@@ -1,0 +1,474 @@
+<div class="prevision-shell" [formGroup]="formGroup">
+  <div class="employee-section-head">
+    <p class="employee-section-kicker">Prevision y beneficios</p>
+    <h3 class="employee-section-title">Prevision y salud</h3>
+    <p class="employee-section-copy">
+      Ordena la informacion previsional por bloques para reducir ruido visual y registrar solo lo que aplica.
+    </p>
+  </div>
+
+  <app-card className="prevision-card">
+    <app-card-header className="prevision-card-header">
+      <h4 class="text-sm font-semibold text-gray-900">Tipo regimen previsional</h4>
+      <p class="mt-1 text-sm text-gray-600">Selecciona el flujo base para mostrar AFP, IPS o Sin Prevision.</p>
+    </app-card-header>
+    <app-card-content className="prevision-card-content">
+      <div class="prevision-grid prevision-grid--two">
+      <div class="form-field">
+        <div class="field-label-row">
+          <label class="text-sm font-medium text-gray-700" for="empleado-tipo-regimen-previsional">
+            Tipo Regimen Previsional
+          </label>
+          @if (isRequired('tipoRegimenPrevisional')) {
+            <span class="field-required" aria-hidden="true">*</span>
+          }
+        </div>
+        <select
+          id="empleado-tipo-regimen-previsional"
+          formControlName="tipoRegimenPrevisional"
+          [class]="controlClass('tipoRegimenPrevisional')"
+        >
+          <option [ngValue]="null">Selecciona un tipo</option>
+          @for (option of tipoRegimenOptions; track option.value) {
+            <option [ngValue]="option.value">{{ option.label }}</option>
+          }
+        </select>
+        @if (hasError('tipoRegimenPrevisional', 'required')) {
+          <p class="field-message">Debes seleccionar el tipo de regimen previsional.</p>
+        } @else {
+          <p class="field-message"></p>
+        }
+      </div>
+
+      @if (tipoPrevision) {
+        <div class="prevision-span-2 rounded-lg border border-gray-200 bg-gray-50 px-4 py-3 text-sm text-gray-600">
+          @for (option of tipoRegimenOptions; track option.value) {
+            @if (option.value === tipoPrevision) {
+              {{ option.description }}
+            }
+          }
+        </div>
+      }
+      </div>
+    </app-card-content>
+  </app-card>
+
+  @if (esAfp) {
+    <app-card className="prevision-card">
+      <app-card-header className="prevision-card-header">
+        <h4 class="text-sm font-semibold text-gray-900">AFP</h4>
+        <p class="mt-1 text-sm text-gray-600">Configura la AFP base y la Cuenta 2 de ahorro voluntario si aplica.</p>
+      </app-card-header>
+      <app-card-content className="prevision-card-content">
+        <div class="prevision-grid prevision-grid--three">
+          <div class="form-field">
+            <div class="field-label-row">
+              <label class="text-sm font-medium text-gray-700" for="empleado-afp">Nombre AFP</label>
+              @if (isRequired('idAfp')) {
+                <span class="field-required" aria-hidden="true">*</span>
+              }
+            </div>
+            <select id="empleado-afp" formControlName="idAfp" [class]="controlClass('idAfp')">
+              <option [ngValue]="null">Selecciona una AFP</option>
+              @for (option of afps; track option.value) {
+                <option [ngValue]="option.value">{{ option.label }}</option>
+              }
+            </select>
+            @if (hasError('idAfp', 'required')) {
+              <p class="field-message">La AFP es obligatoria.</p>
+            } @else {
+              <p class="field-message"></p>
+            }
+          </div>
+
+          <div class="form-field">
+            <div class="field-label-row">
+              <label class="text-sm font-medium text-gray-700" for="empleado-moneda-cuenta2">
+                Moneda Cuenta 2 - Ahorro Volunt.
+              </label>
+              @if (isRequired('idMonedaCuenta2')) {
+                <span class="field-required" aria-hidden="true">*</span>
+              }
+            </div>
+            <select
+              id="empleado-moneda-cuenta2"
+              formControlName="idMonedaCuenta2"
+              [class]="controlClass('idMonedaCuenta2')"
+            >
+              <option [ngValue]="null">Opcional</option>
+              @for (option of monedas; track option.value) {
+                <option [ngValue]="option.value">{{ option.label }}</option>
+              }
+            </select>
+            @if (hasError('idMonedaCuenta2', 'required')) {
+              <p class="field-message">Selecciona la moneda si informas Cuenta 2.</p>
+            } @else {
+              <p class="field-message"></p>
+            }
+          </div>
+
+          <div class="form-field">
+            <div class="field-label-row">
+              <label class="text-sm font-medium text-gray-700" for="empleado-valor-cuenta2">
+                Valor Cuenta 2 - Ahorro Volunt.
+              </label>
+              @if (isRequired('valorCuenta2')) {
+                <span class="field-required" aria-hidden="true">*</span>
+              }
+            </div>
+            <input
+              id="empleado-valor-cuenta2"
+              type="number"
+              min="0"
+              step="1000"
+              formControlName="valorCuenta2"
+              [class]="controlClass('valorCuenta2')"
+            />
+            @if (hasError('valorCuenta2', 'required')) {
+              <p class="field-message">Ingresa el valor si informas Cuenta 2.</p>
+            } @else if (hasError('valorCuenta2', 'min')) {
+              <p class="field-message">El valor de Cuenta 2 no puede ser negativo.</p>
+            } @else {
+              <p class="field-message"></p>
+            }
+          </div>
+        </div>
+      </app-card-content>
+    </app-card>
+  }
+
+  @if (esIps) {
+    <app-card className="prevision-card">
+      <app-card-header className="prevision-card-header">
+        <h4 class="text-sm font-semibold text-gray-900">IPS (Ex INP)</h4>
+        <p class="mt-1 text-sm text-gray-600">Completa la informacion de la Ex-Caja para el trabajador.</p>
+      </app-card-header>
+      <app-card-content className="prevision-card-content">
+        <div class="prevision-grid prevision-grid--three">
+          <div class="form-field">
+            <div class="field-label-row">
+              <label class="text-sm font-medium text-gray-700" for="empleado-nombre-ex-caja">Nombre Ex-Caja</label>
+              @if (isRequired('nombreExCaja')) {
+                <span class="field-required" aria-hidden="true">*</span>
+              }
+            </div>
+            <input
+              id="empleado-nombre-ex-caja"
+              type="text"
+              formControlName="nombreExCaja"
+              [class]="controlClass('nombreExCaja')"
+            />
+            @if (hasError('nombreExCaja', 'required')) {
+              <p class="field-message">El nombre Ex-Caja es obligatorio.</p>
+            } @else {
+              <p class="field-message"></p>
+            }
+          </div>
+
+          <div class="form-field">
+            <div class="field-label-row">
+              <label class="text-sm font-medium text-gray-700" for="empleado-regimen-ex-caja">
+                Regimen Ex-Caja
+              </label>
+              @if (isRequired('regimenExCaja')) {
+                <span class="field-required" aria-hidden="true">*</span>
+              }
+            </div>
+            <input
+              id="empleado-regimen-ex-caja"
+              type="text"
+              formControlName="regimenExCaja"
+              [class]="controlClass('regimenExCaja')"
+            />
+            @if (hasError('regimenExCaja', 'required')) {
+              <p class="field-message">El regimen Ex-Caja es obligatorio.</p>
+            } @else {
+              <p class="field-message"></p>
+            }
+          </div>
+
+          <div class="form-field">
+            <div class="field-label-row">
+              <label class="text-sm font-medium text-gray-700" for="empleado-tasa-ex-caja">Tasa Ex-Caja</label>
+              @if (isRequired('tasaExCaja')) {
+                <span class="field-required" aria-hidden="true">*</span>
+              }
+            </div>
+            <input
+              id="empleado-tasa-ex-caja"
+              type="number"
+              min="0"
+              step="0.01"
+              formControlName="tasaExCaja"
+              [class]="controlClass('tasaExCaja')"
+            />
+            @if (hasError('tasaExCaja', 'required')) {
+              <p class="field-message">La tasa Ex-Caja es obligatoria.</p>
+            } @else if (hasError('tasaExCaja', 'min')) {
+              <p class="field-message">La tasa Ex-Caja no puede ser negativa.</p>
+            } @else {
+              <p class="field-message"></p>
+            }
+          </div>
+        </div>
+      </app-card-content>
+    </app-card>
+  }
+
+  @if (mostrarSalud) {
+    <app-card className="prevision-card">
+      <app-card-header className="prevision-card-header">
+        <h4 class="text-sm font-semibold text-gray-900">Salud</h4>
+        <p class="mt-1 text-sm text-gray-600">Registra el plan de salud en un bloque compacto y consistente.</p>
+      </app-card-header>
+      <app-card-content className="prevision-card-content">
+        <div class="prevision-grid prevision-grid--four">
+          <div class="form-field">
+            <div class="field-label-row">
+              <label class="text-sm font-medium text-gray-700" for="empleado-salud">Nombre</label>
+              @if (isRequired('idSalud')) {
+                <span class="field-required" aria-hidden="true">*</span>
+              }
+            </div>
+            <select id="empleado-salud" formControlName="idSalud" [class]="controlClass('idSalud')">
+              <option [ngValue]="null">Selecciona una institucion</option>
+              @for (option of entidadesSalud; track option.value) {
+                <option [ngValue]="option.value">{{ option.label }}</option>
+              }
+            </select>
+            @if (hasError('idSalud', 'required')) {
+              <p class="field-message">La institucion de salud es obligatoria.</p>
+            } @else {
+              <p class="field-message"></p>
+            }
+          </div>
+
+          <div class="form-field">
+            <div class="field-label-row">
+              <label class="text-sm font-medium text-gray-700" for="empleado-moneda-plan">Tipo Moneda Salud</label>
+              @if (isRequired('idMonedaPlan')) {
+                <span class="field-required" aria-hidden="true">*</span>
+              }
+            </div>
+            <select
+              id="empleado-moneda-plan"
+              formControlName="idMonedaPlan"
+              [class]="controlClass('idMonedaPlan')"
+            >
+              <option [ngValue]="null">Selecciona una moneda</option>
+              @for (option of monedas; track option.value) {
+                <option [ngValue]="option.value">{{ option.label }}</option>
+              }
+            </select>
+            @if (hasError('idMonedaPlan', 'required')) {
+              <p class="field-message">La moneda del plan de salud es obligatoria.</p>
+            } @else {
+              <p class="field-message"></p>
+            }
+          </div>
+
+          <div class="form-field">
+            <div class="field-label-row">
+              <label class="text-sm font-medium text-gray-700" for="empleado-valor-plan">Valor Plan</label>
+              @if (isRequired('valorPlan')) {
+                <span class="field-required" aria-hidden="true">*</span>
+              }
+            </div>
+            <input
+              id="empleado-valor-plan"
+              type="number"
+              min="0"
+              step="1000"
+              formControlName="valorPlan"
+              [class]="controlClass('valorPlan')"
+            />
+            @if (hasError('valorPlan', 'required')) {
+              <p class="field-message">El valor del plan es obligatorio.</p>
+            } @else if (hasError('valorPlan', 'min')) {
+              <p class="field-message">El valor del plan no puede ser negativo.</p>
+            } @else {
+              <p class="field-message"></p>
+            }
+          </div>
+
+          <div class="form-field">
+            <div class="field-label-row">
+              <label class="text-sm font-medium text-gray-700" for="empleado-auge-ges">
+                Adicional Plan Auge (UF)
+              </label>
+              @if (isRequired('adicionalAugeGes')) {
+                <span class="field-required" aria-hidden="true">*</span>
+              }
+            </div>
+            <input
+              id="empleado-auge-ges"
+              type="number"
+              min="0"
+              step="1000"
+              formControlName="adicionalAugeGes"
+              [class]="controlClass('adicionalAugeGes')"
+            />
+            @if (hasError('adicionalAugeGes', 'required')) {
+              <p class="field-message">El adicional Plan Auge es obligatorio.</p>
+            } @else if (hasError('adicionalAugeGes', 'min')) {
+              <p class="field-message">El adicional Plan Auge no puede ser negativo.</p>
+            } @else {
+              <p class="field-message"></p>
+            }
+          </div>
+        </div>
+      </app-card-content>
+    </app-card>
+  }
+
+  @if (esAfp) {
+    <app-card className="prevision-card">
+      <app-card-header className="prevision-card-header flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+        <div>
+          <h4 class="text-sm font-semibold text-gray-900">APVI - Ahorro Previsional Voluntario Individual</h4>
+          <p class="mt-1 text-sm text-gray-600">Activalo solo si el trabajador mantiene ahorro voluntario.</p>
+        </div>
+
+        <label class="inline-flex items-center gap-2 text-sm font-medium text-gray-700" for="empleado-tiene-apv">
+          <input
+            id="empleado-tiene-apv"
+            type="checkbox"
+            class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+            formControlName="tieneApv"
+          />
+          Tiene APVI
+        </label>
+      </app-card-header>
+
+      @if (mostrarApvi) {
+        <app-card-content className="prevision-card-content">
+          <div class="prevision-grid prevision-grid--three">
+            <div class="form-field">
+              <div class="field-label-row">
+                <label class="text-sm font-medium text-gray-700" for="empleado-institucion-apv">Nombre APVI</label>
+                @if (isRequired('idInstitucionApv')) {
+                  <span class="field-required" aria-hidden="true">*</span>
+                }
+              </div>
+              <select
+                id="empleado-institucion-apv"
+                formControlName="idInstitucionApv"
+                [class]="controlClass('idInstitucionApv')"
+              >
+                <option [ngValue]="null">Selecciona una institucion</option>
+                @for (option of institucionesApv; track option.value) {
+                  <option [ngValue]="option.value">{{ option.label }}</option>
+                }
+              </select>
+              @if (hasError('idInstitucionApv', 'required')) {
+                <p class="field-message">La institucion APVI es obligatoria.</p>
+              } @else {
+                <p class="field-message"></p>
+              }
+            </div>
+
+            <div class="form-field">
+              <div class="field-label-row">
+                <label class="text-sm font-medium text-gray-700" for="empleado-moneda-apv">Tipo Moneda APVI</label>
+                @if (isRequired('idMonedaApv')) {
+                  <span class="field-required" aria-hidden="true">*</span>
+                }
+              </div>
+              <select
+                id="empleado-moneda-apv"
+                formControlName="idMonedaApv"
+                [class]="controlClass('idMonedaApv')"
+              >
+                <option [ngValue]="null">Selecciona una moneda</option>
+                @for (option of monedas; track option.value) {
+                  <option [ngValue]="option.value">{{ option.label }}</option>
+                }
+              </select>
+              @if (hasError('idMonedaApv', 'required')) {
+                <p class="field-message">La moneda APVI es obligatoria.</p>
+              } @else {
+                <p class="field-message"></p>
+              }
+            </div>
+
+            <div class="form-field">
+              <div class="field-label-row">
+                <label class="text-sm font-medium text-gray-700" for="empleado-monto-apv">Valor APVI</label>
+                @if (isRequired('montoApv')) {
+                  <span class="field-required" aria-hidden="true">*</span>
+                }
+              </div>
+              <input
+                id="empleado-monto-apv"
+                type="number"
+                min="0"
+                step="1000"
+                formControlName="montoApv"
+                [class]="controlClass('montoApv')"
+              />
+              @if (hasError('montoApv', 'required')) {
+                <p class="field-message">El valor APVI es obligatorio.</p>
+              } @else if (hasError('montoApv', 'min')) {
+                <p class="field-message">El valor APVI no puede ser negativo.</p>
+              } @else {
+                <p class="field-message"></p>
+              }
+            </div>
+
+            <div class="form-field">
+              <div class="field-label-row">
+                <label class="text-sm font-medium text-gray-700" for="empleado-forma-pago-apv">
+                  Forma de Pago APVI
+                </label>
+                @if (isRequired('idFormaPagoApv')) {
+                  <span class="field-required" aria-hidden="true">*</span>
+                }
+              </div>
+              <select
+                id="empleado-forma-pago-apv"
+                formControlName="idFormaPagoApv"
+                [class]="controlClass('idFormaPagoApv')"
+              >
+                <option [ngValue]="null">Selecciona una forma de pago</option>
+                @for (option of formasPagoApv; track option.value) {
+                  <option [ngValue]="option.value">{{ option.label }}</option>
+                }
+              </select>
+              @if (hasError('idFormaPagoApv', 'required')) {
+                <p class="field-message">La forma de pago APVI es obligatoria.</p>
+              } @else {
+                <p class="field-message"></p>
+              }
+            </div>
+
+            <div class="form-field">
+              <div class="field-label-row">
+                <label class="text-sm font-medium text-gray-700" for="empleado-deposito-convenido-apvi">
+                  Deposito Convenido APVI
+                </label>
+                @if (isRequired('depositoConvenidoApvi')) {
+                  <span class="field-required" aria-hidden="true">*</span>
+                }
+              </div>
+              <input
+                id="empleado-deposito-convenido-apvi"
+                type="number"
+                min="0"
+                step="1000"
+                formControlName="depositoConvenidoApvi"
+                [class]="controlClass('depositoConvenidoApvi')"
+              />
+              @if (hasError('depositoConvenidoApvi', 'required')) {
+                <p class="field-message">El deposito convenido APVI es obligatorio.</p>
+              } @else if (hasError('depositoConvenidoApvi', 'min')) {
+                <p class="field-message">El deposito convenido APVI no puede ser negativo.</p>
+              } @else {
+                <p class="field-message"></p>
+              }
+            </div>
+          </div>
+        </app-card-content>
+      }
+    </app-card>
+  }
+</div>

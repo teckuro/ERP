@@ -1,0 +1,83 @@
+<section class="employee-section-shell" [formGroup]="formGroup">
+  <div class="employee-section-head">
+    <p class="employee-section-kicker">Pago</p>
+    <h3 class="employee-section-title">Bloque bancario</h3>
+    <p class="employee-section-copy">Registra la cuenta de abono para el pago de remuneraciones.</p>
+  </div>
+
+  <section class="employee-block">
+    <div class="employee-block-title">Cuenta de abono</div>
+    <div class="employee-grid employee-grid--four">
+    <div class="form-field">
+      <div class="field-label-row">
+        <label class="text-sm font-medium text-gray-700" for="empleado-banco">Banco</label>
+        @if (isRequired('idBanco')) {
+          <span class="field-required" aria-hidden="true">*</span>
+        }
+      </div>
+      <select id="empleado-banco" formControlName="idBanco" [class]="controlClass('idBanco')">
+        <option [ngValue]="null">Selecciona un banco</option>
+        @for (option of bancos; track option.value) {
+          <option [ngValue]="option.value">{{ option.label }}</option>
+        }
+      </select>
+      @if (hasError('idBanco', 'required')) {
+        <p class="field-message">El banco es obligatorio.</p>
+      } @else {
+        <p class="field-message"></p>
+      }
+    </div>
+
+    <div class="form-field">
+      <div class="field-label-row">
+        <label class="text-sm font-medium text-gray-700" for="empleado-tipo-cuenta">Tipo de cuenta</label>
+        @if (isRequired('idTipoCuentaBancaria')) {
+          <span class="field-required" aria-hidden="true">*</span>
+        }
+      </div>
+      <select
+        id="empleado-tipo-cuenta"
+        formControlName="idTipoCuentaBancaria"
+        [class]="controlClass('idTipoCuentaBancaria')"
+      >
+        <option [ngValue]="null">Selecciona un tipo de cuenta</option>
+        @for (option of tiposCuentaBancaria; track option.value) {
+          <option [ngValue]="option.value">{{ option.label }}</option>
+        }
+      </select>
+      @if (hasError('idTipoCuentaBancaria', 'required')) {
+        <p class="field-message">El tipo de cuenta es obligatorio.</p>
+      } @else {
+        <p class="field-message"></p>
+      }
+    </div>
+
+    <div class="form-field employee-span-2">
+      <div class="field-label-row">
+        <label class="text-sm font-medium text-gray-700" for="empleado-numero-cuenta">Numero de cuenta</label>
+        @if (isRequired('numeroCuenta')) {
+          <span class="field-required" aria-hidden="true">*</span>
+        }
+      </div>
+      <input
+        id="empleado-numero-cuenta"
+        type="text"
+        inputmode="numeric"
+        maxlength="50"
+        formControlName="numeroCuenta"
+        placeholder="1234567890"
+        [class]="controlClass('numeroCuenta')"
+      />
+      @if (hasError('numeroCuenta', 'required')) {
+        <p class="field-message">El numero de cuenta es obligatorio.</p>
+      } @else if (hasError('numeroCuenta', 'digitsOnly')) {
+        <p class="field-message">Ingresa solo numeros.</p>
+      } @else if (hasError('numeroCuenta', 'maxlength')) {
+        <p class="field-message">El numero de cuenta supera el largo permitido.</p>
+      } @else {
+        <p class="field-message"></p>
+      }
+    </div>
+  </div>
+  </section>
+</section>

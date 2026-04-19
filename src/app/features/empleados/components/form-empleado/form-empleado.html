@@ -1,0 +1,173 @@
+<form class="form-shell w-full" [formGroup]="form" (ngSubmit)="onSubmit()">
+  <div class="form-stack w-full">
+    <app-card className="editor-shell">
+      <app-card-content className="editor-frame">
+        <app-page-title title="Crear empleado"></app-page-title>
+        <app-page-actions
+          [visibleActions]="['back', 'save']"
+          backLabel="Volver"
+          saveLabel="Guardar"
+          backLink="/empleados"
+          [saveDisabled]="isSaving() || isLoadingCatalogs()"
+          (saveClick)="onSubmit()"
+        ></app-page-actions>
+
+        <div class="status-stack">
+          @if (catalogosError(); as message) {
+            <app-message-box
+              variant="error"
+              title="Catalogos no disponibles"
+              [message]="message"
+              actionLabel="Reintentar"
+              (action)="loadCatalogos()"
+            ></app-message-box>
+          } @else if (isLoadingCatalogs()) {
+            <app-message-box
+              variant="loading"
+              title="Preparando formulario"
+              message="Estamos cargando la informacion necesaria para completar la ficha."
+            ></app-message-box>
+          }
+        </div>
+
+        @if (isSaving()) {
+          <app-message-box
+            mode="modal"
+            variant="loading"
+            title="Registrando ficha"
+            message="Estamos validando y registrando la informacion del colaborador."
+          ></app-message-box>
+        } @else if (errorMessage(); as message) {
+          <app-message-box
+            mode="modal"
+            variant="error"
+            title="No fue posible registrar la ficha"
+            [message]="message"
+            primaryLabel="Aceptar"
+            (action)="dismissErrorMessage()"
+          ></app-message-box>
+        } @else if (successMessage(); as message) {
+          <app-message-box
+            mode="modal"
+            variant="success"
+            title="Ficha registrada"
+            [message]="message"
+            primaryLabel="Aceptar"
+            (action)="goToEmployeeList()"
+          >
+            @if (createdEmployeeId(); as createdId) {
+              <p class="message-detail">
+                Identificador de ficha: {{ createdId }}
+              </p>
+            }
+          </app-message-box>
+        }
+
+        <section class="content-shell">
+          <div class="content-head">
+            <div class="content-copy">
+              <h2 class="content-title">{{ activeStepTitle() }}</h2>
+              <p class="content-description">{{ activeStepDescription() }}</p>
+            </div>
+            <section class="progress-shell progress-shell-inline">
+              <app-stepper
+                [steps]="stepperItems()"
+                [activeId]="activeTab()"
+                caption="Progreso"
+                (activeIdChange)="selectTab($event)"
+                [showMeta]="false"
+              ></app-stepper>
+            </section>
+          </div>
+
+          <div class="content-body">
+            @if (activeTab() === 'datosPersonales') {
+              <div class="step-panel space-y-6">
+                <app-form-empleado-datos-personales
+                  [formGroup]="form.controls.datosPersonales"
+                  [paises]="catalogos().paises"
+                ></app-form-empleado-datos-personales>
+
+                <app-form-empleado-contacto
+                  [formGroup]="form.controls.contacto"
+                  [comunas]="catalogos().comunas"
+                ></app-form-empleado-contacto>
+              </div>
+            } @else if (activeTab() === 'contrato') {
+              <div class="step-panel">
+                <app-form-empleado-contrato
+                  [formGroup]="form.controls.contrato"
+                  [centrosCosto]="catalogos().centrosCosto"
+                  [sucursales]="catalogos().sucursales"
+                  [departamentos]="catalogos().departamentos"
+                  [tiposTrabajador]="catalogos().tiposTrabajador"
+                  [tiposJornada]="catalogos().tiposJornada"
+                  [monedas]="catalogos().monedas"
+                  [tramosCarga]="catalogos().tramosCarga"
+                ></app-form-empleado-contrato>
+              </div>
+            } @else if (activeTab() === 'previsionSalud') {
+              <div class="step-panel">
+                <app-form-empleado-prevision-salud
+                  [formGroup]="form.controls.previsionSalud"
+                  [regimenesPrevisionales]="catalogos().regimenesPrevisionales"
+                  [afps]="catalogos().afps"
+                  [entidadesSalud]="catalogos().entidadesSalud"
+                  [monedas]="catalogos().monedas"
+                  [institucionesApv]="catalogos().institucionesApv"
+                  [formasPagoApv]="catalogos().formasPagoApv"
+                ></app-form-empleado-prevision-salud>
+              </div>
+            } @else {
+              <div class="step-panel">
+                <app-form-empleado-bancario
+                  [formGroup]="form.controls.bancario"
+                  [bancos]="catalogos().bancos"
+                  [tiposCuentaBancaria]="catalogos().tiposCuentaBancaria"
+                ></app-form-empleado-bancario>
+              </div>
+            }
+          </div>
+          <div
+            class="editor-footer"
+          >
+            <p class="editor-footer-copy">
+              Completa el flujo por etapas. Puedes volver a pasos anteriores antes de guardar el
+              colaborador.
+            </p>
+
+            <div class="editor-footer-actions">
+              <button
+                type="button"
+                class="form-action-button form-action-button--secondary"
+                [disabled]="isFirstTab()"
+                (click)="goToPreviousTab()"
+              >
+                Anterior
+              </button>
+
+              @if (!isLastTab()) {
+                <button
+                  type="button"
+                  class="form-action-button form-action-button--primary"
+                  (click)="goToNextTab()"
+                >
+                  Siguiente
+                </button>
+              } @else {
+                <button
+                  type="submit"
+                  class="form-action-button form-action-button--primary"
+                  [disabled]="isSaving() || isLoadingCatalogs()"
+                >
+                  <lucide-icon class="h-4 w-4" name="save"></lucide-icon>
+                  {{ isSaving() ? 'Guardando...' : 'Crear empleado' }}
+                </button>
+              }
+            </div>
+          </div>
+        </section>
+      </app-card-content>
+    </app-card>
+  </div>
+</form>

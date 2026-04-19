@@ -1,0 +1,208 @@
+<section class="employee-section-shell" [formGroup]="formGroup">
+  <div class="employee-section-head">
+    <p class="employee-section-kicker">Ficha base</p>
+    <h3 class="employee-section-title">Datos personales</h3>
+    <p class="employee-section-copy">
+      Completa la informacion principal del colaborador para identificarlo dentro de la ficha.
+    </p>
+  </div>
+
+  <section class="employee-block">
+    <div class="employee-block-title">Identificacion</div>
+    <div class="employee-grid employee-grid--four">
+      <div class="form-field">
+        <div class="field-label-row">
+          <label class="text-sm font-medium text-gray-700" for="empleado-rut">RUT</label>
+          @if (isRequired('rut')) {
+            <span class="field-required" aria-hidden="true">*</span>
+          }
+        </div>
+        <input
+          id="empleado-rut"
+          type="text"
+          inputmode="text"
+          maxlength="12"
+          formControlName="rut"
+          placeholder="12.345.678-9"
+          [class]="controlClass('rut')"
+        />
+        @if (hasError('rut', 'required')) {
+          <p class="field-message">El RUT es obligatorio.</p>
+        } @else if (hasError('rut', 'rut')) {
+          <p class="field-message">Ingresa un RUT valido, por ejemplo 12.345.678-5.</p>
+        } @else {
+          <p class="field-message"></p>
+        }
+      </div>
+
+      <div class="form-field">
+        <div class="field-label-row">
+          <label class="text-sm font-medium text-gray-700" for="empleado-pasaporte">Pasaporte</label>
+        </div>
+        <input
+          id="empleado-pasaporte"
+          type="text"
+          formControlName="pasaporte"
+          placeholder="AA1234567"
+          [class]="controlClass('pasaporte')"
+        />
+        @if (hasError('pasaporte', 'maxlength')) {
+          <p class="field-message">El pasaporte supera el largo permitido.</p>
+        } @else {
+          <p class="field-message"></p>
+        }
+      </div>
+
+      <div class="form-field">
+        <div class="field-label-row">
+          <label class="text-sm font-medium text-gray-700" for="empleado-fecha-nacimiento">Fecha de nacimiento</label>
+          @if (isRequired('fechaNacimiento')) {
+            <span class="field-required" aria-hidden="true">*</span>
+          }
+        </div>
+        <input
+          id="empleado-fecha-nacimiento"
+          type="date"
+          formControlName="fechaNacimiento"
+          [class]="controlClass('fechaNacimiento')"
+        />
+        @if (hasError('fechaNacimiento', 'required')) {
+          <p class="field-message">La fecha de nacimiento es obligatoria.</p>
+        } @else {
+          <p class="field-message"></p>
+        }
+      </div>
+
+      <div class="form-field">
+        <div class="field-label-row">
+          <label class="text-sm font-medium text-gray-700" for="empleado-sexo">Sexo</label>
+          @if (isRequired('sexo')) {
+            <span class="field-required" aria-hidden="true">*</span>
+          }
+        </div>
+        <select id="empleado-sexo" formControlName="sexo" [class]="controlClass('sexo')">
+          @for (option of sexOptions; track option.value) {
+            <option [value]="option.value">{{ option.label }}</option>
+          }
+        </select>
+        @if (hasError('sexo', 'required')) {
+          <p class="field-message">El sexo es obligatorio.</p>
+        } @else {
+          <p class="field-message"></p>
+        }
+      </div>
+
+      <div class="form-field employee-span-2">
+        <div class="field-label-row">
+          <label class="text-sm font-medium text-gray-700" for="empleado-nombres">Nombres</label>
+          @if (isRequired('nombres')) {
+            <span class="field-required" aria-hidden="true">*</span>
+          }
+        </div>
+        <input
+          id="empleado-nombres"
+          type="text"
+          formControlName="nombres"
+          placeholder="Camila"
+          [class]="controlClass('nombres')"
+        />
+        @if (hasError('nombres', 'required')) {
+          <p class="field-message">Los nombres son obligatorios.</p>
+        } @else if (hasError('nombres', 'personName')) {
+          <p class="field-message">Usa solo letras, espacios, apostrofes o guiones.</p>
+        } @else if (hasError('nombres', 'maxlength')) {
+          <p class="field-message">Los nombres superan el largo permitido.</p>
+        } @else {
+          <p class="field-message"></p>
+        }
+      </div>
+
+      <div class="form-field">
+        <div class="field-label-row">
+          <label class="text-sm font-medium text-gray-700" for="empleado-apellido-paterno">Apellido paterno</label>
+          @if (isRequired('apellidoPaterno')) {
+            <span class="field-required" aria-hidden="true">*</span>
+          }
+        </div>
+        <input
+          id="empleado-apellido-paterno"
+          type="text"
+          formControlName="apellidoPaterno"
+          placeholder="Soto"
+          [class]="controlClass('apellidoPaterno')"
+        />
+        @if (hasError('apellidoPaterno', 'required')) {
+          <p class="field-message">El apellido paterno es obligatorio.</p>
+        } @else if (hasError('apellidoPaterno', 'personName')) {
+          <p class="field-message">Usa solo letras, espacios, apostrofes o guiones.</p>
+        } @else if (hasError('apellidoPaterno', 'maxlength')) {
+          <p class="field-message">El apellido paterno supera el largo permitido.</p>
+        } @else {
+          <p class="field-message"></p>
+        }
+      </div>
+
+      <div class="form-field">
+        <div class="field-label-row">
+          <label class="text-sm font-medium text-gray-700" for="empleado-apellido-materno">Apellido materno</label>
+        </div>
+        <input
+          id="empleado-apellido-materno"
+          type="text"
+          formControlName="apellidoMaterno"
+          placeholder="Rojas"
+          [class]="controlClass('apellidoMaterno')"
+        />
+        @if (hasError('apellidoMaterno', 'personName')) {
+          <p class="field-message">Usa solo letras, espacios, apostrofes o guiones.</p>
+        } @else if (hasError('apellidoMaterno', 'maxlength')) {
+          <p class="field-message">El apellido materno supera el largo permitido.</p>
+        } @else {
+          <p class="field-message"></p>
+        }
+      </div>
+
+      <div class="form-field employee-span-2">
+        <div class="field-label-row">
+          <label class="text-sm font-medium text-gray-700" for="empleado-idPais">Nacionalidad</label>
+          @if (isRequired('idPais')) {
+            <span class="field-required" aria-hidden="true">*</span>
+          }
+        </div>
+        <select id="empleado-idPais" formControlName="idPais" [class]="controlClass('idPais')">
+          <option [ngValue]="null">Selecciona un pais</option>
+          @for (pais of paises; track pais.value) {
+            <option [ngValue]="pais.value">{{ pais.label }}</option>
+          }
+        </select>
+        @if (hasError('idPais', 'required')) {
+          <p class="field-message">El pais es obligatorio.</p>
+        } @else if (!paises.length) {
+          <p class="field-message field-message--warning">No hay paises cargados desde Supabase.</p>
+        } @else {
+          <p class="field-message"></p>
+        }
+      </div>
+
+      <div class="form-field employee-span-2">
+        <div class="field-label-row">
+          <label class="text-sm font-medium text-gray-700" for="empleado-estadoCivil">Estado civil</label>
+          @if (isRequired('estadoCivil')) {
+            <span class="field-required" aria-hidden="true">*</span>
+          }
+        </div>
+        <select id="empleado-estadoCivil" formControlName="estadoCivil" [class]="controlClass('estadoCivil')">
+          <option [ngValue]="null">Selecciona un estado civil</option>
+          @for (estadocivil of estadoCivilOptions; track estadocivil.value) {
+            <option [ngValue]="estadocivil.value">{{ estadocivil.label }}</option>
+          }
+        </select>
+        @if (hasError('estadoCivil', 'required')) {
+          <p class="field-message">El estado civil es obligatorio.</p>
+        } @else {
+          <p class="field-message"></p>
+        }
+      </div>
+    </div>
+  </section>
+</section>

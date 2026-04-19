@@ -1,0 +1,64 @@
+@import '../form-empleado-shared.css';
+
+:host {
+  display: block;
+}
+
+.prevision-shell {
+  display: grid;
+  gap: 1rem;
+}
+
+.prevision-card {
+  border-color: rgba(226, 232, 240, 0.95);
+  box-shadow: none;
+}
+
+.prevision-card-header {
+  padding: 1rem 1.05rem;
+}
+
+.prevision-card-content {
+  padding: 1rem 1.05rem;
+}
+
+.prevision-grid {
+  display: grid;
+  gap: 0.9rem 1rem;
+  align-items: start;
+}
+
+.prevision-grid--two {
+  grid-template-columns: repeat(2, minmax(10rem, 1fr));
+}
+
+.prevision-grid--three {
+  grid-template-columns: repeat(3, minmax(10rem, 1fr));
+}
+
+.prevision-grid--four {
+  grid-template-columns: repeat(4, minmax(10rem, 1fr));
+}
+
+.prevision-span-2 {
+  grid-column: span 2;
+}
+
+@media (max-width: 1280px) {
+  .prevision-grid--three,
+  .prevision-grid--four {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 1024px) {
+  .prevision-grid--two,
+  .prevision-grid--three,
+  .prevision-grid--four {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .prevision-span-2 {
+    grid-column: auto;
+  }
+}

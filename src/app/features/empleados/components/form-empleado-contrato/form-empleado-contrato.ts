@@ -1,0 +1,183 @@
+import { Component, Input } from '@angular/core';
+import { ReactiveFormsModule, Validators } from '@angular/forms';
+
+import {
+  ContratoFormGroup,
+  EmpleadoCatalogOption,
+  EmpleadoDepartamentoOption,
+  EmpleadoSucursalOption,
+  RelacionLaboral,
+  TipoContrato,
+  TipoGratificacion,
+  TramoCargaCatalogOption,
+} from '../../models/empleado-form.model';
+import { EmpleadoEstado } from '../../models/empleado-listado.model';
+
+type ContratoControlName = keyof ContratoFormGroup['controls'];
+
+interface SelectOption<T> {
+  value: T;
+  label: string;
+}
+
+interface WeekdayOption {
+  value: number;
+  label: string;
+}
+
+@Component({
+  selector: 'app-form-empleado-contrato',
+  imports: [ReactiveFormsModule],
+  templateUrl: './form-empleado-contrato.html',
+  styleUrl: './form-empleado-contrato.css',
+})
+export class FormEmpleadoContratoComponent {
+  @Input({ required: true }) formGroup!: ContratoFormGroup;
+  @Input() centrosCosto: EmpleadoCatalogOption[] = [];
+  @Input() sucursales: EmpleadoSucursalOption[] = [];
+  @Input() departamentos: EmpleadoDepartamentoOption[] = [];
+  @Input() tiposTrabajador: EmpleadoCatalogOption[] = [];
+  @Input() tiposJornada: EmpleadoCatalogOption[] = [];
+  @Input() monedas: EmpleadoCatalogOption[] = [];
+  @Input() tramosCarga: TramoCargaCatalogOption[] = [];
+
+  readonly employeeStates: SelectOption<EmpleadoEstado>[] = [
+    { value: 'borrador', label: 'Borrador' },
+    { value: 'en_proceso', label: 'En proceso' },
+    { value: 'activo', label: 'Activo' },
+    { value: 'suspendido', label: 'Suspendido' },
+    { value: 'inactivo', label: 'Inactivo' },
+    { value: 'desvinculado', label: 'Desvinculado' },
+    { value: 'bloqueado', label: 'Bloqueado' },
+  ];
+
+  readonly relationOptions: SelectOption<RelacionLaboral>[] = [
+    { value: 'CONTRATO', label: 'Contrato' },
+    { value: 'HONORARIOS', label: 'Boleta de honorarios' },
+  ];
+
+  readonly contractTypes: SelectOption<TipoContrato>[] = [
+    { value: 'INDEFINIDO', label: 'Indefinido' },
+    { value: 'PLAZO_FIJO', label: 'Plazo fijo' },
+    { value: 'OBRA_SERVICIO', label: 'Obra o servicio' },
+  ];
+
+  readonly gratificationTypes: SelectOption<TipoGratificacion>[] = [
+    { value: 'LEGAL_ART_50', label: 'Legal art. 50' },
+    { value: 'LEGAL_ART_47', label: 'Legal art. 47' },
+    { value: 'VOLUNTARIA', label: 'Voluntaria' },
+  ];
+
+  readonly weekdayOptions: WeekdayOption[] = [
+    { value: 1, label: 'Lunes' },
+    { value: 2, label: 'Martes' },
+    { value: 3, label: 'Miércoles' },
+    { value: 4, label: 'Jueves' },
+    { value: 5, label: 'Viernes' },
+    { value: 6, label: 'Sábado' },
+    { value: 7, label: 'Domingo' },
+  ];
+
+  controlClass(controlName: ContratoControlName): string {
+    return [
+      'w-full rounded-xl border bg-white/95 px-3.5 py-2.5 text-sm text-gray-900 shadow-sm transition placeholder:text-slate-400 focus:outline-none focus:ring-4',
+      this.hasError(controlName)
+        ? 'border-red-300 focus:border-red-300 focus:ring-red-100'
+        : 'border-slate-200 focus:border-blue-300 focus:ring-blue-100',
+    ].join(' ');
+  }
+
+  checkboxClass(dayValue: number): string {
+    return [
+      'weekday-chip',
+      this.hasWeekday(dayValue) ? 'is-selected' : '',
+      this.formGroup.controls.semanaCorridaActiva.value ? '' : 'is-disabled',
+    ]
+      .filter(Boolean)
+      .join(' ');
+  }
+
+  hasError(controlName: ContratoControlName, errorCode?: string): boolean {
+    const control = this.formGroup.controls[controlName];
+
+    if (!control.touched) {
+      return false;
+    }
+
+    return errorCode ? control.hasError(errorCode) : control.invalid;
+  }
+
+  isRequired(controlName: ContratoControlName): boolean {
+    return this.formGroup.controls[controlName].hasValidator(Validators.required);
+  }
+
+  get departamentosFiltrados(): EmpleadoDepartamentoOption[] {
+    const sucursalId = this.formGroup.controls.idSucursal.value;
+    return this.departamentos.filter((option) => option.idSucursal === sucursalId);
+  }
+
+  get isIndefinido(): boolean {
+    return this.formGroup.controls.tipoContrato.value === 'INDEFINIDO';
+  }
+
+  get tramoAsignado(): string {
+    return this.selectedTramo?.tramo ?? 'Sin tramo';
+  }
+
+  get valorPorCarga(): string {
+    const tramo = this.selectedTramo;
+
+    if (!tramo?.valor) {
+      return '$0';
+    }
+
+    return new Intl.NumberFormat('es-CL', {
+      style: 'currency',
+      currency: 'CLP',
+      maximumFractionDigits: 0,
+    }).format(tramo.valor);
+  }
+
+  get periodoTramoVigente(): string | null {
+    return this.selectedTramo?.periodo ?? this.tramosCarga[0]?.periodo ?? null;
+  }
+
+  get selectedTramo(): TramoCargaCatalogOption | null {
+    const tramoId = this.formGroup.controls.idTramoCarga.value;
+
+    if (tramoId === null) {
+      return null;
+    }
+
+    return this.tramosCarga.find((option) => option.value === tramoId) ?? null;
+  }
+
+  onRelacionLaboralChange(value: RelacionLaboral): void {
+    this.formGroup.controls.relacionLaboral.setValue(value);
+    this.formGroup.controls.relacionLaboral.markAsTouched();
+  }
+
+  onIndefinidoToggle(checked: boolean): void {
+    this.formGroup.controls.tipoContrato.setValue(checked ? 'INDEFINIDO' : 'PLAZO_FIJO');
+    this.formGroup.controls.tipoContrato.markAsTouched();
+  }
+
+  toggleWeekday(dayValue: number): void {
+    if (!this.formGroup.controls.semanaCorridaActiva.value) {
+      return;
+    }
+
+    const currentDays = this.formGroup.controls.semanaCorridaDiasLaborables.value;
+    const nextDays = currentDays.includes(dayValue)
+      ? currentDays.filter((value) => value !== dayValue)
+      : [...currentDays, dayValue].sort((left, right) => left - right);
+
+    this.formGroup.controls.semanaCorridaDiasLaborables.setValue(nextDays);
+    this.formGroup.controls.semanaCorridaDiasLaborables.markAsTouched();
+  }
+
+  hasWeekday(dayValue: number): boolean {
+    return this.formGroup.controls.semanaCorridaDiasLaborables.value.includes(dayValue);
+  }
+
+}

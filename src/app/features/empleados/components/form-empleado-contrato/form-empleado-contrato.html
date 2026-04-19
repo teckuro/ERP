@@ -1,0 +1,522 @@
+<section class="labor-shell" [formGroup]="formGroup">
+  <div class="labor-head">
+    <p class="labor-kicker">Referencia laboral</p>
+    <h3 class="labor-title">Datos laborales</h3>
+    <p class="labor-copy">
+      La distribución sigue el formulario de remuneraciones tradicional, pero adaptada a la
+      maquetación actual y conectada con el modelo vigente de la base de datos.
+    </p>
+  </div>
+
+  <section class="labor-block">
+    <div class="labor-block-title">Relación laboral</div>
+    <div class="relation-grid">
+      @for (option of relationOptions; track option.value) {
+        <label class="relation-option">
+          <input
+            type="radio"
+            name="relacionLaboral"
+            [checked]="formGroup.controls.relacionLaboral.value === option.value"
+            (change)="onRelacionLaboralChange(option.value)"
+          />
+          <span>{{ option.label }}</span>
+        </label>
+      }
+    </div>
+  </section>
+
+  <section class="labor-block">
+    <div class="labor-block-title">Contrato</div>
+    <div class="labor-grid labor-grid--contract">
+      <div class="form-field">
+        <div class="field-label-row">
+          <label class="text-sm font-medium text-gray-700" for="empleado-tipo-trabajador">Tipo trabajador</label>
+          @if (isRequired('idTipoTrabajador')) {
+            <span class="field-required" aria-hidden="true">*</span>
+          }
+        </div>
+        <select id="empleado-tipo-trabajador" formControlName="idTipoTrabajador" [class]="controlClass('idTipoTrabajador')">
+          <option [ngValue]="null">Selecciona un tipo</option>
+          @for (option of tiposTrabajador; track option.value) {
+            <option [ngValue]="option.value">{{ option.label }}</option>
+          }
+        </select>
+        @if (hasError('idTipoTrabajador', 'required')) {
+          <p class="field-message">El tipo de trabajador es obligatorio.</p>
+        } @else {
+          <p class="field-message"></p>
+        }
+      </div>
+
+      <div class="form-field">
+        <div class="field-label-row">
+          <label class="text-sm font-medium text-gray-700" for="empleado-tipo-jornada">Tipo jornada</label>
+          @if (isRequired('idTipoJornada')) {
+            <span class="field-required" aria-hidden="true">*</span>
+          }
+        </div>
+        <select id="empleado-tipo-jornada" formControlName="idTipoJornada" [class]="controlClass('idTipoJornada')">
+          <option [ngValue]="null">Selecciona una jornada</option>
+          @for (option of tiposJornada; track option.value) {
+            <option [ngValue]="option.value">{{ option.label }}</option>
+          }
+        </select>
+        @if (hasError('idTipoJornada', 'required')) {
+          <p class="field-message">El tipo de jornada es obligatorio.</p>
+        } @else {
+          <p class="field-message"></p>
+        }
+      </div>
+
+      <div class="form-field">
+        <div class="field-label-row">
+          <label class="text-sm font-medium text-gray-700" for="empleado-fecha-ingreso">Ingreso</label>
+          @if (isRequired('fechaIngreso')) {
+            <span class="field-required" aria-hidden="true">*</span>
+          }
+        </div>
+        <input
+          id="empleado-fecha-ingreso"
+          type="date"
+          formControlName="fechaIngreso"
+          [class]="controlClass('fechaIngreso')"
+        />
+        @if (hasError('fechaIngreso', 'required')) {
+          <p class="field-message">La fecha de ingreso es obligatoria.</p>
+        } @else {
+          <p class="field-message"></p>
+        }
+      </div>
+
+      <div class="form-field">
+        <div class="field-label-row">
+          <label class="text-sm font-medium text-gray-700" for="empleado-fecha-contrato">Contrato</label>
+          @if (isRequired('fechaContrato')) {
+            <span class="field-required" aria-hidden="true">*</span>
+          }
+        </div>
+        <input
+          id="empleado-fecha-contrato"
+          type="date"
+          formControlName="fechaContrato"
+          [class]="controlClass('fechaContrato')"
+        />
+        @if (hasError('fechaContrato', 'required')) {
+          <p class="field-message">La fecha de contrato es obligatoria.</p>
+        } @else {
+          <p class="field-message"></p>
+        }
+      </div>
+
+      <div class="form-field">
+        <div class="field-label-row">
+          <label class="text-sm font-medium text-gray-700" for="empleado-fecha-termino">Término</label>
+          @if (isRequired('fechaTermino')) {
+            <span class="field-required" aria-hidden="true">*</span>
+          }
+        </div>
+        <input
+          id="empleado-fecha-termino"
+          type="date"
+          formControlName="fechaTermino"
+          [class]="controlClass('fechaTermino')"
+        />
+        @if (hasError('fechaTermino', 'required')) {
+          <p class="field-message">La fecha de término es obligatoria para contratos no indefinidos.</p>
+        } @else {
+          <p class="field-message"></p>
+        }
+      </div>
+
+      <div class="form-field form-field--checkbox">
+        <div class="field-label-row">
+          <label class="text-sm font-medium text-gray-700" for="empleado-indefinido">Indefinido</label>
+        </div>
+        <label class="inline-flex min-h-[44px] items-center gap-3 rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm text-slate-700">
+          <input
+            id="empleado-indefinido"
+            type="checkbox"
+            [checked]="isIndefinido"
+            (change)="onIndefinidoToggle($any($event.target).checked)"
+          />
+          <span>Contrato indefinido</span>
+        </label>
+        <p class="field-message"></p>
+      </div>
+
+      <div class="form-field">
+        <div class="field-label-row">
+          <label class="text-sm font-medium text-gray-700" for="empleado-departamento">Departamento</label>
+        </div>
+        <select
+          id="empleado-departamento"
+          formControlName="idDepartamentoEmpresa"
+          [class]="controlClass('idDepartamentoEmpresa')"
+        >
+          <option [ngValue]="null">Selecciona un departamento</option>
+          @for (option of departamentosFiltrados; track option.value) {
+            <option [ngValue]="option.value">{{ option.label }}</option>
+          }
+        </select>
+        @if (!departamentosFiltrados.length) {
+          <p class="field-message field-message--warning">No hay departamentos para la sucursal seleccionada.</p>
+        } @else {
+          <p class="field-message"></p>
+        }
+      </div>
+
+      <div class="form-field">
+        <div class="field-label-row">
+          <label class="text-sm font-medium text-gray-700" for="empleado-sucursal">Sucursal</label>
+        </div>
+        <select id="empleado-sucursal" formControlName="idSucursal" [class]="controlClass('idSucursal')">
+          <option [ngValue]="null">Selecciona una sucursal</option>
+          @for (option of sucursales; track option.value) {
+            <option [ngValue]="option.value">{{ option.label }}</option>
+          }
+        </select>
+        <p class="field-message"></p>
+      </div>
+
+      <div class="form-field">
+        <div class="field-label-row">
+          <label class="text-sm font-medium text-gray-700" for="empleado-tipo-contrato">Tipo de contrato</label>
+          @if (isRequired('tipoContrato')) {
+            <span class="field-required" aria-hidden="true">*</span>
+          }
+        </div>
+        <select id="empleado-tipo-contrato" formControlName="tipoContrato" [class]="controlClass('tipoContrato')">
+          @for (option of contractTypes; track option.value) {
+            <option [value]="option.value">{{ option.label }}</option>
+          }
+        </select>
+        <p class="field-message"></p>
+      </div>
+
+      <div class="form-field form-field--checkbox">
+        <div class="field-label-row">
+          <label class="text-sm font-medium text-gray-700" for="empleado-seguro-cesantia">Seguro de cesantía</label>
+        </div>
+        <label class="inline-flex min-h-[44px] items-center gap-3 rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm text-slate-700">
+          <input id="empleado-seguro-cesantia" type="checkbox" formControlName="seguroCesantia" />
+          <span>Activo</span>
+        </label>
+        <p class="field-message"></p>
+      </div>
+    </div>
+  </section>
+
+  <section class="labor-block">
+    <div class="labor-block-title">Remuneración</div>
+    <div class="labor-grid labor-grid--salary">
+      <div class="form-field">
+        <div class="field-label-row">
+          <label class="text-sm font-medium text-gray-700" for="empleado-horas-semanales">Hrs. semanales</label>
+          @if (isRequired('horasSemanales')) {
+            <span class="field-required" aria-hidden="true">*</span>
+          }
+        </div>
+        <input id="empleado-horas-semanales" type="number" formControlName="horasSemanales" [class]="controlClass('horasSemanales')" />
+        @if (hasError('horasSemanales')) {
+          <p class="field-message">Ingresa una cantidad válida entre 1 y 168.</p>
+        } @else {
+          <p class="field-message"></p>
+        }
+      </div>
+
+      <div class="form-field">
+        <div class="field-label-row">
+          <label class="text-sm font-medium text-gray-700" for="empleado-dias-semanales">Días semanales</label>
+          @if (isRequired('diasSemanales')) {
+            <span class="field-required" aria-hidden="true">*</span>
+          }
+        </div>
+        <input id="empleado-dias-semanales" type="number" formControlName="diasSemanales" [class]="controlClass('diasSemanales')" />
+        @if (hasError('diasSemanales')) {
+          <p class="field-message">Ingresa una cantidad válida entre 1 y 7.</p>
+        } @else {
+          <p class="field-message"></p>
+        }
+      </div>
+
+      <div class="form-field">
+        <div class="field-label-row">
+          <label class="text-sm font-medium text-gray-700" for="empleado-sueldo-base">Sueldo base mensual</label>
+          @if (isRequired('sueldoBase')) {
+            <span class="field-required" aria-hidden="true">*</span>
+          }
+        </div>
+        <input id="empleado-sueldo-base" type="number" formControlName="sueldoBase" [class]="controlClass('sueldoBase')" />
+        @if (hasError('sueldoBase')) {
+          <p class="field-message">El sueldo base debe ser mayor a cero.</p>
+        } @else {
+          <p class="field-message"></p>
+        }
+      </div>
+
+      <div class="form-field">
+        <div class="field-label-row">
+          <label class="text-sm font-medium text-gray-700" for="empleado-id-moneda">Tipo de moneda</label>
+        </div>
+        <select id="empleado-id-moneda" formControlName="idMoneda" [class]="controlClass('idMoneda')">
+          <option [ngValue]="null">Selecciona una moneda</option>
+          @for (option of monedas; track option.value) {
+            <option [ngValue]="option.value">{{ option.label }}</option>
+          }
+        </select>
+        <p class="field-message"></p>
+      </div>
+
+      <div class="form-field">
+        <div class="field-label-row">
+          <label class="text-sm font-medium text-gray-700" for="empleado-tipo-gratificacion">Gratificación</label>
+          @if (isRequired('tipoGratificacion')) {
+            <span class="field-required" aria-hidden="true">*</span>
+          }
+        </div>
+        <select id="empleado-tipo-gratificacion" formControlName="tipoGratificacion" [class]="controlClass('tipoGratificacion')">
+          @for (option of gratificationTypes; track option.value) {
+            <option [value]="option.value">{{ option.label }}</option>
+          }
+        </select>
+        <p class="field-message"></p>
+      </div>
+
+      <div class="form-field form-field--checkbox">
+        <div class="field-label-row">
+          <label class="text-sm font-medium text-gray-700" for="empleado-sueldo-variable">Sueldo variable</label>
+        </div>
+        <label class="inline-flex min-h-[44px] items-center gap-3 rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm text-slate-700">
+          <input id="empleado-sueldo-variable" type="checkbox" formControlName="sueldoVariable" />
+          <span>Aplica componente variable</span>
+        </label>
+        <p class="field-message"></p>
+      </div>
+
+      <div class="form-field labor-span-2">
+        <div class="field-label-row">
+          <label class="text-sm font-medium text-gray-700" for="empleado-distribucion-jornada">Distribución de la jornada</label>
+        </div>
+        <input
+          id="empleado-distribucion-jornada"
+          type="text"
+          formControlName="distribucionJornada"
+          placeholder="Ej.: Lunes a Viernes de 8:30 Hrs a 18:30 Hrs"
+          [class]="controlClass('distribucionJornada')"
+        />
+        <p class="field-message"></p>
+      </div>
+
+      <div class="form-field">
+        <div class="field-label-row">
+          <label class="text-sm font-medium text-gray-700" for="empleado-tiempo-colacion">Tiempo de colación (min.)</label>
+        </div>
+        <input
+          id="empleado-tiempo-colacion"
+          type="number"
+          formControlName="tiempoColacionMinutos"
+          [class]="controlClass('tiempoColacionMinutos')"
+        />
+        @if (hasError('tiempoColacionMinutos')) {
+          <p class="field-message">El tiempo de colación debe estar entre 0 y 600 minutos.</p>
+        } @else {
+          <p class="field-message"></p>
+        }
+      </div>
+    </div>
+  </section>
+
+  <section class="labor-block">
+    <div class="labor-block-title">Cargas familiares</div>
+    <div class="labor-grid labor-grid--loads">
+      <div class="form-field">
+        <div class="field-label-row">
+          <label class="text-sm font-medium text-gray-700" for="empleado-cargas">Nro. cargas</label>
+        </div>
+        <input id="empleado-cargas" type="number" formControlName="cargas" [class]="controlClass('cargas')" />
+        @if (hasError('cargas')) {
+          <p class="field-message">El número de cargas no puede ser negativo.</p>
+        } @else {
+          <p class="field-message"></p>
+        }
+      </div>
+
+      <div class="form-field">
+        <div class="field-label-row">
+          <label class="text-sm font-medium text-gray-700">Tramo asignado</label>
+        </div>
+        <select id="empleado-tramo-carga" formControlName="idTramoCarga" [class]="controlClass('idTramoCarga')">
+          <option [ngValue]="null">Selecciona un tramo</option>
+          @for (tramo of tramosCarga; track tramo.value) {
+            <option [ngValue]="tramo.value">
+              {{ tramo.tramo || 'Sin nombre' }}
+              @if (tramo.desde !== null || tramo.hasta !== null) {
+                ({{ tramo.desde ?? 0 }} - {{ tramo.hasta ?? 'Sin tope' }})
+              }
+            </option>
+          }
+        </select>
+        @if (periodoTramoVigente; as periodo) {
+          <p class="field-message field-message--warning">Tabla vigente: {{ periodo }}</p>
+        } @else {
+          <p class="field-message field-message--warning">No hay tabla vigente de cargas familiares.</p>
+        }
+      </div>
+
+      <div class="form-field">
+        <div class="field-label-row">
+          <label class="text-sm font-medium text-gray-700">Valor por carga</label>
+        </div>
+        <div class="readonly-field">{{ valorPorCarga }}</div>
+        <p class="field-message"></p>
+      </div>
+    </div>
+  </section>
+
+  <section class="labor-block">
+    <div class="labor-block-title">Zona extrema</div>
+    <div class="labor-grid labor-grid--zone">
+      <div class="form-field form-field--checkbox">
+        <div class="field-label-row">
+          <label class="text-sm font-medium text-gray-700" for="empleado-zona-extrema">Habilitar zona extrema</label>
+        </div>
+        <label class="inline-flex min-h-[44px] items-center gap-3 rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm text-slate-700">
+          <input id="empleado-zona-extrema" type="checkbox" formControlName="zonaExtremaActiva" />
+          <span>Activar asignación</span>
+        </label>
+        <p class="field-message"></p>
+      </div>
+
+      <div class="form-field">
+        <div class="field-label-row">
+          <label class="text-sm font-medium text-gray-700" for="empleado-zona-territorio">Territorio</label>
+          @if (isRequired('zonaExtremaTerritorio')) {
+            <span class="field-required" aria-hidden="true">*</span>
+          }
+        </div>
+        <input
+          id="empleado-zona-territorio"
+          type="text"
+          formControlName="zonaExtremaTerritorio"
+          placeholder="Ej.: Magallanes"
+          [class]="controlClass('zonaExtremaTerritorio')"
+        />
+        @if (hasError('zonaExtremaTerritorio')) {
+          <p class="field-message">El territorio es obligatorio al activar zona extrema.</p>
+        } @else {
+          <p class="field-message"></p>
+        }
+      </div>
+
+      <div class="form-field">
+        <div class="field-label-row">
+          <label class="text-sm font-medium text-gray-700" for="empleado-zona-porcentaje">Asignación zona extrema (%)</label>
+          @if (isRequired('zonaExtremaPorcentaje')) {
+            <span class="field-required" aria-hidden="true">*</span>
+          }
+        </div>
+        <input
+          id="empleado-zona-porcentaje"
+          type="number"
+          formControlName="zonaExtremaPorcentaje"
+          [class]="controlClass('zonaExtremaPorcentaje')"
+        />
+        @if (hasError('zonaExtremaPorcentaje')) {
+          <p class="field-message">El porcentaje es obligatorio al activar zona extrema.</p>
+        } @else {
+          <p class="field-message"></p>
+        }
+      </div>
+    </div>
+  </section>
+
+  <section class="labor-block">
+    <div class="labor-block-title">Beneficio semana corrida</div>
+    <div class="labor-grid labor-grid--week">
+      <div class="form-field form-field--checkbox">
+        <div class="field-label-row">
+          <label class="text-sm font-medium text-gray-700" for="empleado-semana-corrida">Habilitar semana corrida</label>
+        </div>
+        <label class="inline-flex min-h-[44px] items-center gap-3 rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm text-slate-700">
+          <input id="empleado-semana-corrida" type="checkbox" formControlName="semanaCorridaActiva" />
+          <span>Aplicar cálculo</span>
+        </label>
+        <p class="field-message"></p>
+      </div>
+
+      <div class="form-field labor-span-3">
+        <div class="field-label-row">
+          <label class="text-sm font-medium text-gray-700">Indicar días laborables</label>
+          @if (isRequired('semanaCorridaDiasLaborables')) {
+            <span class="field-required" aria-hidden="true">*</span>
+          }
+        </div>
+        <div class="weekday-grid">
+          @for (day of weekdayOptions; track day.value) {
+            <button
+              type="button"
+              [class]="checkboxClass(day.value)"
+              (click)="toggleWeekday(day.value)"
+            >
+              <span class="weekday-box"></span>
+              <span>{{ day.label }}</span>
+            </button>
+          }
+        </div>
+        @if (hasError('semanaCorridaDiasLaborables')) {
+          <p class="field-message">Selecciona al menos un día laborable cuando semana corrida esté activa.</p>
+        } @else {
+          <p class="field-message"></p>
+        }
+      </div>
+    </div>
+  </section>
+
+  <section class="labor-block">
+    <div class="labor-block-title">Centro de costo y estado</div>
+    <div class="labor-grid labor-grid--footer">
+      <div class="form-field">
+        <div class="field-label-row">
+          <label class="text-sm font-medium text-gray-700" for="empleado-centro-costo">Centro de costo</label>
+        </div>
+        <select id="empleado-centro-costo" formControlName="idCentroCosto" [class]="controlClass('idCentroCosto')">
+          <option [ngValue]="null">Sin centro de costo</option>
+          @for (centroCosto of centrosCosto; track centroCosto.value) {
+            <option [ngValue]="centroCosto.value">{{ centroCosto.label }}</option>
+          }
+        </select>
+        <p class="field-message"></p>
+      </div>
+
+      <div class="form-field">
+        <div class="field-label-row">
+          <label class="text-sm font-medium text-gray-700" for="empleado-cargo">Cargo</label>
+          @if (isRequired('cargo')) {
+            <span class="field-required" aria-hidden="true">*</span>
+          }
+        </div>
+        <input id="empleado-cargo" type="text" formControlName="cargo" [class]="controlClass('cargo')" />
+        @if (hasError('cargo', 'required')) {
+          <p class="field-message">El cargo es obligatorio.</p>
+        } @else {
+          <p class="field-message"></p>
+        }
+      </div>
+
+      <div class="form-field">
+        <div class="field-label-row">
+          <label class="text-sm font-medium text-gray-700" for="empleado-estado">Estado inicial</label>
+          @if (isRequired('estado')) {
+            <span class="field-required" aria-hidden="true">*</span>
+          }
+        </div>
+        <select id="empleado-estado" formControlName="estado" [class]="controlClass('estado')">
+          @for (state of employeeStates; track state.value) {
+            <option [value]="state.value">{{ state.label }}</option>
+          }
+        </select>
+        <p class="field-message"></p>
+      </div>
+    </div>
+  </section>
+</section>

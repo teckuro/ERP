@@ -1,0 +1,2627 @@
+export type Json =
+  | string
+  | number
+  | boolean
+  | null
+  | { [key: string]: Json | undefined }
+  | Json[]
+
+export type Database = {
+  // Allows to automatically instantiate createClient with right options
+  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
+  __InternalSupabase: {
+    PostgrestVersion: "14.5"
+  }
+  public: {
+    Tables: {
+      afp: {
+        Row: {
+          comision: number | null
+          forma_pago_apvi: number | null
+          id_afp: number
+          nombre: string
+          sis: number | null
+          tasa_empleador: number | null
+          tasa_obligatoria: number | null
+          vigencia_fin: string | null
+          vigencia_inicio: string | null
+          vigente: boolean | null
+        }
+        Insert: {
+          comision?: number | null
+          forma_pago_apvi?: number | null
+          id_afp?: number
+          nombre: string
+          sis?: number | null
+          tasa_empleador?: number | null
+          tasa_obligatoria?: number | null
+          vigencia_fin?: string | null
+          vigencia_inicio?: string | null
+          vigente?: boolean | null
+        }
+        Update: {
+          comision?: number | null
+          forma_pago_apvi?: number | null
+          id_afp?: number
+          nombre?: string
+          sis?: number | null
+          tasa_empleador?: number | null
+          tasa_obligatoria?: number | null
+          vigencia_fin?: string | null
+          vigencia_inicio?: string | null
+          vigente?: boolean | null
+        }
+        Relationships: []
+      }
+      anexo_contrato: {
+        Row: {
+          fecha_cambio: string
+          id_anexo: number
+          id_contrato: number
+          observacion: string | null
+          sueldo_base_nuevo: number | null
+        }
+        Insert: {
+          fecha_cambio: string
+          id_anexo?: number
+          id_contrato: number
+          observacion?: string | null
+          sueldo_base_nuevo?: number | null
+        }
+        Update: {
+          fecha_cambio?: string
+          id_anexo?: number
+          id_contrato?: number
+          observacion?: string | null
+          sueldo_base_nuevo?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "anexo_contrato_id_contrato_fkey"
+            columns: ["id_contrato"]
+            isOneToOne: false
+            referencedRelation: "contrato"
+            referencedColumns: ["id_contrato"]
+          },
+          {
+            foreignKeyName: "anexo_contrato_id_contrato_fkey"
+            columns: ["id_contrato"]
+            isOneToOne: false
+            referencedRelation: "vw_persona_factores"
+            referencedColumns: ["id_contrato"]
+          },
+        ]
+      }
+      apv: {
+        Row: {
+          deposito_convenido_apvi: number
+          id_apv: number
+          id_contrato: number
+          id_forma_pago_apv: number
+          id_institucion_apv: number
+          id_moneda: number
+          monto: number
+          vigencia_fin: string | null
+          vigencia_inicio: string
+        }
+        Insert: {
+          deposito_convenido_apvi?: number
+          id_apv?: number
+          id_contrato: number
+          id_forma_pago_apv: number
+          id_institucion_apv: number
+          id_moneda: number
+          monto: number
+          vigencia_fin?: string | null
+          vigencia_inicio: string
+        }
+        Update: {
+          deposito_convenido_apvi?: number
+          id_apv?: number
+          id_contrato?: number
+          id_forma_pago_apv?: number
+          id_institucion_apv?: number
+          id_moneda?: number
+          monto?: number
+          vigencia_fin?: string | null
+          vigencia_inicio?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "apv_id_contrato_fkey"
+            columns: ["id_contrato"]
+            isOneToOne: false
+            referencedRelation: "contrato"
+            referencedColumns: ["id_contrato"]
+          },
+          {
+            foreignKeyName: "apv_id_contrato_fkey"
+            columns: ["id_contrato"]
+            isOneToOne: false
+            referencedRelation: "vw_persona_factores"
+            referencedColumns: ["id_contrato"]
+          },
+          {
+            foreignKeyName: "apv_id_forma_pago_apv_fkey"
+            columns: ["id_forma_pago_apv"]
+            isOneToOne: false
+            referencedRelation: "forma_pago_apv"
+            referencedColumns: ["id_forma_pago_apv"]
+          },
+          {
+            foreignKeyName: "apv_id_institucion_apv_fkey"
+            columns: ["id_institucion_apv"]
+            isOneToOne: false
+            referencedRelation: "institucion_apv"
+            referencedColumns: ["id_institucion_apv"]
+          },
+          {
+            foreignKeyName: "apv_id_moneda_fkey"
+            columns: ["id_moneda"]
+            isOneToOne: false
+            referencedRelation: "moneda"
+            referencedColumns: ["id_moneda"]
+          },
+        ]
+      }
+      audit_log: {
+        Row: {
+          datos_json: Json | null
+          esquema_tabla: string | null
+          fecha: string | null
+          id: number
+          id_registro: number | null
+          operacion: string | null
+          usuario: string | null
+        }
+        Insert: {
+          datos_json?: Json | null
+          esquema_tabla?: string | null
+          fecha?: string | null
+          id?: number
+          id_registro?: number | null
+          operacion?: string | null
+          usuario?: string | null
+        }
+        Update: {
+          datos_json?: Json | null
+          esquema_tabla?: string | null
+          fecha?: string | null
+          id?: number
+          id_registro?: number | null
+          operacion?: string | null
+          usuario?: string | null
+        }
+        Relationships: []
+      }
+      banco: {
+        Row: {
+          id_banco: number
+          nombre: string
+        }
+        Insert: {
+          id_banco?: number
+          nombre: string
+        }
+        Update: {
+          id_banco?: number
+          nombre?: string
+        }
+        Relationships: []
+      }
+      centro_costo: {
+        Row: {
+          codigo: string
+          id_centro_costo: number
+          nombre: string
+        }
+        Insert: {
+          codigo: string
+          id_centro_costo?: number
+          nombre: string
+        }
+        Update: {
+          codigo?: string
+          id_centro_costo?: number
+          nombre?: string
+        }
+        Relationships: []
+      }
+      ciudad: {
+        Row: {
+          id_ciudad: number
+          id_comuna: number
+          nombre: string
+        }
+        Insert: {
+          id_ciudad: number
+          id_comuna: number
+          nombre: string
+        }
+        Update: {
+          id_ciudad?: number
+          id_comuna?: number
+          nombre?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ciudad_id_comuna_fkey"
+            columns: ["id_comuna"]
+            isOneToOne: false
+            referencedRelation: "comuna"
+            referencedColumns: ["id_comuna"]
+          },
+        ]
+      }
+      comuna: {
+        Row: {
+          activo: boolean
+          fecha_creacion: string
+          id_comuna: number
+          id_provincia: number
+          nombre: string
+        }
+        Insert: {
+          activo?: boolean
+          fecha_creacion?: string
+          id_comuna: number
+          id_provincia: number
+          nombre: string
+        }
+        Update: {
+          activo?: boolean
+          fecha_creacion?: string
+          id_comuna?: number
+          id_provincia?: number
+          nombre?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "comuna_id_provincia_fkey"
+            columns: ["id_provincia"]
+            isOneToOne: false
+            referencedRelation: "provincia"
+            referencedColumns: ["id_provincia"]
+          },
+          {
+            foreignKeyName: "comuna_id_provincia_fkey"
+            columns: ["id_provincia"]
+            isOneToOne: false
+            referencedRelation: "vw_persona_factores"
+            referencedColumns: ["id_provincia"]
+          },
+        ]
+      }
+      concepto: {
+        Row: {
+          afecta_afc: boolean
+          afecta_afp: boolean
+          afecta_salud: boolean
+          afecta_sis: boolean
+          codigo: string
+          formula_json: Json | null
+          id_concepto: number
+          imponible: boolean
+          naturaleza: string | null
+          nombre: string
+          orden_impresion: number
+          tipo: string | null
+          tributable: boolean
+        }
+        Insert: {
+          afecta_afc?: boolean
+          afecta_afp?: boolean
+          afecta_salud?: boolean
+          afecta_sis?: boolean
+          codigo: string
+          formula_json?: Json | null
+          id_concepto?: number
+          imponible?: boolean
+          naturaleza?: string | null
+          nombre: string
+          orden_impresion?: number
+          tipo?: string | null
+          tributable?: boolean
+        }
+        Update: {
+          afecta_afc?: boolean
+          afecta_afp?: boolean
+          afecta_salud?: boolean
+          afecta_sis?: boolean
+          codigo?: string
+          formula_json?: Json | null
+          id_concepto?: number
+          imponible?: boolean
+          naturaleza?: string | null
+          nombre?: string
+          orden_impresion?: number
+          tipo?: string | null
+          tributable?: boolean
+        }
+        Relationships: []
+      }
+      configuracion: {
+        Row: {
+          clave: string
+          descripcion: string | null
+          id_config: number
+          modulo: string | null
+          tipo_dato: string | null
+          valor: string
+        }
+        Insert: {
+          clave: string
+          descripcion?: string | null
+          id_config?: number
+          modulo?: string | null
+          tipo_dato?: string | null
+          valor: string
+        }
+        Update: {
+          clave?: string
+          descripcion?: string | null
+          id_config?: number
+          modulo?: string | null
+          tipo_dato?: string | null
+          valor?: string
+        }
+        Relationships: []
+      }
+      contrato: {
+        Row: {
+          cargo: string | null
+          codigo_tipo_contrato:
+            | Database["public"]["Enums"]["tipo_contrato_enum"]
+            | null
+          estado: string | null
+          fecha_contrato: string | null
+          fecha_inicio: string
+          fecha_termino: string | null
+          id_contrato: number
+          id_departamento_empresa: number | null
+          id_empresa: number
+          id_persona: number
+          id_sucursal: number | null
+          id_tipo_jornada: number | null
+          id_tipo_trabajador: number | null
+          seguro_cesantia: boolean
+        }
+        Insert: {
+          cargo?: string | null
+          codigo_tipo_contrato?:
+            | Database["public"]["Enums"]["tipo_contrato_enum"]
+            | null
+          estado?: string | null
+          fecha_contrato?: string | null
+          fecha_inicio: string
+          fecha_termino?: string | null
+          id_contrato?: number
+          id_departamento_empresa?: number | null
+          id_empresa: number
+          id_persona: number
+          id_sucursal?: number | null
+          id_tipo_jornada?: number | null
+          id_tipo_trabajador?: number | null
+          seguro_cesantia?: boolean
+        }
+        Update: {
+          cargo?: string | null
+          codigo_tipo_contrato?:
+            | Database["public"]["Enums"]["tipo_contrato_enum"]
+            | null
+          estado?: string | null
+          fecha_contrato?: string | null
+          fecha_inicio?: string
+          fecha_termino?: string | null
+          id_contrato?: number
+          id_departamento_empresa?: number | null
+          id_empresa?: number
+          id_persona?: number
+          id_sucursal?: number | null
+          id_tipo_jornada?: number | null
+          id_tipo_trabajador?: number | null
+          seguro_cesantia?: boolean
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contrato_id_departamento_empresa_fkey"
+            columns: ["id_departamento_empresa"]
+            isOneToOne: false
+            referencedRelation: "departamento_empresa"
+            referencedColumns: ["id_departamento_empresa"]
+          },
+          {
+            foreignKeyName: "contrato_id_empresa_fkey"
+            columns: ["id_empresa"]
+            isOneToOne: false
+            referencedRelation: "empresa"
+            referencedColumns: ["id_empresa"]
+          },
+          {
+            foreignKeyName: "contrato_id_persona_fkey"
+            columns: ["id_persona"]
+            isOneToOne: false
+            referencedRelation: "persona"
+            referencedColumns: ["id_persona"]
+          },
+          {
+            foreignKeyName: "contrato_id_persona_fkey"
+            columns: ["id_persona"]
+            isOneToOne: false
+            referencedRelation: "vw_persona_factores"
+            referencedColumns: ["id_persona"]
+          },
+          {
+            foreignKeyName: "contrato_id_sucursal_fkey"
+            columns: ["id_sucursal"]
+            isOneToOne: false
+            referencedRelation: "sucursal"
+            referencedColumns: ["id_sucursal"]
+          },
+          {
+            foreignKeyName: "contrato_id_tipo_jornada_fkey"
+            columns: ["id_tipo_jornada"]
+            isOneToOne: false
+            referencedRelation: "tipo_jornada"
+            referencedColumns: ["id_tipo_jornada"]
+          },
+          {
+            foreignKeyName: "contrato_id_tipo_trabajador_fkey"
+            columns: ["id_tipo_trabajador"]
+            isOneToOne: false
+            referencedRelation: "tipo_trabajador"
+            referencedColumns: ["id_tipo_trabajador"]
+          },
+        ]
+      }
+      contrato_centro_costo: {
+        Row: {
+          id_centro_costo: number
+          id_contrato: number
+          id_contrato_centro_costo: number
+          porcentaje: number
+        }
+        Insert: {
+          id_centro_costo: number
+          id_contrato: number
+          id_contrato_centro_costo?: number
+          porcentaje: number
+        }
+        Update: {
+          id_centro_costo?: number
+          id_contrato?: number
+          id_contrato_centro_costo?: number
+          porcentaje?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contrato_centro_costo_id_centro_costo_fkey"
+            columns: ["id_centro_costo"]
+            isOneToOne: false
+            referencedRelation: "centro_costo"
+            referencedColumns: ["id_centro_costo"]
+          },
+          {
+            foreignKeyName: "contrato_centro_costo_id_contrato_fkey"
+            columns: ["id_contrato"]
+            isOneToOne: false
+            referencedRelation: "contrato"
+            referencedColumns: ["id_contrato"]
+          },
+          {
+            foreignKeyName: "contrato_centro_costo_id_contrato_fkey"
+            columns: ["id_contrato"]
+            isOneToOne: false
+            referencedRelation: "vw_persona_factores"
+            referencedColumns: ["id_contrato"]
+          },
+        ]
+      }
+      cuenta_bancaria: {
+        Row: {
+          id_banco: number
+          id_cuenta: number
+          id_persona: number
+          id_tipo_cuenta_bancaria: number | null
+          numero_cuenta: string
+          tipo_cuenta: string | null
+          vigencia_fin: string | null
+          vigencia_inicio: string | null
+        }
+        Insert: {
+          id_banco: number
+          id_cuenta?: number
+          id_persona: number
+          id_tipo_cuenta_bancaria?: number | null
+          numero_cuenta: string
+          tipo_cuenta?: string | null
+          vigencia_fin?: string | null
+          vigencia_inicio?: string | null
+        }
+        Update: {
+          id_banco?: number
+          id_cuenta?: number
+          id_persona?: number
+          id_tipo_cuenta_bancaria?: number | null
+          numero_cuenta?: string
+          tipo_cuenta?: string | null
+          vigencia_fin?: string | null
+          vigencia_inicio?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cuenta_bancaria_id_banco_fkey"
+            columns: ["id_banco"]
+            isOneToOne: false
+            referencedRelation: "banco"
+            referencedColumns: ["id_banco"]
+          },
+          {
+            foreignKeyName: "cuenta_bancaria_id_persona_fkey"
+            columns: ["id_persona"]
+            isOneToOne: false
+            referencedRelation: "persona"
+            referencedColumns: ["id_persona"]
+          },
+          {
+            foreignKeyName: "cuenta_bancaria_id_persona_fkey"
+            columns: ["id_persona"]
+            isOneToOne: false
+            referencedRelation: "vw_persona_factores"
+            referencedColumns: ["id_persona"]
+          },
+          {
+            foreignKeyName: "cuenta_bancaria_id_tipo_cuenta_bancaria_fkey"
+            columns: ["id_tipo_cuenta_bancaria"]
+            isOneToOne: false
+            referencedRelation: "tipo_cuenta_bancaria"
+            referencedColumns: ["id_tipo_cuenta_bancaria"]
+          },
+        ]
+      }
+      cuenta2_afp: {
+        Row: {
+          id_contrato: number
+          id_cuenta2_afp: number
+          id_moneda: number
+          monto: number
+          observacion: string | null
+          vigencia_fin: string | null
+          vigencia_inicio: string
+          vigente: boolean
+        }
+        Insert: {
+          id_contrato: number
+          id_cuenta2_afp?: number
+          id_moneda: number
+          monto?: number
+          observacion?: string | null
+          vigencia_fin?: string | null
+          vigencia_inicio: string
+          vigente?: boolean
+        }
+        Update: {
+          id_contrato?: number
+          id_cuenta2_afp?: number
+          id_moneda?: number
+          monto?: number
+          observacion?: string | null
+          vigencia_fin?: string | null
+          vigencia_inicio?: string
+          vigente?: boolean
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cuenta2_afp_id_contrato_fkey"
+            columns: ["id_contrato"]
+            isOneToOne: false
+            referencedRelation: "contrato"
+            referencedColumns: ["id_contrato"]
+          },
+          {
+            foreignKeyName: "cuenta2_afp_id_contrato_fkey"
+            columns: ["id_contrato"]
+            isOneToOne: false
+            referencedRelation: "vw_persona_factores"
+            referencedColumns: ["id_contrato"]
+          },
+          {
+            foreignKeyName: "cuenta2_afp_id_moneda_fkey"
+            columns: ["id_moneda"]
+            isOneToOne: false
+            referencedRelation: "moneda"
+            referencedColumns: ["id_moneda"]
+          },
+        ]
+      }
+      departamento_empresa: {
+        Row: {
+          codigo: string
+          id_departamento_empresa: number
+          id_empresa: number
+          id_sucursal: number | null
+          nombre: string
+        }
+        Insert: {
+          codigo: string
+          id_departamento_empresa?: number
+          id_empresa: number
+          id_sucursal?: number | null
+          nombre: string
+        }
+        Update: {
+          codigo?: string
+          id_departamento_empresa?: number
+          id_empresa?: number
+          id_sucursal?: number | null
+          nombre?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "departamento_empresa_id_empresa_fkey"
+            columns: ["id_empresa"]
+            isOneToOne: false
+            referencedRelation: "empresa"
+            referencedColumns: ["id_empresa"]
+          },
+          {
+            foreignKeyName: "departamento_empresa_id_sucursal_fkey"
+            columns: ["id_sucursal"]
+            isOneToOne: false
+            referencedRelation: "sucursal"
+            referencedColumns: ["id_sucursal"]
+          },
+        ]
+      }
+      empresa: {
+        Row: {
+          dv: string
+          fecha_creacion: string | null
+          id_empresa: number
+          razon_social: string
+          rut: string
+        }
+        Insert: {
+          dv: string
+          fecha_creacion?: string | null
+          id_empresa?: number
+          razon_social: string
+          rut: string
+        }
+        Update: {
+          dv?: string
+          fecha_creacion?: string | null
+          id_empresa?: number
+          razon_social?: string
+          rut?: string
+        }
+        Relationships: []
+      }
+      ficha_validacion_detalle: {
+        Row: {
+          campo: string | null
+          codigo: string
+          dominio: Database["public"]["Enums"]["tipo_dominio_ficha_enum"]
+          id_ficha_validacion: number
+          id_ficha_validacion_detalle: number
+          mensaje: string
+          metadata: Json | null
+          orden: number
+          resuelto: boolean
+          severidad: Database["public"]["Enums"]["tipo_severidad_validacion_enum"]
+        }
+        Insert: {
+          campo?: string | null
+          codigo: string
+          dominio: Database["public"]["Enums"]["tipo_dominio_ficha_enum"]
+          id_ficha_validacion: number
+          id_ficha_validacion_detalle?: number
+          mensaje: string
+          metadata?: Json | null
+          orden?: number
+          resuelto?: boolean
+          severidad: Database["public"]["Enums"]["tipo_severidad_validacion_enum"]
+        }
+        Update: {
+          campo?: string | null
+          codigo?: string
+          dominio?: Database["public"]["Enums"]["tipo_dominio_ficha_enum"]
+          id_ficha_validacion?: number
+          id_ficha_validacion_detalle?: number
+          mensaje?: string
+          metadata?: Json | null
+          orden?: number
+          resuelto?: boolean
+          severidad?: Database["public"]["Enums"]["tipo_severidad_validacion_enum"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ficha_validacion_detalle_id_ficha_validacion_fkey"
+            columns: ["id_ficha_validacion"]
+            isOneToOne: false
+            referencedRelation: "ficha_validacion_resumen"
+            referencedColumns: ["id_ficha_validacion"]
+          },
+        ]
+      }
+      ficha_validacion_resumen: {
+        Row: {
+          apto_para_activacion: boolean
+          apto_para_remuneraciones: boolean
+          estado_ficha_calculado: Database["public"]["Enums"]["tipo_estado_ficha_enum"]
+          id_ficha_validacion: number
+          id_persona: number
+          observaciones: string | null
+          total_advertencias: number
+          total_bloqueantes: number
+          total_criticos: number
+          validado_en: string
+          validado_por: number | null
+        }
+        Insert: {
+          apto_para_activacion?: boolean
+          apto_para_remuneraciones?: boolean
+          estado_ficha_calculado: Database["public"]["Enums"]["tipo_estado_ficha_enum"]
+          id_ficha_validacion?: number
+          id_persona: number
+          observaciones?: string | null
+          total_advertencias?: number
+          total_bloqueantes?: number
+          total_criticos?: number
+          validado_en?: string
+          validado_por?: number | null
+        }
+        Update: {
+          apto_para_activacion?: boolean
+          apto_para_remuneraciones?: boolean
+          estado_ficha_calculado?: Database["public"]["Enums"]["tipo_estado_ficha_enum"]
+          id_ficha_validacion?: number
+          id_persona?: number
+          observaciones?: string | null
+          total_advertencias?: number
+          total_bloqueantes?: number
+          total_criticos?: number
+          validado_en?: string
+          validado_por?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ficha_validacion_resumen_id_persona_fkey"
+            columns: ["id_persona"]
+            isOneToOne: false
+            referencedRelation: "persona"
+            referencedColumns: ["id_persona"]
+          },
+          {
+            foreignKeyName: "ficha_validacion_resumen_id_persona_fkey"
+            columns: ["id_persona"]
+            isOneToOne: false
+            referencedRelation: "vw_persona_factores"
+            referencedColumns: ["id_persona"]
+          },
+        ]
+      }
+      finiquito: {
+        Row: {
+          anios_servicio: number
+          causal: string
+          fecha: string
+          gratificacion_proporcional: number
+          id_contrato: number
+          id_finiquito: number
+          indemnizacion_anios: number
+          indemnizacion_aviso_previo: number
+          otros: number
+          total: number
+          vacaciones_proporcionales: number
+        }
+        Insert: {
+          anios_servicio: number
+          causal: string
+          fecha: string
+          gratificacion_proporcional?: number
+          id_contrato: number
+          id_finiquito?: number
+          indemnizacion_anios?: number
+          indemnizacion_aviso_previo?: number
+          otros?: number
+          total: number
+          vacaciones_proporcionales?: number
+        }
+        Update: {
+          anios_servicio?: number
+          causal?: string
+          fecha?: string
+          gratificacion_proporcional?: number
+          id_contrato?: number
+          id_finiquito?: number
+          indemnizacion_anios?: number
+          indemnizacion_aviso_previo?: number
+          otros?: number
+          total?: number
+          vacaciones_proporcionales?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "finiquito_id_contrato_fkey"
+            columns: ["id_contrato"]
+            isOneToOne: false
+            referencedRelation: "contrato"
+            referencedColumns: ["id_contrato"]
+          },
+          {
+            foreignKeyName: "finiquito_id_contrato_fkey"
+            columns: ["id_contrato"]
+            isOneToOne: false
+            referencedRelation: "vw_persona_factores"
+            referencedColumns: ["id_contrato"]
+          },
+        ]
+      }
+      forma_pago_apv: {
+        Row: {
+          id_forma_pago_apv: number
+          nombre: string
+        }
+        Insert: {
+          id_forma_pago_apv?: number
+          nombre: string
+        }
+        Update: {
+          id_forma_pago_apv?: number
+          nombre?: string
+        }
+        Relationships: []
+      }
+      haberdescuento_persona: {
+        Row: {
+          estado: boolean | null
+          id_asignacion: number
+          id_concepto: number
+          id_persona: number
+          monto: number | null
+          porcentaje: number | null
+          tipo: string | null
+          tipohaber: string | null
+        }
+        Insert: {
+          estado?: boolean | null
+          id_asignacion?: number
+          id_concepto: number
+          id_persona: number
+          monto?: number | null
+          porcentaje?: number | null
+          tipo?: string | null
+          tipohaber?: string | null
+        }
+        Update: {
+          estado?: boolean | null
+          id_asignacion?: number
+          id_concepto?: number
+          id_persona?: number
+          monto?: number | null
+          porcentaje?: number | null
+          tipo?: string | null
+          tipohaber?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "haberdescuento_persona_id_concepto_fkey"
+            columns: ["id_concepto"]
+            isOneToOne: false
+            referencedRelation: "concepto"
+            referencedColumns: ["id_concepto"]
+          },
+          {
+            foreignKeyName: "haberdescuento_persona_id_persona_fkey"
+            columns: ["id_persona"]
+            isOneToOne: false
+            referencedRelation: "persona"
+            referencedColumns: ["id_persona"]
+          },
+          {
+            foreignKeyName: "haberdescuento_persona_id_persona_fkey"
+            columns: ["id_persona"]
+            isOneToOne: false
+            referencedRelation: "vw_persona_factores"
+            referencedColumns: ["id_persona"]
+          },
+        ]
+      }
+      institucion_apv: {
+        Row: {
+          id_institucion_apv: number
+          nombre: string
+        }
+        Insert: {
+          id_institucion_apv?: number
+          nombre: string
+        }
+        Update: {
+          id_institucion_apv?: number
+          nombre?: string
+        }
+        Relationships: []
+      }
+      liquidacion: {
+        Row: {
+          afc_empleador: number | null
+          afc_trabajador: number | null
+          afp_trabajador: number | null
+          descuentos_legales: number | null
+          descuentos_nolegales: number | null
+          dias_trabajados: number | null
+          estado: string | null
+          estado_v4:
+            | Database["public"]["Enums"]["tipo_estado_liquidacion_enum"]
+            | null
+          fecha_proceso: string | null
+          haberes_imponibles: number | null
+          haberes_noimponibles: number | null
+          id_contrato: number
+          id_liquidacion: number
+          id_persona: number | null
+          idusuario: number | null
+          imponible_100sc: number | null
+          impuesto_unico: number | null
+          monto_liquido: number | null
+          periodo: string
+          renta_imponible: number | null
+          salud_trabajador: number | null
+          sis_empleador: number | null
+          total_aportes_empleador: number | null
+          total_descuentos: number | null
+          total_haberes: number | null
+          total_tributable: number | null
+          valoruf: number | null
+          valorutm: number | null
+          zona_extrema: number | null
+        }
+        Insert: {
+          afc_empleador?: number | null
+          afc_trabajador?: number | null
+          afp_trabajador?: number | null
+          descuentos_legales?: number | null
+          descuentos_nolegales?: number | null
+          dias_trabajados?: number | null
+          estado?: string | null
+          estado_v4?:
+            | Database["public"]["Enums"]["tipo_estado_liquidacion_enum"]
+            | null
+          fecha_proceso?: string | null
+          haberes_imponibles?: number | null
+          haberes_noimponibles?: number | null
+          id_contrato: number
+          id_liquidacion?: number
+          id_persona?: number | null
+          idusuario?: number | null
+          imponible_100sc?: number | null
+          impuesto_unico?: number | null
+          monto_liquido?: number | null
+          periodo: string
+          renta_imponible?: number | null
+          salud_trabajador?: number | null
+          sis_empleador?: number | null
+          total_aportes_empleador?: number | null
+          total_descuentos?: number | null
+          total_haberes?: number | null
+          total_tributable?: number | null
+          valoruf?: number | null
+          valorutm?: number | null
+          zona_extrema?: number | null
+        }
+        Update: {
+          afc_empleador?: number | null
+          afc_trabajador?: number | null
+          afp_trabajador?: number | null
+          descuentos_legales?: number | null
+          descuentos_nolegales?: number | null
+          dias_trabajados?: number | null
+          estado?: string | null
+          estado_v4?:
+            | Database["public"]["Enums"]["tipo_estado_liquidacion_enum"]
+            | null
+          fecha_proceso?: string | null
+          haberes_imponibles?: number | null
+          haberes_noimponibles?: number | null
+          id_contrato?: number
+          id_liquidacion?: number
+          id_persona?: number | null
+          idusuario?: number | null
+          imponible_100sc?: number | null
+          impuesto_unico?: number | null
+          monto_liquido?: number | null
+          periodo?: string
+          renta_imponible?: number | null
+          salud_trabajador?: number | null
+          sis_empleador?: number | null
+          total_aportes_empleador?: number | null
+          total_descuentos?: number | null
+          total_haberes?: number | null
+          total_tributable?: number | null
+          valoruf?: number | null
+          valorutm?: number | null
+          zona_extrema?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "liquidacion_id_contrato_fkey"
+            columns: ["id_contrato"]
+            isOneToOne: false
+            referencedRelation: "contrato"
+            referencedColumns: ["id_contrato"]
+          },
+          {
+            foreignKeyName: "liquidacion_id_contrato_fkey"
+            columns: ["id_contrato"]
+            isOneToOne: false
+            referencedRelation: "vw_persona_factores"
+            referencedColumns: ["id_contrato"]
+          },
+          {
+            foreignKeyName: "liquidacion_id_persona_fkey"
+            columns: ["id_persona"]
+            isOneToOne: false
+            referencedRelation: "persona"
+            referencedColumns: ["id_persona"]
+          },
+          {
+            foreignKeyName: "liquidacion_id_persona_fkey"
+            columns: ["id_persona"]
+            isOneToOne: false
+            referencedRelation: "vw_persona_factores"
+            referencedColumns: ["id_persona"]
+          },
+        ]
+      }
+      liquidacion_detalle: {
+        Row: {
+          afecta_afc: boolean
+          afecta_afp: boolean
+          afecta_salud: boolean
+          afecta_sis: boolean
+          cantidad: number | null
+          descripcion: string | null
+          id_concepto: number
+          id_detalle: number
+          id_liquidacion: number
+          imponible: boolean
+          monto: number
+          orden: number | null
+          tipo: string | null
+          tipo_haber: string | null
+          tributable: boolean
+        }
+        Insert: {
+          afecta_afc?: boolean
+          afecta_afp?: boolean
+          afecta_salud?: boolean
+          afecta_sis?: boolean
+          cantidad?: number | null
+          descripcion?: string | null
+          id_concepto: number
+          id_detalle?: number
+          id_liquidacion: number
+          imponible?: boolean
+          monto: number
+          orden?: number | null
+          tipo?: string | null
+          tipo_haber?: string | null
+          tributable?: boolean
+        }
+        Update: {
+          afecta_afc?: boolean
+          afecta_afp?: boolean
+          afecta_salud?: boolean
+          afecta_sis?: boolean
+          cantidad?: number | null
+          descripcion?: string | null
+          id_concepto?: number
+          id_detalle?: number
+          id_liquidacion?: number
+          imponible?: boolean
+          monto?: number
+          orden?: number | null
+          tipo?: string | null
+          tipo_haber?: string | null
+          tributable?: boolean
+        }
+        Relationships: [
+          {
+            foreignKeyName: "liquidacion_detalle_id_concepto_fkey"
+            columns: ["id_concepto"]
+            isOneToOne: false
+            referencedRelation: "concepto"
+            referencedColumns: ["id_concepto"]
+          },
+          {
+            foreignKeyName: "liquidacion_detalle_id_liquidacion_fkey"
+            columns: ["id_liquidacion"]
+            isOneToOne: false
+            referencedRelation: "liquidacion"
+            referencedColumns: ["id_liquidacion"]
+          },
+        ]
+      }
+      moneda: {
+        Row: {
+          codigo: string
+          id_moneda: number
+          nombre: string
+          simbolo: string
+        }
+        Insert: {
+          codigo: string
+          id_moneda?: number
+          nombre: string
+          simbolo: string
+        }
+        Update: {
+          codigo?: string
+          id_moneda?: number
+          nombre?: string
+          simbolo?: string
+        }
+        Relationships: []
+      }
+      movimiento: {
+        Row: {
+          cantidad: number | null
+          diainasist: number | null
+          fecha: string
+          hrs_pactadas: number | null
+          id_concepto: number | null
+          id_contrato: number | null
+          id_movimiento: number
+          id_persona: number
+          monto: number | null
+          motivoinasist: number | null
+          observacion: string | null
+          tipomovimiento: number | null
+        }
+        Insert: {
+          cantidad?: number | null
+          diainasist?: number | null
+          fecha: string
+          hrs_pactadas?: number | null
+          id_concepto?: number | null
+          id_contrato?: number | null
+          id_movimiento?: number
+          id_persona: number
+          monto?: number | null
+          motivoinasist?: number | null
+          observacion?: string | null
+          tipomovimiento?: number | null
+        }
+        Update: {
+          cantidad?: number | null
+          diainasist?: number | null
+          fecha?: string
+          hrs_pactadas?: number | null
+          id_concepto?: number | null
+          id_contrato?: number | null
+          id_movimiento?: number
+          id_persona?: number
+          monto?: number | null
+          motivoinasist?: number | null
+          observacion?: string | null
+          tipomovimiento?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "movimiento_id_concepto_fkey"
+            columns: ["id_concepto"]
+            isOneToOne: false
+            referencedRelation: "concepto"
+            referencedColumns: ["id_concepto"]
+          },
+          {
+            foreignKeyName: "movimiento_id_contrato_fkey"
+            columns: ["id_contrato"]
+            isOneToOne: false
+            referencedRelation: "contrato"
+            referencedColumns: ["id_contrato"]
+          },
+          {
+            foreignKeyName: "movimiento_id_contrato_fkey"
+            columns: ["id_contrato"]
+            isOneToOne: false
+            referencedRelation: "vw_persona_factores"
+            referencedColumns: ["id_contrato"]
+          },
+          {
+            foreignKeyName: "movimiento_id_persona_fkey"
+            columns: ["id_persona"]
+            isOneToOne: false
+            referencedRelation: "persona"
+            referencedColumns: ["id_persona"]
+          },
+          {
+            foreignKeyName: "movimiento_id_persona_fkey"
+            columns: ["id_persona"]
+            isOneToOne: false
+            referencedRelation: "vw_persona_factores"
+            referencedColumns: ["id_persona"]
+          },
+        ]
+      }
+      pais: {
+        Row: {
+          activo: boolean
+          codigo_iso2: string
+          codigo_iso3: string
+          codigo_numerico: string
+          fecha_actualizacion: string
+          fecha_creacion: string
+          id_pais: number
+          nombre: string
+          nombre_iso: string
+        }
+        Insert: {
+          activo?: boolean
+          codigo_iso2: string
+          codigo_iso3: string
+          codigo_numerico: string
+          fecha_actualizacion?: string
+          fecha_creacion?: string
+          id_pais?: number
+          nombre: string
+          nombre_iso: string
+        }
+        Update: {
+          activo?: boolean
+          codigo_iso2?: string
+          codigo_iso3?: string
+          codigo_numerico?: string
+          fecha_actualizacion?: string
+          fecha_creacion?: string
+          id_pais?: number
+          nombre?: string
+          nombre_iso?: string
+        }
+        Relationships: []
+      }
+      parametros_generales: {
+        Row: {
+          afc_empleador_indefinido: number | null
+          afc_empleador_plazo: number | null
+          afc_trabajador_indefinido: number | null
+          dsctosbpordia: boolean | null
+          fecha_actualizacion: string | null
+          gratificacion: boolean | null
+          imm_gratificacion: number | null
+          periodo: string
+          sis: number | null
+          sueldo_minimo: number | null
+          sueldo_minimo18_65: number | null
+          tope_afp: number | null
+          tope_afpvoluntario: number | null
+          tope_cesantia: number | null
+          tope_ips: number | null
+          uf: number | null
+          utm: number | null
+        }
+        Insert: {
+          afc_empleador_indefinido?: number | null
+          afc_empleador_plazo?: number | null
+          afc_trabajador_indefinido?: number | null
+          dsctosbpordia?: boolean | null
+          fecha_actualizacion?: string | null
+          gratificacion?: boolean | null
+          imm_gratificacion?: number | null
+          periodo: string
+          sis?: number | null
+          sueldo_minimo?: number | null
+          sueldo_minimo18_65?: number | null
+          tope_afp?: number | null
+          tope_afpvoluntario?: number | null
+          tope_cesantia?: number | null
+          tope_ips?: number | null
+          uf?: number | null
+          utm?: number | null
+        }
+        Update: {
+          afc_empleador_indefinido?: number | null
+          afc_empleador_plazo?: number | null
+          afc_trabajador_indefinido?: number | null
+          dsctosbpordia?: boolean | null
+          fecha_actualizacion?: string | null
+          gratificacion?: boolean | null
+          imm_gratificacion?: number | null
+          periodo?: string
+          sis?: number | null
+          sueldo_minimo?: number | null
+          sueldo_minimo18_65?: number | null
+          tope_afp?: number | null
+          tope_afpvoluntario?: number | null
+          tope_cesantia?: number | null
+          tope_ips?: number | null
+          uf?: number | null
+          utm?: number | null
+        }
+        Relationships: []
+      }
+      parametros_legales: {
+        Row: {
+          id_parametro: number
+          nombre: string
+          valor_decimal: number | null
+          valor_entero: number | null
+          vigencia_fin: string | null
+          vigencia_inicio: string
+        }
+        Insert: {
+          id_parametro?: number
+          nombre: string
+          valor_decimal?: number | null
+          valor_entero?: number | null
+          vigencia_fin?: string | null
+          vigencia_inicio: string
+        }
+        Update: {
+          id_parametro?: number
+          nombre?: string
+          valor_decimal?: number | null
+          valor_entero?: number | null
+          vigencia_fin?: string | null
+          vigencia_inicio?: string
+        }
+        Relationships: []
+      }
+      persona: {
+        Row: {
+          apellido_materno: string | null
+          apellido_paterno: string
+          apto_para_remuneraciones: boolean
+          cargas: number | null
+          casa: string | null
+          departamento_direccion: string | null
+          direccion: string | null
+          dv: string
+          email: string | null
+          estado: string
+          estado_civil:
+            | Database["public"]["Enums"]["tipo_estado_civil_enum"]
+            | null
+          estado_ficha: Database["public"]["Enums"]["tipo_estado_ficha_enum"]
+          fax: string | null
+          fecha_activacion: string | null
+          fecha_actualizacion: string
+          fecha_creacion: string
+          fecha_nacimiento: string
+          id_ciudad: number | null
+          id_comuna: number | null
+          id_persona: number
+          id_tramo_carga: number | null
+          id_usuario_activacion: number | null
+          nacionalidad: string | null
+          nombres: string
+          numero_direccion: string | null
+          observaciones_direccion: string | null
+          pasaporte: string | null
+          poblacion: string | null
+          rut: string
+          sexo: string | null
+          telefono: string | null
+          villa: string | null
+        }
+        Insert: {
+          apellido_materno?: string | null
+          apellido_paterno: string
+          apto_para_remuneraciones?: boolean
+          cargas?: number | null
+          casa?: string | null
+          departamento_direccion?: string | null
+          direccion?: string | null
+          dv: string
+          email?: string | null
+          estado?: string
+          estado_civil?:
+            | Database["public"]["Enums"]["tipo_estado_civil_enum"]
+            | null
+          estado_ficha?: Database["public"]["Enums"]["tipo_estado_ficha_enum"]
+          fax?: string | null
+          fecha_activacion?: string | null
+          fecha_actualizacion?: string
+          fecha_creacion?: string
+          fecha_nacimiento: string
+          id_ciudad?: number | null
+          id_comuna?: number | null
+          id_persona?: number
+          id_tramo_carga?: number | null
+          id_usuario_activacion?: number | null
+          nacionalidad?: string | null
+          nombres: string
+          numero_direccion?: string | null
+          observaciones_direccion?: string | null
+          pasaporte?: string | null
+          poblacion?: string | null
+          rut: string
+          sexo?: string | null
+          telefono?: string | null
+          villa?: string | null
+        }
+        Update: {
+          apellido_materno?: string | null
+          apellido_paterno?: string
+          apto_para_remuneraciones?: boolean
+          cargas?: number | null
+          casa?: string | null
+          departamento_direccion?: string | null
+          direccion?: string | null
+          dv?: string
+          email?: string | null
+          estado?: string
+          estado_civil?:
+            | Database["public"]["Enums"]["tipo_estado_civil_enum"]
+            | null
+          estado_ficha?: Database["public"]["Enums"]["tipo_estado_ficha_enum"]
+          fax?: string | null
+          fecha_activacion?: string | null
+          fecha_actualizacion?: string
+          fecha_creacion?: string
+          fecha_nacimiento?: string
+          id_ciudad?: number | null
+          id_comuna?: number | null
+          id_persona?: number
+          id_tramo_carga?: number | null
+          id_usuario_activacion?: number | null
+          nacionalidad?: string | null
+          nombres?: string
+          numero_direccion?: string | null
+          observaciones_direccion?: string | null
+          pasaporte?: string | null
+          poblacion?: string | null
+          rut?: string
+          sexo?: string | null
+          telefono?: string | null
+          villa?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "persona_id_ciudad_fkey"
+            columns: ["id_ciudad"]
+            isOneToOne: false
+            referencedRelation: "ciudad"
+            referencedColumns: ["id_ciudad"]
+          },
+          {
+            foreignKeyName: "persona_id_comuna_fkey"
+            columns: ["id_comuna"]
+            isOneToOne: false
+            referencedRelation: "comuna"
+            referencedColumns: ["id_comuna"]
+          },
+          {
+            foreignKeyName: "persona_id_tramo_carga_fkey"
+            columns: ["id_tramo_carga"]
+            isOneToOne: false
+            referencedRelation: "tramo_carga"
+            referencedColumns: ["id_tramo"]
+          },
+        ]
+      }
+      prestamo: {
+        Row: {
+          caja: string | null
+          cuotas_pagadas: number | null
+          cuotas_total: number | null
+          descripcion: string | null
+          estado: string | null
+          fecha_otorgamiento: string | null
+          id_persona: number
+          id_prestamo: number
+          monto_total: number | null
+          saldo_pendiente: number | null
+          valor_cuota: number | null
+        }
+        Insert: {
+          caja?: string | null
+          cuotas_pagadas?: number | null
+          cuotas_total?: number | null
+          descripcion?: string | null
+          estado?: string | null
+          fecha_otorgamiento?: string | null
+          id_persona: number
+          id_prestamo?: number
+          monto_total?: number | null
+          saldo_pendiente?: number | null
+          valor_cuota?: number | null
+        }
+        Update: {
+          caja?: string | null
+          cuotas_pagadas?: number | null
+          cuotas_total?: number | null
+          descripcion?: string | null
+          estado?: string | null
+          fecha_otorgamiento?: string | null
+          id_persona?: number
+          id_prestamo?: number
+          monto_total?: number | null
+          saldo_pendiente?: number | null
+          valor_cuota?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "prestamo_id_persona_fkey"
+            columns: ["id_persona"]
+            isOneToOne: false
+            referencedRelation: "persona"
+            referencedColumns: ["id_persona"]
+          },
+          {
+            foreignKeyName: "prestamo_id_persona_fkey"
+            columns: ["id_persona"]
+            isOneToOne: false
+            referencedRelation: "vw_persona_factores"
+            referencedColumns: ["id_persona"]
+          },
+        ]
+      }
+      prevision: {
+        Row: {
+          id_afp: number | null
+          id_contrato: number
+          id_prevision: number
+          id_regimen_previsional: number | null
+          monto_ips: number | null
+          nombre_entidad_ips: string | null
+          nombre_ex_caja: string | null
+          observacion_prevision: string | null
+          regimen_ex_caja: string | null
+          tasa_ex_caja: number | null
+          tipo_prevision: string
+          vigencia_fin: string | null
+          vigencia_inicio: string
+        }
+        Insert: {
+          id_afp?: number | null
+          id_contrato: number
+          id_prevision?: number
+          id_regimen_previsional?: number | null
+          monto_ips?: number | null
+          nombre_entidad_ips?: string | null
+          nombre_ex_caja?: string | null
+          observacion_prevision?: string | null
+          regimen_ex_caja?: string | null
+          tasa_ex_caja?: number | null
+          tipo_prevision: string
+          vigencia_fin?: string | null
+          vigencia_inicio: string
+        }
+        Update: {
+          id_afp?: number | null
+          id_contrato?: number
+          id_prevision?: number
+          id_regimen_previsional?: number | null
+          monto_ips?: number | null
+          nombre_entidad_ips?: string | null
+          nombre_ex_caja?: string | null
+          observacion_prevision?: string | null
+          regimen_ex_caja?: string | null
+          tasa_ex_caja?: number | null
+          tipo_prevision?: string
+          vigencia_fin?: string | null
+          vigencia_inicio?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "prevision_id_afp_fkey"
+            columns: ["id_afp"]
+            isOneToOne: false
+            referencedRelation: "afp"
+            referencedColumns: ["id_afp"]
+          },
+          {
+            foreignKeyName: "prevision_id_contrato_fkey"
+            columns: ["id_contrato"]
+            isOneToOne: false
+            referencedRelation: "contrato"
+            referencedColumns: ["id_contrato"]
+          },
+          {
+            foreignKeyName: "prevision_id_contrato_fkey"
+            columns: ["id_contrato"]
+            isOneToOne: false
+            referencedRelation: "vw_persona_factores"
+            referencedColumns: ["id_contrato"]
+          },
+          {
+            foreignKeyName: "prevision_id_regimen_previsional_fkey"
+            columns: ["id_regimen_previsional"]
+            isOneToOne: false
+            referencedRelation: "regimen_previsional"
+            referencedColumns: ["id_regimen"]
+          },
+        ]
+      }
+      provincia: {
+        Row: {
+          activo: boolean
+          fecha_creacion: string
+          id_provincia: number
+          id_region: number
+          nombre: string
+        }
+        Insert: {
+          activo?: boolean
+          fecha_creacion?: string
+          id_provincia: number
+          id_region: number
+          nombre: string
+        }
+        Update: {
+          activo?: boolean
+          fecha_creacion?: string
+          id_provincia?: number
+          id_region?: number
+          nombre?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "provincia_id_region_fkey"
+            columns: ["id_region"]
+            isOneToOne: false
+            referencedRelation: "region"
+            referencedColumns: ["id_region"]
+          },
+          {
+            foreignKeyName: "provincia_id_region_fkey"
+            columns: ["id_region"]
+            isOneToOne: false
+            referencedRelation: "vw_persona_factores"
+            referencedColumns: ["id_region"]
+          },
+        ]
+      }
+      regimen_previsional: {
+        Row: {
+          id_regimen: number
+          nombre: string
+        }
+        Insert: {
+          id_regimen?: number
+          nombre: string
+        }
+        Update: {
+          id_regimen?: number
+          nombre?: string
+        }
+        Relationships: []
+      }
+      region: {
+        Row: {
+          activo: boolean
+          fecha_creacion: string
+          id_region: number
+          nombre: string
+          ordinal: string
+        }
+        Insert: {
+          activo?: boolean
+          fecha_creacion?: string
+          id_region: number
+          nombre: string
+          ordinal: string
+        }
+        Update: {
+          activo?: boolean
+          fecha_creacion?: string
+          id_region?: number
+          nombre?: string
+          ordinal?: string
+        }
+        Relationships: []
+      }
+      remuneracion: {
+        Row: {
+          dias_semanales: number
+          distribucion_jornada: string | null
+          gratificacion_proporcional: boolean
+          horas_semanales: number
+          id_contrato: number
+          id_moneda: number | null
+          id_remuneracion: number
+          semana_corrida_activa: boolean
+          sueldo_base: number
+          sueldo_variable: boolean
+          tiempo_colacion_minutos: number | null
+          tipo_gratificacion: Database["public"]["Enums"]["tipo_gratificacion_enum"]
+          vigencia_fin: string | null
+          vigencia_inicio: string
+          zona_extrema_activa: boolean
+        }
+        Insert: {
+          dias_semanales?: number
+          distribucion_jornada?: string | null
+          gratificacion_proporcional?: boolean
+          horas_semanales?: number
+          id_contrato: number
+          id_moneda?: number | null
+          id_remuneracion?: number
+          semana_corrida_activa?: boolean
+          sueldo_base: number
+          sueldo_variable?: boolean
+          tiempo_colacion_minutos?: number | null
+          tipo_gratificacion?: Database["public"]["Enums"]["tipo_gratificacion_enum"]
+          vigencia_fin?: string | null
+          vigencia_inicio: string
+          zona_extrema_activa?: boolean
+        }
+        Update: {
+          dias_semanales?: number
+          distribucion_jornada?: string | null
+          gratificacion_proporcional?: boolean
+          horas_semanales?: number
+          id_contrato?: number
+          id_moneda?: number | null
+          id_remuneracion?: number
+          semana_corrida_activa?: boolean
+          sueldo_base?: number
+          sueldo_variable?: boolean
+          tiempo_colacion_minutos?: number | null
+          tipo_gratificacion?: Database["public"]["Enums"]["tipo_gratificacion_enum"]
+          vigencia_fin?: string | null
+          vigencia_inicio?: string
+          zona_extrema_activa?: boolean
+        }
+        Relationships: [
+          {
+            foreignKeyName: "remuneracion_id_contrato_fkey"
+            columns: ["id_contrato"]
+            isOneToOne: false
+            referencedRelation: "contrato"
+            referencedColumns: ["id_contrato"]
+          },
+          {
+            foreignKeyName: "remuneracion_id_contrato_fkey"
+            columns: ["id_contrato"]
+            isOneToOne: false
+            referencedRelation: "vw_persona_factores"
+            referencedColumns: ["id_contrato"]
+          },
+          {
+            foreignKeyName: "remuneracion_id_moneda_fkey"
+            columns: ["id_moneda"]
+            isOneToOne: false
+            referencedRelation: "moneda"
+            referencedColumns: ["id_moneda"]
+          },
+        ]
+      }
+      salud: {
+        Row: {
+          id_salud: number
+          nombre: string
+          porcentaje_cotizacion: number | null
+          tipo: string | null
+          vigencia_fin: string | null
+          vigencia_inicio: string | null
+          vigente: boolean | null
+        }
+        Insert: {
+          id_salud?: number
+          nombre: string
+          porcentaje_cotizacion?: number | null
+          tipo?: string | null
+          vigencia_fin?: string | null
+          vigencia_inicio?: string | null
+          vigente?: boolean | null
+        }
+        Update: {
+          id_salud?: number
+          nombre?: string
+          porcentaje_cotizacion?: number | null
+          tipo?: string | null
+          vigencia_fin?: string | null
+          vigencia_inicio?: string | null
+          vigente?: boolean | null
+        }
+        Relationships: []
+      }
+      salud_trabajador: {
+        Row: {
+          adicional_auge_ges: number
+          id_contrato: number
+          id_moneda_plan: number | null
+          id_salud: number
+          id_salud_trabajador: number
+          observaciones_salud: string | null
+          plan_salud: string | null
+          valor_plan: number
+          vigencia_fin: string | null
+          vigencia_inicio: string
+        }
+        Insert: {
+          adicional_auge_ges?: number
+          id_contrato: number
+          id_moneda_plan?: number | null
+          id_salud: number
+          id_salud_trabajador?: number
+          observaciones_salud?: string | null
+          plan_salud?: string | null
+          valor_plan?: number
+          vigencia_fin?: string | null
+          vigencia_inicio: string
+        }
+        Update: {
+          adicional_auge_ges?: number
+          id_contrato?: number
+          id_moneda_plan?: number | null
+          id_salud?: number
+          id_salud_trabajador?: number
+          observaciones_salud?: string | null
+          plan_salud?: string | null
+          valor_plan?: number
+          vigencia_fin?: string | null
+          vigencia_inicio?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "salud_trabajador_id_contrato_fkey"
+            columns: ["id_contrato"]
+            isOneToOne: false
+            referencedRelation: "contrato"
+            referencedColumns: ["id_contrato"]
+          },
+          {
+            foreignKeyName: "salud_trabajador_id_contrato_fkey"
+            columns: ["id_contrato"]
+            isOneToOne: false
+            referencedRelation: "vw_persona_factores"
+            referencedColumns: ["id_contrato"]
+          },
+          {
+            foreignKeyName: "salud_trabajador_id_moneda_plan_fkey"
+            columns: ["id_moneda_plan"]
+            isOneToOne: false
+            referencedRelation: "moneda"
+            referencedColumns: ["id_moneda"]
+          },
+          {
+            foreignKeyName: "salud_trabajador_id_salud_fkey"
+            columns: ["id_salud"]
+            isOneToOne: false
+            referencedRelation: "salud"
+            referencedColumns: ["id_salud"]
+          },
+        ]
+      }
+      semana_corrida: {
+        Row: {
+          activa: boolean
+          dias_laborables: number[]
+          id_contrato: number
+          id_semana_corrida: number
+          vigencia_fin: string | null
+          vigencia_inicio: string
+        }
+        Insert: {
+          activa?: boolean
+          dias_laborables: number[]
+          id_contrato: number
+          id_semana_corrida?: number
+          vigencia_fin?: string | null
+          vigencia_inicio: string
+        }
+        Update: {
+          activa?: boolean
+          dias_laborables?: number[]
+          id_contrato?: number
+          id_semana_corrida?: number
+          vigencia_fin?: string | null
+          vigencia_inicio?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "semana_corrida_id_contrato_fkey"
+            columns: ["id_contrato"]
+            isOneToOne: false
+            referencedRelation: "contrato"
+            referencedColumns: ["id_contrato"]
+          },
+          {
+            foreignKeyName: "semana_corrida_id_contrato_fkey"
+            columns: ["id_contrato"]
+            isOneToOne: false
+            referencedRelation: "vw_persona_factores"
+            referencedColumns: ["id_contrato"]
+          },
+        ]
+      }
+      sucursal: {
+        Row: {
+          codigo: string
+          direccion: string | null
+          id_empresa: number
+          id_sucursal: number
+          nombre: string
+        }
+        Insert: {
+          codigo: string
+          direccion?: string | null
+          id_empresa: number
+          id_sucursal?: number
+          nombre: string
+        }
+        Update: {
+          codigo?: string
+          direccion?: string | null
+          id_empresa?: number
+          id_sucursal?: number
+          nombre?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sucursal_id_empresa_fkey"
+            columns: ["id_empresa"]
+            isOneToOne: false
+            referencedRelation: "empresa"
+            referencedColumns: ["id_empresa"]
+          },
+        ]
+      }
+      tabla_impuesto_unico: {
+        Row: {
+          desde: number
+          factor: number
+          hasta: number | null
+          id: number
+          rebaja: number
+          tramo: number
+          vigencia_fin: string | null
+          vigencia_inicio: string
+        }
+        Insert: {
+          desde: number
+          factor: number
+          hasta?: number | null
+          id?: number
+          rebaja: number
+          tramo: number
+          vigencia_fin?: string | null
+          vigencia_inicio: string
+        }
+        Update: {
+          desde?: number
+          factor?: number
+          hasta?: number | null
+          id?: number
+          rebaja?: number
+          tramo?: number
+          vigencia_fin?: string | null
+          vigencia_inicio?: string
+        }
+        Relationships: []
+      }
+      tipo_cuenta_bancaria: {
+        Row: {
+          id_tipo_cuenta_bancaria: number
+          nombre: string
+        }
+        Insert: {
+          id_tipo_cuenta_bancaria?: number
+          nombre: string
+        }
+        Update: {
+          id_tipo_cuenta_bancaria?: number
+          nombre?: string
+        }
+        Relationships: []
+      }
+      tipo_jornada: {
+        Row: {
+          id_tipo_jornada: number
+          nombre: string
+        }
+        Insert: {
+          id_tipo_jornada?: number
+          nombre: string
+        }
+        Update: {
+          id_tipo_jornada?: number
+          nombre?: string
+        }
+        Relationships: []
+      }
+      tipo_trabajador: {
+        Row: {
+          id_tipo_trabajador: number
+          nombre: string
+        }
+        Insert: {
+          id_tipo_trabajador?: number
+          nombre: string
+        }
+        Update: {
+          id_tipo_trabajador?: number
+          nombre?: string
+        }
+        Relationships: []
+      }
+      tramo_carga: {
+        Row: {
+          desde: number | null
+          hasta: number | null
+          id_tramo: number
+          periodo: string
+          tramo: string | null
+          valor: number | null
+        }
+        Insert: {
+          desde?: number | null
+          hasta?: number | null
+          id_tramo?: number
+          periodo: string
+          tramo?: string | null
+          valor?: number | null
+        }
+        Update: {
+          desde?: number | null
+          hasta?: number | null
+          id_tramo?: number
+          periodo?: string
+          tramo?: string | null
+          valor?: number | null
+        }
+        Relationships: []
+      }
+      tramo_impuesto: {
+        Row: {
+          desde: number | null
+          factor: number | null
+          hasta: number | null
+          id_tramo: number
+          periodo: string
+          rebaja: number | null
+        }
+        Insert: {
+          desde?: number | null
+          factor?: number | null
+          hasta?: number | null
+          id_tramo?: number
+          periodo: string
+          rebaja?: number | null
+        }
+        Update: {
+          desde?: number | null
+          factor?: number | null
+          hasta?: number | null
+          id_tramo?: number
+          periodo?: string
+          rebaja?: number | null
+        }
+        Relationships: []
+      }
+      vacacion_movimiento: {
+        Row: {
+          dias: number
+          fecha: string
+          id_contrato: number
+          id_vacacion_movimiento: number
+          observacion: string | null
+          tipo: Database["public"]["Enums"]["tipo_mov_vacaciones_enum"]
+        }
+        Insert: {
+          dias: number
+          fecha: string
+          id_contrato: number
+          id_vacacion_movimiento?: number
+          observacion?: string | null
+          tipo: Database["public"]["Enums"]["tipo_mov_vacaciones_enum"]
+        }
+        Update: {
+          dias?: number
+          fecha?: string
+          id_contrato?: number
+          id_vacacion_movimiento?: number
+          observacion?: string | null
+          tipo?: Database["public"]["Enums"]["tipo_mov_vacaciones_enum"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "vacacion_movimiento_id_contrato_fkey"
+            columns: ["id_contrato"]
+            isOneToOne: false
+            referencedRelation: "contrato"
+            referencedColumns: ["id_contrato"]
+          },
+          {
+            foreignKeyName: "vacacion_movimiento_id_contrato_fkey"
+            columns: ["id_contrato"]
+            isOneToOne: false
+            referencedRelation: "vw_persona_factores"
+            referencedColumns: ["id_contrato"]
+          },
+        ]
+      }
+      vacacion_saldo: {
+        Row: {
+          fecha_actualizacion: string
+          id_contrato: number
+          id_vacacion_saldo: number
+          saldo_dias: number
+        }
+        Insert: {
+          fecha_actualizacion?: string
+          id_contrato: number
+          id_vacacion_saldo?: number
+          saldo_dias?: number
+        }
+        Update: {
+          fecha_actualizacion?: string
+          id_contrato?: number
+          id_vacacion_saldo?: number
+          saldo_dias?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "vacacion_saldo_id_contrato_fkey"
+            columns: ["id_contrato"]
+            isOneToOne: true
+            referencedRelation: "contrato"
+            referencedColumns: ["id_contrato"]
+          },
+          {
+            foreignKeyName: "vacacion_saldo_id_contrato_fkey"
+            columns: ["id_contrato"]
+            isOneToOne: true
+            referencedRelation: "vw_persona_factores"
+            referencedColumns: ["id_contrato"]
+          },
+        ]
+      }
+      valores_flexibles: {
+        Row: {
+          activo: boolean | null
+          codigo: string
+          descripcion: string
+          id: number
+          orden: number | null
+          tipo: string | null
+          valor: string | null
+        }
+        Insert: {
+          activo?: boolean | null
+          codigo: string
+          descripcion: string
+          id?: number
+          orden?: number | null
+          tipo?: string | null
+          valor?: string | null
+        }
+        Update: {
+          activo?: boolean | null
+          codigo?: string
+          descripcion?: string
+          id?: number
+          orden?: number | null
+          tipo?: string | null
+          valor?: string | null
+        }
+        Relationships: []
+      }
+      zona_extrema: {
+        Row: {
+          id_contrato: number
+          id_zona_extrema: number
+          porcentaje: number
+          territorio: string | null
+          vigencia_fin: string | null
+          vigencia_inicio: string
+        }
+        Insert: {
+          id_contrato: number
+          id_zona_extrema?: number
+          porcentaje: number
+          territorio?: string | null
+          vigencia_fin?: string | null
+          vigencia_inicio: string
+        }
+        Update: {
+          id_contrato?: number
+          id_zona_extrema?: number
+          porcentaje?: number
+          territorio?: string | null
+          vigencia_fin?: string | null
+          vigencia_inicio?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "zona_extrema_id_contrato_fkey"
+            columns: ["id_contrato"]
+            isOneToOne: false
+            referencedRelation: "contrato"
+            referencedColumns: ["id_contrato"]
+          },
+          {
+            foreignKeyName: "zona_extrema_id_contrato_fkey"
+            columns: ["id_contrato"]
+            isOneToOne: false
+            referencedRelation: "vw_persona_factores"
+            referencedColumns: ["id_contrato"]
+          },
+        ]
+      }
+    }
+    Views: {
+      vw_persona_factores: {
+        Row: {
+          afp_nombre: string | null
+          apellido_materno: string | null
+          apellido_paterno: string | null
+          base: number | null
+          cargas: number | null
+          cargo: string | null
+          ciudad: string | null
+          codigo_tipo_contrato:
+            | Database["public"]["Enums"]["tipo_contrato_enum"]
+            | null
+          comision: number | null
+          comuna: string | null
+          dias_semanales: number | null
+          direccion: string | null
+          dv: string | null
+          email: string | null
+          estado: string | null
+          estado_contrato: string | null
+          fecha_nacimiento: string | null
+          fingreso: string | null
+          fretiro: string | null
+          gratificacion_tipo:
+            | Database["public"]["Enums"]["tipo_gratificacion_enum"]
+            | null
+          horas_semanales: number | null
+          id_afp: number | null
+          id_ciudad: number | null
+          id_comuna: number | null
+          id_contrato: number | null
+          id_empresa: number | null
+          id_persona: number | null
+          id_provincia: number | null
+          id_regimen_previsional: number | null
+          id_region: number | null
+          id_salud: number | null
+          monto_dia: number | null
+          nombres: string | null
+          porcentaje_cotizacion: number | null
+          provincia: string | null
+          regimen_previsional_nombre: string | null
+          region: string | null
+          rut: string | null
+          salud_nombre_full: string | null
+          salud_tipo: string | null
+          seguro_cesantia: boolean | null
+          semana_corrida_activa: boolean | null
+          sexo: string | null
+          sis: number | null
+          tasa_empleador: number | null
+          tasa_obligatoria: number | null
+          telefono: string | null
+          tipo_jornada_nombre: string | null
+          tipo_trabajador_nombre: string | null
+          valor_plan: number | null
+          zona_extrema_activa: boolean | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contrato_id_empresa_fkey"
+            columns: ["id_empresa"]
+            isOneToOne: false
+            referencedRelation: "empresa"
+            referencedColumns: ["id_empresa"]
+          },
+          {
+            foreignKeyName: "persona_id_ciudad_fkey"
+            columns: ["id_ciudad"]
+            isOneToOne: false
+            referencedRelation: "ciudad"
+            referencedColumns: ["id_ciudad"]
+          },
+          {
+            foreignKeyName: "persona_id_comuna_fkey"
+            columns: ["id_comuna"]
+            isOneToOne: false
+            referencedRelation: "comuna"
+            referencedColumns: ["id_comuna"]
+          },
+          {
+            foreignKeyName: "prevision_id_afp_fkey"
+            columns: ["id_afp"]
+            isOneToOne: false
+            referencedRelation: "afp"
+            referencedColumns: ["id_afp"]
+          },
+          {
+            foreignKeyName: "prevision_id_regimen_previsional_fkey"
+            columns: ["id_regimen_previsional"]
+            isOneToOne: false
+            referencedRelation: "regimen_previsional"
+            referencedColumns: ["id_regimen"]
+          },
+          {
+            foreignKeyName: "salud_trabajador_id_salud_fkey"
+            columns: ["id_salud"]
+            isOneToOne: false
+            referencedRelation: "salud"
+            referencedColumns: ["id_salud"]
+          },
+        ]
+      }
+    }
+    Functions: {
+      dblink_dteconfiguracion: { Args: never; Returns: string }
+      fn_calcular_dias_trabajados: {
+        Args: {
+          p_fecha_ingreso: string
+          p_fecha_retiro: string
+          p_id_contrato: number
+          p_periodo: string
+        }
+        Returns: number
+      }
+      fn_calcular_impuesto_unico: {
+        Args: { p_base: number; p_fecha: string }
+        Returns: number
+      }
+      fn_formato_decimales: {
+        Args: { p_decimales?: number; p_valor: number }
+        Returns: string
+      }
+      fn_generar_liquidacion: {
+        Args: {
+          p_id_contrato: number
+          p_id_usuario: number
+          p_periodo: string
+          p_preview?: boolean
+        }
+        Returns: {
+          estado: string
+          id_liquidacion: number
+          mensaje: string
+          total_liquido: number
+        }[]
+      }
+      fn_obtener_afp: {
+        Args: { p_fecha: string; p_id_contrato: number }
+        Returns: {
+          comision: number
+          id_afp: number
+          nombre: string
+          sis: number
+          tasa_empleador: number
+          tasa_trabajador: number
+        }[]
+      }
+      fn_obtener_parametro: {
+        Args: { p_fecha: string; p_nombre: string }
+        Returns: number
+      }
+      fn_obtener_remuneracion: {
+        Args: { p_fecha: string; p_id_contrato: number }
+        Returns: {
+          dias_semanales: number
+          gratificacion_proporcional: boolean
+          horas_semanales: number
+          semana_corrida_activa: boolean
+          sueldo_base: number
+          tipo_gratificacion: Database["public"]["Enums"]["tipo_gratificacion_enum"]
+          zona_extrema_activa: boolean
+        }[]
+      }
+      fn_obtener_salud: {
+        Args: { p_fecha: string; p_id_contrato: number }
+        Returns: {
+          id_salud: number
+          nombre: string
+          porcentaje_cotizacion: number
+          tipo: string
+          valor_plan: number
+        }[]
+      }
+      fn_validar_liquidacion: {
+        Args: { p_id_liquidacion: number }
+        Returns: {
+          actual: string
+          detalle: string
+          esperado: string
+          ok: boolean
+          validacion: string
+        }[]
+      }
+    }
+    Enums: {
+      tipo_concepto_enum: "HABER" | "DESCUENTO" | "APORTE_EMPLEADOR"
+      tipo_contrato_enum: "INDEFINIDO" | "PLAZO_FIJO" | "OBRA_SERVICIO"
+      tipo_dominio_ficha_enum:
+        | "GENERAL"
+        | "LABORAL"
+        | "REMUNERACION"
+        | "PREVISION"
+        | "SALUD"
+        | "COMPLEMENTARIOS"
+      tipo_estado_civil_enum:
+        | "SOLTERO"
+        | "CASADO"
+        | "CONVIVIENTE CIVIL"
+        | "SEPARADO"
+        | "DIVORCIADO"
+        | "VIUDO"
+      tipo_estado_ficha_enum: "BORRADOR" | "INCOMPLETO" | "ACTIVO"
+      tipo_estado_liquidacion_enum:
+        | "BORRADOR"
+        | "PROCESADA"
+        | "APROBADA"
+        | "PAGADA"
+        | "ANULADA"
+      tipo_gratificacion_enum: "LEGAL_ART_47" | "LEGAL_ART_50" | "VOLUNTARIA"
+      tipo_mov_vacaciones_enum:
+        | "ACUMULADO"
+        | "USADO"
+        | "BONIFICADO"
+        | "CORREGIDO"
+      tipo_severidad_validacion_enum: "BLOQUEANTE" | "ADVERTENCIA" | "CRITICO"
+    }
+    CompositeTypes: {
+      [_ in never]: never
+    }
+  }
+}
+
+type DatabaseWithoutInternals = Omit<Database, "__InternalSupabase">
+
+type DefaultSchema = DatabaseWithoutInternals[Extract<keyof Database, "public">]
+
+export type Tables<
+  DefaultSchemaTableNameOrOptions extends
+    | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
+    | { schema: keyof DatabaseWithoutInternals },
+  TableName extends DefaultSchemaTableNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+        DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
+    : never = never,
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+      DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])[TableName] extends {
+      Row: infer R
+    }
+    ? R
+    : never
+  : DefaultSchemaTableNameOrOptions extends keyof (DefaultSchema["Tables"] &
+        DefaultSchema["Views"])
+    ? (DefaultSchema["Tables"] &
+        DefaultSchema["Views"])[DefaultSchemaTableNameOrOptions] extends {
+        Row: infer R
+      }
+      ? R
+      : never
+    : never
+
+export type TablesInsert<
+  DefaultSchemaTableNameOrOptions extends
+    | keyof DefaultSchema["Tables"]
+    | { schema: keyof DatabaseWithoutInternals },
+  TableName extends DefaultSchemaTableNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+    : never = never,
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+      Insert: infer I
+    }
+    ? I
+    : never
+  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
+    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
+        Insert: infer I
+      }
+      ? I
+      : never
+    : never
+
+export type TablesUpdate<
+  DefaultSchemaTableNameOrOptions extends
+    | keyof DefaultSchema["Tables"]
+    | { schema: keyof DatabaseWithoutInternals },
+  TableName extends DefaultSchemaTableNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+    : never = never,
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+      Update: infer U
+    }
+    ? U
+    : never
+  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
+    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
+        Update: infer U
+      }
+      ? U
+      : never
+    : never
+
+export type Enums<
+  DefaultSchemaEnumNameOrOptions extends
+    | keyof DefaultSchema["Enums"]
+    | { schema: keyof DatabaseWithoutInternals },
+  EnumName extends DefaultSchemaEnumNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
+    : never = never,
+> = DefaultSchemaEnumNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"][EnumName]
+  : DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema["Enums"]
+    ? DefaultSchema["Enums"][DefaultSchemaEnumNameOrOptions]
+    : never
+
+export type CompositeTypes<
+  PublicCompositeTypeNameOrOptions extends
+    | keyof DefaultSchema["CompositeTypes"]
+    | { schema: keyof DatabaseWithoutInternals },
+  CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
+    : never = never,
+> = PublicCompositeTypeNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
+  : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema["CompositeTypes"]
+    ? DefaultSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
+    : never
+
+export const Constants = {
+  public: {
+    Enums: {
+      tipo_concepto_enum: ["HABER", "DESCUENTO", "APORTE_EMPLEADOR"],
+      tipo_contrato_enum: ["INDEFINIDO", "PLAZO_FIJO", "OBRA_SERVICIO"],
+      tipo_dominio_ficha_enum: [
+        "GENERAL",
+        "LABORAL",
+        "REMUNERACION",
+        "PREVISION",
+        "SALUD",
+        "COMPLEMENTARIOS",
+      ],
+      tipo_estado_civil_enum: [
+        "SOLTERO",
+        "CASADO",
+        "CONVIVIENTE CIVIL",
+        "SEPARADO",
+        "DIVORCIADO",
+        "VIUDO",
+      ],
+      tipo_estado_ficha_enum: ["BORRADOR", "INCOMPLETO", "ACTIVO"],
+      tipo_estado_liquidacion_enum: [
+        "BORRADOR",
+        "PROCESADA",
+        "APROBADA",
+        "PAGADA",
+        "ANULADA",
+      ],
+      tipo_gratificacion_enum: ["LEGAL_ART_47", "LEGAL_ART_50", "VOLUNTARIA"],
+      tipo_mov_vacaciones_enum: [
+        "ACUMULADO",
+        "USADO",
+        "BONIFICADO",
+        "CORREGIDO",
+      ],
+      tipo_severidad_validacion_enum: ["BLOQUEANTE", "ADVERTENCIA", "CRITICO"],
+    },
+  },
+} as const

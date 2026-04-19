@@ -1,0 +1,12 @@
+<div class="min-w-0 space-y-4 overflow-x-hidden">
+  <app-tabla-empleados
+    class="block w-full min-w-0"
+    [empleados]="empleados()"
+    [loading]="isLoading()"
+    [errorMessage]="errorMessage() ?? ''"
+    [bulkActionLoading]="bulkActionLoading()"
+    [bulkActionResult]="bulkActionResult()"
+    (bulkAction)="handleBulkAction($event)"
+    (refresh)="loadEmpleados()"
+  ></app-tabla-empleados>
+</div>

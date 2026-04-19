@@ -1,0 +1,30 @@
+<div class="space-y-6">
+  <div class="flex items-center justify-between gap-4">
+    <div>
+      <h1 class="text-2xl font-semibold text-gray-900">Ficha de empleado</h1>
+      <p class="mt-1 text-sm text-gray-600">Empleado seleccionado: {{ empleadoId ?? 'sin id' }}</p>
+    </div>
+
+    <a
+      routerLink="/empleados"
+      class="inline-flex items-center justify-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 transition-colors duration-200 hover:bg-gray-50"
+    >
+      <lucide-icon class="h-4 w-4" name="arrow-left"></lucide-icon>
+      Volver al listado
+    </a>
+  </div>
+
+  <app-card>
+    <app-card-header>
+      <h2 class="text-lg font-semibold text-gray-900">Base de edicion</h2>
+    </app-card-header>
+    <app-card-content className="space-y-3">
+      <p class="text-sm text-gray-600">
+        Esta pagina ya quedo enlazada para que despues cargues `obtenerPorId`, catalogos y el formulario reutilizable.
+      </p>
+      <p class="text-sm text-gray-600">
+        El siguiente paso natural es compartir aqui el mismo `form-empleado` que usaras en creacion.
+      </p>
+    </app-card-content>
+  </app-card>
+</div>
