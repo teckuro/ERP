@@ -282,64 +282,86 @@
                 <p>{{ currentStepLabel() }} - {{ activeStepTitle() }}</p>
               </section>
 
-              <section class="side-section">
+              <section class="side-section side-section--validations">
                 <div class="side-section-head">
                   <p class="side-kicker">Validaciones del paso</p>
                   <h3>{{ pendingValidationCount() }} pendientes</h3>
                 </div>
 
-                <ul class="validation-list">
-                  @for (item of pendingValidationPanelItems(); track item.id) {
-                    <li
-                      class="validation-item"
-                      [class.is-error]="item.severity === 'error'"
-                      [class.is-warning]="item.severity === 'warning'"
-                    >
-                      <span class="validation-dot" aria-hidden="true"></span>
-                      <span>{{ item.label }}</span>
-                    </li>
-                  } @empty {
+                @if (pendingValidationCount() > 0) {
+                  <div class="validation-group">
+                    <div class="validation-group-head">
+                      <span>Errores bloqueantes</span>
+                      <strong>{{ blockingValidationPanelItems().length }}</strong>
+                    </div>
+                    <ul class="validation-list">
+                      @for (item of blockingValidationPanelItems(); track item.id) {
+                        <li class="validation-item is-error">
+                          <span class="validation-dot" aria-hidden="true"></span>
+                          <span>{{ item.label }}</span>
+                        </li>
+                      } @empty {
+                        <li class="validation-item is-complete">
+                          <span class="validation-dot" aria-hidden="true"></span>
+                          <span>Sin errores bloqueantes.</span>
+                        </li>
+                      }
+                    </ul>
+                  </div>
+
+                  <div class="validation-group">
+                    <div class="validation-group-head">
+                      <span>Advertencias</span>
+                      <strong>{{ warningValidationPanelItems().length }}</strong>
+                    </div>
+                    <ul class="validation-list">
+                      @for (item of warningValidationPanelItems(); track item.id) {
+                        <li class="validation-item is-warning">
+                          <span class="validation-dot" aria-hidden="true"></span>
+                          <span>{{ item.label }}</span>
+                        </li>
+                      } @empty {
+                        <li class="validation-item is-complete">
+                          <span class="validation-dot" aria-hidden="true"></span>
+                          <span>Sin advertencias pendientes.</span>
+                        </li>
+                      }
+                    </ul>
+                  </div>
+                } @else {
+                  <ul class="validation-list">
                     <li class="validation-item is-complete">
                       <span class="validation-dot" aria-hidden="true"></span>
                       <span>Sin validaciones pendientes en este paso.</span>
                     </li>
-                  }
-                </ul>
+                  </ul>
+                }
               </section>
 
-              <section class="side-section">
+              <section class="side-section side-section--global">
                 <div class="side-section-head">
                   <p class="side-kicker">Resumen global</p>
                   <h3>Estado de ficha</h3>
                 </div>
 
-                <ul class="validation-list">
-                  <li
-                    class="validation-item"
-                    [class.is-error]="getGlobalValidationSummary().blockingPending > 0"
-                    [class.is-complete]="getGlobalValidationSummary().blockingPending === 0"
-                  >
-                    <span class="validation-dot" aria-hidden="true"></span>
-                    <span
-                      >{{ getGlobalValidationSummary().blockingPending }} errores bloqueantes</span
-                    >
-                  </li>
-                  <li
-                    class="validation-item"
-                    [class.is-warning]="getGlobalValidationSummary().warningsPending > 0"
-                    [class.is-complete]="getGlobalValidationSummary().warningsPending === 0"
-                  >
-                    <span class="validation-dot" aria-hidden="true"></span>
-                    <span>{{ getGlobalValidationSummary().warningsPending }} advertencias</span>
-                  </li>
-                  <li class="validation-item is-complete">
-                    <span class="validation-dot" aria-hidden="true"></span>
-                    <span
-                      >{{ getGlobalValidationSummary().completeSteps }} de {{ totalSteps }} pasos
-                      completos</span
-                    >
-                  </li>
-                </ul>
+                <dl class="global-summary-grid">
+                  <div class="global-summary-item">
+                    <dt>Bloqueantes</dt>
+                    <dd>{{ getGlobalValidationSummary().blockingPending }}</dd>
+                  </div>
+                  <div class="global-summary-item">
+                    <dt>Advertencias</dt>
+                    <dd>{{ getGlobalValidationSummary().warningsPending }}</dd>
+                  </div>
+                  <div class="global-summary-item">
+                    <dt>Completados</dt>
+                    <dd>{{ getGlobalValidationSummary().completeSteps }}/{{ totalSteps }}</dd>
+                  </div>
+                  <div class="global-summary-item">
+                    <dt>Activo</dt>
+                    <dd>Paso {{ activeStepNumber() }}</dd>
+                  </div>
+                </dl>
               </section>
             </div>
           </aside>

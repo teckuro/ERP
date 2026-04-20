@@ -1,90 +1,99 @@
 :host {
   display: block;
+  font-family: Inter, 'Segoe UI', Roboto, sans-serif;
+  color: #0f172a;
 }
 
 .employee-section-shell {
   display: grid;
-  gap: 1rem;
+  gap: 1.75rem;
 }
 
 .employee-section-shell--compact {
-  margin-top: 1rem;
+  margin-top: 1.25rem;
 }
 
 .employee-section-head {
   display: grid;
-  gap: 0.25rem;
+  gap: 0.45rem;
+  padding: 0.15rem 0 0.25rem;
 }
 
 .employee-section-kicker {
   margin: 0;
-  color: #2563eb;
-  font-size: 0.72rem;
-  font-weight: 800;
+  color: #64748b;
+  font-size: 12px;
+  font-weight: 600;
   letter-spacing: 0.08em;
-  line-height: 1.25;
+  line-height: 16px;
   text-transform: uppercase;
 }
 
 .employee-section-title {
   margin: 0;
-  color: #111827;
-  font-size: 1.1rem;
-  font-weight: 800;
+  color: #0f172a;
+  font-size: 28px;
+  font-weight: 700;
   letter-spacing: 0;
+  line-height: 34px;
 }
 
 .employee-section-copy {
-  max-width: 48rem;
+  max-width: 46rem;
   margin: 0;
-  color: #4b5563;
-  font-size: 0.9rem;
-  line-height: 1.5;
+  color: #475569;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 22px;
 }
 
 .employee-block {
   display: grid;
-  gap: 1rem;
-  padding: 1rem 1.05rem;
-  border: 1px solid #e5e7eb;
-  border-radius: 0.55rem;
-  background: #fff;
+  gap: 1.5rem;
+  padding: 1.5rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 18px;
+  background: #ffffff;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
 }
 
 .employee-block--subtle {
-  background: #f9fafb;
+  background: #fafbfc;
 }
 
 .employee-block-head {
   display: grid;
-  gap: 0.18rem;
-  margin: -1rem -1.05rem 0;
-  padding: 0.78rem 1.05rem;
-  border-bottom: 1px solid #e5e7eb;
-  border-radius: 0.55rem 0.55rem 0 0;
-  background: #f9fafb;
+  gap: 0.25rem;
+  margin: 0;
+  padding: 0 0 1rem;
+  border-bottom: 1px solid #e8edf3;
+  border-radius: 0;
+  background: transparent;
 }
 
 .employee-block-head h4,
 .employee-block-title {
   margin: 0;
-  color: #111827;
-  font-size: 0.86rem;
-  font-weight: 800;
-  letter-spacing: 0.02em;
-  text-transform: uppercase;
+  color: #0f172a;
+  font-size: 18px;
+  font-weight: 600;
+  letter-spacing: 0;
+  line-height: 26px;
+  text-transform: none;
 }
 
 .employee-block-head p {
+  max-width: 44rem;
   margin: 0;
-  color: #6b7280;
-  font-size: 0.82rem;
-  line-height: 1.4;
+  color: #475569;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 22px;
 }
 
 .employee-grid {
   display: grid;
-  gap: 0.95rem 1rem;
+  gap: 1.25rem;
   align-items: start;
 }
 
@@ -110,41 +119,89 @@
 
 .form-field {
   display: grid;
-  gap: 0.38rem;
+  gap: 0.5rem;
   min-width: 0;
 }
 
 .field-label-row {
   display: flex;
-  min-height: 1.25rem;
+  min-height: 18px;
   align-items: center;
-  gap: 0.35rem;
+  gap: 0.3rem;
 }
 
 .field-label-row label {
-  color: #1f2937;
-  font-size: 0.8rem;
-  font-weight: 800;
-  line-height: 1.2;
+  color: #334155;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 18px;
 }
 
 .field-required {
-  color: #b91c1c;
-  font-size: 0.78rem;
-  font-weight: 800;
+  color: #dc2626;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1;
 }
 
 .field-message {
-  min-height: 1rem;
+  min-height: 18px;
   margin: 0;
-  color: #b91c1c;
-  font-size: 0.73rem;
-  font-weight: 700;
-  line-height: 1.35;
+  color: #dc2626;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 18px;
 }
 
 .field-message--warning {
-  color: #a16207;
+  color: #d97706;
+}
+
+.employee-control {
+  width: 100%;
+  height: 44px;
+  border: 1px solid #cbd5e1;
+  border-radius: 12px;
+  background: #ffffff;
+  padding: 0 1rem;
+  color: #0f172a;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 18px;
+  outline: none;
+  transition:
+    border-color 160ms ease,
+    box-shadow 160ms ease,
+    background-color 160ms ease;
+}
+
+.employee-control::placeholder {
+  color: #94a3b8;
+}
+
+.employee-control:hover {
+  border-color: #94a3b8;
+}
+
+.employee-control:focus {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 4px #dbeafe;
+}
+
+.employee-control.is-invalid {
+  border-color: #dc2626;
+}
+
+.employee-control.is-invalid:focus {
+  border-color: #dc2626;
+  box-shadow: 0 0 0 4px #fee2e2;
+}
+
+.employee-control--textarea {
+  height: auto;
+  min-height: 6rem;
+  padding-top: 0.75rem;
+  padding-bottom: 0.75rem;
 }
 
 @media (max-width: 1280px) {
@@ -163,13 +220,22 @@
 
 @media (max-width: 768px) {
   .employee-block {
-    padding: 0.9rem;
-    border-radius: 0.55rem;
+    padding: 1.1rem;
+    border-radius: 18px;
   }
 
   .employee-block-head {
-    margin: -0.9rem -0.9rem 0;
-    padding: 0.75rem 0.9rem;
+    margin: 0;
+    padding: 0 0 0.9rem;
+  }
+
+  .employee-section-shell {
+    gap: 1.25rem;
+  }
+
+  .employee-section-title {
+    font-size: 24px;
+    line-height: 30px;
   }
 
   .employee-grid--two,

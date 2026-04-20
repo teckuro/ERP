@@ -83,7 +83,9 @@
         @if (hasError('idComuna', 'required')) {
           <p class="field-message">La comuna es obligatoria.</p>
         } @else if (!comunas.length) {
-          <p class="field-message field-message--warning">No hay comunas cargadas desde Supabase.</p>
+          <p class="field-message field-message--warning">
+            No hay comunas cargadas desde Supabase.
+          </p>
         } @else {
           <p class="field-message"></p>
         }
@@ -98,7 +100,7 @@
           rows="3"
           formControlName="observacionesDireccion"
           placeholder="Torre B, acceso por recepcion, referencia adicional"
-          [class]="controlClass('observacionesDireccion') + ' h-auto min-h-24 py-2.5'"
+          [class]="controlClass('observacionesDireccion') + ' employee-control--textarea'"
         ></textarea>
         @if (hasError('observacionesDireccion', 'maxlength')) {
           <p class="field-message">Las observaciones superan el largo permitido.</p>

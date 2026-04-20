@@ -309,6 +309,10 @@ export class FormEmpleadoComponent implements OnInit {
     return `Paso ${TAB_ORDER.indexOf(this.activeTab()) + 1} de ${this.totalSteps}`;
   }
 
+  activeStepNumber(): number {
+    return TAB_ORDER.indexOf(this.activeTab()) + 1;
+  }
+
   completedStepCount(): number {
     return TAB_ORDER.filter((tabId) => this.getStepValidationSummary(tabId).status === 'complete')
       .length;
@@ -337,6 +341,14 @@ export class FormEmpleadoComponent implements OnInit {
 
   pendingValidationPanelItems(): EvaluatedValidationRule[] {
     return this.validationPanelItems().filter((item) => !item.complete);
+  }
+
+  blockingValidationPanelItems(): EvaluatedValidationRule[] {
+    return this.pendingValidationPanelItems().filter((item) => item.severity === 'error');
+  }
+
+  warningValidationPanelItems(): EvaluatedValidationRule[] {
+    return this.pendingValidationPanelItems().filter((item) => item.severity === 'warning');
   }
 
   getStepValidationSummary(stepId: ValidationStepId): StepValidationSummary {

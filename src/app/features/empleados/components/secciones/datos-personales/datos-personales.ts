@@ -33,12 +33,7 @@ export class DatosPersonalesComponent {
   }
 
   private resolveControlClass(hasError: boolean): string {
-    return [
-      'h-9 w-full rounded-md border bg-white px-3 text-sm font-medium text-neutral-900 transition-colors placeholder:text-neutral-400 focus:outline-none focus:ring-2',
-      hasError
-        ? 'border-red-300 bg-red-50/30 focus:border-red-500 focus:ring-red-100'
-        : 'border-neutral-200 hover:border-neutral-300 focus:border-blue-500 focus:ring-blue-100',
-    ].join(' ');
+    return ['employee-control', hasError ? 'is-invalid' : ''].filter(Boolean).join(' ');
   }
 
   hasError(controlName: DatosPersonalesControlName, errorCode?: string): boolean {

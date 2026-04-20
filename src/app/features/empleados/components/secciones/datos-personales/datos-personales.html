@@ -1,9 +1,10 @@
 <section class="employee-section-shell">
   <div class="employee-section-head">
-    <p class="employee-section-kicker">Datos personales</p>
-    <h3 class="employee-section-title">Datos personales</h3>
+    <p class="employee-section-kicker">Paso 1 · Datos personales</p>
+    <h3 class="employee-section-title">Identificacion de la ficha</h3>
     <p class="employee-section-copy">
-      Completa la informacion principal del colaborador para identificarlo dentro de la ficha.
+      Registra la informacion base del colaborador para validar su identidad y habilitar el resto
+      del flujo de alta.
     </p>
   </div>
 
@@ -51,7 +52,9 @@
         @if (hasError('pasaporte', 'passport')) {
           <p class="field-message">Ingresa un pasaporte valido de 5 a 30 caracteres.</p>
         } @else if (hasPassportWarning()) {
-          <p class="field-message field-message--warning">Uso de pasaporte sin validacion adicional.</p>
+          <p class="field-message field-message--warning">
+            Uso de pasaporte sin validacion adicional.
+          </p>
         } @else {
           <p class="field-message"></p>
         }
@@ -217,7 +220,11 @@
             <span class="field-required" aria-hidden="true">*</span>
           }
         </div>
-        <select id="empleado-estadoCivil" formControlName="estadoCivil" [class]="controlClass('estadoCivil')">
+        <select
+          id="empleado-estadoCivil"
+          formControlName="estadoCivil"
+          [class]="controlClass('estadoCivil')"
+        >
           <option [ngValue]="null">Selecciona un estado civil</option>
           @for (estadocivil of estadoCivilOptions; track estadocivil.value) {
             <option [ngValue]="estadocivil.value">{{ estadocivil.label }}</option>
@@ -265,7 +272,9 @@
           placeholder="+56 9 1234 5678"
           [class]="contactoControlClass('telefono')"
         />
-        @if (hasContactoError('telefono', 'phoneFormat') || hasContactoError('telefono', 'maxlength')) {
+        @if (
+          hasContactoError('telefono', 'phoneFormat') || hasContactoError('telefono', 'maxlength')
+        ) {
           <p class="field-message">Ingresa un telefono valido.</p>
         } @else if (hasContactoWarning('telefono')) {
           <p class="field-message field-message--warning">Telefono no ingresado.</p>
