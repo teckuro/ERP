@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 
-import { Tables, TablesInsert } from '../../../core/models/database.types';
+import { Tables } from '../../../core/models/database.types';
 import { injectSupabase } from '../../../core/services/supabase.service';
 import { EmpleadoFormCatalogos } from '../models/empleado-catalogos.model';
 import { EmpleadoEstado, EmpleadoListado } from '../models/empleado-listado.model';
@@ -12,11 +12,23 @@ import {
   pickLatestTramosCarga,
 } from '../mappers/empleado-catalogos.mapper';
 import {
-  formatDate,
-  mapEmpleadoEstadoToContratoEstado,
   mapEmpleadoEstadoToPersonaEstado,
   mapPersonaFactorToEmpleado,
 } from '../mappers/empleado-listado.mapper';
+import {
+  buildApvInsert,
+  buildContratoCentroCostoInsert,
+  buildContratoInsert,
+  buildCuenta2AfpInsert,
+  buildCuentaBancariaInsert,
+  buildPersonaInsert,
+  buildPrevisionInsert,
+  buildRemuneracionInsert,
+  buildSaludTrabajadorInsert,
+  buildSemanaCorridaInsert,
+  buildZonaExtremaInsert,
+  mapCreatedEmpleado,
+} from '../mappers/empleado-write.mapper';
 import { formatRutParts, parseRut } from '../utils/empleado-rut';
 import {
   buildForeignKeyError,
@@ -27,17 +39,6 @@ import {
 } from '../utils/empleados-repository-errors';
 
 type PersonaFactorRow = Tables<'vw_persona_factores'>;
-type PersonaInsert = TablesInsert<'persona'>;
-type ContratoInsert = TablesInsert<'contrato'>;
-type RemuneracionInsert = TablesInsert<'remuneracion'>;
-type PrevisionInsert = TablesInsert<'prevision'>;
-type SaludTrabajadorInsert = TablesInsert<'salud_trabajador'>;
-type ApvInsert = TablesInsert<'apv'>;
-type Cuenta2AfpInsert = TablesInsert<'cuenta2_afp'>;
-type CuentaBancariaInsert = TablesInsert<'cuenta_bancaria'>;
-type ContratoCentroCostoInsert = TablesInsert<'contrato_centro_costo'>;
-type SemanaCorridaInsert = TablesInsert<'semana_corrida'>;
-type ZonaExtremaInsert = TablesInsert<'zona_extrema'>;
 type CentroCostoRow = Tables<'centro_costo'>;
 
 interface CentroCostoLookupRow {
@@ -314,30 +315,9 @@ export class EmpleadosRepository {
     let contratoId: number | null = null;
 
     try {
-      const personaInsert: PersonaInsert = {
-        rut: rut.rut,
-        dv: rut.dv,
-        nombres: payload.nombres.trim(),
-        apellido_paterno: payload.apellidoPaterno.trim(),
-        apellido_materno: payload.apellidoMaterno.trim() || null,
-        fecha_nacimiento: payload.fechaNacimiento,
-        sexo: payload.sexo,
-        cargas: payload.cargas,
-        direccion: payload.direccion.trim(),
-        numero_direccion: payload.numeroDireccion,
-        departamento_direccion: payload.departamentoDireccion,
-        observaciones_direccion: payload.observacionesDireccion,
-        pasaporte: payload.pasaporte,
-        email: payload.email.trim(),
-        telefono: payload.telefono.trim(),
-        id_comuna: payload.idComuna,
-        id_tramo_carga: payload.idTramoCarga,
-        estado: mapEmpleadoEstadoToPersonaEstado(payload.estado),
-      };
-
       const { data: persona, error: personaError } = await this.supabase
         .from('persona')
-        .insert(personaInsert)
+        .insert(buildPersonaInsert(payload, rut))
         .select('id_persona')
         .single();
 
@@ -369,25 +349,9 @@ export class EmpleadosRepository {
 
       personaId = persona.id_persona;
 
-      const contratoInsert: ContratoInsert = {
-        id_persona: personaId,
-        id_empresa: empresaId,
-        id_sucursal: payload.idSucursal,
-        id_departamento_empresa: payload.idDepartamentoEmpresa,
-        id_tipo_trabajador: payload.idTipoTrabajador,
-        id_tipo_jornada: payload.idTipoJornada,
-        codigo_tipo_contrato: payload.tipoContrato,
-        cargo: payload.cargo.trim(),
-        seguro_cesantia: payload.seguroCesantia,
-        fecha_inicio: payload.fechaIngreso,
-        fecha_contrato: payload.fechaContrato,
-        fecha_termino: payload.fechaTermino,
-        estado: mapEmpleadoEstadoToContratoEstado(payload.estado),
-      };
-
       const { data: contrato, error: contratoError } = await this.supabase
         .from('contrato')
-        .insert(contratoInsert)
+        .insert(buildContratoInsert(payload, personaId, empresaId))
         .select('id_contrato')
         .single();
 
@@ -420,25 +384,9 @@ export class EmpleadosRepository {
 
       contratoId = contrato.id_contrato;
 
-      const remuneracionInsert: RemuneracionInsert = {
-        id_contrato: contratoId,
-        sueldo_base: payload.sueldoBase,
-        sueldo_variable: payload.sueldoVariable,
-        id_moneda: payload.idMoneda,
-        horas_semanales: payload.horasSemanales,
-        dias_semanales: payload.diasSemanales,
-        distribucion_jornada: payload.distribucionJornada,
-        tiempo_colacion_minutos: payload.tiempoColacionMinutos,
-        tipo_gratificacion: payload.tipoGratificacion,
-        gratificacion_proporcional: payload.gratificacionProporcional,
-        semana_corrida_activa: payload.semanaCorridaActiva,
-        zona_extrema_activa: payload.zonaExtremaActiva,
-        vigencia_inicio: payload.fechaIngreso,
-      };
-
       const { error: remuneracionError } = await this.supabase
         .from('remuneracion')
-        .insert(remuneracionInsert);
+        .insert(buildRemuneracionInsert(payload, contratoId));
 
       if (remuneracionError) {
         const foreignKeyError = buildForeignKeyError(
@@ -462,24 +410,9 @@ export class EmpleadosRepository {
         );
       }
 
-      const previsionInsert: PrevisionInsert = {
-        id_contrato: contratoId,
-        id_afp: payload.tipoPrevision === 'AFP' ? payload.idAfp : null,
-        id_regimen_previsional: payload.idRegimenPrevisional,
-        vigencia_inicio: payload.fechaIngreso,
-        tipo_prevision: payload.tipoPrevision,
-        nombre_entidad_ips: null,
-        monto_ips: null,
-        nombre_ex_caja: payload.tipoPrevision === 'IPS' ? payload.nombreExCaja : null,
-        regimen_ex_caja: payload.tipoPrevision === 'IPS' ? payload.regimenExCaja : null,
-        tasa_ex_caja: payload.tipoPrevision === 'IPS' ? payload.tasaExCaja : null,
-        observacion_prevision: null,
-        vigencia_fin: null,
-      };
-
       const { error: previsionError } = await this.supabase
         .from('prevision')
-        .insert(previsionInsert);
+        .insert(buildPrevisionInsert(payload, contratoId));
 
       if (previsionError) {
         const foreignKeyError = buildForeignKeyError(
@@ -504,18 +437,8 @@ export class EmpleadosRepository {
         );
       }
 
-      if (payload.tipoPrevision !== 'NINGUNA') {
-        const saludTrabajadorInsert: SaludTrabajadorInsert = {
-          id_contrato: contratoId,
-          id_salud: payload.idSalud!,
-          plan_salud: null,
-          id_moneda_plan: payload.idMonedaPlan,
-          valor_plan: payload.valorPlan ?? 0,
-          adicional_auge_ges: payload.adicionalAugeGes ?? 0,
-          observaciones_salud: null,
-          vigencia_inicio: payload.fechaIngreso,
-        };
-
+      const saludTrabajadorInsert = buildSaludTrabajadorInsert(payload, contratoId);
+      if (saludTrabajadorInsert) {
         const { error: saludError } = await this.supabase
           .from('salud_trabajador')
           .insert(saludTrabajadorInsert);
@@ -545,21 +468,8 @@ export class EmpleadosRepository {
         }
       }
 
-      if (
-        payload.tipoPrevision === 'AFP' &&
-        payload.idMonedaCuenta2 !== null &&
-        payload.valorCuenta2 !== null
-      ) {
-        const cuenta2Insert: Cuenta2AfpInsert = {
-          id_contrato: contratoId,
-          id_moneda: payload.idMonedaCuenta2,
-          monto: payload.valorCuenta2,
-          vigente: true,
-          vigencia_inicio: payload.fechaIngreso,
-          vigencia_fin: null,
-          observacion: null,
-        };
-
+      const cuenta2Insert = buildCuenta2AfpInsert(payload, contratoId);
+      if (cuenta2Insert) {
         const { error: cuenta2Error } = await this.supabase
           .from('cuenta2_afp')
           .insert(cuenta2Insert);
@@ -587,15 +497,8 @@ export class EmpleadosRepository {
         }
       }
 
-      if (payload.semanaCorridaActiva) {
-        const semanaCorridaInsert: SemanaCorridaInsert = {
-          id_contrato: contratoId,
-          activa: true,
-          dias_laborables: payload.semanaCorridaDiasLaborables,
-          vigencia_inicio: payload.fechaIngreso,
-          vigencia_fin: null,
-        };
-
+      const semanaCorridaInsert = buildSemanaCorridaInsert(payload, contratoId);
+      if (semanaCorridaInsert) {
         const { error: semanaCorridaError } = await this.supabase
           .from('semana_corrida')
           .insert(semanaCorridaInsert);
@@ -621,15 +524,8 @@ export class EmpleadosRepository {
         }
       }
 
-      if (payload.zonaExtremaActiva && payload.zonaExtremaPorcentaje !== null) {
-        const zonaExtremaInsert: ZonaExtremaInsert = {
-          id_contrato: contratoId,
-          porcentaje: payload.zonaExtremaPorcentaje,
-          territorio: payload.zonaExtremaTerritorio,
-          vigencia_inicio: payload.fechaIngreso,
-          vigencia_fin: null,
-        };
-
+      const zonaExtremaInsert = buildZonaExtremaInsert(payload, contratoId);
+      if (zonaExtremaInsert) {
         const { error: zonaExtremaError } = await this.supabase
           .from('zona_extrema')
           .insert(zonaExtremaInsert);
@@ -655,18 +551,8 @@ export class EmpleadosRepository {
         }
       }
 
-      if (payload.tieneApv) {
-        const apvInsert: ApvInsert = {
-          id_contrato: contratoId,
-          id_institucion_apv: payload.idInstitucionApv!,
-          id_moneda: payload.idMonedaApv!,
-          monto: payload.montoApv!,
-          id_forma_pago_apv: payload.idFormaPagoApv!,
-          deposito_convenido_apvi: payload.depositoConvenidoApvi!,
-          vigencia_inicio: payload.fechaIngreso,
-          vigencia_fin: null,
-        };
-
+      const apvInsert = buildApvInsert(payload, contratoId);
+      if (apvInsert) {
         const { error: apvError } = await this.supabase.from('apv').insert(apvInsert);
 
         if (apvError) {
@@ -692,17 +578,9 @@ export class EmpleadosRepository {
         }
       }
 
-      const cuentaBancariaInsert: CuentaBancariaInsert = {
-        id_persona: personaId,
-        id_banco: payload.idBanco,
-        id_tipo_cuenta_bancaria: payload.idTipoCuentaBancaria,
-        numero_cuenta: payload.numeroCuenta.trim(),
-        vigencia_inicio: payload.fechaIngreso,
-      };
-
       const { error: cuentaBancariaError } = await this.supabase
         .from('cuenta_bancaria')
-        .insert(cuentaBancariaInsert);
+        .insert(buildCuentaBancariaInsert(payload, personaId));
 
       if (cuentaBancariaError) {
         const foreignKeyError = buildForeignKeyError(
@@ -727,13 +605,8 @@ export class EmpleadosRepository {
         );
       }
 
-      if (payload.idCentroCosto !== null) {
-        const centroCostoInsert: ContratoCentroCostoInsert = {
-          id_contrato: contratoId,
-          id_centro_costo: payload.idCentroCosto,
-          porcentaje: 100,
-        };
-
+      const centroCostoInsert = buildContratoCentroCostoInsert(payload, contratoId);
+      if (centroCostoInsert) {
         const { error: centroCostoError } = await this.supabase
           .from('contrato_centro_costo')
           .insert(centroCostoInsert);
@@ -763,18 +636,7 @@ export class EmpleadosRepository {
 
       const departamento = await this.fetchCentroCostoNombre(payload.idCentroCosto);
 
-      return {
-        id: personaId!,
-        rut: formatRutParts(rut),
-        nombre: `${payload.nombres} ${payload.apellidoPaterno} ${payload.apellidoMaterno}`
-          .replace(/\s+/g, ' ')
-          .trim(),
-        cargo: payload.cargo.trim(),
-        departamento: departamento ?? 'Sin centro de costo',
-        fechaIngreso: formatDate(payload.fechaIngreso),
-        sueldoBase: payload.sueldoBase,
-        estado: payload.estado,
-      };
+      return mapCreatedEmpleado(payload, personaId!, rut, departamento);
     } catch (error) {
       await this.rollbackCreate(contratoId, personaId);
       throw error;
