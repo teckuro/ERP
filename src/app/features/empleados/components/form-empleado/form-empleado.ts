@@ -166,7 +166,9 @@ export class FormEmpleadoComponent implements OnInit {
         mapEmpleadoFormToPayload(this.form, this.catalogos()),
       );
 
-      this.successMessage.set(`La ficha de ${created.nombre} quedo registrada correctamente.`);
+      this.successMessage.set(
+        `La ficha de ${created.nombre} quedo registrada en estado inicial. Completa la informacion pendiente para habilitar al colaborador en remuneraciones.`,
+      );
       this.createdEmployeeId.set(created.id);
       this.form.markAsPristine();
     } catch (error) {
@@ -220,26 +222,26 @@ export class FormEmpleadoComponent implements OnInit {
   activeStepTitle(): string {
     switch (this.activeTab()) {
       case 'datosPersonales':
-        return 'Identificacion del colaborador';
+        return 'Identificacion de la ficha';
       case 'contrato':
-        return 'Datos laborales y remuneracion';
+        return 'Datos laborales iniciales';
       case 'previsionSalud':
-        return 'Configuracion previsional';
+        return 'Configuracion previsional inicial';
       case 'bancario':
-        return 'Datos complementarios';
+        return 'Datos administrativos';
     }
   }
 
   activeStepDescription(): string {
     switch (this.activeTab()) {
       case 'datosPersonales':
-        return 'Completa la informacion basica del colaborador y sus datos de contacto para iniciar la ficha.';
+        return 'Registra la informacion basica del colaborador y sus datos de contacto para iniciar la ficha.';
       case 'contrato':
-        return 'Define cargo, jornada, fechas y condiciones laborales con las que comenzara el contrato.';
+        return 'Define cargo, jornada, fechas y condiciones laborales iniciales de la ficha.';
       case 'previsionSalud':
-        return 'Configura regimen previsional, AFP, salud y parametros complementarios del colaborador.';
+        return 'Registra la configuracion previsional, AFP, salud y parametros complementarios de la ficha.';
       case 'bancario':
-        return 'Registra informacion bancaria y datos administrativos complementarios.';
+        return 'Registra informacion bancaria y datos administrativos para completar la ficha inicial.';
     }
   }
 

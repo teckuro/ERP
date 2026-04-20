@@ -8,7 +8,7 @@ export interface SupabaseWriteError {
 export class EmpleadoRutDuplicadoError extends Error {
   constructor(readonly rut: string) {
     super(
-      `No es posible crear el personal con RUT ${rut}, porque ya existe una ficha registrada con ese identificador.`,
+      `No es posible guardar la ficha con RUT ${rut}, porque ya existe una ficha registrada con ese identificador.`,
     );
     this.name = 'EmpleadoRutDuplicadoError';
   }

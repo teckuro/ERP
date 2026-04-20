@@ -41,12 +41,7 @@ export class ContratoComponent {
 
   readonly employeeStates: SelectOption<EmpleadoEstado>[] = [
     { value: 'borrador', label: 'Borrador' },
-    { value: 'en_proceso', label: 'En proceso' },
-    { value: 'activo', label: 'Activo' },
-    { value: 'suspendido', label: 'Suspendido' },
-    { value: 'inactivo', label: 'Inactivo' },
-    { value: 'desvinculado', label: 'Desvinculado' },
-    { value: 'bloqueado', label: 'Bloqueado' },
+    { value: 'en_proceso', label: 'Incompleta' },
   ];
 
   readonly relationOptions: SelectOption<RelacionLaboral>[] = [

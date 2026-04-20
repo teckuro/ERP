@@ -2,11 +2,11 @@
   <div class="form-stack w-full">
     <app-card className="editor-shell">
       <app-card-content className="editor-frame">
-        <app-page-title title="Crear empleado"></app-page-title>
+        <app-page-title title="Nueva ficha de empleado"></app-page-title>
         <app-page-actions
           [visibleActions]="['back', 'save']"
           backLabel="Volver"
-          saveLabel="Guardar"
+          saveLabel="Guardar ficha"
           backLink="/empleados"
           [saveDisabled]="isSaving() || isLoadingCatalogs()"
           (saveClick)="onSubmit()"
@@ -34,8 +34,8 @@
           <app-message-box
             mode="modal"
             variant="loading"
-            title="Registrando ficha"
-            message="Estamos validando y registrando la informacion del colaborador."
+            title="Guardando ficha"
+            message="Estamos guardando la ficha inicial del colaborador."
           ></app-message-box>
         } @else if (errorMessage(); as message) {
           <app-message-box
@@ -131,8 +131,8 @@
             class="editor-footer"
           >
             <p class="editor-footer-copy">
-              Completa el flujo por etapas. Puedes volver a pasos anteriores antes de guardar el
-              colaborador.
+              Completa la ficha por etapas. Puedes volver a pasos anteriores antes de guardar la
+              informacion inicial del colaborador.
             </p>
 
             <div class="editor-footer-actions">
@@ -160,7 +160,7 @@
                   [disabled]="isSaving() || isLoadingCatalogs()"
                 >
                   <lucide-icon class="h-4 w-4" name="save"></lucide-icon>
-                  {{ isSaving() ? 'Guardando...' : 'Crear empleado' }}
+                  {{ isSaving() ? 'Guardando ficha...' : 'Guardar ficha' }}
                 </button>
               }
             </div>

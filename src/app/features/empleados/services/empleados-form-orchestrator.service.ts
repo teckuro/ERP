@@ -188,7 +188,7 @@ export class EmpleadosFormOrchestratorService {
         zonaExtremaPorcentaje: new FormControl<number | null>(null, {
           validators: [Validators.min(0)],
         }),
-        estado: new FormControl<EmpleadoEstado>('activo', {
+        estado: new FormControl<EmpleadoEstado>('borrador', {
           nonNullable: true,
           validators: [Validators.required],
         }),
