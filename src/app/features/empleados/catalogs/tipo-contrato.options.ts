@@ -1,5 +1,5 @@
 import { EmpleadoSelectOption } from './sexo.options';
-import { TipoContrato } from '../models/empleado-form.model';
+import { TipoContrato } from '../models/empleado.model';
 
 export const TIPO_CONTRATO_OPTIONS: readonly EmpleadoSelectOption<TipoContrato>[] = [
   { value: 'INDEFINIDO', label: 'Indefinido' },

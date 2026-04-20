@@ -1,4 +1,4 @@
-import { EmpleadoSexo } from '../models/empleado-form.model';
+import { EmpleadoSexo } from '../models/empleado.model';
 
 export interface EmpleadoSelectOption<T> {
   value: T;

@@ -1,4 +1,4 @@
-import { TipoRegimenPrevisional } from '../models/empleado-form.model';
+import { TipoRegimenPrevisional } from '../models/empleado.model';
 
 export interface TipoRegimenOption {
   value: TipoRegimenPrevisional;

@@ -1,7 +1,8 @@
 import { Component, Input } from '@angular/core';
 import { ReactiveFormsModule, Validators } from '@angular/forms';
 
-import { BancarioFormGroup, EmpleadoCatalogOption } from '../../../models/empleado-form.model';
+import { EmpleadoCatalogOption } from '../../../models/empleado-catalogos.model';
+import { BancarioFormGroup } from '../../../models/empleado-form.model';
 
 type BancarioControlName = keyof BancarioFormGroup['controls'];
 

@@ -1,8 +1,8 @@
 import { Injectable, inject } from '@angular/core';
 
 import { EmpleadosRepository } from '../data-access/empleados.repository';
-import { EmpleadoCreacion } from '../models/empleado-form.model';
 import { EmpleadoListado } from '../models/empleado-listado.model';
+import { CrearEmpleadoPayload } from '../models/empleado-payload.model';
 
 @Injectable({
   providedIn: 'root',
@@ -10,7 +10,7 @@ import { EmpleadoListado } from '../models/empleado-listado.model';
 export class EmpleadosWriteService {
   private readonly empleadosRepository = inject(EmpleadosRepository);
 
-  crear(payload: EmpleadoCreacion): Promise<EmpleadoListado> {
+  crear(payload: CrearEmpleadoPayload): Promise<EmpleadoListado> {
     return this.empleadosRepository.crear(payload);
   }
 }

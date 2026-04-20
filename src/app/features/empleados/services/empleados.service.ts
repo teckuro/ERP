@@ -5,8 +5,9 @@ import {
   EmpleadoRutDuplicadoError,
   EmpleadosRepository,
 } from '../data-access/empleados.repository';
-import { EmpleadoCreacion, EmpleadoFormCatalogos } from '../models/empleado-form.model';
+import { EmpleadoFormCatalogos } from '../models/empleado-catalogos.model';
 import { EmpleadoEstado, EmpleadoListado } from '../models/empleado-listado.model';
+import { CrearEmpleadoPayload } from '../models/empleado-payload.model';
 import { EmpleadosCatalogosService } from './empleados-catalogos.service';
 import { EmpleadosWriteService } from './empleados-write.service';
 
@@ -36,7 +37,7 @@ export class EmpleadosService {
     return this.empleadosRepository.actualizarEstadoPersonas(ids, estado);
   }
 
-  crear(payload: EmpleadoCreacion): Promise<EmpleadoListado> {
+  crear(payload: CrearEmpleadoPayload): Promise<EmpleadoListado> {
     return this.writeService.crear(payload);
   }
 }

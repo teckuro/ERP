@@ -208,7 +208,7 @@ export class TablaEmpleadosComponent {
     const rows = event.rows.map((empleado, index) =>
       exportColumns.map((column) => {
         const value = column.field ? empleado[column.field] : '';
-        return String(column.format ? column.format(value, empleado, index) : value ?? '');
+        return String(column.format ? column.format(value, empleado, index) : (value ?? ''));
       }),
     );
     const csv = [headers, ...rows]
@@ -323,6 +323,10 @@ export class TablaEmpleadosComponent {
   }
 
   private normalize(value: string): string {
-    return value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
+    return value
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase()
+      .trim();
   }
 }

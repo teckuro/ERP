@@ -3,22 +3,23 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 
 import { EmpleadoEstado } from '../models/empleado-listado.model';
+import { EmpleadoFormCatalogos, TramoCargaCatalogOption } from '../models/empleado-catalogos.model';
+import { EmpleadoFormGroup } from '../models/empleado-form.model';
 import {
-  EmpleadoFormCatalogos,
-  EmpleadoFormGroup,
   EmpleadoSexo,
   RelacionLaboral,
   TipoContrato,
   TipoEstadoCivil,
   TipoGratificacion,
   TipoRegimenPrevisional,
-  TramoCargaCatalogOption,
-} from '../models/empleado-form.model';
-import {
-  normalizeText,
-} from '../utils/empleado-form.helpers';
+} from '../models/empleado.model';
+import { normalizeText } from '../utils/empleado-form.helpers';
 import { buildTodayValue, setPreferredCatalogValue } from '../utils/empleado-form-defaults';
-import { formatRutInput, onlyDigits, setNormalizedTextValue } from '../utils/empleado-form.normalizers';
+import {
+  formatRutInput,
+  onlyDigits,
+  setNormalizedTextValue,
+} from '../utils/empleado-form.normalizers';
 import {
   atLeastOneArrayValueValidator,
   digitsOnlyValidator,
@@ -78,7 +79,12 @@ export class EmpleadosFormOrchestratorService {
         }),
         telefono: new FormControl('', {
           nonNullable: true,
-          validators: [Validators.required, Validators.minLength(8), Validators.maxLength(12), digitsOnlyValidator],
+          validators: [
+            Validators.required,
+            Validators.minLength(8),
+            Validators.maxLength(12),
+            digitsOnlyValidator,
+          ],
         }),
         direccion: new FormControl('', {
           nonNullable: true,
@@ -255,13 +261,19 @@ export class EmpleadosFormOrchestratorService {
   }
 
   applyCatalogDefaults(form: EmpleadoFormGroup, catalogos: EmpleadoFormCatalogos): void {
-    setPreferredCatalogValue(form.controls.contrato.controls.idSucursal, catalogos.sucursales, ['casa matriz']);
-    setPreferredCatalogValue(form.controls.contrato.controls.idTipoTrabajador, catalogos.tiposTrabajador, [
-      'dependiente',
+    setPreferredCatalogValue(form.controls.contrato.controls.idSucursal, catalogos.sucursales, [
+      'casa matriz',
     ]);
-    setPreferredCatalogValue(form.controls.contrato.controls.idTipoJornada, catalogos.tiposJornada, [
-      'completa',
-    ]);
+    setPreferredCatalogValue(
+      form.controls.contrato.controls.idTipoTrabajador,
+      catalogos.tiposTrabajador,
+      ['dependiente'],
+    );
+    setPreferredCatalogValue(
+      form.controls.contrato.controls.idTipoJornada,
+      catalogos.tiposJornada,
+      ['completa'],
+    );
     setPreferredCatalogValue(form.controls.contrato.controls.idMoneda, catalogos.monedas, [
       'peso chileno',
       'pesos',
@@ -287,7 +299,9 @@ export class EmpleadosFormOrchestratorService {
 
     contacto.numeroDireccion.valueChanges
       .pipe(takeUntilDestroyed(destroyRef))
-      .subscribe((value) => setNormalizedTextValue(contacto.numeroDireccion, onlyDigits(value, 20)));
+      .subscribe((value) =>
+        setNormalizedTextValue(contacto.numeroDireccion, onlyDigits(value, 20)),
+      );
 
     bancario.numeroCuenta.valueChanges
       .pipe(takeUntilDestroyed(destroyRef))
@@ -309,15 +323,19 @@ export class EmpleadosFormOrchestratorService {
       this.updateContratoValidators(form);
     });
 
-    controls.relacionLaboral.valueChanges.pipe(takeUntilDestroyed(destroyRef)).subscribe((relacion) => {
-      const suggested = getCatalogos().tiposTrabajador.find((option) =>
-        normalizeText(option.label).includes(relacion === 'HONORARIOS' ? 'independiente' : 'dependiente'),
-      );
+    controls.relacionLaboral.valueChanges
+      .pipe(takeUntilDestroyed(destroyRef))
+      .subscribe((relacion) => {
+        const suggested = getCatalogos().tiposTrabajador.find((option) =>
+          normalizeText(option.label).includes(
+            relacion === 'HONORARIOS' ? 'independiente' : 'dependiente',
+          ),
+        );
 
-      if (suggested) {
-        controls.idTipoTrabajador.setValue(suggested.value, { emitEvent: false });
-      }
-    });
+        if (suggested) {
+          controls.idTipoTrabajador.setValue(suggested.value, { emitEvent: false });
+        }
+      });
 
     controls.idSucursal.valueChanges
       .pipe(takeUntilDestroyed(destroyRef))
@@ -333,22 +351,26 @@ export class EmpleadosFormOrchestratorService {
       }
     });
 
-    controls.semanaCorridaActiva.valueChanges.pipe(takeUntilDestroyed(destroyRef)).subscribe((enabled) => {
-      if (!enabled) {
-        controls.semanaCorridaDiasLaborables.setValue([], { emitEvent: false });
-      }
+    controls.semanaCorridaActiva.valueChanges
+      .pipe(takeUntilDestroyed(destroyRef))
+      .subscribe((enabled) => {
+        if (!enabled) {
+          controls.semanaCorridaDiasLaborables.setValue([], { emitEvent: false });
+        }
 
-      this.updateContratoValidators(form);
-    });
+        this.updateContratoValidators(form);
+      });
 
-    controls.zonaExtremaActiva.valueChanges.pipe(takeUntilDestroyed(destroyRef)).subscribe((enabled) => {
-      if (!enabled) {
-        controls.zonaExtremaTerritorio.setValue('', { emitEvent: false });
-        controls.zonaExtremaPorcentaje.setValue(null, { emitEvent: false });
-      }
+    controls.zonaExtremaActiva.valueChanges
+      .pipe(takeUntilDestroyed(destroyRef))
+      .subscribe((enabled) => {
+        if (!enabled) {
+          controls.zonaExtremaTerritorio.setValue('', { emitEvent: false });
+          controls.zonaExtremaPorcentaje.setValue(null, { emitEvent: false });
+        }
 
-      this.updateContratoValidators(form);
-    });
+        this.updateContratoValidators(form);
+      });
 
     this.updateContratoValidators(form);
   }
@@ -366,7 +388,9 @@ export class EmpleadosFormOrchestratorService {
     );
     this.setControlValidators(
       controls.zonaExtremaTerritorio,
-      zonaExtremaActiva ? [Validators.required, Validators.maxLength(150)] : [Validators.maxLength(150)],
+      zonaExtremaActiva
+        ? [Validators.required, Validators.maxLength(150)]
+        : [Validators.maxLength(150)],
     );
     this.setControlValidators(
       controls.zonaExtremaPorcentaje,
@@ -382,12 +406,14 @@ export class EmpleadosFormOrchestratorService {
     const controls = form.controls.previsionSalud.controls;
     let previousTipo = controls.tipoRegimenPrevisional.value;
 
-    controls.tipoRegimenPrevisional.valueChanges.pipe(takeUntilDestroyed(destroyRef)).subscribe((tipo) => {
-      this.handleTipoRegimenChange(form, previousTipo, tipo);
-      previousTipo = tipo;
-      this.ensurePrevisionDefaults(form, getCatalogos());
-      this.updatePrevisionSaludValidators(form);
-    });
+    controls.tipoRegimenPrevisional.valueChanges
+      .pipe(takeUntilDestroyed(destroyRef))
+      .subscribe((tipo) => {
+        this.handleTipoRegimenChange(form, previousTipo, tipo);
+        previousTipo = tipo;
+        this.ensurePrevisionDefaults(form, getCatalogos());
+        this.updatePrevisionSaludValidators(form);
+      });
 
     controls.tieneApv.valueChanges.pipe(takeUntilDestroyed(destroyRef)).subscribe((enabled) => {
       if (!enabled) {
@@ -435,7 +461,9 @@ export class EmpleadosFormOrchestratorService {
     const controls = form.controls.previsionSalud.controls;
     const tipo = controls.tipoRegimenPrevisional.value;
     const requiereSalud = tipo !== null && tipo !== 'NINGUNA';
-    const tieneCuenta2 = tipo === 'AFP' && (controls.idMonedaCuenta2.value !== null || controls.valorCuenta2.value !== null);
+    const tieneCuenta2 =
+      tipo === 'AFP' &&
+      (controls.idMonedaCuenta2.value !== null || controls.valorCuenta2.value !== null);
     const requiereApvi = tipo === 'AFP' && controls.tieneApv.value;
 
     this.setControlValidators(controls.tipoRegimenPrevisional, [Validators.required]);
@@ -447,11 +475,15 @@ export class EmpleadosFormOrchestratorService {
     );
     this.setControlValidators(
       controls.nombreExCaja,
-      tipo === 'IPS' ? [Validators.required, Validators.maxLength(150)] : [Validators.maxLength(150)],
+      tipo === 'IPS'
+        ? [Validators.required, Validators.maxLength(150)]
+        : [Validators.maxLength(150)],
     );
     this.setControlValidators(
       controls.regimenExCaja,
-      tipo === 'IPS' ? [Validators.required, Validators.maxLength(150)] : [Validators.maxLength(150)],
+      tipo === 'IPS'
+        ? [Validators.required, Validators.maxLength(150)]
+        : [Validators.maxLength(150)],
     );
     this.setControlValidators(
       controls.tasaExCaja,
@@ -488,7 +520,10 @@ export class EmpleadosFormOrchestratorService {
       return;
     }
 
-    if (controls.tipoRegimenPrevisional.value !== null && controls.tipoRegimenPrevisional.value !== 'NINGUNA') {
+    if (
+      controls.tipoRegimenPrevisional.value !== null &&
+      controls.tipoRegimenPrevisional.value !== 'NINGUNA'
+    ) {
       setPreferredCatalogValue(controls.idMonedaPlan, monedas, ['peso chileno', 'pesos', 'clp']);
     }
 
@@ -497,7 +532,10 @@ export class EmpleadosFormOrchestratorService {
     }
   }
 
-  private ensureDepartamentoDefault(form: EmpleadoFormGroup, catalogos: EmpleadoFormCatalogos): void {
+  private ensureDepartamentoDefault(
+    form: EmpleadoFormGroup,
+    catalogos: EmpleadoFormCatalogos,
+  ): void {
     const controls = form.controls.contrato.controls;
     const departamentosSucursal = catalogos.departamentos.filter(
       (option) => option.idSucursal === controls.idSucursal.value,
@@ -516,7 +554,10 @@ export class EmpleadosFormOrchestratorService {
     }
   }
 
-  private ensureTramoCargaSelection(form: EmpleadoFormGroup, catalogos: EmpleadoFormCatalogos): void {
+  private ensureTramoCargaSelection(
+    form: EmpleadoFormGroup,
+    catalogos: EmpleadoFormCatalogos,
+  ): void {
     const controls = form.controls.contrato.controls;
     const tramos = catalogos.tramosCarga;
 

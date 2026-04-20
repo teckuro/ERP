@@ -14,8 +14,8 @@ import { mapEmpleadoFormToPayload } from '../../mappers/empleado-form.mapper';
 import {
   EMPTY_EMPLEADO_FORM_CATALOGOS,
   EmpleadoFormCatalogos,
-  EmpleadoFormGroup,
-} from '../../models/empleado-form.model';
+} from '../../models/empleado-catalogos.model';
+import { EmpleadoFormGroup } from '../../models/empleado-form.model';
 import { EmpleadosFormOrchestratorService } from '../../services/empleados-form-orchestrator.service';
 import { EmpleadosCatalogosService } from '../../services/empleados-catalogos.service';
 import {
@@ -87,7 +87,9 @@ export class FormEmpleadoComponent implements OnInit {
   readonly form: EmpleadoFormGroup = this.empleadosFormService.createForm();
 
   async ngOnInit(): Promise<void> {
-    this.empleadosFormService.configureFormBehavior(this.form, this.destroyRef, () => this.catalogos());
+    this.empleadosFormService.configureFormBehavior(this.form, this.destroyRef, () =>
+      this.catalogos(),
+    );
     await this.loadCatalogos();
   }
 
@@ -127,7 +129,9 @@ export class FormEmpleadoComponent implements OnInit {
       this.catalogos.set(catalogos);
       this.empleadosFormService.applyCatalogDefaults(this.form, catalogos);
     } catch {
-      this.catalogosError.set('No fue posible preparar la informacion requerida para el formulario. Intenta nuevamente.');
+      this.catalogosError.set(
+        'No fue posible preparar la informacion requerida para el formulario. Intenta nuevamente.',
+      );
     } finally {
       this.isLoadingCatalogs.set(false);
     }
@@ -142,7 +146,9 @@ export class FormEmpleadoComponent implements OnInit {
     this.form.markAllAsTouched();
 
     if (this.isLoadingCatalogs()) {
-      this.errorMessage.set('La informacion base del formulario aun se esta cargando. Espera unos segundos e intenta nuevamente.');
+      this.errorMessage.set(
+        'La informacion base del formulario aun se esta cargando. Espera unos segundos e intenta nuevamente.',
+      );
       return;
     }
 
@@ -156,7 +162,9 @@ export class FormEmpleadoComponent implements OnInit {
     this.isSaving.set(true);
 
     try {
-      const created = await this.empleadosService.crear(mapEmpleadoFormToPayload(this.form, this.catalogos()));
+      const created = await this.empleadosService.crear(
+        mapEmpleadoFormToPayload(this.form, this.catalogos()),
+      );
 
       this.successMessage.set(`La ficha de ${created.nombre} quedo registrada correctamente.`);
       this.createdEmployeeId.set(created.id);
@@ -236,7 +244,8 @@ export class FormEmpleadoComponent implements OnInit {
   }
 
   private tabStatus(tabId: TabId): 'pending' | 'invalid' | 'complete' {
-    const section = tabId === 'datosPersonales' ? this.getPersonalSectionState() : this.getSection(tabId);
+    const section =
+      tabId === 'datosPersonales' ? this.getPersonalSectionState() : this.getSection(tabId);
     const wasAttempted = this.attemptedTabs().has(tabId) || this.attemptedSave();
 
     if (section.invalid && wasAttempted) {
@@ -253,7 +262,9 @@ export class FormEmpleadoComponent implements OnInit {
   private findFirstInvalidTab(): TabId {
     return (
       TAB_ORDER.find((tabId) =>
-        tabId === 'datosPersonales' ? this.getPersonalSectionState().invalid : this.getSection(tabId).invalid,
+        tabId === 'datosPersonales'
+          ? this.getPersonalSectionState().invalid
+          : this.getSection(tabId).invalid,
       ) ?? 'datosPersonales'
     );
   }
@@ -318,7 +329,9 @@ export class FormEmpleadoComponent implements OnInit {
   }
 
   private isTabInvalid(tabId: TabId): boolean {
-    return tabId === 'datosPersonales' ? this.getPersonalSectionState().invalid : this.getSection(tabId).invalid;
+    return tabId === 'datosPersonales'
+      ? this.getPersonalSectionState().invalid
+      : this.getSection(tabId).invalid;
   }
 
   private markTabAsTouched(tabId: TabId): void {
@@ -377,7 +390,10 @@ export class FormEmpleadoComponent implements OnInit {
   }
 
   private resolveSaveErrorMessage(error: unknown): string {
-    if (error instanceof EmpleadoRutDuplicadoError || error instanceof EmpleadoReferenciaInvalidaError) {
+    if (
+      error instanceof EmpleadoRutDuplicadoError ||
+      error instanceof EmpleadoReferenciaInvalidaError
+    ) {
       return error.message;
     }
 

@@ -1,7 +1,8 @@
 import { Component, Input } from '@angular/core';
 import { ReactiveFormsModule, Validators } from '@angular/forms';
 
-import { ContactoFormGroup, EmpleadoCatalogOption } from '../../../models/empleado-form.model';
+import { EmpleadoCatalogOption } from '../../../models/empleado-catalogos.model';
+import { ContactoFormGroup } from '../../../models/empleado-form.model';
 
 type ContactoControlName = keyof ContactoFormGroup['controls'];
 

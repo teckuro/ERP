@@ -2,15 +2,13 @@ import { Component, Input } from '@angular/core';
 import { ReactiveFormsModule, Validators } from '@angular/forms';
 
 import {
-  ContratoFormGroup,
   EmpleadoCatalogOption,
   EmpleadoDepartamentoOption,
   EmpleadoSucursalOption,
-  RelacionLaboral,
-  TipoContrato,
-  TipoGratificacion,
   TramoCargaCatalogOption,
-} from '../../../models/empleado-form.model';
+} from '../../../models/empleado-catalogos.model';
+import { ContratoFormGroup } from '../../../models/empleado-form.model';
+import { RelacionLaboral, TipoContrato, TipoGratificacion } from '../../../models/empleado.model';
 import { EmpleadoEstado } from '../../../models/empleado-listado.model';
 
 type ContratoControlName = keyof ContratoFormGroup['controls'];
@@ -179,5 +177,4 @@ export class ContratoComponent {
   hasWeekday(dayValue: number): boolean {
     return this.formGroup.controls.semanaCorridaDiasLaborables.value.includes(dayValue);
   }
-
 }

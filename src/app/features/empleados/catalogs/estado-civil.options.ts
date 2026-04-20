@@ -1,5 +1,5 @@
 import { EmpleadoSelectOption } from './sexo.options';
-import { TipoEstadoCivil } from '../models/empleado-form.model';
+import { TipoEstadoCivil } from '../models/empleado.model';
 
 export const ESTADO_CIVIL_OPTIONS: readonly EmpleadoSelectOption<TipoEstadoCivil>[] = [
   { value: 'SOLTERO', label: 'Soltero/a' },

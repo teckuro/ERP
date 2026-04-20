@@ -10,7 +10,7 @@ import {
 } from '../../../../shared/components/ui/card.component';
 
 @Component({
-  selector: 'app-ficha-empleado-page',
+  selector: 'app-ficha-empleado-container',
   imports: [
     CommonModule,
     RouterLink,
@@ -22,7 +22,7 @@ import {
   templateUrl: './ficha-empleado-container.html',
   styleUrl: './ficha-empleado-container.css',
 })
-export class FichaEmpleadoPage {
+export class FichaEmpleadoContainer {
   private readonly route = inject(ActivatedRoute);
 
   readonly empleadoId = this.route.snapshot.paramMap.get('id');

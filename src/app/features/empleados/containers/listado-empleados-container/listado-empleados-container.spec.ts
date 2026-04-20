@@ -2,15 +2,15 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 
 import { EmpleadosService } from '../../services/empleados.service';
-import { ListadoEmpleadosPage } from './listado-empleados-container';
+import { ListadoEmpleadosContainer } from './listado-empleados-container';
 
-describe('ListadoEmpleadosPage', () => {
-  let component: ListadoEmpleadosPage;
-  let fixture: ComponentFixture<ListadoEmpleadosPage>;
+describe('ListadoEmpleadosContainer', () => {
+  let component: ListadoEmpleadosContainer;
+  let fixture: ComponentFixture<ListadoEmpleadosContainer>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [ListadoEmpleadosPage],
+      imports: [ListadoEmpleadosContainer],
       providers: [
         provideRouter([]),
         {
@@ -22,7 +22,7 @@ describe('ListadoEmpleadosPage', () => {
       ],
     }).compileComponents();
 
-    fixture = TestBed.createComponent(ListadoEmpleadosPage);
+    fixture = TestBed.createComponent(ListadoEmpleadosContainer);
     component = fixture.componentInstance;
     await fixture.whenStable();
   });

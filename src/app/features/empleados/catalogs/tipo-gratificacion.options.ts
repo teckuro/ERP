@@ -1,4 +1,4 @@
-import { TipoGratificacion } from '../models/empleado-form.model';
+import { TipoGratificacion } from '../models/empleado.model';
 import { EmpleadoSelectOption } from './sexo.options';
 
 export const TIPO_GRATIFICACION_OPTIONS: readonly EmpleadoSelectOption<TipoGratificacion>[] = [

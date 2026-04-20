@@ -1,11 +1,15 @@
 import { AbstractControl, ValidationErrors, ValidatorFn } from '@angular/forms';
 
-export const atLeastOneArrayValueValidator: ValidatorFn = (control: AbstractControl): ValidationErrors | null => {
+export const atLeastOneArrayValueValidator: ValidatorFn = (
+  control: AbstractControl,
+): ValidationErrors | null => {
   const value = control.value;
   return Array.isArray(value) && value.length > 0 ? null : { required: true };
 };
 
-export const personNameValidator: ValidatorFn = (control: AbstractControl): ValidationErrors | null => {
+export const personNameValidator: ValidatorFn = (
+  control: AbstractControl,
+): ValidationErrors | null => {
   const value = String(control.value ?? '').trim();
 
   if (!value) {
@@ -15,7 +19,9 @@ export const personNameValidator: ValidatorFn = (control: AbstractControl): Vali
   return /^[A-Za-zÁÉÍÓÚÜÑáéíóúüñ' -]+$/.test(value) ? null : { personName: true };
 };
 
-export const digitsOnlyValidator: ValidatorFn = (control: AbstractControl): ValidationErrors | null => {
+export const digitsOnlyValidator: ValidatorFn = (
+  control: AbstractControl,
+): ValidationErrors | null => {
   const value = String(control.value ?? '').trim();
 
   if (!value) {
@@ -26,7 +32,9 @@ export const digitsOnlyValidator: ValidatorFn = (control: AbstractControl): Vali
 };
 
 export const rutValidator: ValidatorFn = (control: AbstractControl): ValidationErrors | null => {
-  const rawValue = String(control.value ?? '').replace(/[^0-9kK]/g, '').toUpperCase();
+  const rawValue = String(control.value ?? '')
+    .replace(/[^0-9kK]/g, '')
+    .toUpperCase();
 
   if (!rawValue) {
     return null;
@@ -47,7 +55,8 @@ export const rutValidator: ValidatorFn = (control: AbstractControl): ValidationE
   }
 
   const expectedValue = 11 - (sum % 11);
-  const expectedVerifier = expectedValue === 11 ? '0' : expectedValue === 10 ? 'K' : String(expectedValue);
+  const expectedVerifier =
+    expectedValue === 11 ? '0' : expectedValue === 10 ? 'K' : String(expectedValue);
 
   return verifier === expectedVerifier ? null : { rut: true };
 };

@@ -1,11 +1,9 @@
 import { Component, Input } from '@angular/core';
 import { ReactiveFormsModule, Validators } from '@angular/forms';
 
-import {
-  EmpleadoCatalogOption,
-  PrevisionSaludFormGroup,
-  TipoRegimenPrevisional,
-} from '../../../models/empleado-form.model';
+import { EmpleadoCatalogOption } from '../../../models/empleado-catalogos.model';
+import { PrevisionSaludFormGroup } from '../../../models/empleado-form.model';
+import { TipoRegimenPrevisional } from '../../../models/empleado.model';
 import { TIPO_REGIMEN_OPTIONS } from '../../../catalogs/prevision.options';
 import {
   CardComponent,

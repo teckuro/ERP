@@ -20,7 +20,10 @@ export function mapPersonaFactorToEmpleado(
   departamentos: Map<number, string>,
 ): EmpleadoListado {
   const rut = row.rut ? formatRut(row.rut, row.dv ?? '') : 'Sin RUT';
-  const nombre = [row.nombres, row.apellido_paterno, row.apellido_materno].filter(Boolean).join(' ').trim();
+  const nombre = [row.nombres, row.apellido_paterno, row.apellido_materno]
+    .filter(Boolean)
+    .join(' ')
+    .trim();
 
   return {
     id: row.id_persona,
@@ -28,10 +31,13 @@ export function mapPersonaFactorToEmpleado(
     nombre: nombre || 'Sin nombre',
     cargo: row.cargo?.trim() || 'Sin cargo',
     departamento:
-      (typeof row.id_contrato === 'number' ? departamentos.get(row.id_contrato) : null) ?? 'Sin centro de costo',
+      (typeof row.id_contrato === 'number' ? departamentos.get(row.id_contrato) : null) ??
+      'Sin centro de costo',
     fechaIngreso: row.fingreso ? formatDate(row.fingreso) : 'Sin fecha',
     sueldoBase: row.base ?? 0,
-    estado: mapPersonaEstadoToEmpleadoEstado(row.estado) ?? mapContratoEstadoToEmpleadoEstado(row.estado_contrato),
+    estado:
+      mapPersonaEstadoToEmpleadoEstado(row.estado) ??
+      mapContratoEstadoToEmpleadoEstado(row.estado_contrato),
   };
 }
 
@@ -113,7 +119,12 @@ export function formatRut(rut: string, dv: string): string {
   const parts: string[] = [];
 
   for (let index = 0; index < reversedDigits.length; index += 3) {
-    parts.push(reversedDigits.slice(index, index + 3).reverse().join(''));
+    parts.push(
+      reversedDigits
+        .slice(index, index + 3)
+        .reverse()
+        .join(''),
+    );
   }
 
   return `${parts.reverse().join('.')}-${dv}`;

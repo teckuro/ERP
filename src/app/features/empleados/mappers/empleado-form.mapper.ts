@@ -1,21 +1,21 @@
-import {
-  EmpleadoCatalogOption,
-  EmpleadoCreacion,
-  EmpleadoFormCatalogos,
-  EmpleadoFormGroup,
-  TipoRegimenPrevisional,
-} from '../models/empleado-form.model';
+import { EmpleadoCatalogOption, EmpleadoFormCatalogos } from '../models/empleado-catalogos.model';
+import { EmpleadoFormGroup } from '../models/empleado-form.model';
+import { TipoRegimenPrevisional } from '../models/empleado.model';
+import { CrearEmpleadoPayload } from '../models/empleado-payload.model';
 import { normalizeText } from '../utils/empleado-form.helpers';
 
 export function mapEmpleadoFormToPayload(
   form: EmpleadoFormGroup,
   catalogos: EmpleadoFormCatalogos,
-): EmpleadoCreacion {
+): CrearEmpleadoPayload {
   const rawValue = form.getRawValue();
-  const tipoPrevision = requireTipoRegimenPrevisional(rawValue.previsionSalud.tipoRegimenPrevisional);
+  const tipoPrevision = requireTipoRegimenPrevisional(
+    rawValue.previsionSalud.tipoRegimenPrevisional,
+  );
   const tieneCuenta2 =
     tipoPrevision === 'AFP' &&
-    (rawValue.previsionSalud.idMonedaCuenta2 !== null || rawValue.previsionSalud.valorCuenta2 !== null);
+    (rawValue.previsionSalud.idMonedaCuenta2 !== null ||
+      rawValue.previsionSalud.valorCuenta2 !== null);
   const requiereSalud = tipoPrevision !== 'NINGUNA';
   const tieneApvi = tipoPrevision === 'AFP' && rawValue.previsionSalud.tieneApv;
 
@@ -59,7 +59,10 @@ export function mapEmpleadoFormToPayload(
     gratificacionProporcional: rawValue.contrato.gratificacionProporcional,
     semanaCorridaActiva: rawValue.contrato.semanaCorridaActiva,
     semanaCorridaDiasLaborables: rawValue.contrato.semanaCorridaActiva
-      ? requireNonEmptyArray(rawValue.contrato.semanaCorridaDiasLaborables, 'al menos un dia laborable')
+      ? requireNonEmptyArray(
+          rawValue.contrato.semanaCorridaDiasLaborables,
+          'al menos un dia laborable',
+        )
       : [],
     zonaExtremaActiva: rawValue.contrato.zonaExtremaActiva,
     zonaExtremaTerritorio: rawValue.contrato.zonaExtremaActiva
@@ -71,23 +74,39 @@ export function mapEmpleadoFormToPayload(
     estado: rawValue.contrato.estado,
     idTramoCarga: rawValue.contrato.idTramoCarga,
     tipoPrevision,
-    idRegimenPrevisional: resolveRegimenPrevisionalId(tipoPrevision, catalogos.regimenesPrevisionales),
-    idAfp: tipoPrevision === 'AFP' ? requireSelection(rawValue.previsionSalud.idAfp, 'la AFP') : null,
+    idRegimenPrevisional: resolveRegimenPrevisionalId(
+      tipoPrevision,
+      catalogos.regimenesPrevisionales,
+    ),
+    idAfp:
+      tipoPrevision === 'AFP' ? requireSelection(rawValue.previsionSalud.idAfp, 'la AFP') : null,
     idMonedaCuenta2: tieneCuenta2
       ? requireSelection(rawValue.previsionSalud.idMonedaCuenta2, 'la moneda de Cuenta 2')
       : null,
-    valorCuenta2: tieneCuenta2 ? requireNumber(rawValue.previsionSalud.valorCuenta2, 'el valor de Cuenta 2') : null,
+    valorCuenta2: tieneCuenta2
+      ? requireNumber(rawValue.previsionSalud.valorCuenta2, 'el valor de Cuenta 2')
+      : null,
     nombreExCaja:
-      tipoPrevision === 'IPS' ? requireText(rawValue.previsionSalud.nombreExCaja, 'el nombre Ex-Caja') : null,
+      tipoPrevision === 'IPS'
+        ? requireText(rawValue.previsionSalud.nombreExCaja, 'el nombre Ex-Caja')
+        : null,
     regimenExCaja:
-      tipoPrevision === 'IPS' ? requireText(rawValue.previsionSalud.regimenExCaja, 'el regimen Ex-Caja') : null,
+      tipoPrevision === 'IPS'
+        ? requireText(rawValue.previsionSalud.regimenExCaja, 'el regimen Ex-Caja')
+        : null,
     tasaExCaja:
-      tipoPrevision === 'IPS' ? requireNumber(rawValue.previsionSalud.tasaExCaja, 'la tasa Ex-Caja') : null,
-    idSalud: requiereSalud ? requireSelection(rawValue.previsionSalud.idSalud, 'la institucion de salud') : null,
+      tipoPrevision === 'IPS'
+        ? requireNumber(rawValue.previsionSalud.tasaExCaja, 'la tasa Ex-Caja')
+        : null,
+    idSalud: requiereSalud
+      ? requireSelection(rawValue.previsionSalud.idSalud, 'la institucion de salud')
+      : null,
     idMonedaPlan: requiereSalud
       ? requireSelection(rawValue.previsionSalud.idMonedaPlan, 'la moneda del plan de salud')
       : null,
-    valorPlan: requiereSalud ? requireNumber(rawValue.previsionSalud.valorPlan, 'el valor del plan de salud') : null,
+    valorPlan: requiereSalud
+      ? requireNumber(rawValue.previsionSalud.valorPlan, 'el valor del plan de salud')
+      : null,
     adicionalAugeGes: requiereSalud
       ? requireNumber(rawValue.previsionSalud.adicionalAugeGes, 'el adicional plan Auge')
       : null,
@@ -95,7 +114,9 @@ export function mapEmpleadoFormToPayload(
     idInstitucionApv: tieneApvi
       ? requireSelection(rawValue.previsionSalud.idInstitucionApv, 'la institucion APVI')
       : null,
-    idMonedaApv: tieneApvi ? requireSelection(rawValue.previsionSalud.idMonedaApv, 'la moneda APVI') : null,
+    idMonedaApv: tieneApvi
+      ? requireSelection(rawValue.previsionSalud.idMonedaApv, 'la moneda APVI')
+      : null,
     montoApv: tieneApvi ? requireNumber(rawValue.previsionSalud.montoApv, 'el valor APVI') : null,
     idFormaPagoApv: tieneApvi
       ? requireSelection(rawValue.previsionSalud.idFormaPagoApv, 'la forma de pago APVI')
@@ -104,7 +125,10 @@ export function mapEmpleadoFormToPayload(
       ? requireNumber(rawValue.previsionSalud.depositoConvenidoApvi, 'el deposito convenido APVI')
       : null,
     idBanco: requireSelection(rawValue.bancario.idBanco, 'el banco'),
-    idTipoCuentaBancaria: requireSelection(rawValue.bancario.idTipoCuentaBancaria, 'el tipo de cuenta bancaria'),
+    idTipoCuentaBancaria: requireSelection(
+      rawValue.bancario.idTipoCuentaBancaria,
+      'el tipo de cuenta bancaria',
+    ),
     numeroCuenta: rawValue.bancario.numeroCuenta,
   };
 }
@@ -117,7 +141,9 @@ function resolveRegimenPrevisionalId(
     return null;
   }
 
-  const regimen = regimenesPrevisionales.find((option) => normalizeText(option.label) === normalizeText(tipo));
+  const regimen = regimenesPrevisionales.find(
+    (option) => normalizeText(option.label) === normalizeText(tipo),
+  );
 
   if (!regimen) {
     throw new Error(`No se encontro el catalogo para el regimen ${tipo}.`);
@@ -134,7 +160,9 @@ function requireSelection(value: number | null, label: string): number {
   return value;
 }
 
-function requireTipoRegimenPrevisional(value: TipoRegimenPrevisional | null): TipoRegimenPrevisional {
+function requireTipoRegimenPrevisional(
+  value: TipoRegimenPrevisional | null,
+): TipoRegimenPrevisional {
   if (value === null) {
     throw new Error('Debes seleccionar el tipo de regimen previsional.');
   }

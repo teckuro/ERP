@@ -11,14 +11,11 @@ import {
 
 @Component({
   selector: 'app-listado-empleados',
-  imports: [
-    CommonModule,
-    TablaEmpleadosComponent,
-  ],
+  imports: [CommonModule, TablaEmpleadosComponent],
   templateUrl: './listado-empleados-container.html',
   styleUrl: './listado-empleados-container.css',
 })
-export class ListadoEmpleadosPage {
+export class ListadoEmpleadosContainer {
   private readonly empleadosService = inject(EmpleadosService);
 
   readonly empleados = signal<EmpleadoListado[]>([]);
@@ -74,7 +71,11 @@ export class ListadoEmpleadosPage {
         status: processed === event.rows.length ? 'success' : 'partial',
         processed,
         total: event.rows.length,
-        message: this.bulkActionResultMessage(event.label ?? 'estado seleccionado', processed, event.rows.length),
+        message: this.bulkActionResultMessage(
+          event.label ?? 'estado seleccionado',
+          processed,
+          event.rows.length,
+        ),
       });
     } catch {
       this.bulkActionResult.set({

@@ -1,10 +1,8 @@
 import { Component, Input } from '@angular/core';
 import { ReactiveFormsModule, Validators } from '@angular/forms';
 
-import {
-  DatosPersonalesFormGroup,
-  EmpleadoCatalogOption,
-} from '../../../models/empleado-form.model';
+import { DatosPersonalesFormGroup } from '../../../models/empleado-form.model';
+import { EmpleadoCatalogOption } from '../../../models/empleado-catalogos.model';
 import { ESTADO_CIVIL_OPTIONS } from '../../../catalogs/estado-civil.options';
 import { SEXO_OPTIONS } from '../../../catalogs/sexo.options';
 

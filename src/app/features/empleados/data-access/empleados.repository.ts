@@ -2,20 +2,29 @@ import { Injectable } from '@angular/core';
 
 import { Tables, TablesInsert } from '../../../core/models/database.types';
 import { injectSupabase } from '../../../core/services/supabase.service';
-import {
-  EmpleadoCatalogOption,
-  EmpleadoCreacion,
-  EmpleadoFormCatalogos,
-  TramoCargaCatalogOption,
-} from '../models/empleado-form.model';
+import { EmpleadoFormCatalogos } from '../models/empleado-catalogos.model';
 import { EmpleadoEstado, EmpleadoListado } from '../models/empleado-listado.model';
+import { CrearEmpleadoPayload } from '../models/empleado-payload.model';
+import {
+  mapCatalog,
+  mapDepartamentosCatalog,
+  mapSaludCatalog,
+  pickLatestTramosCarga,
+} from '../mappers/empleado-catalogos.mapper';
 import {
   formatDate,
-  formatRut,
   mapEmpleadoEstadoToContratoEstado,
   mapEmpleadoEstadoToPersonaEstado,
   mapPersonaFactorToEmpleado,
 } from '../mappers/empleado-listado.mapper';
+import { formatRutParts, parseRut } from '../utils/empleado-rut';
+import {
+  buildForeignKeyError,
+  buildRepositoryError,
+  EmpleadoReferenciaInvalidaError,
+  EmpleadoRutDuplicadoError,
+  isUniqueConstraintError,
+} from '../utils/empleados-repository-errors';
 
 type PersonaFactorRow = Tables<'vw_persona_factores'>;
 type PersonaInsert = TablesInsert<'persona'>;
@@ -36,41 +45,7 @@ interface CentroCostoLookupRow {
   centro_costo: Pick<CentroCostoRow, 'nombre'> | null;
 }
 
-interface DepartamentoEmpresaRow {
-  id_departamento_empresa: number;
-  nombre: string;
-  id_sucursal: number | null;
-}
-
-interface TramoCargaRow {
-  id_tramo: number;
-  periodo: string;
-  desde: number | null;
-  hasta: number | null;
-  valor: number | null;
-  tramo: string | null;
-}
-
-interface SupabaseWriteError {
-  code?: string;
-  message?: string;
-  details?: string;
-  hint?: string;
-}
-
-export class EmpleadoRutDuplicadoError extends Error {
-  constructor(readonly rut: string) {
-    super(`No es posible crear el personal con RUT ${rut}, porque ya existe una ficha registrada con ese identificador.`);
-    this.name = 'EmpleadoRutDuplicadoError';
-  }
-}
-
-export class EmpleadoReferenciaInvalidaError extends Error {
-  constructor(message: string) {
-    super(message);
-    this.name = 'EmpleadoReferenciaInvalidaError';
-  }
-}
+export { EmpleadoReferenciaInvalidaError, EmpleadoRutDuplicadoError };
 
 @Injectable({
   providedIn: 'root',
@@ -99,8 +74,14 @@ export class EmpleadosRepository {
     ] = await Promise.all([
       this.supabase.from('comuna').select('id_comuna,nombre').order('nombre', { ascending: true }),
       this.supabase.from('pais').select('id_pais,nombre').order('nombre', { ascending: true }),
-      this.supabase.from('centro_costo').select('id_centro_costo,nombre').order('nombre', { ascending: true }),
-      this.supabase.from('sucursal').select('id_sucursal,nombre').order('nombre', { ascending: true }),
+      this.supabase
+        .from('centro_costo')
+        .select('id_centro_costo,nombre')
+        .order('nombre', { ascending: true }),
+      this.supabase
+        .from('sucursal')
+        .select('id_sucursal,nombre')
+        .order('nombre', { ascending: true }),
       this.supabase
         .from('departamento_empresa')
         .select('id_departamento_empresa,nombre,id_sucursal')
@@ -109,13 +90,19 @@ export class EmpleadosRepository {
         .from('tipo_trabajador')
         .select('id_tipo_trabajador,nombre')
         .order('nombre', { ascending: true }),
-      this.supabase.from('tipo_jornada').select('id_tipo_jornada,nombre').order('nombre', { ascending: true }),
+      this.supabase
+        .from('tipo_jornada')
+        .select('id_tipo_jornada,nombre')
+        .order('nombre', { ascending: true }),
       this.supabase
         .from('regimen_previsional')
         .select('id_regimen,nombre')
         .order('nombre', { ascending: true }),
       this.supabase.from('afp').select('id_afp,nombre').order('nombre', { ascending: true }),
-      this.supabase.from('salud').select('id_salud,nombre,tipo').order('nombre', { ascending: true }),
+      this.supabase
+        .from('salud')
+        .select('id_salud,nombre,tipo')
+        .order('nombre', { ascending: true }),
       this.supabase.from('moneda').select('id_moneda,nombre').order('nombre', { ascending: true }),
       this.supabase
         .from('tramo_carga')
@@ -138,96 +125,115 @@ export class EmpleadosRepository {
     ]);
 
     if (comunasResult.error) {
-      throw this.buildError('No fue posible cargar las comunas.', comunasResult.error.message);
+      throw buildRepositoryError('No fue posible cargar las comunas.', comunasResult.error.message);
     }
     if (paisesResult.error) {
-      throw this.buildError('No fue posible cargar los paises.', paisesResult.error.message);
+      throw buildRepositoryError('No fue posible cargar los paises.', paisesResult.error.message);
     }
-
 
     if (centrosCostoResult.error) {
-      throw this.buildError('No fue posible cargar los centros de costo.', centrosCostoResult.error.message);
+      throw buildRepositoryError(
+        'No fue posible cargar los centros de costo.',
+        centrosCostoResult.error.message,
+      );
     }
     if (sucursalesResult.error) {
-      throw this.buildError('No fue posible cargar las sucursales.', sucursalesResult.error.message);
+      throw buildRepositoryError(
+        'No fue posible cargar las sucursales.',
+        sucursalesResult.error.message,
+      );
     }
     if (departamentosResult.error) {
-      throw this.buildError('No fue posible cargar los departamentos.', departamentosResult.error.message);
+      throw buildRepositoryError(
+        'No fue posible cargar los departamentos.',
+        departamentosResult.error.message,
+      );
     }
 
     if (tiposTrabajadorResult.error) {
-      throw this.buildError('No fue posible cargar los tipos de trabajador.', tiposTrabajadorResult.error.message);
+      throw buildRepositoryError(
+        'No fue posible cargar los tipos de trabajador.',
+        tiposTrabajadorResult.error.message,
+      );
     }
 
     if (tiposJornadaResult.error) {
-      throw this.buildError('No fue posible cargar los tipos de jornada.', tiposJornadaResult.error.message);
+      throw buildRepositoryError(
+        'No fue posible cargar los tipos de jornada.',
+        tiposJornadaResult.error.message,
+      );
     }
 
     if (regimenesResult.error) {
-      throw this.buildError(
+      throw buildRepositoryError(
         'No fue posible cargar los regimenes previsionales.',
         regimenesResult.error.message,
       );
     }
 
     if (afpsResult.error) {
-      throw this.buildError('No fue posible cargar las AFP.', afpsResult.error.message);
+      throw buildRepositoryError('No fue posible cargar las AFP.', afpsResult.error.message);
     }
 
     if (saludResult.error) {
-      throw this.buildError('No fue posible cargar las instituciones de salud.', saludResult.error.message);
+      throw buildRepositoryError(
+        'No fue posible cargar las instituciones de salud.',
+        saludResult.error.message,
+      );
     }
 
     if (monedasResult.error) {
-      throw this.buildError('No fue posible cargar las monedas.', monedasResult.error.message);
+      throw buildRepositoryError('No fue posible cargar las monedas.', monedasResult.error.message);
     }
     if (tramosCargaResult.error) {
-      throw this.buildError('No fue posible cargar los tramos de carga.', tramosCargaResult.error.message);
+      throw buildRepositoryError(
+        'No fue posible cargar los tramos de carga.',
+        tramosCargaResult.error.message,
+      );
     }
 
     if (institucionesApvResult.error) {
-      throw this.buildError('No fue posible cargar las instituciones APVI.', institucionesApvResult.error.message);
+      throw buildRepositoryError(
+        'No fue posible cargar las instituciones APVI.',
+        institucionesApvResult.error.message,
+      );
     }
 
     if (formasPagoApvResult.error) {
-      throw this.buildError('No fue posible cargar las formas de pago APVI.', formasPagoApvResult.error.message);
+      throw buildRepositoryError(
+        'No fue posible cargar las formas de pago APVI.',
+        formasPagoApvResult.error.message,
+      );
     }
 
     if (bancosResult.error) {
-      throw this.buildError('No fue posible cargar los bancos.', bancosResult.error.message);
+      throw buildRepositoryError('No fue posible cargar los bancos.', bancosResult.error.message);
     }
 
     if (tiposCuentaResult.error) {
-      throw this.buildError(
+      throw buildRepositoryError(
         'No fue posible cargar los tipos de cuenta bancaria.',
         tiposCuentaResult.error.message,
       );
     }
 
     return {
-      comunas: this.mapCatalog(comunasResult.data ?? [], 'id_comuna'),
-      paises: this.mapCatalog(paisesResult.data ?? [], 'id_pais'),
-      centrosCosto: this.mapCatalog(centrosCostoResult.data ?? [], 'id_centro_costo'),
-      sucursales: this.mapCatalog(sucursalesResult.data ?? [], 'id_sucursal'),
-      departamentos: (departamentosResult.data ?? []).map((row: DepartamentoEmpresaRow) => ({
-        value: row.id_departamento_empresa,
-        label: row.nombre,
-        idSucursal: row.id_sucursal,
-      })),
-      tiposTrabajador: this.mapCatalog(tiposTrabajadorResult.data ?? [], 'id_tipo_trabajador'),
-      tiposJornada: this.mapCatalog(tiposJornadaResult.data ?? [], 'id_tipo_jornada'),
-      regimenesPrevisionales: this.mapCatalog(regimenesResult.data ?? [], 'id_regimen'),
-      afps: this.mapCatalog(afpsResult.data ?? [], 'id_afp'),
-      entidadesSalud: (saludResult.data ?? []).map((row) => ({
-        value: row.id_salud,
-        label: row.tipo ? `${row.nombre} (${row.tipo})` : row.nombre,
-      })),
-      monedas: this.mapCatalog(monedasResult.data ?? [], 'id_moneda'),
-      tramosCarga: this.pickLatestTramosCarga(tramosCargaResult.data ?? []),
-      institucionesApv: this.mapCatalog(institucionesApvResult.data ?? [], 'id_institucion_apv'),
-      formasPagoApv: this.mapCatalog(formasPagoApvResult.data ?? [], 'id_forma_pago_apv'),
-      bancos: this.mapCatalog(bancosResult.data ?? [], 'id_banco'),
-      tiposCuentaBancaria: this.mapCatalog(tiposCuentaResult.data ?? [], 'id_tipo_cuenta_bancaria'),
+      comunas: mapCatalog(comunasResult.data ?? [], 'id_comuna'),
+      paises: mapCatalog(paisesResult.data ?? [], 'id_pais'),
+      centrosCosto: mapCatalog(centrosCostoResult.data ?? [], 'id_centro_costo'),
+      sucursales: mapCatalog(sucursalesResult.data ?? [], 'id_sucursal'),
+      departamentos: mapDepartamentosCatalog(departamentosResult.data ?? []),
+      tiposTrabajador: mapCatalog(tiposTrabajadorResult.data ?? [], 'id_tipo_trabajador'),
+      tiposJornada: mapCatalog(tiposJornadaResult.data ?? [], 'id_tipo_jornada'),
+      regimenesPrevisionales: mapCatalog(regimenesResult.data ?? [], 'id_regimen'),
+      afps: mapCatalog(afpsResult.data ?? [], 'id_afp'),
+      entidadesSalud: mapSaludCatalog(saludResult.data ?? []),
+      monedas: mapCatalog(monedasResult.data ?? [], 'id_moneda'),
+      tramosCarga: pickLatestTramosCarga(tramosCargaResult.data ?? []),
+      institucionesApv: mapCatalog(institucionesApvResult.data ?? [], 'id_institucion_apv'),
+      formasPagoApv: mapCatalog(formasPagoApvResult.data ?? [], 'id_forma_pago_apv'),
+      bancos: mapCatalog(bancosResult.data ?? [], 'id_banco'),
+      tiposCuentaBancaria: mapCatalog(tiposCuentaResult.data ?? [], 'id_tipo_cuenta_bancaria'),
     };
   }
 
@@ -240,11 +246,11 @@ export class EmpleadosRepository {
       .order('id_persona', { ascending: false });
 
     if (error) {
-      throw this.buildError('No fue posible cargar el listado de empleados.', error.message);
+      throw buildRepositoryError('No fue posible cargar el listado de empleados.', error.message);
     }
 
-    const rows = (data ?? []).filter((row): row is PersonaFactorRow & { id_persona: number } =>
-      typeof row.id_persona === 'number',
+    const rows = (data ?? []).filter(
+      (row): row is PersonaFactorRow & { id_persona: number } => typeof row.id_persona === 'number',
     );
 
     const departamentos = await this.fetchDepartamentos(rows.map((row) => row.id_contrato));
@@ -262,7 +268,7 @@ export class EmpleadosRepository {
       .maybeSingle();
 
     if (error) {
-      throw this.buildError('No fue posible cargar el empleado.', error.message);
+      throw buildRepositoryError('No fue posible cargar el empleado.', error.message);
     }
 
     if (!data?.id_persona) {
@@ -271,7 +277,10 @@ export class EmpleadosRepository {
 
     const departamentos = await this.fetchDepartamentos([data.id_contrato]);
 
-    return mapPersonaFactorToEmpleado(data as PersonaFactorRow & { id_persona: number }, departamentos);
+    return mapPersonaFactorToEmpleado(
+      data as PersonaFactorRow & { id_persona: number },
+      departamentos,
+    );
   }
 
   async actualizarEstadoPersonas(ids: number[], estado: EmpleadoEstado): Promise<number[]> {
@@ -288,14 +297,17 @@ export class EmpleadosRepository {
       .select('id_persona');
 
     if (error) {
-      throw this.buildError('No fue posible actualizar el estado de los empleados.', error.message);
+      throw buildRepositoryError(
+        'No fue posible actualizar el estado de los empleados.',
+        error.message,
+      );
     }
 
     return (data ?? []).map((row) => row.id_persona);
   }
 
-  async crear(payload: EmpleadoCreacion): Promise<EmpleadoListado> {
-    const rut = this.parseRut(payload.rut);
+  async crear(payload: CrearEmpleadoPayload): Promise<EmpleadoListado> {
+    const rut = parseRut(payload.rut);
     const empresaId = await this.fetchEmpresaId();
 
     let personaId: number | null = null;
@@ -330,15 +342,17 @@ export class EmpleadosRepository {
         .single();
 
       if (personaError) {
-        if (this.isUniqueConstraintError(personaError, 'persona_rut_key')) {
-          throw new EmpleadoRutDuplicadoError(formatRut(rut.rut, rut.dv));
+        if (isUniqueConstraintError(personaError, 'persona_rut_key')) {
+          throw new EmpleadoRutDuplicadoError(formatRutParts(rut));
         }
 
-        const foreignKeyError = this.buildForeignKeyError(
+        const foreignKeyError = buildForeignKeyError(
           personaError,
           {
-            persona_id_comuna_fkey: 'La comuna seleccionada no esta disponible para registrar la ficha.',
-            persona_id_tramo_carga_fkey: 'El tramo de carga seleccionado no esta disponible para registrar la ficha.',
+            persona_id_comuna_fkey:
+              'La comuna seleccionada no esta disponible para registrar la ficha.',
+            persona_id_tramo_carga_fkey:
+              'El tramo de carga seleccionado no esta disponible para registrar la ficha.',
           },
           'No fue posible validar los datos personales seleccionados para la ficha.',
         );
@@ -347,7 +361,10 @@ export class EmpleadosRepository {
           throw foreignKeyError;
         }
 
-        throw this.buildError('No fue posible crear la persona en Supabase.', personaError.message);
+        throw buildRepositoryError(
+          'No fue posible crear la persona en Supabase.',
+          personaError.message,
+        );
       }
 
       personaId = persona.id_persona;
@@ -375,14 +392,17 @@ export class EmpleadosRepository {
         .single();
 
       if (contratoError) {
-        const foreignKeyError = this.buildForeignKeyError(
+        const foreignKeyError = buildForeignKeyError(
           contratoError,
           {
-            contrato_id_persona_fkey: 'No fue posible asociar el contrato a la ficha del colaborador.',
+            contrato_id_persona_fkey:
+              'No fue posible asociar el contrato a la ficha del colaborador.',
             contrato_id_empresa_fkey: 'La empresa configurada para el contrato no esta disponible.',
             contrato_id_sucursal_fkey: 'La sucursal seleccionada no esta disponible.',
-            contrato_id_departamento_empresa_fkey: 'El departamento seleccionado no esta disponible.',
-            contrato_id_tipo_trabajador_fkey: 'El tipo de trabajador seleccionado no esta disponible.',
+            contrato_id_departamento_empresa_fkey:
+              'El departamento seleccionado no esta disponible.',
+            contrato_id_tipo_trabajador_fkey:
+              'El tipo de trabajador seleccionado no esta disponible.',
             contrato_id_tipo_jornada_fkey: 'El tipo de jornada seleccionado no esta disponible.',
           },
           'No fue posible validar los datos laborales seleccionados para la ficha.',
@@ -392,7 +412,10 @@ export class EmpleadosRepository {
           throw foreignKeyError;
         }
 
-        throw this.buildError('No fue posible crear el contrato en Supabase.', contratoError.message);
+        throw buildRepositoryError(
+          'No fue posible crear el contrato en Supabase.',
+          contratoError.message,
+        );
       }
 
       contratoId = contrato.id_contrato;
@@ -413,14 +436,18 @@ export class EmpleadosRepository {
         vigencia_inicio: payload.fechaIngreso,
       };
 
-      const { error: remuneracionError } = await this.supabase.from('remuneracion').insert(remuneracionInsert);
+      const { error: remuneracionError } = await this.supabase
+        .from('remuneracion')
+        .insert(remuneracionInsert);
 
       if (remuneracionError) {
-        const foreignKeyError = this.buildForeignKeyError(
+        const foreignKeyError = buildForeignKeyError(
           remuneracionError,
           {
-            remuneracion_id_contrato_fkey: 'No fue posible asociar la remuneracion al contrato del colaborador.',
-            remuneracion_id_moneda_fkey: 'La moneda seleccionada para la remuneracion no esta disponible.',
+            remuneracion_id_contrato_fkey:
+              'No fue posible asociar la remuneracion al contrato del colaborador.',
+            remuneracion_id_moneda_fkey:
+              'La moneda seleccionada para la remuneracion no esta disponible.',
           },
           'No fue posible validar los datos de remuneracion seleccionados.',
         );
@@ -429,7 +456,10 @@ export class EmpleadosRepository {
           throw foreignKeyError;
         }
 
-        throw this.buildError('No fue posible registrar la remuneracion del empleado.', remuneracionError.message);
+        throw buildRepositoryError(
+          'No fue posible registrar la remuneracion del empleado.',
+          remuneracionError.message,
+        );
       }
 
       const previsionInsert: PrevisionInsert = {
@@ -447,15 +477,19 @@ export class EmpleadosRepository {
         vigencia_fin: null,
       };
 
-      const { error: previsionError } = await this.supabase.from('prevision').insert(previsionInsert);
+      const { error: previsionError } = await this.supabase
+        .from('prevision')
+        .insert(previsionInsert);
 
       if (previsionError) {
-        const foreignKeyError = this.buildForeignKeyError(
+        const foreignKeyError = buildForeignKeyError(
           previsionError,
           {
-            prevision_id_contrato_fkey: 'No fue posible asociar la prevision al contrato del colaborador.',
+            prevision_id_contrato_fkey:
+              'No fue posible asociar la prevision al contrato del colaborador.',
             prevision_id_afp_fkey: 'La AFP seleccionada no esta disponible.',
-            prevision_id_regimen_previsional_fkey: 'El regimen previsional seleccionado no esta disponible.',
+            prevision_id_regimen_previsional_fkey:
+              'El regimen previsional seleccionado no esta disponible.',
           },
           'No fue posible validar los datos previsionales seleccionados.',
         );
@@ -464,7 +498,10 @@ export class EmpleadosRepository {
           throw foreignKeyError;
         }
 
-        throw this.buildError('No fue posible registrar la prevision del empleado.', previsionError.message);
+        throw buildRepositoryError(
+          'No fue posible registrar la prevision del empleado.',
+          previsionError.message,
+        );
       }
 
       if (payload.tipoPrevision !== 'NINGUNA') {
@@ -479,15 +516,20 @@ export class EmpleadosRepository {
           vigencia_inicio: payload.fechaIngreso,
         };
 
-        const { error: saludError } = await this.supabase.from('salud_trabajador').insert(saludTrabajadorInsert);
+        const { error: saludError } = await this.supabase
+          .from('salud_trabajador')
+          .insert(saludTrabajadorInsert);
 
         if (saludError) {
-          const foreignKeyError = this.buildForeignKeyError(
+          const foreignKeyError = buildForeignKeyError(
             saludError,
             {
-              salud_trabajador_id_contrato_fkey: 'No fue posible asociar la salud al contrato del colaborador.',
-              salud_trabajador_id_salud_fkey: 'La institucion de salud seleccionada no esta disponible.',
-              salud_trabajador_id_moneda_plan_fkey: 'La moneda seleccionada para el plan de salud no esta disponible.',
+              salud_trabajador_id_contrato_fkey:
+                'No fue posible asociar la salud al contrato del colaborador.',
+              salud_trabajador_id_salud_fkey:
+                'La institucion de salud seleccionada no esta disponible.',
+              salud_trabajador_id_moneda_plan_fkey:
+                'La moneda seleccionada para el plan de salud no esta disponible.',
             },
             'No fue posible validar los datos de salud seleccionados.',
           );
@@ -496,11 +538,18 @@ export class EmpleadosRepository {
             throw foreignKeyError;
           }
 
-          throw this.buildError('No fue posible registrar la salud del empleado.', saludError.message);
+          throw buildRepositoryError(
+            'No fue posible registrar la salud del empleado.',
+            saludError.message,
+          );
         }
       }
 
-      if (payload.tipoPrevision === 'AFP' && payload.idMonedaCuenta2 !== null && payload.valorCuenta2 !== null) {
+      if (
+        payload.tipoPrevision === 'AFP' &&
+        payload.idMonedaCuenta2 !== null &&
+        payload.valorCuenta2 !== null
+      ) {
         const cuenta2Insert: Cuenta2AfpInsert = {
           id_contrato: contratoId,
           id_moneda: payload.idMonedaCuenta2,
@@ -511,14 +560,18 @@ export class EmpleadosRepository {
           observacion: null,
         };
 
-        const { error: cuenta2Error } = await this.supabase.from('cuenta2_afp').insert(cuenta2Insert);
+        const { error: cuenta2Error } = await this.supabase
+          .from('cuenta2_afp')
+          .insert(cuenta2Insert);
 
         if (cuenta2Error) {
-          const foreignKeyError = this.buildForeignKeyError(
+          const foreignKeyError = buildForeignKeyError(
             cuenta2Error,
             {
-              cuenta2_afp_id_contrato_fkey: 'No fue posible asociar la Cuenta 2 al contrato del colaborador.',
-              cuenta2_afp_id_moneda_fkey: 'La moneda seleccionada para Cuenta 2 no esta disponible.',
+              cuenta2_afp_id_contrato_fkey:
+                'No fue posible asociar la Cuenta 2 al contrato del colaborador.',
+              cuenta2_afp_id_moneda_fkey:
+                'La moneda seleccionada para Cuenta 2 no esta disponible.',
             },
             'No fue posible validar los datos de Cuenta 2 seleccionados.',
           );
@@ -527,7 +580,10 @@ export class EmpleadosRepository {
             throw foreignKeyError;
           }
 
-          throw this.buildError('No fue posible registrar la Cuenta 2 del empleado.', cuenta2Error.message);
+          throw buildRepositoryError(
+            'No fue posible registrar la Cuenta 2 del empleado.',
+            cuenta2Error.message,
+          );
         }
       }
 
@@ -540,13 +596,16 @@ export class EmpleadosRepository {
           vigencia_fin: null,
         };
 
-        const { error: semanaCorridaError } = await this.supabase.from('semana_corrida').insert(semanaCorridaInsert);
+        const { error: semanaCorridaError } = await this.supabase
+          .from('semana_corrida')
+          .insert(semanaCorridaInsert);
 
         if (semanaCorridaError) {
-          const foreignKeyError = this.buildForeignKeyError(
+          const foreignKeyError = buildForeignKeyError(
             semanaCorridaError,
             {
-              semana_corrida_id_contrato_fkey: 'No fue posible asociar la semana corrida al contrato del colaborador.',
+              semana_corrida_id_contrato_fkey:
+                'No fue posible asociar la semana corrida al contrato del colaborador.',
             },
             'No fue posible validar la configuracion de semana corrida.',
           );
@@ -555,7 +614,7 @@ export class EmpleadosRepository {
             throw foreignKeyError;
           }
 
-          throw this.buildError(
+          throw buildRepositoryError(
             'No fue posible registrar la configuracion de semana corrida del empleado.',
             semanaCorridaError.message,
           );
@@ -571,13 +630,16 @@ export class EmpleadosRepository {
           vigencia_fin: null,
         };
 
-        const { error: zonaExtremaError } = await this.supabase.from('zona_extrema').insert(zonaExtremaInsert);
+        const { error: zonaExtremaError } = await this.supabase
+          .from('zona_extrema')
+          .insert(zonaExtremaInsert);
 
         if (zonaExtremaError) {
-          const foreignKeyError = this.buildForeignKeyError(
+          const foreignKeyError = buildForeignKeyError(
             zonaExtremaError,
             {
-              zona_extrema_id_contrato_fkey: 'No fue posible asociar la zona extrema al contrato del colaborador.',
+              zona_extrema_id_contrato_fkey:
+                'No fue posible asociar la zona extrema al contrato del colaborador.',
             },
             'No fue posible validar la configuracion de zona extrema.',
           );
@@ -586,7 +648,7 @@ export class EmpleadosRepository {
             throw foreignKeyError;
           }
 
-          throw this.buildError(
+          throw buildRepositoryError(
             'No fue posible registrar la configuracion de zona extrema del empleado.',
             zonaExtremaError.message,
           );
@@ -608,7 +670,7 @@ export class EmpleadosRepository {
         const { error: apvError } = await this.supabase.from('apv').insert(apvInsert);
 
         if (apvError) {
-          const foreignKeyError = this.buildForeignKeyError(
+          const foreignKeyError = buildForeignKeyError(
             apvError,
             {
               apv_id_contrato_fkey: 'No fue posible asociar el APVI al contrato del colaborador.',
@@ -623,7 +685,10 @@ export class EmpleadosRepository {
             throw foreignKeyError;
           }
 
-          throw this.buildError('No fue posible registrar el APVI del empleado.', apvError.message);
+          throw buildRepositoryError(
+            'No fue posible registrar el APVI del empleado.',
+            apvError.message,
+          );
         }
       }
 
@@ -635,15 +700,19 @@ export class EmpleadosRepository {
         vigencia_inicio: payload.fechaIngreso,
       };
 
-      const { error: cuentaBancariaError } = await this.supabase.from('cuenta_bancaria').insert(cuentaBancariaInsert);
+      const { error: cuentaBancariaError } = await this.supabase
+        .from('cuenta_bancaria')
+        .insert(cuentaBancariaInsert);
 
       if (cuentaBancariaError) {
-        const foreignKeyError = this.buildForeignKeyError(
+        const foreignKeyError = buildForeignKeyError(
           cuentaBancariaError,
           {
-            cuenta_bancaria_id_persona_fkey: 'No fue posible asociar la cuenta bancaria a la ficha del colaborador.',
+            cuenta_bancaria_id_persona_fkey:
+              'No fue posible asociar la cuenta bancaria a la ficha del colaborador.',
             cuenta_bancaria_id_banco_fkey: 'El banco seleccionado no esta disponible.',
-            cuenta_bancaria_id_tipo_cuenta_bancaria_fkey: 'El tipo de cuenta bancaria seleccionado no esta disponible.',
+            cuenta_bancaria_id_tipo_cuenta_bancaria_fkey:
+              'El tipo de cuenta bancaria seleccionado no esta disponible.',
           },
           'No fue posible validar los datos bancarios seleccionados.',
         );
@@ -652,7 +721,7 @@ export class EmpleadosRepository {
           throw foreignKeyError;
         }
 
-        throw this.buildError(
+        throw buildRepositoryError(
           'No fue posible registrar la cuenta bancaria del empleado.',
           cuentaBancariaError.message,
         );
@@ -670,11 +739,13 @@ export class EmpleadosRepository {
           .insert(centroCostoInsert);
 
         if (centroCostoError) {
-          const foreignKeyError = this.buildForeignKeyError(
+          const foreignKeyError = buildForeignKeyError(
             centroCostoError,
             {
-              contrato_centro_costo_id_contrato_fkey: 'No fue posible asociar el centro de costo al contrato del colaborador.',
-              contrato_centro_costo_id_centro_costo_fkey: 'El centro de costo seleccionado no esta disponible.',
+              contrato_centro_costo_id_contrato_fkey:
+                'No fue posible asociar el centro de costo al contrato del colaborador.',
+              contrato_centro_costo_id_centro_costo_fkey:
+                'El centro de costo seleccionado no esta disponible.',
             },
             'No fue posible validar el centro de costo seleccionado.',
           );
@@ -683,7 +754,7 @@ export class EmpleadosRepository {
             throw foreignKeyError;
           }
 
-          throw this.buildError(
+          throw buildRepositoryError(
             'No fue posible vincular el contrato al centro de costo seleccionado.',
             centroCostoError.message,
           );
@@ -694,7 +765,7 @@ export class EmpleadosRepository {
 
       return {
         id: personaId!,
-        rut: formatRut(rut.rut, rut.dv),
+        rut: formatRutParts(rut),
         nombre: `${payload.nombres} ${payload.apellidoPaterno} ${payload.apellidoMaterno}`
           .replace(/\s+/g, ' ')
           .trim(),
@@ -710,7 +781,9 @@ export class EmpleadosRepository {
     }
   }
 
-  private async fetchDepartamentos(contractIds: Array<number | null>): Promise<Map<number, string>> {
+  private async fetchDepartamentos(
+    contractIds: Array<number | null>,
+  ): Promise<Map<number, string>> {
     const normalizedIds = contractIds.filter((id): id is number => typeof id === 'number');
 
     if (normalizedIds.length === 0) {
@@ -723,7 +796,10 @@ export class EmpleadosRepository {
       .in('id_contrato', normalizedIds);
 
     if (error) {
-      throw this.buildError('No fue posible cargar los departamentos de los empleados.', error.message);
+      throw buildRepositoryError(
+        'No fue posible cargar los departamentos de los empleados.',
+        error.message,
+      );
     }
 
     const departamentos = new Map<number, string>();
@@ -737,26 +813,6 @@ export class EmpleadosRepository {
     return departamentos;
   }
 
-  private mapPersonaFactorToEmpleado(
-    row: PersonaFactorRow & { id_persona: number },
-    departamentos: Map<number, string>,
-  ): EmpleadoListado {
-    const rut = row.rut ? this.formatRut(row.rut, row.dv ?? '') : 'Sin RUT';
-    const nombre = [row.nombres, row.apellido_paterno, row.apellido_materno].filter(Boolean).join(' ').trim();
-
-    return {
-      id: row.id_persona,
-      rut,
-      nombre: nombre || 'Sin nombre',
-      cargo: row.cargo?.trim() || 'Sin cargo',
-      departamento:
-        (typeof row.id_contrato === 'number' ? departamentos.get(row.id_contrato) : null) ?? 'Sin centro de costo',
-      fechaIngreso: row.fingreso ? this.formatDate(row.fingreso) : 'Sin fecha',
-      sueldoBase: row.base ?? 0,
-      estado: this.mapPersonaEstadoToEmpleadoEstado(row.estado) ?? this.mapContratoEstadoToEmpleadoEstado(row.estado_contrato),
-    };
-  }
-
   private async fetchEmpresaId(): Promise<number> {
     const { data, error } = await this.supabase
       .from('empresa')
@@ -766,7 +822,10 @@ export class EmpleadosRepository {
       .single();
 
     if (error || !data) {
-      throw this.buildError('No se encontro una empresa configurada para crear contratos.', error?.message);
+      throw buildRepositoryError(
+        'No se encontro una empresa configurada para crear contratos.',
+        error?.message,
+      );
     }
 
     return data.id_empresa;
@@ -798,180 +857,5 @@ export class EmpleadosRepository {
     if (personaId !== null) {
       await this.supabase.from('persona').delete().eq('id_persona', personaId);
     }
-  }
-
-  private mapCatalog<T extends { nombre: string }>(
-    rows: T[],
-    idKey: keyof T & string,
-  ): EmpleadoCatalogOption[] {
-    return rows
-      .map((row) => ({ value: Number(row[idKey]), label: row.nombre }))
-      .filter((row) => Number.isFinite(row.value));
-  }
-
-  private pickLatestTramosCarga(rows: TramoCargaRow[]): TramoCargaCatalogOption[] {
-    const latestPeriodo = rows[0]?.periodo;
-
-    if (!latestPeriodo) {
-      return [];
-    }
-
-    return rows
-      .filter((row) => row.periodo === latestPeriodo)
-      .map((row) => ({
-        value: row.id_tramo,
-        periodo: row.periodo,
-        desde: row.desde,
-        hasta: row.hasta,
-        valor: row.valor,
-        tramo: row.tramo,
-      }));
-  }
-
-  private parseRut(value: string): { rut: string; dv: string } {
-    const cleaned = value.replace(/[^0-9kK]/g, '').toUpperCase();
-
-    if (cleaned.length < 2) {
-      throw this.buildError('El RUT no tiene un formato valido.');
-    }
-
-    const rut = cleaned.slice(0, -1);
-    const dv = cleaned.slice(-1);
-
-    if (!/^\d{7,9}$/.test(rut) || !/^[0-9K]$/.test(dv)) {
-      throw this.buildError('El RUT no tiene un formato valido.');
-    }
-
-    return { rut, dv };
-  }
-
-  private mapContratoEstadoToEmpleadoEstado(value: string | null): EmpleadoEstado {
-    switch (value?.toUpperCase()) {
-      case 'ACTIVO':
-        return 'activo';
-      case 'SUSPENDIDO':
-      case 'PENDIENTE':
-        return 'suspendido';
-      case 'TERMINADO':
-        return 'desvinculado';
-      default:
-        return 'inactivo';
-    }
-  }
-
-  private mapPersonaEstadoToEmpleadoEstado(value: string | null): EmpleadoEstado | null {
-    switch (value?.toUpperCase()) {
-      case 'BORRADOR':
-        return 'borrador';
-      case 'EN_PROCESO':
-        return 'en_proceso';
-      case 'ACTIVO':
-        return 'activo';
-      case 'SUSPENDIDO':
-        return 'suspendido';
-      case 'INACTIVO':
-        return 'inactivo';
-      case 'DESVINCULADO':
-        return 'desvinculado';
-      case 'BLOQUEADO':
-        return 'bloqueado';
-      default:
-        return null;
-    }
-  }
-
-  private mapEmpleadoEstadoToPersonaEstado(value: EmpleadoEstado): string {
-    switch (value) {
-      case 'borrador':
-        return 'BORRADOR';
-      case 'en_proceso':
-        return 'EN_PROCESO';
-      case 'activo':
-        return 'ACTIVO';
-      case 'suspendido':
-        return 'SUSPENDIDO';
-      case 'inactivo':
-        return 'INACTIVO';
-      case 'desvinculado':
-        return 'DESVINCULADO';
-      case 'bloqueado':
-        return 'BLOQUEADO';
-    }
-  }
-
-  private mapEmpleadoEstadoToContratoEstado(value: EmpleadoEstado): string {
-    switch (value) {
-      case 'activo':
-        return 'ACTIVO';
-      case 'suspendido':
-      case 'bloqueado':
-        return 'SUSPENDIDO';
-      case 'inactivo':
-      case 'borrador':
-      case 'en_proceso':
-      case 'desvinculado':
-        return 'TERMINADO';
-    }
-  }
-
-  private formatRut(rut: string, dv: string): string {
-    if (!rut || !dv) {
-      return rut || 'Sin RUT';
-    }
-
-    const reversedDigits = rut.split('').reverse();
-    const parts: string[] = [];
-
-    for (let index = 0; index < reversedDigits.length; index += 3) {
-      parts.push(reversedDigits.slice(index, index + 3).reverse().join(''));
-    }
-
-    return `${parts.reverse().join('.')}-${dv}`;
-  }
-
-  private formatDate(value: string): string {
-    const normalized = value.slice(0, 10);
-    const [year, month, day] = normalized.split('-');
-
-    if (!year || !month || !day) {
-      return value;
-    }
-
-    return `${day}/${month}/${year}`;
-  }
-
-  private buildError(message: string, details?: string): Error {
-    return new Error(details ? `${message} ${details}` : message);
-  }
-
-  private isUniqueConstraintError(error: SupabaseWriteError, constraintName: string): boolean {
-    const text = this.getErrorText(error);
-
-    return text.includes('23505') && text.includes(constraintName.toLowerCase());
-  }
-
-  private buildForeignKeyError(
-    error: SupabaseWriteError,
-    messagesByConstraint: Record<string, string>,
-    fallbackMessage: string,
-  ): EmpleadoReferenciaInvalidaError | null {
-    if (!this.isForeignKeyConstraintError(error)) {
-      return null;
-    }
-
-    const text = this.getErrorText(error);
-    const match = Object.entries(messagesByConstraint).find(([constraintName]) =>
-      text.includes(constraintName.toLowerCase()),
-    );
-
-    return new EmpleadoReferenciaInvalidaError(match?.[1] ?? fallbackMessage);
-  }
-
-  private isForeignKeyConstraintError(error: SupabaseWriteError): boolean {
-    return this.getErrorText(error).includes('23503');
-  }
-
-  private getErrorText(error: SupabaseWriteError): string {
-    return [error.code, error.message, error.details, error.hint].filter(Boolean).join(' ').toLowerCase();
   }
 }
