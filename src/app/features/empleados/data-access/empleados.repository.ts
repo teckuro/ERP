@@ -27,9 +27,8 @@ import {
   buildSaludTrabajadorInsert,
   buildSemanaCorridaInsert,
   buildZonaExtremaInsert,
-  mapCreatedEmpleado,
 } from '../mappers/empleado-write.mapper';
-import { formatRutParts, parseRut } from '../utils/empleado-rut';
+import { formatRutParts, RutParts } from '../utils/empleado-rut';
 import {
   buildForeignKeyError,
   buildRepositoryError,
@@ -307,339 +306,391 @@ export class EmpleadosRepository {
     return (data ?? []).map((row) => row.id_persona);
   }
 
-  async crear(payload: CrearEmpleadoPayload): Promise<EmpleadoListado> {
-    const rut = parseRut(payload.rut);
-    const empresaId = await this.fetchEmpresaId();
+  async obtenerEmpresaIdParaContrato(): Promise<number> {
+    const { data, error } = await this.supabase
+      .from('empresa')
+      .select('id_empresa')
+      .order('id_empresa', { ascending: true })
+      .limit(1)
+      .single();
 
-    let personaId: number | null = null;
-    let contratoId: number | null = null;
+    if (error || !data) {
+      throw buildRepositoryError(
+        'No se encontro una empresa configurada para crear contratos.',
+        error?.message,
+      );
+    }
 
-    try {
-      const { data: persona, error: personaError } = await this.supabase
-        .from('persona')
-        .insert(buildPersonaInsert(payload, rut))
-        .select('id_persona')
-        .single();
+    return data.id_empresa;
+  }
 
-      if (personaError) {
-        if (isUniqueConstraintError(personaError, 'persona_rut_key')) {
-          throw new EmpleadoRutDuplicadoError(formatRutParts(rut));
-        }
+  async insertarPersona(payload: CrearEmpleadoPayload, rut: RutParts): Promise<number> {
+    const { data, error } = await this.supabase
+      .from('persona')
+      .insert(buildPersonaInsert(payload, rut))
+      .select('id_persona')
+      .single();
 
-        const foreignKeyError = buildForeignKeyError(
-          personaError,
-          {
-            persona_id_comuna_fkey:
-              'La comuna seleccionada no esta disponible para registrar la ficha.',
-            persona_id_tramo_carga_fkey:
-              'El tramo de carga seleccionado no esta disponible para registrar la ficha.',
-          },
-          'No fue posible validar los datos personales seleccionados para la ficha.',
-        );
-
-        if (foreignKeyError) {
-          throw foreignKeyError;
-        }
-
-        throw buildRepositoryError(
-          'No fue posible crear la persona en Supabase.',
-          personaError.message,
-        );
+    if (error) {
+      if (isUniqueConstraintError(error, 'persona_rut_key')) {
+        throw new EmpleadoRutDuplicadoError(formatRutParts(rut));
       }
 
-      personaId = persona.id_persona;
+      const foreignKeyError = buildForeignKeyError(
+        error,
+        {
+          persona_id_comuna_fkey:
+            'La comuna seleccionada no esta disponible para registrar la ficha.',
+          persona_id_tramo_carga_fkey:
+            'El tramo de carga seleccionado no esta disponible para registrar la ficha.',
+        },
+        'No fue posible validar los datos personales seleccionados para la ficha.',
+      );
 
-      const { data: contrato, error: contratoError } = await this.supabase
-        .from('contrato')
-        .insert(buildContratoInsert(payload, personaId, empresaId))
-        .select('id_contrato')
-        .single();
-
-      if (contratoError) {
-        const foreignKeyError = buildForeignKeyError(
-          contratoError,
-          {
-            contrato_id_persona_fkey:
-              'No fue posible asociar el contrato a la ficha del colaborador.',
-            contrato_id_empresa_fkey: 'La empresa configurada para el contrato no esta disponible.',
-            contrato_id_sucursal_fkey: 'La sucursal seleccionada no esta disponible.',
-            contrato_id_departamento_empresa_fkey:
-              'El departamento seleccionado no esta disponible.',
-            contrato_id_tipo_trabajador_fkey:
-              'El tipo de trabajador seleccionado no esta disponible.',
-            contrato_id_tipo_jornada_fkey: 'El tipo de jornada seleccionado no esta disponible.',
-          },
-          'No fue posible validar los datos laborales seleccionados para la ficha.',
-        );
-
-        if (foreignKeyError) {
-          throw foreignKeyError;
-        }
-
-        throw buildRepositoryError(
-          'No fue posible crear el contrato en Supabase.',
-          contratoError.message,
-        );
+      if (foreignKeyError) {
+        throw foreignKeyError;
       }
 
-      contratoId = contrato.id_contrato;
+      throw buildRepositoryError('No fue posible crear la persona en Supabase.', error.message);
+    }
 
-      const { error: remuneracionError } = await this.supabase
-        .from('remuneracion')
-        .insert(buildRemuneracionInsert(payload, contratoId));
+    return data.id_persona;
+  }
 
-      if (remuneracionError) {
-        const foreignKeyError = buildForeignKeyError(
-          remuneracionError,
-          {
-            remuneracion_id_contrato_fkey:
-              'No fue posible asociar la remuneracion al contrato del colaborador.',
-            remuneracion_id_moneda_fkey:
-              'La moneda seleccionada para la remuneracion no esta disponible.',
-          },
-          'No fue posible validar los datos de remuneracion seleccionados.',
-        );
+  async insertarContrato(
+    payload: CrearEmpleadoPayload,
+    personaId: number,
+    empresaId: number,
+  ): Promise<number> {
+    const { data, error } = await this.supabase
+      .from('contrato')
+      .insert(buildContratoInsert(payload, personaId, empresaId))
+      .select('id_contrato')
+      .single();
 
-        if (foreignKeyError) {
-          throw foreignKeyError;
-        }
+    if (error) {
+      const foreignKeyError = buildForeignKeyError(
+        error,
+        {
+          contrato_id_persona_fkey:
+            'No fue posible asociar el contrato a la ficha del colaborador.',
+          contrato_id_empresa_fkey: 'La empresa configurada para el contrato no esta disponible.',
+          contrato_id_sucursal_fkey: 'La sucursal seleccionada no esta disponible.',
+          contrato_id_departamento_empresa_fkey: 'El departamento seleccionado no esta disponible.',
+          contrato_id_tipo_trabajador_fkey:
+            'El tipo de trabajador seleccionado no esta disponible.',
+          contrato_id_tipo_jornada_fkey: 'El tipo de jornada seleccionado no esta disponible.',
+        },
+        'No fue posible validar los datos laborales seleccionados para la ficha.',
+      );
 
-        throw buildRepositoryError(
-          'No fue posible registrar la remuneracion del empleado.',
-          remuneracionError.message,
-        );
+      if (foreignKeyError) {
+        throw foreignKeyError;
       }
 
-      const { error: previsionError } = await this.supabase
-        .from('prevision')
-        .insert(buildPrevisionInsert(payload, contratoId));
+      throw buildRepositoryError('No fue posible crear el contrato en Supabase.', error.message);
+    }
 
-      if (previsionError) {
-        const foreignKeyError = buildForeignKeyError(
-          previsionError,
-          {
-            prevision_id_contrato_fkey:
-              'No fue posible asociar la prevision al contrato del colaborador.',
-            prevision_id_afp_fkey: 'La AFP seleccionada no esta disponible.',
-            prevision_id_regimen_previsional_fkey:
-              'El regimen previsional seleccionado no esta disponible.',
-          },
-          'No fue posible validar los datos previsionales seleccionados.',
-        );
+    return data.id_contrato;
+  }
 
-        if (foreignKeyError) {
-          throw foreignKeyError;
-        }
+  async insertarRemuneracion(payload: CrearEmpleadoPayload, contratoId: number): Promise<void> {
+    const { error } = await this.supabase
+      .from('remuneracion')
+      .insert(buildRemuneracionInsert(payload, contratoId));
 
-        throw buildRepositoryError(
-          'No fue posible registrar la prevision del empleado.',
-          previsionError.message,
-        );
+    if (error) {
+      const foreignKeyError = buildForeignKeyError(
+        error,
+        {
+          remuneracion_id_contrato_fkey:
+            'No fue posible asociar la remuneracion al contrato del colaborador.',
+          remuneracion_id_moneda_fkey:
+            'La moneda seleccionada para la remuneracion no esta disponible.',
+        },
+        'No fue posible validar los datos de remuneracion seleccionados.',
+      );
+
+      if (foreignKeyError) {
+        throw foreignKeyError;
       }
 
-      const saludTrabajadorInsert = buildSaludTrabajadorInsert(payload, contratoId);
-      if (saludTrabajadorInsert) {
-        const { error: saludError } = await this.supabase
-          .from('salud_trabajador')
-          .insert(saludTrabajadorInsert);
+      throw buildRepositoryError(
+        'No fue posible registrar la remuneracion del empleado.',
+        error.message,
+      );
+    }
+  }
 
-        if (saludError) {
-          const foreignKeyError = buildForeignKeyError(
-            saludError,
-            {
-              salud_trabajador_id_contrato_fkey:
-                'No fue posible asociar la salud al contrato del colaborador.',
-              salud_trabajador_id_salud_fkey:
-                'La institucion de salud seleccionada no esta disponible.',
-              salud_trabajador_id_moneda_plan_fkey:
-                'La moneda seleccionada para el plan de salud no esta disponible.',
-            },
-            'No fue posible validar los datos de salud seleccionados.',
-          );
+  async insertarPrevision(payload: CrearEmpleadoPayload, contratoId: number): Promise<void> {
+    const { error } = await this.supabase
+      .from('prevision')
+      .insert(buildPrevisionInsert(payload, contratoId));
 
-          if (foreignKeyError) {
-            throw foreignKeyError;
-          }
+    if (error) {
+      const foreignKeyError = buildForeignKeyError(
+        error,
+        {
+          prevision_id_contrato_fkey:
+            'No fue posible asociar la prevision al contrato del colaborador.',
+          prevision_id_afp_fkey: 'La AFP seleccionada no esta disponible.',
+          prevision_id_regimen_previsional_fkey:
+            'El regimen previsional seleccionado no esta disponible.',
+        },
+        'No fue posible validar los datos previsionales seleccionados.',
+      );
 
-          throw buildRepositoryError(
-            'No fue posible registrar la salud del empleado.',
-            saludError.message,
-          );
-        }
+      if (foreignKeyError) {
+        throw foreignKeyError;
       }
 
-      const cuenta2Insert = buildCuenta2AfpInsert(payload, contratoId);
-      if (cuenta2Insert) {
-        const { error: cuenta2Error } = await this.supabase
-          .from('cuenta2_afp')
-          .insert(cuenta2Insert);
+      throw buildRepositoryError(
+        'No fue posible registrar la prevision del empleado.',
+        error.message,
+      );
+    }
+  }
 
-        if (cuenta2Error) {
-          const foreignKeyError = buildForeignKeyError(
-            cuenta2Error,
-            {
-              cuenta2_afp_id_contrato_fkey:
-                'No fue posible asociar la Cuenta 2 al contrato del colaborador.',
-              cuenta2_afp_id_moneda_fkey:
-                'La moneda seleccionada para Cuenta 2 no esta disponible.',
-            },
-            'No fue posible validar los datos de Cuenta 2 seleccionados.',
-          );
+  async insertarSaludTrabajador(payload: CrearEmpleadoPayload, contratoId: number): Promise<void> {
+    const saludTrabajadorInsert = buildSaludTrabajadorInsert(payload, contratoId);
 
-          if (foreignKeyError) {
-            throw foreignKeyError;
-          }
+    if (!saludTrabajadorInsert) {
+      return;
+    }
 
-          throw buildRepositoryError(
-            'No fue posible registrar la Cuenta 2 del empleado.',
-            cuenta2Error.message,
-          );
-        }
+    const { error } = await this.supabase.from('salud_trabajador').insert(saludTrabajadorInsert);
+
+    if (error) {
+      const foreignKeyError = buildForeignKeyError(
+        error,
+        {
+          salud_trabajador_id_contrato_fkey:
+            'No fue posible asociar la salud al contrato del colaborador.',
+          salud_trabajador_id_salud_fkey:
+            'La institucion de salud seleccionada no esta disponible.',
+          salud_trabajador_id_moneda_plan_fkey:
+            'La moneda seleccionada para el plan de salud no esta disponible.',
+        },
+        'No fue posible validar los datos de salud seleccionados.',
+      );
+
+      if (foreignKeyError) {
+        throw foreignKeyError;
       }
 
-      const semanaCorridaInsert = buildSemanaCorridaInsert(payload, contratoId);
-      if (semanaCorridaInsert) {
-        const { error: semanaCorridaError } = await this.supabase
-          .from('semana_corrida')
-          .insert(semanaCorridaInsert);
+      throw buildRepositoryError('No fue posible registrar la salud del empleado.', error.message);
+    }
+  }
 
-        if (semanaCorridaError) {
-          const foreignKeyError = buildForeignKeyError(
-            semanaCorridaError,
-            {
-              semana_corrida_id_contrato_fkey:
-                'No fue posible asociar la semana corrida al contrato del colaborador.',
-            },
-            'No fue posible validar la configuracion de semana corrida.',
-          );
+  async insertarCuenta2Afp(payload: CrearEmpleadoPayload, contratoId: number): Promise<void> {
+    const cuenta2Insert = buildCuenta2AfpInsert(payload, contratoId);
 
-          if (foreignKeyError) {
-            throw foreignKeyError;
-          }
+    if (!cuenta2Insert) {
+      return;
+    }
 
-          throw buildRepositoryError(
-            'No fue posible registrar la configuracion de semana corrida del empleado.',
-            semanaCorridaError.message,
-          );
-        }
+    const { error } = await this.supabase.from('cuenta2_afp').insert(cuenta2Insert);
+
+    if (error) {
+      const foreignKeyError = buildForeignKeyError(
+        error,
+        {
+          cuenta2_afp_id_contrato_fkey:
+            'No fue posible asociar la Cuenta 2 al contrato del colaborador.',
+          cuenta2_afp_id_moneda_fkey: 'La moneda seleccionada para Cuenta 2 no esta disponible.',
+        },
+        'No fue posible validar los datos de Cuenta 2 seleccionados.',
+      );
+
+      if (foreignKeyError) {
+        throw foreignKeyError;
       }
 
-      const zonaExtremaInsert = buildZonaExtremaInsert(payload, contratoId);
-      if (zonaExtremaInsert) {
-        const { error: zonaExtremaError } = await this.supabase
-          .from('zona_extrema')
-          .insert(zonaExtremaInsert);
+      throw buildRepositoryError(
+        'No fue posible registrar la Cuenta 2 del empleado.',
+        error.message,
+      );
+    }
+  }
 
-        if (zonaExtremaError) {
-          const foreignKeyError = buildForeignKeyError(
-            zonaExtremaError,
-            {
-              zona_extrema_id_contrato_fkey:
-                'No fue posible asociar la zona extrema al contrato del colaborador.',
-            },
-            'No fue posible validar la configuracion de zona extrema.',
-          );
+  async insertarSemanaCorrida(payload: CrearEmpleadoPayload, contratoId: number): Promise<void> {
+    const semanaCorridaInsert = buildSemanaCorridaInsert(payload, contratoId);
 
-          if (foreignKeyError) {
-            throw foreignKeyError;
-          }
+    if (!semanaCorridaInsert) {
+      return;
+    }
 
-          throw buildRepositoryError(
-            'No fue posible registrar la configuracion de zona extrema del empleado.',
-            zonaExtremaError.message,
-          );
-        }
+    const { error } = await this.supabase.from('semana_corrida').insert(semanaCorridaInsert);
+
+    if (error) {
+      const foreignKeyError = buildForeignKeyError(
+        error,
+        {
+          semana_corrida_id_contrato_fkey:
+            'No fue posible asociar la semana corrida al contrato del colaborador.',
+        },
+        'No fue posible validar la configuracion de semana corrida.',
+      );
+
+      if (foreignKeyError) {
+        throw foreignKeyError;
       }
 
-      const apvInsert = buildApvInsert(payload, contratoId);
-      if (apvInsert) {
-        const { error: apvError } = await this.supabase.from('apv').insert(apvInsert);
+      throw buildRepositoryError(
+        'No fue posible registrar la configuracion de semana corrida del empleado.',
+        error.message,
+      );
+    }
+  }
 
-        if (apvError) {
-          const foreignKeyError = buildForeignKeyError(
-            apvError,
-            {
-              apv_id_contrato_fkey: 'No fue posible asociar el APVI al contrato del colaborador.',
-              apv_id_institucion_apv_fkey: 'La institucion APVI seleccionada no esta disponible.',
-              apv_id_moneda_fkey: 'La moneda seleccionada para APVI no esta disponible.',
-              apv_id_forma_pago_apv_fkey: 'La forma de pago APVI seleccionada no esta disponible.',
-            },
-            'No fue posible validar los datos APVI seleccionados.',
-          );
+  async insertarZonaExtrema(payload: CrearEmpleadoPayload, contratoId: number): Promise<void> {
+    const zonaExtremaInsert = buildZonaExtremaInsert(payload, contratoId);
 
-          if (foreignKeyError) {
-            throw foreignKeyError;
-          }
+    if (!zonaExtremaInsert) {
+      return;
+    }
 
-          throw buildRepositoryError(
-            'No fue posible registrar el APVI del empleado.',
-            apvError.message,
-          );
-        }
+    const { error } = await this.supabase.from('zona_extrema').insert(zonaExtremaInsert);
+
+    if (error) {
+      const foreignKeyError = buildForeignKeyError(
+        error,
+        {
+          zona_extrema_id_contrato_fkey:
+            'No fue posible asociar la zona extrema al contrato del colaborador.',
+        },
+        'No fue posible validar la configuracion de zona extrema.',
+      );
+
+      if (foreignKeyError) {
+        throw foreignKeyError;
       }
 
-      const { error: cuentaBancariaError } = await this.supabase
-        .from('cuenta_bancaria')
-        .insert(buildCuentaBancariaInsert(payload, personaId));
+      throw buildRepositoryError(
+        'No fue posible registrar la configuracion de zona extrema del empleado.',
+        error.message,
+      );
+    }
+  }
 
-      if (cuentaBancariaError) {
-        const foreignKeyError = buildForeignKeyError(
-          cuentaBancariaError,
-          {
-            cuenta_bancaria_id_persona_fkey:
-              'No fue posible asociar la cuenta bancaria a la ficha del colaborador.',
-            cuenta_bancaria_id_banco_fkey: 'El banco seleccionado no esta disponible.',
-            cuenta_bancaria_id_tipo_cuenta_bancaria_fkey:
-              'El tipo de cuenta bancaria seleccionado no esta disponible.',
-          },
-          'No fue posible validar los datos bancarios seleccionados.',
-        );
+  async insertarApv(payload: CrearEmpleadoPayload, contratoId: number): Promise<void> {
+    const apvInsert = buildApvInsert(payload, contratoId);
 
-        if (foreignKeyError) {
-          throw foreignKeyError;
-        }
+    if (!apvInsert) {
+      return;
+    }
 
-        throw buildRepositoryError(
-          'No fue posible registrar la cuenta bancaria del empleado.',
-          cuentaBancariaError.message,
-        );
+    const { error } = await this.supabase.from('apv').insert(apvInsert);
+
+    if (error) {
+      const foreignKeyError = buildForeignKeyError(
+        error,
+        {
+          apv_id_contrato_fkey: 'No fue posible asociar el APVI al contrato del colaborador.',
+          apv_id_institucion_apv_fkey: 'La institucion APVI seleccionada no esta disponible.',
+          apv_id_moneda_fkey: 'La moneda seleccionada para APVI no esta disponible.',
+          apv_id_forma_pago_apv_fkey: 'La forma de pago APVI seleccionada no esta disponible.',
+        },
+        'No fue posible validar los datos APVI seleccionados.',
+      );
+
+      if (foreignKeyError) {
+        throw foreignKeyError;
       }
 
-      const centroCostoInsert = buildContratoCentroCostoInsert(payload, contratoId);
-      if (centroCostoInsert) {
-        const { error: centroCostoError } = await this.supabase
-          .from('contrato_centro_costo')
-          .insert(centroCostoInsert);
+      throw buildRepositoryError('No fue posible registrar el APVI del empleado.', error.message);
+    }
+  }
 
-        if (centroCostoError) {
-          const foreignKeyError = buildForeignKeyError(
-            centroCostoError,
-            {
-              contrato_centro_costo_id_contrato_fkey:
-                'No fue posible asociar el centro de costo al contrato del colaborador.',
-              contrato_centro_costo_id_centro_costo_fkey:
-                'El centro de costo seleccionado no esta disponible.',
-            },
-            'No fue posible validar el centro de costo seleccionado.',
-          );
+  async insertarCuentaBancaria(payload: CrearEmpleadoPayload, personaId: number): Promise<void> {
+    const { error } = await this.supabase
+      .from('cuenta_bancaria')
+      .insert(buildCuentaBancariaInsert(payload, personaId));
 
-          if (foreignKeyError) {
-            throw foreignKeyError;
-          }
+    if (error) {
+      const foreignKeyError = buildForeignKeyError(
+        error,
+        {
+          cuenta_bancaria_id_persona_fkey:
+            'No fue posible asociar la cuenta bancaria a la ficha del colaborador.',
+          cuenta_bancaria_id_banco_fkey: 'El banco seleccionado no esta disponible.',
+          cuenta_bancaria_id_tipo_cuenta_bancaria_fkey:
+            'El tipo de cuenta bancaria seleccionado no esta disponible.',
+        },
+        'No fue posible validar los datos bancarios seleccionados.',
+      );
 
-          throw buildRepositoryError(
-            'No fue posible vincular el contrato al centro de costo seleccionado.',
-            centroCostoError.message,
-          );
-        }
+      if (foreignKeyError) {
+        throw foreignKeyError;
       }
 
-      const departamento = await this.fetchCentroCostoNombre(payload.idCentroCosto);
+      throw buildRepositoryError(
+        'No fue posible registrar la cuenta bancaria del empleado.',
+        error.message,
+      );
+    }
+  }
 
-      return mapCreatedEmpleado(payload, personaId!, rut, departamento);
-    } catch (error) {
-      await this.rollbackCreate(contratoId, personaId);
-      throw error;
+  async insertarContratoCentroCosto(
+    payload: CrearEmpleadoPayload,
+    contratoId: number,
+  ): Promise<void> {
+    const centroCostoInsert = buildContratoCentroCostoInsert(payload, contratoId);
+
+    if (!centroCostoInsert) {
+      return;
+    }
+
+    const { error } = await this.supabase.from('contrato_centro_costo').insert(centroCostoInsert);
+
+    if (error) {
+      const foreignKeyError = buildForeignKeyError(
+        error,
+        {
+          contrato_centro_costo_id_contrato_fkey:
+            'No fue posible asociar el centro de costo al contrato del colaborador.',
+          contrato_centro_costo_id_centro_costo_fkey:
+            'El centro de costo seleccionado no esta disponible.',
+        },
+        'No fue posible validar el centro de costo seleccionado.',
+      );
+
+      if (foreignKeyError) {
+        throw foreignKeyError;
+      }
+
+      throw buildRepositoryError(
+        'No fue posible vincular el contrato al centro de costo seleccionado.',
+        error.message,
+      );
+    }
+  }
+
+  async obtenerCentroCostoNombre(id: number | null): Promise<string | null> {
+    if (id === null) {
+      return null;
+    }
+
+    const { data, error } = await this.supabase
+      .from('centro_costo')
+      .select('nombre')
+      .eq('id_centro_costo', id)
+      .maybeSingle();
+
+    if (error) {
+      return null;
+    }
+
+    return data?.nombre ?? null;
+  }
+
+  async rollbackCreacion(contratoId: number | null, personaId: number | null): Promise<void> {
+    if (contratoId !== null) {
+      await this.supabase.from('contrato').delete().eq('id_contrato', contratoId);
+    }
+
+    if (personaId !== null) {
+      await this.supabase.from('persona').delete().eq('id_persona', personaId);
     }
   }
 
@@ -673,51 +724,5 @@ export class EmpleadosRepository {
     }
 
     return departamentos;
-  }
-
-  private async fetchEmpresaId(): Promise<number> {
-    const { data, error } = await this.supabase
-      .from('empresa')
-      .select('id_empresa')
-      .order('id_empresa', { ascending: true })
-      .limit(1)
-      .single();
-
-    if (error || !data) {
-      throw buildRepositoryError(
-        'No se encontro una empresa configurada para crear contratos.',
-        error?.message,
-      );
-    }
-
-    return data.id_empresa;
-  }
-
-  private async fetchCentroCostoNombre(id: number | null): Promise<string | null> {
-    if (id === null) {
-      return null;
-    }
-
-    const { data, error } = await this.supabase
-      .from('centro_costo')
-      .select('nombre')
-      .eq('id_centro_costo', id)
-      .maybeSingle();
-
-    if (error) {
-      return null;
-    }
-
-    return data?.nombre ?? null;
-  }
-
-  private async rollbackCreate(contratoId: number | null, personaId: number | null): Promise<void> {
-    if (contratoId !== null) {
-      await this.supabase.from('contrato').delete().eq('id_contrato', contratoId);
-    }
-
-    if (personaId !== null) {
-      await this.supabase.from('persona').delete().eq('id_persona', personaId);
-    }
   }
 }
