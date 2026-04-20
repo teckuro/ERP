@@ -1,5 +1,5 @@
 <section class="labor-shell" [formGroup]="formGroup">
-  <div class="labor-head">
+  <div class="labor-head is-hidden">
     <p class="labor-kicker">Referencia laboral</p>
     <h3 class="labor-title">Datos laborales</h3>
     <p class="labor-copy">
@@ -70,7 +70,7 @@
 
       <div class="form-field">
         <div class="field-label-row">
-          <label class="text-sm font-medium text-gray-700" for="empleado-fecha-ingreso">Ingreso</label>
+          <label class="text-sm font-medium text-gray-700" for="empleado-fecha-ingreso">Fecha ingreso</label>
           @if (isRequired('fechaIngreso')) {
             <span class="field-required" aria-hidden="true">*</span>
           }
@@ -90,7 +90,7 @@
 
       <div class="form-field">
         <div class="field-label-row">
-          <label class="text-sm font-medium text-gray-700" for="empleado-fecha-contrato">Contrato</label>
+          <label class="text-sm font-medium text-gray-700" for="empleado-fecha-contrato">Fecha contrato</label>
           @if (isRequired('fechaContrato')) {
             <span class="field-required" aria-hidden="true">*</span>
           }
@@ -110,7 +110,7 @@
 
       <div class="form-field">
         <div class="field-label-row">
-          <label class="text-sm font-medium text-gray-700" for="empleado-fecha-termino">Término</label>
+          <label class="text-sm font-medium text-gray-700" for="empleado-fecha-termino">Fecha termino</label>
           @if (isRequired('fechaTermino')) {
             <span class="field-required" aria-hidden="true">*</span>
           }
@@ -256,7 +256,7 @@
 
       <div class="form-field">
         <div class="field-label-row">
-          <label class="text-sm font-medium text-gray-700" for="empleado-id-moneda">Tipo de moneda</label>
+          <label class="text-sm font-medium text-gray-700" for="empleado-id-moneda">Moneda sueldo</label>
         </div>
         <select id="empleado-id-moneda" formControlName="idMoneda" [class]="controlClass('idMoneda')">
           <option [ngValue]="null">Selecciona una moneda</option>
@@ -331,7 +331,7 @@
     <div class="labor-grid labor-grid--loads">
       <div class="form-field">
         <div class="field-label-row">
-          <label class="text-sm font-medium text-gray-700" for="empleado-cargas">Nro. cargas</label>
+          <label class="text-sm font-medium text-gray-700" for="empleado-cargas">Numero de cargas</label>
         </div>
         <input id="empleado-cargas" type="number" formControlName="cargas" [class]="controlClass('cargas')" />
         @if (hasError('cargas')) {

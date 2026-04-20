@@ -1,4 +1,4 @@
-<form class="form-shell w-full" [formGroup]="form" (ngSubmit)="onSubmit()">
+<form class="form-shell w-full" [formGroup]="form" (submit)="handleFormSubmit($event)">
   <div class="form-stack w-full">
     <app-card className="editor-shell">
       <app-card-content className="editor-frame">
@@ -88,9 +88,9 @@
               <dt>Sucursal</dt>
               <dd>{{ sucursalVisible() }}</dd>
             </div>
-            <div class="draft-summary-item">
+            <div class="draft-summary-item draft-summary-item--status">
               <dt>Estado</dt>
-              <dd>Borrador</dd>
+              <dd><span class="summary-badge">Borrador</span></dd>
             </div>
             <div class="draft-summary-item">
               <dt>Avance</dt>
@@ -104,10 +104,11 @@
         </section>
 
         <section class="workspace-grid" aria-label="Workspace de nueva ficha">
-          <section class="content-shell" aria-label="Paso actual">
+          <div class="workspace-main">
+
+            <section class="content-shell" aria-label="Paso actual">
             <div class="content-head">
               <div class="content-copy">
-                <p class="step-label">{{ currentStepLabel() }}</p>
                 <h2 class="content-title">{{ activeStepTitle() }}</h2>
                 <p class="content-description">{{ activeStepDescription() }}</p>
               </div>
@@ -129,15 +130,6 @@
                 </div>
               } @else if (activeTab() === 'contrato') {
                 <div class="step-panel">
-                  <div class="labor-process-map" aria-label="Bloques del paso laboral">
-                    <span>Relacion laboral</span>
-                    <span>Contrato</span>
-                    <span>Jornada</span>
-                    <span>Remuneracion</span>
-                    <span>Centro de costo</span>
-                    <span>Estado inicial</span>
-                  </div>
-
                   <app-empleado-contrato
                     [formGroup]="form.controls.contrato"
                     [centrosCosto]="catalogos().centrosCosto"
@@ -168,28 +160,6 @@
                     [bancos]="catalogos().bancos"
                     [tiposCuentaBancaria]="catalogos().tiposCuentaBancaria"
                   ></app-empleado-bancario>
-
-                  <section class="final-review" aria-label="Revision final de la ficha">
-                    <div class="final-review-head">
-                      <p class="final-review-kicker">Cierre de ficha inicial</p>
-                      <h3>Revision final de la ficha</h3>
-                      <p>
-                        Confirma el estado de cada etapa antes de guardar. Esta revision no activa
-                        al colaborador para remuneraciones.
-                      </p>
-                    </div>
-
-                    <div class="final-review-list">
-                      @for (item of finalReviewItems(); track item.label) {
-                        <div class="final-review-item">
-                          <span>{{ item.label }}</span>
-                          <strong [class]="reviewStatusClass(item.status)">{{
-                            item.status
-                          }}</strong>
-                        </div>
-                      }
-                    </div>
-                  </section>
                 </div>
               }
             </div>
@@ -224,9 +194,10 @@
                   </button>
                 } @else {
                   <button
-                    type="submit"
+                    type="button"
                     class="form-action-button form-action-button--primary"
                     [disabled]="isSaving() || isLoadingCatalogs()"
+                    (click)="onSubmit()"
                   >
                     <lucide-icon class="h-4 w-4" name="save"></lucide-icon>
                     {{ isSaving() ? 'Guardando ficha...' : 'Guardar ficha' }}
@@ -234,15 +205,21 @@
                 }
               </div>
             </footer>
-          </section>
+            </section>
+          </div>
 
           <aside class="side-panel" aria-label="Progreso y validaciones">
             <div class="side-panel-card side-panel-card--sticky">
-              <section class="side-section">
+              <section class="side-section side-section--progress">
                 <div class="side-section-head">
-                  <p class="side-kicker">Progreso de la ficha</p>
+                  <p class="side-kicker">Progreso</p>
                   <h3>Etapas del alta</h3>
-                  <p>Completa cada dominio antes de guardar la ficha inicial.</p>
+                  <progress
+                    class="side-progress-meter"
+                    [value]="completedStepCount()"
+                    [max]="totalSteps"
+                  ></progress>
+                  <p class="side-progress-line">Paso {{ activeStepNumber() }} de {{ totalSteps }}</p>
                 </div>
 
                 <ol class="vertical-steps">
@@ -259,14 +236,13 @@
                       >
                         <span class="vertical-step-index">
                           @if (step.id !== activeTab() && step.status === 'complete') {
-                            <span aria-hidden="true">OK</span>
+                            <span aria-hidden="true">✓</span>
                           } @else {
                             {{ index + 1 }}
                           }
                         </span>
                         <span class="vertical-step-copy">
                           <span class="vertical-step-label">{{ step.label }}</span>
-                          <span class="vertical-step-state">{{ sideStepStateLabel(step) }}</span>
                         </span>
                       </button>
                     </li>
@@ -274,59 +250,53 @@
                 </ol>
               </section>
 
-              <section class="side-section side-section--status">
-                <div>
-                  <p class="side-kicker">Estado del paso</p>
-                  <h3>{{ activeStepStateLabel() }}</h3>
-                </div>
-                <p>{{ currentStepLabel() }} - {{ activeStepTitle() }}</p>
-              </section>
-
               <section class="side-section side-section--validations">
                 <div class="side-section-head">
                   <p class="side-kicker">Validaciones del paso</p>
-                  <h3>{{ pendingValidationCount() }} pendientes</h3>
+                  <h3>Resolver ahora · {{ pendingValidationCount() }} pendientes</h3>
                 </div>
 
                 @if (pendingValidationCount() > 0) {
-                  <div class="validation-group">
-                    <div class="validation-group-head">
-                      <span>Errores bloqueantes</span>
-                      <strong>{{ blockingValidationPanelItems().length }}</strong>
+                  <div class="validation-columns">
+                    <div class="validation-group">
+                      <div class="validation-group-head">
+                        <span>Errores bloqueantes</span>
+                        <strong>{{ blockingValidationPanelItems().length }}</strong>
+                      </div>
+                      <ul class="validation-list">
+                        @for (item of blockingValidationPanelItems(); track item.id) {
+                          <li class="validation-item is-error">
+                            <span class="validation-dot" aria-hidden="true"></span>
+                            <span>{{ item.label }}</span>
+                          </li>
+                        } @empty {
+                          <li class="validation-item is-complete">
+                            <span class="validation-dot" aria-hidden="true"></span>
+                            <span>Sin errores bloqueantes.</span>
+                          </li>
+                        }
+                      </ul>
                     </div>
-                    <ul class="validation-list">
-                      @for (item of blockingValidationPanelItems(); track item.id) {
-                        <li class="validation-item is-error">
-                          <span class="validation-dot" aria-hidden="true"></span>
-                          <span>{{ item.label }}</span>
-                        </li>
-                      } @empty {
-                        <li class="validation-item is-complete">
-                          <span class="validation-dot" aria-hidden="true"></span>
-                          <span>Sin errores bloqueantes.</span>
-                        </li>
-                      }
-                    </ul>
-                  </div>
 
-                  <div class="validation-group">
-                    <div class="validation-group-head">
-                      <span>Advertencias</span>
-                      <strong>{{ warningValidationPanelItems().length }}</strong>
+                    <div class="validation-group">
+                      <div class="validation-group-head">
+                        <span>Advertencias</span>
+                        <strong>{{ warningValidationPanelItems().length }}</strong>
+                      </div>
+                      <ul class="validation-list">
+                        @for (item of warningValidationPanelItems(); track item.id) {
+                          <li class="validation-item is-warning">
+                            <span class="validation-dot" aria-hidden="true"></span>
+                            <span>{{ item.label }}</span>
+                          </li>
+                        } @empty {
+                          <li class="validation-item is-complete">
+                            <span class="validation-dot" aria-hidden="true"></span>
+                            <span>Sin advertencias pendientes.</span>
+                          </li>
+                        }
+                      </ul>
                     </div>
-                    <ul class="validation-list">
-                      @for (item of warningValidationPanelItems(); track item.id) {
-                        <li class="validation-item is-warning">
-                          <span class="validation-dot" aria-hidden="true"></span>
-                          <span>{{ item.label }}</span>
-                        </li>
-                      } @empty {
-                        <li class="validation-item is-complete">
-                          <span class="validation-dot" aria-hidden="true"></span>
-                          <span>Sin advertencias pendientes.</span>
-                        </li>
-                      }
-                    </ul>
                   </div>
                 } @else {
                   <ul class="validation-list">
@@ -344,24 +314,11 @@
                   <h3>Estado de ficha</h3>
                 </div>
 
-                <dl class="global-summary-grid">
-                  <div class="global-summary-item">
-                    <dt>Bloqueantes</dt>
-                    <dd>{{ getGlobalValidationSummary().blockingPending }}</dd>
-                  </div>
-                  <div class="global-summary-item">
-                    <dt>Advertencias</dt>
-                    <dd>{{ getGlobalValidationSummary().warningsPending }}</dd>
-                  </div>
-                  <div class="global-summary-item">
-                    <dt>Completados</dt>
-                    <dd>{{ getGlobalValidationSummary().completeSteps }}/{{ totalSteps }}</dd>
-                  </div>
-                  <div class="global-summary-item">
-                    <dt>Activo</dt>
-                    <dd>Paso {{ activeStepNumber() }}</dd>
-                  </div>
-                </dl>
+                <p class="global-summary-line">
+                  Bloqueantes: {{ getGlobalValidationSummary().blockingPending }} |
+                  Advertencias: {{ getGlobalValidationSummary().warningsPending }} |
+                  Completados: {{ getGlobalValidationSummary().completeSteps }}/{{ totalSteps }}
+                </p>
               </section>
             </div>
           </aside>

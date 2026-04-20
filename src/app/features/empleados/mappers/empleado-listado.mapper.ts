@@ -1,19 +1,27 @@
+import { Enums, Tables } from '../../../core/models/database.types';
 import { EmpleadoEstado, EmpleadoListado } from '../models/empleado-listado.model';
 
-export interface PersonaFactorEmpleadoRow {
+type PersonaEstadoDb = Enums<'tipo_estado_persona_enum'>;
+type EstadoFichaDb = Enums<'tipo_estado_ficha_enum'>;
+type PersonaFactorRow = Tables<'vw_persona_factores'>;
+
+export type PersonaFactorEmpleadoRow = Pick<
+  PersonaFactorRow,
+  | 'id_contrato'
+  | 'rut'
+  | 'dv'
+  | 'nombres'
+  | 'apellido_paterno'
+  | 'apellido_materno'
+  | 'cargo'
+  | 'fingreso'
+  | 'base'
+  | 'estado'
+  | 'estado_contrato'
+  | 'estado_ficha'
+> & {
   id_persona: number;
-  id_contrato: number | null;
-  rut: string | null;
-  dv: string | null;
-  nombres: string | null;
-  apellido_paterno: string | null;
-  apellido_materno: string | null;
-  cargo: string | null;
-  fingreso: string | null;
-  base: number | null;
-  estado: string | null;
-  estado_contrato: string | null;
-}
+};
 
 export function mapPersonaFactorToEmpleado(
   row: PersonaFactorEmpleadoRow,
@@ -37,6 +45,7 @@ export function mapPersonaFactorToEmpleado(
     sueldoBase: row.base ?? 0,
     estado:
       mapPersonaEstadoToEmpleadoEstado(row.estado) ??
+      mapEstadoFichaToEmpleadoEstado(row.estado_ficha) ??
       mapContratoEstadoToEmpleadoEstado(row.estado_contrato),
   };
 }
@@ -46,8 +55,9 @@ export function mapContratoEstadoToEmpleadoEstado(value: string | null): Emplead
     case 'ACTIVO':
       return 'activo';
     case 'SUSPENDIDO':
-    case 'PENDIENTE':
       return 'suspendido';
+    case 'PENDIENTE':
+      return 'en_proceso';
     case 'TERMINADO':
       return 'desvinculado';
     default:
@@ -55,8 +65,10 @@ export function mapContratoEstadoToEmpleadoEstado(value: string | null): Emplead
   }
 }
 
-export function mapPersonaEstadoToEmpleadoEstado(value: string | null): EmpleadoEstado | null {
-  switch (value?.toUpperCase()) {
+export function mapPersonaEstadoToEmpleadoEstado(
+  value: PersonaEstadoDb | null,
+): EmpleadoEstado | null {
+  switch (value) {
     case 'BORRADOR':
       return 'borrador';
     case 'EN_PROCESO':
@@ -76,7 +88,20 @@ export function mapPersonaEstadoToEmpleadoEstado(value: string | null): Empleado
   }
 }
 
-export function mapEmpleadoEstadoToPersonaEstado(value: EmpleadoEstado): string {
+export function mapEstadoFichaToEmpleadoEstado(value: EstadoFichaDb | null): EmpleadoEstado | null {
+  switch (value) {
+    case 'BORRADOR':
+      return 'borrador';
+    case 'INCOMPLETO':
+      return 'en_proceso';
+    case 'VALIDO':
+      return 'activo';
+    default:
+      return null;
+  }
+}
+
+export function mapEmpleadoEstadoToPersonaEstado(value: EmpleadoEstado): PersonaEstadoDb {
   switch (value) {
     case 'borrador':
       return 'BORRADOR';
@@ -97,16 +122,33 @@ export function mapEmpleadoEstadoToPersonaEstado(value: EmpleadoEstado): string 
 
 export function mapEmpleadoEstadoToContratoEstado(value: EmpleadoEstado): string {
   switch (value) {
+    case 'borrador':
+    case 'en_proceso':
+      return 'PENDIENTE';
     case 'activo':
       return 'ACTIVO';
     case 'suspendido':
     case 'bloqueado':
       return 'SUSPENDIDO';
-    case 'inactivo':
-    case 'borrador':
-    case 'en_proceso':
     case 'desvinculado':
       return 'TERMINADO';
+    case 'inactivo':
+      return 'SUSPENDIDO';
+  }
+}
+
+export function mapEmpleadoEstadoToEstadoFicha(value: EmpleadoEstado): EstadoFichaDb {
+  switch (value) {
+    case 'borrador':
+      return 'BORRADOR';
+    case 'activo':
+      return 'VALIDO';
+    case 'en_proceso':
+    case 'suspendido':
+    case 'inactivo':
+    case 'desvinculado':
+    case 'bloqueado':
+      return 'INCOMPLETO';
   }
 }
 

@@ -1,23 +1,19 @@
+import { Tables } from '../../../core/models/database.types';
 import {
   EmpleadoCatalogOption,
   EmpleadoDepartamentoOption,
   TramoCargaCatalogOption,
 } from '../models/empleado-catalogos.model';
 
-export interface DepartamentoEmpresaCatalogRow {
-  id_departamento_empresa: number;
-  nombre: string;
-  id_sucursal: number | null;
-}
+export type DepartamentoEmpresaCatalogRow = Pick<
+  Tables<'departamento_empresa'>,
+  'id_departamento_empresa' | 'nombre' | 'id_sucursal'
+>;
 
-export interface TramoCargaCatalogRow {
-  id_tramo: number;
-  periodo: string;
-  desde: number | null;
-  hasta: number | null;
-  valor: number | null;
-  tramo: string | null;
-}
+export type TramoCargaCatalogRow = Pick<
+  Tables<'tramo_carga'>,
+  'id_tramo' | 'periodo' | 'desde' | 'hasta' | 'valor' | 'tramo'
+>;
 
 export function mapCatalog<T extends { nombre: string }>(
   rows: T[],

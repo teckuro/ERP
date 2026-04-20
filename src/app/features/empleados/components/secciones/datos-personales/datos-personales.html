@@ -1,21 +1,12 @@
 <section class="employee-section-shell">
-  <div class="employee-section-head">
-    <p class="employee-section-kicker">Paso 1 · Datos personales</p>
-    <h3 class="employee-section-title">Identificacion de la ficha</h3>
-    <p class="employee-section-copy">
-      Registra la informacion base del colaborador para validar su identidad y habilitar el resto
-      del flujo de alta.
-    </p>
-  </div>
-
   <section class="employee-block" [formGroup]="formGroup">
     <div class="employee-block-head">
       <h4>Identificacion legal</h4>
-      <p>Documentos y atributos legales para individualizar al colaborador.</p>
+      <p>Datos legales del colaborador.</p>
     </div>
 
-    <div class="employee-grid employee-grid--four">
-      <div class="form-field">
+    <div class="employee-grid employee-grid--two">
+      <div class="form-field form-field--rut">
         <div class="field-label-row">
           <label for="empleado-rut">RUT</label>
           <span class="field-required" aria-hidden="true">*</span>
@@ -38,7 +29,7 @@
         }
       </div>
 
-      <div class="form-field">
+      <div class="form-field form-field--passport">
         <div class="field-label-row">
           <label for="empleado-pasaporte">Pasaporte</label>
         </div>
@@ -60,7 +51,7 @@
         }
       </div>
 
-      <div class="form-field">
+      <div class="form-field form-field--date">
         <div class="field-label-row">
           <label for="empleado-fecha-nacimiento">Fecha nacimiento</label>
           @if (isRequired('fechaNacimiento')) {
@@ -70,6 +61,8 @@
         <input
           id="empleado-fecha-nacimiento"
           type="date"
+          lang="es-CL"
+          placeholder="dd/mm/yyyy"
           formControlName="fechaNacimiento"
           [class]="controlClass('fechaNacimiento')"
         />
@@ -84,7 +77,7 @@
         }
       </div>
 
-      <div class="form-field">
+      <div class="form-field form-field--sex">
         <div class="field-label-row">
           <label for="empleado-sexo">Sexo</label>
           @if (isRequired('sexo')) {
@@ -112,7 +105,7 @@
     </div>
 
     <div class="employee-grid employee-grid--three">
-      <div class="form-field">
+      <div class="form-field form-field--wide employee-span-2">
         <div class="field-label-row">
           <label for="empleado-nombres">Nombres</label>
           @if (isRequired('nombres')) {
@@ -191,7 +184,7 @@
     </div>
 
     <div class="employee-grid employee-grid--four" [formGroup]="formGroup">
-      <div class="form-field employee-span-2">
+      <div class="form-field">
         <div class="field-label-row">
           <label for="empleado-idPais">Nacionalidad</label>
           @if (isRequired('idPais')) {
@@ -213,7 +206,7 @@
         }
       </div>
 
-      <div class="form-field employee-span-2">
+      <div class="form-field">
         <div class="field-label-row">
           <label for="empleado-estadoCivil">Estado civil</label>
           @if (isRequired('estadoCivil')) {

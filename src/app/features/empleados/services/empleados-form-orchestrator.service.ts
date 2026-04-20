@@ -261,6 +261,12 @@ export class EmpleadosFormOrchestratorService {
   }
 
   applyCatalogDefaults(form: EmpleadoFormGroup, catalogos: EmpleadoFormCatalogos): void {
+    setPreferredCatalogValue(form.controls.datosPersonales.controls.idPais, catalogos.paises, [
+      'chile',
+    ]);
+    setPreferredCatalogValue(form.controls.contacto.controls.idComuna, catalogos.comunas, [
+      'santiago',
+    ]);
     setPreferredCatalogValue(form.controls.contrato.controls.idSucursal, catalogos.sucursales, [
       'casa matriz',
     ]);

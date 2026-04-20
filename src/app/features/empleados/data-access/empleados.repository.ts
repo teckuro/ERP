@@ -12,6 +12,7 @@ import {
   pickLatestTramosCarga,
 } from '../mappers/empleado-catalogos.mapper';
 import {
+  mapEmpleadoEstadoToEstadoFicha,
   mapEmpleadoEstadoToPersonaEstado,
   mapPersonaFactorToEmpleado,
 } from '../mappers/empleado-listado.mapper';
@@ -72,8 +73,16 @@ export class EmpleadosRepository {
       bancosResult,
       tiposCuentaResult,
     ] = await Promise.all([
-      this.supabase.from('comuna').select('id_comuna,nombre').order('nombre', { ascending: true }),
-      this.supabase.from('pais').select('id_pais,nombre').order('nombre', { ascending: true }),
+      this.supabase
+        .from('comuna')
+        .select('id_comuna,nombre')
+        .eq('activo', true)
+        .order('nombre', { ascending: true }),
+      this.supabase
+        .from('pais')
+        .select('id_pais,nombre')
+        .eq('activo', true)
+        .order('nombre', { ascending: true }),
       this.supabase
         .from('centro_costo')
         .select('id_centro_costo,nombre')
@@ -241,7 +250,7 @@ export class EmpleadosRepository {
     const { data, error } = await this.supabase
       .from('vw_persona_factores')
       .select(
-        'id_persona,id_contrato,rut,dv,nombres,apellido_paterno,apellido_materno,cargo,fingreso,base,estado,estado_contrato',
+        'id_persona,id_contrato,rut,dv,nombres,apellido_paterno,apellido_materno,cargo,fingreso,base,estado,estado_contrato,estado_ficha',
       )
       .order('id_persona', { ascending: false });
 
@@ -262,7 +271,7 @@ export class EmpleadosRepository {
     const { data, error } = await this.supabase
       .from('vw_persona_factores')
       .select(
-        'id_persona,id_contrato,rut,dv,nombres,apellido_paterno,apellido_materno,cargo,fingreso,base,estado,estado_contrato',
+        'id_persona,id_contrato,rut,dv,nombres,apellido_paterno,apellido_materno,cargo,fingreso,base,estado,estado_contrato,estado_ficha',
       )
       .eq('id_persona', id)
       .maybeSingle();
@@ -292,7 +301,10 @@ export class EmpleadosRepository {
 
     const { data, error } = await this.supabase
       .from('persona')
-      .update({ estado: mapEmpleadoEstadoToPersonaEstado(estado) })
+      .update({
+        estado: mapEmpleadoEstadoToPersonaEstado(estado),
+        estado_ficha: mapEmpleadoEstadoToEstadoFicha(estado),
+      })
       .in('id_persona', normalizedIds)
       .select('id_persona');
 
@@ -312,12 +324,13 @@ export class EmpleadosRepository {
       .select('id_empresa')
       .order('id_empresa', { ascending: true })
       .limit(1)
-      .single();
+      .maybeSingle();
 
     if (error || !data) {
       throw buildRepositoryError(
         'No se encontro una empresa configurada para crear contratos.',
-        error?.message,
+        error?.message ??
+          'La tabla empresa no devolvio registros visibles para la clave publica de Supabase.',
       );
     }
 

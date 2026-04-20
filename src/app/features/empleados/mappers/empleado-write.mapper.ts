@@ -5,6 +5,7 @@ import { formatDate } from './empleado-listado.mapper';
 import { RutParts, formatRutParts } from '../utils/empleado-rut';
 import {
   mapEmpleadoEstadoToContratoEstado,
+  mapEmpleadoEstadoToEstadoFicha,
   mapEmpleadoEstadoToPersonaEstado,
 } from './empleado-listado.mapper';
 
@@ -29,17 +30,20 @@ export function buildPersonaInsert(payload: CrearEmpleadoPayload, rut: RutParts)
     apellido_materno: payload.apellidoMaterno.trim() || null,
     fecha_nacimiento: payload.fechaNacimiento,
     sexo: payload.sexo,
-    cargas: payload.cargas,
+    estado_civil: payload.estadoCivil,
+    id_pais: payload.idPais,
+    email: payload.email.trim(),
+    telefono: payload.telefono.trim(),
+    pasaporte: payload.pasaporte,
+    id_comuna: payload.idComuna,
     direccion: payload.direccion.trim(),
     numero_direccion: payload.numeroDireccion,
     departamento_direccion: payload.departamentoDireccion,
     observaciones_direccion: payload.observacionesDireccion,
-    pasaporte: payload.pasaporte,
-    email: payload.email.trim(),
-    telefono: payload.telefono.trim(),
-    id_comuna: payload.idComuna,
     id_tramo_carga: payload.idTramoCarga,
+    cargas: payload.cargas,
     estado: mapEmpleadoEstadoToPersonaEstado(payload.estado),
+    estado_ficha: mapEmpleadoEstadoToEstadoFicha(payload.estado),
   };
 }
 

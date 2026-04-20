@@ -4,9 +4,13 @@
   color: #0f172a;
 }
 
+.is-hidden {
+  display: none !important;
+}
+
 .employee-section-shell {
   display: grid;
-  gap: 1.75rem;
+  gap: 2rem;
 }
 
 .employee-section-shell--compact {
@@ -16,7 +20,7 @@
 .employee-section-head {
   display: grid;
   gap: 0.45rem;
-  padding: 0.15rem 0 0.25rem;
+  padding: 0.25rem 0 0.5rem;
 }
 
 .employee-section-kicker {
@@ -49,10 +53,10 @@
 
 .employee-block {
   display: grid;
-  gap: 1.5rem;
-  padding: 1.5rem;
-  border: 1px solid #e2e8f0;
-  border-radius: 18px;
+  gap: 1.25rem;
+  padding: 1.15rem 1.5rem 1.45rem;
+  border: 1px solid rgba(226, 232, 240, 0.6);
+  border-radius: 12px;
   background: #ffffff;
   box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
 }
@@ -63,10 +67,10 @@
 
 .employee-block-head {
   display: grid;
-  gap: 0.25rem;
+  gap: 0.12rem;
   margin: 0;
-  padding: 0 0 1rem;
-  border-bottom: 1px solid #e8edf3;
+  padding: 0 0 0.55rem;
+  border-bottom: 1px solid rgba(226, 232, 240, 0.28);
   border-radius: 0;
   background: transparent;
 }
@@ -93,20 +97,21 @@
 
 .employee-grid {
   display: grid;
-  gap: 1.25rem;
+  width: min(100%, 52rem);
+  gap: 1.15rem 1.15rem;
   align-items: start;
 }
 
 .employee-grid--two {
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: minmax(18rem, 24rem) minmax(12rem, 18rem);
 }
 
 .employee-grid--three {
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: minmax(18rem, 24rem) minmax(12rem, 18rem);
 }
 
 .employee-grid--four {
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: minmax(18rem, 24rem) minmax(12rem, 18rem);
 }
 
 .employee-span-2 {
@@ -119,8 +124,9 @@
 
 .form-field {
   display: grid;
-  gap: 0.5rem;
+  gap: 0.25rem;
   min-width: 0;
+  max-width: 100%;
 }
 
 .field-label-row {
@@ -131,14 +137,14 @@
 }
 
 .field-label-row label {
-  color: #334155;
-  font-size: 13px;
-  font-weight: 600;
+  color: #64748b;
+  font-size: 0.8rem;
+  font-weight: 700;
   line-height: 18px;
 }
 
 .field-required {
-  color: #dc2626;
+  color: #d97706;
   font-size: 11px;
   font-weight: 600;
   line-height: 1;
@@ -166,13 +172,29 @@
   padding: 0 1rem;
   color: #0f172a;
   font-size: 13px;
-  font-weight: 500;
+  font-weight: 550;
   line-height: 18px;
   outline: none;
   transition:
     border-color 160ms ease,
     box-shadow 160ms ease,
     background-color 160ms ease;
+}
+
+.form-field--passport {
+  max-width: 18rem;
+}
+
+.form-field--date {
+  max-width: 18rem;
+}
+
+.form-field--sex {
+  max-width: 14rem;
+}
+
+.form-field--wide {
+  max-width: 24rem;
 }
 
 .employee-control::placeholder {
@@ -221,7 +243,7 @@
 @media (max-width: 768px) {
   .employee-block {
     padding: 1.1rem;
-    border-radius: 18px;
+    border-radius: 12px;
   }
 
   .employee-block-head {

@@ -189,7 +189,17 @@ export class FormEmpleadoComponent implements OnInit {
     }
   }
 
+  handleFormSubmit(event: SubmitEvent): void {
+    event.preventDefault();
+    event.stopPropagation();
+    void this.onSubmit();
+  }
+
   async onSubmit(): Promise<void> {
+    if (this.isSaving()) {
+      return;
+    }
+
     this.attemptedSave.set(true);
     this.attemptAllTabs();
     this.errorMessage.set(null);
@@ -295,7 +305,7 @@ export class FormEmpleadoComponent implements OnInit {
   activeStepDescription(): string {
     switch (this.activeTab()) {
       case 'datosPersonales':
-        return 'Registra la informacion basica del colaborador y sus datos de contacto para iniciar la ficha.';
+        return 'Completa los datos del colaborador.';
       case 'contrato':
         return 'Define cargo, jornada, fechas y condiciones laborales iniciales de la ficha.';
       case 'previsionSalud':
@@ -908,19 +918,6 @@ export class FormEmpleadoComponent implements OnInit {
         'Bancario',
         () => bancario.numeroCuenta.valid,
       ),
-      this.rule(
-        'bank.final-review',
-        'bancario',
-        'Revision final de ficha pendiente',
-        'info',
-        false,
-        'ficha.revisionFinal',
-        'Cierre',
-        () =>
-          TAB_ORDER.filter((stepId) => stepId !== 'bancario').every(
-            (stepId) => !this.isFormSectionInvalid(stepId),
-          ),
-      ),
     ];
   }
 
@@ -1220,6 +1217,10 @@ export class FormEmpleadoComponent implements OnInit {
     }
 
     if (error instanceof Error) {
+      if (error.message.toLowerCase().includes('row-level security')) {
+        return 'Supabase bloqueo la escritura por politicas RLS. Ejecuta el script scripts/fix_empleados_alta_rls_supabase.sql y vuelve a intentar.';
+      }
+
       return error.message;
     }
 

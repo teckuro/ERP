@@ -524,7 +524,6 @@ export type Database = {
           id_persona: number
           id_tipo_cuenta_bancaria: number | null
           numero_cuenta: string
-          tipo_cuenta: string | null
           vigencia_fin: string | null
           vigencia_inicio: string | null
         }
@@ -534,7 +533,6 @@ export type Database = {
           id_persona: number
           id_tipo_cuenta_bancaria?: number | null
           numero_cuenta: string
-          tipo_cuenta?: string | null
           vigencia_fin?: string | null
           vigencia_inicio?: string | null
         }
@@ -544,7 +542,6 @@ export type Database = {
           id_persona?: number
           id_tipo_cuenta_bancaria?: number | null
           numero_cuenta?: string
-          tipo_cuenta?: string | null
           vigencia_fin?: string | null
           vigencia_inicio?: string | null
         }
@@ -1379,7 +1376,7 @@ export type Database = {
           direccion: string | null
           dv: string
           email: string | null
-          estado: string
+          estado: Database["public"]["Enums"]["tipo_estado_persona_enum"]
           estado_civil:
             | Database["public"]["Enums"]["tipo_estado_civil_enum"]
             | null
@@ -1389,12 +1386,11 @@ export type Database = {
           fecha_actualizacion: string
           fecha_creacion: string
           fecha_nacimiento: string
-          id_ciudad: number | null
           id_comuna: number | null
+          id_pais: number | null
           id_persona: number
           id_tramo_carga: number | null
           id_usuario_activacion: number | null
-          nacionalidad: string | null
           nombres: string
           numero_direccion: string | null
           observaciones_direccion: string | null
@@ -1415,7 +1411,7 @@ export type Database = {
           direccion?: string | null
           dv: string
           email?: string | null
-          estado?: string
+          estado?: Database["public"]["Enums"]["tipo_estado_persona_enum"]
           estado_civil?:
             | Database["public"]["Enums"]["tipo_estado_civil_enum"]
             | null
@@ -1425,12 +1421,11 @@ export type Database = {
           fecha_actualizacion?: string
           fecha_creacion?: string
           fecha_nacimiento: string
-          id_ciudad?: number | null
           id_comuna?: number | null
+          id_pais?: number | null
           id_persona?: number
           id_tramo_carga?: number | null
           id_usuario_activacion?: number | null
-          nacionalidad?: string | null
           nombres: string
           numero_direccion?: string | null
           observaciones_direccion?: string | null
@@ -1451,7 +1446,7 @@ export type Database = {
           direccion?: string | null
           dv?: string
           email?: string | null
-          estado?: string
+          estado?: Database["public"]["Enums"]["tipo_estado_persona_enum"]
           estado_civil?:
             | Database["public"]["Enums"]["tipo_estado_civil_enum"]
             | null
@@ -1461,12 +1456,11 @@ export type Database = {
           fecha_actualizacion?: string
           fecha_creacion?: string
           fecha_nacimiento?: string
-          id_ciudad?: number | null
           id_comuna?: number | null
+          id_pais?: number | null
           id_persona?: number
           id_tramo_carga?: number | null
           id_usuario_activacion?: number | null
-          nacionalidad?: string | null
           nombres?: string
           numero_direccion?: string | null
           observaciones_direccion?: string | null
@@ -1479,18 +1473,18 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "persona_id_ciudad_fkey"
-            columns: ["id_ciudad"]
-            isOneToOne: false
-            referencedRelation: "ciudad"
-            referencedColumns: ["id_ciudad"]
-          },
-          {
             foreignKeyName: "persona_id_comuna_fkey"
             columns: ["id_comuna"]
             isOneToOne: false
             referencedRelation: "comuna"
             referencedColumns: ["id_comuna"]
+          },
+          {
+            foreignKeyName: "persona_id_pais_fkey"
+            columns: ["id_pais"]
+            isOneToOne: false
+            referencedRelation: "pais"
+            referencedColumns: ["id_pais"]
           },
           {
             foreignKeyName: "persona_id_tramo_carga_fkey"
@@ -1570,7 +1564,7 @@ export type Database = {
           observacion_prevision: string | null
           regimen_ex_caja: string | null
           tasa_ex_caja: number | null
-          tipo_prevision: string
+          tipo_prevision: Database["public"]["Enums"]["tipo_prevision_enum"]
           vigencia_fin: string | null
           vigencia_inicio: string
         }
@@ -1585,7 +1579,7 @@ export type Database = {
           observacion_prevision?: string | null
           regimen_ex_caja?: string | null
           tasa_ex_caja?: number | null
-          tipo_prevision: string
+          tipo_prevision: Database["public"]["Enums"]["tipo_prevision_enum"]
           vigencia_fin?: string | null
           vigencia_inicio: string
         }
@@ -1600,7 +1594,7 @@ export type Database = {
           observacion_prevision?: string | null
           regimen_ex_caja?: string | null
           tasa_ex_caja?: number | null
-          tipo_prevision?: string
+          tipo_prevision?: Database["public"]["Enums"]["tipo_prevision_enum"]
           vigencia_fin?: string | null
           vigencia_inicio?: string
         }
@@ -1794,7 +1788,7 @@ export type Database = {
           id_salud: number
           nombre: string
           porcentaje_cotizacion: number | null
-          tipo: string | null
+          tipo: Database["public"]["Enums"]["tipo_salud_enum"] | null
           vigencia_fin: string | null
           vigencia_inicio: string | null
           vigente: boolean | null
@@ -1803,7 +1797,7 @@ export type Database = {
           id_salud?: number
           nombre: string
           porcentaje_cotizacion?: number | null
-          tipo?: string | null
+          tipo?: Database["public"]["Enums"]["tipo_salud_enum"] | null
           vigencia_fin?: string | null
           vigencia_inicio?: string | null
           vigente?: boolean | null
@@ -1812,7 +1806,7 @@ export type Database = {
           id_salud?: number
           nombre?: string
           porcentaje_cotizacion?: number | null
-          tipo?: string | null
+          tipo?: Database["public"]["Enums"]["tipo_salud_enum"] | null
           vigencia_fin?: string | null
           vigencia_inicio?: string | null
           vigente?: boolean | null
@@ -2250,10 +2244,10 @@ export type Database = {
           afp_nombre: string | null
           apellido_materno: string | null
           apellido_paterno: string | null
+          apto_para_remuneraciones: boolean | null
           base: number | null
           cargas: number | null
           cargo: string | null
-          ciudad: string | null
           codigo_tipo_contrato:
             | Database["public"]["Enums"]["tipo_contrato_enum"]
             | null
@@ -2263,8 +2257,11 @@ export type Database = {
           direccion: string | null
           dv: string | null
           email: string | null
-          estado: string | null
+          estado: Database["public"]["Enums"]["tipo_estado_persona_enum"] | null
           estado_contrato: string | null
+          estado_ficha:
+            | Database["public"]["Enums"]["tipo_estado_ficha_enum"]
+            | null
           fecha_nacimiento: string | null
           fingreso: string | null
           fretiro: string | null
@@ -2273,10 +2270,10 @@ export type Database = {
             | null
           horas_semanales: number | null
           id_afp: number | null
-          id_ciudad: number | null
           id_comuna: number | null
           id_contrato: number | null
           id_empresa: number | null
+          id_pais: number | null
           id_persona: number | null
           id_provincia: number | null
           id_regimen_previsional: number | null
@@ -2284,13 +2281,14 @@ export type Database = {
           id_salud: number | null
           monto_dia: number | null
           nombres: string | null
+          pais: string | null
           porcentaje_cotizacion: number | null
           provincia: string | null
           regimen_previsional_nombre: string | null
           region: string | null
           rut: string | null
           salud_nombre_full: string | null
-          salud_tipo: string | null
+          salud_tipo: Database["public"]["Enums"]["tipo_salud_enum"] | null
           seguro_cesantia: boolean | null
           semana_corrida_activa: boolean | null
           sexo: string | null
@@ -2299,6 +2297,9 @@ export type Database = {
           tasa_obligatoria: number | null
           telefono: string | null
           tipo_jornada_nombre: string | null
+          tipo_prevision:
+            | Database["public"]["Enums"]["tipo_prevision_enum"]
+            | null
           tipo_trabajador_nombre: string | null
           valor_plan: number | null
           zona_extrema_activa: boolean | null
@@ -2312,18 +2313,18 @@ export type Database = {
             referencedColumns: ["id_empresa"]
           },
           {
-            foreignKeyName: "persona_id_ciudad_fkey"
-            columns: ["id_ciudad"]
-            isOneToOne: false
-            referencedRelation: "ciudad"
-            referencedColumns: ["id_ciudad"]
-          },
-          {
             foreignKeyName: "persona_id_comuna_fkey"
             columns: ["id_comuna"]
             isOneToOne: false
             referencedRelation: "comuna"
             referencedColumns: ["id_comuna"]
+          },
+          {
+            foreignKeyName: "persona_id_pais_fkey"
+            columns: ["id_pais"]
+            isOneToOne: false
+            referencedRelation: "pais"
+            referencedColumns: ["id_pais"]
           },
           {
             foreignKeyName: "prevision_id_afp_fkey"
@@ -2443,23 +2444,33 @@ export type Database = {
       tipo_estado_civil_enum:
         | "SOLTERO"
         | "CASADO"
-        | "CONVIVIENTE CIVIL"
+        | "CONVIVIENTE_CIVIL"
         | "SEPARADO"
         | "DIVORCIADO"
         | "VIUDO"
-      tipo_estado_ficha_enum: "BORRADOR" | "INCOMPLETO" | "ACTIVO"
+      tipo_estado_ficha_enum: "BORRADOR" | "INCOMPLETO" | "VALIDO"
       tipo_estado_liquidacion_enum:
         | "BORRADOR"
         | "PROCESADA"
         | "APROBADA"
         | "PAGADA"
         | "ANULADA"
+      tipo_estado_persona_enum:
+        | "BORRADOR"
+        | "EN_PROCESO"
+        | "ACTIVO"
+        | "SUSPENDIDO"
+        | "INACTIVO"
+        | "DESVINCULADO"
+        | "BLOQUEADO"
       tipo_gratificacion_enum: "LEGAL_ART_47" | "LEGAL_ART_50" | "VOLUNTARIA"
       tipo_mov_vacaciones_enum:
         | "ACUMULADO"
         | "USADO"
         | "BONIFICADO"
         | "CORREGIDO"
+      tipo_prevision_enum: "AFP" | "IPS" | "NINGUNA"
+      tipo_salud_enum: "FONASA" | "ISAPRE"
       tipo_severidad_validacion_enum: "BLOQUEANTE" | "ADVERTENCIA" | "CRITICO"
     }
     CompositeTypes: {
@@ -2601,18 +2612,27 @@ export const Constants = {
       tipo_estado_civil_enum: [
         "SOLTERO",
         "CASADO",
-        "CONVIVIENTE CIVIL",
+        "CONVIVIENTE_CIVIL",
         "SEPARADO",
         "DIVORCIADO",
         "VIUDO",
       ],
-      tipo_estado_ficha_enum: ["BORRADOR", "INCOMPLETO", "ACTIVO"],
+      tipo_estado_ficha_enum: ["BORRADOR", "INCOMPLETO", "VALIDO"],
       tipo_estado_liquidacion_enum: [
         "BORRADOR",
         "PROCESADA",
         "APROBADA",
         "PAGADA",
         "ANULADA",
+      ],
+      tipo_estado_persona_enum: [
+        "BORRADOR",
+        "EN_PROCESO",
+        "ACTIVO",
+        "SUSPENDIDO",
+        "INACTIVO",
+        "DESVINCULADO",
+        "BLOQUEADO",
       ],
       tipo_gratificacion_enum: ["LEGAL_ART_47", "LEGAL_ART_50", "VOLUNTARIA"],
       tipo_mov_vacaciones_enum: [
@@ -2621,6 +2641,8 @@ export const Constants = {
         "BONIFICADO",
         "CORREGIDO",
       ],
+      tipo_prevision_enum: ["AFP", "IPS", "NINGUNA"],
+      tipo_salud_enum: ["FONASA", "ISAPRE"],
       tipo_severidad_validacion_enum: ["BLOQUEANTE", "ADVERTENCIA", "CRITICO"],
     },
   },
