@@ -26,12 +26,12 @@ interface WeekdayOption {
 }
 
 @Component({
-  selector: 'app-empleado-datos-laborales',
+  selector: 'app-empleado-contrato',
   imports: [ReactiveFormsModule],
-  templateUrl: './datos-laborales.html',
-  styleUrl: './datos-laborales.css',
+  templateUrl: './contrato.html',
+  styleUrl: './contrato.css',
 })
-export class DatosLaboralesComponent {
+export class ContratoComponent {
   @Input({ required: true }) formGroup!: ContratoFormGroup;
   @Input() centrosCosto: EmpleadoCatalogOption[] = [];
   @Input() sucursales: EmpleadoSucursalOption[] = [];

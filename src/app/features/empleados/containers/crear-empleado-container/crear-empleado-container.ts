@@ -11,7 +11,7 @@ import { FormEmpleadoComponent } from '../../components/form-empleado/form-emple
     LucideAngularModule,
     FormEmpleadoComponent,
   ],
-  templateUrl: './crear-empleado.html',
-  styleUrl: './crear-empleado.css',
+  templateUrl: './crear-empleado-container.html',
+  styleUrl: './crear-empleado-container.css',
 })
 export class CrearEmpleadoPage {}

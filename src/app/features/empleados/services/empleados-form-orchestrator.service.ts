@@ -4,7 +4,6 @@ import { FormControl, FormGroup, Validators } from '@angular/forms';
 
 import { EmpleadoEstado } from '../models/empleado-listado.model';
 import {
-  EmpleadoCatalogOption,
   EmpleadoFormCatalogos,
   EmpleadoFormGroup,
   EmpleadoSexo,
@@ -16,12 +15,10 @@ import {
   TramoCargaCatalogOption,
 } from '../models/empleado-form.model';
 import {
-  buildTodayValue,
-  formatRutInput,
   normalizeText,
-  onlyDigits,
-  setNormalizedTextValue,
 } from '../utils/empleado-form.helpers';
+import { buildTodayValue, setPreferredCatalogValue } from '../utils/empleado-form-defaults';
+import { formatRutInput, onlyDigits, setNormalizedTextValue } from '../utils/empleado-form.normalizers';
 import {
   atLeastOneArrayValueValidator,
   digitsOnlyValidator,
@@ -32,7 +29,7 @@ import {
 @Injectable({
   providedIn: 'root',
 })
-export class EmpleadosFormService {
+export class EmpleadosFormOrchestratorService {
   private readonly tramoCargaTouchedByForm = new WeakMap<EmpleadoFormGroup, boolean>();
 
   createForm(): EmpleadoFormGroup {
@@ -258,14 +255,14 @@ export class EmpleadosFormService {
   }
 
   applyCatalogDefaults(form: EmpleadoFormGroup, catalogos: EmpleadoFormCatalogos): void {
-    this.setPreferredCatalogValue(form.controls.contrato.controls.idSucursal, catalogos.sucursales, ['casa matriz']);
-    this.setPreferredCatalogValue(form.controls.contrato.controls.idTipoTrabajador, catalogos.tiposTrabajador, [
+    setPreferredCatalogValue(form.controls.contrato.controls.idSucursal, catalogos.sucursales, ['casa matriz']);
+    setPreferredCatalogValue(form.controls.contrato.controls.idTipoTrabajador, catalogos.tiposTrabajador, [
       'dependiente',
     ]);
-    this.setPreferredCatalogValue(form.controls.contrato.controls.idTipoJornada, catalogos.tiposJornada, [
+    setPreferredCatalogValue(form.controls.contrato.controls.idTipoJornada, catalogos.tiposJornada, [
       'completa',
     ]);
-    this.setPreferredCatalogValue(form.controls.contrato.controls.idMoneda, catalogos.monedas, [
+    setPreferredCatalogValue(form.controls.contrato.controls.idMoneda, catalogos.monedas, [
       'peso chileno',
       'pesos',
       'clp',
@@ -483,22 +480,6 @@ export class EmpleadosFormService {
     );
   }
 
-  private setPreferredCatalogValue(
-    control: FormControl<number | null>,
-    options: EmpleadoCatalogOption[],
-    preferredLabels: string[],
-  ): void {
-    if (control.value !== null || options.length === 0) {
-      return;
-    }
-
-    const preferred = options.find((option) =>
-      preferredLabels.some((label) => normalizeText(option.label) === normalizeText(label)),
-    );
-
-    control.setValue(preferred?.value ?? options[0].value);
-  }
-
   private ensurePrevisionDefaults(form: EmpleadoFormGroup, catalogos: EmpleadoFormCatalogos): void {
     const monedas = catalogos.monedas;
     const controls = form.controls.previsionSalud.controls;
@@ -508,11 +489,11 @@ export class EmpleadosFormService {
     }
 
     if (controls.tipoRegimenPrevisional.value !== null && controls.tipoRegimenPrevisional.value !== 'NINGUNA') {
-      this.setPreferredCatalogValue(controls.idMonedaPlan, monedas, ['peso chileno', 'pesos', 'clp']);
+      setPreferredCatalogValue(controls.idMonedaPlan, monedas, ['peso chileno', 'pesos', 'clp']);
     }
 
     if (controls.tipoRegimenPrevisional.value === 'AFP' && controls.tieneApv.value) {
-      this.setPreferredCatalogValue(controls.idMonedaApv, monedas, ['peso chileno', 'pesos', 'clp']);
+      setPreferredCatalogValue(controls.idMonedaApv, monedas, ['peso chileno', 'pesos', 'clp']);
     }
   }
 

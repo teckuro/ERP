@@ -6,12 +6,12 @@ import { BancarioFormGroup, EmpleadoCatalogOption } from '../../../models/emplea
 type BancarioControlName = keyof BancarioFormGroup['controls'];
 
 @Component({
-  selector: 'app-empleado-complementarios',
+  selector: 'app-empleado-bancario',
   imports: [ReactiveFormsModule],
-  templateUrl: './complementarios.html',
-  styleUrl: './complementarios.css',
+  templateUrl: './bancario.html',
+  styleUrl: './bancario.css',
 })
-export class ComplementariosComponent {
+export class BancarioComponent {
   @Input({ required: true }) formGroup!: BancarioFormGroup;
   @Input() bancos: EmpleadoCatalogOption[] = [];
   @Input() tiposCuentaBancaria: EmpleadoCatalogOption[] = [];

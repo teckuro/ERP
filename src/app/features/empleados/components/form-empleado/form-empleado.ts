@@ -4,10 +4,10 @@ import { AbstractControl, ReactiveFormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { LucideAngularModule } from 'lucide-angular';
 
-import { ComplementariosComponent } from '../secciones/complementarios/complementarios';
-import { DatosLaboralesComponent } from '../secciones/datos-laborales/datos-laborales';
+import { BancarioComponent } from '../secciones/bancario/bancario';
+import { ContratoComponent } from '../secciones/contrato/contrato';
 import { DatosPersonalesComponent } from '../secciones/datos-personales/datos-personales';
-import { DireccionComponent } from '../secciones/direccion/direccion';
+import { ContactoComponent } from '../secciones/contacto/contacto';
 import { PrevisionSaludComponent } from '../secciones/prevision-salud/prevision-salud';
 import { TabsEmpleadoComponent } from '../tabs-empleado/tabs-empleado';
 import { mapEmpleadoFormToPayload } from '../../mappers/empleado-form.mapper';
@@ -16,7 +16,7 @@ import {
   EmpleadoFormCatalogos,
   EmpleadoFormGroup,
 } from '../../models/empleado-form.model';
-import { EmpleadosFormService } from '../../services/empleados-form.service';
+import { EmpleadosFormOrchestratorService } from '../../services/empleados-form-orchestrator.service';
 import { EmpleadosCatalogosService } from '../../services/empleados-catalogos.service';
 import {
   EmpleadoReferenciaInvalidaError,
@@ -56,10 +56,10 @@ const TABS: readonly EmpleadoStepperItem[] = [
     MessageBoxComponent,
     TabsEmpleadoComponent,
     DatosPersonalesComponent,
-    DireccionComponent,
-    DatosLaboralesComponent,
+    ContactoComponent,
+    ContratoComponent,
     PrevisionSaludComponent,
-    ComplementariosComponent,
+    BancarioComponent,
   ],
   templateUrl: './form-empleado.html',
   styleUrl: './form-empleado.css',
@@ -67,7 +67,7 @@ const TABS: readonly EmpleadoStepperItem[] = [
 export class FormEmpleadoComponent implements OnInit {
   private readonly empleadosService = inject(EmpleadosService);
   private readonly empleadosCatalogosService = inject(EmpleadosCatalogosService);
-  private readonly empleadosFormService = inject(EmpleadosFormService);
+  private readonly empleadosFormService = inject(EmpleadosFormOrchestratorService);
   private readonly destroyRef = inject(DestroyRef);
   private readonly router = inject(Router);
   private readonly hostElement = inject<ElementRef<HTMLElement>>(ElementRef);

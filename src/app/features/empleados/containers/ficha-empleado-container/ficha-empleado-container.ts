@@ -19,8 +19,8 @@ import {
     CardHeaderComponent,
     CardContentComponent,
   ],
-  templateUrl: './ficha-empleado.html',
-  styleUrl: './ficha-empleado.css',
+  templateUrl: './ficha-empleado-container.html',
+  styleUrl: './ficha-empleado-container.css',
 })
 export class FichaEmpleadoPage {
   private readonly route = inject(ActivatedRoute);

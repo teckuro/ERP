@@ -2,7 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 
 import { EmpleadosService } from '../../services/empleados.service';
-import { ListadoEmpleadosPage } from './listado-empleados';
+import { ListadoEmpleadosPage } from './listado-empleados-container';
 
 describe('ListadoEmpleadosPage', () => {
   let component: ListadoEmpleadosPage;

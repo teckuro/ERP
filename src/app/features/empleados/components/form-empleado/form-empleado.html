@@ -87,14 +87,14 @@
                   [paises]="catalogos().paises"
                 ></app-empleado-datos-personales>
 
-                <app-empleado-direccion
+                <app-empleado-contacto
                   [formGroup]="form.controls.contacto"
                   [comunas]="catalogos().comunas"
-                ></app-empleado-direccion>
+                ></app-empleado-contacto>
               </div>
             } @else if (activeTab() === 'contrato') {
               <div class="step-panel">
-                <app-empleado-datos-laborales
+                <app-empleado-contrato
                   [formGroup]="form.controls.contrato"
                   [centrosCosto]="catalogos().centrosCosto"
                   [sucursales]="catalogos().sucursales"
@@ -103,7 +103,7 @@
                   [tiposJornada]="catalogos().tiposJornada"
                   [monedas]="catalogos().monedas"
                   [tramosCarga]="catalogos().tramosCarga"
-                ></app-empleado-datos-laborales>
+                ></app-empleado-contrato>
               </div>
             } @else if (activeTab() === 'previsionSalud') {
               <div class="step-panel">
@@ -119,11 +119,11 @@
               </div>
             } @else {
               <div class="step-panel">
-                <app-empleado-complementarios
+                <app-empleado-bancario
                   [formGroup]="form.controls.bancario"
                   [bancos]="catalogos().bancos"
                   [tiposCuentaBancaria]="catalogos().tiposCuentaBancaria"
-                ></app-empleado-complementarios>
+                ></app-empleado-bancario>
               </div>
             }
           </div>

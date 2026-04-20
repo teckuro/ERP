@@ -15,8 +15,8 @@ import {
     CommonModule,
     TablaEmpleadosComponent,
   ],
-  templateUrl: './listado-empleados.html',
-  styleUrl: './listado-empleados.css',
+  templateUrl: './listado-empleados-container.html',
+  styleUrl: './listado-empleados-container.css',
 })
 export class ListadoEmpleadosPage {
   private readonly empleadosService = inject(EmpleadosService);

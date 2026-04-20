@@ -78,7 +78,7 @@ export interface DatosPersonalesValue {
   fechaNacimiento: string;
   sexo: EmpleadoSexo;
   pasaporte: string;
-  idnacionalidad: number | null;
+  idPais: number | null;
   estadoCivil : TipoEstadoCivil;
 }
 

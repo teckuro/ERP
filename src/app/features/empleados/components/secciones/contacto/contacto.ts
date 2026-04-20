@@ -6,12 +6,12 @@ import { ContactoFormGroup, EmpleadoCatalogOption } from '../../../models/emplea
 type ContactoControlName = keyof ContactoFormGroup['controls'];
 
 @Component({
-  selector: 'app-empleado-direccion',
+  selector: 'app-empleado-contacto',
   imports: [ReactiveFormsModule],
-  templateUrl: './direccion.html',
-  styleUrl: './direccion.css',
+  templateUrl: './contacto.html',
+  styleUrl: './contacto.css',
 })
-export class DireccionComponent {
+export class ContactoComponent {
   @Input({ required: true }) formGroup!: ContactoFormGroup;
   @Input() comunas: EmpleadoCatalogOption[] = [];
 
