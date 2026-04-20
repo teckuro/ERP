@@ -13,24 +13,7 @@ export const routes: Routes = [
       },
       {
         path: 'empleados',
-        loadComponent: () =>
-          import('./features/empleados/pages/listado-empleados/listado-empleados').then(
-            (m) => m.ListadoEmpleadosPage,
-          ),
-      },
-      {
-        path: 'empleados/nuevo',
-        loadComponent: () =>
-          import('./features/empleados/pages/crear-empleado/crear-empleado').then(
-            (m) => m.CrearEmpleadoPage,
-          ),
-      },
-      {
-        path: 'empleados/:id',
-        loadComponent: () =>
-          import('./features/empleados/pages/ficha-empleado/ficha-empleado').then(
-            (m) => m.FichaEmpleadoPage,
-          ),
+        loadChildren: () => import('./features/empleados/empleados.routes').then((m) => m.empleadosRoutes),
       },
       {
         path: 'haberes-descuentos',

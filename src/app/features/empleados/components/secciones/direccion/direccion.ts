@@ -1,22 +1,21 @@
 import { Component, Input } from '@angular/core';
 import { ReactiveFormsModule, Validators } from '@angular/forms';
 
-import { BancarioFormGroup, EmpleadoCatalogOption } from '../../models/empleado-form.model';
+import { ContactoFormGroup, EmpleadoCatalogOption } from '../../../models/empleado-form.model';
 
-type BancarioControlName = keyof BancarioFormGroup['controls'];
+type ContactoControlName = keyof ContactoFormGroup['controls'];
 
 @Component({
-  selector: 'app-form-empleado-bancario',
+  selector: 'app-empleado-direccion',
   imports: [ReactiveFormsModule],
-  templateUrl: './form-empleado-bancario.html',
-  styleUrl: './form-empleado-bancario.css',
+  templateUrl: './direccion.html',
+  styleUrl: './direccion.css',
 })
-export class FormEmpleadoBancarioComponent {
-  @Input({ required: true }) formGroup!: BancarioFormGroup;
-  @Input() bancos: EmpleadoCatalogOption[] = [];
-  @Input() tiposCuentaBancaria: EmpleadoCatalogOption[] = [];
+export class DireccionComponent {
+  @Input({ required: true }) formGroup!: ContactoFormGroup;
+  @Input() comunas: EmpleadoCatalogOption[] = [];
 
-  controlClass(controlName: BancarioControlName): string {
+  controlClass(controlName: ContactoControlName): string {
     return [
       'w-full rounded-xl border bg-white/95 px-3.5 py-2.5 text-sm text-gray-900 shadow-sm transition placeholder:text-slate-400 focus:outline-none focus:ring-4',
       this.hasError(controlName)
@@ -25,7 +24,7 @@ export class FormEmpleadoBancarioComponent {
     ].join(' ');
   }
 
-  hasError(controlName: BancarioControlName, errorCode?: string): boolean {
+  hasError(controlName: ContactoControlName, errorCode?: string): boolean {
     const control = this.formGroup.controls[controlName];
 
     if (!control.touched) {
@@ -35,7 +34,7 @@ export class FormEmpleadoBancarioComponent {
     return errorCode ? control.hasError(errorCode) : control.invalid;
   }
 
-  isRequired(controlName: BancarioControlName): boolean {
+  isRequired(controlName: ContactoControlName): boolean {
     return this.formGroup.controls[controlName].hasValidator(Validators.required);
   }
 }

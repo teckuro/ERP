@@ -1,40 +1,28 @@
 import { Component, Input } from '@angular/core';
 import { ReactiveFormsModule, Validators } from '@angular/forms';
 
-import { DatosPersonalesFormGroup, EmpleadoSexo,EmpleadoCatalogOption,TipoEstadoCivil } from '../../models/empleado-form.model';
+import {
+  DatosPersonalesFormGroup,
+  EmpleadoCatalogOption,
+} from '../../../models/empleado-form.model';
+import { ESTADO_CIVIL_OPTIONS } from '../../../catalogs/estado-civil.options';
+import { SEXO_OPTIONS } from '../../../catalogs/sexo.options';
 
 type DatosPersonalesControlName = keyof DatosPersonalesFormGroup['controls'];
 
-interface SelectOption<T> {
-  value: T;
-  label: string;
-}
-
 @Component({
-  selector: 'app-form-empleado-datos-personales',
+  selector: 'app-empleado-datos-personales',
   standalone: true,
   imports: [ReactiveFormsModule],
-  templateUrl: './form-empleado-datos-personales.html',
-  styleUrl: './form-empleado-datos-personales.css',
+  templateUrl: './datos-personales.html',
+  styleUrl: './datos-personales.css',
 })
-export class FormEmpleadoDatosPersonalesComponent {
+export class DatosPersonalesComponent {
   @Input({ required: true }) formGroup!: DatosPersonalesFormGroup;
   @Input() paises: EmpleadoCatalogOption[] = [];
 
-  readonly sexOptions: SelectOption<EmpleadoSexo>[] = [
-    { value: 'F', label: 'Femenino' },
-    { value: 'M', label: 'Masculino' },
-    { value: 'O', label: 'Otro' },
-  ];
-
-  readonly estadoCivilOptions: SelectOption<TipoEstadoCivil>[] = [
-    { value: 'SOLTERO', label: 'Soltero/a' },
-    { value: 'CASADO', label: 'Casado/a' },
-    { value: 'CONVIVIENTE CIVIL', label: 'Conviviente civil' },
-    { value: 'SEPARADO', label: 'Separado/a' },
-    { value: 'DIVORCIADO', label: 'Divorciado/a' },
-    { value: 'VIUDO', label: 'Viudo/a' },
-  ];
+  readonly sexOptions = SEXO_OPTIONS;
+  readonly estadoCivilOptions = ESTADO_CIVIL_OPTIONS;
 
   controlClass(controlName: DatosPersonalesControlName): string {
     return [

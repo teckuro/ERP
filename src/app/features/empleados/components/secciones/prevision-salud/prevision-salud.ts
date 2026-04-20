@@ -5,45 +5,22 @@ import {
   EmpleadoCatalogOption,
   PrevisionSaludFormGroup,
   TipoRegimenPrevisional,
-} from '../../models/empleado-form.model';
+} from '../../../models/empleado-form.model';
+import { TIPO_REGIMEN_OPTIONS } from '../../../catalogs/prevision.options';
 import {
   CardComponent,
   CardContentComponent,
   CardHeaderComponent,
-} from '../../../../shared/components/ui/card.component';
+} from '../../../../../shared/components/ui/card.component';
 
 type PrevisionSaludControlName = keyof PrevisionSaludFormGroup['controls'];
-type TipoRegimenOption = {
-  value: TipoRegimenPrevisional;
-  label: string;
-  description: string;
-};
-
-const TIPO_REGIMEN_OPTIONS: readonly TipoRegimenOption[] = [
-  {
-    value: 'AFP',
-    label: 'AFP',
-    description: 'Muestra AFP, salud, Cuenta 2 y APVI.',
-  },
-  {
-    value: 'IPS',
-    label: 'IPS (Ex INP)',
-    description: 'Muestra los datos de Ex-Caja y salud.',
-  },
-  {
-    value: 'NINGUNA',
-    label: 'Sin Prevision',
-    description: 'Oculta salud y no registra previsiones asociadas.',
-  },
-] as const;
-
 @Component({
-  selector: 'app-form-empleado-prevision-salud',
+  selector: 'app-empleado-prevision-salud',
   imports: [ReactiveFormsModule, CardComponent, CardContentComponent, CardHeaderComponent],
-  templateUrl: './form-empleado-prevision-salud.html',
-  styleUrl: './form-empleado-prevision-salud.css',
+  templateUrl: './prevision-salud.html',
+  styleUrl: './prevision-salud.css',
 })
-export class FormEmpleadoPrevisionSaludComponent {
+export class PrevisionSaludComponent {
   @Input({ required: true }) formGroup!: PrevisionSaludFormGroup;
   @Input() regimenesPrevisionales: EmpleadoCatalogOption[] = [];
   @Input() afps: EmpleadoCatalogOption[] = [];

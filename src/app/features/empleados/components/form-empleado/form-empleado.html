@@ -70,32 +70,31 @@
               <p class="content-description">{{ activeStepDescription() }}</p>
             </div>
             <section class="progress-shell progress-shell-inline">
-              <app-stepper
+              <app-tabs-empleado
                 [steps]="stepperItems()"
                 [activeId]="activeTab()"
                 caption="Progreso"
                 (activeIdChange)="selectTab($event)"
-                [showMeta]="false"
-              ></app-stepper>
+              ></app-tabs-empleado>
             </section>
           </div>
 
           <div class="content-body">
             @if (activeTab() === 'datosPersonales') {
               <div class="step-panel space-y-6">
-                <app-form-empleado-datos-personales
+                <app-empleado-datos-personales
                   [formGroup]="form.controls.datosPersonales"
                   [paises]="catalogos().paises"
-                ></app-form-empleado-datos-personales>
+                ></app-empleado-datos-personales>
 
-                <app-form-empleado-contacto
+                <app-empleado-direccion
                   [formGroup]="form.controls.contacto"
                   [comunas]="catalogos().comunas"
-                ></app-form-empleado-contacto>
+                ></app-empleado-direccion>
               </div>
             } @else if (activeTab() === 'contrato') {
               <div class="step-panel">
-                <app-form-empleado-contrato
+                <app-empleado-datos-laborales
                   [formGroup]="form.controls.contrato"
                   [centrosCosto]="catalogos().centrosCosto"
                   [sucursales]="catalogos().sucursales"
@@ -104,11 +103,11 @@
                   [tiposJornada]="catalogos().tiposJornada"
                   [monedas]="catalogos().monedas"
                   [tramosCarga]="catalogos().tramosCarga"
-                ></app-form-empleado-contrato>
+                ></app-empleado-datos-laborales>
               </div>
             } @else if (activeTab() === 'previsionSalud') {
               <div class="step-panel">
-                <app-form-empleado-prevision-salud
+                <app-empleado-prevision-salud
                   [formGroup]="form.controls.previsionSalud"
                   [regimenesPrevisionales]="catalogos().regimenesPrevisionales"
                   [afps]="catalogos().afps"
@@ -116,15 +115,15 @@
                   [monedas]="catalogos().monedas"
                   [institucionesApv]="catalogos().institucionesApv"
                   [formasPagoApv]="catalogos().formasPagoApv"
-                ></app-form-empleado-prevision-salud>
+                ></app-empleado-prevision-salud>
               </div>
             } @else {
               <div class="step-panel">
-                <app-form-empleado-bancario
+                <app-empleado-complementarios
                   [formGroup]="form.controls.bancario"
                   [bancos]="catalogos().bancos"
                   [tiposCuentaBancaria]="catalogos().tiposCuentaBancaria"
-                ></app-form-empleado-bancario>
+                ></app-empleado-complementarios>
               </div>
             }
           </div>

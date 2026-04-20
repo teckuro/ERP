@@ -10,8 +10,8 @@ import {
   TipoContrato,
   TipoGratificacion,
   TramoCargaCatalogOption,
-} from '../../models/empleado-form.model';
-import { EmpleadoEstado } from '../../models/empleado-listado.model';
+} from '../../../models/empleado-form.model';
+import { EmpleadoEstado } from '../../../models/empleado-listado.model';
 
 type ContratoControlName = keyof ContratoFormGroup['controls'];
 
@@ -26,12 +26,12 @@ interface WeekdayOption {
 }
 
 @Component({
-  selector: 'app-form-empleado-contrato',
+  selector: 'app-empleado-datos-laborales',
   imports: [ReactiveFormsModule],
-  templateUrl: './form-empleado-contrato.html',
-  styleUrl: './form-empleado-contrato.css',
+  templateUrl: './datos-laborales.html',
+  styleUrl: './datos-laborales.css',
 })
-export class FormEmpleadoContratoComponent {
+export class DatosLaboralesComponent {
   @Input({ required: true }) formGroup!: ContratoFormGroup;
   @Input() centrosCosto: EmpleadoCatalogOption[] = [];
   @Input() sucursales: EmpleadoSucursalOption[] = [];
