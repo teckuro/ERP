@@ -9,7 +9,6 @@ import { ContratoComponent } from '../secciones/contrato/contrato';
 import { DatosPersonalesComponent } from '../secciones/datos-personales/datos-personales';
 import { ContactoComponent } from '../secciones/contacto/contacto';
 import { PrevisionSaludComponent } from '../secciones/prevision-salud/prevision-salud';
-import { TabsEmpleadoComponent } from '../tabs-empleado/tabs-empleado';
 import { mapEmpleadoFormToPayload } from '../../mappers/empleado-form.mapper';
 import {
   EMPTY_EMPLEADO_FORM_CATALOGOS,
@@ -34,6 +33,19 @@ import { StepperItem } from '../../../../shared/components/ui/stepper.component'
 
 type TabId = 'datosPersonales' | 'contrato' | 'previsionSalud' | 'bancario';
 type EmpleadoStepperItem = StepperItem & { id: TabId };
+type FinalReviewStatus = 'Completo' | 'Pendiente de revision';
+type ValidationSeverity = 'error' | 'warning';
+
+interface FinalReviewItem {
+  label: string;
+  status: FinalReviewStatus;
+}
+
+interface ValidationPanelItem {
+  label: string;
+  severity: ValidationSeverity;
+  complete: boolean;
+}
 
 const TAB_ORDER: readonly TabId[] = ['datosPersonales', 'contrato', 'previsionSalud', 'bancario'];
 const TABS: readonly EmpleadoStepperItem[] = [
@@ -54,7 +66,6 @@ const TABS: readonly EmpleadoStepperItem[] = [
     PageTitleComponent,
     PageActionsComponent,
     MessageBoxComponent,
-    TabsEmpleadoComponent,
     DatosPersonalesComponent,
     ContactoComponent,
     ContratoComponent,
@@ -85,6 +96,7 @@ export class FormEmpleadoComponent implements OnInit {
   readonly completedTabs = signal<ReadonlySet<TabId>>(new Set());
   readonly attemptedTabs = signal<ReadonlySet<TabId>>(new Set());
   readonly form: EmpleadoFormGroup = this.empleadosFormService.createForm();
+  readonly totalSteps = TAB_ORDER.length;
 
   async ngOnInit(): Promise<void> {
     this.empleadosFormService.configureFormBehavior(this.form, this.destroyRef, () =>
@@ -245,6 +257,132 @@ export class FormEmpleadoComponent implements OnInit {
     }
   }
 
+  currentStepLabel(): string {
+    return `Paso ${TAB_ORDER.indexOf(this.activeTab()) + 1} de ${this.totalSteps}`;
+  }
+
+  completedStepCount(): number {
+    return TAB_ORDER.filter((tabId) => this.completedTabs().has(tabId) && !this.isTabInvalid(tabId))
+      .length;
+  }
+
+  pendingValidationCount(): number {
+    return this.validationPanelItems().filter((item) => !item.complete).length;
+  }
+
+  activeStepStateLabel(): string {
+    const current = this.activeTab();
+
+    if (this.isTabInvalid(current) && (this.attemptedTabs().has(current) || this.attemptedSave())) {
+      return 'Requiere revision';
+    }
+
+    if (!this.isTabInvalid(current) && this.completedTabs().has(current)) {
+      return 'Completo';
+    }
+
+    return 'En curso';
+  }
+
+  validationPanelItems(): ValidationPanelItem[] {
+    const personal = this.form.controls.datosPersonales.controls;
+    const prevision = this.form.controls.previsionSalud.controls;
+    const bancario = this.form.controls.bancario.controls;
+
+    return [
+      {
+        label: 'RUT obligatorio pendiente',
+        severity: 'error',
+        complete: personal.rut.valid,
+      },
+      {
+        label: 'Fecha nacimiento obligatoria',
+        severity: 'error',
+        complete: personal.fechaNacimiento.valid,
+      },
+      {
+        label: 'Apellido paterno obligatorio',
+        severity: 'error',
+        complete: personal.apellidoPaterno.valid,
+      },
+      {
+        label: 'AFP pendiente',
+        severity: 'warning',
+        complete: prevision.tipoRegimenPrevisional.value !== 'AFP' || prevision.idAfp.valid,
+      },
+      {
+        label: 'Cuenta bancaria pendiente',
+        severity: 'warning',
+        complete: bancario.idBanco.valid && bancario.idTipoCuentaBancaria.valid && bancario.numeroCuenta.valid,
+      },
+    ];
+  }
+
+  sideStepStateLabel(step: EmpleadoStepperItem): string {
+    if (step.id === this.activeTab()) {
+      return 'Activo';
+    }
+
+    switch (step.status) {
+      case 'complete':
+        return 'Completo';
+      case 'invalid':
+        return 'Invalido';
+      default:
+        return 'Pendiente';
+    }
+  }
+
+  fullNameVisible(): string {
+    const { nombres, apellidoPaterno, apellidoMaterno } = this.form.controls.datosPersonales.controls;
+    const fullName = [nombres.value, apellidoPaterno.value, apellidoMaterno.value]
+      .map((value) => value.trim())
+      .filter(Boolean)
+      .join(' ');
+
+    return fullName || 'Sin nombre';
+  }
+
+  rutVisible(): string {
+    return this.form.controls.datosPersonales.controls.rut.value.trim() || 'Sin RUT';
+  }
+
+  cargoVisible(): string {
+    return this.form.controls.contrato.controls.cargo.value.trim() || 'Sin cargo';
+  }
+
+  sucursalVisible(): string {
+    const selectedId = this.form.controls.contrato.controls.idSucursal.value;
+    const sucursal = this.catalogos().sucursales.find((option) => option.value === selectedId);
+
+    return sucursal?.label || 'Sin sucursal';
+  }
+
+  finalReviewItems(): FinalReviewItem[] {
+    return [
+      {
+        label: 'Identificacion y contacto',
+        status: this.reviewStatus(this.getPersonalSectionState().valid),
+      },
+      {
+        label: 'Datos laborales iniciales',
+        status: this.reviewStatus(this.form.controls.contrato.valid),
+      },
+      {
+        label: 'Configuracion previsional inicial',
+        status: this.reviewStatus(this.form.controls.previsionSalud.valid),
+      },
+      {
+        label: 'Datos administrativos',
+        status: this.reviewStatus(this.form.controls.bancario.valid),
+      },
+    ];
+  }
+
+  reviewStatusClass(status: FinalReviewStatus): string {
+    return status === 'Completo' ? 'is-complete' : 'is-pending';
+  }
+
   private tabStatus(tabId: TabId): 'pending' | 'invalid' | 'complete' {
     const section =
       tabId === 'datosPersonales' ? this.getPersonalSectionState() : this.getSection(tabId);
@@ -259,6 +397,10 @@ export class FormEmpleadoComponent implements OnInit {
     }
 
     return 'pending';
+  }
+
+  private reviewStatus(isComplete: boolean): FinalReviewStatus {
+    return isComplete ? 'Completo' : 'Pendiente de revision';
   }
 
   private findFirstInvalidTab(): TabId {
@@ -330,7 +472,7 @@ export class FormEmpleadoComponent implements OnInit {
     return TAB_ORDER.includes(tabId as TabId);
   }
 
-  private isTabInvalid(tabId: TabId): boolean {
+  isTabInvalid(tabId: TabId): boolean {
     return tabId === 'datosPersonales'
       ? this.getPersonalSectionState().invalid
       : this.getSection(tabId).invalid;

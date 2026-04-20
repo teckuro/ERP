@@ -1,18 +1,22 @@
-<section class="employee-section-shell" [formGroup]="formGroup">
+<section class="employee-section-shell">
   <div class="employee-section-head">
-    <p class="employee-section-kicker">Ficha base</p>
+    <p class="employee-section-kicker">Datos personales</p>
     <h3 class="employee-section-title">Datos personales</h3>
     <p class="employee-section-copy">
       Completa la informacion principal del colaborador para identificarlo dentro de la ficha.
     </p>
   </div>
 
-  <section class="employee-block">
-    <div class="employee-block-title">Identificacion</div>
+  <section class="employee-block" [formGroup]="formGroup">
+    <div class="employee-block-head">
+      <h4>Identificacion legal</h4>
+      <p>Documentos y atributos legales para individualizar al colaborador.</p>
+    </div>
+
     <div class="employee-grid employee-grid--four">
       <div class="form-field">
         <div class="field-label-row">
-          <label class="text-sm font-medium text-gray-700" for="empleado-rut">RUT</label>
+          <label for="empleado-rut">RUT</label>
           @if (isRequired('rut')) {
             <span class="field-required" aria-hidden="true">*</span>
           }
@@ -37,7 +41,7 @@
 
       <div class="form-field">
         <div class="field-label-row">
-          <label class="text-sm font-medium text-gray-700" for="empleado-pasaporte">Pasaporte</label>
+          <label for="empleado-pasaporte">Pasaporte</label>
         </div>
         <input
           id="empleado-pasaporte"
@@ -55,7 +59,7 @@
 
       <div class="form-field">
         <div class="field-label-row">
-          <label class="text-sm font-medium text-gray-700" for="empleado-fecha-nacimiento">Fecha de nacimiento</label>
+          <label for="empleado-fecha-nacimiento">Fecha nacimiento</label>
           @if (isRequired('fechaNacimiento')) {
             <span class="field-required" aria-hidden="true">*</span>
           }
@@ -75,7 +79,7 @@
 
       <div class="form-field">
         <div class="field-label-row">
-          <label class="text-sm font-medium text-gray-700" for="empleado-sexo">Sexo</label>
+          <label for="empleado-sexo">Sexo</label>
           @if (isRequired('sexo')) {
             <span class="field-required" aria-hidden="true">*</span>
           }
@@ -91,10 +95,19 @@
           <p class="field-message"></p>
         }
       </div>
+    </div>
+  </section>
 
-      <div class="form-field employee-span-2">
+  <section class="employee-block" [formGroup]="formGroup">
+    <div class="employee-block-head">
+      <h4>Nombre del colaborador</h4>
+      <p>Nombre legal que se mostrara en la ficha y documentos laborales.</p>
+    </div>
+
+    <div class="employee-grid employee-grid--three">
+      <div class="form-field">
         <div class="field-label-row">
-          <label class="text-sm font-medium text-gray-700" for="empleado-nombres">Nombres</label>
+          <label for="empleado-nombres">Nombres</label>
           @if (isRequired('nombres')) {
             <span class="field-required" aria-hidden="true">*</span>
           }
@@ -103,7 +116,7 @@
           id="empleado-nombres"
           type="text"
           formControlName="nombres"
-          placeholder="Camila"
+          placeholder="Camila Andrea"
           [class]="controlClass('nombres')"
         />
         @if (hasError('nombres', 'required')) {
@@ -119,7 +132,7 @@
 
       <div class="form-field">
         <div class="field-label-row">
-          <label class="text-sm font-medium text-gray-700" for="empleado-apellido-paterno">Apellido paterno</label>
+          <label for="empleado-apellido-paterno">Apellido paterno</label>
           @if (isRequired('apellidoPaterno')) {
             <span class="field-required" aria-hidden="true">*</span>
           }
@@ -144,7 +157,7 @@
 
       <div class="form-field">
         <div class="field-label-row">
-          <label class="text-sm font-medium text-gray-700" for="empleado-apellido-materno">Apellido materno</label>
+          <label for="empleado-apellido-materno">Apellido materno</label>
         </div>
         <input
           id="empleado-apellido-materno"
@@ -161,10 +174,19 @@
           <p class="field-message"></p>
         }
       </div>
+    </div>
+  </section>
 
+  <section class="employee-block">
+    <div class="employee-block-head">
+      <h4>Informacion base</h4>
+      <p>Nacionalidad, estado civil y canales principales de contacto.</p>
+    </div>
+
+    <div class="employee-grid employee-grid--four" [formGroup]="formGroup">
       <div class="form-field employee-span-2">
         <div class="field-label-row">
-          <label class="text-sm font-medium text-gray-700" for="empleado-idPais">Nacionalidad</label>
+          <label for="empleado-idPais">Nacionalidad</label>
           @if (isRequired('idPais')) {
             <span class="field-required" aria-hidden="true">*</span>
           }
@@ -186,7 +208,7 @@
 
       <div class="form-field employee-span-2">
         <div class="field-label-row">
-          <label class="text-sm font-medium text-gray-700" for="empleado-estadoCivil">Estado civil</label>
+          <label for="empleado-estadoCivil">Estado civil</label>
           @if (isRequired('estadoCivil')) {
             <span class="field-required" aria-hidden="true">*</span>
           }
@@ -199,6 +221,58 @@
         </select>
         @if (hasError('estadoCivil', 'required')) {
           <p class="field-message">El estado civil es obligatorio.</p>
+        } @else {
+          <p class="field-message"></p>
+        }
+      </div>
+    </div>
+
+    <div class="employee-grid employee-grid--two" [formGroup]="contactoFormGroup">
+      <div class="form-field">
+        <div class="field-label-row">
+          <label for="empleado-email">Email</label>
+          @if (isContactoRequired('email')) {
+            <span class="field-required" aria-hidden="true">*</span>
+          }
+        </div>
+        <input
+          id="empleado-email"
+          type="email"
+          formControlName="email"
+          placeholder="nombre@empresa.cl"
+          [class]="contactoControlClass('email')"
+        />
+        @if (hasContactoError('email', 'required')) {
+          <p class="field-message">El correo es obligatorio.</p>
+        } @else if (hasContactoError('email', 'email')) {
+          <p class="field-message">Ingresa un correo valido.</p>
+        } @else {
+          <p class="field-message"></p>
+        }
+      </div>
+
+      <div class="form-field">
+        <div class="field-label-row">
+          <label for="empleado-telefono">Telefono</label>
+          @if (isContactoRequired('telefono')) {
+            <span class="field-required" aria-hidden="true">*</span>
+          }
+        </div>
+        <input
+          id="empleado-telefono"
+          type="text"
+          inputmode="numeric"
+          maxlength="12"
+          formControlName="telefono"
+          placeholder="56912345678"
+          [class]="contactoControlClass('telefono')"
+        />
+        @if (hasContactoError('telefono', 'required')) {
+          <p class="field-message">El telefono es obligatorio.</p>
+        } @else if (hasContactoError('telefono', 'digitsOnly')) {
+          <p class="field-message">Ingresa solo numeros.</p>
+        } @else if (hasContactoError('telefono', 'minlength') || hasContactoError('telefono', 'maxlength')) {
+          <p class="field-message">Ingresa un telefono valido de 8 a 12 digitos.</p>
         } @else {
           <p class="field-message"></p>
         }

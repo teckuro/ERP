@@ -18,10 +18,10 @@ export class ContactoComponent {
 
   controlClass(controlName: ContactoControlName): string {
     return [
-      'w-full rounded-xl border bg-white/95 px-3.5 py-2.5 text-sm text-gray-900 shadow-sm transition placeholder:text-slate-400 focus:outline-none focus:ring-4',
+      'w-full rounded-lg border bg-white px-3.5 py-2.5 text-sm text-slate-900 transition placeholder:text-slate-400 focus:outline-none focus:ring-2',
       this.hasError(controlName)
-        ? 'border-red-300 focus:border-red-300 focus:ring-red-100'
-        : 'border-slate-200 focus:border-blue-300 focus:ring-blue-100',
+        ? 'border-red-300 focus:border-red-400 focus:ring-red-100'
+        : 'border-slate-300 focus:border-blue-500 focus:ring-blue-100',
     ].join(' ');
   }
 

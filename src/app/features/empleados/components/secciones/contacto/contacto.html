@@ -1,73 +1,14 @@
-<section class="employee-section-shell" [formGroup]="formGroup">
-  <div class="employee-section-head">
-    <p class="employee-section-kicker">Canales y ubicacion</p>
-    <h3 class="employee-section-title">Contacto y direccion</h3>
-    <p class="employee-section-copy">
-      Registra como ubicar al colaborador y desglosa la direccion que se persistira en su ficha.
-    </p>
-  </div>
-
-  <section class="employee-block">
-    <div class="employee-block-title">Contacto</div>
-    <div class="employee-grid employee-grid--two">
-      <div class="form-field">
-        <div class="field-label-row">
-          <label class="text-sm font-medium text-gray-700" for="empleado-email">Correo corporativo</label>
-          @if (isRequired('email')) {
-            <span class="field-required" aria-hidden="true">*</span>
-          }
-        </div>
-        <input
-          id="empleado-email"
-          type="email"
-          formControlName="email"
-          placeholder="nombre@empresa.cl"
-          [class]="controlClass('email')"
-        />
-        @if (hasError('email', 'required')) {
-          <p class="field-message">El correo es obligatorio.</p>
-        } @else if (hasError('email', 'email')) {
-          <p class="field-message">Ingresa un correo valido.</p>
-        } @else {
-          <p class="field-message"></p>
-        }
-      </div>
-
-      <div class="form-field">
-        <div class="field-label-row">
-          <label class="text-sm font-medium text-gray-700" for="empleado-telefono">Telefono</label>
-          @if (isRequired('telefono')) {
-            <span class="field-required" aria-hidden="true">*</span>
-          }
-        </div>
-        <input
-          id="empleado-telefono"
-          type="text"
-          inputmode="numeric"
-          maxlength="12"
-          formControlName="telefono"
-          placeholder="56912345678"
-          [class]="controlClass('telefono')"
-        />
-        @if (hasError('telefono', 'required')) {
-          <p class="field-message">El telefono es obligatorio.</p>
-        } @else if (hasError('telefono', 'digitsOnly')) {
-          <p class="field-message">Ingresa solo numeros.</p>
-        } @else if (hasError('telefono', 'minlength') || hasError('telefono', 'maxlength')) {
-          <p class="field-message">Ingresa un telefono valido de 8 a 12 digitos.</p>
-        } @else {
-          <p class="field-message"></p>
-        }
-      </div>
+<section class="employee-section-shell employee-section-shell--compact" [formGroup]="formGroup">
+  <section class="employee-block employee-block--subtle">
+    <div class="employee-block-head">
+      <h4>Ubicacion administrativa</h4>
+      <p>Datos requeridos para completar la ficha contractual y tributaria.</p>
     </div>
-  </section>
 
-  <section class="employee-block">
-    <div class="employee-block-title">Direccion</div>
     <div class="employee-grid employee-grid--four">
       <div class="form-field employee-span-2">
         <div class="field-label-row">
-          <label class="text-sm font-medium text-gray-700" for="empleado-direccion">Calle o avenida</label>
+          <label for="empleado-direccion">Calle o avenida</label>
           @if (isRequired('direccion')) {
             <span class="field-required" aria-hidden="true">*</span>
           }
@@ -88,7 +29,7 @@
 
       <div class="form-field">
         <div class="field-label-row">
-          <label class="text-sm font-medium text-gray-700" for="empleado-numero-direccion">Numero</label>
+          <label for="empleado-numero-direccion">Numero</label>
         </div>
         <input
           id="empleado-numero-direccion"
@@ -110,7 +51,7 @@
 
       <div class="form-field">
         <div class="field-label-row">
-          <label class="text-sm font-medium text-gray-700" for="empleado-departamento-direccion">Depto. u oficina</label>
+          <label for="empleado-departamento-direccion">Depto. u oficina</label>
         </div>
         <input
           id="empleado-departamento-direccion"
@@ -128,7 +69,7 @@
 
       <div class="form-field employee-span-2">
         <div class="field-label-row">
-          <label class="text-sm font-medium text-gray-700" for="empleado-comuna">Comuna</label>
+          <label for="empleado-comuna">Comuna</label>
           @if (isRequired('idComuna')) {
             <span class="field-required" aria-hidden="true">*</span>
           }
@@ -150,7 +91,7 @@
 
       <div class="form-field employee-span-4">
         <div class="field-label-row">
-          <label class="text-sm font-medium text-gray-700" for="empleado-observaciones-direccion">Observaciones</label>
+          <label for="empleado-observaciones-direccion">Observaciones</label>
         </div>
         <textarea
           id="empleado-observaciones-direccion"

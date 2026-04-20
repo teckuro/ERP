@@ -2,15 +2,24 @@
   <div class="form-stack w-full">
     <app-card className="editor-shell">
       <app-card-content className="editor-frame">
-        <app-page-title title="Nueva ficha de empleado"></app-page-title>
-        <app-page-actions
-          [visibleActions]="['back', 'save']"
-          backLabel="Volver"
-          saveLabel="Guardar ficha"
-          backLink="/empleados"
-          [saveDisabled]="isSaving() || isLoadingCatalogs()"
-          (saveClick)="onSubmit()"
-        ></app-page-actions>
+        <header class="editor-head">
+          <div class="editor-title-stack">
+            <app-page-title title="Nueva ficha de empleado"></app-page-title>
+            <div class="draft-badge" aria-label="Estado de la ficha">
+              <span class="draft-badge-dot"></span>
+              <span>Borrador</span>
+            </div>
+          </div>
+
+          <app-page-actions
+            [visibleActions]="['back', 'save']"
+            backLabel="Volver"
+            saveLabel="Guardar ficha"
+            backLink="/empleados"
+            [saveDisabled]="isSaving() || isLoadingCatalogs()"
+            (saveClick)="onSubmit()"
+          ></app-page-actions>
+        </header>
 
         <div class="status-stack">
           @if (catalogosError(); as message) {
@@ -56,115 +65,242 @@
             (action)="goToEmployeeList()"
           >
             @if (createdEmployeeId(); as createdId) {
-              <p class="message-detail">
-                Identificador de ficha: {{ createdId }}
-              </p>
+              <p class="message-detail">Identificador de ficha: {{ createdId }}</p>
             }
           </app-message-box>
         }
 
-        <section class="content-shell">
-          <div class="content-head">
-            <div class="content-copy">
-              <h2 class="content-title">{{ activeStepTitle() }}</h2>
-              <p class="content-description">{{ activeStepDescription() }}</p>
+        <section class="draft-summary" aria-label="Resumen de ficha en construccion">
+          <dl class="draft-summary-grid">
+            <div class="draft-summary-item draft-summary-item--wide">
+              <dt>Nombre completo</dt>
+              <dd>{{ fullNameVisible() }}</dd>
             </div>
-            <section class="progress-shell progress-shell-inline">
-              <app-tabs-empleado
-                [steps]="stepperItems()"
-                [activeId]="activeTab()"
-                caption="Progreso"
-                (activeIdChange)="selectTab($event)"
-              ></app-tabs-empleado>
-            </section>
-          </div>
+            <div class="draft-summary-item">
+              <dt>RUT</dt>
+              <dd>{{ rutVisible() }}</dd>
+            </div>
+            <div class="draft-summary-item">
+              <dt>Cargo</dt>
+              <dd>{{ cargoVisible() }}</dd>
+            </div>
+            <div class="draft-summary-item">
+              <dt>Sucursal</dt>
+              <dd>{{ sucursalVisible() }}</dd>
+            </div>
+            <div class="draft-summary-item">
+              <dt>Estado</dt>
+              <dd>Borrador</dd>
+            </div>
+            <div class="draft-summary-item">
+              <dt>Avance</dt>
+              <dd>{{ completedStepCount() }} de {{ totalSteps }}</dd>
+            </div>
+            <div class="draft-summary-item">
+              <dt>Validaciones</dt>
+              <dd>{{ pendingValidationCount() }} pendientes</dd>
+            </div>
+          </dl>
+        </section>
 
-          <div class="content-body">
-            @if (activeTab() === 'datosPersonales') {
-              <div class="step-panel space-y-6">
-                <app-empleado-datos-personales
-                  [formGroup]="form.controls.datosPersonales"
-                  [paises]="catalogos().paises"
-                ></app-empleado-datos-personales>
+        <section class="workspace-grid" aria-label="Workspace de nueva ficha">
+          <section class="content-shell" aria-label="Paso actual">
+            <div class="content-head">
+              <div class="content-copy">
+                <p class="step-label">{{ currentStepLabel() }}</p>
+                <h2 class="content-title">{{ activeStepTitle() }}</h2>
+                <p class="content-description">{{ activeStepDescription() }}</p>
+              </div>
+            </div>
 
-                <app-empleado-contacto
-                  [formGroup]="form.controls.contacto"
-                  [comunas]="catalogos().comunas"
-                ></app-empleado-contacto>
-              </div>
-            } @else if (activeTab() === 'contrato') {
-              <div class="step-panel">
-                <app-empleado-contrato
-                  [formGroup]="form.controls.contrato"
-                  [centrosCosto]="catalogos().centrosCosto"
-                  [sucursales]="catalogos().sucursales"
-                  [departamentos]="catalogos().departamentos"
-                  [tiposTrabajador]="catalogos().tiposTrabajador"
-                  [tiposJornada]="catalogos().tiposJornada"
-                  [monedas]="catalogos().monedas"
-                  [tramosCarga]="catalogos().tramosCarga"
-                ></app-empleado-contrato>
-              </div>
-            } @else if (activeTab() === 'previsionSalud') {
-              <div class="step-panel">
-                <app-empleado-prevision-salud
-                  [formGroup]="form.controls.previsionSalud"
-                  [regimenesPrevisionales]="catalogos().regimenesPrevisionales"
-                  [afps]="catalogos().afps"
-                  [entidadesSalud]="catalogos().entidadesSalud"
-                  [monedas]="catalogos().monedas"
-                  [institucionesApv]="catalogos().institucionesApv"
-                  [formasPagoApv]="catalogos().formasPagoApv"
-                ></app-empleado-prevision-salud>
-              </div>
-            } @else {
-              <div class="step-panel">
-                <app-empleado-bancario
-                  [formGroup]="form.controls.bancario"
-                  [bancos]="catalogos().bancos"
-                  [tiposCuentaBancaria]="catalogos().tiposCuentaBancaria"
-                ></app-empleado-bancario>
-              </div>
-            }
-          </div>
-          <div
-            class="editor-footer"
-          >
-            <p class="editor-footer-copy">
-              Completa la ficha por etapas. Puedes volver a pasos anteriores antes de guardar la
-              informacion inicial del colaborador.
-            </p>
+            <div class="content-body">
+              @if (activeTab() === 'datosPersonales') {
+                <div class="step-panel">
+                  <app-empleado-datos-personales
+                    [formGroup]="form.controls.datosPersonales"
+                    [contactoFormGroup]="form.controls.contacto"
+                    [paises]="catalogos().paises"
+                  ></app-empleado-datos-personales>
 
-            <div class="editor-footer-actions">
-              <button
-                type="button"
-                class="form-action-button form-action-button--secondary"
-                [disabled]="isFirstTab()"
-                (click)="goToPreviousTab()"
-              >
-                Anterior
-              </button>
+                  <app-empleado-contacto
+                    [formGroup]="form.controls.contacto"
+                    [comunas]="catalogos().comunas"
+                  ></app-empleado-contacto>
+                </div>
+              } @else if (activeTab() === 'contrato') {
+                <div class="step-panel">
+                  <div class="labor-process-map" aria-label="Bloques del paso laboral">
+                    <span>Relacion laboral</span>
+                    <span>Contrato</span>
+                    <span>Jornada</span>
+                    <span>Remuneracion</span>
+                    <span>Centro de costo</span>
+                    <span>Estado inicial</span>
+                  </div>
 
-              @if (!isLastTab()) {
-                <button
-                  type="button"
-                  class="form-action-button form-action-button--primary"
-                  (click)="goToNextTab()"
-                >
-                  Siguiente
-                </button>
+                  <app-empleado-contrato
+                    [formGroup]="form.controls.contrato"
+                    [centrosCosto]="catalogos().centrosCosto"
+                    [sucursales]="catalogos().sucursales"
+                    [departamentos]="catalogos().departamentos"
+                    [tiposTrabajador]="catalogos().tiposTrabajador"
+                    [tiposJornada]="catalogos().tiposJornada"
+                    [monedas]="catalogos().monedas"
+                    [tramosCarga]="catalogos().tramosCarga"
+                  ></app-empleado-contrato>
+                </div>
+              } @else if (activeTab() === 'previsionSalud') {
+                <div class="step-panel">
+                  <app-empleado-prevision-salud
+                    [formGroup]="form.controls.previsionSalud"
+                    [regimenesPrevisionales]="catalogos().regimenesPrevisionales"
+                    [afps]="catalogos().afps"
+                    [entidadesSalud]="catalogos().entidadesSalud"
+                    [monedas]="catalogos().monedas"
+                    [institucionesApv]="catalogos().institucionesApv"
+                    [formasPagoApv]="catalogos().formasPagoApv"
+                  ></app-empleado-prevision-salud>
+                </div>
               } @else {
-                <button
-                  type="submit"
-                  class="form-action-button form-action-button--primary"
-                  [disabled]="isSaving() || isLoadingCatalogs()"
-                >
-                  <lucide-icon class="h-4 w-4" name="save"></lucide-icon>
-                  {{ isSaving() ? 'Guardando ficha...' : 'Guardar ficha' }}
-                </button>
+                <div class="step-panel step-panel--final">
+                  <app-empleado-bancario
+                    [formGroup]="form.controls.bancario"
+                    [bancos]="catalogos().bancos"
+                    [tiposCuentaBancaria]="catalogos().tiposCuentaBancaria"
+                  ></app-empleado-bancario>
+
+                  <section class="final-review" aria-label="Revision final de la ficha">
+                    <div class="final-review-head">
+                      <p class="final-review-kicker">Cierre de ficha inicial</p>
+                      <h3>Revision final de la ficha</h3>
+                      <p>
+                        Confirma el estado de cada etapa antes de guardar. Esta revision no activa al
+                        colaborador para remuneraciones.
+                      </p>
+                    </div>
+
+                    <div class="final-review-list">
+                      @for (item of finalReviewItems(); track item.label) {
+                        <div class="final-review-item">
+                          <span>{{ item.label }}</span>
+                          <strong [class]="reviewStatusClass(item.status)">{{ item.status }}</strong>
+                        </div>
+                      }
+                    </div>
+                  </section>
+                </div>
               }
             </div>
-          </div>
+
+            <footer class="editor-footer">
+              <p class="editor-footer-copy">
+                @if (isTabInvalid(activeTab()) && attemptedTabs().has(activeTab())) {
+                  Completa los campos obligatorios para continuar.
+                } @else {
+                  Completa la ficha por etapas. Puedes volver a pasos anteriores antes de guardar.
+                }
+              </p>
+
+              <div class="editor-footer-actions">
+                <button
+                  type="button"
+                  class="form-action-button form-action-button--secondary"
+                  [disabled]="isFirstTab()"
+                  (click)="goToPreviousTab()"
+                >
+                  Anterior
+                </button>
+
+                @if (!isLastTab()) {
+                  <button
+                    type="button"
+                    class="form-action-button form-action-button--primary"
+                    (click)="goToNextTab()"
+                  >
+                    Siguiente
+                  </button>
+                } @else {
+                  <button
+                    type="submit"
+                    class="form-action-button form-action-button--primary"
+                    [disabled]="isSaving() || isLoadingCatalogs()"
+                  >
+                    <lucide-icon class="h-4 w-4" name="save"></lucide-icon>
+                    {{ isSaving() ? 'Guardando ficha...' : 'Guardar ficha' }}
+                  </button>
+                }
+              </div>
+            </footer>
+          </section>
+
+          <aside class="side-panel" aria-label="Progreso y validaciones">
+            <div class="side-panel-card side-panel-card--sticky">
+              <section class="side-section">
+                <div class="side-section-head">
+                  <p class="side-kicker">Progreso de la ficha</p>
+                  <h3>Etapas del alta</h3>
+                  <p>Completa cada dominio antes de guardar la ficha inicial.</p>
+                </div>
+
+                <ol class="vertical-steps">
+                  @for (step of stepperItems(); track step.id; let index = $index) {
+                    <li>
+                      <button
+                        type="button"
+                        class="vertical-step"
+                        [class.is-active]="step.id === activeTab()"
+                        [class.is-complete]="step.id !== activeTab() && step.status === 'complete'"
+                        [class.is-invalid]="step.id !== activeTab() && step.status === 'invalid'"
+                        [class.is-pending]="step.id !== activeTab() && step.status === 'pending'"
+                        (click)="selectTab(step.id)"
+                      >
+                        <span class="vertical-step-index">
+                          @if (step.id !== activeTab() && step.status === 'complete') {
+                            <span aria-hidden="true">OK</span>
+                          } @else {
+                            {{ index + 1 }}
+                          }
+                        </span>
+                        <span class="vertical-step-copy">
+                          <span class="vertical-step-label">{{ step.label }}</span>
+                          <span class="vertical-step-state">{{ sideStepStateLabel(step) }}</span>
+                        </span>
+                      </button>
+                    </li>
+                  }
+                </ol>
+              </section>
+
+              <section class="side-section side-section--status">
+                <div>
+                  <p class="side-kicker">Estado del paso</p>
+                  <h3>{{ activeStepStateLabel() }}</h3>
+                </div>
+                <p>{{ currentStepLabel() }} - {{ activeStepTitle() }}</p>
+              </section>
+
+              <section class="side-section">
+                <div class="side-section-head">
+                  <p class="side-kicker">Validaciones</p>
+                  <h3>{{ pendingValidationCount() }} pendientes</h3>
+                </div>
+
+                <ul class="validation-list">
+                  @for (item of validationPanelItems(); track item.label) {
+                    <li
+                      class="validation-item"
+                      [class.is-complete]="item.complete"
+                      [class.is-error]="!item.complete && item.severity === 'error'"
+                      [class.is-warning]="!item.complete && item.severity === 'warning'"
+                    >
+                      <span class="validation-dot" aria-hidden="true"></span>
+                      <span>{{ item.label }}</span>
+                    </li>
+                  }
+                </ul>
+              </section>
+            </div>
+          </aside>
         </section>
       </app-card-content>
     </app-card>
