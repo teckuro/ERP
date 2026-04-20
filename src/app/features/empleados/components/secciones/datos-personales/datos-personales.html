@@ -17,9 +17,7 @@
       <div class="form-field">
         <div class="field-label-row">
           <label for="empleado-rut">RUT</label>
-          @if (isRequired('rut')) {
-            <span class="field-required" aria-hidden="true">*</span>
-          }
+          <span class="field-required" aria-hidden="true">*</span>
         </div>
         <input
           id="empleado-rut"
@@ -30,8 +28,8 @@
           placeholder="12.345.678-9"
           [class]="controlClass('rut')"
         />
-        @if (hasError('rut', 'required')) {
-          <p class="field-message">El RUT es obligatorio.</p>
+        @if (hasIdentityError()) {
+          <p class="field-message">Ingresa RUT o pasaporte para identificar al colaborador.</p>
         } @else if (hasError('rut', 'rut')) {
           <p class="field-message">Ingresa un RUT valido, por ejemplo 12.345.678-5.</p>
         } @else {
@@ -50,8 +48,10 @@
           placeholder="AA1234567"
           [class]="controlClass('pasaporte')"
         />
-        @if (hasError('pasaporte', 'maxlength')) {
-          <p class="field-message">El pasaporte supera el largo permitido.</p>
+        @if (hasError('pasaporte', 'passport')) {
+          <p class="field-message">Ingresa un pasaporte valido de 5 a 30 caracteres.</p>
+        } @else if (hasPassportWarning()) {
+          <p class="field-message field-message--warning">Uso de pasaporte sin validacion adicional.</p>
         } @else {
           <p class="field-message"></p>
         }
@@ -72,6 +72,10 @@
         />
         @if (hasError('fechaNacimiento', 'required')) {
           <p class="field-message">La fecha de nacimiento es obligatoria.</p>
+        } @else if (hasError('fechaNacimiento', 'futureDate')) {
+          <p class="field-message">La fecha de nacimiento no puede ser futura.</p>
+        } @else if (hasError('fechaNacimiento', 'date')) {
+          <p class="field-message">Ingresa una fecha de nacimiento valida.</p>
         } @else {
           <p class="field-message"></p>
         }
@@ -231,9 +235,6 @@
       <div class="form-field">
         <div class="field-label-row">
           <label for="empleado-email">Email</label>
-          @if (isContactoRequired('email')) {
-            <span class="field-required" aria-hidden="true">*</span>
-          }
         </div>
         <input
           id="empleado-email"
@@ -242,10 +243,10 @@
           placeholder="nombre@empresa.cl"
           [class]="contactoControlClass('email')"
         />
-        @if (hasContactoError('email', 'required')) {
-          <p class="field-message">El correo es obligatorio.</p>
-        } @else if (hasContactoError('email', 'email')) {
+        @if (hasContactoError('email', 'email')) {
           <p class="field-message">Ingresa un correo valido.</p>
+        } @else if (hasContactoWarning('email')) {
+          <p class="field-message field-message--warning">Email no ingresado.</p>
         } @else {
           <p class="field-message"></p>
         }
@@ -254,25 +255,20 @@
       <div class="form-field">
         <div class="field-label-row">
           <label for="empleado-telefono">Telefono</label>
-          @if (isContactoRequired('telefono')) {
-            <span class="field-required" aria-hidden="true">*</span>
-          }
         </div>
         <input
           id="empleado-telefono"
           type="text"
-          inputmode="numeric"
-          maxlength="12"
+          inputmode="tel"
+          maxlength="20"
           formControlName="telefono"
-          placeholder="56912345678"
+          placeholder="+56 9 1234 5678"
           [class]="contactoControlClass('telefono')"
         />
-        @if (hasContactoError('telefono', 'required')) {
-          <p class="field-message">El telefono es obligatorio.</p>
-        } @else if (hasContactoError('telefono', 'digitsOnly')) {
-          <p class="field-message">Ingresa solo numeros.</p>
-        } @else if (hasContactoError('telefono', 'minlength') || hasContactoError('telefono', 'maxlength')) {
-          <p class="field-message">Ingresa un telefono valido de 8 a 12 digitos.</p>
+        @if (hasContactoError('telefono', 'phoneFormat') || hasContactoError('telefono', 'maxlength')) {
+          <p class="field-message">Ingresa un telefono valido.</p>
+        } @else if (hasContactoWarning('telefono')) {
+          <p class="field-message field-message--warning">Telefono no ingresado.</p>
         } @else {
           <p class="field-message"></p>
         }

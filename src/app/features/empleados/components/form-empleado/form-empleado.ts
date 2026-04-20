@@ -209,6 +209,10 @@ export class FormEmpleadoComponent implements OnInit {
   }
 
   goToNextTab(): void {
+    if (this.isNextDisabled()) {
+      return;
+    }
+
     const currentIndex = TAB_ORDER.indexOf(this.activeTab());
 
     if (currentIndex >= TAB_ORDER.length - 1) {
@@ -229,6 +233,10 @@ export class FormEmpleadoComponent implements OnInit {
 
   isLastTab(): boolean {
     return TAB_ORDER.indexOf(this.activeTab()) === TAB_ORDER.length - 1;
+  }
+
+  isNextDisabled(): boolean {
+    return !this.isLastTab() && this.isTabInvalid(this.activeTab());
   }
 
   activeStepTitle(): string {
@@ -267,7 +275,7 @@ export class FormEmpleadoComponent implements OnInit {
   }
 
   pendingValidationCount(): number {
-    return this.validationPanelItems().filter((item) => !item.complete).length;
+    return this.pendingValidationPanelItems().length;
   }
 
   activeStepStateLabel(): string {
@@ -285,15 +293,35 @@ export class FormEmpleadoComponent implements OnInit {
   }
 
   validationPanelItems(): ValidationPanelItem[] {
-    const personal = this.form.controls.datosPersonales.controls;
-    const prevision = this.form.controls.previsionSalud.controls;
-    const bancario = this.form.controls.bancario.controls;
+    switch (this.activeTab()) {
+      case 'datosPersonales':
+        return this.personalValidationItems();
+      case 'contrato':
+        return this.contractValidationItems();
+      case 'previsionSalud':
+        return this.previsionValidationItems();
+      case 'bancario':
+        return this.bankValidationItems();
+    }
+  }
+
+  pendingValidationPanelItems(): ValidationPanelItem[] {
+    return this.validationPanelItems().filter((item) => !item.complete);
+  }
+
+  private personalValidationItems(): ValidationPanelItem[] {
+    const personalGroup = this.form.controls.datosPersonales;
+    const personal = personalGroup.controls;
+    const contacto = this.form.controls.contacto.controls;
+    const rut = personal.rut.value.trim();
+    const pasaporte = personal.pasaporte.value.trim();
 
     return [
       {
-        label: 'RUT obligatorio pendiente',
+        label: 'RUT o pasaporte obligatorio pendiente',
         severity: 'error',
-        complete: personal.rut.valid,
+        complete:
+          !personalGroup.hasError('rutOrPassport') && personal.rut.valid && personal.pasaporte.valid,
       },
       {
         label: 'Fecha nacimiento obligatoria',
@@ -301,20 +329,97 @@ export class FormEmpleadoComponent implements OnInit {
         complete: personal.fechaNacimiento.valid,
       },
       {
+        label: 'Nombres obligatorio pendiente',
+        severity: 'error',
+        complete: personal.nombres.valid,
+      },
+      {
         label: 'Apellido paterno obligatorio',
         severity: 'error',
         complete: personal.apellidoPaterno.valid,
       },
       {
-        label: 'AFP pendiente',
-        severity: 'warning',
-        complete: prevision.tipoRegimenPrevisional.value !== 'AFP' || prevision.idAfp.valid,
+        label: 'Sexo obligatorio pendiente',
+        severity: 'error',
+        complete: personal.sexo.valid,
       },
       {
-        label: 'Cuenta bancaria pendiente',
-        severity: 'warning',
-        complete: bancario.idBanco.valid && bancario.idTipoCuentaBancaria.valid && bancario.numeroCuenta.valid,
+        label: 'Nacionalidad obligatoria pendiente',
+        severity: 'error',
+        complete: personal.idPais.valid,
       },
+      {
+        label: 'Estado civil obligatorio pendiente',
+        severity: 'error',
+        complete: personal.estadoCivil.valid,
+      },
+      {
+        label: 'Email no ingresado',
+        severity: 'warning',
+        complete: Boolean(contacto.email.value.trim()),
+      },
+      {
+        label: 'Telefono no ingresado',
+        severity: 'warning',
+        complete: Boolean(contacto.telefono.value.trim()),
+      },
+      {
+        label: 'Uso de pasaporte sin validacion adicional',
+        severity: 'warning',
+        complete: !pasaporte || Boolean(rut),
+      },
+    ];
+  }
+
+  private contractValidationItems(): ValidationPanelItem[] {
+    const controls = this.form.controls.contrato.controls;
+
+    return [
+      { label: 'Tipo trabajador obligatorio pendiente', severity: 'error', complete: controls.idTipoTrabajador.valid },
+      { label: 'Tipo jornada obligatorio pendiente', severity: 'error', complete: controls.idTipoJornada.valid },
+      { label: 'Fecha de ingreso obligatoria pendiente', severity: 'error', complete: controls.fechaIngreso.valid },
+      { label: 'Fecha de contrato obligatoria pendiente', severity: 'error', complete: controls.fechaContrato.valid },
+      { label: 'Fecha de termino obligatoria pendiente', severity: 'error', complete: controls.fechaTermino.valid },
+      { label: 'Horas semanales obligatorias pendientes', severity: 'error', complete: controls.horasSemanales.valid },
+      { label: 'Dias semanales obligatorios pendientes', severity: 'error', complete: controls.diasSemanales.valid },
+      { label: 'Sueldo base obligatorio pendiente', severity: 'error', complete: controls.sueldoBase.valid },
+      { label: 'Cargo obligatorio pendiente', severity: 'error', complete: controls.cargo.valid },
+      { label: 'Territorio de zona extrema pendiente', severity: 'error', complete: controls.zonaExtremaTerritorio.valid },
+      { label: 'Porcentaje de zona extrema pendiente', severity: 'error', complete: controls.zonaExtremaPorcentaje.valid },
+      { label: 'Dias de semana corrida pendientes', severity: 'error', complete: controls.semanaCorridaDiasLaborables.valid },
+    ];
+  }
+
+  private previsionValidationItems(): ValidationPanelItem[] {
+    const controls = this.form.controls.previsionSalud.controls;
+
+    return [
+      { label: 'Tipo regimen previsional obligatorio pendiente', severity: 'error', complete: controls.tipoRegimenPrevisional.valid },
+      { label: 'AFP obligatoria pendiente', severity: 'error', complete: controls.idAfp.valid },
+      { label: 'Moneda Cuenta 2 pendiente', severity: 'error', complete: controls.idMonedaCuenta2.valid },
+      { label: 'Valor Cuenta 2 pendiente', severity: 'error', complete: controls.valorCuenta2.valid },
+      { label: 'Nombre Ex-Caja pendiente', severity: 'error', complete: controls.nombreExCaja.valid },
+      { label: 'Regimen Ex-Caja pendiente', severity: 'error', complete: controls.regimenExCaja.valid },
+      { label: 'Tasa Ex-Caja pendiente', severity: 'error', complete: controls.tasaExCaja.valid },
+      { label: 'Institucion de salud pendiente', severity: 'error', complete: controls.idSalud.valid },
+      { label: 'Moneda del plan de salud pendiente', severity: 'error', complete: controls.idMonedaPlan.valid },
+      { label: 'Valor del plan de salud pendiente', severity: 'error', complete: controls.valorPlan.valid },
+      { label: 'Adicional Auge/GES pendiente', severity: 'error', complete: controls.adicionalAugeGes.valid },
+      { label: 'Institucion APVI pendiente', severity: 'error', complete: controls.idInstitucionApv.valid },
+      { label: 'Moneda APVI pendiente', severity: 'error', complete: controls.idMonedaApv.valid },
+      { label: 'Monto APVI pendiente', severity: 'error', complete: controls.montoApv.valid },
+      { label: 'Forma de pago APVI pendiente', severity: 'error', complete: controls.idFormaPagoApv.valid },
+      { label: 'Deposito convenido APVI pendiente', severity: 'error', complete: controls.depositoConvenidoApvi.valid },
+    ];
+  }
+
+  private bankValidationItems(): ValidationPanelItem[] {
+    const controls = this.form.controls.bancario.controls;
+
+    return [
+      { label: 'Banco obligatorio pendiente', severity: 'error', complete: controls.idBanco.valid },
+      { label: 'Tipo de cuenta obligatorio pendiente', severity: 'error', complete: controls.idTipoCuentaBancaria.valid },
+      { label: 'Numero de cuenta obligatorio pendiente', severity: 'error', complete: controls.numeroCuenta.valid },
     ];
   }
 

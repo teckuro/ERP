@@ -141,17 +141,17 @@ export class PageActionsComponent {
 
   actionClass(action: PageActionType): string {
     const base =
-      'inline-flex h-11 min-w-[8.75rem] items-center justify-center gap-2 rounded-2xl border px-4 text-sm font-semibold transition-all duration-200 shadow-sm backdrop-blur-[2px]';
+      'inline-flex h-10 min-w-[8.25rem] items-center justify-center gap-2 rounded-lg border px-4 text-sm font-semibold transition-colors duration-200';
 
     if (action === 'save') {
-      return `${base} border-sky-600 bg-gradient-to-b from-sky-600 to-blue-700 text-white shadow-sky-100 hover:border-sky-700 hover:from-sky-700 hover:to-blue-700 hover:shadow-md`;
+      return `${base} border-blue-700 bg-blue-700 text-white hover:border-blue-800 hover:bg-blue-800`;
     }
 
     if (action === 'back') {
-      return `${base} border-slate-200 bg-white/95 text-slate-700 hover:border-slate-300 hover:bg-slate-50 hover:text-slate-900`;
+      return `${base} border-slate-300 bg-white text-slate-700 hover:border-slate-400 hover:bg-slate-50 hover:text-slate-900`;
     }
 
-    return `${base} border-slate-200 bg-slate-50/85 text-slate-700 hover:border-slate-300 hover:bg-slate-100 hover:text-slate-900`;
+    return `${base} border-slate-300 bg-slate-50 text-slate-700 hover:border-slate-400 hover:bg-slate-100 hover:text-slate-900`;
   }
 
   hasAction(action: PageActionType): boolean {

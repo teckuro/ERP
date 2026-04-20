@@ -34,10 +34,10 @@ export class DatosPersonalesComponent {
 
   private resolveControlClass(hasError: boolean): string {
     return [
-      'w-full rounded-lg border bg-white px-3.5 py-2.5 text-sm text-slate-900 transition placeholder:text-slate-400 focus:outline-none focus:ring-2',
+      'h-9 w-full rounded-md border bg-white px-3 text-sm font-medium text-neutral-900 transition-colors placeholder:text-neutral-400 focus:outline-none focus:ring-2',
       hasError
-        ? 'border-red-300 focus:border-red-400 focus:ring-red-100'
-        : 'border-slate-300 focus:border-blue-500 focus:ring-blue-100',
+        ? 'border-red-300 bg-red-50/30 focus:border-red-500 focus:ring-red-100'
+        : 'border-neutral-200 hover:border-neutral-300 focus:border-blue-500 focus:ring-blue-100',
     ].join(' ');
   }
 
@@ -49,6 +49,20 @@ export class DatosPersonalesComponent {
     }
 
     return errorCode ? control.hasError(errorCode) : control.invalid;
+  }
+
+  hasIdentityError(): boolean {
+    const rut = this.formGroup.controls.rut;
+    const pasaporte = this.formGroup.controls.pasaporte;
+
+    return this.formGroup.hasError('rutOrPassport') && (rut.touched || pasaporte.touched);
+  }
+
+  hasPassportWarning(): boolean {
+    const rut = this.formGroup.controls.rut.value.trim();
+    const pasaporte = this.formGroup.controls.pasaporte.value.trim();
+
+    return !rut && Boolean(pasaporte) && !this.hasError('pasaporte');
   }
 
   isRequired(controlName: DatosPersonalesControlName): boolean {
@@ -67,5 +81,11 @@ export class DatosPersonalesComponent {
 
   isContactoRequired(controlName: ContactoControlName): boolean {
     return this.contactoFormGroup.controls[controlName].hasValidator(Validators.required);
+  }
+
+  hasContactoWarning(controlName: 'email' | 'telefono'): boolean {
+    const control = this.contactoFormGroup.controls[controlName];
+
+    return control.touched && !String(control.value ?? '').trim();
   }
 }

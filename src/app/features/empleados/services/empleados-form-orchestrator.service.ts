@@ -23,7 +23,11 @@ import {
 import {
   atLeastOneArrayValueValidator,
   digitsOnlyValidator,
+  notFutureDateValidator,
   personNameValidator,
+  passportValidator,
+  phoneFormatValidator,
+  rutOrPassportValidator,
   rutValidator,
 } from '../utils/empleado-form.validators';
 
@@ -35,10 +39,11 @@ export class EmpleadosFormOrchestratorService {
 
   createForm(): EmpleadoFormGroup {
     return new FormGroup({
-      datosPersonales: new FormGroup({
+      datosPersonales: new FormGroup(
+        {
         rut: new FormControl('', {
           nonNullable: true,
-          validators: [Validators.required, rutValidator],
+          validators: [rutValidator],
         }),
         nombres: new FormControl('', {
           nonNullable: true,
@@ -54,7 +59,7 @@ export class EmpleadosFormOrchestratorService {
         }),
         fechaNacimiento: new FormControl('', {
           nonNullable: true,
-          validators: [Validators.required],
+          validators: [Validators.required, notFutureDateValidator],
         }),
         sexo: new FormControl<EmpleadoSexo>('F', {
           nonNullable: true,
@@ -62,7 +67,7 @@ export class EmpleadosFormOrchestratorService {
         }),
         pasaporte: new FormControl('', {
           nonNullable: true,
-          validators: [Validators.maxLength(30)],
+          validators: [passportValidator],
         }),
         idPais: new FormControl<number | null>(null, {
           validators: [Validators.required],
@@ -71,24 +76,21 @@ export class EmpleadosFormOrchestratorService {
           nonNullable: true,
           validators: [Validators.required],
         }),
-      }),
+        },
+        { validators: [rutOrPassportValidator] },
+      ),
       contacto: new FormGroup({
         email: new FormControl('', {
           nonNullable: true,
-          validators: [Validators.required, Validators.email],
+          validators: [Validators.email],
         }),
         telefono: new FormControl('', {
           nonNullable: true,
-          validators: [
-            Validators.required,
-            Validators.minLength(8),
-            Validators.maxLength(12),
-            digitsOnlyValidator,
-          ],
+          validators: [Validators.maxLength(20), phoneFormatValidator],
         }),
         direccion: new FormControl('', {
           nonNullable: true,
-          validators: [Validators.required, Validators.maxLength(180)],
+          validators: [Validators.maxLength(180)],
         }),
         numeroDireccion: new FormControl('', {
           nonNullable: true,
@@ -102,9 +104,7 @@ export class EmpleadosFormOrchestratorService {
           nonNullable: true,
           validators: [Validators.maxLength(250)],
         }),
-        idComuna: new FormControl<number | null>(null, {
-          validators: [Validators.required],
-        }),
+        idComuna: new FormControl<number | null>(null),
       }),
       contrato: new FormGroup({
         relacionLaboral: new FormControl<RelacionLaboral>('CONTRATO', {
@@ -292,10 +292,6 @@ export class EmpleadosFormOrchestratorService {
     datosPersonales.rut.valueChanges
       .pipe(takeUntilDestroyed(destroyRef))
       .subscribe((value) => setNormalizedTextValue(datosPersonales.rut, formatRutInput(value)));
-
-    contacto.telefono.valueChanges
-      .pipe(takeUntilDestroyed(destroyRef))
-      .subscribe((value) => setNormalizedTextValue(contacto.telefono, onlyDigits(value, 12)));
 
     contacto.numeroDireccion.valueChanges
       .pipe(takeUntilDestroyed(destroyRef))

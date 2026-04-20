@@ -31,6 +31,64 @@ export const digitsOnlyValidator: ValidatorFn = (
   return /^\d+$/.test(value) ? null : { digitsOnly: true };
 };
 
+export const passportValidator: ValidatorFn = (
+  control: AbstractControl,
+): ValidationErrors | null => {
+  const value = String(control.value ?? '').trim();
+
+  if (!value) {
+    return null;
+  }
+
+  return /^[A-Za-z0-9-]{5,30}$/.test(value) ? null : { passport: true };
+};
+
+export const phoneFormatValidator: ValidatorFn = (
+  control: AbstractControl,
+): ValidationErrors | null => {
+  const value = String(control.value ?? '').trim();
+
+  if (!value) {
+    return null;
+  }
+
+  const digits = value.replace(/\D/g, '');
+  const hasValidCharacters = /^[+()\d\s-]+$/.test(value);
+
+  return hasValidCharacters && digits.length >= 8 && digits.length <= 15
+    ? null
+    : { phoneFormat: true };
+};
+
+export const notFutureDateValidator: ValidatorFn = (
+  control: AbstractControl,
+): ValidationErrors | null => {
+  const value = String(control.value ?? '').trim();
+
+  if (!value) {
+    return null;
+  }
+
+  const selectedDate = new Date(`${value}T00:00:00`);
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  if (Number.isNaN(selectedDate.getTime())) {
+    return { date: true };
+  }
+
+  return selectedDate > today ? { futureDate: true } : null;
+};
+
+export const rutOrPassportValidator: ValidatorFn = (
+  control: AbstractControl,
+): ValidationErrors | null => {
+  const rut = String(control.get('rut')?.value ?? '').trim();
+  const passport = String(control.get('pasaporte')?.value ?? '').trim();
+
+  return rut || passport ? null : { rutOrPassport: true };
+};
+
 export const rutValidator: ValidatorFn = (control: AbstractControl): ValidationErrors | null => {
   const rawValue = String(control.value ?? '')
     .replace(/[^0-9kK]/g, '')

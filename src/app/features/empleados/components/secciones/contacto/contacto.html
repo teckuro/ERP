@@ -98,7 +98,7 @@
           rows="3"
           formControlName="observacionesDireccion"
           placeholder="Torre B, acceso por recepcion, referencia adicional"
-          [class]="controlClass('observacionesDireccion')"
+          [class]="controlClass('observacionesDireccion') + ' h-auto min-h-24 py-2.5'"
         ></textarea>
         @if (hasError('observacionesDireccion', 'maxlength')) {
           <p class="field-message">Las observaciones superan el largo permitido.</p>

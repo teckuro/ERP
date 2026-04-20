@@ -28,7 +28,7 @@
 
 .employee-section-title {
   margin: 0;
-  color: #0f172a;
+  color: #111827;
   font-size: 1.1rem;
   font-weight: 800;
   letter-spacing: 0;
@@ -37,7 +37,7 @@
 .employee-section-copy {
   max-width: 48rem;
   margin: 0;
-  color: #475569;
+  color: #4b5563;
   font-size: 0.9rem;
   line-height: 1.5;
 }
@@ -45,35 +45,39 @@
 .employee-block {
   display: grid;
   gap: 1rem;
-  padding: 1rem;
-  border: 1px solid #e2e8f0;
-  border-radius: 0.85rem;
-  background: #ffffff;
+  padding: 1rem 1.05rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.55rem;
+  background: #fff;
 }
 
 .employee-block--subtle {
-  background: #f8fafc;
+  background: #f9fafb;
 }
 
 .employee-block-head {
   display: grid;
   gap: 0.18rem;
-  padding-bottom: 0.75rem;
-  border-bottom: 1px solid #e2e8f0;
+  margin: -1rem -1.05rem 0;
+  padding: 0.78rem 1.05rem;
+  border-bottom: 1px solid #e5e7eb;
+  border-radius: 0.55rem 0.55rem 0 0;
+  background: #f9fafb;
 }
 
 .employee-block-head h4,
 .employee-block-title {
   margin: 0;
-  color: #0f172a;
-  font-size: 0.92rem;
+  color: #111827;
+  font-size: 0.86rem;
   font-weight: 800;
-  letter-spacing: 0;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
 }
 
 .employee-block-head p {
   margin: 0;
-  color: #64748b;
+  color: #6b7280;
   font-size: 0.82rem;
   line-height: 1.4;
 }
@@ -118,14 +122,14 @@
 }
 
 .field-label-row label {
-  color: #334155;
-  font-size: 0.82rem;
-  font-weight: 750;
+  color: #1f2937;
+  font-size: 0.8rem;
+  font-weight: 800;
   line-height: 1.2;
 }
 
 .field-required {
-  color: #dc2626;
+  color: #b91c1c;
   font-size: 0.78rem;
   font-weight: 800;
 }
@@ -133,14 +137,14 @@
 .field-message {
   min-height: 1rem;
   margin: 0;
-  color: #dc2626;
-  font-size: 0.74rem;
-  font-weight: 650;
+  color: #b91c1c;
+  font-size: 0.73rem;
+  font-weight: 700;
   line-height: 1.35;
 }
 
 .field-message--warning {
-  color: #b45309;
+  color: #a16207;
 }
 
 @media (max-width: 1280px) {
@@ -160,7 +164,12 @@
 @media (max-width: 768px) {
   .employee-block {
     padding: 0.9rem;
-    border-radius: 0.75rem;
+    border-radius: 0.55rem;
+  }
+
+  .employee-block-head {
+    margin: -0.9rem -0.9rem 0;
+    padding: 0.75rem 0.9rem;
   }
 
   .employee-grid--two,

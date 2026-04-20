@@ -215,6 +215,7 @@
                   <button
                     type="button"
                     class="form-action-button form-action-button--primary"
+                    [disabled]="isNextDisabled()"
                     (click)="goToNextTab()"
                   >
                     Siguiente
@@ -281,20 +282,24 @@
 
               <section class="side-section">
                 <div class="side-section-head">
-                  <p class="side-kicker">Validaciones</p>
+                  <p class="side-kicker">Validaciones del paso</p>
                   <h3>{{ pendingValidationCount() }} pendientes</h3>
                 </div>
 
                 <ul class="validation-list">
-                  @for (item of validationPanelItems(); track item.label) {
+                  @for (item of pendingValidationPanelItems(); track item.label) {
                     <li
                       class="validation-item"
-                      [class.is-complete]="item.complete"
-                      [class.is-error]="!item.complete && item.severity === 'error'"
-                      [class.is-warning]="!item.complete && item.severity === 'warning'"
+                      [class.is-error]="item.severity === 'error'"
+                      [class.is-warning]="item.severity === 'warning'"
                     >
                       <span class="validation-dot" aria-hidden="true"></span>
                       <span>{{ item.label }}</span>
+                    </li>
+                  } @empty {
+                    <li class="validation-item is-complete">
+                      <span class="validation-dot" aria-hidden="true"></span>
+                      <span>Sin validaciones pendientes en este paso.</span>
                     </li>
                   }
                 </ul>

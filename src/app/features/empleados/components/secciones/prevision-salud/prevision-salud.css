@@ -10,12 +10,15 @@
 }
 
 .prevision-card {
-  border-color: rgba(226, 232, 240, 0.95);
+  border-color: #e5e7eb;
+  border-radius: 0.55rem;
   box-shadow: none;
 }
 
 .prevision-card-header {
   padding: 1rem 1.05rem;
+  border-bottom: 1px solid #e5e7eb;
+  background: #f9fafb;
 }
 
 .prevision-card-content {
