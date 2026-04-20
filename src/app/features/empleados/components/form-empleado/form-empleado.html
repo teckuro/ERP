@@ -174,8 +174,8 @@
                       <p class="final-review-kicker">Cierre de ficha inicial</p>
                       <h3>Revision final de la ficha</h3>
                       <p>
-                        Confirma el estado de cada etapa antes de guardar. Esta revision no activa al
-                        colaborador para remuneraciones.
+                        Confirma el estado de cada etapa antes de guardar. Esta revision no activa
+                        al colaborador para remuneraciones.
                       </p>
                     </div>
 
@@ -183,7 +183,9 @@
                       @for (item of finalReviewItems(); track item.label) {
                         <div class="final-review-item">
                           <span>{{ item.label }}</span>
-                          <strong [class]="reviewStatusClass(item.status)">{{ item.status }}</strong>
+                          <strong [class]="reviewStatusClass(item.status)">{{
+                            item.status
+                          }}</strong>
                         </div>
                       }
                     </div>
@@ -287,7 +289,7 @@
                 </div>
 
                 <ul class="validation-list">
-                  @for (item of pendingValidationPanelItems(); track item.label) {
+                  @for (item of pendingValidationPanelItems(); track item.id) {
                     <li
                       class="validation-item"
                       [class.is-error]="item.severity === 'error'"
@@ -302,6 +304,41 @@
                       <span>Sin validaciones pendientes en este paso.</span>
                     </li>
                   }
+                </ul>
+              </section>
+
+              <section class="side-section">
+                <div class="side-section-head">
+                  <p class="side-kicker">Resumen global</p>
+                  <h3>Estado de ficha</h3>
+                </div>
+
+                <ul class="validation-list">
+                  <li
+                    class="validation-item"
+                    [class.is-error]="getGlobalValidationSummary().blockingPending > 0"
+                    [class.is-complete]="getGlobalValidationSummary().blockingPending === 0"
+                  >
+                    <span class="validation-dot" aria-hidden="true"></span>
+                    <span
+                      >{{ getGlobalValidationSummary().blockingPending }} errores bloqueantes</span
+                    >
+                  </li>
+                  <li
+                    class="validation-item"
+                    [class.is-warning]="getGlobalValidationSummary().warningsPending > 0"
+                    [class.is-complete]="getGlobalValidationSummary().warningsPending === 0"
+                  >
+                    <span class="validation-dot" aria-hidden="true"></span>
+                    <span>{{ getGlobalValidationSummary().warningsPending }} advertencias</span>
+                  </li>
+                  <li class="validation-item is-complete">
+                    <span class="validation-dot" aria-hidden="true"></span>
+                    <span
+                      >{{ getGlobalValidationSummary().completeSteps }} de {{ totalSteps }} pasos
+                      completos</span
+                    >
+                  </li>
                 </ul>
               </section>
             </div>

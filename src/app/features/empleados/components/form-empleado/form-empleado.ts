@@ -34,17 +34,57 @@ import { StepperItem } from '../../../../shared/components/ui/stepper.component'
 type TabId = 'datosPersonales' | 'contrato' | 'previsionSalud' | 'bancario';
 type EmpleadoStepperItem = StepperItem & { id: TabId };
 type FinalReviewStatus = 'Completo' | 'Pendiente de revision';
-type ValidationSeverity = 'error' | 'warning';
+type ValidationStepId = TabId;
+type ValidationSeverity = 'error' | 'warning' | 'info';
+type ValidationPanelMode = 'step' | 'global';
+type StepValidationStatus = 'pending' | 'in-progress' | 'invalid' | 'complete';
 
 interface FinalReviewItem {
   label: string;
   status: FinalReviewStatus;
 }
 
-interface ValidationPanelItem {
+interface ValidationRule {
+  id: string;
+  stepId: ValidationStepId;
   label: string;
   severity: ValidationSeverity;
+  blocking: boolean;
+  sourcePath: string;
+  category?: string;
+  isApplicable: () => boolean;
+  isComplete: () => boolean;
+  isVisible?: () => boolean;
+}
+
+interface EvaluatedValidationRule {
+  id: string;
+  stepId: ValidationStepId;
+  label: string;
+  severity: ValidationSeverity;
+  blocking: boolean;
   complete: boolean;
+  visible: boolean;
+  sourcePath: string;
+  category?: string;
+}
+
+interface StepValidationSummary {
+  stepId: ValidationStepId;
+  pending: number;
+  blockingPending: number;
+  warningsPending: number;
+  complete: number;
+  applicable: number;
+  status: StepValidationStatus;
+}
+
+interface GlobalValidationSummary {
+  blockingPending: number;
+  warningsPending: number;
+  completeSteps: number;
+  invalidSteps: number;
+  pendingTotal: number;
 }
 
 const TAB_ORDER: readonly TabId[] = ['datosPersonales', 'contrato', 'previsionSalud', 'bancario'];
@@ -270,7 +310,7 @@ export class FormEmpleadoComponent implements OnInit {
   }
 
   completedStepCount(): number {
-    return TAB_ORDER.filter((tabId) => this.completedTabs().has(tabId) && !this.isTabInvalid(tabId))
+    return TAB_ORDER.filter((tabId) => this.getStepValidationSummary(tabId).status === 'complete')
       .length;
   }
 
@@ -279,148 +319,666 @@ export class FormEmpleadoComponent implements OnInit {
   }
 
   activeStepStateLabel(): string {
-    const current = this.activeTab();
-
-    if (this.isTabInvalid(current) && (this.attemptedTabs().has(current) || this.attemptedSave())) {
-      return 'Requiere revision';
-    }
-
-    if (!this.isTabInvalid(current) && this.completedTabs().has(current)) {
-      return 'Completo';
-    }
-
-    return 'En curso';
-  }
-
-  validationPanelItems(): ValidationPanelItem[] {
-    switch (this.activeTab()) {
-      case 'datosPersonales':
-        return this.personalValidationItems();
-      case 'contrato':
-        return this.contractValidationItems();
-      case 'previsionSalud':
-        return this.previsionValidationItems();
-      case 'bancario':
-        return this.bankValidationItems();
+    switch (this.getStepValidationSummary(this.activeTab()).status) {
+      case 'invalid':
+        return 'Requiere revision';
+      case 'complete':
+        return 'Completo';
+      case 'in-progress':
+        return 'En curso';
+      case 'pending':
+        return 'Pendiente';
     }
   }
 
-  pendingValidationPanelItems(): ValidationPanelItem[] {
+  validationPanelItems(): EvaluatedValidationRule[] {
+    return this.getValidationPanelItemsForStep(this.activeTab(), 'step');
+  }
+
+  pendingValidationPanelItems(): EvaluatedValidationRule[] {
     return this.validationPanelItems().filter((item) => !item.complete);
   }
 
-  private personalValidationItems(): ValidationPanelItem[] {
+  getStepValidationSummary(stepId: ValidationStepId): StepValidationSummary {
+    const evaluated = this.evaluateValidationRules().filter(
+      (item) => item.stepId === stepId && item.visible,
+    );
+    const pending = evaluated.filter((item) => !item.complete);
+    const blockingPending = pending.filter((item) => item.blocking).length;
+    const warningsPending = pending.filter((item) => item.severity === 'warning').length;
+    const wasAttempted = this.attemptedTabs().has(stepId) || this.attemptedSave();
+    const hasInteraction = this.hasStepInteraction(stepId);
+
+    let status: StepValidationStatus = 'pending';
+
+    if (blockingPending > 0 && wasAttempted) {
+      status = 'invalid';
+    } else if (blockingPending === 0 && evaluated.length > 0) {
+      status = 'complete';
+    } else if (hasInteraction || pending.length > 0) {
+      status = 'in-progress';
+    }
+
+    return {
+      stepId,
+      pending: pending.length,
+      blockingPending,
+      warningsPending,
+      complete: evaluated.length - pending.length,
+      applicable: evaluated.length,
+      status,
+    };
+  }
+
+  getGlobalValidationSummary(): GlobalValidationSummary {
+    const summaries = TAB_ORDER.map((stepId) => this.getStepValidationSummary(stepId));
+
+    return {
+      blockingPending: summaries.reduce((total, summary) => total + summary.blockingPending, 0),
+      warningsPending: summaries.reduce((total, summary) => total + summary.warningsPending, 0),
+      completeSteps: summaries.filter((summary) => summary.status === 'complete').length,
+      invalidSteps: summaries.filter((summary) => summary.status === 'invalid').length,
+      pendingTotal: summaries.reduce((total, summary) => total + summary.pending, 0),
+    };
+  }
+
+  private getAllValidationRules(): ValidationRule[] {
     const personalGroup = this.form.controls.datosPersonales;
     const personal = personalGroup.controls;
     const contacto = this.form.controls.contacto.controls;
-    const rut = personal.rut.value.trim();
-    const pasaporte = personal.pasaporte.value.trim();
+    const contrato = this.form.controls.contrato.controls;
+    const prevision = this.form.controls.previsionSalud.controls;
+    const bancario = this.form.controls.bancario.controls;
+    const hasCuenta2 =
+      prevision.tipoRegimenPrevisional.value === 'AFP' &&
+      (prevision.idMonedaCuenta2.value !== null || prevision.valorCuenta2.value !== null);
+    const requiereSalud =
+      prevision.tipoRegimenPrevisional.value !== null &&
+      prevision.tipoRegimenPrevisional.value !== 'NINGUNA';
 
     return [
-      {
-        label: 'RUT o pasaporte obligatorio pendiente',
-        severity: 'error',
-        complete:
-          !personalGroup.hasError('rutOrPassport') && personal.rut.valid && personal.pasaporte.valid,
-      },
-      {
-        label: 'Fecha nacimiento obligatoria',
-        severity: 'error',
-        complete: personal.fechaNacimiento.valid,
-      },
-      {
-        label: 'Nombres obligatorio pendiente',
-        severity: 'error',
-        complete: personal.nombres.valid,
-      },
-      {
-        label: 'Apellido paterno obligatorio',
-        severity: 'error',
-        complete: personal.apellidoPaterno.valid,
-      },
-      {
-        label: 'Sexo obligatorio pendiente',
-        severity: 'error',
-        complete: personal.sexo.valid,
-      },
-      {
-        label: 'Nacionalidad obligatoria pendiente',
-        severity: 'error',
-        complete: personal.idPais.valid,
-      },
-      {
-        label: 'Estado civil obligatorio pendiente',
-        severity: 'error',
-        complete: personal.estadoCivil.valid,
-      },
-      {
-        label: 'Email no ingresado',
-        severity: 'warning',
-        complete: Boolean(contacto.email.value.trim()),
-      },
-      {
-        label: 'Telefono no ingresado',
-        severity: 'warning',
-        complete: Boolean(contacto.telefono.value.trim()),
-      },
-      {
-        label: 'Uso de pasaporte sin validacion adicional',
-        severity: 'warning',
-        complete: !pasaporte || Boolean(rut),
-      },
+      this.rule(
+        'personal.identity',
+        'datosPersonales',
+        'RUT valido o pasaporte valido',
+        'error',
+        true,
+        'datosPersonales.rut',
+        'Identificacion legal',
+        () =>
+          !personalGroup.hasError('rutOrPassport') &&
+          personal.rut.valid &&
+          personal.pasaporte.valid,
+      ),
+      this.rule(
+        'personal.birthdate',
+        'datosPersonales',
+        'Fecha nacimiento obligatoria',
+        'error',
+        true,
+        'datosPersonales.fechaNacimiento',
+        'Identificacion legal',
+        () => personal.fechaNacimiento.valid,
+      ),
+      this.rule(
+        'personal.names',
+        'datosPersonales',
+        'Nombres obligatorios',
+        'error',
+        true,
+        'datosPersonales.nombres',
+        'Nombre del colaborador',
+        () => personal.nombres.valid,
+      ),
+      this.rule(
+        'personal.lastname',
+        'datosPersonales',
+        'Apellido paterno obligatorio',
+        'error',
+        true,
+        'datosPersonales.apellidoPaterno',
+        'Nombre del colaborador',
+        () => personal.apellidoPaterno.valid,
+      ),
+      this.rule(
+        'personal.sex',
+        'datosPersonales',
+        'Sexo obligatorio',
+        'error',
+        true,
+        'datosPersonales.sexo',
+        'Identificacion legal',
+        () => personal.sexo.valid,
+      ),
+      this.rule(
+        'personal.country',
+        'datosPersonales',
+        'Nacionalidad obligatoria',
+        'error',
+        true,
+        'datosPersonales.idPais',
+        'Informacion base',
+        () => personal.idPais.valid,
+      ),
+      this.rule(
+        'personal.marital-status',
+        'datosPersonales',
+        'Estado civil obligatorio',
+        'error',
+        true,
+        'datosPersonales.estadoCivil',
+        'Informacion base',
+        () => personal.estadoCivil.valid,
+      ),
+      this.rule(
+        'personal.email-format',
+        'datosPersonales',
+        'Email con formato valido',
+        'error',
+        true,
+        'contacto.email',
+        'Informacion base',
+        () => contacto.email.valid,
+        () => Boolean(contacto.email.value.trim()),
+      ),
+      this.rule(
+        'personal.phone-format',
+        'datosPersonales',
+        'Telefono con formato valido',
+        'error',
+        true,
+        'contacto.telefono',
+        'Informacion base',
+        () => contacto.telefono.valid,
+        () => Boolean(contacto.telefono.value.trim()),
+      ),
+      this.rule(
+        'personal.email-empty',
+        'datosPersonales',
+        'Email no ingresado',
+        'warning',
+        false,
+        'contacto.email',
+        'Informacion base',
+        () => Boolean(contacto.email.value.trim()),
+      ),
+      this.rule(
+        'personal.phone-empty',
+        'datosPersonales',
+        'Telefono no ingresado',
+        'warning',
+        false,
+        'contacto.telefono',
+        'Informacion base',
+        () => Boolean(contacto.telefono.value.trim()),
+      ),
+      this.rule(
+        'personal.passport-review',
+        'datosPersonales',
+        'Uso de pasaporte sin validacion adicional',
+        'warning',
+        false,
+        'datosPersonales.pasaporte',
+        'Identificacion legal',
+        () => Boolean(personal.rut.value.trim()),
+        () => Boolean(personal.pasaporte.value.trim()) && !Boolean(personal.rut.value.trim()),
+      ),
+
+      this.rule(
+        'contract.position',
+        'contrato',
+        'Cargo obligatorio',
+        'error',
+        true,
+        'contrato.cargo',
+        'Contrato',
+        () => contrato.cargo.valid,
+      ),
+      this.rule(
+        'contract.branch',
+        'contrato',
+        'Sucursal obligatoria',
+        'error',
+        true,
+        'contrato.idSucursal',
+        'Contrato',
+        () => contrato.idSucursal.value !== null,
+      ),
+      this.rule(
+        'contract.worker-type',
+        'contrato',
+        'Tipo trabajador obligatorio',
+        'error',
+        true,
+        'contrato.idTipoTrabajador',
+        'Contrato',
+        () => contrato.idTipoTrabajador.valid,
+      ),
+      this.rule(
+        'contract.schedule-type',
+        'contrato',
+        'Tipo jornada obligatorio',
+        'error',
+        true,
+        'contrato.idTipoJornada',
+        'Jornada',
+        () => contrato.idTipoJornada.valid,
+      ),
+      this.rule(
+        'contract.contract-type',
+        'contrato',
+        'Tipo contrato obligatorio',
+        'error',
+        true,
+        'contrato.tipoContrato',
+        'Contrato',
+        () => contrato.tipoContrato.valid,
+      ),
+      this.rule(
+        'contract.start-date',
+        'contrato',
+        'Fecha ingreso obligatoria',
+        'error',
+        true,
+        'contrato.fechaIngreso',
+        'Fechas',
+        () => contrato.fechaIngreso.valid,
+      ),
+      this.rule(
+        'contract.document-date',
+        'contrato',
+        'Fecha contrato obligatoria',
+        'error',
+        true,
+        'contrato.fechaContrato',
+        'Fechas',
+        () => contrato.fechaContrato.valid,
+      ),
+      this.rule(
+        'contract.end-date',
+        'contrato',
+        'Fecha termino obligatoria',
+        'error',
+        true,
+        'contrato.fechaTermino',
+        'Fechas',
+        () => contrato.fechaTermino.valid,
+        () => contrato.tipoContrato.value !== 'INDEFINIDO',
+      ),
+      this.rule(
+        'contract.salary',
+        'contrato',
+        'Sueldo base obligatorio',
+        'error',
+        true,
+        'contrato.sueldoBase',
+        'Remuneracion',
+        () => contrato.sueldoBase.valid,
+      ),
+      this.rule(
+        'contract.currency',
+        'contrato',
+        'Moneda obligatoria',
+        'error',
+        true,
+        'contrato.idMoneda',
+        'Remuneracion',
+        () => contrato.idMoneda.value !== null,
+      ),
+      this.rule(
+        'contract.weekly-hours',
+        'contrato',
+        'Horas semanales obligatorias',
+        'error',
+        true,
+        'contrato.horasSemanales',
+        'Jornada',
+        () => contrato.horasSemanales.valid,
+      ),
+      this.rule(
+        'contract.weekly-days',
+        'contrato',
+        'Dias semanales obligatorios',
+        'error',
+        true,
+        'contrato.diasSemanales',
+        'Jornada',
+        () => contrato.diasSemanales.valid,
+      ),
+      this.rule(
+        'contract.week-run',
+        'contrato',
+        'Dias de semana corrida pendientes',
+        'error',
+        true,
+        'contrato.semanaCorridaDiasLaborables',
+        'Jornada',
+        () => contrato.semanaCorridaDiasLaborables.valid,
+        () => contrato.semanaCorridaActiva.value,
+      ),
+      this.rule(
+        'contract.extreme-zone-area',
+        'contrato',
+        'Territorio de zona extrema pendiente',
+        'error',
+        true,
+        'contrato.zonaExtremaTerritorio',
+        'Zona extrema',
+        () => contrato.zonaExtremaTerritorio.valid,
+        () => contrato.zonaExtremaActiva.value,
+      ),
+      this.rule(
+        'contract.extreme-zone-rate',
+        'contrato',
+        'Porcentaje de zona extrema pendiente',
+        'error',
+        true,
+        'contrato.zonaExtremaPorcentaje',
+        'Zona extrema',
+        () => contrato.zonaExtremaPorcentaje.valid,
+        () => contrato.zonaExtremaActiva.value,
+      ),
+      this.rule(
+        'contract.family-allowance',
+        'contrato',
+        'Tramo de cargas familiares pendiente',
+        'warning',
+        false,
+        'contrato.idTramoCarga',
+        'Cargas',
+        () => contrato.idTramoCarga.value !== null,
+        () => Number(contrato.cargas.value ?? 0) > 0,
+      ),
+
+      this.rule(
+        'prevision.regime',
+        'previsionSalud',
+        'Regimen previsional obligatorio',
+        'error',
+        true,
+        'previsionSalud.tipoRegimenPrevisional',
+        'Prevision',
+        () => prevision.tipoRegimenPrevisional.valid,
+      ),
+      this.rule(
+        'prevision.afp',
+        'previsionSalud',
+        'AFP obligatoria',
+        'error',
+        true,
+        'previsionSalud.idAfp',
+        'Prevision',
+        () => prevision.idAfp.valid,
+        () => prevision.tipoRegimenPrevisional.value === 'AFP',
+      ),
+      this.rule(
+        'prevision.ips-name',
+        'previsionSalud',
+        'Nombre Ex-Caja obligatorio',
+        'error',
+        true,
+        'previsionSalud.nombreExCaja',
+        'IPS',
+        () => prevision.nombreExCaja.valid,
+        () => prevision.tipoRegimenPrevisional.value === 'IPS',
+      ),
+      this.rule(
+        'prevision.ips-regime',
+        'previsionSalud',
+        'Regimen Ex-Caja obligatorio',
+        'error',
+        true,
+        'previsionSalud.regimenExCaja',
+        'IPS',
+        () => prevision.regimenExCaja.valid,
+        () => prevision.tipoRegimenPrevisional.value === 'IPS',
+      ),
+      this.rule(
+        'prevision.ips-rate',
+        'previsionSalud',
+        'Tasa Ex-Caja obligatoria',
+        'error',
+        true,
+        'previsionSalud.tasaExCaja',
+        'IPS',
+        () => prevision.tasaExCaja.valid,
+        () => prevision.tipoRegimenPrevisional.value === 'IPS',
+      ),
+      this.rule(
+        'prevision.health',
+        'previsionSalud',
+        'Institucion de salud obligatoria',
+        'error',
+        true,
+        'previsionSalud.idSalud',
+        'Salud',
+        () => prevision.idSalud.valid,
+        () => requiereSalud,
+      ),
+      this.rule(
+        'prevision.health-currency',
+        'previsionSalud',
+        'Moneda del plan de salud obligatoria',
+        'error',
+        true,
+        'previsionSalud.idMonedaPlan',
+        'Salud',
+        () => prevision.idMonedaPlan.valid,
+        () => requiereSalud,
+      ),
+      this.rule(
+        'prevision.health-plan',
+        'previsionSalud',
+        'Valor del plan de salud obligatorio',
+        'error',
+        true,
+        'previsionSalud.valorPlan',
+        'Salud',
+        () => prevision.valorPlan.valid,
+        () => requiereSalud,
+      ),
+      this.rule(
+        'prevision.health-ges',
+        'previsionSalud',
+        'Adicional Auge/GES obligatorio',
+        'error',
+        true,
+        'previsionSalud.adicionalAugeGes',
+        'Salud',
+        () => prevision.adicionalAugeGes.valid,
+        () => requiereSalud,
+      ),
+      this.rule(
+        'prevision.account2-currency',
+        'previsionSalud',
+        'Moneda Cuenta 2 pendiente',
+        'error',
+        true,
+        'previsionSalud.idMonedaCuenta2',
+        'Cuenta 2',
+        () => prevision.idMonedaCuenta2.valid,
+        () => hasCuenta2,
+      ),
+      this.rule(
+        'prevision.account2-value',
+        'previsionSalud',
+        'Valor Cuenta 2 pendiente',
+        'error',
+        true,
+        'previsionSalud.valorCuenta2',
+        'Cuenta 2',
+        () => prevision.valorCuenta2.valid,
+        () => hasCuenta2,
+      ),
+      this.rule(
+        'prevision.apv-institution',
+        'previsionSalud',
+        'Institucion APVI pendiente',
+        'error',
+        true,
+        'previsionSalud.idInstitucionApv',
+        'APVI',
+        () => prevision.idInstitucionApv.valid,
+        () => prevision.tipoRegimenPrevisional.value === 'AFP' && prevision.tieneApv.value,
+      ),
+      this.rule(
+        'prevision.apv-currency',
+        'previsionSalud',
+        'Moneda APVI pendiente',
+        'error',
+        true,
+        'previsionSalud.idMonedaApv',
+        'APVI',
+        () => prevision.idMonedaApv.valid,
+        () => prevision.tipoRegimenPrevisional.value === 'AFP' && prevision.tieneApv.value,
+      ),
+      this.rule(
+        'prevision.apv-amount',
+        'previsionSalud',
+        'Monto APVI pendiente',
+        'error',
+        true,
+        'previsionSalud.montoApv',
+        'APVI',
+        () => prevision.montoApv.valid,
+        () => prevision.tipoRegimenPrevisional.value === 'AFP' && prevision.tieneApv.value,
+      ),
+      this.rule(
+        'prevision.apv-payment',
+        'previsionSalud',
+        'Forma de pago APVI pendiente',
+        'error',
+        true,
+        'previsionSalud.idFormaPagoApv',
+        'APVI',
+        () => prevision.idFormaPagoApv.valid,
+        () => prevision.tipoRegimenPrevisional.value === 'AFP' && prevision.tieneApv.value,
+      ),
+      this.rule(
+        'prevision.apv-agreement',
+        'previsionSalud',
+        'Deposito convenido APVI pendiente',
+        'error',
+        true,
+        'previsionSalud.depositoConvenidoApvi',
+        'APVI',
+        () => prevision.depositoConvenidoApvi.valid,
+        () => prevision.tipoRegimenPrevisional.value === 'AFP' && prevision.tieneApv.value,
+      ),
+
+      this.rule(
+        'bank.bank',
+        'bancario',
+        'Banco obligatorio',
+        'error',
+        true,
+        'bancario.idBanco',
+        'Bancario',
+        () => bancario.idBanco.valid,
+      ),
+      this.rule(
+        'bank.account-type',
+        'bancario',
+        'Tipo de cuenta obligatorio',
+        'error',
+        true,
+        'bancario.idTipoCuentaBancaria',
+        'Bancario',
+        () => bancario.idTipoCuentaBancaria.valid,
+      ),
+      this.rule(
+        'bank.account-number',
+        'bancario',
+        'Numero de cuenta obligatorio',
+        'error',
+        true,
+        'bancario.numeroCuenta',
+        'Bancario',
+        () => bancario.numeroCuenta.valid,
+      ),
+      this.rule(
+        'bank.final-review',
+        'bancario',
+        'Revision final de ficha pendiente',
+        'info',
+        false,
+        'ficha.revisionFinal',
+        'Cierre',
+        () =>
+          TAB_ORDER.filter((stepId) => stepId !== 'bancario').every(
+            (stepId) => !this.isFormSectionInvalid(stepId),
+          ),
+      ),
     ];
   }
 
-  private contractValidationItems(): ValidationPanelItem[] {
-    const controls = this.form.controls.contrato.controls;
+  private evaluateValidationRules(): EvaluatedValidationRule[] {
+    return this.getAllValidationRules().map((rule) => {
+      const applicable = rule.isApplicable();
 
-    return [
-      { label: 'Tipo trabajador obligatorio pendiente', severity: 'error', complete: controls.idTipoTrabajador.valid },
-      { label: 'Tipo jornada obligatorio pendiente', severity: 'error', complete: controls.idTipoJornada.valid },
-      { label: 'Fecha de ingreso obligatoria pendiente', severity: 'error', complete: controls.fechaIngreso.valid },
-      { label: 'Fecha de contrato obligatoria pendiente', severity: 'error', complete: controls.fechaContrato.valid },
-      { label: 'Fecha de termino obligatoria pendiente', severity: 'error', complete: controls.fechaTermino.valid },
-      { label: 'Horas semanales obligatorias pendientes', severity: 'error', complete: controls.horasSemanales.valid },
-      { label: 'Dias semanales obligatorios pendientes', severity: 'error', complete: controls.diasSemanales.valid },
-      { label: 'Sueldo base obligatorio pendiente', severity: 'error', complete: controls.sueldoBase.valid },
-      { label: 'Cargo obligatorio pendiente', severity: 'error', complete: controls.cargo.valid },
-      { label: 'Territorio de zona extrema pendiente', severity: 'error', complete: controls.zonaExtremaTerritorio.valid },
-      { label: 'Porcentaje de zona extrema pendiente', severity: 'error', complete: controls.zonaExtremaPorcentaje.valid },
-      { label: 'Dias de semana corrida pendientes', severity: 'error', complete: controls.semanaCorridaDiasLaborables.valid },
-    ];
+      return {
+        id: rule.id,
+        stepId: rule.stepId,
+        label: rule.label,
+        severity: rule.severity,
+        blocking: rule.blocking,
+        complete: applicable ? rule.isComplete() : true,
+        visible: applicable && (rule.isVisible?.() ?? true),
+        sourcePath: rule.sourcePath,
+        category: rule.category,
+      };
+    });
   }
 
-  private previsionValidationItems(): ValidationPanelItem[] {
-    const controls = this.form.controls.previsionSalud.controls;
-
-    return [
-      { label: 'Tipo regimen previsional obligatorio pendiente', severity: 'error', complete: controls.tipoRegimenPrevisional.valid },
-      { label: 'AFP obligatoria pendiente', severity: 'error', complete: controls.idAfp.valid },
-      { label: 'Moneda Cuenta 2 pendiente', severity: 'error', complete: controls.idMonedaCuenta2.valid },
-      { label: 'Valor Cuenta 2 pendiente', severity: 'error', complete: controls.valorCuenta2.valid },
-      { label: 'Nombre Ex-Caja pendiente', severity: 'error', complete: controls.nombreExCaja.valid },
-      { label: 'Regimen Ex-Caja pendiente', severity: 'error', complete: controls.regimenExCaja.valid },
-      { label: 'Tasa Ex-Caja pendiente', severity: 'error', complete: controls.tasaExCaja.valid },
-      { label: 'Institucion de salud pendiente', severity: 'error', complete: controls.idSalud.valid },
-      { label: 'Moneda del plan de salud pendiente', severity: 'error', complete: controls.idMonedaPlan.valid },
-      { label: 'Valor del plan de salud pendiente', severity: 'error', complete: controls.valorPlan.valid },
-      { label: 'Adicional Auge/GES pendiente', severity: 'error', complete: controls.adicionalAugeGes.valid },
-      { label: 'Institucion APVI pendiente', severity: 'error', complete: controls.idInstitucionApv.valid },
-      { label: 'Moneda APVI pendiente', severity: 'error', complete: controls.idMonedaApv.valid },
-      { label: 'Monto APVI pendiente', severity: 'error', complete: controls.montoApv.valid },
-      { label: 'Forma de pago APVI pendiente', severity: 'error', complete: controls.idFormaPagoApv.valid },
-      { label: 'Deposito convenido APVI pendiente', severity: 'error', complete: controls.depositoConvenidoApvi.valid },
-    ];
+  private getValidationPanelItemsForStep(
+    stepId: ValidationStepId,
+    mode: ValidationPanelMode,
+  ): EvaluatedValidationRule[] {
+    return this.evaluateValidationRules()
+      .filter((item) => item.visible && (mode === 'global' || item.stepId === stepId))
+      .sort((left, right) => this.validationSortWeight(left) - this.validationSortWeight(right));
   }
 
-  private bankValidationItems(): ValidationPanelItem[] {
-    const controls = this.form.controls.bancario.controls;
+  private rule(
+    id: string,
+    stepId: ValidationStepId,
+    label: string,
+    severity: ValidationSeverity,
+    blocking: boolean,
+    sourcePath: string,
+    category: string,
+    isComplete: () => boolean,
+    isApplicable: () => boolean = () => true,
+    isVisible?: () => boolean,
+  ): ValidationRule {
+    return {
+      id,
+      stepId,
+      label,
+      severity,
+      blocking,
+      sourcePath,
+      category,
+      isApplicable,
+      isComplete,
+      isVisible,
+    };
+  }
 
-    return [
-      { label: 'Banco obligatorio pendiente', severity: 'error', complete: controls.idBanco.valid },
-      { label: 'Tipo de cuenta obligatorio pendiente', severity: 'error', complete: controls.idTipoCuentaBancaria.valid },
-      { label: 'Numero de cuenta obligatorio pendiente', severity: 'error', complete: controls.numeroCuenta.valid },
-    ];
+  private validationSortWeight(item: EvaluatedValidationRule): number {
+    if (item.complete) {
+      return 30;
+    }
+
+    if (item.severity === 'error' && item.blocking) {
+      return 0;
+    }
+
+    if (item.severity === 'warning') {
+      return 10;
+    }
+
+    return 20;
   }
 
   sideStepStateLabel(step: EmpleadoStepperItem): string {
@@ -428,18 +986,21 @@ export class FormEmpleadoComponent implements OnInit {
       return 'Activo';
     }
 
-    switch (step.status) {
+    switch (this.getStepValidationSummary(step.id).status) {
       case 'complete':
         return 'Completo';
       case 'invalid':
         return 'Invalido';
+      case 'in-progress':
+        return 'En curso';
       default:
         return 'Pendiente';
     }
   }
 
   fullNameVisible(): string {
-    const { nombres, apellidoPaterno, apellidoMaterno } = this.form.controls.datosPersonales.controls;
+    const { nombres, apellidoPaterno, apellidoMaterno } =
+      this.form.controls.datosPersonales.controls;
     const fullName = [nombres.value, apellidoPaterno.value, apellidoMaterno.value]
       .map((value) => value.trim())
       .filter(Boolean)
@@ -467,19 +1028,23 @@ export class FormEmpleadoComponent implements OnInit {
     return [
       {
         label: 'Identificacion y contacto',
-        status: this.reviewStatus(this.getPersonalSectionState().valid),
+        status: this.reviewStatus(
+          this.getStepValidationSummary('datosPersonales').blockingPending === 0,
+        ),
       },
       {
         label: 'Datos laborales iniciales',
-        status: this.reviewStatus(this.form.controls.contrato.valid),
+        status: this.reviewStatus(this.getStepValidationSummary('contrato').blockingPending === 0),
       },
       {
         label: 'Configuracion previsional inicial',
-        status: this.reviewStatus(this.form.controls.previsionSalud.valid),
+        status: this.reviewStatus(
+          this.getStepValidationSummary('previsionSalud').blockingPending === 0,
+        ),
       },
       {
         label: 'Datos administrativos',
-        status: this.reviewStatus(this.form.controls.bancario.valid),
+        status: this.reviewStatus(this.getStepValidationSummary('bancario').blockingPending === 0),
       },
     ];
   }
@@ -489,15 +1054,13 @@ export class FormEmpleadoComponent implements OnInit {
   }
 
   private tabStatus(tabId: TabId): 'pending' | 'invalid' | 'complete' {
-    const section =
-      tabId === 'datosPersonales' ? this.getPersonalSectionState() : this.getSection(tabId);
-    const wasAttempted = this.attemptedTabs().has(tabId) || this.attemptedSave();
+    const status = this.getStepValidationSummary(tabId).status;
 
-    if (section.invalid && wasAttempted) {
+    if (status === 'invalid') {
       return 'invalid';
     }
 
-    if (section.valid && this.completedTabs().has(tabId)) {
+    if (status === 'complete') {
       return 'complete';
     }
 
@@ -578,9 +1141,7 @@ export class FormEmpleadoComponent implements OnInit {
   }
 
   isTabInvalid(tabId: TabId): boolean {
-    return tabId === 'datosPersonales'
-      ? this.getPersonalSectionState().invalid
-      : this.getSection(tabId).invalid;
+    return this.getStepValidationSummary(tabId).blockingPending > 0;
   }
 
   private markTabAsTouched(tabId: TabId): void {
@@ -664,6 +1225,30 @@ export class FormEmpleadoComponent implements OnInit {
       case 'bancario':
         return this.form.controls.bancario;
     }
+  }
+
+  private isFormSectionInvalid(tabId: TabId): boolean {
+    return tabId === 'datosPersonales'
+      ? this.getPersonalSectionState().invalid
+      : this.getSection(tabId).invalid;
+  }
+
+  private hasStepInteraction(tabId: TabId): boolean {
+    if (
+      this.completedTabs().has(tabId) ||
+      this.attemptedTabs().has(tabId) ||
+      this.attemptedSave()
+    ) {
+      return true;
+    }
+
+    if (tabId === 'datosPersonales') {
+      const personal = this.getPersonalSectionState();
+      return personal.dirty || personal.touched;
+    }
+
+    const section = this.getSection(tabId);
+    return section.dirty || section.touched;
   }
 
   private getPersonalSectionState() {
