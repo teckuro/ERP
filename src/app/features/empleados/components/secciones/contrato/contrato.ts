@@ -10,6 +10,7 @@ import {
 import { ContratoFormGroup } from '../../../models/empleado-form.model';
 import { RelacionLaboral, TipoContrato, TipoGratificacion } from '../../../models/empleado.model';
 import { EmpleadoEstado } from '../../../models/empleado-listado.model';
+import { CalendarInputComponent } from '../../../../../shared/components/ui/calendar-input.component';
 
 type ContratoControlName = keyof ContratoFormGroup['controls'];
 
@@ -25,7 +26,7 @@ interface WeekdayOption {
 
 @Component({
   selector: 'app-empleado-contrato',
-  imports: [ReactiveFormsModule],
+  imports: [ReactiveFormsModule, CalendarInputComponent],
   templateUrl: './contrato.html',
   styleUrl: './contrato.css',
 })

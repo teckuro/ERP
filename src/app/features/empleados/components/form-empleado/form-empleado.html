@@ -3,7 +3,7 @@
     <header class="form-page-head" aria-label="Encabezado de alta">
       <app-record-breadcrumb
         [items]="breadcrumbItems"
-        title="Alta de colaborador"
+        [title]="pageTitle()"
       ></app-record-breadcrumb>
     </header>
 
@@ -50,7 +50,7 @@
             title="Ficha registrada"
             [message]="message"
             primaryLabel="Aceptar"
-            (action)="goToEmployeeList()"
+            (action)="handleSuccessAction()"
           >
             @if (createdEmployeeId(); as createdId) {
               <p class="message-detail">Identificador de ficha: {{ createdId }}</p>
@@ -60,7 +60,11 @@
 
         <section class="workspace-grid" aria-label="Workspace de nueva ficha">
           <div class="workspace-main">
-            <section class="content-shell" aria-label="Ficha de colaborador">
+            <section
+              class="content-shell"
+              [class.content-shell--basic]="isBasicMode()"
+              aria-label="Ficha de colaborador"
+            >
               <header class="summary-identity">
                 <div class="summary-person">
                   <div class="summary-title-row">
@@ -73,7 +77,7 @@
                   <app-page-actions
                     [visibleActions]="['back', 'save']"
                     backLabel="Volver"
-                    saveLabel="Guardar borrador"
+                    [saveLabel]="saveActionLabel()"
                     backLink="/empleados"
                     [saveDisabled]="isSaving() || isLoadingCatalogs()"
                     (saveClick)="onSubmit()"
@@ -81,6 +85,7 @@
                 </div>
               </header>
 
+              @if (isAdvancedMode()) {
               <div class="content-head">
                 <ol class="flow-tabs" aria-label="Pasos del alta">
                   @for (step of conceptualSteps; track step; let index = $index) {
@@ -99,9 +104,25 @@
                   }
                 </ol>
               </div>
+              }
 
               <div class="content-body">
-                @if (activeTab() === 'datosPersonales') {
+                @if (isLoadingCatalogs()) {
+                  <div class="form-loading-overlay" role="status" aria-live="polite">
+                    <div class="form-loading-indicator" aria-hidden="true"></div>
+                    <span>Preparando campos</span>
+                  </div>
+                }
+
+                @if (isBasicMode()) {
+                  <div class="step-panel step-panel--basic">
+                    <app-empleado-datos-personales
+                      [formGroup]="form.controls.datosPersonales"
+                      [contactoFormGroup]="form.controls.contacto"
+                      [paises]="catalogos().paises"
+                    ></app-empleado-datos-personales>
+                  </div>
+                } @else if (activeTab() === 'datosPersonales') {
                   <div class="step-panel">
                     <app-empleado-datos-personales
                       [formGroup]="form.controls.datosPersonales"
@@ -152,8 +173,10 @@
 
               <footer class="editor-footer">
                 <p class="editor-footer-copy">
-                  @if (isTabInvalid(activeTab()) && attemptedTabs().has(activeTab())) {
-                    Completa los campos obligatorios para continuar.
+                  @if (isBasicMode()) {
+                    Registra los datos personales base. La ficha completa se continuara despues.
+                  } @else if (isTabInvalid(activeTab()) && attemptedTabs().has(activeTab())) {
+                    Hay campos obligatorios pendientes en esta etapa.
                   } @else if (isLastTab()) {
                     Revisa el cierre y finaliza el alta desde esta etapa.
                   } @else {
@@ -161,6 +184,7 @@
                   }
                 </p>
 
+                @if (isAdvancedMode()) {
                 <div class="editor-footer-actions">
                   <button
                     type="button"
@@ -187,11 +211,16 @@
                       [disabled]="isSaving() || isLoadingCatalogs()"
                       (click)="onSubmit()"
                     >
-                      <lucide-icon class="h-4 w-4" name="save"></lucide-icon>
+                      @if (isSaving()) {
+                        <span class="form-button-spinner" aria-hidden="true"></span>
+                      } @else {
+                        <lucide-icon class="h-4 w-4" name="save"></lucide-icon>
+                      }
                       {{ isSaving() ? 'Guardando ficha...' : 'Finalizar alta' }}
                     </button>
                   }
                 </div>
+                }
               </footer>
             </section>
           </div>

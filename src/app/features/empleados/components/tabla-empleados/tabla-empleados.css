@@ -80,3 +80,26 @@
   border-radius: inherit;
   background: #2563eb;
 }
+
+.employee-action-menu {
+  transform-origin: top right;
+  animation: employee-menu-enter 140ms ease-out both;
+}
+
+@keyframes employee-menu-enter {
+  from {
+    opacity: 0;
+    transform: translateY(-4px) scale(0.98);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .employee-action-menu {
+    animation: none;
+  }
+}

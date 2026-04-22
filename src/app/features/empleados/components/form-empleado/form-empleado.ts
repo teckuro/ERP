@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, DestroyRef, ElementRef, OnInit, inject, signal } from '@angular/core';
 import { AbstractControl, ReactiveFormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { LucideAngularModule } from 'lucide-angular';
 
 import { BancarioComponent } from '../secciones/bancario/bancario';
@@ -9,7 +9,10 @@ import { ContratoComponent } from '../secciones/contrato/contrato';
 import { DatosPersonalesComponent } from '../secciones/datos-personales/datos-personales';
 import { ContactoComponent } from '../secciones/contacto/contacto';
 import { PrevisionSaludComponent } from '../secciones/prevision-salud/prevision-salud';
-import { mapEmpleadoFormToPayload } from '../../mappers/empleado-form.mapper';
+import {
+  mapEmpleadoFormToPayload,
+  mapEmpleadoFormToPayloadBasico,
+} from '../../mappers/empleado-form.mapper';
 import {
   EMPTY_EMPLEADO_FORM_CATALOGOS,
   EmpleadoFormCatalogos,
@@ -39,6 +42,7 @@ type ValidationStepId = TabId;
 type ValidationSeverity = 'error' | 'warning' | 'info';
 type ValidationPanelMode = 'step' | 'global';
 type StepValidationStatus = 'pending' | 'in-progress' | 'invalid' | 'complete';
+type FormEmpleadoModo = 'basico' | 'avanzado';
 
 interface FinalReviewItem {
   label: string;
@@ -116,8 +120,10 @@ export class FormEmpleadoComponent implements OnInit {
   private readonly empleadosFormService = inject(EmpleadosFormOrchestratorService);
   private readonly destroyRef = inject(DestroyRef);
   private readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
   private readonly hostElement = inject<ElementRef<HTMLElement>>(ElementRef);
 
+  readonly modo = signal<FormEmpleadoModo>('avanzado');
   readonly activeTab = signal<TabId>('datosPersonales');
   readonly isSaving = signal(false);
   readonly attemptedSave = signal(false);
@@ -143,6 +149,7 @@ export class FormEmpleadoComponent implements OnInit {
   ];
 
   async ngOnInit(): Promise<void> {
+    this.modo.set(this.resolveModo());
     this.empleadosFormService.configureFormBehavior(this.form, this.destroyRef, () =>
       this.catalogos(),
     );
@@ -154,18 +161,7 @@ export class FormEmpleadoComponent implements OnInit {
       return;
     }
 
-    const currentIndex = TAB_ORDER.indexOf(this.activeTab());
-    const targetIndex = TAB_ORDER.indexOf(tabId);
-
-    if (targetIndex > currentIndex) {
-      const blockingTab = this.validateTabsUntil(targetIndex);
-
-      if (blockingTab) {
-        this.showInvalidTab(blockingTab);
-        return;
-      }
-    }
-
+    this.updateTabCompletion(this.activeTab());
     this.activeTab.set(tabId);
   }
 
@@ -206,11 +202,15 @@ export class FormEmpleadoComponent implements OnInit {
     }
 
     this.attemptedSave.set(true);
-    this.attemptAllTabs();
+    if (this.isBasicMode()) {
+      this.attemptBasicGroups();
+    } else {
+      this.attemptAllTabs();
+    }
     this.errorMessage.set(null);
     this.successMessage.set(null);
     this.createdEmployeeId.set(null);
-    this.form.markAllAsTouched();
+    this.markSubmitControlsAsTouched();
 
     if (this.isLoadingCatalogs()) {
       this.errorMessage.set(
@@ -219,9 +219,21 @@ export class FormEmpleadoComponent implements OnInit {
       return;
     }
 
-    if (this.form.invalid) {
+    if (this.isBasicMode()) {
+      if (this.isBasicFormInvalid()) {
+        this.focusFirstInvalidControl();
+        return;
+      }
+
+      await this.submitBasicMode();
+      return;
+    }
+
+    const firstIncompleteTab = this.findFirstIncompleteTab();
+
+    if (firstIncompleteTab || this.form.invalid) {
       this.syncCompletedTabsFromValidity();
-      this.showInvalidTab(this.findFirstInvalidTab());
+      this.showInvalidTab(firstIncompleteTab ?? this.findFirstInvalidTab());
       return;
     }
 
@@ -255,6 +267,34 @@ export class FormEmpleadoComponent implements OnInit {
     void this.router.navigate(['/empleados']);
   }
 
+  handleSuccessAction(): void {
+    if (this.isBasicMode() && this.createdEmployeeId()) {
+      const id = this.createdEmployeeId();
+      this.successMessage.set(null);
+      this.createdEmployeeId.set(null);
+      void this.router.navigate(['/empleados', id], { queryParams: { modo: 'avanzado' } });
+      return;
+    }
+
+    this.goToEmployeeList();
+  }
+
+  isBasicMode(): boolean {
+    return this.modo() === 'basico';
+  }
+
+  isAdvancedMode(): boolean {
+    return this.modo() === 'avanzado';
+  }
+
+  pageTitle(): string {
+    return this.isBasicMode() ? 'Creacion basica de empleado' : 'Alta de colaborador';
+  }
+
+  saveActionLabel(): string {
+    return this.isBasicMode() ? 'Crear empleado' : 'Guardar borrador';
+  }
+
   goToPreviousTab(): void {
     const currentIndex = TAB_ORDER.indexOf(this.activeTab());
 
@@ -264,22 +304,15 @@ export class FormEmpleadoComponent implements OnInit {
   }
 
   goToNextTab(): void {
-    if (this.isNextDisabled()) {
-      return;
-    }
-
     const currentIndex = TAB_ORDER.indexOf(this.activeTab());
 
     if (currentIndex >= TAB_ORDER.length - 1) {
       return;
     }
 
-    if (!this.completeCurrentTabIfValid()) {
-      this.focusFirstInvalidControl();
-      return;
-    }
-
+    this.updateTabCompletion(this.activeTab());
     this.activeTab.set(TAB_ORDER[currentIndex + 1]);
+    this.scrollToPageStart();
   }
 
   isFirstTab(): boolean {
@@ -291,7 +324,7 @@ export class FormEmpleadoComponent implements OnInit {
   }
 
   isNextDisabled(): boolean {
-    return !this.isLastTab() && this.isTabInvalid(this.activeTab());
+    return false;
   }
 
   activeStepNumber(): number {
@@ -364,6 +397,46 @@ export class FormEmpleadoComponent implements OnInit {
       invalidSteps: summaries.filter((summary) => summary.status === 'invalid').length,
       pendingTotal: summaries.reduce((total, summary) => total + summary.pending, 0),
     };
+  }
+
+  private resolveModo(): FormEmpleadoModo {
+    return this.route.snapshot.queryParamMap.get('modo') === 'basico' ? 'basico' : 'avanzado';
+  }
+
+  private markSubmitControlsAsTouched(): void {
+    if (!this.isBasicMode()) {
+      this.form.markAllAsTouched();
+      return;
+    }
+
+    this.form.controls.datosPersonales.markAllAsTouched();
+    this.form.controls.contacto.markAllAsTouched();
+  }
+
+  private attemptBasicGroups(): void {
+    this.attemptedTabs.set(new Set<TabId>(['datosPersonales']));
+  }
+
+  private isBasicFormInvalid(): boolean {
+    return this.form.controls.datosPersonales.invalid || this.form.controls.contacto.invalid;
+  }
+
+  private async submitBasicMode(): Promise<void> {
+    this.isSaving.set(true);
+
+    try {
+      const created = await this.empleadosService.crearBasico(
+        mapEmpleadoFormToPayloadBasico(this.form),
+      );
+
+      this.successMessage.set('Empleado creado. Completa la informacion restante.');
+      this.createdEmployeeId.set(created.id);
+      this.form.markAsPristine();
+    } catch (error) {
+      this.errorMessage.set(this.resolveSaveErrorMessage(error));
+    } finally {
+      this.isSaving.set(false);
+    }
   }
 
   private getAllValidationRules(): ValidationRule[] {
@@ -1021,51 +1094,30 @@ export class FormEmpleadoComponent implements OnInit {
     );
   }
 
-  private completeCurrentTabIfValid(): boolean {
-    const tabId = this.activeTab();
-    this.markTabAsTouched(tabId);
-    this.markTabAsAttempted(tabId);
+  private findFirstIncompleteTab(): TabId | null {
+    return TAB_ORDER.find((tabId) => this.isTabInvalid(tabId)) ?? null;
+  }
 
+  private updateTabCompletion(tabId: TabId): void {
     if (this.isTabInvalid(tabId)) {
       this.removeCompletedTab(tabId);
-      return false;
+      return;
     }
 
     this.markTabAsCompleted(tabId);
-    return true;
-  }
-
-  private validateTabsUntil(targetIndex: number): TabId | null {
-    const currentIndex = TAB_ORDER.indexOf(this.activeTab());
-
-    for (let index = currentIndex; index < targetIndex; index += 1) {
-      const tabId = TAB_ORDER[index];
-      this.markTabAsTouched(tabId);
-      this.markTabAsAttempted(tabId);
-
-      if (this.isTabInvalid(tabId)) {
-        this.removeCompletedTab(tabId);
-        return tabId;
-      }
-
-      this.markTabAsCompleted(tabId);
-    }
-
-    return null;
   }
 
   private showInvalidTab(tabId: TabId): void {
     this.activeTab.set(tabId);
     this.markTabAsTouched(tabId);
     this.markTabAsAttempted(tabId);
-    this.focusFirstInvalidControl();
+    this.focusFirstInvalidControl(tabId);
   }
 
-  private focusFirstInvalidControl(): void {
+  private focusFirstInvalidControl(tabId: TabId = this.activeTab()): void {
     window.setTimeout(() => {
-      const firstInvalidControl = this.hostElement.nativeElement.querySelector<HTMLElement>(
-        '.step-panel input.ng-invalid:not([type="hidden"]), .step-panel select.ng-invalid, .step-panel textarea.ng-invalid, .step-panel [formControlName].ng-invalid',
-      );
+      const firstInvalidControl =
+        this.findFirstControlForPendingValidation(tabId) ?? this.findFirstNgInvalidControl();
 
       if (!firstInvalidControl) {
         return;
@@ -1073,6 +1125,65 @@ export class FormEmpleadoComponent implements OnInit {
 
       firstInvalidControl.scrollIntoView({ behavior: 'smooth', block: 'center' });
       firstInvalidControl.focus({ preventScroll: true });
+    });
+  }
+
+  private findFirstControlForPendingValidation(tabId: TabId): HTMLElement | null {
+    const firstPendingRule = this.getValidationPanelItemsForStep(tabId, 'step').find(
+      (item) => item.blocking && !item.complete,
+    );
+    const controlName = firstPendingRule?.sourcePath.split('.').at(-1);
+
+    if (!controlName) {
+      return null;
+    }
+
+    const controlHost = this.hostElement.nativeElement.querySelector<HTMLElement>(
+      `.step-panel [formControlName="${controlName}"], .step-panel [formcontrolname="${controlName}"]`,
+    );
+
+    return this.getFocusableField(controlHost);
+  }
+
+  private findFirstNgInvalidControl(): HTMLElement | null {
+    const invalidHost = this.hostElement.nativeElement.querySelector<HTMLElement>(
+      '.step-panel input.ng-invalid:not([type="hidden"]), .step-panel select.ng-invalid, .step-panel textarea.ng-invalid, .step-panel [formControlName].ng-invalid, .step-panel [formcontrolname].ng-invalid',
+    );
+
+    return this.getFocusableField(invalidHost);
+  }
+
+  private getFocusableField(controlHost: HTMLElement | null): HTMLElement | null {
+    if (!controlHost) {
+      return null;
+    }
+
+    if (this.isFocusableFormField(controlHost)) {
+      return controlHost;
+    }
+
+    return controlHost.querySelector<HTMLElement>(
+      'input:not([type="hidden"]):not([disabled]), select:not([disabled]), textarea:not([disabled]), button:not([disabled]), [tabindex]:not([tabindex="-1"])',
+    );
+  }
+
+  private isFocusableFormField(element: HTMLElement): boolean {
+    return (
+      element.matches('input:not([type="hidden"]):not([disabled])') ||
+      element.matches('select:not([disabled])') ||
+      element.matches('textarea:not([disabled])') ||
+      element.matches('button:not([disabled])') ||
+      element.matches('[tabindex]:not([tabindex="-1"])')
+    );
+  }
+
+  private scrollToPageStart(): void {
+    window.setTimeout(() => {
+      const formStart =
+        this.hostElement.nativeElement.querySelector<HTMLElement>('.form-page-head') ??
+        this.hostElement.nativeElement;
+
+      formStart.scrollIntoView({ behavior: 'smooth', block: 'start' });
     });
   }
 

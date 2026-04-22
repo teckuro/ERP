@@ -22,6 +22,7 @@ import {
   buildContratoInsert,
   buildCuenta2AfpInsert,
   buildCuentaBancariaInsert,
+  buildPersonaBasicaInsert,
   buildPersonaInsert,
   buildPrevisionInsert,
   buildRemuneracionInsert,
@@ -341,6 +342,39 @@ export class EmpleadosRepository {
     const { data, error } = await this.supabase
       .from('persona')
       .insert(buildPersonaInsert(payload, rut))
+      .select('id_persona')
+      .single();
+
+    if (error) {
+      if (isUniqueConstraintError(error, 'persona_rut_key')) {
+        throw new EmpleadoRutDuplicadoError(formatRutParts(rut));
+      }
+
+      const foreignKeyError = buildForeignKeyError(
+        error,
+        {
+          persona_id_comuna_fkey:
+            'La comuna seleccionada no esta disponible para registrar la ficha.',
+          persona_id_tramo_carga_fkey:
+            'El tramo de carga seleccionado no esta disponible para registrar la ficha.',
+        },
+        'No fue posible validar los datos personales seleccionados para la ficha.',
+      );
+
+      if (foreignKeyError) {
+        throw foreignKeyError;
+      }
+
+      throw buildRepositoryError('No fue posible crear la persona en Supabase.', error.message);
+    }
+
+    return data.id_persona;
+  }
+
+  async insertarPersonaBasica(payload: CrearEmpleadoPayload, rut: RutParts): Promise<number> {
+    const { data, error } = await this.supabase
+      .from('persona')
+      .insert(buildPersonaBasicaInsert(payload, rut))
       .select('id_persona')
       .single();
 

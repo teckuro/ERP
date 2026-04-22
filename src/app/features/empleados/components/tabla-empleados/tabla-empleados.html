@@ -11,14 +11,12 @@
   [bulkActionLoading]="bulkActionLoading"
   [bulkActionResult]="bulkActionResult"
   [bulkActions]="bulkStateActions"
+  [showHeader]="false"
   [trackBy]="trackByEmpleadoId"
   [selectable]="true"
   selectionLabel="empleados"
   persistenceKey="empleados.data-grid.preferences"
-  primaryActionLabel="Nuevo colaborador"
-  [showExportAction]="true"
   searchPlaceholder="Buscar por nombre, RUT, cargo o departamento"
-  (primaryAction)="createEmpleado()"
   (export)="exportEmpleados($event)"
   (bulkAction)="bulkAction.emit($event)"
   (retry)="refresh.emit()"
@@ -100,7 +98,7 @@
 
       @if (openActionMenuId === empleado.id) {
         <div
-          class="absolute right-0 top-9 z-50 w-56 overflow-hidden rounded-lg border border-neutral-200 bg-white text-left shadow-[0_16px_34px_rgba(15,23,42,0.14)] ring-1 ring-black/[0.02]"
+          class="employee-action-menu absolute right-0 top-9 z-50 w-56 overflow-hidden rounded-lg border border-neutral-200 bg-white text-left shadow-[0_16px_34px_rgba(15,23,42,0.14)] ring-1 ring-black/[0.02]"
           role="menu"
         >
           <div class="border-b border-neutral-100 bg-neutral-50 px-3 py-2.5">

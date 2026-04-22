@@ -1,7 +1,19 @@
 :host {
   display: block;
   font-family: Inter, 'Segoe UI', Roboto, sans-serif;
-  color: #0f172a;
+  color: #111827;
+  --form-primary: #2563eb;
+  --form-primary-soft: #eff6ff;
+  --form-surface: #ffffff;
+  --form-bg: #f8fafc;
+  --form-border: #e5e7eb;
+  --form-text: #111827;
+  --form-muted: #6b7280;
+  --form-disabled: #9ca3af;
+  --form-error: #dc2626;
+  --form-error-soft: #fef2f2;
+  --form-warning: #f59e0b;
+  --form-warning-soft: #fffbeb;
 }
 
 .is-hidden {
@@ -10,11 +22,11 @@
 
 .employee-section-shell {
   display: grid;
-  gap: 1rem;
+  gap: 16px;
 }
 
 .employee-section-shell--compact {
-  margin-top: 0.75rem;
+  margin-top: 12px;
 }
 
 .employee-section-head {
@@ -25,52 +37,52 @@
 
 .employee-section-kicker {
   margin: 0;
-  color: #64748b;
+  color: var(--form-muted);
   font-size: 12px;
   font-weight: 600;
-  letter-spacing: 0.08em;
+  letter-spacing: 0;
   line-height: 16px;
   text-transform: uppercase;
 }
 
 .employee-section-title {
   margin: 0;
-  color: #0f172a;
-  font-size: 23px;
+  color: var(--form-text);
+  font-size: 20px;
   font-weight: 750;
   letter-spacing: 0;
-  line-height: 29px;
+  line-height: 24px;
 }
 
 .employee-section-copy {
   max-width: 46rem;
   margin: 0;
-  color: #475569;
+  color: var(--form-muted);
   font-size: 14px;
   font-weight: 400;
-  line-height: 22px;
+  line-height: 20px;
 }
 
 .employee-block {
   display: grid;
-  gap: 1rem;
-  padding: 1rem;
-  border: 1px solid rgba(226, 232, 240, 0.72);
+  gap: 16px;
+  padding: 16px;
+  border: 1px solid var(--form-border);
   border-radius: 8px;
-  background: #ffffff;
+  background: var(--form-surface);
   box-shadow: none;
 }
 
 .employee-block--subtle {
-  background: #fafbfc;
+  background: var(--form-bg);
 }
 
 .employee-block-head {
   display: grid;
-  gap: 0.18rem;
+  gap: 4px;
   margin: 0;
-  padding: 0 0 0.6rem;
-  border-bottom: 1px solid rgba(226, 232, 240, 0.28);
+  padding: 0 0 12px;
+  border-bottom: 1px solid var(--form-border);
   border-radius: 0;
   background: transparent;
 }
@@ -78,40 +90,40 @@
 .employee-block-head h4,
 .employee-block-title {
   margin: 0;
-  color: #0f172a;
-  font-size: 17px;
+  color: var(--form-text);
+  font-size: 15px;
   font-weight: 700;
   letter-spacing: 0;
-  line-height: 23px;
+  line-height: 20px;
   text-transform: none;
 }
 
 .employee-block-head p {
   max-width: 44rem;
   margin: 0;
-  color: #475569;
+  color: var(--form-muted);
   font-size: 13px;
   font-weight: 400;
-  line-height: 20px;
+  line-height: 18px;
 }
 
 .employee-grid {
   display: grid;
-  width: min(100%, 52rem);
-  gap: 0.75rem 1rem;
+  width: 100%;
+  gap: 12px 16px;
   align-items: start;
 }
 
 .employee-grid--two {
-  grid-template-columns: minmax(18rem, 24rem) minmax(12rem, 18rem);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
 .employee-grid--three {
-  grid-template-columns: minmax(18rem, 24rem) minmax(12rem, 18rem);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
 .employee-grid--four {
-  grid-template-columns: minmax(18rem, 24rem) minmax(12rem, 18rem);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
 .employee-span-2 {
@@ -124,55 +136,61 @@
 
 .form-field {
   display: grid;
-  gap: 0.24rem;
+  position: relative;
+  gap: 4px;
   min-width: 0;
   max-width: 100%;
+}
+
+.form-field:has(app-search-select .select-field.is-open),
+.form-field:has(app-calendar-input .calendar-field:focus-within) {
+  z-index: 140;
 }
 
 .field-label-row {
   display: flex;
   min-height: 16px;
   align-items: center;
-  gap: 0.3rem;
+  gap: 4px;
 }
 
 .field-label-row label {
-  color: #64748b;
-  font-size: 0.78rem;
+  color: #374151;
+  font-size: 12px;
   font-weight: 700;
   line-height: 18px;
 }
 
 .field-required {
-  color: #d97706;
+  color: var(--form-error);
   font-size: 11px;
-  font-weight: 600;
+  font-weight: 700;
   line-height: 1;
 }
 
 .field-message {
   min-height: 18px;
   margin: 0;
-  color: #dc2626;
+  color: var(--form-error);
   font-size: 12px;
   font-weight: 500;
   line-height: 18px;
 }
 
 .field-message--warning {
-  color: #d97706;
+  color: var(--form-warning);
 }
 
 .employee-control {
   width: 100%;
-  height: 42px;
-  border: 1px solid #cbd5e1;
-  border-radius: 8px;
-  background: #ffffff;
-  padding: 0 1rem;
-  color: #0f172a;
+  height: 38px;
+  border: 1px solid var(--form-border);
+  border-radius: 6px;
+  background: var(--form-surface);
+  padding: 0 12px;
+  color: var(--form-text);
   font-size: 13px;
-  font-weight: 550;
+  font-weight: 600;
   line-height: 18px;
   outline: none;
   transition:
@@ -182,48 +200,48 @@
 }
 
 .form-field--passport {
-  max-width: 18rem;
+  max-width: none;
 }
 
 .form-field--date {
-  max-width: 18rem;
+  max-width: none;
 }
 
 .form-field--sex {
-  max-width: 14rem;
+  max-width: none;
 }
 
 .form-field--wide {
-  max-width: 24rem;
+  max-width: none;
 }
 
 .employee-control::placeholder {
-  color: #94a3b8;
+  color: var(--form-disabled);
 }
 
 .employee-control:hover {
-  border-color: #94a3b8;
+  border-color: #cbd5e1;
 }
 
 .employee-control:focus {
-  border-color: #2563eb;
-  box-shadow: 0 0 0 4px #dbeafe;
+  border-color: var(--form-primary);
+  box-shadow: 0 0 0 3px var(--form-primary-soft);
 }
 
 .employee-control.is-invalid {
-  border-color: #dc2626;
+  border-color: var(--form-error);
 }
 
 .employee-control.is-invalid:focus {
-  border-color: #dc2626;
-  box-shadow: 0 0 0 4px #fee2e2;
+  border-color: var(--form-error);
+  box-shadow: 0 0 0 3px var(--form-error-soft);
 }
 
 .employee-control--textarea {
   height: auto;
-  min-height: 6rem;
-  padding-top: 0.75rem;
-  padding-bottom: 0.75rem;
+  min-height: 96px;
+  padding-top: 12px;
+  padding-bottom: 12px;
 }
 
 @media (max-width: 1280px) {
@@ -242,22 +260,22 @@
 
 @media (max-width: 768px) {
   .employee-block {
-    padding: 1rem;
+    padding: 16px;
     border-radius: 8px;
   }
 
   .employee-block-head {
     margin: 0;
-    padding: 0 0 0.9rem;
+    padding: 0 0 12px;
   }
 
   .employee-section-shell {
-    gap: 1rem;
+    gap: 16px;
   }
 
   .employee-section-title {
-    font-size: 21px;
-    line-height: 27px;
+    font-size: 18px;
+    line-height: 24px;
   }
 
   .employee-grid--two,

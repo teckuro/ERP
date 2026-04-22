@@ -124,7 +124,7 @@ export class DataGridCellDirective<T = unknown> {
   imports: [CommonModule, LucideAngularModule, CardComponent, MessageBoxComponent],
   template: `
     <app-card [className]="gridCardClass">
-      @if (rows.length > 0 || title) {
+      @if ((rows.length > 0 || title) && showHeader) {
         <div class="border-b border-neutral-100 bg-white px-4 pb-4 pt-3.5">
           <div class="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
             <div class="min-w-0">
@@ -370,78 +370,78 @@ export class DataGridCellDirective<T = unknown> {
             </div>
           </div>
         </div>
+      }
 
-        @if (filtersEnabled && showFilters) {
-          <div class="border-b border-neutral-100 bg-neutral-50 px-4 pb-3 pt-4">
-            <div class="grid gap-3 md:grid-cols-[minmax(14rem,1fr)_repeat(3,minmax(9rem,12rem))]">
-              <div class="relative">
-                <lucide-icon
-                  class="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-neutral-400"
-                  [img]="emptyIcon"
-                ></lucide-icon>
-                <input
-                  class="h-9 w-full rounded-md border border-neutral-200 bg-white py-1 pl-9 pr-8 text-sm font-medium text-neutral-900 outline-none transition placeholder:text-neutral-400 hover:border-neutral-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
-                  type="text"
-                  [placeholder]="searchPlaceholder"
-                  [value]="searchInputTerm"
-                  (input)="updateSearchTerm($event)"
-                />
-                @if (searchInputTerm) {
-                  <button
-                    type="button"
-                    class="absolute right-2 top-1/2 -translate-y-1/2 rounded px-1.5 py-0.5 text-xs font-semibold text-neutral-500 transition hover:bg-neutral-100 hover:text-neutral-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
-                    aria-label="Limpiar busqueda"
-                    (click)="clearSearchTerm()"
-                  >
-                    x
-                  </button>
-                }
-              </div>
-
-              @for (filter of filters.slice(0, 3); track filter.id) {
-                <select
-                  class="h-9 rounded-md border border-neutral-200 bg-white px-2 text-sm font-medium text-neutral-700 outline-none transition hover:border-neutral-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
-                  [value]="filterValues[filter.id] || ''"
-                  (change)="updateFilterValue(filter.id, $event)"
+      @if (filtersEnabled && showFilters) {
+        <div class="border-b border-neutral-100 bg-neutral-50 px-4 pb-3 pt-4">
+          <div class="grid gap-3 md:grid-cols-[minmax(14rem,1fr)_repeat(3,minmax(9rem,12rem))]">
+            <div class="relative">
+              <lucide-icon
+                class="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-neutral-400"
+                [img]="emptyIcon"
+              ></lucide-icon>
+              <input
+                class="h-9 w-full rounded-md border border-neutral-200 bg-white py-1 pl-9 pr-8 text-sm font-medium text-neutral-900 outline-none transition placeholder:text-neutral-400 hover:border-neutral-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                type="text"
+                [placeholder]="searchPlaceholder"
+                [value]="searchInputTerm"
+                (input)="updateSearchTerm($event)"
+              />
+              @if (searchInputTerm) {
+                <button
+                  type="button"
+                  class="absolute right-2 top-1/2 -translate-y-1/2 rounded px-1.5 py-0.5 text-xs font-semibold text-neutral-500 transition hover:bg-neutral-100 hover:text-neutral-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+                  aria-label="Limpiar busqueda"
+                  (click)="clearSearchTerm()"
                 >
-                  <option value="">{{ filter.label }}</option>
-                  @for (option of filterOptions(filter); track option) {
-                    <option [value]="filterOptionValue(option)">{{ filterOptionLabel(option) }}</option>
-                  }
-                </select>
+                  x
+                </button>
               }
             </div>
 
-            @if (activeFilterChips.length > 0) {
-              <div class="mt-3 flex flex-wrap items-center gap-2">
-                @for (chip of activeFilterChips; track chip.id) {
-                  <span
-                    class="inline-flex h-7 items-center gap-1.5 rounded-md border border-neutral-200 bg-white px-2 text-xs font-medium text-neutral-700"
-                  >
-                    <span class="text-neutral-500">{{ chip.label }}:</span>
-                    <span>{{ chip.value }}</span>
-                    <button
-                      type="button"
-                      class="rounded px-1 text-neutral-500 transition hover:bg-neutral-100 hover:text-neutral-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
-                      [attr.aria-label]="'Quitar filtro ' + chip.label"
-                      (click)="removeFilterChip(chip.id)"
-                    >
-                      x
-                    </button>
-                  </span>
+            @for (filter of filters.slice(0, 3); track filter.id) {
+              <select
+                class="h-9 rounded-md border border-neutral-200 bg-white px-2 text-sm font-medium text-neutral-700 outline-none transition hover:border-neutral-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                [value]="filterValues[filter.id] || ''"
+                (change)="updateFilterValue(filter.id, $event)"
+              >
+                <option value="">{{ filter.label }}</option>
+                @for (option of filterOptions(filter); track option) {
+                  <option [value]="filterOptionValue(option)">{{ filterOptionLabel(option) }}</option>
                 }
-
-                <button
-                  type="button"
-                  class="inline-flex h-7 items-center rounded-md px-2 text-xs font-semibold text-neutral-600 transition hover:bg-neutral-100 hover:text-neutral-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
-                  (click)="clearAllFilters()"
-                >
-                  Limpiar todo
-                </button>
-              </div>
+              </select>
             }
           </div>
-        }
+
+          @if (activeFilterChips.length > 0) {
+            <div class="mt-3 flex flex-wrap items-center gap-2">
+              @for (chip of activeFilterChips; track chip.id) {
+                <span
+                  class="inline-flex h-7 items-center gap-1.5 rounded-md border border-neutral-200 bg-white px-2 text-xs font-medium text-neutral-700"
+                >
+                  <span class="text-neutral-500">{{ chip.label }}:</span>
+                  <span>{{ chip.value }}</span>
+                  <button
+                    type="button"
+                    class="rounded px-1 text-neutral-500 transition hover:bg-neutral-100 hover:text-neutral-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+                    [attr.aria-label]="'Quitar filtro ' + chip.label"
+                    (click)="removeFilterChip(chip.id)"
+                  >
+                    x
+                  </button>
+                </span>
+              }
+
+              <button
+                type="button"
+                class="inline-flex h-7 items-center rounded-md px-2 text-xs font-semibold text-neutral-600 transition hover:bg-neutral-100 hover:text-neutral-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+                (click)="clearAllFilters()"
+              >
+                Limpiar todo
+              </button>
+            </div>
+          }
+        </div>
       }
 
       @if (selectable && selectedRows.length > 0) {
@@ -831,6 +831,7 @@ export class DataGridCellDirective<T = unknown> {
 })
 export class DataGridComponent<T = unknown> implements OnChanges, OnDestroy {
   @Input() title = '';
+  @Input() showHeader = true;
   @Input() columns: DataGridColumn<T>[] = [];
   @Input() rows: T[] = [];
   @Input() filters: DataGridFilter<T>[] = [];

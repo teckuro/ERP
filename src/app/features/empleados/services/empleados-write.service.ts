@@ -43,4 +43,11 @@ export class EmpleadosWriteService {
       throw error;
     }
   }
+
+  async crearBasico(payload: CrearEmpleadoPayload): Promise<EmpleadoListado> {
+    const rut = parseRut(payload.rut);
+    const personaId = await this.empleadosRepository.insertarPersonaBasica(payload, rut);
+
+    return mapCreatedEmpleado(payload, personaId, rut, null);
+  }
 }

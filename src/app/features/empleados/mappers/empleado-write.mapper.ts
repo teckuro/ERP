@@ -47,6 +47,18 @@ export function buildPersonaInsert(payload: CrearEmpleadoPayload, rut: RutParts)
   };
 }
 
+export function buildPersonaBasicaInsert(
+  payload: CrearEmpleadoPayload,
+  rut: RutParts,
+): PersonaInsert {
+  return {
+    ...buildPersonaInsert(payload, rut),
+    estado: 'BORRADOR',
+    estado_ficha: 'INCOMPLETO',
+    apto_para_remuneraciones: false,
+  };
+}
+
 export function buildContratoInsert(
   payload: CrearEmpleadoPayload,
   personaId: number,

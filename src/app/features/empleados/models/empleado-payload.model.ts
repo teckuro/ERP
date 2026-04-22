@@ -23,7 +23,7 @@ export interface CrearEmpleadoPayload {
   numeroDireccion: string | null;
   departamentoDireccion: string | null;
   observacionesDireccion: string | null;
-  idComuna: number;
+  idComuna: number | null;
   idPais: number;
   idSucursal: number | null;
   idDepartamentoEmpresa: number | null;

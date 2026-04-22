@@ -2,10 +2,6 @@
   <div class="labor-head is-hidden">
     <p class="labor-kicker">Referencia laboral</p>
     <h3 class="labor-title">Datos laborales</h3>
-    <p class="labor-copy">
-      La distribución sigue el formulario de remuneraciones tradicional, pero adaptada a la
-      maquetación actual y conectada con el modelo vigente de la base de datos.
-    </p>
   </div>
 
   <section class="labor-block">
@@ -89,12 +85,12 @@
             <span class="field-required" aria-hidden="true">*</span>
           }
         </div>
-        <input
+        <app-calendar-input
           id="empleado-fecha-ingreso"
-          type="date"
           formControlName="fechaIngreso"
-          [class]="controlClass('fechaIngreso')"
-        />
+          placeholder="dd/mm/aaaa"
+          [invalid]="hasError('fechaIngreso')"
+        ></app-calendar-input>
         @if (hasError('fechaIngreso', 'required')) {
           <p class="field-message">La fecha de ingreso es obligatoria.</p>
         } @else {
@@ -111,12 +107,12 @@
             <span class="field-required" aria-hidden="true">*</span>
           }
         </div>
-        <input
+        <app-calendar-input
           id="empleado-fecha-contrato"
-          type="date"
           formControlName="fechaContrato"
-          [class]="controlClass('fechaContrato')"
-        />
+          placeholder="dd/mm/aaaa"
+          [invalid]="hasError('fechaContrato')"
+        ></app-calendar-input>
         @if (hasError('fechaContrato', 'required')) {
           <p class="field-message">La fecha de contrato es obligatoria.</p>
         } @else {
@@ -133,12 +129,12 @@
             <span class="field-required" aria-hidden="true">*</span>
           }
         </div>
-        <input
+        <app-calendar-input
           id="empleado-fecha-termino"
-          type="date"
           formControlName="fechaTermino"
-          [class]="controlClass('fechaTermino')"
-        />
+          placeholder="dd/mm/aaaa"
+          [invalid]="hasError('fechaTermino')"
+        ></app-calendar-input>
         @if (hasError('fechaTermino', 'required')) {
           <p class="field-message">
             La fecha de término es obligatoria para contratos no indefinidos.

@@ -5,6 +5,8 @@ import { ContactoFormGroup, DatosPersonalesFormGroup } from '../../../models/emp
 import { EmpleadoCatalogOption } from '../../../models/empleado-catalogos.model';
 import { ESTADO_CIVIL_OPTIONS } from '../../../catalogs/estado-civil.options';
 import { SEXO_OPTIONS } from '../../../catalogs/sexo.options';
+import { CalendarInputComponent } from '../../../../../shared/components/ui/calendar-input.component';
+import { SearchSelectComponent } from '../../../../../shared/components/ui/search-select.component';
 
 type DatosPersonalesControlName = keyof DatosPersonalesFormGroup['controls'];
 type ContactoControlName = keyof ContactoFormGroup['controls'];
@@ -12,7 +14,7 @@ type ContactoControlName = keyof ContactoFormGroup['controls'];
 @Component({
   selector: 'app-empleado-datos-personales',
   standalone: true,
-  imports: [ReactiveFormsModule],
+  imports: [ReactiveFormsModule, CalendarInputComponent, SearchSelectComponent],
   templateUrl: './datos-personales.html',
   styleUrl: './datos-personales.css',
 })
@@ -23,6 +25,7 @@ export class DatosPersonalesComponent {
 
   readonly sexOptions = SEXO_OPTIONS;
   readonly estadoCivilOptions = ESTADO_CIVIL_OPTIONS;
+  readonly today = this.toIsoDate(new Date());
 
   controlClass(controlName: DatosPersonalesControlName): string {
     return this.resolveControlClass(this.hasError(controlName));
@@ -82,5 +85,13 @@ export class DatosPersonalesComponent {
     const control = this.contactoFormGroup.controls[controlName];
 
     return control.touched && !String(control.value ?? '').trim();
+  }
+
+  private toIsoDate(date: Date): string {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+
+    return `${year}-${month}-${day}`;
   }
 }

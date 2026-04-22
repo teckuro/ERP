@@ -2,15 +2,11 @@
   <div class="employee-section-head is-hidden">
     <p class="employee-section-kicker">Prevision y beneficios</p>
     <h3 class="employee-section-title">Prevision y salud</h3>
-    <p class="employee-section-copy">
-      Ordena la informacion previsional por bloques para reducir ruido visual y registrar solo lo que aplica.
-    </p>
   </div>
 
   <app-card className="prevision-card">
     <app-card-header className="prevision-card-header">
       <h4 class="text-sm font-semibold text-gray-900">Regimen previsional</h4>
-      <p class="mt-1 text-sm text-gray-600">Selecciona el regimen que aplica al trabajador.</p>
     </app-card-header>
     <app-card-content className="prevision-card-content">
       <div class="prevision-grid prevision-grid--two">
@@ -39,16 +35,6 @@
           <p class="field-message"></p>
         }
       </div>
-
-      @if (tipoPrevision) {
-        <div class="prevision-span-2 rounded-lg border border-gray-200 bg-gray-50 px-4 py-3 text-sm text-gray-600">
-          @for (option of tipoRegimenOptions; track option.value) {
-            @if (option.value === tipoPrevision) {
-              {{ option.description }}
-            }
-          }
-        </div>
-      }
       </div>
     </app-card-content>
   </app-card>
@@ -57,7 +43,6 @@
     <app-card className="prevision-card">
       <app-card-header className="prevision-card-header">
         <h4 class="text-sm font-semibold text-gray-900">AFP</h4>
-        <p class="mt-1 text-sm text-gray-600">Configura la AFP base y la Cuenta 2 de ahorro voluntario si aplica.</p>
       </app-card-header>
       <app-card-content className="prevision-card-content">
         <div class="prevision-grid prevision-grid--three">
@@ -141,7 +126,6 @@
     <app-card className="prevision-card">
       <app-card-header className="prevision-card-header">
         <h4 class="text-sm font-semibold text-gray-900">IPS (Ex INP)</h4>
-        <p class="mt-1 text-sm text-gray-600">Completa la informacion de la Ex-Caja para el trabajador.</p>
       </app-card-header>
       <app-card-content className="prevision-card-content">
         <div class="prevision-grid prevision-grid--three">
@@ -219,7 +203,6 @@
     <app-card className="prevision-card">
       <app-card-header className="prevision-card-header">
         <h4 class="text-sm font-semibold text-gray-900">Salud</h4>
-        <p class="mt-1 text-sm text-gray-600">Registra el plan de salud en un bloque compacto y consistente.</p>
       </app-card-header>
       <app-card-content className="prevision-card-content">
         <div class="prevision-grid prevision-grid--four">
@@ -326,7 +309,6 @@
       <app-card-header className="prevision-card-header flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
         <div>
           <h4 class="text-sm font-semibold text-gray-900">APVI - Ahorro Previsional Voluntario Individual</h4>
-          <p class="mt-1 text-sm text-gray-600">Activalo solo si el trabajador mantiene ahorro voluntario.</p>
         </div>
 
         <label class="inline-flex items-center gap-2 text-sm font-medium text-gray-700" for="empleado-tiene-apv">

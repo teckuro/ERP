@@ -1,3 +1,285 @@
- :host {
+:host {
   display: block;
+}
+
+.listado-page {
+  display: grid;
+  min-width: 0;
+  gap: 12px;
+  overflow-x: hidden;
+}
+
+.listado-header {
+  display: grid;
+  min-width: 0;
+  padding: 0 4px;
+}
+
+.listado-toolbar {
+  position: relative;
+  z-index: 20;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+  min-width: 0;
+}
+
+.toolbar-button {
+  display: inline-flex;
+  flex: 0 0 auto;
+  min-height: 34px;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border: 1px solid;
+  border-radius: 8px;
+  padding: 0 12px;
+  font-size: 12px;
+  font-weight: 750;
+  line-height: 1;
+  white-space: nowrap;
+  transition:
+    background-color 150ms ease,
+    border-color 150ms ease,
+    color 150ms ease,
+    box-shadow 150ms ease,
+    transform 150ms ease;
+}
+
+.toolbar-button span {
+  display: inline-flex;
+  align-items: center;
+  line-height: 1;
+}
+
+.toolbar-button:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px #bfdbfe;
+}
+
+.toolbar-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.toolbar-button--secondary {
+  border-color: #cbd5e1;
+  background: #ffffff;
+  color: #334155;
+}
+
+.toolbar-button--secondary:hover:not(:disabled) {
+  border-color: #94a3b8;
+  background: #f8fafc;
+  color: #0f172a;
+}
+
+.toolbar-button--primary {
+  border-color: #2563eb;
+  background: #2563eb;
+  color: #ffffff;
+}
+
+.toolbar-button--primary:hover {
+  border-color: #1d4ed8;
+  background: #1d4ed8;
+}
+
+.toolbar-button:hover:not(:disabled) {
+  transform: translateY(-1px);
+}
+
+.toolbar-icon {
+  display: inline-flex;
+  flex: 0 0 14px;
+  align-items: center;
+  justify-content: center;
+  width: 14px;
+  height: 14px;
+  line-height: 0;
+}
+
+.toolbar-icon ::ng-deep svg {
+  display: block;
+  width: 14px;
+  height: 14px;
+}
+
+.toolbar-icon--spin,
+.create-menu-icon--spin,
+.listado-loading-icon {
+  animation: listado-spin 850ms linear infinite;
+}
+
+.toolbar-create {
+  position: relative;
+  display: inline-flex;
+}
+
+.create-menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  z-index: 50;
+  width: 192px;
+  overflow: hidden;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  background: #ffffff;
+  box-shadow: 0 16px 34px rgba(15, 23, 42, 0.14);
+  transform-origin: top right;
+  animation: menu-enter 140ms ease-out both;
+}
+
+.create-menu button {
+  display: flex;
+  gap: 8px;
+  width: 100%;
+  min-height: 38px;
+  align-items: center;
+  border: 0;
+  background: transparent;
+  padding: 0 12px;
+  color: #334155;
+  font-size: 12px;
+  font-weight: 700;
+  text-align: left;
+}
+
+.create-menu button:disabled {
+  cursor: wait;
+  opacity: 0.72;
+}
+
+.create-menu-icon {
+  width: 14px;
+  height: 14px;
+  color: #2563eb;
+}
+
+.create-menu button:hover,
+.create-menu button:focus-visible {
+  background: #f8fafc;
+  color: #0f172a;
+  outline: none;
+}
+
+.listado-content {
+  position: relative;
+  min-width: 0;
+  border: 1px solid #d8e1ec;
+  border-radius: 12px;
+  background: #ffffff;
+  padding: 12px;
+}
+
+.listado-loading-chip {
+  position: absolute;
+  top: 18px;
+  right: 18px;
+  z-index: 30;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 32px;
+  border: 1px solid #bfdbfe;
+  border-radius: 999px;
+  background: rgba(239, 246, 255, 0.96);
+  padding: 0 12px;
+  color: #1d4ed8;
+  font-size: 12px;
+  font-weight: 800;
+  box-shadow: 0 10px 24px rgba(37, 99, 235, 0.12);
+  animation: loading-chip-enter 180ms ease-out both;
+}
+
+.listado-loading-icon {
+  width: 14px;
+  height: 14px;
+}
+
+@keyframes listado-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes menu-enter {
+  from {
+    opacity: 0;
+    transform: translateY(-4px) scale(0.98);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes loading-chip-enter {
+  from {
+    opacity: 0;
+    transform: translateY(-3px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.listado-content ::ng-deep app-data-grid app-card {
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+
+@media (max-width: 640px) {
+  .listado-toolbar {
+    justify-content: stretch;
+  }
+
+  .toolbar-button,
+  .toolbar-create {
+    flex: 1 1 100%;
+  }
+
+  .toolbar-create .toolbar-button {
+    width: 100%;
+  }
+
+  .create-menu {
+    right: 0;
+    left: 0;
+    width: auto;
+  }
+
+  .listado-content {
+    padding: 8px;
+  }
+
+  .listado-loading-chip {
+    top: 12px;
+    right: 12px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .toolbar-button,
+  .create-menu,
+  .listado-loading-chip {
+    animation: none;
+    transition: none;
+  }
+
+  .toolbar-button:hover:not(:disabled) {
+    transform: none;
+  }
+
+  .toolbar-icon--spin,
+  .create-menu-icon--spin,
+  .listado-loading-icon {
+    animation: none;
+  }
 }

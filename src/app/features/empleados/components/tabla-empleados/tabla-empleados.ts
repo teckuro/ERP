@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
-import { Component, EventEmitter, HostListener, Input, Output, inject } from '@angular/core';
-import { Router, RouterLink } from '@angular/router';
+import { Component, EventEmitter, HostListener, Input, Output, ViewChild } from '@angular/core';
+import { RouterLink } from '@angular/router';
 import { LucideAngularModule } from 'lucide-angular';
 import {
   ArrowRight,
@@ -38,8 +38,6 @@ import {
   styleUrl: './tabla-empleados.css',
 })
 export class TablaEmpleadosComponent {
-  private readonly router = inject(Router);
-
   @Input() empleados: EmpleadoListado[] = [];
   @Input() maxItems = 10;
   @Input() loading = false;
@@ -57,6 +55,9 @@ export class TablaEmpleadosComponent {
   readonly rowActionIcon = ArrowRight;
   readonly completionIcon = ClipboardCheck;
   openActionMenuId: number | null = null;
+
+  @ViewChild(DataGridComponent)
+  private readonly dataGrid?: DataGridComponent<EmpleadoListado>;
 
   readonly bulkStateActions: DataGridBulkActionOption[] = [
     {
@@ -215,8 +216,16 @@ export class TablaEmpleadosComponent {
     return empleado.id;
   }
 
-  createEmpleado(): void {
-    void this.router.navigate(['/empleados/nuevo']);
+  toggleFiltros(): void {
+    if (!this.dataGrid) {
+      return;
+    }
+
+    this.dataGrid.showFilters = !this.dataGrid.showFilters;
+  }
+
+  exportarListado(): void {
+    this.dataGrid?.exportFilteredRows();
   }
 
   exportEmpleados(event: DataGridExportEvent<EmpleadoListado>): void {

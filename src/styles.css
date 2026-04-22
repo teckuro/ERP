@@ -3,11 +3,16 @@
 /* Empleados alta workspace */
 app-form-empleado {
   display: block;
-  --emp-ink: #0f172a;
-  --emp-muted: #64748b;
-  --emp-line: #e2e8f0;
+  --emp-ink: #111827;
+  --emp-muted: #6b7280;
+  --emp-line: #e5e7eb;
   --emp-soft: #f8fafc;
   --emp-blue: #2563eb;
+  --emp-blue-hover: #1d4ed8;
+  --emp-blue-soft: #eff6ff;
+  --emp-error: #dc2626;
+  --emp-warning: #f59e0b;
+  --emp-success: #16a34a;
   --emp-panel: #ffffff;
 }
 
@@ -29,29 +34,29 @@ app-form-empleado .validation-group {
 }
 
 app-form-empleado .form-stack {
-  gap: 0.75rem;
+  gap: 12px;
 }
 
 app-form-empleado .form-page-head {
   display: grid;
-  gap: 0.5rem;
-  padding: 0 0.25rem;
+  gap: 8px;
+  padding: 0 4px;
 }
 
 app-form-empleado .form-page-head h1 {
   margin: 0;
   color: var(--emp-ink);
-  font-size: 1.45rem;
+  font-size: 24px;
   font-weight: 850;
-  line-height: 1.18;
+  line-height: 32px;
   text-align: center;
 }
 
 app-form-empleado .editor-shell {
   display: block;
   width: 100%;
-  border-color: transparent;
-  background: #f7f9fc;
+  border-color: var(--emp-line);
+  background: var(--emp-panel);
   box-shadow: none;
 }
 
@@ -60,10 +65,10 @@ app-form-empleado .editor-frame {
   gap: 0;
   overflow: hidden;
   padding: 0;
-  border: 1px solid #d8e1ec;
-  border-radius: 0.85rem;
-  background: #fff;
-  box-shadow: 0 18px 42px rgba(15, 23, 42, 0.08);
+  border: 1px solid var(--emp-line);
+  border-radius: 8px;
+  background: #ffffff;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 }
 
 app-form-empleado .summary-identity {
@@ -71,8 +76,8 @@ app-form-empleado .summary-identity {
   flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: 1rem;
-  padding: 0.85rem 1rem;
+  gap: 16px;
+  padding: 12px 16px;
 }
 
 app-form-empleado .side-progress-summary,
@@ -85,16 +90,16 @@ app-form-empleado .message-detail,
 app-form-empleado .editor-footer-copy {
   margin: 0;
   color: var(--emp-muted);
-  font-size: 0.82rem;
+  font-size: 13px;
   line-height: 1.4;
 }
 
 app-form-empleado .status-stack {
-  padding: 0 1rem;
+  padding: 0 16px;
 }
 
 app-form-empleado .status-stack:not(:empty) {
-  padding-top: 1rem;
+  padding-top: 16px;
 }
 
 app-form-empleado .form-action-button {
@@ -104,18 +109,18 @@ app-form-empleado .form-action-button {
 }
 
 app-form-empleado .side-panel-card {
-  border: 1px solid #e1e7f0;
+  border: 1px solid var(--emp-line);
   background: var(--emp-panel);
 }
 
 app-form-empleado .side-panel-card {
-  border-radius: 0.75rem;
+  border-radius: 8px;
 }
 
 app-form-empleado .summary-person {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.5rem;
+  gap: 8px;
   align-items: center;
   min-width: 0;
 }
@@ -124,9 +129,9 @@ app-form-empleado .summary-person p,
 app-form-empleado .side-kicker {
   margin: 0;
   color: var(--emp-muted);
-  font-size: 0.68rem;
+  font-size: 11px;
   font-weight: 800;
-  letter-spacing: 0.08em;
+  letter-spacing: 0;
   line-height: 1.2;
   text-transform: uppercase;
 }
@@ -141,26 +146,26 @@ app-form-empleado .side-section h3 {
 
 app-form-empleado .summary-person h2 {
   overflow-wrap: anywhere;
-  font-size: 1.12rem;
+  font-size: 18px;
 }
 
 app-form-empleado .summary-title-row {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.5rem;
+  gap: 8px;
   align-items: center;
 }
 
 app-form-empleado .summary-status-badge {
   display: inline-flex;
-  min-height: 1.45rem;
+  min-height: 24px;
   align-items: center;
-  border: 1px solid #fed7aa;
-  border-radius: 999px;
-  padding: 0.18rem 0.58rem;
-  background: #fff7ed;
-  color: #9a3412;
-  font-size: 0.68rem;
+  border: 1px solid var(--emp-line);
+  border-radius: 6px;
+  padding: 0 8px;
+  background: #ffffff;
+  color: var(--emp-muted);
+  font-size: 11px;
   font-weight: 850;
   line-height: 1;
 }
@@ -173,39 +178,39 @@ app-form-empleado .summary-actions {
 
 app-form-empleado .summary-actions .page-actions-toolbar {
   justify-content: flex-end;
-  gap: 0.35rem;
+  gap: 8px;
 }
 
 app-form-empleado .summary-actions .page-actions-toolbar > a,
 app-form-empleado .summary-actions .page-actions-toolbar app-button button {
   min-width: 0 !important;
-  height: 2.25rem !important;
-  padding-right: 0.75rem !important;
-  padding-left: 0.75rem !important;
-  border-radius: 0.5rem !important;
-  font-size: 0.8rem !important;
+  height: 36px !important;
+  padding-right: 12px !important;
+  padding-left: 12px !important;
+  border-radius: 6px !important;
+  font-size: 13px !important;
   font-weight: 760 !important;
 }
 
 app-form-empleado .flow-tabs {
   display: grid;
-  gap: 0.45rem;
+  gap: 8px;
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
 app-form-empleado .flow-tab {
-  border-radius: 0.5rem;
+  border-radius: 6px;
 }
 
 app-form-empleado .workspace-grid {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(17rem, 20rem);
-  gap: 0.75rem;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 12px;
   align-items: start;
-  padding: 0.75rem;
-  background: #f8fafc;
+  padding: 12px;
+  background: var(--emp-soft);
 }
 
 app-form-empleado .workspace-main {
@@ -216,118 +221,227 @@ app-form-empleado .workspace-main {
 app-form-empleado .content-shell {
   display: grid;
   grid-template-rows: auto auto minmax(0, 1fr) auto;
+  width: 100%;
   min-width: 0;
   min-height: min(42rem, calc(100vh - 14rem));
-  border: 1px solid #c8d3e1;
-  border-radius: 0.8rem;
-  background: #fff;
-  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.08);
+  border: 1px solid var(--emp-line);
+  border-radius: 8px;
+  background: var(--emp-soft);
+  box-shadow: none;
 }
 
 app-form-empleado .content-head {
-  padding: 0;
-  border-bottom: 1px solid #cbd5e1;
-  background: #fff;
+  position: relative;
+  z-index: 2;
+  padding: 12px 12px 0;
+  border-bottom: 0;
+  background: var(--emp-soft);
 }
 
 app-form-empleado .flow-tabs {
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  display: inline-flex;
+  width: fit-content;
+  max-width: min(42rem, 100%);
   gap: 0;
   margin: 0;
   padding: 0;
   border-top: 0;
   border-bottom: 0;
-  background: #fff;
+  background: transparent;
+}
+
+app-form-empleado .flow-tabs li {
+  flex: 0 0 auto;
+  min-width: 0;
 }
 
 app-form-empleado .flow-tab {
   position: relative;
   display: grid;
   grid-template-columns: auto minmax(0, 1fr);
-  gap: 0.5rem;
+  gap: 8px;
   align-items: center;
-  width: 100%;
-  min-height: 3rem;
+  width: auto;
+  min-width: max-content;
+  max-width: 13.5rem;
+  min-height: 40px;
   margin-bottom: -1px;
-  padding: 0.5rem 0.75rem;
-  border: 0;
-  border-right: 1px solid #e2e8f0;
-  border-bottom: 2px solid transparent;
-  border-radius: 0;
-  background: transparent;
+  padding: 8px 12px;
+  border: 1px solid var(--emp-line);
+  border-bottom-color: var(--emp-line);
+  border-radius: 6px 6px 0 0;
+  background: #ffffff;
   color: inherit;
   cursor: pointer;
   font: inherit;
   text-align: left;
+  box-shadow: none;
   transition:
     background 160ms ease,
     border-color 160ms ease,
-    box-shadow 160ms ease;
+    box-shadow 160ms ease,
+    color 160ms ease,
+    transform 160ms ease;
 }
 
 app-form-empleado .flow-tab::after {
-  display: none;
-}
-
-app-form-empleado .flow-tabs li:last-child .flow-tab {
-  border-right: 0;
+  content: '';
+  position: absolute;
+  right: 12px;
+  bottom: 6px;
+  left: 12px;
+  height: 2px;
+  border-radius: 999px;
+  background: transparent;
+  opacity: 0;
 }
 
 app-form-empleado .flow-tab:hover {
-  background: #f8fafc;
+  border-color: #cbd5e1;
+  background: var(--emp-soft);
+  color: var(--emp-ink);
+  transform: none;
+  box-shadow: none;
 }
 
 app-form-empleado .flow-tab:focus-visible {
   outline: none;
-  box-shadow: 0 0 0 3px #bfdbfe;
+  box-shadow: 0 0 0 3px var(--emp-blue-soft);
 }
 
 app-form-empleado .flow-tab span {
   display: inline-flex;
-  width: 1.35rem;
-  height: 1.35rem;
+  width: 20px;
+  height: 20px;
   align-items: center;
   justify-content: center;
   border-radius: 999px;
-  border: 1px solid #cbd5e1;
-  background: #fff;
-  color: #475569;
-  font-size: 0.68rem;
+  border: 1px solid var(--emp-line);
+  background: #ffffff;
+  color: var(--emp-muted);
+  font-size: 11px;
   font-weight: 850;
   line-height: 1;
 }
 
 app-form-empleado .flow-tab p {
   margin: 0;
-  color: #334155;
-  font-size: 0.74rem;
+  color: #374151;
+  font-size: 12px;
   font-weight: 780;
   line-height: 1.2;
+  overflow: visible;
+  text-overflow: clip;
+  white-space: nowrap;
 }
 
 app-form-empleado .flow-tab.is-active {
-  border-bottom-color: var(--emp-blue);
-  background: #fff;
+  z-index: 3;
+  border-color: var(--emp-line);
+  border-bottom-color: #ffffff;
+  background: #ffffff;
+  color: var(--emp-ink);
+  transform: translateY(0);
   box-shadow: none;
 }
 
 app-form-empleado .flow-tab.is-active span {
   border-color: var(--emp-blue);
   background: var(--emp-blue);
-  color: #fff;
+  color: #ffffff;
 }
 
 app-form-empleado .flow-tab.is-active p {
-  color: #1e3a8a;
+  color: var(--emp-blue-hover);
+}
+
+app-form-empleado .flow-tab.is-active::after {
+  background: #2563eb;
+  opacity: 1;
 }
 
 app-form-empleado .content-body {
+  position: relative;
+  z-index: 1;
   min-height: 0;
-  padding: 0;
+  margin: 0 12px 12px;
+  border: 1px solid var(--emp-line);
+  border-radius: 0 8px 8px;
+  background: #ffffff;
+  box-shadow: none;
+}
+
+app-form-empleado .form-loading-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  border-radius: inherit;
+  background: rgba(255, 255, 255, 0.78);
+  color: #1d4ed8;
+  font-size: 13px;
+  font-weight: 850;
+  backdrop-filter: blur(2px);
+  animation: form-loading-enter 180ms ease-out both;
+}
+
+app-form-empleado .form-loading-indicator,
+app-form-empleado .form-button-spinner {
+  display: inline-flex;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 999px;
+  animation: form-spin 850ms linear infinite;
+}
+
+app-form-empleado .form-loading-indicator {
+  width: 22px;
+  height: 22px;
+}
+
+app-form-empleado .form-button-spinner {
+  width: 16px;
+  height: 16px;
 }
 
 app-form-empleado .step-panel {
-  padding: 0.75rem 1rem 1rem;
+  min-height: 30rem;
+  padding: 16px;
+  border-radius: inherit;
+  background: #ffffff;
+  animation: form-panel-enter 170ms ease-out both;
+}
+
+app-form-empleado .content-shell--basic {
+  grid-template-rows: auto minmax(0, 1fr) auto;
+}
+
+app-form-empleado .content-shell--basic .content-body {
+  border-radius: 8px;
+}
+
+app-form-empleado .step-panel--basic {
+  min-height: 0;
+}
+
+app-form-empleado .step-panel--basic .employee-section-shell {
+  gap: 1rem;
+}
+
+app-form-empleado .step-panel--basic .employee-block {
+  border-color: transparent;
+  background: transparent;
+  padding: 0;
+  box-shadow: none;
+}
+
+app-form-empleado .step-panel--basic .employee-block + .employee-block {
+  padding-top: 1rem;
+  border-top: 1px solid var(--emp-line);
+  border-radius: 0;
 }
 
 app-form-empleado .step-panel--final {
@@ -337,26 +451,26 @@ app-form-empleado .step-panel--final {
 
 app-form-empleado .side-panel {
   position: sticky;
-  top: 0.85rem;
+  top: 12px;
   align-self: start;
   height: max-content;
 }
 
 app-form-empleado .side-panel-card {
-  gap: 0.75rem;
-  padding: 0.75rem;
-  border-color: #edf2f7;
-  background: rgba(255, 255, 255, 0.74);
+  gap: 12px;
+  padding: 12px;
+  border-color: var(--emp-line);
+  background: #ffffff;
   box-shadow: none;
 }
 
 app-form-empleado .side-section {
-  gap: 0.52rem;
+  gap: 8px;
 }
 
 app-form-empleado .side-section + .side-section {
-  padding-top: 0.75rem;
-  border-top: 1px solid #edf2f7;
+  padding-top: 12px;
+  border-top: 1px solid var(--emp-line);
 }
 
 app-form-empleado .side-section h3 {
@@ -364,20 +478,20 @@ app-form-empleado .side-section h3 {
 }
 
 app-form-empleado .side-progress-line {
-  color: #475569;
-  font-size: 0.72rem;
+  color: var(--emp-muted);
+  font-size: 12px;
   font-weight: 700;
 }
 
 app-form-empleado .side-progress-meter {
   width: 100%;
-  height: 0.45rem;
+  height: 8px;
   accent-color: var(--emp-blue);
 }
 
 app-form-empleado .validation-list {
   display: grid;
-  gap: 0.3rem;
+  gap: 4px;
   margin: 0;
   padding: 0;
   list-style: none;
@@ -394,62 +508,62 @@ app-form-empleado .global-summary-grid {
 app-form-empleado .validation-status-grid div,
 app-form-empleado .global-summary-grid div {
   display: grid;
-  gap: 0.12rem;
-  padding: 0.45rem 0.5rem;
+  gap: 4px;
+  padding: 8px;
 }
 
 app-form-empleado .validation-status-grid strong,
 app-form-empleado .global-summary-grid strong {
   color: var(--emp-ink);
-  font-size: 0.95rem;
+  font-size: 15px;
   font-weight: 900;
 }
 
 app-form-empleado .validation-status-grid span,
 app-form-empleado .global-summary-grid span {
   color: var(--emp-muted);
-  font-size: 0.66rem;
+  font-size: 11px;
   font-weight: 750;
-  letter-spacing: 0.04em;
+  letter-spacing: 0;
   text-transform: uppercase;
 }
 
 app-form-empleado .validation-item {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr);
-  gap: 0.42rem;
+  gap: 8px;
   align-items: start;
-  padding: 0.34rem 0.42rem;
+  padding: 8px;
   border: 0;
-  border-radius: 0.5rem;
+  border-radius: 6px;
   background: var(--emp-soft);
   color: var(--emp-ink);
-  font-size: 0.76rem;
+  font-size: 12px;
   line-height: 1.35;
 }
 
 app-form-empleado .validation-dot {
   width: 0.45rem;
   height: 0.45rem;
-  margin-top: 0.32rem;
+  margin-top: 5px;
   border-radius: 999px;
-  background: #94a3b8;
+  background: #9ca3af;
 }
 
 app-form-empleado .validation-item.is-error {
-  background: #fff7f7;
+  background: #fef2f2;
 }
 
 app-form-empleado .validation-item.is-error .validation-dot {
-  background: #b91c1c;
+  background: var(--emp-error);
 }
 
 app-form-empleado .validation-item.is-warning {
-  background: #fffdf5;
+  background: #fffbeb;
 }
 
 app-form-empleado .validation-item.is-warning .validation-dot {
-  background: #d97706;
+  background: var(--emp-warning);
 }
 
 app-form-empleado .validation-item.is-complete {
@@ -458,43 +572,43 @@ app-form-empleado .validation-item.is-complete {
 }
 
 app-form-empleado .validation-item.is-complete .validation-dot {
-  background: #22c55e;
+  background: var(--emp-success);
 }
 
 app-form-empleado .validation-group-head {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 0.5rem;
+  gap: 8px;
   color: var(--emp-muted);
-  font-size: 0.72rem;
+  font-size: 12px;
   font-weight: 700;
-  letter-spacing: 0.04em;
+  letter-spacing: 0;
   text-transform: uppercase;
 }
 
 app-form-empleado .validation-group-head strong {
   display: inline-flex;
-  min-width: 1.35rem;
-  height: 1.35rem;
+  min-width: 24px;
+  height: 24px;
   align-items: center;
   justify-content: center;
-  border-radius: 999px;
-  background: #f1f5f9;
+  border-radius: 6px;
+  background: var(--emp-soft);
   color: var(--emp-ink);
-  font-size: 0.72rem;
+  font-size: 12px;
 }
 
 app-form-empleado .validation-more {
   color: var(--emp-muted);
-  font-size: 0.72rem;
+  font-size: 12px;
   font-weight: 750;
 }
 
 app-form-empleado .side-summary-line {
   margin: 0;
-  color: #475569;
-  font-size: 0.76rem;
+  color: var(--emp-muted);
+  font-size: 12px;
   font-weight: 650;
   line-height: 1.45;
 }
@@ -502,26 +616,32 @@ app-form-empleado .side-summary-line {
 app-form-empleado .editor-footer {
   display: flex;
   flex-direction: column;
-  gap: 0.85rem;
-  padding: 0.82rem 1rem;
-  border-top: 1px solid #e5e7eb;
-  background: #fff;
+  gap: 12px;
+  padding: 12px 16px;
+  border-top: 1px solid var(--emp-line);
+  background: #ffffff;
 }
 
 app-form-empleado .editor-footer-actions {
   flex-wrap: wrap;
-  gap: 0.75rem;
+  gap: 8px;
 }
 
 app-form-empleado .form-action-button {
-  height: 2.55rem;
+  height: 40px;
   min-width: 8.5rem;
-  gap: 0.5rem;
-  padding: 0 1rem;
+  gap: 8px;
+  padding: 0 16px;
   border: 1px solid;
-  border-radius: 0.55rem;
-  font-size: 0.86rem;
+  border-radius: 6px;
+  font-size: 13px;
   font-weight: 800;
+  transition:
+    background-color 150ms ease,
+    border-color 150ms ease,
+    color 150ms ease,
+    transform 150ms ease,
+    box-shadow 150ms ease;
 }
 
 app-form-empleado .form-action-button:disabled {
@@ -530,24 +650,54 @@ app-form-empleado .form-action-button:disabled {
 }
 
 app-form-empleado .form-action-button--primary {
-  border-color: #1d4ed8;
-  background: #1d4ed8;
-  color: #fff;
+  border-color: var(--emp-blue);
+  background: var(--emp-blue);
+  color: #ffffff;
 }
 
 app-form-empleado .form-action-button--primary:hover:not(:disabled) {
-  border-color: #1e40af;
-  background: #1e40af;
+  border-color: var(--emp-blue-hover);
+  background: var(--emp-blue-hover);
+  transform: translateY(-1px);
 }
 
 app-form-empleado .form-action-button--secondary {
-  border-color: #cbd5e1;
-  background: #fff;
-  color: #334155;
+  border-color: var(--emp-line);
+  background: #ffffff;
+  color: #374151;
 }
 
 app-form-empleado .form-action-button--secondary:hover:not(:disabled) {
   background: var(--emp-soft);
+  transform: translateY(-1px);
+}
+
+@keyframes form-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes form-loading-enter {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes form-panel-enter {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @media (min-width: 1025px) {
@@ -570,16 +720,26 @@ app-form-empleado .form-action-button--secondary:hover:not(:disabled) {
   }
 
   app-form-empleado .flow-tabs {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    display: flex;
+    width: 100%;
+    gap: 0.24rem;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scrollbar-width: thin;
+  }
+
+  app-form-empleado .flow-tabs li {
+    flex: 0 0 auto;
   }
 
   app-form-empleado .editor-footer {
-    padding-right: 1rem;
-    padding-left: 1rem;
+    padding-right: 16px;
+    padding-left: 16px;
   }
 
   app-form-empleado .step-panel {
-    padding: 0.75rem 1rem 1rem;
+    min-height: 0;
+    padding: 16px;
   }
 }
 
@@ -595,11 +755,56 @@ app-form-empleado .form-action-button--secondary:hover:not(:disabled) {
   }
 
   app-form-empleado .workspace-grid {
-    padding: 0.75rem;
+    padding: 12px;
+  }
+
+  app-form-empleado .content-head {
+    padding-right: 8px;
+    padding-left: 8px;
+  }
+
+  app-form-empleado .content-body {
+    margin-right: 8px;
+    margin-left: 8px;
+  }
+
+  app-form-empleado .flow-tabs li {
+    flex-basis: auto;
+  }
+
+  app-form-empleado .flow-tab {
+    max-width: 12.5rem;
+    min-height: 40px;
+    padding-inline: 8px;
+  }
+
+  app-form-empleado .flow-tab p {
+    white-space: normal;
   }
 
   app-form-empleado .editor-footer-actions,
   app-form-empleado .form-action-button {
     width: 100%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  app-form-empleado .form-loading-overlay,
+  app-form-empleado .step-panel {
+    animation: none;
+  }
+
+  app-form-empleado .form-loading-indicator,
+  app-form-empleado .form-button-spinner {
+    animation: none;
+  }
+
+  app-form-empleado .form-action-button {
+    transition: none;
+  }
+
+  app-form-empleado .form-action-button--primary:hover:not(:disabled),
+  app-form-empleado .form-action-button--secondary:hover:not(:disabled) {
+    transform: none;
   }
 }

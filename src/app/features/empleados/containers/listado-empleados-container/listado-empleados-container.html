@@ -1,12 +1,100 @@
-<div class="min-w-0 space-y-4 overflow-x-hidden">
-  <app-tabla-empleados
-    class="block w-full min-w-0"
-    [empleados]="empleados()"
-    [loading]="isLoading()"
-    [errorMessage]="errorMessage() ?? ''"
-    [bulkActionLoading]="bulkActionLoading()"
-    [bulkActionResult]="bulkActionResult()"
-    (bulkAction)="handleBulkAction($event)"
-    (refresh)="loadEmpleados()"
-  ></app-tabla-empleados>
-</div>
+<section class="listado-page" aria-label="Listado de empleados">
+  <header class="listado-header">
+    <app-record-breadcrumb
+      [items]="breadcrumbItems"
+      title="Empleados"
+    ></app-record-breadcrumb>
+  </header>
+
+  <div class="listado-toolbar" aria-label="Acciones del listado">
+    <button type="button" class="toolbar-button toolbar-button--secondary" (click)="tabla.toggleFiltros()">
+      <lucide-icon class="toolbar-icon" [img]="filterIcon"></lucide-icon>
+      <span>Filtros</span>
+    </button>
+
+    <button type="button" class="toolbar-button toolbar-button--secondary" (click)="tabla.exportarListado()">
+      <lucide-icon class="toolbar-icon" [img]="downloadIcon"></lucide-icon>
+      <span>Exportar</span>
+    </button>
+
+    <button
+      type="button"
+      class="toolbar-button toolbar-button--secondary"
+      [disabled]="isLoading()"
+      (click)="loadEmpleados()"
+    >
+      <lucide-icon
+        class="toolbar-icon"
+        [class.toolbar-icon--spin]="isLoading()"
+        [img]="refreshIcon"
+      ></lucide-icon>
+      <span>Refrescar</span>
+    </button>
+
+    <div class="toolbar-create" data-listado-create-menu>
+      <button
+        type="button"
+        class="toolbar-button toolbar-button--primary"
+        [attr.aria-expanded]="crearMenuAbierto"
+        aria-haspopup="menu"
+        [disabled]="createNavigationTarget() !== null"
+        (click)="toggleCrearMenu($event)"
+      >
+        @if (createNavigationTarget()) {
+          <lucide-icon class="toolbar-icon toolbar-icon--spin" [img]="loaderIcon"></lucide-icon>
+        } @else {
+          <lucide-icon class="toolbar-icon" [img]="plusIcon"></lucide-icon>
+        }
+        <span>Crear</span>
+      </button>
+
+      @if (crearMenuAbierto) {
+        <div class="create-menu" role="menu" aria-label="Opciones de creacion">
+          <button
+            type="button"
+            role="menuitem"
+            [disabled]="createNavigationTarget() !== null"
+            (click)="crearBasico()"
+          >
+            @if (createNavigationTarget() === 'basico') {
+              <lucide-icon class="create-menu-icon create-menu-icon--spin" [img]="loaderIcon"></lucide-icon>
+            }
+            Creación básica
+          </button>
+          <button
+            type="button"
+            role="menuitem"
+            [disabled]="createNavigationTarget() !== null"
+            (click)="crearAvanzado()"
+          >
+            @if (createNavigationTarget() === 'avanzado') {
+              <lucide-icon class="create-menu-icon create-menu-icon--spin" [img]="loaderIcon"></lucide-icon>
+            }
+            Creación avanzada
+          </button>
+        </div>
+      }
+    </div>
+  </div>
+
+  <div class="listado-content">
+    @if (isLoading()) {
+      <div class="listado-loading-chip" role="status" aria-live="polite">
+        <lucide-icon class="listado-loading-icon" [img]="loaderIcon"></lucide-icon>
+        <span>Cargando listado</span>
+      </div>
+    }
+
+    <app-tabla-empleados
+      #tabla
+      class="block w-full min-w-0"
+      [empleados]="empleados()"
+      [loading]="isLoading()"
+      [errorMessage]="errorMessage() ?? ''"
+      [bulkActionLoading]="bulkActionLoading()"
+      [bulkActionResult]="bulkActionResult()"
+      (bulkAction)="handleBulkAction($event)"
+      (refresh)="loadEmpleados()"
+    ></app-tabla-empleados>
+  </div>
+</section>

@@ -41,10 +41,11 @@ type MenuItem = {
                 routerLinkActive="bg-blue-50 text-blue-700 font-medium"
                 [routerLinkActiveOptions]="{ exact: item.exact ?? false }"
                 #rla="routerLinkActive"
+                class="sidebar-link"
                 [class]="
-                  'flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 ' +
+                  'sidebar-link flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 ' +
                   (rla.isActive
-                    ? 'bg-blue-50 text-blue-700 font-medium'
+                    ? 'is-active bg-blue-50 text-blue-700 font-medium'
                     : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900')
                 "
               >
@@ -68,6 +69,65 @@ type MenuItem = {
       </div>
     </aside>
   `,
+  styles: [
+    `
+      .sidebar-link {
+        position: relative;
+        overflow: hidden;
+        transform: translateX(0);
+      }
+
+      .sidebar-link::before {
+        content: '';
+        position: absolute;
+        top: 0.55rem;
+        bottom: 0.55rem;
+        left: 0;
+        width: 3px;
+        border-radius: 999px;
+        background: #2563eb;
+        opacity: 0;
+        transform: scaleY(0.5);
+        transition:
+          opacity 160ms ease,
+          transform 160ms ease;
+      }
+
+      .sidebar-link:hover {
+        transform: translateX(2px);
+      }
+
+      .sidebar-link.is-active::before {
+        opacity: 1;
+        transform: scaleY(1);
+      }
+
+      .sidebar-link lucide-icon {
+        transition:
+          color 160ms ease,
+          transform 160ms ease;
+      }
+
+      .sidebar-link:hover lucide-icon,
+      .sidebar-link.is-active lucide-icon {
+        transform: scale(1.04);
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        .sidebar-link,
+        .sidebar-link::before,
+        .sidebar-link lucide-icon {
+          transition: none;
+        }
+
+        .sidebar-link:hover,
+        .sidebar-link:hover lucide-icon,
+        .sidebar-link.is-active lucide-icon {
+          transform: none;
+        }
+      }
+    `,
+  ],
 })
 export class SidebarComponent {
   readonly menuItems: MenuItem[] = [

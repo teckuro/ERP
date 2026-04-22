@@ -2,7 +2,6 @@
   <section class="employee-block" [formGroup]="formGroup">
     <div class="employee-block-head">
       <h4>Identificacion legal</h4>
-      <p>Datos legales del colaborador.</p>
     </div>
 
     <div class="employee-grid employee-grid--two">
@@ -58,14 +57,13 @@
             <span class="field-required" aria-hidden="true">*</span>
           }
         </div>
-        <input
+        <app-calendar-input
           id="empleado-fecha-nacimiento"
-          type="date"
-          lang="es-CL"
-          placeholder="dd/mm/yyyy"
           formControlName="fechaNacimiento"
-          [class]="controlClass('fechaNacimiento')"
-        />
+          placeholder="dd/mm/aaaa"
+          [invalid]="hasError('fechaNacimiento')"
+          [max]="today"
+        ></app-calendar-input>
         @if (hasError('fechaNacimiento', 'required')) {
           <p class="field-message">La fecha de nacimiento es obligatoria.</p>
         } @else if (hasError('fechaNacimiento', 'futureDate')) {
@@ -84,11 +82,14 @@
             <span class="field-required" aria-hidden="true">*</span>
           }
         </div>
-        <select id="empleado-sexo" formControlName="sexo" [class]="controlClass('sexo')">
-          @for (option of sexOptions; track option.value) {
-            <option [value]="option.value">{{ option.label }}</option>
-          }
-        </select>
+        <app-search-select
+          id="empleado-sexo"
+          formControlName="sexo"
+          placeholder="Selecciona sexo"
+          searchPlaceholder="Buscar sexo"
+          [options]="sexOptions"
+          [invalid]="hasError('sexo')"
+        ></app-search-select>
         @if (hasError('sexo', 'required')) {
           <p class="field-message">El sexo es obligatorio.</p>
         } @else {
@@ -101,7 +102,6 @@
   <section class="employee-block" [formGroup]="formGroup">
     <div class="employee-block-head">
       <h4>Nombre del colaborador</h4>
-      <p>Nombre legal que se mostrara en la ficha y documentos laborales.</p>
     </div>
 
     <div class="employee-grid employee-grid--three">
@@ -180,7 +180,6 @@
   <section class="employee-block">
     <div class="employee-block-head">
       <h4>Informacion base</h4>
-      <p>Nacionalidad, estado civil y canales principales de contacto.</p>
     </div>
 
     <div class="employee-grid employee-grid--four" [formGroup]="formGroup">
@@ -191,12 +190,14 @@
             <span class="field-required" aria-hidden="true">*</span>
           }
         </div>
-        <select id="empleado-idPais" formControlName="idPais" [class]="controlClass('idPais')">
-          <option [ngValue]="null">Selecciona un pais</option>
-          @for (pais of paises; track pais.value) {
-            <option [ngValue]="pais.value">{{ pais.label }}</option>
-          }
-        </select>
+        <app-search-select
+          id="empleado-idPais"
+          formControlName="idPais"
+          placeholder="Selecciona un pais"
+          searchPlaceholder="Buscar pais"
+          [options]="paises"
+          [invalid]="hasError('idPais')"
+        ></app-search-select>
         @if (hasError('idPais', 'required')) {
           <p class="field-message">El pais es obligatorio.</p>
         } @else if (!paises.length) {
@@ -213,16 +214,14 @@
             <span class="field-required" aria-hidden="true">*</span>
           }
         </div>
-        <select
+        <app-search-select
           id="empleado-estadoCivil"
           formControlName="estadoCivil"
-          [class]="controlClass('estadoCivil')"
-        >
-          <option [ngValue]="null">Selecciona un estado civil</option>
-          @for (estadocivil of estadoCivilOptions; track estadocivil.value) {
-            <option [ngValue]="estadocivil.value">{{ estadocivil.label }}</option>
-          }
-        </select>
+          placeholder="Selecciona un estado civil"
+          searchPlaceholder="Buscar estado civil"
+          [options]="estadoCivilOptions"
+          [invalid]="hasError('estadoCivil')"
+        ></app-search-select>
         @if (hasError('estadoCivil', 'required')) {
           <p class="field-message">El estado civil es obligatorio.</p>
         } @else {

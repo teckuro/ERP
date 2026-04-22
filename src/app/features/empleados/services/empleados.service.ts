@@ -40,4 +40,8 @@ export class EmpleadosService {
   crear(payload: CrearEmpleadoPayload): Promise<EmpleadoListado> {
     return this.writeService.crear(payload);
   }
+
+  crearBasico(payload: CrearEmpleadoPayload): Promise<EmpleadoListado> {
+    return this.writeService.crearBasico(payload);
+  }
 }
