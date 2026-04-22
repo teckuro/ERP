@@ -1,30 +1,158 @@
-<div class="space-y-6">
-  <div class="flex items-center justify-between gap-4">
-    <div>
-      <h1 class="text-2xl font-semibold text-gray-900">Ficha de empleado</h1>
-      <p class="mt-1 text-sm text-gray-600">Empleado seleccionado: {{ empleadoId ?? 'sin id' }}</p>
-    </div>
+<div class="employee-file-shell">
+  @if (isLoading()) {
+    <section class="file-state">
+      <lucide-icon class="h-5 w-5" [img]="clockIcon"></lucide-icon>
+      <p>Cargando ficha del empleado...</p>
+    </section>
+  } @else if (errorMessage(); as message) {
+    <section class="file-state file-state--error">
+      <lucide-icon class="h-5 w-5" [img]="alertIcon"></lucide-icon>
+      <p>{{ message }}</p>
+      <a routerLink="/empleados">Volver al listado</a>
+    </section>
+  } @else if (empleado(); as employee) {
+    <header class="file-hero">
+      <div class="file-nav">
+        <a routerLink="/empleados" class="back-link">
+          <lucide-icon class="h-4 w-4" [img]="arrowLeftIcon"></lucide-icon>
+          Volver al listado
+        </a>
+        <span class="file-status" [ngClass]="statusClass(employee.estado)">
+          {{ statusLabel(employee.estado) }}
+        </span>
+      </div>
 
-    <a
-      routerLink="/empleados"
-      class="inline-flex items-center justify-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 transition-colors duration-200 hover:bg-gray-50"
-    >
-      <lucide-icon class="h-4 w-4" name="arrow-left"></lucide-icon>
-      Volver al listado
-    </a>
-  </div>
+      <div class="file-identity">
+        <div class="file-person">
+          <p>Ficha persistida</p>
+          <h1>{{ employee.nombre }}</h1>
+          <dl>
+            <div>
+              <dt>RUT</dt>
+              <dd>{{ employee.rut }}</dd>
+            </div>
+            <div>
+              <dt>Cargo</dt>
+              <dd>{{ employee.cargo }}</dd>
+            </div>
+            <div>
+              <dt>Sucursal</dt>
+              <dd>{{ employee.departamento }}</dd>
+            </div>
+          </dl>
+        </div>
 
-  <app-card>
-    <app-card-header>
-      <h2 class="text-lg font-semibold text-gray-900">Base de edicion</h2>
-    </app-card-header>
-    <app-card-content className="space-y-3">
-      <p class="text-sm text-gray-600">
-        Esta pagina ya quedo enlazada para que despues cargues `obtenerPorId`, catalogos y el formulario reutilizable.
-      </p>
-      <p class="text-sm text-gray-600">
-        El siguiente paso natural es compartir aqui el mismo `form-empleado` que usaras en el registro de ficha.
-      </p>
-    </app-card-content>
-  </app-card>
+        <div class="file-health">
+          <div class="completion-ring">
+            <strong>{{ completionValue(employee) }}%</strong>
+            <span>Completitud</span>
+          </div>
+          <div class="pending-box">
+            <p>Pendientes</p>
+            <ul>
+              @for (pending of pendingItems(employee); track pending) {
+                <li>
+                  <span aria-hidden="true"></span>
+                  {{ pending }}
+                </li>
+              }
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="file-actions">
+        @if (employee.estado === 'borrador') {
+          <a [routerLink]="['/empleados', employee.id]" class="file-primary-action">
+            {{ primaryActionLabel(employee) }}
+          </a>
+        } @else {
+          <button type="button" class="file-primary-action" (click)="startEditing()">
+            {{ primaryActionLabel(employee) }}
+          </button>
+        }
+      </div>
+    </header>
+
+    <section class="file-tabs" aria-label="Secciones de la ficha">
+      @for (tab of tabs; track tab.id) {
+        <button
+          type="button"
+          [class.is-active]="tab.id === activeTab()"
+          (click)="selectTab(tab.id)"
+        >
+          {{ tab.label }}
+        </button>
+      }
+    </section>
+
+    <main class="file-content">
+      <section class="section-summary">
+        <div class="section-head">
+          <div>
+            <p>Resumen de bloque</p>
+            <h2>{{ activeTabLabel() }}</h2>
+          </div>
+
+          @if (!isEditingCurrentTab()) {
+            <button type="button" class="section-edit-button" (click)="startEditing()">
+              <lucide-icon class="h-4 w-4" [img]="editIcon"></lucide-icon>
+              Editar seccion
+            </button>
+          }
+        </div>
+
+        <dl class="detail-grid">
+          @for (item of detailItems(employee); track item.label) {
+            <div>
+              <dt>{{ item.label }}</dt>
+              <dd>{{ item.value }}</dd>
+            </div>
+          }
+        </dl>
+
+        @if (isEditingCurrentTab()) {
+          <div class="section-edit-panel">
+            <div>
+              <p>Modo edicion localizado</p>
+              <span>Los cambios de esta vista quedaran limitados a la seccion {{ activeTabLabel() }}.</span>
+            </div>
+            <div class="section-edit-actions">
+              <button type="button" class="section-save-button" (click)="saveSection()">
+                <lucide-icon class="h-4 w-4" [img]="saveIcon"></lucide-icon>
+                Guardar cambios
+              </button>
+              <button type="button" class="section-cancel-button" (click)="cancelEditing()">
+                <lucide-icon class="h-4 w-4" [img]="cancelIcon"></lucide-icon>
+                Cancelar
+              </button>
+            </div>
+          </div>
+        }
+      </section>
+
+      <aside class="file-side">
+        <section>
+          <p>Estado operativo</p>
+          <div class="side-status-row">
+            <lucide-icon class="h-4 w-4" [img]="employee.estado === 'activo' ? checkIcon : clockIcon"></lucide-icon>
+            <span>
+              {{
+                employee.estado === 'activo'
+                  ? 'Ficha lista para operacion administrativa'
+                  : 'Ficha pendiente de completar'
+              }}
+            </span>
+          </div>
+        </section>
+
+        <section>
+          <p>Control de edicion</p>
+          <span>
+            La ficha se actualiza por secciones para evitar cambios masivos sin contexto.
+          </span>
+        </section>
+      </aside>
+    </main>
+  }
 </div>

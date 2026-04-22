@@ -2,7 +2,15 @@ import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, HostListener, Input, Output, inject } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { LucideAngularModule } from 'lucide-angular';
-import { Edit, Eye, History, MoreVertical, PowerOff } from 'lucide-angular/src/icons';
+import {
+  ArrowRight,
+  ClipboardCheck,
+  Edit,
+  Eye,
+  History,
+  MoreVertical,
+  PowerOff,
+} from 'lucide-angular/src/icons';
 
 import { EmpleadoEstado, EmpleadoListado } from '../../models/empleado-listado.model';
 import {
@@ -46,6 +54,8 @@ export class TablaEmpleadosComponent {
   readonly historyIcon = History;
   readonly moreIcon = MoreVertical;
   readonly powerOffIcon = PowerOff;
+  readonly rowActionIcon = ArrowRight;
+  readonly completionIcon = ClipboardCheck;
   openActionMenuId: number | null = null;
 
   readonly bulkStateActions: DataGridBulkActionOption[] = [
@@ -148,8 +158,15 @@ export class TablaEmpleadosComponent {
       format: (value) => this.labelEstado(value as EmpleadoEstado),
     },
     {
+      id: 'avance',
+      header: 'Completitud',
+      align: 'left',
+      sortable: false,
+      hideable: true,
+    },
+    {
       id: 'acciones',
-      header: 'Acciones',
+      header: 'Accion',
       align: 'center',
       sortable: false,
       hideable: false,
@@ -259,6 +276,47 @@ export class TablaEmpleadosComponent {
         return 'border-purple-200 bg-purple-100 text-purple-700';
       default:
         return 'border-blue-200 bg-blue-100 text-blue-700';
+    }
+  }
+
+  rowPrimaryActionLabel(estado: EmpleadoEstado): string {
+    switch (estado) {
+      case 'borrador':
+        return 'Continuar alta';
+      case 'en_proceso':
+        return 'Completar ficha';
+      default:
+        return 'Ver ficha';
+    }
+  }
+
+  completionValue(estado: EmpleadoEstado): number {
+    switch (estado) {
+      case 'borrador':
+        return 35;
+      case 'en_proceso':
+        return 68;
+      case 'activo':
+        return 100;
+      case 'suspendido':
+        return 92;
+      case 'inactivo':
+      case 'desvinculado':
+      case 'bloqueado':
+        return 100;
+    }
+  }
+
+  pendingLabel(estado: EmpleadoEstado): string {
+    switch (estado) {
+      case 'borrador':
+        return 'Pendientes criticos';
+      case 'en_proceso':
+        return 'Datos por cerrar';
+      case 'activo':
+        return 'Ficha completa';
+      default:
+        return 'Revisar estado';
     }
   }
 

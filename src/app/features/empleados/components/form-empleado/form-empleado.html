@@ -1,26 +1,14 @@
 <form class="form-shell w-full" [formGroup]="form" (submit)="handleFormSubmit($event)">
   <div class="form-stack w-full">
+    <header class="form-page-head" aria-label="Encabezado de alta">
+      <app-record-breadcrumb
+        [items]="breadcrumbItems"
+        title="Alta de colaborador"
+      ></app-record-breadcrumb>
+    </header>
+
     <app-card className="editor-shell">
       <app-card-content className="editor-frame">
-        <header class="editor-head">
-          <div class="editor-title-stack">
-            <app-page-title title="Nueva ficha de empleado"></app-page-title>
-            <div class="draft-badge" aria-label="Estado de la ficha">
-              <span class="draft-badge-dot"></span>
-              <span>Borrador</span>
-            </div>
-          </div>
-
-          <app-page-actions
-            [visibleActions]="['back', 'save']"
-            backLabel="Volver"
-            saveLabel="Guardar ficha"
-            backLink="/empleados"
-            [saveDisabled]="isSaving() || isLoadingCatalogs()"
-            (saveClick)="onSubmit()"
-          ></app-page-actions>
-        </header>
-
         <div class="status-stack">
           @if (catalogosError(); as message) {
             <app-message-box
@@ -70,190 +58,165 @@
           </app-message-box>
         }
 
-        <section class="draft-summary" aria-label="Resumen de ficha en construccion">
-          <dl class="draft-summary-grid">
-            <div class="draft-summary-item draft-summary-item--wide">
-              <dt>Nombre completo</dt>
-              <dd>{{ fullNameVisible() }}</dd>
-            </div>
-            <div class="draft-summary-item">
-              <dt>RUT</dt>
-              <dd>{{ rutVisible() }}</dd>
-            </div>
-            <div class="draft-summary-item">
-              <dt>Cargo</dt>
-              <dd>{{ cargoVisible() }}</dd>
-            </div>
-            <div class="draft-summary-item">
-              <dt>Sucursal</dt>
-              <dd>{{ sucursalVisible() }}</dd>
-            </div>
-            <div class="draft-summary-item draft-summary-item--status">
-              <dt>Estado</dt>
-              <dd><span class="summary-badge">Borrador</span></dd>
-            </div>
-            <div class="draft-summary-item">
-              <dt>Avance</dt>
-              <dd>{{ completedStepCount() }} de {{ totalSteps }}</dd>
-            </div>
-            <div class="draft-summary-item">
-              <dt>Validaciones</dt>
-              <dd>{{ pendingValidationCount() }} pendientes</dd>
-            </div>
-          </dl>
-        </section>
-
         <section class="workspace-grid" aria-label="Workspace de nueva ficha">
           <div class="workspace-main">
+            <section class="content-shell" aria-label="Ficha de colaborador">
+              <header class="summary-identity">
+                <div class="summary-person">
+                  <div class="summary-title-row">
+                    <h2>{{ fullNameVisible() }}</h2>
+                    <span class="summary-status-badge">Borrador</span>
+                  </div>
+                </div>
 
-            <section class="content-shell" aria-label="Paso actual">
-            <div class="content-head">
-              <div class="content-copy">
-                <h2 class="content-title">{{ activeStepTitle() }}</h2>
-                <p class="content-description">{{ activeStepDescription() }}</p>
+                <div class="summary-actions">
+                  <app-page-actions
+                    [visibleActions]="['back', 'save']"
+                    backLabel="Volver"
+                    saveLabel="Guardar borrador"
+                    backLink="/empleados"
+                    [saveDisabled]="isSaving() || isLoadingCatalogs()"
+                    (saveClick)="onSubmit()"
+                  ></app-page-actions>
+                </div>
+              </header>
+
+              <div class="content-head">
+                <ol class="flow-tabs" aria-label="Pasos del alta">
+                  @for (step of conceptualSteps; track step; let index = $index) {
+                    <li>
+                      <button
+                        type="button"
+                        class="flow-tab"
+                        [class.is-active]="isConceptualStepActive(index)"
+                        [attr.aria-current]="isConceptualStepActive(index) ? 'step' : null"
+                        (click)="selectTab(conceptualStepTab(index))"
+                      >
+                        <span>{{ index + 1 }}</span>
+                        <p>{{ step }}</p>
+                      </button>
+                    </li>
+                  }
+                </ol>
               </div>
-            </div>
 
-            <div class="content-body">
-              @if (activeTab() === 'datosPersonales') {
-                <div class="step-panel">
-                  <app-empleado-datos-personales
-                    [formGroup]="form.controls.datosPersonales"
-                    [contactoFormGroup]="form.controls.contacto"
-                    [paises]="catalogos().paises"
-                  ></app-empleado-datos-personales>
+              <div class="content-body">
+                @if (activeTab() === 'datosPersonales') {
+                  <div class="step-panel">
+                    <app-empleado-datos-personales
+                      [formGroup]="form.controls.datosPersonales"
+                      [contactoFormGroup]="form.controls.contacto"
+                      [paises]="catalogos().paises"
+                    ></app-empleado-datos-personales>
 
-                  <app-empleado-contacto
-                    [formGroup]="form.controls.contacto"
-                    [comunas]="catalogos().comunas"
-                  ></app-empleado-contacto>
-                </div>
-              } @else if (activeTab() === 'contrato') {
-                <div class="step-panel">
-                  <app-empleado-contrato
-                    [formGroup]="form.controls.contrato"
-                    [centrosCosto]="catalogos().centrosCosto"
-                    [sucursales]="catalogos().sucursales"
-                    [departamentos]="catalogos().departamentos"
-                    [tiposTrabajador]="catalogos().tiposTrabajador"
-                    [tiposJornada]="catalogos().tiposJornada"
-                    [monedas]="catalogos().monedas"
-                    [tramosCarga]="catalogos().tramosCarga"
-                  ></app-empleado-contrato>
-                </div>
-              } @else if (activeTab() === 'previsionSalud') {
-                <div class="step-panel">
-                  <app-empleado-prevision-salud
-                    [formGroup]="form.controls.previsionSalud"
-                    [regimenesPrevisionales]="catalogos().regimenesPrevisionales"
-                    [afps]="catalogos().afps"
-                    [entidadesSalud]="catalogos().entidadesSalud"
-                    [monedas]="catalogos().monedas"
-                    [institucionesApv]="catalogos().institucionesApv"
-                    [formasPagoApv]="catalogos().formasPagoApv"
-                  ></app-empleado-prevision-salud>
-                </div>
-              } @else {
-                <div class="step-panel step-panel--final">
-                  <app-empleado-bancario
-                    [formGroup]="form.controls.bancario"
-                    [bancos]="catalogos().bancos"
-                    [tiposCuentaBancaria]="catalogos().tiposCuentaBancaria"
-                  ></app-empleado-bancario>
-                </div>
-              }
-            </div>
-
-            <footer class="editor-footer">
-              <p class="editor-footer-copy">
-                @if (isTabInvalid(activeTab()) && attemptedTabs().has(activeTab())) {
-                  Completa los campos obligatorios para continuar.
+                    <app-empleado-contacto
+                      [formGroup]="form.controls.contacto"
+                      [comunas]="catalogos().comunas"
+                    ></app-empleado-contacto>
+                  </div>
+                } @else if (activeTab() === 'contrato') {
+                  <div class="step-panel">
+                    <app-empleado-contrato
+                      [formGroup]="form.controls.contrato"
+                      [centrosCosto]="catalogos().centrosCosto"
+                      [sucursales]="catalogos().sucursales"
+                      [departamentos]="catalogos().departamentos"
+                      [tiposTrabajador]="catalogos().tiposTrabajador"
+                      [tiposJornada]="catalogos().tiposJornada"
+                      [monedas]="catalogos().monedas"
+                      [tramosCarga]="catalogos().tramosCarga"
+                    ></app-empleado-contrato>
+                  </div>
+                } @else if (activeTab() === 'previsionSalud') {
+                  <div class="step-panel">
+                    <app-empleado-prevision-salud
+                      [formGroup]="form.controls.previsionSalud"
+                      [regimenesPrevisionales]="catalogos().regimenesPrevisionales"
+                      [afps]="catalogos().afps"
+                      [entidadesSalud]="catalogos().entidadesSalud"
+                      [monedas]="catalogos().monedas"
+                      [institucionesApv]="catalogos().institucionesApv"
+                      [formasPagoApv]="catalogos().formasPagoApv"
+                    ></app-empleado-prevision-salud>
+                  </div>
                 } @else {
-                  Completa la ficha por etapas. Puedes volver a pasos anteriores antes de guardar.
-                }
-              </p>
-
-              <div class="editor-footer-actions">
-                <button
-                  type="button"
-                  class="form-action-button form-action-button--secondary"
-                  [disabled]="isFirstTab()"
-                  (click)="goToPreviousTab()"
-                >
-                  Anterior
-                </button>
-
-                @if (!isLastTab()) {
-                  <button
-                    type="button"
-                    class="form-action-button form-action-button--primary"
-                    [disabled]="isNextDisabled()"
-                    (click)="goToNextTab()"
-                  >
-                    Siguiente
-                  </button>
-                } @else {
-                  <button
-                    type="button"
-                    class="form-action-button form-action-button--primary"
-                    [disabled]="isSaving() || isLoadingCatalogs()"
-                    (click)="onSubmit()"
-                  >
-                    <lucide-icon class="h-4 w-4" name="save"></lucide-icon>
-                    {{ isSaving() ? 'Guardando ficha...' : 'Guardar ficha' }}
-                  </button>
+                  <div class="step-panel step-panel--final">
+                    <app-empleado-bancario
+                      [formGroup]="form.controls.bancario"
+                      [bancos]="catalogos().bancos"
+                      [tiposCuentaBancaria]="catalogos().tiposCuentaBancaria"
+                    ></app-empleado-bancario>
+                  </div>
                 }
               </div>
-            </footer>
+
+              <footer class="editor-footer">
+                <p class="editor-footer-copy">
+                  @if (isTabInvalid(activeTab()) && attemptedTabs().has(activeTab())) {
+                    Completa los campos obligatorios para continuar.
+                  } @else if (isLastTab()) {
+                    Revisa el cierre y finaliza el alta desde esta etapa.
+                  } @else {
+                    Completa la ficha por etapas. Puedes volver a pasos anteriores antes de guardar.
+                  }
+                </p>
+
+                <div class="editor-footer-actions">
+                  <button
+                    type="button"
+                    class="form-action-button form-action-button--secondary"
+                    [disabled]="isFirstTab()"
+                    (click)="goToPreviousTab()"
+                  >
+                    Anterior
+                  </button>
+
+                  @if (!isLastTab()) {
+                    <button
+                      type="button"
+                      class="form-action-button form-action-button--primary"
+                      [disabled]="isNextDisabled()"
+                      (click)="goToNextTab()"
+                    >
+                      Siguiente
+                    </button>
+                  } @else {
+                    <button
+                      type="button"
+                      class="form-action-button form-action-button--primary"
+                      [disabled]="isSaving() || isLoadingCatalogs()"
+                      (click)="onSubmit()"
+                    >
+                      <lucide-icon class="h-4 w-4" name="save"></lucide-icon>
+                      {{ isSaving() ? 'Guardando ficha...' : 'Finalizar alta' }}
+                    </button>
+                  }
+                </div>
+              </footer>
             </section>
           </div>
 
-          <aside class="side-panel" aria-label="Progreso y validaciones">
+          <!-- <aside class="side-panel" aria-label="Progreso y validaciones">
             <div class="side-panel-card side-panel-card--sticky">
               <section class="side-section side-section--progress">
                 <div class="side-section-head">
-                  <p class="side-kicker">Progreso</p>
-                  <h3>Etapas del alta</h3>
+                  <p class="side-kicker">Panel de control</p>
+                  <h3>Alta en curso</h3>
                   <progress
                     class="side-progress-meter"
                     [value]="completedStepCount()"
                     [max]="totalSteps"
                   ></progress>
-                  <p class="side-progress-line">Paso {{ activeStepNumber() }} de {{ totalSteps }}</p>
+                  <p class="side-progress-line">
+                    Paso activo: {{ activeStepNumber() }} de {{ totalSteps }}
+                  </p>
                 </div>
-
-                <ol class="vertical-steps">
-                  @for (step of stepperItems(); track step.id; let index = $index) {
-                    <li>
-                      <button
-                        type="button"
-                        class="vertical-step"
-                        [class.is-active]="step.id === activeTab()"
-                        [class.is-complete]="step.id !== activeTab() && step.status === 'complete'"
-                        [class.is-invalid]="step.id !== activeTab() && step.status === 'invalid'"
-                        [class.is-pending]="step.id !== activeTab() && step.status === 'pending'"
-                        (click)="selectTab(step.id)"
-                      >
-                        <span class="vertical-step-index">
-                          @if (step.id !== activeTab() && step.status === 'complete') {
-                            <span aria-hidden="true">✓</span>
-                          } @else {
-                            {{ index + 1 }}
-                          }
-                        </span>
-                        <span class="vertical-step-copy">
-                          <span class="vertical-step-label">{{ step.label }}</span>
-                        </span>
-                      </button>
-                    </li>
-                  }
-                </ol>
               </section>
 
               <section class="side-section side-section--validations">
                 <div class="side-section-head">
-                  <p class="side-kicker">Validaciones del paso</p>
-                  <h3>Resolver ahora · {{ pendingValidationCount() }} pendientes</h3>
+                  <p class="side-kicker">Validaciones</p>
+                  <h3>{{ pendingValidationCount() }} pendientes</h3>
                 </div>
 
                 @if (pendingValidationCount() > 0) {
@@ -264,7 +227,7 @@
                         <strong>{{ blockingValidationPanelItems().length }}</strong>
                       </div>
                       <ul class="validation-list">
-                        @for (item of blockingValidationPanelItems(); track item.id) {
+                        @for (item of blockingValidationPanelItems().slice(0, 3); track item.id) {
                           <li class="validation-item is-error">
                             <span class="validation-dot" aria-hidden="true"></span>
                             <span>{{ item.label }}</span>
@@ -273,6 +236,11 @@
                           <li class="validation-item is-complete">
                             <span class="validation-dot" aria-hidden="true"></span>
                             <span>Sin errores bloqueantes.</span>
+                          </li>
+                        }
+                        @if (blockingValidationPanelItems().length > 3) {
+                          <li class="validation-more">
+                            +{{ blockingValidationPanelItems().length - 3 }} mas por resolver
                           </li>
                         }
                       </ul>
@@ -284,7 +252,7 @@
                         <strong>{{ warningValidationPanelItems().length }}</strong>
                       </div>
                       <ul class="validation-list">
-                        @for (item of warningValidationPanelItems(); track item.id) {
+                        @for (item of warningValidationPanelItems().slice(0, 3); track item.id) {
                           <li class="validation-item is-warning">
                             <span class="validation-dot" aria-hidden="true"></span>
                             <span>{{ item.label }}</span>
@@ -293,6 +261,11 @@
                           <li class="validation-item is-complete">
                             <span class="validation-dot" aria-hidden="true"></span>
                             <span>Sin advertencias pendientes.</span>
+                          </li>
+                        }
+                        @if (warningValidationPanelItems().length > 3) {
+                          <li class="validation-more">
+                            +{{ warningValidationPanelItems().length - 3 }} mas por revisar
                           </li>
                         }
                       </ul>
@@ -314,14 +287,14 @@
                   <h3>Estado de ficha</h3>
                 </div>
 
-                <p class="global-summary-line">
-                  Bloqueantes: {{ getGlobalValidationSummary().blockingPending }} |
-                  Advertencias: {{ getGlobalValidationSummary().warningsPending }} |
-                  Completados: {{ getGlobalValidationSummary().completeSteps }}/{{ totalSteps }}
+                <p class="side-summary-line">
+                  {{ getGlobalValidationSummary().completeSteps }}/{{ totalSteps }} etapas completas
+                  - {{ getGlobalValidationSummary().blockingPending }} bloqueantes -
+                  {{ getGlobalValidationSummary().warningsPending }} advertencias
                 </p>
               </section>
             </div>
-          </aside>
+          </aside> -->
         </section>
       </app-card-content>
     </app-card>

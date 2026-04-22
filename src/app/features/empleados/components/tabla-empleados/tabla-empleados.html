@@ -15,7 +15,7 @@
   [selectable]="true"
   selectionLabel="empleados"
   persistenceKey="empleados.data-grid.preferences"
-  primaryActionLabel="Nueva ficha"
+  primaryActionLabel="Nuevo colaborador"
   [showExportAction]="true"
   searchPlaceholder="Buscar por nombre, RUT, cargo o departamento"
   (primaryAction)="createEmpleado()"
@@ -55,7 +55,7 @@
 
   <ng-template appDataGridCell="estado" let-empleado>
     <span
-      class="inline-flex items-center rounded-full border px-3 py-1 text-xs font-semibold transition-colors hover:bg-opacity-80"
+      class="inline-flex min-w-[7.5rem] items-center justify-center rounded-full border px-3 py-1 text-xs font-bold shadow-sm transition-colors hover:bg-opacity-80"
       [ngClass]="estadoBadgeClass(empleado.estado)"
       [title]="labelEstado(empleado.estado)"
     >
@@ -64,8 +64,29 @@
     </span>
   </ng-template>
 
+  <ng-template appDataGridCell="avance" let-empleado>
+    <div class="completion-cell" [title]="pendingLabel(empleado.estado)">
+      <div class="completion-head">
+        <span>{{ completionValue(empleado.estado) }}%</span>
+        <small>{{ pendingLabel(empleado.estado) }}</small>
+      </div>
+      <div class="completion-track" aria-hidden="true">
+        <span [style.width.%]="completionValue(empleado.estado)"></span>
+      </div>
+    </div>
+  </ng-template>
+
   <ng-template appDataGridCell="acciones" let-empleado>
-    <div class="relative flex justify-center" data-employee-action-menu (click)="$event.stopPropagation()">
+    <div class="relative flex items-center justify-end gap-2" data-employee-action-menu (click)="$event.stopPropagation()">
+      <a
+        [routerLink]="['/empleados', empleado.id]"
+        class="row-primary-action"
+        (click)="closeActionMenu()"
+      >
+        <span>{{ rowPrimaryActionLabel(empleado.estado) }}</span>
+        <lucide-icon class="h-3.5 w-3.5" [img]="rowActionIcon"></lucide-icon>
+      </a>
+
       <button
         type="button"
         class="inline-flex h-8 w-8 items-center justify-center rounded-md border border-neutral-200 bg-white text-neutral-600 opacity-80 transition group-hover:border-neutral-300 group-hover:text-neutral-800 group-hover:opacity-100 hover:bg-neutral-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
@@ -79,12 +100,19 @@
 
       @if (openActionMenuId === empleado.id) {
         <div
-          class="absolute right-0 top-9 z-50 w-44 overflow-hidden rounded-md border border-neutral-200 bg-white py-1 text-left shadow-[0_8px_20px_rgba(15,23,42,0.08)] ring-1 ring-black/[0.02]"
+          class="absolute right-0 top-9 z-50 w-56 overflow-hidden rounded-lg border border-neutral-200 bg-white text-left shadow-[0_16px_34px_rgba(15,23,42,0.14)] ring-1 ring-black/[0.02]"
           role="menu"
         >
+          <div class="border-b border-neutral-100 bg-neutral-50 px-3 py-2.5">
+            <p class="text-xs font-bold text-neutral-900">{{ rowPrimaryActionLabel(empleado.estado) }}</p>
+            <p class="mt-0.5 text-[0.7rem] font-medium text-neutral-500">
+              {{ labelEstado(empleado.estado) }} · {{ completionValue(empleado.estado) }}% completitud
+            </p>
+          </div>
+          <div class="p-1.5">
           <a
             [routerLink]="['/empleados', empleado.id]"
-            class="flex items-center gap-2 px-3 py-2 text-xs font-semibold text-neutral-700 transition hover:bg-neutral-50 hover:text-neutral-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-500"
+            class="flex items-center gap-2 rounded-md px-2.5 py-2 text-xs font-semibold text-neutral-700 transition hover:bg-neutral-50 hover:text-neutral-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-500"
             role="menuitem"
             (click)="closeActionMenu()"
           >
@@ -93,31 +121,41 @@
           </a>
           <a
             [routerLink]="['/empleados', empleado.id]"
-            class="flex items-center gap-2 px-3 py-2 text-xs font-semibold text-neutral-700 transition hover:bg-neutral-50 hover:text-neutral-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-500"
+            class="flex items-center gap-2 rounded-md px-2.5 py-2 text-xs font-semibold text-neutral-700 transition hover:bg-neutral-50 hover:text-neutral-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-500"
             role="menuitem"
             (click)="closeActionMenu()"
           >
             <lucide-icon class="h-3.5 w-3.5" [img]="editIcon"></lucide-icon>
-            Editar
+            Editar secciones
           </a>
           <button
             type="button"
-            class="mt-1 flex w-full items-center gap-2 border-t border-neutral-100 px-3 py-2 text-left text-xs font-semibold text-red-700 transition hover:bg-red-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-500"
+            class="flex w-full items-center gap-2 rounded-md px-2.5 py-2 text-left text-xs font-semibold text-neutral-700 transition hover:bg-neutral-50 hover:text-neutral-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-500"
             role="menuitem"
             (click)="closeActionMenu()"
           >
-            <lucide-icon class="h-3.5 w-3.5" [img]="powerOffIcon"></lucide-icon>
-            Desactivar
+            <lucide-icon class="h-3.5 w-3.5" [img]="completionIcon"></lucide-icon>
+            Ver completitud
           </button>
           <button
             type="button"
-            class="flex w-full items-center gap-2 px-3 py-2 text-left text-xs font-semibold text-neutral-700 transition hover:bg-neutral-50 hover:text-neutral-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-500"
+            class="flex w-full items-center gap-2 rounded-md px-2.5 py-2 text-left text-xs font-semibold text-neutral-700 transition hover:bg-neutral-50 hover:text-neutral-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-500"
             role="menuitem"
             (click)="closeActionMenu()"
           >
             <lucide-icon class="h-3.5 w-3.5" [img]="historyIcon"></lucide-icon>
             Historial
           </button>
+          <button
+            type="button"
+            class="mt-1 flex w-full items-center gap-2 rounded-md border-t border-neutral-100 px-2.5 py-2 text-left text-xs font-semibold text-red-700 transition hover:bg-red-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-500"
+            role="menuitem"
+            (click)="closeActionMenu()"
+          >
+            <lucide-icon class="h-3.5 w-3.5" [img]="powerOffIcon"></lucide-icon>
+            Desactivar
+          </button>
+          </div>
         </div>
       }
     </div>

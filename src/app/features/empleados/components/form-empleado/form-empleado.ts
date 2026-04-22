@@ -28,11 +28,12 @@ import {
 } from '../../../../shared/components/ui/card.component';
 import { MessageBoxComponent } from '../../../../shared/components/ui/message-box.component';
 import { PageActionsComponent } from '../../../../shared/components/ui/page-actions.component';
-import { PageTitleComponent } from '../../../../shared/components/ui/page-title.component';
-import { StepperItem } from '../../../../shared/components/ui/stepper.component';
+import {
+  RecordBreadcrumbComponent,
+  RecordBreadcrumbItem,
+} from '../../../../shared/components/ui/record-breadcrumb.component';
 
 type TabId = 'datosPersonales' | 'contrato' | 'previsionSalud' | 'bancario';
-type EmpleadoStepperItem = StepperItem & { id: TabId };
 type FinalReviewStatus = 'Completo' | 'Pendiente de revision';
 type ValidationStepId = TabId;
 type ValidationSeverity = 'error' | 'warning' | 'info';
@@ -88,12 +89,6 @@ interface GlobalValidationSummary {
 }
 
 const TAB_ORDER: readonly TabId[] = ['datosPersonales', 'contrato', 'previsionSalud', 'bancario'];
-const TABS: readonly EmpleadoStepperItem[] = [
-  { id: 'datosPersonales', label: 'Datos personales' },
-  { id: 'contrato', label: 'Datos laborales' },
-  { id: 'previsionSalud', label: 'Prevision' },
-  { id: 'bancario', label: 'Complementarios' },
-];
 
 @Component({
   selector: 'app-form-empleado',
@@ -103,7 +98,7 @@ const TABS: readonly EmpleadoStepperItem[] = [
     LucideAngularModule,
     CardComponent,
     CardContentComponent,
-    PageTitleComponent,
+    RecordBreadcrumbComponent,
     PageActionsComponent,
     MessageBoxComponent,
     DatosPersonalesComponent,
@@ -123,7 +118,6 @@ export class FormEmpleadoComponent implements OnInit {
   private readonly router = inject(Router);
   private readonly hostElement = inject<ElementRef<HTMLElement>>(ElementRef);
 
-  readonly tabs = TABS;
   readonly activeTab = signal<TabId>('datosPersonales');
   readonly isSaving = signal(false);
   readonly attemptedSave = signal(false);
@@ -137,6 +131,16 @@ export class FormEmpleadoComponent implements OnInit {
   readonly attemptedTabs = signal<ReadonlySet<TabId>>(new Set());
   readonly form: EmpleadoFormGroup = this.empleadosFormService.createForm();
   readonly totalSteps = TAB_ORDER.length;
+  readonly breadcrumbItems: readonly RecordBreadcrumbItem[] = [
+    { label: 'Empleados', link: '/empleados' },
+    { label: 'Creacion de ficha' },
+  ];
+  readonly conceptualSteps = [
+    'Identificacion y contacto',
+    'Informacion laboral',
+    'Prevision y salud',
+    'Pago y cierre',
+  ];
 
   async ngOnInit(): Promise<void> {
     this.empleadosFormService.configureFormBehavior(this.form, this.destroyRef, () =>
@@ -165,13 +169,6 @@ export class FormEmpleadoComponent implements OnInit {
     this.activeTab.set(tabId);
   }
 
-  stepperItems(): EmpleadoStepperItem[] {
-    return this.tabs.map((tab) => ({
-      ...tab,
-      status: this.tabStatus(tab.id),
-    }));
-  }
-
   async loadCatalogos(): Promise<void> {
     this.catalogosError.set(null);
     this.isLoadingCatalogs.set(true);
@@ -193,6 +190,14 @@ export class FormEmpleadoComponent implements OnInit {
     event.preventDefault();
     event.stopPropagation();
     void this.onSubmit();
+  }
+
+  isConceptualStepActive(index: number): boolean {
+    return TAB_ORDER[index] === this.activeTab();
+  }
+
+  conceptualStepTab(index: number): TabId {
+    return TAB_ORDER[index] ?? 'datosPersonales';
   }
 
   async onSubmit(): Promise<void> {
@@ -289,36 +294,6 @@ export class FormEmpleadoComponent implements OnInit {
     return !this.isLastTab() && this.isTabInvalid(this.activeTab());
   }
 
-  activeStepTitle(): string {
-    switch (this.activeTab()) {
-      case 'datosPersonales':
-        return 'Identificacion de la ficha';
-      case 'contrato':
-        return 'Datos laborales iniciales';
-      case 'previsionSalud':
-        return 'Configuracion previsional inicial';
-      case 'bancario':
-        return 'Datos administrativos';
-    }
-  }
-
-  activeStepDescription(): string {
-    switch (this.activeTab()) {
-      case 'datosPersonales':
-        return 'Completa los datos del colaborador.';
-      case 'contrato':
-        return 'Define cargo, jornada, fechas y condiciones laborales iniciales de la ficha.';
-      case 'previsionSalud':
-        return 'Registra la configuracion previsional, AFP, salud y parametros complementarios de la ficha.';
-      case 'bancario':
-        return 'Registra informacion bancaria y datos administrativos para completar la ficha inicial.';
-    }
-  }
-
-  currentStepLabel(): string {
-    return `Paso ${TAB_ORDER.indexOf(this.activeTab()) + 1} de ${this.totalSteps}`;
-  }
-
   activeStepNumber(): number {
     return TAB_ORDER.indexOf(this.activeTab()) + 1;
   }
@@ -330,19 +305,6 @@ export class FormEmpleadoComponent implements OnInit {
 
   pendingValidationCount(): number {
     return this.pendingValidationPanelItems().length;
-  }
-
-  activeStepStateLabel(): string {
-    switch (this.getStepValidationSummary(this.activeTab()).status) {
-      case 'invalid':
-        return 'Requiere revision';
-      case 'complete':
-        return 'Completo';
-      case 'in-progress':
-        return 'En curso';
-      case 'pending':
-        return 'Pendiente';
-    }
   }
 
   validationPanelItems(): EvaluatedValidationRule[] {
@@ -990,23 +952,6 @@ export class FormEmpleadoComponent implements OnInit {
     return 20;
   }
 
-  sideStepStateLabel(step: EmpleadoStepperItem): string {
-    if (step.id === this.activeTab()) {
-      return 'Activo';
-    }
-
-    switch (this.getStepValidationSummary(step.id).status) {
-      case 'complete':
-        return 'Completo';
-      case 'invalid':
-        return 'Invalido';
-      case 'in-progress':
-        return 'En curso';
-      default:
-        return 'Pendiente';
-    }
-  }
-
   fullNameVisible(): string {
     const { nombres, apellidoPaterno, apellidoMaterno } =
       this.form.controls.datosPersonales.controls;
@@ -1015,7 +960,7 @@ export class FormEmpleadoComponent implements OnInit {
       .filter(Boolean)
       .join(' ');
 
-    return fullName || 'Sin nombre';
+    return fullName || 'Nuevo Colaborador';
   }
 
   rutVisible(): string {
@@ -1042,17 +987,17 @@ export class FormEmpleadoComponent implements OnInit {
         ),
       },
       {
-        label: 'Datos laborales iniciales',
+        label: 'Informacion laboral',
         status: this.reviewStatus(this.getStepValidationSummary('contrato').blockingPending === 0),
       },
       {
-        label: 'Configuracion previsional inicial',
+        label: 'Prevision y salud',
         status: this.reviewStatus(
           this.getStepValidationSummary('previsionSalud').blockingPending === 0,
         ),
       },
       {
-        label: 'Datos administrativos',
+        label: 'Pago y cierre',
         status: this.reviewStatus(this.getStepValidationSummary('bancario').blockingPending === 0),
       },
     ];
@@ -1060,20 +1005,6 @@ export class FormEmpleadoComponent implements OnInit {
 
   reviewStatusClass(status: FinalReviewStatus): string {
     return status === 'Completo' ? 'is-complete' : 'is-pending';
-  }
-
-  private tabStatus(tabId: TabId): 'pending' | 'invalid' | 'complete' {
-    const status = this.getStepValidationSummary(tabId).status;
-
-    if (status === 'invalid') {
-      return 'invalid';
-    }
-
-    if (status === 'complete') {
-      return 'complete';
-    }
-
-    return 'pending';
   }
 
   private reviewStatus(isComplete: boolean): FinalReviewStatus {

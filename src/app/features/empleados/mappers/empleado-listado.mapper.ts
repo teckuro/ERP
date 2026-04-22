@@ -36,7 +36,7 @@ export function mapPersonaFactorToEmpleado(
   return {
     id: row.id_persona,
     rut,
-    nombre: nombre || 'Sin nombre',
+    nombre: nombre || 'Nuevo Colaborador',
     cargo: row.cargo?.trim() || 'Sin cargo',
     departamento:
       (typeof row.id_contrato === 'number' ? departamentos.get(row.id_contrato) : null) ??
