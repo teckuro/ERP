@@ -61,13 +61,6 @@ export class TablaEmpleadosComponent {
 
   readonly bulkStateActions: DataGridBulkActionOption[] = [
     {
-      id: 'set-draft',
-      label: 'Borrador',
-      value: 'borrador',
-      tone: 'neutral',
-      confirmLabel: 'Pasar a borrador',
-    },
-    {
       id: 'set-in-progress',
       label: 'En proceso',
       value: 'en_proceso',
@@ -179,8 +172,8 @@ export class TablaEmpleadosComponent {
       id: 'estado',
       label: 'Estado',
       field: 'estado',
+      emptyLabel: 'Todo',
       options: [
-        { label: 'Borrador', value: 'borrador' },
         { label: 'En proceso', value: 'en_proceso' },
         { label: 'Activo', value: 'activo' },
         { label: 'Suspendido', value: 'suspendido' },
@@ -193,11 +186,13 @@ export class TablaEmpleadosComponent {
       id: 'departamento',
       label: 'Centro de costo',
       field: 'departamento',
+      emptyLabel: 'Todos los centros',
     },
     {
       id: 'cargo',
       label: 'Cargo',
       field: 'cargo',
+      emptyLabel: 'Todos los cargos',
     },
   ];
 
@@ -270,7 +265,6 @@ export class TablaEmpleadosComponent {
   estadoBadgeClass(estado: EmpleadoEstado): string {
     switch (estado) {
       case 'borrador':
-        return 'border-neutral-200 bg-white text-neutral-600';
       case 'en_proceso':
         return 'border-blue-200 bg-blue-100 text-blue-700';
       case 'activo':
@@ -291,7 +285,6 @@ export class TablaEmpleadosComponent {
   rowPrimaryActionLabel(estado: EmpleadoEstado): string {
     switch (estado) {
       case 'borrador':
-        return 'Continuar alta';
       case 'en_proceso':
         return 'Completar ficha';
       default:
@@ -302,7 +295,6 @@ export class TablaEmpleadosComponent {
   completionValue(estado: EmpleadoEstado): number {
     switch (estado) {
       case 'borrador':
-        return 35;
       case 'en_proceso':
         return 68;
       case 'activo':
@@ -319,7 +311,6 @@ export class TablaEmpleadosComponent {
   pendingLabel(estado: EmpleadoEstado): string {
     switch (estado) {
       case 'borrador':
-        return 'Pendientes criticos';
       case 'en_proceso':
         return 'Datos por cerrar';
       case 'activo':
@@ -332,7 +323,6 @@ export class TablaEmpleadosComponent {
   labelEstado(estado: EmpleadoEstado): string {
     switch (estado) {
       case 'borrador':
-        return 'Borrador';
       case 'en_proceso':
         return 'En proceso';
       case 'activo':

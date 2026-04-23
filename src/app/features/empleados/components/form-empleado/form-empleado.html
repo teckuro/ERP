@@ -18,12 +18,6 @@
               actionLabel="Reintentar"
               (action)="loadCatalogos()"
             ></app-message-box>
-          } @else if (isLoadingCatalogs()) {
-            <app-message-box
-              variant="loading"
-              title="Preparando formulario"
-              message="Estamos cargando la informacion necesaria para completar la ficha."
-            ></app-message-box>
           }
         </div>
 
@@ -69,7 +63,7 @@
                 <div class="summary-person">
                   <div class="summary-title-row">
                     <h2>{{ fullNameVisible() }}</h2>
-                    <span class="summary-status-badge">Borrador</span>
+                    <span class="summary-status-badge">En proceso</span>
                   </div>
                 </div>
 

@@ -15,6 +15,7 @@ type ContactoControlName = keyof ContactoFormGroup['controls'];
 export class ContactoComponent {
   @Input({ required: true }) formGroup!: ContactoFormGroup;
   @Input() comunas: EmpleadoCatalogOption[] = [];
+  @Input() visibleBlocks: string[] | null = null;
 
   controlClass(controlName: ContactoControlName): string {
     return ['employee-control', this.hasError(controlName) ? 'is-invalid' : '']
@@ -34,5 +35,9 @@ export class ContactoComponent {
 
   isRequired(controlName: ContactoControlName): boolean {
     return this.formGroup.controls[controlName].hasValidator(Validators.required);
+  }
+
+  isBlockVisible(blockId: string): boolean {
+    return this.visibleBlocks === null || this.visibleBlocks.includes(blockId);
   }
 }

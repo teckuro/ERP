@@ -78,13 +78,6 @@
   </div>
 
   <div class="listado-content">
-    @if (isLoading()) {
-      <div class="listado-loading-chip" role="status" aria-live="polite">
-        <lucide-icon class="listado-loading-icon" [img]="loaderIcon"></lucide-icon>
-        <span>Cargando listado</span>
-      </div>
-    }
-
     <app-tabla-empleados
       #tabla
       class="block w-full min-w-0"

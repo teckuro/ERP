@@ -8,6 +8,7 @@ import {
 } from './empleado.model';
 
 export interface CrearEmpleadoPayload {
+  origenCreacion: 'basico' | 'avanzado';
   rut: string;
   nombres: string;
   apellidoPaterno: string;

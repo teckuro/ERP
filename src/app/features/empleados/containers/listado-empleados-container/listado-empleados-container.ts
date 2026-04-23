@@ -155,7 +155,6 @@ export class ListadoEmpleadosContainer {
 
   private normalizeBulkState(value: string | undefined): EmpleadoListado['estado'] {
     switch (value) {
-      case 'borrador':
       case 'en_proceso':
       case 'activo':
       case 'suspendido':

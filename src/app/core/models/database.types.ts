@@ -670,6 +670,83 @@ export type Database = {
           },
         ]
       }
+      empleado_historial: {
+        Row: {
+          campos_modificados: string[]
+          datos_antes: Json | null
+          datos_despues: Json | null
+          evento: string
+          fecha: string
+          id_contrato: number | null
+          id_historial: number
+          id_persona: number
+          id_registro: number | null
+          operacion: string
+          seccion: string
+          tabla_origen: string
+          usuario: string | null
+        }
+        Insert: {
+          campos_modificados?: string[]
+          datos_antes?: Json | null
+          datos_despues?: Json | null
+          evento: string
+          fecha?: string
+          id_contrato?: number | null
+          id_historial?: number
+          id_persona: number
+          id_registro?: number | null
+          operacion: string
+          seccion: string
+          tabla_origen: string
+          usuario?: string | null
+        }
+        Update: {
+          campos_modificados?: string[]
+          datos_antes?: Json | null
+          datos_despues?: Json | null
+          evento?: string
+          fecha?: string
+          id_contrato?: number | null
+          id_historial?: number
+          id_persona?: number
+          id_registro?: number | null
+          operacion?: string
+          seccion?: string
+          tabla_origen?: string
+          usuario?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "empleado_historial_id_contrato_fkey"
+            columns: ["id_contrato"]
+            isOneToOne: false
+            referencedRelation: "contrato"
+            referencedColumns: ["id_contrato"]
+          },
+          {
+            foreignKeyName: "empleado_historial_id_contrato_fkey"
+            columns: ["id_contrato"]
+            isOneToOne: false
+            referencedRelation: "vw_persona_factores"
+            referencedColumns: ["id_contrato"]
+          },
+          {
+            foreignKeyName: "empleado_historial_id_persona_fkey"
+            columns: ["id_persona"]
+            isOneToOne: false
+            referencedRelation: "persona"
+            referencedColumns: ["id_persona"]
+          },
+          {
+            foreignKeyName: "empleado_historial_id_persona_fkey"
+            columns: ["id_persona"]
+            isOneToOne: false
+            referencedRelation: "vw_persona_factores"
+            referencedColumns: ["id_persona"]
+          },
+        ]
+      }
       empresa: {
         Row: {
           dv: string
@@ -2352,6 +2429,18 @@ export type Database = {
     }
     Functions: {
       dblink_dteconfiguracion: { Args: never; Returns: string }
+      empleado_historial_changed_fields: {
+        Args: { p_new: Json; p_old: Json }
+        Returns: string[]
+      }
+      empleado_historial_tabla_pk: {
+        Args: { p_row: Json; p_tabla: string }
+        Returns: number
+      }
+      empleado_historial_tabla_seccion: {
+        Args: { p_tabla: string }
+        Returns: string
+      }
       fn_calcular_dias_trabajados: {
         Args: {
           p_fecha_ingreso: string

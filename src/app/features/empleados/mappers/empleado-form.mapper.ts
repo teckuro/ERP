@@ -20,6 +20,7 @@ export function mapEmpleadoFormToPayload(
   const tieneApvi = tipoPrevision === 'AFP' && rawValue.previsionSalud.tieneApv;
 
   return {
+    origenCreacion: 'avanzado',
     rut: rawValue.datosPersonales.rut,
     nombres: rawValue.datosPersonales.nombres,
     apellidoPaterno: rawValue.datosPersonales.apellidoPaterno,
@@ -71,7 +72,7 @@ export function mapEmpleadoFormToPayload(
     zonaExtremaPorcentaje: rawValue.contrato.zonaExtremaActiva
       ? requireNumber(rawValue.contrato.zonaExtremaPorcentaje, 'el porcentaje de zona extrema')
       : null,
-    estado: rawValue.contrato.estado,
+    estado: 'activo',
     idTramoCarga: rawValue.contrato.idTramoCarga,
     tipoPrevision,
     idRegimenPrevisional: resolveRegimenPrevisionalId(
@@ -138,6 +139,7 @@ export function mapEmpleadoFormToPayloadBasico(form: EmpleadoFormGroup): CrearEm
   const today = new Date().toISOString().slice(0, 10);
 
   return {
+    origenCreacion: 'basico',
     rut: rawValue.datosPersonales.rut,
     nombres: rawValue.datosPersonales.nombres,
     apellidoPaterno: rawValue.datosPersonales.apellidoPaterno,
@@ -180,7 +182,7 @@ export function mapEmpleadoFormToPayloadBasico(form: EmpleadoFormGroup): CrearEm
     zonaExtremaActiva: false,
     zonaExtremaTerritorio: null,
     zonaExtremaPorcentaje: null,
-    estado: 'borrador',
+    estado: 'en_proceso',
     idTramoCarga: null,
     tipoPrevision: 'NINGUNA',
     idRegimenPrevisional: null,

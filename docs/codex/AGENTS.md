@@ -5,14 +5,8 @@ Este archivo define la base de trabajo para Codex en este proyecto. Antes de gen
 ## Prioridad de reglas
 
 1. `docs/codex/AGENTS.md`
-2. `docs/codex/ui-theme-tokens.md`
-3. `docs/codex/ui-layout-erp.md`
-4. `docs/codex/ui-principles.md`
-5. `docs/codex/form-patterns.md`
-6. `docs/codex/form-secuencia-visual.md`
-7. `docs/codex/ui-icon-buttons.md`
-8. `docs/codex/ui-checklist.md`
-9. Documentos especificos del flujo, por ejemplo `docs/codex/modo-basico-empleado.md`
+2. `docs/codex/ui-form-guidelines.md`
+3. Documentos especificos del flujo, por ejemplo `docs/codex/modo-basico-empleado.md`
 
 Si hay conflicto entre reglas, gana la regla mas alta en esta lista.
 
@@ -37,7 +31,7 @@ La UI debe sentirse empresarial, compacta y sobria:
 
 ## Tokens base
 
-Usar los tokens definidos en `docs/codex/ui-theme-tokens.md`.
+Usar los tokens definidos en `docs/codex/ui-form-guidelines.md`.
 
 Colores operativos:
 
@@ -190,7 +184,7 @@ Antes de cerrar un cambio UI, validar:
 - Labels, inputs y errores son claros.
 - La botonera esta arriba a la derecha.
 - El espaciado usa tokens permitidos.
-- Los colores respetan `ui-theme-tokens.md`.
+- Los colores respetan `ui-form-guidelines.md`.
 - La jerarquia visual es evidente.
 - La densidad es compacta sin perder legibilidad.
 - Mobile conserva una lectura limpia.

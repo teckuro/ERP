@@ -32,6 +32,7 @@ export class EmpleadosWriteService {
       await this.empleadosRepository.insertarApv(payload, contratoId);
       await this.empleadosRepository.insertarCuentaBancaria(payload, personaId);
       await this.empleadosRepository.insertarContratoCentroCosto(payload, contratoId);
+      await this.empleadosRepository.activarPersonaCreada(payload, personaId);
 
       const departamento = await this.empleadosRepository.obtenerCentroCostoNombre(
         payload.idCentroCosto,

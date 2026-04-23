@@ -22,6 +22,7 @@ export class DatosPersonalesComponent {
   @Input({ required: true }) formGroup!: DatosPersonalesFormGroup;
   @Input({ required: true }) contactoFormGroup!: ContactoFormGroup;
   @Input() paises: EmpleadoCatalogOption[] = [];
+  @Input() visibleBlocks: string[] | null = null;
 
   readonly sexOptions = SEXO_OPTIONS;
   readonly estadoCivilOptions = ESTADO_CIVIL_OPTIONS;
@@ -85,6 +86,10 @@ export class DatosPersonalesComponent {
     const control = this.contactoFormGroup.controls[controlName];
 
     return control.touched && !String(control.value ?? '').trim();
+  }
+
+  isBlockVisible(blockId: string): boolean {
+    return this.visibleBlocks === null || this.visibleBlocks.includes(blockId);
   }
 
   private toIsoDate(date: Date): string {

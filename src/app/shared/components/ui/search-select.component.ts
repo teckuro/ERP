@@ -70,11 +70,9 @@ export interface SearchSelectOption<T extends SearchSelectValue = SearchSelectVa
       @if (open) {
         <div
           class="select-panel"
+          [class.opens-above]="panelOpenAbove"
           role="listbox"
           [attr.aria-label]="placeholder"
-          [style.left.px]="panelLeft"
-          [style.top.px]="panelTop"
-          [style.width.px]="panelWidth"
           [style.visibility]="panelReady ? 'visible' : 'hidden'"
         >
           <div class="select-search">
@@ -239,25 +237,40 @@ export interface SearchSelectOption<T extends SearchSelectValue = SearchSelectVa
       }
 
       .select-panel {
-        position: fixed;
+        position: absolute;
+        top: calc(100% + 4px);
+        right: 0;
+        left: 0;
         z-index: 1000;
-        min-width: min(18rem, calc(100vw - 2rem));
+        min-width: 0;
+        width: 100%;
         overflow: hidden;
-        border: 1px solid #e5e7eb;
-        border-radius: 6px;
+        border: 1px solid #2563eb;
+        border-radius: 0 0 6px 6px;
         background: #ffffff;
-        padding: 8px;
-        box-shadow: 0 12px 28px rgba(17, 24, 39, 0.12);
+        padding: 6px;
+        box-shadow:
+          0 1px 0 #2563eb inset,
+          0 16px 30px rgba(15, 23, 42, 0.14);
+      }
+
+      .select-panel.opens-above {
+        top: auto;
+        bottom: calc(100% + 4px);
+        border-radius: 6px 6px 0 0;
+        box-shadow:
+          0 -1px 0 #2563eb inset,
+          0 16px 30px rgba(15, 23, 42, 0.14);
       }
 
       .select-search {
         display: grid;
         grid-template-columns: 18px minmax(0, 1fr);
         align-items: center;
-        height: 32px;
+        height: 34px;
         border: 1px solid #e5e7eb;
         border-radius: 5px;
-        background: #f8fafc;
+        background: #ffffff;
         padding: 0 8px;
         color: #6b7280;
       }
@@ -296,7 +309,7 @@ export interface SearchSelectOption<T extends SearchSelectValue = SearchSelectVa
         align-items: center;
         justify-content: space-between;
         gap: 8px;
-        border-bottom: 1px solid #e5e7eb;
+        border-bottom: 1px solid #eef2f7;
         padding: 0 2px;
         color: #6b7280;
         font-size: 11px;
@@ -314,7 +327,7 @@ export interface SearchSelectOption<T extends SearchSelectValue = SearchSelectVa
       .select-options {
         max-height: 216px;
         overflow: auto;
-        padding-top: 6px;
+        padding-top: 4px;
         scrollbar-color: #cbd5e1 #f8fafc;
         scrollbar-width: thin;
       }
@@ -325,7 +338,7 @@ export interface SearchSelectOption<T extends SearchSelectValue = SearchSelectVa
         width: 100%;
         align-items: center;
         gap: 8px;
-        min-height: 32px;
+        min-height: 34px;
         border: 0;
         border-radius: 5px;
         background: transparent;
@@ -334,7 +347,7 @@ export interface SearchSelectOption<T extends SearchSelectValue = SearchSelectVa
         text-align: left;
       }
 
-      .select-option:hover,
+      .select-option:hover:not(:disabled),
       .select-option.is-active {
         background: #f8fafc;
       }
@@ -447,11 +460,9 @@ export class SearchSelectComponent implements ControlValueAccessor, OnDestroy {
   open = false;
   disabled = false;
   activeIndex = 0;
-  panelLeft = 0;
-  panelTop = 0;
-  panelWidth = 0;
   panelOptionsMaxHeight = 216;
   panelReady = false;
+  panelOpenAbove = false;
 
   private onChange: (value: SearchSelectValue) => void = () => undefined;
   private onTouched: () => void = () => undefined;
@@ -544,6 +555,7 @@ export class SearchSelectComponent implements ControlValueAccessor, OnDestroy {
 
     this.open = false;
     this.panelReady = false;
+    this.panelOpenAbove = false;
     this.searchTerm = '';
     window.clearTimeout(this.panelListenerTimeoutId);
     this.detachPanelListeners();
@@ -659,9 +671,6 @@ export class SearchSelectComponent implements ControlValueAccessor, OnDestroy {
 
     const rect = field.getBoundingClientRect();
     const viewportPadding = 8;
-    const maxWidth = window.innerWidth - viewportPadding * 2;
-    const width = Math.min(Math.max(rect.width, 260), maxWidth);
-    const left = Math.min(Math.max(rect.left, viewportPadding), window.innerWidth - width - viewportPadding);
     const panelChromeHeight = 82;
     const preferredOptionsHeight = 216;
     const preferredPanelHeight = panelChromeHeight + preferredOptionsHeight;
@@ -670,19 +679,8 @@ export class SearchSelectComponent implements ControlValueAccessor, OnDestroy {
     const openAbove = spaceBelow < preferredPanelHeight && spaceAbove > spaceBelow;
     const availableHeight = Math.max(120, (openAbove ? spaceAbove : spaceBelow) - panelChromeHeight);
 
-    this.panelLeft = left;
+    this.panelOpenAbove = openAbove;
     this.panelOptionsMaxHeight = Math.min(preferredOptionsHeight, availableHeight);
-    this.panelWidth = width;
-
-    const panel = this.host.nativeElement.querySelector('.select-panel') as HTMLElement | null;
-    const measuredPanelHeight =
-      panel?.offsetHeight && this.panelReady
-        ? panel.offsetHeight
-        : panelChromeHeight + this.panelOptionsMaxHeight;
-
-    this.panelTop = openAbove
-      ? Math.max(viewportPadding, rect.top - measuredPanelHeight - 6)
-      : Math.min(rect.bottom + 6, window.innerHeight - measuredPanelHeight - viewportPadding);
   }
 
   private attachPanelListeners(): void {

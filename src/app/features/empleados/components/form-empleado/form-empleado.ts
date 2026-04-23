@@ -246,7 +246,7 @@ export class FormEmpleadoComponent implements OnInit {
       );
 
       this.successMessage.set(
-        `La ficha de ${created.nombre} quedo registrada en estado inicial. Completa la informacion pendiente para habilitar al colaborador en remuneraciones.`,
+        `La ficha de ${created.nombre} quedo activa y lista para operar en remuneraciones.`,
       );
       this.createdEmployeeId.set(created.id);
       this.form.markAsPristine();
@@ -292,7 +292,7 @@ export class FormEmpleadoComponent implements OnInit {
   }
 
   saveActionLabel(): string {
-    return this.isBasicMode() ? 'Crear empleado' : 'Guardar borrador';
+    return this.isBasicMode() ? 'Crear empleado' : 'Crear empleado activo';
   }
 
   goToPreviousTab(): void {
@@ -429,7 +429,7 @@ export class FormEmpleadoComponent implements OnInit {
         mapEmpleadoFormToPayloadBasico(this.form),
       );
 
-      this.successMessage.set('Empleado creado. Completa la informacion restante.');
+      this.successMessage.set('Empleado creado en proceso. Completa la informacion restante para habilitar remuneraciones.');
       this.createdEmployeeId.set(created.id);
       this.form.markAsPristine();
     } catch (error) {
@@ -1260,7 +1260,7 @@ export class FormEmpleadoComponent implements OnInit {
 
     if (error instanceof Error) {
       if (error.message.toLowerCase().includes('row-level security')) {
-        return 'Supabase bloqueo la escritura por politicas RLS. Ejecuta el script scripts/fix_empleados_alta_rls_supabase.sql y vuelve a intentar.';
+        return 'Supabase bloqueo la escritura por politicas RLS. Ejecuta bd/crear_sql_v6_10_integrada.sql y vuelve a intentar.';
       }
 
       return error.message;

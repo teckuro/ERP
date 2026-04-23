@@ -24,6 +24,7 @@ import {
   CheckCircle,
   Download,
   Filter,
+  LoaderCircle,
   Plus,
   RefreshCw,
   Search,
@@ -42,6 +43,7 @@ export interface DataGridFilter<T = unknown> {
   id: string;
   label: string;
   field: keyof T;
+  emptyLabel?: string;
   options?: Array<string | { label: string; value: string }>;
 }
 
@@ -263,6 +265,7 @@ export class DataGridCellDirective<T = unknown> {
                   class="h-6 rounded-md border-0 bg-neutral-50 px-1.5 text-xs font-semibold text-neutral-900 outline-none focus:ring-2 focus:ring-blue-500"
                   [value]="pageSize"
                   aria-label="Cantidad de elementos por pagina"
+                  [disabled]="loading"
                   (change)="updatePageSize($event)"
                 >
                   @for (option of pageSizeOptions; track option) {
@@ -276,6 +279,7 @@ export class DataGridCellDirective<T = unknown> {
                 class="inline-flex h-8 items-center gap-1.5 rounded-md border border-neutral-200 bg-white px-2.5 text-xs font-medium text-neutral-600 transition-colors hover:bg-neutral-50 hover:text-neutral-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
                 aria-label="Refrescar grilla"
                 title="Refrescar grilla"
+                [disabled]="loading"
                 (click)="refresh.emit()"
               >
                 <lucide-icon class="h-3.5 w-3.5" [img]="refreshIcon"></lucide-icon>
@@ -405,8 +409,8 @@ export class DataGridCellDirective<T = unknown> {
                 [value]="filterValues[filter.id] || ''"
                 (change)="updateFilterValue(filter.id, $event)"
               >
-                <option value="">{{ filter.label }}</option>
-                @for (option of filterOptions(filter); track option) {
+                <option value="">{{ emptyFilterLabel(filter) }}</option>
+                @for (option of filterOptions(filter); track filterOptionValue(option)) {
                   <option [value]="filterOptionValue(option)">{{ filterOptionLabel(option) }}</option>
                 }
               </select>
@@ -510,25 +514,8 @@ export class DataGridCellDirective<T = unknown> {
       }
 
       <div class="data-grid-scroll w-full min-w-0 overflow-auto bg-white" [ngStyle]="gridBodyStyle">
-        @if (loading) {
-          <div class="divide-y divide-neutral-100">
-            @for (item of skeletonRows; track item) {
-              <div class="grid grid-cols-[2.75rem_1.2fr_0.8fr_0.8fr_0.7fr_0.6fr_3rem] items-center gap-3 px-3 py-3.5">
-                <div class="h-4 w-4 rounded bg-neutral-100"></div>
-                <div class="space-y-2">
-                  <div class="h-3.5 w-44 rounded bg-neutral-100"></div>
-                  <div class="h-3 w-32 rounded bg-neutral-100"></div>
-                </div>
-                <div class="h-3.5 w-24 rounded bg-neutral-100"></div>
-                <div class="h-3.5 w-28 rounded bg-neutral-100"></div>
-                <div class="h-3.5 w-20 rounded bg-neutral-100 justify-self-end"></div>
-                <div class="h-6 w-20 rounded-full bg-neutral-100"></div>
-                <div class="h-8 w-8 rounded-md bg-neutral-100"></div>
-              </div>
-            }
-          </div>
-        } @else if (errorMessage) {
-          <div class="px-6 py-14 text-center">
+        @if (errorMessage && !loading) {
+          <div class="data-grid-state data-grid-state--error">
             <div
               class="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full border border-red-100 bg-red-50"
             >
@@ -544,96 +531,114 @@ export class DataGridCellDirective<T = unknown> {
               Reintentar
             </button>
           </div>
-        } @else if (filteredRows.length > 0) {
-          <table class="w-full min-w-max table-auto border-separate border-spacing-0">
-            <thead class="sticky top-0 z-10 bg-neutral-100 shadow-[0_1px_0_rgba(229,229,229,1)]">
-              <tr>
-                @if (selectable) {
-                  <th scope="col" class="w-11 border-b border-r border-neutral-200 px-3 py-2.5">
-                    <input
-                      class="h-4 w-4 rounded border-neutral-300 text-blue-600 focus:ring-2 focus:ring-blue-500"
-                      type="checkbox"
-                      aria-label="Seleccionar registros visibles"
-                      [checked]="allPageRowsSelected"
-                      [indeterminate]="somePageRowsSelected && !allPageRowsSelected"
-                      (change)="togglePageSelection($event)"
-                    />
-                  </th>
-                }
-                @for (column of visibleColumns; track column.id) {
-                  <th
-                    scope="col"
-                    class="whitespace-nowrap border-b border-r border-neutral-200 px-3 py-2.5 text-xs font-semibold uppercase tracking-wide text-neutral-600 last:border-r-0"
-                    [ngClass]="[alignmentHeaderClass(column), column.headerClass ?? '', column.widthClass ?? '']"
-                  >
-                    @if (isSortable(column)) {
-                      <button
-                        type="button"
-                        class="inline-flex items-center gap-1.5 rounded-md text-left transition-colors hover:text-neutral-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
-                        [class.justify-end]="column.align === 'right'"
-                        [class.justify-center]="column.align === 'center'"
-                        [attr.aria-sort]="sortAriaValue(column)"
-                        (click)="toggleSort(column)"
-                      >
-                        <span>{{ column.header }}</span>
-                        <lucide-icon class="h-3.5 w-3.5" [img]="sortIcon(column)"></lucide-icon>
-                      </button>
-                    } @else {
-                      <span class="block">{{ column.header }}</span>
-                    }
-                  </th>
-                }
-              </tr>
-            </thead>
-
-            <tbody class="bg-white">
-              @for (row of pagedRows; track trackPagedRow($index, row)) {
-                <tr
-                  class="group transition-colors duration-150 odd:bg-white even:bg-white"
-                  [class.hover:bg-neutral-50]="hoverRows"
-                  [class.data-grid-row-selected]="isRowSelected(row)"
-                >
+        } @else if (filteredRows.length > 0 || loading) {
+          <div class="data-grid-table-region" [class.is-loading]="loading">
+            <table class="h-full w-full min-w-max table-auto border-separate border-spacing-0">
+              <thead class="data-grid-head sticky top-0 z-10 bg-neutral-100 shadow-[0_1px_0_rgba(229,229,229,1)]">
+                <tr>
                   @if (selectable) {
-                    <td
-                      class="w-11 border-b border-r border-neutral-100 px-3 py-3.5 transition-colors"
-                      [class.bg-blue-50]="isRowSelected(row)"
-                    >
+                    <th scope="col" class="w-11 border-b border-r border-neutral-200 px-3 py-2.5">
                       <input
                         class="h-4 w-4 rounded border-neutral-300 text-blue-600 focus:ring-2 focus:ring-blue-500"
                         type="checkbox"
-                        [attr.aria-label]="'Seleccionar registro ' + (absoluteIndex($index) + 1)"
-                        [checked]="isRowSelected(row)"
-                        (click)="$event.stopPropagation()"
-                        (change)="toggleRowSelection(row, $event)"
+                        aria-label="Seleccionar registros visibles"
+                        [checked]="allPageRowsSelected"
+                        [indeterminate]="somePageRowsSelected && !allPageRowsSelected"
+                        [disabled]="loading"
+                        (change)="togglePageSelection($event)"
                       />
-                    </td>
+                    </th>
                   }
                   @for (column of visibleColumns; track column.id) {
-                    <td
-                      class="border-b border-r border-neutral-100 px-3 py-3.5 text-sm text-neutral-900 transition-colors last:border-r-0"
-                      [class.bg-blue-50]="isRowSelected(row)"
-                      [ngClass]="[alignmentCellClass(column), column.cellClass ?? '', column.widthClass ?? '']"
+                    <th
+                      scope="col"
+                      class="whitespace-nowrap border-b border-r border-neutral-200 px-3 py-2.5 text-xs font-semibold uppercase tracking-wide text-neutral-600 last:border-r-0"
+                      [ngClass]="[alignmentHeaderClass(column), column.headerClass ?? '', column.widthClass ?? '']"
                     >
-                      @if (cellTemplate(column.id); as customTemplate) {
-                        <div>
-                          <ng-container
-                            *ngTemplateOutlet="
-                              customTemplate;
-                              context: cellContext(row, column, absoluteIndex($index))
-                            "
-                          />
-                        </div>
+                      @if (isSortable(column)) {
+                        <button
+                          type="button"
+                          class="inline-flex items-center gap-1.5 rounded-md text-left transition-colors hover:text-neutral-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
+                          [class.justify-end]="column.align === 'right'"
+                          [class.justify-center]="column.align === 'center'"
+                          [attr.aria-sort]="sortAriaValue(column)"
+                          [disabled]="loading"
+                          (click)="toggleSort(column)"
+                        >
+                          <span>{{ column.header }}</span>
+                          <lucide-icon class="h-3.5 w-3.5" [img]="sortIcon(column)"></lucide-icon>
+                        </button>
                       } @else {
-                        <span class="block whitespace-nowrap">{{ formattedValue(row, column, absoluteIndex($index)) }}</span>
+                        <span class="block">{{ column.header }}</span>
                       }
-                    </td>
+                    </th>
                   }
                 </tr>
-              }
-            </tbody>
-          </table>
-      } @else {
-          <div class="px-6 py-14 text-center">
+              </thead>
+
+              <tbody class="bg-white">
+                @if (loading) {
+                  <tr>
+                    <td
+                      class="data-grid-loading-cell"
+                      [attr.colspan]="visibleColumnSpan"
+                    >
+                      <div class="data-grid-loading-content" role="status" aria-live="polite">
+                        <lucide-icon class="data-grid-loading-spinner" [img]="loadingIcon"></lucide-icon>
+                        <span>{{ loadingLabel }}</span>
+                      </div>
+                    </td>
+                  </tr>
+                } @else {
+                  @for (row of pagedRows; track trackPagedRow($index, row)) {
+                    <tr
+                      class="data-grid-row group transition-colors duration-150"
+                      [class.hover:bg-neutral-50]="hoverRows"
+                      [class.data-grid-row-selected]="isRowSelected(row)"
+                    >
+                      @if (selectable) {
+                        <td
+                          class="w-11 border-b border-r border-neutral-100 px-3 py-3.5 transition-colors"
+                          [class.bg-blue-50]="isRowSelected(row)"
+                        >
+                          <input
+                            class="h-4 w-4 rounded border-neutral-300 text-blue-600 focus:ring-2 focus:ring-blue-500"
+                            type="checkbox"
+                            [attr.aria-label]="'Seleccionar registro ' + (absoluteIndex($index) + 1)"
+                            [checked]="isRowSelected(row)"
+                            (click)="$event.stopPropagation()"
+                            (change)="toggleRowSelection(row, $event)"
+                          />
+                        </td>
+                      }
+                      @for (column of visibleColumns; track column.id) {
+                        <td
+                          class="border-b border-r border-neutral-100 px-3 py-3.5 text-sm text-neutral-900 transition-colors last:border-r-0"
+                          [class.bg-blue-50]="isRowSelected(row)"
+                          [ngClass]="[alignmentCellClass(column), column.cellClass ?? '', column.widthClass ?? '']"
+                        >
+                          @if (cellTemplate(column.id); as customTemplate) {
+                            <div>
+                              <ng-container
+                                *ngTemplateOutlet="
+                                  customTemplate;
+                                  context: cellContext(row, column, absoluteIndex($index))
+                                "
+                              />
+                            </div>
+                          } @else {
+                            <span class="block whitespace-nowrap">{{ formattedValue(row, column, absoluteIndex($index)) }}</span>
+                          }
+                        </td>
+                      }
+                    </tr>
+                  }
+                }
+              </tbody>
+            </table>
+          </div>
+        } @else {
+          <div class="data-grid-state">
             <div
               class="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full border border-neutral-200 bg-neutral-50"
             >
@@ -666,7 +671,7 @@ export class DataGridCellDirective<T = unknown> {
 
       @if (filteredRows.length > 0) {
         <div
-          class="flex flex-col gap-3 border-t border-neutral-200 bg-white px-4 py-3 sm:flex-row sm:items-center sm:justify-between"
+          class="data-grid-footer flex flex-col gap-3 border-t border-neutral-200 bg-white px-4 py-3 sm:flex-row sm:items-center sm:justify-between"
         >
           <p class="text-xs font-semibold text-neutral-600">
             Pagina {{ currentPage }} de {{ totalPages }}
@@ -778,11 +783,18 @@ export class DataGridCellDirective<T = unknown> {
   styles: [
     `
       :host {
+        --data-grid-border: #dbe3ee;
+        --data-grid-border-soft: #e7edf5;
+        --data-grid-head-bg: #f8fafc;
+        --data-grid-row-hover: #f8fafc;
+        --data-grid-row-selected: #eff6ff;
         --data-grid-scrollbar-track: #f1f5f9;
         --data-grid-scrollbar-thumb: #cbd5e1;
       }
 
       .data-grid-scroll {
+        position: relative;
+        background: #ffffff;
         scrollbar-color: var(--data-grid-scrollbar-thumb) var(--data-grid-scrollbar-track);
         scrollbar-width: thin;
       }
@@ -806,6 +818,97 @@ export class DataGridCellDirective<T = unknown> {
         box-shadow: inset 3px 0 0 #2563eb;
       }
 
+      .data-grid-table-region {
+        position: relative;
+        min-height: 100%;
+        background: #ffffff;
+      }
+
+      .data-grid-head {
+        background: var(--data-grid-head-bg);
+      }
+
+      .data-grid-head th {
+        border-color: var(--data-grid-border);
+        background: var(--data-grid-head-bg);
+        color: #475569;
+        font-weight: 800;
+      }
+
+      .data-grid-head button:disabled {
+        cursor: wait;
+        opacity: 0.7;
+      }
+
+      .data-grid-row {
+        background: #ffffff;
+      }
+
+      .data-grid-row:hover {
+        background: var(--data-grid-row-hover);
+      }
+
+      .data-grid-row.data-grid-row-selected {
+        background: var(--data-grid-row-selected);
+      }
+
+      .data-grid-row td {
+        border-color: var(--data-grid-border-soft);
+      }
+
+      .data-grid-table-region.is-loading table {
+        pointer-events: none;
+      }
+
+      .data-grid-loading-cell {
+        height: 22rem;
+        border-bottom: 1px solid var(--data-grid-border-soft);
+        background:
+          linear-gradient(#ffffff, #ffffff) padding-box,
+          linear-gradient(180deg, #f8fafc, #ffffff) border-box;
+        padding: 0;
+        text-align: center;
+        vertical-align: middle;
+      }
+
+      .data-grid-loading-content {
+        display: inline-flex;
+        min-height: 2.4rem;
+        align-items: center;
+        gap: 0.5rem;
+        border: 1px solid #bfdbfe;
+        border-radius: 8px;
+        background: #eff6ff;
+        padding: 0 1rem;
+        color: #1d4ed8;
+        font-size: 0.82rem;
+        font-weight: 800;
+      }
+
+      .data-grid-state {
+        display: grid;
+        min-height: 16rem;
+        place-items: center;
+        padding: 3.5rem 1.5rem;
+        background: #ffffff;
+        text-align: center;
+      }
+
+      .data-grid-state--error {
+        background: linear-gradient(180deg, #fffafa 0%, #ffffff 72%);
+      }
+
+      .data-grid-footer {
+        border-color: var(--data-grid-border);
+        background: #ffffff;
+      }
+
+      .data-grid-loading-spinner {
+        width: 1rem;
+        height: 1rem;
+        animation: data-grid-spin 800ms linear infinite;
+      }
+
       .data-grid-button-spinner {
         width: 0.75rem;
         height: 0.75rem;
@@ -822,7 +925,8 @@ export class DataGridCellDirective<T = unknown> {
       }
 
       @media (prefers-reduced-motion: reduce) {
-        .data-grid-button-spinner {
+        .data-grid-button-spinner,
+        .data-grid-loading-spinner {
           animation: none;
         }
       }
@@ -851,6 +955,7 @@ export class DataGridComponent<T = unknown> implements OnChanges, OnDestroy {
   @Input() emptyDescription = 'Prueba ajustando la busqueda o los filtros.';
   @Input() emptyIcon = Search;
   @Input() loading = false;
+  @Input() loadingLabel = 'Cargando resultados...';
   @Input() errorMessage = '';
   @Input() hoverRows = true;
   @Input() bulkActionLoading = false;
@@ -871,6 +976,7 @@ export class DataGridComponent<T = unknown> implements OnChanges, OnDestroy {
   readonly nextIcon = ChevronRight;
   readonly downloadIcon = Download;
   readonly filterIcon = Filter;
+  readonly loadingIcon = LoaderCircle;
   readonly plusIcon = Plus;
   readonly refreshIcon = RefreshCw;
   readonly selectionIcon = CheckCircle;
@@ -878,8 +984,6 @@ export class DataGridComponent<T = unknown> implements OnChanges, OnDestroy {
   readonly sortNeutralIcon = ArrowUpDown;
   readonly sortAscIcon = ArrowUp;
   readonly sortDescIcon = ArrowDown;
-  readonly skeletonRows = Array.from({ length: 7 }, (_, index) => index);
-
   currentPage = 1;
   pageInput = '1';
   pageInputError = '';
@@ -971,7 +1075,7 @@ export class DataGridComponent<T = unknown> implements OnChanges, OnDestroy {
   }
 
   get gridCardClass(): string {
-    return `relative w-full min-w-0 overflow-hidden rounded-xl border-neutral-200 bg-white shadow-sm ${this.cardClassName}`.trim();
+    return `relative w-full min-w-0 overflow-hidden rounded-lg border border-slate-200 bg-white shadow-none ${this.cardClassName}`.trim();
   }
 
   get gridBodyStyle(): Record<string, string> {
@@ -990,6 +1094,10 @@ export class DataGridComponent<T = unknown> implements OnChanges, OnDestroy {
   get visibleColumns(): DataGridColumn<T>[] {
     const columns = this.columns.filter((column) => this.visibleColumnIds.has(column.id));
     return columns.length > 0 ? columns : this.columns.slice(0, 1);
+  }
+
+  get visibleColumnSpan(): number {
+    return Math.max(1, this.visibleColumns.length + (this.selectable ? 1 : 0));
   }
 
   get exportableVisibleColumns(): DataGridColumn<T>[] {
@@ -1363,6 +1471,10 @@ export class DataGridComponent<T = unknown> implements OnChanges, OnDestroy {
 
   filterOptionLabel(option: string | { label: string; value: string }): string {
     return typeof option === 'string' ? option : option.label;
+  }
+
+  emptyFilterLabel(filter: DataGridFilter<T>): string {
+    return filter.emptyLabel ?? 'Todo';
   }
 
   clearSearchTerm(): void {

@@ -39,10 +39,10 @@ export class ContratoComponent {
   @Input() tiposJornada: EmpleadoCatalogOption[] = [];
   @Input() monedas: EmpleadoCatalogOption[] = [];
   @Input() tramosCarga: TramoCargaCatalogOption[] = [];
+  @Input() visibleBlocks: string[] | null = null;
 
   readonly employeeStates: SelectOption<EmpleadoEstado>[] = [
-    { value: 'borrador', label: 'Borrador' },
-    { value: 'en_proceso', label: 'Incompleta' },
+    { value: 'en_proceso', label: 'En proceso' },
   ];
 
   readonly relationOptions: SelectOption<RelacionLaboral>[] = [
@@ -169,5 +169,9 @@ export class ContratoComponent {
 
   hasWeekday(dayValue: number): boolean {
     return this.formGroup.controls.semanaCorridaDiasLaborables.value.includes(dayValue);
+  }
+
+  isBlockVisible(blockId: string): boolean {
+    return this.visibleBlocks === null || this.visibleBlocks.includes(blockId);
   }
 }

@@ -1,4 +1,5 @@
 <section class="employee-section-shell">
+  @if (isBlockVisible('identificacion')) {
   <section class="employee-block" [formGroup]="formGroup">
     <div class="employee-block-head">
       <h4>Identificacion legal</h4>
@@ -98,7 +99,9 @@
       </div>
     </div>
   </section>
+  }
 
+  @if (isBlockVisible('nombre')) {
   <section class="employee-block" [formGroup]="formGroup">
     <div class="employee-block-head">
       <h4>Nombre del colaborador</h4>
@@ -176,7 +179,9 @@
       </div>
     </div>
   </section>
+  }
 
+  @if (isBlockVisible('base')) {
   <section class="employee-block">
     <div class="employee-block-head">
       <h4>Informacion base</h4>
@@ -276,4 +281,5 @@
       </div>
     </div>
   </section>
+  }
 </section>

@@ -1,54 +1,95 @@
-<div class="employee-file-shell">
-  @if (isLoading()) {
-    <section class="file-state">
-      <lucide-icon class="h-5 w-5" [img]="clockIcon"></lucide-icon>
-      <p>Cargando ficha del empleado...</p>
-    </section>
-  } @else if (errorMessage(); as message) {
-    <section class="file-state file-state--error">
-      <lucide-icon class="h-5 w-5" [img]="alertIcon"></lucide-icon>
-      <p>{{ message }}</p>
-      <a routerLink="/empleados">Volver al listado</a>
-    </section>
-  } @else if (empleado(); as employee) {
-    <header class="file-hero">
-      <div class="file-nav">
-        <a routerLink="/empleados" class="back-link">
-          <lucide-icon class="h-4 w-4" [img]="arrowLeftIcon"></lucide-icon>
-          Volver al listado
-        </a>
-        <span class="file-status" [ngClass]="statusClass(employee.estado)">
-          {{ statusLabel(employee.estado) }}
-        </span>
-      </div>
+<section class="employee-file-page" aria-label="Ficha de empleado">
+  <header class="file-page-head" aria-label="Encabezado de ficha">
+    <app-record-breadcrumb
+      [items]="breadcrumbItems"
+      title="Ficha empleado"
+    ></app-record-breadcrumb>
+  </header>
 
-      <div class="file-identity">
-        <div class="file-person">
-          <p>Ficha persistida</p>
-          <h1>{{ employee.nombre }}</h1>
-          <dl>
-            <div>
-              <dt>RUT</dt>
-              <dd>{{ employee.rut }}</dd>
+  <div class="file-toolbar" aria-label="Acciones de ficha">
+    <a routerLink="/empleados" class="file-toolbar-button file-toolbar-button--secondary">
+      <lucide-icon class="file-toolbar-icon" [img]="arrowLeftIcon"></lucide-icon>
+      Volver
+    </a>
+
+    @if (!isLoading() && !errorMessage() && empleado(); as employee) {
+      <button
+        type="button"
+        class="file-toolbar-button file-toolbar-button--primary"
+        (click)="employee.aptoParaRemuneraciones ? startEditing() : selectRecommendedTab(employee)"
+      >
+        <lucide-icon class="file-toolbar-icon" [img]="editIcon"></lucide-icon>
+        {{ primaryActionLabel(employee) }}
+      </button>
+    }
+  </div>
+
+  <div class="file-content-card">
+    @if (isLoading()) {
+      <section class="file-state file-state--loading" role="status" aria-live="polite">
+        <lucide-icon class="file-state-spinner" [img]="loaderIcon"></lucide-icon>
+        <p>Cargando ficha...</p>
+      </section>
+    } @else if (errorMessage(); as message) {
+      <section class="file-state file-state--error">
+        <lucide-icon class="h-5 w-5" [img]="alertIcon"></lucide-icon>
+        <p>{{ message }}</p>
+      </section>
+    } @else if (empleado(); as employee) {
+      <section class="file-hero" aria-label="Resumen de ficha">
+        <div class="file-identity">
+          <div class="file-person">
+            <div class="file-title-row">
+              <div>
+                <p>Ficha de colaborador</p>
+                <h2>{{ employee.nombre }}</h2>
+              </div>
+              <span class="file-status" [ngClass]="statusClass(employee.estado)">
+                {{ statusLabel(employee.estado) }}
+              </span>
             </div>
-            <div>
-              <dt>Cargo</dt>
-              <dd>{{ employee.cargo }}</dd>
+
+            <dl>
+              <div>
+                <dt>RUT</dt>
+                <dd>{{ employee.rut }}</dd>
+              </div>
+              <div>
+                <dt>Cargo</dt>
+                <dd>{{ employee.cargo }}</dd>
+              </div>
+              <div>
+                <dt>Centro de costo</dt>
+                <dd>{{ employee.departamento }}</dd>
+              </div>
+            </dl>
+          </div>
+
+          <div class="file-metrics" aria-label="Estado de la ficha">
+            <div class="metric-item metric-item--primary metric-progress">
+              <div class="metric-progress-head">
+                <strong>{{ completionValue(employee) }}%</strong>
+                <span>{{ completedBlocks(employee) }} de {{ tabs.length }} bloques completos</span>
+              </div>
+              <div class="progress-track" aria-hidden="true">
+                <span [ngStyle]="progressStyle(employee)"></span>
+              </div>
+              <small>{{ pendingBlocks(employee) }} bloques requieren revision</small>
             </div>
-            <div>
-              <dt>Sucursal</dt>
-              <dd>{{ employee.departamento }}</dd>
+            <div class="metric-item">
+              <strong>{{ operationalStatusLabel(employee) }}</strong>
+              <span>Estado operativo</span>
             </div>
-          </dl>
+            <div class="metric-item">
+              <strong>{{ payrollReadinessLabel(employee) }}</strong>
+              <span>Remuneraciones</span>
+            </div>
+          </div>
         </div>
 
-        <div class="file-health">
-          <div class="completion-ring">
-            <strong>{{ completionValue(employee) }}%</strong>
-            <span>Completitud</span>
-          </div>
+        <div class="file-progress-row">
           <div class="pending-box">
-            <p>Pendientes</p>
+            <p>{{ employee.estado === 'activo' ? 'Control' : 'Pendiente' }}</p>
             <ul>
               @for (pending of pendingItems(employee); track pending) {
                 <li>
@@ -59,100 +100,216 @@
             </ul>
           </div>
         </div>
-      </div>
+      </section>
 
-      <div class="file-actions">
-        @if (employee.estado === 'borrador') {
-          <a [routerLink]="['/empleados', employee.id]" class="file-primary-action">
-            {{ primaryActionLabel(employee) }}
-          </a>
-        } @else {
-          <button type="button" class="file-primary-action" (click)="startEditing()">
-            {{ primaryActionLabel(employee) }}
+      <section class="file-tabs" aria-label="Secciones de la ficha">
+        @for (tab of tabs; track tab.id) {
+          <button
+            type="button"
+            [class.is-active]="tab.id === activeTab()"
+            [ngClass]="tabStatusClass(tab.id, employee)"
+            (click)="selectTab(tab.id)"
+          >
+            <span class="tab-state-dot" aria-hidden="true"></span>
+            <span class="tab-label">{{ tab.label }}</span>
+            <span class="tab-state-label">{{ tabStatusLabel(tab.id, employee) }}</span>
           </button>
-        }
-      </div>
-    </header>
-
-    <section class="file-tabs" aria-label="Secciones de la ficha">
-      @for (tab of tabs; track tab.id) {
-        <button
-          type="button"
-          [class.is-active]="tab.id === activeTab()"
-          (click)="selectTab(tab.id)"
-        >
-          {{ tab.label }}
-        </button>
-      }
-    </section>
-
-    <main class="file-content">
-      <section class="section-summary">
-        <div class="section-head">
-          <div>
-            <p>Resumen de bloque</p>
-            <h2>{{ activeTabLabel() }}</h2>
-          </div>
-
-          @if (!isEditingCurrentTab()) {
-            <button type="button" class="section-edit-button" (click)="startEditing()">
-              <lucide-icon class="h-4 w-4" [img]="editIcon"></lucide-icon>
-              Editar seccion
-            </button>
-          }
-        </div>
-
-        <dl class="detail-grid">
-          @for (item of detailItems(employee); track item.label) {
-            <div>
-              <dt>{{ item.label }}</dt>
-              <dd>{{ item.value }}</dd>
-            </div>
-          }
-        </dl>
-
-        @if (isEditingCurrentTab()) {
-          <div class="section-edit-panel">
-            <div>
-              <p>Modo edicion localizado</p>
-              <span>Los cambios de esta vista quedaran limitados a la seccion {{ activeTabLabel() }}.</span>
-            </div>
-            <div class="section-edit-actions">
-              <button type="button" class="section-save-button" (click)="saveSection()">
-                <lucide-icon class="h-4 w-4" [img]="saveIcon"></lucide-icon>
-                Guardar cambios
-              </button>
-              <button type="button" class="section-cancel-button" (click)="cancelEditing()">
-                <lucide-icon class="h-4 w-4" [img]="cancelIcon"></lucide-icon>
-                Cancelar
-              </button>
-            </div>
-          </div>
         }
       </section>
 
-      <aside class="file-side">
-        <section>
-          <p>Estado operativo</p>
-          <div class="side-status-row">
-            <lucide-icon class="h-4 w-4" [img]="employee.estado === 'activo' ? checkIcon : clockIcon"></lucide-icon>
-            <span>
-              {{
-                employee.estado === 'activo'
-                  ? 'Ficha lista para operacion administrativa'
-                  : 'Ficha pendiente de completar'
-              }}
-            </span>
+      <main class="file-content">
+        <section class="section-summary">
+          <div class="section-head">
+            <div>
+              <p>Revision por bloque</p>
+              <h2>{{ activeTabLabel() }}</h2>
+            </div>
+
           </div>
+
+          @if (activeTab() === 'historial') {
+            <app-data-grid
+              title="Historial de ficha"
+              [columns]="historyColumns"
+              [rows]="historyRows(employee)"
+              [filtersEnabled]="false"
+              [showExportAction]="false"
+              [selectable]="false"
+              [showHeader]="false"
+              [maxItems]="10"
+              [trackBy]="trackHistoryRow"
+              cardClassName="history-grid-card"
+              emptyTitle="Sin eventos de historial"
+              emptyDescription="La ficha aun no registra eventos de auditoria."
+            ></app-data-grid>
+          } @else {
+            <div class="detail-block-list">
+              @for (block of detailBlocks(employee); track block.id) {
+                <section class="detail-block" [class.is-editing]="isEditingBlock(block.id)">
+                  <header class="detail-block-head">
+                    <h3>{{ block.title }}</h3>
+                    @if (!isEditingCurrentTab() && canEditBlock(block.id)) {
+                      <button type="button" class="section-edit-button" (click)="startEditing(block.id)">
+                        <lucide-icon class="h-4 w-4" [img]="editIcon"></lucide-icon>
+                        Editar
+                      </button>
+                    }
+                  </header>
+
+                  @if (isEditingBlock(block.id)) {
+                    <form class="inline-edit-shell" [formGroup]="form" (ngSubmit)="saveSection()">
+                      @if (sectionErrorMessage(); as sectionMessage) {
+                        <div class="section-error-summary" role="alert">
+                          <strong>No se pudo guardar</strong>
+                          <span>{{ sectionMessage }}</span>
+                        </div>
+                      }
+
+                      @if (activeSectionInvalidItems().length > 0 && sectionErrorMessage()) {
+                        <ul class="section-validation-list">
+                          @for (item of activeSectionInvalidItems().slice(0, 5); track item) {
+                            <li>{{ item }}</li>
+                          }
+                        </ul>
+                      }
+
+                      @if (editComponentForBlock(block.id) === 'datos') {
+                        <app-empleado-datos-personales
+                          [formGroup]="form.controls.datosPersonales"
+                          [contactoFormGroup]="form.controls.contacto"
+                          [paises]="catalogos().paises"
+                          [visibleBlocks]="editVisibleBlocks(block.id)"
+                        ></app-empleado-datos-personales>
+                      } @else if (editComponentForBlock(block.id) === 'contacto') {
+                        <app-empleado-contacto
+                          [formGroup]="form.controls.contacto"
+                          [comunas]="catalogos().comunas"
+                          [visibleBlocks]="editVisibleBlocks(block.id)"
+                        ></app-empleado-contacto>
+                      } @else if (editComponentForBlock(block.id) === 'contrato') {
+                        <app-empleado-contrato
+                          [formGroup]="form.controls.contrato"
+                          [centrosCosto]="catalogos().centrosCosto"
+                          [sucursales]="catalogos().sucursales"
+                          [departamentos]="catalogos().departamentos"
+                          [tiposTrabajador]="catalogos().tiposTrabajador"
+                          [tiposJornada]="catalogos().tiposJornada"
+                          [monedas]="catalogos().monedas"
+                          [tramosCarga]="catalogos().tramosCarga"
+                          [visibleBlocks]="editVisibleBlocks(block.id)"
+                        ></app-empleado-contrato>
+                      } @else if (editComponentForBlock(block.id) === 'prevision') {
+                        <app-empleado-prevision-salud
+                          [formGroup]="form.controls.previsionSalud"
+                          [regimenesPrevisionales]="catalogos().regimenesPrevisionales"
+                          [afps]="catalogos().afps"
+                          [entidadesSalud]="catalogos().entidadesSalud"
+                          [monedas]="catalogos().monedas"
+                          [institucionesApv]="catalogos().institucionesApv"
+                          [formasPagoApv]="catalogos().formasPagoApv"
+                          [visibleBlocks]="editVisibleBlocks(block.id)"
+                        ></app-empleado-prevision-salud>
+                      } @else if (editComponentForBlock(block.id) === 'bancario') {
+                        <app-empleado-bancario
+                          [formGroup]="form.controls.bancario"
+                          [bancos]="catalogos().bancos"
+                          [tiposCuentaBancaria]="catalogos().tiposCuentaBancaria"
+                          [visibleBlocks]="editVisibleBlocks(block.id)"
+                        ></app-empleado-bancario>
+                      }
+
+                      <div class="inline-edit-actions">
+                        <button
+                          type="submit"
+                          class="inline-action inline-action--primary"
+                          [disabled]="isSavingSection() || isLoadingCatalogs()"
+                        >
+                          @if (isSavingSection()) {
+                            Guardando...
+                          } @else {
+                            Guardar cambios
+                          }
+                        </button>
+                        <button
+                          type="button"
+                          class="inline-action inline-action--secondary"
+                          [disabled]="isSavingSection()"
+                          (click)="cancelEditing()"
+                        >
+                          Cancelar
+                        </button>
+                      </div>
+                    </form>
+                  } @else {
+                    <dl class="detail-grid">
+                      @for (item of block.items; track item.label) {
+                        <div>
+                          <dt>{{ item.label }}</dt>
+                          <dd>{{ item.value }}</dd>
+                        </div>
+                      }
+                    </dl>
+                  }
+                </section>
+              }
+            </div>
+          }
         </section>
 
-        <section>
-          <p>Control de edicion</p>
-          <span>
-            La ficha se actualiza por secciones para evitar cambios masivos sin contexto.
-          </span>
-        </section>
-      </aside>
-    </main>
-  }
-</div>
+        <aside class="file-side">
+          <section>
+            <p>Estado de ficha</p>
+            <div class="side-status-row">
+              <lucide-icon class="h-4 w-4" [img]="employee.estado === 'activo' ? checkIcon : clockIcon"></lucide-icon>
+              <span>{{ statusLabel(employee.estado) }}</span>
+            </div>
+            <dl class="side-state-list">
+              <div>
+                <dt>Operativo</dt>
+                <dd>{{ operationalStatusLabel(employee) }}</dd>
+              </div>
+              <div>
+                <dt>Ficha</dt>
+                <dd>{{ estadoFichaLabel(employee.estadoFicha) }}</dd>
+              </div>
+              <div>
+                <dt>Remuneraciones</dt>
+                <dd>{{ payrollReadinessLabel(employee) }}</dd>
+              </div>
+              <div>
+                <dt>Completitud</dt>
+                <dd>{{ completionValue(employee) }}%</dd>
+              </div>
+            </dl>
+          </section>
+
+          <section>
+            <p>Faltantes criticos</p>
+            <ul class="side-missing-list">
+              @for (pending of pendingItems(employee); track pending) {
+                <li>{{ pending }}</li>
+              }
+            </ul>
+          </section>
+
+          <section>
+            <p>Impacto operativo</p>
+            <span>{{ impactMessage(employee) }}</span>
+          </section>
+
+          <section>
+            <p>Acciones rapidas</p>
+            <div class="side-actions">
+              <button type="button" (click)="selectRecommendedTab(employee)">
+                {{ nextStepLabel(employee) }}
+              </button>
+              <button type="button" (click)="startEditing()">
+                Editar seccion actual
+              </button>
+            </div>
+          </section>
+        </aside>
+      </main>
+    }
+  </div>
+</section>

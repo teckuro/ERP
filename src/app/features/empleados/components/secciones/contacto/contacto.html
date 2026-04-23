@@ -1,4 +1,5 @@
 <section class="employee-section-shell employee-section-shell--compact" [formGroup]="formGroup">
+  @if (isBlockVisible('ubicacion')) {
   <section class="employee-block">
     <div class="employee-block-head">
       <h4>Ubicacion administrativa</h4>
@@ -109,4 +110,5 @@
       </div>
     </div>
   </section>
+  }
 </section>

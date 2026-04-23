@@ -26,6 +26,7 @@ export class PrevisionSaludComponent {
   @Input() monedas: EmpleadoCatalogOption[] = [];
   @Input() institucionesApv: EmpleadoCatalogOption[] = [];
   @Input() formasPagoApv: EmpleadoCatalogOption[] = [];
+  @Input() visibleBlocks: string[] | null = null;
   readonly tipoRegimenOptions = TIPO_REGIMEN_OPTIONS;
 
   controlClass(controlName: PrevisionSaludControlName): string {
@@ -70,5 +71,9 @@ export class PrevisionSaludComponent {
 
   isRequired(controlName: PrevisionSaludControlName): boolean {
     return this.formGroup.controls[controlName].hasValidator(Validators.required);
+  }
+
+  isBlockVisible(blockId: string): boolean {
+    return this.visibleBlocks === null || this.visibleBlocks.includes(blockId);
   }
 }

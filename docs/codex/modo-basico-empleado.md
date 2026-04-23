@@ -6,8 +6,7 @@ Integrar el modo básico dentro del sistema actual SIN romper:
 
 - layout ERP
 - reglas de UI existentes
-- form-patterns
-- ui-principles
+- reglas de `ui-form-guidelines.md`
 
 Este archivo complementa las reglas existentes, no las reemplaza.
 
@@ -17,10 +16,8 @@ Este archivo complementa las reglas existentes, no las reemplaza.
 
 Antes de aplicar este modo, respetar:
 
-- AGENTS.md :contentReference[oaicite:0]{index=0}
-- ui-layout-erp.md :contentReference[oaicite:1]{index=1}
-- form-patterns.md :contentReference[oaicite:2]{index=2}
-- ui-checklist.md :contentReference[oaicite:3]{index=3}
+- `AGENTS.md`
+- `ui-form-guidelines.md`
 
 ---
 
@@ -61,9 +58,7 @@ Se mantiene:
 
 ### 3.1 Bloque protagonista
 
-Respetar regla:
-
-"Solo un foco principal" :contentReference[oaicite:4]{index=4}
+Respetar la regla de un solo bloque protagonista definida en `ui-form-guidelines.md`.
 
 En modo básico:
 
@@ -91,7 +86,7 @@ NO renderizar:
 
 ## 5. Formularios
 
-Seguir form-patterns.md :contentReference[oaicite:5]{index=5}
+Seguir `ui-form-guidelines.md`.
 
 Pero aplicar:
 
@@ -147,7 +142,7 @@ En modo básico:
 
 ## Estados
 
-estado = 'BORRADOR'  
+estado = 'EN_PROCESO'  
 estado_ficha = 'INCOMPLETO'  
 apto_para_remuneraciones = false
 

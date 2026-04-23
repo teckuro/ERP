@@ -16,6 +16,7 @@ export class BancarioComponent {
   @Input({ required: true }) formGroup!: BancarioFormGroup;
   @Input() bancos: EmpleadoCatalogOption[] = [];
   @Input() tiposCuentaBancaria: EmpleadoCatalogOption[] = [];
+  @Input() visibleBlocks: string[] | null = null;
 
   controlClass(controlName: BancarioControlName): string {
     return ['employee-control', this.hasError(controlName) ? 'is-invalid' : '']
@@ -35,5 +36,9 @@ export class BancarioComponent {
 
   isRequired(controlName: BancarioControlName): boolean {
     return this.formGroup.controls[controlName].hasValidator(Validators.required);
+  }
+
+  isBlockVisible(blockId: string): boolean {
+    return this.visibleBlocks === null || this.visibleBlocks.includes(blockId);
   }
 }

@@ -6,7 +6,11 @@ import {
   EmpleadosRepository,
 } from '../data-access/empleados.repository';
 import { EmpleadoFormCatalogos } from '../models/empleado-catalogos.model';
-import { EmpleadoEstado, EmpleadoListado } from '../models/empleado-listado.model';
+import {
+  EmpleadoEstado,
+  EmpleadoFichaDetalle,
+  EmpleadoListado,
+} from '../models/empleado-listado.model';
 import { CrearEmpleadoPayload } from '../models/empleado-payload.model';
 import { EmpleadosCatalogosService } from './empleados-catalogos.service';
 import { EmpleadosWriteService } from './empleados-write.service';
@@ -29,8 +33,16 @@ export class EmpleadosService {
     return this.empleadosRepository.listar();
   }
 
-  obtenerPorId(id: number): Promise<EmpleadoListado | null> {
+  obtenerPorId(id: number): Promise<EmpleadoFichaDetalle | null> {
     return this.empleadosRepository.obtenerPorId(id);
+  }
+
+  guardarSeccionFicha(
+    personaId: number,
+    seccion: 'general' | 'laboral' | 'remuneracion' | 'prevision' | 'pago',
+    payload: CrearEmpleadoPayload,
+  ): Promise<EmpleadoFichaDetalle | null> {
+    return this.empleadosRepository.guardarSeccionFicha(personaId, seccion, payload);
   }
 
   actualizarEstadoPersonas(ids: number[], estado: EmpleadoEstado): Promise<number[]> {

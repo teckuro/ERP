@@ -4,6 +4,7 @@
     <h3 class="labor-title">Datos laborales</h3>
   </div>
 
+  @if (isBlockVisible('relacion')) {
   <section class="labor-block">
     <div class="labor-block-title">Relación laboral</div>
     <div class="relation-grid">
@@ -20,7 +21,9 @@
       }
     </div>
   </section>
+  }
 
+  @if (isBlockVisible('contrato')) {
   <section class="labor-block">
     <div class="labor-block-title">Contrato</div>
     <div class="labor-grid labor-grid--contract">
@@ -243,7 +246,9 @@
       </div>
     </div>
   </section>
+  }
 
+  @if (isBlockVisible('remuneracion')) {
   <section class="labor-block">
     <div class="labor-block-title">Remuneración</div>
     <div class="labor-grid labor-grid--salary">
@@ -404,7 +409,9 @@
       </div>
     </div>
   </section>
+  }
 
+  @if (isBlockVisible('cargas')) {
   <section class="labor-block">
     <div class="labor-block-title">Cargas familiares</div>
     <div class="labor-grid labor-grid--loads">
@@ -464,7 +471,9 @@
       </div>
     </div>
   </section>
+  }
 
+  @if (isBlockVisible('zonaExtrema')) {
   <section class="labor-block">
     <div class="labor-block-title">Zona extrema</div>
     <div class="labor-grid labor-grid--zone">
@@ -529,7 +538,9 @@
       </div>
     </div>
   </section>
+  }
 
+  @if (isBlockVisible('semanaCorrida')) {
   <section class="labor-block">
     <div class="labor-block-title">Beneficio semana corrida</div>
     <div class="labor-grid labor-grid--week">
@@ -581,7 +592,9 @@
       </div>
     </div>
   </section>
+  }
 
+  @if (isBlockVisible('centroCosto')) {
   <section class="labor-block">
     <div class="labor-block-title">Centro de costo y estado</div>
     <div class="labor-grid labor-grid--footer">
@@ -642,4 +655,5 @@
       </div>
     </div>
   </section>
+  }
 </section>

@@ -1,4 +1,4 @@
-import { TablesInsert } from '../../../core/models/database.types';
+import { TablesInsert, TablesUpdate } from '../../../core/models/database.types';
 import { EmpleadoListado } from '../models/empleado-listado.model';
 import { CrearEmpleadoPayload } from '../models/empleado-payload.model';
 import { formatDate } from './empleado-listado.mapper';
@@ -10,6 +10,7 @@ import {
 } from './empleado-listado.mapper';
 
 export type PersonaInsert = TablesInsert<'persona'>;
+export type PersonaUpdate = TablesUpdate<'persona'>;
 export type ContratoInsert = TablesInsert<'contrato'>;
 export type RemuneracionInsert = TablesInsert<'remuneracion'>;
 export type PrevisionInsert = TablesInsert<'prevision'>;
@@ -22,6 +23,8 @@ export type SemanaCorridaInsert = TablesInsert<'semana_corrida'>;
 export type ZonaExtremaInsert = TablesInsert<'zona_extrema'>;
 
 export function buildPersonaInsert(payload: CrearEmpleadoPayload, rut: RutParts): PersonaInsert {
+  const estadoInicial = payload.origenCreacion === 'avanzado' ? 'en_proceso' : payload.estado;
+
   return {
     rut: rut.rut,
     dv: rut.dv,
@@ -42,8 +45,9 @@ export function buildPersonaInsert(payload: CrearEmpleadoPayload, rut: RutParts)
     observaciones_direccion: payload.observacionesDireccion,
     id_tramo_carga: payload.idTramoCarga,
     cargas: payload.cargas,
-    estado: mapEmpleadoEstadoToPersonaEstado(payload.estado),
-    estado_ficha: mapEmpleadoEstadoToEstadoFicha(payload.estado),
+    estado: mapEmpleadoEstadoToPersonaEstado(estadoInicial),
+    estado_ficha: mapEmpleadoEstadoToEstadoFicha(estadoInicial),
+    apto_para_remuneraciones: false,
   };
 }
 
@@ -53,9 +57,21 @@ export function buildPersonaBasicaInsert(
 ): PersonaInsert {
   return {
     ...buildPersonaInsert(payload, rut),
-    estado: 'BORRADOR',
+    estado: 'EN_PROCESO',
     estado_ficha: 'INCOMPLETO',
     apto_para_remuneraciones: false,
+  };
+}
+
+export function buildPersonaActivacionUpdate(
+  payload: CrearEmpleadoPayload,
+  fechaActivacion: string,
+): PersonaUpdate {
+  return {
+    estado: mapEmpleadoEstadoToPersonaEstado(payload.estado),
+    estado_ficha: mapEmpleadoEstadoToEstadoFicha(payload.estado),
+    apto_para_remuneraciones: payload.origenCreacion === 'avanzado',
+    fecha_activacion: payload.origenCreacion === 'avanzado' ? fechaActivacion : null,
   };
 }
 
@@ -255,6 +271,7 @@ export function mapCreatedEmpleado(
 ): EmpleadoListado {
   return {
     id: personaId,
+    idContrato: null,
     rut: formatRutParts(rut),
     nombre: `${payload.nombres} ${payload.apellidoPaterno} ${payload.apellidoMaterno}`
       .replace(/\s+/g, ' ')
@@ -264,5 +281,7 @@ export function mapCreatedEmpleado(
     fechaIngreso: formatDate(payload.fechaIngreso),
     sueldoBase: payload.sueldoBase,
     estado: payload.estado,
+    estadoFicha: mapEmpleadoEstadoToEstadoFicha(payload.estado),
+    aptoParaRemuneraciones: payload.estado === 'activo',
   };
 }

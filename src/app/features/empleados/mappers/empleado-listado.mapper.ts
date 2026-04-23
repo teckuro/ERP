@@ -1,5 +1,9 @@
 import { Enums, Tables } from '../../../core/models/database.types';
-import { EmpleadoEstado, EmpleadoListado } from '../models/empleado-listado.model';
+import {
+  EmpleadoEstado,
+  EmpleadoEstadoFicha,
+  EmpleadoListado,
+} from '../models/empleado-listado.model';
 
 type PersonaEstadoDb = Enums<'tipo_estado_persona_enum'>;
 type EstadoFichaDb = Enums<'tipo_estado_ficha_enum'>;
@@ -21,6 +25,7 @@ export type PersonaFactorEmpleadoRow = Pick<
   | 'estado_ficha'
 > & {
   id_persona: number;
+  apto_para_remuneraciones?: boolean | null;
 };
 
 export function mapPersonaFactorToEmpleado(
@@ -35,6 +40,7 @@ export function mapPersonaFactorToEmpleado(
 
   return {
     id: row.id_persona,
+    idContrato: row.id_contrato ?? null,
     rut,
     nombre: nombre || 'Nuevo Colaborador',
     cargo: row.cargo?.trim() || 'Sin cargo',
@@ -47,6 +53,8 @@ export function mapPersonaFactorToEmpleado(
       mapPersonaEstadoToEmpleadoEstado(row.estado) ??
       mapEstadoFichaToEmpleadoEstado(row.estado_ficha) ??
       mapContratoEstadoToEmpleadoEstado(row.estado_contrato),
+    estadoFicha: row.estado_ficha ?? 'INCOMPLETO',
+    aptoParaRemuneraciones: row.apto_para_remuneraciones ?? row.estado_ficha === 'VALIDO',
   };
 }
 
@@ -150,6 +158,12 @@ export function mapEmpleadoEstadoToEstadoFicha(value: EmpleadoEstado): EstadoFic
     case 'bloqueado':
       return 'INCOMPLETO';
   }
+}
+
+export function mapEstadoFichaDbToEmpleadoEstadoFicha(
+  value: EstadoFichaDb | null,
+): EmpleadoEstadoFicha {
+  return value ?? 'INCOMPLETO';
 }
 
 export function formatRut(rut: string, dv: string): string {
