@@ -83,10 +83,9 @@ export interface TabbarItem {
         width: var(--tabbar-width);
         padding: 0.2rem 0.25rem 0;
         border: 0;
-        border-radius: 1.1rem 1.1rem 0 0;
+        border-radius: 8px 8px 0 0;
         background: transparent;
-        box-shadow:
-          inset 0 1px 0 rgba(255, 255, 255, 0.92);
+        box-shadow: none;
       }
 
       .tabbar-track.is-focus-active-mode {
@@ -99,15 +98,11 @@ export interface TabbarItem {
         left: 0;
         bottom: 0;
         z-index: 0;
-        border-radius: 1rem 1rem 0 0;
-        background:
-          linear-gradient(180deg, rgba(251, 253, 255, 0.99), rgba(241, 245, 249, 0.98)),
-          linear-gradient(90deg, rgba(191, 219, 254, 0.38), rgba(255, 255, 255, 0));
+        border-radius: 8px 8px 0 0;
+        background: #ffffff;
         border: 1px solid rgba(203, 213, 225, 0.95);
         border-bottom-color: rgba(248, 250, 252, 1);
-        box-shadow:
-          0 12px 24px rgba(15, 23, 42, 0.05),
-          inset 0 1px 0 rgba(255, 255, 255, 0.98);
+        box-shadow: none;
         transition:
           transform 280ms cubic-bezier(0.22, 1, 0.36, 1),
           width 280ms cubic-bezier(0.22, 1, 0.36, 1),
@@ -125,24 +120,23 @@ export interface TabbarItem {
         max-width: 130px;
         border: 1px solid rgba(203, 213, 225, 0.9);
         border-bottom-color: transparent;
-        border-radius: 1rem 1rem 0 0;
-        background: linear-gradient(180deg, #e2e8f0, #f1f5f9);
+        border-radius: 8px 8px 0 0;
+        background: #f8fafc;
         padding: 0.7rem 0.8rem;
         color: #64748b;
         opacity: 0.92;
         text-align: left;
         cursor: pointer;
-        box-shadow: inset 0 1px 0 rgba(255,255,255,0.7);
+        box-shadow: none;
         transition:
           color 180ms ease,
-          transform 140ms ease,
           opacity 180ms ease,
           background 180ms ease,
           width 180ms cubic-bezier(0.22, 1, 0.36, 1),
           min-width 180ms cubic-bezier(0.22, 1, 0.36, 1),
           flex-basis 180ms cubic-bezier(0.22, 1, 0.36, 1),
           flex-grow 180ms cubic-bezier(0.22, 1, 0.36, 1),
-          box-shadow 180ms ease;
+          border-color 180ms ease;
       }
 
       .is-focus-active-mode .tabbar-button {
@@ -181,11 +175,8 @@ export interface TabbarItem {
 
       .tabbar-button:hover:not(.is-disabled) {
         color: #334155;
-        background: linear-gradient(180deg, #e8eef5, #f8fafc);
-        transform: translateY(-1px);
-        box-shadow:
-          0 8px 16px rgba(15, 23, 42, 0.05),
-          inset 0 1px 0 rgba(255,255,255,0.82);
+        background: #ffffff;
+        border-color: #94a3b8;
       }
 
       .tabbar-button:hover:not(.is-disabled)::after {
@@ -206,12 +197,8 @@ export interface TabbarItem {
         transform: translateY(0);
         border-color: rgba(203, 213, 225, 0.9);
         border-bottom-color: transparent;
-        background:
-          linear-gradient(180deg, rgba(255, 255, 255, 1), rgba(248, 250, 252, 0.98)),
-          linear-gradient(90deg, rgba(191, 219, 254, 0.24), rgba(255, 255, 255, 0));
-        box-shadow:
-          0 10px 22px rgba(15, 23, 42, 0.06),
-          inset 0 1px 0 rgba(255,255,255,0.95);
+        background: #ffffff;
+        box-shadow: none;
       }
 
       .tabbar-button:not(.is-active) {
@@ -219,15 +206,15 @@ export interface TabbarItem {
       }
 
       .tabbar-button.is-active::after {
-        background: linear-gradient(90deg, #2563eb, #60a5fa);
+        background: #2563eb;
       }
 
       .tabbar-button.is-complete::after {
-        background: linear-gradient(90deg, #059669, #34d399);
+        background: #059669;
       }
 
       .tabbar-button.is-invalid::after {
-        background: linear-gradient(90deg, #dc2626, #f87171);
+        background: #dc2626;
       }
 
       .tabbar-button.is-upcoming::after {
@@ -261,7 +248,7 @@ export interface TabbarItem {
       .tabbar-label {
         font-size: 0.84rem;
         font-weight: 700;
-        letter-spacing: -0.01em;
+        letter-spacing: 0;
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;

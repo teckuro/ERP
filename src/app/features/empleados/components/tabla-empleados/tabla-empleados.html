@@ -54,7 +54,7 @@
 
   <ng-template appDataGridCell="estado" let-empleado>
     <span
-      class="inline-flex min-w-[7.5rem] items-center justify-center rounded-full border px-3 py-1 text-xs font-bold shadow-sm transition-colors hover:bg-opacity-80"
+      class="inline-flex min-w-[7.5rem] items-center justify-center rounded-md border px-3 py-1 text-xs font-bold transition-colors hover:bg-opacity-80"
       [ngClass]="estadoBadgeClass(empleado.estado)"
       [title]="labelEstado(empleado.estado)"
     >

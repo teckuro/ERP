@@ -40,7 +40,7 @@ export interface StepperItem {
             >
               <span class="stepper-circle">
                 @if (!isActive(step.id) && step.status === 'complete') {
-                  <span class="stepper-check">✓</span>
+                  <span class="stepper-check">OK</span>
                 } @else {
                   {{ index + 1 }}
                 }
@@ -72,12 +72,12 @@ export interface StepperItem {
 
       .stepper-shell {
         display: grid;
-        gap: 1rem;
+        gap: 16px;
       }
 
       .stepper-meta {
         display: grid;
-        gap: 0.2rem;
+        gap: 4px;
       }
 
       .stepper-caption {
@@ -113,18 +113,14 @@ export interface StepperItem {
         min-width: 0;
         width: 100%;
         align-items: flex-start;
-        gap: 0.65rem;
+        gap: 8px;
         border: 0;
         background: transparent;
         padding: 0;
         text-align: left;
         color: #334155;
         cursor: pointer;
-        transition: opacity 180ms ease, transform 180ms ease;
-      }
-
-      .stepper-item:hover:not(.is-disabled) {
-        transform: translateY(-1px);
+        transition: opacity 150ms ease;
       }
 
       .stepper-item.is-disabled {
@@ -140,17 +136,17 @@ export interface StepperItem {
         height: 1.9rem;
         flex-shrink: 0;
         border-radius: 999px;
-        border: 2px solid #cbd5e1;
+        border: 1px solid #cbd5e1;
         background: #ffffff;
         font-size: 0.82rem;
         font-weight: 700;
         color: #64748b;
-        transition: border-color 180ms ease, background 180ms ease, color 180ms ease;
+        transition: border-color 150ms ease, background 150ms ease, color 150ms ease;
       }
 
       .stepper-copy {
         display: grid;
-        gap: 0.22rem;
+        gap: 4px;
         min-width: 0;
         flex: 1 1 auto;
         padding-top: 0.16rem;
@@ -189,7 +185,6 @@ export interface StepperItem {
         border-color: #2563eb;
         background: #2563eb;
         color: #ffffff;
-        box-shadow: 0 6px 14px rgba(37, 99, 235, 0.18);
       }
 
       .stepper-item.is-active .stepper-label {
@@ -201,8 +196,8 @@ export interface StepperItem {
       }
 
       .stepper-item.is-complete .stepper-circle {
-        border-color: #059669;
-        background: #059669;
+        border-color: #16a34a;
+        background: #16a34a;
         color: #ffffff;
       }
 
@@ -211,7 +206,7 @@ export interface StepperItem {
       }
 
       .stepper-item.is-complete .stepper-state {
-        color: #059669;
+        color: #16a34a;
       }
 
       .stepper-item.is-invalid .stepper-circle {
@@ -238,11 +233,11 @@ export interface StepperItem {
         margin: 0.9rem 0.35rem 0;
         border-radius: 999px;
         background: #dbe2ea;
-        transition: background 180ms ease;
+        transition: background 150ms ease;
       }
 
       .stepper-connector.is-complete {
-        background: linear-gradient(90deg, #2563eb, #60a5fa);
+        background: #2563eb;
       }
 
       .stepper-check {
@@ -252,7 +247,7 @@ export interface StepperItem {
       @media (max-width: 1024px) {
         .stepper-list {
           display: grid;
-          gap: 0.85rem;
+          gap: 12px;
         }
 
         .stepper-segment {

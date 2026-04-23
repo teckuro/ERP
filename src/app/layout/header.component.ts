@@ -1,5 +1,5 @@
-import { Component, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Component, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { LucideAngularModule } from 'lucide-angular';
 
@@ -8,14 +8,14 @@ import { LucideAngularModule } from 'lucide-angular';
   standalone: true,
   imports: [CommonModule, FormsModule, LucideAngularModule],
   template: `
-    <header class="h-16 bg-white border-b border-gray-200 fixed top-0 right-0 left-64 z-10">
-      <div class="h-full px-6 flex items-center justify-between">
-        <!-- Period Selector -->
+    <header class="fixed left-64 right-0 top-0 z-10 h-16 border-b border-gray-200 bg-white">
+      <div class="flex h-full items-center justify-between px-6">
         <div class="flex items-center gap-2">
-          <lucide-icon name="calendar" class="w-5 h-5 text-gray-500"></lucide-icon>
+          <lucide-icon name="calendar" class="h-5 w-5 text-gray-500"></lucide-icon>
           <select
             [(ngModel)]="selectedPeriod"
-            class="bg-white border border-gray-300 rounded-lg px-3 py-2 text-sm font-medium text-gray-700 hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent cursor-pointer"
+            class="h-10 cursor-pointer rounded-md border border-gray-200 bg-white px-3 text-sm font-semibold text-gray-700 hover:border-gray-300 focus:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-100"
+            aria-label="Periodo activo"
           >
             <option>Abril 2026</option>
             <option>Marzo 2026</option>
@@ -24,24 +24,25 @@ import { LucideAngularModule } from 'lucide-angular';
           </select>
         </div>
 
-        <!-- Right Section -->
         <div class="flex items-center gap-4">
-          <!-- Notifications -->
-          <button class="relative p-2 rounded-lg hover:bg-gray-100 transition-colors">
-            <lucide-icon name="bell" class="w-5 h-5 text-gray-600"></lucide-icon>
-            <span class="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
+          <button
+            type="button"
+            class="relative inline-flex h-9 w-9 items-center justify-center rounded-md border border-transparent transition-colors hover:border-gray-200 hover:bg-gray-50"
+            aria-label="Notificaciones"
+          >
+            <lucide-icon name="bell" class="h-5 w-5 text-gray-600"></lucide-icon>
+            <span class="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-red-600"></span>
           </button>
 
-          <!-- User Menu -->
-          <div class="flex items-center gap-3 pl-4 border-l border-gray-200">
+          <div class="flex items-center gap-3 border-l border-gray-200 pl-4">
             <div class="text-right">
-              <p class="text-sm font-medium text-gray-900">María González</p>
+              <p class="text-sm font-semibold text-gray-900">Maria Gonzalez</p>
               <p class="text-xs text-gray-500">RRHH Admin</p>
             </div>
-            <div class="w-9 h-9 bg-gradient-to-br from-blue-600 to-blue-700 rounded-full flex items-center justify-center">
-              <span class="text-white text-sm font-medium">MG</span>
+            <div class="flex h-9 w-9 items-center justify-center rounded-md bg-blue-600">
+              <span class="text-sm font-semibold text-white">MG</span>
             </div>
-            <lucide-icon name="chevron-down" class="w-4 h-4 text-gray-500"></lucide-icon>
+            <lucide-icon name="chevron-down" class="h-4 w-4 text-gray-500"></lucide-icon>
           </div>
         </div>
       </div>
@@ -54,8 +55,8 @@ export class HeaderComponent {
   get selectedPeriod(): string {
     return this.selectedPeriodSignal();
   }
+
   set selectedPeriod(value: string) {
     this.selectedPeriodSignal.set(value);
   }
 }
-

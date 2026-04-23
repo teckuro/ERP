@@ -131,7 +131,7 @@ export class DataGridCellDirective<T = unknown> {
           <div class="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
             <div class="min-w-0">
               <div class="flex flex-wrap items-center gap-2">
-                <p class="text-sm font-semibold uppercase tracking-wide text-neutral-900">{{ title || 'Registros' }}</p>
+                <p class="text-sm font-semibold uppercase text-neutral-900">{{ title || 'Registros' }}</p>
                 <span class="rounded-md border border-neutral-200 bg-neutral-50 px-2 py-0.5 text-xs font-semibold text-neutral-700">
                     {{ filteredRows.length }}
                   </span>
@@ -186,7 +186,7 @@ export class DataGridCellDirective<T = unknown> {
                       aria-label="Opciones de exportacion"
                     >
                       <div class="border-b border-neutral-100 bg-neutral-50 px-3 py-2.5">
-                        <p class="text-xs font-semibold uppercase tracking-wide text-neutral-500">
+                        <p class="text-xs font-semibold uppercase text-neutral-500">
                           Exportar
                         </p>
                         <p class="mt-0.5 text-xs font-medium text-neutral-500">
@@ -308,7 +308,7 @@ export class DataGridCellDirective<T = unknown> {
                     <div class="border-b border-neutral-100 bg-neutral-50 px-3 py-2.5">
                       <div class="flex items-start justify-between gap-3">
                         <div>
-                          <p class="text-xs font-semibold uppercase tracking-wide text-neutral-500">
+                          <p class="text-xs font-semibold uppercase text-neutral-500">
                             Columnas
                           </p>
                           <p class="mt-0.5 text-xs font-medium text-neutral-500">
@@ -461,7 +461,7 @@ export class DataGridCellDirective<T = unknown> {
           </div>
 
           <div class="flex flex-wrap items-center gap-2 sm:justify-end">
-            <span class="text-xs font-semibold uppercase tracking-wide text-blue-700">Cambiar estado a</span>
+            <span class="text-xs font-semibold uppercase text-blue-700">Cambiar estado a</span>
             @for (action of bulkActions; track action.id) {
               <button
                 type="button"
@@ -552,7 +552,7 @@ export class DataGridCellDirective<T = unknown> {
                   @for (column of visibleColumns; track column.id) {
                     <th
                       scope="col"
-                      class="whitespace-nowrap border-b border-r border-neutral-200 px-3 py-2.5 text-xs font-semibold uppercase tracking-wide text-neutral-600 last:border-r-0"
+                      class="whitespace-nowrap border-b border-r border-neutral-200 px-3 py-2.5 text-xs font-semibold uppercase text-neutral-600 last:border-r-0"
                       [ngClass]="[alignmentHeaderClass(column), column.headerClass ?? '', column.widthClass ?? '']"
                     >
                       @if (isSortable(column)) {
@@ -731,7 +731,7 @@ export class DataGridCellDirective<T = unknown> {
                   aria-label="Ir a pagina"
                 >
                   <div class="border-b border-neutral-100 bg-neutral-50 px-3 py-2.5">
-                    <p class="text-xs font-semibold uppercase tracking-wide text-neutral-500">
+                    <p class="text-xs font-semibold uppercase text-neutral-500">
                       Ir a pagina
                     </p>
                     <p class="mt-0.5 text-xs font-medium text-neutral-500">
@@ -863,9 +863,7 @@ export class DataGridCellDirective<T = unknown> {
       .data-grid-loading-cell {
         height: 22rem;
         border-bottom: 1px solid var(--data-grid-border-soft);
-        background:
-          linear-gradient(#ffffff, #ffffff) padding-box,
-          linear-gradient(180deg, #f8fafc, #ffffff) border-box;
+        background: #ffffff;
         padding: 0;
         text-align: center;
         vertical-align: middle;
@@ -895,7 +893,7 @@ export class DataGridCellDirective<T = unknown> {
       }
 
       .data-grid-state--error {
-        background: linear-gradient(180deg, #fffafa 0%, #ffffff 72%);
+        background: #ffffff;
       }
 
       .data-grid-footer {
@@ -1337,7 +1335,7 @@ export class DataGridComponent<T = unknown> implements OnChanges, OnDestroy {
       case 'danger':
         return 'border-red-200 text-red-700 hover:bg-red-50';
       case 'blocked':
-        return 'border-purple-200 text-purple-700 hover:bg-purple-50';
+        return 'border-neutral-300 text-neutral-700 hover:bg-neutral-50';
       case 'info':
         return 'border-blue-200 text-blue-700 hover:bg-blue-50';
       default:

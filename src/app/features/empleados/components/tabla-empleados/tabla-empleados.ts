@@ -276,7 +276,7 @@ export class TablaEmpleadosComponent {
       case 'desvinculado':
         return 'border-red-200 bg-red-100 text-red-700';
       case 'bloqueado':
-        return 'border-purple-200 bg-purple-100 text-purple-700';
+        return 'border-neutral-300 bg-neutral-100 text-neutral-700';
       default:
         return 'border-blue-200 bg-blue-100 text-blue-700';
     }

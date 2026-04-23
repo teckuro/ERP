@@ -15,43 +15,39 @@ type MenuItem = {
   standalone: true,
   imports: [CommonModule, RouterLink, RouterLinkActive, LucideAngularModule],
   template: `
-    <aside class="w-64 bg-white border-r border-gray-200 flex flex-col h-screen fixed left-0 top-0">
-      <!-- Logo -->
-      <div class="h-16 flex items-center px-6 border-b border-gray-200">
+    <aside class="fixed left-0 top-0 flex h-screen w-64 flex-col border-r border-gray-200 bg-white">
+      <div class="flex h-16 items-center border-b border-gray-200 px-6">
         <div class="flex items-center gap-3">
-          <div
-            class="w-8 h-8 bg-gradient-to-br from-blue-600 to-blue-700 rounded-lg flex items-center justify-center"
-          >
-            <lucide-icon name="receipt" class="w-5 h-5 text-white"></lucide-icon>
+          <div class="flex h-8 w-8 items-center justify-center rounded-md bg-blue-600">
+            <lucide-icon name="receipt" class="h-5 w-5 text-white"></lucide-icon>
           </div>
           <div>
-            <h1 class="font-semibold text-gray-900 text-sm">Remuneraciones</h1>
+            <h1 class="text-sm font-semibold text-gray-900">Remuneraciones</h1>
             <p class="text-xs text-gray-500">Sistema PYME</p>
           </div>
         </div>
       </div>
 
-      <!-- Navigation -->
       <nav class="flex-1 overflow-y-auto py-4">
         <ul class="space-y-1 px-3">
           @for (item of menuItems; track item.path) {
             <li>
               <a
                 [routerLink]="item.path"
-                routerLinkActive="bg-blue-50 text-blue-700 font-medium"
+                routerLinkActive="is-active bg-blue-50 text-blue-700 font-semibold"
                 [routerLinkActiveOptions]="{ exact: item.exact ?? false }"
                 #rla="routerLinkActive"
-                class="sidebar-link"
-                [class]="
-                  'sidebar-link flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 ' +
-                  (rla.isActive
-                    ? 'is-active bg-blue-50 text-blue-700 font-medium'
-                    : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900')
-                "
+                class="sidebar-link flex items-center gap-3 rounded-md px-3 py-2.5 transition-colors duration-150"
+                [class.text-blue-700]="rla.isActive"
+                [class.bg-blue-50]="rla.isActive"
+                [class.font-semibold]="rla.isActive"
+                [class.text-gray-700]="!rla.isActive"
+                [class.hover:bg-gray-50]="!rla.isActive"
+                [class.hover:text-gray-900]="!rla.isActive"
               >
                 <lucide-icon
                   [name]="item.icon"
-                  [class]="'w-5 h-5 ' + (rla.isActive ? 'text-blue-600' : 'text-gray-500')"
+                  [class]="'h-5 w-5 ' + (rla.isActive ? 'text-blue-600' : 'text-gray-500')"
                 ></lucide-icon>
                 <span class="text-sm">{{ item.label }}</span>
               </a>
@@ -60,11 +56,10 @@ type MenuItem = {
         </ul>
       </nav>
 
-      <!-- Footer -->
-      <div class="p-4 border-t border-gray-200">
-        <div class="bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg p-3">
-          <p class="text-xs font-medium text-blue-900">¿Necesitas ayuda?</p>
-          <p class="text-xs text-blue-700 mt-1">Contacta a soporte</p>
+      <div class="border-t border-gray-200 p-4">
+        <div class="rounded-md border border-blue-100 bg-blue-50 p-3">
+          <p class="text-xs font-semibold text-blue-900">Necesitas ayuda?</p>
+          <p class="mt-1 text-xs text-blue-700">Contacta a soporte</p>
         </div>
       </div>
     </aside>
@@ -74,27 +69,22 @@ type MenuItem = {
       .sidebar-link {
         position: relative;
         overflow: hidden;
-        transform: translateX(0);
       }
 
       .sidebar-link::before {
         content: '';
         position: absolute;
-        top: 0.55rem;
-        bottom: 0.55rem;
+        top: 8px;
+        bottom: 8px;
         left: 0;
         width: 3px;
-        border-radius: 999px;
+        border-radius: 6px;
         background: #2563eb;
         opacity: 0;
         transform: scaleY(0.5);
         transition:
-          opacity 160ms ease,
-          transform 160ms ease;
-      }
-
-      .sidebar-link:hover {
-        transform: translateX(2px);
+          opacity 150ms ease,
+          transform 150ms ease;
       }
 
       .sidebar-link.is-active::before {
@@ -103,14 +93,7 @@ type MenuItem = {
       }
 
       .sidebar-link lucide-icon {
-        transition:
-          color 160ms ease,
-          transform 160ms ease;
-      }
-
-      .sidebar-link:hover lucide-icon,
-      .sidebar-link.is-active lucide-icon {
-        transform: scale(1.04);
+        transition: color 150ms ease;
       }
 
       @media (prefers-reduced-motion: reduce) {
@@ -118,12 +101,6 @@ type MenuItem = {
         .sidebar-link::before,
         .sidebar-link lucide-icon {
           transition: none;
-        }
-
-        .sidebar-link:hover,
-        .sidebar-link:hover lucide-icon,
-        .sidebar-link.is-active lucide-icon {
-          transform: none;
         }
       }
     `,
@@ -136,9 +113,8 @@ export class SidebarComponent {
     { path: '/haberes-descuentos', label: 'Haberes y Descuentos', icon: 'dollar-sign' },
     { path: '/proceso-remuneraciones', label: 'Proceso Remuneraciones', icon: 'file-text' },
     { path: '/liquidaciones', label: 'Liquidaciones', icon: 'receipt' },
-    { path: '/licencias-medicas', label: 'Licencias Médicas', icon: 'heart-pulse' },
+    { path: '/licencias-medicas', label: 'Licencias Medicas', icon: 'heart-pulse' },
     { path: '/reportes', label: 'Reportes', icon: 'bar-chart-3' },
-    { path: '/parametros', label: 'Parámetros', icon: 'settings' },
+    { path: '/parametros', label: 'Parametros', icon: 'settings' },
   ];
 }
-

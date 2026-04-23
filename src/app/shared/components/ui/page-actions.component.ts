@@ -100,7 +100,7 @@ export type PageActionType = 'back' | 'save' | 'edit' | 'export' | 'import';
         flex-wrap: wrap;
         align-items: center;
         justify-content: end;
-        gap: 0.2rem;
+        gap: 8px;
         width: 100%;
       }
     `,
@@ -141,17 +141,17 @@ export class PageActionsComponent {
 
   actionClass(action: PageActionType): string {
     const base =
-      'inline-flex h-10 min-w-[8.25rem] items-center justify-center gap-2 rounded-lg border px-4 text-sm font-semibold transition-colors duration-200';
+      'inline-flex h-10 min-w-[8.25rem] items-center justify-center gap-2 rounded-md border px-4 text-sm font-semibold transition-colors duration-150';
 
     if (action === 'save') {
-      return `${base} border-blue-700 bg-blue-700 text-white hover:border-blue-800 hover:bg-blue-800`;
+      return `${base} border-blue-600 bg-blue-600 text-white hover:border-blue-700 hover:bg-blue-700`;
     }
 
     if (action === 'back') {
-      return `${base} border-slate-300 bg-white text-slate-700 hover:border-slate-400 hover:bg-slate-50 hover:text-slate-900`;
+      return `${base} border-gray-200 bg-white text-gray-700 hover:border-gray-300 hover:bg-gray-50 hover:text-gray-900`;
     }
 
-    return `${base} border-slate-300 bg-slate-50 text-slate-700 hover:border-slate-400 hover:bg-slate-100 hover:text-slate-900`;
+    return `${base} border-gray-200 bg-white text-gray-700 hover:border-gray-300 hover:bg-gray-50 hover:text-gray-900`;
   }
 
   hasAction(action: PageActionType): boolean {

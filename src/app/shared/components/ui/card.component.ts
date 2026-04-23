@@ -11,8 +11,8 @@ export class CardComponent {
 
   @HostBinding('class')
   get hostClass(): string {
-    return `block bg-white rounded-lg border border-gray-200 ${
-      this.hover ? 'hover:shadow-md transition-shadow duration-200' : ''
+    return `block rounded-lg border border-gray-200 bg-white ${
+      this.hover ? 'transition-colors duration-150 hover:border-gray-300' : ''
     } ${this.className}`.trim();
   }
 }
@@ -27,7 +27,7 @@ export class CardHeaderComponent {
 
   @HostBinding('class')
   get hostClass(): string {
-    return `block px-6 py-4 border-b border-gray-200 ${this.className}`.trim();
+    return `block border-b border-gray-200 px-4 py-3 ${this.className}`.trim();
   }
 }
 
@@ -41,7 +41,7 @@ export class CardContentComponent {
 
   @HostBinding('class')
   get hostClass(): string {
-    return `block p-6 ${this.className}`.trim();
+    return `block p-4 ${this.className}`.trim();
   }
 }
 

@@ -39,19 +39,9 @@ import { Component, HostBinding, Input } from '@angular/core';
         min-height: 22rem;
         padding: 1.25rem;
         border: 1px solid rgba(203, 213, 225, 0.95);
-        border-radius: 0 1.25rem 1.25rem 1.25rem;
-        background:
-          linear-gradient(180deg, rgba(248, 250, 252, 0.96), rgba(255, 255, 255, 0.98)),
-          repeating-linear-gradient(
-            0deg,
-            rgba(148, 163, 184, 0.04) 0,
-            rgba(148, 163, 184, 0.04) 1px,
-            transparent 1px,
-            transparent 36px
-          );
-        box-shadow:
-          0 18px 38px rgba(15, 23, 42, 0.06),
-          inset 0 1px 0 rgba(255, 255, 255, 0.9);
+        border-radius: 0 8px 8px 8px;
+        background: #ffffff;
+        box-shadow: none;
       }
 
       @media (min-width: 768px) {
