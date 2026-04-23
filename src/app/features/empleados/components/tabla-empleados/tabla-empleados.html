@@ -1,10 +1,10 @@
 <app-data-grid
-  title="Empleados"
+  title="Listado de empleados"
   [columns]="columns"
   [rows]="empleados"
   [filters]="filters"
   [filtersEnabled]="true"
-  [gridHeight]="420"
+  [gridHeight]="'min(80vh, calc(100vh - 11.5rem))'"
   [maxItems]="maxItems"
   [loading]="loading"
   loadingLabel="Cargando listado de empleados..."
@@ -12,11 +12,14 @@
   [bulkActionLoading]="bulkActionLoading"
   [bulkActionResult]="bulkActionResult"
   [bulkActions]="bulkStateActions"
-  [showHeader]="false"
+  [showHeader]="true"
   [trackBy]="trackByEmpleadoId"
   [selectable]="true"
   selectionLabel="empleados"
   persistenceKey="empleados.data-grid.preferences"
+  [pageSizeOptions]="pageSizeOptions"
+  className="empleados-grid-shell"
+  cardClassName="empleados-grid-card"
   searchPlaceholder="Buscar por nombre, RUT, cargo o departamento"
   (export)="exportEmpleados($event)"
   (bulkAction)="bulkAction.emit($event)"
@@ -26,9 +29,9 @@
   emptyDescription="Prueba ajustando la busqueda o los filtros."
 >
   <ng-template appDataGridCell="nombre" let-empleado>
-    <div class="min-w-0" [title]="empleado.nombre">
-      <p class="truncate text-sm font-semibold text-neutral-900">{{ empleado.nombre }}</p>
-      <p class="mt-1 truncate text-xs font-medium leading-4 text-neutral-500">
+    <div class="employee-name-cell" [title]="empleado.nombre">
+      <p class="employee-name-cell__title">{{ empleado.nombre }}</p>
+      <p class="employee-name-cell__meta">
         {{ formatEmployeeMeta(empleado) }}
       </p>
     </div>
@@ -36,29 +39,29 @@
 
   <ng-template appDataGridCell="departamento" let-empleado>
     @if (isDefaultDepartamento(empleado.departamento)) {
-      <span class="inline-flex rounded-md bg-neutral-50 px-2 py-0.5 text-xs font-medium text-neutral-500">
+      <span class="department-pill department-pill--muted">
         Sin CC
       </span>
     } @else {
-      <span class="block truncate text-neutral-700" [title]="empleado.departamento">
+      <span class="department-pill" [title]="empleado.departamento">
         {{ empleado.departamento }}
       </span>
     }
   </ng-template>
 
   <ng-template appDataGridCell="cargo" let-empleado>
-    <span class="block truncate text-neutral-700" [title]="capitalize(empleado.cargo)">
+    <span class="cargo-cell" [title]="capitalize(empleado.cargo)">
       {{ capitalize(empleado.cargo) }}
     </span>
   </ng-template>
 
   <ng-template appDataGridCell="estado" let-empleado>
     <span
-      class="inline-flex min-w-[7.5rem] items-center justify-center rounded-md border px-3 py-1 text-xs font-bold transition-colors hover:bg-opacity-80"
+      class="status-badge"
       [ngClass]="estadoBadgeClass(empleado.estado)"
       [title]="labelEstado(empleado.estado)"
     >
-      <span class="mr-1.5 h-2 w-2 rounded-full bg-current" aria-hidden="true"></span>
+      <span class="status-badge__dot" aria-hidden="true"></span>
       {{ labelEstado(empleado.estado) }}
     </span>
   </ng-template>
@@ -76,7 +79,7 @@
   </ng-template>
 
   <ng-template appDataGridCell="acciones" let-empleado>
-    <div class="relative flex items-center justify-end gap-2" data-employee-action-menu (click)="$event.stopPropagation()">
+    <div class="employee-actions" data-employee-action-menu (click)="$event.stopPropagation()">
       <a
         [routerLink]="['/empleados', empleado.id]"
         class="row-primary-action"
@@ -99,13 +102,13 @@
 
       @if (openActionMenuId === empleado.id) {
         <div
-          class="employee-action-menu absolute right-0 top-9 z-50 w-56 overflow-hidden rounded-lg border border-neutral-200 bg-white text-left shadow-[0_16px_34px_rgba(15,23,42,0.14)] ring-1 ring-black/[0.02]"
+          class="employee-action-menu"
           role="menu"
         >
           <div class="border-b border-neutral-100 bg-neutral-50 px-3 py-2.5">
             <p class="text-xs font-bold text-neutral-900">{{ rowPrimaryActionLabel(empleado.estado) }}</p>
             <p class="mt-0.5 text-[0.7rem] font-medium text-neutral-500">
-              {{ labelEstado(empleado.estado) }} · {{ completionValue(empleado.estado) }}% completitud
+              {{ labelEstado(empleado.estado) }} - {{ completionValue(empleado.estado) }}% completitud
             </p>
           </div>
           <div class="p-1.5">
