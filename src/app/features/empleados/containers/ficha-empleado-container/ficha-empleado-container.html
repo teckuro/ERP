@@ -68,7 +68,10 @@
           <div class="file-metrics" aria-label="Estado de la ficha">
             <div class="metric-item metric-item--primary metric-progress">
               <div class="metric-progress-head">
-                <strong>{{ completionValue(employee) }}%</strong>
+                <strong class="inline-flex items-baseline gap-px whitespace-nowrap text-blue-700">
+                  <span class="text-[1.55rem] font-extrabold leading-none">{{ completionValue(employee) }}</span>
+                  <span class="text-[0.95rem] font-bold leading-none">%</span>
+                </strong>
                 <span>{{ completedBlocks(employee) }} de {{ tabs.length }} bloques completos</span>
               </div>
               <div class="progress-track" aria-hidden="true">
@@ -243,9 +246,16 @@
                   } @else {
                     <dl class="detail-grid">
                       @for (item of block.items; track item.label) {
-                        <div>
+                        <div [class.is-missing]="isMissingValue(item.value)">
                           <dt>{{ item.label }}</dt>
-                          <dd>{{ item.value }}</dd>
+                          <dd [class.inline-flex]="isMissingValue(item.value)" [class.items-center]="isMissingValue(item.value)" [class.gap-1.5]="isMissingValue(item.value)" [class.text-amber-700]="isMissingValue(item.value)">
+                            @if (isMissingValue(item.value)) {
+                              <span class="inline-flex flex-none items-center justify-center text-amber-500" aria-hidden="true">
+                                <lucide-icon class="h-3.5 w-3.5" [img]="alertIcon"></lucide-icon>
+                              </span>
+                            }
+                            <span>{{ item.value }}</span>
+                          </dd>
                         </div>
                       }
                     </dl>
@@ -287,7 +297,10 @@
             <p>Faltantes criticos</p>
             <ul class="side-missing-list">
               @for (pending of pendingItems(employee); track pending) {
-                <li>{{ pending }}</li>
+                <li>
+                  <lucide-icon class="h-3.5 w-3.5 flex-none text-amber-500" [img]="alertIcon"></lucide-icon>
+                  <span>{{ pending }}</span>
+                </li>
               }
             </ul>
           </section>

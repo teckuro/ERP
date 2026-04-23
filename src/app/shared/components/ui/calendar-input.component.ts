@@ -11,7 +11,7 @@ import {
 } from '@angular/core';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { LucideAngularModule } from 'lucide-angular';
-import { CalendarDays, ChevronLeft, ChevronRight, X } from 'lucide-angular/src/icons';
+import { ChevronLeft, ChevronRight, X } from 'lucide-angular/src/icons';
 
 interface CalendarDay {
   date: Date;
@@ -36,7 +36,11 @@ interface CalendarDay {
   ],
   template: `
     <div class="calendar-root" [class.is-disabled]="disabled">
-      <div class="calendar-field" [class.is-invalid]="invalid">
+      <div class="calendar-field" [class.is-invalid]="invalid" [class.has-inset-label]="insetLabel">
+        @if (insetLabel) {
+          <span class="calendar-inset-label">{{ insetLabel }}</span>
+        }
+
         <input
           [id]="id"
           type="text"
@@ -46,6 +50,8 @@ interface CalendarDay {
           [attr.placeholder]="placeholder"
           [disabled]="disabled"
           [value]="displayValue"
+          (focus)="openCalendar()"
+          (click)="openCalendar()"
           (input)="handleInput($event)"
           (blur)="handleBlur()"
           (keydown)="handleKeydown($event)"
@@ -54,26 +60,17 @@ interface CalendarDay {
         />
 
         @if (value && clearable && !disabled) {
-          <button
-            type="button"
-            class="calendar-icon-button"
-            aria-label="Limpiar fecha"
-            (click)="clearDate()"
-          >
-            <lucide-icon [img]="clearIcon"></lucide-icon>
-          </button>
+          <div class="calendar-actions">
+            <button
+              type="button"
+              class="calendar-icon-button"
+              aria-label="Limpiar fecha"
+              (click)="clearDate()"
+            >
+              <lucide-icon [img]="clearIcon"></lucide-icon>
+            </button>
+          </div>
         }
-
-        <button
-          type="button"
-          class="calendar-trigger"
-          aria-label="Abrir calendario"
-          [attr.aria-expanded]="open"
-          [disabled]="disabled"
-          (click)="toggleCalendar()"
-        >
-          <lucide-icon [img]="calendarIcon"></lucide-icon>
-        </button>
       </div>
 
       @if (open) {
@@ -170,15 +167,21 @@ interface CalendarDay {
       }
 
       .calendar-field {
+        position: relative;
         display: grid;
-        grid-template-columns: minmax(0, 1fr) auto auto;
+        grid-template-columns: minmax(0, 1fr) auto;
         align-items: center;
         width: 100%;
-        height: 38px;
+        height: 32px;
         border: 1px solid #e5e7eb;
-        border-radius: 6px;
+        border-radius: 10px;
         background: #ffffff;
         transition: border-color 160ms ease, box-shadow 160ms ease;
+        overflow: hidden;
+      }
+
+      .calendar-field.has-inset-label {
+        padding-top: 0.32rem;
       }
 
       .calendar-field:hover {
@@ -204,10 +207,10 @@ interface CalendarDay {
         height: 100%;
         border: 0;
         background: transparent;
-        padding: 0 10px;
+        padding: 0 2.5rem 0 0.75rem;
         color: #111827;
         font: inherit;
-        font-size: 12px;
+        font-size: 0.74rem;
         font-weight: 600;
         outline: none;
       }
@@ -216,8 +219,35 @@ interface CalendarDay {
         color: #9ca3af;
       }
 
+      .calendar-inset-label {
+        position: absolute;
+        top: 0.28rem;
+        left: 0.72rem;
+        z-index: 1;
+        padding: 0;
+        background: transparent;
+        color: #64748b;
+        font-size: 0.47rem;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        line-height: 1;
+        pointer-events: none;
+      }
+
+      .calendar-actions {
+        position: absolute;
+        top: 50%;
+        right: 0.25rem;
+        transform: translateY(-50%);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 1.75rem;
+        height: 1.75rem;
+      }
+
       .calendar-icon-button,
-      .calendar-trigger,
       .calendar-nav,
       .calendar-footer button {
         display: inline-flex;
@@ -225,32 +255,25 @@ interface CalendarDay {
         justify-content: center;
       }
 
-      .calendar-icon-button,
-      .calendar-trigger {
-        width: 30px;
-        height: 30px;
+      .calendar-icon-button {
+        width: 24px;
+        height: 24px;
         border: 0;
-        border-radius: 5px;
+        border-radius: 6px;
         background: transparent;
         color: #6b7280;
       }
 
-      .calendar-trigger {
-        margin-right: 4px;
-      }
-
-      .calendar-icon-button:hover,
-      .calendar-trigger:hover {
-        background: #f9fafb;
+      .calendar-icon-button:hover {
+        background: #f8fafc;
         color: #111827;
       }
 
       .calendar-icon-button lucide-icon,
-      .calendar-trigger lucide-icon,
       .calendar-nav lucide-icon {
         display: inline-flex;
-        width: 15px;
-        height: 15px;
+        width: 13px;
+        height: 13px;
         line-height: 0;
       }
 
@@ -425,13 +448,13 @@ export class CalendarInputComponent implements ControlValueAccessor {
 
   @Input() id = '';
   @Input() placeholder = 'dd/mm/aaaa';
+  @Input() insetLabel = '';
   @Input() invalid = false;
   @Input() clearable = true;
   @Input() min = '';
   @Input() max = '';
   @Output() readonly valueChange = new EventEmitter<string>();
 
-  readonly calendarIcon = CalendarDays;
   readonly clearIcon = X;
   readonly previousIcon = ChevronLeft;
   readonly nextIcon = ChevronRight;

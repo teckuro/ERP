@@ -59,6 +59,8 @@ export class TablaEmpleadosComponent {
   @ViewChild(DataGridComponent)
   private readonly dataGrid?: DataGridComponent<EmpleadoListado>;
 
+  readonly pageSizeOptions = [10, 20, 30, 50];
+
   readonly bulkStateActions: DataGridBulkActionOption[] = [
     {
       id: 'set-in-progress',
@@ -135,6 +137,14 @@ export class TablaEmpleadosComponent {
       cellClass: 'text-neutral-700',
     },
     {
+      id: 'fechaIngreso',
+      header: 'Ingreso',
+      field: 'fechaIngreso',
+      type: 'date',
+      cellClass: 'whitespace-nowrap text-neutral-700',
+      format: (value) => this.formatDisplayDate(String(value ?? '')),
+    },
+    {
       id: 'sueldoBase',
       header: 'Sueldo',
       field: 'sueldoBase',
@@ -169,9 +179,30 @@ export class TablaEmpleadosComponent {
 
   readonly filters: DataGridFilter<EmpleadoListado>[] = [
     {
+      id: 'rut',
+      label: 'RUT',
+      field: 'rut',
+      type: 'text',
+      operator: 'contains',
+      normalize: 'rut',
+      placeholder: 'Buscar RUT',
+    },
+    {
+      id: 'nombre',
+      label: 'Empleado',
+      field: 'nombre',
+      type: 'text',
+      operator: 'contains',
+      normalize: 'text',
+      matchMode: 'tokens',
+      placeholder: 'Buscar empleado',
+    },
+    {
       id: 'estado',
       label: 'Estado',
       field: 'estado',
+      type: 'select',
+      operator: 'equals',
       emptyLabel: 'Todo',
       options: [
         { label: 'En proceso', value: 'en_proceso' },
@@ -186,13 +217,24 @@ export class TablaEmpleadosComponent {
       id: 'departamento',
       label: 'Centro de costo',
       field: 'departamento',
+      type: 'select',
+      operator: 'equals',
       emptyLabel: 'Todos los centros',
     },
     {
       id: 'cargo',
       label: 'Cargo',
       field: 'cargo',
+      type: 'select',
+      operator: 'equals',
       emptyLabel: 'Todos los cargos',
+    },
+    {
+      id: 'fechaIngreso',
+      label: 'Ingreso',
+      field: 'fechaIngreso',
+      type: 'date-range',
+      operator: 'between',
     },
   ];
 

@@ -923,6 +923,10 @@ export class FichaEmpleadoContainer implements OnInit {
     );
   }
 
+  isMissingValue(value: string): boolean {
+    return value.trim().toLowerCase() === 'sin informacion';
+  }
+
   private patchFormFromEmployee(employee: EmpleadoFichaDetalle): void {
     this.form.patchValue(employee.formValue);
     this.form.markAsPristine();

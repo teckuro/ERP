@@ -1,4 +1,5 @@
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import {
   Component,
   ContentChildren,
@@ -29,21 +30,42 @@ import {
   RefreshCw,
   Search,
   Settings,
+  X,
 } from 'lucide-angular/src/icons';
 
 import { CardComponent } from './card.component';
+import { CalendarInputComponent } from './calendar-input.component';
 import { MessageBoxComponent, MessageBoxVariant } from './message-box.component';
 
 export type DataGridColumnAlign = 'left' | 'center' | 'right';
 export type DataGridColumnType = 'text' | 'number' | 'date';
 export type DataGridSortDirection = 'asc' | 'desc';
 export type DataGridBulkAction = 'activate' | 'deactivate' | 'change-status' | string;
+export type DataGridFilterType = 'select' | 'text' | 'date' | 'date-range';
+export type DataGridTextOperator = 'contains' | 'startsWith' | 'endsWith' | 'equals';
+export type DataGridSelectOperator = 'equals';
+export type DataGridDateOperator = 'on' | 'before' | 'after' | 'between';
+export type DataGridFilterOperator = DataGridTextOperator | DataGridSelectOperator | DataGridDateOperator;
+export type DataGridFilterNormalization = 'text' | 'rut' | 'none';
+export type DataGridFilterMatchMode = 'default' | 'tokens';
+
+export interface DataGridDateRangeValue {
+  from?: string;
+  to?: string;
+}
+
+export type DataGridFilterValue = string | DataGridDateRangeValue;
 
 export interface DataGridFilter<T = unknown> {
   id: string;
   label: string;
   field: keyof T;
+  type?: DataGridFilterType;
+  operator?: DataGridFilterOperator;
+  normalize?: DataGridFilterNormalization;
+  matchMode?: DataGridFilterMatchMode;
   emptyLabel?: string;
+  placeholder?: string;
   options?: Array<string | { label: string; value: string }>;
 }
 
@@ -123,9 +145,91 @@ export class DataGridCellDirective<T = unknown> {
 @Component({
   selector: 'app-data-grid',
   standalone: true,
-  imports: [CommonModule, LucideAngularModule, CardComponent, MessageBoxComponent],
+  imports: [CommonModule, FormsModule, LucideAngularModule, CardComponent, CalendarInputComponent, MessageBoxComponent],
   template: `
-    <app-card [className]="gridCardClass">
+    <app-card [className]="gridCardClass" [ngStyle]="gridCardStyle">
+      @if (filtersEnabled && showFilters) {
+        <div class="border-b border-neutral-200 bg-[linear-gradient(180deg,#fbfdff_0%,#f8fafc_100%)] px-4 pb-2.5 pt-2.5">
+          <div class="flex flex-col gap-3 xl:flex-row xl:items-start xl:justify-between">
+            <div class="min-w-0 flex-1">
+              <div class="data-grid-filter-grid" [ngStyle]="filterGridStyle">
+                @for (filter of visibleFilters; track filter.id) {
+                  <label class="data-grid-filter-field" [class.data-grid-filter-field--wide]="isDateRangeFilter(filter)">
+                    <span class="data-grid-filter-label">
+                      {{ filter.label }}
+                    </span>
+                    @if (isDateRangeFilter(filter)) {
+                      <div class="data-grid-filter-range">
+                        <app-calendar-input
+                          class="data-grid-filter-range-slot"
+                          [ngModel]="filterDateRangeValue(filter, 'from')"
+                          (ngModelChange)="updateDateRangeFilterValue(filter, 'from', $event)"
+                          [max]="filterDateRangeValue(filter, 'to')"
+                          [insetLabel]="'Desde'"
+                          placeholder="dd/mm/aaaa"
+                        ></app-calendar-input>
+                        <app-calendar-input
+                          class="data-grid-filter-range-slot"
+                          [ngModel]="filterDateRangeValue(filter, 'to')"
+                          (ngModelChange)="updateDateRangeFilterValue(filter, 'to', $event)"
+                          [min]="filterDateRangeValue(filter, 'from')"
+                          [insetLabel]="'Hasta'"
+                          placeholder="dd/mm/aaaa"
+                        ></app-calendar-input>
+                      </div>
+                    } @else if (isDateFilter(filter)) {
+                      <app-calendar-input
+                        [ngModel]="filterTextValue(filter)"
+                        (ngModelChange)="updateFilterModelValue(filter, $event)"
+                        placeholder="dd/mm/aaaa"
+                      ></app-calendar-input>
+                    } @else if (isSelectFilter(filter)) {
+                      <select
+                        class="h-8 w-full min-w-0 rounded-lg border border-slate-200 bg-white px-2.5 text-left text-[0.79rem] font-semibold text-slate-700 shadow-[0_1px_2px_rgba(15,23,42,0.04)] outline-none transition hover:border-slate-300 hover:bg-slate-50 focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-100"
+                        [value]="filterTextValue(filter)"
+                        (change)="updateFilterValue(filter, $event)"
+                      >
+                        <option value="">{{ emptyFilterLabel(filter) }}</option>
+                        @for (option of filterOptions(filter); track filterOptionValue(option)) {
+                          <option [value]="filterOptionValue(option)">{{ filterOptionLabel(option) }}</option>
+                        }
+                      </select>
+                    } @else {
+                      <input
+                        type="text"
+                        class="h-8 w-full min-w-0 rounded-lg border border-slate-200 bg-white px-2.5 text-left text-[0.79rem] font-semibold text-slate-700 shadow-[0_1px_2px_rgba(15,23,42,0.04)] outline-none transition hover:border-slate-300 hover:bg-slate-50 focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-100"
+                        [value]="filterTextValue(filter)"
+                        [placeholder]="filterPlaceholder(filter)"
+                        (input)="updateFilterValue(filter, $event)"
+                      />
+                    }
+                  </label>
+                }
+              </div>
+            </div>
+
+            <div class="flex shrink-0 items-center justify-end gap-2 self-end pb-0.5 xl:pl-3">
+              <button
+                type="button"
+                class="inline-flex h-8 items-center justify-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 text-[0.76rem] font-semibold text-slate-600 transition hover:border-slate-300 hover:bg-slate-50 hover:text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+                (click)="clearAllFilters()"
+              >
+                <lucide-icon class="h-3.5 w-3.5" [img]="clearIcon"></lucide-icon>
+                Limpiar
+              </button>
+              <button
+                type="button"
+                class="inline-flex h-8 items-center justify-center gap-1.5 rounded-lg border border-blue-600 bg-blue-600 px-3.5 text-[0.76rem] font-semibold text-white shadow-[0_6px_16px_rgba(37,99,235,0.18)] transition-colors hover:border-blue-700 hover:bg-blue-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
+                (click)="applyFilters()"
+              >
+                <lucide-icon class="h-3.5 w-3.5" [img]="searchIcon"></lucide-icon>
+                Buscar
+              </button>
+            </div>
+          </div>
+        </div>
+      }
+
       @if ((rows.length > 0 || title) && showHeader) {
         <div class="border-b border-neutral-100 bg-white px-4 pb-4 pt-3.5">
           <div class="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
@@ -136,12 +240,24 @@ export class DataGridCellDirective<T = unknown> {
                     {{ filteredRows.length }}
                   </span>
               </div>
-              <p class="mt-1 text-xs font-medium text-neutral-500" aria-live="polite">
-                  Mostrando {{ rangeStart }}-{{ rangeEnd }} de {{ filteredRows.length }}
-                </p>
             </div>
 
             <div class="flex flex-wrap items-center gap-2 lg:justify-end">
+              <label class="data-grid-toolbar-control data-grid-toolbar-control--show flex h-8 items-center gap-2 rounded-md border border-neutral-200 bg-white px-2.5">
+                <span class="text-xs font-medium text-neutral-600">Mostrar</span>
+                <select
+                  class="h-6 rounded-md border-0 bg-neutral-50 px-1.5 text-xs font-semibold text-neutral-900 outline-none focus:ring-2 focus:ring-blue-500"
+                  [value]="pageSize"
+                  aria-label="Cantidad de elementos por pagina"
+                  [disabled]="loading"
+                  (change)="updatePageSize($event)"
+                >
+                  @for (option of pageSizeOptions; track option) {
+                    <option [value]="option">{{ option }}</option>
+                  }
+                </select>
+              </label>
+
               @if (primaryActionLabel) {
                 <button
                   type="button"
@@ -156,27 +272,27 @@ export class DataGridCellDirective<T = unknown> {
               @if (filtersEnabled) {
                 <button
                   type="button"
-                  class="inline-flex h-8 items-center gap-1.5 rounded-md border border-neutral-200 bg-white px-2.5 text-xs font-medium text-neutral-600 transition-colors hover:bg-neutral-50 hover:text-neutral-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
+                  class="data-grid-toolbar-icon-button inline-flex h-8 w-8 items-center justify-center rounded-md border border-neutral-200 bg-white text-xs font-medium text-neutral-600 transition-colors hover:bg-neutral-50 hover:text-neutral-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
                   aria-label="Mostrar u ocultar filtros"
+                  title="Mostrar u ocultar filtros"
                   [attr.aria-expanded]="showFilters"
                   (click)="showFilters = !showFilters"
                 >
                   <lucide-icon class="h-3.5 w-3.5" [img]="filterIcon"></lucide-icon>
-                  Filtros
                 </button>
               }
 
               @if (showExportAction) {
-                <div class="relative" data-grid-overlay-root>
+                <div class="relative data-grid-toolbar-icon-wrap" data-grid-overlay-root>
                   <button
                     type="button"
-                    class="inline-flex h-8 items-center gap-1.5 rounded-md border border-neutral-200 bg-white px-2.5 text-xs font-medium text-neutral-600 transition-colors hover:bg-neutral-50 hover:text-neutral-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
+                    class="data-grid-toolbar-icon-button inline-flex h-8 w-8 items-center justify-center rounded-md border border-neutral-200 bg-white text-xs font-medium text-neutral-600 transition-colors hover:bg-neutral-50 hover:text-neutral-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
                     aria-label="Exportar registros"
+                    title="Exportar registros"
                     [attr.aria-expanded]="showExportPanel"
                     (click)="toggleExportPanel()"
                   >
                     <lucide-icon class="h-3.5 w-3.5" [img]="downloadIcon"></lucide-icon>
-                    Exportar
                   </button>
 
                   @if (showExportPanel) {
@@ -259,74 +375,54 @@ export class DataGridCellDirective<T = unknown> {
                 </div>
               }
 
-              <label class="flex h-8 items-center gap-2 rounded-md border border-neutral-200 bg-white px-2.5">
-                <span class="text-xs font-medium text-neutral-600">Mostrar</span>
-                <select
-                  class="h-6 rounded-md border-0 bg-neutral-50 px-1.5 text-xs font-semibold text-neutral-900 outline-none focus:ring-2 focus:ring-blue-500"
-                  [value]="pageSize"
-                  aria-label="Cantidad de elementos por pagina"
-                  [disabled]="loading"
-                  (change)="updatePageSize($event)"
-                >
-                  @for (option of pageSizeOptions; track option) {
-                    <option [value]="option">{{ option }}</option>
-                  }
-                </select>
-              </label>
-
               <button
                 type="button"
-                class="inline-flex h-8 items-center gap-1.5 rounded-md border border-neutral-200 bg-white px-2.5 text-xs font-medium text-neutral-600 transition-colors hover:bg-neutral-50 hover:text-neutral-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
+                class="data-grid-toolbar-icon-button inline-flex h-8 w-8 items-center justify-center rounded-md border border-neutral-200 bg-white text-xs font-medium text-neutral-600 transition-colors hover:bg-neutral-50 hover:text-neutral-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
                 aria-label="Refrescar grilla"
                 title="Refrescar grilla"
                 [disabled]="loading"
                 (click)="refresh.emit()"
               >
                 <lucide-icon class="h-3.5 w-3.5" [img]="refreshIcon"></lucide-icon>
-                Refrescar
               </button>
 
-              <div class="relative" data-grid-overlay-root>
+              <div class="relative data-grid-toolbar-icon-wrap" data-grid-overlay-root>
                 <button
                   type="button"
-                  class="inline-flex h-8 items-center gap-1.5 rounded-md border border-neutral-200 bg-white px-2.5 text-xs font-medium text-neutral-600 transition-colors hover:bg-neutral-50 hover:text-neutral-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
+                  class="data-grid-toolbar-icon-button inline-flex h-8 w-8 items-center justify-center rounded-md border border-neutral-200 bg-white text-xs font-medium text-neutral-600 transition-colors hover:bg-neutral-50 hover:text-neutral-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
                   aria-label="Configurar columnas visibles"
                   title="Columnas visibles"
                   [attr.aria-expanded]="showColumnPanel"
                   (click)="toggleColumnPanel()"
                 >
                   <lucide-icon class="h-3.5 w-3.5" [img]="settingsIcon"></lucide-icon>
-                  Columnas
                 </button>
 
                 @if (showColumnPanel) {
                   <div
-                    class="absolute right-0 top-10 z-50 w-72 max-w-[calc(100vw-2rem)] overflow-hidden rounded-md border border-neutral-200 bg-white text-sm shadow-[0_8px_20px_rgba(15,23,42,0.08)] ring-1 ring-black/[0.02]"
+                    class="absolute right-0 top-10 z-50 w-72 max-w-[calc(100vw-2rem)] overflow-hidden rounded-xl border border-slate-200 bg-white text-sm shadow-[0_16px_34px_rgba(15,23,42,0.12)] ring-1 ring-slate-950/[0.03]"
                     role="dialog"
                     aria-label="Columnas visibles"
                   >
-                    <div class="border-b border-neutral-100 bg-neutral-50 px-3 py-2.5">
+                    <div class="border-b border-slate-100 bg-[linear-gradient(180deg,#f8fbff_0%,#fdfefe_100%)] px-3.5 py-2.5">
                       <div class="flex items-start justify-between gap-3">
                         <div>
-                          <p class="text-xs font-semibold uppercase text-neutral-500">
+                          <p class="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-slate-500">
                             Columnas
-                          </p>
-                          <p class="mt-0.5 text-xs font-medium text-neutral-500">
-                            {{ visibleColumns.length }} de {{ columns.length }} columnas visibles
                           </p>
                         </div>
 
                         <div class="flex items-center gap-1.5">
                           <button
                             type="button"
-                            class="inline-flex h-7 items-center rounded-md border border-neutral-200 bg-white px-2.5 text-[0.7rem] font-semibold text-neutral-700 transition-colors hover:border-neutral-300 hover:bg-neutral-100 hover:text-neutral-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
+                            class="inline-flex h-7 items-center rounded-full border border-slate-200 bg-white px-2.5 text-[0.68rem] font-semibold text-slate-700 transition-colors hover:border-slate-300 hover:bg-slate-100 hover:text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
                             (click)="showAllColumns()"
                           >
                             Todo
                           </button>
                           <button
                             type="button"
-                            class="inline-flex h-7 items-center rounded-md border border-neutral-200 bg-white px-2.5 text-[0.7rem] font-semibold text-neutral-700 transition-colors hover:border-neutral-300 hover:bg-neutral-100 hover:text-neutral-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
+                            class="inline-flex h-7 items-center rounded-full border border-slate-200 bg-white px-2.5 text-[0.68rem] font-semibold text-slate-700 transition-colors hover:border-slate-300 hover:bg-slate-100 hover:text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
                             (click)="restoreDefaultColumns()"
                           >
                             Restaurar
@@ -335,33 +431,31 @@ export class DataGridCellDirective<T = unknown> {
                       </div>
                     </div>
 
-                    <div class="max-h-56 overflow-auto p-1.5">
+                    <div class="max-h-64 overflow-auto p-1.5">
                       @for (column of columns; track column.id) {
                         <button
                           type="button"
-                          class="flex w-full items-center justify-between gap-2 rounded-md px-2 py-1.5 text-left transition-colors hover:bg-neutral-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-55"
+                          class="flex w-full items-center justify-between gap-3 rounded-lg px-2.5 py-2 text-left transition-colors hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-55"
                           [disabled]="isColumnFixed(column) || isLastVisibleColumn(column.id)"
+                          [attr.title]="isColumnFixed(column) ? 'La primera columna siempre queda visible' : isLastVisibleColumn(column.id) ? 'Debe quedar al menos una columna visible' : column.header"
                           (click)="toggleColumn(column.id)"
                         >
                           <span class="min-w-0">
-                            <span class="block truncate text-xs font-medium text-neutral-700">
+                            <span class="block truncate text-sm font-semibold text-slate-800">
                               {{ column.header }}
                             </span>
-                            @if (isColumnFixed(column)) {
-                              <span class="text-[0.68rem] font-medium text-neutral-500">Fija</span>
-                            }
                           </span>
 
                           <span
-                            class="relative inline-flex h-4 w-7 shrink-0 items-center rounded-full border transition-colors"
+                            class="relative inline-flex h-5 w-9 shrink-0 items-center rounded-full border transition-colors"
                             [class.border-blue-600]="isColumnVisible(column.id)"
                             [class.bg-blue-500]="isColumnVisible(column.id)"
-                            [class.border-neutral-300]="!isColumnVisible(column.id)"
-                            [class.bg-neutral-100]="!isColumnVisible(column.id)"
+                            [class.border-slate-300]="!isColumnVisible(column.id)"
+                            [class.bg-slate-100]="!isColumnVisible(column.id)"
                           >
                             <span
-                              class="h-3 w-3 rounded-full bg-white shadow-sm ring-1 ring-black/5 transition-transform"
-                              [class.translate-x-3]="isColumnVisible(column.id)"
+                              class="h-4 w-4 rounded-full bg-white shadow-sm ring-1 ring-black/5 transition-transform"
+                              [class.translate-x-4]="isColumnVisible(column.id)"
                               [class.translate-x-0.5]="!isColumnVisible(column.id)"
                             ></span>
                           </span>
@@ -373,78 +467,6 @@ export class DataGridCellDirective<T = unknown> {
               </div>
             </div>
           </div>
-        </div>
-      }
-
-      @if (filtersEnabled && showFilters) {
-        <div class="border-b border-neutral-100 bg-neutral-50 px-4 pb-3 pt-4">
-          <div class="grid gap-3 md:grid-cols-[minmax(14rem,1fr)_repeat(3,minmax(9rem,12rem))]">
-            <div class="relative">
-              <lucide-icon
-                class="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-neutral-400"
-                [img]="emptyIcon"
-              ></lucide-icon>
-              <input
-                class="h-9 w-full rounded-md border border-neutral-200 bg-white py-1 pl-9 pr-8 text-sm font-medium text-neutral-900 outline-none transition placeholder:text-neutral-400 hover:border-neutral-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
-                type="text"
-                [placeholder]="searchPlaceholder"
-                [value]="searchInputTerm"
-                (input)="updateSearchTerm($event)"
-              />
-              @if (searchInputTerm) {
-                <button
-                  type="button"
-                  class="absolute right-2 top-1/2 -translate-y-1/2 rounded px-1.5 py-0.5 text-xs font-semibold text-neutral-500 transition hover:bg-neutral-100 hover:text-neutral-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
-                  aria-label="Limpiar busqueda"
-                  (click)="clearSearchTerm()"
-                >
-                  x
-                </button>
-              }
-            </div>
-
-            @for (filter of filters.slice(0, 3); track filter.id) {
-              <select
-                class="h-9 rounded-md border border-neutral-200 bg-white px-2 text-sm font-medium text-neutral-700 outline-none transition hover:border-neutral-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
-                [value]="filterValues[filter.id] || ''"
-                (change)="updateFilterValue(filter.id, $event)"
-              >
-                <option value="">{{ emptyFilterLabel(filter) }}</option>
-                @for (option of filterOptions(filter); track filterOptionValue(option)) {
-                  <option [value]="filterOptionValue(option)">{{ filterOptionLabel(option) }}</option>
-                }
-              </select>
-            }
-          </div>
-
-          @if (activeFilterChips.length > 0) {
-            <div class="mt-3 flex flex-wrap items-center gap-2">
-              @for (chip of activeFilterChips; track chip.id) {
-                <span
-                  class="inline-flex h-7 items-center gap-1.5 rounded-md border border-neutral-200 bg-white px-2 text-xs font-medium text-neutral-700"
-                >
-                  <span class="text-neutral-500">{{ chip.label }}:</span>
-                  <span>{{ chip.value }}</span>
-                  <button
-                    type="button"
-                    class="rounded px-1 text-neutral-500 transition hover:bg-neutral-100 hover:text-neutral-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
-                    [attr.aria-label]="'Quitar filtro ' + chip.label"
-                    (click)="removeFilterChip(chip.id)"
-                  >
-                    x
-                  </button>
-                </span>
-              }
-
-              <button
-                type="button"
-                class="inline-flex h-7 items-center rounded-md px-2 text-xs font-semibold text-neutral-600 transition hover:bg-neutral-100 hover:text-neutral-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
-                (click)="clearAllFilters()"
-              >
-                Limpiar todo
-              </button>
-            </div>
-          }
         </div>
       }
 
@@ -513,7 +535,7 @@ export class DataGridCellDirective<T = unknown> {
         </div>
       }
 
-      <div class="data-grid-scroll w-full min-w-0 overflow-auto bg-white" [ngStyle]="gridBodyStyle">
+      <div class="data-grid-scroll w-full min-w-0 flex-1 overflow-auto bg-white" [ngStyle]="gridBodyStyle">
         @if (errorMessage && !loading) {
           <div class="data-grid-state data-grid-state--error">
             <div
@@ -533,7 +555,7 @@ export class DataGridCellDirective<T = unknown> {
           </div>
         } @else if (filteredRows.length > 0 || loading) {
           <div class="data-grid-table-region" [class.is-loading]="loading">
-            <table class="h-full w-full min-w-max table-auto border-separate border-spacing-0">
+            <table class="w-full min-w-max table-auto border-separate border-spacing-0">
               <thead class="data-grid-head sticky top-0 z-10 bg-neutral-100 shadow-[0_1px_0_rgba(229,229,229,1)]">
                 <tr>
                   @if (selectable) {
@@ -794,9 +816,52 @@ export class DataGridCellDirective<T = unknown> {
 
       .data-grid-scroll {
         position: relative;
+        min-height: 0;
+        flex: 1 1 auto;
         background: #ffffff;
+        overscroll-behavior: contain;
+        scrollbar-gutter: stable both-edges;
         scrollbar-color: var(--data-grid-scrollbar-thumb) var(--data-grid-scrollbar-track);
         scrollbar-width: thin;
+      }
+
+      .data-grid-filter-grid {
+        display: grid;
+        gap: 0.75rem 0.875rem;
+        align-items: end;
+      }
+
+      .data-grid-filter-field {
+        display: flex;
+        min-width: 0;
+        flex-direction: column;
+        gap: 0.35rem;
+      }
+
+      .data-grid-filter-field--wide {
+        grid-column: span 2;
+      }
+
+      .data-grid-filter-label {
+        width: 100%;
+        padding: 0 0.15rem;
+        text-align: left;
+        font-size: 0.6rem;
+        font-weight: 700;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: #475569;
+      }
+
+      .data-grid-filter-range {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 0.625rem;
+        align-items: end;
+      }
+
+      .data-grid-filter-range-slot {
+        min-width: 0;
       }
 
       .data-grid-scroll::-webkit-scrollbar {
@@ -820,7 +885,7 @@ export class DataGridCellDirective<T = unknown> {
 
       .data-grid-table-region {
         position: relative;
-        min-height: 100%;
+        min-height: 0;
         background: #ffffff;
       }
 
@@ -928,6 +993,16 @@ export class DataGridCellDirective<T = unknown> {
           animation: none;
         }
       }
+
+      @media (max-width: 1023px) {
+        .data-grid-filter-field--wide {
+          grid-column: span 1;
+        }
+
+        .data-grid-filter-range {
+          grid-template-columns: minmax(0, 1fr);
+        }
+      }
     `,
   ],
 })
@@ -977,11 +1052,13 @@ export class DataGridComponent<T = unknown> implements OnChanges, OnDestroy {
   readonly loadingIcon = LoaderCircle;
   readonly plusIcon = Plus;
   readonly refreshIcon = RefreshCw;
+  readonly searchIcon = Search;
   readonly selectionIcon = CheckCircle;
   readonly settingsIcon = Settings;
   readonly sortNeutralIcon = ArrowUpDown;
   readonly sortAscIcon = ArrowUp;
   readonly sortDescIcon = ArrowDown;
+  readonly clearIcon = X;
   currentPage = 1;
   pageInput = '1';
   pageInputError = '';
@@ -995,7 +1072,8 @@ export class DataGridComponent<T = unknown> implements OnChanges, OnDestroy {
   searchTerm = '';
   sortColumnId = '';
   sortDirection: DataGridSortDirection = 'asc';
-  filterValues: Record<string, string> = {};
+  filterValues: Record<string, DataGridFilterValue> = {};
+  draftFilterValues: Record<string, DataGridFilterValue> = {};
   pendingBulkAction: DataGridBulkActionOption | null = null;
   activeBulkAction: DataGridBulkAction | null = null;
   notice: DataGridNotice | null = null;
@@ -1073,12 +1151,16 @@ export class DataGridComponent<T = unknown> implements OnChanges, OnDestroy {
   }
 
   get gridCardClass(): string {
-    return `relative w-full min-w-0 overflow-hidden rounded-lg border border-slate-200 bg-white shadow-none ${this.cardClassName}`.trim();
+    return `relative flex h-full min-h-0 w-full min-w-0 flex-col overflow-hidden rounded-lg border border-slate-200 bg-white shadow-none ${this.cardClassName}`.trim();
+  }
+
+  get gridCardStyle(): Record<string, string> {
+    const height = this.normalizeCssSize(this.gridHeight);
+    return height ? { height, 'max-height': height } : { 'max-height': 'min(36rem, calc(100vh - 14rem))' };
   }
 
   get gridBodyStyle(): Record<string, string> {
-    const height = this.normalizeCssSize(this.gridHeight);
-    return height ? { height } : { 'max-height': '32rem' };
+    return {};
   }
 
   get pageSize(): number {
@@ -1092,6 +1174,30 @@ export class DataGridComponent<T = unknown> implements OnChanges, OnDestroy {
   get visibleColumns(): DataGridColumn<T>[] {
     const columns = this.columns.filter((column) => this.visibleColumnIds.has(column.id));
     return columns.length > 0 ? columns : this.columns.slice(0, 1);
+  }
+
+  get visibleFilters(): DataGridFilter<T>[] {
+    return this.visibleColumns
+      .filter((column) => column.id !== 'acciones' && Boolean(column.field))
+      .map((column) => {
+        const configuredFilter = this.filters.find((filter) => filter.id === column.id);
+
+        return (
+          configuredFilter ?? {
+            id: column.id,
+            label: column.header,
+            field: column.field!,
+            type: 'text',
+            emptyLabel: `Todos`,
+          }
+        );
+      });
+  }
+
+  get filterGridStyle(): Record<string, string> {
+    return {
+      'grid-template-columns': 'repeat(auto-fit, minmax(10.75rem, 1fr))',
+    };
   }
 
   get visibleColumnSpan(): number {
@@ -1123,7 +1229,7 @@ export class DataGridComponent<T = unknown> implements OnChanges, OnDestroy {
   }
 
   get hasActiveFilters(): boolean {
-    return Boolean(this.searchTerm.trim()) || Object.values(this.filterValues).some(Boolean);
+    return Object.values(this.filterValues).some((value) => this.hasFilterValue(value));
   }
 
   get activeFilterChips(): Array<{ id: string; label: string; value: string }> {
@@ -1140,7 +1246,7 @@ export class DataGridComponent<T = unknown> implements OnChanges, OnDestroy {
     this.filters.forEach((filter) => {
       const value = this.filterValues[filter.id];
 
-      if (!value) {
+      if (!this.hasFilterValue(value)) {
         return;
       }
 
@@ -1192,22 +1298,15 @@ export class DataGridComponent<T = unknown> implements OnChanges, OnDestroy {
   }
 
   get filteredRows(): T[] {
-    const term = this.normalizeText(this.searchTerm);
-
     return this.rows.filter((row) => {
-      const matchesSearch =
-        !term ||
-        this.columns
-          .map((column) => this.formattedValue(row, column, 0))
-          .some((value) => this.normalizeText(String(value)).includes(term));
-
-      if (!matchesSearch) {
-        return false;
-      }
-
-      return this.filters.every((filter) => {
+      return this.visibleFilters.every((filter) => {
         const selected = this.filterValues[filter.id];
-        return !selected || String(row[filter.field] ?? '') === selected;
+
+        if (!this.hasFilterValue(selected)) {
+          return true;
+        }
+
+        return this.matchesFilter(row, filter, selected);
       });
     });
   }
@@ -1453,14 +1552,6 @@ export class DataGridComponent<T = unknown> implements OnChanges, OnDestroy {
 
   updateSearchTerm(event: Event): void {
     this.searchInputTerm = (event.target as HTMLInputElement).value;
-    window.clearTimeout(this.searchDebounceId);
-    this.searchDebounceId = window.setTimeout(() => {
-      this.searchTerm = this.searchInputTerm;
-      this.currentPage = 1;
-      this.pageInput = '1';
-      this.clearSelectionByContext('La seleccion se limpio porque cambio la busqueda.');
-      this.persistPreferences();
-    }, 300);
   }
 
   filterOptionValue(option: string | { label: string; value: string }): string {
@@ -1471,8 +1562,22 @@ export class DataGridComponent<T = unknown> implements OnChanges, OnDestroy {
     return typeof option === 'string' ? option : option.label;
   }
 
+  filterTextValue(filter: DataGridFilter<T>): string {
+    const value = this.draftFilterValues[filter.id];
+    return typeof value === 'string' ? value : '';
+  }
+
+  filterDateRangeValue(filter: DataGridFilter<T>, bound: keyof DataGridDateRangeValue): string {
+    const value = this.draftFilterValues[filter.id];
+    return typeof value === 'object' && value != null ? value[bound] ?? '' : '';
+  }
+
   emptyFilterLabel(filter: DataGridFilter<T>): string {
     return filter.emptyLabel ?? 'Todo';
+  }
+
+  filterPlaceholder(filter: DataGridFilter<T>): string {
+    return filter.placeholder ?? `Buscar ${filter.label.toLowerCase()}`;
   }
 
   clearSearchTerm(): void {
@@ -1491,9 +1596,15 @@ export class DataGridComponent<T = unknown> implements OnChanges, OnDestroy {
       return;
     }
 
+    const filter = this.filters.find((item) => item.id === filterId);
+
     this.filterValues = {
       ...this.filterValues,
-      [filterId]: '',
+      [filterId]: this.emptyFilterValue(filter),
+    };
+    this.draftFilterValues = {
+      ...this.draftFilterValues,
+      [filterId]: this.emptyFilterValue(filter),
     };
     this.currentPage = 1;
     this.pageInput = '1';
@@ -1506,17 +1617,48 @@ export class DataGridComponent<T = unknown> implements OnChanges, OnDestroy {
     this.searchInputTerm = '';
     this.searchTerm = '';
     this.filterValues = {};
+    this.draftFilterValues = {};
     this.currentPage = 1;
     this.pageInput = '1';
     this.clearSelectionByContext('La seleccion se limpio porque se quitaron los filtros.');
     this.persistPreferences();
   }
 
-  updateFilterValue(filterId: string, event: Event): void {
-    this.filterValues = {
-      ...this.filterValues,
-      [filterId]: (event.target as HTMLSelectElement).value,
+  updateFilterValue(filter: DataGridFilter<T>, event: Event): void {
+    this.draftFilterValues = {
+      ...this.draftFilterValues,
+      [filter.id]: (event.target as HTMLInputElement | HTMLSelectElement).value,
     };
+  }
+
+  updateFilterModelValue(filter: DataGridFilter<T>, value: string): void {
+    this.draftFilterValues = {
+      ...this.draftFilterValues,
+      [filter.id]: value,
+    };
+  }
+
+  updateDateRangeFilterValue(filter: DataGridFilter<T>, bound: keyof DataGridDateRangeValue, valueOrEvent: string | Event): void {
+    const currentValue = this.draftFilterValues[filter.id];
+    const rangeValue =
+      typeof currentValue === 'object' && currentValue != null
+        ? currentValue
+        : this.emptyFilterValue(filter);
+    const value = typeof valueOrEvent === 'string' ? valueOrEvent : (valueOrEvent.target as HTMLInputElement).value;
+
+    this.draftFilterValues = {
+      ...this.draftFilterValues,
+      [filter.id]: {
+        ...(typeof rangeValue === 'object' && rangeValue != null ? rangeValue : {}),
+        [bound]: value,
+      },
+    };
+  }
+
+  applyFilters(): void {
+    this.searchInputTerm = '';
+    this.searchTerm = '';
+    this.filterValues = { ...this.draftFilterValues };
     this.currentPage = 1;
     this.pageInput = '1';
     this.clearSelectionByContext('La seleccion se limpio porque cambio el contexto filtrado.');
@@ -1533,9 +1675,36 @@ export class DataGridComponent<T = unknown> implements OnChanges, OnDestroy {
     );
   }
 
-  filterDisplayValue(filter: DataGridFilter<T>, value: string): string {
+  filterDisplayValue(filter: DataGridFilter<T>, value: DataGridFilterValue): string {
+    if (this.isDateRangeFilter(filter)) {
+      const range = typeof value === 'object' && value != null ? value : {};
+      const from = range.from ? this.formatFilterDateValue(range.from) : '...';
+      const to = range.to ? this.formatFilterDateValue(range.to) : '...';
+      return `${from} - ${to}`;
+    }
+
+    if (typeof value !== 'string') {
+      return '';
+    }
+
+    if (this.isDateFilter(filter)) {
+      return this.formatFilterDateValue(value);
+    }
+
     const option = this.filterOptions(filter).find((item) => this.filterOptionValue(item) === value);
     return option ? this.filterOptionLabel(option) : value;
+  }
+
+  isSelectFilter(filter: DataGridFilter<T>): boolean {
+    return filter.type === 'select' || Boolean(filter.options?.length);
+  }
+
+  isDateFilter(filter: DataGridFilter<T>): boolean {
+    return filter.type === 'date';
+  }
+
+  isDateRangeFilter(filter: DataGridFilter<T>): boolean {
+    return filter.type === 'date-range';
   }
 
   goToPage(page: number): void {
@@ -1636,16 +1805,11 @@ export class DataGridComponent<T = unknown> implements OnChanges, OnDestroy {
   }
 
   isColumnFixed(column: DataGridColumn<T>): boolean {
-    return column.hideable === false;
+    return this.columns[0]?.id === column.id;
   }
 
   isLastVisibleColumn(columnId: string): boolean {
-    const fixedVisibleCount = this.columns.filter(
-      (column) => this.isColumnFixed(column) && this.visibleColumnIds.has(column.id),
-    ).length;
-    const minimumVisibleCount = Math.max(1, fixedVisibleCount);
-
-    return this.visibleColumnIds.has(columnId) && this.visibleColumnIds.size <= minimumVisibleCount;
+    return this.visibleColumnIds.has(columnId) && this.visibleColumnIds.size <= 1;
   }
 
   toggleColumn(columnId: string): void {
@@ -1792,8 +1956,151 @@ export class DataGridComponent<T = unknown> implements OnChanges, OnDestroy {
     return value.trim();
   }
 
+  private hasFilterValue(value: DataGridFilterValue | undefined): boolean {
+    if (typeof value === 'string') {
+      return value.trim().length > 0;
+    }
+
+    if (!value) {
+      return false;
+    }
+
+    return Boolean(value.from?.trim() || value.to?.trim());
+  }
+
+  private emptyFilterValue(filter?: DataGridFilter<T>): DataGridFilterValue {
+    return filter?.type === 'date-range' ? {} : '';
+  }
+
+  private matchesFilter(row: T, filter: DataGridFilter<T>, selected: DataGridFilterValue): boolean {
+    const value = row[filter.field];
+
+    if (this.isSelectFilter(filter)) {
+      return String(value ?? '') === String(selected ?? '');
+    }
+
+    if (this.isDateRangeFilter(filter)) {
+      return this.matchesDateRangeFilter(value, selected);
+    }
+
+    if (this.isDateFilter(filter)) {
+      return this.matchesDateFilter(value, selected, filter.operator);
+    }
+
+    return this.matchesTextFilter(String(value ?? ''), selected, filter);
+  }
+
+  private matchesTextFilter(value: string, selected: DataGridFilterValue, filter: DataGridFilter<T>): boolean {
+    if (typeof selected !== 'string') {
+      return true;
+    }
+
+    const normalizedValue = this.normalizeFilterText(value, filter.normalize);
+    const normalizedSelected = this.normalizeFilterText(selected, filter.normalize);
+
+    if (!normalizedSelected) {
+      return true;
+    }
+
+    if (filter.matchMode === 'tokens') {
+      const tokens = normalizedSelected.split(' ').filter(Boolean);
+      return tokens.every((token) => normalizedValue.includes(token));
+    }
+
+    switch (filter.operator) {
+      case 'equals':
+        return normalizedValue === normalizedSelected;
+      case 'startsWith':
+        return normalizedValue.startsWith(normalizedSelected);
+      case 'endsWith':
+        return normalizedValue.endsWith(normalizedSelected);
+      default:
+        return normalizedValue.includes(normalizedSelected);
+    }
+  }
+
+  private matchesDateFilter(value: unknown, selected: DataGridFilterValue, operator: DataGridFilterOperator | undefined): boolean {
+    if (typeof selected !== 'string') {
+      return true;
+    }
+
+    const valueTime = this.toDateTime(value);
+    const selectedTime = this.toDateTime(selected);
+
+    if (!Number.isFinite(valueTime) || !Number.isFinite(selectedTime)) {
+      return false;
+    }
+
+    const valueDate = this.normalizeDateBoundary(valueTime, 'start');
+    const selectedDate = this.normalizeDateBoundary(selectedTime, 'start');
+
+    switch (operator) {
+      case 'before':
+        return valueDate < selectedDate;
+      case 'after':
+        return valueDate > selectedDate;
+      default:
+        return valueDate === selectedDate;
+    }
+  }
+
+  private matchesDateRangeFilter(value: unknown, selected: DataGridFilterValue): boolean {
+    if (typeof selected !== 'object' || selected == null) {
+      return true;
+    }
+
+    const valueTime = this.toDateTime(value);
+
+    if (!Number.isFinite(valueTime)) {
+      return false;
+    }
+
+    const from = selected.from ? this.normalizeDateBoundary(this.toDateTime(selected.from), 'start') : Number.NEGATIVE_INFINITY;
+    const to = selected.to ? this.normalizeDateBoundary(this.toDateTime(selected.to), 'end') : Number.POSITIVE_INFINITY;
+
+    return valueTime >= from && valueTime <= to;
+  }
+
+  private normalizeFilterText(value: string, mode: DataGridFilterNormalization = 'text'): string {
+    if (mode === 'none') {
+      return value.trim().replace(/\s+/g, ' ');
+    }
+
+    if (mode === 'rut') {
+      return value.replace(/[^0-9kK]/g, '').toLowerCase();
+    }
+
+    return this.normalizeText(value);
+  }
+
+  private normalizeDateBoundary(timestamp: number, bound: 'start' | 'end'): number {
+    const date = new Date(timestamp);
+
+    if (bound === 'start') {
+      date.setHours(0, 0, 0, 0);
+      return date.getTime();
+    }
+
+    date.setHours(23, 59, 59, 999);
+    return date.getTime();
+  }
+
+  private formatFilterDateValue(value: string): string {
+    const timestamp = this.toDateTime(value);
+
+    if (!Number.isFinite(timestamp)) {
+      return value;
+    }
+
+    return new Intl.DateTimeFormat('es-CL', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+    }).format(new Date(timestamp));
+  }
+
   private normalizeText(value: string): string {
-    return value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
+    return value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim().replace(/\s+/g, ' ');
   }
 
   private rowKey(row: T, fallbackIndex = this.rows.indexOf(row)): unknown {
@@ -1832,7 +2139,7 @@ export class DataGridComponent<T = unknown> implements OnChanges, OnDestroy {
 
     try {
       const preferences = JSON.parse(rawPreferences) as Partial<{
-        filterValues: Record<string, string>;
+        filterValues: Record<string, DataGridFilterValue>;
         pageSize: number;
         searchTerm: string;
         sortColumnId: string;
@@ -1841,9 +2148,10 @@ export class DataGridComponent<T = unknown> implements OnChanges, OnDestroy {
       }>;
 
       this.filterValues = preferences.filterValues ?? this.filterValues;
+      this.draftFilterValues = { ...this.filterValues };
       this.effectivePageSize = this.normalizePageSize(preferences.pageSize ?? this.effectivePageSize);
-      this.searchTerm = preferences.searchTerm ?? '';
-      this.searchInputTerm = this.searchTerm;
+      this.searchTerm = '';
+      this.searchInputTerm = '';
       this.sortColumnId = preferences.sortColumnId ?? '';
       this.sortDirection = preferences.sortDirection ?? 'asc';
 
@@ -1867,6 +2175,12 @@ export class DataGridComponent<T = unknown> implements OnChanges, OnDestroy {
       previousVisibleIds.length > 0
         ? [...this.fixedColumnIds(), ...previousVisibleIds]
         : this.columns.map((column) => column.id),
+    );
+    this.draftFilterValues = Object.fromEntries(
+      Object.entries(this.draftFilterValues).filter(([id]) => this.visibleFilters.some((filter) => filter.id === id)),
+    );
+    this.filterValues = Object.fromEntries(
+      Object.entries(this.filterValues).filter(([id]) => this.visibleFilters.some((filter) => filter.id === id)),
     );
   }
 
