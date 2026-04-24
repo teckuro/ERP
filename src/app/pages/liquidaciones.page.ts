@@ -29,7 +29,7 @@ import { RouterLink } from '@angular/router';
       <!-- Header -->
       <div class="flex items-center justify-between">
         <div>
-          <h1 class="text-2xl font-semibold text-gray-900">Liquidaciones de Sueldo</h1>
+          <h1 class="text-xl font-semibold text-gray-900">Liquidaciones de Sueldo</h1>
           <p class="text-sm text-gray-600 mt-1">Periodo: Abril 2026</p>
         </div>
         <div class="flex gap-3">
@@ -51,7 +51,7 @@ import { RouterLink } from '@angular/router';
             <div class="flex items-center justify-between">
               <div>
                 <p class="text-sm text-gray-600">Total Liquidaciones</p>
-                <p class="text-2xl font-semibold text-gray-900 mt-2">{{ liquidaciones().length }}</p>
+                <p class="text-xl font-semibold text-gray-900 mt-2">{{ liquidaciones().length }}</p>
               </div>
               <div class="w-12 h-12 bg-blue-50 rounded-lg flex items-center justify-center">
                 <lucide-icon class="w-6 h-6 text-blue-600" name="file-text"></lucide-icon>
@@ -65,7 +65,7 @@ import { RouterLink } from '@angular/router';
             <div class="flex items-center justify-between">
               <div>
                 <p class="text-sm text-gray-600">Enviadas</p>
-                <p class="text-2xl font-semibold text-green-600 mt-2">{{ enviadas() }}</p>
+                <p class="text-xl font-semibold text-green-600 mt-2">{{ enviadas() }}</p>
               </div>
               <div class="w-12 h-12 bg-green-50 rounded-lg flex items-center justify-center">
                 <lucide-icon class="w-6 h-6 text-green-600" name="mail"></lucide-icon>
@@ -79,7 +79,7 @@ import { RouterLink } from '@angular/router';
             <div class="flex items-center justify-between">
               <div>
                 <p class="text-sm text-gray-600">Pendientes</p>
-                <p class="text-2xl font-semibold text-yellow-600 mt-2">{{ pendientes() }}</p>
+                <p class="text-xl font-semibold text-yellow-600 mt-2">{{ pendientes() }}</p>
               </div>
               <div class="w-12 h-12 bg-yellow-50 rounded-lg flex items-center justify-center">
                 <lucide-icon class="w-6 h-6 text-yellow-600" name="file-text"></lucide-icon>
@@ -181,14 +181,14 @@ import { RouterLink } from '@angular/router';
             (click)="$event.stopPropagation()"
           >
             <div class="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
-              <h2 class="text-xl font-semibold text-gray-900">Liquidación de Sueldo</h2>
+              <h2 class="text-lg font-semibold text-gray-900">Liquidación de Sueldo</h2>
               <div class="flex gap-2">
                 <app-button variant="outline" size="sm">
                   <lucide-icon icon class="w-4 h-4" name="download"></lucide-icon>
                   Descargar PDF
                 </app-button>
                 <button (click)="closePreview()" class="p-2 hover:bg-gray-100 rounded-lg transition-colors">
-                  <span class="text-gray-500 text-xl">×</span>
+                  <span class="text-gray-500 text-lg">×</span>
                 </button>
               </div>
             </div>
@@ -196,12 +196,12 @@ import { RouterLink } from '@angular/router';
             <div class="p-8 bg-gray-50">
               <div class="bg-white border border-gray-300 p-8 shadow-sm">
                 <div class="text-center border-b border-gray-300 pb-4 mb-6">
-                  <h3 class="text-xl font-bold text-gray-900">EMPRESA PYME LTDA.</h3>
+                  <h3 class="text-lg font-semibold text-gray-900">EMPRESA PYME LTDA.</h3>
                   <p class="text-sm text-gray-600">RUT: 76.123.456-7</p>
                   <p class="text-sm text-gray-600">Dirección Empresa 123, Santiago</p>
                 </div>
 
-                <h4 class="text-lg font-bold text-center text-gray-900 mb-6">LIQUIDACIÓN DE REMUNERACIONES</h4>
+                <h4 class="text-base font-semibold text-center text-gray-900 mb-6">LIQUIDACIÓN DE REMUNERACIONES</h4>
 
                 <div class="grid grid-cols-2 gap-4 mb-6 text-sm">
                   <div>
@@ -272,8 +272,8 @@ import { RouterLink } from '@angular/router';
 
                 <div class="bg-blue-50 border-2 border-blue-200 rounded-lg p-4">
                   <div class="flex justify-between items-center">
-                    <span class="text-lg font-bold text-gray-900">LÍQUIDO A PAGAR</span>
-                    <span class="text-2xl font-bold text-blue-600">
+                    <span class="text-base font-semibold text-gray-900">LÍQUIDO A PAGAR</span>
+                    <span class="text-xl font-semibold text-blue-600">
                       $ {{ selectedLiquidacion()!.liquido.toLocaleString('es-CL') }}
                     </span>
                   </div>

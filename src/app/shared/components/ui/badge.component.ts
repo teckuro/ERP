@@ -27,7 +27,7 @@ export class BadgeComponent {
 
   @HostBinding('class')
   get hostClass(): string {
-    return `inline-flex items-center rounded-md border font-semibold ${this.variants[this.variant]} ${
+    return `inline-flex items-center rounded-md border font-medium ${this.variants[this.variant]} ${
       this.sizes[this.size]
     }`.trim();
   }

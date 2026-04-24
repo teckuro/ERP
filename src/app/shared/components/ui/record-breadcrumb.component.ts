@@ -70,7 +70,7 @@ export interface RecordBreadcrumbItem {
         gap: 0.35rem;
         color: #64748b;
         font-size: 0.78rem;
-        font-weight: 700;
+        font-weight: 500;
         line-height: 1.25rem;
       }
 
@@ -144,7 +144,7 @@ export interface RecordBreadcrumbItem {
         max-width: 18rem;
         overflow: hidden;
         color: #1d4ed8;
-        font-weight: 800;
+        font-weight: 600;
         line-height: 1.5rem;
         text-overflow: ellipsis;
         white-space: nowrap;

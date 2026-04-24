@@ -24,6 +24,8 @@
   --switch-background: #cbced4;
   --font-weight-medium: 500;
   --font-weight-normal: 400;
+  --font-weight-semibold: 600;
+  --font-weight-strong: 700;
   --ring: oklch(0.708 0 0);
   --chart-1: oklch(0.646 0.222 41.116);
   --chart-2: oklch(0.6 0.118 184.704);
@@ -63,6 +65,8 @@
   --ring: oklch(0.439 0 0);
   --font-weight-medium: 500;
   --font-weight-normal: 400;
+  --font-weight-semibold: 600;
+  --font-weight-strong: 700;
   --chart-1: oklch(0.488 0.243 264.376);
   --chart-2: oklch(0.696 0.17 162.48);
   --chart-3: oklch(0.769 0.188 70.08);
@@ -138,14 +142,14 @@
   }
 
   h1 {
-    font-size: var(--text-2xl);
-    font-weight: var(--font-weight-medium);
+    font-size: 1.375rem;
+    font-weight: var(--font-weight-semibold);
     line-height: 1.5;
   }
 
   h2 {
-    font-size: var(--text-xl);
-    font-weight: var(--font-weight-medium);
+    font-size: 1.125rem;
+    font-weight: var(--font-weight-semibold);
     line-height: 1.5;
   }
 
@@ -200,8 +204,8 @@
   border: 0;
   background: transparent;
   color: #dc2626;
-  font-size: 0.95rem;
-  font-weight: 700;
+  font-size: 0.82rem;
+  font-weight: 600;
   letter-spacing: 0;
   line-height: 1;
 }

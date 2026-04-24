@@ -211,7 +211,7 @@ interface CalendarDay {
         color: #111827;
         font: inherit;
         font-size: 0.74rem;
-        font-weight: 600;
+        font-weight: 500;
         outline: none;
       }
 
@@ -228,7 +228,7 @@ interface CalendarDay {
         background: transparent;
         color: #64748b;
         font-size: 0.47rem;
-        font-weight: 800;
+        font-weight: 600;
         letter-spacing: 0.08em;
         text-transform: uppercase;
         line-height: 1;
@@ -314,7 +314,7 @@ interface CalendarDay {
         padding: 0 6px;
         color: #111827;
         font-size: 12px;
-        font-weight: 700;
+        font-weight: 600;
         line-height: 16px;
         outline: none;
         text-transform: capitalize;
@@ -370,7 +370,7 @@ interface CalendarDay {
         place-items: center;
         color: #6b7280;
         font-size: 11px;
-        font-weight: 700;
+        font-weight: 600;
       }
 
       .calendar-day {
@@ -382,7 +382,7 @@ interface CalendarDay {
         background: transparent;
         color: #111827;
         font-size: 12px;
-        font-weight: 700;
+        font-weight: 600;
       }
 
       .calendar-day:hover:not(:disabled) {
@@ -428,7 +428,7 @@ interface CalendarDay {
         padding: 0 9px;
         color: #374151;
         font-size: 12px;
-        font-weight: 700;
+        font-weight: 600;
       }
 
       .calendar-footer button:hover:not(:disabled) {

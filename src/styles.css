@@ -1,5 +1,26 @@
 @import './styles/index.css';
 
+.erp-toolbar-button {
+  gap: 0.5rem;
+  font-weight: 500;
+  line-height: 1;
+}
+
+.erp-toolbar-button > span {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+
+.erp-toolbar-button lucide-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  align-self: center;
+  line-height: 0;
+}
+
 /* Empleados alta workspace */
 app-form-empleado {
   display: block;
@@ -46,8 +67,8 @@ app-form-empleado .form-page-head {
 app-form-empleado .form-page-head h1 {
   margin: 0;
   color: var(--emp-ink);
-  font-size: 24px;
-  font-weight: 850;
+  font-size: 22px;
+  font-weight: 600;
   line-height: 32px;
   text-align: center;
 }
@@ -130,7 +151,7 @@ app-form-empleado .side-kicker {
   margin: 0;
   color: var(--emp-muted);
   font-size: 11px;
-  font-weight: 800;
+  font-weight: 500;
   letter-spacing: 0;
   line-height: 1.2;
   text-transform: uppercase;
@@ -140,7 +161,7 @@ app-form-empleado .summary-person h2,
 app-form-empleado .side-section h3 {
   margin: 0;
   color: var(--emp-ink);
-  font-weight: 850;
+  font-weight: 600;
   line-height: 1.2;
 }
 
@@ -166,7 +187,7 @@ app-form-empleado .summary-status-badge {
   background: #ffffff;
   color: var(--emp-muted);
   font-size: 11px;
-  font-weight: 850;
+  font-weight: 500;
   line-height: 1;
 }
 
@@ -189,7 +210,7 @@ app-form-empleado .summary-actions .page-actions-toolbar app-button button {
   padding-left: 12px !important;
   border-radius: 6px !important;
   font-size: 13px !important;
-  font-weight: 760 !important;
+  font-weight: 500 !important;
 }
 
 app-form-empleado .flow-tabs {
@@ -320,7 +341,7 @@ app-form-empleado .flow-tab span {
   background: #ffffff;
   color: var(--emp-muted);
   font-size: 11px;
-  font-weight: 850;
+  font-weight: 600;
   line-height: 1;
 }
 
@@ -328,7 +349,7 @@ app-form-empleado .flow-tab p {
   margin: 0;
   color: #374151;
   font-size: 12px;
-  font-weight: 780;
+  font-weight: 500;
   line-height: 1.2;
   overflow: visible;
   text-overflow: clip;
@@ -383,7 +404,7 @@ app-form-empleado .form-loading-overlay {
   background: rgba(255, 255, 255, 0.78);
   color: #1d4ed8;
   font-size: 13px;
-  font-weight: 850;
+  font-weight: 600;
   backdrop-filter: blur(2px);
   animation: form-loading-enter 180ms ease-out both;
 }
@@ -480,7 +501,7 @@ app-form-empleado .side-section h3 {
 app-form-empleado .side-progress-line {
   color: var(--emp-muted);
   font-size: 12px;
-  font-weight: 700;
+  font-weight: 500;
 }
 
 app-form-empleado .side-progress-meter {
@@ -516,14 +537,14 @@ app-form-empleado .validation-status-grid strong,
 app-form-empleado .global-summary-grid strong {
   color: var(--emp-ink);
   font-size: 15px;
-  font-weight: 900;
+  font-weight: 600;
 }
 
 app-form-empleado .validation-status-grid span,
 app-form-empleado .global-summary-grid span {
   color: var(--emp-muted);
   font-size: 11px;
-  font-weight: 750;
+  font-weight: 500;
   letter-spacing: 0;
   text-transform: uppercase;
 }
@@ -582,7 +603,7 @@ app-form-empleado .validation-group-head {
   gap: 8px;
   color: var(--emp-muted);
   font-size: 12px;
-  font-weight: 700;
+  font-weight: 500;
   letter-spacing: 0;
   text-transform: uppercase;
 }
@@ -602,7 +623,7 @@ app-form-empleado .validation-group-head strong {
 app-form-empleado .validation-more {
   color: var(--emp-muted);
   font-size: 12px;
-  font-weight: 750;
+  font-weight: 500;
 }
 
 app-form-empleado .side-summary-line {
@@ -635,7 +656,7 @@ app-form-empleado .form-action-button {
   border: 1px solid;
   border-radius: 6px;
   font-size: 13px;
-  font-weight: 800;
+  font-weight: 500;
   transition:
     background-color 150ms ease,
     border-color 150ms ease,
@@ -828,7 +849,7 @@ app-ficha-empleado-container .section-error-summary {
 app-ficha-empleado-container .section-error-summary strong {
   color: #7f1d1d;
   font-size: 0.86rem;
-  font-weight: 850;
+  font-weight: 600;
 }
 
 app-ficha-empleado-container .section-error-summary span,
@@ -867,7 +888,7 @@ app-ficha-empleado-container .inline-action {
   border-radius: 6px;
   padding: 0 0.95rem;
   font-size: 0.82rem;
-  font-weight: 850;
+  font-weight: 500;
 }
 
 app-ficha-empleado-container .inline-action:disabled {
@@ -920,7 +941,7 @@ app-ficha-empleado-container .detail-block-head h3 {
   margin: 0;
   color: #1f2937;
   font-size: 0.84rem;
-  font-weight: 850;
+  font-weight: 600;
   letter-spacing: 0;
 }
 
@@ -954,7 +975,7 @@ app-ficha-empleado-container .detail-grid div:nth-child(-n + 4) {
 app-ficha-empleado-container .detail-grid dt {
   color: #6b7280;
   font-size: 0.68rem;
-  font-weight: 780;
+  font-weight: 500;
   letter-spacing: 0;
 }
 

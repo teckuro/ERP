@@ -136,7 +136,7 @@ export type MessageBoxMode = 'inline' | 'modal';
         margin: 0;
         color: #111827;
         font-size: 0.9rem;
-        font-weight: 800;
+        font-weight: 600;
         letter-spacing: 0;
         line-height: 1.3;
       }
@@ -176,7 +176,7 @@ export type MessageBoxMode = 'inline' | 'modal';
         color: #374151;
         cursor: pointer;
         font-size: 0.82rem;
-        font-weight: 800;
+        font-weight: 500;
         line-height: 1;
         transition: border-color 140ms ease, background 140ms ease, color 140ms ease;
       }

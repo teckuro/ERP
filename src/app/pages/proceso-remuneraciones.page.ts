@@ -14,7 +14,7 @@ import { ButtonComponent } from '../shared/components/ui/button.component';
     <div class="space-y-6">
       <!-- Header -->
       <div>
-        <h1 class="text-2xl font-semibold text-gray-900">Proceso de Cierre Mensual</h1>
+        <h1 class="text-xl font-semibold text-gray-900">Proceso de Cierre Mensual</h1>
         <p class="text-sm text-gray-600 mt-1">Periodo: Abril 2026</p>
       </div>
 
@@ -171,28 +171,28 @@ import { ButtonComponent } from '../shared/components/ui/button.component';
                 <div class="w-20 h-20 bg-green-50 rounded-full flex items-center justify-center mx-auto">
                   <lucide-icon class="w-10 h-10 text-green-600" name="check-circle"></lucide-icon>
                 </div>
-                <h3 class="text-xl font-semibold text-gray-900">Cálculo Completado</h3>
+                <h3 class="text-lg font-semibold text-gray-900">Cálculo Completado</h3>
                 <p class="text-gray-600">Las remuneraciones han sido calculadas exitosamente</p>
 
                 <div class="grid grid-cols-3 gap-4 max-w-3xl mx-auto mt-6">
                   <app-card className="border-green-200">
                     <app-card-content>
                       <p class="text-sm text-gray-600">Procesados</p>
-                      <p class="text-3xl font-semibold text-green-600 mt-2">42</p>
+                      <p class="text-xl font-semibold text-green-600 mt-2">42</p>
                       <p class="text-xs text-gray-500 mt-1">empleados</p>
                     </app-card-content>
                   </app-card>
                   <app-card className="border-red-200">
                     <app-card-content>
                       <p class="text-sm text-gray-600">Con Errores</p>
-                      <p class="text-3xl font-semibold text-red-600 mt-2">0</p>
+                      <p class="text-xl font-semibold text-red-600 mt-2">0</p>
                       <p class="text-xs text-gray-500 mt-1">liquidaciones</p>
                     </app-card-content>
                   </app-card>
                   <app-card className="border-blue-200">
                     <app-card-content>
                       <p class="text-sm text-gray-600">Total Nómina</p>
-                      <p class="text-2xl font-semibold text-blue-600 mt-2">$ 16.2M</p>
+                      <p class="text-xl font-semibold text-blue-600 mt-2">$ 16.2M</p>
                       <p class="text-xs text-gray-500 mt-1">líquido a pagar</p>
                     </app-card-content>
                   </app-card>
@@ -227,7 +227,7 @@ import { ButtonComponent } from '../shared/components/ui/button.component';
                 <div class="w-20 h-20 bg-blue-50 rounded-full flex items-center justify-center mx-auto">
                   <lucide-icon class="w-10 h-10 text-blue-600" name="calculator"></lucide-icon>
                 </div>
-                <h3 class="text-xl font-semibold text-gray-900">Calcular Remuneraciones Masivamente</h3>
+                <h3 class="text-lg font-semibold text-gray-900">Calcular Remuneraciones Masivamente</h3>
                 <p class="text-gray-600">Se procesarán las remuneraciones de 42 empleados activos</p>
 
                 <div class="bg-gray-50 border border-gray-200 rounded-lg p-6 max-w-md mx-auto">
@@ -259,7 +259,7 @@ import { ButtonComponent } from '../shared/components/ui/button.component';
       } @else if (currentStep() === 3) {
         <div class="space-y-6">
           <div class="text-center mb-6">
-            <h3 class="text-xl font-semibold text-gray-900">Generación de Archivos de Exportación</h3>
+            <h3 class="text-lg font-semibold text-gray-900">Generación de Archivos de Exportación</h3>
             <p class="text-gray-600 mt-1">Descarga los archivos necesarios para el cierre del periodo</p>
           </div>
 
@@ -367,7 +367,7 @@ import { ButtonComponent } from '../shared/components/ui/button.component';
             <div class="w-20 h-20 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-4">
               <lucide-icon class="w-10 h-10 text-blue-600" name="lock"></lucide-icon>
             </div>
-            <h3 class="text-xl font-semibold text-gray-900">Cerrar Periodo Abril 2026</h3>
+            <h3 class="text-lg font-semibold text-gray-900">Cerrar Periodo Abril 2026</h3>
             <p class="text-gray-600 mt-2">Finaliza el proceso y bloquea el periodo para modificaciones</p>
 
             <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 max-w-md mx-auto mt-6">

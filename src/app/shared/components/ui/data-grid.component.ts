@@ -185,7 +185,7 @@ export class DataGridCellDirective<T = unknown> {
                       ></app-calendar-input>
                     } @else if (isSelectFilter(filter)) {
                       <select
-                        class="h-8 w-full min-w-0 rounded-lg border border-slate-200 bg-white px-2.5 text-left text-[0.79rem] font-semibold text-slate-700 shadow-[0_1px_2px_rgba(15,23,42,0.04)] outline-none transition hover:border-slate-300 hover:bg-slate-50 focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-100"
+                        class="h-8 w-full min-w-0 rounded-lg border border-slate-200 bg-white px-2.5 text-left text-[0.79rem] font-medium text-slate-700 shadow-[0_1px_2px_rgba(15,23,42,0.04)] outline-none transition hover:border-slate-300 hover:bg-slate-50 focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-100"
                         [value]="filterTextValue(filter)"
                         (change)="updateFilterValue(filter, $event)"
                       >
@@ -197,7 +197,7 @@ export class DataGridCellDirective<T = unknown> {
                     } @else {
                       <input
                         type="text"
-                        class="h-8 w-full min-w-0 rounded-lg border border-slate-200 bg-white px-2.5 text-left text-[0.79rem] font-semibold text-slate-700 shadow-[0_1px_2px_rgba(15,23,42,0.04)] outline-none transition hover:border-slate-300 hover:bg-slate-50 focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-100"
+                        class="h-8 w-full min-w-0 rounded-lg border border-slate-200 bg-white px-2.5 text-left text-[0.79rem] font-medium text-slate-700 shadow-[0_1px_2px_rgba(15,23,42,0.04)] outline-none transition hover:border-slate-300 hover:bg-slate-50 focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-100"
                         [value]="filterTextValue(filter)"
                         [placeholder]="filterPlaceholder(filter)"
                         (input)="updateFilterValue(filter, $event)"
@@ -211,7 +211,7 @@ export class DataGridCellDirective<T = unknown> {
             <div class="flex shrink-0 items-center justify-end gap-2 self-end pb-0.5 xl:pl-3">
               <button
                 type="button"
-                class="inline-flex h-8 items-center justify-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 text-[0.76rem] font-semibold text-slate-600 transition hover:border-slate-300 hover:bg-slate-50 hover:text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+                class="inline-flex h-8 items-center justify-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 text-[0.76rem] font-medium text-slate-600 transition hover:border-slate-300 hover:bg-slate-50 hover:text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
                 (click)="clearAllFilters()"
               >
                 <lucide-icon class="h-3.5 w-3.5" [img]="clearIcon"></lucide-icon>
@@ -219,7 +219,7 @@ export class DataGridCellDirective<T = unknown> {
               </button>
               <button
                 type="button"
-                class="inline-flex h-8 items-center justify-center gap-1.5 rounded-lg border border-blue-600 bg-blue-600 px-3.5 text-[0.76rem] font-semibold text-white shadow-[0_6px_16px_rgba(37,99,235,0.18)] transition-colors hover:border-blue-700 hover:bg-blue-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
+                class="inline-flex h-8 items-center justify-center gap-1.5 rounded-lg border border-blue-600 bg-blue-600 px-3.5 text-[0.76rem] font-medium text-white shadow-[0_6px_16px_rgba(37,99,235,0.18)] transition-colors hover:border-blue-700 hover:bg-blue-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
                 (click)="applyFilters()"
               >
                 <lucide-icon class="h-3.5 w-3.5" [img]="searchIcon"></lucide-icon>
@@ -235,8 +235,8 @@ export class DataGridCellDirective<T = unknown> {
           <div class="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
             <div class="min-w-0">
               <div class="flex flex-wrap items-center gap-2">
-                <p class="text-sm font-semibold uppercase text-neutral-900">{{ title || 'Registros' }}</p>
-                <span class="rounded-md border border-neutral-200 bg-neutral-50 px-2 py-0.5 text-xs font-semibold text-neutral-700">
+                <p class="text-sm font-medium uppercase text-neutral-900">{{ title || 'Registros' }}</p>
+                <span class="rounded-md border border-neutral-200 bg-neutral-50 px-2 py-0.5 text-xs font-medium text-neutral-700">
                     {{ filteredRows.length }}
                   </span>
               </div>
@@ -246,7 +246,7 @@ export class DataGridCellDirective<T = unknown> {
               <label class="data-grid-toolbar-control data-grid-toolbar-control--show flex h-8 items-center gap-2 rounded-md border border-neutral-200 bg-white px-2.5">
                 <span class="text-xs font-medium text-neutral-600">Mostrar</span>
                 <select
-                  class="h-6 rounded-md border-0 bg-neutral-50 px-1.5 text-xs font-semibold text-neutral-900 outline-none focus:ring-2 focus:ring-blue-500"
+                  class="h-6 rounded-md border-0 bg-neutral-50 px-1.5 text-xs font-medium text-neutral-900 outline-none focus:ring-2 focus:ring-blue-500"
                   [value]="pageSize"
                   aria-label="Cantidad de elementos por pagina"
                   [disabled]="loading"
@@ -261,7 +261,7 @@ export class DataGridCellDirective<T = unknown> {
               @if (primaryActionLabel) {
                 <button
                   type="button"
-                  class="inline-flex h-8 items-center gap-1.5 rounded-md border border-blue-600 bg-blue-600 px-3 text-xs font-semibold text-white transition-colors hover:border-blue-700 hover:bg-blue-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
+                  class="inline-flex h-8 items-center gap-1.5 rounded-md border border-blue-600 bg-blue-600 px-3 text-xs font-medium text-white transition-colors hover:border-blue-700 hover:bg-blue-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
                   (click)="primaryAction.emit()"
                 >
                   <lucide-icon class="h-3.5 w-3.5" [img]="plusIcon"></lucide-icon>
@@ -302,7 +302,7 @@ export class DataGridCellDirective<T = unknown> {
                       aria-label="Opciones de exportacion"
                     >
                       <div class="border-b border-neutral-100 bg-neutral-50 px-3 py-2.5">
-                        <p class="text-xs font-semibold uppercase text-neutral-500">
+                        <p class="text-xs font-medium uppercase text-neutral-500">
                           Exportar
                         </p>
                         <p class="mt-0.5 text-xs font-medium text-neutral-500">
@@ -320,7 +320,7 @@ export class DataGridCellDirective<T = unknown> {
                         >
                           <lucide-icon class="mt-0.5 h-3.5 w-3.5 text-neutral-500" [img]="downloadIcon"></lucide-icon>
                           <span>
-                            <span class="block text-xs font-semibold text-neutral-800">Exportar pagina actual</span>
+                            <span class="block text-xs font-medium text-neutral-800">Exportar pagina actual</span>
                             <span class="mt-0.5 block text-xs text-neutral-500">Solo registros visibles</span>
                           </span>
                         </button>
@@ -336,7 +336,7 @@ export class DataGridCellDirective<T = unknown> {
                         >
                           <lucide-icon class="mt-0.5 h-3.5 w-3.5" [class.text-blue-600]="selectedRows.length > 0" [class.text-neutral-500]="selectedRows.length === 0" [img]="downloadIcon"></lucide-icon>
                           <span>
-                            <span class="block text-xs font-semibold text-neutral-800">Exportar seleccionados ({{ selectedRows.length }})</span>
+                            <span class="block text-xs font-medium text-neutral-800">Exportar seleccionados ({{ selectedRows.length }})</span>
                             <span class="mt-0.5 block text-xs text-neutral-500">Solo los marcados manualmente</span>
                           </span>
                         </button>
@@ -350,7 +350,7 @@ export class DataGridCellDirective<T = unknown> {
                         >
                           <lucide-icon class="mt-0.5 h-3.5 w-3.5 text-neutral-500" [img]="downloadIcon"></lucide-icon>
                           <span>
-                            <span class="block text-xs font-semibold text-neutral-800">Exportar todos los resultados (filtrados)</span>
+                            <span class="block text-xs font-medium text-neutral-800">Exportar todos los resultados (filtrados)</span>
                             <span class="mt-0.5 block text-xs text-neutral-500">Incluye todos los registros que cumplen los filtros</span>
                           </span>
                         </button>
@@ -364,7 +364,7 @@ export class DataGridCellDirective<T = unknown> {
                           (change)="toggleExportColumns($event)"
                         />
                         <span>
-                          <span class="block text-xs font-semibold text-neutral-800">Exportar con todas las columnas</span>
+                          <span class="block text-xs font-medium text-neutral-800">Exportar con todas las columnas</span>
                           <span class="mt-0.5 block text-xs text-neutral-500">
                             Por defecto se exportan solo las columnas visibles.
                           </span>
@@ -407,7 +407,7 @@ export class DataGridCellDirective<T = unknown> {
                     <div class="border-b border-slate-100 bg-[linear-gradient(180deg,#f8fbff_0%,#fdfefe_100%)] px-3.5 py-2.5">
                       <div class="flex items-start justify-between gap-3">
                         <div>
-                          <p class="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-slate-500">
+                          <p class="text-[0.68rem] font-medium uppercase tracking-[0.18em] text-slate-500">
                             Columnas
                           </p>
                         </div>
@@ -415,14 +415,14 @@ export class DataGridCellDirective<T = unknown> {
                         <div class="flex items-center gap-1.5">
                           <button
                             type="button"
-                            class="inline-flex h-7 items-center rounded-full border border-slate-200 bg-white px-2.5 text-[0.68rem] font-semibold text-slate-700 transition-colors hover:border-slate-300 hover:bg-slate-100 hover:text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
+                            class="inline-flex h-7 items-center rounded-full border border-slate-200 bg-white px-2.5 text-[0.68rem] font-medium text-slate-700 transition-colors hover:border-slate-300 hover:bg-slate-100 hover:text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
                             (click)="showAllColumns()"
                           >
                             Todo
                           </button>
                           <button
                             type="button"
-                            class="inline-flex h-7 items-center rounded-full border border-slate-200 bg-white px-2.5 text-[0.68rem] font-semibold text-slate-700 transition-colors hover:border-slate-300 hover:bg-slate-100 hover:text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
+                            class="inline-flex h-7 items-center rounded-full border border-slate-200 bg-white px-2.5 text-[0.68rem] font-medium text-slate-700 transition-colors hover:border-slate-300 hover:bg-slate-100 hover:text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
                             (click)="restoreDefaultColumns()"
                           >
                             Restaurar
@@ -441,7 +441,7 @@ export class DataGridCellDirective<T = unknown> {
                           (click)="toggleColumn(column.id)"
                         >
                           <span class="min-w-0">
-                            <span class="block truncate text-sm font-semibold text-slate-800">
+                            <span class="block truncate text-sm font-medium text-slate-800">
                               {{ column.header }}
                             </span>
                           </span>
@@ -477,17 +477,17 @@ export class DataGridCellDirective<T = unknown> {
           aria-label="Acciones masivas"
           aria-live="polite"
         >
-          <div class="flex items-center gap-2 text-sm font-semibold text-blue-900">
+          <div class="flex items-center gap-2 text-sm font-medium text-blue-900">
             <lucide-icon class="h-4 w-4" [img]="selectionIcon"></lucide-icon>
             <span>{{ selectedRows.length }} {{ selectionLabel }} seleccionados</span>
           </div>
 
           <div class="flex flex-wrap items-center gap-2 sm:justify-end">
-            <span class="text-xs font-semibold uppercase text-blue-700">Cambiar estado a</span>
+            <span class="text-xs font-medium uppercase text-blue-700">Cambiar estado a</span>
             @for (action of bulkActions; track action.id) {
               <button
                 type="button"
-                class="inline-flex h-8 items-center gap-1.5 rounded-md border bg-white px-2.5 text-xs font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 disabled:cursor-not-allowed disabled:opacity-60"
+                class="inline-flex h-8 items-center gap-1.5 rounded-md border bg-white px-2.5 text-xs font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 disabled:cursor-not-allowed disabled:opacity-60"
                 [ngClass]="bulkActionButtonClass(action)"
                 [disabled]="bulkActionLoading"
                 (click)="requestBulkAction(action)"
@@ -500,7 +500,7 @@ export class DataGridCellDirective<T = unknown> {
             }
             <button
               type="button"
-              class="inline-flex h-8 items-center rounded-md border border-transparent px-2.5 text-xs font-semibold text-blue-800 transition hover:bg-blue-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 disabled:cursor-not-allowed disabled:opacity-60"
+              class="inline-flex h-8 items-center rounded-md border border-transparent px-2.5 text-xs font-medium text-blue-800 transition hover:bg-blue-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 disabled:cursor-not-allowed disabled:opacity-60"
               [disabled]="bulkActionLoading"
               (click)="clearSelection()"
             >
@@ -541,13 +541,13 @@ export class DataGridCellDirective<T = unknown> {
             <div
               class="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full border border-red-100 bg-red-50"
             >
-              <span class="text-xl font-bold text-red-600">!</span>
+              <span class="text-lg font-semibold text-red-600">!</span>
             </div>
-            <h3 class="mb-1 text-lg font-semibold text-neutral-900">{{ errorMessage }}</h3>
+            <h3 class="mb-1 text-lg font-medium text-neutral-900">{{ errorMessage }}</h3>
             <p class="text-sm text-neutral-600">Intenta nuevamente para actualizar la informacion.</p>
             <button
               type="button"
-              class="mt-4 inline-flex h-9 items-center rounded-md border border-neutral-200 bg-white px-3 text-sm font-semibold text-neutral-700 transition hover:bg-neutral-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+              class="mt-4 inline-flex h-9 items-center rounded-md border border-neutral-200 bg-white px-3 text-sm font-medium text-neutral-700 transition hover:bg-neutral-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
               (click)="retry.emit()"
             >
               Reintentar
@@ -574,7 +574,7 @@ export class DataGridCellDirective<T = unknown> {
                   @for (column of visibleColumns; track column.id) {
                     <th
                       scope="col"
-                      class="whitespace-nowrap border-b border-r border-neutral-200 px-3 py-2.5 text-xs font-semibold uppercase text-neutral-600 last:border-r-0"
+                      class="whitespace-nowrap border-b border-r border-neutral-200 px-3 py-2.5 text-xs font-medium uppercase text-neutral-600 last:border-r-0"
                       [ngClass]="[alignmentHeaderClass(column), column.headerClass ?? '', column.widthClass ?? '']"
                     >
                       @if (isSortable(column)) {
@@ -666,13 +666,13 @@ export class DataGridCellDirective<T = unknown> {
             >
               <lucide-icon class="h-8 w-8 text-neutral-400" [img]="emptyIcon"></lucide-icon>
             </div>
-            <h3 class="mb-1 text-lg font-semibold text-neutral-900">{{ resolvedEmptyTitle }}</h3>
+            <h3 class="mb-1 text-lg font-medium text-neutral-900">{{ resolvedEmptyTitle }}</h3>
             <p class="text-sm text-neutral-600">{{ resolvedEmptyDescription }}</p>
 
             @if (hasActiveFilters) {
               <button
                 type="button"
-                class="mt-4 inline-flex h-9 items-center rounded-md border border-neutral-200 bg-white px-3 text-sm font-semibold text-neutral-700 transition hover:bg-neutral-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+                class="mt-4 inline-flex h-9 items-center rounded-md border border-neutral-200 bg-white px-3 text-sm font-medium text-neutral-700 transition hover:bg-neutral-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
                 (click)="clearAllFilters()"
               >
                 Limpiar filtros
@@ -680,7 +680,7 @@ export class DataGridCellDirective<T = unknown> {
             } @else if (primaryActionLabel) {
               <button
                 type="button"
-                class="mt-4 inline-flex h-9 items-center gap-1.5 rounded-md border border-blue-600 bg-blue-600 px-3 text-sm font-semibold text-white transition hover:border-blue-700 hover:bg-blue-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+                class="mt-4 inline-flex h-9 items-center gap-1.5 rounded-md border border-blue-600 bg-blue-600 px-3 text-sm font-medium text-white transition hover:border-blue-700 hover:bg-blue-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
                 (click)="primaryAction.emit()"
               >
                 <lucide-icon class="h-4 w-4" [img]="plusIcon"></lucide-icon>
@@ -695,7 +695,7 @@ export class DataGridCellDirective<T = unknown> {
         <div
           class="data-grid-footer flex flex-col gap-3 border-t border-neutral-200 bg-white px-4 py-3 sm:flex-row sm:items-center sm:justify-between"
         >
-          <p class="text-xs font-semibold text-neutral-600">
+          <p class="text-xs font-medium text-neutral-600">
             Pagina {{ currentPage }} de {{ totalPages }}
           </p>
 
@@ -706,7 +706,7 @@ export class DataGridCellDirective<T = unknown> {
             >
               <button
                 type="button"
-                class="inline-flex h-8 items-center gap-1.5 border-r border-neutral-200 px-2.5 text-xs font-semibold text-neutral-700 transition-colors hover:bg-neutral-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-500 disabled:cursor-not-allowed disabled:bg-neutral-50 disabled:text-neutral-400 disabled:opacity-70"
+                class="inline-flex h-8 items-center gap-1.5 border-r border-neutral-200 px-2.5 text-xs font-medium text-neutral-700 transition-colors hover:bg-neutral-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-500 disabled:cursor-not-allowed disabled:bg-neutral-50 disabled:text-neutral-400 disabled:opacity-70"
                 aria-label="Pagina anterior"
                 [disabled]="currentPage <= 1"
                 (click)="previousPage()"
@@ -716,7 +716,7 @@ export class DataGridCellDirective<T = unknown> {
               </button>
 
               <span
-                class="inline-flex h-8 min-w-20 items-center justify-center border-r border-neutral-200 bg-neutral-50 px-2.5 text-xs font-semibold text-neutral-900"
+                class="inline-flex h-8 min-w-20 items-center justify-center border-r border-neutral-200 bg-neutral-50 px-2.5 text-xs font-medium text-neutral-900"
                 aria-live="polite"
                 aria-label="Pagina actual"
               >
@@ -725,7 +725,7 @@ export class DataGridCellDirective<T = unknown> {
 
               <button
                 type="button"
-                class="inline-flex h-8 items-center gap-1.5 px-2.5 text-xs font-semibold text-neutral-700 transition-colors hover:bg-neutral-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-500 disabled:cursor-not-allowed disabled:bg-neutral-50 disabled:text-neutral-400 disabled:opacity-70"
+                class="inline-flex h-8 items-center gap-1.5 px-2.5 text-xs font-medium text-neutral-700 transition-colors hover:bg-neutral-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-500 disabled:cursor-not-allowed disabled:bg-neutral-50 disabled:text-neutral-400 disabled:opacity-70"
                 aria-label="Pagina siguiente"
                 [disabled]="currentPage >= totalPages"
                 (click)="nextPage()"
@@ -738,7 +738,7 @@ export class DataGridCellDirective<T = unknown> {
             <div class="relative border-l border-neutral-200 pl-2" data-grid-overlay-root>
               <button
                 type="button"
-                class="inline-flex h-8 items-center justify-center rounded-md border border-neutral-200 bg-white px-2.5 text-xs font-semibold text-neutral-700 transition-colors hover:bg-neutral-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
+                class="inline-flex h-8 items-center justify-center rounded-md border border-neutral-200 bg-white px-2.5 text-xs font-medium text-neutral-700 transition-colors hover:bg-neutral-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
                 aria-label="Ir a una pagina especifica"
                 [attr.aria-expanded]="showPagePopover"
                 (click)="togglePagePopover()"
@@ -753,7 +753,7 @@ export class DataGridCellDirective<T = unknown> {
                   aria-label="Ir a pagina"
                 >
                   <div class="border-b border-neutral-100 bg-neutral-50 px-3 py-2.5">
-                    <p class="text-xs font-semibold uppercase text-neutral-500">
+                    <p class="text-xs font-medium uppercase text-neutral-500">
                       Ir a pagina
                     </p>
                     <p class="mt-0.5 text-xs font-medium text-neutral-500">
@@ -763,7 +763,7 @@ export class DataGridCellDirective<T = unknown> {
 
                   <div class="p-3">
                     <input
-                      class="h-9 w-full rounded-md border border-neutral-200 bg-white px-2.5 text-sm font-semibold text-neutral-900 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                      class="h-9 w-full rounded-md border border-neutral-200 bg-white px-2.5 text-sm font-medium text-neutral-900 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
                       type="number"
                       min="1"
                       [max]="totalPages"
@@ -780,14 +780,14 @@ export class DataGridCellDirective<T = unknown> {
                     <div class="mt-3 flex justify-end gap-2">
                       <button
                         type="button"
-                        class="inline-flex h-8 items-center rounded-md border border-neutral-200 bg-white px-2.5 text-xs font-semibold text-neutral-600 transition-colors hover:bg-neutral-50 hover:text-neutral-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
+                        class="inline-flex h-8 items-center rounded-md border border-neutral-200 bg-white px-2.5 text-xs font-medium text-neutral-600 transition-colors hover:bg-neutral-50 hover:text-neutral-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
                         (click)="closePagePopover()"
                       >
                         Cancelar
                       </button>
                       <button
                         type="button"
-                        class="inline-flex h-8 items-center rounded-md border border-blue-600 bg-blue-600 px-3 text-xs font-semibold text-white transition-colors hover:border-blue-700 hover:bg-blue-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
+                        class="inline-flex h-8 items-center rounded-md border border-blue-600 bg-blue-600 px-3 text-xs font-medium text-white transition-colors hover:border-blue-700 hover:bg-blue-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
                         (click)="confirmPagePopover()"
                       >
                         Ir
@@ -847,7 +847,7 @@ export class DataGridCellDirective<T = unknown> {
         padding: 0 0.15rem;
         text-align: left;
         font-size: 0.6rem;
-        font-weight: 700;
+        font-weight: 600;
         letter-spacing: 0.1em;
         text-transform: uppercase;
         color: #475569;
@@ -897,7 +897,7 @@ export class DataGridCellDirective<T = unknown> {
         border-color: var(--data-grid-border);
         background: var(--data-grid-head-bg);
         color: #475569;
-        font-weight: 800;
+        font-weight: 600;
       }
 
       .data-grid-head button:disabled {
@@ -945,7 +945,7 @@ export class DataGridCellDirective<T = unknown> {
         padding: 0 1rem;
         color: #1d4ed8;
         font-size: 0.82rem;
-        font-weight: 800;
+        font-weight: 600;
       }
 
       .data-grid-state {

@@ -15,7 +15,7 @@
   margin: 0;
   color: #0f172a;
   font-size: 0.92rem;
-  font-weight: 700;
+  font-weight: 600;
   line-height: 1.2;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -69,7 +69,7 @@
   border-radius: 999px;
   padding: 0.42rem 0.9rem;
   font-size: 0.73rem;
-  font-weight: 700;
+  font-weight: 600;
   line-height: 1;
   transition: background-color 150ms ease;
 }
@@ -93,7 +93,7 @@
   padding: 0 0.85rem;
   color: #0f172a;
   font-size: 0.74rem;
-  font-weight: 700;
+  font-weight: 600;
   line-height: 1;
   text-decoration: none;
   transition:
@@ -134,7 +134,7 @@
 .completion-head span {
   color: #0f172a;
   font-size: 0.82rem;
-  font-weight: 700;
+  font-weight: 600;
   line-height: 1;
 }
 
@@ -222,7 +222,7 @@
 
 :host ::ng-deep app-data-grid.empleados-grid-shell > app-card > div:nth-child(2) p.text-sm {
   font-size: 0.92rem;
-  font-weight: 700;
+  font-weight: 600;
   text-transform: none;
 }
 
@@ -267,7 +267,7 @@
   border-color: #d6e2ef;
   background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
   color: #334155;
-  font-weight: 700;
+  font-weight: 600;
 }
 
 :host ::ng-deep app-data-grid.empleados-grid-shell > app-card > div:nth-child(2) button:hover {
@@ -330,7 +330,7 @@
   padding-bottom: 0.88rem;
   color: #64748b;
   font-size: 0.69rem;
-  font-weight: 800;
+  font-weight: 600;
   letter-spacing: 0.04em;
 }
 

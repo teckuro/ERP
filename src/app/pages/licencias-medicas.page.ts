@@ -15,7 +15,7 @@ import { ButtonComponent } from '../shared/components/ui/button.component';
       <!-- Header -->
       <div class="flex items-center justify-between">
         <div>
-          <h1 class="text-2xl font-semibold text-gray-900">Licencias Médicas</h1>
+          <h1 class="text-xl font-semibold text-gray-900">Licencias Médicas</h1>
           <p class="text-sm text-gray-600 mt-1">{{ licencias().length }} licencias registradas</p>
         </div>
         <app-button variant="primary" (click)="showModal.set(true)">
@@ -31,7 +31,7 @@ import { ButtonComponent } from '../shared/components/ui/button.component';
             <div class="flex items-center justify-between">
               <div>
                 <p class="text-sm text-gray-600">Total Licencias</p>
-                <p class="text-2xl font-semibold text-gray-900 mt-2">{{ licencias().length }}</p>
+                <p class="text-xl font-semibold text-gray-900 mt-2">{{ licencias().length }}</p>
               </div>
               <div class="w-12 h-12 bg-blue-50 rounded-lg flex items-center justify-center">
                 <lucide-icon class="w-6 h-6 text-blue-600" name="file-text"></lucide-icon>
@@ -45,7 +45,7 @@ import { ButtonComponent } from '../shared/components/ui/button.component';
             <div class="flex items-center justify-between">
               <div>
                 <p class="text-sm text-gray-600">Emitidas</p>
-                <p class="text-2xl font-semibold text-blue-600 mt-2">{{ emitidas() }}</p>
+                <p class="text-xl font-semibold text-blue-600 mt-2">{{ emitidas() }}</p>
               </div>
               <div class="w-12 h-12 bg-blue-50 rounded-lg flex items-center justify-center">
                 <lucide-icon class="w-6 h-6 text-blue-600" name="calendar"></lucide-icon>
@@ -59,7 +59,7 @@ import { ButtonComponent } from '../shared/components/ui/button.component';
             <div class="flex items-center justify-between">
               <div>
                 <p class="text-sm text-gray-600">Aprobadas</p>
-                <p class="text-2xl font-semibold text-green-600 mt-2">{{ aprobadas() }}</p>
+                <p class="text-xl font-semibold text-green-600 mt-2">{{ aprobadas() }}</p>
               </div>
               <div class="w-12 h-12 bg-green-50 rounded-lg flex items-center justify-center">
                 <lucide-icon class="w-6 h-6 text-green-600" name="calendar"></lucide-icon>
@@ -73,7 +73,7 @@ import { ButtonComponent } from '../shared/components/ui/button.component';
             <div class="flex items-center justify-between">
               <div>
                 <p class="text-sm text-gray-600">Pagadas</p>
-                <p class="text-2xl font-semibold text-gray-600 mt-2">{{ pagadas() }}</p>
+                <p class="text-xl font-semibold text-gray-600 mt-2">{{ pagadas() }}</p>
               </div>
               <div class="w-12 h-12 bg-gray-50 rounded-lg flex items-center justify-center">
                 <lucide-icon class="w-6 h-6 text-gray-600" name="calendar"></lucide-icon>
@@ -175,7 +175,7 @@ import { ButtonComponent } from '../shared/components/ui/button.component';
         <div class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" (click)="showModal.set(false)">
           <div class="bg-white rounded-lg shadow-xl max-w-2xl w-full" (click)="$event.stopPropagation()">
             <div class="border-b border-gray-200 px-6 py-4">
-              <h2 class="text-xl font-semibold text-gray-900">Registrar Licencia Médica</h2>
+              <h2 class="text-lg font-semibold text-gray-900">Registrar Licencia Médica</h2>
             </div>
 
             <div class="p-6 space-y-4">

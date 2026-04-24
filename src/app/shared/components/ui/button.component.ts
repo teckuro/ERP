@@ -11,7 +11,7 @@ type ButtonSize = 'sm' | 'md' | 'lg';
     <button
       type="button"
       [disabled]="disabled"
-      class="inline-flex items-center justify-center gap-2 rounded-md border font-semibold transition-colors duration-150"
+      class="inline-flex items-center justify-center gap-2 rounded-md border font-medium transition-colors duration-150"
       [class.bg-blue-600]="variant === 'primary'"
       [class.border-blue-600]="variant === 'primary'"
       [class.text-white]="variant === 'primary' || variant === 'danger'"

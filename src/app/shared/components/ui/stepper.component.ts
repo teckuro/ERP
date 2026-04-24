@@ -139,7 +139,7 @@ export interface StepperItem {
         border: 1px solid #cbd5e1;
         background: #ffffff;
         font-size: 0.82rem;
-        font-weight: 700;
+        font-weight: 600;
         color: #64748b;
         transition: border-color 150ms ease, background 150ms ease, color 150ms ease;
       }

@@ -34,7 +34,7 @@ import {
       <!-- Header -->
       <div class="flex items-center justify-between">
         <div>
-          <h1 class="text-2xl font-semibold text-gray-900">Haberes y Descuentos</h1>
+          <h1 class="text-xl font-semibold text-gray-900">Haberes y Descuentos</h1>
           <p class="text-sm text-gray-600 mt-1">
             {{ haberesCount() }} haberes • {{ descuentosCount() }} descuentos configurados
           </p>
@@ -52,7 +52,7 @@ import {
             <div class="flex items-center justify-between">
               <div>
                 <p class="text-sm text-gray-600">Total Conceptos</p>
-                <p class="text-2xl font-semibold text-gray-900 mt-2">{{ conceptos().length }}</p>
+                <p class="text-xl font-semibold text-gray-900 mt-2">{{ conceptos().length }}</p>
               </div>
               <div class="w-12 h-12 bg-blue-50 rounded-lg flex items-center justify-center">
                 <lucide-icon class="w-6 h-6 text-blue-600" name="list"></lucide-icon>
@@ -66,7 +66,7 @@ import {
             <div class="flex items-center justify-between">
               <div>
                 <p class="text-sm text-gray-600">Haberes</p>
-                <p class="text-2xl font-semibold text-gray-900 mt-2">{{ haberesCount() }}</p>
+                <p class="text-xl font-semibold text-gray-900 mt-2">{{ haberesCount() }}</p>
               </div>
               <div class="w-12 h-12 bg-green-50 rounded-lg flex items-center justify-center">
                 <lucide-icon class="w-6 h-6 text-green-600" name="dollar-sign"></lucide-icon>
@@ -80,7 +80,7 @@ import {
             <div class="flex items-center justify-between">
               <div>
                 <p class="text-sm text-gray-600">Descuentos</p>
-                <p class="text-2xl font-semibold text-gray-900 mt-2">{{ descuentosCount() }}</p>
+                <p class="text-xl font-semibold text-gray-900 mt-2">{{ descuentosCount() }}</p>
               </div>
               <div class="w-12 h-12 bg-red-50 rounded-lg flex items-center justify-center">
                 <lucide-icon class="w-6 h-6 text-red-600" name="percent"></lucide-icon>
@@ -260,7 +260,7 @@ import {
         <div class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" (click)="closeModal()">
           <div class="bg-white rounded-lg shadow-xl max-w-2xl w-full" (click)="$event.stopPropagation()">
             <div class="border-b border-gray-200 px-6 py-4">
-              <h2 class="text-xl font-semibold text-gray-900">
+              <h2 class="text-lg font-semibold text-gray-900">
                 {{ selectedConcepto() ? 'Editar Concepto' : 'Nuevo Concepto' }}
               </h2>
             </div>

@@ -47,7 +47,7 @@ import {
             Volver
           </a>
           <div>
-            <h1 class="text-2xl font-semibold text-gray-900">Detalle de Liquidación</h1>
+            <h1 class="text-xl font-semibold text-gray-900">Detalle de Liquidación</h1>
             <p class="text-sm text-gray-600 mt-1">Juan Pérez González - Abril 2026</p>
           </div>
         </div>
@@ -154,7 +154,7 @@ import {
                     </div>
                     <div class="pt-2 border-t-2 border-gray-300 flex justify-between">
                       <span class="font-semibold text-gray-900">TOTAL HABERES:</span>
-                      <span class="font-bold text-green-600 text-lg">$ {{ totalHaberes().toLocaleString('es-CL') }}</span>
+                      <span class="font-semibold text-green-600 text-base">$ {{ totalHaberes().toLocaleString('es-CL') }}</span>
                     </div>
                   </div>
                 </div>
@@ -196,7 +196,7 @@ import {
                   <div class="bg-gray-50 p-4">
                     <div class="pt-2 border-t-2 border-gray-300 flex justify-between">
                       <span class="font-semibold text-gray-900">TOTAL DESCUENTOS:</span>
-                      <span class="font-bold text-red-600 text-lg">$ {{ totalDescuentos().toLocaleString('es-CL') }}</span>
+                      <span class="font-semibold text-red-600 text-base">$ {{ totalDescuentos().toLocaleString('es-CL') }}</span>
                     </div>
                   </div>
                 </div>
@@ -209,7 +209,7 @@ import {
             <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
               <div>
                 <p class="text-sm text-blue-800 font-medium">LÍQUIDO A PAGAR</p>
-                <p class="text-3xl font-bold text-blue-600 mt-1">$ {{ liquido().toLocaleString('es-CL') }}</p>
+                <p class="text-xl font-semibold text-blue-600 mt-1">$ {{ liquido().toLocaleString('es-CL') }}</p>
               </div>
               <div class="flex gap-2">
                 <app-button variant="outline">
@@ -341,7 +341,7 @@ import {
                     <p class="text-sm font-medium text-blue-900 mb-1">SUELDO LÍQUIDO A PAGAR</p>
                     <p class="text-xs text-blue-700">Monto neto después de descuentos legales</p>
                   </div>
-                  <p class="text-3xl font-bold text-blue-900">$ {{ liquido().toLocaleString('es-CL') }}</p>
+                  <p class="text-xl font-semibold text-blue-900">$ {{ liquido().toLocaleString('es-CL') }}</p>
                 </div>
               </div>
             </app-card-content>

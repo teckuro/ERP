@@ -247,7 +247,7 @@ export interface TabbarItem {
 
       .tabbar-label {
         font-size: 0.84rem;
-        font-weight: 700;
+        font-weight: 500;
         letter-spacing: 0;
         overflow: hidden;
         text-overflow: ellipsis;

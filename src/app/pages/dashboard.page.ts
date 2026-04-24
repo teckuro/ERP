@@ -26,7 +26,7 @@ import { ButtonComponent } from '../shared/components/ui/button.component';
       <!-- Header -->
       <div class="flex items-center justify-between">
         <div>
-          <h1 class="text-2xl font-semibold text-gray-900">Dashboard de Gestión</h1>
+          <h1 class="text-xl font-semibold text-gray-900">Dashboard de Gestión</h1>
           <p class="text-sm text-gray-600 mt-1">Centro de mando - Periodo Abril 2026</p>
         </div>
         <app-button variant="primary">
@@ -42,7 +42,7 @@ import { ButtonComponent } from '../shared/components/ui/button.component';
             <div class="flex items-start justify-between">
               <div>
                 <p class="text-sm text-gray-600 mb-1">Costo Empresa Total</p>
-                <p class="text-2xl font-semibold text-gray-900">$20.800.000</p>
+                <p class="text-xl font-semibold text-gray-900">$20.800.000</p>
                 <div class="flex items-center gap-1 mt-2">
                   <lucide-icon class="w-4 h-4 text-green-600" name="arrow-up-right"></lucide-icon>
                   <span class="text-sm text-green-600 font-medium">+3.5%</span>
@@ -62,7 +62,7 @@ import { ButtonComponent } from '../shared/components/ui/button.component';
             <div class="flex items-start justify-between">
               <div>
                 <p class="text-sm text-gray-600 mb-1">Total Líquido a Pagar</p>
-                <p class="text-2xl font-semibold text-gray-900">$16.200.000</p>
+                <p class="text-xl font-semibold text-gray-900">$16.200.000</p>
                 <div class="flex items-center gap-1 mt-2">
                   <lucide-icon class="w-4 h-4 text-green-600" name="arrow-up-right"></lucide-icon>
                   <span class="text-sm text-green-600 font-medium">+3.2%</span>
@@ -82,7 +82,7 @@ import { ButtonComponent } from '../shared/components/ui/button.component';
             <div class="flex items-start justify-between">
               <div>
                 <p class="text-sm text-gray-600 mb-1">Estado Previred</p>
-                <p class="text-xl font-semibold text-gray-900">Sin Cargar</p>
+                <p class="text-lg font-semibold text-gray-900">Sin Cargar</p>
                 <div class="mt-3">
                   <app-badge variant="warning">Pendiente</app-badge>
                 </div>
@@ -100,7 +100,7 @@ import { ButtonComponent } from '../shared/components/ui/button.component';
             <div class="flex items-start justify-between">
               <div>
                 <p class="text-sm text-gray-600 mb-1">Días para Cierre</p>
-                <p class="text-2xl font-semibold text-gray-900">{{ diasParaCierre }} días</p>
+                <p class="text-xl font-semibold text-gray-900">{{ diasParaCierre }} días</p>
                 <div class="mt-3">
                   <app-badge [variant]="badgeVariantDiasParaCierre">
                     {{ badgeLabelDiasParaCierre }}
@@ -262,7 +262,7 @@ import { ButtonComponent } from '../shared/components/ui/button.component';
             <div class="flex items-center justify-between">
               <div>
                 <p class="text-xs text-gray-600">Empleados Activos</p>
-                <p class="text-xl font-semibold text-gray-900 mt-1">42</p>
+                <p class="text-lg font-semibold text-gray-900 mt-1">42</p>
               </div>
               <lucide-icon class="w-8 h-8 text-blue-600" name="users"></lucide-icon>
             </div>
@@ -274,7 +274,7 @@ import { ButtonComponent } from '../shared/components/ui/button.component';
             <div class="flex items-center justify-between">
               <div>
                 <p class="text-xs text-gray-600">Licencias Activas</p>
-                <p class="text-xl font-semibold text-gray-900 mt-1">3</p>
+                <p class="text-lg font-semibold text-gray-900 mt-1">3</p>
               </div>
               <lucide-icon class="w-8 h-8 text-yellow-600" name="file-text"></lucide-icon>
             </div>
@@ -286,7 +286,7 @@ import { ButtonComponent } from '../shared/components/ui/button.component';
             <div class="flex items-center justify-between">
               <div>
                 <p class="text-xs text-gray-600">Promedio Sueldo</p>
-                <p class="text-xl font-semibold text-gray-900 mt-1">$1.2M</p>
+                <p class="text-lg font-semibold text-gray-900 mt-1">$1.2M</p>
               </div>
               <lucide-icon class="w-8 h-8 text-green-600" name="dollar-sign"></lucide-icon>
             </div>
@@ -298,7 +298,7 @@ import { ButtonComponent } from '../shared/components/ui/button.component';
             <div class="flex items-center justify-between">
               <div>
                 <p class="text-xs text-gray-600">Tasa Rotación</p>
-                <p class="text-xl font-semibold text-gray-900 mt-1">2.4%</p>
+                <p class="text-lg font-semibold text-gray-900 mt-1">2.4%</p>
               </div>
               <lucide-icon class="w-8 h-8 text-purple-600" name="trending-up"></lucide-icon>
             </div>

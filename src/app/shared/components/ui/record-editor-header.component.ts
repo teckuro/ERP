@@ -54,8 +54,8 @@ type RecordHeaderStatusTone = 'draft' | 'success' | 'warning' | 'info' | 'neutra
       h1 {
         margin: 0;
         color: #0f172a;
-        font-size: 1.55rem;
-        font-weight: 850;
+        font-size: 1.375rem;
+        font-weight: 600;
         letter-spacing: 0;
         line-height: 1.15;
       }
@@ -73,7 +73,7 @@ type RecordHeaderStatusTone = 'draft' | 'success' | 'warning' | 'info' | 'neutra
         border: 1px solid;
         border-radius: 999px;
         font-size: 0.75rem;
-        font-weight: 850;
+        font-weight: 500;
         line-height: 1;
       }
 

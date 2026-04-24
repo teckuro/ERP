@@ -141,7 +141,7 @@ export class PageActionsComponent {
 
   actionClass(action: PageActionType): string {
     const base =
-      'inline-flex h-10 min-w-[8.25rem] items-center justify-center gap-2 rounded-md border px-4 text-sm font-semibold transition-colors duration-150';
+      'erp-toolbar-button inline-flex h-10 min-w-[8.25rem] items-center justify-center gap-2 rounded-md border px-4 text-sm transition-colors duration-150';
 
     if (action === 'save') {
       return `${base} border-blue-600 bg-blue-600 text-white hover:border-blue-700 hover:bg-blue-700`;

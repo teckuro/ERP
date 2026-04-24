@@ -7,7 +7,7 @@
   </header>
 
   <div class="file-toolbar" aria-label="Acciones de ficha">
-    <a routerLink="/empleados" class="file-toolbar-button file-toolbar-button--secondary">
+    <a routerLink="/empleados" class="file-toolbar-button file-toolbar-button--secondary erp-toolbar-button">
       <lucide-icon class="file-toolbar-icon" [img]="arrowLeftIcon"></lucide-icon>
       Volver
     </a>
@@ -15,7 +15,7 @@
     @if (!isLoading() && !errorMessage() && empleado(); as employee) {
       <button
         type="button"
-        class="file-toolbar-button file-toolbar-button--primary"
+        class="file-toolbar-button file-toolbar-button--primary erp-toolbar-button"
         (click)="employee.aptoParaRemuneraciones ? startEditing() : selectRecommendedTab(employee)"
       >
         <lucide-icon class="file-toolbar-icon" [img]="editIcon"></lucide-icon>
@@ -69,8 +69,8 @@
             <div class="metric-item metric-item--primary metric-progress">
               <div class="metric-progress-head">
                 <strong class="inline-flex items-baseline gap-px whitespace-nowrap text-blue-700">
-                  <span class="text-[1.55rem] font-extrabold leading-none">{{ completionValue(employee) }}</span>
-                  <span class="text-[0.95rem] font-bold leading-none">%</span>
+                  <span class="text-xl font-semibold leading-none">{{ completionValue(employee) }}</span>
+                  <span class="text-sm font-medium leading-none">%</span>
                 </strong>
                 <span>{{ completedBlocks(employee) }} de {{ tabs.length }} bloques completos</span>
               </div>

@@ -32,13 +32,10 @@
   min-height: 2.35rem;
   align-items: center;
   justify-content: center;
-  gap: 0.55rem;
   border: 1px solid;
   border-radius: 999px;
   padding: 0 1rem;
   font-size: 0.82rem;
-  font-weight: 700;
-  line-height: 1;
   white-space: nowrap;
   transition:
     background-color 150ms ease,
@@ -85,19 +82,10 @@
   transform: translateY(-1px);
 }
 
-.toolbar-button span {
-  display: inline-flex;
-  align-items: center;
-}
-
 .toolbar-icon {
-  display: inline-flex;
   flex: 0 0 15px;
-  align-items: center;
-  justify-content: center;
   width: 15px;
   height: 15px;
-  line-height: 0;
 }
 
 .toolbar-icon ::ng-deep svg {
@@ -144,7 +132,7 @@
   margin: 0;
   color: #0f172a;
   font-size: 0.86rem;
-  font-weight: 700;
+  font-weight: 600;
   line-height: 1.2;
 }
 
@@ -197,7 +185,7 @@
 .create-menu__option-copy strong {
   color: #0f172a;
   font-size: 0.78rem;
-  font-weight: 700;
+  font-weight: 600;
   line-height: 1.2;
 }
 
