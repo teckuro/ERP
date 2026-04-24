@@ -72,6 +72,7 @@ export { EmpleadoReferenciaInvalidaError, EmpleadoRutDuplicadoError };
 })
 export class EmpleadosRepository {
   private readonly supabase = injectSupabase();
+  private readonly supabaseUntyped = this.supabase as any;
 
   async obtenerCatalogosFormulario(): Promise<EmpleadoFormCatalogos> {
     const [
@@ -137,13 +138,16 @@ export class EmpleadosRepository {
         .select('id_tramo,periodo,desde,hasta,valor,tramo')
         .order('periodo', { ascending: false })
         .order('desde', { ascending: true, nullsFirst: true }),
-      this.supabase
+      this.supabaseUntyped
         .from('institucion_apv')
         .select('id_institucion_apv,nombre')
+        .eq('vigente', true)
+        .neq('codigo', '000')
         .order('nombre', { ascending: true }),
-      this.supabase
+      this.supabaseUntyped
         .from('forma_pago_apv')
         .select('id_forma_pago_apv,nombre')
+        .eq('vigente', true)
         .order('nombre', { ascending: true }),
       this.supabase.from('banco').select('id_banco,nombre').order('nombre', { ascending: true }),
       this.supabase
@@ -258,8 +262,8 @@ export class EmpleadosRepository {
       entidadesSalud: mapSaludCatalog(saludResult.data ?? []),
       monedas: mapCatalog(monedasResult.data ?? [], 'id_moneda'),
       tramosCarga: pickLatestTramosCarga(tramosCargaResult.data ?? []),
-      institucionesApv: mapCatalog(institucionesApvResult.data ?? [], 'id_institucion_apv'),
-      formasPagoApv: mapCatalog(formasPagoApvResult.data ?? [], 'id_forma_pago_apv'),
+      institucionesApv: mapCatalog((institucionesApvResult.data ?? []) as Array<{ id_institucion_apv: number; nombre: string }>, 'id_institucion_apv'),
+      formasPagoApv: mapCatalog((formasPagoApvResult.data ?? []) as Array<{ id_forma_pago_apv: number; nombre: string }>, 'id_forma_pago_apv'),
       bancos: mapCatalog(bancosResult.data ?? [], 'id_banco'),
       tiposCuentaBancaria: mapCatalog(tiposCuentaResult.data ?? [], 'id_tipo_cuenta_bancaria'),
     };

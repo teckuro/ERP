@@ -1,0 +1,58 @@
+name: sync-parametros-v611
+
+on:
+  schedule:
+    # Corre el dia 1 de cada mes a las 08:00 UTC.
+    - cron: "0 8 1 * *"
+  workflow_dispatch:
+    inputs:
+      apply:
+        description: "Aplicar SQL a Supabase"
+        required: true
+        default: "true"
+        type: choice
+        options:
+          - "true"
+          - "false"
+
+concurrency:
+  group: sync-parametros-v611
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    env:
+      SQL_PATH: scripts/parametros-v611/data/parametros_mensuales_v611.sql
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install psql
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y postgresql-client
+
+      - name: Generate monthly SQL
+        run: python scripts/parametros-v611/scripts/mensual/render_parametros_mensuales_v611.py
+
+      - name: Upload generated SQL
+        uses: actions/upload-artifact@v4
+        with:
+          name: parametros_mensuales_v611_sql
+          path: ${{ env.SQL_PATH }}
+
+      - name: Apply SQL to Supabase
+        if: github.event_name == 'schedule' || inputs.apply == 'true'
+        env:
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+        run: |
+          test -n "$SUPABASE_DB_URL"
+          psql "$SUPABASE_DB_URL" -v ON_ERROR_STOP=1 -f "$SQL_PATH"
+

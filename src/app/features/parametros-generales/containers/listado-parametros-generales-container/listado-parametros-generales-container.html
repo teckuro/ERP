@@ -1,0 +1,17 @@
+<section class="parametros-page" aria-label="Parametros generales">
+  <header class="parametros-header">
+    <app-record-breadcrumb
+      [items]="breadcrumbItems"
+      title="Parametros generales"
+    ></app-record-breadcrumb>
+  </header>
+
+  <div class="parametros-content">
+    <app-tabla-parametros-generales
+      class="block w-full min-w-0"
+      [rows]="rows()"
+      [loading]="isLoading()"
+      [errorMessage]="errorMessage() ?? ''"
+    ></app-tabla-parametros-generales>
+  </div>
+</section>

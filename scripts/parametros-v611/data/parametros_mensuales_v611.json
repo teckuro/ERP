@@ -1,0 +1,447 @@
+{
+  "periodo_remuneracion": {
+    "codigo": "2026-04",
+    "anio": 2026,
+    "mes": 4,
+    "fecha_inicio": "2026-04-01",
+    "fecha_fin": "2026-04-30",
+    "estado": "ABIERTO"
+  },
+  "parametros_legales": [
+    {
+      "nombre": "UF",
+      "valor_decimal": 40120.2,
+      "valor_entero": null,
+      "vigencia_inicio": "2026-04-01",
+      "vigencia_fin": null
+    },
+    {
+      "nombre": "UF_MES_ANTERIOR",
+      "valor_decimal": 39841.72,
+      "valor_entero": null,
+      "vigencia_inicio": "2026-04-01",
+      "vigencia_fin": null
+    },
+    {
+      "nombre": "UTM",
+      "valor_decimal": null,
+      "valor_entero": 69889,
+      "vigencia_inicio": "2026-04-01",
+      "vigencia_fin": null
+    },
+    {
+      "nombre": "UTA",
+      "valor_decimal": null,
+      "valor_entero": 838668,
+      "vigencia_inicio": "2026-04-01",
+      "vigencia_fin": null
+    },
+    {
+      "nombre": "SIS",
+      "valor_decimal": 1.54,
+      "valor_entero": null,
+      "vigencia_inicio": "2026-04-01",
+      "vigencia_fin": null
+    },
+    {
+      "nombre": "TOPE_AFP_UF",
+      "valor_decimal": 90.0,
+      "valor_entero": null,
+      "vigencia_inicio": "2026-04-01",
+      "vigencia_fin": null
+    },
+    {
+      "nombre": "TOPE_AFP_PESOS",
+      "valor_decimal": null,
+      "valor_entero": 3610818,
+      "vigencia_inicio": "2026-04-01",
+      "vigencia_fin": null
+    },
+    {
+      "nombre": "TOPE_INP_UF",
+      "valor_decimal": 60.0,
+      "valor_entero": null,
+      "vigencia_inicio": "2026-04-01",
+      "vigencia_fin": null
+    },
+    {
+      "nombre": "TOPE_INP_PESOS",
+      "valor_decimal": null,
+      "valor_entero": 2390503,
+      "vigencia_inicio": "2026-04-01",
+      "vigencia_fin": null
+    },
+    {
+      "nombre": "TOPE_AFC_UF",
+      "valor_decimal": 135.2,
+      "valor_entero": null,
+      "vigencia_inicio": "2026-04-01",
+      "vigencia_fin": null
+    },
+    {
+      "nombre": "TOPE_AFC_PESOS",
+      "valor_decimal": null,
+      "valor_entero": 5424251,
+      "vigencia_inicio": "2026-04-01",
+      "vigencia_fin": null
+    },
+    {
+      "nombre": "SUELDO_MINIMO",
+      "valor_decimal": null,
+      "valor_entero": 539000,
+      "vigencia_inicio": "2026-04-01",
+      "vigencia_fin": null
+    },
+    {
+      "nombre": "SUELDO_MINIMO_18_65",
+      "valor_decimal": null,
+      "valor_entero": 402082,
+      "vigencia_inicio": "2026-04-01",
+      "vigencia_fin": null
+    },
+    {
+      "nombre": "SUELDO_MINIMO_TPC",
+      "valor_decimal": null,
+      "valor_entero": 539000,
+      "vigencia_inicio": "2026-04-01",
+      "vigencia_fin": null
+    },
+    {
+      "nombre": "SUELDO_MINIMO_NO_REM",
+      "valor_decimal": null,
+      "valor_entero": 347434,
+      "vigencia_inicio": "2026-04-01",
+      "vigencia_fin": null
+    },
+    {
+      "nombre": "SALUD_CCAF",
+      "valor_decimal": 4.2,
+      "valor_entero": null,
+      "vigencia_inicio": "2026-04-01",
+      "vigencia_fin": null
+    },
+    {
+      "nombre": "SALUD_FONASA",
+      "valor_decimal": 2.8,
+      "valor_entero": null,
+      "vigencia_inicio": "2026-04-01",
+      "vigencia_fin": null
+    },
+    {
+      "nombre": "TOPE_APV_MENSUAL_UF",
+      "valor_decimal": 50.0,
+      "valor_entero": null,
+      "vigencia_inicio": "2026-04-01",
+      "vigencia_fin": null
+    },
+    {
+      "nombre": "TOPE_APV_MENSUAL_PESOS",
+      "valor_decimal": null,
+      "valor_entero": 2006010,
+      "vigencia_inicio": "2026-04-01",
+      "vigencia_fin": null
+    },
+    {
+      "nombre": "TOPE_APV_ANUAL_UF",
+      "valor_decimal": 600.0,
+      "valor_entero": null,
+      "vigencia_inicio": "2026-04-01",
+      "vigencia_fin": null
+    },
+    {
+      "nombre": "TOPE_APV_ANUAL_PESOS",
+      "valor_decimal": null,
+      "valor_entero": 24072120,
+      "vigencia_inicio": "2026-04-01",
+      "vigencia_fin": null
+    },
+    {
+      "nombre": "TOPE_DEPOSITO_CONVENIDO_ANUAL_UF",
+      "valor_decimal": 900.0,
+      "valor_entero": null,
+      "vigencia_inicio": "2026-04-01",
+      "vigencia_fin": null
+    },
+    {
+      "nombre": "TOPE_DEPOSITO_CONVENIDO_ANUAL_PESOS",
+      "valor_decimal": null,
+      "valor_entero": 36108180,
+      "vigencia_inicio": "2026-04-01",
+      "vigencia_fin": null
+    }
+  ],
+  "parametros_generales_compat": {
+    "periodo": "2026-04",
+    "uf": 40120.2,
+    "utm": 69889,
+    "sueldo_minimo": 539000,
+    "sueldo_minimo18_65": 402082,
+    "gratificacion": true,
+    "imm_gratificacion": 4.75,
+    "tope_afp": 3610818,
+    "tope_ips": 2390503,
+    "tope_cesantia": 5424251,
+    "tope_afpvoluntario": 2006010,
+    "sis": 1.54,
+    "dsctosbpordia": true,
+    "afc_trabajador_indefinido": 0.6,
+    "afc_empleador_indefinido": 2.4,
+    "afc_empleador_plazo": 3.0
+  },
+  "afc_parametro": [
+    {
+      "codigo_tipo_contrato": "INDEFINIDO",
+      "aplica_seguro": true,
+      "aplica_trabajador": true,
+      "tasa_trabajador": 0.6,
+      "tasa_empleador": 2.4,
+      "observacion": "Carga mensual separada v6.11",
+      "vigencia_inicio": "2026-04-01",
+      "vigencia_fin": null
+    },
+    {
+      "codigo_tipo_contrato": "PLAZO_FIJO",
+      "aplica_seguro": true,
+      "aplica_trabajador": false,
+      "tasa_trabajador": 0.0,
+      "tasa_empleador": 3.0,
+      "observacion": "Carga mensual separada v6.11",
+      "vigencia_inicio": "2026-04-01",
+      "vigencia_fin": null
+    },
+    {
+      "codigo_tipo_contrato": "OBRA_SERVICIO",
+      "aplica_seguro": true,
+      "aplica_trabajador": false,
+      "tasa_trabajador": 0.0,
+      "tasa_empleador": 3.0,
+      "observacion": "Carga mensual separada v6.11",
+      "vigencia_inicio": "2026-04-01",
+      "vigencia_fin": null
+    },
+    {
+      "codigo_tipo_contrato": "CASA_PARTICULAR",
+      "aplica_seguro": true,
+      "aplica_trabajador": false,
+      "tasa_trabajador": 0.0,
+      "tasa_empleador": 3.0,
+      "observacion": "Carga mensual separada v6.11",
+      "vigencia_inicio": "2026-04-01",
+      "vigencia_fin": null
+    }
+  ],
+  "tramo_carga": [
+    {
+      "periodo": "2026-04",
+      "desde": 0,
+      "hasta": 631976,
+      "valor": 22007,
+      "tramo": "A"
+    },
+    {
+      "periodo": "2026-04",
+      "desde": 631976,
+      "hasta": 923067,
+      "valor": 13505,
+      "tramo": "B"
+    },
+    {
+      "periodo": "2026-04",
+      "desde": 923067,
+      "hasta": 1439668,
+      "valor": 4267,
+      "tramo": "C"
+    },
+    {
+      "periodo": "2026-04",
+      "desde": 1439668,
+      "hasta": null,
+      "valor": 0,
+      "tramo": "D"
+    }
+  ],
+  "tabla_impuesto_unico": [
+    {
+      "tramo": 1,
+      "desde": 0.0,
+      "hasta": 943501.5,
+      "factor": 0.0,
+      "rebaja": 0.0,
+      "vigencia_inicio": "2026-04-01",
+      "vigencia_fin": null
+    },
+    {
+      "tramo": 2,
+      "desde": 943501.51,
+      "hasta": 2096670.0,
+      "factor": 0.04,
+      "rebaja": 37740.06,
+      "vigencia_inicio": "2026-04-01",
+      "vigencia_fin": null
+    },
+    {
+      "tramo": 3,
+      "desde": 2096670.01,
+      "hasta": 3494450.0,
+      "factor": 0.08,
+      "rebaja": 121606.86,
+      "vigencia_inicio": "2026-04-01",
+      "vigencia_fin": null
+    },
+    {
+      "tramo": 4,
+      "desde": 3494450.01,
+      "hasta": 4892230.0,
+      "factor": 0.135,
+      "rebaja": 313801.61,
+      "vigencia_inicio": "2026-04-01",
+      "vigencia_fin": null
+    },
+    {
+      "tramo": 5,
+      "desde": 4892230.01,
+      "hasta": 6290010.0,
+      "factor": 0.23,
+      "rebaja": 778563.46,
+      "vigencia_inicio": "2026-04-01",
+      "vigencia_fin": null
+    },
+    {
+      "tramo": 6,
+      "desde": 6290010.01,
+      "hasta": 8386680.0,
+      "factor": 0.304,
+      "rebaja": 1244024.2,
+      "vigencia_inicio": "2026-04-01",
+      "vigencia_fin": null
+    },
+    {
+      "tramo": 7,
+      "desde": 8386680.01,
+      "hasta": 10483350.0,
+      "factor": 0.35,
+      "rebaja": 1629811.48,
+      "vigencia_inicio": "2026-04-01",
+      "vigencia_fin": null
+    },
+    {
+      "tramo": 8,
+      "desde": 10483350.01,
+      "hasta": null,
+      "factor": 0.4,
+      "rebaja": 2153978.98,
+      "vigencia_inicio": "2026-04-01",
+      "vigencia_fin": null
+    }
+  ],
+  "tramo_impuesto_compat": [
+    {
+      "periodo": "2026-04",
+      "desde": 0.0,
+      "hasta": 943501.5,
+      "factor": 0.0,
+      "rebaja": 0.0
+    },
+    {
+      "periodo": "2026-04",
+      "desde": 943501.51,
+      "hasta": 2096670.0,
+      "factor": 0.04,
+      "rebaja": 37740.06
+    },
+    {
+      "periodo": "2026-04",
+      "desde": 2096670.01,
+      "hasta": 3494450.0,
+      "factor": 0.08,
+      "rebaja": 121606.86
+    },
+    {
+      "periodo": "2026-04",
+      "desde": 3494450.01,
+      "hasta": 4892230.0,
+      "factor": 0.135,
+      "rebaja": 313801.61
+    },
+    {
+      "periodo": "2026-04",
+      "desde": 4892230.01,
+      "hasta": 6290010.0,
+      "factor": 0.23,
+      "rebaja": 778563.46
+    },
+    {
+      "periodo": "2026-04",
+      "desde": 6290010.01,
+      "hasta": 8386680.0,
+      "factor": 0.304,
+      "rebaja": 1244024.2
+    },
+    {
+      "periodo": "2026-04",
+      "desde": 8386680.01,
+      "hasta": 10483350.0,
+      "factor": 0.35,
+      "rebaja": 1629811.48
+    },
+    {
+      "periodo": "2026-04",
+      "desde": 10483350.01,
+      "hasta": null,
+      "factor": 0.4,
+      "rebaja": 2153978.98
+    }
+  ],
+  "afp_vigencia_updates": [
+    {
+      "afp_nombre": "Capital",
+      "vigencia_inicio": "2026-04-01",
+      "sis": 1.54,
+      "tope_imponible_uf": 90.0
+    },
+    {
+      "afp_nombre": "Cuprum",
+      "vigencia_inicio": "2026-04-01",
+      "sis": 1.54,
+      "tope_imponible_uf": 90.0
+    },
+    {
+      "afp_nombre": "Habitat",
+      "vigencia_inicio": "2026-04-01",
+      "sis": 1.54,
+      "tope_imponible_uf": 90.0
+    },
+    {
+      "afp_nombre": "Modelo",
+      "vigencia_inicio": "2026-04-01",
+      "sis": 1.54,
+      "tope_imponible_uf": 90.0
+    },
+    {
+      "afp_nombre": "PlanVital",
+      "vigencia_inicio": "2026-04-01",
+      "sis": 1.54,
+      "tope_imponible_uf": 90.0
+    },
+    {
+      "afp_nombre": "Provida",
+      "vigencia_inicio": "2026-04-01",
+      "sis": 1.54,
+      "tope_imponible_uf": 90.0
+    },
+    {
+      "afp_nombre": "Uno",
+      "vigencia_inicio": "2026-04-01",
+      "sis": 1.54,
+      "tope_imponible_uf": 90.0
+    }
+  ],
+  "metadata": {
+    "periodo_origen": "2026-04",
+    "previred_indicadores_url": "https://www.previred.com/wp-content/uploads/2026/04/Indicadores-Previsionales-Previred-Abril-2026.pdf",
+    "sii_impuesto_url": "https://www.sii.cl/valores_y_fechas/impuesto_2da_categoria/impuesto2026_art52.htm",
+    "seed_base_json": null,
+    "generated_at": "2026-04-24T01:05:10.451699",
+    "script_version": "mensual_v3_full"
+  }
+}

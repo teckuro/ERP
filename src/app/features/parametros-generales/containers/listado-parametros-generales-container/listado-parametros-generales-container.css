@@ -1,0 +1,27 @@
+:host {
+  display: block;
+}
+
+.parametros-page {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  gap: 12px;
+  min-width: 0;
+  min-height: 0;
+}
+
+.parametros-header {
+  display: grid;
+  padding: 0 4px;
+}
+
+.parametros-content {
+  display: flex;
+  min-width: 0;
+  min-height: 0;
+}
+
+.parametros-content > * {
+  flex: 1 1 auto;
+  min-width: 0;
+}
