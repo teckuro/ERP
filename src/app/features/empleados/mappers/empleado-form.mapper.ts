@@ -87,6 +87,21 @@ export function mapEmpleadoFormToPayload(
     valorCuenta2: tieneCuenta2
       ? requireNumber(rawValue.previsionSalud.valorCuenta2, 'el valor de Cuenta 2')
       : null,
+    idEntidadPrevisionalIps:
+      tipoPrevision === 'IPS'
+        ? requireSelection(
+            rawValue.previsionSalud.idEntidadPrevisionalIps,
+            'la entidad previsional IPS',
+          )
+        : null,
+    idExCajaPrevisional:
+      tipoPrevision === 'IPS'
+        ? requireSelection(rawValue.previsionSalud.idExCajaPrevisional, 'la Ex-Caja')
+        : null,
+    idRegimenExCaja:
+      tipoPrevision === 'IPS'
+        ? requireSelection(rawValue.previsionSalud.idRegimenExCaja, 'el regimen Ex-Caja')
+        : null,
     nombreExCaja:
       tipoPrevision === 'IPS'
         ? requireText(rawValue.previsionSalud.nombreExCaja, 'el nombre Ex-Caja')
@@ -189,6 +204,9 @@ export function mapEmpleadoFormToPayloadBasico(form: EmpleadoFormGroup): CrearEm
     idAfp: null,
     idMonedaCuenta2: null,
     valorCuenta2: null,
+    idEntidadPrevisionalIps: null,
+    idExCajaPrevisional: null,
+    idRegimenExCaja: null,
     nombreExCaja: null,
     regimenExCaja: null,
     tasaExCaja: null,

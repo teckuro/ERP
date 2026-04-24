@@ -4,6 +4,7 @@ import { ReactiveFormsModule, Validators } from '@angular/forms';
 import {
   EmpleadoCatalogOption,
   EmpleadoDepartamentoOption,
+  EmpleadoStringCatalogOption,
   EmpleadoSucursalOption,
   TramoCargaCatalogOption,
 } from '../../../models/empleado-catalogos.model';
@@ -37,6 +38,8 @@ export class ContratoComponent {
   @Input() departamentos: EmpleadoDepartamentoOption[] = [];
   @Input() tiposTrabajador: EmpleadoCatalogOption[] = [];
   @Input() tiposJornada: EmpleadoCatalogOption[] = [];
+  @Input() tiposContrato: EmpleadoStringCatalogOption<TipoContrato>[] = [];
+  @Input() tiposGratificacion: EmpleadoStringCatalogOption<TipoGratificacion>[] = [];
   @Input() monedas: EmpleadoCatalogOption[] = [];
   @Input() tramosCarga: TramoCargaCatalogOption[] = [];
   @Input() visibleBlocks: string[] | null = null;
@@ -48,18 +51,6 @@ export class ContratoComponent {
   readonly relationOptions: SelectOption<RelacionLaboral>[] = [
     { value: 'CONTRATO', label: 'Contrato' },
     { value: 'HONORARIOS', label: 'Boleta de honorarios' },
-  ];
-
-  readonly contractTypes: SelectOption<TipoContrato>[] = [
-    { value: 'INDEFINIDO', label: 'Indefinido' },
-    { value: 'PLAZO_FIJO', label: 'Plazo fijo' },
-    { value: 'OBRA_SERVICIO', label: 'Obra o servicio' },
-  ];
-
-  readonly gratificationTypes: SelectOption<TipoGratificacion>[] = [
-    { value: 'LEGAL_ART_50', label: 'Legal art. 50' },
-    { value: 'LEGAL_ART_47', label: 'Legal art. 47' },
-    { value: 'VOLUNTARIA', label: 'Voluntaria' },
   ];
 
   readonly weekdayOptions: WeekdayOption[] = [
@@ -105,6 +96,27 @@ export class ContratoComponent {
   get departamentosFiltrados(): EmpleadoDepartamentoOption[] {
     const sucursalId = this.formGroup.controls.idSucursal.value;
     return this.departamentos.filter((option) => option.idSucursal === sucursalId);
+  }
+
+  get contractTypes(): SelectOption<TipoContrato>[] {
+    return this.tiposContrato.length
+      ? this.tiposContrato
+      : [
+          { value: 'INDEFINIDO', label: 'Indefinido' },
+          { value: 'PLAZO_FIJO', label: 'Plazo fijo' },
+          { value: 'OBRA_SERVICIO', label: 'Obra o servicio' },
+          { value: 'CASA_PARTICULAR', label: 'Casa particular' },
+        ];
+  }
+
+  get gratificationTypes(): SelectOption<TipoGratificacion>[] {
+    return this.tiposGratificacion.length
+      ? this.tiposGratificacion
+      : [
+          { value: 'LEGAL_ART_50', label: 'Legal art. 50' },
+          { value: 'LEGAL_ART_47', label: 'Legal art. 47' },
+          { value: 'VOLUNTARIA', label: 'Voluntaria' },
+        ];
   }
 
   get isIndefinido(): boolean {

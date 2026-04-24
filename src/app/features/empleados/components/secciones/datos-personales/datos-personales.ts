@@ -2,9 +2,11 @@ import { Component, Input } from '@angular/core';
 import { ReactiveFormsModule, Validators } from '@angular/forms';
 
 import { ContactoFormGroup, DatosPersonalesFormGroup } from '../../../models/empleado-form.model';
-import { EmpleadoCatalogOption } from '../../../models/empleado-catalogos.model';
-import { ESTADO_CIVIL_OPTIONS } from '../../../catalogs/estado-civil.options';
-import { SEXO_OPTIONS } from '../../../catalogs/sexo.options';
+import {
+  EmpleadoCatalogOption,
+  EmpleadoStringCatalogOption,
+} from '../../../models/empleado-catalogos.model';
+import { EmpleadoSexo, TipoEstadoCivil } from '../../../models/empleado.model';
 import { CalendarInputComponent } from '../../../../../shared/components/ui/calendar-input.component';
 import { SearchSelectComponent } from '../../../../../shared/components/ui/search-select.component';
 
@@ -21,11 +23,11 @@ type ContactoControlName = keyof ContactoFormGroup['controls'];
 export class DatosPersonalesComponent {
   @Input({ required: true }) formGroup!: DatosPersonalesFormGroup;
   @Input({ required: true }) contactoFormGroup!: ContactoFormGroup;
+  @Input() sexos: EmpleadoStringCatalogOption<EmpleadoSexo>[] = [];
+  @Input() estadosCivil: EmpleadoStringCatalogOption<TipoEstadoCivil>[] = [];
   @Input() paises: EmpleadoCatalogOption[] = [];
   @Input() visibleBlocks: string[] | null = null;
 
-  readonly sexOptions = SEXO_OPTIONS;
-  readonly estadoCivilOptions = ESTADO_CIVIL_OPTIONS;
   readonly today = this.toIsoDate(new Date());
 
   controlClass(controlName: DatosPersonalesControlName): string {

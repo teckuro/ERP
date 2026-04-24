@@ -1,13 +1,13 @@
 <section class="employee-file-page" aria-label="Ficha de empleado">
   <header class="file-page-head" aria-label="Encabezado de ficha">
-    <app-record-breadcrumb
-      [items]="breadcrumbItems"
-      title="Ficha empleado"
-    ></app-record-breadcrumb>
+    <app-record-breadcrumb [items]="breadcrumbItems" title="Ficha empleado"></app-record-breadcrumb>
   </header>
 
   <div class="file-toolbar" aria-label="Acciones de ficha">
-    <a routerLink="/empleados" class="file-toolbar-button file-toolbar-button--secondary erp-toolbar-button">
+    <a
+      routerLink="/empleados"
+      class="file-toolbar-button file-toolbar-button--secondary erp-toolbar-button"
+    >
       <lucide-icon class="file-toolbar-icon" [img]="arrowLeftIcon"></lucide-icon>
       Volver
     </a>
@@ -69,7 +69,9 @@
             <div class="metric-item metric-item--primary metric-progress">
               <div class="metric-progress-head">
                 <strong class="inline-flex items-baseline gap-px whitespace-nowrap text-blue-700">
-                  <span class="text-xl font-semibold leading-none">{{ completionValue(employee) }}</span>
+                  <span class="text-xl font-semibold leading-none">{{
+                    completionValue(employee)
+                  }}</span>
                   <span class="text-sm font-medium leading-none">%</span>
                 </strong>
                 <span>{{ completedBlocks(employee) }} de {{ tabs.length }} bloques completos</span>
@@ -127,7 +129,6 @@
               <p>Revision por bloque</p>
               <h2>{{ activeTabLabel() }}</h2>
             </div>
-
           </div>
 
           @if (activeTab() === 'historial') {
@@ -152,7 +153,11 @@
                   <header class="detail-block-head">
                     <h3>{{ block.title }}</h3>
                     @if (!isEditingCurrentTab() && canEditBlock(block.id)) {
-                      <button type="button" class="section-edit-button" (click)="startEditing(block.id)">
+                      <button
+                        type="button"
+                        class="section-edit-button"
+                        (click)="startEditing(block.id)"
+                      >
                         <lucide-icon class="h-4 w-4" [img]="editIcon"></lucide-icon>
                         Editar
                       </button>
@@ -180,6 +185,8 @@
                         <app-empleado-datos-personales
                           [formGroup]="form.controls.datosPersonales"
                           [contactoFormGroup]="form.controls.contacto"
+                          [sexos]="catalogos().sexos"
+                          [estadosCivil]="catalogos().estadosCivil"
                           [paises]="catalogos().paises"
                           [visibleBlocks]="editVisibleBlocks(block.id)"
                         ></app-empleado-datos-personales>
@@ -197,6 +204,8 @@
                           [departamentos]="catalogos().departamentos"
                           [tiposTrabajador]="catalogos().tiposTrabajador"
                           [tiposJornada]="catalogos().tiposJornada"
+                          [tiposContrato]="catalogos().tiposContrato"
+                          [tiposGratificacion]="catalogos().tiposGratificacion"
                           [monedas]="catalogos().monedas"
                           [tramosCarga]="catalogos().tramosCarga"
                           [visibleBlocks]="editVisibleBlocks(block.id)"
@@ -204,7 +213,11 @@
                       } @else if (editComponentForBlock(block.id) === 'prevision') {
                         <app-empleado-prevision-salud
                           [formGroup]="form.controls.previsionSalud"
+                          [tiposRegimenPrevisional]="catalogos().tiposRegimenPrevisional"
                           [regimenesPrevisionales]="catalogos().regimenesPrevisionales"
+                          [entidadesPrevisionalesIps]="catalogos().entidadesPrevisionalesIps"
+                          [exCajasPrevisionales]="catalogos().exCajasPrevisionales"
+                          [regimenesExCaja]="catalogos().regimenesExCaja"
                           [afps]="catalogos().afps"
                           [entidadesSalud]="catalogos().entidadesSalud"
                           [monedas]="catalogos().monedas"
@@ -248,9 +261,17 @@
                       @for (item of block.items; track item.label) {
                         <div [class.is-missing]="isMissingValue(item.value)">
                           <dt>{{ item.label }}</dt>
-                          <dd [class.inline-flex]="isMissingValue(item.value)" [class.items-center]="isMissingValue(item.value)" [class.gap-1.5]="isMissingValue(item.value)" [class.text-amber-700]="isMissingValue(item.value)">
+                          <dd
+                            [class.inline-flex]="isMissingValue(item.value)"
+                            [class.items-center]="isMissingValue(item.value)"
+                            [class.gap-1.5]="isMissingValue(item.value)"
+                            [class.text-amber-700]="isMissingValue(item.value)"
+                          >
                             @if (isMissingValue(item.value)) {
-                              <span class="inline-flex flex-none items-center justify-center text-amber-500" aria-hidden="true">
+                              <span
+                                class="inline-flex flex-none items-center justify-center text-amber-500"
+                                aria-hidden="true"
+                              >
                                 <lucide-icon class="h-3.5 w-3.5" [img]="alertIcon"></lucide-icon>
                               </span>
                             }
@@ -270,7 +291,10 @@
           <section>
             <p>Estado de ficha</p>
             <div class="side-status-row">
-              <lucide-icon class="h-4 w-4" [img]="employee.estado === 'activo' ? checkIcon : clockIcon"></lucide-icon>
+              <lucide-icon
+                class="h-4 w-4"
+                [img]="employee.estado === 'activo' ? checkIcon : clockIcon"
+              ></lucide-icon>
               <span>{{ statusLabel(employee.estado) }}</span>
             </div>
             <dl class="side-state-list">
@@ -298,7 +322,10 @@
             <ul class="side-missing-list">
               @for (pending of pendingItems(employee); track pending) {
                 <li>
-                  <lucide-icon class="h-3.5 w-3.5 flex-none text-amber-500" [img]="alertIcon"></lucide-icon>
+                  <lucide-icon
+                    class="h-3.5 w-3.5 flex-none text-amber-500"
+                    [img]="alertIcon"
+                  ></lucide-icon>
                   <span>{{ pending }}</span>
                 </li>
               }
@@ -316,9 +343,7 @@
               <button type="button" (click)="selectRecommendedTab(employee)">
                 {{ nextStepLabel(employee) }}
               </button>
-              <button type="button" (click)="startEditing()">
-                Editar seccion actual
-              </button>
+              <button type="button" (click)="startEditing()">Editar seccion actual</button>
             </div>
           </section>
         </aside>

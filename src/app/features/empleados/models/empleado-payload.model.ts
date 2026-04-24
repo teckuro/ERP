@@ -58,6 +58,9 @@ export interface CrearEmpleadoPayload {
   idAfp: number | null;
   idMonedaCuenta2: number | null;
   valorCuenta2: number | null;
+  idEntidadPrevisionalIps: number | null;
+  idExCajaPrevisional: number | null;
+  idRegimenExCaja: number | null;
   nombreExCaja: string | null;
   regimenExCaja: string | null;
   tasaExCaja: number | null;

@@ -126,6 +126,10 @@ export function buildPrevisionInsert(
     id_contrato: contratoId,
     id_afp: payload.tipoPrevision === 'AFP' ? payload.idAfp : null,
     id_regimen_previsional: payload.idRegimenPrevisional,
+    id_entidad_previsional_ips:
+      payload.tipoPrevision === 'IPS' ? payload.idEntidadPrevisionalIps : null,
+    id_ex_caja_previsional: payload.tipoPrevision === 'IPS' ? payload.idExCajaPrevisional : null,
+    id_regimen_ex_caja: payload.tipoPrevision === 'IPS' ? payload.idRegimenExCaja : null,
     vigencia_inicio: payload.fechaIngreso,
     tipo_prevision: payload.tipoPrevision,
     nombre_entidad_ips: null,

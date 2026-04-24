@@ -2,6 +2,10 @@ import { Injectable } from '@angular/core';
 
 import { Tables } from '../../../core/models/database.types';
 import { injectSupabase } from '../../../core/services/supabase.service';
+import { ESTADO_CIVIL_OPTIONS } from '../catalogs/estado-civil.options';
+import { TIPO_GRATIFICACION_OPTIONS } from '../catalogs/tipo-gratificacion.options';
+import { TIPO_REGIMEN_OPTIONS } from '../catalogs/prevision.options';
+import { SEXO_OPTIONS } from '../catalogs/sexo.options';
 import { EmpleadoFormCatalogos } from '../models/empleado-catalogos.model';
 import {
   EmpleadoEstado,
@@ -11,10 +15,21 @@ import {
 } from '../models/empleado-listado.model';
 import { CrearEmpleadoPayload } from '../models/empleado-payload.model';
 import {
+  EntidadPrevisionalIpsCatalogRow,
+  ExCajaPrevisionalCatalogRow,
+  FormaPagoApvCatalogRow,
+  InstitucionApvCatalogRow,
   mapCatalog,
   mapDepartamentosCatalog,
+  mapRegimenExCajaCatalog,
   mapSaludCatalog,
+  mapTipoContratoCatalog,
   pickLatestTramosCarga,
+  RegimenExCajaCatalogRow,
+  RegimenPrevisionalCatalogRow,
+  TipoContratoCatalogRow,
+  TipoJornadaCatalogRow,
+  TipoTrabajadorCatalogRow,
 } from '../mappers/empleado-catalogos.mapper';
 import {
   formatDate,
@@ -72,7 +87,6 @@ export { EmpleadoReferenciaInvalidaError, EmpleadoRutDuplicadoError };
 })
 export class EmpleadosRepository {
   private readonly supabase = injectSupabase();
-  private readonly supabaseUntyped = this.supabase as any;
 
   async obtenerCatalogosFormulario(): Promise<EmpleadoFormCatalogos> {
     const [
@@ -83,7 +97,11 @@ export class EmpleadosRepository {
       departamentosResult,
       tiposTrabajadorResult,
       tiposJornadaResult,
+      tiposContratoResult,
       regimenesResult,
+      entidadesIpsResult,
+      exCajasResult,
+      regimenesExCajaResult,
       afpsResult,
       saludResult,
       monedasResult,
@@ -124,8 +142,27 @@ export class EmpleadosRepository {
         .select('id_tipo_jornada,nombre')
         .order('nombre', { ascending: true }),
       this.supabase
+        .from('afc_parametro')
+        .select('codigo_tipo_contrato')
+        .order('codigo_tipo_contrato', { ascending: true }),
+      this.supabase
         .from('regimen_previsional')
         .select('id_regimen,nombre')
+        .order('id_regimen', { ascending: true }),
+      this.supabase
+        .from('entidad_previsional_ips')
+        .select('id_entidad_previsional_ips,nombre')
+        .eq('vigente', true)
+        .order('nombre', { ascending: true }),
+      this.supabase
+        .from('ex_caja_previsional')
+        .select('id_ex_caja_previsional,nombre')
+        .eq('vigente', true)
+        .order('nombre', { ascending: true }),
+      this.supabase
+        .from('regimen_ex_caja')
+        .select('id_regimen_ex_caja,nombre,id_ex_caja_previsional,tasa_cotizacion_referencia')
+        .eq('vigente', true)
         .order('nombre', { ascending: true }),
       this.supabase.from('afp').select('id_afp,nombre').order('nombre', { ascending: true }),
       this.supabase
@@ -138,13 +175,13 @@ export class EmpleadosRepository {
         .select('id_tramo,periodo,desde,hasta,valor,tramo')
         .order('periodo', { ascending: false })
         .order('desde', { ascending: true, nullsFirst: true }),
-      this.supabaseUntyped
+      this.supabase
         .from('institucion_apv')
         .select('id_institucion_apv,nombre')
         .eq('vigente', true)
         .neq('codigo', '000')
         .order('nombre', { ascending: true }),
-      this.supabaseUntyped
+      this.supabase
         .from('forma_pago_apv')
         .select('id_forma_pago_apv,nombre')
         .eq('vigente', true)
@@ -196,10 +233,38 @@ export class EmpleadosRepository {
       );
     }
 
+    if (tiposContratoResult.error) {
+      throw buildRepositoryError(
+        'No fue posible cargar los tipos de contrato.',
+        tiposContratoResult.error.message,
+      );
+    }
+
     if (regimenesResult.error) {
       throw buildRepositoryError(
         'No fue posible cargar los regimenes previsionales.',
         regimenesResult.error.message,
+      );
+    }
+
+    if (entidadesIpsResult.error) {
+      throw buildRepositoryError(
+        'No fue posible cargar las entidades previsionales IPS.',
+        entidadesIpsResult.error.message,
+      );
+    }
+
+    if (exCajasResult.error) {
+      throw buildRepositoryError(
+        'No fue posible cargar las ex cajas previsionales.',
+        exCajasResult.error.message,
+      );
+    }
+
+    if (regimenesExCajaResult.error) {
+      throw buildRepositoryError(
+        'No fue posible cargar los regimenes Ex-Caja.',
+        regimenesExCajaResult.error.message,
       );
     }
 
@@ -250,20 +315,54 @@ export class EmpleadosRepository {
     }
 
     return {
+      sexos: [...SEXO_OPTIONS],
+      estadosCivil: [...ESTADO_CIVIL_OPTIONS],
       comunas: mapCatalog(comunasResult.data ?? [], 'id_comuna'),
       paises: mapCatalog(paisesResult.data ?? [], 'id_pais'),
       centrosCosto: mapCatalog(centrosCostoResult.data ?? [], 'id_centro_costo'),
       sucursales: mapCatalog(sucursalesResult.data ?? [], 'id_sucursal'),
       departamentos: mapDepartamentosCatalog(departamentosResult.data ?? []),
-      tiposTrabajador: mapCatalog(tiposTrabajadorResult.data ?? [], 'id_tipo_trabajador'),
-      tiposJornada: mapCatalog(tiposJornadaResult.data ?? [], 'id_tipo_jornada'),
-      regimenesPrevisionales: mapCatalog(regimenesResult.data ?? [], 'id_regimen'),
+      tiposTrabajador: mapCatalog(
+        (tiposTrabajadorResult.data ?? []) as TipoTrabajadorCatalogRow[],
+        'id_tipo_trabajador',
+      ),
+      tiposJornada: mapCatalog(
+        (tiposJornadaResult.data ?? []) as TipoJornadaCatalogRow[],
+        'id_tipo_jornada',
+      ),
+      tiposContrato: mapTipoContratoCatalog(
+        (tiposContratoResult.data ?? []) as TipoContratoCatalogRow[],
+        tipoContratoLabel,
+      ),
+      tiposGratificacion: [...TIPO_GRATIFICACION_OPTIONS],
+      tiposRegimenPrevisional: [...TIPO_REGIMEN_OPTIONS],
+      regimenesPrevisionales: mapCatalog(
+        (regimenesResult.data ?? []) as RegimenPrevisionalCatalogRow[],
+        'id_regimen',
+      ),
+      entidadesPrevisionalesIps: mapCatalog(
+        (entidadesIpsResult.data ?? []) as EntidadPrevisionalIpsCatalogRow[],
+        'id_entidad_previsional_ips',
+      ),
+      exCajasPrevisionales: mapCatalog(
+        (exCajasResult.data ?? []) as ExCajaPrevisionalCatalogRow[],
+        'id_ex_caja_previsional',
+      ),
+      regimenesExCaja: mapRegimenExCajaCatalog(
+        (regimenesExCajaResult.data ?? []) as RegimenExCajaCatalogRow[],
+      ),
       afps: mapCatalog(afpsResult.data ?? [], 'id_afp'),
       entidadesSalud: mapSaludCatalog(saludResult.data ?? []),
       monedas: mapCatalog(monedasResult.data ?? [], 'id_moneda'),
       tramosCarga: pickLatestTramosCarga(tramosCargaResult.data ?? []),
-      institucionesApv: mapCatalog((institucionesApvResult.data ?? []) as Array<{ id_institucion_apv: number; nombre: string }>, 'id_institucion_apv'),
-      formasPagoApv: mapCatalog((formasPagoApvResult.data ?? []) as Array<{ id_forma_pago_apv: number; nombre: string }>, 'id_forma_pago_apv'),
+      institucionesApv: mapCatalog(
+        (institucionesApvResult.data ?? []) as InstitucionApvCatalogRow[],
+        'id_institucion_apv',
+      ),
+      formasPagoApv: mapCatalog(
+        (formasPagoApvResult.data ?? []) as FormaPagoApvCatalogRow[],
+        'id_forma_pago_apv',
+      ),
       bancos: mapCatalog(bancosResult.data ?? [], 'id_banco'),
       tiposCuentaBancaria: mapCatalog(tiposCuentaResult.data ?? [], 'id_tipo_cuenta_bancaria'),
     };
@@ -1111,6 +1210,9 @@ export class EmpleadosRepository {
         idAfp: prevision?.id_afp ?? null,
         idMonedaCuenta2: cuenta2?.id_moneda ?? null,
         valorCuenta2: cuenta2?.monto ?? null,
+        idEntidadPrevisionalIps: prevision?.id_entidad_previsional_ips ?? null,
+        idExCajaPrevisional: prevision?.id_ex_caja_previsional ?? null,
+        idRegimenExCaja: prevision?.id_regimen_ex_caja ?? null,
         nombreExCaja: prevision?.nombre_ex_caja ?? '',
         regimenExCaja: prevision?.regimen_ex_caja ?? '',
         tasaExCaja: prevision?.tasa_ex_caja ?? null,
@@ -1552,4 +1654,15 @@ function formatRutPartsFromInput(value: string): RutParts {
   }
 
   return { rut, dv };
+}
+
+function tipoContratoLabel(value: string): string {
+  const labels: Record<string, string> = {
+    INDEFINIDO: 'Indefinido',
+    PLAZO_FIJO: 'Plazo fijo',
+    OBRA_SERVICIO: 'Obra o servicio',
+    CASA_PARTICULAR: 'Casa particular',
+  };
+
+  return labels[value] ?? value;
 }

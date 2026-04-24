@@ -469,7 +469,7 @@ export class FichaEmpleadoContainer implements OnInit {
           { label: 'RUT', value: this.emptyText(personal.rut) },
           { label: 'Pasaporte', value: this.emptyText(personal.pasaporte) },
           { label: 'Fecha nacimiento', value: this.dateText(personal.fechaNacimiento) },
-          { label: 'Sexo', value: this.optionText(personal.sexo, this.sexOptions()) },
+          { label: 'Sexo', value: this.optionText(personal.sexo, this.catalogos().sexos) },
           this.detailSection('Nombre del colaborador'),
           { label: 'Nombres', value: this.emptyText(personal.nombres) },
           { label: 'Apellido paterno', value: this.emptyText(personal.apellidoPaterno) },
@@ -477,7 +477,10 @@ export class FichaEmpleadoContainer implements OnInit {
           { label: 'Nombre completo', value: empleado.nombre },
           this.detailSection('Informacion base'),
           { label: 'Nacionalidad', value: this.catalogText(personal.idPais, 'paises') },
-          { label: 'Estado civil', value: this.estadoCivilText(personal.estadoCivil) },
+          {
+            label: 'Estado civil',
+            value: this.optionText(personal.estadoCivil, this.catalogos().estadosCivil),
+          },
           { label: 'Email', value: this.emptyText(contacto.email) },
           { label: 'Telefono', value: this.emptyText(contacto.telefono) },
           this.detailSection('Ubicacion administrativa'),
@@ -492,18 +495,33 @@ export class FichaEmpleadoContainer implements OnInit {
           this.detailSection('Relacion laboral'),
           { label: 'Relacion laboral', value: this.relacionLaboralText(contrato.relacionLaboral) },
           this.detailSection('Contrato'),
-          { label: 'Tipo trabajador', value: this.catalogText(contrato.idTipoTrabajador, 'tiposTrabajador') },
-          { label: 'Tipo jornada', value: this.catalogText(contrato.idTipoJornada, 'tiposJornada') },
+          {
+            label: 'Tipo trabajador',
+            value: this.catalogText(contrato.idTipoTrabajador, 'tiposTrabajador'),
+          },
+          {
+            label: 'Tipo jornada',
+            value: this.catalogText(contrato.idTipoJornada, 'tiposJornada'),
+          },
           { label: 'Fecha ingreso', value: this.dateText(contrato.fechaIngreso) },
           { label: 'Fecha contrato', value: this.dateText(contrato.fechaContrato) },
           { label: 'Fecha termino', value: this.dateText(contrato.fechaTermino) },
           { label: 'Indefinido', value: this.booleanText(contrato.tipoContrato === 'INDEFINIDO') },
-          { label: 'Departamento', value: this.catalogText(contrato.idDepartamentoEmpresa, 'departamentos') },
+          {
+            label: 'Departamento',
+            value: this.catalogText(contrato.idDepartamentoEmpresa, 'departamentos'),
+          },
           { label: 'Sucursal', value: this.catalogText(contrato.idSucursal, 'sucursales') },
-          { label: 'Tipo de contrato', value: this.tipoContratoText(contrato.tipoContrato) },
+          {
+            label: 'Tipo de contrato',
+            value: this.optionText(contrato.tipoContrato, this.catalogos().tiposContrato),
+          },
           { label: 'Seguro de cesantia', value: this.booleanText(contrato.seguroCesantia) },
           this.detailSection('Centro de costo y estado'),
-          { label: 'Centro de costo', value: this.catalogText(contrato.idCentroCosto, 'centrosCosto') },
+          {
+            label: 'Centro de costo',
+            value: this.catalogText(contrato.idCentroCosto, 'centrosCosto'),
+          },
           { label: 'Cargo', value: this.emptyText(contrato.cargo) },
           { label: 'Estado de ficha inicial', value: this.statusLabel(contrato.estado) },
         ];
@@ -514,11 +532,20 @@ export class FichaEmpleadoContainer implements OnInit {
           { label: 'Dias semanales', value: this.numberText(contrato.diasSemanales) },
           { label: 'Sueldo base mensual', value: this.moneyText(contrato.sueldoBase) },
           { label: 'Moneda sueldo', value: this.catalogText(contrato.idMoneda, 'monedas') },
-          { label: 'Gratificacion', value: this.tipoGratificacionText(contrato.tipoGratificacion) },
+          {
+            label: 'Gratificacion',
+            value: this.optionText(contrato.tipoGratificacion, this.catalogos().tiposGratificacion),
+          },
           { label: 'Sueldo variable', value: this.booleanText(contrato.sueldoVariable) },
-          { label: 'Distribucion de la jornada', value: this.emptyText(contrato.distribucionJornada) },
+          {
+            label: 'Distribucion de la jornada',
+            value: this.emptyText(contrato.distribucionJornada),
+          },
           { label: 'Tiempo de colacion', value: this.minutesText(contrato.tiempoColacionMinutos) },
-          { label: 'Gratificacion proporcional', value: this.booleanText(contrato.gratificacionProporcional) },
+          {
+            label: 'Gratificacion proporcional',
+            value: this.booleanText(contrato.gratificacionProporcional),
+          },
           this.detailSection('Cargas familiares'),
           { label: 'Numero de cargas', value: this.numberText(contrato.cargas) },
           { label: 'Tramo asignado', value: this.tramoCargaText(contrato.idTramoCarga) },
@@ -526,9 +553,15 @@ export class FichaEmpleadoContainer implements OnInit {
           this.detailSection('Zona extrema'),
           { label: 'Habilitar zona extrema', value: this.booleanText(contrato.zonaExtremaActiva) },
           { label: 'Territorio', value: this.emptyText(contrato.zonaExtremaTerritorio) },
-          { label: 'Asignacion zona extrema', value: this.percentText(contrato.zonaExtremaPorcentaje) },
+          {
+            label: 'Asignacion zona extrema',
+            value: this.percentText(contrato.zonaExtremaPorcentaje),
+          },
           this.detailSection('Beneficio semana corrida'),
-          { label: 'Habilitar semana corrida', value: this.booleanText(contrato.semanaCorridaActiva) },
+          {
+            label: 'Habilitar semana corrida',
+            value: this.booleanText(contrato.semanaCorridaActiva),
+          },
           {
             label: 'Dias laborables',
             value: this.weekdayText(contrato.semanaCorridaDiasLaborables),
@@ -545,7 +578,10 @@ export class FichaEmpleadoContainer implements OnInit {
             value: this.catalogText(bancario.idTipoCuentaBancaria, 'tiposCuentaBancaria'),
           },
           { label: 'Numero de cuenta', value: this.emptyText(bancario.numeroCuenta) },
-          { label: 'Estado pago', value: empleado.estado === 'activo' ? 'Operativo' : 'Por completar' },
+          {
+            label: 'Estado pago',
+            value: empleado.estado === 'activo' ? 'Operativo' : 'Por completar',
+          },
         ];
       case 'documentos':
         return [
@@ -568,28 +604,41 @@ export class FichaEmpleadoContainer implements OnInit {
     prevision: ReturnType<EmpleadoFormGroup['getRawValue']>['previsionSalud'],
   ): EmployeeDetailItem[] {
     const items: EmployeeDetailItem[] = [
-          this.detailSection('Regimen previsional'),
-          {
-            label: 'Regimen previsional',
-            value: this.tipoRegimenPrevisionalText(prevision.tipoRegimenPrevisional),
-          },
+      this.detailSection('Regimen previsional'),
+      {
+        label: 'Regimen previsional',
+        value: this.optionText(
+          prevision.tipoRegimenPrevisional,
+          this.catalogos().tiposRegimenPrevisional,
+        ),
+      },
     ];
 
     if (prevision.tipoRegimenPrevisional === 'AFP') {
       items.push(
-          this.detailSection('AFP'),
-          { label: 'Nombre AFP', value: this.catalogText(prevision.idAfp, 'afps') },
-          { label: 'Moneda Cuenta 2', value: this.catalogText(prevision.idMonedaCuenta2, 'monedas') },
-          { label: 'Valor Cuenta 2', value: this.moneyText(prevision.valorCuenta2) },
+        this.detailSection('AFP'),
+        { label: 'Nombre AFP', value: this.catalogText(prevision.idAfp, 'afps') },
+        { label: 'Moneda Cuenta 2', value: this.catalogText(prevision.idMonedaCuenta2, 'monedas') },
+        { label: 'Valor Cuenta 2', value: this.moneyText(prevision.valorCuenta2) },
       );
     }
 
     if (prevision.tipoRegimenPrevisional === 'IPS') {
       items.push(
-          this.detailSection('IPS (Ex INP)'),
-          { label: 'Nombre Ex-Caja', value: this.emptyText(prevision.nombreExCaja) },
-          { label: 'Regimen Ex-Caja', value: this.emptyText(prevision.regimenExCaja) },
-          { label: 'Tasa Ex-Caja', value: this.percentText(prevision.tasaExCaja) },
+        this.detailSection('IPS (Ex INP)'),
+        {
+          label: 'Entidad previsional IPS',
+          value: this.catalogText(prevision.idEntidadPrevisionalIps, 'entidadesPrevisionalesIps'),
+        },
+        {
+          label: 'Nombre Ex-Caja',
+          value: this.catalogText(prevision.idExCajaPrevisional, 'exCajasPrevisionales'),
+        },
+        {
+          label: 'Regimen Ex-Caja',
+          value: this.catalogText(prevision.idRegimenExCaja, 'regimenesExCaja'),
+        },
+        { label: 'Tasa Ex-Caja', value: this.percentText(prevision.tasaExCaja) },
       );
     }
 
@@ -598,23 +647,35 @@ export class FichaEmpleadoContainer implements OnInit {
       prevision.tipoRegimenPrevisional !== 'NINGUNA'
     ) {
       items.push(
-          this.detailSection('Salud'),
-          { label: 'Institucion de salud', value: this.catalogText(prevision.idSalud, 'entidadesSalud') },
-          { label: 'Moneda plan salud', value: this.catalogText(prevision.idMonedaPlan, 'monedas') },
-          { label: 'Valor plan', value: this.moneyText(prevision.valorPlan) },
-          { label: 'Adicional GES', value: this.moneyText(prevision.adicionalAugeGes) },
+        this.detailSection('Salud'),
+        {
+          label: 'Institucion de salud',
+          value: this.catalogText(prevision.idSalud, 'entidadesSalud'),
+        },
+        { label: 'Moneda plan salud', value: this.catalogText(prevision.idMonedaPlan, 'monedas') },
+        { label: 'Valor plan', value: this.moneyText(prevision.valorPlan) },
+        { label: 'Adicional GES', value: this.moneyText(prevision.adicionalAugeGes) },
       );
     }
 
     if (prevision.tipoRegimenPrevisional === 'AFP') {
       items.push(
-          this.detailSection('APVI'),
-          { label: 'Tiene APVI', value: this.booleanText(prevision.tieneApv) },
-          { label: 'Institucion APVI', value: this.catalogText(prevision.idInstitucionApv, 'institucionesApv') },
-          { label: 'Moneda APVI', value: this.catalogText(prevision.idMonedaApv, 'monedas') },
-          { label: 'Valor APVI', value: this.moneyText(prevision.montoApv) },
-          { label: 'Forma de Pago APVI', value: this.catalogText(prevision.idFormaPagoApv, 'formasPagoApv') },
-          { label: 'Deposito Convenido APVI', value: this.moneyText(prevision.depositoConvenidoApvi) },
+        this.detailSection('APVI'),
+        { label: 'Tiene APVI', value: this.booleanText(prevision.tieneApv) },
+        {
+          label: 'Institucion APVI',
+          value: this.catalogText(prevision.idInstitucionApv, 'institucionesApv'),
+        },
+        { label: 'Moneda APVI', value: this.catalogText(prevision.idMonedaApv, 'monedas') },
+        { label: 'Valor APVI', value: this.moneyText(prevision.montoApv) },
+        {
+          label: 'Forma de Pago APVI',
+          value: this.catalogText(prevision.idFormaPagoApv, 'formasPagoApv'),
+        },
+        {
+          label: 'Deposito Convenido APVI',
+          value: this.moneyText(prevision.depositoConvenidoApvi),
+        },
       );
     }
 
@@ -736,74 +797,22 @@ export class FichaEmpleadoContainer implements OnInit {
     return value ? 'Si' : 'No';
   }
 
-  private optionText<T extends string | number | null | undefined>(
-    value: T,
+  private optionText<T extends string | number>(
+    value: T | null | undefined,
     options: Array<{ value: T; label: string }>,
   ): string {
-    return options.find((option) => option.value === value)?.label ?? this.emptyText(String(value ?? ''));
+    return (
+      options.find((option) => option.value === value)?.label ?? this.emptyText(String(value ?? ''))
+    );
   }
 
-  private catalogText(
-    value: number | null,
-    catalogKey: keyof EmpleadoFormCatalogos,
-  ): string {
+  private catalogText(value: number | null, catalogKey: keyof EmpleadoFormCatalogos): string {
     const catalog = this.catalogos()[catalogKey] as Array<{ value: number; label: string }>;
     return catalog.find((option) => option.value === value)?.label ?? 'Sin informacion';
   }
 
-  private sexOptions(): Array<{ value: string; label: string }> {
-    return [
-      { value: 'F', label: 'Femenino' },
-      { value: 'M', label: 'Masculino' },
-      { value: 'O', label: 'Otro' },
-    ];
-  }
-
-  private estadoCivilText(value: string): string {
-    const labels: Record<string, string> = {
-      SOLTERO: 'Soltero/a',
-      CASADO: 'Casado/a',
-      VIUDO: 'Viudo/a',
-      DIVORCIADO: 'Divorciado/a',
-      CONVIVIENTE_CIVIL: 'Conviviente civil',
-      SEPARADO: 'Separado/a',
-    };
-
-    return labels[value] ?? this.emptyText(value);
-  }
-
   private relacionLaboralText(value: string): string {
     return value === 'HONORARIOS' ? 'Boleta de honorarios' : 'Contrato';
-  }
-
-  private tipoContratoText(value: string): string {
-    const labels: Record<string, string> = {
-      INDEFINIDO: 'Indefinido',
-      PLAZO_FIJO: 'Plazo fijo',
-      OBRA_SERVICIO: 'Obra o servicio',
-    };
-
-    return labels[value] ?? this.emptyText(value);
-  }
-
-  private tipoGratificacionText(value: string): string {
-    const labels: Record<string, string> = {
-      LEGAL_ART_50: 'Legal art. 50',
-      LEGAL_ART_47: 'Legal art. 47',
-      VOLUNTARIA: 'Voluntaria',
-    };
-
-    return labels[value] ?? this.emptyText(value);
-  }
-
-  private tipoRegimenPrevisionalText(value: TipoRegimenPrevisional | null): string {
-    const labels: Record<TipoRegimenPrevisional, string> = {
-      AFP: 'AFP',
-      IPS: 'IPS',
-      NINGUNA: 'Sin prevision',
-    };
-
-    return value ? labels[value] : 'Sin informacion';
   }
 
   private tramoCargaText(value: number | null): string {
@@ -883,7 +892,9 @@ export class FichaEmpleadoContainer implements OnInit {
     return [this.componentBlockId(blockId)];
   }
 
-  editComponentForBlock(blockId: string): 'datos' | 'contacto' | 'contrato' | 'prevision' | 'bancario' | null {
+  editComponentForBlock(
+    blockId: string,
+  ): 'datos' | 'contacto' | 'contrato' | 'prevision' | 'bancario' | null {
     if (['identificacion', 'nombre', 'base'].includes(blockId)) {
       return 'datos';
     }
@@ -941,7 +952,9 @@ export class FichaEmpleadoContainer implements OnInit {
   }
 
   private hasCurrentSectionChanges(): boolean {
-    return this.isEditingCurrentTab() && this.controlsForActiveBlock().some((control) => control.dirty);
+    return (
+      this.isEditingCurrentTab() && this.controlsForActiveBlock().some((control) => control.dirty)
+    );
   }
 
   private controlsForActiveBlock(): AbstractControl[] {
@@ -958,12 +971,7 @@ export class FichaEmpleadoContainer implements OnInit {
       case 'nombre':
         return [personal.nombres, personal.apellidoPaterno, personal.apellidoMaterno];
       case 'base':
-        return [
-          personal.idPais,
-          personal.estadoCivil,
-          contacto.email,
-          contacto.telefono,
-        ];
+        return [personal.idPais, personal.estadoCivil, contacto.email, contacto.telefono];
       case 'ubicacion':
         return [
           contacto.direccion,
@@ -1017,7 +1025,12 @@ export class FichaEmpleadoContainer implements OnInit {
       case 'ips':
         return [prevision.nombreExCaja, prevision.regimenExCaja, prevision.tasaExCaja];
       case 'salud':
-        return [prevision.idSalud, prevision.idMonedaPlan, prevision.valorPlan, prevision.adicionalAugeGes];
+        return [
+          prevision.idSalud,
+          prevision.idMonedaPlan,
+          prevision.valorPlan,
+          prevision.adicionalAugeGes,
+        ];
       case 'apvi':
         return [
           prevision.tieneApv,
@@ -1190,6 +1203,10 @@ export class FichaEmpleadoContainer implements OnInit {
       idAfp: tipoPrevision === 'AFP' ? raw.previsionSalud.idAfp : null,
       idMonedaCuenta2: tieneCuenta2 ? raw.previsionSalud.idMonedaCuenta2 : null,
       valorCuenta2: tieneCuenta2 ? raw.previsionSalud.valorCuenta2 : null,
+      idEntidadPrevisionalIps:
+        tipoPrevision === 'IPS' ? raw.previsionSalud.idEntidadPrevisionalIps : null,
+      idExCajaPrevisional: tipoPrevision === 'IPS' ? raw.previsionSalud.idExCajaPrevisional : null,
+      idRegimenExCaja: tipoPrevision === 'IPS' ? raw.previsionSalud.idRegimenExCaja : null,
       nombreExCaja: tipoPrevision === 'IPS' ? raw.previsionSalud.nombreExCaja : null,
       regimenExCaja: tipoPrevision === 'IPS' ? raw.previsionSalud.regimenExCaja : null,
       tasaExCaja: tipoPrevision === 'IPS' ? raw.previsionSalud.tasaExCaja : null,
@@ -1215,9 +1232,8 @@ export class FichaEmpleadoContainer implements OnInit {
     }
 
     return (
-      this.catalogos().regimenesPrevisionales.find(
-        (option) => option.label.toUpperCase() === tipo,
-      )?.value ?? null
+      this.catalogos().regimenesPrevisionales.find((option) => option.label.toUpperCase() === tipo)
+        ?.value ?? null
     );
   }
 

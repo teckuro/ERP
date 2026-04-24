@@ -80,24 +80,24 @@
               </header>
 
               @if (isAdvancedMode()) {
-              <div class="content-head">
-                <ol class="flow-tabs" aria-label="Pasos del alta">
-                  @for (step of conceptualSteps; track step; let index = $index) {
-                    <li>
-                      <button
-                        type="button"
-                        class="flow-tab"
-                        [class.is-active]="isConceptualStepActive(index)"
-                        [attr.aria-current]="isConceptualStepActive(index) ? 'step' : null"
-                        (click)="selectTab(conceptualStepTab(index))"
-                      >
-                        <span>{{ index + 1 }}</span>
-                        <p>{{ step }}</p>
-                      </button>
-                    </li>
-                  }
-                </ol>
-              </div>
+                <div class="content-head">
+                  <ol class="flow-tabs" aria-label="Pasos del alta">
+                    @for (step of conceptualSteps; track step; let index = $index) {
+                      <li>
+                        <button
+                          type="button"
+                          class="flow-tab"
+                          [class.is-active]="isConceptualStepActive(index)"
+                          [attr.aria-current]="isConceptualStepActive(index) ? 'step' : null"
+                          (click)="selectTab(conceptualStepTab(index))"
+                        >
+                          <span>{{ index + 1 }}</span>
+                          <p>{{ step }}</p>
+                        </button>
+                      </li>
+                    }
+                  </ol>
+                </div>
               }
 
               <div class="content-body">
@@ -113,6 +113,8 @@
                     <app-empleado-datos-personales
                       [formGroup]="form.controls.datosPersonales"
                       [contactoFormGroup]="form.controls.contacto"
+                      [sexos]="catalogos().sexos"
+                      [estadosCivil]="catalogos().estadosCivil"
                       [paises]="catalogos().paises"
                     ></app-empleado-datos-personales>
                   </div>
@@ -121,6 +123,8 @@
                     <app-empleado-datos-personales
                       [formGroup]="form.controls.datosPersonales"
                       [contactoFormGroup]="form.controls.contacto"
+                      [sexos]="catalogos().sexos"
+                      [estadosCivil]="catalogos().estadosCivil"
                       [paises]="catalogos().paises"
                     ></app-empleado-datos-personales>
 
@@ -138,6 +142,8 @@
                       [departamentos]="catalogos().departamentos"
                       [tiposTrabajador]="catalogos().tiposTrabajador"
                       [tiposJornada]="catalogos().tiposJornada"
+                      [tiposContrato]="catalogos().tiposContrato"
+                      [tiposGratificacion]="catalogos().tiposGratificacion"
                       [monedas]="catalogos().monedas"
                       [tramosCarga]="catalogos().tramosCarga"
                     ></app-empleado-contrato>
@@ -146,7 +152,11 @@
                   <div class="step-panel">
                     <app-empleado-prevision-salud
                       [formGroup]="form.controls.previsionSalud"
+                      [tiposRegimenPrevisional]="catalogos().tiposRegimenPrevisional"
                       [regimenesPrevisionales]="catalogos().regimenesPrevisionales"
+                      [entidadesPrevisionalesIps]="catalogos().entidadesPrevisionalesIps"
+                      [exCajasPrevisionales]="catalogos().exCajasPrevisionales"
+                      [regimenesExCaja]="catalogos().regimenesExCaja"
                       [afps]="catalogos().afps"
                       [entidadesSalud]="catalogos().entidadesSalud"
                       [monedas]="catalogos().monedas"
@@ -179,41 +189,41 @@
                 </p>
 
                 @if (isAdvancedMode()) {
-                <div class="editor-footer-actions">
-                  <button
-                    type="button"
-                    class="form-action-button form-action-button--secondary"
-                    [disabled]="isFirstTab()"
-                    (click)="goToPreviousTab()"
-                  >
-                    Anterior
-                  </button>
+                  <div class="editor-footer-actions">
+                    <button
+                      type="button"
+                      class="form-action-button form-action-button--secondary"
+                      [disabled]="isFirstTab()"
+                      (click)="goToPreviousTab()"
+                    >
+                      Anterior
+                    </button>
 
-                  @if (!isLastTab()) {
-                    <button
-                      type="button"
-                      class="form-action-button form-action-button--primary"
-                      [disabled]="isNextDisabled()"
-                      (click)="goToNextTab()"
-                    >
-                      Siguiente
-                    </button>
-                  } @else {
-                    <button
-                      type="button"
-                      class="form-action-button form-action-button--primary"
-                      [disabled]="isSaving() || isLoadingCatalogs()"
-                      (click)="onSubmit()"
-                    >
-                      @if (isSaving()) {
-                        <span class="form-button-spinner" aria-hidden="true"></span>
-                      } @else {
-                        <lucide-icon class="h-4 w-4" name="save"></lucide-icon>
-                      }
-                      {{ isSaving() ? 'Guardando ficha...' : 'Finalizar alta' }}
-                    </button>
-                  }
-                </div>
+                    @if (!isLastTab()) {
+                      <button
+                        type="button"
+                        class="form-action-button form-action-button--primary"
+                        [disabled]="isNextDisabled()"
+                        (click)="goToNextTab()"
+                      >
+                        Siguiente
+                      </button>
+                    } @else {
+                      <button
+                        type="button"
+                        class="form-action-button form-action-button--primary"
+                        [disabled]="isSaving() || isLoadingCatalogs()"
+                        (click)="onSubmit()"
+                      >
+                        @if (isSaving()) {
+                          <span class="form-button-spinner" aria-hidden="true"></span>
+                        } @else {
+                          <lucide-icon class="h-4 w-4" name="save"></lucide-icon>
+                        }
+                        {{ isSaving() ? 'Guardando ficha...' : 'Finalizar alta' }}
+                      </button>
+                    }
+                  </div>
                 }
               </footer>
             </section>

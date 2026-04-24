@@ -1260,7 +1260,7 @@ export class FormEmpleadoComponent implements OnInit {
 
     if (error instanceof Error) {
       if (error.message.toLowerCase().includes('row-level security')) {
-        return 'Supabase bloqueo la escritura por politicas RLS. Ejecuta bd/crear_sql_v6_10_integrada.sql y vuelve a intentar.';
+        return 'Supabase bloqueo la escritura por politicas RLS. Ejecuta bd/base/v11/crear_sql_v6_11_integrada.sql y vuelve a intentar.';
       }
 
       return error.message;

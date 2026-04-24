@@ -1,10 +1,13 @@
 import { Component, Input } from '@angular/core';
 import { ReactiveFormsModule, Validators } from '@angular/forms';
 
-import { EmpleadoCatalogOption } from '../../../models/empleado-catalogos.model';
+import {
+  EmpleadoCatalogOption,
+  EmpleadoStringCatalogOption,
+  RegimenExCajaCatalogOption,
+} from '../../../models/empleado-catalogos.model';
 import { PrevisionSaludFormGroup } from '../../../models/empleado-form.model';
 import { TipoRegimenPrevisional } from '../../../models/empleado.model';
-import { TIPO_REGIMEN_OPTIONS } from '../../../catalogs/prevision.options';
 import {
   CardComponent,
   CardContentComponent,
@@ -20,14 +23,17 @@ type PrevisionSaludControlName = keyof PrevisionSaludFormGroup['controls'];
 })
 export class PrevisionSaludComponent {
   @Input({ required: true }) formGroup!: PrevisionSaludFormGroup;
+  @Input() tiposRegimenPrevisional: EmpleadoStringCatalogOption<TipoRegimenPrevisional>[] = [];
   @Input() regimenesPrevisionales: EmpleadoCatalogOption[] = [];
+  @Input() entidadesPrevisionalesIps: EmpleadoCatalogOption[] = [];
+  @Input() exCajasPrevisionales: EmpleadoCatalogOption[] = [];
+  @Input() regimenesExCaja: RegimenExCajaCatalogOption[] = [];
   @Input() afps: EmpleadoCatalogOption[] = [];
   @Input() entidadesSalud: EmpleadoCatalogOption[] = [];
   @Input() monedas: EmpleadoCatalogOption[] = [];
   @Input() institucionesApv: EmpleadoCatalogOption[] = [];
   @Input() formasPagoApv: EmpleadoCatalogOption[] = [];
   @Input() visibleBlocks: string[] | null = null;
-  readonly tipoRegimenOptions = TIPO_REGIMEN_OPTIONS;
 
   controlClass(controlName: PrevisionSaludControlName): string {
     return ['employee-control', this.hasError(controlName) ? 'is-invalid' : '']
@@ -53,6 +59,11 @@ export class PrevisionSaludComponent {
 
   get mostrarApvi(): boolean {
     return this.esAfp && this.formGroup.controls.tieneApv.value;
+  }
+
+  get regimenesExCajaFiltrados(): RegimenExCajaCatalogOption[] {
+    const exCajaId = this.formGroup.controls.idExCajaPrevisional.value;
+    return this.regimenesExCaja.filter((option) => option.idExCajaPrevisional === exCajaId);
   }
 
   get tipoPrevision(): TipoRegimenPrevisional | null {

@@ -1,5 +1,18 @@
+import {
+  EmpleadoSexo,
+  TipoContrato,
+  TipoEstadoCivil,
+  TipoGratificacion,
+  TipoRegimenPrevisional,
+} from './empleado.model';
+
 export interface EmpleadoCatalogOption {
   value: number;
+  label: string;
+}
+
+export interface EmpleadoStringCatalogOption<TValue extends string = string> {
+  value: TValue;
   label: string;
 }
 
@@ -7,6 +20,11 @@ export interface EmpleadoSucursalOption extends EmpleadoCatalogOption {}
 
 export interface EmpleadoDepartamentoOption extends EmpleadoCatalogOption {
   idSucursal: number | null;
+}
+
+export interface RegimenExCajaCatalogOption extends EmpleadoCatalogOption {
+  idExCajaPrevisional: number;
+  tasaCotizacionReferencia: number | null;
 }
 
 export interface TramoCargaCatalogOption {
@@ -19,6 +37,8 @@ export interface TramoCargaCatalogOption {
 }
 
 export interface EmpleadoFormCatalogos {
+  sexos: EmpleadoStringCatalogOption<EmpleadoSexo>[];
+  estadosCivil: EmpleadoStringCatalogOption<TipoEstadoCivil>[];
   comunas: EmpleadoCatalogOption[];
   paises: EmpleadoCatalogOption[];
   centrosCosto: EmpleadoCatalogOption[];
@@ -26,7 +46,13 @@ export interface EmpleadoFormCatalogos {
   departamentos: EmpleadoDepartamentoOption[];
   tiposTrabajador: EmpleadoCatalogOption[];
   tiposJornada: EmpleadoCatalogOption[];
+  tiposContrato: EmpleadoStringCatalogOption<TipoContrato>[];
+  tiposGratificacion: EmpleadoStringCatalogOption<TipoGratificacion>[];
+  tiposRegimenPrevisional: EmpleadoStringCatalogOption<TipoRegimenPrevisional>[];
   regimenesPrevisionales: EmpleadoCatalogOption[];
+  entidadesPrevisionalesIps: EmpleadoCatalogOption[];
+  exCajasPrevisionales: EmpleadoCatalogOption[];
+  regimenesExCaja: RegimenExCajaCatalogOption[];
   afps: EmpleadoCatalogOption[];
   entidadesSalud: EmpleadoCatalogOption[];
   monedas: EmpleadoCatalogOption[];
@@ -38,6 +64,8 @@ export interface EmpleadoFormCatalogos {
 }
 
 export const EMPTY_EMPLEADO_FORM_CATALOGOS: EmpleadoFormCatalogos = {
+  sexos: [],
+  estadosCivil: [],
   comunas: [],
   paises: [],
   centrosCosto: [],
@@ -45,7 +73,13 @@ export const EMPTY_EMPLEADO_FORM_CATALOGOS: EmpleadoFormCatalogos = {
   departamentos: [],
   tiposTrabajador: [],
   tiposJornada: [],
+  tiposContrato: [],
+  tiposGratificacion: [],
+  tiposRegimenPrevisional: [],
   regimenesPrevisionales: [],
+  entidadesPrevisionalesIps: [],
+  exCajasPrevisionales: [],
+  regimenesExCaja: [],
   afps: [],
   entidadesSalud: [],
   monedas: [],

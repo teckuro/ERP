@@ -41,41 +41,41 @@ export class EmpleadosFormOrchestratorService {
     return new FormGroup({
       datosPersonales: new FormGroup(
         {
-        rut: new FormControl('', {
-          nonNullable: true,
-          validators: [rutValidator],
-        }),
-        nombres: new FormControl('', {
-          nonNullable: true,
-          validators: [Validators.required, Validators.maxLength(60), personNameValidator],
-        }),
-        apellidoPaterno: new FormControl('', {
-          nonNullable: true,
-          validators: [Validators.required, Validators.maxLength(80), personNameValidator],
-        }),
-        apellidoMaterno: new FormControl('', {
-          nonNullable: true,
-          validators: [Validators.maxLength(80), personNameValidator],
-        }),
-        fechaNacimiento: new FormControl('', {
-          nonNullable: true,
-          validators: [Validators.required, notFutureDateValidator],
-        }),
-        sexo: new FormControl<EmpleadoSexo>('F', {
-          nonNullable: true,
-          validators: [Validators.required],
-        }),
-        pasaporte: new FormControl('', {
-          nonNullable: true,
-          validators: [passportValidator],
-        }),
-        idPais: new FormControl<number | null>(null, {
-          validators: [Validators.required],
-        }),
-        estadoCivil: new FormControl<TipoEstadoCivil>('SOLTERO', {
-          nonNullable: true,
-          validators: [Validators.required],
-        }),
+          rut: new FormControl('', {
+            nonNullable: true,
+            validators: [rutValidator],
+          }),
+          nombres: new FormControl('', {
+            nonNullable: true,
+            validators: [Validators.required, Validators.maxLength(60), personNameValidator],
+          }),
+          apellidoPaterno: new FormControl('', {
+            nonNullable: true,
+            validators: [Validators.required, Validators.maxLength(80), personNameValidator],
+          }),
+          apellidoMaterno: new FormControl('', {
+            nonNullable: true,
+            validators: [Validators.maxLength(80), personNameValidator],
+          }),
+          fechaNacimiento: new FormControl('', {
+            nonNullable: true,
+            validators: [Validators.required, notFutureDateValidator],
+          }),
+          sexo: new FormControl<EmpleadoSexo>('F', {
+            nonNullable: true,
+            validators: [Validators.required],
+          }),
+          pasaporte: new FormControl('', {
+            nonNullable: true,
+            validators: [passportValidator],
+          }),
+          idPais: new FormControl<number | null>(null, {
+            validators: [Validators.required],
+          }),
+          estadoCivil: new FormControl<TipoEstadoCivil>('SOLTERO', {
+            nonNullable: true,
+            validators: [Validators.required],
+          }),
         },
         { validators: [rutOrPassportValidator] },
       ),
@@ -203,6 +203,9 @@ export class EmpleadosFormOrchestratorService {
         valorCuenta2: new FormControl<number | null>(null, {
           validators: [Validators.min(0)],
         }),
+        idEntidadPrevisionalIps: new FormControl<number | null>(null),
+        idExCajaPrevisional: new FormControl<number | null>(null),
+        idRegimenExCaja: new FormControl<number | null>(null),
         nombreExCaja: new FormControl('', {
           nonNullable: true,
           validators: [Validators.maxLength(150)],
@@ -434,6 +437,14 @@ export class EmpleadosFormOrchestratorService {
       .pipe(takeUntilDestroyed(destroyRef))
       .subscribe(() => this.updatePrevisionSaludValidators(form));
 
+    controls.idExCajaPrevisional.valueChanges
+      .pipe(takeUntilDestroyed(destroyRef))
+      .subscribe(() => this.ensureRegimenExCajaDefault(form, getCatalogos()));
+
+    controls.idRegimenExCaja.valueChanges
+      .pipe(takeUntilDestroyed(destroyRef))
+      .subscribe(() => this.syncRegimenExCajaFields(form, getCatalogos()));
+
     this.updatePrevisionSaludValidators(form);
   }
 
@@ -474,6 +485,18 @@ export class EmpleadosFormOrchestratorService {
     this.setControlValidators(
       controls.valorCuenta2,
       tieneCuenta2 ? [Validators.required, Validators.min(0)] : [Validators.min(0)],
+    );
+    this.setControlValidators(
+      controls.idEntidadPrevisionalIps,
+      tipo === 'IPS' ? [Validators.required] : [],
+    );
+    this.setControlValidators(
+      controls.idExCajaPrevisional,
+      tipo === 'IPS' ? [Validators.required] : [],
+    );
+    this.setControlValidators(
+      controls.idRegimenExCaja,
+      tipo === 'IPS' ? [Validators.required] : [],
     );
     this.setControlValidators(
       controls.nombreExCaja,
@@ -531,6 +554,19 @@ export class EmpleadosFormOrchestratorService {
 
     if (controls.tipoRegimenPrevisional.value === 'AFP' && controls.tieneApv.value) {
       setPreferredCatalogValue(controls.idMonedaApv, monedas, ['peso chileno', 'pesos', 'clp']);
+    }
+
+    if (controls.tipoRegimenPrevisional.value === 'IPS') {
+      setPreferredCatalogValue(
+        controls.idEntidadPrevisionalIps,
+        catalogos.entidadesPrevisionalesIps,
+        ['ips', 'instituto de prevision social'],
+      );
+      setPreferredCatalogValue(controls.idExCajaPrevisional, catalogos.exCajasPrevisionales, [
+        'servicio de seguro social',
+        'ips',
+      ]);
+      this.ensureRegimenExCajaDefault(form, catalogos);
     }
   }
 
@@ -605,9 +641,53 @@ export class EmpleadosFormOrchestratorService {
 
   private resetIpsFields(form: EmpleadoFormGroup): void {
     const controls = form.controls.previsionSalud.controls;
+    controls.idEntidadPrevisionalIps.setValue(null, { emitEvent: false });
+    controls.idExCajaPrevisional.setValue(null, { emitEvent: false });
+    controls.idRegimenExCaja.setValue(null, { emitEvent: false });
     controls.nombreExCaja.setValue('', { emitEvent: false });
     controls.regimenExCaja.setValue('', { emitEvent: false });
     controls.tasaExCaja.setValue(null, { emitEvent: false });
+  }
+
+  private ensureRegimenExCajaDefault(
+    form: EmpleadoFormGroup,
+    catalogos: EmpleadoFormCatalogos,
+  ): void {
+    const controls = form.controls.previsionSalud.controls;
+    const exCajaId = controls.idExCajaPrevisional.value;
+    const regimenes = catalogos.regimenesExCaja.filter(
+      (option) => option.idExCajaPrevisional === exCajaId,
+    );
+
+    if (regimenes.length === 0) {
+      controls.idRegimenExCaja.setValue(null, { emitEvent: false });
+      controls.regimenExCaja.setValue('', { emitEvent: false });
+      controls.tasaExCaja.setValue(null, { emitEvent: false });
+      return;
+    }
+
+    const currentValue = controls.idRegimenExCaja.value;
+    const currentStillValid = regimenes.some((option) => option.value === currentValue);
+
+    if (!currentStillValid) {
+      controls.idRegimenExCaja.setValue(regimenes[0].value, { emitEvent: false });
+    }
+
+    this.syncRegimenExCajaFields(form, catalogos);
+  }
+
+  private syncRegimenExCajaFields(form: EmpleadoFormGroup, catalogos: EmpleadoFormCatalogos): void {
+    const controls = form.controls.previsionSalud.controls;
+    const exCaja = catalogos.exCajasPrevisionales.find(
+      (option) => option.value === controls.idExCajaPrevisional.value,
+    );
+    const regimen = catalogos.regimenesExCaja.find(
+      (option) => option.value === controls.idRegimenExCaja.value,
+    );
+
+    controls.nombreExCaja.setValue(exCaja?.label ?? '', { emitEvent: false });
+    controls.regimenExCaja.setValue(regimen?.label ?? '', { emitEvent: false });
+    controls.tasaExCaja.setValue(regimen?.tasaCotizacionReferencia ?? null, { emitEvent: false });
   }
 
   private resetSaludFields(form: EmpleadoFormGroup): void {

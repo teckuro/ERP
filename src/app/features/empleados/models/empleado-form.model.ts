@@ -69,6 +69,9 @@ export type PrevisionSaludFormGroup = FormGroup<{
   idAfp: FormControl<number | null>;
   idMonedaCuenta2: FormControl<number | null>;
   valorCuenta2: FormControl<number | null>;
+  idEntidadPrevisionalIps: FormControl<number | null>;
+  idExCajaPrevisional: FormControl<number | null>;
+  idRegimenExCaja: FormControl<number | null>;
   nombreExCaja: FormControl<string>;
   regimenExCaja: FormControl<string>;
   tasaExCaja: FormControl<number | null>;

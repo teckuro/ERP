@@ -47,7 +47,24 @@ Thumbs.db
 src/app/supabase
 /tests
 /test-results
-/bd
+/bd/*
+!/bd/README.md
+!/bd/base/
+/bd/base/*
+!/bd/base/README.md
+!/bd/base/v11/
+!/bd/base/v11/**
+!/bd/base/historico/
+/bd/base/historico/*
+!/bd/base/historico/crear_sql_v6_10_integrada.sql
+!/bd/insert/
+/bd/insert/*
+!/bd/insert/README.md
+!/bd/insert/v11/
+!/bd/insert/v11/**
+!/bd/python/
+/bd/python/*
+!/bd/python/README.md
 /.env
 /src/app/shared/components/ui/peticion.txt
   
