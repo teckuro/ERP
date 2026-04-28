@@ -2,6 +2,12 @@
 
 Este archivo define la base de trabajo para Codex en este proyecto. Antes de generar o modificar UI, Codex debe leer estas reglas y aplicarlas como contrato visual y tecnico del ERP.
 
+## Pedidos al agente (como comunicar mejor)
+
+- Alcance explicito por pantalla o archivo; si el pedido viene de una bitacora fusionada (`docs/codex/peticiones-fusion-items-1-65.md`), seguir ese listado antes que interpretaciones nuevas.
+- Sin dependencias nuevas ni cambiar `formControlName` / guardado cuando el contrato dice “solo UI”.
+- Diagnostico antes de codigo solo cuando pidas auditoria puntual.
+
 ## Prioridad de reglas
 
 1. `docs/codex/AGENTS.md`

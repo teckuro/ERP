@@ -238,7 +238,7 @@ interface MonthOption {
           @case ('ccafConfig') {
             <app-parametros-ccaf-mutuales-tab
               mode="config"
-              [catalogos]="catalogos()"
+              [catalogos]="catalogosCcafVistaPeriodo()"
               [ccafColumns]="ccafColumns"
               [organismosLeyColumns]="organismosLeyColumns"
               [ley16744Columns]="ley16744Columns"
@@ -255,7 +255,7 @@ interface MonthOption {
           @case ('ccafLista') {
             <app-parametros-ccaf-mutuales-tab
               mode="ccafLista"
-              [catalogos]="catalogos()"
+              [catalogos]="catalogosCcafVistaPeriodo()"
               [ccafColumns]="ccafColumns"
               [organismosLeyColumns]="organismosLeyColumns"
               [ley16744Columns]="ley16744Columns"
@@ -272,7 +272,7 @@ interface MonthOption {
           @case ('mutualesLey') {
             <app-parametros-ccaf-mutuales-tab
               mode="mutualesLey"
-              [catalogos]="catalogos()"
+              [catalogos]="catalogosCcafVistaPeriodo()"
               [ccafColumns]="ccafColumns"
               [organismosLeyColumns]="organismosLeyColumns"
               [ley16744Columns]="ley16744Columns"
@@ -288,7 +288,7 @@ interface MonthOption {
 
           @case ('tramosCarga') {
             <app-parametros-tramos-carga-tab
-              [rows]="catalogos().tramosCarga"
+              [rows]="tramosCargaPorPeriodo()"
               [columns]="tramosCargaColumns"
               [loading]="isLoading()"
               [refresh]="cargar.bind(this)"
@@ -297,9 +297,9 @@ interface MonthOption {
 
           @case ('tramosRenta') {
             <app-parametros-tramos-renta-tab
-              [tablaRows]="catalogos().tablaImpuestoUnico"
+              [tablaRows]="tablaImpuestoPorPeriodo()"
               [tablaColumns]="tablaImpuestoColumns"
-              [tramosRows]="catalogos().tramosImpuesto"
+              [tramosRows]="tramosImpuestoPorPeriodo()"
               [tramosColumns]="tramosImpuestoColumns"
               [loading]="isLoading()"
               [refresh]="cargar.bind(this)"
@@ -308,7 +308,7 @@ interface MonthOption {
 
           @case ('isapre') {
             <app-parametros-isapre-tab
-              [rows]="catalogos().isapres"
+              [rows]="isapresPorPeriodo()"
               [columns]="isapreColumns"
               [loading]="isLoading()"
               [refresh]="cargar.bind(this)"
@@ -317,7 +317,7 @@ interface MonthOption {
 
           @case ('afp') {
             <app-parametros-afp-tab
-              [rows]="catalogos().afp"
+              [rows]="afpPorPeriodo()"
               [columns]="afpColumns"
               [loading]="isLoading()"
               [refresh]="cargar.bind(this)"
@@ -326,9 +326,9 @@ interface MonthOption {
 
           @case ('reforma') {
             <app-parametros-reforma-tab
-              [reformaPensiones]="catalogos().reformaPensiones"
-              [reformaPrevisional]="catalogos().reformaPrevisional"
-              [trabajosPesados]="catalogos().trabajosPesados"
+              [reformaPensiones]="reformaPensionesPorPeriodo()"
+              [reformaPrevisional]="reformaPrevisionalPorPeriodo()"
+              [trabajosPesados]="trabajosPesadosPorPeriodo()"
               [apvInstituciones]="catalogos().apvInstituciones"
               [apvFormasPago]="catalogos().apvFormasPago"
               [parametrosLegalesColumns]="parametrosLegalesColumns"
@@ -998,6 +998,93 @@ export class ParametrosPage implements OnInit {
     yearsFromBd.add(selectedYear);
     return [...yearsFromBd].sort((left, right) => right - left);
   });
+
+  /** Primera/último día del mes YYYY-MM para cruzar vigencias con el periodo seleccionado. */
+  private periodoRangoDias(periodo: string): { inicio: string; fin: string } {
+    const [yStr, mStr] = periodo.split('-');
+    const y = Number(yStr);
+    const m = Number(mStr);
+    if (!Number.isFinite(y) || !Number.isFinite(m)) {
+      return { inicio: `${periodo}-01`, fin: `${periodo}-28` };
+    }
+    const ultimo = new Date(y, m, 0).getDate();
+    return {
+      inicio: `${periodo}-01`,
+      fin: `${periodo}-${String(ultimo).padStart(2, '0')}`,
+    };
+  }
+
+  /** Fila visible si el rango [inicio,fin] intersecta el mes del periodo seleccionado. */
+  private vigenciaIntersectaPeriodo(
+    vigenciaInicio: string | null | undefined,
+    vigenciaFin: string | null | undefined,
+    periodo: string,
+  ): boolean {
+    const a = (vigenciaInicio ?? '').trim().slice(0, 10);
+    const bRaw = (vigenciaFin ?? '').trim().slice(0, 10);
+    if (!a) {
+      return true;
+    }
+    const { inicio: p0, fin: p1 } = this.periodoRangoDias(periodo);
+    const b = bRaw || '9999-12-31';
+    return a <= p1 && b >= p0;
+  }
+
+  readonly tramosCargaPorPeriodo = computed(() =>
+    this.catalogos().tramosCarga.filter((row) => row.periodo === this.selectedPeriodo()),
+  );
+
+  readonly tramosImpuestoPorPeriodo = computed(() =>
+    this.catalogos().tramosImpuesto.filter((row) => row.periodo === this.selectedPeriodo()),
+  );
+
+  readonly tablaImpuestoPorPeriodo = computed(() =>
+    this.catalogos().tablaImpuestoUnico.filter((row) =>
+      this.vigenciaIntersectaPeriodo(row.vigenciaInicio, row.vigenciaFin, this.selectedPeriodo()),
+    ),
+  );
+
+  readonly afpPorPeriodo = computed(() =>
+    this.catalogos().afp.filter((row) =>
+      this.vigenciaIntersectaPeriodo(row.vigenciaInicio, row.vigenciaFin, this.selectedPeriodo()),
+    ),
+  );
+
+  readonly isapresPorPeriodo = computed(() =>
+    this.catalogos().isapres.filter((row) =>
+      this.vigenciaIntersectaPeriodo(row.vigenciaInicio, row.vigenciaFin, this.selectedPeriodo()),
+    ),
+  );
+
+  readonly reformaPensionesPorPeriodo = computed(() =>
+    this.catalogos().reformaPensiones.filter((row) =>
+      this.vigenciaIntersectaPeriodo(row.vigenciaInicio, row.vigenciaFin, this.selectedPeriodo()),
+    ),
+  );
+
+  readonly reformaPrevisionalPorPeriodo = computed(() =>
+    this.catalogos().reformaPrevisional.filter((row) =>
+      this.vigenciaIntersectaPeriodo(row.vigenciaInicio, row.vigenciaFin, this.selectedPeriodo()),
+    ),
+  );
+
+  readonly trabajosPesadosPorPeriodo = computed(() =>
+    this.catalogos().trabajosPesados.filter((row) =>
+      this.vigenciaIntersectaPeriodo(row.vigenciaInicio, row.vigenciaFin, this.selectedPeriodo()),
+    ),
+  );
+
+  readonly ley16744PorPeriodo = computed(() =>
+    this.catalogos().ley16744Parametros.filter((row) =>
+      this.vigenciaIntersectaPeriodo(row.vigenciaInicio, row.vigenciaFin, this.selectedPeriodo()),
+    ),
+  );
+
+  /** Catálogos CCAF/Ley: mismas entidades globales, pero ley 16.744 acotada al periodo seleccionado. */
+  readonly catalogosCcafVistaPeriodo = computed((): ParametrosGeneralesCatalogos => ({
+    ...this.catalogos(),
+    ley16744Parametros: this.ley16744PorPeriodo(),
+  }));
 
   readonly form = this.fb.group({
     periodo: [this.currentPeriodo(), [Validators.required, Validators.pattern(/^\d{4}-\d{2}$/)]],

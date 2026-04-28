@@ -28,5 +28,8 @@
 
 | Ruta | Descripción |
 |------|-------------|
+| [`peticiones-fusion-items-1-65.md`](./peticiones-fusion-items-1-65.md) | Peticiones fusionadas (índice de trabajo hasta ítem 65) |
+| [`creacion-avanzada-formulario-campos.md`](./creacion-avanzada-formulario-campos.md) | Alta avanzada: bloques y tabs del formulario |
 | [`parametros-generales-campos-y-listas.md`](./parametros-generales-campos-y-listas.md) | Campos del formulario y catálogos (parámetros generales) |
 | [`sync-parametros-v611.md`](./sync-parametros-v611.md) | Parámetros v611 |
+| [`parametros-permisos-bd-ejemplo.sql`](./parametros-permisos-bd-ejemplo.sql) | Plantilla SQL (lectura catálogos parametros / Supabase) |

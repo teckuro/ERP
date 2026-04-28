@@ -1,7 +1,7 @@
 @import './styles/index.css';
 
 :root {
-  --erp-text-scale: 0.94;
+  --erp-text-scale: 0.92;
   --erp-text-xs: 0.68rem;
   --erp-text-sm: 0.76rem;
   --erp-text-md: 0.82rem;

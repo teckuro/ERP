@@ -47,3 +47,11 @@ Listas cargadas con `listarCatalogos()` (solo lectura en pantalla; grids en otra
 
 - **Lista de periodos** (`YYYY-MM`): `listarPeriodos()` en el repositorio / servicio; alimenta `periodosGeneralesCatalogo` y los años derivados para el combo de año.
 - Los **años** mostrados en la UI deben basarse en esos periodos (más el año del periodo seleccionado), no en una lista fija arbitraria.
+
+## DataGrids y periodo seleccionado
+
+En [`parametros.page.ts`](../../src/app/pages/parametros.page.ts) las filas de los catálogos mostrados en **DataGrids** se acotan al **periodo seleccionado** arriba:
+
+- Filas con **`periodo`** (`tramo_carga`, `tramo_impuesto`): coinciden exactamente con `YYYY-MM` actual.
+- Tablas con **`vigenciaInicio` / `vigenciaFin`**: se incluyen solo si el rango intersecta el mes del periodo seleccionado.
+- Listas maestras sin vigencia por mes (p. ej. **APV instituciones**) se mantienen completas.
