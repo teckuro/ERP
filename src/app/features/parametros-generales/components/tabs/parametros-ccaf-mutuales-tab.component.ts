@@ -23,9 +23,9 @@ export type CcafMutualesTabMode = 'config' | 'ccafLista' | 'mutualesLey';
             <label class="param-field">
               <span>Caja de Compensacion</span>
               <select class="param-input" [value]="selectedCcafId ?? ''" (change)="seleccionarCcaf?.($event)">
-                <option value="">Sin CCAF cargada</option>
+                <option value="" [selected]="selectedCcafId === null">Sin CCAF cargada</option>
                 @for (ccaf of catalogos.ccafEntidades; track ccaf.idCcafEntidad) {
-                  <option [value]="ccaf.idCcafEntidad">{{ ccaf.nombre }}</option>
+                  <option [value]="ccaf.idCcafEntidad" [selected]="ccaf.idCcafEntidad === selectedCcafId">{{ ccaf.nombre }}</option>
                 }
               </select>
             </label>
@@ -35,9 +35,14 @@ export type CcafMutualesTabMode = 'config' | 'ccafLista' | 'mutualesLey';
             <label class="param-field">
               <span>Mutual de Seguridad</span>
               <select class="param-input" [value]="selectedMutualId ?? ''" (change)="seleccionarMutual?.($event)">
-                <option value="">Sin mutual cargada</option>
+                <option value="" [selected]="selectedMutualId === null">Sin mutual cargada</option>
                 @for (mutual of catalogos.organismosLey16744; track mutual.idOrganismoAdministradorLey16744) {
-                  <option [value]="mutual.idOrganismoAdministradorLey16744">{{ mutual.nombre }}</option>
+                  <option
+                    [value]="mutual.idOrganismoAdministradorLey16744"
+                    [selected]="mutual.idOrganismoAdministradorLey16744 === selectedMutualId"
+                  >
+                    {{ mutual.nombre }}
+                  </option>
                 }
               </select>
             </label>

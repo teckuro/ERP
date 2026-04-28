@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit, ViewEncapsulation, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, ViewEncapsulation, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { LucideAngularModule } from 'lucide-angular';
@@ -232,16 +232,16 @@ interface MonthOption {
               [fechaActualizacionLabel]="fechaActualizacionLabel()"
               [onSubmit]="guardar.bind(this)"
             >
-
-              <section class="param-group" aria-labelledby="sis-title">
-                <h2 id="sis-title">Cotizaciones Empleador</h2>
-                <div class="field-grid field-grid--sis">
-                  <label class="param-field">
-                    <span>SIS</span>
-                    <span class="unit-field unit-field--suffix" data-unit="%">
-                      <input class="param-input text-right" type="number" step="0.001" formControlName="sis" [readonly]="!generalesEditando()" />
-                    </span>
-                  </label>
+              <div class="parametros-form-projection" [formGroup]="form">
+                <section class="param-group" aria-labelledby="sis-title">
+                  <h2 id="sis-title">Cotizaciones Empleador</h2>
+                  <div class="field-grid field-grid--sis">
+                    <label class="param-field">
+                      <span>SIS</span>
+                      <span class="unit-field unit-field--suffix" data-unit="%">
+                        <input class="param-input text-right" type="number" step="0.001" formControlName="sis" [readonly]="!generalesEditando()" />
+                      </span>
+                    </label>
 
                   <label class="param-field">
                     <span>SANNA</span>
@@ -275,18 +275,18 @@ interface MonthOption {
                       />
                     </span>
                   </label>
-                </div>
-              </section>
+                  </div>
+                </section>
 
-              <section class="param-group" aria-labelledby="topes-title">
-                <h2 id="topes-title">Topes</h2>
-                <div class="field-grid field-grid--topes">
-                  <label class="param-field">
-                    <span>AFP UF</span>
-                    <span class="unit-field unit-field--suffix" data-unit="UF">
-                      <input class="param-input text-right" type="number" step="0.01" formControlName="topeAfpUf" [readonly]="!generalesEditando()" />
-                    </span>
-                  </label>
+                <section class="param-group" aria-labelledby="topes-title">
+                  <h2 id="topes-title">Topes</h2>
+                  <div class="field-grid field-grid--topes">
+                    <label class="param-field">
+                      <span>AFP UF</span>
+                      <span class="unit-field unit-field--suffix" data-unit="UF">
+                        <input class="param-input text-right" type="number" step="0.01" formControlName="topeAfpUf" [readonly]="!generalesEditando()" />
+                      </span>
+                    </label>
 
                   <label class="param-field">
                     <span>AFP pesos</span>
@@ -412,8 +412,9 @@ interface MonthOption {
                       />
                     </span>
                   </label>
-                </div>
-              </section>
+                  </div>
+                </section>
+              </div>
             </app-parametros-remuneraciones-tab>
           }
 
@@ -747,6 +748,10 @@ interface MonthOption {
         gap: 14px;
       }
 
+      .parametros-form-projection {
+        display: contents;
+      }
+
       .param-group {
         display: grid;
         min-width: 0;
@@ -1048,7 +1053,6 @@ interface MonthOption {
 export class ParametrosPage implements OnInit {
   private readonly service = inject(ParametrosGeneralesService);
   private readonly fb = inject(FormBuilder);
-  private readonly cdr = inject(ChangeDetectorRef);
 
   readonly breadcrumbItems: readonly RecordBreadcrumbItem[] = [{ label: 'Parametros' }];
   readonly tabs: readonly ParametrosTab[] = [
@@ -1556,12 +1560,10 @@ export class ParametrosPage implements OnInit {
     if (!this.hasSelectedInRows()) {
       await this.prepararNuevoPeriodoDesdeBase(this.selectedPeriodo());
       this.generalesEditando.set(true);
-      this.cdr.detectChanges();
       return;
     }
 
     this.generalesEditando.set(true);
-    this.cdr.detectChanges();
   }
 
   volverParametros(): void {

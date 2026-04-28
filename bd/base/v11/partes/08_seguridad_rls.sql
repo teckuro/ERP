@@ -37,7 +37,12 @@ DECLARE
         'afp',
         'salud',
         'moneda',
+        'parametros_generales',
+        'parametros_legales',
+        'afc_parametro',
         'tramo_carga',
+        'tramo_impuesto',
+        'tabla_impuesto_unico',
         'institucion_apv',
         'forma_pago_apv',
         'trabajo_pesado_parametro',
@@ -68,6 +73,83 @@ BEGIN
             EXECUTE format(
                 'CREATE POLICY catalogos_select_anon_authenticated ON public.%I FOR SELECT TO anon, authenticated USING (true)',
                 catalog_table
+            );
+        END IF;
+    END LOOP;
+END $$;
+
+DO $$
+DECLARE
+    parametro_table TEXT;
+    parametro_tables TEXT[] := ARRAY[
+        'parametros_generales',
+        'parametros_legales',
+        'afc_parametro',
+        'trabajo_pesado_parametro',
+        'reforma_previsional_parametro'
+    ];
+BEGIN
+    FOREACH parametro_table IN ARRAY parametro_tables LOOP
+        IF to_regclass(format('public.%I', parametro_table)) IS NULL THEN
+            CONTINUE;
+        END IF;
+
+        EXECUTE format(
+            'GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE public.%I TO anon, authenticated',
+            parametro_table
+        );
+
+        EXECUTE format('ALTER TABLE public.%I ENABLE ROW LEVEL SECURITY', parametro_table);
+
+        IF NOT EXISTS (
+            SELECT 1
+            FROM pg_policies
+            WHERE schemaname = 'public'
+              AND tablename = parametro_table
+              AND policyname = 'parametros_select_anon_authenticated'
+        ) THEN
+            EXECUTE format(
+                'CREATE POLICY parametros_select_anon_authenticated ON public.%I FOR SELECT TO anon, authenticated USING (true)',
+                parametro_table
+            );
+        END IF;
+
+        IF NOT EXISTS (
+            SELECT 1
+            FROM pg_policies
+            WHERE schemaname = 'public'
+              AND tablename = parametro_table
+              AND policyname = 'parametros_insert_anon_authenticated'
+        ) THEN
+            EXECUTE format(
+                'CREATE POLICY parametros_insert_anon_authenticated ON public.%I FOR INSERT TO anon, authenticated WITH CHECK (true)',
+                parametro_table
+            );
+        END IF;
+
+        IF NOT EXISTS (
+            SELECT 1
+            FROM pg_policies
+            WHERE schemaname = 'public'
+              AND tablename = parametro_table
+              AND policyname = 'parametros_update_anon_authenticated'
+        ) THEN
+            EXECUTE format(
+                'CREATE POLICY parametros_update_anon_authenticated ON public.%I FOR UPDATE TO anon, authenticated USING (true) WITH CHECK (true)',
+                parametro_table
+            );
+        END IF;
+
+        IF NOT EXISTS (
+            SELECT 1
+            FROM pg_policies
+            WHERE schemaname = 'public'
+              AND tablename = parametro_table
+              AND policyname = 'parametros_delete_anon_authenticated'
+        ) THEN
+            EXECUTE format(
+                'CREATE POLICY parametros_delete_anon_authenticated ON public.%I FOR DELETE TO anon, authenticated USING (true)',
+                parametro_table
             );
         END IF;
     END LOOP;
