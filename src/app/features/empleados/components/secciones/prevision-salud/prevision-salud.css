@@ -37,9 +37,19 @@
   padding: 16px;
 }
 
+.apvi-toggle {
+  align-items: center;
+}
+
+.apvi-na-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
 .prevision-card-header--actions {
   display: flex;
-  align-items: start;
+  align-items: center;
   justify-content: space-between;
   gap: 16px;
 }

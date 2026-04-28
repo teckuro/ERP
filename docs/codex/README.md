@@ -28,4 +28,5 @@
 
 | Ruta | Descripción |
 |------|-------------|
+| [`parametros-generales-campos-y-listas.md`](./parametros-generales-campos-y-listas.md) | Campos del formulario y catálogos (parámetros generales) |
 | [`sync-parametros-v611.md`](./sync-parametros-v611.md) | Parámetros v611 |
