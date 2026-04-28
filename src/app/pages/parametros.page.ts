@@ -595,42 +595,43 @@ interface MonthOption {
         justify-content: start;
       }
 
-      /* Grillas RRHH: columnas uniformes (valores/remuneraciones/topes/gratificación) */
+      /* Grillas RRHH: 8 columnas; cada campo suele ocupar span 2 (hasta 4 por fila) */
       .field-grid--values,
       .field-grid--rentas,
       .field-grid--afc,
       .field-grid--topes,
-      .field-grid--gratificacion {
-        /* Layout compacto: 2 columnas de ancho término medio */
-        grid-template-columns: repeat(
-          2,
-          minmax(var(--erp-field-min-width, 190px), var(--erp-field-max-width, 260px))
-        );
-        justify-content: start;
+      .field-grid--gratificacion,
+      .field-grid--sis,
+      .field-grid--ccaf {
+        grid-template-columns: repeat(8, minmax(0, 1fr));
+        justify-content: stretch;
+        align-items: end;
       }
 
-      .field-grid--values {
-        /* columnas definidas por regla uniforme */
+      .field-grid--values .param-field,
+      .field-grid--values .param-check,
+      .field-grid--gratificacion .param-field,
+      .field-grid--gratificacion .param-check,
+      .field-grid--rentas .param-field,
+      .field-grid--afc .param-field,
+      .field-grid--sis .param-field,
+      .field-grid--topes .param-field,
+      .field-grid--ccaf .param-field,
+      .field-grid--ccaf .erp-grid-filler {
+        grid-column: span 2;
+        min-width: 0;
       }
 
-      .field-grid--gratificacion {
-        /* columnas definidas por regla uniforme */
-      }
-
-      .field-grid--rentas {
-        /* columnas definidas por regla uniforme */
-      }
-
-      .field-grid--afc {
-        /* columnas definidas por regla uniforme */
-      }
-
-      .field-grid--sis {
-        grid-template-columns: repeat(
-          2,
-          minmax(var(--erp-field-min-width, 190px), var(--erp-field-max-width, 260px))
-        );
-        justify-content: start;
+      @media (max-width: 980px) {
+        .field-grid--values,
+        .field-grid--gratificacion,
+        .field-grid--rentas,
+        .field-grid--afc,
+        .field-grid--sis,
+        .field-grid--topes,
+        .field-grid--ccaf {
+          grid-template-columns: repeat(4, minmax(0, 1fr));
+        }
       }
 
       @media (max-width: 760px) {
@@ -647,23 +648,23 @@ interface MonthOption {
           gap: 10px;
         }
 
+        .field-grid--values .param-field,
+        .field-grid--values .param-check,
+        .field-grid--gratificacion .param-field,
+        .field-grid--gratificacion .param-check,
+        .field-grid--rentas .param-field,
+        .field-grid--afc .param-field,
+        .field-grid--sis .param-field,
+        .field-grid--topes .param-field,
+        .field-grid--ccaf .param-field,
+        .field-grid--ccaf .erp-grid-filler {
+          grid-column: span 1;
+        }
+
         .param-field--wide,
         .catalog-section--split h2 {
           grid-column: span 1;
         }
-      }
-
-      .field-grid--topes {
-        /* columnas definidas por regla uniforme */
-      }
-
-      .field-grid--ccaf {
-        grid-template-columns: repeat(
-          2,
-          minmax(var(--erp-field-min-width, 190px), var(--erp-field-max-width, 260px))
-        );
-        justify-content: start;
-        align-items: end;
       }
 
       .param-field,
@@ -691,7 +692,19 @@ interface MonthOption {
 
       .param-field--wide {
         width: 100%;
-        grid-column: span 2;
+        grid-column: span 8;
+      }
+
+      @media (max-width: 980px) {
+        .param-field--wide {
+          grid-column: span 4;
+        }
+      }
+
+      @media (max-width: 760px) {
+        .param-field--wide {
+          grid-column: span 1;
+        }
       }
 
       .param-check {
@@ -709,10 +722,16 @@ interface MonthOption {
         accent-color: #2563eb;
       }
 
+      .param-field .unit-field {
+        width: 100%;
+        max-width: 100%;
+      }
+
       .unit-field {
         position: relative;
         display: block;
         min-width: 0;
+        box-sizing: border-box;
       }
 
       .unit-field::after {
@@ -817,14 +836,12 @@ interface MonthOption {
       }
 
       @media (max-width: 1060px) {
-        .field-grid--values,
-        .field-grid--gratificacion,
-        .field-grid--rentas,
-        .field-grid--afc,
-        .field-grid--topes,
-        .field-grid--ccaf,
         .catalog-section--split {
-          grid-template-columns: repeat(2, minmax(0, 1fr));
+          grid-template-columns: 1fr;
+        }
+
+        .catalog-section--split h2 {
+          grid-column: span 1;
         }
       }
 
@@ -847,18 +864,6 @@ interface MonthOption {
         .period-month,
         .period-year {
           width: 100%;
-        }
-
-        .field-grid--values,
-        .field-grid--gratificacion,
-        .field-grid--rentas,
-        .field-grid--afc,
-        .field-grid--sis,
-        .field-grid--topes,
-        .field-grid--ccaf,
-        .radio-row,
-        .catalog-section--split {
-          grid-template-columns: 1fr;
         }
 
         .folder-tab {

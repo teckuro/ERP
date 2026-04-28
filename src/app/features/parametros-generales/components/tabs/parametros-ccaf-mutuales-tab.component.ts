@@ -49,7 +49,7 @@ export type CcafMutualesTabMode = 'config' | 'ccafLista' | 'mutualesLey';
 
             <label class="param-field">
               <span>Porcentaje</span>
-              <span class="unit-field unit-field--suffix" data-unit="%" style="width: 100%;">
+              <span class="unit-field unit-field--suffix" data-unit="%">
                 <input class="param-input text-right" type="text" [value]="percentLabel" readonly />
               </span>
             </label>
