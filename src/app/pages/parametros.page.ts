@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, OnInit, ViewEncapsulation, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit, ViewEncapsulation, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { LucideAngularModule } from 'lucide-angular';
@@ -113,7 +113,7 @@ interface MonthOption {
             <app-page-actions
               [visibleActions]="['edit']"
               editLabel="Modificar"
-              [editDisabled]="isLoading() || isSaving() || !isConfigurableTab()"
+              [editDisabled]="modificarDeshabilitado()"
               (editClick)="editarParametros()"
             ></app-page-actions>
           }
@@ -866,6 +866,7 @@ interface MonthOption {
 export class ParametrosPage implements OnInit {
   private readonly service = inject(ParametrosGeneralesService);
   private readonly fb = inject(FormBuilder);
+  private readonly cdr = inject(ChangeDetectorRef);
 
   readonly breadcrumbItems: readonly RecordBreadcrumbItem[] = [{ label: 'Parametros' }];
   readonly tabs: readonly ParametrosTab[] = [
@@ -900,13 +901,30 @@ export class ParametrosPage implements OnInit {
   readonly rows = signal<ParametroGeneral[]>([]);
   readonly selectedPeriodo = signal(this.currentPeriodo());
   readonly catalogos = signal<ParametrosGeneralesCatalogos>(this.emptyCatalogos());
+  readonly periodosGeneralesCatalogo = signal<string[]>([]);
   readonly selectedCcafId = signal<number | null>(null);
   readonly selectedMutualId = signal<number | null>(null);
   readonly isLoading = signal(true);
   readonly isSaving = signal(false);
   readonly generalesEditando = signal(false);
+  /** Formulario hidratado para el periodo actual y sin error de carga pendiente. */
+  readonly datosFormularioListos = signal(false);
+  /** Evita doble clic mientras se prepara el modo edición (carga + copia de periodo). */
+  readonly isPreparingEdit = signal(false);
   readonly errorMessage = signal<string | null>(null);
   readonly successMessage = signal<string | null>(null);
+
+  private cargarDepth = 0;
+
+  readonly modificarDeshabilitado = computed(
+    () =>
+      this.isLoading() ||
+      this.isSaving() ||
+      this.isPreparingEdit() ||
+      !this.isConfigurableTab() ||
+      !this.datosFormularioListos() ||
+      this.errorMessage() !== null,
+  );
 
   readonly pageActions = computed(() => {
     if (this.generalesEditando()) {
@@ -946,18 +964,23 @@ export class ParametrosPage implements OnInit {
     );
   });
   readonly yearOptions = computed(() => {
-    const currentYear = Number(this.currentPeriodo().slice(0, 4));
     const selectedYear = Number(this.selectedYear());
-    const years = new Set<number>([currentYear - 1, currentYear, currentYear + 1, selectedYear]);
-
-    this.rows().forEach((row) => {
-      const year = Number(row.periodo.slice(0, 4));
+    const yearsFromBd = new Set<number>();
+    for (const p of this.periodosGeneralesCatalogo()) {
+      const year = Number(String(p).slice(0, 4));
       if (Number.isFinite(year)) {
-        years.add(year);
+        yearsFromBd.add(year);
       }
-    });
+    }
 
-    return [...years].sort((left, right) => right - left);
+    // Si la BD aún no carga, al menos no dejamos el selector vacío.
+    if (yearsFromBd.size === 0) {
+      const currentYear = Number(this.currentPeriodo().slice(0, 4));
+      return [currentYear - 1, currentYear, currentYear + 1, selectedYear].filter((y) => Number.isFinite(y));
+    }
+
+    yearsFromBd.add(selectedYear);
+    return [...yearsFromBd].sort((left, right) => right - left);
   });
 
   readonly form = this.fb.group({
@@ -1230,8 +1253,8 @@ export class ParametrosPage implements OnInit {
     let periodoInicial = periodoActual;
 
     try {
-      const all = await this.service.listar();
-      const periodos = all.map((row) => row.periodo).filter(Boolean).sort((l, r) => r.localeCompare(l));
+      const periodos = await this.service.listarPeriodos();
+      this.periodosGeneralesCatalogo.set(periodos);
       const ultimo = periodos[0] ?? null;
       const existeActual = periodos.includes(periodoActual);
       periodoInicial = existeActual ? periodoActual : (ultimo ?? periodoActual);
@@ -1243,7 +1266,7 @@ export class ParametrosPage implements OnInit {
     this.form.controls.periodo.setValue(periodoInicial);
     // Periodo fijo: se selecciona solo desde el selector superior.
     this.form.controls.periodo.disable({ emitEvent: false });
-    await this.cargar(periodoInicial);
+    await Promise.all([this.cargar(periodoInicial), this.refrescarPeriodosDesdeBd()]);
   }
 
   asString(value: number | string): string {
@@ -1251,8 +1274,9 @@ export class ParametrosPage implements OnInit {
   }
 
   async cargar(periodo?: string): Promise<void> {
-    this.isLoading.set(true);
+    this.enterCargar();
     this.errorMessage.set(null);
+    this.datosFormularioListos.set(false);
 
     try {
       const selectedPeriodo = periodo ?? this.selectedPeriodo();
@@ -1273,18 +1297,22 @@ export class ParametrosPage implements OnInit {
         // En modo lectura mostramos como base el último periodo disponible, sin crear todavía.
         // La creación formal sigue quedando para "Modificar" + "Guardar".
         const base = await this.service.obtenerUltimoHastaPeriodo(selectedPeriodo).catch(() => null);
-        this.patchForm(base ? { ...base, periodo: selectedPeriodo } : { ...this.emptyParametro(), periodo: selectedPeriodo });
+        this.patchForm(
+          base ? { ...base, periodo: selectedPeriodo } : { ...this.emptyParametro(), periodo: selectedPeriodo },
+          selectedPeriodo,
+        );
         this.generalesEditando.set(false);
         return;
       }
 
-      this.patchForm(rows.find((row) => row.periodo === selectedPeriodo) ?? rows[0]);
+      this.patchForm(rows.find((row) => row.periodo === selectedPeriodo) ?? rows[0], selectedPeriodo);
       this.generalesEditando.set(false);
     } catch (err) {
       const base = this.describeError(err, 'No fue posible cargar los parametros del sistema.');
       this.errorMessage.set(`${base} (Periodo seleccionado: ${this.selectedPeriodo()})`);
     } finally {
-      this.isLoading.set(false);
+      this.leaveCargar();
+      this.cdr.markForCheck();
     }
   }
 
@@ -1354,6 +1382,7 @@ export class ParametrosPage implements OnInit {
     const periodo = this.selectedPeriodo() || this.currentPeriodo();
     this.patchForm({ ...this.emptyParametro(), periodo });
     this.generalesEditando.set(true);
+    this.datosFormularioListos.set(true);
     this.successMessage.set(null);
     this.errorMessage.set(null);
   }
@@ -1364,19 +1393,30 @@ export class ParametrosPage implements OnInit {
     this.successMessage.set(null);
     this.errorMessage.set(null);
 
-    // Intentar cargar por si el registro existe (consulta por periodo seleccionado).
-    if (!this.hasSelectedInRows()) {
-      await this.cargar(this.selectedPeriodo());
+    if (this.isPreparingEdit()) {
+      return;
+    }
+
+    if (!this.datosFormularioListos()) {
+      this.isPreparingEdit.set(true);
+      try {
+        await this.cargar(this.selectedPeriodo());
+      } finally {
+        this.isPreparingEdit.set(false);
+      }
     }
 
     // Si sigue sin existir, creamos el periodo copiando el último <= seleccionado (o defaults).
     if (!this.hasSelectedInRows()) {
       await this.prepararNuevoPeriodoDesdeBase(this.selectedPeriodo());
       this.generalesEditando.set(true);
+      this.datosFormularioListos.set(true);
+      this.cdr.detectChanges();
       return;
     }
 
     this.generalesEditando.set(true);
+    this.cdr.detectChanges();
   }
 
   volverParametros(): void {
@@ -1390,7 +1430,7 @@ export class ParametrosPage implements OnInit {
   async guardar(): Promise<void> {
     this.form.markAllAsTouched();
 
-    if (this.form.invalid || this.isSaving()) {
+    if (this.form.invalid || this.isSaving() || !this.datosFormularioListos()) {
       return;
     }
 
@@ -1419,6 +1459,7 @@ export class ParametrosPage implements OnInit {
       this.patchForm(saved);
       this.generalesEditando.set(false);
       this.successMessage.set(`El periodo ${saved.periodo} quedo actualizado.`);
+      await this.refrescarPeriodosDesdeBd();
     } catch {
       this.errorMessage.set('No fue posible guardar los parametros generales.');
     } finally {
@@ -1515,8 +1556,8 @@ export class ParametrosPage implements OnInit {
     this.successMessage.set(null);
     this.errorMessage.set(null);
 
-    // Siempre consulta el sistema (Supabase) al cambiar periodo
-    await this.cargar(periodo);
+    // Recarga datos del periodo y la lista de periodos en BD (años del selector).
+    await Promise.all([this.cargar(periodo), this.refrescarPeriodosDesdeBd()]);
   }
 
   private async prepararNuevoPeriodoDesdeBase(periodo: string): Promise<void> {
@@ -1533,7 +1574,14 @@ export class ParametrosPage implements OnInit {
     this.patchForm({ ...this.emptyParametro(), periodo });
   }
 
-  private patchForm(row: ParametroGeneral): void {
+  private patchForm(row: ParametroGeneral, expectedPeriodo?: string): void {
+    const selected = expectedPeriodo ?? this.selectedPeriodo();
+    if (row.periodo !== selected) {
+      this.errorMessage.set(`No coincide el periodo cargado (${row.periodo}) con el seleccionado (${selected}).`);
+      this.datosFormularioListos.set(false);
+      return;
+    }
+
     this.form.reset({
       periodo: row.periodo,
       uf: row.uf,
@@ -1578,6 +1626,30 @@ export class ParametrosPage implements OnInit {
       trabajoMenosPesadoTrabajador: row.trabajoMenosPesadoTrabajador,
       fechaActualizacion: row.fechaActualizacion,
     });
+
+    this.datosFormularioListos.set(true);
+  }
+
+  private enterCargar(): void {
+    this.cargarDepth += 1;
+    this.isLoading.set(true);
+  }
+
+  private leaveCargar(): void {
+    this.cargarDepth = Math.max(0, this.cargarDepth - 1);
+    if (this.cargarDepth === 0) {
+      this.isLoading.set(false);
+    }
+  }
+
+  private async refrescarPeriodosDesdeBd(): Promise<void> {
+    try {
+      const periodos = await this.service.listarPeriodos();
+      this.periodosGeneralesCatalogo.set(periodos);
+    } catch {
+      // Mantiene el catálogo previo si falla la consulta ligera.
+    }
+    this.cdr.markForCheck();
   }
 
   private ensureCatalogSelection(catalogos: ParametrosGeneralesCatalogos): void {

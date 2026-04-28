@@ -197,6 +197,28 @@ export class ParametrosGeneralesRepository {
     'TOPE_DEPOSITO_CONVENIDO_ANUAL_PESOS',
   ] as const;
 
+  async listarPeriodos(): Promise<string[]> {
+    const { data, error } = await this.supabaseUntyped
+      .from('parametros_generales')
+      .select('periodo')
+      .order('periodo', { ascending: false });
+
+    if (error) {
+      throw new Error(error.message);
+    }
+
+    const seen = new Set<string>();
+    const out: string[] = [];
+    for (const row of (data ?? []) as { periodo?: string }[]) {
+      const p = String(row?.periodo ?? '').trim();
+      if (p && !seen.has(p)) {
+        seen.add(p);
+        out.push(p);
+      }
+    }
+    return out;
+  }
+
   async listar(filtro?: ParametrosGeneralesFiltro): Promise<ParametroGeneral[]> {
     let query = this.supabaseUntyped
       .from('parametros_generales')
