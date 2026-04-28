@@ -646,6 +646,11 @@ interface MonthOption {
           padding: 12px;
           gap: 10px;
         }
+
+        .param-field--wide,
+        .catalog-section--split h2 {
+          grid-column: span 1;
+        }
       }
 
       .field-grid--topes {
@@ -686,7 +691,7 @@ interface MonthOption {
 
       .param-field--wide {
         width: 100%;
-        grid-column: 1 / -1;
+        grid-column: span 2;
       }
 
       .param-check {
@@ -808,7 +813,7 @@ interface MonthOption {
       }
 
       .catalog-section--split h2 {
-        grid-column: 1 / -1;
+        grid-column: span 2;
       }
 
       @media (max-width: 1060px) {
