@@ -4,16 +4,18 @@ Este archivo define la base de trabajo para Codex en este proyecto. Antes de gen
 
 ## Pedidos al agente (como comunicar mejor)
 
-- Alcance explicito por pantalla o archivo; si el pedido viene de una bitacora fusionada (`docs/codex/peticiones-fusion-items-1-65.md`), seguir ese listado antes que interpretaciones nuevas.
+- En cada tarea, respetar la **jerarquía** de [`README.md`](./README.md) y no contradecir reglas de negocio o UI de un documento de mayor prioridad.
+- Alcance explícito por pantalla o archivo; si el pedido viene de una bitácora fusionada (`docs/codex/peticiones-fusion-items-1-65.md`), seguir ese listado antes que interpretaciones nuevas.
 - Sin dependencias nuevas ni cambiar `formControlName` / guardado cuando el contrato dice “solo UI”.
-- Diagnostico antes de codigo solo cuando pidas auditoria puntual.
+- Diagnóstico antes de código solo cuando pidas auditoría puntual.
+- No duplicar en documentación nueva lo que ya define `AGENTS.md` o `ui-form-guidelines.md`; enlazar y repartir por tema.
 
 ## Prioridad de reglas
 
 1. `docs/codex/AGENTS.md`
-2. `docs/codex/bases-estilos.md` (punto de entrada único: bases de estilos, mapa de docs y enlaces)
+2. `docs/codex/README.md` (índice padre: cómo pedir, jerarquía y enlaces por tema; no sustituye este archivo)
 3. `docs/codex/ui-form-guidelines.md`
-4. Documentos especificos del flujo, por ejemplo `docs/codex/modo-basico-empleado.md`
+4. Documentos específicos del flujo, por ejemplo `docs/codex/temas/modo-basico-empleado.md`
 
 Si hay conflicto entre reglas, gana la regla mas alta en esta lista.
 
@@ -172,9 +174,9 @@ Cuando una petición implique **mejoras visuales / estilos**, registrar el cambi
 
 - `docs/codex/peticiones-estilos.md`
 
-Las reglas base y “estilos padre” del proyecto se resumen en:
+Índice de documentación y temas:
 
-- `docs/codex/bases-estilos.md`
+- `docs/codex/README.md`
 
 ## Anti-patrones
 

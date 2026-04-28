@@ -1,35 +1,92 @@
-# Documentación Codex (`docs/codex`)
+# Documentación ERP — índice padre (reglas y temas)
 
-Índice de guías de producto, UI y flujos. **Empieza por** [`AGENTS.md`](./AGENTS.md) o [`bases-estilos.md`](./bases-estilos.md).
+**Este es el único punto de entrada** para normas de producto, UI y flujos en `docs/codex`. El resto está repartido **por tema**; aquí no se repiten definiciones que ya viven en otros archivos.
 
 ---
 
-## Estilos y UI
+## Cada petición: qué pedir y qué se aplica
 
-| Ruta | Descripción |
-|------|-------------|
-| [`estilos/README.md`](./estilos/README.md) | Grilla 8 columnas, anchos, checklist visual |
-| [`bases-estilos.md`](./bases-estilos.md) | Guía única + mapa de Markdown |
-| [`ui-form-guidelines.md`](./ui-form-guidelines.md) | Formularios, tokens, patrones |
-| [`ui-button-guidelines.md`](./ui-button-guidelines.md) | Botones y toolbar |
-| [`peticiones-estilos.md`](./peticiones-estilos.md) | Bitácora de mejoras visuales |
-| [`manual-base-proyecto.md`](./manual-base-proyecto.md) | Lectura general del proyecto |
+Para que el trabajo respete **reglas de negocio y de UI** sin ambigüedad:
 
-## Flujos empleados / Angular
+1. **Alcance**: pantalla, archivo o flujo concreto (evita cambios colaterales no deseados).
+2. **Tipo de cambio**: solo UI, solo lógica, o ambos; si el contrato dice «solo UI», no tocar guardado, servicios ni `formControlName` sin acuerdo explícito.
+3. **Fuente de verdad** si hay lista cerrada: p. ej. [`peticiones-fusion-items-1-65.md`](./peticiones-fusion-items-1-65.md) u otra bitácora; esa lista manda sobre interpretaciones nuevas.
+4. **Jerarquía de documentos** (en conflicto gana el primero):
+   1. [`AGENTS.md`](./AGENTS.md) — contrato del agente (stack, layout obligatorio, anti‑patrones, checklist).
+   2. **Este README** — índice y cómo pedir; no sustituye a `AGENTS.md`.
+   3. [`ui-form-guidelines.md`](./ui-form-guidelines.md) — tokens, formularios, mensajes, detalle visual.
+   4. Guías del tema (empleados, parámetros, etc.) enlazadas abajo.
 
-| Ruta | Descripción |
-|------|-------------|
-| [`modo-basico-empleado.md`](./modo-basico-empleado.md) | Modo básico |
-| [`base-angular-empleados.md`](./base-angular-empleados.md) | Módulos al estilo del repo |
-| [`flujo-edicion-ficha-empleado.md`](./flujo-edicion-ficha-empleado.md) | Edición de ficha |
-| [`crear-menu-base.md`](./crear-menu-base.md) | Menú y rutas |
+Si falta un caso: primero `ui-form-guidelines.md` y `AGENTS.md`; luego temas específicos.
 
-## Otros
+---
 
-| Ruta | Descripción |
-|------|-------------|
-| [`peticiones-fusion-items-1-65.md`](./peticiones-fusion-items-1-65.md) | Peticiones fusionadas (índice de trabajo hasta ítem 65) |
-| [`creacion-avanzada-formulario-campos.md`](./creacion-avanzada-formulario-campos.md) | Alta avanzada: bloques y tabs del formulario |
-| [`parametros-generales-campos-y-listas.md`](./parametros-generales-campos-y-listas.md) | Campos del formulario y catálogos (parámetros generales) |
-| [`sync-parametros-v611.md`](./sync-parametros-v611.md) | Parámetros v611 |
-| [`parametros-permisos-bd-ejemplo.sql`](./parametros-permisos-bd-ejemplo.sql) | Plantilla SQL (lectura catálogos parametros / Supabase) |
+## Índice por tema
+
+### Contrato y formularios (UI central)
+
+| Documento | Contenido |
+|-----------|-----------|
+| [`AGENTS.md`](./AGENTS.md) | Contrato agente, prioridades, tokens resumidos, layout ERP, anti‑patrones |
+| [`ui-form-guidelines.md`](./ui-form-guidelines.md) | Tokens completos, formularios, MessageBox, loading, checklist |
+| [`ui-button-guidelines.md`](./ui-button-guidelines.md) | Botones, toolbar, variantes |
+| [`estilos/README.md`](./estilos/README.md) | Grilla 8 columnas, anchos, checklist de cierre (7 ítems) |
+| [`temas/implementacion-ui.md`](./temas/implementacion-ui.md) | Dónde está el CSS y componentes en el repo (sin duplicar tokens) |
+
+### Proyecto y tipografía
+
+| Documento | Contenido |
+|-----------|-----------|
+| [`manual-base-proyecto.md`](./manual-base-proyecto.md) | Lectura del proyecto, regla tipográfica (pesos) |
+| [`../../README.md`](../../README.md) | Visión producto y stack (raíz repo) |
+
+### Empleados / Angular
+
+| Documento | Contenido |
+|-----------|-----------|
+| [`modo-basico-empleado.md`](./temas/modo-basico-empleado.md) | Modo básico de ficha |
+| [`base-angular-empleados.md`](./temas/base-angular-empleados.md) | Módulos al estilo del repo |
+| [`flujo-edicion-ficha-empleado.md`](./temas/flujo-edicion-ficha-empleado.md) | Edición de ficha |
+| [`crear-menu-base.md`](./temas/crear-menu-base.md) | Menú lateral y rutas |
+| [`creacion-avanzada-formulario-campos.md`](./temas/creacion-avanzada-formulario-campos.md) | Alta avanzada: bloques y tabs |
+
+### Parámetros y sync
+
+| Documento | Contenido |
+|-----------|-----------|
+| [`parametros-generales-campos-y-listas.md`](./temas/parametros-generales-campos-y-listas.md) | Campos y catálogos |
+| [`sync-parametros-v611.md`](./temas/sync-parametros-v611.md) | Parámetros v611 |
+| [`parametros-permisos-bd-ejemplo.sql`](./temas/parametros-permisos-bd-ejemplo.sql) | Ejemplo SQL / Supabase |
+
+### Bitácoras (no son normativa base)
+
+| Documento | Contenido |
+|-----------|-----------|
+| [`peticiones-estilos.md`](./peticiones-estilos.md) | Registro de mejoras visuales por fecha |
+| [`peticiones-fusion-items-1-65.md`](./peticiones-fusion-items-1-65.md) | Índice de trabajo fusionado |
+
+### Base de datos e infra (fuera de UI)
+
+| Ubicación | Contenido |
+|-----------|-----------|
+| [`../../SUPABASE_SETUP.md`](../../SUPABASE_SETUP.md) | Supabase |
+| [`../../bd/README.md`](../../bd/README.md), [`../../bd/base/README.md`](../../bd/base/README.md), [`../../bd/base/v11/README.md`](../../bd/base/v11/README.md) | Esquema SQL |
+| [`../../bd/insert/README.md`](../../bd/insert/README.md), [`../../bd/python/README.md`](../../bd/python/README.md) | Scripts auxiliares |
+
+---
+
+## Orden de lectura sugerido (pantalla nueva o refino UI)
+
+1. [`AGENTS.md`](./AGENTS.md)  
+2. [`ui-form-guidelines.md`](./ui-form-guidelines.md)  
+3. [`ui-button-guidelines.md`](./ui-button-guidelines.md)  
+4. Si aplica: [`estilos/README.md`](./estilos/README.md)  
+5. Si aplica al flujo: tema empleados o parámetros en la tabla anterior  
+
+**Mejoras visuales**: registrar en [`peticiones-estilos.md`](./peticiones-estilos.md) (obligatorio según `AGENTS.md`).
+
+---
+
+## Carpeta `temas/`
+
+Documentos auxiliares que **no duplican** el contrato de `AGENTS.md`: [`temas/README.md`](./temas/README.md).

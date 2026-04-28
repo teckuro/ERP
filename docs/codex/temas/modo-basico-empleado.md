@@ -17,7 +17,7 @@ Este archivo complementa las reglas existentes, no las reemplaza.
 Antes de aplicar este modo, respetar:
 
 - `AGENTS.md`
-- `bases-estilos.md`
+- `README.md` (índice en `docs/codex/`)
 - `ui-form-guidelines.md`
 
 ---
@@ -220,4 +220,4 @@ Usar condiciones:
 
 Las mejoras visuales aplicadas por petición se registran en:
 
-- `docs/codex/peticiones-estilos.md`
+- [`peticiones-estilos.md`](../peticiones-estilos.md)

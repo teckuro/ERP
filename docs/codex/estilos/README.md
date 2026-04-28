@@ -8,7 +8,7 @@ Punto de entrada para **normas visuales reutilizables** (grillas, anchos, checkl
 
 | Documento | Contenido |
 |-----------|-----------|
-| [`../bases-estilos.md`](../bases-estilos.md) | Mapa del repo, tokens, orden de lectura |
+| [`../README.md`](../README.md) | Índice padre, jerarquía de reglas y mapa por tema |
 | [`../peticiones-estilos.md`](../peticiones-estilos.md) | Bitácora de mejoras pedidas (no es normativa) |
 | Este archivo | Grilla 8 columnas + anchos + checklist de cierre |
 

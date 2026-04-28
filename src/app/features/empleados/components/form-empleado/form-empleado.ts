@@ -135,6 +135,8 @@ export class FormEmpleadoComponent implements OnInit {
   readonly attemptedSave = signal(false);
   readonly errorMessage = signal<string | null>(null);
   readonly successMessage = signal<string | null>(null);
+  /** Flujo que originó el último guardado exitoso (para el modal, sin depender solo de la ruta). */
+  readonly successFlow = signal<FormEmpleadoModo | null>(null);
   readonly createdEmployeeId = signal<number | null>(null);
   readonly catalogos = signal<EmpleadoFormCatalogos>(EMPTY_EMPLEADO_FORM_CATALOGOS);
   readonly isLoadingCatalogs = signal(true);
@@ -213,6 +215,7 @@ export class FormEmpleadoComponent implements OnInit {
     }
     this.errorMessage.set(null);
     this.successMessage.set(null);
+    this.successFlow.set(null);
     this.createdEmployeeId.set(null);
     this.markSubmitControlsAsTouched();
 
@@ -252,6 +255,7 @@ export class FormEmpleadoComponent implements OnInit {
       this.successMessage.set(
         `La ficha de ${created.nombre} quedo activa y lista para operar en remuneraciones.`,
       );
+      this.successFlow.set('avanzado');
       this.createdEmployeeId.set(created.id);
       this.form.markAsPristine();
     } catch (error) {
@@ -267,6 +271,7 @@ export class FormEmpleadoComponent implements OnInit {
 
   goToEmployeeList(): void {
     this.successMessage.set(null);
+    this.successFlow.set(null);
     this.createdEmployeeId.set(null);
     void this.router.navigate(['/empleados']);
   }
@@ -296,9 +301,16 @@ export class FormEmpleadoComponent implements OnInit {
     return this.isAdvancedMode() ? (['back'] as const) : (['back', 'save'] as const);
   }
 
-  /** Modal de exito: texto del boton principal (basico -> Ir al listado). */
+  /** Modal de exito: titulo (solo copia distinta en creacion basica). */
+  successModalTitle(): string {
+    return this.successFlow() === 'basico'
+      ? 'Empleado registrado correctamente'
+      : 'Ficha registrada';
+  }
+
+  /** Modal de exito: texto del boton principal (basico -> Ir al listado, avanzado -> Aceptar). */
   successModalPrimaryLabel(): string {
-    return this.isBasicMode() ? 'Ir al listado' : 'Aceptar';
+    return this.successFlow() === 'basico' ? 'Ir al listado' : 'Aceptar';
   }
 
   goToPreviousTab(): void {
@@ -435,7 +447,10 @@ export class FormEmpleadoComponent implements OnInit {
         mapEmpleadoFormToPayloadBasico(this.form),
       );
 
-      this.successMessage.set('Empleado creado en proceso. Completa la informacion restante para habilitar remuneraciones.');
+      this.successMessage.set(
+        'La creación básica fue guardada y la ficha quedó en estado "En proceso".',
+      );
+      this.successFlow.set('basico');
       this.createdEmployeeId.set(created.id);
       this.form.markAsPristine();
     } catch (error) {

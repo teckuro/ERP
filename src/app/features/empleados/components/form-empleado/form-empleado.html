@@ -41,12 +41,33 @@
           <app-message-box
             mode="modal"
             variant="success"
-            title="Ficha registrada"
+            [modalHeadlineSplit]="successFlow() === 'basico'"
+            [title]="successModalTitle()"
             [message]="message"
             [primaryLabel]="successModalPrimaryLabel()"
             (action)="handleSuccessAction()"
           >
-            @if (createdEmployeeId(); as createdId) {
+            @if (successFlow() === 'basico') {
+              <div
+                class="basic-success-followup"
+                role="region"
+                aria-labelledby="basic-success-next-title"
+              >
+                <div class="basic-success-followup__panel">
+                  <h3 class="basic-success-followup__title" id="basic-success-next-title">Próximo paso</h3>
+                  <p class="basic-success-followup__text">
+                    Completa los datos laborales, previsionales y de remuneración desde la ficha del empleado
+                    para dejarlo listo para liquidar.
+                  </p>
+                </div>
+                @if (createdEmployeeId(); as fichaId) {
+                  <div class="basic-success-followup__meta">
+                    <span class="basic-success-followup__meta-label">Referencia</span>
+                    <span class="basic-success-followup__meta-value">Ficha N° {{ fichaId }}</span>
+                  </div>
+                }
+              </div>
+            } @else if (createdEmployeeId(); as createdId) {
               <p class="message-detail">Identificador de ficha: {{ createdId }}</p>
             }
           </app-message-box>

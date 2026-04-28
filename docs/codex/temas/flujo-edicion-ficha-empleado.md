@@ -14,8 +14,8 @@ El patron principal es:
 
 Este documento complementa:
 
-- `docs/codex/ui-form-guidelines.md`
-- `docs/codex/modo-basico-empleado.md`
+- [`ui-form-guidelines.md`](../ui-form-guidelines.md)
+- [`modo-basico-empleado.md`](./modo-basico-empleado.md)
 
 ---
 

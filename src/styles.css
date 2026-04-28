@@ -1388,3 +1388,248 @@ app-ficha-empleado-container .history-grid-card {
 app-ficha-empleado-container .history-grid-card table {
   background: #ffffff;
 }
+
+/*
+ * Contenido tipo Markdown / HTML enriquecido (global).
+ * Envolver bloques renderizados (p. ej. [innerHTML]) con class="erp-md".
+ * Compatible con .message-detail dentro de app-message-box u otros contenedores.
+ */
+.erp-md {
+  --erp-md-ink: #111827;
+  --erp-md-muted: #4b5563;
+  --erp-md-soft: #f8fafc;
+  --erp-md-border: #e5e7eb;
+  --erp-md-accent: #2563eb;
+  --erp-md-accent-hover: #1d4ed8;
+
+  max-width: 72ch;
+  color: var(--erp-md-muted);
+  font-family: var(--erp-font-sans);
+  font-size: var(--erp-text-md);
+  font-weight: 400;
+  line-height: 1.55;
+  word-break: break-word;
+}
+
+.erp-md > *:first-child {
+  margin-top: 0;
+}
+
+.erp-md > *:last-child {
+  margin-bottom: 0;
+}
+
+.erp-md h1,
+.erp-md h2,
+.erp-md h3,
+.erp-md h4,
+.erp-md h5,
+.erp-md h6 {
+  margin: 1.15em 0 0.45em;
+  color: var(--erp-md-ink);
+  font-weight: 600;
+  line-height: 1.3;
+  letter-spacing: -0.01em;
+}
+
+.erp-md h1 {
+  margin-top: 0;
+  font-size: var(--erp-title-md);
+}
+
+.erp-md h2 {
+  font-size: var(--erp-title-sm);
+  padding-bottom: 0.2em;
+  border-bottom: 1px solid var(--erp-md-border);
+}
+
+.erp-md h3 {
+  font-size: calc(var(--erp-text-md) * 1.08);
+}
+
+.erp-md h4 {
+  font-size: calc(var(--erp-text-md) * 1.02);
+}
+
+.erp-md h5,
+.erp-md h6 {
+  font-size: var(--erp-text-md);
+  color: var(--erp-md-muted);
+}
+
+.erp-md p {
+  margin: 0.65em 0;
+}
+
+.erp-md a {
+  color: var(--erp-md-accent);
+  font-weight: 500;
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 2px;
+}
+
+.erp-md a:hover {
+  color: var(--erp-md-accent-hover);
+}
+
+.erp-md strong {
+  color: var(--erp-md-ink);
+  font-weight: 600;
+}
+
+.erp-md em {
+  font-style: italic;
+}
+
+.erp-md ul,
+.erp-md ol {
+  margin: 0.65em 0;
+  padding-left: 1.35em;
+}
+
+.erp-md ul {
+  list-style-type: disc;
+}
+
+.erp-md ol {
+  list-style-type: decimal;
+}
+
+.erp-md li {
+  margin: 0.28em 0;
+}
+
+.erp-md li::marker {
+  color: #9ca3af;
+}
+
+.erp-md blockquote {
+  margin: 0.85em 0;
+  border-left: 3px solid #bfdbfe;
+  padding: 0.35em 0 0.35em 0.9em;
+  background: #f8fafc;
+  color: var(--erp-md-muted);
+}
+
+.erp-md hr {
+  margin: 1.25em 0;
+  border: 0;
+  border-top: 1px solid var(--erp-md-border);
+}
+
+.erp-md code {
+  padding: 0.12em 0.35em;
+  border: 1px solid var(--erp-md-border);
+  border-radius: 4px;
+  background: var(--erp-md-soft);
+  color: #1e293b;
+  font-family: ui-monospace, 'Cascadia Code', 'Segoe UI Mono', 'SFMono-Regular', Menlo, Monaco, Consolas, monospace;
+  font-size: 0.88em;
+}
+
+.erp-md pre {
+  margin: 0.85em 0;
+  overflow: auto;
+  border: 1px solid var(--erp-md-border);
+  border-radius: 8px;
+  background: #0f172a;
+  color: #e2e8f0;
+  font-family: ui-monospace, 'Cascadia Code', 'Segoe UI Mono', 'SFMono-Regular', Menlo, Monaco, Consolas, monospace;
+  font-size: 0.82em;
+  line-height: 1.45;
+}
+
+.erp-md pre code {
+  display: block;
+  padding: 0.85em 1em;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: inherit;
+  font-size: inherit;
+}
+
+.erp-md table {
+  width: 100%;
+  margin: 0.85em 0;
+  border-collapse: collapse;
+  font-size: 0.95em;
+}
+
+.erp-md th,
+.erp-md td {
+  border: 1px solid var(--erp-md-border);
+  padding: 0.45em 0.65em;
+  vertical-align: top;
+}
+
+.erp-md th {
+  background: var(--erp-md-soft);
+  color: var(--erp-md-ink);
+  font-weight: 600;
+  text-align: left;
+}
+
+.erp-md img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 6px;
+}
+
+/* En modales / mensajes: ancho completo del contenedor */
+.message-detail.erp-md,
+app-message-box .erp-md,
+app-message-box .message-detail {
+  max-width: none;
+}
+
+app-message-box .message-detail:not(.erp-md) ul,
+app-message-box .message-detail:not(.erp-md) ol {
+  margin: 0.45em 0 0;
+  padding-left: 1.25em;
+}
+
+app-message-box .message-detail:not(.erp-md) li {
+  margin: 0.2em 0;
+}
+
+app-message-box .message-detail:not(.erp-md) a {
+  color: var(--erp-md-accent, #2563eb);
+  font-weight: 500;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+app-message-box .message-detail:not(.erp-md) code {
+  padding: 0.1em 0.3em;
+  border-radius: 4px;
+  border: 1px solid #e5e7eb;
+  background: #f8fafc;
+  font-size: 0.88em;
+}
+
+.dark .erp-md {
+  --erp-md-ink: oklch(0.985 0 0);
+  --erp-md-muted: oklch(0.708 0 0);
+  --erp-md-soft: oklch(0.269 0 0);
+  --erp-md-border: oklch(0.369 0 0);
+  --erp-md-accent: oklch(0.696 0.17 162.48);
+  --erp-md-accent-hover: oklch(0.769 0.188 70.08);
+}
+
+.dark .erp-md blockquote {
+  background: oklch(0.205 0 0);
+  border-left-color: oklch(0.488 0.243 264.376);
+}
+
+.dark .erp-md pre {
+  background: oklch(0.18 0 0);
+  border-color: oklch(0.369 0 0);
+}
+
+.dark .erp-md code {
+  background: oklch(0.269 0 0);
+  border-color: oklch(0.369 0 0);
+  color: oklch(0.92 0 0);
+}

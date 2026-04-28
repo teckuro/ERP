@@ -21,21 +21,38 @@ export type MessageBoxMode = 'inline' | 'modal';
     <section
       class="message-box"
       [class.message-modal]="mode === 'modal'"
+      [class.message-modal--headline]="useModalHeadlineLayout()"
       [ngClass]="variantClass()"
       [attr.role]="mode === 'modal' ? 'dialog' : liveRole()"
       [attr.aria-modal]="mode === 'modal'"
       [attr.aria-live]="liveRegion()"
     >
-      <div class="message-icon" aria-hidden="true">
-        <lucide-icon
-          class="message-icon-svg"
-          [class.message-icon-spin]="variant === 'loading'"
-          [img]="icon()"
-        ></lucide-icon>
-      </div>
+      @if (useModalHeadlineLayout()) {
+        <div class="message-modal-headline-row">
+          @if (title) {
+            <p class="message-title message-title--headline">{{ title }}</p>
+          }
+          <div class="message-icon" aria-hidden="true">
+            <lucide-icon
+              class="message-icon-svg"
+              [class.message-icon-spin]="variant === 'loading'"
+              [img]="icon()"
+            ></lucide-icon>
+          </div>
+        </div>
+      } @else {
+        <div class="message-icon" aria-hidden="true">
+          <lucide-icon
+            class="message-icon-svg"
+            [class.message-icon-spin]="variant === 'loading'"
+            [img]="icon()"
+          ></lucide-icon>
+        </div>
+      }
 
-      <div class="message-copy">
-        @if (title) {
+      <!-- Un solo ng-content: Angular proyecta solo en el primer slot del template; antes el bloque de “Próximo paso” no llegaba en modo headline. -->
+      <div class="message-copy" [class.message-copy--headline]="useModalHeadlineLayout()">
+        @if (!useModalHeadlineLayout() && title) {
           <p class="message-title">{{ title }}</p>
         }
 
@@ -46,7 +63,7 @@ export type MessageBoxMode = 'inline' | 'modal';
         <ng-content></ng-content>
       </div>
 
-      <div class="message-actions">
+      <div class="message-actions" [class.message-actions--headline]="useModalHeadlineLayout()">
         @if (secondaryLabel) {
           <button type="button" class="message-button message-button-secondary" (click)="secondary.emit()">
             {{ secondaryLabel }}
@@ -105,6 +122,86 @@ export type MessageBoxMode = 'inline' | 'modal';
         border-left-width: 1px;
         padding: 16px;
         box-shadow: 0 24px 56px rgba(15, 23, 42, 0.22);
+      }
+
+      /* Modal compacto: título arriba a la izquierda, ícono arriba a la derecha (opt-in desde el padre). */
+      .message-modal.message-modal--headline {
+        grid-template-columns: minmax(0, 1fr);
+        grid-template-rows: auto auto auto;
+        gap: 0;
+        align-items: start;
+        width: min(100%, 32rem);
+        padding: 22px 24px 20px;
+        border-radius: 10px;
+        border: 1px solid #e5e7eb;
+        box-shadow:
+          0 4px 6px -1px rgba(15, 23, 42, 0.07),
+          0 24px 48px -12px rgba(15, 23, 42, 0.18);
+      }
+
+      .message-modal-headline-row {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 16px;
+        min-width: 0;
+        padding-bottom: 16px;
+        margin-bottom: 4px;
+        border-bottom: 1px solid #f1f5f9;
+      }
+
+      .message-title--headline {
+        flex: 1;
+        min-width: 0;
+        margin: 0;
+        color: #1f2937;
+        font-size: 1.0625rem;
+        font-weight: 600;
+        letter-spacing: -0.02em;
+        line-height: 1.35;
+      }
+
+      .message-modal.message-modal--headline .message-icon {
+        flex-shrink: 0;
+        width: 44px;
+        height: 44px;
+        border-radius: 12px;
+      }
+
+      .message-modal.message-modal--headline .message-icon-svg {
+        width: 22px;
+        height: 22px;
+      }
+
+      .message-copy--headline {
+        display: grid;
+        gap: 0;
+        padding-top: 0;
+      }
+
+      .message-modal.message-modal--headline .message-copy--headline > .message-text {
+        margin: 0 0 16px;
+        max-width: 38rem;
+        color: #4b5563;
+        font-size: 0.875rem;
+        font-weight: 400;
+        line-height: 1.55;
+      }
+
+      .message-modal.message-modal--headline .message-actions--headline {
+        grid-column: auto;
+        width: 100%;
+        margin-top: 18px;
+        padding-top: 16px;
+        border-top: 1px solid #e5e7eb;
+      }
+
+      .message-modal.message-modal--headline .message-button-primary {
+        min-height: 36px;
+        padding: 0 16px;
+        font-size: 0.84rem;
+        font-weight: 600;
+        border-radius: 8px;
       }
 
       /* Loading modal: centrado, más limpio y con icono protagonista */
@@ -259,6 +356,12 @@ export type MessageBoxMode = 'inline' | 'modal';
         color: #16a34a;
       }
 
+      /* Éxito en modal headline: sin barra lateral; el check ya indica el estado. */
+      .message-modal.message-modal--headline.message-success {
+        border: 1px solid #e5e7eb;
+        background: #ffffff;
+      }
+
       .message-error {
         border-color: #fecaca;
         border-left-color: #dc2626;
@@ -307,13 +410,25 @@ export type MessageBoxMode = 'inline' | 'modal';
           grid-template-columns: auto minmax(0, 1fr);
         }
 
+        .message-modal.message-modal--headline {
+          grid-template-columns: minmax(0, 1fr);
+        }
+
         .message-actions {
           grid-column: 1 / -1;
           justify-content: flex-start;
         }
 
+        .message-modal.message-modal--headline .message-actions--headline {
+          justify-content: flex-end;
+        }
+
         .message-button {
           flex: 1 1 auto;
+        }
+
+        .message-modal.message-modal--headline .message-button-primary {
+          flex: 0 0 auto;
         }
       }
 
@@ -331,10 +446,16 @@ export class MessageBoxComponent {
   @Input() title = '';
   @Input() message = '';
   @Input() actionLabel = '';
+  /** Texto del botón principal; si está vacío se usa `actionLabel`. Si ambos están vacíos, no se muestra el botón. */
   @Input() primaryLabel = '';
   @Input() secondaryLabel = '';
   @Input() dismissible = false;
   @Input() dismissLabel = 'Cerrar mensaje';
+  /**
+   * Si es true y `mode === 'modal'`, el título y el ícono comparten una fila (título izquierda, ícono derecha).
+   * Por defecto false: layout clásico del ERP sin cambios.
+   */
+  @Input() modalHeadlineSplit = false;
   @Output() readonly action = new EventEmitter<void>();
   @Output() readonly secondary = new EventEmitter<void>();
   @Output() readonly dismiss = new EventEmitter<void>();
@@ -365,6 +486,10 @@ export class MessageBoxComponent {
 
   primaryActionLabel(): string {
     return this.primaryLabel || this.actionLabel;
+  }
+
+  useModalHeadlineLayout(): boolean {
+    return this.modalHeadlineSplit && this.mode === 'modal';
   }
 
   icon() {

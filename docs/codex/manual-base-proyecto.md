@@ -4,23 +4,23 @@ Este manual queda dividido por tema para que sea mas facil mantenerlo.
 
 Documentos base:
 
-- `docs/codex/base-angular-empleados.md`
-- `docs/codex/crear-menu-base.md`
+- `docs/codex/temas/base-angular-empleados.md`
+- `docs/codex/temas/crear-menu-base.md`
 
 Documentos que siguen aplicando como reglas de UI:
 
 - `docs/codex/AGENTS.md`
-- `docs/codex/bases-estilos.md` (guía única de bases de estilos y mapa del resto de Markdown)
+- `docs/codex/README.md` (índice padre y enlaces por tema)
 - `docs/codex/ui-form-guidelines.md`
-- `docs/codex/modo-basico-empleado.md`
+- `docs/codex/temas/modo-basico-empleado.md`
 
 Orden recomendado de lectura:
 
 1. `AGENTS.md`
-2. `bases-estilos.md`
+2. `README.md` (carpeta codex)
 3. `ui-form-guidelines.md`
-4. `base-angular-empleados.md`
-5. `crear-menu-base.md`
+4. `temas/base-angular-empleados.md`
+5. `temas/crear-menu-base.md`
 
 ## Alcance de cada archivo
 

@@ -3,15 +3,15 @@
 Registro cronológico de mejoras visuales aplicadas por petición, con foco en **trazabilidad** (qué se tocó y dónde),
 sin mezclarlo con las reglas base.
 
+### 2026-04-28 (documentación)
+
+- **Índice padre único**: `docs/codex/README.md` con reglas por petición y mapa por tema.
+- **Eliminados** `bases-estilos.md` y `estilos-base.md` (contenido redundante); rutas de código en `docs/codex/temas/implementacion-ui.md`.
+- Referencias actualizadas en `AGENTS.md`, `manual-base-proyecto.md`, `estilos/README.md`, `ui-form-guidelines.md`, `temas/modo-basico-empleado.md`.
+
 ### 2026-04-28 (listado empleados)
 
 - **Tabla listado**: `filtersEnabled=false` en `tabla-empleados.html` (sin barra global de busqueda/filtros del DataGrid; coincide con pedido original).
-
-### 2026-04-28
-
-- **Documentación – bases de estilos**:
-  - Se agregó la guía única `docs/codex/bases-estilos.md` (mapa de Markdown del repo, resumen de tokens/layout y enlaces).
-  - Se actualizó `docs/codex/AGENTS.md`, `docs/codex/manual-base-proyecto.md`, `docs/codex/estilos-base.md`, `docs/codex/modo-basico-empleado.md` y `docs/codex/ui-form-guidelines.md` para enlazarla.
 
 ### 2026-04-27
 - **Creación Básica de Empleado (modo básico)**:

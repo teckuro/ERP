@@ -1,6 +1,6 @@
 # Parámetros generales: campos del formulario y listas (catálogos)
 
-Referencia alineada al modelo en [`parametro-general.model.ts`](../../src/app/features/parametros-generales/models/parametro-general.model.ts) y a la carga vía `ParametrosGeneralesService`.
+Referencia alineada al modelo en [`parametro-general.model.ts`](../../../src/app/features/parametros-generales/models/parametro-general.model.ts) y a la carga vía `ParametrosGeneralesService`.
 
 ## Formulario editable por periodo (`ParametroGeneral`)
 
@@ -50,7 +50,7 @@ Listas cargadas con `listarCatalogos()` (solo lectura en pantalla; grids en otra
 
 ## DataGrids y periodo seleccionado
 
-En [`parametros.page.ts`](../../src/app/pages/parametros.page.ts) las filas de los catálogos mostrados en **DataGrids** se acotan al **periodo seleccionado** arriba:
+En [`parametros.page.ts`](../../../src/app/pages/parametros.page.ts) las filas de los catálogos mostrados en **DataGrids** se acotan al **periodo seleccionado** arriba:
 
 - Filas con **`periodo`** (`tramo_carga`, `tramo_impuesto`): coinciden exactamente con `YYYY-MM` actual.
 - Tablas con **`vigenciaInicio` / `vigenciaFin`**: se incluyen solo si el rango intersecta el mes del periodo seleccionado.
