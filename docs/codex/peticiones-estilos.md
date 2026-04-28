@@ -3,6 +3,16 @@
 Registro cronológico de mejoras visuales aplicadas por petición, con foco en **trazabilidad** (qué se tocó y dónde),
 sin mezclarlo con las reglas base.
 
+### 2026-04-28 (seguimiento)
+
+- **Alta de colaborador (form-empleado, `styles.css` global)**:
+  - `content-body`, `editor-footer` y grupo `flow-tabs` alineados a **max-width 56rem** y centrados; cabecera de pasos con más aire (`content-head` con flex centrado).
+  - `summary-identity` con separación inferior más clara (`border-bottom` + padding).
+- **Compartido empleados (`form-empleado-shared.css`)**:
+  - Mayor `gap` en `employee-section-shell`, `employee-section-head` con línea inferior y `--compact` con `margin-top` 8px.
+- **Contrato / Previsión**:
+  - Anchos `labor-grid`, `relation-grid`, `prevision-grid` y `.prevision-shell` acotados a **56rem** donde correspondía.
+
 ### 2026-04-28
 
 - **Documentación – bases de estilos**:

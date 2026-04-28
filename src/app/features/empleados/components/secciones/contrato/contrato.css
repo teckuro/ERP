@@ -33,7 +33,7 @@
 
 .labor-grid {
   display: grid;
-  width: min(100%, 72rem);
+  width: min(100%, 56rem);
   gap: 12px 16px;
 }
 
@@ -51,7 +51,7 @@
 .labor-grid--zone,
 .labor-grid--footer,
 .labor-grid--week {
-  width: min(100%, 52rem);
+  width: min(100%, 56rem);
   grid-template-columns: minmax(18rem, 24rem) minmax(12rem, 18rem);
 }
 
@@ -71,7 +71,7 @@
 .relation-grid {
   display: flex;
   flex-wrap: wrap;
-  width: min(100%, 52rem);
+  width: min(100%, 56rem);
   gap: 8px;
 }
 
