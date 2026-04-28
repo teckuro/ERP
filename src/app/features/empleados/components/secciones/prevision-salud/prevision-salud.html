@@ -370,16 +370,23 @@
         </div>
 
         <label
-          class="inline-flex items-center gap-2 text-sm font-medium text-gray-700"
+          class="inline-flex items-center gap-2 text-sm font-medium text-gray-700 apvi-toggle"
           for="empleado-tiene-apv"
         >
           <input
             id="empleado-tiene-apv"
             type="checkbox"
-            class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+            class="h-4 w-4 shrink-0 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
             formControlName="tieneApv"
           />
-          Tiene APVI
+          @if (mostrarApvi) {
+            <span>Tiene APVI</span>
+          } @else {
+            <span class="apvi-na-icon" title="No aplica APVI">
+              <lucide-icon class="h-4 w-4 text-slate-500" name="ban"></lucide-icon>
+              <span class="sr-only">No aplica APVI</span>
+            </span>
+          }
         </label>
       </app-card-header>
 

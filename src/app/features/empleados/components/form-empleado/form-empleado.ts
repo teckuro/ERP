@@ -295,6 +295,11 @@ export class FormEmpleadoComponent implements OnInit {
     return this.isBasicMode() ? 'Crear empleado' : 'Crear empleado activo';
   }
 
+  /** En alta avanzada el guardado va en el pie ("Finalizar alta"); el header solo debe permitir volver. */
+  headerVisibleActions(): readonly ('back' | 'save')[] {
+    return this.isAdvancedMode() ? (['back'] as const) : (['back', 'save'] as const);
+  }
+
   goToPreviousTab(): void {
     const currentIndex = TAB_ORDER.indexOf(this.activeTab());
 

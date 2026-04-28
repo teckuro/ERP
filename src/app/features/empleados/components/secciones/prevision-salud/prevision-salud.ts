@@ -13,11 +13,18 @@ import {
   CardContentComponent,
   CardHeaderComponent,
 } from '../../../../../shared/components/ui/card.component';
+import { LucideAngularModule } from 'lucide-angular';
 
 type PrevisionSaludControlName = keyof PrevisionSaludFormGroup['controls'];
 @Component({
   selector: 'app-empleado-prevision-salud',
-  imports: [ReactiveFormsModule, CardComponent, CardContentComponent, CardHeaderComponent],
+  imports: [
+    ReactiveFormsModule,
+    LucideAngularModule,
+    CardComponent,
+    CardContentComponent,
+    CardHeaderComponent,
+  ],
   templateUrl: './prevision-salud.html',
   styleUrl: './prevision-salud.css',
 })
