@@ -171,3 +171,4 @@ Antes de cerrar un cambio UI:
 - MessageBox usa el componente compartido.
 - Mobile no tiene textos superpuestos ni controles desbordados.
 - No se introdujeron paletas, gradientes o decoraciones nuevas.
+- Formularios del mantenedor **Parámetros** respetan la grilla de 8 columnas y `span` documentados arriba (sin rejillas anidadas que rompan el cómputo de columnas libres).
