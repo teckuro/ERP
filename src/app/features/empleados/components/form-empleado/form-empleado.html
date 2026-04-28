@@ -28,6 +28,33 @@
             title="Guardando ficha"
             message="Estamos guardando la ficha inicial del colaborador."
           ></app-message-box>
+        } @else if (duplicateRutModalRut(); as rutDup) {
+          <app-message-box
+            mode="modal"
+            variant="error"
+            [modalHeadlineSplit]="true"
+            title="Ficha ya registrada"
+            [message]="'Ya existe un empleado registrado con el RUT ' + rutDup + '.'"
+            primaryLabel="Aceptar"
+            (action)="dismissErrorMessage()"
+          >
+            <div
+              class="basic-success-followup"
+              role="region"
+              aria-labelledby="duplicate-rut-detail-title"
+            >
+              <div class="basic-success-followup__panel">
+                <h3 class="basic-success-followup__title" id="duplicate-rut-detail-title">Detalle</h3>
+                <p class="basic-success-followup__text">
+                  Revisa el listado o edita la ficha existente antes de crear una nueva.
+                </p>
+              </div>
+              <div class="basic-success-followup__meta">
+                <span class="basic-success-followup__meta-label">RUT</span>
+                <span class="basic-success-followup__meta-value">{{ rutDup }}</span>
+              </div>
+            </div>
+          </app-message-box>
         } @else if (errorMessage(); as message) {
           <app-message-box
             mode="modal"

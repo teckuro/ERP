@@ -626,7 +626,7 @@ export class ParametrosGeneralesRepository {
       this.legalRow('UTA', null, payload.uta, vigenciaInicio),
       this.legalRow('SIS', payload.sis, null, vigenciaInicio),
       this.legalRow('SANNA', payload.sanna, null, vigenciaInicio),
-      this.legalRow('SUELDO_MINIMO', null, payload.sueldoMinimo18a65 ?? payload.sueldoMinimo, vigenciaInicio),
+      this.legalRow('SUELDO_MINIMO', null, payload.sueldoMinimo ?? payload.sueldoMinimo18a65, vigenciaInicio),
       this.legalRow('SUELDO_MINIMO_18_65', null, payload.sueldoMinimoMenor18Mayor65 ?? payload.sueldoMinimo18a65, vigenciaInicio),
       this.legalRow('SUELDO_MINIMO_TPC', null, payload.sueldoMinimoCasaParticular, vigenciaInicio),
       this.legalRow('SUELDO_MINIMO_NO_REM', null, payload.ingresoMinimoNoRemuneracional, vigenciaInicio),

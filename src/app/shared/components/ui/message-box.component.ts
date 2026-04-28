@@ -60,6 +60,10 @@ export type MessageBoxMode = 'inline' | 'modal';
           <p class="message-text">{{ message }}</p>
         }
 
+        @if (detail) {
+          <p class="message-detail">{{ detail }}</p>
+        }
+
         <ng-content></ng-content>
       </div>
 
@@ -362,6 +366,12 @@ export type MessageBoxMode = 'inline' | 'modal';
         background: #ffffff;
       }
 
+      /* Error en modal headline: misma caja neutra que éxito; el ícono indica el estado. */
+      .message-modal.message-modal--headline.message-error {
+        border: 1px solid #e5e7eb;
+        background: #ffffff;
+      }
+
       .message-error {
         border-color: #fecaca;
         border-left-color: #dc2626;
@@ -445,6 +455,8 @@ export class MessageBoxComponent {
   @Input() mode: MessageBoxMode = 'inline';
   @Input() title = '';
   @Input() message = '';
+  /** Texto secundario (p. ej. periodo, detalle técnico). Opcional. */
+  @Input() detail = '';
   @Input() actionLabel = '';
   /** Texto del botón principal; si está vacío se usa `actionLabel`. Si ambos están vacíos, no se muestra el botón. */
   @Input() primaryLabel = '';

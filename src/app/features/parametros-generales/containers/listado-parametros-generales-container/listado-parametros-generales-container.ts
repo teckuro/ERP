@@ -5,6 +5,7 @@ import {
   RecordBreadcrumbComponent,
   RecordBreadcrumbItem,
 } from '../../../../shared/components/ui/record-breadcrumb.component';
+import { MessageBoxComponent } from '../../../../shared/components/ui/message-box.component';
 import { TablaParametrosGeneralesComponent } from '../../components/tabla-parametros-generales/tabla-parametros-generales';
 import { ParametroGeneral } from '../../models/parametro-general.model';
 import { ParametrosGeneralesService } from '../../services/parametros-generales.service';
@@ -12,7 +13,7 @@ import { ParametrosGeneralesService } from '../../services/parametros-generales.
 @Component({
   selector: 'app-listado-parametros-generales-container',
   standalone: true,
-  imports: [CommonModule, RecordBreadcrumbComponent, TablaParametrosGeneralesComponent],
+  imports: [CommonModule, RecordBreadcrumbComponent, TablaParametrosGeneralesComponent, MessageBoxComponent],
   templateUrl: './listado-parametros-generales-container.html',
   styleUrl: './listado-parametros-generales-container.css',
 })
@@ -22,7 +23,7 @@ export class ListadoParametrosGeneralesContainer implements OnInit {
   readonly breadcrumbItems: readonly RecordBreadcrumbItem[] = [{ label: 'Parametros' }];
   readonly rows = signal<ParametroGeneral[]>([]);
   readonly isLoading = signal(true);
-  readonly errorMessage = signal<string | null>(null);
+  readonly errorCargaDetalle = signal<string | null>(null);
 
   async ngOnInit(): Promise<void> {
     await this.loadRows();
@@ -30,14 +31,22 @@ export class ListadoParametrosGeneralesContainer implements OnInit {
 
   async loadRows(): Promise<void> {
     this.isLoading.set(true);
-    this.errorMessage.set(null);
+    this.errorCargaDetalle.set(null);
 
     try {
       this.rows.set(await this.service.listar());
-    } catch {
-      this.errorMessage.set('No fue posible cargar los parametros generales.');
+    } catch (err) {
+      const detalle =
+        err && typeof err === 'object' && 'message' in err
+          ? String((err as { message?: unknown }).message ?? '').trim()
+          : '';
+      this.errorCargaDetalle.set(detalle || 'Error desconocido.');
     } finally {
       this.isLoading.set(false);
     }
+  }
+
+  cerrarErrorCarga(): void {
+    this.errorCargaDetalle.set(null);
   }
 }

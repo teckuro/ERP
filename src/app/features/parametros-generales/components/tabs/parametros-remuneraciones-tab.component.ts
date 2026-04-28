@@ -13,6 +13,13 @@ import { FormGroup, ReactiveFormsModule } from '@angular/forms';
         <p class="param-section-lead">Rentas mínimas imponibles y montos base.</p>
         <div class="field-grid field-grid--rentas">
           <label class="param-field">
+            <span>Sueldo mínimo</span>
+            <span class="unit-field unit-field--suffix" data-unit="$">
+              <input class="param-input text-right" type="number" step="1" formControlName="sueldoMinimo" [readonly]="!editable" />
+            </span>
+          </label>
+
+          <label class="param-field">
             <span>Sueldo mínimo 18 a 65</span>
             <span class="unit-field unit-field--suffix" data-unit="$">
               <input class="param-input text-right" type="number" step="1" formControlName="sueldoMinimo18a65" [readonly]="!editable" />
@@ -208,6 +215,13 @@ import { FormGroup, ReactiveFormsModule } from '@angular/forms';
             <span>APV mensual pesos</span>
             <span class="unit-field unit-field--suffix" data-unit="$">
               <input class="param-input text-right" type="number" step="1" formControlName="topeApvMensual" [readonly]="!editable" />
+            </span>
+          </label>
+
+          <label class="param-field">
+            <span>Tope AFP voluntario</span>
+            <span class="unit-field unit-field--suffix" data-unit="$">
+              <input class="param-input text-right" type="number" step="1" formControlName="topeAfpVoluntario" [readonly]="!editable" />
             </span>
           </label>
 

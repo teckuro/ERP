@@ -37,7 +37,10 @@ import { ParametrosGeneralesService } from '../features/parametros-generales/ser
 import { ButtonComponent } from '../shared/components/ui/button.component';
 import { DataGridColumn } from '../shared/components/ui/data-grid.component';
 import { CardComponent, CardContentComponent } from '../shared/components/ui/card.component';
-import { MessageBoxComponent } from '../shared/components/ui/message-box.component';
+import {
+  MessageBoxComponent,
+  MessageBoxVariant,
+} from '../shared/components/ui/message-box.component';
 import { PageActionsComponent } from '../shared/components/ui/page-actions.component';
 import {
   RecordBreadcrumbComponent,
@@ -60,6 +63,18 @@ interface ParametrosTab {
 interface MonthOption {
   value: string;
   label: string;
+}
+
+type ParametrosDialogKind = 'alerta' | 'confirmar-guardado';
+
+interface ParametrosDialogState {
+  kind: ParametrosDialogKind;
+  variant: MessageBoxVariant;
+  title: string;
+  message: string;
+  detail?: string;
+  primaryLabel?: string;
+  secondaryLabel?: string;
 }
 
 @Component({
@@ -190,23 +205,18 @@ interface MonthOption {
           ></app-message-box>
         }
 
-        @if (errorMessage()) {
+        @if (dialogState(); as dlg) {
           <app-message-box
-            variant="error"
-            title="No fue posible completar la operacion"
-            [message]="errorMessage() ?? ''"
-            [dismissible]="true"
-            (dismiss)="errorMessage.set(null)"
-          ></app-message-box>
-        }
-
-        @if (successMessage()) {
-          <app-message-box
-            variant="success"
-            title="Parametros actualizados"
-            [message]="successMessage() ?? ''"
-            [dismissible]="true"
-            (dismiss)="successMessage.set(null)"
+            [variant]="dlg.variant"
+            mode="modal"
+            [modalHeadlineSplit]="true"
+            [title]="dlg.title"
+            [message]="dlg.message"
+            [detail]="dlg.detail ?? ''"
+            [primaryLabel]="dlg.primaryLabel ?? 'Aceptar'"
+            [secondaryLabel]="dlg.secondaryLabel ?? ''"
+            (action)="onDialogoAccionPrimaria()"
+            (secondary)="onDialogoAccionSecundaria()"
           ></app-message-box>
         }
 
@@ -1285,8 +1295,9 @@ export class ParametrosPage implements OnInit {
   readonly datosFormularioListos = signal(false);
   /** Evita doble clic mientras se prepara el modo edición (carga + copia de periodo). */
   readonly isPreparingEdit = signal(false);
-  readonly errorMessage = signal<string | null>(null);
-  readonly successMessage = signal<string | null>(null);
+  /** Bloquea "Modificar" tras error de carga hasta una carga exitosa. */
+  readonly cargaBloqueadaPorError = signal(false);
+  readonly dialogState = signal<ParametrosDialogState | null>(null);
 
   private cargarDepth = 0;
 
@@ -1297,7 +1308,7 @@ export class ParametrosPage implements OnInit {
       this.isPreparingEdit() ||
       !this.isConfigurableTab() ||
       !this.datosFormularioListos() ||
-      this.errorMessage() !== null,
+      this.cargaBloqueadaPorError(),
   );
 
   readonly pageActions = computed(() => {
@@ -1736,7 +1747,7 @@ export class ParametrosPage implements OnInit {
 
   async cargar(periodo?: string): Promise<void> {
     this.enterCargar();
-    this.errorMessage.set(null);
+    this.cargaBloqueadaPorError.set(false);
     this.datosFormularioListos.set(false);
 
     try {
@@ -1770,8 +1781,9 @@ export class ParametrosPage implements OnInit {
       this.patchForm(rows.find((row) => row.periodo === selectedPeriodo) ?? rows[0], selectedPeriodo);
       this.generalesEditando.set(false);
     } catch (err) {
-      const base = this.describeError(err, 'No fue posible cargar los parametros del sistema.');
-      this.errorMessage.set(`${base} (Periodo seleccionado: ${this.selectedPeriodo()})`);
+      this.cargaBloqueadaPorError.set(true);
+      const detalle = this.extractErrorDetail(err);
+      this.mostrarErrorCargaParametros(detalle);
     } finally {
       this.leaveCargar();
       this.cdr.markForCheck();
@@ -1824,16 +1836,162 @@ export class ParametrosPage implements OnInit {
     return fallback;
   }
 
+  private extractErrorDetail(err: unknown): string {
+    if (err && typeof err === 'object' && 'message' in err) {
+      return String((err as { message?: unknown }).message ?? '').trim();
+    }
+    return '';
+  }
+
+  private isDuplicatePeriodError(err: unknown): boolean {
+    const msg = this.extractErrorDetail(err);
+    return /duplicate|unique|23505|ya existe|violates unique/i.test(msg);
+  }
+
+  cerrarDialogo(): void {
+    this.dialogState.set(null);
+  }
+
+  onDialogoAccionPrimaria(): void {
+    const dlg = this.dialogState();
+    if (!dlg) {
+      return;
+    }
+    if (dlg.kind === 'confirmar-guardado') {
+      this.dialogState.set(null);
+      void this.ejecutarGuardarInterno();
+      return;
+    }
+    this.dialogState.set(null);
+  }
+
+  onDialogoAccionSecundaria(): void {
+    this.cerrarDialogo();
+  }
+
+  private mostrarFormularioInvalido(): void {
+    this.dialogState.set({
+      kind: 'alerta',
+      variant: 'warning',
+      title: 'Faltan datos por completar',
+      message: 'Revisa los campos marcados antes de guardar los parámetros.',
+      detail: 'Hay campos obligatorios o con formato inválido.',
+      primaryLabel: 'Aceptar',
+    });
+  }
+
+  private mostrarPeriodoDuplicado(periodo: string): void {
+    this.dialogState.set({
+      kind: 'alerta',
+      variant: 'warning',
+      title: 'Periodo ya registrado',
+      message: `Ya existen parámetros registrados para el periodo ${periodo}.`,
+      detail: 'Puedes modificar el registro existente en lugar de crear uno nuevo.',
+      primaryLabel: 'Aceptar',
+    });
+  }
+
+  private mostrarExitoGuardado(periodo: string): void {
+    this.dialogState.set({
+      kind: 'alerta',
+      variant: 'success',
+      title: 'Parámetros guardados',
+      message: 'Los parámetros del periodo fueron guardados correctamente.',
+      detail: `Periodo: ${periodo}`,
+      primaryLabel: 'Aceptar',
+    });
+  }
+
+  private mostrarExitoActualizacion(periodo: string): void {
+    this.dialogState.set({
+      kind: 'alerta',
+      variant: 'success',
+      title: 'Parámetros actualizados',
+      message: 'Los parámetros del periodo fueron actualizados correctamente.',
+      detail: `Periodo: ${periodo}`,
+      primaryLabel: 'Aceptar',
+    });
+  }
+
+  private mostrarErrorGuardado(mensajeError: string): void {
+    this.dialogState.set({
+      kind: 'alerta',
+      variant: 'error',
+      title: 'No se pudieron guardar los parámetros',
+      message: 'Ocurrió un problema al intentar guardar los parámetros del periodo.',
+      detail: mensajeError || 'Error desconocido.',
+      primaryLabel: 'Aceptar',
+    });
+  }
+
+  private mostrarErrorActualizacion(mensajeError: string): void {
+    this.dialogState.set({
+      kind: 'alerta',
+      variant: 'error',
+      title: 'No se pudieron actualizar los parámetros',
+      message: 'Ocurrió un problema al intentar actualizar los parámetros del periodo.',
+      detail: mensajeError || 'Error desconocido.',
+      primaryLabel: 'Aceptar',
+    });
+  }
+
+  private mostrarErrorCargaParametros(detalleTecnico: string): void {
+    this.dialogState.set({
+      kind: 'alerta',
+      variant: 'error',
+      title: 'No fue posible completar la operación',
+      message: 'No fue posible cargar los parámetros del sistema.',
+      detail: detalleTecnico
+        ? `${detalleTecnico}\n\nPeriodo seleccionado: ${this.selectedPeriodo()}`
+        : `Periodo seleccionado: ${this.selectedPeriodo()}`,
+      primaryLabel: 'Aceptar',
+    });
+  }
+
+  private mostrarExitoSincronizacion(refresco: boolean): void {
+    this.dialogState.set({
+      kind: 'alerta',
+      variant: 'success',
+      title: refresco ? 'Datos refrescados' : 'Datos sincronizados',
+      message: refresco
+        ? 'Los parámetros se actualizaron desde la base de datos.'
+        : 'Los parámetros se sincronizaron correctamente desde la base de datos.',
+      primaryLabel: 'Aceptar',
+    });
+  }
+
+  private mostrarErrorSincronizacionSinDatos(): void {
+    this.dialogState.set({
+      kind: 'alerta',
+      variant: 'warning',
+      title: 'Sin datos para sincronizar',
+      message: 'No hay parámetros disponibles en la base de datos para sincronizar.',
+      primaryLabel: 'Aceptar',
+    });
+  }
+
+  private mostrarConfirmacionModificacion(): void {
+    this.dialogState.set({
+      kind: 'confirmar-guardado',
+      variant: 'warning',
+      title: 'Confirmar modificación',
+      message: `Se actualizarán los parámetros del periodo ${this.selectedPeriodo()}.`,
+      detail: 'Esta modificación puede afectar cálculos de remuneraciones asociados a este periodo.',
+      primaryLabel: 'Confirmar modificación',
+      secondaryLabel: 'Cancelar',
+    });
+  }
+
   async sincronizar(): Promise<void> {
     const hadData = this.hasAnySyncedData();
     await this.cargar();
 
     if (this.hasAnySyncedData()) {
-      this.successMessage.set(hadData ? 'Datos refrescados desde la base de datos.' : 'Datos sincronizados desde la base de datos.');
+      this.mostrarExitoSincronizacion(hadData);
       return;
     }
 
-    this.errorMessage.set('No hay parametros disponibles en la base de datos para sincronizar.');
+    this.mostrarErrorSincronizacionSinDatos();
   }
 
   seleccionarTab(tabId: ParametrosTabId): void {
@@ -1860,15 +2018,13 @@ export class ParametrosPage implements OnInit {
     this.patchForm({ ...this.emptyParametro(), periodo });
     this.generalesEditando.set(true);
     this.datosFormularioListos.set(true);
-    this.successMessage.set(null);
-    this.errorMessage.set(null);
+    this.cerrarDialogo();
   }
 
   async editarParametros(): Promise<void> {
     // “Modificar” es el flujo principal: si no hay data para el periodo, intenta traerla
     // y si sigue sin existir, deja el formulario listo para crear ese periodo.
-    this.successMessage.set(null);
-    this.errorMessage.set(null);
+    this.cerrarDialogo();
 
     if (this.isPreparingEdit()) {
       return;
@@ -1900,29 +2056,48 @@ export class ParametrosPage implements OnInit {
     const row = this.rows().find((item) => item.periodo === this.selectedPeriodo());
     this.patchForm(row ?? { ...this.emptyParametro(), periodo: this.selectedPeriodo() });
     this.generalesEditando.set(false);
-    this.successMessage.set(null);
-    this.errorMessage.set(null);
+    this.cerrarDialogo();
   }
 
   async guardar(): Promise<void> {
     this.form.markAllAsTouched();
 
     if (this.form.invalid || this.isSaving() || !this.datosFormularioListos()) {
+      if (this.form.invalid && !this.isSaving() && this.datosFormularioListos()) {
+        this.mostrarFormularioInvalido();
+      }
+      return;
+    }
+
+    const periodo = this.selectedPeriodo();
+    const existiaRegistro = this.rows().some((row) => row.periodo === periodo);
+    if (existiaRegistro) {
+      this.mostrarConfirmacionModificacion();
+      return;
+    }
+
+    await this.ejecutarGuardarInterno();
+  }
+
+  private async ejecutarGuardarInterno(): Promise<void> {
+    if (this.form.invalid || this.isSaving() || !this.datosFormularioListos()) {
+      return;
+    }
+
+    const periodo = this.selectedPeriodo();
+    const existiaRegistro = this.rows().some((row) => row.periodo === periodo);
+
+    if (!existiaRegistro && this.periodosGeneralesCatalogo().includes(periodo)) {
+      this.mostrarPeriodoDuplicado(periodo);
       return;
     }
 
     this.isSaving.set(true);
-    this.errorMessage.set(null);
-    this.successMessage.set(null);
+    this.cerrarDialogo();
 
     const payload: ParametroGeneral = {
       ...this.form.getRawValue(),
-      // Periodo fijo: el guardado siempre usa el periodo seleccionado.
-      periodo: this.selectedPeriodo(),
-      gratificacion: this.form.controls.gratificacion.value,
-      descuentosBasePorDia: this.form.controls.descuentosBasePorDia.value,
-      sueldoMinimo: this.form.controls.sueldoMinimo18a65.value,
-      topeAfpVoluntario: this.form.controls.topeApvMensual.value,
+      periodo,
       fechaActualizacion: new Date().toISOString(),
     };
 
@@ -1935,10 +2110,24 @@ export class ParametrosPage implements OnInit {
       this.selectedPeriodo.set(saved.periodo);
       this.patchForm(saved);
       this.generalesEditando.set(false);
-      this.successMessage.set(`El periodo ${saved.periodo} quedo actualizado.`);
+      if (existiaRegistro) {
+        this.mostrarExitoActualizacion(saved.periodo);
+      } else {
+        this.mostrarExitoGuardado(saved.periodo);
+      }
       await this.refrescarPeriodosDesdeBd();
-    } catch {
-      this.errorMessage.set('No fue posible guardar los parametros generales.');
+    } catch (err) {
+      if (isDevMode()) {
+        console.error('[Parametros] guardar', err);
+      }
+      const detalle = this.extractErrorDetail(err) || 'No fue posible guardar los parámetros generales.';
+      if (this.isDuplicatePeriodError(err)) {
+        this.mostrarPeriodoDuplicado(periodo);
+      } else if (existiaRegistro) {
+        this.mostrarErrorActualizacion(detalle);
+      } else {
+        this.mostrarErrorGuardado(detalle);
+      }
     } finally {
       this.isSaving.set(false);
     }
@@ -2030,8 +2219,7 @@ export class ParametrosPage implements OnInit {
   private async seleccionarPeriodo(periodo: string): Promise<void> {
     this.selectedPeriodo.set(periodo);
     this.generalesEditando.set(false);
-    this.successMessage.set(null);
-    this.errorMessage.set(null);
+    this.cerrarDialogo();
 
     // Recarga datos del periodo y la lista de periodos en BD (años del selector).
     await Promise.all([this.cargar(periodo), this.refrescarPeriodosDesdeBd()]);
@@ -2054,7 +2242,14 @@ export class ParametrosPage implements OnInit {
   private patchForm(row: ParametroGeneral, expectedPeriodo?: string): void {
     const selected = expectedPeriodo ?? this.selectedPeriodo();
     if (row.periodo !== selected) {
-      this.errorMessage.set(`No coincide el periodo cargado (${row.periodo}) con el seleccionado (${selected}).`);
+      this.dialogState.set({
+        kind: 'alerta',
+        variant: 'error',
+        title: 'No se pudieron actualizar los parámetros',
+        message: 'Los datos recibidos no coinciden con el periodo seleccionado.',
+        detail: `Periodo en datos: ${row.periodo}. Periodo seleccionado: ${selected}.`,
+        primaryLabel: 'Aceptar',
+      });
       this.datosFormularioListos.set(false);
       return;
     }

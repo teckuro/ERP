@@ -70,8 +70,7 @@ Si falta un caso: primero `ui-form-guidelines.md` y `AGENTS.md`; luego temas esp
 | Ubicación | Contenido |
 |-----------|-----------|
 | [`../../SUPABASE_SETUP.md`](../../SUPABASE_SETUP.md) | Supabase |
-| [`../../bd/README.md`](../../bd/README.md), [`../../bd/base/README.md`](../../bd/base/README.md), [`../../bd/base/v11/README.md`](../../bd/base/v11/README.md) | Esquema SQL |
-| [`../../bd/insert/README.md`](../../bd/insert/README.md), [`../../bd/python/README.md`](../../bd/python/README.md) | Scripts auxiliares |
+| [`../../bd/README.md`](../../bd/README.md), [`../../bd/base/README.md`](../../bd/base/README.md), [`../../bd/base/v11/README.md`](../../bd/base/v11/README.md) | Esquema SQL (`bd/` solo `base/`) |
 
 ---
 

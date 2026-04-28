@@ -1,5 +1,8 @@
 -- crear_sql_v6_6.sql
 --
+-- NOTA: Para instalación y mantenimiento se prefiere bd/base/v11/run_all.sql (partes/*.sql).
+-- Este archivo es el monolito equivalente; si editas el esquema, hazlo en partes/ y regenera aquí si lo usas.
+--
 -- Version v6.11 integrada basada en v6.10.
 -- Integra regiones, provincias y comunas de Chile,
 -- corrige dependencias de creacion y deja el script re-ejecutable.
@@ -4302,10 +4305,88 @@ EXECUTE FUNCTION set_updated_at();
 -- - scripts/fix_catalogos_lectura_supabase.sql
 -- - scripts/fix_empleados_alta_rls_supabase.sql
 -- - scripts/empleados_historial_ficha.sql
+-- (Ver tambien partes/08_seguridad_rls.sql; ejecutar bloques completos.)
 -- ============================================
 
 GRANT USAGE ON SCHEMA public TO anon, authenticated;
 GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO anon, authenticated;
+
+DO $$
+DECLARE
+    parametro_table TEXT;
+    parametro_tables TEXT[] := ARRAY[
+        'parametros_generales',
+        'parametros_legales',
+        'afc_parametro',
+        'trabajo_pesado_parametro',
+        'reforma_previsional_parametro'
+    ];
+BEGIN
+    FOREACH parametro_table IN ARRAY parametro_tables LOOP
+        IF to_regclass(format('public.%I', parametro_table)) IS NULL THEN
+            CONTINUE;
+        END IF;
+
+        EXECUTE format(
+            'GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE public.%I TO anon, authenticated',
+            parametro_table
+        );
+
+        EXECUTE format('ALTER TABLE public.%I ENABLE ROW LEVEL SECURITY', parametro_table);
+
+        IF NOT EXISTS (
+            SELECT 1
+            FROM pg_policies
+            WHERE schemaname = 'public'
+              AND tablename = parametro_table
+              AND policyname = 'parametros_select_anon_authenticated'
+        ) THEN
+            EXECUTE format(
+                'CREATE POLICY parametros_select_anon_authenticated ON public.%I FOR SELECT TO anon, authenticated USING (true)',
+                parametro_table
+            );
+        END IF;
+
+        IF NOT EXISTS (
+            SELECT 1
+            FROM pg_policies
+            WHERE schemaname = 'public'
+              AND tablename = parametro_table
+              AND policyname = 'parametros_insert_anon_authenticated'
+        ) THEN
+            EXECUTE format(
+                'CREATE POLICY parametros_insert_anon_authenticated ON public.%I FOR INSERT TO anon, authenticated WITH CHECK (true)',
+                parametro_table
+            );
+        END IF;
+
+        IF NOT EXISTS (
+            SELECT 1
+            FROM pg_policies
+            WHERE schemaname = 'public'
+              AND tablename = parametro_table
+              AND policyname = 'parametros_update_anon_authenticated'
+        ) THEN
+            EXECUTE format(
+                'CREATE POLICY parametros_update_anon_authenticated ON public.%I FOR UPDATE TO anon, authenticated USING (true) WITH CHECK (true)',
+                parametro_table
+            );
+        END IF;
+
+        IF NOT EXISTS (
+            SELECT 1
+            FROM pg_policies
+            WHERE schemaname = 'public'
+              AND tablename = parametro_table
+              AND policyname = 'parametros_delete_anon_authenticated'
+        ) THEN
+            EXECUTE format(
+                'CREATE POLICY parametros_delete_anon_authenticated ON public.%I FOR DELETE TO anon, authenticated USING (true)',
+                parametro_table
+            );
+        END IF;
+    END LOOP;
+END $$;
 
 DO $$
 DECLARE
@@ -4327,19 +4408,22 @@ DECLARE
         'ex_caja_previsional',
         'regimen_ex_caja',
         'afp',
+        'afp_vigencia',
         'salud',
+        'salud_plan',
         'moneda',
         'tramo_carga',
+        'tramo_impuesto',
+        'tabla_impuesto_unico',
         'institucion_apv',
         'forma_pago_apv',
-        'trabajo_pesado_parametro',
-        'reforma_previsional_parametro',
         'ley_16744_parametros',
         'organismo_administrador_ley_16744',
         'ccaf_entidad',
         'empresa_ley_16744',
         'banco',
-        'tipo_cuenta_bancaria'
+        'tipo_cuenta_bancaria',
+        'zona_extrema_catalogo'
     ];
 BEGIN
     FOREACH catalog_table IN ARRAY catalog_tables LOOP
@@ -4445,6 +4529,22 @@ BEGIN
                 write_table
             );
         END IF;
+    END LOOP;
+END $$;
+
+DO $$
+DECLARE
+    catalog_view TEXT;
+    catalog_views TEXT[] := ARRAY[
+        'vw_persona_factores'
+    ];
+BEGIN
+    FOREACH catalog_view IN ARRAY catalog_views LOOP
+        IF to_regclass(format('public.%I', catalog_view)) IS NULL THEN
+            CONTINUE;
+        END IF;
+
+        EXECUTE format('GRANT SELECT ON TABLE public.%I TO anon, authenticated', catalog_view);
     END LOOP;
 END $$;
 

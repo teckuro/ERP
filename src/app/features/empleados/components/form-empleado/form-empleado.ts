@@ -134,6 +134,8 @@ export class FormEmpleadoComponent implements OnInit {
   readonly isSaving = signal(false);
   readonly attemptedSave = signal(false);
   readonly errorMessage = signal<string | null>(null);
+  /** RUT duplicado: modal estructurado (mismo layout que éxito básico, variante error). */
+  readonly duplicateRutModalRut = signal<string | null>(null);
   readonly successMessage = signal<string | null>(null);
   /** Flujo que originó el último guardado exitoso (para el modal, sin depender solo de la ruta). */
   readonly successFlow = signal<FormEmpleadoModo | null>(null);
@@ -214,6 +216,7 @@ export class FormEmpleadoComponent implements OnInit {
       this.attemptAllTabs();
     }
     this.errorMessage.set(null);
+    this.duplicateRutModalRut.set(null);
     this.successMessage.set(null);
     this.successFlow.set(null);
     this.createdEmployeeId.set(null);
@@ -259,7 +262,11 @@ export class FormEmpleadoComponent implements OnInit {
       this.createdEmployeeId.set(created.id);
       this.form.markAsPristine();
     } catch (error) {
-      this.errorMessage.set(this.resolveSaveErrorMessage(error));
+      if (error instanceof EmpleadoRutDuplicadoError) {
+        this.duplicateRutModalRut.set(error.rut);
+      } else {
+        this.errorMessage.set(this.resolveSaveErrorMessage(error));
+      }
     } finally {
       this.isSaving.set(false);
     }
@@ -267,6 +274,7 @@ export class FormEmpleadoComponent implements OnInit {
 
   dismissErrorMessage(): void {
     this.errorMessage.set(null);
+    this.duplicateRutModalRut.set(null);
   }
 
   goToEmployeeList(): void {
@@ -454,7 +462,11 @@ export class FormEmpleadoComponent implements OnInit {
       this.createdEmployeeId.set(created.id);
       this.form.markAsPristine();
     } catch (error) {
-      this.errorMessage.set(this.resolveSaveErrorMessage(error));
+      if (error instanceof EmpleadoRutDuplicadoError) {
+        this.duplicateRutModalRut.set(error.rut);
+      } else {
+        this.errorMessage.set(this.resolveSaveErrorMessage(error));
+      }
     } finally {
       this.isSaving.set(false);
     }
@@ -1281,7 +1293,7 @@ export class FormEmpleadoComponent implements OnInit {
 
     if (error instanceof Error) {
       if (error.message.toLowerCase().includes('row-level security')) {
-        return 'Supabase bloqueo la escritura por politicas RLS. Ejecuta bd/base/v11/crear_sql_v6_11_integrada.sql y vuelve a intentar.';
+        return 'Supabase bloqueo la escritura por politicas RLS. Ejecuta bd/base/v11/run_all.sql (esquema por partes) o el monolito crear_sql_v6_11_integrada.sql y vuelve a intentar.';
       }
 
       return error.message;

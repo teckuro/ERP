@@ -1,8 +1,8 @@
 ## Base v11
 
 ### Formas de ejecutar el esquema
-- **Completo (1 archivo)**: `crear_sql_v6_11_integrada.sql`
-- **Por partes (recomendado)**: `run_all.sql` (ejecuta los bloques de `partes/` en orden)
+- **Por partes (recomendado)**: `run_all.sql` — incluye `partes/*.sql` en orden; es la vía preferida (diffs claros, errores localizados, RLS/triggers en archivos acotados).
+- **Monolito**: `crear_sql_v6_11_integrada.sql` — mismo contenido agrupado; conviene solo cuando hace falta un único `.sql` portable; mantener sincronizado con `partes/` si se regenera.
 
 ### Orden de ejecución (`partes/`)
 1. **`00_reset.sql`**: drops para re-ejecución
