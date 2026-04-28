@@ -1,3 +1,26 @@
 :host {
   display: block;
 }
+
+.basic-create-head {
+  display: grid;
+  gap: 6px;
+  padding: 4px 2px 10px;
+}
+
+.basic-create-title {
+  margin: 0;
+  color: #111827;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 20px;
+}
+
+.basic-create-copy {
+  max-width: 56rem;
+  margin: 0;
+  color: #6b7280;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 18px;
+}

@@ -1786,15 +1786,32 @@ export type Database = {
           fecha_actualizacion: string | null
           gratificacion: boolean | null
           imm_gratificacion: number | null
+          ingreso_minimo_no_remuneracional: number | null
           periodo: string
+          salud_ccaf: number | null
+          salud_fonasa_con_ccaf: number | null
+          salud_obligatoria: number | null
+          sanna: number | null
           sis: number | null
           sueldo_minimo: number | null
+          sueldo_minimo_casa_particular: number | null
+          sueldo_minimo_menor18_mayor65: number | null
           sueldo_minimo18_65: number | null
           tope_afp: number | null
+          tope_afp_uf: number | null
           tope_afpvoluntario: number | null
+          tope_apv_anual: number | null
+          tope_apv_anual_uf: number | null
+          tope_apv_mensual: number | null
+          tope_apv_mensual_uf: number | null
           tope_cesantia: number | null
+          tope_cesantia_uf: number | null
+          tope_deposito_convenido_anual: number | null
+          tope_deposito_convenido_anual_uf: number | null
           tope_ips: number | null
+          tope_ips_uf: number | null
           uf: number | null
+          uta: number | null
           utm: number | null
         }
         Insert: {
@@ -1805,15 +1822,32 @@ export type Database = {
           fecha_actualizacion?: string | null
           gratificacion?: boolean | null
           imm_gratificacion?: number | null
+          ingreso_minimo_no_remuneracional?: number | null
           periodo: string
+          salud_ccaf?: number | null
+          salud_fonasa_con_ccaf?: number | null
+          salud_obligatoria?: number | null
+          sanna?: number | null
           sis?: number | null
           sueldo_minimo?: number | null
+          sueldo_minimo_casa_particular?: number | null
+          sueldo_minimo_menor18_mayor65?: number | null
           sueldo_minimo18_65?: number | null
           tope_afp?: number | null
+          tope_afp_uf?: number | null
           tope_afpvoluntario?: number | null
+          tope_apv_anual?: number | null
+          tope_apv_anual_uf?: number | null
+          tope_apv_mensual?: number | null
+          tope_apv_mensual_uf?: number | null
           tope_cesantia?: number | null
+          tope_cesantia_uf?: number | null
+          tope_deposito_convenido_anual?: number | null
+          tope_deposito_convenido_anual_uf?: number | null
           tope_ips?: number | null
+          tope_ips_uf?: number | null
           uf?: number | null
+          uta?: number | null
           utm?: number | null
         }
         Update: {
@@ -1824,15 +1858,32 @@ export type Database = {
           fecha_actualizacion?: string | null
           gratificacion?: boolean | null
           imm_gratificacion?: number | null
+          ingreso_minimo_no_remuneracional?: number | null
           periodo?: string
+          salud_ccaf?: number | null
+          salud_fonasa_con_ccaf?: number | null
+          salud_obligatoria?: number | null
+          sanna?: number | null
           sis?: number | null
           sueldo_minimo?: number | null
+          sueldo_minimo_casa_particular?: number | null
+          sueldo_minimo_menor18_mayor65?: number | null
           sueldo_minimo18_65?: number | null
           tope_afp?: number | null
+          tope_afp_uf?: number | null
           tope_afpvoluntario?: number | null
+          tope_apv_anual?: number | null
+          tope_apv_anual_uf?: number | null
+          tope_apv_mensual?: number | null
+          tope_apv_mensual_uf?: number | null
           tope_cesantia?: number | null
+          tope_cesantia_uf?: number | null
+          tope_deposito_convenido_anual?: number | null
+          tope_deposito_convenido_anual_uf?: number | null
           tope_ips?: number | null
+          tope_ips_uf?: number | null
           uf?: number | null
+          uta?: number | null
           utm?: number | null
         }
         Relationships: []

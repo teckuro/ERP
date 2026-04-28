@@ -10,15 +10,17 @@ Documentos base:
 Documentos que siguen aplicando como reglas de UI:
 
 - `docs/codex/AGENTS.md`
+- `docs/codex/bases-estilos.md` (guía única de bases de estilos y mapa del resto de Markdown)
 - `docs/codex/ui-form-guidelines.md`
 - `docs/codex/modo-basico-empleado.md`
 
 Orden recomendado de lectura:
 
 1. `AGENTS.md`
-2. `ui-form-guidelines.md`
-3. `base-angular-empleados.md`
-4. `crear-menu-base.md`
+2. `bases-estilos.md`
+3. `ui-form-guidelines.md`
+4. `base-angular-empleados.md`
+5. `crear-menu-base.md`
 
 ## Alcance de cada archivo
 

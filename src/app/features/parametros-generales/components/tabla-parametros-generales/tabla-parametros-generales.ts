@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, Input } from '@angular/core';
 
-import { DataGridColumn, DataGridComponent } from '../../../../shared/components/ui/data-grid.component';
+import { DataGridColumn, DataGridComponent, DataGridFilter } from '../../../../shared/components/ui/data-grid.component';
 import { ParametroGeneral } from '../../models/parametro-general.model';
 
 @Component({
@@ -14,6 +14,47 @@ export class TablaParametrosGeneralesComponent {
   @Input() rows: ParametroGeneral[] = [];
   @Input() loading = false;
   @Input() errorMessage = '';
+
+  readonly filters: DataGridFilter<ParametroGeneral>[] = [
+    {
+      id: 'periodo',
+      label: 'Periodo',
+      field: 'periodo',
+      type: 'text',
+      operator: 'startsWith',
+      placeholder: 'Ej: 2026-04',
+      emptyLabel: 'Todos',
+    },
+    {
+      id: 'gratificacion',
+      label: 'Gratificacion',
+      field: 'gratificacion',
+      type: 'select',
+      emptyLabel: 'Todas',
+      options: [
+        { label: 'Si', value: 'true' },
+        { label: 'No', value: 'false' },
+      ],
+    },
+    {
+      id: 'descuentosBasePorDia',
+      label: 'Desc. por dia',
+      field: 'descuentosBasePorDia',
+      type: 'select',
+      emptyLabel: 'Todos',
+      options: [
+        { label: 'Si', value: 'true' },
+        { label: 'No', value: 'false' },
+      ],
+    },
+    {
+      id: 'fechaActualizacion',
+      label: 'Actualizacion',
+      field: 'fechaActualizacion',
+      type: 'date-range',
+      emptyLabel: 'Cualquier fecha',
+    },
+  ];
 
   private readonly clpFormatter = new Intl.NumberFormat('es-CL', {
     maximumFractionDigits: 0,

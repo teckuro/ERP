@@ -110,6 +110,13 @@
 
                 @if (isBasicMode()) {
                   <div class="step-panel step-panel--basic">
+                    <header class="basic-create-head" aria-label="Guia de creacion basica">
+                      <h3 class="basic-create-title">Datos minimos para registrar al colaborador</h3>
+                      <p class="basic-create-copy">
+                        Completa la identificacion y contacto base. La ficha quedara en proceso y podras continuar
+                        despues con el alta avanzada.
+                      </p>
+                    </header>
                     <app-empleado-datos-personales
                       [formGroup]="form.controls.datosPersonales"
                       [contactoFormGroup]="form.controls.contacto"

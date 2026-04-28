@@ -38,28 +38,62 @@ type ParametroGeneralSupabaseRow = Omit<
   | 'afc_empleador_indefinido'
   | 'afc_empleador_plazo'
   | 'afc_trabajador_indefinido'
+  | 'ingreso_minimo_no_remuneracional'
   | 'imm_gratificacion'
+  | 'salud_ccaf'
+  | 'salud_fonasa_con_ccaf'
+  | 'salud_obligatoria'
+  | 'sanna'
   | 'sis'
   | 'sueldo_minimo'
   | 'sueldo_minimo18_65'
+  | 'sueldo_minimo_casa_particular'
+  | 'sueldo_minimo_menor18_mayor65'
+  | 'tope_afp_uf'
   | 'tope_afp'
   | 'tope_afpvoluntario'
+  | 'tope_apv_anual'
+  | 'tope_apv_anual_uf'
+  | 'tope_apv_mensual'
+  | 'tope_apv_mensual_uf'
   | 'tope_cesantia'
+  | 'tope_cesantia_uf'
+  | 'tope_deposito_convenido_anual'
+  | 'tope_deposito_convenido_anual_uf'
+  | 'tope_ips_uf'
   | 'tope_ips'
+  | 'uta'
   | 'uf'
   | 'utm'
 > & {
   afc_empleador_indefinido: number | string | null;
   afc_empleador_plazo: number | string | null;
   afc_trabajador_indefinido: number | string | null;
+  ingreso_minimo_no_remuneracional: number | string | null;
   imm_gratificacion: number | string | null;
+  salud_ccaf: number | string | null;
+  salud_fonasa_con_ccaf: number | string | null;
+  salud_obligatoria: number | string | null;
+  sanna: number | string | null;
   sis: number | string | null;
   sueldo_minimo: number | string | null;
   sueldo_minimo18_65: number | string | null;
+  sueldo_minimo_casa_particular: number | string | null;
+  sueldo_minimo_menor18_mayor65: number | string | null;
+  tope_afp_uf: number | string | null;
   tope_afp: number | string | null;
   tope_afpvoluntario: number | string | null;
+  tope_apv_anual: number | string | null;
+  tope_apv_anual_uf: number | string | null;
+  tope_apv_mensual: number | string | null;
+  tope_apv_mensual_uf: number | string | null;
   tope_cesantia: number | string | null;
+  tope_cesantia_uf: number | string | null;
+  tope_deposito_convenido_anual: number | string | null;
+  tope_deposito_convenido_anual_uf: number | string | null;
+  tope_ips_uf: number | string | null;
   tope_ips: number | string | null;
+  uta: number | string | null;
   uf: number | string | null;
   utm: number | string | null;
 };
@@ -171,15 +205,32 @@ export class ParametrosGeneralesRepository {
           'periodo',
           'uf',
           'utm',
+          'uta',
           'sueldo_minimo',
           'sueldo_minimo18_65',
+          'sueldo_minimo_menor18_mayor65',
+          'sueldo_minimo_casa_particular',
+          'ingreso_minimo_no_remuneracional',
           'gratificacion',
           'imm_gratificacion',
+          'tope_afp_uf',
           'tope_afp',
+          'tope_ips_uf',
           'tope_ips',
+          'tope_cesantia_uf',
           'tope_cesantia',
+          'tope_apv_mensual_uf',
+          'tope_apv_mensual',
+          'tope_apv_anual_uf',
+          'tope_apv_anual',
+          'tope_deposito_convenido_anual_uf',
+          'tope_deposito_convenido_anual',
           'tope_afpvoluntario',
           'sis',
+          'sanna',
+          'salud_obligatoria',
+          'salud_ccaf',
+          'salud_fonasa_con_ccaf',
           'dsctosbpordia',
           'afc_trabajador_indefinido',
           'afc_empleador_indefinido',
@@ -211,15 +262,32 @@ export class ParametrosGeneralesRepository {
           'periodo',
           'uf',
           'utm',
+          'uta',
           'sueldo_minimo',
           'sueldo_minimo18_65',
+          'sueldo_minimo_menor18_mayor65',
+          'sueldo_minimo_casa_particular',
+          'ingreso_minimo_no_remuneracional',
           'gratificacion',
           'imm_gratificacion',
+          'tope_afp_uf',
           'tope_afp',
+          'tope_ips_uf',
           'tope_ips',
+          'tope_cesantia_uf',
           'tope_cesantia',
+          'tope_apv_mensual_uf',
+          'tope_apv_mensual',
+          'tope_apv_anual_uf',
+          'tope_apv_anual',
+          'tope_deposito_convenido_anual_uf',
+          'tope_deposito_convenido_anual',
           'tope_afpvoluntario',
           'sis',
+          'sanna',
+          'salud_obligatoria',
+          'salud_ccaf',
+          'salud_fonasa_con_ccaf',
           'dsctosbpordia',
           'afc_trabajador_indefinido',
           'afc_empleador_indefinido',
@@ -393,8 +461,6 @@ export class ParametrosGeneralesRepository {
       const value = legalMap.get(name);
       return this.toNumber(value?.valorDecimal ?? value?.valorEntero ?? null);
     };
-    const legalNumberWithFallback = (name: string, fallback: number | null): number | null =>
-      legalNumber(name) ?? fallback;
     const afcByContrato = new Map(afcParametros.map((item) => [item.codigoTipoContrato, item]));
     const trabajoByCodigo = new Map(trabajosPesados.map((item) => [item.codigo, item]));
     const indefinido = afcByContrato.get('INDEFINIDO');
@@ -409,32 +475,35 @@ export class ParametrosGeneralesRepository {
 
     return {
       ...row,
-      uf: legalNumberWithFallback('UF', row.uf),
-      utm: legalNumberWithFallback('UTM', row.utm),
-      uta: legalNumber('UTA'),
-      sis: legalNumberWithFallback('SIS', row.sis),
-      sanna: legalNumber('SANNA'),
-      sueldoMinimo: legalNumberWithFallback('SUELDO_MINIMO', row.sueldoMinimo),
-      sueldoMinimo18a65: legalNumberWithFallback('SUELDO_MINIMO', row.sueldoMinimo),
-      sueldoMinimoMenor18Mayor65: legalNumberWithFallback('SUELDO_MINIMO_18_65', row.sueldoMinimo18a65),
-      sueldoMinimoCasaParticular: legalNumber('SUELDO_MINIMO_TPC'),
-      ingresoMinimoNoRemuneracional: legalNumber('SUELDO_MINIMO_NO_REM'),
-      topeAfpUf: legalNumber('TOPE_AFP_UF'),
-      topeAfp: legalNumberWithFallback('TOPE_AFP_PESOS', row.topeAfp),
-      topeIpsUf: legalNumber('TOPE_INP_UF'),
-      topeIps: legalNumberWithFallback('TOPE_INP_PESOS', row.topeIps),
-      topeCesantiaUf: legalNumber('TOPE_AFC_UF'),
-      topeCesantia: legalNumberWithFallback('TOPE_AFC_PESOS', row.topeCesantia),
-      topeApvMensualUf: legalNumber('TOPE_APV_MENSUAL_UF'),
-      topeApvMensual: legalNumberWithFallback('TOPE_APV_MENSUAL_PESOS', row.topeAfpVoluntario),
-      topeAfpVoluntario: legalNumberWithFallback('TOPE_APV_MENSUAL_PESOS', row.topeAfpVoluntario),
-      topeApvAnualUf: legalNumber('TOPE_APV_ANUAL_UF'),
-      topeApvAnual: legalNumber('TOPE_APV_ANUAL_PESOS'),
-      topeDepositoConvenidoAnualUf: legalNumber('TOPE_DEPOSITO_CONVENIDO_ANUAL_UF'),
-      topeDepositoConvenidoAnual: legalNumber('TOPE_DEPOSITO_CONVENIDO_ANUAL_PESOS'),
-      saludObligatoria,
-      saludCcaf,
-      saludFonasaConCcaf,
+      // Fuente de verdad: parametros_generales. Legales solo fallback si viene NULL.
+      uf: row.uf ?? legalNumber('UF'),
+      utm: row.utm ?? legalNumber('UTM'),
+      uta: row.uta ?? legalNumber('UTA'),
+      sis: row.sis ?? legalNumber('SIS'),
+      sanna: row.sanna ?? legalNumber('SANNA'),
+      sueldoMinimo: row.sueldoMinimo ?? legalNumber('SUELDO_MINIMO'),
+      sueldoMinimo18a65: row.sueldoMinimo18a65 ?? legalNumber('SUELDO_MINIMO'),
+      sueldoMinimoMenor18Mayor65: row.sueldoMinimoMenor18Mayor65 ?? legalNumber('SUELDO_MINIMO_18_65'),
+      sueldoMinimoCasaParticular: row.sueldoMinimoCasaParticular ?? legalNumber('SUELDO_MINIMO_TPC'),
+      ingresoMinimoNoRemuneracional: row.ingresoMinimoNoRemuneracional ?? legalNumber('SUELDO_MINIMO_NO_REM'),
+      topeAfpUf: row.topeAfpUf ?? legalNumber('TOPE_AFP_UF'),
+      topeAfp: row.topeAfp ?? legalNumber('TOPE_AFP_PESOS'),
+      topeIpsUf: row.topeIpsUf ?? legalNumber('TOPE_INP_UF'),
+      topeIps: row.topeIps ?? legalNumber('TOPE_INP_PESOS'),
+      topeCesantiaUf: row.topeCesantiaUf ?? legalNumber('TOPE_AFC_UF'),
+      topeCesantia: row.topeCesantia ?? legalNumber('TOPE_AFC_PESOS'),
+      topeApvMensualUf: row.topeApvMensualUf ?? legalNumber('TOPE_APV_MENSUAL_UF'),
+      topeApvMensual: row.topeApvMensual ?? legalNumber('TOPE_APV_MENSUAL_PESOS'),
+      topeAfpVoluntario: row.topeAfpVoluntario ?? legalNumber('TOPE_APV_MENSUAL_PESOS'),
+      topeApvAnualUf: row.topeApvAnualUf ?? legalNumber('TOPE_APV_ANUAL_UF'),
+      topeApvAnual: row.topeApvAnual ?? legalNumber('TOPE_APV_ANUAL_PESOS'),
+      topeDepositoConvenidoAnualUf:
+        row.topeDepositoConvenidoAnualUf ?? legalNumber('TOPE_DEPOSITO_CONVENIDO_ANUAL_UF'),
+      topeDepositoConvenidoAnual:
+        row.topeDepositoConvenidoAnual ?? legalNumber('TOPE_DEPOSITO_CONVENIDO_ANUAL_PESOS'),
+      saludObligatoria: row.saludObligatoria ?? saludObligatoria,
+      saludCcaf: row.saludCcaf ?? saludCcaf,
+      saludFonasaConCcaf: row.saludFonasaConCcaf ?? saludFonasaConCcaf,
       afcTrabajadorIndefinido: indefinido?.tasaTrabajador ?? row.afcTrabajadorIndefinido,
       afcEmpleadorIndefinido: indefinido?.tasaEmpleador ?? row.afcEmpleadorIndefinido,
       afcEmpleadorPlazo: plazo?.tasaEmpleador ?? row.afcEmpleadorPlazo,
@@ -911,34 +980,34 @@ export class ParametrosGeneralesRepository {
       periodo: row.periodo,
       uf: this.toNumber(row.uf),
       utm: this.toNumber(row.utm),
-      uta: null,
+      uta: this.toNumber(row.uta),
       sueldoMinimo: this.toNumber(row.sueldo_minimo),
       sueldoMinimo18a65: this.toNumber(row.sueldo_minimo18_65),
-      sueldoMinimoMenor18Mayor65: this.toNumber(row.sueldo_minimo18_65),
-      sueldoMinimoCasaParticular: null,
-      ingresoMinimoNoRemuneracional: null,
+      sueldoMinimoMenor18Mayor65: this.toNumber(row.sueldo_minimo_menor18_mayor65 ?? row.sueldo_minimo18_65),
+      sueldoMinimoCasaParticular: this.toNumber(row.sueldo_minimo_casa_particular),
+      ingresoMinimoNoRemuneracional: this.toNumber(row.ingreso_minimo_no_remuneracional),
       gratificacion: row.gratificacion ?? false,
       immGratificacion: this.toNumber(row.imm_gratificacion),
-      topeAfpUf: null,
+      topeAfpUf: this.toNumber(row.tope_afp_uf),
       topeAfp: this.toNumber(row.tope_afp),
-      topeIpsUf: null,
+      topeIpsUf: this.toNumber(row.tope_ips_uf),
       topeIps: this.toNumber(row.tope_ips),
-      topeCesantiaUf: null,
+      topeCesantiaUf: this.toNumber(row.tope_cesantia_uf),
       topeCesantia: this.toNumber(row.tope_cesantia),
-      topeApvMensualUf: null,
-      topeApvMensual: this.toNumber(row.tope_afpvoluntario),
-      topeApvAnualUf: null,
-      topeApvAnual: null,
-      topeDepositoConvenidoAnualUf: null,
-      topeDepositoConvenidoAnual: null,
+      topeApvMensualUf: this.toNumber(row.tope_apv_mensual_uf),
+      topeApvMensual: this.toNumber(row.tope_apv_mensual ?? row.tope_afpvoluntario),
+      topeApvAnualUf: this.toNumber(row.tope_apv_anual_uf),
+      topeApvAnual: this.toNumber(row.tope_apv_anual),
+      topeDepositoConvenidoAnualUf: this.toNumber(row.tope_deposito_convenido_anual_uf),
+      topeDepositoConvenidoAnual: this.toNumber(row.tope_deposito_convenido_anual),
       topeAfpVoluntario: this.toNumber(row.tope_afpvoluntario),
       sis: this.toNumber(row.sis),
-      sanna: null,
+      sanna: this.toNumber(row.sanna),
       seguroSocialExpectativaVida: null,
       aporteEmpleadorAfp: null,
-      saludObligatoria: null,
-      saludCcaf: null,
-      saludFonasaConCcaf: null,
+      saludObligatoria: this.toNumber(row.salud_obligatoria),
+      saludCcaf: this.toNumber(row.salud_ccaf),
+      saludFonasaConCcaf: this.toNumber(row.salud_fonasa_con_ccaf),
       descuentosBasePorDia: row.dsctosbpordia ?? false,
       afcTrabajadorIndefinido: this.toNumber(row.afc_trabajador_indefinido),
       afcEmpleadorIndefinido: this.toNumber(row.afc_empleador_indefinido),
@@ -958,15 +1027,32 @@ export class ParametrosGeneralesRepository {
       periodo: payload.periodo,
       uf: payload.uf,
       utm: payload.utm,
+      uta: payload.uta,
       sueldo_minimo: payload.sueldoMinimo,
       sueldo_minimo18_65: payload.sueldoMinimo18a65,
+      sueldo_minimo_menor18_mayor65: payload.sueldoMinimoMenor18Mayor65,
+      sueldo_minimo_casa_particular: payload.sueldoMinimoCasaParticular,
+      ingreso_minimo_no_remuneracional: payload.ingresoMinimoNoRemuneracional,
       gratificacion: payload.gratificacion,
       imm_gratificacion: payload.immGratificacion,
+      tope_afp_uf: payload.topeAfpUf,
       tope_afp: payload.topeAfp,
+      tope_ips_uf: payload.topeIpsUf,
       tope_ips: payload.topeIps,
+      tope_cesantia_uf: payload.topeCesantiaUf,
       tope_cesantia: payload.topeCesantia,
-      tope_afpvoluntario: payload.topeApvMensual ?? payload.topeAfpVoluntario,
+      tope_apv_mensual_uf: payload.topeApvMensualUf,
+      tope_apv_mensual: payload.topeApvMensual,
+      tope_apv_anual_uf: payload.topeApvAnualUf,
+      tope_apv_anual: payload.topeApvAnual,
+      tope_deposito_convenido_anual_uf: payload.topeDepositoConvenidoAnualUf,
+      tope_deposito_convenido_anual: payload.topeDepositoConvenidoAnual,
+      tope_afpvoluntario: payload.topeAfpVoluntario,
       sis: payload.sis,
+      sanna: payload.sanna,
+      salud_obligatoria: payload.saludObligatoria,
+      salud_ccaf: payload.saludCcaf,
+      salud_fonasa_con_ccaf: payload.saludFonasaConCcaf,
       dsctosbpordia: payload.descuentosBasePorDia,
       afc_trabajador_indefinido: payload.afcTrabajadorIndefinido,
       afc_empleador_indefinido: payload.afcEmpleadorIndefinido,

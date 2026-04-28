@@ -2,6 +2,8 @@
 
 Este archivo es la fuente unica para reglas visuales, formularios, loading, botones, mensajes y checklist de UI del ERP.
 
+Para ver el mapa del proyecto y un resumen de bases de estilos (punto de entrada único), usar [`bases-estilos.md`](./bases-estilos.md).
+
 Documentos relacionados:
 
 - `docs/codex/ui-button-guidelines.md` (botones)

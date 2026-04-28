@@ -17,6 +17,7 @@ Este archivo complementa las reglas existentes, no las reemplaza.
 Antes de aplicar este modo, respetar:
 
 - `AGENTS.md`
+- `bases-estilos.md`
 - `ui-form-guidelines.md`
 
 ---
@@ -113,6 +114,31 @@ Referencia visual (modo basico):
 
 ---
 
+## 5.1 Patrón de grilla (alineación en 8)
+
+Cuando el formulario tenga muchos campos cortos (RUT, pasaporte, fechas, tipo/estado) se permite usar una
+**grilla interna de 8 columnas** para alinear “hacia abajo” sin cambiar el orden lógico de lectura.
+
+Reglas:
+
+- Mantener el **orden DOM** de los campos (no reordenar por CSS).
+- Usar **spans** para dar jerarquía por ancho (no forzar siempre 2 columnas).
+- En tablet degradar a **4 columnas**; en mobile a **1 columna**.
+- Aplicar el patrón **solo en modo básico** para no afectar el alta avanzada.
+
+Referencia de implementación:
+
+- `src/app/features/empleados/components/secciones/datos-personales/datos-personales.css`
+
+Ejemplo de asignación de spans (escritorio 8 cols):
+
+- Identificación legal: RUT `span 4`, Pasaporte `span 2`, Fecha nacimiento `span 1`, Sexo `span 1`
+- Nombre: Nombres `span 4`, Apellido paterno `span 2`, Apellido materno `span 2`
+- Información base: Nacionalidad `span 4`, Estado civil `span 4`
+- Contacto: Email `span 4`, Teléfono `span 4`
+
+---
+
 ## 6. Validaciones
 
 Respetar regla base:
@@ -187,3 +213,11 @@ Usar condiciones:
   <!-- flujo completo -->
 </div>
 ```
+
+---
+
+## Cambios de estilos (registro)
+
+Las mejoras visuales aplicadas por petición se registran en:
+
+- `docs/codex/peticiones-estilos.md`

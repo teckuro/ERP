@@ -5,8 +5,9 @@ Este archivo define la base de trabajo para Codex en este proyecto. Antes de gen
 ## Prioridad de reglas
 
 1. `docs/codex/AGENTS.md`
-2. `docs/codex/ui-form-guidelines.md`
-3. Documentos especificos del flujo, por ejemplo `docs/codex/modo-basico-empleado.md`
+2. `docs/codex/bases-estilos.md` (punto de entrada único: bases de estilos, mapa de docs y enlaces)
+3. `docs/codex/ui-form-guidelines.md`
+4. Documentos especificos del flujo, por ejemplo `docs/codex/modo-basico-empleado.md`
 
 Si hay conflicto entre reglas, gana la regla mas alta en esta lista.
 
@@ -158,6 +159,16 @@ Antes de implementar:
 4. Aplicar layout base, tokens de tema y densidad compacta.
 5. Implementar con componentes y patrones existentes.
 6. Verificar contra el checklist.
+
+## Registro de mejoras de estilos (obligatorio)
+
+Cuando una petición implique **mejoras visuales / estilos**, registrar el cambio en:
+
+- `docs/codex/peticiones-estilos.md`
+
+Las reglas base y “estilos padre” del proyecto se resumen en:
+
+- `docs/codex/bases-estilos.md`
 
 ## Anti-patrones
 
