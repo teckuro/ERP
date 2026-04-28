@@ -11,6 +11,7 @@ Este documento es el **punto de entrada** para entender cómo se ve y se constru
 | Documento | Rol |
 |-----------|-----|
 | [`AGENTS.md`](./AGENTS.md) | Contrato para Codex: stack, tokens, layout obligatorio, anti‑patrones, checklist UI. |
+| [`estilos/README.md`](./estilos/README.md) | Grilla 8 columnas, anchos de bloque, checklist de cierre (7 ítems). |
 | **`bases-estilos.md` (este archivo)** | Resumen único + mapa de docs + implementación (CSS/componentes). |
 | [`ui-form-guidelines.md`](./ui-form-guidelines.md) | Fuente detallada: tokens, formularios, MessageBox, loading, checklist. |
 | [`ui-button-guidelines.md`](./ui-button-guidelines.md) | Variantes, tamaños y uso de botones / toolbar. |
