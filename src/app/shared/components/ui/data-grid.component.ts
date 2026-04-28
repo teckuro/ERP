@@ -153,30 +153,8 @@ export class DataGridCellDirective<T = unknown> {
     <app-card [className]="gridCardClass" [ngStyle]="gridCardStyle">
       @if (filtersEnabled && showFilters) {
         <div class="data-grid-filter-panel border-b border-neutral-200 bg-white px-4 py-3">
-          <div class="mb-3 flex flex-col gap-2 lg:flex-row lg:items-center lg:justify-between">
-            <label class="data-grid-search-field">
-              <span class="sr-only">Busqueda global</span>
-              <lucide-icon class="h-3.5 w-3.5 text-slate-400" [img]="searchIcon"></lucide-icon>
-              <input
-                type="text"
-                class="data-grid-search-input"
-                [value]="searchInputTerm"
-                [placeholder]="searchPlaceholder"
-                (input)="updateSearchTerm($event)"
-              />
-              @if (searchInputTerm) {
-                <button
-                  type="button"
-                  class="data-grid-search-clear"
-                  aria-label="Limpiar busqueda"
-                  (click)="clearSearchTerm()"
-                >
-                  <lucide-icon class="h-3.5 w-3.5" [img]="clearIcon"></lucide-icon>
-                </button>
-              }
-            </label>
-
-            @if (activeFilterChips.length > 0) {
+          @if (activeFilterChips.length > 0) {
+            <div class="mb-3 flex flex-col gap-2 lg:flex-row lg:items-center lg:justify-end">
               <div class="data-grid-filter-chips" aria-label="Filtros activos">
                 @for (chip of activeFilterChips; track chip.id) {
                   <button
@@ -198,8 +176,8 @@ export class DataGridCellDirective<T = unknown> {
                   Limpiar todo
                 </button>
               </div>
-            }
-          </div>
+            </div>
+          }
 
           <div class="flex flex-col gap-3 xl:flex-row xl:items-start xl:justify-between">
             <div class="min-w-0 flex-1">
@@ -993,57 +971,6 @@ export class DataGridCellDirective<T = unknown> {
         align-items: end;
       }
 
-      .data-grid-search-field {
-        display: flex;
-        width: min(100%, 28rem);
-        min-height: 2.25rem;
-        align-items: center;
-        gap: 0.5rem;
-        border: 1px solid #e5e7eb;
-        border-radius: 8px;
-        background: #ffffff;
-        padding: 0 0.75rem;
-        box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
-      }
-
-      .data-grid-search-field:focus-within {
-        border-color: #2563eb;
-        box-shadow: 0 0 0 2px #dbeafe;
-      }
-
-      .data-grid-search-input {
-        min-width: 0;
-        flex: 1 1 auto;
-        border: 0;
-        background: transparent;
-        color: #111827;
-        font-size: var(--data-grid-text-md);
-        font-weight: 500;
-        outline: none;
-      }
-
-      .data-grid-search-input::placeholder {
-        color: #9ca3af;
-      }
-
-      .data-grid-search-clear {
-        display: inline-flex;
-        width: 1.5rem;
-        height: 1.5rem;
-        align-items: center;
-        justify-content: center;
-        border-radius: 6px;
-        color: #6b7280;
-        transition:
-          background-color 150ms ease,
-          color 150ms ease;
-      }
-
-      .data-grid-search-clear:hover {
-        background: #f3f4f6;
-        color: #111827;
-      }
-
       .data-grid-filter-chips {
         display: flex;
         min-width: 0;
@@ -1359,10 +1286,6 @@ export class DataGridCellDirective<T = unknown> {
           padding: 0.75rem;
         }
 
-        .data-grid-search-field {
-          width: 100%;
-        }
-
         .data-grid-filter-chips {
           justify-content: flex-start;
           flex-wrap: nowrap;
@@ -1468,7 +1391,6 @@ export class DataGridComponent<T = unknown> implements OnChanges, OnDestroy {
   @Input() rows: T[] = [];
   @Input() filters: DataGridFilter<T>[] = [];
   @Input() filtersEnabled = false;
-  @Input() searchPlaceholder = 'Buscar...';
   @Input() primaryActionLabel = '';
   @Input() showExportAction = false;
   @Input() selectable = false;
@@ -1524,8 +1446,6 @@ export class DataGridComponent<T = unknown> implements OnChanges, OnDestroy {
   showFilters = true;
   showPagePopover = false;
   effectivePageSize = 10;
-  searchInputTerm = '';
-  searchTerm = '';
   sortColumnId = '';
   sortDirection: DataGridSortDirection = 'asc';
   filterValues: Record<string, DataGridFilterValue> = {};
@@ -1536,7 +1456,6 @@ export class DataGridComponent<T = unknown> implements OnChanges, OnDestroy {
 
   private visibleColumnIds = new Set<string>();
   private selectedRowKeys = new Set<unknown>();
-  private searchDebounceId = 0;
   private noticeTimeoutId = 0;
   private preferencesLoaded = false;
 
@@ -1597,7 +1516,6 @@ export class DataGridComponent<T = unknown> implements OnChanges, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    window.clearTimeout(this.searchDebounceId);
     window.clearTimeout(this.noticeTimeoutId);
   }
 
@@ -1709,19 +1627,11 @@ export class DataGridComponent<T = unknown> implements OnChanges, OnDestroy {
   }
 
   get hasActiveFilters(): boolean {
-    return Boolean(this.searchTerm.trim()) || Object.values(this.filterValues).some((value) => this.hasFilterValue(value));
+    return Object.values(this.filterValues).some((value) => this.hasFilterValue(value));
   }
 
   get activeFilterChips(): Array<{ id: string; label: string; value: string }> {
     const chips: Array<{ id: string; label: string; value: string }> = [];
-
-    if (this.searchTerm.trim()) {
-      chips.push({
-        id: '__search',
-        label: 'Busqueda',
-        value: this.searchTerm.trim(),
-      });
-    }
 
     this.visibleFilters.forEach((filter) => {
       const value = this.filterValues[filter.id];
@@ -1770,8 +1680,8 @@ export class DataGridComponent<T = unknown> implements OnChanges, OnDestroy {
   }
 
   get filteredRows(): T[] {
-    return this.rows.filter((row) => {
-      return this.matchesSearch(row) && this.visibleFilters.every((filter) => {
+    return this.rows.filter((row) =>
+      this.visibleFilters.every((filter) => {
         const selected = this.filterValues[filter.id];
 
         if (!this.hasFilterValue(selected)) {
@@ -1779,8 +1689,8 @@ export class DataGridComponent<T = unknown> implements OnChanges, OnDestroy {
         }
 
         return this.matchesFilter(row, filter, selected);
-      });
-    });
+      }),
+    );
   }
 
   get sortedRows(): T[] {
@@ -2036,18 +1946,6 @@ export class DataGridComponent<T = unknown> implements OnChanges, OnDestroy {
     this.persistPreferences();
   }
 
-  updateSearchTerm(event: Event): void {
-    this.searchInputTerm = (event.target as HTMLInputElement).value;
-    window.clearTimeout(this.searchDebounceId);
-    this.searchDebounceId = window.setTimeout(() => {
-      this.searchTerm = this.searchInputTerm.trim();
-      this.currentPage = 1;
-      this.pageInput = '1';
-      this.clearSelectionByContext('La seleccion se limpio porque cambio la busqueda.');
-      this.persistPreferences();
-    }, 250);
-  }
-
   filterOptionValue(option: string | { label: string; value: string }): string {
     return typeof option === 'string' ? option : option.value;
   }
@@ -2074,22 +1972,7 @@ export class DataGridComponent<T = unknown> implements OnChanges, OnDestroy {
     return filter.placeholder ?? `Buscar ${filter.label.toLowerCase()}`;
   }
 
-  clearSearchTerm(): void {
-    window.clearTimeout(this.searchDebounceId);
-    this.searchInputTerm = '';
-    this.searchTerm = '';
-    this.currentPage = 1;
-    this.pageInput = '1';
-    this.clearSelectionByContext('La seleccion se limpio porque se quito la busqueda.');
-    this.persistPreferences();
-  }
-
   removeFilterChip(filterId: string): void {
-    if (filterId === '__search') {
-      this.clearSearchTerm();
-      return;
-    }
-
     const filter = this.filters.find((item) => item.id === filterId);
 
     this.filterValues = {
@@ -2107,9 +1990,6 @@ export class DataGridComponent<T = unknown> implements OnChanges, OnDestroy {
   }
 
   clearAllFilters(): void {
-    window.clearTimeout(this.searchDebounceId);
-    this.searchInputTerm = '';
-    this.searchTerm = '';
     this.filterValues = {};
     this.draftFilterValues = {};
     this.currentPage = 1;
@@ -2150,8 +2030,6 @@ export class DataGridComponent<T = unknown> implements OnChanges, OnDestroy {
   }
 
   applyFilters(): void {
-    window.clearTimeout(this.searchDebounceId);
-    this.searchTerm = this.searchInputTerm.trim();
     this.filterValues = { ...this.draftFilterValues };
     this.currentPage = 1;
     this.pageInput = '1';
@@ -2380,18 +2258,6 @@ export class DataGridComponent<T = unknown> implements OnChanges, OnDestroy {
 
   private rawValue(row: T, column: DataGridColumn<T>): unknown {
     return column.field ? row[column.field] : '';
-  }
-
-  private matchesSearch(row: T): boolean {
-    const term = this.normalizeText(this.searchTerm);
-
-    if (!term) {
-      return true;
-    }
-
-    return this.columns
-      .filter((column) => Boolean(column.field))
-      .some((column) => this.normalizeText(String(this.rawValue(row, column) ?? '')).includes(term));
   }
 
   private hasExplicitColumnWidth(column: DataGridColumn<T>): boolean {
@@ -2699,7 +2565,6 @@ export class DataGridComponent<T = unknown> implements OnChanges, OnDestroy {
       JSON.stringify({
         filterValues: this.filterValues,
         pageSize: this.effectivePageSize,
-        searchTerm: this.searchTerm,
         sortColumnId: this.sortColumnId,
         sortDirection: this.sortDirection,
         visibleColumnIds: [...this.visibleColumnIds],
@@ -2718,7 +2583,6 @@ export class DataGridComponent<T = unknown> implements OnChanges, OnDestroy {
       const preferences = JSON.parse(rawPreferences) as Partial<{
         filterValues: Record<string, DataGridFilterValue>;
         pageSize: number;
-        searchTerm: string;
         sortColumnId: string;
         sortDirection: DataGridSortDirection;
         visibleColumnIds: string[];
@@ -2727,8 +2591,6 @@ export class DataGridComponent<T = unknown> implements OnChanges, OnDestroy {
       this.filterValues = preferences.filterValues ?? this.filterValues;
       this.draftFilterValues = { ...this.filterValues };
       this.effectivePageSize = this.normalizePageSize(preferences.pageSize ?? this.effectivePageSize);
-      this.searchTerm = preferences.searchTerm ?? '';
-      this.searchInputTerm = this.searchTerm;
       this.sortColumnId = preferences.sortColumnId ?? '';
       this.sortDirection = preferences.sortDirection ?? 'asc';
 

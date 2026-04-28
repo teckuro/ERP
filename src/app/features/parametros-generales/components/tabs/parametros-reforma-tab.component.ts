@@ -1,6 +1,10 @@
 import { CommonModule } from '@angular/common';
 import { Component, Input } from '@angular/core';
-import { DataGridColumn, DataGridComponent } from '../../../../shared/components/ui/data-grid.component';
+import {
+  DataGridColumn,
+  DataGridComponent,
+  DataGridFilter,
+} from '../../../../shared/components/ui/data-grid.component';
 import {
   ApvApvcFormaPago,
   ApvApvcInstitucion,
@@ -22,7 +26,8 @@ import {
           [rows]="reformaPensiones"
           [columns]="parametrosLegalesColumns"
           [loading]="loading"
-          [filtersEnabled]="false"
+          [filters]="parametrosLegalesFilters"
+          [filtersEnabled]="true"
           [showExportAction]="true"
           [maxItems]="10"
           gridHeight="24rem"
@@ -40,7 +45,8 @@ import {
           [rows]="reformaPrevisional"
           [columns]="reformaPrevisionalColumns"
           [loading]="loading"
-          [filtersEnabled]="false"
+          [filters]="reformaPrevisionalFilters"
+          [filtersEnabled]="true"
           [showExportAction]="true"
           [maxItems]="8"
           gridHeight="20rem"
@@ -58,7 +64,8 @@ import {
           [rows]="trabajosPesados"
           [columns]="trabajosPesadosColumns"
           [loading]="loading"
-          [filtersEnabled]="false"
+          [filters]="trabajosPesadosFilters"
+          [filtersEnabled]="true"
           [showExportAction]="true"
           [maxItems]="8"
           gridHeight="20rem"
@@ -76,7 +83,8 @@ import {
           [rows]="apvInstituciones"
           [columns]="apvInstitucionesColumns"
           [loading]="loading"
-          [filtersEnabled]="false"
+          [filters]="apvInstitucionesFilters"
+          [filtersEnabled]="true"
           [showExportAction]="true"
           [maxItems]="8"
           gridHeight="18rem"
@@ -91,7 +99,8 @@ import {
           [rows]="apvFormasPago"
           [columns]="apvFormasPagoColumns"
           [loading]="loading"
-          [filtersEnabled]="false"
+          [filters]="apvFormasPagoFilters"
+          [filtersEnabled]="true"
           [showExportAction]="true"
           [maxItems]="8"
           gridHeight="18rem"
@@ -119,5 +128,101 @@ export class ParametrosReformaTabComponent {
 
   @Input() loading = false;
   @Input() refresh: (() => void) | null = null;
+
+  readonly parametrosLegalesFilters: DataGridFilter<ParametroLegal>[] = [
+    {
+      id: 'periodo',
+      label: 'Periodo',
+      field: 'vigenciaInicio',
+      type: 'text',
+      operator: 'startsWith',
+      placeholder: 'Ej: 2026-04',
+      emptyLabel: 'Todos',
+    },
+  ];
+
+  readonly reformaPrevisionalFilters: DataGridFilter<ReformaPrevisionalParametro>[] = [
+    {
+      id: 'periodo',
+      label: 'Periodo',
+      field: 'vigenciaInicio',
+      type: 'text',
+      operator: 'startsWith',
+      placeholder: 'Ej: 2026-04',
+      emptyLabel: 'Todos',
+    },
+  ];
+
+  readonly trabajosPesadosFilters: DataGridFilter<TrabajoPesadoParametro>[] = [
+    {
+      id: 'periodo',
+      label: 'Periodo',
+      field: 'vigenciaInicio',
+      type: 'text',
+      operator: 'startsWith',
+      placeholder: 'Ej: 2026-04',
+      emptyLabel: 'Todos',
+    },
+  ];
+
+  readonly apvInstitucionesFilters: DataGridFilter<ApvApvcInstitucion>[] = [
+    {
+      id: 'codigo',
+      label: 'Codigo',
+      field: 'codigo',
+      type: 'text',
+      operator: 'contains',
+      emptyLabel: 'Todos',
+    },
+    {
+      id: 'nombre',
+      label: 'Institucion',
+      field: 'nombre',
+      type: 'text',
+      operator: 'contains',
+      emptyLabel: 'Todos',
+    },
+    {
+      id: 'vigente',
+      label: 'Estado',
+      field: 'vigente',
+      type: 'select',
+      emptyLabel: 'Todos',
+      options: [
+        { label: 'Vigente', value: 'true' },
+        { label: 'Inactivo', value: 'false' },
+      ],
+    },
+  ];
+
+  readonly apvFormasPagoFilters: DataGridFilter<ApvApvcFormaPago>[] = [
+    {
+      id: 'codigo',
+      label: 'Codigo',
+      field: 'codigo',
+      type: 'text',
+      operator: 'contains',
+      emptyLabel: 'Todos',
+    },
+    {
+      id: 'nombre',
+      label: 'Forma',
+      field: 'nombre',
+      type: 'text',
+      operator: 'contains',
+      emptyLabel: 'Todos',
+    },
+    {
+      id: 'vigente',
+      label: 'Estado',
+      field: 'vigente',
+      type: 'select',
+      emptyLabel: 'Todos',
+      options: [
+        { label: 'Vigente', value: 'true' },
+        { label: 'Inactivo', value: 'false' },
+      ],
+    },
+  ];
 }
 

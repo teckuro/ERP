@@ -5,25 +5,54 @@
 .basic-create-head {
   display: grid;
   gap: 8px;
-  margin-bottom: 2px;
-  padding: 2px 2px 12px;
+  margin-bottom: 4px;
+  padding: 4px 4px 14px;
   border-bottom: 1px solid #e5e7eb;
+}
+
+.basic-create-kicker {
+  margin: 0;
+  color: #64748b;
+  font-size: var(--erp-text-xs, 0.665rem);
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  line-height: 1.2;
+  text-transform: uppercase;
 }
 
 .basic-create-title {
   margin: 0;
   color: #0f172a;
-  font-size: 15px;
-  font-weight: 650;
+  font-size: var(--erp-title-md, 1.08rem);
+  font-weight: 600;
   line-height: 1.35;
-  letter-spacing: -0.01em;
+  letter-spacing: -0.02em;
 }
 
 .basic-create-copy {
-  max-width: 56rem;
+  max-width: 52rem;
   margin: 0;
   color: #475569;
-  font-size: 12.5px;
-  font-weight: 480;
-  line-height: 1.5;
+  font-size: var(--erp-text-sm, 0.72rem);
+  font-weight: 400;
+  line-height: 1.55;
+}
+
+.basic-create-copy strong {
+  color: #334155;
+  font-weight: 600;
+}
+
+/* Contenedor del flujo basico: aire tras el encabezado guia */
+:host .basic-wizard {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+:host .editor-footer--basic .editor-footer-copy {
+  max-width: 48rem;
+  color: #64748b;
+  font-size: var(--erp-text-sm, 0.72rem);
+  line-height: 1.45;
 }

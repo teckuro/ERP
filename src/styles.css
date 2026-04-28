@@ -1,15 +1,18 @@
 @import './styles/index.css';
 
 :root {
-  --erp-text-scale: 0.92;
-  --erp-text-xs: 0.68rem;
-  --erp-text-sm: 0.74rem;
-  --erp-text-md: 0.82rem;
-  --erp-title-sm: 0.94rem;
-  --erp-title-md: 1.14rem;
+  /* Tipografia base ERP (ligera, legible; Inter cargada en index.html) */
+  --erp-font-sans: 'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial,
+    sans-serif;
+  --erp-text-scale: 0.9;
+  --erp-text-xs: 0.665rem;
+  --erp-text-sm: 0.72rem;
+  --erp-text-md: 0.8rem;
+  --erp-title-sm: 0.92rem;
+  --erp-title-md: 1.08rem;
 
   /* ERP form controls (fuente de verdad: docs/codex/ui-form-guidelines.md) */
-  --erp-control-height: 23px;
+  --erp-control-height: 22px;
   --erp-field-min-width: 190px;
   --erp-field-max-width: 260px;
   --erp-field-row-gap: 3px;
@@ -22,6 +25,20 @@
   --erp-unit-badge-font-size: 0.66rem;
   --erp-unit-offset-x: 6px;
   --erp-unit-input-padding: 34px;
+
+  /* Alto util del outlet principal (layout: header fijo pt-16 + padding p-6 vertical ≈ 7rem). Ver layout-shell.component */
+  --app-layout-main-chrome-y: 7rem;
+}
+
+body {
+  margin: 0;
+  font-family: var(--erp-font-sans);
+  font-size: var(--erp-text-md);
+  font-weight: 400;
+  line-height: 1.5;
+  color: #111827;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 /* Parametros: filtro de periodo (compacto y adaptable) */
@@ -55,8 +72,8 @@
 
 .parametros-page .period-arrow {
   display: inline-flex;
-  width: var(--erp-control-height, 23px);
-  height: var(--erp-control-height, 23px);
+  width: var(--erp-control-height, 22px);
+  height: var(--erp-control-height, 22px);
   align-items: center;
   justify-content: center;
   border: 1px solid #e5e7eb;
@@ -107,7 +124,7 @@
   align-items: center;
   justify-content: flex-start;
   gap: 6px;
-  min-height: var(--erp-control-height, 23px);
+  min-height: var(--erp-control-height, 22px);
   text-align: left;
 }
 
@@ -116,7 +133,7 @@
   align-items: center;
 }
 
-/* Opción con radio centrado bajo el texto (alto control 23px) */
+/* Opción con radio centrado bajo el texto (alto control ERP) */
 .erp-choice-radio {
   display: grid;
   width: fit-content;
@@ -126,7 +143,7 @@
   row-gap: var(--erp-field-row-gap, 3px);
   column-gap: var(--erp-field-col-gap, 2px);
   text-align: left;
-  grid-template-rows: auto var(--erp-control-height, 23px);
+  grid-template-rows: auto var(--erp-control-height, 22px);
 }
 
 .erp-choice-radio > span:first-child {
@@ -150,7 +167,7 @@
   align-items: end;
   gap: var(--erp-field-row-gap, 3px);
   text-align: left;
-  grid-template-rows: auto var(--erp-control-height, 23px);
+  grid-template-rows: auto var(--erp-control-height, 22px);
 }
 
 .erp-flag-check > span:first-child {
@@ -326,6 +343,90 @@ app-form-empleado .form-shell,
 app-form-empleado .form-stack,
 app-form-empleado .editor-shell {
   min-height: 100%;
+}
+
+/* Alta / ficha: ocupar alto util sin scroll extra cuando el contenido cabe */
+.page-shell {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  min-height: 0;
+  width: 100%;
+  max-width: 100%;
+  height: calc(100dvh - var(--app-layout-main-chrome-y, 7rem));
+  max-height: calc(100dvh - var(--app-layout-main-chrome-y, 7rem));
+}
+
+.page-shell app-form-empleado {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.page-shell app-form-empleado form.form-shell {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.page-shell app-form-empleado .form-page-head {
+  flex: 0 0 auto;
+}
+
+.page-shell app-form-empleado .form-stack {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.page-shell app-form-empleado app-card.editor-shell {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.page-shell app-form-empleado app-card.editor-shell app-card-content.editor-frame {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.page-shell app-form-empleado .status-stack {
+  flex: 0 0 auto;
+}
+
+.page-shell app-form-empleado .workspace-grid {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.page-shell app-form-empleado .workspace-main {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.page-shell app-form-empleado .content-shell {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0 !important;
+  max-height: none !important;
+  height: auto !important;
+}
+
+.page-shell app-form-empleado .content-body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
 }
 
 app-form-empleado .form-stack,

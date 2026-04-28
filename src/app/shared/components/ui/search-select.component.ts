@@ -159,15 +159,16 @@ export interface SearchSelectOption<T extends SearchSelectValue = SearchSelectVa
         grid-template-columns: minmax(0, 1fr) auto auto;
         align-items: center;
         width: 100%;
-        height: 38px;
+        height: var(--erp-control-height, 22px);
+        min-height: var(--erp-control-height, 22px);
         border: 1px solid #e5e7eb;
         border-radius: 6px;
         background: #ffffff;
-        padding: 0 6px 0 10px;
+        padding: 0 4px 0 8px;
         color: #9ca3af;
         font: inherit;
-        font-size: 12px;
-        font-weight: 600;
+        font-size: var(--erp-text-sm, 0.72rem);
+        font-weight: 500;
         text-align: left;
         transition: border-color 160ms ease, box-shadow 160ms ease;
       }
@@ -216,8 +217,8 @@ export interface SearchSelectOption<T extends SearchSelectValue = SearchSelectVa
       .select-icon-button,
       .select-chevron {
         display: inline-flex;
-        width: 28px;
-        height: 28px;
+        width: calc(var(--erp-control-height, 22px) - 2px);
+        height: calc(var(--erp-control-height, 22px) - 2px);
         align-items: center;
         justify-content: center;
         border-radius: 5px;
@@ -267,7 +268,7 @@ export interface SearchSelectOption<T extends SearchSelectValue = SearchSelectVa
         display: grid;
         grid-template-columns: 18px minmax(0, 1fr);
         align-items: center;
-        height: 34px;
+        height: calc(var(--erp-control-height, 22px) + 6px);
         border: 1px solid #e5e7eb;
         border-radius: 5px;
         background: #ffffff;
@@ -298,8 +299,8 @@ export interface SearchSelectOption<T extends SearchSelectValue = SearchSelectVa
         padding: 0 0 0 8px;
         color: #111827;
         font: inherit;
-        font-size: 12px;
-        font-weight: 600;
+        font-size: var(--erp-text-sm, 0.72rem);
+        font-weight: 500;
         outline: none;
       }
 
@@ -338,7 +339,7 @@ export interface SearchSelectOption<T extends SearchSelectValue = SearchSelectVa
         width: 100%;
         align-items: center;
         gap: 8px;
-        min-height: 34px;
+        min-height: calc(var(--erp-control-height, 22px) + 6px);
         border: 0;
         border-radius: 5px;
         background: transparent;

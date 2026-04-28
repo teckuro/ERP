@@ -19,6 +19,13 @@ Documentos relacionados:
 
 ## Tokens
 
+Tipografia (base global en `src/styles.css` `:root` + `body`):
+
+- Familia: **`--erp-font-sans`** — `Inter` (hoja cargada en `src/index.html`) con fallback `ui-sans-serif, system-ui, sans-serif`.
+- Escala de texto: **`--erp-text-scale`** (`0.9`), tamaños **`--erp-text-xs`**, **`--erp-text-sm`**, **`--erp-text-md`**, titulos **`--erp-title-sm`**, **`--erp-title-md`**.
+- Cuerpo de aplicacion: `body` usa `--erp-font-sans`, `--erp-text-md`, peso `400`, `line-height` ~`1.5`, antialiasing activado.
+- Controles y etiquetas de formulario ERP: preferir pesos **500–600** (labels secundarios mas ligeros que valores).
+
 Colores:
 
 - Primario: `#2563EB`
@@ -41,7 +48,7 @@ Espaciado permitido:
 
 Alturas:
 
-- Inputs: `23px` (estándar ERP).
+- Inputs y selects compactos: **`--erp-control-height`** = `22px` (antes `23px`; mas ligero visualmente). Usar siempre `var(--erp-control-height)` en inputs de formulario, `app-search-select`, `app-calendar-input` y `.employee-control` para alineacion.
 - Botones compactos: `28px` a `32px`.
 - Botones principales de pagina: `36px` a `40px`.
 - Iconos en botones: `14px` a `16px`.
@@ -81,8 +88,8 @@ Reglas:
 - Fechas con escritura guiada `dd/mm/aaaa` y valor interno ISO si aplica.
 - Mantener altura visual consistente entre inputs, selects, calendarios y controles complejos.
 - Tamaño de inputs (regla base):
-  - Alto estándar: `23px`.
-  - Ancho mínimo por campo: `190px` (evitar inputs gigantes; “término medio”).
+  - Alto estándar: token **`--erp-control-height`** (`22px`).
+  - Ancho mínimo por campo: **`--erp-field-min-width`** (`190px`; evitar inputs gigantes; “término medio”).
 - Ancho en formularios:
   - No ocupar siempre el `100%` del ancho disponible.
   - Reservar `width: 100%` para barras de filtros o controles que realmente lo requieran (ej. buscadores globales).
@@ -107,7 +114,7 @@ Implementacion y estilos en `src/app/pages/parametros.page.ts` (view encapsulati
 
 ### Grillas empleados (alta / ficha)
 
-Patrones distintos (`employee-grid`, rejillas de 8 columnas en pasos básicos, etc.): mantener **consistencia visual** con el ERP (labels arriba, altura 23px) según sección; no replican la misma fórmula span-2/8 de Parámetros en todos los bloques.
+Patrones distintos (`employee-grid`, rejillas de 8 columnas en pasos básicos, etc.): mantener **consistencia visual** con el ERP (labels arriba, altura `--erp-control-height`) según sección; no replican la misma fórmula span-2/8 de Parámetros en todos los bloques.
 
 ## MessageBox
 

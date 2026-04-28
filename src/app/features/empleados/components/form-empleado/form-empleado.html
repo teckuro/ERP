@@ -109,12 +109,13 @@
                 }
 
                 @if (isBasicMode()) {
-                  <div class="step-panel step-panel--basic">
+                  <div class="step-panel step-panel--basic basic-wizard">
                     <header class="basic-create-head" aria-label="Guia de creacion basica">
+                      <p class="basic-create-kicker">Creacion basica</p>
                       <h3 class="basic-create-title">Datos minimos para registrar al colaborador</h3>
                       <p class="basic-create-copy">
-                        Completa la identificacion y contacto base. La ficha quedara en proceso y podras continuar
-                        despues con el alta avanzada.
+                        Completa la identificacion y contacto base. La ficha quedara <strong>en proceso</strong> y podras
+                        continuar despues con el alta avanzada o desde la ficha del colaborador.
                       </p>
                     </header>
                     <app-empleado-datos-personales
@@ -123,6 +124,7 @@
                       [sexos]="catalogos().sexos"
                       [estadosCivil]="catalogos().estadosCivil"
                       [paises]="catalogos().paises"
+                      [basicSectionLeads]="true"
                     ></app-empleado-datos-personales>
                   </div>
                 } @else if (activeTab() === 'datosPersonales') {
@@ -182,7 +184,7 @@
                 }
               </div>
 
-              <footer class="editor-footer">
+              <footer class="editor-footer" [class.editor-footer--basic]="isBasicMode()">
                 <p class="editor-footer-copy">
                   @if (isBasicMode()) {
                     Registra los datos personales base. La ficha completa se continuara despues.

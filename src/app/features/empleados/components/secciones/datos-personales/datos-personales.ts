@@ -28,6 +28,8 @@ export class DatosPersonalesComponent {
   @Input() estadosCivil: EmpleadoStringCatalogOption<TipoEstadoCivil>[] = [];
   @Input() paises: EmpleadoCatalogOption[] = [];
   @Input() visibleBlocks: string[] | null = null;
+  /** Textos de ayuda bajo cada titulo de bloque (solo creacion basica). */
+  @Input() basicSectionLeads = false;
 
   readonly today = this.toIsoDate(new Date());
 

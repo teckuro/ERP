@@ -3,6 +3,11 @@
     <app-card className="employee-block" [formGroup]="formGroup">
       <div class="employee-block-head">
         <h4>Identificacion legal</h4>
+        @if (basicSectionLeads) {
+          <p class="employee-block-lead">
+            Datos para reconocer al colaborador en el sistema (documento y fecha de nacimiento).
+          </p>
+        }
       </div>
 
       <div class="employee-grid employee-grid--two">
@@ -105,6 +110,11 @@
     <app-card className="employee-block" [formGroup]="formGroup">
       <div class="employee-block-head">
         <h4>Nombre del colaborador</h4>
+        @if (basicSectionLeads) {
+          <p class="employee-block-lead">
+            Como se mostrara en listados, documentos y comunicaciones internas.
+          </p>
+        }
       </div>
 
       <div class="employee-grid employee-grid--three">
@@ -185,6 +195,11 @@
     <app-card className="employee-block">
       <div class="employee-block-head">
         <h4>Informacion base</h4>
+        @if (basicSectionLeads) {
+          <p class="employee-block-lead">
+            Nacionalidad y estado civil. Mas abajo puedes dejar un medio de contacto si lo tienes a mano.
+          </p>
+        }
       </div>
 
       <div class="employee-grid employee-grid--four" [formGroup]="formGroup">
@@ -237,8 +252,17 @@
         </div>
       </div>
 
-      <div class="employee-block-subhead" aria-hidden="true">
+      <div
+        class="employee-block-subhead"
+        [class.employee-block-subhead--basic]="basicSectionLeads"
+        [attr.aria-hidden]="basicSectionLeads ? null : 'true'"
+      >
         <span>Contacto</span>
+        @if (basicSectionLeads) {
+          <p class="employee-block-lead employee-block-lead--inline">
+            Correo y telefono opcionales en esta etapa; podras completarlos o corregirlos en la ficha.
+          </p>
+        }
       </div>
 
       <div class="employee-grid employee-grid--two" [formGroup]="contactoFormGroup">

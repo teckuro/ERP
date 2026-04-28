@@ -1,6 +1,10 @@
 import { CommonModule } from '@angular/common';
 import { Component, Input } from '@angular/core';
-import { DataGridColumn, DataGridComponent } from '../../../../shared/components/ui/data-grid.component';
+import {
+  DataGridColumn,
+  DataGridComponent,
+  DataGridFilter,
+} from '../../../../shared/components/ui/data-grid.component';
 import {
   CcafEntidad,
   Ley16744Parametro,
@@ -64,7 +68,8 @@ export type CcafMutualesTabMode = 'config' | 'ccafLista' | 'mutualesLey';
             [rows]="catalogos.ccafEntidades"
             [columns]="ccafColumns"
             [loading]="loading"
-            [filtersEnabled]="false"
+            [filters]="ccafEntidadFilters"
+            [filtersEnabled]="true"
             [showExportAction]="true"
             [maxItems]="8"
             gridHeight="22rem"
@@ -85,7 +90,8 @@ export type CcafMutualesTabMode = 'config' | 'ccafLista' | 'mutualesLey';
               [rows]="catalogos.organismosLey16744"
               [columns]="organismosLeyColumns"
               [loading]="loading"
-              [filtersEnabled]="false"
+              [filters]="organismosLeyFilters"
+              [filtersEnabled]="true"
               [showExportAction]="true"
               [maxItems]="8"
               gridHeight="22rem"
@@ -100,7 +106,8 @@ export type CcafMutualesTabMode = 'config' | 'ccafLista' | 'mutualesLey';
               [rows]="catalogos.ley16744Parametros"
               [columns]="ley16744Columns"
               [loading]="loading"
-              [filtersEnabled]="false"
+              [filters]="ley16744Filters"
+              [filtersEnabled]="true"
               [showExportAction]="true"
               [maxItems]="8"
               gridHeight="22rem"
@@ -130,5 +137,85 @@ export class ParametrosCcafMutualesTabComponent {
   @Input() seleccionarCcaf: ((event: Event) => void) | null = null;
   @Input() seleccionarMutual: ((event: Event) => void) | null = null;
   @Input() refresh: (() => void) | null = null;
+
+  readonly ccafEntidadFilters: DataGridFilter<CcafEntidad>[] = [
+    {
+      id: 'codigo',
+      label: 'Codigo',
+      field: 'codigo',
+      type: 'text',
+      operator: 'contains',
+      emptyLabel: 'Todos',
+    },
+    {
+      id: 'nombre',
+      label: 'Nombre',
+      field: 'nombre',
+      type: 'text',
+      operator: 'contains',
+      emptyLabel: 'Todos',
+    },
+    {
+      id: 'vigente',
+      label: 'Estado',
+      field: 'vigente',
+      type: 'select',
+      emptyLabel: 'Todos',
+      options: [
+        { label: 'Vigente', value: 'true' },
+        { label: 'Inactivo', value: 'false' },
+      ],
+    },
+  ];
+
+  readonly organismosLeyFilters: DataGridFilter<OrganismoLey16744>[] = [
+    {
+      id: 'codigo',
+      label: 'Codigo',
+      field: 'codigo',
+      type: 'text',
+      operator: 'contains',
+      emptyLabel: 'Todos',
+    },
+    {
+      id: 'nombre',
+      label: 'Nombre',
+      field: 'nombre',
+      type: 'text',
+      operator: 'contains',
+      emptyLabel: 'Todos',
+    },
+    {
+      id: 'tipo',
+      label: 'Tipo',
+      field: 'tipo',
+      type: 'text',
+      operator: 'contains',
+      emptyLabel: 'Todos',
+    },
+    {
+      id: 'vigente',
+      label: 'Estado',
+      field: 'vigente',
+      type: 'select',
+      emptyLabel: 'Todos',
+      options: [
+        { label: 'Vigente', value: 'true' },
+        { label: 'Inactivo', value: 'false' },
+      ],
+    },
+  ];
+
+  readonly ley16744Filters: DataGridFilter<Ley16744Parametro>[] = [
+    {
+      id: 'periodo',
+      label: 'Periodo',
+      field: 'vigenciaInicio',
+      type: 'text',
+      operator: 'startsWith',
+      placeholder: 'Ej: 2026-04',
+      emptyLabel: 'Todos',
+    },
+  ];
 }
 

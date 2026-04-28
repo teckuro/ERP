@@ -1,6 +1,10 @@
 import { CommonModule } from '@angular/common';
 import { Component, Input } from '@angular/core';
-import { DataGridColumn, DataGridComponent } from '../../../../shared/components/ui/data-grid.component';
+import {
+  DataGridColumn,
+  DataGridComponent,
+  DataGridFilter,
+} from '../../../../shared/components/ui/data-grid.component';
 import { TramoCargaParametro } from '../../models/parametro-general.model';
 
 @Component({
@@ -16,7 +20,8 @@ import { TramoCargaParametro } from '../../models/parametro-general.model';
           [rows]="rows"
           [columns]="columns"
           [loading]="loading"
-          [filtersEnabled]="false"
+          [filters]="tramosCargaFilters"
+          [filtersEnabled]="true"
           [showExportAction]="true"
           [maxItems]="10"
           gridHeight="28rem"
@@ -34,5 +39,17 @@ export class ParametrosTramosCargaTabComponent {
   @Input({ required: true }) columns!: DataGridColumn<TramoCargaParametro>[];
   @Input() loading = false;
   @Input() refresh: (() => void) | null = null;
+
+  readonly tramosCargaFilters: DataGridFilter<TramoCargaParametro>[] = [
+    {
+      id: 'periodo',
+      label: 'Periodo',
+      field: 'periodo',
+      type: 'text',
+      operator: 'startsWith',
+      placeholder: 'Ej: 2026-04',
+      emptyLabel: 'Todos',
+    },
+  ];
 }
 

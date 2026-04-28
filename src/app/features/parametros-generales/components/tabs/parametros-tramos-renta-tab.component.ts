@@ -1,6 +1,10 @@
 import { CommonModule } from '@angular/common';
 import { Component, Input } from '@angular/core';
-import { DataGridColumn, DataGridComponent } from '../../../../shared/components/ui/data-grid.component';
+import {
+  DataGridColumn,
+  DataGridComponent,
+  DataGridFilter,
+} from '../../../../shared/components/ui/data-grid.component';
 import { TablaImpuestoUnicoParametro, TramoImpuestoParametro } from '../../models/parametro-general.model';
 
 @Component({
@@ -17,7 +21,8 @@ import { TablaImpuestoUnicoParametro, TramoImpuestoParametro } from '../../model
             [rows]="tablaRows"
             [columns]="tablaColumns"
             [loading]="loading"
-            [filtersEnabled]="false"
+            [filters]="tablaImpuestoFilters"
+            [filtersEnabled]="true"
             [showExportAction]="true"
             [maxItems]="10"
             gridHeight="28rem"
@@ -32,7 +37,8 @@ import { TablaImpuestoUnicoParametro, TramoImpuestoParametro } from '../../model
             [rows]="tramosRows"
             [columns]="tramosColumns"
             [loading]="loading"
-            [filtersEnabled]="false"
+            [filters]="tramosImpuestoFilters"
+            [filtersEnabled]="true"
             [showExportAction]="true"
             [maxItems]="10"
             gridHeight="28rem"
@@ -54,5 +60,30 @@ export class ParametrosTramosRentaTabComponent {
 
   @Input() loading = false;
   @Input() refresh: (() => void) | null = null;
+
+  /** Vigencia (YYYY-MM-DD): filtrar por prefijo de mes equivale a periodo. */
+  readonly tablaImpuestoFilters: DataGridFilter<TablaImpuestoUnicoParametro>[] = [
+    {
+      id: 'periodo',
+      label: 'Periodo',
+      field: 'vigenciaInicio',
+      type: 'text',
+      operator: 'startsWith',
+      placeholder: 'Ej: 2026-04',
+      emptyLabel: 'Todos',
+    },
+  ];
+
+  readonly tramosImpuestoFilters: DataGridFilter<TramoImpuestoParametro>[] = [
+    {
+      id: 'periodo',
+      label: 'Periodo',
+      field: 'periodo',
+      type: 'text',
+      operator: 'startsWith',
+      placeholder: 'Ej: 2026-04',
+      emptyLabel: 'Todos',
+    },
+  ];
 }
 

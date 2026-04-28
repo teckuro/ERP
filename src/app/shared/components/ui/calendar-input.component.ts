@@ -172,9 +172,10 @@ interface CalendarDay {
         grid-template-columns: minmax(0, 1fr) auto;
         align-items: center;
         width: 100%;
-        height: 32px;
+        height: var(--erp-control-height, 22px);
+        min-height: var(--erp-control-height, 22px);
         border: 1px solid #e5e7eb;
-        border-radius: 10px;
+        border-radius: 6px;
         background: #ffffff;
         transition: border-color 160ms ease, box-shadow 160ms ease;
         overflow: hidden;
@@ -207,10 +208,10 @@ interface CalendarDay {
         height: 100%;
         border: 0;
         background: transparent;
-        padding: 0 2.5rem 0 0.75rem;
+        padding: 0 2.35rem 0 0.62rem;
         color: #111827;
         font: inherit;
-        font-size: 0.74rem;
+        font-size: var(--erp-text-sm, 0.72rem);
         font-weight: 500;
         outline: none;
       }
@@ -256,10 +257,10 @@ interface CalendarDay {
       }
 
       .calendar-icon-button {
-        width: 24px;
-        height: 24px;
+        width: calc(var(--erp-control-height, 22px) - 4px);
+        height: calc(var(--erp-control-height, 22px) - 4px);
         border: 0;
-        border-radius: 6px;
+        border-radius: 5px;
         background: transparent;
         color: #6b7280;
       }

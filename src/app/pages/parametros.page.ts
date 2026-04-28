@@ -224,6 +224,7 @@ interface MonthOption {
           }
         </nav>
 
+        <div class="parametros-tab-body" role="region" aria-label="Contenido de la seccion">
         @switch (activeTab()) {
           @case ('valores') {
             <app-parametros-valores-tab
@@ -352,6 +353,7 @@ interface MonthOption {
             ></app-parametros-reforma-tab>
           }
         }
+        </div>
       </div>
         </app-card-content>
       </app-card>
@@ -388,10 +390,43 @@ interface MonthOption {
         --prm-input-border: #d1d5db;
         --prm-unit-gap: var(--prm-unit-chip-gap);
         --param-content-max-width: 1060px;
-        display: grid;
-        min-width: 0;
+        display: flex;
+        flex-direction: column;
         gap: 12px;
         width: 100%;
+        min-width: 0;
+        min-height: 0;
+        box-sizing: border-box;
+        height: calc(100dvh - var(--app-layout-main-chrome-y, 7rem));
+        max-height: calc(100dvh - var(--app-layout-main-chrome-y, 7rem));
+      }
+
+      .parametros-page > header.parametros-header {
+        flex: 0 0 auto;
+      }
+
+      .parametros-page app-card.parametros-shell {
+        flex: 1 1 auto;
+        display: flex;
+        flex-direction: column;
+        min-height: 0;
+        width: 100%;
+      }
+
+      .parametros-page app-card.parametros-shell app-card-content.parametros-frame {
+        flex: 1 1 auto;
+        display: flex;
+        flex-direction: column;
+        min-height: 0;
+        overflow: hidden;
+      }
+
+      .parametros-page .parametros-tab-body {
+        flex: 1 1 auto;
+        min-height: 0;
+        min-width: 0;
+        overflow-x: hidden;
+        overflow-y: auto;
       }
 
       .parametros-viewhead {
@@ -438,8 +473,8 @@ interface MonthOption {
 
       .param-select,
       .param-input {
-        height: var(--erp-control-height, 23px);
-        min-height: var(--erp-control-height, 23px);
+        height: var(--erp-control-height, 22px);
+        min-height: var(--erp-control-height, 22px);
         width: 100%;
         max-width: 100%;
         box-sizing: border-box;
@@ -486,14 +521,25 @@ interface MonthOption {
         margin: 0;
       }
 
+      .parametros-page app-card.parametros-shell app-card-content.parametros-frame > .parametros-viewhead {
+        flex: 0 0 auto;
+      }
+
       .parametros-content {
-        display: grid;
+        display: flex;
+        flex-direction: column;
+        flex: 1 1 auto;
+        min-height: 0;
         min-width: 0;
         overflow: hidden;
         border: 1px solid var(--prm-line, #e5e7eb);
         border-radius: 8px;
         background: var(--prm-panel, #ffffff);
         position: relative;
+      }
+
+      .parametros-content > .folder-tabs {
+        flex: 0 0 auto;
       }
 
       .folder-tabs {
@@ -504,8 +550,6 @@ interface MonthOption {
         background: var(--prm-soft, #f8fafc);
         padding: 10px 12px 0;
         gap: 6px;
-        position: sticky;
-        top: 0;
         z-index: 10;
         overscroll-behavior-x: contain;
         scrollbar-width: thin;
@@ -590,11 +634,6 @@ interface MonthOption {
       .tab-panel--compact {
         gap: 8px;
         padding: 10px;
-      }
-
-      .tab-panel--viewport {
-        max-height: calc(100vh - 240px);
-        overflow: auto;
       }
 
       @media (max-width: 760px) {
@@ -784,7 +823,7 @@ interface MonthOption {
         flex-direction: row;
         align-items: center;
         gap: 8px;
-        min-height: var(--erp-control-height, 23px);
+        min-height: var(--erp-control-height, 22px);
         margin: 0;
         font-size: 0.74rem;
         font-weight: 700;
@@ -975,8 +1014,8 @@ interface MonthOption {
         box-sizing: border-box;
         width: 100%;
         min-width: 0;
-        min-height: var(--erp-control-height, 23px);
-        height: var(--erp-control-height, 23px);
+        min-height: var(--erp-control-height, 22px);
+        height: var(--erp-control-height, 22px);
         padding: 0 6px 0 8px;
         border: 1px solid var(--prm-input-border);
         border-radius: 6px;

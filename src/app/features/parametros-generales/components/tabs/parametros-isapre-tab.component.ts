@@ -1,6 +1,10 @@
 import { CommonModule } from '@angular/common';
 import { Component, Input } from '@angular/core';
-import { DataGridColumn, DataGridComponent } from '../../../../shared/components/ui/data-grid.component';
+import {
+  DataGridColumn,
+  DataGridComponent,
+  DataGridFilter,
+} from '../../../../shared/components/ui/data-grid.component';
 import { IsapreParametro } from '../../models/parametro-general.model';
 
 @Component({
@@ -16,7 +20,8 @@ import { IsapreParametro } from '../../models/parametro-general.model';
           [rows]="rows"
           [columns]="columns"
           [loading]="loading"
-          [filtersEnabled]="false"
+          [filters]="isapreFilters"
+          [filtersEnabled]="true"
           [showExportAction]="true"
           [maxItems]="10"
           gridHeight="28rem"
@@ -34,5 +39,45 @@ export class ParametrosIsapreTabComponent {
   @Input({ required: true }) columns!: DataGridColumn<IsapreParametro>[];
   @Input() loading = false;
   @Input() refresh: (() => void) | null = null;
+
+  readonly isapreFilters: DataGridFilter<IsapreParametro>[] = [
+    {
+      id: 'periodo',
+      label: 'Periodo',
+      field: 'vigenciaInicio',
+      type: 'text',
+      operator: 'startsWith',
+      placeholder: 'Ej: 2026-04',
+      emptyLabel: 'Todos',
+    },
+    {
+      id: 'codigo',
+      label: 'Codigo',
+      field: 'codigo',
+      type: 'text',
+      operator: 'contains',
+      placeholder: 'Filtrar por codigo',
+      emptyLabel: 'Todos',
+    },
+    {
+      id: 'nombre',
+      label: 'Nombre',
+      field: 'nombre',
+      type: 'text',
+      operator: 'contains',
+      emptyLabel: 'Todos',
+    },
+    {
+      id: 'vigente',
+      label: 'Estado',
+      field: 'vigente',
+      type: 'select',
+      emptyLabel: 'Todos',
+      options: [
+        { label: 'Vigente', value: 'true' },
+        { label: 'Inactivo', value: 'false' },
+      ],
+    },
+  ];
 }
 
