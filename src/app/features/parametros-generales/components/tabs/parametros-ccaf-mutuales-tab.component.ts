@@ -18,10 +18,11 @@ export type CcafMutualesTabMode = 'config' | 'ccafLista' | 'mutualesLey';
     <section class="tab-panel">
       @if (mode === 'config') {
         <section class="param-group" aria-labelledby="ccaf-title">
-          <h2 id="ccaf-title">Configuracion CCAF y Mutual</h2>
-          <div class="field-grid field-grid--ccaf" aria-label="Configuracion CCAF y Mutual">
+          <h2 id="ccaf-title">Configuración CCAF y mutual</h2>
+          <p class="param-section-lead">Selección usada como referencia en el periodo actual.</p>
+          <div class="field-grid field-grid--ccaf" aria-label="Configuración CCAF y mutual">
             <label class="param-field">
-              <span>Caja de Compensacion</span>
+              <span>Caja de compensación</span>
               <select class="param-input" [value]="selectedCcafId ?? ''" (change)="seleccionarCcaf?.($event)">
                 <option value="" [selected]="selectedCcafId === null">Sin CCAF cargada</option>
                 @for (ccaf of catalogos.ccafEntidades; track ccaf.idCcafEntidad) {
@@ -29,8 +30,6 @@ export type CcafMutualesTabMode = 'config' | 'ccafLista' | 'mutualesLey';
                 }
               </select>
             </label>
-
-            <div class="erp-grid-filler" aria-hidden="true"></div>
 
             <label class="param-field">
               <span>Mutual de Seguridad</span>
@@ -71,7 +70,7 @@ export type CcafMutualesTabMode = 'config' | 'ccafLista' | 'mutualesLey';
             gridHeight="22rem"
             persistenceKey="parametros.ccaf.dg"
             emptyTitle="No hay CCAF cargadas"
-            emptyDescription="Sin registros externos de cajas de compensacion."
+            emptyDescription="Sin registros externos de cajas de compensación."
             (refresh)="refresh?.()"
           ></app-data-grid>
         </section>
@@ -82,7 +81,7 @@ export type CcafMutualesTabMode = 'config' | 'ccafLista' | 'mutualesLey';
           <h2 id="lista-mutuales-title">Mutuales y Ley 16.744</h2>
           <div class="catalog-grid">
             <app-data-grid
-              title="Organismos administradores"
+              title="Organismos administradores Ley 16.744"
               [rows]="catalogos.organismosLey16744"
               [columns]="organismosLeyColumns"
               [loading]="loading"
@@ -97,7 +96,7 @@ export type CcafMutualesTabMode = 'config' | 'ccafLista' | 'mutualesLey';
             ></app-data-grid>
 
             <app-data-grid
-              title="Parametros Ley 16.744"
+              title="Parámetros Ley 16.744"
               [rows]="catalogos.ley16744Parametros"
               [columns]="ley16744Columns"
               [loading]="loading"

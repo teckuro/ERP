@@ -1,1 +1,43 @@
 @import '../../form-empleado-shared.css';
+
+:host .employee-grid--four {
+  grid-template-columns: repeat(8, minmax(0, 1fr));
+}
+
+/* orden: direccion (3) | numero (2) | depto (2) | comuna | observaciones */
+:host .employee-grid--four > .form-field:nth-child(1) {
+  grid-column: span 3;
+}
+
+:host .employee-grid--four > .form-field:nth-child(2),
+:host .employee-grid--four > .form-field:nth-child(3) {
+  grid-column: span 2;
+}
+
+:host .employee-grid--four > .form-field:nth-child(4) {
+  grid-column: span 8;
+}
+
+:host .employee-grid--four > .form-field:nth-child(5) {
+  grid-column: span 8;
+}
+
+@media (max-width: 1024px) {
+  :host .employee-grid--four {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  :host .employee-grid--four > .form-field:nth-child(1) {
+    grid-column: span 3;
+  }
+
+  :host .employee-grid--four > .form-field:nth-child(2),
+  :host .employee-grid--four > .form-field:nth-child(3) {
+    grid-column: span 2;
+  }
+
+  :host .employee-grid--four > .form-field:nth-child(4),
+  :host .employee-grid--four > .form-field:nth-child(5) {
+    grid-column: span 4;
+  }
+}

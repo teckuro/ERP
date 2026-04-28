@@ -10,9 +10,9 @@ import { TramoCargaParametro } from '../../models/parametro-general.model';
   template: `
     <section class="tab-panel">
       <section class="catalog-section" aria-labelledby="tramos-carga-title">
-        <h2 id="tramos-carga-title">Tramos Cargas Familiares</h2>
+        <h2 id="tramos-carga-title">Tramos cargas familiares</h2>
         <app-data-grid
-          title="Tramos de asignacion familiar"
+          title="Tramos de asignación familiar"
           [rows]="rows"
           [columns]="columns"
           [loading]="loading"
@@ -22,7 +22,7 @@ import { TramoCargaParametro } from '../../models/parametro-general.model';
           gridHeight="28rem"
           persistenceKey="parametros.tramos-carga.dg"
           emptyTitle="No hay tramos cargados"
-          emptyDescription="Sin carga externa de asignacion familiar."
+          emptyDescription="Sin carga externa de asignación familiar."
           (refresh)="refresh?.()"
         ></app-data-grid>
       </section>

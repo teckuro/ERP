@@ -3,11 +3,13 @@
 }
 
 .parametros-page {
+  --param-content-max-width: 1060px;
   display: grid;
   grid-template-rows: auto minmax(0, 1fr);
   gap: 12px;
   min-width: 0;
   min-height: 0;
+  width: 100%;
 }
 
 .parametros-header {

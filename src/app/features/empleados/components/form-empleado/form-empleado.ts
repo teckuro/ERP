@@ -17,6 +17,12 @@ import {
   EMPTY_EMPLEADO_FORM_CATALOGOS,
   EmpleadoFormCatalogos,
 } from '../../models/empleado-catalogos.model';
+import {
+  EMPLEADO_FORM_CONCEPTUAL_STEP_LABELS,
+  EMPLEADO_FORM_STEP_BLOCK_IDS,
+  EMPLEADO_FORM_TAB_ORDER,
+  EmpleadoFormTabId,
+} from '../../models/empleado-form.manifest';
 import { EmpleadoFormGroup } from '../../models/empleado-form.model';
 import { EmpleadosFormOrchestratorService } from '../../services/empleados-form-orchestrator.service';
 import { EmpleadosCatalogosService } from '../../services/empleados-catalogos.service';
@@ -36,7 +42,7 @@ import {
   RecordBreadcrumbItem,
 } from '../../../../shared/components/ui/record-breadcrumb.component';
 
-type TabId = 'datosPersonales' | 'contrato' | 'previsionSalud' | 'bancario';
+type TabId = EmpleadoFormTabId;
 type FinalReviewStatus = 'Completo' | 'Pendiente de revision';
 type ValidationStepId = TabId;
 type ValidationSeverity = 'error' | 'warning' | 'info';
@@ -92,7 +98,7 @@ interface GlobalValidationSummary {
   pendingTotal: number;
 }
 
-const TAB_ORDER: readonly TabId[] = ['datosPersonales', 'contrato', 'previsionSalud', 'bancario'];
+const TAB_ORDER: readonly TabId[] = [...EMPLEADO_FORM_TAB_ORDER];
 
 @Component({
   selector: 'app-form-empleado',
@@ -141,12 +147,10 @@ export class FormEmpleadoComponent implements OnInit {
     { label: 'Empleados', link: '/empleados' },
     { label: 'Creacion de ficha' },
   ];
-  readonly conceptualSteps = [
-    'Identificacion y contacto',
-    'Informacion laboral',
-    'Prevision y salud',
-    'Pago y cierre',
-  ];
+  readonly conceptualSteps = [...EMPLEADO_FORM_CONCEPTUAL_STEP_LABELS];
+
+  /** Inventario de bloques por paso (manifest); referencia unica frente a templates de seccion. */
+  readonly stepBlockIds = EMPLEADO_FORM_STEP_BLOCK_IDS;
 
   async ngOnInit(): Promise<void> {
     this.modo.set(this.resolveModo());

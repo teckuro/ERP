@@ -9,17 +9,18 @@ import { FormGroup, ReactiveFormsModule } from '@angular/forms';
   template: `
     <form class="tab-panel parametros-form" [formGroup]="form" (ngSubmit)="onSubmit?.()">
       <section class="param-group" aria-labelledby="rentas-title">
-        <h2 id="rentas-title">Rentas Minimas Imponibles</h2>
+        <h2 id="rentas-title">Remuneraciones</h2>
+        <p class="param-section-lead">Rentas mínimas imponibles y montos base.</p>
         <div class="field-grid field-grid--rentas">
           <label class="param-field">
-            <span>Sueldo minimo 18 a 65</span>
+            <span>Sueldo mínimo 18 a 65</span>
             <span class="unit-field unit-field--suffix" data-unit="$">
               <input class="param-input text-right" type="number" step="1" formControlName="sueldoMinimo18a65" [readonly]="!editable" />
             </span>
           </label>
 
           <label class="param-field">
-            <span>Menores de 18 y Mayores de 65</span>
+            <span>Menores de 18 y mayores de 65</span>
             <span class="unit-field unit-field--suffix" data-unit="$">
               <input
                 class="param-input text-right"
@@ -39,7 +40,7 @@ import { FormGroup, ReactiveFormsModule } from '@angular/forms';
           </label>
 
           <label class="param-field">
-            <span>Ingreso minimo no remuneracional</span>
+            <span>Ingreso mínimo no remuneracional</span>
             <span class="unit-field unit-field--suffix" data-unit="$">
               <input
                 class="param-input text-right"
@@ -54,7 +55,8 @@ import { FormGroup, ReactiveFormsModule } from '@angular/forms';
       </section>
 
       <section class="param-group" aria-labelledby="afc-title">
-        <h2 id="afc-title">Seguro de Cesantia (AFC)</h2>
+        <h2 id="afc-title">AFC (seguro de cesantía)</h2>
+        <p class="param-section-lead">Porcentajes de cotización según tipo de contrato.</p>
         <div class="field-grid field-grid--afc">
           <label class="param-field">
             <span>Empleado</span>
@@ -78,7 +80,7 @@ import { FormGroup, ReactiveFormsModule } from '@angular/forms';
           </label>
 
           <label class="param-field">
-            <span>Empleador indefinido 11 anos o mas</span>
+            <span>Empleador indefinido 11 años o más</span>
             <span class="unit-field unit-field--suffix" data-unit="%">
               <input
                 class="param-input text-right"
@@ -106,7 +108,8 @@ import { FormGroup, ReactiveFormsModule } from '@angular/forms';
       </section>
 
       <section class="param-group" aria-labelledby="sis-title">
-        <h2 id="sis-title">Cotizaciones Empleador</h2>
+        <h2 id="sis-title">SIS, SANNA y cotizaciones empleador</h2>
+        <p class="param-section-lead">Porcentajes aplicados sobre la remuneración imponible.</p>
         <div class="field-grid field-grid--sis">
           <label class="param-field">
             <span>SIS</span>
@@ -145,8 +148,10 @@ import { FormGroup, ReactiveFormsModule } from '@angular/forms';
       </section>
 
       <section class="param-group" aria-labelledby="topes-title">
-        <h2 id="topes-title">Topes</h2>
+        <h2 id="topes-title">Topes imponibles</h2>
+        <p class="param-section-lead">Límites en UF y en pesos por concepto.</p>
         <div class="field-grid field-grid--topes">
+          <h3 class="param-subsection-title param-subsection-title--first">AFP</h3>
           <label class="param-field">
             <span>AFP UF</span>
             <span class="unit-field unit-field--suffix" data-unit="UF">
@@ -161,6 +166,7 @@ import { FormGroup, ReactiveFormsModule } from '@angular/forms';
             </span>
           </label>
 
+          <h3 class="param-subsection-title">IPS</h3>
           <label class="param-field">
             <span>IPS UF</span>
             <span class="unit-field unit-field--suffix" data-unit="UF">
@@ -175,20 +181,22 @@ import { FormGroup, ReactiveFormsModule } from '@angular/forms';
             </span>
           </label>
 
+          <h3 class="param-subsection-title">Cesantía</h3>
           <label class="param-field">
-            <span>Cesantia UF</span>
+            <span>Cesantía UF</span>
             <span class="unit-field unit-field--suffix" data-unit="UF">
               <input class="param-input text-right" type="number" step="0.01" formControlName="topeCesantiaUf" [readonly]="!editable" />
             </span>
           </label>
 
           <label class="param-field">
-            <span>Cesantia pesos</span>
+            <span>Cesantía pesos</span>
             <span class="unit-field unit-field--suffix" data-unit="$">
               <input class="param-input text-right" type="number" step="1" formControlName="topeCesantia" [readonly]="!editable" />
             </span>
           </label>
 
+          <h3 class="param-subsection-title">APV voluntario</h3>
           <label class="param-field">
             <span>APV mensual UF</span>
             <span class="unit-field unit-field--suffix" data-unit="UF">
@@ -217,8 +225,9 @@ import { FormGroup, ReactiveFormsModule } from '@angular/forms';
             </span>
           </label>
 
+          <h3 class="param-subsection-title">Depósito convenido</h3>
           <label class="param-field">
-            <span>Deposito convenido anual UF</span>
+            <span>Depósito convenido anual UF</span>
             <span class="unit-field unit-field--suffix" data-unit="UF">
               <input
                 class="param-input text-right"
@@ -231,7 +240,7 @@ import { FormGroup, ReactiveFormsModule } from '@angular/forms';
           </label>
 
           <label class="param-field">
-            <span>Deposito convenido anual pesos</span>
+            <span>Depósito convenido anual pesos</span>
             <span class="unit-field unit-field--suffix" data-unit="$">
               <input
                 class="param-input text-right"
@@ -247,6 +256,7 @@ import { FormGroup, ReactiveFormsModule } from '@angular/forms';
 
       <section class="param-group" aria-labelledby="salud-title">
         <h2 id="salud-title">Salud</h2>
+        <p class="param-section-lead">Cotizaciones de salud.</p>
         <div class="field-grid field-grid--rentas">
           <label class="param-field">
             <span>Salud obligatoria</span>
@@ -272,7 +282,8 @@ import { FormGroup, ReactiveFormsModule } from '@angular/forms';
       </section>
 
       <section class="param-group" aria-labelledby="trabajo-pesado-title">
-        <h2 id="trabajo-pesado-title">Trabajo Pesado</h2>
+        <h2 id="trabajo-pesado-title">Trabajo pesado y menos pesado</h2>
+        <p class="param-section-lead">Porcentajes adicionales por riesgo.</p>
         <div class="field-grid field-grid--rentas">
           <label class="param-field">
             <span>Trabajo pesado empleador</span>
@@ -304,7 +315,7 @@ import { FormGroup, ReactiveFormsModule } from '@angular/forms';
         </div>
       </section>
 
-      <footer class="tab-footnote">Ultima actualizacion: {{ fechaActualizacionLabel || 'Sin registro' }}</footer>
+      <footer class="tab-footnote tab-footnote--muted">Última actualización: {{ fechaActualizacionLabel || 'Sin registro' }}</footer>
     </form>
   `,
 })

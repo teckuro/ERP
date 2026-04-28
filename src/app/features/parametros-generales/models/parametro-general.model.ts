@@ -218,3 +218,5 @@ export interface ParametrosGeneralesCatalogos {
   apvFormasPago: ApvApvcFormaPago[];
   afcParametros: AfcParametro[];
 }
+
+export { PARAMETRO_GENERAL_FORM_KEYS, PARAMETROS_CATALOGO_ARRAY_KEYS } from './parametros-generales.manifest';

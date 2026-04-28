@@ -10,10 +10,10 @@ import { TablaImpuestoUnicoParametro, TramoImpuestoParametro } from '../../model
   template: `
     <section class="tab-panel">
       <section class="catalog-section" aria-labelledby="tabla-impuesto-title">
-        <h2 id="tabla-impuesto-title">Tramos Impuesto a la Renta</h2>
+        <h2 id="tabla-impuesto-title">Tramos impuesto a la renta</h2>
         <div class="catalog-grid">
           <app-data-grid
-            title="Tabla impuesto unico"
+            title="Tabla impuesto único"
             [rows]="tablaRows"
             [columns]="tablaColumns"
             [loading]="loading"
@@ -23,12 +23,12 @@ import { TablaImpuestoUnicoParametro, TramoImpuestoParametro } from '../../model
             gridHeight="28rem"
             persistenceKey="parametros.tabla-impuesto.dg"
             emptyTitle="No hay tabla de impuesto cargada"
-            emptyDescription="Sin carga externa del SII para impuesto unico."
+            emptyDescription="Sin carga externa del SII para impuesto único."
             (refresh)="refresh?.()"
           ></app-data-grid>
 
           <app-data-grid
-            title="Tramos impuesto periodo"
+            title="Tramos impuesto por periodo"
             [rows]="tramosRows"
             [columns]="tramosColumns"
             [loading]="loading"

@@ -10,7 +10,7 @@ import { AfpParametro } from '../../models/parametro-general.model';
   template: `
     <section class="tab-panel">
       <section class="catalog-section" aria-labelledby="afp-title">
-        <h2 id="afp-title">Informacion AFP</h2>
+        <h2 id="afp-title">Información AFP</h2>
         <app-data-grid
           title="AFP"
           [rows]="rows"

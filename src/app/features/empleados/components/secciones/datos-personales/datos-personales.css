@@ -16,47 +16,59 @@
   padding-top: 0;
 }
 
-/* Regla base: grilla de 8 columnas en escritorio */
+/* Regla base: grilla de 8 columnas; campos entre span 2 y span 3 (prioridad de lectura = orden del DOM) */
 :host-context(.step-panel--basic) .employee-grid {
   grid-template-columns: repeat(8, minmax(0, 1fr));
 }
 
-/* Identificacion legal (orden se mantiene): RUT, Pasaporte, Fecha nacimiento, Sexo */
+/* Identificacion legal: RUT y Pasaporte prioridad ancho (3); fecha 2; Sexo en siguiente fila (min 2) */
 :host-context(.step-panel--basic) .employee-block:has(.form-field--rut) .form-field--rut {
-  grid-column: span 4;
+  grid-column: span 3;
 }
 
 :host-context(.step-panel--basic) .employee-block:has(.form-field--rut) .form-field--passport {
-  grid-column: span 2;
+  grid-column: span 3;
 }
 
 :host-context(.step-panel--basic) .employee-block:has(.form-field--rut) .form-field--date {
-  grid-column: span 1;
+  grid-column: span 2;
 }
 
 :host-context(.step-panel--basic) .employee-block:has(.form-field--rut) .form-field--sex {
-  grid-column: span 1;
+  grid-column: span 2;
 }
 
-/* Nombre del colaborador (orden se mantiene): Nombres, Apellido paterno, Apellido materno */
+/* Nombre del colaborador: Nombres y apellido paterno 3; apellido materno 2 */
 :host-context(.step-panel--basic) .employee-block:has(#empleado-nombres) .form-field--wide {
-  grid-column: span 4;
+  grid-column: span 3;
 }
 
 :host-context(.step-panel--basic)
   .employee-block:has(#empleado-nombres)
-  .form-field:not(.form-field--wide) {
+  .form-field:has(#empleado-apellido-paterno) {
+  grid-column: span 3;
+}
+
+:host-context(.step-panel--basic)
+  .employee-block:has(#empleado-nombres)
+  .form-field:has(#empleado-apellido-materno) {
   grid-column: span 2;
 }
 
-/* Informacion base: Nacionalidad y Estado civil */
-:host-context(.step-panel--basic) .employee-block:has(#empleado-idPais) .form-field {
-  grid-column: span 4;
+/* Informacion base: solo la primera grilla (no mezclar con Contacto en la misma card) */
+:host-context(.step-panel--basic)
+  .employee-block:has(#empleado-idPais)
+  .employee-grid--four
+  > .form-field {
+  grid-column: span 3;
 }
 
-/* Contacto base: Email y Telefono */
-:host-context(.step-panel--basic) .employee-block:has(#empleado-email) .form-field {
-  grid-column: span 4;
+/* Contacto base: segunda grilla dentro de la misma card */
+:host-context(.step-panel--basic)
+  .employee-block:has(#empleado-email)
+  .employee-grid--two
+  > .form-field {
+  grid-column: span 3;
 }
 
 @media (max-width: 1024px) {
@@ -65,11 +77,11 @@
   }
 
   :host-context(.step-panel--basic) .employee-block:has(.form-field--rut) .form-field--rut {
-    grid-column: span 4;
+    grid-column: span 3;
   }
 
   :host-context(.step-panel--basic) .employee-block:has(.form-field--rut) .form-field--passport {
-    grid-column: span 2;
+    grid-column: span 3;
   }
 
   :host-context(.step-panel--basic) .employee-block:has(.form-field--rut) .form-field--date {
@@ -81,20 +93,32 @@
   }
 
   :host-context(.step-panel--basic) .employee-block:has(#empleado-nombres) .form-field--wide {
-    grid-column: span 4;
+    grid-column: span 3;
   }
 
   :host-context(.step-panel--basic)
     .employee-block:has(#empleado-nombres)
-    .form-field:not(.form-field--wide) {
+    .form-field:has(#empleado-apellido-paterno) {
+    grid-column: span 3;
+  }
+
+  :host-context(.step-panel--basic)
+    .employee-block:has(#empleado-nombres)
+    .form-field:has(#empleado-apellido-materno) {
     grid-column: span 2;
   }
 
-  :host-context(.step-panel--basic) .employee-block:has(#empleado-idPais) .form-field {
+  :host-context(.step-panel--basic)
+    .employee-block:has(#empleado-idPais)
+    .employee-grid--four
+    > .form-field {
     grid-column: span 2;
   }
 
-  :host-context(.step-panel--basic) .employee-block:has(#empleado-email) .form-field {
-    grid-column: span 4;
+  :host-context(.step-panel--basic)
+    .employee-block:has(#empleado-email)
+    .employee-grid--two
+    > .form-field {
+    grid-column: span 2;
   }
 }

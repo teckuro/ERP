@@ -628,12 +628,12 @@ export class DataGridCellDirective<T = unknown> {
                 <tr>
                   <th
                     scope="col"
-                    class="data-grid-row-number-cell border-b border-r border-neutral-200 px-3 py-2 text-[0.68rem] font-medium uppercase text-neutral-600"
+                    class="data-grid-row-number-cell data-grid-head-num border-b border-r border-neutral-200 text-[0.68rem] font-medium uppercase text-neutral-600"
                   >
                     N°
                   </th>
                   @if (selectable) {
-                    <th scope="col" class="w-11 border-b border-r border-neutral-200 px-3 py-2.5">
+                    <th scope="col" class="data-grid-selection-head w-11 border-b border-r border-neutral-200">
                       <input
                         class="h-4 w-4 rounded border-neutral-300 text-blue-600 focus:ring-2 focus:ring-blue-500"
                         type="checkbox"
@@ -648,7 +648,7 @@ export class DataGridCellDirective<T = unknown> {
                   @for (column of visibleColumns; track column.id) {
                     <th
                       scope="col"
-                      class="whitespace-nowrap border-b border-r border-neutral-200 px-3 py-2 text-[0.68rem] font-medium uppercase text-neutral-600 last:border-r-0"
+                      class="data-grid-head-cell whitespace-nowrap border-b border-r border-neutral-200 text-[0.68rem] font-medium uppercase text-neutral-600 last:border-r-0"
                       [ngClass]="[alignmentHeaderClass(column), column.headerClass ?? '', column.widthClass ?? '']"
                     >
                       @if (isSortable(column)) {
@@ -676,17 +676,17 @@ export class DataGridCellDirective<T = unknown> {
                 @if (loading) {
                   @for (skeletonRow of skeletonRows; track skeletonRow) {
                     <tr class="data-grid-skeleton-row" aria-hidden="true">
-                      <td class="data-grid-row-number-cell border-b border-r border-neutral-100 px-3 py-3.5">
+                      <td class="data-grid-row-number-cell data-grid-skel-num border-b border-r border-neutral-100">
                         <span class="data-grid-skeleton-line data-grid-skeleton-line--number"></span>
                       </td>
                       @if (selectable) {
-                        <td class="w-11 border-b border-r border-neutral-100 px-3 py-3.5">
+                        <td class="data-grid-skel-select w-11 border-b border-r border-neutral-100">
                           <span class="data-grid-skeleton-box h-4 w-4 rounded"></span>
                         </td>
                       }
                       @for (column of visibleColumns; track column.id) {
                         <td
-                          class="border-b border-r border-neutral-100 px-3 py-3.5 last:border-r-0"
+                          class="data-grid-skel-cell border-b border-r border-neutral-100 last:border-r-0"
                           [ngClass]="[alignmentCellClass(column), column.cellClass ?? '', column.widthClass ?? '']"
                         >
                           <span class="data-grid-skeleton-line" [class.data-grid-skeleton-line--short]="column.align === 'right' || column.align === 'center'"></span>
@@ -702,14 +702,14 @@ export class DataGridCellDirective<T = unknown> {
                       [class.data-grid-row-selected]="isRowSelected(row)"
                     >
                       <td
-                        class="data-grid-row-number-cell border-b border-r border-neutral-100 px-3 py-2.5 text-[0.72rem] font-semibold text-slate-500 transition-colors"
+                        class="data-grid-row-number-cell data-grid-body-num border-b border-r border-neutral-100 text-[0.72rem] font-semibold text-slate-500 transition-colors"
                         [class.bg-blue-50]="isRowSelected(row)"
                       >
                         {{ absoluteIndex($index) + 1 }}
                       </td>
                       @if (selectable) {
                         <td
-                          class="w-11 border-b border-r border-neutral-100 px-3 py-3.5 transition-colors"
+                          class="data-grid-selection-cell w-11 border-b border-r border-neutral-100 transition-colors"
                           [class.bg-blue-50]="isRowSelected(row)"
                         >
                           <input
@@ -724,7 +724,7 @@ export class DataGridCellDirective<T = unknown> {
                       }
                       @for (column of visibleColumns; track column.id) {
                         <td
-                          class="border-b border-r border-neutral-100 px-3 py-2.5 text-[0.76rem] text-neutral-900 transition-colors last:border-r-0"
+                          class="data-grid-body-cell border-b border-r border-neutral-100 text-[0.76rem] text-neutral-900 transition-colors last:border-r-0"
                           [class.bg-blue-50]="isRowSelected(row)"
                           [ngClass]="[alignmentCellClass(column), column.cellClass ?? '', column.widthClass ?? '']"
                         >
@@ -969,6 +969,11 @@ export class DataGridCellDirective<T = unknown> {
         --data-grid-text-xs: 0.64rem;
         --data-grid-text-sm: 0.72rem;
         --data-grid-text-md: 0.76rem;
+        --data-grid-padding-inline: 0.5rem;
+        --data-grid-padding-block-body: 0.5rem;
+        --data-grid-padding-block-head: 0.5rem;
+        --data-grid-padding-num-inline: 0.45rem;
+        --data-grid-padding-skel: 0.65rem;
       }
 
       .data-grid-scroll {
@@ -1167,11 +1172,47 @@ export class DataGridCellDirective<T = unknown> {
       }
 
       .data-grid-row-number-col {
-        width: 3.75rem;
+        width: 3rem;
+      }
+
+      .data-grid-head-cell,
+      .data-grid-selection-head {
+        padding: var(--data-grid-padding-block-head) var(--data-grid-padding-inline);
+      }
+
+      .data-grid-head-num {
+        padding: var(--data-grid-padding-block-head) var(--data-grid-padding-num-inline);
+      }
+
+      .data-grid-body-cell {
+        padding: var(--data-grid-padding-block-body) var(--data-grid-padding-inline);
+        font-size: var(--data-grid-text-md);
+        line-height: 1.35;
+      }
+
+      .data-grid-body-num {
+        padding: calc(var(--data-grid-padding-block-body) - 0.03rem)
+          var(--data-grid-padding-num-inline);
+      }
+
+      .data-grid-selection-cell {
+        padding: 0.6rem var(--data-grid-padding-inline);
+      }
+
+      .data-grid-skel-cell {
+        padding: var(--data-grid-padding-skel) var(--data-grid-padding-inline);
+      }
+
+      .data-grid-skel-num {
+        padding: var(--data-grid-padding-skel) var(--data-grid-padding-num-inline);
+      }
+
+      .data-grid-skel-select {
+        padding: var(--data-grid-padding-skel) var(--data-grid-padding-inline);
       }
 
       .data-grid-row-number-cell {
-        width: 3.75rem;
+        width: 3rem;
         text-align: center;
         white-space: nowrap;
       }
@@ -1609,7 +1650,7 @@ export class DataGridComponent<T = unknown> implements OnChanges, OnDestroy {
   }
 
   get tableMinWidth(): string {
-    const rowNumberWidth = 3.75;
+    const rowNumberWidth = 3;
     const selectionWidth = this.selectable ? 2.75 : 0;
     const columnWidth = this.visibleColumns.reduce((total, column) => total + this.estimatedColumnWidth(column), rowNumberWidth + selectionWidth);
     return `${Math.max(42, Math.min(columnWidth, 96))}rem`;

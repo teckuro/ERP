@@ -1,16 +1,15 @@
 import { CommonModule } from '@angular/common';
 import { Component, Input } from '@angular/core';
 import { FormGroup, ReactiveFormsModule } from '@angular/forms';
-import { LucideAngularModule } from 'lucide-angular';
-
 @Component({
   selector: 'app-parametros-valores-tab',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, LucideAngularModule],
+  imports: [CommonModule, ReactiveFormsModule],
   template: `
     <form class="tab-panel parametros-form" [formGroup]="form" (ngSubmit)="onSubmit?.()">
       <section class="param-group" aria-labelledby="indicadores-title">
-        <h2 id="indicadores-title">Indicadores</h2>
+        <h2 id="indicadores-title">Indicadores mensuales</h2>
+        <p class="param-section-lead">UF, UTM y UTA del periodo.</p>
         <div class="field-grid field-grid--values">
           <label class="param-field">
             <span>Valor U.F.</span>
@@ -36,7 +35,7 @@ import { LucideAngularModule } from 'lucide-angular';
       </section>
 
       <section class="param-group" aria-labelledby="gratificacion-title">
-        <h2 id="gratificacion-title">Gratificacion</h2>
+        <h2 id="gratificacion-title">Gratificación</h2>
         <div class="field-grid field-grid--gratificacion">
           <label class="param-field">
             <span>Porcentaje (legal)</span>
@@ -58,23 +57,23 @@ import { LucideAngularModule } from 'lucide-angular';
             </span>
           </label>
 
-          <label class="param-check erp-flag-check">
-            <span>Con Gratificacion</span>
+          <label class="param-checkbox-inline">
             <input type="checkbox" formControlName="gratificacion" (click)="onReadonlyToggle($event)" />
+            <span>Con gratificación</span>
           </label>
-
-          <label class="param-check erp-flag-check">
-            <span>Tope Legal</span>
+          <label class="param-checkbox-inline">
             <input type="checkbox" checked disabled />
+            <span>Tope legal</span>
           </label>
         </div>
       </section>
 
       <section class="param-group" aria-labelledby="ausencias-title">
-        <h2 id="ausencias-title">Metodo de Descuento Ausencias</h2>
-        <div class="radio-row">
+        <h2 id="ausencias-title">Configuración general</h2>
+        <p class="param-section-lead">Método de descuento por ausencias.</p>
+        <div class="field-grid field-grid--values">
           <label class="erp-choice-radio">
-            <span>En base 30 dias</span>
+            <span>En base 30 días</span>
             <input
               type="radio"
               name="descuentosBase"
@@ -84,7 +83,7 @@ import { LucideAngularModule } from 'lucide-angular';
             />
           </label>
           <label class="erp-choice-radio">
-            <span>En base dias del Mes</span>
+            <span>En base días del mes</span>
             <input
               type="radio"
               name="descuentosBase"
@@ -96,7 +95,7 @@ import { LucideAngularModule } from 'lucide-angular';
         </div>
       </section>
 
-      <footer class="tab-footnote">Ultima actualizacion: {{ fechaActualizacionLabel || 'Sin registro' }}</footer>
+      <footer class="tab-footnote tab-footnote--muted">Última actualización: {{ fechaActualizacionLabel || 'Sin registro' }}</footer>
     </form>
   `,
 })

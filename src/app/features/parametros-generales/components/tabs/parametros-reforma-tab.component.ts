@@ -16,9 +16,9 @@ import {
   template: `
     <section class="tab-panel">
       <section class="catalog-section" aria-labelledby="reforma-title">
-        <h2 id="reforma-title">Reforma de Pensiones</h2>
+        <h2 id="reforma-title">Reforma de pensiones</h2>
         <app-data-grid
-          title="Parametros legales"
+          title="Parámetros legales"
           [rows]="reformaPensiones"
           [columns]="parametrosLegalesColumns"
           [loading]="loading"
@@ -28,7 +28,7 @@ import {
           gridHeight="24rem"
           persistenceKey="parametros.reforma-legal.dg"
           emptyTitle="No hay parametros legales"
-          emptyDescription="Sin registros externos de reforma o APV."
+          emptyDescription="Sin registros externos de reforma ni APV."
           (refresh)="refresh?.()"
         ></app-data-grid>
       </section>

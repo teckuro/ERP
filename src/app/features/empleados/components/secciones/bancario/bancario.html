@@ -6,7 +6,10 @@
 
   @if (isBlockVisible('cuenta')) {
   <app-card className="employee-block">
-    <div class="employee-block-title">Cuenta de abono</div>
+    <div class="employee-block-head">
+      <h4>Cuenta de abono</h4>
+    </div>
+
     <div class="employee-grid employee-grid--four">
     <div class="form-field">
       <div class="field-label-row">
@@ -52,7 +55,7 @@
       }
     </div>
 
-    <div class="form-field employee-span-2">
+    <div class="form-field">
       <div class="field-label-row">
         <label class="text-sm font-medium text-gray-700" for="empleado-numero-cuenta">Numero de cuenta</label>
         @if (isRequired('numeroCuenta')) {

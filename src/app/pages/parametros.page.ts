@@ -1,5 +1,15 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit, ViewEncapsulation, computed, inject, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  isDevMode,
+  OnInit,
+  ViewEncapsulation,
+  computed,
+  inject,
+  signal,
+} from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { LucideAngularModule } from 'lucide-angular';
@@ -14,6 +24,7 @@ import {
   OrganismoLey16744,
   ParametroGeneral,
   ParametroLegal,
+  PARAMETROS_CATALOGO_ARRAY_KEYS,
   ParametrosGeneralesCatalogos,
   ParametrosTabId,
   ReformaPrevisionalParametro,
@@ -361,6 +372,22 @@ interface MonthOption {
         --prm-blue: #2563eb;
         --prm-blue-hover: #1d4ed8;
         --prm-blue-soft: #eff6ff;
+        --prm-chip-muted: #64748b;
+        --prm-chip-line: #e5e7eb;
+        --prm-chip-soft: #f1f5f9;
+        --prm-unit-chip-fs: 0.625rem;
+        --prm-unit-chip-gap: 6px;
+        --prm-unit-chip-min-height: 17px;
+        --prm-unit-chip-pad-x: 7px;
+        --prm-unit-chip-ring-gap: 5px;
+        --prm-field-stack-gap: 5px;
+        --prm-field-row-gap: 12px;
+        --prm-grid-gap-inline: 14px;
+        --prm-inline-soft-ring: rgba(37, 99, 235, 0.17);
+        --prm-soft-muted-zone: #f8fafc;
+        --prm-input-border: #d1d5db;
+        --prm-unit-gap: var(--prm-unit-chip-gap);
+        --param-content-max-width: 1060px;
         display: grid;
         min-width: 0;
         gap: 12px;
@@ -368,10 +395,12 @@ interface MonthOption {
       }
 
       .parametros-viewhead {
+        position: relative;
         display: grid;
         gap: 12px;
-        padding: 4px 0 8px;
-        background: #f9fafb;
+        padding: 4px 0 12px;
+        border-radius: 8px;
+        background: linear-gradient(to bottom, #f9fafb 0%, #f9fafb 88%, #f3f4f6 100%);
       }
 
       .parametros-viewhead::after {
@@ -443,6 +472,18 @@ interface MonthOption {
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
+      }
+
+      /* Sin flechas nativas: no compiten con el chip de unidad ni “pegándose” al borde */
+      .parametros-page input.param-input[type='number'] {
+        appearance: textfield;
+        -moz-appearance: textfield;
+      }
+
+      .parametros-page input.param-input[type='number']::-webkit-outer-spin-button,
+      .parametros-page input.param-input[type='number']::-webkit-inner-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
       }
 
       .parametros-content {
@@ -534,12 +575,16 @@ interface MonthOption {
         background: var(--prm-blue, #2563eb);
       }
 
-      .tab-panel {
+      .parametros-page .tab-panel {
         display: grid;
         min-height: 0;
+        min-width: 0;
         gap: 12px;
         background: #ffffff;
         padding: 12px;
+        justify-items: stretch;
+        box-sizing: border-box;
+        width: 100%;
       }
 
       .tab-panel--compact {
@@ -553,7 +598,7 @@ interface MonthOption {
       }
 
       @media (max-width: 760px) {
-        .tab-panel {
+        .parametros-page .tab-panel {
           padding: 10px;
           gap: 10px;
           min-height: 0;
@@ -561,23 +606,38 @@ interface MonthOption {
       }
 
       .parametros-page .tab-panel.parametros-form {
-        box-sizing: border-box;
-        max-width: min(56rem, 100%);
-        margin-inline: auto;
-      }
-
-      .parametros-form {
         align-content: start;
         gap: 14px;
       }
 
       .param-group {
         display: grid;
+        width: 100%;
+        max-width: none;
         min-width: 0;
         overflow: hidden;
         border: 1px solid #e5e7eb;
         border-radius: 8px;
         background: #ffffff;
+        box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+        justify-items: stretch;
+      }
+
+      /* Títulos y bordes del card a todo el ancho; solo la rejilla de campos respeta el tope */
+      .parametros-page .param-group .field-grid {
+        box-sizing: border-box;
+        width: 100%;
+        max-width: min(var(--param-content-max-width), 100%);
+        min-width: 0;
+        justify-self: start;
+      }
+
+      .parametros-page .param-group .radio-row {
+        box-sizing: border-box;
+        width: 100%;
+        max-width: min(var(--param-content-max-width), 100%);
+        min-width: 0;
+        justify-self: start;
       }
 
       .param-group h2,
@@ -585,47 +645,198 @@ interface MonthOption {
         margin: 0;
         border-bottom: 1px solid var(--prm-line, #e5e7eb);
         background: var(--prm-soft, #f8fafc);
-        padding: 10px 12px;
+        padding: 10px 14px;
         color: var(--prm-ink, #111827);
         font-size: 0.86rem;
         font-weight: 700;
         line-height: 1.2;
       }
 
+      .param-section-lead {
+        margin: 0;
+        padding: 8px 14px 0;
+        border-bottom: 1px solid #f1f5f9;
+        color: #64748b;
+        font-size: 0.72rem;
+        font-weight: 600;
+        line-height: 1.35;
+      }
+
+      .param-subsection-title {
+        grid-column: span 8;
+        box-sizing: border-box;
+        width: 100%;
+        min-width: 0;
+        justify-self: stretch;
+        margin: 0;
+        padding: 10px 0 4px;
+        border-top: 1px solid #f1f5f9;
+        color: #64748b;
+        font-size: 0.72rem;
+        font-weight: 750;
+        letter-spacing: 0.03em;
+        line-height: 1.2;
+        text-transform: uppercase;
+      }
+
+      .field-grid .param-subsection-title--first {
+        padding-top: 2px;
+        border-top: 0;
+      }
+
+      .field-grid-slot--subsection > .param-subsection-title {
+        grid-column: auto;
+      }
+
+      .param-flag-row {
+        display: flex;
+        flex-wrap: wrap;
+        flex-direction: row;
+        align-items: flex-end;
+        align-content: flex-start;
+        gap: 12px 24px;
+        grid-column: span 8;
+        box-sizing: border-box;
+        width: 100%;
+        max-width: 100%;
+        min-width: 0;
+        justify-self: stretch;
+        padding: 6px 0 12px;
+      }
+
+      .param-flag-row .param-check {
+        flex: 0 1 auto;
+        min-width: min(100%, var(--erp-field-min-width, 190px));
+        max-width: 100%;
+      }
+
       .field-grid {
         display: grid;
         align-items: end;
-        row-gap: var(--erp-field-row-gap, 3px);
-        column-gap: var(--erp-field-col-gap, 2px);
-        padding: 12px;
+        justify-items: stretch;
+        row-gap: var(--prm-field-row-gap);
+        column-gap: var(--prm-grid-gap-inline);
+        padding: 14px 14px 16px;
         justify-content: start;
+        grid-auto-flow: row;
       }
 
-      /* Grillas RRHH: 8 columnas; cada campo suele ocupar span 2 (hasta 4 por fila) */
+      /*
+       * Rejilla maestra: 8 columnas; cada input/select = span 2 (de a dos). No hace falta llenar la fila: pueden quedar columnas libres.
+       * Subtítulos (.param-subsection-title) = span 8. Radios/checks compactos en Valores = span 1.
+       */
       .field-grid--values,
+      .field-grid--gratificacion,
       .field-grid--rentas,
       .field-grid--afc,
       .field-grid--topes,
-      .field-grid--gratificacion,
       .field-grid--sis,
       .field-grid--ccaf {
         grid-template-columns: repeat(8, minmax(0, 1fr));
-        justify-content: stretch;
+        justify-content: start;
         align-items: end;
       }
 
-      .field-grid--values .param-field,
-      .field-grid--values .param-check,
-      .field-grid--gratificacion .param-field,
-      .field-grid--gratificacion .param-check,
-      .field-grid--rentas .param-field,
-      .field-grid--afc .param-field,
-      .field-grid--sis .param-field,
-      .field-grid--topes .param-field,
-      .field-grid--ccaf .param-field,
-      .field-grid--ccaf .erp-grid-filler {
+      .field-grid > .field-grid-slot {
+        grid-column: span 8;
+        min-width: 0;
+        justify-self: stretch;
+        width: 100%;
+        box-sizing: border-box;
+      }
+
+      /* Agrupa título + filas de campos con el mismo ritmo que el resto del formulario */
+      .field-grid > .field-grid-slot--subsection {
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+        gap: var(--prm-field-stack-gap);
+        min-width: 0;
+      }
+
+      /* Slots anidados: hasta 3 columnas (máx.); repetir reglas sin '>' para slots dentro de subsección */
+      .field-grid .field-grid-slot--3 {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: var(--prm-grid-gap-inline);
+        align-items: end;
+        min-width: 0;
+      }
+
+      .field-grid > .field-grid-slot--3 {
+        grid-column: span 8;
+      }
+
+      .field-grid .field-grid-slot--2 {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: var(--prm-grid-gap-inline);
+        align-items: end;
+        min-width: 0;
+      }
+
+      .field-grid > .field-grid-slot--2 {
+        grid-column: span 8;
+      }
+
+      .param-checkbox-inline {
+        display: inline-flex;
+        flex-direction: row;
+        align-items: center;
+        gap: 8px;
+        min-height: var(--erp-control-height, 23px);
+        margin: 0;
+        font-size: 0.74rem;
+        font-weight: 700;
+        color: #374151;
+        cursor: pointer;
+        user-select: none;
+      }
+
+      .param-checkbox-inline input {
+        width: 16px;
+        height: 16px;
+        flex-shrink: 0;
+        accent-color: #2563eb;
+      }
+
+      .field-grid--gratificacion > .param-checkbox-inline span {
+        line-height: 1.2;
+      }
+
+      .field-grid--values > .param-field,
+      .field-grid--values > .param-check,
+      .field-grid--gratificacion > .param-field,
+      .field-grid--rentas > .param-field,
+      .field-grid--afc > .param-field,
+      .field-grid--sis > .param-field,
+      .field-grid--topes > .param-field,
+      .field-grid--ccaf > .param-field {
         grid-column: span 2;
         min-width: 0;
+        justify-self: start;
+        width: 100%;
+        max-width: 100%;
+      }
+
+      /* Radios / checks: controles compactos → span 1 cada uno (excepción respecto a inputs span 2) */
+      .parametros-page .field-grid--values > .erp-choice-radio {
+        grid-column: span 1;
+        min-width: 0;
+        justify-self: start;
+        width: auto;
+        max-width: 100%;
+        box-sizing: border-box;
+        align-self: end;
+      }
+
+      .field-grid--gratificacion > .param-checkbox-inline {
+        grid-column: span 1;
+        min-width: 0;
+        justify-self: start;
+        width: auto;
+        max-width: 100%;
+        align-self: end;
       }
 
       @media (max-width: 980px) {
@@ -637,6 +848,15 @@ interface MonthOption {
         .field-grid--topes,
         .field-grid--ccaf {
           grid-template-columns: repeat(4, minmax(0, 1fr));
+        }
+
+        .field-grid > .field-grid-slot {
+          grid-column: span 4;
+        }
+
+        .field-grid .param-subsection-title,
+        .field-grid .param-flag-row {
+          grid-column: span 4;
         }
       }
 
@@ -654,20 +874,40 @@ interface MonthOption {
           gap: 10px;
         }
 
-        .field-grid--values .param-field,
-        .field-grid--values .param-check,
-        .field-grid--gratificacion .param-field,
-        .field-grid--gratificacion .param-check,
-        .field-grid--rentas .param-field,
-        .field-grid--afc .param-field,
-        .field-grid--sis .param-field,
-        .field-grid--topes .param-field,
-        .field-grid--ccaf .param-field,
-        .field-grid--ccaf .erp-grid-filler {
+        .field-grid > .field-grid-slot {
           grid-column: span 1;
         }
 
-        .param-field--wide,
+        .field-grid .field-grid-slot--3,
+        .field-grid > .field-grid-slot--3 {
+          grid-template-columns: 1fr;
+          gap: 10px;
+        }
+
+        .field-grid .field-grid-slot--2,
+        .field-grid > .field-grid-slot--2 {
+          grid-template-columns: 1fr;
+          gap: 10px;
+        }
+
+        .parametros-page .field-grid--values > .erp-choice-radio,
+        .field-grid--values > .param-field,
+        .field-grid--values > .param-check,
+        .field-grid--gratificacion > .param-field,
+        .field-grid--gratificacion > .param-checkbox-inline,
+        .field-grid--rentas > .param-field,
+        .field-grid--afc > .param-field,
+        .field-grid--sis > .param-field,
+        .field-grid--topes > .param-field,
+        .field-grid--ccaf > .param-field {
+          grid-column: span 1;
+        }
+
+        .field-grid .param-subsection-title,
+        .field-grid .param-flag-row {
+          grid-column: span 1;
+        }
+
         .catalog-section--split h2 {
           grid-column: span 1;
         }
@@ -677,8 +917,9 @@ interface MonthOption {
       .param-check,
       .radio-row label {
         display: grid;
+        grid-template-columns: minmax(0, 1fr);
         min-width: 0;
-        gap: 3px;
+        gap: 6px;
         color: #374151;
         font-size: 0.74rem;
         font-weight: 700;
@@ -694,24 +935,11 @@ interface MonthOption {
         min-height: 1.65em;
         display: flex;
         align-items: flex-end;
+        justify-self: start;
+        max-width: 100%;
       }
 
-      .param-field--wide {
-        width: 100%;
-        grid-column: span 8;
-      }
-
-      @media (max-width: 980px) {
-        .param-field--wide {
-          grid-column: span 4;
-        }
-      }
-
-      @media (max-width: 760px) {
-        .param-field--wide {
-          grid-column: span 1;
-        }
-      }
+      /* .param-field--wide opcional (misma huella span 2 que el resto; texto largo sólo rompe dentro de la celda) */
 
       .param-check {
       }
@@ -728,22 +956,95 @@ interface MonthOption {
         accent-color: #2563eb;
       }
 
-      .param-field .unit-field {
+      .param-field .unit-field,
+      .field-grid .param-field > .unit-field {
         width: 100%;
         max-width: 100%;
+        min-width: 0;
       }
 
-      .unit-field {
+      /*
+       * Campo con unidad ($ % UF IMM): un solo borde exterior, input sin borde interno,
+       * chip como flex item (alineación estable; evita solapamiento con padding-right fijo).
+       */
+      .parametros-page .unit-field.unit-field--suffix {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        gap: var(--prm-unit-gap);
+        box-sizing: border-box;
+        width: 100%;
+        min-width: 0;
+        min-height: var(--erp-control-height, 23px);
+        height: var(--erp-control-height, 23px);
+        padding: 0 6px 0 8px;
+        border: 1px solid var(--prm-input-border);
+        border-radius: 6px;
+        background: var(--prm-panel);
+        transition:
+          border-color 140ms ease,
+          box-shadow 140ms ease;
+      }
+
+      .parametros-page .unit-field.unit-field--suffix:focus-within {
+        border-color: var(--prm-blue);
+        box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.14);
+      }
+
+      .parametros-page .unit-field.unit-field--suffix:has(.param-input:is([readonly], :disabled)) {
+        background: var(--prm-soft);
+      }
+
+      .parametros-page .unit-field.unit-field--suffix .param-input {
+        flex: 1 1 0%;
+        min-width: 0;
+        height: auto;
+        align-self: stretch;
+        border: none !important;
+        background: transparent !important;
+        box-shadow: none !important;
+        padding: 0 4px 0 0 !important;
+      }
+
+      .parametros-page .unit-field.unit-field--suffix .param-input:focus {
+        outline: none !important;
+      }
+
+      .parametros-page .unit-field.unit-field--suffix .param-input[readonly] {
+        background: transparent !important;
+      }
+
+      .parametros-page .unit-field.unit-field--suffix::after {
+        content: attr(data-unit);
+        position: static;
+        flex-shrink: 0;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        height: var(--erp-unit-badge-height, 16px);
+        min-width: var(--erp-unit-badge-min-width, 18px);
+        padding: 0 var(--erp-unit-badge-padding-x, 5px);
+        border: 1px solid var(--prm-line);
+        border-radius: 999px;
+        background: var(--prm-soft);
+        color: #64748b;
+        font-size: var(--erp-unit-badge-font-size, var(--prm-unit-chip-fs, 0.625rem));
+        font-weight: 750;
+        line-height: 1;
+        pointer-events: none;
+      }
+
+      /* Prefijo legacy (no hay plantillas actuales): badge absoluto dentro del input */
+      .parametros-page .unit-field.unit-field--prefix:not(.unit-field--suffix) {
         position: relative;
         display: block;
-        min-width: 0;
-        box-sizing: border-box;
       }
 
-      .unit-field::after {
+      .parametros-page .unit-field.unit-field--prefix:not(.unit-field--suffix)::after {
         content: attr(data-unit);
         position: absolute;
         top: 50%;
+        right: var(--erp-unit-offset-x, 6px);
         transform: translateY(-50%);
         display: inline-flex;
         align-items: center;
@@ -751,33 +1052,17 @@ interface MonthOption {
         height: var(--erp-unit-badge-height, 16px);
         min-width: var(--erp-unit-badge-min-width, 18px);
         padding: 0 var(--erp-unit-badge-padding-x, 5px);
-        border: 1px solid #e5e7eb;
+        border: 1px solid var(--prm-line);
         border-radius: 999px;
-        background: #f8fafc;
+        background: var(--prm-soft);
         color: #64748b;
         font-size: var(--erp-unit-badge-font-size, 0.66rem);
         font-weight: 750;
         line-height: 1;
         pointer-events: none;
-        opacity: 0.95;
       }
 
-      .unit-field--suffix::after {
-        right: var(--erp-unit-offset-x, 6px);
-      }
-
-      .unit-field--prefix::after {
-        /* Mantener compatibilidad: aunque se use "prefix", el badge va a la derecha */
-        right: var(--erp-unit-offset-x, 6px);
-        left: auto;
-      }
-
-      .unit-field--suffix .param-input {
-        padding-right: var(--erp-unit-input-padding, 34px);
-      }
-
-      .unit-field--prefix .param-input {
-        /* Mantener compatibilidad: aunque se use "prefix", el badge va a la derecha */
+      .parametros-page .unit-field.unit-field--prefix:not(.unit-field--suffix) .param-input {
         padding-right: var(--erp-unit-input-padding, 34px);
         padding-left: 6px;
       }
@@ -790,9 +1075,20 @@ interface MonthOption {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(var(--erp-field-min-width, 190px), var(--erp-field-max-width, 260px)));
         justify-content: start;
+        justify-items: start;
+        align-items: end;
         row-gap: var(--erp-field-row-gap, 3px);
         column-gap: var(--erp-field-col-gap, 2px);
         padding: 12px;
+        width: 100%;
+        max-width: 100%;
+        box-sizing: border-box;
+      }
+
+      .radio-row--spaced {
+        row-gap: 8px;
+        column-gap: 16px;
+        padding: 12px 12px 14px;
       }
 
       .tab-footnote {
@@ -802,21 +1098,44 @@ interface MonthOption {
         font-weight: 600;
       }
 
+      .tab-footnote--muted {
+        margin-top: 4px;
+        padding: 10px 12px 8px;
+        border-top: 1px solid #f1f5f9;
+        color: #94a3b8;
+        font-weight: 600;
+      }
+
       .catalog-section {
         display: grid;
+        grid-template-columns: minmax(0, 1fr);
         min-width: 0;
+        width: 100%;
         gap: 10px;
         overflow: hidden;
         border: 1px solid #e5e7eb;
         border-radius: 8px;
         background: #ffffff;
+        box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+        justify-items: stretch;
+      }
+
+      .catalog-section > app-data-grid {
+        box-sizing: border-box;
+        width: 100%;
+        min-width: 0;
+        padding: 0 12px 12px;
       }
 
       .catalog-grid {
         display: grid;
+        width: 100%;
+        min-width: 0;
         gap: 12px;
         padding: 12px;
         grid-template-columns: repeat(2, minmax(0, 1fr));
+        justify-items: stretch;
+        align-items: stretch;
       }
 
       .catalog-grid app-data-grid {
@@ -1394,6 +1713,7 @@ export class ParametrosPage implements OnInit {
       );
       this.rows.set(next);
       this.catalogos.set(catalogos);
+      this.assertCatalogosArrayShape(catalogos);
       this.ensureCatalogSelection(catalogos);
       if (rows.length === 0) {
         // Mantener periodo seleccionado incluso si no hay fila para ese periodo.
@@ -1416,6 +1736,21 @@ export class ParametrosPage implements OnInit {
     } finally {
       this.leaveCargar();
       this.cdr.markForCheck();
+    }
+  }
+
+  /** Comprueba que every key del manifest siga siendo array (fallos tempranos ante cambios de RPC). */
+  private assertCatalogosArrayShape(catalogos: ParametrosGeneralesCatalogos): void {
+    if (!isDevMode()) {
+      return;
+    }
+
+    for (const key of PARAMETROS_CATALOGO_ARRAY_KEYS) {
+      const value = catalogos[key];
+
+      if (!Array.isArray(value)) {
+        console.error(`[Parametros] Catalogo corrupto: "${key}" no es un arreglo`, value);
+      }
     }
   }
 

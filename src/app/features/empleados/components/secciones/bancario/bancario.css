@@ -1,1 +1,29 @@
 @import '../../form-empleado-shared.css';
+
+:host .employee-grid--four {
+  grid-template-columns: repeat(8, minmax(0, 1fr));
+}
+
+:host .employee-grid--four > .form-field:nth-child(1),
+:host .employee-grid--four > .form-field:nth-child(2) {
+  grid-column: span 3;
+}
+
+:host .employee-grid--four > .form-field:nth-child(3) {
+  grid-column: span 8;
+}
+
+@media (max-width: 1024px) {
+  :host .employee-grid--four {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  :host .employee-grid--four > .form-field:nth-child(1),
+  :host .employee-grid--four > .form-field:nth-child(2) {
+    grid-column: span 2;
+  }
+
+  :host .employee-grid--four > .form-field:nth-child(3) {
+    grid-column: span 4;
+  }
+}

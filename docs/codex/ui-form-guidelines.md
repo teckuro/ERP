@@ -91,6 +91,23 @@ Reglas:
   - Checks:
     - En listas/opciones (ej. elección entre alternativas): inline con el label.
     - En grillas tipo “param-check” (ej. flags/tope legal): label arriba y checkbox abajo, **centrado**.
+### Grilla 8 columnas (mantenedor Parámetros)
+
+Implementacion y estilos en `src/app/pages/parametros.page.ts` (view encapsulation none; selector raíz `.parametros-page`).
+
+- **Rejilla maestra** `field-grid` + modificadores (`field-grid--values`, `--rentas`, `--topes`, etc.): `grid-template-columns: repeat(8, minmax(0, 1fr))`.
+- Cada **input, select o campo con unidad** (`.param-field` **hijo directo** del `field-grid`) usa **`grid-column: span 2`** (“de a dos” sobre la grilla de 8).
+- **No es obligatorio llenar la fila**: si hay tres campos, ocupan 6 columnas y **quedan 2 libres** a la derecha; el flujo es natural, alineado al inicio (`justify-content: start` en el grid).
+- **Subtítulos de bloque** dentro de la rejilla (`.param-subsection-title`, p. ej. AFP / IPS en Topes): **`span 8`** (fila completa).
+- **Excepción (pestaña Información de Valores)**: radios (`.erp-choice-radio`) y checks inline de gratificación (`.param-checkbox-inline`) usan **`span 1`** por ser controles compactos; el resto de campos sigue en span 2.
+- Evitar **contenedores** tipo `.field-grid-slot--2/--3` que partían todo el ancho en mitades o tercios: los campos deben participar **directamente** en la grilla de 8 para respetar el cálculo de columnas libres.
+- Unidades (`$`, `%`, UF, etc.) van en `.unit-field` / `.param-input`; línea de ayuda al contenido: `--param-content-max-width` en el grupo si se limita el ancho útil del formulario.
+
+**Responsive**: por defecto, en `max-width: 980px` la grilla pasa a **4** columnas (cada `span 2` sigue siendo “medio ancho”); en `max-width: 760px` una columna (`span 1` en hijos).
+
+### Grillas empleados (alta / ficha)
+
+Patrones distintos (`employee-grid`, rejillas de 8 columnas en pasos básicos, etc.): mantener **consistencia visual** con el ERP (labels arriba, altura 23px) según sección; no replican la misma fórmula span-2/8 de Parámetros en todos los bloques.
 
 ## MessageBox
 
