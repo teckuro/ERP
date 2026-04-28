@@ -5,7 +5,7 @@
   </div>
 
   @if (isBlockVisible('relacion')) {
-  <section class="labor-block">
+  <app-card className="labor-block">
     <div class="labor-block-title">Relación laboral</div>
     <div class="relation-grid">
       @for (option of relationOptions; track option.value) {
@@ -20,11 +20,11 @@
         </label>
       }
     </div>
-  </section>
+  </app-card>
   }
 
   @if (isBlockVisible('contrato')) {
-  <section class="labor-block">
+  <app-card className="labor-block">
     <div class="labor-block-title">Contrato</div>
     <div class="labor-grid labor-grid--contract">
       <div class="form-field">
@@ -245,11 +245,11 @@
         <p class="field-message"></p>
       </div>
     </div>
-  </section>
+  </app-card>
   }
 
   @if (isBlockVisible('remuneracion')) {
-  <section class="labor-block">
+  <app-card className="labor-block">
     <div class="labor-block-title">Remuneración</div>
     <div class="labor-grid labor-grid--salary">
       <div class="form-field">
@@ -408,11 +408,11 @@
         }
       </div>
     </div>
-  </section>
+  </app-card>
   }
 
   @if (isBlockVisible('cargas')) {
-  <section class="labor-block">
+  <app-card className="labor-block">
     <div class="labor-block-title">Cargas familiares</div>
     <div class="labor-grid labor-grid--loads">
       <div class="form-field">
@@ -470,11 +470,11 @@
         <p class="field-message"></p>
       </div>
     </div>
-  </section>
+  </app-card>
   }
 
   @if (isBlockVisible('zonaExtrema')) {
-  <section class="labor-block">
+  <app-card className="labor-block">
     <div class="labor-block-title">Zona extrema</div>
     <div class="labor-grid labor-grid--zone">
       <div class="form-field form-field--checkbox">
@@ -537,11 +537,11 @@
         }
       </div>
     </div>
-  </section>
+  </app-card>
   }
 
   @if (isBlockVisible('semanaCorrida')) {
-  <section class="labor-block">
+  <app-card className="labor-block">
     <div class="labor-block-title">Beneficio semana corrida</div>
     <div class="labor-grid labor-grid--week">
       <div class="form-field form-field--checkbox">
@@ -591,11 +591,11 @@
         }
       </div>
     </div>
-  </section>
+  </app-card>
   }
 
   @if (isBlockVisible('centroCosto')) {
-  <section class="labor-block">
+  <app-card className="labor-block">
     <div class="labor-block-title">Centro de costo y estado</div>
     <div class="labor-grid labor-grid--footer">
       <div class="form-field">
@@ -654,6 +654,7 @@
         <p class="field-message"></p>
       </div>
     </div>
-  </section>
+  </app-card>
   }
 </section>
+

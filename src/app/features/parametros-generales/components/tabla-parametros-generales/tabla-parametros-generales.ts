@@ -29,6 +29,11 @@ export class TablaParametrosGeneralesComponent {
     maximumFractionDigits: 3,
   });
 
+  private readonly dateFormatter = new Intl.DateTimeFormat('es-CL', {
+    dateStyle: 'short',
+    timeStyle: 'short',
+  });
+
   private formatMoney = (value: unknown): string => {
     const numberValue = Number(value);
     return Number.isFinite(numberValue) ? `$${this.clpFormatter.format(numberValue)}` : '-';
@@ -44,26 +49,122 @@ export class TablaParametrosGeneralesComponent {
     return Number.isFinite(numberValue) ? `${this.percentFormatter.format(numberValue)}%` : '-';
   };
 
+  private formatBoolean = (value: unknown): string => (value ? 'Si' : 'No');
+
+  private formatDateTime = (value: unknown): string => {
+    if (!value) {
+      return '-';
+    }
+
+    const date = new Date(String(value));
+    return Number.isFinite(date.getTime()) ? this.dateFormatter.format(date) : String(value);
+  };
+
   readonly columns: DataGridColumn<ParametroGeneral>[] = [
     { id: 'periodo', header: 'Periodo', field: 'periodo', sortable: true },
     { id: 'uf', header: 'UF', field: 'uf', sortable: true, align: 'right', format: this.formatDecimal },
     { id: 'utm', header: 'UTM', field: 'utm', sortable: true, align: 'right', format: this.formatMoney },
     {
       id: 'sueldoMinimo',
-      header: 'Sueldo mínimo',
+      header: 'Sueldo minimo',
       field: 'sueldoMinimo',
       sortable: true,
       align: 'right',
       format: this.formatMoney,
     },
     {
-      id: 'topeCesantia',
-      header: 'Tope cesantía',
-      field: 'topeCesantia',
+      id: 'sueldoMinimo18a65',
+      header: 'Sueldo min. 18 a 65',
+      field: 'sueldoMinimo18a65',
+      sortable: true,
+      align: 'right',
+      format: this.formatMoney,
+    },
+    {
+      id: 'immGratificacion',
+      header: 'IMM gratificacion',
+      field: 'immGratificacion',
       sortable: true,
       align: 'right',
       format: this.formatDecimal,
     },
+    {
+      id: 'topeAfp',
+      header: 'Tope AFP',
+      field: 'topeAfp',
+      sortable: true,
+      align: 'right',
+      format: this.formatMoney,
+    },
+    {
+      id: 'topeIps',
+      header: 'Tope IPS',
+      field: 'topeIps',
+      sortable: true,
+      align: 'right',
+      format: this.formatMoney,
+    },
+    {
+      id: 'topeCesantia',
+      header: 'Tope cesantia',
+      field: 'topeCesantia',
+      sortable: true,
+      align: 'right',
+      format: this.formatMoney,
+    },
+    {
+      id: 'topeAfpVoluntario',
+      header: 'Tope AFP volunt.',
+      field: 'topeAfpVoluntario',
+      sortable: true,
+      align: 'right',
+      format: this.formatMoney,
+    },
     { id: 'sis', header: 'SIS', field: 'sis', sortable: true, align: 'right', format: this.formatPercent },
+    {
+      id: 'afcTrabajadorIndefinido',
+      header: 'AFC trab. indef.',
+      field: 'afcTrabajadorIndefinido',
+      sortable: true,
+      align: 'right',
+      format: this.formatPercent,
+    },
+    {
+      id: 'afcEmpleadorIndefinido',
+      header: 'AFC emp. indef.',
+      field: 'afcEmpleadorIndefinido',
+      sortable: true,
+      align: 'right',
+      format: this.formatPercent,
+    },
+    {
+      id: 'afcEmpleadorPlazo',
+      header: 'AFC emp. plazo',
+      field: 'afcEmpleadorPlazo',
+      sortable: true,
+      align: 'right',
+      format: this.formatPercent,
+    },
+    {
+      id: 'gratificacion',
+      header: 'Gratificacion',
+      field: 'gratificacion',
+      sortable: true,
+      format: this.formatBoolean,
+    },
+    {
+      id: 'descuentosBasePorDia',
+      header: 'Desc. por dia',
+      field: 'descuentosBasePorDia',
+      sortable: true,
+      format: this.formatBoolean,
+    },
+    {
+      id: 'fechaActualizacion',
+      header: 'Actualizacion',
+      field: 'fechaActualizacion',
+      sortable: true,
+      format: this.formatDateTime,
+    },
   ];
 }

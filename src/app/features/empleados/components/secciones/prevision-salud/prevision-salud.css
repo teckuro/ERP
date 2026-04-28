@@ -1,11 +1,5 @@
 @import '../../form-empleado-shared.css';
 
-:host {
-  display: block;
-  font-family: Inter, 'Segoe UI', Roboto, sans-serif;
-  color: #111827;
-}
-
 .prevision-shell {
   display: grid;
   gap: 16px;
@@ -27,7 +21,7 @@
 .prevision-card-header h4 {
   margin: 0;
   color: #111827;
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 600;
   line-height: 20px;
 }
@@ -35,12 +29,31 @@
 .prevision-card-header p {
   margin: 4px 0 0;
   color: #6b7280;
-  font-size: 13px;
+  font-size: 12px;
   line-height: 18px;
 }
 
 .prevision-card-content {
   padding: 16px;
+}
+
+.prevision-card-header--actions {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.prevision-card-header--actions > label {
+  min-height: 36px;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  background: #ffffff;
+  padding: 0 12px;
+  color: #374151;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
 }
 
 .prevision-grid {
@@ -71,5 +84,16 @@
   .prevision-grid--three,
   .prevision-grid--four {
     grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .prevision-card-header--actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .prevision-card-header--actions > label {
+    width: fit-content;
   }
 }

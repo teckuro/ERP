@@ -1,5 +1,274 @@
 @import './styles/index.css';
 
+:root {
+  --erp-text-scale: 0.94;
+  --erp-text-xs: 0.68rem;
+  --erp-text-sm: 0.76rem;
+  --erp-text-md: 0.82rem;
+  --erp-title-sm: 0.94rem;
+  --erp-title-md: 1.14rem;
+
+  /* ERP form controls (fuente de verdad: docs/codex/ui-form-guidelines.md) */
+  --erp-control-height: 23px;
+  --erp-field-min-width: 190px;
+  --erp-field-max-width: 260px;
+  --erp-field-row-gap: 3px;
+  --erp-field-col-gap: 2px;
+
+  /* Unidad integrada (badge) */
+  --erp-unit-badge-height: 16px;
+  --erp-unit-badge-min-width: 18px;
+  --erp-unit-badge-padding-x: 5px;
+  --erp-unit-badge-font-size: 0.66rem;
+  --erp-unit-offset-x: 6px;
+  --erp-unit-input-padding: 34px;
+}
+
+/* Parametros: filtro de periodo (compacto y adaptable) */
+.parametros-page .period-row {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  background: #ffffff;
+  padding: 6px 8px;
+  color: #111827;
+  font-size: 0.82rem;
+}
+
+.parametros-page .period-label {
+  color: #111827;
+  font-weight: 650;
+}
+
+.parametros-page .period-controls {
+  display: inline-grid;
+  grid-auto-flow: column;
+  grid-auto-columns: max-content;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+  justify-content: start;
+}
+
+.parametros-page .period-arrow {
+  display: inline-flex;
+  width: var(--erp-control-height, 23px);
+  height: var(--erp-control-height, 23px);
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  background: #ffffff;
+  color: #2563eb;
+  cursor: pointer;
+}
+
+.parametros-page .period-arrow:hover:not(:disabled) {
+  border-color: #bfdbfe;
+  background: #eff6ff;
+}
+
+.parametros-page .period-arrow:disabled {
+  color: #9ca3af;
+  cursor: not-allowed;
+}
+
+.parametros-page .period-year {
+  width: 72px;
+}
+
+.parametros-page .period-month {
+  width: 132px;
+}
+
+.parametros-page .period-status {
+  align-self: center;
+  justify-self: end;
+  color: #6b7280;
+  font-size: 0.76rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+@media (max-width: 860px) {
+  .parametros-page .period-row {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+}
+
+/* Utilidades ERP (evitar anclar diseño a pantallas) */
+.erp-choice-inline {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 6px;
+  min-height: var(--erp-control-height, 23px);
+  text-align: left;
+}
+
+.erp-choice-inline > span:first-child {
+  min-height: 0;
+  align-items: center;
+}
+
+/* Opción con radio centrado bajo el texto (alto control 23px) */
+.erp-choice-radio {
+  display: grid;
+  width: fit-content;
+  justify-self: start;
+  justify-items: start;
+  align-items: end;
+  row-gap: var(--erp-field-row-gap, 3px);
+  column-gap: var(--erp-field-col-gap, 2px);
+  text-align: left;
+  grid-template-rows: auto var(--erp-control-height, 23px);
+}
+
+.erp-choice-radio > span:first-child {
+  min-height: 1.65em;
+  display: flex;
+  align-items: flex-end;
+  width: max-content;
+  white-space: nowrap;
+}
+
+.erp-choice-radio input[type='radio'] {
+  justify-self: center;
+  align-self: center;
+}
+
+.erp-flag-check {
+  display: grid;
+  width: fit-content;
+  justify-self: start;
+  justify-items: start;
+  align-items: end;
+  gap: var(--erp-field-row-gap, 3px);
+  text-align: left;
+  grid-template-rows: auto var(--erp-control-height, 23px);
+}
+
+.erp-flag-check > span:first-child {
+  min-height: 1.65em;
+  display: flex;
+  align-items: flex-end;
+  width: max-content;
+  white-space: nowrap;
+  justify-self: start;
+  text-align: left;
+}
+
+.erp-flag-check input {
+  justify-self: center;
+  align-self: center;
+}
+
+.erp-field-fit {
+  max-width: var(--erp-field-max-width, 260px);
+  width: 100%;
+}
+
+.erp-field-narrow {
+  max-width: 140px;
+  width: 100%;
+}
+
+/* Utilidades de grid (para formularios) */
+.erp-grid-span-all {
+  grid-column: 1 / -1;
+}
+
+.erp-grid-span-2 {
+  grid-column: 1 / span 2;
+}
+
+.erp-grid-filler {
+  visibility: hidden;
+}
+
+/* Split de campos: bloque principal + bloque auxiliar */
+.erp-form-split {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  justify-content: flex-start;
+  gap: var(--erp-field-row-gap, 3px) calc(var(--erp-field-col-gap, 2px) * 3);
+}
+
+.erp-form-split__main {
+  display: grid;
+  grid-template-columns: repeat(
+    auto-fit,
+    minmax(var(--erp-field-min-width, 190px), var(--erp-field-max-width, 260px))
+  );
+  justify-content: start;
+  align-items: end;
+  row-gap: var(--erp-field-row-gap, 3px);
+  column-gap: var(--erp-field-col-gap, 2px);
+}
+
+.erp-form-split__aside {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: flex-start;
+  gap: calc(var(--erp-field-col-gap, 2px) * 4);
+}
+
+/* Fila única: inputs + checks al final */
+.erp-form-line {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: end;
+  justify-content: flex-start;
+  column-gap: var(--erp-field-col-gap, 2px);
+  row-gap: var(--erp-field-row-gap, 3px);
+  gap: var(--erp-field-col-gap, 2px);
+}
+
+.erp-form-line__grow {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: end;
+  gap: var(--erp-field-col-gap, 2px);
+}
+
+.erp-form-line__end {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: calc(var(--erp-field-col-gap, 2px) * 2);
+}
+
+.erp-flag-compact {
+  display: grid;
+  width: fit-content;
+  justify-items: center;
+  align-items: center;
+  gap: 2px;
+  white-space: nowrap;
+  text-align: center;
+}
+
+.erp-flag-compact > span:first-child {
+  line-height: 1.05;
+}
+
+@media (max-width: 720px) {
+  .erp-form-line {
+    flex-wrap: wrap;
+  }
+  .erp-form-line__end {
+    margin-left: 0;
+    width: 100%;
+  }
+}
+
 .erp-toolbar-button {
   gap: 0.5rem;
   font-weight: 500;
@@ -19,6 +288,22 @@
   justify-content: center;
   align-self: center;
   line-height: 0;
+}
+
+.erp-action-button {
+  display: inline-flex;
+  min-height: 38px;
+  min-width: 8.25rem;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border-radius: 6px;
+  border: 1px solid #e5e7eb;
+  padding: 0 1rem;
+  font-size: var(--erp-text-md);
+  font-weight: 500;
+  line-height: 1;
+  transition: background-color 150ms ease, border-color 150ms ease, color 150ms ease;
 }
 
 /* Empleados alta workspace */
@@ -60,16 +345,23 @@ app-form-empleado .form-stack {
 
 app-form-empleado .form-page-head {
   display: grid;
+  width: 100%;
+  min-width: 0;
   gap: 8px;
   padding: 0 4px;
+}
+
+app-form-empleado .form-page-head app-record-breadcrumb {
+  width: 100%;
+  min-width: 0;
 }
 
 app-form-empleado .form-page-head h1 {
   margin: 0;
   color: var(--emp-ink);
-  font-size: 22px;
+  font-size: 20px;
   font-weight: 600;
-  line-height: 32px;
+  line-height: 28px;
   text-align: center;
 }
 
@@ -111,7 +403,7 @@ app-form-empleado .message-detail,
 app-form-empleado .editor-footer-copy {
   margin: 0;
   color: var(--emp-muted);
-  font-size: 13px;
+  font-size: 12px;
   line-height: 1.4;
 }
 
@@ -167,7 +459,7 @@ app-form-empleado .side-section h3 {
 
 app-form-empleado .summary-person h2 {
   overflow-wrap: anywhere;
-  font-size: 18px;
+  font-size: 17px;
 }
 
 app-form-empleado .summary-title-row {
@@ -205,11 +497,11 @@ app-form-empleado .summary-actions .page-actions-toolbar {
 app-form-empleado .summary-actions .page-actions-toolbar > a,
 app-form-empleado .summary-actions .page-actions-toolbar app-button button {
   min-width: 0 !important;
-  height: 36px !important;
+  height: 34px !important;
   padding-right: 12px !important;
   padding-left: 12px !important;
   border-radius: 6px !important;
-  font-size: 13px !important;
+  font-size: 12px !important;
   font-weight: 500 !important;
 }
 
@@ -348,7 +640,7 @@ app-form-empleado .flow-tab span {
 app-form-empleado .flow-tab p {
   margin: 0;
   color: #374151;
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 500;
   line-height: 1.2;
   overflow: visible;
@@ -403,7 +695,7 @@ app-form-empleado .form-loading-overlay {
   border-radius: inherit;
   background: rgba(255, 255, 255, 0.78);
   color: #1d4ed8;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 600;
   backdrop-filter: blur(2px);
   animation: form-loading-enter 180ms ease-out both;
@@ -453,16 +745,16 @@ app-form-empleado .step-panel--basic .employee-section-shell {
 }
 
 app-form-empleado .step-panel--basic .employee-block {
-  border-color: transparent;
-  background: transparent;
+  border-color: var(--emp-line);
+  background: #ffffff;
   padding: 0;
   box-shadow: none;
 }
 
 app-form-empleado .step-panel--basic .employee-block + .employee-block {
-  padding-top: 1rem;
+  padding-top: 0;
   border-top: 1px solid var(--emp-line);
-  border-radius: 0;
+  border-radius: 8px;
 }
 
 app-form-empleado .step-panel--final {
@@ -495,7 +787,7 @@ app-form-empleado .side-section + .side-section {
 }
 
 app-form-empleado .side-section h3 {
-  font-size: 0.9rem;
+  font-size: var(--erp-title-sm);
 }
 
 app-form-empleado .side-progress-line {
@@ -536,7 +828,7 @@ app-form-empleado .global-summary-grid div {
 app-form-empleado .validation-status-grid strong,
 app-form-empleado .global-summary-grid strong {
   color: var(--emp-ink);
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 600;
 }
 
@@ -559,7 +851,7 @@ app-form-empleado .validation-item {
   border-radius: 6px;
   background: var(--emp-soft);
   color: var(--emp-ink);
-  font-size: 12px;
+  font-size: 11px;
   line-height: 1.35;
 }
 
@@ -649,13 +941,13 @@ app-form-empleado .editor-footer-actions {
 }
 
 app-form-empleado .form-action-button {
-  height: 40px;
+  height: 38px;
   min-width: 8.5rem;
   gap: 8px;
   padding: 0 16px;
   border: 1px solid;
   border-radius: 6px;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 500;
   transition:
     background-color 150ms ease,

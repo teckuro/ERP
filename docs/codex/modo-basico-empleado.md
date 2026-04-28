@@ -52,6 +52,11 @@ Se mantiene:
 - botonera arriba derecha
 - contenido en card
 
+Implementacion de referencia (fuente de verdad):
+
+- `src/app/features/empleados/components/form-empleado/form-empleado.html`
+- Estilos globales para este flujo viven en `src/styles.css` bajo `app-form-empleado { ... }`
+
 ---
 
 ## 3. Aplicación del modo básico
@@ -98,6 +103,13 @@ Pero aplicar:
 - sin cards múltiples
 
 👉 una sola card principal
+
+Referencia visual (modo basico):
+
+- El modo basico usa el mismo shell visual del alta completa:
+  - `editor-frame` + `content-shell--basic`
+  - `summary-identity` (header dentro de card)
+  - `app-page-actions` como botonera principal (no duplicar)
 
 ---
 

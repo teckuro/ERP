@@ -285,16 +285,37 @@ export type Database = {
       }
       banco: {
         Row: {
+          activo: boolean
+          codigo_sbif: string
+          created_at: string
+          es_banco_estado: boolean
+          es_banco_extranjero: boolean
           id_banco: number
           nombre: string
+          nombre_corto: string
+          updated_at: string | null
         }
         Insert: {
+          activo?: boolean
+          codigo_sbif: string
+          created_at?: string
+          es_banco_estado?: boolean
+          es_banco_extranjero?: boolean
           id_banco?: number
           nombre: string
+          nombre_corto: string
+          updated_at?: string | null
         }
         Update: {
+          activo?: boolean
+          codigo_sbif?: string
+          created_at?: string
+          es_banco_estado?: boolean
+          es_banco_extranjero?: boolean
           id_banco?: number
           nombre?: string
+          nombre_corto?: string
+          updated_at?: string | null
         }
         Relationships: []
       }
@@ -638,31 +659,52 @@ export type Database = {
       }
       cuenta_bancaria: {
         Row: {
+          activa: boolean
+          created_at: string
+          es_principal: boolean
           id_banco: number
           id_cuenta: number
           id_persona: number
-          id_tipo_cuenta_bancaria: number | null
+          id_tipo_cuenta_bancaria: number
           numero_cuenta: string
+          observacion: string | null
+          titular_nombre: string | null
+          titular_rut: string | null
+          updated_at: string | null
           vigencia_fin: string | null
-          vigencia_inicio: string | null
+          vigencia_inicio: string
         }
         Insert: {
+          activa?: boolean
+          created_at?: string
+          es_principal?: boolean
           id_banco: number
           id_cuenta?: number
           id_persona: number
-          id_tipo_cuenta_bancaria?: number | null
+          id_tipo_cuenta_bancaria: number
           numero_cuenta: string
+          observacion?: string | null
+          titular_nombre?: string | null
+          titular_rut?: string | null
+          updated_at?: string | null
           vigencia_fin?: string | null
-          vigencia_inicio?: string | null
+          vigencia_inicio?: string
         }
         Update: {
+          activa?: boolean
+          created_at?: string
+          es_principal?: boolean
           id_banco?: number
           id_cuenta?: number
           id_persona?: number
-          id_tipo_cuenta_bancaria?: number | null
+          id_tipo_cuenta_bancaria?: number
           numero_cuenta?: string
+          observacion?: string | null
+          titular_nombre?: string | null
+          titular_rut?: string | null
+          updated_at?: string | null
           vigencia_fin?: string | null
-          vigencia_inicio?: string | null
+          vigencia_inicio?: string
         }
         Relationships: [
           {
@@ -958,16 +1000,22 @@ export type Database = {
       }
       ex_caja_previsional: {
         Row: {
+          codigo_base: string | null
+          codigo_previred_ejemplo: string | null
           id_ex_caja_previsional: number
           nombre: string
           vigente: boolean
         }
         Insert: {
+          codigo_base?: string | null
+          codigo_previred_ejemplo?: string | null
           id_ex_caja_previsional?: number
           nombre: string
           vigente?: boolean
         }
         Update: {
+          codigo_base?: string | null
+          codigo_previred_ejemplo?: string | null
           id_ex_caja_previsional?: number
           nombre?: string
           vigente?: boolean
@@ -1228,6 +1276,51 @@ export type Database = {
           codigo?: string | null
           id_institucion_apv?: number
           nombre?: string
+          vigente?: boolean
+        }
+        Relationships: []
+      }
+      ips_ex_caja_tasa_basica: {
+        Row: {
+          escenario_empresa: string
+          fuente: string | null
+          grupo_trabajador: string
+          id_ips_ex_caja_tasa_basica: number
+          nombre_escenario: string
+          nombre_grupo: string
+          observacion: string | null
+          tasa_cotizacion: number
+          tipo_salud: string
+          vigencia_fin: string | null
+          vigencia_inicio: string
+          vigente: boolean
+        }
+        Insert: {
+          escenario_empresa: string
+          fuente?: string | null
+          grupo_trabajador: string
+          id_ips_ex_caja_tasa_basica?: number
+          nombre_escenario: string
+          nombre_grupo: string
+          observacion?: string | null
+          tasa_cotizacion: number
+          tipo_salud: string
+          vigencia_fin?: string | null
+          vigencia_inicio: string
+          vigente?: boolean
+        }
+        Update: {
+          escenario_empresa?: string
+          fuente?: string | null
+          grupo_trabajador?: string
+          id_ips_ex_caja_tasa_basica?: number
+          nombre_escenario?: string
+          nombre_grupo?: string
+          observacion?: string | null
+          tasa_cotizacion?: number
+          tipo_salud?: string
+          vigencia_fin?: string | null
+          vigencia_inicio?: string
           vigente?: boolean
         }
         Relationships: []
@@ -2221,6 +2314,10 @@ export type Database = {
       }
       regimen_ex_caja: {
         Row: {
+          codigo_base: string | null
+          codigo_previred: string | null
+          codigo_subcaja: string | null
+          glosa_previred: string | null
           id_ex_caja_previsional: number
           id_regimen_ex_caja: number
           nombre: string
@@ -2228,6 +2325,10 @@ export type Database = {
           vigente: boolean
         }
         Insert: {
+          codigo_base?: string | null
+          codigo_previred?: string | null
+          codigo_subcaja?: string | null
+          glosa_previred?: string | null
           id_ex_caja_previsional: number
           id_regimen_ex_caja?: number
           nombre: string
@@ -2235,6 +2336,10 @@ export type Database = {
           vigente?: boolean
         }
         Update: {
+          codigo_base?: string | null
+          codigo_previred?: string | null
+          codigo_subcaja?: string | null
+          glosa_previred?: string | null
           id_ex_caja_previsional?: number
           id_regimen_ex_caja?: number
           nombre?: string
@@ -2695,16 +2800,28 @@ export type Database = {
       }
       tipo_cuenta_bancaria: {
         Row: {
+          activo: boolean
+          codigo: string
+          created_at: string
           id_tipo_cuenta_bancaria: number
           nombre: string
+          updated_at: string | null
         }
         Insert: {
+          activo?: boolean
+          codigo: string
+          created_at?: string
           id_tipo_cuenta_bancaria?: number
           nombre: string
+          updated_at?: string | null
         }
         Update: {
+          activo?: boolean
+          codigo?: string
+          created_at?: string
           id_tipo_cuenta_bancaria?: number
           nombre?: string
+          updated_at?: string | null
         }
         Relationships: []
       }
@@ -3313,6 +3430,7 @@ export type Database = {
           validacion: string
         }[]
       }
+      unaccent: { Args: { "": string }; Returns: string }
     }
     Enums: {
       tipo_concepto_enum: "HABER" | "DESCUENTO" | "APORTE_EMPLEADOR"

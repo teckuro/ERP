@@ -12,10 +12,10 @@ export const TIPO_REGIMEN_OPTIONS: readonly TipoRegimenOption[] = [
   },
   {
     value: 'IPS',
-    label: 'IPS (Ex INP)',
+    label: 'IPS / Ex-Caja',
   },
   {
     value: 'NINGUNA',
-    label: 'Sin Prevision',
+    label: 'Sin prevision',
   },
 ];

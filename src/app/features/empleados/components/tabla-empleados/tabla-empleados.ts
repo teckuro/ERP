@@ -113,6 +113,7 @@ export class TablaEmpleadosComponent {
       field: 'rut',
       type: 'text',
       cellClass: 'whitespace-nowrap text-neutral-700',
+      priorityResponsive: 'secondary',
     },
     {
       id: 'nombre',
@@ -120,6 +121,7 @@ export class TablaEmpleadosComponent {
       field: 'nombre',
       type: 'text',
       hideable: false,
+      priorityResponsive: 'primary',
     },
     {
       id: 'cargo',
@@ -127,6 +129,7 @@ export class TablaEmpleadosComponent {
       field: 'cargo',
       type: 'text',
       cellClass: 'text-neutral-700',
+      priorityResponsive: 'tertiary',
       format: (value) => this.capitalize(String(value ?? '')),
     },
     {
@@ -135,6 +138,7 @@ export class TablaEmpleadosComponent {
       field: 'departamento',
       type: 'text',
       cellClass: 'text-neutral-700',
+      priorityResponsive: 'tertiary',
     },
     {
       id: 'fechaIngreso',
@@ -159,6 +163,7 @@ export class TablaEmpleadosComponent {
       field: 'estado',
       type: 'text',
       hideable: false,
+      priorityResponsive: 'secondary',
       format: (value) => this.labelEstado(value as EmpleadoEstado),
     },
     {

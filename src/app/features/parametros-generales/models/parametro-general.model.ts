@@ -1,40 +1,65 @@
-export interface ParametroGeneral {
-  periodo: string;
-  uf: number | null;
-  utm: number | null;
-  sueldoMinimo: number | null;
-  sueldoMinimo18a65: number | null;
-  gratificacion: boolean;
-  immGratificacion: number | null;
-  topeAfp: number | null;
-  topeIps: number | null;
-  topeCesantia: number | null;
-  topeAfpVoluntario: number | null;
-  sis: number | null;
-  descuentosBasePorDia: boolean;
-  afcTrabajadorIndefinido: number | null;
-  afcEmpleadorIndefinido: number | null;
-  afcEmpleadorPlazo: number | null;
-  fechaActualizacion: string | null;
-}
-
-export type ParametroGeneralUpsert = ParametroGeneral;
+export type ParametrosTabId =
+  | 'valores'
+  | 'remuneraciones'
+  | 'ccafConfig'
+  | 'ccafLista'
+  | 'mutualesLey'
+  | 'tramosCarga'
+  | 'tramosRenta'
+  | 'isapre'
+  | 'afp'
+  | 'reforma';
 
 export interface ParametrosGeneralesFiltro {
   periodo?: string;
 }
 
-export type ParametrosTabId =
-  | 'generales'
-  | 'normativa'
-  | 'tramos'
-  | 'impuestos'
-  | 'isapres'
-  | 'afp'
-  | 'reforma'
-  | 'ley16744'
-  | 'ccaf'
-  | 'apv';
+export interface ParametroGeneral {
+  periodo: string;
+  uf: number | null;
+  utm: number | null;
+  uta: number | null;
+  sueldoMinimo: number | null;
+  sueldoMinimo18a65: number | null;
+  sueldoMinimoMenor18Mayor65: number | null;
+  sueldoMinimoCasaParticular: number | null;
+  ingresoMinimoNoRemuneracional: number | null;
+  topeAfpUf: number | null;
+  gratificacion: boolean;
+  immGratificacion: number | null;
+  topeAfp: number | null;
+  topeIpsUf: number | null;
+  topeIps: number | null;
+  topeCesantiaUf: number | null;
+  topeCesantia: number | null;
+  topeApvMensualUf: number | null;
+  topeApvMensual: number | null;
+  topeApvAnualUf: number | null;
+  topeApvAnual: number | null;
+  topeDepositoConvenidoAnualUf: number | null;
+  topeDepositoConvenidoAnual: number | null;
+  topeAfpVoluntario: number | null;
+  sis: number | null;
+  sanna: number | null;
+  seguroSocialExpectativaVida: number | null;
+  aporteEmpleadorAfp: number | null;
+  saludObligatoria: number | null;
+  saludCcaf: number | null;
+  saludFonasaConCcaf: number | null;
+  descuentosBasePorDia: boolean;
+  afcTrabajadorIndefinido: number | null;
+  afcEmpleadorIndefinido: number | null;
+  afcEmpleadorPlazo: number | null;
+  afcEmpleadorIndefinidoOnceAnosMas: number | null;
+  afcEmpleadorCasaParticular: number | null;
+  trabajoPesadoEmpleador: number | null;
+  trabajoPesadoTrabajador: number | null;
+  trabajoMenosPesadoEmpleador: number | null;
+  trabajoMenosPesadoTrabajador: number | null;
+  fechaActualizacion: string | null;
+}
+
+export type ParametroGeneralUpsert = ParametroGeneral;
 
 export interface AfpParametro {
   idAfp: number;
@@ -96,6 +121,18 @@ export interface ParametroLegal {
   valorEntero: number | null;
   vigenciaInicio: string;
   vigenciaFin: string | null;
+}
+
+export interface AfcParametro {
+  idAfcParametro: number;
+  codigoTipoContrato: string;
+  aplicaSeguro: boolean;
+  aplicaTrabajador: boolean;
+  tasaTrabajador: number;
+  tasaEmpleador: number;
+  vigenciaInicio: string;
+  vigenciaFin: string | null;
+  observacion: string | null;
 }
 
 export interface TrabajoPesadoParametro {
@@ -179,4 +216,5 @@ export interface ParametrosGeneralesCatalogos {
   ccafEntidades: CcafEntidad[];
   apvInstituciones: ApvApvcInstitucion[];
   apvFormasPago: ApvApvcFormaPago[];
+  afcParametros: AfcParametro[];
 }

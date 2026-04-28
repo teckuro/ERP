@@ -8,6 +8,7 @@ import {
 } from '../../../models/empleado-catalogos.model';
 import { EmpleadoSexo, TipoEstadoCivil } from '../../../models/empleado.model';
 import { CalendarInputComponent } from '../../../../../shared/components/ui/calendar-input.component';
+import { CardComponent } from '../../../../../shared/components/ui/card.component';
 import { SearchSelectComponent } from '../../../../../shared/components/ui/search-select.component';
 
 type DatosPersonalesControlName = keyof DatosPersonalesFormGroup['controls'];
@@ -16,7 +17,7 @@ type ContactoControlName = keyof ContactoFormGroup['controls'];
 @Component({
   selector: 'app-empleado-datos-personales',
   standalone: true,
-  imports: [ReactiveFormsModule, CalendarInputComponent, SearchSelectComponent],
+  imports: [ReactiveFormsModule, CalendarInputComponent, CardComponent, SearchSelectComponent],
   templateUrl: './datos-personales.html',
   styleUrl: './datos-personales.css',
 })

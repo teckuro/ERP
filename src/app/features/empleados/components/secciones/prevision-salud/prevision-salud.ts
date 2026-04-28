@@ -54,7 +54,7 @@ export class PrevisionSaludComponent {
   }
 
   get mostrarSalud(): boolean {
-    return this.tipoPrevision !== null && !this.sinPrevision;
+    return this.tipoPrevision !== null;
   }
 
   get mostrarApvi(): boolean {

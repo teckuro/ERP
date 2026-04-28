@@ -25,7 +25,6 @@ import {
   CheckCircle,
   Download,
   Filter,
-  LoaderCircle,
   Plus,
   RefreshCw,
   Search,
@@ -81,6 +80,9 @@ export interface DataGridColumn<T = unknown> {
   id: string;
   header: string;
   field?: keyof T;
+  visible?: boolean;
+  width?: string;
+  minWidth?: string;
   align?: DataGridColumnAlign;
   sortable?: boolean;
   type?: DataGridColumnType;
@@ -88,6 +90,7 @@ export interface DataGridColumn<T = unknown> {
   headerClass?: string;
   cellClass?: string;
   widthClass?: string;
+  priorityResponsive?: 'primary' | 'secondary' | 'tertiary' | number;
   format?: (value: unknown, row: T, index: number) => string | number;
 }
 
@@ -149,7 +152,55 @@ export class DataGridCellDirective<T = unknown> {
   template: `
     <app-card [className]="gridCardClass" [ngStyle]="gridCardStyle">
       @if (filtersEnabled && showFilters) {
-        <div class="border-b border-neutral-200 bg-[linear-gradient(180deg,#fbfdff_0%,#f8fafc_100%)] px-4 pb-2.5 pt-2.5">
+        <div class="data-grid-filter-panel border-b border-neutral-200 bg-white px-4 py-3">
+          <div class="mb-3 flex flex-col gap-2 lg:flex-row lg:items-center lg:justify-between">
+            <label class="data-grid-search-field">
+              <span class="sr-only">Busqueda global</span>
+              <lucide-icon class="h-3.5 w-3.5 text-slate-400" [img]="searchIcon"></lucide-icon>
+              <input
+                type="text"
+                class="data-grid-search-input"
+                [value]="searchInputTerm"
+                [placeholder]="searchPlaceholder"
+                (input)="updateSearchTerm($event)"
+              />
+              @if (searchInputTerm) {
+                <button
+                  type="button"
+                  class="data-grid-search-clear"
+                  aria-label="Limpiar busqueda"
+                  (click)="clearSearchTerm()"
+                >
+                  <lucide-icon class="h-3.5 w-3.5" [img]="clearIcon"></lucide-icon>
+                </button>
+              }
+            </label>
+
+            @if (activeFilterChips.length > 0) {
+              <div class="data-grid-filter-chips" aria-label="Filtros activos">
+                @for (chip of activeFilterChips; track chip.id) {
+                  <button
+                    type="button"
+                    class="data-grid-filter-chip"
+                    [attr.aria-label]="'Quitar filtro ' + chip.label"
+                    (click)="removeFilterChip(chip.id)"
+                  >
+                    <span class="data-grid-filter-chip__label">{{ chip.label }}</span>
+                    <span class="data-grid-filter-chip__value">{{ chip.value }}</span>
+                    <lucide-icon class="h-3 w-3" [img]="clearIcon"></lucide-icon>
+                  </button>
+                }
+                <button
+                  type="button"
+                  class="data-grid-filter-chips__clear-all"
+                  (click)="clearAllFilters()"
+                >
+                  Limpiar todo
+                </button>
+              </div>
+            }
+          </div>
+
           <div class="flex flex-col gap-3 xl:flex-row xl:items-start xl:justify-between">
             <div class="min-w-0 flex-1">
               <div class="data-grid-filter-grid" [ngStyle]="filterGridStyle">
@@ -185,7 +236,7 @@ export class DataGridCellDirective<T = unknown> {
                       ></app-calendar-input>
                     } @else if (isSelectFilter(filter)) {
                       <select
-                        class="h-8 w-full min-w-0 rounded-lg border border-slate-200 bg-white px-2.5 text-left text-[0.79rem] font-medium text-slate-700 shadow-[0_1px_2px_rgba(15,23,42,0.04)] outline-none transition hover:border-slate-300 hover:bg-slate-50 focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-100"
+                        class="h-8 w-full min-w-0 rounded-lg border border-slate-200 bg-white px-2.5 text-left text-[0.74rem] font-medium text-slate-700 shadow-[0_1px_2px_rgba(15,23,42,0.04)] outline-none transition hover:border-slate-300 hover:bg-slate-50 focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-100"
                         [value]="filterTextValue(filter)"
                         (change)="updateFilterValue(filter, $event)"
                       >
@@ -197,7 +248,7 @@ export class DataGridCellDirective<T = unknown> {
                     } @else {
                       <input
                         type="text"
-                        class="h-8 w-full min-w-0 rounded-lg border border-slate-200 bg-white px-2.5 text-left text-[0.79rem] font-medium text-slate-700 shadow-[0_1px_2px_rgba(15,23,42,0.04)] outline-none transition hover:border-slate-300 hover:bg-slate-50 focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-100"
+                        class="h-8 w-full min-w-0 rounded-lg border border-slate-200 bg-white px-2.5 text-left text-[0.74rem] font-medium text-slate-700 shadow-[0_1px_2px_rgba(15,23,42,0.04)] outline-none transition hover:border-slate-300 hover:bg-slate-50 focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-100"
                         [value]="filterTextValue(filter)"
                         [placeholder]="filterPlaceholder(filter)"
                         (input)="updateFilterValue(filter, $event)"
@@ -211,7 +262,7 @@ export class DataGridCellDirective<T = unknown> {
             <div class="flex shrink-0 items-center justify-end gap-2 self-end pb-0.5 xl:pl-3">
               <button
                 type="button"
-                class="inline-flex h-8 items-center justify-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 text-[0.76rem] font-medium text-slate-600 transition hover:border-slate-300 hover:bg-slate-50 hover:text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+                class="inline-flex h-8 items-center justify-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 text-[0.72rem] font-medium text-slate-600 transition hover:border-slate-300 hover:bg-slate-50 hover:text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
                 (click)="clearAllFilters()"
               >
                 <lucide-icon class="h-3.5 w-3.5" [img]="clearIcon"></lucide-icon>
@@ -219,7 +270,7 @@ export class DataGridCellDirective<T = unknown> {
               </button>
               <button
                 type="button"
-                class="inline-flex h-8 items-center justify-center gap-1.5 rounded-lg border border-blue-600 bg-blue-600 px-3.5 text-[0.76rem] font-medium text-white shadow-[0_6px_16px_rgba(37,99,235,0.18)] transition-colors hover:border-blue-700 hover:bg-blue-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
+                class="inline-flex h-8 items-center justify-center gap-1.5 rounded-lg border border-blue-600 bg-blue-600 px-3.5 text-[0.72rem] font-medium text-white shadow-[0_6px_16px_rgba(37,99,235,0.18)] transition-colors hover:border-blue-700 hover:bg-blue-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
                 (click)="applyFilters()"
               >
                 <lucide-icon class="h-3.5 w-3.5" [img]="searchIcon"></lucide-icon>
@@ -437,7 +488,7 @@ export class DataGridCellDirective<T = unknown> {
                           type="button"
                           class="flex w-full items-center justify-between gap-3 rounded-lg px-2.5 py-2 text-left transition-colors hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-55"
                           [disabled]="isColumnFixed(column) || isLastVisibleColumn(column.id)"
-                          [attr.title]="isColumnFixed(column) ? 'La primera columna siempre queda visible' : isLastVisibleColumn(column.id) ? 'Debe quedar al menos una columna visible' : column.header"
+                          [attr.title]="isColumnFixed(column) ? 'Esta columna siempre queda visible' : isLastVisibleColumn(column.id) ? 'Debe quedar al menos una columna visible' : column.header"
                           (click)="toggleColumn(column.id)"
                         >
                           <span class="min-w-0">
@@ -555,9 +606,32 @@ export class DataGridCellDirective<T = unknown> {
           </div>
         } @else if (filteredRows.length > 0 || loading) {
           <div class="data-grid-table-region" [class.is-loading]="loading">
-            <table class="w-full min-w-max table-auto border-separate border-spacing-0">
+            @if (loading) {
+              <span class="sr-only" role="status" aria-live="polite">{{ loadingLabel }}</span>
+            }
+            <table
+              class="data-grid-table-view w-full border-separate border-spacing-0"
+              [class.data-grid-table-view--fit]="shouldFitColumns"
+              [class.data-grid-table-view--scroll]="!shouldFitColumns"
+              [style.--data-grid-table-min-width]="tableMinWidth"
+            >
+              <colgroup>
+                <col class="data-grid-row-number-col" />
+                @if (selectable) {
+                  <col class="data-grid-selection-col" />
+                }
+                @for (column of visibleColumns; track column.id) {
+                  <col [ngStyle]="columnSizingStyle(column)" />
+                }
+              </colgroup>
               <thead class="data-grid-head sticky top-0 z-10 bg-neutral-100 shadow-[0_1px_0_rgba(229,229,229,1)]">
                 <tr>
+                  <th
+                    scope="col"
+                    class="data-grid-row-number-cell border-b border-r border-neutral-200 px-3 py-2 text-[0.68rem] font-medium uppercase text-neutral-600"
+                  >
+                    N°
+                  </th>
                   @if (selectable) {
                     <th scope="col" class="w-11 border-b border-r border-neutral-200 px-3 py-2.5">
                       <input
@@ -574,7 +648,7 @@ export class DataGridCellDirective<T = unknown> {
                   @for (column of visibleColumns; track column.id) {
                     <th
                       scope="col"
-                      class="whitespace-nowrap border-b border-r border-neutral-200 px-3 py-2.5 text-xs font-medium uppercase text-neutral-600 last:border-r-0"
+                      class="whitespace-nowrap border-b border-r border-neutral-200 px-3 py-2 text-[0.68rem] font-medium uppercase text-neutral-600 last:border-r-0"
                       [ngClass]="[alignmentHeaderClass(column), column.headerClass ?? '', column.widthClass ?? '']"
                     >
                       @if (isSortable(column)) {
@@ -600,17 +674,26 @@ export class DataGridCellDirective<T = unknown> {
 
               <tbody class="bg-white">
                 @if (loading) {
-                  <tr>
-                    <td
-                      class="data-grid-loading-cell"
-                      [attr.colspan]="visibleColumnSpan"
-                    >
-                      <div class="data-grid-loading-content" role="status" aria-live="polite">
-                        <lucide-icon class="data-grid-loading-spinner" [img]="loadingIcon"></lucide-icon>
-                        <span>{{ loadingLabel }}</span>
-                      </div>
-                    </td>
-                  </tr>
+                  @for (skeletonRow of skeletonRows; track skeletonRow) {
+                    <tr class="data-grid-skeleton-row" aria-hidden="true">
+                      <td class="data-grid-row-number-cell border-b border-r border-neutral-100 px-3 py-3.5">
+                        <span class="data-grid-skeleton-line data-grid-skeleton-line--number"></span>
+                      </td>
+                      @if (selectable) {
+                        <td class="w-11 border-b border-r border-neutral-100 px-3 py-3.5">
+                          <span class="data-grid-skeleton-box h-4 w-4 rounded"></span>
+                        </td>
+                      }
+                      @for (column of visibleColumns; track column.id) {
+                        <td
+                          class="border-b border-r border-neutral-100 px-3 py-3.5 last:border-r-0"
+                          [ngClass]="[alignmentCellClass(column), column.cellClass ?? '', column.widthClass ?? '']"
+                        >
+                          <span class="data-grid-skeleton-line" [class.data-grid-skeleton-line--short]="column.align === 'right' || column.align === 'center'"></span>
+                        </td>
+                      }
+                    </tr>
+                  }
                 } @else {
                   @for (row of pagedRows; track trackPagedRow($index, row)) {
                     <tr
@@ -618,6 +701,12 @@ export class DataGridCellDirective<T = unknown> {
                       [class.hover:bg-neutral-50]="hoverRows"
                       [class.data-grid-row-selected]="isRowSelected(row)"
                     >
+                      <td
+                        class="data-grid-row-number-cell border-b border-r border-neutral-100 px-3 py-2.5 text-[0.72rem] font-semibold text-slate-500 transition-colors"
+                        [class.bg-blue-50]="isRowSelected(row)"
+                      >
+                        {{ absoluteIndex($index) + 1 }}
+                      </td>
                       @if (selectable) {
                         <td
                           class="w-11 border-b border-r border-neutral-100 px-3 py-3.5 transition-colors"
@@ -635,7 +724,7 @@ export class DataGridCellDirective<T = unknown> {
                       }
                       @for (column of visibleColumns; track column.id) {
                         <td
-                          class="border-b border-r border-neutral-100 px-3 py-3.5 text-sm text-neutral-900 transition-colors last:border-r-0"
+                          class="border-b border-r border-neutral-100 px-3 py-2.5 text-[0.76rem] text-neutral-900 transition-colors last:border-r-0"
                           [class.bg-blue-50]="isRowSelected(row)"
                           [ngClass]="[alignmentCellClass(column), column.cellClass ?? '', column.widthClass ?? '']"
                         >
@@ -649,7 +738,7 @@ export class DataGridCellDirective<T = unknown> {
                               />
                             </div>
                           } @else {
-                            <span class="block whitespace-nowrap">{{ formattedValue(row, column, absoluteIndex($index)) }}</span>
+                            <span class="block truncate" [attr.title]="formattedValue(row, column, absoluteIndex($index))">{{ formattedValue(row, column, absoluteIndex($index)) }}</span>
                           }
                         </td>
                       }
@@ -658,6 +747,71 @@ export class DataGridCellDirective<T = unknown> {
                 }
               </tbody>
             </table>
+
+            <div class="data-grid-card-list" [attr.aria-label]="title || 'Registros'">
+              @if (loading) {
+                @for (skeletonRow of mobileSkeletonRows; track skeletonRow) {
+                  <article class="data-grid-mobile-card data-grid-mobile-card--loading" aria-hidden="true">
+                    <span class="data-grid-skeleton-line data-grid-skeleton-line--title"></span>
+                    <span class="data-grid-skeleton-line"></span>
+                    <span class="data-grid-skeleton-line data-grid-skeleton-line--short"></span>
+                  </article>
+                }
+              } @else {
+                @for (row of pagedRows; track trackPagedRow($index, row)) {
+                  <article
+                    class="data-grid-mobile-card"
+                    [class.data-grid-mobile-card--selected]="isRowSelected(row)"
+                  >
+                    <span class="data-grid-mobile-counter">N° {{ absoluteIndex($index) + 1 }}</span>
+                    @if (selectable) {
+                      <label class="data-grid-mobile-select">
+                        <input
+                          class="h-4 w-4 rounded border-neutral-300 text-blue-600 focus:ring-2 focus:ring-blue-500"
+                          type="checkbox"
+                          [checked]="isRowSelected(row)"
+                          (change)="toggleRowSelection(row, $event)"
+                        />
+                        <span>Seleccionar registro</span>
+                      </label>
+                    }
+
+                    <dl class="data-grid-mobile-fields">
+                      @for (column of mobileColumns; track column.id) {
+                        <div class="data-grid-mobile-field" [class.data-grid-mobile-field--primary]="isMobilePrimaryColumn(column)">
+                          <dt>{{ column.header }}</dt>
+                          <dd [ngClass]="alignmentCellClass(column)">
+                            @if (cellTemplate(column.id); as customTemplate) {
+                              <ng-container
+                                *ngTemplateOutlet="
+                                  customTemplate;
+                                  context: cellContext(row, column, absoluteIndex($index))
+                                "
+                              />
+                            } @else {
+                              {{ formattedValue(row, column, absoluteIndex($index)) }}
+                            }
+                          </dd>
+                        </div>
+                      }
+                    </dl>
+
+                    @if (mobileActionColumn; as actionColumn) {
+                      <div class="data-grid-mobile-actions">
+                        @if (cellTemplate(actionColumn.id); as actionTemplate) {
+                          <ng-container
+                            *ngTemplateOutlet="
+                              actionTemplate;
+                              context: cellContext(row, actionColumn, absoluteIndex($index))
+                            "
+                          />
+                        }
+                      </div>
+                    }
+                  </article>
+                }
+              }
+            </div>
           </div>
         } @else {
           <div class="data-grid-state">
@@ -812,6 +966,9 @@ export class DataGridCellDirective<T = unknown> {
         --data-grid-row-selected: #eff6ff;
         --data-grid-scrollbar-track: #f1f5f9;
         --data-grid-scrollbar-thumb: #cbd5e1;
+        --data-grid-text-xs: 0.64rem;
+        --data-grid-text-sm: 0.72rem;
+        --data-grid-text-md: 0.76rem;
       }
 
       .data-grid-scroll {
@@ -820,7 +977,7 @@ export class DataGridCellDirective<T = unknown> {
         flex: 1 1 auto;
         background: #ffffff;
         overscroll-behavior: contain;
-        scrollbar-gutter: stable both-edges;
+        scrollbar-gutter: auto;
         scrollbar-color: var(--data-grid-scrollbar-thumb) var(--data-grid-scrollbar-track);
         scrollbar-width: thin;
       }
@@ -829,6 +986,103 @@ export class DataGridCellDirective<T = unknown> {
         display: grid;
         gap: 0.75rem 0.875rem;
         align-items: end;
+      }
+
+      .data-grid-search-field {
+        display: flex;
+        width: min(100%, 28rem);
+        min-height: 2.25rem;
+        align-items: center;
+        gap: 0.5rem;
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;
+        background: #ffffff;
+        padding: 0 0.75rem;
+        box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+      }
+
+      .data-grid-search-field:focus-within {
+        border-color: #2563eb;
+        box-shadow: 0 0 0 2px #dbeafe;
+      }
+
+      .data-grid-search-input {
+        min-width: 0;
+        flex: 1 1 auto;
+        border: 0;
+        background: transparent;
+        color: #111827;
+        font-size: var(--data-grid-text-md);
+        font-weight: 500;
+        outline: none;
+      }
+
+      .data-grid-search-input::placeholder {
+        color: #9ca3af;
+      }
+
+      .data-grid-search-clear {
+        display: inline-flex;
+        width: 1.5rem;
+        height: 1.5rem;
+        align-items: center;
+        justify-content: center;
+        border-radius: 6px;
+        color: #6b7280;
+        transition:
+          background-color 150ms ease,
+          color 150ms ease;
+      }
+
+      .data-grid-search-clear:hover {
+        background: #f3f4f6;
+        color: #111827;
+      }
+
+      .data-grid-filter-chips {
+        display: flex;
+        min-width: 0;
+        flex: 1 1 auto;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 0.5rem;
+      }
+
+      .data-grid-filter-chip,
+      .data-grid-filter-chips__clear-all {
+        display: inline-flex;
+        min-height: 1.75rem;
+        align-items: center;
+        gap: 0.35rem;
+        border: 1px solid #e5e7eb;
+        border-radius: 999px;
+        background: #f8fafc;
+        padding: 0 0.625rem;
+        color: #374151;
+        font-size: var(--data-grid-text-sm);
+        font-weight: 600;
+        transition:
+          background-color 150ms ease,
+          border-color 150ms ease;
+      }
+
+      .data-grid-filter-chip:hover,
+      .data-grid-filter-chips__clear-all:hover {
+        border-color: #cbd5e1;
+        background: #ffffff;
+      }
+
+      .data-grid-filter-chip__label {
+        color: #6b7280;
+      }
+
+      .data-grid-filter-chip__value {
+        max-width: 11rem;
+        overflow: hidden;
+        color: #111827;
+        text-overflow: ellipsis;
+        white-space: nowrap;
       }
 
       .data-grid-filter-field {
@@ -846,7 +1100,7 @@ export class DataGridCellDirective<T = unknown> {
         width: 100%;
         padding: 0 0.15rem;
         text-align: left;
-        font-size: 0.6rem;
+        font-size: var(--data-grid-text-xs);
         font-weight: 600;
         letter-spacing: 0.1em;
         text-transform: uppercase;
@@ -870,13 +1124,22 @@ export class DataGridCellDirective<T = unknown> {
       }
 
       .data-grid-scroll::-webkit-scrollbar-track {
-        background: var(--data-grid-scrollbar-track);
+        border-radius: 999px;
+        background: transparent;
       }
 
       .data-grid-scroll::-webkit-scrollbar-thumb {
-        border: 2px solid var(--data-grid-scrollbar-track);
+        border: 1px solid #f8fafc;
         border-radius: 999px;
         background: var(--data-grid-scrollbar-thumb);
+      }
+
+      .data-grid-scroll::-webkit-scrollbar-thumb:hover {
+        background: #94a3b8;
+      }
+
+      .data-grid-scroll::-webkit-scrollbar-corner {
+        background: transparent;
       }
 
       .data-grid-row-selected {
@@ -887,6 +1150,34 @@ export class DataGridCellDirective<T = unknown> {
         position: relative;
         min-height: 0;
         background: #ffffff;
+      }
+
+      .data-grid-card-list {
+        display: none;
+      }
+
+      .data-grid-table-view--fit {
+        min-width: 100%;
+        table-layout: fixed;
+      }
+
+      .data-grid-table-view--scroll {
+        min-width: max(100%, var(--data-grid-table-min-width, 64rem));
+        table-layout: auto;
+      }
+
+      .data-grid-row-number-col {
+        width: 3.75rem;
+      }
+
+      .data-grid-row-number-cell {
+        width: 3.75rem;
+        text-align: center;
+        white-space: nowrap;
+      }
+
+      .data-grid-selection-col {
+        width: 2.75rem;
       }
 
       .data-grid-head {
@@ -925,32 +1216,46 @@ export class DataGridCellDirective<T = unknown> {
         pointer-events: none;
       }
 
-      .data-grid-loading-cell {
-        height: 22rem;
-        border-bottom: 1px solid var(--data-grid-border-soft);
-        background: #ffffff;
-        padding: 0;
-        text-align: center;
-        vertical-align: middle;
+      .data-grid-skeleton-box,
+      .data-grid-skeleton-line {
+        display: inline-block;
+        overflow: hidden;
+        position: relative;
+        background: #e5e7eb;
       }
 
-      .data-grid-loading-content {
-        display: inline-flex;
-        min-height: 2.4rem;
-        align-items: center;
-        gap: 0.5rem;
-        border: 1px solid #bfdbfe;
-        border-radius: 8px;
-        background: #eff6ff;
-        padding: 0 1rem;
-        color: #1d4ed8;
-        font-size: 0.82rem;
-        font-weight: 600;
+      .data-grid-skeleton-line {
+        width: min(100%, 10rem);
+        height: 0.75rem;
+        border-radius: 999px;
+      }
+
+      .data-grid-skeleton-line--short {
+        width: 5rem;
+      }
+
+      .data-grid-skeleton-line--number {
+        width: 1.5rem;
+      }
+
+      .data-grid-skeleton-line--title {
+        width: 13rem;
+        height: 0.9rem;
+      }
+
+      .data-grid-skeleton-box::after,
+      .data-grid-skeleton-line::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        transform: translateX(-100%);
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.65), transparent);
+        animation: data-grid-skeleton 1200ms ease-in-out infinite;
       }
 
       .data-grid-state {
         display: grid;
-        min-height: 16rem;
+        min-height: 14rem;
         place-items: center;
         padding: 3.5rem 1.5rem;
         background: #ffffff;
@@ -964,12 +1269,6 @@ export class DataGridCellDirective<T = unknown> {
       .data-grid-footer {
         border-color: var(--data-grid-border);
         background: #ffffff;
-      }
-
-      .data-grid-loading-spinner {
-        width: 1rem;
-        height: 1rem;
-        animation: data-grid-spin 800ms linear infinite;
       }
 
       .data-grid-button-spinner {
@@ -987,9 +1286,19 @@ export class DataGridCellDirective<T = unknown> {
         }
       }
 
+      @keyframes data-grid-skeleton {
+        to {
+          transform: translateX(100%);
+        }
+      }
+
       @media (prefers-reduced-motion: reduce) {
-        .data-grid-button-spinner,
-        .data-grid-loading-spinner {
+        .data-grid-button-spinner {
+          animation: none;
+        }
+
+        .data-grid-skeleton-box::after,
+        .data-grid-skeleton-line::after {
           animation: none;
         }
       }
@@ -1001,6 +1310,111 @@ export class DataGridCellDirective<T = unknown> {
 
         .data-grid-filter-range {
           grid-template-columns: minmax(0, 1fr);
+        }
+      }
+
+      @media (max-width: 767px) {
+        .data-grid-filter-panel {
+          padding: 0.75rem;
+        }
+
+        .data-grid-search-field {
+          width: 100%;
+        }
+
+        .data-grid-filter-chips {
+          justify-content: flex-start;
+          flex-wrap: nowrap;
+          overflow-x: auto;
+          padding-bottom: 0.125rem;
+          scrollbar-width: thin;
+        }
+
+        .data-grid-filter-chip,
+        .data-grid-filter-chips__clear-all {
+          flex: 0 0 auto;
+        }
+
+        .data-grid-table-view {
+          display: none;
+        }
+
+        .data-grid-card-list {
+          display: grid;
+          gap: 0.75rem;
+          padding: 0.75rem;
+          background: #f8fafc;
+        }
+
+        .data-grid-mobile-card {
+          display: grid;
+          gap: 0.75rem;
+          border: 1px solid #e5e7eb;
+          border-radius: 8px;
+          background: #ffffff;
+          padding: 0.75rem;
+        }
+
+        .data-grid-mobile-counter {
+          justify-self: start;
+          border-radius: 999px;
+          background: #f1f5f9;
+          padding: 0.15rem 0.5rem;
+          color: #475569;
+          font-size: var(--data-grid-text-sm);
+          font-weight: 700;
+        }
+
+        .data-grid-mobile-card--selected {
+          border-color: #bfdbfe;
+          background: #eff6ff;
+        }
+
+        .data-grid-mobile-select {
+          display: inline-flex;
+          align-items: center;
+          gap: 0.5rem;
+          color: #374151;
+          font-size: var(--data-grid-text-md);
+          font-weight: 600;
+        }
+
+        .data-grid-mobile-fields {
+          display: grid;
+          gap: 0.75rem;
+          margin: 0;
+        }
+
+        .data-grid-mobile-field {
+          display: grid;
+          gap: 0.25rem;
+        }
+
+        .data-grid-mobile-field dt {
+          color: #6b7280;
+          font-size: var(--data-grid-text-sm);
+          font-weight: 700;
+          letter-spacing: 0.04em;
+          text-transform: uppercase;
+        }
+
+        .data-grid-mobile-field dd {
+          min-width: 0;
+          margin: 0;
+          color: #111827;
+          font-size: 0.74rem;
+          font-weight: 600;
+        }
+
+        .data-grid-mobile-field--primary dd {
+          font-size: 0.8rem;
+        }
+
+        .data-grid-mobile-actions {
+          display: flex;
+          justify-content: flex-end;
+          border-top: 1px solid #e5e7eb;
+          padding-top: 0.75rem;
         }
       }
     `,
@@ -1049,7 +1463,6 @@ export class DataGridComponent<T = unknown> implements OnChanges, OnDestroy {
   readonly nextIcon = ChevronRight;
   readonly downloadIcon = Download;
   readonly filterIcon = Filter;
-  readonly loadingIcon = LoaderCircle;
   readonly plusIcon = Plus;
   readonly refreshIcon = RefreshCw;
   readonly searchIcon = Search;
@@ -1059,6 +1472,8 @@ export class DataGridComponent<T = unknown> implements OnChanges, OnDestroy {
   readonly sortAscIcon = ArrowUp;
   readonly sortDescIcon = ArrowDown;
   readonly clearIcon = X;
+  readonly skeletonRows = Array.from({ length: 6 }, (_item, index) => index);
+  readonly mobileSkeletonRows = Array.from({ length: 3 }, (_item, index) => index);
   currentPage = 1;
   pageInput = '1';
   pageInputError = '';
@@ -1176,6 +1591,30 @@ export class DataGridComponent<T = unknown> implements OnChanges, OnDestroy {
     return columns.length > 0 ? columns : this.columns.slice(0, 1);
   }
 
+  get mobileColumns(): DataGridColumn<T>[] {
+    const columns = this.visibleColumns.filter((column) => column.id !== 'acciones');
+    const prioritized = columns
+      .filter((column) => this.mobileColumnPriority(column) <= 2)
+      .sort((left, right) => this.mobileColumnPriority(left) - this.mobileColumnPriority(right));
+
+    return prioritized.length > 0 ? prioritized : columns.slice(0, 4);
+  }
+
+  get mobileActionColumn(): DataGridColumn<T> | null {
+    return this.visibleColumns.find((column) => column.id === 'acciones') ?? null;
+  }
+
+  get shouldFitColumns(): boolean {
+    return this.visibleColumns.length + 1 <= 6 && !this.visibleColumns.some((column) => this.hasExplicitColumnWidth(column));
+  }
+
+  get tableMinWidth(): string {
+    const rowNumberWidth = 3.75;
+    const selectionWidth = this.selectable ? 2.75 : 0;
+    const columnWidth = this.visibleColumns.reduce((total, column) => total + this.estimatedColumnWidth(column), rowNumberWidth + selectionWidth);
+    return `${Math.max(42, Math.min(columnWidth, 96))}rem`;
+  }
+
   get visibleFilters(): DataGridFilter<T>[] {
     return this.visibleColumns
       .filter((column) => column.id !== 'acciones' && Boolean(column.field))
@@ -1201,7 +1640,7 @@ export class DataGridComponent<T = unknown> implements OnChanges, OnDestroy {
   }
 
   get visibleColumnSpan(): number {
-    return Math.max(1, this.visibleColumns.length + (this.selectable ? 1 : 0));
+    return Math.max(1, this.visibleColumns.length + 1 + (this.selectable ? 1 : 0));
   }
 
   get exportableVisibleColumns(): DataGridColumn<T>[] {
@@ -1229,7 +1668,7 @@ export class DataGridComponent<T = unknown> implements OnChanges, OnDestroy {
   }
 
   get hasActiveFilters(): boolean {
-    return Object.values(this.filterValues).some((value) => this.hasFilterValue(value));
+    return Boolean(this.searchTerm.trim()) || Object.values(this.filterValues).some((value) => this.hasFilterValue(value));
   }
 
   get activeFilterChips(): Array<{ id: string; label: string; value: string }> {
@@ -1243,7 +1682,7 @@ export class DataGridComponent<T = unknown> implements OnChanges, OnDestroy {
       });
     }
 
-    this.filters.forEach((filter) => {
+    this.visibleFilters.forEach((filter) => {
       const value = this.filterValues[filter.id];
 
       if (!this.hasFilterValue(value)) {
@@ -1261,22 +1700,14 @@ export class DataGridComponent<T = unknown> implements OnChanges, OnDestroy {
   }
 
   get resolvedEmptyTitle(): string {
-    if (this.rows.length === 0) {
-      return 'Aun no hay empleados creados.';
-    }
-
     if (this.hasActiveFilters) {
-      return 'No se encontraron empleados con los filtros aplicados.';
+      return 'No se encontraron registros con los filtros aplicados.';
     }
 
     return this.emptyTitle;
   }
 
   get resolvedEmptyDescription(): string {
-    if (this.rows.length === 0) {
-      return 'Crea el primer registro para comenzar a trabajar en este modulo.';
-    }
-
     if (this.hasActiveFilters) {
       return 'Ajusta o limpia los filtros para ampliar los resultados.';
     }
@@ -1299,7 +1730,7 @@ export class DataGridComponent<T = unknown> implements OnChanges, OnDestroy {
 
   get filteredRows(): T[] {
     return this.rows.filter((row) => {
-      return this.visibleFilters.every((filter) => {
+      return this.matchesSearch(row) && this.visibleFilters.every((filter) => {
         const selected = this.filterValues[filter.id];
 
         if (!this.hasFilterValue(selected)) {
@@ -1535,6 +1966,20 @@ export class DataGridComponent<T = unknown> implements OnChanges, OnDestroy {
         : 'text-left';
   }
 
+  columnSizingStyle(column: DataGridColumn<T>): Record<string, string> {
+    const width = this.normalizeCssSize(column.width ?? '');
+    const minWidth = this.normalizeCssSize(column.minWidth ?? '');
+
+    if (this.shouldFitColumns) {
+      return width ? { width } : {};
+    }
+
+    return {
+      width: width || `${this.estimatedColumnWidth(column)}rem`,
+      'min-width': minWidth || `${this.estimatedColumnWidth(column)}rem`,
+    };
+  }
+
   previousPage(): void {
     this.goToPage(this.currentPage - 1);
   }
@@ -1552,6 +1997,14 @@ export class DataGridComponent<T = unknown> implements OnChanges, OnDestroy {
 
   updateSearchTerm(event: Event): void {
     this.searchInputTerm = (event.target as HTMLInputElement).value;
+    window.clearTimeout(this.searchDebounceId);
+    this.searchDebounceId = window.setTimeout(() => {
+      this.searchTerm = this.searchInputTerm.trim();
+      this.currentPage = 1;
+      this.pageInput = '1';
+      this.clearSelectionByContext('La seleccion se limpio porque cambio la busqueda.');
+      this.persistPreferences();
+    }, 250);
   }
 
   filterOptionValue(option: string | { label: string; value: string }): string {
@@ -1656,8 +2109,8 @@ export class DataGridComponent<T = unknown> implements OnChanges, OnDestroy {
   }
 
   applyFilters(): void {
-    this.searchInputTerm = '';
-    this.searchTerm = '';
+    window.clearTimeout(this.searchDebounceId);
+    this.searchTerm = this.searchInputTerm.trim();
     this.filterValues = { ...this.draftFilterValues };
     this.currentPage = 1;
     this.pageInput = '1';
@@ -1705,6 +2158,10 @@ export class DataGridComponent<T = unknown> implements OnChanges, OnDestroy {
 
   isDateRangeFilter(filter: DataGridFilter<T>): boolean {
     return filter.type === 'date-range';
+  }
+
+  isMobilePrimaryColumn(column: DataGridColumn<T>): boolean {
+    return this.mobileColumnPriority(column) === 1;
   }
 
   goToPage(page: number): void {
@@ -1805,7 +2262,7 @@ export class DataGridComponent<T = unknown> implements OnChanges, OnDestroy {
   }
 
   isColumnFixed(column: DataGridColumn<T>): boolean {
-    return this.columns[0]?.id === column.id;
+    return column.hideable === false || this.columns[0]?.id === column.id;
   }
 
   isLastVisibleColumn(columnId: string): boolean {
@@ -1839,7 +2296,7 @@ export class DataGridComponent<T = unknown> implements OnChanges, OnDestroy {
   }
 
   restoreDefaultColumns(): void {
-    this.visibleColumnIds = new Set(this.columns.map((column) => column.id));
+    this.visibleColumnIds = new Set(this.defaultVisibleColumnIds());
     this.persistPreferences();
   }
 
@@ -1882,6 +2339,85 @@ export class DataGridComponent<T = unknown> implements OnChanges, OnDestroy {
 
   private rawValue(row: T, column: DataGridColumn<T>): unknown {
     return column.field ? row[column.field] : '';
+  }
+
+  private matchesSearch(row: T): boolean {
+    const term = this.normalizeText(this.searchTerm);
+
+    if (!term) {
+      return true;
+    }
+
+    return this.columns
+      .filter((column) => Boolean(column.field))
+      .some((column) => this.normalizeText(String(this.rawValue(row, column) ?? '')).includes(term));
+  }
+
+  private hasExplicitColumnWidth(column: DataGridColumn<T>): boolean {
+    return Boolean(column.width || column.minWidth || column.widthClass?.includes('min-w-') || column.widthClass?.includes('w-'));
+  }
+
+  private estimatedColumnWidth(column: DataGridColumn<T>): number {
+    if (column.id === 'acciones' || !column.field) {
+      return 6;
+    }
+
+    if (column.width) {
+      return this.cssSizeToRem(column.width) ?? 9;
+    }
+
+    if (column.minWidth) {
+      return this.cssSizeToRem(column.minWidth) ?? 9;
+    }
+
+    if (column.type === 'number') {
+      return 7.5;
+    }
+
+    if (column.type === 'date') {
+      return 8;
+    }
+
+    return Math.max(8, Math.min(14, column.header.length * 0.62 + 4));
+  }
+
+  private cssSizeToRem(value: string): number | null {
+    const normalized = value.trim();
+
+    if (!normalized) {
+      return null;
+    }
+
+    if (normalized.endsWith('rem')) {
+      return Number.parseFloat(normalized);
+    }
+
+    if (normalized.endsWith('px')) {
+      return Number.parseFloat(normalized) / 16;
+    }
+
+    return null;
+  }
+
+  private mobileColumnPriority(column: DataGridColumn<T>): number {
+    if (column.priorityResponsive === 'primary') {
+      return 1;
+    }
+
+    if (column.priorityResponsive === 'secondary') {
+      return 2;
+    }
+
+    if (column.priorityResponsive === 'tertiary') {
+      return 3;
+    }
+
+    if (typeof column.priorityResponsive === 'number') {
+      return column.priorityResponsive;
+    }
+
+    const visibleIndex = this.visibleColumns.findIndex((item) => item.id === column.id);
+    return visibleIndex >= 0 ? visibleIndex + 1 : 99;
   }
 
   private compareValues(left: unknown, right: unknown, column: DataGridColumn<T>): number {
@@ -2150,8 +2686,8 @@ export class DataGridComponent<T = unknown> implements OnChanges, OnDestroy {
       this.filterValues = preferences.filterValues ?? this.filterValues;
       this.draftFilterValues = { ...this.filterValues };
       this.effectivePageSize = this.normalizePageSize(preferences.pageSize ?? this.effectivePageSize);
-      this.searchTerm = '';
-      this.searchInputTerm = '';
+      this.searchTerm = preferences.searchTerm ?? '';
+      this.searchInputTerm = this.searchTerm;
       this.sortColumnId = preferences.sortColumnId ?? '';
       this.sortDirection = preferences.sortDirection ?? 'asc';
 
@@ -2174,7 +2710,7 @@ export class DataGridComponent<T = unknown> implements OnChanges, OnDestroy {
     this.visibleColumnIds = new Set(
       previousVisibleIds.length > 0
         ? [...this.fixedColumnIds(), ...previousVisibleIds]
-        : this.columns.map((column) => column.id),
+        : this.defaultVisibleColumnIds(),
     );
     this.draftFilterValues = Object.fromEntries(
       Object.entries(this.draftFilterValues).filter(([id]) => this.visibleFilters.some((filter) => filter.id === id)),
@@ -2186,6 +2722,12 @@ export class DataGridComponent<T = unknown> implements OnChanges, OnDestroy {
 
   private fixedColumnIds(): string[] {
     return this.columns.filter((column) => this.isColumnFixed(column)).map((column) => column.id);
+  }
+
+  private defaultVisibleColumnIds(): string[] {
+    return this.columns
+      .filter((column) => column.visible !== false || this.isColumnFixed(column))
+      .map((column) => column.id);
   }
 
   private clampCurrentPage(): void {

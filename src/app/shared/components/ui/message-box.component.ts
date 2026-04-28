@@ -107,6 +107,40 @@ export type MessageBoxMode = 'inline' | 'modal';
         box-shadow: 0 24px 56px rgba(15, 23, 42, 0.22);
       }
 
+      /* Loading modal: centrado, más limpio y con icono protagonista */
+      .message-modal.message-loading {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        gap: 10px;
+        padding: 22px 18px;
+      }
+
+      .message-modal.message-loading .message-icon {
+        width: 44px;
+        height: 44px;
+        border-radius: 12px;
+        background: #eff6ff;
+        color: #2563eb;
+      }
+
+      .message-modal.message-loading .message-icon-svg {
+        width: 22px;
+        height: 22px;
+      }
+
+      .message-modal.message-loading .message-copy {
+        padding-top: 0;
+        justify-items: center;
+      }
+
+      .message-modal.message-loading .message-actions,
+      .message-modal.message-loading .message-dismiss {
+        display: none;
+      }
+
       .message-icon {
         display: inline-flex;
         align-items: center;

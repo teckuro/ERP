@@ -1,5 +1,8 @@
 :host {
   display: block;
+  width: 100%;
+  min-width: 0;
+  height: 100%;
 }
 
 .listado-page {
@@ -8,14 +11,21 @@
   height: calc(100vh - 7rem);
   min-height: 0;
   min-width: 0;
+  width: 100%;
   gap: 12px;
   overflow: hidden;
 }
 
 .listado-header {
   display: grid;
+  width: 100%;
   min-width: 0;
   padding: 0 4px;
+}
+
+.listado-header app-record-breadcrumb {
+  width: 100%;
+  min-width: 0;
 }
 
 .listado-toolbar {
@@ -218,6 +228,7 @@
 .listado-content > * {
   flex: 1 1 auto;
   min-width: 0;
+  height: 100%;
 }
 
 @keyframes listado-spin {

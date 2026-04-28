@@ -2,6 +2,10 @@
 
 Este archivo es la fuente unica para reglas visuales, formularios, loading, botones, mensajes y checklist de UI del ERP.
 
+Documentos relacionados:
+
+- `docs/codex/ui-button-guidelines.md` (botones)
+
 ## Direccion visual
 
 - Interfaz enterprise, compacta y sobria.
@@ -31,11 +35,11 @@ Colores:
 
 Espaciado permitido:
 
-- `4px`, `8px`, `12px`, `16px`, `24px`, `32px`
+- `2px`, `3px`, `4px`, `8px`, `12px`, `16px`, `24px`, `32px`
 
 Alturas:
 
-- Inputs: `38px` a `42px`.
+- Inputs: `23px` (estándar ERP).
 - Botones compactos: `28px` a `32px`.
 - Botones principales de pagina: `36px` a `40px`.
 - Iconos en botones: `14px` a `16px`.
@@ -47,6 +51,15 @@ Todas las pantallas deben mantener:
 1. Header con breadcrumb arriba a la izquierda y titulo de la vista.
 2. Botonera separada debajo del header, alineada a la derecha.
 3. Contenido principal en una superficie blanca con borde cuando la vista lo requiera.
+
+Referencia de implementacion (UI base del ERP):
+
+- `src/app/features/empleados/components/form-empleado/form-empleado.html`
+- `src/styles.css` (bloque `app-form-empleado { ... }`) define tokens y patrones de:
+  - tabs sobrios (sin gradientes)
+  - cards con borde y radios 6–8px
+  - loading overlay contextual
+  - botonera consistente
 
 Reglas:
 
@@ -65,6 +78,17 @@ Reglas:
 - Selects de catalogo con busqueda cuando tengan mas de 5 opciones o busqueda por texto.
 - Fechas con escritura guiada `dd/mm/aaaa` y valor interno ISO si aplica.
 - Mantener altura visual consistente entre inputs, selects, calendarios y controles complejos.
+- Tamaño de inputs (regla base):
+  - Alto estándar: `23px`.
+  - Ancho mínimo por campo: `190px` (evitar inputs gigantes; “término medio”).
+- Ancho en formularios:
+  - No ocupar siempre el `100%` del ancho disponible.
+  - Reservar `width: 100%` para barras de filtros o controles que realmente lo requieran (ej. buscadores globales).
+- Radios y checks:
+  - Radios: el control **siempre va alineado al label en la misma línea**.
+  - Checks:
+    - En listas/opciones (ej. elección entre alternativas): inline con el label.
+    - En grillas tipo “param-check” (ej. flags/tope legal): label arriba y checkbox abajo, **centrado**.
 
 ## MessageBox
 
@@ -91,7 +115,7 @@ Estilo:
 ## Loading
 
 - Si carga una tabla o listado, el loading vive dentro del cuerpo de la grilla.
-- Si carga una pantalla completa, el loading va centrado dentro del contenido principal.
+- Si carga una pantalla completa, usar `app-message-box variant="loading" mode="modal"` para centrar y bloquear la vista.
 - No bloquear toda la pantalla cuando solo cambia una parte.
 - Usar texto contextual: `Cargando listado de empleados...`, `Cargando ficha...`, `Guardando ficha...`.
 

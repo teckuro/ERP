@@ -16,6 +16,10 @@ export class ParametrosGeneralesService {
     return this.repository.listar(filtro);
   }
 
+  obtenerUltimoHastaPeriodo(periodo: string): Promise<ParametroGeneral | null> {
+    return this.repository.obtenerUltimoHastaPeriodo(periodo);
+  }
+
   guardar(payload: ParametroGeneralUpsert): Promise<ParametroGeneral> {
     return this.repository.guardar(payload);
   }

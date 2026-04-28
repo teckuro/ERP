@@ -1,114 +1,118 @@
 <section class="employee-section-shell employee-section-shell--compact" [formGroup]="formGroup">
   @if (isBlockVisible('ubicacion')) {
-  <section class="employee-block">
-    <div class="employee-block-head">
-      <h4>Ubicacion administrativa</h4>
-    </div>
+    <app-card className="employee-block">
+      <div class="employee-block-head">
+        <h4>Domicilio particular</h4>
+      </div>
 
-    <div class="employee-grid employee-grid--four">
-      <div class="form-field employee-span-2">
-        <div class="field-label-row">
-          <label for="empleado-direccion">Calle o avenida</label>
-          @if (isRequired('direccion')) {
-            <span class="field-required" aria-hidden="true">*</span>
+      <div class="employee-grid employee-grid--four">
+        <div class="form-field employee-span-2">
+          <div class="field-label-row">
+            <label for="empleado-direccion">Calle o avenida</label>
+            @if (isRequired('direccion')) {
+              <span class="field-required" aria-hidden="true">*</span>
+            }
+          </div>
+          <input
+            id="empleado-direccion"
+            type="text"
+            formControlName="direccion"
+            placeholder="Av. Apoquindo"
+            [class]="controlClass('direccion')"
+          />
+          @if (hasError('direccion', 'required')) {
+            <p class="field-message">La direccion es obligatoria.</p>
+          } @else {
+            <p class="field-message"></p>
           }
         </div>
-        <input
-          id="empleado-direccion"
-          type="text"
-          formControlName="direccion"
-          placeholder="Av. Apoquindo"
-          [class]="controlClass('direccion')"
-        />
-        @if (hasError('direccion', 'required')) {
-          <p class="field-message">La direccion es obligatoria.</p>
-        } @else {
-          <p class="field-message"></p>
-        }
-      </div>
 
-      <div class="form-field">
-        <div class="field-label-row">
-          <label for="empleado-numero-direccion">Numero</label>
-        </div>
-        <input
-          id="empleado-numero-direccion"
-          type="text"
-          inputmode="numeric"
-          maxlength="20"
-          formControlName="numeroDireccion"
-          placeholder="1001"
-          [class]="controlClass('numeroDireccion')"
-        />
-        @if (hasError('numeroDireccion', 'digitsOnly')) {
-          <p class="field-message">Ingresa solo numeros.</p>
-        } @else if (hasError('numeroDireccion', 'maxlength')) {
-          <p class="field-message">El numero supera el largo permitido.</p>
-        } @else {
-          <p class="field-message"></p>
-        }
-      </div>
-
-      <div class="form-field">
-        <div class="field-label-row">
-          <label for="empleado-departamento-direccion">Depto. u oficina</label>
-        </div>
-        <input
-          id="empleado-departamento-direccion"
-          type="text"
-          formControlName="departamentoDireccion"
-          placeholder="Oficina 402"
-          [class]="controlClass('departamentoDireccion')"
-        />
-        @if (hasError('departamentoDireccion', 'maxlength')) {
-          <p class="field-message">El departamento u oficina supera el largo permitido.</p>
-        } @else {
-          <p class="field-message"></p>
-        }
-      </div>
-
-      <div class="form-field employee-span-2">
-        <div class="field-label-row">
-          <label for="empleado-comuna">Comuna</label>
-          @if (isRequired('idComuna')) {
-            <span class="field-required" aria-hidden="true">*</span>
+        <div class="form-field">
+          <div class="field-label-row">
+            <label for="empleado-numero-direccion">Numero</label>
+          </div>
+          <input
+            id="empleado-numero-direccion"
+            type="text"
+            inputmode="numeric"
+            maxlength="20"
+            formControlName="numeroDireccion"
+            placeholder="1001"
+            [class]="controlClass('numeroDireccion')"
+          />
+          @if (hasError('numeroDireccion', 'digitsOnly')) {
+            <p class="field-message">Ingresa solo numeros.</p>
+          } @else if (hasError('numeroDireccion', 'maxlength')) {
+            <p class="field-message">El numero supera el largo permitido.</p>
+          } @else {
+            <p class="field-message"></p>
           }
         </div>
-        <select id="empleado-comuna" formControlName="idComuna" [class]="controlClass('idComuna')">
-          <option [ngValue]="null">Selecciona una comuna</option>
-          @for (comuna of comunas; track comuna.value) {
-            <option [ngValue]="comuna.value">{{ comuna.label }}</option>
-          }
-        </select>
-        @if (hasError('idComuna', 'required')) {
-          <p class="field-message">La comuna es obligatoria.</p>
-        } @else if (!comunas.length) {
-          <p class="field-message field-message--warning">
-            No hay comunas cargadas desde Supabase.
-          </p>
-        } @else {
-          <p class="field-message"></p>
-        }
-      </div>
 
-      <div class="form-field employee-span-4">
-        <div class="field-label-row">
-          <label for="empleado-observaciones-direccion">Observaciones</label>
+        <div class="form-field">
+          <div class="field-label-row">
+            <label for="empleado-departamento-direccion">Depto. u oficina</label>
+          </div>
+          <input
+            id="empleado-departamento-direccion"
+            type="text"
+            formControlName="departamentoDireccion"
+            placeholder="Oficina 402"
+            [class]="controlClass('departamentoDireccion')"
+          />
+          @if (hasError('departamentoDireccion', 'maxlength')) {
+            <p class="field-message">El departamento u oficina supera el largo permitido.</p>
+          } @else {
+            <p class="field-message"></p>
+          }
         </div>
-        <textarea
-          id="empleado-observaciones-direccion"
-          rows="3"
-          formControlName="observacionesDireccion"
-          placeholder="Torre B, acceso por recepcion, referencia adicional"
-          [class]="controlClass('observacionesDireccion') + ' employee-control--textarea'"
-        ></textarea>
-        @if (hasError('observacionesDireccion', 'maxlength')) {
-          <p class="field-message">Las observaciones superan el largo permitido.</p>
-        } @else {
-          <p class="field-message"></p>
-        }
+
+        <div class="form-field employee-span-2">
+          <div class="field-label-row">
+            <label for="empleado-comuna">Comuna</label>
+            @if (isRequired('idComuna')) {
+              <span class="field-required" aria-hidden="true">*</span>
+            }
+          </div>
+          <select
+            id="empleado-comuna"
+            formControlName="idComuna"
+            [class]="controlClass('idComuna')"
+          >
+            <option [ngValue]="null">Selecciona una comuna</option>
+            @for (comuna of comunas; track comuna.value) {
+              <option [ngValue]="comuna.value">{{ comuna.label }}</option>
+            }
+          </select>
+          @if (hasError('idComuna', 'required')) {
+            <p class="field-message">La comuna es obligatoria.</p>
+          } @else if (!comunas.length) {
+            <p class="field-message field-message--warning">
+              No hay comunas cargadas desde Supabase.
+            </p>
+          } @else {
+            <p class="field-message"></p>
+          }
+        </div>
+
+        <div class="form-field employee-span-4">
+          <div class="field-label-row">
+            <label for="empleado-observaciones-direccion">Observaciones</label>
+          </div>
+          <textarea
+            id="empleado-observaciones-direccion"
+            rows="3"
+            formControlName="observacionesDireccion"
+            placeholder="Torre B, acceso por recepcion, referencia adicional"
+            [class]="controlClass('observacionesDireccion') + ' employee-control--textarea'"
+          ></textarea>
+          @if (hasError('observacionesDireccion', 'maxlength')) {
+            <p class="field-message">Las observaciones superan el largo permitido.</p>
+          } @else {
+            <p class="field-message"></p>
+          }
+        </div>
       </div>
-    </div>
-  </section>
+    </app-card>
   }
 </section>

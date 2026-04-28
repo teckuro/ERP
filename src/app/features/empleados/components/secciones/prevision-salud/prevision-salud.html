@@ -7,7 +7,7 @@
   @if (isBlockVisible('regimen')) {
     <app-card className="prevision-card">
       <app-card-header className="prevision-card-header">
-        <h4 class="text-sm font-semibold text-gray-900">Regimen previsional</h4>
+        <h4>Tipo de prevision</h4>
       </app-card-header>
       <app-card-content className="prevision-card-content">
         <div class="prevision-grid prevision-grid--two">
@@ -17,7 +17,7 @@
                 class="text-sm font-medium text-gray-700"
                 for="empleado-tipo-regimen-previsional"
               >
-                Regimen previsional
+                Tipo de prevision
               </label>
               @if (isRequired('tipoRegimenPrevisional')) {
                 <span class="field-required" aria-hidden="true">*</span>
@@ -28,13 +28,13 @@
               formControlName="tipoRegimenPrevisional"
               [class]="controlClass('tipoRegimenPrevisional')"
             >
-              <option [ngValue]="null">Selecciona un tipo</option>
+              <option [ngValue]="null">Selecciona una opcion</option>
               @for (option of tiposRegimenPrevisional; track option.value) {
                 <option [ngValue]="option.value">{{ option.label }}</option>
               }
             </select>
             @if (hasError('tipoRegimenPrevisional', 'required')) {
-              <p class="field-message">Debes seleccionar el tipo de regimen previsional.</p>
+              <p class="field-message">Debes seleccionar el tipo de prevision.</p>
             } @else {
               <p class="field-message"></p>
             }
@@ -47,7 +47,7 @@
   @if (esAfp && isBlockVisible('afp')) {
     <app-card className="prevision-card">
       <app-card-header className="prevision-card-header">
-        <h4 class="text-sm font-semibold text-gray-900">AFP</h4>
+        <h4>AFP</h4>
       </app-card-header>
       <app-card-content className="prevision-card-content">
         <div class="prevision-grid prevision-grid--three">
@@ -130,17 +130,17 @@
   @if (esIps && isBlockVisible('ips')) {
     <app-card className="prevision-card">
       <app-card-header className="prevision-card-header">
-        <h4 class="text-sm font-semibold text-gray-900">IPS (Ex INP)</h4>
+        <h4>Ex-Caja / regimen antiguo</h4>
       </app-card-header>
       <app-card-content className="prevision-card-content">
-        <div class="prevision-grid prevision-grid--three">
+        <div class="prevision-grid prevision-grid--four">
           <div class="form-field">
             <div class="field-label-row">
               <label
                 class="text-sm font-medium text-gray-700"
                 for="empleado-entidad-previsional-ips"
               >
-                Entidad previsional IPS
+                Entidad IPS
               </label>
               @if (isRequired('idEntidadPrevisionalIps')) {
                 <span class="field-required" aria-hidden="true">*</span>
@@ -157,7 +157,7 @@
               }
             </select>
             @if (hasError('idEntidadPrevisionalIps', 'required')) {
-              <p class="field-message">La entidad previsional IPS es obligatoria.</p>
+              <p class="field-message">La entidad IPS es obligatoria.</p>
             } @else {
               <p class="field-message"></p>
             }
@@ -215,9 +215,33 @@
                 No hay regimenes para la Ex-Caja seleccionada.
               </p>
             } @else {
-              <p class="field-message">
-                Tasa referencia: {{ formGroup.controls.tasaExCaja.value ?? 0 }}%
-              </p>
+              <p class="field-message"></p>
+            }
+          </div>
+
+          <div class="form-field">
+            <div class="field-label-row">
+              <label class="text-sm font-medium text-gray-700" for="empleado-tasa-ex-caja">
+                Tasa Ex-Caja (%)
+              </label>
+              @if (isRequired('tasaExCaja')) {
+                <span class="field-required" aria-hidden="true">*</span>
+              }
+            </div>
+            <input
+              id="empleado-tasa-ex-caja"
+              type="number"
+              min="0"
+              step="0.01"
+              formControlName="tasaExCaja"
+              [class]="controlClass('tasaExCaja')"
+            />
+            @if (hasError('tasaExCaja', 'required')) {
+              <p class="field-message">La tasa Ex-Caja es obligatoria.</p>
+            } @else if (hasError('tasaExCaja', 'min')) {
+              <p class="field-message">La tasa Ex-Caja no puede ser negativa.</p>
+            } @else {
+              <p class="field-message">Ingresa la tasa informada para este trabajador.</p>
             }
           </div>
         </div>
@@ -228,7 +252,7 @@
   @if (mostrarSalud && isBlockVisible('salud')) {
     <app-card className="prevision-card">
       <app-card-header className="prevision-card-header">
-        <h4 class="text-sm font-semibold text-gray-900">Salud</h4>
+        <h4>Salud</h4>
       </app-card-header>
       <app-card-content className="prevision-card-content">
         <div class="prevision-grid prevision-grid--four">
@@ -338,11 +362,9 @@
 
   @if (esAfp && isBlockVisible('apvi')) {
     <app-card className="prevision-card">
-      <app-card-header
-        className="prevision-card-header flex flex-col gap-4 md:flex-row md:items-start md:justify-between"
-      >
+      <app-card-header className="prevision-card-header prevision-card-header--actions">
         <div>
-          <h4 class="text-sm font-semibold text-gray-900">
+          <h4>
             APVI - Ahorro Previsional Voluntario Individual
           </h4>
         </div>
@@ -366,9 +388,9 @@
           <div class="prevision-grid prevision-grid--three">
             <div class="form-field">
               <div class="field-label-row">
-                <label class="text-sm font-medium text-gray-700" for="empleado-institucion-apv"
-                  >Institucion APVI</label
-                >
+                <label class="text-sm font-medium text-gray-700" for="empleado-institucion-apv">
+                  Institucion APVI
+                </label>
                 @if (isRequired('idInstitucionApv')) {
                   <span class="field-required" aria-hidden="true">*</span>
                 }
@@ -392,9 +414,9 @@
 
             <div class="form-field">
               <div class="field-label-row">
-                <label class="text-sm font-medium text-gray-700" for="empleado-moneda-apv"
-                  >Moneda APVI</label
-                >
+                <label class="text-sm font-medium text-gray-700" for="empleado-moneda-apv">
+                  Moneda APVI
+                </label>
                 @if (isRequired('idMonedaApv')) {
                   <span class="field-required" aria-hidden="true">*</span>
                 }
@@ -418,9 +440,9 @@
 
             <div class="form-field">
               <div class="field-label-row">
-                <label class="text-sm font-medium text-gray-700" for="empleado-monto-apv"
-                  >Valor APVI</label
-                >
+                <label class="text-sm font-medium text-gray-700" for="empleado-monto-apv">
+                  Valor APVI
+                </label>
                 @if (isRequired('montoApv')) {
                   <span class="field-required" aria-hidden="true">*</span>
                 }
@@ -502,3 +524,4 @@
     </app-card>
   }
 </div>
+
