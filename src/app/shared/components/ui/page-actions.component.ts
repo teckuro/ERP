@@ -63,16 +63,18 @@ export type PageActionType = 'back' | 'save' | 'edit' | 'export' | 'import';
       }
 
       @if (hasAction('edit')) {
-        <app-button
-          variant="outline"
-          size="md"
-          [className]="actionClass('edit')"
-          [disabled]="editDisabled"
-          (click)="editClick.emit()"
-        >
-          <lucide-icon class="h-4 w-4" [img]="PencilIcon"></lucide-icon>
-          {{ editLabel }}
-        </app-button>
+        <span class="inline-flex max-w-full" [attr.title]="editTooltip.trim() ? editTooltip : null">
+          <app-button
+            variant="outline"
+            size="md"
+            [className]="actionClass('edit')"
+            [disabled]="editDisabled"
+            (click)="editClick.emit()"
+          >
+            <lucide-icon class="h-4 w-4" [img]="PencilIcon"></lucide-icon>
+            {{ editLabel }}
+          </app-button>
+        </span>
       }
 
       @if (hasAction('save')) {
@@ -124,6 +126,8 @@ export class PageActionsComponent {
   @Input() backLabel = 'Volver';
   @Input() saveLabel = 'Guardar';
   @Input() editLabel = 'Modificar';
+  /** Texto nativo (tooltip) al pasar el mouse sobre Modificar; opcional. */
+  @Input() editTooltip = '';
   @Input() exportLabel = 'Exportar';
   @Input() importLabel = 'Importar';
 

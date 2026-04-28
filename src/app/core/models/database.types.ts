@@ -21,6 +21,7 @@ export type Database = {
           codigo_tipo_contrato: Database["public"]["Enums"]["tipo_contrato_enum"]
           id_afc_parametro: number
           observacion: string | null
+          periodo: string | null
           tasa_empleador: number
           tasa_trabajador: number
           vigencia_fin: string | null
@@ -32,6 +33,7 @@ export type Database = {
           codigo_tipo_contrato: Database["public"]["Enums"]["tipo_contrato_enum"]
           id_afc_parametro?: number
           observacion?: string | null
+          periodo?: string | null
           tasa_empleador?: number
           tasa_trabajador?: number
           vigencia_fin?: string | null
@@ -43,6 +45,7 @@ export type Database = {
           codigo_tipo_contrato?: Database["public"]["Enums"]["tipo_contrato_enum"]
           id_afc_parametro?: number
           observacion?: string | null
+          periodo?: string | null
           tasa_empleador?: number
           tasa_trabajador?: number
           vigencia_fin?: string | null
@@ -57,6 +60,7 @@ export type Database = {
           forma_pago_apvi: number | null
           id_afp: number
           nombre: string
+          periodo: string | null
           sis: number | null
           tasa_empleador: number | null
           tasa_obligatoria: number | null
@@ -70,6 +74,7 @@ export type Database = {
           forma_pago_apvi?: number | null
           id_afp?: number
           nombre: string
+          periodo?: string | null
           sis?: number | null
           tasa_empleador?: number | null
           tasa_obligatoria?: number | null
@@ -83,6 +88,7 @@ export type Database = {
           forma_pago_apvi?: number | null
           id_afp?: number
           nombre?: string
+          periodo?: string | null
           sis?: number | null
           tasa_empleador?: number | null
           tasa_obligatoria?: number | null
@@ -325,6 +331,7 @@ export type Database = {
           fuente: string | null
           id_ccaf_entidad: number
           nombre: string
+          periodo: string | null
           vigente: boolean
         }
         Insert: {
@@ -332,6 +339,7 @@ export type Database = {
           fuente?: string | null
           id_ccaf_entidad?: number
           nombre: string
+          periodo?: string | null
           vigente?: boolean
         }
         Update: {
@@ -339,6 +347,7 @@ export type Database = {
           fuente?: string | null
           id_ccaf_entidad?: number
           nombre?: string
+          periodo?: string | null
           vigente?: boolean
         }
         Relationships: []
@@ -1188,18 +1197,21 @@ export type Database = {
           codigo: string | null
           id_forma_pago_apv: number
           nombre: string
+          periodo: string | null
           vigente: boolean
         }
         Insert: {
           codigo?: string | null
           id_forma_pago_apv?: number
           nombre: string
+          periodo?: string | null
           vigente?: boolean
         }
         Update: {
           codigo?: string | null
           id_forma_pago_apv?: number
           nombre?: string
+          periodo?: string | null
           vigente?: boolean
         }
         Relationships: []
@@ -1264,18 +1276,21 @@ export type Database = {
           codigo: string | null
           id_institucion_apv: number
           nombre: string
+          periodo: string | null
           vigente: boolean
         }
         Insert: {
           codigo?: string | null
           id_institucion_apv?: number
           nombre: string
+          periodo?: string | null
           vigente?: boolean
         }
         Update: {
           codigo?: string | null
           id_institucion_apv?: number
           nombre?: string
+          periodo?: string | null
           vigente?: boolean
         }
         Relationships: []
@@ -1333,6 +1348,7 @@ export type Database = {
           fuente_financiamiento: string | null
           fuente_organismos: string | null
           id_ley_16744_parametro: number
+          periodo: string
           vigencia_fin: string | null
           vigencia_inicio: string
           vigente: boolean
@@ -1344,6 +1360,7 @@ export type Database = {
           fuente_financiamiento?: string | null
           fuente_organismos?: string | null
           id_ley_16744_parametro?: number
+          periodo: string
           vigencia_fin?: string | null
           vigencia_inicio?: string
           vigente?: boolean
@@ -1355,6 +1372,7 @@ export type Database = {
           fuente_financiamiento?: string | null
           fuente_organismos?: string | null
           id_ley_16744_parametro?: number
+          periodo?: string
           vigencia_fin?: string | null
           vigencia_inicio?: string
           vigente?: boolean
@@ -1722,6 +1740,7 @@ export type Database = {
           codigo: string
           id_organismo_administrador_ley_16744: number
           nombre: string
+          periodo: string | null
           tipo: string
           vigente: boolean
         }
@@ -1729,6 +1748,7 @@ export type Database = {
           codigo: string
           id_organismo_administrador_ley_16744?: number
           nombre: string
+          periodo?: string | null
           tipo: string
           vigente?: boolean
         }
@@ -1736,6 +1756,7 @@ export type Database = {
           codigo?: string
           id_organismo_administrador_ley_16744?: number
           nombre?: string
+          periodo?: string | null
           tipo?: string
           vigente?: boolean
         }
@@ -1892,6 +1913,7 @@ export type Database = {
         Row: {
           id_parametro: number
           nombre: string
+          periodo: string | null
           valor_decimal: number | null
           valor_entero: number | null
           vigencia_fin: string | null
@@ -1900,6 +1922,7 @@ export type Database = {
         Insert: {
           id_parametro?: number
           nombre: string
+          periodo?: string | null
           valor_decimal?: number | null
           valor_entero?: number | null
           vigencia_fin?: string | null
@@ -1908,6 +1931,7 @@ export type Database = {
         Update: {
           id_parametro?: number
           nombre?: string
+          periodo?: string | null
           valor_decimal?: number | null
           valor_entero?: number | null
           vigencia_fin?: string | null
@@ -2340,6 +2364,7 @@ export type Database = {
           fapp_seguro_social: number
           fuente: string | null
           id_reforma_previsional_parametro: number
+          periodo: string | null
           vigencia_fin: string | null
           vigencia_inicio: string
         }
@@ -2349,6 +2374,7 @@ export type Database = {
           fapp_seguro_social: number
           fuente?: string | null
           id_reforma_previsional_parametro?: number
+          periodo?: string | null
           vigencia_fin?: string | null
           vigencia_inicio: string
         }
@@ -2358,6 +2384,7 @@ export type Database = {
           fapp_seguro_social?: number
           fuente?: string | null
           id_reforma_previsional_parametro?: number
+          periodo?: string | null
           vigencia_fin?: string | null
           vigencia_inicio?: string
         }
@@ -2580,6 +2607,7 @@ export type Database = {
           codigo: string | null
           id_salud: number
           nombre: string
+          periodo: string | null
           porcentaje_cotizacion: number | null
           tipo: Database["public"]["Enums"]["tipo_salud_enum"] | null
           vigencia_fin: string | null
@@ -2590,6 +2618,7 @@ export type Database = {
           codigo?: string | null
           id_salud?: number
           nombre: string
+          periodo?: string | null
           porcentaje_cotizacion?: number | null
           tipo?: Database["public"]["Enums"]["tipo_salud_enum"] | null
           vigencia_fin?: string | null
@@ -2600,6 +2629,7 @@ export type Database = {
           codigo?: string | null
           id_salud?: number
           nombre?: string
+          periodo?: string | null
           porcentaje_cotizacion?: number | null
           tipo?: Database["public"]["Enums"]["tipo_salud_enum"] | null
           vigencia_fin?: string | null
@@ -2822,6 +2852,7 @@ export type Database = {
           factor: number
           hasta: number | null
           id: number
+          periodo: string | null
           rebaja: number
           tramo: number
           vigencia_fin: string | null
@@ -2832,6 +2863,7 @@ export type Database = {
           factor: number
           hasta?: number | null
           id?: number
+          periodo?: string | null
           rebaja: number
           tramo: number
           vigencia_fin?: string | null
@@ -2842,6 +2874,7 @@ export type Database = {
           factor?: number
           hasta?: number | null
           id?: number
+          periodo?: string | null
           rebaja?: number
           tramo?: number
           vigencia_fin?: string | null
@@ -2939,6 +2972,7 @@ export type Database = {
           fuente: string | null
           id_trabajo_pesado_parametro: number
           nombre: string
+          periodo: string
           requiere_dictamen_cen: boolean
           tasa_empleador: number
           tasa_total: number
@@ -2952,6 +2986,7 @@ export type Database = {
           fuente?: string | null
           id_trabajo_pesado_parametro?: number
           nombre: string
+          periodo: string
           requiere_dictamen_cen?: boolean
           tasa_empleador: number
           tasa_total: number
@@ -2965,6 +3000,7 @@ export type Database = {
           fuente?: string | null
           id_trabajo_pesado_parametro?: number
           nombre?: string
+          periodo?: string
           requiere_dictamen_cen?: boolean
           tasa_empleador?: number
           tasa_total?: number

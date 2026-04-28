@@ -82,15 +82,32 @@ CREATE TABLE parametros_generales (
     periodo VARCHAR(7) PRIMARY KEY,
     uf NUMERIC(14,4),
     utm NUMERIC(12,0),
+    uta NUMERIC(12,0),
     sueldo_minimo NUMERIC(12,0),
     sueldo_minimo18_65 NUMERIC(12,0),
+    sueldo_minimo_menor18_mayor65 NUMERIC(12,0),
+    sueldo_minimo_casa_particular NUMERIC(12,0),
+    ingreso_minimo_no_remuneracional NUMERIC(12,0),
     gratificacion BOOLEAN DEFAULT TRUE,
     imm_gratificacion NUMERIC(8,4) DEFAULT 4.75,
+    tope_afp_uf NUMERIC(10,4),
     tope_afp NUMERIC(12,0),
+    tope_ips_uf NUMERIC(10,4),
     tope_ips NUMERIC(12,0),
+    tope_cesantia_uf NUMERIC(10,4),
     tope_cesantia NUMERIC(12,0),
+    tope_apv_mensual_uf NUMERIC(10,4),
+    tope_apv_mensual NUMERIC(12,0),
+    tope_apv_anual_uf NUMERIC(10,4),
+    tope_apv_anual NUMERIC(12,0),
+    tope_deposito_convenido_anual_uf NUMERIC(10,4),
+    tope_deposito_convenido_anual NUMERIC(12,0),
     tope_afpvoluntario NUMERIC(12,0),
     sis NUMERIC(7,4),
+    sanna NUMERIC(7,4),
+    salud_obligatoria NUMERIC(7,4),
+    salud_ccaf NUMERIC(7,4),
+    salud_fonasa_con_ccaf NUMERIC(7,4),
     dsctosbpordia BOOLEAN DEFAULT TRUE,
     afc_trabajador_indefinido NUMERIC(7,4) DEFAULT 0.6,
     afc_empleador_indefinido NUMERIC(7,4) DEFAULT 2.4,
@@ -98,8 +115,8 @@ CREATE TABLE parametros_generales (
     fecha_actualizacion TIMESTAMP DEFAULT NOW(),
     CONSTRAINT chk_parametros_periodo CHECK (periodo ~ '^[0-9]{4}-(0[1-9]|1[0-2])$')
 );
--- Nota: se conserva por compatibilidad historica, pero v4 debe leer
--- parametros legales desde parametros_legales y tabla_impuesto_unico.
+-- Snapshot denormalizado consumido por la app (database.types / repositorio).
+-- Detalle normativo sigue en parametros_legales y tabla_impuesto_unico.
 
 CREATE TABLE tramo_carga (
     id_tramo SERIAL PRIMARY KEY,
@@ -135,6 +152,8 @@ CREATE TABLE afp (
     forma_pago_apvi INT,
     vigencia_inicio DATE,
     vigencia_fin DATE,
+    periodo VARCHAR(7),
+    CONSTRAINT chk_afp_periodo_fmt CHECK (periodo IS NULL OR periodo ~ '^[0-9]{4}-(0[1-9]|1[0-2])$'),
     CONSTRAINT chk_afp_tasa_obligatoria CHECK (tasa_obligatoria BETWEEN 10.0000 AND 15.0000),
     CONSTRAINT chk_afp_comision CHECK (comision >= 0),
     CONSTRAINT chk_afp_sis CHECK (sis >= 0),
@@ -172,6 +191,8 @@ CREATE TABLE salud (
     vigente BOOLEAN DEFAULT TRUE,
     vigencia_inicio DATE,
     vigencia_fin DATE,
+    periodo VARCHAR(7),
+    CONSTRAINT chk_salud_periodo_fmt CHECK (periodo IS NULL OR periodo ~ '^[0-9]{4}-(0[1-9]|1[0-2])$'),
     CONSTRAINT chk_salud_porcentaje CHECK (porcentaje_cotizacion >= 7.0000),
     CONSTRAINT chk_salud_vigencia CHECK (vigencia_fin IS NULL OR vigencia_fin >= vigencia_inicio)
 );
@@ -204,6 +225,8 @@ CREATE TABLE afc_parametro (
     vigencia_inicio DATE NOT NULL,
     vigencia_fin DATE,
     observacion TEXT,
+    periodo VARCHAR(7),
+    CONSTRAINT chk_afc_parametro_periodo_fmt CHECK (periodo IS NULL OR periodo ~ '^[0-9]{4}-(0[1-9]|1[0-2])$'),
     CONSTRAINT uq_afc_parametro UNIQUE (codigo_tipo_contrato, vigencia_inicio),
     CONSTRAINT chk_afc_parametro_tasas CHECK (tasa_trabajador >= 0 AND tasa_empleador >= 0),
     CONSTRAINT chk_afc_parametro_vigencia CHECK (vigencia_fin IS NULL OR vigencia_fin >= vigencia_inicio)
@@ -261,14 +284,18 @@ CREATE TABLE institucion_apv (
     id_institucion_apv SERIAL PRIMARY KEY,
     codigo VARCHAR(10) UNIQUE,
     nombre VARCHAR(150) NOT NULL UNIQUE,
-    vigente BOOLEAN NOT NULL DEFAULT TRUE
+    vigente BOOLEAN NOT NULL DEFAULT TRUE,
+    periodo VARCHAR(7),
+    CONSTRAINT chk_inst_apv_periodo_fmt CHECK (periodo IS NULL OR periodo ~ '^[0-9]{4}-(0[1-9]|1[0-2])$')
 );
 
 CREATE TABLE forma_pago_apv (
     id_forma_pago_apv SERIAL PRIMARY KEY,
     codigo VARCHAR(10) UNIQUE,
     nombre VARCHAR(100) NOT NULL UNIQUE,
-    vigente BOOLEAN NOT NULL DEFAULT TRUE
+    vigente BOOLEAN NOT NULL DEFAULT TRUE,
+    periodo VARCHAR(7),
+    CONSTRAINT chk_forma_pago_apv_periodo_fmt CHECK (periodo IS NULL OR periodo ~ '^[0-9]{4}-(0[1-9]|1[0-2])$')
 );
 
 CREATE TABLE centro_costo (
@@ -320,12 +347,15 @@ CREATE TABLE parametros_legales (
     valor_entero INTEGER,
     vigencia_inicio DATE NOT NULL,
     vigencia_fin DATE,
+    periodo VARCHAR(7),
+    CONSTRAINT chk_parametros_legales_periodo_fmt CHECK (periodo IS NULL OR periodo ~ '^[0-9]{4}-(0[1-9]|1[0-2])$'),
     CONSTRAINT uq_parametros_legales UNIQUE (nombre, vigencia_inicio)
 );
 
 CREATE TABLE trabajo_pesado_parametro (
     id_trabajo_pesado_parametro SERIAL PRIMARY KEY,
-    codigo VARCHAR(30) NOT NULL UNIQUE,
+    codigo VARCHAR(30) NOT NULL,
+    periodo VARCHAR(7) NOT NULL,
     nombre VARCHAR(150) NOT NULL,
     tasa_trabajador NUMERIC(7,4) NOT NULL,
     tasa_empleador NUMERIC(7,4) NOT NULL,
@@ -335,6 +365,8 @@ CREATE TABLE trabajo_pesado_parametro (
     vigente BOOLEAN NOT NULL DEFAULT TRUE,
     vigencia_inicio DATE NOT NULL DEFAULT DATE '2025-08-01',
     vigencia_fin DATE,
+    CONSTRAINT chk_trabajo_pesado_periodo_fmt CHECK (periodo ~ '^[0-9]{4}-(0[1-9]|1[0-2])$'),
+    CONSTRAINT uq_trabajo_pesado_codigo_periodo UNIQUE (codigo, periodo),
     CONSTRAINT chk_trabajo_pesado_tasas CHECK (tasa_trabajador >= 0 AND tasa_empleador >= 0 AND tasa_total >= 0),
     CONSTRAINT chk_trabajo_pesado_vigencia CHECK (vigencia_fin IS NULL OR vigencia_fin >= vigencia_inicio)
 );
@@ -347,6 +379,8 @@ CREATE TABLE reforma_previsional_parametro (
     cuenta_capitalizacion_individual NUMERIC(7,4) NOT NULL,
     fapp_seguro_social NUMERIC(7,4) NOT NULL,
     fuente TEXT,
+    periodo VARCHAR(7),
+    CONSTRAINT chk_reforma_prev_periodo_fmt CHECK (periodo IS NULL OR periodo ~ '^[0-9]{4}-(0[1-9]|1[0-2])$'),
     CONSTRAINT uq_reforma_previsional_parametro UNIQUE (vigencia_inicio),
     CONSTRAINT chk_reforma_previsional_tasas CHECK (
         aporte_empleador_total >= 0
@@ -358,7 +392,8 @@ CREATE TABLE reforma_previsional_parametro (
 
 CREATE TABLE ley_16744_parametros (
     id_ley_16744_parametro SERIAL PRIMARY KEY,
-    codigo VARCHAR(30) NOT NULL UNIQUE,
+    codigo VARCHAR(30) NOT NULL,
+    periodo VARCHAR(7) NOT NULL,
     cotizacion_basica_empleador NUMERIC(7,4) NOT NULL,
     descripcion_tasa_adicional TEXT,
     fuente_financiamiento TEXT,
@@ -366,6 +401,8 @@ CREATE TABLE ley_16744_parametros (
     vigente BOOLEAN NOT NULL DEFAULT TRUE,
     vigencia_inicio DATE NOT NULL DEFAULT DATE '2026-04-01',
     vigencia_fin DATE,
+    CONSTRAINT chk_ley_16744_periodo_fmt CHECK (periodo ~ '^[0-9]{4}-(0[1-9]|1[0-2])$'),
+    CONSTRAINT uq_ley_16744_codigo_periodo UNIQUE (codigo, periodo),
     CONSTRAINT chk_ley_16744_parametros_tasa CHECK (cotizacion_basica_empleador >= 0),
     CONSTRAINT chk_ley_16744_parametros_vigencia CHECK (vigencia_fin IS NULL OR vigencia_fin >= vigencia_inicio)
 );
@@ -375,7 +412,9 @@ CREATE TABLE organismo_administrador_ley_16744 (
     codigo VARCHAR(30) NOT NULL UNIQUE,
     nombre VARCHAR(150) NOT NULL UNIQUE,
     tipo VARCHAR(30) NOT NULL,
-    vigente BOOLEAN NOT NULL DEFAULT TRUE
+    vigente BOOLEAN NOT NULL DEFAULT TRUE,
+    periodo VARCHAR(7),
+    CONSTRAINT chk_org_16744_periodo_fmt CHECK (periodo IS NULL OR periodo ~ '^[0-9]{4}-(0[1-9]|1[0-2])$')
 );
 
 CREATE TABLE ccaf_entidad (
@@ -383,7 +422,9 @@ CREATE TABLE ccaf_entidad (
     codigo VARCHAR(30) NOT NULL UNIQUE,
     nombre VARCHAR(150) NOT NULL UNIQUE,
     vigente BOOLEAN NOT NULL DEFAULT TRUE,
-    fuente TEXT
+    fuente TEXT,
+    periodo VARCHAR(7),
+    CONSTRAINT chk_ccaf_entidad_periodo_fmt CHECK (periodo IS NULL OR periodo ~ '^[0-9]{4}-(0[1-9]|1[0-2])$')
 );
 
 CREATE TABLE tabla_impuesto_unico (
@@ -395,6 +436,10 @@ CREATE TABLE tabla_impuesto_unico (
     rebaja NUMERIC(18,2) NOT NULL,
     vigencia_inicio DATE NOT NULL,
     vigencia_fin DATE,
+    periodo VARCHAR(7) GENERATED ALWAYS AS (
+        (EXTRACT(YEAR FROM vigencia_inicio))::integer::text || '-' ||
+        LPAD((EXTRACT(MONTH FROM vigencia_inicio))::integer::text, 2, '0')
+    ) STORED,
     CONSTRAINT uq_tabla_impuesto_unico UNIQUE (tramo, vigencia_inicio)
 );
 

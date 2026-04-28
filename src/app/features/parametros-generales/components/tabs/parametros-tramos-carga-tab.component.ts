@@ -15,6 +15,9 @@ import { TramoCargaParametro } from '../../models/parametro-general.model';
     <section class="tab-panel">
       <section class="catalog-section" aria-labelledby="tramos-carga-title">
         <h2 id="tramos-carga-title">Tramos cargas familiares</h2>
+        <div class="param-hint param-hint--consulta" role="note">
+          <span class="param-hint__tag">Solo lectura</span>
+        </div>
         <app-data-grid
           title="Tramos de asignación familiar"
           [rows]="rows"
@@ -24,10 +27,10 @@ import { TramoCargaParametro } from '../../models/parametro-general.model';
           [filtersEnabled]="true"
           [showExportAction]="true"
           [maxItems]="10"
-          gridHeight="28rem"
-          persistenceKey="parametros.tramos-carga.dg"
-          emptyTitle="No hay tramos cargados"
-          emptyDescription="Sin carga externa de asignación familiar."
+          gridHeight="100%"
+          [persistenceKey]="gridPersistenceKey"
+          emptyTitle="No hay registros para el periodo seleccionado"
+          emptyDescription="No hay tramos de asignación familiar para este periodo."
           (refresh)="refresh?.()"
         ></app-data-grid>
       </section>
@@ -38,6 +41,7 @@ export class ParametrosTramosCargaTabComponent {
   @Input({ required: true }) rows!: TramoCargaParametro[];
   @Input({ required: true }) columns!: DataGridColumn<TramoCargaParametro>[];
   @Input() loading = false;
+  @Input() gridPersistenceKey = 'parametros.tramos-carga.dg';
   @Input() refresh: (() => void) | null = null;
 
   readonly tramosCargaFilters: DataGridFilter<TramoCargaParametro>[] = [

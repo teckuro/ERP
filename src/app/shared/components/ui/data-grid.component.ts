@@ -1492,6 +1492,21 @@ export class DataGridComponent<T = unknown> implements OnChanges, OnDestroy {
       this.syncVisibleColumns();
     }
 
+    if (changes['persistenceKey']) {
+      const prev = changes['persistenceKey'].previousValue as string | undefined;
+      const curr = changes['persistenceKey'].currentValue as string | undefined;
+      if (prev !== curr && prev !== undefined && curr) {
+        this.filterValues = {};
+        this.draftFilterValues = {};
+        this.sortColumnId = '';
+        this.sortDirection = 'asc';
+        this.currentPage = 1;
+        this.pageInput = '1';
+        this.selectedRowKeys = new Set();
+        this.preferencesLoaded = false;
+      }
+    }
+
     if (!this.preferencesLoaded && this.persistenceKey) {
       this.restorePreferences();
       this.preferencesLoaded = true;
@@ -1575,21 +1590,27 @@ export class DataGridComponent<T = unknown> implements OnChanges, OnDestroy {
   }
 
   get visibleFilters(): DataGridFilter<T>[] {
-    return this.visibleColumns
+    const fromColumns = this.visibleColumns
       .filter((column) => column.id !== 'acciones' && Boolean(column.field))
       .map((column) => {
         const configuredFilter = this.filters.find((filter) => filter.id === column.id);
 
         return (
-          configuredFilter ?? {
+          configuredFilter ??
+          ({
             id: column.id,
             label: column.header,
             field: column.field!,
             type: 'text',
             emptyLabel: `Todos`,
-          }
+          } satisfies DataGridFilter<T>)
         );
       });
+
+    const idsFromColumns = new Set(fromColumns.map((f) => f.id));
+    const standalone = this.filters.filter((f) => !idsFromColumns.has(f.id));
+
+    return [...standalone, ...fromColumns];
   }
 
   get filterGridStyle(): Record<string, string> {

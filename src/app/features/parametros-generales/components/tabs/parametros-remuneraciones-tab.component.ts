@@ -8,6 +8,10 @@ import { FormGroup, ReactiveFormsModule } from '@angular/forms';
   imports: [CommonModule, ReactiveFormsModule],
   template: `
     <form class="tab-panel parametros-form" [formGroup]="form" (ngSubmit)="onSubmit?.()">
+      <div class="param-hint param-hint--editable" role="note">
+        <span class="param-hint__tag">Editable</span>
+        <span class="param-hint__text">Los cambios se guardan con Guardar en la barra superior.</span>
+      </div>
       <section class="param-group" aria-labelledby="rentas-title">
         <h2 id="rentas-title">Remuneraciones</h2>
         <p class="param-section-lead">Rentas mínimas imponibles y montos base.</p>
@@ -329,7 +333,7 @@ import { FormGroup, ReactiveFormsModule } from '@angular/forms';
         </div>
       </section>
 
-      <footer class="tab-footnote tab-footnote--muted">Última actualización: {{ fechaActualizacionLabel || 'Sin registro' }}</footer>
+      <footer class="tab-footnote tab-footnote--muted">Última actualización: {{ fechaActualizacionLabel }}</footer>
     </form>
   `,
 })

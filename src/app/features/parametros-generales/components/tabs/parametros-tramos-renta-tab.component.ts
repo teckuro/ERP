@@ -1,74 +1,110 @@
 import { CommonModule } from '@angular/common';
-import { Component, Input } from '@angular/core';
+import { Component, Input, signal } from '@angular/core';
 import {
   DataGridColumn,
   DataGridComponent,
   DataGridFilter,
 } from '../../../../shared/components/ui/data-grid.component';
 import { TablaImpuestoUnicoParametro, TramoImpuestoParametro } from '../../models/parametro-general.model';
+import { ParametrosInnerTabBarComponent } from '../parametros-inner-tab-bar.component';
+
+type ImpuestoSubId = 'tramos' | 'tabla';
 
 @Component({
   selector: 'app-parametros-tramos-renta-tab',
   standalone: true,
-  imports: [CommonModule, DataGridComponent],
+  imports: [CommonModule, DataGridComponent, ParametrosInnerTabBarComponent],
   template: `
     <section class="tab-panel">
-      <section class="catalog-section" aria-labelledby="tabla-impuesto-title">
-        <h2 id="tabla-impuesto-title">Tramos impuesto a la renta</h2>
-        <div class="catalog-grid">
-          <app-data-grid
-            title="Tabla impuesto único"
-            [rows]="tablaRows"
-            [columns]="tablaColumns"
-            [loading]="loading"
-            [filters]="tablaImpuestoFilters"
-            [filtersEnabled]="true"
-            [showExportAction]="true"
-            [maxItems]="10"
-            gridHeight="28rem"
-            persistenceKey="parametros.tabla-impuesto.dg"
-            emptyTitle="No hay tabla de impuesto cargada"
-            emptyDescription="Sin carga externa del SII para impuesto único."
-            (refresh)="refresh?.()"
-          ></app-data-grid>
-
-          <app-data-grid
-            title="Tramos impuesto por periodo"
-            [rows]="tramosRows"
-            [columns]="tramosColumns"
-            [loading]="loading"
-            [filters]="tramosImpuestoFilters"
-            [filtersEnabled]="true"
-            [showExportAction]="true"
-            [maxItems]="10"
-            gridHeight="28rem"
-            persistenceKey="parametros.tramos-impuesto.dg"
-            emptyTitle="No hay tramos por periodo"
-            emptyDescription="Sin tramos mensuales heredados."
-            (refresh)="refresh?.()"
-          ></app-data-grid>
+      <div class="param-subhead">
+        <div class="param-subhead__tabs">
+          <app-parametros-inner-tab-bar
+            ariaLabel="Secciones impuesto unico"
+            mobileLabel="Vista"
+            [tabs]="impuestoInnerTabs"
+            [activeId]="activeSub()"
+            (activeIdChange)="setSub($event)"
+          />
         </div>
-      </section>
+        <div class="param-hint param-hint--consulta param-hint--inline" role="note">
+          <span class="param-hint__tag">Solo lectura</span>
+        </div>
+      </div>
+
+      <div class="param-tab-subview">
+        @if (activeSub() === 'tramos') {
+          <section class="catalog-section" aria-label="Tramos impuesto">
+            <app-data-grid
+              title="Tramos impuesto por periodo"
+              [rows]="tramosRows"
+              [columns]="tramosColumns"
+              [loading]="loading"
+              [filters]="tramosImpuestoFilters"
+              [filtersEnabled]="true"
+              [showExportAction]="true"
+              [maxItems]="10"
+              gridHeight="100%"
+              [persistenceKey]="gridPersistenceKeyTramos"
+              emptyTitle="No hay registros para el periodo seleccionado"
+              emptyDescription="Sin tramos de impuesto único para este periodo."
+              (refresh)="refresh?.()"
+            ></app-data-grid>
+          </section>
+        }
+
+        @if (activeSub() === 'tabla') {
+          <section class="catalog-section" aria-label="Tabla impuesto unico">
+            <app-data-grid
+              title="Tabla impuesto único"
+              [rows]="tablaRows"
+              [columns]="tablaColumns"
+              [loading]="loading"
+              [filters]="tablaImpuestoFilters"
+              [filtersEnabled]="true"
+              [showExportAction]="true"
+              [maxItems]="10"
+              gridHeight="100%"
+              [persistenceKey]="gridPersistenceKeyTabla"
+              emptyTitle="No hay registros para el periodo seleccionado"
+              emptyDescription="Sin tabla de impuesto único vigente para este periodo."
+              (refresh)="refresh?.()"
+            ></app-data-grid>
+          </section>
+        }
+      </div>
     </section>
   `,
 })
 export class ParametrosTramosRentaTabComponent {
+  readonly impuestoInnerTabs = [
+    { id: 'tramos' as const, label: 'Tramos' },
+    { id: 'tabla' as const, label: 'Tabla' },
+  ];
+
+  readonly activeSub = signal<ImpuestoSubId>('tramos');
+
   @Input({ required: true }) tablaRows!: TablaImpuestoUnicoParametro[];
   @Input({ required: true }) tablaColumns!: DataGridColumn<TablaImpuestoUnicoParametro>[];
   @Input({ required: true }) tramosRows!: TramoImpuestoParametro[];
   @Input({ required: true }) tramosColumns!: DataGridColumn<TramoImpuestoParametro>[];
 
   @Input() loading = false;
+  @Input() gridPersistenceKeyTabla = 'parametros.tabla-impuesto.dg';
+  @Input() gridPersistenceKeyTramos = 'parametros.tramos-impuesto.dg';
   @Input() refresh: (() => void) | null = null;
 
-  /** Vigencia (YYYY-MM-DD): filtrar por prefijo de mes equivale a periodo. */
+  /**
+   * Filtra por `periodo` YYYY-MM (columna generada en BD). Definido como filtro independiente del DataGrid
+   * para que siga aplicando aunque la columna «Vigencia» esté oculta en el panel de columnas.
+   */
   readonly tablaImpuestoFilters: DataGridFilter<TablaImpuestoUnicoParametro>[] = [
     {
       id: 'periodo',
-      label: 'Periodo',
-      field: 'vigenciaInicio',
+      label: 'Período tabla',
+      field: 'periodo',
       type: 'text',
       operator: 'startsWith',
+      normalize: 'none',
       placeholder: 'Ej: 2026-04',
       emptyLabel: 'Todos',
     },
@@ -85,5 +121,10 @@ export class ParametrosTramosRentaTabComponent {
       emptyLabel: 'Todos',
     },
   ];
-}
 
+  setSub(id: string): void {
+    if (id === 'tramos' || id === 'tabla') {
+      this.activeSub.set(id);
+    }
+  }
+}

@@ -28,7 +28,7 @@ export class ParametrosGeneralesService {
     return this.repository.guardar(payload);
   }
 
-  listarCatalogos(): Promise<ParametrosGeneralesCatalogos> {
-    return this.repository.listarCatalogos();
+  listarCatalogos(periodo: string): Promise<ParametrosGeneralesCatalogos> {
+    return this.repository.listarCatalogos(periodo);
   }
 }

@@ -7,6 +7,14 @@ import { FormGroup, ReactiveFormsModule } from '@angular/forms';
   imports: [CommonModule, ReactiveFormsModule],
   template: `
     <form class="tab-panel parametros-form" [formGroup]="form" (ngSubmit)="onSubmit?.()">
+      <div class="param-hint param-hint--editable" role="note">
+        <span class="param-hint__tag">Editable</span>
+        @if (editable) {
+          <span class="param-hint__text">Los cambios se guardan con el botón Guardar de la barra superior.</span>
+        } @else {
+          <span class="param-hint__text">Estos datos se modifican desde el botón Modificar de la barra superior.</span>
+        }
+      </div>
       <section class="param-group" aria-labelledby="indicadores-title">
         <h2 id="indicadores-title">Indicadores mensuales</h2>
         <p class="param-section-lead">UF, UTM y UTA del periodo.</p>
@@ -95,7 +103,7 @@ import { FormGroup, ReactiveFormsModule } from '@angular/forms';
         </div>
       </section>
 
-      <footer class="tab-footnote tab-footnote--muted">Última actualización: {{ fechaActualizacionLabel || 'Sin registro' }}</footer>
+      <footer class="tab-footnote tab-footnote--muted">Última actualización: {{ fechaActualizacionLabel }}</footer>
     </form>
   `,
 })

@@ -49,8 +49,11 @@ import {
 import { ParametrosRemuneracionesTabComponent } from '../features/parametros-generales/components/tabs/parametros-remuneraciones-tab.component';
 import { ParametrosValoresTabComponent } from '../features/parametros-generales/components/tabs/parametros-valores-tab.component';
 import { ParametrosAfpTabComponent } from '../features/parametros-generales/components/tabs/parametros-afp-tab.component';
-import { ParametrosCcafMutualesTabComponent } from '../features/parametros-generales/components/tabs/parametros-ccaf-mutuales-tab.component';
-import { ParametrosIsapreTabComponent } from '../features/parametros-generales/components/tabs/parametros-isapre-tab.component';
+import {
+  CcafMutualSubId,
+  ParametrosCcafMutualesTabComponent,
+} from '../features/parametros-generales/components/tabs/parametros-ccaf-mutuales-tab.component';
+import { ParametrosSaludTabComponent } from '../features/parametros-generales/components/tabs/parametros-salud-tab.component';
 import { ParametrosReformaTabComponent } from '../features/parametros-generales/components/tabs/parametros-reforma-tab.component';
 import { ParametrosTramosCargaTabComponent } from '../features/parametros-generales/components/tabs/parametros-tramos-carga-tab.component';
 import { ParametrosTramosRentaTabComponent } from '../features/parametros-generales/components/tabs/parametros-tramos-renta-tab.component';
@@ -65,7 +68,7 @@ interface MonthOption {
   label: string;
 }
 
-type ParametrosDialogKind = 'alerta' | 'confirmar-guardado';
+type ParametrosDialogKind = 'alerta' | 'confirmar-guardado' | 'confirmar-crear-parametros';
 
 interface ParametrosDialogState {
   kind: ParametrosDialogKind;
@@ -98,26 +101,26 @@ interface ParametrosDialogState {
     ParametrosCcafMutualesTabComponent,
     ParametrosTramosCargaTabComponent,
     ParametrosTramosRentaTabComponent,
-    ParametrosIsapreTabComponent,
+    ParametrosSaludTabComponent,
     ParametrosAfpTabComponent,
     ParametrosReformaTabComponent,
   ],
   template: `
-    <section class="parametros-page" aria-label="Mantenedor de parametros">
+    <section class="parametros-page" aria-label="Mantenedor de parámetros">
       <header class="parametros-header">
-        <app-record-breadcrumb [items]="breadcrumbItems" title="Parametros del sistema"></app-record-breadcrumb>
+        <app-record-breadcrumb [items]="breadcrumbItems" title="Parámetros del sistema"></app-record-breadcrumb>
       </header>
 
       <app-card className="parametros-shell">
         <app-card-content className="parametros-frame">
           <div class="parametros-viewhead">
-        <div class="parametros-toolbar" aria-label="Acciones de parametros">
+        <div class="parametros-toolbar" aria-label="Acciones de parámetros">
           @if (!hasAnySyncedData()) {
             <app-button
               variant="outline"
               size="md"
               className="erp-toolbar-button erp-action-button"
-              [disabled]="isLoading() || isSaving()"
+              [disabled]="parametrosUiBloqueada()"
               (click)="sincronizar()"
             >
               <lucide-icon icon class="h-4 w-4" name="refresh-cw"></lucide-icon>
@@ -125,24 +128,45 @@ interface ParametrosDialogState {
             </app-button>
           }
 
-          @if (generalesEditando()) {
-            <app-page-actions
-              [visibleActions]="['back', 'save']"
-              backLabel="Volver"
-              [saveLabel]="saveLabel()"
-              backLink="/"
-              [saveDisabled]="isSaving() || isLoading() || form.invalid"
-              (saveClick)="guardar()"
-              (backClick)="volverParametrosAction()"
-            ></app-page-actions>
-          } @else {
-            <app-page-actions
-              [visibleActions]="['edit']"
-              editLabel="Modificar"
-              [editDisabled]="modificarDeshabilitado()"
-              (editClick)="editarParametros()"
-            ></app-page-actions>
-          }
+          <div class="parametros-toolbar__end">
+            @if (!generalesEditando() && !isConfigurableTab() && !parametrosUiBloqueada()) {
+              <p class="param-toolbar-consult-inline" role="note">
+                MODO CONSULTA · Modificar/Guardar no aplica en esta vista.
+              </p>
+            }
+
+            @if (generalesEditando()) {
+              <app-page-actions
+                [visibleActions]="['back', 'save']"
+                backLabel="Volver"
+                [saveLabel]="saveLabel()"
+                backLink="/"
+                [saveDisabled]="isSaving() || isLoading() || isLoadingPlantilla() || form.invalid"
+                (saveClick)="guardar()"
+                (backClick)="volverParametrosAction()"
+              ></app-page-actions>
+            } @else {
+              @if (isConfigurableTab() && !hasSelectedInRows()) {
+                <app-button
+                  variant="outline"
+                  size="md"
+                  className="erp-toolbar-button erp-action-button"
+                  [disabled]="crearParametrosDeshabilitado()"
+                  (click)="crearParametrosParaPeriodo()"
+                >
+                  <lucide-icon icon class="h-4 w-4" name="plus"></lucide-icon>
+                  Crear parámetros
+                </app-button>
+              }
+              <app-page-actions
+                [visibleActions]="['edit']"
+                editLabel="Modificar"
+                [editTooltip]="modificarTooltipConsulta()"
+                [editDisabled]="modificarDeshabilitado()"
+                (editClick)="editarParametros()"
+              ></app-page-actions>
+            }
+          </div>
         </div>
 
         <div class="period-row" aria-label="Periodo">
@@ -152,7 +176,7 @@ interface ParametrosDialogState {
               type="button"
               class="period-arrow"
               aria-label="Periodo anterior"
-              [disabled]="isLoading() || isSaving()"
+              [disabled]="parametrosUiBloqueada()"
               (click)="moverPeriodo(-1)"
             >
               <lucide-icon class="h-4 w-4" name="arrow-left"></lucide-icon>
@@ -182,7 +206,7 @@ interface ParametrosDialogState {
               type="button"
               class="period-arrow"
               aria-label="Periodo siguiente"
-              [disabled]="isLoading() || isSaving()"
+              [disabled]="parametrosUiBloqueada()"
               (click)="moverPeriodo(1)"
             >
               <lucide-icon class="h-4 w-4" name="chevron-right"></lucide-icon>
@@ -190,7 +214,11 @@ interface ParametrosDialogState {
           </div>
 
           <span class="period-status">
-            {{ hasSelectedInRows() ? 'Periodo cargado' : 'Periodo sin registro' }} · {{ selectedPeriodo() }}
+            @if (hasSelectedInRows()) {
+              Periodo seleccionado: {{ selectedPeriodo() }} · Con información cargada
+            } @else {
+              Sin información cargada para {{ selectedPeriodo() }}
+            }
           </span>
         </div>
           </div>
@@ -200,8 +228,15 @@ interface ParametrosDialogState {
           <app-message-box
             variant="loading"
             mode="modal"
-            title="Cargando parametros"
-            message="Obteniendo parametros mensuales y cargas externas."
+            title="Cargando parámetros"
+            message="Obteniendo parámetros mensuales y cargas externas."
+          ></app-message-box>
+        } @else if (isLoadingPlantilla()) {
+          <app-message-box
+            variant="loading"
+            mode="modal"
+            title="Obteniendo plantilla"
+            message="Consultando el último período registrado para usarlo solo como base en el formulario. No se guarda nada automáticamente."
           ></app-message-box>
         }
 
@@ -220,7 +255,7 @@ interface ParametrosDialogState {
           ></app-message-box>
         }
 
-        <nav class="folder-tabs" aria-label="Secciones de parametros">
+        <nav class="folder-tabs" aria-label="Secciones de parámetros">
           @for (tab of tabs; track tab.id) {
             <button
               type="button"
@@ -234,7 +269,7 @@ interface ParametrosDialogState {
           }
         </nav>
 
-        <div class="parametros-tab-body" role="region" aria-label="Contenido de la seccion">
+        <div class="parametros-tab-body" role="region" aria-label="Contenido de la sección">
         @switch (activeTab()) {
           @case ('valores') {
             <app-parametros-valores-tab
@@ -257,10 +292,11 @@ interface ParametrosDialogState {
             </app-parametros-remuneraciones-tab>
           }
 
-          @case ('ccafConfig') {
+          @case ('ccafMutual') {
             <app-parametros-ccaf-mutuales-tab
-              mode="config"
-              [catalogos]="catalogosCcafVistaPeriodo()"
+              [activeSub]="ccafMutualSubTab()"
+              (activeSubChange)="ccafMutualSubTab.set($event)"
+              [catalogos]="catalogos()"
               [ccafColumns]="ccafColumns"
               [organismosLeyColumns]="organismosLeyColumns"
               [ley16744Columns]="ley16744Columns"
@@ -268,40 +304,9 @@ interface ParametrosDialogState {
               [selectedCcafId]="selectedCcafId()"
               [selectedMutualId]="selectedMutualId()"
               [percentLabel]="decimal(selectedLey16744Rate(), 2)"
-              [seleccionarCcaf]="seleccionarCcaf.bind(this)"
-              [seleccionarMutual]="seleccionarMutual.bind(this)"
-              [refresh]="cargar.bind(this)"
-            ></app-parametros-ccaf-mutuales-tab>
-          }
-
-          @case ('ccafLista') {
-            <app-parametros-ccaf-mutuales-tab
-              mode="ccafLista"
-              [catalogos]="catalogosCcafVistaPeriodo()"
-              [ccafColumns]="ccafColumns"
-              [organismosLeyColumns]="organismosLeyColumns"
-              [ley16744Columns]="ley16744Columns"
-              [loading]="isLoading()"
-              [selectedCcafId]="selectedCcafId()"
-              [selectedMutualId]="selectedMutualId()"
-              [percentLabel]="decimal(selectedLey16744Rate(), 2)"
-              [seleccionarCcaf]="seleccionarCcaf.bind(this)"
-              [seleccionarMutual]="seleccionarMutual.bind(this)"
-              [refresh]="cargar.bind(this)"
-            ></app-parametros-ccaf-mutuales-tab>
-          }
-
-          @case ('mutualesLey') {
-            <app-parametros-ccaf-mutuales-tab
-              mode="mutualesLey"
-              [catalogos]="catalogosCcafVistaPeriodo()"
-              [ccafColumns]="ccafColumns"
-              [organismosLeyColumns]="organismosLeyColumns"
-              [ley16744Columns]="ley16744Columns"
-              [loading]="isLoading()"
-              [selectedCcafId]="selectedCcafId()"
-              [selectedMutualId]="selectedMutualId()"
-              [percentLabel]="decimal(selectedLey16744Rate(), 2)"
+              [gridPersistenceKeyCcaf]="gridPersistenceKey('parametros.ccaf.dg')"
+              [gridPersistenceKeyMutuales]="gridPersistenceKey('parametros.mutuales.dg')"
+              [gridPersistenceKeyLey16744]="gridPersistenceKey('parametros.ley16744.dg')"
               [seleccionarCcaf]="seleccionarCcaf.bind(this)"
               [seleccionarMutual]="seleccionarMutual.bind(this)"
               [refresh]="cargar.bind(this)"
@@ -313,35 +318,42 @@ interface ParametrosDialogState {
               [rows]="tramosCargaPorPeriodo()"
               [columns]="tramosCargaColumns"
               [loading]="isLoading()"
+              [gridPersistenceKey]="gridPersistenceKey('parametros.tramos-carga.dg')"
               [refresh]="cargar.bind(this)"
             ></app-parametros-tramos-carga-tab>
           }
 
-          @case ('tramosRenta') {
+          @case ('impuestoUnico') {
             <app-parametros-tramos-renta-tab
               [tablaRows]="tablaImpuestoPorPeriodo()"
               [tablaColumns]="tablaImpuestoColumns"
               [tramosRows]="tramosImpuestoPorPeriodo()"
               [tramosColumns]="tramosImpuestoColumns"
               [loading]="isLoading()"
+              [gridPersistenceKeyTabla]="gridPersistenceKey('parametros.tabla-impuesto.dg')"
+              [gridPersistenceKeyTramos]="gridPersistenceKey('parametros.tramos-impuesto.dg')"
               [refresh]="cargar.bind(this)"
             ></app-parametros-tramos-renta-tab>
           }
 
-          @case ('isapre') {
-            <app-parametros-isapre-tab
-              [rows]="isapresPorPeriodo()"
+          @case ('salud') {
+            <app-parametros-salud-tab
+              [isapreRows]="isapresPorPeriodo()"
+              [institucionesRows]="saludOtrasInstitucionesPorPeriodo()"
               [columns]="isapreColumns"
               [loading]="isLoading()"
+              [gridPersistenceKeyIsapre]="gridPersistenceKey('parametros.isapre.dg')"
+              [gridPersistenceKeyInstituciones]="gridPersistenceKey('parametros.salud-instituciones.dg')"
               [refresh]="cargar.bind(this)"
-            ></app-parametros-isapre-tab>
+            ></app-parametros-salud-tab>
           }
 
-          @case ('afp') {
+          @case ('prevision') {
             <app-parametros-afp-tab
               [rows]="afpPorPeriodo()"
               [columns]="afpColumns"
               [loading]="isLoading()"
+              [gridPersistenceKey]="gridPersistenceKey('parametros.afp.dg')"
               [refresh]="cargar.bind(this)"
             ></app-parametros-afp-tab>
           }
@@ -359,6 +371,11 @@ interface ParametrosDialogState {
               [apvInstitucionesColumns]="apvInstitucionesColumns"
               [apvFormasPagoColumns]="apvFormasPagoColumns"
               [loading]="isLoading()"
+              [gridPersistenceKeyLegal]="gridPersistenceKey('parametros.reforma-legal.dg')"
+              [gridPersistenceKeyPrevisional]="gridPersistenceKey('parametros.reforma-previsional.dg')"
+              [gridPersistenceKeyTrabPesados]="gridPersistenceKey('parametros.trabajos-pesados.dg')"
+              [gridPersistenceKeyApvInst]="gridPersistenceKey('parametros.apv-instituciones.dg')"
+              [gridPersistenceKeyApvPago]="gridPersistenceKey('parametros.apv-formas-pago.dg')"
               [refresh]="cargar.bind(this)"
             ></app-parametros-reforma-tab>
           }
@@ -435,8 +452,20 @@ interface ParametrosDialogState {
         flex: 1 1 auto;
         min-height: 0;
         min-width: 0;
-        overflow-x: hidden;
-        overflow-y: auto;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+      }
+
+      /* El scroll va en .tab-panel para no desplazar toda la tarjeta (tabs + barra de periodo). */
+      .parametros-page .parametros-tab-body > * {
+        flex: 1 1 auto;
+        min-height: 0;
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+        box-sizing: border-box;
+        overflow: hidden;
       }
 
       .parametros-viewhead {
@@ -461,18 +490,125 @@ interface ParametrosDialogState {
       .parametros-toolbar {
         display: flex;
         align-items: center;
-        justify-content: flex-end;
-        gap: 12px;
+        justify-content: flex-start;
+        gap: 10px 12px;
         flex-wrap: wrap;
       }
 
-      /* Mantiene la botonera fija a la derecha aunque se oculte el botón de sincronizar */
-      .parametros-toolbar app-page-actions {
+      .parametros-toolbar__end {
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        flex-wrap: wrap;
+        gap: 8px 12px;
         margin-left: auto;
+        min-width: 0;
+        max-width: 100%;
+      }
+
+      .parametros-toolbar__end app-page-actions {
+        flex: 0 0 auto;
+      }
+
+      .param-toolbar-consult-inline {
+        margin: 0;
+        padding: 0;
+        max-width: min(22rem, 100%);
+        color: #94a3b8;
+        font-size: 0.68rem;
+        font-weight: 500;
+        line-height: 1.3;
+        text-align: right;
+        letter-spacing: 0.01em;
+      }
+
+      @media (max-width: 520px) {
+        .parametros-toolbar__end {
+          flex-direction: column;
+          align-items: flex-end;
+        }
+
+        .parametros-toolbar__end app-page-actions {
+          order: 1;
+        }
+
+        .param-toolbar-consult-inline {
+          order: 2;
+          line-height: 1.3;
+          max-width: 100%;
+        }
       }
 
       .parametros-toolbar app-button {
         white-space: nowrap;
+      }
+
+      /* Avisos de contexto: integrados, sin “cajas” pesadas */
+      .param-hint {
+        display: flex;
+        align-items: baseline;
+        flex-wrap: wrap;
+        gap: 6px 10px;
+        margin: 0 0 10px;
+        padding: 0;
+        max-width: min(52rem, 100%);
+      }
+
+      .param-hint__tag {
+        flex: 0 0 auto;
+        margin: 0;
+        padding: 1px 7px;
+        border-radius: 999px;
+        border: 1px solid var(--prm-chip-line, #e5e7eb);
+        background: var(--prm-chip-soft, #f1f5f9);
+        color: var(--prm-chip-muted, #64748b);
+        font-size: 0.62rem;
+        font-weight: 750;
+        letter-spacing: 0.04em;
+        line-height: 1.35;
+        text-transform: uppercase;
+      }
+
+      .param-hint--editable .param-hint__tag {
+        border-color: rgba(37, 99, 235, 0.22);
+        background: rgba(239, 246, 255, 0.85);
+        color: #2563eb;
+      }
+
+      .param-hint__text {
+        margin: 0;
+        color: var(--prm-muted, #6b7280);
+        font-size: 0.72rem;
+        font-weight: 500;
+        line-height: 1.4;
+      }
+
+      .param-hint--consulta {
+        margin-bottom: 6px;
+      }
+
+      .parametros-page .catalog-section > .param-hint {
+        padding: 4px 12px 0;
+        margin-bottom: 0;
+      }
+
+      .param-subhead {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px 12px;
+        margin-bottom: 8px;
+      }
+
+      .param-subhead__tabs {
+        flex: 1 1 auto;
+        min-width: 0;
+      }
+
+      .param-hint--inline {
+        margin-bottom: 0;
+        flex: 0 0 auto;
       }
 
       .parametros-toolbar__main {
@@ -630,20 +766,40 @@ interface ParametrosDialogState {
       }
 
       .parametros-page .tab-panel {
-        display: grid;
+        display: flex;
+        flex-direction: column;
+        flex: 1 1 auto;
         min-height: 0;
         min-width: 0;
         gap: 12px;
         background: #ffffff;
         padding: 12px;
-        justify-items: stretch;
         box-sizing: border-box;
         width: 100%;
+        overflow-x: hidden;
+        overflow-y: auto;
       }
 
       .tab-panel--compact {
         gap: 8px;
         padding: 10px;
+      }
+
+      .parametros-page .param-tab-subview {
+        flex: 1 1 auto;
+        min-height: 0;
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .parametros-page .param-tab-subview > .catalog-section {
+        flex: 1 1 auto;
+        min-height: 0;
+      }
+
+      .parametros-page .param-tab-subview > .param-group {
+        flex: 0 0 auto;
       }
 
       @media (max-width: 760px) {
@@ -655,8 +811,16 @@ interface ParametrosDialogState {
       }
 
       .parametros-page .tab-panel.parametros-form {
-        align-content: start;
         gap: 14px;
+      }
+
+      .parametros-page .tab-panel.parametros-form > footer.tab-footnote {
+        margin-top: auto;
+        flex-shrink: 0;
+      }
+
+      .parametros-page .tab-panel > .param-group {
+        flex: 0 0 auto;
       }
 
       .param-group {
@@ -1156,8 +1320,10 @@ interface ParametrosDialogState {
       }
 
       .catalog-section {
-        display: grid;
-        grid-template-columns: minmax(0, 1fr);
+        display: flex;
+        flex-direction: column;
+        flex: 1 1 0;
+        min-height: 0;
         min-width: 0;
         width: 100%;
         gap: 10px;
@@ -1166,29 +1332,43 @@ interface ParametrosDialogState {
         border-radius: 8px;
         background: #ffffff;
         box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
-        justify-items: stretch;
+      }
+
+      .catalog-section > h2 {
+        flex: 0 0 auto;
       }
 
       .catalog-section > app-data-grid {
         box-sizing: border-box;
+        flex: 1 1 auto;
+        min-height: 0;
         width: 100%;
         min-width: 0;
         padding: 0 12px 12px;
+      }
+
+      .catalog-section > .catalog-grid {
+        flex: 1 1 auto;
+        min-height: 0;
       }
 
       .catalog-grid {
         display: grid;
         width: 100%;
         min-width: 0;
+        min-height: 0;
         gap: 12px;
         padding: 12px;
         grid-template-columns: repeat(2, minmax(0, 1fr));
+        grid-auto-rows: minmax(0, 1fr);
         justify-items: stretch;
         align-items: stretch;
       }
 
       .catalog-grid app-data-grid {
         min-width: 0;
+        min-height: 0;
+        height: 100%;
       }
 
       @media (max-width: 980px) {
@@ -1201,21 +1381,36 @@ interface ParametrosDialogState {
         margin-top: 0;
       }
 
-      .catalog-section--split {
+      .catalog-section.catalog-section--split {
+        display: grid;
         grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+        grid-template-rows: auto minmax(0, 1fr);
+        flex: 1 1 0;
+        min-height: 0;
       }
 
-      .catalog-section--split h2 {
-        grid-column: span 2;
+      .catalog-section.catalog-section--split > h2 {
+        grid-column: 1 / -1;
+      }
+
+      .catalog-section.catalog-section--split > app-data-grid {
+        min-height: 0;
+        height: 100%;
+        align-self: stretch;
       }
 
       @media (max-width: 1060px) {
-        .catalog-section--split {
+        .catalog-section.catalog-section--split {
           grid-template-columns: 1fr;
+          grid-template-rows: auto minmax(0, 1fr) minmax(0, 1fr);
         }
 
-        .catalog-section--split h2 {
-          grid-column: span 1;
+        .catalog-section.catalog-section--split > h2 {
+          grid-column: 1;
+        }
+
+        .catalog-section.catalog-section--split > app-data-grid {
+          grid-column: 1;
         }
       }
 
@@ -1252,17 +1447,15 @@ export class ParametrosPage implements OnInit {
   private readonly fb = inject(FormBuilder);
   private readonly cdr = inject(ChangeDetectorRef);
 
-  readonly breadcrumbItems: readonly RecordBreadcrumbItem[] = [{ label: 'Parametros' }];
+  readonly breadcrumbItems: readonly RecordBreadcrumbItem[] = [{ label: 'Parámetros' }];
   readonly tabs: readonly ParametrosTab[] = [
-    { id: 'valores', label: 'Informacion de Valores' },
-    { id: 'remuneraciones', label: 'Informacion de Remuneraciones' },
-    { id: 'ccafConfig', label: 'Configuracion CCAF y Mutual' },
-    { id: 'ccafLista', label: 'Lista CCAF' },
-    { id: 'mutualesLey', label: 'Mutuales y Ley 16.744' },
+    { id: 'valores', label: 'Información de Valores' },
+    { id: 'remuneraciones', label: 'Información de Remuneraciones' },
+    { id: 'ccafMutual', label: 'CCAF y Mutual' },
     { id: 'tramosCarga', label: 'Tramos Cargas Familiares' },
-    { id: 'tramosRenta', label: 'Tramos Impuesto a la Renta' },
-    { id: 'isapre', label: 'ISAPRE' },
-    { id: 'afp', label: 'Informacion AFP' },
+    { id: 'impuestoUnico', label: 'Impuesto único' },
+    { id: 'salud', label: 'Salud' },
+    { id: 'prevision', label: 'Previsión' },
     { id: 'reforma', label: 'Reforma de Pensiones' },
   ];
 
@@ -1282,6 +1475,7 @@ export class ParametrosPage implements OnInit {
   ];
 
   readonly activeTab = signal<ParametrosTabId>('valores');
+  readonly ccafMutualSubTab = signal<CcafMutualSubId>('config');
   readonly rows = signal<ParametroGeneral[]>([]);
   readonly selectedPeriodo = signal(this.currentPeriodo());
   readonly catalogos = signal<ParametrosGeneralesCatalogos>(this.emptyCatalogos());
@@ -1289,25 +1483,53 @@ export class ParametrosPage implements OnInit {
   readonly selectedCcafId = signal<number | null>(null);
   readonly selectedMutualId = signal<number | null>(null);
   readonly isLoading = signal(true);
+  /** Consulta al backend solo para plantilla del último período (crear parámetros); no es guardado. */
+  readonly isLoadingPlantilla = signal(false);
   readonly isSaving = signal(false);
   readonly generalesEditando = signal(false);
   /** Formulario hidratado para el periodo actual y sin error de carga pendiente. */
   readonly datosFormularioListos = signal(false);
   /** Evita doble clic mientras se prepara el modo edición (carga + copia de periodo). */
   readonly isPreparingEdit = signal(false);
+  /** Refresco silencioso antes de abrir el modal «Crear parámetros» (sin overlay global). */
+  readonly isPreparandoDialogoCrear = signal(false);
   /** Bloquea "Modificar" tras error de carga hasta una carga exitosa. */
   readonly cargaBloqueadaPorError = signal(false);
   readonly dialogState = signal<ParametrosDialogState | null>(null);
 
   private cargarDepth = 0;
 
+  /** Bloqueo de acciones de barra / período por carga principal, plantilla o guardado. */
+  readonly parametrosUiBloqueada = computed(
+    () =>
+      this.isLoading() ||
+      this.isLoadingPlantilla() ||
+      this.isSaving() ||
+      this.isPreparandoDialogoCrear(),
+  );
+
   readonly modificarDeshabilitado = computed(
     () =>
       this.isLoading() ||
+      this.isLoadingPlantilla() ||
       this.isSaving() ||
       this.isPreparingEdit() ||
       !this.isConfigurableTab() ||
       !this.datosFormularioListos() ||
+      this.cargaBloqueadaPorError() ||
+      !this.hasSelectedInRows(),
+  );
+
+  readonly crearParametrosDeshabilitado = computed(
+    () =>
+      this.isLoading() ||
+      this.isLoadingPlantilla() ||
+      this.isSaving() ||
+      this.isPreparingEdit() ||
+      this.isPreparandoDialogoCrear() ||
+      !this.isConfigurableTab() ||
+      this.hasSelectedInRows() ||
+      this.generalesEditando() ||
       this.cargaBloqueadaPorError(),
   );
 
@@ -1323,6 +1545,11 @@ export class ParametrosPage implements OnInit {
 
   volverParametrosAction(): void {
     this.volverParametros();
+  }
+
+  /** Aísla filtros/paginación del DataGrid por periodo al cambiar el selector. */
+  gridPersistenceKey(baseKey: string): string {
+    return `${baseKey}.${this.selectedPeriodo()}`;
   }
 
   readonly hasSelectedInRows = computed(() => this.rows().some((row) => row.periodo === this.selectedPeriodo()));
@@ -1368,92 +1595,24 @@ export class ParametrosPage implements OnInit {
     return [...yearsFromBd].sort((left, right) => right - left);
   });
 
-  /** Primera/último día del mes YYYY-MM para cruzar vigencias con el periodo seleccionado. */
-  private periodoRangoDias(periodo: string): { inicio: string; fin: string } {
-    const [yStr, mStr] = periodo.split('-');
-    const y = Number(yStr);
-    const m = Number(mStr);
-    if (!Number.isFinite(y) || !Number.isFinite(m)) {
-      return { inicio: `${periodo}-01`, fin: `${periodo}-28` };
-    }
-    const ultimo = new Date(y, m, 0).getDate();
-    return {
-      inicio: `${periodo}-01`,
-      fin: `${periodo}-${String(ultimo).padStart(2, '0')}`,
-    };
-  }
+  /** Catálogos ya filtrados en backend por periodo seleccionado (listarCatalogos). */
+  readonly tramosCargaPorPeriodo = computed(() => this.catalogos().tramosCarga);
 
-  /** Fila visible si el rango [inicio,fin] intersecta el mes del periodo seleccionado. */
-  private vigenciaIntersectaPeriodo(
-    vigenciaInicio: string | null | undefined,
-    vigenciaFin: string | null | undefined,
-    periodo: string,
-  ): boolean {
-    const a = (vigenciaInicio ?? '').trim().slice(0, 10);
-    const bRaw = (vigenciaFin ?? '').trim().slice(0, 10);
-    if (!a) {
-      return true;
-    }
-    const { inicio: p0, fin: p1 } = this.periodoRangoDias(periodo);
-    const b = bRaw || '9999-12-31';
-    return a <= p1 && b >= p0;
-  }
+  readonly tramosImpuestoPorPeriodo = computed(() => this.catalogos().tramosImpuesto);
 
-  readonly tramosCargaPorPeriodo = computed(() =>
-    this.catalogos().tramosCarga.filter((row) => row.periodo === this.selectedPeriodo()),
-  );
+  readonly tablaImpuestoPorPeriodo = computed(() => this.catalogos().tablaImpuestoUnico);
 
-  readonly tramosImpuestoPorPeriodo = computed(() =>
-    this.catalogos().tramosImpuesto.filter((row) => row.periodo === this.selectedPeriodo()),
-  );
+  readonly afpPorPeriodo = computed(() => this.catalogos().afp);
 
-  readonly tablaImpuestoPorPeriodo = computed(() =>
-    this.catalogos().tablaImpuestoUnico.filter((row) =>
-      this.vigenciaIntersectaPeriodo(row.vigenciaInicio, row.vigenciaFin, this.selectedPeriodo()),
-    ),
-  );
+  readonly isapresPorPeriodo = computed(() => this.catalogos().isapres);
 
-  readonly afpPorPeriodo = computed(() =>
-    this.catalogos().afp.filter((row) =>
-      this.vigenciaIntersectaPeriodo(row.vigenciaInicio, row.vigenciaFin, this.selectedPeriodo()),
-    ),
-  );
+  readonly saludOtrasInstitucionesPorPeriodo = computed(() => this.catalogos().saludInstituciones);
 
-  readonly isapresPorPeriodo = computed(() =>
-    this.catalogos().isapres.filter((row) =>
-      this.vigenciaIntersectaPeriodo(row.vigenciaInicio, row.vigenciaFin, this.selectedPeriodo()),
-    ),
-  );
+  readonly reformaPensionesPorPeriodo = computed(() => this.catalogos().reformaPensiones);
 
-  readonly reformaPensionesPorPeriodo = computed(() =>
-    this.catalogos().reformaPensiones.filter((row) =>
-      this.vigenciaIntersectaPeriodo(row.vigenciaInicio, row.vigenciaFin, this.selectedPeriodo()),
-    ),
-  );
+  readonly reformaPrevisionalPorPeriodo = computed(() => this.catalogos().reformaPrevisional);
 
-  readonly reformaPrevisionalPorPeriodo = computed(() =>
-    this.catalogos().reformaPrevisional.filter((row) =>
-      this.vigenciaIntersectaPeriodo(row.vigenciaInicio, row.vigenciaFin, this.selectedPeriodo()),
-    ),
-  );
-
-  readonly trabajosPesadosPorPeriodo = computed(() =>
-    this.catalogos().trabajosPesados.filter((row) =>
-      this.vigenciaIntersectaPeriodo(row.vigenciaInicio, row.vigenciaFin, this.selectedPeriodo()),
-    ),
-  );
-
-  readonly ley16744PorPeriodo = computed(() =>
-    this.catalogos().ley16744Parametros.filter((row) =>
-      this.vigenciaIntersectaPeriodo(row.vigenciaInicio, row.vigenciaFin, this.selectedPeriodo()),
-    ),
-  );
-
-  /** Catálogos CCAF/Ley: mismas entidades globales, pero ley 16.744 acotada al periodo seleccionado. */
-  readonly catalogosCcafVistaPeriodo = computed((): ParametrosGeneralesCatalogos => ({
-    ...this.catalogos(),
-    ley16744Parametros: this.ley16744PorPeriodo(),
-  }));
+  readonly trabajosPesadosPorPeriodo = computed(() => this.catalogos().trabajosPesados);
 
   readonly form = this.fb.group({
     periodo: [this.currentPeriodo(), [Validators.required, Validators.pattern(/^\d{4}-\d{2}$/)]],
@@ -1745,35 +1904,33 @@ export class ParametrosPage implements OnInit {
     return String(value);
   }
 
-  async cargar(periodo?: string): Promise<void> {
-    this.enterCargar();
+  async cargar(periodo?: string, options?: { showLoadingOverlay?: boolean }): Promise<void> {
+    const showOverlay = options?.showLoadingOverlay !== false;
+    if (showOverlay) {
+      this.enterCargar();
+    }
     this.cargaBloqueadaPorError.set(false);
     this.datosFormularioListos.set(false);
 
     try {
       const selectedPeriodo = periodo ?? this.selectedPeriodo();
-      const [rows, catalogos] = await Promise.all([
+      const [rowsRaw, catalogos] = await Promise.all([
         // Siempre se consulta por periodo seleccionado para evitar traer todo el histórico.
         this.service.listar({ periodo: selectedPeriodo }),
-        this.service.listarCatalogos(),
+        this.service.listarCatalogos(selectedPeriodo),
       ]);
+      const rows = rowsRaw ?? [];
 
-      const next = [...this.rows().filter((row) => row.periodo !== selectedPeriodo), ...(rows ?? [])].sort(
+      const next = [...this.rows().filter((row) => row.periodo !== selectedPeriodo), ...rows].sort(
         (left, right) => right.periodo.localeCompare(left.periodo),
       );
       this.rows.set(next);
       this.catalogos.set(catalogos);
       this.assertCatalogosArrayShape(catalogos);
       this.ensureCatalogSelection(catalogos);
-      if (rows.length === 0) {
-        // Mantener periodo seleccionado incluso si no hay fila para ese periodo.
-        // En modo lectura mostramos como base el último periodo disponible, sin crear todavía.
-        // La creación formal sigue quedando para "Modificar" + "Guardar".
-        const base = await this.service.obtenerUltimoHastaPeriodo(selectedPeriodo).catch(() => null);
-        this.patchForm(
-          base ? { ...base, periodo: selectedPeriodo } : { ...this.emptyParametro(), periodo: selectedPeriodo },
-          selectedPeriodo,
-        );
+      if (!rows.length) {
+        // Sin fila en parametros_generales: formulario vacío para este periodo (no reutilizar otro periodo).
+        this.patchForm(this.emptyParametroForPeriodo(selectedPeriodo), selectedPeriodo);
         this.generalesEditando.set(false);
         return;
       }
@@ -1785,7 +1942,9 @@ export class ParametrosPage implements OnInit {
       const detalle = this.extractErrorDetail(err);
       this.mostrarErrorCargaParametros(detalle);
     } finally {
-      this.leaveCargar();
+      if (showOverlay) {
+        this.leaveCargar();
+      }
       this.cdr.markForCheck();
     }
   }
@@ -1862,10 +2021,21 @@ export class ParametrosPage implements OnInit {
       void this.ejecutarGuardarInterno();
       return;
     }
+    if (dlg.kind === 'confirmar-crear-parametros') {
+      this.dialogState.set(null);
+      void this.finalizarCrearParametrosConBase(true);
+      return;
+    }
     this.dialogState.set(null);
   }
 
   onDialogoAccionSecundaria(): void {
+    const dlg = this.dialogState();
+    if (dlg?.kind === 'confirmar-crear-parametros') {
+      this.dialogState.set(null);
+      void this.finalizarCrearParametrosConBase(false);
+      return;
+    }
     this.cerrarDialogo();
   }
 
@@ -1982,6 +2152,20 @@ export class ParametrosPage implements OnInit {
     });
   }
 
+  private mostrarConfirmacionCrearParametros(): void {
+    const periodo = this.selectedPeriodo();
+    this.dialogState.set({
+      kind: 'confirmar-crear-parametros',
+      variant: 'info',
+      title: 'Crear parámetros del período',
+      message: 'No existen parámetros generales para el período seleccionado.',
+      detail: `Puedes iniciar el formulario vacío o cargar el último período registrado como base para completar los datos.\n\nPeríodo: ${periodo}`,
+      primaryLabel: 'Cargar último como base',
+      secondaryLabel: 'Crear vacío',
+    });
+    this.cdr.markForCheck();
+  }
+
   async sincronizar(): Promise<void> {
     const hadData = this.hasAnySyncedData();
     await this.cargar();
@@ -2015,16 +2199,19 @@ export class ParametrosPage implements OnInit {
 
   nuevoPeriodo(): void {
     const periodo = this.selectedPeriodo() || this.currentPeriodo();
-    this.patchForm({ ...this.emptyParametro(), periodo });
+    this.patchForm(this.emptyParametroForPeriodo(periodo), periodo);
     this.generalesEditando.set(true);
     this.datosFormularioListos.set(true);
     this.cerrarDialogo();
   }
 
   async editarParametros(): Promise<void> {
-    // “Modificar” es el flujo principal: si no hay data para el periodo, intenta traerla
-    // y si sigue sin existir, deja el formulario listo para crear ese periodo.
+    // “Modificar” solo aplica si existe parametros_generales para el periodo seleccionado.
     this.cerrarDialogo();
+
+    if (!this.hasSelectedInRows()) {
+      return;
+    }
 
     if (this.isPreparingEdit()) {
       return;
@@ -2039,12 +2226,7 @@ export class ParametrosPage implements OnInit {
       }
     }
 
-    // Si sigue sin existir, creamos el periodo copiando el último <= seleccionado (o defaults).
     if (!this.hasSelectedInRows()) {
-      await this.prepararNuevoPeriodoDesdeBase(this.selectedPeriodo());
-      this.generalesEditando.set(true);
-      this.datosFormularioListos.set(true);
-      this.cdr.detectChanges();
       return;
     }
 
@@ -2052,9 +2234,63 @@ export class ParametrosPage implements OnInit {
     this.cdr.detectChanges();
   }
 
+  /**
+   * Crea borrador para un periodo sin registro (copia del último periodo ≤ seleccionado o valores por defecto).
+   * Acción explícita; no reutiliza datos de otro periodo en modo solo lectura.
+   */
+  async crearParametrosParaPeriodo(): Promise<void> {
+    this.cerrarDialogo();
+
+    if (this.hasSelectedInRows() || !this.isConfigurableTab() || this.generalesEditando()) {
+      return;
+    }
+
+    if (this.isPreparingEdit() || this.isPreparandoDialogoCrear()) {
+      return;
+    }
+
+    this.isPreparandoDialogoCrear.set(true);
+    try {
+      await this.cargar(this.selectedPeriodo(), { showLoadingOverlay: false });
+      if (this.hasSelectedInRows()) {
+        return;
+      }
+      this.mostrarConfirmacionCrearParametros();
+    } finally {
+      this.isPreparandoDialogoCrear.set(false);
+      this.cdr.markForCheck();
+    }
+  }
+
+  /**
+   * Tras elegir en el modal: formulario vacío (solo UI) o plantilla desde último período (consulta puntual).
+   * No guarda en base de datos.
+   */
+  private async finalizarCrearParametrosConBase(cargarUltimoRegistrado: boolean): Promise<void> {
+    if (this.hasSelectedInRows() || !this.isConfigurableTab() || this.generalesEditando()) {
+      return;
+    }
+    if (cargarUltimoRegistrado) {
+      this.isLoadingPlantilla.set(true);
+      try {
+        await this.prepararNuevoPeriodoDesdeBase(this.selectedPeriodo());
+      } finally {
+        this.isLoadingPlantilla.set(false);
+        this.cdr.markForCheck();
+      }
+    } else {
+      this.patchForm(this.emptyParametroForPeriodo(this.selectedPeriodo()));
+    }
+    if (!this.hasSelectedInRows() && this.datosFormularioListos()) {
+      this.generalesEditando.set(true);
+      this.form.markAsPristine();
+    }
+    this.cdr.markForCheck();
+  }
+
   volverParametros(): void {
     const row = this.rows().find((item) => item.periodo === this.selectedPeriodo());
-    this.patchForm(row ?? { ...this.emptyParametro(), periodo: this.selectedPeriodo() });
+    this.patchForm(row ?? this.emptyParametroForPeriodo(this.selectedPeriodo()), this.selectedPeriodo());
     this.generalesEditando.set(false);
     this.cerrarDialogo();
   }
@@ -2165,7 +2401,25 @@ export class ParametrosPage implements OnInit {
 
   isConfigurableTab(): boolean {
     const tab = this.activeTab();
-    return tab === 'valores' || tab === 'remuneraciones' || tab === 'ccafConfig';
+    return (
+      tab === 'valores' ||
+      tab === 'remuneraciones' ||
+      (tab === 'ccafMutual' && this.ccafMutualSubTab() === 'config')
+    );
+  }
+
+  /** Tooltip del botón Modificar cuando la vista activa no es editable. */
+  modificarTooltipConsulta(): string {
+    if (this.generalesEditando()) {
+      return '';
+    }
+    if (!this.isConfigurableTab()) {
+      return 'Modificar/Guardar solo aplican a Valores, Remuneraciones y CCAF > Configuración.';
+    }
+    if (!this.hasSelectedInRows()) {
+      return 'No hay parámetros cargados para este periodo. Use Crear parámetros si desea registrar uno nuevo.';
+    }
+    return '';
   }
 
   selectedLey16744Rate(): number | null {
@@ -2174,7 +2428,7 @@ export class ParametrosPage implements OnInit {
 
   fechaActualizacionLabel(): string {
     const value = this.form.controls.fechaActualizacion.value;
-    return value ? this.formatDateTime(value) : 'Sin registro';
+    return value ? this.formatDateTime(value) : 'Sin información';
   }
 
   money(value: number | null): string {
@@ -2216,12 +2470,28 @@ export class ParametrosPage implements OnInit {
       .join(' ');
   }
 
+  private puedeAbandonarEdicionAlCambiarPeriodo(): boolean {
+    if (!this.generalesEditando() || !this.form.dirty) {
+      return true;
+    }
+    return globalThis.confirm(
+      'Hay cambios sin guardar. Si continúa, se descartarán. ¿Cambiar de periodo?',
+    );
+  }
+
   private async seleccionarPeriodo(periodo: string): Promise<void> {
+    if (periodo === this.selectedPeriodo()) {
+      return;
+    }
+    if (!this.puedeAbandonarEdicionAlCambiarPeriodo()) {
+      this.cdr.markForCheck();
+      return;
+    }
+
     this.selectedPeriodo.set(periodo);
     this.generalesEditando.set(false);
     this.cerrarDialogo();
 
-    // Recarga datos del periodo y la lista de periodos en BD (años del selector).
     await Promise.all([this.cargar(periodo), this.refrescarPeriodosDesdeBd()]);
   }
 
@@ -2236,7 +2506,7 @@ export class ParametrosPage implements OnInit {
       // Si falla la carga de base, usamos defaults.
     }
 
-    this.patchForm({ ...this.emptyParametro(), periodo });
+    this.patchForm(this.emptyParametroForPeriodo(periodo));
   }
 
   private patchForm(row: ParametroGeneral, expectedPeriodo?: string): void {
@@ -2325,8 +2595,17 @@ export class ParametrosPage implements OnInit {
   }
 
   private ensureCatalogSelection(catalogos: ParametrosGeneralesCatalogos): void {
+    const tieneParametrosPeriodo = this.rows().some((row) => row.periodo === this.selectedPeriodo());
+    if (!tieneParametrosPeriodo) {
+      this.selectedCcafId.set(null);
+      this.selectedMutualId.set(null);
+      return;
+    }
+
     const ccafExists = catalogos.ccafEntidades.some((row) => row.idCcafEntidad === this.selectedCcafId());
-    const mutualExists = catalogos.organismosLey16744.some((row) => row.idOrganismoAdministradorLey16744 === this.selectedMutualId());
+    const mutualExists = catalogos.organismosLey16744.some(
+      (row) => row.idOrganismoAdministradorLey16744 === this.selectedMutualId(),
+    );
 
     if (!ccafExists) {
       this.selectedCcafId.set(catalogos.ccafEntidades[0]?.idCcafEntidad ?? null);
@@ -2337,9 +2616,10 @@ export class ParametrosPage implements OnInit {
     }
   }
 
-  private emptyParametro(): ParametroGeneral {
+  /** Valores neutros para un periodo sin registro (sin datos de otros periodos). */
+  private emptyParametroForPeriodo(periodo: string): ParametroGeneral {
     return {
-      periodo: this.currentPeriodo(),
+      periodo,
       uf: null,
       utm: null,
       uta: null,
@@ -2348,8 +2628,8 @@ export class ParametrosPage implements OnInit {
       sueldoMinimoMenor18Mayor65: null,
       sueldoMinimoCasaParticular: null,
       ingresoMinimoNoRemuneracional: null,
-      gratificacion: true,
-      immGratificacion: 4.75,
+      gratificacion: false,
+      immGratificacion: null,
       topeAfpUf: null,
       topeAfp: null,
       topeIpsUf: null,
@@ -2382,6 +2662,10 @@ export class ParametrosPage implements OnInit {
       trabajoMenosPesadoTrabajador: null,
       fechaActualizacion: null,
     };
+  }
+
+  private emptyParametro(): ParametroGeneral {
+    return this.emptyParametroForPeriodo(this.currentPeriodo());
   }
 
   private emptyCatalogos(): ParametrosGeneralesCatalogos {

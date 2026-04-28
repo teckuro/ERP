@@ -211,15 +211,32 @@ CREATE TABLE parametros_generales (
     periodo VARCHAR(7) PRIMARY KEY,
     uf NUMERIC(14,4),
     utm NUMERIC(12,0),
+    uta NUMERIC(12,0),
     sueldo_minimo NUMERIC(12,0),
     sueldo_minimo18_65 NUMERIC(12,0),
+    sueldo_minimo_menor18_mayor65 NUMERIC(12,0),
+    sueldo_minimo_casa_particular NUMERIC(12,0),
+    ingreso_minimo_no_remuneracional NUMERIC(12,0),
     gratificacion BOOLEAN DEFAULT TRUE,
     imm_gratificacion NUMERIC(8,4) DEFAULT 4.75,
+    tope_afp_uf NUMERIC(10,4),
     tope_afp NUMERIC(12,0),
+    tope_ips_uf NUMERIC(10,4),
     tope_ips NUMERIC(12,0),
+    tope_cesantia_uf NUMERIC(10,4),
     tope_cesantia NUMERIC(12,0),
+    tope_apv_mensual_uf NUMERIC(10,4),
+    tope_apv_mensual NUMERIC(12,0),
+    tope_apv_anual_uf NUMERIC(10,4),
+    tope_apv_anual NUMERIC(12,0),
+    tope_deposito_convenido_anual_uf NUMERIC(10,4),
+    tope_deposito_convenido_anual NUMERIC(12,0),
     tope_afpvoluntario NUMERIC(12,0),
     sis NUMERIC(7,4),
+    sanna NUMERIC(7,4),
+    salud_obligatoria NUMERIC(7,4),
+    salud_ccaf NUMERIC(7,4),
+    salud_fonasa_con_ccaf NUMERIC(7,4),
     dsctosbpordia BOOLEAN DEFAULT TRUE,
     afc_trabajador_indefinido NUMERIC(7,4) DEFAULT 0.6,
     afc_empleador_indefinido NUMERIC(7,4) DEFAULT 2.4,
@@ -227,8 +244,8 @@ CREATE TABLE parametros_generales (
     fecha_actualizacion TIMESTAMP DEFAULT NOW(),
     CONSTRAINT chk_parametros_periodo CHECK (periodo ~ '^[0-9]{4}-(0[1-9]|1[0-2])$')
 );
--- Nota: se conserva por compatibilidad historica, pero v4 debe leer
--- parametros legales desde parametros_legales y tabla_impuesto_unico.
+-- Snapshot denormalizado consumido por la app (database.types / repositorio).
+-- Detalle normativo sigue en parametros_legales y tabla_impuesto_unico.
 
 CREATE TABLE tramo_carga (
     id_tramo SERIAL PRIMARY KEY,

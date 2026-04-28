@@ -101,6 +101,7 @@ type ParametroGeneralSupabaseRow = Omit<
 interface TrabajoPesadoRow {
   id_trabajo_pesado_parametro: number;
   codigo: string;
+  periodo: string;
   nombre: string;
   tasa_trabajador: number;
   tasa_empleador: number;
@@ -120,11 +121,13 @@ interface ReformaPrevisionalRow {
   cuenta_capitalizacion_individual: number;
   fapp_seguro_social: number;
   fuente: string | null;
+  periodo: string | null;
 }
 
 interface Ley16744ParametroRow {
   id_ley_16744_parametro: number;
   codigo: string;
+  periodo: string;
   cotizacion_basica_empleador: number;
   descripcion_tasa_adicional: string | null;
   fuente_financiamiento: string | null;
@@ -140,6 +143,7 @@ interface OrganismoLey16744Row {
   nombre: string;
   tipo: string;
   vigente: boolean;
+  periodo: string | null;
 }
 
 interface CcafEntidadRow {
@@ -148,6 +152,7 @@ interface CcafEntidadRow {
   nombre: string;
   vigente: boolean;
   fuente: string | null;
+  periodo: string | null;
 }
 
 interface ApvInstitucionRow {
@@ -155,6 +160,7 @@ interface ApvInstitucionRow {
   codigo: string | null;
   nombre: string;
   vigente: boolean;
+  periodo: string | null;
 }
 
 interface ApvFormaPagoRow {
@@ -162,6 +168,7 @@ interface ApvFormaPagoRow {
   codigo: string | null;
   nombre: string;
   vigente: boolean;
+  periodo: string | null;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -351,22 +358,22 @@ export class ParametrosGeneralesRepository {
     return hydrated ?? this.toModel(data);
   }
 
-  async listarCatalogos(): Promise<ParametrosGeneralesCatalogos> {
-    const afp = await this.safeListWithError(() => this.listarAfp());
-    const isapres = await this.safeListWithError(() => this.listarIsapres());
-    const saludInstituciones = await this.safeListWithError(() => this.listarSaludInstituciones());
-    const tramosCarga = await this.safeListWithError(() => this.listarTramosCarga());
-    const tramosImpuesto = await this.safeListWithError(() => this.listarTramosImpuesto());
-    const tablaImpuestoUnico = await this.safeListWithError(() => this.listarTablaImpuestoUnico());
-    const reformaPensiones = await this.safeListWithError(() => this.listarParametrosLegales());
-    const trabajosPesados = await this.safeListWithError(() => this.listarTrabajosPesados());
-    const reformaPrevisional = await this.safeListWithError(() => this.listarReformaPrevisional());
-    const ley16744Parametros = await this.safeListWithError(() => this.listarLey16744Parametros());
-    const organismosLey16744 = await this.safeListWithError(() => this.listarOrganismosLey16744());
-    const ccafEntidades = await this.safeListWithError(() => this.listarCcafEntidades());
-    const apvInstituciones = await this.safeListWithError(() => this.listarApvInstituciones());
-    const apvFormasPago = await this.safeListWithError(() => this.listarApvFormasPago());
-    const afcParametros = await this.safeListWithError(() => this.listarAfcParametros());
+  async listarCatalogos(periodo: string): Promise<ParametrosGeneralesCatalogos> {
+    const afp = await this.safeListWithError(() => this.listarAfp(periodo));
+    const isapres = await this.safeListWithError(() => this.listarIsapres(periodo));
+    const saludInstituciones = await this.safeListWithError(() => this.listarSaludInstituciones(periodo));
+    const tramosCarga = await this.safeListWithError(() => this.listarTramosCarga(periodo));
+    const tramosImpuesto = await this.safeListWithError(() => this.listarTramosImpuesto(periodo));
+    const tablaImpuestoUnico = await this.safeListWithError(() => this.listarTablaImpuestoUnico(periodo));
+    const reformaPensiones = await this.safeListWithError(() => this.listarParametrosLegales(periodo));
+    const trabajosPesados = await this.safeListWithError(() => this.listarTrabajosPesados(periodo));
+    const reformaPrevisional = await this.safeListWithError(() => this.listarReformaPrevisional(periodo));
+    const ley16744Parametros = await this.safeListWithError(() => this.listarLey16744Parametros(periodo));
+    const organismosLey16744 = await this.safeListWithError(() => this.listarOrganismosLey16744(periodo));
+    const ccafEntidades = await this.safeListWithError(() => this.listarCcafEntidades(periodo));
+    const apvInstituciones = await this.safeListWithError(() => this.listarApvInstituciones(periodo));
+    const apvFormasPago = await this.safeListWithError(() => this.listarApvFormasPago(periodo));
+    const afcParametros = await this.safeListWithError(() => this.listarAfcParametros(periodo));
 
     const result: ParametrosGeneralesCatalogos = {
       afp: afp.data,
@@ -459,6 +466,40 @@ export class ParametrosGeneralesRepository {
 
   private periodoToVigenciaInicio(periodo: string): string {
     return `${periodo}-01`;
+  }
+
+  /** Primer y último día del mes YYYY-MM (solape de vigencias). */
+  private periodoMesRangoDias(periodo: string): { inicio: string; fin: string } {
+    const [yStr, mStr] = periodo.split('-');
+    const y = Number(yStr);
+    const m = Number(mStr);
+    if (!Number.isFinite(y) || !Number.isFinite(m)) {
+      return { inicio: `${periodo}-01`, fin: `${periodo}-28` };
+    }
+    const ultimo = new Date(y, m, 0).getDate();
+    return {
+      inicio: `${periodo}-01`,
+      fin: `${periodo}-${String(ultimo).padStart(2, '0')}`,
+    };
+  }
+
+  private applyVigenciaSolapaPeriodo(query: any, periodo: string): any {
+    const { inicio, fin } = this.periodoMesRangoDias(periodo);
+    return query.lte('vigencia_inicio', fin).or(`vigencia_fin.is.null,vigencia_fin.gte.${inicio}`);
+  }
+
+  /** Catálogo global (periodo NULL) o fila específica del mes. */
+  private catalogoGlobalOPeriodo(query: any, periodo: string): any {
+    return query.or(`periodo.is.null,periodo.eq.${periodo}`);
+  }
+
+  /**
+   * Filas del mes seleccionado (YYYY-MM) o catálogo sin mes (periodo NULL).
+   * Combina con solape de vigencia para no traer vigencias ajenas al mes cuando periodo viene NULL.
+   */
+  private applyPeriodoMesOGlobalSolapa(query: any, periodo: string): any {
+    const scoped = query.or(`periodo.eq.${periodo},periodo.is.null`);
+    return this.applyVigenciaSolapaPeriodo(scoped, periodo);
   }
 
   private async hydrateConfigurables(rows: ParametroGeneral[]): Promise<ParametroGeneral[]> {
@@ -621,37 +662,38 @@ export class ParametrosGeneralesRepository {
 
   private async guardarParametrosLegales(payload: ParametroGeneralUpsert, vigenciaInicio: string): Promise<void> {
     const rows = [
-      this.legalRow('UF', payload.uf, null, vigenciaInicio),
-      this.legalRow('UTM', null, payload.utm, vigenciaInicio),
-      this.legalRow('UTA', null, payload.uta, vigenciaInicio),
-      this.legalRow('SIS', payload.sis, null, vigenciaInicio),
-      this.legalRow('SANNA', payload.sanna, null, vigenciaInicio),
-      this.legalRow('SUELDO_MINIMO', null, payload.sueldoMinimo ?? payload.sueldoMinimo18a65, vigenciaInicio),
-      this.legalRow('SUELDO_MINIMO_18_65', null, payload.sueldoMinimoMenor18Mayor65 ?? payload.sueldoMinimo18a65, vigenciaInicio),
-      this.legalRow('SUELDO_MINIMO_TPC', null, payload.sueldoMinimoCasaParticular, vigenciaInicio),
-      this.legalRow('SUELDO_MINIMO_NO_REM', null, payload.ingresoMinimoNoRemuneracional, vigenciaInicio),
-      this.legalRow('TOPE_AFP_UF', payload.topeAfpUf, null, vigenciaInicio),
-      this.legalRow('TOPE_AFP_PESOS', null, payload.topeAfp, vigenciaInicio),
-      this.legalRow('TOPE_INP_UF', payload.topeIpsUf, null, vigenciaInicio),
-      this.legalRow('TOPE_INP_PESOS', null, payload.topeIps, vigenciaInicio),
-      this.legalRow('TOPE_AFC_UF', payload.topeCesantiaUf, null, vigenciaInicio),
-      this.legalRow('TOPE_AFC_PESOS', null, payload.topeCesantia, vigenciaInicio),
-      this.legalRow('TOPE_APV_MENSUAL_UF', payload.topeApvMensualUf, null, vigenciaInicio),
-      this.legalRow('TOPE_APV_MENSUAL_PESOS', null, payload.topeApvMensual, vigenciaInicio),
-      this.legalRow('TOPE_APV_ANUAL_UF', payload.topeApvAnualUf, null, vigenciaInicio),
-      this.legalRow('TOPE_APV_ANUAL_PESOS', null, payload.topeApvAnual, vigenciaInicio),
-      this.legalRow('TOPE_DEPOSITO_CONVENIDO_ANUAL_UF', payload.topeDepositoConvenidoAnualUf, null, vigenciaInicio),
-      this.legalRow('TOPE_DEPOSITO_CONVENIDO_ANUAL_PESOS', null, payload.topeDepositoConvenidoAnual, vigenciaInicio),
-      this.legalRow('SALUD_OBLIGATORIA', payload.saludObligatoria, null, vigenciaInicio),
-      this.legalRow('SALUD_CCAF', payload.saludCcaf, null, vigenciaInicio),
-      this.legalRow('SALUD_FONASA_CON_CCAF', payload.saludFonasaConCcaf, null, vigenciaInicio),
-      this.legalRow('AFC_EMPLEADOR_INDEFINIDO_11_ANOS_MAS', payload.afcEmpleadorIndefinidoOnceAnosMas, null, vigenciaInicio),
+      this.legalRow('UF', payload.uf, null, vigenciaInicio, payload.periodo),
+      this.legalRow('UTM', null, payload.utm, vigenciaInicio, payload.periodo),
+      this.legalRow('UTA', null, payload.uta, vigenciaInicio, payload.periodo),
+      this.legalRow('SIS', payload.sis, null, vigenciaInicio, payload.periodo),
+      this.legalRow('SANNA', payload.sanna, null, vigenciaInicio, payload.periodo),
+      this.legalRow('SUELDO_MINIMO', null, payload.sueldoMinimo ?? payload.sueldoMinimo18a65, vigenciaInicio, payload.periodo),
+      this.legalRow('SUELDO_MINIMO_18_65', null, payload.sueldoMinimoMenor18Mayor65 ?? payload.sueldoMinimo18a65, vigenciaInicio, payload.periodo),
+      this.legalRow('SUELDO_MINIMO_TPC', null, payload.sueldoMinimoCasaParticular, vigenciaInicio, payload.periodo),
+      this.legalRow('SUELDO_MINIMO_NO_REM', null, payload.ingresoMinimoNoRemuneracional, vigenciaInicio, payload.periodo),
+      this.legalRow('TOPE_AFP_UF', payload.topeAfpUf, null, vigenciaInicio, payload.periodo),
+      this.legalRow('TOPE_AFP_PESOS', null, payload.topeAfp, vigenciaInicio, payload.periodo),
+      this.legalRow('TOPE_INP_UF', payload.topeIpsUf, null, vigenciaInicio, payload.periodo),
+      this.legalRow('TOPE_INP_PESOS', null, payload.topeIps, vigenciaInicio, payload.periodo),
+      this.legalRow('TOPE_AFC_UF', payload.topeCesantiaUf, null, vigenciaInicio, payload.periodo),
+      this.legalRow('TOPE_AFC_PESOS', null, payload.topeCesantia, vigenciaInicio, payload.periodo),
+      this.legalRow('TOPE_APV_MENSUAL_UF', payload.topeApvMensualUf, null, vigenciaInicio, payload.periodo),
+      this.legalRow('TOPE_APV_MENSUAL_PESOS', null, payload.topeApvMensual, vigenciaInicio, payload.periodo),
+      this.legalRow('TOPE_APV_ANUAL_UF', payload.topeApvAnualUf, null, vigenciaInicio, payload.periodo),
+      this.legalRow('TOPE_APV_ANUAL_PESOS', null, payload.topeApvAnual, vigenciaInicio, payload.periodo),
+      this.legalRow('TOPE_DEPOSITO_CONVENIDO_ANUAL_UF', payload.topeDepositoConvenidoAnualUf, null, vigenciaInicio, payload.periodo),
+      this.legalRow('TOPE_DEPOSITO_CONVENIDO_ANUAL_PESOS', null, payload.topeDepositoConvenidoAnual, vigenciaInicio, payload.periodo),
+      this.legalRow('SALUD_OBLIGATORIA', payload.saludObligatoria, null, vigenciaInicio, payload.periodo),
+      this.legalRow('SALUD_CCAF', payload.saludCcaf, null, vigenciaInicio, payload.periodo),
+      this.legalRow('SALUD_FONASA_CON_CCAF', payload.saludFonasaConCcaf, null, vigenciaInicio, payload.periodo),
+      this.legalRow('AFC_EMPLEADOR_INDEFINIDO_11_ANOS_MAS', payload.afcEmpleadorIndefinidoOnceAnosMas, null, vigenciaInicio, payload.periodo),
     ].filter((row) => row.valor_decimal !== null || row.valor_entero !== null);
 
     const { error: deleteError } = await this.supabaseUntyped
       .from('parametros_legales')
       .delete()
       .eq('vigencia_inicio', vigenciaInicio)
+      .eq('periodo', payload.periodo)
       .in('nombre', rows.map((row) => row.nombre));
 
     if (deleteError) {
@@ -668,28 +710,36 @@ export class ParametrosGeneralesRepository {
     }
   }
 
-  private legalRow(nombre: string, valorDecimal: number | null, valorEntero: number | null, vigenciaInicio: string) {
+  private legalRow(
+    nombre: string,
+    valorDecimal: number | null,
+    valorEntero: number | null,
+    vigenciaInicio: string,
+    periodo: string,
+  ) {
     return {
       nombre,
       valor_decimal: valorDecimal,
       valor_entero: valorEntero,
       vigencia_inicio: vigenciaInicio,
       vigencia_fin: null,
+      periodo,
     };
   }
 
   private async guardarAfcParametros(payload: ParametroGeneralUpsert, vigenciaInicio: string): Promise<void> {
     const rows = [
-      this.afcRow('INDEFINIDO', true, true, payload.afcTrabajadorIndefinido, payload.afcEmpleadorIndefinido, vigenciaInicio),
-      this.afcRow('PLAZO_FIJO', true, false, 0, payload.afcEmpleadorPlazo, vigenciaInicio),
-      this.afcRow('OBRA_SERVICIO', true, false, 0, payload.afcEmpleadorPlazo, vigenciaInicio),
-      this.afcRow('CASA_PARTICULAR', true, false, 0, payload.afcEmpleadorCasaParticular, vigenciaInicio),
+      this.afcRow('INDEFINIDO', true, true, payload.afcTrabajadorIndefinido, payload.afcEmpleadorIndefinido, vigenciaInicio, payload.periodo),
+      this.afcRow('PLAZO_FIJO', true, false, 0, payload.afcEmpleadorPlazo, vigenciaInicio, payload.periodo),
+      this.afcRow('OBRA_SERVICIO', true, false, 0, payload.afcEmpleadorPlazo, vigenciaInicio, payload.periodo),
+      this.afcRow('CASA_PARTICULAR', true, false, 0, payload.afcEmpleadorCasaParticular, vigenciaInicio, payload.periodo),
     ].filter((row) => row.tasa_trabajador !== null && row.tasa_empleador !== null);
 
     const { error: deleteError } = await this.supabaseUntyped
       .from('afc_parametro')
       .delete()
-      .eq('vigencia_inicio', vigenciaInicio);
+      .eq('vigencia_inicio', vigenciaInicio)
+      .eq('periodo', payload.periodo);
 
     if (deleteError) {
       throw new Error(deleteError.message);
@@ -712,6 +762,7 @@ export class ParametrosGeneralesRepository {
     tasaTrabajador: number | null,
     tasaEmpleador: number | null,
     vigenciaInicio: string,
+    periodo: string,
   ) {
     return {
       codigo_tipo_contrato: codigoTipoContrato,
@@ -722,18 +773,27 @@ export class ParametrosGeneralesRepository {
       vigencia_inicio: vigenciaInicio,
       vigencia_fin: null,
       observacion: 'Configurado desde parametros',
+      periodo,
     };
   }
 
   private async guardarTrabajosPesados(payload: ParametroGeneralUpsert, vigenciaInicio: string): Promise<void> {
     const rows = [
-      this.trabajoPesadoRow('PESADO', 'Trabajo pesado', payload.trabajoPesadoTrabajador, payload.trabajoPesadoEmpleador, vigenciaInicio),
+      this.trabajoPesadoRow(
+        'PESADO',
+        'Trabajo pesado',
+        payload.trabajoPesadoTrabajador,
+        payload.trabajoPesadoEmpleador,
+        vigenciaInicio,
+        payload.periodo,
+      ),
       this.trabajoPesadoRow(
         'MENOS_PESADO',
         'Trabajo pesado con menor desgaste relativo',
         payload.trabajoMenosPesadoTrabajador,
         payload.trabajoMenosPesadoEmpleador,
         vigenciaInicio,
+        payload.periodo,
       ),
     ].filter((row) => row.tasa_trabajador !== null && row.tasa_empleador !== null);
 
@@ -741,7 +801,9 @@ export class ParametrosGeneralesRepository {
       return;
     }
 
-    const { error } = await this.supabaseUntyped.from('trabajo_pesado_parametro').upsert(rows, { onConflict: 'codigo' });
+    const { error } = await this.supabaseUntyped
+      .from('trabajo_pesado_parametro')
+      .upsert(rows, { onConflict: 'codigo,periodo' });
     if (error) {
       throw new Error(error.message);
     }
@@ -753,9 +815,11 @@ export class ParametrosGeneralesRepository {
     tasaTrabajador: number | null,
     tasaEmpleador: number | null,
     vigenciaInicio: string,
+    periodo: string,
   ) {
     return {
       codigo,
+      periodo,
       nombre,
       tasa_trabajador: tasaTrabajador,
       tasa_empleador: tasaEmpleador,
@@ -776,7 +840,8 @@ export class ParametrosGeneralesRepository {
     const { error: deleteError } = await this.supabaseUntyped
       .from('reforma_previsional_parametro')
       .delete()
-      .eq('vigencia_inicio', vigenciaInicio);
+      .eq('vigencia_inicio', vigenciaInicio)
+      .eq('periodo', payload.periodo);
 
     if (deleteError) {
       throw new Error(deleteError.message);
@@ -789,6 +854,7 @@ export class ParametrosGeneralesRepository {
       cuenta_capitalizacion_individual: payload.aporteEmpleadorAfp ?? 0,
       fapp_seguro_social: payload.seguroSocialExpectativaVida ?? 0,
       fuente: 'Configurado desde parametros',
+      periodo: payload.periodo,
     };
 
     const { error } = await this.supabaseUntyped.from('reforma_previsional_parametro').insert(row);
@@ -797,8 +863,10 @@ export class ParametrosGeneralesRepository {
     }
   }
 
-  private async listarAfp(): Promise<AfpParametro[]> {
-    const { data, error } = await this.supabase.from('afp').select('*').order('nombre', { ascending: true });
+  private async listarAfp(periodo: string): Promise<AfpParametro[]> {
+    let query = this.supabase.from('afp').select('*');
+    query = this.applyPeriodoMesOGlobalSolapa(query, periodo);
+    const { data, error } = await query.order('nombre', { ascending: true });
 
     if (error) {
       throw new Error(error.message);
@@ -807,12 +875,10 @@ export class ParametrosGeneralesRepository {
     return (data ?? []).map((row) => this.toAfp(row));
   }
 
-  private async listarIsapres(): Promise<IsapreParametro[]> {
-    const { data, error } = await this.supabase
-      .from('salud')
-      .select('*')
-      .eq('tipo', 'ISAPRE')
-      .order('nombre', { ascending: true });
+  private async listarIsapres(periodo: string): Promise<IsapreParametro[]> {
+    let query = this.supabase.from('salud').select('*').eq('tipo', 'ISAPRE');
+    query = this.applyVigenciaSolapaPeriodo(query, periodo);
+    const { data, error } = await query.order('nombre', { ascending: true });
 
     if (error) {
       throw new Error(error.message);
@@ -821,24 +887,25 @@ export class ParametrosGeneralesRepository {
     return (data ?? []).map((row) => this.toIsapre(row));
   }
 
-  private async listarSaludInstituciones(): Promise<IsapreParametro[]> {
-    const { data, error } = await this.supabase
-      .from('salud')
-      .select('*')
-      .order('tipo', { ascending: true })
-      .order('nombre', { ascending: true });
+  private async listarSaludInstituciones(periodo: string): Promise<IsapreParametro[]> {
+    let query = this.supabase.from('salud').select('*');
+    query = this.applyPeriodoMesOGlobalSolapa(query, periodo);
+    const { data, error } = await query.order('tipo', { ascending: true }).order('nombre', { ascending: true });
 
     if (error) {
       throw new Error(error.message);
     }
 
-    return (data ?? []).map((row) => this.toIsapre(row));
+    return (data ?? [])
+      .filter((row) => (row.tipo ?? '').toUpperCase() !== 'ISAPRE')
+      .map((row) => this.toIsapre(row));
   }
 
-  private async listarTramosCarga(): Promise<TramoCargaParametro[]> {
+  private async listarTramosCarga(periodo: string): Promise<TramoCargaParametro[]> {
     const { data, error } = await this.supabase
       .from('tramo_carga')
       .select('*')
+      .eq('periodo', periodo)
       .order('periodo', { ascending: false })
       .order('desde', { ascending: true });
 
@@ -849,10 +916,11 @@ export class ParametrosGeneralesRepository {
     return (data ?? []).map((row) => this.toTramoCarga(row));
   }
 
-  private async listarTramosImpuesto(): Promise<TramoImpuestoParametro[]> {
+  private async listarTramosImpuesto(periodo: string): Promise<TramoImpuestoParametro[]> {
     const { data, error } = await this.supabase
       .from('tramo_impuesto')
       .select('*')
+      .eq('periodo', periodo)
       .order('periodo', { ascending: false })
       .order('desde', { ascending: true });
 
@@ -863,11 +931,16 @@ export class ParametrosGeneralesRepository {
     return (data ?? []).map((row) => this.toTramoImpuesto(row));
   }
 
-  private async listarTablaImpuestoUnico(): Promise<TablaImpuestoUnicoParametro[]> {
+  /**
+   * Misma clave que el selector superior YYYY-MM y que `tramo_impuesto.periodo`.
+   * Filtra por columna generada `periodo` (mes de vigencia_inicio), no por solape amplio:
+   * evita mezclar tablas históricas con vigencia_fin nula cuando el usuario elige un mes concreto.
+   */
+  private async listarTablaImpuestoUnico(periodo: string): Promise<TablaImpuestoUnicoParametro[]> {
     const { data, error } = await this.supabase
       .from('tabla_impuesto_unico')
       .select('*')
-      .order('vigencia_inicio', { ascending: false })
+      .eq('periodo', periodo)
       .order('tramo', { ascending: true });
 
     if (error) {
@@ -877,12 +950,10 @@ export class ParametrosGeneralesRepository {
     return (data ?? []).map((row) => this.toTablaImpuestoUnico(row));
   }
 
-  private async listarParametrosLegales(): Promise<ParametroLegal[]> {
-    const { data, error } = await this.supabase
-      .from('parametros_legales')
-      .select('*')
-      .order('vigencia_inicio', { ascending: false })
-      .order('nombre', { ascending: true });
+  private async listarParametrosLegales(periodo: string): Promise<ParametroLegal[]> {
+    let query = this.supabase.from('parametros_legales').select('*');
+    query = this.applyPeriodoMesOGlobalSolapa(query, periodo);
+    const { data, error } = await query.order('vigencia_inicio', { ascending: false }).order('nombre', { ascending: true });
 
     if (error) {
       throw new Error(error.message);
@@ -891,12 +962,10 @@ export class ParametrosGeneralesRepository {
     return (data ?? []).map((row) => this.toParametroLegal(row));
   }
 
-  private async listarTrabajosPesados(): Promise<TrabajoPesadoParametro[]> {
-    const { data, error } = await this.supabaseUntyped
-      .from('trabajo_pesado_parametro')
-      .select('*')
-      .order('vigencia_inicio', { ascending: false })
-      .order('codigo', { ascending: true });
+  private async listarTrabajosPesados(periodo: string): Promise<TrabajoPesadoParametro[]> {
+    let query = this.supabaseUntyped.from('trabajo_pesado_parametro').select('*');
+    query = this.applyVigenciaSolapaPeriodo(query, periodo);
+    const { data, error } = await query.order('vigencia_inicio', { ascending: false }).order('codigo', { ascending: true });
 
     if (error) {
       throw new Error(error.message);
@@ -905,11 +974,10 @@ export class ParametrosGeneralesRepository {
     return ((data ?? []) as TrabajoPesadoRow[]).map((row) => this.toTrabajoPesado(row));
   }
 
-  private async listarReformaPrevisional(): Promise<ReformaPrevisionalParametro[]> {
-    const { data, error } = await this.supabaseUntyped
-      .from('reforma_previsional_parametro')
-      .select('*')
-      .order('vigencia_inicio', { ascending: false });
+  private async listarReformaPrevisional(periodo: string): Promise<ReformaPrevisionalParametro[]> {
+    let query = this.supabaseUntyped.from('reforma_previsional_parametro').select('*');
+    query = this.applyPeriodoMesOGlobalSolapa(query, periodo);
+    const { data, error } = await query.order('vigencia_inicio', { ascending: false });
 
     if (error) {
       throw new Error(error.message);
@@ -918,11 +986,12 @@ export class ParametrosGeneralesRepository {
     return ((data ?? []) as ReformaPrevisionalRow[]).map((row) => this.toReformaPrevisional(row));
   }
 
-  private async listarLey16744Parametros(): Promise<Ley16744Parametro[]> {
+  private async listarLey16744Parametros(periodo: string): Promise<Ley16744Parametro[]> {
     const { data, error } = await this.supabaseUntyped
       .from('ley_16744_parametros')
       .select('*')
-      .order('vigencia_inicio', { ascending: false });
+      .eq('periodo', periodo)
+      .order('codigo', { ascending: true });
 
     if (error) {
       throw new Error(error.message);
@@ -931,11 +1000,10 @@ export class ParametrosGeneralesRepository {
     return ((data ?? []) as Ley16744ParametroRow[]).map((row) => this.toLey16744Parametro(row));
   }
 
-  private async listarOrganismosLey16744(): Promise<OrganismoLey16744[]> {
-    const { data, error } = await this.supabaseUntyped
-      .from('organismo_administrador_ley_16744')
-      .select('*')
-      .order('nombre', { ascending: true });
+  private async listarOrganismosLey16744(periodo: string): Promise<OrganismoLey16744[]> {
+    let query = this.supabaseUntyped.from('organismo_administrador_ley_16744').select('*');
+    query = this.catalogoGlobalOPeriodo(query, periodo);
+    const { data, error } = await query.order('nombre', { ascending: true });
 
     if (error) {
       throw new Error(error.message);
@@ -944,11 +1012,10 @@ export class ParametrosGeneralesRepository {
     return ((data ?? []) as OrganismoLey16744Row[]).map((row) => this.toOrganismoLey16744(row));
   }
 
-  private async listarCcafEntidades(): Promise<CcafEntidad[]> {
-    const { data, error } = await this.supabaseUntyped
-      .from('ccaf_entidad')
-      .select('*')
-      .order('nombre', { ascending: true });
+  private async listarCcafEntidades(periodo: string): Promise<CcafEntidad[]> {
+    let query = this.supabaseUntyped.from('ccaf_entidad').select('*');
+    query = this.catalogoGlobalOPeriodo(query, periodo);
+    const { data, error } = await query.order('nombre', { ascending: true });
 
     if (error) {
       throw new Error(error.message);
@@ -957,11 +1024,10 @@ export class ParametrosGeneralesRepository {
     return ((data ?? []) as CcafEntidadRow[]).map((row) => this.toCcafEntidad(row));
   }
 
-  private async listarApvInstituciones(): Promise<ApvApvcInstitucion[]> {
-    const { data, error } = await this.supabaseUntyped
-      .from('institucion_apv')
-      .select('id_institucion_apv,codigo,nombre,vigente')
-      .order('codigo', { ascending: true });
+  private async listarApvInstituciones(periodo: string): Promise<ApvApvcInstitucion[]> {
+    let query = this.supabaseUntyped.from('institucion_apv').select('id_institucion_apv,codigo,nombre,vigente,periodo');
+    query = this.catalogoGlobalOPeriodo(query, periodo);
+    const { data, error } = await query.order('codigo', { ascending: true });
 
     if (error) {
       throw new Error(error.message);
@@ -970,11 +1036,10 @@ export class ParametrosGeneralesRepository {
     return ((data ?? []) as ApvInstitucionRow[]).map((row) => this.toApvInstitucion(row));
   }
 
-  private async listarApvFormasPago(): Promise<ApvApvcFormaPago[]> {
-    const { data, error } = await this.supabaseUntyped
-      .from('forma_pago_apv')
-      .select('id_forma_pago_apv,codigo,nombre,vigente')
-      .order('codigo', { ascending: true });
+  private async listarApvFormasPago(periodo: string): Promise<ApvApvcFormaPago[]> {
+    let query = this.supabaseUntyped.from('forma_pago_apv').select('id_forma_pago_apv,codigo,nombre,vigente,periodo');
+    query = this.catalogoGlobalOPeriodo(query, periodo);
+    const { data, error } = await query.order('codigo', { ascending: true });
 
     if (error) {
       throw new Error(error.message);
@@ -983,10 +1048,10 @@ export class ParametrosGeneralesRepository {
     return ((data ?? []) as ApvFormaPagoRow[]).map((row) => this.toApvFormaPago(row));
   }
 
-  private async listarAfcParametros(): Promise<AfcParametro[]> {
-    const { data, error } = await this.supabase
-      .from('afc_parametro')
-      .select('*')
+  private async listarAfcParametros(periodo: string): Promise<AfcParametro[]> {
+    let query = this.supabase.from('afc_parametro').select('*');
+    query = this.applyPeriodoMesOGlobalSolapa(query, periodo);
+    const { data, error } = await query
       .order('vigencia_inicio', { ascending: false })
       .order('codigo_tipo_contrato', { ascending: true });
 
@@ -1088,6 +1153,7 @@ export class ParametrosGeneralesRepository {
       idAfp: row.id_afp,
       codigo: row.codigo,
       nombre: row.nombre,
+      periodo: row.periodo,
       tasaObligatoria: row.tasa_obligatoria,
       comision: row.comision,
       sis: row.sis,
@@ -1105,6 +1171,7 @@ export class ParametrosGeneralesRepository {
       nombre: row.nombre,
       tipo: row.tipo,
       porcentajeCotizacion: row.porcentaje_cotizacion,
+      periodo: row.periodo,
       vigente: row.vigente ?? false,
       vigenciaInicio: row.vigencia_inicio,
       vigenciaFin: row.vigencia_fin,
@@ -1134,6 +1201,14 @@ export class ParametrosGeneralesRepository {
   }
 
   private toTablaImpuestoUnico(row: TablaImpuestoUnicoRow): TablaImpuestoUnicoParametro {
+    const vigencia = row.vigencia_inicio;
+    const periodoYm =
+      row.periodo && String(row.periodo).length >= 7
+        ? String(row.periodo).slice(0, 7)
+        : typeof vigencia === 'string' && vigencia.length >= 7
+          ? vigencia.slice(0, 7)
+          : undefined;
+
     return {
       id: row.id,
       tramo: row.tramo,
@@ -1141,8 +1216,9 @@ export class ParametrosGeneralesRepository {
       hasta: row.hasta,
       factor: row.factor,
       rebaja: row.rebaja,
-      vigenciaInicio: row.vigencia_inicio,
+      vigenciaInicio: vigencia,
       vigenciaFin: row.vigencia_fin,
+      periodo: periodoYm,
     };
   }
 
@@ -1152,6 +1228,7 @@ export class ParametrosGeneralesRepository {
       nombre: row.nombre,
       valorDecimal: this.toNumber(row.valor_decimal),
       valorEntero: this.toNumber(row.valor_entero),
+      periodo: row.periodo,
       vigenciaInicio: row.vigencia_inicio,
       vigenciaFin: row.vigencia_fin,
     };
@@ -1190,6 +1267,7 @@ export class ParametrosGeneralesRepository {
     return {
       idTrabajoPesadoParametro: row.id_trabajo_pesado_parametro,
       codigo: row.codigo,
+      periodo: row.periodo,
       nombre: row.nombre,
       tasaTrabajador: row.tasa_trabajador,
       tasaEmpleador: row.tasa_empleador,
@@ -1205,6 +1283,7 @@ export class ParametrosGeneralesRepository {
   private toReformaPrevisional(row: ReformaPrevisionalRow): ReformaPrevisionalParametro {
     return {
       idReformaPrevisionalParametro: row.id_reforma_previsional_parametro,
+      periodo: row.periodo,
       vigenciaInicio: row.vigencia_inicio,
       vigenciaFin: row.vigencia_fin,
       aporteEmpleadorTotal: row.aporte_empleador_total,
@@ -1218,6 +1297,7 @@ export class ParametrosGeneralesRepository {
     return {
       idLey16744Parametro: row.id_ley_16744_parametro,
       codigo: row.codigo,
+      periodo: row.periodo,
       cotizacionBasicaEmpleador: row.cotizacion_basica_empleador,
       descripcionTasaAdicional: row.descripcion_tasa_adicional,
       fuenteFinanciamiento: row.fuente_financiamiento,
@@ -1235,6 +1315,7 @@ export class ParametrosGeneralesRepository {
       nombre: row.nombre,
       tipo: row.tipo,
       vigente: row.vigente,
+      periodo: row.periodo,
     };
   }
 
@@ -1245,6 +1326,7 @@ export class ParametrosGeneralesRepository {
       nombre: row.nombre,
       vigente: row.vigente,
       fuente: row.fuente,
+      periodo: row.periodo,
     };
   }
 
@@ -1254,6 +1336,7 @@ export class ParametrosGeneralesRepository {
       codigo: row.codigo,
       nombre: row.nombre,
       vigente: row.vigente,
+      periodo: row.periodo,
     };
   }
 
@@ -1263,6 +1346,7 @@ export class ParametrosGeneralesRepository {
       codigo: row.codigo,
       nombre: row.nombre,
       vigente: row.vigente,
+      periodo: row.periodo,
     };
   }
 
@@ -1274,6 +1358,7 @@ export class ParametrosGeneralesRepository {
       aplicaTrabajador: row.aplica_trabajador,
       tasaTrabajador: row.tasa_trabajador,
       tasaEmpleador: row.tasa_empleador,
+      periodo: row.periodo,
       vigenciaInicio: row.vigencia_inicio,
       vigenciaFin: row.vigencia_fin,
       observacion: row.observacion,

@@ -13,8 +13,10 @@ import { AfpParametro } from '../../models/parametro-general.model';
   imports: [CommonModule, DataGridComponent],
   template: `
     <section class="tab-panel">
-      <section class="catalog-section" aria-labelledby="afp-title">
-        <h2 id="afp-title">Información AFP</h2>
+      <section class="catalog-section" aria-label="AFP">
+        <div class="param-hint param-hint--consulta" role="note">
+          <span class="param-hint__tag">Solo lectura</span>
+        </div>
         <app-data-grid
           title="AFP"
           [rows]="rows"
@@ -24,10 +26,10 @@ import { AfpParametro } from '../../models/parametro-general.model';
           [filtersEnabled]="true"
           [showExportAction]="true"
           [maxItems]="10"
-          gridHeight="28rem"
-          persistenceKey="parametros.afp.dg"
-          emptyTitle="No hay AFP cargadas"
-          emptyDescription="Sin tasas externas por administradora."
+          gridHeight="100%"
+          [persistenceKey]="gridPersistenceKey"
+          emptyTitle="No hay registros para el periodo seleccionado"
+          emptyDescription="Sin AFP con vigencia en este periodo."
           (refresh)="refresh?.()"
         ></app-data-grid>
       </section>
@@ -38,11 +40,12 @@ export class ParametrosAfpTabComponent {
   @Input({ required: true }) rows!: AfpParametro[];
   @Input({ required: true }) columns!: DataGridColumn<AfpParametro>[];
   @Input() loading = false;
+  @Input() gridPersistenceKey = 'parametros.afp.dg';
   @Input() refresh: (() => void) | null = null;
 
   readonly afpFilters: DataGridFilter<AfpParametro>[] = [
     {
-      id: 'periodo',
+      id: 'vigenciaInicio',
       label: 'Periodo',
       field: 'vigenciaInicio',
       type: 'text',

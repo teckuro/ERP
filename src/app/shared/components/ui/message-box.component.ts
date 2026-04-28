@@ -285,6 +285,10 @@ export type MessageBoxMode = 'inline' | 'modal';
         line-height: 1.45;
       }
 
+      :host ::ng-deep .message-detail {
+        white-space: pre-line;
+      }
+
       .message-actions {
         display: inline-flex;
         flex-wrap: wrap;

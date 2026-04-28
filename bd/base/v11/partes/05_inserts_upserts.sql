@@ -656,12 +656,12 @@ INSERT INTO centro_costo (id_centro_costo, codigo, nombre) VALUES
 ON CONFLICT (id_centro_costo) DO NOTHING;
 
 INSERT INTO trabajo_pesado_parametro (
-    codigo, nombre, tasa_trabajador, tasa_empleador, tasa_total,
+    codigo, periodo, nombre, tasa_trabajador, tasa_empleador, tasa_total,
     requiere_dictamen_cen, fuente, vigente, vigencia_inicio
 ) VALUES
-    ('PESADO', 'Trabajo pesado', 2.0000, 2.0000, 4.0000, TRUE, 'https://www.spensiones.cl/portal/compendio/596/w3-propertyvalue-4282.html', TRUE, DATE '2025-08-01'),
-    ('MENOS_PESADO', 'Trabajo pesado con menor desgaste relativo', 1.0000, 1.0000, 2.0000, TRUE, 'https://www.spensiones.cl/portal/compendio/596/w3-propertyvalue-4282.html', TRUE, DATE '2025-08-01')
-ON CONFLICT (codigo) DO UPDATE SET
+    ('PESADO', '2025-08', 'Trabajo pesado', 2.0000, 2.0000, 4.0000, TRUE, 'https://www.spensiones.cl/portal/compendio/596/w3-propertyvalue-4282.html', TRUE, DATE '2025-08-01'),
+    ('MENOS_PESADO', '2025-08', 'Trabajo pesado con menor desgaste relativo', 1.0000, 1.0000, 2.0000, TRUE, 'https://www.spensiones.cl/portal/compendio/596/w3-propertyvalue-4282.html', TRUE, DATE '2025-08-01')
+ON CONFLICT (codigo, periodo) DO UPDATE SET
     nombre = EXCLUDED.nombre,
     tasa_trabajador = EXCLUDED.tasa_trabajador,
     tasa_empleador = EXCLUDED.tasa_empleador,
@@ -673,14 +673,15 @@ ON CONFLICT (codigo) DO UPDATE SET
 
 INSERT INTO reforma_previsional_parametro (
     vigencia_inicio, vigencia_fin, aporte_empleador_total,
-    cuenta_capitalizacion_individual, fapp_seguro_social, fuente
+    cuenta_capitalizacion_individual, fapp_seguro_social, fuente, periodo
 ) VALUES (
     DATE '2025-08-01',
     DATE '2026-07-31',
     1.0000,
     0.1000,
     0.9000,
-    'https://www.spensiones.cl/portal/institucional/594/w3-article-16615.html'
+    'https://www.spensiones.cl/portal/institucional/594/w3-article-16615.html',
+    '2025-08'
 )
 ON CONFLICT (vigencia_inicio) DO UPDATE SET
     vigencia_fin = EXCLUDED.vigencia_fin,
@@ -690,10 +691,11 @@ ON CONFLICT (vigencia_inicio) DO UPDATE SET
     fuente = EXCLUDED.fuente;
 
 INSERT INTO ley_16744_parametros (
-    codigo, cotizacion_basica_empleador, descripcion_tasa_adicional,
+    codigo, periodo, cotizacion_basica_empleador, descripcion_tasa_adicional,
     fuente_financiamiento, fuente_organismos, vigente, vigencia_inicio
 ) VALUES (
     'LEY_16744_BASE',
+    '2026-04',
     0.9000,
     'depende de actividad/siniestralidad de la empresa',
     'https://www.suseso.cl/606/w3-article-18613.html',
@@ -701,7 +703,7 @@ INSERT INTO ley_16744_parametros (
     TRUE,
     DATE '2026-04-01'
 )
-ON CONFLICT (codigo) DO UPDATE SET
+ON CONFLICT (codigo, periodo) DO UPDATE SET
     cotizacion_basica_empleador = EXCLUDED.cotizacion_basica_empleador,
     descripcion_tasa_adicional = EXCLUDED.descripcion_tasa_adicional,
     fuente_financiamiento = EXCLUDED.fuente_financiamiento,
@@ -758,12 +760,12 @@ INSERT INTO departamento_empresa (id_departamento_empresa, id_empresa, id_sucurs
     (1, 1, 1, 'ADM', 'Administracion')
 ON CONFLICT (id_departamento_empresa) DO NOTHING;
 
-INSERT INTO afp (id_afp, nombre, tasa_obligatoria, comision, sis, tasa_empleador, vigente, forma_pago_apvi, vigencia_inicio) VALUES
-    (1, 'AFP Modelo', 10.00, 1.45, 1.26, 0.00, TRUE, 1, '2024-01-01')
+INSERT INTO afp (id_afp, nombre, tasa_obligatoria, comision, sis, tasa_empleador, vigente, forma_pago_apvi, vigencia_inicio, periodo) VALUES
+    (1, 'AFP Modelo', 10.00, 1.45, 1.26, 0.00, TRUE, 1, '2024-01-01', '2024-01')
 ON CONFLICT (id_afp) DO NOTHING;
 
-INSERT INTO salud (id_salud, nombre, tipo, porcentaje_cotizacion, vigente, vigencia_inicio) VALUES
-    (1, 'FONASA', 'FONASA', 7.00, TRUE, '2024-01-01')
+INSERT INTO salud (id_salud, nombre, tipo, porcentaje_cotizacion, vigente, vigencia_inicio, periodo) VALUES
+    (1, 'FONASA', 'FONASA', 7.00, TRUE, '2024-01-01', '2024-01')
 ON CONFLICT (id_salud) DO NOTHING;
 
 INSERT INTO afp_vigencia (
@@ -817,12 +819,13 @@ INSERT INTO afc_parametro (
     tasa_trabajador,
     tasa_empleador,
     vigencia_inicio,
-    observacion
+    observacion,
+    periodo
 ) VALUES
-    ('INDEFINIDO', TRUE, TRUE, 0.60, 2.40, '2024-01-01', 'Seed base v6.11'),
-    ('PLAZO_FIJO', TRUE, FALSE, 0.00, 3.00, '2024-01-01', 'Seed base v6.11'),
-    ('OBRA_SERVICIO', TRUE, FALSE, 0.00, 3.00, '2024-01-01', 'Seed base v6.11'),
-    ('CASA_PARTICULAR', TRUE, FALSE, 0.00, 3.00, '2024-01-01', 'Seed base v6.11')
+    ('INDEFINIDO', TRUE, TRUE, 0.60, 2.40, '2024-01-01', 'Seed base v6.11', '2024-01'),
+    ('PLAZO_FIJO', TRUE, FALSE, 0.00, 3.00, '2024-01-01', 'Seed base v6.11', '2024-01'),
+    ('OBRA_SERVICIO', TRUE, FALSE, 0.00, 3.00, '2024-01-01', 'Seed base v6.11', '2024-01'),
+    ('CASA_PARTICULAR', TRUE, FALSE, 0.00, 3.00, '2024-01-01', 'Seed base v6.11', '2024-01')
 ON CONFLICT (codigo_tipo_contrato, vigencia_inicio) DO NOTHING;
 
 INSERT INTO tipo_movimiento (

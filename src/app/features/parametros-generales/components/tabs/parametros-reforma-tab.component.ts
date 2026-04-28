@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, Input } from '@angular/core';
+import { Component, Input, signal } from '@angular/core';
 import {
   DataGridColumn,
   DataGridComponent,
@@ -12,108 +12,146 @@ import {
   ReformaPrevisionalParametro,
   TrabajoPesadoParametro,
 } from '../../models/parametro-general.model';
+import { ParametrosInnerTabBarComponent } from '../parametros-inner-tab-bar.component';
+
+type ReformaSubId = 'legales' | 'aportes' | 'trabPesados' | 'apvInst' | 'apvPago';
 
 @Component({
   selector: 'app-parametros-reforma-tab',
   standalone: true,
-  imports: [CommonModule, DataGridComponent],
+  imports: [CommonModule, DataGridComponent, ParametrosInnerTabBarComponent],
   template: `
     <section class="tab-panel">
-      <section class="catalog-section" aria-labelledby="reforma-title">
-        <h2 id="reforma-title">Reforma de pensiones</h2>
-        <app-data-grid
-          title="Parámetros legales"
-          [rows]="reformaPensiones"
-          [columns]="parametrosLegalesColumns"
-          [loading]="loading"
-          [filters]="parametrosLegalesFilters"
-          [filtersEnabled]="true"
-          [showExportAction]="true"
-          [maxItems]="10"
-          gridHeight="24rem"
-          persistenceKey="parametros.reforma-legal.dg"
-          emptyTitle="No hay parametros legales"
-          emptyDescription="Sin registros externos de reforma ni APV."
-          (refresh)="refresh?.()"
-        ></app-data-grid>
-      </section>
+      <div class="param-subhead">
+        <div class="param-subhead__tabs">
+          <app-parametros-inner-tab-bar
+            ariaLabel="Secciones reforma de pensiones"
+            mobileLabel="Vista"
+            [tabs]="reformaInnerTabs"
+            [activeId]="activeSub()"
+            (activeIdChange)="setSub($event)"
+          />
+        </div>
+        <div class="param-hint param-hint--consulta param-hint--inline" role="note">
+          <span class="param-hint__tag">Solo lectura</span>
+        </div>
+      </div>
 
-      <section class="catalog-section" aria-labelledby="reforma-previsional-title">
-        <h2 id="reforma-previsional-title">Aportes reforma previsional</h2>
-        <app-data-grid
-          title="Aportes previsionales"
-          [rows]="reformaPrevisional"
-          [columns]="reformaPrevisionalColumns"
-          [loading]="loading"
-          [filters]="reformaPrevisionalFilters"
-          [filtersEnabled]="true"
-          [showExportAction]="true"
-          [maxItems]="8"
-          gridHeight="20rem"
-          persistenceKey="parametros.reforma-previsional.dg"
-          emptyTitle="No hay aportes de reforma"
-          emptyDescription="Sin parametros externos de aporte empleador."
-          (refresh)="refresh?.()"
-        ></app-data-grid>
-      </section>
+      <div class="param-tab-subview">
+        @if (activeSub() === 'legales') {
+          <section class="catalog-section" aria-label="Parametros legales">
+            <app-data-grid
+              title="Parámetros legales"
+              [rows]="reformaPensiones"
+              [columns]="parametrosLegalesColumns"
+              [loading]="loading"
+              [filters]="parametrosLegalesFilters"
+              [filtersEnabled]="true"
+              [showExportAction]="true"
+              [maxItems]="10"
+              gridHeight="100%"
+              [persistenceKey]="gridPersistenceKeyLegal"
+              emptyTitle="No hay registros para el periodo seleccionado"
+              emptyDescription="Sin parámetros legales con vigencia en este periodo."
+              (refresh)="refresh?.()"
+            ></app-data-grid>
+          </section>
+        }
 
-      <section class="catalog-section" aria-labelledby="trabajos-pesados-title">
-        <h2 id="trabajos-pesados-title">Trabajos pesados</h2>
-        <app-data-grid
-          title="Trabajos pesados"
-          [rows]="trabajosPesados"
-          [columns]="trabajosPesadosColumns"
-          [loading]="loading"
-          [filters]="trabajosPesadosFilters"
-          [filtersEnabled]="true"
-          [showExportAction]="true"
-          [maxItems]="8"
-          gridHeight="20rem"
-          persistenceKey="parametros.trabajos-pesados.dg"
-          emptyTitle="No hay parametros de trabajos pesados"
-          emptyDescription="Sin tasas externas por trabajo pesado."
-          (refresh)="refresh?.()"
-        ></app-data-grid>
-      </section>
+        @if (activeSub() === 'aportes') {
+          <section class="catalog-section" aria-label="Aportes previsionales">
+            <app-data-grid
+              title="Aportes previsionales"
+              [rows]="reformaPrevisional"
+              [columns]="reformaPrevisionalColumns"
+              [loading]="loading"
+              [filters]="reformaPrevisionalFilters"
+              [filtersEnabled]="true"
+              [showExportAction]="true"
+              [maxItems]="8"
+              gridHeight="100%"
+              [persistenceKey]="gridPersistenceKeyPrevisional"
+              emptyTitle="No hay registros para el periodo seleccionado"
+              emptyDescription="Sin aportes previsionales vigentes para este periodo."
+              (refresh)="refresh?.()"
+            ></app-data-grid>
+          </section>
+        }
 
-      <section class="catalog-section catalog-section--split" aria-labelledby="apv-title">
-        <h2 id="apv-title">APV / APVC</h2>
-        <app-data-grid
-          title="Instituciones APV"
-          [rows]="apvInstituciones"
-          [columns]="apvInstitucionesColumns"
-          [loading]="loading"
-          [filters]="apvInstitucionesFilters"
-          [filtersEnabled]="true"
-          [showExportAction]="true"
-          [maxItems]="8"
-          gridHeight="18rem"
-          persistenceKey="parametros.apv-instituciones.dg"
-          emptyTitle="No hay instituciones APV"
-          emptyDescription="Sin instituciones APV/APVC externas."
-          (refresh)="refresh?.()"
-        ></app-data-grid>
+        @if (activeSub() === 'trabPesados') {
+          <section class="catalog-section" aria-label="Trabajos pesados">
+            <app-data-grid
+              title="Trabajos pesados"
+              [rows]="trabajosPesados"
+              [columns]="trabajosPesadosColumns"
+              [loading]="loading"
+              [filters]="trabajosPesadosFilters"
+              [filtersEnabled]="true"
+              [showExportAction]="true"
+              [maxItems]="8"
+              gridHeight="100%"
+              [persistenceKey]="gridPersistenceKeyTrabPesados"
+              emptyTitle="No hay registros para el periodo seleccionado"
+              emptyDescription="Sin parámetros de trabajos pesados para este periodo."
+              (refresh)="refresh?.()"
+            ></app-data-grid>
+          </section>
+        }
 
-        <app-data-grid
-          title="Formas de pago APV"
-          [rows]="apvFormasPago"
-          [columns]="apvFormasPagoColumns"
-          [loading]="loading"
-          [filters]="apvFormasPagoFilters"
-          [filtersEnabled]="true"
-          [showExportAction]="true"
-          [maxItems]="8"
-          gridHeight="18rem"
-          persistenceKey="parametros.apv-formas-pago.dg"
-          emptyTitle="No hay formas de pago APV"
-          emptyDescription="Sin formas de pago APV/APVC externas."
-          (refresh)="refresh?.()"
-        ></app-data-grid>
-      </section>
+        @if (activeSub() === 'apvInst') {
+          <section class="catalog-section" aria-label="Instituciones APV">
+            <app-data-grid
+              title="Instituciones APV"
+              [rows]="apvInstituciones"
+              [columns]="apvInstitucionesColumns"
+              [loading]="loading"
+              [filters]="apvInstitucionesFilters"
+              [filtersEnabled]="true"
+              [showExportAction]="true"
+              [maxItems]="8"
+              gridHeight="100%"
+              [persistenceKey]="gridPersistenceKeyApvInst"
+              emptyTitle="No hay registros para el periodo seleccionado"
+              emptyDescription="Sin instituciones APV en catálogo."
+              (refresh)="refresh?.()"
+            ></app-data-grid>
+          </section>
+        }
+
+        @if (activeSub() === 'apvPago') {
+          <section class="catalog-section" aria-label="Formas de pago APV">
+            <app-data-grid
+              title="Formas de pago APV"
+              [rows]="apvFormasPago"
+              [columns]="apvFormasPagoColumns"
+              [loading]="loading"
+              [filters]="apvFormasPagoFilters"
+              [filtersEnabled]="true"
+              [showExportAction]="true"
+              [maxItems]="8"
+              gridHeight="100%"
+              [persistenceKey]="gridPersistenceKeyApvPago"
+              emptyTitle="No hay registros para el periodo seleccionado"
+              emptyDescription="Sin formas de pago APV en catálogo."
+              (refresh)="refresh?.()"
+            ></app-data-grid>
+          </section>
+        }
+      </div>
     </section>
   `,
 })
 export class ParametrosReformaTabComponent {
+  readonly reformaInnerTabs = [
+    { id: 'legales' as const, label: 'Legales' },
+    { id: 'aportes' as const, label: 'Aportes' },
+    { id: 'trabPesados' as const, label: 'Trab. pesados' },
+    { id: 'apvInst' as const, label: 'APV inst.' },
+    { id: 'apvPago' as const, label: 'APV pago' },
+  ];
+
+  readonly activeSub = signal<ReformaSubId>('legales');
+
   @Input({ required: true }) reformaPensiones!: ParametroLegal[];
   @Input({ required: true }) reformaPrevisional!: ReformaPrevisionalParametro[];
   @Input({ required: true }) trabajosPesados!: TrabajoPesadoParametro[];
@@ -127,11 +165,16 @@ export class ParametrosReformaTabComponent {
   @Input({ required: true }) apvFormasPagoColumns!: DataGridColumn<ApvApvcFormaPago>[];
 
   @Input() loading = false;
+  @Input() gridPersistenceKeyLegal = 'parametros.reforma-legal.dg';
+  @Input() gridPersistenceKeyPrevisional = 'parametros.reforma-previsional.dg';
+  @Input() gridPersistenceKeyTrabPesados = 'parametros.trabajos-pesados.dg';
+  @Input() gridPersistenceKeyApvInst = 'parametros.apv-instituciones.dg';
+  @Input() gridPersistenceKeyApvPago = 'parametros.apv-formas-pago.dg';
   @Input() refresh: (() => void) | null = null;
 
   readonly parametrosLegalesFilters: DataGridFilter<ParametroLegal>[] = [
     {
-      id: 'periodo',
+      id: 'vigenciaInicio',
       label: 'Periodo',
       field: 'vigenciaInicio',
       type: 'text',
@@ -143,7 +186,7 @@ export class ParametrosReformaTabComponent {
 
   readonly reformaPrevisionalFilters: DataGridFilter<ReformaPrevisionalParametro>[] = [
     {
-      id: 'periodo',
+      id: 'vigenciaInicio',
       label: 'Periodo',
       field: 'vigenciaInicio',
       type: 'text',
@@ -155,7 +198,7 @@ export class ParametrosReformaTabComponent {
 
   readonly trabajosPesadosFilters: DataGridFilter<TrabajoPesadoParametro>[] = [
     {
-      id: 'periodo',
+      id: 'vigenciaInicio',
       label: 'Periodo',
       field: 'vigenciaInicio',
       type: 'text',
@@ -224,5 +267,11 @@ export class ParametrosReformaTabComponent {
       ],
     },
   ];
-}
 
+  setSub(id: string): void {
+    const allowed: ReformaSubId[] = ['legales', 'aportes', 'trabPesados', 'apvInst', 'apvPago'];
+    if (allowed.includes(id as ReformaSubId)) {
+      this.activeSub.set(id as ReformaSubId);
+    }
+  }
+}

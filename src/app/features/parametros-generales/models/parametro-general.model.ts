@@ -1,13 +1,11 @@
 export type ParametrosTabId =
   | 'valores'
   | 'remuneraciones'
-  | 'ccafConfig'
-  | 'ccafLista'
-  | 'mutualesLey'
+  | 'ccafMutual'
   | 'tramosCarga'
-  | 'tramosRenta'
-  | 'isapre'
-  | 'afp'
+  | 'impuestoUnico'
+  | 'salud'
+  | 'prevision'
   | 'reforma';
 
 export interface ParametrosGeneralesFiltro {
@@ -65,6 +63,8 @@ export interface AfpParametro {
   idAfp: number;
   codigo: string | null;
   nombre: string;
+  /** YYYY-MM alineado a vigencia; NULL = catálogo global. */
+  periodo: string | null;
   tasaObligatoria: number | null;
   comision: number | null;
   sis: number | null;
@@ -80,6 +80,7 @@ export interface IsapreParametro {
   nombre: string;
   tipo: string | null;
   porcentajeCotizacion: number | null;
+  periodo: string | null;
   vigente: boolean;
   vigenciaInicio: string | null;
   vigenciaFin: string | null;
@@ -112,6 +113,8 @@ export interface TablaImpuestoUnicoParametro {
   rebaja: number;
   vigenciaInicio: string;
   vigenciaFin: string | null;
+  /** YYYY-MM derivado de vigencia_inicio en BD. */
+  periodo?: string;
 }
 
 export interface ParametroLegal {
@@ -119,6 +122,7 @@ export interface ParametroLegal {
   nombre: string;
   valorDecimal: number | null;
   valorEntero: number | null;
+  periodo: string | null;
   vigenciaInicio: string;
   vigenciaFin: string | null;
 }
@@ -130,6 +134,7 @@ export interface AfcParametro {
   aplicaTrabajador: boolean;
   tasaTrabajador: number;
   tasaEmpleador: number;
+  periodo: string | null;
   vigenciaInicio: string;
   vigenciaFin: string | null;
   observacion: string | null;
@@ -138,6 +143,7 @@ export interface AfcParametro {
 export interface TrabajoPesadoParametro {
   idTrabajoPesadoParametro: number;
   codigo: string;
+  periodo: string;
   nombre: string;
   tasaTrabajador: number;
   tasaEmpleador: number;
@@ -151,6 +157,7 @@ export interface TrabajoPesadoParametro {
 
 export interface ReformaPrevisionalParametro {
   idReformaPrevisionalParametro: number;
+  periodo: string | null;
   vigenciaInicio: string;
   vigenciaFin: string | null;
   aporteEmpleadorTotal: number;
@@ -162,6 +169,7 @@ export interface ReformaPrevisionalParametro {
 export interface Ley16744Parametro {
   idLey16744Parametro: number;
   codigo: string;
+  periodo: string;
   cotizacionBasicaEmpleador: number;
   descripcionTasaAdicional: string | null;
   fuenteFinanciamiento: string | null;
@@ -177,6 +185,7 @@ export interface OrganismoLey16744 {
   nombre: string;
   tipo: string;
   vigente: boolean;
+  periodo: string | null;
 }
 
 export interface CcafEntidad {
@@ -185,6 +194,7 @@ export interface CcafEntidad {
   nombre: string;
   vigente: boolean;
   fuente: string | null;
+  periodo: string | null;
 }
 
 export interface ApvApvcInstitucion {
@@ -192,6 +202,7 @@ export interface ApvApvcInstitucion {
   codigo: string | null;
   nombre: string;
   vigente: boolean;
+  periodo: string | null;
 }
 
 export interface ApvApvcFormaPago {
@@ -199,6 +210,7 @@ export interface ApvApvcFormaPago {
   codigo: string | null;
   nombre: string;
   vigente: boolean;
+  periodo: string | null;
 }
 
 export interface ParametrosGeneralesCatalogos {
