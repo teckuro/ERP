@@ -105,7 +105,145 @@ import { FormGroup, ReactiveFormsModule } from '@angular/forms';
         </div>
       </section>
 
-      <ng-content></ng-content>
+      <section class="param-group" aria-labelledby="sis-title">
+        <h2 id="sis-title">Cotizaciones Empleador</h2>
+        <div class="field-grid field-grid--sis">
+          <label class="param-field">
+            <span>SIS</span>
+            <span class="unit-field unit-field--suffix" data-unit="%">
+              <input class="param-input text-right" type="number" step="0.001" formControlName="sis" [readonly]="!editable" />
+            </span>
+          </label>
+
+          <label class="param-field">
+            <span>SANNA</span>
+            <span class="unit-field unit-field--suffix" data-unit="%">
+              <input class="param-input text-right" type="number" step="0.001" formControlName="sanna" [readonly]="!editable" />
+            </span>
+          </label>
+
+          <label class="param-field">
+            <span>Seguro social expectativa de vida</span>
+            <span class="unit-field unit-field--suffix" data-unit="%">
+              <input
+                class="param-input text-right"
+                type="number"
+                step="0.001"
+                formControlName="seguroSocialExpectativaVida"
+                [readonly]="!editable"
+              />
+            </span>
+          </label>
+
+          <label class="param-field">
+            <span>Aporte empleador AFP</span>
+            <span class="unit-field unit-field--suffix" data-unit="%">
+              <input class="param-input text-right" type="number" step="0.001" formControlName="aporteEmpleadorAfp" [readonly]="!editable" />
+            </span>
+          </label>
+        </div>
+      </section>
+
+      <section class="param-group" aria-labelledby="topes-title">
+        <h2 id="topes-title">Topes</h2>
+        <div class="field-grid field-grid--topes">
+          <label class="param-field">
+            <span>AFP UF</span>
+            <span class="unit-field unit-field--suffix" data-unit="UF">
+              <input class="param-input text-right" type="number" step="0.01" formControlName="topeAfpUf" [readonly]="!editable" />
+            </span>
+          </label>
+
+          <label class="param-field">
+            <span>AFP pesos</span>
+            <span class="unit-field unit-field--suffix" data-unit="$">
+              <input class="param-input text-right" type="number" step="1" formControlName="topeAfp" [readonly]="!editable" />
+            </span>
+          </label>
+
+          <label class="param-field">
+            <span>IPS UF</span>
+            <span class="unit-field unit-field--suffix" data-unit="UF">
+              <input class="param-input text-right" type="number" step="0.01" formControlName="topeIpsUf" [readonly]="!editable" />
+            </span>
+          </label>
+
+          <label class="param-field">
+            <span>IPS pesos</span>
+            <span class="unit-field unit-field--suffix" data-unit="$">
+              <input class="param-input text-right" type="number" step="1" formControlName="topeIps" [readonly]="!editable" />
+            </span>
+          </label>
+
+          <label class="param-field">
+            <span>Cesantia UF</span>
+            <span class="unit-field unit-field--suffix" data-unit="UF">
+              <input class="param-input text-right" type="number" step="0.01" formControlName="topeCesantiaUf" [readonly]="!editable" />
+            </span>
+          </label>
+
+          <label class="param-field">
+            <span>Cesantia pesos</span>
+            <span class="unit-field unit-field--suffix" data-unit="$">
+              <input class="param-input text-right" type="number" step="1" formControlName="topeCesantia" [readonly]="!editable" />
+            </span>
+          </label>
+
+          <label class="param-field">
+            <span>APV mensual UF</span>
+            <span class="unit-field unit-field--suffix" data-unit="UF">
+              <input class="param-input text-right" type="number" step="0.01" formControlName="topeApvMensualUf" [readonly]="!editable" />
+            </span>
+          </label>
+
+          <label class="param-field">
+            <span>APV mensual pesos</span>
+            <span class="unit-field unit-field--suffix" data-unit="$">
+              <input class="param-input text-right" type="number" step="1" formControlName="topeApvMensual" [readonly]="!editable" />
+            </span>
+          </label>
+
+          <label class="param-field">
+            <span>APV anual UF</span>
+            <span class="unit-field unit-field--suffix" data-unit="UF">
+              <input class="param-input text-right" type="number" step="0.01" formControlName="topeApvAnualUf" [readonly]="!editable" />
+            </span>
+          </label>
+
+          <label class="param-field">
+            <span>APV anual pesos</span>
+            <span class="unit-field unit-field--suffix" data-unit="$">
+              <input class="param-input text-right" type="number" step="1" formControlName="topeApvAnual" [readonly]="!editable" />
+            </span>
+          </label>
+
+          <label class="param-field">
+            <span>Deposito convenido anual UF</span>
+            <span class="unit-field unit-field--suffix" data-unit="UF">
+              <input
+                class="param-input text-right"
+                type="number"
+                step="0.01"
+                formControlName="topeDepositoConvenidoAnualUf"
+                [readonly]="!editable"
+              />
+            </span>
+          </label>
+
+          <label class="param-field">
+            <span>Deposito convenido anual pesos</span>
+            <span class="unit-field unit-field--suffix" data-unit="$">
+              <input
+                class="param-input text-right"
+                type="number"
+                step="1"
+                formControlName="topeDepositoConvenidoAnual"
+                [readonly]="!editable"
+              />
+            </span>
+          </label>
+        </div>
+      </section>
 
       <section class="param-group" aria-labelledby="salud-title">
         <h2 id="salud-title">Salud</h2>
