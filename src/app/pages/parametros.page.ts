@@ -560,12 +560,6 @@ interface MonthOption {
         }
       }
 
-      .parametros-page .tab-panel.parametros-form {
-        box-sizing: border-box;
-        max-width: min(56rem, 100%);
-        margin-inline: auto;
-      }
-
       .parametros-form {
         align-content: start;
         gap: 14px;

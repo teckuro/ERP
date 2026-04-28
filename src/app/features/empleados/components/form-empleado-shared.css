@@ -22,19 +22,17 @@
 
 .employee-section-shell {
   display: grid;
-  gap: 18px;
-  padding-top: 2px;
+  gap: 16px;
 }
 
 .employee-section-shell--compact {
-  margin-top: 8px;
+  margin-top: 12px;
 }
 
 .employee-section-head {
   display: grid;
-  gap: 0.45rem;
-  padding: 0.15rem 0 0.55rem;
-  border-bottom: 1px solid var(--form-border);
+  gap: 0.35rem;
+  padding: 0.1rem 0 0.35rem;
 }
 
 .employee-section-kicker {
