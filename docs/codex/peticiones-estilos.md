@@ -3,6 +3,10 @@
 Registro cronológico de mejoras visuales aplicadas por petición, con foco en **trazabilidad** (qué se tocó y dónde),
 sin mezclarlo con las reglas base.
 
+### 2026-04-28 (listado empleados)
+
+- **Tabla listado**: `filtersEnabled=false` en `tabla-empleados.html` (sin barra global de busqueda/filtros del DataGrid; coincide con pedido original).
+
 ### 2026-04-28 (seguimiento)
 
 - **Alta de colaborador (form-empleado, `styles.css` global)**:

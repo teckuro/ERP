@@ -3,7 +3,7 @@
   [columns]="columns"
   [rows]="empleados"
   [filters]="filters"
-  [filtersEnabled]="true"
+  [filtersEnabled]="false"
   [gridHeight]="'100%'"
   [maxItems]="maxItems"
   [loading]="loading"
@@ -26,7 +26,7 @@
   (retry)="refresh.emit()"
   (refresh)="refresh.emit()"
   emptyTitle="No se encontraron empleados"
-  emptyDescription="Prueba ajustando la busqueda o los filtros."
+  emptyDescription="Aun no hay registros para mostrar en el listado."
 >
   <ng-template appDataGridCell="nombre" let-empleado>
     <div class="employee-name-cell" [title]="empleado.nombre">
