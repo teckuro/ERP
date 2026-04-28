@@ -43,7 +43,7 @@
             variant="success"
             title="Ficha registrada"
             [message]="message"
-            primaryLabel="Aceptar"
+            [primaryLabel]="successModalPrimaryLabel()"
             (action)="handleSuccessAction()"
           >
             @if (createdEmployeeId(); as createdId) {

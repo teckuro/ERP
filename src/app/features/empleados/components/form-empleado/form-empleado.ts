@@ -268,14 +268,6 @@ export class FormEmpleadoComponent implements OnInit {
   }
 
   handleSuccessAction(): void {
-    if (this.isBasicMode() && this.createdEmployeeId()) {
-      const id = this.createdEmployeeId();
-      this.successMessage.set(null);
-      this.createdEmployeeId.set(null);
-      void this.router.navigate(['/empleados', id], { queryParams: { modo: 'avanzado' } });
-      return;
-    }
-
     this.goToEmployeeList();
   }
 
@@ -298,6 +290,11 @@ export class FormEmpleadoComponent implements OnInit {
   /** En alta avanzada el guardado va en el pie ("Finalizar alta"); el header solo debe permitir volver. */
   headerVisibleActions(): readonly ('back' | 'save')[] {
     return this.isAdvancedMode() ? (['back'] as const) : (['back', 'save'] as const);
+  }
+
+  /** Modal de exito: texto del boton principal (basico -> Ir al listado). */
+  successModalPrimaryLabel(): string {
+    return this.isBasicMode() ? 'Ir al listado' : 'Aceptar';
   }
 
   goToPreviousTab(): void {
