@@ -148,37 +148,18 @@ export class DataGridCellDirective<T = unknown> {
 @Component({
   selector: 'app-data-grid',
   standalone: true,
-  imports: [CommonModule, FormsModule, LucideAngularModule, CardComponent, CalendarInputComponent, MessageBoxComponent],
+  imports: [
+    CommonModule,
+    FormsModule,
+    LucideAngularModule,
+    CardComponent,
+    CalendarInputComponent,
+    MessageBoxComponent,
+  ],
   template: `
     <app-card [className]="gridCardClass" [ngStyle]="gridCardStyle">
       @if (filtersEnabled && showFilters) {
         <div class="data-grid-filter-panel border-b border-neutral-200 bg-white px-4 py-3">
-          @if (activeFilterChips.length > 0) {
-            <div class="mb-3 flex flex-col gap-2 lg:flex-row lg:items-center lg:justify-end">
-              <div class="data-grid-filter-chips" aria-label="Filtros activos">
-                @for (chip of activeFilterChips; track chip.id) {
-                  <button
-                    type="button"
-                    class="data-grid-filter-chip"
-                    [attr.aria-label]="'Quitar filtro ' + chip.label"
-                    (click)="removeFilterChip(chip.id)"
-                  >
-                    <span class="data-grid-filter-chip__label">{{ chip.label }}</span>
-                    <span class="data-grid-filter-chip__value">{{ chip.value }}</span>
-                    <lucide-icon class="h-3 w-3" [img]="clearIcon"></lucide-icon>
-                  </button>
-                }
-                <button
-                  type="button"
-                  class="data-grid-filter-chips__clear-all"
-                  (click)="clearAllFilters()"
-                >
-                  Limpiar todo
-                </button>
-              </div>
-            </div>
-          }
-
           <div class="flex flex-col gap-3 xl:flex-row xl:items-start xl:justify-between">
             <div class="min-w-0 flex-1">
               <div class="data-grid-filter-grid" [ngStyle]="filterGridStyle">
@@ -194,16 +175,14 @@ export class DataGridCellDirective<T = unknown> {
                           [ngModel]="filterDateRangeValue(filter, 'from')"
                           (ngModelChange)="updateDateRangeFilterValue(filter, 'from', $event)"
                           [max]="filterDateRangeValue(filter, 'to')"
-                          [insetLabel]="'Desde'"
-                          placeholder="dd/mm/aaaa"
+                          placeholder="Desde dd/mm/aaaa"
                         ></app-calendar-input>
                         <app-calendar-input
                           class="data-grid-filter-range-slot"
                           [ngModel]="filterDateRangeValue(filter, 'to')"
                           (ngModelChange)="updateDateRangeFilterValue(filter, 'to', $event)"
                           [min]="filterDateRangeValue(filter, 'from')"
-                          [insetLabel]="'Hasta'"
-                          placeholder="dd/mm/aaaa"
+                          placeholder="Hasta dd/mm/aaaa"
                         ></app-calendar-input>
                       </div>
                     } @else if (isDateFilter(filter)) {
@@ -214,7 +193,7 @@ export class DataGridCellDirective<T = unknown> {
                       ></app-calendar-input>
                     } @else if (isSelectFilter(filter)) {
                       <select
-                        class="h-8 w-full min-w-0 rounded-lg border border-slate-200 bg-white px-2.5 text-left text-[0.74rem] font-medium text-slate-700 shadow-[0_1px_2px_rgba(15,23,42,0.04)] outline-none transition hover:border-slate-300 hover:bg-slate-50 focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-100"
+                        class="data-grid-filter-control"
                         [value]="filterTextValue(filter)"
                         (change)="updateFilterValue(filter, $event)"
                       >
@@ -226,7 +205,7 @@ export class DataGridCellDirective<T = unknown> {
                     } @else {
                       <input
                         type="text"
-                        class="h-8 w-full min-w-0 rounded-lg border border-slate-200 bg-white px-2.5 text-left text-[0.74rem] font-medium text-slate-700 shadow-[0_1px_2px_rgba(15,23,42,0.04)] outline-none transition hover:border-slate-300 hover:bg-slate-50 focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-100"
+                        class="data-grid-filter-control"
                         [value]="filterTextValue(filter)"
                         [placeholder]="filterPlaceholder(filter)"
                         (input)="updateFilterValue(filter, $event)"
@@ -237,10 +216,10 @@ export class DataGridCellDirective<T = unknown> {
               </div>
             </div>
 
-            <div class="flex shrink-0 items-center justify-end gap-2 self-end pb-0.5 xl:pl-3">
+            <div class="data-grid-filter-actions flex shrink-0 items-center justify-end gap-2 self-end pb-0.5 xl:pl-3">
               <button
                 type="button"
-                class="inline-flex h-8 items-center justify-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 text-[0.72rem] font-medium text-slate-600 transition hover:border-slate-300 hover:bg-slate-50 hover:text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+                class="data-grid-filter-action"
                 (click)="clearAllFilters()"
               >
                 <lucide-icon class="h-3.5 w-3.5" [img]="clearIcon"></lucide-icon>
@@ -248,7 +227,7 @@ export class DataGridCellDirective<T = unknown> {
               </button>
               <button
                 type="button"
-                class="inline-flex h-8 items-center justify-center gap-1.5 rounded-lg border border-blue-600 bg-blue-600 px-3.5 text-[0.72rem] font-medium text-white shadow-[0_6px_16px_rgba(37,99,235,0.18)] transition-colors hover:border-blue-700 hover:bg-blue-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
+                class="data-grid-filter-action data-grid-filter-action--primary"
                 (click)="applyFilters()"
               >
                 <lucide-icon class="h-3.5 w-3.5" [img]="searchIcon"></lucide-icon>
@@ -256,6 +235,25 @@ export class DataGridCellDirective<T = unknown> {
               </button>
             </div>
           </div>
+
+          @if (activeFilterChips.length > 0) {
+            <div class="data-grid-filter-chips-row mt-3 flex w-full min-w-0 flex-col gap-2 lg:flex-row lg:items-center lg:justify-start">
+              <div class="data-grid-filter-chips" aria-label="Filtros activos">
+                @for (chip of activeFilterChips; track chip.id) {
+                  <button
+                    type="button"
+                    class="data-grid-filter-chip"
+                    [attr.aria-label]="'Quitar filtro ' + chip.label"
+                    (click)="removeFilterChip(chip.id)"
+                  >
+                    <span class="data-grid-filter-chip__label">{{ chip.label }}</span>
+                    <span class="data-grid-filter-chip__value">{{ chip.value }}</span>
+                    <lucide-icon class="h-3 w-3" [img]="clearIcon"></lucide-icon>
+                  </button>
+                }
+              </div>
+            </div>
+          }
         </div>
       }
 
@@ -971,20 +969,123 @@ export class DataGridCellDirective<T = unknown> {
         align-items: end;
       }
 
+      .data-grid-filter-panel {
+        --data-grid-filter-h: var(--erp-control-height, 22px);
+      }
+
+      .data-grid-filter-control {
+        box-sizing: border-box;
+        width: 100%;
+        min-width: 0;
+        height: var(--data-grid-filter-h);
+        max-height: var(--data-grid-filter-h);
+        min-height: var(--data-grid-filter-h);
+        margin: 0;
+        border: 1px solid #e2e8f0;
+        border-radius: 0.5rem;
+        background: #ffffff;
+        padding: 0 0.625rem;
+        color: #334155;
+        font-size: 0.74rem;
+        font-weight: 500;
+        line-height: 1;
+        box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+        outline: none;
+        transition:
+          border-color 150ms ease,
+          background-color 150ms ease,
+          box-shadow 150ms ease;
+      }
+
+      .data-grid-filter-control::placeholder {
+        color: #94a3b8;
+      }
+
+      .data-grid-filter-control:hover {
+        border-color: #cbd5e1;
+        background: #f8fafc;
+      }
+
+      .data-grid-filter-control:focus {
+        border-color: #3b82f6;
+        background: #ffffff;
+        box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.18);
+      }
+
+      select.data-grid-filter-control {
+        cursor: pointer;
+      }
+
+      .data-grid-filter-action {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.375rem;
+        box-sizing: border-box;
+        height: var(--data-grid-filter-h);
+        max-height: var(--data-grid-filter-h);
+        min-height: var(--data-grid-filter-h);
+        padding: 0 0.75rem;
+        border: 1px solid #cbd5e1;
+        border-radius: 0.5rem;
+        background: #ffffff;
+        color: #475569;
+        font-size: var(--data-grid-text-sm);
+        font-weight: 500;
+        line-height: 1;
+        cursor: pointer;
+        transition:
+          border-color 150ms ease,
+          background-color 150ms ease,
+          color 150ms ease,
+          box-shadow 150ms ease;
+      }
+
+      .data-grid-filter-action:hover {
+        border-color: #94a3b8;
+        background: #f8fafc;
+        color: #0f172a;
+      }
+
+      .data-grid-filter-action:focus-visible {
+        outline: none;
+        box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.35);
+      }
+
+      .data-grid-filter-action--primary {
+        border-color: #2563eb;
+        background: #2563eb;
+        color: #ffffff;
+        box-shadow: 0 6px 16px rgba(37, 99, 235, 0.18);
+      }
+
+      .data-grid-filter-action--primary:hover {
+        border-color: #1d4ed8;
+        background: #1d4ed8;
+        color: #ffffff;
+      }
+
+      :host ::ng-deep .data-grid-filter-panel app-calendar-input .calendar-field {
+        height: var(--data-grid-filter-h, 22px) !important;
+        min-height: var(--data-grid-filter-h, 22px) !important;
+        max-height: var(--data-grid-filter-h, 22px) !important;
+      }
+
       .data-grid-filter-chips {
         display: flex;
         min-width: 0;
-        flex: 1 1 auto;
+        width: 100%;
         flex-wrap: wrap;
         align-items: center;
-        justify-content: flex-end;
+        justify-content: flex-start;
         gap: 0.5rem;
       }
 
-      .data-grid-filter-chip,
-      .data-grid-filter-chips__clear-all {
+      .data-grid-filter-chip {
         display: inline-flex;
-        min-height: 1.75rem;
+        max-height: var(--data-grid-filter-h);
+        min-height: var(--data-grid-filter-h);
+        height: var(--data-grid-filter-h);
         align-items: center;
         gap: 0.35rem;
         border: 1px solid #e5e7eb;
@@ -994,13 +1095,13 @@ export class DataGridCellDirective<T = unknown> {
         color: #374151;
         font-size: var(--data-grid-text-sm);
         font-weight: 600;
+        line-height: 1;
         transition:
           background-color 150ms ease,
           border-color 150ms ease;
       }
 
-      .data-grid-filter-chip:hover,
-      .data-grid-filter-chips__clear-all:hover {
+      .data-grid-filter-chip:hover {
         border-color: #cbd5e1;
         background: #ffffff;
       }
@@ -1294,8 +1395,7 @@ export class DataGridCellDirective<T = unknown> {
           scrollbar-width: thin;
         }
 
-        .data-grid-filter-chip,
-        .data-grid-filter-chips__clear-all {
+        .data-grid-filter-chip {
           flex: 0 0 auto;
         }
 

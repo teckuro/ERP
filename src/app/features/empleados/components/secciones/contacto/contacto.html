@@ -82,16 +82,14 @@
               <span class="field-required" aria-hidden="true">*</span>
             }
           </div>
-          <select
+          <app-search-select
             id="empleado-comuna"
             formControlName="idComuna"
-            [class]="controlClass('idComuna')"
-          >
-            <option [ngValue]="null">Selecciona una comuna</option>
-            @for (comuna of comunas; track comuna.value) {
-              <option [ngValue]="comuna.value">{{ comuna.label }}</option>
-            }
-          </select>
+            placeholder="Selecciona una comuna"
+            searchPlaceholder="Buscar comuna"
+            [options]="comunas"
+            [invalid]="hasError('idComuna')"
+          ></app-search-select>
           @if (hasError('idComuna', 'required')) {
             <p class="field-message">La comuna es obligatoria.</p>
           } @else if (!comunas.length) {

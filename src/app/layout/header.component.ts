@@ -3,25 +3,28 @@ import { Component, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { LucideAngularModule } from 'lucide-angular';
 
+import {
+  SearchSelectComponent,
+  SearchSelectOption,
+} from '../shared/components/ui/search-select.component';
+
 @Component({
   selector: 'app-header',
   standalone: true,
-  imports: [CommonModule, FormsModule, LucideAngularModule],
+  imports: [CommonModule, FormsModule, LucideAngularModule, SearchSelectComponent],
   template: `
     <header class="fixed left-64 right-0 top-0 z-10 h-16 border-b border-gray-200 bg-white">
       <div class="flex h-full items-center justify-between px-6">
         <div class="flex items-center gap-2">
           <lucide-icon name="calendar" class="h-5 w-5 text-gray-500"></lucide-icon>
-          <select
+          <app-search-select
+            class="periodo-header-select min-w-[10rem]"
+            ariaLabel="Periodo activo"
             [(ngModel)]="selectedPeriod"
-            class="h-10 cursor-pointer rounded-md border border-gray-200 bg-white px-3 text-sm font-semibold text-gray-700 hover:border-gray-300 focus:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-100"
-            aria-label="Periodo activo"
-          >
-            <option>Abril 2026</option>
-            <option>Marzo 2026</option>
-            <option>Febrero 2026</option>
-            <option>Enero 2026</option>
-          </select>
+            [options]="periodoOptions"
+            searchPlaceholder="Buscar periodo"
+            placeholder="Periodo"
+          ></app-search-select>
         </div>
 
         <div class="flex items-center gap-4">
@@ -48,8 +51,26 @@ import { LucideAngularModule } from 'lucide-angular';
       </div>
     </header>
   `,
+  styles: [
+    `
+      ::ng-deep .periodo-header-select .select-field {
+        height: 2.5rem;
+        border-radius: 0.375rem;
+        padding: 0 0.75rem;
+        font-size: 0.875rem;
+        font-weight: 600;
+      }
+    `,
+  ],
 })
 export class HeaderComponent {
+  readonly periodoOptions: SearchSelectOption<string>[] = [
+    { value: 'Abril 2026', label: 'Abril 2026' },
+    { value: 'Marzo 2026', label: 'Marzo 2026' },
+    { value: 'Febrero 2026', label: 'Febrero 2026' },
+    { value: 'Enero 2026', label: 'Enero 2026' },
+  ];
+
   readonly selectedPeriodSignal = signal('Abril 2026');
 
   get selectedPeriod(): string {

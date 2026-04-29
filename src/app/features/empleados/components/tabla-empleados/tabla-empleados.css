@@ -314,8 +314,7 @@
   scrollbar-width: thin;
 }
 
-:host ::ng-deep app-data-grid.empleados-grid-shell .data-grid-filter-chip,
-:host ::ng-deep app-data-grid.empleados-grid-shell .data-grid-filter-chips__clear-all {
+:host ::ng-deep app-data-grid.empleados-grid-shell .data-grid-filter-chip {
   flex: 0 0 auto;
   white-space: nowrap;
 }

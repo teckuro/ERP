@@ -13,6 +13,7 @@ import {
   CardContentComponent,
   CardHeaderComponent,
 } from '../../../../../shared/components/ui/card.component';
+import { SearchSelectComponent } from '../../../../../shared/components/ui/search-select.component';
 import { LucideAngularModule } from 'lucide-angular';
 
 type PrevisionSaludControlName = keyof PrevisionSaludFormGroup['controls'];
@@ -24,6 +25,7 @@ type PrevisionSaludControlName = keyof PrevisionSaludFormGroup['controls'];
     CardComponent,
     CardContentComponent,
     CardHeaderComponent,
+    SearchSelectComponent,
   ],
   templateUrl: './prevision-salud.html',
   styleUrl: './prevision-salud.css',

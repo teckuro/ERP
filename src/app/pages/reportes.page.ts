@@ -14,6 +14,10 @@ import {
   TabsListComponent,
   TabsTriggerDirective,
 } from '../shared/components/ui/tabs.component';
+import {
+  SearchSelectComponent,
+  SearchSelectOption,
+} from '../shared/components/ui/search-select.component';
 
 @Component({
   selector: 'app-reportes-page',
@@ -31,6 +35,7 @@ import {
     TabsListComponent,
     TabsTriggerDirective,
     TabsContentDirective,
+    SearchSelectComponent,
   ],
   template: `
     <div class="space-y-6">
@@ -47,15 +52,13 @@ import {
             <lucide-icon class="w-5 h-5 text-gray-500" name="calendar"></lucide-icon>
             <div class="flex-1">
               <label class="block text-sm font-medium text-gray-700 mb-2">Periodo a Generar</label>
-              <select
+              <app-search-select
+                class="reportes-periodo-select w-full max-w-xs"
                 [(ngModel)]="periodo"
-                class="w-full max-w-xs px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                <option>Abril 2026</option>
-                <option>Marzo 2026</option>
-                <option>Febrero 2026</option>
-                <option>Enero 2026</option>
-              </select>
+                [options]="periodoOpcionesReportes"
+                searchPlaceholder="Buscar periodo"
+                placeholder="Periodo"
+              ></app-search-select>
             </div>
           </div>
         </app-card-content>
@@ -217,6 +220,13 @@ import {
 })
 export class ReportesPage {
   periodo = 'Abril 2026';
+
+  readonly periodoOpcionesReportes: SearchSelectOption<string>[] = [
+    { value: 'Abril 2026', label: 'Abril 2026' },
+    { value: 'Marzo 2026', label: 'Marzo 2026' },
+    { value: 'Febrero 2026', label: 'Febrero 2026' },
+    { value: 'Enero 2026', label: 'Enero 2026' },
+  ];
 
   private readonly reportes = signal<Reporte[]>([
     {

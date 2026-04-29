@@ -9,7 +9,14 @@ import { ButtonComponent } from '../shared/components/ui/button.component';
   selector: 'app-licencias-medicas-page',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, LucideAngularModule, CardComponent, CardContentComponent, BadgeComponent, ButtonComponent],
+  imports: [
+    CommonModule,
+    LucideAngularModule,
+    CardComponent,
+    CardContentComponent,
+    BadgeComponent,
+    ButtonComponent,
+  ],
   template: `
     <div class="space-y-6">
       <!-- Header -->
@@ -181,7 +188,9 @@ import { ButtonComponent } from '../shared/components/ui/button.component';
             <div class="p-6 space-y-4">
               <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">Empleado</label>
-                <select class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <select
+                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
                   <option>Seleccionar empleado...</option>
                   <option>Juan Pérez González</option>
                   <option>María Rodríguez Silva</option>
@@ -192,7 +201,9 @@ import { ButtonComponent } from '../shared/components/ui/button.component';
               <div class="grid grid-cols-2 gap-4">
                 <div>
                   <label class="block text-sm font-medium text-gray-700 mb-2">Tipo de Licencia</label>
-                  <select class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                  <select
+                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
                     <option value="reposo">Reposo</option>
                     <option value="maternal">Maternal</option>
                     <option value="paternal">Paternal</option>

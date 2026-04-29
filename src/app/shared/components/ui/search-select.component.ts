@@ -4,17 +4,34 @@ import {
   Component,
   ElementRef,
   EventEmitter,
+  HostBinding,
   HostListener,
   Input,
+  Injector,
   OnDestroy,
   Output,
   ViewChild,
+  afterNextRender,
   forwardRef,
   inject,
 } from '@angular/core';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { LucideAngularModule } from 'lucide-angular';
 import { Check, ChevronDown, Search, X } from 'lucide-angular/src/icons';
+
+import {
+  autoUpdate,
+  computePosition,
+  flip,
+  offset,
+  shift,
+  size,
+} from '@floating-ui/dom';
+
+/** Enfoca sin `scrollIntoView` implícito (evita saltos del scroll del contenedor o de la página). */
+function focusWithoutScroll(element: HTMLElement | null): void {
+  element?.focus({ preventScroll: true });
+}
 
 export type SearchSelectValue = string | number | null;
 
@@ -39,6 +56,7 @@ export interface SearchSelectOption<T extends SearchSelectValue = SearchSelectVa
   template: `
     <div class="select-root" [class.is-disabled]="disabled">
       <button
+        #selectField
         type="button"
         class="select-field"
         [id]="id"
@@ -69,11 +87,12 @@ export interface SearchSelectOption<T extends SearchSelectValue = SearchSelectVa
 
       @if (open) {
         <div
+          #selectPanel
           class="select-panel"
           [class.opens-above]="panelOpenAbove"
           role="listbox"
           [attr.aria-label]="placeholder"
-          [style.visibility]="panelReady ? 'visible' : 'hidden'"
+          [style.visibility]="floatingLayoutDone ? 'visible' : 'hidden'"
         >
           <div class="select-search">
             <lucide-icon [img]="searchIcon"></lucide-icon>
@@ -105,7 +124,7 @@ export interface SearchSelectOption<T extends SearchSelectValue = SearchSelectVa
             }
           </div>
 
-          <div class="select-options" [style.max-height.px]="panelOptionsMaxHeight">
+          <div class="select-options">
             @for (option of filteredOptions; track option.value) {
               <button
                 type="button"
@@ -139,18 +158,32 @@ export interface SearchSelectOption<T extends SearchSelectValue = SearchSelectVa
   `,
   styles: [
     `
+      /*
+       * Tokens ERP (docs/codex/ui-form-guidelines.md): respaldo si el arbol no hereda :root;
+       * alineacion con inputs/calendar (~22px alto).
+       */
       :host {
         display: block;
+        box-sizing: border-box;
         width: 100%;
+        font-family: var(--erp-font-sans, inherit);
+        --erp-control-height: 22px;
+        --erp-field-min-width: 190px;
+        --erp-text-sm: 0.72rem;
+        --erp-select-panel-z: 11060;
+        --erp-select-host-z-open: 120;
       }
 
-      :host:has(.select-field.is-open) {
-        position: relative;
-        z-index: 120;
+      /**
+       * Al abrir, el host sube en el stacking context (encima de celdas vecinas / filas del grid)
+       * sin depender del panel (que va con position:fixed controlada por Floating UI).
+       */
+      :host.select-panel-host-open {
+        isolation: isolate;
+        z-index: var(--erp-select-host-z-open);
       }
 
       .select-root {
-        position: relative;
         width: 100%;
       }
 
@@ -238,14 +271,13 @@ export interface SearchSelectOption<T extends SearchSelectValue = SearchSelectVa
       }
 
       .select-panel {
-        position: absolute;
-        top: calc(100% + 4px);
-        right: 0;
-        left: 0;
-        z-index: 1000;
+        box-sizing: border-box;
         min-width: 0;
-        width: 100%;
         overflow: hidden;
+        pointer-events: auto;
+        z-index: var(--erp-select-panel-z);
+        transition: none;
+        animation: none;
         border: 1px solid #2563eb;
         border-radius: 0 0 6px 6px;
         background: #ffffff;
@@ -256,8 +288,6 @@ export interface SearchSelectOption<T extends SearchSelectValue = SearchSelectVa
       }
 
       .select-panel.opens-above {
-        top: auto;
-        bottom: calc(100% + 4px);
         border-radius: 6px 6px 0 0;
         box-shadow:
           0 -1px 0 #2563eb inset,
@@ -433,10 +463,22 @@ export class SearchSelectComponent implements ControlValueAccessor, OnDestroy {
 
   private readonly host = inject(ElementRef<HTMLElement>);
   private readonly cdr = inject(ChangeDetectorRef);
+  private readonly injector = inject(Injector);
   private readonly inputId = SearchSelectComponent.nextInputId++;
+
+  @HostBinding('class.select-panel-host-open')
+  protected get selectPanelHostOpen(): boolean {
+    return this.open;
+  }
 
   @ViewChild('searchInput')
   private readonly searchInput?: ElementRef<HTMLInputElement>;
+
+  @ViewChild('selectField', { read: ElementRef })
+  private readonly selectFieldRef?: ElementRef<HTMLElement>;
+
+  @ViewChild('selectPanel', { read: ElementRef })
+  private readonly selectPanelRef?: ElementRef<HTMLElement>;
 
   @Input() id = '';
   @Input() ariaLabel = '';
@@ -456,19 +498,26 @@ export class SearchSelectComponent implements ControlValueAccessor, OnDestroy {
   readonly searchInputDomId = `search-select-search-${this.inputId}`;
   readonly searchInputDomName = `search-select-${this.inputId}-no-autofill`;
 
+  /** Reservado visual arriba de la zona scroll (búsqueda + meta): coherente con panelChrome histórico. */
+  private static readonly PANEL_ABOVE_OPTIONS_RESERVED_PX = 90;
+
   value: SearchSelectValue = null;
   searchTerm = '';
   open = false;
   disabled = false;
   activeIndex = 0;
-  panelOptionsMaxHeight = 216;
-  panelReady = false;
+  /** Oculta el panel hasta que la primera corrida de Floating UI fije ancho/posicion (evita flash y desalineacion). */
+  floatingLayoutDone = false;
   panelOpenAbove = false;
 
   private onChange: (value: SearchSelectValue) => void = () => undefined;
   private onTouched: () => void = () => undefined;
-  private readonly panelScrollListener = (event: Event) => this.closeOnExternalScroll(event);
-  private panelListenerTimeoutId = 0;
+
+  /** Limpieza devuelta por `autoUpdate` de Floating UI (scroll/resize/animaciones). */
+  private floatingDispose?: () => void;
+
+  /** Coalesce reflows al filtrar (evita ráfagas ResizeObserver ↔ autoUpdate). */
+  private searchLayoutFrameId = 0;
 
   @HostListener('document:click', ['$event'])
   closeOnOutsideClick(event: MouseEvent): void {
@@ -482,7 +531,42 @@ export class SearchSelectComponent implements ControlValueAccessor, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    this.detachPanelListeners();
+    this.cancelQueuedSearchLayout();
+    this.detachFloatingUi();
+  }
+
+  private cancelQueuedSearchLayout(): void {
+    if (this.searchLayoutFrameId !== 0) {
+      cancelAnimationFrame(this.searchLayoutFrameId);
+      this.searchLayoutFrameId = 0;
+    }
+  }
+
+  private getReferenceEl(): HTMLElement | null {
+    return (
+      this.selectFieldRef?.nativeElement ??
+      (this.host.nativeElement.querySelector('.select-field') as HTMLElement | null)
+    );
+  }
+
+  private getFloatingEl(): HTMLElement | null {
+    return (
+      this.selectPanelRef?.nativeElement ??
+      (this.host.nativeElement.querySelector('.select-panel') as HTMLElement | null)
+    );
+  }
+
+  /**
+   * Iguala el ancho del panel al boton disparador *antes* de flip/shift.
+   * Si el panel sigue con ancho "natural" o 100% del host, shift/flip miden mal y el panel queda desfasado.
+   */
+  private syncFloatingWidthToMatchReference(reference: HTMLElement, floating: HTMLElement): void {
+    const rw = reference.getBoundingClientRect().width;
+    const wCss = `${rw}px`;
+    floating.style.boxSizing = 'border-box';
+    floating.style.width = wCss;
+    floating.style.minWidth = wCss;
+    floating.style.maxWidth = wCss;
   }
 
   get selectedOption(): SearchSelectOption | null {
@@ -522,31 +606,41 @@ export class SearchSelectComponent implements ControlValueAccessor, OnDestroy {
       return;
     }
 
-    this.open ? this.closePanel() : this.openPanel();
+    this.open ? this.closePanel() : this.openPanel('click');
   }
 
-  openPanel(): void {
+  /**
+   * @param origin Clic en el campo: no enfocamos la búsqueda (evita scroll de la página / contenedor).
+   * Desde teclado (Enter/flechas): enfocamos con `preventScroll` para escritura rápida.
+   */
+  openPanel(origin: 'click' | 'keyboard' = 'keyboard'): void {
     if (this.disabled) {
       return;
     }
 
     this.open = true;
-    this.panelReady = false;
+    this.floatingLayoutDone = false;
     this.searchTerm = '';
     this.activeIndex = Math.max(
       0,
       this.filteredOptions.findIndex((option) => option.value === this.value),
     );
-    this.updatePanelPosition();
-    window.setTimeout(() => {
-      this.panelReady = true;
-      this.cdr.detectChanges();
-      this.updatePanelPosition();
-      this.cdr.detectChanges();
-      this.searchInput?.nativeElement.focus();
-      window.clearTimeout(this.panelListenerTimeoutId);
-      this.panelListenerTimeoutId = window.setTimeout(() => this.attachPanelListeners(), 80);
-    });
+
+    this.cdr.detectChanges();
+
+    afterNextRender(
+      () => {
+        if (!this.open || this.disabled) {
+          return;
+        }
+        this.attachFloatingUi();
+
+        if (origin === 'keyboard') {
+          requestAnimationFrame(() => focusWithoutScroll(this.searchInput?.nativeElement ?? null));
+        }
+      },
+      { injector: this.injector },
+    );
   }
 
   closePanel(): void {
@@ -554,21 +648,23 @@ export class SearchSelectComponent implements ControlValueAccessor, OnDestroy {
       return;
     }
 
+    this.cancelQueuedSearchLayout();
+    this.detachFloatingUi();
+
     this.open = false;
-    this.panelReady = false;
+    this.floatingLayoutDone = false;
     this.panelOpenAbove = false;
     this.searchTerm = '';
-    window.clearTimeout(this.panelListenerTimeoutId);
-    this.detachPanelListeners();
     this.onTouched();
   }
 
   updateSearch(event: Event): void {
     this.searchTerm = (event.target as HTMLInputElement).value;
     this.activeIndex = 0;
-    window.setTimeout(() => {
-      this.updatePanelPosition();
-      this.cdr.detectChanges();
+    this.cancelQueuedSearchLayout();
+    this.searchLayoutFrameId = requestAnimationFrame(() => {
+      this.searchLayoutFrameId = 0;
+      void this.runFloatingUpdate();
     });
   }
 
@@ -594,7 +690,7 @@ export class SearchSelectComponent implements ControlValueAccessor, OnDestroy {
   handleTriggerKeydown(event: KeyboardEvent): void {
     if (event.key === 'ArrowDown' || event.key === 'Enter' || event.key === ' ') {
       event.preventDefault();
-      this.openPanel();
+      this.openPanel('keyboard');
     }
   }
 
@@ -659,50 +755,133 @@ export class SearchSelectComponent implements ControlValueAccessor, OnDestroy {
     this.setActiveOption(options[nextEnabledIndex]);
   }
 
-  private updatePanelPosition(): void {
+  private attachFloatingUi(): void {
+    this.detachFloatingUi();
+
+    const reference = this.getReferenceEl();
+    const floating = this.getFloatingEl();
+
+    if (!reference || !floating || !this.open) {
+      return;
+    }
+
+    /** Ancho estable desde el primer frame (luego `size.apply` lo mantiene alineado a `rects.reference`). */
+    this.syncFloatingWidthToMatchReference(reference, floating);
+
+    this.floatingDispose = autoUpdate(
+      reference,
+      floating,
+      () => {
+        void this.runFloatingUpdate();
+      },
+      {
+        ancestorScroll: true,
+        ancestorResize: true,
+        elementResize: true,
+        layoutShift: false,
+        animationFrame: false,
+      },
+    );
+  }
+
+  private detachFloatingUi(): void {
+    this.floatingDispose?.();
+    this.floatingDispose = undefined;
+  }
+
+  private async runFloatingUpdate(): Promise<void> {
     if (!this.open) {
       return;
     }
 
-    const field = this.host.nativeElement.querySelector('.select-field') as HTMLElement | null;
+    const reference = this.getReferenceEl();
+    const floating = this.getFloatingEl();
 
-    if (!field) {
+    if (!reference || !floating) {
       return;
     }
 
-    const rect = field.getBoundingClientRect();
-    const viewportPadding = 8;
-    const panelChromeHeight = 82;
-    const preferredOptionsHeight = 216;
-    const preferredPanelHeight = panelChromeHeight + preferredOptionsHeight;
-    const spaceBelow = window.innerHeight - rect.bottom - viewportPadding;
-    const spaceAbove = rect.top - viewportPadding;
-    const openAbove = spaceBelow < preferredPanelHeight && spaceAbove > spaceBelow;
-    const availableHeight = Math.max(120, (openAbove ? spaceAbove : spaceBelow) - panelChromeHeight);
+    this.syncFloatingWidthToMatchReference(reference, floating);
 
-    this.panelOpenAbove = openAbove;
-    this.panelOptionsMaxHeight = Math.min(preferredOptionsHeight, availableHeight);
-  }
+    const reserved = SearchSelectComponent.PANEL_ABOVE_OPTIONS_RESERVED_PX;
+    const result = await computePosition(reference, floating, {
+      placement: 'bottom-start',
+      strategy: 'fixed',
+      middleware: [
+        offset(0),
+        flip({
+          fallbackPlacements: ['top-start'],
+        }),
+        shift({ padding: 8 }),
+        size({
+          padding: { top: 8, bottom: 8 },
+          apply({ availableHeight, elements, rects }) {
+            const wCss = `${rects.reference.width}px`;
+            const f = elements.floating;
+            f.style.boxSizing = 'border-box';
+            f.style.width = wCss;
+            f.style.minWidth = wCss;
+            f.style.maxWidth = wCss;
 
-  private attachPanelListeners(): void {
-    document.addEventListener('scroll', this.panelScrollListener, true);
-    window.addEventListener('resize', this.panelScrollListener);
-  }
+            const scrollArea = f.querySelector('.select-options') as HTMLElement | null;
 
-  private detachPanelListeners(): void {
-    document.removeEventListener('scroll', this.panelScrollListener, true);
-    window.removeEventListener('resize', this.panelScrollListener);
-  }
+            if (scrollArea && typeof availableHeight === 'number') {
+              const forOptions = Math.max(availableHeight - reserved, 0);
+              const mh = `${Math.max(96, Math.min(216, forOptions))}px`;
+              if (scrollArea.style.maxHeight !== mh) {
+                scrollArea.style.maxHeight = mh;
+              }
+            }
+          },
+        }),
+      ],
+    });
 
-  private closeOnExternalScroll(event: Event): void {
-    const target = event.target;
+    const x = Math.round(result.x);
+    const y = Math.round(result.y);
 
-    if (target instanceof Node && this.host.nativeElement.contains(target)) {
-      return;
+    const next = {
+      position: result.strategy,
+      transform: 'none',
+      left: `${x}px`,
+      top: `${y}px`,
+      right: 'auto',
+      bottom: 'auto',
+    } as const;
+
+    let mutated = false;
+
+    if (
+      floating.style.position !== next.position ||
+      floating.style.transform !== next.transform ||
+      floating.style.left !== next.left ||
+      floating.style.top !== next.top ||
+      floating.style.right !== next.right ||
+      floating.style.bottom !== next.bottom
+    ) {
+      floating.style.position = next.position;
+      floating.style.transform = next.transform;
+      floating.style.left = next.left;
+      floating.style.top = next.top;
+      floating.style.right = next.right;
+      floating.style.bottom = next.bottom;
+      mutated = true;
     }
 
-    this.closePanel();
-    this.cdr.detectChanges();
+    const openAboveNext = result.placement.startsWith('top');
+    if (this.panelOpenAbove !== openAboveNext) {
+      this.panelOpenAbove = openAboveNext;
+      mutated = true;
+    }
+
+    if (!this.floatingLayoutDone) {
+      this.floatingLayoutDone = true;
+      mutated = true;
+    }
+
+    if (mutated) {
+      this.cdr.markForCheck();
+    }
   }
 
   private normalizeText(value: string): string {

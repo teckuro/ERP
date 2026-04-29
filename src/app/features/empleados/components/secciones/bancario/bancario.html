@@ -21,12 +21,14 @@
           <span class="field-required" aria-hidden="true">*</span>
         }
       </div>
-      <select id="empleado-banco" formControlName="idBanco" [class]="controlClass('idBanco')">
-        <option [ngValue]="null">Selecciona un banco</option>
-        @for (option of bancos; track option.value) {
-          <option [ngValue]="option.value">{{ option.label }}</option>
-        }
-      </select>
+      <app-search-select
+        id="empleado-banco"
+        formControlName="idBanco"
+        placeholder="Selecciona un banco"
+        searchPlaceholder="Buscar banco"
+        [options]="bancos"
+        [invalid]="hasError('idBanco')"
+      ></app-search-select>
       @if (hasError('idBanco', 'required')) {
         <p class="field-message">El banco es obligatorio.</p>
       } @else {
@@ -41,16 +43,14 @@
           <span class="field-required" aria-hidden="true">*</span>
         }
       </div>
-      <select
+      <app-search-select
         id="empleado-tipo-cuenta"
         formControlName="idTipoCuentaBancaria"
-        [class]="controlClass('idTipoCuentaBancaria')"
-      >
-        <option [ngValue]="null">Selecciona un tipo de cuenta</option>
-        @for (option of tiposCuentaBancaria; track option.value) {
-          <option [ngValue]="option.value">{{ option.label }}</option>
-        }
-      </select>
+        placeholder="Selecciona un tipo de cuenta"
+        searchPlaceholder="Buscar tipo de cuenta"
+        [options]="tiposCuentaBancaria"
+        [invalid]="hasError('idTipoCuentaBancaria')"
+      ></app-search-select>
       @if (hasError('idTipoCuentaBancaria', 'required')) {
         <p class="field-message">El tipo de cuenta es obligatorio.</p>
       } @else {

@@ -4,12 +4,13 @@ import { ReactiveFormsModule, Validators } from '@angular/forms';
 import { EmpleadoCatalogOption } from '../../../models/empleado-catalogos.model';
 import { ContactoFormGroup } from '../../../models/empleado-form.model';
 import { CardComponent } from '../../../../../shared/components/ui/card.component';
+import { SearchSelectComponent } from '../../../../../shared/components/ui/search-select.component';
 
 type ContactoControlName = keyof ContactoFormGroup['controls'];
 
 @Component({
   selector: 'app-empleado-contacto',
-  imports: [ReactiveFormsModule, CardComponent],
+  imports: [ReactiveFormsModule, CardComponent, SearchSelectComponent],
   templateUrl: './contacto.html',
   styleUrl: './contacto.css',
 })

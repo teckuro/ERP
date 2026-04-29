@@ -36,16 +36,14 @@
             <span class="field-required" aria-hidden="true">*</span>
           }
         </div>
-        <select
+        <app-search-select
           id="empleado-tipo-trabajador"
           formControlName="idTipoTrabajador"
-          [class]="controlClass('idTipoTrabajador')"
-        >
-          <option [ngValue]="null">Selecciona un tipo</option>
-          @for (option of tiposTrabajador; track option.value) {
-            <option [ngValue]="option.value">{{ option.label }}</option>
-          }
-        </select>
+          placeholder="Selecciona un tipo"
+          searchPlaceholder="Buscar tipo trabajador"
+          [options]="tiposTrabajador"
+          [invalid]="hasError('idTipoTrabajador')"
+        ></app-search-select>
         @if (hasError('idTipoTrabajador', 'required')) {
           <p class="field-message">El tipo de trabajador es obligatorio.</p>
         } @else {
@@ -62,15 +60,14 @@
             <span class="field-required" aria-hidden="true">*</span>
           }
         </div>
-        <select
+        <app-search-select
           id="empleado-tipo-contrato"
           formControlName="tipoContrato"
-          [class]="controlClass('tipoContrato')"
-        >
-          @for (option of contractTypes; track option.value) {
-            <option [value]="option.value">{{ option.label }}</option>
-          }
-        </select>
+          placeholder="Tipo de contrato"
+          searchPlaceholder="Buscar tipo de contrato"
+          [options]="contractTypes"
+          [invalid]="hasError('tipoContrato')"
+        ></app-search-select>
         <p class="field-message"></p>
       </div>
 
@@ -176,16 +173,14 @@
             >Departamento</label
           >
         </div>
-        <select
+        <app-search-select
           id="empleado-departamento"
           formControlName="idDepartamentoEmpresa"
-          [class]="controlClass('idDepartamentoEmpresa')"
-        >
-          <option [ngValue]="null">Selecciona un departamento</option>
-          @for (option of departamentosFiltrados; track option.value) {
-            <option [ngValue]="option.value">{{ option.label }}</option>
-          }
-        </select>
+          placeholder="Selecciona un departamento"
+          searchPlaceholder="Buscar departamento"
+          [options]="departamentosFiltrados"
+          [invalid]="hasError('idDepartamentoEmpresa')"
+        ></app-search-select>
         @if (!departamentosFiltrados.length) {
           <p class="field-message field-message--warning">
             No hay departamentos para la sucursal seleccionada.
@@ -200,16 +195,14 @@
           <label for="empleado-sucursal">Sucursal</label>
           <span class="field-required" aria-hidden="true">*</span>
         </div>
-        <select
+        <app-search-select
           id="empleado-sucursal"
           formControlName="idSucursal"
-          [class]="controlClass('idSucursal')"
-        >
-          <option [ngValue]="null">Selecciona una sucursal</option>
-          @for (option of sucursales; track option.value) {
-            <option [ngValue]="option.value">{{ option.label }}</option>
-          }
-        </select>
+          placeholder="Selecciona una sucursal"
+          searchPlaceholder="Buscar sucursal"
+          [options]="sucursales"
+          [invalid]="hasError('idSucursal')"
+        ></app-search-select>
         <p class="field-message"></p>
       </div>
     </div>
@@ -233,16 +226,14 @@
             <span class="field-required" aria-hidden="true">*</span>
           }
         </div>
-        <select
+        <app-search-select
           id="empleado-tipo-jornada"
           formControlName="idTipoJornada"
-          [class]="controlClass('idTipoJornada')"
-        >
-          <option [ngValue]="null">Selecciona una jornada</option>
-          @for (option of tiposJornada; track option.value) {
-            <option [ngValue]="option.value">{{ option.label }}</option>
-          }
-        </select>
+          placeholder="Selecciona una jornada"
+          searchPlaceholder="Buscar jornada"
+          [options]="tiposJornada"
+          [invalid]="hasError('idTipoJornada')"
+        ></app-search-select>
         @if (hasError('idTipoJornada', 'required')) {
           <p class="field-message">El tipo de jornada es obligatorio.</p>
         } @else {
@@ -326,16 +317,14 @@
             >Moneda sueldo</label
           >
         </div>
-        <select
+        <app-search-select
           id="empleado-id-moneda"
           formControlName="idMoneda"
-          [class]="controlClass('idMoneda')"
-        >
-          <option [ngValue]="null">Selecciona una moneda</option>
-          @for (option of monedas; track option.value) {
-            <option [ngValue]="option.value">{{ option.label }}</option>
-          }
-        </select>
+          placeholder="Selecciona una moneda"
+          searchPlaceholder="Buscar moneda"
+          [options]="monedas"
+          [invalid]="hasError('idMoneda')"
+        ></app-search-select>
         <p class="field-message"></p>
       </div>
 
@@ -352,15 +341,14 @@
             <span class="field-required" aria-hidden="true">*</span>
           }
         </div>
-        <select
+        <app-search-select
           id="empleado-tipo-gratificacion"
           formControlName="tipoGratificacion"
-          [class]="controlClass('tipoGratificacion')"
-        >
-          @for (option of gratificationTypes; track option.value) {
-            <option [value]="option.value">{{ option.label }}</option>
-          }
-        </select>
+          placeholder="Gratificación"
+          searchPlaceholder="Buscar gratificación"
+          [options]="gratificationTypes"
+          [invalid]="hasError('tipoGratificacion')"
+        ></app-search-select>
         <p class="field-message"></p>
       </div>
 
@@ -455,21 +443,14 @@
         <div class="field-label-row">
           <label>Tramo asignado</label>
         </div>
-        <select
+        <app-search-select
           id="empleado-tramo-carga"
           formControlName="idTramoCarga"
-          [class]="controlClass('idTramoCarga')"
-        >
-          <option [ngValue]="null">Selecciona un tramo</option>
-          @for (tramo of tramosCarga; track tramo.value) {
-            <option [ngValue]="tramo.value">
-              {{ tramo.tramo || 'Nuevo Colaborador' }}
-              @if (tramo.desde !== null || tramo.hasta !== null) {
-                ({{ tramo.desde ?? 0 }} - {{ tramo.hasta ?? 'Sin tope' }})
-              }
-            </option>
-          }
-        </select>
+          placeholder="Selecciona un tramo"
+          searchPlaceholder="Buscar tramo"
+          [options]="tramosCargaOptions"
+          [invalid]="hasError('idTramoCarga')"
+        ></app-search-select>
         @if (periodoTramoVigente; as periodo) {
           <p class="field-message field-message--warning">Tabla vigente: {{ periodo }}</p>
         } @else {
@@ -617,16 +598,14 @@
             >Centro de costo</label
           >
         </div>
-        <select
+        <app-search-select
           id="empleado-centro-costo"
           formControlName="idCentroCosto"
-          [class]="controlClass('idCentroCosto')"
-        >
-          <option [ngValue]="null">Sin centro de costo</option>
-          @for (centroCosto of centrosCosto; track centroCosto.value) {
-            <option [ngValue]="centroCosto.value">{{ centroCosto.label }}</option>
-          }
-        </select>
+          placeholder="Sin centro de costo"
+          searchPlaceholder="Buscar centro de costo"
+          [options]="centrosCosto"
+          [invalid]="hasError('idCentroCosto')"
+        ></app-search-select>
         <p class="field-message"></p>
       </div>
 
@@ -659,11 +638,14 @@
             <span class="field-required" aria-hidden="true">*</span>
           }
         </div>
-        <select id="empleado-estado" formControlName="estado" [class]="controlClass('estado')">
-          @for (state of employeeStates; track state.value) {
-            <option [value]="state.value">{{ state.label }}</option>
-          }
-        </select>
+        <app-search-select
+          id="empleado-estado"
+          formControlName="estado"
+          placeholder="Estado inicial"
+          searchPlaceholder="Buscar estado"
+          [options]="employeeStates"
+          [invalid]="hasError('estado')"
+        ></app-search-select>
         <p class="field-message"></p>
       </div>
     </div>

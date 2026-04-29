@@ -25,16 +25,14 @@
                 <span class="field-required" aria-hidden="true">*</span>
               }
             </div>
-            <select
+            <app-search-select
               id="empleado-tipo-regimen-previsional"
               formControlName="tipoRegimenPrevisional"
-              [class]="controlClass('tipoRegimenPrevisional')"
-            >
-              <option [ngValue]="null">Selecciona una opcion</option>
-              @for (option of tiposRegimenPrevisional; track option.value) {
-                <option [ngValue]="option.value">{{ option.label }}</option>
-              }
-            </select>
+              placeholder="Selecciona una opcion"
+              searchPlaceholder="Buscar tipo de previsión"
+              [options]="tiposRegimenPrevisional"
+              [invalid]="hasError('tipoRegimenPrevisional')"
+            ></app-search-select>
             @if (hasError('tipoRegimenPrevisional', 'required')) {
               <p class="field-message">Debes seleccionar el tipo de prevision.</p>
             } @else {
@@ -84,12 +82,14 @@
                 <span class="field-required" aria-hidden="true">*</span>
               }
             </div>
-            <select id="empleado-afp" formControlName="idAfp" [class]="controlClass('idAfp')">
-              <option [ngValue]="null">Selecciona una AFP</option>
-              @for (option of afps; track option.value) {
-                <option [ngValue]="option.value">{{ option.label }}</option>
-              }
-            </select>
+            <app-search-select
+              id="empleado-afp"
+              formControlName="idAfp"
+              placeholder="Selecciona una AFP"
+              searchPlaceholder="Buscar AFP"
+              [options]="afps"
+              [invalid]="hasError('idAfp')"
+            ></app-search-select>
             @if (hasError('idAfp', 'required')) {
               <p class="field-message">La AFP es obligatoria.</p>
             } @else {
@@ -106,16 +106,14 @@
                 <span class="field-required" aria-hidden="true">*</span>
               }
             </div>
-            <select
+            <app-search-select
               id="empleado-moneda-cuenta2"
               formControlName="idMonedaCuenta2"
-              [class]="controlClass('idMonedaCuenta2')"
-            >
-              <option [ngValue]="null">Opcional</option>
-              @for (option of monedas; track option.value) {
-                <option [ngValue]="option.value">{{ option.label }}</option>
-              }
-            </select>
+              placeholder="Opcional"
+              searchPlaceholder="Buscar moneda"
+              [options]="monedas"
+              [invalid]="hasError('idMonedaCuenta2')"
+            ></app-search-select>
             @if (hasError('idMonedaCuenta2', 'required')) {
               <p class="field-message">Selecciona la moneda si informas Cuenta 2.</p>
             } @else {
@@ -174,16 +172,14 @@
                 <span class="field-required" aria-hidden="true">*</span>
               }
             </div>
-            <select
+            <app-search-select
               id="empleado-entidad-previsional-ips"
               formControlName="idEntidadPrevisionalIps"
-              [class]="controlClass('idEntidadPrevisionalIps')"
-            >
-              <option [ngValue]="null">Selecciona una entidad</option>
-              @for (option of entidadesPrevisionalesIps; track option.value) {
-                <option [ngValue]="option.value">{{ option.label }}</option>
-              }
-            </select>
+              placeholder="Selecciona una entidad"
+              searchPlaceholder="Buscar entidad IPS"
+              [options]="entidadesPrevisionalesIps"
+              [invalid]="hasError('idEntidadPrevisionalIps')"
+            ></app-search-select>
             @if (hasError('idEntidadPrevisionalIps', 'required')) {
               <p class="field-message">La entidad IPS es obligatoria.</p>
             } @else {
@@ -200,16 +196,14 @@
                 <span class="field-required" aria-hidden="true">*</span>
               }
             </div>
-            <select
+            <app-search-select
               id="empleado-nombre-ex-caja"
               formControlName="idExCajaPrevisional"
-              [class]="controlClass('idExCajaPrevisional')"
-            >
-              <option [ngValue]="null">Selecciona una Ex-Caja</option>
-              @for (option of exCajasPrevisionales; track option.value) {
-                <option [ngValue]="option.value">{{ option.label }}</option>
-              }
-            </select>
+              placeholder="Selecciona una Ex-Caja"
+              searchPlaceholder="Buscar Ex-Caja"
+              [options]="exCajasPrevisionales"
+              [invalid]="hasError('idExCajaPrevisional')"
+            ></app-search-select>
             @if (hasError('idExCajaPrevisional', 'required')) {
               <p class="field-message">El nombre Ex-Caja es obligatorio.</p>
             } @else {
@@ -226,16 +220,14 @@
                 <span class="field-required" aria-hidden="true">*</span>
               }
             </div>
-            <select
+            <app-search-select
               id="empleado-regimen-ex-caja"
               formControlName="idRegimenExCaja"
-              [class]="controlClass('idRegimenExCaja')"
-            >
-              <option [ngValue]="null">Selecciona un regimen</option>
-              @for (option of regimenesExCajaFiltrados; track option.value) {
-                <option [ngValue]="option.value">{{ option.label }}</option>
-              }
-            </select>
+              placeholder="Selecciona un regimen"
+              searchPlaceholder="Buscar regimen Ex-Caja"
+              [options]="regimenesExCajaFiltrados"
+              [invalid]="hasError('idRegimenExCaja')"
+            ></app-search-select>
             @if (hasError('idRegimenExCaja', 'required')) {
               <p class="field-message">El regimen Ex-Caja es obligatorio.</p>
             } @else if (!regimenesExCajaFiltrados.length) {
@@ -296,12 +288,14 @@
                 <span class="field-required" aria-hidden="true">*</span>
               }
             </div>
-            <select id="empleado-salud" formControlName="idSalud" [class]="controlClass('idSalud')">
-              <option [ngValue]="null">Selecciona una institucion</option>
-              @for (option of entidadesSalud; track option.value) {
-                <option [ngValue]="option.value">{{ option.label }}</option>
-              }
-            </select>
+            <app-search-select
+              id="empleado-salud"
+              formControlName="idSalud"
+              placeholder="Selecciona una institucion"
+              searchPlaceholder="Buscar institución de salud"
+              [options]="entidadesSalud"
+              [invalid]="hasError('idSalud')"
+            ></app-search-select>
             @if (hasError('idSalud', 'required')) {
               <p class="field-message">La institucion de salud es obligatoria.</p>
             } @else {
@@ -318,16 +312,14 @@
                 <span class="field-required" aria-hidden="true">*</span>
               }
             </div>
-            <select
+            <app-search-select
               id="empleado-moneda-plan"
               formControlName="idMonedaPlan"
-              [class]="controlClass('idMonedaPlan')"
-            >
-              <option [ngValue]="null">Selecciona una moneda</option>
-              @for (option of monedas; track option.value) {
-                <option [ngValue]="option.value">{{ option.label }}</option>
-              }
-            </select>
+              placeholder="Selecciona una moneda"
+              searchPlaceholder="Buscar moneda"
+              [options]="monedas"
+              [invalid]="hasError('idMonedaPlan')"
+            ></app-search-select>
             @if (hasError('idMonedaPlan', 'required')) {
               <p class="field-message">La moneda del plan de salud es obligatoria.</p>
             } @else {
@@ -414,16 +406,14 @@
                   <span class="field-required" aria-hidden="true">*</span>
                 }
               </div>
-              <select
+              <app-search-select
                 id="empleado-institucion-apv"
                 formControlName="idInstitucionApv"
-                [class]="controlClass('idInstitucionApv')"
-              >
-                <option [ngValue]="null">Selecciona una institucion</option>
-                @for (option of institucionesApv; track option.value) {
-                  <option [ngValue]="option.value">{{ option.label }}</option>
-                }
-              </select>
+                placeholder="Selecciona una institucion"
+                searchPlaceholder="Buscar institución APVI"
+                [options]="institucionesApv"
+                [invalid]="hasError('idInstitucionApv')"
+              ></app-search-select>
               @if (hasError('idInstitucionApv', 'required')) {
                 <p class="field-message">La institucion APVI es obligatoria.</p>
               } @else {
@@ -440,16 +430,14 @@
                   <span class="field-required" aria-hidden="true">*</span>
                 }
               </div>
-              <select
+              <app-search-select
                 id="empleado-moneda-apv"
                 formControlName="idMonedaApv"
-                [class]="controlClass('idMonedaApv')"
-              >
-                <option [ngValue]="null">Selecciona una moneda</option>
-                @for (option of monedas; track option.value) {
-                  <option [ngValue]="option.value">{{ option.label }}</option>
-                }
-              </select>
+                placeholder="Selecciona una moneda"
+                searchPlaceholder="Buscar moneda"
+                [options]="monedas"
+                [invalid]="hasError('idMonedaApv')"
+              ></app-search-select>
               @if (hasError('idMonedaApv', 'required')) {
                 <p class="field-message">La moneda APVI es obligatoria.</p>
               } @else {
@@ -492,16 +480,14 @@
                   <span class="field-required" aria-hidden="true">*</span>
                 }
               </div>
-              <select
+              <app-search-select
                 id="empleado-forma-pago-apv"
                 formControlName="idFormaPagoApv"
-                [class]="controlClass('idFormaPagoApv')"
-              >
-                <option [ngValue]="null">Selecciona una forma de pago</option>
-                @for (option of formasPagoApv; track option.value) {
-                  <option [ngValue]="option.value">{{ option.label }}</option>
-                }
-              </select>
+                placeholder="Selecciona una forma de pago"
+                searchPlaceholder="Buscar forma de pago"
+                [options]="formasPagoApv"
+                [invalid]="hasError('idFormaPagoApv')"
+              ></app-search-select>
               @if (hasError('idFormaPagoApv', 'required')) {
                 <p class="field-message">La forma de pago APVI es obligatoria.</p>
               } @else {

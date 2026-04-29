@@ -4,12 +4,13 @@ import { ReactiveFormsModule, Validators } from '@angular/forms';
 import { EmpleadoCatalogOption } from '../../../models/empleado-catalogos.model';
 import { BancarioFormGroup } from '../../../models/empleado-form.model';
 import { CardComponent } from '../../../../../shared/components/ui/card.component';
+import { SearchSelectComponent } from '../../../../../shared/components/ui/search-select.component';
 
 type BancarioControlName = keyof BancarioFormGroup['controls'];
 
 @Component({
   selector: 'app-empleado-bancario',
-  imports: [ReactiveFormsModule, CardComponent],
+  imports: [ReactiveFormsModule, CardComponent, SearchSelectComponent],
   templateUrl: './bancario.html',
   styleUrl: './bancario.css',
 })

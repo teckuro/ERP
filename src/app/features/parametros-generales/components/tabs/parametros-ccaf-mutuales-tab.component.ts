@@ -1,5 +1,12 @@
 import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { FormsModule } from '@angular/forms';
+
+import {
+  SearchSelectComponent,
+  SearchSelectOption,
+  SearchSelectValue,
+} from '../../../../shared/components/ui/search-select.component';
 import {
   DataGridColumn,
   DataGridComponent,
@@ -21,7 +28,7 @@ export type CcafMutualSubId = 'config' | 'listaCcaf' | 'mutuales' | 'ley16744';
 @Component({
   selector: 'app-parametros-ccaf-mutuales-tab',
   standalone: true,
-  imports: [CommonModule, DataGridComponent, ParametrosInnerTabBarComponent],
+  imports: [CommonModule, FormsModule, DataGridComponent, ParametrosInnerTabBarComponent, SearchSelectComponent],
   template: `
     <section class="tab-panel">
       <div class="param-subhead">
@@ -53,27 +60,26 @@ export type CcafMutualSubId = 'config' | 'listaCcaf' | 'mutuales' | 'ley16744';
             <div class="field-grid field-grid--ccaf" aria-label="Configuración CCAF y mutual">
               <label class="param-field">
                 <span>Caja de compensación</span>
-                <select class="param-input" [value]="selectedCcafId ?? ''" (change)="seleccionarCcaf?.($event)">
-                  <option value="" [selected]="selectedCcafId === null">Sin CCAF cargada</option>
-                  @for (ccaf of catalogos.ccafEntidades; track ccaf.idCcafEntidad) {
-                    <option [value]="ccaf.idCcafEntidad" [selected]="ccaf.idCcafEntidad === selectedCcafId">{{ ccaf.nombre }}</option>
-                  }
-                </select>
+                <app-search-select
+                  class="param-field-search-select"
+                  [ngModel]="selectedCcafId"
+                  (ngModelChange)="seleccionarCcaf?.($event)"
+                  [options]="ccafSelectOptions"
+                  placeholder="Sin CCAF cargada"
+                  searchPlaceholder="Buscar CCAF"
+                ></app-search-select>
               </label>
 
               <label class="param-field">
                 <span>Mutual de Seguridad</span>
-                <select class="param-input" [value]="selectedMutualId ?? ''" (change)="seleccionarMutual?.($event)">
-                  <option value="" [selected]="selectedMutualId === null">Sin mutual cargada</option>
-                  @for (mutual of catalogos.organismosLey16744; track mutual.idOrganismoAdministradorLey16744) {
-                    <option
-                      [value]="mutual.idOrganismoAdministradorLey16744"
-                      [selected]="mutual.idOrganismoAdministradorLey16744 === selectedMutualId"
-                    >
-                      {{ mutual.nombre }}
-                    </option>
-                  }
-                </select>
+                <app-search-select
+                  class="param-field-search-select"
+                  [ngModel]="selectedMutualId"
+                  (ngModelChange)="seleccionarMutual?.($event)"
+                  [options]="mutualSelectOptions"
+                  placeholder="Sin mutual cargada"
+                  searchPlaceholder="Buscar mutual"
+                ></app-search-select>
               </label>
 
               <label class="param-field">
@@ -151,8 +157,37 @@ export type CcafMutualSubId = 'config' | 'listaCcaf' | 'mutuales' | 'ley16744';
       </div>
     </section>
   `,
+  styles: [
+    `
+      .param-field-search-select ::ng-deep .select-field {
+        border-radius: 6px;
+        height: var(--erp-control-height, 22px);
+        min-height: var(--erp-control-height, 22px);
+      }
+    `,
+  ],
 })
 export class ParametrosCcafMutualesTabComponent {
+  get ccafSelectOptions(): SearchSelectOption<number | null>[] {
+    return [
+      { value: null, label: 'Sin CCAF cargada' },
+      ...this.catalogos.ccafEntidades.map((ccaf) => ({
+        value: ccaf.idCcafEntidad,
+        label: ccaf.nombre,
+      })),
+    ];
+  }
+
+  get mutualSelectOptions(): SearchSelectOption<number | null>[] {
+    return [
+      { value: null, label: 'Sin mutual cargada' },
+      ...this.catalogos.organismosLey16744.map((mutual) => ({
+        value: mutual.idOrganismoAdministradorLey16744,
+        label: mutual.nombre,
+      })),
+    ];
+  }
+
   emitSub(id: string): void {
     this.activeSubChange.emit(id as CcafMutualSubId);
   }
@@ -180,8 +215,8 @@ export class ParametrosCcafMutualesTabComponent {
   @Input() gridPersistenceKeyMutuales = 'parametros.mutuales.dg';
   @Input() gridPersistenceKeyLey16744 = 'parametros.ley16744.dg';
 
-  @Input() seleccionarCcaf: ((event: Event) => void) | null = null;
-  @Input() seleccionarMutual: ((event: Event) => void) | null = null;
+  @Input() seleccionarCcaf: ((value: SearchSelectValue) => void) | null = null;
+  @Input() seleccionarMutual: ((value: SearchSelectValue) => void) | null = null;
   @Input() refresh: (() => void) | null = null;
 
   readonly ccafEntidadFilters: DataGridFilter<CcafEntidad>[] = [

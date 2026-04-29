@@ -1,4 +1,11 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { FormsModule } from '@angular/forms';
+
+import {
+  SearchSelectComponent,
+  SearchSelectOption,
+  SearchSelectValue,
+} from '../../../shared/components/ui/search-select.component';
 
 export interface ParametrosInnerTabItem {
   id: string;
@@ -8,19 +15,20 @@ export interface ParametrosInnerTabItem {
 @Component({
   selector: 'app-parametros-inner-tab-bar',
   standalone: true,
+  imports: [FormsModule, SearchSelectComponent],
   template: `
     <div class="param-inner-tabs" role="navigation" [attr.aria-label]="ariaLabel">
       <label class="param-inner-tabs__mobile-label" for="param-inner-tab-select">{{ mobileLabel }}</label>
-      <select
-        id="param-inner-tab-select"
-        class="param-inner-tabs__select"
-        [value]="activeId"
-        (change)="onSelectFromSelect($event)"
-      >
-        @for (t of tabs; track t.id) {
-          <option [value]="t.id">{{ t.label }}</option>
-        }
-      </select>
+      <div class="param-inner-tabs__select">
+        <app-search-select
+          id="param-inner-tab-select"
+          [ngModel]="activeId"
+          (ngModelChange)="onSelectFromSearch($event)"
+          [options]="tabSelectOptions"
+          searchPlaceholder="Buscar seccion"
+          placeholder="Selecciona"
+        ></app-search-select>
+      </div>
       <div class="param-inner-tabs__buttons" role="tablist">
         @for (t of tabs; track t.id) {
           <button
@@ -61,12 +69,13 @@ export interface ParametrosInnerTabItem {
         box-sizing: border-box;
         width: 100%;
         max-width: 100%;
-        border: 1px solid #d1d5db;
+      }
+
+      .param-inner-tabs__select ::ng-deep .select-field {
         border-radius: 8px;
-        background: #fff;
-        padding: 8px 10px;
-        color: #111827;
-        font-size: 0.84rem;
+        height: var(--erp-control-height, 22px);
+        min-height: var(--erp-control-height, 22px);
+        font-size: 0.78rem;
       }
 
       .param-inner-tabs__buttons {
@@ -130,8 +139,12 @@ export class ParametrosInnerTabBarComponent {
 
   @Output() activeIdChange = new EventEmitter<string>();
 
-  onSelectFromSelect(event: Event): void {
-    const id = (event.target as HTMLSelectElement).value;
+  get tabSelectOptions(): SearchSelectOption<string>[] {
+    return this.tabs.map((tab) => ({ value: tab.id, label: tab.label }));
+  }
+
+  onSelectFromSearch(value: SearchSelectValue): void {
+    const id = value === null || value === undefined ? '' : String(value);
     this.onSelect(id);
   }
 

@@ -13,6 +13,10 @@ import { RelacionLaboral, TipoContrato, TipoGratificacion } from '../../../model
 import { EmpleadoEstado } from '../../../models/empleado-listado.model';
 import { CalendarInputComponent } from '../../../../../shared/components/ui/calendar-input.component';
 import { CardComponent } from '../../../../../shared/components/ui/card.component';
+import {
+  SearchSelectComponent,
+  type SearchSelectOption,
+} from '../../../../../shared/components/ui/search-select.component';
 
 type ContratoControlName = keyof ContratoFormGroup['controls'];
 
@@ -28,7 +32,7 @@ interface WeekdayOption {
 
 @Component({
   selector: 'app-empleado-contrato',
-  imports: [ReactiveFormsModule, CalendarInputComponent, CardComponent],
+  imports: [ReactiveFormsModule, CalendarInputComponent, CardComponent, SearchSelectComponent],
   templateUrl: './contrato.html',
   styleUrl: './contrato.css',
 })
@@ -125,6 +129,21 @@ export class ContratoComponent {
           { value: 'LEGAL_ART_47', label: 'Legal art. 47' },
           { value: 'VOLUNTARIA', label: 'Voluntaria' },
         ];
+  }
+
+  /** Etiquetas combinadas para app-search-select (misma info que los <option> nativos). */
+  get tramosCargaOptions(): SearchSelectOption[] {
+    return this.tramosCarga.map((tramo) => {
+      const range =
+        tramo.desde !== null || tramo.hasta !== null
+          ? ` (${tramo.desde ?? 0} – ${tramo.hasta ?? 'Sin tope'})`
+          : '';
+
+      return {
+        value: tramo.value,
+        label: `${tramo.tramo || 'Nuevo Colaborador'}${range}`,
+      };
+    });
   }
 
   get isIndefinido(): boolean {

@@ -35,6 +35,7 @@ import {
 } from '../features/parametros-generales/models/parametro-general.model';
 import { ParametrosGeneralesService } from '../features/parametros-generales/services/parametros-generales.service';
 import { ButtonComponent } from '../shared/components/ui/button.component';
+import { SearchSelectValue } from '../shared/components/ui/search-select.component';
 import { DataGridColumn } from '../shared/components/ui/data-grid.component';
 import { CardComponent, CardContentComponent } from '../shared/components/ui/card.component';
 import {
@@ -184,6 +185,7 @@ interface ParametrosDialogState {
 
             <select
               class="param-select period-year"
+              id="parametros-periodo-anio"
               [ngModel]="selectedYear()"
               (ngModelChange)="seleccionarAnioValue($event)"
             >
@@ -194,6 +196,7 @@ interface ParametrosDialogState {
 
             <select
               class="param-select period-month"
+              id="parametros-periodo-mes"
               [ngModel]="selectedMonth()"
               (ngModelChange)="seleccionarMesValue($event)"
             >
@@ -2383,12 +2386,12 @@ export class ParametrosPage implements OnInit {
     this.form.controls.descuentosBasePorDia.setValue(value);
   }
 
-  seleccionarCcaf(event: Event): void {
-    this.selectedCcafId.set(this.numberFromSelect(event));
+  seleccionarCcaf(value: SearchSelectValue): void {
+    this.selectedCcafId.set(this.catalogIdFromSearchValue(value));
   }
 
-  seleccionarMutual(event: Event): void {
-    this.selectedMutualId.set(this.numberFromSelect(event));
+  seleccionarMutual(value: SearchSelectValue): void {
+    this.selectedMutualId.set(this.catalogIdFromSearchValue(value));
   }
 
   selectedYear(): string {
@@ -2696,9 +2699,13 @@ export class ParametrosPage implements OnInit {
     return `${year}-${String(month).padStart(2, '0')}`;
   }
 
-  private numberFromSelect(event: Event): number | null {
-    const value = Number((event.target as HTMLSelectElement).value);
-    return Number.isFinite(value) && value > 0 ? value : null;
+  private catalogIdFromSearchValue(value: SearchSelectValue): number | null {
+    if (value === null || value === '' || value === undefined) {
+      return null;
+    }
+
+    const n = typeof value === 'number' ? value : Number(value);
+    return Number.isFinite(n) && n > 0 ? n : null;
   }
 
   private formatDateTime(value: string): string {
