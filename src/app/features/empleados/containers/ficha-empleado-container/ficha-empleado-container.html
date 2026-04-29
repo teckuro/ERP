@@ -97,6 +97,18 @@
                 </div>
               </div>
 
+              @if (activeTab() === 'remuneracion' && employee.aptoParaRemuneraciones) {
+                <div class="section-hd-actions">
+                  <a
+                    routerLink="/haberes-descuentos"
+                    [queryParams]="{ persona: employee.id }"
+                    class="file-toolbar-button file-toolbar-button--secondary erp-toolbar-button"
+                  >
+                    Administrar haberes y descuentos
+                  </a>
+                </div>
+              }
+
               @if (activeTab() === 'historial') {
                 <app-data-grid
                   title="Historial de ficha"

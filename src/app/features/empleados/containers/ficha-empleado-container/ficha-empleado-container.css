@@ -827,6 +827,10 @@
   flex-shrink: 0;
 }
 
+.section-summary .section-hd-actions {
+  flex-shrink: 0;
+}
+
 .section-summary app-data-grid,
 .section-summary .detail-block-list {
   /* Ocupa alto útil cuando hay bastante contenido; sin estirar filas/grid items al alto del viewport */
