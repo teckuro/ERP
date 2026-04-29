@@ -6,9 +6,8 @@ import { LucideAngularModule } from 'lucide-angular';
 import {
   AlertCircle,
   ArrowLeft,
-  CheckCircle2,
-  Clock3,
   Edit3,
+  Info,
   LoaderCircle,
   Save,
   X,
@@ -127,8 +126,8 @@ export class FichaEmpleadoContainer implements OnInit {
 
   readonly arrowLeftIcon = ArrowLeft;
   readonly alertIcon = AlertCircle;
-  readonly checkIcon = CheckCircle2;
-  readonly clockIcon = Clock3;
+  /** Vacío esperado — ícono informativo pequeño, no error. */
+  readonly emptyFieldIcon = Info;
   readonly editIcon = Edit3;
   readonly loaderIcon = LoaderCircle;
   readonly saveIcon = Save;
@@ -137,8 +136,8 @@ export class FichaEmpleadoContainer implements OnInit {
   readonly tabs: EmployeeFileTabItem[] = [
     { id: 'general', label: 'General' },
     { id: 'laboral', label: 'Laboral' },
-    { id: 'remuneracion', label: 'Remuneracion' },
-    { id: 'prevision', label: 'Prevision y Salud' },
+    { id: 'remuneracion', label: 'Remuneración' },
+    { id: 'prevision', label: 'Previsión y salud' },
     { id: 'pago', label: 'Pago' },
     { id: 'documentos', label: 'Documentos' },
     { id: 'historial', label: 'Historial' },
@@ -161,7 +160,7 @@ export class FichaEmpleadoContainer implements OnInit {
     },
     {
       id: 'modulo',
-      header: 'Modulo',
+      header: 'Módulo',
       field: 'modulo',
       sortable: true,
       widthClass: 'min-w-[8rem]',
@@ -277,7 +276,7 @@ export class FichaEmpleadoContainer implements OnInit {
     controls.forEach((control) => control.updateValueAndValidity({ emitEvent: false }));
 
     if (controls.some((control) => control.invalid)) {
-      this.sectionErrorMessage.set('Revisa los campos marcados antes de guardar esta seccion.');
+      this.sectionErrorMessage.set('Revisa los campos marcados antes de guardar esta sección.');
       return;
     }
 
@@ -302,7 +301,7 @@ export class FichaEmpleadoContainer implements OnInit {
       this.sectionErrorMessage.set(
         error instanceof Error
           ? error.message
-          : 'No fue posible guardar la seccion. Intenta nuevamente.',
+          : 'No fue posible guardar la sección. Intenta nuevamente.',
       );
     } finally {
       this.isSavingSection.set(false);
@@ -365,10 +364,10 @@ export class FichaEmpleadoContainer implements OnInit {
 
   pendingItems(empleado: EmpleadoListado): string[] {
     if (empleado.estadoFicha === 'VALIDO') {
-      return ['Ficha valida', 'Remuneraciones habilitadas'];
+      return ['Ficha válida', 'Remuneraciones habilitadas'];
     }
 
-    return ['Completar contrato', 'Validar remuneracion', 'Registrar datos de pago'];
+    return ['Completar contrato', 'Validar remuneración', 'Registrar datos de pago'];
   }
 
   primaryActionLabel(empleado: EmpleadoListado): string {
@@ -376,7 +375,7 @@ export class FichaEmpleadoContainer implements OnInit {
       return 'Registrar datos de pago';
     }
 
-    return 'Editar seccion';
+    return 'Editar sección';
   }
 
   payrollReadinessLabel(empleado: EmpleadoListado): string {
@@ -387,7 +386,11 @@ export class FichaEmpleadoContainer implements OnInit {
     return empleado.estado === 'activo' ? 'Listo para operar' : 'Pendiente de completar';
   }
 
+  /** Paso sugerido en el panel lateral (acciones rápidas). */
   nextStepLabel(empleado: EmpleadoListado): string {
+    if (!empleado.aptoParaRemuneraciones) {
+      return 'Registrar datos de pago';
+    }
     return empleado.estado === 'activo' ? 'Revisar secciones' : 'Registrar datos de pago';
   }
 
@@ -447,7 +450,7 @@ export class FichaEmpleadoContainer implements OnInit {
   impactMessage(empleado: EmpleadoListado): string {
     return empleado.aptoParaRemuneraciones
       ? 'El colaborador puede operar en procesos administrativos y de remuneraciones.'
-      : 'No se puede generar liquidacion mientras falten datos de pago y validacion previsional.';
+      : 'No se puede generar liquidación mientras falten datos de pago y validación previsional.';
   }
 
   activeTabLabel(): string {
@@ -465,7 +468,7 @@ export class FichaEmpleadoContainer implements OnInit {
     switch (this.activeTab()) {
       case 'general':
         return [
-          this.detailSection('Identificacion legal'),
+          this.detailSection('Identificación legal'),
           { label: 'RUT', value: this.emptyText(personal.rut) },
           { label: 'Pasaporte', value: this.emptyText(personal.pasaporte) },
           { label: 'Fecha nacimiento', value: this.dateText(personal.fechaNacimiento) },
@@ -475,25 +478,25 @@ export class FichaEmpleadoContainer implements OnInit {
           { label: 'Apellido paterno', value: this.emptyText(personal.apellidoPaterno) },
           { label: 'Apellido materno', value: this.emptyText(personal.apellidoMaterno) },
           { label: 'Nombre completo', value: empleado.nombre },
-          this.detailSection('Informacion base'),
+          this.detailSection('Información personal y contacto'),
           { label: 'Nacionalidad', value: this.catalogText(personal.idPais, 'paises') },
           {
             label: 'Estado civil',
             value: this.optionText(personal.estadoCivil, this.catalogos().estadosCivil),
           },
           { label: 'Email', value: this.emptyText(contacto.email) },
-          { label: 'Telefono', value: this.emptyText(contacto.telefono) },
+          { label: 'Teléfono', value: this.emptyText(contacto.telefono) },
           this.detailSection('Domicilio particular'),
           { label: 'Calle o avenida', value: this.emptyText(contacto.direccion) },
-          { label: 'Numero', value: this.emptyText(contacto.numeroDireccion) },
+          { label: 'Número', value: this.emptyText(contacto.numeroDireccion) },
           { label: 'Depto. u oficina', value: this.emptyText(contacto.departamentoDireccion) },
           { label: 'Comuna', value: this.catalogText(contacto.idComuna, 'comunas') },
           { label: 'Observaciones', value: this.emptyText(contacto.observacionesDireccion) },
         ];
       case 'laboral':
         return [
-          this.detailSection('Relacion laboral'),
-          { label: 'Relacion laboral', value: this.relacionLaboralText(contrato.relacionLaboral) },
+          this.detailSection('Relación laboral'),
+          { label: 'Relación laboral', value: this.relacionLaboralText(contrato.relacionLaboral) },
           this.detailSection('Contrato'),
           {
             label: 'Tipo trabajador',
@@ -505,7 +508,7 @@ export class FichaEmpleadoContainer implements OnInit {
           },
           { label: 'Fecha ingreso', value: this.dateText(contrato.fechaIngreso) },
           { label: 'Fecha contrato', value: this.dateText(contrato.fechaContrato) },
-          { label: 'Fecha termino', value: this.dateText(contrato.fechaTermino) },
+          { label: 'Fecha término', value: this.dateText(contrato.fechaTermino) },
           { label: 'Indefinido', value: this.booleanText(contrato.tipoContrato === 'INDEFINIDO') },
           {
             label: 'Departamento',
@@ -516,7 +519,7 @@ export class FichaEmpleadoContainer implements OnInit {
             label: 'Tipo de contrato',
             value: this.optionText(contrato.tipoContrato, this.catalogos().tiposContrato),
           },
-          { label: 'Seguro de cesantia', value: this.booleanText(contrato.seguroCesantia) },
+          { label: 'Seguro de cesantía', value: this.booleanText(contrato.seguroCesantia) },
           this.detailSection('Centro de costo y estado'),
           {
             label: 'Centro de costo',
@@ -527,34 +530,34 @@ export class FichaEmpleadoContainer implements OnInit {
         ];
       case 'remuneracion':
         return [
-          this.detailSection('Remuneracion'),
+          this.detailSection('Remuneración'),
           { label: 'Hrs. semanales', value: this.numberText(contrato.horasSemanales) },
-          { label: 'Dias semanales', value: this.numberText(contrato.diasSemanales) },
+          { label: 'Días semanales', value: this.numberText(contrato.diasSemanales) },
           { label: 'Sueldo base mensual', value: this.moneyText(contrato.sueldoBase) },
           { label: 'Moneda sueldo', value: this.catalogText(contrato.idMoneda, 'monedas') },
           {
-            label: 'Gratificacion',
+            label: 'Gratificación',
             value: this.optionText(contrato.tipoGratificacion, this.catalogos().tiposGratificacion),
           },
           { label: 'Sueldo variable', value: this.booleanText(contrato.sueldoVariable) },
           {
-            label: 'Distribucion de la jornada',
+            label: 'Distribución de la jornada',
             value: this.emptyText(contrato.distribucionJornada),
           },
-          { label: 'Tiempo de colacion', value: this.minutesText(contrato.tiempoColacionMinutos) },
+          { label: 'Tiempo de colación', value: this.minutesText(contrato.tiempoColacionMinutos) },
           {
-            label: 'Gratificacion proporcional',
+            label: 'Gratificación proporcional',
             value: this.booleanText(contrato.gratificacionProporcional),
           },
           this.detailSection('Cargas familiares'),
-          { label: 'Numero de cargas', value: this.numberText(contrato.cargas) },
+          { label: 'Número de cargas', value: this.numberText(contrato.cargas) },
           { label: 'Tramo asignado', value: this.tramoCargaText(contrato.idTramoCarga) },
           { label: 'Valor por carga', value: this.valorCargaText(contrato.idTramoCarga) },
           this.detailSection('Zona extrema'),
           { label: 'Habilitar zona extrema', value: this.booleanText(contrato.zonaExtremaActiva) },
           { label: 'Territorio', value: this.emptyText(contrato.zonaExtremaTerritorio) },
           {
-            label: 'Asignacion zona extrema',
+            label: 'Asignación zona extrema',
             value: this.percentText(contrato.zonaExtremaPorcentaje),
           },
           this.detailSection('Beneficio semana corrida'),
@@ -563,7 +566,7 @@ export class FichaEmpleadoContainer implements OnInit {
             value: this.booleanText(contrato.semanaCorridaActiva),
           },
           {
-            label: 'Dias laborables',
+            label: 'Días laborables',
             value: this.weekdayText(contrato.semanaCorridaDiasLaborables),
           },
         ];
@@ -577,7 +580,7 @@ export class FichaEmpleadoContainer implements OnInit {
             label: 'Tipo de cuenta',
             value: this.catalogText(bancario.idTipoCuentaBancaria, 'tiposCuentaBancaria'),
           },
-          { label: 'Numero de cuenta', value: this.emptyText(bancario.numeroCuenta) },
+          { label: 'Número de cuenta', value: this.emptyText(bancario.numeroCuenta) },
           {
             label: 'Estado pago',
             value: empleado.estado === 'activo' ? 'Operativo' : 'Por completar',
@@ -592,10 +595,10 @@ export class FichaEmpleadoContainer implements OnInit {
         ];
       case 'historial':
         return [
-          { label: 'Ultimo cambio', value: 'Ficha consultada' },
+          { label: 'Último cambio', value: 'Ficha consultada' },
           { label: 'Estado actual', value: this.statusLabel(empleado.estado) },
-          { label: 'Origen', value: 'Modulo empleados' },
-          { label: 'Auditoria', value: 'Preparada para eventos' },
+          { label: 'Origen', value: 'Módulo empleados' },
+          { label: 'Auditoría', value: 'Preparada para eventos' },
         ];
     }
   }
@@ -604,9 +607,9 @@ export class FichaEmpleadoContainer implements OnInit {
     prevision: ReturnType<EmpleadoFormGroup['getRawValue']>['previsionSalud'],
   ): EmployeeDetailItem[] {
     const items: EmployeeDetailItem[] = [
-      this.detailSection('Regimen previsional'),
+      this.detailSection('Régimen previsional'),
       {
-        label: 'Regimen previsional',
+        label: 'Régimen previsional',
         value: this.optionText(
           prevision.tipoRegimenPrevisional,
           this.catalogos().tiposRegimenPrevisional,
@@ -635,7 +638,7 @@ export class FichaEmpleadoContainer implements OnInit {
           value: this.catalogText(prevision.idExCajaPrevisional, 'exCajasPrevisionales'),
         },
         {
-          label: 'Regimen Ex-Caja',
+          label: 'Régimen Ex-Caja',
           value: this.catalogText(prevision.idRegimenExCaja, 'regimenesExCaja'),
         },
         { label: 'Tasa Ex-Caja', value: this.percentText(prevision.tasaExCaja) },
@@ -649,7 +652,7 @@ export class FichaEmpleadoContainer implements OnInit {
       items.push(
         this.detailSection('Salud'),
         {
-          label: 'Institucion de salud',
+          label: 'Institución de salud',
           value: this.catalogText(prevision.idSalud, 'entidadesSalud'),
         },
         { label: 'Moneda plan salud', value: this.catalogText(prevision.idMonedaPlan, 'monedas') },
@@ -663,7 +666,7 @@ export class FichaEmpleadoContainer implements OnInit {
         this.detailSection('APVI'),
         { label: 'Tiene APVI', value: this.booleanText(prevision.tieneApv) },
         {
-          label: 'Institucion APVI',
+          label: 'Institución APVI',
           value: this.catalogText(prevision.idInstitucionApv, 'institucionesApv'),
         },
         { label: 'Moneda APVI', value: this.catalogText(prevision.idMonedaApv, 'monedas') },
@@ -673,7 +676,7 @@ export class FichaEmpleadoContainer implements OnInit {
           value: this.catalogText(prevision.idFormaPagoApv, 'formasPagoApv'),
         },
         {
-          label: 'Deposito Convenido APVI',
+          label: 'Depósito convenido APVI',
           value: this.moneyText(prevision.depositoConvenidoApvi),
         },
       );
@@ -753,13 +756,13 @@ export class FichaEmpleadoContainer implements OnInit {
 
   private emptyText(value: string | null | undefined): string {
     const normalized = String(value ?? '').trim();
-    return normalized || 'Sin informacion';
+    return normalized || 'Sin información';
   }
 
   private numberText(value: number | null | undefined): string {
     return typeof value === 'number' && !Number.isNaN(value)
       ? value.toLocaleString('es-CL')
-      : 'Sin informacion';
+      : 'Sin información';
   }
 
   private moneyText(value: number | null | undefined): string {
@@ -769,12 +772,12 @@ export class FichaEmpleadoContainer implements OnInit {
           currency: 'CLP',
           maximumFractionDigits: 0,
         }).format(value)
-      : 'Sin informacion';
+      : 'Sin información';
   }
 
   private dateText(value: string | null | undefined): string {
     if (!value) {
-      return 'Sin informacion';
+      return 'Sin información';
     }
 
     const [year, month, day] = value.slice(0, 10).split('-');
@@ -784,17 +787,17 @@ export class FichaEmpleadoContainer implements OnInit {
   private minutesText(value: number | null | undefined): string {
     return typeof value === 'number' && !Number.isNaN(value)
       ? `${value.toLocaleString('es-CL')} min.`
-      : 'Sin informacion';
+      : 'Sin información';
   }
 
   private percentText(value: number | null | undefined): string {
     return typeof value === 'number' && !Number.isNaN(value)
       ? `${value.toLocaleString('es-CL')}%`
-      : 'Sin informacion';
+      : 'Sin información';
   }
 
   private booleanText(value: boolean): string {
-    return value ? 'Si' : 'No';
+    return value ? 'Sí' : 'No';
   }
 
   private optionText<T extends string | number>(
@@ -808,7 +811,7 @@ export class FichaEmpleadoContainer implements OnInit {
 
   private catalogText(value: number | null, catalogKey: keyof EmpleadoFormCatalogos): string {
     const catalog = this.catalogos()[catalogKey] as Array<{ value: number; label: string }>;
-    return catalog.find((option) => option.value === value)?.label ?? 'Sin informacion';
+    return catalog.find((option) => option.value === value)?.label ?? 'Sin información';
   }
 
   private relacionLaboralText(value: string): string {
@@ -819,7 +822,7 @@ export class FichaEmpleadoContainer implements OnInit {
     const tramo = this.catalogos().tramosCarga.find((option) => option.value === value);
 
     if (!tramo) {
-      return 'Sin informacion';
+      return 'Sin información';
     }
 
     const range =
@@ -839,22 +842,22 @@ export class FichaEmpleadoContainer implements OnInit {
     const labels = new Map<number, string>([
       [1, 'Lunes'],
       [2, 'Martes'],
-      [3, 'Miercoles'],
+      [3, 'Miércoles'],
       [4, 'Jueves'],
       [5, 'Viernes'],
-      [6, 'Sabado'],
+      [6, 'Sábado'],
       [7, 'Domingo'],
     ]);
 
     return values.length
       ? values.map((value) => labels.get(value) ?? String(value)).join(', ')
-      : 'Sin informacion';
+      : 'Sin información';
   }
 
   estadoFichaLabel(estadoFicha: EmpleadoEstadoFicha): string {
     switch (estadoFicha) {
       case 'VALIDO':
-        return 'Valida';
+        return 'Válida';
       case 'BORRADOR':
         return 'Borrador';
       case 'INCOMPLETO':
@@ -935,7 +938,8 @@ export class FichaEmpleadoContainer implements OnInit {
   }
 
   isMissingValue(value: string): boolean {
-    return value.trim().toLowerCase() === 'sin informacion';
+    const normalized = value.trim().toLowerCase();
+    return normalized === 'sin información' || normalized === 'sin informacion';
   }
 
   private patchFormFromEmployee(employee: EmpleadoFichaDetalle): void {
@@ -1105,18 +1109,18 @@ export class FichaEmpleadoContainer implements OnInit {
 
   private blockIdForTitle(title: string): string {
     const ids: Record<string, string> = {
-      'Identificacion legal': 'identificacion',
+      'Identificación legal': 'identificacion',
       'Nombre del colaborador': 'nombre',
-      'Informacion base': 'base',
+      'Información personal y contacto': 'base',
       'Domicilio particular': 'ubicacion',
-      'Relacion laboral': 'relacion',
+      'Relación laboral': 'relacion',
       Contrato: 'contrato',
       'Centro de costo y estado': 'centro-costo',
-      Remuneracion: 'remuneracion',
+      Remuneración: 'remuneracion',
       'Cargas familiares': 'cargas',
       'Zona extrema': 'zona-extrema',
       'Beneficio semana corrida': 'semana-corrida',
-      'Regimen previsional': 'regimen',
+      'Régimen previsional': 'regimen',
       AFP: 'afp',
       'IPS (Ex INP)': 'ips',
       Salud: 'salud',

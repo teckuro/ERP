@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, HostBinding, Input } from '@angular/core';
 import { ReactiveFormsModule, Validators } from '@angular/forms';
 
 import { ContactoFormGroup, DatosPersonalesFormGroup } from '../../../models/empleado-form.model';
@@ -30,6 +30,13 @@ export class DatosPersonalesComponent {
   @Input() visibleBlocks: string[] | null = null;
   /** Textos de ayuda bajo cada titulo de bloque (solo creacion basica). */
   @Input() basicSectionLeads = false;
+  /** Grilla 8 columnas y spans proporcionales (solo alta avanzada). */
+  @Input() advancedGridLayout = false;
+
+  @HostBinding('class.employee-layout-advanced')
+  protected get employeeLayoutAdvanced(): boolean {
+    return this.advancedGridLayout;
+  }
 
   readonly today = this.toIsoDate(new Date());
 

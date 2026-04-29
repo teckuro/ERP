@@ -41,6 +41,11 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* Reserva hueco para la barra vertical y evita saltos al mostrar/ocultar scroll */
+.app-outlet-scroll {
+  scrollbar-gutter: stable;
+}
+
 /* Parametros: filtro de periodo (compacto y adaptable) */
 .parametros-page .period-row {
   display: grid;
@@ -350,25 +355,26 @@ app-form-empleado .editor-shell {
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
-  min-height: 0;
+  box-sizing: border-box;
   width: 100%;
   max-width: 100%;
-  height: calc(100dvh - var(--app-layout-main-chrome-y, 7rem));
-  max-height: calc(100dvh - var(--app-layout-main-chrome-y, 7rem));
+  /* Rellena el alto del contenedor principal (main con h-full) */
+  min-height: 100%;
 }
 
 .page-shell app-form-empleado {
-  flex: 1;
+  flex: 1 1 auto;
   display: flex;
   flex-direction: column;
-  min-height: 0;
+  min-height: 100%;
+  min-width: 0;
 }
 
 .page-shell app-form-empleado form.form-shell {
-  flex: 1;
+  flex: 1 1 auto;
   display: flex;
   flex-direction: column;
-  min-height: 0;
+  min-height: auto;
 }
 
 .page-shell app-form-empleado .form-page-head {
@@ -376,24 +382,26 @@ app-form-empleado .editor-shell {
 }
 
 .page-shell app-form-empleado .form-stack {
-  flex: 1;
+  flex: 1 1 auto;
   display: flex;
   flex-direction: column;
-  min-height: 0;
+  min-height: auto;
 }
 
 .page-shell app-form-empleado app-card.editor-shell {
-  flex: 1;
+  flex: 1 1 auto;
   display: flex;
   flex-direction: column;
-  min-height: 0;
+  min-height: auto;
 }
 
 .page-shell app-form-empleado app-card.editor-shell app-card-content.editor-frame {
-  flex: 1;
+  flex: 1 1 auto;
   display: flex;
   flex-direction: column;
-  min-height: 0;
+  min-height: auto;
+  /* Un solo scroll: el outlet (.app-outlet-scroll); sin recorte ni barra interna */
+  overflow: visible;
 }
 
 .page-shell app-form-empleado .status-stack {
@@ -401,32 +409,68 @@ app-form-empleado .editor-shell {
 }
 
 .page-shell app-form-empleado .workspace-grid {
-  flex: 1;
+  flex: 1 1 auto;
   display: flex;
   flex-direction: column;
-  min-height: 0;
-  overflow: hidden;
+  min-height: auto;
+  overflow: visible;
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 100%;
+  padding: 12px 0;
 }
 
 .page-shell app-form-empleado .workspace-main {
-  flex: 1;
-  min-height: 0;
-  overflow: hidden;
+  flex: 1 1 auto;
+  min-height: auto;
+  overflow: visible;
+  width: 100%;
+  max-width: 100%;
 }
 
 .page-shell app-form-empleado .content-shell {
-  flex: 1;
+  flex: 1 1 auto;
   display: flex;
   flex-direction: column;
-  min-height: 0 !important;
+  min-height: auto !important;
   max-height: none !important;
   height: auto !important;
+  width: 100%;
+  max-width: 100%;
+  /* Un solo marco exterior: ya lo aporta .editor-frame; evita doble borde */
+  border: 0;
+  box-shadow: none;
 }
 
 .page-shell app-form-empleado .content-body {
-  flex: 1;
-  min-height: 0;
-  overflow-y: auto;
+  flex: 1 1 auto;
+  min-height: auto;
+  overflow: visible;
+  display: flex;
+  flex-direction: column;
+  margin: 0 10px 12px;
+  /* Sin segundo trazo: separación por fondo + sombra muy suave */
+  border: 0;
+  /* Avanzado: pegado visual a las tabs (misma curva que el diseño global) */
+  border-radius: 0 0 8px 8px;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05);
+}
+
+.page-shell app-form-empleado .content-shell--basic .content-body {
+  border-radius: 8px;
+}
+
+/* Área de pasos: alto según contenido; el scroll vive en .app-outlet-scroll */
+.page-shell app-form-empleado .content-body > .step-panel {
+  flex: 0 1 auto;
+  min-height: auto;
+}
+
+.page-shell app-form-empleado .content-head .flow-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  width: 100%;
+  max-width: none;
 }
 
 app-form-empleado .form-stack,
@@ -1340,6 +1384,71 @@ app-ficha-empleado-container .detail-block-head h3 {
 
 app-ficha-empleado-container .detail-block .inline-edit-shell {
   padding: 0.85rem;
+}
+
+/*
+ * Edición en ficha (mismos seccionales que el alta): compactar rejillas sin tocar alta básica/avanzada ni app-form-empleado.
+ * Requiere .detail-block.is-editing (solo existe en ficha).
+ */
+app-ficha-empleado-container .detail-block.is-editing .inline-edit-shell {
+  gap: 0.75rem;
+  padding-inline: 0.65rem;
+  padding-bottom: 0.75rem;
+}
+
+app-ficha-empleado-container .detail-block.is-editing app-empleado-datos-personales .employee-section-shell,
+app-ficha-empleado-container .detail-block.is-editing app-empleado-contacto .employee-section-shell,
+app-ficha-empleado-container .detail-block.is-editing app-empleado-contrato .employee-section-shell,
+app-ficha-empleado-container .detail-block.is-editing app-empleado-prevision-salud .employee-section-shell,
+app-ficha-empleado-container .detail-block.is-editing app-empleado-bancario .employee-section-shell {
+  gap: 12px;
+}
+
+app-ficha-empleado-container .detail-block.is-editing app-empleado-datos-personales .employee-block,
+app-ficha-empleado-container .detail-block.is-editing app-empleado-contacto .employee-block,
+app-ficha-empleado-container .detail-block.is-editing app-empleado-contrato .employee-block,
+app-ficha-empleado-container .detail-block.is-editing app-empleado-prevision-salud .employee-block,
+app-ficha-empleado-container .detail-block.is-editing app-empleado-bancario .employee-block {
+  border-color: #ebeff5;
+}
+
+app-ficha-empleado-container .detail-block.is-editing app-empleado-datos-personales .employee-block-head,
+app-ficha-empleado-container .detail-block.is-editing app-empleado-contacto .employee-block-head,
+app-ficha-empleado-container .detail-block.is-editing app-empleado-contrato .employee-block-head,
+app-ficha-empleado-container .detail-block.is-editing app-empleado-prevision-salud .employee-block-head,
+app-ficha-empleado-container .detail-block.is-editing app-empleado-bancario .employee-block-head {
+  gap: 2px;
+  padding: 10px 12px 8px;
+}
+
+app-ficha-empleado-container .detail-block.is-editing app-empleado-datos-personales .employee-block > .employee-grid,
+app-ficha-empleado-container .detail-block.is-editing app-empleado-contacto .employee-block > .employee-grid,
+app-ficha-empleado-container .detail-block.is-editing app-empleado-contrato .employee-block > .employee-grid,
+app-ficha-empleado-container .detail-block.is-editing app-empleado-prevision-salud .employee-block > .employee-grid,
+app-ficha-empleado-container .detail-block.is-editing app-empleado-bancario .employee-block > .employee-grid {
+  gap: 10px 12px;
+  padding: 10px 12px 12px;
+}
+
+/* Cabeceras de subtema alineadas con el bloque de la ficha (sin segundo título sobredimensionado) */
+app-ficha-empleado-container .detail-block.is-editing app-empleado-datos-personales .employee-block-head h4,
+app-ficha-empleado-container .detail-block.is-editing app-empleado-contacto .employee-block-head h4,
+app-ficha-empleado-container .detail-block.is-editing app-empleado-contrato .employee-block-head h4,
+app-ficha-empleado-container .detail-block.is-editing app-empleado-prevision-salud .employee-block-head h4,
+app-ficha-empleado-container .detail-block.is-editing app-empleado-bancario .employee-block-head h4 {
+  font-size: 0.838rem;
+}
+
+app-ficha-empleado-container .detail-block.is-editing .inline-edit-actions {
+  margin-top: 0.35rem;
+  padding-top: 0.72rem;
+  gap: 0.45rem;
+}
+
+/* Titular del bloque de ficha: más compacto mientras hay formulario abierto debajo */
+app-ficha-empleado-container .detail-block.is-editing > .detail-block-head {
+  min-height: 0;
+  padding: 0.55rem 0.72rem;
 }
 
 app-ficha-empleado-container .detail-block .section-edit-button {

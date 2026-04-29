@@ -7,14 +7,16 @@
   @if (isBlockVisible('regimen')) {
     <app-card className="prevision-card">
       <app-card-header className="prevision-card-header">
-        <h4>Tipo de prevision</h4>
+        <h4>Régimen previsional</h4>
       </app-card-header>
       <app-card-content className="prevision-card-content">
-        <div class="prevision-grid prevision-grid--two">
+        <div
+          class="prevision-grid prevision-grid--two"
+          [class.prevision-grid-adv]="advancedGridLayout"
+        >
           <div class="form-field">
             <div class="field-label-row">
               <label
-                class="text-sm font-medium text-gray-700"
                 for="empleado-tipo-regimen-previsional"
               >
                 Tipo de prevision
@@ -39,6 +41,27 @@
               <p class="field-message"></p>
             }
           </div>
+
+          @if (esAfp) {
+            <div class="form-field form-field--checkbox apvi-toggle-field">
+              <div class="field-label-row">
+                <label for="empleado-tiene-apv"
+                  >APVI (Ahorro Previsional Voluntario Individual)</label
+                >
+              </div>
+              <label class="employee-checkbox-row">
+                <input
+                  id="empleado-tiene-apv"
+                  type="checkbox"
+                  formControlName="tieneApv"
+                />
+                <span>Tiene APVI</span>
+              </label>
+              <p class="field-message field-message--hint">
+                Solo si aplica; el detalle se registra en la etapa APVI.
+              </p>
+            </div>
+          }
         </div>
       </app-card-content>
     </app-card>
@@ -50,10 +73,13 @@
         <h4>AFP</h4>
       </app-card-header>
       <app-card-content className="prevision-card-content">
-        <div class="prevision-grid prevision-grid--three">
+        <div
+          class="prevision-grid prevision-grid--three"
+          [class.prevision-grid-adv]="advancedGridLayout"
+        >
           <div class="form-field">
             <div class="field-label-row">
-              <label class="text-sm font-medium text-gray-700" for="empleado-afp">Nombre AFP</label>
+              <label for="empleado-afp">Nombre AFP</label>
               @if (isRequired('idAfp')) {
                 <span class="field-required" aria-hidden="true">*</span>
               }
@@ -73,7 +99,7 @@
 
           <div class="form-field">
             <div class="field-label-row">
-              <label class="text-sm font-medium text-gray-700" for="empleado-moneda-cuenta2">
+              <label for="empleado-moneda-cuenta2">
                 Moneda Cuenta 2 - Ahorro Volunt.
               </label>
               @if (isRequired('idMonedaCuenta2')) {
@@ -99,7 +125,7 @@
 
           <div class="form-field">
             <div class="field-label-row">
-              <label class="text-sm font-medium text-gray-700" for="empleado-valor-cuenta2">
+              <label for="empleado-valor-cuenta2">
                 Valor Cuenta 2 - Ahorro Volunt.
               </label>
               @if (isRequired('valorCuenta2')) {
@@ -133,11 +159,13 @@
         <h4>Ex-Caja / regimen antiguo</h4>
       </app-card-header>
       <app-card-content className="prevision-card-content">
-        <div class="prevision-grid prevision-grid--four">
+        <div
+          class="prevision-grid prevision-grid--four prevision-grid--ips"
+          [class.prevision-grid-adv]="advancedGridLayout"
+        >
           <div class="form-field">
             <div class="field-label-row">
               <label
-                class="text-sm font-medium text-gray-700"
                 for="empleado-entidad-previsional-ips"
               >
                 Entidad IPS
@@ -165,7 +193,7 @@
 
           <div class="form-field">
             <div class="field-label-row">
-              <label class="text-sm font-medium text-gray-700" for="empleado-nombre-ex-caja">
+              <label for="empleado-nombre-ex-caja">
                 Nombre Ex-Caja
               </label>
               @if (isRequired('idExCajaPrevisional')) {
@@ -191,7 +219,7 @@
 
           <div class="form-field">
             <div class="field-label-row">
-              <label class="text-sm font-medium text-gray-700" for="empleado-regimen-ex-caja">
+              <label for="empleado-regimen-ex-caja">
                 Regimen Ex-Caja
               </label>
               @if (isRequired('idRegimenExCaja')) {
@@ -221,7 +249,7 @@
 
           <div class="form-field">
             <div class="field-label-row">
-              <label class="text-sm font-medium text-gray-700" for="empleado-tasa-ex-caja">
+              <label for="empleado-tasa-ex-caja">
                 Tasa Ex-Caja (%)
               </label>
               @if (isRequired('tasaExCaja')) {
@@ -255,10 +283,13 @@
         <h4>Salud</h4>
       </app-card-header>
       <app-card-content className="prevision-card-content">
-        <div class="prevision-grid prevision-grid--four">
+        <div
+          class="prevision-grid prevision-grid--four prevision-grid--salud"
+          [class.prevision-grid-adv]="advancedGridLayout"
+        >
           <div class="form-field">
             <div class="field-label-row">
-              <label class="text-sm font-medium text-gray-700" for="empleado-salud"
+              <label for="empleado-salud"
                 >Institucion de salud</label
               >
               @if (isRequired('idSalud')) {
@@ -280,7 +311,7 @@
 
           <div class="form-field">
             <div class="field-label-row">
-              <label class="text-sm font-medium text-gray-700" for="empleado-moneda-plan"
+              <label for="empleado-moneda-plan"
                 >Moneda plan salud</label
               >
               @if (isRequired('idMonedaPlan')) {
@@ -306,7 +337,7 @@
 
           <div class="form-field">
             <div class="field-label-row">
-              <label class="text-sm font-medium text-gray-700" for="empleado-valor-plan"
+              <label for="empleado-valor-plan"
                 >Valor plan</label
               >
               @if (isRequired('valorPlan')) {
@@ -332,7 +363,7 @@
 
           <div class="form-field">
             <div class="field-label-row">
-              <label class="text-sm font-medium text-gray-700" for="empleado-auge-ges">
+              <label for="empleado-auge-ges">
                 Adicional GES (UF)
               </label>
               @if (isRequired('adicionalAugeGes')) {
@@ -360,37 +391,23 @@
     </app-card>
   }
 
-  @if (esAfp && isBlockVisible('apvi')) {
-    <div class="apvi-preface">
-      <label class="apvi-toggle-label" for="empleado-tiene-apv">
-        <input
-          id="empleado-tiene-apv"
-          type="checkbox"
-          class="h-4 w-4 shrink-0 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-          formControlName="tieneApv"
-        />
-        @if (mostrarApvi) {
-          <span>Tiene APVI</span>
-        } @else {
-          <span class="apvi-na-icon" title="No aplica APVI">
-            <lucide-icon class="h-4 w-4 text-slate-500" name="ban"></lucide-icon>
-            <span class="sr-only">No aplica APVI</span>
-          </span>
-        }
-      </label>
-    </div>
-
-    @if (mostrarApvi) {
+  @if (esAfp && isBlockVisible('apvi') && mostrarApvi) {
       <app-card className="prevision-card">
         <app-card-header className="prevision-card-header">
           <h4>APVI - Ahorro Previsional Voluntario Individual</h4>
         </app-card-header>
 
         <app-card-content className="prevision-card-content">
-          <div class="prevision-grid prevision-grid--three">
+          <p class="apvi-step-lead">
+            Completa estos datos solo si el trabajador tiene APVI configurado.
+          </p>
+          <div
+            class="prevision-grid prevision-grid--three prevision-grid--apvi"
+            [class.prevision-grid-adv]="advancedGridLayout"
+          >
             <div class="form-field">
               <div class="field-label-row">
-                <label class="text-sm font-medium text-gray-700" for="empleado-institucion-apv">
+                <label for="empleado-institucion-apv">
                   Institucion APVI
                 </label>
                 @if (isRequired('idInstitucionApv')) {
@@ -416,7 +433,7 @@
 
             <div class="form-field">
               <div class="field-label-row">
-                <label class="text-sm font-medium text-gray-700" for="empleado-moneda-apv">
+                <label for="empleado-moneda-apv">
                   Moneda APVI
                 </label>
                 @if (isRequired('idMonedaApv')) {
@@ -442,7 +459,7 @@
 
             <div class="form-field">
               <div class="field-label-row">
-                <label class="text-sm font-medium text-gray-700" for="empleado-monto-apv">
+                <label for="empleado-monto-apv">
                   Valor APVI
                 </label>
                 @if (isRequired('montoApv')) {
@@ -468,7 +485,7 @@
 
             <div class="form-field">
               <div class="field-label-row">
-                <label class="text-sm font-medium text-gray-700" for="empleado-forma-pago-apv">
+                <label for="empleado-forma-pago-apv">
                   Forma de Pago APVI
                 </label>
                 @if (isRequired('idFormaPagoApv')) {
@@ -495,7 +512,6 @@
             <div class="form-field">
               <div class="field-label-row">
                 <label
-                  class="text-sm font-medium text-gray-700"
                   for="empleado-deposito-convenido-apvi"
                 >
                   Deposito Convenido APVI
@@ -523,7 +539,6 @@
           </div>
         </app-card-content>
       </app-card>
-    }
   }
 </div>
 

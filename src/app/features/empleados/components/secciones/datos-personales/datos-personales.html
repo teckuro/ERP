@@ -10,7 +10,11 @@
         }
       </div>
 
-      <div class="employee-grid employee-grid--two">
+      <div
+        class="employee-grid employee-grid--two"
+        [class.employee-grid-adv]="advancedGridLayout"
+        [class.employee-grid-adv--ident]="advancedGridLayout"
+      >
         <div class="form-field form-field--rut">
           <div class="field-label-row">
             <label for="empleado-rut">RUT</label>
@@ -117,8 +121,12 @@
         }
       </div>
 
-      <div class="employee-grid employee-grid--three">
-        <div class="form-field form-field--wide employee-span-2">
+      <div
+        class="employee-grid employee-grid--three"
+        [class.employee-grid-adv]="advancedGridLayout"
+        [class.employee-grid-adv--nombre]="advancedGridLayout"
+      >
+        <div class="form-field form-field--wide">
           <div class="field-label-row">
             <label for="empleado-nombres">Nombres</label>
             @if (isRequired('nombres')) {
@@ -194,7 +202,7 @@
   @if (isBlockVisible('base')) {
     <app-card className="employee-block">
       <div class="employee-block-head">
-        <h4>Informacion base</h4>
+        <h4>Datos personales y contacto</h4>
         @if (basicSectionLeads) {
           <p class="employee-block-lead">
             Nacionalidad y estado civil. Mas abajo puedes dejar un medio de contacto si lo tienes a mano.
@@ -202,7 +210,12 @@
         }
       </div>
 
-      <div class="employee-grid employee-grid--four" [formGroup]="formGroup">
+      <div
+        class="employee-grid employee-grid--four"
+        [formGroup]="formGroup"
+        [class.employee-grid-adv]="advancedGridLayout"
+        [class.employee-grid-adv--base]="advancedGridLayout"
+      >
         <div class="form-field">
           <div class="field-label-row">
             <label for="empleado-idPais">Nacionalidad</label>
@@ -265,8 +278,13 @@
         }
       </div>
 
-      <div class="employee-grid employee-grid--two" [formGroup]="contactoFormGroup">
-        <div class="form-field">
+      <div
+        class="employee-grid employee-grid--two"
+        [formGroup]="contactoFormGroup"
+        [class.employee-grid-adv]="advancedGridLayout"
+        [class.employee-grid-adv--contact]="advancedGridLayout"
+      >
+        <div class="form-field form-field--wide">
           <div class="field-label-row">
             <label for="empleado-email">Email</label>
           </div>

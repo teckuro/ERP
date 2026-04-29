@@ -12,19 +12,27 @@ export const EMPLEADO_FORM_TAB_ORDER = [
 
 export type EmpleadoFormTabId = (typeof EMPLEADO_FORM_TAB_ORDER)[number];
 
-export const EMPLEADO_FORM_CONCEPTUAL_STEP_LABELS = [
-  'Identificacion y contacto',
-  'Informacion laboral',
+/** Pasos del asistente en creacion avanzada (9 etapas). */
+export const EMPLEADO_ADVANCED_WIZARD_LABELS = [
+  'Datos personales',
+  'Domicilio particular',
+  'Contrato y organizacion',
+  'Jornada y remuneracion',
+  'Asignaciones y condiciones especiales',
   'Prevision y salud',
-  'Pago y cierre',
+  'APVI',
+  'Bancario',
+  'Resumen final',
 ] as const;
+
+export const EMPLEADO_ADVANCED_WIZARD_STEP_COUNT = EMPLEADO_ADVANCED_WIZARD_LABELS.length;
 
 /** Bloques visibles por pestaña (ids usados en templates de sección). */
 export const EMPLEADO_FORM_STEP_BLOCK_IDS: Record<EmpleadoFormTabId, readonly string[]> = {
-  datosPersonales: ['identificacion', 'nombre', 'base', 'ubicacion'],
+  datosPersonales: ['identificacion', 'nombre', 'base'],
   contrato: [
     'relacion',
-    'contrato',
+    'contratoBase',
     'remuneracion',
     'cargas',
     'zonaExtrema',

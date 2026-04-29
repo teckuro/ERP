@@ -56,6 +56,35 @@
 }
 
 
+.labor-field-section {
+  margin: 4px 0 0;
+}
+
+.labor-field-section--span {
+  grid-column: 1 / -1;
+}
+
+.labor-field-section-title {
+  margin: 0;
+  padding: 0 0 6px;
+  border-bottom: 1px solid #f1f5f9;
+  color: #64748b;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  line-height: 1.3;
+  text-transform: uppercase;
+}
+
+:host .field-message--hint {
+  margin: 0;
+  min-height: 1.1rem;
+  color: #64748b;
+  font-size: 0.7rem;
+  font-weight: 450;
+  line-height: 1.35;
+}
+
 .labor-span-2 {
   grid-column: span 2;
 }
@@ -77,16 +106,18 @@
 
 .relation-option {
   display: inline-flex;
-  min-height: 36px;
+  box-sizing: border-box;
+  height: var(--erp-control-height, 22px);
+  min-height: var(--erp-control-height, 22px);
   align-items: center;
   gap: 8px;
   border: 1px solid #e5e7eb;
   border-radius: 6px;
   background: #ffffff;
-  padding: 0 12px;
-  color: #374151;
-  font-size: 12px;
-  font-weight: 600;
+  padding: 0 10px;
+  color: #111827;
+  font-size: var(--erp-text-sm, 0.72rem);
+  font-weight: 500;
 }
 
 .relation-option input {
@@ -97,19 +128,9 @@
   align-content: start;
 }
 
-.form-field--checkbox > label {
-  min-height: 36px;
-  border-color: #e5e7eb;
-  border-radius: 6px;
-  padding: 0 12px;
-  color: #374151;
-  font-size: 12px;
-  font-weight: 600;
-}
-
 .readonly-field {
   display: flex;
-  min-height: 36px;
+  min-height: var(--erp-control-height, 22px);
   align-items: center;
   border: 1px solid #e5e7eb;
   border-radius: 6px;
@@ -128,17 +149,19 @@
 
 .weekday-chip {
   display: inline-flex;
+  box-sizing: border-box;
   width: 100%;
   align-items: center;
   gap: 8px;
-  min-height: 36px;
-  padding: 0 12px;
+  height: var(--erp-control-height, 22px);
+  min-height: var(--erp-control-height, 22px);
+  padding: 0 10px;
   border: 1px solid #e5e7eb;
   border-radius: 6px;
   background: #ffffff;
-  color: #374151;
-  font-size: 12px;
-  font-weight: 600;
+  color: #111827;
+  font-size: var(--erp-text-sm, 0.72rem);
+  font-weight: 500;
   transition:
     border-color 160ms ease,
     background 160ms ease,
@@ -170,12 +193,12 @@
 }
 
 @media (max-width: 1280px) {
-  .labor-grid--contract,
-  .labor-grid--salary {
+  :host:not(.labor-layout-advanced) .labor-grid--contract,
+  :host:not(.labor-layout-advanced) .labor-grid--salary {
     grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   }
 
-  .labor-span-3 {
+  :host:not(.labor-layout-advanced) .labor-span-3 {
     grid-column: auto;
   }
 }
@@ -185,12 +208,12 @@
     padding: 0;
   }
 
-  .labor-grid--contract,
-  .labor-grid--salary,
-  .labor-grid--loads,
-  .labor-grid--zone,
-  .labor-grid--footer,
-  .labor-grid--week {
+  :host:not(.labor-layout-advanced) .labor-grid--contract,
+  :host:not(.labor-layout-advanced) .labor-grid--salary,
+  :host:not(.labor-layout-advanced) .labor-grid--loads,
+  :host:not(.labor-layout-advanced) .labor-grid--zone,
+  :host:not(.labor-layout-advanced) .labor-grid--footer,
+  :host:not(.labor-layout-advanced) .labor-grid--week {
     grid-template-columns: minmax(0, 1fr);
   }
 
@@ -198,7 +221,210 @@
     grid-template-columns: minmax(0, 1fr);
   }
 
-  .labor-span-2 {
+  :host:not(.labor-layout-advanced) .labor-span-2 {
     grid-column: auto;
+  }
+}
+
+/* --- Alta avanzada: grillas a ancho completo, 8 columnas desktop --- */
+:host.labor-layout-advanced .labor-shell {
+  gap: 1.25rem;
+}
+
+:host.labor-layout-advanced .labor-grid {
+  width: 100%;
+  max-width: none;
+}
+
+:host.labor-layout-advanced .relation-grid {
+  width: 100%;
+  max-width: none;
+}
+
+:host.labor-layout-advanced .labor-field-section-title {
+  border-bottom-color: #f1f5f9;
+  color: #64748b;
+}
+
+:host.labor-layout-advanced .labor-grid--contract,
+:host.labor-layout-advanced .labor-grid--salary {
+  grid-template-columns: repeat(8, minmax(0, 1fr));
+}
+
+:host.labor-layout-advanced .labor-grid--loads,
+:host.labor-layout-advanced .labor-grid--zone,
+:host.labor-layout-advanced .labor-grid--footer,
+:host.labor-layout-advanced .labor-grid--week {
+  width: 100%;
+  max-width: none;
+  grid-template-columns: repeat(8, minmax(0, 1fr));
+}
+
+/* Contrato y organización (orden DOM en labor-grid--contract) */
+:host.labor-layout-advanced .labor-grid--contract > :nth-child(1) {
+  grid-column: span 3;
+}
+
+:host.labor-layout-advanced .labor-grid--contract > :nth-child(2) {
+  grid-column: span 2;
+}
+
+:host.labor-layout-advanced .labor-grid--contract > :nth-child(4),
+:host.labor-layout-advanced .labor-grid--contract > :nth-child(5),
+:host.labor-layout-advanced .labor-grid--contract > :nth-child(6) {
+  grid-column: span 2;
+}
+
+:host.labor-layout-advanced .labor-grid--contract > :nth-child(7) {
+  grid-column: span 2;
+}
+
+:host.labor-layout-advanced .labor-grid--contract > :nth-child(9),
+:host.labor-layout-advanced .labor-grid--contract > :nth-child(10) {
+  grid-column: span 3;
+}
+
+/* Jornada y remuneración */
+:host.labor-layout-advanced .labor-grid--salary > :nth-child(2) {
+  grid-column: span 3;
+}
+
+:host.labor-layout-advanced .labor-grid--salary > :nth-child(3),
+:host.labor-layout-advanced .labor-grid--salary > :nth-child(4) {
+  grid-column: span 2;
+}
+
+:host.labor-layout-advanced .labor-grid--salary > :nth-child(6) {
+  grid-column: span 3;
+}
+
+:host.labor-layout-advanced .labor-grid--salary > :nth-child(7) {
+  grid-column: span 2;
+}
+
+:host.labor-layout-advanced .labor-grid--salary > :nth-child(9) {
+  grid-column: span 2;
+}
+
+:host.labor-layout-advanced .labor-grid--salary > :nth-child(10) {
+  grid-column: span 2;
+}
+
+/* Distribución jornada: ancho medio; fila siguiente tiempo colación + seguro (sin estirar a 8) */
+:host.labor-layout-advanced .labor-grid--salary > :nth-child(11) {
+  grid-column: span 4;
+}
+
+:host.labor-layout-advanced .labor-grid--salary > :nth-child(12) {
+  grid-column: span 2;
+}
+
+:host.labor-layout-advanced .labor-grid--salary > :nth-child(13) {
+  grid-column: span 2;
+}
+
+/* Asignación familiar */
+:host.labor-layout-advanced .labor-grid--loads > :nth-child(1) {
+  grid-column: span 2;
+}
+
+:host.labor-layout-advanced .labor-grid--loads > :nth-child(2) {
+  grid-column: span 3;
+}
+
+:host.labor-layout-advanced .labor-grid--loads > :nth-child(3) {
+  grid-column: span 2;
+}
+
+/* Zona extrema */
+:host.labor-layout-advanced .labor-grid--zone > :nth-child(1) {
+  grid-column: span 2;
+}
+
+:host.labor-layout-advanced .labor-grid--zone > :nth-child(2) {
+  grid-column: span 3;
+}
+
+:host.labor-layout-advanced .labor-grid--zone > :nth-child(3) {
+  grid-column: span 2;
+}
+
+/* Semana corrida */
+:host.labor-layout-advanced .labor-grid--week > :nth-child(1) {
+  grid-column: span 2;
+}
+
+:host.labor-layout-advanced .labor-grid--week > :nth-child(2) {
+  grid-column: span 4;
+}
+
+:host.labor-layout-advanced .labor-grid--week > .labor-span-3 {
+  grid-column: span 4;
+}
+
+/* Centro de costo y estado */
+:host.labor-layout-advanced .labor-grid--footer > :nth-child(1),
+:host.labor-layout-advanced .labor-grid--footer > :nth-child(2) {
+  grid-column: span 3;
+}
+
+:host.labor-layout-advanced .labor-grid--footer > :nth-child(3) {
+  grid-column: span 2;
+}
+
+@media (max-width: 1024px) {
+  :host.labor-layout-advanced .labor-grid--contract,
+  :host.labor-layout-advanced .labor-grid--salary,
+  :host.labor-layout-advanced .labor-grid--loads,
+  :host.labor-layout-advanced .labor-grid--zone,
+  :host.labor-layout-advanced .labor-grid--footer,
+  :host.labor-layout-advanced .labor-grid--week {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  :host.labor-layout-advanced .labor-grid--contract > .form-field,
+  :host.labor-layout-advanced .labor-grid--salary > .form-field,
+  :host.labor-layout-advanced .labor-grid--loads > .form-field,
+  :host.labor-layout-advanced .labor-grid--zone > .form-field,
+  :host.labor-layout-advanced .labor-grid--footer > .form-field {
+    grid-column: span 2;
+  }
+
+  :host.labor-layout-advanced .labor-grid--contract > .labor-field-section--span,
+  :host.labor-layout-advanced .labor-grid--salary > .labor-field-section--span {
+    grid-column: span 4;
+  }
+
+  :host.labor-layout-advanced .labor-grid--salary > :nth-child(11) {
+    grid-column: span 4;
+  }
+
+  :host.labor-layout-advanced .labor-grid--week > :nth-child(2),
+  :host.labor-layout-advanced .labor-grid--week > .labor-span-3 {
+    grid-column: span 4;
+  }
+
+  :host.labor-layout-advanced .labor-grid--week > :nth-child(1) {
+    grid-column: span 2;
+  }
+}
+
+@media (max-width: 760px) {
+  :host.labor-layout-advanced .labor-grid--contract,
+  :host.labor-layout-advanced .labor-grid--salary,
+  :host.labor-layout-advanced .labor-grid--loads,
+  :host.labor-layout-advanced .labor-grid--zone,
+  :host.labor-layout-advanced .labor-grid--footer,
+  :host.labor-layout-advanced .labor-grid--week {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  :host.labor-layout-advanced .labor-grid--contract > *,
+  :host.labor-layout-advanced .labor-grid--salary > *,
+  :host.labor-layout-advanced .labor-grid--loads > *,
+  :host.labor-layout-advanced .labor-grid--zone > *,
+  :host.labor-layout-advanced .labor-grid--footer > *,
+  :host.labor-layout-advanced .labor-grid--week > * {
+    grid-column: 1 / -1;
   }
 }

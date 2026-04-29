@@ -222,7 +222,7 @@
 }
 
 .field-label-row label {
-  color: #4b5563;
+  color: var(--form-muted, #6b7280);
   font-size: var(--erp-text-xs, 0.665rem);
   font-weight: 500;
   line-height: 1.35;
@@ -249,9 +249,68 @@
   color: var(--form-warning);
 }
 
+/* Checkbox + texto en línea: mismo borde/radio/tipografía que .employee-control */
+.employee-checkbox-row {
+  display: inline-flex;
+  width: fit-content;
+  max-width: 100%;
+  align-items: center;
+  gap: 8px;
+  box-sizing: border-box;
+  height: var(--erp-control-height, 22px);
+  min-height: var(--erp-control-height, 22px);
+  margin: 0;
+  padding: 0 10px;
+  border: 1px solid var(--form-border);
+  border-radius: 6px;
+  background: var(--form-surface);
+  color: var(--form-text);
+  font-family: inherit;
+  font-size: var(--erp-text-sm, 0.72rem);
+  font-weight: 500;
+  line-height: 1.25;
+  cursor: pointer;
+  transition:
+    border-color 160ms ease,
+    box-shadow 160ms ease,
+    background-color 160ms ease;
+}
+
+.employee-checkbox-row:hover {
+  border-color: #cbd5e1;
+}
+
+.employee-checkbox-row:focus-within {
+  border-color: var(--form-primary);
+  box-shadow: 0 0 0 3px var(--form-primary-soft);
+  outline: none;
+}
+
+.employee-checkbox-row input[type='checkbox'] {
+  width: 14px;
+  height: 14px;
+  margin: 0;
+  flex-shrink: 0;
+  accent-color: var(--form-primary);
+  cursor: pointer;
+}
+
+.employee-checkbox-row span {
+  min-width: 0;
+}
+
+/* Controles al ancho de la celda (grilla); altura token ui-form-guidelines.md */
+.form-field app-search-select,
+.form-field app-calendar-input {
+  display: block;
+  width: 100%;
+  min-width: 0;
+}
+
 .employee-control {
   box-sizing: border-box;
   width: 100%;
+  min-width: 0;
   height: var(--erp-control-height, 22px);
   min-height: var(--erp-control-height, 22px);
   border: 1px solid var(--form-border);
@@ -270,20 +329,16 @@
     background-color 160ms ease;
 }
 
-.form-field--passport {
-  max-width: none;
-}
-
-.form-field--date {
-  max-width: none;
-}
-
-.form-field--sex {
-  max-width: none;
+.form-field--passport,
+.form-field--date,
+.form-field--sex,
+.form-field--rut {
+  min-width: 0;
 }
 
 .form-field--wide {
   max-width: none;
+  min-width: 0;
 }
 
 .employee-control::placeholder {
@@ -311,6 +366,8 @@
 .employee-control--textarea {
   height: auto;
   min-height: 96px;
+  max-width: 100%;
+  min-width: 0;
   padding-top: 12px;
   padding-bottom: 12px;
 }

@@ -1,12 +1,20 @@
 <section class="employee-section-shell employee-section-shell--compact" [formGroup]="formGroup">
   @if (isBlockVisible('ubicacion')) {
-    <app-card className="employee-block">
+    <app-card className="employee-block" [class.employee-block--domicilio-avanzado]="domicilioAvanzado">
       <div class="employee-block-head">
         <h4>Domicilio particular</h4>
+        @if (domicilioAvanzado) {
+          <p class="employee-block-lead">
+            La comuna es obligatoria en el alta avanzada para completar la ficha y liquidar remuneraciones.
+          </p>
+        }
       </div>
 
-      <div class="employee-grid employee-grid--four">
-        <div class="form-field employee-span-2">
+      <div
+        class="employee-grid employee-grid--four"
+        [class.employee-grid-adv-domicilio]="advancedGridLayout"
+      >
+        <div class="form-field form-field--wide">
           <div class="field-label-row">
             <label for="empleado-direccion">Calle o avenida</label>
             @if (isRequired('direccion')) {
@@ -67,7 +75,7 @@
           }
         </div>
 
-        <div class="form-field employee-span-2">
+        <div class="form-field">
           <div class="field-label-row">
             <label for="empleado-comuna">Comuna</label>
             @if (isRequired('idComuna')) {
@@ -95,7 +103,7 @@
           }
         </div>
 
-        <div class="form-field employee-span-4">
+        <div class="form-field">
           <div class="field-label-row">
             <label for="empleado-observaciones-direccion">Observaciones</label>
           </div>

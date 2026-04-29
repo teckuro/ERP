@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, DestroyRef, ElementRef, OnInit, inject, signal } from '@angular/core';
-import { AbstractControl, ReactiveFormsModule } from '@angular/forms';
+import { AbstractControl, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { LucideAngularModule } from 'lucide-angular';
 
@@ -18,7 +18,8 @@ import {
   EmpleadoFormCatalogos,
 } from '../../models/empleado-catalogos.model';
 import {
-  EMPLEADO_FORM_CONCEPTUAL_STEP_LABELS,
+  EMPLEADO_ADVANCED_WIZARD_LABELS,
+  EMPLEADO_ADVANCED_WIZARD_STEP_COUNT,
   EMPLEADO_FORM_STEP_BLOCK_IDS,
   EMPLEADO_FORM_TAB_ORDER,
   EmpleadoFormTabId,
@@ -43,17 +44,16 @@ import {
 } from '../../../../shared/components/ui/record-breadcrumb.component';
 
 type TabId = EmpleadoFormTabId;
-type FinalReviewStatus = 'Completo' | 'Pendiente de revision';
+type WizardStepUiKind =
+  | 'completo'
+  | 'pendiente'
+  | 'errores'
+  | 'opcional'
+  | 'no-aplica';
 type ValidationStepId = TabId;
 type ValidationSeverity = 'error' | 'warning' | 'info';
-type ValidationPanelMode = 'step' | 'global';
 type StepValidationStatus = 'pending' | 'in-progress' | 'invalid' | 'complete';
 type FormEmpleadoModo = 'basico' | 'avanzado';
-
-interface FinalReviewItem {
-  label: string;
-  status: FinalReviewStatus;
-}
 
 interface ValidationRule {
   id: string;
@@ -71,6 +71,7 @@ interface ValidationRule {
 interface EvaluatedValidationRule {
   id: string;
   stepId: ValidationStepId;
+  wizardStep: number;
   label: string;
   severity: ValidationSeverity;
   blocking: boolean;
@@ -130,7 +131,8 @@ export class FormEmpleadoComponent implements OnInit {
   private readonly hostElement = inject<ElementRef<HTMLElement>>(ElementRef);
 
   readonly modo = signal<FormEmpleadoModo>('avanzado');
-  readonly activeTab = signal<TabId>('datosPersonales');
+  /** Creacion avanzada: indice de etapa 0..8 (9 pasos). */
+  readonly activeWizardStep = signal(0);
   readonly isSaving = signal(false);
   readonly attemptedSave = signal(false);
   readonly errorMessage = signal<string | null>(null);
@@ -145,32 +147,39 @@ export class FormEmpleadoComponent implements OnInit {
   readonly catalogosError = signal<string | null>(null);
   readonly completedTabs = signal<ReadonlySet<TabId>>(new Set());
   readonly attemptedTabs = signal<ReadonlySet<TabId>>(new Set());
+  readonly attemptedWizardSteps = signal<ReadonlySet<number>>(new Set());
   readonly form: EmpleadoFormGroup = this.empleadosFormService.createForm();
-  readonly totalSteps = TAB_ORDER.length;
+  readonly totalSteps = EMPLEADO_ADVANCED_WIZARD_STEP_COUNT;
   readonly breadcrumbItems: readonly RecordBreadcrumbItem[] = [
     { label: 'Empleados', link: '/empleados' },
     { label: 'Creacion de ficha' },
   ];
-  readonly conceptualSteps = [...EMPLEADO_FORM_CONCEPTUAL_STEP_LABELS];
+  readonly advancedWizardLabels = [...EMPLEADO_ADVANCED_WIZARD_LABELS];
 
   /** Inventario de bloques por paso (manifest); referencia unica frente a templates de seccion. */
   readonly stepBlockIds = EMPLEADO_FORM_STEP_BLOCK_IDS;
 
   async ngOnInit(): Promise<void> {
-    this.modo.set(this.resolveModo());
+    const modo = this.resolveModo();
+    this.modo.set(modo);
+    if (modo === 'avanzado') {
+      this.form.controls.contacto.controls.idComuna.addValidators(Validators.required);
+      this.form.controls.contacto.controls.idComuna.updateValueAndValidity({ emitEvent: false });
+    }
     this.empleadosFormService.configureFormBehavior(this.form, this.destroyRef, () =>
       this.catalogos(),
     );
     await this.loadCatalogos();
   }
 
-  selectTab(tabId: TabId | string): void {
-    if (!this.isKnownTab(tabId)) {
+  selectWizardStep(index: number): void {
+    if (index < 0 || index >= EMPLEADO_ADVANCED_WIZARD_STEP_COUNT) {
       return;
     }
 
-    this.updateTabCompletion(this.activeTab());
-    this.activeTab.set(tabId);
+    this.syncCompletedTabsFromValidity();
+    this.activeWizardStep.set(index);
+    this.attemptedWizardSteps.update((prev) => new Set([...prev, index]));
   }
 
   async loadCatalogos(): Promise<void> {
@@ -193,15 +202,26 @@ export class FormEmpleadoComponent implements OnInit {
   handleFormSubmit(event: SubmitEvent): void {
     event.preventDefault();
     event.stopPropagation();
+    if (this.isAdvancedMode() && this.activeWizardStep() !== 8) {
+      return;
+    }
     void this.onSubmit();
   }
 
-  isConceptualStepActive(index: number): boolean {
-    return TAB_ORDER[index] === this.activeTab();
+  isWizardStepActive(index: number): boolean {
+    return this.activeWizardStep() === index;
   }
 
-  conceptualStepTab(index: number): TabId {
-    return TAB_ORDER[index] ?? 'datosPersonales';
+  /** Secuencia de indices al usar Siguiente / Anterior (omite APVI si no aplica). */
+  linearWizardSequence(): readonly number[] {
+    const base = [0, 1, 2, 3, 4, 5] as const;
+    const p = this.form.controls.previsionSalud.controls;
+    const incluyeApvi =
+      p.tipoRegimenPrevisional.value === 'AFP' && p.tieneApv.value === true;
+    if (incluyeApvi) {
+      return [...base, 6, 7, 8];
+    }
+    return [...base, 7, 8];
   }
 
   async onSubmit(): Promise<void> {
@@ -239,11 +259,11 @@ export class FormEmpleadoComponent implements OnInit {
       return;
     }
 
-    const firstIncompleteTab = this.findFirstIncompleteTab();
+    const firstBadStep = this.findFirstWizardStepWithBlockingIssues();
 
-    if (firstIncompleteTab || this.form.invalid) {
+    if (firstBadStep !== null || this.form.invalid) {
       this.syncCompletedTabsFromValidity();
-      this.showInvalidTab(firstIncompleteTab ?? this.findFirstInvalidTab());
+      this.showInvalidWizardStep(firstBadStep ?? 0);
       return;
     }
 
@@ -256,7 +276,7 @@ export class FormEmpleadoComponent implements OnInit {
       );
 
       this.successMessage.set(
-        `La ficha de ${created.nombre} quedo activa y lista para operar en remuneraciones.`,
+        'La ficha avanzada fue guardada correctamente y el empleado quedo listo para operar.',
       );
       this.successFlow.set('avanzado');
       this.createdEmployeeId.set(created.id);
@@ -297,7 +317,7 @@ export class FormEmpleadoComponent implements OnInit {
   }
 
   pageTitle(): string {
-    return this.isBasicMode() ? 'Creacion basica de empleado' : 'Alta de colaborador';
+    return this.isBasicMode() ? 'Creacion basica de empleado' : 'Creacion avanzada de empleado';
   }
 
   saveActionLabel(): string {
@@ -313,40 +333,63 @@ export class FormEmpleadoComponent implements OnInit {
   successModalTitle(): string {
     return this.successFlow() === 'basico'
       ? 'Empleado registrado correctamente'
-      : 'Ficha registrada';
+      : 'Empleado registrado correctamente';
   }
 
-  /** Modal de exito: texto del boton principal (basico -> Ir al listado, avanzado -> Aceptar). */
+  /** Modal de exito: texto del boton principal. */
   successModalPrimaryLabel(): string {
-    return this.successFlow() === 'basico' ? 'Ir al listado' : 'Aceptar';
+    return 'Ir al listado';
   }
 
   goToPreviousTab(): void {
-    const currentIndex = TAB_ORDER.indexOf(this.activeTab());
-
-    if (currentIndex > 0) {
-      this.activeTab.set(TAB_ORDER[currentIndex - 1]);
+    const seq = this.linearWizardSequence();
+    let idx = seq.indexOf(this.activeWizardStep());
+    if (idx === -1) {
+      const cur = this.activeWizardStep();
+      const candidates = seq.filter((s) => s < cur);
+      const prev = candidates.length ? candidates[candidates.length - 1]! : seq[0]!;
+      this.syncCompletedTabsFromValidity();
+      this.activeWizardStep.set(prev);
+      return;
+    }
+    if (idx > 0) {
+      this.syncCompletedTabsFromValidity();
+      this.activeWizardStep.set(seq[idx - 1]!);
     }
   }
 
   goToNextTab(): void {
-    const currentIndex = TAB_ORDER.indexOf(this.activeTab());
-
-    if (currentIndex >= TAB_ORDER.length - 1) {
+    const seq = this.linearWizardSequence();
+    let idx = seq.indexOf(this.activeWizardStep());
+    if (idx === -1) {
+      const cur = this.activeWizardStep();
+      const next = seq.find((s) => s > cur);
+      if (next !== undefined) {
+        this.syncCompletedTabsFromValidity();
+        this.activeWizardStep.set(next);
+        this.scrollToPageStart();
+      }
       return;
     }
-
-    this.updateTabCompletion(this.activeTab());
-    this.activeTab.set(TAB_ORDER[currentIndex + 1]);
-    this.scrollToPageStart();
+    if (idx < seq.length - 1) {
+      this.syncCompletedTabsFromValidity();
+      this.activeWizardStep.set(seq[idx + 1]!);
+      this.scrollToPageStart();
+    }
   }
 
   isFirstTab(): boolean {
-    return TAB_ORDER.indexOf(this.activeTab()) === 0;
+    const seq = this.linearWizardSequence();
+    const idx = seq.indexOf(this.activeWizardStep());
+    if (idx === -1) {
+      return this.activeWizardStep() <= seq[0]!;
+    }
+    return idx === 0;
   }
 
   isLastTab(): boolean {
-    return TAB_ORDER.indexOf(this.activeTab()) === TAB_ORDER.length - 1;
+    const seq = this.linearWizardSequence();
+    return this.activeWizardStep() === seq[seq.length - 1]!;
   }
 
   isNextDisabled(): boolean {
@@ -354,12 +397,17 @@ export class FormEmpleadoComponent implements OnInit {
   }
 
   activeStepNumber(): number {
-    return TAB_ORDER.indexOf(this.activeTab()) + 1;
+    return this.activeWizardStep() + 1;
   }
 
   completedStepCount(): number {
-    return TAB_ORDER.filter((tabId) => this.getStepValidationSummary(tabId).status === 'complete')
-      .length;
+    let n = 0;
+    for (let i = 0; i < EMPLEADO_ADVANCED_WIZARD_STEP_COUNT; i++) {
+      if (this.getWizardStepValidationSummary(i).status === 'complete') {
+        n++;
+      }
+    }
+    return n;
   }
 
   pendingValidationCount(): number {
@@ -367,7 +415,9 @@ export class FormEmpleadoComponent implements OnInit {
   }
 
   validationPanelItems(): EvaluatedValidationRule[] {
-    return this.getValidationPanelItemsForStep(this.activeTab(), 'step');
+    return this.evaluateValidationRules().filter(
+      (item) => item.visible && item.wizardStep === this.activeWizardStep(),
+    );
   }
 
   pendingValidationPanelItems(): EvaluatedValidationRule[] {
@@ -383,34 +433,178 @@ export class FormEmpleadoComponent implements OnInit {
   }
 
   getStepValidationSummary(stepId: ValidationStepId): StepValidationSummary {
-    const evaluated = this.evaluateValidationRules().filter(
-      (item) => item.stepId === stepId && item.visible,
-    );
-    const pending = evaluated.filter((item) => !item.complete);
-    const blockingPending = pending.filter((item) => item.blocking).length;
-    const warningsPending = pending.filter((item) => item.severity === 'warning').length;
-    const wasAttempted = this.attemptedTabs().has(stepId) || this.attemptedSave();
-    const hasInteraction = this.hasStepInteraction(stepId);
+    if (!this.isAdvancedMode()) {
+      const evaluated = this.evaluateValidationRules().filter(
+        (item) => item.stepId === stepId && item.visible,
+      );
+      const pending = evaluated.filter((item) => !item.complete);
+      const blockingPending = pending.filter((item) => item.blocking).length;
+      const warningsPending = pending.filter((item) => item.severity === 'warning').length;
+      const wasAttempted = this.attemptedTabs().has(stepId) || this.attemptedSave();
+      const hasInteraction = this.hasStepInteraction(stepId);
+
+      let status: StepValidationStatus = 'pending';
+
+      if (blockingPending > 0 && wasAttempted) {
+        status = 'invalid';
+      } else if (blockingPending === 0 && evaluated.length > 0) {
+        status = 'complete';
+      } else if (hasInteraction || pending.length > 0) {
+        status = 'in-progress';
+      }
+
+      return {
+        stepId,
+        pending: pending.length,
+        blockingPending,
+        warningsPending,
+        complete: evaluated.length - pending.length,
+        applicable: evaluated.length,
+        status,
+      };
+    }
+
+    const indices = this.wizardStepsForTab(stepId);
+    const parts = indices.map((i) => this.computeWizardStepValidationCore(i));
+    const pending = parts.reduce((sum, p) => sum + p.pending, 0);
+    const blockingPending = parts.reduce((sum, p) => sum + p.blockingPending, 0);
+    const warningsPending = parts.reduce((sum, p) => sum + p.warningsPending, 0);
+    const applicable = parts.reduce((sum, p) => sum + p.applicable, 0);
+    const complete = parts.reduce((sum, p) => sum + p.complete, 0);
+    const wasAttempted =
+      this.attemptedSave() || indices.some((i) => this.attemptedWizardSteps().has(i));
+    const hasInteraction = indices.some((i) => this.hasWizardStepInteraction(i));
 
     let status: StepValidationStatus = 'pending';
 
     if (blockingPending > 0 && wasAttempted) {
       status = 'invalid';
-    } else if (blockingPending === 0 && evaluated.length > 0) {
+    } else if (blockingPending === 0 && applicable > 0 && pending === 0) {
       status = 'complete';
-    } else if (hasInteraction || pending.length > 0) {
+    } else if (hasInteraction || pending > 0) {
       status = 'in-progress';
     }
 
     return {
       stepId,
-      pending: pending.length,
+      pending,
       blockingPending,
       warningsPending,
-      complete: evaluated.length - pending.length,
-      applicable: evaluated.length,
+      complete,
+      applicable,
       status,
     };
+  }
+
+  getWizardStepValidationSummary(wizardStepIndex: number): StepValidationSummary {
+    if (wizardStepIndex === 8) {
+      const blockingUpstream =
+        [0, 1, 2, 3, 4, 5, 6, 7].some(
+          (i) => this.computeWizardStepValidationCore(i).blockingPending > 0,
+        ) || this.form.invalid;
+      const wasAttempted = this.attemptedSave();
+      let status: StepValidationStatus = 'pending';
+
+      if (!blockingUpstream) {
+        status = 'complete';
+      } else if (wasAttempted) {
+        status = 'invalid';
+      } else {
+        status = 'in-progress';
+      }
+
+      return {
+        stepId: 'bancario',
+        pending: blockingUpstream ? 1 : 0,
+        blockingPending: blockingUpstream ? 1 : 0,
+        warningsPending: 0,
+        complete: !blockingUpstream ? 1 : 0,
+        applicable: 1,
+        status,
+      };
+    }
+
+    return this.computeWizardStepValidationCore(wizardStepIndex);
+  }
+
+  wizardStepUiKind(stepIndex: number): WizardStepUiKind {
+    if (stepIndex === 8) {
+      const summary = this.getWizardStepValidationSummary(8);
+      if (summary.blockingPending > 0 && this.attemptedSave()) {
+        return 'errores';
+      }
+      if (summary.blockingPending === 0) {
+        return 'completo';
+      }
+      return 'pendiente';
+    }
+
+    const previsionTipo = this.form.controls.previsionSalud.controls.tipoRegimenPrevisional.value;
+    const tieneApv = this.form.controls.previsionSalud.controls.tieneApv.value;
+
+    if (stepIndex === 6 && previsionTipo !== 'AFP') {
+      return 'no-aplica';
+    }
+
+    if (stepIndex === 6 && previsionTipo === 'AFP' && !tieneApv) {
+      return 'opcional';
+    }
+
+    const summary = this.getWizardStepValidationSummary(stepIndex);
+    /** Respeta la secuencia lineal (p. ej. paso 7 no “pasó” el 6 si APVI está fuera del flujo). */
+    const stepRelevantForUi = this.wizardStepShownAsProgressed(stepIndex);
+
+    if (summary.blockingPending > 0 && stepRelevantForUi) {
+      return 'errores';
+    }
+
+    if (summary.blockingPending === 0 && summary.status === 'complete') {
+      if (!stepRelevantForUi) {
+        return 'pendiente';
+      }
+      return 'completo';
+    }
+
+    if (stepIndex === 6 && previsionTipo === 'AFP' && tieneApv && summary.applicable === 0) {
+      return 'opcional';
+    }
+
+    return 'pendiente';
+  }
+
+  wizardStepUiLabel(kind: WizardStepUiKind): string {
+    switch (kind) {
+      case 'completo':
+        return 'Completo';
+      case 'pendiente':
+        return 'Pendiente';
+      case 'errores':
+        return 'Con errores';
+      case 'opcional':
+        return 'Opcional';
+      case 'no-aplica':
+        return 'No aplica';
+    }
+  }
+
+  advancedReviewRows(): { stepIndex: number; label: string; kind: WizardStepUiKind }[] {
+    return this.advancedWizardLabels.map((label, stepIndex) => ({
+      stepIndex,
+      label,
+      kind: this.wizardStepUiKind(stepIndex),
+    }));
+  }
+
+  identificacionResumen(): string {
+    const rut = this.form.controls.datosPersonales.controls.rut.value.trim();
+    const pas = this.form.controls.datosPersonales.controls.pasaporte.value.trim();
+    if (rut) {
+      return rut;
+    }
+    if (pas) {
+      return `Pasaporte ${pas}`;
+    }
+    return 'Sin identificador';
   }
 
   getGlobalValidationSummary(): GlobalValidationSummary {
@@ -423,6 +617,173 @@ export class FormEmpleadoComponent implements OnInit {
       invalidSteps: summaries.filter((summary) => summary.status === 'invalid').length,
       pendingTotal: summaries.reduce((total, summary) => total + summary.pending, 0),
     };
+  }
+
+  private resolveWizardStep(rule: ValidationRule): number {
+    if (rule.sourcePath === 'contacto.idComuna') {
+      return 1;
+    }
+
+    if (rule.stepId === 'datosPersonales') {
+      return 0;
+    }
+
+    if (rule.stepId === 'bancario') {
+      return 7;
+    }
+
+    if (rule.stepId === 'previsionSalud') {
+      return rule.category === 'APVI' ? 6 : 5;
+    }
+
+    if (rule.stepId === 'contrato') {
+      const cat = rule.category ?? '';
+      if (cat === 'Zona extrema' || cat === 'Cargas' || cat === 'Semana corrida') {
+        return 4;
+      }
+      if (cat === 'Jornada' || cat === 'Remuneracion') {
+        return 3;
+      }
+      return 2;
+    }
+
+    return 0;
+  }
+
+  private wizardStepsForTab(tabId: TabId): number[] {
+    switch (tabId) {
+      case 'datosPersonales':
+        return [0, 1];
+      case 'contrato':
+        return [2, 3, 4];
+      case 'previsionSalud':
+        return [5, 6];
+      case 'bancario':
+        return [7];
+    }
+  }
+
+  private primaryTabForWizardStep(step: number): TabId {
+    if (step <= 1) {
+      return 'datosPersonales';
+    }
+    if (step <= 4) {
+      return 'contrato';
+    }
+    if (step <= 6) {
+      return 'previsionSalud';
+    }
+    return 'bancario';
+  }
+
+  private hasWizardStepInteraction(wizardStepIndex: number): boolean {
+    if (this.attemptedSave()) {
+      return true;
+    }
+    if (this.attemptedWizardSteps().has(wizardStepIndex)) {
+      return true;
+    }
+    const tab = this.primaryTabForWizardStep(wizardStepIndex);
+    return this.attemptedTabs().has(tab) || this.completedTabs().has(tab);
+  }
+
+  /**
+   * Indica si el paso ya cuenta como “alcanzado” en el flujo lineal (para pintar completo/errores).
+   * Evita marcar el paso 7 como “pasó” el 6 cuando APVI no está en `linearWizardSequence()`.
+   */
+  private wizardStepShownAsProgressed(stepIndex: number): boolean {
+    if (this.attemptedSave() || this.attemptedWizardSteps().has(stepIndex)) {
+      return true;
+    }
+    const seq = this.linearWizardSequence();
+    const active = this.activeWizardStep();
+    const iAct = seq.indexOf(active);
+    const iStep = seq.indexOf(stepIndex);
+
+    if (iAct === -1) {
+      return stepIndex === active;
+    }
+    if (iStep === -1) {
+      return false;
+    }
+    return iStep <= iAct;
+  }
+
+  private computeWizardStepValidationCore(wizardStepIndex: number): StepValidationSummary {
+    const evaluated = this.evaluateValidationRules().filter(
+      (item) => item.wizardStep === wizardStepIndex && item.visible,
+    );
+    const pending = evaluated.filter((item) => !item.complete);
+    const blockingPending = pending.filter((item) => item.blocking).length;
+    const warningsPending = pending.filter((item) => item.severity === 'warning').length;
+    const wasAttempted =
+      this.attemptedWizardSteps().has(wizardStepIndex) || this.attemptedSave();
+    const hasInteraction = this.hasWizardStepInteraction(wizardStepIndex);
+
+    let status: StepValidationStatus = 'pending';
+
+    if (blockingPending > 0 && wasAttempted) {
+      status = 'invalid';
+    } else if (blockingPending === 0 && evaluated.length > 0 && pending.length === 0) {
+      status = 'complete';
+    } else if (hasInteraction || pending.length > 0) {
+      status = 'in-progress';
+    }
+
+    return {
+      stepId: this.primaryTabForWizardStep(wizardStepIndex),
+      pending: pending.length,
+      blockingPending,
+      warningsPending,
+      complete: evaluated.length - pending.length,
+      applicable: evaluated.length,
+      status,
+    };
+  }
+
+  private findFirstWizardStepWithBlockingIssues(): number | null {
+    for (let s = 0; s <= 7; s++) {
+      if (this.computeWizardStepValidationCore(s).blockingPending > 0) {
+        return s;
+      }
+    }
+
+    return this.form.invalid ? 0 : null;
+  }
+
+  private showInvalidWizardStep(step: number): void {
+    this.activeWizardStep.set(step);
+    this.attemptedWizardSteps.update((prev) => new Set([...prev, step]));
+    this.attemptAllTabs();
+    this.markWizardStepTouched(step);
+    this.focusFirstInvalidControl(step);
+  }
+
+  private markWizardStepTouched(step: number): void {
+    switch (step) {
+      case 0:
+        this.markControlAsTouched(this.form.controls.datosPersonales);
+        this.form.controls.contacto.controls.email.markAsTouched();
+        this.form.controls.contacto.controls.telefono.markAsTouched();
+        break;
+      case 1:
+        this.markControlAsTouched(this.form.controls.contacto);
+        break;
+      case 2:
+      case 3:
+      case 4:
+        this.markControlAsTouched(this.form.controls.contrato);
+        break;
+      case 5:
+      case 6:
+        this.markControlAsTouched(this.form.controls.previsionSalud);
+        break;
+      case 7:
+        this.markControlAsTouched(this.form.controls.bancario);
+        break;
+      default:
+        this.form.markAllAsTouched();
+    }
   }
 
   private resolveModo(): FormEmpleadoModo {
@@ -613,6 +974,17 @@ export class FormEmpleadoComponent implements OnInit {
         () => Boolean(personal.rut.value.trim()),
         () => Boolean(personal.pasaporte.value.trim()) && !Boolean(personal.rut.value.trim()),
       ),
+      this.rule(
+        'contact.commune',
+        'datosPersonales',
+        'Comuna obligatoria',
+        'error',
+        true,
+        'contacto.idComuna',
+        'Domicilio',
+        () => contacto.idComuna.valid,
+        () => this.isAdvancedMode(),
+      ),
 
       this.rule(
         'contract.position',
@@ -742,7 +1114,7 @@ export class FormEmpleadoComponent implements OnInit {
         'error',
         true,
         'contrato.semanaCorridaDiasLaborables',
-        'Jornada',
+        'Semana corrida',
         () => contrato.semanaCorridaDiasLaborables.valid,
         () => contrato.semanaCorridaActiva.value,
       ),
@@ -996,6 +1368,7 @@ export class FormEmpleadoComponent implements OnInit {
       return {
         id: rule.id,
         stepId: rule.stepId,
+        wizardStep: this.resolveWizardStep(rule),
         label: rule.label,
         severity: rule.severity,
         blocking: rule.blocking,
@@ -1005,15 +1378,6 @@ export class FormEmpleadoComponent implements OnInit {
         category: rule.category,
       };
     });
-  }
-
-  private getValidationPanelItemsForStep(
-    stepId: ValidationStepId,
-    mode: ValidationPanelMode,
-  ): EvaluatedValidationRule[] {
-    return this.evaluateValidationRules()
-      .filter((item) => item.visible && (mode === 'global' || item.stepId === stepId))
-      .sort((left, right) => this.validationSortWeight(left) - this.validationSortWeight(right));
   }
 
   private rule(
@@ -1084,73 +1448,45 @@ export class FormEmpleadoComponent implements OnInit {
     return sucursal?.label || 'Sin sucursal';
   }
 
-  finalReviewItems(): FinalReviewItem[] {
-    return [
-      {
-        label: 'Identificacion y contacto',
-        status: this.reviewStatus(
-          this.getStepValidationSummary('datosPersonales').blockingPending === 0,
-        ),
-      },
-      {
-        label: 'Informacion laboral',
-        status: this.reviewStatus(this.getStepValidationSummary('contrato').blockingPending === 0),
-      },
-      {
-        label: 'Prevision y salud',
-        status: this.reviewStatus(
-          this.getStepValidationSummary('previsionSalud').blockingPending === 0,
-        ),
-      },
-      {
-        label: 'Pago y cierre',
-        status: this.reviewStatus(this.getStepValidationSummary('bancario').blockingPending === 0),
-      },
-    ];
-  }
-
-  reviewStatusClass(status: FinalReviewStatus): string {
-    return status === 'Completo' ? 'is-complete' : 'is-pending';
-  }
-
-  private reviewStatus(isComplete: boolean): FinalReviewStatus {
-    return isComplete ? 'Completo' : 'Pendiente de revision';
-  }
-
-  private findFirstInvalidTab(): TabId {
-    return (
-      TAB_ORDER.find((tabId) =>
-        tabId === 'datosPersonales'
-          ? this.getPersonalSectionState().invalid
-          : this.getSection(tabId).invalid,
-      ) ?? 'datosPersonales'
-    );
-  }
-
-  private findFirstIncompleteTab(): TabId | null {
-    return TAB_ORDER.find((tabId) => this.isTabInvalid(tabId)) ?? null;
-  }
-
-  private updateTabCompletion(tabId: TabId): void {
-    if (this.isTabInvalid(tabId)) {
-      this.removeCompletedTab(tabId);
-      return;
+  checklistStatusClass(kind: WizardStepUiKind): string {
+    switch (kind) {
+      case 'completo':
+        return 'is-complete';
+      case 'errores':
+        return 'is-error';
+      case 'opcional':
+        return 'is-optional';
+      case 'no-aplica':
+        return 'is-na';
+      default:
+        return 'is-pending';
     }
-
-    this.markTabAsCompleted(tabId);
   }
 
-  private showInvalidTab(tabId: TabId): void {
-    this.activeTab.set(tabId);
-    this.markTabAsTouched(tabId);
-    this.markTabAsAttempted(tabId);
-    this.focusFirstInvalidControl(tabId);
-  }
-
-  private focusFirstInvalidControl(tabId: TabId = this.activeTab()): void {
+  private focusFirstInvalidControl(wizardStep: number = this.activeWizardStep()): void {
     window.setTimeout(() => {
-      const firstInvalidControl =
-        this.findFirstControlForPendingValidation(tabId) ?? this.findFirstNgInvalidControl();
+      const sorted = [...this.evaluateValidationRules()].sort(
+        (a, b) => this.validationSortWeight(a) - this.validationSortWeight(b),
+      );
+      const firstPendingRule = sorted.find(
+        (item) =>
+          item.visible &&
+          item.wizardStep === wizardStep &&
+          item.blocking &&
+          !item.complete,
+      );
+      const controlName = firstPendingRule?.sourcePath.split('.').at(-1);
+
+      let firstInvalidControl: HTMLElement | null = null;
+
+      if (controlName) {
+        const controlHost = this.hostElement.nativeElement.querySelector<HTMLElement>(
+          `.step-panel [formControlName="${controlName}"], .step-panel [formcontrolname="${controlName}"]`,
+        );
+        firstInvalidControl = this.getFocusableField(controlHost);
+      }
+
+      firstInvalidControl ??= this.findFirstNgInvalidControl();
 
       if (!firstInvalidControl) {
         return;
@@ -1159,23 +1495,6 @@ export class FormEmpleadoComponent implements OnInit {
       firstInvalidControl.scrollIntoView({ behavior: 'smooth', block: 'center' });
       firstInvalidControl.focus({ preventScroll: true });
     });
-  }
-
-  private findFirstControlForPendingValidation(tabId: TabId): HTMLElement | null {
-    const firstPendingRule = this.getValidationPanelItemsForStep(tabId, 'step').find(
-      (item) => item.blocking && !item.complete,
-    );
-    const controlName = firstPendingRule?.sourcePath.split('.').at(-1);
-
-    if (!controlName) {
-      return null;
-    }
-
-    const controlHost = this.hostElement.nativeElement.querySelector<HTMLElement>(
-      `.step-panel [formControlName="${controlName}"], .step-panel [formcontrolname="${controlName}"]`,
-    );
-
-    return this.getFocusableField(controlHost);
   }
 
   private findFirstNgInvalidControl(): HTMLElement | null {
@@ -1220,22 +1539,8 @@ export class FormEmpleadoComponent implements OnInit {
     });
   }
 
-  private isKnownTab(tabId: string): tabId is TabId {
-    return TAB_ORDER.includes(tabId as TabId);
-  }
-
   isTabInvalid(tabId: TabId): boolean {
     return this.getStepValidationSummary(tabId).blockingPending > 0;
-  }
-
-  private markTabAsTouched(tabId: TabId): void {
-    if (tabId === 'datosPersonales') {
-      this.markControlAsTouched(this.form.controls.datosPersonales);
-      this.markControlAsTouched(this.form.controls.contacto);
-      return;
-    }
-
-    this.markControlAsTouched(this.getSection(tabId));
   }
 
   private markControlAsTouched(control: AbstractControl): void {
@@ -1243,12 +1548,9 @@ export class FormEmpleadoComponent implements OnInit {
     control.updateValueAndValidity({ emitEvent: false });
   }
 
-  private markTabAsAttempted(tabId: TabId): void {
-    this.attemptedTabs.update((tabs) => new Set([...tabs, tabId]));
-  }
-
   private attemptAllTabs(): void {
     this.attemptedTabs.set(new Set(TAB_ORDER));
+    this.attemptedWizardSteps.set(new Set([0, 1, 2, 3, 4, 5, 6, 7, 8]));
   }
 
   private syncCompletedTabsFromValidity(): void {

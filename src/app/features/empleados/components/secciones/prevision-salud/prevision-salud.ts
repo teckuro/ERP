@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, HostBinding, Input } from '@angular/core';
 import { ReactiveFormsModule, Validators } from '@angular/forms';
 
 import {
@@ -41,6 +41,13 @@ export class PrevisionSaludComponent {
   @Input() institucionesApv: EmpleadoCatalogOption[] = [];
   @Input() formasPagoApv: EmpleadoCatalogOption[] = [];
   @Input() visibleBlocks: string[] | null = null;
+  /** Grilla 8 columnas y spans (solo alta avanzada). */
+  @Input() advancedGridLayout = false;
+
+  @HostBinding('class.employee-layout-advanced')
+  protected get employeeLayoutAdvanced(): boolean {
+    return this.advancedGridLayout;
+  }
 
   controlClass(controlName: PrevisionSaludControlName): string {
     return ['employee-control', this.hasError(controlName) ? 'is-invalid' : '']

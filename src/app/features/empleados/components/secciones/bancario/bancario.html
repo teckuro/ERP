@@ -10,10 +10,13 @@
       <h4>Cuenta de abono</h4>
     </div>
 
-    <div class="employee-grid employee-grid--four">
+    <div
+      class="employee-grid employee-grid--four"
+      [class.employee-grid-adv-bancario]="advancedGridLayout"
+    >
     <div class="form-field">
       <div class="field-label-row">
-        <label class="text-sm font-medium text-gray-700" for="empleado-banco">Banco</label>
+        <label for="empleado-banco">Banco</label>
         @if (isRequired('idBanco')) {
           <span class="field-required" aria-hidden="true">*</span>
         }
@@ -33,7 +36,7 @@
 
     <div class="form-field">
       <div class="field-label-row">
-        <label class="text-sm font-medium text-gray-700" for="empleado-tipo-cuenta">Tipo de cuenta</label>
+        <label for="empleado-tipo-cuenta">Tipo de cuenta</label>
         @if (isRequired('idTipoCuentaBancaria')) {
           <span class="field-required" aria-hidden="true">*</span>
         }
@@ -57,7 +60,7 @@
 
     <div class="form-field">
       <div class="field-label-row">
-        <label class="text-sm font-medium text-gray-700" for="empleado-numero-cuenta">Numero de cuenta</label>
+        <label for="empleado-numero-cuenta">Numero de cuenta</label>
         @if (isRequired('numeroCuenta')) {
           <span class="field-required" aria-hidden="true">*</span>
         }

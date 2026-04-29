@@ -26,7 +26,11 @@
             mode="modal"
             variant="loading"
             title="Guardando ficha"
-            message="Estamos guardando la ficha inicial del colaborador."
+            [message]="
+              isBasicMode()
+                ? 'Estamos guardando la ficha inicial del colaborador.'
+                : 'Estamos guardando la ficha completa del colaborador.'
+            "
           ></app-message-box>
         } @else if (duplicateRutModalRut(); as rutDup) {
           <app-message-box
@@ -59,8 +63,15 @@
           <app-message-box
             mode="modal"
             variant="error"
-            title="No fue posible registrar la ficha"
-            [message]="message"
+            [title]="
+              isBasicMode() ? 'No fue posible registrar la ficha' : 'No fue posible registrar el empleado'
+            "
+            [message]="
+              isBasicMode()
+                ? message
+                : 'Ocurrió un problema al intentar guardar la ficha avanzada.'
+            "
+            [detail]="isBasicMode() ? '' : message"
             primaryLabel="Aceptar"
             (action)="dismissErrorMessage()"
           ></app-message-box>
@@ -68,7 +79,7 @@
           <app-message-box
             mode="modal"
             variant="success"
-            [modalHeadlineSplit]="successFlow() === 'basico'"
+            [modalHeadlineSplit]="true"
             [title]="successModalTitle()"
             [message]="message"
             [primaryLabel]="successModalPrimaryLabel()"
@@ -94,8 +105,25 @@
                   </div>
                 }
               </div>
-            } @else if (createdEmployeeId(); as createdId) {
-              <p class="message-detail">Identificador de ficha: {{ createdId }}</p>
+            } @else {
+              <div
+                class="basic-success-followup"
+                role="region"
+                aria-labelledby="advanced-success-detail-title"
+              >
+                <div class="basic-success-followup__panel">
+                  <h3 class="basic-success-followup__title" id="advanced-success-detail-title">Detalle</h3>
+                  <p class="basic-success-followup__text">
+                    Puedes revisar o completar información adicional desde la ficha del empleado.
+                  </p>
+                </div>
+                @if (createdEmployeeId(); as fichaId) {
+                  <div class="basic-success-followup__meta">
+                    <span class="basic-success-followup__meta-label">Referencia</span>
+                    <span class="basic-success-followup__meta-value">Ficha N° {{ fichaId }}</span>
+                  </div>
+                }
+              </div>
             }
           </app-message-box>
         }
@@ -130,17 +158,25 @@
               @if (isAdvancedMode()) {
                 <div class="content-head">
                   <ol class="flow-tabs" aria-label="Pasos del alta">
-                    @for (step of conceptualSteps; track step; let index = $index) {
+                    @for (step of advancedWizardLabels; track step; let index = $index) {
                       <li>
                         <button
                           type="button"
                           class="flow-tab"
-                          [class.is-active]="isConceptualStepActive(index)"
-                          [attr.aria-current]="isConceptualStepActive(index) ? 'step' : null"
-                          (click)="selectTab(conceptualStepTab(index))"
+                          [class.is-active]="isWizardStepActive(index)"
+                          [class.flow-tab--complete]="wizardStepUiKind(index) === 'completo'"
+                          [class.flow-tab--pending]="wizardStepUiKind(index) === 'pendiente'"
+                          [class.flow-tab--invalid]="wizardStepUiKind(index) === 'errores'"
+                          [class.flow-tab--optional]="wizardStepUiKind(index) === 'opcional'"
+                          [class.flow-tab--na]="wizardStepUiKind(index) === 'no-aplica'"
+                          [attr.aria-current]="isWizardStepActive(index) ? 'step' : null"
+                          (click)="selectWizardStep(index)"
                         >
-                          <span>{{ index + 1 }}</span>
-                          <p>{{ step }}</p>
+                          <span class="flow-tab-num">{{ index + 1 }}</span>
+                          <div class="flow-tab-body">
+                            <small class="flow-tab-state">{{ wizardStepUiLabel(wizardStepUiKind(index)) }}</small>
+                            <p class="flow-tab-title">{{ step }}</p>
+                          </div>
                         </button>
                       </li>
                     }
@@ -175,7 +211,7 @@
                       [basicSectionLeads]="true"
                     ></app-empleado-datos-personales>
                   </div>
-                } @else if (activeTab() === 'datosPersonales') {
+                } @else if (activeWizardStep() === 0) {
                   <div class="step-panel">
                     <app-empleado-datos-personales
                       [formGroup]="form.controls.datosPersonales"
@@ -183,14 +219,21 @@
                       [sexos]="catalogos().sexos"
                       [estadosCivil]="catalogos().estadosCivil"
                       [paises]="catalogos().paises"
+                      [visibleBlocks]="['identificacion', 'nombre', 'base']"
+                      [advancedGridLayout]="true"
                     ></app-empleado-datos-personales>
-
+                  </div>
+                } @else if (activeWizardStep() === 1) {
+                  <div class="step-panel">
                     <app-empleado-contacto
                       [formGroup]="form.controls.contacto"
                       [comunas]="catalogos().comunas"
+                      [visibleBlocks]="['ubicacion']"
+                      [domicilioAvanzado]="true"
+                      [advancedGridLayout]="true"
                     ></app-empleado-contacto>
                   </div>
-                } @else if (activeTab() === 'contrato') {
+                } @else if (activeWizardStep() === 2) {
                   <div class="step-panel">
                     <app-empleado-contrato
                       [formGroup]="form.controls.contrato"
@@ -203,9 +246,45 @@
                       [tiposGratificacion]="catalogos().tiposGratificacion"
                       [monedas]="catalogos().monedas"
                       [tramosCarga]="catalogos().tramosCarga"
+                      [visibleBlocks]="['relacion', 'contratoBase', 'centroCosto']"
+                      [advancedGridLayout]="true"
                     ></app-empleado-contrato>
                   </div>
-                } @else if (activeTab() === 'previsionSalud') {
+                } @else if (activeWizardStep() === 3) {
+                  <div class="step-panel">
+                    <app-empleado-contrato
+                      [formGroup]="form.controls.contrato"
+                      [centrosCosto]="catalogos().centrosCosto"
+                      [sucursales]="catalogos().sucursales"
+                      [departamentos]="catalogos().departamentos"
+                      [tiposTrabajador]="catalogos().tiposTrabajador"
+                      [tiposJornada]="catalogos().tiposJornada"
+                      [tiposContrato]="catalogos().tiposContrato"
+                      [tiposGratificacion]="catalogos().tiposGratificacion"
+                      [monedas]="catalogos().monedas"
+                      [tramosCarga]="catalogos().tramosCarga"
+                      [visibleBlocks]="['remuneracion']"
+                      [advancedGridLayout]="true"
+                    ></app-empleado-contrato>
+                  </div>
+                } @else if (activeWizardStep() === 4) {
+                  <div class="step-panel">
+                    <app-empleado-contrato
+                      [formGroup]="form.controls.contrato"
+                      [centrosCosto]="catalogos().centrosCosto"
+                      [sucursales]="catalogos().sucursales"
+                      [departamentos]="catalogos().departamentos"
+                      [tiposTrabajador]="catalogos().tiposTrabajador"
+                      [tiposJornada]="catalogos().tiposJornada"
+                      [tiposContrato]="catalogos().tiposContrato"
+                      [tiposGratificacion]="catalogos().tiposGratificacion"
+                      [monedas]="catalogos().monedas"
+                      [tramosCarga]="catalogos().tramosCarga"
+                      [visibleBlocks]="['cargas', 'zonaExtrema', 'semanaCorrida']"
+                      [advancedGridLayout]="true"
+                    ></app-empleado-contrato>
+                  </div>
+                } @else if (activeWizardStep() === 5) {
                   <div class="step-panel">
                     <app-empleado-prevision-salud
                       [formGroup]="form.controls.previsionSalud"
@@ -219,15 +298,110 @@
                       [monedas]="catalogos().monedas"
                       [institucionesApv]="catalogos().institucionesApv"
                       [formasPagoApv]="catalogos().formasPagoApv"
+                      [visibleBlocks]="['regimen', 'afp', 'ips', 'salud']"
+                      [advancedGridLayout]="true"
                     ></app-empleado-prevision-salud>
                   </div>
-                } @else {
+                } @else if (activeWizardStep() === 6) {
+                  <div class="step-panel">
+                    @if (form.controls.previsionSalud.controls.tipoRegimenPrevisional.value !== 'AFP') {
+                      <div class="wizard-na-panel" role="status">
+                        <h3 class="wizard-na-title">No aplica</h3>
+                        <p class="wizard-na-text">
+                          APVI solo corresponde cuando el régimen previsional es AFP. Puedes continuar con el
+                          alta.
+                        </p>
+                      </div>
+                    } @else if (!form.controls.previsionSalud.controls.tieneApv.value) {
+                      <div class="wizard-optional-panel" role="status">
+                        <h3 class="wizard-optional-title">Opcional</h3>
+                        <p class="wizard-optional-text">
+                          El trabajador no tiene APVI activo. Si no aplica, continúa al siguiente paso.
+                        </p>
+                      </div>
+                    } @else {
+                      <app-empleado-prevision-salud
+                        [formGroup]="form.controls.previsionSalud"
+                        [tiposRegimenPrevisional]="catalogos().tiposRegimenPrevisional"
+                        [regimenesPrevisionales]="catalogos().regimenesPrevisionales"
+                        [entidadesPrevisionalesIps]="catalogos().entidadesPrevisionalesIps"
+                        [exCajasPrevisionales]="catalogos().exCajasPrevisionales"
+                        [regimenesExCaja]="catalogos().regimenesExCaja"
+                        [afps]="catalogos().afps"
+                        [entidadesSalud]="catalogos().entidadesSalud"
+                        [monedas]="catalogos().monedas"
+                        [institucionesApv]="catalogos().institucionesApv"
+                        [formasPagoApv]="catalogos().formasPagoApv"
+                        [visibleBlocks]="['apvi']"
+                        [advancedGridLayout]="true"
+                      ></app-empleado-prevision-salud>
+                    }
+                  </div>
+                } @else if (activeWizardStep() === 7) {
                   <div class="step-panel step-panel--final">
                     <app-empleado-bancario
                       [formGroup]="form.controls.bancario"
                       [bancos]="catalogos().bancos"
                       [tiposCuentaBancaria]="catalogos().tiposCuentaBancaria"
+                      [advancedGridLayout]="true"
                     ></app-empleado-bancario>
+                  </div>
+                } @else {
+                  <div class="step-panel step-panel--resumen">
+                    <app-card className="resumen-card">
+                      <app-card-content className="resumen-card-inner">
+                        <h3 class="resumen-title">Resumen final</h3>
+                        <p class="resumen-lead">
+                          Revisa los datos antes de finalizar. El guardado definitivo ocurre solo al presionar
+                          <strong>Finalizar alta</strong>.
+                        </p>
+                        <dl class="resumen-dl">
+                          <div class="resumen-dl-row">
+                            <dt>Nombre</dt>
+                            <dd>{{ fullNameVisible() }}</dd>
+                          </div>
+                          <div class="resumen-dl-row">
+                            <dt>RUT o pasaporte</dt>
+                            <dd>{{ identificacionResumen() }}</dd>
+                          </div>
+                          <div class="resumen-dl-row">
+                            <dt>Cargo</dt>
+                            <dd>{{ cargoVisible() }}</dd>
+                          </div>
+                          <div class="resumen-dl-row">
+                            <dt>Sucursal</dt>
+                            <dd>{{ sucursalVisible() }}</dd>
+                          </div>
+                        </dl>
+                        <h4 class="resumen-checklist-title">Estado por etapa</h4>
+                        <ul class="resumen-checklist">
+                          @for (row of advancedReviewRows(); track row.stepIndex) {
+                            <li
+                              class="resumen-checklist-item"
+                              [ngClass]="checklistStatusClass(row.kind)"
+                            >
+                              <div class="resumen-checklist-main">
+                                <span class="resumen-checklist-step">{{ row.stepIndex + 1 }}. {{ row.label }}</span>
+                                <span class="resumen-checklist-state">{{ wizardStepUiLabel(row.kind) }}</span>
+                              </div>
+                              @if (
+                                row.stepIndex < 8 &&
+                                row.kind !== 'completo' &&
+                                row.kind !== 'no-aplica'
+                              ) {
+                                <button
+                                  type="button"
+                                  class="resumen-review-button"
+                                  (click)="selectWizardStep(row.stepIndex)"
+                                >
+                                  Revisar
+                                </button>
+                              }
+                            </li>
+                          }
+                        </ul>
+                      </app-card-content>
+                    </app-card>
                   </div>
                 }
               </div>
@@ -236,12 +410,15 @@
                 <p class="editor-footer-copy">
                   @if (isBasicMode()) {
                     Registra los datos personales base. La ficha completa se continuara despues.
-                  } @else if (isTabInvalid(activeTab()) && attemptedTabs().has(activeTab())) {
-                    Hay campos obligatorios pendientes en esta etapa.
-                  } @else if (isLastTab()) {
-                    Revisa el cierre y finaliza el alta desde esta etapa.
+                  } @else if (
+                    getWizardStepValidationSummary(activeWizardStep()).blockingPending > 0 &&
+                    attemptedWizardSteps().has(activeWizardStep())
+                  ) {
+                    Hay datos obligatorios pendientes o con error en esta etapa.
+                  } @else if (activeWizardStep() === 8) {
+                    Revisa el resumen y usa Finalizar alta para guardar la ficha completa.
                   } @else {
-                    Completa la ficha por etapas. Puedes volver a pasos anteriores antes de guardar.
+                    Completa la ficha por etapas. Puedes volver a pasos anteriores; los datos no se pierden.
                   }
                 </p>
 
@@ -256,7 +433,7 @@
                       Anterior
                     </button>
 
-                    @if (!isLastTab()) {
+                    @if (activeWizardStep() !== 8) {
                       <button
                         type="button"
                         class="form-action-button form-action-button--primary"

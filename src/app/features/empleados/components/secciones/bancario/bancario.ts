@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, HostBinding, Input } from '@angular/core';
 import { ReactiveFormsModule, Validators } from '@angular/forms';
 
 import { EmpleadoCatalogOption } from '../../../models/empleado-catalogos.model';
@@ -18,6 +18,12 @@ export class BancarioComponent {
   @Input() bancos: EmpleadoCatalogOption[] = [];
   @Input() tiposCuentaBancaria: EmpleadoCatalogOption[] = [];
   @Input() visibleBlocks: string[] | null = null;
+  @Input() advancedGridLayout = false;
+
+  @HostBinding('class.employee-layout-advanced')
+  protected get employeeLayoutAdvanced(): boolean {
+    return this.advancedGridLayout;
+  }
 
   controlClass(controlName: BancarioControlName): string {
     return ['employee-control', this.hasError(controlName) ? 'is-invalid' : '']

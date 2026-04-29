@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, HostBinding, Input } from '@angular/core';
 import { ReactiveFormsModule, Validators } from '@angular/forms';
 
 import { EmpleadoCatalogOption } from '../../../models/empleado-catalogos.model';
@@ -17,6 +17,15 @@ export class ContactoComponent {
   @Input({ required: true }) formGroup!: ContactoFormGroup;
   @Input() comunas: EmpleadoCatalogOption[] = [];
   @Input() visibleBlocks: string[] | null = null;
+  /** Resalta comuna obligatoria (creacion avanzada). */
+  @Input() domicilioAvanzado = false;
+  /** Grilla 8 columnas y spans del domicilio (solo alta avanzada). */
+  @Input() advancedGridLayout = false;
+
+  @HostBinding('class.employee-layout-advanced')
+  protected get employeeLayoutAdvanced(): boolean {
+    return this.advancedGridLayout;
+  }
 
   controlClass(controlName: ContactoControlName): string {
     return ['employee-control', this.hasError(controlName) ? 'is-invalid' : '']

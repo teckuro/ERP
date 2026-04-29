@@ -62,3 +62,95 @@
     padding: 12px 14px 14px;
   }
 }
+
+/* Alta avanzada: grilla 8 columnas, spans proporcionales (no afecta basica ni ficha) */
+:host.employee-layout-advanced .employee-grid-adv {
+  width: 100%;
+  max-width: none;
+  grid-template-columns: repeat(8, minmax(0, 1fr));
+  justify-content: start;
+  align-content: start;
+}
+
+:host.employee-layout-advanced .employee-grid-adv > .form-field {
+  min-width: 0;
+}
+
+:host.employee-layout-advanced .employee-grid-adv--ident > .form-field {
+  grid-column: span 2;
+}
+
+:host.employee-layout-advanced .employee-grid-adv--nombre > .form-field:nth-child(1) {
+  grid-column: span 4;
+}
+
+:host.employee-layout-advanced .employee-grid-adv--nombre > .form-field:nth-child(2),
+:host.employee-layout-advanced .employee-grid-adv--nombre > .form-field:nth-child(3) {
+  grid-column: span 2;
+}
+
+/* Nacionalidad un poco más ancha; estado civil compacto (fila 3+2, hueco a la derecha) */
+:host.employee-layout-advanced .employee-grid-adv--base > .form-field:nth-child(1) {
+  grid-column: span 3;
+}
+
+:host.employee-layout-advanced .employee-grid-adv--base > .form-field:nth-child(2) {
+  grid-column: span 2;
+}
+
+:host.employee-layout-advanced .employee-section-shell {
+  gap: 1.25rem;
+}
+
+:host.employee-layout-advanced .employee-grid-adv--contact > .form-field:nth-child(1) {
+  grid-column: span 4;
+}
+
+:host.employee-layout-advanced .employee-grid-adv--contact > .form-field:nth-child(2) {
+  grid-column: span 2;
+}
+
+@media (max-width: 980px) {
+  :host.employee-layout-advanced .employee-grid-adv {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  :host.employee-layout-advanced .employee-grid-adv--ident > .form-field {
+    grid-column: span 2;
+  }
+
+  :host.employee-layout-advanced .employee-grid-adv--nombre > .form-field:nth-child(1) {
+    grid-column: span 4;
+  }
+
+  :host.employee-layout-advanced .employee-grid-adv--nombre > .form-field:nth-child(2),
+  :host.employee-layout-advanced .employee-grid-adv--nombre > .form-field:nth-child(3) {
+    grid-column: span 2;
+  }
+
+  :host.employee-layout-advanced .employee-grid-adv--base > .form-field:nth-child(1) {
+    grid-column: span 4;
+  }
+
+  :host.employee-layout-advanced .employee-grid-adv--base > .form-field:nth-child(2) {
+    grid-column: span 2;
+  }
+
+  :host.employee-layout-advanced .employee-grid-adv--contact > .form-field:nth-child(1) {
+    grid-column: span 4;
+  }
+
+  :host.employee-layout-advanced .employee-grid-adv--contact > .form-field:nth-child(2) {
+    grid-column: span 2;
+  }
+}
+
+@media (max-width: 760px) {
+  :host.employee-layout-advanced .employee-grid-adv {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  :host.employee-layout-advanced .employee-grid-adv > .form-field {
+    grid-column: 1 / -1;
+  }
+}

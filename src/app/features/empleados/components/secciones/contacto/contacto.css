@@ -1,43 +1,111 @@
 @import '../../form-empleado-shared.css';
 
-:host .employee-grid--four {
+:host .employee-block--domicilio-avanzado {
+  outline: 1px solid #e2e8f0;
+  outline-offset: 0;
+}
+
+/* Ficha / usos sin alta avanzada */
+:host:not(.employee-layout-advanced) .employee-grid--four {
   grid-template-columns: repeat(8, minmax(0, 1fr));
 }
 
-/* orden: direccion (3) | numero (2) | depto (2) | comuna | observaciones */
-:host .employee-grid--four > .form-field:nth-child(1) {
+/* orden legacy: direccion (3) | numero (2) | depto (2) | comuna (auto) | observaciones (full) */
+:host:not(.employee-layout-advanced) .employee-grid--four > .form-field:nth-child(1) {
   grid-column: span 3;
 }
 
-:host .employee-grid--four > .form-field:nth-child(2),
-:host .employee-grid--four > .form-field:nth-child(3) {
+:host:not(.employee-layout-advanced) .employee-grid--four > .form-field:nth-child(2),
+:host:not(.employee-layout-advanced) .employee-grid--four > .form-field:nth-child(3) {
   grid-column: span 2;
 }
 
-:host .employee-grid--four > .form-field:nth-child(4) {
-  grid-column: span 8;
-}
-
-:host .employee-grid--four > .form-field:nth-child(5) {
+:host:not(.employee-layout-advanced) .employee-grid--four > .form-field:nth-child(5) {
   grid-column: span 8;
 }
 
 @media (max-width: 1024px) {
-  :host .employee-grid--four {
+  :host:not(.employee-layout-advanced) .employee-grid--four {
     grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 
-  :host .employee-grid--four > .form-field:nth-child(1) {
+  :host:not(.employee-layout-advanced) .employee-grid--four > .form-field:nth-child(1) {
     grid-column: span 3;
   }
 
-  :host .employee-grid--four > .form-field:nth-child(2),
-  :host .employee-grid--four > .form-field:nth-child(3) {
+  :host:not(.employee-layout-advanced) .employee-grid--four > .form-field:nth-child(2),
+  :host:not(.employee-layout-advanced) .employee-grid--four > .form-field:nth-child(3) {
     grid-column: span 2;
   }
 
-  :host .employee-grid--four > .form-field:nth-child(4),
-  :host .employee-grid--four > .form-field:nth-child(5) {
+  :host:not(.employee-layout-advanced) .employee-grid--four > .form-field:nth-child(5) {
     grid-column: span 4;
+  }
+}
+
+/* Alta avanzada: calle 4, numero 2, depto 2, comuna 3, observaciones 8 */
+:host.employee-layout-advanced .employee-grid-adv-domicilio {
+  width: 100%;
+  max-width: none;
+  grid-template-columns: repeat(8, minmax(0, 1fr));
+  justify-content: start;
+  align-content: start;
+}
+
+:host.employee-layout-advanced .employee-grid-adv-domicilio > .form-field {
+  min-width: 0;
+}
+
+:host.employee-layout-advanced .employee-grid-adv-domicilio > .form-field:nth-child(1) {
+  grid-column: span 4;
+}
+
+:host.employee-layout-advanced .employee-grid-adv-domicilio > .form-field:nth-child(2),
+:host.employee-layout-advanced .employee-grid-adv-domicilio > .form-field:nth-child(3) {
+  grid-column: span 2;
+}
+
+:host.employee-layout-advanced .employee-grid-adv-domicilio > .form-field:nth-child(4) {
+  grid-column: span 3;
+}
+
+:host.employee-layout-advanced .employee-grid-adv-domicilio > .form-field:nth-child(5) {
+  grid-column: span 8;
+}
+
+:host.employee-layout-advanced .employee-section-shell--compact {
+  gap: 1.25rem;
+}
+
+@media (max-width: 1024px) {
+  :host.employee-layout-advanced .employee-grid-adv-domicilio {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  :host.employee-layout-advanced .employee-grid-adv-domicilio > .form-field:nth-child(1) {
+    grid-column: span 4;
+  }
+
+  :host.employee-layout-advanced .employee-grid-adv-domicilio > .form-field:nth-child(2),
+  :host.employee-layout-advanced .employee-grid-adv-domicilio > .form-field:nth-child(3) {
+    grid-column: span 2;
+  }
+
+  :host.employee-layout-advanced .employee-grid-adv-domicilio > .form-field:nth-child(4) {
+    grid-column: span 4;
+  }
+
+  :host.employee-layout-advanced .employee-grid-adv-domicilio > .form-field:nth-child(5) {
+    grid-column: span 4;
+  }
+}
+
+@media (max-width: 760px) {
+  :host.employee-layout-advanced .employee-grid-adv-domicilio {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  :host.employee-layout-advanced .employee-grid-adv-domicilio > .form-field {
+    grid-column: 1 / -1;
   }
 }

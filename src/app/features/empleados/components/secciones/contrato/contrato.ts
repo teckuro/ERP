@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, HostBinding, Input } from '@angular/core';
 import { ReactiveFormsModule, Validators } from '@angular/forms';
 
 import {
@@ -44,6 +44,13 @@ export class ContratoComponent {
   @Input() monedas: EmpleadoCatalogOption[] = [];
   @Input() tramosCarga: TramoCargaCatalogOption[] = [];
   @Input() visibleBlocks: string[] | null = null;
+  /** Grilla 8 columnas y spans laborales (solo alta avanzada). */
+  @Input() advancedGridLayout = false;
+
+  @HostBinding('class.labor-layout-advanced')
+  protected get laborLayoutAdvanced(): boolean {
+    return this.advancedGridLayout;
+  }
 
   readonly employeeStates: SelectOption<EmpleadoEstado>[] = [
     { value: 'en_proceso', label: 'En proceso' },
@@ -185,6 +192,16 @@ export class ContratoComponent {
   }
 
   isBlockVisible(blockId: string): boolean {
-    return this.visibleBlocks === null || this.visibleBlocks.includes(blockId);
+    if (this.visibleBlocks === null) {
+      return true;
+    }
+
+    const v = this.visibleBlocks;
+
+    if (blockId === 'contratoBase' && v.includes('contrato')) {
+      return true;
+    }
+
+    return v.includes(blockId);
   }
 }

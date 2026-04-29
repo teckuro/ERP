@@ -1,5 +1,23 @@
 @import '../../form-empleado-shared.css';
 
+.apvi-step-lead {
+  margin: 0 0 12px;
+  max-width: 36rem;
+  color: #475569;
+  font-size: 0.76rem;
+  font-weight: 450;
+  line-height: 1.45;
+}
+
+:host .field-message--hint {
+  margin: 0;
+  min-height: 1.1rem;
+  color: #64748b;
+  font-size: 0.7rem;
+  font-weight: 450;
+  line-height: 1.35;
+}
+
 .prevision-shell {
   display: grid;
   gap: 16px;
@@ -18,7 +36,7 @@
   align-items: center;
   padding: 14px 16px 11px;
   border-bottom: 1px solid #e5e7eb;
-  background: linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%);
+  background: #f8fafc;
 }
 
 .prevision-card-header h4 {
@@ -55,55 +73,141 @@
   gap: 8px;
 }
 
-.apvi-toggle-label {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  min-height: 36px;
-  border: 1px solid #e5e7eb;
-  border-radius: 6px;
-  background: #ffffff;
-  padding: 0 12px;
-  color: #374151;
-  font-size: 12px;
-  font-weight: 600;
-  white-space: nowrap;
-}
-
-.prevision-grid {
+/* Ficha / editor sin flag avanzado */
+:host:not(.employee-layout-advanced) .prevision-grid {
   display: grid;
   width: min(100%, 52rem);
   gap: 12px 16px;
   align-items: start;
 }
 
-.prevision-grid--two,
-.prevision-grid--three {
+:host:not(.employee-layout-advanced) .prevision-grid--two,
+:host:not(.employee-layout-advanced) .prevision-grid--three {
   grid-template-columns: minmax(18rem, 24rem) minmax(12rem, 18rem);
 }
 
-.prevision-grid--four {
+:host:not(.employee-layout-advanced) .prevision-grid--four {
   grid-template-columns: minmax(18rem, 24rem) minmax(12rem, 18rem);
 }
 
 @media (max-width: 1280px) {
-  .prevision-grid--three,
-  .prevision-grid--four {
+  :host:not(.employee-layout-advanced) .prevision-grid--three,
+  :host:not(.employee-layout-advanced) .prevision-grid--four {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
 @media (max-width: 1024px) {
-  .prevision-grid--two,
-  .prevision-grid--three,
-  .prevision-grid--four {
+  :host:not(.employee-layout-advanced) .prevision-grid--two,
+  :host:not(.employee-layout-advanced) .prevision-grid--three,
+  :host:not(.employee-layout-advanced) .prevision-grid--four {
     grid-template-columns: minmax(0, 1fr);
   }
 }
 
-@media (max-width: 768px) {
-  .apvi-toggle-label {
-    width: fit-content;
-    max-width: 100%;
+:host.employee-layout-advanced .prevision-shell {
+  gap: 1.25rem;
+}
+
+:host.employee-layout-advanced .apvi-toggle-field {
+  width: fit-content;
+  max-width: 100%;
+}
+
+/* Alta avanzada */
+:host.employee-layout-advanced .prevision-grid-adv {
+  display: grid;
+  width: 100%;
+  max-width: none;
+  gap: 12px 16px;
+  align-items: start;
+  grid-template-columns: repeat(8, minmax(0, 1fr));
+  justify-content: start;
+}
+
+:host.employee-layout-advanced .prevision-grid-adv > .form-field {
+  min-width: 0;
+}
+
+:host.employee-layout-advanced .prevision-grid-adv.prevision-grid--two > .form-field:nth-child(1) {
+  grid-column: span 3;
+}
+
+:host.employee-layout-advanced .prevision-grid-adv.prevision-grid--two > .form-field:nth-child(2) {
+  grid-column: span 2;
+}
+
+:host.employee-layout-advanced .prevision-grid-adv.prevision-grid--three:not(.prevision-grid--apvi) > :nth-child(1) {
+  grid-column: span 3;
+}
+
+:host.employee-layout-advanced .prevision-grid-adv.prevision-grid--three:not(.prevision-grid--apvi) > :nth-child(2) {
+  grid-column: span 2;
+}
+
+:host.employee-layout-advanced .prevision-grid-adv.prevision-grid--three:not(.prevision-grid--apvi) > :nth-child(3) {
+  grid-column: span 2;
+}
+
+/* Fila 1: Entidad IPS + Nombre Ex-Caja + Régimen (3+3+2=8); fila 2: Tasa % compacta (2) */
+:host.employee-layout-advanced .prevision-grid-adv.prevision-grid--ips > :nth-child(1),
+:host.employee-layout-advanced .prevision-grid-adv.prevision-grid--ips > :nth-child(2) {
+  grid-column: span 3;
+}
+
+:host.employee-layout-advanced .prevision-grid-adv.prevision-grid--ips > :nth-child(3),
+:host.employee-layout-advanced .prevision-grid-adv.prevision-grid--ips > :nth-child(4) {
+  grid-column: span 2;
+}
+
+:host.employee-layout-advanced .prevision-grid-adv.prevision-grid--salud > :nth-child(1) {
+  grid-column: span 3;
+}
+
+:host.employee-layout-advanced .prevision-grid-adv.prevision-grid--salud > :nth-child(2),
+:host.employee-layout-advanced .prevision-grid-adv.prevision-grid--salud > :nth-child(3),
+:host.employee-layout-advanced .prevision-grid-adv.prevision-grid--salud > :nth-child(4) {
+  grid-column: span 2;
+}
+
+:host.employee-layout-advanced .prevision-grid-adv.prevision-grid--apvi > :nth-child(1) {
+  grid-column: span 3;
+}
+
+:host.employee-layout-advanced .prevision-grid-adv.prevision-grid--apvi > :nth-child(2),
+:host.employee-layout-advanced .prevision-grid-adv.prevision-grid--apvi > :nth-child(3) {
+  grid-column: span 2;
+}
+
+:host.employee-layout-advanced .prevision-grid-adv.prevision-grid--apvi > :nth-child(4) {
+  grid-column: span 3;
+}
+
+:host.employee-layout-advanced .prevision-grid-adv.prevision-grid--apvi > :nth-child(5) {
+  grid-column: span 2;
+}
+
+@media (max-width: 1024px) {
+  :host.employee-layout-advanced .prevision-grid-adv {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  :host.employee-layout-advanced .prevision-grid-adv > .form-field {
+    grid-column: span 2;
+  }
+
+  :host.employee-layout-advanced .prevision-grid-adv.prevision-grid--apvi > :nth-child(1),
+  :host.employee-layout-advanced .prevision-grid-adv.prevision-grid--apvi > :nth-child(4) {
+    grid-column: span 4;
+  }
+}
+
+@media (max-width: 760px) {
+  :host.employee-layout-advanced .prevision-grid-adv {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  :host.employee-layout-advanced .prevision-grid-adv > * {
+    grid-column: 1 / -1;
   }
 }

@@ -12,7 +12,7 @@ import { HeaderComponent } from './header.component';
       <app-sidebar></app-sidebar>
       <app-header></app-header>
       <main class="ml-64 h-screen overflow-hidden pt-16">
-        <div class="h-full overflow-y-auto overflow-x-hidden p-6">
+        <div class="app-outlet-scroll h-full overflow-y-auto overflow-x-hidden p-6">
           <router-outlet></router-outlet>
         </div>
       </main>

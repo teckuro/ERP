@@ -142,7 +142,7 @@ export class EmpleadosFormOrchestratorService {
         fechaTermino: new FormControl('', {
           nonNullable: true,
         }),
-        sueldoBase: new FormControl<number | null>(900000, {
+        sueldoBase: new FormControl<number | null>(null, {
           validators: [Validators.required, Validators.min(1)],
         }),
         idMoneda: new FormControl<number | null>(null),
@@ -266,9 +266,6 @@ export class EmpleadosFormOrchestratorService {
   applyCatalogDefaults(form: EmpleadoFormGroup, catalogos: EmpleadoFormCatalogos): void {
     setPreferredCatalogValue(form.controls.datosPersonales.controls.idPais, catalogos.paises, [
       'chile',
-    ]);
-    setPreferredCatalogValue(form.controls.contacto.controls.idComuna, catalogos.comunas, [
-      'santiago',
     ]);
     setPreferredCatalogValue(form.controls.contrato.controls.idSucursal, catalogos.sucursales, [
       'casa matriz',
