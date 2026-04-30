@@ -762,6 +762,33 @@ CREATE TABLE contrato_centro_costo (
     porcentaje NUMERIC(5,2) NOT NULL CHECK (porcentaje > 0 AND porcentaje <= 100)
 );
 
+CREATE TABLE catalogo_lre (
+    id_catalogo_lre SERIAL PRIMARY KEY,
+    codigo_lre VARCHAR(10) NOT NULL UNIQUE,
+    nombre_lre VARCHAR(200) NOT NULL,
+    modulo_lre VARCHAR(40) NOT NULL,
+    grupo_lre VARCHAR(50),
+    clasificacion_lre VARCHAR(60),
+    imponible BOOLEAN,
+    tributable BOOLEAN,
+    afecta_liquido BOOLEAN,
+    vigente BOOLEAN NOT NULL DEFAULT TRUE,
+    vigencia_inicio DATE,
+    vigencia_fin DATE,
+    observacion TEXT,
+    CONSTRAINT chk_catalogo_lre_vigencia CHECK (
+        vigencia_fin IS NULL
+        OR vigencia_inicio IS NULL
+        OR vigencia_fin >= vigencia_inicio
+    )
+);
+
+CREATE INDEX idx_catalogo_lre_codigo ON catalogo_lre (codigo_lre);
+CREATE INDEX idx_catalogo_lre_modulo ON catalogo_lre (modulo_lre);
+CREATE INDEX idx_catalogo_lre_grupo ON catalogo_lre (grupo_lre);
+CREATE INDEX idx_catalogo_lre_clasificacion ON catalogo_lre (clasificacion_lre);
+CREATE INDEX idx_catalogo_lre_vigente ON catalogo_lre (vigente);
+
 CREATE TABLE concepto (
     id_concepto SERIAL PRIMARY KEY,
     codigo VARCHAR(30) UNIQUE NOT NULL,
@@ -777,8 +804,23 @@ CREATE TABLE concepto (
     afecta_sis BOOLEAN NOT NULL DEFAULT FALSE,
     orden_impresion INT NOT NULL DEFAULT 0,
     calculo_automatico BOOLEAN NOT NULL DEFAULT FALSE,
-    formula_json JSONB
+    formula_json JSONB,
+    id_catalogo_lre INT REFERENCES catalogo_lre (id_catalogo_lre) ON DELETE SET NULL,
+    afecta_liquido BOOLEAN NOT NULL DEFAULT TRUE,
+    es_sistema BOOLEAN NOT NULL DEFAULT FALSE,
+    vigente BOOLEAN NOT NULL DEFAULT TRUE,
+    vigencia_inicio DATE,
+    vigencia_fin DATE,
+    CONSTRAINT chk_concepto_vigencia CHECK (
+        vigencia_fin IS NULL
+        OR vigencia_inicio IS NULL
+        OR vigencia_fin >= vigencia_inicio
+    )
 );
+
+CREATE INDEX idx_concepto_catalogo_lre ON concepto (id_catalogo_lre);
+CREATE INDEX idx_concepto_vigente ON concepto (vigente);
+CREATE INDEX idx_concepto_es_sistema ON concepto (es_sistema);
 
 CREATE TABLE regla_concepto_calculo (
     id_regla_concepto_calculo SERIAL PRIMARY KEY,
@@ -875,8 +917,27 @@ CREATE TABLE haberdescuento_persona (
     porcentaje NUMERIC(5,2),
     tipo VARCHAR(20),
     tipohaber VARCHAR(20),
-    estado BOOLEAN DEFAULT TRUE
+    estado BOOLEAN DEFAULT TRUE,
+    id_contrato INT REFERENCES contrato (id_contrato) ON DELETE SET NULL,
+    vigencia_inicio DATE,
+    vigencia_fin DATE,
+    observacion TEXT,
+    periodicidad VARCHAR(30),
+    CONSTRAINT chk_hd_vigencia CHECK (
+        vigencia_fin IS NULL
+        OR vigencia_inicio IS NULL
+        OR vigencia_fin >= vigencia_inicio
+    ),
+    CONSTRAINT chk_hd_periodicidad CHECK (
+        periodicidad IS NULL
+        OR periodicidad IN ('MENSUAL', 'QUINCENAL', 'OCASIONAL', 'UNICA')
+    )
 );
+
+CREATE INDEX idx_hd_persona_estado ON haberdescuento_persona (id_persona, estado);
+CREATE INDEX idx_hd_contrato_estado ON haberdescuento_persona (id_contrato, estado);
+CREATE INDEX idx_hd_concepto ON haberdescuento_persona (id_concepto);
+CREATE INDEX idx_hd_vigencia ON haberdescuento_persona (vigencia_inicio, vigencia_fin);
 
 CREATE TABLE persona_tramo_carga (
     id_persona_tramo_carga SERIAL PRIMARY KEY,

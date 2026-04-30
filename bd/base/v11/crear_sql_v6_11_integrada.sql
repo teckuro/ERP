@@ -3381,7 +3381,8 @@ INSERT INTO motivo_inasistencia (
     descuenta_dias,
     activo
 ) VALUES
-    (101, 'LICENCIA_MEDICA', 'Licencia medica', TRUE, TRUE)
+    (101, 'LICENCIA_MEDICA', 'Licencia medica', TRUE, TRUE),
+    (102, 'INASISTENCIA_INJUSTIFICADA', 'Inasistencia injustificada', TRUE, TRUE)
 ON CONFLICT (id_motivo_inasistencia) DO NOTHING;
 
 INSERT INTO tramo_carga (periodo, desde, hasta, valor, tramo)
@@ -3758,26 +3759,137 @@ INSERT INTO tabla_impuesto_unico (tramo, desde, hasta, factor, rebaja, vigencia_
     (3, 1796251, NULL, 0.08, 106250, '2024-01-01')
 ON CONFLICT DO NOTHING;
 
+INSERT INTO catalogo_lre (
+    codigo_lre, nombre_lre, modulo_lre, grupo_lre, clasificacion_lre,
+    imponible, tributable, afecta_liquido, vigente
+) VALUES
+    ('2101', 'Sueldo', 'HABERES', 'HABERES_21XX', 'HABER_IMPONIBLE_TRIBUTABLE', TRUE, TRUE, TRUE, TRUE),
+    ('2110', 'Aguinaldo', 'HABERES', 'HABERES_21XX', 'HABER_IMPONIBLE_TRIBUTABLE', TRUE, TRUE, TRUE, TRUE),
+    ('2111', 'Bonos u otras remuneraciones fijas mensuales', 'HABERES', 'HABERES_21XX', 'HABER_IMPONIBLE_TRIBUTABLE', TRUE, TRUE, TRUE, TRUE),
+    ('2113', 'Bonos u otras remuneraciones variables mensuales o superiores a un mes', 'HABERES', 'HABERES_21XX', 'HABER_IMPONIBLE_TRIBUTABLE', TRUE, TRUE, TRUE, TRUE),
+    ('2301', 'Colación total mensual (Art. 41)', 'HABERES', 'HABERES_23XX', 'HABER_NO_IMPONIBLE_NO_TRIBUTABLE', FALSE, FALSE, TRUE, TRUE),
+    ('2302', 'Movilización total mensual (Art. 41)', 'HABERES', 'HABERES_23XX', 'HABER_NO_IMPONIBLE_NO_TRIBUTABLE', FALSE, FALSE, TRUE, TRUE),
+    ('2311', 'Asignación familiar legal total mensual (Art. 41)', 'HABERES', 'HABERES_23XX', 'HABER_NO_IMPONIBLE_NO_TRIBUTABLE', FALSE, FALSE, TRUE, TRUE),
+    ('3141', 'Cotización obligatoria previsional (AFP o IPS)', 'DESCUENTOS', 'DESCUENTOS_31XX', 'DESCUENTO_LEGAL', FALSE, FALSE, TRUE, TRUE),
+    ('3143', 'Cotización obligatoria salud 7%', 'DESCUENTOS', 'DESCUENTOS_31XX', 'DESCUENTO_LEGAL', FALSE, FALSE, TRUE, TRUE),
+    ('3151', 'Cotización AFC - trabajador', 'DESCUENTOS', 'DESCUENTOS_31XX', 'DESCUENTO_LEGAL', FALSE, FALSE, TRUE, TRUE),
+    ('3183', 'Otros descuentos autorizados y solicitados por el trabajador', 'DESCUENTOS', 'DESCUENTOS_31XX', 'OTRO_DESCUENTO', FALSE, FALSE, TRUE, TRUE),
+    ('3186', 'Pensiones de alimentos', 'DESCUENTOS', 'DESCUENTOS_31XX', 'OTRO_DESCUENTO', FALSE, FALSE, TRUE, TRUE),
+    ('3188', 'Descuentos por anticipos y préstamos', 'DESCUENTOS', 'DESCUENTOS_31XX', 'OTRO_DESCUENTO', FALSE, FALSE, TRUE, TRUE),
+    ('4151', 'Aporte AFC - empleador', 'APORTES_EMPLEADOR', 'APORTES_41XX', 'APORTE_EMPLEADOR', FALSE, FALSE, FALSE, TRUE),
+    ('4155', 'Aporte empleador seguro invalidez y sobrevivencia', 'APORTES_EMPLEADOR', 'APORTES_41XX', 'APORTE_EMPLEADOR', FALSE, FALSE, FALSE, TRUE)
+ON CONFLICT (codigo_lre) DO NOTHING;
+
 INSERT INTO concepto (
     codigo, nombre, tipo, naturaleza, imponible, tributable,
-    afecta_afp, afecta_salud, afecta_afc, afecta_sis, orden_impresion
+    afecta_afp, afecta_salud, afecta_afc, afecta_sis, orden_impresion, calculo_automatico,
+    es_sistema, afecta_liquido, vigente
 ) VALUES
-    ('SUELDO_BASE', 'Sueldo base', 'HABER', 'IMPONIBLE', TRUE, TRUE, TRUE, TRUE, TRUE, FALSE, 10),
-    ('GRATIFICACION', 'Gratificacion legal', 'HABER', 'IMPONIBLE', TRUE, TRUE, TRUE, TRUE, TRUE, FALSE, 20),
-    ('HORAS_EXTRAS', 'Horas extras', 'HABER', 'IMPONIBLE', TRUE, TRUE, TRUE, TRUE, TRUE, FALSE, 30),
-    ('INASISTENCIA', 'Inasistencia', 'DESCUENTO', 'NO_IMPONIBLE', FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, 40),
-    ('AFP', 'Cotizacion AFP', 'DESCUENTO', 'NO_IMPONIBLE', FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, 50),
-    ('SALUD', 'Cotizacion salud', 'DESCUENTO', 'NO_IMPONIBLE', FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, 51),
-    ('CESANTIA', 'Seguro cesantia', 'DESCUENTO', 'NO_IMPONIBLE', FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, 52),
-    ('PRESTAMO', 'Descuento prestamo', 'DESCUENTO', 'NO_IMPONIBLE', FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, 54),
-    ('IMPUESTO_RENTA', 'Impuesto a la renta', 'DESCUENTO', 'NO_IMPONIBLE', FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, 55),
-    ('BONO_RESPONSABILIDAD', 'Bono responsabilidad', 'HABER', 'IMPONIBLE', TRUE, TRUE, TRUE, TRUE, TRUE, FALSE, 60),
-    ('MOVILIZACION', 'Movilizacion', 'HABER', 'NO_IMPONIBLE', FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, 70),
-    ('ZONA_EXTREMA', 'Zona extrema', 'HABER', 'NO_IMPONIBLE', FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, 80),
-    ('AFP_EMPLEADOR', 'AFP empleador', 'APORTE_EMPLEADOR', 'NO_IMPONIBLE', FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, 120),
-    ('SIS_EMPLEADOR', 'SIS empleador', 'APORTE_EMPLEADOR', 'NO_IMPONIBLE', FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, 121),
-    ('AFC_EMPLEADOR', 'AFC empleador', 'APORTE_EMPLEADOR', 'NO_IMPONIBLE', FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, 122)
+    ('SUELDO_BASE', 'Sueldo base', 'HABER', 'IMPONIBLE', TRUE, TRUE, TRUE, TRUE, TRUE, FALSE, 10, TRUE, TRUE, TRUE, TRUE),
+    ('GRATIFICACION', 'Gratificacion legal', 'HABER', 'IMPONIBLE', TRUE, TRUE, TRUE, TRUE, TRUE, FALSE, 20, TRUE, TRUE, TRUE, TRUE),
+    ('HORAS_EXTRAS', 'Horas extras', 'HABER', 'IMPONIBLE', TRUE, TRUE, TRUE, TRUE, TRUE, FALSE, 30, TRUE, TRUE, TRUE, TRUE),
+    ('INASISTENCIA', 'Inasistencia', 'DESCUENTO', 'NO_IMPONIBLE', FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, 40, TRUE, TRUE, TRUE, TRUE),
+    ('AFP', 'Cotizacion AFP', 'DESCUENTO', 'NO_IMPONIBLE', FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, 50, TRUE, TRUE, TRUE, TRUE),
+    ('SALUD', 'Cotizacion salud', 'DESCUENTO', 'NO_IMPONIBLE', FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, 51, TRUE, TRUE, TRUE, TRUE),
+    ('CESANTIA', 'Seguro cesantia', 'DESCUENTO', 'NO_IMPONIBLE', FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, 52, TRUE, TRUE, TRUE, TRUE),
+    ('PRESTAMO', 'Descuento prestamo', 'DESCUENTO', 'NO_IMPONIBLE', FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, 54, FALSE, FALSE, TRUE, TRUE),
+    ('IMPUESTO_RENTA', 'Impuesto a la renta', 'DESCUENTO', 'NO_IMPONIBLE', FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, 55, TRUE, TRUE, TRUE, TRUE),
+    ('BONO_RESPONSABILIDAD', 'Bono responsabilidad', 'HABER', 'IMPONIBLE', TRUE, TRUE, TRUE, TRUE, TRUE, FALSE, 60, FALSE, FALSE, TRUE, TRUE),
+    ('MOVILIZACION', 'Movilizacion', 'HABER', 'NO_IMPONIBLE', FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, 70, FALSE, FALSE, TRUE, TRUE),
+    ('ZONA_EXTREMA', 'Zona extrema', 'HABER', 'NO_IMPONIBLE', FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, 80, TRUE, TRUE, TRUE, TRUE),
+    ('AFP_EMPLEADOR', 'AFP empleador', 'APORTE_EMPLEADOR', 'NO_IMPONIBLE', FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, 120, TRUE, TRUE, FALSE, TRUE),
+    ('SIS_EMPLEADOR', 'SIS empleador', 'APORTE_EMPLEADOR', 'NO_IMPONIBLE', FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, 121, TRUE, TRUE, FALSE, TRUE),
+    ('AFC_EMPLEADOR', 'AFC empleador', 'APORTE_EMPLEADOR', 'NO_IMPONIBLE', FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, 122, TRUE, TRUE, FALSE, TRUE),
+    ('COLACION', 'Colación (Art. 41)', 'HABER', 'NO_IMPONIBLE', FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, 90, FALSE, TRUE, TRUE, TRUE),
+    ('ASIGNACION_FAMILIAR', 'Asignación familiar legal', 'HABER', 'NO_IMPONIBLE', FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, 91, TRUE, TRUE, TRUE, TRUE),
+    ('AGUINALDO', 'Aguinaldo', 'HABER', 'IMPONIBLE', TRUE, TRUE, TRUE, TRUE, TRUE, FALSE, 92, FALSE, TRUE, TRUE, TRUE),
+    ('DESCUENTO_CONVENIO', 'Descuento por convenio o autorización', 'DESCUENTO', 'NO_IMPONIBLE', FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, 93, FALSE, FALSE, TRUE, TRUE),
+    ('PENSION_ALIMENTOS', 'Pensión de alimentos', 'DESCUENTO', 'NO_IMPONIBLE', FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, 94, FALSE, FALSE, TRUE, TRUE),
+    ('ANTICIPO', 'Anticipo o descuento por cuenta', 'DESCUENTO', 'NO_IMPONIBLE', FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, 95, FALSE, FALSE, TRUE, TRUE)
 ON CONFLICT (codigo) DO NOTHING;
+
+UPDATE concepto c
+SET id_catalogo_lre = l.id_catalogo_lre
+FROM catalogo_lre l
+WHERE c.codigo = 'SUELDO_BASE' AND l.codigo_lre = '2101';
+
+-- DUDA NORMATIVA (LRE DT): HORAS_EXTRAS permanece en 2113 (remuneraciones variables mensuales o superiores a un mes).
+-- Alternativa frecuente según criterio contable/asesoría: 2102 Sobresueldo u otra línea del suplemento vigente.
+-- Validar con manual LRE y política de la empresa antes de producción.
+UPDATE concepto c
+SET id_catalogo_lre = l.id_catalogo_lre
+FROM catalogo_lre l
+WHERE c.codigo = 'HORAS_EXTRAS' AND l.codigo_lre = '2113';
+
+UPDATE concepto c
+SET id_catalogo_lre = l.id_catalogo_lre
+FROM catalogo_lre l
+WHERE c.codigo = 'BONO_RESPONSABILIDAD' AND l.codigo_lre = '2111';
+
+UPDATE concepto c
+SET id_catalogo_lre = l.id_catalogo_lre
+FROM catalogo_lre l
+WHERE c.codigo = 'MOVILIZACION' AND l.codigo_lre = '2302';
+
+UPDATE concepto c
+SET id_catalogo_lre = l.id_catalogo_lre
+FROM catalogo_lre l
+WHERE c.codigo = 'AFP' AND l.codigo_lre = '3141';
+
+UPDATE concepto c
+SET id_catalogo_lre = l.id_catalogo_lre
+FROM catalogo_lre l
+WHERE c.codigo = 'SALUD' AND l.codigo_lre = '3143';
+
+UPDATE concepto c
+SET id_catalogo_lre = l.id_catalogo_lre
+FROM catalogo_lre l
+WHERE c.codigo = 'PRESTAMO' AND l.codigo_lre = '3188';
+
+UPDATE concepto c
+SET id_catalogo_lre = l.id_catalogo_lre
+FROM catalogo_lre l
+WHERE c.codigo = 'CESANTIA' AND l.codigo_lre = '3151';
+
+UPDATE concepto c
+SET id_catalogo_lre = l.id_catalogo_lre
+FROM catalogo_lre l
+WHERE c.codigo = 'AFC_EMPLEADOR' AND l.codigo_lre = '4151';
+
+UPDATE concepto c
+SET id_catalogo_lre = l.id_catalogo_lre
+FROM catalogo_lre l
+WHERE c.codigo = 'SIS_EMPLEADOR' AND l.codigo_lre = '4155';
+
+UPDATE concepto c
+SET id_catalogo_lre = l.id_catalogo_lre
+FROM catalogo_lre l
+WHERE c.codigo = 'AGUINALDO' AND l.codigo_lre = '2110';
+
+UPDATE concepto c
+SET id_catalogo_lre = l.id_catalogo_lre
+FROM catalogo_lre l
+WHERE c.codigo = 'COLACION' AND l.codigo_lre = '2301';
+
+UPDATE concepto c
+SET id_catalogo_lre = l.id_catalogo_lre
+FROM catalogo_lre l
+WHERE c.codigo = 'ASIGNACION_FAMILIAR' AND l.codigo_lre = '2311';
+
+UPDATE concepto c
+SET id_catalogo_lre = l.id_catalogo_lre
+FROM catalogo_lre l
+WHERE c.codigo = 'DESCUENTO_CONVENIO' AND l.codigo_lre = '3183';
+
+UPDATE concepto c
+SET id_catalogo_lre = l.id_catalogo_lre
+FROM catalogo_lre l
+WHERE c.codigo = 'PENSION_ALIMENTOS' AND l.codigo_lre = '3186';
+
+UPDATE concepto c
+SET id_catalogo_lre = l.id_catalogo_lre
+FROM catalogo_lre l
+WHERE c.codigo = 'ANTICIPO' AND l.codigo_lre = '3188';
 
 INSERT INTO regla_concepto_calculo (
     id_concepto,
@@ -3813,7 +3925,8 @@ JOIN (
         ('CESANTIA', 'DESCUENTO_AFC', 52, 'RENTA_IMPONIBLE_TOPE', 'tasa_afc_trabajador * base', TRUE, FALSE, TRUE),
         ('IMPUESTO_RENTA', 'IMPUESTO_UNICO', 55, 'TOTAL_TRIBUTABLE', 'tabla_impuesto_unico(periodo)', FALSE, TRUE, TRUE),
         ('ZONA_EXTREMA', 'ASIGNACION_ZONA_EXTREMA', 80, 'HABERES_IMPONIBLES', 'porcentaje_zona_extrema * base', FALSE, FALSE, TRUE),
-        ('AFP_EMPLEADOR', 'APORTE_AFP_EMPLEADOR', 120, 'RENTA_IMPONIBLE_TOPE', 'tasa_empleador_afp * base', TRUE, FALSE, TRUE)
+        ('AFP_EMPLEADOR', 'APORTE_AFP_EMPLEADOR', 120, 'RENTA_IMPONIBLE_TOPE', 'tasa_empleador_afp * base', TRUE, FALSE, TRUE),
+        ('ASIGNACION_FAMILIAR', 'ASIGNACION_FAMILIAR_LEGAL', 91, 'TRAMO_ASIGNACION_FAMILIAR', 'monto_legal_segun_tramo_y_cargas', FALSE, FALSE, TRUE)
 ) AS r(codigo_concepto, codigo_regla, orden_calculo, base_calculo, formula_sql, usa_tope_imponible, usa_tabla_impuesto, calculo_automatico)
     ON r.codigo_concepto = c.codigo
 WHERE NOT EXISTS (
@@ -3828,14 +3941,20 @@ WHERE NOT EXISTS (
 INSERT INTO haberdescuento_persona (
     id_asignacion,
     id_persona,
+    id_contrato,
     id_concepto,
     monto,
     porcentaje,
     tipo,
     tipohaber,
-    estado
+    estado,
+    vigencia_inicio,
+    vigencia_fin,
+    observacion,
+    periodicidad
 )
 SELECT
+    1,
     1,
     1,
     c.id_concepto,
@@ -3843,7 +3962,11 @@ SELECT
     NULL,
     'FIJO',
     'IMPONIBLE',
-    TRUE
+    TRUE,
+    DATE '2024-01-01',
+    NULL,
+    'Seed demo: asignación recurrente',
+    'MENSUAL'
 FROM concepto c
 WHERE c.codigo = 'BONO_RESPONSABILIDAD'
 ON CONFLICT (id_asignacion) DO NOTHING;
@@ -3851,22 +3974,32 @@ ON CONFLICT (id_asignacion) DO NOTHING;
 INSERT INTO haberdescuento_persona (
     id_asignacion,
     id_persona,
+    id_contrato,
     id_concepto,
     monto,
     porcentaje,
     tipo,
     tipohaber,
-    estado
+    estado,
+    vigencia_inicio,
+    vigencia_fin,
+    observacion,
+    periodicidad
 )
 SELECT
     2,
+    1,
     1,
     c.id_concepto,
     30000,
     NULL,
     'FIJO',
     'NOIMPONIBLE',
-    TRUE
+    TRUE,
+    DATE '2024-01-01',
+    NULL,
+    'Seed demo: asignación recurrente',
+    'MENSUAL'
 FROM concepto c
 WHERE c.codigo = 'MOVILIZACION'
 ON CONFLICT (id_asignacion) DO NOTHING;
@@ -3875,8 +4008,10 @@ INSERT INTO movimiento (
     id_movimiento,
     id_persona,
     id_contrato,
-    fecha,
     id_concepto,
+    fecha,
+    id_tipo_movimiento,
+    id_motivo_inasistencia,
     tipomovimiento,
     motivoinasist,
     diainasist,
@@ -3884,9 +4019,59 @@ INSERT INTO movimiento (
     monto,
     cantidad,
     observacion
-) VALUES
-    (1, 1, 1, '2024-01-10', NULL, 2, NULL, 0, 2, 45000, 2, 'Horas extras enero'),
-    (2, 1, 1, '2024-01-18', NULL, 3, 102, 1, NULL, 25000, 1, 'Inasistencia injustificada')
+)
+SELECT
+    1,
+    1,
+    1,
+    c.id_concepto,
+    DATE '2024-01-10',
+    2,
+    NULL,
+    2,
+    NULL,
+    0,
+    2,
+    45000,
+    2,
+    'Horas extras enero (seed demo)'
+FROM concepto c
+WHERE c.codigo = 'HORAS_EXTRAS'
+ON CONFLICT (id_movimiento) DO NOTHING;
+
+INSERT INTO movimiento (
+    id_movimiento,
+    id_persona,
+    id_contrato,
+    id_concepto,
+    fecha,
+    id_tipo_movimiento,
+    id_motivo_inasistencia,
+    tipomovimiento,
+    motivoinasist,
+    diainasist,
+    hrs_pactadas,
+    monto,
+    cantidad,
+    observacion
+)
+SELECT
+    2,
+    1,
+    1,
+    c.id_concepto,
+    DATE '2024-01-18',
+    3,
+    102,
+    3,
+    102,
+    1,
+    NULL,
+    25000,
+    1,
+    'Inasistencia injustificada (seed demo)'
+FROM concepto c
+WHERE c.codigo = 'INASISTENCIA'
 ON CONFLICT (id_movimiento) DO NOTHING;
 
 INSERT INTO prestamo (
@@ -4437,6 +4622,7 @@ DECLARE
         'ley_16744_parametros',
         'organismo_administrador_ley_16744',
         'ccaf_entidad',
+        'catalogo_lre',
         'empresa_ley_16744',
         'banco',
         'tipo_cuenta_bancaria',
@@ -4547,6 +4733,103 @@ BEGIN
             );
         END IF;
     END LOOP;
+END $$;
+
+DO $$
+DECLARE
+    hd_table TEXT;
+    hd_tables TEXT[] := ARRAY[
+        'concepto',
+        'haberdescuento_persona'
+    ];
+BEGIN
+    FOREACH hd_table IN ARRAY hd_tables LOOP
+        IF to_regclass(format('public.%I', hd_table)) IS NULL THEN
+            CONTINUE;
+        END IF;
+
+        EXECUTE format(
+            'GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE public.%I TO anon, authenticated',
+            hd_table
+        );
+
+        EXECUTE format('ALTER TABLE public.%I ENABLE ROW LEVEL SECURITY', hd_table);
+
+        IF NOT EXISTS (
+            SELECT 1
+            FROM pg_policies
+            WHERE schemaname = 'public'
+              AND tablename = hd_table
+              AND policyname = 'haberes_descuentos_select'
+        ) THEN
+            EXECUTE format(
+                'CREATE POLICY haberes_descuentos_select ON public.%I FOR SELECT TO anon, authenticated USING (true)',
+                hd_table
+            );
+        END IF;
+
+        IF NOT EXISTS (
+            SELECT 1
+            FROM pg_policies
+            WHERE schemaname = 'public'
+              AND tablename = hd_table
+              AND policyname = 'haberes_descuentos_insert'
+        ) THEN
+            EXECUTE format(
+                'CREATE POLICY haberes_descuentos_insert ON public.%I FOR INSERT TO anon, authenticated WITH CHECK (true)',
+                hd_table
+            );
+        END IF;
+
+        IF NOT EXISTS (
+            SELECT 1
+            FROM pg_policies
+            WHERE schemaname = 'public'
+              AND tablename = hd_table
+              AND policyname = 'haberes_descuentos_update'
+        ) THEN
+            EXECUTE format(
+                'CREATE POLICY haberes_descuentos_update ON public.%I FOR UPDATE TO anon, authenticated USING (true) WITH CHECK (true)',
+                hd_table
+            );
+        END IF;
+
+        IF NOT EXISTS (
+            SELECT 1
+            FROM pg_policies
+            WHERE schemaname = 'public'
+              AND tablename = hd_table
+              AND policyname = 'haberes_descuentos_delete'
+        ) THEN
+            EXECUTE format(
+                'CREATE POLICY haberes_descuentos_delete ON public.%I FOR DELETE TO anon, authenticated USING (true)',
+                hd_table
+            );
+        END IF;
+    END LOOP;
+END $$;
+
+DO $$
+DECLARE
+    regla_table TEXT := 'regla_concepto_calculo';
+BEGIN
+    IF to_regclass(format('public.%I', regla_table)) IS NOT NULL THEN
+        EXECUTE format('GRANT SELECT ON TABLE public.%I TO anon, authenticated', regla_table);
+        EXECUTE format('ALTER TABLE public.%I ENABLE ROW LEVEL SECURITY', regla_table);
+
+        IF NOT EXISTS (
+            SELECT 1
+            FROM pg_policies
+            WHERE schemaname = 'public'
+              AND tablename = regla_table
+              AND policyname = 'regla_concepto_calculo_select'
+        ) THEN
+            EXECUTE format(
+                'CREATE POLICY regla_concepto_calculo_select ON public.%I FOR SELECT TO anon, authenticated USING (true)',
+                regla_table
+            );
+        END IF;
+    END IF;
 END $$;
 
 DO $$

@@ -3,6 +3,7 @@ import {
   ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
+  effect,
   isDevMode,
   OnInit,
   ViewEncapsulation,
@@ -58,6 +59,7 @@ import { ParametrosSaludTabComponent } from '../features/parametros-generales/co
 import { ParametrosReformaTabComponent } from '../features/parametros-generales/components/tabs/parametros-reforma-tab.component';
 import { ParametrosTramosCargaTabComponent } from '../features/parametros-generales/components/tabs/parametros-tramos-carga-tab.component';
 import { ParametrosTramosRentaTabComponent } from '../features/parametros-generales/components/tabs/parametros-tramos-renta-tab.component';
+import { PeriodoActivoService } from '../core/services/periodo-activo.service';
 
 interface ParametrosTab {
   id: ParametrosTabId;
@@ -171,7 +173,7 @@ interface ParametrosDialogState {
         </div>
 
         <div class="period-row" aria-label="Periodo">
-          <span class="period-label">Periodo</span>
+          <span class="period-label">Parámetros del período {{ periodoGlobal.etiqueta() }}</span>
           <div class="period-controls">
             <button
               type="button"
@@ -223,6 +225,9 @@ interface ParametrosDialogState {
               Sin información cargada para {{ selectedPeriodo() }}
             }
           </span>
+          <p class="period-sync-hint">
+            Sincronizado con el período activo de la cabecera. Cambiar aquí o arriba actualiza el mismo contexto.
+          </p>
         </div>
           </div>
 
@@ -1449,6 +1454,7 @@ export class ParametrosPage implements OnInit {
   private readonly service = inject(ParametrosGeneralesService);
   private readonly fb = inject(FormBuilder);
   private readonly cdr = inject(ChangeDetectorRef);
+  readonly periodoGlobal = inject(PeriodoActivoService);
 
   readonly breadcrumbItems: readonly RecordBreadcrumbItem[] = [{ label: 'Parámetros' }];
   readonly tabs: readonly ParametrosTab[] = [
@@ -1480,7 +1486,7 @@ export class ParametrosPage implements OnInit {
   readonly activeTab = signal<ParametrosTabId>('valores');
   readonly ccafMutualSubTab = signal<CcafMutualSubId>('config');
   readonly rows = signal<ParametroGeneral[]>([]);
-  readonly selectedPeriodo = signal(this.currentPeriodo());
+  readonly selectedPeriodo = signal(this.periodoGlobal.periodoYm());
   readonly catalogos = signal<ParametrosGeneralesCatalogos>(this.emptyCatalogos());
   readonly periodosGeneralesCatalogo = signal<string[]>([]);
   readonly selectedCcafId = signal<number | null>(null);
@@ -1618,7 +1624,7 @@ export class ParametrosPage implements OnInit {
   readonly trabajosPesadosPorPeriodo = computed(() => this.catalogos().trabajosPesados);
 
   readonly form = this.fb.group({
-    periodo: [this.currentPeriodo(), [Validators.required, Validators.pattern(/^\d{4}-\d{2}$/)]],
+    periodo: [this.periodoGlobal.periodoYm(), [Validators.required, Validators.pattern(/^\d{4}-\d{2}$/)]],
     uf: this.fb.control<number | null>(null, { validators: [Validators.min(0)] }),
     utm: this.fb.control<number | null>(null, { validators: [Validators.min(0)] }),
     uta: this.fb.control<number | null>(null, { validators: [Validators.min(0)] }),
@@ -1661,6 +1667,16 @@ export class ParametrosPage implements OnInit {
     trabajoMenosPesadoTrabajador: this.fb.control<number | null>(null, { validators: [Validators.min(0), Validators.max(100)] }),
     fechaActualizacion: this.fb.control<string | null>(null),
   });
+
+  constructor() {
+    effect(() => {
+      const g = this.periodoGlobal.periodoYm();
+      if (g === this.selectedPeriodo()) {
+        return;
+      }
+      void this.seleccionarPeriodo(g, { fromGlobal: true });
+    });
+  }
 
   private formatMoneyGrid = (value: unknown): string => this.money(this.numberFromUnknown(value));
 
@@ -1879,26 +1895,19 @@ export class ParametrosPage implements OnInit {
   ];
 
   async ngOnInit(): Promise<void> {
-    // Carga inicial: el periodo lo decide la BD (evita fecha local incorrecta y "saltos" a 2027).
-    // Regla:
-    // - Si existe el mes actual, usarlo.
-    // - Si no existe, usar el último periodo disponible.
-    const periodoActual = this.currentPeriodo();
-    let periodoInicial = periodoActual;
+    // Carga inicial: período = contexto global (cabecera). Sin sustituir por último de BD para mantener una sola fuente de verdad.
+    const periodoInicial = this.periodoGlobal.periodoYm();
 
     try {
       const periodos = await this.service.listarPeriodos();
       this.periodosGeneralesCatalogo.set(periodos);
-      const ultimo = periodos[0] ?? null;
-      const existeActual = periodos.includes(periodoActual);
-      periodoInicial = existeActual ? periodoActual : (ultimo ?? periodoActual);
     } catch {
-      // Si falla, mantenemos periodoActual.
+      // Si falla, seguimos con período global.
     }
 
     this.selectedPeriodo.set(periodoInicial);
     this.form.controls.periodo.setValue(periodoInicial);
-    // Periodo fijo: se selecciona solo desde el selector superior.
+    // Periodo fijo en formulario: edición solo vía selector de período / cabecera.
     this.form.controls.periodo.disable({ emitEvent: false });
     await Promise.all([this.cargar(periodoInicial), this.refrescarPeriodosDesdeBd()]);
   }
@@ -2347,6 +2356,7 @@ export class ParametrosPage implements OnInit {
       );
       this.rows.set(nextRows);
       this.selectedPeriodo.set(saved.periodo);
+      this.periodoGlobal.setPeriodoYm(saved.periodo);
       this.patchForm(saved);
       this.generalesEditando.set(false);
       if (existiaRegistro) {
@@ -2482,20 +2492,31 @@ export class ParametrosPage implements OnInit {
     );
   }
 
-  private async seleccionarPeriodo(periodo: string): Promise<void> {
+  private async seleccionarPeriodo(
+    periodo: string,
+    options?: { fromGlobal?: boolean },
+  ): Promise<void> {
     if (periodo === this.selectedPeriodo()) {
       return;
     }
     if (!this.puedeAbandonarEdicionAlCambiarPeriodo()) {
+      if (options?.fromGlobal) {
+        this.periodoGlobal.setPeriodoYm(this.selectedPeriodo());
+      }
       this.cdr.markForCheck();
       return;
     }
 
     this.selectedPeriodo.set(periodo);
+    this.form.controls.periodo.setValue(periodo, { emitEvent: false });
     this.generalesEditando.set(false);
     this.cerrarDialogo();
 
     await Promise.all([this.cargar(periodo), this.refrescarPeriodosDesdeBd()]);
+
+    if (!options?.fromGlobal) {
+      this.periodoGlobal.setPeriodoYm(periodo);
+    }
   }
 
   private async prepararNuevoPeriodoDesdeBase(periodo: string): Promise<void> {

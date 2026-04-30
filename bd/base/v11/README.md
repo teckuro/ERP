@@ -4,6 +4,15 @@
 - **Por partes (recomendado)**: `run_all.sql` — incluye `partes/*.sql` en orden; es la vía preferida (diffs claros, errores localizados, RLS/triggers en archivos acotados).
 - **Monolito**: `crear_sql_v6_11_integrada.sql` — mismo contenido agrupado; conviene solo cuando hace falta un único `.sql` portable; mantener sincronizado con `partes/` si se regenera.
 
+### BD ya existente (sin `00_reset`)
+
+1. Ejecutar **`partes/07_migracion_lre_ejecutar.sql`**: agrega tablas/columnas LRE y `haberdescuento_persona` (idempotente).
+2. Ejecutar **`partes/12_migracion_lre_datos_incremental.sql`**: catálogo LRE, conceptos, reglas, demo asignaciones/movimientos con `ON CONFLICT DO UPDATE` donde aplica.
+
+Requiere que existan `persona`/`contrato` con IDs coherentes (el seed demo usa `id_persona = 1`, `id_contrato = 1`). Ajustar esos valores en el script si tu BD usa otros IDs.
+
+No ejecutar `run_all.sql` ni `00_reset.sql` sobre producción con datos que quieras conservar.
+
 ### Orden de ejecución (`partes/`)
 1. **`00_reset.sql`**: drops para re-ejecución
 2. **`01_tipos.sql`**: enums

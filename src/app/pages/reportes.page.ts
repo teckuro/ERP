@@ -1,6 +1,5 @@
-import { ChangeDetectionStrategy, Component, computed, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
 import { LucideAngularModule } from 'lucide-angular';
 import {
   CardComponent,
@@ -14,10 +13,7 @@ import {
   TabsListComponent,
   TabsTriggerDirective,
 } from '../shared/components/ui/tabs.component';
-import {
-  SearchSelectComponent,
-  SearchSelectOption,
-} from '../shared/components/ui/search-select.component';
+import { PeriodoActivoService } from '../core/services/periodo-activo.service';
 
 @Component({
   selector: 'app-reportes-page',
@@ -25,7 +21,6 @@ import {
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     CommonModule,
-    FormsModule,
     LucideAngularModule,
     CardComponent,
     CardContentComponent,
@@ -35,7 +30,6 @@ import {
     TabsListComponent,
     TabsTriggerDirective,
     TabsContentDirective,
-    SearchSelectComponent,
   ],
   template: `
     <div class="space-y-6">
@@ -45,20 +39,17 @@ import {
         <p class="text-sm text-gray-600 mt-1">Genera y exporta reportes del sistema</p>
       </div>
 
-      <!-- Period Selector -->
+      <!-- Contexto período (global, cabecera) -->
       <app-card>
         <app-card-content>
-          <div class="flex items-center gap-4">
-            <lucide-icon class="w-5 h-5 text-gray-500" name="calendar"></lucide-icon>
-            <div class="flex-1">
-              <label class="block text-sm font-medium text-gray-700 mb-2">Periodo a Generar</label>
-              <app-search-select
-                class="reportes-periodo-select w-full max-w-xs"
-                [(ngModel)]="periodo"
-                [options]="periodoOpcionesReportes"
-                searchPlaceholder="Buscar periodo"
-                placeholder="Periodo"
-              ></app-search-select>
+          <div class="flex items-start gap-3">
+            <lucide-icon class="w-5 h-5 shrink-0 text-gray-500" name="calendar"></lucide-icon>
+            <div class="text-sm text-gray-700">
+              <p class="font-medium text-gray-900">Período para la generación de reportes</p>
+              <p class="mt-1">
+                Período activo: <strong>{{ periodoActivo.etiqueta() }}</strong>. Cambie el mes en la cabecera del sistema;
+                aquí no se duplica el selector.
+              </p>
             </div>
           </div>
         </app-card-content>
@@ -210,7 +201,7 @@ import {
               <li>El archivo PREVIRED debe ser enviado antes del día 10 de cada mes</li>
               <li>El Libro de Remuneraciones es obligatorio mantenerlo actualizado mensualmente</li>
               <li>Los certificados anuales deben emitirse antes del 28 de febrero</li>
-              <li>Todos los reportes se generan con los datos del periodo seleccionado</li>
+              <li>Todos los reportes usan el período activo definido en la cabecera del layout</li>
             </ul>
           </div>
         </app-card-content>
@@ -219,14 +210,7 @@ import {
   `,
 })
 export class ReportesPage {
-  periodo = 'Abril 2026';
-
-  readonly periodoOpcionesReportes: SearchSelectOption<string>[] = [
-    { value: 'Abril 2026', label: 'Abril 2026' },
-    { value: 'Marzo 2026', label: 'Marzo 2026' },
-    { value: 'Febrero 2026', label: 'Febrero 2026' },
-    { value: 'Enero 2026', label: 'Enero 2026' },
-  ];
+  readonly periodoActivo = inject(PeriodoActivoService);
 
   private readonly reportes = signal<Reporte[]>([
     {

@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, effect, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { LucideAngularModule } from 'lucide-angular';
 import {
@@ -8,6 +8,7 @@ import {
 } from '../shared/components/ui/card.component';
 import { BadgeComponent } from '../shared/components/ui/badge.component';
 import { ButtonComponent } from '../shared/components/ui/button.component';
+import { PeriodoActivoService } from '../core/services/periodo-activo.service';
 import { RouterLink } from '@angular/router';
 
 @Component({
@@ -30,7 +31,7 @@ import { RouterLink } from '@angular/router';
       <div class="flex items-center justify-between">
         <div>
           <h1 class="text-xl font-semibold text-gray-900">Liquidaciones de Sueldo</h1>
-          <p class="text-sm text-gray-600 mt-1">Periodo: Abril 2026</p>
+          <p class="text-sm text-gray-600 mt-1">Liquidaciones del período {{ periodoActivo.etiqueta() }}</p>
         </div>
         <div class="flex gap-3">
           <app-button variant="outline">
@@ -108,6 +109,14 @@ import { RouterLink } from '@angular/router';
               </tr>
             </thead>
             <tbody class="divide-y divide-gray-200">
+              @if (liquidaciones().length === 0) {
+                <tr>
+                  <td colspan="7" class="px-6 py-10 text-center text-sm text-gray-500">
+                    No hay liquidaciones para {{ periodoActivo.etiqueta() }}. Cambie el período en la cabecera o genere el
+                    proceso del mes correspondiente.
+                  </td>
+                </tr>
+              }
               @for (liquidacion of liquidaciones(); track liquidacion.id) {
                 <tr class="hover:bg-gray-50 transition-colors">
                   <td class="px-6 py-4">
@@ -293,11 +302,14 @@ import { RouterLink } from '@angular/router';
   `,
 })
 export class LiquidacionesPage {
-  readonly liquidaciones = signal<Liquidacion[]>([
+  readonly periodoActivo = inject(PeriodoActivoService);
+
+  private readonly todasLasLiquidaciones = signal<Liquidacion[]>([
     {
       id: 1,
       empleado: 'Juan Pérez González',
       rut: '12.345.678-9',
+      periodoYm: '2026-04',
       periodo: 'Abril 2026',
       totalHaberes: 1650000,
       totalDescuentos: 320000,
@@ -309,6 +321,7 @@ export class LiquidacionesPage {
       id: 2,
       empleado: 'María Rodríguez Silva',
       rut: '23.456.789-0',
+      periodoYm: '2026-04',
       periodo: 'Abril 2026',
       totalHaberes: 1280000,
       totalDescuentos: 248000,
@@ -320,6 +333,7 @@ export class LiquidacionesPage {
       id: 3,
       empleado: 'Carlos López Muñoz',
       rut: '34.567.890-1',
+      periodoYm: '2026-04',
       periodo: 'Abril 2026',
       totalHaberes: 2250000,
       totalDescuentos: 456000,
@@ -330,13 +344,41 @@ export class LiquidacionesPage {
       id: 4,
       empleado: 'Ana Martínez Torres',
       rut: '45.678.901-2',
+      periodoYm: '2026-04',
       periodo: 'Abril 2026',
       totalHaberes: 1180000,
       totalDescuentos: 228000,
       liquido: 952000,
       enviada: false,
     },
+    {
+      id: 5,
+      empleado: 'Pedro Soto Vega',
+      rut: '98.765.432-1',
+      periodoYm: '2026-05',
+      periodo: 'Mayo 2026',
+      totalHaberes: 1400000,
+      totalDescuentos: 280000,
+      liquido: 1120000,
+      enviada: false,
+    },
+    {
+      id: 6,
+      empleado: 'Lucía Fernández Bravo',
+      rut: '87.654.321-0',
+      periodoYm: '2026-05',
+      periodo: 'Mayo 2026',
+      totalHaberes: 1100000,
+      totalDescuentos: 210000,
+      liquido: 890000,
+      enviada: true,
+      fechaEnvio: '09/05/2026',
+    },
   ]);
+
+  readonly liquidaciones = computed(() =>
+    this.todasLasLiquidaciones().filter((l) => l.periodoYm === this.periodoActivo.periodoYm()),
+  );
 
   readonly enviadas = computed(() => this.liquidaciones().filter((l) => l.enviada).length);
   readonly pendientes = computed(() => this.liquidaciones().filter((l) => !l.enviada).length);
@@ -345,6 +387,14 @@ export class LiquidacionesPage {
   readonly showPreview = signal(false);
 
   readonly today = new Date().toLocaleDateString('es-CL');
+
+  constructor() {
+    effect(() => {
+      this.periodoActivo.periodoYm();
+      this.closePreview();
+      this.selectedLiquidacion.set(null);
+    });
+  }
 
   openPreview(liq: Liquidacion) {
     this.selectedLiquidacion.set(liq);
@@ -359,6 +409,7 @@ type Liquidacion = {
   id: number;
   empleado: string;
   rut: string;
+  periodoYm: string;
   periodo: string;
   totalHaberes: number;
   totalDescuentos: number;

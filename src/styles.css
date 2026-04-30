@@ -115,6 +115,15 @@ body {
   white-space: nowrap;
 }
 
+.parametros-page .period-sync-hint {
+  grid-column: 1 / -1;
+  margin: 0;
+  font-size: 0.72rem;
+  color: #64748b;
+  font-weight: 500;
+  line-height: 1.35;
+}
+
 @media (max-width: 860px) {
   .parametros-page .period-row {
     grid-template-columns: 1fr;

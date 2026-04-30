@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { LucideAngularModule } from 'lucide-angular';
 import {
@@ -8,6 +8,7 @@ import {
 } from '../shared/components/ui/card.component';
 import { BadgeComponent } from '../shared/components/ui/badge.component';
 import { ButtonComponent } from '../shared/components/ui/button.component';
+import { PeriodoActivoService } from '../core/services/periodo-activo.service';
 
 @Component({
   selector: 'app-dashboard-page',
@@ -27,7 +28,7 @@ import { ButtonComponent } from '../shared/components/ui/button.component';
       <div class="flex items-center justify-between">
         <div>
           <h1 class="text-xl font-semibold text-gray-900">Dashboard de Gestión</h1>
-          <p class="text-sm text-gray-600 mt-1">Centro de mando - Periodo Abril 2026</p>
+          <p class="text-sm text-gray-600 mt-1">Centro de mando · Período activo {{ periodoActivo.etiqueta() }}</p>
         </div>
         <app-button variant="primary">
           <lucide-icon icon class="w-4 h-4" name="file-text"></lucide-icon>
@@ -309,6 +310,8 @@ import { ButtonComponent } from '../shared/components/ui/button.component';
   `,
 })
 export class DashboardPage {
+  readonly periodoActivo = inject(PeriodoActivoService);
+
   readonly costosComparativos = [
     { mes: 'Oct', costoEmpresa: 18200000, liquidoPagar: 14100000 },
     { mes: 'Nov', costoEmpresa: 18800000, liquidoPagar: 14600000 },

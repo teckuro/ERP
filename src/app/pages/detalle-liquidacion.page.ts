@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { LucideAngularModule } from 'lucide-angular';
@@ -15,6 +15,7 @@ import {
   TabsListComponent,
   TabsTriggerDirective,
 } from '../shared/components/ui/tabs.component';
+import { PeriodoActivoService } from '../core/services/periodo-activo.service';
 
 @Component({
   selector: 'app-detalle-liquidacion-page',
@@ -48,7 +49,7 @@ import {
           </a>
           <div>
             <h1 class="text-xl font-semibold text-gray-900">Detalle de Liquidación</h1>
-            <p class="text-sm text-gray-600 mt-1">Juan Pérez González - Abril 2026</p>
+            <p class="text-sm text-gray-600 mt-1">Juan Pérez González — período {{ periodoActivo.etiqueta() }}</p>
           </div>
         </div>
         <div class="flex gap-2">
@@ -362,6 +363,7 @@ import {
   `,
 })
 export class DetalleLiquidacionPage {
+  readonly periodoActivo = inject(PeriodoActivoService);
   readonly firmaEnProceso = signal(false);
 
   readonly haberes = signal<HaberItem[]>([

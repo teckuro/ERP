@@ -128,6 +128,7 @@ DECLARE
         'ley_16744_parametros',
         'organismo_administrador_ley_16744',
         'ccaf_entidad',
+        'catalogo_lre',
         'empresa_ley_16744',
         'banco',
         'tipo_cuenta_bancaria',
@@ -238,6 +239,107 @@ BEGIN
             );
         END IF;
     END LOOP;
+END $$;
+
+-- Haberes y descuentos / conceptos LRE: mantenedor en app (anon + authenticated).
+-- Misma postura que empleados_alta_* hasta existan roles JWT en politicas.
+DO $$
+DECLARE
+    hd_table TEXT;
+    hd_tables TEXT[] := ARRAY[
+        'concepto',
+        'haberdescuento_persona'
+    ];
+BEGIN
+    FOREACH hd_table IN ARRAY hd_tables LOOP
+        IF to_regclass(format('public.%I', hd_table)) IS NULL THEN
+            CONTINUE;
+        END IF;
+
+        EXECUTE format(
+            'GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE public.%I TO anon, authenticated',
+            hd_table
+        );
+
+        EXECUTE format('ALTER TABLE public.%I ENABLE ROW LEVEL SECURITY', hd_table);
+
+        IF NOT EXISTS (
+            SELECT 1
+            FROM pg_policies
+            WHERE schemaname = 'public'
+              AND tablename = hd_table
+              AND policyname = 'haberes_descuentos_select'
+        ) THEN
+            EXECUTE format(
+                'CREATE POLICY haberes_descuentos_select ON public.%I FOR SELECT TO anon, authenticated USING (true)',
+                hd_table
+            );
+        END IF;
+
+        IF NOT EXISTS (
+            SELECT 1
+            FROM pg_policies
+            WHERE schemaname = 'public'
+              AND tablename = hd_table
+              AND policyname = 'haberes_descuentos_insert'
+        ) THEN
+            EXECUTE format(
+                'CREATE POLICY haberes_descuentos_insert ON public.%I FOR INSERT TO anon, authenticated WITH CHECK (true)',
+                hd_table
+            );
+        END IF;
+
+        IF NOT EXISTS (
+            SELECT 1
+            FROM pg_policies
+            WHERE schemaname = 'public'
+              AND tablename = hd_table
+              AND policyname = 'haberes_descuentos_update'
+        ) THEN
+            EXECUTE format(
+                'CREATE POLICY haberes_descuentos_update ON public.%I FOR UPDATE TO anon, authenticated USING (true) WITH CHECK (true)',
+                hd_table
+            );
+        END IF;
+
+        IF NOT EXISTS (
+            SELECT 1
+            FROM pg_policies
+            WHERE schemaname = 'public'
+              AND tablename = hd_table
+              AND policyname = 'haberes_descuentos_delete'
+        ) THEN
+            EXECUTE format(
+                'CREATE POLICY haberes_descuentos_delete ON public.%I FOR DELETE TO anon, authenticated USING (true)',
+                hd_table
+            );
+        END IF;
+    END LOOP;
+END $$;
+
+-- Reglas de calculo por concepto: lectura para diagnóstico / futuras pantallas;
+-- la escritura sigue siendo vía migraciones o service_role.
+DO $$
+DECLARE
+    regla_table TEXT := 'regla_concepto_calculo';
+BEGIN
+    IF to_regclass(format('public.%I', regla_table)) IS NOT NULL THEN
+        EXECUTE format('GRANT SELECT ON TABLE public.%I TO anon, authenticated', regla_table);
+        EXECUTE format('ALTER TABLE public.%I ENABLE ROW LEVEL SECURITY', regla_table);
+
+        IF NOT EXISTS (
+            SELECT 1
+            FROM pg_policies
+            WHERE schemaname = 'public'
+              AND tablename = regla_table
+              AND policyname = 'regla_concepto_calculo_select'
+        ) THEN
+            EXECUTE format(
+                'CREATE POLICY regla_concepto_calculo_select ON public.%I FOR SELECT TO anon, authenticated USING (true)',
+                regla_table
+            );
+        END IF;
+    END IF;
 END $$;
 
 -- Vistas de solo lectura usadas por la app (sin RLS propio; aplica politicas de tablas base con security_invoker).

@@ -1,9 +1,10 @@
-import { ChangeDetectionStrategy, Component, computed, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, effect, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { LucideAngularModule } from 'lucide-angular';
 import { CardComponent, CardContentComponent } from '../shared/components/ui/card.component';
 import { BadgeComponent } from '../shared/components/ui/badge.component';
 import { ButtonComponent } from '../shared/components/ui/button.component';
+import { PeriodoActivoService } from '../core/services/periodo-activo.service';
 
 @Component({
   selector: 'app-proceso-remuneraciones-page',
@@ -15,7 +16,7 @@ import { ButtonComponent } from '../shared/components/ui/button.component';
       <!-- Header -->
       <div>
         <h1 class="text-xl font-semibold text-gray-900">Proceso de Cierre Mensual</h1>
-        <p class="text-sm text-gray-600 mt-1">Periodo: Abril 2026</p>
+        <p class="text-sm text-gray-600 mt-1">Proceso del período {{ periodoActivo.etiqueta() }}</p>
       </div>
 
       <!-- Stepper Mejorado -->
@@ -321,7 +322,7 @@ import { ButtonComponent } from '../shared/components/ui/button.component';
                   <h4 class="font-semibold text-gray-900 mb-2">Libro de Remuneraciones</h4>
                   <p class="text-sm text-gray-600 mb-4">LRE - Documento legal obligatorio mensual</p>
                   <div class="bg-blue-50 rounded-lg p-3 mb-4 w-full">
-                    <p class="text-xs text-blue-900"><strong>Periodo:</strong> Abril 2026</p>
+                    <p class="text-xs text-blue-900"><strong>Periodo:</strong> {{ periodoActivo.etiqueta() }}</p>
                     <p class="text-xs text-blue-700 mt-1">Formato: PDF</p>
                   </div>
                   <app-button variant="primary" className="w-full" (click)="archivosGenerados.set(true)">
@@ -367,7 +368,7 @@ import { ButtonComponent } from '../shared/components/ui/button.component';
             <div class="w-20 h-20 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-4">
               <lucide-icon class="w-10 h-10 text-blue-600" name="lock"></lucide-icon>
             </div>
-            <h3 class="text-lg font-semibold text-gray-900">Cerrar Periodo Abril 2026</h3>
+            <h3 class="text-lg font-semibold text-gray-900">Cerrar período {{ periodoActivo.etiqueta() }}</h3>
             <p class="text-gray-600 mt-2">Finaliza el proceso y bloquea el periodo para modificaciones</p>
 
             <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 max-w-md mx-auto mt-6">
@@ -405,7 +406,7 @@ import { ButtonComponent } from '../shared/components/ui/button.component';
 
             <app-button variant="primary" size="lg" className="mt-8" [disabled]="!archivosGenerados()">
               <lucide-icon icon class="w-5 h-5" name="lock"></lucide-icon>
-              Cerrar Periodo Abril 2026
+              Cerrar período {{ periodoActivo.etiqueta() }}
             </app-button>
           </div>
         </div>
@@ -427,6 +428,8 @@ import { ButtonComponent } from '../shared/components/ui/button.component';
   `,
 })
 export class ProcesoRemuneracionesPage {
+  readonly periodoActivo = inject(PeriodoActivoService);
+
   readonly currentStep = signal<Step>(1);
   readonly incidenciasValidadas = signal(false);
   readonly calculoRealizado = signal(false);
@@ -448,6 +451,17 @@ export class ProcesoRemuneracionesPage {
   ]);
 
   readonly incidenciasPendientes = computed(() => this.incidencias().filter((i) => !i.validada).length);
+
+  constructor() {
+    effect(() => {
+      this.periodoActivo.periodoYm();
+      this.currentStep.set(1);
+      this.incidenciasValidadas.set(false);
+      this.calculoRealizado.set(false);
+      this.archivosGenerados.set(false);
+      this.parametrosActualizados.set(false);
+    });
+  }
 
   prevStep() {
     this.currentStep.update((s) => (Math.max(1, s - 1) as Step));

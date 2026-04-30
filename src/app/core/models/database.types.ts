@@ -325,6 +325,54 @@ export type Database = {
         }
         Relationships: []
       }
+      catalogo_lre: {
+        Row: {
+          afecta_liquido: boolean | null
+          clasificacion_lre: string | null
+          codigo_lre: string
+          grupo_lre: string | null
+          id_catalogo_lre: number
+          imponible: boolean | null
+          modulo_lre: string
+          nombre_lre: string
+          observacion: string | null
+          tributable: boolean | null
+          vigencia_fin: string | null
+          vigencia_inicio: string | null
+          vigente: boolean
+        }
+        Insert: {
+          afecta_liquido?: boolean | null
+          clasificacion_lre?: string | null
+          codigo_lre: string
+          grupo_lre?: string | null
+          id_catalogo_lre?: number
+          imponible?: boolean | null
+          modulo_lre: string
+          nombre_lre: string
+          observacion?: string | null
+          tributable?: boolean | null
+          vigencia_fin?: string | null
+          vigencia_inicio?: string | null
+          vigente?: boolean
+        }
+        Update: {
+          afecta_liquido?: boolean | null
+          clasificacion_lre?: string | null
+          codigo_lre?: string
+          grupo_lre?: string | null
+          id_catalogo_lre?: number
+          imponible?: boolean | null
+          modulo_lre?: string
+          nombre_lre?: string
+          observacion?: string | null
+          tributable?: boolean | null
+          vigencia_fin?: string | null
+          vigencia_inicio?: string | null
+          vigente?: boolean
+        }
+        Relationships: []
+      }
       ccaf_entidad: {
         Row: {
           codigo: string
@@ -439,12 +487,15 @@ export type Database = {
         Row: {
           afecta_afc: boolean
           afecta_afp: boolean
+          afecta_liquido: boolean
           afecta_salud: boolean
           afecta_sis: boolean
           calculo_automatico: boolean
           codigo: string
           codigo_motor: string | null
+          es_sistema: boolean
           formula_json: Json | null
+          id_catalogo_lre: number | null
           id_concepto: number
           imponible: boolean
           naturaleza: string | null
@@ -452,16 +503,22 @@ export type Database = {
           orden_impresion: number
           tipo: string | null
           tributable: boolean
+          vigencia_fin: string | null
+          vigencia_inicio: string | null
+          vigente: boolean
         }
         Insert: {
           afecta_afc?: boolean
           afecta_afp?: boolean
+          afecta_liquido?: boolean
           afecta_salud?: boolean
           afecta_sis?: boolean
           calculo_automatico?: boolean
           codigo: string
           codigo_motor?: string | null
+          es_sistema?: boolean
           formula_json?: Json | null
+          id_catalogo_lre?: number | null
           id_concepto?: number
           imponible?: boolean
           naturaleza?: string | null
@@ -469,16 +526,22 @@ export type Database = {
           orden_impresion?: number
           tipo?: string | null
           tributable?: boolean
+          vigencia_fin?: string | null
+          vigencia_inicio?: string | null
+          vigente?: boolean
         }
         Update: {
           afecta_afc?: boolean
           afecta_afp?: boolean
+          afecta_liquido?: boolean
           afecta_salud?: boolean
           afecta_sis?: boolean
           calculo_automatico?: boolean
           codigo?: string
           codigo_motor?: string | null
+          es_sistema?: boolean
           formula_json?: Json | null
+          id_catalogo_lre?: number | null
           id_concepto?: number
           imponible?: boolean
           naturaleza?: string | null
@@ -486,8 +549,19 @@ export type Database = {
           orden_impresion?: number
           tipo?: string | null
           tributable?: boolean
+          vigencia_fin?: string | null
+          vigencia_inicio?: string | null
+          vigente?: boolean
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "concepto_id_catalogo_lre_fkey"
+            columns: ["id_catalogo_lre"]
+            isOneToOne: false
+            referencedRelation: "catalogo_lre"
+            referencedColumns: ["id_catalogo_lre"]
+          },
+        ]
       }
       configuracion: {
         Row: {
@@ -1221,31 +1295,46 @@ export type Database = {
           estado: boolean | null
           id_asignacion: number
           id_concepto: number
+          id_contrato: number | null
           id_persona: number
           monto: number | null
+          observacion: string | null
+          periodicidad: string | null
           porcentaje: number | null
           tipo: string | null
           tipohaber: string | null
+          vigencia_fin: string | null
+          vigencia_inicio: string | null
         }
         Insert: {
           estado?: boolean | null
           id_asignacion?: number
           id_concepto: number
+          id_contrato?: number | null
           id_persona: number
           monto?: number | null
+          observacion?: string | null
+          periodicidad?: string | null
           porcentaje?: number | null
           tipo?: string | null
           tipohaber?: string | null
+          vigencia_fin?: string | null
+          vigencia_inicio?: string | null
         }
         Update: {
           estado?: boolean | null
           id_asignacion?: number
           id_concepto?: number
+          id_contrato?: number | null
           id_persona?: number
           monto?: number | null
+          observacion?: string | null
+          periodicidad?: string | null
           porcentaje?: number | null
           tipo?: string | null
           tipohaber?: string | null
+          vigencia_fin?: string | null
+          vigencia_inicio?: string | null
         }
         Relationships: [
           {
@@ -1254,6 +1343,20 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "concepto"
             referencedColumns: ["id_concepto"]
+          },
+          {
+            foreignKeyName: "haberdescuento_persona_id_contrato_fkey"
+            columns: ["id_contrato"]
+            isOneToOne: false
+            referencedRelation: "contrato"
+            referencedColumns: ["id_contrato"]
+          },
+          {
+            foreignKeyName: "haberdescuento_persona_id_contrato_fkey"
+            columns: ["id_contrato"]
+            isOneToOne: false
+            referencedRelation: "vw_persona_factores"
+            referencedColumns: ["id_contrato"]
           },
           {
             foreignKeyName: "haberdescuento_persona_id_persona_fkey"
