@@ -20,6 +20,23 @@ export const routes: Routes = [
         loadComponent: () => import('./pages/haberes-descuentos.page').then((m) => m.HaberesDescuentosPage),
       },
       {
+        path: 'remuneraciones',
+        loadComponent: () =>
+          import('./layout/remuneraciones-outlet.component').then((m) => m.RemuneracionesOutletComponent),
+        children: [
+          {
+            path: '',
+            pathMatch: 'full',
+            redirectTo: 'conceptos',
+          },
+          {
+            path: 'conceptos',
+            loadComponent: () =>
+              import('./pages/conceptos-remuneracion.page').then((m) => m.ConceptosRemuneracionPage),
+          },
+        ],
+      },
+      {
         path: 'proceso-remuneraciones',
         loadComponent: () =>
           import('./pages/proceso-remuneraciones.page').then((m) => m.ProcesoRemuneracionesPage),

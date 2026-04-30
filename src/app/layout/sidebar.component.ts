@@ -111,6 +111,7 @@ export class SidebarComponent {
     { path: '/', label: 'Dashboard', icon: 'layout-dashboard', exact: true },
     { path: '/empleados', label: 'Empleados', icon: 'users' },
     { path: '/haberes-descuentos', label: 'Haberes y Descuentos', icon: 'dollar-sign' },
+    { path: '/remuneraciones/conceptos', label: 'Conceptos de remuneración', icon: 'tags', exact: true },
     { path: '/proceso-remuneraciones', label: 'Proceso Remuneraciones', icon: 'file-text' },
     { path: '/liquidaciones', label: 'Liquidaciones', icon: 'receipt' },
     { path: '/licencias-medicas', label: 'Licencias Medicas', icon: 'heart-pulse' },

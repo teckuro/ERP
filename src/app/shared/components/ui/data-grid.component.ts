@@ -92,6 +92,11 @@ export interface DataGridColumn<T = unknown> {
   widthClass?: string;
   priorityResponsive?: 'primary' | 'secondary' | 'tertiary' | number;
   format?: (value: unknown, row: T, index: number) => string | number;
+  /**
+   * Si es `false`, no se muestra un control de filtro derivado de esta columna.
+   * Por defecto se considera true (comportamiento anterior).
+   */
+  filterable?: boolean;
 }
 
 export type DataGridExportScope = 'page' | 'selected' | 'filtered';
@@ -1691,7 +1696,10 @@ export class DataGridComponent<T = unknown> implements OnChanges, OnDestroy {
 
   get visibleFilters(): DataGridFilter<T>[] {
     const fromColumns = this.visibleColumns
-      .filter((column) => column.id !== 'acciones' && Boolean(column.field))
+      .filter(
+        (column) =>
+          column.id !== 'acciones' && Boolean(column.field) && column.filterable !== false,
+      )
       .map((column) => {
         const configuredFilter = this.filters.find((filter) => filter.id === column.id);
 

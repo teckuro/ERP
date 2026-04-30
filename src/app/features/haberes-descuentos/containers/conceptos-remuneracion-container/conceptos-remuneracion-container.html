@@ -1,0 +1,381 @@
+<section class="hd-page" aria-label="Conceptos de remuneración">
+  <header class="hd-head">
+    <app-record-breadcrumb
+      [items]="breadcrumbItems"
+      title="Conceptos de remuneración"
+    ></app-record-breadcrumb>
+    <p class="hd-lead">
+      Administra el catálogo interno de conceptos de remuneración y su mapeo al Libro de Remuneraciones Electrónico.
+    </p>
+    <div class="hd-head-actions">
+      <div class="hd-head-buttons hd-head-buttons--end">
+        <app-button variant="outline" size="md" (click)="refrescar()">
+          <lucide-icon icon class="w-4 h-4" [img]="refreshIcon"></lucide-icon>
+          Refrescar
+        </app-button>
+      </div>
+    </div>
+  </header>
+
+  <p class="cr-note">
+    Los conceptos calculados por el proceso de liquidación quedan restringidos en este mantenedor salvo un perfil con
+    permisos ampliados.
+  </p>
+
+  <div class="cr-grid-wrap">
+    <app-data-grid
+      title="Conceptos"
+      primaryActionLabel="Nuevo concepto"
+      (primaryAction)="abrirNuevoConcepto()"
+      [rows]="catalogoFilas()"
+      [columns]="catalogColumns"
+      [filters]="catalogFilters"
+      [filtersEnabled]="true"
+      [loading]="catalogLoading()"
+      [showExportAction]="false"
+      [selectable]="false"
+      [trackBy]="trackCatalogo"
+      gridHeight="min(32rem, calc(100vh - 20rem))"
+      emptyTitle="Sin conceptos"
+      emptyDescription="No se encontraron conceptos en el catálogo."
+    >
+      <ng-template appDataGridCell="tipo" let-row>
+        @if (row.tipo === 'HABER') {
+          <span class="hd-chip hd-chip--haber">Haber</span>
+        } @else if (row.tipo === 'DESCUENTO') {
+          <span class="hd-chip hd-chip--descuento">Descuento</span>
+        } @else if (row.tipo === 'APORTE_EMPLEADOR') {
+          <span class="hd-chip hd-chip--neutral">Aporte empl.</span>
+        } @else {
+          <span class="hd-chip hd-chip--neutral">{{ etiquetaTipo(row.tipo) }}</span>
+        }
+      </ng-template>
+      <ng-template appDataGridCell="imponible" let-row>
+        <span class="hd-chip" [class.hd-chip--si]="row.imponible" [class.hd-chip--no]="!row.imponible">
+          {{ row.imponible ? 'Sí' : 'No' }}
+        </span>
+      </ng-template>
+      <ng-template appDataGridCell="tributable" let-row>
+        <span class="hd-chip" [class.hd-chip--si]="row.tributable" [class.hd-chip--no]="!row.tributable">
+          {{ row.tributable ? 'Sí' : 'No' }}
+        </span>
+      </ng-template>
+      <ng-template appDataGridCell="afectaAfp" let-row>
+        <span class="hd-chip" [class.hd-chip--si]="row.afectaAfp" [class.hd-chip--no]="!row.afectaAfp">
+          {{ row.afectaAfp ? 'Sí' : 'No' }}
+        </span>
+      </ng-template>
+      <ng-template appDataGridCell="afectaSalud" let-row>
+        <span class="hd-chip" [class.hd-chip--si]="row.afectaSalud" [class.hd-chip--no]="!row.afectaSalud">
+          {{ row.afectaSalud ? 'Sí' : 'No' }}
+        </span>
+      </ng-template>
+      <ng-template appDataGridCell="afectaAfc" let-row>
+        <span class="hd-chip" [class.hd-chip--si]="row.afectaAfc" [class.hd-chip--no]="!row.afectaAfc">
+          {{ row.afectaAfc ? 'Sí' : 'No' }}
+        </span>
+      </ng-template>
+      <ng-template appDataGridCell="afectaSis" let-row>
+        <span class="hd-chip" [class.hd-chip--si]="row.afectaSis" [class.hd-chip--no]="!row.afectaSis">
+          {{ row.afectaSis ? 'Sí' : 'No' }}
+        </span>
+      </ng-template>
+      <ng-template appDataGridCell="calculoAutomatico" let-row>
+        @if (row.calculoAutomatico) {
+          <span class="hd-chip hd-chip--auto">Automático</span>
+        } @else {
+          <span class="hd-chip hd-chip--manual-concepto">Manual</span>
+        }
+      </ng-template>
+      <ng-template appDataGridCell="esSistema" let-row>
+        @if (row.esSistema) {
+          <span class="hd-chip hd-chip--sistema">Sistema</span>
+        } @else {
+          <span class="hd-chip hd-chip--no-sistema">—</span>
+        }
+      </ng-template>
+      <ng-template appDataGridCell="afectaLiquido" let-row>
+        <span class="hd-chip" [class.hd-chip--si]="row.afectaLiquido" [class.hd-chip--no]="!row.afectaLiquido">
+          {{ row.afectaLiquido ? 'Sí' : 'No' }}
+        </span>
+      </ng-template>
+      <ng-template appDataGridCell="vigente" let-row>
+        <span class="hd-chip" [class.hd-chip--si]="row.vigente" [class.hd-chip--no]="!row.vigente">
+          {{ row.vigente ? 'Sí' : 'No' }}
+        </span>
+      </ng-template>
+      <ng-template appDataGridCell="acciones" let-row>
+        <div class="hd-actions">
+          <button
+            type="button"
+            class="hd-action-btn"
+            title="Editar"
+            [disabled]="conceptoCatalogoProtegido(row) && !puedeEditarConceptoCatalogo"
+            (click)="editarConceptoRow(row)"
+          >
+            <lucide-icon class="h-4 w-4" [img]="editIcon"></lucide-icon>
+          </button>
+          <button
+            type="button"
+            class="hd-action-btn hd-action-btn--danger"
+            title="Eliminar"
+            [disabled]="conceptoCatalogoProtegido(row) && !puedeEditarConceptoCatalogo"
+            (click)="pedirEliminarConcepto(row)"
+          >
+            Eliminar
+          </button>
+        </div>
+      </ng-template>
+    </app-data-grid>
+  </div>
+
+  @if (catalogDialogAbierto()) {
+    <div class="hd-modal-root" role="presentation">
+      <div class="hd-modal-backdrop" (click)="cerrarCatalogDialog()"></div>
+      <div class="hd-modal hd-modal--wide" role="dialog" aria-modal="true" aria-labelledby="cr-catalog-modal-title">
+        <h2 id="cr-catalog-modal-title" class="hd-modal-title">
+          {{ catalogEditId() == null ? 'Nuevo concepto' : 'Editar concepto' }}
+        </h2>
+        <div class="hd-modal-body">
+          <div class="hd-modal-stack">
+            <div class="hd-modal-group">
+              <div>
+                <label class="hd-field-label" for="cr-cat-codigo">Código interno</label>
+                <input
+                  id="cr-cat-codigo"
+                  type="text"
+                  class="hd-input"
+                  maxlength="30"
+                  [readonly]="catalogEditId() !== null"
+                  [ngModel]="catCodigo()"
+                  (ngModelChange)="catCodigo.set($event)"
+                />
+              </div>
+              <div>
+                <label class="hd-field-label" for="cr-cat-codigo-motor">Código motor</label>
+                <input
+                  id="cr-cat-codigo-motor"
+                  type="text"
+                  class="hd-input"
+                  [ngModel]="catCodigoMotor()"
+                  (ngModelChange)="catCodigoMotor.set($event)"
+                />
+              </div>
+              <div class="hd-modal-span2">
+                <label class="hd-field-label" for="cr-cat-nombre">Nombre</label>
+                <input
+                  id="cr-cat-nombre"
+                  type="text"
+                  class="hd-input"
+                  [ngModel]="catNombre()"
+                  (ngModelChange)="catNombre.set($event)"
+                />
+              </div>
+            </div>
+
+            <div class="hd-modal-group">
+              <div>
+                <label class="hd-field-label" for="cr-cat-tipo">Tipo</label>
+                <select
+                  id="cr-cat-tipo"
+                  class="hd-input"
+                  [ngModel]="catTipo()"
+                  (ngModelChange)="onCatTipoChange($event)"
+                >
+                  <option value="HABER">Haber</option>
+                  <option value="DESCUENTO">Descuento</option>
+                  <option value="APORTE_EMPLEADOR">Aporte empleador</option>
+                </select>
+              </div>
+              <div>
+                <label class="hd-field-label" for="cr-cat-naturaleza">Naturaleza</label>
+                <select
+                  id="cr-cat-naturaleza"
+                  class="hd-input"
+                  [disabled]="catTipo() === 'APORTE_EMPLEADOR'"
+                  [ngModel]="catNaturaleza()"
+                  (ngModelChange)="catNaturaleza.set($event)"
+                >
+                  <option [ngValue]="'IMPONIBLE'">Imponible</option>
+                  <option [ngValue]="'NO_IMPONIBLE'">No imponible</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="hd-modal-group">
+              <div class="hd-modal-span2">
+                <label class="hd-field-label" for="cr-cat-lre">Catálogo LRE</label>
+                <app-search-select
+                  id="cr-cat-lre"
+                  [options]="catalogoLreSearchOptions()"
+                  [ngModel]="catIdCatalogoLre()"
+                  (ngModelChange)="onCatLreChange($event)"
+                  placeholder="Buscar por código o nombre LRE"
+                  searchPlaceholder="Filtrar catálogo"
+                  [clearable]="true"
+                ></app-search-select>
+              </div>
+              @if (lreCatalogoSeleccionado(); as lre) {
+                <div class="hd-lre-resume hd-modal-span2">
+                  <p><span class="hd-lre-k">Código LRE</span> {{ lre.codigoLre }}</p>
+                  <p><span class="hd-lre-k">Nombre LRE</span> {{ lre.nombreLre }}</p>
+                  <p><span class="hd-lre-k">Módulo</span> {{ lre.moduloLre }}</p>
+                  <p><span class="hd-lre-k">Grupo</span> {{ lre.grupoLre?.trim() ? lre.grupoLre : '—' }}</p>
+                  <p>
+                    <span class="hd-lre-k">Clasificación</span>
+                    {{ lre.clasificacionLre?.trim() ? lre.clasificacionLre : '—' }}
+                  </p>
+                </div>
+              }
+            </div>
+
+            @if (catalogRowSnapshot(); as snap) {
+              <div class="hd-modal-group">
+                <div class="hd-modal-span2">
+                  <label class="hd-field-label">Es sistema</label>
+                  <div class="hd-readonly-flag">
+                    @if (snap.esSistema) {
+                      <span class="hd-chip hd-chip--sistema">Sí</span>
+                    } @else {
+                      <span class="hd-muted">No</span>
+                    }
+                  </div>
+                </div>
+              </div>
+            }
+
+            <div class="hd-modal-group">
+              <div>
+                <label class="hd-field-label" for="cr-cat-vig-ini">Vigencia inicio</label>
+                <input
+                  id="cr-cat-vig-ini"
+                  type="date"
+                  class="hd-input"
+                  [ngModel]="catVigenciaInicio()"
+                  (ngModelChange)="catVigenciaInicio.set($event)"
+                />
+              </div>
+              <div>
+                <label class="hd-field-label" for="cr-cat-vig-fin">Vigencia fin</label>
+                <input
+                  id="cr-cat-vig-fin"
+                  type="date"
+                  class="hd-input"
+                  [ngModel]="catVigenciaFin()"
+                  (ngModelChange)="catVigenciaFin.set($event)"
+                />
+              </div>
+              <div>
+                <label class="hd-field-label" for="cr-cat-orden">Orden impresión</label>
+                <input
+                  id="cr-cat-orden"
+                  type="number"
+                  class="hd-input"
+                  min="0"
+                  step="1"
+                  [ngModel]="catOrdenImpresion()"
+                  (ngModelChange)="catOrdenImpresion.set($event)"
+                />
+              </div>
+              <div>
+                <label class="hd-field-label" for="cr-cat-vigente">Vigente</label>
+                <div class="hd-estado-row">
+                  <label class="hd-check">
+                    <input type="checkbox" [ngModel]="catVigente()" (ngModelChange)="catVigente.set($event)" />
+                    Concepto vigente
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <div class="hd-modal-group">
+              <div class="hd-check-grid hd-modal-span2">
+                <label class="hd-check"
+                  ><input type="checkbox" [ngModel]="catImponible()" (ngModelChange)="catImponible.set($event)" />
+                  Imponible</label
+                >
+                <label class="hd-check"
+                  ><input type="checkbox" [ngModel]="catTributable()" (ngModelChange)="catTributable.set($event)" />
+                  Tributable</label
+                >
+                <label class="hd-check"
+                  ><input type="checkbox" [ngModel]="catAfectaAfp()" (ngModelChange)="catAfectaAfp.set($event)" />
+                  Afecta AFP</label
+                >
+                <label class="hd-check"
+                  ><input type="checkbox" [ngModel]="catAfectaSalud()" (ngModelChange)="catAfectaSalud.set($event)" />
+                  Afecta salud</label
+                >
+                <label class="hd-check"
+                  ><input type="checkbox" [ngModel]="catAfectaAfc()" (ngModelChange)="catAfectaAfc.set($event)" />
+                  Afecta AFC</label
+                >
+                <label class="hd-check"
+                  ><input type="checkbox" [ngModel]="catAfectaSis()" (ngModelChange)="catAfectaSis.set($event)" />
+                  Afecta SIS</label
+                >
+                <label class="hd-check"
+                  ><input
+                    type="checkbox"
+                    [ngModel]="catAfectaLiquido()"
+                    (ngModelChange)="catAfectaLiquido.set($event)"
+                  />
+                  Afecta líquido</label
+                >
+              </div>
+            </div>
+
+            <div class="hd-modal-group">
+              <div class="hd-modal-span2">
+                <label class="hd-field-label" for="cr-cat-calc-auto">Cálculo automático</label>
+                <div class="hd-estado-row">
+                  <label class="hd-check">
+                    <input
+                      type="checkbox"
+                      [ngModel]="catCalculoAutomatico()"
+                      (ngModelChange)="catCalculoAutomatico.set($event)"
+                      [disabled]="!!(catalogRowSnapshot()?.calculoAutomatico && !puedeEditarConceptoCatalogo)"
+                    />
+                    Generado por liquidación
+                  </label>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="hd-modal-actions">
+          <button type="button" class="hd-btn hd-btn--ghost" (click)="cerrarCatalogDialog()">Cancelar</button>
+          <button type="button" class="hd-btn hd-btn--primary" (click)="guardarCatalogDialog()">Guardar</button>
+        </div>
+      </div>
+    </div>
+  }
+
+  @if (modalMsg(); as msg) {
+    <app-message-box
+      [variant]="msg.variant"
+      mode="modal"
+      [modalHeadlineSplit]="true"
+      [title]="msg.title"
+      [message]="msg.message"
+      [detail]="msg.detail ?? ''"
+      primaryLabel="Aceptar"
+      (action)="cerrarModalMsg()"
+    ></app-message-box>
+  }
+
+  @if (confirmEliminarConcepto(); as del) {
+    <app-message-box
+      variant="warning"
+      mode="modal"
+      [modalHeadlineSplit]="true"
+      title="Eliminar concepto"
+      message="Se eliminará el concepto del catálogo si no tiene uso en liquidaciones ni asignaciones."
+      [detail]="del.nombre"
+      secondaryLabel="Cancelar"
+      primaryLabel="Eliminar"
+      (secondary)="cerrarConfirmEliminarConcepto()"
+      (action)="confirmarEliminarConceptoEjecutar()"
+    ></app-message-box>
+  }
+</section>
