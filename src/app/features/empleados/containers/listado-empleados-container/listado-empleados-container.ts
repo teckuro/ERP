@@ -1,8 +1,6 @@
 import { CommonModule } from '@angular/common';
-import { Component, HostListener, inject, signal } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
-import { LucideAngularModule } from 'lucide-angular';
-import { Download, Filter, LoaderCircle, Plus, RefreshCw } from 'lucide-angular/src/icons';
 
 import { TablaEmpleadosComponent } from '../../components/tabla-empleados/tabla-empleados';
 import { EmpleadoListado } from '../../models/empleado-listado.model';
@@ -18,7 +16,7 @@ import {
 
 @Component({
   selector: 'app-listado-empleados',
-  imports: [CommonModule, LucideAngularModule, RecordBreadcrumbComponent, TablaEmpleadosComponent],
+  imports: [CommonModule, RecordBreadcrumbComponent, TablaEmpleadosComponent],
   templateUrl: './listado-empleados-container.html',
   styleUrl: './listado-empleados-container.css',
 })
@@ -27,29 +25,12 @@ export class ListadoEmpleadosContainer {
   private readonly router = inject(Router);
 
   readonly breadcrumbItems: readonly RecordBreadcrumbItem[] = [{ label: 'Empleados' }];
-  readonly downloadIcon = Download;
-  readonly filterIcon = Filter;
-  readonly loaderIcon = LoaderCircle;
-  readonly plusIcon = Plus;
-  readonly refreshIcon = RefreshCw;
   readonly empleados = signal<EmpleadoListado[]>([]);
   readonly isLoading = signal(true);
   readonly errorMessage = signal<string | null>(null);
   readonly bulkActionLoading = signal(false);
   readonly bulkActionResult = signal<DataGridBulkActionResult<EmpleadoListado> | null>(null);
   readonly createNavigationTarget = signal<'basico' | 'avanzado' | null>(null);
-  crearMenuAbierto = false;
-
-  @HostListener('document:click', ['$event'])
-  closeCrearMenuOnOutsideClick(event: MouseEvent): void {
-    const target = event.target;
-
-    if (target instanceof Element && target.closest('[data-listado-create-menu]')) {
-      return;
-    }
-
-    this.crearMenuAbierto = false;
-  }
 
   async ngOnInit(): Promise<void> {
     await this.loadEmpleados();
@@ -62,23 +43,16 @@ export class ListadoEmpleadosContainer {
     try {
       this.empleados.set(await this.empleadosService.listar());
     } catch {
-      this.errorMessage.set('No fue posible cargar el listado de empleados.');
+      this.errorMessage.set('No se pudo cargar el listado de empleados.');
     } finally {
       this.isLoading.set(false);
     }
-  }
-
-  toggleCrearMenu(event: MouseEvent): void {
-    event.stopPropagation();
-    this.crearMenuAbierto = !this.crearMenuAbierto;
   }
 
   async crearBasico(): Promise<void> {
     if (this.createNavigationTarget()) {
       return;
     }
-
-    this.crearMenuAbierto = false;
     this.createNavigationTarget.set('basico');
 
     try {
@@ -92,8 +66,6 @@ export class ListadoEmpleadosContainer {
     if (this.createNavigationTarget()) {
       return;
     }
-
-    this.crearMenuAbierto = false;
     this.createNavigationTarget.set('avanzado');
 
     try {

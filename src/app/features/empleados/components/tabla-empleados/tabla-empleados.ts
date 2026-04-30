@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
-import { Component, EventEmitter, HostListener, Input, Output, ViewChild } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { Component, EventEmitter, HostListener, Input, Output, ViewChild, inject } from '@angular/core';
+import { Router, NavigationStart, RouterLink } from '@angular/router';
 import { LucideAngularModule } from 'lucide-angular';
 import {
   ArrowRight,
@@ -8,7 +8,9 @@ import {
   Edit,
   Eye,
   History,
+  LoaderCircle,
   MoreVertical,
+  Plus,
   PowerOff,
 } from 'lucide-angular/src/icons';
 
@@ -22,6 +24,7 @@ import {
   DataGridComponent,
   DataGridExportEvent,
   DataGridFilter,
+  DataGridPrimaryActionMenuDirective,
 } from '../../../../shared/components/ui/data-grid.component';
 
 @Component({
@@ -32,29 +35,38 @@ import {
     RouterLink,
     LucideAngularModule,
     DataGridCellDirective,
+    DataGridPrimaryActionMenuDirective,
     DataGridComponent,
   ],
   templateUrl: './tabla-empleados.html',
   styleUrl: './tabla-empleados.css',
 })
 export class TablaEmpleadosComponent {
+  private readonly router = inject(Router);
+
   @Input() empleados: EmpleadoListado[] = [];
   @Input() maxItems = 10;
   @Input() loading = false;
   @Input() errorMessage = '';
   @Input() bulkActionLoading = false;
   @Input() bulkActionResult: DataGridBulkActionResult<EmpleadoListado> | null = null;
+  @Input() createNavigationTarget: 'basico' | 'avanzado' | null = null;
   @Output() readonly refresh = new EventEmitter<void>();
   @Output() readonly bulkAction = new EventEmitter<DataGridBulkActionEvent<EmpleadoListado>>();
+  @Output() readonly createBasico = new EventEmitter<void>();
+  @Output() readonly createAvanzado = new EventEmitter<void>();
 
   readonly editIcon = Edit;
   readonly eyeIcon = Eye;
   readonly historyIcon = History;
+  readonly loaderIcon = LoaderCircle;
   readonly moreIcon = MoreVertical;
+  readonly plusIcon = Plus;
   readonly powerOffIcon = PowerOff;
   readonly rowActionIcon = ArrowRight;
   readonly completionIcon = ClipboardCheck;
   openActionMenuId: number | null = null;
+  crearMenuAbierto = false;
 
   @ViewChild(DataGridComponent)
   private readonly dataGrid?: DataGridComponent<EmpleadoListado>;
@@ -114,6 +126,8 @@ export class TablaEmpleadosComponent {
       type: 'text',
       cellClass: 'whitespace-nowrap text-neutral-700',
       priorityResponsive: 'secondary',
+      filterable: true,
+      showFilterWhenHidden: true,
     },
     {
       id: 'nombre',
@@ -122,6 +136,8 @@ export class TablaEmpleadosComponent {
       type: 'text',
       hideable: false,
       priorityResponsive: 'primary',
+      filterable: true,
+      showFilterWhenHidden: true,
     },
     {
       id: 'cargo',
@@ -131,6 +147,8 @@ export class TablaEmpleadosComponent {
       cellClass: 'text-neutral-700',
       priorityResponsive: 'tertiary',
       format: (value) => this.capitalize(String(value ?? '')),
+      filterable: true,
+      showFilterWhenHidden: true,
     },
     {
       id: 'departamento',
@@ -139,14 +157,18 @@ export class TablaEmpleadosComponent {
       type: 'text',
       cellClass: 'text-neutral-700',
       priorityResponsive: 'tertiary',
+      filterable: true,
+      showFilterWhenHidden: true,
     },
     {
       id: 'fechaIngreso',
-      header: 'Ingreso',
+      header: 'Fecha ingreso',
       field: 'fechaIngreso',
       type: 'date',
       cellClass: 'whitespace-nowrap text-neutral-700',
       format: (value) => this.formatDisplayDate(String(value ?? '')),
+      filterable: true,
+      showFilterWhenHidden: true,
     },
     {
       id: 'sueldoBase',
@@ -156,6 +178,7 @@ export class TablaEmpleadosComponent {
       align: 'right',
       cellClass: 'whitespace-nowrap font-semibold text-neutral-900',
       format: (value) => `$ ${Number(value).toLocaleString('es-CL')}`,
+      filterable: false,
     },
     {
       id: 'estado',
@@ -165,6 +188,8 @@ export class TablaEmpleadosComponent {
       hideable: false,
       priorityResponsive: 'secondary',
       format: (value) => this.labelEstado(value as EmpleadoEstado),
+      filterable: true,
+      showFilterWhenHidden: true,
     },
     {
       id: 'avance',
@@ -172,6 +197,7 @@ export class TablaEmpleadosComponent {
       align: 'left',
       sortable: false,
       hideable: true,
+      filterable: false,
     },
     {
       id: 'acciones',
@@ -179,6 +205,7 @@ export class TablaEmpleadosComponent {
       align: 'center',
       sortable: false,
       hideable: false,
+      filterable: false,
     },
   ];
 
@@ -236,10 +263,11 @@ export class TablaEmpleadosComponent {
     },
     {
       id: 'fechaIngreso',
-      label: 'Ingreso',
+      label: 'Fecha de ingreso',
       field: 'fechaIngreso',
       type: 'date-range',
       operator: 'between',
+      disallowFuture: true,
     },
   ];
 
@@ -254,8 +282,57 @@ export class TablaEmpleadosComponent {
     this.openActionMenuId = null;
   }
 
+  @HostListener('document:click', ['$event'])
+  closeCrearMenuOnOutsideClick(event: MouseEvent): void {
+    const target = event.target;
+
+    if (target instanceof Element && target.closest('[data-empleados-create-menu], [data-grid-primary-action-root]')) {
+      return;
+    }
+
+    this.crearMenuAbierto = false;
+  }
+
+  @HostListener('document:keydown.escape')
+  closeMenusOnEscape(): void {
+    this.crearMenuAbierto = false;
+    this.openActionMenuId = null;
+  }
+
+  constructor() {
+    this.router.events.subscribe((event) => {
+      if (event instanceof NavigationStart) {
+        this.crearMenuAbierto = false;
+        this.openActionMenuId = null;
+      }
+    });
+  }
+
   trackByEmpleadoId(_index: number, empleado: EmpleadoListado): number {
     return empleado.id;
+  }
+
+  toggleCrearMenu(): void {
+    if (this.createNavigationTarget) {
+      return;
+    }
+    this.crearMenuAbierto = !this.crearMenuAbierto;
+  }
+
+  onCrearBasico(): void {
+    if (this.createNavigationTarget) {
+      return;
+    }
+    this.crearMenuAbierto = false;
+    this.createBasico.emit();
+  }
+
+  onCrearAvanzado(): void {
+    if (this.createNavigationTarget) {
+      return;
+    }
+    this.crearMenuAbierto = false;
+    this.createAvanzado.emit();
   }
 
   toggleFiltros(): void {

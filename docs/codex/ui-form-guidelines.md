@@ -61,6 +61,10 @@ Todas las pantallas deben mantener:
 2. Botonera separada debajo del header, alineada a la derecha.
 3. Contenido principal en una superficie blanca con borde cuando la vista lo requiera.
 
+Regla adicional (altura):
+
+- El contenedor padre de la pantalla debe poder llegar al **límite inferior** (`min-height: 100%`) y, si usa grilla, el contenido debe crecer con `minmax(0, 1fr)` (ver `docs/codex/estilos/README.md`).
+
 Referencia de implementacion (UI base del ERP):
 
 - `src/app/features/empleados/components/form-empleado/form-empleado.html`
@@ -93,6 +97,16 @@ Reglas:
 - Ancho en formularios:
   - No ocupar siempre el `100%` del ancho disponible.
   - Reservar `width: 100%` para barras de filtros o controles que realmente lo requieran (ej. buscadores globales).
+
+### Regla (ERP) — grillas de captura: máximo 4 columnas
+
+En formularios normales de captura (p.ej. creación básica), evitar grillas “tipo 8 columnas” que introducen ruido.
+
+- **Desktop**: máximo **4 columnas**.
+- **Tablet**: **2 columnas**.
+- **Móvil**: **1 columna**.
+- Secciones con 2 campos deben tener **ancho contenido** (usar `max-width` del bloque interno) y no estirar por llenar pantalla.
+- La **grilla de 8 columnas** se reserva para mantenedores densos (ej. **Parámetros**) o casos explícitos de alta densidad.
 - Radios y checks:
   - Radios: el control **siempre va alineado al label en la misma línea**.
   - Checks:

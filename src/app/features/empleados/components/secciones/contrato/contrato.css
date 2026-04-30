@@ -248,7 +248,7 @@
 
 :host.labor-layout-advanced .labor-grid--contract,
 :host.labor-layout-advanced .labor-grid--salary {
-  grid-template-columns: repeat(8, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
 }
 
 :host.labor-layout-advanced .labor-grid--loads,
@@ -257,12 +257,12 @@
 :host.labor-layout-advanced .labor-grid--week {
   width: 100%;
   max-width: none;
-  grid-template-columns: repeat(8, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
 }
 
 /* Contrato y organización (orden DOM en labor-grid--contract) */
 :host.labor-layout-advanced .labor-grid--contract > :nth-child(1) {
-  grid-column: span 3;
+  grid-column: span 2;
 }
 
 :host.labor-layout-advanced .labor-grid--contract > :nth-child(2) {
@@ -281,12 +281,12 @@
 
 :host.labor-layout-advanced .labor-grid--contract > :nth-child(9),
 :host.labor-layout-advanced .labor-grid--contract > :nth-child(10) {
-  grid-column: span 3;
+  grid-column: span 2;
 }
 
 /* Jornada y remuneración */
 :host.labor-layout-advanced .labor-grid--salary > :nth-child(2) {
-  grid-column: span 3;
+  grid-column: span 2;
 }
 
 :host.labor-layout-advanced .labor-grid--salary > :nth-child(3),
@@ -295,7 +295,7 @@
 }
 
 :host.labor-layout-advanced .labor-grid--salary > :nth-child(6) {
-  grid-column: span 3;
+  grid-column: span 2;
 }
 
 :host.labor-layout-advanced .labor-grid--salary > :nth-child(7) {

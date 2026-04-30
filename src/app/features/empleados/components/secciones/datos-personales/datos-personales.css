@@ -16,41 +16,138 @@
   padding-top: 0;
 }
 
+
+/* Contención de ancho (modo básico): evita formularios excesivamente anchos */
+:host-context(.step-panel--basic) .employee-block {
+  width: 100%;
+}
+
+:host-context(.step-panel--basic) .employee-block--wide {
+  max-width: 100%;
+}
+
+:host-context(.step-panel--basic) .employee-block--narrow {
+  max-width: 100%;
+}
+
+/* Creación básica: “Datos personales” + “Contacto” lado a lado en desktop */
+:host-context(.step-panel--basic) .employee-basic-bottom-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 14px;
+  align-items: start;
+}
+
+@media (min-width: 980px) {
+  :host-context(.step-panel--basic) .employee-basic-bottom-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* ====== Grillas por capa (solo modo básico) ====== */
+:host-context(.step-panel--basic) .employee-grid-basic--ident {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+:host-context(.step-panel--basic) .employee-grid-basic--nombre {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+:host-context(.step-panel--basic) .employee-grid-basic--base {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+:host-context(.step-panel--basic) .employee-grid-basic--contact {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+:host-context(.step-panel--basic) .employee-grid-basic--contact .form-field--wide {
+  grid-column: span 2;
+}
+
+:host-context(.step-panel--basic) .form-field--span-2 {
+  grid-column: span 2;
+}
+
+/* Tablet: 2 columnas */
+@media (max-width: 980px) {
+  :host-context(.step-panel--basic) .employee-grid-basic--ident,
+  :host-context(.step-panel--basic) .employee-grid-basic--nombre,
+  :host-context(.step-panel--basic) .employee-grid-basic--base,
+  :host-context(.step-panel--basic) .employee-grid-basic--contact {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  :host-context(.step-panel--basic) .employee-grid-basic--contact .form-field--wide {
+    grid-column: span 2;
+  }
+}
+
+/* Móvil: 1 columna */
+@media (max-width: 760px) {
+  :host-context(.step-panel--basic) .employee-grid-basic--ident,
+  :host-context(.step-panel--basic) .employee-grid-basic--nombre,
+  :host-context(.step-panel--basic) .employee-grid-basic--base,
+  :host-context(.step-panel--basic) .employee-grid-basic--contact {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
 /*
-  Creacion basica: misma base que Parámetros (docs/codex/ui-form-guidelines.md):
-  - grilla de 8 columnas
-  - cada campo hijo directo = span 2 (minimo); no obliga a llenar la fila (huecos a la derecha OK)
+  Creación básica: patrón de captura (máx. 4 columnas):
+  - desktop: 4 columnas (máximo)
+  - tablet: 2 columnas
+  - móvil: 1 columna
 */
-:host-context(.step-panel--basic) .employee-grid {
-  grid-template-columns: repeat(8, minmax(0, 1fr));
+/* Legacy (desactivado): reemplazado por `employee-grid-basic--*` */
+:host-context(.step-panel--basic) .employee-grid--basic-legacy {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   justify-content: start;
   align-content: start;
   width: 100%;
 }
 
-:host-context(.step-panel--basic) .employee-block .employee-grid > .form-field {
-  grid-column: span 2;
+:host-context(.step-panel--basic) .employee-block .employee-grid--basic-legacy > .form-field {
+  grid-column: span 1;
   min-width: 0;
 }
 
-/* En max-width 980px: grilla 4 cols; span 2 = medio ancho (equivalente visual a span 2 en grilla 8) */
+/* En tablet: 2 columnas (modo básico) */
 @media (max-width: 980px) {
-  :host-context(.step-panel--basic) .employee-grid {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+  :host-context(.step-panel--basic) .employee-grid--basic-legacy {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  :host-context(.step-panel--basic) .employee-block .employee-grid > .form-field {
+  :host-context(.step-panel--basic) .employee-block .employee-grid--basic-legacy > .form-field {
+    grid-column: span 1;
+  }
+
+
+  :host-context(.step-panel--basic) .form-field--passport,
+  :host-context(.step-panel--basic) .form-field--date,
+  :host-context(.step-panel--basic) .form-field--sex {
+    grid-column: span 1;
+  }
+
+  :host-context(.step-panel--basic) .employee-grid--three .form-field--wide {
+    grid-column: span 2;
+  }
+
+  :host-context(.step-panel--basic) .employee-grid--four > .form-field:nth-child(1),
+  :host-context(.step-panel--basic) .employee-grid--four > .form-field:nth-child(2),
+  :host-context(.step-panel--basic) .employee-grid--two .form-field--wide,
+  :host-context(.step-panel--basic) .employee-grid--two > .form-field:nth-child(2) {
     grid-column: span 2;
   }
 }
 
 /* En max-width 760px: una columna, campo a ancho util */
 @media (max-width: 760px) {
-  :host-context(.step-panel--basic) .employee-grid {
+  :host-context(.step-panel--basic) .employee-grid--basic-legacy {
     grid-template-columns: minmax(0, 1fr);
   }
 
-  :host-context(.step-panel--basic) .employee-block .employee-grid > .form-field {
+  :host-context(.step-panel--basic) .employee-block .employee-grid--basic-legacy > .form-field {
     grid-column: 1 / -1;
   }
 
@@ -63,11 +160,58 @@
   }
 }
 
-/* Alta avanzada: grilla 8 columnas, spans proporcionales (no afecta basica ni ficha) */
+/* Etiqueta visual para campos secundarios (p.ej. Pasaporte) */
+:host-context(.step-panel--basic) .field-optional {
+  color: #64748b;
+  font-size: 0.68rem;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+/* Spans (modo básico): jerarquía por ancho sin llenar el ancho disponible */
+
+:host-context(.step-panel--basic) .employee-grid--two .form-field--wide {
+  grid-column: span 2;
+}
+
+:host-context(.step-panel--basic) .form-field--span-2 {
+  grid-column: span 2;
+}
+
+/* Contacto (modo básico): 3 columnas, email ocupa 2 (span 2) */
+:host-context(.step-panel--basic) .employee-grid--contact {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+:host-context(.step-panel--basic) .employee-grid--contact .form-field--wide {
+  grid-column: span 2;
+}
+
+@media (max-width: 980px) {
+  :host-context(.step-panel--basic) .employee-grid--contact {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  :host-context(.step-panel--basic) .employee-grid--contact .form-field--wide {
+    grid-column: span 2;
+  }
+}
+
+@media (max-width: 760px) {
+  :host-context(.step-panel--basic) .employee-grid--contact {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  :host-context(.step-panel--basic) .employee-grid--contact .form-field--wide {
+    grid-column: 1 / -1;
+  }
+}
+
+/* Alta avanzada: grilla de captura (máx 4 cols desktop, 2 tablet, 1 móvil) */
 :host.employee-layout-advanced .employee-grid-adv {
   width: 100%;
   max-width: none;
-  grid-template-columns: repeat(8, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   justify-content: start;
   align-content: start;
 }
@@ -77,21 +221,21 @@
 }
 
 :host.employee-layout-advanced .employee-grid-adv--ident > .form-field {
-  grid-column: span 2;
+  grid-column: span 1;
 }
 
 :host.employee-layout-advanced .employee-grid-adv--nombre > .form-field:nth-child(1) {
-  grid-column: span 4;
+  grid-column: span 2;
 }
 
 :host.employee-layout-advanced .employee-grid-adv--nombre > .form-field:nth-child(2),
 :host.employee-layout-advanced .employee-grid-adv--nombre > .form-field:nth-child(3) {
-  grid-column: span 2;
+  grid-column: span 1;
 }
 
 /* Nacionalidad un poco más ancha; estado civil compacto (fila 3+2, hueco a la derecha) */
 :host.employee-layout-advanced .employee-grid-adv--base > .form-field:nth-child(1) {
-  grid-column: span 3;
+  grid-column: span 2;
 }
 
 :host.employee-layout-advanced .employee-grid-adv--base > .form-field:nth-child(2) {
@@ -103,7 +247,7 @@
 }
 
 :host.employee-layout-advanced .employee-grid-adv--contact > .form-field:nth-child(1) {
-  grid-column: span 4;
+  grid-column: span 2;
 }
 
 :host.employee-layout-advanced .employee-grid-adv--contact > .form-field:nth-child(2) {
@@ -112,36 +256,36 @@
 
 @media (max-width: 980px) {
   :host.employee-layout-advanced .employee-grid-adv {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   :host.employee-layout-advanced .employee-grid-adv--ident > .form-field {
-    grid-column: span 2;
+    grid-column: 1 / -1;
   }
 
   :host.employee-layout-advanced .employee-grid-adv--nombre > .form-field:nth-child(1) {
-    grid-column: span 4;
+    grid-column: 1 / -1;
   }
 
   :host.employee-layout-advanced .employee-grid-adv--nombre > .form-field:nth-child(2),
   :host.employee-layout-advanced .employee-grid-adv--nombre > .form-field:nth-child(3) {
-    grid-column: span 2;
+    grid-column: 1 / -1;
   }
 
   :host.employee-layout-advanced .employee-grid-adv--base > .form-field:nth-child(1) {
-    grid-column: span 4;
+    grid-column: 1 / -1;
   }
 
   :host.employee-layout-advanced .employee-grid-adv--base > .form-field:nth-child(2) {
-    grid-column: span 2;
+    grid-column: 1 / -1;
   }
 
   :host.employee-layout-advanced .employee-grid-adv--contact > .form-field:nth-child(1) {
-    grid-column: span 4;
+    grid-column: 1 / -1;
   }
 
   :host.employee-layout-advanced .employee-grid-adv--contact > .form-field:nth-child(2) {
-    grid-column: span 2;
+    grid-column: 1 / -1;
   }
 }
 

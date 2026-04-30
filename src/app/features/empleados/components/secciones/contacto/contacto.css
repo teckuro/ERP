@@ -7,7 +7,7 @@
 
 /* Ficha / usos sin alta avanzada */
 :host:not(.employee-layout-advanced) .employee-grid--four {
-  grid-template-columns: repeat(8, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
 }
 
 /* orden legacy: direccion (3) | numero (2) | depto (2) | comuna (auto) | observaciones (full) */
@@ -21,7 +21,7 @@
 }
 
 :host:not(.employee-layout-advanced) .employee-grid--four > .form-field:nth-child(5) {
-  grid-column: span 8;
+  grid-column: 1 / -1;
 }
 
 @media (max-width: 1024px) {
@@ -43,11 +43,11 @@
   }
 }
 
-/* Alta avanzada: calle 4, numero 2, depto 2, comuna 3, observaciones 8 */
+/* Alta avanzada: grilla de captura (máx 4 cols desktop, 2 tablet, 1 móvil) */
 :host.employee-layout-advanced .employee-grid-adv-domicilio {
   width: 100%;
   max-width: none;
-  grid-template-columns: repeat(8, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   justify-content: start;
   align-content: start;
 }
@@ -57,20 +57,20 @@
 }
 
 :host.employee-layout-advanced .employee-grid-adv-domicilio > .form-field:nth-child(1) {
-  grid-column: span 4;
+  grid-column: span 2;
 }
 
 :host.employee-layout-advanced .employee-grid-adv-domicilio > .form-field:nth-child(2),
 :host.employee-layout-advanced .employee-grid-adv-domicilio > .form-field:nth-child(3) {
-  grid-column: span 2;
+  grid-column: span 1;
 }
 
 :host.employee-layout-advanced .employee-grid-adv-domicilio > .form-field:nth-child(4) {
-  grid-column: span 3;
+  grid-column: span 2;
 }
 
 :host.employee-layout-advanced .employee-grid-adv-domicilio > .form-field:nth-child(5) {
-  grid-column: span 8;
+  grid-column: 1 / -1;
 }
 
 :host.employee-layout-advanced .employee-section-shell--compact {
@@ -79,7 +79,7 @@
 
 @media (max-width: 1024px) {
   :host.employee-layout-advanced .employee-grid-adv-domicilio {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   :host.employee-layout-advanced .employee-grid-adv-domicilio > .form-field:nth-child(1) {

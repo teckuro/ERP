@@ -6,73 +6,6 @@
     ></app-record-breadcrumb>
   </header>
 
-  <div class="listado-toolbar" aria-label="Acciones del listado">
-    <div class="toolbar-create" data-listado-create-menu>
-      <button
-        type="button"
-        class="toolbar-button toolbar-button--primary erp-toolbar-button"
-        title="Crear empleado"
-        aria-label="Crear empleado"
-        [attr.aria-expanded]="crearMenuAbierto"
-        aria-haspopup="menu"
-        [disabled]="createNavigationTarget() !== null"
-        (click)="toggleCrearMenu($event)"
-      >
-        @if (createNavigationTarget()) {
-          <lucide-icon class="toolbar-icon toolbar-icon--spin" [img]="loaderIcon"></lucide-icon>
-        } @else {
-          <lucide-icon class="toolbar-icon" [img]="plusIcon"></lucide-icon>
-        }
-        <span>Crear empleado</span>
-      </button>
-
-      @if (crearMenuAbierto) {
-        <div class="create-menu" role="menu" aria-label="Opciones de creacion">
-          <div class="create-menu__header">
-            <p>Crear empleado</p>
-            <span>Selecciona el flujo de ingreso</span>
-          </div>
-
-          <button
-            type="button"
-            class="create-menu__option"
-            role="menuitem"
-            [disabled]="createNavigationTarget() !== null"
-            (click)="crearBasico()"
-          >
-            <span class="create-menu__option-copy">
-              <strong>Creacion basica</strong>
-              <small>Alta rapida con datos esenciales</small>
-            </span>
-            @if (createNavigationTarget() === 'basico') {
-              <lucide-icon class="create-menu-icon create-menu-icon--spin" [img]="loaderIcon"></lucide-icon>
-            } @else {
-              <lucide-icon class="create-menu-icon" [img]="plusIcon"></lucide-icon>
-            }
-          </button>
-
-          <button
-            type="button"
-            class="create-menu__option"
-            role="menuitem"
-            [disabled]="createNavigationTarget() !== null"
-            (click)="crearAvanzado()"
-          >
-            <span class="create-menu__option-copy">
-              <strong>Creacion avanzada</strong>
-              <small>Ficha completa y configuracion detallada</small>
-            </span>
-            @if (createNavigationTarget() === 'avanzado') {
-              <lucide-icon class="create-menu-icon create-menu-icon--spin" [img]="loaderIcon"></lucide-icon>
-            } @else {
-              <lucide-icon class="create-menu-icon" [img]="plusIcon"></lucide-icon>
-            }
-          </button>
-        </div>
-      }
-    </div>
-  </div>
-
   <div class="listado-content">
     <app-tabla-empleados
       #tabla
@@ -82,6 +15,9 @@
       [errorMessage]="errorMessage() ?? ''"
       [bulkActionLoading]="bulkActionLoading()"
       [bulkActionResult]="bulkActionResult()"
+      [createNavigationTarget]="createNavigationTarget()"
+      (createBasico)="crearBasico()"
+      (createAvanzado)="crearAvanzado()"
       (bulkAction)="handleBulkAction($event)"
       (refresh)="loadEmpleados()"
     ></app-tabla-empleados>

@@ -16,10 +16,10 @@ export type EmpleadoFormTabId = (typeof EMPLEADO_FORM_TAB_ORDER)[number];
 export const EMPLEADO_ADVANCED_WIZARD_LABELS = [
   'Datos personales',
   'Domicilio particular',
-  'Contrato y organizacion',
-  'Jornada y remuneracion',
+  'Contrato y organización',
+  'Jornada y remuneración',
   'Asignaciones y condiciones especiales',
-  'Prevision y salud',
+  'Previsión y salud',
   'APVI',
   'Bancario',
   'Resumen final',
@@ -29,7 +29,7 @@ export const EMPLEADO_ADVANCED_WIZARD_STEP_COUNT = EMPLEADO_ADVANCED_WIZARD_LABE
 
 /** Bloques visibles por pestaña (ids usados en templates de sección). */
 export const EMPLEADO_FORM_STEP_BLOCK_IDS: Record<EmpleadoFormTabId, readonly string[]> = {
-  datosPersonales: ['identificacion', 'nombre', 'base'],
+  datosPersonales: ['identificacion', 'nombre', 'base', 'contacto'],
   contrato: [
     'relacion',
     'contratoBase',

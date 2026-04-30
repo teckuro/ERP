@@ -114,28 +114,31 @@ Referencia visual (modo basico):
 
 ---
 
-## 5.1 Patrón de grilla (alineación en 8)
+## 5.1 Patrón de grilla (captura, sin ruido)
 
-Cuando el formulario tenga muchos campos cortos (RUT, pasaporte, fechas, tipo/estado) se permite usar una
-**grilla interna de 8 columnas** para alinear “hacia abajo” sin cambiar el orden lógico de lectura.
+En **modo básico**, el objetivo es capturar datos esenciales sin “ruido” visual.
+Por defecto **no usar grillas de 8 columnas** para formularios normales de captura.
 
 Reglas:
 
+- **Desktop**: máximo **4 columnas**.
+- **Tablet**: **2 columnas**.
+- **Móvil**: **1 columna**.
 - Mantener el **orden DOM** de los campos (no reordenar por CSS).
-- Usar **spans** para dar jerarquía por ancho (no forzar siempre 2 columnas).
-- En tablet degradar a **4 columnas**; en mobile a **1 columna**.
-- Aplicar el patrón **solo en modo básico** para no afectar el alta avanzada.
+- Usar **spans** solo para jerarquía (p.ej. RUT más ancho), sin forzar que una sección “rellene” la pantalla.
+- Secciones con pocos campos (2) deben tener **ancho contenido** (`max-width`) y no ocupar todo el ancho disponible.
+- Evitar overrides “globales” por contexto (ej. `:host-context(.step-panel--basic) .employee-grid { ... }`) que afecten otras secciones; preferir clases explícitas por bloque/capa (ver `docs/codex/estilos/README.md`).
 
 Referencia de implementación:
 
 - `src/app/features/empleados/components/secciones/datos-personales/datos-personales.css`
 
-Ejemplo de asignación de spans (escritorio 8 cols):
+Asignación sugerida:
 
-- Identificación legal: RUT `span 4`, Pasaporte `span 2`, Fecha nacimiento `span 1`, Sexo `span 1`
-- Nombre: Nombres `span 4`, Apellido paterno `span 2`, Apellido materno `span 2`
-- Información base: Nacionalidad `span 4`, Estado civil `span 4`
-- Contacto: Email `span 4`, Teléfono `span 4`
+- Identificación legal (4 campos): RUT más ancho; el resto compacto y sin estirar.
+- Nombre (3 campos): 3 columnas en desktop, 2 en tablet, 1 en móvil.
+- Datos personales (2 campos): 2 columnas y **contenida**.
+- Contacto (2 campos): 2 columnas y **contenida** (email puede ocupar 2 cols si aporta legibilidad).
 
 ---
 

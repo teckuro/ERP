@@ -1,7 +1,7 @@
 <div class="prevision-shell" [formGroup]="formGroup">
   <div class="employee-section-head is-hidden">
-    <p class="employee-section-kicker">Prevision y beneficios</p>
-    <h3 class="employee-section-title">Prevision y salud</h3>
+    <p class="employee-section-kicker">Previsión y beneficios</p>
+    <h3 class="employee-section-title">Previsión y salud</h3>
   </div>
 
   @if (isBlockVisible('regimen')) {
@@ -19,7 +19,7 @@
               <label
                 for="empleado-tipo-regimen-previsional"
               >
-                Tipo de prevision
+                Tipo de previsión
               </label>
               @if (isRequired('tipoRegimenPrevisional')) {
                 <span class="field-required" aria-hidden="true">*</span>
@@ -28,13 +28,13 @@
             <app-search-select
               id="empleado-tipo-regimen-previsional"
               formControlName="tipoRegimenPrevisional"
-              placeholder="Selecciona una opcion"
+              placeholder="Selecciona una opción"
               searchPlaceholder="Buscar tipo de previsión"
               [options]="tiposRegimenPrevisional"
               [invalid]="hasError('tipoRegimenPrevisional')"
             ></app-search-select>
             @if (hasError('tipoRegimenPrevisional', 'required')) {
-              <p class="field-message">Debes seleccionar el tipo de prevision.</p>
+              <p class="field-message">Debes seleccionar el tipo de previsión.</p>
             } @else {
               <p class="field-message"></p>
             }
@@ -154,7 +154,7 @@
   @if (esIps && isBlockVisible('ips')) {
     <app-card className="prevision-card">
       <app-card-header className="prevision-card-header">
-        <h4>Ex-Caja / regimen antiguo</h4>
+        <h4>Ex-Caja / régimen antiguo</h4>
       </app-card-header>
       <app-card-content className="prevision-card-content">
         <div
@@ -214,7 +214,7 @@
           <div class="form-field">
             <div class="field-label-row">
               <label for="empleado-regimen-ex-caja">
-                Regimen Ex-Caja
+                Régimen Ex-Caja
               </label>
               @if (isRequired('idRegimenExCaja')) {
                 <span class="field-required" aria-hidden="true">*</span>
@@ -223,16 +223,16 @@
             <app-search-select
               id="empleado-regimen-ex-caja"
               formControlName="idRegimenExCaja"
-              placeholder="Selecciona un regimen"
-              searchPlaceholder="Buscar regimen Ex-Caja"
+              placeholder="Selecciona un régimen"
+              searchPlaceholder="Buscar régimen Ex-Caja"
               [options]="regimenesExCajaFiltrados"
               [invalid]="hasError('idRegimenExCaja')"
             ></app-search-select>
             @if (hasError('idRegimenExCaja', 'required')) {
-              <p class="field-message">El regimen Ex-Caja es obligatorio.</p>
+              <p class="field-message">El régimen Ex-Caja es obligatorio.</p>
             } @else if (!regimenesExCajaFiltrados.length) {
               <p class="field-message field-message--warning">
-                No hay regimenes para la Ex-Caja seleccionada.
+                No hay regímenes para la Ex-Caja seleccionada.
               </p>
             } @else {
               <p class="field-message"></p>
@@ -282,7 +282,7 @@
           <div class="form-field">
             <div class="field-label-row">
               <label for="empleado-salud"
-                >Institucion de salud</label
+                >Institución de salud</label
               >
               @if (isRequired('idSalud')) {
                 <span class="field-required" aria-hidden="true">*</span>
@@ -291,13 +291,13 @@
             <app-search-select
               id="empleado-salud"
               formControlName="idSalud"
-              placeholder="Selecciona una institucion"
+              placeholder="Selecciona una institución"
               searchPlaceholder="Buscar institución de salud"
               [options]="entidadesSalud"
               [invalid]="hasError('idSalud')"
             ></app-search-select>
             @if (hasError('idSalud', 'required')) {
-              <p class="field-message">La institucion de salud es obligatoria.</p>
+              <p class="field-message">La institución de salud es obligatoria.</p>
             } @else {
               <p class="field-message"></p>
             }
@@ -400,7 +400,7 @@
             <div class="form-field">
               <div class="field-label-row">
                 <label for="empleado-institucion-apv">
-                  Institucion APVI
+                  Institución APVI
                 </label>
                 @if (isRequired('idInstitucionApv')) {
                   <span class="field-required" aria-hidden="true">*</span>
@@ -409,13 +409,13 @@
               <app-search-select
                 id="empleado-institucion-apv"
                 formControlName="idInstitucionApv"
-                placeholder="Selecciona una institucion"
+                placeholder="Selecciona una institución"
                 searchPlaceholder="Buscar institución APVI"
                 [options]="institucionesApv"
                 [invalid]="hasError('idInstitucionApv')"
               ></app-search-select>
               @if (hasError('idInstitucionApv', 'required')) {
-                <p class="field-message">La institucion APVI es obligatoria.</p>
+                <p class="field-message">La institución APVI es obligatoria.</p>
               } @else {
                 <p class="field-message"></p>
               }

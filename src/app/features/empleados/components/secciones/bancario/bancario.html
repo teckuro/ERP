@@ -60,7 +60,7 @@
 
     <div class="form-field">
       <div class="field-label-row">
-        <label for="empleado-numero-cuenta">Numero de cuenta</label>
+        <label for="empleado-numero-cuenta">Número de cuenta</label>
         @if (isRequired('numeroCuenta')) {
           <span class="field-required" aria-hidden="true">*</span>
         }
@@ -71,15 +71,15 @@
         inputmode="numeric"
         maxlength="50"
         formControlName="numeroCuenta"
-        placeholder="1234567890"
+        placeholder="Ej: 1234567890"
         [class]="controlClass('numeroCuenta')"
       />
       @if (hasError('numeroCuenta', 'required')) {
-        <p class="field-message">El numero de cuenta es obligatorio.</p>
+        <p class="field-message">El número de cuenta es obligatorio.</p>
       } @else if (hasError('numeroCuenta', 'digitsOnly')) {
-        <p class="field-message">Ingresa solo numeros.</p>
+        <p class="field-message">Ingresa solo números.</p>
       } @else if (hasError('numeroCuenta', 'maxlength')) {
-        <p class="field-message">El numero de cuenta supera el largo permitido.</p>
+        <p class="field-message">El número de cuenta supera el largo permitido.</p>
       } @else {
         <p class="field-message"></p>
       }

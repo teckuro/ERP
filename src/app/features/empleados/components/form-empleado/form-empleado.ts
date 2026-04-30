@@ -45,6 +45,7 @@ import {
 
 type TabId = EmpleadoFormTabId;
 type WizardStepUiKind =
+  | 'actual'
   | 'completo'
   | 'pendiente'
   | 'errores'
@@ -138,6 +139,10 @@ export class FormEmpleadoComponent implements OnInit {
   readonly errorMessage = signal<string | null>(null);
   /** RUT duplicado: modal estructurado (mismo layout que éxito básico, variante error). */
   readonly duplicateRutModalRut = signal<string | null>(null);
+
+  advancedStatusBadgeLabel(): string {
+    return 'Avanzada';
+  }
   readonly successMessage = signal<string | null>(null);
   /** Flujo que originó el último guardado exitoso (para el modal, sin depender solo de la ruta). */
   readonly successFlow = signal<FormEmpleadoModo | null>(null);
@@ -147,14 +152,38 @@ export class FormEmpleadoComponent implements OnInit {
   readonly catalogosError = signal<string | null>(null);
   readonly completedTabs = signal<ReadonlySet<TabId>>(new Set());
   readonly attemptedTabs = signal<ReadonlySet<TabId>>(new Set());
+  readonly visitedWizardSteps = signal<ReadonlySet<number>>(new Set([0]));
   readonly attemptedWizardSteps = signal<ReadonlySet<number>>(new Set());
   readonly form: EmpleadoFormGroup = this.empleadosFormService.createForm();
   readonly totalSteps = EMPLEADO_ADVANCED_WIZARD_STEP_COUNT;
   readonly breadcrumbItems: readonly RecordBreadcrumbItem[] = [
     { label: 'Empleados', link: '/empleados' },
-    { label: 'Creacion de ficha' },
+    { label: 'Creación de ficha' },
   ];
   readonly advancedWizardLabels = [...EMPLEADO_ADVANCED_WIZARD_LABELS];
+  readonly advancedWizardShortLabels: readonly string[] = [
+    'Datos personales',
+    'Domicilio',
+    'Contrato',
+    'Jornada',
+    'Asignaciones',
+    'Previsión y salud',
+    'APVI',
+    'Banco',
+    'Resumen',
+  ] as const;
+
+  readonly advancedWizardStepDescriptions: readonly string[] = [
+    'Completa la identificación, nombre, datos personales y contacto.',
+    'Registra el domicilio particular del empleado.',
+    'Define contrato, cargo, organización y centro de costo.',
+    'Configura jornada, sueldo base y datos remuneracionales.',
+    'Registra asignaciones y condiciones especiales si corresponden.',
+    'Configura previsión y salud según corresponda.',
+    'Registra APVI solo si aplica.',
+    'Define banco, cuenta y forma de pago.',
+    'Revisa la información antes de crear la ficha.',
+  ] as const;
 
   /** Inventario de bloques por paso (manifest); referencia unica frente a templates de seccion. */
   readonly stepBlockIds = EMPLEADO_FORM_STEP_BLOCK_IDS;
@@ -179,7 +208,19 @@ export class FormEmpleadoComponent implements OnInit {
 
     this.syncCompletedTabsFromValidity();
     this.activeWizardStep.set(index);
-    this.attemptedWizardSteps.update((prev) => new Set([...prev, index]));
+    this.markWizardStepVisited(index);
+  }
+
+  wizardStepShortLabel(stepIndex: number): string {
+    return this.advancedWizardShortLabels[stepIndex] ?? this.advancedWizardLabels[stepIndex] ?? '';
+  }
+
+  wizardStepDescription(stepIndex: number): string {
+    return this.advancedWizardStepDescriptions[stepIndex] ?? '';
+  }
+
+  wizardProgressPercent(): number {
+    return Math.round(((this.activeWizardStep() + 1) / this.totalSteps) * 100);
   }
 
   async loadCatalogos(): Promise<void> {
@@ -317,11 +358,11 @@ export class FormEmpleadoComponent implements OnInit {
   }
 
   pageTitle(): string {
-    return this.isBasicMode() ? 'Creacion basica de empleado' : 'Creacion avanzada de empleado';
+    return 'Crear empleado';
   }
 
   saveActionLabel(): string {
-    return this.isBasicMode() ? 'Crear empleado' : 'Crear empleado activo';
+    return this.isBasicMode() ? 'Guardar ficha básica' : 'Crear empleado activo';
   }
 
   /** En alta avanzada el guardado va en el pie ("Finalizar alta"); el header solo debe permitir volver. */
@@ -350,30 +391,37 @@ export class FormEmpleadoComponent implements OnInit {
       const prev = candidates.length ? candidates[candidates.length - 1]! : seq[0]!;
       this.syncCompletedTabsFromValidity();
       this.activeWizardStep.set(prev);
+      this.markWizardStepVisited(prev);
       return;
     }
     if (idx > 0) {
       this.syncCompletedTabsFromValidity();
-      this.activeWizardStep.set(seq[idx - 1]!);
+      const previous = seq[idx - 1]!;
+      this.activeWizardStep.set(previous);
+      this.markWizardStepVisited(previous);
     }
   }
 
   goToNextTab(): void {
     const seq = this.linearWizardSequence();
     let idx = seq.indexOf(this.activeWizardStep());
+    this.markWizardStepAttempted(this.activeWizardStep());
     if (idx === -1) {
       const cur = this.activeWizardStep();
       const next = seq.find((s) => s > cur);
       if (next !== undefined) {
         this.syncCompletedTabsFromValidity();
         this.activeWizardStep.set(next);
+        this.markWizardStepVisited(next);
         this.scrollToPageStart();
       }
       return;
     }
     if (idx < seq.length - 1) {
       this.syncCompletedTabsFromValidity();
-      this.activeWizardStep.set(seq[idx + 1]!);
+      const next = seq[idx + 1]!;
+      this.activeWizardStep.set(next);
+      this.markWizardStepVisited(next);
       this.scrollToPageStart();
     }
   }
@@ -528,10 +576,16 @@ export class FormEmpleadoComponent implements OnInit {
   }
 
   wizardStepUiKind(stepIndex: number): WizardStepUiKind {
+    const isActive = this.isWizardStepActive(stepIndex);
+    const stepWasAttempted = this.wizardStepWasAttempted(stepIndex);
+
     if (stepIndex === 8) {
       const summary = this.getWizardStepValidationSummary(8);
       if (summary.blockingPending > 0 && this.attemptedSave()) {
         return 'errores';
+      }
+      if (isActive) {
+        return 'actual';
       }
       if (summary.blockingPending === 0) {
         return 'completo';
@@ -554,8 +608,12 @@ export class FormEmpleadoComponent implements OnInit {
     /** Respeta la secuencia lineal (p. ej. paso 7 no “pasó” el 6 si APVI está fuera del flujo). */
     const stepRelevantForUi = this.wizardStepShownAsProgressed(stepIndex);
 
-    if (summary.blockingPending > 0 && stepRelevantForUi) {
+    if (summary.blockingPending > 0 && stepWasAttempted) {
       return 'errores';
+    }
+
+    if (isActive) {
+      return 'actual';
     }
 
     if (summary.blockingPending === 0 && summary.status === 'complete') {
@@ -574,14 +632,16 @@ export class FormEmpleadoComponent implements OnInit {
 
   wizardStepUiLabel(kind: WizardStepUiKind): string {
     switch (kind) {
+      case 'actual':
+        return 'Actual';
       case 'completo':
-        return 'Completo';
+        return 'Completado';
       case 'pendiente':
         return 'Pendiente';
       case 'errores':
         return 'Con errores';
       case 'opcional':
-        return 'Opcional';
+        return 'Pendiente';
       case 'no-aplica':
         return 'No aplica';
     }
@@ -617,6 +677,45 @@ export class FormEmpleadoComponent implements OnInit {
       invalidSteps: summaries.filter((summary) => summary.status === 'invalid').length,
       pendingTotal: summaries.reduce((total, summary) => total + summary.pending, 0),
     };
+  }
+
+  wizardMapPendingCount(): number {
+    return this.advancedWizardLabels.filter(
+      (_, index) => ['pendiente', 'opcional'].includes(this.wizardStepUiKind(index)),
+    ).length;
+  }
+
+  wizardMapErrorCount(): number {
+    return this.advancedWizardLabels.filter(
+      (_, index) => this.wizardStepUiKind(index) === 'errores',
+    ).length;
+  }
+
+  wizardMapNotApplicableCount(): number {
+    return this.advancedWizardLabels.filter(
+      (_, index) => this.wizardStepUiKind(index) === 'no-aplica',
+    ).length;
+  }
+
+  wizardMapSummaryLabel(): string {
+    const errors = this.wizardMapErrorCount();
+    const pending = this.wizardMapPendingCount();
+    const notApplicable = this.wizardMapNotApplicableCount();
+    const parts: string[] = [];
+
+    if (errors > 0) {
+      parts.push(`${errors} ${errors === 1 ? 'paso con errores' : 'pasos con errores'}`);
+    }
+
+    if (pending > 0) {
+      parts.push(`${pending} ${pending === 1 ? 'paso pendiente' : 'pasos pendientes'}`);
+    }
+
+    if (errors === 0 && notApplicable > 0) {
+      parts.push(`${notApplicable} ${notApplicable === 1 ? 'paso no aplica' : 'pasos no aplican'}`);
+    }
+
+    return parts.length ? parts.join(' · ') : 'Sin pendientes visibles';
   }
 
   private resolveWizardStep(rule: ValidationRule): number {
@@ -687,12 +786,28 @@ export class FormEmpleadoComponent implements OnInit {
     return this.attemptedTabs().has(tab) || this.completedTabs().has(tab);
   }
 
+  private markWizardStepVisited(step: number): void {
+    this.visitedWizardSteps.update((prev) => new Set([...prev, step]));
+  }
+
+  private markWizardStepAttempted(step: number): void {
+    this.markWizardStepVisited(step);
+    this.attemptedWizardSteps.update((prev) => new Set([...prev, step]));
+  }
+
+  private wizardStepWasAttempted(stepIndex: number): boolean {
+    return this.attemptedSave() || this.attemptedWizardSteps().has(stepIndex);
+  }
+
   /**
    * Indica si el paso ya cuenta como “alcanzado” en el flujo lineal (para pintar completo/errores).
    * Evita marcar el paso 7 como “pasó” el 6 cuando APVI no está en `linearWizardSequence()`.
    */
   private wizardStepShownAsProgressed(stepIndex: number): boolean {
     if (this.attemptedSave() || this.attemptedWizardSteps().has(stepIndex)) {
+      return true;
+    }
+    if (this.visitedWizardSteps().has(stepIndex)) {
       return true;
     }
     const seq = this.linearWizardSequence();
@@ -878,7 +993,7 @@ export class FormEmpleadoComponent implements OnInit {
         'error',
         true,
         'datosPersonales.nombres',
-        'Nombre del colaborador',
+        'Nombre del empleado',
         () => personal.nombres.valid,
       ),
       this.rule(
@@ -888,7 +1003,7 @@ export class FormEmpleadoComponent implements OnInit {
         'error',
         true,
         'datosPersonales.apellidoPaterno',
-        'Nombre del colaborador',
+        'Nombre del empleado',
         () => personal.apellidoPaterno.valid,
       ),
       this.rule(
@@ -1430,7 +1545,11 @@ export class FormEmpleadoComponent implements OnInit {
       .filter(Boolean)
       .join(' ');
 
-    return fullName || 'Nuevo Colaborador';
+    if (fullName) {
+      return fullName;
+    }
+
+    return 'Nuevo empleado';
   }
 
   rutVisible(): string {

@@ -2,7 +2,7 @@ import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { LucideAngularModule } from 'lucide-angular';
-import { Edit, RefreshCw } from 'lucide-angular/src/icons';
+import { Edit } from 'lucide-angular/src/icons';
 
 import {
   DataGridCellDirective,
@@ -10,7 +10,6 @@ import {
   DataGridComponent,
   DataGridFilter,
 } from '../../../../shared/components/ui/data-grid.component';
-import { ButtonComponent } from '../../../../shared/components/ui/button.component';
 import { MessageBoxComponent, MessageBoxVariant } from '../../../../shared/components/ui/message-box.component';
 import {
   RecordBreadcrumbComponent,
@@ -71,7 +70,6 @@ function siNo(v: boolean): string {
     FormsModule,
     LucideAngularModule,
     RecordBreadcrumbComponent,
-    ButtonComponent,
     DataGridComponent,
     DataGridCellDirective,
     MessageBoxComponent,
@@ -90,7 +88,6 @@ export class ConceptosRemuneracionContainer implements OnInit {
   ];
 
   readonly editIcon = Edit;
-  readonly refreshIcon = RefreshCw;
 
   readonly catalogLoading = signal(false);
 

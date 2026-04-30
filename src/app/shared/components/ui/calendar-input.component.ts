@@ -36,9 +36,18 @@ interface CalendarDay {
   ],
   template: `
     <div class="calendar-root" [class.is-disabled]="disabled">
-      <div class="calendar-field" [class.is-invalid]="invalid" [class.has-inset-label]="insetLabel">
+      <div
+        class="calendar-field"
+        [class.is-invalid]="invalid"
+        [class.has-inset-label]="insetLabel"
+        [class.has-side-label]="sideLabel"
+        [class.has-clear]="value && clearable && !disabled"
+      >
         @if (insetLabel) {
           <span class="calendar-inset-label">{{ insetLabel }}</span>
+        }
+        @if (sideLabel) {
+          <span class="calendar-side-label">{{ sideLabel }}</span>
         }
 
         <input
@@ -60,16 +69,14 @@ interface CalendarDay {
         />
 
         @if (value && clearable && !disabled) {
-          <div class="calendar-actions">
-            <button
-              type="button"
-              class="calendar-icon-button"
-              aria-label="Limpiar fecha"
-              (click)="clearDate()"
-            >
-              <lucide-icon [img]="clearIcon"></lucide-icon>
-            </button>
-          </div>
+          <button
+            type="button"
+            class="calendar-clear"
+            aria-label="Limpiar fecha"
+            (click)="clearDate($event)"
+          >
+            <lucide-icon [img]="clearIcon"></lucide-icon>
+          </button>
         }
       </div>
 
@@ -168,8 +175,7 @@ interface CalendarDay {
 
       .calendar-field {
         position: relative;
-        display: grid;
-        grid-template-columns: minmax(0, 1fr) auto;
+        display: flex;
         align-items: center;
         width: 100%;
         height: var(--erp-control-height, 22px);
@@ -183,6 +189,26 @@ interface CalendarDay {
 
       .calendar-field.has-inset-label {
         padding-top: 0.32rem;
+      }
+
+      .calendar-field.has-side-label {
+        padding-left: 0.15rem;
+      }
+
+      .calendar-side-label {
+        display: inline-flex;
+        align-items: center;
+        justify-content: flex-start;
+        width: 3.9rem;
+        padding: 0 0.55rem 0 0.55rem;
+        color: #64748b;
+        font-size: 0.72rem;
+        font-weight: 600;
+        line-height: 1;
+        border-right: 1px solid #edf2f7;
+        flex: 0 0 auto;
+        user-select: none;
+        pointer-events: none;
       }
 
       .calendar-field:hover {
@@ -205,10 +231,11 @@ interface CalendarDay {
 
       input {
         min-width: 0;
+        flex: 1 1 auto;
         height: 100%;
         border: 0;
         background: transparent;
-        padding: 0 2.35rem 0 0.62rem;
+        padding: 0 0.5rem;
         color: #111827;
         font: inherit;
         font-size: var(--erp-text-sm, 0.72rem);
@@ -216,8 +243,38 @@ interface CalendarDay {
         outline: none;
       }
 
+      .calendar-field.has-side-label input {
+        text-align: right;
+        padding-left: 0.6rem;
+      }
+
+      .calendar-field.has-clear input {
+        padding-right: 2.4rem;
+      }
+
       input::placeholder {
         color: #9ca3af;
+      }
+
+      .calendar-clear {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: calc(var(--erp-control-height, 22px) - 4px);
+        height: calc(var(--erp-control-height, 22px) - 4px);
+        position: absolute;
+        top: 50%;
+        right: 0.25rem;
+        transform: translateY(-50%);
+        border: 0;
+        border-radius: 5px;
+        background: transparent;
+        color: #6b7280;
+      }
+
+      .calendar-clear:hover {
+        background: #f8fafc;
+        color: #111827;
       }
 
       .calendar-inset-label {
@@ -234,18 +291,6 @@ interface CalendarDay {
         text-transform: uppercase;
         line-height: 1;
         pointer-events: none;
-      }
-
-      .calendar-actions {
-        position: absolute;
-        top: 50%;
-        right: 0.25rem;
-        transform: translateY(-50%);
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        width: 1.75rem;
-        height: 1.75rem;
       }
 
       .calendar-icon-button,
@@ -270,12 +315,26 @@ interface CalendarDay {
         color: #111827;
       }
 
+      .calendar-clear lucide-icon,
       .calendar-icon-button lucide-icon,
       .calendar-nav lucide-icon {
         display: inline-flex;
-        width: 13px;
-        height: 13px;
+        width: 14px;
+        height: 14px;
         line-height: 0;
+      }
+
+      .calendar-nav lucide-icon,
+      .calendar-icon-button lucide-icon,
+      .calendar-clear lucide-icon {
+        align-items: center;
+        justify-content: center;
+      }
+
+      .calendar-nav lucide-icon ::ng-deep svg,
+      .calendar-icon-button lucide-icon ::ng-deep svg,
+      .calendar-clear lucide-icon ::ng-deep svg {
+        display: block;
       }
 
       .calendar-popover {
@@ -287,16 +346,17 @@ interface CalendarDay {
         border: 1px solid #e5e7eb;
         border-radius: 6px;
         background: #ffffff;
-        padding: 8px;
+        padding: 10px;
+        box-sizing: border-box;
         box-shadow: 0 12px 28px rgba(17, 24, 39, 0.12);
       }
 
       .calendar-head {
         display: grid;
-        grid-template-columns: 28px minmax(0, 1fr) 28px;
+        grid-template-columns: 30px minmax(0, 1fr) 30px;
         align-items: center;
         gap: 6px;
-        margin-bottom: 8px;
+        margin-bottom: 10px;
       }
 
       .calendar-period {
@@ -336,8 +396,9 @@ interface CalendarDay {
       }
 
       .calendar-nav {
-        width: 28px;
-        height: 28px;
+        width: 30px;
+        height: 30px;
+        padding: 0;
         border: 1px solid #e5e7eb;
         border-radius: 5px;
         background: #ffffff;
@@ -450,6 +511,8 @@ export class CalendarInputComponent implements ControlValueAccessor {
   @Input() id = '';
   @Input() placeholder = 'dd/mm/aaaa';
   @Input() insetLabel = '';
+  /** Label lateral dentro del control (ej. Desde/Hasta). */
+  @Input() sideLabel = '';
   @Input() invalid = false;
   @Input() clearable = true;
   @Input() min = '';
@@ -581,7 +644,9 @@ export class CalendarInputComponent implements ControlValueAccessor {
     this.displayValue = this.formatDisplayValue(this.value);
   }
 
-  clearDate(): void {
+  clearDate(event?: Event): void {
+    event?.stopPropagation();
+    event?.preventDefault();
     this.updateValue('');
     this.displayValue = '';
     this.closeCalendar();

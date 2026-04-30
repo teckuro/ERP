@@ -1,4 +1,58 @@
 <section class="employee-section-shell employee-section-shell--compact" [formGroup]="formGroup">
+  @if (isBlockVisible('contacto')) {
+    <app-card className="employee-block">
+      <div class="employee-block-head">
+        <h4>Contacto</h4>
+        <p class="employee-block-lead">Email y teléfono para notificaciones o coordinación interna.</p>
+      </div>
+
+      <div class="employee-grid employee-grid--two">
+        <div class="form-field">
+          <div class="field-label-row">
+            <label for="empleado-email">Email (opcional)</label>
+          </div>
+          <input
+            id="empleado-email"
+            type="email"
+            inputmode="email"
+            formControlName="email"
+            placeholder="Ej: nombre@empresa.cl"
+            [class]="controlClass('email')"
+          />
+          @if (hasError('email', 'email')) {
+            <p class="field-message">Ingresa un email válido.</p>
+          } @else if (hasError('email', 'maxlength')) {
+            <p class="field-message">El email supera el largo permitido.</p>
+          } @else {
+            <p class="field-message"></p>
+          }
+        </div>
+
+        <div class="form-field">
+          <div class="field-label-row">
+            <label for="empleado-telefono">Teléfono (opcional)</label>
+          </div>
+          <input
+            id="empleado-telefono"
+            type="text"
+            inputmode="tel"
+            maxlength="30"
+            formControlName="telefono"
+            placeholder="Ej: +56 9 1234 5678"
+            [class]="controlClass('telefono')"
+          />
+          @if (hasError('telefono', 'phone')) {
+            <p class="field-message">Ingresa un teléfono válido.</p>
+          } @else if (hasError('telefono', 'maxlength')) {
+            <p class="field-message">El teléfono supera el largo permitido.</p>
+          } @else {
+            <p class="field-message"></p>
+          }
+        </div>
+      </div>
+    </app-card>
+  }
+
   @if (isBlockVisible('ubicacion')) {
     <app-card className="employee-block" [class.employee-block--domicilio-avanzado]="domicilioAvanzado">
       <div class="employee-block-head">
@@ -25,11 +79,11 @@
             id="empleado-direccion"
             type="text"
             formControlName="direccion"
-            placeholder="Av. Apoquindo"
+            placeholder="Ej: Av. Libertad 123"
             [class]="controlClass('direccion')"
           />
           @if (hasError('direccion', 'required')) {
-            <p class="field-message">La direccion es obligatoria.</p>
+            <p class="field-message">La dirección es obligatoria.</p>
           } @else {
             <p class="field-message"></p>
           }
@@ -45,13 +99,13 @@
             inputmode="numeric"
             maxlength="20"
             formControlName="numeroDireccion"
-            placeholder="1001"
+            placeholder="Ej: 123"
             [class]="controlClass('numeroDireccion')"
           />
           @if (hasError('numeroDireccion', 'digitsOnly')) {
-            <p class="field-message">Ingresa solo numeros.</p>
+            <p class="field-message">Ingresa solo números.</p>
           } @else if (hasError('numeroDireccion', 'maxlength')) {
-            <p class="field-message">El numero supera el largo permitido.</p>
+            <p class="field-message">El número supera el largo permitido.</p>
           } @else {
             <p class="field-message"></p>
           }
@@ -65,7 +119,7 @@
             id="empleado-departamento-direccion"
             type="text"
             formControlName="departamentoDireccion"
-            placeholder="Oficina 402"
+            placeholder="Ej: Depto 402"
             [class]="controlClass('departamentoDireccion')"
           />
           @if (hasError('departamentoDireccion', 'maxlength')) {
@@ -109,7 +163,7 @@
             id="empleado-observaciones-direccion"
             rows="3"
             formControlName="observacionesDireccion"
-            placeholder="Torre B, acceso por recepcion, referencia adicional"
+            placeholder="Ej: Torre B, acceso por recepción"
             [class]="controlClass('observacionesDireccion') + ' employee-control--textarea'"
           ></textarea>
           @if (hasError('observacionesDireccion', 'maxlength')) {

@@ -1,40 +1,106 @@
-<app-data-grid
-  title="Listado de empleados"
-  [columns]="columns"
-  [rows]="empleados"
-  [filters]="filters"
-  [filtersEnabled]="true"
-  [gridHeight]="'100%'"
-  [maxItems]="maxItems"
-  [loading]="loading"
-  loadingLabel="Cargando listado de empleados..."
-  [errorMessage]="errorMessage"
-  [bulkActionLoading]="bulkActionLoading"
-  [bulkActionResult]="bulkActionResult"
-  [bulkActions]="bulkStateActions"
-  [showHeader]="true"
-  [trackBy]="trackByEmpleadoId"
-  [selectable]="true"
-  selectionLabel="empleados"
-  persistenceKey="empleados.data-grid.preferences"
-  [pageSizeOptions]="pageSizeOptions"
-  className="empleados-grid-shell"
-  cardClassName="empleados-grid-card"
-  (export)="exportEmpleados($event)"
-  (bulkAction)="bulkAction.emit($event)"
-  (retry)="refresh.emit()"
-  (refresh)="refresh.emit()"
-  emptyTitle="No se encontraron empleados"
-  emptyDescription="Aun no hay registros para mostrar en el listado."
->
-  <ng-template appDataGridCell="nombre" let-empleado>
-    <div class="employee-name-cell" [title]="empleado.nombre">
-      <p class="employee-name-cell__title">{{ empleado.nombre }}</p>
-      <p class="employee-name-cell__meta">
-        {{ formatEmployeeMeta(empleado) }}
-      </p>
-    </div>
-  </ng-template>
+<div class="empleados-grid-wrap">
+  <app-data-grid
+    title="Listado de empleados"
+    primaryActionLabel="Crear empleado"
+    (primaryAction)="toggleCrearMenu()"
+    [primaryActionMenuOpen]="crearMenuAbierto"
+    [filtersCollapsible]="false"
+    filterChipsDisplay="whenFiltersHidden"
+    headerCountDisplay="text"
+    headerCountNoun="resultados"
+    [headerShowActiveFiltersCount]="true"
+    emptyTitleWhenFiltered="No se encontraron empleados con los filtros aplicados."
+    emptyDescriptionWhenFiltered="Ajusta la búsqueda o limpia los filtros para ver más resultados."
+    [columns]="columns"
+    [rows]="empleados"
+    [filters]="filters"
+    [filtersEnabled]="true"
+    [gridHeight]="'100%'"
+    [maxItems]="maxItems"
+    [loading]="loading"
+    loadingLabel="Cargando listado de empleados..."
+    [errorMessage]="errorMessage"
+    [bulkActionLoading]="bulkActionLoading"
+    [bulkActionResult]="bulkActionResult"
+    [bulkActions]="bulkStateActions"
+    [showHeader]="true"
+    [trackBy]="trackByEmpleadoId"
+    [selectable]="true"
+    selectionLabel="empleados"
+    persistenceKey="empleados.data-grid.preferences"
+    [pageSizeOptions]="pageSizeOptions"
+    className="empleados-grid-shell"
+    cardClassName="empleados-grid-card"
+    (export)="exportEmpleados($event)"
+    (bulkAction)="bulkAction.emit($event)"
+    (retry)="refresh.emit()"
+    (refresh)="refresh.emit()"
+    emptyTitle="Aún no hay empleados registrados."
+    emptyDescription="Crea el primer empleado para comenzar a gestionar remuneraciones."
+  >
+    <ng-template appDataGridPrimaryActionMenu>
+      @if (crearMenuAbierto) {
+        <div class="empleados-create-menu" data-empleados-create-menu role="menu" aria-label="Opciones de creacion">
+          <div class="empleados-create-menu__header">
+            <p>Crear empleado</p>
+            <span>Selecciona el tipo de creación</span>
+          </div>
+
+          <button
+            type="button"
+            class="empleados-create-menu__option"
+            role="menuitem"
+            [disabled]="createNavigationTarget !== null"
+            (click)="onCrearBasico()"
+          >
+            <span class="empleados-create-menu__option-copy">
+              <strong>Creación básica</strong>
+              <small>Alta rápida con datos esenciales</small>
+            </span>
+            @if (createNavigationTarget === 'basico') {
+              <span class="empleados-create-menu-icon-wrap" aria-hidden="true">
+                <lucide-icon class="empleados-create-menu-icon empleados-create-menu-icon--spin" [img]="loaderIcon"></lucide-icon>
+              </span>
+            } @else {
+              <span class="empleados-create-menu-icon-wrap" aria-hidden="true">
+                <lucide-icon class="empleados-create-menu-icon" [img]="plusIcon"></lucide-icon>
+              </span>
+            }
+          </button>
+
+          <button
+            type="button"
+            class="empleados-create-menu__option"
+            role="menuitem"
+            [disabled]="createNavigationTarget !== null"
+            (click)="onCrearAvanzado()"
+          >
+            <span class="empleados-create-menu__option-copy">
+              <strong>Creación avanzada</strong>
+              <small>Ficha completa y configuración</small>
+            </span>
+            @if (createNavigationTarget === 'avanzado') {
+              <span class="empleados-create-menu-icon-wrap" aria-hidden="true">
+                <lucide-icon class="empleados-create-menu-icon empleados-create-menu-icon--spin" [img]="loaderIcon"></lucide-icon>
+              </span>
+            } @else {
+              <span class="empleados-create-menu-icon-wrap" aria-hidden="true">
+                <lucide-icon class="empleados-create-menu-icon" [img]="plusIcon"></lucide-icon>
+              </span>
+            }
+          </button>
+        </div>
+      }
+    </ng-template>
+
+    <ng-template appDataGridCell="nombre" let-empleado>
+      <div class="employee-name-cell" [title]="empleado.nombre">
+        <p class="employee-name-cell__title">{{ empleado.nombre }}</p>
+        <p class="employee-name-cell__meta">
+          {{ formatEmployeeMeta(empleado) }}
+        </p>
+      </div>
+    </ng-template>
 
   <ng-template appDataGridCell="departamento" let-empleado>
     @if (isDefaultDepartamento(empleado.departamento)) {
@@ -161,4 +227,5 @@
       }
     </div>
   </ng-template>
-</app-data-grid>
+  </app-data-grid>
+</div>

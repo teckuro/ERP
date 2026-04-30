@@ -3,6 +3,7 @@ import { FormsModule } from '@angular/forms';
 import {
   Component,
   ContentChildren,
+  ContentChild,
   Directive,
   EventEmitter,
   HostBinding,
@@ -47,6 +48,8 @@ export type DataGridDateOperator = 'on' | 'before' | 'after' | 'between';
 export type DataGridFilterOperator = DataGridTextOperator | DataGridSelectOperator | DataGridDateOperator;
 export type DataGridFilterNormalization = 'text' | 'rut' | 'none';
 export type DataGridFilterMatchMode = 'default' | 'tokens';
+export type DataGridFilterChipsDisplay = 'whenFiltersVisible' | 'whenFiltersHidden' | 'always' | 'never';
+export type DataGridHeaderCountDisplay = 'badge' | 'text';
 
 export interface DataGridDateRangeValue {
   from?: string;
@@ -66,6 +69,15 @@ export interface DataGridFilter<T = unknown> {
   emptyLabel?: string;
   placeholder?: string;
   options?: Array<string | { label: string; value: string }>;
+  /** Para filtros fecha (date / date-range): límite inferior inclusivo (ISO yyyy-mm-dd). */
+  min?: string;
+  /** Para filtros fecha (date / date-range): límite superior inclusivo (ISO yyyy-mm-dd). */
+  max?: string;
+  /**
+   * Para fechas reales (ej. ingreso trabajador): bloquea fechas futuras.
+   * Se traduce a `max = hoy` salvo que `max` sea más restrictivo.
+   */
+  disallowFuture?: boolean;
 }
 
 export interface DataGridCellContext<T> {
@@ -97,6 +109,11 @@ export interface DataGridColumn<T = unknown> {
    * Por defecto se considera true (comportamiento anterior).
    */
   filterable?: boolean;
+  /**
+   * Si la columna se oculta, define si el filtro asociado debe seguir visible.
+   * Útil para filtros de negocio (ej. estado, cargo) aunque la columna no se muestre.
+   */
+  showFilterWhenHidden?: boolean;
 }
 
 export type DataGridExportScope = 'page' | 'selected' | 'filtered';
@@ -150,6 +167,14 @@ export class DataGridCellDirective<T = unknown> {
   constructor(readonly template: TemplateRef<DataGridCellContext<T>>) {}
 }
 
+@Directive({
+  selector: 'ng-template[appDataGridPrimaryActionMenu]',
+  standalone: true,
+})
+export class DataGridPrimaryActionMenuDirective {
+  constructor(readonly template: TemplateRef<unknown>) {}
+}
+
 @Component({
   selector: 'app-data-grid',
   standalone: true,
@@ -177,24 +202,40 @@ export class DataGridCellDirective<T = unknown> {
                       <div class="data-grid-filter-range">
                         <app-calendar-input
                           class="data-grid-filter-range-slot"
+                          class="data-grid-date-control"
                           [ngModel]="filterDateRangeValue(filter, 'from')"
                           (ngModelChange)="updateDateRangeFilterValue(filter, 'from', $event)"
-                          [max]="filterDateRangeValue(filter, 'to')"
-                          placeholder="Desde dd/mm/aaaa"
+                          [min]="dateFilterMin(filter)"
+                          [max]="rangeBoundMax(filter, 'from')"
+                          [invalid]="isInvalidDateRangeFilter(filter)"
+                          placeholder="dd/mm/aaaa"
+                          sideLabel="Desde"
                         ></app-calendar-input>
                         <app-calendar-input
                           class="data-grid-filter-range-slot"
+                          class="data-grid-date-control"
                           [ngModel]="filterDateRangeValue(filter, 'to')"
                           (ngModelChange)="updateDateRangeFilterValue(filter, 'to', $event)"
-                          [min]="filterDateRangeValue(filter, 'from')"
-                          placeholder="Hasta dd/mm/aaaa"
+                          [min]="rangeBoundMin(filter, 'to')"
+                          [max]="dateFilterMax(filter)"
+                          [invalid]="isInvalidDateRangeFilter(filter)"
+                          placeholder="dd/mm/aaaa"
+                          sideLabel="Hasta"
                         ></app-calendar-input>
                       </div>
+                      @if (isInvalidDateRangeFilter(filter)) {
+                        <p class="mt-1 text-[0.68rem] font-semibold text-red-600">
+                          “Hasta” no puede ser menor que “Desde”.
+                        </p>
+                      }
                     } @else if (isDateFilter(filter)) {
                       <app-calendar-input
                         [ngModel]="filterTextValue(filter)"
                         (ngModelChange)="updateFilterModelValue(filter, $event)"
+                        [min]="dateFilterMin(filter)"
+                        [max]="dateFilterMax(filter)"
                         placeholder="dd/mm/aaaa"
+                        class="data-grid-date-control"
                       ></app-calendar-input>
                     } @else if (isSelectFilter(filter)) {
                       <select
@@ -226,6 +267,7 @@ export class DataGridCellDirective<T = unknown> {
                 type="button"
                 class="data-grid-filter-action"
                 (click)="clearAllFilters()"
+                [disabled]="loading || (!hasActiveDraftFilters && !hasActiveAppliedFilters)"
               >
                 <lucide-icon class="h-3.5 w-3.5" [img]="clearIcon"></lucide-icon>
                 Limpiar
@@ -233,6 +275,7 @@ export class DataGridCellDirective<T = unknown> {
               <button
                 type="button"
                 class="data-grid-filter-action data-grid-filter-action--primary"
+                [disabled]="loading || visibleFilters.some((filter) => isInvalidDateRangeFilter(filter))"
                 (click)="applyFilters()"
               >
                 <lucide-icon class="h-3.5 w-3.5" [img]="searchIcon"></lucide-icon>
@@ -242,22 +285,24 @@ export class DataGridCellDirective<T = unknown> {
           </div>
 
           @if (activeFilterChips.length > 0) {
-            <div class="data-grid-filter-chips-row mt-3 flex w-full min-w-0 flex-col gap-2 lg:flex-row lg:items-center lg:justify-start">
-              <div class="data-grid-filter-chips" aria-label="Filtros activos">
-                @for (chip of activeFilterChips; track chip.id) {
-                  <button
-                    type="button"
-                    class="data-grid-filter-chip"
-                    [attr.aria-label]="'Quitar filtro ' + chip.label"
-                    (click)="removeFilterChip(chip.id)"
-                  >
-                    <span class="data-grid-filter-chip__label">{{ chip.label }}</span>
-                    <span class="data-grid-filter-chip__value">{{ chip.value }}</span>
-                    <lucide-icon class="h-3 w-3" [img]="clearIcon"></lucide-icon>
-                  </button>
-                }
+            @if (shouldShowFilterChipsRow) {
+              <div class="data-grid-filter-chips-row mt-3 flex w-full min-w-0 flex-col gap-2 lg:flex-row lg:items-center lg:justify-start">
+                <div class="data-grid-filter-chips" aria-label="Filtros activos">
+                  @for (chip of activeFilterChips; track chip.id) {
+                    <button
+                      type="button"
+                      class="data-grid-filter-chip"
+                      [attr.aria-label]="'Quitar filtro ' + chip.label"
+                      (click)="removeFilterChip(chip.id)"
+                    >
+                      <span class="data-grid-filter-chip__label">{{ chip.label }}</span>
+                      <span class="data-grid-filter-chip__value">{{ chip.value }}</span>
+                      <lucide-icon class="h-3 w-3" [img]="clearIcon"></lucide-icon>
+                    </button>
+                  }
+                </div>
               </div>
-            </div>
+            }
           }
         </div>
       }
@@ -268,9 +313,13 @@ export class DataGridCellDirective<T = unknown> {
             <div class="min-w-0">
               <div class="flex flex-wrap items-center gap-2">
                 <p class="text-sm font-medium uppercase text-neutral-900">{{ title || 'Registros' }}</p>
-                <span class="rounded-md border border-neutral-200 bg-neutral-50 px-2 py-0.5 text-xs font-medium text-neutral-700">
-                    {{ filteredRows.length }}
-                  </span>
+                @if (headerCountDisplay === 'text') {
+                  <span class="text-xs font-medium text-neutral-600">· {{ headerCountText }}</span>
+                } @else {
+                  <span class="rounded-md border border-neutral-200 bg-neutral-50 px-2 py-0.5 text-xs font-medium text-neutral-700">
+                      {{ filteredRows.length }}
+                    </span>
+                }
               </div>
             </div>
 
@@ -291,17 +340,25 @@ export class DataGridCellDirective<T = unknown> {
               </label>
 
               @if (primaryActionLabel) {
-                <button
-                  type="button"
-                  class="inline-flex h-8 items-center gap-1.5 rounded-md border border-blue-600 bg-blue-600 px-3 text-xs font-medium text-white transition-colors hover:border-blue-700 hover:bg-blue-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
-                  (click)="primaryAction.emit()"
-                >
-                  <lucide-icon class="h-3.5 w-3.5" [img]="plusIcon"></lucide-icon>
-                  {{ primaryActionLabel }}
-                </button>
+                <div class="relative" data-grid-primary-action-root>
+                  <button
+                    type="button"
+                    class="inline-flex h-8 items-center gap-1.5 rounded-md border border-blue-600 bg-blue-600 px-3 text-xs font-medium text-white transition-colors hover:border-blue-700 hover:bg-blue-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
+                    aria-haspopup="menu"
+                    [attr.aria-expanded]="primaryActionMenuOpen"
+                    (click)="primaryAction.emit()"
+                  >
+                    <lucide-icon class="h-3.5 w-3.5" [img]="plusIcon"></lucide-icon>
+                    {{ primaryActionLabel }}
+                  </button>
+
+                  @if (primaryActionMenuTemplate) {
+                    <ng-container *ngTemplateOutlet="primaryActionMenuTemplate" />
+                  }
+                </div>
               }
 
-              @if (filtersEnabled) {
+              @if (filtersEnabled && filtersCollapsible) {
                 <button
                   type="button"
                   class="data-grid-toolbar-icon-button inline-flex h-8 w-8 items-center justify-center rounded-md border border-neutral-200 bg-white text-xs font-medium text-neutral-600 transition-colors hover:bg-neutral-50 hover:text-neutral-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
@@ -1076,6 +1133,11 @@ export class DataGridCellDirective<T = unknown> {
         max-height: var(--data-grid-filter-h, 22px) !important;
       }
 
+      /* Fechas: control compuesto más alto (34px). */
+      .data-grid-filter-panel app-calendar-input.data-grid-date-control {
+        --erp-control-height: 34px;
+      }
+
       .data-grid-filter-chips {
         display: flex;
         min-width: 0;
@@ -1148,7 +1210,7 @@ export class DataGridCellDirective<T = unknown> {
       .data-grid-filter-range {
         display: grid;
         grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 0.625rem;
+        gap: 0.5rem;
         align-items: end;
       }
 
@@ -1496,7 +1558,25 @@ export class DataGridComponent<T = unknown> implements OnChanges, OnDestroy {
   @Input() rows: T[] = [];
   @Input() filters: DataGridFilter<T>[] = [];
   @Input() filtersEnabled = false;
+  /** En grillas padre: filtros siempre visibles, sin toggle. */
+  @Input() filtersCollapsible = true;
+  /**
+   * Controla la fila de chips de filtros activos.
+   * Por defecto conserva el comportamiento previo (chips visibles cuando los filtros están visibles).
+   */
+  @Input() filterChipsDisplay: DataGridFilterChipsDisplay = 'whenFiltersVisible';
+  /** Cómo renderizar el conteo de resultados en el header. */
+  @Input() headerCountDisplay: DataGridHeaderCountDisplay = 'badge';
+  /** Texto del conteo (ej. "resultados"). */
+  @Input() headerCountNoun = 'resultados';
+  /** Mostrar "· N filtro(s) activo(s)" en el header cuando aplique. */
+  @Input() headerShowActiveFiltersCount = false;
+  /** Empty state cuando hay filtros activos pero 0 resultados. */
+  @Input() emptyTitleWhenFiltered = 'No se encontraron registros con los filtros aplicados.';
+  @Input() emptyDescriptionWhenFiltered = 'Ajusta o limpia los filtros para ampliar los resultados.';
   @Input() primaryActionLabel = '';
+  /** Para accesibilidad: refleja si el popover del primary action está abierto. */
+  @Input() primaryActionMenuOpen = false;
   @Input() showExportAction = false;
   @Input() selectable = false;
   @Input() selectionLabel = 'registros';
@@ -1567,6 +1647,9 @@ export class DataGridComponent<T = unknown> implements OnChanges, OnDestroy {
   @ContentChildren(DataGridCellDirective)
   private readonly customCells?: QueryList<DataGridCellDirective<T>>;
 
+  @ContentChild(DataGridPrimaryActionMenuDirective)
+  private readonly primaryActionMenu?: DataGridPrimaryActionMenuDirective;
+
   @HostListener('document:click', ['$event'])
   closePanelsOnOutsideClick(event: MouseEvent): void {
     if (!this.showColumnPanel && !this.showPagePopover && !this.showExportPanel) {
@@ -1593,6 +1676,12 @@ export class DataGridComponent<T = unknown> implements OnChanges, OnDestroy {
   }
 
   ngOnChanges(changes: SimpleChanges): void {
+    if (changes['filtersCollapsible'] || changes['filtersEnabled']) {
+      if (this.filtersEnabled && !this.filtersCollapsible) {
+        this.showFilters = true;
+      }
+    }
+
     if (changes['columns']) {
       this.syncVisibleColumns();
     }
@@ -1695,30 +1784,42 @@ export class DataGridComponent<T = unknown> implements OnChanges, OnDestroy {
   }
 
   get visibleFilters(): DataGridFilter<T>[] {
-    const fromColumns = this.visibleColumns
-      .filter(
-        (column) =>
-          column.id !== 'acciones' && Boolean(column.field) && column.filterable !== false,
-      )
-      .map((column) => {
-        const configuredFilter = this.filters.find((filter) => filter.id === column.id);
+    const configuredById = new Map(this.filters.map((f) => [f.id, f] as const));
+    const visibleColumnIdSet = new Set(this.visibleColumns.map((c) => c.id));
 
-        return (
-          configuredFilter ??
+    const filtersFromColumns: DataGridFilter<T>[] = [];
+    const consumedIds = new Set<string>();
+
+    // Orden estable: recorrer columnas en orden declarado, no por visibilidad.
+    this.columns.forEach((column) => {
+      if (column.id === 'acciones' || !column.field || column.filterable === false) {
+        return;
+      }
+
+      const isVisible = visibleColumnIdSet.has(column.id);
+      const shouldShow = isVisible || column.showFilterWhenHidden === true;
+      if (!shouldShow) {
+        return;
+      }
+
+      const configured = configuredById.get(column.id);
+      filtersFromColumns.push(
+        configured ??
           ({
             id: column.id,
             label: column.header,
             field: column.field!,
             type: 'text',
             emptyLabel: `Todos`,
-          } satisfies DataGridFilter<T>)
-        );
-      });
+          } satisfies DataGridFilter<T>),
+      );
+      consumedIds.add(column.id);
+    });
 
-    const idsFromColumns = new Set(fromColumns.map((f) => f.id));
-    const standalone = this.filters.filter((f) => !idsFromColumns.has(f.id));
+    // Filtros standalone: los que no calzan con una columna id (orden estable según filters[]).
+    const standalone = this.filters.filter((f) => !consumedIds.has(f.id) && !this.columns.some((c) => c.id === f.id));
 
-    return [...standalone, ...fromColumns];
+    return [...standalone, ...filtersFromColumns];
   }
 
   get filterGridStyle(): Record<string, string> {
@@ -1759,6 +1860,16 @@ export class DataGridComponent<T = unknown> implements OnChanges, OnDestroy {
     return Object.values(this.filterValues).some((value) => this.hasFilterValue(value));
   }
 
+  /** Filtros aplicados que afectan los resultados. */
+  get hasActiveAppliedFilters(): boolean {
+    return this.hasActiveFilters;
+  }
+
+  /** Filtros escritos/seleccionados en pantalla (draft), aún no aplicados. */
+  get hasActiveDraftFilters(): boolean {
+    return Object.values(this.draftFilterValues).some((value) => this.hasFilterValue(value));
+  }
+
   get activeFilterChips(): Array<{ id: string; label: string; value: string }> {
     const chips: Array<{ id: string; label: string; value: string }> = [];
 
@@ -1779,9 +1890,26 @@ export class DataGridComponent<T = unknown> implements OnChanges, OnDestroy {
     return chips;
   }
 
+  get shouldShowFilterChipsRow(): boolean {
+    if (!this.filtersEnabled) {
+      return false;
+    }
+
+    switch (this.filterChipsDisplay) {
+      case 'never':
+        return false;
+      case 'always':
+        return true;
+      case 'whenFiltersHidden':
+        return !this.showFilters;
+      default:
+        return this.showFilters;
+    }
+  }
+
   get resolvedEmptyTitle(): string {
     if (this.hasActiveFilters) {
-      return 'No se encontraron registros con los filtros aplicados.';
+      return this.emptyTitleWhenFiltered;
     }
 
     return this.emptyTitle;
@@ -1789,10 +1917,46 @@ export class DataGridComponent<T = unknown> implements OnChanges, OnDestroy {
 
   get resolvedEmptyDescription(): string {
     if (this.hasActiveFilters) {
-      return 'Ajusta o limpia los filtros para ampliar los resultados.';
+      return this.emptyDescriptionWhenFiltered;
     }
 
     return this.emptyDescription;
+  }
+
+  get activeFilterCount(): number {
+    return this.visibleFilters.reduce((count, filter) => {
+      const value = this.filterValues[filter.id];
+      return count + (this.hasFilterValue(value) ? 1 : 0);
+    }, 0);
+  }
+
+  get headerCountText(): string {
+    const resultsText = `${this.filteredRows.length} ${this.headerCountNoun}`;
+    if (!this.headerShowActiveFiltersCount || !this.hasActiveFilters) {
+      return resultsText;
+    }
+    const n = this.activeFilterCount;
+    const filtrosText = `${n} ${n === 1 ? 'filtro activo' : 'filtros activos'}`;
+    return `${resultsText} · ${filtrosText}`;
+  }
+
+  get hasPendingFilterChanges(): boolean {
+    return this.serializeFilterValues(this.draftFilterValues) !== this.serializeFilterValues(this.filterValues);
+  }
+
+  private serializeFilterValues(values: Record<string, DataGridFilterValue>): string {
+    const keys = Object.keys(values).sort();
+    const normalized = keys.map((key) => {
+      const v = values[key];
+      if (typeof v === 'string') {
+        return [key, v.trim()];
+      }
+      if (typeof v === 'object' && v != null) {
+        return [key, { from: v.from?.trim() ?? '', to: v.to?.trim() ?? '' }];
+      }
+      return [key, ''];
+    });
+    return JSON.stringify(normalized);
   }
 
   get pagedRows(): T[] {
@@ -2010,6 +2174,10 @@ export class DataGridComponent<T = unknown> implements OnChanges, OnDestroy {
     return this.customCells?.find((cell) => cell.columnId === columnId)?.template ?? null;
   }
 
+  get primaryActionMenuTemplate(): TemplateRef<unknown> | null {
+    return this.primaryActionMenu?.template ?? null;
+  }
+
   cellContext(row: T, column: DataGridColumn<T>, index: number): DataGridCellContext<T> {
     return {
       $implicit: row,
@@ -2118,6 +2286,21 @@ export class DataGridComponent<T = unknown> implements OnChanges, OnDestroy {
     this.persistPreferences();
   }
 
+  private clearFilterById(filterId: string): void {
+    const filter = this.filters.find((item) => item.id === filterId);
+    this.filterValues = {
+      ...this.filterValues,
+      [filterId]: this.emptyFilterValue(filter),
+    };
+    this.draftFilterValues = {
+      ...this.draftFilterValues,
+      [filterId]: this.emptyFilterValue(filter),
+    };
+    this.currentPage = 1;
+    this.pageInput = '1';
+    this.clearSelectionByContext('La seleccion se limpio porque se oculto una columna con filtro activo.');
+  }
+
   clearAllFilters(): void {
     this.filterValues = {};
     this.draftFilterValues = {};
@@ -2159,11 +2342,90 @@ export class DataGridComponent<T = unknown> implements OnChanges, OnDestroy {
   }
 
   applyFilters(): void {
+    if (this.visibleFilters.some((filter) => this.isInvalidDateRangeFilter(filter))) {
+      this.showNotice(
+        'Rango inválido',
+        'Revisa el filtro de fecha: “Hasta” no puede ser menor que “Desde”.',
+        'error',
+      );
+      return;
+    }
     this.filterValues = { ...this.draftFilterValues };
     this.currentPage = 1;
     this.pageInput = '1';
     this.clearSelectionByContext('La seleccion se limpio porque cambio el contexto filtrado.');
     this.persistPreferences();
+  }
+
+  dateFilterMin(filter: DataGridFilter<T>): string {
+    return filter.min?.trim() ? String(filter.min).trim() : '';
+  }
+
+  dateFilterMax(filter: DataGridFilter<T>): string {
+    const configured = filter.max?.trim() ? String(filter.max).trim() : '';
+    const today = this.toIsoDate(new Date());
+    const withFutureGuard = filter.disallowFuture ? today : '';
+
+    if (configured && withFutureGuard) {
+      return configured < withFutureGuard ? configured : withFutureGuard;
+    }
+    return configured || withFutureGuard;
+  }
+
+  rangeBoundMin(filter: DataGridFilter<T>, bound: keyof DataGridDateRangeValue): string {
+    if (!this.isDateRangeFilter(filter)) {
+      return '';
+    }
+    if (bound === 'to') {
+      return this.filterDateRangeValue(filter, 'from');
+    }
+    return this.dateFilterMin(filter);
+  }
+
+  rangeBoundMax(filter: DataGridFilter<T>, bound: keyof DataGridDateRangeValue): string {
+    if (!this.isDateRangeFilter(filter)) {
+      return this.dateFilterMax(filter);
+    }
+    if (bound === 'from') {
+      const to = this.filterDateRangeValue(filter, 'to');
+      const max = this.dateFilterMax(filter);
+      if (to && max) {
+        return to < max ? to : max;
+      }
+      return to || max;
+    }
+    return this.dateFilterMax(filter);
+  }
+
+  isInvalidDateRangeFilter(filter: DataGridFilter<T>): boolean {
+    if (!this.isDateRangeFilter(filter)) {
+      return false;
+    }
+    const value = this.draftFilterValues[filter.id];
+    if (typeof value !== 'object' || value == null) {
+      return false;
+    }
+    const from = value.from?.trim() ?? '';
+    const to = value.to?.trim() ?? '';
+    return Boolean(from && to && to < from);
+  }
+
+  hasDateRangeValue(filter: DataGridFilter<T>): boolean {
+    const value = this.draftFilterValues[filter.id];
+    if (typeof value !== 'object' || value == null) {
+      return false;
+    }
+    return Boolean(value.from?.trim() || value.to?.trim());
+  }
+
+  clearDateRangeFilter(filter: DataGridFilter<T>): void {
+    if (!this.isDateRangeFilter(filter)) {
+      return;
+    }
+    this.draftFilterValues = {
+      ...this.draftFilterValues,
+      [filter.id]: {},
+    };
   }
 
   filterOptions(filter: DataGridFilter<T>): Array<string | { label: string; value: string }> {
@@ -2330,6 +2592,10 @@ export class DataGridComponent<T = unknown> implements OnChanges, OnDestroy {
       }
 
       this.visibleColumnIds.delete(columnId);
+      // Si el filtro depende de la columna y no debe mantenerse oculto, limpiar.
+      if (column.filterable !== false && column.showFilterWhenHidden !== true) {
+        this.clearFilterById(columnId);
+      }
       this.persistPreferences();
       return;
     }
@@ -2514,6 +2780,13 @@ export class DataGridComponent<T = unknown> implements OnChanges, OnDestroy {
     }
 
     return new Date(value).getTime();
+  }
+
+  private toIsoDate(date: Date): string {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
   }
 
   private normalizePageSize(value: unknown): number {
@@ -2744,11 +3017,13 @@ export class DataGridComponent<T = unknown> implements OnChanges, OnDestroy {
         ? [...this.fixedColumnIds(), ...previousVisibleIds]
         : this.defaultVisibleColumnIds(),
     );
+    // Mantener valores solo para filtros efectivamente visibles (evita filtros fantasma).
+    const allowedFilterIds = new Set(this.visibleFilters.map((f) => f.id));
     this.draftFilterValues = Object.fromEntries(
-      Object.entries(this.draftFilterValues).filter(([id]) => this.visibleFilters.some((filter) => filter.id === id)),
+      Object.entries(this.draftFilterValues).filter(([id]) => allowedFilterIds.has(id)),
     );
     this.filterValues = Object.fromEntries(
-      Object.entries(this.filterValues).filter(([id]) => this.visibleFilters.some((filter) => filter.id === id)),
+      Object.entries(this.filterValues).filter(([id]) => allowedFilterIds.has(id)),
     );
   }
 
