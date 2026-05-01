@@ -56,4 +56,16 @@ export class EmpleadosService {
   crearBasico(payload: CrearEmpleadoPayload): Promise<EmpleadoListado> {
     return this.writeService.crearBasico(payload);
   }
+
+  guardarBorradorAvanzado(
+    personaIdExistente: number | null,
+    payload: CrearEmpleadoPayload,
+    pasoWizard: number,
+  ): Promise<EmpleadoListado> {
+    return this.writeService.guardarBorradorAvanzado(personaIdExistente, payload, pasoWizard);
+  }
+
+  finalizarAltaAvanzadaExistente(personaId: number, payload: CrearEmpleadoPayload): Promise<void> {
+    return this.writeService.finalizarAltaAvanzadaExistente(personaId, payload);
+  }
 }

@@ -11,6 +11,7 @@ Documentación **por tema** que complementa el índice padre [`../README.md`](..
 - [`flujo-edicion-ficha-empleado.md`](./flujo-edicion-ficha-empleado.md)
 - [`crear-menu-base.md`](./crear-menu-base.md)
 - [`creacion-avanzada-formulario-campos.md`](./creacion-avanzada-formulario-campos.md)
+- [`creacion-avanzada-borrador-tests.md`](./creacion-avanzada-borrador-tests.md) — fase 1/2 de pruebas (borrador / continuar alta)
 
 ### Parámetros y sync
 

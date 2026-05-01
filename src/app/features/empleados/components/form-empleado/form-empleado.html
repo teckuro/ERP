@@ -146,7 +146,20 @@
                         </div>
                       </div>
 
-                      <div class="summary-actions">
+                      <div class="summary-actions summary-actions--advanced">
+                        <button
+                          type="button"
+                          data-testid="guardar-borrador-avanzado"
+                          class="erp-toolbar-button erp-action-button border-gray-200 bg-white text-gray-700 hover:border-gray-300 hover:bg-gray-50 hover:text-gray-900"
+                          [disabled]="isSavingBorrador() || isSaving() || isLoadingCatalogs()"
+                          (click)="onGuardarBorrador()"
+                        >
+                          @if (isSavingBorrador()) {
+                            Guardando...
+                          } @else {
+                            Guardar borrador
+                          }
+                        </button>
                         <app-page-actions
                           [visibleActions]="headerVisibleActions()"
                           backLabel="Volver"
@@ -154,6 +167,9 @@
                         ></app-page-actions>
                       </div>
                     </header>
+                    @if (borradorFeedback(); as bf) {
+                      <p class="advanced-draft-feedback" role="status">{{ bf }}</p>
+                    }
 
                     <div class="advanced-wizard-layout">
                       <aside class="advanced-wizard-map" aria-label="Mapa de ficha">
@@ -248,6 +264,7 @@
                               } @else {
                                 <button
                                   type="button"
+                                  data-testid="finalizar-alta"
                                   class="form-action-button form-action-button--primary advanced-step-nav-btn advanced-step-nav-btn--primary"
                                   [disabled]="isSaving() || isLoadingCatalogs()"
                                   (click)="onSubmit()"
@@ -527,60 +544,81 @@
                 </section>
               } @else {
                 <div class="basic-create-page" aria-label="Creación básica de empleado">
-                  <header class="summary-identity summary-identity--basic">
-                    <div class="summary-person summary-person--basic">
-                      <div class="summary-title-row">
-                        <h2>Creación básica</h2>
-                        <span class="summary-mode-badge" aria-label="Modo de alta">Básica</span>
-                      </div>
-                      <p class="summary-subtitle">
-                        Registra la información mínima para abrir una ficha de empleado.
-                      </p>
-                    </div>
+                  <div class="basic-create-shell">
+                    <div class="basic-create-inner">
+                      <header class="summary-identity summary-identity--basic">
+                        <div class="summary-person summary-person--basic">
+                          <div class="summary-title-row">
+                            <h2>Creación básica</h2>
+                            <span class="summary-mode-badge" aria-label="Modo de alta">Básica</span>
+                          </div>
+                          <p class="summary-subtitle">
+                            Registra la información mínima para abrir una ficha de empleado.
+                          </p>
+                        </div>
 
-                    <div class="summary-actions">
-                      <app-page-actions
-                        [visibleActions]="headerVisibleActions()"
-                        backLabel="Volver"
-                        [saveLabel]="saveActionLabel()"
-                        backLink="/empleados"
-                        [saveDisabled]="isSaving() || isLoadingCatalogs()"
-                        (saveClick)="onSubmit()"
-                      ></app-page-actions>
-                    </div>
-                  </header>
+                        <div class="summary-actions">
+                          <app-page-actions
+                            [visibleActions]="headerVisibleActions()"
+                            backLabel="Volver"
+                            [saveLabel]="saveActionLabel()"
+                            backLink="/empleados"
+                            [saveDisabled]="isSaving() || isLoadingCatalogs()"
+                            (saveClick)="onSubmit()"
+                          ></app-page-actions>
+                        </div>
+                      </header>
 
-                  <div class="content-body content-body--basic">
-                    @if (isLoadingCatalogs()) {
-                      <div class="form-loading-overlay" role="status" aria-live="polite">
-                        <div class="form-loading-indicator" aria-hidden="true"></div>
-                        <span>Preparando campos</span>
-                      </div>
-                    }
+                      <div class="content-body content-body--basic">
+                        @if (isLoadingCatalogs()) {
+                          <div class="form-loading-overlay" role="status" aria-live="polite">
+                            <div class="form-loading-indicator" aria-hidden="true"></div>
+                            <span>Preparando campos</span>
+                          </div>
+                        }
 
-                    <div class="basic-create-stack">
-                      <section class="basic-create-callout" aria-label="Alcance del alta rápida">
-                        <h3 class="basic-create-callout__title">Alta rápida de empleado</h3>
-                        <p class="basic-create-callout__text">
-                          Registra los datos mínimos para crear la ficha. Los antecedentes laborales,
-                          previsionales y bancarios se completan después.
-                        </p>
-                        <p class="basic-create-callout__result" aria-live="polite">
-                          <span class="basic-create-callout__result-label">Resultado:</span>
-                          ficha en proceso
-                        </p>
-                      </section>
+                        <div class="basic-create-stack">
+                          <section class="basic-create-summary-card" aria-label="Resumen del alta básica">
+                            <div class="basic-create-summary-card__head">
+                              <h3 class="basic-create-summary-card__title">Alta rápida de empleado</h3>
+                              <span class="basic-create-status-chip" role="status">Ficha en proceso</span>
+                            </div>
+                            <p class="basic-create-summary-card__lead">
+                              Solo se guardan los datos mínimos para abrir la ficha.
+                            </p>
+                            <div class="basic-create-summary-card__pending">
+                              <span class="basic-create-summary-card__pending-label"
+                                >Pendiente desde la ficha:</span
+                              >
+                              <div class="basic-create-summary-card__chips" role="list">
+                                <span class="basic-create-summary-chip" role="listitem"
+                                  >Contrato y organización</span
+                                >
+                                <span class="basic-create-summary-chip" role="listitem"
+                                  >Jornada y remuneración</span
+                                >
+                                <span class="basic-create-summary-chip" role="listitem"
+                                  >Previsión y salud</span
+                                >
+                                <span class="basic-create-summary-chip" role="listitem">Banco</span>
+                              </div>
+                            </div>
+                          </section>
 
-                      <div class="step-panel step-panel--basic basic-wizard">
-                        <div class="basic-create-form-shell">
-                          <app-empleado-datos-personales
-                            [formGroup]="form.controls.datosPersonales"
-                            [contactoFormGroup]="form.controls.contacto"
-                            [sexos]="catalogos().sexos"
-                            [estadosCivil]="catalogos().estadosCivil"
-                            [paises]="catalogos().paises"
-                            [basicSectionLeads]="true"
-                          ></app-empleado-datos-personales>
+                          <div class="basic-create-form">
+                            <div class="step-panel step-panel--basic basic-wizard">
+                              <div class="basic-create-form-shell">
+                                <app-empleado-datos-personales
+                                  [formGroup]="form.controls.datosPersonales"
+                                  [contactoFormGroup]="form.controls.contacto"
+                                  [sexos]="catalogos().sexos"
+                                  [estadosCivil]="catalogos().estadosCivil"
+                                  [paises]="catalogos().paises"
+                                  [basicSectionLeads]="true"
+                                ></app-empleado-datos-personales>
+                              </div>
+                            </div>
+                          </div>
                         </div>
                       </div>
                     </div>

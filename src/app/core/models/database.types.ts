@@ -2105,6 +2105,7 @@ export type Database = {
           numero_direccion: string | null
           observaciones_direccion: string | null
           pasaporte: string | null
+          paso_alta_avanzada: number | null
           poblacion: string | null
           rut: string
           sexo: string | null
@@ -2141,6 +2142,7 @@ export type Database = {
           numero_direccion?: string | null
           observaciones_direccion?: string | null
           pasaporte?: string | null
+          paso_alta_avanzada?: number | null
           poblacion?: string | null
           rut: string
           sexo?: string | null
@@ -2177,6 +2179,7 @@ export type Database = {
           numero_direccion?: string | null
           observaciones_direccion?: string | null
           pasaporte?: string | null
+          paso_alta_avanzada?: number | null
           poblacion?: string | null
           rut?: string
           sexo?: string | null

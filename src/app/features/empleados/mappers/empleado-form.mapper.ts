@@ -226,6 +226,159 @@ export function mapEmpleadoFormToPayloadBasico(form: EmpleadoFormGroup): CrearEm
   };
 }
 
+/**
+ * Payload para guardar borrador de creación avanzada: tolera campos incompletos usando
+ * defaults de catálogo solo donde la persistencia lo exige (no reemplaza validación final Paso 9).
+ */
+export function mapEmpleadoFormToPayloadBorrador(
+  form: EmpleadoFormGroup,
+  catalogos: EmpleadoFormCatalogos,
+): CrearEmpleadoPayload {
+  const rawValue = form.getRawValue();
+  const today = new Date().toISOString().slice(0, 10);
+
+  const pickFirstId = (options: EmpleadoCatalogOption[], label: string): number => {
+    const v = options[0]?.value;
+    if (typeof v !== 'number' || Number.isNaN(v)) {
+      throw new Error(`El catalogo de ${label} no esta disponible para guardar el borrador.`);
+    }
+    return v;
+  };
+
+  const tipoRaw = rawValue.previsionSalud.tipoRegimenPrevisional;
+  const tipoPrevision: TipoRegimenPrevisional =
+    tipoRaw === 'AFP' || tipoRaw === 'IPS' || tipoRaw === 'NINGUNA' ? tipoRaw : 'NINGUNA';
+
+  const idTipoTrabajador =
+    rawValue.contrato.idTipoTrabajador && rawValue.contrato.idTipoTrabajador > 0
+      ? rawValue.contrato.idTipoTrabajador
+      : pickFirstId(catalogos.tiposTrabajador, 'tipo de trabajador');
+  const idTipoJornada =
+    rawValue.contrato.idTipoJornada && rawValue.contrato.idTipoJornada > 0
+      ? rawValue.contrato.idTipoJornada
+      : pickFirstId(catalogos.tiposJornada, 'tipo de jornada');
+
+  const idPais =
+    rawValue.datosPersonales.idPais && rawValue.datosPersonales.idPais > 0
+      ? rawValue.datosPersonales.idPais
+      : pickFirstId(catalogos.paises, 'pais');
+
+  const idComuna =
+    rawValue.contacto.idComuna && rawValue.contacto.idComuna > 0
+      ? rawValue.contacto.idComuna
+      : pickFirstId(catalogos.comunas, 'comuna');
+
+  const idRegimenPrevisional =
+    tipoPrevision === 'NINGUNA'
+      ? null
+      : resolveRegimenPrevisionalId(tipoPrevision, catalogos.regimenesPrevisionales);
+
+  const tieneCuenta2 =
+    tipoPrevision === 'AFP' &&
+    (rawValue.previsionSalud.idMonedaCuenta2 !== null ||
+      rawValue.previsionSalud.valorCuenta2 !== null);
+  const requiereSalud = tipoPrevision !== 'NINGUNA';
+  const tieneApvi = tipoPrevision === 'AFP' && rawValue.previsionSalud.tieneApv === true;
+
+  const idBanco =
+    rawValue.bancario.idBanco && rawValue.bancario.idBanco > 0
+      ? rawValue.bancario.idBanco
+      : pickFirstId(catalogos.bancos, 'banco');
+  const idTipoCuentaBancaria =
+    rawValue.bancario.idTipoCuentaBancaria && rawValue.bancario.idTipoCuentaBancaria > 0
+      ? rawValue.bancario.idTipoCuentaBancaria
+      : pickFirstId(catalogos.tiposCuentaBancaria, 'tipo de cuenta');
+  const numeroCuentaRaw = rawValue.bancario.numeroCuenta.trim();
+  const numeroCuenta =
+    numeroCuentaRaw.length > 0
+      ? numeroCuentaRaw
+      : `DRAFT-${Math.random().toString(36).slice(2, 11).toUpperCase()}`;
+
+  const fechaIngreso = rawValue.contrato.fechaIngreso?.trim() ? rawValue.contrato.fechaIngreso : today;
+  const fechaContrato = rawValue.contrato.fechaContrato?.trim()
+    ? rawValue.contrato.fechaContrato
+    : fechaIngreso;
+
+  return {
+    origenCreacion: 'avanzado',
+    rut: rawValue.datosPersonales.rut,
+    nombres: rawValue.datosPersonales.nombres,
+    apellidoPaterno: rawValue.datosPersonales.apellidoPaterno,
+    apellidoMaterno: rawValue.datosPersonales.apellidoMaterno,
+    fechaNacimiento: rawValue.datosPersonales.fechaNacimiento,
+    sexo: rawValue.datosPersonales.sexo,
+    estadoCivil: rawValue.datosPersonales.estadoCivil,
+    pasaporte: rawValue.datosPersonales.pasaporte.trim() || null,
+    idPais,
+    email: rawValue.contacto.email,
+    telefono: rawValue.contacto.telefono,
+    direccion: (rawValue.contacto.direccion || '—').trim() || '—',
+    numeroDireccion: rawValue.contacto.numeroDireccion.trim() || null,
+    departamentoDireccion: rawValue.contacto.departamentoDireccion.trim() || null,
+    observacionesDireccion: rawValue.contacto.observacionesDireccion.trim() || null,
+    idComuna,
+    idSucursal: rawValue.contrato.idSucursal,
+    idDepartamentoEmpresa: rawValue.contrato.idDepartamentoEmpresa,
+    idCentroCosto: rawValue.contrato.idCentroCosto,
+    cargo: (rawValue.contrato.cargo || 'Sin cargo').trim() || 'Sin cargo',
+    fechaContrato,
+    tipoContrato: rawValue.contrato.tipoContrato,
+    idTipoTrabajador,
+    idTipoJornada,
+    seguroCesantia: rawValue.contrato.seguroCesantia,
+    fechaIngreso,
+    fechaTermino: rawValue.contrato.fechaTermino || null,
+    sueldoBase: rawValue.contrato.sueldoBase ?? 0,
+    idMoneda: rawValue.contrato.idMoneda,
+    sueldoVariable: rawValue.contrato.sueldoVariable,
+    horasSemanales: rawValue.contrato.horasSemanales ?? 0,
+    diasSemanales: rawValue.contrato.diasSemanales ?? 0,
+    distribucionJornada: rawValue.contrato.distribucionJornada.trim() || null,
+    tiempoColacionMinutos: rawValue.contrato.tiempoColacionMinutos,
+    tipoGratificacion: rawValue.contrato.tipoGratificacion,
+    gratificacionProporcional: rawValue.contrato.gratificacionProporcional,
+    semanaCorridaActiva: rawValue.contrato.semanaCorridaActiva,
+    semanaCorridaDiasLaborables: rawValue.contrato.semanaCorridaActiva
+      ? rawValue.contrato.semanaCorridaDiasLaborables ?? []
+      : [],
+    zonaExtremaActiva: rawValue.contrato.zonaExtremaActiva,
+    zonaExtremaTerritorio: rawValue.contrato.zonaExtremaActiva
+      ? rawValue.contrato.zonaExtremaTerritorio.trim() || null
+      : null,
+    zonaExtremaPorcentaje: rawValue.contrato.zonaExtremaActiva
+      ? rawValue.contrato.zonaExtremaPorcentaje
+      : null,
+    estado: 'borrador',
+    idTramoCarga: rawValue.contrato.idTramoCarga,
+    cargas: rawValue.contrato.cargas ?? 0,
+    tipoPrevision,
+    idRegimenPrevisional,
+    idAfp: tipoPrevision === 'AFP' ? rawValue.previsionSalud.idAfp : null,
+    idMonedaCuenta2: tieneCuenta2 ? rawValue.previsionSalud.idMonedaCuenta2 : null,
+    valorCuenta2: tieneCuenta2 ? rawValue.previsionSalud.valorCuenta2 : null,
+    idEntidadPrevisionalIps:
+      tipoPrevision === 'IPS' ? rawValue.previsionSalud.idEntidadPrevisionalIps : null,
+    idExCajaPrevisional: tipoPrevision === 'IPS' ? rawValue.previsionSalud.idExCajaPrevisional : null,
+    idRegimenExCaja: tipoPrevision === 'IPS' ? rawValue.previsionSalud.idRegimenExCaja : null,
+    nombreExCaja: tipoPrevision === 'IPS' ? rawValue.previsionSalud.nombreExCaja || null : null,
+    regimenExCaja: tipoPrevision === 'IPS' ? rawValue.previsionSalud.regimenExCaja || null : null,
+    tasaExCaja: tipoPrevision === 'IPS' ? rawValue.previsionSalud.tasaExCaja : null,
+    idSalud: requiereSalud ? rawValue.previsionSalud.idSalud : null,
+    idMonedaPlan: requiereSalud ? rawValue.previsionSalud.idMonedaPlan : null,
+    valorPlan: requiereSalud ? rawValue.previsionSalud.valorPlan : null,
+    adicionalAugeGes: requiereSalud ? rawValue.previsionSalud.adicionalAugeGes : null,
+    tieneApv: tieneApvi,
+    idInstitucionApv: tieneApvi ? rawValue.previsionSalud.idInstitucionApv : null,
+    idMonedaApv: tieneApvi ? rawValue.previsionSalud.idMonedaApv : null,
+    montoApv: tieneApvi ? rawValue.previsionSalud.montoApv : null,
+    idFormaPagoApv: tieneApvi ? rawValue.previsionSalud.idFormaPagoApv : null,
+    depositoConvenidoApvi: tieneApvi ? rawValue.previsionSalud.depositoConvenidoApvi : null,
+    idBanco,
+    idTipoCuentaBancaria,
+    numeroCuenta,
+  };
+}
+
 function resolveRegimenPrevisionalId(
   tipo: TipoRegimenPrevisional,
   regimenesPrevisionales: EmpleadoCatalogOption[],

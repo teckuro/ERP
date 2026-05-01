@@ -51,4 +51,19 @@ export class EmpleadosWriteService {
 
     return mapCreatedEmpleado(payload, personaId, rut, null);
   }
+
+  guardarBorradorAvanzado(
+    personaIdExistente: number | null,
+    payload: CrearEmpleadoPayload,
+    pasoWizard: number,
+  ): Promise<EmpleadoListado> {
+    return this.empleadosRepository.guardarBorradorAvanzado(personaIdExistente, payload, pasoWizard);
+  }
+
+  finalizarAltaAvanzadaExistente(
+    personaId: number,
+    payload: CrearEmpleadoPayload,
+  ): Promise<void> {
+    return this.empleadosRepository.finalizarAltaAvanzadaExistente(personaId, payload);
+  }
 }

@@ -7,9 +7,7 @@
           <span class="field-required" aria-hidden="true">*</span>
         </h4>
         @if (basicSectionLeads) {
-          <p class="employee-block-lead">
-            Ingresa RUT o pasaporte para reconocer al empleado en el sistema.
-          </p>
+          <p class="employee-block-lead">RUT o pasaporte (uno obligatorio).</p>
         }
       </div>
 
@@ -116,9 +114,7 @@
       <div class="employee-block-head">
         <h4>Nombre del empleado</h4>
         @if (basicSectionLeads) {
-          <p class="employee-block-lead">
-            Nombre que se mostrará en listados, documentos y comunicaciones internas.
-          </p>
+          <p class="employee-block-lead">Nombre visible en listados y comunicaciones.</p>
         }
       </div>
 
@@ -269,9 +265,7 @@
           <app-card className="employee-block employee-block--narrow">
             <div class="employee-block-head">
               <h4>Contacto</h4>
-              <p class="employee-block-lead">
-                Correo y teléfono opcionales en esta etapa. Podrás completarlos o corregirlos después.
-              </p>
+              <p class="employee-block-lead">Email y teléfono opcionales.</p>
             </div>
 
             <div class="employee-grid employee-grid-basic--contact" [formGroup]="contactoFormGroup">

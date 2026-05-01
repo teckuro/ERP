@@ -12,7 +12,9 @@ import { PrevisionSaludComponent } from '../secciones/prevision-salud/prevision-
 import {
   mapEmpleadoFormToPayload,
   mapEmpleadoFormToPayloadBasico,
+  mapEmpleadoFormToPayloadBorrador,
 } from '../../mappers/empleado-form.mapper';
+import { validateBorradorAvanzadoFormMinimo } from '../../utils/empleado-borrador-form.validation';
 import {
   EMPTY_EMPLEADO_FORM_CATALOGOS,
   EmpleadoFormCatalogos,
@@ -147,6 +149,10 @@ export class FormEmpleadoComponent implements OnInit {
   /** Flujo que originó el último guardado exitoso (para el modal, sin depender solo de la ruta). */
   readonly successFlow = signal<FormEmpleadoModo | null>(null);
   readonly createdEmployeeId = signal<number | null>(null);
+  /** Creación avanzada: id persona al actualizar borrador o null si es alta nueva. */
+  readonly borradorPersonaId = signal<number | null>(null);
+  readonly isSavingBorrador = signal(false);
+  readonly borradorFeedback = signal<string | null>(null);
   readonly catalogos = signal<EmpleadoFormCatalogos>(EMPTY_EMPLEADO_FORM_CATALOGOS);
   readonly isLoadingCatalogs = signal(true);
   readonly catalogosError = signal<string | null>(null);
@@ -199,6 +205,77 @@ export class FormEmpleadoComponent implements OnInit {
       this.catalogos(),
     );
     await this.loadCatalogos();
+    if (this.modo() === 'avanzado') {
+      const rawId = this.route.snapshot.queryParamMap.get('idPersona');
+      const idPersona = rawId ? Number(rawId) : NaN;
+      const debeHidratarBorrador = Number.isInteger(idPersona) && idPersona >= 1;
+      if (debeHidratarBorrador) {
+        this.isLoadingCatalogs.set(true);
+      }
+      try {
+        await this.loadContinuacionBorradorSiAplica();
+      } finally {
+        if (debeHidratarBorrador) {
+          this.isLoadingCatalogs.set(false);
+        }
+      }
+    }
+  }
+
+  async onGuardarBorrador(): Promise<void> {
+    if (!this.isAdvancedMode() || this.isSavingBorrador() || this.isSaving()) {
+      return;
+    }
+    if (this.isLoadingCatalogs()) {
+      this.borradorFeedback.set(null);
+      this.errorMessage.set(
+        'La informacion base del formulario aun se esta cargando. Espera unos segundos e intenta nuevamente.',
+      );
+      return;
+    }
+
+    const err = validateBorradorAvanzadoFormMinimo(this.form);
+    if (err) {
+      this.borradorFeedback.set(null);
+      this.errorMessage.set(err);
+      return;
+    }
+
+    this.errorMessage.set(null);
+    this.borradorFeedback.set(null);
+    this.isSavingBorrador.set(true);
+    const prevId = this.borradorPersonaId();
+
+    try {
+      const payload = mapEmpleadoFormToPayloadBorrador(this.form, this.catalogos());
+      const resumen = await this.empleadosService.guardarBorradorAvanzado(
+        prevId,
+        payload,
+        this.activeWizardStep(),
+      );
+      this.borradorPersonaId.set(resumen.id);
+      this.borradorFeedback.set(
+        prevId === null ? 'Borrador guardado correctamente.' : 'Borrador actualizado.',
+      );
+      this.form.markAsPristine();
+      void this.router.navigate([], {
+        relativeTo: this.route,
+        queryParams: { idPersona: resumen.id },
+        queryParamsHandling: 'merge',
+        replaceUrl: true,
+      });
+      window.setTimeout(() => this.borradorFeedback.set(null), 4500);
+    } catch (error) {
+      if (error instanceof EmpleadoRutDuplicadoError) {
+        this.duplicateRutModalRut.set(error.rut);
+      } else {
+        this.errorMessage.set(
+          error instanceof Error ? error.message : 'No fue posible guardar el borrador.',
+        );
+      }
+    } finally {
+      this.isSavingBorrador.set(false);
+    }
   }
 
   selectWizardStep(index: number): void {
@@ -313,16 +390,32 @@ export class FormEmpleadoComponent implements OnInit {
     this.isSaving.set(true);
 
     try {
-      const created = await this.empleadosService.crear(
-        mapEmpleadoFormToPayload(this.form, this.catalogos()),
-      );
+      const borradorId = this.borradorPersonaId();
+      if (borradorId !== null) {
+        await this.empleadosService.finalizarAltaAvanzadaExistente(
+          borradorId,
+          mapEmpleadoFormToPayload(this.form, this.catalogos()),
+        );
+        this.successMessage.set(
+          'La ficha avanzada fue guardada correctamente y el empleado quedo listo para operar.',
+        );
+        this.successFlow.set('avanzado');
+        this.createdEmployeeId.set(borradorId);
+        this.borradorPersonaId.set(null);
+        this.form.markAsPristine();
+        void this.router.navigate(['/empleados/nuevo'], { replaceUrl: true });
+      } else {
+        const created = await this.empleadosService.crear(
+          mapEmpleadoFormToPayload(this.form, this.catalogos()),
+        );
 
-      this.successMessage.set(
-        'La ficha avanzada fue guardada correctamente y el empleado quedo listo para operar.',
-      );
-      this.successFlow.set('avanzado');
-      this.createdEmployeeId.set(created.id);
-      this.form.markAsPristine();
+        this.successMessage.set(
+          'La ficha avanzada fue guardada correctamente y el empleado quedo listo para operar.',
+        );
+        this.successFlow.set('avanzado');
+        this.createdEmployeeId.set(created.id);
+        this.form.markAsPristine();
+      }
     } catch (error) {
       if (error instanceof EmpleadoRutDuplicadoError) {
         this.duplicateRutModalRut.set(error.rut);
@@ -938,6 +1031,37 @@ export class FormEmpleadoComponent implements OnInit {
 
   private resolveModo(): FormEmpleadoModo {
     return this.route.snapshot.queryParamMap.get('modo') === 'basico' ? 'basico' : 'avanzado';
+  }
+
+  private async loadContinuacionBorradorSiAplica(): Promise<void> {
+    const raw = this.route.snapshot.queryParamMap.get('idPersona');
+    const id = raw ? Number(raw) : NaN;
+    if (!Number.isInteger(id) || id < 1) {
+      return;
+    }
+
+    try {
+      const detalle = await this.empleadosService.obtenerPorId(id);
+      if (!detalle) {
+        this.catalogosError.set('No se encontro la ficha indicada para continuar el alta.');
+        return;
+      }
+      if (detalle.pasoAltaAvanzada === null || detalle.pasoAltaAvanzada === undefined) {
+        this.catalogosError.set(
+          'Esta ficha no tiene un borrador de creacion avanzada guardado. Usa la ficha del empleado para completar por secciones.',
+        );
+        return;
+      }
+
+      this.borradorPersonaId.set(id);
+      this.form.patchValue(detalle.formValue as never);
+      const paso = Math.min(Math.max(0, detalle.pasoAltaAvanzada), this.totalSteps - 1);
+      this.activeWizardStep.set(paso);
+      this.visitedWizardSteps.update((prev) => new Set([...prev, paso]));
+      this.form.markAsPristine();
+    } catch {
+      this.catalogosError.set('No fue posible cargar el borrador para continuar el alta.');
+    }
   }
 
   private markSubmitControlsAsTouched(): void {

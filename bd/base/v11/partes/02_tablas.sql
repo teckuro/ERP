@@ -518,6 +518,7 @@ CREATE TABLE persona (
     estado_ficha tipo_estado_ficha_enum NOT NULL DEFAULT 'BORRADOR',
     estado tipo_estado_persona_enum NOT NULL DEFAULT 'BORRADOR',
     apto_para_remuneraciones BOOLEAN NOT NULL DEFAULT FALSE,
+    paso_alta_avanzada SMALLINT NULL,
     fecha_activacion TIMESTAMPTZ,
     id_usuario_activacion INT,
     fecha_creacion TIMESTAMPTZ NOT NULL DEFAULT NOW(),

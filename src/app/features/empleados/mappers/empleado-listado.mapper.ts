@@ -26,6 +26,7 @@ export type PersonaFactorEmpleadoRow = Pick<
 > & {
   id_persona: number;
   apto_para_remuneraciones?: boolean | null;
+  paso_alta_avanzada?: number | null;
 };
 
 export function mapPersonaFactorToEmpleado(
@@ -55,6 +56,8 @@ export function mapPersonaFactorToEmpleado(
       mapContratoEstadoToEmpleadoEstado(row.estado_contrato),
     estadoFicha: row.estado_ficha ?? 'INCOMPLETO',
     aptoParaRemuneraciones: row.apto_para_remuneraciones ?? row.estado_ficha === 'VALIDO',
+    pasoAltaAvanzada:
+      typeof row.paso_alta_avanzada === 'number' ? row.paso_alta_avanzada : null,
   };
 }
 

@@ -41,7 +41,7 @@
   margin: 0 auto;
 }
 
-/* Marco único del modo básico: ancho alineado al avanzado, sin panel lateral ni pie duplicado */
+/* Marco del modo básico: ocupa el ancho del workspace; el eje común vive en .basic-create-inner */
 :host .basic-create-page {
   display: flex;
   flex-direction: column;
@@ -49,9 +49,32 @@
   min-width: 0;
   min-height: 0;
   width: 100%;
-  max-width: 80rem;
-  margin-inline: auto;
+  max-width: none;
+  margin-inline: 0;
+}
+
+:host .basic-create-shell {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+  min-width: 0;
+  width: 100%;
   min-height: min(36rem, calc(100dvh - var(--app-layout-main-chrome-y, 7rem)));
+}
+
+/* Header + resumen + formulario comparten el mismo max-width (menos aire lateral vacío) */
+:host .basic-create-inner {
+  width: 100%;
+  max-width: min(68rem, 100%);
+  margin-inline: auto;
+  padding-inline: 12px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+  min-width: 0;
 }
 
 :host .content-body--basic {
@@ -62,53 +85,125 @@
   min-width: 0;
 }
 
+/* Misma columna que el header: quita margen lateral global del content-body en modo básico */
+:host .basic-create-inner .content-body.content-body--basic {
+  margin-inline: 0;
+  width: 100%;
+}
+
 :host .basic-create-stack {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 8px;
   flex: 1 1 auto;
   min-height: 0;
   min-width: 0;
   width: 100%;
 }
 
-/* Callout compacto (sustituye el bloque largo previo) */
-:host .basic-create-callout {
-  margin: 0;
-  padding: 10px 12px;
-  border: 1px solid #e5e7eb;
-  border-radius: 8px;
-  border-left: 3px solid #94a3b8;
-  background: #f8fafc;
+:host .basic-create-form {
+  width: 100%;
+  min-width: 0;
 }
 
-:host .basic-create-callout__title {
-  margin: 0 0 6px;
+/* Panel blanco del formulario básico: menos aire que el paso avanzado (16px global en styles.css). */
+:host .basic-create-form .step-panel.step-panel--basic.basic-wizard {
+  padding: 12px;
+}
+
+@media (max-width: 720px) {
+  :host .basic-create-inner {
+    padding-inline: 10px;
+  }
+}
+
+/* Card única de resumen: mismo ancho que el formulario (columna .basic-create-inner) */
+:host .basic-create-summary-card {
+  margin: 0;
+  padding: 12px 16px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  background: #f8fafc;
+  min-width: 0;
+}
+
+:host .basic-create-summary-card__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px 12px;
+  margin-bottom: 6px;
+}
+
+:host .basic-create-summary-card__title {
+  margin: 0;
   color: #0f172a;
   font-size: var(--erp-text-sm, 0.72rem);
   font-weight: 600;
-  line-height: 1.35;
+  line-height: 1.3;
 }
 
-:host .basic-create-callout__text {
-  margin: 0 0 6px;
-  color: #475569;
-  font-size: var(--erp-text-xs, 0.665rem);
-  line-height: 1.5;
-}
-
-:host .basic-create-callout__result {
-  margin: 0;
-  color: #334155;
+:host .basic-create-status-chip {
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+  padding: 2px 10px;
+  border-radius: 999px;
+  border: 1px solid #bfdbfe;
+  background: #eff6ff;
+  color: #1d4ed8;
   font-size: var(--erp-text-xs, 0.665rem);
   font-weight: 600;
+  line-height: 1.3;
+}
+
+:host .basic-create-summary-card__lead {
+  margin: 0;
+  color: #475569;
+  font-size: var(--erp-text-xs, 0.665rem);
   line-height: 1.45;
 }
 
-:host .basic-create-callout__result-label {
-  font-weight: 600;
+:host .basic-create-summary-card__pending {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid #e5e7eb;
+}
+
+:host .basic-create-summary-card__pending-label {
+  flex: 0 0 auto;
   color: #64748b;
-  margin-right: 4px;
+  font-size: var(--erp-text-xs, 0.665rem);
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+:host .basic-create-summary-card__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+:host .basic-create-summary-chip {
+  display: inline-flex;
+  align-items: center;
+  max-width: 100%;
+  padding: 3px 9px;
+  border-radius: 999px;
+  border: 1px solid #e5e7eb;
+  background: #ffffff;
+  color: #475569;
+  font-size: 10px;
+  font-weight: 500;
+  line-height: 1.35;
 }
 
 /* Cabecera básica: título + subtítulo a la izquierda, acciones alineadas arriba a la derecha */
@@ -120,7 +215,7 @@
   column-gap: 16px;
   row-gap: 0;
   width: 100%;
-  padding: 12px 4px 10px;
+  padding: 12px 0 10px;
   border-bottom: 1px solid #e5e7eb;
 }
 
@@ -259,6 +354,25 @@
 
 .advanced-create-header .summary-actions {
   justify-self: end;
+}
+
+.advanced-create-header .summary-actions--advanced {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+:host .advanced-draft-feedback {
+  margin: 0 0 8px;
+  padding: 6px 10px;
+  border-radius: 6px;
+  background: #ecfdf5;
+  border: 1px solid #a7f3d0;
+  color: #065f46;
+  font-size: var(--erp-text-xs, 0.665rem);
+  line-height: 1.45;
 }
 
 .advanced-wizard-map {
@@ -549,6 +663,11 @@
 
   .advanced-create-header .summary-actions {
     justify-self: start;
+  }
+
+  .advanced-create-header .summary-actions--advanced {
+    justify-content: flex-start;
+    width: 100%;
   }
 
   .advanced-wizard-layout {

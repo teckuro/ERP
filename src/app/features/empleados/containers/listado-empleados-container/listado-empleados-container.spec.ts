@@ -1,5 +1,8 @@
+import { importProvidersFrom } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
+import { LucideAngularModule } from 'lucide-angular';
+import { ChevronRight, Home } from 'lucide-angular/src/icons';
 
 import { EmpleadosService } from '../../services/empleados.service';
 import { ListadoEmpleadosContainer } from './listado-empleados-container';
@@ -13,6 +16,7 @@ describe('ListadoEmpleadosContainer', () => {
       imports: [ListadoEmpleadosContainer],
       providers: [
         provideRouter([]),
+        importProvidersFrom(LucideAngularModule.pick({ Home, ChevronRight })),
         {
           provide: EmpleadosService,
           useValue: {

@@ -335,6 +335,15 @@ sin mezclarlo con las reglas base.
   - `src/app/features/empleados/components/form-empleado/form-empleado.{html,css,ts}`
   - `tests/empleados-basic-create.spec.ts`
 
+### 2026-05-01 (Creacion basica — distribucion y resumen en fila)
+
+- **Eje comun**: `basic-create-shell` + `basic-create-inner` (`max-width: min(68rem, 100%)`) alinean **cabecera**, **resumen** y **formulario**; la pagina ya no fuerza 80rem con contenido mas angosto.
+- **Resumen en desktop**: `.basic-create-summary` en **dos columnas** (Alta rapida + Pendiente); en mobile una columna.
+- **Pendiente compacto**: chips neutros (`.basic-create-pending-chip`), sin lista larga ni aspecto de error/wizard.
+- **Contacto (modo basico)**: grilla de **dos columnas** `minmax(0,1.15fr) minmax(10.5rem,1fr)` y sin `span 2` en email para que **Telefono** no quede en un tercio del ancho.
+  - `src/app/features/empleados/components/form-empleado/form-empleado.{html,css}`
+  - `src/app/features/empleados/components/secciones/datos-personales/datos-personales.css`
+
 ### 2026-04-30 (Wizard avanzado — navegacion en cabecera del paso)
 
 - **Anterior / Siguiente / Finalizar alta** en la zona superior derecha del **contenido del paso** (`.advanced-step-header`), alineados con kicker + descripcion; **Volver** sigue solo en el header global de "Creacion avanzada".
@@ -343,3 +352,30 @@ sin mezclarlo con las reglas base.
 - **Scroll al paso**: `scrollToCurrentStepStart` usa `.advanced-step-header` y doble `requestAnimationFrame`; `selectWizardStep` tambien dispara scroll.
   - `src/app/features/empleados/components/form-empleado/form-empleado.{html,css,ts}`
   - `tests/empleados-wizard-stability.spec.ts` (offset de `.advanced-step-actions` respecto a `.advanced-wizard-content` + ancho del contenido)
+
+### 2026-05-01 (Creacion basica — ajuste fino visual)
+
+- **Callout**: titulo + texto breve; **resultado** como chip (`.basic-create-result-chip`); borde uniforme sin acento lateral grueso.
+- **Textos secundarios**: leads mas cortos en identificacion, nombre y contacto (modo basico).
+- **Evolucion**: el ancho `.basic-create-narrow` paso a **`basic-create-inner`** + resumen en fila (ver entrada **distribucion y resumen en fila** arriba).
+  - `src/app/features/empleados/components/secciones/datos-personales/datos-personales.html`
+  - `tests/empleados-basic-create.spec.ts`
+
+### 2026-04-30 (Creacion basica — card unica de resumen superior)
+
+- **Unificacion**: se eliminan las dos cards separadas (Alta rapida + Pendiente por completar) y se integra todo en **una** `.basic-create-summary-card` al mismo ancho que `.basic-create-inner`.
+- **Estructura**: fila cabecera (titulo **Alta rapida de empleado** + chip estado **Ficha en proceso**), texto **Solo se guardan los datos minimos para abrir la ficha.**, fila **Pendiente desde la ficha:** con chips compactos (Contrato y organizacion, Jornada y remuneracion, Prevision y salud, Banco); sin texto tecnico **Resultado**, sin lista larga ni aspecto wizard.
+- **Padding**: `14px 16px` en la card informativa; chip estado con estilo informativo (no error).
+- **Archivos**: `src/app/features/empleados/components/form-empleado/form-empleado.{html,css}`, `tests/empleados-basic-create.spec.ts`.
+
+### 2026-05-01 (Creacion avanzada — Guardar borrador en cabecera)
+
+- **Acciones**: boton secundario **Guardar borrador** antes de **Volver** en cabecera avanzada; fila `.summary-actions--advanced` con `gap` 8px; mensaje breve `.advanced-draft-feedback` tras guardado (no toast global).
+- **Archivos**: `src/app/features/empleados/components/form-empleado/form-empleado.{html,css}`.
+
+### 2026-04-30 (Creacion basica — compactacion card resumen y panel)
+
+- **Card resumen**: padding `12px 16px`; menos espacio entre titulo, lead, separador y pendientes (`margin`/`padding` en 6–8px); cabecera con **align-items: baseline** y chip un poco mas bajo en altura (`padding` vertical 2px) para alinear con el titulo sin sensacion flotante.
+- **Stack**: `gap` entre resumen y formulario de 12px a **8px** (token).
+- **Panel blanco**: `.basic-create-form .step-panel.step-panel--basic.basic-wizard` con **padding 12px** (override del 16px global del paso) solo en modo basico.
+- **Archivo**: `src/app/features/empleados/components/form-empleado/form-empleado.css`.

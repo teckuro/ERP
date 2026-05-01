@@ -45,6 +45,7 @@ import {
   buildCuentaBancariaInsert,
   buildPersonaActivacionUpdate,
   buildPersonaBasicaInsert,
+  buildPersonaBorradorAvanzadoInsert,
   buildPersonaInsert,
   buildPrevisionInsert,
   buildRemuneracionInsert,
@@ -52,7 +53,7 @@ import {
   buildSemanaCorridaInsert,
   buildZonaExtremaInsert,
 } from '../mappers/empleado-write.mapper';
-import { formatRutParts, RutParts } from '../utils/empleado-rut';
+import { formatRutParts, parseRut, RutParts } from '../utils/empleado-rut';
 import {
   buildForeignKeyError,
   buildRepositoryError,
@@ -60,6 +61,10 @@ import {
   EmpleadoRutDuplicadoError,
   isUniqueConstraintError,
 } from '../utils/empleados-repository-errors';
+import {
+  buildPersonaMetaBorradorUpdate,
+  puedePersistirPrevisionBorrador,
+} from '../utils/empleado-borrador.rules';
 
 type PersonaFactorRow = Tables<'vw_persona_factores'>;
 type PersonaRow = Tables<'persona'>;
@@ -385,8 +390,14 @@ export class EmpleadosRepository {
     );
 
     const departamentos = await this.fetchDepartamentos(rows.map((row) => row.id_contrato));
+    const pasos = await this.fetchPasosAltaAvanzada(rows.map((row) => row.id_persona));
 
-    return rows.map((row) => mapPersonaFactorToEmpleado(row, departamentos));
+    return rows.map((row) =>
+      mapPersonaFactorToEmpleado(
+        { ...row, paso_alta_avanzada: pasos.get(row.id_persona) ?? null },
+        departamentos,
+      ),
+    );
   }
 
   async obtenerPorId(id: number): Promise<EmpleadoFichaDetalle | null> {
@@ -407,8 +418,12 @@ export class EmpleadosRepository {
     }
 
     const departamentos = await this.fetchDepartamentos([data.id_contrato]);
+    const pasos = await this.fetchPasosAltaAvanzada([data.id_persona]);
     const resumen = mapPersonaFactorToEmpleado(
-      data as PersonaFactorRow & { id_persona: number },
+      {
+        ...(data as PersonaFactorRow & { id_persona: number }),
+        paso_alta_avanzada: pasos.get(data.id_persona) ?? null,
+      },
       departamentos,
     );
 
@@ -566,6 +581,187 @@ export class EmpleadosRepository {
     }
 
     return data.id_persona;
+  }
+
+  async insertarPersonaBorradorAvanzado(
+    payload: CrearEmpleadoPayload,
+    rut: RutParts,
+    pasoWizard: number,
+  ): Promise<number> {
+    const { data, error } = await this.supabase
+      .from('persona')
+      .insert(buildPersonaBorradorAvanzadoInsert(payload, rut, pasoWizard))
+      .select('id_persona')
+      .single();
+
+    if (error) {
+      if (isUniqueConstraintError(error, 'persona_rut_key')) {
+        throw new EmpleadoRutDuplicadoError(formatRutParts(rut));
+      }
+
+      const foreignKeyError = buildForeignKeyError(
+        error,
+        {
+          persona_id_comuna_fkey:
+            'La comuna seleccionada no esta disponible para registrar la ficha.',
+          persona_id_tramo_carga_fkey:
+            'El tramo de carga seleccionado no esta disponible para registrar la ficha.',
+        },
+        'No fue posible validar los datos personales seleccionados para la ficha.',
+      );
+
+      if (foreignKeyError) {
+        throw foreignKeyError;
+      }
+
+      throw buildRepositoryError('No fue posible crear el borrador en Supabase.', error.message);
+    }
+
+    return data.id_persona;
+  }
+
+  /**
+   * Guarda avance parcial del wizard avanzado. Crea persona/contrato en el primer guardado o actualiza el mismo id.
+   */
+  async guardarBorradorAvanzado(
+    personaIdExistente: number | null,
+    payload: CrearEmpleadoPayload,
+    pasoWizard: number,
+  ): Promise<EmpleadoListado> {
+    let personaId = personaIdExistente;
+
+    if (personaId === null) {
+      personaId = await this.insertarPersonaBorradorAvanzado(payload, parseRut(payload.rut), pasoWizard);
+    }
+
+    await this.persistirBorradorAvanzado(personaId, payload, pasoWizard);
+    return this.obtenerListadoEmpleadoPorId(personaId);
+  }
+
+  /**
+   * Finaliza alta avanzada sobre ficha existente (borrador): mismas tablas que creación completa + activación.
+   */
+  async finalizarAltaAvanzadaExistente(
+    personaId: number,
+    payload: CrearEmpleadoPayload,
+  ): Promise<void> {
+    await this.actualizarPersonaDesdePayload(personaId, payload);
+    const contratoId = await this.ensureContratoId(personaId, payload);
+    await this.actualizarContratoDesdePayload(contratoId, payload);
+    await this.upsertContratoCentroCostoDesdePayload(contratoId, payload);
+    await this.upsertRemuneracionDesdePayload(contratoId, payload);
+    await this.upsertSemanaCorridaDesdePayload(contratoId, payload);
+    await this.upsertZonaExtremaDesdePayload(contratoId, payload);
+    await this.upsertPrevisionDesdePayload(contratoId, payload);
+    await this.upsertSaludDesdePayload(contratoId, payload);
+    await this.upsertCuenta2DesdePayload(contratoId, payload);
+    await this.upsertApvDesdePayload(contratoId, payload);
+    await this.upsertCuentaBancariaDesdePayload(personaId, payload);
+    await this.activarPersonaCreada(payload, personaId);
+
+    const { error } = await this.supabase
+      .from('persona')
+      .update({ paso_alta_avanzada: null })
+      .eq('id_persona', personaId);
+
+    if (error) {
+      throw buildRepositoryError(
+        'No fue posible limpiar el estado de borrador de la ficha.',
+        error.message,
+      );
+    }
+  }
+
+  async obtenerListadoEmpleadoPorId(personaId: number): Promise<EmpleadoListado> {
+    const { data, error } = await this.supabase
+      .from('vw_persona_factores')
+      .select(
+        'id_persona,id_contrato,rut,dv,nombres,apellido_paterno,apellido_materno,cargo,fingreso,base,estado,estado_contrato,estado_ficha,apto_para_remuneraciones',
+      )
+      .eq('id_persona', personaId)
+      .maybeSingle();
+
+    if (error) {
+      throw buildRepositoryError('No fue posible cargar el empleado.', error.message);
+    }
+
+    if (!data?.id_persona) {
+      throw buildRepositoryError('No se encontro el empleado solicitado.', '');
+    }
+
+    const departamentos = await this.fetchDepartamentos([data.id_contrato]);
+    const pasos = await this.fetchPasosAltaAvanzada([data.id_persona]);
+    return mapPersonaFactorToEmpleado(
+      {
+        ...(data as PersonaFactorRow & { id_persona: number }),
+        paso_alta_avanzada: pasos.get(data.id_persona) ?? null,
+      },
+      departamentos,
+    );
+  }
+
+  private async persistirBorradorAvanzado(
+    personaId: number,
+    payload: CrearEmpleadoPayload,
+    pasoWizard: number,
+  ): Promise<void> {
+    await this.actualizarPersonaDesdePayload(personaId, payload);
+    const contratoId = await this.ensureContratoId(personaId, payload);
+    await this.actualizarContratoDesdePayload(contratoId, payload);
+    await this.upsertContratoCentroCostoDesdePayload(contratoId, payload);
+    await this.upsertRemuneracionDesdePayload(contratoId, payload);
+    await this.upsertSemanaCorridaDesdePayload(contratoId, payload);
+    await this.upsertZonaExtremaDesdePayload(contratoId, payload);
+    if (puedePersistirPrevisionBorrador(payload)) {
+      await this.upsertPrevisionDesdePayload(contratoId, payload);
+      await this.upsertSaludDesdePayload(contratoId, payload);
+      await this.upsertCuenta2DesdePayload(contratoId, payload);
+      await this.upsertApvDesdePayload(contratoId, payload);
+    }
+    await this.upsertCuentaBancariaDesdePayload(personaId, payload);
+    await this.aplicarMetaBorrador(personaId, pasoWizard);
+  }
+
+  private async aplicarMetaBorrador(personaId: number, pasoWizard: number): Promise<void> {
+    const { error } = await this.supabase
+      .from('persona')
+      .update(buildPersonaMetaBorradorUpdate(pasoWizard))
+      .eq('id_persona', personaId);
+
+    if (error) {
+      throw buildRepositoryError('No fue posible actualizar el borrador.', error.message);
+    }
+  }
+
+  private async fetchPasosAltaAvanzada(ids: number[]): Promise<Map<number, number | null>> {
+    const map = new Map<number, number | null>();
+    const normalized = [...new Set(ids)].filter((id) => Number.isInteger(id));
+    for (const id of normalized) {
+      map.set(id, null);
+    }
+    if (normalized.length === 0) {
+      return map;
+    }
+
+    const { data, error } = await this.supabase
+      .from('persona')
+      .select('id_persona, paso_alta_avanzada')
+      .in('id_persona', normalized);
+
+    if (error) {
+      throw buildRepositoryError('No fue posible leer el paso del wizard.', error.message);
+    }
+
+    for (const row of data ?? []) {
+      if (typeof row.id_persona === 'number') {
+        map.set(
+          row.id_persona,
+          typeof row.paso_alta_avanzada === 'number' ? row.paso_alta_avanzada : null,
+        );
+      }
+    }
+
+    return map;
   }
 
   async activarPersonaCreada(payload: CrearEmpleadoPayload, personaId: number): Promise<void> {

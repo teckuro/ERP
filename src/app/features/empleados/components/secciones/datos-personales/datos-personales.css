@@ -57,12 +57,14 @@
   grid-template-columns: repeat(4, minmax(0, 1fr));
 }
 
+/* Contacto: dos columnas equilibradas (email + teléfono); evita teléfono en 1/3 del ancho */
 :host-context(.step-panel--basic) .employee-grid-basic--contact {
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: minmax(0, 1.15fr) minmax(10.5rem, 1fr);
 }
 
 :host-context(.step-panel--basic) .employee-grid-basic--contact .form-field--wide {
-  grid-column: span 2;
+  grid-column: auto;
+  min-width: 0;
 }
 
 :host-context(.step-panel--basic) .form-field--span-2 {
@@ -79,7 +81,7 @@
   }
 
   :host-context(.step-panel--basic) .employee-grid-basic--contact .form-field--wide {
-    grid-column: span 2;
+    grid-column: auto;
   }
 }
 

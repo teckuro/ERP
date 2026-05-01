@@ -49,6 +49,7 @@ Si falta un caso: primero `ui-form-guidelines.md` y `AGENTS.md`; luego temas esp
 | [`flujo-edicion-ficha-empleado.md`](./temas/flujo-edicion-ficha-empleado.md) | Edición de ficha |
 | [`crear-menu-base.md`](./temas/crear-menu-base.md) | Menú lateral y rutas |
 | [`creacion-avanzada-formulario-campos.md`](./temas/creacion-avanzada-formulario-campos.md) | Alta avanzada: bloques y tabs |
+| [`creacion-avanzada-borrador-tests.md`](./temas/creacion-avanzada-borrador-tests.md) | Pruebas borrador / continuar alta (fase 1 cubierta, fase 2 con `E2E_EMPLEADOS_BORRADOR`) |
 
 ### Parámetros y sync
 

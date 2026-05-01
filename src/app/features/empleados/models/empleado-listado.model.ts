@@ -22,6 +22,8 @@ export interface EmpleadoListado {
   estado: EmpleadoEstado;
   estadoFicha: EmpleadoEstadoFicha;
   aptoParaRemuneraciones: boolean;
+  /** Solo creación avanzada con borrador guardado; null si no aplica (p. ej. alta básica). */
+  pasoAltaAvanzada: number | null;
 }
 
 export interface EmpleadoFichaDetalle extends EmpleadoListado {

@@ -237,6 +237,7 @@ export class TablaEmpleadosComponent {
       operator: 'equals',
       emptyLabel: 'Todo',
       options: [
+        { label: 'Borrador', value: 'borrador' },
         { label: 'En proceso', value: 'en_proceso' },
         { label: 'Activo', value: 'activo' },
         { label: 'Suspendido', value: 'suspendido' },
@@ -406,8 +407,25 @@ export class TablaEmpleadosComponent {
     }
   }
 
-  rowPrimaryActionLabel(estado: EmpleadoEstado): string {
-    switch (estado) {
+  primaryActionLink(empleado: EmpleadoListado): (string | number)[] {
+    if (empleado.pasoAltaAvanzada !== null) {
+      return ['/empleados', 'nuevo'];
+    }
+    return ['/empleados', empleado.id];
+  }
+
+  primaryActionQueryParams(empleado: EmpleadoListado): Record<string, string> {
+    if (empleado.pasoAltaAvanzada !== null) {
+      return { idPersona: String(empleado.id) };
+    }
+    return {};
+  }
+
+  rowPrimaryActionLabel(empleado: EmpleadoListado): string {
+    if (empleado.pasoAltaAvanzada !== null) {
+      return 'Continuar alta';
+    }
+    switch (empleado.estado) {
       case 'borrador':
       case 'en_proceso':
         return 'Completar ficha';
@@ -447,6 +465,7 @@ export class TablaEmpleadosComponent {
   labelEstado(estado: EmpleadoEstado): string {
     switch (estado) {
       case 'borrador':
+        return 'Borrador';
       case 'en_proceso':
         return 'En proceso';
       case 'activo':

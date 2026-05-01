@@ -60,6 +60,22 @@ export function buildPersonaBasicaInsert(
     estado: 'EN_PROCESO',
     estado_ficha: 'INCOMPLETO',
     apto_para_remuneraciones: false,
+    paso_alta_avanzada: null,
+  };
+}
+
+/** Alta avanzada en borrador: persona BORRADOR + paso del wizard (no apto remuneraciones). */
+export function buildPersonaBorradorAvanzadoInsert(
+  payload: CrearEmpleadoPayload,
+  rut: RutParts,
+  pasoWizard: number,
+): PersonaInsert {
+  return {
+    ...buildPersonaInsert(payload, rut),
+    estado: 'BORRADOR',
+    estado_ficha: 'INCOMPLETO',
+    apto_para_remuneraciones: false,
+    paso_alta_avanzada: pasoWizard,
   };
 }
 
@@ -287,5 +303,6 @@ export function mapCreatedEmpleado(
     estado: payload.estado,
     estadoFicha: mapEmpleadoEstadoToEstadoFicha(payload.estado),
     aptoParaRemuneraciones: payload.estado === 'activo',
+    pasoAltaAvanzada: null,
   };
 }
