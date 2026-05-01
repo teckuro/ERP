@@ -28,8 +28,8 @@ import { AfpParametro } from '../../models/parametro-general.model';
           [maxItems]="10"
           gridHeight="100%"
           [persistenceKey]="gridPersistenceKey"
-          emptyTitle="No hay registros para el periodo seleccionado"
-          emptyDescription="Sin AFP con vigencia en este periodo."
+          emptyTitle="No hay AFP vigentes para este período"
+          emptyDescription="Prueba con otro período o revisa la sincronización/carga mensual."
           (refresh)="refresh?.()"
         ></app-data-grid>
       </section>
@@ -46,11 +46,11 @@ export class ParametrosAfpTabComponent {
   readonly afpFilters: DataGridFilter<AfpParametro>[] = [
     {
       id: 'vigenciaInicio',
-      label: 'Periodo',
+      label: 'Vigencia inicio',
       field: 'vigenciaInicio',
       type: 'text',
       operator: 'startsWith',
-      placeholder: 'Ej: 2026-04',
+      placeholder: 'Ej: 2026-05',
       emptyLabel: 'Todos',
     },
     {

@@ -51,13 +51,13 @@ export type CcafMutualSubId = 'config' | 'listaCcaf' | 'mutuales' | 'ley16744';
       <div class="param-tab-subview">
         @if (activeSub === 'config') {
           <div class="param-hint param-hint--editable" role="note">
-            <span class="param-hint__tag">Editable</span>
+            <span class="param-hint__tag">Referencia</span>
             <span class="param-hint__text">La selección se guarda con Guardar en la barra superior.</span>
           </div>
-          <section class="param-group" aria-labelledby="ccaf-title">
-            <h2 id="ccaf-title">Configuración CCAF y mutual</h2>
-            <p class="param-section-lead">Selección usada como referencia en el periodo actual.</p>
-            <div class="field-grid field-grid--ccaf" aria-label="Configuración CCAF y mutual">
+          <section class="param-group param-group--ccaf-current" aria-labelledby="ccaf-title">
+            <h2 id="ccaf-title">Configuración vigente del período</h2>
+            <p class="param-section-lead">Selección usada como referencia para el período activo.</p>
+            <div class="field-grid field-grid--ccaf field-grid--ccaf-compact" aria-label="Configuración CCAF y mutual">
               <label class="param-field">
                 <span>Caja de compensación</span>
                 <app-search-select
@@ -85,7 +85,7 @@ export type CcafMutualSubId = 'config' | 'listaCcaf' | 'mutuales' | 'ley16744';
               <label class="param-field">
                 <span>Porcentaje</span>
                 <span class="unit-field unit-field--suffix" data-unit="%">
-                  <input class="param-input text-right" type="text" [value]="percentLabel" readonly />
+                  <input class="param-input text-right" type="text" [value]="percentLabel === '-' ? '—' : percentLabel" readonly />
                 </span>
               </label>
             </div>
@@ -104,7 +104,7 @@ export type CcafMutualSubId = 'config' | 'listaCcaf' | 'mutuales' | 'ley16744';
               [filtersEnabled]="true"
               [showExportAction]="true"
               [maxItems]="8"
-              gridHeight="100%"
+              gridHeight="min(520px, 100%)"
               [persistenceKey]="gridPersistenceKeyCcaf"
               emptyTitle="No hay registros para el periodo seleccionado"
               emptyDescription="Sin cajas de compensación disponibles en catálogo."
@@ -125,7 +125,7 @@ export type CcafMutualSubId = 'config' | 'listaCcaf' | 'mutuales' | 'ley16744';
               [filtersEnabled]="true"
               [showExportAction]="true"
               [maxItems]="8"
-              gridHeight="100%"
+              gridHeight="min(520px, 100%)"
               [persistenceKey]="gridPersistenceKeyMutuales"
               emptyTitle="No hay registros para el periodo seleccionado"
               emptyDescription="Sin organismos administradores en catálogo."
@@ -146,7 +146,7 @@ export type CcafMutualSubId = 'config' | 'listaCcaf' | 'mutuales' | 'ley16744';
               [filtersEnabled]="true"
               [showExportAction]="true"
               [maxItems]="8"
-              gridHeight="100%"
+              gridHeight="min(520px, 100%)"
               [persistenceKey]="gridPersistenceKeyLey16744"
               emptyTitle="No hay registros para el periodo seleccionado"
               emptyDescription="Sin parámetros Ley 16.744 vigentes para este periodo."
@@ -163,6 +163,17 @@ export type CcafMutualSubId = 'config' | 'listaCcaf' | 'mutuales' | 'ley16744';
         border-radius: 6px;
         height: var(--erp-control-height, 22px);
         min-height: var(--erp-control-height, 22px);
+      }
+
+      .param-group--ccaf-current {
+        width: min(56rem, 100%);
+        max-width: 100%;
+        align-self: flex-start;
+      }
+
+      /* Evita el “panel gigante vacío” cuando solo hay 3 campos. */
+      .field-grid--ccaf-compact {
+        max-width: min(56rem, 100%);
       }
     `,
   ],

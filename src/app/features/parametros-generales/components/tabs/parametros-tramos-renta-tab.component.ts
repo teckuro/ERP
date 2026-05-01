@@ -43,7 +43,7 @@ type ImpuestoSubId = 'tramos' | 'tabla';
               [filtersEnabled]="true"
               [showExportAction]="true"
               [maxItems]="10"
-              gridHeight="100%"
+              gridHeight="min(520px, 100%)"
               [persistenceKey]="gridPersistenceKeyTramos"
               emptyTitle="No hay registros para el periodo seleccionado"
               emptyDescription="Sin tramos de impuesto único para este periodo."
@@ -63,7 +63,7 @@ type ImpuestoSubId = 'tramos' | 'tabla';
               [filtersEnabled]="true"
               [showExportAction]="true"
               [maxItems]="10"
-              gridHeight="100%"
+              gridHeight="min(520px, 100%)"
               [persistenceKey]="gridPersistenceKeyTabla"
               emptyTitle="No hay registros para el periodo seleccionado"
               emptyDescription="Sin tabla de impuesto único vigente para este periodo."
@@ -105,7 +105,7 @@ export class ParametrosTramosRentaTabComponent {
       type: 'text',
       operator: 'startsWith',
       normalize: 'none',
-      placeholder: 'Ej: 2026-04',
+      placeholder: 'Ej: 2026-05',
       emptyLabel: 'Todos',
     },
   ];
@@ -117,7 +117,7 @@ export class ParametrosTramosRentaTabComponent {
       field: 'periodo',
       type: 'text',
       operator: 'startsWith',
-      placeholder: 'Ej: 2026-04',
+      placeholder: 'Ej: 2026-05',
       emptyLabel: 'Todos',
     },
   ];

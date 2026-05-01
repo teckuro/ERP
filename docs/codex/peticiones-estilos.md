@@ -3,6 +3,15 @@
 Registro cronológico de mejoras visuales aplicadas por petición, con foco en **trazabilidad** (qué se tocó y dónde),
 sin mezclarlo con las reglas base.
 
+### 2026-05-01 (Parámetros del sistema — Fase 2.5 pulido visual menor)
+
+- **Tabs principales con scroll interno más intencional**: se amplió el respiro lateral y `scroll-padding-inline` de `nav.folder-tabs`, se mantuvo el auto-centrado del tab activo y se agregó un fade lateral sutil desde el contenedor para sugerir scroll sin tapar texto.
+  - `src/app/pages/parametros.page.ts`
+- **CCAF y Mutual como configuración vigente**: la subpestaña de configuración queda titulada como **Configuración vigente del período**, con copy breve, ancho contenido y grilla compacta de los mismos tres campos existentes.
+  - `src/app/features/parametros-generales/components/tabs/parametros-ccaf-mutuales-tab.component.ts`
+- **Banda de período**: se mantiene el patrón aprobado de estado/chip/acción; no se cambiaron datos, sincronización ni lógica del período global.
+  - `src/app/pages/parametros.page.ts`
+
 ### 2026-04-28 (documentación)
 
 - **Índice padre único**: `docs/codex/README.md` con reglas por petición y mapa por tema.
@@ -116,6 +125,16 @@ sin mezclarlo con las reglas base.
   - `src/app/features/empleados/models/empleado-form.manifest.ts`
   - Ajuste UX: se agregó encabezado contextual del paso (**“Paso X de 9 · …”** + descripción breve) y se ocultó la scrollbar del stepper para que el overflow horizontal se sienta más limpio.
   - **Wrapper estable del wizard avanzado**: se creó una estructura de layout con clases dedicadas (`advanced-create-shell/inner`, `advanced-wizard-layout`, `advanced-wizard-map`, `advanced-wizard-content`, `advanced-wizard-footer`) para centralizar la maquetación del flujo avanzado y evitar ajustes aislados por bloque. En desktop se habilita el panel lateral **“Mapa de ficha”** (2 columnas) y en tablet/móvil se oculta para mantener lectura en una columna.
+
+### 2026-05-01 (Parámetros del sistema — Fase 2 layout fino)
+
+- **Tabs principales sin cortes**: el tab activo se auto-centrará dentro del scroll interno de `nav.folder-tabs` al cambiar de pestaña; se ajustó `scroll-padding`/padding para evitar recortes por borde.
+  - `src/app/pages/parametros.page.ts`
+- **Grillas vacías con altura razonable**: se acotó `gridHeight` a `min(520px, 100%)` en pestañas con catálogos/empty states frecuentes (sin tocar lógica, columnas ni filtros), evitando “cajas gigantes vacías” sin inflar filas.
+  - `src/app/features/parametros-generales/components/tabs/parametros-tramos-carga-tab.component.ts`
+  - `src/app/features/parametros-generales/components/tabs/parametros-tramos-renta-tab.component.ts`
+  - `src/app/features/parametros-generales/components/tabs/parametros-ccaf-mutuales-tab.component.ts`
+  - `src/app/features/parametros-generales/components/tabs/parametros-reforma-tab.component.ts`
 
 ### 2026-04-30 (Creacion avanzada - Mapa de ficha como navegacion desktop)
 
@@ -372,6 +391,20 @@ sin mezclarlo con las reglas base.
 
 - **Acciones**: boton secundario **Guardar borrador** antes de **Volver** en cabecera avanzada; fila `.summary-actions--advanced` con `gap` 8px; mensaje breve `.advanced-draft-feedback` tras guardado (no toast global).
 - **Archivos**: `src/app/features/empleados/components/form-empleado/form-empleado.{html,css}`.
+
+### 2026-05-01 (Parametros del sistema — normalizacion visual de estado, unidades y grillas)
+
+- **Estado del periodo**: banda compacta con chips **Sin datos / Cargado / Editando / Solo lectura** y “Acción sugerida” (Crear / Modificar / Guardar / Consultar) coherente con el periodo seleccionado.
+  - `src/app/pages/parametros.page.ts`
+- **Contradiccion resuelta**: pestañas editables ya no muestran “Editable” si el periodo no tiene datos; en su lugar muestran “Sin datos del periodo” con guia breve.
+  - `src/app/pages/parametros.page.ts`
+  - `src/app/features/parametros-generales/components/tabs/parametros-{valores,remuneraciones}-tab.component.ts`
+- **Unidades**: UF/UTM/UTA ahora indican **CLP** (evita el `$` ambiguo).
+  - `src/app/features/parametros-generales/components/tabs/parametros-valores-tab.component.ts`
+- **Grillas (solo lectura)**: empty states con copy mas contextual (sin inflar layout) y filtros de periodo/vigencia con placeholder coherente.
+  - `src/app/features/parametros-generales/components/tabs/parametros-{tramos-carga,tramos-renta,salud,afp,reforma}-tab.component.ts`
+- **CCAF y mutual**: configuracion con ancho contenido (`max-width`) para evitar panel vacio cuando hay pocos campos.
+  - `src/app/features/parametros-generales/components/tabs/parametros-ccaf-mutuales-tab.component.ts`
 
 ### 2026-04-30 (Creacion basica — compactacion card resumen y panel)
 

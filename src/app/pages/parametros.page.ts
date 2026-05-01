@@ -3,6 +3,7 @@ import {
   ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
+  ElementRef,
   effect,
   isDevMode,
   OnInit,
@@ -133,9 +134,7 @@ interface ParametrosDialogState {
 
           <div class="parametros-toolbar__end">
             @if (!generalesEditando() && !isConfigurableTab() && !parametrosUiBloqueada()) {
-              <p class="param-toolbar-consult-inline" role="note">
-                MODO CONSULTA · Modificar/Guardar no aplica en esta vista.
-              </p>
+              <span class="period-chip period-chip--muted" role="note">Solo lectura</span>
             }
 
             @if (generalesEditando()) {
@@ -218,13 +217,37 @@ interface ParametrosDialogState {
             </button>
           </div>
 
-          <span class="period-status">
-            @if (hasSelectedInRows()) {
-              Periodo seleccionado: {{ selectedPeriodo() }} · Con información cargada
-            } @else {
-              Sin información cargada para {{ selectedPeriodo() }}
-            }
-          </span>
+          <div class="period-status">
+            <span class="period-status__label">
+              @if (hasSelectedInRows()) {
+                Parámetros cargados para {{ selectedPeriodo() }}
+              } @else {
+                Sin información cargada para {{ selectedPeriodo() }}
+              }
+            </span>
+            <span class="period-status__chips" role="status" aria-label="Estado del período">
+              @if (!hasSelectedInRows()) {
+                <span class="period-chip period-chip--warning">Sin datos</span>
+              } @else if (generalesEditando()) {
+                <span class="period-chip period-chip--info">Editando</span>
+              } @else if (isConfigurableTab()) {
+                <span class="period-chip period-chip--success">Cargado</span>
+              } @else {
+                <span class="period-chip period-chip--muted">Solo lectura</span>
+              }
+            </span>
+            <span class="period-status__next" role="note">
+              @if (!hasSelectedInRows()) {
+                Acción: Crear parámetros
+              } @else if (generalesEditando()) {
+                Acción: Guardar
+              } @else if (isConfigurableTab()) {
+                Acción: Modificar
+              } @else {
+                Acción: Consultar
+              }
+            </span>
+          </div>
           <p class="period-sync-hint">
             Sincronizado con el período activo de la cabecera. Cambiar aquí o arriba actualiza el mismo contexto.
           </p>
@@ -283,6 +306,7 @@ interface ParametrosDialogState {
             <app-parametros-valores-tab
               [form]="form"
               [editable]="generalesEditando()"
+              [hasPeriodoData]="hasSelectedInRows()"
               [fechaActualizacionLabel]="fechaActualizacionLabel()"
               [bloquearSiLectura]="bloquearSiLectura.bind(this)"
               [setDescuentosBaseFn]="setDescuentosBase.bind(this)"
@@ -294,6 +318,7 @@ interface ParametrosDialogState {
             <app-parametros-remuneraciones-tab
               [form]="form"
               [editable]="generalesEditando()"
+              [hasPeriodoData]="hasSelectedInRows()"
               [fechaActualizacionLabel]="fechaActualizacionLabel()"
               [onSubmit]="guardar.bind(this)"
             >
@@ -434,6 +459,73 @@ interface ParametrosDialogState {
         box-sizing: border-box;
         height: calc(100dvh - var(--app-layout-main-chrome-y, 7rem));
         max-height: calc(100dvh - var(--app-layout-main-chrome-y, 7rem));
+      }
+
+      .parametros-page .period-status {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 6px;
+        margin: 0;
+        color: var(--prm-ink);
+        font-size: 0.78rem;
+        font-weight: 600;
+        line-height: 1.2;
+      }
+
+      .parametros-page .period-status__label {
+        font-weight: 700;
+      }
+
+      .parametros-page .period-status__chips {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        min-width: 0;
+      }
+
+      .parametros-page .period-status__next {
+        color: var(--prm-muted);
+        font-weight: 600;
+      }
+
+      .parametros-page .period-chip {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 18px;
+        padding: 0 8px;
+        border: 1px solid var(--prm-chip-line);
+        border-radius: 999px;
+        background: var(--prm-chip-soft);
+        color: var(--prm-chip-muted);
+        font-size: 0.7rem;
+        font-weight: 700;
+        letter-spacing: 0.02em;
+        white-space: nowrap;
+      }
+
+      .parametros-page .period-chip--success {
+        border-color: rgba(22, 163, 74, 0.25);
+        background: #ecfdf5;
+        color: #166534;
+      }
+
+      .parametros-page .period-chip--warning {
+        border-color: rgba(245, 158, 11, 0.25);
+        background: #fffbeb;
+        color: #92400e;
+      }
+
+      .parametros-page .period-chip--info {
+        border-color: rgba(37, 99, 235, 0.25);
+        background: var(--prm-blue-soft);
+        color: #1d4ed8;
+      }
+
+      .parametros-page .period-chip--muted {
+        background: #f8fafc;
+        color: #64748b;
       }
 
       .parametros-page > header.parametros-header {
@@ -692,6 +784,27 @@ interface ParametrosDialogState {
         position: relative;
       }
 
+      .parametros-content::before,
+      .parametros-content::after {
+        content: '';
+        position: absolute;
+        top: 1px;
+        z-index: 12;
+        width: 16px;
+        height: 44px;
+        pointer-events: none;
+      }
+
+      .parametros-content::before {
+        left: 1px;
+        background: linear-gradient(to right, var(--prm-soft, #f8fafc), rgba(248, 250, 252, 0));
+      }
+
+      .parametros-content::after {
+        right: 1px;
+        background: linear-gradient(to left, var(--prm-soft, #f8fafc), rgba(248, 250, 252, 0));
+      }
+
       .parametros-content > .folder-tabs {
         flex: 0 0 auto;
       }
@@ -702,11 +815,12 @@ interface ParametrosDialogState {
         overflow-x: auto;
         border-bottom: 1px solid var(--prm-line, #e5e7eb);
         background: var(--prm-soft, #f8fafc);
-        padding: 10px 12px 0;
+        padding: 10px 24px 0;
         gap: 6px;
         z-index: 10;
         overscroll-behavior-x: contain;
         scrollbar-width: thin;
+        scroll-padding-inline: 24px;
       }
 
       .folder-tab {
@@ -744,7 +858,8 @@ interface ParametrosDialogState {
 
       @media (max-width: 760px) {
         .folder-tabs {
-          padding: 10px 10px 0;
+          padding: 10px 16px 0;
+          scroll-padding-inline: 16px;
         }
 
         .folder-tab {
@@ -781,7 +896,7 @@ interface ParametrosDialogState {
         min-width: 0;
         gap: 12px;
         background: #ffffff;
-        padding: 12px;
+        padding: 12px 12px 16px;
         box-sizing: border-box;
         width: 100%;
         overflow-x: hidden;
@@ -1454,6 +1569,7 @@ export class ParametrosPage implements OnInit {
   private readonly service = inject(ParametrosGeneralesService);
   private readonly fb = inject(FormBuilder);
   private readonly cdr = inject(ChangeDetectorRef);
+  private readonly hostElement = inject<ElementRef<HTMLElement>>(ElementRef);
   readonly periodoGlobal = inject(PeriodoActivoService);
 
   readonly breadcrumbItems: readonly RecordBreadcrumbItem[] = [{ label: 'Parámetros' }];
@@ -2192,6 +2308,11 @@ export class ParametrosPage implements OnInit {
 
   seleccionarTab(tabId: ParametrosTabId): void {
     this.activeTab.set(tabId);
+    window.requestAnimationFrame(() => {
+      const root = this.hostElement.nativeElement;
+      const active = root.querySelector<HTMLElement>('nav.folder-tabs button.folder-tab--active');
+      active?.scrollIntoView({ inline: 'center', block: 'nearest', behavior: 'smooth' });
+    });
   }
 
   async seleccionarAnioValue(year: string): Promise<void> {

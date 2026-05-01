@@ -27,10 +27,10 @@ import { TramoCargaParametro } from '../../models/parametro-general.model';
           [filtersEnabled]="true"
           [showExportAction]="true"
           [maxItems]="10"
-          gridHeight="100%"
+          gridHeight="min(520px, 100%)"
           [persistenceKey]="gridPersistenceKey"
-          emptyTitle="No hay registros para el periodo seleccionado"
-          emptyDescription="No hay tramos de asignación familiar para este periodo."
+          emptyTitle="No hay tramos de asignación familiar para este período"
+          emptyDescription="Prueba con otro período o revisa la sincronización/carga mensual."
           (refresh)="refresh?.()"
         ></app-data-grid>
       </section>
@@ -51,7 +51,7 @@ export class ParametrosTramosCargaTabComponent {
       field: 'periodo',
       type: 'text',
       operator: 'startsWith',
-      placeholder: 'Ej: 2026-04',
+      placeholder: 'Ej: 2026-05',
       emptyLabel: 'Todos',
     },
   ];
