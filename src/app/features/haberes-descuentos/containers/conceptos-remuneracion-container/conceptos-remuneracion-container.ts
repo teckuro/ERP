@@ -139,7 +139,7 @@ export class ConceptosRemuneracionContainer implements OnInit {
   readonly catalogColumns: DataGridColumn<CatalogoGridRow>[] = [
     {
       id: 'codigo',
-      header: 'Código interno',
+      header: 'Código',
       field: 'codigo',
       type: 'text',
       sortable: true,
@@ -180,11 +180,12 @@ export class ConceptosRemuneracionContainer implements OnInit {
       type: 'text',
       sortable: true,
       format: (_v, row) => etiquetaNaturalezaFn(row.naturaleza),
+      visible: false,
       filterable: false,
     },
     {
       id: 'codigoLre',
-      header: 'Código LRE',
+      header: 'LRE',
       field: 'codigoLre',
       type: 'text',
       sortable: true,
@@ -271,11 +272,12 @@ export class ConceptosRemuneracionContainer implements OnInit {
       type: 'text',
       sortable: true,
       format: (v) => siNo(Boolean(v)),
+      visible: false,
       filterable: false,
     },
     {
       id: 'calculoAutomatico',
-      header: 'Cálculo automático',
+      header: 'Modo',
       field: 'calculoAutomatico',
       type: 'text',
       sortable: true,
@@ -283,8 +285,26 @@ export class ConceptosRemuneracionContainer implements OnInit {
       filterable: false,
     },
     {
+      id: 'vigenciaInicio',
+      header: 'Inicio',
+      field: 'vigenciaInicio',
+      type: 'date',
+      sortable: true,
+      format: (v) => this.formatDate(v),
+      filterable: false,
+    },
+    {
+      id: 'vigenciaFin',
+      header: 'Fin',
+      field: 'vigenciaFin',
+      type: 'date',
+      sortable: true,
+      format: (v) => this.formatDate(v),
+      filterable: false,
+    },
+    {
       id: 'vigente',
-      header: 'Vigente',
+      header: 'Estado',
       field: 'vigente',
       type: 'text',
       sortable: true,
@@ -619,5 +639,22 @@ export class ConceptosRemuneracionContainer implements OnInit {
       title: 'Datos incompletos',
       message: detail,
     });
+  }
+
+  private formatDate(value: unknown): string {
+    if (value == null || value === '') {
+      return '—';
+    }
+    const date = new Date(`${String(value).slice(0, 10)}T00:00:00`);
+    if (!Number.isFinite(date.getTime())) {
+      return String(value);
+    }
+    return new Intl.DateTimeFormat('es-CL', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+    })
+      .format(date)
+      .replaceAll('/', '-');
   }
 }

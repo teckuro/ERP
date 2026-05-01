@@ -95,7 +95,7 @@
       </ng-template>
       <ng-template appDataGridCell="vigente" let-row>
         <span class="hd-chip" [class.hd-chip--si]="row.vigente" [class.hd-chip--no]="!row.vigente">
-          {{ row.vigente ? 'Sí' : 'No' }}
+          {{ row.vigente ? 'Vigente' : 'No vigente' }}
         </span>
       </ng-template>
       <ng-template appDataGridCell="acciones" let-row>

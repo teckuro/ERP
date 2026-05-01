@@ -55,6 +55,7 @@ type HdGridRow = HaberDescuentoAsignacionListado & {
   estadoActivo: string;
   filtroVigenciaPeriodo: string;
   etiquetaVigencia: string;
+  valorAsignacion: string;
   /** Texto agregado para filtro “Buscar” (nombre, código concepto, LRE). */
   busquedaAsignacion: string;
 };
@@ -270,6 +271,16 @@ export class HaberesDescuentosContainer implements OnInit {
       type: 'text',
       sortable: true,
       format: (_v, row) => etiquetaNaturalezaFn(row.naturalezaConcepto),
+      visible: false,
+      filterable: false,
+    },
+    {
+      id: 'valorAsignacion',
+      header: 'Valor',
+      field: 'valorAsignacion',
+      type: 'text',
+      align: 'right',
+      sortable: false,
       filterable: false,
     },
     {
@@ -283,6 +294,7 @@ export class HaberesDescuentosContainer implements OnInit {
         row.tipoValor === 'PORCENTAJE' || row.monto == null
           ? '—'
           : `$ ${Number(row.monto).toLocaleString('es-CL')}`,
+      visible: false,
       filterable: false,
     },
     {
@@ -293,7 +305,8 @@ export class HaberesDescuentosContainer implements OnInit {
       align: 'right',
       sortable: true,
       format: (_v, row) =>
-        row.tipoValor === 'FIJO' || row.porcentaje == null ? '—' : `${Number(row.porcentaje)} %`,
+        row.tipoValor === 'FIJO' || row.porcentaje == null ? '—' : `${this.formatPercent(row.porcentaje)} %`,
+      visible: false,
       filterable: false,
     },
     {
@@ -303,6 +316,7 @@ export class HaberesDescuentosContainer implements OnInit {
       type: 'text',
       sortable: true,
       format: (v) => (v == null || v === '' ? '—' : String(v)),
+      visible: false,
       filterable: false,
     },
     {
@@ -311,7 +325,7 @@ export class HaberesDescuentosContainer implements OnInit {
       field: 'vigenciaInicio',
       type: 'text',
       sortable: true,
-      format: (v) => (v == null || v === '' ? '—' : String(v).slice(0, 10)),
+      format: (v) => this.formatDate(v),
       filterable: false,
     },
     {
@@ -320,7 +334,7 @@ export class HaberesDescuentosContainer implements OnInit {
       field: 'vigenciaFin',
       type: 'text',
       sortable: true,
-      format: (v) => (v == null || v === '' ? '—' : String(v).slice(0, 10)),
+      format: (v) => this.formatDate(v),
       filterable: false,
     },
     {
@@ -439,6 +453,7 @@ export class HaberesDescuentosContainer implements OnInit {
         estadoActivo: r.estado ? 'Activo' : 'Inactivo',
         filtroVigenciaPeriodo: vigenteMes ? 'SI' : 'NO',
         etiquetaVigencia,
+        valorAsignacion: this.valorAsignacionLabel(r),
         busquedaAsignacion: [r.nombreConcepto, r.codigoConcepto, r.codigoLre ?? '']
           .join(' ')
           .toLowerCase(),
@@ -712,5 +727,36 @@ export class HaberesDescuentosContainer implements OnInit {
       title: 'Datos incompletos',
       message: detail,
     });
+  }
+
+  private valorAsignacionLabel(row: HaberDescuentoAsignacionListado): string {
+    if (row.tipoValor === 'PORCENTAJE') {
+      return row.porcentaje == null ? '—' : `${this.formatPercent(row.porcentaje)} %`;
+    }
+    return row.monto == null ? '—' : `$ ${Number(row.monto).toLocaleString('es-CL')}`;
+  }
+
+  private formatPercent(value: number): string {
+    return new Intl.NumberFormat('es-CL', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    }).format(value);
+  }
+
+  private formatDate(value: unknown): string {
+    if (value == null || value === '') {
+      return '—';
+    }
+    const date = new Date(`${String(value).slice(0, 10)}T00:00:00`);
+    if (!Number.isFinite(date.getTime())) {
+      return String(value);
+    }
+    return new Intl.DateTimeFormat('es-CL', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+    })
+      .format(date)
+      .replaceAll('/', '-');
   }
 }

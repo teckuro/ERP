@@ -93,6 +93,14 @@ Ejemplo (patrón típico):
 
 Esta regla no implica “full width”: aplica solo a **altura**.
 
+### Tablas y DataGrid
+
+- La altura de una tabla se resuelve en el contenedor visible: `page-shell` / card externa / workspace / contenido / contenedor de tabla.
+- No inflar filas, celdas, filtros ni padding para llenar la pantalla.
+- El scroll horizontal, si existe, debe vivir dentro del componente tabla/DataGrid.
+- Header, filtros, toolbar, cuerpo de tabla, paginación y empty state deben compartir el mismo eje visual.
+- Para reglas de columnas, formatos, estados y acciones, ver [`../ui-tables.md`](../ui-tables.md).
+
 ---
 
 ## Checklist ultra-corto de revisión visual (7 ítems)

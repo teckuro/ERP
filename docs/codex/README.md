@@ -30,6 +30,7 @@ Si falta un caso: primero `ui-form-guidelines.md` y `AGENTS.md`; luego temas esp
 | [`AGENTS.md`](./AGENTS.md) | Contrato agente, prioridades, tokens resumidos, layout ERP, anti‑patrones |
 | [`ui-form-guidelines.md`](./ui-form-guidelines.md) | Tokens completos, formularios, MessageBox, loading, checklist |
 | [`ui-button-guidelines.md`](./ui-button-guidelines.md) | Botones, toolbar, variantes |
+| [`ui-tables.md`](./ui-tables.md) | Estándar de tablas, DataGrid, columnas, formatos, filtros, empty states y responsive |
 | [`estilos/README.md`](./estilos/README.md) | Grilla 8 columnas, anchos, checklist de cierre (7 ítems) |
 | [`temas/implementacion-ui.md`](./temas/implementacion-ui.md) | Dónde está el CSS y componentes en el repo (sin duplicar tokens) |
 
@@ -80,8 +81,9 @@ Si falta un caso: primero `ui-form-guidelines.md` y `AGENTS.md`; luego temas esp
 1. [`AGENTS.md`](./AGENTS.md)  
 2. [`ui-form-guidelines.md`](./ui-form-guidelines.md)  
 3. [`ui-button-guidelines.md`](./ui-button-guidelines.md)  
-4. Si aplica: [`estilos/README.md`](./estilos/README.md)  
-5. Si aplica al flujo: tema empleados o parámetros en la tabla anterior  
+4. Si aplica tabla/listado: [`ui-tables.md`](./ui-tables.md)
+5. Si aplica: [`estilos/README.md`](./estilos/README.md)
+6. Si aplica al flujo: tema empleados o parámetros en la tabla anterior
 
 **Mejoras visuales**: registrar en [`peticiones-estilos.md`](./peticiones-estilos.md) (obligatorio según `AGENTS.md`).
 

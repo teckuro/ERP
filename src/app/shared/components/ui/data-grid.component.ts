@@ -2195,7 +2195,19 @@ export class DataGridComponent<T = unknown> implements OnChanges, OnDestroy {
       return column.format(value, row, index);
     }
 
-    return value == null ? '' : String(value);
+    if (value == null || value === '' || (typeof value === 'number' && Number.isNaN(value))) {
+      return '—';
+    }
+
+    if (typeof value === 'boolean') {
+      return value ? 'Sí' : 'No';
+    }
+
+    if (column.type === 'date') {
+      return this.formatDisplayDate(value);
+    }
+
+    return String(value);
   }
 
   alignmentHeaderClass(column: DataGridColumn<T>): string {
@@ -2937,11 +2949,27 @@ export class DataGridComponent<T = unknown> implements OnChanges, OnDestroy {
       return value;
     }
 
+    return this.formatDateTime(timestamp);
+  }
+
+  private formatDisplayDate(value: unknown): string {
+    const timestamp = this.toDateTime(value);
+
+    if (!Number.isFinite(timestamp)) {
+      return String(value ?? '—');
+    }
+
+    return this.formatDateTime(timestamp);
+  }
+
+  private formatDateTime(timestamp: number): string {
     return new Intl.DateTimeFormat('es-CL', {
       day: '2-digit',
       month: '2-digit',
       year: 'numeric',
-    }).format(new Date(timestamp));
+    })
+      .format(new Date(timestamp))
+      .replaceAll('/', '-');
   }
 
   private normalizeText(value: string): string {

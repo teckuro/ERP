@@ -1802,22 +1802,22 @@ export class ParametrosPage implements OnInit {
 
   private formatIntegerGrid = (value: unknown): string => {
     const numberValue = this.numberFromUnknown(value);
-    return numberValue === null ? '-' : new Intl.NumberFormat('es-CL', { maximumFractionDigits: 0 }).format(numberValue);
+    return numberValue === null ? '—' : new Intl.NumberFormat('es-CL', { maximumFractionDigits: 0 }).format(numberValue);
   };
 
   private formatPercentGrid = (value: unknown): string => {
     const numberValue = this.numberFromUnknown(value);
     return numberValue === null
-      ? '-'
+      ? '—'
       : `${new Intl.NumberFormat('es-CL', {
           minimumFractionDigits: 2,
           maximumFractionDigits: 4,
-        }).format(numberValue)}%`;
+        }).format(numberValue)} %`;
   };
 
   private formatDateGrid = (value: unknown): string => this.date(typeof value === 'string' ? value : null);
 
-  private formatBooleanGrid = (value: unknown): string => (value ? 'Si' : 'No');
+  private formatBooleanGrid = (value: unknown): string => (value ? 'Sí' : 'No');
 
   private formatVigenteGrid = (value: unknown): string => (value ? 'Vigente' : 'Inactivo');
 
@@ -2566,12 +2566,12 @@ export class ParametrosPage implements OnInit {
   }
 
   money(value: number | null): string {
-    return value === null ? '-' : `$${new Intl.NumberFormat('es-CL', { maximumFractionDigits: 0 }).format(value)}`;
+    return value === null ? '—' : `$ ${new Intl.NumberFormat('es-CL', { maximumFractionDigits: 0 }).format(value)}`;
   }
 
   decimal(value: number | null, digits = 2): string {
     return value === null
-      ? '-'
+      ? '—'
       : new Intl.NumberFormat('es-CL', {
           minimumFractionDigits: digits,
           maximumFractionDigits: digits,
@@ -2580,7 +2580,7 @@ export class ParametrosPage implements OnInit {
 
   date(value: string | null): string {
     if (!value) {
-      return '-';
+      return '—';
     }
 
     const date = new Date(`${value}T00:00:00`);
@@ -2593,7 +2593,9 @@ export class ParametrosPage implements OnInit {
       day: '2-digit',
       month: '2-digit',
       year: 'numeric',
-    }).format(date);
+    })
+      .format(date)
+      .replaceAll('/', '-');
   }
 
   labelParametro(value: string): string {

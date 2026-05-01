@@ -221,7 +221,7 @@ export class ParametrosCcafMutualesTabComponent {
   @Input() loading = false;
   @Input() selectedCcafId: number | null = null;
   @Input() selectedMutualId: number | null = null;
-  @Input() percentLabel = '-';
+  @Input() percentLabel = '—';
   @Input() gridPersistenceKeyCcaf = 'parametros.ccaf.dg';
   @Input() gridPersistenceKeyMutuales = 'parametros.mutuales.dg';
   @Input() gridPersistenceKeyLey16744 = 'parametros.ley16744.dg';
