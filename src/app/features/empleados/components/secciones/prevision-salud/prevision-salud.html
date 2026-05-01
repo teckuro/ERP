@@ -7,14 +7,27 @@
   @if (isBlockVisible('regimen')) {
     <app-card className="prevision-card">
       <app-card-header className="prevision-card-header">
-        <h4>Régimen previsional</h4>
+        <div class="prevision-card-title-row">
+          <div>
+            <h4>Régimen previsional</h4>
+          </div>
+          <span
+            class="prevision-status-chip"
+            [class.is-afp]="esAfp"
+            [class.is-ips]="esIps"
+            [class.is-none]="sinPrevision"
+            [class.is-pending]="tipoPrevision === null"
+          >
+            {{ regimenStatusLabel }}
+          </span>
+        </div>
       </app-card-header>
       <app-card-content className="prevision-card-content">
         <div
           class="prevision-grid prevision-grid--two"
           [class.prevision-grid-adv]="advancedGridLayout"
         >
-          <div class="form-field">
+          <div class="form-field prevision-field--regimen">
             <div class="field-label-row">
               <label
                 for="empleado-tipo-regimen-previsional"
@@ -55,9 +68,7 @@
                 />
                 <span>Tiene APVI</span>
               </label>
-              <p class="field-message field-message--hint">
-                Solo si aplica; el detalle se registra en la etapa APVI.
-              </p>
+              <p class="field-message"></p>
             </div>
           }
         </div>
@@ -65,17 +76,24 @@
     </app-card>
   }
 
+  @if (sinPrevision && isBlockVisible('regimen')) {
+    <div class="prevision-state-note is-none" role="status">
+      <span class="prevision-state-note__label">Sin previsión</span>
+      <p>No se solicitarán datos de AFP, IPS ni APVI para este trabajador.</p>
+    </div>
+  }
+
   @if (esAfp && isBlockVisible('afp')) {
     <app-card className="prevision-card">
       <app-card-header className="prevision-card-header">
-        <h4>AFP</h4>
+        <h4>Datos AFP</h4>
       </app-card-header>
       <app-card-content className="prevision-card-content">
         <div
           class="prevision-grid prevision-grid--three"
           [class.prevision-grid-adv]="advancedGridLayout"
         >
-          <div class="form-field">
+          <div class="form-field prevision-field--afp">
             <div class="field-label-row">
               <label for="empleado-afp">Nombre AFP</label>
               @if (isRequired('idAfp')) {
@@ -97,10 +115,10 @@
             }
           </div>
 
-          <div class="form-field">
+          <div class="form-field prevision-field--medium">
             <div class="field-label-row">
               <label for="empleado-moneda-cuenta2">
-                Moneda Cuenta 2 - Ahorro Volunt.
+                Moneda Cuenta 2
               </label>
               @if (isRequired('idMonedaCuenta2')) {
                 <span class="field-required" aria-hidden="true">*</span>
@@ -121,10 +139,10 @@
             }
           </div>
 
-          <div class="form-field">
+          <div class="form-field prevision-field--amount">
             <div class="field-label-row">
               <label for="empleado-valor-cuenta2">
-                Valor Cuenta 2 - Ahorro Volunt.
+                Valor Cuenta 2
               </label>
               @if (isRequired('valorCuenta2')) {
                 <span class="field-required" aria-hidden="true">*</span>
@@ -154,14 +172,14 @@
   @if (esIps && isBlockVisible('ips')) {
     <app-card className="prevision-card">
       <app-card-header className="prevision-card-header">
-        <h4>Ex-Caja / régimen antiguo</h4>
+        <h4>Datos IPS</h4>
       </app-card-header>
       <app-card-content className="prevision-card-content">
         <div
           class="prevision-grid prevision-grid--four prevision-grid--ips"
           [class.prevision-grid-adv]="advancedGridLayout"
         >
-          <div class="form-field">
+          <div class="form-field prevision-field--ips">
             <div class="field-label-row">
               <label
                 for="empleado-entidad-previsional-ips"
@@ -187,10 +205,10 @@
             }
           </div>
 
-          <div class="form-field">
+          <div class="form-field prevision-field--excaja">
             <div class="field-label-row">
               <label for="empleado-nombre-ex-caja">
-                Nombre Ex-Caja
+                Ex-Caja
               </label>
               @if (isRequired('idExCajaPrevisional')) {
                 <span class="field-required" aria-hidden="true">*</span>
@@ -211,7 +229,7 @@
             }
           </div>
 
-          <div class="form-field">
+          <div class="form-field prevision-field--regimen-excaja">
             <div class="field-label-row">
               <label for="empleado-regimen-ex-caja">
                 Régimen Ex-Caja
@@ -239,7 +257,7 @@
             }
           </div>
 
-          <div class="form-field">
+          <div class="form-field prevision-field--rate">
             <div class="field-label-row">
               <label for="empleado-tasa-ex-caja">
                 Tasa Ex-Caja (%)
@@ -279,7 +297,7 @@
           class="prevision-grid prevision-grid--four prevision-grid--salud"
           [class.prevision-grid-adv]="advancedGridLayout"
         >
-          <div class="form-field">
+          <div class="form-field prevision-field--salud">
             <div class="field-label-row">
               <label for="empleado-salud"
                 >Institución de salud</label
@@ -303,7 +321,7 @@
             }
           </div>
 
-          <div class="form-field">
+          <div class="form-field prevision-field--medium">
             <div class="field-label-row">
               <label for="empleado-moneda-plan"
                 >Moneda plan salud</label
@@ -327,7 +345,7 @@
             }
           </div>
 
-          <div class="form-field">
+          <div class="form-field prevision-field--amount">
             <div class="field-label-row">
               <label for="empleado-valor-plan"
                 >Valor plan</label
@@ -353,7 +371,7 @@
             }
           </div>
 
-          <div class="form-field">
+          <div class="form-field prevision-field--amount">
             <div class="field-label-row">
               <label for="empleado-auge-ges">
                 Adicional GES (UF)
@@ -381,6 +399,26 @@
         </div>
       </app-card-content>
     </app-card>
+  } @else if (isBlockVisible('salud') && tipoPrevision !== null) {
+    <div class="prevision-state-note is-neutral" role="status">
+      <span class="prevision-state-note__label">Salud sin datos requeridos</span>
+      <p>La selección actual no solicita datos de salud en este paso.</p>
+    </div>
+  }
+
+  @if (advancedGridLayout && isBlockVisible('regimen')) {
+    <div
+      class="prevision-impact"
+      [class.is-enabled]="esAfp && formGroup.controls.tieneApv.value"
+      [class.is-optional]="esAfp && !formGroup.controls.tieneApv.value"
+      [class.is-na]="!esAfp"
+      role="status"
+    >
+      <div class="prevision-impact__main">
+        <span class="prevision-impact__eyebrow">Al continuar: {{ apviDestinationLabel }}</span>
+        <strong>{{ apviImpactLabel }}</strong>
+      </div>
+    </div>
   }
 
   @if (esAfp && isBlockVisible('apvi') && mostrarApvi) {
@@ -527,4 +565,3 @@
       </app-card>
   }
 </div>
-

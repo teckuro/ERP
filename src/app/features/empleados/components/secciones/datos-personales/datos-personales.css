@@ -224,6 +224,15 @@
   grid-column: span 1;
 }
 
+:host.employee-layout-advanced .employee-grid-adv--base {
+  max-width: none;
+  gap: 8px 12px;
+}
+
+:host.employee-layout-advanced .employee-grid-adv--contact {
+  max-width: none;
+}
+
 :host.employee-layout-advanced .employee-grid-adv--nombre > .form-field:nth-child(1) {
   grid-column: span 2;
 }
@@ -233,7 +242,6 @@
   grid-column: span 1;
 }
 
-/* Nacionalidad un poco más ancha; estado civil compacto (fila 3+2, hueco a la derecha) */
 :host.employee-layout-advanced .employee-grid-adv--base > .form-field:nth-child(1) {
   grid-column: span 2;
 }
@@ -243,7 +251,25 @@
 }
 
 :host.employee-layout-advanced .employee-section-shell {
-  gap: 1.25rem;
+  gap: 10px;
+}
+
+:host.employee-layout-advanced .employee-block-head {
+  padding: 12px 14px 8px;
+}
+
+:host.employee-layout-advanced .employee-block > .employee-grid {
+  padding: 12px 14px 14px;
+}
+
+:host.employee-layout-advanced .employee-block--narrow .employee-block-head {
+  padding-top: 8px;
+  padding-bottom: 4px;
+}
+
+:host.employee-layout-advanced .employee-block--narrow > .employee-grid {
+  padding-top: 8px;
+  padding-bottom: 10px;
 }
 
 :host.employee-layout-advanced .employee-grid-adv--contact > .form-field:nth-child(1) {
@@ -260,7 +286,7 @@
   }
 
   :host.employee-layout-advanced .employee-grid-adv--ident > .form-field {
-    grid-column: 1 / -1;
+    grid-column: span 1;
   }
 
   :host.employee-layout-advanced .employee-grid-adv--nombre > .form-field:nth-child(1) {
@@ -269,23 +295,23 @@
 
   :host.employee-layout-advanced .employee-grid-adv--nombre > .form-field:nth-child(2),
   :host.employee-layout-advanced .employee-grid-adv--nombre > .form-field:nth-child(3) {
-    grid-column: 1 / -1;
+    grid-column: span 1;
   }
 
   :host.employee-layout-advanced .employee-grid-adv--base > .form-field:nth-child(1) {
-    grid-column: 1 / -1;
+    grid-column: span 1;
   }
 
   :host.employee-layout-advanced .employee-grid-adv--base > .form-field:nth-child(2) {
-    grid-column: 1 / -1;
+    grid-column: span 1;
   }
 
   :host.employee-layout-advanced .employee-grid-adv--contact > .form-field:nth-child(1) {
-    grid-column: 1 / -1;
+    grid-column: span 1;
   }
 
   :host.employee-layout-advanced .employee-grid-adv--contact > .form-field:nth-child(2) {
-    grid-column: 1 / -1;
+    grid-column: span 1;
   }
 }
 

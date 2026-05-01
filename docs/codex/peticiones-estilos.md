@@ -144,3 +144,202 @@ sin mezclarlo con las reglas base.
   - `src/app/features/empleados/components/form-empleado/form-empleado.css`
 - **Bloque informativo sin caja marcada**: "Datos completos del empleado" queda como banda secundaria con acento lateral, sin borde rectangular.
   - `src/app/features/empleados/components/form-empleado/form-empleado.css`
+
+### 2026-04-30 (Creacion avanzada - Paso 1 como patron base)
+
+- **Paso 1 mas compacto y jerarquico**: se ajusto el encabezado a "identidad legal, datos personales y contacto base", se transformo la introduccion pesada en una nota liviana y se ordenaron los bloques como Identificacion legal, Nombre, Datos personales y Contacto.
+  - `src/app/features/empleados/components/form-empleado/form-empleado.{ts,html,css}`
+  - `src/app/features/empleados/components/secciones/datos-personales/datos-personales.{html,css}`
+- **Grillas proporcionales por bloque**: Identificacion legal usa 4/2/1 columnas, Nombre prioriza Nombres sobre apellidos, Datos personales y Contacto acotan su ancho interno para evitar selects o campos opcionales gigantes.
+  - `src/app/features/empleados/components/secciones/datos-personales/datos-personales.css`
+- **Ajuste fino de proporcion**: se amplio moderadamente el eje desktop del wizard, se redujo el espacio vertical entre cards del Paso 1, se compacto el padding de bloques con pocos campos y se separo el footer inferior con margen y borde suave.
+  - `src/app/features/empleados/components/form-empleado/form-empleado.css`
+  - `src/app/features/empleados/components/secciones/datos-personales/datos-personales.css`
+- **Microajuste final de densidad**: se redujo el aire entre el encabezado avanzado y el contenido, la nota informativa paso a ancho contenido y los bloques cortos del Paso 1 quedaron con padding/gap mas compacto.
+  - `src/app/features/empleados/components/form-empleado/form-empleado.css`
+  - `src/app/features/empleados/components/secciones/datos-personales/datos-personales.css`
+- **Cierre de patron del Paso 1**: la nota informativa mantiene estilo liviano pero vuelve a ocupar el ancho del contenido para alinearse con las cards del formulario.
+  - `src/app/features/empleados/components/form-empleado/form-empleado.css`
+
+### 2026-04-30 (Creacion avanzada - Paso 2 domicilio)
+
+- **Paso 2 alineado al patron del Paso 1**: se actualizo la bajada del paso Domicilio y la nota informativa liviana cambia su texto cuando el paso activo es Domicilio, manteniendo ancho alineado a las cards.
+  - `src/app/features/empleados/components/form-empleado/form-empleado.{ts,html,css}`
+- **Domicilio particular mas proporcional**: Calle queda mas ancha, Numero y Depto. mas compactos, Comuna queda en ancho medio y Observaciones ocupa ancho completo con altura contenida.
+  - `src/app/features/empleados/components/secciones/contacto/contacto.{html,css}`
+- **Estabilizacion visual del Paso 2**: se agrego una capa especifica para mantener altura minima razonable del panel Domicilio, sostener el footer en una posicion estable y reducir la altura inicial de Observaciones.
+  - `src/app/features/empleados/components/form-empleado/form-empleado.{html,css}`
+  - `src/app/features/empleados/components/secciones/contacto/contacto.css`
+- **Contenedor padre hasta el final de pagina**: se ajusto el eje avanzado para que la columna de contenido y el panel del paso crezcan hasta el alto disponible, manteniendo el footer estable sin inflar las cards internas.
+  - `src/app/features/empleados/components/form-empleado/form-empleado.css`
+- **Regla documentada como estandar**: el contenedor padre visible de pantallas y wizards debe llegar al final de la pagina/viewport disponible; el alto se resuelve en el marco padre, no inflando cards internas ni campos.
+  - `docs/codex/estilos/README.md`
+  - `docs/codex/ui-form-guidelines.md`
+
+### 2026-04-30 (Creacion avanzada - Paso 3 contrato y organizacion)
+
+- **Paso 3 alineado al patron del wizard**: se actualizo la bajada y la nota informativa contextual para Contrato y organizacion, usando la misma alerta liviana alineada al contenido.
+  - `src/app/features/empleados/components/form-empleado/form-empleado.{ts,html,css}`
+- **Bloques contractuales separados y compactos**: Relacion laboral queda como seleccion breve, Contrato agrupa tipo trabajador/tipo contrato/indefinido y fechas, Organizacion separa departamento/sucursal, y Centro de costo conserva cargo como campo protagonista.
+  - `src/app/features/empleados/components/secciones/contrato/contrato.{html,css}`
+- **Altura estable del Paso 3**: el panel de contrato participa del mismo contenedor flexible del wizard para mantener el footer estable sin inflar cards internas.
+  - `src/app/features/empleados/components/form-empleado/form-empleado.css`
+- **Ajuste fino de densidad del Paso 3**: se compacto el bloque Contrato, la ayuda de Indefinido quedo como hint secundario, el subtitulo de fechas se suavizo, Organizacion redujo aire interno y Cargo gano ancho relativo frente a Centro de costo y Estado inicial.
+  - `src/app/features/empleados/components/secciones/contrato/contrato.css`
+
+### 2026-04-30 (Creacion avanzada - Paso 4 jornada y remuneracion)
+
+- **Paso 4 alineado al patron del wizard**: se actualizo la bajada y la nota informativa contextual para Jornada y remuneracion, manteniendo alerta liviana y ancho alineado a las cards.
+  - `src/app/features/empleados/components/form-empleado/form-empleado.{ts,html,css}`
+- **Jornada y remuneracion por bloques**: el bloque de remuneracion se separo visualmente en Jornada laboral, Distribucion y colacion, Remuneracion base y Condiciones de remuneracion, sin mover campos fuera del paso ni cambiar bindings.
+  - `src/app/features/empleados/components/secciones/contrato/contrato.html`
+- **Grillas proporcionales del Paso 4**: Tipo jornada y sueldo base ganan ancho relativo, horas/dias/colacion quedan compactos, condiciones se muestran como checks livianos y el panel participa del mismo alto estable del wizard.
+  - `src/app/features/empleados/components/secciones/contrato/contrato.css`
+- **Ajuste fino de densidad del Paso 4**: Distribucion y colacion redujo padding/alto interno, colacion quedo como campo corto, Condiciones de remuneracion se acoto en ancho y los hints de checks quedaron mas discretos.
+  - `src/app/features/empleados/components/secciones/contrato/contrato.{html,css}`
+- **Correccion visual del Paso 4**: Distribucion de la jornada dejo de ocupar fila completa y queda alineada en desktop con Tiempo de colacion como campo corto, manteniendo el scope de clases solo en los bloques del paso.
+  - `src/app/features/empleados/components/secciones/contrato/contrato.html`
+
+### 2026-04-30 (Creacion avanzada - Paso 5 asignaciones y condiciones)
+
+- **Paso 5 alineado al patron del wizard**: se actualizo la bajada y la nota informativa contextual para Asignaciones y condiciones especiales, manteniendo alerta liviana y contenedor estable.
+  - `src/app/features/empleados/components/form-empleado/form-empleado.{ts,html,css}`
+- **Asignaciones y condiciones por bloques**: Asignacion familiar, Zona extrema y Semana corrida quedan como cards compactas con encabezado liviano y ayuda secundaria.
+  - `src/app/features/empleados/components/secciones/contrato/contrato.html`
+- **Grillas proporcionales del Paso 5**: cargas/tramo/valor se alinean en desktop, zona extrema separa decision/territorio/porcentaje, y semana corrida usa selector de dias compacto sin inflar altura interna.
+  - `src/app/features/empleados/components/secciones/contrato/contrato.css`
+
+### 2026-04-30 (Creación avanzada — Paso 5 ajuste fino)
+
+- **Asignación familiar**: etiqueta “Cargas” más corta, “Tabla vigente” pasa a chip discreto, y “Valor por carga” refuerza estilo de dato calculado (readonly con borde punteado).
+  - `src/app/features/empleados/components/secciones/contrato/contrato.html`
+  - `src/app/features/empleados/components/secciones/contrato/contrato.css`
+- **Zona extrema y Semana corrida (inactivos)**: los campos condicionales dejan de ocupar espacio cuando el toggle está apagado y se reemplazan por una nota muted, evitando la impresión de editabilidad.
+  - `src/app/features/empleados/components/secciones/contrato/contrato.html`
+- **Eje consistente del Paso 5**: los contenedores `grid` de Asignación familiar / Zona extrema / Semana corrida usan el mismo ancho máximo para evitar saltos visuales entre bloques.
+  - `src/app/features/empleados/components/secciones/contrato/contrato.css`
+
+### 2026-04-30 (Creación avanzada — layout wizard ajuste fino)
+
+- **Paso X**: se eliminó la caja informativa repetida bajo el subtítulo del paso; queda solo “Paso X de 9 · Nombre” + subtítulo breve.
+  - `src/app/features/empleados/components/form-empleado/form-empleado.html`
+  - `src/app/features/empleados/components/form-empleado/form-empleado.css`
+- **Footer estable**: el footer del wizard se mantiene al ancho completo del layout (spanning mapa + contenido) y vive dentro de `advanced-create-inner` para conservar eje y posición estable.
+  - `src/app/features/empleados/components/form-empleado/form-empleado.html`
+  - `src/app/features/empleados/components/form-empleado/form-empleado.css`
+- **Alineación de header**: el header superior usa la misma grilla (270px + contenido) para alinear “Creación avanzada” con el mapa y “Volver” con el borde derecho del contenido/footer.
+  - `src/app/features/empleados/components/form-empleado/form-empleado.css`
+- **Footer estable por altura mínima del cuerpo**: el área central del wizard usa `minmax(..., 1fr)` con un mínimo común en desktop para reducir saltos visuales entre pasos cortos y largos (sin inflar cards internas).
+  - `src/app/features/empleados/components/form-empleado/form-empleado.css`
+- **Orden HTML corregido**: el footer del wizard se renderiza después del cuerpo (`advanced-wizard-layout`) y no antes del layout principal.
+  - `src/app/features/empleados/components/form-empleado/form-empleado.html`
+- **Referencia de alto (Paso 9)**: el mínimo común del cuerpo del wizard se alinea al `min-height` usado por los paneles de paso (incluye Resumen final) para que todos los pasos compartan el mismo marco vertical.
+  - `src/app/features/empleados/components/form-empleado/form-empleado.css`
+- **Scroll/foco al cambiar de paso**: al presionar Anterior/Siguiente el wizard sube al inicio útil del paso (header del paso) y en desktop enfoca el primer campo habilitado (en <=1024px no enfoca para evitar teclado).
+  - `src/app/features/empleados/components/form-empleado/form-empleado.ts`
+
+### 2026-04-30 (Creacion avanzada - ancho uniforme de grillas)
+
+- **Grillas internas con el mismo ancho visual en Pasos 1 a 5**: se normalizo el ancho de los contenedores `grid` dentro de las cards para que los bloques no cambien de eje entre secciones; las proporciones de columnas se mantienen por tipo de campo.
+  - `src/app/features/empleados/components/secciones/datos-personales/datos-personales.css`
+  - `src/app/features/empleados/components/secciones/contrato/contrato.css`
+
+### 2026-04-30 (Creacion avanzada - Paso 5 microajuste final)
+
+- **Semana corrida mas compacta**: cuando el calculo esta inactivo, se muestra solo una nota muted breve y no se reserva encabezado/espacio para dias ocultos.
+  - `src/app/features/empleados/components/secciones/contrato/contrato.html`
+  - `src/app/features/empleados/components/secciones/contrato/contrato.css`
+- **Errores de Zona extrema mas contenidos**: los mensajes de Territorio y Asignacion (%) se compactaron para no romper la grilla.
+  - `src/app/features/empleados/components/secciones/contrato/contrato.html`
+
+### 2026-04-30 (Creacion avanzada - Paso 6 prevision y salud)
+
+- **Paso 6 alineado al patron del wizard**: se actualizo la bajada y la alerta informativa liviana para Prevision y salud, manteniendo el mismo eje visual de los pasos anteriores.
+  - `src/app/features/empleados/components/form-empleado/form-empleado.{ts,html,css}`
+- **Prevision y salud por bloques compactos**: Regimen previsional, AFP, IPS / Ex-Caja y Salud quedan con encabezados discretos, ayudas secundarias y grillas proporcionales sin cambiar bindings ni condiciones.
+  - `src/app/features/empleados/components/secciones/prevision-salud/prevision-salud.{html,css}`
+- **Responsive del Paso 6**: desktop usa campos principales mas anchos y monetarios compactos; tablet reorganiza a dos columnas y mobile apila a una columna sin reservar espacio para bloques que no aplican.
+  - `src/app/features/empleados/components/secciones/prevision-salud/prevision-salud.css`
+- **Orden visual de IPS y Salud**: IPS / Ex-Caja queda en dos filas proporcionales (Entidad + Ex-Caja, Regimen + Tasa) y Salud mantiene institucion protagonista con montos compactos.
+  - `src/app/features/empleados/components/secciones/prevision-salud/prevision-salud.css`
+- **Salud mas clara y responsive**: en desktop los cuatro campos quedan en una fila con Institucion como columna protagonista; en ancho intermedio Institucion ocupa fila completa y moneda/valores se reordenan sin vacios visuales.
+  - `src/app/features/empleados/components/secciones/prevision-salud/prevision-salud.css`
+- **Responsividad progresiva del Paso 6**: al disminuir ancho, AFP/IPS/Salud priorizan el campo principal en fila completa, luego agrupan secundarios en dos columnas y finalmente apilan todo a una columna para mantener orden y visibilidad.
+  - `src/app/features/empleados/components/secciones/prevision-salud/prevision-salud.css`
+- **Corte intermedio ampliado del Paso 6**: el modo de dos columnas legible se aplica desde 1380px hacia abajo para evitar compresion visual entre 1180px y 1380px.
+  - `src/app/features/empleados/components/secciones/prevision-salud/prevision-salud.css`
+- **Corte de seguridad responsive del Paso 6**: el apilado a una columna comienza antes del breakpoint general para evitar solapes entre 1075px y el cambio de layout del wizard.
+  - `src/app/features/empleados/components/secciones/prevision-salud/prevision-salud.css`
+
+### 2026-04-30 (Creacion avanzada - Paso 9 resumen final)
+
+- **Resumen final como pantalla de cierre**: se ajusto la bajada del Paso 9, la alerta informativa y el texto de avance del mapa para evitar la contradiccion entre recorrido y pasos pendientes.
+  - `src/app/features/empleados/components/form-empleado/form-empleado.{ts,html}`
+- **Estado por etapa mas compacto y semantico**: las filas del checklist usan numero, descripcion breve, chip de estado y accion Revisar secundaria, manteniendo la navegacion existente.
+  - `src/app/features/empleados/components/form-empleado/form-empleado.{html,css,ts}`
+- **Resumen principal y footer alineados al patron del wizard**: la sintesis de Nombre, RUT/Pasaporte, Cargo y Sucursal queda en grilla compacta, con footer estable y accion final Finalizar alta.
+  - `src/app/features/empleados/components/form-empleado/form-empleado.css`
+
+### 2026-04-30 (Creacion avanzada - Paso 6 decision previsional)
+
+- **Regimen previsional como decision principal**: el bloque inicial incorpora chip de estado para AFP, IPS, sin regimen o pendiente, con ayuda breve bajo el selector.
+  - `src/app/features/empleados/components/secciones/prevision-salud/prevision-salud.{html,css,ts}`
+- **AFP, IPS y sin prevision con contexto visual**: las cards condicionales explican el efecto sobre APVI y el estado sin prevision deja claro que no se solicitan AFP, IPS ni APVI.
+  - `src/app/features/empleados/components/secciones/prevision-salud/prevision-salud.{html,css}`
+- **Impacto APVI al cierre del Paso 6**: se agrego un bloque compacto que indica si el siguiente paso sera APVI, si queda opcional u omitido, o si el flujo continua con Bancario, sin cambiar navegacion ni validaciones.
+  - `src/app/features/empleados/components/secciones/prevision-salud/prevision-salud.{html,css,ts}`
+
+### 2026-04-30 (Creacion avanzada - Paso 6 reduccion de ruido)
+
+- **Copy visible mas compacto**: el Paso 6 conserva una sola frase superior y elimina subtitulos/notas repetidas dentro de Regimen, AFP, IPS y Salud.
+  - `src/app/features/empleados/components/form-empleado/form-empleado.{html,ts}`
+  - `src/app/features/empleados/components/secciones/prevision-salud/prevision-salud.html`
+- **Impacto APVI simplificado**: el bloque inferior muestra solo destino al continuar y estado APVI, sin explicaciones duplicadas ni cajas de ayuda permanentes.
+  - `src/app/features/empleados/components/secciones/prevision-salud/prevision-salud.{html,css,ts}`
+
+### 2026-04-30 (Creacion avanzada - Paso 6 estados sin acento lateral)
+
+- **Estados contextuales sin barra izquierda**: los bloques Sin prevision, Salud sin datos e Impacto APVI reemplazan el acento lateral por borde suave, fondo neutro y chips internos.
+  - `src/app/features/empleados/components/secciones/prevision-salud/prevision-salud.css`
+
+### 2026-04-30 (Creacion avanzada - Mapa de ficha sin acento lateral)
+
+- **Paso activo sin barra izquierda**: el item activo del Mapa de ficha deja de usar acento lateral y queda marcado con fondo azul suave, borde sobrio, marcador numerico y chip de estado.
+  - `src/app/features/empleados/components/form-empleado/form-empleado.css`
+
+### 2026-04-30 (Creacion avanzada - Mapa de ficha panel compacto)
+
+- **Mapa lateral como lista sobria**: el Mapa de ficha pasa a panel blanco con borde, cabecera separada, resumen en chip y filas compactas sin linea vertical de timeline.
+  - `src/app/features/empleados/components/form-empleado/form-empleado.css`
+
+### 2026-04-30 (Creacion avanzada - eje global del wizard)
+
+- **Footer en el marco padre del wizard**: el pie de Anterior / Siguiente / Finalizar alta se mueve al grid principal para compartir ancho con cabecera, mapa y contenido, manteniendose estable al cambiar de paso.
+  - `src/app/features/empleados/components/form-empleado/form-empleado.{html,css}`
+- **Layout flexible sin inflar cards internas**: el cuerpo central ocupa el espacio disponible y el footer queda en la fila final del wrapper avanzado, sin padding artificial en cards o campos.
+  - `src/app/features/empleados/components/form-empleado/form-empleado.css`
+- **Separacion superior contenida**: se reduce el gap entre la cabecera avanzada y el cuerpo del wizard para evitar una banda vacia entre ambos bloques.
+  - `src/app/features/empleados/components/form-empleado/form-empleado.css`
+
+### 2026-04-30 (Creacion basica — flujo dedicado y pie de pagina)
+
+- **Diferenciacion clara vs avanzada**: titulo "Creacion basica", badge de modo **Básica**, subtitulo corto, callout compacto "Alta rapida" con **Resultado: ficha en proceso**, panel lateral informativo de pendientes (no mapa de 9 pasos), y **footer** al pie con copy + boton **Guardar ficha basica** (el guardado en header se unifica al pie como en el wizard avanzado).
+- **Limpieza**: eliminado bloque muerto `isBasicMode()` dentro del contenido del wizard avanzado; modal de exito basico sin mensaje de "listo para liquidar" prematuro.
+  - `src/app/features/empleados/components/form-empleado/form-empleado.{html,css,ts}`
+- **Pruebas E2E**: `tests/empleados-basic-create.spec.ts` (aserciones + captura opcional `.basic-create-page`).
+
+### 2026-04-30 (Creacion basica — solo formulario y CTA en cabecera)
+
+- **Sin panel "Estado de la ficha"**: layout de una columna (callout + formulario). **Guardar ficha basica** de nuevo en **cabecera** junto a Volver (`headerVisibleActions` solo en modo basico).
+- **Cabecera en grilla**: titulo/subtitilo alineados a la izquierda, botonera a la derecha; subtitulo sin mayusculas forzadas (anula herencia de `.summary-person p`). Sin `footer.editor-footer--basic`.
+  - `src/app/features/empleados/components/form-empleado/form-empleado.{html,css,ts}`
+  - `tests/empleados-basic-create.spec.ts`
+
+### 2026-04-30 (Wizard avanzado — navegacion en cabecera del paso)
+
+- **Anterior / Siguiente / Finalizar alta** en la zona superior derecha del **contenido del paso** (`.advanced-step-header`), alineados con kicker + descripcion; **Volver** sigue solo en el header global de "Creacion avanzada".
+- **Sin duplicar**: eliminado `footer.advanced-wizard-footer` con los mismos botones; se conserva una **pista compacta** (`.advanced-step-hint`) bajo la fila principal.
+- **Estabilidad visual**: ancho minimo del boton primario (`.advanced-step-nav-btn--primary`); grid responsive (max 720px) apila acciones bajo el titulo.
+- **Scroll al paso**: `scrollToCurrentStepStart` usa `.advanced-step-header` y doble `requestAnimationFrame`; `selectWizardStep` tambien dispara scroll.
+  - `src/app/features/empleados/components/form-empleado/form-empleado.{html,css,ts}`
+  - `tests/empleados-wizard-stability.spec.ts` (offset de `.advanced-step-actions` respecto a `.advanced-wizard-content` + ancho del contenido)

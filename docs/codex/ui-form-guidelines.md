@@ -64,6 +64,7 @@ Todas las pantallas deben mantener:
 Regla adicional (altura):
 
 - El contenedor padre de la pantalla debe poder llegar al **límite inferior** (`min-height: 100%`) y, si usa grilla, el contenido debe crecer con `minmax(0, 1fr)` (ver `docs/codex/estilos/README.md`).
+- Este es un estándar transversal: formularios y wizards deben estirar el **marco padre** hasta el alto disponible, manteniendo cards/campos compactos. No usar textareas, cards internas o padding artificial para rellenar altura.
 
 Referencia de implementacion (UI base del ERP):
 

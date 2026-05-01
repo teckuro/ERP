@@ -3,7 +3,7 @@
     <app-card className="employee-block employee-block--wide" [formGroup]="formGroup">
       <div class="employee-block-head">
         <h4>
-          Documento de identificación
+          Identificación legal
           <span class="field-required" aria-hidden="true">*</span>
         </h4>
         @if (basicSectionLeads) {
@@ -34,7 +34,7 @@
             [class]="controlClass('rut')"
           />
           @if (hasIdentityError()) {
-            <p class="field-message">Documento obligatorio. Ingresa RUT o pasaporte.</p>
+            <p class="field-message">Ingresa RUT o pasaporte.</p>
           } @else if (hasError('rut', 'rut')) {
             <p class="field-message">Ingresa un RUT válido, por ejemplo 12.345.678-5.</p>
           } @else {
@@ -379,7 +379,7 @@
         <app-card className="employee-block employee-block--narrow" [formGroup]="contactoFormGroup">
           <div class="employee-block-head">
             <h4>Contacto</h4>
-            <p class="employee-block-lead">Email y teléfono opcionales para notificaciones o coordinación interna.</p>
+            <p class="employee-block-lead">Email y teléfono son opcionales para coordinación interna.</p>
           </div>
 
           <div
@@ -433,4 +433,3 @@
     }
   }
 </section>
-

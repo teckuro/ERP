@@ -79,11 +79,17 @@ Reglas:
 - El wrapper raíz de la pantalla (o `:host`) debe tener `height`/`min-height: 100%` cuando la vista se presenta como “página”.
 - Si el layout usa **CSS Grid** con header + contenido, el área de contenido debe ser `minmax(0, 1fr)` para que el bloque protagonista crezca y no colapse.
 - Usar `min-height: 0` en wrappers flex/grid internos cuando haya scroll dentro de la página (evita desbordes).
+- **Estándar general**: la cadena padre visible (`page-shell` / formulario / card externa / workspace / contenido) debe poder llegar al final de la página o del viewport disponible.
+- No resolver pantallas cortas agrandando cards internas, textareas, inputs o padding artificial. El crecimiento pertenece al contenedor padre y al eje de layout.
+- En wizards, el footer debe vivir en el mismo eje del formulario y mantenerse estable al final del contenedor flexible. Los pasos con poco contenido pueden usar una altura mínima razonable en el panel padre, no en la card de campos.
+- Las secciones internas siguen siendo compactas: esta regla de alto aplica al marco de página, no obliga a estirar controles ni bloques de captura.
 
 Ejemplo (patrón típico):
 
 - `:host { min-height: 100%; }`
 - `.page { min-height: 100%; display: grid; grid-template-rows: auto minmax(0, 1fr); }`
+- `.content { min-height: 100%; display: flex; flex-direction: column; }`
+- `.step-body { flex: 1 1 auto; min-height: 0; }`
 
 Esta regla no implica “full width”: aplica solo a **altura**.
 

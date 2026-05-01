@@ -94,8 +94,8 @@
                 <div class="basic-success-followup__panel">
                   <h3 class="basic-success-followup__title" id="basic-success-next-title">Próximo paso</h3>
                   <p class="basic-success-followup__text">
-                    Completa los datos laborales, previsionales y de remuneración desde la ficha del empleado
-                    para dejarlo listo para liquidar.
+                    La ficha queda en proceso. Completa contrato, previsión, salud, banco y remuneración desde la
+                    ficha del empleado cuando corresponda; hasta entonces no está lista para liquidar.
                   </p>
                 </div>
                 @if (createdEmployeeId(); as fichaId) {
@@ -150,10 +150,7 @@
                         <app-page-actions
                           [visibleActions]="headerVisibleActions()"
                           backLabel="Volver"
-                          [saveLabel]="saveActionLabel()"
                           backLink="/empleados"
-                          [saveDisabled]="isSaving() || isLoadingCatalogs()"
-                          (saveClick)="onSubmit()"
                         ></app-page-actions>
                       </div>
                     </header>
@@ -165,7 +162,7 @@
                           <div class="advanced-wizard-map__progress" aria-label="Progreso de la ficha">
                             <div class="advanced-wizard-map__progress-row">
                               <span>Paso {{ activeWizardStep() + 1 }} de {{ totalSteps }}</span>
-                              <strong>{{ wizardProgressPercent() }}% completado</strong>
+                              <strong>{{ wizardProgressPercent() }}% recorrido</strong>
                             </div>
                             <span class="advanced-wizard-map__progress-track" aria-hidden="true">
                               <span
@@ -216,15 +213,72 @@
                       </aside>
 
                       <div class="advanced-wizard-content" aria-label="Contenido del paso">
-                        <header class="advanced-step-head advanced-step-context" aria-label="Contexto del paso actual">
-                          <p class="advanced-step-kicker">
-                            Paso {{ activeWizardStep() + 1 }} de {{ totalSteps }} ·
-                            {{ advancedWizardLabels[activeWizardStep()] }}
+                        <section
+                          class="advanced-step-header"
+                          aria-label="Paso actual y acciones del asistente"
+                        >
+                          <div class="advanced-step-header__main">
+                            <div class="advanced-step-heading advanced-step-context">
+                              <p class="advanced-step-kicker">
+                                Paso {{ activeWizardStep() + 1 }} de {{ totalSteps }} ·
+                                {{ advancedWizardLabels[activeWizardStep()] }}
+                              </p>
+                              <p class="advanced-step-copy">
+                                {{ wizardStepDescription(activeWizardStep()) }}
+                              </p>
+                            </div>
+                            <div class="advanced-step-actions">
+                              <button
+                                type="button"
+                                class="form-action-button form-action-button--secondary advanced-step-nav-btn"
+                                [disabled]="isFirstTab()"
+                                (click)="goToPreviousTab()"
+                              >
+                                Anterior
+                              </button>
+                              @if (activeWizardStep() !== 8) {
+                                <button
+                                  type="button"
+                                  class="form-action-button form-action-button--primary advanced-step-nav-btn advanced-step-nav-btn--primary"
+                                  [disabled]="isNextDisabled()"
+                                  (click)="goToNextTab()"
+                                >
+                                  Siguiente
+                                </button>
+                              } @else {
+                                <button
+                                  type="button"
+                                  class="form-action-button form-action-button--primary advanced-step-nav-btn advanced-step-nav-btn--primary"
+                                  [disabled]="isSaving() || isLoadingCatalogs()"
+                                  (click)="onSubmit()"
+                                >
+                                  @if (isSaving()) {
+                                    <span class="form-button-spinner" aria-hidden="true"></span>
+                                  } @else {
+                                    <lucide-icon class="h-4 w-4" name="save"></lucide-icon>
+                                  }
+                                  {{ isSaving() ? 'Guardando ficha...' : 'Finalizar alta' }}
+                                </button>
+                              }
+                            </div>
+                          </div>
+                          <p class="advanced-step-hint" aria-live="polite">
+                            @if (
+                              getWizardStepValidationSummary(activeWizardStep()).blockingPending > 0 &&
+                              attemptedWizardSteps().has(activeWizardStep())
+                            ) {
+                              Hay datos obligatorios pendientes o con error en esta etapa.
+                            } @else if (activeWizardStep() === 8) {
+                              @if (wizardMapPendingCount() + wizardMapErrorCount() > 0) {
+                                Corrige las etapas pendientes antes de finalizar la ficha.
+                              } @else {
+                                La ficha está lista para finalizar el alta.
+                              }
+                            } @else {
+                              Completa la ficha por etapas. Puedes volver a pasos anteriores; los datos no se pierden.
+                            }
                           </p>
-                          <p class="advanced-step-copy">
-                            {{ wizardStepDescription(activeWizardStep()) }}
-                          </p>
-                        </header>
+                        </section>
 
                         <div class="content-head advanced-stepper-scroll" aria-label="Navegación de pasos">
                           <ol class="flow-tabs" aria-label="Pasos del alta">
@@ -255,8 +309,7 @@
                           </ol>
                         </div>
                         <div class="advanced-wizard-step">
-
-              <div class="content-body">
+                          <div class="content-body">
                 @if (isLoadingCatalogs()) {
                   <div class="form-loading-overlay" role="status" aria-live="polite">
                     <div class="form-loading-indicator" aria-hidden="true"></div>
@@ -264,44 +317,7 @@
                   </div>
                 }
 
-                @if (isAdvancedMode()) {
-                  <header class="advanced-create-head" aria-label="Guía de creación avanzada">
-                    <h3 class="advanced-create-title">Datos completos del empleado</h3>
-                    <p class="advanced-create-copy">
-                      Completa la información personal, laboral, previsional, de salud, bancaria y remuneracional para
-                      dejar la ficha lista para el proceso de remuneraciones.
-                    </p>
-                  </header>
-                }
-
-                @if (isBasicMode()) {
-                  <div class="step-panel step-panel--basic basic-wizard">
-                    <div class="basic-create-form-shell">
-                      <header class="basic-create-head" aria-label="Guía de creación básica">
-                        <h3 class="basic-create-title">Datos mínimos para registrar al empleado</h3>
-                        <p class="basic-create-copy">
-                          Completa la identificación y los datos base. La ficha quedará
-                          <strong>en proceso</strong> y podrás completarla después desde la ficha del empleado.
-                        </p>
-                        <div class="basic-create-note" role="note" aria-label="Alcance de la creación rápida">
-                          <lucide-icon class="basic-create-note__icon" name="info" aria-hidden="true"></lucide-icon>
-                          <p class="basic-create-note__text">
-                            Esta creación rápida registra solo los datos esenciales. Contrato, previsión, salud,
-                            banco y remuneración se completan después.
-                          </p>
-                        </div>
-                      </header>
-                      <app-empleado-datos-personales
-                        [formGroup]="form.controls.datosPersonales"
-                        [contactoFormGroup]="form.controls.contacto"
-                        [sexos]="catalogos().sexos"
-                        [estadosCivil]="catalogos().estadosCivil"
-                        [paises]="catalogos().paises"
-                        [basicSectionLeads]="true"
-                      ></app-empleado-datos-personales>
-                    </div>
-                  </div>
-                } @else if (activeWizardStep() === 0) {
+                @if (activeWizardStep() === 0) {
                   <div class="step-panel">
                     <app-empleado-datos-personales
                       [formGroup]="form.controls.datosPersonales"
@@ -314,7 +330,7 @@
                     ></app-empleado-datos-personales>
                   </div>
                 } @else if (activeWizardStep() === 1) {
-                  <div class="step-panel">
+                  <div class="step-panel step-panel--domicilio">
                     <app-empleado-contacto
                       [formGroup]="form.controls.contacto"
                       [comunas]="catalogos().comunas"
@@ -324,7 +340,7 @@
                     ></app-empleado-contacto>
                   </div>
                 } @else if (activeWizardStep() === 2) {
-                  <div class="step-panel">
+                  <div class="step-panel step-panel--contrato">
                     <app-empleado-contrato
                       [formGroup]="form.controls.contrato"
                       [centrosCosto]="catalogos().centrosCosto"
@@ -341,7 +357,7 @@
                     ></app-empleado-contrato>
                   </div>
                 } @else if (activeWizardStep() === 3) {
-                  <div class="step-panel">
+                  <div class="step-panel step-panel--jornada">
                     <app-empleado-contrato
                       [formGroup]="form.controls.contrato"
                       [centrosCosto]="catalogos().centrosCosto"
@@ -358,7 +374,7 @@
                     ></app-empleado-contrato>
                   </div>
                 } @else if (activeWizardStep() === 4) {
-                  <div class="step-panel">
+                  <div class="step-panel step-panel--asignaciones">
                     <app-empleado-contrato
                       [formGroup]="form.controls.contrato"
                       [centrosCosto]="catalogos().centrosCosto"
@@ -375,7 +391,7 @@
                     ></app-empleado-contrato>
                   </div>
                 } @else if (activeWizardStep() === 5) {
-                  <div class="step-panel">
+                  <div class="step-panel step-panel--prevision">
                     <app-empleado-prevision-salud
                       [formGroup]="form.controls.previsionSalud"
                       [tiposRegimenPrevisional]="catalogos().tiposRegimenPrevisional"
@@ -471,22 +487,30 @@
                               [ngClass]="checklistStatusClass(row.kind)"
                             >
                               <div class="resumen-checklist-main">
-                                <span class="resumen-checklist-step">{{ row.stepIndex + 1 }}. {{ row.label }}</span>
-                                <span class="resumen-checklist-state">{{ wizardStepUiLabel(row.kind) }}</span>
+                                <span class="resumen-checklist-num" aria-hidden="true">
+                                  {{ row.stepIndex + 1 }}
+                                </span>
+                                <span class="resumen-checklist-text">
+                                  <span class="resumen-checklist-step">{{ row.label }}</span>
+                                  <!-- Detalle removido: evita duplicar copy (se resuelve en el estado del paso). -->
+                                </span>
                               </div>
-                              @if (
-                                row.stepIndex < 8 &&
-                                row.kind !== 'completo' &&
-                                row.kind !== 'no-aplica'
-                              ) {
-                                <button
-                                  type="button"
-                                  class="resumen-review-button"
-                                  (click)="selectWizardStep(row.stepIndex)"
-                                >
-                                  Revisar
-                                </button>
-                              }
+                              <div class="resumen-checklist-actions">
+                                <span class="resumen-checklist-state">{{ wizardStepUiLabel(row.kind) }}</span>
+                                @if (
+                                  row.stepIndex < 8 &&
+                                  row.kind !== 'completo' &&
+                                  row.kind !== 'no-aplica'
+                                ) {
+                                  <button
+                                    type="button"
+                                    class="resumen-review-button"
+                                    (click)="selectWizardStep(row.stepIndex)"
+                                  >
+                                    Revisar
+                                  </button>
+                                }
+                              </div>
                             </li>
                           }
                         </ul>
@@ -495,120 +519,70 @@
                   </div>
                 }
               </div>
-
+                          </div>
                         </div>
-
-                        @if (!isBasicMode()) {
-                          <footer class="editor-footer advanced-wizard-footer">
-                  <p class="editor-footer-copy">
-                    @if (
-                      getWizardStepValidationSummary(activeWizardStep()).blockingPending > 0 &&
-                      attemptedWizardSteps().has(activeWizardStep())
-                    ) {
-                      Hay datos obligatorios pendientes o con error en esta etapa.
-                    } @else if (activeWizardStep() === 8) {
-                      Revisa el resumen y usa Finalizar alta para guardar la ficha completa.
-                    } @else {
-                      Completa la ficha por etapas. Puedes volver a pasos anteriores; los datos no se pierden.
-                    }
-                  </p>
-
-                  @if (isAdvancedMode()) {
-                    <div class="editor-footer-actions">
-                      <button
-                        type="button"
-                        class="form-action-button form-action-button--secondary"
-                        [disabled]="isFirstTab()"
-                        (click)="goToPreviousTab()"
-                      >
-                        Anterior
-                      </button>
-
-                      @if (activeWizardStep() !== 8) {
-                        <button
-                          type="button"
-                          class="form-action-button form-action-button--primary"
-                          [disabled]="isNextDisabled()"
-                          (click)="goToNextTab()"
-                        >
-                          Siguiente
-                        </button>
-                      } @else {
-                        <button
-                          type="button"
-                          class="form-action-button form-action-button--primary"
-                          [disabled]="isSaving() || isLoadingCatalogs()"
-                          (click)="onSubmit()"
-                        >
-                          @if (isSaving()) {
-                            <span class="form-button-spinner" aria-hidden="true"></span>
-                          } @else {
-                            <lucide-icon class="h-4 w-4" name="save"></lucide-icon>
-                          }
-                          {{ isSaving() ? 'Guardando ficha...' : 'Finalizar alta' }}
-                        </button>
-                      }
-                    </div>
-                  }
-                          </footer>
-                        }
                       </div>
+
                     </div>
-                  </div>
                 </section>
               } @else {
-                <header class="summary-identity">
-                  <div class="summary-person">
-                    <div class="summary-title-row">
-                      <h2>Creación básica</h2>
-                      <span class="summary-status-badge">En proceso</span>
+                <div class="basic-create-page" aria-label="Creación básica de empleado">
+                  <header class="summary-identity summary-identity--basic">
+                    <div class="summary-person summary-person--basic">
+                      <div class="summary-title-row">
+                        <h2>Creación básica</h2>
+                        <span class="summary-mode-badge" aria-label="Modo de alta">Básica</span>
+                      </div>
+                      <p class="summary-subtitle">
+                        Registra la información mínima para abrir una ficha de empleado.
+                      </p>
                     </div>
-                  </div>
 
-                  <div class="summary-actions">
-                    <app-page-actions
-                      [visibleActions]="headerVisibleActions()"
-                      backLabel="Volver"
-                      [saveLabel]="saveActionLabel()"
-                      backLink="/empleados"
-                      [saveDisabled]="isSaving() || isLoadingCatalogs()"
-                      (saveClick)="onSubmit()"
-                    ></app-page-actions>
-                  </div>
-                </header>
-
-                <div class="content-body">
-                  @if (isLoadingCatalogs()) {
-                    <div class="form-loading-overlay" role="status" aria-live="polite">
-                      <div class="form-loading-indicator" aria-hidden="true"></div>
-                      <span>Preparando campos</span>
+                    <div class="summary-actions">
+                      <app-page-actions
+                        [visibleActions]="headerVisibleActions()"
+                        backLabel="Volver"
+                        [saveLabel]="saveActionLabel()"
+                        backLink="/empleados"
+                        [saveDisabled]="isSaving() || isLoadingCatalogs()"
+                        (saveClick)="onSubmit()"
+                      ></app-page-actions>
                     </div>
-                  }
+                  </header>
 
-                  <div class="step-panel step-panel--basic basic-wizard">
-                    <div class="basic-create-form-shell">
-                      <header class="basic-create-head" aria-label="Guía de creación básica">
-                        <h3 class="basic-create-title">Datos mínimos para registrar al empleado</h3>
-                        <p class="basic-create-copy">
-                          Completa la identificación y los datos base. La ficha quedará
-                          <strong>en proceso</strong> y podrás completarla después desde la ficha del empleado.
+                  <div class="content-body content-body--basic">
+                    @if (isLoadingCatalogs()) {
+                      <div class="form-loading-overlay" role="status" aria-live="polite">
+                        <div class="form-loading-indicator" aria-hidden="true"></div>
+                        <span>Preparando campos</span>
+                      </div>
+                    }
+
+                    <div class="basic-create-stack">
+                      <section class="basic-create-callout" aria-label="Alcance del alta rápida">
+                        <h3 class="basic-create-callout__title">Alta rápida de empleado</h3>
+                        <p class="basic-create-callout__text">
+                          Registra los datos mínimos para crear la ficha. Los antecedentes laborales,
+                          previsionales y bancarios se completan después.
                         </p>
-                        <div class="basic-create-note" role="note" aria-label="Alcance de la creación rápida">
-                          <lucide-icon class="basic-create-note__icon" name="info" aria-hidden="true"></lucide-icon>
-                          <p class="basic-create-note__text">
-                            Esta creación rápida registra solo los datos esenciales. Contrato, previsión, salud,
-                            banco y remuneración se completan después.
-                          </p>
+                        <p class="basic-create-callout__result" aria-live="polite">
+                          <span class="basic-create-callout__result-label">Resultado:</span>
+                          ficha en proceso
+                        </p>
+                      </section>
+
+                      <div class="step-panel step-panel--basic basic-wizard">
+                        <div class="basic-create-form-shell">
+                          <app-empleado-datos-personales
+                            [formGroup]="form.controls.datosPersonales"
+                            [contactoFormGroup]="form.controls.contacto"
+                            [sexos]="catalogos().sexos"
+                            [estadosCivil]="catalogos().estadosCivil"
+                            [paises]="catalogos().paises"
+                            [basicSectionLeads]="true"
+                          ></app-empleado-datos-personales>
                         </div>
-                      </header>
-                      <app-empleado-datos-personales
-                        [formGroup]="form.controls.datosPersonales"
-                        [contactoFormGroup]="form.controls.contacto"
-                        [sexos]="catalogos().sexos"
-                        [estadosCivil]="catalogos().estadosCivil"
-                        [paises]="catalogos().paises"
-                        [basicSectionLeads]="true"
-                      ></app-empleado-datos-personales>
+                      </div>
                     </div>
                   </div>
                 </div>

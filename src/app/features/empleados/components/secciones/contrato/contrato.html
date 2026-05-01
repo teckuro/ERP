@@ -6,7 +6,10 @@
 
   @if (isBlockVisible('relacion')) {
   <app-card className="labor-block">
-    <div class="labor-block-title">Relación laboral</div>
+    <div class="labor-block-head">
+      <h4>Relación laboral</h4>
+      <p>Selecciona la modalidad de relación laboral del colaborador.</p>
+    </div>
     <div class="relation-grid">
       @for (option of relationOptions; track option.value) {
         <label class="relation-option">
@@ -25,7 +28,9 @@
 
   @if (isBlockVisible('contratoBase')) {
   <app-card className="labor-block">
-    <div class="labor-block-title">Contrato y organización</div>
+    <div class="labor-block-head">
+      <h4>Contrato</h4>
+    </div>
     <div class="labor-grid labor-grid--contract">
       <div class="form-field">
         <div class="field-label-row">
@@ -69,6 +74,26 @@
           [invalid]="hasError('tipoContrato')"
         ></app-search-select>
         <p class="field-message"></p>
+      </div>
+
+      <div class="form-field form-field--checkbox labor-toggle-field">
+        <div class="field-label-row">
+          <label for="empleado-indefinido"
+            >Indefinido</label
+          >
+        </div>
+        <label class="employee-checkbox-row">
+          <input
+            id="empleado-indefinido"
+            type="checkbox"
+            [checked]="isIndefinido"
+            (change)="onIndefinidoToggle($any($event.target).checked)"
+          />
+          <span>Contrato indefinido</span>
+        </label>
+        <p class="field-message field-message--hint">
+          Si el contrato es indefinido, no se exige fecha de término.
+        </p>
       </div>
 
       <div class="labor-field-section labor-field-section--span">
@@ -122,7 +147,7 @@
       <div class="form-field">
         <div class="field-label-row">
           <label for="empleado-fecha-termino"
-            >Fecha termino</label
+            >Fecha término</label
           >
           @if (isRequired('fechaTermino')) {
             <span class="field-required" aria-hidden="true">*</span>
@@ -143,29 +168,14 @@
         }
       </div>
 
-      <div class="form-field form-field--checkbox">
-        <div class="field-label-row">
-          <label for="empleado-indefinido"
-            >Indefinido</label
-          >
-        </div>
-        <label class="employee-checkbox-row">
-          <input
-            id="empleado-indefinido"
-            type="checkbox"
-            [checked]="isIndefinido"
-            (change)="onIndefinidoToggle($any($event.target).checked)"
-          />
-          <span>Contrato indefinido</span>
-        </label>
-        <p class="field-message field-message--hint">
-          Si el contrato es indefinido, no se exige fecha de término.
-        </p>
-      </div>
+    </div>
+  </app-card>
 
-      <div class="labor-field-section labor-field-section--span">
-        <p class="labor-field-section-title">Organización interna</p>
-      </div>
+  <app-card className="labor-block">
+    <div class="labor-block-head">
+      <h4>Organización</h4>
+    </div>
+    <div class="labor-grid labor-grid--organization">
 
       <div class="form-field">
         <div class="field-label-row">
@@ -210,13 +220,12 @@
   }
 
   @if (isBlockVisible('remuneracion')) {
-  <app-card className="labor-block">
-    <div class="labor-block-title">Jornada y remuneración</div>
-    <div class="labor-grid labor-grid--salary">
-      <div class="labor-field-section labor-field-section--span">
-        <p class="labor-field-section-title">Jornada laboral</p>
-      </div>
-
+  <app-card className="labor-block labor-block--schedule">
+    <div class="labor-block-head">
+      <h4>Jornada laboral</h4>
+      <p>Indica la jornada pactada para efectos de control y cálculo.</p>
+    </div>
+    <div class="labor-grid labor-grid--schedule">
       <div class="form-field">
         <div class="field-label-row">
           <label for="empleado-tipo-jornada"
@@ -284,11 +293,56 @@
           <p class="field-message"></p>
         }
       </div>
+    </div>
+  </app-card>
 
-      <div class="labor-field-section labor-field-section--span">
-        <p class="labor-field-section-title">Remuneración base</p>
+  <app-card className="labor-block labor-block--distribution">
+    <div class="labor-block-head">
+      <h4>Distribución y colación</h4>
+      <p>Registra la distribución acordada y el tiempo de colación informado.</p>
+    </div>
+    <div class="labor-grid labor-grid--distribution">
+      <div class="form-field form-field--wide">
+        <div class="field-label-row">
+          <label for="empleado-distribucion-jornada"
+            >Distribución de la jornada</label
+          >
+        </div>
+        <input
+          id="empleado-distribucion-jornada"
+          type="text"
+          formControlName="distribucionJornada"
+          placeholder="Ej: Lunes a viernes de 8:30 a 18:30"
+          [class]="controlClass('distribucionJornada')"
+        />
+        <p class="field-message"></p>
       </div>
 
+      <div class="form-field">
+        <div class="field-label-row">
+          <label for="empleado-tiempo-colacion">Tiempo de colación (min.)</label>
+        </div>
+        <input
+          id="empleado-tiempo-colacion"
+          type="number"
+          formControlName="tiempoColacionMinutos"
+          [class]="controlClass('tiempoColacionMinutos')"
+        />
+        @if (hasError('tiempoColacionMinutos')) {
+          <p class="field-message">El tiempo de colación debe estar entre 0 y 600 minutos.</p>
+        } @else {
+          <p class="field-message"></p>
+        }
+      </div>
+    </div>
+  </app-card>
+
+  <app-card className="labor-block labor-block--base-pay">
+    <div class="labor-block-head">
+      <h4>Remuneración base</h4>
+      <p>Define la base remuneracional pactada para el contrato.</p>
+    </div>
+    <div class="labor-grid labor-grid--base-pay">
       <div class="form-field">
         <div class="field-label-row">
           <label for="empleado-sueldo-base"
@@ -313,9 +367,7 @@
 
       <div class="form-field">
         <div class="field-label-row">
-          <label for="empleado-id-moneda"
-            >Moneda sueldo</label
-          >
+          <label for="empleado-id-moneda">Moneda</label>
         </div>
         <app-search-select
           id="empleado-id-moneda"
@@ -326,10 +378,6 @@
           [invalid]="hasError('idMoneda')"
         ></app-search-select>
         <p class="field-message"></p>
-      </div>
-
-      <div class="labor-field-section labor-field-section--span">
-        <p class="labor-field-section-title">Condiciones de remuneración</p>
       </div>
 
       <div class="form-field">
@@ -351,6 +399,28 @@
         ></app-search-select>
         <p class="field-message"></p>
       </div>
+    </div>
+  </app-card>
+
+  <app-card className="labor-block labor-block--pay-conditions">
+    <div class="labor-block-head">
+      <h4>Condiciones de remuneración</h4>
+    </div>
+    <div class="labor-grid labor-grid--pay-conditions">
+      <div class="form-field form-field--checkbox labor-toggle-field">
+        <div class="field-label-row">
+          <label for="empleado-seguro-cesantia"
+            >Seguro de cesantía</label
+          >
+        </div>
+        <label class="employee-checkbox-row">
+          <input id="empleado-seguro-cesantia" type="checkbox" formControlName="seguroCesantia" />
+          <span>Activo</span>
+        </label>
+        <p class="field-message field-message--hint">
+          Aplica seguro de cesantía cuando corresponda según el tipo de contrato.
+        </p>
+      </div>
 
       <div class="form-field form-field--checkbox">
         <div class="field-label-row">
@@ -362,68 +432,25 @@
           <input id="empleado-sueldo-variable" type="checkbox" formControlName="sueldoVariable" />
           <span>Aplica componente variable</span>
         </label>
-        <p class="field-message"></p>
-      </div>
-
-      <div class="form-field form-field--wide labor-span-2">
-        <div class="field-label-row">
-          <label for="empleado-distribucion-jornada"
-            >Distribución de la jornada</label
-          >
-        </div>
-        <input
-          id="empleado-distribucion-jornada"
-          type="text"
-          formControlName="distribucionJornada"
-          placeholder="Ej: Lunes a viernes de 8:30 a 18:30"
-          [class]="controlClass('distribucionJornada')"
-        />
-        <p class="field-message"></p>
-      </div>
-
-      <div class="form-field">
-        <div class="field-label-row">
-          <label for="empleado-tiempo-colacion"
-            >Tiempo de colación (min.)</label
-          >
-        </div>
-        <input
-          id="empleado-tiempo-colacion"
-          type="number"
-          formControlName="tiempoColacionMinutos"
-          [class]="controlClass('tiempoColacionMinutos')"
-        />
-        @if (hasError('tiempoColacionMinutos')) {
-          <p class="field-message">El tiempo de colación debe estar entre 0 y 600 minutos.</p>
-        } @else {
-          <p class="field-message"></p>
-        }
-      </div>
-
-      <div class="form-field form-field--checkbox">
-        <div class="field-label-row">
-          <label for="empleado-seguro-cesantia"
-            >Seguro de cesantía</label
-          >
-        </div>
-        <label class="employee-checkbox-row">
-          <input id="empleado-seguro-cesantia" type="checkbox" formControlName="seguroCesantia" />
-          <span>Activo</span>
-        </label>
-        <p class="field-message"></p>
+        <p class="field-message field-message--hint">
+          Marca si el colaborador puede recibir remuneraciones variables.
+        </p>
       </div>
     </div>
   </app-card>
   }
 
   @if (isBlockVisible('cargas')) {
-  <app-card className="labor-block">
-    <div class="labor-block-title">Asignación familiar</div>
+  <app-card className="labor-block labor-block--loads">
+    <div class="labor-block-head">
+      <h4>Asignación familiar</h4>
+      <p>Selecciona el tramo para visualizar el valor asociado según parámetros del período.</p>
+    </div>
     <div class="labor-grid labor-grid--loads">
-      <div class="form-field">
+      <div class="form-field form-field--compact">
         <div class="field-label-row">
           <label for="empleado-cargas"
-            >Numero de cargas</label
+            >Cargas</label
           >
         </div>
         <input
@@ -452,10 +479,12 @@
           [invalid]="hasError('idTramoCarga')"
         ></app-search-select>
         @if (periodoTramoVigente; as periodo) {
-          <p class="field-message field-message--warning">Tabla vigente: {{ periodo }}</p>
+          <p class="field-message">
+            <span class="period-chip">Tabla vigente: {{ periodo }}</span>
+          </p>
         } @else {
-          <p class="field-message field-message--warning">
-            No hay tabla vigente de cargas familiares.
+          <p class="field-message">
+            <span class="period-chip period-chip--warning">No hay tabla vigente de cargas familiares</span>
           </p>
         }
       </div>
@@ -464,7 +493,7 @@
         <div class="field-label-row">
           <label>Valor por carga</label>
         </div>
-        <div class="readonly-field">{{ valorPorCarga }}</div>
+        <div class="readonly-field readonly-field--calculated">{{ valorPorCarga }}</div>
         <p class="field-message"></p>
       </div>
     </div>
@@ -472,10 +501,13 @@
   }
 
   @if (isBlockVisible('zonaExtrema')) {
-  <app-card className="labor-block">
-    <div class="labor-block-title">Zona extrema</div>
+  <app-card className="labor-block labor-block--zone">
+    <div class="labor-block-head">
+      <h4>Zona extrema</h4>
+      <p>Activa esta opción solo si el colaborador aplica a una asignación por territorio especial.</p>
+    </div>
     <div class="labor-grid labor-grid--zone">
-      <div class="form-field form-field--checkbox">
+      <div class="form-field form-field--checkbox labor-toggle-field">
         <div class="field-label-row">
           <label for="empleado-zona-extrema"
             >Habilitar zona extrema</label
@@ -488,59 +520,70 @@
         <p class="field-message"></p>
       </div>
 
-      <div class="form-field">
-        <div class="field-label-row">
-          <label for="empleado-zona-territorio"
-            >Territorio</label
-          >
-          @if (isRequired('zonaExtremaTerritorio')) {
-            <span class="field-required" aria-hidden="true">*</span>
+      @if (formGroup.controls.zonaExtremaActiva.value) {
+        <div class="form-field form-field--wide labor-detail-field labor-detail-field--primary">
+          <div class="field-label-row">
+            <label for="empleado-zona-territorio"
+              >Territorio</label
+            >
+            @if (isRequired('zonaExtremaTerritorio')) {
+              <span class="field-required" aria-hidden="true">*</span>
+            }
+          </div>
+          <input
+            id="empleado-zona-territorio"
+            type="text"
+            formControlName="zonaExtremaTerritorio"
+            placeholder="Ej.: Magallanes"
+            [class]="controlClass('zonaExtremaTerritorio')"
+          />
+          @if (hasError('zonaExtremaTerritorio')) {
+            <p class="field-message">Ingresa territorio.</p>
+          } @else {
+            <p class="field-message"></p>
           }
         </div>
-        <input
-          id="empleado-zona-territorio"
-          type="text"
-          formControlName="zonaExtremaTerritorio"
-          placeholder="Ej.: Magallanes"
-          [class]="controlClass('zonaExtremaTerritorio')"
-        />
-        @if (hasError('zonaExtremaTerritorio')) {
-          <p class="field-message">El territorio es obligatorio al activar zona extrema.</p>
-        } @else {
-          <p class="field-message"></p>
-        }
-      </div>
 
-      <div class="form-field">
-        <div class="field-label-row">
-          <label for="empleado-zona-porcentaje"
-            >Asignación zona extrema (%)</label
-          >
-          @if (isRequired('zonaExtremaPorcentaje')) {
-            <span class="field-required" aria-hidden="true">*</span>
+        <div class="form-field form-field--compact labor-detail-field labor-detail-field--compact">
+          <div class="field-label-row">
+            <label for="empleado-zona-porcentaje"
+              >Asignación (%)</label
+            >
+            @if (isRequired('zonaExtremaPorcentaje')) {
+              <span class="field-required" aria-hidden="true">*</span>
+            }
+          </div>
+          <input
+            id="empleado-zona-porcentaje"
+            type="number"
+            formControlName="zonaExtremaPorcentaje"
+            [class]="controlClass('zonaExtremaPorcentaje')"
+          />
+          @if (hasError('zonaExtremaPorcentaje')) {
+            <p class="field-message">Ingresa porcentaje.</p>
+          } @else {
+            <p class="field-message"></p>
           }
         </div>
-        <input
-          id="empleado-zona-porcentaje"
-          type="number"
-          formControlName="zonaExtremaPorcentaje"
-          [class]="controlClass('zonaExtremaPorcentaje')"
-        />
-        @if (hasError('zonaExtremaPorcentaje')) {
-          <p class="field-message">El porcentaje es obligatorio al activar zona extrema.</p>
-        } @else {
-          <p class="field-message"></p>
-        }
-      </div>
+      } @else {
+        <div class="form-field zone-extrema-note">
+          <p class="field-message field-message--muted">
+            Activa “Zona extrema” para ingresar territorio y porcentaje.
+          </p>
+        </div>
+      }
     </div>
   </app-card>
   }
 
   @if (isBlockVisible('semanaCorrida')) {
-  <app-card className="labor-block">
-    <div class="labor-block-title">Beneficio semana corrida</div>
+  <app-card className="labor-block labor-block--week">
+    <div class="labor-block-head">
+      <h4>Semana corrida</h4>
+      <p>Marca los días pactados para evaluar semana corrida cuando corresponda.</p>
+    </div>
     <div class="labor-grid labor-grid--week">
-      <div class="form-field form-field--checkbox">
+      <div class="form-field form-field--checkbox labor-toggle-field">
         <div class="field-label-row">
           <label for="empleado-semana-corrida"
             >Habilitar semana corrida</label
@@ -557,40 +600,50 @@
         <p class="field-message"></p>
       </div>
 
-      <div class="form-field labor-span-3">
-        <div class="field-label-row">
-          <label>Indicar días laborables</label>
-          @if (isRequired('semanaCorridaDiasLaborables')) {
-            <span class="field-required" aria-hidden="true">*</span>
+      @if (formGroup.controls.semanaCorridaActiva.value) {
+        <div class="form-field labor-span-3 labor-detail-field labor-detail-field--days">
+          <div class="field-label-row">
+            <label>Indicar días laborables</label>
+            @if (isRequired('semanaCorridaDiasLaborables')) {
+              <span class="field-required" aria-hidden="true">*</span>
+            }
+          </div>
+          <div class="weekday-grid">
+            @for (day of weekdayOptions; track day.value) {
+              <button
+                type="button"
+                [class]="checkboxClass(day.value)"
+                (click)="toggleWeekday(day.value)"
+              >
+                <span class="weekday-box"></span>
+                <span>{{ day.label }}</span>
+              </button>
+            }
+          </div>
+          @if (hasError('semanaCorridaDiasLaborables')) {
+            <p class="field-message">
+              Selecciona al menos un día laborable cuando semana corrida esté activa.
+            </p>
+          } @else {
+            <p class="field-message"></p>
           }
         </div>
-        <div class="weekday-grid">
-          @for (day of weekdayOptions; track day.value) {
-            <button
-              type="button"
-              [class]="checkboxClass(day.value)"
-              (click)="toggleWeekday(day.value)"
-            >
-              <span class="weekday-box"></span>
-              <span>{{ day.label }}</span>
-            </button>
-          }
-        </div>
-        @if (hasError('semanaCorridaDiasLaborables')) {
-          <p class="field-message">
-            Selecciona al menos un día laborable cuando semana corrida esté activa.
+      } @else {
+        <div class="form-field week-running-note">
+          <p class="field-message field-message--muted">
+            Activa semana corrida para seleccionar los días.
           </p>
-        } @else {
-          <p class="field-message"></p>
-        }
-      </div>
+        </div>
+      }
     </div>
   </app-card>
   }
 
   @if (isBlockVisible('centroCosto')) {
   <app-card className="labor-block">
-    <div class="labor-block-title">Centro de costo y estado inicial</div>
+    <div class="labor-block-head">
+      <h4>Centro de costo y estado inicial</h4>
+    </div>
     <div class="labor-grid labor-grid--footer">
       <div class="form-field">
         <div class="field-label-row">
@@ -652,4 +705,3 @@
   </app-card>
   }
 </section>
-

@@ -59,7 +59,7 @@
         <h4>Domicilio particular</h4>
         @if (domicilioAvanzado) {
           <p class="employee-block-lead">
-            La comuna es obligatoria en el alta avanzada para completar la ficha y liquidar remuneraciones.
+            La comuna es obligatoria para asociar correctamente la ubicación del colaborador.
           </p>
         }
       </div>
@@ -145,7 +145,7 @@
             [invalid]="hasError('idComuna')"
           ></app-search-select>
           @if (hasError('idComuna', 'required')) {
-            <p class="field-message">La comuna es obligatoria.</p>
+            <p class="field-message">Selecciona una comuna.</p>
           } @else if (!comunas.length) {
             <p class="field-message field-message--warning">
               No hay comunas cargadas desde Supabase.
@@ -163,7 +163,7 @@
             id="empleado-observaciones-direccion"
             rows="3"
             formControlName="observacionesDireccion"
-            placeholder="Ej: Torre B, acceso por recepción"
+            placeholder="Ej: referencia de domicilio, torre, block, sector u otra indicación."
             [class]="controlClass('observacionesDireccion') + ' employee-control--textarea'"
           ></textarea>
           @if (hasError('observacionesDireccion', 'maxlength')) {

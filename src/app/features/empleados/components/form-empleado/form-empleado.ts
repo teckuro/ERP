@@ -174,15 +174,15 @@ export class FormEmpleadoComponent implements OnInit {
   ] as const;
 
   readonly advancedWizardStepDescriptions: readonly string[] = [
-    'Completa la identificación, nombre, datos personales y contacto.',
-    'Registra el domicilio particular del empleado.',
-    'Define contrato, cargo, organización y centro de costo.',
-    'Configura jornada, sueldo base y datos remuneracionales.',
-    'Registra asignaciones y condiciones especiales si corresponden.',
-    'Configura previsión y salud según corresponda.',
+    'Registra la identidad legal, datos personales y contacto base del colaborador.',
+    'Registra la dirección particular del colaborador para mantener actualizada su información de contacto.',
+    'Define la relación laboral, fechas contractuales y ubicación organizacional del colaborador.',
+    'Define la jornada laboral, distribución de horario y remuneración base del colaborador.',
+    'Registra cargas familiares y condiciones especiales que pueden afectar remuneraciones.',
+    'Define el régimen previsional y la institución de salud del trabajador.',
     'Registra APVI solo si aplica.',
     'Define banco, cuenta y forma de pago.',
-    'Revisa la información antes de crear la ficha.',
+    'Revisa la información capturada antes de finalizar la creación de la ficha.',
   ] as const;
 
   /** Inventario de bloques por paso (manifest); referencia unica frente a templates de seccion. */
@@ -209,6 +209,7 @@ export class FormEmpleadoComponent implements OnInit {
     this.syncCompletedTabsFromValidity();
     this.activeWizardStep.set(index);
     this.markWizardStepVisited(index);
+    this.scrollToCurrentStepStart({ focusFirstField: true });
   }
 
   wizardStepShortLabel(stepIndex: number): string {
@@ -365,9 +366,9 @@ export class FormEmpleadoComponent implements OnInit {
     return this.isBasicMode() ? 'Guardar ficha básica' : 'Crear empleado activo';
   }
 
-  /** En alta avanzada el guardado va en el pie ("Finalizar alta"); el header solo debe permitir volver. */
+  /** Avanzada: guardado en el pie. Básica: Volver + Guardar en cabecera (modo-basico / sin duplicar pie). */
   headerVisibleActions(): readonly ('back' | 'save')[] {
-    return this.isAdvancedMode() ? (['back'] as const) : (['back', 'save'] as const);
+    return this.isBasicMode() ? (['back', 'save'] as const) : (['back'] as const);
   }
 
   /** Modal de exito: titulo (solo copia distinta en creacion basica). */
@@ -392,6 +393,7 @@ export class FormEmpleadoComponent implements OnInit {
       this.syncCompletedTabsFromValidity();
       this.activeWizardStep.set(prev);
       this.markWizardStepVisited(prev);
+      this.scrollToCurrentStepStart({ focusFirstField: true });
       return;
     }
     if (idx > 0) {
@@ -399,6 +401,7 @@ export class FormEmpleadoComponent implements OnInit {
       const previous = seq[idx - 1]!;
       this.activeWizardStep.set(previous);
       this.markWizardStepVisited(previous);
+      this.scrollToCurrentStepStart({ focusFirstField: true });
     }
   }
 
@@ -413,7 +416,7 @@ export class FormEmpleadoComponent implements OnInit {
         this.syncCompletedTabsFromValidity();
         this.activeWizardStep.set(next);
         this.markWizardStepVisited(next);
-        this.scrollToPageStart();
+        this.scrollToCurrentStepStart({ focusFirstField: true });
       }
       return;
     }
@@ -422,7 +425,7 @@ export class FormEmpleadoComponent implements OnInit {
       const next = seq[idx + 1]!;
       this.activeWizardStep.set(next);
       this.markWizardStepVisited(next);
-      this.scrollToPageStart();
+      this.scrollToCurrentStepStart({ focusFirstField: true });
     }
   }
 
@@ -641,7 +644,7 @@ export class FormEmpleadoComponent implements OnInit {
       case 'errores':
         return 'Con errores';
       case 'opcional':
-        return 'Pendiente';
+        return 'Opcional';
       case 'no-aplica':
         return 'No aplica';
     }
@@ -651,8 +654,29 @@ export class FormEmpleadoComponent implements OnInit {
     return this.advancedWizardLabels.map((label, stepIndex) => ({
       stepIndex,
       label,
-      kind: this.wizardStepUiKind(stepIndex),
+      kind: this.reviewStepUiKind(stepIndex),
     }));
+  }
+
+  reviewRowDescription(row: { stepIndex: number; kind: WizardStepUiKind }): string {
+    switch (row.kind) {
+      case 'errores':
+        return 'Corrige los datos obligatorios antes de finalizar.';
+      case 'pendiente':
+        return 'Faltan datos obligatorios o revisión de esta etapa.';
+      case 'opcional':
+        return 'Completa esta etapa solo si corresponde.';
+      case 'no-aplica':
+        return 'Esta etapa no corresponde para la configuración actual.';
+      default:
+        return '';
+    }
+  }
+
+  hasReviewBlockingStates(): boolean {
+    return this.advancedReviewRows().some((row) =>
+      ['pendiente', 'errores'].includes(row.kind),
+    );
   }
 
   identificacionResumen(): string {
@@ -664,7 +688,7 @@ export class FormEmpleadoComponent implements OnInit {
     if (pas) {
       return `Pasaporte ${pas}`;
     }
-    return 'Sin identificador';
+    return 'Sin información';
   }
 
   getGlobalValidationSummary(): GlobalValidationSummary {
@@ -681,7 +705,13 @@ export class FormEmpleadoComponent implements OnInit {
 
   wizardMapPendingCount(): number {
     return this.advancedWizardLabels.filter(
-      (_, index) => ['pendiente', 'opcional'].includes(this.wizardStepUiKind(index)),
+      (_, index) => this.wizardStepUiKind(index) === 'pendiente',
+    ).length;
+  }
+
+  wizardMapOptionalCount(): number {
+    return this.advancedWizardLabels.filter(
+      (_, index) => this.wizardStepUiKind(index) === 'opcional',
     ).length;
   }
 
@@ -700,6 +730,7 @@ export class FormEmpleadoComponent implements OnInit {
   wizardMapSummaryLabel(): string {
     const errors = this.wizardMapErrorCount();
     const pending = this.wizardMapPendingCount();
+    const optional = this.wizardMapOptionalCount();
     const notApplicable = this.wizardMapNotApplicableCount();
     const parts: string[] = [];
 
@@ -709,6 +740,10 @@ export class FormEmpleadoComponent implements OnInit {
 
     if (pending > 0) {
       parts.push(`${pending} ${pending === 1 ? 'paso pendiente' : 'pasos pendientes'}`);
+    }
+
+    if (optional > 0) {
+      parts.push(`${optional} ${optional === 1 ? 'paso opcional' : 'pasos opcionales'}`);
     }
 
     if (errors === 0 && notApplicable > 0) {
@@ -1549,7 +1584,7 @@ export class FormEmpleadoComponent implements OnInit {
       return fullName;
     }
 
-    return 'Nuevo empleado';
+    return 'Sin información';
   }
 
   rutVisible(): string {
@@ -1557,14 +1592,14 @@ export class FormEmpleadoComponent implements OnInit {
   }
 
   cargoVisible(): string {
-    return this.form.controls.contrato.controls.cargo.value.trim() || 'Sin cargo';
+    return this.form.controls.contrato.controls.cargo.value.trim() || 'Sin información';
   }
 
   sucursalVisible(): string {
     const selectedId = this.form.controls.contrato.controls.idSucursal.value;
     const sucursal = this.catalogos().sucursales.find((option) => option.value === selectedId);
 
-    return sucursal?.label || 'Sin sucursal';
+    return sucursal?.label || 'Sin información';
   }
 
   checklistStatusClass(kind: WizardStepUiKind): string {
@@ -1580,6 +1615,22 @@ export class FormEmpleadoComponent implements OnInit {
       default:
         return 'is-pending';
     }
+  }
+
+  private reviewStepUiKind(stepIndex: number): WizardStepUiKind {
+    const kind = this.wizardStepUiKind(stepIndex);
+    if (kind !== 'actual') {
+      return kind;
+    }
+
+    const summary = this.getWizardStepValidationSummary(stepIndex);
+    if (summary.blockingPending > 0 && this.attemptedSave()) {
+      return 'errores';
+    }
+    if (summary.blockingPending === 0 && summary.status === 'complete') {
+      return 'completo';
+    }
+    return 'pendiente';
   }
 
   private focusFirstInvalidControl(wizardStep: number = this.activeWizardStep()): void {
@@ -1656,6 +1707,36 @@ export class FormEmpleadoComponent implements OnInit {
 
       formStart.scrollIntoView({ behavior: 'smooth', block: 'start' });
     });
+  }
+
+  private scrollToCurrentStepStart(options: { focusFirstField: boolean }): void {
+    const run = (): void => {
+      const host = this.hostElement.nativeElement;
+      const stepHeader = host.querySelector<HTMLElement>('.advanced-step-header');
+      const stepPanel = host.querySelector<HTMLElement>('.advanced-wizard-step .step-panel');
+      const target = stepHeader ?? stepPanel ?? host.querySelector<HTMLElement>('.advanced-wizard-content');
+
+      if (!target) {
+        return;
+      }
+
+      // Mantener el cambio de paso estable: sube al inicio útil del paso.
+      target.scrollIntoView({ behavior: 'auto', block: 'start' });
+
+      // En desktop, opcionalmente enfocar el primer campo habilitado para dejar el cursor listo.
+      // En mobile/tablet evitamos enfocar para no abrir el teclado automáticamente.
+      if (!options.focusFirstField || window.matchMedia('(max-width: 1024px)').matches) {
+        return;
+      }
+
+      const firstField = stepPanel?.querySelector<HTMLElement>(
+        'input:not([type="hidden"]):not([disabled]), select:not([disabled]), textarea:not([disabled]), button:not([disabled]), [tabindex]:not([tabindex="-1"])',
+      );
+
+      firstField?.focus({ preventScroll: true });
+    };
+
+    requestAnimationFrame(() => requestAnimationFrame(run));
   }
 
   isTabInvalid(tabId: TabId): boolean {

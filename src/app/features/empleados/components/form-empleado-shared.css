@@ -253,11 +253,12 @@
 .employee-checkbox-row {
   display: inline-flex;
   width: fit-content;
+  min-width: 0;
   max-width: 100%;
   align-items: center;
   gap: 8px;
   box-sizing: border-box;
-  height: var(--erp-control-height, 22px);
+  height: auto;
   min-height: var(--erp-control-height, 22px);
   margin: 0;
   padding: 0 10px;
@@ -297,6 +298,7 @@
 
 .employee-checkbox-row span {
   min-width: 0;
+  overflow-wrap: anywhere;
 }
 
 /* Controles al ancho de la celda (grilla); altura token ui-form-guidelines.md */

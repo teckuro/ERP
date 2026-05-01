@@ -1,7 +1,7 @@
 @import '../../form-empleado-shared.css';
 
 :host .employee-block--domicilio-avanzado {
-  outline: 1px solid #e2e8f0;
+  outline: 0;
   outline-offset: 0;
 }
 
@@ -48,6 +48,7 @@
   width: 100%;
   max-width: none;
   grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px 14px;
   justify-content: start;
   align-content: start;
 }
@@ -67,14 +68,29 @@
 
 :host.employee-layout-advanced .employee-grid-adv-domicilio > .form-field:nth-child(4) {
   grid-column: span 2;
+  max-width: 28rem;
 }
 
 :host.employee-layout-advanced .employee-grid-adv-domicilio > .form-field:nth-child(5) {
   grid-column: 1 / -1;
 }
 
+:host.employee-layout-advanced .employee-grid-adv-domicilio > .form-field:nth-child(5) textarea {
+  height: 76px;
+  min-height: 72px;
+  resize: vertical;
+}
+
 :host.employee-layout-advanced .employee-section-shell--compact {
-  gap: 1.25rem;
+  gap: 10px;
+}
+
+:host.employee-layout-advanced .employee-block-head {
+  padding: 12px 14px 8px;
+}
+
+:host.employee-layout-advanced .employee-block > .employee-grid {
+  padding: 12px 14px 14px;
 }
 
 @media (max-width: 1024px) {
@@ -83,20 +99,20 @@
   }
 
   :host.employee-layout-advanced .employee-grid-adv-domicilio > .form-field:nth-child(1) {
-    grid-column: span 4;
+    grid-column: 1 / -1;
   }
 
   :host.employee-layout-advanced .employee-grid-adv-domicilio > .form-field:nth-child(2),
   :host.employee-layout-advanced .employee-grid-adv-domicilio > .form-field:nth-child(3) {
-    grid-column: span 2;
+    grid-column: span 1;
   }
 
   :host.employee-layout-advanced .employee-grid-adv-domicilio > .form-field:nth-child(4) {
-    grid-column: span 4;
+    grid-column: 1 / -1;
   }
 
   :host.employee-layout-advanced .employee-grid-adv-domicilio > .form-field:nth-child(5) {
-    grid-column: span 4;
+    grid-column: 1 / -1;
   }
 }
 
@@ -107,5 +123,9 @@
 
   :host.employee-layout-advanced .employee-grid-adv-domicilio > .form-field {
     grid-column: 1 / -1;
+  }
+
+  :host.employee-layout-advanced .employee-grid-adv-domicilio > .form-field:nth-child(5) textarea {
+    height: 72px;
   }
 }

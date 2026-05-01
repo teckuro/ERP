@@ -77,6 +77,36 @@ export class PrevisionSaludComponent {
     return this.esAfp && this.formGroup.controls.tieneApv.value;
   }
 
+  get regimenStatusLabel(): string {
+    if (this.esAfp) {
+      return 'Cotiza en AFP';
+    }
+    if (this.esIps) {
+      return 'Régimen IPS';
+    }
+    if (this.sinPrevision) {
+      return 'Sin régimen previsional';
+    }
+    return 'Pendiente';
+  }
+
+  get apviImpactLabel(): string {
+    if (this.esAfp && this.formGroup.controls.tieneApv.value) {
+      return 'APVI habilitado';
+    }
+    if (this.esAfp) {
+      return 'APVI opcional';
+    }
+    return 'APVI no aplica';
+  }
+
+  get apviDestinationLabel(): string {
+    if (this.esAfp && this.formGroup.controls.tieneApv.value) {
+      return 'APVI';
+    }
+    return 'Bancario';
+  }
+
   get regimenesExCajaFiltrados(): RegimenExCajaCatalogOption[] {
     const exCajaId = this.formGroup.controls.idExCajaPrevisional.value;
     return this.regimenesExCaja.filter((option) => option.idExCajaPrevisional === exCajaId);
