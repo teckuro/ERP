@@ -55,20 +55,45 @@
             <lucide-icon class="file-toolbar-icon" [img]="arrowLeftIcon"></lucide-icon>
             Volver
           </a>
-          @if (employee.aptoParaRemuneraciones) {
+          @if (canEditCurrentTab()) {
             <button
               type="button"
               class="file-toolbar-button file-toolbar-button--primary erp-toolbar-button file-sheet-action file-sheet-action--primary"
               (click)="startEditing()"
             >
               <lucide-icon class="file-toolbar-icon" [img]="editIcon"></lucide-icon>
-              {{ primaryActionLabel(employee) }}
+              {{ primaryActionEvaluadaLabel(employee) }}
             </button>
           }
         </div>
       </div>
 
-        <div class="file-body">
+      <section class="file-state-overview" aria-label="Estado operativo de la ficha">
+        <div class="file-state-overview__main">
+          <p class="file-state-overview__title">{{ estadoFichaVisualLabel(employee) }}</p>
+          <p class="file-state-overview__readiness">{{ payrollReadinessEvaluadoLabel(employee) }}</p>
+        </div>
+        <div class="file-state-overview__pending">
+          <span>{{ pendingSummary(employee) }}</span>
+          @if (evaluacionEmpleado(employee).bloqueos.length > 0) {
+            <ul>
+              @for (pending of pendingItemsEvaluados(employee).slice(0, 3); track pending) {
+                <li>{{ pending }}</li>
+              }
+            </ul>
+          }
+        </div>
+        <button
+          type="button"
+          class="erp-btn-outline file-state-overview__action"
+          [class.erp-btn-emphasis]="!evaluacionEmpleado(employee).aptoParaRemuneraciones"
+          (click)="selectRecommendedTab(employee)"
+        >
+          {{ primaryActionEvaluadaLabel(employee) }}
+        </button>
+      </section>
+
+      <div class="file-body">
         <div class="file-body-main">
           <div class="file-tabs-wrap">
             <section class="file-tabs file-tabs--erp" aria-label="Secciones de la ficha">
@@ -304,7 +329,7 @@
                 </li>
                 <li>
                   <span class="file-status-card__kv-k">Remuneraciones:</span>
-                  <span>{{ payrollReadinessLabel(employee) }}</span>
+                  <span>{{ payrollReadinessEvaluadoLabel(employee) }}</span>
                 </li>
               </ul>
             </div>
@@ -312,7 +337,7 @@
             <div class="file-status-card__section">
               <p class="file-status-card__label">Faltantes críticos</p>
               <ul class="file-status-card__missing-list">
-                @for (pending of pendingItems(employee); track pending) {
+                @for (pending of pendingItemsEvaluados(employee); track pending) {
                   <li>{{ pending }}</li>
                 }
               </ul>
@@ -332,7 +357,7 @@
                   [class.erp-btn-emphasis]="!employee.aptoParaRemuneraciones"
                   (click)="selectRecommendedTab(employee)"
                 >
-                  {{ nextStepLabel(employee) }}
+                  {{ primaryActionEvaluadaLabel(employee) }}
                 </button>
                 <button type="button" class="erp-btn-outline file-status-quick" (click)="startEditing()">
                   Editar sección actual

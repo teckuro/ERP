@@ -36,6 +36,10 @@ import { EmpleadosCatalogosService } from '../../services/empleados-catalogos.se
 import { EmpleadosFormOrchestratorService } from '../../services/empleados-form-orchestrator.service';
 import { EmpleadosService } from '../../services/empleados.service';
 import {
+  EvaluacionCompletitudEmpleado,
+  evaluarCompletitudYAptitudEmpleado,
+} from '../../utils/empleado-completitud.rules';
+import {
   DataGridColumn,
   DataGridComponent,
 } from '../../../../shared/components/ui/data-grid.component';
@@ -352,14 +356,19 @@ export class FichaEmpleadoContainer implements OnInit {
   }
 
   completionValue(empleado: EmpleadoListado): number {
-    switch (empleado.estadoFicha) {
-      case 'VALIDO':
-        return 100;
-      case 'BORRADOR':
-        return 24;
-      case 'INCOMPLETO':
-        return empleado.aptoParaRemuneraciones ? 88 : 68;
+    const evaluacion = this.evaluacionEmpleado(empleado);
+
+    if (empleado.pasoAltaAvanzada !== null || empleado.estadoFicha === 'BORRADOR') {
+      return 24;
     }
+
+    if (evaluacion.aptoParaRemuneraciones) {
+      return 100;
+    }
+
+    const bloquesBase = 5;
+    const pendientes = new Set(evaluacion.seccionesPendientes.map((item) => this.tabFromSection(item)));
+    return Math.max(20, Math.round(((bloquesBase - pendientes.size) / bloquesBase) * 100));
   }
 
   pendingItems(empleado: EmpleadoListado): string[] {
@@ -407,23 +416,19 @@ export class FichaEmpleadoContainer implements OnInit {
   }
 
   tabStatus(tabId: EmployeeFileTab, empleado: EmpleadoListado): EmployeeFileTabStatus {
-    if (empleado.estadoFicha === 'VALIDO') {
+    const evaluacion = this.evaluacionEmpleado(empleado);
+
+    if (evaluacion.aptoParaRemuneraciones) {
       return 'complete';
     }
 
-    switch (tabId) {
-      case 'general':
-      case 'laboral':
-        return 'complete';
-      case 'remuneracion':
-      case 'prevision':
-        return 'warning';
-      case 'pago':
-        return 'blocking';
-      case 'documentos':
-      case 'historial':
-        return 'pending';
+    if (evaluacion.seccionesPendientes.some((section) => this.tabFromSection(section) === tabId)) {
+      return tabId === 'pago' || tabId === 'remuneracion' || tabId === 'prevision'
+        ? 'blocking'
+        : 'warning';
     }
+
+    return tabId === 'documentos' || tabId === 'historial' ? 'pending' : 'complete';
   }
 
   tabStatusLabel(tabId: EmployeeFileTab, empleado: EmpleadoListado): string {
@@ -444,13 +449,81 @@ export class FichaEmpleadoContainer implements OnInit {
   }
 
   selectRecommendedTab(empleado: EmpleadoListado): void {
-    this.selectTab(empleado.estado === 'activo' ? 'general' : 'pago');
+    const firstPending = this.evaluacionEmpleado(empleado).seccionesPendientes[0];
+    this.selectTab(firstPending ? this.tabFromSection(firstPending) : 'general');
   }
 
   impactMessage(empleado: EmpleadoListado): string {
-    return empleado.aptoParaRemuneraciones
-      ? 'El colaborador puede operar en procesos administrativos y de remuneraciones.'
-      : 'No se puede generar liquidación mientras falten datos de pago y validación previsional.';
+    const evaluacion = this.evaluacionEmpleado(empleado);
+
+    if (evaluacion.aptoParaRemuneraciones) {
+      return 'Ficha apta para procesos de remuneraciones.';
+    }
+
+    return `No apta para remuneraciones: ${evaluacion.bloqueos.length} pendiente(s) por completar.`;
+  }
+
+  evaluacionEmpleado(empleado: EmpleadoListado): EvaluacionCompletitudEmpleado {
+    return evaluarCompletitudYAptitudEmpleado({
+      payload: this.mapFichaEmpleadoToEvaluacionInput(empleado),
+      pasoAltaAvanzada: empleado.pasoAltaAvanzada,
+    });
+  }
+
+  estadoFichaVisualLabel(empleado: EmpleadoListado): string {
+    const evaluacion = this.evaluacionEmpleado(empleado);
+
+    if (empleado.pasoAltaAvanzada !== null || empleado.estadoFicha === 'BORRADOR') {
+      return 'Borrador';
+    }
+
+    if (evaluacion.aptoParaRemuneraciones) {
+      return 'Ficha completa';
+    }
+
+    if (empleado.estado === 'activo') {
+      return 'Con pendientes';
+    }
+
+    return 'En proceso';
+  }
+
+  payrollReadinessEvaluadoLabel(empleado: EmpleadoListado): string {
+    return this.evaluacionEmpleado(empleado).aptoParaRemuneraciones
+      ? 'Apta para remuneraciones'
+      : 'No apta para remuneraciones';
+  }
+
+  pendingItemsEvaluados(empleado: EmpleadoListado): string[] {
+    const evaluacion = this.evaluacionEmpleado(empleado);
+
+    if (evaluacion.bloqueos.length === 0) {
+      return ['Sin pendientes bloqueantes.'];
+    }
+
+    return evaluacion.bloqueos.slice(0, 5).map((bloqueo) => this.humanPendingText(bloqueo));
+  }
+
+  pendingSummary(empleado: EmpleadoListado): string {
+    const total = this.evaluacionEmpleado(empleado).bloqueos.length;
+
+    if (total === 0) {
+      return 'Sin pendientes bloqueantes.';
+    }
+
+    return total > 5 ? `${total} pendientes por completar.` : 'Pendiente:';
+  }
+
+  primaryActionEvaluadaLabel(empleado: EmpleadoListado): string {
+    if (empleado.pasoAltaAvanzada !== null) {
+      return 'Continuar alta';
+    }
+
+    if (this.evaluacionEmpleado(empleado).aptoParaRemuneraciones) {
+      return 'Ver datos / Editar ficha';
+    }
+
+    return empleado.estado === 'activo' ? 'Revisar pendientes' : 'Completar ficha';
   }
 
   activeTabLabel(): string {
@@ -525,7 +598,7 @@ export class FichaEmpleadoContainer implements OnInit {
             label: 'Centro de costo',
             value: this.catalogText(contrato.idCentroCosto, 'centrosCosto'),
           },
-          { label: 'Cargo', value: this.emptyText(contrato.cargo) },
+          { label: 'Cargo', value: this.cargoText(contrato.cargo) },
           { label: 'Estado de ficha inicial', value: this.statusLabel(contrato.estado) },
         ];
       case 'remuneracion':
@@ -533,7 +606,7 @@ export class FichaEmpleadoContainer implements OnInit {
           this.detailSection('Remuneración'),
           { label: 'Hrs. semanales', value: this.numberText(contrato.horasSemanales) },
           { label: 'Días semanales', value: this.numberText(contrato.diasSemanales) },
-          { label: 'Sueldo base mensual', value: this.moneyText(contrato.sueldoBase) },
+          { label: 'Sueldo base mensual', value: this.moneyRequiredText(contrato.sueldoBase) },
           { label: 'Moneda sueldo', value: this.catalogText(contrato.idMoneda, 'monedas') },
           {
             label: 'Gratificación',
@@ -575,12 +648,12 @@ export class FichaEmpleadoContainer implements OnInit {
       case 'pago':
         return [
           this.detailSection('Cuenta de abono'),
-          { label: 'Banco', value: this.catalogText(bancario.idBanco, 'bancos') },
+          { label: 'Banco', value: this.bankText(bancario.idBanco) },
           {
             label: 'Tipo de cuenta',
-            value: this.catalogText(bancario.idTipoCuentaBancaria, 'tiposCuentaBancaria'),
+            value: this.accountTypeText(bancario.idTipoCuentaBancaria),
           },
-          { label: 'Número de cuenta', value: this.emptyText(bancario.numeroCuenta) },
+          { label: 'Número de cuenta', value: this.accountNumberText(bancario.numeroCuenta) },
           {
             label: 'Estado pago',
             value: empleado.estado === 'activo' ? 'Operativo' : 'Por completar',
@@ -775,6 +848,42 @@ export class FichaEmpleadoContainer implements OnInit {
       : 'Sin información';
   }
 
+  private moneyRequiredText(value: number | null | undefined): string {
+    return typeof value === 'number' && Number.isFinite(value) && value > 0
+      ? this.moneyText(value)
+      : 'Sueldo base pendiente';
+  }
+
+  private cargoText(value: string | null | undefined): string {
+    const normalized = String(value ?? '').trim();
+
+    if (!normalized || this.normalizeText(normalized) === 'sin cargo') {
+      return 'Cargo pendiente';
+    }
+
+    return normalized;
+  }
+
+  private bankText(value: number | null): string {
+    return value && value > 0 ? this.catalogText(value, 'bancos') : 'Datos bancarios pendientes';
+  }
+
+  private accountTypeText(value: number | null): string {
+    return value && value > 0
+      ? this.catalogText(value, 'tiposCuentaBancaria')
+      : 'Datos bancarios pendientes';
+  }
+
+  private accountNumberText(value: string | null | undefined): string {
+    const normalized = String(value ?? '').trim();
+
+    if (!normalized || normalized.toUpperCase().startsWith('DRAFT-')) {
+      return 'Cuenta bancaria pendiente';
+    }
+
+    return normalized;
+  }
+
   private dateText(value: string | null | undefined): string {
     if (!value) {
       return 'Sin información';
@@ -940,6 +1049,80 @@ export class FichaEmpleadoContainer implements OnInit {
   isMissingValue(value: string): boolean {
     const normalized = value.trim().toLowerCase();
     return normalized === 'sin información' || normalized === 'sin informacion';
+  }
+
+  private mapFichaEmpleadoToEvaluacionInput(empleado: EmpleadoListado): CrearEmpleadoPayload {
+    return {
+      ...this.buildPayloadForSave(),
+      estado: empleado.estado,
+    };
+  }
+
+  private humanPendingText(bloqueo: string): string {
+    const normalized = this.normalizeText(bloqueo);
+
+    if (normalized.includes('alta avanzada')) {
+      return 'Continuar alta avanzada.';
+    }
+    if (normalized.includes('rut')) {
+      return 'RUT valido.';
+    }
+    if (normalized.includes('nombres') || normalized.includes('apellido') || normalized.includes('pais')) {
+      return 'Datos personales completos.';
+    }
+    if (normalized.includes('contrato') || normalized.includes('fecha de ingreso')) {
+      return 'Contrato activo.';
+    }
+    if (normalized.includes('cargo')) {
+      return 'Cargo pendiente.';
+    }
+    if (normalized.includes('jornada') || normalized.includes('trabajador')) {
+      return 'Jornada laboral valida.';
+    }
+    if (normalized.includes('remuneracion') || normalized.includes('sueldo')) {
+      return 'Sueldo base valido.';
+    }
+    if (normalized.includes('previsional') || normalized.includes('afp') || normalized.includes('salud')) {
+      return 'Prevision y salud.';
+    }
+    if (normalized.includes('apvi')) {
+      return 'APVI completo.';
+    }
+    if (normalized.includes('banco') || normalized.includes('cuenta bancaria') || normalized.includes('cuenta real')) {
+      return 'Cuenta bancaria real.';
+    }
+
+    return bloqueo;
+  }
+
+  private tabFromSection(section: string): EmployeeFileTab {
+    const normalized = this.normalizeText(section);
+
+    if (normalized.includes('identidad') || normalized.includes('alta basica')) {
+      return 'general';
+    }
+    if (normalized.includes('contrato') || normalized.includes('jornada') || normalized.includes('estado')) {
+      return 'laboral';
+    }
+    if (normalized.includes('remuneracion')) {
+      return 'remuneracion';
+    }
+    if (normalized.includes('prevision') || normalized.includes('salud') || normalized.includes('apvi')) {
+      return 'prevision';
+    }
+    if (normalized.includes('pago')) {
+      return 'pago';
+    }
+
+    return 'general';
+  }
+
+  private normalizeText(value: string): string {
+    return value
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase()
+      .trim();
   }
 
   private patchFormFromEmployee(employee: EmpleadoFichaDetalle): void {

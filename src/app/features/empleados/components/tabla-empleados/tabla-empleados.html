@@ -123,22 +123,22 @@
   <ng-template appDataGridCell="estado" let-empleado>
     <span
       class="status-badge"
-      [ngClass]="estadoBadgeClass(empleado.estado)"
-      [title]="labelEstado(empleado.estado)"
+      [ngClass]="estadoVisualBadgeClass(empleado)"
+      [title]="labelEstadoVisual(empleado)"
     >
       <span class="status-badge__dot" aria-hidden="true"></span>
-      {{ labelEstado(empleado.estado) }}
+      {{ labelEstadoVisual(empleado) }}
     </span>
   </ng-template>
 
   <ng-template appDataGridCell="avance" let-empleado>
-    <div class="completion-cell" [title]="pendingLabel(empleado.estado)">
+    <div class="completion-cell" [title]="pendingLabel(empleado)">
       <div class="completion-head">
-        <span>{{ completionValue(empleado.estado) }}%</span>
-        <small>{{ pendingLabel(empleado.estado) }}</small>
+        <span>{{ completionValue(empleado) }}%</span>
+        <small>{{ pendingLabel(empleado) }}</small>
       </div>
       <div class="completion-track" aria-hidden="true">
-        <span [style.width.%]="completionValue(empleado.estado)"></span>
+        <span [style.width.%]="completionValue(empleado)"></span>
       </div>
     </div>
   </ng-template>
@@ -175,7 +175,7 @@
           <div class="border-b border-neutral-100 bg-neutral-50 px-3 py-2.5">
             <p class="text-xs font-semibold text-neutral-900">{{ rowPrimaryActionLabel(empleado) }}</p>
             <p class="mt-0.5 text-[0.7rem] font-medium text-neutral-500">
-              {{ labelEstado(empleado.estado) }} - {{ completionValue(empleado.estado) }}% completitud
+              {{ labelEstadoVisual(empleado) }} - {{ pendingLabel(empleado) }}
             </p>
           </div>
           <div class="p-1.5">

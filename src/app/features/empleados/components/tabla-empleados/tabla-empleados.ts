@@ -407,6 +407,26 @@ export class TablaEmpleadosComponent {
     }
   }
 
+  estadoVisualBadgeClass(empleado: EmpleadoListado): string {
+    if (empleado.pasoAltaAvanzada !== null) {
+      return this.estadoBadgeClass('borrador');
+    }
+
+    if (this.isEstadoOperativoCerrado(empleado.estado)) {
+      return this.estadoBadgeClass(empleado.estado);
+    }
+
+    if (empleado.estado === 'activo' && !empleado.aptoParaRemuneraciones) {
+      return 'border-yellow-200 bg-yellow-100 text-yellow-700';
+    }
+
+    if (empleado.estadoFicha === 'INCOMPLETO') {
+      return this.estadoBadgeClass('en_proceso');
+    }
+
+    return this.estadoBadgeClass(empleado.estado);
+  }
+
   primaryActionLink(empleado: EmpleadoListado): (string | number)[] {
     if (empleado.pasoAltaAvanzada !== null) {
       return ['/empleados', 'nuevo'];
@@ -425,41 +445,84 @@ export class TablaEmpleadosComponent {
     if (empleado.pasoAltaAvanzada !== null) {
       return 'Continuar alta';
     }
-    switch (empleado.estado) {
-      case 'borrador':
-      case 'en_proceso':
-        return 'Completar ficha';
-      default:
-        return 'Ver ficha';
+
+    if (this.isEstadoOperativoCerrado(empleado.estado)) {
+      return 'Ver ficha';
     }
+
+    if (empleado.estado === 'activo' && !empleado.aptoParaRemuneraciones) {
+      return 'Revisar pendientes';
+    }
+
+    if (empleado.estadoFicha === 'INCOMPLETO') {
+      return 'Completar ficha';
+    }
+
+    return 'Ver ficha';
   }
 
-  completionValue(estado: EmpleadoEstado): number {
-    switch (estado) {
-      case 'borrador':
-      case 'en_proceso':
-        return 68;
-      case 'activo':
-        return 100;
-      case 'suspendido':
-        return 92;
-      case 'inactivo':
-      case 'desvinculado':
-      case 'bloqueado':
-        return 100;
+  completionValue(empleado: EmpleadoListado): number {
+    if (empleado.pasoAltaAvanzada !== null) {
+      return 24;
     }
+
+    if (empleado.estadoFicha === 'VALIDO' && empleado.aptoParaRemuneraciones) {
+      return 100;
+    }
+
+    if (empleado.estado === 'activo' && !empleado.aptoParaRemuneraciones) {
+      return 88;
+    }
+
+    if (this.isEstadoOperativoCerrado(empleado.estado)) {
+      return 100;
+    }
+
+    return 68;
   }
 
-  pendingLabel(estado: EmpleadoEstado): string {
-    switch (estado) {
-      case 'borrador':
-      case 'en_proceso':
-        return 'Datos por cerrar';
-      case 'activo':
-        return 'Ficha completa';
-      default:
-        return 'Revisar estado';
+  pendingLabel(empleado: EmpleadoListado): string {
+    if (empleado.pasoAltaAvanzada !== null) {
+      return 'Alta pendiente';
     }
+
+    if (empleado.estadoFicha === 'VALIDO' && empleado.aptoParaRemuneraciones) {
+      return 'Apto';
+    }
+
+    if (empleado.estado === 'activo' && !empleado.aptoParaRemuneraciones) {
+      return 'No apto';
+    }
+
+    if (empleado.estadoFicha === 'INCOMPLETO') {
+      return 'Ficha pendiente';
+    }
+
+    return 'Ver ficha';
+  }
+
+  labelEstadoVisual(empleado: EmpleadoListado): string {
+    if (empleado.pasoAltaAvanzada !== null) {
+      return 'Borrador';
+    }
+
+    if (this.isEstadoOperativoCerrado(empleado.estado)) {
+      return this.labelEstado(empleado.estado);
+    }
+
+    if (empleado.estado === 'activo' && !empleado.aptoParaRemuneraciones) {
+      return 'Activo / No apto';
+    }
+
+    if (empleado.estadoFicha === 'INCOMPLETO') {
+      return 'En proceso';
+    }
+
+    if (empleado.estadoFicha === 'VALIDO' && empleado.aptoParaRemuneraciones) {
+      return 'Activo / Apto';
+    }
+
+    return this.labelEstado(empleado.estado);
   }
 
   labelEstado(estado: EmpleadoEstado): string {
@@ -528,5 +591,9 @@ export class TablaEmpleadosComponent {
       .replace(/[\u0300-\u036f]/g, '')
       .toLowerCase()
       .trim();
+  }
+
+  private isEstadoOperativoCerrado(estado: EmpleadoEstado): boolean {
+    return ['suspendido', 'inactivo', 'desvinculado', 'bloqueado'].includes(estado);
   }
 }

@@ -49,9 +49,53 @@ describe('TablaEmpleadosComponent', () => {
   });
 
   it('sin paso avanzado: accion primaria va a ficha del empleado', () => {
-    const e = fila({ id: 7, pasoAltaAvanzada: null, estado: 'activo' });
+    const e = fila({
+      id: 7,
+      pasoAltaAvanzada: null,
+      estado: 'activo',
+      estadoFicha: 'VALIDO',
+      aptoParaRemuneraciones: true,
+    });
     expect(component.primaryActionLink(e)).toEqual(['/empleados', 7]);
     expect(component.primaryActionQueryParams(e)).toEqual({});
     expect(component.rowPrimaryActionLabel(e)).toBe('Ver ficha');
+  });
+
+  it('En proceso muestra Completar ficha sin paso avanzado', () => {
+    const e = fila({
+      estado: 'en_proceso',
+      estadoFicha: 'INCOMPLETO',
+      aptoParaRemuneraciones: false,
+      pasoAltaAvanzada: null,
+    });
+
+    expect(component.labelEstadoVisual(e)).toBe('En proceso');
+    expect(component.rowPrimaryActionLabel(e)).toBe('Completar ficha');
+    expect(component.primaryActionLink(e)).toEqual(['/empleados', 1]);
+  });
+
+  it('Apto muestra Ver ficha y estado Activo / Apto', () => {
+    const e = fila({
+      estado: 'activo',
+      estadoFicha: 'VALIDO',
+      aptoParaRemuneraciones: true,
+      pasoAltaAvanzada: null,
+    });
+
+    expect(component.labelEstadoVisual(e)).toBe('Activo / Apto');
+    expect(component.rowPrimaryActionLabel(e)).toBe('Ver ficha');
+  });
+
+  it('Activo no apto muestra Revisar pendientes', () => {
+    const e = fila({
+      estado: 'activo',
+      estadoFicha: 'INCOMPLETO',
+      aptoParaRemuneraciones: false,
+      pasoAltaAvanzada: null,
+    });
+
+    expect(component.labelEstadoVisual(e)).toBe('Activo / No apto');
+    expect(component.rowPrimaryActionLabel(e)).toBe('Revisar pendientes');
+    expect(component.pendingLabel(e)).toBe('No apto');
   });
 });

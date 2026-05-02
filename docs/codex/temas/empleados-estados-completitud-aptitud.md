@@ -371,3 +371,70 @@ seleccion real del usuario. Por eso:
 
 Estas brechas deben cerrarse con metadata explicita si el negocio necesita
 auditoria estricta de defaults.
+
+## 18. Uso en Listado empleados
+
+El listado debe leer la accion principal desde los campos persistidos de negocio
+ya disponibles en la fila:
+
+- `pasoAltaAvanzada !== null` muestra `Borrador` y accion `Continuar alta`;
+- sin paso avanzado y `estadoFicha = INCOMPLETO` muestra `En proceso` y accion
+  `Completar ficha`;
+- `estadoFicha = VALIDO` y `aptoParaRemuneraciones = true` muestra
+  `Activo / Apto` y accion `Ver ficha`;
+- `estado = activo` con `aptoParaRemuneraciones = false` muestra
+  `Activo / No apto` y accion `Revisar pendientes`;
+- estados operativos `SUSPENDIDO`, `INACTIVO`, `DESVINCULADO` y `BLOQUEADO`
+  mantienen accion `Ver ficha`.
+
+El listado no recalcula aptitud completa porque no transporta todos los bloques
+de la ficha. Usa el resultado persistido y la prioridad oficial de
+`pasoAltaAvanzada`.
+
+## 19. Uso en Ficha empleado
+
+La ficha usa el helper central:
+
+```ts
+evaluarCompletitudYAptitudEmpleado({
+  payload: mapFichaEmpleadoToEvaluacionInput(empleado),
+  pasoAltaAvanzada: empleado.pasoAltaAvanzada,
+})
+```
+
+La funcion `mapFichaEmpleadoToEvaluacionInput` adapta el formulario cargado en la
+ficha al shape `CrearEmpleadoPayload` que espera el helper. La ficha usa la
+salida para:
+
+- estado visual de ficha;
+- aptitud para remuneraciones;
+- bloqueos principales;
+- defaults tecnicos detectados como pendientes;
+- secciones pendientes y estado de tabs.
+
+No se crea un helper paralelo de aptitud.
+
+## 20. Panel de estado en Ficha
+
+La Ficha empleado muestra un panel superior compacto con:
+
+- estado de ficha (`Borrador`, `En proceso`, `Con pendientes`,
+  `Ficha completa`);
+- aptitud (`Apta para remuneraciones` / `No apta para remuneraciones`);
+- maximo tres pendientes principales en la lectura superior;
+- accion siguiente (`Completar ficha`, `Revisar pendientes`,
+  `Ver datos / Editar ficha`).
+
+El panel lateral conserva el detalle, pero limita los faltantes a los principales
+para evitar listas gigantes. Si existen defaults tecnicos, se traducen a textos
+operativos, por ejemplo:
+
+- `DRAFT-*` como `Cuenta bancaria pendiente`;
+- `Sin cargo` como `Cargo pendiente`;
+- sueldo base `0` como `Sueldo base pendiente`;
+- banco o tipo de cuenta sin valor real como `Datos bancarios pendientes`.
+
+La accion explicita `Validar para remuneraciones` desde ficha no queda
+implementada en esta fase. La ficha solo muestra si ya esta lista o que falta;
+no activa automaticamente ni cambia aptitud como efecto lateral de visualizar o
+editar parcialmente.
