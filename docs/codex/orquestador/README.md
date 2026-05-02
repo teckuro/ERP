@@ -4,7 +4,7 @@
 
 Conjunto de documentos **globales y breves** para que Codex, Cursor, ChatGPT u otros agentes obtengan **rápidamente** el estado del ERP (visión, fases, módulos tocables o congelados) **antes** de planificar o implementar una nueva fase.
 
-**No sustituye** los contratos por tema en [`docs/codex/temas/`](../temas/README.md): es un **mapa e índice operativo**. El detalle normativo, de UI y de implementación sigue en cada tema y en [`AGENTS.md`](../AGENTS.md).
+**No sustituye** los contratos por módulo en [`../modulos/`](../modulos/empleados/README.md): es un **mapa e índice operativo**. El detalle normativo y de flujo por pantalla está en cada **`modulos/<módulo>/*.md`**.
 
 ## Cuándo leerla
 
@@ -16,23 +16,26 @@ Conjunto de documentos **globales y breves** para que Codex, Cursor, ChatGPT u o
 
 1. [`contexto-proyecto.md`](./contexto-proyecto.md) — mapa global del producto, stack, UI, módulos y camino oficial.
 2. [`estado-fases.md`](./estado-fases.md) — tablero de fases, siguiente paso y criterios para avanzar.
-3. [`../AGENTS.md`](../AGENTS.md) — contrato del agente (stack, layout, anti‑patrones, checklist).
-4. [`../README.md`](../README.md) — índice padre y enlaces por tema.
-5. **Documento específico** del módulo o fase (p. ej. empleados, parámetros, Python) según el trabajo.
+3. [`mapa-documentacion.md`](./mapa-documentacion.md) — lista de documentos globales, por módulo, vigentes en `temas/`, stubs y archivo.
+4. [`../AGENTS.md`](../AGENTS.md) — contrato del agente (stack, layout, anti‑patrones, checklist).
+5. [`../README.md`](../README.md) — índice padre y jerarquía.
+6. **[`../modulos/<módulo>/README.md`](../modulos/empleados/README.md)** y luego el **documento del subflujo** que corresponda.
 
-Siempre debe quedar claro: primero **contexto + fases**, después **contrato**, después **tema**. El índice por **módulo y flujos de pantalla** está en [`../temas/README.md`](../temas/README.md) y [`../temas/flujos/README.md`](../temas/flujos/README.md).
+Siempre debe quedar claro: primero **contexto + fases + mapa**, después **contrato (`AGENTS` + UI)**, después **módulo**, después **pantalla**. Los recorridos por ruta siguen en [`../temas/flujos/README.md`](../temas/flujos/README.md).
 
-## Relación con `docs/codex/temas`
+## Relación con `docs/codex/modulos` y `docs/codex/temas`
 
 | Carpeta / doc | Rol |
 |-----------------|-----|
 | `orquestador/` | Contexto global, orden del producto, qué no construir aún. |
-| `temas/` | Contratos y guías **por dominio** (empleados, parámetros, reforma, etc.). |
+| `modulos/` | Contratos y guías **por módulo y subflujo** (fuente vigente para empleados, parámetros, etc.). |
+| `temas/` | Flujos por app, UI transversal, menú; **stubs** hacia `modulos/` donde aplica; ver [`../temas/README.md`](../temas/README.md). |
 
-Si hay conflicto entre un resumen del orquestador y un tema detallado, **gana el documento del tema** (y `AGENTS.md` según jerarquía del README padre).
+Si hay conflicto entre un resumen del orquestador y un documento de `modulos/`, **gana el documento del módulo** (y `AGENTS.md` según jerarquía del README padre).
 
 ## Regla para futuras fases
 
 1. Actualizar [`estado-fases.md`](./estado-fases.md) al **cerrar** o **abrir** una fase (estado, enlace a doc de cierre si existe).
 2. Ajustar [`contexto-proyecto.md`](./contexto-proyecto.md) solo si cambia visión global, módulos en juego o reglas transversales.
-3. No convertir estos archivos en **bitácora larga**: los detalles van a `temas/`, `peticiones-estilos.md` o bitácoras puntuales.
+3. Actualizar [`mapa-documentacion.md`](./mapa-documentacion.md) si cambia el inventario de fuentes o stubs.
+4. No convertir estos archivos en **bitácora larga**: los detalles van a `modulos/`, `peticiones-estilos.md` o bitácoras puntuales.

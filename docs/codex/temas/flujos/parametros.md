@@ -15,20 +15,23 @@ Gestionar **parámetros legales y operativos** del período de remuneración act
 3. Cambiar de **tab** y **subtab** según el tema (valores, remuneraciones, tramos, salud, previsión, etc.).
 4. Cargar o editar datos respetando la distinción período vs vigencia vs catálogo global.
 
-## Documentación relacionada
+## Documentación relacionada (módulo)
 
 | Tema | Documento |
 |------|-------------|
-| Estándar visual del módulo | [`../parametros-ui-estandar.md`](../parametros-ui-estandar.md) |
-| Período, vigencia y catálogo | [`../parametros-vigencia-y-periodo.md`](../parametros-vigencia-y-periodo.md) |
-| Campos y listas | [`../parametros-generales-campos-y-listas.md`](../parametros-generales-campos-y-listas.md) |
-| Reforma / gradualidad (8,5 %) | [`../reforma-pensiones-gradualidad.md`](../reforma-pensiones-gradualidad.md) |
-| Python y carga mensual | [`../python-parametros-carga-mensual.md`](../python-parametros-carga-mensual.md) |
-| Sync v6.11 | [`../sync-parametros-v611.md`](../sync-parametros-v611.md) |
-| Permisos / ejemplo SQL | [`../parametros-permisos-bd-ejemplo.sql`](../parametros-permisos-bd-ejemplo.sql) |
+| Punto de entrada | [`../modulos/parametros/README.md`](../modulos/parametros/README.md) |
+| Contrato resumen | [`../modulos/parametros/contrato-general.md`](../modulos/parametros/contrato-general.md) |
+| Estándar visual del módulo | [`../modulos/parametros/ui-parametros.md`](../modulos/parametros/ui-parametros.md) |
+| Período, vigencia y catálogo | [`../modulos/parametros/periodo-vigencia-catalogo.md`](../modulos/parametros/periodo-vigencia-catalogo.md) |
+| Campos y listas | [`../modulos/parametros/campos-y-listas.md`](../modulos/parametros/campos-y-listas.md) |
+| Reforma / gradualidad (8,5 %) | [`../modulos/parametros/reforma-gradualidad.md`](../modulos/parametros/reforma-gradualidad.md) |
+| Python y carga mensual | [`../modulos/parametros/python-carga-mensual.md`](../modulos/parametros/python-carga-mensual.md) |
+| Sync v6.11 | [`../modulos/parametros/sync-parametros-v611.md`](../modulos/parametros/sync-parametros-v611.md) |
+| Permisos / ejemplo SQL | [`../modulos/parametros/permisos-bd-ejemplo.sql`](../modulos/parametros/permisos-bd-ejemplo.sql) |
+| Tests | [`../modulos/parametros/tests-parametros.md`](../modulos/parametros/tests-parametros.md) |
 | Tablas y DataGrid | [`../../ui-tables.md`](../../ui-tables.md) |
 
 ## Pruebas
 
-- Capturas por pestaña (generación de PNG): `tests/parametros-tabs.screenshots.spec.ts`.
+- Capturas por pestaña: `tests/parametros-tabs.screenshots.spec.ts`.
 - Snapshot de listado de rutas: `tests/dashboard.spec.ts` (`parametros`).

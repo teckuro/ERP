@@ -42,21 +42,23 @@ Orden de trabajo en pantalla:
 3. Recorrer **pestañas en este orden** (coincide con chips en UI): **General → Laboral → Remuneración → Previsión y salud → Pago → Documentos → Historial**.
 4. En cada pestaña editable: **lectura por bloques** → **Editar** → cambios → **Guardar cambios** o **Cancelar**.
 
-Tabla detallada (bloques, componentes, `saveTarget`): **[`flujo-edicion-ficha-empleado.md`](../flujo-edicion-ficha-empleado.md) §3**.
+Tabla detallada (bloques, componentes, `saveTarget`): **[`../modulos/empleados/ficha-empleado.md`](../modulos/empleados/ficha-empleado.md)**.
 
-- **Validar para remuneraciones**: acción explícita cuando el helper no tiene bloqueos y aplica opción B ([`empleados-estados-completitud-aptitud.md`](../empleados-estados-completitud-aptitud.md) §21).
+- **Validar para remuneraciones**: acción explícita cuando el helper no tiene bloqueos y aplica opción B ([`../modulos/empleados/validar-remuneraciones.md`](../modulos/empleados/validar-remuneraciones.md)).
 
-## Documentación relacionada
+## Documentación relacionada (módulo)
 
 | Tema | Documento |
-|------|-------------|
-| Estados, completitud, aptitud, validar remuneraciones | [`../empleados-estados-completitud-aptitud.md`](../empleados-estados-completitud-aptitud.md) |
-| Edición por tabs y bloques | [`../flujo-edicion-ficha-empleado.md`](../flujo-edicion-ficha-empleado.md) |
-| Ficha técnica y tests de imagen | [`../ficha-empleado-funcionamiento-y-tests-visuales.md`](../ficha-empleado-funcionamiento-y-tests-visuales.md) |
-| Modo básico | [`../modo-basico-empleado.md`](../modo-basico-empleado.md) |
+|------|------------|
+| Punto de entrada módulo | [`../modulos/empleados/README.md`](../modulos/empleados/README.md) |
+| Estados, completitud, aptitud | [`../modulos/empleados/contrato-general.md`](../modulos/empleados/contrato-general.md) |
+| Listado y CTAs | [`../modulos/empleados/listado.md`](../modulos/empleados/listado.md) |
+| Ficha (UI + técnico + tests) | [`../modulos/empleados/ficha-empleado.md`](../modulos/empleados/ficha-empleado.md) |
+| Alta básica | [`../modulos/empleados/creacion-basica.md`](../modulos/empleados/creacion-basica.md) |
 | Arquitectura Angular empleados | [`../base-angular-empleados.md`](../base-angular-empleados.md) |
-| Wizard avanzado (campos) | [`../creacion-avanzada-formulario-campos.md`](../creacion-avanzada-formulario-campos.md) |
-| Borrador y E2E | [`../creacion-avanzada-borrador-tests.md`](../creacion-avanzada-borrador-tests.md) |
+| Wizard avanzado (campos) | [`../modulos/empleados/creacion-avanzada.md`](../modulos/empleados/creacion-avanzada.md) |
+| Borrador y E2E | [`../modulos/empleados/borrador-continuar-alta.md`](../modulos/empleados/borrador-continuar-alta.md) |
+| Tests | [`../modulos/empleados/tests-empleados.md`](../modulos/empleados/tests-empleados.md) |
 | Menú | [`../crear-menu-base.md`](../crear-menu-base.md) |
 
 ## Pruebas (referencia)

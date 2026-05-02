@@ -1,16 +1,18 @@
 # Temas (`docs/codex/temas`)
 
-Documentación **por módulo y contrato** que complementa el índice padre [`../README.md`](../README.md) sin repetir el contrato de [`../AGENTS.md`](../AGENTS.md).
+Documentación **transversal**, **flujos por ruta** y **stubs** que complementan el índice padre [`../README.md`](../README.md) sin sustituir [`../AGENTS.md`](../AGENTS.md).
 
-El **contexto global** y el **tablero de fases** están en [`../orquestador/`](../orquestador/README.md).
+**Contratos por módulo y pantalla (fuente vigente):** [`../modulos/`](../modulos/empleados/README.md).  
+**Contexto global y fases:** [`../orquestador/`](../orquestador/README.md) y [`../orquestador/mapa-documentacion.md`](../orquestador/mapa-documentacion.md).
 
 ## Convención de orden
 
-1. Leer **[`organizacion-por-modulo-y-flujos.md`](./organizacion-por-modulo-y-flujos.md)** — cómo agrupamos archivos y la carpeta `flujos/`.
-2. Entrar al **índice de flujos** **[`flujos/README.md`](./flujos/README.md)** — tabla de rutas ↔ documento de recorrido.
-3. Abrir el **contrato** (`.md` en esta carpeta) según el tema.
+1. Orquestador + mapa (arriba).
+2. **[`organizacion-por-modulo-y-flujos.md`](./organizacion-por-modulo-y-flujos.md)** — política `modulos/` vs `temas/`.
+3. **[`flujos/README.md`](./flujos/README.md)** — tabla de rutas ↔ recorrido.
+4. **[`../modulos/<módulo>/README.md`](../modulos/empleados/README.md)** y el documento del flujo en esa carpeta.
 
-Los archivos de contrato **permanecen en la raíz de `temas/`** (nombres con prefijo `empleados-`, `parametros-`, etc.) para no invalidar enlaces; el orden se expresa aquí y en `flujos/`.
+Varios `.md` en la **raíz de `temas/`** son **solo redirección** (“Documento migrado…”) hacia `modulos/`; el texto normativo está allí.
 
 ---
 
@@ -36,24 +38,25 @@ Los archivos de contrato **permanecen en la raíz de `temas/`** (nombres con pre
 
 | Documento | Contenido |
 |-----------|------------|
-| [`organizacion-por-modulo-y-flujos.md`](./organizacion-por-modulo-y-flujos.md) | Convención módulo / flujo / contrato |
+| [`organizacion-por-modulo-y-flujos.md`](./organizacion-por-modulo-y-flujos.md) | Convención `modulos/` + `temas/` + `flujos/` |
 | [`implementacion-ui.md`](./implementacion-ui.md) | Rutas de código (CSS, componentes compartidos) |
 | [`crear-menu-base.md`](./crear-menu-base.md) | Menú lateral y rutas de navegación |
+| [`base-angular-empleados.md`](./base-angular-empleados.md) | Arquitectura del feature empleados (sigue aquí; no duplicado en `modulos/`) |
 
 ---
 
-## Módulo — Empleados
+## Módulo — Empleados (enlaces canónicos en `modulos/`)
 
-### Flujo y contrato por página
-
-| Página / flujo | Contrato o guía |
-|----------------|-----------------|
-| Listado, CTAs y estados | [`empleados-estados-completitud-aptitud.md`](./empleados-estados-completitud-aptitud.md) |
-| Ficha `/empleados/:id` — **orden de pestañas, bloques y guardado** | [`flujo-edicion-ficha-empleado.md`](./flujo-edicion-ficha-empleado.md) (**fuente de verdad** UI flujo) |
-| Ficha — carga, servicios, Playwright | [`ficha-empleado-funcionamiento-y-tests-visuales.md`](./ficha-empleado-funcionamiento-y-tests-visuales.md) |
-| Alta básica | [`modo-basico-empleado.md`](./modo-basico-empleado.md) |
-| Alta avanzada (wizard, campos) | [`creacion-avanzada-formulario-campos.md`](./creacion-avanzada-formulario-campos.md) |
-| Borrador, continuar alta, E2E | [`creacion-avanzada-borrador-tests.md`](./creacion-avanzada-borrador-tests.md) |
+| Página / flujo | Documento vigente |
+|----------------|---------------------|
+| Punto de entrada | [`../modulos/empleados/README.md`](../modulos/empleados/README.md) |
+| Listado, CTAs y estados | [`../modulos/empleados/listado.md`](../modulos/empleados/listado.md), [`../modulos/empleados/contrato-general.md`](../modulos/empleados/contrato-general.md) |
+| Ficha | [`../modulos/empleados/ficha-empleado.md`](../modulos/empleados/ficha-empleado.md) |
+| Alta básica | [`../modulos/empleados/creacion-basica.md`](../modulos/empleados/creacion-basica.md) |
+| Alta avanzada | [`../modulos/empleados/creacion-avanzada.md`](../modulos/empleados/creacion-avanzada.md) |
+| Borrador / continuar alta / E2E | [`../modulos/empleados/borrador-continuar-alta.md`](../modulos/empleados/borrador-continuar-alta.md) |
+| Validar remuneraciones | [`../modulos/empleados/validar-remuneraciones.md`](../modulos/empleados/validar-remuneraciones.md) |
+| Tests | [`../modulos/empleados/tests-empleados.md`](../modulos/empleados/tests-empleados.md) |
 | Arquitectura Angular | [`base-angular-empleados.md`](./base-angular-empleados.md) |
 
 **Recorrido unificado:** [`flujos/empleados.md`](./flujos/empleados.md).
@@ -62,15 +65,17 @@ Los archivos de contrato **permanecen en la raíz de `temas/`** (nombres con pre
 
 ## Módulo — Parámetros y carga normativa
 
-| Página / flujo | Contrato o guía |
-|----------------|-----------------|
-| Pantalla `/parametros` (UI) | [`parametros-ui-estandar.md`](./parametros-ui-estandar.md) |
-| Período, vigencia, catálogo | [`parametros-vigencia-y-periodo.md`](./parametros-vigencia-y-periodo.md) |
-| Campos y listas | [`parametros-generales-campos-y-listas.md`](./parametros-generales-campos-y-listas.md) |
-| Reforma / gradualidad | [`reforma-pensiones-gradualidad.md`](./reforma-pensiones-gradualidad.md) |
-| Python, mensual, seeds | [`python-parametros-carga-mensual.md`](./python-parametros-carga-mensual.md) |
-| Sync v6.11 | [`sync-parametros-v611.md`](./sync-parametros-v611.md) |
-| Permisos / ejemplo SQL | [`parametros-permisos-bd-ejemplo.sql`](./parametros-permisos-bd-ejemplo.sql) |
+| Página / flujo | Documento vigente |
+|----------------|---------------------|
+| Punto de entrada | [`../modulos/parametros/README.md`](../modulos/parametros/README.md) |
+| Pantalla `/parametros` (UI) | [`../modulos/parametros/ui-parametros.md`](../modulos/parametros/ui-parametros.md) |
+| Período, vigencia, catálogo | [`../modulos/parametros/periodo-vigencia-catalogo.md`](../modulos/parametros/periodo-vigencia-catalogo.md) |
+| Campos y listas | [`../modulos/parametros/campos-y-listas.md`](../modulos/parametros/campos-y-listas.md) |
+| Reforma / gradualidad | [`../modulos/parametros/reforma-gradualidad.md`](../modulos/parametros/reforma-gradualidad.md) |
+| Python, mensual, seeds | [`../modulos/parametros/python-carga-mensual.md`](../modulos/parametros/python-carga-mensual.md) |
+| Sync v6.11 | [`../modulos/parametros/sync-parametros-v611.md`](../modulos/parametros/sync-parametros-v611.md) |
+| Permisos / ejemplo SQL | [`../modulos/parametros/permisos-bd-ejemplo.sql`](../modulos/parametros/permisos-bd-ejemplo.sql) |
+| Tests | [`../modulos/parametros/tests-parametros.md`](../modulos/parametros/tests-parametros.md) |
 
 **Recorrido unificado:** [`flujos/parametros.md`](./flujos/parametros.md).
 
@@ -80,7 +85,7 @@ Los archivos de contrato **permanecen en la raíz de `temas/`** (nombres con pre
 
 | Página / flujo | Contrato o guía |
 |----------------|-----------------|
-| `/remuneraciones/conceptos` | Contrato **pendiente**; ver [`flujos/remuneraciones-conceptos.md`](./flujos/remuneraciones-conceptos.md) |
+| `/remuneraciones/conceptos` | [`../modulos/conceptos-remuneracion/README.md`](../modulos/conceptos-remuneracion/README.md); flujo [`flujos/remuneraciones-conceptos.md`](./flujos/remuneraciones-conceptos.md) |
 
 ---
 
@@ -88,7 +93,15 @@ Los archivos de contrato **permanecen en la raíz de `temas/`** (nombres con pre
 
 | Página / flujo | Contrato o guía |
 |----------------|-----------------|
-| `/haberes-descuentos` | Contrato **pendiente**; ver [`flujos/haberes-descuentos.md`](./flujos/haberes-descuentos.md) |
+| `/haberes-descuentos` | [`../modulos/haberes-descuentos/README.md`](../modulos/haberes-descuentos/README.md); flujo [`flujos/haberes-descuentos.md`](./flujos/haberes-descuentos.md) |
+
+---
+
+## Módulo — Nómina / proceso (visión)
+
+| Página / flujo | Documento |
+|----------------|------------|
+| Proceso / nómina futura | [`../modulos/nomina-mensual/README.md`](../modulos/nomina-mensual/README.md), [`../modulos/nomina-mensual/vision-futura.md`](../modulos/nomina-mensual/vision-futura.md) |
 
 ---
 
@@ -101,7 +114,7 @@ Los archivos de contrato **permanecen en la raíz de `temas/`** (nombres con pre
 | `/licencias-medicas` | [`flujos/licencias-medicas.md`](./flujos/licencias-medicas.md) |
 | `/reportes` | [`flujos/reportes.md`](./flujos/reportes.md) |
 
-Contratos por dominio para estos módulos: **pendientes** (crear `temas/<modulo>-*.md` al cerrar fase de documentación).
+Contratos por dominio para estos módulos: **pendientes** (añadir bajo `modulos/` al cerrar fase de documentación).
 
 ---
 

@@ -1,6 +1,6 @@
 # Flujos de la aplicación (índice)
 
-Documentación **por módulo de pantalla**: rutas reales, recorrido del usuario y enlaces a contratos en `docs/codex/temas/`.
+Documentación **por módulo de pantalla**: rutas reales, recorrido del usuario y enlaces a contratos en **`docs/codex/modulos/`** (y transversales en `temas/` cuando aplique).
 
 Convención de organización: [`../organizacion-por-modulo-y-flujos.md`](../organizacion-por-modulo-y-flujos.md).
 

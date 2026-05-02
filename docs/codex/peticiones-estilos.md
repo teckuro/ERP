@@ -39,14 +39,14 @@ sin mezclarlo con las reglas base.
 
 ### 2026-05-02 (Parametros - estandar UI del modulo)
 
-- **Estandar documentado**: se creo `docs/codex/temas/parametros-ui-estandar.md` con estructura oficial, banda superior, tabs, subtabs, copy, empty states, DataGrid, cards compactas, responsive y checklist de cierre.
+- **Estandar documentado**: se creo `docs/codex/temas/parametros-ui-estandar.md` (stub; fuente vigente `docs/codex/modulos/parametros/ui-parametros.md`) con estructura oficial, banda superior, tabs, subtabs, copy, empty states, DataGrid, cards compactas, responsive y checklist de cierre.
 - **Clases semanticas compatibles**: se agregaron aliases `parametros-period-*`, `parametros-tabs`, `parametros-tab-button`, `parametros-inner-*`, `parametros-tab-panel`, `parametros-section-card`, `parametros-config-card`, `parametros-form-grid` y `parametros-grid-shell` sin retirar las clases legacy.
 - **Referencias docs/codex**: README, AGENTS y estilos apuntan al nuevo estandar para futuras mejoras de Parametros.
   - `src/app/pages/parametros.page.ts`
   - `src/styles.css`
   - `src/app/features/parametros-generales/components/parametros-inner-tab-bar.component.ts`
   - `src/app/features/parametros-generales/components/tabs/*.ts`
-  - `docs/codex/temas/parametros-ui-estandar.md`
+  - `docs/codex/modulos/parametros/ui-parametros.md` (histórico: `docs/codex/temas/parametros-ui-estandar.md`)
 
 ### 2026-05-02 (Parametros - referencia anterior en carga pendiente)
 
@@ -128,7 +128,7 @@ sin mezclarlo con las reglas base.
   - `src/app/features/parametros-generales/components/tabs/parametros-salud-tab.component.ts`
   - `src/app/features/parametros-generales/components/tabs/parametros-afp-tab.component.ts`
 - **Documentación de contrato**: matriz de tablas y reglas UI/Python/DataGrid.
-  - `docs/codex/temas/parametros-vigencia-y-periodo.md`
+  - `docs/codex/modulos/parametros/periodo-vigencia-catalogo.md` (histórico: `docs/codex/temas/parametros-vigencia-y-periodo.md`)
   - `docs/codex/README.md`
 
 ### 2026-05-01 (Parámetros del sistema — Fase 2.5 pulido visual menor)

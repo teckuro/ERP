@@ -2,7 +2,7 @@
 
 ## 1. Propósito de este documento
 
-Ofrecer en **una sola lectura** el mapa del producto: visión, stack, principios de UI, módulos y camino hacia remuneraciones completas. Sirve de **ancla** para agentes y personas; el detalle vive en [`temas/`](../temas/README.md) y en el índice [`../README.md`](../README.md).
+Ofrecer en **una sola lectura** el mapa del producto: visión, stack, principios de UI, módulos y camino hacia remuneraciones completas. Sirve de **ancla** para agentes y personas; el detalle por dominio vive en [`modulos/`](../modulos/empleados/README.md) y material transversal en [`temas/`](../temas/README.md); índice [`../README.md`](../README.md).
 
 ## 2. Visión del producto
 
@@ -20,7 +20,7 @@ ERP **chileno**, orientado a **remuneraciones completas**, con interfaz **limpia
 | Esquema actual | **`bd/base/v11`** como referencia de base de datos del proyecto. |
 | Carga normativa y parámetros | **Python** (carpeta de parámetros en el workspace; **v6.11** para carga mensual, vigencias y seeds normativos). |
 | Pruebas E2E / UI | **Playwright**. |
-| Contrato de trabajo para agentes | **`docs/codex`** (`AGENTS.md`, guías UI, `temas/`). |
+| Contrato de trabajo para agentes | **`docs/codex`** (`AGENTS.md`, guías UI, `modulos/`, `temas/`). |
 
 ## 4. Principio UI/UX
 
@@ -31,7 +31,7 @@ Guiado por **estados**, **pendientes** y **acciones**. Orden de presentación:
 3. **Acción siguiente** — un CTA coherente con el estado.
 4. **Detalle bajo demanda** — pestañas, paneles o drill‑down; no todo visible a la vez.
 
-El sistema **no** debe parecer una planilla gigante. En UI operativa **no** mostrar nombres de tablas, columnas ni errores crudos de motor. La complejidad legal y previsional existe **por capas** (catálogo, vigencia, período mensual, etc.); ver [`parametros-vigencia-y-periodo.md`](../temas/parametros-vigencia-y-periodo.md).
+El sistema **no** debe parecer una planilla gigante. En UI operativa **no** mostrar nombres de tablas, columnas ni errores crudos de motor. La complejidad legal y previsional existe **por capas** (catálogo, vigencia, período mensual, etc.); ver [`periodo-vigencia-catalogo.md`](../modulos/parametros/periodo-vigencia-catalogo.md).
 
 ## 5. Mapa de módulos (alto nivel)
 
@@ -48,19 +48,19 @@ El sistema **no** debe parecer una planilla gigante. En UI operativa **no** most
 
 ## 6. Estado resumido — Empleados
 
-Contrato de estados, completitud y aptitud: [`empleados-estados-completitud-aptitud.md`](../temas/empleados-estados-completitud-aptitud.md). Flujos de ficha: [`flujo-edicion-ficha-empleado.md`](../temas/flujo-edicion-ficha-empleado.md). Modo básico: [`modo-basico-empleado.md`](../temas/modo-basico-empleado.md).
+Contrato de estados, completitud y aptitud: [`contrato-general.md`](../modulos/empleados/contrato-general.md). Ficha: [`ficha-empleado.md`](../modulos/empleados/ficha-empleado.md). Modo básico: [`creacion-basica.md`](../modulos/empleados/creacion-basica.md).
 
-Puntos ya alineados al contrato (resumen): helper central `evaluarCompletitudYAptitudEmpleado`, listado y ficha orientados a estado/pendientes/acción, selects sin falsa autoselección, rehidratación de borrador avanzado sin tratar defaults técnicos como datos reales. **Fase 8 cerrada:** validación explícita **Validar para remuneraciones** en Ficha (opción B: sin aptitud automática); implementación y contrato en tema §21 y [`estado-fases.md`](./estado-fases.md).
+Puntos ya alineados al contrato (resumen): helper central `evaluarCompletitudYAptitudEmpleado`, listado y ficha orientados a estado/pendientes/acción, selects sin falsa autoselección, rehidratación de borrador avanzado sin tratar defaults técnicos como datos reales. **Fase 8 cerrada:** validación explícita **Validar para remuneraciones** en Ficha (opción B: sin aptitud automática); implementación y contrato en [`validar-remuneraciones.md`](../modulos/empleados/validar-remuneraciones.md) y [`estado-fases.md`](./estado-fases.md).
 
 ## 7. Estado resumido — Parámetros
 
-Período activo como contexto global; distinción **mensual / vigencia / catálogo**: [`parametros-vigencia-y-periodo.md`](../temas/parametros-vigencia-y-periodo.md). UI del módulo: [`parametros-ui-estandar.md`](../temas/parametros-ui-estandar.md). Reforma y gradualidad (p. ej. 8,5 %): [`reforma-pensiones-gradualidad.md`](../temas/reforma-pensiones-gradualidad.md). Campos y listas: [`parametros-generales-campos-y-listas.md`](../temas/parametros-generales-campos-y-listas.md).
+Período activo como contexto global; distinción **mensual / vigencia / catálogo**: [`periodo-vigencia-catalogo.md`](../modulos/parametros/periodo-vigencia-catalogo.md). UI del módulo: [`ui-parametros.md`](../modulos/parametros/ui-parametros.md). Reforma y gradualidad (p. ej. 8,5 %): [`reforma-gradualidad.md`](../modulos/parametros/reforma-gradualidad.md). Campos y listas: [`campos-y-listas.md`](../modulos/parametros/campos-y-listas.md).
 
 La UI no debe dar por “todo vacío” si solo falta **carga mensual** oficial.
 
 ## 8. Estado resumido — Python / BD v11
 
-Contrato de carga mensual, preparación y alineación con período: [`python-parametros-carga-mensual.md`](../temas/python-parametros-carga-mensual.md). Esquema: [`../../../bd/base/v11/README.md`](../../../bd/base/v11/README.md) (ruta relativa desde este archivo).
+Contrato de carga mensual, preparación y alineación con período: [`python-carga-mensual.md`](../modulos/parametros/python-carga-mensual.md). Esquema: [`../../../bd/base/v11/README.md`](../../../bd/base/v11/README.md) (ruta relativa desde este archivo).
 
 ## 9. Estado resumido — Haberes y descuentos
 
@@ -114,7 +114,7 @@ Cada pantalla debe ayudar a responder:
 
 - Los cambios de producto/UI relevantes deben poder **rastrearse** (p. ej. [`peticiones-estilos.md`](../peticiones-estilos.md) para mejoras visuales acordadas).
 - No mezclar **períodos** ni fuentes de verdad sin dejar explícito en doc o en UI qué período aplica.
-- Respetar separación **preparación** vs **carga oficial** en Python cuando el contrato lo exija ([`python-parametros-carga-mensual.md`](../temas/python-parametros-carga-mensual.md)).
+- Respetar separación **preparación** vs **carga oficial** en Python cuando el contrato lo exija ([`python-carga-mensual.md`](../modulos/parametros/python-carga-mensual.md)).
 - Historial o bitácoras de negocio, donde existan en el sistema, deben reflejar **quién / cuándo / qué** sin sustituir el modelo de datos documentado en temas.
 
 ## 15. Qué no construir todavía
@@ -137,9 +137,15 @@ Hasta cerrar las fases previas del tablero y el contrato correspondiente:
 | Índice padre | [`../README.md`](../README.md) |
 | Manual de lectura del repo | [`../manual-base-proyecto.md`](../manual-base-proyecto.md) |
 | Fases y cierre | [`estado-fases.md`](./estado-fases.md) |
-| Empleados estado/aptitud | [`../temas/empleados-estados-completitud-aptitud.md`](../temas/empleados-estados-completitud-aptitud.md) |
-| Borrador / tests | [`../temas/creacion-avanzada-borrador-tests.md`](../temas/creacion-avanzada-borrador-tests.md) |
+| Mapa documentación | [`mapa-documentacion.md`](./mapa-documentacion.md) |
+| Empleados (módulo) | [`../modulos/empleados/README.md`](../modulos/empleados/README.md) |
+| Empleados estado/aptitud | [`../modulos/empleados/contrato-general.md`](../modulos/empleados/contrato-general.md) |
+| Borrador / tests | [`../modulos/empleados/borrador-continuar-alta.md`](../modulos/empleados/borrador-continuar-alta.md), [`../modulos/empleados/tests-empleados.md`](../modulos/empleados/tests-empleados.md) |
 | Organización temas / flujos app | [`../temas/organizacion-por-modulo-y-flujos.md`](../temas/organizacion-por-modulo-y-flujos.md), [`../temas/flujos/README.md`](../temas/flujos/README.md) |
-| Parámetros período / vigencia | [`../temas/parametros-vigencia-y-periodo.md`](../temas/parametros-vigencia-y-periodo.md) |
-| Parámetros UI | [`../temas/parametros-ui-estandar.md`](../temas/parametros-ui-estandar.md) |
-| Python carga mensual | [`../temas/python-parametros-carga-mensual.md`](../temas/python-parametros-carga-mensual.md) |
+| Parámetros (módulo) | [`../modulos/parametros/README.md`](../modulos/parametros/README.md) |
+| Parámetros período / vigencia | [`../modulos/parametros/periodo-vigencia-catalogo.md`](../modulos/parametros/periodo-vigencia-catalogo.md) |
+| Parámetros UI | [`../modulos/parametros/ui-parametros.md`](../modulos/parametros/ui-parametros.md) |
+| Python carga mensual | [`../modulos/parametros/python-carga-mensual.md`](../modulos/parametros/python-carga-mensual.md) |
+| Conceptos (futuro) | [`../modulos/conceptos-remuneracion/README.md`](../modulos/conceptos-remuneracion/README.md) |
+| Haberes / descuentos | [`../modulos/haberes-descuentos/README.md`](../modulos/haberes-descuentos/README.md) |
+| Nómina mensual (visión) | [`../modulos/nomina-mensual/README.md`](../modulos/nomina-mensual/README.md) |
