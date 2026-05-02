@@ -4,6 +4,10 @@ import { EmpleadosRepository } from '../data-access/empleados.repository';
 import { mapCreatedEmpleado } from '../mappers/empleado-write.mapper';
 import { EmpleadoListado } from '../models/empleado-listado.model';
 import { CrearEmpleadoPayload } from '../models/empleado-payload.model';
+import {
+  assertEmpleadoAptoParaRemuneraciones,
+  evaluarCompletitudYAptitudEmpleado,
+} from '../utils/empleado-completitud.rules';
 import { parseRut } from '../utils/empleado-rut';
 
 @Injectable({
@@ -13,6 +17,8 @@ export class EmpleadosWriteService {
   private readonly empleadosRepository = inject(EmpleadosRepository);
 
   async crear(payload: CrearEmpleadoPayload): Promise<EmpleadoListado> {
+    this.validarAptitudFinal(payload);
+
     const rut = parseRut(payload.rut);
     const empresaId = await this.empleadosRepository.obtenerEmpresaIdParaContrato();
 
@@ -64,6 +70,16 @@ export class EmpleadosWriteService {
     personaId: number,
     payload: CrearEmpleadoPayload,
   ): Promise<void> {
+    this.validarAptitudFinal(payload);
     return this.empleadosRepository.finalizarAltaAvanzadaExistente(personaId, payload);
+  }
+
+  private validarAptitudFinal(payload: CrearEmpleadoPayload): void {
+    assertEmpleadoAptoParaRemuneraciones(
+      evaluarCompletitudYAptitudEmpleado({
+        payload,
+        pasoAltaAvanzada: null,
+      }),
+    );
   }
 }
