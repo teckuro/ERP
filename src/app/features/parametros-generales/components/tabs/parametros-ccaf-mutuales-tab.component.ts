@@ -46,11 +46,11 @@ export type CcafMutualSubId = 'config' | 'listaCcaf' | 'mutuales' | 'ley16744';
       <div class="param-tab-subview">
         @if (activeSub === 'config') {
           <section class="param-group param-group--ccaf-current" aria-labelledby="ccaf-title">
-            <h2 id="ccaf-title">Configuración vigente del período</h2>
-            <p class="param-section-lead">Selección usada como referencia para el período activo.</p>
-            <div class="field-grid field-grid--ccaf field-grid--ccaf-compact" aria-label="Configuración CCAF y mutual">
+            <h2 id="ccaf-title">Configuracion vigente del periodo</h2>
+            <p class="param-section-lead">Seleccion usada como referencia para el periodo activo.</p>
+            <div class="field-grid field-grid--ccaf field-grid--ccaf-compact" aria-label="Configuracion CCAF y mutual">
               <label class="param-field">
-                <span>Caja de compensación</span>
+                <span>Caja de compensacion</span>
                 <app-search-select
                   class="param-field-search-select"
                   [ngModel]="selectedCcafId"
@@ -76,7 +76,7 @@ export type CcafMutualSubId = 'config' | 'listaCcaf' | 'mutuales' | 'ley16744';
               <label class="param-field">
                 <span>Porcentaje</span>
                 <span class="unit-field unit-field--suffix" data-unit="%">
-                  <input class="param-input text-right" type="text" [value]="percentLabel === '-' ? '—' : percentLabel" readonly />
+                  <input class="param-input text-right" type="text" [value]="percentLabel === '-' ? '-' : percentLabel" readonly />
                 </span>
               </label>
             </div>
@@ -97,7 +97,7 @@ export type CcafMutualSubId = 'config' | 'listaCcaf' | 'mutuales' | 'ley16744';
               [maxItems]="8"
               gridHeight="min(520px, 100%)"
               [persistenceKey]="gridPersistenceKeyCcaf"
-              emptyTitle="Sin cajas de compensación en catálogo"
+              emptyTitle="Sin cajas de compensacion en catalogo"
               emptyDescription="No hay CCAF cargadas. Revisa la normativa base o maestros."
               (refresh)="refresh?.()"
             ></app-data-grid>
@@ -118,7 +118,7 @@ export type CcafMutualSubId = 'config' | 'listaCcaf' | 'mutuales' | 'ley16744';
               [maxItems]="8"
               gridHeight="min(520px, 100%)"
               [persistenceKey]="gridPersistenceKeyMutuales"
-              emptyTitle="Sin organismos administradores en catálogo"
+              emptyTitle="Sin organismos administradores en catalogo"
               emptyDescription="No hay mutualidades u organismos cargados. Revisa la normativa base o maestros."
               (refresh)="refresh?.()"
             ></app-data-grid>
@@ -128,8 +128,19 @@ export type CcafMutualSubId = 'config' | 'listaCcaf' | 'mutuales' | 'ley16744';
         @if (activeSub === 'ley16744') {
           <section class="catalog-section" aria-labelledby="ley-title">
             <h2 class="sr-only" id="ley-title">Ley 16.744</h2>
+            @if (catalogos.ley16744Parametros.length === 0 && referenciaPeriodoLabel) {
+              <div class="param-reference-callout" role="note">
+                <div>
+                  <span class="param-reference-callout__label">Referencia disponible: {{ referenciaPeriodoLabel }}</span>
+                  <p>No se usara para calculo de {{ periodoLabel }}.</p>
+                </div>
+                <button type="button" class="param-reference-callout__action" (click)="verReferenciaPeriodoAnterior?.()">
+                  Ver referencia {{ referenciaPeriodoLabel }}
+                </button>
+              </div>
+            }
             <app-data-grid
-              title="Parámetros Ley 16.744"
+              title="Parametros Ley 16.744"
               [rows]="catalogos.ley16744Parametros"
               [columns]="ley16744Columns"
               [loading]="loading"
@@ -139,8 +150,8 @@ export type CcafMutualSubId = 'config' | 'listaCcaf' | 'mutuales' | 'ley16744';
               [maxItems]="8"
               gridHeight="min(520px, 100%)"
               [persistenceKey]="gridPersistenceKeyLey16744"
-              emptyTitle="No hay parámetros Ley 16.744 para este período"
-              emptyDescription="Prueba con otro período o revisa la sincronización/carga mensual."
+              [emptyTitle]="'No hay parametros Ley 16.744 cargados para ' + periodoLabel + '.'"
+              emptyDescription="Pendiente de fuente o criterio oficial para el snapshot mensual."
               (refresh)="refresh?.()"
             ></app-data-grid>
           </section>
@@ -162,7 +173,6 @@ export type CcafMutualSubId = 'config' | 'listaCcaf' | 'mutuales' | 'ley16744';
         align-self: flex-start;
       }
 
-      /* Evita el “panel gigante vacío” cuando solo hay 3 campos. */
       .field-grid--ccaf-compact {
         max-width: min(56rem, 100%);
       }
@@ -195,7 +205,7 @@ export class ParametrosCcafMutualesTabComponent {
   }
 
   readonly ccafInnerTabs: readonly ParametrosInnerTabItem[] = [
-    { id: 'config', label: 'Configuración' },
+    { id: 'config', label: 'Configuracion' },
     { id: 'listaCcaf', label: 'Lista CCAF' },
     { id: 'mutuales', label: 'Mutuales' },
     { id: 'ley16744', label: 'Ley 16.744' },
@@ -212,32 +222,21 @@ export class ParametrosCcafMutualesTabComponent {
   @Input() loading = false;
   @Input() selectedCcafId: number | null = null;
   @Input() selectedMutualId: number | null = null;
-  @Input() percentLabel = '—';
+  @Input() percentLabel = '-';
+  @Input() periodoLabel = 'este periodo';
+  @Input() referenciaPeriodoLabel: string | null = null;
   @Input() gridPersistenceKeyCcaf = 'parametros.ccaf.dg';
   @Input() gridPersistenceKeyMutuales = 'parametros.mutuales.dg';
   @Input() gridPersistenceKeyLey16744 = 'parametros.ley16744.dg';
 
   @Input() seleccionarCcaf: ((value: SearchSelectValue) => void) | null = null;
   @Input() seleccionarMutual: ((value: SearchSelectValue) => void) | null = null;
+  @Input() verReferenciaPeriodoAnterior: (() => void) | null = null;
   @Input() refresh: (() => void) | null = null;
 
   readonly ccafEntidadFilters: DataGridFilter<CcafEntidad>[] = [
-    {
-      id: 'codigo',
-      label: 'Codigo',
-      field: 'codigo',
-      type: 'text',
-      operator: 'contains',
-      emptyLabel: 'Todos',
-    },
-    {
-      id: 'nombre',
-      label: 'Nombre',
-      field: 'nombre',
-      type: 'text',
-      operator: 'contains',
-      emptyLabel: 'Todos',
-    },
+    { id: 'codigo', label: 'Codigo', field: 'codigo', type: 'text', operator: 'contains', emptyLabel: 'Todos' },
+    { id: 'nombre', label: 'Nombre', field: 'nombre', type: 'text', operator: 'contains', emptyLabel: 'Todos' },
     {
       id: 'vigente',
       label: 'Estado',
@@ -252,30 +251,9 @@ export class ParametrosCcafMutualesTabComponent {
   ];
 
   readonly organismosLeyFilters: DataGridFilter<OrganismoLey16744>[] = [
-    {
-      id: 'codigo',
-      label: 'Codigo',
-      field: 'codigo',
-      type: 'text',
-      operator: 'contains',
-      emptyLabel: 'Todos',
-    },
-    {
-      id: 'nombre',
-      label: 'Nombre',
-      field: 'nombre',
-      type: 'text',
-      operator: 'contains',
-      emptyLabel: 'Todos',
-    },
-    {
-      id: 'tipo',
-      label: 'Tipo',
-      field: 'tipo',
-      type: 'text',
-      operator: 'contains',
-      emptyLabel: 'Todos',
-    },
+    { id: 'codigo', label: 'Codigo', field: 'codigo', type: 'text', operator: 'contains', emptyLabel: 'Todos' },
+    { id: 'nombre', label: 'Nombre', field: 'nombre', type: 'text', operator: 'contains', emptyLabel: 'Todos' },
+    { id: 'tipo', label: 'Tipo', field: 'tipo', type: 'text', operator: 'contains', emptyLabel: 'Todos' },
     {
       id: 'vigente',
       label: 'Estado',
@@ -292,7 +270,7 @@ export class ParametrosCcafMutualesTabComponent {
   readonly ley16744Filters: DataGridFilter<Ley16744Parametro>[] = [
     {
       id: 'periodo',
-      label: 'Período',
+      label: 'Periodo',
       field: 'periodo',
       type: 'text',
       operator: 'startsWith',

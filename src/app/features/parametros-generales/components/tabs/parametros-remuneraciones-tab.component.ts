@@ -8,6 +8,19 @@ import { FormGroup, ReactiveFormsModule } from '@angular/forms';
   imports: [CommonModule, ReactiveFormsModule],
   template: `
     <form class="tab-panel parametros-form" [formGroup]="form" (ngSubmit)="onSubmit?.()">
+      @if (!hasPeriodoData) {
+        <section class="param-pending-notice" aria-label="Estado de carga mensual">
+          <div>
+            <h2>No hay valores mensuales cargados para {{ periodoLabel }}.</h2>
+            <p>Faltan datos oficiales del periodo.</p>
+          </div>
+          @if (referenciaPeriodoLabel) {
+            <button type="button" class="param-reference-callout__action" (click)="verReferenciaPeriodoAnterior?.()">
+              Ver referencia {{ referenciaPeriodoLabel }}
+            </button>
+          }
+        </section>
+      }
       <section class="param-group" aria-labelledby="rentas-title">
         <h2 id="rentas-title">Remuneraciones</h2>
         <p class="param-section-lead">Rentas mínimas imponibles y montos base.</p>
@@ -337,7 +350,10 @@ export class ParametrosRemuneracionesTabComponent {
   @Input({ required: true }) form!: FormGroup;
   @Input() editable = false;
   @Input() hasPeriodoData = true;
+  @Input() periodoLabel = 'este periodo';
+  @Input() referenciaPeriodoLabel: string | null = null;
   @Input() fechaActualizacionLabel: string | null = null;
   @Input() onSubmit: (() => void) | null = null;
+  @Input() verReferenciaPeriodoAnterior: (() => void) | null = null;
 }
 

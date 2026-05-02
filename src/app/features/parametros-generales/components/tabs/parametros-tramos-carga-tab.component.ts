@@ -15,8 +15,19 @@ import { TramoCargaParametro } from '../../models/parametro-general.model';
     <section class="tab-panel">
       <section class="catalog-section" aria-labelledby="tramos-carga-title">
         <h2 id="tramos-carga-title">Tramos cargas familiares</h2>
+        @if (rows.length === 0 && referenciaPeriodoLabel) {
+          <div class="param-reference-callout" role="note">
+            <div>
+              <span class="param-reference-callout__label">Referencia disponible: {{ referenciaPeriodoLabel }}</span>
+              <p>No se usara para calculo de {{ periodoLabel }}.</p>
+            </div>
+            <button type="button" class="param-reference-callout__action" (click)="verReferenciaPeriodoAnterior?.()">
+              Ver referencia {{ referenciaPeriodoLabel }}
+            </button>
+          </div>
+        }
         <app-data-grid
-          title="Tramos de asignación familiar"
+          title="Tramos de asignacion familiar"
           [rows]="rows"
           [columns]="columns"
           [loading]="loading"
@@ -26,8 +37,8 @@ import { TramoCargaParametro } from '../../models/parametro-general.model';
           [maxItems]="10"
           gridHeight="min(520px, 100%)"
           [persistenceKey]="gridPersistenceKey"
-          emptyTitle="No hay tramos de asignación familiar para este período"
-          emptyDescription="Prueba con otro período o revisa la sincronización/carga mensual."
+          [emptyTitle]="'No hay tramos de asignacion familiar para ' + periodoLabel + '.'"
+          emptyDescription="La carga oficial del periodo esta pendiente."
           (refresh)="refresh?.()"
         ></app-data-grid>
       </section>
@@ -39,12 +50,15 @@ export class ParametrosTramosCargaTabComponent {
   @Input({ required: true }) columns!: DataGridColumn<TramoCargaParametro>[];
   @Input() loading = false;
   @Input() gridPersistenceKey = 'parametros.tramos-carga.dg';
+  @Input() periodoLabel = 'este periodo';
+  @Input() referenciaPeriodoLabel: string | null = null;
+  @Input() verReferenciaPeriodoAnterior: (() => void) | null = null;
   @Input() refresh: (() => void) | null = null;
 
   readonly tramosCargaFilters: DataGridFilter<TramoCargaParametro>[] = [
     {
       id: 'periodo',
-      label: 'Período',
+      label: 'Periodo',
       field: 'periodo',
       type: 'text',
       operator: 'startsWith',
@@ -53,4 +67,3 @@ export class ParametrosTramosCargaTabComponent {
     },
   ];
 }
-

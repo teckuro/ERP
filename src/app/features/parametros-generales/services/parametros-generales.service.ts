@@ -20,6 +20,10 @@ export class ParametrosGeneralesService {
     return this.repository.listarPeriodos();
   }
 
+  listarPeriodosConDatosMensuales(): Promise<string[]> {
+    return this.repository.listarPeriodosConDatosMensuales();
+  }
+
   obtenerUltimoHastaPeriodo(periodo: string): Promise<ParametroGeneral | null> {
     return this.repository.obtenerUltimoHastaPeriodo(periodo);
   }

@@ -3,6 +3,18 @@
 Registro cronológico de mejoras visuales aplicadas por petición, con foco en **trazabilidad** (qué se tocó y dónde),
 sin mezclarlo con las reglas base.
 
+### 2026-05-02 (Parametros - referencia anterior en carga pendiente)
+
+- **Empty states mensuales pendientes**: Tramos Cargas, Impuesto Unico, Ley 16.744, Valores y Remuneraciones muestran mensajes breves cuando el periodo activo no tiene datos oficiales.
+- **Referencia sin mezclar datos**: si hay un periodo anterior con datos mensuales, se ofrece una accion secundaria `Ver referencia ...` que cambia el selector al periodo anterior; no se renderizan ni guardan datos anteriores dentro del periodo activo.
+- **Banda superior liviana**: en estados pendiente/parcial solo agrega `Referencia disponible: ...` cuando corresponde, manteniendo el detalle corto sobre datos oficiales faltantes y catalogos/vigencias disponibles.
+  - `src/app/pages/parametros.page.ts`
+  - `src/app/features/parametros-generales/components/tabs/parametros-valores-tab.component.ts`
+  - `src/app/features/parametros-generales/components/tabs/parametros-remuneraciones-tab.component.ts`
+  - `src/app/features/parametros-generales/components/tabs/parametros-tramos-carga-tab.component.ts`
+  - `src/app/features/parametros-generales/components/tabs/parametros-tramos-renta-tab.component.ts`
+  - `src/app/features/parametros-generales/components/tabs/parametros-ccaf-mutuales-tab.component.ts`
+
 ### 2026-05-02 (Parámetros - banda superior período / estado mensual)
 
 - **Dos zonas flex sin solape**: izquierda título + controles de período + hint corto de sincronización; derecha estado mensual (título + chip único + detalle); sin grid de tres columnas ni texto largo competiendo con los selects.

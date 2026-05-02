@@ -7,6 +7,8 @@ Fecha de revisión Codex: 2026-05-01.
 **El período activo (YYYY-MM) es contexto visual y de negocio para liquidación, pero no es un filtro obligatorio para todas las tablas de Parámetros.**  
 Algunas grillas listan **catálogos normativos por vigencia** (solape con el mes), **catálogos globales** (`periodo` NULL) o **snapshots mensuales** (`periodo` obligatorio). La UI debe distinguir el mensaje vacío y el hint según el tipo de dato.
 
+Un periodo puede existir en estado `parcial` cuando fue preparado al inicio de mes con catalogos, vigencias y normativa base, pero aun no tiene los snapshots mensuales oficiales. `parcial` no significa completo y no debe habilitar liquidacion definitiva si faltan datos mensuales obligatorios.
+
 Referencias de implementación:
 
 - Repositorio: `src/app/features/parametros-generales/data-access/parametros-generales.repository.ts` (`listar`, `listarCatalogos`, helpers `applyVigenciaSolapaPeriodo`, `applyPeriodoMesOGlobalSolapa`, `catalogoGlobalOPeriodo`).
@@ -52,6 +54,25 @@ Columnas: **tabla** · **módulo/tab** · **tipo** · **campo período** · **ca
 | `forma_pago_apv` | Reforma > APV pago | CATALOGO_GLOBAL (con `periodo` opcional) | `periodo` nullable | — | no | Catálogo formas de pago. | Python normativo (`forma_pago_apv`) | Ídem. | Riesgo alto si empty culpa al “2026-05”. |
 | `ips_ex_caja_tasa_basica` | (No en UI Parámetros; carga relacionada) | VIGENCIA | — | `vigencia_inicio`, `vigencia_fin` | — | N/A | Python (`ips_tasa_basica`) | Tasas ex caja; ver render SQL. | Pendiente de exposición UI. |
 | `periodo_remuneracion` | Contexto de carga (no pantalla Parámetros) | PERIODO_MENSUAL | `codigo` / `anio`,`mes` | fechas | sí (pipeline) | N/A en UI | Python (encabezado de carga) | Ancla del JSON mensual. | — |
+
+### Estados de carga del periodo
+
+La tabla `periodo_remuneracion` usa la columna existente `estado VARCHAR(20)`; no hay enum dedicado en v11.
+
+Estados operativos:
+
+- `pendiente`: periodo creado, sin base suficiente o sin preparacion ejecutada.
+- `parcial`: periodo preparado con catalogos/vigencias/normativa; faltan datos mensuales oficiales.
+- `cargado`: carga mensual oficial validada y renderizada.
+- `corregido`: carga mensual corregida/versionada.
+- `cerrado`: periodo no debe degradarse automaticamente por preparaciones posteriores.
+- `error`: falla registrada en el flujo de carga.
+
+Reglas de transicion:
+
+- `--modo preparar` deja `parcial` y no degrada `cerrado` ni `corregido`.
+- `--modo mensual` deja `cargado` cuando las secciones mensuales obligatorias validan.
+- La preparacion parcial no inserta UF/UTM/UTA, tramos, topes ni sueldos minimos sin fuente mensual oficial.
 
 ### Gradualidad cotización empleador (8,5 %)
 
@@ -140,5 +161,6 @@ La UI no debe repetir chips de tipo de dato en cada tab. La explicacion mensual/
 - Banda superior: estado global del periodo (`Pendiente`, `Parcial`, `Completo`, `Editando`, `Error`) y una descripcion corta.
 - Tabs: titulo, filtros, tabla y empty state especifico.
 - Tablas normativas: estados por fila cuando aportan decision operativa (`Vigente al periodo`, `Futuro`, `Historico`).
+- Referencia anterior: si el periodo activo no tiene datos mensuales oficiales y existe un periodo anterior cargado, la accion `Ver referencia ...` solo cambia el selector al periodo anterior; no mezcla ni guarda esos datos como oficiales del periodo activo.
 
 Mejora futura documentada: boton `Ver detalle de carga`, con desglose de mensuales, vigencias, catalogos, ultima ejecucion Python y log asociado. No se implementa en esta fase.

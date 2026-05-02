@@ -227,6 +227,9 @@ interface ParametrosDialogState {
               </span>
             </div>
             <p class="period-mensual__detail">{{ periodoEstadoDetalle() }}</p>
+            @if ((periodoCargaEstado() === 'pendiente' || periodoCargaEstado() === 'parcial') && periodoReferenciaAnteriorLabel()) {
+              <p class="period-mensual__reference">Referencia disponible: {{ periodoReferenciaAnteriorLabel() }}</p>
+            }
           </div>
         </div>
           </div>
@@ -284,10 +287,13 @@ interface ParametrosDialogState {
               [form]="form"
               [editable]="generalesEditando()"
               [hasPeriodoData]="hasSelectedInRows()"
+              [periodoLabel]="periodoSeleccionadoLabel()"
+              [referenciaPeriodoLabel]="periodoReferenciaAnteriorLabel()"
               [fechaActualizacionLabel]="fechaActualizacionLabel()"
               [bloquearSiLectura]="bloquearSiLectura.bind(this)"
               [setDescuentosBaseFn]="setDescuentosBase.bind(this)"
               [onSubmit]="guardar.bind(this)"
+              [verReferenciaPeriodoAnterior]="verReferenciaPeriodoAnterior.bind(this)"
             ></app-parametros-valores-tab>
           }
 
@@ -296,8 +302,11 @@ interface ParametrosDialogState {
               [form]="form"
               [editable]="generalesEditando()"
               [hasPeriodoData]="hasSelectedInRows()"
+              [periodoLabel]="periodoSeleccionadoLabel()"
+              [referenciaPeriodoLabel]="periodoReferenciaAnteriorLabel()"
               [fechaActualizacionLabel]="fechaActualizacionLabel()"
               [onSubmit]="guardar.bind(this)"
+              [verReferenciaPeriodoAnterior]="verReferenciaPeriodoAnterior.bind(this)"
             >
             </app-parametros-remuneraciones-tab>
           }
@@ -314,11 +323,14 @@ interface ParametrosDialogState {
               [selectedCcafId]="selectedCcafId()"
               [selectedMutualId]="selectedMutualId()"
               [percentLabel]="decimal(selectedLey16744Rate(), 2)"
+              [periodoLabel]="periodoSeleccionadoLabel()"
+              [referenciaPeriodoLabel]="periodoReferenciaAnteriorLabel()"
               [gridPersistenceKeyCcaf]="gridPersistenceKey('parametros.ccaf.dg')"
               [gridPersistenceKeyMutuales]="gridPersistenceKey('parametros.mutuales.dg')"
               [gridPersistenceKeyLey16744]="gridPersistenceKey('parametros.ley16744.dg')"
               [seleccionarCcaf]="seleccionarCcaf.bind(this)"
               [seleccionarMutual]="seleccionarMutual.bind(this)"
+              [verReferenciaPeriodoAnterior]="verReferenciaPeriodoAnterior.bind(this)"
               [refresh]="cargar.bind(this)"
             ></app-parametros-ccaf-mutuales-tab>
           }
@@ -329,6 +341,9 @@ interface ParametrosDialogState {
               [columns]="tramosCargaColumns"
               [loading]="isLoading()"
               [gridPersistenceKey]="gridPersistenceKey('parametros.tramos-carga.dg')"
+              [periodoLabel]="periodoSeleccionadoLabel()"
+              [referenciaPeriodoLabel]="periodoReferenciaAnteriorLabel()"
+              [verReferenciaPeriodoAnterior]="verReferenciaPeriodoAnterior.bind(this)"
               [refresh]="cargar.bind(this)"
             ></app-parametros-tramos-carga-tab>
           }
@@ -342,6 +357,9 @@ interface ParametrosDialogState {
               [loading]="isLoading()"
               [gridPersistenceKeyTabla]="gridPersistenceKey('parametros.tabla-impuesto.dg')"
               [gridPersistenceKeyTramos]="gridPersistenceKey('parametros.tramos-impuesto.dg')"
+              [periodoLabel]="periodoSeleccionadoLabel()"
+              [referenciaPeriodoLabel]="periodoReferenciaAnteriorLabel()"
+              [verReferenciaPeriodoAnterior]="verReferenciaPeriodoAnterior.bind(this)"
               [refresh]="cargar.bind(this)"
             ></app-parametros-tramos-renta-tab>
           }
@@ -481,6 +499,14 @@ interface ParametrosDialogState {
       .parametros-page .period-chip--muted {
         background: #f8fafc;
         color: #64748b;
+      }
+
+      .period-mensual__reference {
+        margin: 3px 0 0;
+        color: #64748b;
+        font-size: 0.7rem;
+        font-weight: 600;
+        line-height: 1.3;
       }
 
       .parametros-page > header.parametros-header {
@@ -886,6 +912,70 @@ interface ParametrosDialogState {
         font-size: 0.72rem;
         font-weight: 600;
         line-height: 1.35;
+      }
+
+      .param-reference-callout,
+      .param-pending-notice {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px 12px;
+        margin: 0 12px;
+        padding: 9px 10px;
+        border: 1px solid #bfdbfe;
+        border-radius: 6px;
+        background: #eff6ff;
+        color: #1e3a8a;
+      }
+
+      .param-pending-notice {
+        margin: 0;
+      }
+
+      .param-reference-callout__label,
+      .param-pending-notice h2 {
+        display: block;
+        margin: 0;
+        color: #1e3a8a;
+        font-size: 0.76rem;
+        font-weight: 650;
+        line-height: 1.25;
+      }
+
+      .param-reference-callout p,
+      .param-pending-notice p {
+        margin: 2px 0 0;
+        color: #475569;
+        font-size: 0.7rem;
+        font-weight: 500;
+        line-height: 1.3;
+      }
+
+      .param-reference-callout__action {
+        flex: 0 0 auto;
+        min-height: 30px;
+        border: 1px solid #bfdbfe;
+        border-radius: 6px;
+        background: #ffffff;
+        padding: 0 10px;
+        color: #1d4ed8;
+        cursor: pointer;
+        font-size: 0.72rem;
+        font-weight: 650;
+        line-height: 1;
+      }
+
+      .param-reference-callout__action:hover {
+        border-color: #93c5fd;
+        background: #f8fafc;
+      }
+
+      @media (max-width: 760px) {
+        .param-reference-callout,
+        .param-pending-notice {
+          flex-direction: column;
+          align-items: flex-start;
+        }
       }
 
       .param-subsection-title {
@@ -1490,6 +1580,7 @@ export class ParametrosPage implements OnInit {
   readonly selectedPeriodo = signal(this.periodoGlobal.periodoYm());
   readonly catalogos = signal<ParametrosGeneralesCatalogos>(this.emptyCatalogos());
   readonly periodosGeneralesCatalogo = signal<string[]>([]);
+  readonly periodosMensualesCatalogo = signal<string[]>([]);
   readonly selectedCcafId = signal<number | null>(null);
   readonly selectedMutualId = signal<number | null>(null);
   readonly isLoading = signal(true);
@@ -1635,10 +1726,10 @@ export class ParametrosPage implements OnInit {
       case 'completo':
         return 'Datos mensuales cargados. Vigencias y catálogos disponibles.';
       case 'parcial':
-        return 'Hay datos mensuales pendientes. Revisa antes de usar el período para cálculo.';
+        return 'Faltan datos oficiales del período. Vigencias y catálogos siguen disponibles.';
       case 'pendiente':
       default:
-        return 'Faltan datos mensuales. Vigencias y catálogos siguen disponibles.';
+        return 'Faltan datos oficiales del período. Vigencias y catálogos siguen disponibles.';
     }
   });
 
@@ -1677,7 +1768,7 @@ export class ParametrosPage implements OnInit {
   readonly yearOptions = computed(() => {
     const selectedYear = Number(this.selectedYear());
     const yearsFromBd = new Set<number>();
-    for (const p of this.periodosGeneralesCatalogo()) {
+    for (const p of [...this.periodosGeneralesCatalogo(), ...this.periodosMensualesCatalogo()]) {
       const year = Number(String(p).slice(0, 4));
       if (Number.isFinite(year)) {
         yearsFromBd.add(year);
@@ -1695,6 +1786,20 @@ export class ParametrosPage implements OnInit {
   });
 
   /** Catálogos aplican su política propia: periodo mensual, vigencia o catálogo global. */
+  readonly periodoReferenciaAnterior = computed(() => {
+    const selected = this.selectedPeriodo();
+    return this.periodosMensualesCatalogo()
+      .filter((periodo) => periodo < selected)
+      .sort((left, right) => right.localeCompare(left))[0] ?? null;
+  });
+
+  readonly periodoSeleccionadoLabel = computed(() => this.formatPeriodoMesAnio(this.selectedPeriodo()));
+
+  readonly periodoReferenciaAnteriorLabel = computed(() => {
+    const periodo = this.periodoReferenciaAnterior();
+    return periodo ? this.formatPeriodoMesAnio(periodo) : null;
+  });
+
   readonly tramosCargaPorPeriodo = computed(() => this.catalogos().tramosCarga);
 
   readonly tramosImpuestoPorPeriodo = computed(() => this.catalogos().tramosImpuesto);
@@ -2020,8 +2125,12 @@ export class ParametrosPage implements OnInit {
     const periodoInicial = this.periodoGlobal.periodoYm();
 
     try {
-      const periodos = await this.service.listarPeriodos();
+      const [periodos, periodosMensuales] = await Promise.all([
+        this.service.listarPeriodos(),
+        this.service.listarPeriodosConDatosMensuales(),
+      ]);
       this.periodosGeneralesCatalogo.set(periodos);
+      this.periodosMensualesCatalogo.set(periodosMensuales);
     } catch {
       // Si falla, seguimos con período global.
     }
@@ -2335,6 +2444,14 @@ export class ParametrosPage implements OnInit {
     await this.seleccionarPeriodo(periodo);
   }
 
+  async verReferenciaPeriodoAnterior(): Promise<void> {
+    const periodo = this.periodoReferenciaAnterior();
+    if (!periodo) {
+      return;
+    }
+    await this.seleccionarPeriodo(periodo);
+  }
+
   nuevoPeriodo(): void {
     const periodo = this.selectedPeriodo() || this.currentPeriodo();
     this.patchForm(this.emptyParametroForPeriodo(periodo), periodo);
@@ -2603,6 +2720,12 @@ export class ParametrosPage implements OnInit {
       .replaceAll('/', '-');
   }
 
+  private formatPeriodoMesAnio(periodo: string): string {
+    const [year, month] = periodo.split('-');
+    const monthName = this.monthOptions.find((item) => item.value === month)?.label ?? month;
+    return `${monthName} ${year}`;
+  }
+
   labelParametro(value: string): string {
     return value
       .toLowerCase()
@@ -2738,8 +2861,12 @@ export class ParametrosPage implements OnInit {
 
   private async refrescarPeriodosDesdeBd(): Promise<void> {
     try {
-      const periodos = await this.service.listarPeriodos();
+      const [periodos, periodosMensuales] = await Promise.all([
+        this.service.listarPeriodos(),
+        this.service.listarPeriodosConDatosMensuales(),
+      ]);
       this.periodosGeneralesCatalogo.set(periodos);
+      this.periodosMensualesCatalogo.set(periodosMensuales);
     } catch {
       // Mantiene el catálogo previo si falla la consulta ligera.
     }

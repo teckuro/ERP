@@ -31,6 +31,17 @@ type ImpuestoSubId = 'tramos' | 'tabla';
       <div class="param-tab-subview">
         @if (activeSub() === 'tramos') {
           <section class="catalog-section" aria-label="Tramos impuesto">
+            @if (tramosRows.length === 0 && referenciaPeriodoLabel) {
+              <div class="param-reference-callout" role="note">
+                <div>
+                  <span class="param-reference-callout__label">Referencia disponible: {{ referenciaPeriodoLabel }}</span>
+                  <p>No se usara para calculo de {{ periodoLabel }}.</p>
+                </div>
+                <button type="button" class="param-reference-callout__action" (click)="verReferenciaPeriodoAnterior?.()">
+                  Ver referencia {{ referenciaPeriodoLabel }}
+                </button>
+              </div>
+            }
             <app-data-grid
               title="Tramos impuesto por periodo"
               [rows]="tramosRows"
@@ -42,8 +53,8 @@ type ImpuestoSubId = 'tramos' | 'tabla';
               [maxItems]="10"
               gridHeight="min(520px, 100%)"
               [persistenceKey]="gridPersistenceKeyTramos"
-              emptyTitle="No hay tramos de impuesto único para este período"
-              emptyDescription="Revisa la carga mensual o crea parámetros para el mes seleccionado."
+              [emptyTitle]="'No hay tramos de impuesto unico para ' + periodoLabel + '.'"
+              emptyDescription="La tabla oficial del periodo aun no esta integrada."
               (refresh)="refresh?.()"
             ></app-data-grid>
           </section>
@@ -51,8 +62,19 @@ type ImpuestoSubId = 'tramos' | 'tabla';
 
         @if (activeSub() === 'tabla') {
           <section class="catalog-section" aria-label="Tabla impuesto unico">
+            @if (tablaRows.length === 0 && referenciaPeriodoLabel) {
+              <div class="param-reference-callout" role="note">
+                <div>
+                  <span class="param-reference-callout__label">Referencia disponible: {{ referenciaPeriodoLabel }}</span>
+                  <p>No se usara para calculo de {{ periodoLabel }}.</p>
+                </div>
+                <button type="button" class="param-reference-callout__action" (click)="verReferenciaPeriodoAnterior?.()">
+                  Ver referencia {{ referenciaPeriodoLabel }}
+                </button>
+              </div>
+            }
             <app-data-grid
-              title="Tabla impuesto único"
+              title="Tabla impuesto unico"
               [rows]="tablaRows"
               [columns]="tablaColumns"
               [loading]="loading"
@@ -62,8 +84,8 @@ type ImpuestoSubId = 'tramos' | 'tabla';
               [maxItems]="10"
               gridHeight="min(520px, 100%)"
               [persistenceKey]="gridPersistenceKeyTabla"
-              emptyTitle="No hay tabla de impuesto único para este período"
-              emptyDescription="Revisa la carga mensual o la normativa base."
+              [emptyTitle]="'No hay tabla de impuesto unico para ' + periodoLabel + '.'"
+              emptyDescription="La tabla oficial del periodo aun no esta integrada."
               (refresh)="refresh?.()"
             ></app-data-grid>
           </section>
@@ -88,16 +110,15 @@ export class ParametrosTramosRentaTabComponent {
   @Input() loading = false;
   @Input() gridPersistenceKeyTabla = 'parametros.tabla-impuesto.dg';
   @Input() gridPersistenceKeyTramos = 'parametros.tramos-impuesto.dg';
+  @Input() periodoLabel = 'este periodo';
+  @Input() referenciaPeriodoLabel: string | null = null;
+  @Input() verReferenciaPeriodoAnterior: (() => void) | null = null;
   @Input() refresh: (() => void) | null = null;
 
-  /**
-   * Filtra por `periodo` YYYY-MM (columna generada en BD). Definido como filtro independiente del DataGrid
-   * para que siga aplicando aunque la columna «Vigencia» esté oculta en el panel de columnas.
-   */
   readonly tablaImpuestoFilters: DataGridFilter<TablaImpuestoUnicoParametro>[] = [
     {
       id: 'periodo',
-      label: 'Período tabla',
+      label: 'Periodo tabla',
       field: 'periodo',
       type: 'text',
       operator: 'startsWith',
@@ -110,7 +131,7 @@ export class ParametrosTramosRentaTabComponent {
   readonly tramosImpuestoFilters: DataGridFilter<TramoImpuestoParametro>[] = [
     {
       id: 'periodo',
-      label: 'Período',
+      label: 'Periodo',
       field: 'periodo',
       type: 'text',
       operator: 'startsWith',

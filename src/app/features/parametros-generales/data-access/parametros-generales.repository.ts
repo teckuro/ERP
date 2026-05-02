@@ -228,6 +228,38 @@ export class ParametrosGeneralesRepository {
     return out;
   }
 
+  async listarPeriodosConDatosMensuales(): Promise<string[]> {
+    const periodos = new Set<string>();
+    const sources: Array<{ table: string; column: string }> = [
+      { table: 'parametros_generales', column: 'periodo' },
+      { table: 'tramo_carga', column: 'periodo' },
+      { table: 'tramo_impuesto', column: 'periodo' },
+      { table: 'tabla_impuesto_unico', column: 'periodo' },
+      { table: 'ley_16744_parametros', column: 'periodo' },
+    ];
+
+    for (const source of sources) {
+      const { data, error } = await this.supabaseUntyped
+        .from(source.table)
+        .select(source.column)
+        .not(source.column, 'is', null)
+        .order(source.column, { ascending: false });
+
+      if (error) {
+        throw new Error(error.message);
+      }
+
+      for (const row of (data ?? []) as Record<string, unknown>[]) {
+        const periodo = String(row[source.column] ?? '').slice(0, 7);
+        if (/^\d{4}-\d{2}$/.test(periodo)) {
+          periodos.add(periodo);
+        }
+      }
+    }
+
+    return [...periodos].sort((left, right) => right.localeCompare(left));
+  }
+
   async listar(filtro?: ParametrosGeneralesFiltro): Promise<ParametroGeneral[]> {
     let query = this.supabaseUntyped
       .from('parametros_generales')

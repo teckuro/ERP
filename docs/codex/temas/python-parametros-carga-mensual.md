@@ -8,11 +8,53 @@ Los scripts Python de parametros no deben tratar todo como carga mensual del per
 
 Esta guia complementa `docs/codex/temas/parametros-vigencia-y-periodo.md`.
 
+## Preparacion inicial del periodo
+
+Al inicio de mes se puede ejecutar:
+
+```powershell
+python -B ..\Python\00_ejecutar_flujo_parametros_v611.py --periodo 2026-05 --modo preparar
+```
+
+Este modo genera un SQL de preparacion parcial bajo `Python/runs/<YYYY-MM>/mensual/preparacion_periodo_<YYYY-MM>_v611.sql`. No ejecuta el scraper mensual de PreviRed/SII y no aplica SQL remoto por si solo.
+
+Que carga o asegura:
+
+- `periodo_remuneracion` para el mes, con estado `parcial`.
+- Catalogos normativos globales: `ccaf_entidad`, `organismo_administrador_ley_16744`, `institucion_apv`, `forma_pago_apv`.
+- Vigencias/normativa disponibles desde normativa base: `parametros_legales`, `reforma_previsional_parametro`, trabajo pesado normativo y Ley SANNA.
+- Gradualidad empleador 8,5 % como calendario versionado por vigencia.
+- Matriz `ips_ex_caja_tasa_basica` si el flujo IPS genera datos.
+
+Que no carga:
+
+- `parametros_generales`.
+- `tramo_carga`.
+- `tramo_impuesto`.
+- `tabla_impuesto_unico`.
+- Snapshots mensuales oficiales de Ley 16.744 u otros datos que dependan de fuente mensual.
+
+Reglas:
+
+- `parcial` significa periodo preparado con base normativa/catalogos/vigencias, no periodo completo.
+- No se copian UF, UTM, UTA, tramos, topes ni sueldos minimos desde el mes anterior como oficiales.
+- La UI puede mostrar catalogos y vigencias aunque los datos mensuales esten pendientes.
+- No usar un periodo `parcial` para liquidacion definitiva si faltan datos mensuales obligatorios.
+- La preparacion es idempotente: usa `UPSERT`, indices `IF NOT EXISTS` y no degrada periodos `cerrado` o `corregido`.
+
+La carga mensual oficial sigue separada:
+
+```powershell
+python -B ..\Python\00_ejecutar_flujo_parametros_v611.py --periodo 2026-05 --modo mensual
+```
+
+Cuando el JSON mensual valida las secciones obligatorias, el SQL mensual marca el periodo como `cargado` salvo que el periodo ya este `cerrado` o venga explicitamente como `corregido`.
+
 ## Inventario de scripts revisados
 
 | Script | Proposito | Fuente | Destino | Periodo | Salida | Riesgo |
 |--------|-----------|--------|---------|---------|--------|--------|
-| `00_ejecutar_flujo_parametros_v611.py` | Orquesta seed, carga mensual, normativa, IPS, logs y aplicacion opcional. | Scripts `01`, `03`, `04`, `05`, `06`; opcional `psql`. | `out_v611_seed`, `runs/<periodo>/mensual`, `normativa_base`, `ips_tasas`, `logs`. | Requiere `--periodo`. | Logs y rutas por periodo. | Seguro sin `--aplicar-*`; con aplicacion revisar DSN/ambiente. |
+| `00_ejecutar_flujo_parametros_v611.py` | Orquesta seed, preparacion parcial, carga mensual, normativa, IPS, logs y aplicacion opcional. | Scripts `01`, `02`, `03`, `04`, `05`, `06`; opcional `psql`. | `out_v611_seed`, `runs/<periodo>/mensual`, `normativa_base`, `ips_tasas`, `logs`. | Requiere `--periodo`; `--modo preparar|mensual|full`. | Logs y rutas por periodo. | Seguro sin `--aplicar-*`; con aplicacion revisar DSN/ambiente. |
 | `01_scrape_semillas_v611.py` | Scraping y normalizacion de seed estructural. | SPensiones, PreviRed, Supersalud y catalogos internos. | `afp`, `afp_vigencia`, `salud`, `entidad_previsional_ips`, movimientos, inasistencias, conceptos. | Opcional `--periodo`; usa `vigencia_inicio` comun. | `seed_v611.json`, `seed_v611.sql`. | Incluye `TRUNCATE TABLE`; tratar como bootstrap, no mensual. |
 | `02_normativa_base_v611.py` | Normativa y maestros faltantes. | SPensiones, Hacienda, ChileAtiende, SUSESO, PreviRed. | `trabajo_pesado_parametro`, SANNA, `reforma_previsional_parametro`, Ley 16.744, CCAF, APV. | Puede anclar salida por periodo, pero la semantica es vigencia/catalogo. | JSON y SQL normativo. | Usa `CREATE/ALTER IF NOT EXISTS` y `ON CONFLICT`; no debe duplicar gradualidad. |
 | `03_scrape_parametros_mensuales_v611_json.py` | Obtiene indicadores mensuales y arma JSON del periodo. | PDF PreviRed mensual, SII, seed base. | `periodo_remuneracion`, `parametros_generales_compat`, `parametros_legales`, `afc_parametro`, `tramo_carga`, impuesto, `afp_vigencia_updates`. | Requiere `--periodo`. | JSON mensual y manifest. | Mezcla mensuales y vigencias de origen mensual; el render debe mantener categorias. |
