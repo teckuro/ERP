@@ -139,6 +139,7 @@ Hasta cerrar las fases previas del tablero y el contrato correspondiente:
 | Fases y cierre | [`estado-fases.md`](./estado-fases.md) |
 | Empleados estado/aptitud | [`../temas/empleados-estados-completitud-aptitud.md`](../temas/empleados-estados-completitud-aptitud.md) |
 | Borrador / tests | [`../temas/creacion-avanzada-borrador-tests.md`](../temas/creacion-avanzada-borrador-tests.md) |
+| Organización temas / flujos app | [`../temas/organizacion-por-modulo-y-flujos.md`](../temas/organizacion-por-modulo-y-flujos.md), [`../temas/flujos/README.md`](../temas/flujos/README.md) |
 | Parámetros período / vigencia | [`../temas/parametros-vigencia-y-periodo.md`](../temas/parametros-vigencia-y-periodo.md) |
 | Parámetros UI | [`../temas/parametros-ui-estandar.md`](../temas/parametros-ui-estandar.md) |
 | Python carga mensual | [`../temas/python-parametros-carga-mensual.md`](../temas/python-parametros-carga-mensual.md) |

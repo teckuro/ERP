@@ -6,6 +6,7 @@ Explicar **cómo funciona** la pantalla de ficha (`/empleados/:id`) en el front 
 
 Complementa (sin sustituir):
 
+- [`flujos/empleados.md`](./flujos/empleados.md) — índice de rutas y flujos del módulo Empleados.
 - [`flujo-edicion-ficha-empleado.md`](./flujo-edicion-ficha-empleado.md) — flujo UX de edición por tabs y bloques.
 - [`empleados-estados-completitud-aptitud.md`](./empleados-estados-completitud-aptitud.md) — estados, helper de completitud y validación para remuneraciones.
 - [`../ui-form-guidelines.md`](../ui-form-guidelines.md) — formularios y mensajes.

@@ -20,7 +20,7 @@ Conjunto de documentos **globales y breves** para que Codex, Cursor, ChatGPT u o
 4. [`../README.md`](../README.md) — índice padre y enlaces por tema.
 5. **Documento específico** del módulo o fase (p. ej. empleados, parámetros, Python) según el trabajo.
 
-Siempre debe quedar claro: primero **contexto + fases**, después **contrato**, después **tema**.
+Siempre debe quedar claro: primero **contexto + fases**, después **contrato**, después **tema**. El índice por **módulo y flujos de pantalla** está en [`../temas/README.md`](../temas/README.md) y [`../temas/flujos/README.md`](../temas/flujos/README.md).
 
 ## Relación con `docs/codex/temas`
 

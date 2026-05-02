@@ -45,6 +45,8 @@ Si falta un caso: primero `ui-form-guidelines.md` y `AGENTS.md`; luego temas esp
 | [`ui-tables.md`](./ui-tables.md) | Estándar de tablas, DataGrid, columnas, formatos, filtros, empty states y responsive |
 | [`estilos/README.md`](./estilos/README.md) | Grilla 8 columnas, anchos, checklist de cierre (7 ítems) |
 | [`temas/implementacion-ui.md`](./temas/implementacion-ui.md) | Dónde está el CSS y componentes en el repo (sin duplicar tokens) |
+| [`temas/organizacion-por-modulo-y-flujos.md`](./temas/organizacion-por-modulo-y-flujos.md) | Convención: temas por módulo/página y carpeta `flujos/` |
+| [`temas/flujos/README.md`](./temas/flujos/README.md) | Índice de flujos de la app (rutas ↔ recorridos) |
 
 ### Proyecto y tipografía
 
@@ -109,4 +111,4 @@ Si falta un caso: primero `ui-form-guidelines.md` y `AGENTS.md`; luego temas esp
 
 ## Carpeta `temas/`
 
-Documentos auxiliares que **no duplican** el contrato de `AGENTS.md`: [`temas/README.md`](./temas/README.md).
+Documentos auxiliares que **no duplican** el contrato de `AGENTS.md`. Entrada ordenada **por módulo** y **flujos por ruta**: [`temas/README.md`](./temas/README.md) y [`temas/flujos/README.md`](./temas/flujos/README.md).
