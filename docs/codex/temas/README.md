@@ -2,6 +2,8 @@
 
 Documentación **por tema** que complementa el índice padre [`../README.md`](../README.md) sin repetir el contrato de [`../AGENTS.md`](../AGENTS.md).
 
+El **contexto global del producto** y el **tablero de fases** (qué está cerrado, qué sigue, qué no tocar aún) están en [`../orquestador/`](../orquestador/README.md): [`contexto-proyecto.md`](../orquestador/contexto-proyecto.md), [`estado-fases.md`](../orquestador/estado-fases.md). Aquí viven los **contratos por dominio** (empleados, parámetros, Python, etc.).
+
 - [`implementacion-ui.md`](./implementacion-ui.md) — rutas de código (CSS, componentes compartidos).
 
 ### Empleados / Angular

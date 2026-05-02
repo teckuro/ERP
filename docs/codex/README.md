@@ -2,6 +2,18 @@
 
 **Este es el único punto de entrada** para normas de producto, UI y flujos en `docs/codex`. El resto está repartido **por tema**; aquí no se repiten definiciones que ya viven en otros archivos.
 
+### Contexto global y fases (agentes Codex / Cursor / ChatGPT)
+
+Para **mapa del producto**, **fases cerradas frente a la siguiente** y **qué no construir aún**, usar la carpeta **[`orquestador/`](./orquestador/README.md)**:
+
+| Documento | Uso |
+|-----------|-----|
+| [`orquestador/README.md`](./orquestador/README.md) | Rol del orquestador y orden de lectura |
+| [`orquestador/contexto-proyecto.md`](./orquestador/contexto-proyecto.md) | Visión, stack, módulos, reglas UI, camino a remuneraciones |
+| [`orquestador/estado-fases.md`](./orquestador/estado-fases.md) | Tablero de fases, enlaces y criterios para avanzar |
+
+No sustituye a [`AGENTS.md`](./AGENTS.md) ni al detalle de [`temas/`](./temas/README.md); acelera el **arranque** de una sesión o fase nueva.
+
 ---
 
 ## Cada petición: qué pedir y qué se aplica
@@ -82,6 +94,7 @@ Si falta un caso: primero `ui-form-guidelines.md` y `AGENTS.md`; luego temas esp
 
 ## Orden de lectura sugerido (pantalla nueva o refino UI)
 
+0. Sesión o fase amplia: [`orquestador/contexto-proyecto.md`](./orquestador/contexto-proyecto.md) y [`orquestador/estado-fases.md`](./orquestador/estado-fases.md).
 1. [`AGENTS.md`](./AGENTS.md)
 2. [`ui-form-guidelines.md`](./ui-form-guidelines.md)
 3. [`ui-button-guidelines.md`](./ui-button-guidelines.md)
