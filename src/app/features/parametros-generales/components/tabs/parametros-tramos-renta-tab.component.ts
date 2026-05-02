@@ -26,17 +26,6 @@ type ImpuestoSubId = 'tramos' | 'tabla';
             (activeIdChange)="setSub($event)"
           />
         </div>
-        <div class="param-hint param-hint--consulta param-hint--inline" role="note">
-          @if (activeSub() === 'tramos') {
-            <span class="param-hint__tag">Mensual</span>
-            <span class="param-hint__tag">Período {{ periodo }}</span>
-          } @else {
-            <span class="param-hint__tag">Vigencia</span>
-            <span class="param-hint__tag">Tabla base</span>
-          }
-          <span class="param-hint__tag">Solo lectura</span>
-          <span class="param-hint__text">{{ activeSub() === 'tramos' ? 'Tramos cargados para el período activo.' : 'Tabla base aplicable al período activo.' }}</span>
-        </div>
       </div>
 
       <div class="param-tab-subview">
@@ -96,7 +85,6 @@ export class ParametrosTramosRentaTabComponent {
   @Input({ required: true }) tramosRows!: TramoImpuestoParametro[];
   @Input({ required: true }) tramosColumns!: DataGridColumn<TramoImpuestoParametro>[];
 
-  @Input() periodo = '';
   @Input() loading = false;
   @Input() gridPersistenceKeyTabla = 'parametros.tabla-impuesto.dg';
   @Input() gridPersistenceKeyTramos = 'parametros.tramos-impuesto.dg';

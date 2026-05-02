@@ -73,6 +73,7 @@ interface MonthOption {
 }
 
 type ParametrosDialogKind = 'alerta' | 'confirmar-guardado' | 'confirmar-crear-parametros';
+type PeriodoCargaEstado = 'pendiente' | 'parcial' | 'completo' | 'editando' | 'error';
 
 interface ParametrosDialogState {
   kind: ParametrosDialogKind;
@@ -133,10 +134,6 @@ interface ParametrosDialogState {
           }
 
           <div class="parametros-toolbar__end">
-            @if (!generalesEditando() && !isConfigurableTab() && !parametrosUiBloqueada()) {
-              <span class="period-chip period-chip--muted" role="note">Solo lectura</span>
-            }
-
             @if (generalesEditando()) {
               <app-page-actions
                 [visibleActions]="['back', 'save']"
@@ -218,34 +215,13 @@ interface ParametrosDialogState {
           </div>
 
           <div class="period-status">
-            <span class="period-status__label">
-              @if (hasSelectedInRows()) {
-                Parámetros cargados para {{ selectedPeriodo() }}
-              } @else {
-                Sin información cargada para {{ selectedPeriodo() }}
-              }
-            </span>
+            <span class="period-status__label">{{ periodoEstadoTitulo() }}</span>
+            <span class="period-status__detail">{{ periodoEstadoDetalle() }}</span>
             <span class="period-status__chips" role="status" aria-label="Estado del período">
-              @if (!hasSelectedInRows()) {
-                <span class="period-chip period-chip--warning">Sin datos</span>
-              } @else if (generalesEditando()) {
-                <span class="period-chip period-chip--info">Editando</span>
-              } @else if (isConfigurableTab()) {
-                <span class="period-chip period-chip--success">Cargado</span>
-              } @else {
-                <span class="period-chip period-chip--muted">Solo lectura</span>
-              }
+              <span class="period-chip" [ngClass]="periodoEstadoChipClass()">{{ periodoEstadoChip() }}</span>
             </span>
             <span class="period-status__next" role="note">
-              @if (!hasSelectedInRows()) {
-                Acción: Crear parámetros
-              } @else if (generalesEditando()) {
-                Acción: Guardar
-              } @else if (isConfigurableTab()) {
-                Acción: Modificar
-              } @else {
-                Acción: Consultar
-              }
+              Acción: {{ periodoEstadoAccion() }}
             </span>
           </div>
           <p class="period-sync-hint">
@@ -329,7 +305,6 @@ interface ParametrosDialogState {
             <app-parametros-ccaf-mutuales-tab
               [activeSub]="ccafMutualSubTab()"
               (activeSubChange)="ccafMutualSubTab.set($event)"
-              [periodo]="selectedPeriodo()"
               [catalogos]="catalogos()"
               [ccafColumns]="ccafColumns"
               [organismosLeyColumns]="organismosLeyColumns"
@@ -349,7 +324,6 @@ interface ParametrosDialogState {
 
           @case ('tramosCarga') {
             <app-parametros-tramos-carga-tab
-              [periodo]="selectedPeriodo()"
               [rows]="tramosCargaPorPeriodo()"
               [columns]="tramosCargaColumns"
               [loading]="isLoading()"
@@ -360,7 +334,6 @@ interface ParametrosDialogState {
 
           @case ('impuestoUnico') {
             <app-parametros-tramos-renta-tab
-              [periodo]="selectedPeriodo()"
               [tablaRows]="tablaImpuestoPorPeriodo()"
               [tablaColumns]="tablaImpuestoColumns"
               [tramosRows]="tramosImpuestoPorPeriodo()"
@@ -374,7 +347,6 @@ interface ParametrosDialogState {
 
           @case ('salud') {
             <app-parametros-salud-tab
-              [periodo]="selectedPeriodo()"
               [isapreRows]="isapresPorPeriodo()"
               [institucionesRows]="saludOtrasInstitucionesPorPeriodo()"
               [columns]="isapreColumns"
@@ -387,7 +359,6 @@ interface ParametrosDialogState {
 
           @case ('prevision') {
             <app-parametros-afp-tab
-              [periodo]="selectedPeriodo()"
               [rows]="afpPorPeriodo()"
               [columns]="afpColumns"
               [loading]="isLoading()"
@@ -398,7 +369,6 @@ interface ParametrosDialogState {
 
           @case ('reforma') {
             <app-parametros-reforma-tab
-              [periodo]="selectedPeriodo()"
               [reformaPensiones]="reformaPensionesPorPeriodo()"
               [reformaPrevisional]="reformaPrevisionalPorPeriodo()"
               [trabajosPesados]="trabajosPesadosPorPeriodo()"
@@ -483,6 +453,14 @@ interface ParametrosDialogState {
         font-weight: 700;
       }
 
+      .parametros-page .period-status__detail {
+        flex-basis: 100%;
+        color: #64748b;
+        font-size: 0.72rem;
+        font-weight: 500;
+        line-height: 1.35;
+      }
+
       .parametros-page .period-status__chips {
         display: inline-flex;
         align-items: center;
@@ -521,6 +499,12 @@ interface ParametrosDialogState {
         border-color: rgba(245, 158, 11, 0.25);
         background: #fffbeb;
         color: #92400e;
+      }
+
+      .parametros-page .period-chip--error {
+        border-color: rgba(220, 38, 38, 0.25);
+        background: #fef2f2;
+        color: #991b1b;
       }
 
       .parametros-page .period-chip--info {
@@ -649,55 +633,6 @@ interface ParametrosDialogState {
         white-space: nowrap;
       }
 
-      /* Avisos de contexto: integrados, sin “cajas” pesadas */
-      .param-hint {
-        display: flex;
-        align-items: baseline;
-        flex-wrap: wrap;
-        gap: 6px 10px;
-        margin: 0 0 10px;
-        padding: 0;
-        max-width: min(52rem, 100%);
-      }
-
-      .param-hint__tag {
-        flex: 0 0 auto;
-        margin: 0;
-        padding: 1px 7px;
-        border-radius: 999px;
-        border: 1px solid var(--prm-chip-line, #e5e7eb);
-        background: var(--prm-chip-soft, #f1f5f9);
-        color: var(--prm-chip-muted, #64748b);
-        font-size: 0.62rem;
-        font-weight: 750;
-        letter-spacing: 0.04em;
-        line-height: 1.35;
-        text-transform: uppercase;
-      }
-
-      .param-hint--editable .param-hint__tag {
-        border-color: rgba(37, 99, 235, 0.22);
-        background: rgba(239, 246, 255, 0.85);
-        color: #2563eb;
-      }
-
-      .param-hint__text {
-        margin: 0;
-        color: var(--prm-muted, #6b7280);
-        font-size: 0.72rem;
-        font-weight: 500;
-        line-height: 1.4;
-      }
-
-      .param-hint--consulta {
-        margin-bottom: 6px;
-      }
-
-      .parametros-page .catalog-section > .param-hint {
-        padding: 4px 12px 0;
-        margin-bottom: 0;
-      }
-
       .param-subhead {
         display: flex;
         flex-wrap: wrap;
@@ -710,11 +645,6 @@ interface ParametrosDialogState {
       .param-subhead__tabs {
         flex: 1 1 auto;
         min-width: 0;
-      }
-
-      .param-hint--inline {
-        margin-bottom: 0;
-        flex: 0 0 auto;
       }
 
       .parametros-toolbar__main {
@@ -1684,6 +1614,30 @@ export class ParametrosPage implements OnInit {
   }
 
   readonly hasSelectedInRows = computed(() => this.rows().some((row) => row.periodo === this.selectedPeriodo()));
+  readonly periodoCargaEstado = computed<PeriodoCargaEstado>(() => {
+    if (this.cargaBloqueadaPorError()) {
+      return 'error';
+    }
+    if (this.generalesEditando()) {
+      return 'editando';
+    }
+
+    const seccionesMensuales = [
+      this.hasSelectedInRows(),
+      this.catalogos().tramosCarga.length > 0,
+      this.catalogos().tramosImpuesto.length > 0,
+      this.catalogos().ley16744Parametros.length > 0,
+    ];
+    const cargadas = seccionesMensuales.filter(Boolean).length;
+
+    if (cargadas === 0) {
+      return 'pendiente';
+    }
+    if (cargadas < seccionesMensuales.length) {
+      return 'parcial';
+    }
+    return 'completo';
+  });
   readonly hasAnySyncedData = computed(() => {
     const catalogos = this.catalogos();
 
@@ -1705,6 +1659,86 @@ export class ParametrosPage implements OnInit {
       catalogos.apvFormasPago.length > 0 ||
       catalogos.afcParametros.length > 0
     );
+  });
+
+  readonly periodoEstadoTitulo = computed(() => {
+    const periodo = this.periodoGlobal.etiqueta();
+    switch (this.periodoCargaEstado()) {
+      case 'error':
+        return `Error en carga mensual de ${periodo}`;
+      case 'editando':
+        return `Editando parámetros mensuales de ${periodo}`;
+      case 'completo':
+        return `Parámetros mensuales cargados para ${periodo}`;
+      case 'parcial':
+        return `Carga mensual parcial para ${periodo}`;
+      case 'pendiente':
+      default:
+        return `${periodo} pendiente de carga mensual`;
+    }
+  });
+
+  readonly periodoEstadoDetalle = computed(() => {
+    switch (this.periodoCargaEstado()) {
+      case 'error':
+        return 'La normativa y catálogos siguen disponibles. Revisa el detalle de carga.';
+      case 'editando':
+        return 'Guarda los cambios para actualizar la configuración mensual.';
+      case 'completo':
+        return 'Datos mensuales, vigencias y catálogos disponibles.';
+      case 'parcial':
+        return 'Hay datos mensuales pendientes. Revisa antes de usar el período para cálculo.';
+      case 'pendiente':
+      default:
+        return 'Catálogos, vigencias y normativa siguen disponibles para consulta.';
+    }
+  });
+
+  readonly periodoEstadoChip = computed(() => {
+    switch (this.periodoCargaEstado()) {
+      case 'error':
+        return 'Error';
+      case 'editando':
+        return 'Editando';
+      case 'completo':
+        return 'Completo';
+      case 'parcial':
+        return 'Parcial';
+      case 'pendiente':
+      default:
+        return 'Pendiente';
+    }
+  });
+
+  readonly periodoEstadoChipClass = computed(() => {
+    switch (this.periodoCargaEstado()) {
+      case 'error':
+        return 'period-chip--error';
+      case 'editando':
+        return 'period-chip--info';
+      case 'completo':
+        return 'period-chip--success';
+      case 'parcial':
+      case 'pendiente':
+      default:
+        return 'period-chip--warning';
+    }
+  });
+
+  readonly periodoEstadoAccion = computed(() => {
+    if (this.generalesEditando()) {
+      return 'Guardar';
+    }
+    if (this.periodoCargaEstado() === 'pendiente') {
+      return 'Crear parámetros';
+    }
+    if (this.periodoCargaEstado() === 'parcial') {
+      return 'Revisar';
+    }
+    if (this.isConfigurableTab()) {
+      return 'Modificar';
+    }
+    return 'Consultar';
   });
   readonly yearOptions = computed(() => {
     const selectedYear = Number(this.selectedYear());

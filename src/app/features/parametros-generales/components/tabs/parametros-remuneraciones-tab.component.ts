@@ -8,23 +8,6 @@ import { FormGroup, ReactiveFormsModule } from '@angular/forms';
   imports: [CommonModule, ReactiveFormsModule],
   template: `
     <form class="tab-panel parametros-form" [formGroup]="form" (ngSubmit)="onSubmit?.()">
-      @if (hasPeriodoData) {
-        <div class="param-hint param-hint--editable" role="note">
-          <span class="param-hint__tag">{{ editable ? 'Editando' : 'Cargado' }}</span>
-          <span class="param-hint__text">
-            @if (editable) {
-              Los cambios se guardan con Guardar en la barra superior.
-            } @else {
-              Modifica desde el botón Modificar de la barra superior.
-            }
-          </span>
-        </div>
-      } @else {
-        <div class="param-hint param-hint--consulta param-hint--inline" role="note">
-          <span class="param-hint__tag">Sin datos del período</span>
-          <span class="param-hint__text">Crea parámetros para habilitar edición en esta sección.</span>
-        </div>
-      }
       <section class="param-group" aria-labelledby="rentas-title">
         <h2 id="rentas-title">Remuneraciones</h2>
         <p class="param-section-lead">Rentas mínimas imponibles y montos base.</p>

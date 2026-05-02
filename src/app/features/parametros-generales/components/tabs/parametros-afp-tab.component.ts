@@ -14,12 +14,6 @@ import { AfpParametro } from '../../models/parametro-general.model';
   template: `
     <section class="tab-panel">
       <section class="catalog-section" aria-label="AFP">
-        <div class="param-hint param-hint--consulta" role="note">
-          <span class="param-hint__tag">Vigencia</span>
-          <span class="param-hint__tag">Vigente al período activo</span>
-          <span class="param-hint__tag">Solo lectura</span>
-          <span class="param-hint__text">AFP vigentes para el período {{ periodo }}.</span>
-        </div>
         <app-data-grid
           title="AFP"
           [rows]="rows"
@@ -42,7 +36,6 @@ import { AfpParametro } from '../../models/parametro-general.model';
 export class ParametrosAfpTabComponent {
   @Input({ required: true }) rows!: AfpParametro[];
   @Input({ required: true }) columns!: DataGridColumn<AfpParametro>[];
-  @Input() periodo = '';
   @Input() loading = false;
   @Input() gridPersistenceKey = 'parametros.afp.dg';
   @Input() refresh: (() => void) | null = null;

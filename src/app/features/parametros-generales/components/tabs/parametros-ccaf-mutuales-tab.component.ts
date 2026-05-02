@@ -41,28 +41,10 @@ export type CcafMutualSubId = 'config' | 'listaCcaf' | 'mutuales' | 'ley16744';
             (activeIdChange)="emitSub($event)"
           />
         </div>
-        @if (activeSub !== 'config') {
-          <div class="param-hint param-hint--consulta param-hint--inline" role="note">
-            @if (activeSub === 'ley16744') {
-              <span class="param-hint__tag">Mensual</span>
-              <span class="param-hint__tag">Período {{ periodo }}</span>
-            } @else {
-              <span class="param-hint__tag">Catálogo global</span>
-              <span class="param-hint__tag">No depende del período</span>
-            }
-            <span class="param-hint__tag">Solo lectura</span>
-            <span class="param-hint__text">{{ activeSub === 'ley16744' ? 'Parámetros cargados para el período activo.' : 'Catálogo disponible para selección y consulta.' }}</span>
-          </div>
-        }
       </div>
 
       <div class="param-tab-subview">
         @if (activeSub === 'config') {
-          <div class="param-hint param-hint--editable" role="note">
-            <span class="param-hint__tag">Configuración vigente</span>
-            <span class="param-hint__tag">Referencia del período</span>
-            <span class="param-hint__text">La selección se guarda con Guardar en la barra superior.</span>
-          </div>
           <section class="param-group param-group--ccaf-current" aria-labelledby="ccaf-title">
             <h2 id="ccaf-title">Configuración vigente del período</h2>
             <p class="param-section-lead">Selección usada como referencia para el período activo.</p>
@@ -228,7 +210,6 @@ export class ParametrosCcafMutualesTabComponent {
   @Input({ required: true }) ley16744Columns!: DataGridColumn<Ley16744Parametro>[];
 
   @Input() loading = false;
-  @Input() periodo = '';
   @Input() selectedCcafId: number | null = null;
   @Input() selectedMutualId: number | null = null;
   @Input() percentLabel = '—';

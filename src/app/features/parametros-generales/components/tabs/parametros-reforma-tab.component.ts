@@ -32,28 +32,6 @@ type ReformaSubId = 'legales' | 'aportes' | 'trabPesados' | 'apvInst' | 'apvPago
             (activeIdChange)="setSub($event)"
           />
         </div>
-        <div class="param-hint param-hint--consulta param-hint--inline" role="note">
-          @if (activeSub() === 'legales') {
-            <span class="param-hint__tag">Vigencia</span>
-            <span class="param-hint__tag">Período contextual</span>
-            <span class="param-hint__tag">Solo lectura</span>
-            <span class="param-hint__text">Parámetros vigentes para el período {{ periodo }}.</span>
-          } @else if (activeSub() === 'aportes') {
-            <span class="param-hint__tag">Normativa</span>
-            <span class="param-hint__tag">Vigencia por devengo</span>
-            <span class="param-hint__tag">Tramo según período</span>
-            <span class="param-hint__text">Calendario aplicable según período activo.</span>
-          } @else if (activeSub() === 'trabPesados') {
-            <span class="param-hint__tag">Híbrido</span>
-            <span class="param-hint__tag">Período + vigencia</span>
-            <span class="param-hint__tag">Solo lectura</span>
-            <span class="param-hint__text">Tasas aplicables al período activo.</span>
-          } @else {
-            <span class="param-hint__tag">Catálogo global</span>
-            <span class="param-hint__tag">No depende del período</span>
-            <span class="param-hint__text">Catálogo disponible para consulta.</span>
-          }
-        </div>
       </div>
 
       <div class="param-tab-subview">
@@ -177,7 +155,6 @@ export class ParametrosReformaTabComponent {
   @Input({ required: true }) apvInstituciones!: ApvApvcInstitucion[];
   @Input({ required: true }) apvFormasPago!: ApvApvcFormaPago[];
 
-  @Input() periodo = '';
   @Input({ required: true }) parametrosLegalesColumns!: DataGridColumn<ParametroLegal>[];
   @Input({ required: true }) reformaPrevisionalColumns!: DataGridColumn<ReformaPrevisionalParametro>[];
   @Input({ required: true }) trabajosPesadosColumns!: DataGridColumn<TrabajoPesadoParametro>[];

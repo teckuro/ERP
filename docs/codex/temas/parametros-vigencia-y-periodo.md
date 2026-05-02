@@ -130,3 +130,15 @@ Pendiente Python/SQL:
 
 - Confirmar que los maestros globales no se traten como faltantes mensuales en los logs de carga.
 - Revisar si `trabajo_pesado_parametro` debe exigir `periodo` mensual en UI o permanecer como vigencia solapada.
+
+## Actualizacion aplicada: estado global y tabs limpios
+
+Fecha de ajuste: 2026-05-01.
+
+La UI no debe repetir chips de tipo de dato en cada tab. La explicacion mensual/vigencia/catalogo queda en esta documentacion; la pantalla muestra:
+
+- Banda superior: estado global del periodo (`Pendiente`, `Parcial`, `Completo`, `Editando`, `Error`) y una descripcion corta.
+- Tabs: titulo, filtros, tabla y empty state especifico.
+- Tablas normativas: estados por fila cuando aportan decision operativa (`Vigente al periodo`, `Futuro`, `Historico`).
+
+Mejora futura documentada: boton `Ver detalle de carga`, con desglose de mensuales, vigencias, catalogos, ultima ejecucion Python y log asociado. No se implementa en esta fase.

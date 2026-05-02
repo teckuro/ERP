@@ -15,12 +15,6 @@ import { TramoCargaParametro } from '../../models/parametro-general.model';
     <section class="tab-panel">
       <section class="catalog-section" aria-labelledby="tramos-carga-title">
         <h2 id="tramos-carga-title">Tramos cargas familiares</h2>
-        <div class="param-hint param-hint--consulta" role="note">
-          <span class="param-hint__tag">Mensual</span>
-          <span class="param-hint__tag">Período {{ periodo }}</span>
-          <span class="param-hint__tag">Solo lectura</span>
-          <span class="param-hint__text">Tramos cargados para el período activo.</span>
-        </div>
         <app-data-grid
           title="Tramos de asignación familiar"
           [rows]="rows"
@@ -43,7 +37,6 @@ import { TramoCargaParametro } from '../../models/parametro-general.model';
 export class ParametrosTramosCargaTabComponent {
   @Input({ required: true }) rows!: TramoCargaParametro[];
   @Input({ required: true }) columns!: DataGridColumn<TramoCargaParametro>[];
-  @Input() periodo = '';
   @Input() loading = false;
   @Input() gridPersistenceKey = 'parametros.tramos-carga.dg';
   @Input() refresh: (() => void) | null = null;

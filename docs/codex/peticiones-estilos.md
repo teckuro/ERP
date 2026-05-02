@@ -3,6 +3,20 @@
 Registro cronológico de mejoras visuales aplicadas por petición, con foco en **trazabilidad** (qué se tocó y dónde),
 sin mezclarlo con las reglas base.
 
+### 2026-05-01 (Parametros - estado simple y tabs limpios)
+
+- **Banda superior como fuente de estado**: el periodo ahora comunica pendiente, parcial, completo, editando o error con un chip unico y una descripcion corta; los catalogos/vigencias se explican como disponibles aunque falte carga mensual.
+  - `src/app/pages/parametros.page.ts`
+- **Tabs sin chips repetidos**: se quitaron los hints/chips de tipo de dato en Valores, Remuneraciones, CCAF/Mutual, Tramos, Impuesto, Salud, Prevision y Reforma; quedan titulo, filtros, tabla y empty state especifico.
+  - `src/app/features/parametros-generales/components/tabs/parametros-valores-tab.component.ts`
+  - `src/app/features/parametros-generales/components/tabs/parametros-remuneraciones-tab.component.ts`
+  - `src/app/features/parametros-generales/components/tabs/parametros-ccaf-mutuales-tab.component.ts`
+  - `src/app/features/parametros-generales/components/tabs/parametros-tramos-carga-tab.component.ts`
+  - `src/app/features/parametros-generales/components/tabs/parametros-tramos-renta-tab.component.ts`
+  - `src/app/features/parametros-generales/components/tabs/parametros-salud-tab.component.ts`
+  - `src/app/features/parametros-generales/components/tabs/parametros-afp-tab.component.ts`
+  - `src/app/features/parametros-generales/components/tabs/parametros-reforma-tab.component.ts`
+
 ### 2026-05-01 (Parametros - copy compacto por tipo de dato)
 
 - **Hints sin detalles tecnicos de BD**: se reemplazaron explicaciones visibles con nombres de tablas/columnas por chips compactos de contexto (`Mensual`, `Vigencia`, `Catalogo global`, `Normativa`, `Solo lectura`) y frases de una linea.

@@ -7,21 +7,6 @@ import { FormGroup, ReactiveFormsModule } from '@angular/forms';
   imports: [CommonModule, ReactiveFormsModule],
   template: `
     <form class="tab-panel parametros-form" [formGroup]="form" (ngSubmit)="onSubmit?.()">
-      @if (hasPeriodoData) {
-        <div class="param-hint param-hint--editable" role="note">
-          <span class="param-hint__tag">{{ editable ? 'Editando' : 'Cargado' }}</span>
-          @if (editable) {
-            <span class="param-hint__text">Los cambios se guardan con el botón Guardar de la barra superior.</span>
-          } @else {
-            <span class="param-hint__text">Estos datos se modifican desde el botón Modificar de la barra superior.</span>
-          }
-        </div>
-      } @else {
-        <div class="param-hint param-hint--consulta param-hint--inline" role="note">
-          <span class="param-hint__tag">Sin datos del período</span>
-          <span class="param-hint__text">Crea parámetros para habilitar edición en esta sección.</span>
-        </div>
-      }
       <section class="param-group" aria-labelledby="indicadores-title">
         <h2 id="indicadores-title">Indicadores mensuales</h2>
         <p class="param-section-lead">UF, UTM y UTA del periodo.</p>

@@ -26,12 +26,6 @@ type SaludSubId = 'isapre' | 'instituciones';
             (activeIdChange)="setSub($event)"
           />
         </div>
-        <div class="param-hint param-hint--consulta param-hint--inline" role="note">
-          <span class="param-hint__tag">Vigencia</span>
-          <span class="param-hint__tag">Vigente al período activo</span>
-          <span class="param-hint__tag">Solo lectura</span>
-          <span class="param-hint__text">Instituciones vigentes para el período {{ periodo }}.</span>
-        </div>
       </div>
 
       <div class="param-tab-subview">
@@ -90,7 +84,6 @@ export class ParametrosSaludTabComponent {
   @Input({ required: true }) institucionesRows!: IsapreParametro[];
   @Input({ required: true }) columns!: DataGridColumn<IsapreParametro>[];
 
-  @Input() periodo = '';
   @Input() loading = false;
   @Input() gridPersistenceKeyIsapre = 'parametros.isapre.dg';
   @Input() gridPersistenceKeyInstituciones = 'parametros.salud-instituciones.dg';
