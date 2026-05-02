@@ -513,3 +513,36 @@ de la ficha. No completa valores faltantes. No duplica persona.
 Guardar una seccion de ficha no valida automaticamente. Si el guardado deja la
 ficha sin bloqueos, la UI cambia a `Ficha completa` y `Pendiente de validacion`.
 La aptitud solo se persiste con la accion explicita.
+
+## 22. Rehidratacion de borrador avanzado
+
+Al continuar un borrador avanzado desde:
+
+```text
+/empleados/nuevo?idPersona=<id_persona>
+```
+
+la ficha debe separar datos persistidos de datos reales del usuario.
+
+Los defaults tecnicos pueden existir en BD para permitir persistencia parcial,
+pero no deben hidratarse como valores reales del formulario ni marcar pasos como
+completos. Al cargar el borrador:
+
+- `paso_alta_avanzada` define el paso activo del wizard;
+- los pasos posteriores al paso guardado quedan pendientes salvo datos reales
+  confirmados;
+- `DRAFT-*` se muestra como cuenta bancaria pendiente, no como cuenta real;
+- `Sin cargo` se muestra como cargo pendiente;
+- sueldo base `0` o invalido deja remuneracion pendiente;
+- `tipoPrevision = NINGUNA` de borrador no completa automaticamente prevision;
+- placeholders como direccion tecnica no cuentan como domicilio real.
+
+La normalizacion ocurre solo al hidratar el borrador para UI. No cambia la regla
+de guardado de borrador: se puede seguir persistiendo parcialmente con defaults
+tecnicos cuando la BD lo exige.
+
+La completitud visual del wizard debe mirar datos reales validos, no solo filas
+relacionadas ni valores crudos. El resumen final usa esas mismas reglas: si
+quedan defaults tecnicos o datos pendientes, muestra pendientes y no permite
+finalizar alta. Finalizar alta sigue ejecutando el helper central y bloquea
+defaults tecnicos antes de activar o dejar apta la ficha.

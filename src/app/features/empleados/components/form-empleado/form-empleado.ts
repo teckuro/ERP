@@ -15,6 +15,7 @@ import {
   mapEmpleadoFormToPayloadBorrador,
 } from '../../mappers/empleado-form.mapper';
 import { validateBorradorAvanzadoFormMinimo } from '../../utils/empleado-borrador-form.validation';
+import { normalizarBorradorAvanzadoParaFormulario } from '../../utils/empleado-borrador-hidratacion';
 import {
   EMPTY_EMPLEADO_FORM_CATALOGOS,
   EmpleadoFormCatalogos,
@@ -1053,9 +1054,10 @@ export class FormEmpleadoComponent implements OnInit {
         return;
       }
 
-      this.borradorPersonaId.set(id);
-      this.form.patchValue(detalle.formValue as never);
       const paso = Math.min(Math.max(0, detalle.pasoAltaAvanzada), this.totalSteps - 1);
+      const formValue = normalizarBorradorAvanzadoParaFormulario(detalle.formValue, paso);
+      this.borradorPersonaId.set(id);
+      this.form.patchValue(formValue as never);
       this.activeWizardStep.set(paso);
       this.visitedWizardSteps.update((prev) => new Set([...prev, paso]));
       this.form.markAsPristine();
@@ -1268,7 +1270,7 @@ export class FormEmpleadoComponent implements OnInit {
         true,
         'contrato.cargo',
         'Contrato',
-        () => contrato.cargo.valid,
+        () => contrato.cargo.valid && !this.isTechnicalCargo(contrato.cargo.value),
       ),
       this.rule(
         'contract.branch',
@@ -1630,7 +1632,7 @@ export class FormEmpleadoComponent implements OnInit {
         true,
         'bancario.numeroCuenta',
         'Bancario',
-        () => bancario.numeroCuenta.valid,
+        () => bancario.numeroCuenta.valid && !this.isDraftAccount(bancario.numeroCuenta.value),
       ),
     ];
   }
@@ -1716,7 +1718,8 @@ export class FormEmpleadoComponent implements OnInit {
   }
 
   cargoVisible(): string {
-    return this.form.controls.contrato.controls.cargo.value.trim() || 'Sin información';
+    const cargo = this.form.controls.contrato.controls.cargo.value.trim();
+    return cargo && !this.isTechnicalCargo(cargo) ? cargo : 'Sin informacion';
   }
 
   sucursalVisible(): string {
@@ -1975,5 +1978,21 @@ export class FormEmpleadoComponent implements OnInit {
       dirty: datosPersonales.dirty || contacto.dirty,
       touched: datosPersonales.touched || contacto.touched,
     };
+  }
+
+  private isTechnicalCargo(value: string): boolean {
+    return this.normalizeTechnicalText(value) === this.normalizeTechnicalText('Sin cargo');
+  }
+
+  private isDraftAccount(value: string): boolean {
+    return value.trim().toUpperCase().startsWith('DRAFT-');
+  }
+
+  private normalizeTechnicalText(value: string): string {
+    return value
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .trim()
+      .toLowerCase();
   }
 }
