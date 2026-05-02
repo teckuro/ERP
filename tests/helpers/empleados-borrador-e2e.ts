@@ -126,14 +126,22 @@ export async function selectWizardStepByIndex(page: Page, zeroBasedIndex: number
   await page.waitForTimeout(200);
 }
 
-/** Primera opción habilitada del panel abierto (catálogo desconocido en distintos seeds). */
+/**
+ * Primera opción con valor real del panel (salta filas «Seleccione…» / «Sin seleccionar» del catálogo).
+ * Sin esto, el primer `.select-option` puede ser la opción vacía y dejar el FormControl en null con `Validators.required`.
+ */
 export async function pickFirstSearchSelectOption(page: Page, triggerId: string): Promise<void> {
   const trigger = searchSelectTrigger(page, triggerId);
   await expect(trigger).toBeVisible({ timeout: 15_000 });
   await trigger.click();
-  const first = page.locator('.select-panel .select-option:not([disabled])').first();
-  await expect(first).toBeVisible({ timeout: 10_000 });
-  await first.click();
+  const options = page.locator('.select-panel .select-option:not([disabled])');
+  await expect(options.first()).toBeVisible({ timeout: 10_000 });
+  const conValor = options.filter({
+    hasNotText: /^(Seleccione|Sin seleccionar|Selecciona|—)/i,
+  });
+  const target = (await conValor.count()) > 0 ? conValor.first() : options.first();
+  await expect(target).toBeVisible({ timeout: 10_000 });
+  await target.click();
   await page.waitForTimeout(200);
 }
 
