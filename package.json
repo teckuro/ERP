@@ -10,6 +10,7 @@
     "test:supabase": "node scripts/test-supabase-api.mjs",
     "list:supabase:endpoints": "node scripts/list-supabase-endpoints.mjs",
     "test:visual": "playwright test",
+    "test:e2e:empleados-borrador": "playwright test tests/empleados-borrador-persistencia.spec.ts --workers=1",
     "types:supabase": "node scripts/generate-types.cjs"
   },
   "private": true,

@@ -1,4 +1,10 @@
+import { resolve } from 'node:path';
+
+import { config as loadEnv } from 'dotenv';
 import { defineConfig } from '@playwright/test';
+
+// Variables para E2E (p. ej. `E2E_EMPLEADOS_BORRADOR`) sin depender solo del shell.
+loadEnv({ path: resolve(process.cwd(), '.env'), quiet: true });
 
 export default defineConfig({
   testDir: './tests',
