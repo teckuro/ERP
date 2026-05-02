@@ -17,7 +17,7 @@ export interface ParametrosInnerTabItem {
   standalone: true,
   imports: [FormsModule, SearchSelectComponent],
   template: `
-    <div class="param-inner-tabs" role="navigation" [attr.aria-label]="ariaLabel">
+    <div class="param-inner-tabs parametros-inner-tabs" role="navigation" [attr.aria-label]="ariaLabel">
       <label class="param-inner-tabs__mobile-label" for="param-inner-tab-select">{{ mobileLabel }}</label>
       <div class="param-inner-tabs__select">
         <app-search-select
@@ -29,13 +29,14 @@ export interface ParametrosInnerTabItem {
           placeholder="Selecciona"
         ></app-search-select>
       </div>
-      <div class="param-inner-tabs__buttons" role="tablist">
+      <div class="param-inner-tabs__buttons parametros-inner-tabs__buttons" role="tablist">
         @for (t of tabs; track t.id) {
           <button
             type="button"
             role="tab"
-            class="param-inner-tab"
+            class="param-inner-tab parametros-inner-tab-button"
             [class.param-inner-tab--active]="activeId === t.id"
+            [class.parametros-inner-tab-active]="activeId === t.id"
             [attr.aria-selected]="activeId === t.id"
             (click)="onSelect(t.id)"
           >

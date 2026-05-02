@@ -133,7 +133,7 @@ interface ParametrosDialogState {
             </app-button>
           }
 
-          <div class="parametros-toolbar__end">
+          <div class="parametros-toolbar__end parametros-period-actions">
             @if (generalesEditando()) {
               <app-page-actions
                 [visibleActions]="['back', 'save']"
@@ -168,11 +168,11 @@ interface ParametrosDialogState {
           </div>
         </div>
 
-        <div class="period-row" aria-label="Periodo">
-          <div class="period-row__left">
+        <div class="period-row parametros-period-band" aria-label="Periodo">
+          <div class="period-row__left parametros-period-left">
             <div class="period-row__left-top">
               <span class="period-label">Parámetros del período {{ periodoGlobal.etiqueta() }}</span>
-              <div class="period-controls">
+              <div class="period-controls parametros-period-controls">
                 <button
                   type="button"
                   class="period-arrow"
@@ -216,17 +216,17 @@ interface ParametrosDialogState {
                 </button>
               </div>
             </div>
-            <p class="period-sync-hint">Sincronizado con el período activo.</p>
+            <p class="period-sync-hint parametros-period-sync">Sincronizado con el período activo.</p>
           </div>
 
-          <div class="period-row__right" role="region" aria-label="Estado mensual">
+          <div class="period-row__right parametros-period-status" role="region" aria-label="Estado mensual">
             <div class="period-mensual__head">
-              <span class="period-mensual__title">{{ periodoEstadoTitulo() }}</span>
+              <span class="period-mensual__title parametros-period-status-title">{{ periodoEstadoTitulo() }}</span>
               <span class="period-mensual__chip" role="status" aria-label="Resumen de estado">
                 <span class="period-chip" [ngClass]="periodoEstadoChipClass()">{{ periodoEstadoChip() }}</span>
               </span>
             </div>
-            <p class="period-mensual__detail">{{ periodoEstadoDetalle() }}</p>
+            <p class="period-mensual__detail parametros-period-status-detail">{{ periodoEstadoDetalle() }}</p>
             @if ((periodoCargaEstado() === 'pendiente' || periodoCargaEstado() === 'parcial') && periodoReferenciaAnteriorLabel()) {
               <p class="period-mensual__reference">Referencia disponible: {{ periodoReferenciaAnteriorLabel() }}</p>
             }
@@ -234,7 +234,7 @@ interface ParametrosDialogState {
         </div>
           </div>
 
-      <div class="parametros-content">
+      <div class="parametros-content parametros-panel">
         @if (isLoading()) {
           <app-message-box
             variant="loading"
@@ -266,12 +266,13 @@ interface ParametrosDialogState {
           ></app-message-box>
         }
 
-        <nav class="folder-tabs" aria-label="Secciones de parámetros">
+        <nav class="folder-tabs parametros-tabs" aria-label="Secciones de parámetros">
           @for (tab of tabs; track tab.id) {
             <button
               type="button"
-              class="folder-tab"
+              class="folder-tab parametros-tab-button"
               [class.folder-tab--active]="activeTab() === tab.id"
+              [class.parametros-tab-active]="activeTab() === tab.id"
               [attr.aria-current]="activeTab() === tab.id ? 'page' : null"
               (click)="seleccionarTab(tab.id)"
             >

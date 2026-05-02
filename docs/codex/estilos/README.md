@@ -10,6 +10,7 @@ Punto de entrada para **normas visuales reutilizables** (grillas, anchos, checkl
 |-----------|-----------|
 | [`../README.md`](../README.md) | Índice padre, jerarquía de reglas y mapa por tema |
 | [`../peticiones-estilos.md`](../peticiones-estilos.md) | Bitácora de mejoras pedidas (no es normativa) |
+| [`../temas/parametros-ui-estandar.md`](../temas/parametros-ui-estandar.md) | Estándar visual especifico del modulo Parametros |
 | Este archivo | Grilla 8 columnas + anchos + checklist de cierre |
 
 ---

@@ -174,6 +174,10 @@ Cuando una petición implique **mejoras visuales / estilos**, registrar el cambi
 
 - `docs/codex/peticiones-estilos.md`
 
+Para cambios visuales del modulo Parametros, leer tambien:
+
+- `docs/codex/temas/parametros-ui-estandar.md`
+
 Índice de documentación y temas:
 
 - `docs/codex/README.md`

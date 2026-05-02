@@ -30,7 +30,7 @@ export type CcafMutualSubId = 'config' | 'listaCcaf' | 'mutuales' | 'ley16744';
   standalone: true,
   imports: [CommonModule, FormsModule, DataGridComponent, ParametrosInnerTabBarComponent, SearchSelectComponent],
   template: `
-    <section class="tab-panel">
+    <section class="tab-panel parametros-tab-panel">
       <div class="param-subhead">
         <div class="param-subhead__tabs">
           <app-parametros-inner-tab-bar
@@ -45,10 +45,10 @@ export type CcafMutualSubId = 'config' | 'listaCcaf' | 'mutuales' | 'ley16744';
 
       <div class="param-tab-subview">
         @if (activeSub === 'config') {
-          <section class="param-group param-group--ccaf-current" aria-labelledby="ccaf-title">
+          <section class="param-group parametros-section-card parametros-config-card param-group--ccaf-current" aria-labelledby="ccaf-title">
             <h2 id="ccaf-title">Configuracion vigente del periodo</h2>
             <p class="param-section-lead">Seleccion usada como referencia para el periodo activo.</p>
-            <div class="field-grid field-grid--ccaf field-grid--ccaf-compact" aria-label="Configuracion CCAF y mutual">
+            <div class="field-grid parametros-form-grid parametros-form-grid-compact field-grid--ccaf field-grid--ccaf-compact" aria-label="Configuracion CCAF y mutual">
               <label class="param-field">
                 <span>Caja de compensacion</span>
                 <app-search-select
@@ -84,7 +84,7 @@ export type CcafMutualSubId = 'config' | 'listaCcaf' | 'mutuales' | 'ley16744';
         }
 
         @if (activeSub === 'listaCcaf') {
-          <section class="catalog-section" aria-labelledby="lista-ccaf-title">
+          <section class="catalog-section parametros-grid-shell" aria-labelledby="lista-ccaf-title">
             <h2 class="sr-only" id="lista-ccaf-title">Lista CCAF</h2>
             <app-data-grid
               title="CCAF"
@@ -105,7 +105,7 @@ export type CcafMutualSubId = 'config' | 'listaCcaf' | 'mutuales' | 'ley16744';
         }
 
         @if (activeSub === 'mutuales') {
-          <section class="catalog-section" aria-labelledby="lista-mutuales-title">
+          <section class="catalog-section parametros-grid-shell" aria-labelledby="lista-mutuales-title">
             <h2 class="sr-only" id="lista-mutuales-title">Mutuales</h2>
             <app-data-grid
               title="Organismos administradores Ley 16.744"
@@ -126,7 +126,7 @@ export type CcafMutualSubId = 'config' | 'listaCcaf' | 'mutuales' | 'ley16744';
         }
 
         @if (activeSub === 'ley16744') {
-          <section class="catalog-section" aria-labelledby="ley-title">
+          <section class="catalog-section parametros-grid-shell" aria-labelledby="ley-title">
             <h2 class="sr-only" id="ley-title">Ley 16.744</h2>
             @if (catalogos.ley16744Parametros.length === 0 && referenciaPeriodoLabel) {
               <div class="param-reference-callout" role="note">

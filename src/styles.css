@@ -47,7 +47,8 @@ body {
 }
 
 /* Parametros: banda de periodo (dos zonas: contexto izquierda, estado mensual derecha) */
-.parametros-page .period-row {
+.parametros-page .period-row,
+.parametros-page .parametros-period-band {
   display: flex;
   flex-wrap: wrap;
   align-items: flex-start;
@@ -64,7 +65,8 @@ body {
   font-size: 0.82rem;
 }
 
-.parametros-page .period-row__left {
+.parametros-page .period-row__left,
+.parametros-page .parametros-period-left {
   flex: 1 1 240px;
   display: flex;
   flex-direction: column;
@@ -80,7 +82,8 @@ body {
   min-width: 0;
 }
 
-.parametros-page .period-row__right {
+.parametros-page .period-row__right,
+.parametros-page .parametros-period-status {
   flex: 0 1 22rem;
   display: flex;
   flex-direction: column;
@@ -102,7 +105,8 @@ body {
   min-width: 0;
 }
 
-.parametros-page .period-controls {
+.parametros-page .period-controls,
+.parametros-page .parametros-period-controls {
   display: inline-flex;
   flex-wrap: wrap;
   align-items: center;
@@ -151,7 +155,8 @@ body {
   min-width: 0;
 }
 
-.parametros-page .period-mensual__title {
+.parametros-page .period-mensual__title,
+.parametros-page .parametros-period-status-title {
   color: #374151;
   font-size: 0.78rem;
   font-weight: 600;
@@ -164,7 +169,8 @@ body {
   flex: 0 0 auto;
 }
 
-.parametros-page .period-mensual__detail {
+.parametros-page .period-mensual__detail,
+.parametros-page .parametros-period-status-detail {
   margin: 0;
   width: 100%;
   max-width: 100%;
@@ -176,7 +182,8 @@ body {
   text-wrap: balance;
 }
 
-.parametros-page .period-sync-hint {
+.parametros-page .period-sync-hint,
+.parametros-page .parametros-period-sync {
   margin: 0;
   font-size: 0.72rem;
   color: #64748b;
@@ -185,7 +192,8 @@ body {
 }
 
 @media (max-width: 900px) {
-  .parametros-page .period-row__right {
+  .parametros-page .period-row__right,
+  .parametros-page .parametros-period-status {
     flex: 1 1 100%;
     max-width: 100%;
     margin-left: 0;
@@ -198,7 +206,8 @@ body {
     justify-content: flex-start;
   }
 
-  .parametros-page .period-mensual__detail {
+  .parametros-page .period-mensual__detail,
+  .parametros-page .parametros-period-status-detail {
     max-width: 100%;
     text-align: left;
   }

@@ -7,7 +7,7 @@ import { FormGroup, ReactiveFormsModule } from '@angular/forms';
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule],
   template: `
-    <form class="tab-panel parametros-form" [formGroup]="form" (ngSubmit)="onSubmit?.()">
+    <form class="tab-panel parametros-tab-panel parametros-form" [formGroup]="form" (ngSubmit)="onSubmit?.()">
       @if (!hasPeriodoData) {
         <section class="param-pending-notice" aria-label="Estado de carga mensual">
           <div>
@@ -21,10 +21,10 @@ import { FormGroup, ReactiveFormsModule } from '@angular/forms';
           }
         </section>
       }
-      <section class="param-group" aria-labelledby="rentas-title">
+      <section class="param-group parametros-section-card" aria-labelledby="rentas-title">
         <h2 id="rentas-title">Remuneraciones</h2>
         <p class="param-section-lead">Rentas mínimas imponibles y montos base.</p>
-        <div class="field-grid field-grid--rentas">
+        <div class="field-grid parametros-form-grid field-grid--rentas">
           <label class="param-field">
             <span>Sueldo mínimo</span>
             <span class="unit-field unit-field--suffix" data-unit="$">
@@ -74,10 +74,10 @@ import { FormGroup, ReactiveFormsModule } from '@angular/forms';
         </div>
       </section>
 
-      <section class="param-group" aria-labelledby="afc-title">
+      <section class="param-group parametros-section-card" aria-labelledby="afc-title">
         <h2 id="afc-title">AFC (seguro de cesantía)</h2>
         <p class="param-section-lead">Porcentajes de cotización según tipo de contrato.</p>
-        <div class="field-grid field-grid--afc">
+        <div class="field-grid parametros-form-grid field-grid--afc">
           <label class="param-field">
             <span>Empleado</span>
             <span class="unit-field unit-field--suffix" data-unit="%">
@@ -127,10 +127,10 @@ import { FormGroup, ReactiveFormsModule } from '@angular/forms';
         </div>
       </section>
 
-      <section class="param-group" aria-labelledby="sis-title">
+      <section class="param-group parametros-section-card" aria-labelledby="sis-title">
         <h2 id="sis-title">SIS, SANNA y cotizaciones empleador</h2>
         <p class="param-section-lead">Porcentajes aplicados sobre la remuneración imponible.</p>
-        <div class="field-grid field-grid--sis">
+        <div class="field-grid parametros-form-grid field-grid--sis">
           <label class="param-field">
             <span>SIS</span>
             <span class="unit-field unit-field--suffix" data-unit="%">
@@ -167,10 +167,10 @@ import { FormGroup, ReactiveFormsModule } from '@angular/forms';
         </div>
       </section>
 
-      <section class="param-group" aria-labelledby="topes-title">
+      <section class="param-group parametros-section-card" aria-labelledby="topes-title">
         <h2 id="topes-title">Topes imponibles</h2>
         <p class="param-section-lead">Límites en UF y en pesos por concepto.</p>
-        <div class="field-grid field-grid--topes">
+        <div class="field-grid parametros-form-grid field-grid--topes">
           <h3 class="param-subsection-title param-subsection-title--first">AFP</h3>
           <label class="param-field">
             <span>AFP UF</span>
@@ -281,10 +281,10 @@ import { FormGroup, ReactiveFormsModule } from '@angular/forms';
         </div>
       </section>
 
-      <section class="param-group" aria-labelledby="salud-title">
+      <section class="param-group parametros-section-card" aria-labelledby="salud-title">
         <h2 id="salud-title">Salud</h2>
         <p class="param-section-lead">Cotizaciones de salud.</p>
-        <div class="field-grid field-grid--rentas">
+        <div class="field-grid parametros-form-grid field-grid--rentas">
           <label class="param-field">
             <span>Salud obligatoria</span>
             <span class="unit-field unit-field--suffix" data-unit="%">
@@ -308,10 +308,10 @@ import { FormGroup, ReactiveFormsModule } from '@angular/forms';
         </div>
       </section>
 
-      <section class="param-group" aria-labelledby="trabajo-pesado-title">
+      <section class="param-group parametros-section-card" aria-labelledby="trabajo-pesado-title">
         <h2 id="trabajo-pesado-title">Trabajo pesado y menos pesado</h2>
         <p class="param-section-lead">Porcentajes adicionales por riesgo.</p>
-        <div class="field-grid field-grid--rentas">
+        <div class="field-grid parametros-form-grid field-grid--rentas">
           <label class="param-field">
             <span>Trabajo pesado empleador</span>
             <span class="unit-field unit-field--suffix" data-unit="%">

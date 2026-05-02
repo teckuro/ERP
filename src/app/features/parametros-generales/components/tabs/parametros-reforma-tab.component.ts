@@ -21,7 +21,7 @@ type ReformaSubId = 'legales' | 'aportes' | 'trabPesados' | 'apvInst' | 'apvPago
   standalone: true,
   imports: [CommonModule, DataGridComponent, ParametrosInnerTabBarComponent],
   template: `
-    <section class="tab-panel">
+    <section class="tab-panel parametros-tab-panel">
       <div class="param-subhead">
         <div class="param-subhead__tabs">
           <app-parametros-inner-tab-bar
@@ -36,7 +36,7 @@ type ReformaSubId = 'legales' | 'aportes' | 'trabPesados' | 'apvInst' | 'apvPago
 
       <div class="param-tab-subview">
         @if (activeSub() === 'legales') {
-          <section class="catalog-section" aria-label="Parametros legales">
+          <section class="catalog-section parametros-grid-shell" aria-label="Parametros legales">
             <app-data-grid
               title="Parámetros legales"
               [rows]="reformaPensiones"
@@ -56,7 +56,7 @@ type ReformaSubId = 'legales' | 'aportes' | 'trabPesados' | 'apvInst' | 'apvPago
         }
 
         @if (activeSub() === 'aportes') {
-          <section class="catalog-section" aria-label="Aportes previsionales">
+          <section class="catalog-section parametros-grid-shell" aria-label="Aportes previsionales">
             <app-data-grid
               title="Aportes previsionales"
               [rows]="reformaPrevisional"
@@ -76,7 +76,7 @@ type ReformaSubId = 'legales' | 'aportes' | 'trabPesados' | 'apvInst' | 'apvPago
         }
 
         @if (activeSub() === 'trabPesados') {
-          <section class="catalog-section" aria-label="Trabajos pesados">
+          <section class="catalog-section parametros-grid-shell" aria-label="Trabajos pesados">
             <app-data-grid
               title="Trabajos pesados"
               [rows]="trabajosPesados"
@@ -96,7 +96,7 @@ type ReformaSubId = 'legales' | 'aportes' | 'trabPesados' | 'apvInst' | 'apvPago
         }
 
         @if (activeSub() === 'apvInst') {
-          <section class="catalog-section" aria-label="Instituciones APV">
+          <section class="catalog-section parametros-grid-shell" aria-label="Instituciones APV">
             <app-data-grid
               title="Instituciones APV"
               [rows]="apvInstituciones"
@@ -116,7 +116,7 @@ type ReformaSubId = 'legales' | 'aportes' | 'trabPesados' | 'apvInst' | 'apvPago
         }
 
         @if (activeSub() === 'apvPago') {
-          <section class="catalog-section" aria-label="Formas de pago APV">
+          <section class="catalog-section parametros-grid-shell" aria-label="Formas de pago APV">
             <app-data-grid
               title="Formas de pago APV"
               [rows]="apvFormasPago"

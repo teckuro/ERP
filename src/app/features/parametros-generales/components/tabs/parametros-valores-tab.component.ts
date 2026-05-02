@@ -6,7 +6,7 @@ import { FormGroup, ReactiveFormsModule } from '@angular/forms';
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule],
   template: `
-    <form class="tab-panel parametros-form" [formGroup]="form" (ngSubmit)="onSubmit?.()">
+    <form class="tab-panel parametros-tab-panel parametros-form" [formGroup]="form" (ngSubmit)="onSubmit?.()">
       @if (!hasPeriodoData) {
         <section class="param-pending-notice" aria-label="Estado de carga mensual">
           <div>
@@ -20,10 +20,10 @@ import { FormGroup, ReactiveFormsModule } from '@angular/forms';
           }
         </section>
       }
-      <section class="param-group" aria-labelledby="indicadores-title">
+      <section class="param-group parametros-section-card" aria-labelledby="indicadores-title">
         <h2 id="indicadores-title">Indicadores mensuales</h2>
         <p class="param-section-lead">UF, UTM y UTA del periodo.</p>
-        <div class="field-grid field-grid--values">
+        <div class="field-grid parametros-form-grid field-grid--values">
           <label class="param-field">
             <span>UF (CLP)</span>
             <span class="unit-field unit-field--suffix" data-unit="CLP">
@@ -47,9 +47,9 @@ import { FormGroup, ReactiveFormsModule } from '@angular/forms';
         </div>
       </section>
 
-      <section class="param-group" aria-labelledby="gratificacion-title">
+      <section class="param-group parametros-section-card" aria-labelledby="gratificacion-title">
         <h2 id="gratificacion-title">Gratificación</h2>
-        <div class="field-grid field-grid--gratificacion">
+        <div class="field-grid parametros-form-grid field-grid--gratificacion">
           <label class="param-field">
             <span>Porcentaje (legal)</span>
             <span class="unit-field unit-field--suffix" data-unit="%">
@@ -81,10 +81,10 @@ import { FormGroup, ReactiveFormsModule } from '@angular/forms';
         </div>
       </section>
 
-      <section class="param-group" aria-labelledby="ausencias-title">
+      <section class="param-group parametros-section-card" aria-labelledby="ausencias-title">
         <h2 id="ausencias-title">Configuración general</h2>
         <p class="param-section-lead">Método de descuento por ausencias.</p>
-        <div class="field-grid field-grid--values">
+        <div class="field-grid parametros-form-grid field-grid--values">
           <label class="erp-choice-radio">
             <span>En base 30 días</span>
             <input

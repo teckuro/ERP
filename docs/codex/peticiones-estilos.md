@@ -3,6 +3,17 @@
 Registro cronológico de mejoras visuales aplicadas por petición, con foco en **trazabilidad** (qué se tocó y dónde),
 sin mezclarlo con las reglas base.
 
+### 2026-05-02 (Parametros - estandar UI del modulo)
+
+- **Estandar documentado**: se creo `docs/codex/temas/parametros-ui-estandar.md` con estructura oficial, banda superior, tabs, subtabs, copy, empty states, DataGrid, cards compactas, responsive y checklist de cierre.
+- **Clases semanticas compatibles**: se agregaron aliases `parametros-period-*`, `parametros-tabs`, `parametros-tab-button`, `parametros-inner-*`, `parametros-tab-panel`, `parametros-section-card`, `parametros-config-card`, `parametros-form-grid` y `parametros-grid-shell` sin retirar las clases legacy.
+- **Referencias docs/codex**: README, AGENTS y estilos apuntan al nuevo estandar para futuras mejoras de Parametros.
+  - `src/app/pages/parametros.page.ts`
+  - `src/styles.css`
+  - `src/app/features/parametros-generales/components/parametros-inner-tab-bar.component.ts`
+  - `src/app/features/parametros-generales/components/tabs/*.ts`
+  - `docs/codex/temas/parametros-ui-estandar.md`
+
 ### 2026-05-02 (Parametros - referencia anterior en carga pendiente)
 
 - **Empty states mensuales pendientes**: Tramos Cargas, Impuesto Unico, Ley 16.744, Valores y Remuneraciones muestran mensajes breves cuando el periodo activo no tiene datos oficiales.

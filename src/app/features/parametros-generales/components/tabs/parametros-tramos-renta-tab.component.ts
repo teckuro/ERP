@@ -15,7 +15,7 @@ type ImpuestoSubId = 'tramos' | 'tabla';
   standalone: true,
   imports: [CommonModule, DataGridComponent, ParametrosInnerTabBarComponent],
   template: `
-    <section class="tab-panel">
+    <section class="tab-panel parametros-tab-panel">
       <div class="param-subhead">
         <div class="param-subhead__tabs">
           <app-parametros-inner-tab-bar
@@ -30,7 +30,7 @@ type ImpuestoSubId = 'tramos' | 'tabla';
 
       <div class="param-tab-subview">
         @if (activeSub() === 'tramos') {
-          <section class="catalog-section" aria-label="Tramos impuesto">
+          <section class="catalog-section parametros-grid-shell" aria-label="Tramos impuesto">
             @if (tramosRows.length === 0 && referenciaPeriodoLabel) {
               <div class="param-reference-callout" role="note">
                 <div>
@@ -61,7 +61,7 @@ type ImpuestoSubId = 'tramos' | 'tabla';
         }
 
         @if (activeSub() === 'tabla') {
-          <section class="catalog-section" aria-label="Tabla impuesto unico">
+          <section class="catalog-section parametros-grid-shell" aria-label="Tabla impuesto unico">
             @if (tablaRows.length === 0 && referenciaPeriodoLabel) {
               <div class="param-reference-callout" role="note">
                 <div>

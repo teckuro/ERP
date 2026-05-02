@@ -12,8 +12,8 @@ import { AfpParametro } from '../../models/parametro-general.model';
   standalone: true,
   imports: [CommonModule, DataGridComponent],
   template: `
-    <section class="tab-panel">
-      <section class="catalog-section" aria-label="AFP">
+    <section class="tab-panel parametros-tab-panel">
+      <section class="catalog-section parametros-grid-shell" aria-label="AFP">
         <app-data-grid
           title="AFP"
           [rows]="rows"

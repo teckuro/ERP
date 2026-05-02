@@ -12,8 +12,8 @@ import { TramoCargaParametro } from '../../models/parametro-general.model';
   standalone: true,
   imports: [CommonModule, DataGridComponent],
   template: `
-    <section class="tab-panel">
-      <section class="catalog-section" aria-labelledby="tramos-carga-title">
+    <section class="tab-panel parametros-tab-panel">
+      <section class="catalog-section parametros-grid-shell" aria-labelledby="tramos-carga-title">
         <h2 id="tramos-carga-title">Tramos cargas familiares</h2>
         @if (rows.length === 0 && referenciaPeriodoLabel) {
           <div class="param-reference-callout" role="note">

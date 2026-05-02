@@ -57,6 +57,7 @@ Si falta un caso: primero `ui-form-guidelines.md` y `AGENTS.md`; luego temas esp
 | Documento | Contenido |
 |-----------|-----------|
 | [`parametros-generales-campos-y-listas.md`](./temas/parametros-generales-campos-y-listas.md) | Campos y catálogos |
+| [`parametros-ui-estandar.md`](./temas/parametros-ui-estandar.md) | Estándar visual del módulo Parámetros: banda, tabs, subtabs, copy, DataGrid y responsive |
 | [`parametros-vigencia-y-periodo.md`](./temas/parametros-vigencia-y-periodo.md) | Clasificación período vs vigencia vs catálogo (UI/Python) |
 | [`python-parametros-carga-mensual.md`](./temas/python-parametros-carga-mensual.md) | Contrato Python: mensual, vigencias, seeds normativos, catalogos globales y configuracion empresa |
 | [`sync-parametros-v611.md`](./temas/sync-parametros-v611.md) | Parámetros v611 |

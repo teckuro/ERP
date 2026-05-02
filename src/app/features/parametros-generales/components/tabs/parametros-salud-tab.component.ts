@@ -15,7 +15,7 @@ type SaludSubId = 'isapre' | 'instituciones';
   standalone: true,
   imports: [CommonModule, DataGridComponent, ParametrosInnerTabBarComponent],
   template: `
-    <section class="tab-panel">
+    <section class="tab-panel parametros-tab-panel">
       <div class="param-subhead">
         <div class="param-subhead__tabs">
           <app-parametros-inner-tab-bar
@@ -30,7 +30,7 @@ type SaludSubId = 'isapre' | 'instituciones';
 
       <div class="param-tab-subview">
         @if (activeSub() === 'isapre') {
-          <section class="catalog-section" aria-label="ISAPRE">
+          <section class="catalog-section parametros-grid-shell" aria-label="ISAPRE">
             <app-data-grid
               title="ISAPRE"
               [rows]="isapreRows"
@@ -50,7 +50,7 @@ type SaludSubId = 'isapre' | 'instituciones';
         }
 
         @if (activeSub() === 'instituciones') {
-          <section class="catalog-section" aria-label="Instituciones de salud">
+          <section class="catalog-section parametros-grid-shell" aria-label="Instituciones de salud">
             <app-data-grid
               title="Instituciones de salud"
               [rows]="institucionesRows"
