@@ -16,6 +16,19 @@ sin mezclarlo con las reglas base.
   - `src/app/features/haberes-descuentos/containers/conceptos-remuneracion-container/conceptos-remuneracion-container.{ts,html}`
   - `src/app/pages/parametros.page.ts`
 
+### 2026-05-01 (Parámetros — hints y empty states por vigencia vs período)
+
+- **Copy alineado a datos reales**: se evita culpar al “mes seleccionado” cuando la grilla es catálogo global o listado por solape de vigencia; se aclara gradualidad 8,5 % como normativa por vigencia.
+  - `src/app/features/parametros-generales/components/tabs/parametros-ccaf-mutuales-tab.component.ts`
+  - `src/app/features/parametros-generales/components/tabs/parametros-reforma-tab.component.ts`
+  - `src/app/features/parametros-generales/components/tabs/parametros-tramos-renta-tab.component.ts`
+  - `src/app/features/parametros-generales/components/tabs/parametros-tramos-carga-tab.component.ts`
+  - `src/app/features/parametros-generales/components/tabs/parametros-salud-tab.component.ts`
+  - `src/app/features/parametros-generales/components/tabs/parametros-afp-tab.component.ts`
+- **Documentación de contrato**: matriz de tablas y reglas UI/Python/DataGrid.
+  - `docs/codex/temas/parametros-vigencia-y-periodo.md`
+  - `docs/codex/README.md`
+
 ### 2026-05-01 (Parámetros del sistema — Fase 2.5 pulido visual menor)
 
 - **Tabs principales con scroll interno más intencional**: se amplió el respiro lateral y `scroll-padding-inline` de `nav.folder-tabs`, se mantuvo el auto-centrado del tab activo y se agregó un fade lateral sutil desde el contenedor para sugerir scroll sin tapar texto.

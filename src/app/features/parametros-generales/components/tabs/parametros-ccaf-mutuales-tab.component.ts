@@ -44,6 +44,9 @@ export type CcafMutualSubId = 'config' | 'listaCcaf' | 'mutuales' | 'ley16744';
         @if (activeSub !== 'config') {
           <div class="param-hint param-hint--consulta param-hint--inline" role="note">
             <span class="param-hint__tag">Solo lectura</span>
+            <span class="param-hint__text">
+              Listas CCAF y mutual son catálogos generales; el período activo no implica que falte el catálogo completo.
+            </span>
           </div>
         }
       </div>
@@ -106,8 +109,8 @@ export type CcafMutualSubId = 'config' | 'listaCcaf' | 'mutuales' | 'ley16744';
               [maxItems]="8"
               gridHeight="min(520px, 100%)"
               [persistenceKey]="gridPersistenceKeyCcaf"
-              emptyTitle="No hay registros para el periodo seleccionado"
-              emptyDescription="Sin cajas de compensación disponibles en catálogo."
+              emptyTitle="Sin cajas de compensación en catálogo"
+              emptyDescription="No hay CCAF cargadas. Revisa la normativa base o la carga mensual de maestros."
               (refresh)="refresh?.()"
             ></app-data-grid>
           </section>
@@ -127,8 +130,8 @@ export type CcafMutualSubId = 'config' | 'listaCcaf' | 'mutuales' | 'ley16744';
               [maxItems]="8"
               gridHeight="min(520px, 100%)"
               [persistenceKey]="gridPersistenceKeyMutuales"
-              emptyTitle="No hay registros para el periodo seleccionado"
-              emptyDescription="Sin organismos administradores en catálogo."
+              emptyTitle="Sin organismos administradores en catálogo"
+              emptyDescription="No hay mutualidades u organismos Ley 16.744 cargados. Revisa la normativa base o la carga mensual de maestros."
               (refresh)="refresh?.()"
             ></app-data-grid>
           </section>
@@ -148,8 +151,8 @@ export type CcafMutualSubId = 'config' | 'listaCcaf' | 'mutuales' | 'ley16744';
               [maxItems]="8"
               gridHeight="min(520px, 100%)"
               [persistenceKey]="gridPersistenceKeyLey16744"
-              emptyTitle="No hay registros para el periodo seleccionado"
-              emptyDescription="Sin parámetros Ley 16.744 vigentes para este periodo."
+              emptyTitle="No hay parámetros Ley 16.744 para este período"
+              emptyDescription="Prueba con otro período o revisa la sincronización/carga mensual."
               (refresh)="refresh?.()"
             ></app-data-grid>
           </section>

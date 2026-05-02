@@ -17,6 +17,9 @@ import { TramoCargaParametro } from '../../models/parametro-general.model';
         <h2 id="tramos-carga-title">Tramos cargas familiares</h2>
         <div class="param-hint param-hint--consulta" role="note">
           <span class="param-hint__tag">Solo lectura</span>
+          <span class="param-hint__text">
+            Tramos de carga familiar son datos mensuales (columna periodo en tramo_carga): deben existir filas para cada YYYY-MM cargado.
+          </span>
         </div>
         <app-data-grid
           title="Tramos de asignación familiar"

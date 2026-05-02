@@ -34,6 +34,9 @@ type ReformaSubId = 'legales' | 'aportes' | 'trabPesados' | 'apvInst' | 'apvPago
         </div>
         <div class="param-hint param-hint--consulta param-hint--inline" role="note">
           <span class="param-hint__tag">Solo lectura</span>
+          <span class="param-hint__text">
+            Reforma mezcla normativa por vigencia, parámetros mensuales y catálogos generales; revisa el mensaje vacío de cada grilla.
+          </span>
         </div>
       </div>
 
@@ -51,8 +54,8 @@ type ReformaSubId = 'legales' | 'aportes' | 'trabPesados' | 'apvInst' | 'apvPago
               [maxItems]="10"
               gridHeight="min(520px, 100%)"
               [persistenceKey]="gridPersistenceKeyLegal"
-              emptyTitle="No hay parámetros legales vigentes para este período"
-              emptyDescription="Prueba con otro período o revisa la sincronización/carga mensual."
+              emptyTitle="No hay parámetros legales vigentes al período activo"
+              emptyDescription="No se encontraron filas cuya vigencia solape el mes seleccionado. Prueba con otro período o revisa la carga normativa/mensual."
               (refresh)="refresh?.()"
             ></app-data-grid>
           </section>
@@ -71,8 +74,8 @@ type ReformaSubId = 'legales' | 'aportes' | 'trabPesados' | 'apvInst' | 'apvPago
               [maxItems]="8"
               gridHeight="min(520px, 100%)"
               [persistenceKey]="gridPersistenceKeyPrevisional"
-              emptyTitle="No hay aportes previsionales vigentes para este período"
-              emptyDescription="Prueba con otro período o revisa la sincronización/carga mensual."
+              emptyTitle="No hay tramos de gradualidad vigentes al período activo"
+              emptyDescription="La gradualidad 8,5 % es normativa por vigencia (devengo). Si está vacío, revisa la tabla reforma_previsional_parametro en la carga mensual o la normativa base."
               (refresh)="refresh?.()"
             ></app-data-grid>
           </section>
@@ -91,8 +94,8 @@ type ReformaSubId = 'legales' | 'aportes' | 'trabPesados' | 'apvInst' | 'apvPago
               [maxItems]="8"
               gridHeight="min(520px, 100%)"
               [persistenceKey]="gridPersistenceKeyTrabPesados"
-              emptyTitle="No hay parámetros de trabajos pesados para este período"
-              emptyDescription="Prueba con otro período o revisa la sincronización/carga mensual."
+              emptyTitle="No hay trabajos pesados para el período activo"
+              emptyDescription="Las tasas se publican por mes (columna periodo) y por vigencia. Si falta el mes, revisa la carga mensual; si falta vigencia, revisa el catálogo normativo."
               (refresh)="refresh?.()"
             ></app-data-grid>
           </section>
@@ -111,8 +114,8 @@ type ReformaSubId = 'legales' | 'aportes' | 'trabPesados' | 'apvInst' | 'apvPago
               [maxItems]="8"
               gridHeight="min(520px, 100%)"
               [persistenceKey]="gridPersistenceKeyApvInst"
-              emptyTitle="No hay registros para el periodo seleccionado"
-              emptyDescription="Sin instituciones APV en catálogo."
+              emptyTitle="Sin instituciones APV en catálogo"
+              emptyDescription="Catálogo general. Si está vacío, revisa la normativa base o la carga de maestros (no es un faltante típico del mes seleccionado)."
               (refresh)="refresh?.()"
             ></app-data-grid>
           </section>
@@ -131,8 +134,8 @@ type ReformaSubId = 'legales' | 'aportes' | 'trabPesados' | 'apvInst' | 'apvPago
               [maxItems]="8"
               gridHeight="min(520px, 100%)"
               [persistenceKey]="gridPersistenceKeyApvPago"
-              emptyTitle="No hay registros para el periodo seleccionado"
-              emptyDescription="Sin formas de pago APV en catálogo."
+              emptyTitle="Sin formas de pago APV en catálogo"
+              emptyDescription="Catálogo general. Si está vacío, revisa la normativa base o la carga de maestros."
               (refresh)="refresh?.()"
             ></app-data-grid>
           </section>

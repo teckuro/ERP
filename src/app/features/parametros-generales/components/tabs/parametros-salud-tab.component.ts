@@ -28,6 +28,9 @@ type SaludSubId = 'isapre' | 'instituciones';
         </div>
         <div class="param-hint param-hint--consulta param-hint--inline" role="note">
           <span class="param-hint__tag">Solo lectura</span>
+          <span class="param-hint__text">
+            Instituciones e ISAPRE se listan por vigencia que solapa el período activo; no son un snapshot mensual único.
+          </span>
         </div>
       </div>
 
@@ -45,8 +48,8 @@ type SaludSubId = 'isapre' | 'instituciones';
               [maxItems]="10"
               gridHeight="100%"
               [persistenceKey]="gridPersistenceKeyIsapre"
-              emptyTitle="No hay ISAPRE vigentes para este período"
-              emptyDescription="Prueba con otro período o revisa la sincronización/carga mensual."
+              emptyTitle="No hay ISAPRE vigentes para el período activo"
+              emptyDescription="No se encontraron ISAPRE con vigencia que solape el mes seleccionado. Revisa catálogo o carga normativa."
               (refresh)="refresh?.()"
             ></app-data-grid>
           </section>
@@ -65,8 +68,8 @@ type SaludSubId = 'isapre' | 'instituciones';
               [maxItems]="10"
               gridHeight="100%"
               [persistenceKey]="gridPersistenceKeyInstituciones"
-              emptyTitle="No hay instituciones de salud vigentes para este período"
-              emptyDescription="Prueba con otro período o revisa la sincronización/carga mensual."
+              emptyTitle="No hay instituciones de salud vigentes para el período activo"
+              emptyDescription="No se encontraron instituciones (FONASA/otras) con vigencia que solape el mes seleccionado. Revisa catálogo o carga normativa."
               (refresh)="refresh?.()"
             ></app-data-grid>
           </section>

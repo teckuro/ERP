@@ -28,6 +28,9 @@ type ImpuestoSubId = 'tramos' | 'tabla';
         </div>
         <div class="param-hint param-hint--consulta param-hint--inline" role="note">
           <span class="param-hint__tag">Solo lectura</span>
+          <span class="param-hint__text">
+            Tramos compat son mensuales por periodo. La tabla oficial se versiona por vigencia; el listado se filtra por mes derivado de vigencia_inicio.
+          </span>
         </div>
       </div>
 
@@ -45,8 +48,8 @@ type ImpuestoSubId = 'tramos' | 'tabla';
               [maxItems]="10"
               gridHeight="min(520px, 100%)"
               [persistenceKey]="gridPersistenceKeyTramos"
-              emptyTitle="No hay registros para el periodo seleccionado"
-              emptyDescription="Sin tramos de impuesto único para este periodo."
+              emptyTitle="No hay tramos de impuesto único para este período"
+              emptyDescription="Son filas mensuales (compat). Revisa la carga mensual o crea parámetros para el mes seleccionado."
               (refresh)="refresh?.()"
             ></app-data-grid>
           </section>
@@ -65,8 +68,8 @@ type ImpuestoSubId = 'tramos' | 'tabla';
               [maxItems]="10"
               gridHeight="min(520px, 100%)"
               [persistenceKey]="gridPersistenceKeyTabla"
-              emptyTitle="No hay registros para el periodo seleccionado"
-              emptyDescription="Sin tabla de impuesto único vigente para este periodo."
+              emptyTitle="No hay tabla de impuesto único para este período"
+              emptyDescription="La tabla se filtra por mes derivado de vigencia_inicio. Revisa la carga mensual o la normativa base de tabla_impuesto_unico."
               (refresh)="refresh?.()"
             ></app-data-grid>
           </section>

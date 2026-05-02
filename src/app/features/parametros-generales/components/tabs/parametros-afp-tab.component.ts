@@ -16,6 +16,9 @@ import { AfpParametro } from '../../models/parametro-general.model';
       <section class="catalog-section" aria-label="AFP">
         <div class="param-hint param-hint--consulta" role="note">
           <span class="param-hint__tag">Solo lectura</span>
+          <span class="param-hint__text">
+            Catálogo previsional con vigencias. El período activo se usa para mostrar AFP cuya vigencia solapa ese mes.
+          </span>
         </div>
         <app-data-grid
           title="AFP"
@@ -28,8 +31,8 @@ import { AfpParametro } from '../../models/parametro-general.model';
           [maxItems]="10"
           gridHeight="100%"
           [persistenceKey]="gridPersistenceKey"
-          emptyTitle="No hay AFP vigentes para este período"
-          emptyDescription="Prueba con otro período o revisa la sincronización/carga mensual."
+          emptyTitle="No hay AFP vigentes para el período activo"
+          emptyDescription="No se encontraron AFP con vigencia que solape el mes seleccionado. Revisa catálogo o carga normativa."
           (refresh)="refresh?.()"
         ></app-data-grid>
       </section>
