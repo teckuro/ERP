@@ -151,8 +151,8 @@ describe('FichaEmpleadoContainer', () => {
     employee.formValue.bancario['numeroCuenta'] = 'DRAFT-123';
     component['patchFormFromEmployee'](employee);
 
-    expect(component.pendingItemsEvaluados(employee)).toContain('Sueldo base valido.');
-    expect(component.pendingItemsEvaluados(employee)).toContain('Cuenta bancaria real.');
+    expect(component.pendingItemsEvaluados(employee)).toContain('Ingresa sueldo base válido.');
+    expect(component.pendingItemsEvaluados(employee)).toContain('Reemplaza la cuenta bancaria temporal.');
     expect(component.payrollReadinessEvaluadoLabel(employee)).toBe('No apta para remuneraciones');
   });
 
@@ -175,7 +175,7 @@ describe('FichaEmpleadoContainer', () => {
 
     expect(component.canValidateForPayroll(employee)).toBe(true);
     expect(component.primaryActionEvaluadaLabel(employee)).toBe('Validar para remuneraciones');
-    expect(component.payrollReadinessEvaluadoLabel(employee)).toBe('Pendiente de validacion');
+    expect(component.payrollReadinessEvaluadoLabel(employee)).toBe('Pendiente de validación');
   });
 
   it('ficha con bloqueos no muestra validar y mantiene pendientes', () => {
@@ -185,7 +185,7 @@ describe('FichaEmpleadoContainer', () => {
 
     expect(component.canValidateForPayroll(employee)).toBe(false);
     expect(component.primaryActionEvaluadaLabel(employee)).toBe('Revisar pendientes');
-    expect(component.pendingItemsEvaluados(employee)).toContain('Cuenta bancaria real.');
+    expect(component.pendingItemsEvaluados(employee)).toContain('Reemplaza la cuenta bancaria temporal.');
   });
 
   it('borrador con paso_alta_avanzada no muestra validar y mantiene Continuar alta', () => {
@@ -236,7 +236,7 @@ describe('FichaEmpleadoContainer', () => {
     await component.validarFichaParaRemuneraciones();
 
     expect(empleadosServiceMock.validarFichaParaRemuneraciones).not.toHaveBeenCalled();
-    expect(component.validationBlockingItems()).toContain('Cuenta bancaria real.');
+    expect(component.validationBlockingItems()).toContain('Reemplaza la cuenta bancaria temporal.');
   });
 
   it('validar con Sin cargo bloquea', async () => {
@@ -248,7 +248,7 @@ describe('FichaEmpleadoContainer', () => {
     await component.validarFichaParaRemuneraciones();
 
     expect(empleadosServiceMock.validarFichaParaRemuneraciones).not.toHaveBeenCalled();
-    expect(component.validationBlockingItems()).toContain('Cargo pendiente.');
+    expect(component.validationBlockingItems()).toContain('Define un cargo real.');
   });
 
   it('validar con sueldo base 0 bloquea', async () => {
@@ -260,6 +260,29 @@ describe('FichaEmpleadoContainer', () => {
     await component.validarFichaParaRemuneraciones();
 
     expect(empleadosServiceMock.validarFichaParaRemuneraciones).not.toHaveBeenCalled();
-    expect(component.validationBlockingItems()).toContain('Sueldo base valido.');
+    expect(component.validationBlockingItems()).toContain('Ingresa sueldo base válido.');
+  });
+
+  it('borrador basico sin paso no muestra validar', () => {
+    const employee = empleado({
+      estado: 'borrador',
+      estadoFicha: 'INCOMPLETO',
+      pasoAltaAvanzada: null,
+    });
+    component['patchFormFromEmployee'](employee);
+
+    expect(component.canValidateForPayroll(employee)).toBe(false);
+    expect(component.primaryActionEvaluadaLabel(employee)).toBe('Completar ficha');
+  });
+
+  it('ya apta no muestra validar', () => {
+    const employee = empleado({
+      estadoFicha: 'VALIDO',
+      aptoParaRemuneraciones: true,
+    });
+    component['patchFormFromEmployee'](employee);
+
+    expect(component.canValidateForPayroll(employee)).toBe(false);
+    expect(component.primaryActionEvaluadaLabel(employee)).toContain('Ver datos');
   });
 });

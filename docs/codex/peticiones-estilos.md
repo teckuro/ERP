@@ -25,9 +25,12 @@ sin mezclarlo con las reglas base.
 - **Ficha empleado**: accion principal **Validar para remuneraciones** solo cuando
   la ficha no tiene bloqueos ni defaults tecnicos y aun no esta apta; confirmacion
   compacta con botones **Cancelar** y **Validar**.
-- **Mensajes operativos**: estado `Ficha completa` + `Pendiente de validacion`
-  cuando faltaba solo la confirmacion; errores de validacion muestran hasta cinco
-  pendientes principales.
+- **Mensajes operativos**: estado `Ficha completa` + `Pendiente de validación`
+  cuando faltaba solo la confirmación; errores de validación muestran hasta cinco
+  pendientes principales y «y X pendientes más» con tilde; textos de bloqueo
+  alineados a negocio (p. ej. cuenta temporal, cargo real, sueldo, previsión/APVI).
+- **Diálogo de confirmación**: título «¿Validar esta ficha para remuneraciones?»
+  y cuerpo con tildes (`podrá`, `remuneración`, `período`).
 - **Sin activacion automatica**: guardar secciones ya no deja apta la ficha por
   efecto lateral; la aptitud queda atada a la accion explicita.
   - `src/app/features/empleados/containers/ficha-empleado-container/ficha-empleado-container.{html,css,ts}`

@@ -558,7 +558,7 @@ export class FichaEmpleadoContainer implements OnInit {
     if (evaluacion.aptoParaRemuneraciones) {
       return empleado.estadoFicha === 'VALIDO' && empleado.aptoParaRemuneraciones
         ? 'Ficha apta para procesos de remuneraciones.'
-        : 'La ficha no tiene pendientes bloqueantes. Validala para incluirla en procesos de remuneracion.';
+        : 'La ficha no tiene pendientes bloqueantes. Valídala para incluirla en procesos de remuneración.';
     }
 
     return `No apta para remuneraciones: ${evaluacion.bloqueos.length} pendiente(s) por completar.`;
@@ -579,7 +579,7 @@ export class FichaEmpleadoContainer implements OnInit {
     }
 
     if (empleado.estadoFicha === 'VALIDO' && empleado.aptoParaRemuneraciones) {
-      return 'Ficha valida';
+      return 'Ficha válida';
     }
 
     if (evaluacion.aptoParaRemuneraciones) {
@@ -599,7 +599,7 @@ export class FichaEmpleadoContainer implements OnInit {
     }
 
     if (this.canValidateForPayroll(empleado)) {
-      return 'Pendiente de validacion';
+      return 'Pendiente de validación';
     }
 
     return 'No apta para remuneraciones';
@@ -646,6 +646,8 @@ export class FichaEmpleadoContainer implements OnInit {
 
     return (
       empleado.pasoAltaAvanzada === null &&
+      empleado.estado !== 'borrador' &&
+      empleado.estadoFicha !== 'BORRADOR' &&
       (empleado.estadoFicha !== 'VALIDO' || !empleado.aptoParaRemuneraciones) &&
       (empleado.estado === 'en_proceso' || empleado.estado === 'activo') &&
       evaluacion.bloqueos.length === 0 &&
@@ -1204,7 +1206,7 @@ export class FichaEmpleadoContainer implements OnInit {
       return 'Continuar alta avanzada.';
     }
     if (normalized.includes('rut')) {
-      return 'RUT valido.';
+      return 'RUT válido.';
     }
     if (normalized.includes('nombres') || normalized.includes('apellido') || normalized.includes('pais')) {
       return 'Datos personales completos.';
@@ -1212,20 +1214,34 @@ export class FichaEmpleadoContainer implements OnInit {
     if (normalized.includes('contrato') || normalized.includes('fecha de ingreso')) {
       return 'Contrato activo.';
     }
-    if (normalized.includes('cargo')) {
-      return 'Cargo pendiente.';
+    if (normalized.includes('apvi') || normalized.includes('tiene apvi')) {
+      return 'Completa APVI o desactiva Tiene APVI.';
+    }
+    if (normalized.includes('cargo') || normalized.includes('sin cargo')) {
+      return 'Define un cargo real.';
     }
     if (normalized.includes('jornada') || normalized.includes('trabajador')) {
-      return 'Jornada laboral valida.';
+      return 'Jornada laboral válida.';
     }
     if (normalized.includes('remuneracion') || normalized.includes('sueldo')) {
-      return 'Sueldo base valido.';
+      return 'Ingresa sueldo base válido.';
     }
-    if (normalized.includes('previsional') || normalized.includes('afp') || normalized.includes('salud')) {
-      return 'Prevision y salud.';
+    if (
+      normalized.includes('previsional') ||
+      normalized.includes('prevision') ||
+      normalized.includes('afp') ||
+      normalized.includes('salud') ||
+      normalized.includes('regimen') ||
+      normalized.includes('institucion de salud')
+    ) {
+      return 'Completa previsión y salud.';
     }
-    if (normalized.includes('apvi')) {
-      return 'APVI completo.';
+    if (
+      normalized.includes('draft') ||
+      normalized.includes('temporal') ||
+      normalized.includes('reemplaza la cuenta')
+    ) {
+      return 'Reemplaza la cuenta bancaria temporal.';
     }
     if (normalized.includes('banco') || normalized.includes('cuenta bancaria') || normalized.includes('cuenta real')) {
       return 'Cuenta bancaria real.';

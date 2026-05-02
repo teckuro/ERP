@@ -486,6 +486,14 @@ export class EmpleadosRepository {
     }
 
     const estadoActual = mapPersonaEstadoToEmpleadoEstado(persona.estado);
+
+    if (estadoActual !== 'en_proceso' && estadoActual !== 'activo') {
+      throw buildRepositoryError(
+        'No se puede validar la ficha en el estado operativo actual.',
+        'Estado incompatible para validar remuneraciones.',
+      );
+    }
+
     const estadoEvaluacion =
       estadoActual === 'en_proceso' || estadoActual === 'activo' ? 'activo' : estadoActual;
     const evaluacion = evaluarCompletitudYAptitudEmpleado({
@@ -499,13 +507,6 @@ export class EmpleadosRepository {
 
     if (!evaluacion.aptoParaRemuneraciones) {
       throw new EmpleadoAptitudInvalidaError(evaluacion);
-    }
-
-    if (estadoActual !== 'en_proceso' && estadoActual !== 'activo') {
-      throw buildRepositoryError(
-        'No se puede validar la ficha en el estado operativo actual.',
-        'Estado incompatible para validar remuneraciones.',
-      );
     }
 
     const nextEstado = estadoActual === 'en_proceso' ? 'ACTIVO' : persona.estado;

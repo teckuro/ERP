@@ -430,7 +430,8 @@ La Ficha empleado muestra un panel superior compacto con:
 
 - estado de ficha (`Borrador`, `En proceso`, `Con pendientes`,
   `Ficha completa`);
-- aptitud (`Apta para remuneraciones` / `No apta para remuneraciones`);
+- aptitud (`Apta para remuneraciones`, `Pendiente de validación` o
+  `No apta para remuneraciones`);
 - maximo tres pendientes principales en la lectura superior;
 - accion siguiente (`Completar ficha`, `Revisar pendientes`,
   `Ver datos / Editar ficha`).
@@ -483,16 +484,18 @@ No se muestra en:
 - borradores avanzados;
 - fichas con pendientes o defaults tecnicos;
 - fichas ya aptas;
-- `SUSPENDIDO`, `INACTIVO`, `DESVINCULADO` o `BLOQUEADO`.
+- `SUSPENDIDO`, `INACTIVO`, `DESVINCULADO` o `BLOQUEADO`;
+- `BORRADOR` operativo o `estado_ficha = BORRADOR` (incluye borrador basico sin
+  `paso_alta_avanzada`).
 
 ### Confirmacion
 
 Antes de persistir la validacion se muestra una confirmacion breve:
 
 ```text
-Validar esta ficha para remuneraciones?
-Desde este momento el trabajador podra ser considerado en procesos de
-remuneracion si el periodo y contrato cumplen las reglas del sistema.
+¿Validar esta ficha para remuneraciones?
+Desde este momento el trabajador podrá ser considerado en procesos de
+remuneración si el período y contrato cumplen las reglas del sistema.
 ```
 
 Botones:
@@ -502,8 +505,11 @@ Botones:
 
 ### Persistencia
 
-Al confirmar, el servicio/repository vuelve a ejecutar el helper. Si aparecen
-bloqueos, no actualiza la persona y muestra hasta cinco pendientes principales.
+Al confirmar, el servicio/repository comprueba primero que el estado operativo
+sea `EN_PROCESO` o `ACTIVO`; si no, responde error sin persistir. Luego vuelve
+a ejecutar el helper. Si aparecen bloqueos, no actualiza la persona y muestra
+hasta cinco pendientes principales (y un conteo «y X pendientes más» si hay
+más de cinco).
 
 Si no hay bloqueos, solo actualiza `persona`:
 
