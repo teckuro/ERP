@@ -32,6 +32,9 @@ yarn-error.log
 # Cursor (workspace rules/skills; local by default)
 .cursor/
 
+# Guías y bitácora Codex (copia local del contrato de agente; no publicar en remoto)
+/docs/codex/
+
 # Miscellaneous
 /.angular/cache
 .sass-cache/
