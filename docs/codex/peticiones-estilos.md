@@ -7,6 +7,7 @@ sin mezclarlo con las reglas base.
 
 - **Dos zonas flex sin solape**: izquierda título + controles de período + hint corto de sincronización; derecha estado mensual (título + chip único + detalle); sin grid de tres columnas ni texto largo competiendo con los selects.
 - **Crear parámetros** queda en la botonera junto a **Modificar** (secundario a la izquierda del primario), no en la banda de período.
+- **Pulido final banda**: menos aire entre toolbar y `.period-row` (`parametros-viewhead` gap/padding); bloque estado con ancho ~22rem, `margin-left: auto`, texto y chip alineados a la izquierda dentro del bloque (sin pegar al borde derecho del card); detalle con `text-wrap: balance` donde el motor lo soporta.
 - **Copy acotado**: títulos `Estado mensual: …` y detalles breves por pendiente / completo / parcial / error / edición; advertencia suave solo en pendiente (chip); parcial en variante info.
   - `src/app/pages/parametros.page.ts`
   - `src/styles.css`

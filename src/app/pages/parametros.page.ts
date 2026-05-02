@@ -525,8 +525,8 @@ interface ParametrosDialogState {
 
       .parametros-viewhead {
         display: grid;
-        gap: 12px;
-        padding: 4px 0 12px;
+        gap: 6px;
+        padding: 0 0 8px;
         border-radius: 8px;
         background: linear-gradient(to bottom, #f9fafb 0%, #f9fafb 88%, #f3f4f6 100%);
       }
