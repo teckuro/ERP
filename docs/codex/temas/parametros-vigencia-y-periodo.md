@@ -99,6 +99,7 @@ Resumen aplicado en hints / empty states de tabs (`parametros-*-tab.component.ts
 - `docs/codex/temas/parametros-generales-campos-y-listas.md`
 - `docs/codex/temas/sync-parametros-v611.md`
 - `docs/codex/temas/reforma-pensiones-gradualidad.md`
+- `docs/codex/temas/python-parametros-carga-mensual.md`
 
 ## Actualizacion aplicada: politica final por tab visible
 

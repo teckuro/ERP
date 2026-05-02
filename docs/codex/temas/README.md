@@ -16,5 +16,7 @@ Documentación **por tema** que complementa el índice padre [`../README.md`](..
 ### Parámetros y sync
 
 - [`parametros-generales-campos-y-listas.md`](./parametros-generales-campos-y-listas.md)
+- [`parametros-vigencia-y-periodo.md`](./parametros-vigencia-y-periodo.md)
+- [`python-parametros-carga-mensual.md`](./python-parametros-carga-mensual.md)
 - [`sync-parametros-v611.md`](./sync-parametros-v611.md)
 - [`parametros-permisos-bd-ejemplo.sql`](./parametros-permisos-bd-ejemplo.sql)
