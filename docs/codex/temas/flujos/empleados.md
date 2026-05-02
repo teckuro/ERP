@@ -33,9 +33,18 @@ Definición en `src/app/features/empleados/empleados.routes.ts`.
 
 - Wizard por pasos; opción **Guardar borrador**; al finalizar se valida completitud con el helper central.
 
-### Ficha
+### Ficha (`/empleados/:id`)
 
-- Tabs (General, Laboral, …); guardado **por sección**; panel superior con estado y aptitud; validación explícita remuneraciones según contrato.
+Orden de trabajo en pantalla:
+
+1. Revisar **panel superior** (estado ficha, aptitud, pendientes, CTA).
+2. Revisar **panel lateral** (completitud %, mismos faltantes, impacto, acciones rápidas).
+3. Recorrer **pestañas en este orden** (coincide con chips en UI): **General → Laboral → Remuneración → Previsión y salud → Pago → Documentos → Historial**.
+4. En cada pestaña editable: **lectura por bloques** → **Editar** → cambios → **Guardar cambios** o **Cancelar**.
+
+Tabla detallada (bloques, componentes, `saveTarget`): **[`flujo-edicion-ficha-empleado.md`](../flujo-edicion-ficha-empleado.md) §3**.
+
+- **Validar para remuneraciones**: acción explícita cuando el helper no tiene bloqueos y aplica opción B ([`empleados-estados-completitud-aptitud.md`](../empleados-estados-completitud-aptitud.md) §21).
 
 ## Documentación relacionada
 

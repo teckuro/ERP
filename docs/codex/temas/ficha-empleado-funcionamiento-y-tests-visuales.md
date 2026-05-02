@@ -30,25 +30,18 @@ Si no hay empleado o falla la red, se muestra mensaje de error; si hay datos, se
 
 ---
 
-## 2. Estructura de la UI (orden de lectura en pantalla)
+## 2. Estructura de la UI
 
-1. **Cabecera** — `app-record-breadcrumb` (Empleados → Ficha), hero compacto (nombre, RUT, cargo, centro de costo) y botonera (Volver + acción principal según estado).
-2. **Panel de estado** (`file-state-overview`) — título de estado de ficha, etiqueta de aptitud/pendiente de validación, resumen de pendientes (hasta 3 ítems) y botón de **acción siguiente** (misma lógica que el primario del hero cuando aplica).
-3. **Feedback** — éxito o error tras validar remuneraciones (lista corta de bloqueos si falla).
-4. **Cuerpo** — **tabs** (General, Laboral, Remuneración, Previsión y salud, Pago, Documentos, Historial) y contenido del tab activo.
-5. **Modo lectura vs edición** — por tab: vista tipo ficha (`detailItems` / bloques) o bloques editables (`*Component` de sección) cuando el usuario entra en edición (`startEditing` / `editingTab`).
+Orden real de la pantalla y **desglose de cada pestaña, bloques y `saveTarget`**: [`flujo-edicion-ficha-empleado.md`](./flujo-edicion-ficha-empleado.md) (§2 Layout, **§3 Pestañas**).
 
-Principio alineado al orquestador: **estado → pendientes → acción → detalle**; no se muestra todo el formulario como única vista plana.
+Resumen: cabecera → panel estado → (feedback validación) → cuerpo con **tabs + bloques** + **panel lateral** (`file-status-panel`). Principio: **estado → pendientes → acción → detalle**.
 
 ---
 
-## 3. Tabs, secciones y guardado
+## 3. Guardado y tabs
 
-- Cada tab tiene un **mapeo** a la sección persistida con **`EmpleadosService.guardarSeccionFicha(personaId, seccion, payload)`** (`general` → datos personales + contacto según implementación; `laboral`, `remuneracion`, `prevision`, `pago`).
-- **`saveSection()`** arma el payload con **`buildPayloadForSave()`**, valida controles del bloque activo y, si es válido, guarda y **reemplaza** `empleado` con la respuesta del servidor (ficha actualizada + `formValue`).
-- Al **cambiar de tab** con cambios sin guardar, el contenedor pide confirmación para descartar o cancelar el cambio de tab.
-
-`Documentos` e `Historial` suelen ser **solo lectura** u operaciones distintas (`canEditCurrentTab()` los excluye de edición inline principal).
+- **`guardarSeccionFicha`**: secciones `general` \| `laboral` \| `remuneracion` \| `prevision` \| `pago` (ver tabla en flujo §3). `Documentos` e `Historial` **no** persisten desde esta pantalla (`saveTarget` null, `canEditCurrentTab()` false).
+- **`saveSection()`** + **`buildPayloadForSave()`**; cambio de tab con cambios sin guardar → `window.confirm`.
 
 ---
 

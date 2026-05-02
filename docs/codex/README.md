@@ -61,8 +61,8 @@ Si falta un caso: primero `ui-form-guidelines.md` y `AGENTS.md`; luego temas esp
 |-----------|-----------|
 | [`modo-basico-empleado.md`](./temas/modo-basico-empleado.md) | Modo básico de ficha |
 | [`base-angular-empleados.md`](./temas/base-angular-empleados.md) | Módulos al estilo del repo |
-| [`flujo-edicion-ficha-empleado.md`](./temas/flujo-edicion-ficha-empleado.md) | Edición de ficha |
-| [`ficha-empleado-funcionamiento-y-tests-visuales.md`](./temas/ficha-empleado-funcionamiento-y-tests-visuales.md) | Ficha `/empleados/:id` (detalle) y tests de imagen Playwright |
+| [`flujo-edicion-ficha-empleado.md`](./temas/flujo-edicion-ficha-empleado.md) | Ficha: pestañas en orden, bloques y guardado |
+| [`ficha-empleado-funcionamiento-y-tests-visuales.md`](./temas/ficha-empleado-funcionamiento-y-tests-visuales.md) | Ficha: carga técnica y tests de imagen |
 | [`empleados-estados-completitud-aptitud.md`](./temas/empleados-estados-completitud-aptitud.md) | Contrato de estados, completitud, borrador/continuar alta y aptitud para remuneraciones |
 | [`crear-menu-base.md`](./temas/crear-menu-base.md) | Menú lateral y rutas |
 | [`creacion-avanzada-formulario-campos.md`](./temas/creacion-avanzada-formulario-campos.md) | Alta avanzada: bloques y tabs |

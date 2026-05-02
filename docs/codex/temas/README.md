@@ -49,7 +49,8 @@ Los archivos de contrato **permanecen en la raíz de `temas/`** (nombres con pre
 | Página / flujo | Contrato o guía |
 |----------------|-----------------|
 | Listado, CTAs y estados | [`empleados-estados-completitud-aptitud.md`](./empleados-estados-completitud-aptitud.md) |
-| Ficha `/empleados/:id` (tabs, guardado, validar remuneraciones) | [`flujo-edicion-ficha-empleado.md`](./flujo-edicion-ficha-empleado.md), [`ficha-empleado-funcionamiento-y-tests-visuales.md`](./ficha-empleado-funcionamiento-y-tests-visuales.md) |
+| Ficha `/empleados/:id` — **orden de pestañas, bloques y guardado** | [`flujo-edicion-ficha-empleado.md`](./flujo-edicion-ficha-empleado.md) (**fuente de verdad** UI flujo) |
+| Ficha — carga, servicios, Playwright | [`ficha-empleado-funcionamiento-y-tests-visuales.md`](./ficha-empleado-funcionamiento-y-tests-visuales.md) |
 | Alta básica | [`modo-basico-empleado.md`](./modo-basico-empleado.md) |
 | Alta avanzada (wizard, campos) | [`creacion-avanzada-formulario-campos.md`](./creacion-avanzada-formulario-campos.md) |
 | Borrador, continuar alta, E2E | [`creacion-avanzada-borrador-tests.md`](./creacion-avanzada-borrador-tests.md) |
