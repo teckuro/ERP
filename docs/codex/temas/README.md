@@ -11,6 +11,7 @@ El **contexto global del producto** y el **tablero de fases** (qué está cerrad
 - [`modo-basico-empleado.md`](./modo-basico-empleado.md)
 - [`base-angular-empleados.md`](./base-angular-empleados.md)
 - [`flujo-edicion-ficha-empleado.md`](./flujo-edicion-ficha-empleado.md)
+- [`ficha-empleado-funcionamiento-y-tests-visuales.md`](./ficha-empleado-funcionamiento-y-tests-visuales.md) — funcionamiento detallado de `/empleados/:id` y tests Playwright de imagen
 - [`empleados-estados-completitud-aptitud.md`](./empleados-estados-completitud-aptitud.md) - contrato de estados, completitud, borrador/continuar alta y aptitud para remuneraciones
 - [`crear-menu-base.md`](./crear-menu-base.md)
 - [`creacion-avanzada-formulario-campos.md`](./creacion-avanzada-formulario-campos.md)
