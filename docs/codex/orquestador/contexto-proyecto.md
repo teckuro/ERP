@@ -33,6 +33,8 @@ Guiado por **estados**, **pendientes** y **acciones**. Orden de presentación:
 
 El sistema **no** debe parecer una planilla gigante. En UI operativa **no** mostrar nombres de tablas, columnas ni errores crudos de motor. La complejidad legal y previsional existe **por capas** (catálogo, vigencia, período mensual, etc.); ver [`periodo-vigencia-catalogo.md`](../modulos/parametros/periodo-vigencia-catalogo.md).
 
+Criterios operativos de pantalla (estado → pendientes → acción, qué evitar y **siguiente fase fuerte**): [`diseno-operativo-erp.md`](./diseno-operativo-erp.md).
+
 ## 5. Mapa de módulos (alto nivel)
 
 | Área | Rol en el producto |
@@ -41,7 +43,7 @@ El sistema **no** debe parecer una planilla gigante. En UI operativa **no** most
 | **Parámetros** | Período activo, datos mensuales vs vigencias vs catálogos globales; estado oficial del período de remuneración. |
 | **Python / seeds** | Carga oficial de parámetros mensuales y normativa base alineada a BD v11. |
 | **Haberes / descuentos** | Asignaciones recurrentes por trabajador (en evolución); no sustituyen conceptos ni liquidaciones. |
-| **Conceptos de remuneración** | Pendiente de fase fuerte: catálogo maestro gobernado para haberes, descuentos, aportes y liquidaciones. |
+| **Conceptos de remuneración** | **Siguiente fase fuerte** (pendiente): catálogo maestro gobernado para haberes, descuentos, aportes y liquidaciones. Entrada: [`../modulos/conceptos-remuneracion/README.md`](../modulos/conceptos-remuneracion/README.md). |
 | **Movimientos variables** | Futuro: horas extra, bonos puntuales, comisiones, ausencias, etc. |
 | **Proceso mensual / motor / liquidaciones** | Futuro: checklist guiado, cálculo, cierre y congelado de resultados. |
 | **Previred / LRE** | Fases posteriores con trazabilidad y validaciones. |
@@ -68,7 +70,7 @@ Uso actual acotado a **asignaciones recurrentes** por trabajador, con período g
 
 ## 10. Estado resumido — Conceptos de remuneración
 
-**Pendiente de fase fuerte.** Debe ser catálogo maestro (LRE, sistema/protegido, automático/manual, vigencias, reglas de edición) y **fuente** para haberes, descuentos, aportes y liquidaciones. **No** mezclar con asignaciones por trabajador.
+**Siguiente fase fuerte de producto (pendiente de cierre).** Debe ser catálogo maestro (LRE, sistema/protegido, automático/manual, vigencias, reglas de edición) y **fuente** para haberes, descuentos, aportes y liquidaciones. **No** mezclar con asignaciones por trabajador. Punto de entrada del módulo: [`../modulos/conceptos-remuneracion/README.md`](../modulos/conceptos-remuneracion/README.md). Marco UX operativo: [`diseno-operativo-erp.md`](./diseno-operativo-erp.md) §6.
 
 ## 11. Módulos futuros
 
@@ -137,6 +139,7 @@ Hasta cerrar las fases previas del tablero y el contrato correspondiente:
 | Índice padre | [`../README.md`](../README.md) |
 | Manual de lectura del repo | [`../manual-base-proyecto.md`](../manual-base-proyecto.md) |
 | Fases y cierre | [`estado-fases.md`](./estado-fases.md) |
+| Diseño operativo (UX prioridades, Conceptos siguiente fase) | [`diseno-operativo-erp.md`](./diseno-operativo-erp.md) |
 | Mapa documentación | [`mapa-documentacion.md`](./mapa-documentacion.md) |
 | Empleados (módulo) | [`../modulos/empleados/README.md`](../modulos/empleados/README.md) |
 | Empleados estado/aptitud | [`../modulos/empleados/contrato-general.md`](../modulos/empleados/contrato-general.md) |

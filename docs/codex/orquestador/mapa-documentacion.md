@@ -13,6 +13,7 @@
 | [`../manual-base-proyecto.md`](../manual-base-proyecto.md) | Lectura del repo |
 | [`README.md`](./README.md) | Rol del orquestador |
 | [`contexto-proyecto.md`](./contexto-proyecto.md) | Visión, módulos, camino a remuneraciones |
+| [`diseno-operativo-erp.md`](./diseno-operativo-erp.md) | Diseño operativo de pantallas; **Conceptos** como siguiente fase fuerte |
 | [`estado-fases.md`](./estado-fases.md) | Tablero de fases |
 | **Este archivo** | Inventario: global / por módulo / vigente / histórico / reemplazado |
 
