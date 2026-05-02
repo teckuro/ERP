@@ -88,6 +88,9 @@ export async function fillPaso0BorradorMinimo(
   await page.locator('#empleado-nombres').fill(nombres);
   await page.locator('#empleado-apellido-paterno').fill(apellido);
   await pickSearchSelectOption(page, 'empleado-idPais', /Chile/i);
+  /** Obligatorios para `validateBorradorAvanzadoFormMinimo` (selects con fila vacía inicial). */
+  await pickSearchSelectOption(page, 'empleado-sexo', /Femenino|Masculino|Otro/i);
+  await pickSearchSelectOption(page, 'empleado-estadoCivil', /Soltero/i);
 }
 
 export async function openEmpleadosListado(page: Page): Promise<void> {
