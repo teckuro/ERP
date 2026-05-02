@@ -1720,7 +1720,7 @@ export class ParametrosPage implements OnInit {
     return [...yearsFromBd].sort((left, right) => right - left);
   });
 
-  /** Catálogos ya filtrados en backend por periodo seleccionado (listarCatalogos). */
+  /** Catálogos aplican su política propia: periodo mensual, vigencia o catálogo global. */
   readonly tramosCargaPorPeriodo = computed(() => this.catalogos().tramosCarga);
 
   readonly tramosImpuestoPorPeriodo = computed(() => this.catalogos().tramosImpuesto);
@@ -1820,6 +1820,22 @@ export class ParametrosPage implements OnInit {
   private formatBooleanGrid = (value: unknown): string => (value ? 'Sí' : 'No');
 
   private formatVigenteGrid = (value: unknown): string => (value ? 'Vigente' : 'Inactivo');
+
+  private estadoVigenciaPeriodo(row: { vigenciaInicio: string | null; vigenciaFin: string | null }): string {
+    const fechaPeriodo = `${this.selectedPeriodo()}-01`;
+    const inicio = row.vigenciaInicio ?? '';
+    const fin = row.vigenciaFin ?? null;
+
+    if (inicio && inicio > fechaPeriodo) {
+      return 'Futuro';
+    }
+
+    if (fin && fin < fechaPeriodo) {
+      return 'Historico';
+    }
+
+    return 'Vigente al periodo';
+  }
 
   readonly tramosCargaColumns: DataGridColumn<TramoCargaParametro>[] = [
     { id: 'periodo', header: 'Periodo', field: 'periodo', sortable: true },
@@ -1943,17 +1959,8 @@ export class ParametrosPage implements OnInit {
     { id: 'vigenciaInicio', header: 'Inicio', field: 'vigenciaInicio', type: 'date', sortable: true, format: this.formatDateGrid },
     { id: 'vigenciaFin', header: 'Fin', field: 'vigenciaFin', type: 'date', sortable: true, format: this.formatDateGrid },
     {
-      id: 'aporteEmpleadorTotal',
-      header: 'Aporte empleador',
-      field: 'aporteEmpleadorTotal',
-      type: 'number',
-      sortable: true,
-      align: 'right',
-      format: this.formatPercentGrid,
-    },
-    {
       id: 'cuentaCapitalizacionIndividual',
-      header: 'Capitalizacion',
+      header: 'Cuenta individual',
       field: 'cuentaCapitalizacionIndividual',
       type: 'number',
       sortable: true,
@@ -1961,13 +1968,37 @@ export class ParametrosPage implements OnInit {
       format: this.formatPercentGrid,
     },
     {
-      id: 'fappSeguroSocial',
-      header: 'Seguro social',
-      field: 'fappSeguroSocial',
+      id: 'cotizacionRentabilidadProtegida',
+      header: 'CRP',
+      field: 'cotizacionRentabilidadProtegida',
       type: 'number',
       sortable: true,
       align: 'right',
       format: this.formatPercentGrid,
+    },
+    {
+      id: 'seguroSocialSisCev',
+      header: 'Seguro Social / SIS / CEV',
+      field: 'seguroSocialSisCev',
+      type: 'number',
+      sortable: true,
+      align: 'right',
+      format: this.formatPercentGrid,
+    },
+    {
+      id: 'aporteEmpleadorTotal',
+      header: 'Total empleador',
+      field: 'aporteEmpleadorTotal',
+      type: 'number',
+      sortable: true,
+      align: 'right',
+      format: this.formatPercentGrid,
+    },
+    {
+      id: 'estadoPeriodo',
+      header: 'Estado',
+      sortable: false,
+      format: (_value, row) => this.estadoVigenciaPeriodo(row),
     },
     { id: 'fuente', header: 'Fuente', field: 'fuente', sortable: true },
   ];

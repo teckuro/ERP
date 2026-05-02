@@ -99,3 +99,33 @@ Resumen aplicado en hints / empty states de tabs (`parametros-*-tab.component.ts
 - `docs/codex/temas/parametros-generales-campos-y-listas.md`
 - `docs/codex/temas/sync-parametros-v611.md`
 - `docs/codex/temas/reforma-pensiones-gradualidad.md`
+
+## Actualizacion aplicada: politica final por tab visible
+
+Fecha de ajuste: 2026-05-01.
+
+| Tab | Tipo dominante | Politica en UI/repositorio |
+|-----|----------------|----------------------------|
+| Informacion de Valores | PERIODO_MENSUAL | `parametros_generales.periodo = YYYY-MM`; vacio por mes. |
+| Informacion de Remuneraciones | PERIODO_MENSUAL + fallback VIGENCIA | formulario del snapshot mensual; datos legales/AFC/Reforma se hidratan por vigencia del mes. |
+| CCAF y Mutual | CONFIG_EMPRESA + CATALOGO_GLOBAL + PERIODO_MENSUAL | configuracion guardada en el snapshot mensual; CCAF y mutuales se muestran siempre; Ley 16.744 sigue mensual. |
+| Tramos Cargas Familiares | PERIODO_MENSUAL | `tramo_carga.periodo = YYYY-MM`. |
+| Impuesto unico | PERIODO_MENSUAL / vigencia derivada | `tramo_impuesto.periodo = YYYY-MM`; `tabla_impuesto_unico.periodo` deriva de `vigencia_inicio`. |
+| Salud | VIGENCIA | ISAPRE e instituciones por solape de vigencia; no exige `periodo` exacto. |
+| Prevision | VIGENCIA | AFP por solape de vigencia; no exige `periodo` exacto. |
+| Reforma de Pensiones > Legales | VIGENCIA | parametros legales por solape de vigencia. |
+| Reforma de Pensiones > Aportes | VIGENCIA normativa | calendario completo de gradualidad/aportes; periodo activo marca estado. |
+| Reforma de Pensiones > Trab. pesados | HIBRIDO VIGENCIA + MES | se muestra por vigencia que solapa el mes; pendiente decidir si debe exigir `periodo` mensual. |
+| Reforma de Pensiones > APV inst. / APV pago | CATALOGO_GLOBAL | catalogos completos; no dependen del periodo seleccionado. |
+
+Reglas aplicadas en esta fase:
+
+- AFP, Salud, parametros legales y AFC no filtran por `periodo` exacto cuando el dato real es vigencia.
+- CCAF, mutuales, instituciones APV y formas de pago APV son catalogos globales; se muestran siempre aunque tengan `periodo` como trazabilidad.
+- Reforma previsional / gradualidad 8,5 % se muestra como calendario completo; el periodo activo solo calcula estado visual: `Vigente al periodo`, `Futuro` o `Historico`.
+- Ley 16.744, tramos de carga, tramos impuesto y tabla impuesto unico conservan el criterio mensual documentado.
+
+Pendiente Python/SQL:
+
+- Confirmar que los maestros globales no se traten como faltantes mensuales en los logs de carga.
+- Revisar si `trabajo_pesado_parametro` debe exigir `periodo` mensual en UI o permanecer como vigencia solapada.

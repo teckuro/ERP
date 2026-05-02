@@ -3,6 +3,16 @@
 Registro cronológico de mejoras visuales aplicadas por petición, con foco en **trazabilidad** (qué se tocó y dónde),
 sin mezclarlo con las reglas base.
 
+### 2026-05-01 (Parametros - filtros por periodo, vigencia y catalogo)
+
+- **Politica de filtros por tipo de dato**: las grillas de Parametros separan datos mensuales, vigencias y catalogos globales. AFP/Salud/Legales/AFC usan solape de vigencia; CCAF/Mutuales/APV se muestran como catalogos generales; Reforma > Aportes muestra el calendario normativo completo y marca estado segun periodo activo.
+  - `src/app/features/parametros-generales/data-access/parametros-generales.repository.ts`
+  - `src/app/pages/parametros.page.ts`
+- **Copy/empty states**: se corrigieron filtros visibles de `Periodo` a `Vigencia inicio` donde corresponde y se ajusto Reforma para no comunicar la gradualidad como faltante mensual.
+  - `src/app/features/parametros-generales/components/tabs/parametros-salud-tab.component.ts`
+  - `src/app/features/parametros-generales/components/tabs/parametros-reforma-tab.component.ts`
+  - `src/app/features/parametros-generales/components/tabs/parametros-ccaf-mutuales-tab.component.ts`
+
 ### 2026-05-01 (Tablas ERP — estándar transversal)
 
 - **Estándar oficial de tablas/DataGrid**: se documentó qué mostrar/no mostrar, orden de columnas, formatos de fechas/montos/porcentajes/vacíos, filtros, toolbar, loading, empty states, paginación, acciones y responsive.

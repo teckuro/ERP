@@ -305,10 +305,10 @@ export class ParametrosCcafMutualesTabComponent {
     {
       id: 'periodo',
       label: 'Periodo',
-      field: 'vigenciaInicio',
+      field: 'periodo',
       type: 'text',
       operator: 'startsWith',
-      placeholder: 'Ej: 2026-04',
+      placeholder: 'Ej: 2026-05',
       emptyLabel: 'Todos',
     },
   ];

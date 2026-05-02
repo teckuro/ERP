@@ -138,11 +138,11 @@ export class ParametrosSaludTabComponent {
   readonly institucionesFilters: DataGridFilter<IsapreParametro>[] = [
     {
       id: 'vigenciaInicio',
-      label: 'Periodo',
+      label: 'Vigencia inicio',
       field: 'vigenciaInicio',
       type: 'text',
       operator: 'startsWith',
-      placeholder: 'Ej: 2026-04',
+      placeholder: 'Ej: 2026-05',
       emptyLabel: 'Todos',
     },
     {

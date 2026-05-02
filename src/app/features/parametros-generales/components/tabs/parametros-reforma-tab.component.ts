@@ -35,7 +35,7 @@ type ReformaSubId = 'legales' | 'aportes' | 'trabPesados' | 'apvInst' | 'apvPago
         <div class="param-hint param-hint--consulta param-hint--inline" role="note">
           <span class="param-hint__tag">Solo lectura</span>
           <span class="param-hint__text">
-            Reforma mezcla normativa por vigencia, parámetros mensuales y catálogos generales; revisa el mensaje vacío de cada grilla.
+            Reforma mezcla normativa por vigencia, parámetros mensuales y catálogos generales. El período activo contextualiza o destaca, no oculta catálogos globales.
           </span>
         </div>
       </div>
@@ -74,8 +74,8 @@ type ReformaSubId = 'legales' | 'aportes' | 'trabPesados' | 'apvInst' | 'apvPago
               [maxItems]="8"
               gridHeight="min(520px, 100%)"
               [persistenceKey]="gridPersistenceKeyPrevisional"
-              emptyTitle="No hay tramos de gradualidad vigentes al período activo"
-              emptyDescription="La gradualidad 8,5 % es normativa por vigencia (devengo). Si está vacío, revisa la tabla reforma_previsional_parametro en la carga mensual o la normativa base."
+              emptyTitle="No hay gradualidad cargada"
+              emptyDescription="La gradualidad 8,5 % es normativa por vigencia (devengo). El período activo solo destaca el tramo aplicable."
               (refresh)="refresh?.()"
             ></app-data-grid>
           </section>
@@ -178,11 +178,11 @@ export class ParametrosReformaTabComponent {
   readonly parametrosLegalesFilters: DataGridFilter<ParametroLegal>[] = [
     {
       id: 'vigenciaInicio',
-      label: 'Periodo',
+      label: 'Vigencia inicio',
       field: 'vigenciaInicio',
       type: 'text',
       operator: 'startsWith',
-      placeholder: 'Ej: 2026-04',
+      placeholder: 'Ej: 2026-05',
       emptyLabel: 'Todos',
     },
   ];
@@ -190,11 +190,11 @@ export class ParametrosReformaTabComponent {
   readonly reformaPrevisionalFilters: DataGridFilter<ReformaPrevisionalParametro>[] = [
     {
       id: 'vigenciaInicio',
-      label: 'Periodo',
+      label: 'Vigencia inicio',
       field: 'vigenciaInicio',
       type: 'text',
       operator: 'startsWith',
-      placeholder: 'Ej: 2026-04',
+      placeholder: 'Ej: 2026-08',
       emptyLabel: 'Todos',
     },
   ];
@@ -202,11 +202,11 @@ export class ParametrosReformaTabComponent {
   readonly trabajosPesadosFilters: DataGridFilter<TrabajoPesadoParametro>[] = [
     {
       id: 'vigenciaInicio',
-      label: 'Periodo',
+      label: 'Vigencia inicio',
       field: 'vigenciaInicio',
       type: 'text',
       operator: 'startsWith',
-      placeholder: 'Ej: 2026-04',
+      placeholder: 'Ej: 2026-05',
       emptyLabel: 'Todos',
     },
   ];

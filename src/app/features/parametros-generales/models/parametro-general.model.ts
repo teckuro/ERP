@@ -162,6 +162,8 @@ export interface ReformaPrevisionalParametro {
   vigenciaFin: string | null;
   aporteEmpleadorTotal: number;
   cuentaCapitalizacionIndividual: number;
+  cotizacionRentabilidadProtegida: number;
+  seguroSocialSisCev: number;
   fappSeguroSocial: number;
   fuente: string | null;
 }
