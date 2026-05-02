@@ -3,6 +3,13 @@
 Registro cronológico de mejoras visuales aplicadas por petición, con foco en **trazabilidad** (qué se tocó y dónde),
 sin mezclarlo con las reglas base.
 
+### 2026-05-02 (Parámetros - banda superior período / estado mensual)
+
+- **Dos zonas flex sin solape**: izquierda título + controles de período + hint corto de sincronización; derecha estado mensual (título + chip único + detalle) y acción **Crear parámetros** alineada en la misma fila cuando aplica; sin grid de tres columnas ni texto largo competiendo con los selects.
+- **Copy acotado**: títulos `Estado mensual: …` y detalles breves por pendiente / completo / parcial / error / edición; advertencia suave solo en pendiente (chip); parcial en variante info.
+  - `src/app/pages/parametros.page.ts`
+  - `src/styles.css`
+
 ### 2026-05-01 (Parametros - estado simple y tabs limpios)
 
 - **Banda superior como fuente de estado**: el periodo ahora comunica pendiente, parcial, completo, editando o error con un chip unico y una descripcion corta; los catalogos/vigencias se explican como disponibles aunque falte carga mensual.

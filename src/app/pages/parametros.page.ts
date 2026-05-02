@@ -145,18 +145,6 @@ interface ParametrosDialogState {
                 (backClick)="volverParametrosAction()"
               ></app-page-actions>
             } @else {
-              @if (isConfigurableTab() && !hasSelectedInRows()) {
-                <app-button
-                  variant="outline"
-                  size="md"
-                  className="erp-toolbar-button erp-action-button"
-                  [disabled]="crearParametrosDeshabilitado()"
-                  (click)="crearParametrosParaPeriodo()"
-                >
-                  <lucide-icon icon class="h-4 w-4" name="plus"></lucide-icon>
-                  Crear parámetros
-                </app-button>
-              }
               <app-page-actions
                 [visibleActions]="['edit']"
                 editLabel="Modificar"
@@ -169,64 +157,77 @@ interface ParametrosDialogState {
         </div>
 
         <div class="period-row" aria-label="Periodo">
-          <span class="period-label">Parámetros del período {{ periodoGlobal.etiqueta() }}</span>
-          <div class="period-controls">
-            <button
-              type="button"
-              class="period-arrow"
-              aria-label="Periodo anterior"
-              [disabled]="parametrosUiBloqueada()"
-              (click)="moverPeriodo(-1)"
-            >
-              <lucide-icon class="h-4 w-4" name="arrow-left"></lucide-icon>
-            </button>
+          <div class="period-row__left">
+            <div class="period-row__left-top">
+              <span class="period-label">Parámetros del período {{ periodoGlobal.etiqueta() }}</span>
+              <div class="period-controls">
+                <button
+                  type="button"
+                  class="period-arrow"
+                  aria-label="Periodo anterior"
+                  [disabled]="parametrosUiBloqueada()"
+                  (click)="moverPeriodo(-1)"
+                >
+                  <lucide-icon class="h-4 w-4" name="arrow-left"></lucide-icon>
+                </button>
 
-            <select
-              class="param-select period-year"
-              id="parametros-periodo-anio"
-              [ngModel]="selectedYear()"
-              (ngModelChange)="seleccionarAnioValue($event)"
-            >
-              @for (year of yearOptions(); track year) {
-                <option [value]="asString(year)">{{ year }}</option>
-              }
-            </select>
+                <select
+                  class="param-select period-year"
+                  id="parametros-periodo-anio"
+                  [ngModel]="selectedYear()"
+                  (ngModelChange)="seleccionarAnioValue($event)"
+                >
+                  @for (year of yearOptions(); track year) {
+                    <option [value]="asString(year)">{{ year }}</option>
+                  }
+                </select>
 
-            <select
-              class="param-select period-month"
-              id="parametros-periodo-mes"
-              [ngModel]="selectedMonth()"
-              (ngModelChange)="seleccionarMesValue($event)"
-            >
-              @for (month of monthOptions; track month.value) {
-                <option [value]="month.value">{{ month.label }}</option>
-              }
-            </select>
+                <select
+                  class="param-select period-month"
+                  id="parametros-periodo-mes"
+                  [ngModel]="selectedMonth()"
+                  (ngModelChange)="seleccionarMesValue($event)"
+                >
+                  @for (month of monthOptions; track month.value) {
+                    <option [value]="month.value">{{ month.label }}</option>
+                  }
+                </select>
 
-            <button
-              type="button"
-              class="period-arrow"
-              aria-label="Periodo siguiente"
-              [disabled]="parametrosUiBloqueada()"
-              (click)="moverPeriodo(1)"
-            >
-              <lucide-icon class="h-4 w-4" name="chevron-right"></lucide-icon>
-            </button>
+                <button
+                  type="button"
+                  class="period-arrow"
+                  aria-label="Periodo siguiente"
+                  [disabled]="parametrosUiBloqueada()"
+                  (click)="moverPeriodo(1)"
+                >
+                  <lucide-icon class="h-4 w-4" name="chevron-right"></lucide-icon>
+                </button>
+              </div>
+            </div>
+            <p class="period-sync-hint">Sincronizado con el período activo.</p>
           </div>
 
-          <div class="period-status">
-            <span class="period-status__label">{{ periodoEstadoTitulo() }}</span>
-            <span class="period-status__detail">{{ periodoEstadoDetalle() }}</span>
-            <span class="period-status__chips" role="status" aria-label="Estado del período">
-              <span class="period-chip" [ngClass]="periodoEstadoChipClass()">{{ periodoEstadoChip() }}</span>
-            </span>
-            <span class="period-status__next" role="note">
-              Acción: {{ periodoEstadoAccion() }}
-            </span>
+          <div class="period-row__right" role="region" aria-label="Estado mensual">
+            <div class="period-mensual__head">
+              <span class="period-mensual__title">{{ periodoEstadoTitulo() }}</span>
+              <span class="period-mensual__chip" role="status" aria-label="Resumen de estado">
+                <span class="period-chip" [ngClass]="periodoEstadoChipClass()">{{ periodoEstadoChip() }}</span>
+              </span>
+              @if (isConfigurableTab() && !hasSelectedInRows() && !generalesEditando()) {
+                <app-button
+                  variant="outline"
+                  size="md"
+                  className="erp-toolbar-button erp-action-button period-mensual__action"
+                  [disabled]="crearParametrosDeshabilitado()"
+                  (click)="crearParametrosParaPeriodo()"
+                >
+                  <lucide-icon icon class="h-4 w-4" name="plus"></lucide-icon>
+                  Crear parámetros
+                </app-button>
+              }
+            </div>
+            <p class="period-mensual__detail">{{ periodoEstadoDetalle() }}</p>
           </div>
-          <p class="period-sync-hint">
-            Sincronizado con el período activo de la cabecera. Cambiar aquí o arriba actualiza el mismo contexto.
-          </p>
         </div>
           </div>
 
@@ -437,42 +438,6 @@ interface ParametrosDialogState {
         max-height: calc(100dvh - var(--app-layout-main-chrome-y, 7rem));
       }
 
-      .parametros-page .period-status {
-        display: flex;
-        flex-wrap: wrap;
-        align-items: center;
-        gap: 6px;
-        margin: 0;
-        color: var(--prm-ink);
-        font-size: 0.78rem;
-        font-weight: 600;
-        line-height: 1.2;
-      }
-
-      .parametros-page .period-status__label {
-        font-weight: 700;
-      }
-
-      .parametros-page .period-status__detail {
-        flex-basis: 100%;
-        color: #64748b;
-        font-size: 0.72rem;
-        font-weight: 500;
-        line-height: 1.35;
-      }
-
-      .parametros-page .period-status__chips {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        min-width: 0;
-      }
-
-      .parametros-page .period-status__next {
-        color: var(--prm-muted);
-        font-weight: 600;
-      }
-
       .parametros-page .period-chip {
         display: inline-flex;
         align-items: center;
@@ -484,7 +449,7 @@ interface ParametrosDialogState {
         background: var(--prm-chip-soft);
         color: var(--prm-chip-muted);
         font-size: 0.7rem;
-        font-weight: 700;
+        font-weight: 600;
         letter-spacing: 0.02em;
         white-space: nowrap;
       }
@@ -559,22 +524,11 @@ interface ParametrosDialogState {
       }
 
       .parametros-viewhead {
-        position: relative;
         display: grid;
         gap: 12px;
         padding: 4px 0 12px;
         border-radius: 8px;
         background: linear-gradient(to bottom, #f9fafb 0%, #f9fafb 88%, #f3f4f6 100%);
-      }
-
-      .parametros-viewhead::after {
-        content: '';
-        position: absolute;
-        right: 0;
-        bottom: 0;
-        left: 0;
-        height: 1px;
-        background: transparent;
       }
 
       .parametros-toolbar {
@@ -1474,13 +1428,8 @@ interface ParametrosDialogState {
       }
 
       @media (max-width: 720px) {
-        .parametros-toolbar,
-        .period-row {
-          align-items: stretch;
-          grid-template-columns: 1fr;
-        }
-
         .parametros-toolbar {
+          align-items: stretch;
           flex-direction: column;
         }
 
@@ -1662,35 +1611,34 @@ export class ParametrosPage implements OnInit {
   });
 
   readonly periodoEstadoTitulo = computed(() => {
-    const periodo = this.periodoGlobal.etiqueta();
     switch (this.periodoCargaEstado()) {
       case 'error':
-        return `Error en carga mensual de ${periodo}`;
+        return 'Estado mensual: Error';
       case 'editando':
-        return `Editando parámetros mensuales de ${periodo}`;
+        return 'Estado mensual: En edición';
       case 'completo':
-        return `Parámetros mensuales cargados para ${periodo}`;
+        return 'Estado mensual: Completo';
       case 'parcial':
-        return `Carga mensual parcial para ${periodo}`;
+        return 'Estado mensual: Parcial';
       case 'pendiente':
       default:
-        return `${periodo} pendiente de carga mensual`;
+        return 'Estado mensual: Pendiente';
     }
   });
 
   readonly periodoEstadoDetalle = computed(() => {
     switch (this.periodoCargaEstado()) {
       case 'error':
-        return 'La normativa y catálogos siguen disponibles. Revisa el detalle de carga.';
+        return 'No se completó la carga mensual. Revisa el detalle de carga.';
       case 'editando':
-        return 'Guarda los cambios para actualizar la configuración mensual.';
+        return 'Guarda para persistir el snapshot mensual.';
       case 'completo':
-        return 'Datos mensuales, vigencias y catálogos disponibles.';
+        return 'Datos mensuales cargados. Vigencias y catálogos disponibles.';
       case 'parcial':
         return 'Hay datos mensuales pendientes. Revisa antes de usar el período para cálculo.';
       case 'pendiente':
       default:
-        return 'Catálogos, vigencias y normativa siguen disponibles para consulta.';
+        return 'Faltan datos mensuales. Vigencias y catálogos siguen disponibles.';
     }
   });
 
@@ -1699,7 +1647,7 @@ export class ParametrosPage implements OnInit {
       case 'error':
         return 'Error';
       case 'editando':
-        return 'Editando';
+        return 'Edición';
       case 'completo':
         return 'Completo';
       case 'parcial':
@@ -1719,27 +1667,13 @@ export class ParametrosPage implements OnInit {
       case 'completo':
         return 'period-chip--success';
       case 'parcial':
+        return 'period-chip--info';
       case 'pendiente':
       default:
         return 'period-chip--warning';
     }
   });
 
-  readonly periodoEstadoAccion = computed(() => {
-    if (this.generalesEditando()) {
-      return 'Guardar';
-    }
-    if (this.periodoCargaEstado() === 'pendiente') {
-      return 'Crear parámetros';
-    }
-    if (this.periodoCargaEstado() === 'parcial') {
-      return 'Revisar';
-    }
-    if (this.isConfigurableTab()) {
-      return 'Modificar';
-    }
-    return 'Consultar';
-  });
   readonly yearOptions = computed(() => {
     const selectedYear = Number(this.selectedYear());
     const yearsFromBd = new Set<number>();
