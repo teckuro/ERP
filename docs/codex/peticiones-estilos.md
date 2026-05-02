@@ -3,6 +3,20 @@
 Registro cronológico de mejoras visuales aplicadas por petición, con foco en **trazabilidad** (qué se tocó y dónde),
 sin mezclarlo con las reglas base.
 
+### 2026-05-02 (Empleados - validacion explicita para remuneraciones)
+
+- **Ficha empleado**: accion principal **Validar para remuneraciones** solo cuando
+  la ficha no tiene bloqueos ni defaults tecnicos y aun no esta apta; confirmacion
+  compacta con botones **Cancelar** y **Validar**.
+- **Mensajes operativos**: estado `Ficha completa` + `Pendiente de validacion`
+  cuando faltaba solo la confirmacion; errores de validacion muestran hasta cinco
+  pendientes principales.
+- **Sin activacion automatica**: guardar secciones ya no deja apta la ficha por
+  efecto lateral; la aptitud queda atada a la accion explicita.
+  - `src/app/features/empleados/containers/ficha-empleado-container/ficha-empleado-container.{html,css,ts}`
+  - `src/app/features/empleados/services/empleados.service.ts`
+  - `src/app/features/empleados/data-access/empleados.repository.ts`
+
 ### 2026-05-02 (Parametros - estandar UI del modulo)
 
 - **Estandar documentado**: se creo `docs/codex/temas/parametros-ui-estandar.md` con estructura oficial, banda superior, tabs, subtabs, copy, empty states, DataGrid, cards compactas, responsive y checklist de cierre.

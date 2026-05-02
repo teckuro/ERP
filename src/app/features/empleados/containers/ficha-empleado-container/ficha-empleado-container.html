@@ -59,7 +59,8 @@
             <button
               type="button"
               class="file-toolbar-button file-toolbar-button--primary erp-toolbar-button file-sheet-action file-sheet-action--primary"
-              (click)="startEditing()"
+              [disabled]="isValidatingPayroll()"
+              (click)="handlePrimaryFichaAction(employee)"
             >
               <lucide-icon class="file-toolbar-icon" [img]="editIcon"></lucide-icon>
               {{ primaryActionEvaluadaLabel(employee) }}
@@ -86,12 +87,74 @@
         <button
           type="button"
           class="erp-btn-outline file-state-overview__action"
-          [class.erp-btn-emphasis]="!evaluacionEmpleado(employee).aptoParaRemuneraciones"
-          (click)="selectRecommendedTab(employee)"
+          [class.erp-btn-emphasis]="canValidateForPayroll(employee)"
+          [disabled]="isValidatingPayroll()"
+          (click)="handlePrimaryFichaAction(employee)"
         >
           {{ primaryActionEvaluadaLabel(employee) }}
         </button>
       </section>
+
+      @if (validationSuccessMessage(); as successMessage) {
+        <div class="file-validation-feedback file-validation-feedback--success" role="status">
+          {{ successMessage }}
+        </div>
+      }
+
+      @if (validationErrorMessage(); as validationMessage) {
+        <div class="file-validation-feedback file-validation-feedback--error" role="alert">
+          <strong>No se puede validar la ficha</strong>
+          <span>{{ validationMessage }}</span>
+          @if (validationBlockingItems().length > 0) {
+            <ul>
+              @for (item of validationBlockingItems(); track item) {
+                <li>{{ item }}</li>
+              }
+            </ul>
+          }
+          @if (validationPendingCount() > 0) {
+            <small>y {{ validationPendingCount() }} pendientes mas.</small>
+          }
+        </div>
+      }
+
+      @if (confirmPayrollValidation()) {
+        <div class="file-confirm-backdrop" role="presentation">
+          <section
+            class="file-confirm-dialog"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="validar-remuneraciones-title"
+          >
+            <h3 id="validar-remuneraciones-title">Validar esta ficha para remuneraciones?</h3>
+            <p>
+              Desde este momento el trabajador podra ser considerado en procesos de remuneracion si el periodo y contrato cumplen las reglas del sistema.
+            </p>
+            <div class="file-confirm-dialog__actions">
+              <button
+                type="button"
+                class="inline-action inline-action--secondary"
+                [disabled]="isValidatingPayroll()"
+                (click)="cancelPayrollValidation()"
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                class="inline-action inline-action--primary"
+                [disabled]="isValidatingPayroll()"
+                (click)="validarFichaParaRemuneraciones()"
+              >
+                @if (isValidatingPayroll()) {
+                  Validando...
+                } @else {
+                  Validar
+                }
+              </button>
+            </div>
+          </section>
+        </div>
+      }
 
       <div class="file-body">
         <div class="file-body-main">
@@ -354,8 +417,9 @@
                 <button
                   type="button"
                   class="erp-btn-outline file-status-quick"
-                  [class.erp-btn-emphasis]="!employee.aptoParaRemuneraciones"
-                  (click)="selectRecommendedTab(employee)"
+                  [class.erp-btn-emphasis]="canValidateForPayroll(employee)"
+                  [disabled]="isValidatingPayroll()"
+                  (click)="handlePrimaryFichaAction(employee)"
                 >
                   {{ primaryActionEvaluadaLabel(employee) }}
                 </button>

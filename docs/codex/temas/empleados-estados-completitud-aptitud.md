@@ -434,7 +434,82 @@ operativos, por ejemplo:
 - sueldo base `0` como `Sueldo base pendiente`;
 - banco o tipo de cuenta sin valor real como `Datos bancarios pendientes`.
 
-La accion explicita `Validar para remuneraciones` desde ficha no queda
-implementada en esta fase. La ficha solo muestra si ya esta lista o que falta;
-no activa automaticamente ni cambia aptitud como efecto lateral de visualizar o
-editar parcialmente.
+La accion explicita `Validar para remuneraciones` desde ficha queda definida en
+la seccion siguiente. La ficha no activa automaticamente ni cambia aptitud como
+efecto lateral de visualizar o editar parcialmente.
+
+## 21. Validacion explicita desde Ficha empleado
+
+Decision aprobada: Opcion B.
+
+La ficha completa no se vuelve apta automaticamente. Cuando el helper central no
+detecta bloqueos ni defaults tecnicos, pero la persona aun no tiene
+`estado_ficha = VALIDO` o `apto_para_remuneraciones = true`, la ficha debe
+mostrar una accion explicita:
+
+```text
+Validar para remuneraciones
+```
+
+Esto separa:
+
+- ficha completa segun datos reales;
+- validacion operativa confirmada por el usuario;
+- habilitacion para procesos de remuneraciones.
+
+### Condiciones para mostrar la accion
+
+La accion solo aparece si se cumple todo:
+
+- `paso_alta_avanzada === null`;
+- el helper retorna `bloqueos.length === 0`;
+- el helper retorna `defaultsTecnicosDetectados.length === 0`;
+- el helper no informa secciones pendientes;
+- la persona aun no esta validada para remuneraciones;
+- el estado operativo permite validar: `EN_PROCESO` o `ACTIVO`.
+
+No se muestra en:
+
+- borradores avanzados;
+- fichas con pendientes o defaults tecnicos;
+- fichas ya aptas;
+- `SUSPENDIDO`, `INACTIVO`, `DESVINCULADO` o `BLOQUEADO`.
+
+### Confirmacion
+
+Antes de persistir la validacion se muestra una confirmacion breve:
+
+```text
+Validar esta ficha para remuneraciones?
+Desde este momento el trabajador podra ser considerado en procesos de
+remuneracion si el periodo y contrato cumplen las reglas del sistema.
+```
+
+Botones:
+
+- Cancelar;
+- Validar.
+
+### Persistencia
+
+Al confirmar, el servicio/repository vuelve a ejecutar el helper. Si aparecen
+bloqueos, no actualiza la persona y muestra hasta cinco pendientes principales.
+
+Si no hay bloqueos, solo actualiza `persona`:
+
+```text
+estado_ficha = VALIDO
+apto_para_remuneraciones = true
+estado = ACTIVO si venia EN_PROCESO
+fecha_activacion = hoy si estaba vacia
+paso_alta_avanzada = null
+```
+
+No actualiza contrato, remuneracion, prevision, salud, banco, APVI ni otros datos
+de la ficha. No completa valores faltantes. No duplica persona.
+
+### Guardado parcial
+
+Guardar una seccion de ficha no valida automaticamente. Si el guardado deja la
+ficha sin bloqueos, la UI cambia a `Ficha completa` y `Pendiente de validacion`.
+La aptitud solo se persiste con la accion explicita.

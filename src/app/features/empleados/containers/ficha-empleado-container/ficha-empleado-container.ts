@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, DestroyRef, OnInit, inject, signal } from '@angular/core';
 import { AbstractControl, ReactiveFormsModule } from '@angular/forms';
-import { ActivatedRoute, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { LucideAngularModule } from 'lucide-angular';
 import {
   AlertCircle,
@@ -106,6 +106,7 @@ interface EmployeeHistoryRow {
 })
 export class FichaEmpleadoContainer implements OnInit {
   private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
   private readonly empleadosService = inject(EmpleadosService);
   private readonly empleadosCatalogosService = inject(EmpleadosCatalogosService);
   private readonly empleadosFormService = inject(EmpleadosFormOrchestratorService);
@@ -116,8 +117,14 @@ export class FichaEmpleadoContainer implements OnInit {
   readonly isLoading = signal(true);
   readonly isLoadingCatalogs = signal(true);
   readonly isSavingSection = signal(false);
+  readonly isValidatingPayroll = signal(false);
   readonly errorMessage = signal<string | null>(null);
   readonly sectionErrorMessage = signal<string | null>(null);
+  readonly validationSuccessMessage = signal<string | null>(null);
+  readonly validationErrorMessage = signal<string | null>(null);
+  readonly validationBlockingItems = signal<string[]>([]);
+  readonly validationPendingCount = signal(0);
+  readonly confirmPayrollValidation = signal(false);
   readonly activeTab = signal<EmployeeFileTab>('general');
   readonly editingTab = signal<EmployeeFileTab | null>(null);
   readonly editingBlock = signal<string | null>(null);
@@ -261,6 +268,98 @@ export class FichaEmpleadoContainer implements OnInit {
     this.editingTab.set(null);
     this.editingBlock.set(null);
     this.sectionErrorMessage.set(null);
+  }
+
+  async handlePrimaryFichaAction(empleado: EmpleadoFichaDetalle): Promise<void> {
+    if (this.canValidateForPayroll(empleado)) {
+      this.openPayrollValidationConfirm();
+      return;
+    }
+
+    if (empleado.pasoAltaAvanzada !== null) {
+      await this.router.navigate(['/empleados', 'nuevo'], {
+        queryParams: { idPersona: empleado.id },
+      });
+      return;
+    }
+
+    if (this.evaluacionEmpleado(empleado).bloqueos.length > 0) {
+      this.selectRecommendedTab(empleado);
+      return;
+    }
+
+    this.startEditing();
+  }
+
+  openPayrollValidationConfirm(): void {
+    this.validationErrorMessage.set(null);
+    this.validationBlockingItems.set([]);
+    this.validationPendingCount.set(0);
+    this.confirmPayrollValidation.set(true);
+  }
+
+  cancelPayrollValidation(): void {
+    if (this.isValidatingPayroll()) {
+      return;
+    }
+
+    this.confirmPayrollValidation.set(false);
+  }
+
+  async validarFichaParaRemuneraciones(): Promise<void> {
+    const employee = this.empleado();
+
+    if (!employee || this.isValidatingPayroll()) {
+      return;
+    }
+
+    const evaluacion = this.evaluacionEmpleado(employee);
+
+    if (!this.canValidateForPayroll(employee)) {
+      this.setPayrollValidationError(evaluacion);
+      this.confirmPayrollValidation.set(false);
+      return;
+    }
+
+    this.isValidatingPayroll.set(true);
+    this.validationErrorMessage.set(null);
+    this.validationSuccessMessage.set(null);
+    this.validationBlockingItems.set([]);
+    this.validationPendingCount.set(0);
+
+    try {
+      const updated = await this.empleadosService.validarFichaParaRemuneraciones(
+        employee.id,
+        this.mapFichaEmpleadoToEvaluacionInput(employee),
+      );
+
+      if (updated) {
+        this.empleado.set(updated);
+        this.patchFormFromEmployee(updated);
+      }
+
+      this.validationSuccessMessage.set('Ficha validada para remuneraciones.');
+      this.confirmPayrollValidation.set(false);
+    } catch (error) {
+      const evaluacionError =
+        error instanceof Error && 'evaluacion' in error
+          ? (error as { evaluacion: EvaluacionCompletitudEmpleado }).evaluacion
+          : null;
+
+      if (evaluacionError) {
+        this.setPayrollValidationError(evaluacionError);
+      } else {
+        this.validationErrorMessage.set(
+          error instanceof Error
+            ? error.message
+            : 'No se pudo validar la ficha para remuneraciones.',
+        );
+      }
+
+      this.confirmPayrollValidation.set(false);
+    } finally {
+      this.isValidatingPayroll.set(false);
+    }
   }
 
   async saveSection(): Promise<void> {
@@ -457,7 +556,9 @@ export class FichaEmpleadoContainer implements OnInit {
     const evaluacion = this.evaluacionEmpleado(empleado);
 
     if (evaluacion.aptoParaRemuneraciones) {
-      return 'Ficha apta para procesos de remuneraciones.';
+      return empleado.estadoFicha === 'VALIDO' && empleado.aptoParaRemuneraciones
+        ? 'Ficha apta para procesos de remuneraciones.'
+        : 'La ficha no tiene pendientes bloqueantes. Validala para incluirla en procesos de remuneracion.';
     }
 
     return `No apta para remuneraciones: ${evaluacion.bloqueos.length} pendiente(s) por completar.`;
@@ -477,6 +578,10 @@ export class FichaEmpleadoContainer implements OnInit {
       return 'Borrador';
     }
 
+    if (empleado.estadoFicha === 'VALIDO' && empleado.aptoParaRemuneraciones) {
+      return 'Ficha valida';
+    }
+
     if (evaluacion.aptoParaRemuneraciones) {
       return 'Ficha completa';
     }
@@ -489,9 +594,15 @@ export class FichaEmpleadoContainer implements OnInit {
   }
 
   payrollReadinessEvaluadoLabel(empleado: EmpleadoListado): string {
-    return this.evaluacionEmpleado(empleado).aptoParaRemuneraciones
-      ? 'Apta para remuneraciones'
-      : 'No apta para remuneraciones';
+    if (empleado.estadoFicha === 'VALIDO' && empleado.aptoParaRemuneraciones) {
+      return 'Apta para remuneraciones';
+    }
+
+    if (this.canValidateForPayroll(empleado)) {
+      return 'Pendiente de validacion';
+    }
+
+    return 'No apta para remuneraciones';
   }
 
   pendingItemsEvaluados(empleado: EmpleadoListado): string[] {
@@ -519,11 +630,28 @@ export class FichaEmpleadoContainer implements OnInit {
       return 'Continuar alta';
     }
 
-    if (this.evaluacionEmpleado(empleado).aptoParaRemuneraciones) {
+    if (this.canValidateForPayroll(empleado)) {
+      return 'Validar para remuneraciones';
+    }
+
+    if (empleado.estadoFicha === 'VALIDO' && empleado.aptoParaRemuneraciones) {
       return 'Ver datos / Editar ficha';
     }
 
     return empleado.estado === 'activo' ? 'Revisar pendientes' : 'Completar ficha';
+  }
+
+  canValidateForPayroll(empleado: EmpleadoListado): boolean {
+    const evaluacion = this.evaluacionEmpleado(empleado);
+
+    return (
+      empleado.pasoAltaAvanzada === null &&
+      (empleado.estadoFicha !== 'VALIDO' || !empleado.aptoParaRemuneraciones) &&
+      (empleado.estado === 'en_proceso' || empleado.estado === 'activo') &&
+      evaluacion.bloqueos.length === 0 &&
+      evaluacion.defaultsTecnicosDetectados.length === 0 &&
+      evaluacion.seccionesPendientes.length === 0
+    );
   }
 
   activeTabLabel(): string {
@@ -1054,8 +1182,19 @@ export class FichaEmpleadoContainer implements OnInit {
   private mapFichaEmpleadoToEvaluacionInput(empleado: EmpleadoListado): CrearEmpleadoPayload {
     return {
       ...this.buildPayloadForSave(),
-      estado: empleado.estado,
+      estado:
+        empleado.estado === 'en_proceso' || empleado.estado === 'activo' ? 'activo' : empleado.estado,
     };
+  }
+
+  private setPayrollValidationError(evaluacion: EvaluacionCompletitudEmpleado): void {
+    const items = evaluacion.bloqueos.map((bloqueo) => this.humanPendingText(bloqueo));
+
+    this.validationErrorMessage.set(
+      'Corrige los pendientes antes de habilitar al trabajador para remuneraciones.',
+    );
+    this.validationBlockingItems.set(items.slice(0, 5));
+    this.validationPendingCount.set(Math.max(0, items.length - 5));
   }
 
   private humanPendingText(bloqueo: string): string {

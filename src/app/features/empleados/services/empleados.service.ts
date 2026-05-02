@@ -45,6 +45,13 @@ export class EmpleadosService {
     return this.empleadosRepository.guardarSeccionFicha(personaId, seccion, payload);
   }
 
+  validarFichaParaRemuneraciones(
+    personaId: number,
+    payload: CrearEmpleadoPayload,
+  ): Promise<EmpleadoFichaDetalle | null> {
+    return this.empleadosRepository.validarFichaParaRemuneraciones(personaId, payload);
+  }
+
   actualizarEstadoPersonas(ids: number[], estado: EmpleadoEstado): Promise<number[]> {
     return this.empleadosRepository.actualizarEstadoPersonas(ids, estado);
   }

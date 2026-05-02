@@ -35,6 +35,7 @@ import {
   formatDate,
   mapEmpleadoEstadoToEstadoFicha,
   mapEmpleadoEstadoToPersonaEstado,
+  mapPersonaEstadoToEmpleadoEstado,
   mapPersonaFactorToEmpleado,
 } from '../mappers/empleado-listado.mapper';
 import {
@@ -65,6 +66,10 @@ import {
   buildPersonaMetaBorradorUpdate,
   puedePersistirPrevisionBorrador,
 } from '../utils/empleado-borrador.rules';
+import {
+  EmpleadoAptitudInvalidaError,
+  evaluarCompletitudYAptitudEmpleado,
+} from '../utils/empleado-completitud.rules';
 
 type PersonaFactorRow = Tables<'vw_persona_factores'>;
 type PersonaRow = Tables<'persona'>;
@@ -467,6 +472,61 @@ export class EmpleadosRepository {
     }
 
     await this.recalcularEstadoFicha(personaId, payload);
+    return this.obtenerPorId(personaId);
+  }
+
+  async validarFichaParaRemuneraciones(
+    personaId: number,
+    payload: CrearEmpleadoPayload,
+  ): Promise<EmpleadoFichaDetalle | null> {
+    const persona = await this.fetchPersonaEstadoValidacion(personaId);
+
+    if (!persona) {
+      return null;
+    }
+
+    const estadoActual = mapPersonaEstadoToEmpleadoEstado(persona.estado);
+    const estadoEvaluacion =
+      estadoActual === 'en_proceso' || estadoActual === 'activo' ? 'activo' : estadoActual;
+    const evaluacion = evaluarCompletitudYAptitudEmpleado({
+      payload: {
+        ...payload,
+        estado: estadoEvaluacion ?? payload.estado,
+      },
+      pasoAltaAvanzada:
+        typeof persona.paso_alta_avanzada === 'number' ? persona.paso_alta_avanzada : null,
+    });
+
+    if (!evaluacion.aptoParaRemuneraciones) {
+      throw new EmpleadoAptitudInvalidaError(evaluacion);
+    }
+
+    if (estadoActual !== 'en_proceso' && estadoActual !== 'activo') {
+      throw buildRepositoryError(
+        'No se puede validar la ficha en el estado operativo actual.',
+        'Estado incompatible para validar remuneraciones.',
+      );
+    }
+
+    const nextEstado = estadoActual === 'en_proceso' ? 'ACTIVO' : persona.estado;
+    const { error } = await this.supabase
+      .from('persona')
+      .update({
+        estado: nextEstado,
+        estado_ficha: 'VALIDO',
+        apto_para_remuneraciones: true,
+        paso_alta_avanzada: null,
+        fecha_activacion: persona.fecha_activacion ?? new Date().toISOString(),
+      })
+      .eq('id_persona', personaId);
+
+    if (error) {
+      throw buildRepositoryError(
+        'No fue posible validar la ficha para remuneraciones.',
+        error.message,
+      );
+    }
+
     return this.obtenerPorId(personaId);
   }
 
@@ -1762,29 +1822,51 @@ export class EmpleadosRepository {
     personaId: number,
     payload: CrearEmpleadoPayload,
   ): Promise<void> {
-    const fichaCompleta = Boolean(
-      payload.cargo.trim() &&
-        payload.fechaIngreso &&
-        payload.idTipoTrabajador &&
-        payload.idTipoJornada &&
-        payload.sueldoBase > 0 &&
-        payload.tipoPrevision &&
-        payload.idBanco &&
-        payload.idTipoCuentaBancaria &&
-        payload.numeroCuenta.trim(),
-    );
+    const pasos = await this.fetchPasosAltaAvanzada([personaId]);
+    const evaluacion = evaluarCompletitudYAptitudEmpleado({
+      payload,
+      pasoAltaAvanzada: pasos.get(personaId) ?? null,
+    });
+
+    if (evaluacion.aptoParaRemuneraciones) {
+      return;
+    }
 
     const { error } = await this.supabase
       .from('persona')
       .update({
-        estado_ficha: fichaCompleta ? 'VALIDO' : 'INCOMPLETO',
-        apto_para_remuneraciones: fichaCompleta,
+        estado_ficha: 'INCOMPLETO',
+        apto_para_remuneraciones: false,
       })
       .eq('id_persona', personaId);
 
     if (error) {
       throw buildRepositoryError('No fue posible recalcular el estado de ficha.', error.message);
     }
+  }
+
+  private async fetchPersonaEstadoValidacion(personaId: number): Promise<Pick<
+    PersonaRow,
+    | 'id_persona'
+    | 'estado'
+    | 'estado_ficha'
+    | 'apto_para_remuneraciones'
+    | 'fecha_activacion'
+    | 'paso_alta_avanzada'
+  > | null> {
+    const { data, error } = await this.supabase
+      .from('persona')
+      .select(
+        'id_persona,estado,estado_ficha,apto_para_remuneraciones,fecha_activacion,paso_alta_avanzada',
+      )
+      .eq('id_persona', personaId)
+      .maybeSingle();
+
+    if (error) {
+      throw buildRepositoryError('No fue posible leer el estado de la ficha.', error.message);
+    }
+
+    return data;
   }
 
   private async fetchDepartamentos(

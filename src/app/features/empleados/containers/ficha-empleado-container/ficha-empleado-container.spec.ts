@@ -109,8 +109,19 @@ function empleado(over: Partial<EmpleadoFichaDetalle> = {}): EmpleadoFichaDetall
 describe('FichaEmpleadoContainer', () => {
   let component: FichaEmpleadoContainer;
   let fixture: ComponentFixture<FichaEmpleadoContainer>;
+  let empleadosServiceMock: {
+    obtenerPorId: ReturnType<typeof vi.fn>;
+    guardarSeccionFicha: ReturnType<typeof vi.fn>;
+    validarFichaParaRemuneraciones: ReturnType<typeof vi.fn>;
+  };
 
   beforeEach(async () => {
+    empleadosServiceMock = {
+      obtenerPorId: vi.fn().mockResolvedValue(null),
+      guardarSeccionFicha: vi.fn().mockResolvedValue(null),
+      validarFichaParaRemuneraciones: vi.fn().mockResolvedValue(null),
+    };
+
     await TestBed.configureTestingModule({
       imports: [FichaEmpleadoContainer],
       providers: [
@@ -121,10 +132,7 @@ describe('FichaEmpleadoContainer', () => {
         },
         {
           provide: EmpleadosService,
-          useValue: {
-            obtenerPorId: async () => null,
-            guardarSeccionFicha: async () => null,
-          },
+          useValue: empleadosServiceMock,
         },
         {
           provide: EmpleadosCatalogosService,
@@ -159,5 +167,99 @@ describe('FichaEmpleadoContainer', () => {
       .find((item) => item.label === 'Número de cuenta');
 
     expect(cuenta?.value).toBe('Cuenta bancaria pendiente');
+  });
+
+  it('ficha completa no apta muestra Validar para remuneraciones', () => {
+    const employee = empleado({ estado: 'en_proceso', estadoFicha: 'INCOMPLETO' });
+    component['patchFormFromEmployee'](employee);
+
+    expect(component.canValidateForPayroll(employee)).toBe(true);
+    expect(component.primaryActionEvaluadaLabel(employee)).toBe('Validar para remuneraciones');
+    expect(component.payrollReadinessEvaluadoLabel(employee)).toBe('Pendiente de validacion');
+  });
+
+  it('ficha con bloqueos no muestra validar y mantiene pendientes', () => {
+    const employee = empleado();
+    employee.formValue.bancario['numeroCuenta'] = 'DRAFT-XYZ';
+    component['patchFormFromEmployee'](employee);
+
+    expect(component.canValidateForPayroll(employee)).toBe(false);
+    expect(component.primaryActionEvaluadaLabel(employee)).toBe('Revisar pendientes');
+    expect(component.pendingItemsEvaluados(employee)).toContain('Cuenta bancaria real.');
+  });
+
+  it('borrador con paso_alta_avanzada no muestra validar y mantiene Continuar alta', () => {
+    const employee = empleado({
+      estado: 'borrador',
+      estadoFicha: 'INCOMPLETO',
+      pasoAltaAvanzada: 3,
+    });
+    component['patchFormFromEmployee'](employee);
+
+    expect(component.canValidateForPayroll(employee)).toBe(false);
+    expect(component.primaryActionEvaluadaLabel(employee)).toBe('Continuar alta');
+  });
+
+  it('validar ficha exitosa actualiza la ficha recargada desde servicio', async () => {
+    const current = empleado({ estado: 'en_proceso', estadoFicha: 'INCOMPLETO' });
+    const updated = empleado({
+      estado: 'activo',
+      estadoFicha: 'VALIDO',
+      aptoParaRemuneraciones: true,
+    });
+    empleadosServiceMock.validarFichaParaRemuneraciones.mockResolvedValue(updated);
+    component.empleado.set(current);
+    component['patchFormFromEmployee'](current);
+
+    await component.validarFichaParaRemuneraciones();
+
+    expect(empleadosServiceMock.validarFichaParaRemuneraciones).toHaveBeenCalledWith(
+      1,
+      expect.objectContaining({
+        estado: 'activo',
+        cargo: 'Analista',
+        sueldoBase: 900000,
+        numeroCuenta: '123456',
+      }),
+    );
+    expect(component.empleado()?.estadoFicha).toBe('VALIDO');
+    expect(component.empleado()?.aptoParaRemuneraciones).toBe(true);
+    expect(component.empleado()?.estado).toBe('activo');
+  });
+
+  it('validar con DRAFT bloquea y no llama servicio', async () => {
+    const employee = empleado();
+    employee.formValue.bancario['numeroCuenta'] = 'DRAFT-XYZ';
+    component.empleado.set(employee);
+    component['patchFormFromEmployee'](employee);
+
+    await component.validarFichaParaRemuneraciones();
+
+    expect(empleadosServiceMock.validarFichaParaRemuneraciones).not.toHaveBeenCalled();
+    expect(component.validationBlockingItems()).toContain('Cuenta bancaria real.');
+  });
+
+  it('validar con Sin cargo bloquea', async () => {
+    const employee = empleado();
+    employee.formValue.contrato['cargo'] = 'Sin cargo';
+    component.empleado.set(employee);
+    component['patchFormFromEmployee'](employee);
+
+    await component.validarFichaParaRemuneraciones();
+
+    expect(empleadosServiceMock.validarFichaParaRemuneraciones).not.toHaveBeenCalled();
+    expect(component.validationBlockingItems()).toContain('Cargo pendiente.');
+  });
+
+  it('validar con sueldo base 0 bloquea', async () => {
+    const employee = empleado();
+    employee.formValue.contrato['sueldoBase'] = 0;
+    component.empleado.set(employee);
+    component['patchFormFromEmployee'](employee);
+
+    await component.validarFichaParaRemuneraciones();
+
+    expect(empleadosServiceMock.validarFichaParaRemuneraciones).not.toHaveBeenCalled();
+    expect(component.validationBlockingItems()).toContain('Sueldo base valido.');
   });
 });
