@@ -531,6 +531,16 @@
                             </li>
                           }
                         </ul>
+                        @if (activeWizardStep() === 8 && attemptedSave() && resumenPendientesNegocio().length > 0) {
+                          <div class="resumen-pendientes-negocio" role="alert">
+                            <p class="resumen-pendientes-title">Pendientes para finalizar</p>
+                            <ul class="resumen-pendientes-list">
+                              @for (msg of resumenPendientesNegocio(); track msg) {
+                                <li>{{ msg }}</li>
+                              }
+                            </ul>
+                          </div>
+                        }
                       </app-card-content>
                     </app-card>
                   </div>

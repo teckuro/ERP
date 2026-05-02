@@ -105,6 +105,41 @@ interface GlobalValidationSummary {
 
 const TAB_ORDER: readonly TabId[] = [...EMPLEADO_FORM_TAB_ORDER];
 
+/** Mensajes de negocio al intentar finalizar con bloqueos (paso 9); no exponer detalle técnico de BD. */
+const MENSAJES_FINALIZAR_ALTA: Partial<Record<string, string>> = {
+  'contract.position': 'Define un cargo real antes de finalizar.',
+  'contract.branch': 'Selecciona sucursal y organización antes de finalizar.',
+  'contract.worker-type': 'Selecciona un tipo de trabajador real antes de finalizar.',
+  'contract.schedule-type': 'Selecciona un tipo de jornada real antes de finalizar.',
+  'contract.contract-type': 'Selecciona el tipo de contrato antes de finalizar.',
+  'contract.start-date': 'Ingresa la fecha de ingreso antes de finalizar.',
+  'contract.document-date': 'Ingresa la fecha de contrato antes de finalizar.',
+  'contract.end-date': 'Completa la fecha de término del contrato antes de finalizar.',
+  'contract.salary': 'Ingresa un sueldo base válido antes de finalizar.',
+  'contract.currency': 'Selecciona la moneda de remuneración antes de finalizar.',
+  'contract.weekly-hours': 'Completa la jornada semanal antes de finalizar.',
+  'contract.weekly-days': 'Completa los días semanales antes de finalizar.',
+  'prevision.regime': 'Completa previsión y salud antes de finalizar.',
+  'prevision.afp': 'Completa AFP y régimen previsional antes de finalizar.',
+  'prevision.health': 'Completa institución de salud y plan antes de finalizar.',
+  'prevision.health-currency': 'Completa moneda y valor del plan de salud antes de finalizar.',
+  'prevision.health-plan': 'Completa el valor del plan de salud antes de finalizar.',
+  'prevision.apv-institution': 'Completa APVI o desactiva "Tiene APVI".',
+  'prevision.apv-currency': 'Completa APVI o desactiva "Tiene APVI".',
+  'prevision.apv-amount': 'Completa APVI o desactiva "Tiene APVI".',
+  'prevision.apv-payment': 'Completa APVI o desactiva "Tiene APVI".',
+  'prevision.apv-agreement': 'Completa APVI o desactiva "Tiene APVI".',
+  'prevision.ips-name': 'Completa la información de previsión IPS antes de finalizar.',
+  'prevision.ips-regime': 'Completa la información de previsión IPS antes de finalizar.',
+  'prevision.ips-rate': 'Completa la información de previsión IPS antes de finalizar.',
+  'prevision.health-ges': 'Completa el adicional Auge/GES del plan de salud antes de finalizar.',
+  'prevision.account2-currency': 'Completa Cuenta 2 AFP o deja los montos en blanco.',
+  'prevision.account2-value': 'Completa Cuenta 2 AFP o deja los montos en blanco.',
+  'bank.bank': 'Selecciona un banco real antes de finalizar.',
+  'bank.account-type': 'Selecciona un tipo de cuenta real antes de finalizar.',
+  'bank.account-number': 'Reemplaza la cuenta bancaria temporal o ingresa una cuenta real.',
+};
+
 @Component({
   selector: 'app-form-empleado',
   imports: [
@@ -750,6 +785,41 @@ export class FormEmpleadoComponent implements OnInit {
       label,
       kind: this.reviewStepUiKind(stepIndex),
     }));
+  }
+
+  /**
+   * Paso 9: pendientes en lenguaje de negocio tras intentar finalizar (reglas bloqueantes).
+   */
+  resumenPendientesNegocio(): string[] {
+    if (!this.isAdvancedMode() || this.activeWizardStep() !== 8 || !this.attemptedSave()) {
+      return [];
+    }
+
+    const seen = new Set<string>();
+    const out: string[] = [];
+    let blockingSinMensaje = 0;
+
+    for (const item of this.evaluateValidationRules()) {
+      if (!item.visible || item.complete || !item.blocking || item.severity !== 'error') {
+        continue;
+      }
+
+      const msg = MENSAJES_FINALIZAR_ALTA[item.id];
+      if (msg) {
+        if (!seen.has(item.id)) {
+          seen.add(item.id);
+          out.push(msg);
+        }
+      } else {
+        blockingSinMensaje += 1;
+      }
+    }
+
+    if (out.length === 0 && blockingSinMensaje > 0) {
+      out.push('Revisa las etapas con pendientes o errores antes de finalizar.');
+    }
+
+    return out.slice(0, 10);
   }
 
   reviewRowDescription(row: { stepIndex: number; kind: WizardStepUiKind }): string {

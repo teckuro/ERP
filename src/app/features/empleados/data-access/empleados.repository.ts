@@ -1245,6 +1245,8 @@ export class EmpleadosRepository {
         ])
       : [null, null, null, null, null, null, null, null, await this.obtenerHistorialFicha(resumen.id)];
 
+    const sinDefaultsLecturaBorrador = resumen.pasoAltaAvanzada !== null;
+
     return {
       ...resumen,
       idContrato: contratoId,
@@ -1261,6 +1263,7 @@ export class EmpleadosRepository {
         zonaExtrema as ZonaExtremaRow | null,
         apv as ApvRow | null,
         cuenta2 as Cuenta2AfpRow | null,
+        { sinDefaultsLecturaBorrador },
       ),
     };
   }
@@ -1408,7 +1411,10 @@ export class EmpleadosRepository {
     zonaExtrema: ZonaExtremaRow | null,
     apv: ApvRow | null,
     cuenta2: Cuenta2AfpRow | null,
+    opciones?: { sinDefaultsLecturaBorrador?: boolean },
   ): EmpleadoFichaDetalle['formValue'] {
+    const sinDef = opciones?.sinDefaultsLecturaBorrador === true;
+
     return {
       datosPersonales: {
         rut: formatRutParts({ rut: persona.rut, dv: persona.dv }),
@@ -1416,10 +1422,10 @@ export class EmpleadosRepository {
         apellidoPaterno: persona.apellido_paterno,
         apellidoMaterno: persona.apellido_materno ?? '',
         fechaNacimiento: persona.fecha_nacimiento,
-        sexo: persona.sexo ?? 'F',
+        sexo: sinDef ? (persona.sexo ?? null) : (persona.sexo ?? 'F'),
         pasaporte: persona.pasaporte ?? '',
         idPais: persona.id_pais,
-        estadoCivil: persona.estado_civil ?? 'SOLTERO',
+        estadoCivil: sinDef ? (persona.estado_civil ?? null) : (persona.estado_civil ?? 'SOLTERO'),
       },
       contacto: {
         email: persona.email ?? '',
@@ -1437,7 +1443,9 @@ export class EmpleadosRepository {
         idCentroCosto: centroCosto?.id_centro_costo ?? null,
         cargo: contrato?.cargo ?? '',
         fechaContrato: contrato?.fecha_contrato ?? contrato?.fecha_inicio ?? '',
-        tipoContrato: contrato?.codigo_tipo_contrato ?? 'INDEFINIDO',
+        tipoContrato: sinDef
+          ? (contrato?.codigo_tipo_contrato ?? null)
+          : (contrato?.codigo_tipo_contrato ?? 'INDEFINIDO'),
         idTipoTrabajador: contrato?.id_tipo_trabajador ?? null,
         idTipoJornada: contrato?.id_tipo_jornada ?? null,
         seguroCesantia: contrato?.seguro_cesantia ?? true,
@@ -1450,7 +1458,9 @@ export class EmpleadosRepository {
         diasSemanales: remuneracion?.dias_semanales ?? null,
         distribucionJornada: remuneracion?.distribucion_jornada ?? '',
         tiempoColacionMinutos: remuneracion?.tiempo_colacion_minutos ?? null,
-        tipoGratificacion: remuneracion?.tipo_gratificacion ?? 'LEGAL_ART_50',
+        tipoGratificacion: sinDef
+          ? (remuneracion?.tipo_gratificacion ?? null)
+          : (remuneracion?.tipo_gratificacion ?? 'LEGAL_ART_50'),
         gratificacionProporcional: remuneracion?.gratificacion_proporcional ?? false,
         semanaCorridaActiva: semanaCorrida?.activa ?? remuneracion?.semana_corrida_activa ?? false,
         semanaCorridaDiasLaborables: semanaCorrida?.dias_laborables ?? [],

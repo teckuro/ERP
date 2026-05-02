@@ -3,6 +3,13 @@
 Registro cronológico de mejoras visuales aplicadas por petición, con foco en **trazabilidad** (qué se tocó y dónde),
 sin mezclarlo con las reglas base.
 
+### 2026-05-02 (Empleados - resumen paso 9 pendientes de negocio)
+
+- **Creación avanzada / paso 9**: bloque informativo compacto bajo la checklist de
+  etapas cuando se intentó finalizar y hay bloqueos: título «Pendientes para
+  finalizar», lista con mensajes de negocio (fondo `#f8fafc`, borde neutro).
+  - `src/app/features/empleados/components/form-empleado/form-empleado.{html,css,ts}`
+
 ### 2026-05-02 (Empleados - selects con opción vacía)
 
 - **Catálogos**: primera fila explícita «Seleccione…» / «Sin seleccionar» en `app-search-select` de identidad, domicilio, contrato, previsión, APVI y banco; el disparador muestra placeholder gris hasta elección real (mismo patrón `SearchSelectComponent`).

@@ -1174,6 +1174,33 @@
   overflow-wrap: anywhere;
 }
 
+:host .resumen-pendientes-negocio {
+  margin-top: 16px;
+  padding: 12px;
+  border-radius: 6px;
+  border: 1px solid #e5e7eb;
+  background: #f8fafc;
+}
+
+:host .resumen-pendientes-title {
+  margin: 0 0 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #111827;
+}
+
+:host .resumen-pendientes-list {
+  margin: 0;
+  padding-left: 20px;
+  font-size: 13px;
+  color: #4b5563;
+  line-height: 1.45;
+}
+
+:host .resumen-pendientes-list li + li {
+  margin-top: 4px;
+}
+
 :host .resumen-checklist-title {
   margin: 4px 0 0;
   color: #0f172a;

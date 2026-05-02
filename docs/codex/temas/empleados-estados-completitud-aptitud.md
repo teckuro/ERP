@@ -551,8 +551,23 @@ La normalizacion ocurre solo al hidratar el borrador para UI. No cambia la regla
 de guardado de borrador: se puede seguir persistiendo parcialmente con defaults
 tecnicos cuando la BD lo exige.
 
+Detalle de implementacion (alineado al contrato «persistencia ≠ seleccion»):
+
+- Si existe `paso_alta_avanzada`, la lectura desde BD hacia `formValue` evita
+  rellenar con defaults de ficha completa (p. ej. tipo de contrato o
+  gratificacion) cuando la columna viene nula; asi no se confunden con eleccion
+  del usuario.
+- Tras aplicar umbrales por `paso`, se eliminan IDs de jornada o moneda que
+  quedaron «huerfanos» sin un sueldo base valido.
+- `tipoContrato` se limpia solo si el paso guardado no alcanzo el paso de
+  contrato (o el bloque contrato parece puramente tecnico); los campos del paso
+  «Jornada y remuneracion» siguen la regla `paso < 3`.
+- APVI marcado en BD pero incompleto se normaliza a «sin APVI» para la UI (o el
+  usuario debe completarlo de nuevo).
+
 La completitud visual del wizard debe mirar datos reales validos, no solo filas
 relacionadas ni valores crudos. El resumen final usa esas mismas reglas: si
 quedan defaults tecnicos o datos pendientes, muestra pendientes y no permite
-finalizar alta. Finalizar alta sigue ejecutando el helper central y bloquea
-defaults tecnicos antes de activar o dejar apta la ficha.
+finalizar alta. Tras intentar finalizar, el paso 9 puede listar mensajes de
+negocio (sin nombres de tablas ni columnas). Finalizar alta sigue ejecutando el
+helper central y bloquea defaults tecnicos antes de activar o dejar apta la ficha.

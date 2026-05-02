@@ -126,4 +126,102 @@ describe('normalizarBorradorAvanzadoParaFormulario', () => {
     expect(normalized.previsionSalud['tipoRegimenPrevisional']).toBeNull();
     expect(normalized.bancario['numeroCuenta']).toBe('');
   });
+
+  it('sin sueldo base valido elimina ids de jornada aunque el paso guardado sea 5', () => {
+    const base = formValue();
+    const normalized = normalizarBorradorAvanzadoParaFormulario(
+      {
+        ...base,
+        previsionSalud: {
+          ...base.previsionSalud,
+          tipoRegimenPrevisional: 'AFP',
+          idAfp: 1,
+          idSalud: 2,
+          idMonedaPlan: 1,
+          valorPlan: 10000,
+          adicionalAugeGes: 0,
+        },
+        contrato: {
+          ...base.contrato,
+          sueldoBase: 0,
+          idTipoTrabajador: 88,
+          idTipoJornada: 2,
+          idMoneda: 30,
+          horasSemanales: 45,
+          diasSemanales: 5,
+        },
+      },
+      5,
+    );
+
+    expect(normalized.contrato['sueldoBase']).toBeNull();
+    expect(normalized.contrato['idTipoTrabajador']).toBeNull();
+    expect(normalized.contrato['idMoneda']).toBeNull();
+  });
+
+  it('cuenta vacia sin DRAFT deja banco y tipo cuenta pendientes', () => {
+    const base = formValue();
+    const normalized = normalizarBorradorAvanzadoParaFormulario(
+      {
+        ...base,
+        bancario: { idBanco: 1, idTipoCuentaBancaria: 2, numeroCuenta: '   ' },
+      },
+      7,
+    );
+
+    expect(normalized.bancario['idBanco']).toBeNull();
+    expect(normalized.bancario['idTipoCuentaBancaria']).toBeNull();
+  });
+
+  it('conserva tipoContrato en paso 3 si el contrato base ya es coherente', () => {
+    const base = formValue();
+    const normalized = normalizarBorradorAvanzadoParaFormulario(
+      {
+        ...base,
+        contrato: {
+          ...base.contrato,
+          cargo: 'Analista',
+          idSucursal: 1,
+          fechaIngreso: '2026-01-01',
+          fechaContrato: '2026-01-01',
+          tipoContrato: 'INDEFINIDO',
+          sueldoBase: 500_000,
+          idTipoTrabajador: 9,
+          idMoneda: 1,
+        },
+      },
+      3,
+    );
+
+    expect(normalized.contrato['tipoContrato']).toBe('INDEFINIDO');
+    expect(normalized.contrato['idTipoTrabajador']).toBe(9);
+  });
+
+  it('APVI incompleto desactiva Tiene APVI y limpia campos', () => {
+    const base = formValue();
+    const normalized = normalizarBorradorAvanzadoParaFormulario(
+      {
+        ...base,
+        previsionSalud: {
+          ...base.previsionSalud,
+          tipoRegimenPrevisional: 'AFP',
+          idAfp: 1,
+          idSalud: 1,
+          idMonedaPlan: 1,
+          valorPlan: 1,
+          adicionalAugeGes: 0,
+          tieneApv: true,
+          idInstitucionApv: null,
+          idMonedaApv: null,
+          montoApv: null,
+          idFormaPagoApv: null,
+          depositoConvenidoApvi: null,
+        },
+      },
+      7,
+    );
+
+    expect(normalized.previsionSalud['tieneApv']).toBe(false);
+    expect(normalized.previsionSalud['idInstitucionApv']).toBeNull();
+  });
 });
