@@ -5,7 +5,8 @@ sin mezclarlo con las reglas base.
 
 ### 2026-05-02 (Parámetros - banda superior período / estado mensual)
 
-- **Dos zonas flex sin solape**: izquierda título + controles de período + hint corto de sincronización; derecha estado mensual (título + chip único + detalle) y acción **Crear parámetros** alineada en la misma fila cuando aplica; sin grid de tres columnas ni texto largo competiendo con los selects.
+- **Dos zonas flex sin solape**: izquierda título + controles de período + hint corto de sincronización; derecha estado mensual (título + chip único + detalle); sin grid de tres columnas ni texto largo competiendo con los selects.
+- **Crear parámetros** queda en la botonera junto a **Modificar** (secundario a la izquierda del primario), no en la banda de período.
 - **Copy acotado**: títulos `Estado mensual: …` y detalles breves por pendiente / completo / parcial / error / edición; advertencia suave solo en pendiente (chip); parcial en variante info.
   - `src/app/pages/parametros.page.ts`
   - `src/styles.css`

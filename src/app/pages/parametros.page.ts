@@ -145,6 +145,18 @@ interface ParametrosDialogState {
                 (backClick)="volverParametrosAction()"
               ></app-page-actions>
             } @else {
+              @if (isConfigurableTab() && !hasSelectedInRows()) {
+                <app-button
+                  variant="outline"
+                  size="md"
+                  className="erp-toolbar-button erp-action-button"
+                  [disabled]="crearParametrosDeshabilitado()"
+                  (click)="crearParametrosParaPeriodo()"
+                >
+                  <lucide-icon icon class="h-4 w-4" name="plus"></lucide-icon>
+                  Crear parámetros
+                </app-button>
+              }
               <app-page-actions
                 [visibleActions]="['edit']"
                 editLabel="Modificar"
@@ -213,18 +225,6 @@ interface ParametrosDialogState {
               <span class="period-mensual__chip" role="status" aria-label="Resumen de estado">
                 <span class="period-chip" [ngClass]="periodoEstadoChipClass()">{{ periodoEstadoChip() }}</span>
               </span>
-              @if (isConfigurableTab() && !hasSelectedInRows() && !generalesEditando()) {
-                <app-button
-                  variant="outline"
-                  size="md"
-                  className="erp-toolbar-button erp-action-button period-mensual__action"
-                  [disabled]="crearParametrosDeshabilitado()"
-                  (click)="crearParametrosParaPeriodo()"
-                >
-                  <lucide-icon icon class="h-4 w-4" name="plus"></lucide-icon>
-                  Crear parámetros
-                </app-button>
-              }
             </div>
             <p class="period-mensual__detail">{{ periodoEstadoDetalle() }}</p>
           </div>

@@ -161,10 +161,6 @@ body {
   flex: 0 0 auto;
 }
 
-.parametros-page .period-mensual__action {
-  flex: 0 0 auto;
-}
-
 .parametros-page .period-mensual__detail {
   margin: 0;
   width: 100%;
