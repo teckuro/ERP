@@ -16,17 +16,15 @@ Tablero ** vivo** (a actualizar al cerrar fases) con: qué está **cerrado**, qu
 | 5 — Listado y Ficha con helper | **Cerrada** | CTAs por estado en listado; ficha con panel compacto (estado, aptitud, pendientes, acción); adapter al helper. | [`flujo-edicion-ficha-empleado.md`](../temas/flujo-edicion-ficha-empleado.md), tema empleados | `ficha-empleado-container`, listado (unit); Playwright empleados UI |
 | 6 — Selects vacíos / sin autoselección | **Cerrada** | Opción vacía; sin primer catálogo como elección; defaults no cuentan como selección real. | Tema empleados + formularios; [`ui-form-guidelines.md`](../ui-form-guidelines.md) | Unit form/orchestrator según repo |
 | 7 — Rehidratación borrador avanzado | **Cerrada** | DRAFT‑*, Sin cargo, sueldo 0, APVI incompleto no como reales; paso 9 con pendientes reales. | [`creacion-avanzada-borrador-tests.md`](../temas/creacion-avanzada-borrador-tests.md), tema empleados | `empleado-borrador-hidratacion` (unit); E2E opcionales con `E2E_EMPLEADOS_BORRADOR` |
-| 8 — Validar para remuneraciones (Ficha) | **Siguiente** | Opción B: ficha completa **no** apta sola; acción explícita; reevalúa helper; persiste `VALIDO` + `apto_para_remuneraciones` + activación si aplica. Condiciones de botón y exclusiones en tema §21. | [`empleados-estados-completitud-aptitud.md`](../temas/empleados-estados-completitud-aptitud.md) §21 | Al cerrar fase: ampliar unit/E2E ficha si el contrato lo pide |
+| 8 — Validar para remuneraciones (Ficha) | **Cerrada** | Opción B: ficha completa **no** apta sola; CTA **Validar para remuneraciones**; confirmación; `EmpleadosRepository.validarFichaParaRemuneraciones` reevalúa helper y persiste solo `persona` (`VALIDO`, `apto_para_remuneraciones`, `ACTIVO` si aplica, `fecha_activacion`, `paso_alta_avanzada` null). Condiciones UI y exclusiones: tema §21. | [`empleados-estados-completitud-aptitud.md`](../temas/empleados-estados-completitud-aptitud.md) §21 | Unit: `ficha-empleado-container.spec.ts`, `empleados.service.spec.ts`; E2E ficha opcional según entorno |
 
 ## 3. Fases cerradas (lista corta)
 
-0, 1, 2, 3, 4, 5, 6, 7 — según tabla.
+0, 1, 2, 3, 4, 5, 6, 7, 8 — según tabla.
 
 ## 4. Fase actual / siguiente
 
-**Fase 8 — Validar para remuneraciones desde Ficha empleado** (`estado: siguiente`).
-
-Prioridad: cerrar contrato de producto y criterios de listo en código y pruebas alineados a [`empleados-estados-completitud-aptitud.md`](../temas/empleados-estados-completitud-aptitud.md) (sección de validación explícita).
+**Siguiente prioridad de producto (fuera del tablero 0–8):** **Conceptos de remuneración** — catálogo maestro gobernado; no mezclar con asignaciones por trabajador. Ver [`contexto-proyecto.md`](./contexto-proyecto.md) §10 y §9 orden recomendado.
 
 ## 5. Pendientes técnicos no bloqueantes
 
@@ -39,9 +37,9 @@ Prioridad: cerrar contrato de producto y criterios de listo en código y pruebas
 
 Registrar en [`peticiones-estilos.md`](../peticiones-estilos.md) cuando haya cambio visual acordado; no usar el orquestador como bitácora visual.
 
-## 7. Módulos futuros (fuera de las fases 0–8)
+## 7. Módulos futuros (post fases 0–8 cerradas)
 
-- **Conceptos de remuneración** (fase fuerte pendiente).
+- **Conceptos de remuneración** (fase fuerte pendiente; siguiente foco).
 - **Haberes y descuentos** (refuerzo de reglas y UI).
 - **Movimientos variables**, **proceso mensual**, **motor**, **liquidaciones**, **Previred**, **LRE** — ver [`contexto-proyecto.md`](./contexto-proyecto.md) secciones 10–12 y 15.
 
@@ -54,8 +52,7 @@ Registrar en [`peticiones-estilos.md`](../peticiones-estilos.md) cuando haya cam
 
 ## 9. Orden recomendado de próximas fases
 
-1. **Cerrar Fase 8** (validación explícita remuneraciones en Ficha).
-2. **Conceptos** gobernados (maestro, vigencias, LRE, no mezclar con asignación por trabajador).
-3. **Haberes recurrentes** (vigencia, duplicados, separación de conceptos).
-4. **Movimientos variables**.
-5. **Proceso mensual guiado** → **motor** → **liquidaciones** → integraciones **Previred / LRE**.
+1. **Conceptos** gobernados (maestro, vigencias, LRE, no mezclar con asignación por trabajador).
+2. **Haberes recurrentes** (vigencia, duplicados, separación de conceptos).
+3. **Movimientos variables**.
+4. **Proceso mensual guiado** → **motor** → **liquidaciones** → integraciones **Previred / LRE**.

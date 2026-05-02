@@ -50,7 +50,7 @@ El sistema **no** debe parecer una planilla gigante. En UI operativa **no** most
 
 Contrato de estados, completitud y aptitud: [`empleados-estados-completitud-aptitud.md`](../temas/empleados-estados-completitud-aptitud.md). Flujos de ficha: [`flujo-edicion-ficha-empleado.md`](../temas/flujo-edicion-ficha-empleado.md). Modo básico: [`modo-basico-empleado.md`](../temas/modo-basico-empleado.md).
 
-Puntos ya alineados al contrato (resumen): helper central `evaluarCompletitudYAptitudEmpleado`, listado y ficha orientados a estado/pendientes/acción, selects sin falsa autoselección, rehidratación de borrador avanzado sin tratar defaults técnicos como datos reales. La **validación explícita para remuneraciones** (opción B: la ficha completa no pasa a apta sola) es la **fase siguiente** en el tablero; ver [`estado-fases.md`](./estado-fases.md).
+Puntos ya alineados al contrato (resumen): helper central `evaluarCompletitudYAptitudEmpleado`, listado y ficha orientados a estado/pendientes/acción, selects sin falsa autoselección, rehidratación de borrador avanzado sin tratar defaults técnicos como datos reales. **Fase 8 cerrada:** validación explícita **Validar para remuneraciones** en Ficha (opción B: sin aptitud automática); implementación y contrato en tema §21 y [`estado-fases.md`](./estado-fases.md).
 
 ## 7. Estado resumido — Parámetros
 
