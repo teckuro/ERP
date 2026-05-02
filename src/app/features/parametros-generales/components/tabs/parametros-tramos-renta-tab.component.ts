@@ -27,10 +27,15 @@ type ImpuestoSubId = 'tramos' | 'tabla';
           />
         </div>
         <div class="param-hint param-hint--consulta param-hint--inline" role="note">
+          @if (activeSub() === 'tramos') {
+            <span class="param-hint__tag">Mensual</span>
+            <span class="param-hint__tag">Período {{ periodo }}</span>
+          } @else {
+            <span class="param-hint__tag">Vigencia</span>
+            <span class="param-hint__tag">Tabla base</span>
+          }
           <span class="param-hint__tag">Solo lectura</span>
-          <span class="param-hint__text">
-            Tramos compat son mensuales por periodo. La tabla oficial se versiona por vigencia; el listado se filtra por mes derivado de vigencia_inicio.
-          </span>
+          <span class="param-hint__text">{{ activeSub() === 'tramos' ? 'Tramos cargados para el período activo.' : 'Tabla base aplicable al período activo.' }}</span>
         </div>
       </div>
 
@@ -49,7 +54,7 @@ type ImpuestoSubId = 'tramos' | 'tabla';
               gridHeight="min(520px, 100%)"
               [persistenceKey]="gridPersistenceKeyTramos"
               emptyTitle="No hay tramos de impuesto único para este período"
-              emptyDescription="Son filas mensuales (compat). Revisa la carga mensual o crea parámetros para el mes seleccionado."
+              emptyDescription="Revisa la carga mensual o crea parámetros para el mes seleccionado."
               (refresh)="refresh?.()"
             ></app-data-grid>
           </section>
@@ -69,7 +74,7 @@ type ImpuestoSubId = 'tramos' | 'tabla';
               gridHeight="min(520px, 100%)"
               [persistenceKey]="gridPersistenceKeyTabla"
               emptyTitle="No hay tabla de impuesto único para este período"
-              emptyDescription="La tabla se filtra por mes derivado de vigencia_inicio. Revisa la carga mensual o la normativa base de tabla_impuesto_unico."
+              emptyDescription="Revisa la carga mensual o la normativa base."
               (refresh)="refresh?.()"
             ></app-data-grid>
           </section>
@@ -91,6 +96,7 @@ export class ParametrosTramosRentaTabComponent {
   @Input({ required: true }) tramosRows!: TramoImpuestoParametro[];
   @Input({ required: true }) tramosColumns!: DataGridColumn<TramoImpuestoParametro>[];
 
+  @Input() periodo = '';
   @Input() loading = false;
   @Input() gridPersistenceKeyTabla = 'parametros.tabla-impuesto.dg';
   @Input() gridPersistenceKeyTramos = 'parametros.tramos-impuesto.dg';
@@ -116,7 +122,7 @@ export class ParametrosTramosRentaTabComponent {
   readonly tramosImpuestoFilters: DataGridFilter<TramoImpuestoParametro>[] = [
     {
       id: 'periodo',
-      label: 'Periodo',
+      label: 'Período',
       field: 'periodo',
       type: 'text',
       operator: 'startsWith',

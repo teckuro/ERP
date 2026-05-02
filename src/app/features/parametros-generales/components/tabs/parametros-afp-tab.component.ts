@@ -15,10 +15,10 @@ import { AfpParametro } from '../../models/parametro-general.model';
     <section class="tab-panel">
       <section class="catalog-section" aria-label="AFP">
         <div class="param-hint param-hint--consulta" role="note">
+          <span class="param-hint__tag">Vigencia</span>
+          <span class="param-hint__tag">Vigente al período activo</span>
           <span class="param-hint__tag">Solo lectura</span>
-          <span class="param-hint__text">
-            Catálogo previsional con vigencias. El período activo se usa para mostrar AFP cuya vigencia solapa ese mes.
-          </span>
+          <span class="param-hint__text">AFP vigentes para el período {{ periodo }}.</span>
         </div>
         <app-data-grid
           title="AFP"
@@ -32,7 +32,7 @@ import { AfpParametro } from '../../models/parametro-general.model';
           gridHeight="100%"
           [persistenceKey]="gridPersistenceKey"
           emptyTitle="No hay AFP vigentes para el período activo"
-          emptyDescription="No se encontraron AFP con vigencia que solape el mes seleccionado. Revisa catálogo o carga normativa."
+          emptyDescription="Prueba con otro período o revisa el catálogo previsional."
           (refresh)="refresh?.()"
         ></app-data-grid>
       </section>
@@ -42,6 +42,7 @@ import { AfpParametro } from '../../models/parametro-general.model';
 export class ParametrosAfpTabComponent {
   @Input({ required: true }) rows!: AfpParametro[];
   @Input({ required: true }) columns!: DataGridColumn<AfpParametro>[];
+  @Input() periodo = '';
   @Input() loading = false;
   @Input() gridPersistenceKey = 'parametros.afp.dg';
   @Input() refresh: (() => void) | null = null;

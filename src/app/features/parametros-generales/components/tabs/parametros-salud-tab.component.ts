@@ -27,10 +27,10 @@ type SaludSubId = 'isapre' | 'instituciones';
           />
         </div>
         <div class="param-hint param-hint--consulta param-hint--inline" role="note">
+          <span class="param-hint__tag">Vigencia</span>
+          <span class="param-hint__tag">Vigente al período activo</span>
           <span class="param-hint__tag">Solo lectura</span>
-          <span class="param-hint__text">
-            Instituciones e ISAPRE se listan por vigencia que solapa el período activo; no son un snapshot mensual único.
-          </span>
+          <span class="param-hint__text">Instituciones vigentes para el período {{ periodo }}.</span>
         </div>
       </div>
 
@@ -49,7 +49,7 @@ type SaludSubId = 'isapre' | 'instituciones';
               gridHeight="100%"
               [persistenceKey]="gridPersistenceKeyIsapre"
               emptyTitle="No hay ISAPRE vigentes para el período activo"
-              emptyDescription="No se encontraron ISAPRE con vigencia que solape el mes seleccionado. Revisa catálogo o carga normativa."
+              emptyDescription="Prueba con otro período o revisa el catálogo de salud."
               (refresh)="refresh?.()"
             ></app-data-grid>
           </section>
@@ -69,7 +69,7 @@ type SaludSubId = 'isapre' | 'instituciones';
               gridHeight="100%"
               [persistenceKey]="gridPersistenceKeyInstituciones"
               emptyTitle="No hay instituciones de salud vigentes para el período activo"
-              emptyDescription="No se encontraron instituciones (FONASA/otras) con vigencia que solape el mes seleccionado. Revisa catálogo o carga normativa."
+              emptyDescription="Prueba con otro período o revisa el catálogo de salud."
               (refresh)="refresh?.()"
             ></app-data-grid>
           </section>
@@ -90,6 +90,7 @@ export class ParametrosSaludTabComponent {
   @Input({ required: true }) institucionesRows!: IsapreParametro[];
   @Input({ required: true }) columns!: DataGridColumn<IsapreParametro>[];
 
+  @Input() periodo = '';
   @Input() loading = false;
   @Input() gridPersistenceKeyIsapre = 'parametros.isapre.dg';
   @Input() gridPersistenceKeyInstituciones = 'parametros.salud-instituciones.dg';

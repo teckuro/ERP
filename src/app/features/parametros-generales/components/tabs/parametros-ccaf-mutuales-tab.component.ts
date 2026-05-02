@@ -43,10 +43,15 @@ export type CcafMutualSubId = 'config' | 'listaCcaf' | 'mutuales' | 'ley16744';
         </div>
         @if (activeSub !== 'config') {
           <div class="param-hint param-hint--consulta param-hint--inline" role="note">
+            @if (activeSub === 'ley16744') {
+              <span class="param-hint__tag">Mensual</span>
+              <span class="param-hint__tag">Período {{ periodo }}</span>
+            } @else {
+              <span class="param-hint__tag">Catálogo global</span>
+              <span class="param-hint__tag">No depende del período</span>
+            }
             <span class="param-hint__tag">Solo lectura</span>
-            <span class="param-hint__text">
-              Listas CCAF y mutual son catálogos generales; el período activo no implica que falte el catálogo completo.
-            </span>
+            <span class="param-hint__text">{{ activeSub === 'ley16744' ? 'Parámetros cargados para el período activo.' : 'Catálogo disponible para selección y consulta.' }}</span>
           </div>
         }
       </div>
@@ -54,7 +59,8 @@ export type CcafMutualSubId = 'config' | 'listaCcaf' | 'mutuales' | 'ley16744';
       <div class="param-tab-subview">
         @if (activeSub === 'config') {
           <div class="param-hint param-hint--editable" role="note">
-            <span class="param-hint__tag">Referencia</span>
+            <span class="param-hint__tag">Configuración vigente</span>
+            <span class="param-hint__tag">Referencia del período</span>
             <span class="param-hint__text">La selección se guarda con Guardar en la barra superior.</span>
           </div>
           <section class="param-group param-group--ccaf-current" aria-labelledby="ccaf-title">
@@ -110,7 +116,7 @@ export type CcafMutualSubId = 'config' | 'listaCcaf' | 'mutuales' | 'ley16744';
               gridHeight="min(520px, 100%)"
               [persistenceKey]="gridPersistenceKeyCcaf"
               emptyTitle="Sin cajas de compensación en catálogo"
-              emptyDescription="No hay CCAF cargadas. Revisa la normativa base o la carga mensual de maestros."
+              emptyDescription="No hay CCAF cargadas. Revisa la normativa base o maestros."
               (refresh)="refresh?.()"
             ></app-data-grid>
           </section>
@@ -131,7 +137,7 @@ export type CcafMutualSubId = 'config' | 'listaCcaf' | 'mutuales' | 'ley16744';
               gridHeight="min(520px, 100%)"
               [persistenceKey]="gridPersistenceKeyMutuales"
               emptyTitle="Sin organismos administradores en catálogo"
-              emptyDescription="No hay mutualidades u organismos Ley 16.744 cargados. Revisa la normativa base o la carga mensual de maestros."
+              emptyDescription="No hay mutualidades u organismos cargados. Revisa la normativa base o maestros."
               (refresh)="refresh?.()"
             ></app-data-grid>
           </section>
@@ -222,6 +228,7 @@ export class ParametrosCcafMutualesTabComponent {
   @Input({ required: true }) ley16744Columns!: DataGridColumn<Ley16744Parametro>[];
 
   @Input() loading = false;
+  @Input() periodo = '';
   @Input() selectedCcafId: number | null = null;
   @Input() selectedMutualId: number | null = null;
   @Input() percentLabel = '—';
@@ -304,7 +311,7 @@ export class ParametrosCcafMutualesTabComponent {
   readonly ley16744Filters: DataGridFilter<Ley16744Parametro>[] = [
     {
       id: 'periodo',
-      label: 'Periodo',
+      label: 'Período',
       field: 'periodo',
       type: 'text',
       operator: 'startsWith',

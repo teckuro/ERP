@@ -33,10 +33,26 @@ type ReformaSubId = 'legales' | 'aportes' | 'trabPesados' | 'apvInst' | 'apvPago
           />
         </div>
         <div class="param-hint param-hint--consulta param-hint--inline" role="note">
-          <span class="param-hint__tag">Solo lectura</span>
-          <span class="param-hint__text">
-            Reforma mezcla normativa por vigencia, parámetros mensuales y catálogos generales. El período activo contextualiza o destaca, no oculta catálogos globales.
-          </span>
+          @if (activeSub() === 'legales') {
+            <span class="param-hint__tag">Vigencia</span>
+            <span class="param-hint__tag">Período contextual</span>
+            <span class="param-hint__tag">Solo lectura</span>
+            <span class="param-hint__text">Parámetros vigentes para el período {{ periodo }}.</span>
+          } @else if (activeSub() === 'aportes') {
+            <span class="param-hint__tag">Normativa</span>
+            <span class="param-hint__tag">Vigencia por devengo</span>
+            <span class="param-hint__tag">Tramo según período</span>
+            <span class="param-hint__text">Calendario aplicable según período activo.</span>
+          } @else if (activeSub() === 'trabPesados') {
+            <span class="param-hint__tag">Híbrido</span>
+            <span class="param-hint__tag">Período + vigencia</span>
+            <span class="param-hint__tag">Solo lectura</span>
+            <span class="param-hint__text">Tasas aplicables al período activo.</span>
+          } @else {
+            <span class="param-hint__tag">Catálogo global</span>
+            <span class="param-hint__tag">No depende del período</span>
+            <span class="param-hint__text">Catálogo disponible para consulta.</span>
+          }
         </div>
       </div>
 
@@ -55,7 +71,7 @@ type ReformaSubId = 'legales' | 'aportes' | 'trabPesados' | 'apvInst' | 'apvPago
               gridHeight="min(520px, 100%)"
               [persistenceKey]="gridPersistenceKeyLegal"
               emptyTitle="No hay parámetros legales vigentes al período activo"
-              emptyDescription="No se encontraron filas cuya vigencia solape el mes seleccionado. Prueba con otro período o revisa la carga normativa/mensual."
+              emptyDescription="Prueba con otro período o revisa la carga normativa."
               (refresh)="refresh?.()"
             ></app-data-grid>
           </section>
@@ -75,7 +91,7 @@ type ReformaSubId = 'legales' | 'aportes' | 'trabPesados' | 'apvInst' | 'apvPago
               gridHeight="min(520px, 100%)"
               [persistenceKey]="gridPersistenceKeyPrevisional"
               emptyTitle="No hay gradualidad cargada"
-              emptyDescription="La gradualidad 8,5 % es normativa por vigencia (devengo). El período activo solo destaca el tramo aplicable."
+              emptyDescription="Revisa la normativa base de Reforma de Pensiones."
               (refresh)="refresh?.()"
             ></app-data-grid>
           </section>
@@ -95,7 +111,7 @@ type ReformaSubId = 'legales' | 'aportes' | 'trabPesados' | 'apvInst' | 'apvPago
               gridHeight="min(520px, 100%)"
               [persistenceKey]="gridPersistenceKeyTrabPesados"
               emptyTitle="No hay trabajos pesados para el período activo"
-              emptyDescription="Las tasas se publican por mes (columna periodo) y por vigencia. Si falta el mes, revisa la carga mensual; si falta vigencia, revisa el catálogo normativo."
+              emptyDescription="Revisa la carga mensual o el catálogo normativo."
               (refresh)="refresh?.()"
             ></app-data-grid>
           </section>
@@ -115,7 +131,7 @@ type ReformaSubId = 'legales' | 'aportes' | 'trabPesados' | 'apvInst' | 'apvPago
               gridHeight="min(520px, 100%)"
               [persistenceKey]="gridPersistenceKeyApvInst"
               emptyTitle="Sin instituciones APV en catálogo"
-              emptyDescription="Catálogo general. Si está vacío, revisa la normativa base o la carga de maestros (no es un faltante típico del mes seleccionado)."
+              emptyDescription="Revisa la normativa base o maestros."
               (refresh)="refresh?.()"
             ></app-data-grid>
           </section>
@@ -135,7 +151,7 @@ type ReformaSubId = 'legales' | 'aportes' | 'trabPesados' | 'apvInst' | 'apvPago
               gridHeight="min(520px, 100%)"
               [persistenceKey]="gridPersistenceKeyApvPago"
               emptyTitle="Sin formas de pago APV en catálogo"
-              emptyDescription="Catálogo general. Si está vacío, revisa la normativa base o la carga de maestros."
+              emptyDescription="Revisa la normativa base o maestros."
               (refresh)="refresh?.()"
             ></app-data-grid>
           </section>
@@ -161,6 +177,7 @@ export class ParametrosReformaTabComponent {
   @Input({ required: true }) apvInstituciones!: ApvApvcInstitucion[];
   @Input({ required: true }) apvFormasPago!: ApvApvcFormaPago[];
 
+  @Input() periodo = '';
   @Input({ required: true }) parametrosLegalesColumns!: DataGridColumn<ParametroLegal>[];
   @Input({ required: true }) reformaPrevisionalColumns!: DataGridColumn<ReformaPrevisionalParametro>[];
   @Input({ required: true }) trabajosPesadosColumns!: DataGridColumn<TrabajoPesadoParametro>[];

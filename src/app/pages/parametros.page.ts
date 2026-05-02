@@ -329,6 +329,7 @@ interface ParametrosDialogState {
             <app-parametros-ccaf-mutuales-tab
               [activeSub]="ccafMutualSubTab()"
               (activeSubChange)="ccafMutualSubTab.set($event)"
+              [periodo]="selectedPeriodo()"
               [catalogos]="catalogos()"
               [ccafColumns]="ccafColumns"
               [organismosLeyColumns]="organismosLeyColumns"
@@ -348,6 +349,7 @@ interface ParametrosDialogState {
 
           @case ('tramosCarga') {
             <app-parametros-tramos-carga-tab
+              [periodo]="selectedPeriodo()"
               [rows]="tramosCargaPorPeriodo()"
               [columns]="tramosCargaColumns"
               [loading]="isLoading()"
@@ -358,6 +360,7 @@ interface ParametrosDialogState {
 
           @case ('impuestoUnico') {
             <app-parametros-tramos-renta-tab
+              [periodo]="selectedPeriodo()"
               [tablaRows]="tablaImpuestoPorPeriodo()"
               [tablaColumns]="tablaImpuestoColumns"
               [tramosRows]="tramosImpuestoPorPeriodo()"
@@ -371,6 +374,7 @@ interface ParametrosDialogState {
 
           @case ('salud') {
             <app-parametros-salud-tab
+              [periodo]="selectedPeriodo()"
               [isapreRows]="isapresPorPeriodo()"
               [institucionesRows]="saludOtrasInstitucionesPorPeriodo()"
               [columns]="isapreColumns"
@@ -383,6 +387,7 @@ interface ParametrosDialogState {
 
           @case ('prevision') {
             <app-parametros-afp-tab
+              [periodo]="selectedPeriodo()"
               [rows]="afpPorPeriodo()"
               [columns]="afpColumns"
               [loading]="isLoading()"
@@ -393,6 +398,7 @@ interface ParametrosDialogState {
 
           @case ('reforma') {
             <app-parametros-reforma-tab
+              [periodo]="selectedPeriodo()"
               [reformaPensiones]="reformaPensionesPorPeriodo()"
               [reformaPrevisional]="reformaPrevisionalPorPeriodo()"
               [trabajosPesados]="trabajosPesadosPorPeriodo()"
