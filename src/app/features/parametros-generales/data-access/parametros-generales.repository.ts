@@ -11,6 +11,8 @@ import {
   ParametroGeneralUpsert,
   ParametrosGeneralesCatalogos,
   ParametrosGeneralesFiltro,
+  PeriodoRemuneracionEstado,
+  PeriodoRemuneracionEstadoInfo,
   TablaImpuestoUnicoParametro,
   TramoCargaParametro,
   TramoImpuestoParametro,
@@ -207,25 +209,73 @@ export class ParametrosGeneralesRepository {
   ] as const;
 
   async listarPeriodos(): Promise<string[]> {
-    const { data, error } = await this.supabaseUntyped
+    const seen = new Set<string>();
+    const out: string[] = [];
+
+    const { data: periodosOficiales, error: periodosError } = await this.supabaseUntyped
+      .from('periodo_remuneracion')
+      .select('codigo')
+      .order('codigo', { ascending: false });
+
+    if (periodosError) {
+      throw new Error(periodosError.message);
+    }
+
+    for (const row of (periodosOficiales ?? []) as { codigo?: string }[]) {
+      const periodo = String(row?.codigo ?? '').trim();
+      if (periodo && !seen.has(periodo)) {
+        seen.add(periodo);
+        out.push(periodo);
+      }
+    }
+
+    const { data: periodosLegacy, error: legacyError } = await this.supabaseUntyped
       .from('parametros_generales')
       .select('periodo')
       .order('periodo', { ascending: false });
 
+    if (legacyError) {
+      throw new Error(legacyError.message);
+    }
+
+    for (const row of (periodosLegacy ?? []) as { periodo?: string }[]) {
+      const periodo = String(row?.periodo ?? '').trim();
+      if (periodo && !seen.has(periodo)) {
+        seen.add(periodo);
+        out.push(periodo);
+      }
+    }
+
+    return out.sort((left, right) => right.localeCompare(left));
+  }
+
+  async obtenerPeriodoRemuneracion(periodo: string): Promise<PeriodoRemuneracionEstadoInfo | null> {
+    const { data, error } = await this.supabaseUntyped
+      .from('periodo_remuneracion')
+      .select('codigo, estado, fecha_inicio, fecha_fin')
+      .eq('codigo', periodo)
+      .maybeSingle();
+
     if (error) {
       throw new Error(error.message);
     }
-
-    const seen = new Set<string>();
-    const out: string[] = [];
-    for (const row of (data ?? []) as { periodo?: string }[]) {
-      const p = String(row?.periodo ?? '').trim();
-      if (p && !seen.has(p)) {
-        seen.add(p);
-        out.push(p);
-      }
+    if (!data) {
+      return null;
     }
-    return out;
+
+    const row = data as {
+      codigo?: string;
+      estado?: string;
+      fecha_inicio?: string;
+      fecha_fin?: string;
+    };
+
+    return {
+      codigo: String(row.codigo ?? periodo),
+      estado: this.normalizePeriodoRemuneracionEstado(row.estado),
+      fechaInicio: String(row.fecha_inicio ?? ''),
+      fechaFin: String(row.fecha_fin ?? ''),
+    };
   }
 
   async listarPeriodosConDatosMensuales(): Promise<string[]> {
@@ -258,6 +308,21 @@ export class ParametrosGeneralesRepository {
     }
 
     return [...periodos].sort((left, right) => right.localeCompare(left));
+  }
+
+  private normalizePeriodoRemuneracionEstado(value: unknown): PeriodoRemuneracionEstado {
+    const estado = String(value ?? '').trim().toLowerCase();
+    if (
+      estado === 'pendiente' ||
+      estado === 'parcial' ||
+      estado === 'cargado' ||
+      estado === 'corregido' ||
+      estado === 'cerrado' ||
+      estado === 'error'
+    ) {
+      return estado;
+    }
+    return 'pendiente';
   }
 
   async listar(filtro?: ParametrosGeneralesFiltro): Promise<ParametroGeneral[]> {

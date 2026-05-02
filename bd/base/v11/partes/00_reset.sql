@@ -53,6 +53,7 @@ DROP TABLE IF EXISTS tipo_movimiento CASCADE;
 DROP TABLE IF EXISTS afc_parametro CASCADE;
 DROP TABLE IF EXISTS salud_plan CASCADE;
 DROP TABLE IF EXISTS afp_vigencia CASCADE;
+DROP TABLE IF EXISTS ips_ex_caja_tasa_basica CASCADE;
 DROP TABLE IF EXISTS regimen_ex_caja CASCADE;
 DROP TABLE IF EXISTS ex_caja_previsional CASCADE;
 DROP TABLE IF EXISTS entidad_previsional_ips CASCADE;

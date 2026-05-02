@@ -66,6 +66,7 @@ CREATE INDEX idx_zona_extrema_contrato_fin ON zona_extrema(id_contrato, vigencia
 CREATE INDEX idx_afp_vigencia_afp_fecha ON afp_vigencia(id_afp, vigencia_inicio, vigencia_fin);
 CREATE INDEX idx_salud_plan_salud_fecha ON salud_plan(id_salud, vigencia_inicio, vigencia_fin);
 CREATE INDEX idx_afc_parametro_fecha ON afc_parametro(codigo_tipo_contrato, vigencia_inicio, vigencia_fin);
+CREATE INDEX idx_ips_ex_caja_tasa_basica_fecha ON ips_ex_caja_tasa_basica(vigencia_inicio, vigencia_fin);
 CREATE INDEX idx_trabajo_pesado_parametro_fecha ON trabajo_pesado_parametro(vigencia_inicio, vigencia_fin);
 CREATE INDEX idx_reforma_previsional_parametro_fecha ON reforma_previsional_parametro(vigencia_inicio, vigencia_fin);
 CREATE INDEX idx_ley_16744_parametros_fecha ON ley_16744_parametros(vigencia_inicio, vigencia_fin);

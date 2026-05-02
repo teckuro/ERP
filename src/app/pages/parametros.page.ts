@@ -29,6 +29,8 @@ import {
   PARAMETROS_CATALOGO_ARRAY_KEYS,
   ParametrosGeneralesCatalogos,
   ParametrosTabId,
+  PeriodoRemuneracionEstado,
+  PeriodoRemuneracionEstadoInfo,
   ReformaPrevisionalParametro,
   TablaImpuestoUnicoParametro,
   TrabajoPesadoParametro,
@@ -73,7 +75,7 @@ interface MonthOption {
 }
 
 type ParametrosDialogKind = 'alerta' | 'confirmar-guardado' | 'confirmar-crear-parametros';
-type PeriodoCargaEstado = 'pendiente' | 'parcial' | 'completo' | 'editando' | 'error';
+type PeriodoCargaEstado = PeriodoRemuneracionEstado | 'editando';
 
 interface ParametrosDialogState {
   kind: ParametrosDialogKind;
@@ -1582,6 +1584,7 @@ export class ParametrosPage implements OnInit {
   readonly catalogos = signal<ParametrosGeneralesCatalogos>(this.emptyCatalogos());
   readonly periodosGeneralesCatalogo = signal<string[]>([]);
   readonly periodosMensualesCatalogo = signal<string[]>([]);
+  readonly periodoRemuneracion = signal<PeriodoRemuneracionEstadoInfo | null>(null);
   readonly selectedCcafId = signal<number | null>(null);
   readonly selectedMutualId = signal<number | null>(null);
   readonly isLoading = signal(true);
@@ -1662,6 +1665,10 @@ export class ParametrosPage implements OnInit {
     if (this.generalesEditando()) {
       return 'editando';
     }
+    const estadoOficial = this.periodoRemuneracion()?.estado;
+    if (estadoOficial) {
+      return estadoOficial;
+    }
 
     const seccionesMensuales = [
       this.hasSelectedInRows(),
@@ -1677,7 +1684,7 @@ export class ParametrosPage implements OnInit {
     if (cargadas < seccionesMensuales.length) {
       return 'parcial';
     }
-    return 'completo';
+    return 'cargado';
   });
   readonly hasAnySyncedData = computed(() => {
     const catalogos = this.catalogos();
@@ -1708,8 +1715,12 @@ export class ParametrosPage implements OnInit {
         return 'Estado mensual: Error';
       case 'editando':
         return 'Estado mensual: En edición';
-      case 'completo':
-        return 'Estado mensual: Completo';
+      case 'cargado':
+        return 'Estado mensual: Cargado';
+      case 'corregido':
+        return 'Estado mensual: Corregido';
+      case 'cerrado':
+        return 'Estado mensual: Cerrado';
       case 'parcial':
         return 'Estado mensual: Parcial';
       case 'pendiente':
@@ -1724,8 +1735,12 @@ export class ParametrosPage implements OnInit {
         return 'No se completó la carga mensual. Revisa el detalle de carga.';
       case 'editando':
         return 'Guarda para persistir el snapshot mensual.';
-      case 'completo':
+      case 'cargado':
         return 'Datos mensuales cargados. Vigencias y catálogos disponibles.';
+      case 'corregido':
+        return 'Datos mensuales corregidos. Vigencias y catálogos disponibles.';
+      case 'cerrado':
+        return 'Periodo cerrado para cambios operativos. Vigencias y catálogos disponibles.';
       case 'parcial':
         return 'Faltan datos oficiales del período. Vigencias y catálogos siguen disponibles.';
       case 'pendiente':
@@ -1740,8 +1755,12 @@ export class ParametrosPage implements OnInit {
         return 'Error';
       case 'editando':
         return 'Edición';
-      case 'completo':
-        return 'Completo';
+      case 'cargado':
+        return 'Cargado';
+      case 'corregido':
+        return 'Corregido';
+      case 'cerrado':
+        return 'Cerrado';
       case 'parcial':
         return 'Parcial';
       case 'pendiente':
@@ -1756,7 +1775,9 @@ export class ParametrosPage implements OnInit {
         return 'period-chip--error';
       case 'editando':
         return 'period-chip--info';
-      case 'completo':
+      case 'cargado':
+      case 'corregido':
+      case 'cerrado':
         return 'period-chip--success';
       case 'parcial':
         return 'period-chip--info';
@@ -2157,10 +2178,12 @@ export class ParametrosPage implements OnInit {
 
     try {
       const selectedPeriodo = periodo ?? this.selectedPeriodo();
-      const [rowsRaw, catalogos] = await Promise.all([
+      this.periodoRemuneracion.set(null);
+      const [rowsRaw, catalogos, periodoRemuneracion] = await Promise.all([
         // Siempre se consulta por periodo seleccionado para evitar traer todo el histórico.
         this.service.listar({ periodo: selectedPeriodo }),
         this.service.listarCatalogos(selectedPeriodo),
+        this.service.obtenerPeriodoRemuneracion(selectedPeriodo),
       ]);
       const rows = rowsRaw ?? [];
 
@@ -2169,6 +2192,7 @@ export class ParametrosPage implements OnInit {
       );
       this.rows.set(next);
       this.catalogos.set(catalogos);
+      this.periodoRemuneracion.set(periodoRemuneracion);
       this.assertCatalogosArrayShape(catalogos);
       this.ensureCatalogSelection(catalogos);
       if (!rows.length) {

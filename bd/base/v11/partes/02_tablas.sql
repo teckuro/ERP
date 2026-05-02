@@ -312,10 +312,11 @@ CREATE TABLE periodo_remuneracion (
     mes INTEGER NOT NULL CHECK (mes BETWEEN 1 AND 12),
     fecha_inicio DATE NOT NULL,
     fecha_fin DATE NOT NULL,
-    estado VARCHAR(20) NOT NULL DEFAULT 'ABIERTO',
+    estado VARCHAR(20) NOT NULL DEFAULT 'pendiente',
     fecha_creacion TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     CONSTRAINT chk_periodo_remuneracion_codigo CHECK (codigo ~ '^[0-9]{4}-(0[1-9]|1[0-2])$'),
     CONSTRAINT chk_periodo_remuneracion_fechas CHECK (fecha_fin >= fecha_inicio),
+    CONSTRAINT chk_periodo_remuneracion_estado CHECK (estado IN ('pendiente', 'parcial', 'cargado', 'corregido', 'cerrado', 'error')),
     CONSTRAINT uq_periodo_remuneracion_rango UNIQUE (fecha_inicio, fecha_fin)
 );
 
@@ -338,6 +339,25 @@ CREATE TABLE regimen_ex_caja (
     tasa_cotizacion_referencia NUMERIC(7,4),
     vigente BOOLEAN NOT NULL DEFAULT TRUE,
     CONSTRAINT uq_regimen_ex_caja UNIQUE (id_ex_caja_previsional, nombre)
+);
+
+CREATE TABLE ips_ex_caja_tasa_basica (
+    id_ips_ex_caja_tasa_basica SERIAL PRIMARY KEY,
+    grupo_trabajador VARCHAR(40) NOT NULL,
+    nombre_grupo VARCHAR(120) NOT NULL,
+    tipo_salud VARCHAR(20) NOT NULL,
+    escenario_empresa VARCHAR(40) NOT NULL,
+    nombre_escenario VARCHAR(150) NOT NULL,
+    tasa_cotizacion NUMERIC(7,4) NOT NULL,
+    vigente BOOLEAN NOT NULL DEFAULT TRUE,
+    vigencia_inicio DATE NOT NULL,
+    vigencia_fin DATE,
+    fuente TEXT,
+    observacion TEXT,
+    CONSTRAINT uq_ips_ex_caja_tasa_basica UNIQUE (grupo_trabajador, tipo_salud, escenario_empresa, vigencia_inicio),
+    CONSTRAINT chk_ips_ex_caja_tasa_basica_salud CHECK (tipo_salud IN ('FONASA', 'ISAPRE')),
+    CONSTRAINT chk_ips_ex_caja_tasa_basica_tasa CHECK (tasa_cotizacion >= 0),
+    CONSTRAINT chk_ips_ex_caja_tasa_basica_vigencia CHECK (vigencia_fin IS NULL OR vigencia_fin >= vigencia_inicio)
 );
 
 CREATE TABLE parametros_legales (

@@ -12,6 +12,21 @@ export interface ParametrosGeneralesFiltro {
   periodo?: string;
 }
 
+export type PeriodoRemuneracionEstado =
+  | 'pendiente'
+  | 'parcial'
+  | 'cargado'
+  | 'corregido'
+  | 'cerrado'
+  | 'error';
+
+export interface PeriodoRemuneracionEstadoInfo {
+  codigo: string;
+  estado: PeriodoRemuneracionEstado;
+  fechaInicio: string;
+  fechaFin: string;
+}
+
 export interface ParametroGeneral {
   periodo: string;
   uf: number | null;

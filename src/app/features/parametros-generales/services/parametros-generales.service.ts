@@ -4,6 +4,7 @@ import { ParametrosGeneralesRepository } from '../data-access/parametros-general
 import {
   ParametroGeneral,
   ParametroGeneralUpsert,
+  PeriodoRemuneracionEstadoInfo,
   ParametrosGeneralesCatalogos,
   ParametrosGeneralesFiltro,
 } from '../models/parametro-general.model';
@@ -22,6 +23,10 @@ export class ParametrosGeneralesService {
 
   listarPeriodosConDatosMensuales(): Promise<string[]> {
     return this.repository.listarPeriodosConDatosMensuales();
+  }
+
+  obtenerPeriodoRemuneracion(periodo: string): Promise<PeriodoRemuneracionEstadoInfo | null> {
+    return this.repository.obtenerPeriodoRemuneracion(periodo);
   }
 
   obtenerUltimoHastaPeriodo(periodo: string): Promise<ParametroGeneral | null> {
