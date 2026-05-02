@@ -17,6 +17,7 @@ import {
   SearchSelectComponent,
   type SearchSelectOption,
 } from '../../../../../shared/components/ui/search-select.component';
+import { withEmptyNumberCatalog, withEmptyStringCatalog } from '../../../utils/empleado-select-options';
 
 type ContratoControlName = keyof ContratoFormGroup['controls'];
 
@@ -131,9 +132,41 @@ export class ContratoComponent {
         ];
   }
 
+  get tiposTrabajadorSelectOptions(): SearchSelectOption[] {
+    return withEmptyNumberCatalog(this.tiposTrabajador, 'Seleccione tipo de trabajador');
+  }
+
+  get tipoContratoSelectOptions(): SearchSelectOption[] {
+    return withEmptyStringCatalog(this.contractTypes, 'Seleccione tipo de contrato');
+  }
+
+  get sucursalesSelectOptions(): SearchSelectOption[] {
+    return withEmptyNumberCatalog(this.sucursales, 'Seleccione sucursal');
+  }
+
+  get departamentosSelectOptions(): SearchSelectOption[] {
+    return withEmptyNumberCatalog(this.departamentosFiltrados, 'Seleccione área / departamento');
+  }
+
+  get tiposJornadaSelectOptions(): SearchSelectOption[] {
+    return withEmptyNumberCatalog(this.tiposJornada, 'Seleccione jornada');
+  }
+
+  get monedasSelectOptions(): SearchSelectOption[] {
+    return withEmptyNumberCatalog(this.monedas, 'Seleccione moneda');
+  }
+
+  get gratificacionSelectOptions(): SearchSelectOption[] {
+    return withEmptyStringCatalog(this.gratificationTypes, 'Seleccione tipo de gratificación');
+  }
+
+  get centrosCostoSelectOptions(): SearchSelectOption[] {
+    return withEmptyNumberCatalog(this.centrosCosto, 'Seleccione centro de costo');
+  }
+
   /** Etiquetas combinadas para app-search-select (misma info que los <option> nativos). */
   get tramosCargaOptions(): SearchSelectOption[] {
-    return this.tramosCarga.map((tramo) => {
+    const rows = this.tramosCarga.map((tramo) => {
       const range =
         tramo.desde !== null || tramo.hasta !== null
           ? ` (${tramo.desde ?? 0} – ${tramo.hasta ?? 'Sin tope'})`
@@ -144,6 +177,7 @@ export class ContratoComponent {
         label: `${tramo.tramo || 'Nuevo Colaborador'}${range}`,
       };
     });
+    return withEmptyNumberCatalog(rows, 'Sin seleccionar');
   }
 
   get isIndefinido(): boolean {
@@ -188,7 +222,11 @@ export class ContratoComponent {
   }
 
   onIndefinidoToggle(checked: boolean): void {
-    this.formGroup.controls.tipoContrato.setValue(checked ? 'INDEFINIDO' : 'PLAZO_FIJO');
+    if (checked) {
+      this.formGroup.controls.tipoContrato.setValue('INDEFINIDO');
+    } else if (this.formGroup.controls.tipoContrato.value === 'INDEFINIDO') {
+      this.formGroup.controls.tipoContrato.setValue(null);
+    }
     this.formGroup.controls.tipoContrato.markAsTouched();
   }
 

@@ -141,7 +141,7 @@
             formControlName="idComuna"
             placeholder="Selecciona una comuna"
             searchPlaceholder="Buscar comuna"
-            [options]="comunas"
+            [options]="comunaSelectOptions"
             [invalid]="hasError('idComuna')"
           ></app-search-select>
           @if (hasError('idComuna', 'required')) {

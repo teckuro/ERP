@@ -95,7 +95,7 @@
             formControlName="sexo"
             placeholder="Selecciona sexo"
             searchPlaceholder="Buscar sexo"
-            [options]="sexos"
+            [options]="sexoSelectOptions"
             [invalid]="hasError('sexo')"
           ></app-search-select>
           @if (hasError('sexo', 'required')) {
@@ -223,7 +223,7 @@
                 formControlName="idPais"
                 placeholder="Selecciona un país"
                 searchPlaceholder="Buscar país"
-                [options]="paises"
+                [options]="paisSelectOptions"
                 [invalid]="hasError('idPais')"
               ></app-search-select>
               @if (hasError('idPais', 'required')) {
@@ -249,7 +249,7 @@
                 formControlName="estadoCivil"
                 placeholder="Selecciona un estado civil"
                 searchPlaceholder="Buscar estado civil"
-                [options]="estadosCivil"
+                [options]="estadoCivilSelectOptions"
                 [invalid]="hasError('estadoCivil')"
               ></app-search-select>
               @if (hasError('estadoCivil', 'required')) {
@@ -335,7 +335,7 @@
               formControlName="idPais"
               placeholder="Selecciona un país"
               searchPlaceholder="Buscar país"
-              [options]="paises"
+              [options]="paisSelectOptions"
               [invalid]="hasError('idPais')"
             ></app-search-select>
             @if (hasError('idPais', 'required')) {
@@ -357,7 +357,7 @@
               formControlName="estadoCivil"
               placeholder="Selecciona un estado civil"
               searchPlaceholder="Buscar estado civil"
-              [options]="estadosCivil"
+              [options]="estadoCivilSelectOptions"
               [invalid]="hasError('estadoCivil')"
             ></app-search-select>
             @if (hasError('estadoCivil', 'required')) {

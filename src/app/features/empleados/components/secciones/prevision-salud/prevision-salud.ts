@@ -13,7 +13,11 @@ import {
   CardContentComponent,
   CardHeaderComponent,
 } from '../../../../../shared/components/ui/card.component';
-import { SearchSelectComponent } from '../../../../../shared/components/ui/search-select.component';
+import {
+  SearchSelectComponent,
+  type SearchSelectOption,
+} from '../../../../../shared/components/ui/search-select.component';
+import { withEmptyNumberCatalog, withEmptyStringCatalog } from '../../../utils/empleado-select-options';
 import { LucideAngularModule } from 'lucide-angular';
 
 type PrevisionSaludControlName = keyof PrevisionSaludFormGroup['controls'];
@@ -114,6 +118,50 @@ export class PrevisionSaludComponent {
 
   get tipoPrevision(): TipoRegimenPrevisional | null {
     return this.formGroup.controls.tipoRegimenPrevisional.value;
+  }
+
+  get tiposRegimenSelectOptions(): SearchSelectOption[] {
+    return withEmptyStringCatalog(this.tiposRegimenPrevisional, 'Seleccione régimen previsional');
+  }
+
+  get afpSelectOptions(): SearchSelectOption[] {
+    return withEmptyNumberCatalog(this.afps, 'Seleccione AFP');
+  }
+
+  get monedaCuenta2SelectOptions(): SearchSelectOption[] {
+    return withEmptyNumberCatalog(this.monedas, 'Seleccione moneda');
+  }
+
+  get entidadIpsSelectOptions(): SearchSelectOption[] {
+    return withEmptyNumberCatalog(this.entidadesPrevisionalesIps, 'Seleccione IPS');
+  }
+
+  get exCajaSelectOptions(): SearchSelectOption[] {
+    return withEmptyNumberCatalog(this.exCajasPrevisionales, 'Seleccione ex caja');
+  }
+
+  get regimenExCajaSelectOptions(): SearchSelectOption[] {
+    return withEmptyNumberCatalog(this.regimenesExCajaFiltrados, 'Seleccione régimen ex caja');
+  }
+
+  get saludSelectOptions(): SearchSelectOption[] {
+    return withEmptyNumberCatalog(this.entidadesSalud, 'Seleccione institución de salud');
+  }
+
+  get monedaPlanSelectOptions(): SearchSelectOption[] {
+    return withEmptyNumberCatalog(this.monedas, 'Seleccione moneda plan salud');
+  }
+
+  get institucionApvSelectOptions(): SearchSelectOption[] {
+    return withEmptyNumberCatalog(this.institucionesApv, 'Seleccione institución APV');
+  }
+
+  get monedaApvSelectOptions(): SearchSelectOption[] {
+    return withEmptyNumberCatalog(this.monedas, 'Seleccione moneda APV');
+  }
+
+  get formaPagoApvSelectOptions(): SearchSelectOption[] {
+    return withEmptyNumberCatalog(this.formasPagoApv, 'Seleccione forma de pago APV');
   }
 
   hasError(controlName: PrevisionSaludControlName, errorCode?: string): boolean {

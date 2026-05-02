@@ -255,6 +255,16 @@ persona.estado_ficha = INCOMPLETO
 persona.apto_para_remuneraciones = false
 ```
 
+## 11.1 Selects, opciones vacías y datos reales
+
+- Todo **select de decisión de negocio** (catálogo con `app-search-select`) debe incluir una **opción vacía real** (`value: null` o equivalente acordado en el `FormControl`), con copy tipo «Seleccione…» / «Sin seleccionar», para que el primer ítem del catálogo **nunca** cuente como elección implícita del usuario.
+- **El primer registro del catálogo no es una elección**: no se debe autocompletar el control al cargar catálogos ni al hidratar formularios nuevos; `applyCatalogDefaults` no debe forzar IDs preferidos salvo reglas de negocio explícitas y documentadas.
+- **`null` / vacío y validación**: en finalizar alta o activar remuneraciones, `null` en un campo obligatorio debe **bloquear**; en borrador, los campos no alcanzados pueden seguir en `null` y la validación mínima de borrador exige solo identidad + país + sexo + estado civil (además de RUT válido).
+- **Borrador y persistencia**: el payload de borrador puede seguir usando **defaults técnicos** solo donde la BD lo exija (IDs, tipo de contrato técnico, etc.); al **continuar alta**, `normalizarBorradorAvanzadoParaFormulario` debe volver a **pendiente** (`null` en UI) lo que no corresponda al paso guardado, para no mostrar esos IDs como si el usuario los hubiera elegido.
+- **Aptitud**: no se puede habilitar `apto_para_remuneraciones` si subsisten selects obligatorios en `null` o defaults técnicos detectados (ver matriz §11 y helper §14).
+
+Implementación de referencia: util `empleado-select-options.ts` (opción vacía + catálogo), secciones `datos-personales`, `contacto`, `contrato`, `prevision-salud`, `bancario`, y `EmpleadosFormOrchestratorService` (inicialización y ausencia de autoselección por catálogo).
+
 ## 12. Que no debe pasar
 
 - No mostrar `Completar ficha` como accion principal si `paso_alta_avanzada !== null`.

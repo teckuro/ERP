@@ -18,5 +18,11 @@ export function validateBorradorAvanzadoFormMinimo(form: EmpleadoFormGroup): str
   if (dp.idPais.value === null || dp.idPais.value < 1) {
     return 'Selecciona el pais antes de guardar el borrador.';
   }
+  if (dp.sexo.value === null) {
+    return 'Selecciona el sexo antes de guardar el borrador.';
+  }
+  if (dp.estadoCivil.value === null) {
+    return 'Selecciona el estado civil antes de guardar el borrador.';
+  }
   return null;
 }

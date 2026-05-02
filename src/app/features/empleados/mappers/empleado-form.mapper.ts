@@ -1,6 +1,12 @@
 import { EmpleadoCatalogOption, EmpleadoFormCatalogos } from '../models/empleado-catalogos.model';
 import { EmpleadoFormGroup } from '../models/empleado-form.model';
-import { TipoRegimenPrevisional } from '../models/empleado.model';
+import {
+  EmpleadoSexo,
+  TipoContrato,
+  TipoEstadoCivil,
+  TipoGratificacion,
+  TipoRegimenPrevisional,
+} from '../models/empleado.model';
 import { CrearEmpleadoPayload } from '../models/empleado-payload.model';
 import { normalizeText } from '../utils/empleado-form.helpers';
 
@@ -26,8 +32,8 @@ export function mapEmpleadoFormToPayload(
     apellidoPaterno: rawValue.datosPersonales.apellidoPaterno,
     apellidoMaterno: rawValue.datosPersonales.apellidoMaterno,
     fechaNacimiento: rawValue.datosPersonales.fechaNacimiento,
-    sexo: rawValue.datosPersonales.sexo,
-    estadoCivil: rawValue.datosPersonales.estadoCivil,
+    sexo: requireSexo(rawValue.datosPersonales.sexo),
+    estadoCivil: requireEstadoCivil(rawValue.datosPersonales.estadoCivil),
     pasaporte: rawValue.datosPersonales.pasaporte.trim() || null,
     idPais: requireSelection(rawValue.datosPersonales.idPais, 'el pais'),
     email: rawValue.contacto.email,
@@ -42,7 +48,7 @@ export function mapEmpleadoFormToPayload(
     idCentroCosto: rawValue.contrato.idCentroCosto,
     cargo: rawValue.contrato.cargo,
     fechaContrato: rawValue.contrato.fechaContrato,
-    tipoContrato: rawValue.contrato.tipoContrato,
+    tipoContrato: requireTipoContrato(rawValue.contrato.tipoContrato),
     idTipoTrabajador: requireSelection(rawValue.contrato.idTipoTrabajador, 'el tipo de trabajador'),
     idTipoJornada: requireSelection(rawValue.contrato.idTipoJornada, 'el tipo de jornada'),
     seguroCesantia: rawValue.contrato.seguroCesantia,
@@ -56,7 +62,7 @@ export function mapEmpleadoFormToPayload(
     diasSemanales: rawValue.contrato.diasSemanales ?? 0,
     distribucionJornada: rawValue.contrato.distribucionJornada.trim() || null,
     tiempoColacionMinutos: rawValue.contrato.tiempoColacionMinutos,
-    tipoGratificacion: rawValue.contrato.tipoGratificacion,
+    tipoGratificacion: requireTipoGratificacion(rawValue.contrato.tipoGratificacion),
     gratificacionProporcional: rawValue.contrato.gratificacionProporcional,
     semanaCorridaActiva: rawValue.contrato.semanaCorridaActiva,
     semanaCorridaDiasLaborables: rawValue.contrato.semanaCorridaActiva
@@ -160,8 +166,8 @@ export function mapEmpleadoFormToPayloadBasico(form: EmpleadoFormGroup): CrearEm
     apellidoPaterno: rawValue.datosPersonales.apellidoPaterno,
     apellidoMaterno: rawValue.datosPersonales.apellidoMaterno,
     fechaNacimiento: rawValue.datosPersonales.fechaNacimiento,
-    sexo: rawValue.datosPersonales.sexo,
-    estadoCivil: rawValue.datosPersonales.estadoCivil,
+    sexo: requireSexo(rawValue.datosPersonales.sexo),
+    estadoCivil: requireEstadoCivil(rawValue.datosPersonales.estadoCivil),
     pasaporte: rawValue.datosPersonales.pasaporte.trim() || null,
     cargas: 0,
     email: rawValue.contacto.email,
@@ -306,8 +312,8 @@ export function mapEmpleadoFormToPayloadBorrador(
     apellidoPaterno: rawValue.datosPersonales.apellidoPaterno,
     apellidoMaterno: rawValue.datosPersonales.apellidoMaterno,
     fechaNacimiento: rawValue.datosPersonales.fechaNacimiento,
-    sexo: rawValue.datosPersonales.sexo,
-    estadoCivil: rawValue.datosPersonales.estadoCivil,
+    sexo: requireSexo(rawValue.datosPersonales.sexo),
+    estadoCivil: requireEstadoCivil(rawValue.datosPersonales.estadoCivil),
     pasaporte: rawValue.datosPersonales.pasaporte.trim() || null,
     idPais,
     email: rawValue.contacto.email,
@@ -322,7 +328,7 @@ export function mapEmpleadoFormToPayloadBorrador(
     idCentroCosto: rawValue.contrato.idCentroCosto,
     cargo: (rawValue.contrato.cargo || 'Sin cargo').trim() || 'Sin cargo',
     fechaContrato,
-    tipoContrato: rawValue.contrato.tipoContrato,
+    tipoContrato: rawValue.contrato.tipoContrato ?? 'INDEFINIDO',
     idTipoTrabajador,
     idTipoJornada,
     seguroCesantia: rawValue.contrato.seguroCesantia,
@@ -335,7 +341,7 @@ export function mapEmpleadoFormToPayloadBorrador(
     diasSemanales: rawValue.contrato.diasSemanales ?? 0,
     distribucionJornada: rawValue.contrato.distribucionJornada.trim() || null,
     tiempoColacionMinutos: rawValue.contrato.tiempoColacionMinutos,
-    tipoGratificacion: rawValue.contrato.tipoGratificacion,
+    tipoGratificacion: rawValue.contrato.tipoGratificacion ?? 'LEGAL_ART_50',
     gratificacionProporcional: rawValue.contrato.gratificacionProporcional,
     semanaCorridaActiva: rawValue.contrato.semanaCorridaActiva,
     semanaCorridaDiasLaborables: rawValue.contrato.semanaCorridaActiva
@@ -396,6 +402,38 @@ function resolveRegimenPrevisionalId(
   }
 
   return regimen.value;
+}
+
+function requireSexo(value: EmpleadoSexo | null): EmpleadoSexo {
+  if (value === null) {
+    throw new Error('Debes seleccionar el sexo.');
+  }
+
+  return value;
+}
+
+function requireEstadoCivil(value: TipoEstadoCivil | null): TipoEstadoCivil {
+  if (value === null) {
+    throw new Error('Debes seleccionar el estado civil.');
+  }
+
+  return value;
+}
+
+function requireTipoContrato(value: TipoContrato | null): TipoContrato {
+  if (value === null) {
+    throw new Error('Debes seleccionar el tipo de contrato.');
+  }
+
+  return value;
+}
+
+function requireTipoGratificacion(value: TipoGratificacion | null): TipoGratificacion {
+  if (value === null) {
+    throw new Error('Debes seleccionar el tipo de gratificacion.');
+  }
+
+  return value;
 }
 
 function requireSelection(value: number | null, label: string): number {

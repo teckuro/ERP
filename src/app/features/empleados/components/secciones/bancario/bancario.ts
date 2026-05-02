@@ -4,7 +4,11 @@ import { ReactiveFormsModule, Validators } from '@angular/forms';
 import { EmpleadoCatalogOption } from '../../../models/empleado-catalogos.model';
 import { BancarioFormGroup } from '../../../models/empleado-form.model';
 import { CardComponent } from '../../../../../shared/components/ui/card.component';
-import { SearchSelectComponent } from '../../../../../shared/components/ui/search-select.component';
+import {
+  SearchSelectComponent,
+  type SearchSelectOption,
+} from '../../../../../shared/components/ui/search-select.component';
+import { withEmptyNumberCatalog } from '../../../utils/empleado-select-options';
 
 type BancarioControlName = keyof BancarioFormGroup['controls'];
 
@@ -48,5 +52,13 @@ export class BancarioComponent {
 
   isBlockVisible(blockId: string): boolean {
     return this.visibleBlocks === null || this.visibleBlocks.includes(blockId);
+  }
+
+  get bancoSelectOptions(): SearchSelectOption[] {
+    return withEmptyNumberCatalog(this.bancos, 'Seleccione banco');
+  }
+
+  get tipoCuentaSelectOptions(): SearchSelectOption[] {
+    return withEmptyNumberCatalog(this.tiposCuentaBancaria, 'Seleccione tipo de cuenta');
   }
 }

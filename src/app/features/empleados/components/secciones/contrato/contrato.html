@@ -46,7 +46,7 @@
           formControlName="idTipoTrabajador"
           placeholder="Selecciona un tipo"
           searchPlaceholder="Buscar tipo trabajador"
-          [options]="tiposTrabajador"
+          [options]="tiposTrabajadorSelectOptions"
           [invalid]="hasError('idTipoTrabajador')"
         ></app-search-select>
         @if (hasError('idTipoTrabajador', 'required')) {
@@ -70,7 +70,7 @@
           formControlName="tipoContrato"
           placeholder="Tipo de contrato"
           searchPlaceholder="Buscar tipo de contrato"
-          [options]="contractTypes"
+          [options]="tipoContratoSelectOptions"
           [invalid]="hasError('tipoContrato')"
         ></app-search-select>
         <p class="field-message"></p>
@@ -188,7 +188,7 @@
           formControlName="idDepartamentoEmpresa"
           placeholder="Selecciona un departamento"
           searchPlaceholder="Buscar departamento"
-          [options]="departamentosFiltrados"
+          [options]="departamentosSelectOptions"
           [invalid]="hasError('idDepartamentoEmpresa')"
         ></app-search-select>
         @if (!departamentosFiltrados.length) {
@@ -210,7 +210,7 @@
           formControlName="idSucursal"
           placeholder="Selecciona una sucursal"
           searchPlaceholder="Buscar sucursal"
-          [options]="sucursales"
+          [options]="sucursalesSelectOptions"
           [invalid]="hasError('idSucursal')"
         ></app-search-select>
         <p class="field-message"></p>
@@ -240,7 +240,7 @@
           formControlName="idTipoJornada"
           placeholder="Selecciona una jornada"
           searchPlaceholder="Buscar jornada"
-          [options]="tiposJornada"
+          [options]="tiposJornadaSelectOptions"
           [invalid]="hasError('idTipoJornada')"
         ></app-search-select>
         @if (hasError('idTipoJornada', 'required')) {
@@ -374,7 +374,7 @@
           formControlName="idMoneda"
           placeholder="Selecciona una moneda"
           searchPlaceholder="Buscar moneda"
-          [options]="monedas"
+          [options]="monedasSelectOptions"
           [invalid]="hasError('idMoneda')"
         ></app-search-select>
         <p class="field-message"></p>
@@ -394,7 +394,7 @@
           formControlName="tipoGratificacion"
           placeholder="Gratificación"
           searchPlaceholder="Buscar gratificación"
-          [options]="gratificationTypes"
+          [options]="gratificacionSelectOptions"
           [invalid]="hasError('tipoGratificacion')"
         ></app-search-select>
         <p class="field-message"></p>
@@ -656,7 +656,7 @@
           formControlName="idCentroCosto"
           placeholder="Sin centro de costo"
           searchPlaceholder="Buscar centro de costo"
-          [options]="centrosCosto"
+          [options]="centrosCostoSelectOptions"
           [invalid]="hasError('idCentroCosto')"
         ></app-search-select>
         <p class="field-message"></p>

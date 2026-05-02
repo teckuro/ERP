@@ -43,7 +43,7 @@
               formControlName="tipoRegimenPrevisional"
               placeholder="Selecciona una opción"
               searchPlaceholder="Buscar tipo de previsión"
-              [options]="tiposRegimenPrevisional"
+              [options]="tiposRegimenSelectOptions"
               [invalid]="hasError('tipoRegimenPrevisional')"
             ></app-search-select>
             @if (hasError('tipoRegimenPrevisional', 'required')) {
@@ -105,7 +105,7 @@
               formControlName="idAfp"
               placeholder="Selecciona una AFP"
               searchPlaceholder="Buscar AFP"
-              [options]="afps"
+              [options]="afpSelectOptions"
               [invalid]="hasError('idAfp')"
             ></app-search-select>
             @if (hasError('idAfp', 'required')) {
@@ -129,7 +129,7 @@
               formControlName="idMonedaCuenta2"
               placeholder="Opcional"
               searchPlaceholder="Buscar moneda"
-              [options]="monedas"
+              [options]="monedaCuenta2SelectOptions"
               [invalid]="hasError('idMonedaCuenta2')"
             ></app-search-select>
             @if (hasError('idMonedaCuenta2', 'required')) {
@@ -195,7 +195,7 @@
               formControlName="idEntidadPrevisionalIps"
               placeholder="Selecciona una entidad"
               searchPlaceholder="Buscar entidad IPS"
-              [options]="entidadesPrevisionalesIps"
+              [options]="entidadIpsSelectOptions"
               [invalid]="hasError('idEntidadPrevisionalIps')"
             ></app-search-select>
             @if (hasError('idEntidadPrevisionalIps', 'required')) {
@@ -219,7 +219,7 @@
               formControlName="idExCajaPrevisional"
               placeholder="Selecciona una Ex-Caja"
               searchPlaceholder="Buscar Ex-Caja"
-              [options]="exCajasPrevisionales"
+              [options]="exCajaSelectOptions"
               [invalid]="hasError('idExCajaPrevisional')"
             ></app-search-select>
             @if (hasError('idExCajaPrevisional', 'required')) {
@@ -243,7 +243,7 @@
               formControlName="idRegimenExCaja"
               placeholder="Selecciona un régimen"
               searchPlaceholder="Buscar régimen Ex-Caja"
-              [options]="regimenesExCajaFiltrados"
+              [options]="regimenExCajaSelectOptions"
               [invalid]="hasError('idRegimenExCaja')"
             ></app-search-select>
             @if (hasError('idRegimenExCaja', 'required')) {
@@ -311,7 +311,7 @@
               formControlName="idSalud"
               placeholder="Selecciona una institución"
               searchPlaceholder="Buscar institución de salud"
-              [options]="entidadesSalud"
+              [options]="saludSelectOptions"
               [invalid]="hasError('idSalud')"
             ></app-search-select>
             @if (hasError('idSalud', 'required')) {
@@ -335,7 +335,7 @@
               formControlName="idMonedaPlan"
               placeholder="Selecciona una moneda"
               searchPlaceholder="Buscar moneda"
-              [options]="monedas"
+              [options]="monedaPlanSelectOptions"
               [invalid]="hasError('idMonedaPlan')"
             ></app-search-select>
             @if (hasError('idMonedaPlan', 'required')) {
@@ -449,7 +449,7 @@
                 formControlName="idInstitucionApv"
                 placeholder="Selecciona una institución"
                 searchPlaceholder="Buscar institución APVI"
-                [options]="institucionesApv"
+                [options]="institucionApvSelectOptions"
                 [invalid]="hasError('idInstitucionApv')"
               ></app-search-select>
               @if (hasError('idInstitucionApv', 'required')) {
@@ -473,7 +473,7 @@
                 formControlName="idMonedaApv"
                 placeholder="Selecciona una moneda"
                 searchPlaceholder="Buscar moneda"
-                [options]="monedas"
+                [options]="monedaApvSelectOptions"
                 [invalid]="hasError('idMonedaApv')"
               ></app-search-select>
               @if (hasError('idMonedaApv', 'required')) {
@@ -523,7 +523,7 @@
                 formControlName="idFormaPagoApv"
                 placeholder="Selecciona una forma de pago"
                 searchPlaceholder="Buscar forma de pago"
-                [options]="formasPagoApv"
+                [options]="formaPagoApvSelectOptions"
                 [invalid]="hasError('idFormaPagoApv')"
               ></app-search-select>
               @if (hasError('idFormaPagoApv', 'required')) {

@@ -50,6 +50,8 @@ export function normalizarBorradorAvanzadoParaFormulario(
   if (paso < 3) {
     contrato['idTipoTrabajador'] = null;
     contrato['idTipoJornada'] = null;
+    contrato['tipoContrato'] = null;
+    contrato['tipoGratificacion'] = null;
     contrato['sueldoBase'] = null;
     contrato['idMoneda'] = null;
     contrato['horasSemanales'] = null;

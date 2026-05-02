@@ -3,6 +3,16 @@
 Registro cronológico de mejoras visuales aplicadas por petición, con foco en **trazabilidad** (qué se tocó y dónde),
 sin mezclarlo con las reglas base.
 
+### 2026-05-02 (Empleados - selects con opción vacía)
+
+- **Catálogos**: primera fila explícita «Seleccione…» / «Sin seleccionar» en `app-search-select` de identidad, domicilio, contrato, previsión, APVI y banco; el disparador muestra placeholder gris hasta elección real (mismo patrón `SearchSelectComponent`).
+  - `src/app/features/empleados/utils/empleado-select-options.ts`
+  - `src/app/features/empleados/components/secciones/datos-personales/*`
+  - `src/app/features/empleados/components/secciones/contacto/*`
+  - `src/app/features/empleados/components/secciones/contrato/*`
+  - `src/app/features/empleados/components/secciones/prevision-salud/*`
+  - `src/app/features/empleados/components/secciones/bancario/*`
+
 ### 2026-05-02 (Empleados - validacion explicita para remuneraciones)
 
 - **Ficha empleado**: accion principal **Validar para remuneraciones** solo cuando

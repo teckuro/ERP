@@ -121,6 +121,8 @@ describe('normalizarBorradorAvanzadoParaFormulario', () => {
 
     expect(normalized.contrato['idTipoTrabajador']).toBeNull();
     expect(normalized.contrato['idTipoJornada']).toBeNull();
+    expect(normalized.contrato['tipoContrato']).toBeNull();
+    expect(normalized.contrato['tipoGratificacion']).toBeNull();
     expect(normalized.previsionSalud['tipoRegimenPrevisional']).toBeNull();
     expect(normalized.bancario['numeroCuenta']).toBe('');
   });

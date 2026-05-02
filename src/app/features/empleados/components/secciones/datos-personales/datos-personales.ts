@@ -9,7 +9,11 @@ import {
 import { EmpleadoSexo, TipoEstadoCivil } from '../../../models/empleado.model';
 import { CalendarInputComponent } from '../../../../../shared/components/ui/calendar-input.component';
 import { CardComponent } from '../../../../../shared/components/ui/card.component';
-import { SearchSelectComponent } from '../../../../../shared/components/ui/search-select.component';
+import {
+  SearchSelectComponent,
+  type SearchSelectOption,
+} from '../../../../../shared/components/ui/search-select.component';
+import { withEmptyNumberCatalog, withEmptyStringCatalog } from '../../../utils/empleado-select-options';
 
 type DatosPersonalesControlName = keyof DatosPersonalesFormGroup['controls'];
 type ContactoControlName = keyof ContactoFormGroup['controls'];
@@ -102,6 +106,18 @@ export class DatosPersonalesComponent {
 
   isBlockVisible(blockId: string): boolean {
     return this.visibleBlocks === null || this.visibleBlocks.includes(blockId);
+  }
+
+  get sexoSelectOptions(): SearchSelectOption[] {
+    return withEmptyStringCatalog(this.sexos, 'Seleccione sexo');
+  }
+
+  get paisSelectOptions(): SearchSelectOption[] {
+    return withEmptyNumberCatalog(this.paises, 'Seleccione país');
+  }
+
+  get estadoCivilSelectOptions(): SearchSelectOption[] {
+    return withEmptyStringCatalog(this.estadosCivil, 'Seleccione estado civil');
   }
 
   private toIsoDate(date: Date): string {

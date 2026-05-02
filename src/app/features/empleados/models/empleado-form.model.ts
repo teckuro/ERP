@@ -16,10 +16,10 @@ export type DatosPersonalesFormGroup = FormGroup<{
   apellidoPaterno: FormControl<string>;
   apellidoMaterno: FormControl<string>;
   fechaNacimiento: FormControl<string>;
-  sexo: FormControl<EmpleadoSexo>;
+  sexo: FormControl<EmpleadoSexo | null>;
   pasaporte: FormControl<string>;
   idPais: FormControl<number | null>;
-  estadoCivil: FormControl<TipoEstadoCivil>;
+  estadoCivil: FormControl<TipoEstadoCivil | null>;
 }>;
 
 export type ContactoFormGroup = FormGroup<{
@@ -39,7 +39,7 @@ export type ContratoFormGroup = FormGroup<{
   idCentroCosto: FormControl<number | null>;
   cargo: FormControl<string>;
   fechaContrato: FormControl<string>;
-  tipoContrato: FormControl<TipoContrato>;
+  tipoContrato: FormControl<TipoContrato | null>;
   idTipoTrabajador: FormControl<number | null>;
   idTipoJornada: FormControl<number | null>;
   seguroCesantia: FormControl<boolean>;
@@ -52,7 +52,7 @@ export type ContratoFormGroup = FormGroup<{
   diasSemanales: FormControl<number | null>;
   distribucionJornada: FormControl<string>;
   tiempoColacionMinutos: FormControl<number | null>;
-  tipoGratificacion: FormControl<TipoGratificacion>;
+  tipoGratificacion: FormControl<TipoGratificacion | null>;
   gratificacionProporcional: FormControl<boolean>;
   semanaCorridaActiva: FormControl<boolean>;
   semanaCorridaDiasLaborables: FormControl<number[]>;

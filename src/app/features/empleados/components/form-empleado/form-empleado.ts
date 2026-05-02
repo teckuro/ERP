@@ -1341,7 +1341,8 @@ export class FormEmpleadoComponent implements OnInit {
         'contrato.fechaTermino',
         'Fechas',
         () => contrato.fechaTermino.valid,
-        () => contrato.tipoContrato.value !== 'INDEFINIDO',
+        () =>
+          contrato.tipoContrato.value !== null && contrato.tipoContrato.value !== 'INDEFINIDO',
       ),
       this.rule(
         'contract.salary',

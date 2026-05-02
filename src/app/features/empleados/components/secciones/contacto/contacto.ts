@@ -4,7 +4,11 @@ import { ReactiveFormsModule, Validators } from '@angular/forms';
 import { EmpleadoCatalogOption } from '../../../models/empleado-catalogos.model';
 import { ContactoFormGroup } from '../../../models/empleado-form.model';
 import { CardComponent } from '../../../../../shared/components/ui/card.component';
-import { SearchSelectComponent } from '../../../../../shared/components/ui/search-select.component';
+import {
+  SearchSelectComponent,
+  type SearchSelectOption,
+} from '../../../../../shared/components/ui/search-select.component';
+import { withEmptyNumberCatalog } from '../../../utils/empleado-select-options';
 
 type ContactoControlName = keyof ContactoFormGroup['controls'];
 
@@ -50,5 +54,9 @@ export class ContactoComponent {
 
   isBlockVisible(blockId: string): boolean {
     return this.visibleBlocks === null || this.visibleBlocks.includes(blockId);
+  }
+
+  get comunaSelectOptions(): SearchSelectOption[] {
+    return withEmptyNumberCatalog(this.comunas, 'Seleccione comuna');
   }
 }
