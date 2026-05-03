@@ -76,16 +76,64 @@
   width: 100%;
 }
 
-/* Tres filtros visibles; ngStyle del DataGrid se anula aquí */
+/* Filtros compactos */
 :host ::ng-deep .cr-grid-wrap .data-grid-filter-grid {
-  grid-template-columns: minmax(11rem, 1.8fr) minmax(7.5rem, 0.85fr) minmax(7.5rem, 0.85fr) !important;
-  gap: 0.65rem 0.85rem;
+  grid-template-columns: repeat(auto-fit, minmax(10.5rem, 1fr)) !important;
+  gap: 0.65rem 0.75rem !important;
 }
 
 @media (max-width: 900px) {
   :host ::ng-deep .cr-grid-wrap .data-grid-filter-grid {
-    grid-template-columns: repeat(auto-fit, minmax(10.75rem, 1fr)) !important;
+    grid-template-columns: repeat(auto-fit, minmax(10.25rem, 1fr)) !important;
   }
+}
+
+.cr-lre-empty {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #64748b;
+}
+
+.cr-lre-val {
+  font-size: 0.78rem;
+  color: #334155;
+  line-height: 1.35;
+}
+
+.hd-chip--vig-ok {
+  background: #f0fdf4;
+  color: #15803d;
+  border-color: #bbf7d0;
+}
+
+.hd-chip--vig-futuro {
+  background: #fffbeb;
+  color: #b45309;
+  border-color: #fde68a;
+}
+
+.hd-chip--vig-vencido {
+  background: #f8fafc;
+  color: #64748b;
+  border-color: #e2e8f0;
+}
+
+.hd-chip--vig-no {
+  background: #fef2f2;
+  color: #b91c1c;
+  border-color: #fecaca;
+}
+
+.hd-chip--usuario {
+  background: #eff6ff;
+  color: #1d4ed8;
+  border-color: #bfdbfe;
+}
+
+.hd-chip--protegido {
+  background: #f1f5f9;
+  color: #475569;
+  border-color: #cbd5e1;
 }
 
 /* Chips */

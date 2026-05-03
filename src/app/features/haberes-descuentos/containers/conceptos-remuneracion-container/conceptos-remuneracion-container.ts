@@ -2,7 +2,7 @@ import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { LucideAngularModule } from 'lucide-angular';
-import { Edit } from 'lucide-angular/src/icons';
+import { Edit, Eye } from 'lucide-angular/src/icons';
 
 import {
   DataGridCellDirective,
@@ -22,11 +22,21 @@ import {
   ConceptoMantenimientoFila,
   ConceptoMantenimientoPayload,
 } from '../../models/haber-descuento-asignacion.model';
+import {
+  clasificarVigenciaConcepto,
+  esConceptoAsignable,
+  etiquetaVigenciaConcepto,
+  type VigenciaConceptoPeriodo,
+} from '../../rules/concepto-asignabilidad.rules';
 
 type CatalogoGridRow = ConceptoMantenimientoFila & {
   busquedaCatalogo: string;
-  /** Filtro UI: vigente sí / no — se deriva de `vigente`. */
-  filtroVigenciaCatalogo: string;
+  /** Vigencia respecto a la fecha de referencia del listado (filtro). */
+  filtroVigenciaPeriodo: VigenciaConceptoPeriodo;
+  filtroAsignable: 'SI' | 'NO';
+  filtroOrigen: 'SISTEMA' | 'USUARIO';
+  filtroLre: 'CON' | 'SIN';
+  esAsignableCatalogo: boolean;
 };
 
 /**
@@ -58,10 +68,6 @@ function etiquetaNaturalezaFn(n: string | null): string {
   return n?.trim() ? n : '—';
 }
 
-function siNo(v: boolean): string {
-  return v ? 'Sí' : 'No';
-}
-
 @Component({
   selector: 'app-conceptos-remuneracion-container',
   standalone: true,
@@ -88,8 +94,11 @@ export class ConceptosRemuneracionContainer implements OnInit {
   ];
 
   readonly editIcon = Edit;
+  readonly eyeIcon = Eye;
 
   readonly catalogLoading = signal(false);
+  /** Fecha civil de referencia para vigencia y asignable (hoy). */
+  private readonly fechaReferenciaListado = (): Date => new Date();
 
   readonly catalogoFilas = signal<CatalogoGridRow[]>([]);
   readonly catalogoLreOpciones = signal<CatalogoLreOpcion[]>([]);
@@ -138,28 +147,18 @@ export class ConceptosRemuneracionContainer implements OnInit {
 
   readonly catalogColumns: DataGridColumn<CatalogoGridRow>[] = [
     {
-      id: 'codigo',
-      header: 'Código',
-      field: 'codigo',
+      id: 'nombre',
+      header: 'Nombre',
+      field: 'nombre',
       type: 'text',
       sortable: true,
       priorityResponsive: 'primary',
       filterable: false,
     },
     {
-      id: 'codigoMotor',
-      header: 'Código motor',
-      field: 'codigoMotor',
-      type: 'text',
-      sortable: true,
-      format: (v) => (v == null || v === '' ? '—' : String(v)),
-      visible: false,
-      filterable: false,
-    },
-    {
-      id: 'nombre',
-      header: 'Nombre',
-      field: 'nombre',
+      id: 'codigo',
+      header: 'Código',
+      field: 'codigo',
       type: 'text',
       sortable: true,
       priorityResponsive: 'primary',
@@ -174,141 +173,43 @@ export class ConceptosRemuneracionContainer implements OnInit {
       filterable: false,
     },
     {
-      id: 'naturaleza',
-      header: 'Naturaleza',
-      field: 'naturaleza',
-      type: 'text',
-      sortable: true,
-      format: (_v, row) => etiquetaNaturalezaFn(row.naturaleza),
-      visible: false,
-      filterable: false,
-    },
-    {
-      id: 'codigoLre',
+      id: 'lreCelda',
       header: 'LRE',
-      field: 'codigoLre',
+      field: 'busquedaCatalogo',
+      type: 'text',
+      sortable: false,
+      filterable: false,
+    },
+    {
+      id: 'vigenciaPeriodo',
+      header: 'Vigencia',
+      field: 'filtroVigenciaPeriodo',
       type: 'text',
       sortable: true,
-      format: (v) => (v == null || v === '' ? '—' : String(v)),
       filterable: false,
     },
     {
-      id: 'clasificacionLre',
-      header: 'Clasificación LRE',
-      field: 'clasificacionLre',
+      id: 'origenCatalogo',
+      header: 'Origen',
+      field: 'filtroOrigen',
       type: 'text',
       sortable: true,
-      format: (v) => (v == null || v === '' ? '—' : String(v)),
-      filterable: false,
-    },
-    {
-      id: 'imponible',
-      header: 'Imponible',
-      field: 'imponible',
-      type: 'text',
-      sortable: false,
-      visible: false,
-      filterable: false,
-    },
-    {
-      id: 'tributable',
-      header: 'Tributable',
-      field: 'tributable',
-      type: 'text',
-      sortable: false,
-      visible: false,
-      filterable: false,
-    },
-    {
-      id: 'afectaAfp',
-      header: 'Afecta AFP',
-      field: 'afectaAfp',
-      type: 'text',
-      sortable: false,
-      visible: false,
-      filterable: false,
-    },
-    {
-      id: 'afectaSalud',
-      header: 'Afecta salud',
-      field: 'afectaSalud',
-      type: 'text',
-      sortable: false,
-      visible: false,
-      filterable: false,
-    },
-    {
-      id: 'afectaAfc',
-      header: 'Afecta AFC',
-      field: 'afectaAfc',
-      type: 'text',
-      sortable: false,
-      visible: false,
-      filterable: false,
-    },
-    {
-      id: 'afectaSis',
-      header: 'Afecta SIS',
-      field: 'afectaSis',
-      type: 'text',
-      sortable: false,
-      visible: false,
-      filterable: false,
-    },
-    {
-      id: 'afectaLiquido',
-      header: 'Afecta líquido',
-      field: 'afectaLiquido',
-      type: 'text',
-      sortable: false,
-      format: (v) => siNo(Boolean(v)),
-      visible: false,
-      filterable: false,
-    },
-    {
-      id: 'esSistema',
-      header: 'Es sistema',
-      field: 'esSistema',
-      type: 'text',
-      sortable: true,
-      format: (v) => siNo(Boolean(v)),
-      visible: false,
       filterable: false,
     },
     {
       id: 'calculoAutomatico',
-      header: 'Modo',
+      header: 'Cálculo',
       field: 'calculoAutomatico',
       type: 'text',
       sortable: true,
-      format: (v) => siNo(Boolean(v)),
       filterable: false,
     },
     {
-      id: 'vigenciaInicio',
-      header: 'Inicio',
-      field: 'vigenciaInicio',
-      type: 'date',
-      sortable: true,
-      format: (v) => this.formatDate(v),
-      filterable: false,
-    },
-    {
-      id: 'vigenciaFin',
-      header: 'Fin',
-      field: 'vigenciaFin',
-      type: 'date',
-      sortable: true,
-      format: (v) => this.formatDate(v),
-      filterable: false,
-    },
-    {
-      id: 'vigente',
-      header: 'Estado',
-      field: 'vigente',
+      id: 'asignable',
+      header: 'Asignable',
+      field: 'filtroAsignable',
       type: 'text',
       sortable: true,
-      format: (v) => siNo(Boolean(v)),
       filterable: false,
     },
     {
@@ -343,15 +244,54 @@ export class ConceptosRemuneracionContainer implements OnInit {
       ],
     },
     {
-      id: 'filtroVigenciaCatalogo',
-      label: 'Estado',
-      field: 'filtroVigenciaCatalogo',
+      id: 'filtroVigenciaPeriodo',
+      label: 'Vigencia',
+      field: 'filtroVigenciaPeriodo',
       type: 'select',
       operator: 'equals',
       emptyLabel: 'Todos',
       options: [
-        { label: 'Vigente', value: 'SI' },
-        { label: 'No vigente', value: 'NO' },
+        { label: 'Vigente (período)', value: 'VIGENTE_PERIODO' },
+        { label: 'Sin fechas', value: 'SIN_FECHAS' },
+        { label: 'Futuro', value: 'FUTURO' },
+        { label: 'Vencido', value: 'VENCIDO' },
+        { label: 'No vigente (catálogo)', value: 'NO_OPERATIVO' },
+      ],
+    },
+    {
+      id: 'filtroAsignable',
+      label: 'Asignable',
+      field: 'filtroAsignable',
+      type: 'select',
+      operator: 'equals',
+      emptyLabel: 'Todos',
+      options: [
+        { label: 'Sí', value: 'SI' },
+        { label: 'No', value: 'NO' },
+      ],
+    },
+    {
+      id: 'filtroOrigen',
+      label: 'Origen',
+      field: 'filtroOrigen',
+      type: 'select',
+      operator: 'equals',
+      emptyLabel: 'Todos',
+      options: [
+        { label: 'Sistema', value: 'SISTEMA' },
+        { label: 'Usuario', value: 'USUARIO' },
+      ],
+    },
+    {
+      id: 'filtroLre',
+      label: 'LRE',
+      field: 'filtroLre',
+      type: 'select',
+      operator: 'equals',
+      emptyLabel: 'Todos',
+      options: [
+        { label: 'Con LRE', value: 'CON' },
+        { label: 'Sin LRE', value: 'SIN' },
       ],
     },
   ];
@@ -392,18 +332,55 @@ export class ConceptosRemuneracionContainer implements OnInit {
     this.catalogLoading.set(true);
     try {
       const rows = await this.haberesDescuentosService.listarConceptosMantenimiento();
+      const ref = this.fechaReferenciaListado();
       this.catalogoFilas.set(
-        rows.map((r) => ({
-          ...r,
-          busquedaCatalogo: [r.nombre, r.codigo, r.codigoMotor ?? '', r.codigoLre ?? '']
-            .join(' ')
-            .toLowerCase(),
-          filtroVigenciaCatalogo: r.vigente ? 'SI' : 'NO',
-        })),
+        rows.map((r) => {
+          const periodo = clasificarVigenciaConcepto(r, ref);
+          const asignable = esConceptoAsignable(r, ref);
+          return {
+            ...r,
+            filtroVigenciaPeriodo: periodo,
+            filtroAsignable: asignable ? 'SI' : 'NO',
+            filtroOrigen: r.esSistema ? 'SISTEMA' : 'USUARIO',
+            filtroLre: r.idCatalogoLre == null ? 'SIN' : 'CON',
+            esAsignableCatalogo: asignable,
+            busquedaCatalogo: [r.nombre, r.codigo, r.codigoMotor ?? '', r.codigoLre ?? '', r.nombreLre ?? '']
+              .join(' ')
+              .toLowerCase(),
+          };
+        }),
       );
     } finally {
       this.catalogLoading.set(false);
     }
+  }
+
+  etiquetaVigenciaChip(row: CatalogoGridRow): string {
+    return etiquetaVigenciaConcepto(row.filtroVigenciaPeriodo);
+  }
+
+  revisarConceptoRow(row: CatalogoGridRow): void {
+    const vig = this.etiquetaVigenciaChip(row);
+    const lre =
+      row.idCatalogoLre == null
+        ? 'LRE no asignado'
+        : `${row.codigoLre ?? '—'} · ${(row.nombreLre ?? '').trim() || '—'}`;
+    const asig = row.esAsignableCatalogo ? 'Sí' : 'No';
+    const origen = row.esSistema ? 'Sistema' : row.calculoAutomatico ? 'Usuario (protegido)' : 'Usuario';
+    const calc = row.calculoAutomatico ? 'Automático' : 'Manual';
+    this.modalMsg.set({
+      variant: 'info',
+      title: 'Resumen del concepto',
+      message: `${row.nombre} (${row.codigo})`,
+      detail: [
+        `Tipo: ${etiquetaTipoConcepto(row.tipo)}`,
+        `Origen: ${origen}`,
+        `Cálculo: ${calc}`,
+        `Vigencia: ${vig}`,
+        `LRE: ${lre}`,
+        `Asignable en haberes/descuentos: ${asig}`,
+      ].join('\n'),
+    });
   }
 
   onCatLreChange(id: number | null): void {

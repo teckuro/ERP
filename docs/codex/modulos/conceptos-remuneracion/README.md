@@ -2,7 +2,7 @@
 
 ## Estado (Fase 9)
 
-**Fase fuerte del producto en curso:** la **documentación** Fase 9 incluye diagnóstico, contrato funcional y **decisiones operativas** ([`decisiones-operativas.md`](./decisiones-operativas.md)). La **implementación** del mantenedor ya existe en código; quedan brechas de **permisos/JWT**, **reglas de cálculo en UI**, **E2E** y endurecimiento de **RLS** según diagnóstico §8 y decisiones §2 / §10.
+**Fase fuerte del producto en curso:** la **documentación** Fase 9 incluye diagnóstico, contrato funcional y **decisiones operativas** ([`decisiones-operativas.md`](./decisiones-operativas.md)). **Fase 9.2A** dejó el **listado base** del catálogo (columnas, filtros, regla `esConceptoAsignable`, vacíos); siguen brechas de **permisos/JWT**, **CRUD alineado a roles**, **reglas de cálculo en UI**, **E2E visual estable** y **RLS** según diagnóstico §8 y decisiones §2 / §10.
 
 ## Orden de lectura
 

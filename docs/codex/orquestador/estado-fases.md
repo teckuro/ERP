@@ -25,7 +25,7 @@ Tablero **vivo** (a actualizar al cerrar fases) con: qué está **cerrado**, qu�
 
 ## 4. Fase actual / siguiente
 
-**Fase fuerte Conceptos (implementación — 9.2):** continuar sobre el mantenedor ya existente y las brechas listadas en [`diagnostico-fase-9.md`](../modulos/conceptos-remuneracion/diagnostico-fase-9.md) §8, [`decisiones-operativas.md`](../modulos/conceptos-remuneracion/decisiones-operativas.md) §10–§11 y [`contrato-funcional.md`](../modulos/conceptos-remuneracion/contrato-funcional.md) §4–§8 (RLS/roles, `PUEDE_EDITAR_CONCEPTOS_MODO_ADMIN`, reglas de cálculo sin UI, E2E). Punto de entrada: [`../modulos/conceptos-remuneracion/README.md`](../modulos/conceptos-remuneracion/README.md). Marco UX: [`diseno-operativo-erp.md`](./diseno-operativo-erp.md) §6. Contexto: [`contexto-proyecto.md`](./contexto-proyecto.md) §10 y §12.
+**Fase fuerte Conceptos (implementación — 9.2):** **9.2A** cerró listado base (grilla, filtros, `esConceptoAsignable`, smoke E2E `tests/conceptos-remuneracion-listado.spec.ts`). **9.2B** en adelante: roles/JWT, alinear `APORTE` y repositorio asignables, RLS, reglas de cálculo, E2E visual. Brechas: [`diagnostico-fase-9.md`](../modulos/conceptos-remuneracion/diagnostico-fase-9.md) §8, [`decisiones-operativas.md`](../modulos/conceptos-remuneracion/decisiones-operativas.md) §10–§11, [`contrato-funcional.md`](../modulos/conceptos-remuneracion/contrato-funcional.md) §4–§9. Punto de entrada: [`../modulos/conceptos-remuneracion/README.md`](../modulos/conceptos-remuneracion/README.md). Marco UX: [`diseno-operativo-erp.md`](./diseno-operativo-erp.md) §6. Contexto: [`contexto-proyecto.md`](./contexto-proyecto.md) §10 y §12.
 
 ## 5. Pendientes técnicos no bloqueantes
 

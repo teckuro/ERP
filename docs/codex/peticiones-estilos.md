@@ -3,6 +3,11 @@
 Registro cronológico de mejoras visuales aplicadas por petición, con foco en **trazabilidad** (qué se tocó y dónde),
 sin mezclarlo con las reglas base.
 
+### 2026-05-02 (Conceptos — listado 9.2A)
+
+- **Catálogo `/remuneraciones/conceptos`**: cabecera con texto de catálogo maestro (sin prometer cálculo de liquidaciones); grilla con columnas Nombre → Código → Tipo → LRE → Vigencia → Origen → Cálculo → Asignable; chips de vigencia (ok / futuro / vencido / no vigente); chips Origen (Sistema, Protegido, Usuario); texto **LRE no asignado** en gris; filtros en rejilla `auto-fit` compacta; acción **Revisar** con ícono ojo.
+  - `src/app/features/haberes-descuentos/containers/conceptos-remuneracion-container/*`
+
 ### 2026-05-02 (Empleados - resumen paso 9 pendientes de negocio)
 
 - **Creación avanzada / paso 9**: bloque informativo compacto bajo la checklist de

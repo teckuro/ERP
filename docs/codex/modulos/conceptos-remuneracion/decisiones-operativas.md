@@ -131,10 +131,10 @@ Se definen **perfiles lógicos** para mapear luego a **claims/roles JWT** y a **
 
 1. **Roles:** sustituir constante admin por comprobación de perfil §2; ocultar/deshabilitar acciones según perfil.
 2. **Tipo APORTE:** restringir creación en UI/servicio a Admin (§4).
-3. **Asignables:** añadir filtro `vigente` (y vigencia vs fecha) en `listarConceptosAsignables` §5.
-4. **Listado conceptos:** indicador **LRE no asignado** §8.
+3. **Asignables:** añadir filtro `vigente` (y vigencia vs fecha) en `listarConceptosAsignables` §5 (repositorio Haberes — pendiente si no se tocó en 9.2A).
+4. **Listado conceptos:** indicador **LRE no asignado** §8 (**Fase 9.2A** en UI: columna + filtros + `esConceptoAsignable` en `concepto-asignabilidad.rules.ts`).
 5. **RLS:** tarea aparte con aprobación explícita de políticas; no ejecutar sin ticket.
-6. **E2E:** ruta `/remuneraciones/conceptos` en `dashboard.spec.ts` o spec dedicado ([`contrato-funcional.md`](./contrato-funcional.md) §8).
+6. **E2E:** ruta `/remuneraciones/conceptos` — spec dedicado `tests/conceptos-remuneracion-listado.spec.ts` (smoke); opcional ampliar `dashboard.spec.ts` con captura visual.
 7. **Haberes/descuentos:** copiar en UI mensajes si el concepto deja de ser asignable por `vigente` o vigencia.
 
 **No incluido en 9.2 mínimo:** UI de `regla_concepto_calculo`, motor, liquidaciones, nómina, Parámetros, Python.

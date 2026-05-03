@@ -99,7 +99,22 @@ Hasta entonces, el comportamiento vigente es el descrito en §3.2–3.3.
 | **Integración / E2E** | Ruta `/remuneraciones/conceptos`: carga de grilla (mock o Supabase test), crear concepto mínimo, intento de borrar concepto en uso (error esperado). |
 | **Visual** | Añadir `{ path: '/remuneraciones/conceptos', name: 'remuneraciones-conceptos' }` al array de `tests/dashboard.spec.ts` cuando se estabilicen datos de entorno. |
 
-## 9. Documentos hermanos
+## 9. Fase 9.2A — Listado base (catálogo)
+
+**Objetivo:** dejar **visible y filtrable** el catálogo maestro sin completar CRUD avanzado, sin RLS/JWT productivos ni UI de `regla_concepto_calculo`.
+
+**Implementación (código):**
+
+- Contenedor: `src/app/features/haberes-descuentos/containers/conceptos-remuneracion-container/`.
+- Regla **asignable** (alineada a [`decisiones-operativas.md`](./decisiones-operativas.md) §5): `src/app/features/haberes-descuentos/rules/concepto-asignabilidad.rules.ts` (`esConceptoAsignable`, `clasificarVigenciaConcepto`).
+- **Columnas:** Nombre, Código, Tipo, LRE (texto código · nombre o «LRE no asignado»), Vigencia (chip según período respecto a **hoy**: vigente / sin fechas / futuro / vencido / no vigente catálogo), Origen (Sistema / Protegido / Usuario), Cálculo (Automático / Manual), Asignable (Sí/No), Acciones (Revisar resumen, Editar, Eliminar según reglas existentes).
+- **Filtros:** búsqueda nombre/código/LRE; tipo; vigencia (período); asignable; origen sistema/usuario; LRE con/sin. Panel colapsable para no saturar cabecera.
+- **Vacíos:** mensajes explícitos sin nombres de tablas cuando no hay datos o no hay coincidencias con filtros.
+- **Qué no entra en 9.2A:** CRUD completo nuevo, permisos reales JWT, RLS definitiva, eliminación como flujo principal (sigue excepcional), asignación a trabajadores, motor.
+
+**Pendiente 9.2B (orientativo):** alinear modal/servicio con tipo `APORTE_EMPLEADOR` solo Admin; reforzar listado asignable en repositorio Haberes; E2E visual estable; auditoría.
+
+## 10. Documentos hermanos
 
 - [`contrato-general.md`](./contrato-general.md) — resumen y enlaces.
 - [`../haberes-descuentos/contrato-general.md`](../haberes-descuentos/contrato-general.md) — límites del módulo asignaciones (no duplicar definición de concepto).

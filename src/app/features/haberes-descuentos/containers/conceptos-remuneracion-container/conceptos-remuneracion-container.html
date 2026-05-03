@@ -5,13 +5,14 @@
       title="Conceptos de remuneración"
     ></app-record-breadcrumb>
     <p class="hd-lead">
-      Administra el catálogo interno de conceptos de remuneración y su mapeo al Libro de Remuneraciones Electrónico.
+      Catálogo maestro usado por haberes, descuentos y futuras liquidaciones. No es asignación por trabajador ni
+      resultado de cálculo cerrado.
     </p>
   </header>
 
   <p class="cr-note">
-    Los conceptos calculados por el proceso de liquidación quedan restringidos en este mantenedor salvo un perfil con
-    permisos ampliados.
+    Los conceptos generados o restringidos por liquidación siguen marcados como automáticos o protegidos; la edición
+    ampliada quedará ligada a perfiles en una fase posterior.
   </p>
 
   <div class="cr-grid-wrap">
@@ -19,7 +20,7 @@
       title="Conceptos"
       primaryActionLabel="Nuevo concepto"
       (primaryAction)="abrirNuevoConcepto()"
-      [filtersCollapsible]="false"
+      [filtersCollapsible]="true"
       [rows]="catalogoFilas()"
       [columns]="catalogColumns"
       [filters]="catalogFilters"
@@ -30,8 +31,10 @@
       [trackBy]="trackCatalogo"
       gridHeight="100%"
       (refresh)="refrescar()"
-      emptyTitle="Sin conceptos"
-      emptyDescription="No se encontraron conceptos en el catálogo."
+      emptyTitle="No hay conceptos de remuneración registrados."
+      emptyDescription="Crea o carga el catálogo maestro antes de asignar haberes o descuentos."
+      emptyTitleWhenFiltered="No hay conceptos que coincidan con los filtros."
+      emptyDescriptionWhenFiltered="Ajusta la búsqueda o limpia filtros para ver más resultados."
     >
       <ng-template appDataGridCell="tipo" let-row>
         @if (row.tipo === 'HABER') {
@@ -44,35 +47,40 @@
           <span class="hd-chip hd-chip--neutral">{{ etiquetaTipo(row.tipo) }}</span>
         }
       </ng-template>
-      <ng-template appDataGridCell="imponible" let-row>
-        <span class="hd-chip" [class.hd-chip--si]="row.imponible" [class.hd-chip--no]="!row.imponible">
-          {{ row.imponible ? 'Sí' : 'No' }}
-        </span>
+      <ng-template appDataGridCell="lreCelda" let-row>
+        @if (row.idCatalogoLre == null) {
+          <span class="cr-lre-empty">LRE no asignado</span>
+        } @else {
+          <span class="cr-lre-val">{{ row.codigoLre ?? '—' }} · {{ (row.nombreLre ?? '').trim() || '—' }}</span>
+        }
       </ng-template>
-      <ng-template appDataGridCell="tributable" let-row>
-        <span class="hd-chip" [class.hd-chip--si]="row.tributable" [class.hd-chip--no]="!row.tributable">
-          {{ row.tributable ? 'Sí' : 'No' }}
-        </span>
+      <ng-template appDataGridCell="vigenciaPeriodo" let-row>
+        @switch (row.filtroVigenciaPeriodo) {
+          @case ('VIGENTE_PERIODO') {
+            <span class="hd-chip hd-chip--vig-ok">{{ etiquetaVigenciaChip(row) }}</span>
+          }
+          @case ('SIN_FECHAS') {
+            <span class="hd-chip hd-chip--vig-ok">{{ etiquetaVigenciaChip(row) }}</span>
+          }
+          @case ('FUTURO') {
+            <span class="hd-chip hd-chip--vig-futuro">{{ etiquetaVigenciaChip(row) }}</span>
+          }
+          @case ('VENCIDO') {
+            <span class="hd-chip hd-chip--vig-vencido">{{ etiquetaVigenciaChip(row) }}</span>
+          }
+          @default {
+            <span class="hd-chip hd-chip--vig-no">{{ etiquetaVigenciaChip(row) }}</span>
+          }
+        }
       </ng-template>
-      <ng-template appDataGridCell="afectaAfp" let-row>
-        <span class="hd-chip" [class.hd-chip--si]="row.afectaAfp" [class.hd-chip--no]="!row.afectaAfp">
-          {{ row.afectaAfp ? 'Sí' : 'No' }}
-        </span>
-      </ng-template>
-      <ng-template appDataGridCell="afectaSalud" let-row>
-        <span class="hd-chip" [class.hd-chip--si]="row.afectaSalud" [class.hd-chip--no]="!row.afectaSalud">
-          {{ row.afectaSalud ? 'Sí' : 'No' }}
-        </span>
-      </ng-template>
-      <ng-template appDataGridCell="afectaAfc" let-row>
-        <span class="hd-chip" [class.hd-chip--si]="row.afectaAfc" [class.hd-chip--no]="!row.afectaAfc">
-          {{ row.afectaAfc ? 'Sí' : 'No' }}
-        </span>
-      </ng-template>
-      <ng-template appDataGridCell="afectaSis" let-row>
-        <span class="hd-chip" [class.hd-chip--si]="row.afectaSis" [class.hd-chip--no]="!row.afectaSis">
-          {{ row.afectaSis ? 'Sí' : 'No' }}
-        </span>
+      <ng-template appDataGridCell="origenCatalogo" let-row>
+        @if (row.esSistema) {
+          <span class="hd-chip hd-chip--sistema">Sistema</span>
+        } @else if (row.calculoAutomatico) {
+          <span class="hd-chip hd-chip--protegido">Protegido</span>
+        } @else {
+          <span class="hd-chip hd-chip--usuario">Usuario</span>
+        }
       </ng-template>
       <ng-template appDataGridCell="calculoAutomatico" let-row>
         @if (row.calculoAutomatico) {
@@ -81,25 +89,16 @@
           <span class="hd-chip hd-chip--manual-concepto">Manual</span>
         }
       </ng-template>
-      <ng-template appDataGridCell="esSistema" let-row>
-        @if (row.esSistema) {
-          <span class="hd-chip hd-chip--sistema">Sistema</span>
-        } @else {
-          <span class="hd-chip hd-chip--no-sistema">—</span>
-        }
-      </ng-template>
-      <ng-template appDataGridCell="afectaLiquido" let-row>
-        <span class="hd-chip" [class.hd-chip--si]="row.afectaLiquido" [class.hd-chip--no]="!row.afectaLiquido">
-          {{ row.afectaLiquido ? 'Sí' : 'No' }}
-        </span>
-      </ng-template>
-      <ng-template appDataGridCell="vigente" let-row>
-        <span class="hd-chip" [class.hd-chip--si]="row.vigente" [class.hd-chip--no]="!row.vigente">
-          {{ row.vigente ? 'Vigente' : 'No vigente' }}
+      <ng-template appDataGridCell="asignable" let-row>
+        <span class="hd-chip" [class.hd-chip--si]="row.esAsignableCatalogo" [class.hd-chip--no]="!row.esAsignableCatalogo">
+          {{ row.esAsignableCatalogo ? 'Sí' : 'No' }}
         </span>
       </ng-template>
       <ng-template appDataGridCell="acciones" let-row>
         <div class="hd-actions">
+          <button type="button" class="hd-action-btn" title="Revisar" (click)="revisarConceptoRow(row)">
+            <lucide-icon class="h-4 w-4" [img]="eyeIcon"></lucide-icon>
+          </button>
           <button
             type="button"
             class="hd-action-btn"
