@@ -97,7 +97,7 @@ Hasta entonces, el comportamiento vigente es el descrito en §3.2–3.3.
 |-------|------------------|
 | **Unit** | `validarPayloadConcepto`, mapeos desde Supabase, `assertConceptoPermiteAsignacionManual` (donde aplique). |
 | **Integración / E2E** | Ruta `/remuneraciones/conceptos`: carga de grilla (mock o Supabase test), crear concepto mínimo, intento de borrar concepto en uso (error esperado). |
-| **Visual** | Añadir `{ path: '/remuneraciones/conceptos', name: 'remuneraciones-conceptos' }` al array de `tests/dashboard.spec.ts` cuando se estabilicen datos de entorno. |
+| **Visual / E2E** | Smoke: `tests/conceptos-remuneracion-listado.spec.ts`. Opcional: captura en `tests/dashboard.spec.ts` cuando se estabilicen datos de entorno. |
 
 ## 9. Fase 9.2A — Listado base (catálogo)
 
