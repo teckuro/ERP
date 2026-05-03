@@ -17,7 +17,23 @@ export const routes: Routes = [
       },
       {
         path: 'haberes-descuentos',
-        loadComponent: () => import('./pages/haberes-descuentos.page').then((m) => m.HaberesDescuentosPage),
+        pathMatch: 'full',
+        redirectTo: '/remuneraciones/haberes-descuentos',
+      },
+      {
+        path: 'proceso-remuneraciones',
+        pathMatch: 'full',
+        redirectTo: '/remuneraciones/proceso-mensual',
+      },
+      {
+        path: 'liquidaciones/:id',
+        pathMatch: 'full',
+        redirectTo: '/remuneraciones/liquidaciones/:id',
+      },
+      {
+        path: 'liquidaciones',
+        pathMatch: 'full',
+        redirectTo: '/remuneraciones/liquidaciones',
       },
       {
         path: 'remuneraciones',
@@ -34,20 +50,26 @@ export const routes: Routes = [
             loadComponent: () =>
               import('./pages/conceptos-remuneracion.page').then((m) => m.ConceptosRemuneracionPage),
           },
+          {
+            path: 'haberes-descuentos',
+            loadComponent: () =>
+              import('./pages/haberes-descuentos.page').then((m) => m.HaberesDescuentosPage),
+          },
+          {
+            path: 'proceso-mensual',
+            loadComponent: () =>
+              import('./pages/proceso-remuneraciones.page').then((m) => m.ProcesoRemuneracionesPage),
+          },
+          {
+            path: 'liquidaciones',
+            loadComponent: () => import('./pages/liquidaciones.page').then((m) => m.LiquidacionesPage),
+          },
+          {
+            path: 'liquidaciones/:id',
+            loadComponent: () =>
+              import('./pages/detalle-liquidacion.page').then((m) => m.DetalleLiquidacionPage),
+          },
         ],
-      },
-      {
-        path: 'proceso-remuneraciones',
-        loadComponent: () =>
-          import('./pages/proceso-remuneraciones.page').then((m) => m.ProcesoRemuneracionesPage),
-      },
-      {
-        path: 'liquidaciones',
-        loadComponent: () => import('./pages/liquidaciones.page').then((m) => m.LiquidacionesPage),
-      },
-      {
-        path: 'liquidaciones/:id',
-        loadComponent: () => import('./pages/detalle-liquidacion.page').then((m) => m.DetalleLiquidacionPage),
       },
       {
         path: 'licencias-medicas',

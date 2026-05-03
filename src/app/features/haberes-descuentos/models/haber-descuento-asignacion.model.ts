@@ -1,3 +1,5 @@
+import type { EstadoVigenciaAsignacion } from '../rules/haber-descuento-vigencia.rules';
+
 /**
  * Dominio del mantenedor haberdescuento_persona + join concepto + catalogo_lre.
  * Columnas alineadas a database.types (v11).
@@ -111,6 +113,22 @@ export interface HaberDescuentoAsignacionListado {
   vigenciaInicio: string | null;
   vigenciaFin: string | null;
   observacion: string | null;
+  estado: boolean;
+  estadoVigencia?: EstadoVigenciaAsignacion;
+  estadoVigenciaEtiqueta?: string;
+}
+
+export interface HaberDescuentoAsignacionVigencia {
+  idAsignacion: number;
+  idPersona: number;
+  idConcepto: number;
+  vigenciaInicio: string | null;
+  vigenciaFin: string | null;
+  estado: boolean;
+}
+
+export interface HaberDescuentoAsignacionCierrePayload {
+  vigenciaFin: string | null;
   estado: boolean;
 }
 

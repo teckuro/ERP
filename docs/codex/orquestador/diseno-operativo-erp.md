@@ -47,6 +47,8 @@ Hasta avanzar razonablemente en **Conceptos** (y datos de parámetros / empleado
 
 ## 7. Documentos relacionados
 
+Navegación del dominio **Remuneraciones** en la app: rutas operativas bajo `/remuneraciones/*` (conceptos, haberes y descuentos, proceso mensual, liquidaciones); rutas antiguas en raíz solo como redirects temporales (ver [`estado-fases.md`](./estado-fases.md), Fase 9.3B.1).
+
 | Documento | Uso |
 |-----------|-----|
 | [`contexto-proyecto.md`](./contexto-proyecto.md) | Visión, módulos, camino oficial |

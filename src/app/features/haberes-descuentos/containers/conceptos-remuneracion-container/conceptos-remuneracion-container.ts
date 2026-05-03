@@ -26,8 +26,15 @@ import {
   clasificarVigenciaConcepto,
   esConceptoAsignable,
   etiquetaVigenciaConcepto,
+  motivosNoAsignableConcepto,
+  resumenAsignabilidadConcepto,
   type VigenciaConceptoPeriodo,
 } from '../../rules/concepto-asignabilidad.rules';
+import {
+  evaluarConceptoAccionesPermitidas,
+  tituloAccionConcepto,
+  type ConceptoAccionesPermitidas,
+} from '../../rules/concepto-acciones.rules';
 
 type CatalogoGridRow = ConceptoMantenimientoFila & {
   busquedaCatalogo: string;
@@ -89,7 +96,7 @@ export class ConceptosRemuneracionContainer implements OnInit {
   private readonly haberesDescuentosService = inject(HaberesDescuentosService);
 
   readonly breadcrumbItems: readonly RecordBreadcrumbItem[] = [
-    { label: 'Remuneraciones', link: '/' },
+    { label: 'Remuneraciones', link: '/remuneraciones' },
     { label: 'Conceptos de remuneración' },
   ];
 
@@ -126,7 +133,8 @@ export class ConceptosRemuneracionContainer implements OnInit {
   readonly catOrdenImpresion = signal(100);
   readonly catCalculoAutomatico = signal(false);
 
-  readonly confirmEliminarConcepto = signal<{ idConcepto: number; nombre: string } | null>(null);
+  /** Detalle 9.2B (modal de solo lectura). */
+  readonly detalleConceptoFila = signal<CatalogoGridRow | null>(null);
 
   readonly modalMsg = signal<{
     variant: MessageBoxVariant;
@@ -141,6 +149,11 @@ export class ConceptosRemuneracionContainer implements OnInit {
       return null;
     }
     return this.catalogoLreOpciones().find((o) => o.idCatalogoLre === id) ?? null;
+  });
+
+  readonly detalleAcciones = computed((): ConceptoAccionesPermitidas | null => {
+    const r = this.detalleConceptoFila();
+    return r ? evaluarConceptoAccionesPermitidas(r, this.fechaReferenciaListado(), this.puedeEditarConceptoCatalogo) : null;
   });
 
   readonly puedeEditarConceptoCatalogo = PUEDE_EDITAR_CONCEPTOS_MODO_ADMIN;
@@ -359,28 +372,28 @@ export class ConceptosRemuneracionContainer implements OnInit {
     return etiquetaVigenciaConcepto(row.filtroVigenciaPeriodo);
   }
 
+  accionesConcepto(row: CatalogoGridRow): ConceptoAccionesPermitidas {
+    return evaluarConceptoAccionesPermitidas(row, this.fechaReferenciaListado(), this.puedeEditarConceptoCatalogo);
+  }
+
+  tituloAccion(row: CatalogoGridRow, accion: 'editar' | 'eliminar'): string {
+    return tituloAccionConcepto(this.accionesConcepto(row), accion);
+  }
+
+  motivosNoAsignableDetalle(row: CatalogoGridRow): string[] {
+    return motivosNoAsignableConcepto(row, this.fechaReferenciaListado());
+  }
+
+  resumenAsignacionDetalle(row: CatalogoGridRow): string {
+    return resumenAsignabilidadConcepto(row, this.fechaReferenciaListado());
+  }
+
   revisarConceptoRow(row: CatalogoGridRow): void {
-    const vig = this.etiquetaVigenciaChip(row);
-    const lre =
-      row.idCatalogoLre == null
-        ? 'LRE no asignado'
-        : `${row.codigoLre ?? '—'} · ${(row.nombreLre ?? '').trim() || '—'}`;
-    const asig = row.esAsignableCatalogo ? 'Sí' : 'No';
-    const origen = row.esSistema ? 'Sistema' : row.calculoAutomatico ? 'Usuario (protegido)' : 'Usuario';
-    const calc = row.calculoAutomatico ? 'Automático' : 'Manual';
-    this.modalMsg.set({
-      variant: 'info',
-      title: 'Resumen del concepto',
-      message: `${row.nombre} (${row.codigo})`,
-      detail: [
-        `Tipo: ${etiquetaTipoConcepto(row.tipo)}`,
-        `Origen: ${origen}`,
-        `Cálculo: ${calc}`,
-        `Vigencia: ${vig}`,
-        `LRE: ${lre}`,
-        `Asignable en haberes/descuentos: ${asig}`,
-      ].join('\n'),
-    });
+    this.detalleConceptoFila.set(row);
+  }
+
+  cerrarDetalleConcepto(): void {
+    this.detalleConceptoFila.set(null);
   }
 
   onCatLreChange(id: number | null): void {
@@ -402,40 +415,21 @@ export class ConceptosRemuneracionContainer implements OnInit {
   }
 
   abrirNuevoConcepto(): void {
-    this.catalogEditId.set(null);
-    this.catalogRowSnapshot.set(null);
-    this.catCodigo.set('');
-    this.catCodigoMotor.set('');
-    this.catNombre.set('');
-    this.catTipo.set('HABER');
-    this.catNaturaleza.set('IMPONIBLE');
-    this.catIdCatalogoLre.set(null);
-    this.catImponible.set(true);
-    this.catTributable.set(true);
-    this.catAfectaAfp.set(true);
-    this.catAfectaSalud.set(true);
-    this.catAfectaAfc.set(true);
-    this.catAfectaSis.set(false);
-    this.catAfectaLiquido.set(true);
-    this.catVigente.set(true);
-    this.catVigenciaInicio.set('');
-    this.catVigenciaFin.set('');
-    this.catOrdenImpresion.set(100);
-    this.catCalculoAutomatico.set(false);
-    this.catalogDialogAbierto.set(true);
-  }
-
-  conceptoCatalogoProtegido(row: ConceptoMantenimientoFila): boolean {
-    return row.esSistema || row.calculoAutomatico;
+    this.modalMsg.set({
+      variant: 'info',
+      title: 'Alta no disponible',
+      message:
+        'El alta de conceptos no está habilitada en esta fase del producto. Se prioriza trazabilidad del catálogo y alineación de perfiles.',
+    });
   }
 
   editarConceptoRow(row: CatalogoGridRow): void {
-    if (this.conceptoCatalogoProtegido(row) && !this.puedeEditarConceptoCatalogo) {
+    const acc = this.accionesConcepto(row);
+    if (!acc.puedeEditar) {
       this.modalMsg.set({
         variant: 'warning',
-        title: 'Concepto restringido',
-        message:
-          'Este concepto está protegido por el sistema o se calcula en la liquidación. No puede editarse desde aquí.',
+        title: 'Edición no disponible',
+        message: acc.motivosBloqueo[0] ?? 'No puede editarse este concepto con el perfil actual.',
       });
       return;
     }
@@ -466,58 +460,13 @@ export class ConceptosRemuneracionContainer implements OnInit {
     this.catalogDialogAbierto.set(false);
   }
 
-  pedirEliminarConcepto(row: CatalogoGridRow): void {
-    if (row.esSistema) {
-      this.modalMsg.set({
-        variant: 'warning',
-        title: 'Concepto de sistema',
-        message: 'Los conceptos de sistema no pueden eliminarse.',
-      });
-      return;
-    }
-    if (this.conceptoCatalogoProtegido(row) && !this.puedeEditarConceptoCatalogo) {
-      this.modalMsg.set({
-        variant: 'warning',
-        title: 'Concepto restringido',
-        message: 'Este concepto no puede eliminarse desde aquí.',
-      });
-      return;
-    }
-    this.confirmEliminarConcepto.set({ idConcepto: row.idConcepto, nombre: row.nombre });
-  }
-
-  cerrarConfirmEliminarConcepto(): void {
-    this.confirmEliminarConcepto.set(null);
-  }
-
-  async confirmarEliminarConceptoEjecutar(): Promise<void> {
-    const ctx = this.confirmEliminarConcepto();
-    if (!ctx) {
-      return;
-    }
-    try {
-      await this.haberesDescuentosService.eliminarConcepto(ctx.idConcepto);
-      this.confirmEliminarConcepto.set(null);
-      await this.cargarCatalogo();
-      this.modalMsg.set({
-        variant: 'success',
-        title: 'Concepto eliminado',
-        message: 'El concepto fue eliminado del catálogo.',
-        detail: ctx.nombre,
-      });
-    } catch (err) {
-      const detalle =
-        err && typeof err === 'object' && 'message' in err
-          ? String((err as { message?: unknown }).message ?? '')
-          : '';
-      this.confirmEliminarConcepto.set(null);
-      this.modalMsg.set({
-        variant: 'error',
-        title: 'No se pudo guardar',
-        message: 'No se pudo eliminar el concepto.',
-        detail: detalle,
-      });
-    }
+  pedirEliminarConcepto(_row: CatalogoGridRow): void {
+    this.modalMsg.set({
+      variant: 'info',
+      title: 'Eliminación no disponible',
+      message:
+        'La eliminación desde el listado no está habilitada en esta fase. Prefiera desactivar el concepto o cerrar su vigencia cuando el flujo esté disponible en catálogo.',
+    });
   }
 
   private armarPayloadConcepto(): ConceptoMantenimientoPayload {
@@ -616,6 +565,10 @@ export class ConceptosRemuneracionContainer implements OnInit {
       title: 'Datos incompletos',
       message: detail,
     });
+  }
+
+  formatFechaDetalle(value: unknown): string {
+    return this.formatDate(value);
   }
 
   private formatDate(value: unknown): string {

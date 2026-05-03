@@ -80,6 +80,18 @@ Se definen **perfiles lógicos** para mapear luego a **claims/roles JWT** y a **
 
 ## 6. Vigencias (`vigencia_inicio`, `vigencia_fin`, `vigente`)
 
+### Relacion con Haberes y descuentos - Fase 9.3A
+
+Conceptos sigue siendo la fuente para decidir si un concepto es asignable manualmente. Haberes y descuentos agrega una regla propia, separada, para validar que la asignacion recurrente por trabajador no tenga duplicados activos ni rangos de vigencia superpuestos para el mismo trabajador y concepto.
+
+### Relacion con Haberes y descuentos - Fase 9.3B
+
+El cierre de una asignacion recurrente historica no depende de que el concepto siga siendo asignable hoy. La regla de Conceptos aplica para crear o actualizar asignaciones; el cierre controlado pertenece a Haberes y descuentos y conserva historial sin delete fisico.
+
+### Relacion con Haberes y descuentos - Fase 9.3C
+
+La vista historica y los filtros por estado de vigencia son responsabilidad de Haberes y descuentos. Conceptos no duplica esos estados: solo mantiene la regla de asignabilidad para altas/ediciones. Las asignaciones VENCIDA, CERRADA e INVALIDA pueden consultarse como historial aunque el concepto ya no sea asignable.
+
 - **`vigente`:** interruptor operativo **inmediato** (“sigue activo en catálogo”). Un concepto puede tener `vigente=true` y luego ajustar fechas para planificar baja.
 - **`vigencia_inicio` / `vigencia_fin`:** opcionales; si ambas existen, **fin ≥ inicio** (ya validado en cliente/servicio).
 - **Nueva versión normativa del “mismo” concepto:** como `codigo` es **único**, no hay dos filas con el mismo código. **Decisión:** una nueva versión normativa requiere **nuevo `codigo`** interno (p. ej. `BONO_MOV_2027`) o **procedimiento admin** que archive el anterior y cree el nuevo; no se autoriza “solape” de dos filas **mismo código** con distintas vigencias.
@@ -131,10 +143,12 @@ Se definen **perfiles lógicos** para mapear luego a **claims/roles JWT** y a **
 
 1. **Roles:** sustituir constante admin por comprobación de perfil §2; ocultar/deshabilitar acciones según perfil.
 2. **Tipo APORTE:** restringir creación en UI/servicio a Admin (§4).
-3. **Asignables:** añadir filtro `vigente` (y vigencia vs fecha) en `listarConceptosAsignables` §5 (repositorio Haberes — pendiente si no se tocó en 9.2A).
+3. **Asignables:** la lista del selector en Haberes y la validación al guardar usan `esConceptoAsignable` sobre datos de mantenimiento (**Fase 9.2C**); ya no basta el filtro SQL parcial del repositorio legacy.
 4. **Listado conceptos:** indicador **LRE no asignado** §8 (**Fase 9.2A** en UI: columna + filtros + `esConceptoAsignable` en `concepto-asignabilidad.rules.ts`).
 5. **RLS:** tarea aparte con aprobación explícita de políticas; no ejecutar sin ticket.
 6. **E2E:** ruta `/remuneraciones/conceptos` — spec dedicado `tests/conceptos-remuneracion-listado.spec.ts` (smoke); opcional ampliar `dashboard.spec.ts` con captura visual.
 7. **Haberes/descuentos:** copiar en UI mensajes si el concepto deja de ser asignable por `vigente` o vigencia.
+8. **Detalle y blindaje (Fase 9.2B):** modal desde **Revisar** con trazabilidad de reglas; `evaluarConceptoAccionesPermitidas` en `concepto-acciones.rules.ts` (sin eliminar en v1; alta no operativa); alinear con §2–§8 del contrato funcional.
 
 **No incluido en 9.2 mínimo:** UI de `regla_concepto_calculo`, motor, liquidaciones, nómina, Parámetros, Python.
+

@@ -11,7 +11,7 @@ Catálogo maestro **`concepto`** enlazado opcionalmente a **`catalogo_lre`**, fu
 | [`diagnostico-fase-9.md`](./diagnostico-fase-9.md) | Inventario rutas, UI, servicios, BD v11, RLS, Python, brechas |
 | [`contrato-funcional.md`](./contrato-funcional.md) | Reglas de negocio, permisos, UI, pruebas y dependencias |
 | [`decisiones-operativas.md`](./decisiones-operativas.md) | Permisos, sistema/usuario, asignables, vigencias, LRE, baja; base Fase 9.2 |
-| Código `esConceptoAsignable` | `src/app/features/haberes-descuentos/rules/concepto-asignabilidad.rules.ts` (Fase 9.2A) |
+| Código `esConceptoAsignable` | `concepto-asignabilidad.rules.ts`; uso en Haberes: `HaberesDescuentosService` (Fase 9.2C, [`contrato-funcional.md`](./contrato-funcional.md) §11) |
 | [`README.md`](./README.md) | Punto de entrada y orden de lectura |
 
 ## Orden de lectura

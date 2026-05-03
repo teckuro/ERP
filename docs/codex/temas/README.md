@@ -93,7 +93,7 @@ Varios `.md` en la **raíz de `temas/`** son **solo redirección** (“Documento
 
 | Página / flujo | Contrato o guía |
 |----------------|-----------------|
-| `/haberes-descuentos` | [`../modulos/haberes-descuentos/README.md`](../modulos/haberes-descuentos/README.md); flujo [`flujos/haberes-descuentos.md`](./flujos/haberes-descuentos.md) |
+| `/remuneraciones/haberes-descuentos` (redirect `/haberes-descuentos`) | [`../modulos/haberes-descuentos/README.md`](../modulos/haberes-descuentos/README.md); flujo [`flujos/haberes-descuentos.md`](./flujos/haberes-descuentos.md) |
 
 ---
 
@@ -109,8 +109,8 @@ Varios `.md` en la **raíz de `temas/`** son **solo redirección** (“Documento
 
 | Página / flujo | Documento de flujo |
 |----------------|-------------------|
-| `/proceso-remuneraciones` | [`flujos/proceso-remuneraciones.md`](./flujos/proceso-remuneraciones.md) |
-| `/liquidaciones`, `/liquidaciones/:id` | [`flujos/liquidaciones.md`](./flujos/liquidaciones.md) |
+| `/remuneraciones/proceso-mensual` (redirect `/proceso-remuneraciones`) | [`flujos/proceso-remuneraciones.md`](./flujos/proceso-remuneraciones.md) |
+| `/remuneraciones/liquidaciones`, `/remuneraciones/liquidaciones/:id` (redirects `/liquidaciones`) | [`flujos/liquidaciones.md`](./flujos/liquidaciones.md) |
 | `/licencias-medicas` | [`flujos/licencias-medicas.md`](./flujos/licencias-medicas.md) |
 | `/reportes` | [`flujos/reportes.md`](./flujos/reportes.md) |
 

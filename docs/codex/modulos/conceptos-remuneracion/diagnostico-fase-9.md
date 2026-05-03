@@ -50,7 +50,7 @@ En el workspace **Python**, `01_scrape_semillas_v611.py` incluye **`MANUAL_CONCE
 
 ## 7. Pruebas automatizadas
 
-- **`tests/dashboard.spec.ts`:** el bucle de rutas con snapshot **no incluye** `/remuneraciones/conceptos` (sí hay otras rutas como `/haberes-descuentos`, `/parametros`). **Brecha** documentada para una fase posterior.
+- **`tests/dashboard.spec.ts`:** el bucle de rutas con snapshot **no incluye** `/remuneraciones/conceptos` (sí hay otras rutas como `/remuneraciones/haberes-descuentos`, `/parametros`). **Brecha** documentada para una fase posterior.
 
 ## 8. Resumen de brechas (prioridad sugerida)
 

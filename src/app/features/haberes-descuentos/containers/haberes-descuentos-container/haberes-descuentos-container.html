@@ -5,9 +5,10 @@
       title="Haberes y descuentos"
     ></app-record-breadcrumb>
     <p class="hd-lead">
-      Administra haberes y descuentos recurrentes por trabajador según el período activo global. El mantenedor del
-      catálogo de conceptos y el mapeo al Libro de Remuneraciones Electrónico está en la pantalla
-      <strong>Conceptos de remuneración</strong>.
+      Administra haberes y descuentos recurrentes por trabajador según el período activo global. El selector de concepto
+      solo incluye ítems <strong>asignables</strong> según las mismas reglas que el catálogo en
+      <strong>Conceptos de remuneración</strong> (tipo, vigencia del catálogo, sistema y cálculo automático). El
+      mantenedor del catálogo y el mapeo al Libro de Remuneraciones Electrónico está en esa pantalla.
     </p>
     <div class="hd-head-actions">
       <div class="hd-period-wrap">
@@ -130,13 +131,17 @@
                 <span class="hd-chip hd-chip--neutral">{{ etiquetaTipo(row.tipoConcepto) }}</span>
               }
             </ng-template>
-            <ng-template appDataGridCell="etiquetaVigencia" let-row>
-              @if (row.etiquetaVigencia === 'Vigente al período') {
-                <span class="hd-chip hd-chip--vigente-periodo">Vigente al período</span>
-              } @else if (row.etiquetaVigencia === 'Fuera de vigencia') {
-                <span class="hd-chip hd-chip--fuera-vigencia">Fuera de vigencia</span>
+            <ng-template appDataGridCell="estadoVigenciaEtiqueta" let-row>
+              @if (row.estadoVigencia === 'ACTIVA') {
+                <span class="hd-chip hd-chip--vigente-periodo">{{ row.estadoVigenciaEtiqueta }}</span>
+              } @else if (row.estadoVigencia === 'FUTURA') {
+                <span class="hd-chip hd-chip--sin-termino">{{ row.estadoVigenciaEtiqueta }}</span>
+              } @else if (row.estadoVigencia === 'VENCIDA') {
+                <span class="hd-chip hd-chip--fuera-vigencia">{{ row.estadoVigenciaEtiqueta }}</span>
+              } @else if (row.estadoVigencia === 'CERRADA') {
+                <span class="hd-chip hd-chip--inactivo">{{ row.estadoVigenciaEtiqueta }}</span>
               } @else {
-                <span class="hd-chip hd-chip--sin-termino">Sin fecha término</span>
+                <span class="hd-chip hd-chip--invalid">{{ row.estadoVigenciaEtiqueta }}</span>
               }
             </ng-template>
             <ng-template appDataGridCell="imponible" let-row>
@@ -149,26 +154,25 @@
                 {{ row.tributable ? 'Sí' : 'No' }}
               </span>
             </ng-template>
-            <ng-template appDataGridCell="estadoActivo" let-row>
-              @if (row.estadoActivo === 'Activo') {
-                <span class="hd-chip hd-chip--activo">Activo</span>
-              } @else {
-                <span class="hd-chip hd-chip--inactivo">Inactivo</span>
-              }
-            </ng-template>
             <ng-template appDataGridCell="acciones" let-row>
               <div class="hd-actions">
-                <button type="button" class="hd-action-btn" title="Editar" (click)="editar(row)">
+                <button
+                  type="button"
+                  class="hd-action-btn"
+                  [title]="tituloEditar(row)"
+                  [disabled]="!puedeEditar(row)"
+                  (click)="editar(row)"
+                >
                   <lucide-icon class="h-4 w-4" [img]="editIcon"></lucide-icon>
                 </button>
                 <button
                   type="button"
                   class="hd-action-btn hd-action-btn--danger"
-                  title="Desactivar"
-                  [disabled]="!row.estado"
+                  [title]="tituloCerrar(row)"
+                  [disabled]="!puedeCerrar(row)"
                   (click)="pedirDesactivar(row)"
                 >
-                  Desactivar
+                  Cerrar
                 </button>
               </div>
             </ng-template>
@@ -408,14 +412,15 @@
       variant="warning"
       mode="modal"
       [modalHeadlineSplit]="true"
-      title="Desactivar concepto"
-      message="El concepto dejará de aplicarse al trabajador."
+      title="Cerrar asignacion recurrente"
+      message="La asignacion dejara de aplicar, pero se conservara en el historial."
       [detail]="conf.nombre"
       secondaryLabel="Cancelar"
-      primaryLabel="Desactivar"
+      primaryLabel="Cerrar"
       (secondary)="cerrarConfirmDesactivar()"
       (action)="confirmarDesactivar()"
     ></app-message-box>
   }
 
 </section>
+

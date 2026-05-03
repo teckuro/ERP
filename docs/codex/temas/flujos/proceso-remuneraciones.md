@@ -2,7 +2,8 @@
 
 ## Ruta
 
-- **`/proceso-remuneraciones`** — `ProcesoRemuneracionesPage` (`src/app/pages/proceso-remuneraciones.page.ts`).
+- **Oficial:** **`/remuneraciones/proceso-mensual`** — `ProcesoRemuneracionesPage` (`src/app/pages/proceso-remuneraciones.page.ts`), hija de `RemuneracionesOutletComponent`.
+- **Compatibilidad temporal:** **`/proceso-remuneraciones`** — `redirectTo` -> `/remuneraciones/proceso-mensual` (`pathMatch: 'full'` en `src/app/app.routes.ts`).
 
 ## Objetivo del usuario
 

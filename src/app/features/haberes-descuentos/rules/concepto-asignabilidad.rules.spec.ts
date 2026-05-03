@@ -2,6 +2,8 @@ import type { ConceptoAsignableInput } from './concepto-asignabilidad.rules';
 import {
   clasificarVigenciaConcepto,
   esConceptoAsignable,
+  motivosNoAsignableConcepto,
+  resumenAsignabilidadConcepto,
   vigenciasCoherentesConcepto,
 } from './concepto-asignabilidad.rules';
 
@@ -103,5 +105,25 @@ describe('clasificarVigenciaConcepto', () => {
         ref,
       ),
     ).toBe('VENCIDO');
+  });
+
+  it('marca inválido si fin es anterior a inicio', () => {
+    expect(
+      clasificarVigenciaConcepto(
+        base({ vigenciaInicio: '2026-06-01', vigenciaFin: '2026-01-01', vigente: true }),
+        ref,
+      ),
+    ).toBe('INVALIDO');
+  });
+});
+
+describe('motivosNoAsignableConcepto y resumen', () => {
+  it('lista motivos si no es asignable', () => {
+    const m = motivosNoAsignableConcepto(
+      base({ tipo: 'APORTE_EMPLEADOR', vigente: true }),
+      ref,
+    );
+    expect(m.length).toBeGreaterThan(0);
+    expect(resumenAsignabilidadConcepto(base({ tipo: 'APORTE_EMPLEADOR' }), ref)).toContain('No.');
   });
 });

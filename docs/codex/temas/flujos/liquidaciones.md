@@ -2,8 +2,9 @@
 
 ## Rutas
 
-- **`/liquidaciones`** — listado u operaciones de liquidaciones (`LiquidacionesPage`).
-- **`/liquidaciones/:id`** — detalle (`DetalleLiquidacionPage`).
+- **Oficial listado:** **`/remuneraciones/liquidaciones`** — `LiquidacionesPage`.
+- **Oficial detalle:** **`/remuneraciones/liquidaciones/:id`** — `DetalleLiquidacionPage`.
+- **Compatibilidad temporal:** **`/liquidaciones`** y **`/liquidaciones/:id`** — `redirectTo` -> rutas oficiales bajo `/remuneraciones/liquidaciones` (`src/app/app.routes.ts`).
 
 ## Objetivo del usuario
 
@@ -24,4 +25,4 @@ Consultar o gestionar **liquidaciones** (listado y detalle). En visión de produ
 
 ## Pruebas
 
-- Snapshots de rutas en `tests/dashboard.spec.ts` si las rutas base están incluidas; detalle `/liquidaciones/:id` puede requerir datos — **E2E pendiente** si no hay id estable.
+- Snapshots de rutas en `tests/dashboard.spec.ts` si las rutas base están incluidas; detalle `/remuneraciones/liquidaciones/:id` puede requerir datos — **E2E pendiente** si no hay id estable.

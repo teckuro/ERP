@@ -4,12 +4,13 @@ import { Tables, TablesInsert, TablesUpdate } from '../../../core/models/databas
 import { injectSupabase } from '../../../core/services/supabase.service';
 import {
   CatalogoLreOpcion,
-  ConceptoListado,
   ConceptoMantenimientoFila,
   ConceptoMantenimientoPayload,
   ContratoResumenPersona,
+  HaberDescuentoAsignacionCierrePayload,
   HaberDescuentoAsignacionListado,
   HaberDescuentoAsignacionPayload,
+  HaberDescuentoAsignacionVigencia,
 } from '../models/haber-descuento-asignacion.model';
 
 type HaberDescuentoRow = Tables<'haberdescuento_persona'>;
@@ -49,20 +50,6 @@ function unwrapCatalogoLre(
     return null;
   }
   return Array.isArray(cl) ? cl[0] ?? null : cl;
-}
-
-function mapConcepto(row: ConceptoWithLre): ConceptoListado {
-  const lre = unwrapCatalogoLre(row.catalogo_lre);
-  return {
-    idConcepto: row.id_concepto,
-    codigo: row.codigo,
-    nombre: row.nombre,
-    tipo: row.tipo,
-    naturaleza: row.naturaleza,
-    imponible: row.imponible,
-    tributable: row.tributable,
-    codigoLre: lre?.codigo_lre ?? null,
-  };
 }
 
 function mapConceptoMantenimiento(row: ConceptoWithLre): ConceptoMantenimientoFila {
@@ -194,48 +181,20 @@ export class HaberesDescuentosRepository {
   }
 
   /**
-   * Conceptos que pueden asignarse manualmente a una persona.
-   * Criterio en BD: HABER o DESCUENTO, es_sistema = false, calculo_automatico = false.
+   * Metadatos de `concepto` para validar asignación manual con la regla central
+   * `esConceptoAsignable` (servicio).
    */
-  async listarConceptosAsignables(): Promise<ConceptoListado[]> {
-    const { data, error } = await this.supabase
-      .from('concepto')
-      .select(
-        `
-        id_concepto,
-        codigo,
-        nombre,
-        tipo,
-        naturaleza,
-        imponible,
-        tributable,
-        calculo_automatico,
-        es_sistema,
-        catalogo_lre (
-          codigo_lre
-        )
-      `,
-      )
-      .in('tipo', ['HABER', 'DESCUENTO'])
-      .eq('calculo_automatico', false)
-      .eq('es_sistema', false)
-      .order('nombre');
-
-    if (error) {
-      throw new Error(error.message);
-    }
-
-    return (data ?? []).map((row) => mapConcepto(row as unknown as ConceptoWithLre));
-  }
-
   async obtenerConceptoParaAsignacion(idConcepto: number): Promise<{
-    calculo_automatico: boolean;
-    es_sistema: boolean;
     tipo: string | null;
+    esSistema: boolean;
+    calculoAutomatico: boolean;
+    vigente: boolean;
+    vigenciaInicio: string | null;
+    vigenciaFin: string | null;
   } | null> {
     const { data, error } = await this.supabase
       .from('concepto')
-      .select('calculo_automatico, es_sistema, tipo')
+      .select('tipo, es_sistema, calculo_automatico, vigente, vigencia_inicio, vigencia_fin')
       .eq('id_concepto', idConcepto)
       .maybeSingle();
 
@@ -248,9 +207,12 @@ export class HaberesDescuentosRepository {
     }
 
     return {
-      calculo_automatico: Boolean(data.calculo_automatico),
-      es_sistema: Boolean(data.es_sistema),
       tipo: data.tipo ?? null,
+      esSistema: Boolean(data.es_sistema),
+      calculoAutomatico: Boolean(data.calculo_automatico),
+      vigente: Boolean(data.vigente),
+      vigenciaInicio: data.vigencia_inicio,
+      vigenciaFin: data.vigencia_fin,
     };
   }
 
@@ -487,6 +449,77 @@ export class HaberesDescuentosRepository {
     return (data?.length ?? 0) > 0;
   }
 
+  async listarAsignacionesPorPersonaYConcepto(
+    idPersona: number,
+    idConcepto: number,
+  ): Promise<HaberDescuentoAsignacionVigencia[]> {
+    const { data, error } = await this.supabase
+      .from('haberdescuento_persona')
+      .select('id_asignacion, id_persona, id_concepto, estado, vigencia_inicio, vigencia_fin')
+      .eq('id_persona', idPersona)
+      .eq('id_concepto', idConcepto)
+      .order('vigencia_inicio', { ascending: true });
+
+    if (error) {
+      throw new Error(error.message);
+    }
+
+    return (data ?? []).map((row) => ({
+      idAsignacion: row.id_asignacion as number,
+      idPersona: row.id_persona as number,
+      idConcepto: row.id_concepto as number,
+      vigenciaInicio: (row.vigencia_inicio as string | null) ?? null,
+      vigenciaFin: (row.vigencia_fin as string | null) ?? null,
+      estado: Boolean(row.estado),
+    }));
+  }
+
+  async obtenerAsignacionPorId(
+    idAsignacion: number,
+  ): Promise<HaberDescuentoAsignacionVigencia | null> {
+    const { data, error } = await this.supabase
+      .from('haberdescuento_persona')
+      .select('id_asignacion, id_persona, id_concepto, estado, vigencia_inicio, vigencia_fin')
+      .eq('id_asignacion', idAsignacion)
+      .maybeSingle();
+
+    if (error) {
+      throw new Error(error.message);
+    }
+
+    if (!data) {
+      return null;
+    }
+
+    return {
+      idAsignacion: data.id_asignacion as number,
+      idPersona: data.id_persona as number,
+      idConcepto: data.id_concepto as number,
+      vigenciaInicio: (data.vigencia_inicio as string | null) ?? null,
+      vigenciaFin: (data.vigencia_fin as string | null) ?? null,
+      estado: Boolean(data.estado),
+    };
+  }
+
+  async cerrarAsignacion(
+    idAsignacion: number,
+    payload: HaberDescuentoAsignacionCierrePayload,
+  ): Promise<void> {
+    const patch: TablesUpdate<'haberdescuento_persona'> = {
+      estado: payload.estado,
+      vigencia_fin: payload.vigenciaFin,
+    };
+
+    const { error } = await this.supabase
+      .from('haberdescuento_persona')
+      .update(patch)
+      .eq('id_asignacion', idAsignacion);
+
+    if (error) {
+      throw new Error(error.message);
+    }
+  }
+
   async crearAsignacion(
     payload: HaberDescuentoAsignacionPayload,
   ): Promise<void> {
@@ -541,13 +574,6 @@ export class HaberesDescuentosRepository {
   }
 
   async desactivarAsignacion(idAsignacion: number): Promise<void> {
-    const { error } = await this.supabase
-      .from('haberdescuento_persona')
-      .update({ estado: false })
-      .eq('id_asignacion', idAsignacion);
-
-    if (error) {
-      throw new Error(error.message);
-    }
+    await this.cerrarAsignacion(idAsignacion, { estado: false, vigenciaFin: null });
   }
 }

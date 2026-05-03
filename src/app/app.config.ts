@@ -1,4 +1,12 @@
-import { ApplicationConfig, importProvidersFrom, provideBrowserGlobalErrorListeners } from '@angular/core';
+import { registerLocaleData } from '@angular/common';
+import localeEsCl from '@angular/common/locales/es-CL';
+import {
+  ApplicationConfig,
+  DEFAULT_CURRENCY_CODE,
+  importProvidersFrom,
+  LOCALE_ID,
+  provideBrowserGlobalErrorListeners,
+} from '@angular/core';
 import { provideRouter } from '@angular/router';
 import { LucideAngularModule } from 'lucide-angular';
 import {
@@ -58,8 +66,12 @@ import {
 import { routes } from './app.routes';
 import { SUPABASE_CLIENT, createSupabaseClient } from './core/services/supabase.service';
 
+registerLocaleData(localeEsCl);
+
 export const appConfig: ApplicationConfig = {
   providers: [
+    { provide: LOCALE_ID, useValue: 'es-CL' },
+    { provide: DEFAULT_CURRENCY_CODE, useValue: 'CLP' },
     provideBrowserGlobalErrorListeners(),
     provideRouter(routes),
     { provide: SUPABASE_CLIENT, useFactory: createSupabaseClient },

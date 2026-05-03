@@ -12,4 +12,6 @@
 
 ## Relación con flujos documentados
 
+Pantalla placeholder de proceso mensual en la app: **`/remuneraciones/proceso-mensual`** (redirect desde `/proceso-remuneraciones`).
+
 [`../../temas/flujos/proceso-remuneraciones.md`](../../temas/flujos/proceso-remuneraciones.md) y [`../../orquestador/contexto-proyecto.md`](../../orquestador/contexto-proyecto.md) §11–§15.

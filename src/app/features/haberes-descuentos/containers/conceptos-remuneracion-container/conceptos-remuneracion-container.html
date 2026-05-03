@@ -11,14 +11,14 @@
   </header>
 
   <p class="cr-note">
-    Los conceptos generados o restringidos por liquidación siguen marcados como automáticos o protegidos; la edición
-    ampliada quedará ligada a perfiles en una fase posterior.
+    Alta y eliminación física desde el listado no están habilitadas en esta fase; use la acción «Revisar» para ver
+    reglas y bloqueos. Los conceptos automáticos o de sistema siguen protegidos salvo perfil administrador.
   </p>
 
   <div class="cr-grid-wrap">
     <app-data-grid
       title="Conceptos"
-      primaryActionLabel="Nuevo concepto"
+      primaryActionLabel=""
       (primaryAction)="abrirNuevoConcepto()"
       [filtersCollapsible]="true"
       [rows]="catalogoFilas()"
@@ -68,6 +68,9 @@
           @case ('VENCIDO') {
             <span class="hd-chip hd-chip--vig-vencido">{{ etiquetaVigenciaChip(row) }}</span>
           }
+          @case ('INVALIDO') {
+            <span class="hd-chip hd-chip--vig-invalid">{{ etiquetaVigenciaChip(row) }}</span>
+          }
           @default {
             <span class="hd-chip hd-chip--vig-no">{{ etiquetaVigenciaChip(row) }}</span>
           }
@@ -96,14 +99,14 @@
       </ng-template>
       <ng-template appDataGridCell="acciones" let-row>
         <div class="hd-actions">
-          <button type="button" class="hd-action-btn" title="Revisar" (click)="revisarConceptoRow(row)">
+          <button type="button" class="hd-action-btn" title="Revisar detalle" (click)="revisarConceptoRow(row)">
             <lucide-icon class="h-4 w-4" [img]="eyeIcon"></lucide-icon>
           </button>
           <button
             type="button"
             class="hd-action-btn"
-            title="Editar"
-            [disabled]="conceptoCatalogoProtegido(row) && !puedeEditarConceptoCatalogo"
+            [attr.title]="tituloAccion(row, 'editar')"
+            [disabled]="!accionesConcepto(row).puedeEditar"
             (click)="editarConceptoRow(row)"
           >
             <lucide-icon class="h-4 w-4" [img]="editIcon"></lucide-icon>
@@ -111,8 +114,8 @@
           <button
             type="button"
             class="hd-action-btn hd-action-btn--danger"
-            title="Eliminar"
-            [disabled]="conceptoCatalogoProtegido(row) && !puedeEditarConceptoCatalogo"
+            [attr.title]="tituloAccion(row, 'eliminar')"
+            [disabled]="!accionesConcepto(row).puedeEliminar"
             (click)="pedirEliminarConcepto(row)"
           >
             Eliminar
@@ -121,6 +124,133 @@
       </ng-template>
     </app-data-grid>
   </div>
+
+  @if (detalleConceptoFila(); as dRow) {
+    <div class="hd-modal-root cr-detalle-root" role="presentation">
+      <div class="hd-modal-backdrop" (click)="cerrarDetalleConcepto()"></div>
+      <div
+        class="hd-modal cr-detalle-modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="cr-detalle-title"
+      >
+        <h2 id="cr-detalle-title" class="hd-modal-title">Detalle del concepto</h2>
+        <div class="hd-modal-body cr-detalle-body">
+          <section class="cr-detalle-block" aria-labelledby="cr-det-h-id">
+            <h3 id="cr-det-h-id" class="cr-detalle-h">Identificación</h3>
+            <dl class="cr-detalle-dl">
+              <div><dt>Nombre</dt><dd>{{ dRow.nombre }}</dd></div>
+              <div><dt>Código</dt><dd>{{ dRow.codigo }}</dd></div>
+              <div><dt>Tipo</dt><dd>{{ etiquetaTipo(dRow.tipo) }}</dd></div>
+              <div><dt>Descripción</dt><dd class="cr-detalle-muted">No aplica en catálogo (solo nombre y código).</dd></div>
+              <div>
+                <dt>LRE</dt>
+                <dd>
+                  @if (dRow.idCatalogoLre == null) {
+                    <span class="cr-lre-empty">LRE no asignado</span>
+                  } @else {
+                    {{ dRow.codigoLre ?? '—' }} · {{ (dRow.nombreLre ?? '').trim() || '—' }}
+                  }
+                </dd>
+              </div>
+            </dl>
+          </section>
+
+          <section class="cr-detalle-block" aria-labelledby="cr-det-h-cl">
+            <h3 id="cr-det-h-cl" class="cr-detalle-h">Clasificación operativa</h3>
+            <dl class="cr-detalle-dl">
+              <div>
+                <dt>Origen</dt>
+                <dd>
+                  @if (dRow.esSistema) {
+                    Sistema
+                  } @else if (dRow.calculoAutomatico) {
+                    Protegido (usuario, automático en liquidación)
+                  } @else {
+                    Usuario
+                  }
+                </dd>
+              </div>
+              <div><dt>Modo</dt><dd>{{ dRow.calculoAutomatico ? 'Automático' : 'Manual' }}</dd></div>
+              <div>
+                <dt>Asignable en haberes/descuentos</dt>
+                <dd>{{ dRow.esAsignableCatalogo ? 'Sí' : 'No' }}</dd>
+              </div>
+              <div>
+                <dt>Motivo</dt>
+                <dd class="cr-detalle-motivo">{{ resumenAsignacionDetalle(dRow) }}</dd>
+              </div>
+              @if (!dRow.esAsignableCatalogo && motivosNoAsignableDetalle(dRow).length) {
+                <div class="cr-detalle-sublist">
+                  <span class="cr-detalle-sublist-k">Detalle</span>
+                  <ul>
+                    @for (m of motivosNoAsignableDetalle(dRow); track m) {
+                      <li>{{ m }}</li>
+                    }
+                  </ul>
+                </div>
+              }
+            </dl>
+          </section>
+
+          <section class="cr-detalle-block" aria-labelledby="cr-det-h-vig">
+            <h3 id="cr-det-h-vig" class="cr-detalle-h">Vigencia</h3>
+            <dl class="cr-detalle-dl">
+              <div><dt>Inicio</dt><dd>{{ formatFechaDetalle(dRow.vigenciaInicio) }}</dd></div>
+              <div><dt>Fin</dt><dd>{{ formatFechaDetalle(dRow.vigenciaFin) }}</dd></div>
+              <div><dt>Estado respecto a hoy</dt><dd>{{ etiquetaVigenciaChip(dRow) }}</dd></div>
+            </dl>
+          </section>
+
+          <section class="cr-detalle-block cr-detalle-block--last" aria-labelledby="cr-det-h-act">
+            <h3 id="cr-det-h-act" class="cr-detalle-h">Acciones y protección (v1)</h3>
+            <ul class="cr-detalle-acciones">
+              <li>
+                Revisar:
+                <span class="cr-detalle-ok">{{ detalleAcciones()!.puedeRevisar ? 'Permitida' : 'No' }}</span>
+              </li>
+              <li>
+                Editar:
+                <span [class.cr-detalle-ok]="detalleAcciones()!.puedeEditar" [class.cr-detalle-no]="!detalleAcciones()!.puedeEditar">
+                  {{ detalleAcciones()!.puedeEditar ? 'Permitida' : 'Bloqueada' }}
+                </span>
+              </li>
+              <li>
+                Eliminar desde listado:
+                <span [class.cr-detalle-ok]="detalleAcciones()!.puedeEliminar" [class.cr-detalle-no]="!detalleAcciones()!.puedeEliminar">
+                  {{ detalleAcciones()!.puedeEliminar ? 'Permitida' : 'No habilitada en esta fase' }}
+                </span>
+              </li>
+              <li>
+                Asignar manualmente (recurrente):
+                <span [class.cr-detalle-ok]="detalleAcciones()!.puedeAsignar" [class.cr-detalle-no]="!detalleAcciones()!.puedeAsignar">
+                  {{ detalleAcciones()!.puedeAsignar ? 'Permitida por reglas' : 'No aplica' }}
+                </span>
+              </li>
+            </ul>
+            @if (detalleAcciones()!.motivosBloqueo.length) {
+              <div class="cr-detalle-bloqueos">
+                <p class="cr-detalle-bloqueos-k">Bloqueos o avisos</p>
+                <ul>
+                  @for (b of detalleAcciones()!.motivosBloqueo; track b) {
+                    <li>{{ b }}</li>
+                  }
+                </ul>
+              </div>
+            }
+          </section>
+        </div>
+        <div class="hd-modal-actions">
+          <button type="button" class="hd-btn hd-btn--ghost" (click)="cerrarDetalleConcepto()">Cerrar</button>
+          @if (detalleAcciones()!.puedeEditar) {
+            <button type="button" class="hd-btn hd-btn--primary" (click)="cerrarDetalleConcepto(); editarConceptoRow(dRow)">
+              Editar
+            </button>
+          }
+        </div>
+      </div>
+    </div>
+  }
 
   @if (catalogDialogAbierto()) {
     <div class="hd-modal-root" role="presentation">
@@ -378,18 +508,4 @@
     ></app-message-box>
   }
 
-  @if (confirmEliminarConcepto(); as del) {
-    <app-message-box
-      variant="warning"
-      mode="modal"
-      [modalHeadlineSplit]="true"
-      title="Eliminar concepto"
-      message="Se eliminará el concepto del catálogo si no tiene uso en liquidaciones ni asignaciones."
-      [detail]="del.nombre"
-      secondaryLabel="Cancelar"
-      primaryLabel="Eliminar"
-      (secondary)="cerrarConfirmEliminarConcepto()"
-      (action)="confirmarEliminarConceptoEjecutar()"
-    ></app-message-box>
-  }
 </section>

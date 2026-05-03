@@ -1,7 +1,44 @@
 ## Peticiones de estilos (bitácora)
 
+### 2026-05-03 (Fase 9.3B.1 — Navegacion dominio Remuneraciones)
+
+- **Modulo:** Remuneraciones (rutas y menu lateral).
+- **Cambio:** rutas oficiales bajo `/remuneraciones/*` para Conceptos, Haberes y descuentos, Proceso mensual y Liquidaciones; orden de items en sidebar alineado a ese dominio.
+- **Compatibilidad:** `/haberes-descuentos`, `/proceso-remuneraciones`, `/liquidaciones` y `/liquidaciones/:id` quedan como redirects temporales a las rutas oficiales.
+- **UI:** sin rediseno profundo; etiqueta de menu **Proceso mensual** (antes Proceso Remuneraciones); breadcrumb primer segmento enlaza a `/remuneraciones`.
+- **Archivos:** `src/app/app.routes.ts`, `src/app/layout/sidebar.component.ts`, `src/app/pages/liquidaciones.page.ts`, `src/app/pages/detalle-liquidacion.page.ts`, `src/app/features/empleados/containers/ficha-empleado-container/ficha-empleado-container.html`, contenedores Haberes/Conceptos (breadcrumb).
+
+### 2026-05-03 (Codificación e idioma de presentación)
+
+- **`index.html`**: `lang="es-CL"` para alinear el documento al español chileno (tipografía del sistema y lectores de pantalla).
+- **`app.config.ts`**: `LOCALE_ID` `es-CL`, `DEFAULT_CURRENCY_CODE` `CLP` y `registerLocaleData` para que pipes de Angular (fecha, número, moneda) usen convenciones locales coherentes y no mezclen formato en-US por defecto.
+
+### 2026-05-03 (Haberes y descuentos - vista historica 9.3C)
+
+- **Filtro de vigencia**: queda integrado al panel de filtros del `DataGrid`, con default **Operativas** (`ACTIVA + FUTURA`) y opciones **Todas**, **Activas**, **Futuras**, **Vencidas**, **Cerradas** e **Invalidas**.
+- **Historial visible**: cerradas, vencidas e invalidas quedan consultables mediante filtros sin mezclarse con la vista operativa por defecto.
+- **Acciones por estado**: editar/cerrar queda deshabilitado para filas historicas o invalidas, evitando doble cierre y cambios operativos sobre historial.
+- **Archivos**: `src/app/features/haberes-descuentos/containers/haberes-descuentos-container/haberes-descuentos-container.{html,css,ts}`.
+
+### 2026-05-03 (Haberes y descuentos - cierre controlado 9.3B)
+
+- **Accion por fila**: se reemplaza el copy visible **Desactivar** por **Cerrar** para asignaciones recurrentes, alineado a cierre/desactivacion logica sin delete fisico.
+- **Confirmacion**: modal simple indica que la asignacion dejara de aplicar y se conservara en historial.
+- **Mensaje de exito**: se agrega confirmacion **Asignacion cerrada correctamente.**
+- **Archivos**: `src/app/features/haberes-descuentos/containers/haberes-descuentos-container/haberes-descuentos-container.{html,ts}`.
 Registro cronológico de mejoras visuales aplicadas por petición, con foco en **trazabilidad** (qué se tocó y dónde),
 sin mezclarlo con las reglas base.
+
+### 2026-05-03 (Haberes — copy alineación asignables 9.2C)
+
+- **Cabecera `/remuneraciones/haberes-descuentos`**: el párrafo `hd-lead` aclara que el selector de concepto respeta la misma regla de asignabilidad que el catálogo Conceptos (sin cambio de layout).
+  - `src/app/features/haberes-descuentos/containers/haberes-descuentos-container/haberes-descuentos-container.html`
+
+### 2026-05-03 (Conceptos — detalle 9.2B)
+
+- **Modal de detalle** (`/remuneraciones/conceptos`): overlay con `cr-detalle-root`; cuerpo con scroll (`max-height` + flex), **footer fijo** (Cerrar + Editar condicional); secciones con títulos `cr-detalle-section-title`; listas de motivos y bloqueos en tipografía compacta.
+- **Chips de vigencia**: variante **inválida** (fechas incoherentes) con estilo distintivo `.hd-chip--vig-invalid`.
+  - `src/app/features/haberes-descuentos/containers/conceptos-remuneracion-container/*`
 
 ### 2026-05-02 (Conceptos — listado 9.2A)
 
@@ -560,3 +597,5 @@ sin mezclarlo con las reglas base.
 - **Stack**: `gap` entre resumen y formulario de 12px a **8px** (token).
 - **Panel blanco**: `.basic-create-form .step-panel.step-panel--basic.basic-wizard` con **padding 12px** (override del 16px global del paso) solo en modo basico.
 - **Archivo**: `src/app/features/empleados/components/form-empleado/form-empleado.css`.
+
+

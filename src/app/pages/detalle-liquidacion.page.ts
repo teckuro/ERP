@@ -42,7 +42,7 @@ import { PeriodoActivoService } from '../core/services/periodo-activo.service';
         <div class="flex items-center gap-4">
           <a
             class="inline-flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-gray-100 transition-colors text-gray-700"
-            routerLink="/liquidaciones"
+            routerLink="/remuneraciones/liquidaciones"
           >
             <lucide-icon class="w-4 h-4" name="arrow-left"></lucide-icon>
             Volver

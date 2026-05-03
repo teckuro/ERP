@@ -2,7 +2,8 @@
 
 ## Ruta
 
-- **`/haberes-descuentos`** — `HaberesDescuentosPage` (`src/app/pages/haberes-descuentos.page.ts`).
+- **Oficial:** **`/remuneraciones/haberes-descuentos`** — `HaberesDescuentosPage` (`src/app/pages/haberes-descuentos.page.ts`), hija de `RemuneracionesOutletComponent`.
+- **Compatibilidad temporal:** **`/haberes-descuentos`** — `redirectTo` -> `/remuneraciones/haberes-descuentos` (`pathMatch: 'full'` en `src/app/app.routes.ts`).
 
 ## Objetivo del usuario
 

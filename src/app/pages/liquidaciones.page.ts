@@ -153,7 +153,7 @@ import { RouterLink } from '@angular/router';
                         <lucide-icon class="w-4 h-4" name="eye"></lucide-icon>
                       </button>
                       <a
-                        [routerLink]="['/liquidaciones', liquidacion.id]"
+                        [routerLink]="['/remuneraciones/liquidaciones', liquidacion.id]"
                         class="p-2 text-gray-600 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors"
                         title="Ver detalle"
                       >

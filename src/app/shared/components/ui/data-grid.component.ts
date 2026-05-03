@@ -64,6 +64,8 @@ export interface DataGridFilter<T = unknown> {
   field: keyof T;
   type?: DataGridFilterType;
   operator?: DataGridFilterOperator;
+  initialValue?: DataGridFilterValue;
+  predicate?: (row: T, value: DataGridFilterValue) => boolean;
   normalize?: DataGridFilterNormalization;
   matchMode?: DataGridFilterMatchMode;
   emptyLabel?: string;
@@ -1711,6 +1713,9 @@ export class DataGridComponent<T = unknown> implements OnChanges, OnDestroy {
     }
 
     if (changes['rows'] || changes['maxItems'] || changes['filters']) {
+      if (changes['filters']) {
+        this.applyInitialFilterValues();
+      }
       this.clampCurrentPage();
       this.pruneSelection();
     }
@@ -2829,7 +2834,30 @@ export class DataGridComponent<T = unknown> implements OnChanges, OnDestroy {
     return filter?.type === 'date-range' ? {} : '';
   }
 
+  private applyInitialFilterValues(): void {
+    const nextFilterValues = { ...this.filterValues };
+    const nextDraftFilterValues = { ...this.draftFilterValues };
+
+    this.visibleFilters.forEach((filter) => {
+      if (
+        filter.initialValue !== undefined &&
+        nextFilterValues[filter.id] === undefined &&
+        nextDraftFilterValues[filter.id] === undefined
+      ) {
+        nextFilterValues[filter.id] = filter.initialValue;
+        nextDraftFilterValues[filter.id] = filter.initialValue;
+      }
+    });
+
+    this.filterValues = nextFilterValues;
+    this.draftFilterValues = nextDraftFilterValues;
+  }
+
   private matchesFilter(row: T, filter: DataGridFilter<T>, selected: DataGridFilterValue): boolean {
+    if (filter.predicate) {
+      return filter.predicate(row, selected);
+    }
+
     const value = row[filter.field];
 
     if (this.isSelectFilter(filter)) {

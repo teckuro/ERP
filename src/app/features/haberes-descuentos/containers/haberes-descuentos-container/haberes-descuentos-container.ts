@@ -41,7 +41,7 @@ import {
   SearchSelectComponent,
   SearchSelectOption,
 } from '../../../../shared/components/ui/search-select.component';
-import { PeriodoActivoService, primerDiaSqlDesdeYm, vigenciaIntersecaMes } from '../../../../core/services/periodo-activo.service';
+import { PeriodoActivoService, primerDiaSqlDesdeYm } from '../../../../core/services/periodo-activo.service';
 import { HaberesDescuentosService } from '../../services/haberes-descuentos.service';
 import {
   ConceptoListado,
@@ -50,11 +50,11 @@ import {
   HaberDescuentoTipoValor,
   PERIODICIDADES_HD,
 } from '../../models/haber-descuento-asignacion.model';
+import { type EstadoVigenciaAsignacion } from '../../rules/haber-descuento-vigencia.rules';
 
 type HdGridRow = HaberDescuentoAsignacionListado & {
-  estadoActivo: string;
-  filtroVigenciaPeriodo: string;
-  etiquetaVigencia: string;
+  estadoVigencia: EstadoVigenciaAsignacion;
+  estadoVigenciaEtiqueta: string;
   valorAsignacion: string;
   /** Texto agregado para filtro “Buscar” (nombre, código concepto, LRE). */
   busquedaAsignacion: string;
@@ -128,7 +128,7 @@ export class HaberesDescuentosContainer implements OnInit {
   readonly periodicidadesHd = PERIODICIDADES_HD;
 
   readonly breadcrumbItems: readonly RecordBreadcrumbItem[] = [
-    { label: 'Remuneraciones', link: '/' },
+    { label: 'Remuneraciones', link: '/remuneraciones' },
     { label: 'Haberes y descuentos' },
   ];
 
@@ -155,6 +155,7 @@ export class HaberesDescuentosContainer implements OnInit {
   readonly formConceptoId = signal<number | null>(null);
   readonly formConceptoSnapshot = signal<{
     codigo: string;
+    nombre: string;
     tipo: string | null;
     naturaleza: string | null;
     codigoLre: string | null;
@@ -225,13 +226,27 @@ export class HaberesDescuentosContainer implements OnInit {
     this.dialogEditId() == null ? 'Asignar haber o descuento' : 'Editar asignación',
   );
 
-  readonly conceptoOpciones = computed<SearchSelectOption<number>[]>(() =>
-    this.conceptos().map((c) => ({
+  readonly conceptoOpciones = computed<SearchSelectOption<number>[]>(() => {
+    const base = this.conceptos().map((c) => ({
       value: c.idConcepto,
       label: `${c.nombre} (${c.codigo})`,
       description: c.tipo ?? undefined,
-    })),
-  );
+    }));
+    const id = this.formConceptoId();
+    const editando = this.dialogEditId() != null;
+    const snap = this.formConceptoSnapshot();
+    if (editando && id != null && snap && !base.some((o) => o.value === id)) {
+      return [
+        {
+          value: id,
+          label: `${snap.nombre} (${snap.codigo}) — ya no está disponible para nuevas asignaciones; elija otro concepto o cierre sin guardar.`,
+          description: snap.tipo ?? undefined,
+        },
+        ...base,
+      ];
+    }
+    return base;
+  });
 
   readonly contratoOpcionesNativo = computed(() => this.contratosPersona());
 
@@ -338,19 +353,11 @@ export class HaberesDescuentosContainer implements OnInit {
       filterable: false,
     },
     {
-      id: 'etiquetaVigencia',
-      header: 'Vigencia',
-      field: 'etiquetaVigencia',
+      id: 'estadoVigenciaEtiqueta',
+      header: 'Estado vigencia',
+      field: 'estadoVigenciaEtiqueta',
       type: 'text',
       sortable: true,
-      filterable: false,
-    },
-    {
-      id: 'estadoActivo',
-      header: 'Estado',
-      field: 'estadoActivo',
-      type: 'text',
-      sortable: false,
       filterable: false,
     },
     {
@@ -374,16 +381,30 @@ export class HaberesDescuentosContainer implements OnInit {
       placeholder: 'Nombre, código o LRE',
     },
     {
-      id: 'filtroVigenciaPeriodo',
-      label: 'Vigentes al período activo',
-      field: 'filtroVigenciaPeriodo',
+      id: 'estadoVigencia',
+      label: 'Estado de vigencia',
+      field: 'estadoVigencia',
       type: 'select',
       operator: 'equals',
-      emptyLabel: 'Todos',
+      emptyLabel: 'Todas',
+      initialValue: 'OPERATIVAS',
       options: [
-        { label: 'Sí', value: 'SI' },
-        { label: 'No', value: 'NO' },
+        { label: 'Operativas', value: 'OPERATIVAS' },
+        { label: 'Activas', value: 'ACTIVA' },
+        { label: 'Futuras', value: 'FUTURA' },
+        { label: 'Vencidas', value: 'VENCIDA' },
+        { label: 'Cerradas', value: 'CERRADA' },
+        { label: 'Invalidas', value: 'INVALIDA' },
       ],
+      predicate: (row, value) => {
+        if (typeof value !== 'string' || value === '') {
+          return true;
+        }
+        if (value === 'OPERATIVAS') {
+          return row.estadoVigencia === 'ACTIVA' || row.estadoVigencia === 'FUTURA';
+        }
+        return row.estadoVigencia === value;
+      },
     },
   ];
 
@@ -393,7 +414,6 @@ export class HaberesDescuentosContainer implements OnInit {
 
   constructor() {
     effect(() => {
-      const _p = this.periodoActivo.periodoYm();
       const pid = this.personaIdSeleccionada();
       if (pid == null) {
         this.filas.set([]);
@@ -437,22 +457,13 @@ export class HaberesDescuentosContainer implements OnInit {
     }
   }
 
-  private mapFilasAsignacion(rows: HaberDescuentoAsignacionListado[], ym: string): HdGridRow[] {
+  private mapFilasAsignacion(rows: HaberDescuentoAsignacionListado[]): HdGridRow[] {
     return rows.map((r) => {
-      const vigenteMes = vigenciaIntersecaMes(r.vigenciaInicio, r.vigenciaFin, ym);
-      let etiquetaVigencia: string;
-      if (!vigenteMes) {
-        etiquetaVigencia = 'Fuera de vigencia';
-      } else if (!r.vigenciaFin) {
-        etiquetaVigencia = 'Sin fecha término';
-      } else {
-        etiquetaVigencia = 'Vigente al período';
-      }
+      const estadoVigencia = r.estadoVigencia ?? 'INVALIDA';
       return {
         ...r,
-        estadoActivo: r.estado ? 'Activo' : 'Inactivo',
-        filtroVigenciaPeriodo: vigenteMes ? 'SI' : 'NO',
-        etiquetaVigencia,
+        estadoVigencia,
+        estadoVigenciaEtiqueta: r.estadoVigenciaEtiqueta ?? 'Invalida',
         valorAsignacion: this.valorAsignacionLabel(r),
         busquedaAsignacion: [r.nombreConcepto, r.codigoConcepto, r.codigoLre ?? '']
           .join(' ')
@@ -496,8 +507,7 @@ export class HaberesDescuentosContainer implements OnInit {
     this.gridLoading.set(true);
     try {
       const rows = await this.haberesDescuentosService.listarPorPersona(idPersona);
-      const ym = this.periodoActivo.periodoYm();
-      this.filas.set(this.mapFilasAsignacion(rows, ym));
+      this.filas.set(this.mapFilasAsignacion(rows));
     } finally {
       this.gridLoading.set(false);
     }
@@ -558,10 +568,14 @@ export class HaberesDescuentosContainer implements OnInit {
   }
 
   editar(row: HdGridRow): void {
+    if (!this.puedeEditar(row)) {
+      return;
+    }
     this.dialogEditId.set(row.idAsignacion);
     this.formConceptoId.set(row.idConcepto);
     this.formConceptoSnapshot.set({
       codigo: row.codigoConcepto,
+      nombre: row.nombreConcepto,
       tipo: row.tipoConcepto,
       naturaleza: row.naturalezaConcepto,
       codigoLre: row.codigoLre,
@@ -682,6 +696,9 @@ export class HaberesDescuentosContainer implements OnInit {
   }
 
   pedirDesactivar(row: HdGridRow): void {
+    if (!this.puedeCerrar(row)) {
+      return;
+    }
     this.confirmDesactivar.set({
       idAsignacion: row.idAsignacion,
       nombre: row.nombreConcepto,
@@ -699,9 +716,15 @@ export class HaberesDescuentosContainer implements OnInit {
       return;
     }
     try {
-      await this.haberesDescuentosService.desactivar(ctx.idAsignacion);
+      await this.haberesDescuentosService.cerrarAsignacion(ctx.idAsignacion);
       this.confirmDesactivar.set(null);
       await this.cargarAsignaciones(pid);
+      this.modalMsg.set({
+        variant: 'success',
+        title: 'Asignacion cerrada',
+        message: 'Asignacion cerrada correctamente.',
+        detail: ctx.nombre,
+      });
     } catch (err) {
       const detalle =
         err && typeof err === 'object' && 'message' in err
@@ -727,6 +750,22 @@ export class HaberesDescuentosContainer implements OnInit {
       title: 'Datos incompletos',
       message: detail,
     });
+  }
+
+  puedeEditar(row: HdGridRow): boolean {
+    return row.estadoVigencia === 'ACTIVA' || row.estadoVigencia === 'FUTURA';
+  }
+
+  puedeCerrar(row: HdGridRow): boolean {
+    return row.estadoVigencia === 'ACTIVA' || row.estadoVigencia === 'FUTURA';
+  }
+
+  tituloEditar(row: HdGridRow): string {
+    return this.puedeEditar(row) ? 'Editar' : 'No editable en historial';
+  }
+
+  tituloCerrar(row: HdGridRow): string {
+    return this.puedeCerrar(row) ? 'Cerrar' : 'No se puede cerrar este estado';
   }
 
   private valorAsignacionLabel(row: HaberDescuentoAsignacionListado): string {
@@ -760,3 +799,5 @@ export class HaberesDescuentosContainer implements OnInit {
       .replaceAll('/', '-');
   }
 }
+
+
