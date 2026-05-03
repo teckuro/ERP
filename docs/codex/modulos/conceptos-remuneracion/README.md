@@ -2,7 +2,7 @@
 
 ## Estado (Fase 9)
 
-**Fase fuerte del producto en curso:** la **documentación de diagnóstico y contrato funcional** (Fase 9 documental) está en los archivos enlazados abajo. La **implementación** del mantenedor ya existe en código; quedan brechas de **permisos**, **reglas de cálculo en UI**, **E2E** y endurecimiento de **RLS** según [`diagnostico-fase-9.md`](./diagnostico-fase-9.md) §8.
+**Fase fuerte del producto en curso:** la **documentación** Fase 9 incluye diagnóstico, contrato funcional y **decisiones operativas** ([`decisiones-operativas.md`](./decisiones-operativas.md)). La **implementación** del mantenedor ya existe en código; quedan brechas de **permisos/JWT**, **reglas de cálculo en UI**, **E2E** y endurecimiento de **RLS** según diagnóstico §8 y decisiones §2 / §10.
 
 ## Orden de lectura
 
@@ -15,6 +15,7 @@
 | Archivo | Rol |
 |---------|-----|
 | [`diagnostico-fase-9.md`](./diagnostico-fase-9.md) | Diagnóstico Fase 9 |
+| [`decisiones-operativas.md`](./decisiones-operativas.md) | Decisiones de producto antes de CRUD/RLS (Fase 9.2) |
 | [`contrato-funcional.md`](./contrato-funcional.md) | Contrato funcional del mantenedor y del modelo |
 | [`contrato-general.md`](./contrato-general.md) | Resumen e índice |
 

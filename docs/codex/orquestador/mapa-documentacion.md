@@ -23,7 +23,7 @@
 |--------|--------|
 | Empleados | [`../modulos/empleados/README.md`](../modulos/empleados/README.md) |
 | Parámetros | [`../modulos/parametros/README.md`](../modulos/parametros/README.md) |
-| Conceptos remuneración | [`../modulos/conceptos-remuneracion/README.md`](../modulos/conceptos-remuneracion/README.md) — además [`diagnostico-fase-9.md`](../modulos/conceptos-remuneracion/diagnostico-fase-9.md), [`contrato-funcional.md`](../modulos/conceptos-remuneracion/contrato-funcional.md), [`contrato-general.md`](../modulos/conceptos-remuneracion/contrato-general.md) |
+| Conceptos remuneración | [`../modulos/conceptos-remuneracion/README.md`](../modulos/conceptos-remuneracion/README.md) — además [`diagnostico-fase-9.md`](../modulos/conceptos-remuneracion/diagnostico-fase-9.md), [`decisiones-operativas.md`](../modulos/conceptos-remuneracion/decisiones-operativas.md), [`contrato-funcional.md`](../modulos/conceptos-remuneracion/contrato-funcional.md), [`contrato-general.md`](../modulos/conceptos-remuneracion/contrato-general.md) |
 | Haberes y descuentos | [`../modulos/haberes-descuentos/README.md`](../modulos/haberes-descuentos/README.md) |
 | Nómina mensual (visión) | [`../modulos/nomina-mensual/README.md`](../modulos/nomina-mensual/README.md) |
 

@@ -2,6 +2,8 @@
 
 Documento **normativo** para el mantenedor de catálogo y su relación con asignaciones y liquidación. Diagnóstico factual: [`diagnostico-fase-9.md`](./diagnostico-fase-9.md). Principios globales: [`../../orquestador/diseno-operativo-erp.md`](../../orquestador/diseno-operativo-erp.md).
 
+**Decisiones de producto (permisos, LRE, vigencias, baja):** [`decisiones-operativas.md`](./decisiones-operativas.md). Si hubiera contradicción no resuelta entre este archivo y aquél sobre **quién puede** o **flujo de baja**, prevalece **`decisiones-operativas.md`** hasta alinear ambos explícitamente.
+
 ## 1. Definición
 
 Un **concepto de remuneración** es una fila del catálogo maestro `concepto` que describe **qué** se liquida o se asigna (tipo, naturaleza, impacto previsional/tributario, vínculo opcional a **LRE**), **no** el monto aplicado a una persona ni el resultado de una liquidación cerrada.
@@ -14,7 +16,7 @@ Un **concepto de remuneración** es una fila del catálogo maestro `concepto` qu
 ### 2.1 Catálogo LRE (`catalogo_lre`)
 
 - Es el **maestro oficial** de códigos LRE; el concepto enlaza con `id_catalogo_lre` opcional.
-- La UI debe permitir **desvincular** LRE (`null`) si el negocio lo autoriza; la validación de obligatoriedad por tipo de concepto es **decisión de producto** pendiente si no está en reglas de servidor.
+- Criterios de obligatoriedad, cambio de mapeo y estado “sin LRE”: ver [`decisiones-operativas.md`](./decisiones-operativas.md) §8. La UI debe permitir **desvincular** LRE (`null`) salvo política futura distinta aprobada por producto.
 
 ### 2.2 Concepto (`concepto`)
 
@@ -42,7 +44,7 @@ Un **concepto de remuneración** es una fila del catálogo maestro `concepto` qu
 
 ### 3.1 Crear
 
-- Usuario con permiso de mantenedor puede crear conceptos **no sistema** (`es_sistema = false` en inserción).
+- Usuario con permiso de **Mantenedor conceptos** (perfil en [`decisiones-operativas.md`](./decisiones-operativas.md) §2) puede crear conceptos **no sistema** (`es_sistema = false` en inserción), con tipos permitidos según §4 de ese documento.
 - Código y nombre obligatorios; resto según defaults del modal.
 
 ### 3.2 Editar
@@ -59,7 +61,8 @@ Un **concepto de remuneración** es una fila del catálogo maestro `concepto` qu
 
 ### 3.4 Asignación manual a trabajador (fuera de esta pantalla, pero regla global)
 
-- Solo conceptos **HABER** o **DESCUENTO**, con `es_sistema = false` y `calculo_automatico = false` en listado asignable (repositorio).
+- Criterio completo (incl. `vigente` y vigencias): [`decisiones-operativas.md`](./decisiones-operativas.md) §5.
+- Hoy el repositorio filtra por tipo `HABER`/`DESCUENTO`, `es_sistema = false` y `calculo_automatico = false`; Fase 9.2 debe alinear con §5 (p. ej. `vigente`).
 - **APORTE_EMPLEADOR** y conceptos sistema / automáticos: **no** asignables manualmente (`HaberesDescuentosService`).
 
 ## 4. Perfil administrador (contrato técnico pendiente de productizar)
