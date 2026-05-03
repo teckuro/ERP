@@ -1,15 +1,25 @@
-# Conceptos de remuneración — contrato general (borrador)
+# Conceptos de remuneración — contrato general (índice)
 
-## Alcance futuro
+## Rol del módulo
 
-- Catálogo único de conceptos usable en **haberes**, **descuentos**, **aportes** y **motor de liquidación**.
-- Reglas de edición, vigencia, flags LRE / sistema / automático, y trazabilidad de versiones.
-- **No** duplicar ni fusionar con la ficha empleado ni con asignaciones recurrentes por persona.
+Catálogo maestro **`concepto`** enlazado opcionalmente a **`catalogo_lre`**, fuente para **asignaciones** (`haberdescuento_persona`), **liquidación** (`liquidacion_detalle`) y, en evolución, **motor** (`regla_concepto_calculo`, `formula_json`). **No** es la ficha del empleado ni el monto recurrente por sí solo.
 
-## Dependencias
+## Documentos del módulo (Fase 9)
 
-Cerrar razonablemente **Empleados aptos** y **Parámetros** sólidos antes de un motor productivo; ver orden en [`../../orquestador/contexto-proyecto.md`](../../orquestador/contexto-proyecto.md) §12.
+| Documento | Contenido |
+|-----------|------------|
+| [`diagnostico-fase-9.md`](./diagnostico-fase-9.md) | Inventario rutas, UI, servicios, BD v11, RLS, Python, brechas |
+| [`contrato-funcional.md`](./contrato-funcional.md) | Reglas de negocio, permisos, UI, pruebas y dependencias |
+| [`README.md`](./README.md) | Punto de entrada y orden de lectura |
 
-## Estado
+## Orden de lectura
 
-Contrato detallado **no cerrado** — este archivo es ancla mínima hasta la fase de documentación e implementación.
+1. [`diagnostico-fase-9.md`](./diagnostico-fase-9.md) — qué hay implementado hoy.  
+2. [`contrato-funcional.md`](./contrato-funcional.md) — cómo debe comportarse el producto y qué queda explícitamente fuera de alcance.  
+3. Orquestador: [`../../orquestador/contexto-proyecto.md`](../../orquestador/contexto-proyecto.md) §10 y §12, [`../../orquestador/diseno-operativo-erp.md`](../../orquestador/diseno-operativo-erp.md) §6.
+
+## Principios que no se renegocian aquí
+
+- **No** mezclar concepto maestro con asignación por trabajador.
+- **No** tratar conceptos **sistema** o **cálculo automático** como editables por el mismo perfil que edita conceptos manuales, salvo **política admin** explícita (ver contrato funcional §4).
+- Respetar el **camino oficial** hacia remuneraciones completas en `contexto-proyecto` (conceptos antes de motor productivo fuerte).

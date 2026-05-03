@@ -30,7 +30,7 @@
 |--------|--------|
 | Empleados | [`modulos/empleados/README.md`](./modulos/empleados/README.md) |
 | Parámetros | [`modulos/parametros/README.md`](./modulos/parametros/README.md) |
-| Conceptos remuneración (futuro) | [`modulos/conceptos-remuneracion/README.md`](./modulos/conceptos-remuneracion/README.md) |
+| Conceptos remuneración | [`modulos/conceptos-remuneracion/README.md`](./modulos/conceptos-remuneracion/README.md) (diagnóstico + [`contrato-funcional.md`](./modulos/conceptos-remuneracion/contrato-funcional.md)) |
 | Haberes y descuentos | [`modulos/haberes-descuentos/README.md`](./modulos/haberes-descuentos/README.md) |
 | Nómina mensual (visión) | [`modulos/nomina-mensual/README.md`](./modulos/nomina-mensual/README.md) |
 

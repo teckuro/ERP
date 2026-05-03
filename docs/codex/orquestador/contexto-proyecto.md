@@ -43,7 +43,7 @@ Criterios operativos de pantalla (estado → pendientes → acción, qué evitar
 | **Parámetros** | Período activo, datos mensuales vs vigencias vs catálogos globales; estado oficial del período de remuneración. |
 | **Python / seeds** | Carga oficial de parámetros mensuales y normativa base alineada a BD v11. |
 | **Haberes / descuentos** | Asignaciones recurrentes por trabajador (en evolución); no sustituyen conceptos ni liquidaciones. |
-| **Conceptos de remuneración** | **Siguiente fase fuerte** (pendiente): catálogo maestro gobernado para haberes, descuentos, aportes y liquidaciones. Entrada: [`../modulos/conceptos-remuneracion/README.md`](../modulos/conceptos-remuneracion/README.md). |
+| **Conceptos de remuneración** | **Fase fuerte en curso**; Fase 9 **documental cerrada** (diagnóstico + contrato funcional). Catálogo maestro para haberes, descuentos, aportes y liquidaciones. Entrada: [`../modulos/conceptos-remuneracion/README.md`](../modulos/conceptos-remuneracion/README.md). |
 | **Movimientos variables** | Futuro: horas extra, bonos puntuales, comisiones, ausencias, etc. |
 | **Proceso mensual / motor / liquidaciones** | Futuro: checklist guiado, cálculo, cierre y congelado de resultados. |
 | **Previred / LRE** | Fases posteriores con trazabilidad y validaciones. |
@@ -70,11 +70,11 @@ Uso actual acotado a **asignaciones recurrentes** por trabajador, con período g
 
 ## 10. Estado resumido — Conceptos de remuneración
 
-**Siguiente fase fuerte de producto (pendiente de cierre).** Debe ser catálogo maestro (LRE, sistema/protegido, automático/manual, vigencias, reglas de edición) y **fuente** para haberes, descuentos, aportes y liquidaciones. **No** mezclar con asignaciones por trabajador. Punto de entrada del módulo: [`../modulos/conceptos-remuneracion/README.md`](../modulos/conceptos-remuneracion/README.md). Marco UX operativo: [`diseno-operativo-erp.md`](./diseno-operativo-erp.md) §6.
+**Fase fuerte en curso** (Fase 9 documental **cerrada**: diagnóstico + contrato funcional). Catálogo maestro (LRE, sistema/protegido, automático/manual, vigencias, reglas de edición) y **fuente** para haberes, descuentos, aportes y liquidaciones. **No** mezclar con asignaciones por trabajador. Punto de entrada: [`../modulos/conceptos-remuneracion/README.md`](../modulos/conceptos-remuneracion/README.md). Contrato detallado: [`../modulos/conceptos-remuneracion/contrato-funcional.md`](../modulos/conceptos-remuneracion/contrato-funcional.md). Marco UX: [`diseno-operativo-erp.md`](./diseno-operativo-erp.md) §6.
 
 ## 11. Módulos futuros
 
-- Conceptos gobernados (prioridad alta antes de motor fuerte).
+- **Conceptos** — documentación de gobernanza (Fase 9) **cerrada**; sigue prioridad alta **cerrar implementación** (permisos, pruebas, reglas motor en UI) antes de motor fuerte.
 - Movimientos variables mensuales.
 - Proceso mensual tipo checklist (parámetros → aptos → recurrentes → variables → cálculo → cierre).
 - Motor de cálculo y **liquidaciones congeladas** (resultado, no formulario principal).
@@ -149,6 +149,6 @@ Hasta cerrar las fases previas del tablero y el contrato correspondiente:
 | Parámetros período / vigencia | [`../modulos/parametros/periodo-vigencia-catalogo.md`](../modulos/parametros/periodo-vigencia-catalogo.md) |
 | Parámetros UI | [`../modulos/parametros/ui-parametros.md`](../modulos/parametros/ui-parametros.md) |
 | Python carga mensual | [`../modulos/parametros/python-carga-mensual.md`](../modulos/parametros/python-carga-mensual.md) |
-| Conceptos (futuro) | [`../modulos/conceptos-remuneracion/README.md`](../modulos/conceptos-remuneracion/README.md) |
+| Conceptos (módulo) | [`../modulos/conceptos-remuneracion/README.md`](../modulos/conceptos-remuneracion/README.md), [`../modulos/conceptos-remuneracion/contrato-funcional.md`](../modulos/conceptos-remuneracion/contrato-funcional.md), [`../modulos/conceptos-remuneracion/diagnostico-fase-9.md`](../modulos/conceptos-remuneracion/diagnostico-fase-9.md) |
 | Haberes / descuentos | [`../modulos/haberes-descuentos/README.md`](../modulos/haberes-descuentos/README.md) |
 | Nómina mensual (visión) | [`../modulos/nomina-mensual/README.md`](../modulos/nomina-mensual/README.md) |

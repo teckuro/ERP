@@ -13,4 +13,4 @@
 
 ## Dependencia
 
-Reglas finas de vigencia, duplicados y UI guiada dependen de [`../conceptos-remuneracion/contrato-general.md`](../conceptos-remuneracion/contrato-general.md) y del tablero de fases.
+Reglas finas de vigencia, duplicados y UI guiada dependen del módulo **Conceptos**: [`../conceptos-remuneracion/contrato-funcional.md`](../conceptos-remuneracion/contrato-funcional.md), [`../conceptos-remuneracion/contrato-general.md`](../conceptos-remuneracion/contrato-general.md) y del tablero [`../../orquestador/estado-fases.md`](../../orquestador/estado-fases.md).

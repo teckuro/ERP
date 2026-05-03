@@ -17,14 +17,15 @@ Tablero **vivo** (a actualizar al cerrar fases) con: qué está **cerrado**, qu�
 | 6 — Selects vacíos / sin autoselección | **Cerrada** | Opción vacía; sin primer catálogo como elección; defaults no cuentan como selección real. | Módulo Empleados + formularios; [`ui-form-guidelines.md`](../ui-form-guidelines.md) | Unit form/orchestrator según repo |
 | 7 — Rehidratación borrador avanzado | **Cerrada** | DRAFT‑*, Sin cargo, sueldo 0, APVI incompleto no como reales; paso 9 con pendientes reales. | [`borrador-continuar-alta.md`](../modulos/empleados/borrador-continuar-alta.md), [`contrato-general.md`](../modulos/empleados/contrato-general.md) | `empleado-borrador-hidratacion` (unit); E2E opcionales con `E2E_EMPLEADOS_BORRADOR` |
 | 8 — Validar para remuneraciones (Ficha) | **Cerrada** | Opción B: ficha completa **no** apta sola; CTA **Validar para remuneraciones**; confirmación; `EmpleadosRepository.validarFichaParaRemuneraciones` reevalúa helper y persiste solo `persona` (`VALIDO`, `apto_para_remuneraciones`, `ACTIVO` si aplica, `fecha_activacion`, `paso_alta_avanzada` null). Condiciones UI y exclusiones: [`validar-remuneraciones.md`](../modulos/empleados/validar-remuneraciones.md) y §21 de [`contrato-general.md`](../modulos/empleados/contrato-general.md). | [`validar-remuneraciones.md`](../modulos/empleados/validar-remuneraciones.md) | Unit: `ficha-empleado-container.spec.ts`, `empleados.service.spec.ts`; E2E ficha opcional según entorno |
+| 9 — Conceptos: diagnóstico y contrato funcional | **Cerrada** (documental) | Inventario de ruta `/remuneraciones/conceptos`, contenedor, servicio/repositorio, tablas `concepto` / `catalogo_lre` / `regla_concepto_calculo`, RLS y seeds Python; **contrato funcional** del mantenedor y límites con asignaciones y motor. Brechas: permisos admin, RLS productivo, UI de reglas, E2E ruta. | [`diagnostico-fase-9.md`](../modulos/conceptos-remuneracion/diagnostico-fase-9.md), [`contrato-funcional.md`](../modulos/conceptos-remuneracion/contrato-funcional.md), [`contrato-general.md`](../modulos/conceptos-remuneracion/contrato-general.md) | Ver [`contrato-funcional.md`](../modulos/conceptos-remuneracion/contrato-funcional.md) §8; snapshot `/remuneraciones/conceptos` pendiente en `tests/dashboard.spec.ts` |
 
 ## 3. Fases cerradas (lista corta)
 
-0, 1, 2, 3, 4, 5, 6, 7, 8 — según tabla.
+0–8 según tabla; **9** cerrada en alcance **documental** (diagnóstico + contrato funcional). El frente **Conceptos** sigue abierto en implementación/pruebas hasta cerrar brechas del §8 del contrato funcional.
 
 ## 4. Fase actual / siguiente
 
-**Siguiente fase fuerte de producto (fuera del tablero 0–8):** **Conceptos de remuneración** — catálogo maestro gobernado; no mezclar con asignaciones por trabajador. Punto de entrada del módulo: [`../modulos/conceptos-remuneracion/README.md`](../modulos/conceptos-remuneracion/README.md). Marco UX y prioridades: [`diseno-operativo-erp.md`](./diseno-operativo-erp.md). Contexto y orden del camino: [`contexto-proyecto.md`](./contexto-proyecto.md) §10 y §12.
+**Fase fuerte Conceptos (implementación):** continuar sobre el mantenedor ya existente y las brechas listadas en [`diagnostico-fase-9.md`](../modulos/conceptos-remuneracion/diagnostico-fase-9.md) §8 y [`contrato-funcional.md`](../modulos/conceptos-remuneracion/contrato-funcional.md) §4–§8 (RLS/roles, `PUEDE_EDITAR_CONCEPTOS_MODO_ADMIN`, reglas de cálculo, E2E). Punto de entrada: [`../modulos/conceptos-remuneracion/README.md`](../modulos/conceptos-remuneracion/README.md). Marco UX: [`diseno-operativo-erp.md`](./diseno-operativo-erp.md) §6. Contexto: [`contexto-proyecto.md`](./contexto-proyecto.md) §10 y §12.
 
 ## 5. Pendientes técnicos no bloqueantes
 
@@ -39,7 +40,7 @@ Registrar en [`peticiones-estilos.md`](../peticiones-estilos.md) cuando haya cam
 
 ## 7. Módulos futuros (post fases 0–8 cerradas)
 
-- **Conceptos de remuneración** — **siguiente fase fuerte**; catálogo maestro antes de motor y liquidaciones productivas. README: [`../modulos/conceptos-remuneracion/README.md`](../modulos/conceptos-remuneracion/README.md).
+- **Conceptos de remuneración** — **fase fuerte en ejecución**; Fase **9 documental** cerrada (diagnóstico + contrato). README y contratos: [`../modulos/conceptos-remuneracion/README.md`](../modulos/conceptos-remuneracion/README.md).
 - **Haberes y descuentos** (refuerzo de reglas y UI).
 - **Movimientos variables**, **proceso mensual**, **motor**, **liquidaciones**, **Previred**, **LRE** — ver [`contexto-proyecto.md`](./contexto-proyecto.md) secciones 10–12 y 15.
 
@@ -52,7 +53,7 @@ Registrar en [`peticiones-estilos.md`](../peticiones-estilos.md) cuando haya cam
 
 ## 9. Orden recomendado de próximas fases
 
-1. **Conceptos** gobernados (maestro, vigencias, LRE, no mezclar con asignación por trabajador).
+1. **Conceptos** — cerrar brechas de implementación y pruebas del contrato funcional (tras Fase 9 documental); maestro, vigencias, LRE; no mezclar con asignación por trabajador.
 2. **Haberes recurrentes** (vigencia, duplicados, separación de conceptos).
 3. **Movimientos variables**.
 4. **Proceso mensual guiado** → **motor** → **liquidaciones** → integraciones **Previred / LRE**.

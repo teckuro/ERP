@@ -40,7 +40,8 @@ La **siguiente fase fuerte** acordada en el tablero es **Conceptos de remuneraci
 
 - Punto de entrada: [`../modulos/conceptos-remuneracion/README.md`](../modulos/conceptos-remuneracion/README.md).
 - Visión y dependencias en el camino a remuneraciones: [`contexto-proyecto.md`](./contexto-proyecto.md) §10 y §12.
-- Tablero de fases: [`estado-fases.md`](./estado-fases.md) §4 y §7.
+- Tablero de fases: [`estado-fases.md`](./estado-fases.md) §4, §7 y **fila Fase 9** (documental cerrada).
+- Diagnóstico y contrato funcional del mantenedor: [`../modulos/conceptos-remuneracion/diagnostico-fase-9.md`](../modulos/conceptos-remuneracion/diagnostico-fase-9.md), [`../modulos/conceptos-remuneracion/contrato-funcional.md`](../modulos/conceptos-remuneracion/contrato-funcional.md).
 
 Hasta avanzar razonablemente en **Conceptos** (y datos de parámetros / empleados aptos según [`contexto-proyecto.md`](./contexto-proyecto.md) §15), **no** forzar alcance de motor de liquidación productivo ni nómina end-to-end sin checklist.
 
