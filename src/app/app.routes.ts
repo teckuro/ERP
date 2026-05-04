@@ -16,6 +16,11 @@ export const routes: Routes = [
         loadChildren: () => import('./features/empleados/empleados.routes').then((m) => m.empleadosRoutes),
       },
       {
+        path: 'movimientos-variables',
+        pathMatch: 'full',
+        redirectTo: '/remuneraciones/movimientos-variables',
+      },
+      {
         path: 'haberes-descuentos',
         pathMatch: 'full',
         redirectTo: '/remuneraciones/haberes-descuentos',
@@ -54,6 +59,11 @@ export const routes: Routes = [
             path: 'haberes-descuentos',
             loadComponent: () =>
               import('./pages/haberes-descuentos.page').then((m) => m.HaberesDescuentosPage),
+          },
+          {
+            path: 'movimientos-variables',
+            loadComponent: () =>
+              import('./pages/movimientos-variables.page').then((m) => m.MovimientosVariablesPage),
           },
           {
             path: 'proceso-mensual',

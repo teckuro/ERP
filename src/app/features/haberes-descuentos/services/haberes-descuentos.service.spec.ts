@@ -102,6 +102,7 @@ describe('HaberesDescuentosService', () => {
   let service: HaberesDescuentosService;
   let repository: {
     listarAsignacionesPorPersona: ReturnType<typeof vi.fn>;
+    listarTodasAsignacionesConConcepto: ReturnType<typeof vi.fn>;
     listarConceptosMantenimiento: ReturnType<typeof vi.fn>;
     obtenerConceptoParaAsignacion: ReturnType<typeof vi.fn>;
     listarAsignacionesPorPersonaYConcepto: ReturnType<typeof vi.fn>;
@@ -117,6 +118,7 @@ describe('HaberesDescuentosService', () => {
     vi.setSystemTime(new Date(2026, 4, 3, 12, 0, 0, 0));
     repository = {
       listarAsignacionesPorPersona: vi.fn().mockResolvedValue([]),
+      listarTodasAsignacionesConConcepto: vi.fn().mockResolvedValue([]),
       listarConceptosMantenimiento: vi.fn(),
       obtenerConceptoParaAsignacion: vi.fn(),
       listarAsignacionesPorPersonaYConcepto: vi.fn().mockResolvedValue([]),
@@ -365,5 +367,70 @@ describe('HaberesDescuentosService', () => {
 
     expect(repository.obtenerConceptoParaAsignacion).not.toHaveBeenCalled();
     expect(repository.cerrarAsignacion).toHaveBeenCalled();
+  });
+
+  describe('resolverSnapshotConceptoParaMovimientoVariableManual', () => {
+    const refMayo2026 = new Date(2026, 4, 1, 0, 0, 0, 0);
+
+    it('devuelve snapshot cuando el concepto es asignable en la fecha de referencia', async () => {
+      repository.obtenerConceptoParaAsignacion.mockResolvedValue(conceptoAsignable());
+
+      const snap = await service.resolverSnapshotConceptoParaMovimientoVariableManual(10, refMayo2026);
+
+      expect(snap).toEqual({ tipo: 'HABER', calculoAutomatico: false, esSistema: false });
+      expect(repository.obtenerConceptoParaAsignacion).toHaveBeenCalledWith(10);
+    });
+
+    it('rechaza si el concepto no existe en catalogo', async () => {
+      repository.obtenerConceptoParaAsignacion.mockResolvedValue(null);
+
+      await expect(service.resolverSnapshotConceptoParaMovimientoVariableManual(999, refMayo2026)).rejects.toThrow(
+        /No se pudo validar el concepto/,
+      );
+    });
+
+    it('rechaza aporte empleador', async () => {
+      repository.obtenerConceptoParaAsignacion.mockResolvedValue({
+        ...conceptoAsignable(),
+        tipo: 'APORTE_EMPLEADOR',
+      });
+
+      await expect(service.resolverSnapshotConceptoParaMovimientoVariableManual(12, refMayo2026)).rejects.toThrow(
+        /aportes del empleador/,
+      );
+    });
+
+    it('rechaza concepto sistema o automatico antes de esConceptoAsignable', async () => {
+      repository.obtenerConceptoParaAsignacion.mockResolvedValue({
+        ...conceptoAsignable(),
+        esSistema: true,
+      });
+
+      await expect(service.resolverSnapshotConceptoParaMovimientoVariableManual(12, refMayo2026)).rejects.toThrow(
+        /automaticos o de sistema/,
+      );
+
+      repository.obtenerConceptoParaAsignacion.mockResolvedValue({
+        ...conceptoAsignable(),
+        calculoAutomatico: true,
+      });
+
+      await expect(service.resolverSnapshotConceptoParaMovimientoVariableManual(12, refMayo2026)).rejects.toThrow(
+        /automaticos o de sistema/,
+      );
+    });
+  });
+
+  describe('listarAsignacionesParaPrevalidacionMensual', () => {
+    it('usa listarTodasAsignacionesConConcepto y calcula intersectaPeriodo', async () => {
+      repository.listarTodasAsignacionesConConcepto.mockResolvedValue([
+        asignacionListadoBase({ idAsignacion: 1, vigenciaInicio: '2026-05-10', vigenciaFin: '2026-05-20' }),
+        asignacionListadoBase({ idAsignacion: 2, vigenciaInicio: '2027-01-01', vigenciaFin: null }),
+      ]);
+      const out = await service.listarAsignacionesParaPrevalidacionMensual('2026-05');
+      expect(repository.listarTodasAsignacionesConConcepto).toHaveBeenCalled();
+      expect(out[0].intersectaPeriodo).toBe(true);
+      expect(out[1].intersectaPeriodo).toBe(false);
+    });
   });
 });

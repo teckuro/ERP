@@ -42,8 +42,9 @@ No contradecir la jerarquía siguiente.
 
 1. `docs/codex/AGENTS.md` — contrato del agente: stack, layout obligatorio, tokens resumidos, anti‑patrones, checklist.
 2. `docs/codex/README.md` — índice padre: cómo pedir alcance, enlaces por módulo.
-3. `docs/codex/ui-form-guidelines.md` — tokens completos, formularios, MessageBox, loading, checklist visual.
-4. Guías de flujo concretas bajo `docs/codex/modulos/<módulo>/` (p. ej. `docs/codex/modulos/empleados/creacion-basica.md`); `docs/codex/temas/` para flujos transversales o stubs.
+3. `docs/codex/arquitectura/frontend-interfaces.md` — estructura Angular (páginas wrapper, contenedores, capas, anti‑patrones); leer si el alcance toca `src/app/pages/` o organización de `features/`.
+4. `docs/codex/ui-form-guidelines.md` — tokens completos, formularios, MessageBox, loading, checklist visual.
+5. Guías de flujo concretas bajo `docs/codex/modulos/<módulo>/` (p. ej. `docs/codex/modulos/empleados/creacion-basica.md`); `docs/codex/temas/` para flujos transversales o stubs.
 
 ## Cómo pedir trabajo (alinear con el README)
 
@@ -62,7 +63,7 @@ No contradecir la jerarquía siguiente.
 
 | Situación | Leer primero |
 |-----------|----------------|
-| Pantalla nueva o refino UI general | `AGENTS.md` → `ui-form-guidelines.md` → `ui-button-guidelines.md` |
+| Pantalla nueva o refino UI general | `AGENTS.md` → `arquitectura/frontend-interfaces.md` (si afecta rutas/contenedor/feature) → `ui-form-guidelines.md` → `ui-button-guidelines.md` |
 | Grilla / anchos / checklist 7 ítems | `docs/codex/estilos/README.md` |
 | Dónde está CSS y componentes compartidos | `docs/codex/temas/implementacion-ui.md` |
 | Módulos al estilo empleados | `docs/codex/temas/base-angular-empleados.md` |

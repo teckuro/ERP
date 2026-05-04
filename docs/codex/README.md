@@ -6,10 +6,11 @@
 
 1. **Orquestador** — contexto global, diseño operativo y fases: [`orquestador/README.md`](./orquestador/README.md), [`orquestador/contexto-proyecto.md`](./orquestador/contexto-proyecto.md), [`orquestador/diseno-operativo-erp.md`](./orquestador/diseno-operativo-erp.md), [`orquestador/estado-fases.md`](./orquestador/estado-fases.md).
 2. **Mapa de documentación** — inventario global / por módulo / histórico: [`orquestador/mapa-documentacion.md`](./orquestador/mapa-documentacion.md).
-3. **Contrato del agente y guías UI** — [`AGENTS.md`](./AGENTS.md), [`ui-form-guidelines.md`](./ui-form-guidelines.md), [`ui-button-guidelines.md`](./ui-button-guidelines.md), [`ui-tables.md`](./ui-tables.md), [`estilos/README.md`](./estilos/README.md).
-4. **Módulo** — [`modulos/<módulo>/README.md`](./modulos/empleados/README.md) (elegir carpeta: `empleados`, `parametros`, etc.).
-5. **Subflujo / pantalla** — el `.md` concreto dentro de esa carpeta (p. ej. [`modulos/empleados/ficha-empleado.md`](./modulos/empleados/ficha-empleado.md)).
-6. **`temas/`** — solo si hace falta un **flujo por rutas** ([`temas/flujos/README.md`](./temas/flujos/README.md)), UI de implementación ([`temas/implementacion-ui.md`](./temas/implementacion-ui.md)), menú ([`temas/crear-menu-base.md`](./temas/crear-menu-base.md)) o un doc **aún no migrado**. Muchos `.md` en la raíz de `temas/` son **stubs** (“Documento migrado…”) hacia `modulos/`.
+3. **Arquitectura frontend (Angular)** — páginas wrapper, contenedores, capas: [`arquitectura/frontend-interfaces.md`](./arquitectura/frontend-interfaces.md) (leer antes de rutas/pantallas/feature nuevos o refactors grandes).
+4. **Contrato del agente y guías UI** — [`AGENTS.md`](./AGENTS.md), [`ui-form-guidelines.md`](./ui-form-guidelines.md), [`ui-button-guidelines.md`](./ui-button-guidelines.md), [`ui-tables.md`](./ui-tables.md), [`estilos/README.md`](./estilos/README.md).
+5. **Módulo** — [`modulos/<módulo>/README.md`](./modulos/empleados/README.md) (elegir carpeta: `empleados`, `parametros`, etc.).
+6. **Subflujo / pantalla** — el `.md` concreto dentro de esa carpeta (p. ej. [`modulos/empleados/ficha-empleado.md`](./modulos/empleados/ficha-empleado.md)).
+7. **`temas/`** — solo si hace falta un **flujo por rutas** ([`temas/flujos/README.md`](./temas/flujos/README.md)), UI de implementación ([`temas/implementacion-ui.md`](./temas/implementacion-ui.md)), menú ([`temas/crear-menu-base.md`](./temas/crear-menu-base.md)) o un doc **aún no migrado**. Muchos `.md` en la raíz de `temas/` son **stubs** (“Documento migrado…”) hacia `modulos/`.
 
 ### Cada petición: qué pedir y qué se aplica
 
@@ -19,8 +20,18 @@
 4. **Jerarquía** (en conflicto gana el primero):
    1. [`AGENTS.md`](./AGENTS.md)
    2. **Este README** — índice y orden de lectura; no sustituye `AGENTS.md`.
-   3. [`ui-form-guidelines.md`](./ui-form-guidelines.md)
-   4. Documentos bajo [`modulos/`](./modulos/empleados/README.md) (y transversales en `temas/` cuando aplique).
+   3. [`arquitectura/frontend-interfaces.md`](./arquitectura/frontend-interfaces.md) — estructura Angular (`pages` vs `features`, contenedores, capas).
+   4. [`ui-form-guidelines.md`](./ui-form-guidelines.md)
+   5. Documentos bajo [`modulos/`](./modulos/empleados/README.md) (y transversales en `temas/` cuando aplique).
+
+---
+
+## `docs/codex/arquitectura/` — contratos transversales de código
+
+| Documento | Contenido |
+|-------------|-------------|
+| [`arquitectura/README.md`](./arquitectura/README.md) | Índice de esta carpeta |
+| [`arquitectura/frontend-interfaces.md`](./arquitectura/frontend-interfaces.md) | Contrato frontend Angular (inglés): wrappers en `pages/`, contenedores, servicios, reglas |
 
 ---
 
@@ -32,6 +43,7 @@
 | Parámetros | [`modulos/parametros/README.md`](./modulos/parametros/README.md) |
 | Conceptos remuneración | [`modulos/conceptos-remuneracion/README.md`](./modulos/conceptos-remuneracion/README.md) (diagnóstico + [`contrato-funcional.md`](./modulos/conceptos-remuneracion/contrato-funcional.md)) |
 | Haberes y descuentos | [`modulos/haberes-descuentos/README.md`](./modulos/haberes-descuentos/README.md) |
+| Movimientos variables (mensuales) | [`modulos/movimientos-variables/README.md`](./modulos/movimientos-variables/README.md) |
 | Nómina mensual (visión) | [`modulos/nomina-mensual/README.md`](./modulos/nomina-mensual/README.md) |
 
 ---
@@ -66,6 +78,16 @@
 |-----------|-----------|
 | [`peticiones-estilos.md`](./peticiones-estilos.md) | Registro de mejoras visuales por fecha |
 | [`peticiones-fusion-items-1-65.md`](./peticiones-fusion-items-1-65.md) | Índice de trabajo fusionado |
+
+---
+
+## Auditorías (hallazgos priorizados)
+
+| Documento | Contenido |
+|-----------|-----------|
+| [`auditorias/README.md`](./auditorias/README.md) | Índice de auditorías |
+| [`auditorias/qa-chile-01-remuneraciones.md`](./auditorias/qa-chile-01-remuneraciones.md) | QA-CHILE-01: remuneraciones chilenas (riesgos, brechas, checklist) |
+| [`auditorias/param-chile-01-parametros-y-demo-proceso.md`](./auditorias/param-chile-01-parametros-y-demo-proceso.md) | PARAM-CHILE-01: parametros reales vs demo en proceso mensual (ALTO-004) |
 
 ---
 

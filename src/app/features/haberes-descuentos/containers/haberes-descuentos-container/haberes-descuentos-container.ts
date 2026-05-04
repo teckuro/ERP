@@ -11,7 +11,7 @@ import {
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { LucideAngularModule } from 'lucide-angular';
 import { Edit, LoaderCircle, Plus, RefreshCw } from 'lucide-angular/src/icons';
 
@@ -112,6 +112,7 @@ function etiquetaNaturalezaFn(n: string | null): string {
     CardComponent,
     CardHeaderComponent,
     CardContentComponent,
+    RouterLink,
   ],
   templateUrl: './haberes-descuentos-container.html',
   styleUrl: './haberes-descuentos-container.css',

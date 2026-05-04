@@ -1,0 +1,304 @@
+<div class="space-y-6">
+  <div class="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+    <div>
+      <h1 class="text-xl font-semibold text-gray-900">Proceso mensual</h1>
+      <p class="text-sm text-gray-600 mt-1">Periodo global (app): {{ periodoActivo.etiqueta() }}</p>
+    </div>
+    <div class="flex flex-wrap items-center gap-2">
+      <label class="text-sm text-gray-700" for="pm-periodo">Periodo a validar</label>
+      <input
+        id="pm-periodo"
+        type="month"
+        class="rounded border border-gray-300 px-2 py-1 text-sm text-gray-900"
+        [value]="periodoSeleccionado()"
+        (change)="onPeriodoInput($event)"
+      />
+      <app-button variant="primary" size="sm" [disabled]="validando()" (click)="validarPeriodo()">
+        {{ validando() ? 'Validando...' : 'Validar periodo' }}
+      </app-button>
+    </div>
+  </div>
+
+  <app-card>
+    <app-card-content className="p-4">
+      <div class="flex items-start gap-3">
+        <lucide-icon class="w-5 h-5 text-slate-600 flex-shrink-0 mt-0.5" name="info"></lucide-icon>
+        <div class="text-sm text-gray-700 space-y-2">
+          <p class="font-medium text-gray-900">Esta etapa no calcula remuneraciones ni genera liquidaciones.</p>
+          <p>
+            Los valores normativos del periodo se administran en
+            <a routerLink="/parametros" class="text-blue-700 underline font-medium">Parametros</a>. Esta vista no
+            muestra montos ni tablas normativas: solo estado de prevalidacion.
+          </p>
+          <p class="text-gray-600">
+            Use &quot;Validar periodo&quot; para leer parametros, trabajadores, conceptos y movimientos variables del
+            mes seleccionado (sin motor).
+          </p>
+        </div>
+      </div>
+    </app-card-content>
+  </app-card>
+
+  <app-card>
+    <app-card-content className="p-6">
+      <div class="flex items-center justify-between">
+        @for (step of steps; track step.number; let i = $index) {
+          <div class="flex items-center flex-1">
+            <div class="flex flex-col items-center gap-2">
+              <div
+                class="w-14 h-14 rounded-full flex items-center justify-center transition-all"
+                [class.bg-blue-600]="currentStep() === step.number"
+                [class.text-white]="currentStep() === step.number"
+                [class.ring-4]="currentStep() === step.number"
+                [class.ring-blue-100]="currentStep() === step.number"
+                [class.scale-110]="currentStep() === step.number"
+                [class.bg-green-600]="currentStep() > step.number"
+                [class.text-white]="currentStep() > step.number"
+                [class.bg-gray-200]="currentStep() < step.number"
+                [class.text-gray-600]="currentStep() < step.number"
+              >
+                @if (currentStep() > step.number) {
+                  <lucide-icon class="w-6 h-6" name="check"></lucide-icon>
+                } @else {
+                  <lucide-icon class="w-6 h-6" [name]="step.icon"></lucide-icon>
+                }
+              </div>
+              <div class="text-center">
+                <p
+                  class="text-sm font-medium"
+                  [class.text-blue-600]="currentStep() === step.number"
+                  [class.text-gray-700]="currentStep() !== step.number"
+                >
+                  {{ step.title }}
+                </p>
+                <p class="text-xs text-gray-600 mt-1">{{ step.description }}</p>
+              </div>
+            </div>
+            @if (i < steps.length - 1) {
+              <div
+                class="flex-1 h-0.5 mx-4 mt-[-40px]"
+                [class.bg-green-600]="currentStep() > step.number"
+                [class.bg-gray-200]="currentStep() <= step.number"
+              ></div>
+            }
+          </div>
+        }
+      </div>
+    </app-card-content>
+  </app-card>
+
+  <app-card>
+    <app-card-content className="p-6">
+      @if (currentStep() === 1) {
+        <div class="space-y-6">
+          <div class="rounded-lg border border-slate-200 bg-white p-4">
+            <div class="flex flex-wrap items-center justify-between gap-2">
+              <h3 class="font-semibold text-gray-900">Estado del periodo</h3>
+              @if (resultado(); as res) {
+                <app-badge [variant]="badgeVariantEstado(res.estado)">{{ etiquetaEstadoGlobal(res.estado) }}</app-badge>
+              } @else {
+                <app-badge variant="default">{{ etiquetaEstadoGlobal(null) }}</app-badge>
+              }
+            </div>
+            @if (errorEjecucion(); as err) {
+              <p class="mt-2 text-sm text-red-700">{{ err }}</p>
+            }
+            @if (resultado(); as res) {
+              <p class="mt-2 text-sm text-gray-600">
+                Resumen: activos aptos {{ res.resumen.trabajadoresActivosAptos }}, activos no aptos
+                {{ res.resumen.trabajadoresActivosNoAptos }}, parametros operativos
+                {{ res.resumen.parametrosOperativos ? 'si' : 'no' }}.
+              </p>
+              <p class="mt-1 text-sm text-gray-600">
+                Recurrentes aplicables al mes: {{ res.resumen.recurrentesAplicablesAlPeriodo }}; invalidas:
+                {{ res.resumen.recurrentesInvalidas }}; fuera del mes: {{ res.resumen.recurrentesFueraDelMes }}; cerradas:
+                {{ res.resumen.recurrentesCerradas }}.
+              </p>
+              @if (res.resumen.parametrosGrupos.length) {
+                <p class="mt-1 text-xs text-gray-500">
+                  Parametros (grupos):
+                  @for (g of res.resumen.parametrosGrupos; track g.id) {
+                    <span>{{ g.id }}={{ g.clasificacion }}</span>@if (!$last) {<span>; </span>}
+                  }
+                </p>
+              }
+            }
+          </div>
+
+          <div class="grid gap-4 md:grid-cols-2">
+            <div class="rounded-lg border border-slate-200 p-4">
+              <h4 class="text-sm font-semibold text-gray-900">Bloqueos</h4>
+              @if (resultado()?.bloqueos?.length) {
+                <ul class="mt-2 list-inside list-disc space-y-1 text-sm text-red-800">
+                  @for (b of resultado()!.bloqueos; track b.codigo) {
+                    <li>{{ b.texto }}</li>
+                  }
+                </ul>
+              } @else {
+                <p class="mt-2 text-sm text-gray-600">Sin bloqueos en la ultima evaluacion.</p>
+              }
+            </div>
+            <div class="rounded-lg border border-slate-200 p-4">
+              <h4 class="text-sm font-semibold text-gray-900">Advertencias</h4>
+              @if (resultado()?.advertencias?.length) {
+                <ul class="mt-2 list-inside list-disc space-y-1 text-sm text-yellow-900">
+                  @for (a of resultado()!.advertencias; track a.codigo) {
+                    <li>{{ a.texto }}</li>
+                  }
+                </ul>
+              } @else {
+                <p class="mt-2 text-sm text-gray-600">Sin advertencias en la ultima evaluacion.</p>
+              }
+            </div>
+          </div>
+
+          @if (resultado()?.informaciones?.length) {
+            <div class="rounded-lg border border-slate-100 bg-slate-50 p-4">
+              <h4 class="text-sm font-semibold text-gray-800">Pendientes / informativo</h4>
+              <ul class="mt-2 list-inside list-disc space-y-1 text-sm text-gray-700">
+                @for (i of resultado()!.informaciones; track i.codigo) {
+                  <li>{{ i.texto }}</li>
+                }
+              </ul>
+            </div>
+          }
+
+          <div class="rounded-lg border border-slate-200 p-4">
+            <h4 class="text-sm font-semibold text-gray-900">Areas</h4>
+            <dl class="mt-3 space-y-2 text-sm">
+              @for (it of resultado()?.items ?? []; track it.area) {
+                <div class="flex flex-wrap justify-between gap-2 border-b border-slate-100 pb-2 last:border-0">
+                  <dt class="text-gray-800">{{ it.etiqueta }}</dt>
+                  <dd class="text-gray-600">
+                    {{ it.estado }}
+                    @if (it.detalle) {
+                      <span class="text-gray-500"> — {{ it.detalle }}</span>
+                    }
+                  </dd>
+                </div>
+              }
+              @if (!resultado()) {
+                <p class="text-gray-600">Ejecute &quot;Validar periodo&quot; para ver Parametros, Trabajadores, Conceptos, Haberes recurrentes, Movimientos variables y Liquidaciones futuras.</p>
+              }
+            </dl>
+          </div>
+        </div>
+      } @else if (currentStep() === 2) {
+        <div class="space-y-6 text-center py-8">
+          <div class="w-20 h-20 bg-slate-100 rounded-full flex items-center justify-center mx-auto">
+            <lucide-icon class="w-10 h-10 text-slate-500" name="calculator"></lucide-icon>
+          </div>
+          <h3 class="text-lg font-semibold text-gray-900">Calculo masivo</h3>
+          <p class="text-gray-600 max-w-lg mx-auto">
+            Este modulo no ejecuta calculo de remuneraciones ni totales de nomina. Cuando exista motor y
+            parametros validados por periodo, aqui se mostrara el estado del proceso.
+          </p>
+          <app-button variant="outline" size="lg" [disabled]="true">Calculo no disponible</app-button>
+        </div>
+      } @else if (currentStep() === 3) {
+        <div class="space-y-6">
+          <div class="text-center mb-6">
+            <h3 class="text-lg font-semibold text-gray-900">Exportaciones (Previred, banco, LRE)</h3>
+            <p class="text-gray-600 mt-1">
+              Las descargas reales dependen de liquidaciones y parametros oficiales. Aqui no se generan archivos ni
+              montos.
+            </p>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <app-card className="border border-purple-100">
+              <app-card-content className="p-6">
+                <div class="flex flex-col items-center text-center">
+                  <div class="w-16 h-16 bg-purple-50 rounded-full flex items-center justify-center mb-4">
+                    <lucide-icon class="w-8 h-8 text-purple-600" name="upload"></lucide-icon>
+                  </div>
+                  <h4 class="font-semibold text-gray-900 mb-2">Previred</h4>
+                  <p class="text-sm text-gray-600 mb-4">Pendiente integracion con liquidaciones cerradas.</p>
+                  <app-button variant="outline" className="w-full" [disabled]="true">No disponible</app-button>
+                </div>
+              </app-card-content>
+            </app-card>
+
+            <app-card className="border border-green-100">
+              <app-card-content className="p-6">
+                <div class="flex flex-col items-center text-center">
+                  <div class="w-16 h-16 bg-green-50 rounded-full flex items-center justify-center mb-4">
+                    <lucide-icon class="w-8 h-8 text-green-600" name="file-spreadsheet"></lucide-icon>
+                  </div>
+                  <h4 class="font-semibold text-gray-900 mb-2">Carga bancaria</h4>
+                  <p class="text-sm text-gray-600 mb-4">Pendiente integracion con liquidaciones y bancos.</p>
+                  <app-button variant="outline" className="w-full" [disabled]="true">No disponible</app-button>
+                </div>
+              </app-card-content>
+            </app-card>
+
+            <app-card className="border border-blue-100">
+              <app-card-content className="p-6">
+                <div class="flex flex-col items-center text-center">
+                  <div class="w-16 h-16 bg-blue-50 rounded-full flex items-center justify-center mb-4">
+                    <lucide-icon class="w-8 h-8 text-blue-600" name="file-text"></lucide-icon>
+                  </div>
+                  <h4 class="font-semibold text-gray-900 mb-2">Libro de remuneraciones (LRE)</h4>
+                  <p class="text-sm text-gray-600 mb-4">Pendiente generacion desde motor y snapshots.</p>
+                  <app-button variant="outline" className="w-full" [disabled]="true">No disponible</app-button>
+                </div>
+              </app-card-content>
+            </app-card>
+          </div>
+
+          <app-card className="bg-gray-50">
+            <app-card-content>
+              <div class="flex items-start gap-3">
+                <lucide-icon class="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" name="alert-circle"></lucide-icon>
+                <div class="text-sm text-gray-700">
+                  <p class="font-medium text-gray-900 mb-2">Recordatorios</p>
+                  <ul class="space-y-1 list-disc list-inside">
+                    <li>Plazos y formatos oficiales se aplican cuando el producto este integrado.</li>
+                    <li>No use esta pantalla como calendario de vencimientos hasta tener fuentes validadas.</li>
+                  </ul>
+                </div>
+              </div>
+            </app-card-content>
+          </app-card>
+        </div>
+      } @else {
+        <div class="space-y-6">
+          <div class="text-center py-12">
+            <div class="w-20 h-20 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-4">
+              <lucide-icon class="w-10 h-10 text-blue-600" name="lock"></lucide-icon>
+            </div>
+            <h3 class="text-lg font-semibold text-gray-900">Cierre de periodo {{ periodoActivo.etiqueta() }}</h3>
+            <p class="text-gray-600 mt-2">
+              El cierre real bloqueara ediciones cuando exista proceso mensual productivo y estado de periodo en
+              base de datos.
+            </p>
+
+            <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 max-w-md mx-auto mt-6">
+              <div class="flex gap-3">
+                <lucide-icon class="w-5 h-5 text-yellow-600 flex-shrink-0 mt-0.5" name="alert-circle"></lucide-icon>
+                <div class="text-sm text-gray-700 text-left">
+                  <p class="font-medium text-yellow-900 mb-2">Antes de un cierre real, verifique en otros modulos:</p>
+                  <ul class="space-y-1 list-disc list-inside text-yellow-800">
+                    <li>Liquidaciones generadas y auditadas</li>
+                    <li>Archivos de cotizacion y pago segun procedimiento interno</li>
+                    <li>Parametros del periodo cargados en Parametros</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+
+            <app-button variant="primary" size="lg" className="mt-8" [disabled]="true">
+              Cierre no disponible en esta version
+            </app-button>
+          </div>
+        </div>
+      }
+    </app-card-content>
+  </app-card>
+
+  <div class="flex items-center justify-between">
+    <app-button variant="outline" [disabled]="currentStep() === 1" (click)="prevStep()">Anterior</app-button>
+    <div class="text-sm text-gray-600">Paso {{ currentStep() }} de {{ steps.length }}</div>
+    <app-button variant="primary" [disabled]="currentStep() === 4" (click)="nextStep()">Siguiente</app-button>
+  </div>
+</div>

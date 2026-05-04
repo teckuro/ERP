@@ -424,6 +424,51 @@ export class HaberesDescuentosRepository {
     return (data ?? []).map((row) => mapAsignacion(row as HdWithConcept));
   }
 
+  /** Listado global de asignaciones recurrentes (join concepto) para prevalidacion por periodo. */
+  async listarTodasAsignacionesConConcepto(): Promise<HaberDescuentoAsignacionListado[]> {
+    const { data, error } = await this.supabase
+      .from('haberdescuento_persona')
+      .select(
+        `
+        id_asignacion,
+        id_persona,
+        id_concepto,
+        id_contrato,
+        monto,
+        porcentaje,
+        tipo,
+        tipohaber,
+        estado,
+        periodicidad,
+        vigencia_inicio,
+        vigencia_fin,
+        observacion,
+        concepto (
+          id_concepto,
+          codigo,
+          nombre,
+          tipo,
+          naturaleza,
+          imponible,
+          tributable,
+          es_sistema,
+          calculo_automatico,
+          catalogo_lre (
+            codigo_lre
+          )
+        )
+      `,
+      )
+      .order('id_persona', { ascending: true })
+      .order('id_asignacion', { ascending: true });
+
+    if (error) {
+      throw new Error(error.message);
+    }
+
+    return (data ?? []).map((row) => mapAsignacion(row as HdWithConcept));
+  }
+
   async existeActivaMismoConcepto(
     idPersona: number,
     idConcepto: number,

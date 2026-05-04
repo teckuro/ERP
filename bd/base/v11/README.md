@@ -22,6 +22,8 @@ Estados validos:
 2. Ejecutar `partes/12_migracion_lre_datos_incremental.sql` solo si corresponde cargar catalogo/demo LRE incremental.
 3. Para Parametros, aplicar solo scripts incrementales revisados para el ambiente. No usar `run_all.sql` ni `00_reset.sql` sobre produccion con datos que quieras conservar.
 
+4. Si la base se creo antes de la tabla `movimiento_variable_mensual`, ejecutar `partes/14_movimiento_variable_mensual.sql` una vez (no forma parte de `run_all.sql` si ya incorporaste el bloque en `02_tablas.sql` en un fresh install).
+
 `12_migracion_lre_datos_incremental.sql` requiere que existan `persona`/`contrato` con IDs coherentes si se dejan los datos demo.
 
 ### Orden de ejecucion fresh local (`partes/`)
@@ -39,6 +41,7 @@ Estados validos:
 11. `10_periodo_catalogos.sql`: periodo/vigencia/catalogos para Parametros.
 12. `11_parametros_generales_ampliacion.sql`: columnas extendidas de `parametros_generales`.
 13. `13_persona_paso_alta_avanzada.sql`: soporte para continuar alta avanzada.
+14. `14_movimiento_variable_mensual.sql`: tabla movimientos variables mensuales (Fase 9.4C); solo para BD ya creada sin pasar por `02_tablas.sql` actualizado (idempotente).
 
 ### Ejecucion fresh local
 

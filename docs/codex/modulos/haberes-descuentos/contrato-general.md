@@ -8,7 +8,7 @@
 ## Que no cubre
 
 - No son liquidaciones ni resultado de calculo mensual cerrado.
-- No son movimientos variables (horas extra, bonos puntuales, comisiones, etc.); eso queda para fase futura.
+- No son **movimientos variables mensuales** (bonos puntuales del mes, comision del periodo, HE del periodo, etc.); ese dominio tiene contrato en [`../movimientos-variables/contrato-general.md`](../movimientos-variables/contrato-general.md) (Fase 9.4A), persistencia en [`../movimientos-variables/persistencia-9-4C.md`](../movimientos-variables/persistencia-9-4C.md) y carga puntual en UI [`../movimientos-variables/ui-9-4E.md`](../movimientos-variables/ui-9-4E.md) (ruta `/remuneraciones/movimientos-variables`).
 - No sustituye el catalogo de Conceptos; las asignaciones deben referenciar conceptos gobernados.
 
 ## Navegacion oficial
@@ -32,6 +32,8 @@ Haberes y descuentos administra asignaciones recurrentes por trabajador. No es c
 ## Dependencia
 
 Reglas de listado asignable dependen del modulo Conceptos: [`../conceptos-remuneracion/decisiones-operativas.md`](../conceptos-remuneracion/decisiones-operativas.md), [`../conceptos-remuneracion/contrato-funcional.md`](../conceptos-remuneracion/contrato-funcional.md), [`../conceptos-remuneracion/contrato-general.md`](../conceptos-remuneracion/contrato-general.md), reglas de asignabilidad y acciones en codigo (`concepto-asignabilidad.rules.ts`, `concepto-acciones.rules.ts`) y del tablero [`../../orquestador/estado-fases.md`](../../orquestador/estado-fases.md). El servicio `HaberesDescuentosService` filtra y valida con `esConceptoAsignable` (misma regla que el catalogo).
+
+**CHILE-FIX-01 (movimientos variables):** el mismo criterio de concepto asignable en una fecha de referencia se expone en `resolverSnapshotConceptoParaMovimientoVariableManual` para que `MovimientosVariablesService` valide altas manuales sin confiar en snapshot de cliente. Ver [`../movimientos-variables/hardening-chile-fix-01.md`](../movimientos-variables/hardening-chile-fix-01.md).
 
 ## Fase 9.3A - Vigencias, duplicados y reglas recurrentes
 
@@ -163,3 +165,7 @@ Haberes y descuentos muestra por defecto las asignaciones recurrentes operativas
 ### No incluido
 
 Esta fase no implementa auditoria avanzada, movimientos variables, proceso mensual, motor, liquidaciones, Previred, LRE final, login, roles, JWT, RLS, SQL destructivo ni redisenio visual profundo.
+
+## Integracion Proceso mensual (Fase 9.5B)
+
+El modulo expone listado global de asignaciones con concepto (`HaberesDescuentosRepository.listarTodasAsignacionesConConcepto`) y el metodo `HaberesDescuentosService.listarAsignacionesParaPrevalidacionMensual(periodo)`, que reutiliza `vigenciaIntersecaMes` y `clasificarVigenciaAsignacion` para alimentar prevalidaciones de **Nomina mensual** sin calcular liquidaciones. Contrato del consumidor: [`../nomina-mensual/prevalidaciones-9-5B.md`](../nomina-mensual/prevalidaciones-9-5B.md).

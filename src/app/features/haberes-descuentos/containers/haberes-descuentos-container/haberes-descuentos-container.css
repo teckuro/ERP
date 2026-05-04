@@ -870,6 +870,17 @@
   margin: 0;
 }
 
+.hd-nomina-hint-link {
+  color: #2563eb;
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.hd-nomina-hint-link:hover {
+  color: #1d4ed8;
+}
+
 .hd-modal--wide {
   width: min(56rem, calc(100vw - 2rem));
   max-height: min(92vh, 52rem);

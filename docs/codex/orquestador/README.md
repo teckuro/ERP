@@ -19,16 +19,18 @@ Conjunto de documentos **globales y breves** para que Codex, Cursor, ChatGPT u o
 3. [`estado-fases.md`](./estado-fases.md) — tablero de fases, siguiente paso y criterios para avanzar.
 4. [`mapa-documentacion.md`](./mapa-documentacion.md) — lista de documentos globales, por módulo, vigentes en `temas/`, stubs y archivo.
 5. [`../AGENTS.md`](../AGENTS.md) — contrato del agente (stack, layout, anti‑patrones, checklist).
-6. [`../README.md`](../README.md) — índice padre y jerarquía.
-7. **[`../modulos/<módulo>/README.md`](../modulos/empleados/README.md)** y luego el **documento del subflujo** que corresponda.
+6. [`../arquitectura/frontend-interfaces.md`](../arquitectura/frontend-interfaces.md) — si el trabajo afecta estructura Angular (`pages/` vs `features/`, contenedores).
+7. [`../README.md`](../README.md) — índice padre y jerarquía.
+8. **[`../modulos/<módulo>/README.md`](../modulos/empleados/README.md)** y luego el **documento del subflujo** que corresponda.
 
-Siempre debe quedar claro: primero **contexto + diseño operativo + fases + mapa**, después **contrato (`AGENTS` + UI)**, después **módulo**, después **pantalla**. Los recorridos por ruta siguen en [`../temas/flujos/README.md`](../temas/flujos/README.md).
+Siempre debe quedar claro: primero **contexto + diseño operativo + fases + mapa**, después **contrato (`AGENTS` + UI + arquitectura frontend si aplica)**, después **módulo**, después **pantalla**. Los recorridos por ruta siguen en [`../temas/flujos/README.md`](../temas/flujos/README.md).
 
 ## Relación con `docs/codex/modulos` y `docs/codex/temas`
 
 | Carpeta / doc | Rol |
 |-----------------|-----|
 | `orquestador/` | Contexto global, diseño operativo, orden del producto, qué no construir aún. |
+| `arquitectura/` | Contratos de código transversal (p. ej. [`../arquitectura/frontend-interfaces.md`](../arquitectura/frontend-interfaces.md)). |
 | `modulos/` | Contratos y guías **por módulo y subflujo** (fuente vigente para empleados, parámetros, etc.). |
 | `temas/` | Flujos por app, UI transversal, menú; **stubs** hacia `modulos/` donde aplica; ver [`../temas/README.md`](../temas/README.md). |
 

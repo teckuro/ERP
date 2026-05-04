@@ -152,3 +152,10 @@ La vista historica y los filtros por estado de vigencia son responsabilidad de H
 
 **No incluido en 9.2 mínimo:** UI de `regla_concepto_calculo`, motor, liquidaciones, nómina, Parámetros, Python.
 
+---
+
+## 12. Relacion con Movimientos variables (Fase 9.4A documental)
+
+Los **movimientos variables mensuales** consumen conceptos del catalogo pero son un **modulo distinto** de las asignaciones recurrentes. Ver [`../movimientos-variables/decisiones-operativas.md`](../movimientos-variables/decisiones-operativas.md) (uso de concepto, duplicados v1, periodo `YYYY-MM`).
+
+**Pendiente:** definir en catalogo o en reglas si un concepto puede usarse solo en recurrentes, solo en variables o en ambos; hasta entonces el contrato guia en movimientos variables aplica filtros conceptuales (tipos haber/descuento, no automatico de sistema, etc.) sin nuevo campo obligatorio en 9.4A.

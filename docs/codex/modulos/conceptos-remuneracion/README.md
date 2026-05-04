@@ -29,3 +29,7 @@
 ## Relación con Haberes y descuentos
 
 El código del mantenedor comparte **`HaberesDescuentosService`** con asignaciones recurrentes. El contrato de **asignaciones** sigue en [`../haberes-descuentos/contrato-general.md`](../haberes-descuentos/contrato-general.md); las reglas del **catálogo concepto** viven en este módulo.
+
+## Relacion con Movimientos variables
+
+Los movimientos variables mensuales **referencian** conceptos del catalogo pero no son el mantenedor de `concepto`. Contrato, decisiones y modelo v1 (validacion opcional por snapshot sin acoplar a `concepto-asignabilidad`): [`../movimientos-variables/README.md`](../movimientos-variables/README.md), [`contrato-funcional.md`](./contrato-funcional.md) §17.

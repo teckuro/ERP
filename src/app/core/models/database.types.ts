@@ -1838,6 +1838,73 @@ export type Database = {
           },
         ]
       }
+      movimiento_variable_mensual: {
+        Row: {
+          estado: string
+          fecha_actualizacion: string
+          fecha_anulacion: string | null
+          fecha_registro: string
+          id_concepto: number
+          id_movimiento_variable: number
+          id_persona: number
+          monto: number
+          motivo_anulacion: string | null
+          observacion: string | null
+          origen: string
+          periodo: string
+        }
+        Insert: {
+          estado?: string
+          fecha_actualizacion?: string
+          fecha_anulacion?: string | null
+          fecha_registro?: string
+          id_concepto: number
+          id_movimiento_variable?: number
+          id_persona: number
+          monto: number
+          motivo_anulacion?: string | null
+          observacion?: string | null
+          origen?: string
+          periodo: string
+        }
+        Update: {
+          estado?: string
+          fecha_actualizacion?: string
+          fecha_anulacion?: string | null
+          fecha_registro?: string
+          id_concepto?: number
+          id_movimiento_variable?: number
+          id_persona?: number
+          monto?: number
+          motivo_anulacion?: string | null
+          observacion?: string | null
+          origen?: string
+          periodo?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "movimiento_variable_mensual_id_concepto_fkey"
+            columns: ["id_concepto"]
+            isOneToOne: false
+            referencedRelation: "concepto"
+            referencedColumns: ["id_concepto"]
+          },
+          {
+            foreignKeyName: "movimiento_variable_mensual_id_persona_fkey"
+            columns: ["id_persona"]
+            isOneToOne: false
+            referencedRelation: "persona"
+            referencedColumns: ["id_persona"]
+          },
+          {
+            foreignKeyName: "movimiento_variable_mensual_id_persona_fkey"
+            columns: ["id_persona"]
+            isOneToOne: false
+            referencedRelation: "vw_persona_factores"
+            referencedColumns: ["id_persona"]
+          },
+        ]
+      }
       organismo_administrador_ley_16744: {
         Row: {
           codigo: string
@@ -2466,31 +2533,46 @@ export type Database = {
       reforma_previsional_parametro: {
         Row: {
           aporte_empleador_total: number
+          codigo: string | null
+          cotizacion_rentabilidad_protegida: number
           cuenta_capitalizacion_individual: number
           fapp_seguro_social: number
           fuente: string | null
           id_reforma_previsional_parametro: number
+          ley_referencia: string | null
+          observacion: string | null
           periodo: string | null
+          seguro_social_sis_cev: number
           vigencia_fin: string | null
           vigencia_inicio: string
         }
         Insert: {
           aporte_empleador_total: number
+          codigo?: string | null
+          cotizacion_rentabilidad_protegida?: number
           cuenta_capitalizacion_individual: number
           fapp_seguro_social: number
           fuente?: string | null
           id_reforma_previsional_parametro?: number
+          ley_referencia?: string | null
+          observacion?: string | null
           periodo?: string | null
+          seguro_social_sis_cev?: number
           vigencia_fin?: string | null
           vigencia_inicio: string
         }
         Update: {
           aporte_empleador_total?: number
+          codigo?: string | null
+          cotizacion_rentabilidad_protegida?: number
           cuenta_capitalizacion_individual?: number
           fapp_seguro_social?: number
           fuente?: string | null
           id_reforma_previsional_parametro?: number
+          ley_referencia?: string | null
+          observacion?: string | null
           periodo?: string | null
+          seguro_social_sis_cev?: number
           vigencia_fin?: string | null
           vigencia_inicio?: string
         }

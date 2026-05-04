@@ -7,18 +7,20 @@
 
 ## Objetivo del usuario
 
-Pantalla de **proceso mensual** o checklist de remuneraciones (según evolución del producto). En el orquestador figura como **futuro** respecto al checklist completo (parámetros, aptos, recurrentes, variables, cálculo, cierre).
+Pantalla de **proceso mensual**: prevalidaciones por periodo (`9.5A`); motor y liquidaciones siguen **futuros** en codigo.
 
 ## Recorrido típico
 
 1. Acceder desde el menú.
-2. Seguir los pasos que la UI exponga (placeholder de producto hasta cerrar fase).
+2. Elegir periodo `YYYY-MM` y pulsar **Validar periodo**.
+3. Revisar bloqueos, advertencias y areas; avanzar pasos solo como guia (calculo/export/cierre aun no productivos).
 
 ## Documentación relacionada
 
 | Tipo | Enlace |
 |------|--------|
-| Contrato del proceso mensual | **Pendiente** — `temas/proceso-remuneraciones-*.md`. |
+| Contrato modulo Nomina mensual | [`../../modulos/nomina-mensual/contrato-general.md`](../../modulos/nomina-mensual/contrato-general.md), [`../../modulos/nomina-mensual/prevalidaciones-9-5A.md`](../../modulos/nomina-mensual/prevalidaciones-9-5A.md) |
+| Auditoria demo vs parametros (PARAM-CHILE-01) | [`../../auditorias/param-chile-01-parametros-y-demo-proceso.md`](../../auditorias/param-chile-01-parametros-y-demo-proceso.md) |
 | Orquestador — camino oficial | [`../../orquestador/contexto-proyecto.md`](../../orquestador/contexto-proyecto.md) §12 |
 | UI general | [`../../AGENTS.md`](../../AGENTS.md) |
 

@@ -28,7 +28,7 @@ Tablero **vivo** (a actualizar al cerrar fases) con: qué está **cerrado**, qu�
 **Fase fuerte Conceptos (implementación — 9.2):** **9.2A** cerró listado base (grilla, filtros, `esConceptoAsignable`, smoke E2E `tests/conceptos-remuneracion-listado.spec.ts`). **9.2B** cerró **detalle por Revisar** (modal, `concepto-acciones.rules.ts`, blindaje en grilla). **9.2C** alineó **Haberes y descuentos** al catálogo: `listarConceptos` y validación de alta/edición usan la **misma regla central** que Conceptos; tests unit en `haberes-descuentos.service.spec.ts`. **Siguiente** en 9.2: roles/JWT, `APORTE` solo Admin, RLS, reglas de cálculo en UI, E2E visual ampliado. Brechas: [`diagnostico-fase-9.md`](../modulos/conceptos-remuneracion/diagnostico-fase-9.md) §8, [`decisiones-operativas.md`](../modulos/conceptos-remuneracion/decisiones-operativas.md) §10–§11, [`contrato-funcional.md`](../modulos/conceptos-remuneracion/contrato-funcional.md) §4–§11. Punto de entrada: [`../modulos/conceptos-remuneracion/README.md`](../modulos/conceptos-remuneracion/README.md). Marco UX: [`diseno-operativo-erp.md`](./diseno-operativo-erp.md) §6. Contexto: [`contexto-proyecto.md`](./contexto-proyecto.md) §10 y §12.
 
 
-**Haberes y descuentos 9.3A-9.3C:** cerradas. Quedan implementadas vigencias/duplicados recurrentes, cierre/desactivacion controlada y vista historica con filtro de estado derivado. **Fase 9.3B.1** normalizo rutas y menu del dominio Remuneraciones bajo `/remuneraciones/*` (ver seccion dedicada abajo). Siguiente natural: auditoria/roles/RLS o integracion posterior con movimientos variables y proceso mensual, sin mezclar con motor ni liquidaciones.
+**Haberes y descuentos 9.3A-9.3C:** cerradas. Quedan implementadas vigencias/duplicados recurrentes, cierre/desactivacion controlada y vista historica con filtro de estado derivado. **Fase 9.3B.1** normalizo rutas y menu del dominio Remuneraciones bajo `/remuneraciones/*` (ver seccion dedicada abajo). **Fase 9.4A** cerro el **contrato documental** de **Movimientos variables mensuales** (separacion de recurrentes y de Conceptos; sin SQL ni UI productiva). **Fase 9.4B** agrego **modelo TypeScript y reglas puras** con tests unitarios (sin CRUD productivo ni SQL). **Fase 9.4C** agrego **DDL no destructivo** (`movimiento_variable_mensual`), script incremental `14_*.sql`, **repositorio y mappers** con validacion alineada a 9.4B (sin UI productiva, sin RLS, sin motor). **Fase 9.4D** agrego **`MovimientosVariablesService`** (capa fina sobre el repository, listado base como filas, tests con mock). **Fase 9.4E** agrego **UI de carga manual controlada** bajo `/remuneraciones/movimientos-variables` (listado por periodo, alta manual, anulacion con confirmacion; sin repository en UI). **CHILE-FIX-01** endurecio **crear/actualizar**: concepto desde catalogo (`HaberesDescuentosService`) y aptitud/contrato en periodo (`EmpleadosService`); ver [`../modulos/movimientos-variables/hardening-chile-fix-01.md`](../modulos/movimientos-variables/hardening-chile-fix-01.md) y seguimiento en [`../auditorias/qa-chile-01-remuneraciones.md`](../auditorias/qa-chile-01-remuneraciones.md). **PARAM-CHILE-01** limpio la UI de **Proceso mensual** frente a datos normativos demo (**ALTO-004**); informe [`../auditorias/param-chile-01-parametros-y-demo-proceso.md`](../auditorias/param-chile-01-parametros-y-demo-proceso.md). **Fase 9.5A** agrego **prevalidaciones** de proceso mensual (`ProcesoMensualService`, reglas puras, UI minima con lectura real vía servicios existentes; sin motor ni liquidaciones); ver [`../modulos/nomina-mensual/prevalidaciones-9-5A.md`](../modulos/nomina-mensual/prevalidaciones-9-5A.md). **Fase 9.5B** agrego **haberes recurrentes** filtrados al `YYYY-MM`, **grupos minimos de parametros** (`listarCatalogos` + `revisarGruposParametrosMinimos`) y resumen en contenedor; ver [`../modulos/nomina-mensual/prevalidaciones-9-5B.md`](../modulos/nomina-mensual/prevalidaciones-9-5B.md). Punto de entrada movimientos variables: [`../modulos/movimientos-variables/README.md`](../modulos/movimientos-variables/README.md). Punto de entrada proceso mensual: [`../modulos/nomina-mensual/README.md`](../modulos/nomina-mensual/README.md). Siguiente natural: motor / liquidaciones segun roadmap; auditoria/roles/RLS; edicion/importacion masiva de MV.
 
 ## 5. Pendientes técnicos no bloqueantes
 
@@ -45,7 +45,9 @@ Registrar en [`peticiones-estilos.md`](../peticiones-estilos.md) cuando haya cam
 
 - **Conceptos de remuneración** — **fase fuerte en ejecución**; Fase **9 documental** cerrada (diagnóstico + contrato + decisiones operativas). README y contratos: [`../modulos/conceptos-remuneracion/README.md`](../modulos/conceptos-remuneracion/README.md).
 - **Haberes y descuentos** (refuerzo de reglas y UI).
-- **Movimientos variables**, **proceso mensual**, **motor**, **liquidaciones**, **Previred**, **LRE** — ver [`contexto-proyecto.md`](./contexto-proyecto.md) secciones 10–12 y 15.
+- **Movimientos variables** — **9.4A** documental, **9.4B** modelo TS + reglas, **9.4C** SQL + repositorio, **9.4D** service fino y **9.4E** UI carga manual bajo `/remuneraciones/movimientos-variables` cerradas en alcance acordado; [`../modulos/movimientos-variables/README.md`](../modulos/movimientos-variables/README.md).
+- **Proceso mensual**, **motor**, **liquidaciones**, **Previred**, **LRE** — ver [`contexto-proyecto.md`](./contexto-proyecto.md) secciones 10–12 y 15.
+- **Arquitectura frontend Angular** — contrato [`../arquitectura/frontend-interfaces.md`](../arquitectura/frontend-interfaces.md): paginas wrapper en `pages/`, pantallas en `features/*/containers/`; paginas legacy con UI inline son deuda hasta migracion por fase.
 
 ### Fase 9.3A - Haberes y descuentos: vigencias, duplicados y reglas recurrentes
 
@@ -95,6 +97,126 @@ No incluido: motor, liquidaciones, nomina mensual, movimientos variables, audito
 
 Pruebas: `haber-descuento-vigencia.rules.spec.ts`, `haberes-descuentos.service.spec.ts`, `npm test -- --watch=false`.
 
+### Fase 9.4A - Movimientos variables mensuales: contrato funcional y separacion desde recurrentes
+
+Estado: **Cerrada** (alcance **documental**).
+
+Objetivo: definir contrato funcional de movimientos variables mensuales y separarlos de Conceptos (catalogo), Haberes recurrentes, Proceso mensual, Motor y Liquidaciones.
+
+Resultado: queda documentado que los movimientos variables son registros puntuales por trabajador, concepto y periodo `YYYY-MM`; no reemplazan recurrentes; no calculan liquidaciones; seran entrada futura del Proceso mensual solo en estado **VALIDADO** (o equivalente). Estados, validaciones, duplicados v1, anulacion vs delete fisico y ruta planificada `/remuneraciones/movimientos-variables` en [`../modulos/movimientos-variables/`](../modulos/movimientos-variables/README.md).
+
+No incluido: UI completa, CRUD productivo, SQL, migraciones, Supabase remoto, motor, liquidaciones, Previred/LRE, login, JWT/RLS, rediseno visual profundo.
+
+Pruebas: no aplica cambio de codigo en esta fase; ejecutar `npm test` solo si hubo modificaciones de codigo en el mismo entregable.
+
+### Fase 9.4B - Movimientos variables: modelo TypeScript y validaciones puras
+
+Estado: **Cerrada**.
+
+Objetivo: materializar tipos de dominio y helpers de validacion alineados al contrato 9.4A y a [`../modulos/movimientos-variables/decisiones-operativas.md`](../modulos/movimientos-variables/decisiones-operativas.md), antes de UI productiva y sin acoplarse a `concepto-asignabilidad.rules.ts` (validacion opcional por snapshot de concepto).
+
+Resultado: carpeta `src/app/features/movimientos-variables/` con `models/movimiento-variable.model.ts`, `rules/movimiento-variable-validacion.rules.ts` y spec asociado; anexo técnico [`../modulos/movimientos-variables/modelo-tecnico-9-4B.md`](../modulos/movimientos-variables/modelo-tecnico-9-4B.md).
+
+No incluido: SQL, migraciones, Supabase remoto, pantalla productiva, motor, liquidaciones, proceso mensual productivo, JWT/RLS, importadores masivos.
+
+Pruebas: `movimiento-variable-validacion.rules.spec.ts`, `npm test -- --watch=false`.
+
+### Fase 9.4C - Movimientos variables mensuales: SQL no destructivo y repositorio base antes de UI
+
+Estado: **Cerrada**.
+
+Objetivo: preparar persistencia local no destructiva y repositorio base para movimientos variables mensuales antes de implementar UI productiva.
+
+Resultado: queda definido SQL no destructivo para `movimiento_variable_mensual` en `bd/base/v11/partes/02_tablas.sql` (y monolito integrado), script incremental idempotente `bd/base/v11/partes/14_movimiento_variable_mensual.sql`, `MovimientosVariablesRepository`, mappers, tipos manuales en `database.types.ts`, y documento de persistencia [`../modulos/movimientos-variables/persistencia-9-4C.md`](../modulos/movimientos-variables/persistencia-9-4C.md). La UI productiva, servicio con snapshot de catálogo, RLS, Supabase remoto, motor y liquidaciones quedan fuera de alcance.
+
+No incluido: pantalla productiva, CRUD visual, motor, liquidaciones, proceso mensual productivo, Supabase remoto, RLS/JWT, SQL destructivo ni rediseno visual.
+
+Pruebas: `movimientos-variables.mapper.spec.ts`, `movimiento-variable-validacion.rules.spec.ts`, `npm test -- --watch=false`.
+
+### Fase 9.4D - Movimientos variables mensuales: service fino y listado base sin UI avanzada
+
+Estado: **Cerrada**.
+
+Objetivo: crear una capa de service fina para movimientos variables que centralice validaciones, duplicados, anulacion logica y acceso al repository antes de una UI productiva.
+
+Resultado: `MovimientosVariablesService` en `src/app/features/movimientos-variables/services/` con tests `movimientos-variables.service.spec.ts`; listados como `MovimientoVariableListadoFila`; payload opcional `concepto` para snapshot sin acoplar a `concepto-asignabilidad.rules.ts`; documento [`../modulos/movimientos-variables/service-9-4D.md`](../modulos/movimientos-variables/service-9-4D.md). La pantalla productiva, grid avanzado, proceso mensual, motor, liquidaciones, Supabase remoto, RLS/JWT y rediseno visual quedan fuera.
+
+No incluido: pantalla productiva, formulario visual, datagrid avanzado, proceso mensual, motor, liquidaciones, Supabase remoto, RLS/JWT, rediseno visual.
+
+Pruebas: `movimientos-variables.service.spec.ts`, suites 9.4B/9.4C, `npm test -- --watch=false`.
+
+### Fase 9.4E - Movimientos variables mensuales: UI carga manual controlada
+
+Estado: **Cerrada**.
+
+Objetivo: exponer listado y operaciones manuales de movimientos variables por periodo sin acoplar la UI al repositorio ni al motor.
+
+Resultado: ruta `/remuneraciones/movimientos-variables` (lazy), item en menu lateral, contenedor con filtro `YYYY-MM`, `DataGrid`, alta por modal (`MovimientosVariablesService.crear` con `origen: MANUAL` y snapshot de concepto), anulacion con confirmacion y motivo opcional (`anular`), catalogos via `EmpleadosService.listar` y `HaberesDescuentosService.listarConceptos`. Redirect `/movimientos-variables` a la ruta oficial. Referencia cruzada en pantalla Haberes y descuentos. Documento [`../modulos/movimientos-variables/ui-9-4E.md`](../modulos/movimientos-variables/ui-9-4E.md).
+
+No incluido: edicion de filas existentes en esta fase, importacion masiva, motor, liquidaciones, bloqueo duro por periodo cerrado en UI, RLS/JWT, SQL destructivo.
+
+Pruebas: `movimientos-variables-container.spec.ts`, suites 9.4B/9.4C/9.4D, `npm test -- --watch=false`.
+
+### CHILE-FIX-01 - Movimientos variables: catalogo + aptitud/contrato (QA-CHILE-01 ALTO-001, ALTO-002)
+
+Estado: **Cerrada** (Angular; sin motor, liquidaciones, SQL destructivo, RLS/JWT, Previred/LRE, rediseno visual).
+
+Objetivo: que `MovimientosVariablesService.crear` y `actualizar` no dependan de `payload.concepto` para candados; que rechacen trabajadores no aptos, no activos o sin contrato vigente en el `YYYY-MM` del movimiento.
+
+Resultado: metodo publico `HaberesDescuentosService.resolverSnapshotConceptoParaMovimientoVariableManual`; servicio de movimientos variables inyecta `HaberesDescuentosService` y `EmpleadosService`. Documento normativo: [`../modulos/movimientos-variables/hardening-chile-fix-01.md`](../modulos/movimientos-variables/hardening-chile-fix-01.md). Seguimiento en informe QA: [`../auditorias/qa-chile-01-remuneraciones.md`](../auditorias/qa-chile-01-remuneraciones.md) seccion 17.
+
+No incluido: periodo cerrado a carga, flag catalogo solo variable vs recurrente (ALTO-003), RLS, motor.
+
+Pruebas: `haberes-descuentos.service.spec.ts`, `movimientos-variables.service.spec.ts`, `npm test -- --watch=false`.
+
+### PARAM-CHILE-01 - Auditoria de parametros reales y limpieza de datos demo en proceso mensual
+
+Estado: **Cerrada** (Angular + documentacion; sin motor, liquidaciones, Previred/LRE generados, SQL destructivo, migraciones, Supabase remoto, Python nuevo, RLS/JWT, rediseno visual profundo).
+
+Objetivo: mitigar **QA-CHILE-01-ALTO-004**; auditar cobertura declarativa de parametros chilenos vs pantalla Proceso mensual; quitar cifras normativas demo de `proceso-remuneraciones.page.ts`.
+
+Resultado: pagina Proceso mensual con copy neutro, sin UF/sueldo minimo/tabla 2026/totales literales; enlace a `/parametros`; pasos calculo/exportacion/cierre marcados como no disponibles. UI en `src/app/features/nomina-mensual/containers/proceso-mensual-container/`; ruta `proceso-remuneraciones.page.ts` solo wrapper. Informe [`../auditorias/param-chile-01-parametros-y-demo-proceso.md`](../auditorias/param-chile-01-parametros-y-demo-proceso.md). Seguimiento ALTO-004 en [`../auditorias/qa-chile-01-remuneraciones.md`](../auditorias/qa-chile-01-remuneraciones.md) seccion 18.
+
+No incluido: lectura de parametros desde proceso, motor, liquidaciones, generacion Previred/LRE real.
+
+Pruebas: `npm test -- --watch=false` (suite global; sin spec dedicado de la pagina).
+
+### Fase 9.5A - Proceso mensual chileno: contrato funcional y prevalidaciones
+
+Estado: **Cerrada** (Angular + documentacion; sin motor, liquidaciones, Previred/LRE, SQL destructivo, Supabase remoto, Python nuevo, RLS/JWT, rediseno visual profundo).
+
+Objetivo: contrato funcional y primera capa de **prevalidaciones** por `YYYY-MM` usando servicios existentes (parametros, empleados, conceptos, movimientos variables); sin calcular montos ni generar liquidaciones.
+
+Resultado: `ProcesoMensualService`, `proceso-mensual-prevalidacion.rules.ts`, modelos TS, tests; contenedor con selector de periodo, accion **Validar periodo**, paneles de estado/bloqueos/advertencias/informaciones y areas. Documentos [`../modulos/nomina-mensual/contrato-general.md`](../modulos/nomina-mensual/contrato-general.md) y [`../modulos/nomina-mensual/prevalidaciones-9-5A.md`](../modulos/nomina-mensual/prevalidaciones-9-5A.md). Haberes recurrentes por periodo queda **PENDIENTE_INTEGRACION** (mensaje INFO).
+
+No incluido: motor, liquidaciones, Previred/LRE, lectura agregada de recurrentes por periodo, bloqueo BD de periodo.
+
+Pruebas: `proceso-mensual-prevalidacion.rules.spec.ts`, `proceso-mensual.service.spec.ts`, `proceso-mensual-container.spec.ts`, `npm test -- --watch=false`.
+
+### Fase 9.5B - Proceso mensual: recurrentes por mes y grupos minimos de parametros
+
+Estado: **Cerrada** (Angular + documentacion; sin motor, liquidaciones, Previred/LRE, SQL destructivo, Supabase remoto, Python nuevo, RLS/JWT, rediseno visual profundo).
+
+Objetivo: completar prerequisitos de **9.5A** con lectura real de **asignaciones recurrentes** intersectadas con el mes (`HaberesDescuentosService.listarAsignacionesParaPrevalidacionMensual`) y con **catalogos + fila mensual** clasificados en grupos (`revisarGruposParametrosMinimos`), sin mostrar valores normativos en UI ni simular OK sin datos.
+
+Resultado: repositorio `listarTodasAsignacionesConConcepto`, reglas `proceso-mensual-parametros-minimos.rules.ts` y `proceso-mensual-recurrentes.rules.ts`, extension de `proceso-mensual-prevalidacion.rules.ts` y `ProcesoMensualService` (incluye `listarCatalogos`); bloqueo si hay recurrentes **INVALIDAS** o error de lectura; resumen con `parametrosGrupos` y conteos de recurrentes en contenedor. Documento [`../modulos/nomina-mensual/prevalidaciones-9-5B.md`](../modulos/nomina-mensual/prevalidaciones-9-5B.md); contrato general y 9.5A actualizados con enlaces.
+
+No incluido: motor, liquidaciones, Previred/LRE, bloqueo duro de periodo en BD, importacion masiva de movimientos variables.
+
+Pruebas: `proceso-mensual-parametros-minimos.rules.spec.ts`, `proceso-mensual-recurrentes.rules.spec.ts`, suites 9.5A (`proceso-mensual-prevalidacion.rules.spec.ts`, `proceso-mensual.service.spec.ts`, `proceso-mensual-container.spec.ts`), `haberes-descuentos.service.spec.ts` (bloque recurrentes), `npx ng test --watch=false`.
+
+### QA-CHILE-01 - Auditoria remuneraciones Chile (documental)
+
+Estado: **Cerrada** (entrega de informe; sin cambios de codigo, SQL, Python ni Supabase remoto).
+
+Objetivo: revisar el proyecto bajo enfoque chileno (conceptos, recurrentes, variables, parametros, empleados, proceso/liquidacion futuros, Previred/LRE) y priorizar brechas.
+
+Resultado: informe [`../auditorias/qa-chile-01-remuneraciones.md`](../auditorias/qa-chile-01-remuneraciones.md) e indice [`../auditorias/README.md`](../auditorias/README.md). Siguientes pasos sugeridos en el informe (p. ej. CHILE-FIX-01, PARAM-CHILE-01, 9.5A).
+
+No incluido: implementacion de motor, liquidaciones, RLS productivo, correcciones de codigo (solo documentacion de hallazgos).
+
+Pruebas: no ejecutadas en esta fase (auditoria por lectura).
+
 ## 8. Criterios para avanzar de fase
 
 - Contrato en **`docs/codex/modulos/<módulo>/`** (y stubs o temas transversales) actualizado si cambia la regla de negocio o de UI.
@@ -105,7 +227,7 @@ Pruebas: `haber-descuento-vigencia.rules.spec.ts`, `haberes-descuentos.service.s
 ## 9. Orden recomendado de próximas fases
 
 1. **Conceptos** — cerrar brechas de implementación y pruebas del contrato funcional (tras Fase 9 documental); maestro, vigencias, LRE; no mezclar con asignación por trabajador.
-2. **Haberes recurrentes** (vigencia, duplicados, separación de conceptos).
-3. **Movimientos variables**.
-4. **Proceso mensual guiado** → **motor** → **liquidaciones** → integraciones **Previred / LRE**.
+2. **Haberes recurrentes** (vigencia, duplicados, separación de conceptos) — fases 9.3A–9.3C y 9.3B.1 cerradas en documento y codigo segun tablero.
+3. **Movimientos variables** — **9.4A** a **9.4E** cerradas en alcance acordado (incluye UI carga manual); siguiente: RLS/roles, edicion/importacion, integracion proceso mensual segun prioridad.
+4. **Proceso mensual** — **9.5A** y **9.5B** cerraron **prevalidaciones** (incluye recurrentes por mes y grupos minimos de parametros) sin motor; siguiente: motor / **liquidaciones** → integraciones **Previred / LRE**.
 

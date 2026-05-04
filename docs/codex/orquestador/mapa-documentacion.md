@@ -4,6 +4,7 @@
 
 | Documento | Rol |
 |-----------|-----|
+| [`../arquitectura/frontend-interfaces.md`](../arquitectura/frontend-interfaces.md) | Contrato Angular: `pages/` wrapper, `features/`, contenedores vs logica, anti-patrones |
 | [`../AGENTS.md`](../AGENTS.md) | Contrato del agente, stack, layout, checklist |
 | [`../README.md`](../README.md) | Índice padre y orden de lectura |
 | [`../ui-form-guidelines.md`](../ui-form-guidelines.md) | Formularios, tokens, mensajes |
@@ -25,7 +26,8 @@
 | Parámetros | [`../modulos/parametros/README.md`](../modulos/parametros/README.md) |
 | Conceptos remuneración | [`../modulos/conceptos-remuneracion/README.md`](../modulos/conceptos-remuneracion/README.md) — además [`diagnostico-fase-9.md`](../modulos/conceptos-remuneracion/diagnostico-fase-9.md), [`decisiones-operativas.md`](../modulos/conceptos-remuneracion/decisiones-operativas.md), [`contrato-funcional.md`](../modulos/conceptos-remuneracion/contrato-funcional.md), [`contrato-general.md`](../modulos/conceptos-remuneracion/contrato-general.md) |
 | Haberes y descuentos | [`../modulos/haberes-descuentos/README.md`](../modulos/haberes-descuentos/README.md) — rutas oficiales bajo `/remuneraciones/*` (Fase 9.3B.1 en [`estado-fases.md`](./estado-fases.md)) |
-| Nómina mensual (visión) | [`../modulos/nomina-mensual/README.md`](../modulos/nomina-mensual/README.md) |
+| Movimientos variables (mensuales) | [`../modulos/movimientos-variables/README.md`](../modulos/movimientos-variables/README.md) — contrato 9.4A; modelo TS/reglas 9.4B en [`modelo-tecnico-9-4B.md`](../modulos/movimientos-variables/modelo-tecnico-9-4B.md); persistencia 9.4C en [`persistencia-9-4C.md`](../modulos/movimientos-variables/persistencia-9-4C.md); service 9.4D en [`service-9-4D.md`](../modulos/movimientos-variables/service-9-4D.md); UI carga manual 9.4E en [`ui-9-4E.md`](../modulos/movimientos-variables/ui-9-4E.md); endurecimiento CHILE-FIX-01 en [`hardening-chile-fix-01.md`](../modulos/movimientos-variables/hardening-chile-fix-01.md); tablero [`estado-fases.md`](./estado-fases.md) |
+| Nómina mensual / proceso mensual | [`../modulos/nomina-mensual/README.md`](../modulos/nomina-mensual/README.md) — [`contrato-general.md`](../modulos/nomina-mensual/contrato-general.md), [`prevalidaciones-9-5A.md`](../modulos/nomina-mensual/prevalidaciones-9-5A.md), [`prevalidaciones-9-5B.md`](../modulos/nomina-mensual/prevalidaciones-9-5B.md) |
 
 ## 3. Vigentes en `temas/` (transversal o no migrado)
 
@@ -42,6 +44,9 @@
 
 | Documento | Rol |
 |-----------|-----|
+| [`../auditorias/README.md`](../auditorias/README.md) | Indice de auditorias funcionales (p. ej. remuneraciones Chile) |
+| [`../auditorias/qa-chile-01-remuneraciones.md`](../auditorias/qa-chile-01-remuneraciones.md) | QA-CHILE-01: auditoria remuneraciones chilenas (hallazgos, severidad, brechas) |
+| [`../auditorias/param-chile-01-parametros-y-demo-proceso.md`](../auditorias/param-chile-01-parametros-y-demo-proceso.md) | PARAM-CHILE-01: parametros vs demo en proceso mensual (ALTO-004) |
 | [`../peticiones-estilos.md`](../peticiones-estilos.md) | Registro de mejoras visuales |
 | [`../peticiones-fusion-items-1-65.md`](../peticiones-fusion-items-1-65.md) | Bitácora fusionada |
 

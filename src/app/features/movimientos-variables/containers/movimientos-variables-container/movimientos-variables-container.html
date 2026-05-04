@@ -1,0 +1,238 @@
+<section class="mv-page" aria-label="Movimientos variables">
+  <header class="mv-head">
+    <app-record-breadcrumb
+      [items]="breadcrumbItems"
+      title="Movimientos variables"
+    ></app-record-breadcrumb>
+    <p class="mv-lead">
+      Cargue montos puntuales por trabajador, concepto y período (<strong>YYYY-MM</strong>). El selector de concepto usa
+      el mismo universo <strong>asignable</strong> que Haberes y descuentos. Los recurrentes del mes siguen en
+      <a routerLink="/remuneraciones/haberes-descuentos" class="mv-inline-link">Haberes y descuentos</a>.
+    </p>
+    <div class="mv-head-actions">
+      <div class="mv-period-wrap">
+        <div class="mv-period-global" aria-live="polite">
+          <span class="mv-period-global-k">Período activo (referencia):</span>
+          <span class="mv-period-global-v">{{ periodoActivo.etiqueta() }}</span>
+        </div>
+        <p class="mv-period-hint">
+          El listado usa el período que elija abajo; puede diferir del período activo mientras el proceso mensual no
+          bloquee cargas.
+        </p>
+      </div>
+      <div class="mv-head-buttons">
+        <app-button variant="outline" size="md" (click)="refrescar()">
+          <lucide-icon icon class="w-4 h-4" [img]="refreshIcon"></lucide-icon>
+          Refrescar
+        </app-button>
+        <app-button variant="primary" size="md" (click)="abrirNuevo()">
+          <lucide-icon icon class="w-4 h-4" [img]="plusIcon"></lucide-icon>
+          Nuevo movimiento
+        </app-button>
+      </div>
+    </div>
+  </header>
+
+  <app-card>
+    <app-card-header className="px-4 py-3 border-b border-gray-100">
+      <h2 class="text-sm font-semibold text-gray-900">Filtro por período</h2>
+    </app-card-header>
+    <app-card-content className="px-4 py-3">
+      <div class="flex flex-wrap items-end gap-3">
+        <div class="min-w-[12rem]">
+          <label class="mv-field-label" for="mv-periodo">Período (YYYY-MM)</label>
+          <input
+            id="mv-periodo"
+            type="month"
+            class="mv-input"
+            [ngModel]="periodoFiltro()"
+            (ngModelChange)="periodoFiltro.set($event)"
+          />
+        </div>
+        <app-button variant="primary" size="md" (click)="buscar()">Buscar</app-button>
+        @if (catalogosLoading()) {
+          <span class="text-xs text-gray-500">Cargando catálogos…</span>
+        }
+      </div>
+    </app-card-content>
+  </app-card>
+
+  <div class="mv-grid-wrap">
+    <app-data-grid
+      title="Movimientos del período"
+      [rows]="filas()"
+      [columns]="columns"
+      [filters]="filters"
+      [filtersEnabled]="true"
+      [loading]="gridLoading()"
+      [showExportAction]="false"
+      [selectable]="false"
+      [trackBy]="trackMvRow"
+      gridHeight="min(32rem, calc(100vh - 24rem))"
+      emptyTitle="Sin movimientos"
+      emptyDescription="No hay registros para este período. Cree uno con «Nuevo movimiento» o elija otro período."
+    >
+      <ng-template appDataGridCell="estado" let-row>
+        @switch (row.estado) {
+          @case ('BORRADOR') {
+            <span class="mv-chip mv-chip--neutral">{{ etiquetaEstado(row.estado) }}</span>
+          }
+          @case ('VALIDADO') {
+            <span class="mv-chip mv-chip--ok">{{ etiquetaEstado(row.estado) }}</span>
+          }
+          @case ('OBSERVADO') {
+            <span class="mv-chip mv-chip--warn">{{ etiquetaEstado(row.estado) }}</span>
+          }
+          @case ('ANULADO') {
+            <span class="mv-chip mv-chip--muted">{{ etiquetaEstado(row.estado) }}</span>
+          }
+          @default {
+            <span class="mv-chip mv-chip--neutral">{{ etiquetaEstado(row.estado) }}</span>
+          }
+        }
+      </ng-template>
+      <ng-template appDataGridCell="acciones" let-row>
+        <div class="mv-actions">
+          <button
+            type="button"
+            class="mv-action-btn mv-action-btn--danger"
+            title="Anular movimiento"
+            [disabled]="!puedeAnular(row.estado)"
+            (click)="pedirAnular(row)"
+          >
+            Anular
+          </button>
+        </div>
+      </ng-template>
+    </app-data-grid>
+  </div>
+
+  @if (dialogNuevoAbierto()) {
+    <div class="mv-modal-root" role="presentation">
+      <div class="mv-modal-backdrop" (click)="cerrarNuevo()"></div>
+      <div class="mv-modal" role="dialog" aria-modal="true" aria-labelledby="mv-modal-nuevo-title">
+        <h2 id="mv-modal-nuevo-title" class="mv-modal-title">Nuevo movimiento variable</h2>
+        <p class="mv-modal-sub">Período: <strong>{{ periodoFiltro() }}</strong> · Origen: manual</p>
+
+        <div class="mv-modal-body">
+          <div class="mv-modal-group">
+            <div class="mv-modal-span2">
+              <label class="mv-field-label" for="mv-emp">Trabajador</label>
+              <app-search-select
+                id="mv-emp"
+                [options]="empleadoOptions()"
+                [ngModel]="formPersonaId()"
+                (ngModelChange)="formPersonaId.set($event)"
+                placeholder="Buscar por nombre o RUT"
+                searchPlaceholder="Filtrar lista"
+              ></app-search-select>
+            </div>
+            <div class="mv-modal-span2">
+              <label class="mv-field-label" for="mv-concepto">Concepto</label>
+              <app-search-select
+                id="mv-concepto"
+                [options]="conceptoOpciones()"
+                [ngModel]="formConceptoId()"
+                (ngModelChange)="formConceptoId.set($event)"
+                placeholder="Seleccione concepto"
+                searchPlaceholder="Buscar concepto"
+              ></app-search-select>
+            </div>
+          </div>
+          <div class="mv-modal-group">
+            <div>
+              <label class="mv-field-label" for="mv-monto">Monto</label>
+              <input
+                id="mv-monto"
+                type="number"
+                min="0"
+                step="1"
+                class="mv-input"
+                [ngModel]="formMonto()"
+                (ngModelChange)="formMonto.set($event)"
+              />
+            </div>
+            <div>
+              <label class="mv-field-label" for="mv-estado-alta">Estado al crear</label>
+              <select
+                id="mv-estado-alta"
+                class="mv-input"
+                [ngModel]="formEstadoAlta()"
+                (ngModelChange)="formEstadoAlta.set($event)"
+              >
+                <option [ngValue]="'BORRADOR'">Borrador</option>
+                <option [ngValue]="'VALIDADO'">Validado</option>
+              </select>
+            </div>
+            <div class="mv-modal-span2">
+              <label class="mv-field-label" for="mv-obs">Observación</label>
+              <textarea
+                id="mv-obs"
+                class="mv-input mv-textarea"
+                rows="3"
+                [ngModel]="formObservacion()"
+                (ngModelChange)="formObservacion.set($event)"
+                placeholder="Opcional"
+              ></textarea>
+            </div>
+          </div>
+        </div>
+
+        <div class="mv-modal-actions">
+          <button type="button" class="mv-btn mv-btn--ghost" [disabled]="guardarNuevoLoading()" (click)="cerrarNuevo()">
+            Cancelar
+          </button>
+          <button type="button" class="mv-btn mv-btn--primary" [disabled]="guardarNuevoLoading()" (click)="guardarNuevo()">
+            @if (guardarNuevoLoading()) {
+              Guardando…
+            } @else {
+              Guardar
+            }
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+
+  @if (confirmAnular(); as row) {
+    <div class="mv-modal-root" role="presentation">
+      <div class="mv-modal-backdrop" (click)="cerrarConfirmAnular()"></div>
+      <div class="mv-modal mv-modal--narrow" role="dialog" aria-modal="true" aria-labelledby="mv-anular-title">
+        <h2 id="mv-anular-title" class="mv-modal-title">Anular movimiento</h2>
+        <div class="mv-modal-body">
+          <p class="mv-modal-text">
+            ¿Confirma la anulación del movimiento de
+            <strong>{{ row.trabajadorEtiqueta }}</strong> · {{ row.conceptoEtiqueta }} ·
+            {{ formatMonto(row.monto) }}?
+          </p>
+          <label class="mv-field-label" for="mv-motivo-anul">Motivo (opcional)</label>
+          <textarea
+            id="mv-motivo-anul"
+            class="mv-input mv-textarea"
+            rows="2"
+            [ngModel]="motivoAnulacion()"
+            (ngModelChange)="motivoAnulacion.set($event)"
+            placeholder="Ej. corrección solicitada por el cliente interno"
+          ></textarea>
+        </div>
+        <div class="mv-modal-actions">
+          <button type="button" class="mv-btn mv-btn--ghost" (click)="cerrarConfirmAnular()">Cancelar</button>
+          <button type="button" class="mv-btn mv-btn--danger" (click)="confirmarAnular()">Anular</button>
+        </div>
+      </div>
+    </div>
+  }
+
+  @if (modalMsg(); as msg) {
+    <app-message-box
+      [variant]="msg.variant"
+      mode="modal"
+      [modalHeadlineSplit]="true"
+      [title]="msg.title"
+      [message]="msg.message"
+      [detail]="msg.detail ?? ''"
+      primaryLabel="Aceptar"
+      (action)="cerrarModalMsg()"
+    ></app-message-box>
+  }
+</section>

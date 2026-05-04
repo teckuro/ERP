@@ -1,5 +1,35 @@
 ## Peticiones de estilos (bitácora)
 
+### 2026-05-04 - Fase 9.5B - Resumen recurrentes y grupos de parametros (Proceso mensual)
+
+- **Modulo:** Remuneraciones / Proceso mensual (`/remuneraciones/proceso-mensual`).
+- **Cambio:** bajo el resumen existente (activos aptos / parametros operativos), parrafo con conteos de recurrentes aplicables al mes, invalidas, fuera del mes y cerradas; linea compacta **Parametros (grupos):** con `id=clasificacion` por grupo (sin valores UF/UTM ni topes literales).
+- **Archivos:** `src/app/features/nomina-mensual/containers/proceso-mensual-container/proceso-mensual-container.html`, `proceso-mensual-container.spec.ts`.
+
+### 2026-05-03 - PARAM-CHILE-01 - Limpieza demo Proceso mensual
+
+- **Modulo:** Remuneraciones / Proceso mensual (`/remuneraciones/proceso-mensual`).
+- **Cambio:** se retiraron cifras normativas y totales demo (UF, sueldo minimo, tabla 2026, nomina, banco, fechas de vencimiento literales); tarjeta informativa superior; pasos calculo/export/cierre marcados como no disponibles; enlace a Parametros; sin rediseno profundo del shell.
+- **Archivos:** `src/app/pages/proceso-remuneraciones.page.ts`.
+
+### 2026-05-04 - Fase 9.5A - Prevalidaciones en Proceso mensual
+
+- **Modulo:** Remuneraciones / Proceso mensual (`/remuneraciones/proceso-mensual`).
+- **Cambio:** selector `input type="month"`, boton **Validar periodo**, tarjetas de estado/bloqueos/advertencias/informaciones y listado por areas; cabecera indica periodo global vs periodo a validar; paso 1 sustituye placeholders locales previos (sin motor, sin cifras normativas).
+- **Archivos:** `src/app/features/nomina-mensual/containers/proceso-mensual-container/*`, `src/app/features/nomina-mensual/services/proceso-mensual.service.ts`, `src/app/features/nomina-mensual/rules/proceso-mensual-prevalidacion.rules.ts`, `src/app/features/nomina-mensual/models/proceso-mensual.model.ts`.
+
+### 2026-05-04 - PARAM-CHILE-01 v4 - Proceso mensual en contenedor `nomina-mensual`
+
+- **Modulo:** Remuneraciones / Proceso mensual.
+- **Cambio:** UI movida a `features/nomina-mensual/containers/proceso-mensual-container/` (html, css, ts, spec); la pagina de ruta queda como wrapper minimo (`frontend-interfaces`).
+- **Archivos:** `src/app/pages/proceso-remuneraciones.page.ts`, `src/app/features/nomina-mensual/containers/proceso-mensual-container/*`.
+
+### 2026-05-03 (Movimientos variables — pantalla 9.4E)
+
+- **Módulo:** Movimientos variables (Remuneraciones).
+- **Cambio:** nueva pantalla `/remuneraciones/movimientos-variables` con cabecera al estilo Haberes (breadcrumb, período de referencia, botonera), tarjeta de filtro por `input type="month"`, `DataGrid` con chips de estado y modales propios (clases `mv-*`); ítem de menú con icono **sliders**; hint en Haberes enlaza a esta ruta.
+- **Archivos:** `src/app/features/movimientos-variables/containers/movimientos-variables-container/*`, `src/app/pages/movimientos-variables.page.ts`, `src/app/app.routes.ts`, `src/app/layout/sidebar.component.ts`, `src/app/features/haberes-descuentos/containers/haberes-descuentos-container/haberes-descuentos-container.{html,css,ts}`.
+
 ### 2026-05-03 (Fase 9.3B.1 — Navegacion dominio Remuneraciones)
 
 - **Modulo:** Remuneraciones (rutas y menu lateral).

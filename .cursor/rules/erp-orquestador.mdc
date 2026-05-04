@@ -15,7 +15,8 @@ Antes de planificar, codificar o responder con alcance técnico:
 2. **`docs/codex/orquestador/estado-fases.md`** — fases cerradas, fase siguiente, criterios para avanzar.
 3. **`docs/codex/AGENTS.md`** — contrato del agente (prioridades, layout, anti‑patrones, checklist).
 4. **`docs/codex/README.md`** — índice padre y enlaces por tema.
-5. **Documento específico** del módulo o fase bajo `docs/codex/temas/` (u otro path que indique el README) según el trabajo.
+5. **`docs/codex/arquitectura/frontend-interfaces.md`** — si el alcance crea o refactoriza rutas/pantallas Angular, contenedores o estructura de `features/` (contrato `pages` vs contenedor; inglés).
+6. **Documento específico** del módulo o fase bajo `docs/codex/temas/` (u otro path que indique el README) según el trabajo.
 
 Si el alcance es solo una duda puntual sobre un archivo ya abierto, al menos leer **`estado-fases.md`** y **`AGENTS.md`** para no contradecir fases o módulos congelados.
 

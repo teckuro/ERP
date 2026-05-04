@@ -118,6 +118,13 @@ export interface HaberDescuentoAsignacionListado {
   estadoVigenciaEtiqueta?: string;
 }
 
+/** Enriquecido para prevalidacion proceso mensual (9.5B); no calcula liquidaciones. */
+export interface HaberDescuentoAsignacionPrevalidacionMensualFila {
+  asignacion: HaberDescuentoAsignacionListado;
+  estadoVigencia: EstadoVigenciaAsignacion;
+  intersectaPeriodo: boolean;
+}
+
 export interface HaberDescuentoAsignacionVigencia {
   idAsignacion: number;
   idPersona: number;

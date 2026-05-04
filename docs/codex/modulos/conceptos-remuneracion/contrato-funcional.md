@@ -173,3 +173,12 @@ Conceptos mantiene el catalogo maestro. Haberes y descuentos administra asignaci
 
 Rutas antiguas de compatibilidad temporal (redirect): ver `docs/codex/orquestador/estado-fases.md` (Fase 9.3B.1).
 
+## 17. Movimientos variables mensuales (Fase 9.4A)
+
+El catalogo **concepto** es la **fuente** de definiciones que luego se aplican por persona: en **asignaciones recurrentes** (Haberes y descuentos) y en **movimientos variables mensuales** (modulo aparte).
+
+- Conceptos define tipo, vigencia de catalogo, LRE, asignabilidad recurrente, sistema/usuario, automatico/manual.
+- Movimiento variable **referencia** `id_concepto` y aplica un **monto puntual** en un **periodo** `YYYY-MM` para un trabajador; no redefine el catalogo.
+
+Contrato del modulo movimientos variables: [`../movimientos-variables/README.md`](../movimientos-variables/README.md). Persistencia local de la fila puntual (tabla `movimiento_variable_mensual`, sin RLS productivo aun): [`../movimientos-variables/persistencia-9-4C.md`](../movimientos-variables/persistencia-9-4C.md). Pendiente de producto: flag o regla **asignable recurrente vs variable vs ambos** (documentado alli; sin cambio de codigo en 9.4A).
+

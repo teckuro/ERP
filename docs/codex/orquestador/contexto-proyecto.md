@@ -44,8 +44,8 @@ Criterios operativos de pantalla (estado → pendientes → acción, qué evitar
 | **Python / seeds** | Carga oficial de parámetros mensuales y normativa base alineada a BD v11. |
 | **Haberes / descuentos** | Asignaciones recurrentes por trabajador (en evolución); no sustituyen conceptos ni liquidaciones. |
 | **Conceptos de remuneración** | **Fase fuerte en curso**; Fase 9 **documental cerrada** (diagnóstico + contrato funcional). Catálogo maestro para haberes, descuentos, aportes y liquidaciones. Entrada: [`../modulos/conceptos-remuneracion/README.md`](../modulos/conceptos-remuneracion/README.md). |
-| **Movimientos variables** | Futuro: horas extra, bonos puntuales, comisiones, ausencias, etc. |
-| **Proceso mensual / motor / liquidaciones** | Futuro: checklist guiado, cálculo, cierre y congelado de resultados. |
+| **Movimientos variables** | Haberes/descuentos **puntuales** por trabajador y período (`YYYY-MM`). Contrato **9.4A**, modelo **9.4B**, persistencia **9.4C**, service **9.4D** y UI carga manual **9.4E** (`/remuneraciones/movimientos-variables`) en [`../modulos/movimientos-variables/README.md`](../modulos/movimientos-variables/README.md); RLS y proceso mensual en fases posteriores. |
+| **Proceso mensual / motor / liquidaciones** | **Proceso mensual:** prevalidaciones por `YYYY-MM` (**9.5A–9.5B**, sin motor) en [`../modulos/nomina-mensual/README.md`](../modulos/nomina-mensual/README.md). **Motor / liquidaciones:** futuro checklist, cálculo, cierre y congelado de resultados. |
 | **Previred / LRE** | Fases posteriores con trazabilidad y validaciones. |
 
 ## 6. Estado resumido — Empleados
@@ -66,7 +66,7 @@ Contrato de carga mensual, preparación y alineación con período: [`python-car
 
 ## 9. Estado resumido — Haberes y descuentos
 
-Uso actual acotado a **asignaciones recurrentes** por trabajador, con período global; **no** calcula liquidaciones ni reemplaza movimientos variables. Pendiente: reglas de vigencia, duplicados, separación clara respecto de **conceptos** y UI más guiada. No duplicar aquí el contrato fino del módulo.
+Uso actual acotado a **asignaciones recurrentes** por trabajador, con período global; **no** calcula liquidaciones ni reemplaza **movimientos variables** (contrato en [`../modulos/movimientos-variables/README.md`](../modulos/movimientos-variables/README.md)). No duplicar aquí el contrato fino del módulo.
 
 ## 10. Estado resumido — Conceptos de remuneración
 
@@ -75,8 +75,8 @@ Uso actual acotado a **asignaciones recurrentes** por trabajador, con período g
 ## 11. Módulos futuros
 
 - **Conceptos** — documentación de gobernanza (Fase 9) **cerrada**; sigue prioridad alta **cerrar implementación** (permisos, pruebas, reglas motor en UI) antes de motor fuerte.
-- Movimientos variables mensuales.
-- Proceso mensual tipo checklist (parámetros → aptos → recurrentes → variables → cálculo → cierre).
+- **Movimientos variables mensuales** — 9.4A documental + 9.4B modelo TS/reglas + 9.4C SQL/repositorio + 9.4D service fino + 9.4E UI carga manual: [`../modulos/movimientos-variables/README.md`](../modulos/movimientos-variables/README.md).
+- Proceso mensual tipo checklist (parámetros → aptos → recurrentes → variables → cálculo → cierre); en Angular hay **prevalidaciones** por periodo sin liquidación ([`../modulos/nomina-mensual/README.md`](../modulos/nomina-mensual/README.md)).
 - Motor de cálculo y **liquidaciones congeladas** (resultado, no formulario principal).
 - Previred y LRE con trazabilidad y versiones.
 

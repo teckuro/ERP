@@ -1,5 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 
+import { vigenciaIntersecaMes } from '../../../core/services/periodo-activo.service';
 import { HaberesDescuentosRepository } from '../data-access/haberes-descuentos.repository';
 import {
   CatalogoLreOpcion,
@@ -9,6 +10,7 @@ import {
   ContratoResumenPersona,
   HaberDescuentoAsignacionListado,
   HaberDescuentoAsignacionPayload,
+  HaberDescuentoAsignacionPrevalidacionMensualFila,
   PERIODICIDADES_HD,
 } from '../models/haber-descuento-asignacion.model';
 import {
@@ -17,6 +19,13 @@ import {
   motivosNoAsignableConcepto,
   type ConceptoAsignableInput,
 } from '../rules/concepto-asignabilidad.rules';
+
+/** Snapshot alineado a `MovimientoVariableConceptoSnapshot` (evita dependencia circular con movimientos-variables). */
+export type SnapshotConceptoMovimientoVariable = {
+  tipo: string | null;
+  calculoAutomatico: boolean;
+  esSistema: boolean;
+};
 import {
   clasificarVigenciaAsignacion,
   etiquetaEstadoVigenciaAsignacion,
@@ -24,6 +33,14 @@ import {
   validarRangoAsignacionRecurrente,
   type RangoVigenciaAsignacion,
 } from '../rules/haber-descuento-vigencia.rules';
+
+function fechaInicioMesYmLocal(ym: string): Date {
+  const t = ym.trim();
+  const [ys, ms] = t.split('-');
+  const y = Number(ys);
+  const m = Number(ms);
+  return inicioDiaReferencia(new Date(y, m - 1, 1));
+}
 
 function conceptoMantenimientoToListado(row: ConceptoMantenimientoFila): ConceptoListado {
   return {
@@ -86,12 +103,58 @@ export class HaberesDescuentosService {
     );
   }
 
+  /**
+   * Todas las asignaciones recurrentes con clasificacion de vigencia al inicio del mes del periodo
+   * e indicador de interseccion con el mes (para proceso mensual / prevalidacion; sin motor).
+   */
+  async listarAsignacionesParaPrevalidacionMensual(
+    periodo: string,
+  ): Promise<HaberDescuentoAsignacionPrevalidacionMensualFila[]> {
+    const rows = await this.repository.listarTodasAsignacionesConConcepto();
+    const ref = fechaInicioMesYmLocal(periodo);
+    return rows.map((asignacion) => ({
+      asignacion,
+      estadoVigencia: clasificarVigenciaAsignacion(
+        {
+          vigenciaInicio: asignacion.vigenciaInicio,
+          vigenciaFin: asignacion.vigenciaFin,
+          estado: asignacion.estado,
+        },
+        ref,
+      ),
+      intersectaPeriodo: vigenciaIntersecaMes(
+        asignacion.vigenciaInicio,
+        asignacion.vigenciaFin,
+        periodo,
+      ),
+    }));
+  }
+
   private async assertConceptoPermiteAsignacionManual(idConcepto: number): Promise<void> {
+    await this.resolverSnapshotConceptoParaMovimientoVariableManual(idConcepto, inicioDiaReferencia(new Date()));
+  }
+
+  /**
+   * Resuelve el concepto en catalogo y aplica la misma regla que asignaciones recurrentes (`esConceptoAsignable`)
+   * en la fecha de referencia (p. ej. primer dia del periodo `YYYY-MM` del movimiento variable).
+   * CHILE-FIX-01: la UI no es fuente de verdad; `MovimientosVariablesService` debe llamar esto antes de crear/actualizar.
+   */
+  async resolverSnapshotConceptoParaMovimientoVariableManual(
+    idConcepto: number,
+    refDate: Date,
+  ): Promise<SnapshotConceptoMovimientoVariable> {
     const meta = await this.repository.obtenerConceptoParaAsignacion(idConcepto);
     if (!meta) {
-      throw new Error('Concepto no encontrado.');
+      throw new Error('No se pudo validar el concepto de remuneracion seleccionado.');
     }
-    const ref = inicioDiaReferencia(new Date());
+    const ref = inicioDiaReferencia(refDate);
+    const tipoNorm = (meta.tipo ?? '').trim().toUpperCase();
+    if (tipoNorm === 'APORTE_EMPLEADOR') {
+      throw new Error('Los aportes del empleador no se registran como movimientos variables del trabajador.');
+    }
+    if (meta.esSistema || meta.calculoAutomatico) {
+      throw new Error('Los conceptos automaticos o de sistema no se cargan manualmente.');
+    }
     const input: ConceptoAsignableInput = {
       tipo: meta.tipo ?? '',
       esSistema: meta.esSistema,
@@ -102,8 +165,13 @@ export class HaberesDescuentosService {
     };
     if (!esConceptoAsignable(input, ref)) {
       const motivos = motivosNoAsignableConcepto(input, ref);
-      throw new Error(motivos[0] ?? 'Este concepto no admite asignación manual según el catálogo actual.');
+      throw new Error(motivos[0] ?? 'El concepto seleccionado no puede usarse como movimiento variable manual.');
     }
+    return {
+      tipo: meta.tipo ?? null,
+      calculoAutomatico: meta.calculoAutomatico,
+      esSistema: meta.esSistema,
+    };
   }
 
   private async validarContratoPersona(
