@@ -36,14 +36,16 @@ Reglas ya ancladas en producto (resumen; detalle en `modulos/empleados` y [`esta
 
 ## 6. Siguiente fase fuerte de producto
 
-La **siguiente fase fuerte** acordada en el tablero es **Conceptos de remuneración**: catálogo maestro gobernado (LRE, vigencias, reglas de edición), **fuente** para haberes, descuentos, aportes y liquidaciones, **sin** mezclar con asignaciones por trabajador.
+La **siguiente fase oficial** es **SEG-01 - Roles, permisos, JWT/RLS base**. Antes de seguir endureciendo modulos productivos, debe quedar definida la matriz de roles, acciones permitidas, acciones bloqueadas y separacion entre permisos UI y permisos BD/JWT/RLS.
 
-- Punto de entrada: [`../modulos/conceptos-remuneracion/README.md`](../modulos/conceptos-remuneracion/README.md).
-- Visión y dependencias en el camino a remuneraciones: [`contexto-proyecto.md`](./contexto-proyecto.md) §10 y §12.
-- Tablero de fases: [`estado-fases.md`](./estado-fases.md) §4, §7 y **fila Fase 9** (documental cerrada).
-- Diagnóstico y contrato funcional del mantenedor: [`../modulos/conceptos-remuneracion/diagnostico-fase-9.md`](../modulos/conceptos-remuneracion/diagnostico-fase-9.md), [`../modulos/conceptos-remuneracion/contrato-funcional.md`](../modulos/conceptos-remuneracion/contrato-funcional.md).
+Despues de SEG-01, la fase fuerte de producto es **CONC-02 - Conceptos gobernados para motor**: catalogo maestro gobernado (LRE, vigencias, reglas de edicion), fuente para haberes, descuentos, aportes y liquidaciones, sin mezclar con asignaciones por trabajador.
 
-Hasta avanzar razonablemente en **Conceptos** (y datos de parámetros / empleados aptos según [`contexto-proyecto.md`](./contexto-proyecto.md) §15), **no** forzar alcance de motor de liquidación productivo ni nómina end-to-end sin checklist.
+- SEG-01: [`matriz-roles-permisos.md`](./matriz-roles-permisos.md).
+- CONC-02: [`../modulos/conceptos-remuneracion/README.md`](../modulos/conceptos-remuneracion/README.md).
+- Roadmap y dependencias: [`roadmap-operativo.md`](./roadmap-operativo.md), [`dependencias-fases.md`](./dependencias-fases.md).
+- Tablero de fases: [`estado-fases.md`](./estado-fases.md).
+
+Hasta cerrar **SEG-01** y avanzar razonablemente en **CONC-02**, no forzar alcance de motor de liquidacion productivo ni nomina end-to-end. **MOTOR-00** debe cerrarse antes de cualquier implementacion de motor.
 
 ## 7. Documentos relacionados
 
@@ -60,10 +62,11 @@ Navegación del dominio **Remuneraciones** en la app: rutas operativas bajo `/re
 Orden conceptual del producto (cada eslabon tiene su modulo o fase; no implica que todo este implementado):
 
 ```txt
-Conceptos -> Haberes recurrentes -> Movimientos variables -> Proceso mensual -> Motor -> Liquidaciones -> Previred/LRE
+SEG-01 -> CONC-02 -> Haberes recurrentes -> Movimientos variables -> Proceso mensual -> MOTOR-00 -> MOTOR-01 -> Liquidaciones -> Previred/LRE
 ```
 
-- **Conceptos:** catalogo maestro.
+- **SEG-01:** roles, permisos, JWT/RLS base y restricciones por rol.
+- **CONC-02:** catalogo maestro gobernado.
 - **Haberes recurrentes:** asignaciones por trabajador con vigencia en el tiempo.
 - **Movimientos variables:** lineas puntuales por trabajador, concepto y periodo `YYYY-MM` (contrato: [`../modulos/movimientos-variables/README.md`](../modulos/movimientos-variables/README.md); **9.4B** modelo TS/reglas; **9.4C** tabla + repository; **9.4D** `MovimientosVariablesService`; **9.4E** pantalla `/remuneraciones/movimientos-variables` para listado y carga manual; **CHILE-FIX-01** validacion servidor catalogo + aptitud/contrato: [`../modulos/movimientos-variables/hardening-chile-fix-01.md`](../modulos/movimientos-variables/hardening-chile-fix-01.md)).
-- **Proceso mensual / Motor / Liquidaciones / Previred:** etapas posteriores segun [`contexto-proyecto.md`](./contexto-proyecto.md) y [`estado-fases.md`](./estado-fases.md).
+- **Proceso mensual / MOTOR-00 / Motor / Liquidaciones / Previred:** etapas posteriores segun [`roadmap-operativo.md`](./roadmap-operativo.md), [`dependencias-fases.md`](./dependencias-fases.md) y [`estado-fases.md`](./estado-fases.md).
