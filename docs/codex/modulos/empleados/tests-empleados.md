@@ -1,4 +1,4 @@
-# Tests — módulo Empleados
+# Tests - módulo Empleados
 
 ## Unitarios (Vitest / `ng test`)
 

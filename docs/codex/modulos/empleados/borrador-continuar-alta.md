@@ -1,4 +1,4 @@
-# Pruebas — Guardar borrador / Continuar alta (creación avanzada)
+# Pruebas - Guardar borrador / Continuar alta (creación avanzada)
 
 Documenta la **fase 1** (UI y unitarios) y la **fase 2** (E2E con persistencia Supabase). Complementa [`creacion-avanzada.md`](./creacion-avanzada.md).
 
@@ -6,7 +6,7 @@ Documenta la **fase 1** (UI y unitarios) y la **fase 2** (E2E con persistencia S
 
 ## 1. Estado de cobertura
 
-### Fase 1 — sin Supabase obligatorio
+### Fase 1 - sin Supabase obligatorio
 
 | Capa | Qué cubre | Dónde |
 |------|-----------|--------|
@@ -14,7 +14,7 @@ Documenta la **fase 1** (UI y unitarios) y la **fase 2** (E2E con persistencia S
 | Componente | CTA «Continuar alta» + `idPersona` | `tabla-empleados.spec.ts` |
 | E2E UI | Botón borrador solo avanzado, básico sin borrador, error `idPersona`, validación RUT, layout ~900px | `tests/empleados-borrador.spec.ts` |
 
-### Fase 2 — persistencia (Supabase local / dev)
+### Fase 2 - persistencia (Supabase local / dev)
 
 **Archivo:** `tests/empleados-borrador-persistencia.spec.ts`  
 **Activación:** variable de entorno `E2E_EMPLEADOS_BORRADOR` con valor truthy: `1`, `true`, `yes` u `on` (sin distinguir mayúsculas). Puede definirse en el archivo **`.env`** en la raíz del proyecto (se carga al arrancar Playwright y al importar el spec). Si no está activa, la suite usa `test.describe.skip` (no se ejecutan casos; no son tests verdes falsos).
@@ -26,7 +26,7 @@ Documenta la **fase 1** (UI y unitarios) y la **fase 2** (E2E con persistencia S
 | APVI | AFP con APVI: «Siguiente» muestra bloque APVI |
 | IPS | «Siguiente» desde previsión llega a banco (sin paso APVI) |
 | RUT duplicado | Segundo alta nuevo con mismo RUT que borrador ya guardado → modal «Ficha ya registrada» |
-| Finalizar | Borrador mínimo → completar pasos 1–5 y 7 con previsión «Sin prevision» → paso 9 «Finalizar alta» → mensaje de éxito |
+| Finalizar | Borrador mínimo → completar pasos 1-5 y 7 con previsión «Sin prevision» → paso 9 «Finalizar alta» → mensaje de éxito |
 
 **Helpers:** `tests/helpers/empleados-borrador-e2e.ts` (RUT único ficticio, `app-search-select`, filtros grilla, pasos wizard). `fillPaso0BorradorMinimo` incluye sexo y estado civil porque la validación mínima de borrador los exige; sin ellos el guardado no corre y la URL no recibe `idPersona`. Las fechas usan `fillCalendarInputByHostId` (`app-calendar-input` duplica `id` en host e input). Los combos usan `button.select-field#…` como trigger (`app-search-select` + botón comparten `id`). `pickFirstSearchSelectOption` ignora la primera fila vacía del catálogo (valor null) para no dejar el formulario inválido al finalizar. Tras guardar borrador, `waitGuardarBorradorTerminado` espera el fin del request (texto del botón); el aviso verde dura ~4,5 s y no debe ser la única aserción si Supabase es lento.
 
@@ -34,12 +34,12 @@ Documenta la **fase 1** (UI y unitarios) y la **fase 2** (E2E con persistencia S
 
 ---
 
-## 2. Por qué la fase 2 es opt‑in
+## 2. Por qué la fase 2 es opt-in
 
 | Motivo | Detalle |
 |--------|---------|
 | Supabase | Sin instancia alineada al esquema (p. ej. `paso_alta_avanzada`) los fallos son de infraestructura. |
-| Catálogos | AFP/IPS/banco/comuna dependen de datos reales en BD; los tests usan «primera opción» o etiquetas conocidas (`AFP`, `Sin prevision`, etc.) — un seed distinto puede exigir ajustar selectores. |
+| Catálogos | AFP/IPS/banco/comuna dependen de datos reales en BD; los tests usan «primera opción» o etiquetas conocidas (`AFP`, `Sin prevision`, etc.) - un seed distinto puede exigir ajustar selectores. |
 | Datos | Solo RUTs y nombres generados en test (ficticios). |
 | Calidad | Sin mocks que simulen persistencia; sin relajar validaciones finales. |
 
@@ -90,5 +90,5 @@ npm run test:visual -- tests/empleados-borrador.spec.ts tests/empleados-borrador
 
 ## 5. Enlaces
 
-- [`../../../SUPABASE_SETUP.md`](../../../SUPABASE_SETUP.md)
-- [`../../../bd/base/v11/README.md`](../../../bd/base/v11/README.md)
+- [`../../../../SUPABASE_SETUP.md`](../../../../SUPABASE_SETUP.md)
+- [`../../../../bd/base/v11/README.md`](../../../../bd/base/v11/README.md)

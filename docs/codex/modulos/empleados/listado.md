@@ -2,7 +2,7 @@
 
 ## Ruta
 
-- **`/empleados`** — `ListadoEmpleadosContainer`.
+- **`/empleados`** - `ListadoEmpleadosContainer`.
 
 ## Objetivo
 

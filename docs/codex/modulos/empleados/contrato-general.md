@@ -557,7 +557,7 @@ La normalizacion ocurre solo al hidratar el borrador para UI. No cambia la regla
 de guardado de borrador: se puede seguir persistiendo parcialmente con defaults
 tecnicos cuando la BD lo exige.
 
-Detalle de implementacion (alineado al contrato «persistencia ≠ seleccion»):
+Detalle de implementacion (alineado al contrato «persistencia �  seleccion»):
 
 - Si existe `paso_alta_avanzada`, la lectura desde BD hacia `formValue` evita
   rellenar con defaults de ficha completa (p. ej. tipo de contrato o

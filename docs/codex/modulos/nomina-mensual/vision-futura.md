@@ -1,4 +1,4 @@
-# Nómina mensual — visión futura
+# Nómina mensual - visión futura
 
 ## Mensaje corto
 

@@ -1,4 +1,4 @@
-# Parámetros — contrato general (resumen)
+# Parámetros - contrato general (resumen)
 
 ## Objetivo
 

@@ -19,6 +19,12 @@ Este archivo define la base de trabajo para Codex en este proyecto. Antes de gen
 
 Si hay conflicto entre reglas, gana la regla mas alta en esta lista.
 
+## Tablas canonicas
+
+Antes de crear consultas, servicios, mappers, SQL o documentacion tecnica con nombres de tablas, revisar primero [`docs/codex/orquestador/diccionario-tablas-canonicas.md`](./orquestador/diccionario-tablas-canonicas.md).
+
+No crear tablas nuevas ni usar nombres alternativos sin actualizar ese diccionario y confirmar la BD real.
+
 ## Stack del proyecto
 
 - Angular standalone.

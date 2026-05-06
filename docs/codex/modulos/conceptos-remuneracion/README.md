@@ -1,4 +1,4 @@
-# Módulo Conceptos de remuneración — punto de entrada
+# Módulo Conceptos de remuneración - punto de entrada
 
 ## Estado (Fase 9)
 
@@ -6,9 +6,9 @@
 
 ## Orden de lectura
 
-1. [`diagnostico-fase-9.md`](./diagnostico-fase-9.md) — estado real del repo (UI, API, BD, pruebas).  
-2. [`contrato-funcional.md`](./contrato-funcional.md) — reglas de negocio y de pantalla que deben cumplirse o extenderse.  
-3. [`contrato-general.md`](./contrato-general.md) — índice y principios.  
+1. [`diagnostico-fase-9.md`](./diagnostico-fase-9.md) - estado real del repo (UI, API, BD, pruebas).  
+2. [`contrato-funcional.md`](./contrato-funcional.md) - reglas de negocio y de pantalla que deben cumplirse o extenderse.  
+3. [`contrato-general.md`](./contrato-general.md) - índice y principios.  
 
 ## Documentos
 

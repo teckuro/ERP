@@ -8,10 +8,10 @@ Fijar **cómo debe sentirse y comportarse** la aplicación para el usuario opera
 
 Cada pantalla debe ayudar a responder, **en este orden**:
 
-1. **Estado** — en qué situación está el contexto o el registro.
-2. **Qué falta** — pocos pendientes claros (no listas interminables).
-3. **Acción siguiente** — un CTA coherente con el estado.
-4. **Detalle bajo demanda** — pestañas, paneles o enlaces; no exponer todo a la vez.
+1. **Estado** - en qué situación está el contexto o el registro.
+2. **Qué falta** - pocos pendientes claros (no listas interminables).
+3. **Acción siguiente** - un CTA coherente con el estado.
+4. **Detalle bajo demanda** - pestañas, paneles o enlaces; no exponer todo a la vez.
 
 ## 3. Qué evitar en UI operativa
 

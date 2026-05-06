@@ -1905,6 +1905,373 @@ export type Database = {
           },
         ]
       }
+      nomina_calculo_concepto: {
+        Row: {
+          afecta_liquido: boolean
+          codigo_lre_snapshot: string | null
+          created_at: string
+          id_calculo_concepto: number
+          id_calculo_trabajador: number
+          id_concepto: number | null
+          imponible: boolean
+          monto: number
+          nombre_concepto_snapshot: string
+          origen: string
+          tipo: string
+          trazabilidad_json: Json | null
+          tributable: boolean
+        }
+        Insert: {
+          afecta_liquido?: boolean
+          codigo_lre_snapshot?: string | null
+          created_at?: string
+          id_calculo_concepto?: number
+          id_calculo_trabajador: number
+          id_concepto?: number | null
+          imponible?: boolean
+          monto?: number
+          nombre_concepto_snapshot: string
+          origen: string
+          tipo: string
+          trazabilidad_json?: Json | null
+          tributable?: boolean
+        }
+        Update: {
+          afecta_liquido?: boolean
+          codigo_lre_snapshot?: string | null
+          created_at?: string
+          id_calculo_concepto?: number
+          id_calculo_trabajador?: number
+          id_concepto?: number | null
+          imponible?: boolean
+          monto?: number
+          nombre_concepto_snapshot?: string
+          origen?: string
+          tipo?: string
+          trazabilidad_json?: Json | null
+          tributable?: boolean
+        }
+        Relationships: [
+          {
+            foreignKeyName: "nomina_calculo_concepto_id_calculo_trabajador_fkey"
+            columns: ["id_calculo_trabajador"]
+            isOneToOne: false
+            referencedRelation: "nomina_calculo_trabajador"
+            referencedColumns: ["id_calculo_trabajador"]
+          },
+          {
+            foreignKeyName: "nomina_calculo_concepto_id_concepto_fkey"
+            columns: ["id_concepto"]
+            isOneToOne: false
+            referencedRelation: "concepto"
+            referencedColumns: ["id_concepto"]
+          },
+        ]
+      }
+      nomina_calculo_issue: {
+        Row: {
+          campo: string | null
+          codigo: string
+          created_at: string
+          entidad_id: string | null
+          id_calculo_periodo: number
+          id_calculo_trabajador: number | null
+          id_issue: number
+          mensaje: string
+          origen: string
+          severidad: string
+        }
+        Insert: {
+          campo?: string | null
+          codigo: string
+          created_at?: string
+          entidad_id?: string | null
+          id_calculo_periodo: number
+          id_calculo_trabajador?: number | null
+          id_issue?: number
+          mensaje: string
+          origen: string
+          severidad: string
+        }
+        Update: {
+          campo?: string | null
+          codigo?: string
+          created_at?: string
+          entidad_id?: string | null
+          id_calculo_periodo?: number
+          id_calculo_trabajador?: number | null
+          id_issue?: number
+          mensaje?: string
+          origen?: string
+          severidad?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "nomina_calculo_issue_id_calculo_periodo_fkey"
+            columns: ["id_calculo_periodo"]
+            isOneToOne: false
+            referencedRelation: "nomina_calculo_periodo"
+            referencedColumns: ["id_calculo_periodo"]
+          },
+          {
+            foreignKeyName: "nomina_calculo_issue_id_calculo_trabajador_fkey"
+            columns: ["id_calculo_trabajador"]
+            isOneToOne: false
+            referencedRelation: "nomina_calculo_trabajador"
+            referencedColumns: ["id_calculo_trabajador"]
+          },
+        ]
+      }
+      nomina_calculo_periodo: {
+        Row: {
+          activo: boolean
+          created_at: string
+          estado: string
+          fecha_generacion: string
+          hash_snapshot: string | null
+          id_calculo_periodo: number
+          id_empresa: number | null
+          observacion_anulacion: string | null
+          origen: string
+          periodo: string
+          reemplazado_por: number | null
+          total_advertencias: number
+          total_bloqueados: number
+          total_descuentos: number
+          total_haberes: number
+          total_liquido: number
+          total_trabajadores: number
+          updated_at: string
+          usuario_generador: string | null
+          version_motor: string
+        }
+        Insert: {
+          activo?: boolean
+          created_at?: string
+          estado?: string
+          fecha_generacion?: string
+          hash_snapshot?: string | null
+          id_calculo_periodo?: number
+          id_empresa?: number | null
+          observacion_anulacion?: string | null
+          origen?: string
+          periodo: string
+          reemplazado_por?: number | null
+          total_advertencias?: number
+          total_bloqueados?: number
+          total_descuentos?: number
+          total_haberes?: number
+          total_liquido?: number
+          total_trabajadores?: number
+          updated_at?: string
+          usuario_generador?: string | null
+          version_motor: string
+        }
+        Update: {
+          activo?: boolean
+          created_at?: string
+          estado?: string
+          fecha_generacion?: string
+          hash_snapshot?: string | null
+          id_calculo_periodo?: number
+          id_empresa?: number | null
+          observacion_anulacion?: string | null
+          origen?: string
+          periodo?: string
+          reemplazado_por?: number | null
+          total_advertencias?: number
+          total_bloqueados?: number
+          total_descuentos?: number
+          total_haberes?: number
+          total_liquido?: number
+          total_trabajadores?: number
+          updated_at?: string
+          usuario_generador?: string | null
+          version_motor?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "nomina_calculo_periodo_id_empresa_fkey"
+            columns: ["id_empresa"]
+            isOneToOne: false
+            referencedRelation: "empresa"
+            referencedColumns: ["id_empresa"]
+          },
+          {
+            foreignKeyName: "nomina_calculo_periodo_reemplazado_por_fkey"
+            columns: ["reemplazado_por"]
+            isOneToOne: false
+            referencedRelation: "nomina_calculo_periodo"
+            referencedColumns: ["id_calculo_periodo"]
+          },
+        ]
+      }
+      nomina_calculo_trabajador: {
+        Row: {
+          base_imponible_previsional: number
+          base_tributable: number
+          cotizacion_afc: number
+          cotizacion_afp: number
+          cotizacion_ley_16744_empleador: number
+          cotizacion_salud: number
+          cotizacion_sanna: number
+          cotizacion_sis: number
+          created_at: string
+          estado: string
+          id_calculo_periodo: number
+          id_calculo_trabajador: number
+          id_persona: number
+          impuesto_unico: number
+          liquido_preliminar: number
+          nombre_completo_snapshot: string
+          rut: string
+          sueldo_base: number
+          total_descuentos_legales: number
+          total_descuentos_voluntarios: number
+          total_haberes_imponibles: number
+          total_haberes_no_imponibles: number
+          updated_at: string
+        }
+        Insert: {
+          base_imponible_previsional?: number
+          base_tributable?: number
+          cotizacion_afc?: number
+          cotizacion_afp?: number
+          cotizacion_ley_16744_empleador?: number
+          cotizacion_salud?: number
+          cotizacion_sanna?: number
+          cotizacion_sis?: number
+          created_at?: string
+          estado: string
+          id_calculo_periodo: number
+          id_calculo_trabajador?: number
+          id_persona: number
+          impuesto_unico?: number
+          liquido_preliminar?: number
+          nombre_completo_snapshot: string
+          rut: string
+          sueldo_base?: number
+          total_descuentos_legales?: number
+          total_descuentos_voluntarios?: number
+          total_haberes_imponibles?: number
+          total_haberes_no_imponibles?: number
+          updated_at?: string
+        }
+        Update: {
+          base_imponible_previsional?: number
+          base_tributable?: number
+          cotizacion_afc?: number
+          cotizacion_afp?: number
+          cotizacion_ley_16744_empleador?: number
+          cotizacion_salud?: number
+          cotizacion_sanna?: number
+          cotizacion_sis?: number
+          created_at?: string
+          estado?: string
+          id_calculo_periodo?: number
+          id_calculo_trabajador?: number
+          id_persona?: number
+          impuesto_unico?: number
+          liquido_preliminar?: number
+          nombre_completo_snapshot?: string
+          rut?: string
+          sueldo_base?: number
+          total_descuentos_legales?: number
+          total_descuentos_voluntarios?: number
+          total_haberes_imponibles?: number
+          total_haberes_no_imponibles?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "nomina_calculo_trabajador_id_calculo_periodo_fkey"
+            columns: ["id_calculo_periodo"]
+            isOneToOne: false
+            referencedRelation: "nomina_calculo_periodo"
+            referencedColumns: ["id_calculo_periodo"]
+          },
+          {
+            foreignKeyName: "nomina_calculo_trabajador_id_persona_fkey"
+            columns: ["id_persona"]
+            isOneToOne: false
+            referencedRelation: "persona"
+            referencedColumns: ["id_persona"]
+          },
+          {
+            foreignKeyName: "nomina_calculo_trabajador_id_persona_fkey"
+            columns: ["id_persona"]
+            isOneToOne: false
+            referencedRelation: "vw_persona_factores"
+            referencedColumns: ["id_persona"]
+          },
+        ]
+      }
+      nomina_calculo_trazabilidad: {
+        Row: {
+          campo_fuente: string
+          codigo: string
+          created_at: string
+          formula: string
+          id_calculo_periodo: number
+          id_calculo_trabajador: number | null
+          id_trazabilidad: number
+          observacion: string | null
+          origen: string
+          tabla_fuente: string
+          valor_entrada: Json | null
+          valor_resultado: Json | null
+          vigencia_fin: string | null
+          vigencia_inicio: string | null
+        }
+        Insert: {
+          campo_fuente: string
+          codigo: string
+          created_at?: string
+          formula: string
+          id_calculo_periodo: number
+          id_calculo_trabajador?: number | null
+          id_trazabilidad?: number
+          observacion?: string | null
+          origen: string
+          tabla_fuente: string
+          valor_entrada?: Json | null
+          valor_resultado?: Json | null
+          vigencia_fin?: string | null
+          vigencia_inicio?: string | null
+        }
+        Update: {
+          campo_fuente?: string
+          codigo?: string
+          created_at?: string
+          formula?: string
+          id_calculo_periodo?: number
+          id_calculo_trabajador?: number | null
+          id_trazabilidad?: number
+          observacion?: string | null
+          origen?: string
+          tabla_fuente?: string
+          valor_entrada?: Json | null
+          valor_resultado?: Json | null
+          vigencia_fin?: string | null
+          vigencia_inicio?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "nomina_calculo_trazabilidad_id_calculo_periodo_fkey"
+            columns: ["id_calculo_periodo"]
+            isOneToOne: false
+            referencedRelation: "nomina_calculo_periodo"
+            referencedColumns: ["id_calculo_periodo"]
+          },
+          {
+            foreignKeyName: "nomina_calculo_trazabilidad_id_calculo_trabajador_fkey"
+            columns: ["id_calculo_trabajador"]
+            isOneToOne: false
+            referencedRelation: "nomina_calculo_trabajador"
+            referencedColumns: ["id_calculo_trabajador"]
+          },
+        ]
+      }
       organismo_administrador_ley_16744: {
         Row: {
           codigo: string

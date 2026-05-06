@@ -1,9 +1,9 @@
-# Flujo — Proceso de remuneraciones
+# Flujo - Proceso de remuneraciones
 
 ## Ruta
 
-- **Oficial:** **`/remuneraciones/proceso-mensual`** — `ProcesoRemuneracionesPage` (`src/app/pages/proceso-remuneraciones.page.ts`), hija de `RemuneracionesOutletComponent`.
-- **Compatibilidad temporal:** **`/proceso-remuneraciones`** — `redirectTo` -> `/remuneraciones/proceso-mensual` (`pathMatch: 'full'` en `src/app/app.routes.ts`).
+- **Oficial:** **`/remuneraciones/proceso-mensual`** - `ProcesoRemuneracionesPage` (`src/app/pages/proceso-remuneraciones.page.ts`), hija de `RemuneracionesOutletComponent`.
+- **Compatibilidad temporal:** **`/proceso-remuneraciones`** - `redirectTo` -> `/remuneraciones/proceso-mensual` (`pathMatch: 'full'` en `src/app/app.routes.ts`).
 
 ## Objetivo del usuario
 
@@ -21,7 +21,7 @@ Pantalla de **proceso mensual**: prevalidaciones por periodo (`9.5A`); motor y l
 |------|--------|
 | Contrato modulo Nomina mensual | [`../../modulos/nomina-mensual/contrato-general.md`](../../modulos/nomina-mensual/contrato-general.md), [`../../modulos/nomina-mensual/prevalidaciones-9-5A.md`](../../modulos/nomina-mensual/prevalidaciones-9-5A.md) |
 | Auditoria demo vs parametros (PARAM-CHILE-01) | [`../../auditorias/param-chile-01-parametros-y-demo-proceso.md`](../../auditorias/param-chile-01-parametros-y-demo-proceso.md) |
-| Orquestador — camino oficial | [`../../orquestador/contexto-proyecto.md`](../../orquestador/contexto-proyecto.md) §12 |
+| Orquestador - camino oficial | [`../../orquestador/contexto-proyecto.md`](../../orquestador/contexto-proyecto.md) §12 |
 | UI general | [`../../AGENTS.md`](../../AGENTS.md) |
 
 ## Pruebas

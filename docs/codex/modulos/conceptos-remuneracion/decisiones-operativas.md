@@ -1,4 +1,4 @@
-# Conceptos de remuneración — decisiones operativas
+# Conceptos de remuneración - decisiones operativas
 
 ## 1. Objetivo
 
@@ -33,7 +33,7 @@ Se definen **perfiles lógicos** para mapear luego a **claims/roles JWT** y a **
 - **`codigo`:** inmutable tras creación (identidad estable para integraciones y asignaciones).
 - **`es_sistema`:** no lo crea el usuario estándar; no puede pasar de `true` a `false` desde UI.
 
-### 3.2 Campos editables — concepto **no sistema** y **no** `calculo_automatico` (Mantenedor)
+### 3.2 Campos editables - concepto **no sistema** y **no** `calculo_automatico` (Mantenedor)
 
 - `nombre`, `codigo_motor`, `tipo` (dentro de lo permitido §4), `naturaleza`, flags de imposición/cotizaciones/líquido, `id_catalogo_lre`, `vigente`, `vigencia_inicio` / `vigencia_fin`, `orden_impresion`.
 - **`calculo_automatico`:** Mantenedor **no** puede pasar de `false` a `true` (riesgo de mezclar con motor); solo **Admin conceptos** si el negocio lo autoriza con procedimiento.
@@ -69,10 +69,10 @@ Se definen **perfiles lógicos** para mapear luego a **claims/roles JWT** y a **
 1. `tipo` ∈ **`HABER`**, **`DESCUENTO`**.
 2. `es_sistema = false`.
 3. `calculo_automatico = false`.
-4. **`vigente = true`** (decisión explícita; hoy el repositorio puede no filtrarlo — **brecha** Fase 9.2).
+4. **`vigente = true`** (decisión explícita; hoy el repositorio puede no filtrarlo - **brecha** Fase 9.2).
 5. **Vigencia por fechas:** si `vigencia_inicio` / `vigencia_fin` están informadas, la fecha de **contexto de asignación** (hoy: operación manual; mañana: período de liquidación) debe caer dentro del rango; hasta existir período acoplado en UI, **Mantenedor** no debe asignar conceptos claramente fuera de vigencia (validación suave en 9.2 mínimo: si `vigencia_fin` es anterior a la fecha actual, no listar).
 
-**“Protegido”** en el sentido §3: si `es_sistema` o `calculo_automatico`, **no** es asignable (ya cubierto por 2–3).
+**“Protegido”** en el sentido §3: si `es_sistema` o `calculo_automatico`, **no** es asignable (ya cubierto por 2-3).
 
 **Impacto en Haberes/descuentos:** el contrato de asignaciones debe referenciar esta sección como fuente; actualizar enlace en [`../haberes-descuentos/contrato-general.md`](../haberes-descuentos/contrato-general.md).
 
@@ -114,7 +114,7 @@ La vista historica y los filtros por estado de vigencia son responsabilidad de H
 - **Obligatoriedad:** **no obligatorio** para que el Mantenedor cree o edite un `HABER`/`DESCUENTO` interno de empresa (permite iteración del catálogo).
 - **Cambio de mapeo LRE:** permitido si el perfil puede editar el concepto; debe quedar **trazado** cuando exista bitácora (pendiente §10).
 - **Conceptos sistema / semilla:** el LRE asociado se considera **parte del paquete normativo**; solo **Admin conceptos** o **normativa** lo modifica.
-- **Sin mapeo LRE:** permitido en catálogo; la UI debe poder mostrar estado **“LRE no asignado”** (chip o columna) para apoyar cierre antes de exportaciones oficiales — **implementación Fase 9.2** (no bloquea guardado salvo política futura por tipo de export).
+- **Sin mapeo LRE:** permitido en catálogo; la UI debe poder mostrar estado **“LRE no asignado”** (chip o columna) para apoyar cierre antes de exportaciones oficiales - **implementación Fase 9.2** (no bloquea guardado salvo política futura por tipo de export).
 - **No** se introduce en esta fase un valor de BD “pendiente_lre”; el estado es **derivado** (`id_catalogo_lre IS NULL`).
 
 ---
@@ -146,9 +146,9 @@ La vista historica y los filtros por estado de vigencia son responsabilidad de H
 3. **Asignables:** la lista del selector en Haberes y la validación al guardar usan `esConceptoAsignable` sobre datos de mantenimiento (**Fase 9.2C**); ya no basta el filtro SQL parcial del repositorio legacy.
 4. **Listado conceptos:** indicador **LRE no asignado** §8 (**Fase 9.2A** en UI: columna + filtros + `esConceptoAsignable` en `concepto-asignabilidad.rules.ts`).
 5. **RLS:** tarea aparte con aprobación explícita de políticas; no ejecutar sin ticket.
-6. **E2E:** ruta `/remuneraciones/conceptos` — spec dedicado `tests/conceptos-remuneracion-listado.spec.ts` (smoke); opcional ampliar `dashboard.spec.ts` con captura visual.
+6. **E2E:** ruta `/remuneraciones/conceptos` - spec dedicado `tests/conceptos-remuneracion-listado.spec.ts` (smoke); opcional ampliar `dashboard.spec.ts` con captura visual.
 7. **Haberes/descuentos:** copiar en UI mensajes si el concepto deja de ser asignable por `vigente` o vigencia.
-8. **Detalle y blindaje (Fase 9.2B):** modal desde **Revisar** con trazabilidad de reglas; `evaluarConceptoAccionesPermitidas` en `concepto-acciones.rules.ts` (sin eliminar en v1; alta no operativa); alinear con §2–§8 del contrato funcional.
+8. **Detalle y blindaje (Fase 9.2B):** modal desde **Revisar** con trazabilidad de reglas; `evaluarConceptoAccionesPermitidas` en `concepto-acciones.rules.ts` (sin eliminar en v1; alta no operativa); alinear con §2-§8 del contrato funcional.
 
 **No incluido en 9.2 mínimo:** UI de `regla_concepto_calculo`, motor, liquidaciones, nómina, Parámetros, Python.
 

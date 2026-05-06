@@ -1,4 +1,4 @@
-# Tests — módulo Parámetros
+# Tests - módulo Parámetros
 
 ## Playwright / capturas
 
@@ -15,7 +15,7 @@ npx playwright test tests/parametros-tabs.screenshots.spec.ts --workers=1
 
 ## Unitarios
 
-Lógica de `ParametrosPage`, servicios y repositorios según cambios en `src/app/features/parametros-generales` y `src/app/pages/parametros.page.ts` — ejecutar `npx ng test --watch=false` filtrando suites tocadas.
+Lógica de `ParametrosPage`, servicios y repositorios según cambios en `src/app/features/parametros-generales` y `src/app/pages/parametros.page.ts` - ejecutar `npx ng test --watch=false` filtrando suites tocadas.
 
 ## Assets vigentes
 

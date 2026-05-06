@@ -1,4 +1,4 @@
-# Módulo Parámetros — punto de entrada
+# Módulo Parámetros - punto de entrada
 
 ## Qué documenta esta carpeta
 

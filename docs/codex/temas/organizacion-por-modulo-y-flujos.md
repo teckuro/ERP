@@ -8,11 +8,11 @@ Convención **estable** para encontrar documentación: **orquestador global** �
 
 1. **Fuente vigente por dominio de producto** vive en **`docs/codex/modulos/<módulo>/`**, con un **`README.md`** por módulo y un archivo por subflujo importante.
 2. **`docs/codex/temas/`** agrupa:
-   - **`flujos/`** — un documento por área de app con rutas y pasos de usuario;
-   - **transversal** — implementación UI, menú, arquitectura de feature cuando no se ha partido en `modulos/`;
-   **stubs** en la raíz de `temas/` — mismo nombre histórico, una línea que apunta al archivo en `modulos/` (no borrar rutas enlazadas desde PRs viejos sin necesidad).
-3. **Orquestador** (`docs/codex/orquestador/`) — contexto, fases, [`mapa-documentacion.md`](../orquestador/mapa-documentacion.md); no duplicar contratos largos.
-4. **Archivo** (`docs/codex/archivo/`) — solo si se **mueve** explícitamente un documento obsoleto; ver [`../archivo/README.md`](../archivo/README.md).
+   - **`flujos/`** - un documento por área de app con rutas y pasos de usuario;
+   - **transversal** - implementación UI, menú, arquitectura de feature cuando no se ha partido en `modulos/`;
+   **stubs** en la raíz de `temas/` - mismo nombre histórico, una línea que apunta al archivo en `modulos/` (no borrar rutas enlazadas desde PRs viejos sin necesidad).
+3. **Orquestador** (`docs/codex/orquestador/`) - contexto, fases, [`mapa-documentacion.md`](../orquestador/mapa-documentacion.md); no duplicar contratos largos.
+4. **Archivo** (`docs/codex/archivo/`) - solo si se **mueve** explícitamente un documento obsoleto; ver [`../archivo/README.md`](../archivo/README.md).
 5. **Nuevo contrato de módulo cerrado**: crear o editar bajo `modulos/<módulo>/`; actualizar `README` del módulo, `mapa-documentacion.md`, `flujos/<modulo>.md` y el índice en [`temas/README.md`](./README.md).
 
 ## Relación módulo ↔ flujo ↔ contrato

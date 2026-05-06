@@ -26,10 +26,10 @@ ERP **chileno**, orientado a **remuneraciones completas**, con interfaz **limpia
 
 Guiado por **estados**, **pendientes** y **acciones**. Orden de presentación:
 
-1. **Estado** — en qué situación está el registro o el proceso.
-2. **Qué falta** — pendientes principales (pocos, claros).
-3. **Acción siguiente** — un CTA coherente con el estado.
-4. **Detalle bajo demanda** — pestañas, paneles o drill‑down; no todo visible a la vez.
+1. **Estado** - en qué situación está el registro o el proceso.
+2. **Qué falta** - pendientes principales (pocos, claros).
+3. **Acción siguiente** - un CTA coherente con el estado.
+4. **Detalle bajo demanda** - pestañas, paneles o drill-down; no todo visible a la vez.
 
 El sistema **no** debe parecer una planilla gigante. En UI operativa **no** mostrar nombres de tablas, columnas ni errores crudos de motor. La complejidad legal y previsional existe **por capas** (catálogo, vigencia, período mensual, etc.); ver [`periodo-vigencia-catalogo.md`](../modulos/parametros/periodo-vigencia-catalogo.md).
 
@@ -45,37 +45,38 @@ Criterios operativos de pantalla (estado → pendientes → acción, qué evitar
 | **Haberes / descuentos** | Asignaciones recurrentes por trabajador (en evolución); no sustituyen conceptos ni liquidaciones. |
 | **Conceptos de remuneración** | **Fase fuerte en curso**; Fase 9 **documental cerrada** (diagnóstico + contrato funcional). Catálogo maestro para haberes, descuentos, aportes y liquidaciones. Entrada: [`../modulos/conceptos-remuneracion/README.md`](../modulos/conceptos-remuneracion/README.md). |
 | **Movimientos variables** | Haberes/descuentos **puntuales** por trabajador y período (`YYYY-MM`). Contrato **9.4A**, modelo **9.4B**, persistencia **9.4C**, service **9.4D** y UI carga manual **9.4E** (`/remuneraciones/movimientos-variables`) en [`../modulos/movimientos-variables/README.md`](../modulos/movimientos-variables/README.md); RLS y proceso mensual en fases posteriores. |
-| **Proceso mensual / motor / liquidaciones** | **Proceso mensual:** prevalidaciones por `YYYY-MM` (**9.5A–9.5B**, sin motor) en [`../modulos/nomina-mensual/README.md`](../modulos/nomina-mensual/README.md). **Motor / liquidaciones:** futuro checklist, cálculo, cierre y congelado de resultados. |
+| **Proceso mensual / motor / liquidaciones** | **Proceso mensual:** prevalidaciones por `YYYY-MM` (**9.5A-9.5B**, sin motor) en [`../modulos/nomina-mensual/README.md`](../modulos/nomina-mensual/README.md). **Motor / liquidaciones:** futuro checklist, cálculo, cierre y congelado de resultados. |
 | **Previred / LRE** | Fases posteriores con trazabilidad y validaciones. |
 
-## 6. Estado resumido — Empleados
+## 6. Estado resumido - Empleados
 
 Contrato de estados, completitud y aptitud: [`contrato-general.md`](../modulos/empleados/contrato-general.md). Ficha: [`ficha-empleado.md`](../modulos/empleados/ficha-empleado.md). Modo básico: [`creacion-basica.md`](../modulos/empleados/creacion-basica.md).
 
 Puntos ya alineados al contrato (resumen): helper central `evaluarCompletitudYAptitudEmpleado`, listado y ficha orientados a estado/pendientes/acción, selects sin falsa autoselección, rehidratación de borrador avanzado sin tratar defaults técnicos como datos reales. **Fase 8 cerrada:** validación explícita **Validar para remuneraciones** en Ficha (opción B: sin aptitud automática); implementación y contrato en [`validar-remuneraciones.md`](../modulos/empleados/validar-remuneraciones.md) y [`estado-fases.md`](./estado-fases.md).
 
-## 7. Estado resumido — Parámetros
+## 7. Estado resumido - Parámetros
 
 Período activo como contexto global; distinción **mensual / vigencia / catálogo**: [`periodo-vigencia-catalogo.md`](../modulos/parametros/periodo-vigencia-catalogo.md). UI del módulo: [`ui-parametros.md`](../modulos/parametros/ui-parametros.md). Reforma y gradualidad (p. ej. 8,5 %): [`reforma-gradualidad.md`](../modulos/parametros/reforma-gradualidad.md). Campos y listas: [`campos-y-listas.md`](../modulos/parametros/campos-y-listas.md).
 
 La UI no debe dar por “todo vacío” si solo falta **carga mensual** oficial.
 
-## 8. Estado resumido — Python / BD v11
+## 8. Estado resumido - Python / BD v11
 
 Contrato de carga mensual, preparación y alineación con período: [`python-carga-mensual.md`](../modulos/parametros/python-carga-mensual.md). Esquema: [`../../../bd/base/v11/README.md`](../../../bd/base/v11/README.md) (ruta relativa desde este archivo).
 
-## 9. Estado resumido — Haberes y descuentos
+## 9. Estado resumido - Haberes y descuentos
 
 Uso actual acotado a **asignaciones recurrentes** por trabajador, con período global; **no** calcula liquidaciones ni reemplaza **movimientos variables** (contrato en [`../modulos/movimientos-variables/README.md`](../modulos/movimientos-variables/README.md)). No duplicar aquí el contrato fino del módulo.
 
-## 10. Estado resumido — Conceptos de remuneración
+## 10. Estado resumido - Conceptos de remuneración
 
 **Fase fuerte en curso** (Fase 9 documental **cerrada**: diagnóstico + contrato funcional). Catálogo maestro (LRE, sistema/protegido, automático/manual, vigencias, reglas de edición) y **fuente** para haberes, descuentos, aportes y liquidaciones. **No** mezclar con asignaciones por trabajador. Punto de entrada: [`../modulos/conceptos-remuneracion/README.md`](../modulos/conceptos-remuneracion/README.md). Contrato detallado: [`../modulos/conceptos-remuneracion/contrato-funcional.md`](../modulos/conceptos-remuneracion/contrato-funcional.md). Marco UX: [`diseno-operativo-erp.md`](./diseno-operativo-erp.md) §6.
+Conceptos sigue siendo la siguiente fase fuerte de producto, pero queda ordenada despues de `SEG-01 - Roles, permisos, JWT/RLS base`. No avanzar `CONC-02` ni contrato de motor sin matriz de permisos revisada.
 
 ## 11. Módulos futuros
 
-- **Conceptos** — documentación de gobernanza (Fase 9) **cerrada**; sigue prioridad alta **cerrar implementación** (permisos, pruebas, reglas motor en UI) antes de motor fuerte.
-- **Movimientos variables mensuales** — 9.4A documental + 9.4B modelo TS/reglas + 9.4C SQL/repositorio + 9.4D service fino + 9.4E UI carga manual: [`../modulos/movimientos-variables/README.md`](../modulos/movimientos-variables/README.md).
+- **Conceptos** - documentación de gobernanza (Fase 9) **cerrada**; sigue prioridad alta **cerrar implementación** (permisos, pruebas, reglas motor en UI) antes de motor fuerte.
+- **Movimientos variables mensuales** - 9.4A documental + 9.4B modelo TS/reglas + 9.4C SQL/repositorio + 9.4D service fino + 9.4E UI carga manual: [`../modulos/movimientos-variables/README.md`](../modulos/movimientos-variables/README.md).
 - Proceso mensual tipo checklist (parámetros → aptos → recurrentes → variables → cálculo → cierre); en Angular hay **prevalidaciones** por periodo sin liquidación ([`../modulos/nomina-mensual/README.md`](../modulos/nomina-mensual/README.md)).
 - Motor de cálculo y **liquidaciones congeladas** (resultado, no formulario principal).
 - Previred y LRE con trazabilidad y versiones.
@@ -126,7 +127,7 @@ Hasta cerrar las fases previas del tablero y el contrato correspondiente:
 - Motor de liquidación **productivo**.
 - Liquidaciones **productivas** masivas sin auditoría clara.
 - Previred / LRE **finales** sin fuente y versión acotadas.
-- Nómina mensual **productiva** end‑to‑end sin checklist y aptos.
+- Nómina mensual **productiva** end-to-end sin checklist y aptos.
 - Cálculo automático **completo** sin conceptos y datos mensuales gobernados.
 - Movimientos variables si **conceptos / haberes** no están alineados.
 - **Activación automática** de aptitud remuneraciones **sin** acción explícita en ficha (opción B).

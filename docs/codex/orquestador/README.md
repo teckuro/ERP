@@ -14,19 +14,20 @@ Conjunto de documentos **globales y breves** para que Codex, Cursor, ChatGPT u o
 
 ## Orden recomendado de lectura
 
-1. [`contexto-proyecto.md`](./contexto-proyecto.md) — mapa global del producto, stack, UI, módulos y camino oficial.
-2. [`roadmap-operativo.md`](./roadmap-operativo.md) — orden oficial: ORDEN-01 cerrada, SEG-01 siguiente, CONC-02 despues, MOTOR-00 antes de motor.
-3. [`dependencias-fases.md`](./dependencias-fases.md) — bloqueadores entre seguridad, conceptos, motor, liquidaciones, cierre, Previred y LRE.
-4. [`criterios-cierre-fases.md`](./criterios-cierre-fases.md) — estados permitidos y criterios para cerrar fases.
-5. [`orden-prioridades.md`](./orden-prioridades.md) — prioridades altas, medias, bajas y regla visual.
-6. [`estado-fases.md`](./estado-fases.md) — tablero vivo de fases y siguiente paso oficial.
-7. [`mapa-documentacion.md`](./mapa-documentacion.md) — lista de documentos globales, por módulo, vigentes en `temas/`, stubs y archivo.
-8. [`diseno-operativo-erp.md`](./diseno-operativo-erp.md) — diseño operativo: estado, pendientes, acciones y camino SEG-01 -> CONC-02 -> MOTOR-00.
-9. [`matriz-roles-permisos.md`](./matriz-roles-permisos.md) — placeholder vigente de SEG-01.
-10. [`../AGENTS.md`](../AGENTS.md) — contrato del agente (stack, layout, anti‑patrones, checklist).
-11. [`../arquitectura/frontend-interfaces.md`](../arquitectura/frontend-interfaces.md) — si el trabajo afecta estructura Angular (`pages/` vs `features/`, contenedores).
-12. [`../README.md`](../README.md) — índice padre y jerarquía.
-13. **[`../modulos/<módulo>/README.md`](../modulos/empleados/README.md)** y luego el **documento del subflujo** que corresponda.
+1. [`contexto-proyecto.md`](./contexto-proyecto.md) - mapa global del producto, stack, UI, módulos y camino oficial.
+2. [`roadmap-operativo.md`](./roadmap-operativo.md) - orden oficial: ORDEN-01 cerrada, SEG-01 siguiente, CONC-02 despues, MOTOR-00 antes de motor.
+3. [`dependencias-fases.md`](./dependencias-fases.md) - bloqueadores entre seguridad, conceptos, motor, liquidaciones, cierre, Previred y LRE.
+4. [`criterios-cierre-fases.md`](./criterios-cierre-fases.md) - estados permitidos y criterios para cerrar fases.
+5. [`orden-prioridades.md`](./orden-prioridades.md) - prioridades altas, medias, bajas y regla visual.
+6. [`estado-fases.md`](./estado-fases.md) - tablero vivo de fases y siguiente paso oficial.
+7. [`mapa-documentacion.md`](./mapa-documentacion.md) - lista de documentos globales, por módulo, vigentes en `temas/`, stubs y archivo.
+8. [`diccionario-tablas-canonicas.md`](./diccionario-tablas-canonicas.md) - obligatorio antes de consultas, servicios, mappers, SQL o documentacion tecnica con nombres de tablas.
+9. [`diseno-operativo-erp.md`](./diseno-operativo-erp.md) - diseño operativo: estado, pendientes, acciones y camino SEG-01 -> CONC-02 -> MOTOR-00.
+10. [`matriz-roles-permisos.md`](./matriz-roles-permisos.md) - placeholder vigente de SEG-01.
+11. [`../AGENTS.md`](../AGENTS.md) - contrato del agente (stack, layout, anti-patrones, checklist).
+12. [`../arquitectura/frontend-interfaces.md`](../arquitectura/frontend-interfaces.md) - si el trabajo afecta estructura Angular (`pages/` vs `features/`, contenedores).
+13. [`../README.md`](../README.md) - índice padre y jerarquía.
+14. **[`../modulos/<módulo>/README.md`](../modulos/empleados/README.md)** y luego el **documento del subflujo** que corresponda.
 
 Siempre debe quedar claro: primero **contexto + roadmap + dependencias + fases + mapa**, despues **contrato (`AGENTS` + UI + arquitectura frontend si aplica)**, despues **modulo**, despues **pantalla**. Los recorridos por ruta siguen en [`../temas/flujos/README.md`](../temas/flujos/README.md).
 

@@ -8,8 +8,8 @@ Documentación **transversal**, **flujos por ruta** y **stubs** que complementan
 ## Convención de orden
 
 1. Orquestador + mapa (arriba).
-2. **[`organizacion-por-modulo-y-flujos.md`](./organizacion-por-modulo-y-flujos.md)** — política `modulos/` vs `temas/`.
-3. **[`flujos/README.md`](./flujos/README.md)** — tabla de rutas ↔ recorrido.
+2. **[`organizacion-por-modulo-y-flujos.md`](./organizacion-por-modulo-y-flujos.md)** - política `modulos/` vs `temas/`.
+3. **[`flujos/README.md`](./flujos/README.md)** - tabla de rutas ↔ recorrido.
 4. **[`../modulos/<módulo>/README.md`](../modulos/empleados/README.md)** y el documento del flujo en esa carpeta.
 
 Varios `.md` en la **raíz de `temas/`** son **solo redirección** (“Documento migrado…”) hacia `modulos/`; el texto normativo está allí.
@@ -34,7 +34,7 @@ Varios `.md` en la **raíz de `temas/`** son **solo redirección** (“Documento
 
 ---
 
-## Transversal — UI y menú
+## Transversal - UI y menú
 
 | Documento | Contenido |
 |-----------|------------|
@@ -45,7 +45,7 @@ Varios `.md` en la **raíz de `temas/`** son **solo redirección** (“Documento
 
 ---
 
-## Módulo — Empleados (enlaces canónicos en `modulos/`)
+## Módulo - Empleados (enlaces canónicos en `modulos/`)
 
 | Página / flujo | Documento vigente |
 |----------------|---------------------|
@@ -63,7 +63,7 @@ Varios `.md` en la **raíz de `temas/`** son **solo redirección** (“Documento
 
 ---
 
-## Módulo — Parámetros y carga normativa
+## Módulo - Parámetros y carga normativa
 
 | Página / flujo | Documento vigente |
 |----------------|---------------------|
@@ -81,7 +81,7 @@ Varios `.md` en la **raíz de `temas/`** son **solo redirección** (“Documento
 
 ---
 
-## Módulo — Remuneraciones (conceptos)
+## Módulo - Remuneraciones (conceptos)
 
 | Página / flujo | Contrato o guía |
 |----------------|-----------------|
@@ -89,7 +89,7 @@ Varios `.md` en la **raíz de `temas/`** son **solo redirección** (“Documento
 
 ---
 
-## Módulo — Haberes y descuentos
+## Módulo - Haberes y descuentos
 
 | Página / flujo | Contrato o guía |
 |----------------|-----------------|
@@ -97,7 +97,7 @@ Varios `.md` en la **raíz de `temas/`** son **solo redirección** (“Documento
 
 ---
 
-## Módulo — Nómina / proceso (visión)
+## Módulo - Nómina / proceso (visión)
 
 | Página / flujo | Documento |
 |----------------|------------|
@@ -105,7 +105,7 @@ Varios `.md` en la **raíz de `temas/`** son **solo redirección** (“Documento
 
 ---
 
-## Módulo — Proceso, liquidaciones, licencias, reportes
+## Módulo - Proceso, liquidaciones, licencias, reportes
 
 | Página / flujo | Documento de flujo |
 |----------------|-------------------|
