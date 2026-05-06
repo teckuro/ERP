@@ -40,6 +40,8 @@ CREATE INDEX idx_liquidacion_contrato ON liquidacion(id_contrato);
 CREATE INDEX idx_liquidacion_detalle_liq ON liquidacion_detalle(id_liquidacion);
 CREATE INDEX idx_liquidacion_detalle_concepto ON liquidacion_detalle(id_concepto);
 CREATE INDEX idx_parametros_generales_periodo ON parametros_generales(periodo);
+CREATE INDEX idx_parametros_generales_cliente_ccaf ON parametros_generales_cliente(id_ccaf_entidad);
+CREATE INDEX idx_parametros_generales_cliente_mutual ON parametros_generales_cliente(id_organismo_administrador_ley_16744);
 CREATE INDEX idx_tramo_carga_periodo ON tramo_carga(periodo);
 CREATE INDEX idx_tramo_impuesto_periodo ON tramo_impuesto(periodo);
 CREATE INDEX idx_movimiento_persona ON movimiento(id_persona);

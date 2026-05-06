@@ -166,3 +166,54 @@ Las nuevas tablas son de snapshot de calculo y no reemplazan tablas canonicas no
 ## Siguiente fase recomendada
 
 SEG-NOMINA - RLS y permisos de snapshots de nomina.
+
+## MOTOR-03D - Validacion contra tablas existentes
+
+Fecha: 2026-05-06.
+
+Resultado:
+
+- El usuario confirma que las tablas de snapshots ya existen en Supabase.
+- Se ejecuto `npm run types:supabase`.
+- `src/app/core/models/database.types.ts` contiene `nomina_calculo_periodo`, `nomina_calculo_trabajador`, `nomina_calculo_concepto`, `nomina_calculo_issue` y `nomina_calculo_trazabilidad`.
+- `NominaCalculoSnapshotRepository` queda tipado contra `Database['public']['Tables']`, sin wrapper `any` para estas tablas.
+- La UI `/remuneraciones/proceso-mensual` valida periodo, genera pre-nomina y calcula preliminar, pero el unico trabajador calculable disponible queda `con_bloqueos`; por contrato, no habilita guardar snapshot.
+- Una escritura tecnica controlada con anon key confirma que la tabla existe, pero Supabase responde `new row violates row-level security policy for table "nomina_calculo_periodo"`.
+
+No incluido:
+
+- No se aplico SQL.
+- No se crearon migraciones.
+- No se modifico `bd/`.
+- No se cambio RLS.
+- No se cerro periodo ni se genero liquidacion oficial, PDF, Previred o LRE.
+
+Pendiente: `SEG-NOMINA - RLS y permisos de snapshots de nomina`.
+
+## SEG-NOMINA - RLS y permisos de snapshots de nomina
+
+Fecha: 2026-05-06.
+
+Resultado:
+
+- Se agrega `bd/base/v11/partes/16_nomina_calculo_snapshot_rls.sql`.
+- La parte 16 habilita RLS y permisos `SELECT`, `INSERT` y `UPDATE` para `authenticated` sobre:
+  - `nomina_calculo_periodo`
+  - `nomina_calculo_trabajador`
+  - `nomina_calculo_concepto`
+  - `nomina_calculo_issue`
+  - `nomina_calculo_trazabilidad`
+- No habilita `DELETE`; el reemplazo sigue usando `UPDATE` para dejar el snapshot anterior inactivo/anulado.
+- `bd/base/v11/run_all.sql` incluye la parte 16 despues de la parte 15.
+- El SQL se aplico contra Supabase de desarrollo con `npx supabase db query --db-url ... --file bd/base/v11/partes/16_nomina_calculo_snapshot_rls.sql`.
+
+No incluido:
+
+- No se implementa RLS por roles finos.
+- No se usa service role en frontend.
+- No se cierra periodo ni se genera liquidacion oficial, PDF, Previred, LRE o contabilidad.
+
+Pendiente:
+
+- Probar guardado y reemplazo desde UI con sesion Supabase `authenticated`.
+- Completar datos minimos del trabajador para que el calculo preliminar no quede `con_bloqueos`.

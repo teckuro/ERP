@@ -23,7 +23,7 @@ Referencias de implementación:
 | **ANUAL** | Conjunto normativo tributario o de renta **identificado por año** (sin filas por cada mes del año). | Empty state por **año** del período activo, no por “2026-05” si el dato no es mensual. *(En v11 actual no hay tablas de Parámetros consumidas por la UI puramente “anuales” sin mes; ver nota de impuesto único.)* |
 | **VIGENCIA** | Filas versionadas por `vigencia_inicio` / `vigencia_fin` (y a veces `periodo` opcional de alineación). El mes activo **solapa** vigencias. | Hint: “vigentes al período activo”; empty: “sin registros vigentes para el período activo” (no implica catálogo vacío). |
 | **CATALOGO_GLOBAL** | Catálogo sin dependencia real del mes; en BD puede tener `periodo` NULL o filas marcadas por mes solo por trazabilidad. | Hint: “catálogo general”; empty: no culpar al “2026-05” si el catálogo está vacío en absoluto. |
-| **CONFIG_EMPRESA** | Preferencias de la empresa (CCAF, mutual, etc.) que se guardan en el **snapshot** `parametros_generales` del mes o en tablas `empresa_*` fuera de este módulo. | Mensaje: “configuración aplicable al período activo” cuando el dato es mensual; si fuera solo vigencia, usar reglas de **VIGENCIA**. |
+| **CONFIG_EMPRESA** | Preferencias de la empresa/cliente (CCAF, mutual, etc.) que se guardan separadas del snapshot oficial mensual. | Mensaje: “configuración aplicable al período activo” cuando el dato es mensual; si fuera solo vigencia, usar reglas de **VIGENCIA**. |
 
 ### Nota: impuesto único (`tabla_impuesto_unico`)
 
@@ -36,6 +36,7 @@ Columnas: **tabla** · **módulo/tab** · **tipo** · **campo período** · **ca
 | tabla | módulo/tab | tipo | campo período | vigencia | depende período activo | cómo mostrar en UI | fuente | observaciones | riesgo actual |
 |-------|------------|------|-----------------|----------|------------------------|--------------------|--------|----------------|---------------|
 | `parametros_generales` | Parámetros > Valores / Remuneraciones (formulario) | PERIODO_MENSUAL | `periodo` PK | - | sí (carga/edición por mes) | “Datos cargados para {mes}.” / vacío: “No hay parámetros cargados para {YYYY-MM}.” | Python (`parametros_generales_compat`) + edición UI | Snapshot denormalizado; comentario en `02_tablas.sql`. | Mostrar “sin mes” si no existe fila; OK. |
+| `parametros_generales_cliente` | Parámetros > Valores / CCAF y Mutual > Configuración | CONFIG_EMPRESA | `periodo` PK | - | sí como configuración aplicable al período | “Configuración aplicable al período activo.” | UI | Método de descuento de ausencias, gratificación, CCAF y mutual propios del cliente; no completa ni modifica el snapshot oficial `parametros_generales`. | Permite guardar aunque el período esté `parcial` o sin `parametros_generales`, salvo regla de período cerrado que aplique en el proyecto. |
 | `tramo_carga` | Parámetros > Tramos cargas familiares | PERIODO_MENSUAL | `periodo` NOT NULL | - | sí | Mensual estricto; vacío por mes. | Python (`tramo_carga`) | Tramos por mes. | Riesgo bajo si copy dice “mensual”. |
 | `tramo_impuesto` | Parámetros > Impuesto único > Tramos | PERIODO_MENSUAL | `periodo` NOT NULL | - | sí | Mensual estricto. | Python (`tramo_impuesto_compat`) | Compat mensual con tramos históricos. | Riesgo bajo. |
 | `tabla_impuesto_unico` | Parámetros > Impuesto único > Tabla | PERIODO_MENSUAL (vigencia subyacente) | `periodo` GENERATED | `vigencia_inicio`, `vigencia_fin` | sí (filtro por `periodo` = mes) | Hint: tabla versionada; **filtro mostrado como mes** derivado de vigencia. | Python (`tabla_impuesto_unico`) | `periodo` es mes de inicio de vigencia, no “libre”. | Confundir con “anual” si solo se mira el año. |
@@ -59,7 +60,7 @@ Columnas: **tabla** · **módulo/tab** · **tipo** · **campo período** · **ca
 
 La tabla `periodo_remuneracion` usa la columna existente `estado VARCHAR(20)`; no hay enum dedicado en v11.
 
-Decision consolidada: `periodo_remuneracion.estado` es la fuente principal del estado mensual que muestra Parametros. La UI solo puede inferir un estado por tablas dispersas como fallback cuando no existe fila en `periodo_remuneracion` para el periodo seleccionado, por compatibilidad con datos antiguos o entornos incompletos. Si existe fila oficial, manda ese valor.
+Decision consolidada: `periodo_remuneracion.estado` describe el estado de la carga mensual, pero el estado visual de Parametros se calcula como completitud operativa. La UI usa `evaluarCompletitudParametrosMensual(...)` y cruza carga oficial, configuracion cliente, vigencias aplicables, diferencias oficial/cliente y estado tecnico. Si `periodo_remuneracion` existe, su estado participa en la evaluacion; no basta por si solo para marcar Parametros como completo.
 
 Estados operativos:
 
@@ -95,7 +96,7 @@ Resumen aplicado en hints / empty states de tabs (`parametros-*-tab.component.ts
 2. **ANUAL** - Mensajes por año del período activo (si en el futuro hay tablas puramente anuales en esta pantalla).
 3. **VIGENCIA** - “Vigentes al período activo {YYYY-MM}.” / vacío: “No hay registros vigentes para el período activo.”
 4. **CATALOGO_GLOBAL** - “Catálogo general (no depende del mes salvo marcas opcionales en `periodo`).” / vacío: “Sin registros en catálogo.” **Sin** “para 2026-05”.
-5. **CONFIG_EMPRESA** - “Configuración aplicable al período activo.” cuando el valor vive en el snapshot mensual.
+5. **CONFIG_EMPRESA** - “Configuración aplicable al período activo.” cuando el valor vive en tabla de configuración cliente.
 
 ## Reglas para Python (`02` / `04`)
 
@@ -138,7 +139,7 @@ Fecha de ajuste: 2026-05-01.
 |-----|----------------|----------------------------|
 | Informacion de Valores | PERIODO_MENSUAL | `parametros_generales.periodo = YYYY-MM`; vacio por mes. |
 | Informacion de Remuneraciones | PERIODO_MENSUAL + fallback VIGENCIA | formulario del snapshot mensual; datos legales/AFC/Reforma se hidratan por vigencia del mes. |
-| CCAF y Mutual | CONFIG_EMPRESA + CATALOGO_GLOBAL + PERIODO_MENSUAL | configuracion guardada en el snapshot mensual; CCAF y mutuales se muestran siempre; Ley 16.744 sigue mensual. |
+| CCAF y Mutual | CONFIG_EMPRESA + CATALOGO_GLOBAL + PERIODO_MENSUAL | configuracion guardada en `parametros_generales_cliente`; CCAF y mutuales se muestran siempre; Ley 16.744 sigue mensual. |
 | Tramos Cargas Familiares | PERIODO_MENSUAL | `tramo_carga.periodo = YYYY-MM`. |
 | Impuesto unico | PERIODO_MENSUAL / vigencia derivada | `tramo_impuesto.periodo = YYYY-MM`; `tabla_impuesto_unico.periodo` deriva de `vigencia_inicio`. |
 | Salud | VIGENCIA | ISAPRE e instituciones por solape de vigencia; no exige `periodo` exacto. |

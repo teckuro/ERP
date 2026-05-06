@@ -447,6 +447,56 @@ CREATE TABLE ccaf_entidad (
     CONSTRAINT chk_ccaf_entidad_periodo_fmt CHECK (periodo IS NULL OR periodo ~ '^[0-9]{4}-(0[1-9]|1[0-2])$')
 );
 
+CREATE TABLE parametros_generales_cliente (
+    periodo VARCHAR(7) PRIMARY KEY,
+    uf NUMERIC(14,4),
+    utm NUMERIC(12,0),
+    uta NUMERIC(12,0),
+    sueldo_minimo NUMERIC(12,0),
+    sueldo_minimo18_65 NUMERIC(12,0),
+    sueldo_minimo_menor18_mayor65 NUMERIC(12,0),
+    sueldo_minimo_casa_particular NUMERIC(12,0),
+    ingreso_minimo_no_remuneracional NUMERIC(12,0),
+    tope_afp_uf NUMERIC(10,4),
+    tope_afp NUMERIC(12,0),
+    tope_ips_uf NUMERIC(10,4),
+    tope_ips NUMERIC(12,0),
+    tope_cesantia_uf NUMERIC(10,4),
+    tope_cesantia NUMERIC(12,0),
+    tope_apv_mensual_uf NUMERIC(10,4),
+    tope_apv_mensual NUMERIC(12,0),
+    tope_apv_anual_uf NUMERIC(10,4),
+    tope_apv_anual NUMERIC(12,0),
+    tope_deposito_convenido_anual_uf NUMERIC(10,4),
+    tope_deposito_convenido_anual NUMERIC(12,0),
+    tope_afpvoluntario NUMERIC(12,0),
+    sis NUMERIC(7,4),
+    sanna NUMERIC(7,4),
+    seguro_social_expectativa_vida NUMERIC(7,4),
+    aporte_empleador_afp NUMERIC(7,4),
+    salud_obligatoria NUMERIC(7,4),
+    salud_ccaf NUMERIC(7,4),
+    salud_fonasa_con_ccaf NUMERIC(7,4),
+    afc_trabajador_indefinido NUMERIC(7,4),
+    afc_empleador_indefinido NUMERIC(7,4),
+    afc_empleador_plazo NUMERIC(7,4),
+    afc_empleador_indefinido_11_anos_mas NUMERIC(7,4),
+    afc_empleador_casa_particular NUMERIC(7,4),
+    trabajo_pesado_empleador NUMERIC(7,4),
+    trabajo_pesado_trabajador NUMERIC(7,4),
+    trabajo_menos_pesado_empleador NUMERIC(7,4),
+    trabajo_menos_pesado_trabajador NUMERIC(7,4),
+    descuentos_base_por_dia BOOLEAN DEFAULT FALSE,
+    gratificacion BOOLEAN DEFAULT TRUE,
+    imm_gratificacion NUMERIC(8,4) DEFAULT 4.75,
+    id_ccaf_entidad INT REFERENCES ccaf_entidad(id_ccaf_entidad) ON DELETE SET NULL,
+    id_organismo_administrador_ley_16744 INT REFERENCES organismo_administrador_ley_16744(id_organismo_administrador_ley_16744) ON DELETE SET NULL,
+    fecha_actualizacion TIMESTAMP DEFAULT NOW(),
+    CONSTRAINT chk_parametros_generales_cliente_periodo CHECK (periodo ~ '^[0-9]{4}-(0[1-9]|1[0-2])$')
+);
+-- Configuracion propia del cliente editable desde UI. No reemplaza ni completa
+-- el snapshot mensual oficial de parametros_generales cargado por Python.
+
 CREATE TABLE tabla_impuesto_unico (
     id SERIAL PRIMARY KEY,
     tramo INTEGER NOT NULL,

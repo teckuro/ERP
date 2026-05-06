@@ -4,14 +4,12 @@ Referencia alineada al modelo en [`parametro-general.model.ts`](../../../../src/
 
 ## Formulario editable por periodo (`ParametroGeneral`)
 
-Campos persistidos con el periodo seleccionado (pestañas **Valores**, **Remuneraciones**, **CCAF y Mutual** donde aplica):
+Campos del snapshot mensual oficial con el periodo seleccionado (pestañas **Valores** y **Remuneraciones** donde aplica):
 
 | Control / API | Notas |
 |---------------|--------|
 | `periodo` | `YYYY-MM`; fijado por el selector superior del listado. |
 | `uf`, `utm`, `uta` | Indicadores. |
-| `gratificacion`, `immGratificacion` | Gratificación y factor IMM. |
-| `descuentosBasePorDia` | Método de descuento de ausencias (radio). |
 | `sueldoMinimo18a65`, `sueldoMinimoMenor18Mayor65`, `sueldoMinimoCasaParticular`, `ingresoMinimoNoRemuneracional` | Rentas mínimas imponibles. |
 | `afcTrabajadorIndefinido`, `afcEmpleadorIndefinido`, `afcEmpleadorPlazo`, `afcEmpleadorIndefinidoOnceAnosMas`, `afcEmpleadorCasaParticular` | Tasas AFC (%). |
 | `sis`, `sanna`, `seguroSocialExpectativaVida`, `aporteEmpleadorAfp` | Cotizaciones empleador (%). |
@@ -22,6 +20,22 @@ Campos persistidos con el periodo seleccionado (pestañas **Valores**, **Remuner
 | `fechaActualizacion` | Metadato de última actualización. |
 
 > El payload de guardado puede mapear nombres legacy (p. ej. `sueldoMinimo` desde `sueldoMinimo18a65`); ver `guardar` en `parametros.page.ts`.
+
+## Configuracion cliente por periodo (`parametros_generales_cliente`)
+
+Configuracion propia del cliente/empresa editable desde UI y guardable aunque no exista carga mensual oficial en `parametros_generales`.
+El guardado normal de la UI escribe en esta tabla; `parametros_generales` queda como snapshot oficial mensual de comparacion.
+
+| Control / API | Notas |
+|---------------|-------|
+| `periodo` | `YYYY-MM`; clave de configuracion aplicable al periodo activo. |
+| `descuentosBasePorDia` | Metodo de descuento de ausencias. |
+| `gratificacion`, `immGratificacion` | Configuracion de gratificacion y factor IMM. |
+| `idCcafEntidad` | Seleccion de CCAF desde `ccaf_entidad`; puede ser NULL. |
+| `idOrganismoAdministradorLey16744` | Seleccion de mutual/organismo administrador desde `organismo_administrador_ley_16744`; puede ser NULL. |
+| `fechaActualizacion` | Metadato de ultima actualizacion. |
+
+Para completitud operativa, la configuracion cliente puede incluir valores operativos equivalentes al snapshot oficial: UF, UTM, UTA, sueldos minimos, ingreso minimo no remuneracional, topes AFP/IPS/Cesantia/APV, SIS, SANNA, salud, AFC y trabajo pesado. Esos campos son obligatorios para considerar completa la configuracion cliente cuando existen en el modelo, y se comparan contra el dato oficial sin sobrescribirlo automaticamente.
 
 ## Catálogos y tablas (`ParametrosGeneralesCatalogos`)
 

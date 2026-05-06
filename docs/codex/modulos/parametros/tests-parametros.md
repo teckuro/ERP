@@ -17,6 +17,12 @@ npx playwright test tests/parametros-tabs.screenshots.spec.ts --workers=1
 
 Lógica de `ParametrosPage`, servicios y repositorios según cambios en `src/app/features/parametros-generales` y `src/app/pages/parametros.page.ts` - ejecutar `npx ng test --watch=false` filtrando suites tocadas.
 
+### Completitud mensual
+
+| Spec | Que cubre |
+|------|-----------|
+| `src/app/features/parametros-generales/rules/parametros-completitud.rules.spec.ts` | `evaluarCompletitudParametrosMensual(...)`: cerrado completo, parcial sin configuracion cliente, pendiente sin oficiales, vigencia aplicable de trabajo pesado por solape, falta de trabajo pesado, diferencias oficial/cliente y error tecnico. |
+
 ## Assets vigentes
 
 Las capturas referenciadas por la spec de tabs viven bajo **`docs/codex/assets/parametros-tabs/`** (crear o actualizar al regenerar imágenes; no commitear basura fuera de esa convención sin acuerdo).

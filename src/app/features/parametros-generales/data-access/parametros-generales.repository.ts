@@ -9,6 +9,8 @@ import {
   ParametroGeneral,
   ParametroLegal,
   ParametroGeneralUpsert,
+  ParametrosGeneralesClienteConfig,
+  ParametrosGeneralesClienteConfigUpsert,
   ParametrosGeneralesCatalogos,
   ParametrosGeneralesFiltro,
   PeriodoRemuneracionEstado,
@@ -175,6 +177,53 @@ interface ApvFormaPagoRow {
   periodo: string | null;
 }
 
+interface ParametrosGeneralesClienteConfigRow {
+  periodo: string;
+  uf?: number | string | null;
+  utm?: number | string | null;
+  uta?: number | string | null;
+  sueldo_minimo?: number | string | null;
+  sueldo_minimo18_65?: number | string | null;
+  sueldo_minimo_menor18_mayor65?: number | string | null;
+  sueldo_minimo_casa_particular?: number | string | null;
+  ingreso_minimo_no_remuneracional?: number | string | null;
+  tope_afp_uf?: number | string | null;
+  tope_afp?: number | string | null;
+  tope_ips_uf?: number | string | null;
+  tope_ips?: number | string | null;
+  tope_cesantia_uf?: number | string | null;
+  tope_cesantia?: number | string | null;
+  tope_apv_mensual_uf?: number | string | null;
+  tope_apv_mensual?: number | string | null;
+  tope_apv_anual_uf?: number | string | null;
+  tope_apv_anual?: number | string | null;
+  tope_deposito_convenido_anual_uf?: number | string | null;
+  tope_deposito_convenido_anual?: number | string | null;
+  tope_afpvoluntario?: number | string | null;
+  sis?: number | string | null;
+  sanna?: number | string | null;
+  seguro_social_expectativa_vida?: number | string | null;
+  aporte_empleador_afp?: number | string | null;
+  salud_obligatoria?: number | string | null;
+  salud_ccaf?: number | string | null;
+  salud_fonasa_con_ccaf?: number | string | null;
+  afc_trabajador_indefinido?: number | string | null;
+  afc_empleador_indefinido?: number | string | null;
+  afc_empleador_plazo?: number | string | null;
+  afc_empleador_indefinido_11_anos_mas?: number | string | null;
+  afc_empleador_casa_particular?: number | string | null;
+  trabajo_pesado_empleador?: number | string | null;
+  trabajo_pesado_trabajador?: number | string | null;
+  trabajo_menos_pesado_empleador?: number | string | null;
+  trabajo_menos_pesado_trabajador?: number | string | null;
+  descuentos_base_por_dia: boolean | null;
+  gratificacion: boolean | null;
+  imm_gratificacion: number | string | null;
+  id_ccaf_entidad: number | null;
+  id_organismo_administrador_ley_16744: number | null;
+  fecha_actualizacion: string | null;
+}
+
 @Injectable({ providedIn: 'root' })
 export class ParametrosGeneralesRepository {
   private readonly supabase = injectSupabase();
@@ -207,6 +256,52 @@ export class ParametrosGeneralesRepository {
     'TOPE_DEPOSITO_CONVENIDO_ANUAL_UF',
     'TOPE_DEPOSITO_CONVENIDO_ANUAL_PESOS',
   ] as const;
+  private readonly clienteConfigSelect = [
+    'periodo',
+    'uf',
+    'utm',
+    'uta',
+    'sueldo_minimo',
+    'sueldo_minimo18_65',
+    'sueldo_minimo_menor18_mayor65',
+    'sueldo_minimo_casa_particular',
+    'ingreso_minimo_no_remuneracional',
+    'tope_afp_uf',
+    'tope_afp',
+    'tope_ips_uf',
+    'tope_ips',
+    'tope_cesantia_uf',
+    'tope_cesantia',
+    'tope_apv_mensual_uf',
+    'tope_apv_mensual',
+    'tope_apv_anual_uf',
+    'tope_apv_anual',
+    'tope_deposito_convenido_anual_uf',
+    'tope_deposito_convenido_anual',
+    'tope_afpvoluntario',
+    'sis',
+    'sanna',
+    'seguro_social_expectativa_vida',
+    'aporte_empleador_afp',
+    'salud_obligatoria',
+    'salud_ccaf',
+    'salud_fonasa_con_ccaf',
+    'afc_trabajador_indefinido',
+    'afc_empleador_indefinido',
+    'afc_empleador_plazo',
+    'afc_empleador_indefinido_11_anos_mas',
+    'afc_empleador_casa_particular',
+    'trabajo_pesado_empleador',
+    'trabajo_pesado_trabajador',
+    'trabajo_menos_pesado_empleador',
+    'trabajo_menos_pesado_trabajador',
+    'descuentos_base_por_dia',
+    'gratificacion',
+    'imm_gratificacion',
+    'id_ccaf_entidad',
+    'id_organismo_administrador_ley_16744',
+    'fecha_actualizacion',
+  ].join(',');
 
   async listarPeriodos(): Promise<string[]> {
     const seen = new Set<string>();
@@ -455,6 +550,99 @@ export class ParametrosGeneralesRepository {
 
     const [hydrated] = await this.hydrateConfigurables([this.toModel(data)]);
     return hydrated ?? this.toModel(data);
+  }
+
+  async obtenerClienteConfig(periodo: string): Promise<ParametrosGeneralesClienteConfig | null> {
+    const { data, error } = await this.supabaseUntyped
+      .from('parametros_generales_cliente')
+      .select(this.clienteConfigSelect)
+      .eq('periodo', periodo)
+      .maybeSingle();
+
+    if (error) {
+      throw new Error(error.message);
+    }
+
+    return data ? this.toClienteConfig(data as ParametrosGeneralesClienteConfigRow) : null;
+  }
+
+  async obtenerUltimaClienteConfigHastaPeriodo(periodo: string): Promise<ParametrosGeneralesClienteConfig | null> {
+    const { data, error } = await this.supabaseUntyped
+      .from('parametros_generales_cliente')
+      .select(this.clienteConfigSelect)
+      .lt('periodo', periodo)
+      .order('periodo', { ascending: false })
+      .limit(1);
+
+    if (error) {
+      throw new Error(error.message);
+    }
+
+    const row = ((data ?? []) as ParametrosGeneralesClienteConfigRow[])[0] ?? null;
+    return row ? this.toClienteConfig(row) : null;
+  }
+
+  async guardarClienteConfig(
+    payload: ParametrosGeneralesClienteConfigUpsert,
+  ): Promise<ParametrosGeneralesClienteConfig> {
+    const row = {
+      periodo: payload.periodo,
+      uf: payload.uf,
+      utm: payload.utm,
+      uta: payload.uta,
+      sueldo_minimo: payload.sueldoMinimo,
+      sueldo_minimo18_65: payload.sueldoMinimo18a65,
+      sueldo_minimo_menor18_mayor65: payload.sueldoMinimoMenor18Mayor65,
+      sueldo_minimo_casa_particular: payload.sueldoMinimoCasaParticular,
+      ingreso_minimo_no_remuneracional: payload.ingresoMinimoNoRemuneracional,
+      tope_afp_uf: payload.topeAfpUf,
+      tope_afp: payload.topeAfp,
+      tope_ips_uf: payload.topeIpsUf,
+      tope_ips: payload.topeIps,
+      tope_cesantia_uf: payload.topeCesantiaUf,
+      tope_cesantia: payload.topeCesantia,
+      tope_apv_mensual_uf: payload.topeApvMensualUf,
+      tope_apv_mensual: payload.topeApvMensual,
+      tope_apv_anual_uf: payload.topeApvAnualUf,
+      tope_apv_anual: payload.topeApvAnual,
+      tope_deposito_convenido_anual_uf: payload.topeDepositoConvenidoAnualUf,
+      tope_deposito_convenido_anual: payload.topeDepositoConvenidoAnual,
+      tope_afpvoluntario: payload.topeAfpVoluntario,
+      sis: payload.sis,
+      sanna: payload.sanna,
+      seguro_social_expectativa_vida: payload.seguroSocialExpectativaVida,
+      aporte_empleador_afp: payload.aporteEmpleadorAfp,
+      salud_obligatoria: payload.saludObligatoria,
+      salud_ccaf: payload.saludCcaf,
+      salud_fonasa_con_ccaf: payload.saludFonasaConCcaf,
+      afc_trabajador_indefinido: payload.afcTrabajadorIndefinido,
+      afc_empleador_indefinido: payload.afcEmpleadorIndefinido,
+      afc_empleador_plazo: payload.afcEmpleadorPlazo,
+      afc_empleador_indefinido_11_anos_mas: payload.afcEmpleadorIndefinidoOnceAnosMas,
+      afc_empleador_casa_particular: payload.afcEmpleadorCasaParticular,
+      trabajo_pesado_empleador: payload.trabajoPesadoEmpleador,
+      trabajo_pesado_trabajador: payload.trabajoPesadoTrabajador,
+      trabajo_menos_pesado_empleador: payload.trabajoMenosPesadoEmpleador,
+      trabajo_menos_pesado_trabajador: payload.trabajoMenosPesadoTrabajador,
+      descuentos_base_por_dia: payload.descuentosBasePorDia,
+      gratificacion: payload.gratificacion,
+      imm_gratificacion: payload.immGratificacion,
+      id_ccaf_entidad: payload.idCcafEntidad,
+      id_organismo_administrador_ley_16744: payload.idOrganismoAdministradorLey16744,
+      fecha_actualizacion: new Date().toISOString(),
+    };
+
+    const { data, error } = await this.supabaseUntyped
+      .from('parametros_generales_cliente')
+      .upsert(row, { onConflict: 'periodo' })
+      .select(this.clienteConfigSelect)
+      .single();
+
+    if (error) {
+      throw new Error(error.message);
+    }
+
+    return this.toClienteConfig(data as ParametrosGeneralesClienteConfigRow);
   }
 
   async listarCatalogos(periodo: string): Promise<ParametrosGeneralesCatalogos> {
@@ -755,7 +943,6 @@ export class ParametrosGeneralesRepository {
       this.guardarParametrosLegales(payload, vigenciaInicio),
       this.guardarAfcParametros(payload, vigenciaInicio),
       this.guardarTrabajosPesados(payload, vigenciaInicio),
-      this.guardarReformaPrevisional(payload, vigenciaInicio),
     ]);
   }
 
@@ -803,7 +990,9 @@ export class ParametrosGeneralesRepository {
       return;
     }
 
-    const { error } = await this.supabaseUntyped.from('parametros_legales').insert(rows);
+    const { error } = await this.supabaseUntyped
+      .from('parametros_legales')
+      .upsert(rows, { onConflict: 'nombre,vigencia_inicio' });
     if (error) {
       throw new Error(error.message);
     }
@@ -848,7 +1037,9 @@ export class ParametrosGeneralesRepository {
       return;
     }
 
-    const { error } = await this.supabaseUntyped.from('afc_parametro').insert(rows);
+    const { error } = await this.supabaseUntyped
+      .from('afc_parametro')
+      .upsert(rows, { onConflict: 'codigo_tipo_contrato,vigencia_inicio' });
     if (error) {
       throw new Error(error.message);
     }
@@ -929,37 +1120,6 @@ export class ParametrosGeneralesRepository {
       vigencia_inicio: vigenciaInicio,
       vigencia_fin: null,
     };
-  }
-
-  private async guardarReformaPrevisional(payload: ParametroGeneralUpsert, vigenciaInicio: string): Promise<void> {
-    if (payload.seguroSocialExpectativaVida === null && payload.aporteEmpleadorAfp === null) {
-      return;
-    }
-
-    const { error: deleteError } = await this.supabaseUntyped
-      .from('reforma_previsional_parametro')
-      .delete()
-      .eq('vigencia_inicio', vigenciaInicio)
-      .eq('periodo', payload.periodo);
-
-    if (deleteError) {
-      throw new Error(deleteError.message);
-    }
-
-    const row = {
-      vigencia_inicio: vigenciaInicio,
-      vigencia_fin: null,
-      aporte_empleador_total: (payload.seguroSocialExpectativaVida ?? 0) + (payload.aporteEmpleadorAfp ?? 0),
-      cuenta_capitalizacion_individual: payload.aporteEmpleadorAfp ?? 0,
-      fapp_seguro_social: payload.seguroSocialExpectativaVida ?? 0,
-      fuente: 'Configurado desde parametros',
-      periodo: payload.periodo,
-    };
-
-    const { error } = await this.supabaseUntyped.from('reforma_previsional_parametro').insert(row);
-    if (error) {
-      throw new Error(error.message);
-    }
   }
 
   private async listarAfp(periodo: string): Promise<AfpParametro[]> {
@@ -1224,8 +1384,6 @@ export class ParametrosGeneralesRepository {
       sueldo_minimo_menor18_mayor65: payload.sueldoMinimoMenor18Mayor65,
       sueldo_minimo_casa_particular: payload.sueldoMinimoCasaParticular,
       ingreso_minimo_no_remuneracional: payload.ingresoMinimoNoRemuneracional,
-      gratificacion: payload.gratificacion,
-      imm_gratificacion: payload.immGratificacion,
       tope_afp_uf: payload.topeAfpUf,
       tope_afp: payload.topeAfp,
       tope_ips_uf: payload.topeIpsUf,
@@ -1244,7 +1402,6 @@ export class ParametrosGeneralesRepository {
       salud_obligatoria: payload.saludObligatoria,
       salud_ccaf: payload.saludCcaf,
       salud_fonasa_con_ccaf: payload.saludFonasaConCcaf,
-      dsctosbpordia: payload.descuentosBasePorDia,
       afc_trabajador_indefinido: payload.afcTrabajadorIndefinido,
       afc_empleador_indefinido: payload.afcEmpleadorIndefinido,
       afc_empleador_plazo: payload.afcEmpleadorPlazo,
@@ -1455,6 +1612,55 @@ export class ParametrosGeneralesRepository {
       nombre: row.nombre,
       vigente: row.vigente,
       periodo: row.periodo,
+    };
+  }
+
+  private toClienteConfig(row: ParametrosGeneralesClienteConfigRow): ParametrosGeneralesClienteConfig {
+    return {
+      periodo: row.periodo,
+      uf: this.toNumber(row.uf ?? null),
+      utm: this.toNumber(row.utm ?? null),
+      uta: this.toNumber(row.uta ?? null),
+      sueldoMinimo: this.toNumber(row.sueldo_minimo ?? null),
+      sueldoMinimo18a65: this.toNumber(row.sueldo_minimo18_65 ?? null),
+      sueldoMinimoMenor18Mayor65: this.toNumber(row.sueldo_minimo_menor18_mayor65 ?? null),
+      sueldoMinimoCasaParticular: this.toNumber(row.sueldo_minimo_casa_particular ?? null),
+      ingresoMinimoNoRemuneracional: this.toNumber(row.ingreso_minimo_no_remuneracional ?? null),
+      topeAfpUf: this.toNumber(row.tope_afp_uf ?? null),
+      topeAfp: this.toNumber(row.tope_afp ?? null),
+      topeIpsUf: this.toNumber(row.tope_ips_uf ?? null),
+      topeIps: this.toNumber(row.tope_ips ?? null),
+      topeCesantiaUf: this.toNumber(row.tope_cesantia_uf ?? null),
+      topeCesantia: this.toNumber(row.tope_cesantia ?? null),
+      topeApvMensualUf: this.toNumber(row.tope_apv_mensual_uf ?? null),
+      topeApvMensual: this.toNumber(row.tope_apv_mensual ?? null),
+      topeApvAnualUf: this.toNumber(row.tope_apv_anual_uf ?? null),
+      topeApvAnual: this.toNumber(row.tope_apv_anual ?? null),
+      topeDepositoConvenidoAnualUf: this.toNumber(row.tope_deposito_convenido_anual_uf ?? null),
+      topeDepositoConvenidoAnual: this.toNumber(row.tope_deposito_convenido_anual ?? null),
+      topeAfpVoluntario: this.toNumber(row.tope_afpvoluntario ?? null),
+      sis: this.toNumber(row.sis ?? null),
+      sanna: this.toNumber(row.sanna ?? null),
+      seguroSocialExpectativaVida: this.toNumber(row.seguro_social_expectativa_vida ?? null),
+      aporteEmpleadorAfp: this.toNumber(row.aporte_empleador_afp ?? null),
+      saludObligatoria: this.toNumber(row.salud_obligatoria ?? null),
+      saludCcaf: this.toNumber(row.salud_ccaf ?? null),
+      saludFonasaConCcaf: this.toNumber(row.salud_fonasa_con_ccaf ?? null),
+      afcTrabajadorIndefinido: this.toNumber(row.afc_trabajador_indefinido ?? null),
+      afcEmpleadorIndefinido: this.toNumber(row.afc_empleador_indefinido ?? null),
+      afcEmpleadorPlazo: this.toNumber(row.afc_empleador_plazo ?? null),
+      afcEmpleadorIndefinidoOnceAnosMas: this.toNumber(row.afc_empleador_indefinido_11_anos_mas ?? null),
+      afcEmpleadorCasaParticular: this.toNumber(row.afc_empleador_casa_particular ?? null),
+      trabajoPesadoEmpleador: this.toNumber(row.trabajo_pesado_empleador ?? null),
+      trabajoPesadoTrabajador: this.toNumber(row.trabajo_pesado_trabajador ?? null),
+      trabajoMenosPesadoEmpleador: this.toNumber(row.trabajo_menos_pesado_empleador ?? null),
+      trabajoMenosPesadoTrabajador: this.toNumber(row.trabajo_menos_pesado_trabajador ?? null),
+      descuentosBasePorDia: row.descuentos_base_por_dia,
+      gratificacion: row.gratificacion,
+      immGratificacion: this.toNumber(row.imm_gratificacion),
+      idCcafEntidad: row.id_ccaf_entidad,
+      idOrganismoAdministradorLey16744: row.id_organismo_administrador_ley_16744,
+      fechaActualizacion: row.fecha_actualizacion,
     };
   }
 

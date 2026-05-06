@@ -1,19 +1,28 @@
 import { Injectable } from '@angular/core';
 
+import type { Database, Json } from '../../../core/models/database.types';
 import { injectSupabase } from '../../../core/services/supabase.service';
 import type {
   NominaCalculoConceptoSnapshot,
   NominaCalculoIssueSnapshot,
   NominaCalculoPeriodoSnapshot,
+  NominaCalculoSnapshotEstado,
+  NominaCalculoSnapshotOrigen,
   NominaCalculoTrabajadorSnapshot,
   NominaCalculoTrazabilidadSnapshot,
+  MotorCalculoEstadoTrabajador,
 } from '../models/proceso-mensual.model';
 
-type SupabaseAny = ReturnType<typeof injectSupabase> & { from: (table: string) => any };
+type Tables = Database['public']['Tables'];
+type NominaCalculoPeriodoRow = Tables['nomina_calculo_periodo']['Row'];
+type NominaCalculoTrabajadorRow = Tables['nomina_calculo_trabajador']['Row'];
+type NominaCalculoConceptoInsert = Tables['nomina_calculo_concepto']['Insert'];
+type NominaCalculoIssueInsert = Tables['nomina_calculo_issue']['Insert'];
+type NominaCalculoTrazabilidadInsert = Tables['nomina_calculo_trazabilidad']['Insert'];
 
 @Injectable({ providedIn: 'root' })
 export class NominaCalculoSnapshotRepository {
-  private readonly supabase = injectSupabase() as SupabaseAny;
+  private readonly supabase = injectSupabase();
 
   async guardarSnapshotPreliminar(snapshot: NominaCalculoPeriodoSnapshot): Promise<{
     snapshot: NominaCalculoPeriodoSnapshot;
@@ -132,16 +141,18 @@ export class NominaCalculoSnapshotRepository {
       .insert(rows)
       .select('*');
     if (error) throw new Error(`No fue posible guardar trabajadores del snapshot: ${error.message}`);
-    return (data ?? []).map((row: any) => mapTrabajadorRow(row, trabajadores));
+    return (data ?? []).map((row) => mapTrabajadorRow(row, trabajadores));
   }
 
   private async insertarConceptos(
     trabajadores: NominaCalculoTrabajadorSnapshot[],
     idTrabajadorPorPersona: Map<number, number>,
   ): Promise<void> {
-    const rows = trabajadores.flatMap((t) =>
-      t.conceptos.map((c) => ({
-        id_calculo_trabajador: idTrabajadorPorPersona.get(t.idPersona),
+    const rows: NominaCalculoConceptoInsert[] = trabajadores.flatMap((t) => {
+      const idCalculoTrabajador = idTrabajadorPorPersona.get(t.idPersona);
+      if (idCalculoTrabajador == null) return [];
+      return t.conceptos.map((c): NominaCalculoConceptoInsert => ({
+        id_calculo_trabajador: idCalculoTrabajador,
         id_concepto: c.idConcepto,
         tipo: c.tipo,
         nombre_concepto_snapshot: c.nombreConceptoSnapshot,
@@ -151,9 +162,9 @@ export class NominaCalculoSnapshotRepository {
         tributable: c.tributable,
         afecta_liquido: c.afectaLiquido,
         origen: c.origen,
-        trazabilidad_json: c.trazabilidadJson,
-      })),
-    );
+        trazabilidad_json: c.trazabilidadJson as Json | null,
+      }));
+    });
     if (rows.length === 0) return;
     const { error } = await this.supabase.from('nomina_calculo_concepto').insert(rows);
     if (error) throw new Error(`No fue posible guardar conceptos del snapshot: ${error.message}`);
@@ -211,12 +222,12 @@ export class NominaCalculoSnapshotRepository {
   }
 }
 
-function mapPeriodoRow(row: any): NominaCalculoPeriodoSnapshot {
+function mapPeriodoRow(row: NominaCalculoPeriodoRow): NominaCalculoPeriodoSnapshot {
   return {
     idCalculoPeriodo: row.id_calculo_periodo,
     periodo: row.periodo,
     idEmpresa: row.id_empresa ?? null,
-    estado: row.estado,
+    estado: parseSnapshotEstado(row.estado),
     fechaGeneracion: row.fecha_generacion,
     usuarioGenerador: row.usuario_generador ?? null,
     totalTrabajadores: Number(row.total_trabajadores ?? 0),
@@ -227,7 +238,7 @@ function mapPeriodoRow(row: any): NominaCalculoPeriodoSnapshot {
     totalAdvertencias: Number(row.total_advertencias ?? 0),
     versionMotor: row.version_motor,
     hashSnapshot: row.hash_snapshot ?? null,
-    origen: row.origen,
+    origen: parseSnapshotOrigen(row.origen),
     activo: row.activo === true,
     reemplazadoPor: row.reemplazado_por ?? null,
     trabajadores: [],
@@ -236,7 +247,10 @@ function mapPeriodoRow(row: any): NominaCalculoPeriodoSnapshot {
   };
 }
 
-function mapTrabajadorRow(row: any, source: NominaCalculoTrabajadorSnapshot[]): NominaCalculoTrabajadorSnapshot {
+function mapTrabajadorRow(
+  row: NominaCalculoTrabajadorRow,
+  source: NominaCalculoTrabajadorSnapshot[],
+): NominaCalculoTrabajadorSnapshot {
   const original = source.find((t) => t.idPersona === row.id_persona);
   return {
     ...(original ?? {
@@ -249,7 +263,7 @@ function mapTrabajadorRow(row: any, source: NominaCalculoTrabajadorSnapshot[]): 
     idPersona: row.id_persona,
     rut: row.rut,
     nombreCompletoSnapshot: row.nombre_completo_snapshot,
-    estado: row.estado,
+    estado: parseTrabajadorEstado(row.estado),
     sueldoBase: Number(row.sueldo_base ?? 0),
     baseImponiblePrevisional: Number(row.base_imponible_previsional ?? 0),
     baseTributable: Number(row.base_tributable ?? 0),
@@ -268,7 +282,47 @@ function mapTrabajadorRow(row: any, source: NominaCalculoTrabajadorSnapshot[]): 
   };
 }
 
-function mapIssueRow(issue: NominaCalculoIssueSnapshot, idCalculoPeriodo: number, idCalculoTrabajador: number | null): Record<string, unknown> {
+const SNAPSHOT_ESTADOS: readonly NominaCalculoSnapshotEstado[] = [
+  'borrador',
+  'preliminar',
+  'recalculado',
+  'observado',
+  'listo_para_revision',
+  'aprobado_para_liquidacion',
+  'anulado',
+];
+
+const SNAPSHOT_ORIGENES: readonly NominaCalculoSnapshotOrigen[] = ['preliminar', 'manual', 'recalculo'];
+
+const TRABAJADOR_ESTADOS: readonly MotorCalculoEstadoTrabajador[] = [
+  'calculado_preliminar',
+  'con_advertencias',
+  'con_bloqueos',
+];
+
+function parseSnapshotEstado(value: string): NominaCalculoSnapshotEstado {
+  return SNAPSHOT_ESTADOS.includes(value as NominaCalculoSnapshotEstado)
+    ? (value as NominaCalculoSnapshotEstado)
+    : 'observado';
+}
+
+function parseSnapshotOrigen(value: string): NominaCalculoSnapshotOrigen {
+  return SNAPSHOT_ORIGENES.includes(value as NominaCalculoSnapshotOrigen)
+    ? (value as NominaCalculoSnapshotOrigen)
+    : 'preliminar';
+}
+
+function parseTrabajadorEstado(value: string): MotorCalculoEstadoTrabajador {
+  return TRABAJADOR_ESTADOS.includes(value as MotorCalculoEstadoTrabajador)
+    ? (value as MotorCalculoEstadoTrabajador)
+    : 'con_advertencias';
+}
+
+function mapIssueRow(
+  issue: NominaCalculoIssueSnapshot,
+  idCalculoPeriodo: number,
+  idCalculoTrabajador: number | null,
+): NominaCalculoIssueInsert {
   return {
     id_calculo_periodo: idCalculoPeriodo,
     id_calculo_trabajador: idCalculoTrabajador,
@@ -285,7 +339,7 @@ function mapTrazabilidadRow(
   traza: NominaCalculoTrazabilidadSnapshot,
   idCalculoPeriodo: number,
   idCalculoTrabajador: number | null,
-): Record<string, unknown> {
+): NominaCalculoTrazabilidadInsert {
   return {
     id_calculo_periodo: idCalculoPeriodo,
     id_calculo_trabajador: idCalculoTrabajador,

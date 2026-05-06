@@ -161,6 +161,8 @@ Reglas:
 
 Configuracion propia del cliente/empresa, separada de los catalogos.
 
+- Metodo de descuento de ausencias.
+- Configuracion de gratificacion.
 - CCAF seleccionada para la empresa.
 - Mutual seleccionada para la empresa.
 - Configuracion Previred empresa.
@@ -168,7 +170,7 @@ Configuracion propia del cliente/empresa, separada de los catalogos.
 Reglas:
 
 - Puede ser mensual o por vigencia segun modelo.
-- En v11 actual, CCAF/Mutual visible en Parametros se toma como configuracion aplicable al periodo desde `parametros_generales`.
+- En v11 actual, la configuracion cliente visible en Parametros se guarda en `parametros_generales_cliente`; Python no debe escribirla como parte de la carga mensual oficial.
 - No mezclar seleccion de empresa con catalogo global.
 
 ## Gradualidad 8,5 %

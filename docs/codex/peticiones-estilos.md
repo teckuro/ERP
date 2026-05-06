@@ -654,3 +654,9 @@ sin mezclarlo con las reglas base.
 - Se agrega en `/remuneraciones/proceso-mensual` una seccion minima **Snapshot preliminar** con acciones para guardar, ver activo y recalcular/reemplazar.
 - Cambio acotado: sin rediseno de pantalla, sin nuevas paletas, sin inflar cards ni cambiar el layout general.
 - Copy obligatorio visible: el snapshot no cierra periodo ni genera liquidacion oficial, PDF, Previred ni LRE.
+
+# 2026-05-06 - Parametros configuracion cliente
+
+- En `/parametros`, cuando no existe configuracion cliente del periodo, la toolbar mantiene una sola accion **Modificar**.
+- Al modificar se muestra decision inicial con **Usar ultima disponible**, **Crear desde cero** y **Cancelar**; no se crea fila hasta guardar.
+- Cambio acotado al flujo de botones/modal, sin redisenar la pantalla ni cambiar paleta.

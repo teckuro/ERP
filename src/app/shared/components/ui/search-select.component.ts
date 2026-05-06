@@ -489,6 +489,7 @@ export class SearchSelectComponent implements ControlValueAccessor, OnDestroy {
   @Input() invalid = false;
   @Input() clearable = false;
   @Input() options: ReadonlyArray<SearchSelectOption> = [];
+  @Input() disabled = false;
   @Output() readonly valueChange = new EventEmitter<SearchSelectValue>();
 
   readonly checkIcon = Check;
@@ -504,7 +505,6 @@ export class SearchSelectComponent implements ControlValueAccessor, OnDestroy {
   value: SearchSelectValue = null;
   searchTerm = '';
   open = false;
-  disabled = false;
   activeIndex = 0;
   /** Oculta el panel hasta que la primera corrida de Floating UI fije ancho/posicion (evita flash y desalineacion). */
   floatingLayoutDone = false;

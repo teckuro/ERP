@@ -68,6 +68,12 @@ export type MessageBoxMode = 'inline' | 'modal';
       </div>
 
       <div class="message-actions" [class.message-actions--headline]="useModalHeadlineLayout()">
+        @if (tertiaryLabel) {
+          <button type="button" class="message-button message-button-secondary" (click)="tertiary.emit()">
+            {{ tertiaryLabel }}
+          </button>
+        }
+
         @if (secondaryLabel) {
           <button type="button" class="message-button message-button-secondary" (click)="secondary.emit()">
             {{ secondaryLabel }}
@@ -465,6 +471,7 @@ export class MessageBoxComponent {
   /** Texto del botón principal; si está vacío se usa `actionLabel`. Si ambos están vacíos, no se muestra el botón. */
   @Input() primaryLabel = '';
   @Input() secondaryLabel = '';
+  @Input() tertiaryLabel = '';
   @Input() dismissible = false;
   @Input() dismissLabel = 'Cerrar mensaje';
   /**
@@ -474,6 +481,7 @@ export class MessageBoxComponent {
   @Input() modalHeadlineSplit = false;
   @Output() readonly action = new EventEmitter<void>();
   @Output() readonly secondary = new EventEmitter<void>();
+  @Output() readonly tertiary = new EventEmitter<void>();
   @Output() readonly dismiss = new EventEmitter<void>();
 
   readonly closeIcon = XIcon;

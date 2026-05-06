@@ -1,12 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, Input, Output } from '@angular/core';
-import { FormsModule } from '@angular/forms';
 
-import {
-  SearchSelectComponent,
-  SearchSelectOption,
-  SearchSelectValue,
-} from '../../../../shared/components/ui/search-select.component';
 import {
   DataGridColumn,
   DataGridComponent,
@@ -23,12 +17,12 @@ import {
   ParametrosInnerTabItem,
 } from '../parametros-inner-tab-bar.component';
 
-export type CcafMutualSubId = 'config' | 'listaCcaf' | 'mutuales' | 'ley16744';
+export type CcafMutualSubId = 'listaCcaf' | 'mutuales' | 'ley16744';
 
 @Component({
   selector: 'app-parametros-ccaf-mutuales-tab',
   standalone: true,
-  imports: [CommonModule, FormsModule, DataGridComponent, ParametrosInnerTabBarComponent, SearchSelectComponent],
+  imports: [CommonModule, DataGridComponent, ParametrosInnerTabBarComponent],
   template: `
     <section class="tab-panel parametros-tab-panel">
       <div class="param-subhead">
@@ -44,45 +38,6 @@ export type CcafMutualSubId = 'config' | 'listaCcaf' | 'mutuales' | 'ley16744';
       </div>
 
       <div class="param-tab-subview">
-        @if (activeSub === 'config') {
-          <section class="param-group parametros-section-card parametros-config-card param-group--ccaf-current" aria-labelledby="ccaf-title">
-            <h2 id="ccaf-title">Configuracion vigente del periodo</h2>
-            <p class="param-section-lead">Seleccion usada como referencia para el periodo activo.</p>
-            <div class="field-grid parametros-form-grid parametros-form-grid-compact field-grid--ccaf field-grid--ccaf-compact" aria-label="Configuracion CCAF y mutual">
-              <label class="param-field">
-                <span>Caja de compensacion</span>
-                <app-search-select
-                  class="param-field-search-select"
-                  [ngModel]="selectedCcafId"
-                  (ngModelChange)="seleccionarCcaf?.($event)"
-                  [options]="ccafSelectOptions"
-                  placeholder="Sin CCAF cargada"
-                  searchPlaceholder="Buscar CCAF"
-                ></app-search-select>
-              </label>
-
-              <label class="param-field">
-                <span>Mutual de Seguridad</span>
-                <app-search-select
-                  class="param-field-search-select"
-                  [ngModel]="selectedMutualId"
-                  (ngModelChange)="seleccionarMutual?.($event)"
-                  [options]="mutualSelectOptions"
-                  placeholder="Sin mutual cargada"
-                  searchPlaceholder="Buscar mutual"
-                ></app-search-select>
-              </label>
-
-              <label class="param-field">
-                <span>Porcentaje</span>
-                <span class="unit-field unit-field--suffix" data-unit="%">
-                  <input class="param-input text-right" type="text" [value]="percentLabel === '-' ? '-' : percentLabel" readonly />
-                </span>
-              </label>
-            </div>
-          </section>
-        }
-
         @if (activeSub === 'listaCcaf') {
           <section class="catalog-section parametros-grid-shell" aria-labelledby="lista-ccaf-title">
             <h2 class="sr-only" id="lista-ccaf-title">Lista CCAF</h2>
@@ -159,53 +114,9 @@ export type CcafMutualSubId = 'config' | 'listaCcaf' | 'mutuales' | 'ley16744';
       </div>
     </section>
   `,
-  styles: [
-    `
-      .param-field-search-select ::ng-deep .select-field {
-        border-radius: 6px;
-        height: var(--erp-control-height, 22px);
-        min-height: var(--erp-control-height, 22px);
-      }
-
-      .param-group--ccaf-current {
-        width: min(56rem, 100%);
-        max-width: 100%;
-        align-self: flex-start;
-      }
-
-      .field-grid--ccaf-compact {
-        max-width: min(56rem, 100%);
-      }
-    `,
-  ],
 })
 export class ParametrosCcafMutualesTabComponent {
-  get ccafSelectOptions(): SearchSelectOption<number | null>[] {
-    return [
-      { value: null, label: 'Sin CCAF cargada' },
-      ...this.catalogos.ccafEntidades.map((ccaf) => ({
-        value: ccaf.idCcafEntidad,
-        label: ccaf.nombre,
-      })),
-    ];
-  }
-
-  get mutualSelectOptions(): SearchSelectOption<number | null>[] {
-    return [
-      { value: null, label: 'Sin mutual cargada' },
-      ...this.catalogos.organismosLey16744.map((mutual) => ({
-        value: mutual.idOrganismoAdministradorLey16744,
-        label: mutual.nombre,
-      })),
-    ];
-  }
-
-  emitSub(id: string): void {
-    this.activeSubChange.emit(id as CcafMutualSubId);
-  }
-
   readonly ccafInnerTabs: readonly ParametrosInnerTabItem[] = [
-    { id: 'config', label: 'Configuracion' },
     { id: 'listaCcaf', label: 'Lista CCAF' },
     { id: 'mutuales', label: 'Mutuales' },
     { id: 'ley16744', label: 'Ley 16.744' },
@@ -220,19 +131,18 @@ export class ParametrosCcafMutualesTabComponent {
   @Input({ required: true }) ley16744Columns!: DataGridColumn<Ley16744Parametro>[];
 
   @Input() loading = false;
-  @Input() selectedCcafId: number | null = null;
-  @Input() selectedMutualId: number | null = null;
-  @Input() percentLabel = '-';
   @Input() periodoLabel = 'este periodo';
   @Input() referenciaPeriodoLabel: string | null = null;
   @Input() gridPersistenceKeyCcaf = 'parametros.ccaf.dg';
   @Input() gridPersistenceKeyMutuales = 'parametros.mutuales.dg';
   @Input() gridPersistenceKeyLey16744 = 'parametros.ley16744.dg';
 
-  @Input() seleccionarCcaf: ((value: SearchSelectValue) => void) | null = null;
-  @Input() seleccionarMutual: ((value: SearchSelectValue) => void) | null = null;
   @Input() verReferenciaPeriodoAnterior: (() => void) | null = null;
   @Input() refresh: (() => void) | null = null;
+
+  emitSub(id: string): void {
+    this.activeSubChange.emit(id as CcafMutualSubId);
+  }
 
   readonly ccafEntidadFilters: DataGridFilter<CcafEntidad>[] = [
     { id: 'codigo', label: 'Codigo', field: 'codigo', type: 'text', operator: 'contains', emptyLabel: 'Todos' },

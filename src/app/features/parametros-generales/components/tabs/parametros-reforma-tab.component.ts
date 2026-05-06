@@ -89,7 +89,7 @@ type ReformaSubId = 'legales' | 'aportes' | 'trabPesados' | 'apvInst' | 'apvPago
               gridHeight="min(520px, 100%)"
               [persistenceKey]="gridPersistenceKeyTrabPesados"
               emptyTitle="No hay trabajos pesados para el período activo"
-              emptyDescription="Revisa la carga mensual o el catálogo normativo."
+              emptyDescription="Revisa las vigencias de trabajo pesado aplicables al periodo."
               (refresh)="refresh?.()"
             ></app-data-grid>
           </section>

@@ -24,6 +24,7 @@ DECLARE
     parametro_table TEXT;
     parametro_tables TEXT[] := ARRAY[
         'parametros_generales',
+        'parametros_generales_cliente',
         'parametros_legales',
         'afc_parametro',
         'trabajo_pesado_parametro',

@@ -4,6 +4,8 @@ import { ParametrosGeneralesRepository } from '../data-access/parametros-general
 import {
   ParametroGeneral,
   ParametroGeneralUpsert,
+  ParametrosGeneralesClienteConfig,
+  ParametrosGeneralesClienteConfigUpsert,
   PeriodoRemuneracionEstadoInfo,
   ParametrosGeneralesCatalogos,
   ParametrosGeneralesFiltro,
@@ -35,6 +37,20 @@ export class ParametrosGeneralesService {
 
   guardar(payload: ParametroGeneralUpsert): Promise<ParametroGeneral> {
     return this.repository.guardar(payload);
+  }
+
+  obtenerClienteConfig(periodo: string): Promise<ParametrosGeneralesClienteConfig | null> {
+    return this.repository.obtenerClienteConfig(periodo);
+  }
+
+  obtenerUltimaClienteConfigHastaPeriodo(periodo: string): Promise<ParametrosGeneralesClienteConfig | null> {
+    return this.repository.obtenerUltimaClienteConfigHastaPeriodo(periodo);
+  }
+
+  guardarClienteConfig(
+    payload: ParametrosGeneralesClienteConfigUpsert,
+  ): Promise<ParametrosGeneralesClienteConfig> {
+    return this.repository.guardarClienteConfig(payload);
   }
 
   listarCatalogos(periodo: string): Promise<ParametrosGeneralesCatalogos> {

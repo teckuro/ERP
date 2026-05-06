@@ -14,3 +14,4 @@
 \ir partes/11_parametros_generales_ampliacion.sql
 \ir partes/13_persona_paso_alta_avanzada.sql
 \ir partes/15_nomina_calculo_snapshot.sql
+\ir partes/16_nomina_calculo_snapshot_rls.sql

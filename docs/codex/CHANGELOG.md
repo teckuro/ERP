@@ -1,5 +1,28 @@
 # CHANGELOG
 
+## SEG-NOMINA - RLS y permisos minimos de snapshots de nomina
+
+Fecha: 2026-05-06
+
+- Se agrega `bd/base/v11/partes/16_nomina_calculo_snapshot_rls.sql` con RLS minimo para snapshots de nomina.
+- La parte 16 queda incluida en `bd/base/v11/run_all.sql` despues de `15_nomina_calculo_snapshot.sql`.
+- Politicas: `SELECT`, `INSERT` y `UPDATE` solo para `authenticated` con `auth.role() = 'authenticated'`; no se habilita `DELETE`.
+- Se aplica el SQL contra Supabase de desarrollo con `npx supabase db query --db-url ... --file bd/base/v11/partes/16_nomina_calculo_snapshot_rls.sql`.
+- No se cierra periodo, no se genera liquidacion oficial, PDF, Previred, LRE ni contabilidad.
+- Pendiente: validar guardado/reemplazo desde UI con sesion Supabase autenticada y trabajador sin bloqueos.
+
+## MOTOR-03D - Validacion contra tablas existentes
+
+Fecha: 2026-05-06
+
+- Se ejecuto `npm run types:supabase` contra Supabase con las tablas de snapshot ya existentes.
+- `database.types.ts` confirma `nomina_calculo_periodo`, `nomina_calculo_trabajador`, `nomina_calculo_concepto`, `nomina_calculo_issue` y `nomina_calculo_trazabilidad`.
+- `NominaCalculoSnapshotRepository` se ajusta para usar tipos generados reales y deja de usar wrapper `any` para estas tablas.
+- La prueba real de UI llega a prevalidacion, pre-nomina y calculo preliminar; el guardado queda bloqueado correctamente porque el trabajador disponible queda `con_bloqueos`.
+- Una escritura tecnica controlada contra Supabase confirma RLS activa: `nomina_calculo_periodo` rechaza inserts con anon key.
+- No se aplico SQL, no se crearon migraciones, no se modifico `bd/`, no se cerro periodo ni se genero PDF, Previred o LRE.
+- Siguiente fase: SEG-NOMINA - RLS y permisos de snapshots de nomina.
+
 ## MOTOR-03C - Aplicacion controlada de migracion y validacion contra Supabase
 
 Fecha: 2026-05-06

@@ -11,6 +11,18 @@ Unificar criterios del módulo **Parámetros** sin duplicar el detalle de cada s
 3. **Estado del período** (oficial vs borrador, sincronización, etc.) se documenta en los archivos de período y UI; no inventar estados en cliente sin contrato.
 4. **UI** sigue tokens y guías: [`../../ui-form-guidelines.md`](../../ui-form-guidelines.md), [`../../ui-tables.md`](../../ui-tables.md).
 
+## Completitud mensual operativa
+
+El estado visual de Parametros no debe depender solo de `periodo_remuneracion.estado` ni de la existencia de una fila en `parametros_generales`. La UI calcula completitud mensual con `evaluarCompletitudParametrosMensual(...)`, agrupando:
+
+- datos oficiales mensuales (`parametros_generales`, tramos de carga, tramos de impuesto, tabla impuesto unico, Ley 16.744);
+- configuracion cliente (`parametros_generales_cliente`);
+- vigencias aplicables (AFP, salud, AFC, reforma previsional, trabajo pesado y parametros legales);
+- consistencia oficial vs cliente;
+- estado tecnico.
+
+`parametros_generales` es snapshot oficial mensual y sirve para comparacion. El guardado normal de Parametros persiste configuracion cliente; no debe sobrescribir el snapshot oficial central. Cuando existan diferencias oficial/cliente se marca advertencia y no se considera cerrado hasta que exista confirmacion o flujo controlado.
+
 ## Documentos de detalle
 
 | Tema | Archivo |

@@ -1,4 +1,5 @@
 export type ParametrosTabId =
+  | 'configCliente'
   | 'valores'
   | 'remuneraciones'
   | 'ccafMutual'
@@ -73,6 +74,22 @@ export interface ParametroGeneral {
 }
 
 export type ParametroGeneralUpsert = ParametroGeneral;
+
+export interface ParametrosGeneralesClienteConfig
+  extends Partial<Omit<ParametroGeneral, 'periodo' | 'fechaActualizacion' | 'descuentosBasePorDia' | 'gratificacion'>> {
+  periodo: string;
+  descuentosBasePorDia: boolean | null;
+  gratificacion: boolean | null;
+  immGratificacion: number | null;
+  idCcafEntidad: number | null;
+  idOrganismoAdministradorLey16744: number | null;
+  fechaActualizacion: string | null;
+}
+
+export type ParametrosGeneralesClienteConfigUpsert = Omit<
+  ParametrosGeneralesClienteConfig,
+  'fechaActualizacion'
+>;
 
 export interface AfpParametro {
   idAfp: number;

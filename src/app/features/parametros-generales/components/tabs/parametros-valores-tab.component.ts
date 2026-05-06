@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, Input } from '@angular/core';
 import { FormGroup, ReactiveFormsModule } from '@angular/forms';
+
 @Component({
   selector: 'app-parametros-valores-tab',
   standalone: true,
@@ -20,6 +21,7 @@ import { FormGroup, ReactiveFormsModule } from '@angular/forms';
           }
         </section>
       }
+
       <section class="param-group parametros-section-card" aria-labelledby="indicadores-title">
         <h2 id="indicadores-title">Indicadores mensuales</h2>
         <p class="param-section-lead">UF, UTM y UTA del periodo.</p>
@@ -27,120 +29,39 @@ import { FormGroup, ReactiveFormsModule } from '@angular/forms';
           <label class="param-field">
             <span>UF (CLP)</span>
             <span class="unit-field unit-field--suffix" data-unit="CLP">
-              <input class="param-input text-right" type="number" step="0.01" formControlName="uf" [readonly]="!editable" />
+              <input class="param-input text-right" type="number" step="0.01" formControlName="uf" [readonly]="!officialEditable" />
             </span>
           </label>
 
           <label class="param-field">
             <span>UTM (CLP)</span>
             <span class="unit-field unit-field--suffix" data-unit="CLP">
-              <input class="param-input text-right" type="number" step="1" formControlName="utm" [readonly]="!editable" />
+              <input class="param-input text-right" type="number" step="1" formControlName="utm" [readonly]="!officialEditable" />
             </span>
           </label>
 
           <label class="param-field">
             <span>UTA (CLP)</span>
             <span class="unit-field unit-field--suffix" data-unit="CLP">
-              <input class="param-input text-right" type="number" step="1" formControlName="uta" [readonly]="!editable" />
+              <input class="param-input text-right" type="number" step="1" formControlName="uta" [readonly]="!officialEditable" />
             </span>
           </label>
         </div>
       </section>
 
-      <section class="param-group parametros-section-card" aria-labelledby="gratificacion-title">
-        <h2 id="gratificacion-title">Gratificación</h2>
-        <div class="field-grid parametros-form-grid field-grid--gratificacion">
-          <label class="param-field">
-            <span>Porcentaje (legal)</span>
-            <span class="unit-field unit-field--suffix" data-unit="%">
-              <input class="param-input text-right" type="number" step="0.01" [value]="25" readonly />
-            </span>
-          </label>
-
-          <label class="param-field">
-            <span>Factor I.M.M</span>
-            <span class="unit-field unit-field--suffix" data-unit="IMM">
-              <input
-                class="param-input text-right"
-                type="number"
-                step="0.01"
-                formControlName="immGratificacion"
-                [readonly]="!editable"
-              />
-            </span>
-          </label>
-
-          <label class="param-checkbox-inline">
-            <input type="checkbox" formControlName="gratificacion" (click)="onReadonlyToggle($event)" />
-            <span>Con gratificación</span>
-          </label>
-          <label class="param-checkbox-inline">
-            <input type="checkbox" checked disabled />
-            <span>Tope legal</span>
-          </label>
-        </div>
-      </section>
-
-      <section class="param-group parametros-section-card" aria-labelledby="ausencias-title">
-        <h2 id="ausencias-title">Configuración general</h2>
-        <p class="param-section-lead">Método de descuento por ausencias.</p>
-        <div class="field-grid parametros-form-grid field-grid--values">
-          <label class="erp-choice-radio">
-            <span>En base 30 días</span>
-            <input
-              type="radio"
-              name="descuentosBase"
-              [checked]="!(form.get('descuentosBasePorDia')?.value ?? false)"
-              [disabled]="!editable"
-              (change)="setDescuentosBase(false)"
-            />
-          </label>
-          <label class="erp-choice-radio">
-            <span>En base días del mes</span>
-            <input
-              type="radio"
-              name="descuentosBase"
-              [checked]="(form.get('descuentosBasePorDia')?.value ?? false)"
-              [disabled]="!editable"
-              (change)="setDescuentosBase(true)"
-            />
-          </label>
-        </div>
-      </section>
-
-      <footer class="tab-footnote tab-footnote--muted">Última actualización: {{ fechaActualizacionLabel }}</footer>
+      <footer class="tab-footnote tab-footnote--muted">Ultima actualizacion: {{ fechaActualizacionLabel }}</footer>
     </form>
   `,
 })
 export class ParametrosValoresTabComponent {
   @Input({ required: true }) form!: FormGroup;
   @Input() editable = false;
+  @Input() officialEditable = false;
+  @Input() configEditable = false;
   @Input() hasPeriodoData = true;
   @Input() periodoLabel = 'este periodo';
   @Input() referenciaPeriodoLabel: string | null = null;
   @Input() fechaActualizacionLabel: string | null = null;
   @Input() onSubmit: (() => void) | null = null;
   @Input() verReferenciaPeriodoAnterior: (() => void) | null = null;
-
-  @Input() bloquearSiLectura: ((event: Event) => void) | null = null;
-  @Input() setDescuentosBaseFn: ((value: boolean) => void) | null = null;
-
-  onReadonlyToggle(event: Event): void {
-    this.bloquearSiLectura?.(event);
-  }
-
-  setDescuentosBase(value: boolean): void {
-    if (this.setDescuentosBaseFn) {
-      this.setDescuentosBaseFn(value);
-      return;
-    }
-
-    if (!this.editable) {
-      return;
-    }
-
-    const control = (this.form as any)?.controls?.descuentosBasePorDia;
-    control?.setValue?.(value);
-  }
 }
-

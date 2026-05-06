@@ -2446,6 +2446,51 @@ export type Database = {
         }
         Relationships: []
       }
+      parametros_generales_cliente: {
+        Row: {
+          descuentos_base_por_dia: boolean | null
+          fecha_actualizacion: string | null
+          gratificacion: boolean | null
+          id_ccaf_entidad: number | null
+          id_organismo_administrador_ley_16744: number | null
+          imm_gratificacion: number | null
+          periodo: string
+        }
+        Insert: {
+          descuentos_base_por_dia?: boolean | null
+          fecha_actualizacion?: string | null
+          gratificacion?: boolean | null
+          id_ccaf_entidad?: number | null
+          id_organismo_administrador_ley_16744?: number | null
+          imm_gratificacion?: number | null
+          periodo: string
+        }
+        Update: {
+          descuentos_base_por_dia?: boolean | null
+          fecha_actualizacion?: string | null
+          gratificacion?: boolean | null
+          id_ccaf_entidad?: number | null
+          id_organismo_administrador_ley_16744?: number | null
+          imm_gratificacion?: number | null
+          periodo?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "parametros_generales_cliente_id_ccaf_entidad_fkey"
+            columns: ["id_ccaf_entidad"]
+            isOneToOne: false
+            referencedRelation: "ccaf_entidad"
+            referencedColumns: ["id_ccaf_entidad"]
+          },
+          {
+            foreignKeyName: "parametros_generales_cliente_id_organismo_administrador_le_fkey"
+            columns: ["id_organismo_administrador_ley_16744"]
+            isOneToOne: false
+            referencedRelation: "organismo_administrador_ley_16744"
+            referencedColumns: ["id_organismo_administrador_ley_16744"]
+          },
+        ]
+      }
       parametros_legales: {
         Row: {
           id_parametro: number
