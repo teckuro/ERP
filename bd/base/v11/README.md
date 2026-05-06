@@ -24,6 +24,8 @@ Estados validos:
 
 4. Si la base se creo antes de la tabla `movimiento_variable_mensual`, ejecutar `partes/14_movimiento_variable_mensual.sql` una vez (no forma parte de `run_all.sql` si ya incorporaste el bloque en `02_tablas.sql` en un fresh install).
 
+5. Para snapshots preliminares de nomina mensual, ejecutar `partes/15_nomina_calculo_snapshot.sql` una vez en ambientes revisados. El script es incremental/idempotente y no cierra periodos ni crea liquidaciones oficiales.
+
 `12_migracion_lre_datos_incremental.sql` requiere que existan `persona`/`contrato` con IDs coherentes si se dejan los datos demo.
 
 ### Orden de ejecucion fresh local (`partes/`)
@@ -42,6 +44,7 @@ Estados validos:
 12. `11_parametros_generales_ampliacion.sql`: columnas extendidas de `parametros_generales`.
 13. `13_persona_paso_alta_avanzada.sql`: soporte para continuar alta avanzada.
 14. `14_movimiento_variable_mensual.sql`: tabla movimientos variables mensuales (Fase 9.4C); solo para BD ya creada sin pasar por `02_tablas.sql` actualizado (idempotente).
+15. `15_nomina_calculo_snapshot.sql`: tablas de snapshots preliminares de nomina mensual (MOTOR-03B/MOTOR-03C), sin liquidacion oficial ni cierre.
 
 ### Ejecucion fresh local
 

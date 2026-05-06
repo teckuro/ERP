@@ -8,8 +8,24 @@ import { esPeriodoRemuneracionValido } from '../../movimientos-variables/rules/m
 import type { ParametroGeneral, ParametrosGeneralesCatalogos } from '../../parametros-generales/models/parametro-general.model';
 import { ParametrosGeneralesService } from '../../parametros-generales/services/parametros-generales.service';
 
-import type { ProcesoMensualPrevalidacion } from '../models/proceso-mensual.model';
+import type {
+  GuardarSnapshotPreliminarResult,
+  MotorCalculoPeriodoResultado,
+  MotorCalculoInput,
+  NominaCalculoPeriodoSnapshot,
+  ProcesoMensualPreNominaPeriodo,
+  ProcesoMensualPrevalidacion,
+} from '../models/proceso-mensual.model';
+import { trabajadorSnapshotDesdeFicha } from '../models/proceso-mensual.model';
+import { NominaCalculoSnapshotRepository } from '../data-access/nomina-calculo-snapshot.repository';
+import { generarCalculoPreliminarPeriodo } from '../rules/proceso-mensual-motor.rules';
+import {
+  buildGuardarSnapshotRechazado,
+  mapResultadoMotorToSnapshotPayload,
+  validarResultadoSnapshotPreliminar,
+} from '../rules/proceso-mensual-snapshot.rules';
 import { revisarGruposParametrosMinimos } from '../rules/proceso-mensual-parametros-minimos.rules';
+import { construirPreNominaPeriodo } from '../rules/proceso-mensual-prenomina.rules';
 import {
   construirPrevalidacionMensual,
   contarRecurrentesParaPrevalidacionMensual,
@@ -22,6 +38,8 @@ export class ProcesoMensualService {
   private readonly empleados = inject(EmpleadosService);
   private readonly haberesDescuentos = inject(HaberesDescuentosService);
   private readonly movimientosVariables = inject(MovimientosVariablesService);
+  private readonly snapshots = inject(NominaCalculoSnapshotRepository);
+  private readonly calculosPorPeriodo = new Map<string, MotorCalculoPeriodoResultado>();
 
   /**
    * Orquesta lecturas y devuelve prevalidacion. No calcula remuneraciones ni liquidaciones.
@@ -43,6 +61,79 @@ export class ProcesoMensualService {
     ]);
 
     return construirPrevalidacionMensual(this.mapearHechosDesdeSettled(p, settled));
+  }
+
+  async generarPreNominaPeriodo(periodo: string): Promise<ProcesoMensualPreNominaPeriodo> {
+    const prevalidacion = await this.ejecutarPrevalidaciones(periodo);
+    return construirPreNominaPeriodo(prevalidacion, new Date().toISOString());
+  }
+
+  async generarCalculoPeriodo(periodo: string): Promise<MotorCalculoPeriodoResultado> {
+    const p = periodo.trim();
+    const input = await this.construirInputMotorPeriodo(p);
+    const resultado = generarCalculoPreliminarPeriodo(input, new Date().toISOString());
+    this.calculosPorPeriodo.set(p, resultado);
+    return resultado;
+  }
+
+  obtenerResultadoCalculoPeriodo(periodo: string): MotorCalculoPeriodoResultado | null {
+    return this.calculosPorPeriodo.get(periodo.trim()) ?? null;
+  }
+
+  async guardarSnapshotPreliminar(periodo: string): Promise<GuardarSnapshotPreliminarResult> {
+    const p = periodo.trim();
+    const resultado = this.obtenerResultadoCalculoPeriodo(p);
+    const issues = validarResultadoSnapshotPreliminar(resultado);
+    if (issues.length > 0 || !resultado) {
+      return buildGuardarSnapshotRechazado(issues);
+    }
+
+    const snapshot = mapResultadoMotorToSnapshotPayload({
+      resultado,
+      fechaGeneracion: new Date().toISOString(),
+      origen: 'preliminar',
+    });
+    const guardado = await this.snapshots.guardarSnapshotPreliminar(snapshot);
+    return {
+      ok: true,
+      snapshot: guardado.snapshot,
+      reemplazoSnapshotAnterior: guardado.reemplazoSnapshotAnterior,
+      hashSnapshot: guardado.snapshot.hashSnapshot,
+      issues: [],
+    };
+  }
+
+  async reemplazarSnapshotPreliminar(periodo: string): Promise<GuardarSnapshotPreliminarResult> {
+    const resultado = await this.generarCalculoPeriodo(periodo);
+    const issues = validarResultadoSnapshotPreliminar(resultado);
+    if (issues.length > 0) {
+      return buildGuardarSnapshotRechazado(issues);
+    }
+    const snapshot = mapResultadoMotorToSnapshotPayload({
+      resultado,
+      fechaGeneracion: new Date().toISOString(),
+      origen: 'recalculo',
+    });
+    const guardado = await this.snapshots.guardarSnapshotPreliminar(snapshot);
+    return {
+      ok: true,
+      snapshot: guardado.snapshot,
+      reemplazoSnapshotAnterior: guardado.reemplazoSnapshotAnterior,
+      hashSnapshot: guardado.snapshot.hashSnapshot,
+      issues: [],
+    };
+  }
+
+  obtenerSnapshotActivo(periodo: string): Promise<NominaCalculoPeriodoSnapshot | null> {
+    return this.snapshots.obtenerSnapshotActivo(periodo.trim());
+  }
+
+  listarSnapshotsPeriodo(periodo: string): Promise<NominaCalculoPeriodoSnapshot[]> {
+    return this.snapshots.listarSnapshotsPeriodo(periodo.trim());
+  }
+
+  anularSnapshotActivo(periodo: string, motivo?: string): Promise<void> {
+    return this.snapshots.anularSnapshotActivo(periodo.trim(), motivo);
   }
 
   private hechosMinimos(periodo: string): ProcesoMensualHechosPrevalidacion {
@@ -192,6 +283,31 @@ export class ProcesoMensualService {
       movimientos,
       lecturaMovimientos,
       errorMovimientos,
+    };
+  }
+
+  private async construirInputMotorPeriodo(periodo: string): Promise<MotorCalculoInput> {
+    const [prevalidacion, parametrosPeriodo, catalogos, empleadosListado, recurrentes] = await Promise.all([
+      this.ejecutarPrevalidaciones(periodo),
+      this.parametrosGenerales.obtenerUltimoHastaPeriodo(periodo),
+      this.parametrosGenerales.listarCatalogos(periodo),
+      this.empleados.listar(),
+      this.haberesDescuentos.listarAsignacionesParaPrevalidacionMensual(periodo),
+    ]);
+    const preNomina = construirPreNominaPeriodo(prevalidacion, new Date().toISOString());
+    const aptos = empleadosListado.filter((e) => e.estado === 'activo' && e.aptoParaRemuneraciones);
+    const fichas = await Promise.all(aptos.map((e) => this.empleados.obtenerPorId(e.id)));
+    const trabajadores = fichas.filter((f): f is NonNullable<typeof f> => f != null).map(trabajadorSnapshotDesdeFicha);
+
+    return {
+      periodo,
+      preNomina,
+      prevalidacion,
+      parametrosPeriodo,
+      catalogos,
+      trabajadores,
+      recurrentes,
+      empresaLey16744: null,
     };
   }
 }

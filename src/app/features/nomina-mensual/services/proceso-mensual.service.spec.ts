@@ -7,6 +7,7 @@ import { MovimientosVariablesService } from '../../movimientos-variables/service
 import type { ParametroGeneral } from '../../parametros-generales/models/parametro-general.model';
 import { ParametrosGeneralesService } from '../../parametros-generales/services/parametros-generales.service';
 
+import { NominaCalculoSnapshotRepository } from '../data-access/nomina-calculo-snapshot.repository';
 import { ProcesoMensualService } from './proceso-mensual.service';
 
 const filaPgMock = {
@@ -56,8 +57,8 @@ const filaPgMock = {
 
 const catalogosMock = {
   afp: [{ idAfp: 1, codigo: 'x', nombre: 'n', periodo: null, tasaObligatoria: 0.1, comision: 0, sis: 0, tasaEmpleador: 0, vigente: true, vigenciaInicio: null, vigenciaFin: null }],
-  isapres: [{ idSalud: 1, codigo: 'x', nombre: 'n', tipo: null, porcentajeCotizacion: null, periodo: null, vigente: true, vigenciaInicio: null, vigenciaFin: null }],
-  saludInstituciones: [],
+  isapres: [],
+  saludInstituciones: [{ idSalud: 1, codigo: 'FONASA', nombre: 'Fonasa', tipo: 'FONASA', porcentajeCotizacion: 0.07, periodo: null, vigente: true, vigenciaInicio: null, vigenciaFin: null }],
   tramosCarga: [],
   tramosImpuesto: [{ idTramo: 1, periodo: '2026-05', desde: 0, hasta: 1, factor: 1, rebaja: 0 }],
   tablaImpuestoUnico: [{ id: 1, tramo: 1, desde: 0, hasta: 999999, factor: 0, rebaja: 0, vigenciaInicio: '2026-05-01', vigenciaFin: null }],
@@ -117,12 +118,18 @@ describe('ProcesoMensualService', () => {
     obtenerPeriodoRemuneracion: ReturnType<typeof vi.fn>;
     listarCatalogos: ReturnType<typeof vi.fn>;
   };
-  let empleados: { listar: ReturnType<typeof vi.fn> };
+  let empleados: { listar: ReturnType<typeof vi.fn>; obtenerPorId: ReturnType<typeof vi.fn> };
   let haberes: {
     listarConceptosMantenimiento: ReturnType<typeof vi.fn>;
     listarAsignacionesParaPrevalidacionMensual: ReturnType<typeof vi.fn>;
   };
   let movimientos: { listarPorPeriodo: ReturnType<typeof vi.fn> };
+  let snapshots: {
+    guardarSnapshotPreliminar: ReturnType<typeof vi.fn>;
+    obtenerSnapshotActivo: ReturnType<typeof vi.fn>;
+    listarSnapshotsPeriodo: ReturnType<typeof vi.fn>;
+    anularSnapshotActivo: ReturnType<typeof vi.fn>;
+  };
 
   beforeEach(() => {
     parametros = {
@@ -137,9 +144,31 @@ describe('ProcesoMensualService', () => {
     };
     empleados = {
       listar: vi.fn().mockResolvedValue([
-        { estado: 'activo', aptoParaRemuneraciones: true },
-        { estado: 'activo', aptoParaRemuneraciones: true },
+        { id: 1, estado: 'activo', aptoParaRemuneraciones: true },
+        { id: 2, estado: 'activo', aptoParaRemuneraciones: true },
       ]),
+      obtenerPorId: vi.fn().mockImplementation((id: number) => Promise.resolve({
+        id,
+        idContrato: id * 10,
+        rut: `${id}${id}.${id}${id}${id}.${id}${id}${id}-${id}`,
+        nombre: `Trabajador ${id}`,
+        cargo: 'Analista',
+        departamento: 'Operaciones',
+        fechaIngreso: '2024-01-01',
+        sueldoBase: 800000,
+        estado: 'activo',
+        estadoFicha: 'VALIDO',
+        aptoParaRemuneraciones: true,
+        pasoAltaAvanzada: null,
+        historial: [],
+        formValue: {
+          datosPersonales: {},
+          contacto: {},
+          contrato: { sueldoBase: 800000, tipoContrato: 'I' },
+          previsionSalud: { idAfp: 1, idSalud: 1, valorPlan: null },
+          bancario: {},
+        },
+      })),
     };
     haberes = {
       listarConceptosMantenimiento: vi
@@ -150,6 +179,15 @@ describe('ProcesoMensualService', () => {
     movimientos = {
       listarPorPeriodo: vi.fn().mockResolvedValue([]),
     };
+    snapshots = {
+      guardarSnapshotPreliminar: vi.fn().mockImplementation((snapshot) => Promise.resolve({
+        snapshot: { ...snapshot, idCalculoPeriodo: 1 },
+        reemplazoSnapshotAnterior: false,
+      })),
+      obtenerSnapshotActivo: vi.fn().mockResolvedValue(null),
+      listarSnapshotsPeriodo: vi.fn().mockResolvedValue([]),
+      anularSnapshotActivo: vi.fn().mockResolvedValue(undefined),
+    };
 
     TestBed.configureTestingModule({
       providers: [
@@ -158,6 +196,7 @@ describe('ProcesoMensualService', () => {
         { provide: EmpleadosService, useValue: empleados },
         { provide: HaberesDescuentosService, useValue: haberes },
         { provide: MovimientosVariablesService, useValue: movimientos },
+        { provide: NominaCalculoSnapshotRepository, useValue: snapshots },
       ],
     });
   });
@@ -193,5 +232,81 @@ describe('ProcesoMensualService', () => {
     const r = await svc.ejecutarPrevalidaciones('2026-05');
     expect(r.bloqueos.some((b) => b.codigo === 'MV_LECTURA_ERROR')).toBe(true);
     expect(r.estado).toBe('BLOQUEADO');
+  });
+
+  it('genera pre-nomina funcional desde la prevalidacion del periodo', async () => {
+    movimientos.listarPorPeriodo.mockResolvedValue([
+      {
+        idMovimiento: 1,
+        idPersona: 1,
+        idConcepto: 1,
+        periodo: '2026-05',
+        monto: 1000,
+        estado: 'VALIDADO',
+        origen: 'MANUAL',
+      },
+    ]);
+    const svc = TestBed.inject(ProcesoMensualService);
+    const r = await svc.generarPreNominaPeriodo('2026-05');
+
+    expect(r.periodo).toBe('2026-05');
+    expect(r.estado).toBe('GENERADA');
+    expect(r.trabajadoresIncluidos).toBe(2);
+    expect(r.movimientosVariablesValidados).toBe(1);
+    expect(r.generadoEn).toMatch(/T/);
+  });
+
+  it('genera calculo preliminar y lo deja consultable en memoria', async () => {
+    const svc = TestBed.inject(ProcesoMensualService);
+    const r = await svc.generarCalculoPeriodo('2026-05');
+
+    expect(r.periodo).toBe('2026-05');
+    expect(r.liquidaciones.length).toBe(2);
+    expect(r.resumen.totalTrabajadoresCalculados).toBe(2);
+    expect(svc.obtenerResultadoCalculoPeriodo('2026-05')).toBe(r);
+  });
+
+  it('guarda snapshot preliminar desde calculo en memoria sin cerrar periodo', async () => {
+    const svc = TestBed.inject(ProcesoMensualService);
+    await svc.generarCalculoPeriodo('2026-05');
+    const r = await svc.guardarSnapshotPreliminar('2026-05');
+
+    expect(r.ok).toBe(true);
+    expect(r.snapshot?.periodo).toBe('2026-05');
+    expect(r.snapshot?.estado).toBe('preliminar');
+    expect(r.snapshot?.hashSnapshot).toMatch(/^fnv1a32:/);
+    expect(snapshots.guardarSnapshotPreliminar).toHaveBeenCalled();
+  });
+
+  it('no guarda snapshot si el calculo tiene bloqueos', async () => {
+    empleados.obtenerPorId.mockResolvedValueOnce({
+      id: 1,
+      idContrato: null,
+      rut: '11.111.111-1',
+      nombre: 'Trabajador bloqueo',
+      cargo: 'Analista',
+      departamento: 'Operaciones',
+      fechaIngreso: '2024-01-01',
+      sueldoBase: null,
+      estado: 'activo',
+      estadoFicha: 'VALIDO',
+      aptoParaRemuneraciones: true,
+      pasoAltaAvanzada: null,
+      historial: [],
+      formValue: {
+        datosPersonales: {},
+        contacto: {},
+        contrato: { sueldoBase: null, tipoContrato: null },
+        previsionSalud: { idAfp: null, idSalud: null, valorPlan: null },
+        bancario: {},
+      },
+    });
+    const svc = TestBed.inject(ProcesoMensualService);
+    await svc.generarCalculoPeriodo('2026-05');
+    const r = await svc.guardarSnapshotPreliminar('2026-05');
+
+    expect(r.ok).toBe(false);
+    expect(r.issues.some((i) => i.codigo === 'SNAPSHOT_CALCULO_BLOQUEADO')).toBe(true);
+    expect(snapshots.guardarSnapshotPreliminar).not.toHaveBeenCalled();
   });
 });

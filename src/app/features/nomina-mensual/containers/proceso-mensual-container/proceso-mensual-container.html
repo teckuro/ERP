@@ -125,6 +125,234 @@
             }
           </div>
 
+          <div class="rounded-lg border border-slate-200 bg-white p-4">
+            <div class="flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <h3 class="font-semibold text-gray-900">Pre-nomina del periodo</h3>
+                <p class="mt-1 text-sm text-gray-600">
+                  Consolida trabajadores aptos, recurrentes aplicables y movimientos validados. No calcula montos ni
+                  genera liquidaciones.
+                </p>
+              </div>
+              <div class="flex flex-wrap items-center gap-2">
+                @if (preNomina(); as pn) {
+                  <app-badge [variant]="badgeVariantPreNomina(pn.estado)">{{ etiquetaEstadoPreNomina(pn.estado) }}</app-badge>
+                } @else {
+                  <app-badge variant="default">{{ etiquetaEstadoPreNomina(null) }}</app-badge>
+                }
+                <app-button
+                  variant="primary"
+                  size="sm"
+                  [disabled]="!puedeGenerarPreNomina()"
+                  (click)="generarPreNomina()"
+                >
+                  {{ generandoPreNomina() ? 'Generando...' : 'Generar pre-nomina' }}
+                </app-button>
+              </div>
+            </div>
+
+            @if (preNomina(); as pn) {
+              <dl class="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4 text-sm">
+                <div>
+                  <dt class="text-gray-500">Trabajadores incluidos</dt>
+                  <dd class="font-semibold text-gray-900">{{ pn.trabajadoresIncluidos }}</dd>
+                </div>
+                <div>
+                  <dt class="text-gray-500">Recurrentes incluidos</dt>
+                  <dd class="font-semibold text-gray-900">{{ pn.recurrentesIncluidos }}</dd>
+                </div>
+                <div>
+                  <dt class="text-gray-500">Movimientos validados</dt>
+                  <dd class="font-semibold text-gray-900">{{ pn.movimientosVariablesValidados }}</dd>
+                </div>
+                <div>
+                  <dt class="text-gray-500">Movimientos borrador</dt>
+                  <dd class="font-semibold text-gray-900">{{ pn.movimientosVariablesBorrador }}</dd>
+                </div>
+              </dl>
+              @if (pn.codigosBloqueo.length || pn.codigosAdvertencia.length) {
+                <p class="mt-3 text-xs text-gray-500">
+                  Codigos:
+                  @for (c of pn.codigosBloqueo; track c) {
+                    <span>{{ c }}</span>@if (!$last || pn.codigosAdvertencia.length) {<span>; </span>}
+                  }
+                  @for (c of pn.codigosAdvertencia; track c) {
+                    <span>{{ c }}</span>@if (!$last) {<span>; </span>}
+                  }
+                </p>
+              }
+            } @else {
+              <p class="mt-3 text-sm text-gray-600">
+                Primero valide el periodo. Si no hay bloqueos, podra generar esta base funcional de pre-nomina.
+              </p>
+            }
+          </div>
+
+          <div class="rounded-lg border border-slate-200 bg-white p-4">
+            <div class="flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <h3 class="font-semibold text-gray-900">Calculo preliminar</h3>
+                <p class="mt-1 text-sm text-gray-600">
+                  Genera resultado base por trabajador desde la pre-nomina. No cierra periodo, no emite liquidaciones y
+                  no genera archivos oficiales.
+                </p>
+              </div>
+              <app-button
+                variant="primary"
+                size="sm"
+                [disabled]="!puedeCalcularPreliminar()"
+                (click)="calcularPreliminar()"
+              >
+                {{ calculandoPreliminar() ? 'Calculando...' : 'Calcular preliminar' }}
+              </app-button>
+            </div>
+
+            @if (calculo(); as calc) {
+              <dl class="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-6 text-sm">
+                <div>
+                  <dt class="text-gray-500">Calculados</dt>
+                  <dd class="font-semibold text-gray-900">{{ calc.resumen.totalTrabajadoresCalculados }}</dd>
+                </div>
+                <div>
+                  <dt class="text-gray-500">Bloqueados</dt>
+                  <dd class="font-semibold text-gray-900">{{ calc.resumen.totalBloqueados }}</dd>
+                </div>
+                <div>
+                  <dt class="text-gray-500">Advertencias</dt>
+                  <dd class="font-semibold text-gray-900">{{ calc.resumen.totalConAdvertencias }}</dd>
+                </div>
+                <div>
+                  <dt class="text-gray-500">Haberes</dt>
+                  <dd class="font-semibold text-gray-900">{{ calc.resumen.totalHaberes | number: '1.0-0' }}</dd>
+                </div>
+                <div>
+                  <dt class="text-gray-500">Descuentos</dt>
+                  <dd class="font-semibold text-gray-900">{{ calc.resumen.totalDescuentos | number: '1.0-0' }}</dd>
+                </div>
+                <div>
+                  <dt class="text-gray-500">Liquido preliminar</dt>
+                  <dd class="font-semibold text-gray-900">{{ calc.resumen.totalLiquidoPreliminar | number: '1.0-0' }}</dd>
+                </div>
+              </dl>
+
+              <div class="mt-4 overflow-x-auto">
+                <table class="min-w-full divide-y divide-slate-200 text-sm">
+                  <thead class="bg-slate-50 text-left text-xs font-medium uppercase text-slate-500">
+                    <tr>
+                      <th class="px-3 py-2">Trabajador</th>
+                      <th class="px-3 py-2 text-right">Haberes</th>
+                      <th class="px-3 py-2 text-right">Descuentos</th>
+                      <th class="px-3 py-2 text-right">Gratificacion</th>
+                      <th class="px-3 py-2 text-right">Base imponible</th>
+                      <th class="px-3 py-2 text-right">Base tributable</th>
+                      <th class="px-3 py-2 text-right">Impuesto unico</th>
+                      <th class="px-3 py-2 text-right">Liquido</th>
+                      <th class="px-3 py-2">Estado</th>
+                      <th class="px-3 py-2">Issues</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-slate-100">
+                    @for (liq of calc.liquidaciones; track liq.idPersona) {
+                      <tr>
+                        <td class="px-3 py-2 text-gray-900">{{ liq.nombreCompleto }}</td>
+                        <td class="px-3 py-2 text-right">{{ liq.totalHaberes | number: '1.0-0' }}</td>
+                        <td class="px-3 py-2 text-right">{{ liq.totalDescuentos | number: '1.0-0' }}</td>
+                        <td class="px-3 py-2 text-right">{{ liq.gratificacionLegal | number: '1.0-0' }}</td>
+                        <td class="px-3 py-2 text-right">{{ liq.baseImponiblePrevisional | number: '1.0-0' }}</td>
+                        <td class="px-3 py-2 text-right">{{ liq.baseTributable | number: '1.0-0' }}</td>
+                        <td class="px-3 py-2 text-right">{{ liq.impuestoUnico | number: '1.0-0' }}</td>
+                        <td class="px-3 py-2 text-right font-medium text-gray-900">{{ liq.liquidoAPago | number: '1.0-0' }}</td>
+                        <td class="px-3 py-2">{{ liq.estado }}</td>
+                        <td class="px-3 py-2 text-xs text-gray-600">
+                          @if (liq.issues.length) {
+                            @for (issue of liq.issues; track issue.codigo) {
+                              <span>{{ issue.codigo }}</span>@if (!$last) {<span>; </span>}
+                            }
+                          } @else {
+                            <span>Sin issues</span>
+                          }
+                        </td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            } @else {
+              <p class="mt-3 text-sm text-gray-600">
+                Genere la pre-nomina del periodo para habilitar el calculo preliminar.
+              </p>
+            }
+          </div>
+
+          <div class="rounded-lg border border-slate-200 bg-white p-4">
+            <div class="flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <h3 class="font-semibold text-gray-900">Snapshot preliminar</h3>
+                <p class="mt-1 text-sm text-gray-600">
+                  Guarda el calculo preliminar para revision. Esto no cierra el periodo ni genera liquidacion oficial.
+                </p>
+              </div>
+              <div class="flex flex-wrap items-center gap-2">
+                <app-button
+                  variant="outline"
+                  size="sm"
+                  [disabled]="consultandoSnapshot()"
+                  (click)="verSnapshotActivo()"
+                >
+                  {{ consultandoSnapshot() ? 'Consultando...' : 'Ver snapshot activo' }}
+                </app-button>
+                <app-button
+                  variant="outline"
+                  size="sm"
+                  [disabled]="!puedeGuardarSnapshot()"
+                  (click)="recalcularYReemplazarSnapshot()"
+                >
+                  Recalcular y reemplazar
+                </app-button>
+                <app-button
+                  variant="primary"
+                  size="sm"
+                  [disabled]="!puedeGuardarSnapshot()"
+                  (click)="guardarSnapshotPreliminar()"
+                >
+                  {{ guardandoSnapshot() ? 'Guardando...' : 'Guardar snapshot preliminar' }}
+                </app-button>
+              </div>
+            </div>
+
+            @if (snapshotActivo(); as snapshot) {
+              <dl class="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-5 text-sm">
+                <div>
+                  <dt class="text-gray-500">Estado</dt>
+                  <dd class="font-semibold text-gray-900">{{ snapshot.estado }}</dd>
+                </div>
+                <div>
+                  <dt class="text-gray-500">Trabajadores</dt>
+                  <dd class="font-semibold text-gray-900">{{ snapshot.totalTrabajadores }}</dd>
+                </div>
+                <div>
+                  <dt class="text-gray-500">Liquido snapshot</dt>
+                  <dd class="font-semibold text-gray-900">{{ snapshot.totalLiquido | number: '1.0-0' }}</dd>
+                </div>
+                <div>
+                  <dt class="text-gray-500">Version motor</dt>
+                  <dd class="font-semibold text-gray-900">{{ snapshot.versionMotor }}</dd>
+                </div>
+                <div>
+                  <dt class="text-gray-500">Hash</dt>
+                  <dd class="font-semibold text-gray-900">{{ snapshot.hashSnapshot || 'sin hash' }}</dd>
+                </div>
+              </dl>
+              <p class="mt-3 text-xs text-gray-500">
+                Snapshot preliminar guardado. No es liquidacion oficial, no genera PDF, Previred ni LRE.
+              </p>
+            } @else {
+              <p class="mt-3 text-sm text-gray-600">
+                No hay snapshot activo cargado para el periodo seleccionado.
+              </p>
+            }
+          </div>
+
           <div class="grid gap-4 md:grid-cols-2">
             <div class="rounded-lg border border-slate-200 p-4">
               <h4 class="text-sm font-semibold text-gray-900">Bloqueos</h4>

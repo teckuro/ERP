@@ -24,13 +24,13 @@
 - **Cambio:** UI movida a `features/nomina-mensual/containers/proceso-mensual-container/` (html, css, ts, spec); la pagina de ruta queda como wrapper minimo (`frontend-interfaces`).
 - **Archivos:** `src/app/pages/proceso-remuneraciones.page.ts`, `src/app/features/nomina-mensual/containers/proceso-mensual-container/*`.
 
-### 2026-05-03 (Movimientos variables — pantalla 9.4E)
+### 2026-05-03 (Movimientos variables - pantalla 9.4E)
 
 - **Módulo:** Movimientos variables (Remuneraciones).
 - **Cambio:** nueva pantalla `/remuneraciones/movimientos-variables` con cabecera al estilo Haberes (breadcrumb, período de referencia, botonera), tarjeta de filtro por `input type="month"`, `DataGrid` con chips de estado y modales propios (clases `mv-*`); ítem de menú con icono **sliders**; hint en Haberes enlaza a esta ruta.
 - **Archivos:** `src/app/features/movimientos-variables/containers/movimientos-variables-container/*`, `src/app/pages/movimientos-variables.page.ts`, `src/app/app.routes.ts`, `src/app/layout/sidebar.component.ts`, `src/app/features/haberes-descuentos/containers/haberes-descuentos-container/haberes-descuentos-container.{html,css,ts}`.
 
-### 2026-05-03 (Fase 9.3B.1 — Navegacion dominio Remuneraciones)
+### 2026-05-03 (Fase 9.3B.1 - Navegacion dominio Remuneraciones)
 
 - **Modulo:** Remuneraciones (rutas y menu lateral).
 - **Cambio:** rutas oficiales bajo `/remuneraciones/*` para Conceptos, Haberes y descuentos, Proceso mensual y Liquidaciones; orden de items en sidebar alineado a ese dominio.
@@ -59,18 +59,18 @@
 Registro cronológico de mejoras visuales aplicadas por petición, con foco en **trazabilidad** (qué se tocó y dónde),
 sin mezclarlo con las reglas base.
 
-### 2026-05-03 (Haberes — copy alineación asignables 9.2C)
+### 2026-05-03 (Haberes - copy alineación asignables 9.2C)
 
 - **Cabecera `/remuneraciones/haberes-descuentos`**: el párrafo `hd-lead` aclara que el selector de concepto respeta la misma regla de asignabilidad que el catálogo Conceptos (sin cambio de layout).
   - `src/app/features/haberes-descuentos/containers/haberes-descuentos-container/haberes-descuentos-container.html`
 
-### 2026-05-03 (Conceptos — detalle 9.2B)
+### 2026-05-03 (Conceptos - detalle 9.2B)
 
 - **Modal de detalle** (`/remuneraciones/conceptos`): overlay con `cr-detalle-root`; cuerpo con scroll (`max-height` + flex), **footer fijo** (Cerrar + Editar condicional); secciones con títulos `cr-detalle-section-title`; listas de motivos y bloqueos en tipografía compacta.
 - **Chips de vigencia**: variante **inválida** (fechas incoherentes) con estilo distintivo `.hd-chip--vig-invalid`.
   - `src/app/features/haberes-descuentos/containers/conceptos-remuneracion-container/*`
 
-### 2026-05-02 (Conceptos — listado 9.2A)
+### 2026-05-02 (Conceptos - listado 9.2A)
 
 - **Catálogo `/remuneraciones/conceptos`**: cabecera con texto de catálogo maestro (sin prometer cálculo de liquidaciones); grilla con columnas Nombre → Código → Tipo → LRE → Vigencia → Origen → Cálculo → Asignable; chips de vigencia (ok / futuro / vencido / no vigente); chips Origen (Sistema, Protegido, Usuario); texto **LRE no asignado** en gris; filtros en rejilla `auto-fit` compacta; acción **Revisar** con ícono ojo.
   - `src/app/features/haberes-descuentos/containers/conceptos-remuneracion-container/*`
@@ -177,20 +177,20 @@ sin mezclarlo con las reglas base.
   - `src/app/features/parametros-generales/components/tabs/parametros-reforma-tab.component.ts`
   - `src/app/features/parametros-generales/components/tabs/parametros-ccaf-mutuales-tab.component.ts`
 
-### 2026-05-01 (Tablas ERP — estándar transversal)
+### 2026-05-01 (Tablas ERP - estándar transversal)
 
 - **Estándar oficial de tablas/DataGrid**: se documentó qué mostrar/no mostrar, orden de columnas, formatos de fechas/montos/porcentajes/vacíos, filtros, toolbar, loading, empty states, paginación, acciones y responsive.
   - `docs/codex/ui-tables.md`
   - `docs/codex/README.md`
   - `docs/codex/estilos/README.md`
-- **Defaults de DataGrid**: valores vacíos pasan a `—`, booleanos a `Sí/No` y fechas sin formateador explícito a formato local consistente, manteniendo loading/scroll dentro del componente.
+- **Defaults de DataGrid**: valores vacíos pasan a `-`, booleanos a `Sí/No` y fechas sin formateador explícito a formato local consistente, manteniendo loading/scroll dentro del componente.
   - `src/app/shared/components/ui/data-grid.component.ts`
 - **Aplicación inicial**: Haberes y descuentos reduce columnas visibles a valor operativo único (monto/porcentaje), fechas con formato local y columnas secundarias ocultas; Conceptos oculta origen técnico por defecto, muestra modo Automático/Manual, estado Vigente/No vigente y vigencias; Parámetros normaliza vacío, CLP, porcentaje y fechas.
   - `src/app/features/haberes-descuentos/containers/haberes-descuentos-container/haberes-descuentos-container.ts`
   - `src/app/features/haberes-descuentos/containers/conceptos-remuneracion-container/conceptos-remuneracion-container.{ts,html}`
   - `src/app/pages/parametros.page.ts`
 
-### 2026-05-01 (Parámetros — hints y empty states por vigencia vs período)
+### 2026-05-01 (Parámetros - hints y empty states por vigencia vs período)
 
 - **Copy alineado a datos reales**: se evita culpar al “mes seleccionado” cuando la grilla es catálogo global o listado por solape de vigencia; se aclara gradualidad 8,5 % como normativa por vigencia.
   - `src/app/features/parametros-generales/components/tabs/parametros-ccaf-mutuales-tab.component.ts`
@@ -203,7 +203,7 @@ sin mezclarlo con las reglas base.
   - `docs/codex/modulos/parametros/periodo-vigencia-catalogo.md` (histórico: `docs/codex/temas/parametros-vigencia-y-periodo.md`)
   - `docs/codex/README.md`
 
-### 2026-05-01 (Parámetros del sistema — Fase 2.5 pulido visual menor)
+### 2026-05-01 (Parámetros del sistema - Fase 2.5 pulido visual menor)
 
 - **Tabs principales con scroll interno más intencional**: se amplió el respiro lateral y `scroll-padding-inline` de `nav.folder-tabs`, se mantuvo el auto-centrado del tab activo y se agregó un fade lateral sutil desde el contenedor para sugerir scroll sin tapar texto.
   - `src/app/pages/parametros.page.ts`
@@ -226,10 +226,10 @@ sin mezclarlo con las reglas base.
 
 - **Tipografía**: jerarquía alineada a `ui-form-guidelines.md` (`--erp-text-xs/sm/md`, `--erp-title-sm/md`) en hero, revisión por bloque, rejilla de datos y panel lateral.
 - **Fondo**: página/host `#f8fafc`; títulos y franjas con barra `#f8fafc` (`section-head`, `detail-block-head`, cabecera `file-status-card`, franja tabs `file-tabs-wrap`, resumen superior `file-sheet-head`).
-- **Iconos**: tamaños 14–16px (toolbar 14px, revisión/sección/título estado); Lucide `ClipboardList`, `FolderOpen`, `Activity` en Encabezados.
+- **Iconos**: tamaños 14-16px (toolbar 14px, revisión/sección/título estado); Lucide `ClipboardList`, `FolderOpen`, `Activity` en Encabezados.
 - **Archivos**: `ficha-empleado-container.{html,css,ts}`.
 
-### 2026-04-29 (Ficha de Empleado — ajuste fino)
+### 2026-04-29 (Ficha de Empleado - ajuste fino)
 
 - **Secciones**: sin íconos en cabeceras de bloque; títulos sólo texto sobre franja gris.
 - **Editar**: botón por sección más ligero (peso 500, `--erp-text-xs`), sin ícono; alineado a la derecha (`margin-left: auto`).
@@ -249,7 +249,7 @@ sin mezclarlo con las reglas base.
     - `bd/base/README.md`
     - `bd/base/v11/README.md`
 
-### 2026-04-30 (Creación básica — ficha en proceso)
+### 2026-04-30 (Creación básica - ficha en proceso)
 
 - **Creación básica más clara y consistente**: se unificó el lenguaje a **empleado** en el modo básico, se cambió el CTA a **“Guardar ficha básica”**, se corrigieron acentos/copy, se agregó aviso informativo sutil del alcance, y se reordenaron secciones para separar **Contacto** como bloque propio. Además se corrigió el patrón de layout para evitar formularios demasiado anchos: **máximo 4 columnas en desktop (2 tablet, 1 móvil)** y secciones de 2 campos con **ancho contenido** (sin grilla 8 columnas). Finalmente se balanceó el layout para evitar vacío lateral: wrapper centrado **~1120px** y “Datos personales + Contacto” en **2 columnas** en desktop.
   - `src/app/features/empleados/components/form-empleado/form-empleado.{ts,html,css}`
@@ -261,43 +261,43 @@ sin mezclarlo con las reglas base.
   - Pulido de jerarquía: se eliminó el texto pequeño duplicado “Creación básica” dentro del bloque y el label quedó como “Pasaporte (opcional)”.
   - Alineación: el header interno “Creación básica [En proceso]” se alineó al mismo eje (`max-width`) que el formulario para evitar desconexión visual.
 
-### 2026-04-30 (Listado empleados — acción integrada)
+### 2026-04-30 (Listado empleados - acción integrada)
 
 - **Acción “Crear empleado” integrada al DataGrid**: el CTA se movió al header del `app-data-grid` (patrón de `conceptos-remuneracion`), con menú Básico/Avanzado desplegable desde el mismo botón.
   - `src/app/features/empleados/containers/listado-empleados-container/listado-empleados-container.{html,ts}`
   - `src/app/features/empleados/components/tabla-empleados/tabla-empleados.{html,ts,css}`
 
-### 2026-04-30 (Conceptos remuneración — toolbar)
+### 2026-04-30 (Conceptos remuneración - toolbar)
 
 - **Se quitó “Refrescar” del header de página** para evitar duplicidad: queda solo el refresco del `app-data-grid`.
   - `src/app/features/haberes-descuentos/containers/conceptos-remuneracion-container/conceptos-remuneracion-container.{html,ts}`
 
-### 2026-04-30 (DataGrid — filtro rango fechas)
+### 2026-04-30 (DataGrid - filtro rango fechas)
 
 - **Filtro rango fecha más claro y seguro**: labels visibles “Desde/Hasta” (sin depender de placeholder), validación para impedir “Hasta < Desde”, acción “Limpiar” del rango, y soporte opcional `disallowFuture` para evitar fechas futuras (ej. fecha real de ingreso).
   - `src/app/shared/components/ui/data-grid.component.ts`
   - `src/app/features/empleados/components/tabla-empleados/tabla-empleados.ts`
 
-### 2026-04-30 (Listado empleados — filtros sin chips)
+### 2026-04-30 (Listado empleados - filtros sin chips)
 
 - **Fila de chips de filtros activos parametrizable**: se agregó `filterChipsDisplay` al `app-data-grid` y en empleados se configuró para que los chips solo aparezcan si los filtros están ocultos (evita duplicidad).
   - `src/app/shared/components/ui/data-grid.component.ts`
   - `src/app/features/empleados/components/tabla-empleados/tabla-empleados.html`
 
-### 2026-04-30 (DataGrid — filtros vs columnas ocultas)
+### 2026-04-30 (DataGrid - filtros vs columnas ocultas)
 
 - **Filtros consistentes al ocultar columnas**: `visibleFilters` ya no “revive” filtros de columnas ocultas como standalone; ahora respeta `column.showFilterWhenHidden` y limpia automáticamente el filtro al ocultar una columna si no debe mantenerse.
   - `src/app/shared/components/ui/data-grid.component.ts`
   - `src/app/features/empleados/components/tabla-empleados/tabla-empleados.ts`
 
-### 2026-04-30 (Listado empleados — empty state y header)
+### 2026-04-30 (Listado empleados - empty state y header)
 
 - **Empty states contextuales + contador claro**: en empleados se diferenció “sin empleados” vs “sin resultados por filtros”, el header muestra `· N resultados` y opcional `· N filtros activos`, y el empty state se posicionó más arriba para evitar un centro vacío gigante. Botones: `Limpiar` se deshabilita si no hay filtros; `Aplicar` solo es primario/habilitado cuando hay cambios pendientes.
   - `src/app/shared/components/ui/data-grid.component.ts`
   - `src/app/features/empleados/components/tabla-empleados/tabla-empleados.{html,css}`
   - `src/app/features/empleados/containers/listado-empleados-container/listado-empleados-container.ts`
 
-### 2026-04-30 (Listado empleados — popover crear empleado)
+### 2026-04-30 (Listado empleados - popover crear empleado)
 
 - **Popover “Crear empleado” anclado al botón**: el dropdown ahora se renderiza dentro del header del `app-data-grid` (anclado al CTA), no se dispara desde “Buscar”, y se cierra por click fuera, Escape, selección o navegación.
   - `src/app/shared/components/ui/data-grid.component.ts`
@@ -306,10 +306,10 @@ sin mezclarlo con las reglas base.
 - **Pulido visual del popover**: header con título en casing normal, sombra liviana, separador sutil, opciones 100% clickeables, hover suave e ícono “+” a la derecha dentro de contenedor.
   - `src/app/features/empleados/components/tabla-empleados/tabla-empleados.{html,css}`
 
-- **Ajuste final de ancho/offset**: popover en ~296px (rango 280–300) y separación de 8px bajo el botón, manteniendo `max-width` responsivo.
+- **Ajuste final de ancho/offset**: popover en ~296px (rango 280-300) y separación de 8px bajo el botón, manteniendo `max-width` responsivo.
   - `src/app/features/empleados/components/tabla-empleados/tabla-empleados.css`
 
-### 2026-04-30 (Creación avanzada — maquetación limpia)
+### 2026-04-30 (Creación avanzada - maquetación limpia)
 
 - **Creación avanzada alineada a patrón de creación básica** (sin tocar lógica): se aplicó **ancho controlado** (~1120px) con header interno alineado al eje del formulario, y se agregó un encabezado liviano “Datos completos del empleado” con descripción del alcance del alta avanzada.
   - `src/app/features/empleados/components/form-empleado/form-empleado.{ts,html,css}`
@@ -326,7 +326,7 @@ sin mezclarlo con las reglas base.
   - Ajuste UX: se agregó encabezado contextual del paso (**“Paso X de 9 · …”** + descripción breve) y se ocultó la scrollbar del stepper para que el overflow horizontal se sienta más limpio.
   - **Wrapper estable del wizard avanzado**: se creó una estructura de layout con clases dedicadas (`advanced-create-shell/inner`, `advanced-wizard-layout`, `advanced-wizard-map`, `advanced-wizard-content`, `advanced-wizard-footer`) para centralizar la maquetación del flujo avanzado y evitar ajustes aislados por bloque. En desktop se habilita el panel lateral **“Mapa de ficha”** (2 columnas) y en tablet/móvil se oculta para mantener lectura en una columna.
 
-### 2026-05-01 (Parámetros del sistema — Fase 2 layout fino)
+### 2026-05-01 (Parámetros del sistema - Fase 2 layout fino)
 
 - **Tabs principales sin cortes**: el tab activo se auto-centrará dentro del scroll interno de `nav.folder-tabs` al cambiar de pestaña; se ajustó `scroll-padding`/padding para evitar recortes por borde.
   - `src/app/pages/parametros.page.ts`
@@ -428,7 +428,7 @@ sin mezclarlo con las reglas base.
 - **Grillas proporcionales del Paso 5**: cargas/tramo/valor se alinean en desktop, zona extrema separa decision/territorio/porcentaje, y semana corrida usa selector de dias compacto sin inflar altura interna.
   - `src/app/features/empleados/components/secciones/contrato/contrato.css`
 
-### 2026-04-30 (Creación avanzada — Paso 5 ajuste fino)
+### 2026-04-30 (Creación avanzada - Paso 5 ajuste fino)
 
 - **Asignación familiar**: etiqueta “Cargas” más corta, “Tabla vigente” pasa a chip discreto, y “Valor por carga” refuerza estilo de dato calculado (readonly con borde punteado).
   - `src/app/features/empleados/components/secciones/contrato/contrato.html`
@@ -438,7 +438,7 @@ sin mezclarlo con las reglas base.
 - **Eje consistente del Paso 5**: los contenedores `grid` de Asignación familiar / Zona extrema / Semana corrida usan el mismo ancho máximo para evitar saltos visuales entre bloques.
   - `src/app/features/empleados/components/secciones/contrato/contrato.css`
 
-### 2026-04-30 (Creación avanzada — layout wizard ajuste fino)
+### 2026-04-30 (Creación avanzada - layout wizard ajuste fino)
 
 - **Paso X**: se eliminó la caja informativa repetida bajo el subtítulo del paso; queda solo “Paso X de 9 · Nombre” + subtítulo breve.
   - `src/app/features/empleados/components/form-empleado/form-empleado.html`
@@ -555,21 +555,21 @@ sin mezclarlo con las reglas base.
 - **Separacion superior contenida**: se reduce el gap entre la cabecera avanzada y el cuerpo del wizard para evitar una banda vacia entre ambos bloques.
   - `src/app/features/empleados/components/form-empleado/form-empleado.css`
 
-### 2026-04-30 (Creacion basica — flujo dedicado y pie de pagina)
+### 2026-04-30 (Creacion basica - flujo dedicado y pie de pagina)
 
 - **Diferenciacion clara vs avanzada**: titulo "Creacion basica", badge de modo **Básica**, subtitulo corto, callout compacto "Alta rapida" con **Resultado: ficha en proceso**, panel lateral informativo de pendientes (no mapa de 9 pasos), y **footer** al pie con copy + boton **Guardar ficha basica** (el guardado en header se unifica al pie como en el wizard avanzado).
 - **Limpieza**: eliminado bloque muerto `isBasicMode()` dentro del contenido del wizard avanzado; modal de exito basico sin mensaje de "listo para liquidar" prematuro.
   - `src/app/features/empleados/components/form-empleado/form-empleado.{html,css,ts}`
 - **Pruebas E2E**: `tests/empleados-basic-create.spec.ts` (aserciones + captura opcional `.basic-create-page`).
 
-### 2026-04-30 (Creacion basica — solo formulario y CTA en cabecera)
+### 2026-04-30 (Creacion basica - solo formulario y CTA en cabecera)
 
 - **Sin panel "Estado de la ficha"**: layout de una columna (callout + formulario). **Guardar ficha basica** de nuevo en **cabecera** junto a Volver (`headerVisibleActions` solo en modo basico).
 - **Cabecera en grilla**: titulo/subtitilo alineados a la izquierda, botonera a la derecha; subtitulo sin mayusculas forzadas (anula herencia de `.summary-person p`). Sin `footer.editor-footer--basic`.
   - `src/app/features/empleados/components/form-empleado/form-empleado.{html,css,ts}`
   - `tests/empleados-basic-create.spec.ts`
 
-### 2026-05-01 (Creacion basica — distribucion y resumen en fila)
+### 2026-05-01 (Creacion basica - distribucion y resumen en fila)
 
 - **Eje comun**: `basic-create-shell` + `basic-create-inner` (`max-width: min(68rem, 100%)`) alinean **cabecera**, **resumen** y **formulario**; la pagina ya no fuerza 80rem con contenido mas angosto.
 - **Resumen en desktop**: `.basic-create-summary` en **dos columnas** (Alta rapida + Pendiente); en mobile una columna.
@@ -578,7 +578,7 @@ sin mezclarlo con las reglas base.
   - `src/app/features/empleados/components/form-empleado/form-empleado.{html,css}`
   - `src/app/features/empleados/components/secciones/datos-personales/datos-personales.css`
 
-### 2026-04-30 (Wizard avanzado — navegacion en cabecera del paso)
+### 2026-04-30 (Wizard avanzado - navegacion en cabecera del paso)
 
 - **Anterior / Siguiente / Finalizar alta** en la zona superior derecha del **contenido del paso** (`.advanced-step-header`), alineados con kicker + descripcion; **Volver** sigue solo en el header global de "Creacion avanzada".
 - **Sin duplicar**: eliminado `footer.advanced-wizard-footer` con los mismos botones; se conserva una **pista compacta** (`.advanced-step-hint`) bajo la fila principal.
@@ -587,7 +587,7 @@ sin mezclarlo con las reglas base.
   - `src/app/features/empleados/components/form-empleado/form-empleado.{html,css,ts}`
   - `tests/empleados-wizard-stability.spec.ts` (offset de `.advanced-step-actions` respecto a `.advanced-wizard-content` + ancho del contenido)
 
-### 2026-05-01 (Creacion basica — ajuste fino visual)
+### 2026-05-01 (Creacion basica - ajuste fino visual)
 
 - **Callout**: titulo + texto breve; **resultado** como chip (`.basic-create-result-chip`); borde uniforme sin acento lateral grueso.
 - **Textos secundarios**: leads mas cortos en identificacion, nombre y contacto (modo basico).
@@ -595,19 +595,19 @@ sin mezclarlo con las reglas base.
   - `src/app/features/empleados/components/secciones/datos-personales/datos-personales.html`
   - `tests/empleados-basic-create.spec.ts`
 
-### 2026-04-30 (Creacion basica — card unica de resumen superior)
+### 2026-04-30 (Creacion basica - card unica de resumen superior)
 
 - **Unificacion**: se eliminan las dos cards separadas (Alta rapida + Pendiente por completar) y se integra todo en **una** `.basic-create-summary-card` al mismo ancho que `.basic-create-inner`.
 - **Estructura**: fila cabecera (titulo **Alta rapida de empleado** + chip estado **Ficha en proceso**), texto **Solo se guardan los datos minimos para abrir la ficha.**, fila **Pendiente desde la ficha:** con chips compactos (Contrato y organizacion, Jornada y remuneracion, Prevision y salud, Banco); sin texto tecnico **Resultado**, sin lista larga ni aspecto wizard.
 - **Padding**: `14px 16px` en la card informativa; chip estado con estilo informativo (no error).
 - **Archivos**: `src/app/features/empleados/components/form-empleado/form-empleado.{html,css}`, `tests/empleados-basic-create.spec.ts`.
 
-### 2026-05-01 (Creacion avanzada — Guardar borrador en cabecera)
+### 2026-05-01 (Creacion avanzada - Guardar borrador en cabecera)
 
 - **Acciones**: boton secundario **Guardar borrador** antes de **Volver** en cabecera avanzada; fila `.summary-actions--advanced` con `gap` 8px; mensaje breve `.advanced-draft-feedback` tras guardado (no toast global).
 - **Archivos**: `src/app/features/empleados/components/form-empleado/form-empleado.{html,css}`.
 
-### 2026-05-01 (Parametros del sistema — normalizacion visual de estado, unidades y grillas)
+### 2026-05-01 (Parametros del sistema - normalizacion visual de estado, unidades y grillas)
 
 - **Estado del periodo**: banda compacta con chips **Sin datos / Cargado / Editando / Solo lectura** y “Acción sugerida” (Crear / Modificar / Guardar / Consultar) coherente con el periodo seleccionado.
   - `src/app/pages/parametros.page.ts`
@@ -621,11 +621,36 @@ sin mezclarlo con las reglas base.
 - **CCAF y mutual**: configuracion con ancho contenido (`max-width`) para evitar panel vacio cuando hay pocos campos.
   - `src/app/features/parametros-generales/components/tabs/parametros-ccaf-mutuales-tab.component.ts`
 
-### 2026-04-30 (Creacion basica — compactacion card resumen y panel)
+### 2026-04-30 (Creacion basica - compactacion card resumen y panel)
 
-- **Card resumen**: padding `12px 16px`; menos espacio entre titulo, lead, separador y pendientes (`margin`/`padding` en 6–8px); cabecera con **align-items: baseline** y chip un poco mas bajo en altura (`padding` vertical 2px) para alinear con el titulo sin sensacion flotante.
+- **Card resumen**: padding `12px 16px`; menos espacio entre titulo, lead, separador y pendientes (`margin`/`padding` en 6-8px); cabecera con **align-items: baseline** y chip un poco mas bajo en altura (`padding` vertical 2px) para alinear con el titulo sin sensacion flotante.
 - **Stack**: `gap` entre resumen y formulario de 12px a **8px** (token).
 - **Panel blanco**: `.basic-create-form .step-panel.step-panel--basic.basic-wizard` con **padding 12px** (override del 16px global del paso) solo en modo basico.
 - **Archivo**: `src/app/features/empleados/components/form-empleado/form-empleado.css`.
 
 
+### 2026-05-05 (Proceso mensual - pre-nomina funcional 9.5C)
+
+- **Modulo:** Remuneraciones / Proceso mensual (`/remuneraciones/proceso-mensual`).
+- **Cambio:** bloque **Pre-nomina del periodo** dentro de Revision previa con estado, accion **Generar pre-nomina** y conteos de trabajadores, recurrentes y movimientos variables.
+- **Sin valores normativos ni montos:** la UI muestra trazabilidad y estado, no calculo de remuneraciones.
+- **Archivos:** `src/app/features/nomina-mensual/containers/proceso-mensual-container/proceso-mensual-container.{html,ts}`.
+
+### 2026-05-05 (MOTOR-01 - Calculo preliminar en Proceso mensual)
+
+- **Modulo:** Remuneraciones / Proceso mensual (`/remuneraciones/proceso-mensual`).
+- **Cambio:** bloque **Calculo preliminar** dentro de Revision previa con accion **Calcular preliminar**, resumen de trabajadores calculados/bloqueados/con advertencias y totales preliminares; tabla simple por trabajador con haberes, descuentos, bases, liquido, estado e issues.
+- **Sin redisenar pantalla:** se reutiliza estructura existente con Tailwind y componentes `app-button`/`app-card`; no hay CSS global ni cambios de layout base.
+- **Archivos:** `src/app/features/nomina-mensual/containers/proceso-mensual-container/proceso-mensual-container.{html,ts}`.
+
+### 2026-05-05 (MOTOR-02 - Columnas legales en calculo preliminar)
+
+- **Modulo:** Remuneraciones / Proceso mensual (`/remuneraciones/proceso-mensual`).
+- **Cambio:** tabla de **Calculo preliminar** agrega columnas **Gratificacion** e **Impuesto unico** para exponer las reglas legales avanzadas del motor.
+- **Sin redisenar pantalla:** se mantiene el mismo bloque, tabla y scroll horizontal existente; no hay CSS nuevo.
+- **Archivos:** `src/app/features/nomina-mensual/containers/proceso-mensual-container/proceso-mensual-container.html`.
+# 2026-05-06 - MOTOR-03B snapshot preliminar
+
+- Se agrega en `/remuneraciones/proceso-mensual` una seccion minima **Snapshot preliminar** con acciones para guardar, ver activo y recalcular/reemplazar.
+- Cambio acotado: sin rediseno de pantalla, sin nuevas paletas, sin inflar cards ni cambiar el layout general.
+- Copy obligatorio visible: el snapshot no cierra periodo ni genera liquidacion oficial, PDF, Previred ni LRE.
