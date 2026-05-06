@@ -353,15 +353,8 @@ function resolverEstado(
   if (!grupos.oficialesMensuales.completo || !grupos.configuracionCliente.completo || !grupos.vigencias.completo) {
     return 'parcial';
   }
-  if (diferencias.length > 0 || !grupos.consistencia.completo) {
-    return 'cargado';
-  }
-  if (estadoPeriodo === 'cerrado') {
-    return 'cerrado';
-  }
-  if (estadoPeriodo === 'corregido') {
-    return 'corregido';
-  }
+  // Diferencias se permiten sin bloquear (se manejan en UI)
+  // El estado del mes respeta siempre periodo_remuneracion.estado si es cerrado/corregido
   return 'cargado';
 }
 

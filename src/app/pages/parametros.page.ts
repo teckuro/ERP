@@ -1748,18 +1748,18 @@ export class ParametrosPage implements OnInit {
       case 'error':
         return 'No se completó la carga mensual. Revisa el detalle de carga.';
       case 'editando':
-        return 'Guarda para persistir la configuración cliente del período.';
+        return 'Configuración guardada con pendientes. Pueden completarse valores de fin de mes.';
       case 'cargado':
-        return this.completitudDetalle('Datos oficiales y configuracion cliente cargados; falta confirmacion final si hay diferencias.');
+        return this.completitudDetalle('Datos cargados. Si hay diferencias entre oficial y tu configuración, puedes revisar y actualizar.');
       case 'corregido':
-        return this.completitudDetalle('Datos revisados por flujo controlado.');
+        return 'Datos revisados por flujo controlado.';
       case 'cerrado':
-        return this.completitudDetalle('Periodo validado con datos oficiales, configuracion cliente y vigencias aplicables.');
+        return 'Período cerrado. No se permite edición sin flujo de reapertura.';
       case 'parcial':
-        return this.completitudDetalle('Hay datos, pero faltan configuraciones o vigencias aplicables.');
+        return this.completitudDetalle('Período preparado. Faltan datos oficiales mensuales o vigencias, pero puedes guardar configuración cliente.');
       case 'pendiente':
       default:
-        return this.completitudDetalle('No existe base minima completa del periodo.');
+        return this.completitudDetalle('Datos oficiales pendientes de carga. Vigencias y catálogos siguen disponibles para consulta.');
     }
   });
 
@@ -1803,8 +1803,14 @@ export class ParametrosPage implements OnInit {
 
   private completitudDetalle(base: string): string {
     const completitud = this.completitudParametros();
-    const pendiente = completitud.errores[0] ?? completitud.pendientes[0] ?? completitud.advertencias[0] ?? '';
-    return pendiente ? `${base} Completitud ${completitud.porcentaje}%. ${pendiente}` : `${base} Completitud ${completitud.porcentaje}%.`;
+    // Si está parcial o pendiente, no mostrar "100%"
+    if (this.periodoCargaEstado() === 'parcial' || this.periodoCargaEstado() === 'pendiente') {
+      const pendiente = completitud.pendientes[0] ?? completitud.advertencias[0] ?? '';
+      return pendiente ? `${base} ${pendiente}` : base;
+    }
+    // Si está cargado, mostrar % y diferencias si existen
+    const pendiente = completitud.errores[0] ?? completitud.advertencias[0] ?? '';
+    return pendiente ? `${base} ${pendiente}` : base;
   }
 
   readonly yearOptions = computed(() => {
@@ -2537,15 +2543,18 @@ export class ParametrosPage implements OnInit {
 
   private mostrarDecisionConfigCliente(): void {
     const periodo = this.selectedPeriodo();
+    const hasOficiales = this.parametrosOficiales()?.periodo === periodo;
+    
     this.dialogState.set({
-      kind: 'confirmar-config-cliente',
+      kind: 'confirmar-config-cliente-extendido',
       variant: 'info',
-      title: 'Crear configuracion cliente',
-      message: 'No existe configuracion propia del cliente para el periodo seleccionado.',
-      detail: `Periodo: ${periodo}\nPuedes crearla desde cero o usar la ultima configuracion cliente disponible como base. No se guardara nada hasta confirmar Guardar.`,
+      title: 'Configurar período',
+      message: 'No existe configuración propia del cliente para este período.',
+      detail: `Período: ${periodo}\nElige cómo iniciar la configuración del cliente.`,
       primaryLabel: 'Crear desde cero',
-      secondaryLabel: 'Usar ultima disponible',
-      tertiaryLabel: 'Cancelar',
+      secondaryLabel: 'Usar última disponible',
+      tertiaryLabel: hasOficiales ? 'Usar valores oficiales' : null,
+      fourthLabel: 'Cancelar',
     });
     this.cdr.markForCheck();
   }
