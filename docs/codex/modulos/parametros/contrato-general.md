@@ -23,6 +23,15 @@ El estado visual de Parametros no debe depender solo de `periodo_remuneracion.es
 
 `parametros_generales` es snapshot oficial mensual y sirve para comparacion. El guardado normal de Parametros persiste configuracion cliente; no debe sobrescribir el snapshot oficial central. Cuando existan diferencias oficial/cliente se marca advertencia y no se considera cerrado hasta que exista confirmacion o flujo controlado.
 
+## Flujo operativo UI
+
+- Guardar en Parametros no cierra periodo: solo persiste `parametros_generales_cliente`.
+- Mostrar referencia anterior no carga el mes y no suma completitud oficial.
+- Usar referencia anterior como base crea/prepara una configuracion cliente del periodo actual solo despues de que el usuario confirme y guarde.
+- Carga oficial mensual sigue viniendo por Python o accion mensual controlada sobre `parametros_generales` y tablas mensuales.
+- Si llegan oficiales despues de configurar cliente y existen diferencias, la UI marca `Pendiente de reconciliacion` y permite actualizar `parametros_generales_cliente` con oficiales, mantener la configuracion o revisar despues. La decision queda persistida de forma minima en `parametros_generales_cliente`; no modifica `parametros_generales` ni incorpora auditoria avanzada.
+- El cierre completo y la validacion final de periodo quedan fuera de esta fase.
+
 ## Documentos de detalle
 
 | Tema | Archivo |

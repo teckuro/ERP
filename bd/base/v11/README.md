@@ -26,6 +26,10 @@ Estados validos:
 
 5. Para snapshots preliminares de nomina mensual, ejecutar `partes/15_nomina_calculo_snapshot.sql` una vez en ambientes revisados. El script es incremental/idempotente y no cierra periodos ni crea liquidaciones oficiales.
 
+6. Para bases creadas antes de persistir la reconciliacion de Parametros, ejecutar `partes/17_parametros_reconciliacion_cliente.sql` una vez. Agrega solo metadatos a `parametros_generales_cliente`; no modifica `parametros_generales`.
+
+7. Para bases creadas antes del modelo base de Novedades mensuales, ejecutar `partes/18_novedades_mensuales.sql` una vez. Crea `novedad_remuneracion_periodo` con relaciones a periodo, persona, contrato opcional y concepto; no implementa UI, motor ni liquidaciones.
+
 `12_migracion_lre_datos_incremental.sql` requiere que existan `persona`/`contrato` con IDs coherentes si se dejan los datos demo.
 
 ### Orden de ejecucion fresh local (`partes/`)
@@ -45,6 +49,8 @@ Estados validos:
 13. `13_persona_paso_alta_avanzada.sql`: soporte para continuar alta avanzada.
 14. `14_movimiento_variable_mensual.sql`: tabla movimientos variables mensuales (Fase 9.4C); solo para BD ya creada sin pasar por `02_tablas.sql` actualizado (idempotente).
 15. `15_nomina_calculo_snapshot.sql`: tablas de snapshots preliminares de nomina mensual (MOTOR-03B/MOTOR-03C), sin liquidacion oficial ni cierre.
+16. `17_parametros_reconciliacion_cliente.sql`: columnas de decision de reconciliacion en `parametros_generales_cliente`.
+17. `18_novedades_mensuales.sql`: tabla base `novedad_remuneracion_periodo` para hechos del periodo, sin calculo ni resultado de liquidacion.
 
 ### Ejecucion fresh local
 

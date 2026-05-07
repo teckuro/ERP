@@ -4,8 +4,14 @@ import type {
   ParametrosGeneralesClienteConfig,
   PeriodoRemuneracionEstadoInfo,
 } from '../models/parametro-general.model';
+import { describe, expect, it } from 'vitest';
 
-import { evaluarCompletitudParametrosMensual } from './parametros-completitud.rules';
+import {
+  crearClienteConfigDesdeOficiales,
+  evaluarCompletitudParametrosMensual,
+  resolverEstadoVisualParametros,
+  resolverOpcionesBaseConfigCliente,
+} from './parametros-completitud.rules';
 
 describe('parametros-completitud.rules', () => {
   const periodo = '2026-05';
@@ -23,6 +29,19 @@ describe('parametros-completitud.rules', () => {
     expect(resultado.porcentaje).toBe(100);
     expect(resultado.pendientes).toEqual([]);
     expect(resultado.diferencias).toEqual([]);
+  });
+
+  it('mantiene estado corregido cuando el periodo esta completo y sin diferencias', () => {
+    const resultado = evaluarCompletitudParametrosMensual({
+      periodo,
+      periodoRemuneracion: periodoInfo('corregido'),
+      oficial: parametroOficial(),
+      clienteConfig: clienteConfig(),
+      catalogos: catalogosCompletos(),
+    });
+
+    expect(resultado.estadoCalculado).toBe('corregido');
+    expect(resultado.porcentaje).toBe(100);
   });
 
   it('queda parcial si existen datos oficiales pero falta configuracion cliente', () => {
@@ -51,6 +70,28 @@ describe('parametros-completitud.rules', () => {
     expect(resultado.estadoCalculado).toBe('pendiente');
     expect(resultado.grupos.oficialesMensuales.completo).toBe(false);
     expect(resultado.pendientes).toContain('Faltan datos oficiales mensuales del periodo.');
+  });
+
+  it('no marca cargado ni 100% cuando la UI muestra referencia anterior pero los oficiales actuales faltan', () => {
+    const catalogosActuales = catalogosCompletos();
+    catalogosActuales.tramosCarga = [];
+    catalogosActuales.tramosImpuesto = [];
+    catalogosActuales.tablaImpuestoUnico = [];
+    catalogosActuales.ley16744Parametros = [];
+
+    const resultado = evaluarCompletitudParametrosMensual({
+      periodo,
+      periodoRemuneracion: periodoInfo('parcial'),
+      oficial: null,
+      clienteConfig: clienteConfig(),
+      catalogos: catalogosActuales,
+    });
+
+    expect(resultado.estadoCalculado).toBe('pendiente');
+    expect(resultado.porcentaje).toBeLessThan(100);
+    expect(resultado.grupos.oficialesMensuales.completo).toBe(false);
+    expect(resultado.pendientes).toContain('Faltan datos oficiales mensuales del periodo.');
+    expect(resultado.pendientes).toContain('Faltan tramos de carga familiar.');
   });
 
   it('valida trabajo pesado por solape de vigencia y no por fila mensual exacta', () => {
@@ -110,12 +151,206 @@ describe('parametros-completitud.rules', () => {
 
     expect(resultado.estadoCalculado).toBe('cargado');
     expect(resultado.grupos.consistencia.completo).toBe(false);
+    expect(resultado.reconciliacionPendiente).toBe(true);
     expect(resultado.diferencias).toEqual([
       { campo: 'uf', oficial: 38000, cliente: 40000 },
     ]);
     expect(resultado.advertencias).toContain(
       'Existen diferencias pendientes entre valores oficiales y configuracion cliente.',
     );
+  });
+
+  it('resuelve estado visual pendiente de reconciliacion cuando hay oficiales y diferencias', () => {
+    const estado = resolverEstadoVisualParametros({
+      estadoCalculado: 'cargado',
+      oficialActual: true,
+      clienteConfig: true,
+      referenciaAnterior: false,
+      diferencias: true,
+    });
+
+    expect(estado).toBe('pendiente_reconciliacion');
+  });
+
+  it('diferencias sin decision quedan pendientes de reconciliacion', () => {
+    const resultado = evaluarCompletitudParametrosMensual({
+      periodo,
+      periodoRemuneracion: periodoInfo('cargado'),
+      oficial: parametroOficial(),
+      clienteConfig: clienteConfig({ uf: 40000, estadoReconciliacionOficial: 'pendiente' }),
+      catalogos: catalogosCompletos(),
+    });
+
+    expect(resultado.diferencias).toHaveLength(1);
+    expect(resultado.reconciliacionPendiente).toBe(true);
+    expect(resultado.grupos.consistencia.completo).toBe(false);
+  });
+
+  it('actualizar con oficiales genera payload cliente actualizado sin mutar oficial', () => {
+    const oficial = parametroOficial({ uf: 38100 });
+    const actual = clienteConfig({ uf: 40000 });
+
+    const payload = crearClienteConfigDesdeOficiales(oficial, actual, periodo);
+
+    expect(payload.uf).toBe(38100);
+    expect(oficial.uf).toBe(38100);
+    expect(actual.uf).toBe(40000);
+  });
+
+  it('mantener mi configuracion conserva valores y persiste decision cliente_confirmado', () => {
+    const resultado = evaluarCompletitudParametrosMensual({
+      periodo,
+      periodoRemuneracion: periodoInfo('cargado'),
+      oficial: parametroOficial(),
+      clienteConfig: clienteConfig({ uf: 40000, estadoReconciliacionOficial: 'cliente_confirmado' }),
+      catalogos: catalogosCompletos(),
+    });
+
+    expect(resultado.diferencias).toEqual([{ campo: 'uf', oficial: 38000, cliente: 40000 }]);
+    expect(resultado.reconciliacionPendiente).toBe(false);
+    expect(resultado.grupos.consistencia.completo).toBe(true);
+    expect(resultado.advertencias).toEqual([]);
+  });
+
+  it('revisar despues mantiene pendiente la reconciliacion', () => {
+    const resultado = evaluarCompletitudParametrosMensual({
+      periodo,
+      periodoRemuneracion: periodoInfo('cargado'),
+      oficial: parametroOficial(),
+      clienteConfig: clienteConfig({
+        uf: 40000,
+        estadoReconciliacionOficial: 'pendiente',
+        origenReconciliacion: 'revisar_despues',
+      }),
+      catalogos: catalogosCompletos(),
+    });
+
+    expect(resultado.reconciliacionPendiente).toBe(true);
+    expect(resultado.advertencias).toContain(
+      'Existen diferencias pendientes entre valores oficiales y configuracion cliente.',
+    );
+  });
+
+  it('decision cliente_confirmado no se muestra como pendiente bloqueante', () => {
+    const resultado = evaluarCompletitudParametrosMensual({
+      periodo,
+      periodoRemuneracion: periodoInfo('cargado'),
+      oficial: parametroOficial(),
+      clienteConfig: clienteConfig({ uf: 40000, estadoReconciliacionOficial: 'cliente_confirmado' }),
+      catalogos: catalogosCompletos(),
+    });
+
+    const estado = resolverEstadoVisualParametros({
+      estadoCalculado: resultado.estadoCalculado,
+      oficialActual: true,
+      clienteConfig: true,
+      referenciaAnterior: false,
+      diferencias: resultado.reconciliacionPendiente,
+    });
+
+    expect(estado).toBe('cargado');
+  });
+
+  it('resuelve estado visual con referencia anterior sin tratarlo como cargado', () => {
+    const estado = resolverEstadoVisualParametros({
+      estadoCalculado: 'pendiente',
+      oficialActual: false,
+      clienteConfig: false,
+      referenciaAnterior: true,
+      diferencias: false,
+    });
+
+    expect(estado).toBe('referencia_anterior');
+  });
+
+  it('resuelve oficiales actuales sin configuracion como configuracion pendiente', () => {
+    const estado = resolverEstadoVisualParametros({
+      estadoCalculado: 'parcial',
+      oficialActual: true,
+      clienteConfig: false,
+      referenciaAnterior: false,
+      diferencias: false,
+    });
+
+    expect(estado).toBe('oficial_sin_config');
+  });
+
+  it('prioriza configuracion parcial sobre referencia cuando no hay oficiales actuales', () => {
+    const estado = resolverEstadoVisualParametros({
+      estadoCalculado: 'pendiente',
+      oficialActual: false,
+      clienteConfig: true,
+      referenciaAnterior: true,
+      diferencias: false,
+    });
+
+    expect(estado).toBe('configuracion_parcial');
+  });
+
+  it('resuelve sin base disponible cuando faltan oficiales, cliente y referencia', () => {
+    const estado = resolverEstadoVisualParametros({
+      estadoCalculado: 'pendiente',
+      oficialActual: false,
+      clienteConfig: false,
+      referenciaAnterior: false,
+      diferencias: false,
+    });
+
+    expect(estado).toBe('sin_base');
+  });
+
+  it('no ofrece usar referencia como base cuando no existe referencia anterior', () => {
+    const opciones = resolverOpcionesBaseConfigCliente({
+      ultimaConfigDisponible: false,
+      referenciaAnteriorDisponible: false,
+      oficialesActualesDisponibles: false,
+    });
+
+    expect(opciones).toEqual(['cero', 'cancelar']);
+    expect(opciones).not.toContain('referencia');
+  });
+
+  it('ofrece referencia anterior solo como opcion de base cuando esta disponible', () => {
+    const opciones = resolverOpcionesBaseConfigCliente({
+      ultimaConfigDisponible: true,
+      referenciaAnteriorDisponible: true,
+      oficialesActualesDisponibles: false,
+    });
+
+    expect(opciones).toEqual(['cero', 'ultima', 'referencia', 'cancelar']);
+  });
+
+  it('ofrece valores oficiales actuales sin mezclar referencia anterior', () => {
+    const opciones = resolverOpcionesBaseConfigCliente({
+      ultimaConfigDisponible: false,
+      referenciaAnteriorDisponible: false,
+      oficialesActualesDisponibles: true,
+    });
+
+    expect(opciones).toEqual(['cero', 'oficiales', 'cancelar']);
+  });
+
+  it('crea payload cliente desde oficiales sin modificar la fuente oficial', () => {
+    const oficial = parametroOficial({ periodo: '2026-05', uf: 38100 });
+    const actual = clienteConfig({
+      descuentosBasePorDia: true,
+      gratificacion: false,
+      immGratificacion: 3.5,
+      idCcafEntidad: 2,
+      idOrganismoAdministradorLey16744: 3,
+    });
+
+    const payload = crearClienteConfigDesdeOficiales(oficial, actual, '2026-05');
+
+    expect(payload.periodo).toBe('2026-05');
+    expect(payload.uf).toBe(38100);
+    expect(payload.descuentosBasePorDia).toBe(true);
+    expect(payload.gratificacion).toBe(false);
+    expect(payload.immGratificacion).toBe(3.5);
+    expect(payload.idCcafEntidad).toBe(2);
+    expect(payload.idOrganismoAdministradorLey16744).toBe(3);
+    expect(oficial.periodo).toBe('2026-05');
+    expect(oficial.uf).toBe(38100);
   });
 
   it('prioriza estado error ante falla tecnica o error de carga', () => {
@@ -203,6 +438,10 @@ function clienteConfig(
     immGratificacion: 4.75,
     idCcafEntidad: 1,
     idOrganismoAdministradorLey16744: 1,
+    estadoReconciliacionOficial: 'pendiente',
+    fechaReconciliacionOficial: null,
+    origenReconciliacion: null,
+    observacionReconciliacion: null,
     fechaActualizacion: '2026-05-01T00:00:00',
     ...overrides,
   };

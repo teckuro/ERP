@@ -2,11 +2,21 @@ import type {
   ParametroGeneral,
   ParametrosGeneralesCatalogos,
   ParametrosGeneralesClienteConfig,
+  ParametrosGeneralesClienteConfigUpsert,
   PeriodoRemuneracionEstado,
   PeriodoRemuneracionEstadoInfo,
 } from '../models/parametro-general.model';
 
 export type ParametrosCompletitudEstado = PeriodoRemuneracionEstado;
+export type ParametrosEstadoVisual =
+  | PeriodoRemuneracionEstado
+  | 'editando'
+  | 'pendiente_reconciliacion'
+  | 'oficial_sin_config'
+  | 'configuracion_parcial'
+  | 'referencia_anterior'
+  | 'sin_base';
+export type ParametrosConfigClienteBaseOpcion = 'cero' | 'ultima' | 'referencia' | 'oficiales' | 'cancelar';
 export type ParametrosCompletitudGrupoId =
   | 'oficialesMensuales'
   | 'configuracionCliente'
@@ -36,6 +46,7 @@ export interface ParametrosCompletitudResultado {
   advertencias: string[];
   errores: string[];
   diferencias: ParametrosDiferenciaCompletitud[];
+  reconciliacionPendiente: boolean;
 }
 
 export interface EvaluarCompletitudParametrosInput {
@@ -45,6 +56,22 @@ export interface EvaluarCompletitudParametrosInput {
   clienteConfig: ParametrosGeneralesClienteConfig | null;
   catalogos: ParametrosGeneralesCatalogos;
   errorTecnico?: boolean;
+}
+
+export interface ResolverEstadoVisualParametrosInput {
+  estadoCalculado: ParametrosCompletitudEstado;
+  oficialActual: boolean;
+  clienteConfig: boolean;
+  referenciaAnterior: boolean;
+  diferencias: boolean;
+  editando?: boolean;
+  errorTecnico?: boolean;
+}
+
+export interface ResolverOpcionesBaseConfigClienteInput {
+  ultimaConfigDisponible: boolean;
+  referenciaAnteriorDisponible: boolean;
+  oficialesActualesDisponibles: boolean;
 }
 
 const PESOS: Record<ParametrosCompletitudGrupoId, number> = {
@@ -130,8 +157,9 @@ export function evaluarCompletitudParametrosMensual(
   const config = evaluarConfigCliente(input, pendientes);
   const vigencias = evaluarVigencias(input, pendientes);
   const diferencias = compararOficialCliente(input.oficial, input.clienteConfig);
-  const consistencia = grupo('consistencia', diferencias.length === 0 ? 1 : 0, 1);
-  if (diferencias.length > 0) {
+  const reconciliacionPendiente = diferencias.length > 0 && requiereReconciliacionOficial(input.clienteConfig);
+  const consistencia = grupo('consistencia', reconciliacionPendiente ? 0 : 1, 1);
+  if (reconciliacionPendiente) {
     advertencias.push('Existen diferencias pendientes entre valores oficiales y configuracion cliente.');
   }
 
@@ -157,13 +185,14 @@ export function evaluarCompletitudParametrosMensual(
   ));
 
   return {
-    estadoCalculado: resolverEstado(input.periodoRemuneracion?.estado ?? null, grupos, errores, diferencias),
+    estadoCalculado: resolverEstado(input.periodoRemuneracion?.estado ?? null, grupos, errores, reconciliacionPendiente),
     porcentaje,
     grupos,
     pendientes,
     advertencias,
     errores,
     diferencias,
+    reconciliacionPendiente,
   };
 }
 
@@ -342,7 +371,7 @@ function resolverEstado(
   estadoPeriodo: PeriodoRemuneracionEstado | null,
   grupos: Record<ParametrosCompletitudGrupoId, ParametrosCompletitudGrupo>,
   errores: string[],
-  diferencias: ParametrosDiferenciaCompletitud[],
+  reconciliacionPendiente: boolean,
 ): ParametrosCompletitudEstado {
   if (errores.length > 0) {
     return 'error';
@@ -355,7 +384,112 @@ function resolverEstado(
   }
   // Diferencias se permiten sin bloquear (se manejan en UI)
   // El estado del mes respeta siempre periodo_remuneracion.estado si es cerrado/corregido
+  if (reconciliacionPendiente) {
+    return 'cargado';
+  }
+  if (estadoPeriodo === 'cerrado' || estadoPeriodo === 'corregido') {
+    return estadoPeriodo;
+  }
   return 'cargado';
+}
+
+function requiereReconciliacionOficial(cliente: ParametrosGeneralesClienteConfig | null): boolean {
+  return cliente?.estadoReconciliacionOficial !== 'cliente_confirmado'
+    && cliente?.estadoReconciliacionOficial !== 'actualizado_con_oficiales';
+}
+
+export function resolverEstadoVisualParametros(input: ResolverEstadoVisualParametrosInput): ParametrosEstadoVisual {
+  if (input.errorTecnico) {
+    return 'error';
+  }
+  if (input.editando) {
+    return 'editando';
+  }
+  if (input.oficialActual && input.clienteConfig && input.diferencias) {
+    return 'pendiente_reconciliacion';
+  }
+  if (input.oficialActual && !input.clienteConfig) {
+    return 'oficial_sin_config';
+  }
+  if (!input.oficialActual && input.clienteConfig) {
+    return 'configuracion_parcial';
+  }
+  if (!input.oficialActual && input.referenciaAnterior) {
+    return 'referencia_anterior';
+  }
+  if (!input.oficialActual) {
+    return 'sin_base';
+  }
+  return input.estadoCalculado;
+}
+
+export function resolverOpcionesBaseConfigCliente(
+  input: ResolverOpcionesBaseConfigClienteInput,
+): ParametrosConfigClienteBaseOpcion[] {
+  const opciones: ParametrosConfigClienteBaseOpcion[] = ['cero'];
+  if (input.ultimaConfigDisponible) {
+    opciones.push('ultima');
+  }
+  if (input.referenciaAnteriorDisponible) {
+    opciones.push('referencia');
+  }
+  if (input.oficialesActualesDisponibles) {
+    opciones.push('oficiales');
+  }
+  opciones.push('cancelar');
+  return opciones;
+}
+
+export function crearClienteConfigDesdeOficiales(
+  oficial: ParametroGeneral,
+  actual: ParametrosGeneralesClienteConfig | null,
+  periodo: string,
+): ParametrosGeneralesClienteConfigUpsert {
+  return {
+    periodo,
+    uf: oficial.uf,
+    utm: oficial.utm,
+    uta: oficial.uta,
+    sueldoMinimo: oficial.sueldoMinimo,
+    sueldoMinimo18a65: oficial.sueldoMinimo18a65,
+    sueldoMinimoMenor18Mayor65: oficial.sueldoMinimoMenor18Mayor65,
+    sueldoMinimoCasaParticular: oficial.sueldoMinimoCasaParticular,
+    ingresoMinimoNoRemuneracional: oficial.ingresoMinimoNoRemuneracional,
+    topeAfpUf: oficial.topeAfpUf,
+    topeAfp: oficial.topeAfp,
+    topeIpsUf: oficial.topeIpsUf,
+    topeIps: oficial.topeIps,
+    topeCesantiaUf: oficial.topeCesantiaUf,
+    topeCesantia: oficial.topeCesantia,
+    topeApvMensualUf: oficial.topeApvMensualUf,
+    topeApvMensual: oficial.topeApvMensual,
+    topeApvAnualUf: oficial.topeApvAnualUf,
+    topeApvAnual: oficial.topeApvAnual,
+    topeDepositoConvenidoAnualUf: oficial.topeDepositoConvenidoAnualUf,
+    topeDepositoConvenidoAnual: oficial.topeDepositoConvenidoAnual,
+    topeAfpVoluntario: oficial.topeAfpVoluntario,
+    sis: oficial.sis,
+    sanna: oficial.sanna,
+    seguroSocialExpectativaVida: oficial.seguroSocialExpectativaVida,
+    aporteEmpleadorAfp: oficial.aporteEmpleadorAfp,
+    saludObligatoria: oficial.saludObligatoria,
+    saludCcaf: oficial.saludCcaf,
+    saludFonasaConCcaf: oficial.saludFonasaConCcaf,
+    afcTrabajadorIndefinido: oficial.afcTrabajadorIndefinido,
+    afcEmpleadorIndefinido: oficial.afcEmpleadorIndefinido,
+    afcEmpleadorPlazo: oficial.afcEmpleadorPlazo,
+    afcEmpleadorIndefinidoOnceAnosMas: oficial.afcEmpleadorIndefinidoOnceAnosMas,
+    afcEmpleadorCasaParticular: oficial.afcEmpleadorCasaParticular,
+    trabajoPesadoEmpleador: oficial.trabajoPesadoEmpleador,
+    trabajoPesadoTrabajador: oficial.trabajoPesadoTrabajador,
+    trabajoMenosPesadoEmpleador: oficial.trabajoMenosPesadoEmpleador,
+    trabajoMenosPesadoTrabajador: oficial.trabajoMenosPesadoTrabajador,
+    descuentosBasePorDia: actual?.descuentosBasePorDia ?? false,
+    gratificacion: actual?.gratificacion ?? oficial.gratificacion ?? true,
+    immGratificacion: actual?.immGratificacion ?? oficial.immGratificacion,
+    idCcafEntidad: actual?.idCcafEntidad ?? null,
+    idOrganismoAdministradorLey16744: actual?.idOrganismoAdministradorLey16744 ?? null,
+  };
 }
 
 function grupo(id: ParametrosCompletitudGrupoId, completos: number, total: number): ParametrosCompletitudGrupo {

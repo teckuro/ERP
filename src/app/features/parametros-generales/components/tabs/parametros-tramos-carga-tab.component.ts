@@ -15,10 +15,10 @@ import { TramoCargaParametro } from '../../models/parametro-general.model';
     <section class="tab-panel parametros-tab-panel">
       <section class="catalog-section parametros-grid-shell" aria-labelledby="tramos-carga-title">
         <h2 id="tramos-carga-title">Tramos cargas familiares</h2>
-        @if (rows.length === 0 && referenciaPeriodoLabel) {
+        @if (referenciaPeriodoLabel) {
           <div class="param-reference-callout" role="note">
             <div>
-              <span class="param-reference-callout__label">Referencia disponible: {{ referenciaPeriodoLabel }}</span>
+              <span class="param-reference-callout__label">Referencia {{ referenciaPeriodoLabel }}</span>
               <p>No se usara para calculo de {{ periodoLabel }}.</p>
             </div>
             <button type="button" class="param-reference-callout__action" (click)="verReferenciaPeriodoAnterior?.()">

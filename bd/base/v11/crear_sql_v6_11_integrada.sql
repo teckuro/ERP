@@ -64,10 +64,12 @@ DROP TABLE IF EXISTS salud_trabajador CASCADE;
 DROP TABLE IF EXISTS prevision CASCADE;
 DROP TABLE IF EXISTS haberdescuento_persona CASCADE;
 DROP TABLE IF EXISTS prestamo CASCADE;
+DROP TABLE IF EXISTS movimiento_variable_mensual CASCADE;
 DROP TABLE IF EXISTS movimiento CASCADE;
 DROP TABLE IF EXISTS liquidacion_detalle CASCADE;
 DROP TABLE IF EXISTS liquidacion CASCADE;
 DROP TABLE IF EXISTS concepto CASCADE;
+DROP TABLE IF EXISTS catalogo_lre CASCADE;
 DROP TABLE IF EXISTS anexo_contrato CASCADE;
 DROP TABLE IF EXISTS contrato CASCADE;
 DROP TABLE IF EXISTS cuenta_bancaria CASCADE;
@@ -431,10 +433,11 @@ CREATE TABLE periodo_remuneracion (
     mes INTEGER NOT NULL CHECK (mes BETWEEN 1 AND 12),
     fecha_inicio DATE NOT NULL,
     fecha_fin DATE NOT NULL,
-    estado VARCHAR(20) NOT NULL DEFAULT 'ABIERTO',
+    estado VARCHAR(20) NOT NULL DEFAULT 'pendiente',
     fecha_creacion TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     CONSTRAINT chk_periodo_remuneracion_codigo CHECK (codigo ~ '^[0-9]{4}-(0[1-9]|1[0-2])$'),
     CONSTRAINT chk_periodo_remuneracion_fechas CHECK (fecha_fin >= fecha_inicio),
+    CONSTRAINT chk_periodo_remuneracion_estado CHECK (estado IN ('pendiente', 'parcial', 'cargado', 'corregido', 'cerrado', 'error')),
     CONSTRAINT uq_periodo_remuneracion_rango UNIQUE (fecha_inicio, fecha_fin)
 );
 
@@ -863,6 +866,33 @@ CREATE TABLE contrato_centro_costo (
     porcentaje NUMERIC(5,2) NOT NULL CHECK (porcentaje > 0 AND porcentaje <= 100)
 );
 
+CREATE TABLE IF NOT EXISTS catalogo_lre (
+    id_catalogo_lre SERIAL PRIMARY KEY,
+    codigo_lre VARCHAR(10) NOT NULL UNIQUE,
+    nombre_lre VARCHAR(200) NOT NULL,
+    modulo_lre VARCHAR(40) NOT NULL,
+    grupo_lre VARCHAR(50),
+    clasificacion_lre VARCHAR(60),
+    imponible BOOLEAN,
+    tributable BOOLEAN,
+    afecta_liquido BOOLEAN,
+    vigente BOOLEAN NOT NULL DEFAULT TRUE,
+    vigencia_inicio DATE,
+    vigencia_fin DATE,
+    observacion TEXT,
+    CONSTRAINT chk_catalogo_lre_vigencia CHECK (
+        vigencia_fin IS NULL
+        OR vigencia_inicio IS NULL
+        OR vigencia_fin >= vigencia_inicio
+    )
+);
+
+CREATE INDEX IF NOT EXISTS idx_catalogo_lre_codigo ON catalogo_lre (codigo_lre);
+CREATE INDEX IF NOT EXISTS idx_catalogo_lre_modulo ON catalogo_lre (modulo_lre);
+CREATE INDEX IF NOT EXISTS idx_catalogo_lre_grupo ON catalogo_lre (grupo_lre);
+CREATE INDEX IF NOT EXISTS idx_catalogo_lre_clasificacion ON catalogo_lre (clasificacion_lre);
+CREATE INDEX IF NOT EXISTS idx_catalogo_lre_vigente ON catalogo_lre (vigente);
+
 CREATE TABLE concepto (
     id_concepto SERIAL PRIMARY KEY,
     codigo VARCHAR(30) UNIQUE NOT NULL,
@@ -878,8 +908,23 @@ CREATE TABLE concepto (
     afecta_sis BOOLEAN NOT NULL DEFAULT FALSE,
     orden_impresion INT NOT NULL DEFAULT 0,
     calculo_automatico BOOLEAN NOT NULL DEFAULT FALSE,
-    formula_json JSONB
+    formula_json JSONB,
+    id_catalogo_lre INT REFERENCES catalogo_lre (id_catalogo_lre) ON DELETE SET NULL,
+    afecta_liquido BOOLEAN NOT NULL DEFAULT TRUE,
+    es_sistema BOOLEAN NOT NULL DEFAULT FALSE,
+    vigente BOOLEAN NOT NULL DEFAULT TRUE,
+    vigencia_inicio DATE,
+    vigencia_fin DATE,
+    CONSTRAINT chk_concepto_vigencia CHECK (
+        vigencia_fin IS NULL
+        OR vigencia_inicio IS NULL
+        OR vigencia_fin >= vigencia_inicio
+    )
 );
+
+CREATE INDEX idx_concepto_catalogo_lre ON concepto (id_catalogo_lre);
+CREATE INDEX idx_concepto_vigente ON concepto (vigente);
+CREATE INDEX idx_concepto_es_sistema ON concepto (es_sistema);
 
 CREATE TABLE regla_concepto_calculo (
     id_regla_concepto_calculo SERIAL PRIMARY KEY,
@@ -981,7 +1026,7 @@ CREATE TABLE haberdescuento_persona (
 
 -- Fase 9.4C: movimientos variables mensuales (haber/descuento puntual por periodo YYYY-MM).
 -- No reemplaza haberdescuento_persona. Ver docs/codex/modulos/movimientos-variables/persistencia-9-4C.md
-CREATE TABLE movimiento_variable_mensual (
+CREATE TABLE IF NOT EXISTS movimiento_variable_mensual (
     id_movimiento_variable SERIAL PRIMARY KEY,
     id_persona INT NOT NULL REFERENCES persona(id_persona) ON DELETE CASCADE,
     id_concepto INT NOT NULL REFERENCES concepto(id_concepto),
@@ -1010,12 +1055,12 @@ CREATE TABLE movimiento_variable_mensual (
     CONSTRAINT chk_movvar_origen CHECK (origen IN ('MANUAL', 'IMPORTADO', 'SISTEMA'))
 );
 
-CREATE INDEX idx_movvar_periodo ON movimiento_variable_mensual (periodo);
-CREATE INDEX idx_movvar_persona_periodo ON movimiento_variable_mensual (id_persona, periodo);
-CREATE INDEX idx_movvar_concepto_periodo ON movimiento_variable_mensual (id_concepto, periodo);
-CREATE INDEX idx_movvar_estado_periodo ON movimiento_variable_mensual (estado, periodo);
+CREATE INDEX IF NOT EXISTS idx_movvar_periodo ON movimiento_variable_mensual (periodo);
+CREATE INDEX IF NOT EXISTS idx_movvar_persona_periodo ON movimiento_variable_mensual (id_persona, periodo);
+CREATE INDEX IF NOT EXISTS idx_movvar_concepto_periodo ON movimiento_variable_mensual (id_concepto, periodo);
+CREATE INDEX IF NOT EXISTS idx_movvar_estado_periodo ON movimiento_variable_mensual (estado, periodo);
 
-CREATE UNIQUE INDEX uq_movvar_operativo_persona_concepto_periodo
+CREATE UNIQUE INDEX IF NOT EXISTS uq_movvar_operativo_persona_concepto_periodo
     ON movimiento_variable_mensual (id_persona, id_concepto, periodo)
     WHERE estado <> 'ANULADO';
 
@@ -3764,7 +3809,7 @@ SELECT DISTINCT
     SUBSTRING(src.codigo, 6, 2)::INT,
     TO_DATE(src.codigo || '-01', 'YYYY-MM-DD'),
     (DATE_TRUNC('month', TO_DATE(src.codigo || '-01', 'YYYY-MM-DD')) + INTERVAL '1 month - 1 day')::DATE,
-    'ABIERTO'
+    'pendiente'
 FROM (
     SELECT periodo AS codigo FROM parametros_generales
     UNION

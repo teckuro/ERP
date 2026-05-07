@@ -11,10 +11,26 @@ import { FormGroup, ReactiveFormsModule } from '@angular/forms';
       @if (!hasPeriodoData) {
         <section class="param-pending-notice" aria-label="Estado de carga mensual">
           <div>
-            <h2>No hay valores mensuales cargados para {{ periodoLabel }}.</h2>
-            <p>Faltan datos oficiales del periodo.</p>
+            <h2>
+              @if (hasClienteConfig) {
+                Configuracion cliente para {{ periodoLabel }}.
+              } @else if (referenciaPeriodoLabel) {
+                Valores de referencia disponibles.
+              } @else {
+                Sin base mensual para {{ periodoLabel }}.
+              }
+            </h2>
+            <p>
+              @if (hasClienteConfig) {
+                La configuracion pertenece al periodo seleccionado; los oficiales siguen pendientes.
+              } @else if (referenciaPeriodoLabel) {
+                Estos valores son una referencia anterior. La carga oficial del periodo aun no esta disponible.
+              } @else {
+                Puedes crear una configuracion inicial desde Modificar.
+              }
+            </p>
           </div>
-          @if (referenciaPeriodoLabel) {
+          @if (!hasClienteConfig && referenciaPeriodoLabel) {
             <button type="button" class="param-reference-callout__action" (click)="verReferenciaPeriodoAnterior?.()">
               Ver referencia {{ referenciaPeriodoLabel }}
             </button>
@@ -59,6 +75,7 @@ export class ParametrosValoresTabComponent {
   @Input() officialEditable = false;
   @Input() configEditable = false;
   @Input() hasPeriodoData = true;
+  @Input() hasClienteConfig = false;
   @Input() periodoLabel = 'este periodo';
   @Input() referenciaPeriodoLabel: string | null = null;
   @Input() fechaActualizacionLabel: string | null = null;

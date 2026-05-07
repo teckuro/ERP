@@ -75,6 +75,19 @@ export interface ParametroGeneral {
 
 export type ParametroGeneralUpsert = ParametroGeneral;
 
+export type ParametrosReconciliacionOficialEstado =
+  | 'pendiente'
+  | 'actualizado_con_oficiales'
+  | 'cliente_confirmado'
+  | 'revisar_despues';
+
+export type ParametrosReconciliacionOrigen =
+  | 'actualizar_con_oficiales'
+  | 'mantener_configuracion'
+  | 'revisar_despues'
+  | 'edicion_cliente'
+  | null;
+
 export interface ParametrosGeneralesClienteConfig
   extends Partial<Omit<ParametroGeneral, 'periodo' | 'fechaActualizacion' | 'descuentosBasePorDia' | 'gratificacion'>> {
   periodo: string;
@@ -83,13 +96,30 @@ export interface ParametrosGeneralesClienteConfig
   immGratificacion: number | null;
   idCcafEntidad: number | null;
   idOrganismoAdministradorLey16744: number | null;
+  estadoReconciliacionOficial: ParametrosReconciliacionOficialEstado;
+  fechaReconciliacionOficial: string | null;
+  origenReconciliacion: ParametrosReconciliacionOrigen;
+  observacionReconciliacion: string | null;
   fechaActualizacion: string | null;
 }
 
 export type ParametrosGeneralesClienteConfigUpsert = Omit<
   ParametrosGeneralesClienteConfig,
-  'fechaActualizacion'
->;
+  | 'fechaActualizacion'
+  | 'estadoReconciliacionOficial'
+  | 'fechaReconciliacionOficial'
+  | 'origenReconciliacion'
+  | 'observacionReconciliacion'
+> &
+  Partial<
+    Pick<
+      ParametrosGeneralesClienteConfig,
+      | 'estadoReconciliacionOficial'
+      | 'fechaReconciliacionOficial'
+      | 'origenReconciliacion'
+      | 'observacionReconciliacion'
+    >
+  >;
 
 export interface AfpParametro {
   idAfp: number;
@@ -263,6 +293,20 @@ export interface ParametrosGeneralesCatalogos {
   apvInstituciones: ApvApvcInstitucion[];
   apvFormasPago: ApvApvcFormaPago[];
   afcParametros: AfcParametro[];
+}
+
+export interface ParametrosReferenciaMensualInfo {
+  parametrosGenerales: string | null;
+  tramosCarga: string | null;
+  tramosImpuesto: string | null;
+  tablaImpuestoUnico: string | null;
+  ley16744Parametros: string | null;
+}
+
+export interface ParametrosReferenciaVisualMensual {
+  parametroGeneral: ParametroGeneral | null;
+  catalogos: ParametrosGeneralesCatalogos;
+  referencias: ParametrosReferenciaMensualInfo;
 }
 
 export { PARAMETRO_GENERAL_FORM_KEYS, PARAMETROS_CATALOGO_ARRAY_KEYS } from './parametros-generales.manifest';

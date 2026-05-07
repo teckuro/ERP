@@ -61,6 +61,7 @@ BEFORE UPDATE ON parametros_generales
 FOR EACH ROW
 EXECUTE FUNCTION fn_set_timestamp();
 
+DROP TRIGGER IF EXISTS trg_parametros_generales_cliente_update_timestamp ON parametros_generales_cliente;
 CREATE TRIGGER trg_parametros_generales_cliente_update_timestamp
 BEFORE UPDATE ON parametros_generales_cliente
 FOR EACH ROW

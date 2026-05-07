@@ -83,10 +83,10 @@ export type CcafMutualSubId = 'listaCcaf' | 'mutuales' | 'ley16744';
         @if (activeSub === 'ley16744') {
           <section class="catalog-section parametros-grid-shell" aria-labelledby="ley-title">
             <h2 class="sr-only" id="ley-title">Ley 16.744</h2>
-            @if (catalogos.ley16744Parametros.length === 0 && referenciaPeriodoLabel) {
+            @if (referenciaPeriodoLabel) {
               <div class="param-reference-callout" role="note">
                 <div>
-                  <span class="param-reference-callout__label">Referencia disponible: {{ referenciaPeriodoLabel }}</span>
+                  <span class="param-reference-callout__label">Referencia {{ referenciaPeriodoLabel }}</span>
                   <p>No se usara para calculo de {{ periodoLabel }}.</p>
                 </div>
                 <button type="button" class="param-reference-callout__action" (click)="verReferenciaPeriodoAnterior?.()">

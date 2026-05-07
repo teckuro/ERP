@@ -1,5 +1,11 @@
 ## Peticiones de estilos (bitácora)
 
+### 2026-05-07 - Parametros inicio mensual con referencia visual
+
+- **Modulo:** Parametros (`/parametros`).
+- **Cambio:** avisos y badges de referencia anterior para oficiales mensuales pendientes; la banda superior distingue `Pendiente oficial` / `Referencia anterior`, `Sin base disponible`, `Configuracion parcial` y `Pendiente de reconciliacion`; el flujo `Modificar` concentra la decision de base inicial y evita comunicar `Cargado` cuando solo hay referencia visual.
+- **Archivos:** `src/app/pages/parametros.page.ts`, tabs de Parametros y documentacion del modulo.
+
 ### 2026-05-04 - Fase 9.5B - Resumen recurrentes y grupos de parametros (Proceso mensual)
 
 - **Modulo:** Remuneraciones / Proceso mensual (`/remuneraciones/proceso-mensual`).

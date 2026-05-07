@@ -1083,22 +1083,16 @@ export type Database = {
       }
       ex_caja_previsional: {
         Row: {
-          codigo_base: string | null
-          codigo_previred_ejemplo: string | null
           id_ex_caja_previsional: number
           nombre: string
           vigente: boolean
         }
         Insert: {
-          codigo_base?: string | null
-          codigo_previred_ejemplo?: string | null
           id_ex_caja_previsional?: number
           nombre: string
           vigente?: boolean
         }
         Update: {
-          codigo_base?: string | null
-          codigo_previred_ejemplo?: string | null
           id_ex_caja_previsional?: number
           nombre?: string
           vigente?: boolean
@@ -2272,6 +2266,121 @@ export type Database = {
           },
         ]
       }
+      novedad_remuneracion_periodo: {
+        Row: {
+          aprobado_por: string | null
+          cantidad: number | null
+          categoria: string
+          creado_por: string | null
+          estado: string
+          fecha_actualizacion: string
+          fecha_aprobacion: string | null
+          fecha_creacion: string
+          fecha_evento: string | null
+          id_concepto: number
+          id_contrato: number | null
+          id_novedad_remuneracion_periodo: number
+          id_persona: number
+          moneda: string
+          monto: number | null
+          observacion: string | null
+          origen: string
+          periodo: string
+          referencia_externa: string | null
+          tipo_movimiento: string
+          unidad: string | null
+        }
+        Insert: {
+          aprobado_por?: string | null
+          cantidad?: number | null
+          categoria: string
+          creado_por?: string | null
+          estado?: string
+          fecha_actualizacion?: string
+          fecha_aprobacion?: string | null
+          fecha_creacion?: string
+          fecha_evento?: string | null
+          id_concepto: number
+          id_contrato?: number | null
+          id_novedad_remuneracion_periodo?: number
+          id_persona: number
+          moneda?: string
+          monto?: number | null
+          observacion?: string | null
+          origen?: string
+          periodo: string
+          referencia_externa?: string | null
+          tipo_movimiento: string
+          unidad?: string | null
+        }
+        Update: {
+          aprobado_por?: string | null
+          cantidad?: number | null
+          categoria?: string
+          creado_por?: string | null
+          estado?: string
+          fecha_actualizacion?: string
+          fecha_aprobacion?: string | null
+          fecha_creacion?: string
+          fecha_evento?: string | null
+          id_concepto?: number
+          id_contrato?: number | null
+          id_novedad_remuneracion_periodo?: number
+          id_persona?: number
+          moneda?: string
+          monto?: number | null
+          observacion?: string | null
+          origen?: string
+          periodo?: string
+          referencia_externa?: string | null
+          tipo_movimiento?: string
+          unidad?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "novedad_remuneracion_periodo_id_concepto_fkey"
+            columns: ["id_concepto"]
+            isOneToOne: false
+            referencedRelation: "concepto"
+            referencedColumns: ["id_concepto"]
+          },
+          {
+            foreignKeyName: "novedad_remuneracion_periodo_id_contrato_fkey"
+            columns: ["id_contrato"]
+            isOneToOne: false
+            referencedRelation: "contrato"
+            referencedColumns: ["id_contrato"]
+          },
+          {
+            foreignKeyName: "novedad_remuneracion_periodo_id_contrato_fkey"
+            columns: ["id_contrato"]
+            isOneToOne: false
+            referencedRelation: "vw_persona_factores"
+            referencedColumns: ["id_contrato"]
+          },
+          {
+            foreignKeyName: "novedad_remuneracion_periodo_id_persona_fkey"
+            columns: ["id_persona"]
+            isOneToOne: false
+            referencedRelation: "persona"
+            referencedColumns: ["id_persona"]
+          },
+          {
+            foreignKeyName: "novedad_remuneracion_periodo_id_persona_fkey"
+            columns: ["id_persona"]
+            isOneToOne: false
+            referencedRelation: "vw_persona_factores"
+            referencedColumns: ["id_persona"]
+          },
+          {
+            foreignKeyName: "novedad_remuneracion_periodo_periodo_fkey"
+            columns: ["periodo"]
+            isOneToOne: false
+            referencedRelation: "periodo_remuneracion"
+            referencedColumns: ["codigo"]
+          },
+        ]
+      }
       organismo_administrador_ley_16744: {
         Row: {
           codigo: string
@@ -2448,31 +2557,154 @@ export type Database = {
       }
       parametros_generales_cliente: {
         Row: {
+          afc_empleador_casa_particular: number | null
+          afc_empleador_indefinido: number | null
+          afc_empleador_indefinido_11_anos_mas: number | null
+          afc_empleador_plazo: number | null
+          afc_trabajador_indefinido: number | null
+          aporte_empleador_afp: number | null
           descuentos_base_por_dia: boolean | null
+          estado_reconciliacion_oficial: string
           fecha_actualizacion: string | null
+          fecha_reconciliacion_oficial: string | null
           gratificacion: boolean | null
           id_ccaf_entidad: number | null
           id_organismo_administrador_ley_16744: number | null
           imm_gratificacion: number | null
+          ingreso_minimo_no_remuneracional: number | null
+          observacion_reconciliacion: string | null
+          origen_reconciliacion: string | null
           periodo: string
+          salud_ccaf: number | null
+          salud_fonasa_con_ccaf: number | null
+          salud_obligatoria: number | null
+          sanna: number | null
+          seguro_social_expectativa_vida: number | null
+          sis: number | null
+          sueldo_minimo: number | null
+          sueldo_minimo_casa_particular: number | null
+          sueldo_minimo_menor18_mayor65: number | null
+          sueldo_minimo18_65: number | null
+          tope_afp: number | null
+          tope_afp_uf: number | null
+          tope_afpvoluntario: number | null
+          tope_apv_anual: number | null
+          tope_apv_anual_uf: number | null
+          tope_apv_mensual: number | null
+          tope_apv_mensual_uf: number | null
+          tope_cesantia: number | null
+          tope_cesantia_uf: number | null
+          tope_deposito_convenido_anual: number | null
+          tope_deposito_convenido_anual_uf: number | null
+          tope_ips: number | null
+          tope_ips_uf: number | null
+          trabajo_menos_pesado_empleador: number | null
+          trabajo_menos_pesado_trabajador: number | null
+          trabajo_pesado_empleador: number | null
+          trabajo_pesado_trabajador: number | null
+          uf: number | null
+          uta: number | null
+          utm: number | null
         }
         Insert: {
+          afc_empleador_casa_particular?: number | null
+          afc_empleador_indefinido?: number | null
+          afc_empleador_indefinido_11_anos_mas?: number | null
+          afc_empleador_plazo?: number | null
+          afc_trabajador_indefinido?: number | null
+          aporte_empleador_afp?: number | null
           descuentos_base_por_dia?: boolean | null
+          estado_reconciliacion_oficial?: string
           fecha_actualizacion?: string | null
+          fecha_reconciliacion_oficial?: string | null
           gratificacion?: boolean | null
           id_ccaf_entidad?: number | null
           id_organismo_administrador_ley_16744?: number | null
           imm_gratificacion?: number | null
+          ingreso_minimo_no_remuneracional?: number | null
+          observacion_reconciliacion?: string | null
+          origen_reconciliacion?: string | null
           periodo: string
+          salud_ccaf?: number | null
+          salud_fonasa_con_ccaf?: number | null
+          salud_obligatoria?: number | null
+          sanna?: number | null
+          seguro_social_expectativa_vida?: number | null
+          sis?: number | null
+          sueldo_minimo?: number | null
+          sueldo_minimo_casa_particular?: number | null
+          sueldo_minimo_menor18_mayor65?: number | null
+          sueldo_minimo18_65?: number | null
+          tope_afp?: number | null
+          tope_afp_uf?: number | null
+          tope_afpvoluntario?: number | null
+          tope_apv_anual?: number | null
+          tope_apv_anual_uf?: number | null
+          tope_apv_mensual?: number | null
+          tope_apv_mensual_uf?: number | null
+          tope_cesantia?: number | null
+          tope_cesantia_uf?: number | null
+          tope_deposito_convenido_anual?: number | null
+          tope_deposito_convenido_anual_uf?: number | null
+          tope_ips?: number | null
+          tope_ips_uf?: number | null
+          trabajo_menos_pesado_empleador?: number | null
+          trabajo_menos_pesado_trabajador?: number | null
+          trabajo_pesado_empleador?: number | null
+          trabajo_pesado_trabajador?: number | null
+          uf?: number | null
+          uta?: number | null
+          utm?: number | null
         }
         Update: {
+          afc_empleador_casa_particular?: number | null
+          afc_empleador_indefinido?: number | null
+          afc_empleador_indefinido_11_anos_mas?: number | null
+          afc_empleador_plazo?: number | null
+          afc_trabajador_indefinido?: number | null
+          aporte_empleador_afp?: number | null
           descuentos_base_por_dia?: boolean | null
+          estado_reconciliacion_oficial?: string
           fecha_actualizacion?: string | null
+          fecha_reconciliacion_oficial?: string | null
           gratificacion?: boolean | null
           id_ccaf_entidad?: number | null
           id_organismo_administrador_ley_16744?: number | null
           imm_gratificacion?: number | null
+          ingreso_minimo_no_remuneracional?: number | null
+          observacion_reconciliacion?: string | null
+          origen_reconciliacion?: string | null
           periodo?: string
+          salud_ccaf?: number | null
+          salud_fonasa_con_ccaf?: number | null
+          salud_obligatoria?: number | null
+          sanna?: number | null
+          seguro_social_expectativa_vida?: number | null
+          sis?: number | null
+          sueldo_minimo?: number | null
+          sueldo_minimo_casa_particular?: number | null
+          sueldo_minimo_menor18_mayor65?: number | null
+          sueldo_minimo18_65?: number | null
+          tope_afp?: number | null
+          tope_afp_uf?: number | null
+          tope_afpvoluntario?: number | null
+          tope_apv_anual?: number | null
+          tope_apv_anual_uf?: number | null
+          tope_apv_mensual?: number | null
+          tope_apv_mensual_uf?: number | null
+          tope_cesantia?: number | null
+          tope_cesantia_uf?: number | null
+          tope_deposito_convenido_anual?: number | null
+          tope_deposito_convenido_anual_uf?: number | null
+          tope_ips?: number | null
+          tope_ips_uf?: number | null
+          trabajo_menos_pesado_empleador?: number | null
+          trabajo_menos_pesado_trabajador?: number | null
+          trabajo_pesado_empleador?: number | null
+          trabajo_pesado_trabajador?: number | null
+          uf?: number | null
+          uta?: number | null
+          utm?: number | null
         }
         Relationships: [
           {
@@ -2945,46 +3177,31 @@ export type Database = {
       reforma_previsional_parametro: {
         Row: {
           aporte_empleador_total: number
-          codigo: string | null
-          cotizacion_rentabilidad_protegida: number
           cuenta_capitalizacion_individual: number
           fapp_seguro_social: number
           fuente: string | null
           id_reforma_previsional_parametro: number
-          ley_referencia: string | null
-          observacion: string | null
           periodo: string | null
-          seguro_social_sis_cev: number
           vigencia_fin: string | null
           vigencia_inicio: string
         }
         Insert: {
           aporte_empleador_total: number
-          codigo?: string | null
-          cotizacion_rentabilidad_protegida?: number
           cuenta_capitalizacion_individual: number
           fapp_seguro_social: number
           fuente?: string | null
           id_reforma_previsional_parametro?: number
-          ley_referencia?: string | null
-          observacion?: string | null
           periodo?: string | null
-          seguro_social_sis_cev?: number
           vigencia_fin?: string | null
           vigencia_inicio: string
         }
         Update: {
           aporte_empleador_total?: number
-          codigo?: string | null
-          cotizacion_rentabilidad_protegida?: number
           cuenta_capitalizacion_individual?: number
           fapp_seguro_social?: number
           fuente?: string | null
           id_reforma_previsional_parametro?: number
-          ley_referencia?: string | null
-          observacion?: string | null
           periodo?: string | null
-          seguro_social_sis_cev?: number
           vigencia_fin?: string | null
           vigencia_inicio?: string
         }
@@ -2992,10 +3209,6 @@ export type Database = {
       }
       regimen_ex_caja: {
         Row: {
-          codigo_base: string | null
-          codigo_previred: string | null
-          codigo_subcaja: string | null
-          glosa_previred: string | null
           id_ex_caja_previsional: number
           id_regimen_ex_caja: number
           nombre: string
@@ -3003,10 +3216,6 @@ export type Database = {
           vigente: boolean
         }
         Insert: {
-          codigo_base?: string | null
-          codigo_previred?: string | null
-          codigo_subcaja?: string | null
-          glosa_previred?: string | null
           id_ex_caja_previsional: number
           id_regimen_ex_caja?: number
           nombre: string
@@ -3014,10 +3223,6 @@ export type Database = {
           vigente?: boolean
         }
         Update: {
-          codigo_base?: string | null
-          codigo_previred?: string | null
-          codigo_subcaja?: string | null
-          glosa_previred?: string | null
           id_ex_caja_previsional?: number
           id_regimen_ex_caja?: number
           nombre?: string

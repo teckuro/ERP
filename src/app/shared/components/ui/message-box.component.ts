@@ -80,6 +80,12 @@ export type MessageBoxMode = 'inline' | 'modal';
           </button>
         }
 
+        @if (fourthLabel) {
+          <button type="button" class="message-button message-button-secondary" (click)="fourth.emit()">
+            {{ fourthLabel }}
+          </button>
+        }
+
         @if (primaryActionLabel()) {
           <button type="button" class="message-button message-button-primary" (click)="action.emit()">
             {{ primaryActionLabel() }}
@@ -472,6 +478,7 @@ export class MessageBoxComponent {
   @Input() primaryLabel = '';
   @Input() secondaryLabel = '';
   @Input() tertiaryLabel = '';
+  @Input() fourthLabel = '';
   @Input() dismissible = false;
   @Input() dismissLabel = 'Cerrar mensaje';
   /**
@@ -482,6 +489,7 @@ export class MessageBoxComponent {
   @Output() readonly action = new EventEmitter<void>();
   @Output() readonly secondary = new EventEmitter<void>();
   @Output() readonly tertiary = new EventEmitter<void>();
+  @Output() readonly fourth = new EventEmitter<void>();
   @Output() readonly dismiss = new EventEmitter<void>();
 
   readonly closeIcon = XIcon;
