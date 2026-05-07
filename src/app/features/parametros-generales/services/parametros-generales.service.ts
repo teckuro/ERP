@@ -9,6 +9,9 @@ import {
   PeriodoRemuneracionEstadoInfo,
   ParametrosGeneralesCatalogos,
   ParametrosGeneralesFiltro,
+  ParametrosReconciliacionOficialEstado,
+  ParametrosReconciliacionOrigen,
+  ParametrosReferenciaVisualMensual,
 } from '../models/parametro-general.model';
 
 @Injectable({ providedIn: 'root' })
@@ -53,7 +56,24 @@ export class ParametrosGeneralesService {
     return this.repository.guardarClienteConfig(payload);
   }
 
+  registrarReconciliacionOficialCliente(input: {
+    periodo: string;
+    estado: ParametrosReconciliacionOficialEstado;
+    origen: ParametrosReconciliacionOrigen;
+    observacion?: string | null;
+  }): Promise<ParametrosGeneralesClienteConfig> {
+    return this.repository.registrarReconciliacionOficialCliente(input);
+  }
+
   listarCatalogos(periodo: string): Promise<ParametrosGeneralesCatalogos> {
     return this.repository.listarCatalogos(periodo);
+  }
+
+  obtenerReferenciaVisualMensual(
+    periodo: string,
+    catalogosActuales: ParametrosGeneralesCatalogos,
+    incluirParametrosGenerales: boolean,
+  ): Promise<ParametrosReferenciaVisualMensual> {
+    return this.repository.obtenerReferenciaVisualMensual(periodo, catalogosActuales, incluirParametrosGenerales);
   }
 }

@@ -145,7 +145,7 @@ Fecha de ajuste: 2026-05-01.
 | Salud | VIGENCIA | ISAPRE e instituciones por solape de vigencia; no exige `periodo` exacto. |
 | Prevision | VIGENCIA | AFP por solape de vigencia; no exige `periodo` exacto. |
 | Reforma de Pensiones > Legales | VIGENCIA | parametros legales por solape de vigencia. |
-| Reforma de Pensiones > Aportes | VIGENCIA normativa | calendario completo de gradualidad/aportes; periodo activo marca estado. |
+| Reforma de Pensiones > Aportes | VIGENCIA normativa | filas de gradualidad/aportes que solapan el periodo activo. |
 | Reforma de Pensiones > Trab. pesados | HIBRIDO VIGENCIA + MES | se muestra por vigencia que solapa el mes; pendiente decidir si debe exigir `periodo` mensual. |
 | Reforma de Pensiones > APV inst. / APV pago | CATALOGO_GLOBAL | catalogos completos; no dependen del periodo seleccionado. |
 
@@ -153,8 +153,24 @@ Reglas aplicadas en esta fase:
 
 - AFP, Salud, parametros legales y AFC no filtran por `periodo` exacto cuando el dato real es vigencia.
 - CCAF, mutuales, instituciones APV y formas de pago APV son catalogos globales; se muestran siempre aunque tengan `periodo` como trazabilidad.
-- Reforma previsional / gradualidad 8,5 % se muestra como calendario completo; el periodo activo solo calcula estado visual: `Vigente al periodo`, `Futuro` o `Historico`.
+- Reforma previsional / gradualidad 8,5 % se muestra por vigencias que solapan el periodo activo; no usa fallback mensual.
 - Ley 16.744, tramos de carga, tramos impuesto y tabla impuesto unico conservan el criterio mensual documentado.
+
+## Inicio de mes sin oficiales actuales
+
+Cuando se inicia un periodo nuevo puede existir `periodo_remuneracion` en estado `parcial` o `pendiente` sin snapshots mensuales oficiales para ese `YYYY-MM`. En ese caso la UI de Parametros no debe quedar vacia si existe una referencia anterior, pero esa referencia no equivale a carga oficial.
+
+Reglas:
+
+- `parametros_generales`, `tramo_carga`, `tramo_impuesto`, `tabla_impuesto_unico` y `ley_16744_parametros` buscan el ultimo `periodo` anterior disponible solo para visualizacion.
+- La referencia se muestra con badge/callout `Referencia <periodo anterior>` y mensajes como `Datos oficiales del periodo pendientes de carga`.
+- No se inserta ni se guarda la referencia anterior en tablas oficiales del periodo actual.
+- La completitud mensual se evalua contra datos oficiales actuales, no contra la referencia visual; por eso no debe mostrar 100%, `cargado` ni `cerrado` mientras falten oficiales reales.
+- La configuracion cliente (`parametros_generales_cliente`) sigue siendo editable para el periodo actual. Guardarla no cierra el periodo ni reemplaza la carga oficial.
+- Si el usuario elige `Usar referencia anterior como base`, la referencia se copia solo al borrador/formulario de `parametros_generales_cliente` del periodo actual; nunca se inserta en `parametros_generales`.
+- Si existe `parametros_generales_cliente` y luego llegan oficiales actuales, las diferencias se tratan como reconciliacion pendiente. Actualizar con oficiales modifica solo `parametros_generales_cliente`; mantener configuracion deja la advertencia visible porque no hay soporte de decision persistente en esta fase.
+- Las tablas por vigencia (`trabajo_pesado_parametro`, `reforma_previsional_parametro`, `parametros_legales`, `afc_parametro`, `afp_vigencia`, `salud`, `salud_plan` si aplica) se resuelven por solape: `vigencia_inicio <= fin_periodo AND (vigencia_fin IS NULL OR vigencia_fin >= inicio_periodo)`.
+- El cierre o reconciliacion exige carga oficial real del periodo; la referencia anterior solo reduce vacios visuales al inicio de mes.
 
 Pendiente Python/SQL:
 

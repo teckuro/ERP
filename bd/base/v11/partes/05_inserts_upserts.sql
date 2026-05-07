@@ -1191,7 +1191,7 @@ SELECT DISTINCT
     SUBSTRING(src.codigo, 6, 2)::INT,
     TO_DATE(src.codigo || '-01', 'YYYY-MM-DD'),
     (DATE_TRUNC('month', TO_DATE(src.codigo || '-01', 'YYYY-MM-DD')) + INTERVAL '1 month - 1 day')::DATE,
-    'ABIERTO'
+    'pendiente'
 FROM (
     SELECT periodo AS codigo FROM parametros_generales
     UNION

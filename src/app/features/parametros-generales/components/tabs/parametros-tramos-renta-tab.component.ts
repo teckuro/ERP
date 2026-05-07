@@ -31,14 +31,14 @@ type ImpuestoSubId = 'tramos' | 'tabla';
       <div class="param-tab-subview">
         @if (activeSub() === 'tramos') {
           <section class="catalog-section parametros-grid-shell" aria-label="Tramos impuesto">
-            @if (tramosRows.length === 0 && referenciaPeriodoLabel) {
+            @if (referenciaTramosPeriodoLabel) {
               <div class="param-reference-callout" role="note">
                 <div>
-                  <span class="param-reference-callout__label">Referencia disponible: {{ referenciaPeriodoLabel }}</span>
+                  <span class="param-reference-callout__label">Referencia {{ referenciaTramosPeriodoLabel }}</span>
                   <p>No se usara para calculo de {{ periodoLabel }}.</p>
                 </div>
                 <button type="button" class="param-reference-callout__action" (click)="verReferenciaPeriodoAnterior?.()">
-                  Ver referencia {{ referenciaPeriodoLabel }}
+                  Ver referencia {{ referenciaTramosPeriodoLabel }}
                 </button>
               </div>
             }
@@ -62,14 +62,14 @@ type ImpuestoSubId = 'tramos' | 'tabla';
 
         @if (activeSub() === 'tabla') {
           <section class="catalog-section parametros-grid-shell" aria-label="Tabla impuesto unico">
-            @if (tablaRows.length === 0 && referenciaPeriodoLabel) {
+            @if (referenciaTablaPeriodoLabel) {
               <div class="param-reference-callout" role="note">
                 <div>
-                  <span class="param-reference-callout__label">Referencia disponible: {{ referenciaPeriodoLabel }}</span>
+                  <span class="param-reference-callout__label">Referencia {{ referenciaTablaPeriodoLabel }}</span>
                   <p>No se usara para calculo de {{ periodoLabel }}.</p>
                 </div>
                 <button type="button" class="param-reference-callout__action" (click)="verReferenciaPeriodoAnterior?.()">
-                  Ver referencia {{ referenciaPeriodoLabel }}
+                  Ver referencia {{ referenciaTablaPeriodoLabel }}
                 </button>
               </div>
             }
@@ -111,7 +111,8 @@ export class ParametrosTramosRentaTabComponent {
   @Input() gridPersistenceKeyTabla = 'parametros.tabla-impuesto.dg';
   @Input() gridPersistenceKeyTramos = 'parametros.tramos-impuesto.dg';
   @Input() periodoLabel = 'este periodo';
-  @Input() referenciaPeriodoLabel: string | null = null;
+  @Input() referenciaTramosPeriodoLabel: string | null = null;
+  @Input() referenciaTablaPeriodoLabel: string | null = null;
   @Input() verReferenciaPeriodoAnterior: (() => void) | null = null;
   @Input() refresh: (() => void) | null = null;
 

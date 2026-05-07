@@ -13,6 +13,10 @@ import {
   ParametrosGeneralesClienteConfigUpsert,
   ParametrosGeneralesCatalogos,
   ParametrosGeneralesFiltro,
+  ParametrosReconciliacionOficialEstado,
+  ParametrosReconciliacionOrigen,
+  ParametrosReferenciaMensualInfo,
+  ParametrosReferenciaVisualMensual,
   PeriodoRemuneracionEstado,
   PeriodoRemuneracionEstadoInfo,
   TablaImpuestoUnicoParametro,
@@ -221,6 +225,10 @@ interface ParametrosGeneralesClienteConfigRow {
   imm_gratificacion: number | string | null;
   id_ccaf_entidad: number | null;
   id_organismo_administrador_ley_16744: number | null;
+  estado_reconciliacion_oficial?: string | null;
+  fecha_reconciliacion_oficial?: string | null;
+  origen_reconciliacion?: string | null;
+  observacion_reconciliacion?: string | null;
   fecha_actualizacion: string | null;
 }
 
@@ -300,6 +308,10 @@ export class ParametrosGeneralesRepository {
     'imm_gratificacion',
     'id_ccaf_entidad',
     'id_organismo_administrador_ley_16744',
+    'estado_reconciliacion_oficial',
+    'fecha_reconciliacion_oficial',
+    'origen_reconciliacion',
+    'observacion_reconciliacion',
     'fecha_actualizacion',
   ].join(',');
 
@@ -629,12 +641,42 @@ export class ParametrosGeneralesRepository {
       imm_gratificacion: payload.immGratificacion,
       id_ccaf_entidad: payload.idCcafEntidad,
       id_organismo_administrador_ley_16744: payload.idOrganismoAdministradorLey16744,
+      estado_reconciliacion_oficial: payload.estadoReconciliacionOficial,
+      fecha_reconciliacion_oficial: payload.fechaReconciliacionOficial,
+      origen_reconciliacion: payload.origenReconciliacion,
+      observacion_reconciliacion: payload.observacionReconciliacion,
       fecha_actualizacion: new Date().toISOString(),
     };
 
     const { data, error } = await this.supabaseUntyped
       .from('parametros_generales_cliente')
       .upsert(row, { onConflict: 'periodo' })
+      .select(this.clienteConfigSelect)
+      .single();
+
+    if (error) {
+      throw new Error(error.message);
+    }
+
+    return this.toClienteConfig(data as ParametrosGeneralesClienteConfigRow);
+  }
+
+  async registrarReconciliacionOficialCliente(input: {
+    periodo: string;
+    estado: ParametrosReconciliacionOficialEstado;
+    origen: ParametrosReconciliacionOrigen;
+    observacion?: string | null;
+  }): Promise<ParametrosGeneralesClienteConfig> {
+    const { data, error } = await this.supabaseUntyped
+      .from('parametros_generales_cliente')
+      .update({
+        estado_reconciliacion_oficial: input.estado,
+        fecha_reconciliacion_oficial: new Date().toISOString(),
+        origen_reconciliacion: input.origen,
+        observacion_reconciliacion: input.observacion ?? null,
+        fecha_actualizacion: new Date().toISOString(),
+      })
+      .eq('periodo', input.periodo)
       .select(this.clienteConfigSelect)
       .single();
 
@@ -720,6 +762,160 @@ export class ParametrosGeneralesRepository {
     }
 
     return result;
+  }
+
+  async obtenerReferenciaVisualMensual(
+    periodo: string,
+    catalogosActuales: ParametrosGeneralesCatalogos,
+    incluirParametrosGenerales: boolean,
+  ): Promise<ParametrosReferenciaVisualMensual> {
+    const referencias = this.emptyReferenciasMensuales();
+    const catalogos: ParametrosGeneralesCatalogos = {
+      ...catalogosActuales,
+      tramosCarga: catalogosActuales.tramosCarga,
+      tramosImpuesto: catalogosActuales.tramosImpuesto,
+      tablaImpuestoUnico: catalogosActuales.tablaImpuestoUnico,
+      ley16744Parametros: catalogosActuales.ley16744Parametros,
+    };
+
+    const [parametroGeneral, tramosCarga, tramosImpuesto, tablaImpuestoUnico, ley16744Parametros] =
+      await Promise.all([
+        incluirParametrosGenerales ? this.obtenerParametroGeneralReferenciaAnterior(periodo) : Promise.resolve(null),
+        catalogosActuales.tramosCarga.length === 0
+          ? this.listarMensualAnterior(periodo, 'tramo_carga', this.listarTramosCarga.bind(this))
+          : Promise.resolve(null),
+        catalogosActuales.tramosImpuesto.length === 0
+          ? this.listarMensualAnterior(periodo, 'tramo_impuesto', this.listarTramosImpuesto.bind(this))
+          : Promise.resolve(null),
+        catalogosActuales.tablaImpuestoUnico.length === 0
+          ? this.listarMensualAnterior(periodo, 'tabla_impuesto_unico', this.listarTablaImpuestoUnico.bind(this))
+          : Promise.resolve(null),
+        catalogosActuales.ley16744Parametros.length === 0
+          ? this.listarMensualAnterior(periodo, 'ley_16744_parametros', this.listarLey16744Parametros.bind(this))
+          : Promise.resolve(null),
+      ]);
+
+    if (parametroGeneral) {
+      referencias.parametrosGenerales = parametroGeneral.periodo;
+    }
+    if (tramosCarga) {
+      catalogos.tramosCarga = tramosCarga.rows;
+      referencias.tramosCarga = tramosCarga.periodo;
+    }
+    if (tramosImpuesto) {
+      catalogos.tramosImpuesto = tramosImpuesto.rows;
+      referencias.tramosImpuesto = tramosImpuesto.periodo;
+    }
+    if (tablaImpuestoUnico) {
+      catalogos.tablaImpuestoUnico = tablaImpuestoUnico.rows;
+      referencias.tablaImpuestoUnico = tablaImpuestoUnico.periodo;
+    }
+    if (ley16744Parametros) {
+      catalogos.ley16744Parametros = ley16744Parametros.rows;
+      referencias.ley16744Parametros = ley16744Parametros.periodo;
+    }
+
+    return { parametroGeneral, catalogos, referencias };
+  }
+
+  private emptyReferenciasMensuales(): ParametrosReferenciaMensualInfo {
+    return {
+      parametrosGenerales: null,
+      tramosCarga: null,
+      tramosImpuesto: null,
+      tablaImpuestoUnico: null,
+      ley16744Parametros: null,
+    };
+  }
+
+  private async obtenerParametroGeneralReferenciaAnterior(periodo: string): Promise<ParametroGeneral | null> {
+    const { data, error } = await this.supabaseUntyped
+      .from('parametros_generales')
+      .select(
+        [
+          'periodo',
+          'uf',
+          'utm',
+          'uta',
+          'sueldo_minimo',
+          'sueldo_minimo18_65',
+          'sueldo_minimo_menor18_mayor65',
+          'sueldo_minimo_casa_particular',
+          'ingreso_minimo_no_remuneracional',
+          'gratificacion',
+          'imm_gratificacion',
+          'tope_afp_uf',
+          'tope_afp',
+          'tope_ips_uf',
+          'tope_ips',
+          'tope_cesantia_uf',
+          'tope_cesantia',
+          'tope_apv_mensual_uf',
+          'tope_apv_mensual',
+          'tope_apv_anual_uf',
+          'tope_apv_anual',
+          'tope_deposito_convenido_anual_uf',
+          'tope_deposito_convenido_anual',
+          'tope_afpvoluntario',
+          'sis',
+          'sanna',
+          'salud_obligatoria',
+          'salud_ccaf',
+          'salud_fonasa_con_ccaf',
+          'dsctosbpordia',
+          'afc_trabajador_indefinido',
+          'afc_empleador_indefinido',
+          'afc_empleador_plazo',
+          'fecha_actualizacion',
+        ].join(','),
+      )
+      .lt('periodo', periodo)
+      .order('periodo', { ascending: false })
+      .limit(1);
+
+    if (error) {
+      throw new Error(error.message);
+    }
+
+    const row = ((data ?? []) as ParametroGeneralSupabaseRow[])[0] ?? null;
+    if (!row) {
+      return null;
+    }
+
+    const [hydrated] = await this.hydrateConfigurables([this.toModel(row)]);
+    return hydrated ?? null;
+  }
+
+  private async listarMensualAnterior<T>(
+    periodo: string,
+    table: string,
+    loader: (periodo: string) => Promise<T[]>,
+  ): Promise<{ periodo: string; rows: T[] } | null> {
+    const referenciaPeriodo = await this.obtenerUltimoPeriodoMensualAnterior(table, periodo);
+    if (!referenciaPeriodo) {
+      return null;
+    }
+
+    const rows = await loader(referenciaPeriodo);
+    return rows.length > 0 ? { periodo: referenciaPeriodo, rows } : null;
+  }
+
+  private async obtenerUltimoPeriodoMensualAnterior(table: string, periodo: string): Promise<string | null> {
+    const { data, error } = await this.supabaseUntyped
+      .from(table)
+      .select('periodo')
+      .not('periodo', 'is', null)
+      .lt('periodo', periodo)
+      .order('periodo', { ascending: false })
+      .limit(1);
+
+    if (error) {
+      throw new Error(error.message);
+    }
+
+    const row = ((data ?? []) as Array<{ periodo?: string | null }>)[0] ?? null;
+    const referencia = String(row?.periodo ?? '').slice(0, 7);
+    return /^\d{4}-\d{2}$/.test(referencia) ? referencia : null;
   }
 
   private async safeList<T>(loader: () => Promise<T[]>): Promise<T[]> {
@@ -1233,11 +1429,10 @@ export class ParametrosGeneralesRepository {
     return ((data ?? []) as TrabajoPesadoRow[]).map((row) => this.toTrabajoPesado(row));
   }
 
-  private async listarReformaPrevisional(_periodo: string): Promise<ReformaPrevisionalParametro[]> {
-    const { data, error } = await this.supabaseUntyped
-      .from('reforma_previsional_parametro')
-      .select('*')
-      .order('vigencia_inicio', { ascending: true });
+  private async listarReformaPrevisional(periodo: string): Promise<ReformaPrevisionalParametro[]> {
+    let query = this.supabaseUntyped.from('reforma_previsional_parametro').select('*');
+    query = this.applyVigenciaSolapaPeriodo(query, periodo);
+    const { data, error } = await query.order('vigencia_inicio', { ascending: true });
 
     if (error) {
       throw new Error(error.message);
@@ -1660,8 +1855,37 @@ export class ParametrosGeneralesRepository {
       immGratificacion: this.toNumber(row.imm_gratificacion),
       idCcafEntidad: row.id_ccaf_entidad,
       idOrganismoAdministradorLey16744: row.id_organismo_administrador_ley_16744,
+      estadoReconciliacionOficial: this.toReconciliacionEstado(row.estado_reconciliacion_oficial),
+      fechaReconciliacionOficial: row.fecha_reconciliacion_oficial ?? null,
+      origenReconciliacion: this.toReconciliacionOrigen(row.origen_reconciliacion),
+      observacionReconciliacion: row.observacion_reconciliacion ?? null,
       fechaActualizacion: row.fecha_actualizacion,
     };
+  }
+
+  private toReconciliacionEstado(value: unknown): ParametrosReconciliacionOficialEstado {
+    const estado = String(value ?? '').trim();
+    if (
+      estado === 'actualizado_con_oficiales' ||
+      estado === 'cliente_confirmado' ||
+      estado === 'revisar_despues'
+    ) {
+      return estado;
+    }
+    return 'pendiente';
+  }
+
+  private toReconciliacionOrigen(value: unknown): ParametrosReconciliacionOrigen {
+    const origen = String(value ?? '').trim();
+    if (
+      origen === 'actualizar_con_oficiales' ||
+      origen === 'mantener_configuracion' ||
+      origen === 'revisar_despues' ||
+      origen === 'edicion_cliente'
+    ) {
+      return origen;
+    }
+    return null;
   }
 
   private toAfcParametro(row: AfcRow): AfcParametro {

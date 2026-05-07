@@ -29,8 +29,8 @@ import {
   ParametrosGeneralesClienteConfig,
   PARAMETROS_CATALOGO_ARRAY_KEYS,
   ParametrosGeneralesCatalogos,
+  ParametrosReferenciaMensualInfo,
   ParametrosTabId,
-  PeriodoRemuneracionEstado,
   PeriodoRemuneracionEstadoInfo,
   ReformaPrevisionalParametro,
   TablaImpuestoUnicoParametro,
@@ -39,7 +39,14 @@ import {
   TramoImpuestoParametro,
 } from '../features/parametros-generales/models/parametro-general.model';
 import { ParametrosGeneralesService } from '../features/parametros-generales/services/parametros-generales.service';
-import { evaluarCompletitudParametrosMensual } from '../features/parametros-generales/rules/parametros-completitud.rules';
+import {
+  ParametrosConfigClienteBaseOpcion,
+  ParametrosEstadoVisual,
+  crearClienteConfigDesdeOficiales,
+  evaluarCompletitudParametrosMensual,
+  resolverEstadoVisualParametros,
+  resolverOpcionesBaseConfigCliente,
+} from '../features/parametros-generales/rules/parametros-completitud.rules';
 import { ButtonComponent } from '../shared/components/ui/button.component';
 import { SearchSelectValue } from '../shared/components/ui/search-select.component';
 import { DataGridColumn } from '../shared/components/ui/data-grid.component';
@@ -82,8 +89,18 @@ type ParametrosDialogKind =
   | 'confirmar-guardado'
   | 'confirmar-crear-parametros'
   | 'confirmar-config-cliente'
-  | 'config-cliente-sin-base';
-type PeriodoCargaEstado = PeriodoRemuneracionEstado | 'editando';
+  | 'confirmar-config-cliente-extendido'
+  | 'config-cliente-sin-base'
+  | 'reconciliacion-diferencias';
+type PeriodoCargaEstado = ParametrosEstadoVisual;
+type ConfigClienteDraftSource = 'cero' | 'ultima' | 'referencia' | 'oficiales' | 'existente';
+type ParametrosDialogAction =
+  | 'usar-ultima-config'
+  | 'usar-referencia'
+  | 'usar-oficiales'
+  | 'cancelar'
+  | 'mantener-config'
+  | 'revisar-despues';
 
 interface ParametrosDialogState {
   kind: ParametrosDialogKind;
@@ -94,6 +111,10 @@ interface ParametrosDialogState {
   primaryLabel?: string;
   secondaryLabel?: string;
   tertiaryLabel?: string;
+  fourthLabel?: string;
+  secondaryAction?: ParametrosDialogAction;
+  tertiaryAction?: ParametrosDialogAction;
+  fourthAction?: ParametrosDialogAction;
 }
 
 @Component({
@@ -216,7 +237,7 @@ interface ParametrosDialogState {
                 </button>
               </div>
             </div>
-            <p class="period-sync-hint parametros-period-sync">Sincronizado con el período activo.</p>
+            <p class="period-sync-hint parametros-period-sync">{{ periodoContextoHint() }}</p>
           </div>
 
           <div class="period-row__right parametros-period-status" role="region" aria-label="Estado mensual">
@@ -227,9 +248,6 @@ interface ParametrosDialogState {
               </span>
             </div>
             <p class="period-mensual__detail parametros-period-status-detail">{{ periodoEstadoDetalle() }}</p>
-            @if ((periodoCargaEstado() === 'pendiente' || periodoCargaEstado() === 'parcial') && periodoReferenciaAnteriorLabel()) {
-              <p class="period-mensual__reference">Referencia disponible: {{ periodoReferenciaAnteriorLabel() }}</p>
-            }
           </div>
         </div>
           </div>
@@ -262,9 +280,11 @@ interface ParametrosDialogState {
             [primaryLabel]="dlg.primaryLabel ?? 'Aceptar'"
             [secondaryLabel]="dlg.secondaryLabel ?? ''"
             [tertiaryLabel]="dlg.tertiaryLabel ?? ''"
+            [fourthLabel]="dlg.fourthLabel ?? ''"
             (action)="onDialogoAccionPrimaria()"
             (secondary)="onDialogoAccionSecundaria()"
             (tertiary)="onDialogoAccionTerciaria()"
+            (fourth)="onDialogoAccionCuarta()"
           ></app-message-box>
         }
 
@@ -290,6 +310,8 @@ interface ParametrosDialogState {
               [form]="form"
               [catalogos]="catalogos()"
               [editable]="generalesEditando()"
+              [hasClienteConfig]="clienteConfig() !== null"
+              [periodoLabel]="periodoSeleccionadoLabel()"
               [selectedCcafId]="selectedCcafId()"
               [selectedMutualId]="selectedMutualId()"
               [percentLabel]="decimal(selectedLey16744Rate(), 2)"
@@ -309,8 +331,9 @@ interface ParametrosDialogState {
               [officialEditable]="generalesEditando()"
               [configEditable]="generalesEditando()"
               [hasPeriodoData]="hasSelectedInRows()"
+              [hasClienteConfig]="clienteConfig() !== null"
               [periodoLabel]="periodoSeleccionadoLabel()"
-              [referenciaPeriodoLabel]="periodoReferenciaAnteriorLabel()"
+              [referenciaPeriodoLabel]="referenciaParametrosGeneralesLabel()"
               [fechaActualizacionLabel]="fechaActualizacionLabel()"
               [onSubmit]="guardar.bind(this)"
               [verReferenciaPeriodoAnterior]="verReferenciaPeriodoAnterior.bind(this)"
@@ -322,8 +345,9 @@ interface ParametrosDialogState {
               [form]="form"
               [editable]="generalesEditando()"
               [hasPeriodoData]="hasSelectedInRows()"
+              [hasClienteConfig]="clienteConfig() !== null"
               [periodoLabel]="periodoSeleccionadoLabel()"
-              [referenciaPeriodoLabel]="periodoReferenciaAnteriorLabel()"
+              [referenciaPeriodoLabel]="referenciaParametrosGeneralesLabel()"
               [fechaActualizacionLabel]="fechaActualizacionLabel()"
               [onSubmit]="guardar.bind(this)"
               [verReferenciaPeriodoAnterior]="verReferenciaPeriodoAnterior.bind(this)"
@@ -341,7 +365,7 @@ interface ParametrosDialogState {
               [ley16744Columns]="ley16744Columns"
               [loading]="isLoading()"
               [periodoLabel]="periodoSeleccionadoLabel()"
-              [referenciaPeriodoLabel]="periodoReferenciaAnteriorLabel()"
+              [referenciaPeriodoLabel]="referenciaLey16744Label()"
               [gridPersistenceKeyCcaf]="gridPersistenceKey('parametros.ccaf.dg')"
               [gridPersistenceKeyMutuales]="gridPersistenceKey('parametros.mutuales.dg')"
               [gridPersistenceKeyLey16744]="gridPersistenceKey('parametros.ley16744.dg')"
@@ -357,7 +381,7 @@ interface ParametrosDialogState {
               [loading]="isLoading()"
               [gridPersistenceKey]="gridPersistenceKey('parametros.tramos-carga.dg')"
               [periodoLabel]="periodoSeleccionadoLabel()"
-              [referenciaPeriodoLabel]="periodoReferenciaAnteriorLabel()"
+              [referenciaPeriodoLabel]="referenciaTramosCargaLabel()"
               [verReferenciaPeriodoAnterior]="verReferenciaPeriodoAnterior.bind(this)"
               [refresh]="cargar.bind(this)"
             ></app-parametros-tramos-carga-tab>
@@ -373,7 +397,8 @@ interface ParametrosDialogState {
               [gridPersistenceKeyTabla]="gridPersistenceKey('parametros.tabla-impuesto.dg')"
               [gridPersistenceKeyTramos]="gridPersistenceKey('parametros.tramos-impuesto.dg')"
               [periodoLabel]="periodoSeleccionadoLabel()"
-              [referenciaPeriodoLabel]="periodoReferenciaAnteriorLabel()"
+              [referenciaTramosPeriodoLabel]="referenciaTramosImpuestoLabel()"
+              [referenciaTablaPeriodoLabel]="referenciaTablaImpuestoUnicoLabel()"
               [verReferenciaPeriodoAnterior]="verReferenciaPeriodoAnterior.bind(this)"
               [refresh]="cargar.bind(this)"
             ></app-parametros-tramos-renta-tab>
@@ -1594,7 +1619,10 @@ export class ParametrosPage implements OnInit {
   readonly ccafMutualSubTab = signal<CcafMutualSubId>('listaCcaf');
   readonly rows = signal<ParametroGeneral[]>([]);
   readonly selectedPeriodo = signal(this.periodoGlobal.periodoYm());
+  readonly catalogosOficiales = signal<ParametrosGeneralesCatalogos>(this.emptyCatalogos());
   readonly catalogos = signal<ParametrosGeneralesCatalogos>(this.emptyCatalogos());
+  readonly parametroReferenciaAnterior = signal<ParametroGeneral | null>(null);
+  readonly referenciasMensuales = signal<ParametrosReferenciaMensualInfo>(this.emptyReferenciasMensuales());
   readonly clienteConfig = signal<ParametrosGeneralesClienteConfig | null>(null);
   readonly periodosGeneralesCatalogo = signal<string[]>([]);
   readonly periodosMensualesCatalogo = signal<string[]>([]);
@@ -1615,8 +1643,11 @@ export class ParametrosPage implements OnInit {
   /** Bloquea "Modificar" tras error de carga hasta una carga exitosa. */
   readonly cargaBloqueadaPorError = signal(false);
   readonly dialogState = signal<ParametrosDialogState | null>(null);
+  readonly configDraftSource = signal<ConfigClienteDraftSource>('existente');
+  readonly configDraftSourcePeriodo = signal<string | null>(null);
 
   private cargarDepth = 0;
+  private readonly reconciliacionAvisadaPeriodos = new Set<string>();
 
   /** Bloqueo de acciones de barra / período por carga principal, plantilla o guardado. */
   readonly parametrosUiBloqueada = computed(
@@ -1687,19 +1718,26 @@ export class ParametrosPage implements OnInit {
       periodoRemuneracion: this.periodoRemuneracion(),
       oficial: this.parametroOficialSeleccionado(),
       clienteConfig: this.clienteConfig(),
-      catalogos: this.catalogos(),
+      catalogos: this.catalogosOficiales(),
       errorTecnico: this.cargaBloqueadaPorError(),
     }),
   );
-  readonly periodoCargaEstado = computed<PeriodoCargaEstado>(() => {
-    if (this.cargaBloqueadaPorError()) {
-      return 'error';
-    }
-    if (this.generalesEditando()) {
-      return 'editando';
-    }
-    return this.completitudParametros().estadoCalculado;
-  });
+  readonly hayReferenciaVisualMensual = computed(() =>
+    Object.values(this.referenciasMensuales()).some((periodo) => periodo !== null),
+  );
+  readonly hayDiferenciasOficialCliente = computed(() => this.completitudParametros().diferencias.length > 0);
+  readonly hayReconciliacionOficialPendiente = computed(() => this.completitudParametros().reconciliacionPendiente);
+  readonly periodoCargaEstado = computed<PeriodoCargaEstado>(() =>
+    resolverEstadoVisualParametros({
+      estadoCalculado: this.completitudParametros().estadoCalculado,
+      oficialActual: this.parametroOficialSeleccionado() !== null,
+      clienteConfig: this.clienteConfig() !== null,
+      referenciaAnterior: this.hayReferenciaVisualMensual(),
+      diferencias: this.hayReconciliacionOficialPendiente(),
+      editando: this.generalesEditando(),
+      errorTecnico: this.cargaBloqueadaPorError(),
+    }),
+  );
   readonly hasAnySyncedData = computed(() => {
     const catalogos = this.catalogos();
 
@@ -1730,7 +1768,17 @@ export class ParametrosPage implements OnInit {
       case 'editando':
         return 'Estado mensual: En edición';
       case 'cargado':
-        return 'Estado mensual: Cargado';
+        return 'Estado mensual: Parametros cargados';
+      case 'pendiente_reconciliacion':
+        return 'Estado mensual: Pendiente de reconciliacion';
+      case 'oficial_sin_config':
+        return 'Estado mensual: Parametros cargados';
+      case 'configuracion_parcial':
+        return 'Estado mensual: Pendiente oficial';
+      case 'referencia_anterior':
+        return 'Estado mensual: Pendiente oficial';
+      case 'sin_base':
+        return 'Estado mensual: Sin base disponible';
       case 'corregido':
         return 'Estado mensual: Corregido';
       case 'cerrado':
@@ -1750,7 +1798,17 @@ export class ParametrosPage implements OnInit {
       case 'editando':
         return 'Configuración guardada con pendientes. Pueden completarse valores de fin de mes.';
       case 'cargado':
-        return this.completitudDetalle('Datos cargados. Si hay diferencias entre oficial y tu configuración, puedes revisar y actualizar.');
+        return 'Valores oficiales y configuracion cliente estan alineados. Listo para revisar.';
+      case 'pendiente_reconciliacion':
+        return 'Hay diferencias entre tu configuracion y los valores oficiales cargados.';
+      case 'oficial_sin_config':
+        return 'Hay valores oficiales actuales. Falta crear configuracion cliente del periodo.';
+      case 'configuracion_parcial':
+        return 'Puedes trabajar con la configuracion guardada. La carga oficial del periodo sigue pendiente.';
+      case 'referencia_anterior':
+        return 'Datos oficiales pendientes. Se muestra la ultima referencia disponible.';
+      case 'sin_base':
+        return 'No hay datos oficiales ni referencia anterior para este periodo. Puedes crear una configuracion inicial.';
       case 'corregido':
         return 'Datos revisados por flujo controlado.';
       case 'cerrado':
@@ -1770,7 +1828,17 @@ export class ParametrosPage implements OnInit {
       case 'editando':
         return 'Edición';
       case 'cargado':
-        return 'Cargado';
+        return 'Listo para revisar';
+      case 'pendiente_reconciliacion':
+        return 'Reconciliacion pendiente';
+      case 'oficial_sin_config':
+        return 'Configurar cliente';
+      case 'configuracion_parcial':
+        return 'Configuracion parcial';
+      case 'referencia_anterior':
+        return this.referenciaVisualPrincipalCodigo() ? `Referencia ${this.referenciaVisualPrincipalCodigo()}` : 'Referencia anterior';
+      case 'sin_base':
+        return 'Crear configuracion';
       case 'corregido':
         return 'Corregido';
       case 'cerrado':
@@ -1793,6 +1861,13 @@ export class ParametrosPage implements OnInit {
       case 'corregido':
       case 'cerrado':
         return 'period-chip--success';
+      case 'pendiente_reconciliacion':
+      case 'referencia_anterior':
+      case 'sin_base':
+        return 'period-chip--warning';
+      case 'oficial_sin_config':
+      case 'configuracion_parcial':
+        return 'period-chip--info';
       case 'parcial':
         return 'period-chip--info';
       case 'pendiente':
@@ -1809,8 +1884,9 @@ export class ParametrosPage implements OnInit {
       return pendiente ? `${base} ${pendiente}` : base;
     }
     // Si está cargado, mostrar % y diferencias si existen
+    const detalleCompletitud = `Completitud ${completitud.porcentaje}%.`;
     const pendiente = completitud.errores[0] ?? completitud.advertencias[0] ?? '';
-    return pendiente ? `${base} ${pendiente}` : base;
+    return pendiente ? `${base} ${detalleCompletitud} ${pendiente}` : `${base} ${detalleCompletitud}`;
   }
 
   readonly yearOptions = computed(() => {
@@ -1848,6 +1924,56 @@ export class ParametrosPage implements OnInit {
     return periodo ? this.formatPeriodoMesAnio(periodo) : null;
   });
 
+  readonly periodoContextoHint = computed(() => {
+    switch (this.periodoCargaEstado()) {
+      case 'referencia_anterior':
+        return `Periodo seleccionado: ${this.selectedPeriodo()}.`;
+      case 'configuracion_parcial':
+        return 'Configuracion cliente del periodo seleccionado.';
+      case 'oficial_sin_config':
+      case 'cargado':
+      case 'pendiente_reconciliacion':
+        return 'Datos oficiales del periodo seleccionado.';
+      default:
+        return `Periodo seleccionado: ${this.selectedPeriodo()}.`;
+    }
+  });
+
+  readonly referenciaParametrosGeneralesLabel = computed(() =>
+    this.formatReferenciaMensualLabel(this.referenciasMensuales().parametrosGenerales),
+  );
+
+  readonly referenciaTramosCargaLabel = computed(() =>
+    this.formatReferenciaMensualLabel(this.referenciasMensuales().tramosCarga),
+  );
+
+  readonly referenciaTramosImpuestoLabel = computed(() =>
+    this.formatReferenciaMensualLabel(this.referenciasMensuales().tramosImpuesto),
+  );
+
+  readonly referenciaTablaImpuestoUnicoLabel = computed(() =>
+    this.formatReferenciaMensualLabel(this.referenciasMensuales().tablaImpuestoUnico),
+  );
+
+  readonly referenciaLey16744Label = computed(() =>
+    this.formatReferenciaMensualLabel(this.referenciasMensuales().ley16744Parametros),
+  );
+
+  readonly referenciaVisualPrincipalLabel = computed(() => {
+    return this.formatReferenciaMensualLabel(this.referenciaVisualPrincipalCodigo());
+  });
+
+  readonly referenciaVisualPrincipalCodigo = computed(() => {
+    const refs = this.referenciasMensuales();
+    return (
+      refs.parametrosGenerales ??
+      refs.tramosCarga ??
+      refs.tramosImpuesto ??
+      refs.tablaImpuestoUnico ??
+      refs.ley16744Parametros
+    );
+  });
+
   readonly tramosCargaPorPeriodo = computed(() => this.catalogos().tramosCarga);
 
   readonly tramosImpuestoPorPeriodo = computed(() => this.catalogos().tramosImpuesto);
@@ -1868,46 +1994,46 @@ export class ParametrosPage implements OnInit {
 
   readonly form = this.fb.group({
     periodo: [this.periodoGlobal.periodoYm(), [Validators.required, Validators.pattern(/^\d{4}-\d{2}$/)]],
-    uf: this.fb.control<number | null>(null, { validators: [Validators.required, Validators.min(0)] }),
-    utm: this.fb.control<number | null>(null, { validators: [Validators.required, Validators.min(0)] }),
-    uta: this.fb.control<number | null>(null, { validators: [Validators.required, Validators.min(0)] }),
-    sueldoMinimo: this.fb.control<number | null>(null, { validators: [Validators.required, Validators.min(0)] }),
-    sueldoMinimo18a65: this.fb.control<number | null>(null, { validators: [Validators.required, Validators.min(0)] }),
-    sueldoMinimoMenor18Mayor65: this.fb.control<number | null>(null, { validators: [Validators.required, Validators.min(0)] }),
-    sueldoMinimoCasaParticular: this.fb.control<number | null>(null, { validators: [Validators.required, Validators.min(0)] }),
-    ingresoMinimoNoRemuneracional: this.fb.control<number | null>(null, { validators: [Validators.required, Validators.min(0)] }),
+    uf: this.fb.control<number | null>(null, { validators: [Validators.min(0)] }),
+    utm: this.fb.control<number | null>(null, { validators: [Validators.min(0)] }),
+    uta: this.fb.control<number | null>(null, { validators: [Validators.min(0)] }),
+    sueldoMinimo: this.fb.control<number | null>(null, { validators: [Validators.min(0)] }),
+    sueldoMinimo18a65: this.fb.control<number | null>(null, { validators: [Validators.min(0)] }),
+    sueldoMinimoMenor18Mayor65: this.fb.control<number | null>(null, { validators: [Validators.min(0)] }),
+    sueldoMinimoCasaParticular: this.fb.control<number | null>(null, { validators: [Validators.min(0)] }),
+    ingresoMinimoNoRemuneracional: this.fb.control<number | null>(null, { validators: [Validators.min(0)] }),
     gratificacion: this.fb.nonNullable.control(true),
     immGratificacion: this.fb.control<number | null>(null, { validators: [Validators.required, Validators.min(0)] }),
-    topeAfpUf: this.fb.control<number | null>(null, { validators: [Validators.required, Validators.min(0)] }),
-    topeAfp: this.fb.control<number | null>(null, { validators: [Validators.required, Validators.min(0)] }),
-    topeIpsUf: this.fb.control<number | null>(null, { validators: [Validators.required, Validators.min(0)] }),
-    topeIps: this.fb.control<number | null>(null, { validators: [Validators.required, Validators.min(0)] }),
-    topeCesantiaUf: this.fb.control<number | null>(null, { validators: [Validators.required, Validators.min(0)] }),
-    topeCesantia: this.fb.control<number | null>(null, { validators: [Validators.required, Validators.min(0)] }),
-    topeApvMensualUf: this.fb.control<number | null>(null, { validators: [Validators.required, Validators.min(0)] }),
-    topeApvMensual: this.fb.control<number | null>(null, { validators: [Validators.required, Validators.min(0)] }),
-    topeApvAnualUf: this.fb.control<number | null>(null, { validators: [Validators.required, Validators.min(0)] }),
-    topeApvAnual: this.fb.control<number | null>(null, { validators: [Validators.required, Validators.min(0)] }),
+    topeAfpUf: this.fb.control<number | null>(null, { validators: [Validators.min(0)] }),
+    topeAfp: this.fb.control<number | null>(null, { validators: [Validators.min(0)] }),
+    topeIpsUf: this.fb.control<number | null>(null, { validators: [Validators.min(0)] }),
+    topeIps: this.fb.control<number | null>(null, { validators: [Validators.min(0)] }),
+    topeCesantiaUf: this.fb.control<number | null>(null, { validators: [Validators.min(0)] }),
+    topeCesantia: this.fb.control<number | null>(null, { validators: [Validators.min(0)] }),
+    topeApvMensualUf: this.fb.control<number | null>(null, { validators: [Validators.min(0)] }),
+    topeApvMensual: this.fb.control<number | null>(null, { validators: [Validators.min(0)] }),
+    topeApvAnualUf: this.fb.control<number | null>(null, { validators: [Validators.min(0)] }),
+    topeApvAnual: this.fb.control<number | null>(null, { validators: [Validators.min(0)] }),
     topeDepositoConvenidoAnualUf: this.fb.control<number | null>(null, { validators: [Validators.min(0)] }),
     topeDepositoConvenidoAnual: this.fb.control<number | null>(null, { validators: [Validators.min(0)] }),
     topeAfpVoluntario: this.fb.control<number | null>(null, { validators: [Validators.min(0)] }),
-    sis: this.fb.control<number | null>(null, { validators: [Validators.required, Validators.min(0), Validators.max(100)] }),
-    sanna: this.fb.control<number | null>(null, { validators: [Validators.required, Validators.min(0), Validators.max(100)] }),
-    seguroSocialExpectativaVida: this.fb.control<number | null>(null, { validators: [Validators.required, Validators.min(0), Validators.max(100)] }),
-    aporteEmpleadorAfp: this.fb.control<number | null>(null, { validators: [Validators.required, Validators.min(0), Validators.max(100)] }),
-    saludObligatoria: this.fb.control<number | null>(null, { validators: [Validators.required, Validators.min(0), Validators.max(100)] }),
+    sis: this.fb.control<number | null>(null, { validators: [Validators.min(0), Validators.max(100)] }),
+    sanna: this.fb.control<number | null>(null, { validators: [Validators.min(0), Validators.max(100)] }),
+    seguroSocialExpectativaVida: this.fb.control<number | null>(null, { validators: [Validators.min(0), Validators.max(100)] }),
+    aporteEmpleadorAfp: this.fb.control<number | null>(null, { validators: [Validators.min(0), Validators.max(100)] }),
+    saludObligatoria: this.fb.control<number | null>(null, { validators: [Validators.min(0), Validators.max(100)] }),
     saludCcaf: this.fb.control<number | null>(null, { validators: [Validators.min(0), Validators.max(100)] }),
     saludFonasaConCcaf: this.fb.control<number | null>(null, { validators: [Validators.min(0), Validators.max(100)] }),
     descuentosBasePorDia: this.fb.nonNullable.control(false),
-    afcTrabajadorIndefinido: this.fb.control<number | null>(null, { validators: [Validators.required, Validators.min(0), Validators.max(100)] }),
-    afcEmpleadorIndefinido: this.fb.control<number | null>(null, { validators: [Validators.required, Validators.min(0), Validators.max(100)] }),
-    afcEmpleadorPlazo: this.fb.control<number | null>(null, { validators: [Validators.required, Validators.min(0), Validators.max(100)] }),
-    afcEmpleadorIndefinidoOnceAnosMas: this.fb.control<number | null>(null, { validators: [Validators.required, Validators.min(0), Validators.max(100)] }),
-    afcEmpleadorCasaParticular: this.fb.control<number | null>(null, { validators: [Validators.required, Validators.min(0), Validators.max(100)] }),
-    trabajoPesadoEmpleador: this.fb.control<number | null>(null, { validators: [Validators.required, Validators.min(0), Validators.max(100)] }),
-    trabajoPesadoTrabajador: this.fb.control<number | null>(null, { validators: [Validators.required, Validators.min(0), Validators.max(100)] }),
-    trabajoMenosPesadoEmpleador: this.fb.control<number | null>(null, { validators: [Validators.required, Validators.min(0), Validators.max(100)] }),
-    trabajoMenosPesadoTrabajador: this.fb.control<number | null>(null, { validators: [Validators.required, Validators.min(0), Validators.max(100)] }),
+    afcTrabajadorIndefinido: this.fb.control<number | null>(null, { validators: [Validators.min(0), Validators.max(100)] }),
+    afcEmpleadorIndefinido: this.fb.control<number | null>(null, { validators: [Validators.min(0), Validators.max(100)] }),
+    afcEmpleadorPlazo: this.fb.control<number | null>(null, { validators: [Validators.min(0), Validators.max(100)] }),
+    afcEmpleadorIndefinidoOnceAnosMas: this.fb.control<number | null>(null, { validators: [Validators.min(0), Validators.max(100)] }),
+    afcEmpleadorCasaParticular: this.fb.control<number | null>(null, { validators: [Validators.min(0), Validators.max(100)] }),
+    trabajoPesadoEmpleador: this.fb.control<number | null>(null, { validators: [Validators.min(0), Validators.max(100)] }),
+    trabajoPesadoTrabajador: this.fb.control<number | null>(null, { validators: [Validators.min(0), Validators.max(100)] }),
+    trabajoMenosPesadoEmpleador: this.fb.control<number | null>(null, { validators: [Validators.min(0), Validators.max(100)] }),
+    trabajoMenosPesadoTrabajador: this.fb.control<number | null>(null, { validators: [Validators.min(0), Validators.max(100)] }),
     fechaActualizacion: this.fb.control<string | null>(null),
   });
 
@@ -2222,20 +2348,32 @@ export class ParametrosPage implements OnInit {
         this.service.obtenerClienteConfig(selectedPeriodo),
       ]);
       const rows = rowsRaw ?? [];
+      const referenciaVisual = await this.service.obtenerReferenciaVisualMensual(
+        selectedPeriodo,
+        catalogos,
+        rows.length === 0,
+      );
 
       const next = [...this.rows().filter((row) => row.periodo !== selectedPeriodo), ...rows].sort(
         (left, right) => right.periodo.localeCompare(left.periodo),
       );
       this.rows.set(next);
-      this.catalogos.set(catalogos);
+      this.catalogosOficiales.set(catalogos);
+      this.catalogos.set(referenciaVisual.catalogos);
+      this.parametroReferenciaAnterior.set(referenciaVisual.parametroGeneral);
+      this.referenciasMensuales.set(referenciaVisual.referencias);
       this.periodoRemuneracion.set(periodoRemuneracion);
       this.clienteConfig.set(clienteConfig);
-      this.assertCatalogosArrayShape(catalogos);
-      this.ensureCatalogSelection(catalogos);
+      this.assertCatalogosArrayShape(referenciaVisual.catalogos);
+      this.ensureCatalogSelection(referenciaVisual.catalogos);
       if (!rows.length) {
-        // Sin fila en parametros_generales: formulario vacío para este periodo (no reutilizar otro periodo).
-        this.patchForm(this.parametroConClienteConfig(this.emptyParametroForPeriodo(selectedPeriodo), clienteConfig), selectedPeriodo);
+        // Sin oficial actual: la referencia es solo visual y el periodo del formulario sigue siendo el seleccionado.
+        const baseReferencia = !clienteConfig && referenciaVisual.parametroGeneral
+          ? { ...referenciaVisual.parametroGeneral, periodo: selectedPeriodo }
+          : this.emptyParametroForPeriodo(selectedPeriodo);
+        this.patchForm(this.parametroConClienteConfig(baseReferencia, clienteConfig), selectedPeriodo);
         this.generalesEditando.set(false);
+        this.mostrarAvisoReconciliacionSiCorresponde();
         return;
       }
 
@@ -2244,6 +2382,7 @@ export class ParametrosPage implements OnInit {
         selectedPeriodo,
       );
       this.generalesEditando.set(false);
+      this.mostrarAvisoReconciliacionSiCorresponde();
     } catch (err) {
       this.cargaBloqueadaPorError.set(true);
       const detalle = this.extractErrorDetail(err);
@@ -2333,9 +2472,14 @@ export class ParametrosPage implements OnInit {
       void this.finalizarCrearParametrosConBase(true);
       return;
     }
-    if (dlg.kind === 'confirmar-config-cliente') {
+    if (dlg.kind === 'confirmar-config-cliente' || dlg.kind === 'confirmar-config-cliente-extendido') {
       this.dialogState.set(null);
       this.iniciarEdicionConfigClienteDesdeCero();
+      return;
+    }
+    if (dlg.kind === 'reconciliacion-diferencias') {
+      this.dialogState.set(null);
+      void this.actualizarClienteConOficiales();
       return;
     }
     if (dlg.kind === 'config-cliente-sin-base') {
@@ -2353,9 +2497,14 @@ export class ParametrosPage implements OnInit {
       void this.finalizarCrearParametrosConBase(false);
       return;
     }
-    if (dlg?.kind === 'confirmar-config-cliente') {
+    if (dlg?.kind === 'confirmar-config-cliente' || dlg?.kind === 'confirmar-config-cliente-extendido') {
       this.dialogState.set(null);
-      void this.prepararConfigClienteDesdeUltima();
+      void this.ejecutarAccionDialogo(dlg.secondaryAction);
+      return;
+    }
+    if (dlg?.kind === 'reconciliacion-diferencias') {
+      this.dialogState.set(null);
+      void this.ejecutarAccionDialogo(dlg.secondaryAction);
       return;
     }
     if (dlg?.kind === 'config-cliente-sin-base') {
@@ -2366,7 +2515,52 @@ export class ParametrosPage implements OnInit {
   }
 
   onDialogoAccionTerciaria(): void {
+    const dlg = this.dialogState();
+    if (dlg?.kind === 'confirmar-config-cliente-extendido') {
+      this.dialogState.set(null);
+      void this.ejecutarAccionDialogo(dlg.tertiaryAction);
+      return;
+    }
+    if (dlg?.kind === 'reconciliacion-diferencias') {
+      this.dialogState.set(null);
+      void this.ejecutarAccionDialogo(dlg.tertiaryAction);
+      return;
+    }
     this.cerrarDialogo();
+  }
+
+  onDialogoAccionCuarta(): void {
+    const dlg = this.dialogState();
+    if (dlg?.fourthAction) {
+      this.dialogState.set(null);
+      void this.ejecutarAccionDialogo(dlg.fourthAction);
+      return;
+    }
+    this.cerrarDialogo();
+  }
+
+  private async ejecutarAccionDialogo(action: ParametrosDialogAction | undefined): Promise<void> {
+    switch (action) {
+      case 'usar-ultima-config':
+        await this.prepararConfigClienteDesdeUltima();
+        return;
+      case 'usar-referencia':
+        this.prepararConfigClienteDesdeReferencia();
+        return;
+      case 'usar-oficiales':
+        this.prepararConfigClienteDesdeOficiales();
+        return;
+      case 'mantener-config':
+        await this.mantenerConfiguracionCliente();
+        return;
+      case 'revisar-despues':
+        await this.revisarReconciliacionDespues();
+        return;
+      case 'cancelar':
+      default:
+        this.cerrarDialogo();
+        return;
+    }
   }
 
   private mostrarFormularioInvalido(): void {
@@ -2413,13 +2607,26 @@ export class ParametrosPage implements OnInit {
     });
   }
 
-  private mostrarExitoClienteConfig(periodo: string): void {
+  private mostrarExitoClienteConfig(
+    periodo: string,
+    source: ConfigClienteDraftSource = 'existente',
+    sourcePeriodo: string | null = null,
+  ): void {
+    const detail =
+      source === 'referencia' && sourcePeriodo
+        ? `Configuracion creada desde referencia ${sourcePeriodo}.`
+        : source === 'oficiales'
+          ? 'Configuracion actualizada con valores oficiales.'
+          : source === 'ultima' && sourcePeriodo
+            ? `Configuracion creada desde ultima configuracion disponible (${sourcePeriodo}).`
+            : `Periodo: ${periodo}`;
+
     this.dialogState.set({
       kind: 'alerta',
       variant: 'success',
       title: 'Configuracion guardada',
-      message: 'La configuracion del cliente fue guardada correctamente.',
-      detail: `Periodo: ${periodo}`,
+      message: `Configuracion de ${periodo} guardada.`,
+      detail,
       primaryLabel: 'Aceptar',
     });
   }
@@ -2541,22 +2748,75 @@ export class ParametrosPage implements OnInit {
     this.mostrarSoloConfigClienteEditable();
   }
 
-  private mostrarDecisionConfigCliente(): void {
+  private async mostrarDecisionConfigCliente(): Promise<void> {
     const periodo = this.selectedPeriodo();
-    const hasOficiales = this.parametrosOficiales()?.periodo === periodo;
-    
+    const hasOficiales = this.parametroOficialSeleccionado()?.periodo === periodo;
+    const hasReferencia = this.parametroReferenciaAnterior() !== null;
+    let ultimaConfigDisponible = false;
+
+    this.isLoadingPlantilla.set(true);
+    try {
+      ultimaConfigDisponible = (await this.service.obtenerUltimaClienteConfigHastaPeriodo(periodo)) !== null;
+    } catch {
+      ultimaConfigDisponible = false;
+    } finally {
+      this.isLoadingPlantilla.set(false);
+    }
+
+    const actions = resolverOpcionesBaseConfigCliente({
+      ultimaConfigDisponible,
+      referenciaAnteriorDisponible: hasReferencia,
+      oficialesActualesDisponibles: hasOficiales,
+    })
+      .filter((opcion): opcion is Exclude<ParametrosConfigClienteBaseOpcion, 'cero'> => opcion !== 'cero')
+      .map((opcion) => ({
+        label: this.configClienteBaseLabel(opcion),
+        action: this.configClienteBaseAction(opcion),
+      }));
+
     this.dialogState.set({
       kind: 'confirmar-config-cliente-extendido',
       variant: 'info',
-      title: 'Configurar período',
-      message: 'No existe configuración propia del cliente para este período.',
-      detail: `Período: ${periodo}\nElige cómo iniciar la configuración del cliente.`,
-      primaryLabel: 'Crear desde cero',
-      secondaryLabel: 'Usar última disponible',
-      tertiaryLabel: hasOficiales ? 'Usar valores oficiales' : null,
-      fourthLabel: 'Cancelar',
+      title: 'Configurar periodo',
+      message: 'No existe configuracion propia del cliente para este periodo.',
+      detail: `Periodo: ${periodo}\nElige como iniciar la configuracion del cliente. No se creara una fila hasta guardar.`,
+      primaryLabel: 'Crear configuracion desde cero',
+      secondaryLabel: actions[0]?.label,
+      secondaryAction: actions[0]?.action,
+      tertiaryLabel: actions[1]?.label,
+      tertiaryAction: actions[1]?.action,
+      fourthLabel: actions[2]?.label,
+      fourthAction: actions[2]?.action,
     });
     this.cdr.markForCheck();
+  }
+
+  private configClienteBaseLabel(opcion: Exclude<ParametrosConfigClienteBaseOpcion, 'cero'>): string {
+    switch (opcion) {
+      case 'ultima':
+        return 'Usar ultima configuracion disponible';
+      case 'referencia':
+        return 'Usar referencia anterior como base';
+      case 'oficiales':
+        return 'Usar valores oficiales actuales';
+      case 'cancelar':
+      default:
+        return 'Cancelar';
+    }
+  }
+
+  private configClienteBaseAction(opcion: Exclude<ParametrosConfigClienteBaseOpcion, 'cero'>): ParametrosDialogAction {
+    switch (opcion) {
+      case 'ultima':
+        return 'usar-ultima-config';
+      case 'referencia':
+        return 'usar-referencia';
+      case 'oficiales':
+        return 'usar-oficiales';
+      case 'cancelar':
+      default:
+        return 'cancelar';
+    }
   }
 
   private mostrarSinConfigClienteAnterior(): void {
@@ -2572,9 +2832,124 @@ export class ParametrosPage implements OnInit {
     this.cdr.markForCheck();
   }
 
+  private mostrarAvisoReconciliacionSiCorresponde(): void {
+    const periodo = this.selectedPeriodo();
+    if (!this.hayReconciliacionOficialPendiente() || this.reconciliacionAvisadaPeriodos.has(periodo)) {
+      return;
+    }
+
+    this.reconciliacionAvisadaPeriodos.add(periodo);
+    this.mostrarReconciliacionDiferencias();
+  }
+
+  private mostrarReconciliacionDiferencias(): void {
+    this.dialogState.set({
+      kind: 'reconciliacion-diferencias',
+      variant: 'warning',
+      title: 'Pendiente de reconciliacion',
+      message: 'Se cargaron parametros oficiales para este periodo y tu configuracion tiene diferencias.',
+      detail: 'Puedes actualizar la configuracion cliente con valores oficiales, mantener tu configuracion o revisar despues.',
+      primaryLabel: 'Actualizar con oficiales',
+      secondaryLabel: 'Mantener mi configuracion',
+      secondaryAction: 'mantener-config',
+      tertiaryLabel: 'Revisar despues',
+      tertiaryAction: 'revisar-despues',
+    });
+    this.cdr.markForCheck();
+  }
+
+  private async actualizarClienteConOficiales(): Promise<void> {
+    const oficial = this.parametroOficialSeleccionado();
+    if (!oficial) {
+      this.mostrarErrorClienteConfig('No hay valores oficiales actuales para actualizar la configuracion cliente.');
+      return;
+    }
+
+    this.isSaving.set(true);
+    try {
+      const saved = await this.service.guardarClienteConfig(
+        {
+          ...crearClienteConfigDesdeOficiales(oficial, this.clienteConfig(), this.selectedPeriodo()),
+          estadoReconciliacionOficial: 'actualizado_con_oficiales',
+          fechaReconciliacionOficial: new Date().toISOString(),
+          origenReconciliacion: 'actualizar_con_oficiales',
+          observacionReconciliacion: 'Cliente actualizado con parametros oficiales desde reconciliacion.',
+        },
+      );
+      this.clienteConfig.set(saved);
+      this.patchForm(this.parametroConClienteConfig(oficial, saved), this.selectedPeriodo());
+      this.selectedCcafId.set(saved.idCcafEntidad);
+      this.selectedMutualId.set(saved.idOrganismoAdministradorLey16744);
+      this.mostrarExitoClienteConfig(saved.periodo, 'oficiales', oficial.periodo);
+    } catch (err) {
+      this.mostrarErrorClienteConfig(this.extractErrorDetail(err) || 'No fue posible actualizar la configuracion con oficiales.');
+    } finally {
+      this.isSaving.set(false);
+      this.cdr.markForCheck();
+    }
+  }
+
+  private async mantenerConfiguracionCliente(): Promise<void> {
+    await this.registrarDecisionReconciliacion(
+      'cliente_confirmado',
+      'mantener_configuracion',
+      'No se sobrescribio tu configuracion cliente.',
+      'La decision quedo registrada para este periodo.',
+    );
+  }
+
+  private async revisarReconciliacionDespues(): Promise<void> {
+    await this.registrarDecisionReconciliacion(
+      'pendiente',
+      'revisar_despues',
+      'La reconciliacion queda pendiente.',
+      'La advertencia puede volver a mostrarse mientras existan diferencias sin confirmar.',
+    );
+  }
+
+  private async registrarDecisionReconciliacion(
+    estado: 'pendiente' | 'cliente_confirmado',
+    origen: 'mantener_configuracion' | 'revisar_despues',
+    message: string,
+    detail: string,
+  ): Promise<void> {
+    const periodo = this.selectedPeriodo();
+    if (!this.clienteConfig()) {
+      this.mostrarErrorClienteConfig('No hay configuracion cliente para registrar la decision de reconciliacion.');
+      return;
+    }
+
+    this.isSaving.set(true);
+    try {
+      const saved = await this.service.registrarReconciliacionOficialCliente({
+        periodo,
+        estado,
+        origen,
+        observacion: message,
+      });
+      this.clienteConfig.set(saved);
+      this.dialogState.set({
+        kind: 'alerta',
+        variant: estado === 'cliente_confirmado' ? 'info' : 'warning',
+        title: estado === 'cliente_confirmado' ? 'Configuracion mantenida' : 'Revisar despues',
+        message,
+        detail,
+        primaryLabel: 'Aceptar',
+      });
+    } catch (err) {
+      this.mostrarErrorClienteConfig(this.extractErrorDetail(err) || 'No fue posible registrar la decision de reconciliacion.');
+    } finally {
+      this.isSaving.set(false);
+      this.cdr.markForCheck();
+    }
+  }
+
   async sincronizar(): Promise<void> {
     const hadData = this.hasAnySyncedData();
     await this.cargar();
+    if (this.dialogState()?.kind === 'reconciliacion-diferencias') {
+      return;
+    }
 
     if (this.hasAnySyncedData()) {
       this.mostrarExitoSincronizacion(hadData);
@@ -2641,11 +3016,17 @@ export class ParametrosPage implements OnInit {
     }
 
     if (!this.clienteConfig()) {
-      this.mostrarDecisionConfigCliente();
+      await this.mostrarDecisionConfigCliente();
       return;
     }
 
+    this.patchForm(
+      this.parametroConClienteConfig(this.baseActualParaConfigCliente(), this.clienteConfig()),
+      this.selectedPeriodo(),
+    );
     this.generalesEditando.set(true);
+    this.configDraftSource.set('existente');
+    this.configDraftSourcePeriodo.set(this.selectedPeriodo());
     this.cdr.detectChanges();
   }
 
@@ -2667,7 +3048,10 @@ export class ParametrosPage implements OnInit {
   }
 
   private iniciarEdicionConfigClienteDesdeCero(): void {
+    this.patchForm(this.baseActualParaConfigCliente(), this.selectedPeriodo());
     this.aplicarClienteConfigDraft(null);
+    this.configDraftSource.set('cero');
+    this.configDraftSourcePeriodo.set(this.selectedPeriodo());
     this.generalesEditando.set(true);
     this.form.markAsPristine();
     this.cdr.markForCheck();
@@ -2682,7 +3066,10 @@ export class ParametrosPage implements OnInit {
         return;
       }
 
+      this.patchForm(this.baseActualParaConfigCliente(), this.selectedPeriodo());
       this.aplicarClienteConfigDraft(base);
+      this.configDraftSource.set('ultima');
+      this.configDraftSourcePeriodo.set(base.periodo);
       this.generalesEditando.set(true);
       this.form.markAsPristine();
     } catch (err) {
@@ -2693,9 +3080,80 @@ export class ParametrosPage implements OnInit {
     }
   }
 
+  private prepararConfigClienteDesdeOficiales(): void {
+    const oficial = this.parametroOficialSeleccionado();
+    if (!oficial || oficial.periodo !== this.selectedPeriodo()) {
+      this.mostrarErrorClienteConfig('No hay valores oficiales disponibles para este periodo.');
+      return;
+    }
+
+    this.patchForm(oficial, this.selectedPeriodo());
+    this.selectedCcafId.set(null);
+    this.selectedMutualId.set(null);
+    this.configDraftSource.set('oficiales');
+    this.configDraftSourcePeriodo.set(oficial.periodo);
+    this.generalesEditando.set(true);
+    this.form.markAsPristine();
+    this.cdr.markForCheck();
+  }
+
+  private prepararConfigClienteDesdeReferencia(): void {
+    const referencia = this.parametroReferenciaAnterior();
+    if (!referencia) {
+      this.mostrarErrorClienteConfig('No hay referencia anterior disponible para usar como base.');
+      return;
+    }
+
+    this.patchForm({ ...referencia, periodo: this.selectedPeriodo() }, this.selectedPeriodo());
+    this.selectedCcafId.set(null);
+    this.selectedMutualId.set(null);
+    this.configDraftSource.set('referencia');
+    this.configDraftSourcePeriodo.set(referencia.periodo);
+    this.generalesEditando.set(true);
+    this.form.markAsPristine();
+    this.cdr.markForCheck();
+  }
+
   private aplicarClienteConfigDraft(config: ParametrosGeneralesClienteConfig | null): void {
     this.form.patchValue(
       {
+        uf: config?.uf ?? null,
+        utm: config?.utm ?? null,
+        uta: config?.uta ?? null,
+        sueldoMinimo: config?.sueldoMinimo ?? null,
+        sueldoMinimo18a65: config?.sueldoMinimo18a65 ?? null,
+        sueldoMinimoMenor18Mayor65: config?.sueldoMinimoMenor18Mayor65 ?? null,
+        sueldoMinimoCasaParticular: config?.sueldoMinimoCasaParticular ?? null,
+        ingresoMinimoNoRemuneracional: config?.ingresoMinimoNoRemuneracional ?? null,
+        topeAfpUf: config?.topeAfpUf ?? null,
+        topeAfp: config?.topeAfp ?? null,
+        topeIpsUf: config?.topeIpsUf ?? null,
+        topeIps: config?.topeIps ?? null,
+        topeCesantiaUf: config?.topeCesantiaUf ?? null,
+        topeCesantia: config?.topeCesantia ?? null,
+        topeApvMensualUf: config?.topeApvMensualUf ?? null,
+        topeApvMensual: config?.topeApvMensual ?? null,
+        topeApvAnualUf: config?.topeApvAnualUf ?? null,
+        topeApvAnual: config?.topeApvAnual ?? null,
+        topeDepositoConvenidoAnualUf: config?.topeDepositoConvenidoAnualUf ?? null,
+        topeDepositoConvenidoAnual: config?.topeDepositoConvenidoAnual ?? null,
+        topeAfpVoluntario: config?.topeAfpVoluntario ?? null,
+        sis: config?.sis ?? null,
+        sanna: config?.sanna ?? null,
+        seguroSocialExpectativaVida: config?.seguroSocialExpectativaVida ?? null,
+        aporteEmpleadorAfp: config?.aporteEmpleadorAfp ?? null,
+        saludObligatoria: config?.saludObligatoria ?? null,
+        saludCcaf: config?.saludCcaf ?? null,
+        saludFonasaConCcaf: config?.saludFonasaConCcaf ?? null,
+        afcTrabajadorIndefinido: config?.afcTrabajadorIndefinido ?? null,
+        afcEmpleadorIndefinido: config?.afcEmpleadorIndefinido ?? null,
+        afcEmpleadorPlazo: config?.afcEmpleadorPlazo ?? null,
+        afcEmpleadorIndefinidoOnceAnosMas: config?.afcEmpleadorIndefinidoOnceAnosMas ?? null,
+        afcEmpleadorCasaParticular: config?.afcEmpleadorCasaParticular ?? null,
+        trabajoPesadoEmpleador: config?.trabajoPesadoEmpleador ?? null,
+        trabajoPesadoTrabajador: config?.trabajoPesadoTrabajador ?? null,
+        trabajoMenosPesadoEmpleador: config?.trabajoMenosPesadoEmpleador ?? null,
+        trabajoMenosPesadoTrabajador: config?.trabajoMenosPesadoTrabajador ?? null,
         descuentosBasePorDia: config?.descuentosBasePorDia ?? false,
         gratificacion: config?.gratificacion ?? true,
         immGratificacion: config?.immGratificacion ?? 4.75,
@@ -2707,10 +3165,16 @@ export class ParametrosPage implements OnInit {
     this.selectedMutualId.set(config?.idOrganismoAdministradorLey16744 ?? null);
   }
 
+  private baseActualParaConfigCliente(): ParametroGeneral {
+    return this.parametroOficialSeleccionado() ?? this.emptyParametroForPeriodo(this.selectedPeriodo());
+  }
+
   volverParametros(): void {
     const row = this.rows().find((item) => item.periodo === this.selectedPeriodo());
+    const referencia = this.parametroReferenciaAnterior();
+    const base = row ?? (!this.clienteConfig() && referencia ? { ...referencia, periodo: this.selectedPeriodo() } : this.emptyParametroForPeriodo(this.selectedPeriodo()));
     this.patchForm(
-      this.parametroConClienteConfig(row ?? this.emptyParametroForPeriodo(this.selectedPeriodo()), this.clienteConfig()),
+      this.parametroConClienteConfig(base, this.clienteConfig()),
       this.selectedPeriodo(),
     );
     this.ensureCatalogSelection(this.catalogos());
@@ -2744,7 +3208,9 @@ export class ParametrosPage implements OnInit {
       const saved = await this.guardarClienteConfigDesdeFormulario(periodo);
       this.clienteConfig.set(saved);
       this.generalesEditando.set(false);
-      this.mostrarExitoClienteConfig(saved.periodo);
+      this.mostrarExitoClienteConfig(saved.periodo, this.configDraftSource(), this.configDraftSourcePeriodo());
+      this.configDraftSource.set('existente');
+      this.configDraftSourcePeriodo.set(saved.periodo);
     } catch (err) {
       if (isDevMode()) {
         console.error('[Parametros] guardarClienteConfig', err);
@@ -2920,6 +3386,10 @@ export class ParametrosPage implements OnInit {
     const [year, month] = periodo.split('-');
     const monthName = this.monthOptions.find((item) => item.value === month)?.label ?? month;
     return `${monthName} ${year}`;
+  }
+
+  private formatReferenciaMensualLabel(periodo: string | null): string | null {
+    return periodo ? this.formatPeriodoMesAnio(periodo) : null;
   }
 
   labelParametro(value: string): string {
@@ -3207,6 +3677,16 @@ export class ParametrosPage implements OnInit {
       apvInstituciones: [],
       apvFormasPago: [],
       afcParametros: [],
+    };
+  }
+
+  private emptyReferenciasMensuales(): ParametrosReferenciaMensualInfo {
+    return {
+      parametrosGenerales: null,
+      tramosCarga: null,
+      tramosImpuesto: null,
+      tablaImpuestoUnico: null,
+      ley16744Parametros: null,
     };
   }
 

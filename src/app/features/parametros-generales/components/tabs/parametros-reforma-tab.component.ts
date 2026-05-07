@@ -68,8 +68,8 @@ type ReformaSubId = 'legales' | 'aportes' | 'trabPesados' | 'apvInst' | 'apvPago
               [maxItems]="8"
               gridHeight="min(520px, 100%)"
               [persistenceKey]="gridPersistenceKeyPrevisional"
-              emptyTitle="No hay gradualidad cargada"
-              emptyDescription="Revisa la normativa base de Reforma de Pensiones."
+              emptyTitle="No hay gradualidad vigente al periodo activo"
+              emptyDescription="Revisa las vigencias de reforma previsional."
               (refresh)="refresh?.()"
             ></app-data-grid>
           </section>

@@ -152,7 +152,17 @@ Catalogo:
 - Titulo: `Sin registros en catalogo.`
 - Detalle: `Revisa la normativa base o maestros.`
 
-La referencia anterior no se renderiza dentro del periodo activo y no se guarda como dato oficial.
+La referencia anterior puede renderizarse dentro del periodo activo como referencia visual cuando faltan oficiales actuales, con badge `Referencia <periodo anterior>`. No se guarda como dato oficial, no habilita cierre, no marca `Cargado` y no cuenta para la completitud mensual oficial.
+
+Estados visuales adicionales:
+
+- `Pendiente oficial`: faltan oficiales actuales. Si hay configuracion cliente, la UI indica que puede trabajarse con esa configuracion parcial.
+- `Pendiente oficial` + `Referencia <YYYY-MM>`: no hay oficiales ni configuracion cliente, pero existe referencia visual anterior.
+- `Sin base disponible`: no hay oficiales, configuracion cliente ni referencia anterior.
+- `Pendiente de reconciliacion`: existen oficiales actuales y configuracion cliente con diferencias.
+- `Listo para revisar`: oficiales actuales y configuracion cliente estan alineados. No implica cierre.
+
+La accion principal fuera de edicion sigue siendo `Modificar`. Si no existe configuracion cliente, el MsgBox de inicio ofrece solo las bases disponibles: crear desde cero, usar ultima configuracion, usar referencia anterior, usar valores oficiales actuales o cancelar. No se crea fila hasta presionar `Guardar`.
 
 ## DataGrid
 

@@ -15,3 +15,5 @@
 \ir partes/13_persona_paso_alta_avanzada.sql
 \ir partes/15_nomina_calculo_snapshot.sql
 \ir partes/16_nomina_calculo_snapshot_rls.sql
+\ir partes/17_parametros_reconciliacion_cliente.sql
+\ir partes/18_novedades_mensuales.sql

@@ -447,7 +447,7 @@ CREATE TABLE ccaf_entidad (
     CONSTRAINT chk_ccaf_entidad_periodo_fmt CHECK (periodo IS NULL OR periodo ~ '^[0-9]{4}-(0[1-9]|1[0-2])$')
 );
 
-CREATE TABLE parametros_generales_cliente (
+CREATE TABLE IF NOT EXISTS parametros_generales_cliente (
     periodo VARCHAR(7) PRIMARY KEY,
     uf NUMERIC(14,4),
     utm NUMERIC(12,0),
@@ -491,8 +491,18 @@ CREATE TABLE parametros_generales_cliente (
     imm_gratificacion NUMERIC(8,4) DEFAULT 4.75,
     id_ccaf_entidad INT REFERENCES ccaf_entidad(id_ccaf_entidad) ON DELETE SET NULL,
     id_organismo_administrador_ley_16744 INT REFERENCES organismo_administrador_ley_16744(id_organismo_administrador_ley_16744) ON DELETE SET NULL,
+    estado_reconciliacion_oficial VARCHAR(40) NOT NULL DEFAULT 'pendiente',
+    fecha_reconciliacion_oficial TIMESTAMP,
+    origen_reconciliacion VARCHAR(40),
+    observacion_reconciliacion TEXT,
     fecha_actualizacion TIMESTAMP DEFAULT NOW(),
-    CONSTRAINT chk_parametros_generales_cliente_periodo CHECK (periodo ~ '^[0-9]{4}-(0[1-9]|1[0-2])$')
+    CONSTRAINT chk_parametros_generales_cliente_periodo CHECK (periodo ~ '^[0-9]{4}-(0[1-9]|1[0-2])$'),
+    CONSTRAINT chk_parametros_generales_cliente_reconciliacion CHECK (
+        estado_reconciliacion_oficial IN ('pendiente', 'actualizado_con_oficiales', 'cliente_confirmado', 'revisar_despues')
+    ),
+    CONSTRAINT chk_parametros_generales_cliente_origen_reconciliacion CHECK (
+        origen_reconciliacion IS NULL OR origen_reconciliacion IN ('actualizar_con_oficiales', 'mantener_configuracion', 'revisar_despues', 'edicion_cliente')
+    )
 );
 -- Configuracion propia del cliente editable desde UI. No reemplaza ni completa
 -- el snapshot mensual oficial de parametros_generales cargado por Python.
@@ -833,7 +843,7 @@ CREATE TABLE contrato_centro_costo (
     porcentaje NUMERIC(5,2) NOT NULL CHECK (porcentaje > 0 AND porcentaje <= 100)
 );
 
-CREATE TABLE catalogo_lre (
+CREATE TABLE IF NOT EXISTS catalogo_lre (
     id_catalogo_lre SERIAL PRIMARY KEY,
     codigo_lre VARCHAR(10) NOT NULL UNIQUE,
     nombre_lre VARCHAR(200) NOT NULL,
@@ -854,11 +864,11 @@ CREATE TABLE catalogo_lre (
     )
 );
 
-CREATE INDEX idx_catalogo_lre_codigo ON catalogo_lre (codigo_lre);
-CREATE INDEX idx_catalogo_lre_modulo ON catalogo_lre (modulo_lre);
-CREATE INDEX idx_catalogo_lre_grupo ON catalogo_lre (grupo_lre);
-CREATE INDEX idx_catalogo_lre_clasificacion ON catalogo_lre (clasificacion_lre);
-CREATE INDEX idx_catalogo_lre_vigente ON catalogo_lre (vigente);
+CREATE INDEX IF NOT EXISTS idx_catalogo_lre_codigo ON catalogo_lre (codigo_lre);
+CREATE INDEX IF NOT EXISTS idx_catalogo_lre_modulo ON catalogo_lre (modulo_lre);
+CREATE INDEX IF NOT EXISTS idx_catalogo_lre_grupo ON catalogo_lre (grupo_lre);
+CREATE INDEX IF NOT EXISTS idx_catalogo_lre_clasificacion ON catalogo_lre (clasificacion_lre);
+CREATE INDEX IF NOT EXISTS idx_catalogo_lre_vigente ON catalogo_lre (vigente);
 
 CREATE TABLE concepto (
     id_concepto SERIAL PRIMARY KEY,
@@ -1012,7 +1022,7 @@ CREATE INDEX idx_hd_vigencia ON haberdescuento_persona (vigencia_inicio, vigenci
 
 -- Fase 9.4C: movimientos variables mensuales (haber/descuento puntual por periodo YYYY-MM).
 -- No reemplaza haberdescuento_persona. Ver docs/codex/modulos/movimientos-variables/persistencia-9-4C.md
-CREATE TABLE movimiento_variable_mensual (
+CREATE TABLE IF NOT EXISTS movimiento_variable_mensual (
     id_movimiento_variable SERIAL PRIMARY KEY,
     id_persona INT NOT NULL REFERENCES persona(id_persona) ON DELETE CASCADE,
     id_concepto INT NOT NULL REFERENCES concepto(id_concepto),
@@ -1041,12 +1051,12 @@ CREATE TABLE movimiento_variable_mensual (
     CONSTRAINT chk_movvar_origen CHECK (origen IN ('MANUAL', 'IMPORTADO', 'SISTEMA'))
 );
 
-CREATE INDEX idx_movvar_periodo ON movimiento_variable_mensual (periodo);
-CREATE INDEX idx_movvar_persona_periodo ON movimiento_variable_mensual (id_persona, periodo);
-CREATE INDEX idx_movvar_concepto_periodo ON movimiento_variable_mensual (id_concepto, periodo);
-CREATE INDEX idx_movvar_estado_periodo ON movimiento_variable_mensual (estado, periodo);
+CREATE INDEX IF NOT EXISTS idx_movvar_periodo ON movimiento_variable_mensual (periodo);
+CREATE INDEX IF NOT EXISTS idx_movvar_persona_periodo ON movimiento_variable_mensual (id_persona, periodo);
+CREATE INDEX IF NOT EXISTS idx_movvar_concepto_periodo ON movimiento_variable_mensual (id_concepto, periodo);
+CREATE INDEX IF NOT EXISTS idx_movvar_estado_periodo ON movimiento_variable_mensual (estado, periodo);
 
-CREATE UNIQUE INDEX uq_movvar_operativo_persona_concepto_periodo
+CREATE UNIQUE INDEX IF NOT EXISTS uq_movvar_operativo_persona_concepto_periodo
     ON movimiento_variable_mensual (id_persona, id_concepto, periodo)
     WHERE estado <> 'ANULADO';
 
