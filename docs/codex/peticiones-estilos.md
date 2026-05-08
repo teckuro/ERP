@@ -1,5 +1,12 @@
 ## Peticiones de estilos (bitácora)
 
+### 2026-05-07 - NOM-01D compactacion visual Novedades mensuales
+
+- **Modulo:** Remuneraciones / Novedades mensuales (`/remuneraciones/novedades-mensuales`).
+- **Cambio:** se aligera la UI base siguiendo creacion avanzada de Empleados: controles nativos compactos de `22px`, labels pequenos, grilla de formulario a 4 columnas desktop, cards/contexto mas bajos, chips y acciones de fila mas livianos.
+- **Criterio:** no agrandar inputs para llenar espacio; la densidad se controla con grilla, gaps y jerarquia. Botones principales quedan mas altos que inputs para conservar peso de accion.
+- **Archivos:** `src/app/features/nomina-mensual/novedades/containers/novedades-mensuales-container/novedades-mensuales-container.css`.
+
 ### 2026-05-07 - Parametros inicio mensual con referencia visual
 
 - **Modulo:** Parametros (`/parametros`).
@@ -585,6 +592,14 @@ sin mezclarlo con las reglas base.
   - `src/app/features/empleados/components/secciones/datos-personales/datos-personales.css`
 
 ### 2026-04-30 (Wizard avanzado - navegacion en cabecera del paso)
+
+# 2026-05-07 - NOM-01D UI base de novedades mensuales
+
+- **Modulo:** Remuneraciones / Novedades mensuales (`/remuneraciones/novedades-mensuales`).
+- **Cambio:** pantalla base con header, contexto de periodo, listado con badges de estado, filtros minimos y formulario compacto para crear/editar borradores.
+- **Reglas visuales:** se reutilizan `app-card`, `app-button`, `app-data-grid`, `app-message-box` y `app-record-breadcrumb`; paleta neutra con azul primario, sin rediseño global ni cards anidadas.
+- **Fuera de alcance visual:** no es dashboard avanzado, no integra motor ni proceso mensual real, no muestra resultados de liquidacion.
+- **Archivos:** `src/app/pages/novedades-mensuales.page.ts`, `src/app/features/nomina-mensual/novedades/containers/novedades-mensuales-container/*`.
 
 - **Anterior / Siguiente / Finalizar alta** en la zona superior derecha del **contenido del paso** (`.advanced-step-header`), alineados con kicker + descripcion; **Volver** sigue solo en el header global de "Creacion avanzada".
 - **Sin duplicar**: eliminado `footer.advanced-wizard-footer` con los mismos botones; se conserva una **pista compacta** (`.advanced-step-hint`) bajo la fila principal.

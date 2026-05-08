@@ -1,5 +1,16 @@
 # CHANGELOG
 
+## UNIF-NOM-02 - Entradas mensuales canonicas
+
+Fecha: 2026-05-07
+
+- Se agrega `src/app/features/nomina-mensual/entradas/` con modelo `EntradaMensualPeriodo`, mapper, rules y `EntradasMensualesPeriodoService`.
+- La capa normaliza recurrentes, novedades mensuales canonicas y movimientos variables legacy sin cambiar datos ni estados fuente.
+- Decision de transicion: `VALIDADO` legacy se normaliza como `aprobada`; `BLOQUEADO` legacy se normaliza como `legacy_bloqueado` y bloquea proceso.
+- No se adapta `ProcesoMensualService`; esa integracion queda para UNIF-NOM-03.
+- No se modifica motor, liquidaciones, Previred/LRE, Python, SQL, UI, rutas ni sidebar.
+- Pruebas: `npm test -- --watch=false`; `npm run build`.
+
 ## SEG-NOMINA - RLS y permisos minimos de snapshots de nomina
 
 Fecha: 2026-05-06
@@ -164,3 +175,16 @@ Registro de cambios aplicados a la base documental del ERP de remuneraciones.  C
 - Se creó la primera versión de la base documental reorganizada a partir de las fuentes originales (`docs.zip`).  Se definió la estructura de carpetas (`codex/`, `modulos/`, `temas/`, `orquestador/`) y se redactaron archivos resumidos por módulo: empleados, parámetros, conceptos de remuneración, haberes y descuentos, nómina mensual.  Se añadieron guías de UI y estilos y un índice general (`README.md`).  Se generó un `mapa-documentacion.md` para describir cada archivo.
 
 Entradas anteriores se encuentran en resúmenes del memento; esta changelog las formaliza en la base documental para futuras referencias.
+
+<!-- ARQ-ERP-01-INTEGRACION -->
+
+## 2026-05-07 - ARQ-ERP-01 / UNIF-NOM-01 integracion documental
+
+- Se agrega `orquestador/estructura-canonica-erp.md`.
+- Se agrega `orquestador/plan-transicion-novedades-movimientos.md`.
+- Se agrega `modulos/nomina-mensual/benchmark-novedades-pre-nomina.md`.
+- Se agrega `orquestador/integracion-documental-2026-05-07.md`.
+- Decision: Novedades mensuales queda como flujo funcional canonico y Movimientos variables como legacy/transicion.
+- Decision: `novedad_remuneracion_periodo` queda como tabla canonica futura para hechos del periodo y `movimiento_variable_mensual` como tabla legacy/transicion.
+- No se borra documentacion historica; se agregan notas de integracion y referencias cruzadas.
+- Ajuste de validacion: roadmap y tablero dejan de empujar mejoras nuevas sobre Movimientos variables y priorizan `EntradasMensualesPeriodoService`.

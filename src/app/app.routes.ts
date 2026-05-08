@@ -66,6 +66,11 @@ export const routes: Routes = [
               import('./pages/movimientos-variables.page').then((m) => m.MovimientosVariablesPage),
           },
           {
+            path: 'novedades-mensuales',
+            loadComponent: () =>
+              import('./pages/novedades-mensuales.page').then((m) => m.NovedadesMensualesPage),
+          },
+          {
             path: 'proceso-mensual',
             loadComponent: () =>
               import('./pages/proceso-remuneraciones.page').then((m) => m.ProcesoRemuneracionesPage),

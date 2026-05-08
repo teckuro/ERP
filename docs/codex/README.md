@@ -125,3 +125,24 @@
 - **Archivo de documentos viejos** (si se mueven explícitamente): [`archivo/README.md`](./archivo/README.md).
 
 **Mejoras visuales**: registrar en [`peticiones-estilos.md`](./peticiones-estilos.md) cuando proceda según [`AGENTS.md`](./AGENTS.md).
+
+<!-- ARQ-ERP-01-INTEGRACION -->
+
+## Integracion canonica 2026-05-07
+
+Se agrega como lectura obligatoria para fases de Nomina y consolidacion:
+
+| Documento | Rol |
+|---|---|
+| [`orquestador/estructura-canonica-erp.md`](./orquestador/estructura-canonica-erp.md) | Mapa canonico del ERP, fuentes de verdad y legacy/transicion. |
+| [`orquestador/plan-transicion-novedades-movimientos.md`](./orquestador/plan-transicion-novedades-movimientos.md) | Transicion entre Movimientos variables y Novedades mensuales. |
+| [`modulos/nomina-mensual/benchmark-novedades-pre-nomina.md`](./modulos/nomina-mensual/benchmark-novedades-pre-nomina.md) | Benchmark funcional para UI/flujo de Novedades y Pre-nomina. |
+| [`orquestador/integracion-documental-2026-05-07.md`](./orquestador/integracion-documental-2026-05-07.md) | Resumen de integracion aplicada a este paquete documental. |
+
+Decision canonica:
+
+- **Novedades mensuales** es el nombre funcional oficial para RRHH.
+- `novedad_remuneracion_periodo` es la tabla canonica futura para hechos del periodo.
+- **Movimientos variables** queda como termino legacy/tecnico de transicion.
+- `movimiento_variable_mensual` queda como tabla legacy de transicion.
+- No crear nuevas mejoras funcionales sobre el flujo legacy salvo bugs criticos o compatibilidad temporal.

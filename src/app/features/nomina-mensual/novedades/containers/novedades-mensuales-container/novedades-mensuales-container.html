@@ -1,0 +1,329 @@
+<section class="nm-page" aria-label="Novedades mensuales">
+  <header class="nm-head">
+    <app-record-breadcrumb
+      [items]="breadcrumbItems"
+      title="Novedades mensuales"
+    ></app-record-breadcrumb>
+    <p class="nm-lead">
+      Registra hechos del periodo que afectan la remuneracion. No son asignaciones recurrentes ni calculan liquidacion
+      por si solas.
+    </p>
+
+    <div class="nm-head-actions">
+      <div class="nm-period-wrap">
+        <div class="nm-period-global" aria-live="polite">
+          <span class="nm-period-global-k">Periodo activo</span>
+          <span class="nm-period-global-v">{{ periodoActivo.etiqueta() }}</span>
+        </div>
+        <p class="nm-period-hint">
+          Las novedades aprobadas seran consideradas por el proceso mensual en una fase posterior.
+        </p>
+      </div>
+      <div class="nm-head-buttons">
+        <app-button variant="outline" size="md" (click)="cargarNovedades()">
+          <lucide-icon icon class="w-4 h-4" [img]="refreshIcon"></lucide-icon>
+          Reintentar carga
+        </app-button>
+        <app-button variant="primary" size="md" (click)="abrirNuevo()">
+          <lucide-icon icon class="w-4 h-4" [img]="plusIcon"></lucide-icon>
+          Nueva novedad
+        </app-button>
+      </div>
+    </div>
+  </header>
+
+  <app-card>
+    <app-card-header className="px-4 py-3 border-b border-gray-100">
+      <h2 class="text-sm font-semibold text-gray-900">Contexto del periodo</h2>
+    </app-card-header>
+    <app-card-content className="px-4 py-3">
+      <div class="nm-context-grid">
+        <div>
+          <label class="nm-field-label" for="nm-periodo">Periodo (YYYY-MM)</label>
+          <input
+            id="nm-periodo"
+            type="month"
+            class="nm-input"
+            [ngModel]="periodoFiltro()"
+            (ngModelChange)="periodoFiltro.set($event)"
+          />
+        </div>
+        <div class="nm-context-card">
+          <span class="nm-context-k">Total</span>
+          <strong>{{ totalNovedades() }}</strong>
+        </div>
+        @for (item of conteosEstado(); track item.estado) {
+          @if (item.total > 0) {
+            <div class="nm-context-card">
+              <span class="nm-context-k">{{ item.label }}</span>
+              <strong>{{ item.total }}</strong>
+            </div>
+          }
+        }
+        <div class="nm-context-action">
+          <app-button variant="primary" size="md" (click)="cargarNovedades()">Buscar</app-button>
+        </div>
+      </div>
+    </app-card-content>
+  </app-card>
+
+  @if (formAbierto()) {
+    <app-card>
+      <app-card-header className="px-4 py-3 border-b border-gray-100">
+        <div class="nm-form-head">
+          <div>
+            <h2 class="text-sm font-semibold text-gray-900">
+              {{ novedadEditando() ? 'Editar novedad' : 'Nueva novedad' }}
+            </h2>
+            <p class="nm-form-sub">
+              Guarde el borrador antes de enviarlo a revision. Esta pantalla no calcula liquidaciones.
+            </p>
+          </div>
+        </div>
+      </app-card-header>
+      <app-card-content className="px-4 py-4">
+        <div class="nm-form-section">
+          <h3>Identificacion</h3>
+          <div class="nm-form-grid">
+            <label class="nm-field">
+              <span class="nm-field-label">Periodo</span>
+              <input
+                type="month"
+                class="nm-input"
+                [ngModel]="form().periodo"
+                (ngModelChange)="actualizarForm('periodo', $event)"
+              />
+            </label>
+            <label class="nm-field">
+              <span class="nm-field-label">Trabajador / idPersona</span>
+              <input
+                type="number"
+                min="1"
+                step="1"
+                class="nm-input"
+                [ngModel]="form().idPersona"
+                (ngModelChange)="actualizarForm('idPersona', $event == null || $event === '' ? null : +$event)"
+              />
+            </label>
+            <label class="nm-field">
+              <span class="nm-field-label">Contrato / idContrato</span>
+              <input
+                type="number"
+                min="1"
+                step="1"
+                class="nm-input"
+                [ngModel]="form().idContrato"
+                (ngModelChange)="actualizarForm('idContrato', $event == null || $event === '' ? null : +$event)"
+              />
+            </label>
+            <label class="nm-field">
+              <span class="nm-field-label">Concepto / idConcepto</span>
+              <input
+                type="number"
+                min="1"
+                step="1"
+                class="nm-input"
+                [ngModel]="form().idConcepto"
+                (ngModelChange)="actualizarForm('idConcepto', $event == null || $event === '' ? null : +$event)"
+              />
+            </label>
+          </div>
+        </div>
+
+        <div class="nm-form-section">
+          <h3>Movimiento</h3>
+          <div class="nm-form-grid">
+            <label class="nm-field">
+              <span class="nm-field-label">Categoria</span>
+              <select
+                class="nm-input"
+                [ngModel]="form().categoria"
+                (ngModelChange)="actualizarForm('categoria', $event)"
+              >
+                @for (categoria of categorias; track categoria) {
+                  <option [ngValue]="categoria">{{ etiquetaCategoria(categoria) }}</option>
+                }
+              </select>
+            </label>
+            <label class="nm-field">
+              <span class="nm-field-label">Tipo movimiento</span>
+              <select
+                class="nm-input"
+                [ngModel]="form().tipoMovimiento"
+                (ngModelChange)="actualizarForm('tipoMovimiento', $event)"
+              >
+                @for (tipo of tiposMovimiento; track tipo) {
+                  <option [ngValue]="tipo">{{ etiquetaTipoMovimiento(tipo) }}</option>
+                }
+              </select>
+            </label>
+            <label class="nm-field">
+              <span class="nm-field-label">Cantidad</span>
+              <input
+                type="number"
+                min="0"
+                step="0.01"
+                class="nm-input"
+                [ngModel]="form().cantidad"
+                (ngModelChange)="actualizarForm('cantidad', $event == null || $event === '' ? null : +$event)"
+              />
+            </label>
+            <label class="nm-field">
+              <span class="nm-field-label">Unidad</span>
+              <input
+                type="text"
+                class="nm-input"
+                [ngModel]="form().unidad"
+                (ngModelChange)="actualizarForm('unidad', $event)"
+              />
+            </label>
+            <label class="nm-field">
+              <span class="nm-field-label">Monto</span>
+              <input
+                type="number"
+                min="0"
+                step="1"
+                class="nm-input"
+                [ngModel]="form().monto"
+                (ngModelChange)="actualizarForm('monto', $event == null || $event === '' ? null : +$event)"
+              />
+            </label>
+            <label class="nm-field">
+              <span class="nm-field-label">Moneda</span>
+              <input
+                type="text"
+                maxlength="3"
+                class="nm-input"
+                [ngModel]="form().moneda"
+                (ngModelChange)="actualizarForm('moneda', $event)"
+              />
+            </label>
+          </div>
+        </div>
+
+        <div class="nm-form-section">
+          <h3>Contexto</h3>
+          <div class="nm-form-grid">
+            <label class="nm-field">
+              <span class="nm-field-label">Origen</span>
+              <select class="nm-input" [ngModel]="form().origen" (ngModelChange)="actualizarForm('origen', $event)">
+                @for (origen of origenes; track origen) {
+                  <option [ngValue]="origen">{{ etiquetaOrigen(origen) }}</option>
+                }
+              </select>
+            </label>
+            <label class="nm-field">
+              <span class="nm-field-label">Fecha evento</span>
+              <input
+                type="date"
+                class="nm-input"
+                [ngModel]="form().fechaEvento"
+                (ngModelChange)="actualizarForm('fechaEvento', $event)"
+              />
+            </label>
+            <label class="nm-field">
+              <span class="nm-field-label">Referencia externa</span>
+              <input
+                type="text"
+                class="nm-input"
+                [ngModel]="form().referenciaExterna"
+                (ngModelChange)="actualizarForm('referenciaExterna', $event)"
+              />
+            </label>
+            <label class="nm-field nm-form-span2">
+              <span class="nm-field-label">Observacion</span>
+              <textarea
+                rows="3"
+                class="nm-input nm-textarea"
+                [ngModel]="form().observacion"
+                (ngModelChange)="actualizarForm('observacion', $event)"
+              ></textarea>
+            </label>
+          </div>
+        </div>
+
+        <div class="nm-form-actions">
+          <app-button variant="outline" size="md" [disabled]="guardando()" (click)="cerrarFormulario()">Cancelar</app-button>
+          <app-button variant="primary" size="md" [disabled]="guardando()" (click)="guardarFormulario()">
+            {{ guardando() ? 'Guardando...' : 'Guardar borrador' }}
+          </app-button>
+        </div>
+      </app-card-content>
+    </app-card>
+  }
+
+  <app-card>
+    <app-card-header className="px-4 py-3 border-b border-gray-100">
+      <div class="nm-action-observation">
+        <div>
+          <h2 class="text-sm font-semibold text-gray-900">Listado del periodo</h2>
+          <p class="nm-form-sub">Use la observacion solo para rechazar o anular novedades.</p>
+        </div>
+        <label>
+          <span class="nm-field-label">Observacion para accion</span>
+          <input
+            type="text"
+            class="nm-input"
+            [ngModel]="observacionAccion()"
+            (ngModelChange)="observacionAccion.set($event)"
+          />
+        </label>
+      </div>
+    </app-card-header>
+    <app-card-content className="p-0">
+      <app-data-grid
+        title="Novedades del periodo"
+        [rows]="filas()"
+        [columns]="columns"
+        [filters]="filters"
+        [filtersEnabled]="true"
+        [loading]="loading()"
+        [showExportAction]="false"
+        [selectable]="false"
+        [trackBy]="trackNovedad"
+        gridHeight="min(34rem, calc(100vh - 26rem))"
+        emptyTitle="No hay novedades registradas para este periodo."
+        emptyDescription="Puedes crear borradores de bonos puntuales, horas extra, ausencias, anticipos u otros movimientos del mes."
+      >
+        <ng-template appDataGridCell="estado" let-row>
+          <span [class]="claseEstado(row.estado)">{{ etiquetaEstado(row.estado) }}</span>
+        </ng-template>
+        <ng-template appDataGridCell="acciones" let-row>
+          <div class="nm-actions">
+            @if (puedeEditar(row)) {
+              <button type="button" class="nm-action-btn" (click)="editarNovedad(row)">Editar</button>
+            }
+            @if (puedeEnviarRevision(row)) {
+              <button type="button" class="nm-action-btn" (click)="enviarRevision(row)">Enviar</button>
+            }
+            @if (puedeAprobar(row)) {
+              <button type="button" class="nm-action-btn nm-action-btn--ok" (click)="aprobar(row)">Aprobar</button>
+            }
+            @if (puedeRechazar(row)) {
+              <button type="button" class="nm-action-btn nm-action-btn--warn" (click)="rechazar(row)">Rechazar</button>
+            }
+            @if (puedeAnular(row)) {
+              <button type="button" class="nm-action-btn nm-action-btn--danger" (click)="anular(row)">Anular</button>
+            }
+            @if (puedeEliminar(row)) {
+              <button type="button" class="nm-action-btn nm-action-btn--danger" (click)="eliminar(row)">Eliminar</button>
+            }
+          </div>
+        </ng-template>
+      </app-data-grid>
+    </app-card-content>
+  </app-card>
+
+  @if (mensaje(); as msg) {
+    <app-message-box
+      [variant]="msg.variant"
+      mode="modal"
+      [modalHeadlineSplit]="true"
+      [title]="msg.title"
+      [message]="msg.message"
+      [detail]="msg.detail ?? ''"
+      primaryLabel="Aceptar"
+      (action)="cerrarMensaje()"
+    ></app-message-box>
+  }
+</section>

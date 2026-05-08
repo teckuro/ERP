@@ -33,7 +33,11 @@ yarn-error.log
 .cursor/
 
 # Guías y bitácora Codex (copia local del contrato de agente; no publicar en remoto)
-/docs/codex/
+/docs/codex/*
+!/docs/codex/ui-form-guidelines.md
+!/docs/codex/estilos/
+/docs/codex/estilos/*
+!/docs/codex/estilos/README.md
 
 # Miscellaneous
 # Copia local de respaldo del proyecto (no versionar)
