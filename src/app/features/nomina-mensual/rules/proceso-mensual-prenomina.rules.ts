@@ -9,6 +9,7 @@ export function construirPreNominaPeriodo(
 ): ProcesoMensualPreNominaPeriodo {
   const movimientosValidados = prevalidacion.resumen.conteoMovimientosPorEstado.VALIDADO ?? 0;
   const movimientosBorrador = prevalidacion.resumen.conteoMovimientosPorEstado.BORRADOR ?? 0;
+  const entradas = prevalidacion.resumen.resumenEntradasMensuales;
 
   return {
     periodo: prevalidacion.periodo,
@@ -16,6 +17,9 @@ export function construirPreNominaPeriodo(
     generadoEn,
     trabajadoresIncluidos: prevalidacion.resumen.trabajadoresActivosAptos,
     recurrentesIncluidos: prevalidacion.resumen.recurrentesAplicablesAlPeriodo,
+    entradasMensualesAptas: entradas?.aptasPreNomina ?? 0,
+    entradasMensualesPendientesRevision: entradas?.pendientesRevision ?? 0,
+    entradasMensualesBloqueantes: entradas?.bloqueantes ?? 0,
     movimientosVariablesValidados: movimientosValidados,
     movimientosVariablesBorrador: movimientosBorrador,
     parametrosOperativos: prevalidacion.resumen.parametrosOperativos,

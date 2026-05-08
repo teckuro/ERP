@@ -2,6 +2,11 @@ import type { MovimientoVariableEstado } from '../../movimientos-variables/model
 import type { HaberDescuentoAsignacionPrevalidacionMensualFila } from '../../haberes-descuentos/models/haber-descuento-asignacion.model';
 import type { EmpleadoFichaDetalle, EmpleadoListado } from '../../empleados/models/empleado-listado.model';
 import type {
+  EntradaMensualEstado,
+  EntradaMensualPeriodo,
+  ResumenEntradasMensualesPeriodo,
+} from '../entradas/models/entrada-mensual-periodo.model';
+import type {
   AfcParametro,
   AfpParametro,
   IsapreParametro,
@@ -23,6 +28,7 @@ export type ProcesoMensualArea =
   | 'TRABAJADORES'
   | 'CONCEPTOS'
   | 'HABERES_RECURRENTES'
+  | 'ENTRADAS_MENSUALES'
   | 'MOVIMIENTOS_VARIABLES'
   | 'PROCESO';
 
@@ -74,6 +80,10 @@ export interface ProcesoMensualResumen {
   periodo: string;
   hayBloqueos: boolean;
   hayAdvertencias: boolean;
+  totalEntradasMensuales?: number;
+  resumenEntradasMensuales?: ResumenEntradasMensualesPeriodo;
+  conteoEntradasPorEstado?: Partial<Record<EntradaMensualEstado, number>>;
+  /** Alias legacy de transicion para la UI existente. */
   conteoMovimientosPorEstado: Partial<Record<MovimientoVariableEstado, number>>;
   trabajadoresActivosAptos: number;
   trabajadoresActivosNoAptos: number;
@@ -94,6 +104,7 @@ export interface ProcesoMensualPrevalidacion {
   /** Avisos informativos (no cambian LISTO vs CON_ADVERTENCIAS). */
   informaciones: ProcesoMensualMensaje[];
   items: ProcesoMensualItem[];
+  entradasMensuales?: EntradaMensualPeriodo[];
 }
 
 export type ProcesoMensualPreNominaEstado =
@@ -107,6 +118,10 @@ export interface ProcesoMensualPreNominaPeriodo {
   generadoEn: string;
   trabajadoresIncluidos: number;
   recurrentesIncluidos: number;
+  entradasMensualesAptas?: number;
+  entradasMensualesPendientesRevision?: number;
+  entradasMensualesBloqueantes?: number;
+  /** Alias legacy de transicion para la UI existente. */
   movimientosVariablesValidados: number;
   movimientosVariablesBorrador: number;
   parametrosOperativos: boolean;

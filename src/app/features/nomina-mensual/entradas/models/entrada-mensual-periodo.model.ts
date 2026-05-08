@@ -72,4 +72,5 @@ export interface ResumenEntradasMensualesPeriodo {
   anuladas: number;
   bloqueantes: number;
   conWarnings: number;
+  aptasPreNomina: number;
 }

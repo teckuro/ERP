@@ -1,5 +1,16 @@
 # CHANGELOG
 
+## UNIF-NOM-03 - Proceso mensual con entradas canonicas
+
+Fecha: 2026-05-07
+
+- `ProcesoMensualService` consume `EntradasMensualesPeriodoService` para prevalidar entradas del periodo.
+- Se elimina la dependencia directa de `MovimientosVariablesService` desde Proceso mensual; Movimientos variables sigue existiendo como fuente legacy dentro de la capa canonica.
+- Se agregan resumen y conteos de entradas mensuales canonicas, incluyendo aptas para pre-nomina.
+- Se mantienen alias legacy de movimientos variables para compatibilidad temporal.
+- No se modifican estados fuente, motor, liquidaciones, cierre, Previred/LRE, Python, SQL, rutas, sidebar ni UI productiva.
+- Pruebas: `npm test -- --watch=false`; `npm run build`.
+
 ## UNIF-NOM-02 - Entradas mensuales canonicas
 
 Fecha: 2026-05-07

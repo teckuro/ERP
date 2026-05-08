@@ -3,11 +3,17 @@ import { inject, Injectable } from '@angular/core';
 import type { HaberDescuentoAsignacionPrevalidacionMensualFila } from '../../haberes-descuentos/models/haber-descuento-asignacion.model';
 import { EmpleadosService } from '../../empleados/services/empleados.service';
 import { HaberesDescuentosService } from '../../haberes-descuentos/services/haberes-descuentos.service';
-import { MovimientosVariablesService } from '../../movimientos-variables/services/movimientos-variables.service';
-import { esPeriodoRemuneracionValido } from '../../movimientos-variables/rules/movimiento-variable-validacion.rules';
+import type {
+  MovimientoVariableEstado,
+  MovimientoVariableListadoFila,
+  MovimientoVariableOrigen,
+} from '../../movimientos-variables/models/movimiento-variable.model';
 import type { ParametroGeneral, ParametrosGeneralesCatalogos } from '../../parametros-generales/models/parametro-general.model';
 import { ParametrosGeneralesService } from '../../parametros-generales/services/parametros-generales.service';
 
+import type { EntradaMensualPeriodo } from '../entradas/models/entrada-mensual-periodo.model';
+import { EntradasMensualesPeriodoService } from '../entradas/services/entradas-mensuales-periodo.service';
+import { validarPeriodoEntradaMensual } from '../entradas/rules/entradas-mensuales-periodo.rules';
 import type {
   GuardarSnapshotPreliminarResult,
   MotorCalculoPeriodoResultado,
@@ -37,7 +43,7 @@ export class ProcesoMensualService {
   private readonly parametrosGenerales = inject(ParametrosGeneralesService);
   private readonly empleados = inject(EmpleadosService);
   private readonly haberesDescuentos = inject(HaberesDescuentosService);
-  private readonly movimientosVariables = inject(MovimientosVariablesService);
+  private readonly entradasMensuales = inject(EntradasMensualesPeriodoService);
   private readonly snapshots = inject(NominaCalculoSnapshotRepository);
   private readonly calculosPorPeriodo = new Map<string, MotorCalculoPeriodoResultado>();
 
@@ -46,7 +52,7 @@ export class ProcesoMensualService {
    */
   async ejecutarPrevalidaciones(periodo: string): Promise<ProcesoMensualPrevalidacion> {
     const p = periodo.trim();
-    if (!esPeriodoRemuneracionValido(p)) {
+    if (!validarPeriodoEntradaMensual(p)) {
       return construirPrevalidacionMensual(this.hechosMinimos(p));
     }
 
@@ -55,7 +61,7 @@ export class ProcesoMensualService {
       this.parametrosGenerales.obtenerPeriodoRemuneracion(p),
       this.empleados.listar(),
       this.haberesDescuentos.listarConceptosMantenimiento(),
-      this.movimientosVariables.listarPorPeriodo(p),
+      this.entradasMensuales.listarEntradasPeriodo(p),
       this.haberesDescuentos.listarAsignacionesParaPrevalidacionMensual(p),
       this.parametrosGenerales.listarCatalogos(p),
     ]);
@@ -151,6 +157,8 @@ export class ProcesoMensualService {
       lecturaConceptos: 'ok',
       alertaConceptosMotorFuturo: false,
       recurrentesConteo: { lectura: 'ok', aplicables: 0, invalidas: 0, cerradas: 0, fueraDelMes: 0 },
+      entradasMensuales: [],
+      lecturaEntradasMensuales: 'ok',
       movimientos: [],
       lecturaMovimientos: 'ok',
     };
@@ -160,7 +168,7 @@ export class ProcesoMensualService {
     periodo: string,
     settled: PromiseSettledResult<unknown>[],
   ): ProcesoMensualHechosPrevalidacion {
-    const [rUlt, rPer, rEmp, rConc, rMov, rRec, rCat] = settled;
+    const [rUlt, rPer, rEmp, rConc, rEntradas, rRec, rCat] = settled;
 
     let ultimoPg: ParametroGeneral | null = null;
     let lecturaUltimoPg: ProcesoMensualHechosPrevalidacion['lecturaUltimoPg'] = 'ok';
@@ -217,14 +225,23 @@ export class ProcesoMensualService {
       errorConceptos = rConc.reason instanceof Error ? rConc.reason.message : String(rConc.reason);
     }
 
-    let movimientos: ProcesoMensualHechosPrevalidacion['movimientos'] = [];
+    let entradasMensuales: ProcesoMensualHechosPrevalidacion['entradasMensuales'] = [];
+    let lecturaEntradasMensuales: ProcesoMensualHechosPrevalidacion['lecturaEntradasMensuales'] = 'ok';
+    let errorEntradasMensuales: string | undefined;
+    if (rEntradas.status === 'fulfilled') {
+      entradasMensuales = rEntradas.value as ProcesoMensualHechosPrevalidacion['entradasMensuales'];
+    } else {
+      lecturaEntradasMensuales = 'error';
+      errorEntradasMensuales = rEntradas.reason instanceof Error ? rEntradas.reason.message : String(rEntradas.reason);
+    }
+
+    const movimientos: ProcesoMensualHechosPrevalidacion['movimientos'] =
+      lecturaEntradasMensuales === 'ok' ? this.mapearMovimientosLegacyDesdeEntradas(entradasMensuales) : [];
     let lecturaMovimientos: ProcesoMensualHechosPrevalidacion['lecturaMovimientos'] = 'ok';
     let errorMovimientos: string | undefined;
-    if (rMov.status === 'fulfilled') {
-      movimientos = rMov.value as ProcesoMensualHechosPrevalidacion['movimientos'];
-    } else {
+    if (lecturaEntradasMensuales === 'error') {
       lecturaMovimientos = 'error';
-      errorMovimientos = rMov.reason instanceof Error ? rMov.reason.message : String(rMov.reason);
+      errorMovimientos = errorEntradasMensuales;
     }
 
     let recurrentesConteo: ProcesoMensualHechosPrevalidacion['recurrentesConteo'];
@@ -280,10 +297,57 @@ export class ProcesoMensualService {
       errorConceptos,
       alertaConceptosMotorFuturo,
       recurrentesConteo,
+      entradasMensuales,
+      lecturaEntradasMensuales,
+      errorEntradasMensuales,
       movimientos,
       lecturaMovimientos,
       errorMovimientos,
     };
+  }
+
+  private mapearMovimientosLegacyDesdeEntradas(entradas: readonly EntradaMensualPeriodo[]): MovimientoVariableListadoFila[] {
+    return entradas
+      .filter((entrada) => entrada.origen === 'legacy_movimiento_variable')
+      .map((entrada) => ({
+        idMovimiento: Number(entrada.origenId ?? 0),
+        idPersona: entrada.idPersona,
+        idConcepto: entrada.idConcepto,
+        periodo: entrada.periodo,
+        monto: entrada.monto ?? 0,
+        estado: this.estadoLegacyDesdeEntrada(entrada),
+        origen: this.origenLegacyDesdeEntrada(entrada),
+        observacion: entrada.observacion ?? null,
+      }));
+  }
+
+  private estadoLegacyDesdeEntrada(entrada: EntradaMensualPeriodo): MovimientoVariableEstado {
+    const estadoLegacy = entrada.metadata['estadoLegacy'];
+    if (typeof estadoLegacy === 'string') {
+      return estadoLegacy as MovimientoVariableEstado;
+    }
+    switch (entrada.estado) {
+      case 'borrador':
+        return 'BORRADOR';
+      case 'aprobada':
+      case 'legacy_validado':
+        return 'VALIDADO';
+      case 'observada':
+        return 'OBSERVADO';
+      case 'anulada':
+        return 'ANULADO';
+      case 'legacy_bloqueado':
+        return 'BLOQUEADO';
+      case 'incorporada_a_pre_nomina':
+        return 'INCLUIDO_EN_PROCESO';
+      default:
+        return 'BORRADOR';
+    }
+  }
+
+  private origenLegacyDesdeEntrada(entrada: EntradaMensualPeriodo): MovimientoVariableOrigen {
+    const origenLegacy = entrada.metadata['origenLegacy'];
+    return typeof origenLegacy === 'string' ? (origenLegacy as MovimientoVariableOrigen) : 'MANUAL';
   }
 
   private async construirInputMotorPeriodo(periodo: string): Promise<MotorCalculoInput> {

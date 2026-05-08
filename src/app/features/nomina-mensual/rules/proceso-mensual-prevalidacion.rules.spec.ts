@@ -1,5 +1,6 @@
 import type { ParametroGeneral, PeriodoRemuneracionEstadoInfo } from '../../parametros-generales/models/parametro-general.model';
 import type { MovimientoVariableListadoFila } from '../../movimientos-variables/models/movimiento-variable.model';
+import type { EntradaMensualPeriodo } from '../entradas/models/entrada-mensual-periodo.model';
 
 import {
   construirPrevalidacionMensual,
@@ -39,6 +40,8 @@ function baseHechos(over: Partial<ProcesoMensualHechosPrevalidacion> = {}): Proc
     lecturaConceptos: 'ok',
     alertaConceptosMotorFuturo: false,
     recurrentesConteo: { lectura: 'ok', aplicables: 0, invalidas: 0, cerradas: 0, fueraDelMes: 0 },
+    entradasMensuales: [],
+    lecturaEntradasMensuales: 'ok',
     movimientos: [],
     lecturaMovimientos: 'ok',
     ...over,
@@ -54,6 +57,33 @@ function mv(estado: MovimientoVariableListadoFila['estado']): MovimientoVariable
     monto: 1000,
     estado,
     origen: 'MANUAL',
+  };
+}
+
+function entrada(over: Partial<EntradaMensualPeriodo> = {}): EntradaMensualPeriodo {
+  return {
+    idEntrada: over.idEntrada ?? 'novedad:1',
+    origen: over.origen ?? 'novedad_mensual',
+    origenId: over.origenId ?? 1,
+    periodo: over.periodo ?? '2026-05',
+    idPersona: over.idPersona ?? 1,
+    idContrato: over.idContrato ?? 10,
+    idConcepto: over.idConcepto ?? 1,
+    tipoEntrada: over.tipoEntrada ?? 'haber',
+    categoria: over.categoria ?? 'haber_variable',
+    tipoMovimiento: over.tipoMovimiento ?? 'haber',
+    cantidad: over.cantidad ?? null,
+    unidad: over.unidad ?? null,
+    monto: over.monto ?? 1000,
+    moneda: over.moneda ?? 'CLP',
+    estado: over.estado ?? 'aprobada',
+    fechaEvento: over.fechaEvento ?? null,
+    observacion: over.observacion ?? null,
+    referenciaExterna: over.referenciaExterna ?? null,
+    requiereRevision: over.requiereRevision ?? false,
+    bloqueaProceso: over.bloqueaProceso ?? false,
+    warnings: over.warnings ?? [],
+    metadata: over.metadata ?? {},
   };
 }
 
@@ -81,51 +111,57 @@ describe('proceso-mensual-prevalidacion.rules', () => {
     expect(r.bloqueos.some((b) => b.codigo === 'PARAMETROS_SIN_FILA')).toBe(true);
   });
 
-  it('solo movimientos VALIDADO -> no bloquea por variables', () => {
+  it('entradas mensuales aprobadas -> area canonica OK', () => {
     const r = construirPrevalidacionMensual(
       baseHechos({
+        entradasMensuales: [entrada({ estado: 'aprobada' })],
         movimientos: [mv('VALIDADO')],
       }),
     );
-    expect(r.bloqueos.filter((b) => b.area === 'MOVIMIENTOS_VARIABLES').length).toBe(0);
-    expect(r.advertencias.filter((a) => a.codigo === 'MV_BORRADOR').length).toBe(0);
+    expect(r.items.find((i) => i.area === 'ENTRADAS_MENSUALES')?.estado).toBe('LISTO');
+    expect(r.resumen.resumenEntradasMensuales?.aptasPreNomina).toBe(1);
+    expect(r.bloqueos.filter((b) => b.area === 'ENTRADAS_MENSUALES').length).toBe(0);
   });
 
-  it('movimientos BORRADOR -> advertencia MV_BORRADOR', () => {
+  it('entradas mensuales pendientes -> advertencia canonica', () => {
     const r = construirPrevalidacionMensual(
       baseHechos({
+        entradasMensuales: [entrada({ estado: 'borrador', requiereRevision: true })],
         movimientos: [mv('BORRADOR')],
       }),
     );
-    expect(r.advertencias.some((a) => a.codigo === 'MV_BORRADOR')).toBe(true);
+    expect(r.advertencias.some((a) => a.codigo === 'ENTRADAS_PENDIENTES_REVISION')).toBe(true);
     expect(r.estado).toBe('CON_ADVERTENCIAS');
   });
 
-  it('movimientos OBSERVADO -> bloqueo', () => {
+  it('entradas mensuales observadas -> advertencia canonica', () => {
     const r = construirPrevalidacionMensual(
       baseHechos({
+        entradasMensuales: [entrada({ estado: 'observada', requiereRevision: true })],
         movimientos: [mv('OBSERVADO')],
       }),
     );
-    expect(r.estado).toBe('BLOQUEADO');
-    expect(r.bloqueos.some((b) => b.codigo === 'MV_OBSERVADO')).toBe(true);
+    expect(r.estado).toBe('CON_ADVERTENCIAS');
+    expect(r.advertencias.some((a) => a.codigo === 'ENTRADAS_OBSERVADAS')).toBe(true);
   });
 
-  it('movimientos ANULADO -> ignorado para bloqueos/advertencias de MV', () => {
+  it('entradas mensuales anuladas -> no bloquean ni advierten en area canonica', () => {
     const r = construirPrevalidacionMensual(
       baseHechos({
+        entradasMensuales: [entrada({ estado: 'anulada' })],
         movimientos: [mv('ANULADO')],
       }),
     );
-    expect(r.bloqueos.filter((b) => b.area === 'MOVIMIENTOS_VARIABLES').length).toBe(0);
-    expect(r.advertencias.filter((a) => a.area === 'MOVIMIENTOS_VARIABLES').length).toBe(0);
+    expect(r.bloqueos.filter((b) => b.area === 'ENTRADAS_MENSUALES').length).toBe(0);
+    expect(r.advertencias.filter((a) => a.area === 'ENTRADAS_MENSUALES').length).toBe(0);
   });
 
   it('combinacion de bloqueos -> BLOQUEADO', () => {
     const r = construirPrevalidacionMensual(
       baseHechos({
         ultimoPg: null,
-        movimientos: [mv('OBSERVADO')],
+        entradasMensuales: [entrada({ estado: 'legacy_bloqueado', origen: 'legacy_movimiento_variable', bloqueaProceso: true })],
+        movimientos: [mv('BLOQUEADO')],
       }),
     );
     expect(r.estado).toBe('BLOQUEADO');
@@ -136,6 +172,7 @@ describe('proceso-mensual-prevalidacion.rules', () => {
     const r = construirPrevalidacionMensual(
       baseHechos({
         empleadosActivosNoAptos: 1,
+        entradasMensuales: [entrada({ estado: 'aprobada' })],
         movimientos: [mv('VALIDADO')],
       }),
     );
@@ -149,6 +186,31 @@ describe('proceso-mensual-prevalidacion.rules', () => {
     expect(r.bloqueos.length).toBe(0);
     expect(r.advertencias.length).toBe(0);
     expect(r.resumen.parametrosOperativos).toBe(true);
+  });
+
+  it('resumen de entradas calcula totales canónicos y legacy', () => {
+    const r = construirPrevalidacionMensual(
+      baseHechos({
+        entradasMensuales: [
+          entrada({ estado: 'aprobada', origen: 'novedad_mensual' }),
+          entrada({
+            idEntrada: 'legacy_movimiento:1',
+            origen: 'legacy_movimiento_variable',
+            estado: 'legacy_bloqueado',
+            bloqueaProceso: true,
+            warnings: ['bloqueado'],
+          }),
+          entrada({ idEntrada: 'novedad:2', estado: 'pendiente_revision', requiereRevision: true }),
+        ],
+        movimientos: [mv('BLOQUEADO')],
+      }),
+    );
+    expect(r.resumen.totalEntradasMensuales).toBe(3);
+    expect(r.resumen.resumenEntradasMensuales?.aprobadas).toBe(1);
+    expect(r.resumen.resumenEntradasMensuales?.pendientesRevision).toBe(1);
+    expect(r.resumen.resumenEntradasMensuales?.legacyMovimientos).toBe(1);
+    expect(r.resumen.resumenEntradasMensuales?.bloqueantes).toBe(1);
+    expect(r.bloqueos.some((b) => b.codigo === 'ENTRADAS_BLOQUEANTES')).toBe(true);
   });
 
   it('recurrentes invalidas -> BLOQUEADO', () => {

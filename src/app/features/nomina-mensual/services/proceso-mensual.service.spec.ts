@@ -7,6 +7,7 @@ import { MovimientosVariablesService } from '../../movimientos-variables/service
 import type { ParametroGeneral } from '../../parametros-generales/models/parametro-general.model';
 import { ParametrosGeneralesService } from '../../parametros-generales/services/parametros-generales.service';
 
+import { EntradasMensualesPeriodoService } from '../entradas/services/entradas-mensuales-periodo.service';
 import { NominaCalculoSnapshotRepository } from '../data-access/nomina-calculo-snapshot.repository';
 import { ProcesoMensualService } from './proceso-mensual.service';
 
@@ -124,6 +125,7 @@ describe('ProcesoMensualService', () => {
     listarAsignacionesParaPrevalidacionMensual: ReturnType<typeof vi.fn>;
   };
   let movimientos: { listarPorPeriodo: ReturnType<typeof vi.fn> };
+  let entradasMensuales: { listarEntradasPeriodo: ReturnType<typeof vi.fn> };
   let snapshots: {
     guardarSnapshotPreliminar: ReturnType<typeof vi.fn>;
     obtenerSnapshotActivo: ReturnType<typeof vi.fn>;
@@ -179,6 +181,9 @@ describe('ProcesoMensualService', () => {
     movimientos = {
       listarPorPeriodo: vi.fn().mockResolvedValue([]),
     };
+    entradasMensuales = {
+      listarEntradasPeriodo: vi.fn().mockResolvedValue([]),
+    };
     snapshots = {
       guardarSnapshotPreliminar: vi.fn().mockImplementation((snapshot) => Promise.resolve({
         snapshot: { ...snapshot, idCalculoPeriodo: 1 },
@@ -195,25 +200,28 @@ describe('ProcesoMensualService', () => {
         { provide: ParametrosGeneralesService, useValue: parametros },
         { provide: EmpleadosService, useValue: empleados },
         { provide: HaberesDescuentosService, useValue: haberes },
+        { provide: EntradasMensualesPeriodoService, useValue: entradasMensuales },
         { provide: MovimientosVariablesService, useValue: movimientos },
         { provide: NominaCalculoSnapshotRepository, useValue: snapshots },
       ],
     });
   });
 
-  it('valida periodo invalido sin llamar listarPorPeriodo ni recurrentes ni catalogos', async () => {
+  it('valida periodo invalido sin llamar entradas, legacy directo, recurrentes ni catalogos', async () => {
     const svc = TestBed.inject(ProcesoMensualService);
     const r = await svc.ejecutarPrevalidaciones('2026-13');
     expect(r.estado).toBe('BLOQUEADO');
+    expect(entradasMensuales.listarEntradasPeriodo).not.toHaveBeenCalled();
     expect(movimientos.listarPorPeriodo).not.toHaveBeenCalled();
     expect(haberes.listarAsignacionesParaPrevalidacionMensual).not.toHaveBeenCalled();
     expect(parametros.listarCatalogos).not.toHaveBeenCalled();
   });
 
-  it('con periodo valido llama movimientos variables y recurrentes y catalogos', async () => {
+  it('con periodo valido usa entradas canonicas y no llama directo movimientos variables', async () => {
     const svc = TestBed.inject(ProcesoMensualService);
     await svc.ejecutarPrevalidaciones('2026-05');
-    expect(movimientos.listarPorPeriodo).toHaveBeenCalledWith('2026-05');
+    expect(entradasMensuales.listarEntradasPeriodo).toHaveBeenCalledWith('2026-05');
+    expect(movimientos.listarPorPeriodo).not.toHaveBeenCalled();
     expect(haberes.listarAsignacionesParaPrevalidacionMensual).toHaveBeenCalledWith('2026-05');
     expect(parametros.listarCatalogos).toHaveBeenCalledWith('2026-05');
   });
@@ -226,24 +234,39 @@ describe('ProcesoMensualService', () => {
     expect(parametros.obtenerUltimoHastaPeriodo).toHaveBeenCalled();
   });
 
-  it('propaga fallo de lectura de movimientos como bloqueo en resultado', async () => {
-    movimientos.listarPorPeriodo.mockRejectedValue(new Error('red'));
+  it('propaga fallo de lectura de entradas como bloqueo en resultado', async () => {
+    entradasMensuales.listarEntradasPeriodo.mockRejectedValue(new Error('red'));
     const svc = TestBed.inject(ProcesoMensualService);
     const r = await svc.ejecutarPrevalidaciones('2026-05');
-    expect(r.bloqueos.some((b) => b.codigo === 'MV_LECTURA_ERROR')).toBe(true);
+    expect(r.bloqueos.some((b) => b.codigo === 'ENTRADAS_LECTURA_ERROR')).toBe(true);
     expect(r.estado).toBe('BLOQUEADO');
   });
 
   it('genera pre-nomina funcional desde la prevalidacion del periodo', async () => {
-    movimientos.listarPorPeriodo.mockResolvedValue([
+    entradasMensuales.listarEntradasPeriodo.mockResolvedValue([
       {
-        idMovimiento: 1,
+        idEntrada: 'legacy_movimiento:1',
+        origen: 'legacy_movimiento_variable',
+        origenId: 1,
         idPersona: 1,
+        idContrato: null,
         idConcepto: 1,
         periodo: '2026-05',
+        tipoEntrada: 'otro',
+        categoria: 'legacy_movimiento_variable',
+        tipoMovimiento: null,
+        cantidad: null,
+        unidad: null,
         monto: 1000,
-        estado: 'VALIDADO',
-        origen: 'MANUAL',
+        moneda: 'CLP',
+        estado: 'aprobada',
+        fechaEvento: null,
+        observacion: null,
+        referenciaExterna: null,
+        requiereRevision: false,
+        bloqueaProceso: false,
+        warnings: [],
+        metadata: { estadoLegacy: 'VALIDADO', origenLegacy: 'MANUAL' },
       },
     ]);
     const svc = TestBed.inject(ProcesoMensualService);
@@ -253,6 +276,7 @@ describe('ProcesoMensualService', () => {
     expect(r.estado).toBe('GENERADA');
     expect(r.trabajadoresIncluidos).toBe(2);
     expect(r.movimientosVariablesValidados).toBe(1);
+    expect(r.entradasMensualesAptas).toBe(1);
     expect(r.generadoEn).toMatch(/T/);
   });
 
