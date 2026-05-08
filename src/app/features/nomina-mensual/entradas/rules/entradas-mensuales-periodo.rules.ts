@@ -228,6 +228,7 @@ export function construirResumenEntradas(
       if (entrada.estado === 'anulada') acc.anuladas += 1;
       if (entradaBloqueaProceso(entrada)) acc.bloqueantes += 1;
       if (entrada.warnings.length > 0) acc.conWarnings += 1;
+      if (puedeEntrarAPreNomina(entrada)) acc.aptasPreNomina += 1;
       return acc;
     },
     {
@@ -242,6 +243,7 @@ export function construirResumenEntradas(
       anuladas: 0,
       bloqueantes: 0,
       conWarnings: 0,
+      aptasPreNomina: 0,
     },
   );
 }

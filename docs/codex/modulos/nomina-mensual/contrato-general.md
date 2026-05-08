@@ -46,9 +46,18 @@ Lectura del mantenimiento de conceptos via `HaberesDescuentosService.listarConce
 
 `HaberesDescuentosService.listarAsignacionesParaPrevalidacionMensual(periodo)` alimenta conteos y bloqueos: lectura en error o **vigencias invalidas** en el universo consultado implica **BLOQUEO**. Cerradas y fuera del mes se excluyen de aplicables al periodo. Contrato fino: `prevalidaciones-9-5B.md` y modulo Haberes (`listarTodasAsignacionesConConcepto`).
 
-## 8. Relacion con novedades mensuales / movimientos variables
+## 8. Relacion con entradas mensuales, novedades mensuales y movimientos variables
 
-`MovimientosVariablesService.listarPorPeriodo(periodo)` alimenta conteos por estado en la implementacion actual. Funcionalmente, esas entradas corresponden a **Novedades mensuales**: hechos del periodo que no son recurrentes, no son conceptos y no calculan por si solos. Reglas actuales: `VALIDADO` no bloquea; `BORRADOR` -> advertencia; `OBSERVADO`, `BLOQUEADO`, `INCLUIDO_EN_PROCESO` -> bloqueo; `ANULADO` ignorado para esas reglas.
+`ProcesoMensualService` consume `EntradasMensualesPeriodoService` para obtener una vista normalizada del periodo. Esa capa integra asignaciones recurrentes, novedades mensuales y movimientos variables legacy durante la transicion.
+
+La decision vigente es:
+
+- **Novedades mensuales** es el nombre funcional oficial para RRHH.
+- `novedad_remuneracion_periodo` es la tabla canonica futura para hechos del periodo.
+- **Movimientos variables** queda como termino legacy/tecnico/transicion.
+- `movimiento_variable_mensual` queda como tabla legacy de transicion.
+
+Los campos publicos de proceso mensual que exponen conteos de movimientos variables se mantienen solo como alias de compatibilidad temporal para la UI existente.
 
 NOM-01B crea el modelo SQL base `novedad_remuneracion_periodo` para la nomenclatura funcional nueva. Esa tabla registra periodo, persona, contrato opcional, concepto, categoria, tipo, cantidad, monto, origen y estado. No reemplaza por si sola la implementacion actual ni integra proceso mensual hasta fases posteriores.
 
@@ -80,6 +89,19 @@ Reglas de fase:
 - no cambia UI, rutas, sidebar, SQL, motor, liquidaciones, Previred ni LRE.
 
 La adaptacion real de Proceso mensual debe hacerse recien en **UNIF-NOM-03**.
+
+## 8.2 UNIF-NOM-03 - Proceso mensual con entradas canonicas
+
+UNIF-NOM-03 adapta `ProcesoMensualService` para que la prevalidacion y la pre-nomina lean entradas normalizadas desde `EntradasMensualesPeriodoService`.
+
+Resultado de fase:
+
+- Proceso mensual deja de depender directamente de `MovimientosVariablesService`.
+- Novedades mensuales aprobadas quedan visibles para el resumen y la prevalidacion del periodo.
+- Movimientos variables siguen visibles como origen `legacy_movimiento_variable` durante la transicion.
+- El resumen incorpora total de entradas, recurrentes, novedades mensuales, legacy, aprobadas, pendientes, observadas, rechazadas, anuladas, bloqueantes, con warnings y aptas para pre-nomina.
+- No se modifican estados fuente ni se escribe en `novedad_remuneracion_periodo` o `movimiento_variable_mensual`.
+- No se modifica motor, liquidaciones, cierre, Previred/LRE, SQL, Python, rutas, sidebar ni UI productiva.
 
 ## 9. Prevalidaciones y estados
 
@@ -202,5 +224,5 @@ Decision vigente:
 - **Novedades mensuales** es el nombre funcional oficial.
 - `novedad_remuneracion_periodo` es la tabla canonica futura.
 - `MovimientosVariablesService` y `movimiento_variable_mensual` pueden seguir existiendo como transicion, pero no son la arquitectura final.
-- Proceso mensual debe evolucionar hacia `EntradasMensualesPeriodoService`; UNIF-NOM-02 crea la capa y UNIF-NOM-03 debe adaptar el consumo.
+- Proceso mensual consume `EntradasMensualesPeriodoService` desde UNIF-NOM-03; los alias legacy se conservan solo como compatibilidad temporal.
 - El motor preliminar y los snapshots no equivalen aun a liquidacion oficial cerrada.

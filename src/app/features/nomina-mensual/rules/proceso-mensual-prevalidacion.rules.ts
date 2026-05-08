@@ -1,10 +1,16 @@
 import type { HaberDescuentoAsignacionPrevalidacionMensualFila } from '../../haberes-descuentos/models/haber-descuento-asignacion.model';
 import type { MovimientoVariableEstado, MovimientoVariableListadoFila } from '../../movimientos-variables/models/movimiento-variable.model';
-import { esPeriodoRemuneracionValido } from '../../movimientos-variables/rules/movimiento-variable-validacion.rules';
 import type {
   ParametroGeneral,
   PeriodoRemuneracionEstadoInfo,
 } from '../../parametros-generales/models/parametro-general.model';
+import type { EntradaMensualEstado, EntradaMensualPeriodo } from '../entradas/models/entrada-mensual-periodo.model';
+import {
+  construirResumenEntradas,
+  entradaBloqueaProceso,
+  entradaRequiereRevision,
+  validarPeriodoEntradaMensual,
+} from '../entradas/rules/entradas-mensuales-periodo.rules';
 
 import type {
   ProcesoMensualArea,
@@ -64,6 +70,10 @@ export interface ProcesoMensualHechosPrevalidacion {
   errorConceptos?: string;
   alertaConceptosMotorFuturo: boolean;
   recurrentesConteo: ProcesoMensualRecurrentesConteo;
+  entradasMensuales: EntradaMensualPeriodo[];
+  lecturaEntradasMensuales: 'ok' | 'error';
+  errorEntradasMensuales?: string;
+  /** Alias legacy de transicion derivado de entradasMensuales. */
   movimientos: MovimientoVariableListadoFila[];
   lecturaMovimientos: 'ok' | 'error';
   errorMovimientos?: string;
@@ -77,6 +87,16 @@ function conteosPorEstadoMv(
   const o: Partial<Record<MovimientoVariableEstado, number>> = {};
   for (const f of filas) {
     o[f.estado] = (o[f.estado] ?? 0) + 1;
+  }
+  return o;
+}
+
+function conteosPorEstadoEntrada(
+  entradas: readonly EntradaMensualPeriodo[],
+): Partial<Record<EntradaMensualEstado, number>> {
+  const o: Partial<Record<EntradaMensualEstado, number>> = {};
+  for (const entrada of entradas) {
+    o[entrada.estado] = (o[entrada.estado] ?? 0) + 1;
   }
   return o;
 }
@@ -111,7 +131,7 @@ function mergeEstadoFinal(bloqueos: ProcesoMensualMensaje[], advertencias: Proce
  */
 export function construirPrevalidacionMensual(hechos: ProcesoMensualHechosPrevalidacion): ProcesoMensualPrevalidacion {
   const periodo = hechos.periodo.trim();
-  const periodoFormatoValido = esPeriodoRemuneracionValido(periodo);
+  const periodoFormatoValido = validarPeriodoEntradaMensual(periodo);
 
   const bloqueos: ProcesoMensualMensaje[] = [];
   const advertencias: ProcesoMensualMensaje[] = [];
@@ -130,6 +150,9 @@ export function construirPrevalidacionMensual(hechos: ProcesoMensualHechosPreval
       periodo,
       hayBloqueos: true,
       hayAdvertencias: false,
+      totalEntradasMensuales: 0,
+      resumenEntradasMensuales: construirResumenEntradas([]),
+      conteoEntradasPorEstado: {},
       conteoMovimientosPorEstado: {},
       trabajadoresActivosAptos: 0,
       trabajadoresActivosNoAptos: 0,
@@ -148,6 +171,7 @@ export function construirPrevalidacionMensual(hechos: ProcesoMensualHechosPreval
       advertencias,
       informaciones,
       items: completarItemsVacios(items),
+      entradasMensuales: [],
     };
   }
 
@@ -399,78 +423,74 @@ export function construirPrevalidacionMensual(hechos: ProcesoMensualHechosPreval
     detalle: detalleRec,
   });
 
-  /* --- Movimientos variables --- */
+  /* --- Entradas mensuales canonicas --- */
+  const entradas = hechos.entradasMensuales;
+  const resumenEntradas = construirResumenEntradas(entradas);
+  const conteosEntradas = conteosPorEstadoEntrada(entradas);
   const conteos = conteosPorEstadoMv(hechos.movimientos);
-  let itemMv: ItemEstado = 'LISTO';
-  let detalleMv: string | undefined;
+  let itemEntradas: ItemEstado = 'LISTO';
+  let detalleEntradas: string | undefined;
 
-  if (hechos.lecturaMovimientos === 'error') {
+  if (hechos.lecturaEntradasMensuales === 'error') {
     pushMsg(
       bloqueos,
-      'MV_LECTURA_ERROR',
-      'MOVIMIENTOS_VARIABLES',
+      'ENTRADAS_LECTURA_ERROR',
+      'ENTRADAS_MENSUALES',
       'BLOQUEO',
-      hechos.errorMovimientos ?? 'Error al leer movimientos variables del periodo.',
+      hechos.errorEntradasMensuales ?? 'Error al leer entradas mensuales del periodo.',
     );
-    itemMv = 'CON_PROBLEMAS';
-    detalleMv = 'Error de lectura';
+    itemEntradas = 'CON_PROBLEMAS';
+    detalleEntradas = 'Error de lectura';
   } else {
-    const nObs = conteos['OBSERVADO'] ?? 0;
-    const nBloq = conteos['BLOQUEADO'] ?? 0;
-    const nInc = conteos['INCLUIDO_EN_PROCESO'] ?? 0;
-    const nBor = conteos['BORRADOR'] ?? 0;
+    const partes: string[] = [];
 
-    if (nObs > 0) {
+    if (resumenEntradas.bloqueantes > 0 || entradas.some(entradaBloqueaProceso)) {
       pushMsg(
         bloqueos,
-        'MV_OBSERVADO',
-        'MOVIMIENTOS_VARIABLES',
+        'ENTRADAS_BLOQUEANTES',
+        'ENTRADAS_MENSUALES',
         'BLOQUEO',
-        'Existen movimientos variables OBSERVADOS que deben revisarse antes del calculo.',
+        'Existen entradas mensuales bloqueantes para el periodo.',
       );
-      itemMv = 'CON_PROBLEMAS';
-      detalleMv = `${nObs} observado(s)`;
+      itemEntradas = 'CON_PROBLEMAS';
+      partes.push(`${resumenEntradas.bloqueantes} bloqueante(s)`);
     }
-    if (nBloq > 0) {
-      pushMsg(
-        bloqueos,
-        'MV_BLOQUEADO',
-        'MOVIMIENTOS_VARIABLES',
-        'BLOQUEO',
-        'Existen movimientos variables BLOQUEADOS en el periodo.',
-      );
-      itemMv = 'CON_PROBLEMAS';
-    }
-    if (nInc > 0) {
-      pushMsg(
-        bloqueos,
-        'MV_INCLUIDO_EN_PROCESO',
-        'MOVIMIENTOS_VARIABLES',
-        'BLOQUEO',
-        'Existen movimientos variables INCLUIDO_EN_PROCESO sin proceso cerrado coherente.',
-      );
-      itemMv = 'CON_PROBLEMAS';
-    }
-    if (nBor > 0) {
+    if (resumenEntradas.pendientesRevision > 0) {
       pushMsg(
         advertencias,
-        'MV_BORRADOR',
-        'MOVIMIENTOS_VARIABLES',
+        'ENTRADAS_PENDIENTES_REVISION',
+        'ENTRADAS_MENSUALES',
         'ADVERTENCIA',
-        'Existen movimientos variables en BORRADOR para el periodo.',
+        'Existen entradas mensuales en borrador o pendientes de revision para el periodo.',
       );
-      if (itemMv === 'LISTO') {
-        itemMv = 'CON_PROBLEMAS';
+      if (itemEntradas === 'LISTO') {
+        itemEntradas = 'CON_PROBLEMAS';
       }
-      detalleMv = detalleMv ? `${detalleMv}; ${nBor} borrador(es)` : `${nBor} borrador(es)`;
+      partes.push(`${resumenEntradas.pendientesRevision} pendiente(s)`);
     }
+    if (resumenEntradas.observadas > 0 || entradas.some(entradaRequiereRevision)) {
+      pushMsg(
+        advertencias,
+        'ENTRADAS_OBSERVADAS',
+        'ENTRADAS_MENSUALES',
+        'ADVERTENCIA',
+        'Existen entradas mensuales observadas o que requieren revision para el periodo.',
+      );
+      if (itemEntradas === 'LISTO') {
+        itemEntradas = 'CON_PROBLEMAS';
+      }
+      partes.push(`${resumenEntradas.observadas} observada(s)`);
+    }
+    partes.push(`${resumenEntradas.aptasPreNomina} apta(s) para pre-nomina`);
+    partes.push(`${resumenEntradas.legacyMovimientos} legacy`);
+    detalleEntradas = partes.join('; ');
   }
 
   items.push({
-    area: 'MOVIMIENTOS_VARIABLES',
-    etiqueta: 'Movimientos variables',
-    estado: itemMv,
-    detalle: detalleMv,
+    area: 'ENTRADAS_MENSUALES',
+    etiqueta: 'Entradas mensuales',
+    estado: itemEntradas,
+    detalle: detalleEntradas,
   });
 
   /* --- Proceso / liquidaciones futuras --- */
@@ -494,6 +514,9 @@ export function construirPrevalidacionMensual(hechos: ProcesoMensualHechosPreval
     periodo,
     hayBloqueos: bloqueos.length > 0,
     hayAdvertencias: advertencias.length > 0,
+    totalEntradasMensuales: resumenEntradas.total,
+    resumenEntradasMensuales: resumenEntradas,
+    conteoEntradasPorEstado: conteosEntradas,
     conteoMovimientosPorEstado: conteos,
     trabajadoresActivosAptos: hechos.empleadosActivosAptos,
     trabajadoresActivosNoAptos: hechos.empleadosActivosNoAptos,
@@ -513,6 +536,7 @@ export function construirPrevalidacionMensual(hechos: ProcesoMensualHechosPreval
     advertencias,
     informaciones,
     items,
+    entradasMensuales: entradas,
   };
 }
 
@@ -521,7 +545,7 @@ function completarItemsVacios(parcial: ProcesoMensualItem[]): ProcesoMensualItem
     'TRABAJADORES',
     'CONCEPTOS',
     'HABERES_RECURRENTES',
-    'MOVIMIENTOS_VARIABLES',
+    'ENTRADAS_MENSUALES',
     'PROCESO',
   ];
   const labels: Record<ProcesoMensualArea, string> = {
@@ -529,6 +553,7 @@ function completarItemsVacios(parcial: ProcesoMensualItem[]): ProcesoMensualItem
     TRABAJADORES: 'Trabajadores',
     CONCEPTOS: 'Conceptos',
     HABERES_RECURRENTES: 'Haberes recurrentes',
+    ENTRADAS_MENSUALES: 'Entradas mensuales',
     MOVIMIENTOS_VARIABLES: 'Movimientos variables',
     PROCESO: 'Liquidaciones futuras',
   };

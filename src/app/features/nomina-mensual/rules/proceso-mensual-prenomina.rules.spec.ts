@@ -2,6 +2,21 @@ import type { ProcesoMensualPrevalidacion } from '../models/proceso-mensual.mode
 
 import { construirPreNominaPeriodo } from './proceso-mensual-prenomina.rules';
 
+const resumenEntradasBase = {
+  total: 2,
+  recurrentes: 0,
+  novedadesMensuales: 1,
+  legacyMovimientos: 1,
+  aprobadas: 2,
+  pendientesRevision: 0,
+  observadas: 0,
+  rechazadas: 0,
+  anuladas: 0,
+  bloqueantes: 0,
+  conWarnings: 0,
+  aptasPreNomina: 2,
+};
+
 function prevalidacionBase(over: Partial<ProcesoMensualPrevalidacion> = {}): ProcesoMensualPrevalidacion {
   return {
     periodo: '2026-05',
@@ -10,6 +25,9 @@ function prevalidacionBase(over: Partial<ProcesoMensualPrevalidacion> = {}): Pro
       periodo: '2026-05',
       hayBloqueos: false,
       hayAdvertencias: false,
+      totalEntradasMensuales: 2,
+      resumenEntradasMensuales: resumenEntradasBase,
+      conteoEntradasPorEstado: { aprobada: 2 },
       conteoMovimientosPorEstado: { VALIDADO: 2 },
       trabajadoresActivosAptos: 3,
       trabajadoresActivosNoAptos: 0,
@@ -24,6 +42,7 @@ function prevalidacionBase(over: Partial<ProcesoMensualPrevalidacion> = {}): Pro
     advertencias: [],
     informaciones: [],
     items: [],
+    entradasMensuales: [],
     ...over,
   };
 }
@@ -35,6 +54,7 @@ describe('proceso-mensual-prenomina.rules', () => {
     expect(r.estado).toBe('GENERADA');
     expect(r.trabajadoresIncluidos).toBe(3);
     expect(r.recurrentesIncluidos).toBe(4);
+    expect(r.entradasMensualesAptas).toBe(2);
     expect(r.movimientosVariablesValidados).toBe(2);
     expect(r.codigosBloqueo).toEqual([]);
   });
@@ -54,6 +74,11 @@ describe('proceso-mensual-prenomina.rules', () => {
         resumen: {
           ...prevalidacionBase().resumen,
           hayAdvertencias: true,
+          resumenEntradasMensuales: {
+            ...resumenEntradasBase,
+            pendientesRevision: 1,
+            aptasPreNomina: 1,
+          },
           conteoMovimientosPorEstado: { VALIDADO: 1, BORRADOR: 1 },
         },
       }),
