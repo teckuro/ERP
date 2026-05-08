@@ -6,7 +6,7 @@ Guiar el **proceso mensual** por periodo `YYYY-MM`: revisar prerequisitos (param
 
 La arquitectura funcional completa de remuneraciones queda definida en [`arquitectura-funcional-remuneraciones.md`](./arquitectura-funcional-remuneraciones.md) (NOM-00). Ese documento fija la separacion entre Maestros RRHH, Parametros, Conceptos, Haberes/descuentos recurrentes, Novedades mensuales, Proceso mensual, Motor, Liquidacion, Previred/LRE y Reportes.
 
-El modelo documental de **Novedades mensuales** queda definido en [`novedades-mensuales.md`](./novedades-mensuales.md) (NOM-01). NOM-01B agrega la tabla base `novedad_remuneracion_periodo` para hechos del periodo, sin UI ni motor. NOM-01C agrega la capa Angular base de modelos, mapper, repository, service y reglas puras, sin pantalla final ni integracion al motor. El nombre tecnico historico puede aparecer como movimientos variables, pero para RRHH el nombre funcional principal es Novedades mensuales.
+El modelo documental de **Novedades mensuales** queda definido en [`novedades-mensuales.md`](./novedades-mensuales.md) (NOM-01). NOM-01B agrega la tabla base `novedad_remuneracion_periodo` para hechos del periodo. NOM-01C agrega la capa Angular base de modelos, mapper, repository, service y reglas puras. NOM-01D agrega la UI base `/remuneraciones/novedades-mensuales` para listar, crear borradores y cambiar estados simples, sin integracion real al proceso mensual ni motor. El nombre tecnico historico puede aparecer como movimientos variables, pero para RRHH el nombre funcional principal es Novedades mensuales.
 
 ## 2. Alcance actual (cerrado en 9.5A + 9.5B + 9.5C + MOTOR-01 + MOTOR-02 + MOTOR-03A + MOTOR-03B + MOTOR-03C)
 
@@ -53,6 +53,33 @@ Lectura del mantenimiento de conceptos via `HaberesDescuentosService.listarConce
 NOM-01B crea el modelo SQL base `novedad_remuneracion_periodo` para la nomenclatura funcional nueva. Esa tabla registra periodo, persona, contrato opcional, concepto, categoria, tipo, cantidad, monto, origen y estado. No reemplaza por si sola la implementacion actual ni integra proceso mensual hasta fases posteriores.
 
 NOM-01C crea `src/app/features/nomina-mensual/novedades/` con modelo, mapper, repository, service y reglas puras para listar, crear, actualizar y cambiar estados de novedades mensuales. Esta capa no modifica recurrentes, no calcula liquidaciones, no marca pre-nomina real y no toca Previred/LRE.
+
+NOM-01D crea la pantalla base `/remuneraciones/novedades-mensuales` sobre `NovedadesMensualesService`. Permite listar por periodo, crear/editar borradores y ejecutar transiciones simples (`borrador`, `pendiente_revision`, `aprobada`, `rechazada`, `anulada`) segun reglas. La UI muestra ids tecnicos de trabajador/concepto hasta que una fase futura conecte catalogos de nombres. No escribe en recurrentes, parametros, liquidaciones, proceso mensual real, Previred ni LRE.
+
+## 8.1 UNIF-NOM-02 - Entradas mensuales canonicas
+
+UNIF-NOM-02 crea la capa aislada `src/app/features/nomina-mensual/entradas/` con:
+
+- modelo canonico `EntradaMensualPeriodo`;
+- reglas puras para normalizar estados, origenes y resumen;
+- mapper de novedades mensuales y movimientos variables legacy;
+- `EntradasMensualesPeriodoService`.
+
+Responsabilidad de esta capa:
+
+- normalizar asignaciones recurrentes vigentes desde `HaberesDescuentosService.listarAsignacionesParaPrevalidacionMensual`;
+- normalizar novedades mensuales desde `NovedadesMensualesService`;
+- normalizar movimientos variables desde `MovimientosVariablesService` solo como fuente legacy/transicion;
+- entregar una vista funcional unificada para una futura adaptacion de Proceso mensual.
+
+Reglas de fase:
+
+- no modifica estados ni datos de las fuentes;
+- no reemplaza `MovimientosVariablesService`;
+- no cambia `ProcesoMensualService`;
+- no cambia UI, rutas, sidebar, SQL, motor, liquidaciones, Previred ni LRE.
+
+La adaptacion real de Proceso mensual debe hacerse recien en **UNIF-NOM-03**.
 
 ## 9. Prevalidaciones y estados
 
@@ -150,7 +177,7 @@ MOTOR-03C no agrega reglas de calculo, no cambia UI, no cierra periodo, no crea 
 - `prevalidaciones-9-5A.md` (fase 9.5A).
 - `prevalidaciones-9-5B.md` (fase 9.5B: recurrentes + grupos parametros).
 - `prevalidaciones-9-5C.md` (fase 9.5C: pre-nomina funcional por periodo).
-- `novedades-mensuales.md` (fases NOM-01, NOM-01B y NOM-01C).
+- `novedades-mensuales.md` (fases NOM-01, NOM-01B, NOM-01C y NOM-01D).
 - `motor-calculo-contrato.md` (fase MOTOR-00).
 - `motor-calculo-orden-operaciones.md`.
 - `motor-calculo-entradas-salidas.md`.
@@ -163,3 +190,17 @@ MOTOR-03C no agrega reglas de calculo, no cambia UI, no cierra periodo, no crea 
 - `vision-futura.md`.
 - Orquestador: `docs/codex/orquestador/estado-fases.md`.
 - Arquitectura: `docs/codex/arquitectura/frontend-interfaces.md`.
+
+<!-- ARQ-ERP-01-INTEGRACION -->
+
+## Integracion canonica 2026-05-07
+
+Este contrato debe leerse junto con [`../../orquestador/estructura-canonica-erp.md`](../../orquestador/estructura-canonica-erp.md).
+
+Decision vigente:
+
+- **Novedades mensuales** es el nombre funcional oficial.
+- `novedad_remuneracion_periodo` es la tabla canonica futura.
+- `MovimientosVariablesService` y `movimiento_variable_mensual` pueden seguir existiendo como transicion, pero no son la arquitectura final.
+- Proceso mensual debe evolucionar hacia `EntradasMensualesPeriodoService`; UNIF-NOM-02 crea la capa y UNIF-NOM-03 debe adaptar el consumo.
+- El motor preliminar y los snapshots no equivalen aun a liquidacion oficial cerrada.

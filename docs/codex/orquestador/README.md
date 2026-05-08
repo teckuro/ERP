@@ -49,3 +49,17 @@ Si hay conflicto entre un resumen del orquestador y un documento de `modulos/`, 
 3. Ajustar [`diseno-operativo-erp.md`](./diseno-operativo-erp.md) si cambian principios UX operativos o el camino oficial declarado.
 4. Actualizar [`mapa-documentacion.md`](./mapa-documentacion.md) si cambia el inventario de fuentes o stubs.
 5. No convertir estos archivos en **bitácora larga**: los detalles van a `modulos/`, `peticiones-estilos.md` o bitácoras puntuales.
+
+<!-- ARQ-ERP-01-INTEGRACION -->
+
+## Integracion canonica 2026-05-07
+
+Para cualquier fase nueva de Nomina, leer primero:
+
+1. [`estructura-canonica-erp.md`](./estructura-canonica-erp.md)
+2. [`plan-transicion-novedades-movimientos.md`](./plan-transicion-novedades-movimientos.md)
+3. [`diccionario-tablas-canonicas.md`](./diccionario-tablas-canonicas.md)
+4. [`estado-fases.md`](./estado-fases.md)
+5. [`roadmap-operativo.md`](./roadmap-operativo.md)
+
+La decision activa es que **Novedades mensuales** reemplaza funcionalmente a **Movimientos variables** como nombre de producto, pero el codigo/tabla legacy se conserva hasta una fase tecnica de transicion.

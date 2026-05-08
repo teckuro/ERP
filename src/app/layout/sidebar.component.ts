@@ -112,6 +112,7 @@ export class SidebarComponent {
     { path: '/empleados', label: 'Empleados', icon: 'users' },
     { path: '/remuneraciones/conceptos', label: 'Conceptos de remuneración', icon: 'tags', exact: true },
     { path: '/remuneraciones/haberes-descuentos', label: 'Haberes y descuentos', icon: 'dollar-sign' },
+    { path: '/remuneraciones/novedades-mensuales', label: 'Novedades mensuales', icon: 'calendar-plus' },
     { path: '/remuneraciones/movimientos-variables', label: 'Movimientos variables', icon: 'sliders' },
     { path: '/remuneraciones/proceso-mensual', label: 'Proceso mensual', icon: 'file-text' },
     { path: '/remuneraciones/liquidaciones', label: 'Liquidaciones', icon: 'receipt' },

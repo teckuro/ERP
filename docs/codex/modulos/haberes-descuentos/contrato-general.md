@@ -169,3 +169,15 @@ Esta fase no implementa auditoria avanzada, movimientos variables, proceso mensu
 ## Integracion Proceso mensual (Fase 9.5B)
 
 El modulo expone listado global de asignaciones con concepto (`HaberesDescuentosRepository.listarTodasAsignacionesConConcepto`) y el metodo `HaberesDescuentosService.listarAsignacionesParaPrevalidacionMensual(periodo)`, que reutiliza `vigenciaIntersecaMes` y `clasificarVigenciaAsignacion` para alimentar prevalidaciones de **Nomina mensual** sin calcular liquidaciones. Contrato del consumidor: [`../nomina-mensual/prevalidaciones-9-5B.md`](../nomina-mensual/prevalidaciones-9-5B.md).
+
+<!-- ARQ-ERP-01-INTEGRACION -->
+
+## Nota canonica 2026-05-07
+
+Donde este contrato hable de Movimientos variables, entender que el nombre funcional oficial futuro es **Novedades mensuales**.
+
+Regla:
+
+- Si se repite o queda pactado, vive en Haberes y descuentos recurrentes (`haberdescuento_persona`).
+- Si ocurre solo en el periodo, vive en Novedades mensuales (`novedad_remuneracion_periodo`).
+- No duplicar el mismo pago/descuento en recurrentes y novedades sin regla de negocio explicita.

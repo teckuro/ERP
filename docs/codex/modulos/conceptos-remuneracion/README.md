@@ -33,3 +33,18 @@ El código del mantenedor comparte **`HaberesDescuentosService`** con asignacion
 ## Relacion con Movimientos variables
 
 Los movimientos variables mensuales **referencian** conceptos del catalogo pero no son el mantenedor de `concepto`. Contrato, decisiones y modelo v1 (validacion opcional por snapshot sin acoplar a `concepto-asignabilidad`): [`../movimientos-variables/README.md`](../movimientos-variables/README.md), [`contrato-funcional.md`](./contrato-funcional.md) §17.
+
+<!-- ARQ-ERP-01-INTEGRACION -->
+
+## Nota canonica 2026-05-07
+
+Cuando este modulo mencione Movimientos variables, leerlo como antecedente historico del dominio **Novedades mensuales**.
+
+Regla vigente:
+
+- Conceptos define comportamiento.
+- Asignaciones recurrentes asignan conceptos repetitivos.
+- Novedades mensuales registran hechos del periodo.
+- Motor calcula.
+
+Pendiente futuro: asegurar que Conceptos pueda indicar si un concepto es usable como recurrente, novedad mensual o ambos.
