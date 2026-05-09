@@ -130,7 +130,7 @@ export class HaberesDescuentosContainer implements OnInit {
 
   readonly breadcrumbItems: readonly RecordBreadcrumbItem[] = [
     { label: 'Remuneraciones', link: '/remuneraciones' },
-    { label: 'Haberes y descuentos' },
+    { label: 'Asignaciones recurrentes' },
   ];
 
   readonly loaderIcon = LoaderCircle;
@@ -224,7 +224,7 @@ export class HaberesDescuentosContainer implements OnInit {
   });
 
   readonly tituloModal = computed(() =>
-    this.dialogEditId() == null ? 'Asignar haber o descuento' : 'Editar asignación',
+    this.dialogEditId() == null ? 'Nueva asignacion recurrente' : 'Editar asignacion recurrente',
   );
 
   readonly conceptoOpciones = computed<SearchSelectOption<number>[]>(() => {
@@ -667,15 +667,15 @@ export class HaberesDescuentosContainer implements OnInit {
         await this.haberesDescuentosService.crear(payload);
         this.modalMsg.set({
           variant: 'success',
-          title: 'Haber/descuento asignado',
-          message: 'El concepto fue asignado correctamente al trabajador.',
+          title: 'Asignacion recurrente creada',
+          message: 'La asignacion recurrente fue registrada correctamente para el trabajador.',
           detail: nombreDetalle,
         });
       } else {
         await this.haberesDescuentosService.actualizar(editId, payload);
         this.modalMsg.set({
           variant: 'success',
-          title: 'Haber/descuento actualizado',
+          title: 'Asignacion recurrente actualizada',
           message: 'Los cambios fueron guardados correctamente.',
           detail: nombreDetalle,
         });

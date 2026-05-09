@@ -290,6 +290,42 @@ describe('ProcesoMensualService', () => {
     expect(svc.obtenerResultadoCalculoPeriodo('2026-05')).toBe(r);
   });
 
+  it('construye calculo desde entradas canonicas sin alterar resultados legales en MOTOR-04', async () => {
+    entradasMensuales.listarEntradasPeriodo.mockResolvedValue([
+      {
+        idEntrada: 'novedad:1',
+        origen: 'novedad_mensual',
+        origenId: 1,
+        idPersona: 1,
+        idContrato: 10,
+        idConcepto: 99,
+        periodo: '2026-05',
+        tipoEntrada: 'haber',
+        categoria: 'haber_variable',
+        tipoMovimiento: 'haber',
+        cantidad: null,
+        unidad: null,
+        monto: 50000,
+        moneda: 'CLP',
+        estado: 'aprobada',
+        fechaEvento: null,
+        observacion: null,
+        referenciaExterna: null,
+        requiereRevision: false,
+        bloqueaProceso: false,
+        warnings: [],
+        metadata: { origenTecnico: 'novedad_remuneracion_periodo' },
+      },
+    ]);
+    const svc = TestBed.inject(ProcesoMensualService);
+    const r = await svc.generarCalculoPeriodo('2026-05');
+
+    expect(entradasMensuales.listarEntradasPeriodo).toHaveBeenCalledWith('2026-05');
+    expect(r.liquidaciones[0].baseImponiblePrevisional).toBe(100);
+    expect(r.liquidaciones[0].impuestoUnico).toBe(0);
+    expect(r.liquidaciones[0].liquidoAPago).toBe(r.liquidaciones[0].totalHaberes - r.liquidaciones[0].totalDescuentos);
+  });
+
   it('guarda snapshot preliminar desde calculo en memoria sin cerrar periodo', async () => {
     const svc = TestBed.inject(ProcesoMensualService);
     await svc.generarCalculoPeriodo('2026-05');

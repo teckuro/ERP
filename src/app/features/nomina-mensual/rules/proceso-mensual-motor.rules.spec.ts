@@ -172,6 +172,7 @@ function input(over: Partial<MotorCalculoInput> = {}): MotorCalculoInput {
       gratificacionProporcional: null,
     }],
     recurrentes: [],
+    entradasMensuales: [],
     empresaLey16744: {
       idEmpresaLey16744: 1,
       idEmpresa: 1,
@@ -414,5 +415,41 @@ describe('proceso-mensual-motor.rules', () => {
 
     expect(r.liquidaciones).toHaveLength(1);
     expect(r.generadoEn).toBe('now');
+  });
+
+  it('MOTOR-04 contrato preparatorio: entradasMensuales no alteran resultados legales', () => {
+    const base = generarCalculoPreliminarPeriodo(input(), 'now').liquidaciones[0];
+    const conEntradas = generarCalculoPreliminarPeriodo(input({
+      entradasMensuales: [{
+        idEntrada: 'novedad:1',
+        origen: 'novedad_mensual',
+        origenId: 1,
+        periodo: '2026-05',
+        idPersona: 1,
+        idContrato: 10,
+        idConcepto: 99,
+        tipoEntrada: 'haber',
+        categoria: 'haber_variable',
+        tipoMovimiento: 'haber',
+        cantidad: null,
+        unidad: null,
+        monto: 50000,
+        moneda: 'CLP',
+        estado: 'aprobada',
+        afectaBase: null,
+        metadata: { contratoMotor: 'MOTOR-04_PREPARATORIO' },
+      }],
+    }), 'now').liquidaciones[0];
+
+    expect(conEntradas.baseImponiblePrevisional).toBe(base.baseImponiblePrevisional);
+    expect(conEntradas.baseTributable).toBe(base.baseTributable);
+    expect(conEntradas.cotizacionAfp).toBe(base.cotizacionAfp);
+    expect(conEntradas.cotizacionSalud).toBe(base.cotizacionSalud);
+    expect(conEntradas.cotizacionAfc).toBe(base.cotizacionAfc);
+    expect(conEntradas.cotizacionSis).toBe(base.cotizacionSis);
+    expect(conEntradas.cotizacionSanna).toBe(base.cotizacionSanna);
+    expect(conEntradas.cotizacionLey16744).toBe(base.cotizacionLey16744);
+    expect(conEntradas.impuestoUnico).toBe(base.impuestoUnico);
+    expect(conEntradas.liquidoAPago).toBe(base.liquidoAPago);
   });
 });

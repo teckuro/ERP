@@ -33,6 +33,17 @@ import {
   RecordBreadcrumbItem,
 } from '../../../../../shared/components/ui/record-breadcrumb.component';
 import {
+  SearchSelectComponent,
+  type SearchSelectOption,
+} from '../../../../../shared/components/ui/search-select.component';
+import type { EmpleadoListado } from '../../../../empleados/models/empleado-listado.model';
+import { EmpleadosService } from '../../../../empleados/services/empleados.service';
+import type {
+  ConceptoListado,
+  ContratoResumenPersona,
+} from '../../../../haberes-descuentos/models/haber-descuento-asignacion.model';
+import { HaberesDescuentosService } from '../../../../haberes-descuentos/services/haberes-descuentos.service';
+import {
   NOVEDAD_MENSUAL_CATEGORIAS,
   NOVEDAD_MENSUAL_ESTADOS,
   NOVEDAD_MENSUAL_ORIGENES,
@@ -142,10 +153,6 @@ function formInicial(periodo: string): NovedadForm {
   };
 }
 
-function numeroOTextoTecnico(id: number | null, prefijo: string): string {
-  return id == null ? 'Sin dato' : `${prefijo} ${id}`;
-}
-
 @Component({
   selector: 'app-novedades-mensuales-container',
   standalone: true,
@@ -161,6 +168,7 @@ function numeroOTextoTecnico(id: number | null, prefijo: string): string {
     DataGridComponent,
     DataGridCellDirective,
     MessageBoxComponent,
+    SearchSelectComponent,
   ],
   templateUrl: './novedades-mensuales-container.html',
   styleUrl: './novedades-mensuales-container.css',
@@ -168,11 +176,13 @@ function numeroOTextoTecnico(id: number | null, prefijo: string): string {
 })
 export class NovedadesMensualesContainer implements OnInit {
   private readonly novedadesService = inject(NovedadesMensualesService);
+  private readonly empleadosService = inject(EmpleadosService);
+  private readonly haberesDescuentosService = inject(HaberesDescuentosService);
   readonly periodoActivo = inject(PeriodoActivoService);
 
   readonly breadcrumbItems: readonly RecordBreadcrumbItem[] = [
     { label: 'Remuneraciones', link: '/remuneraciones' },
-    { label: 'Novedades mensuales' },
+    { label: 'Movimientos del mes' },
   ];
 
   readonly plusIcon = Plus;
@@ -185,7 +195,13 @@ export class NovedadesMensualesContainer implements OnInit {
 
   readonly periodoFiltro = signal('');
   readonly loading = signal(false);
+  readonly soporteLoading = signal(false);
+  readonly contratosLoading = signal(false);
   readonly guardando = signal(false);
+  readonly empleadosListado = signal<EmpleadoListado[]>([]);
+  readonly empleadoOptions = signal<SearchSelectOption<number>[]>([]);
+  readonly conceptos = signal<ConceptoListado[]>([]);
+  readonly contratosPersona = signal<ContratoResumenPersona[]>([]);
   readonly filas = signal<NovedadGridRow[]>([]);
   readonly formAbierto = signal(false);
   readonly novedadEditando = signal<NovedadMensual | null>(null);
@@ -199,6 +215,13 @@ export class NovedadesMensualesContainer implements OnInit {
   } | null>(null);
 
   readonly totalNovedades = computed(() => this.filas().length);
+  readonly conceptoOptions = computed<SearchSelectOption<number>[]>(() =>
+    this.conceptos().map((concepto) => ({
+      value: concepto.idConcepto,
+      label: `${concepto.nombre} (${concepto.codigo})`,
+      description: concepto.tipo ?? undefined,
+    })),
+  );
   readonly conteosEstado = computed(() =>
     this.estados.map((estado) => ({
       estado,
@@ -309,7 +332,7 @@ export class NovedadesMensualesContainer implements OnInit {
     const periodo = this.periodoActivo.periodoYm();
     this.periodoFiltro.set(periodo);
     this.form.set(formInicial(periodo));
-    void this.cargarNovedades();
+    void this.inicializarPantalla();
   }
 
   etiquetaEstado(estado: NovedadMensualEstado): string {
@@ -335,7 +358,7 @@ export class NovedadesMensualesContainer implements OnInit {
       this.mensaje.set({
         variant: 'warning',
         title: 'Periodo no valido',
-        message: 'Use el formato YYYY-MM para consultar novedades mensuales.',
+        message: 'Use el formato YYYY-MM para consultar movimientos del mes.',
       });
       return;
     }
@@ -346,7 +369,7 @@ export class NovedadesMensualesContainer implements OnInit {
       this.filas.set(novedades.map((novedad) => this.aGridRow(novedad)));
     } catch (err) {
       this.filas.set([]);
-      this.mostrarError(err, 'No se pudieron cargar las novedades del periodo.');
+      this.mostrarError(err, 'No se pudieron cargar los movimientos del periodo.');
     } finally {
       this.loading.set(false);
     }
@@ -354,6 +377,7 @@ export class NovedadesMensualesContainer implements OnInit {
 
   abrirNuevo(): void {
     this.novedadEditando.set(null);
+    this.contratosPersona.set([]);
     this.form.set(formInicial(this.periodoFiltro().trim() || this.periodoActivo.periodoYm()));
     this.formAbierto.set(true);
   }
@@ -380,6 +404,11 @@ export class NovedadesMensualesContainer implements OnInit {
       referenciaExterna: novedad.referenciaExterna ?? '',
     });
     this.formAbierto.set(true);
+    if (novedad.idPersona) {
+      void this.cargarContratosPersona(novedad.idPersona);
+    } else {
+      this.contratosPersona.set([]);
+    }
   }
 
   cerrarFormulario(): void {
@@ -391,6 +420,25 @@ export class NovedadesMensualesContainer implements OnInit {
     this.form.update((actual) => ({ ...actual, [campo]: valor }));
   }
 
+  async onTrabajadorChange(idPersona: number | null): Promise<void> {
+    this.actualizarForm('idPersona', idPersona);
+    this.actualizarForm('idContrato', null);
+    this.contratosPersona.set([]);
+    if (idPersona == null) {
+      return;
+    }
+
+    await this.cargarContratosPersona(idPersona);
+    const contratos = this.contratosPersona();
+    if (contratos.length === 1) {
+      this.actualizarForm('idContrato', contratos[0].idContrato);
+    }
+  }
+
+  onConceptoChange(idConcepto: number | null): void {
+    this.actualizarForm('idConcepto', idConcepto);
+  }
+
   async guardarFormulario(): Promise<void> {
     const input = this.inputDesdeForm();
     const resultado = validarNovedadMensualInput({ ...input, estado: this.novedadEditando()?.estado ?? 'borrador' });
@@ -398,7 +446,7 @@ export class NovedadesMensualesContainer implements OnInit {
       this.mensaje.set({
         variant: 'warning',
         title: 'Datos incompletos',
-        message: resultado.errores[0]?.mensaje ?? 'Revise los datos de la novedad mensual.',
+        message: this.mensajeOperativo(resultado.errores[0]?.mensaje) ?? 'Revise los datos del movimiento del mes.',
       });
       return;
     }
@@ -410,21 +458,21 @@ export class NovedadesMensualesContainer implements OnInit {
         await this.novedadesService.actualizarNovedad(editando.idNovedad, input);
         this.mensaje.set({
           variant: 'success',
-          title: 'Novedad actualizada',
-          message: 'La novedad mensual quedo actualizada.',
+          title: 'Movimiento actualizado',
+          message: 'El movimiento del mes quedo actualizado.',
         });
       } else {
         await this.novedadesService.crearNovedad(input);
         this.mensaje.set({
           variant: 'success',
-          title: 'Novedad guardada',
-          message: 'Novedad guardada como borrador.',
+          title: 'Movimiento guardado',
+          message: 'Movimiento guardado como borrador.',
         });
       }
       this.cerrarFormulario();
       await this.cargarNovedades();
     } catch (err) {
-      this.mostrarError(err, 'No se pudo guardar la novedad mensual.');
+      this.mostrarError(err, 'No se pudo guardar el movimiento del mes.');
     } finally {
       this.guardando.set(false);
     }
@@ -457,32 +505,32 @@ export class NovedadesMensualesContainer implements OnInit {
   async enviarRevision(novedad: NovedadMensual): Promise<void> {
     await this.ejecutarAccion(
       () => this.novedadesService.enviarARevision(novedad.idNovedad),
-      'Novedad enviada a revision.',
-      'No se pudo enviar la novedad a revision.',
+      'Movimiento enviado a revision.',
+      'No se pudo enviar el movimiento a revision.',
     );
   }
 
   async aprobar(novedad: NovedadMensual): Promise<void> {
     await this.ejecutarAccion(
       () => this.novedadesService.aprobarNovedad(novedad.idNovedad, USUARIO_UI_BASE),
-      'Novedad aprobada.',
-      'No se pudo aprobar la novedad.',
+      'Movimiento aprobado.',
+      'No se pudo aprobar el movimiento.',
     );
   }
 
   async rechazar(novedad: NovedadMensual): Promise<void> {
     await this.ejecutarAccion(
       () => this.novedadesService.rechazarNovedad(novedad.idNovedad, this.observacionAccion().trim()),
-      'Novedad rechazada.',
-      'No se pudo rechazar la novedad.',
+      'Movimiento rechazado.',
+      'No se pudo rechazar el movimiento.',
     );
   }
 
   async anular(novedad: NovedadMensual): Promise<void> {
     await this.ejecutarAccion(
       () => this.novedadesService.anularNovedad(novedad.idNovedad, this.observacionAccion().trim() || null),
-      'Novedad anulada.',
-      'No se pudo anular la novedad.',
+      'Movimiento anulado.',
+      'No se pudo anular el movimiento.',
     );
   }
 
@@ -492,8 +540,8 @@ export class NovedadesMensualesContainer implements OnInit {
         await this.novedadesService.eliminarSoloBorrador(novedad.idNovedad);
         return undefined;
       },
-      'Novedad eliminada.',
-      'No se pudo eliminar la novedad.',
+      'Movimiento eliminado.',
+      'No se pudo eliminar el movimiento.',
     );
   }
 
@@ -536,6 +584,46 @@ export class NovedadesMensualesContainer implements OnInit {
     }
   }
 
+  private async inicializarPantalla(): Promise<void> {
+    await this.cargarDatosSoporte();
+    await this.cargarNovedades();
+  }
+
+  private async cargarDatosSoporte(): Promise<void> {
+    this.soporteLoading.set(true);
+    try {
+      const [empleados, conceptos] = await Promise.all([
+        this.empleadosService.listar(),
+        this.haberesDescuentosService.listarConceptos(),
+      ]);
+      this.empleadosListado.set(empleados);
+      this.empleadoOptions.set(
+        empleados.map((empleado) => ({
+          value: empleado.id,
+          label: `${empleado.nombre} · ${empleado.rut}`,
+          description: empleado.cargo || undefined,
+        })),
+      );
+      this.conceptos.set(conceptos);
+    } catch (err) {
+      this.mostrarError(err, 'No se pudieron cargar los datos necesarios para registrar movimientos del mes.');
+    } finally {
+      this.soporteLoading.set(false);
+    }
+  }
+
+  private async cargarContratosPersona(idPersona: number): Promise<void> {
+    this.contratosLoading.set(true);
+    try {
+      this.contratosPersona.set(await this.haberesDescuentosService.listarContratosPersona(idPersona));
+    } catch (err) {
+      this.contratosPersona.set([]);
+      this.mostrarError(err, 'No se pudieron cargar los contratos del trabajador.');
+    } finally {
+      this.contratosLoading.set(false);
+    }
+  }
+
   private inputDesdeForm(): CrearNovedadMensualInput & ActualizarNovedadMensualInput {
     const form = this.form();
     return {
@@ -557,8 +645,8 @@ export class NovedadesMensualesContainer implements OnInit {
   }
 
   private aGridRow(novedad: NovedadMensual): NovedadGridRow {
-    const trabajadorEtiqueta = numeroOTextoTecnico(novedad.idPersona, 'Persona');
-    const conceptoEtiqueta = numeroOTextoTecnico(novedad.idConcepto, 'Concepto');
+    const trabajadorEtiqueta = this.etiquetaTrabajador(novedad.idPersona);
+    const conceptoEtiqueta = this.etiquetaConcepto(novedad.idConcepto);
     const categoriaEtiqueta = this.etiquetaCategoria(novedad.categoria);
     const estadoEtiqueta = this.etiquetaEstado(novedad.estado);
     const origenEtiqueta = this.etiquetaOrigen(novedad.origen);
@@ -588,12 +676,36 @@ export class NovedadesMensualesContainer implements OnInit {
     };
   }
 
+  private etiquetaTrabajador(idPersona: number | null): string {
+    if (idPersona == null) {
+      return 'Trabajador sin ficha visible';
+    }
+    const empleado = this.empleadosListado().find((item) => item.id === idPersona);
+    return empleado ? `${empleado.nombre} · ${empleado.rut}` : 'Trabajador sin ficha visible';
+  }
+
+  private etiquetaConcepto(idConcepto: number | null): string {
+    if (idConcepto == null) {
+      return 'Concepto no disponible';
+    }
+    const concepto = this.conceptos().find((item) => item.idConcepto === idConcepto);
+    return concepto ? `${concepto.nombre} (${concepto.codigo})` : 'Concepto no disponible';
+  }
+
   private mostrarError(err: unknown, fallback: string): void {
     const message = err instanceof Error && err.message.trim() ? err.message : fallback;
     this.mensaje.set({
       variant: 'error',
       title: 'Error',
-      message,
+      message: this.mensajeOperativo(message) ?? fallback,
     });
+  }
+
+  private mensajeOperativo(message: string | undefined): string | undefined {
+    return message
+      ?.replace(/novedades mensuales/gi, 'movimientos del mes')
+      .replace(/novedad mensual/gi, 'movimiento del mes')
+      .replace(/novedades/gi, 'movimientos')
+      .replace(/novedad/gi, 'movimiento');
   }
 }

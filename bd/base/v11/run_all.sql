@@ -17,3 +17,4 @@
 \ir partes/16_nomina_calculo_snapshot_rls.sql
 \ir partes/17_parametros_reconciliacion_cliente.sql
 \ir partes/18_novedades_mensuales.sql
+\ir partes/19_novedades_mensuales_rls.sql

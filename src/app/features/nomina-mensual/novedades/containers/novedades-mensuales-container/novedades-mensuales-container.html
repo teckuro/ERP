@@ -1,12 +1,12 @@
-<section class="nm-page" aria-label="Novedades mensuales">
+<section class="nm-page" aria-label="Movimientos del mes">
   <header class="nm-head">
     <app-record-breadcrumb
       [items]="breadcrumbItems"
-      title="Novedades mensuales"
+      title="Movimientos del mes"
     ></app-record-breadcrumb>
     <p class="nm-lead">
-      Registra hechos del periodo que afectan la remuneracion. No son asignaciones recurrentes ni calculan liquidacion
-      por si solas.
+      Registra movimientos puntuales del periodo, como bonos, descuentos, anticipos, ajustes u otros hechos mensuales
+      que deben revisarse antes de preparar la nomina.
     </p>
 
     <div class="nm-head-actions">
@@ -16,7 +16,7 @@
           <span class="nm-period-global-v">{{ periodoActivo.etiqueta() }}</span>
         </div>
         <p class="nm-period-hint">
-          Las novedades aprobadas seran consideradas por el proceso mensual en una fase posterior.
+          Registra los movimientos del periodo antes de preparar la nomina.
         </p>
       </div>
       <div class="nm-head-buttons">
@@ -26,7 +26,7 @@
         </app-button>
         <app-button variant="primary" size="md" (click)="abrirNuevo()">
           <lucide-icon icon class="w-4 h-4" [img]="plusIcon"></lucide-icon>
-          Nueva novedad
+          Nuevo movimiento del mes
         </app-button>
       </div>
     </div>
@@ -73,7 +73,7 @@
         <div class="nm-form-head">
           <div>
             <h2 class="text-sm font-semibold text-gray-900">
-              {{ novedadEditando() ? 'Editar novedad' : 'Nueva novedad' }}
+              {{ novedadEditando() ? 'Editar movimiento del mes' : 'Nuevo movimiento del mes' }}
             </h2>
             <p class="nm-form-sub">
               Guarde el borrador antes de enviarlo a revision. Esta pantalla no calcula liquidaciones.
@@ -94,38 +94,49 @@
                 (ngModelChange)="actualizarForm('periodo', $event)"
               />
             </label>
-            <label class="nm-field">
-              <span class="nm-field-label">Trabajador / idPersona</span>
-              <input
-                type="number"
-                min="1"
-                step="1"
-                class="nm-input"
+            <label class="nm-field nm-form-span2">
+              <span class="nm-field-label">Trabajador</span>
+              <app-search-select
+                id="nm-trabajador"
+                placeholder="Selecciona trabajador"
+                searchPlaceholder="Buscar por nombre o RUT"
+                emptyText="No hay trabajadores disponibles"
+                [options]="empleadoOptions()"
                 [ngModel]="form().idPersona"
-                (ngModelChange)="actualizarForm('idPersona', $event == null || $event === '' ? null : +$event)"
-              />
+                (ngModelChange)="onTrabajadorChange($event == null ? null : +$event)"
+                [disabled]="guardando() || soporteLoading()"
+                [clearable]="true"
+              ></app-search-select>
             </label>
             <label class="nm-field">
-              <span class="nm-field-label">Contrato / idContrato</span>
-              <input
-                type="number"
-                min="1"
-                step="1"
+              <span class="nm-field-label">Contrato</span>
+              <select
                 class="nm-input"
                 [ngModel]="form().idContrato"
                 (ngModelChange)="actualizarForm('idContrato', $event == null || $event === '' ? null : +$event)"
-              />
+                [disabled]="guardando() || contratosLoading() || !form().idPersona || contratosPersona().length <= 1"
+              >
+                <option [ngValue]="null">
+                  {{ form().idPersona ? 'Sin contrato especifico' : 'Selecciona trabajador primero' }}
+                </option>
+                @for (contrato of contratosPersona(); track contrato.idContrato) {
+                  <option [ngValue]="contrato.idContrato">{{ contrato.etiqueta }}</option>
+                }
+              </select>
             </label>
-            <label class="nm-field">
-              <span class="nm-field-label">Concepto / idConcepto</span>
-              <input
-                type="number"
-                min="1"
-                step="1"
-                class="nm-input"
+            <label class="nm-field nm-form-span2">
+              <span class="nm-field-label">Concepto</span>
+              <app-search-select
+                id="nm-concepto"
+                placeholder="Selecciona concepto"
+                searchPlaceholder="Buscar concepto"
+                emptyText="No hay conceptos disponibles"
+                [options]="conceptoOptions()"
                 [ngModel]="form().idConcepto"
-                (ngModelChange)="actualizarForm('idConcepto', $event == null || $event === '' ? null : +$event)"
-              />
+                (ngModelChange)="onConceptoChange($event == null ? null : +$event)"
+                [disabled]="guardando() || soporteLoading()"
+                [clearable]="true"
+              ></app-search-select>
             </label>
           </div>
         </div>
@@ -257,7 +268,7 @@
       <div class="nm-action-observation">
         <div>
           <h2 class="text-sm font-semibold text-gray-900">Listado del periodo</h2>
-          <p class="nm-form-sub">Use la observacion solo para rechazar o anular novedades.</p>
+          <p class="nm-form-sub">Use la observacion solo para rechazar o anular movimientos del mes.</p>
         </div>
         <label>
           <span class="nm-field-label">Observacion para accion</span>
@@ -272,7 +283,7 @@
     </app-card-header>
     <app-card-content className="p-0">
       <app-data-grid
-        title="Novedades del periodo"
+        title="Movimientos del periodo"
         [rows]="filas()"
         [columns]="columns"
         [filters]="filters"
@@ -282,8 +293,8 @@
         [selectable]="false"
         [trackBy]="trackNovedad"
         gridHeight="min(34rem, calc(100vh - 26rem))"
-        emptyTitle="No hay novedades registradas para este periodo."
-        emptyDescription="Puedes crear borradores de bonos puntuales, horas extra, ausencias, anticipos u otros movimientos del mes."
+        emptyTitle="No hay movimientos registrados para este periodo."
+        emptyDescription="Puedes registrar movimientos del mes y enviarlos a revision antes de preparar la nomina."
       >
         <ng-template appDataGridCell="estado" let-row>
           <span [class]="claseEstado(row.estado)">{{ etiquetaEstado(row.estado) }}</span>

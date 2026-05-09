@@ -2,23 +2,34 @@
 
 ## 1. Objetivo del modulo
 
-Guiar el **proceso mensual** por periodo `YYYY-MM`: revisar prerequisitos (parametros, trabajadores, conceptos, recurrentes, movimientos variables), construir pre-nomina y ejecutar un calculo base preliminar. En la version actual no genera liquidaciones oficiales, snapshots definitivos, cierre, Previred, LRE ni PDF.
+Guiar el **proceso mensual** por periodo `YYYY-MM`: revisar prerequisitos (parametros, trabajadores, conceptos, recurrentes, movimientos del mes), construir una base de nomina y ejecutar un calculo base preliminar. En la version actual no genera liquidaciones oficiales, snapshots definitivos, cierre, Previred, LRE ni PDF.
 
 La arquitectura funcional completa de remuneraciones queda definida en [`arquitectura-funcional-remuneraciones.md`](./arquitectura-funcional-remuneraciones.md) (NOM-00). Ese documento fija la separacion entre Maestros RRHH, Parametros, Conceptos, Haberes/descuentos recurrentes, Novedades mensuales, Proceso mensual, Motor, Liquidacion, Previred/LRE y Reportes.
 
-El modelo documental de **Novedades mensuales** queda definido en [`novedades-mensuales.md`](./novedades-mensuales.md) (NOM-01). NOM-01B agrega la tabla base `novedad_remuneracion_periodo` para hechos del periodo. NOM-01C agrega la capa Angular base de modelos, mapper, repository, service y reglas puras. NOM-01D agrega la UI base `/remuneraciones/novedades-mensuales` para listar, crear borradores y cambiar estados simples, sin integracion real al proceso mensual ni motor. El nombre tecnico historico puede aparecer como movimientos variables, pero para RRHH el nombre funcional principal es Novedades mensuales.
+El modelo documental de **Novedades mensuales** queda definido en [`novedades-mensuales.md`](./novedades-mensuales.md) (NOM-01). NOM-01B agrega la tabla base `novedad_remuneracion_periodo` para hechos del periodo. NOM-01C agrega la capa Angular base de modelos, mapper, repository, service y reglas puras. NOM-01D agrega la UI base `/remuneraciones/novedades-mensuales` para listar, crear borradores y cambiar estados simples, sin integracion real al proceso mensual ni motor. Desde USAB-NOM-01/02, para RRHH el nombre visible principal es **Movimientos del mes**; **Novedades mensuales** queda como nombre tecnico/documental interno.
 
 ## 2. Alcance actual (cerrado en 9.5A + 9.5B + 9.5C + MOTOR-01 + MOTOR-02 + MOTOR-03A + MOTOR-03B + MOTOR-03C)
 
-- Pantalla **Proceso mensual** bajo `/remuneraciones/proceso-mensual`.
+- Pantalla visible **Preparar nomina** bajo `/remuneraciones/proceso-mensual`.
 - **Prevalidaciones** orquestadas por `ProcesoMensualService` con reglas puras en `proceso-mensual-prevalidacion.rules.ts`, grupos minimos en `proceso-mensual-parametros-minimos.rules.ts` y conteos de recurrentes en `proceso-mensual-recurrentes.rules.ts`.
-- **Pre-nomina funcional por periodo** construida desde la prevalidacion con `proceso-mensual-prenomina.rules.ts`; consolida conteos y trazabilidad, pero no calcula montos.
+- **Pre-nomina funcional por periodo** construida desde la prevalidacion con `proceso-mensual-prenomina.rules.ts`; en UI se muestra como **Base de nomina**. Consolida conteos y trazabilidad, pero no calcula montos.
+- **Base de nomina trazable USAB-NOM-04**: antes del calculo preliminar, la UI muestra trabajadores considerados, listos, con observaciones, bloqueados/excluidos, asignaciones recurrentes incluidas, movimientos del mes incluidos, parametros del periodo y acciones de revision. Mantiene nombres tecnicos internos y no cambia formulas legales.
+- **Validacion operativa USAB-NOM-05**: antes de `Calcular preliminar`, la UI muestra estado de calculo, bloqueos, advertencias, informacion, razon visible de deshabilitado y siguiente accion recomendada.
+- **Resultado preliminar revisable USAB-NOM-06**: despues de calcular, la UI muestra resumen operativo, trabajadores calculados/con observaciones/omitidos, observaciones del resultado, detalle tecnico secundario y acciones de recalculo, revision y guardado preliminar.
+- **Guardado/versionado operativo USAB-NOM-07**: el resultado preliminar muestra estado de guardado, razon visible cuando no se puede guardar, confirmacion antes de guardar, ultimo resultado guardado, fecha, version del calculo, identificador tecnico y advertencias asociadas. Guardar crea o reemplaza una version revisable del periodo; no es liquidacion oficial.
+- **Revision para aprobacion USAB-NOM-08**: sobre el resultado preliminar guardado, la UI muestra estado de preparacion, checklist operativo y bloqueos/advertencias/informacion para decidir. La accion deshabilitada de solicitud fue reemplazada por `Aprobar resultado preliminar` en USAB-NOM-09.
+- **Aprobacion operativa USAB-NOM-09**: sobre el resultado preliminar guardado vigente, RRHH puede marcar `Aprobar resultado preliminar` con confirmacion previa. La UI muestra fecha/hora, usuario no disponible si no existe contexto real, version del calculo, identificador tecnico, trabajadores y totales aprobados, y advertencias al aprobar. Si se recalcula despues, la aprobacion queda desactualizada y debe guardarse/aprobarse nuevamente.
 - **Calculo preliminar MOTOR-01/MOTOR-02** con `proceso-mensual-motor.rules.ts`; calcula sueldo base, haberes recurrentes, gratificacion controlada, bases con topes disponibles, cotizaciones basicas, impuesto unico con tabla, asignacion familiar simple, liquido preliminar, issues y trazabilidad.
 - **Contrato de persistencia MOTOR-03A** documental: define snapshot preliminar, estados, tablas candidatas, hash, version de motor y reglas de recalculo/reemplazo; no implementa escritura.
 - **Persistencia controlada MOTOR-03B**: agrega SQL local versionable, mapping, hash deterministico simple, repository y servicio para guardar/consultar/reemplazar snapshots preliminares sin liquidacion oficial ni cierre.
 - **Aplicacion controlada MOTOR-03C**: valida el SQL de snapshots, confirma PK/FK contra v11, incluye la parte 15 en `run_all.sql` y deja tipos Supabase pendientes hasta aplicar la migracion en un ambiente confirmado.
 - UI en `features/nomina-mensual/containers/proceso-mensual-container/`; pagina de ruta solo wrapper (`frontend-interfaces`).
-- Selector de periodo y acciones **Validar periodo** / **Generar pre-nomina** / **Calcular preliminar** / **Guardar snapshot preliminar**; muestra estado global, bloqueos, advertencias, informaciones, filas por area, resumen de calculo, snapshot activo y tabla simple por trabajador.
+- Selector de periodo y acciones **Validar periodo** / **Generar base de nomina** / **Calcular preliminar** / **Guardar resultado preliminar**; desde USAB-NOM-03 la UI se organiza como dashboard operativo con resumen, siguiente accion, checklist por areas, bloqueos/advertencias, base de nomina, calculo preliminar y resultado guardado. Desde USAB-NOM-04, Base de nomina es la vista de trazabilidad previa al calculo y no debe exponer IDs tecnicos como labels principales.
+- Desde USAB-NOM-05, `Calcular preliminar` se habilita solo con periodo valido, base generada, trabajadores considerados, parametros minimos disponibles, sin bloqueos ni error activo.
+- Desde USAB-NOM-06, `Resultado preliminar` es una salida revisable del calculo. Guardarlo no equivale a liquidacion oficial, no cierra periodo y no genera Previred/LRE/banco.
+- Desde USAB-NOM-07, `Guardar resultado preliminar` usa el soporte existente de snapshots preliminares. El repositorio reemplaza el resultado activo del periodo marcando el anterior inactivo/anulado y vinculando el reemplazo. La UI no inventa version numerica incremental; muestra fecha, version del calculo e identificador tecnico disponibles.
+- Desde USAB-NOM-08, `Revision para aprobacion` prepara la decision operativa con checklist y observaciones visibles; desde USAB-NOM-09 esa revision puede marcar aprobacion operativa interna.
+- Desde USAB-NOM-09, `Aprobar resultado preliminar` es una marca operativa interna sobre el resultado guardado vigente. No agrega persistencia nueva formal si el contrato actual no tiene campo de aprobacion; no cierra periodo, no emite liquidaciones oficiales, no genera Previred/LRE/banco y no cambia formulas legales.
 
 ## 3. Fuera de alcance (explicito)
 
@@ -27,7 +38,7 @@ El modelo documental de **Novedades mensuales** queda definido en [`novedades-me
 - Gratificacion por 30% de utilidades, reliquidacion anual, proporcionalidad compleja por dias y ausencias avanzadas.
 - Liquidaciones productivas, snapshots, cierre contable.
 - Generacion Previred, LRE, archivos bancarios.
-- Bloqueo duro de periodo en BD, aprobaciones, roles/JWT/RLS.
+- Bloqueo duro de periodo en BD, aprobaciones legales finales, roles/JWT/RLS.
 - Rediseno visual integral (fase UX-FINAL aparte).
 
 ## 4. Relacion con parametros
@@ -52,7 +63,8 @@ Lectura del mantenimiento de conceptos via `HaberesDescuentosService.listarConce
 
 La decision vigente es:
 
-- **Novedades mensuales** es el nombre funcional oficial para RRHH.
+- **Movimientos del mes** es el nombre visible oficial para RRHH.
+- **Novedades mensuales** se mantiene como nombre tecnico/documental interno.
 - `novedad_remuneracion_periodo` es la tabla canonica futura para hechos del periodo.
 - **Movimientos variables** queda como termino legacy/tecnico/transicion.
 - `movimiento_variable_mensual` queda como tabla legacy de transicion.
@@ -63,7 +75,7 @@ NOM-01B crea el modelo SQL base `novedad_remuneracion_periodo` para la nomenclat
 
 NOM-01C crea `src/app/features/nomina-mensual/novedades/` con modelo, mapper, repository, service y reglas puras para listar, crear, actualizar y cambiar estados de novedades mensuales. Esta capa no modifica recurrentes, no calcula liquidaciones, no marca pre-nomina real y no toca Previred/LRE.
 
-NOM-01D crea la pantalla base `/remuneraciones/novedades-mensuales` sobre `NovedadesMensualesService`. Permite listar por periodo, crear/editar borradores y ejecutar transiciones simples (`borrador`, `pendiente_revision`, `aprobada`, `rechazada`, `anulada`) segun reglas. La UI muestra ids tecnicos de trabajador/concepto hasta que una fase futura conecte catalogos de nombres. No escribe en recurrentes, parametros, liquidaciones, proceso mensual real, Previred ni LRE.
+NOM-01D crea la pantalla base `/remuneraciones/novedades-mensuales` sobre `NovedadesMensualesService`. Permite listar por periodo, crear/editar borradores y ejecutar transiciones simples (`borrador`, `pendiente_revision`, `aprobada`, `rechazada`, `anulada`) segun reglas. USAB-NOM-02 reemplaza la captura visible de IDs por selectores operativos de trabajador (`Nombre · RUT`), concepto (`Nombre (codigo)`) y contrato por trabajador; el payload interno mantiene `idPersona`, `idContrato` e `idConcepto`. No escribe en recurrentes, parametros, liquidaciones, proceso mensual real, Previred ni LRE.
 
 ## 8.1 UNIF-NOM-02 - Entradas mensuales canonicas
 
@@ -103,9 +115,37 @@ Resultado de fase:
 - No se modifican estados fuente ni se escribe en `novedad_remuneracion_periodo` o `movimiento_variable_mensual`.
 - No se modifica motor, liquidaciones, cierre, Previred/LRE, SQL, Python, rutas, sidebar ni UI productiva.
 
+## 8.3 SEG-NOV-02 - RLS y permisos de novedades mensuales
+
+SEG-NOV-02 agrega RLS para `novedad_remuneracion_periodo` en `bd/base/v11/partes/19_novedades_mensuales_rls.sql`.
+
+Reglas:
+
+- `authenticated` puede leer, insertar y actualizar novedades mensuales.
+- `anon` no recibe permisos nuevos sobre la tabla.
+- `DELETE` directo no se habilita; la baja funcional debe hacerse por anulacion logica.
+- No se crea modelo de roles finos porque aun no existe JWT/RLS por rol en el proyecto.
+- No se cambia estructura de tabla, datos, motor, contrato de entrada del motor, formulas legales, liquidaciones, cierre, Previred/LRE, Python, UI, rutas ni sidebar.
+- Validacion aplicada contra `SUPABASE_DB_URL` del `.env`: RLS habilitado, tres policies, sin lectura `anon` y sin `DELETE` para `authenticated`.
+
+Nota para fases futuras: cuando una fase tenga como objetivo integrar entradas mensuales al motor, se permite ajustar modelos, interfaces o contratos de entrada sin cambiar formulas previsionales, tributarias ni resultados legales, salvo que esa fase lo autorice explicitamente.
+
+## 8.4 NOM-UX-01 - Consolidacion visual de Novedades mensuales
+
+NOM-UX-01 consolida la experiencia de RRHH para hechos del periodo:
+
+- Movimientos del mes queda como opcion visible principal en el sidebar.
+- Movimientos variables se retira del menu principal y queda como ruta legacy/transicion conservada.
+- No se borra `MovimientosVariablesService`, el modulo legacy ni la ruta `/remuneraciones/movimientos-variables`.
+- No se migran datos y no se modifica SQL/RLS.
+- No se modifica motor, contrato de entrada del motor, formulas legales, liquidaciones, Previred/LRE ni Python.
+- Proceso mensual ya consume entradas canonicas desde UNIF-NOM-03; el cambio visual solo evita presentar dos pantallas productivas equivalentes.
+
 ## 9. Prevalidaciones y estados
 
 Estados globales: `SIN_EVALUAR` (antes de ejecutar), `LISTO_PARA_CALCULO`, `CON_ADVERTENCIAS`, `BLOQUEADO`. Detalle en `prevalidaciones-9-5A.md` y ampliacion 9.5B en `prevalidaciones-9-5B.md`.
+
+En UI visible, los estados de checklist se traducen a lenguaje operativo: `Listo`, `Revisar`, `Pendiente de integracion` y `Sin evaluar`. No deben presentarse estados internos crudos como foco principal para RRHH.
 
 ## 10. Bloqueos y advertencias
 
@@ -126,9 +166,182 @@ MOTOR-01 queda documentado en [`motor-calculo-implementacion-01.md`](./motor-cal
 
 ## 12. Pre-nomina 9.5C
 
-La pre-nomina por periodo es una base funcional de control. Se puede construir solo desde una prevalidacion sin bloqueos. Si hay advertencias, queda como `GENERADA_CON_ADVERTENCIAS`; si hay bloqueos, queda `NO_GENERABLE`.
+La pre-nomina por periodo es una base funcional de control. En UI visible, desde USAB-NOM-03 se denomina **Base de nomina**. Se puede construir solo desde una prevalidacion sin bloqueos. Si hay advertencias, queda como `GENERADA_CON_ADVERTENCIAS`; si hay bloqueos, queda `NO_GENERABLE`.
 
 No persiste datos ni marca movimientos como incluidos. No reemplaza el motor ni genera liquidaciones.
+
+## 12.1 Validacion operativa antes de calculo preliminar
+
+USAB-NOM-05 define el semaforo visible previo a `Calcular preliminar`.
+
+Bloquea el calculo preliminar:
+
+- periodo invalido o no validado;
+- error tecnico activo al cargar datos necesarios;
+- base de nomina no generada;
+- base sin trabajadores considerados;
+- parametros minimos obligatorios faltantes para calcular;
+- bloqueos reales de prevalidacion o trabajadores bloqueados en la base.
+
+No bloquea por defecto:
+
+- ausencia de movimientos del mes;
+- ausencia de asignaciones recurrentes activas;
+- observaciones no bloqueantes de trabajadores;
+- parametros opcionales pendientes para cierre o reconciliacion.
+
+Parametros minimos para preliminar:
+
+- grupo mensual base (`mensuales_uf_utm_sueldo`);
+- topes base (`topes_base`);
+- catalogos esenciales AFP/impuesto (`catalogos_afp_impuesto`).
+
+La completitud legal total del periodo queda para cierre, reconciliacion o carga final. Esta validacion no modifica formulas legales, motor, snapshots, liquidaciones oficiales, SQL/RLS, Previred/LRE ni banco.
+
+## 12.2 Resultado preliminar revisable
+
+USAB-NOM-06 define el resultado posterior a `Calcular preliminar` como una salida operativa revisable.
+
+Debe mostrar:
+
+- estado del resultado: sin resultado, calculado con exito, calculado con observaciones, no se pudo calcular o guardado como preliminar;
+- resumen con trabajadores calculados, trabajadores con observaciones, trabajadores omitidos y totales disponibles;
+- tabla de trabajadores del resultado con nombre/RUT, estado, haberes, descuentos, liquido preliminar y observaciones;
+- observaciones del resultado separadas en bloqueos, advertencias e informacion;
+- detalle tecnico secundario: version del calculo, identificador tecnico y fecha de generacion;
+- acciones operativas: recalcular preliminar, revisar base, revisar movimientos del mes, revisar asignaciones recurrentes y guardar resultado preliminar cuando el flujo lo permite.
+
+Reglas:
+
+- no inventar totales no disponibles;
+- no usar `Issues`, `Hash` ni IDs como labels principales;
+- no presentar el resultado como liquidacion oficial;
+- no agregar cierre, Previred, LRE ni banco como acciones activas;
+- guardar resultado preliminar conserva una version revisable del calculo, no cierra periodo.
+
+## 12.2.1 Guardado y versionado operativo del resultado preliminar
+
+USAB-NOM-07 define el guardado como una version operativa revisable del calculo preliminar.
+
+Estados visibles:
+
+- `Sin resultado`: no existe calculo preliminar actual.
+- `Resultado no guardado`: existe calculo preliminar sin bloqueos y aun no fue guardado.
+- `Resultado guardado`: el resultado actual quedo guardado como version revisable.
+- `Resultado actualizado sin guardar`: se recalculo despues del ultimo guardado.
+- `No se pudo guardar`: fallo la persistencia o la validacion de guardado.
+
+Reglas:
+
+- se puede guardar solo si existe resultado preliminar, el periodo es valido y no hay bloqueos del resultado;
+- si no se puede guardar, la UI muestra razon visible;
+- antes de guardar se confirma que no emite liquidaciones, no cierra el periodo y no genera archivos legales;
+- el ultimo resultado preliminar guardado muestra fecha de guardado, version del calculo, identificador tecnico, trabajadores calculados, trabajadores con observaciones, trabajadores omitidos y liquido preliminar si existe;
+- las advertencias no bloqueantes quedan visibles despues de guardar;
+- si se recalcula despues de guardar, la UI diferencia el ultimo guardado del resultado actual.
+
+Persistencia real:
+
+- se usa `ProcesoMensualService.guardarSnapshotPreliminar` y `NominaCalculoSnapshotRepository`;
+- el guardado reemplaza el resultado activo del periodo: el anterior se marca inactivo/anulado y se vincula con `reemplazadoPor`;
+- no existe version numerica incremental funcional propia, por lo que la UI no la inventa;
+- la identificacion disponible es fecha de guardado, `versionMotor`, `hashSnapshot` e `idCalculoPeriodo` como referencia tecnica secundaria.
+
+Fuera de alcance:
+
+- liquidacion oficial;
+- cierre de periodo;
+- Previred, LRE, banco o archivos legales;
+- cambios de formulas legales;
+- SQL/RLS, migraciones o cambios de seguridad.
+
+## 12.2.2 Revision operativa para aprobacion
+
+USAB-NOM-08 agrega una capa de decision de usuario sobre el resultado preliminar guardado. La revision vive despues del bloque `Ultimo resultado preliminar guardado` y no reemplaza el guardado ni crea estados legales.
+
+Estados visibles:
+
+- `Sin resultado guardado`: aun no existe version preliminar para revisar.
+- `Pendiente de guardado`: existe calculo preliminar actual, pero no fue guardado.
+- `Resultado guardado pendiente de revision`: hay resultado guardado con advertencias u observaciones no bloqueantes.
+- `Resultado actualizado sin guardar`: se recalculo despues del ultimo guardado y debe guardarse la version vigente.
+- `No apto para aprobacion`: existen bloqueos u omisiones que deben corregirse.
+- `Listo para aprobar`: el resultado guardado no tiene bloqueos ni advertencias visibles para la revision operativa.
+
+Checklist minimo visible:
+
+- resultado preliminar guardado;
+- resultado guardado vigente;
+- trabajadores calculados revisables;
+- ausencia de bloqueos operativos;
+- advertencias visibles para decision de RRHH;
+- acciones legales marcadas como fase posterior.
+
+Reglas de UX:
+
+- cada estado debe explicar la siguiente accion en lenguaje operativo;
+- bloqueos, advertencias e informacion se muestran separados para facilitar decision;
+- la accion vigente es `Aprobar resultado preliminar` cuando se cumplen las condiciones de USAB-NOM-09;
+- no se usan `issues`, `payload`, `hash` ni `snapshot` como labels principales de usuario;
+- no se muestran aprobacion real, cierre, liquidacion oficial, Previred, LRE ni banco como acciones activas.
+
+## 12.2.3 Aprobacion operativa interna
+
+USAB-NOM-09 habilita la accion `Aprobar resultado preliminar` sobre el resultado preliminar guardado vigente. Aprobar significa que RRHH reviso y acepta operativamente el resultado guardado para seguir a una etapa posterior; no significa cierre legal ni emision de liquidaciones.
+
+Condiciones para aprobar:
+
+- existe periodo valido;
+- existe resultado preliminar guardado;
+- el resultado guardado esta vigente;
+- no existe resultado recalculado posterior sin guardar;
+- no hay bloqueos operativos ni trabajadores omitidos;
+- las advertencias, si existen, quedan visibles antes de confirmar.
+
+Resultado visible:
+
+- estado `Aprobado operativamente` o `Aprobacion desactualizada`;
+- fecha/hora de aprobacion;
+- usuario visible si existe contexto real, o texto operativo `Usuario no disponible en esta sesion`;
+- version del calculo e identificador tecnico como detalle secundario;
+- trabajadores calculados, total haberes, total descuentos y liquido preliminar;
+- advertencias presentes al aprobar.
+
+Reglas:
+
+- requiere confirmacion previa y el mensaje aclara que no emite liquidaciones, no cierra periodo y no genera archivos legales;
+- si se recalcula despues, la aprobacion anterior queda visible como desactualizada y se exige guardar/aprobar nuevamente;
+- no aprueba automaticamente al guardar;
+- no crea tablas, columnas, migraciones ni RLS; queda como estado operativo UI sobre el snapshot activo hasta una fase posterior de persistencia formal;
+- no modifica formulas legales, motor, liquidaciones oficiales, cierre, Previred, LRE ni banco.
+
+## 12.2.4 Saneamiento previo a cierre operativo
+
+NOM-HARD-01 fija el corte funcional antes de disenar cierre operativo. El sistema soportado queda en esta secuencia:
+
+1. Resultado preliminar calculado.
+2. Resultado preliminar guardado como version revisable.
+3. Resultado aprobado operativamente por RRHH en UI.
+4. Cierre operativo del periodo: pendiente.
+5. Liquidaciones oficiales: pendiente.
+6. Salidas legales y bancarias (PDF, Previred, LRE, banco): pendiente.
+
+Reglas de saneamiento:
+
+- `Aprobar resultado preliminar` es una aprobacion interna local/volatil mientras no exista persistencia formal de aprobacion.
+- La persistencia formal debe definirse antes del cierre: metadata en snapshot, estado de periodo, tabla de auditoria o mecanismo transaccional equivalente.
+- El snapshot usado para cierre debe poder consultarse completo desde BD, no solo cabecera o resumen parcial.
+- El reemplazo de snapshot activo debe endurecerse con atomicidad real si el flujo de cierre depende de el.
+- `window.confirm` es deuda de UX; antes de cierre operativo debe reemplazarse por un dialogo propio auditable y testeable.
+- Cierre, reapertura, anulacion o rectificacion de periodo requieren contrato propio; no se infieren desde USAB-NOM-09.
+- Las pantallas de Liquidaciones no deben mostrar datos demo ni acciones aparentes de firma, descarga, impresion, envio o liquidacion oficial hasta que exista modulo real.
+
+Fuera de alcance de este saneamiento:
+
+- no implementar liquidaciones oficiales;
+- no crear cierre de periodo;
+- no generar Previred, LRE, PDF ni archivo de banco;
+- no cambiar formulas legales, motor, SQL/RLS, migraciones, RPC ni permisos.
 
 ## 12.1 Calculo preliminar MOTOR-01/MOTOR-02
 
@@ -194,6 +407,44 @@ Resultado:
 
 MOTOR-03C no agrega reglas de calculo, no cambia UI, no cierra periodo, no crea liquidacion oficial, no genera PDF, Previred, LRE ni contabilidad.
 
+## 12.5 MOTOR-04 - Contrato de entradas mensuales para el motor
+
+MOTOR-04 prepara el contrato de entrada del motor para recibir entradas mensuales canonicas desde Proceso mensual.
+
+Decision aplicada: **Opcion A - contrato preparatorio**.
+
+Cambios de contrato:
+
+- `MotorCalculoInput` agrega `entradasMensuales`.
+- `EntradaMensualMotor` representa una entrada mensual normalizada apta para el motor.
+- `proceso-mensual-motor-entradas.rules.ts` mapea `EntradaMensualPeriodo` hacia `EntradaMensualMotor`.
+- `ProcesoMensualService` arma el input con entradas aptas provenientes de `EntradasMensualesPeriodoService` via prevalidacion.
+
+Entradas incluidas:
+
+- entradas aprobadas;
+- entradas sin bloqueo critico;
+- legacy validado solo como transicion cuando ya fue normalizado como aprobado.
+
+Entradas excluidas:
+
+- borrador;
+- pendiente_revision;
+- observada;
+- rechazada;
+- anulada;
+- `legacy_bloqueado` o cualquier entrada con bloqueo critico.
+
+Alcance de calculo:
+
+- El motor recibe `entradasMensuales`, pero no las suma todavia a haberes, descuentos, bases ni liquido.
+- No se modifican formulas previsionales, tributarias ni legales.
+- No se cambia calculo de AFP, salud, AFC, SIS, SANNA, impuesto unico ni Ley 16.744.
+- No se generan liquidaciones oficiales, no se cierra periodo y no se modifican snapshots oficiales.
+- No se modifica SQL/RLS, Python, Previred/LRE, UI, rutas ni sidebar.
+
+La fase posterior debe decidir como cada entrada mensual aprobada afecta base imponible, base tributable, liquido y trazabilidad calculada, apoyandose en reglas gobernadas de Conceptos.
+
 ## 13. Referencias
 
 - `prevalidaciones-9-5A.md` (fase 9.5A).
@@ -221,7 +472,8 @@ Este contrato debe leerse junto con [`../../orquestador/estructura-canonica-erp.
 
 Decision vigente:
 
-- **Novedades mensuales** es el nombre funcional oficial.
+- **Movimientos del mes** es el nombre visible oficial.
+- **Novedades mensuales** es el nombre tecnico/documental interno.
 - `novedad_remuneracion_periodo` es la tabla canonica futura.
 - `MovimientosVariablesService` y `movimiento_variable_mensual` pueden seguir existiendo como transicion, pero no son la arquitectura final.
 - Proceso mensual consume `EntradasMensualesPeriodoService` desde UNIF-NOM-03; los alias legacy se conservan solo como compatibilidad temporal.
