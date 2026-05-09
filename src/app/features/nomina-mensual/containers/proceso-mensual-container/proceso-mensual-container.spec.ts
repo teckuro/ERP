@@ -173,10 +173,94 @@ function snapshotGuardado(overrides: Record<string, unknown> = {}) {
     origen: 'preliminar',
     activo: true,
     reemplazadoPor: null,
+    aprobacionOperativa: null,
     trabajadores: [],
     issues: [],
     trazabilidad: [],
     ...overrides,
+  };
+}
+
+function snapshotCompletoGuardado(overrides: Record<string, unknown> = {}) {
+  const cabecera = snapshotGuardado(overrides);
+  const trabajador = {
+    idCalculoTrabajador: 10,
+    idCalculoPeriodo: 1,
+    idPersona: 1,
+    rut: '11.111.111-1',
+    nombreCompletoSnapshot: 'Ana Perez',
+    estado: 'calculado_preliminar',
+    sueldoBase: 800000,
+    baseImponiblePrevisional: 800000,
+    baseTributable: 800000,
+    totalHaberesImponibles: 800000,
+    totalHaberesNoImponibles: 0,
+    totalDescuentosLegales: 150000,
+    totalDescuentosVoluntarios: 0,
+    impuestoUnico: 0,
+    liquidoPreliminar: 650000,
+    cotizacionAfp: 0,
+    cotizacionSalud: 0,
+    cotizacionAfc: 0,
+    cotizacionSis: 0,
+    cotizacionSanna: 0,
+    cotizacionLey16744Empleador: 0,
+    conceptos: [{
+      idCalculoConcepto: 20,
+      idCalculoTrabajador: 10,
+      idConcepto: null,
+      tipo: 'haber',
+      nombreConceptoSnapshot: 'Sueldo base',
+      codigoLreSnapshot: 'HAB001',
+      monto: 800000,
+      imponible: true,
+      tributable: true,
+      afectaLiquido: true,
+      origen: 'contrato',
+      trazabilidadJson: null,
+    }],
+    issues: [{
+      idIssue: 30,
+      idCalculoPeriodo: 1,
+      idCalculoTrabajador: 10,
+      codigo: 'INFO_RESULTADO',
+      severidad: 'INFO',
+      origen: 'calculo',
+      mensaje: 'Informacion guardada del resultado.',
+      campo: null,
+      entidadId: null,
+    }],
+    trazabilidad: [],
+  };
+  return {
+    cabecera: { ...cabecera, trabajadores: [trabajador], issues: [], trazabilidad: [] },
+    trabajadores: [trabajador],
+    conceptos: trabajador.conceptos,
+    observaciones: trabajador.issues,
+    trazabilidad: [{
+      idTrazabilidad: 40,
+      idCalculoPeriodo: 1,
+      idCalculoTrabajador: 10,
+      codigo: 'LIQUIDO_PRELIMINAR',
+      origen: 'calculo',
+      tablaFuente: 'resultado',
+      campoFuente: 'liquido',
+      vigenciaInicio: null,
+      vigenciaFin: null,
+      valorEntrada: 800000,
+      formula: 'haberes - descuentos',
+      valorResultado: 650000,
+      observacion: 'Liquido calculado guardado.',
+    }],
+    aprobacionOperativa: cabecera.aprobacionOperativa,
+    resumen: {
+      totalConceptos: 1,
+      totalObservaciones: 1,
+      totalTrazas: 1,
+      totalTrabajadoresSinDetalle: 0,
+      esActivoVigente: true,
+      fueReemplazado: false,
+    },
   };
 }
 
@@ -187,8 +271,11 @@ describe('ProcesoMensualContainer', () => {
   const generarCalculoPeriodo = vi.fn();
   const guardarSnapshotPreliminar = vi.fn();
   const reemplazarSnapshotPreliminar = vi.fn();
+  const aprobarResultadoPreliminarOperativamente = vi.fn();
   const obtenerResultadoCalculoPeriodo = vi.fn();
   const obtenerSnapshotActivo = vi.fn();
+  const obtenerSnapshotCompletoActivo = vi.fn();
+  const obtenerSnapshotCompletoPorId = vi.fn();
 
   beforeEach(async () => {
     vi.spyOn(window, 'confirm').mockReturnValue(true);
@@ -197,8 +284,11 @@ describe('ProcesoMensualContainer', () => {
     generarCalculoPeriodo.mockReset();
     guardarSnapshotPreliminar.mockReset();
     reemplazarSnapshotPreliminar.mockReset();
+    aprobarResultadoPreliminarOperativamente.mockReset();
     obtenerResultadoCalculoPeriodo.mockReset();
     obtenerSnapshotActivo.mockReset();
+    obtenerSnapshotCompletoActivo.mockReset();
+    obtenerSnapshotCompletoPorId.mockReset();
     ejecutarPrevalidaciones.mockResolvedValue({
       periodo: '2026-05',
       estado: 'BLOQUEADO',
@@ -341,7 +431,20 @@ describe('ProcesoMensualContainer', () => {
       issues: [],
     });
     obtenerResultadoCalculoPeriodo.mockReturnValue(null);
-    obtenerSnapshotActivo.mockResolvedValue(snapshotMock);
+    aprobarResultadoPreliminarOperativamente.mockResolvedValue({
+      ...snapshotMock,
+      aprobacionOperativa: {
+        estado: 'aprobado_operativamente',
+        fecha: '2026-05-05T11:00:00.000Z',
+        usuarioId: null,
+        usuarioLabel: 'Usuario no disponible en esta sesion',
+        advertencias: [],
+        metadata: { idCalculoPeriodo: 1, periodo: '2026-05' },
+      },
+    });
+    obtenerSnapshotActivo.mockResolvedValue(null);
+    obtenerSnapshotCompletoActivo.mockResolvedValue(null);
+    obtenerSnapshotCompletoPorId.mockResolvedValue(null);
 
     await TestBed.configureTestingModule({
       imports: [ProcesoMensualContainer],
@@ -356,8 +459,11 @@ describe('ProcesoMensualContainer', () => {
             generarCalculoPeriodo,
             guardarSnapshotPreliminar,
             reemplazarSnapshotPreliminar,
+            aprobarResultadoPreliminarOperativamente,
             obtenerResultadoCalculoPeriodo,
             obtenerSnapshotActivo,
+            obtenerSnapshotCompletoActivo,
+            obtenerSnapshotCompletoPorId,
           },
         },
         importProvidersFrom(
@@ -395,6 +501,14 @@ describe('ProcesoMensualContainer', () => {
     expect(text).toContain('No puedes aprobar todavia. Primero calcula el resultado preliminar.');
     expect(text).toContain('Checklist operativo');
     expect(aprobar?.disabled).toBe(true);
+  });
+
+  it('muestra seccion de resultado guardado desde BD sin snapshot guardado', () => {
+    const text = fixture.nativeElement.textContent as string;
+    expect(text).toContain('Resultado guardado desde BD');
+    expect(text).toContain('Este detalle corresponde al resultado preliminar guardado en base de datos.');
+    expect(text).toContain('No hay resultado preliminar guardado para consultar.');
+    expect(text).toContain('Actualizar consulta');
   });
 
   it('muestra selector de periodo (input month)', () => {
@@ -1078,6 +1192,11 @@ describe('ProcesoMensualContainer', () => {
     fixture.detectChanges();
 
     expect(window.confirm).toHaveBeenLastCalledWith(expect.stringContaining('Aprobar resultado preliminar'));
+    expect(aprobarResultadoPreliminarOperativamente).toHaveBeenCalledWith({
+      idCalculoPeriodo: 1,
+      periodo: '2026-05',
+      advertencias: [],
+    });
     const text = fixture.nativeElement.textContent as string;
     expect(text).toContain('Aprobacion operativa');
     expect(text).toContain('Aprobado operativamente');
@@ -1094,6 +1213,97 @@ describe('ProcesoMensualContainer', () => {
     expect(text).not.toContain('Cierre ejecutado');
     expect(text).not.toContain('Previred generado');
     expect(text).not.toContain('LRE generado');
+  });
+
+  it('muestra aprobacion persistida al cargar resultado guardado desde BD', async () => {
+    obtenerSnapshotActivo.mockResolvedValueOnce(snapshotGuardado({
+      aprobacionOperativa: {
+        estado: 'aprobado_operativamente',
+        fecha: '2026-05-05T11:00:00.000Z',
+        usuarioId: null,
+        usuarioLabel: 'rrhh@empresa.cl',
+        advertencias: ['Advertencia registrada al aprobar.'],
+        metadata: { idCalculoPeriodo: 1, periodo: '2026-05' },
+      },
+    }));
+
+    const localFixture = TestBed.createComponent(ProcesoMensualContainer);
+    localFixture.detectChanges();
+    await localFixture.whenStable();
+    localFixture.detectChanges();
+
+    const text = localFixture.nativeElement.textContent as string;
+    const aprobar = ([...localFixture.nativeElement.querySelectorAll('button')] as HTMLButtonElement[])
+      .find((b) => (b.textContent ?? '').includes('Aprobar resultado preliminar'));
+    expect(text).toContain('Resultado preliminar aprobado operativamente.');
+    expect(text).toContain('rrhh@empresa.cl');
+    expect(text).toContain('Advertencia registrada al aprobar.');
+    expect(aprobar?.disabled).toBe(true);
+  });
+
+  it('muestra resumen, trabajadores, conceptos y trazabilidad del snapshot completo desde BD', async () => {
+    obtenerSnapshotActivo.mockResolvedValue(snapshotGuardado());
+    obtenerSnapshotCompletoActivo.mockResolvedValue(snapshotCompletoGuardado());
+
+    const localFixture = TestBed.createComponent(ProcesoMensualContainer);
+    localFixture.detectChanges();
+    await localFixture.whenStable();
+    await localFixture.whenStable();
+    localFixture.detectChanges();
+
+    const text = localFixture.nativeElement.textContent as string;
+    expect(obtenerSnapshotCompletoActivo).toHaveBeenCalledWith('2026-05');
+    expect(generarCalculoPeriodo).not.toHaveBeenCalled();
+    expect(text).toContain('Resultado guardado desde BD');
+    expect(text).toContain('Resultado guardado vigente');
+    expect(text).toContain('Trabajadores guardados');
+    expect(text).toContain('Ana Perez');
+    expect(text).toContain('Sueldo base (HAB001)');
+    expect(text).toContain('Informacion guardada del resultado.');
+    expect(text).toContain('Liquido calculado guardado.');
+  });
+
+  it('muestra error operativo si falla la consulta del detalle guardado', async () => {
+    obtenerSnapshotCompletoActivo.mockRejectedValueOnce(new Error('red'));
+
+    const buttons = [...fixture.nativeElement.querySelectorAll('button')] as HTMLButtonElement[];
+    buttons.find((b) => (b.textContent ?? '').includes('Actualizar consulta'))!.click();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    const text = fixture.nativeElement.textContent as string;
+    expect(text).toContain('No se pudo cargar el detalle del resultado guardado. Intenta nuevamente o revisa la conexion.');
+  });
+
+  it('no marca aprobado si falla la persistencia operativa', async () => {
+    aprobarResultadoPreliminarOperativamente.mockRejectedValueOnce(new Error('RLS'));
+    ejecutarPrevalidaciones.mockResolvedValueOnce(prevalidacionLista());
+    generarPreNominaPeriodo.mockResolvedValueOnce(baseNominaLista());
+
+    let buttons = [...fixture.nativeElement.querySelectorAll('button')] as HTMLButtonElement[];
+    buttons.find((b) => (b.textContent ?? '').includes('Validar periodo'))!.click();
+    await fixture.whenStable();
+    fixture.detectChanges();
+    buttons = [...fixture.nativeElement.querySelectorAll('button')] as HTMLButtonElement[];
+    buttons.find((b) => (b.textContent ?? '').includes('Generar base de nomina'))!.click();
+    await fixture.whenStable();
+    fixture.detectChanges();
+    buttons = [...fixture.nativeElement.querySelectorAll('button')] as HTMLButtonElement[];
+    buttons.find((b) => (b.textContent ?? '').includes('Calcular preliminar'))!.click();
+    await fixture.whenStable();
+    fixture.detectChanges();
+    buttons = [...fixture.nativeElement.querySelectorAll('button')] as HTMLButtonElement[];
+    buttons.find((b) => (b.textContent ?? '').includes('Guardar resultado preliminar'))!.click();
+    await fixture.whenStable();
+    fixture.detectChanges();
+    buttons = [...fixture.nativeElement.querySelectorAll('button')] as HTMLButtonElement[];
+    buttons.find((b) => (b.textContent ?? '').includes('Aprobar resultado preliminar'))!.click();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    const text = fixture.nativeElement.textContent as string;
+    expect(text).toContain('No se pudo registrar la aprobacion operativa. Intenta nuevamente o revisa la conexion.');
+    expect(text).not.toContain('Resultado preliminar aprobado operativamente.');
   });
 
   it('si se recalcula despues de guardar muestra resultado actualizado sin guardar', async () => {

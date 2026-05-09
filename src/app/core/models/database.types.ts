@@ -2019,6 +2019,12 @@ export type Database = {
       nomina_calculo_periodo: {
         Row: {
           activo: boolean
+          aprobacion_operativa_advertencias: Json
+          aprobacion_operativa_estado: string | null
+          aprobacion_operativa_fecha: string | null
+          aprobacion_operativa_metadata: Json
+          aprobacion_operativa_usuario_id: string | null
+          aprobacion_operativa_usuario_label: string | null
           created_at: string
           estado: string
           fecha_generacion: string
@@ -2041,6 +2047,12 @@ export type Database = {
         }
         Insert: {
           activo?: boolean
+          aprobacion_operativa_advertencias?: Json
+          aprobacion_operativa_estado?: string | null
+          aprobacion_operativa_fecha?: string | null
+          aprobacion_operativa_metadata?: Json
+          aprobacion_operativa_usuario_id?: string | null
+          aprobacion_operativa_usuario_label?: string | null
           created_at?: string
           estado?: string
           fecha_generacion?: string
@@ -2063,6 +2075,12 @@ export type Database = {
         }
         Update: {
           activo?: boolean
+          aprobacion_operativa_advertencias?: Json
+          aprobacion_operativa_estado?: string | null
+          aprobacion_operativa_fecha?: string | null
+          aprobacion_operativa_metadata?: Json
+          aprobacion_operativa_usuario_id?: string | null
+          aprobacion_operativa_usuario_label?: string | null
           created_at?: string
           estado?: string
           fecha_generacion?: string

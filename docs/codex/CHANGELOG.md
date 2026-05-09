@@ -1,5 +1,29 @@
 # CHANGELOG
 
+## NOM-SNAPSHOT-01 - Snapshot completo consultable desde BD
+
+Fecha: 2026-05-09
+
+- Objetivo: consultar el resultado preliminar guardado completo desde BD, sin recalcular con datos actuales.
+- Repository/servicio: se agregan `obtenerSnapshotCompletoActivo(periodo)` y `obtenerSnapshotCompletoPorId(idCalculoPeriodo)` para leer cabecera, trabajadores, conceptos, observaciones, trazabilidad y aprobacion operativa desde las tablas `nomina_calculo_*`.
+- UI: `Preparar nomina` incorpora `Resultado guardado desde BD`, con estado vigente/reemplazado, resumen, trabajadores guardados, conceptos, observaciones y trazabilidad en lenguaje operativo.
+- Trazabilidad usuario final: la pantalla diferencia detalle operativo de identificadores tecnicos; muestra errores de consulta y empty state sin inventar datos.
+- Alcance: lectura consultable del snapshot preliminar; no recalcula movimientos/parametros, no cierra periodo, no emite liquidaciones, no genera Previred, LRE, banco ni PDF.
+- Pendiente posterior: endurecer reemplazo atomico, cierre/reapertura, historico avanzado y validaciones de cierre sobre snapshot completo.
+- Pruebas: `nomina-calculo-snapshot.repository.spec.ts`, `proceso-mensual.service.spec.ts`, `proceso-mensual-container.spec.ts`, `npx ng test --watch=false`, `npm run build`.
+
+## NOM-PERSIST-01 - Persistencia formal de aprobacion operativa
+
+Fecha: 2026-05-09
+
+- Objetivo: persistir formalmente la aprobacion operativa del resultado preliminar guardado, asociada al `id_calculo_periodo` vigente.
+- SQL: `nomina_calculo_periodo` agrega metadata de aprobacion operativa (`estado`, `fecha`, `usuario`, `advertencias` y `metadata`) sin usar `aprobado_para_liquidacion`.
+- Servicio/UI: `Aprobar resultado preliminar` actualiza BD antes de mostrar aprobado; si falla la persistencia, la UI no marca aprobado y permite reintentar.
+- Recuperacion: `Preparar nomina` consulta el resultado activo al cargar/validar periodo y reconstruye el bloque `Aprobacion operativa` desde BD.
+- Alcance: aprobacion operativa interna persistida; no cierra periodo, no emite liquidaciones, no genera Previred, LRE, banco ni PDF, no cambia formulas legales.
+- Pendiente posterior: cierre/reapertura, historico avanzado de aprobaciones/resultados, dialogo propio auditable y salidas legales.
+- Pruebas: `proceso-mensual-container.spec.ts`, `proceso-mensual.service.spec.ts`, `proceso-mensual-snapshot.rules.spec.ts`, `npx ng test --watch=false`, `npm run build`.
+
 ## NOM-HARD-01 - Saneamiento previo a cierre operativo
 
 Fecha: 2026-05-09

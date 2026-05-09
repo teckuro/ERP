@@ -21,6 +21,12 @@ CREATE TABLE IF NOT EXISTS nomina_calculo_periodo (
     activo BOOLEAN NOT NULL DEFAULT TRUE,
     reemplazado_por INT NULL REFERENCES nomina_calculo_periodo(id_calculo_periodo),
     observacion_anulacion TEXT NULL,
+    aprobacion_operativa_estado TEXT NULL,
+    aprobacion_operativa_fecha TIMESTAMPTZ NULL,
+    aprobacion_operativa_usuario_id UUID NULL,
+    aprobacion_operativa_usuario_label TEXT NULL,
+    aprobacion_operativa_advertencias JSONB NOT NULL DEFAULT '[]'::JSONB,
+    aprobacion_operativa_metadata JSONB NOT NULL DEFAULT '{}'::JSONB,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     CONSTRAINT chk_nomina_calc_periodo_fmt CHECK (periodo ~ '^[0-9]{4}-(0[1-9]|1[0-2])$'),
@@ -42,8 +48,35 @@ CREATE TABLE IF NOT EXISTS nomina_calculo_periodo (
             'anulado'
         )
     ),
+    CONSTRAINT chk_nomina_calc_periodo_aprobacion_operativa CHECK (
+        aprobacion_operativa_estado IS NULL
+        OR aprobacion_operativa_estado IN ('aprobado_operativamente')
+    ),
     CONSTRAINT chk_nomina_calc_periodo_origen CHECK (origen IN ('preliminar', 'manual', 'recalculo'))
 );
+
+ALTER TABLE nomina_calculo_periodo
+    ADD COLUMN IF NOT EXISTS aprobacion_operativa_estado TEXT NULL,
+    ADD COLUMN IF NOT EXISTS aprobacion_operativa_fecha TIMESTAMPTZ NULL,
+    ADD COLUMN IF NOT EXISTS aprobacion_operativa_usuario_id UUID NULL,
+    ADD COLUMN IF NOT EXISTS aprobacion_operativa_usuario_label TEXT NULL,
+    ADD COLUMN IF NOT EXISTS aprobacion_operativa_advertencias JSONB NOT NULL DEFAULT '[]'::JSONB,
+    ADD COLUMN IF NOT EXISTS aprobacion_operativa_metadata JSONB NOT NULL DEFAULT '{}'::JSONB;
+
+DO $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1
+        FROM pg_constraint
+        WHERE conname = 'chk_nomina_calc_periodo_aprobacion_operativa'
+    ) THEN
+        ALTER TABLE nomina_calculo_periodo
+            ADD CONSTRAINT chk_nomina_calc_periodo_aprobacion_operativa CHECK (
+                aprobacion_operativa_estado IS NULL
+                OR aprobacion_operativa_estado IN ('aprobado_operativamente')
+            );
+    END IF;
+END $$;
 
 CREATE TABLE IF NOT EXISTS nomina_calculo_trabajador (
     id_calculo_trabajador SERIAL PRIMARY KEY,

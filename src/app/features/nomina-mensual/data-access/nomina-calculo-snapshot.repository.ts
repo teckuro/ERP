@@ -3,11 +3,14 @@ import { Injectable } from '@angular/core';
 import type { Database, Json } from '../../../core/models/database.types';
 import { injectSupabase } from '../../../core/services/supabase.service';
 import type {
+  AprobacionOperativaPersistida,
+  AprobarResultadoPreliminarOperativamenteParams,
   NominaCalculoConceptoSnapshot,
   NominaCalculoIssueSnapshot,
   NominaCalculoPeriodoSnapshot,
   NominaCalculoSnapshotEstado,
   NominaCalculoSnapshotOrigen,
+  NominaSnapshotCompletoView,
   NominaCalculoTrabajadorSnapshot,
   NominaCalculoTrazabilidadSnapshot,
   MotorCalculoEstadoTrabajador,
@@ -16,6 +19,9 @@ import type {
 type Tables = Database['public']['Tables'];
 type NominaCalculoPeriodoRow = Tables['nomina_calculo_periodo']['Row'];
 type NominaCalculoTrabajadorRow = Tables['nomina_calculo_trabajador']['Row'];
+type NominaCalculoConceptoRow = Tables['nomina_calculo_concepto']['Row'];
+type NominaCalculoIssueRow = Tables['nomina_calculo_issue']['Row'];
+type NominaCalculoTrazabilidadRow = Tables['nomina_calculo_trazabilidad']['Row'];
 type NominaCalculoConceptoInsert = Tables['nomina_calculo_concepto']['Insert'];
 type NominaCalculoIssueInsert = Tables['nomina_calculo_issue']['Insert'];
 type NominaCalculoTrazabilidadInsert = Tables['nomina_calculo_trazabilidad']['Insert'];
@@ -82,6 +88,117 @@ export class NominaCalculoSnapshotRepository {
     const activo = await this.obtenerSnapshotActivo(periodo);
     if (!activo?.idCalculoPeriodo) return;
     await this.marcarInactivo(activo.idCalculoPeriodo, 'anulado', motivo);
+  }
+
+  async obtenerSnapshotCompletoActivo(periodo: string, idEmpresa: number | null = null): Promise<NominaSnapshotCompletoView | null> {
+    const cabecera = await this.obtenerSnapshotActivo(periodo, idEmpresa);
+    if (!cabecera?.idCalculoPeriodo) return null;
+    return this.obtenerSnapshotCompletoPorId(cabecera.idCalculoPeriodo);
+  }
+
+  async obtenerSnapshotCompletoPorId(idCalculoPeriodo: number): Promise<NominaSnapshotCompletoView | null> {
+    const { data: cabeceraRow, error: cabeceraError } = await this.supabase
+      .from('nomina_calculo_periodo')
+      .select('*')
+      .eq('id_calculo_periodo', idCalculoPeriodo)
+      .maybeSingle();
+    if (cabeceraError) throw new Error(`No fue posible consultar el resultado guardado: ${cabeceraError.message}`);
+    if (!cabeceraRow) return null;
+
+    const cabecera = mapPeriodoRow(cabeceraRow);
+    const trabajadores = await this.obtenerTrabajadoresSnapshot(idCalculoPeriodo);
+    const idTrabajadores = trabajadores
+      .map((t) => t.idCalculoTrabajador)
+      .filter((id): id is number => typeof id === 'number');
+    const [conceptos, observaciones, trazabilidad] = await Promise.all([
+      this.obtenerConceptosSnapshot(idTrabajadores),
+      this.obtenerObservacionesSnapshot(idCalculoPeriodo),
+      this.obtenerTrazabilidadSnapshot(idCalculoPeriodo),
+    ]);
+
+    const trabajadoresPorId = new Map<number, NominaCalculoTrabajadorSnapshot>(
+      trabajadores
+        .filter((t): t is NominaCalculoTrabajadorSnapshot & { idCalculoTrabajador: number } =>
+          typeof t.idCalculoTrabajador === 'number')
+        .map((t) => [t.idCalculoTrabajador, t]),
+    );
+    for (const concepto of conceptos) {
+      const trabajador = typeof concepto.idCalculoTrabajador === 'number'
+        ? trabajadoresPorId.get(concepto.idCalculoTrabajador)
+        : undefined;
+      if (trabajador) trabajador.conceptos.push(concepto);
+    }
+    for (const observacion of observaciones) {
+      const trabajador = typeof observacion.idCalculoTrabajador === 'number'
+        ? trabajadoresPorId.get(observacion.idCalculoTrabajador)
+        : undefined;
+      if (trabajador) trabajador.issues.push(observacion);
+    }
+    for (const traza of trazabilidad) {
+      const trabajador = typeof traza.idCalculoTrabajador === 'number'
+        ? trabajadoresPorId.get(traza.idCalculoTrabajador)
+        : undefined;
+      if (trabajador) trabajador.trazabilidad.push(traza);
+    }
+
+    return {
+      cabecera: {
+        ...cabecera,
+        trabajadores,
+        issues: observaciones.filter((i) => i.idCalculoTrabajador == null),
+        trazabilidad: trazabilidad.filter((t) => t.idCalculoTrabajador == null),
+      },
+      trabajadores,
+      conceptos,
+      observaciones,
+      trazabilidad,
+      aprobacionOperativa: cabecera.aprobacionOperativa,
+      resumen: {
+        totalConceptos: conceptos.length,
+        totalObservaciones: observaciones.length,
+        totalTrazas: trazabilidad.length,
+        totalTrabajadoresSinDetalle: Math.max(0, cabecera.totalTrabajadores - trabajadores.length),
+        esActivoVigente: cabecera.activo === true && cabecera.reemplazadoPor == null,
+        fueReemplazado: cabecera.activo !== true || cabecera.reemplazadoPor != null,
+      },
+    };
+  }
+
+  async aprobarResultadoPreliminarOperativamente(
+    params: AprobarResultadoPreliminarOperativamenteParams,
+  ): Promise<NominaCalculoPeriodoSnapshot> {
+    const activo = await this.obtenerSnapshotActivo(params.periodo);
+    if (!activo?.idCalculoPeriodo || activo.idCalculoPeriodo !== params.idCalculoPeriodo) {
+      throw new Error('El resultado preliminar guardado ya no es el vigente. Consulta el ultimo guardado antes de aprobar.');
+    }
+    if (activo.aprobacionOperativa?.estado === 'aprobado_operativamente') {
+      return activo;
+    }
+
+    const { data: userData } = await this.supabase.auth.getUser();
+    const user = userData.user;
+    const fecha = new Date().toISOString();
+    const usuarioLabel = user?.email?.trim() || 'Usuario no disponible en esta sesion';
+    const metadata = buildAprobacionOperativaMetadata(activo);
+    const { data, error } = await this.supabase
+      .from('nomina_calculo_periodo')
+      .update({
+        aprobacion_operativa_estado: 'aprobado_operativamente',
+        aprobacion_operativa_fecha: fecha,
+        aprobacion_operativa_usuario_id: user?.id ?? null,
+        aprobacion_operativa_usuario_label: usuarioLabel,
+        aprobacion_operativa_advertencias: params.advertencias,
+        aprobacion_operativa_metadata: metadata as Json,
+        updated_at: fecha,
+      })
+      .eq('id_calculo_periodo', params.idCalculoPeriodo)
+      .eq('periodo', params.periodo)
+      .eq('activo', true)
+      .is('reemplazado_por', null)
+      .select('*')
+      .single();
+    if (error) throw new Error(`No se pudo registrar la aprobacion operativa: ${error.message}`);
+    return mapPeriodoRow(data);
   }
 
   private async insertarCabecera(snapshot: NominaCalculoPeriodoSnapshot): Promise<NominaCalculoPeriodoSnapshot> {
@@ -220,6 +337,47 @@ export class NominaCalculoSnapshotRepository {
       .eq('id_calculo_periodo', idAnterior);
     if (error) throw new Error(`No fue posible vincular snapshot reemplazado: ${error.message}`);
   }
+
+  private async obtenerTrabajadoresSnapshot(idCalculoPeriodo: number): Promise<NominaCalculoTrabajadorSnapshot[]> {
+    const { data, error } = await this.supabase
+      .from('nomina_calculo_trabajador')
+      .select('*')
+      .eq('id_calculo_periodo', idCalculoPeriodo)
+      .order('nombre_completo_snapshot', { ascending: true });
+    if (error) throw new Error(`No fue posible consultar trabajadores del resultado guardado: ${error.message}`);
+    return (data ?? []).map(mapTrabajadorCompletoRow);
+  }
+
+  private async obtenerConceptosSnapshot(idCalculoTrabajadores: number[]): Promise<NominaCalculoConceptoSnapshot[]> {
+    if (idCalculoTrabajadores.length === 0) return [];
+    const { data, error } = await this.supabase
+      .from('nomina_calculo_concepto')
+      .select('*')
+      .in('id_calculo_trabajador', idCalculoTrabajadores)
+      .order('id_calculo_trabajador', { ascending: true });
+    if (error) throw new Error(`No fue posible consultar conceptos del resultado guardado: ${error.message}`);
+    return (data ?? []).map(mapConceptoCompletoRow);
+  }
+
+  private async obtenerObservacionesSnapshot(idCalculoPeriodo: number): Promise<NominaCalculoIssueSnapshot[]> {
+    const { data, error } = await this.supabase
+      .from('nomina_calculo_issue')
+      .select('*')
+      .eq('id_calculo_periodo', idCalculoPeriodo)
+      .order('severidad', { ascending: true });
+    if (error) throw new Error(`No fue posible consultar observaciones del resultado guardado: ${error.message}`);
+    return (data ?? []).map(mapIssueCompletoRow);
+  }
+
+  private async obtenerTrazabilidadSnapshot(idCalculoPeriodo: number): Promise<NominaCalculoTrazabilidadSnapshot[]> {
+    const { data, error } = await this.supabase
+      .from('nomina_calculo_trazabilidad')
+      .select('*')
+      .eq('id_calculo_periodo', idCalculoPeriodo)
+      .order('id_trazabilidad', { ascending: true });
+    if (error) throw new Error(`No fue posible consultar trazabilidad del resultado guardado: ${error.message}`);
+    return (data ?? []).map(mapTrazabilidadCompletaRow);
+  }
 }
 
 function mapPeriodoRow(row: NominaCalculoPeriodoRow): NominaCalculoPeriodoSnapshot {
@@ -241,10 +399,53 @@ function mapPeriodoRow(row: NominaCalculoPeriodoRow): NominaCalculoPeriodoSnapsh
     origen: parseSnapshotOrigen(row.origen),
     activo: row.activo === true,
     reemplazadoPor: row.reemplazado_por ?? null,
+    aprobacionOperativa: mapAprobacionOperativa(row),
     trabajadores: [],
     issues: [],
     trazabilidad: [],
   };
+}
+
+function mapAprobacionOperativa(row: NominaCalculoPeriodoRow): AprobacionOperativaPersistida | null {
+  if (row.aprobacion_operativa_estado !== 'aprobado_operativamente' || !row.aprobacion_operativa_fecha) {
+    return null;
+  }
+
+  return {
+    estado: 'aprobado_operativamente',
+    fecha: row.aprobacion_operativa_fecha,
+    usuarioId: row.aprobacion_operativa_usuario_id ?? null,
+    usuarioLabel: row.aprobacion_operativa_usuario_label ?? null,
+    advertencias: parseStringArray(row.aprobacion_operativa_advertencias),
+    metadata: parseRecord(row.aprobacion_operativa_metadata),
+  };
+}
+
+function buildAprobacionOperativaMetadata(snapshot: NominaCalculoPeriodoSnapshot): Record<string, unknown> {
+  return {
+    idCalculoPeriodo: snapshot.idCalculoPeriodo ?? null,
+    periodo: snapshot.periodo,
+    versionMotor: snapshot.versionMotor,
+    hashSnapshot: snapshot.hashSnapshot,
+    totalTrabajadores: snapshot.totalTrabajadores,
+    totalHaberes: snapshot.totalHaberes,
+    totalDescuentos: snapshot.totalDescuentos,
+    totalLiquido: snapshot.totalLiquido,
+    totalBloqueados: snapshot.totalBloqueados,
+    totalAdvertencias: snapshot.totalAdvertencias,
+    origen: snapshot.origen,
+    notaAlcance: 'Aprobacion operativa interna; no cierra periodo ni emite liquidaciones.',
+  };
+}
+
+function parseStringArray(value: Json | null): string[] {
+  return Array.isArray(value) ? value.filter((item): item is string => typeof item === 'string') : [];
+}
+
+function parseRecord(value: Json | null): Record<string, unknown> {
+  return value != null && typeof value === 'object' && !Array.isArray(value)
+    ? value as Record<string, unknown>
+    : {};
 }
 
 function mapTrabajadorRow(
@@ -282,6 +483,84 @@ function mapTrabajadorRow(
   };
 }
 
+function mapTrabajadorCompletoRow(row: NominaCalculoTrabajadorRow): NominaCalculoTrabajadorSnapshot {
+  return {
+    idCalculoTrabajador: row.id_calculo_trabajador,
+    idCalculoPeriodo: row.id_calculo_periodo,
+    idPersona: row.id_persona,
+    rut: row.rut,
+    nombreCompletoSnapshot: row.nombre_completo_snapshot,
+    estado: parseTrabajadorEstado(row.estado),
+    sueldoBase: Number(row.sueldo_base ?? 0),
+    baseImponiblePrevisional: Number(row.base_imponible_previsional ?? 0),
+    baseTributable: Number(row.base_tributable ?? 0),
+    totalHaberesImponibles: Number(row.total_haberes_imponibles ?? 0),
+    totalHaberesNoImponibles: Number(row.total_haberes_no_imponibles ?? 0),
+    totalDescuentosLegales: Number(row.total_descuentos_legales ?? 0),
+    totalDescuentosVoluntarios: Number(row.total_descuentos_voluntarios ?? 0),
+    impuestoUnico: Number(row.impuesto_unico ?? 0),
+    liquidoPreliminar: Number(row.liquido_preliminar ?? 0),
+    cotizacionAfp: Number(row.cotizacion_afp ?? 0),
+    cotizacionSalud: Number(row.cotizacion_salud ?? 0),
+    cotizacionAfc: Number(row.cotizacion_afc ?? 0),
+    cotizacionSis: Number(row.cotizacion_sis ?? 0),
+    cotizacionSanna: Number(row.cotizacion_sanna ?? 0),
+    cotizacionLey16744Empleador: Number(row.cotizacion_ley_16744_empleador ?? 0),
+    conceptos: [],
+    issues: [],
+    trazabilidad: [],
+  };
+}
+
+function mapConceptoCompletoRow(row: NominaCalculoConceptoRow): NominaCalculoConceptoSnapshot {
+  return {
+    idCalculoConcepto: row.id_calculo_concepto,
+    idCalculoTrabajador: row.id_calculo_trabajador,
+    idConcepto: row.id_concepto ?? null,
+    tipo: parseConceptoTipo(row.tipo),
+    nombreConceptoSnapshot: row.nombre_concepto_snapshot,
+    codigoLreSnapshot: row.codigo_lre_snapshot ?? null,
+    monto: Number(row.monto ?? 0),
+    imponible: row.imponible === true,
+    tributable: row.tributable === true,
+    afectaLiquido: row.afecta_liquido === true,
+    origen: row.origen,
+    trazabilidadJson: parseRecord(row.trazabilidad_json),
+  };
+}
+
+function mapIssueCompletoRow(row: NominaCalculoIssueRow): NominaCalculoIssueSnapshot {
+  return {
+    idIssue: row.id_issue,
+    idCalculoPeriodo: row.id_calculo_periodo,
+    idCalculoTrabajador: row.id_calculo_trabajador ?? null,
+    codigo: row.codigo,
+    severidad: parseIssueSeveridad(row.severidad),
+    origen: row.origen,
+    mensaje: row.mensaje,
+    campo: row.campo ?? null,
+    entidadId: row.entidad_id ?? null,
+  };
+}
+
+function mapTrazabilidadCompletaRow(row: NominaCalculoTrazabilidadRow): NominaCalculoTrazabilidadSnapshot {
+  return {
+    idTrazabilidad: row.id_trazabilidad,
+    idCalculoPeriodo: row.id_calculo_periodo,
+    idCalculoTrabajador: row.id_calculo_trabajador ?? null,
+    codigo: row.codigo,
+    origen: row.origen,
+    tablaFuente: row.tabla_fuente,
+    campoFuente: row.campo_fuente,
+    vigenciaInicio: row.vigencia_inicio ?? null,
+    vigenciaFin: row.vigencia_fin ?? null,
+    valorEntrada: normalizeJsonValue(row.valor_entrada),
+    formula: row.formula,
+    valorResultado: normalizeJsonValue(row.valor_resultado),
+    observacion: row.observacion ?? null,
+  };
+}
+
 const SNAPSHOT_ESTADOS: readonly NominaCalculoSnapshotEstado[] = [
   'borrador',
   'preliminar',
@@ -300,6 +579,10 @@ const TRABAJADOR_ESTADOS: readonly MotorCalculoEstadoTrabajador[] = [
   'con_bloqueos',
 ];
 
+const CONCEPTO_TIPOS: readonly NominaCalculoConceptoSnapshot['tipo'][] = ['haber', 'descuento', 'cotizacion', 'impuesto'];
+
+const ISSUE_SEVERIDADES: readonly NominaCalculoIssueSnapshot['severidad'][] = ['BLOQUEO', 'ADVERTENCIA', 'INFO'];
+
 function parseSnapshotEstado(value: string): NominaCalculoSnapshotEstado {
   return SNAPSHOT_ESTADOS.includes(value as NominaCalculoSnapshotEstado)
     ? (value as NominaCalculoSnapshotEstado)
@@ -316,6 +599,25 @@ function parseTrabajadorEstado(value: string): MotorCalculoEstadoTrabajador {
   return TRABAJADOR_ESTADOS.includes(value as MotorCalculoEstadoTrabajador)
     ? (value as MotorCalculoEstadoTrabajador)
     : 'con_advertencias';
+}
+
+function parseConceptoTipo(value: string): NominaCalculoConceptoSnapshot['tipo'] {
+  return CONCEPTO_TIPOS.includes(value as NominaCalculoConceptoSnapshot['tipo'])
+    ? (value as NominaCalculoConceptoSnapshot['tipo'])
+    : 'descuento';
+}
+
+function parseIssueSeveridad(value: string): NominaCalculoIssueSnapshot['severidad'] {
+  return ISSUE_SEVERIDADES.includes(value as NominaCalculoIssueSnapshot['severidad'])
+    ? (value as NominaCalculoIssueSnapshot['severidad'])
+    : 'INFO';
+}
+
+function normalizeJsonValue(value: Json | null): number | string | Record<string, unknown> | unknown[] | null {
+  if (value == null || typeof value === 'number' || typeof value === 'string') return value;
+  if (Array.isArray(value)) return value;
+  if (typeof value === 'object') return value as Record<string, unknown>;
+  return String(value);
 }
 
 function mapIssueRow(
@@ -349,9 +651,9 @@ function mapTrazabilidadRow(
     campo_fuente: traza.campoFuente,
     vigencia_inicio: traza.vigenciaInicio,
     vigencia_fin: traza.vigenciaFin,
-    valor_entrada: traza.valorEntrada,
+    valor_entrada: traza.valorEntrada as Json | null,
     formula: traza.formula,
-    valor_resultado: traza.valorResultado,
+    valor_resultado: traza.valorResultado as Json | null,
     observacion: traza.observacion,
   };
 }

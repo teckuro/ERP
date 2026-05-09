@@ -18,7 +18,8 @@ El modelo documental de **Novedades mensuales** queda definido en [`novedades-me
 - **Resultado preliminar revisable USAB-NOM-06**: despues de calcular, la UI muestra resumen operativo, trabajadores calculados/con observaciones/omitidos, observaciones del resultado, detalle tecnico secundario y acciones de recalculo, revision y guardado preliminar.
 - **Guardado/versionado operativo USAB-NOM-07**: el resultado preliminar muestra estado de guardado, razon visible cuando no se puede guardar, confirmacion antes de guardar, ultimo resultado guardado, fecha, version del calculo, identificador tecnico y advertencias asociadas. Guardar crea o reemplaza una version revisable del periodo; no es liquidacion oficial.
 - **Revision para aprobacion USAB-NOM-08**: sobre el resultado preliminar guardado, la UI muestra estado de preparacion, checklist operativo y bloqueos/advertencias/informacion para decidir. La accion deshabilitada de solicitud fue reemplazada por `Aprobar resultado preliminar` en USAB-NOM-09.
-- **Aprobacion operativa USAB-NOM-09**: sobre el resultado preliminar guardado vigente, RRHH puede marcar `Aprobar resultado preliminar` con confirmacion previa. La UI muestra fecha/hora, usuario no disponible si no existe contexto real, version del calculo, identificador tecnico, trabajadores y totales aprobados, y advertencias al aprobar. Si se recalcula despues, la aprobacion queda desactualizada y debe guardarse/aprobarse nuevamente.
+- **Aprobacion operativa USAB-NOM-09 + NOM-PERSIST-01**: sobre el resultado preliminar guardado vigente, RRHH puede marcar `Aprobar resultado preliminar` con confirmacion previa. La aprobacion se persiste en `nomina_calculo_periodo` asociada a `id_calculo_periodo`; la UI muestra fecha/hora, usuario real si existe o `Usuario no disponible en esta sesion`, version del calculo, identificador tecnico, trabajadores y totales aprobados, y advertencias al aprobar. Si se recalcula/guarda un resultado posterior, la aprobacion anterior no aprueba automaticamente el nuevo resultado.
+- **Snapshot completo consultable NOM-SNAPSHOT-01**: el resultado guardado puede consultarse completo desde BD por periodo activo o por `id_calculo_periodo`, incluyendo cabecera, trabajadores, conceptos, observaciones, trazabilidad y aprobacion operativa. La consulta no recalcula con movimientos, parametros ni reglas actuales.
 - **Calculo preliminar MOTOR-01/MOTOR-02** con `proceso-mensual-motor.rules.ts`; calcula sueldo base, haberes recurrentes, gratificacion controlada, bases con topes disponibles, cotizaciones basicas, impuesto unico con tabla, asignacion familiar simple, liquido preliminar, issues y trazabilidad.
 - **Contrato de persistencia MOTOR-03A** documental: define snapshot preliminar, estados, tablas candidatas, hash, version de motor y reglas de recalculo/reemplazo; no implementa escritura.
 - **Persistencia controlada MOTOR-03B**: agrega SQL local versionable, mapping, hash deterministico simple, repository y servicio para guardar/consultar/reemplazar snapshots preliminares sin liquidacion oficial ni cierre.
@@ -29,7 +30,8 @@ El modelo documental de **Novedades mensuales** queda definido en [`novedades-me
 - Desde USAB-NOM-06, `Resultado preliminar` es una salida revisable del calculo. Guardarlo no equivale a liquidacion oficial, no cierra periodo y no genera Previred/LRE/banco.
 - Desde USAB-NOM-07, `Guardar resultado preliminar` usa el soporte existente de snapshots preliminares. El repositorio reemplaza el resultado activo del periodo marcando el anterior inactivo/anulado y vinculando el reemplazo. La UI no inventa version numerica incremental; muestra fecha, version del calculo e identificador tecnico disponibles.
 - Desde USAB-NOM-08, `Revision para aprobacion` prepara la decision operativa con checklist y observaciones visibles; desde USAB-NOM-09 esa revision puede marcar aprobacion operativa interna.
-- Desde USAB-NOM-09, `Aprobar resultado preliminar` es una marca operativa interna sobre el resultado guardado vigente. No agrega persistencia nueva formal si el contrato actual no tiene campo de aprobacion; no cierra periodo, no emite liquidaciones oficiales, no genera Previred/LRE/banco y no cambia formulas legales.
+- Desde NOM-PERSIST-01, `Aprobar resultado preliminar` es una marca operativa interna persistida sobre el resultado guardado vigente. No usa `aprobado_para_liquidacion`, no cierra periodo, no emite liquidaciones oficiales, no genera Previred/LRE/banco y no cambia formulas legales.
+- Desde NOM-SNAPSHOT-01, `Resultado guardado desde BD` muestra el detalle persistido del snapshot completo. No usa datos actuales para reconstruir montos y no reemplaza el cierre operativo futuro.
 
 ## 3. Fuera de alcance (explicito)
 
@@ -285,9 +287,9 @@ Reglas de UX:
 - no se usan `issues`, `payload`, `hash` ni `snapshot` como labels principales de usuario;
 - no se muestran aprobacion real, cierre, liquidacion oficial, Previred, LRE ni banco como acciones activas.
 
-## 12.2.3 Aprobacion operativa interna
+## 12.2.3 Aprobacion operativa interna persistida
 
-USAB-NOM-09 habilita la accion `Aprobar resultado preliminar` sobre el resultado preliminar guardado vigente. Aprobar significa que RRHH reviso y acepta operativamente el resultado guardado para seguir a una etapa posterior; no significa cierre legal ni emision de liquidaciones.
+USAB-NOM-09 habilita la accion `Aprobar resultado preliminar` sobre el resultado preliminar guardado vigente. NOM-PERSIST-01 persiste formalmente esa aprobacion en la cabecera `nomina_calculo_periodo`. Aprobar significa que RRHH reviso y acepta operativamente ese resultado guardado especifico para seguir a una etapa posterior; no significa cierre legal ni emision de liquidaciones.
 
 Condiciones para aprobar:
 
@@ -310,10 +312,34 @@ Resultado visible:
 Reglas:
 
 - requiere confirmacion previa y el mensaje aclara que no emite liquidaciones, no cierra periodo y no genera archivos legales;
+- se registra en el mismo resultado guardado (`id_calculo_periodo`) mediante `aprobacion_operativa_estado`, `aprobacion_operativa_fecha`, usuario, advertencias y metadata;
+- al cargar o validar el periodo, la UI recupera la aprobacion desde BD y reconstruye el bloque visible;
+- si la persistencia falla, la UI no marca el resultado como aprobado y muestra error operativo;
 - si se recalcula despues, la aprobacion anterior queda visible como desactualizada y se exige guardar/aprobar nuevamente;
 - no aprueba automaticamente al guardar;
-- no crea tablas, columnas, migraciones ni RLS; queda como estado operativo UI sobre el snapshot activo hasta una fase posterior de persistencia formal;
+- no usa `aprobado_para_liquidacion`; ese estado queda fuera de esta fase para evitar mezclar aprobacion operativa interna con liquidacion oficial futura;
 - no modifica formulas legales, motor, liquidaciones oficiales, cierre, Previred, LRE ni banco.
+
+## 12.2.3.1 Snapshot completo consultable desde BD
+
+NOM-SNAPSHOT-01 agrega la consulta operativa del resultado guardado completo. La UI muestra `Resultado guardado desde BD` para que RRHH pueda revisar lo que quedo persistido sin depender del calculo en memoria ni de parametros actuales.
+
+Lectura minima:
+
+- `nomina_calculo_periodo`: cabecera, estado, fecha, totales, version del motor, identificador tecnico, activo/reemplazado y aprobacion operativa;
+- `nomina_calculo_trabajador`: trabajadores calculados y totales por persona;
+- `nomina_calculo_concepto`: conceptos guardados por trabajador, monto, tipo, origen y flags imponible/tributable/afecta liquido;
+- `nomina_calculo_issue`: observaciones de periodo o trabajador;
+- `nomina_calculo_trazabilidad`: codigo, origen, fuente, vigencia, formula, entrada, resultado y observacion.
+
+Reglas:
+
+- se puede consultar el snapshot activo por periodo o un snapshot especifico por `id_calculo_periodo`;
+- la consulta no invoca `generarCalculoPeriodo`, no relee movimientos del mes, no reevalua parametros y no recalcula montos;
+- la UI prioriza labels operativos (`Trabajadores guardados`, `Conceptos`, `Observaciones`, `Trazabilidad`) y mantiene identificadores tecnicos como detalle secundario;
+- si no hay resultado guardado, muestra empty state accionable; si falla la consulta, muestra error operativo reintentable;
+- un snapshot reemplazado debe mostrarse como reemplazado/no vigente cuando se consulte por id;
+- no habilita cierre, liquidacion oficial, Previred, LRE, banco ni PDF.
 
 ## 12.2.4 Saneamiento previo a cierre operativo
 
@@ -328,9 +354,9 @@ NOM-HARD-01 fija el corte funcional antes de disenar cierre operativo. El sistem
 
 Reglas de saneamiento:
 
-- `Aprobar resultado preliminar` es una aprobacion interna local/volatil mientras no exista persistencia formal de aprobacion.
-- La persistencia formal debe definirse antes del cierre: metadata en snapshot, estado de periodo, tabla de auditoria o mecanismo transaccional equivalente.
-- El snapshot usado para cierre debe poder consultarse completo desde BD, no solo cabecera o resumen parcial.
+- `Aprobar resultado preliminar` es una aprobacion interna persistida desde NOM-PERSIST-01 en la cabecera del resultado guardado.
+- La persistencia formal disponible no equivale a cierre; cierre/reapertura e historico avanzado deben definirse antes de emitir liquidaciones oficiales.
+- El snapshot completo ya puede consultarse desde BD para revision operativa desde NOM-SNAPSHOT-01; antes de cierre aun deben definirse validaciones formales de cierre, historico avanzado y atomicidad de reemplazo.
 - El reemplazo de snapshot activo debe endurecerse con atomicidad real si el flujo de cierre depende de el.
 - `window.confirm` es deuda de UX; antes de cierre operativo debe reemplazarse por un dialogo propio auditable y testeable.
 - Cierre, reapertura, anulacion o rectificacion de periodo requieren contrato propio; no se infieren desde USAB-NOM-09.
