@@ -313,6 +313,22 @@ export type NominaCalculoSnapshotEstado =
 
 export type NominaCalculoSnapshotOrigen = 'preliminar' | 'manual' | 'recalculo';
 export type NominaCalculoConceptoTipo = 'haber' | 'descuento' | 'cotizacion' | 'impuesto';
+export type EstadoAprobacionOperativaPersistida = 'aprobado_operativamente';
+
+export interface AprobacionOperativaPersistida {
+  estado: EstadoAprobacionOperativaPersistida;
+  fecha: string;
+  usuarioId: string | null;
+  usuarioLabel: string | null;
+  advertencias: string[];
+  metadata: Record<string, unknown>;
+}
+
+export interface AprobarResultadoPreliminarOperativamenteParams {
+  idCalculoPeriodo: number;
+  periodo: string;
+  advertencias: string[];
+}
 
 export interface NominaCalculoConceptoSnapshot {
   idCalculoConcepto?: number;
@@ -351,9 +367,9 @@ export interface NominaCalculoTrazabilidadSnapshot {
   campoFuente: string;
   vigenciaInicio: string | null;
   vigenciaFin: string | null;
-  valorEntrada: number | string | null;
+  valorEntrada: number | string | Record<string, unknown> | unknown[] | null;
   formula: string;
-  valorResultado: number | string | null;
+  valorResultado: number | string | Record<string, unknown> | unknown[] | null;
   observacion: string | null;
 }
 
@@ -402,6 +418,7 @@ export interface NominaCalculoPeriodoSnapshot {
   origen: NominaCalculoSnapshotOrigen;
   activo: boolean;
   reemplazadoPor: number | null;
+  aprobacionOperativa: AprobacionOperativaPersistida | null;
   trabajadores: NominaCalculoTrabajadorSnapshot[];
   issues: NominaCalculoIssueSnapshot[];
   trazabilidad: NominaCalculoTrazabilidadSnapshot[];
@@ -413,6 +430,25 @@ export interface GuardarSnapshotPreliminarResult {
   reemplazoSnapshotAnterior: boolean;
   hashSnapshot: string | null;
   issues: MotorCalculoIssue[];
+}
+
+export interface NominaSnapshotCompletoResumen {
+  totalConceptos: number;
+  totalObservaciones: number;
+  totalTrazas: number;
+  totalTrabajadoresSinDetalle: number;
+  esActivoVigente: boolean;
+  fueReemplazado: boolean;
+}
+
+export interface NominaSnapshotCompletoView {
+  cabecera: NominaCalculoPeriodoSnapshot;
+  trabajadores: NominaCalculoTrabajadorSnapshot[];
+  conceptos: NominaCalculoConceptoSnapshot[];
+  observaciones: NominaCalculoIssueSnapshot[];
+  trazabilidad: NominaCalculoTrazabilidadSnapshot[];
+  aprobacionOperativa: AprobacionOperativaPersistida | null;
+  resumen: NominaSnapshotCompletoResumen;
 }
 
 export type MotorCatalogosLegales = {

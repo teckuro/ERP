@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { LucideAngularModule } from 'lucide-angular';
@@ -13,7 +13,11 @@ import type {
   ClasificacionParametroGrupo,
   MotorCalculoPeriodoResultado,
   MotorCalculoIssue,
+  MotorCalculoEstadoTrabajador,
+  MotorCalculoSeveridad,
+  NominaCalculoConceptoSnapshot,
   NominaCalculoPeriodoSnapshot,
+  NominaSnapshotCompletoView,
   ProcesoMensualArea,
   ProcesoMensualEstado,
   ProcesoMensualItemEstado,
@@ -173,6 +177,48 @@ interface AprobacionOperativaRegistroView {
   advertencias: string[];
 }
 
+interface SnapshotCompletoTrabajadorView {
+  id: number | string;
+  trabajadorLabel: string;
+  estadoLabel: string;
+  haberesLabel: string;
+  descuentosLabel: string;
+  liquidoLabel: string;
+  conceptos: string[];
+  observaciones: string[];
+}
+
+interface SnapshotCompletoObservacionView {
+  codigo: string;
+  nivelLabel: 'Bloqueo' | 'Advertencia' | 'Informacion';
+  mensaje: string;
+  trabajadorLabel: string;
+}
+
+interface SnapshotCompletoDetalleView {
+  estadoLabel: string;
+  descripcion: string;
+  resumen: {
+    periodo: string;
+    fechaGeneracionLabel: string;
+    versionCalculoLabel: string;
+    identificadorTecnicoLabel: string;
+    trabajadores: number;
+    totalHaberesLabel: string;
+    totalDescuentosLabel: string;
+    totalLiquidoLabel: string;
+    totalConceptos: number;
+    totalObservaciones: number;
+    totalTrazas: number;
+    aprobacionLabel: string;
+  };
+  trabajadores: SnapshotCompletoTrabajadorView[];
+  observaciones: SnapshotCompletoObservacionView[];
+  trazabilidad: string[];
+  advertenciaDetalleFaltante: string | null;
+  reemplazoLabel: string | null;
+}
+
 @Component({
   selector: 'app-proceso-mensual-container',
   standalone: true,
@@ -189,7 +235,7 @@ interface AprobacionOperativaRegistroView {
   templateUrl: './proceso-mensual-container.html',
   styleUrl: './proceso-mensual-container.css',
 })
-export class ProcesoMensualContainer {
+export class ProcesoMensualContainer implements OnInit {
   readonly periodoActivo = inject(PeriodoActivoService);
   readonly procesoMensual = inject(ProcesoMensualService);
 
@@ -203,13 +249,84 @@ export class ProcesoMensualContainer {
   readonly calculandoPreliminar = signal(false);
   readonly guardandoSnapshot = signal(false);
   readonly consultandoSnapshot = signal(false);
+  readonly consultandoSnapshotCompleto = signal(false);
   readonly errorEjecucion = signal<string | null>(null);
   readonly errorGuardadoResultado = signal<string | null>(null);
+  readonly errorAprobacionOperativa = signal<string | null>(null);
+  readonly errorSnapshotCompleto = signal<string | null>(null);
   readonly exitoGuardadoResultado = signal<string | null>(null);
   readonly identificadorResultadoGuardadoActual = signal<string | null>(null);
   readonly aprobacionOperativa = signal<AprobacionOperativaRegistroView | null>(null);
+  readonly aprobandoResultado = signal(false);
+  readonly snapshotCompleto = signal<NominaSnapshotCompletoView | null>(null);
+
+  ngOnInit(): void {
+    this.verSnapshotActivo();
+  }
 
   readonly baseNominaTrazabilidad = computed(() => this.preNomina()?.trazabilidad ?? null);
+
+  readonly snapshotCompletoDetalle = computed<SnapshotCompletoDetalleView | null>(() => {
+    const completo = this.snapshotCompleto();
+    if (!completo) return null;
+    const trabajadorPorId = new Map(
+      completo.trabajadores.map((t) => [
+        t.idCalculoTrabajador,
+        `${t.nombreCompletoSnapshot?.trim() || 'Trabajador sin ficha visible'} · ${t.rut?.trim() || 'RUT no disponible'}`,
+      ]),
+    );
+    const trabajadores = completo.trabajadores.slice(0, 8).map<SnapshotCompletoTrabajadorView>((trabajador) => ({
+      id: trabajador.idCalculoTrabajador ?? trabajador.idPersona,
+      trabajadorLabel: `${trabajador.nombreCompletoSnapshot?.trim() || 'Trabajador sin ficha visible'} · ${trabajador.rut?.trim() || 'RUT no disponible'}`,
+      estadoLabel: this.etiquetaEstadoSnapshotTrabajador(trabajador.estado),
+      haberesLabel: this.formatoMonto(trabajador.totalHaberesImponibles + trabajador.totalHaberesNoImponibles),
+      descuentosLabel: this.formatoMonto(trabajador.totalDescuentosLegales + trabajador.totalDescuentosVoluntarios),
+      liquidoLabel: this.formatoMonto(trabajador.liquidoPreliminar),
+      conceptos: trabajador.conceptos.slice(0, 4).map((concepto) => this.etiquetaConceptoSnapshot(concepto)),
+      observaciones: trabajador.issues.slice(0, 3).map((issue) => issue.mensaje),
+    }));
+    const observaciones = completo.observaciones.slice(0, 8).map<SnapshotCompletoObservacionView>((obs) => ({
+      codigo: String(obs.idIssue ?? obs.codigo),
+      nivelLabel: this.etiquetaNivelObservacion(obs.severidad),
+      mensaje: obs.mensaje,
+      trabajadorLabel: obs.idCalculoTrabajador == null
+        ? 'Resultado completo'
+        : trabajadorPorId.get(obs.idCalculoTrabajador) ?? 'Trabajador sin ficha visible',
+    }));
+    return {
+      estadoLabel: completo.resumen.esActivoVigente
+        ? 'Resultado guardado vigente'
+        : 'Resultado reemplazado',
+      descripcion: completo.aprobacionOperativa
+        ? 'Resultado guardado aprobado operativamente.'
+        : 'Resultado guardado pendiente de aprobacion operativa.',
+      resumen: {
+        periodo: completo.cabecera.periodo,
+        fechaGeneracionLabel: this.formatoFechaHora(completo.cabecera.fechaGeneracion),
+        versionCalculoLabel: completo.cabecera.versionMotor || 'Version no disponible',
+        identificadorTecnicoLabel: completo.cabecera.hashSnapshot || 'Identificador tecnico no disponible',
+        trabajadores: completo.trabajadores.length,
+        totalHaberesLabel: this.formatoMonto(completo.cabecera.totalHaberes),
+        totalDescuentosLabel: this.formatoMonto(completo.cabecera.totalDescuentos),
+        totalLiquidoLabel: this.formatoMonto(completo.cabecera.totalLiquido),
+        totalConceptos: completo.resumen.totalConceptos,
+        totalObservaciones: completo.resumen.totalObservaciones,
+        totalTrazas: completo.resumen.totalTrazas,
+        aprobacionLabel: completo.aprobacionOperativa ? 'Aprobado operativamente' : 'Pendiente de aprobacion',
+      },
+      trabajadores,
+      observaciones,
+      trazabilidad: completo.trazabilidad.slice(0, 5).map((traza) =>
+        `${traza.codigo}: ${traza.observacion || traza.formula || traza.origen}`,
+      ),
+      advertenciaDetalleFaltante: completo.trabajadores.length === 0
+        ? 'El resultado guardado tiene cabecera, pero no se encontraron detalles asociados.'
+        : null,
+      reemplazoLabel: completo.resumen.fueReemplazado
+        ? 'Este resultado fue reemplazado por un resultado posterior.'
+        : null,
+    };
+  });
 
   readonly resultadoPreliminar = computed<ResultadoPreliminarView>(() => {
     const calculo = this.calculo();
@@ -399,7 +516,8 @@ export class ProcesoMensualContainer {
       bloqueos.length === 0 &&
       (guardado?.trabajadoresOmitidos ?? 0) === 0 &&
       validarPeriodoEntradaMensual(this.periodoSeleccionado()) &&
-      !this.guardandoSnapshot();
+      !this.guardandoSnapshot() &&
+      !this.aprobandoResultado();
 
     return {
       estado,
@@ -686,9 +804,12 @@ export class ProcesoMensualContainer {
       this.snapshotActivo.set(null);
       this.errorEjecucion.set(null);
       this.errorGuardadoResultado.set(null);
+      this.errorAprobacionOperativa.set(null);
       this.exitoGuardadoResultado.set(null);
       this.identificadorResultadoGuardadoActual.set(null);
       this.aprobacionOperativa.set(null);
+      this.snapshotCompleto.set(null);
+      this.errorSnapshotCompleto.set(null);
     }
   }
 
@@ -704,9 +825,13 @@ export class ProcesoMensualContainer {
         this.calculo.set(null);
         this.snapshotActivo.set(null);
         this.errorGuardadoResultado.set(null);
+        this.errorAprobacionOperativa.set(null);
         this.exitoGuardadoResultado.set(null);
         this.identificadorResultadoGuardadoActual.set(null);
         this.aprobacionOperativa.set(null);
+        this.snapshotCompleto.set(null);
+        this.errorSnapshotCompleto.set(null);
+        return this.cargarSnapshotActivo(p);
       })
       .catch((e: unknown) => {
         this.resultado.set(null);
@@ -728,8 +853,12 @@ export class ProcesoMensualContainer {
         this.calculo.set(null);
         this.snapshotActivo.set(null);
         this.errorGuardadoResultado.set(null);
+        this.errorAprobacionOperativa.set(null);
         this.exitoGuardadoResultado.set(null);
         this.identificadorResultadoGuardadoActual.set(null);
+        this.aprobacionOperativa.set(null);
+        this.snapshotCompleto.set(null);
+        this.errorSnapshotCompleto.set(null);
       })
       .catch((e: unknown) => {
         this.preNomina.set(null);
@@ -750,8 +879,11 @@ export class ProcesoMensualContainer {
       .then((r) => {
         this.calculo.set(r);
         this.errorGuardadoResultado.set(null);
+        this.errorAprobacionOperativa.set(null);
         this.exitoGuardadoResultado.set(null);
         this.identificadorResultadoGuardadoActual.set(null);
+        this.snapshotCompleto.set(null);
+        this.errorSnapshotCompleto.set(null);
       })
       .catch((e: unknown) => {
         this.calculo.set(null);
@@ -776,8 +908,10 @@ export class ProcesoMensualContainer {
           const msg = r.issues.map((i) => i.mensaje).join(' ') || 'No se pudo guardar el resultado preliminar.';
           throw new Error(msg);
         }
-        this.snapshotActivo.set(r.snapshot);
+        this.aplicarSnapshotActivo(r.snapshot);
         this.identificadorResultadoGuardadoActual.set(r.snapshot.hashSnapshot ?? null);
+        this.errorAprobacionOperativa.set(null);
+        void this.cargarSnapshotCompletoActivo(p);
         this.exitoGuardadoResultado.set('Resultado preliminar guardado. Quedo disponible como version revisable del periodo.');
       })
       .catch((e: unknown) => {
@@ -795,9 +929,11 @@ export class ProcesoMensualContainer {
     void this.procesoMensual
       .obtenerSnapshotActivo(p)
       .then((snapshot) => {
-        this.snapshotActivo.set(snapshot);
+        this.aplicarSnapshotActivo(snapshot);
         this.errorGuardadoResultado.set(null);
+        this.errorAprobacionOperativa.set(null);
         this.exitoGuardadoResultado.set(null);
+        return this.cargarSnapshotCompletoActivo(p);
       })
       .catch((e: unknown) => {
         this.errorEjecucion.set(e instanceof Error ? e.message : String(e));
@@ -805,6 +941,10 @@ export class ProcesoMensualContainer {
       .finally(() => {
         this.consultandoSnapshot.set(false);
       });
+  }
+
+  consultarDetalleResultadoGuardado(): void {
+    void this.cargarSnapshotCompletoActivo(this.periodoSeleccionado());
   }
 
   recalcularYReemplazarSnapshot(): void {
@@ -818,9 +958,11 @@ export class ProcesoMensualContainer {
           const msg = r.issues.map((i) => i.mensaje).join(' ') || 'No se pudo reemplazar el resultado preliminar.';
           throw new Error(msg);
         }
-        this.snapshotActivo.set(r.snapshot);
+        this.aplicarSnapshotActivo(r.snapshot);
         this.calculo.set(this.procesoMensual.obtenerResultadoCalculoPeriodo(p));
         this.identificadorResultadoGuardadoActual.set(r.snapshot.hashSnapshot ?? null);
+        this.errorAprobacionOperativa.set(null);
+        void this.cargarSnapshotCompletoActivo(p);
         this.exitoGuardadoResultado.set('Resultado preliminar guardado. Quedo disponible como version revisable del periodo.');
       })
       .catch((e: unknown) => {
@@ -903,19 +1045,23 @@ export class ProcesoMensualContainer {
     }
     if (!this.confirmarAprobacionOperativa(advertenciasAprobacion.length > 0)) return;
 
-    this.aprobacionOperativa.set({
-      fechaAprobacionLabel: this.formatoFechaHora(new Date().toISOString()),
-      usuarioLabel: 'Usuario no disponible en esta sesion',
-      versionCalculoLabel: snapshot.versionMotor || 'Version no disponible',
-      identificadorTecnicoLabel: snapshot.hashSnapshot || 'Identificador tecnico no disponible',
-      identificadorResultado: snapshot.hashSnapshot ?? null,
-      idCalculoPeriodo: snapshot.idCalculoPeriodo ?? null,
-      trabajadoresCalculados: snapshot.totalTrabajadores,
-      totalHaberesLabel: this.formatoMonto(snapshot.totalHaberes),
-      totalDescuentosLabel: this.formatoMonto(snapshot.totalDescuentos),
-      totalLiquidoLabel: this.formatoMonto(snapshot.totalLiquido),
-      advertencias: advertenciasAprobacion,
-    });
+    this.aprobandoResultado.set(true);
+    this.errorAprobacionOperativa.set(null);
+    void this.procesoMensual
+      .aprobarResultadoPreliminarOperativamente({
+        idCalculoPeriodo: snapshot.idCalculoPeriodo!,
+        periodo: this.periodoSeleccionado(),
+        advertencias: advertenciasAprobacion,
+      })
+      .then((persistido) => {
+        this.aplicarSnapshotActivo(persistido);
+      })
+      .catch(() => {
+        this.errorAprobacionOperativa.set('No se pudo registrar la aprobacion operativa. Intenta nuevamente o revisa la conexion.');
+      })
+      .finally(() => {
+        this.aprobandoResultado.set(false);
+      });
   }
 
   revisarBaseNomina(): void {
@@ -1471,6 +1617,84 @@ export class ProcesoMensualContainer {
     };
   }
 
+  private cargarSnapshotActivo(periodo: string): Promise<void> {
+    return this.procesoMensual.obtenerSnapshotActivo(periodo)
+      .then((snapshot) => {
+        this.aplicarSnapshotActivo(snapshot);
+        return this.cargarSnapshotCompletoActivo(periodo);
+      });
+  }
+
+  private cargarSnapshotCompletoActivo(periodo: string): Promise<void> {
+    this.consultandoSnapshotCompleto.set(true);
+    this.errorSnapshotCompleto.set(null);
+    return this.procesoMensual.obtenerSnapshotCompletoActivo(periodo)
+      .then((snapshot) => {
+        this.snapshotCompleto.set(snapshot);
+      })
+      .catch(() => {
+        this.snapshotCompleto.set(null);
+        this.errorSnapshotCompleto.set('No se pudo cargar el detalle del resultado guardado. Intenta nuevamente o revisa la conexion.');
+      })
+      .finally(() => {
+        this.consultandoSnapshotCompleto.set(false);
+      });
+  }
+
+  private aplicarSnapshotActivo(snapshot: NominaCalculoPeriodoSnapshot | null): void {
+    this.snapshotActivo.set(snapshot);
+    this.aprobacionOperativa.set(snapshot ? this.aprobacionDesdeSnapshot(snapshot) : null);
+  }
+
+  private aprobacionDesdeSnapshot(snapshot: NominaCalculoPeriodoSnapshot): AprobacionOperativaRegistroView | null {
+    const aprobacion = snapshot.aprobacionOperativa;
+    if (!aprobacion) return null;
+    return {
+      fechaAprobacionLabel: this.formatoFechaHora(aprobacion.fecha),
+      usuarioLabel: aprobacion.usuarioLabel || 'Usuario no disponible en esta sesion',
+      versionCalculoLabel: snapshot.versionMotor || 'Version no disponible',
+      identificadorTecnicoLabel: snapshot.hashSnapshot || 'Identificador tecnico no disponible',
+      identificadorResultado: snapshot.hashSnapshot ?? null,
+      idCalculoPeriodo: snapshot.idCalculoPeriodo ?? null,
+      trabajadoresCalculados: snapshot.totalTrabajadores,
+      totalHaberesLabel: this.formatoMonto(snapshot.totalHaberes),
+      totalDescuentosLabel: this.formatoMonto(snapshot.totalDescuentos),
+      totalLiquidoLabel: this.formatoMonto(snapshot.totalLiquido),
+      advertencias: aprobacion.advertencias,
+    };
+  }
+
+  private etiquetaEstadoSnapshotTrabajador(estado: MotorCalculoEstadoTrabajador): string {
+    switch (estado) {
+      case 'calculado_preliminar':
+        return 'Calculado';
+      case 'con_advertencias':
+        return 'Con observaciones';
+      case 'con_bloqueos':
+        return 'Con bloqueos';
+      default:
+        return 'No calculado';
+    }
+  }
+
+  private etiquetaConceptoSnapshot(concepto: NominaCalculoConceptoSnapshot): string {
+    const nombre = concepto.nombreConceptoSnapshot?.trim() || 'Concepto no disponible';
+    const codigo = concepto.codigoLreSnapshot?.trim();
+    return `${nombre}${codigo ? ` (${codigo})` : ''}: ${this.formatoMonto(concepto.monto)}`;
+  }
+
+  private etiquetaNivelObservacion(severidad: MotorCalculoSeveridad): SnapshotCompletoObservacionView['nivelLabel'] {
+    switch (severidad) {
+      case 'BLOQUEO':
+        return 'Bloqueo';
+      case 'ADVERTENCIA':
+        return 'Advertencia';
+      case 'INFO':
+      default:
+        return 'Informacion';
+    }
+  }
+
   private etiquetaEstadoSnapshot(estado: NominaCalculoPeriodoSnapshot['estado']): string {
     switch (estado) {
       case 'preliminar':
@@ -1608,5 +1832,4 @@ export class ProcesoMensualContainer {
       timeStyle: 'short',
     }).format(fecha);
   }
-
 }

@@ -28,6 +28,8 @@ import type {
   MotorCalculoPeriodoResultado,
   MotorCalculoInput,
   NominaCalculoPeriodoSnapshot,
+  NominaSnapshotCompletoView,
+  AprobarResultadoPreliminarOperativamenteParams,
   ProcesoMensualPreNominaPeriodo,
   ProcesoMensualPrevalidacion,
 } from '../models/proceso-mensual.model';
@@ -149,12 +151,29 @@ export class ProcesoMensualService {
     return this.snapshots.obtenerSnapshotActivo(periodo.trim());
   }
 
+  obtenerSnapshotCompletoActivo(periodo: string): Promise<NominaSnapshotCompletoView | null> {
+    return this.snapshots.obtenerSnapshotCompletoActivo(periodo.trim());
+  }
+
+  obtenerSnapshotCompletoPorId(idCalculoPeriodo: number): Promise<NominaSnapshotCompletoView | null> {
+    return this.snapshots.obtenerSnapshotCompletoPorId(idCalculoPeriodo);
+  }
+
   listarSnapshotsPeriodo(periodo: string): Promise<NominaCalculoPeriodoSnapshot[]> {
     return this.snapshots.listarSnapshotsPeriodo(periodo.trim());
   }
 
   anularSnapshotActivo(periodo: string, motivo?: string): Promise<void> {
     return this.snapshots.anularSnapshotActivo(periodo.trim(), motivo);
+  }
+
+  aprobarResultadoPreliminarOperativamente(
+    params: AprobarResultadoPreliminarOperativamenteParams,
+  ): Promise<NominaCalculoPeriodoSnapshot> {
+    return this.snapshots.aprobarResultadoPreliminarOperativamente({
+      ...params,
+      periodo: params.periodo.trim(),
+    });
   }
 
   private hechosMinimos(periodo: string): ProcesoMensualHechosPrevalidacion {

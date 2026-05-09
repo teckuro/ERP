@@ -1,5 +1,22 @@
 ## Peticiones de estilos (bitácora)
 
+## 2026-05-09 - NOM-SNAPSHOT-01 resultado guardado desde BD
+
+- `Preparar nomina` agrega el bloque `Resultado guardado desde BD` despues de `Ultimo resultado preliminar guardado`.
+- La seccion muestra estado vigente/reemplazado, resumen, trabajadores guardados, conceptos, observaciones y trazabilidad con labels operativos.
+- El copy visible aclara que el detalle viene de BD y no recalcula movimientos ni parametros actuales.
+- Empty state y error de consulta quedan visibles y accionables con `Actualizar consulta`.
+- Se mantienen cards compactas y Tailwind existente; no hay paleta nueva ni redisenio profundo.
+- Archivos: `src/app/features/nomina-mensual/containers/proceso-mensual-container/proceso-mensual-container.{ts,html,spec.ts}`.
+
+## 2026-05-09 - NOM-PERSIST-01 aprobacion operativa persistida
+
+- `Preparar nomina` mantiene el bloque `Aprobacion operativa`, pero ahora lo reconstruye desde el resultado guardado del periodo.
+- El copy visible aclara que la aprobacion fue recuperada desde BD y que no cierra periodo ni emite liquidaciones.
+- Se agrega mensaje operativo de error cuando no se puede registrar la aprobacion, sin marcar aprobado localmente.
+- Se mantienen cards compactas y Tailwind existente; no hay paleta nueva ni redisenio profundo.
+- Archivos: `src/app/features/nomina-mensual/containers/proceso-mensual-container/proceso-mensual-container.{ts,html,spec.ts}`.
+
 ## 2026-05-09 - NOM-HARD-01 saneamiento previo a cierre operativo
 
 - `Liquidaciones oficiales` queda como pantalla de modulo no disponible, sin datos demo, montos oficiales aparentes ni acciones de descarga, firma, impresion o envio.

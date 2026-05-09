@@ -129,8 +129,11 @@ describe('ProcesoMensualService', () => {
   let snapshots: {
     guardarSnapshotPreliminar: ReturnType<typeof vi.fn>;
     obtenerSnapshotActivo: ReturnType<typeof vi.fn>;
+    obtenerSnapshotCompletoActivo: ReturnType<typeof vi.fn>;
+    obtenerSnapshotCompletoPorId: ReturnType<typeof vi.fn>;
     listarSnapshotsPeriodo: ReturnType<typeof vi.fn>;
     anularSnapshotActivo: ReturnType<typeof vi.fn>;
+    aprobarResultadoPreliminarOperativamente: ReturnType<typeof vi.fn>;
   };
 
   beforeEach(() => {
@@ -190,8 +193,22 @@ describe('ProcesoMensualService', () => {
         reemplazoSnapshotAnterior: false,
       })),
       obtenerSnapshotActivo: vi.fn().mockResolvedValue(null),
+      obtenerSnapshotCompletoActivo: vi.fn().mockResolvedValue(null),
+      obtenerSnapshotCompletoPorId: vi.fn().mockResolvedValue(null),
       listarSnapshotsPeriodo: vi.fn().mockResolvedValue([]),
       anularSnapshotActivo: vi.fn().mockResolvedValue(undefined),
+      aprobarResultadoPreliminarOperativamente: vi.fn().mockImplementation((params) => Promise.resolve({
+        idCalculoPeriodo: params.idCalculoPeriodo,
+        periodo: params.periodo,
+        aprobacionOperativa: {
+          estado: 'aprobado_operativamente',
+          fecha: '2026-05-05T11:00:00.000Z',
+          usuarioId: null,
+          usuarioLabel: 'Usuario no disponible en esta sesion',
+          advertencias: params.advertencias,
+          metadata: {},
+        },
+      })),
     };
 
     TestBed.configureTestingModule({
@@ -368,5 +385,53 @@ describe('ProcesoMensualService', () => {
     expect(r.ok).toBe(false);
     expect(r.issues.some((i) => i.codigo === 'SNAPSHOT_CALCULO_BLOQUEADO')).toBe(true);
     expect(snapshots.guardarSnapshotPreliminar).not.toHaveBeenCalled();
+  });
+
+  it('persiste aprobacion operativa mediante repository sin usar cierre ni liquidacion', async () => {
+    const svc = TestBed.inject(ProcesoMensualService);
+    const r = await svc.aprobarResultadoPreliminarOperativamente({
+      idCalculoPeriodo: 1,
+      periodo: '2026-05',
+      advertencias: ['Advertencia visible'],
+    });
+
+    expect(snapshots.aprobarResultadoPreliminarOperativamente).toHaveBeenCalledWith({
+      idCalculoPeriodo: 1,
+      periodo: '2026-05',
+      advertencias: ['Advertencia visible'],
+    });
+    expect(r.aprobacionOperativa?.estado).toBe('aprobado_operativamente');
+  });
+
+  it('expone consulta de snapshot completo activo sin recalcular resultado', async () => {
+    const svc = TestBed.inject(ProcesoMensualService);
+    snapshots.obtenerSnapshotCompletoActivo.mockResolvedValueOnce({
+      cabecera: { idCalculoPeriodo: 1, periodo: '2026-05' },
+      trabajadores: [],
+      conceptos: [],
+      observaciones: [],
+      trazabilidad: [],
+      aprobacionOperativa: null,
+      resumen: {
+        totalConceptos: 0,
+        totalObservaciones: 0,
+        totalTrazas: 0,
+        totalTrabajadoresSinDetalle: 0,
+        esActivoVigente: true,
+        fueReemplazado: false,
+      },
+    });
+
+    const r = await svc.obtenerSnapshotCompletoActivo('2026-05');
+
+    expect(snapshots.obtenerSnapshotCompletoActivo).toHaveBeenCalledWith('2026-05');
+    expect(snapshots.obtenerSnapshotCompletoPorId).not.toHaveBeenCalled();
+    expect(r?.cabecera.periodo).toBe('2026-05');
+  });
+
+  it('expone consulta de snapshot completo por id_calculo_periodo', async () => {
+    const svc = TestBed.inject(ProcesoMensualService);
+    await svc.obtenerSnapshotCompletoPorId(5);
+    expect(snapshots.obtenerSnapshotCompletoPorId).toHaveBeenCalledWith(5);
   });
 });
