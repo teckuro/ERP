@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, effect, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { LucideAngularModule } from 'lucide-angular';
@@ -8,16 +8,170 @@ import { BadgeComponent } from '../../../../shared/components/ui/badge.component
 import { ButtonComponent } from '../../../../shared/components/ui/button.component';
 import { CardComponent, CardContentComponent } from '../../../../shared/components/ui/card.component';
 import type {
+  BaseNominaParametrosEstado,
+  BaseNominaTrabajadorEstado,
+  ClasificacionParametroGrupo,
   MotorCalculoPeriodoResultado,
+  MotorCalculoIssue,
   NominaCalculoPeriodoSnapshot,
+  ProcesoMensualArea,
   ProcesoMensualEstado,
+  ProcesoMensualItemEstado,
+  ProcesoMensualMensaje,
   ProcesoMensualPreNominaEstado,
   ProcesoMensualPreNominaPeriodo,
   ProcesoMensualPrevalidacion,
 } from '../../models/proceso-mensual.model';
 import { ProcesoMensualService } from '../../services/proceso-mensual.service';
+import { validarPeriodoEntradaMensual } from '../../entradas/rules/entradas-mensuales-periodo.rules';
 
-export type ProcesoMensualStep = 1 | 2 | 3 | 4;
+type ValidacionCalculoEstado = 'pendiente' | 'listo' | 'advertencias' | 'bloqueado';
+type ValidacionOperativaSeveridad = 'bloqueo' | 'advertencia' | 'info';
+type ValidacionAccionLocal = 'validarPeriodo' | 'generarBase' | 'actualizarBase' | 'calcularPreliminar';
+type ResultadoPreliminarEstado =
+  | 'sin_resultado'
+  | 'no_guardado'
+  | 'guardado'
+  | 'actualizado_sin_guardar'
+  | 'error_guardado'
+  | 'con_bloqueos';
+type RevisionAprobacionEstado =
+  | 'sin_resultado_guardado'
+  | 'pendiente_guardado'
+  | 'pendiente_revision'
+  | 'actualizado_sin_guardar'
+  | 'no_apto'
+  | 'listo'
+  | 'aprobado'
+  | 'aprobado_desactualizado';
+type RevisionChecklistEstado = 'Completo' | 'Pendiente' | 'Requiere atencion' | 'No aplica';
+
+interface ValidacionOperativaItemView {
+  codigo: string;
+  titulo: string;
+  descripcion: string;
+  severidad: ValidacionOperativaSeveridad;
+  accionLabel?: string;
+  ruta?: string;
+  accionLocal?: ValidacionAccionLocal;
+}
+
+interface ValidacionCalculoPreliminarView {
+  estado: ValidacionCalculoEstado;
+  estadoLabel: string;
+  puedeCalcular: boolean;
+  razonDeshabilitado?: string;
+  siguienteAccion: {
+    label: string;
+    descripcion: string;
+    ruta?: string;
+    accionLocal?: ValidacionAccionLocal;
+  };
+  bloqueos: ValidacionOperativaItemView[];
+  advertencias: ValidacionOperativaItemView[];
+  informaciones: ValidacionOperativaItemView[];
+}
+
+interface ResultadoObservacionView {
+  codigo: string;
+  titulo: string;
+  descripcion: string;
+  accionLabel?: string;
+  ruta?: string;
+}
+
+interface TrabajadorResultadoPreliminarView {
+  idPersona: number | string;
+  trabajadorLabel: string;
+  rutLabel: string;
+  estadoLabel: 'Calculado' | 'Con observaciones' | 'Omitido' | 'No calculado';
+  haberesLabel: string;
+  descuentosLabel: string;
+  liquidoLabel: string;
+  observacionLabel: string;
+  accionLabel?: string;
+  ruta?: string;
+}
+
+interface ResultadoPreliminarView {
+  estado: ResultadoPreliminarEstado;
+  estadoLabel: string;
+  descripcionEstado: string;
+  resumen: {
+    trabajadoresCalculados: number;
+    trabajadoresConObservaciones: number;
+    trabajadoresOmitidos: number;
+    totalHaberes: number | null;
+    totalDescuentos: number | null;
+    totalLiquido: number | null;
+    totalCostoEmpresa: number | null;
+  };
+  trabajadores: TrabajadorResultadoPreliminarView[];
+  bloqueos: ResultadoObservacionView[];
+  advertencias: ResultadoObservacionView[];
+  informaciones: ResultadoObservacionView[];
+  detalleTecnico: {
+    versionCalculo: string;
+    identificadorTecnico: string;
+    generadoEn: string;
+  };
+  ultimoGuardado?: {
+    versionLabel: string;
+    fechaGuardadoLabel: string;
+    versionCalculoLabel: string;
+    identificadorTecnicoLabel: string;
+    estadoLabel: string;
+    trabajadoresCalculados: number;
+    trabajadoresConObservaciones: number;
+    trabajadoresOmitidos: number;
+    totalLiquidoLabel: string;
+    advertenciasLabel: string;
+  };
+  acciones: {
+    puedeRecalcular: boolean;
+    puedeGuardarPreliminar: boolean;
+    razonNoPuedeGuardar?: string;
+    helperGuardar: string;
+    modoGuardadoLabel: string;
+  };
+}
+
+interface RevisionAprobacionChecklistItemView {
+  titulo: string;
+  descripcion: string;
+  estado: RevisionChecklistEstado;
+}
+
+interface RevisionAprobacionView {
+  estado: RevisionAprobacionEstado;
+  estadoLabel: string;
+  descripcion: string;
+  checklist: RevisionAprobacionChecklistItemView[];
+  bloqueos: ResultadoObservacionView[];
+  advertencias: ResultadoObservacionView[];
+  informaciones: ResultadoObservacionView[];
+  accionPrincipalLabel: string;
+  puedeGuardarActualizado: boolean;
+  puedeRecalcular: boolean;
+  puedeAprobar: boolean;
+  razonNoPuedeAprobar?: string;
+  aprobacion: AprobacionOperativaRegistroView | null;
+  notaAprobacion: string;
+}
+
+interface AprobacionOperativaRegistroView {
+  fechaAprobacionLabel: string;
+  usuarioLabel: string;
+  versionCalculoLabel: string;
+  identificadorTecnicoLabel: string;
+  identificadorResultado: string | null;
+  idCalculoPeriodo: number | null;
+  trabajadoresCalculados: number;
+  totalHaberesLabel: string;
+  totalDescuentosLabel: string;
+  totalLiquidoLabel: string;
+  advertencias: string[];
+}
 
 @Component({
   selector: 'app-proceso-mensual-container',
@@ -39,7 +193,6 @@ export class ProcesoMensualContainer {
   readonly periodoActivo = inject(PeriodoActivoService);
   readonly procesoMensual = inject(ProcesoMensualService);
 
-  readonly currentStep = signal<ProcesoMensualStep>(1);
   readonly periodoSeleccionado = signal(this.periodoActivo.periodoYm());
   readonly resultado = signal<ProcesoMensualPrevalidacion | null>(null);
   readonly preNomina = signal<ProcesoMensualPreNominaPeriodo | null>(null);
@@ -51,20 +204,476 @@ export class ProcesoMensualContainer {
   readonly guardandoSnapshot = signal(false);
   readonly consultandoSnapshot = signal(false);
   readonly errorEjecucion = signal<string | null>(null);
+  readonly errorGuardadoResultado = signal<string | null>(null);
+  readonly exitoGuardadoResultado = signal<string | null>(null);
+  readonly identificadorResultadoGuardadoActual = signal<string | null>(null);
+  readonly aprobacionOperativa = signal<AprobacionOperativaRegistroView | null>(null);
 
-  readonly steps = [
-    { number: 1 as const, title: 'Revision previa', icon: 'alert-circle', description: 'Parametros e incidencias' },
-    { number: 2 as const, title: 'Calculo', icon: 'calculator', description: 'Motor futuro' },
-    { number: 3 as const, title: 'Exportaciones', icon: 'file-text', description: 'Previred, banco, LRE' },
-    { number: 4 as const, title: 'Cierre', icon: 'lock', description: 'Bloqueo de periodo' },
-  ];
+  readonly baseNominaTrazabilidad = computed(() => this.preNomina()?.trazabilidad ?? null);
 
-  constructor() {
-    effect(() => {
-      this.periodoActivo.periodoYm();
-      this.currentStep.set(1);
-    });
-  }
+  readonly resultadoPreliminar = computed<ResultadoPreliminarView>(() => {
+    const calculo = this.calculo();
+    const base = this.baseNominaTrazabilidad();
+    const snapshot = this.snapshotActivo();
+
+    if (!calculo) {
+      const guardado = snapshot != null;
+      const estado: ResultadoPreliminarEstado = this.errorGuardadoResultado()
+        ? 'error_guardado'
+        : guardado
+          ? 'guardado'
+          : 'sin_resultado';
+      return {
+        estado,
+        estadoLabel: this.etiquetaResultadoPreliminar(estado),
+        descripcionEstado: this.descripcionEstadoGuardado(estado),
+        resumen: {
+          trabajadoresCalculados: snapshot?.totalTrabajadores ?? 0,
+          trabajadoresConObservaciones: snapshot?.totalAdvertencias ?? 0,
+          trabajadoresOmitidos: snapshot?.totalBloqueados ?? 0,
+          totalHaberes: snapshot?.totalHaberes ?? null,
+          totalDescuentos: snapshot?.totalDescuentos ?? null,
+          totalLiquido: snapshot?.totalLiquido ?? null,
+          totalCostoEmpresa: null,
+        },
+        trabajadores: [],
+        bloqueos: [],
+        advertencias: [],
+        informaciones: guardado
+          ? [{
+              codigo: 'RESULTADO_GUARDADO',
+              titulo: 'Resultado preliminar guardado',
+              descripcion: 'Existe un resultado preliminar activo para revisar.',
+            }]
+          : [],
+        detalleTecnico: {
+          versionCalculo: snapshot?.versionMotor ?? 'Version no disponible',
+          identificadorTecnico: snapshot?.hashSnapshot ?? 'Identificador tecnico no disponible',
+          generadoEn: snapshot?.fechaGeneracion ?? 'Fecha no disponible',
+        },
+        ultimoGuardado: snapshot ? this.ultimoGuardadoDesdeSnapshot(snapshot) : undefined,
+        acciones: {
+          puedeRecalcular: this.validacionCalculo().puedeCalcular,
+          puedeGuardarPreliminar: false,
+          razonNoPuedeGuardar: guardado
+            ? 'No hay cambios para guardar. El resultado preliminar actual ya esta guardado.'
+            : 'Primero calcula preliminarmente la nomina.',
+          helperGuardar: 'Guarda una version revisable del calculo. No emite liquidaciones ni cierra el periodo.',
+          modoGuardadoLabel: 'Al guardar, se reemplazara el resultado preliminar activo del periodo.',
+        },
+      };
+    }
+
+    const bloqueos = this.observacionesResultado(calculo, 'BLOQUEO');
+    const advertencias = this.observacionesResultado(calculo, 'ADVERTENCIA');
+    const trabajadoresCalculadosIds = new Set(calculo.liquidaciones.map((liq) => liq.idPersona));
+    const omitidosBase = (base?.trabajadores ?? [])
+      .filter((trabajador) => !trabajadoresCalculadosIds.has(trabajador.idPersona) || trabajador.estado === 'bloqueado' || trabajador.estado === 'excluido')
+      .map<TrabajadorResultadoPreliminarView>((trabajador) => ({
+        idPersona: `omitido-${trabajador.idPersona}`,
+        trabajadorLabel: trabajador.trabajadorLabel || 'Trabajador sin ficha visible',
+        rutLabel: trabajador.rutLabel || 'RUT no disponible',
+        estadoLabel: 'Omitido',
+        haberesLabel: 'Monto no disponible',
+        descuentosLabel: 'Monto no disponible',
+        liquidoLabel: 'Monto no disponible',
+        observacionLabel: trabajador.observacion || 'No calculado en el resultado preliminar.',
+        accionLabel: 'Revisar base de nomina',
+      }));
+    const trabajadores = [
+      ...calculo.liquidaciones.map<TrabajadorResultadoPreliminarView>((liq) => {
+        const estadoLabel = this.estadoResultadoTrabajador(liq.estado);
+        return {
+          idPersona: liq.idPersona,
+          trabajadorLabel: liq.nombreCompleto?.trim() || 'Trabajador sin ficha visible',
+          rutLabel: liq.rut?.trim() || 'RUT no disponible',
+          estadoLabel,
+          haberesLabel: this.formatoMonto(liq.totalHaberes),
+          descuentosLabel: this.formatoMonto(liq.totalDescuentos),
+          liquidoLabel: this.formatoMonto(liq.liquidoAPago),
+          observacionLabel: liq.issues.length ? liq.issues.map((issue) => issue.mensaje).join('; ') : 'Sin observaciones',
+          ...this.accionResultadoDesdeIssues(liq.issues),
+        };
+      }),
+      ...omitidosBase,
+    ];
+    for (const omitido of omitidosBase) {
+      bloqueos.push({
+        codigo: String(omitido.idPersona),
+        titulo: 'Trabajador omitido del calculo',
+        descripcion: omitido.observacionLabel,
+        accionLabel: 'Revisar base de nomina',
+      });
+    }
+
+    const trabajadoresConObservaciones = trabajadores.filter((t) => t.estadoLabel === 'Con observaciones').length;
+    const trabajadoresOmitidos = trabajadores.filter((t) => t.estadoLabel === 'Omitido' || t.estadoLabel === 'No calculado').length;
+    const estado: ResultadoPreliminarEstado = this.resolverEstadoGuardadoResultado(calculo, bloqueos);
+    const puedeGuardarPreliminar = this.puedeGuardarSnapshot();
+
+    return {
+      estado,
+      estadoLabel: this.etiquetaResultadoPreliminar(estado),
+      descripcionEstado: this.descripcionEstadoGuardado(estado),
+      resumen: {
+        trabajadoresCalculados: calculo.resumen.totalTrabajadoresCalculados,
+        trabajadoresConObservaciones,
+        trabajadoresOmitidos,
+        totalHaberes: calculo.resumen.totalHaberes,
+        totalDescuentos: calculo.resumen.totalDescuentos,
+        totalLiquido: calculo.resumen.totalLiquidoPreliminar,
+        totalCostoEmpresa: null,
+      },
+      trabajadores,
+      bloqueos,
+      advertencias,
+      informaciones: [{
+        codigo: 'RESULTADO_GENERADO',
+        titulo: 'Resultado preliminar generado',
+        descripcion: 'Revisa trabajadores, observaciones y totales antes de guardar.',
+      }],
+      detalleTecnico: {
+        versionCalculo: snapshot?.versionMotor ?? 'Version no disponible',
+        identificadorTecnico: snapshot?.hashSnapshot ?? 'Identificador tecnico no disponible',
+        generadoEn: calculo.generadoEn,
+      },
+      ultimoGuardado: snapshot ? this.ultimoGuardadoDesdeSnapshot(snapshot) : undefined,
+      acciones: {
+        puedeRecalcular: this.validacionCalculo().puedeCalcular,
+        puedeGuardarPreliminar,
+        razonNoPuedeGuardar: puedeGuardarPreliminar
+          ? undefined
+          : this.razonNoPuedeGuardarResultado(bloqueos),
+        helperGuardar: 'Guarda una version revisable del calculo. No emite liquidaciones ni cierra el periodo.',
+        modoGuardadoLabel: 'Al guardar, se reemplazara el resultado preliminar activo del periodo.',
+      },
+    };
+  });
+
+  readonly revisionAprobacion = computed<RevisionAprobacionView>(() => {
+    const resultado = this.resultadoPreliminar();
+    const validacion = this.validacionCalculo();
+    const guardado = resultado.ultimoGuardado;
+    const hayResultadoActual = this.calculo() != null;
+    const hayGuardado = guardado != null;
+    const actualizadoSinGuardar = resultado.estado === 'actualizado_sin_guardar';
+    const bloqueos = [
+      ...resultado.bloqueos,
+      ...validacion.bloqueos.map((item) => this.observacionDesdeValidacion(item)),
+    ];
+    const advertencias = [
+      ...resultado.advertencias,
+      ...validacion.advertencias.map((item) => this.observacionDesdeValidacion(item)),
+    ];
+    const informaciones: ResultadoObservacionView[] = [
+      ...resultado.informaciones,
+      ...validacion.informaciones.map((item) => this.observacionDesdeValidacion(item)),
+    ];
+
+    let estado: RevisionAprobacionEstado;
+    if ((hayResultadoActual || hayGuardado) && (bloqueos.length > 0 || (guardado?.trabajadoresOmitidos ?? 0) > 0)) {
+      estado = 'no_apto';
+    } else if (!hayGuardado) {
+      estado = hayResultadoActual ? 'pendiente_guardado' : 'sin_resultado_guardado';
+    } else if (actualizadoSinGuardar) {
+      estado = 'actualizado_sin_guardar';
+    } else if (advertencias.length > 0 || (guardado?.trabajadoresConObservaciones ?? 0) > 0) {
+      estado = 'pendiente_revision';
+    } else {
+      estado = 'listo';
+    }
+
+    const aprobacion = this.aprobacionOperativa();
+    const aprobacionVigente =
+      !!aprobacion &&
+      hayGuardado &&
+      !actualizadoSinGuardar &&
+      aprobacion.identificadorResultado === (this.snapshotActivo()?.hashSnapshot ?? null);
+    if (aprobacion) {
+      estado = aprobacionVigente ? 'aprobado' : 'aprobado_desactualizado';
+    }
+
+    const puedeAprobar =
+      hayGuardado &&
+      !actualizadoSinGuardar &&
+      bloqueos.length === 0 &&
+      (guardado?.trabajadoresOmitidos ?? 0) === 0 &&
+      validarPeriodoEntradaMensual(this.periodoSeleccionado()) &&
+      !this.guardandoSnapshot();
+
+    return {
+      estado,
+      estadoLabel: this.etiquetaRevisionAprobacion(estado),
+      descripcion: this.descripcionRevisionAprobacion(estado),
+      checklist: this.checklistRevisionAprobacion({
+        hayGuardado,
+        guardado,
+        actualizadoSinGuardar,
+        hayResultadoActual,
+        bloqueos,
+        advertencias,
+      }),
+      bloqueos,
+      advertencias,
+      informaciones,
+      accionPrincipalLabel: actualizadoSinGuardar || estado === 'pendiente_guardado'
+        ? 'Guardar resultado actualizado'
+        : hayGuardado
+          ? 'Revisar resultado guardado'
+          : 'Calcular preliminar',
+      puedeGuardarActualizado: resultado.acciones.puedeGuardarPreliminar,
+      puedeRecalcular: resultado.acciones.puedeRecalcular,
+      puedeAprobar: puedeAprobar && !aprobacionVigente,
+      razonNoPuedeAprobar: this.razonNoPuedeAprobar({
+        hayResultadoActual,
+        hayGuardado,
+        actualizadoSinGuardar,
+        bloqueos,
+        omitidos: guardado?.trabajadoresOmitidos ?? 0,
+        aprobacionVigente,
+      }),
+      aprobacion,
+      notaAprobacion: 'Esta aprobacion es interna y no reemplaza el cierre del periodo ni la emision de liquidaciones oficiales.',
+    };
+  });
+
+  readonly validacionCalculo = computed<ValidacionCalculoPreliminarView>(() => {
+    const periodo = this.periodoSeleccionado();
+    const resultado = this.resultado();
+    const preNomina = this.preNomina();
+    const base = this.baseNominaTrazabilidad();
+    const bloqueos: ValidacionOperativaItemView[] = [];
+    const advertencias: ValidacionOperativaItemView[] = [];
+    const informaciones: ValidacionOperativaItemView[] = [];
+
+    if (!validarPeriodoEntradaMensual(periodo)) {
+      bloqueos.push({
+        codigo: 'BLOQ-001',
+        titulo: 'Periodo invalido',
+        descripcion: 'Selecciona un periodo valido antes de preparar la nomina.',
+        severidad: 'bloqueo',
+        accionLabel: 'Seleccionar periodo valido',
+      });
+    }
+
+    if (this.errorEjecucion()) {
+      bloqueos.push({
+        codigo: 'BLOQ-002',
+        titulo: 'No fue posible cargar la informacion',
+        descripcion: this.errorEjecucion() ?? 'Reintenta la validacion del periodo.',
+        severidad: 'bloqueo',
+        accionLabel: 'Validar periodo',
+        accionLocal: 'validarPeriodo',
+      });
+    }
+
+    if (!resultado) {
+      return this.buildValidacionCalculo({
+        bloqueos,
+        advertencias,
+        informaciones,
+        estadoForzado: bloqueos.length ? 'bloqueado' : 'pendiente',
+        razonDeshabilitado: bloqueos.length
+          ? bloqueos[0].descripcion
+          : 'Valida el periodo para revisar la base antes de calcular.',
+        siguienteAccion: bloqueos.length
+          ? {
+              label: bloqueos[0].accionLabel ?? 'Validar periodo',
+              descripcion: bloqueos[0].descripcion,
+              accionLocal: bloqueos[0].accionLocal,
+            }
+          : {
+              label: 'Validar periodo',
+              descripcion: 'Revisa trabajadores, parametros, asignaciones recurrentes y movimientos del mes.',
+              accionLocal: 'validarPeriodo',
+            },
+      });
+    }
+
+    for (const bloqueo of resultado.bloqueos) {
+      bloqueos.push(this.itemDesdeMensaje(bloqueo, 'bloqueo'));
+    }
+
+    const faltantesMinimos = resultado.resumen.parametrosGrupos.filter((g) => this.parametroMinimoBloqueante(g.id, g.clasificacion));
+    if (faltantesMinimos.length > 0 && !bloqueos.some((b) => b.codigo === 'BLOQ-004')) {
+      bloqueos.push({
+        codigo: 'BLOQ-004',
+        titulo: 'Faltan parametros minimos para calcular',
+        descripcion: 'Revisa los parametros obligatorios del periodo antes de calcular preliminarmente.',
+        severidad: 'bloqueo',
+        accionLabel: 'Revisar parametros',
+        ruta: '/parametros',
+      });
+    }
+
+    if (!preNomina) {
+      bloqueos.push({
+        codigo: 'BLOQ-005',
+        titulo: 'Base de nomina no generada',
+        descripcion: 'Genera la base de nomina para revisar trabajadores y entradas consideradas.',
+        severidad: 'bloqueo',
+        accionLabel: 'Generar base de nomina',
+        accionLocal: 'generarBase',
+      });
+    } else if ((base?.trabajadoresConsiderados ?? preNomina.trabajadoresIncluidos) === 0) {
+      bloqueos.push({
+        codigo: 'BLOQ-003',
+        titulo: 'No hay trabajadores considerados',
+        descripcion: 'La base de nomina no tiene trabajadores para calcular.',
+        severidad: 'bloqueo',
+        accionLabel: 'Actualizar base de nomina',
+        accionLocal: 'actualizarBase',
+      });
+    }
+
+    if (base?.bloqueados && base.bloqueados > 0) {
+      bloqueos.push({
+        codigo: 'BLOQ-006',
+        titulo: 'Hay trabajadores bloqueados',
+        descripcion: 'Revisa los trabajadores bloqueados en la base antes de calcular.',
+        severidad: 'bloqueo',
+        accionLabel: 'Revisar base de nomina',
+      });
+    }
+
+    for (const advertencia of resultado.advertencias) {
+      if (!this.parametroMinimoBloqueanteDesdeCodigo(advertencia.codigo)) {
+        advertencias.push(this.itemDesdeMensaje(advertencia, 'advertencia'));
+      }
+    }
+
+    const resumenEntradas = resultado.resumen.resumenEntradasMensuales;
+    const totalMovimientosMes =
+      (resumenEntradas?.novedadesMensuales ?? 0) + (resumenEntradas?.legacyMovimientos ?? 0);
+    if (totalMovimientosMes === 0) {
+      advertencias.push({
+        codigo: 'ADV-001',
+        titulo: 'No hay movimientos del mes registrados',
+        descripcion: 'Puedes continuar si este periodo no requiere movimientos variables.',
+        severidad: 'advertencia',
+        accionLabel: 'Revisar movimientos del mes',
+        ruta: '/remuneraciones/novedades-mensuales',
+      });
+    }
+
+    if (resultado.resumen.recurrentesAplicablesAlPeriodo === 0) {
+      advertencias.push({
+        codigo: 'ADV-002',
+        titulo: 'No hay asignaciones recurrentes activas',
+        descripcion: 'Puedes continuar si no aplican asignaciones recurrentes para este periodo.',
+        severidad: 'advertencia',
+        accionLabel: 'Revisar asignaciones recurrentes',
+        ruta: '/remuneraciones/haberes-descuentos',
+      });
+    }
+
+    if (base?.conObservaciones && base.conObservaciones > 0) {
+      advertencias.push({
+        codigo: 'ADV-003',
+        titulo: 'Hay trabajadores con observaciones',
+        descripcion: 'Las observaciones no bloqueantes deben revisarse antes de guardar un resultado.',
+        severidad: 'advertencia',
+        accionLabel: 'Revisar base de nomina',
+      });
+    }
+
+    const parametrosOpcionales = resultado.resumen.parametrosGrupos.filter((g) => this.parametroOpcionalAdvertencia(g.id, g.clasificacion));
+    if (parametrosOpcionales.length > 0) {
+      advertencias.push({
+        codigo: 'ADV-004',
+        titulo: 'Hay parametros opcionales pendientes',
+        descripcion: 'Puedes calcular preliminarmente; estos datos quedan para cierre o reconciliacion.',
+        severidad: 'advertencia',
+        accionLabel: 'Revisar parametros',
+        ruta: '/parametros',
+      });
+    }
+
+    if (preNomina) {
+      informaciones.push({
+        codigo: 'INFO-001',
+        titulo: 'Base de nomina generada',
+        descripcion: 'La base esta disponible para revisar antes del calculo preliminar.',
+        severidad: 'info',
+      });
+    }
+    if (resultado.resumen.parametrosOperativos && faltantesMinimos.length === 0) {
+      informaciones.push({
+        codigo: 'INFO-002',
+        titulo: 'Parametros minimos disponibles',
+        descripcion: 'Los parametros necesarios para el calculo preliminar estan disponibles.',
+        severidad: 'info',
+      });
+    }
+    if (totalMovimientosMes > 0) {
+      informaciones.push({
+        codigo: 'INFO-003',
+        titulo: 'Movimientos del mes cargados',
+        descripcion: 'Hay movimientos del mes disponibles para la revision del periodo.',
+        severidad: 'info',
+      });
+    }
+    if (resultado.resumen.recurrentesAplicablesAlPeriodo > 0) {
+      informaciones.push({
+        codigo: 'INFO-004',
+        titulo: 'Asignaciones recurrentes cargadas',
+        descripcion: 'Hay asignaciones recurrentes vigentes consideradas para el periodo.',
+        severidad: 'info',
+      });
+    }
+
+    return this.buildValidacionCalculo({ bloqueos, advertencias, informaciones });
+  });
+
+  readonly dashboardResumen = computed(() => {
+    const resultado = this.resultado();
+    const preNomina = this.preNomina();
+    const calculo = this.calculo();
+    const snapshot = this.snapshotActivo();
+    const resumen = resultado?.resumen;
+    const conteoEstados = resumen?.conteoEntradasPorEstado ?? {};
+    const movimientosAprobados =
+      (conteoEstados['aprobada'] ?? 0) +
+      (conteoEstados['incorporada_a_pre_nomina'] ?? 0) +
+      (conteoEstados['calculada'] ?? 0) +
+      (resumen?.conteoMovimientosPorEstado['VALIDADO'] ?? 0);
+    const movimientosPendientes =
+      (conteoEstados['borrador'] ?? 0) +
+      (conteoEstados['pendiente_revision'] ?? 0) +
+      (resumen?.conteoMovimientosPorEstado['BORRADOR'] ?? 0);
+
+    return {
+      estadoPeriodo: resultado?.estado ?? null,
+      trabajadoresAptos: resumen?.trabajadoresActivosAptos ?? null,
+      trabajadoresPorRevisar: resumen?.trabajadoresActivosNoAptos ?? null,
+      parametrosListos: resumen?.parametrosOperativos ?? null,
+      movimientosAprobados,
+      movimientosPendientes,
+      asignacionesAplicables: resumen?.recurrentesAplicablesAlPeriodo ?? null,
+      asignacionesPorRevisar: resumen ? resumen.recurrentesInvalidas + resumen.recurrentesFueraDelMes : null,
+      resultadoPreliminar: snapshot
+        ? 'Guardado para revision'
+        : calculo
+          ? 'Calculado preliminar'
+          : preNomina
+            ? 'Base generada'
+            : 'Sin calculo',
+    };
+  });
+
+  readonly siguienteAccion = computed(() => {
+    const accion = this.validacionCalculo().siguienteAccion;
+    const calculo = this.calculo();
+    const snapshot = this.snapshotActivo();
+
+    if (!calculo) {
+      return `${accion.label}: ${accion.descripcion}`;
+    }
+    if (!snapshot) {
+      return 'Guarda el resultado preliminar para revision.';
+    }
+    return 'Resultado preliminar disponible para revision.';
+  });
 
   onPeriodoInput(event: Event): void {
     const el = event.target as HTMLInputElement;
@@ -76,6 +685,10 @@ export class ProcesoMensualContainer {
       this.calculo.set(null);
       this.snapshotActivo.set(null);
       this.errorEjecucion.set(null);
+      this.errorGuardadoResultado.set(null);
+      this.exitoGuardadoResultado.set(null);
+      this.identificadorResultadoGuardadoActual.set(null);
+      this.aprobacionOperativa.set(null);
     }
   }
 
@@ -90,6 +703,10 @@ export class ProcesoMensualContainer {
         this.preNomina.set(null);
         this.calculo.set(null);
         this.snapshotActivo.set(null);
+        this.errorGuardadoResultado.set(null);
+        this.exitoGuardadoResultado.set(null);
+        this.identificadorResultadoGuardadoActual.set(null);
+        this.aprobacionOperativa.set(null);
       })
       .catch((e: unknown) => {
         this.resultado.set(null);
@@ -110,6 +727,9 @@ export class ProcesoMensualContainer {
         this.preNomina.set(r);
         this.calculo.set(null);
         this.snapshotActivo.set(null);
+        this.errorGuardadoResultado.set(null);
+        this.exitoGuardadoResultado.set(null);
+        this.identificadorResultadoGuardadoActual.set(null);
       })
       .catch((e: unknown) => {
         this.preNomina.set(null);
@@ -121,6 +741,7 @@ export class ProcesoMensualContainer {
   }
 
   calcularPreliminar(): void {
+    if (!this.puedeCalcularPreliminar()) return;
     const p = this.periodoSeleccionado();
     this.calculandoPreliminar.set(true);
     this.errorEjecucion.set(null);
@@ -128,6 +749,9 @@ export class ProcesoMensualContainer {
       .generarCalculoPeriodo(p)
       .then((r) => {
         this.calculo.set(r);
+        this.errorGuardadoResultado.set(null);
+        this.exitoGuardadoResultado.set(null);
+        this.identificadorResultadoGuardadoActual.set(null);
       })
       .catch((e: unknown) => {
         this.calculo.set(null);
@@ -139,20 +763,25 @@ export class ProcesoMensualContainer {
   }
 
   guardarSnapshotPreliminar(): void {
+    if (!this.confirmarGuardarPreliminar()) return;
     const p = this.periodoSeleccionado();
     this.guardandoSnapshot.set(true);
     this.errorEjecucion.set(null);
+    this.errorGuardadoResultado.set(null);
+    this.exitoGuardadoResultado.set(null);
     void this.procesoMensual
       .guardarSnapshotPreliminar(p)
       .then((r) => {
         if (!r.ok || !r.snapshot) {
-          const msg = r.issues.map((i) => i.codigo).join(', ') || 'No fue posible guardar snapshot preliminar.';
+          const msg = r.issues.map((i) => i.mensaje).join(' ') || 'No se pudo guardar el resultado preliminar.';
           throw new Error(msg);
         }
         this.snapshotActivo.set(r.snapshot);
+        this.identificadorResultadoGuardadoActual.set(r.snapshot.hashSnapshot ?? null);
+        this.exitoGuardadoResultado.set('Resultado preliminar guardado. Quedo disponible como version revisable del periodo.');
       })
       .catch((e: unknown) => {
-        this.errorEjecucion.set(e instanceof Error ? e.message : String(e));
+        this.errorGuardadoResultado.set(e instanceof Error ? e.message : String(e));
       })
       .finally(() => {
         this.guardandoSnapshot.set(false);
@@ -167,6 +796,8 @@ export class ProcesoMensualContainer {
       .obtenerSnapshotActivo(p)
       .then((snapshot) => {
         this.snapshotActivo.set(snapshot);
+        this.errorGuardadoResultado.set(null);
+        this.exitoGuardadoResultado.set(null);
       })
       .catch((e: unknown) => {
         this.errorEjecucion.set(e instanceof Error ? e.message : String(e));
@@ -184,14 +815,16 @@ export class ProcesoMensualContainer {
       .reemplazarSnapshotPreliminar(p)
       .then((r) => {
         if (!r.ok || !r.snapshot) {
-          const msg = r.issues.map((i) => i.codigo).join(', ') || 'No fue posible reemplazar snapshot preliminar.';
+          const msg = r.issues.map((i) => i.mensaje).join(' ') || 'No se pudo reemplazar el resultado preliminar.';
           throw new Error(msg);
         }
         this.snapshotActivo.set(r.snapshot);
         this.calculo.set(this.procesoMensual.obtenerResultadoCalculoPeriodo(p));
+        this.identificadorResultadoGuardadoActual.set(r.snapshot.hashSnapshot ?? null);
+        this.exitoGuardadoResultado.set('Resultado preliminar guardado. Quedo disponible como version revisable del periodo.');
       })
       .catch((e: unknown) => {
-        this.errorEjecucion.set(e instanceof Error ? e.message : String(e));
+        this.errorGuardadoResultado.set(e instanceof Error ? e.message : String(e));
       })
       .finally(() => {
         this.guardandoSnapshot.set(false);
@@ -201,7 +834,7 @@ export class ProcesoMensualContainer {
   etiquetaEstadoGlobal(estado: ProcesoMensualEstado | null): string {
     switch (estado) {
       case 'LISTO_PARA_CALCULO':
-        return 'Listo para calculo (prevalidacion)';
+        return 'Listo para calcular';
       case 'CON_ADVERTENCIAS':
         return 'Con advertencias';
       case 'BLOQUEADO':
@@ -228,11 +861,11 @@ export class ProcesoMensualContainer {
   etiquetaEstadoPreNomina(estado: ProcesoMensualPreNominaEstado | null): string {
     switch (estado) {
       case 'GENERADA':
-        return 'Pre-nomina generada';
+        return 'Base de nomina generada';
       case 'GENERADA_CON_ADVERTENCIAS':
-        return 'Pre-nomina con advertencias';
+        return 'Base generada con advertencias';
       case 'NO_GENERABLE':
-        return 'No generable';
+        return 'Base no generable';
       default:
         return 'Sin generar';
     }
@@ -257,20 +890,723 @@ export class ProcesoMensualContainer {
   }
 
   puedeCalcularPreliminar(): boolean {
-    const pn = this.preNomina();
-    return !!pn && pn.estado !== 'NO_GENERABLE' && !this.validando() && !this.generandoPreNomina() && !this.calculandoPreliminar();
+    return this.validacionCalculo().puedeCalcular && !this.validando() && !this.generandoPreNomina() && !this.calculandoPreliminar();
+  }
+
+  aprobarResultadoPreliminar(): void {
+    const revision = this.revisionAprobacion();
+    const snapshot = this.snapshotActivo();
+    if (!revision.puedeAprobar || !snapshot) return;
+    const advertenciasAprobacion = revision.advertencias.map((advertencia) => advertencia.descripcion);
+    if (advertenciasAprobacion.length === 0 && snapshot.totalAdvertencias > 0) {
+      advertenciasAprobacion.push(`Resultado guardado con ${snapshot.totalAdvertencias} advertencia(s) no bloqueante(s).`);
+    }
+    if (!this.confirmarAprobacionOperativa(advertenciasAprobacion.length > 0)) return;
+
+    this.aprobacionOperativa.set({
+      fechaAprobacionLabel: this.formatoFechaHora(new Date().toISOString()),
+      usuarioLabel: 'Usuario no disponible en esta sesion',
+      versionCalculoLabel: snapshot.versionMotor || 'Version no disponible',
+      identificadorTecnicoLabel: snapshot.hashSnapshot || 'Identificador tecnico no disponible',
+      identificadorResultado: snapshot.hashSnapshot ?? null,
+      idCalculoPeriodo: snapshot.idCalculoPeriodo ?? null,
+      trabajadoresCalculados: snapshot.totalTrabajadores,
+      totalHaberesLabel: this.formatoMonto(snapshot.totalHaberes),
+      totalDescuentosLabel: this.formatoMonto(snapshot.totalDescuentos),
+      totalLiquidoLabel: this.formatoMonto(snapshot.totalLiquido),
+      advertencias: advertenciasAprobacion,
+    });
+  }
+
+  revisarBaseNomina(): void {
+    document.querySelector('#base-nomina')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 
   puedeGuardarSnapshot(): boolean {
     const calc = this.calculo();
-    return !!calc && calc.estado !== 'con_bloqueos' && !this.guardandoSnapshot() && !calc.issues.some((i) => i.severidad === 'BLOQUEO');
+    if (!validarPeriodoEntradaMensual(this.periodoSeleccionado())) return false;
+    if (!calc || this.errorEjecucion()) return false;
+    if (this.guardandoSnapshot()) return false;
+    if (calc.estado === 'con_bloqueos' || calc.issues.some((i) => i.severidad === 'BLOQUEO')) return false;
+    const snapshot = this.snapshotActivo();
+    return !snapshot || this.identificadorResultadoGuardadoActual() !== snapshot.hashSnapshot;
   }
 
-  prevStep(): void {
-    this.currentStep.update((s) => Math.max(1, s - 1) as ProcesoMensualStep);
+  etiquetaArea(area: ProcesoMensualArea, fallback?: string): string {
+    switch (area) {
+      case 'PARAMETROS':
+        return 'Parametros';
+      case 'TRABAJADORES':
+        return 'Trabajadores';
+      case 'CONCEPTOS':
+        return 'Conceptos de remuneracion';
+      case 'HABERES_RECURRENTES':
+        return 'Asignaciones recurrentes';
+      case 'ENTRADAS_MENSUALES':
+      case 'MOVIMIENTOS_VARIABLES':
+        return 'Movimientos del mes';
+      case 'PROCESO':
+        return 'Preparacion del periodo';
+      default:
+        return fallback ?? area;
+    }
   }
 
-  nextStep(): void {
-    this.currentStep.update((s) => Math.min(4, s + 1) as ProcesoMensualStep);
+  etiquetaItemEstado(estado: ProcesoMensualItemEstado): string {
+    switch (estado) {
+      case 'LISTO':
+        return 'Listo';
+      case 'CON_PROBLEMAS':
+        return 'Revisar';
+      case 'PENDIENTE_INTEGRACION':
+        return 'Pendiente de integracion';
+      case 'NO_EVALUADO':
+      default:
+        return 'Sin evaluar';
+    }
   }
+
+  badgeVariantItemEstado(estado: ProcesoMensualItemEstado): 'success' | 'warning' | 'error' | 'info' | 'default' {
+    switch (estado) {
+      case 'LISTO':
+        return 'success';
+      case 'CON_PROBLEMAS':
+        return 'error';
+      case 'PENDIENTE_INTEGRACION':
+        return 'info';
+      default:
+        return 'default';
+    }
+  }
+
+  accionArea(area: ProcesoMensualArea): { label: string; route: string } | null {
+    switch (area) {
+      case 'PARAMETROS':
+        return { label: 'Revisar parametros', route: '/parametros' };
+      case 'CONCEPTOS':
+        return { label: 'Revisar conceptos', route: '/remuneraciones/conceptos' };
+      case 'HABERES_RECURRENTES':
+        return { label: 'Revisar asignaciones', route: '/remuneraciones/haberes-descuentos' };
+      case 'ENTRADAS_MENSUALES':
+      case 'MOVIMIENTOS_VARIABLES':
+        return { label: 'Revisar movimientos', route: '/remuneraciones/novedades-mensuales' };
+      default:
+        return null;
+    }
+  }
+
+  referenciaTecnica(mensaje: ProcesoMensualMensaje): string {
+    return `Referencia tecnica: ${mensaje.codigo}`;
+  }
+
+  etiquetaEstadoTrabajador(estado: string): string {
+    switch (estado) {
+      case 'calculado_preliminar':
+        return 'Calculado preliminar';
+      case 'con_advertencias':
+        return 'Con advertencias';
+      case 'con_bloqueos':
+        return 'Con bloqueos';
+      default:
+        return estado;
+    }
+  }
+
+  badgeVariantResultadoPreliminar(estado: ResultadoPreliminarEstado): 'success' | 'warning' | 'error' | 'info' | 'default' {
+    switch (estado) {
+      case 'no_guardado':
+      case 'guardado':
+        return 'success';
+      case 'actualizado_sin_guardar':
+        return 'warning';
+      case 'error_guardado':
+      case 'con_bloqueos':
+        return 'error';
+      case 'sin_resultado':
+      default:
+        return 'default';
+    }
+  }
+
+  badgeVariantRevisionAprobacion(estado: RevisionAprobacionEstado): 'success' | 'warning' | 'error' | 'info' | 'default' {
+    switch (estado) {
+      case 'listo':
+      case 'aprobado':
+        return 'success';
+      case 'aprobado_desactualizado':
+      case 'pendiente_revision':
+      case 'actualizado_sin_guardar':
+        return 'warning';
+      case 'no_apto':
+        return 'error';
+      case 'pendiente_guardado':
+        return 'info';
+      case 'sin_resultado_guardado':
+      default:
+        return 'default';
+    }
+  }
+
+  badgeVariantRevisionChecklist(estado: RevisionChecklistEstado): 'success' | 'warning' | 'error' | 'info' | 'default' {
+    switch (estado) {
+      case 'Completo':
+        return 'success';
+      case 'Pendiente':
+        return 'warning';
+      case 'Requiere atencion':
+        return 'error';
+      case 'No aplica':
+      default:
+        return 'default';
+    }
+  }
+
+  badgeVariantEstadoResultadoTrabajador(
+    estado: TrabajadorResultadoPreliminarView['estadoLabel'],
+  ): 'success' | 'warning' | 'error' | 'info' | 'default' {
+    switch (estado) {
+      case 'Calculado':
+        return 'success';
+      case 'Con observaciones':
+        return 'warning';
+      case 'Omitido':
+      case 'No calculado':
+        return 'error';
+      default:
+        return 'default';
+    }
+  }
+
+  etiquetaEstadoBaseTrabajador(estado: BaseNominaTrabajadorEstado): string {
+    switch (estado) {
+      case 'listo':
+        return 'Listo para calculo';
+      case 'con_observaciones':
+        return 'Con observaciones';
+      case 'bloqueado':
+        return 'Bloqueado';
+      case 'excluido':
+        return 'Excluido';
+      default:
+        return estado;
+    }
+  }
+
+  badgeVariantEstadoBaseTrabajador(
+    estado: BaseNominaTrabajadorEstado,
+  ): 'success' | 'warning' | 'error' | 'info' | 'default' {
+    switch (estado) {
+      case 'listo':
+        return 'success';
+      case 'con_observaciones':
+        return 'warning';
+      case 'bloqueado':
+        return 'error';
+      case 'excluido':
+        return 'default';
+      default:
+        return 'default';
+    }
+  }
+
+  etiquetaParametrosBase(estado: BaseNominaParametrosEstado): string {
+    switch (estado) {
+      case 'listos':
+        return 'Listos';
+      case 'con_observaciones':
+        return 'Con observaciones';
+      case 'por_revisar':
+        return 'Por revisar';
+      case 'sin_evaluar':
+      default:
+        return 'Sin evaluar';
+    }
+  }
+
+  badgeVariantParametrosBase(estado: BaseNominaParametrosEstado): 'success' | 'warning' | 'error' | 'info' | 'default' {
+    switch (estado) {
+      case 'listos':
+        return 'success';
+      case 'con_observaciones':
+        return 'warning';
+      case 'por_revisar':
+        return 'error';
+      default:
+        return 'default';
+    }
+  }
+
+  badgeVariantValidacionCalculo(estado: ValidacionCalculoEstado): 'success' | 'warning' | 'error' | 'info' | 'default' {
+    switch (estado) {
+      case 'listo':
+        return 'success';
+      case 'advertencias':
+        return 'warning';
+      case 'bloqueado':
+        return 'error';
+      case 'pendiente':
+      default:
+        return 'default';
+    }
+  }
+
+  ejecutarAccionValidacion(accion: ValidacionAccionLocal): void {
+    switch (accion) {
+      case 'validarPeriodo':
+        this.validarPeriodo();
+        break;
+      case 'generarBase':
+      case 'actualizarBase':
+        this.generarPreNomina();
+        break;
+      case 'calcularPreliminar':
+        this.calcularPreliminar();
+        break;
+    }
+  }
+
+  private etiquetaRevisionAprobacion(estado: RevisionAprobacionEstado): string {
+    switch (estado) {
+      case 'aprobado':
+        return 'Aprobado operativamente';
+      case 'aprobado_desactualizado':
+        return 'Aprobacion desactualizada';
+      case 'pendiente_guardado':
+        return 'Pendiente de guardado';
+      case 'pendiente_revision':
+        return 'Listo para aprobar con advertencias';
+      case 'actualizado_sin_guardar':
+        return 'Resultado actualizado sin guardar';
+      case 'no_apto':
+        return 'No apto para aprobacion';
+      case 'listo':
+        return 'Listo para aprobar';
+      case 'sin_resultado_guardado':
+      default:
+        return 'Sin resultado guardado';
+    }
+  }
+
+  private descripcionRevisionAprobacion(estado: RevisionAprobacionEstado): string {
+    switch (estado) {
+      case 'aprobado':
+        return 'Resultado preliminar aprobado operativamente.';
+      case 'aprobado_desactualizado':
+        return 'La aprobacion operativa anterior quedo desactualizada porque existe un resultado posterior. Guarda y aprueba nuevamente el resultado actualizado.';
+      case 'pendiente_guardado':
+        return 'El resultado calculado debe guardarse antes de revisarlo para aprobacion.';
+      case 'pendiente_revision':
+        return 'El resultado preliminar guardado esta listo para aprobacion operativa, con advertencias visibles para decision RRHH.';
+      case 'actualizado_sin_guardar':
+        return 'Hay un calculo preliminar mas reciente que el ultimo guardado. Guarda la version actual antes de revisarla.';
+      case 'no_apto':
+        return 'Existen bloqueos que impiden aprobar operativamente este resultado.';
+      case 'listo':
+        return 'El resultado preliminar guardado esta listo para aprobacion operativa.';
+      case 'sin_resultado_guardado':
+      default:
+        return 'Guarda un resultado preliminar antes de aprobar operativamente la nomina.';
+    }
+  }
+
+  private checklistRevisionAprobacion(input: {
+    hayGuardado: boolean;
+    guardado: ResultadoPreliminarView['ultimoGuardado'];
+    actualizadoSinGuardar: boolean;
+    hayResultadoActual: boolean;
+    bloqueos: ResultadoObservacionView[];
+    advertencias: ResultadoObservacionView[];
+  }): RevisionAprobacionChecklistItemView[] {
+    const totalCalculados = input.guardado?.trabajadoresCalculados ?? 0;
+    const omitidos = input.guardado?.trabajadoresOmitidos ?? 0;
+    return [
+      {
+        titulo: 'Resultado preliminar guardado',
+        descripcion: input.hayGuardado
+          ? 'Existe una version preliminar activa para este periodo.'
+          : input.hayResultadoActual
+            ? 'Guarda el calculo preliminar para que quede disponible para revision.'
+            : 'Primero calcula y guarda un resultado preliminar.',
+        estado: input.hayGuardado ? 'Completo' : 'Pendiente',
+      },
+      {
+        titulo: 'Resultado guardado vigente',
+        descripcion: input.actualizadoSinGuardar
+          ? 'El calculo actual es mas reciente que la version guardada.'
+          : input.hayGuardado
+            ? 'La version guardada coincide con el ultimo resultado disponible.'
+            : 'Se evaluara despues del guardado.',
+        estado: !input.hayGuardado ? 'Pendiente' : input.actualizadoSinGuardar ? 'Requiere atencion' : 'Completo',
+      },
+      {
+        titulo: 'Trabajadores calculados revisables',
+        descripcion: input.hayGuardado
+          ? `${totalCalculados} trabajador(es) calculado(s) en el resultado guardado.`
+          : 'Aun no hay trabajadores guardados para revisar.',
+        estado: !input.hayGuardado ? 'Pendiente' : totalCalculados > 0 ? 'Completo' : 'Requiere atencion',
+      },
+      {
+        titulo: 'Sin bloqueos operativos',
+        descripcion: input.bloqueos.length
+          ? 'Hay bloqueos que requieren correccion antes de avanzar.'
+          : 'No hay bloqueos visibles en la revision operativa.',
+        estado: input.bloqueos.length || omitidos > 0 ? 'Requiere atencion' : input.hayGuardado ? 'Completo' : 'Pendiente',
+      },
+      {
+        titulo: 'Advertencias visibles para decision RRHH',
+        descripcion: input.advertencias.length
+          ? 'Las advertencias quedan visibles para decidir si se corrigen o se aceptan operativamente.'
+          : 'No hay advertencias pendientes en la version revisada.',
+        estado: !input.hayGuardado ? 'Pendiente' : input.advertencias.length ? 'Requiere atencion' : 'Completo',
+      },
+      {
+        titulo: 'Resultado aprobado operativamente',
+        descripcion: this.aprobacionOperativa()
+          ? 'RRHH registro una aprobacion operativa interna para el resultado preliminar.'
+          : 'Pendiente de aprobacion operativa interna por RRHH.',
+        estado: this.aprobacionOperativa() ? 'Completo' : input.hayGuardado ? 'Pendiente' : 'No aplica',
+      },
+      {
+        titulo: 'Acciones legales pendientes para fase posterior',
+        descripcion: 'Liquidaciones oficiales, cierre, Previred, LRE y bancos no se ejecutan en esta revision.',
+        estado: 'No aplica',
+      },
+    ];
+  }
+
+  private observacionDesdeValidacion(item: ValidacionOperativaItemView): ResultadoObservacionView {
+    return {
+      codigo: item.codigo,
+      titulo: item.titulo,
+      descripcion: item.descripcion,
+      accionLabel: item.accionLabel,
+      ruta: item.ruta,
+    };
+  }
+
+  private buildValidacionCalculo(input: {
+    bloqueos: ValidacionOperativaItemView[];
+    advertencias: ValidacionOperativaItemView[];
+    informaciones: ValidacionOperativaItemView[];
+    estadoForzado?: ValidacionCalculoEstado;
+    razonDeshabilitado?: string;
+    siguienteAccion?: ValidacionCalculoPreliminarView['siguienteAccion'];
+  }): ValidacionCalculoPreliminarView {
+    const estado =
+      input.estadoForzado ??
+      (input.bloqueos.length > 0 ? 'bloqueado' : input.advertencias.length > 0 ? 'advertencias' : 'listo');
+    const puedeCalcular = estado === 'listo' || estado === 'advertencias';
+    const razonDeshabilitado = puedeCalcular ? undefined : input.razonDeshabilitado ?? input.bloqueos[0]?.descripcion;
+    return {
+      estado,
+      estadoLabel: this.etiquetaValidacionCalculo(estado),
+      puedeCalcular,
+      razonDeshabilitado,
+      siguienteAccion: input.siguienteAccion ?? this.resolverSiguienteAccion(input.bloqueos, input.advertencias),
+      bloqueos: input.bloqueos,
+      advertencias: input.advertencias,
+      informaciones: input.informaciones,
+    };
+  }
+
+  private etiquetaValidacionCalculo(estado: ValidacionCalculoEstado): string {
+    switch (estado) {
+      case 'listo':
+        return 'Listo para calcular';
+      case 'advertencias':
+        return 'Con advertencias';
+      case 'bloqueado':
+        return 'Bloqueado';
+      case 'pendiente':
+      default:
+        return 'Pendiente de validar';
+    }
+  }
+
+  private resolverSiguienteAccion(
+    bloqueos: readonly ValidacionOperativaItemView[],
+    advertencias: readonly ValidacionOperativaItemView[],
+  ): ValidacionCalculoPreliminarView['siguienteAccion'] {
+    const prioridad = ['BLOQ-001', 'BLOQ-004', 'BLOQ-005', 'BLOQ-003', 'BLOQ-006'];
+    const bloqueo = prioridad.map((codigo) => bloqueos.find((b) => b.codigo === codigo)).find((b): b is ValidacionOperativaItemView => !!b) ?? bloqueos[0];
+    if (bloqueo) {
+      return {
+        label: bloqueo.accionLabel ?? 'Resolver bloqueo',
+        descripcion: bloqueo.descripcion,
+        ruta: bloqueo.ruta,
+        accionLocal: bloqueo.accionLocal,
+      };
+    }
+    if (advertencias.length > 0) {
+      return {
+        label: 'Revisar advertencias o calcular preliminar',
+        descripcion: `La base de nomina puede calcularse con ${advertencias.length} advertencia(s) no bloqueante(s).`,
+        accionLocal: 'calcularPreliminar',
+      };
+    }
+    return {
+      label: 'Calcular preliminar',
+      descripcion: 'La base de nomina esta lista para calcular preliminarmente.',
+      accionLocal: 'calcularPreliminar',
+    };
+  }
+
+  private itemDesdeMensaje(
+    mensaje: ProcesoMensualMensaje,
+    severidad: ValidacionOperativaSeveridad,
+  ): ValidacionOperativaItemView {
+    const accion = this.accionArea(mensaje.area);
+    return {
+      codigo: mensaje.codigo,
+      titulo: this.tituloMensajeOperativo(mensaje),
+      descripcion: mensaje.texto,
+      severidad,
+      accionLabel: accion?.label,
+      ruta: accion?.route,
+    };
+  }
+
+  private tituloMensajeOperativo(mensaje: ProcesoMensualMensaje): string {
+    if (mensaje.area === 'PARAMETROS') return 'Parametros del periodo por revisar';
+    if (mensaje.area === 'TRABAJADORES') return 'Trabajadores por revisar';
+    if (mensaje.area === 'HABERES_RECURRENTES') return 'Asignaciones recurrentes por revisar';
+    if (mensaje.area === 'ENTRADAS_MENSUALES' || mensaje.area === 'MOVIMIENTOS_VARIABLES') return 'Movimientos del mes por revisar';
+    if (mensaje.area === 'CONCEPTOS') return 'Conceptos de remuneracion por revisar';
+    return 'Preparacion del periodo por revisar';
+  }
+
+  private parametroMinimoBloqueante(id: string, clasificacion: ClasificacionParametroGrupo): boolean {
+    const obligatorios = new Set(['mensuales_uf_utm_sueldo', 'topes_base', 'catalogos_afp_impuesto']);
+    return obligatorios.has(id) && (clasificacion === 'FALTANTE' || clasificacion === 'PARCIAL');
+  }
+
+  private parametroMinimoBloqueanteDesdeCodigo(codigo: string): boolean {
+    return ['PARAM_MIN_mensuales_uf_utm_sueldo', 'PARAM_MIN_topes_base', 'PARAM_MIN_catalogos_afp_impuesto']
+      .some((prefix) => codigo.startsWith(prefix));
+  }
+
+  private parametroOpcionalAdvertencia(id: string, clasificacion: ClasificacionParametroGrupo): boolean {
+    return !this.parametroMinimoBloqueante(id, clasificacion) && (clasificacion === 'FALTANTE' || clasificacion === 'PARCIAL');
+  }
+
+  private etiquetaResultadoPreliminar(estado: ResultadoPreliminarEstado): string {
+    switch (estado) {
+      case 'no_guardado':
+        return 'Resultado no guardado';
+      case 'guardado':
+        return 'Resultado guardado';
+      case 'actualizado_sin_guardar':
+        return 'Resultado actualizado sin guardar';
+      case 'error_guardado':
+        return 'No se pudo guardar';
+      case 'con_bloqueos':
+        return 'Resultado con bloqueos';
+      case 'sin_resultado':
+      default:
+        return 'Sin resultado';
+    }
+  }
+
+  private descripcionEstadoGuardado(estado: ResultadoPreliminarEstado): string {
+    switch (estado) {
+      case 'no_guardado':
+        return 'Revisa el calculo preliminar y guardalo como version revisable si corresponde.';
+      case 'guardado':
+        return 'Este resultado preliminar quedo guardado como version revisable. No emite liquidaciones ni cierra el periodo.';
+      case 'actualizado_sin_guardar':
+        return 'Volviste a calcular despues del ultimo guardado. Guarda esta nueva version si quieres conservarla.';
+      case 'error_guardado':
+        return 'No se pudo guardar el resultado preliminar. Intenta nuevamente o revisa las observaciones del resultado.';
+      case 'con_bloqueos':
+        return 'No puedes guardar este resultado preliminar. Hay bloqueos del resultado que deben resolverse.';
+      case 'sin_resultado':
+      default:
+        return 'Primero calcula preliminarmente la nomina para revisar montos y observaciones antes de guardar.';
+    }
+  }
+
+  private resolverEstadoGuardadoResultado(
+    calculo: MotorCalculoPeriodoResultado,
+    bloqueos: ResultadoObservacionView[],
+  ): ResultadoPreliminarEstado {
+    if (this.errorGuardadoResultado()) return 'error_guardado';
+    if (calculo.estado === 'con_bloqueos' || bloqueos.length > 0) return 'con_bloqueos';
+    const snapshot = this.snapshotActivo();
+    if (!snapshot) return 'no_guardado';
+    return this.identificadorResultadoGuardadoActual() === snapshot.hashSnapshot
+      ? 'guardado'
+      : 'actualizado_sin_guardar';
+  }
+
+  private razonNoPuedeGuardarResultado(bloqueos: ResultadoObservacionView[]): string {
+    if (!validarPeriodoEntradaMensual(this.periodoSeleccionado())) return 'El periodo seleccionado no es valido.';
+    if (!this.calculo()) return 'Primero calcula preliminarmente la nomina.';
+    if (this.errorEjecucion()) return 'Hay un error tecnico activo que debes resolver antes de guardar.';
+    if (bloqueos.length > 0) return 'El resultado tiene bloqueos que deben revisarse.';
+    const snapshot = this.snapshotActivo();
+    if (snapshot && this.identificadorResultadoGuardadoActual() === snapshot.hashSnapshot) {
+      return 'No hay cambios para guardar. El resultado preliminar actual ya esta guardado.';
+    }
+    if (this.guardandoSnapshot()) return 'El guardado del resultado preliminar esta en curso.';
+    return 'Genera un resultado preliminar sin bloqueos antes de guardar.';
+  }
+
+  private ultimoGuardadoDesdeSnapshot(snapshot: NominaCalculoPeriodoSnapshot): ResultadoPreliminarView['ultimoGuardado'] {
+    const advertencias = snapshot.totalAdvertencias ?? 0;
+    return {
+      versionLabel: snapshot.idCalculoPeriodo
+        ? `Disponible por identificador tecnico ${snapshot.idCalculoPeriodo}`
+        : 'Version numerica no disponible en esta etapa.',
+      fechaGuardadoLabel: this.formatoFechaHora(snapshot.fechaGeneracion),
+      versionCalculoLabel: snapshot.versionMotor || 'Version no disponible',
+      identificadorTecnicoLabel: snapshot.hashSnapshot || 'Identificador tecnico no disponible',
+      estadoLabel: this.etiquetaEstadoSnapshot(snapshot.estado),
+      trabajadoresCalculados: snapshot.totalTrabajadores,
+      trabajadoresConObservaciones: advertencias,
+      trabajadoresOmitidos: snapshot.totalBloqueados,
+      totalLiquidoLabel: this.formatoMonto(snapshot.totalLiquido),
+      advertenciasLabel: advertencias > 0
+        ? `Este resultado se guardo con ${advertencias} advertencia(s) no bloqueante(s).`
+        : 'Resultado guardado sin advertencias.',
+    };
+  }
+
+  private etiquetaEstadoSnapshot(estado: NominaCalculoPeriodoSnapshot['estado']): string {
+    switch (estado) {
+      case 'preliminar':
+        return 'Preliminar';
+      case 'recalculado':
+        return 'Recalculado';
+      case 'observado':
+        return 'Observado';
+      case 'listo_para_revision':
+        return 'Listo para revision';
+      case 'aprobado_para_liquidacion':
+        return 'Aprobado para fase posterior';
+      case 'anulado':
+        return 'Anulado';
+      case 'borrador':
+      default:
+        return 'Borrador';
+    }
+  }
+
+  private razonNoPuedeAprobar(input: {
+    hayResultadoActual: boolean;
+    hayGuardado: boolean;
+    actualizadoSinGuardar: boolean;
+    bloqueos: ResultadoObservacionView[];
+    omitidos: number;
+    aprobacionVigente: boolean;
+  }): string | undefined {
+    if (input.aprobacionVigente) return 'El resultado preliminar guardado ya esta aprobado operativamente.';
+    if (!validarPeriodoEntradaMensual(this.periodoSeleccionado())) return 'El periodo no es valido para aprobacion operativa.';
+    if (!input.hayResultadoActual && !input.hayGuardado) return 'Primero calcula el resultado preliminar.';
+    if (!input.hayGuardado) return 'Primero guarda el resultado preliminar.';
+    if (input.actualizadoSinGuardar) return 'Hay un resultado actualizado sin guardar.';
+    if (input.bloqueos.length > 0 || input.omitidos > 0) return 'Existen bloqueos operativos pendientes.';
+    return undefined;
+  }
+
+  private confirmarAprobacionOperativa(tieneAdvertencias: boolean): boolean {
+    const partes = [
+      'Aprobar resultado preliminar',
+      '',
+      'Esta accion marca el resultado preliminar guardado como aprobado operativamente para revision interna.',
+      'No emite liquidaciones, no cierra el periodo y no genera archivos legales.',
+    ];
+    if (tieneAdvertencias) {
+      partes.push(
+        '',
+        'Existen advertencias visibles. Puedes aprobar operativamente, pero quedaran registradas como observaciones de revision.',
+      );
+    }
+    partes.push('', 'Deseas aprobar el resultado preliminar?');
+    try {
+      return typeof window === 'undefined' || typeof window.confirm !== 'function'
+        ? true
+        : window.confirm(partes.join('\n'));
+    } catch {
+      return true;
+    }
+  }
+
+  private confirmarGuardarPreliminar(): boolean {
+    const mensaje = [
+      'Guardar resultado preliminar',
+      '',
+      'Se guardara una version revisable del calculo preliminar para este periodo.',
+      'Esto no emite liquidaciones, no cierra el periodo y no genera archivos legales.',
+      '',
+      'Deseas continuar?',
+    ].join('\n');
+    try {
+      return typeof window === 'undefined' || typeof window.confirm !== 'function' ? true : window.confirm(mensaje);
+    } catch {
+      return true;
+    }
+  }
+
+  private estadoResultadoTrabajador(estado: string): TrabajadorResultadoPreliminarView['estadoLabel'] {
+    switch (estado) {
+      case 'calculado_preliminar':
+        return 'Calculado';
+      case 'con_advertencias':
+        return 'Con observaciones';
+      case 'con_bloqueos':
+        return 'Omitido';
+      default:
+        return 'No calculado';
+    }
+  }
+
+  private observacionesResultado(
+    calculo: MotorCalculoPeriodoResultado,
+    severidad: MotorCalculoIssue['severidad'],
+  ): ResultadoObservacionView[] {
+    return [
+      ...calculo.issues,
+      ...calculo.liquidaciones.flatMap((liq) => liq.issues),
+    ]
+      .filter((issue) => issue.severidad === severidad)
+      .map((issue) => ({
+        codigo: issue.codigo,
+        titulo: severidad === 'BLOQUEO' ? 'Bloqueo del resultado' : 'Advertencia del resultado',
+        descripcion: issue.mensaje,
+        ...this.accionResultadoDesdeIssues([issue]),
+      }));
+  }
+
+  private accionResultadoDesdeIssues(
+    issues: readonly MotorCalculoIssue[],
+  ): Pick<ResultadoObservacionView, 'accionLabel' | 'ruta'> {
+    const origen = issues.map((issue) => `${issue.origen} ${issue.codigo}`.toLowerCase()).join(' ');
+    if (origen.includes('entrada') || origen.includes('movimiento')) {
+      return { accionLabel: 'Revisar movimientos del mes', ruta: '/remuneraciones/novedades-mensuales' };
+    }
+    if (origen.includes('recurrente') || origen.includes('haber')) {
+      return { accionLabel: 'Revisar asignaciones recurrentes', ruta: '/remuneraciones/haberes-descuentos' };
+    }
+    return { accionLabel: 'Revisar base de nomina' };
+  }
+
+  private formatoMonto(valor: number | null | undefined): string {
+    if (typeof valor !== 'number' || !Number.isFinite(valor)) return 'Monto no disponible';
+    return new Intl.NumberFormat('es-CL', {
+      style: 'currency',
+      currency: 'CLP',
+      maximumFractionDigits: 0,
+    }).format(valor);
+  }
+
+  private formatoFechaHora(valor: string | null | undefined): string {
+    if (!valor) return 'Fecha no disponible';
+    const fecha = new Date(valor);
+    if (Number.isNaN(fecha.getTime())) return valor;
+    return new Intl.DateTimeFormat('es-CL', {
+      dateStyle: 'short',
+      timeStyle: 'short',
+    }).format(fecha);
+  }
+
 }

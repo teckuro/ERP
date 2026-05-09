@@ -1,5 +1,9 @@
 # Haberes y descuentos - contrato general
 
+> Nombre visible en UI: `Asignaciones recurrentes`.
+> Nombre tecnico/documental: `Haberes y descuentos`.
+> Tabla principal: `haberdescuento_persona`.
+
 ## Que si cubre
 
 - Asignaciones recurrentes por trabajador alineadas al periodo de remuneracion.
@@ -8,7 +12,7 @@
 ## Que no cubre
 
 - No son liquidaciones ni resultado de calculo mensual cerrado.
-- No son **movimientos variables mensuales** (bonos puntuales del mes, comision del periodo, HE del periodo, etc.); ese dominio tiene contrato en [`../movimientos-variables/contrato-general.md`](../movimientos-variables/contrato-general.md) (Fase 9.4A), persistencia en [`../movimientos-variables/persistencia-9-4C.md`](../movimientos-variables/persistencia-9-4C.md) y carga puntual en UI [`../movimientos-variables/ui-9-4E.md`](../movimientos-variables/ui-9-4E.md) (ruta `/remuneraciones/movimientos-variables`).
+- No son movimientos puntuales del periodo (bonos puntuales del mes, comision del periodo, HE del periodo, etc.); ese dominio se muestra en UI como **Movimientos del mes** y se documenta tecnicamente como **Novedades mensuales** sobre `novedad_remuneracion_periodo`. Movimientos variables queda como legacy/transicion.
 - No sustituye el catalogo de Conceptos; las asignaciones deben referenciar conceptos gobernados.
 
 ## Navegacion oficial
@@ -27,7 +31,7 @@ Ruta antigua de compatibilidad temporal (redirect):
 /haberes-descuentos -> /remuneraciones/haberes-descuentos
 ```
 
-Haberes y descuentos administra asignaciones recurrentes por trabajador. No es catalogo maestro, no es movimiento variable y no calcula liquidaciones.
+Asignaciones recurrentes administra conceptos repetitivos o con vigencia por trabajador. No es catalogo maestro, no es movimiento del mes y no calcula liquidaciones.
 
 ## Dependencia
 

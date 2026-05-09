@@ -1,5 +1,90 @@
 ## Peticiones de estilos (bitácora)
 
+## 2026-05-09 - NOM-HARD-01 saneamiento previo a cierre operativo
+
+- `Liquidaciones oficiales` queda como pantalla de modulo no disponible, sin datos demo, montos oficiales aparentes ni acciones de descarga, firma, impresion o envio.
+- El detalle de liquidacion conserva la ruta por compatibilidad, pero muestra estado no disponible y no renderiza documento de pago.
+- Se retira `Liquidaciones` del sidebar para no presentarlo como flujo productivo activo.
+- El copy visible delimita el estado actual: resultado preliminar guardado/aprobado internamente; cierre, liquidaciones, PDF, Previred, LRE y banco quedan pendientes.
+- Archivos: `src/app/pages/liquidaciones.page.ts`, `src/app/pages/detalle-liquidacion.page.ts`, `src/app/layout/sidebar.component.ts`.
+
+## 2026-05-09 - USAB-NOM-09 aprobacion operativa
+
+- `Preparar nomina` reemplaza la accion futura por `Aprobar resultado preliminar` dentro de `Revision para aprobacion`.
+- La seccion muestra razon visible cuando no se puede aprobar y un bloque `Aprobacion operativa` con estado, fecha, usuario disponible/no disponible, version, identificador tecnico, trabajadores, totales y advertencias.
+- Si se recalcula despues de aprobar, el bloque queda visible como `Aprobacion desactualizada` y guia a guardar/aprobar nuevamente.
+- Se mantienen cards compactas y Tailwind existente; no hay CSS nuevo, paleta nueva ni redisenio profundo.
+- Archivos: `src/app/features/nomina-mensual/containers/proceso-mensual-container/proceso-mensual-container.{ts,html,spec.ts}`.
+
+## 2026-05-08 - USAB-NOM-08 revision para aprobacion
+
+- `Preparar nomina` agrega el bloque `Revision para aprobacion` despues del ultimo resultado guardado.
+- La experiencia queda orientada a usuario RRHH: estado legible, descripcion de que falta, checklist operativo y observaciones separadas en bloqueos, advertencias e informacion.
+- La accion deshabilitada `Solicitar aprobacion` fue el estado visual de USAB-NOM-08 y queda reemplazada por `Aprobar resultado preliminar` desde USAB-NOM-09.
+- Se mantienen cards compactas y Tailwind existente, sin CSS nuevo ni redisenio profundo.
+- Archivos: `src/app/features/nomina-mensual/containers/proceso-mensual-container/proceso-mensual-container.{ts,html,spec.ts}`.
+
+## 2026-05-08 - USAB-NOM-07 guardado/versionado de Resultado preliminar
+
+- `Resultado preliminar` agrega estado visible de guardado, razon de bloqueo, helper de alcance y mensajes de exito/error en lenguaje operativo.
+- Se incorpora el bloque `Ultimo resultado preliminar guardado` con fecha, version del calculo, identificador tecnico, conteos y liquido preliminar disponible.
+- Se mantiene la estructura existente de cards y Tailwind; no hay CSS nuevo ni redisenio profundo.
+- El copy visible aclara que guardar no emite liquidaciones, no cierra el periodo y no genera archivos legales.
+- Archivos: `src/app/features/nomina-mensual/containers/proceso-mensual-container/proceso-mensual-container.{ts,html,spec.ts}`.
+
+## 2026-05-08 - USAB-NOM-06 revision de Resultado preliminar
+
+- `Resultado preliminar` se presenta como bloque de revision operativa, no como salida oficial.
+- Se agregan resumen compacto, tabla de trabajadores del resultado, observaciones separadas, detalle tecnico secundario y acciones de recalculo/revision/guardado.
+- La UI mantiene lenguaje operativo y evita `Issues`, `Hash` e IDs como labels principales.
+- No se agregan acciones de cierre, liquidacion oficial, Previred, LRE ni banco.
+
+## 2026-05-08 - USAB-NOM-05 semaforo de calculo preliminar
+
+- `Preparar nomina` agrega el bloque `Estado para calculo preliminar` dentro del flujo existente.
+- Se separan visualmente bloqueos, advertencias e informacion con tarjetas compactas accionables.
+- El boton `Calcular preliminar` queda acompanado de una razon visible cuando esta deshabilitado.
+- La ausencia de movimientos del mes o asignaciones recurrentes se comunica como advertencia no bloqueante, sin inflar layout ni cambiar rutas.
+
+## 2026-05-08 - USAB-NOM-04 trazabilidad de Base de nomina
+
+- `Base de nomina` deja de ser solo conteos y pasa a mostrar trazabilidad operativa revisable antes del calculo.
+- Se agregan bloques compactos: resumen de base, trabajadores incluidos, entradas consideradas, parametros del periodo y acciones de revision.
+- La tabla usa lenguaje RRHH: trabajador, estado, contrato, asignaciones recurrentes, movimientos del mes y observaciones; no muestra IDs ni nombres tecnicos internos.
+- Se mantiene el dashboard de `Preparar nomina` sin agrandar artificialmente la pantalla ni convertirlo en flujo de cierre.
+
+## 2026-05-08 - USAB-NOM-03 dashboard Preparar nomina
+
+- `Preparar nomina` se reorganiza como dashboard operativo del periodo, no como wizard de pasos futuros.
+- La pantalla muestra resumen operativo, accion recomendada, checklist por areas, bloqueos/advertencias, base de nomina, calculo preliminar y resultado guardado.
+- Se reemplazan estados internos visibles por etiquetas operativas y se agregan accesos a Parametros, Movimientos del mes y Asignaciones recurrentes.
+- `Pre-nomina` queda como nombre interno; la UI visible usa `Base de nomina`.
+- Las salidas legales y cierre quedan como aviso secundario hasta que existan liquidaciones oficiales.
+
+## 2026-05-08 - USAB-NOM-02 usabilidad Movimientos del mes
+
+- Se reemplazan inputs numericos visibles de trabajador, contrato y concepto por controles operativos.
+- Trabajador se selecciona como `Nombre · RUT`; concepto como `Nombre (codigo)`; contrato se carga segun trabajador y se preselecciona si es unico.
+- Se retiran helpers tecnicos de la pantalla y el copy visible usa `movimiento` / `movimientos del mes`.
+- En `Preparar nomina` se limpian rotulos tecnicos menores hacia observaciones e identificador tecnico.
+- No se modifica layout estructural, SQL/RLS, motor, modelos publicos, servicios publicos ni liquidaciones.
+
+## 2026-05-08 - USAB-NOM-01 lenguaje visible Remuneraciones
+
+- Se alineo el lenguaje visible del menu y pantallas de Remuneraciones.
+- `Proceso mensual` pasa a mostrarse como `Preparar nomina`.
+- `Novedades mensuales` pasa a mostrarse como `Movimientos del mes`.
+- `Haberes y descuentos` pasa a mostrarse como `Asignaciones recurrentes`.
+- No se modifico layout estructural, SQL, RLS, motor, formulas legales, snapshots ni liquidaciones.
+
+### 2026-05-07 - NOM-UX-01 consolidacion visual Novedades mensuales
+
+- **Modulo:** Remuneraciones / Novedades mensuales.
+- **Cambio:** el sidebar deja Novedades mensuales como opcion visible principal para hechos del periodo y retira Movimientos variables del menu principal; la ruta legacy se conserva por compatibilidad.
+- **Copy:** la pantalla aclara que las novedades aprobadas forman parte de las entradas mensuales revisadas por Proceso mensual antes del calculo; el empty state orienta a registrar y enviar a revision antes de preparar pre-nomina.
+- **Fuera de alcance visual:** sin nueva UI, sin redireccion de rutas, sin borrar legacy, sin SQL/RLS, sin motor ni liquidaciones.
+- **Archivos:** `src/app/layout/sidebar.component.ts`, `src/app/features/nomina-mensual/novedades/containers/novedades-mensuales-container/novedades-mensuales-container.html`.
+
 ### 2026-05-07 - NOM-01D compactacion visual Novedades mensuales
 
 - **Modulo:** Remuneraciones / Novedades mensuales (`/remuneraciones/novedades-mensuales`).

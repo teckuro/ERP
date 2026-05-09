@@ -1,15 +1,18 @@
 <div class="space-y-6">
-  <div class="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+  <div class="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
     <div>
-      <h1 class="text-xl font-semibold text-gray-900">Proceso mensual</h1>
-      <p class="text-sm text-gray-600 mt-1">Periodo global (app): {{ periodoActivo.etiqueta() }}</p>
+      <h1 class="text-xl font-semibold text-gray-900">Preparar nomina</h1>
+      <p class="mt-1 text-sm text-gray-600">
+        Centro operativo del periodo: revisa trabajadores, parametros, asignaciones recurrentes y movimientos del mes
+        antes del calculo preliminar.
+      </p>
     </div>
     <div class="flex flex-wrap items-center gap-2">
-      <label class="text-sm text-gray-700" for="pm-periodo">Periodo a validar</label>
+      <label class="text-sm font-medium text-gray-700" for="pm-periodo">Periodo a validar</label>
       <input
         id="pm-periodo"
         type="month"
-        class="rounded border border-gray-300 px-2 py-1 text-sm text-gray-900"
+        class="rounded-md border border-gray-300 px-2 py-1 text-sm text-gray-900"
         [value]="periodoSeleccionado()"
         (change)="onPeriodoInput($event)"
       />
@@ -19,514 +22,1069 @@
     </div>
   </div>
 
+  @if (errorEjecucion(); as err) {
+    <div class="rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
+      {{ err }}
+    </div>
+  }
+
   <app-card>
     <app-card-content className="p-4">
-      <div class="flex items-start gap-3">
-        <lucide-icon class="w-5 h-5 text-slate-600 flex-shrink-0 mt-0.5" name="info"></lucide-icon>
-        <div class="text-sm text-gray-700 space-y-2">
-          <p class="font-medium text-gray-900">Esta etapa no calcula remuneraciones ni genera liquidaciones.</p>
-          <p>
-            Los valores normativos del periodo se administran en
-            <a routerLink="/parametros" class="text-blue-700 underline font-medium">Parametros</a>. Esta vista no
-            muestra montos ni tablas normativas: solo estado de prevalidacion.
-          </p>
-          <p class="text-gray-600">
-            Use &quot;Validar periodo&quot; para leer parametros, trabajadores, conceptos y movimientos variables del
-            mes seleccionado (sin motor).
-          </p>
+      <div class="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+        <div class="flex items-start gap-3">
+          <lucide-icon class="mt-0.5 h-5 w-5 flex-shrink-0 text-slate-600" name="info"></lucide-icon>
+          <div class="space-y-1 text-sm text-gray-700">
+            <p class="font-medium text-gray-900">Esta pantalla prepara la nomina del periodo.</p>
+            <p>
+              No cierra el periodo, no emite liquidaciones oficiales y no genera Previred, banco ni LRE.
+            </p>
+          </div>
         </div>
+        <a routerLink="/parametros" class="text-sm font-medium text-blue-700 underline">Revisar parametros</a>
       </div>
     </app-card-content>
   </app-card>
 
-  <app-card>
-    <app-card-content className="p-6">
-      <div class="flex items-center justify-between">
-        @for (step of steps; track step.number; let i = $index) {
-          <div class="flex items-center flex-1">
-            <div class="flex flex-col items-center gap-2">
-              <div
-                class="w-14 h-14 rounded-full flex items-center justify-center transition-all"
-                [class.bg-blue-600]="currentStep() === step.number"
-                [class.text-white]="currentStep() === step.number"
-                [class.ring-4]="currentStep() === step.number"
-                [class.ring-blue-100]="currentStep() === step.number"
-                [class.scale-110]="currentStep() === step.number"
-                [class.bg-green-600]="currentStep() > step.number"
-                [class.text-white]="currentStep() > step.number"
-                [class.bg-gray-200]="currentStep() < step.number"
-                [class.text-gray-600]="currentStep() < step.number"
-              >
-                @if (currentStep() > step.number) {
-                  <lucide-icon class="w-6 h-6" name="check"></lucide-icon>
-                } @else {
-                  <lucide-icon class="w-6 h-6" [name]="step.icon"></lucide-icon>
+  <section class="grid gap-4 xl:grid-cols-[minmax(0,1fr)_22rem]">
+    <app-card>
+      <app-card-content className="p-4">
+        <div class="mb-4 flex flex-wrap items-center justify-between gap-2">
+          <div>
+            <h2 class="text-sm font-semibold text-gray-900">Resumen operativo del periodo</h2>
+            <p class="text-xs text-gray-500">Indicadores disponibles despues de validar el periodo.</p>
+          </div>
+          <app-badge [variant]="badgeVariantEstado(dashboardResumen().estadoPeriodo)">
+            {{ etiquetaEstadoGlobal(dashboardResumen().estadoPeriodo) }}
+          </app-badge>
+        </div>
+
+        <dl class="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+          <div class="rounded-md border border-slate-200 bg-white p-3">
+            <dt class="text-xs font-medium text-gray-500">Trabajadores aptos</dt>
+            <dd class="mt-1 text-lg font-semibold text-gray-900">
+              {{ dashboardResumen().trabajadoresAptos ?? 'Sin evaluar' }}
+            </dd>
+          </div>
+          <div class="rounded-md border border-slate-200 bg-white p-3">
+            <dt class="text-xs font-medium text-gray-500">Trabajadores por revisar</dt>
+            <dd class="mt-1 text-lg font-semibold text-gray-900">
+              {{ dashboardResumen().trabajadoresPorRevisar ?? 'Sin evaluar' }}
+            </dd>
+          </div>
+          <div class="rounded-md border border-slate-200 bg-white p-3">
+            <dt class="text-xs font-medium text-gray-500">Parametros</dt>
+            <dd class="mt-1 text-sm font-semibold text-gray-900">
+              @if (dashboardResumen().parametrosListos == null) {
+                Sin evaluar
+              } @else {
+                {{ dashboardResumen().parametrosListos ? 'Parametros listos' : 'Parametros por revisar' }}
+              }
+            </dd>
+          </div>
+          <div class="rounded-md border border-slate-200 bg-white p-3">
+            <dt class="text-xs font-medium text-gray-500">Movimientos aprobados</dt>
+            <dd class="mt-1 text-lg font-semibold text-gray-900">{{ dashboardResumen().movimientosAprobados }}</dd>
+          </div>
+          <div class="rounded-md border border-slate-200 bg-white p-3">
+            <dt class="text-xs font-medium text-gray-500">Movimientos pendientes</dt>
+            <dd class="mt-1 text-lg font-semibold text-gray-900">{{ dashboardResumen().movimientosPendientes }}</dd>
+          </div>
+          <div class="rounded-md border border-slate-200 bg-white p-3">
+            <dt class="text-xs font-medium text-gray-500">Asignaciones recurrentes</dt>
+            <dd class="mt-1 text-sm font-semibold text-gray-900">
+              @if (dashboardResumen().asignacionesAplicables == null) {
+                Sin evaluar
+              } @else {
+                {{ dashboardResumen().asignacionesAplicables }} aplicables ·
+                {{ dashboardResumen().asignacionesPorRevisar }} por revisar
+              }
+            </dd>
+          </div>
+        </dl>
+      </app-card-content>
+    </app-card>
+
+    <app-card>
+      <app-card-content className="p-4">
+        <h2 class="text-sm font-semibold text-gray-900">Siguiente accion recomendada</h2>
+        <p class="mt-2 text-sm font-medium text-gray-900">{{ validacionCalculo().siguienteAccion.label }}</p>
+        <p class="mt-1 text-sm text-gray-700">{{ validacionCalculo().siguienteAccion.descripcion }}</p>
+        <div class="mt-4 flex flex-wrap gap-2">
+          @if (validacionCalculo().siguienteAccion.ruta) {
+            <a [routerLink]="validacionCalculo().siguienteAccion.ruta" class="text-sm font-medium text-blue-700 underline">
+              {{ validacionCalculo().siguienteAccion.label }}
+            </a>
+          }
+          @if (validacionCalculo().siguienteAccion.accionLocal) {
+            <button
+              type="button"
+              class="text-sm font-medium text-blue-700 underline"
+              (click)="ejecutarAccionValidacion(validacionCalculo().siguienteAccion.accionLocal!)"
+            >
+              {{ validacionCalculo().siguienteAccion.label }}
+            </button>
+          }
+          <a routerLink="/remuneraciones/novedades-mensuales" class="text-sm font-medium text-blue-700 underline">
+            Revisar movimientos
+          </a>
+          <a routerLink="/remuneraciones/haberes-descuentos" class="text-sm font-medium text-blue-700 underline">
+            Revisar asignaciones
+          </a>
+        </div>
+      </app-card-content>
+    </app-card>
+  </section>
+
+  <section class="grid gap-4 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)]">
+    <app-card>
+      <app-card-content className="p-4">
+        <h2 class="text-sm font-semibold text-gray-900">Checklist del periodo</h2>
+        <div class="mt-3 divide-y divide-slate-100">
+          @for (it of resultado()?.items ?? []; track it.area) {
+            <div class="flex flex-col gap-2 py-3 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <p class="text-sm font-medium text-gray-900">{{ etiquetaArea(it.area, it.etiqueta) }}</p>
+                @if (it.detalle) {
+                  <p class="mt-0.5 text-xs text-gray-500">{{ it.detalle }}</p>
                 }
               </div>
-              <div class="text-center">
-                <p
-                  class="text-sm font-medium"
-                  [class.text-blue-600]="currentStep() === step.number"
-                  [class.text-gray-700]="currentStep() !== step.number"
-                >
-                  {{ step.title }}
-                </p>
-                <p class="text-xs text-gray-600 mt-1">{{ step.description }}</p>
-              </div>
-            </div>
-            @if (i < steps.length - 1) {
-              <div
-                class="flex-1 h-0.5 mx-4 mt-[-40px]"
-                [class.bg-green-600]="currentStep() > step.number"
-                [class.bg-gray-200]="currentStep() <= step.number"
-              ></div>
-            }
-          </div>
-        }
-      </div>
-    </app-card-content>
-  </app-card>
-
-  <app-card>
-    <app-card-content className="p-6">
-      @if (currentStep() === 1) {
-        <div class="space-y-6">
-          <div class="rounded-lg border border-slate-200 bg-white p-4">
-            <div class="flex flex-wrap items-center justify-between gap-2">
-              <h3 class="font-semibold text-gray-900">Estado del periodo</h3>
-              @if (resultado(); as res) {
-                <app-badge [variant]="badgeVariantEstado(res.estado)">{{ etiquetaEstadoGlobal(res.estado) }}</app-badge>
-              } @else {
-                <app-badge variant="default">{{ etiquetaEstadoGlobal(null) }}</app-badge>
-              }
-            </div>
-            @if (errorEjecucion(); as err) {
-              <p class="mt-2 text-sm text-red-700">{{ err }}</p>
-            }
-            @if (resultado(); as res) {
-              <p class="mt-2 text-sm text-gray-600">
-                Resumen: activos aptos {{ res.resumen.trabajadoresActivosAptos }}, activos no aptos
-                {{ res.resumen.trabajadoresActivosNoAptos }}, parametros operativos
-                {{ res.resumen.parametrosOperativos ? 'si' : 'no' }}.
-              </p>
-              <p class="mt-1 text-sm text-gray-600">
-                Recurrentes aplicables al mes: {{ res.resumen.recurrentesAplicablesAlPeriodo }}; invalidas:
-                {{ res.resumen.recurrentesInvalidas }}; fuera del mes: {{ res.resumen.recurrentesFueraDelMes }}; cerradas:
-                {{ res.resumen.recurrentesCerradas }}.
-              </p>
-              @if (res.resumen.parametrosGrupos.length) {
-                <p class="mt-1 text-xs text-gray-500">
-                  Parametros (grupos):
-                  @for (g of res.resumen.parametrosGrupos; track g.id) {
-                    <span>{{ g.id }}={{ g.clasificacion }}</span>@if (!$last) {<span>; </span>}
-                  }
-                </p>
-              }
-            }
-          </div>
-
-          <div class="rounded-lg border border-slate-200 bg-white p-4">
-            <div class="flex flex-wrap items-center justify-between gap-3">
-              <div>
-                <h3 class="font-semibold text-gray-900">Pre-nomina del periodo</h3>
-                <p class="mt-1 text-sm text-gray-600">
-                  Consolida trabajadores aptos, recurrentes aplicables y movimientos validados. No calcula montos ni
-                  genera liquidaciones.
-                </p>
-              </div>
               <div class="flex flex-wrap items-center gap-2">
-                @if (preNomina(); as pn) {
-                  <app-badge [variant]="badgeVariantPreNomina(pn.estado)">{{ etiquetaEstadoPreNomina(pn.estado) }}</app-badge>
-                } @else {
-                  <app-badge variant="default">{{ etiquetaEstadoPreNomina(null) }}</app-badge>
+                <app-badge [variant]="badgeVariantItemEstado(it.estado)" size="sm">
+                  {{ etiquetaItemEstado(it.estado) }}
+                </app-badge>
+                @if (accionArea(it.area); as accion) {
+                  <a [routerLink]="accion.route" class="text-xs font-medium text-blue-700 underline">
+                    {{ accion.label }}
+                  </a>
                 }
-                <app-button
-                  variant="primary"
-                  size="sm"
-                  [disabled]="!puedeGenerarPreNomina()"
-                  (click)="generarPreNomina()"
-                >
-                  {{ generandoPreNomina() ? 'Generando...' : 'Generar pre-nomina' }}
-                </app-button>
               </div>
             </div>
+          } @empty {
+            <p class="py-3 text-sm text-gray-600">
+              Ejecute "Validar periodo" para revisar Parametros, Trabajadores, Conceptos, Asignaciones recurrentes y
+              Movimientos del mes.
+            </p>
+          }
+        </div>
+      </app-card-content>
+    </app-card>
 
-            @if (preNomina(); as pn) {
-              <dl class="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4 text-sm">
-                <div>
-                  <dt class="text-gray-500">Trabajadores incluidos</dt>
-                  <dd class="font-semibold text-gray-900">{{ pn.trabajadoresIncluidos }}</dd>
-                </div>
-                <div>
-                  <dt class="text-gray-500">Recurrentes incluidos</dt>
-                  <dd class="font-semibold text-gray-900">{{ pn.recurrentesIncluidos }}</dd>
-                </div>
-                <div>
-                  <dt class="text-gray-500">Movimientos validados</dt>
-                  <dd class="font-semibold text-gray-900">{{ pn.movimientosVariablesValidados }}</dd>
-                </div>
-                <div>
-                  <dt class="text-gray-500">Movimientos borrador</dt>
-                  <dd class="font-semibold text-gray-900">{{ pn.movimientosVariablesBorrador }}</dd>
-                </div>
-              </dl>
-              @if (pn.codigosBloqueo.length || pn.codigosAdvertencia.length) {
-                <p class="mt-3 text-xs text-gray-500">
-                  Codigos:
-                  @for (c of pn.codigosBloqueo; track c) {
-                    <span>{{ c }}</span>@if (!$last || pn.codigosAdvertencia.length) {<span>; </span>}
-                  }
-                  @for (c of pn.codigosAdvertencia; track c) {
-                    <span>{{ c }}</span>@if (!$last) {<span>; </span>}
-                  }
-                </p>
-              }
-            } @else {
-              <p class="mt-3 text-sm text-gray-600">
-                Primero valide el periodo. Si no hay bloqueos, podra generar esta base funcional de pre-nomina.
-              </p>
-            }
-          </div>
-
-          <div class="rounded-lg border border-slate-200 bg-white p-4">
-            <div class="flex flex-wrap items-center justify-between gap-3">
-              <div>
-                <h3 class="font-semibold text-gray-900">Calculo preliminar</h3>
-                <p class="mt-1 text-sm text-gray-600">
-                  Genera resultado base por trabajador desde la pre-nomina. No cierra periodo, no emite liquidaciones y
-                  no genera archivos oficiales.
-                </p>
-              </div>
-              <app-button
-                variant="primary"
-                size="sm"
-                [disabled]="!puedeCalcularPreliminar()"
-                (click)="calcularPreliminar()"
-              >
-                {{ calculandoPreliminar() ? 'Calculando...' : 'Calcular preliminar' }}
-              </app-button>
-            </div>
-
-            @if (calculo(); as calc) {
-              <dl class="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-6 text-sm">
-                <div>
-                  <dt class="text-gray-500">Calculados</dt>
-                  <dd class="font-semibold text-gray-900">{{ calc.resumen.totalTrabajadoresCalculados }}</dd>
-                </div>
-                <div>
-                  <dt class="text-gray-500">Bloqueados</dt>
-                  <dd class="font-semibold text-gray-900">{{ calc.resumen.totalBloqueados }}</dd>
-                </div>
-                <div>
-                  <dt class="text-gray-500">Advertencias</dt>
-                  <dd class="font-semibold text-gray-900">{{ calc.resumen.totalConAdvertencias }}</dd>
-                </div>
-                <div>
-                  <dt class="text-gray-500">Haberes</dt>
-                  <dd class="font-semibold text-gray-900">{{ calc.resumen.totalHaberes | number: '1.0-0' }}</dd>
-                </div>
-                <div>
-                  <dt class="text-gray-500">Descuentos</dt>
-                  <dd class="font-semibold text-gray-900">{{ calc.resumen.totalDescuentos | number: '1.0-0' }}</dd>
-                </div>
-                <div>
-                  <dt class="text-gray-500">Liquido preliminar</dt>
-                  <dd class="font-semibold text-gray-900">{{ calc.resumen.totalLiquidoPreliminar | number: '1.0-0' }}</dd>
-                </div>
-              </dl>
-
-              <div class="mt-4 overflow-x-auto">
-                <table class="min-w-full divide-y divide-slate-200 text-sm">
-                  <thead class="bg-slate-50 text-left text-xs font-medium uppercase text-slate-500">
-                    <tr>
-                      <th class="px-3 py-2">Trabajador</th>
-                      <th class="px-3 py-2 text-right">Haberes</th>
-                      <th class="px-3 py-2 text-right">Descuentos</th>
-                      <th class="px-3 py-2 text-right">Gratificacion</th>
-                      <th class="px-3 py-2 text-right">Base imponible</th>
-                      <th class="px-3 py-2 text-right">Base tributable</th>
-                      <th class="px-3 py-2 text-right">Impuesto unico</th>
-                      <th class="px-3 py-2 text-right">Liquido</th>
-                      <th class="px-3 py-2">Estado</th>
-                      <th class="px-3 py-2">Issues</th>
-                    </tr>
-                  </thead>
-                  <tbody class="divide-y divide-slate-100">
-                    @for (liq of calc.liquidaciones; track liq.idPersona) {
-                      <tr>
-                        <td class="px-3 py-2 text-gray-900">{{ liq.nombreCompleto }}</td>
-                        <td class="px-3 py-2 text-right">{{ liq.totalHaberes | number: '1.0-0' }}</td>
-                        <td class="px-3 py-2 text-right">{{ liq.totalDescuentos | number: '1.0-0' }}</td>
-                        <td class="px-3 py-2 text-right">{{ liq.gratificacionLegal | number: '1.0-0' }}</td>
-                        <td class="px-3 py-2 text-right">{{ liq.baseImponiblePrevisional | number: '1.0-0' }}</td>
-                        <td class="px-3 py-2 text-right">{{ liq.baseTributable | number: '1.0-0' }}</td>
-                        <td class="px-3 py-2 text-right">{{ liq.impuestoUnico | number: '1.0-0' }}</td>
-                        <td class="px-3 py-2 text-right font-medium text-gray-900">{{ liq.liquidoAPago | number: '1.0-0' }}</td>
-                        <td class="px-3 py-2">{{ liq.estado }}</td>
-                        <td class="px-3 py-2 text-xs text-gray-600">
-                          @if (liq.issues.length) {
-                            @for (issue of liq.issues; track issue.codigo) {
-                              <span>{{ issue.codigo }}</span>@if (!$last) {<span>; </span>}
-                            }
-                          } @else {
-                            <span>Sin issues</span>
-                          }
-                        </td>
-                      </tr>
-                    }
-                  </tbody>
-                </table>
-              </div>
-            } @else {
-              <p class="mt-3 text-sm text-gray-600">
-                Genere la pre-nomina del periodo para habilitar el calculo preliminar.
-              </p>
-            }
-          </div>
-
-          <div class="rounded-lg border border-slate-200 bg-white p-4">
-            <div class="flex flex-wrap items-center justify-between gap-3">
-              <div>
-                <h3 class="font-semibold text-gray-900">Snapshot preliminar</h3>
-                <p class="mt-1 text-sm text-gray-600">
-                  Guarda el calculo preliminar para revision. Esto no cierra el periodo ni genera liquidacion oficial.
-                </p>
-              </div>
-              <div class="flex flex-wrap items-center gap-2">
-                <app-button
-                  variant="outline"
-                  size="sm"
-                  [disabled]="consultandoSnapshot()"
-                  (click)="verSnapshotActivo()"
-                >
-                  {{ consultandoSnapshot() ? 'Consultando...' : 'Ver snapshot activo' }}
-                </app-button>
-                <app-button
-                  variant="outline"
-                  size="sm"
-                  [disabled]="!puedeGuardarSnapshot()"
-                  (click)="recalcularYReemplazarSnapshot()"
-                >
-                  Recalcular y reemplazar
-                </app-button>
-                <app-button
-                  variant="primary"
-                  size="sm"
-                  [disabled]="!puedeGuardarSnapshot()"
-                  (click)="guardarSnapshotPreliminar()"
-                >
-                  {{ guardandoSnapshot() ? 'Guardando...' : 'Guardar snapshot preliminar' }}
-                </app-button>
-              </div>
-            </div>
-
-            @if (snapshotActivo(); as snapshot) {
-              <dl class="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-5 text-sm">
-                <div>
-                  <dt class="text-gray-500">Estado</dt>
-                  <dd class="font-semibold text-gray-900">{{ snapshot.estado }}</dd>
-                </div>
-                <div>
-                  <dt class="text-gray-500">Trabajadores</dt>
-                  <dd class="font-semibold text-gray-900">{{ snapshot.totalTrabajadores }}</dd>
-                </div>
-                <div>
-                  <dt class="text-gray-500">Liquido snapshot</dt>
-                  <dd class="font-semibold text-gray-900">{{ snapshot.totalLiquido | number: '1.0-0' }}</dd>
-                </div>
-                <div>
-                  <dt class="text-gray-500">Version motor</dt>
-                  <dd class="font-semibold text-gray-900">{{ snapshot.versionMotor }}</dd>
-                </div>
-                <div>
-                  <dt class="text-gray-500">Hash</dt>
-                  <dd class="font-semibold text-gray-900">{{ snapshot.hashSnapshot || 'sin hash' }}</dd>
-                </div>
-              </dl>
-              <p class="mt-3 text-xs text-gray-500">
-                Snapshot preliminar guardado. No es liquidacion oficial, no genera PDF, Previred ni LRE.
-              </p>
-            } @else {
-              <p class="mt-3 text-sm text-gray-600">
-                No hay snapshot activo cargado para el periodo seleccionado.
-              </p>
-            }
-          </div>
-
-          <div class="grid gap-4 md:grid-cols-2">
-            <div class="rounded-lg border border-slate-200 p-4">
-              <h4 class="text-sm font-semibold text-gray-900">Bloqueos</h4>
-              @if (resultado()?.bloqueos?.length) {
-                <ul class="mt-2 list-inside list-disc space-y-1 text-sm text-red-800">
-                  @for (b of resultado()!.bloqueos; track b.codigo) {
-                    <li>{{ b.texto }}</li>
-                  }
-                </ul>
-              } @else {
-                <p class="mt-2 text-sm text-gray-600">Sin bloqueos en la ultima evaluacion.</p>
-              }
-            </div>
-            <div class="rounded-lg border border-slate-200 p-4">
-              <h4 class="text-sm font-semibold text-gray-900">Advertencias</h4>
-              @if (resultado()?.advertencias?.length) {
-                <ul class="mt-2 list-inside list-disc space-y-1 text-sm text-yellow-900">
-                  @for (a of resultado()!.advertencias; track a.codigo) {
-                    <li>{{ a.texto }}</li>
-                  }
-                </ul>
-              } @else {
-                <p class="mt-2 text-sm text-gray-600">Sin advertencias en la ultima evaluacion.</p>
-              }
-            </div>
-          </div>
-
-          @if (resultado()?.informaciones?.length) {
-            <div class="rounded-lg border border-slate-100 bg-slate-50 p-4">
-              <h4 class="text-sm font-semibold text-gray-800">Pendientes / informativo</h4>
-              <ul class="mt-2 list-inside list-disc space-y-1 text-sm text-gray-700">
-                @for (i of resultado()!.informaciones; track i.codigo) {
-                  <li>{{ i.texto }}</li>
+    <app-card>
+      <app-card-content className="p-4">
+        <h2 class="text-sm font-semibold text-gray-900">Bloqueos y advertencias</h2>
+        <div class="mt-3 space-y-4">
+          <section>
+            <h3 class="text-xs font-semibold uppercase text-red-700">Bloqueos que impiden calcular</h3>
+            @if (resultado()?.bloqueos?.length) {
+              <ul class="mt-2 space-y-2 text-sm text-red-800">
+                @for (b of resultado()!.bloqueos; track b.codigo) {
+                  <li>
+                    <p>{{ b.texto }}</p>
+                    <p class="text-xs text-red-600">{{ referenciaTecnica(b) }}</p>
+                  </li>
                 }
               </ul>
-            </div>
+            } @else {
+              <p class="mt-2 text-sm text-gray-600">Sin bloqueos en la ultima evaluacion.</p>
+            }
+          </section>
+
+          <section>
+            <h3 class="text-xs font-semibold uppercase text-yellow-700">Advertencias del periodo</h3>
+            @if (resultado()?.advertencias?.length) {
+              <ul class="mt-2 space-y-2 text-sm text-yellow-900">
+                @for (a of resultado()!.advertencias; track a.codigo) {
+                  <li>
+                    <p>{{ a.texto }}</p>
+                    <p class="text-xs text-yellow-700">{{ referenciaTecnica(a) }}</p>
+                  </li>
+                }
+              </ul>
+            } @else {
+              <p class="mt-2 text-sm text-gray-600">Sin advertencias en la ultima evaluacion.</p>
+            }
+          </section>
+
+          @if (resultado()?.informaciones?.length) {
+            <section>
+              <h3 class="text-xs font-semibold uppercase text-slate-700">Informacion y pendientes de integracion</h3>
+              <ul class="mt-2 space-y-2 text-sm text-gray-700">
+                @for (i of resultado()!.informaciones; track i.codigo) {
+                  <li>
+                    <p>{{ i.texto }}</p>
+                    <p class="text-xs text-gray-500">{{ referenciaTecnica(i) }}</p>
+                  </li>
+                }
+              </ul>
+            </section>
           }
-
-          <div class="rounded-lg border border-slate-200 p-4">
-            <h4 class="text-sm font-semibold text-gray-900">Areas</h4>
-            <dl class="mt-3 space-y-2 text-sm">
-              @for (it of resultado()?.items ?? []; track it.area) {
-                <div class="flex flex-wrap justify-between gap-2 border-b border-slate-100 pb-2 last:border-0">
-                  <dt class="text-gray-800">{{ it.etiqueta }}</dt>
-                  <dd class="text-gray-600">
-                    {{ it.estado }}
-                    @if (it.detalle) {
-                      <span class="text-gray-500"> — {{ it.detalle }}</span>
-                    }
-                  </dd>
-                </div>
-              }
-              @if (!resultado()) {
-                <p class="text-gray-600">Ejecute &quot;Validar periodo&quot; para ver Parametros, Trabajadores, Conceptos, Haberes recurrentes, Movimientos variables y Liquidaciones futuras.</p>
-              }
-            </dl>
-          </div>
         </div>
-      } @else if (currentStep() === 2) {
-        <div class="space-y-6 text-center py-8">
-          <div class="w-20 h-20 bg-slate-100 rounded-full flex items-center justify-center mx-auto">
-            <lucide-icon class="w-10 h-10 text-slate-500" name="calculator"></lucide-icon>
-          </div>
-          <h3 class="text-lg font-semibold text-gray-900">Calculo masivo</h3>
-          <p class="text-gray-600 max-w-lg mx-auto">
-            Este modulo no ejecuta calculo de remuneraciones ni totales de nomina. Cuando exista motor y
-            parametros validados por periodo, aqui se mostrara el estado del proceso.
+      </app-card-content>
+    </app-card>
+  </section>
+
+  <app-card>
+    <app-card-content className="p-4">
+      <div class="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h2 id="base-nomina" class="text-sm font-semibold text-gray-900">Base de nomina</h2>
+          <p class="mt-1 text-sm text-gray-600">
+            Consolida trabajadores aptos, asignaciones recurrentes aplicables y movimientos del mes aprobados.
           </p>
-          <app-button variant="outline" size="lg" [disabled]="true">Calculo no disponible</app-button>
         </div>
-      } @else if (currentStep() === 3) {
-        <div class="space-y-6">
-          <div class="text-center mb-6">
-            <h3 class="text-lg font-semibold text-gray-900">Exportaciones (Previred, banco, LRE)</h3>
-            <p class="text-gray-600 mt-1">
-              Las descargas reales dependen de liquidaciones y parametros oficiales. Aqui no se generan archivos ni
-              montos.
-            </p>
-          </div>
-
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <app-card className="border border-purple-100">
-              <app-card-content className="p-6">
-                <div class="flex flex-col items-center text-center">
-                  <div class="w-16 h-16 bg-purple-50 rounded-full flex items-center justify-center mb-4">
-                    <lucide-icon class="w-8 h-8 text-purple-600" name="upload"></lucide-icon>
-                  </div>
-                  <h4 class="font-semibold text-gray-900 mb-2">Previred</h4>
-                  <p class="text-sm text-gray-600 mb-4">Pendiente integracion con liquidaciones cerradas.</p>
-                  <app-button variant="outline" className="w-full" [disabled]="true">No disponible</app-button>
-                </div>
-              </app-card-content>
-            </app-card>
-
-            <app-card className="border border-green-100">
-              <app-card-content className="p-6">
-                <div class="flex flex-col items-center text-center">
-                  <div class="w-16 h-16 bg-green-50 rounded-full flex items-center justify-center mb-4">
-                    <lucide-icon class="w-8 h-8 text-green-600" name="file-spreadsheet"></lucide-icon>
-                  </div>
-                  <h4 class="font-semibold text-gray-900 mb-2">Carga bancaria</h4>
-                  <p class="text-sm text-gray-600 mb-4">Pendiente integracion con liquidaciones y bancos.</p>
-                  <app-button variant="outline" className="w-full" [disabled]="true">No disponible</app-button>
-                </div>
-              </app-card-content>
-            </app-card>
-
-            <app-card className="border border-blue-100">
-              <app-card-content className="p-6">
-                <div class="flex flex-col items-center text-center">
-                  <div class="w-16 h-16 bg-blue-50 rounded-full flex items-center justify-center mb-4">
-                    <lucide-icon class="w-8 h-8 text-blue-600" name="file-text"></lucide-icon>
-                  </div>
-                  <h4 class="font-semibold text-gray-900 mb-2">Libro de remuneraciones (LRE)</h4>
-                  <p class="text-sm text-gray-600 mb-4">Pendiente generacion desde motor y snapshots.</p>
-                  <app-button variant="outline" className="w-full" [disabled]="true">No disponible</app-button>
-                </div>
-              </app-card-content>
-            </app-card>
-          </div>
-
-          <app-card className="bg-gray-50">
-            <app-card-content>
-              <div class="flex items-start gap-3">
-                <lucide-icon class="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" name="alert-circle"></lucide-icon>
-                <div class="text-sm text-gray-700">
-                  <p class="font-medium text-gray-900 mb-2">Recordatorios</p>
-                  <ul class="space-y-1 list-disc list-inside">
-                    <li>Plazos y formatos oficiales se aplican cuando el producto este integrado.</li>
-                    <li>No use esta pantalla como calendario de vencimientos hasta tener fuentes validadas.</li>
-                  </ul>
-                </div>
-              </div>
-            </app-card-content>
-          </app-card>
+        <div class="flex flex-wrap items-center gap-2">
+          @if (preNomina(); as pn) {
+            <app-badge [variant]="badgeVariantPreNomina(pn.estado)">{{ etiquetaEstadoPreNomina(pn.estado) }}</app-badge>
+          } @else {
+            <app-badge variant="default">{{ etiquetaEstadoPreNomina(null) }}</app-badge>
+          }
+          <app-button variant="primary" size="sm" [disabled]="!puedeGenerarPreNomina()" (click)="generarPreNomina()">
+            {{ generandoPreNomina() ? 'Generando...' : 'Generar base de nomina' }}
+          </app-button>
         </div>
-      } @else {
-        <div class="space-y-6">
-          <div class="text-center py-12">
-            <div class="w-20 h-20 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-4">
-              <lucide-icon class="w-10 h-10 text-blue-600" name="lock"></lucide-icon>
-            </div>
-            <h3 class="text-lg font-semibold text-gray-900">Cierre de periodo {{ periodoActivo.etiqueta() }}</h3>
-            <p class="text-gray-600 mt-2">
-              El cierre real bloqueara ediciones cuando exista proceso mensual productivo y estado de periodo en
-              base de datos.
-            </p>
+      </div>
 
-            <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 max-w-md mx-auto mt-6">
-              <div class="flex gap-3">
-                <lucide-icon class="w-5 h-5 text-yellow-600 flex-shrink-0 mt-0.5" name="alert-circle"></lucide-icon>
-                <div class="text-sm text-gray-700 text-left">
-                  <p class="font-medium text-yellow-900 mb-2">Antes de un cierre real, verifique en otros modulos:</p>
-                  <ul class="space-y-1 list-disc list-inside text-yellow-800">
-                    <li>Liquidaciones generadas y auditadas</li>
-                    <li>Archivos de cotizacion y pago segun procedimiento interno</li>
-                    <li>Parametros del periodo cargados en Parametros</li>
-                  </ul>
+      @if (preNomina(); as pn) {
+        @if (baseNominaTrazabilidad(); as base) {
+          <section class="mt-4">
+            <h3 class="text-xs font-semibold uppercase text-slate-600">Resumen de base</h3>
+            <dl class="mt-2 grid gap-3 sm:grid-cols-2 lg:grid-cols-6 text-sm">
+              <div class="rounded-md border border-slate-200 bg-white p-3">
+                <dt class="text-gray-500">Trabajadores considerados</dt>
+                <dd class="mt-1 text-lg font-semibold text-gray-900">{{ base.trabajadoresConsiderados }}</dd>
+              </div>
+              <div class="rounded-md border border-slate-200 bg-white p-3">
+                <dt class="text-gray-500">Listos para calculo</dt>
+                <dd class="mt-1 text-lg font-semibold text-gray-900">{{ base.listosParaCalculo }}</dd>
+              </div>
+              <div class="rounded-md border border-slate-200 bg-white p-3">
+                <dt class="text-gray-500">Con observaciones</dt>
+                <dd class="mt-1 text-lg font-semibold text-gray-900">{{ base.conObservaciones }}</dd>
+              </div>
+              <div class="rounded-md border border-slate-200 bg-white p-3">
+                <dt class="text-gray-500">Bloqueados</dt>
+                <dd class="mt-1 text-lg font-semibold text-gray-900">{{ base.bloqueados }}</dd>
+              </div>
+              <div class="rounded-md border border-slate-200 bg-white p-3">
+                <dt class="text-gray-500">Asignaciones recurrentes incluidas</dt>
+                <dd class="mt-1 text-lg font-semibold text-gray-900">{{ base.asignacionesRecurrentesIncluidas }}</dd>
+              </div>
+              <div class="rounded-md border border-slate-200 bg-white p-3">
+                <dt class="text-gray-500">Movimientos del mes incluidos</dt>
+                <dd class="mt-1 text-lg font-semibold text-gray-900">{{ base.movimientosDelMesIncluidos }}</dd>
+              </div>
+            </dl>
+
+            <p class="mt-3 text-sm text-gray-700">
+              @if (base.bloqueados > 0) {
+                La base tiene trabajadores bloqueados que requieren revision antes del calculo.
+              } @else if (base.conObservaciones > 0) {
+                La base tiene observaciones operativas, pero puede continuar si RRHH las revisa.
+              } @else {
+                La base no presenta observaciones para los trabajadores considerados.
+              }
+            </p>
+          </section>
+
+          <section class="mt-5">
+            <h3 class="text-xs font-semibold uppercase text-slate-600">Trabajadores incluidos</h3>
+            <div class="mt-2 overflow-x-auto">
+              <table class="min-w-full divide-y divide-slate-200 text-sm">
+                <thead class="bg-slate-50 text-left text-xs font-medium uppercase text-slate-500">
+                  <tr>
+                    <th class="px-3 py-2">Trabajador</th>
+                    <th class="px-3 py-2">Estado</th>
+                    <th class="px-3 py-2">Contrato</th>
+                    <th class="px-3 py-2 text-right">Asignaciones recurrentes</th>
+                    <th class="px-3 py-2 text-right">Movimientos del mes</th>
+                    <th class="px-3 py-2">Observaciones</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100">
+                  @for (trabajador of base.trabajadores; track trabajador.idPersona) {
+                    <tr>
+                      <td class="px-3 py-2">
+                        <p class="font-medium text-gray-900">{{ trabajador.trabajadorLabel }}</p>
+                        <p class="text-xs text-gray-500">{{ trabajador.rutLabel }}</p>
+                      </td>
+                      <td class="px-3 py-2">
+                        <app-badge [variant]="badgeVariantEstadoBaseTrabajador(trabajador.estado)" size="sm">
+                          {{ etiquetaEstadoBaseTrabajador(trabajador.estado) }}
+                        </app-badge>
+                      </td>
+                      <td class="px-3 py-2 text-gray-700">{{ trabajador.contratoLabel }}</td>
+                      <td class="px-3 py-2 text-right text-gray-900">{{ trabajador.asignacionesRecurrentes }}</td>
+                      <td class="px-3 py-2 text-right text-gray-900">{{ trabajador.movimientosDelMes }}</td>
+                      <td class="px-3 py-2 text-gray-700">{{ trabajador.observacion }}</td>
+                    </tr>
+                  } @empty {
+                    <tr>
+                      <td class="px-3 py-3 text-gray-600" colspan="6">
+                        No hay trabajadores considerados en la base del periodo.
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          </section>
+
+          <section class="mt-5">
+            <h3 class="text-xs font-semibold uppercase text-slate-600">Entradas consideradas</h3>
+            <div class="mt-2 grid gap-3 md:grid-cols-3">
+              <div class="rounded-md border border-slate-200 bg-white p-3 text-sm">
+                <p class="font-medium text-gray-900">Asignaciones recurrentes</p>
+                <p class="mt-1 text-2xl font-semibold text-gray-900">{{ base.asignacionesRecurrentesIncluidas }}</p>
+                <p class="mt-1 text-xs text-gray-500">Incluidas desde asignaciones vigentes del periodo.</p>
+                <a routerLink="/remuneraciones/haberes-descuentos" class="mt-2 inline-block text-xs font-medium text-blue-700 underline">
+                  Revisar asignaciones recurrentes
+                </a>
+              </div>
+              <div class="rounded-md border border-slate-200 bg-white p-3 text-sm">
+                <p class="font-medium text-gray-900">Movimientos del mes</p>
+                <p class="mt-1 text-2xl font-semibold text-gray-900">{{ base.movimientosDelMesIncluidos }}</p>
+                <p class="mt-1 text-xs text-gray-500">Movimientos aprobados incluidos en la base.</p>
+                <a routerLink="/remuneraciones/novedades-mensuales" class="mt-2 inline-block text-xs font-medium text-blue-700 underline">
+                  Revisar movimientos del mes
+                </a>
+              </div>
+              <div class="rounded-md border border-slate-200 bg-white p-3 text-sm">
+                <div class="flex items-center justify-between gap-2">
+                  <p class="font-medium text-gray-900">Parametros del periodo</p>
+                  <app-badge [variant]="badgeVariantParametrosBase(base.parametrosEstado)" size="sm">
+                    {{ etiquetaParametrosBase(base.parametrosEstado) }}
+                  </app-badge>
                 </div>
+                <p class="mt-2 text-xs text-gray-600">{{ base.observacionParametros }}</p>
+                <a routerLink="/parametros" class="mt-2 inline-block text-xs font-medium text-blue-700 underline">
+                  Revisar parametros
+                </a>
               </div>
             </div>
+          </section>
 
-            <app-button variant="primary" size="lg" className="mt-8" [disabled]="true">
-              Cierre no disponible en esta version
+          <section class="mt-5 flex flex-wrap items-center gap-2">
+            <app-button variant="outline" size="sm" [disabled]="!puedeGenerarPreNomina()" (click)="generarPreNomina()">
+              Actualizar base de nomina
             </app-button>
-          </div>
-        </div>
+            <a routerLink="/remuneraciones/novedades-mensuales" class="text-sm font-medium text-blue-700 underline">
+              Revisar movimientos del mes
+            </a>
+            <a routerLink="/remuneraciones/haberes-descuentos" class="text-sm font-medium text-blue-700 underline">
+              Revisar asignaciones recurrentes
+            </a>
+          </section>
+        } @else {
+          <dl class="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4 text-sm">
+            <div>
+              <dt class="text-gray-500">Trabajadores considerados</dt>
+              <dd class="font-semibold text-gray-900">{{ pn.trabajadoresIncluidos }}</dd>
+            </div>
+            <div>
+              <dt class="text-gray-500">Asignaciones recurrentes incluidas</dt>
+              <dd class="font-semibold text-gray-900">{{ pn.recurrentesIncluidos }}</dd>
+            </div>
+            <div>
+              <dt class="text-gray-500">Movimientos del mes incluidos</dt>
+              <dd class="font-semibold text-gray-900">
+                {{ pn.entradasMensualesAptas ?? pn.movimientosVariablesValidados }}
+              </dd>
+            </div>
+            <div>
+              <dt class="text-gray-500">Movimientos del mes por revisar</dt>
+              <dd class="font-semibold text-gray-900">
+                {{ pn.entradasMensualesPendientesRevision ?? pn.movimientosVariablesBorrador }}
+              </dd>
+            </div>
+          </dl>
+        }
+      } @else {
+        <p class="mt-3 text-sm text-gray-600">
+          Aun no se ha generado la base de nomina para este periodo. Valida el periodo y genera la base para revisar los
+          trabajadores y entradas consideradas.
+        </p>
       }
     </app-card-content>
   </app-card>
 
-  <div class="flex items-center justify-between">
-    <app-button variant="outline" [disabled]="currentStep() === 1" (click)="prevStep()">Anterior</app-button>
-    <div class="text-sm text-gray-600">Paso {{ currentStep() }} de {{ steps.length }}</div>
-    <app-button variant="primary" [disabled]="currentStep() === 4" (click)="nextStep()">Siguiente</app-button>
+  <app-card>
+    <app-card-content className="p-4">
+      @if (validacionCalculo(); as validacion) {
+        <section class="mb-5 rounded-md border border-slate-200 bg-slate-50 p-3">
+          <div class="flex flex-wrap items-start justify-between gap-3">
+            <div>
+              <h2 class="text-sm font-semibold text-gray-900">Estado para calculo preliminar</h2>
+              <p class="mt-1 text-sm text-gray-700">
+                @if (validacion.estado === 'bloqueado') {
+                  Hay {{ validacion.bloqueos.length }} bloqueo(s) que debes resolver antes de calcular.
+                } @else if (validacion.estado === 'advertencias') {
+                  Puedes calcular preliminarmente con {{ validacion.advertencias.length }} advertencia(s) no bloqueante(s).
+                } @else if (validacion.estado === 'listo') {
+                  La base de nomina esta lista para calcular preliminarmente.
+                } @else {
+                  Valida el periodo y genera la base de nomina antes de calcular.
+                }
+              </p>
+            </div>
+            <app-badge [variant]="badgeVariantValidacionCalculo(validacion.estado)">
+              {{ validacion.estadoLabel }}
+            </app-badge>
+          </div>
+
+          @if (validacion.razonDeshabilitado) {
+            <div class="mt-3 rounded-md border border-red-200 bg-white px-3 py-2 text-sm text-red-800">
+              <p class="font-medium">No puedes calcular todavia.</p>
+              <p class="mt-0.5">{{ validacion.razonDeshabilitado }}</p>
+            </div>
+          }
+
+          <div class="mt-4 grid gap-3 lg:grid-cols-3">
+            <section>
+              <h3 class="text-xs font-semibold uppercase text-red-700">Bloqueos</h3>
+              @if (validacion.bloqueos.length) {
+                <ul class="mt-2 space-y-2">
+                  @for (item of validacion.bloqueos; track item.codigo) {
+                    <li class="rounded-md border border-red-100 bg-white p-3 text-sm">
+                      <p class="font-medium text-gray-900">{{ item.titulo }}</p>
+                      <p class="mt-1 text-gray-700">{{ item.descripcion }}</p>
+                      @if (item.ruta || item.accionLocal) {
+                        <div class="mt-2">
+                          @if (item.ruta) {
+                            <a [routerLink]="item.ruta" class="text-xs font-medium text-blue-700 underline">
+                              {{ item.accionLabel }}
+                            </a>
+                          } @else if (item.accionLocal) {
+                            <button
+                              type="button"
+                              class="text-xs font-medium text-blue-700 underline"
+                              (click)="ejecutarAccionValidacion(item.accionLocal)"
+                            >
+                              {{ item.accionLabel }}
+                            </button>
+                          }
+                        </div>
+                      }
+                    </li>
+                  }
+                </ul>
+              } @else {
+                <p class="mt-2 text-sm text-gray-600">Sin bloqueos para el calculo preliminar.</p>
+              }
+            </section>
+
+            <section>
+              <h3 class="text-xs font-semibold uppercase text-yellow-700">Advertencias</h3>
+              @if (validacion.advertencias.length) {
+                <ul class="mt-2 space-y-2">
+                  @for (item of validacion.advertencias; track item.codigo) {
+                    <li class="rounded-md border border-yellow-100 bg-white p-3 text-sm">
+                      <p class="font-medium text-gray-900">{{ item.titulo }}</p>
+                      <p class="mt-1 text-gray-700">{{ item.descripcion }}</p>
+                      <p class="mt-1 text-xs text-yellow-800">No bloquea el calculo preliminar.</p>
+                      @if (item.ruta) {
+                        <a [routerLink]="item.ruta" class="mt-2 inline-block text-xs font-medium text-blue-700 underline">
+                          {{ item.accionLabel }}
+                        </a>
+                      }
+                    </li>
+                  }
+                </ul>
+              } @else {
+                <p class="mt-2 text-sm text-gray-600">Sin advertencias operativas.</p>
+              }
+            </section>
+
+            <section>
+              <h3 class="text-xs font-semibold uppercase text-slate-700">Informacion</h3>
+              @if (validacion.informaciones.length) {
+                <ul class="mt-2 space-y-2">
+                  @for (item of validacion.informaciones; track item.codigo) {
+                    <li class="rounded-md border border-slate-100 bg-white p-3 text-sm">
+                      <p class="font-medium text-gray-900">{{ item.titulo }}</p>
+                      <p class="mt-1 text-gray-700">{{ item.descripcion }}</p>
+                    </li>
+                  }
+                </ul>
+              } @else {
+                <p class="mt-2 text-sm text-gray-600">Sin informacion adicional despues de la ultima validacion.</p>
+              }
+            </section>
+          </div>
+        </section>
+      }
+
+      <div class="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h2 class="text-sm font-semibold text-gray-900">Resultado preliminar</h2>
+          <p class="mt-1 text-sm text-gray-600">
+            Revision del calculo por trabajador antes de guardar. No emite liquidaciones ni cierra el periodo.
+          </p>
+        </div>
+        <div class="flex flex-wrap items-center gap-2">
+          @if (resultadoPreliminar(); as resultado) {
+            <app-badge [variant]="badgeVariantResultadoPreliminar(resultado.estado)">
+              {{ resultado.estadoLabel }}
+            </app-badge>
+          }
+          <app-button variant="primary" size="sm" [disabled]="!puedeCalcularPreliminar()" (click)="calcularPreliminar()">
+            {{ calculandoPreliminar() ? 'Calculando...' : (calculo() ? 'Recalcular preliminar' : 'Calcular preliminar') }}
+          </app-button>
+        </div>
+      </div>
+
+      @if (resultadoPreliminar(); as resultado) {
+        @if (resultado.estado === 'sin_resultado') {
+          <div class="mt-4 rounded-md border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-gray-700">
+            <p class="font-medium text-gray-900">Aun no hay resultado preliminar.</p>
+            <p class="mt-1">{{ resultado.descripcionEstado }}</p>
+            <p class="mt-2 text-gray-600">No puedes guardar todavia. Primero calcula preliminarmente la nomina.</p>
+          </div>
+        } @else {
+          <p class="mt-4 text-sm text-gray-700">
+            {{ resultado.descripcionEstado }}
+          </p>
+          @if (resultado.estado === 'actualizado_sin_guardar') {
+            <p class="mt-2 rounded-md border border-yellow-200 bg-yellow-50 px-3 py-2 text-sm text-yellow-900">
+              El resultado actual fue recalculado despues del ultimo guardado. Puedes revisar las diferencias operativas
+              disponibles y guardar una nueva version preliminar.
+            </p>
+          }
+          @if (errorGuardadoResultado()) {
+            <p class="mt-2 rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800">
+              No se pudo guardar el resultado preliminar. Intenta nuevamente o revisa las observaciones del resultado.
+              {{ errorGuardadoResultado() }}
+            </p>
+          }
+          @if (exitoGuardadoResultado()) {
+            <p class="mt-2 rounded-md border border-green-200 bg-green-50 px-3 py-2 text-sm text-green-800">
+              {{ exitoGuardadoResultado() }}
+            </p>
+          }
+
+          <dl class="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-6 text-sm">
+            <div class="rounded-md border border-slate-200 bg-white p-3">
+              <dt class="text-gray-500">Trabajadores calculados</dt>
+              <dd class="mt-1 text-lg font-semibold text-gray-900">{{ resultado.resumen.trabajadoresCalculados }}</dd>
+            </div>
+            <div class="rounded-md border border-slate-200 bg-white p-3">
+              <dt class="text-gray-500">Trabajadores con observaciones</dt>
+              <dd class="mt-1 text-lg font-semibold text-gray-900">{{ resultado.resumen.trabajadoresConObservaciones }}</dd>
+            </div>
+            <div class="rounded-md border border-slate-200 bg-white p-3">
+              <dt class="text-gray-500">Trabajadores omitidos</dt>
+              <dd class="mt-1 text-lg font-semibold text-gray-900">{{ resultado.resumen.trabajadoresOmitidos }}</dd>
+            </div>
+            <div class="rounded-md border border-slate-200 bg-white p-3">
+              <dt class="text-gray-500">Total haberes</dt>
+              <dd class="mt-1 text-sm font-semibold text-gray-900">
+                {{ resultado.resumen.totalHaberes == null ? 'No disponible' : (resultado.resumen.totalHaberes | currency: 'CLP':'symbol-narrow':'1.0-0') }}
+              </dd>
+            </div>
+            <div class="rounded-md border border-slate-200 bg-white p-3">
+              <dt class="text-gray-500">Total descuentos</dt>
+              <dd class="mt-1 text-sm font-semibold text-gray-900">
+                {{ resultado.resumen.totalDescuentos == null ? 'No disponible' : (resultado.resumen.totalDescuentos | currency: 'CLP':'symbol-narrow':'1.0-0') }}
+              </dd>
+            </div>
+            <div class="rounded-md border border-slate-200 bg-white p-3">
+              <dt class="text-gray-500">Liquido preliminar</dt>
+              <dd class="mt-1 text-sm font-semibold text-gray-900">
+                {{ resultado.resumen.totalLiquido == null ? 'No disponible' : (resultado.resumen.totalLiquido | currency: 'CLP':'symbol-narrow':'1.0-0') }}
+              </dd>
+            </div>
+          </dl>
+          @if (resultado.resumen.totalCostoEmpresa != null) {
+            <p class="mt-2 text-sm text-gray-700">
+              <span class="font-medium">Costo empresa preliminar:</span>
+              {{ resultado.resumen.totalCostoEmpresa | currency: 'CLP':'symbol-narrow':'1.0-0' }}
+            </p>
+          }
+
+          <section class="mt-5">
+            <h3 class="text-xs font-semibold uppercase text-slate-600">Trabajadores del resultado</h3>
+            <div class="mt-2 overflow-x-auto">
+              <table class="min-w-full divide-y divide-slate-200 text-sm">
+                <thead class="bg-slate-50 text-left text-xs font-medium uppercase text-slate-500">
+                  <tr>
+                    <th class="px-3 py-2">Trabajador</th>
+                    <th class="px-3 py-2">Estado</th>
+                    <th class="px-3 py-2 text-right">Haberes</th>
+                    <th class="px-3 py-2 text-right">Descuentos</th>
+                    <th class="px-3 py-2 text-right">Liquido preliminar</th>
+                    <th class="px-3 py-2">Observaciones</th>
+                    <th class="px-3 py-2">Accion</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100">
+                  @for (trabajador of resultado.trabajadores; track trabajador.idPersona) {
+                    <tr>
+                      <td class="px-3 py-2">
+                        <p class="font-medium text-gray-900">{{ trabajador.trabajadorLabel }}</p>
+                        <p class="text-xs text-gray-500">{{ trabajador.rutLabel }}</p>
+                      </td>
+                      <td class="px-3 py-2">
+                        <app-badge [variant]="badgeVariantEstadoResultadoTrabajador(trabajador.estadoLabel)" size="sm">
+                          {{ trabajador.estadoLabel }}
+                        </app-badge>
+                      </td>
+                      <td class="px-3 py-2 text-right text-gray-900">{{ trabajador.haberesLabel }}</td>
+                      <td class="px-3 py-2 text-right text-gray-900">{{ trabajador.descuentosLabel }}</td>
+                      <td class="px-3 py-2 text-right font-medium text-gray-900">{{ trabajador.liquidoLabel }}</td>
+                      <td class="px-3 py-2 text-gray-700">{{ trabajador.observacionLabel }}</td>
+                      <td class="px-3 py-2">
+                        @if (trabajador.ruta) {
+                          <a [routerLink]="trabajador.ruta" class="text-xs font-medium text-blue-700 underline">
+                            {{ trabajador.accionLabel }}
+                          </a>
+                        } @else if (trabajador.accionLabel) {
+                          <button type="button" class="text-xs font-medium text-blue-700 underline" (click)="revisarBaseNomina()">
+                            {{ trabajador.accionLabel }}
+                          </button>
+                        }
+                      </td>
+                    </tr>
+                  } @empty {
+                    <tr>
+                      <td class="px-3 py-3 text-gray-600" colspan="7">
+                        No hay trabajadores disponibles en el resultado preliminar.
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          </section>
+
+          <section class="mt-5">
+            <h3 class="text-xs font-semibold uppercase text-slate-600">Observaciones del resultado</h3>
+            <div class="mt-2 grid gap-3 lg:grid-cols-3">
+              <div>
+                <h4 class="text-xs font-semibold uppercase text-red-700">Bloqueos del resultado</h4>
+                @if (resultado.bloqueos.length) {
+                  <ul class="mt-2 space-y-2">
+                    @for (item of resultado.bloqueos; track item.codigo) {
+                      <li class="rounded-md border border-red-100 bg-white p-3 text-sm">
+                        <p class="font-medium text-gray-900">{{ item.titulo }}</p>
+                        <p class="mt-1 text-gray-700">{{ item.descripcion }}</p>
+                        @if (item.ruta) {
+                          <a [routerLink]="item.ruta" class="mt-2 inline-block text-xs font-medium text-blue-700 underline">
+                            {{ item.accionLabel }}
+                          </a>
+                        } @else if (item.accionLabel) {
+                          <button type="button" class="mt-2 text-xs font-medium text-blue-700 underline" (click)="revisarBaseNomina()">
+                            {{ item.accionLabel }}
+                          </button>
+                        }
+                      </li>
+                    }
+                  </ul>
+                } @else {
+                  <p class="mt-2 text-sm text-gray-600">Sin bloqueos del resultado.</p>
+                }
+              </div>
+              <div>
+                <h4 class="text-xs font-semibold uppercase text-yellow-700">Advertencias del resultado</h4>
+                @if (resultado.advertencias.length) {
+                  <ul class="mt-2 space-y-2">
+                    @for (item of resultado.advertencias; track item.codigo) {
+                      <li class="rounded-md border border-yellow-100 bg-white p-3 text-sm">
+                        <p class="font-medium text-gray-900">{{ item.titulo }}</p>
+                        <p class="mt-1 text-gray-700">{{ item.descripcion }}</p>
+                        @if (item.ruta) {
+                          <a [routerLink]="item.ruta" class="mt-2 inline-block text-xs font-medium text-blue-700 underline">
+                            {{ item.accionLabel }}
+                          </a>
+                        }
+                      </li>
+                    }
+                  </ul>
+                } @else {
+                  <p class="mt-2 text-sm text-gray-600">Sin advertencias del resultado.</p>
+                }
+              </div>
+              <div>
+                <h4 class="text-xs font-semibold uppercase text-slate-700">Informacion del resultado</h4>
+                @if (resultado.informaciones.length) {
+                  <ul class="mt-2 space-y-2">
+                    @for (item of resultado.informaciones; track item.codigo) {
+                      <li class="rounded-md border border-slate-100 bg-white p-3 text-sm">
+                        <p class="font-medium text-gray-900">{{ item.titulo }}</p>
+                        <p class="mt-1 text-gray-700">{{ item.descripcion }}</p>
+                      </li>
+                    }
+                  </ul>
+                } @else {
+                  <p class="mt-2 text-sm text-gray-600">Sin informacion adicional del resultado.</p>
+                }
+              </div>
+            </div>
+          </section>
+
+          <section class="mt-5 rounded-md border border-slate-200 bg-slate-50 p-3">
+            <h3 class="text-xs font-semibold uppercase text-slate-600">Detalle tecnico</h3>
+            <dl class="mt-2 grid gap-3 sm:grid-cols-3 text-sm">
+              <div>
+                <dt class="text-gray-500">Version del calculo</dt>
+                <dd class="font-medium text-gray-900">{{ resultado.detalleTecnico.versionCalculo }}</dd>
+              </div>
+              <div>
+                <dt class="text-gray-500">Identificador tecnico</dt>
+                <dd class="font-medium text-gray-900">{{ resultado.detalleTecnico.identificadorTecnico }}</dd>
+              </div>
+              <div>
+                <dt class="text-gray-500">Fecha de generacion</dt>
+                <dd class="font-medium text-gray-900">{{ resultado.detalleTecnico.generadoEn }}</dd>
+              </div>
+            </dl>
+          </section>
+
+          <section class="mt-5 rounded-md border border-blue-100 bg-blue-50 p-3">
+            <div class="flex flex-wrap items-start justify-between gap-3">
+              <div>
+                <h3 class="text-xs font-semibold uppercase text-blue-800">Estado de guardado</h3>
+                <p class="mt-1 text-sm font-medium text-gray-900">{{ resultado.estadoLabel }}</p>
+                <p class="mt-1 text-sm text-gray-700">{{ resultado.descripcionEstado }}</p>
+              </div>
+              <app-badge [variant]="badgeVariantResultadoPreliminar(resultado.estado)" size="sm">
+                {{ resultado.estadoLabel }}
+              </app-badge>
+            </div>
+            <p class="mt-3 text-sm text-gray-700">
+              {{ resultado.acciones.modoGuardadoLabel }}
+            </p>
+            @if (resultado.ultimoGuardado) {
+              <p class="mt-2 text-sm text-gray-700">
+                <span class="font-medium">Ultimo guardado:</span>
+                {{ resultado.ultimoGuardado.fechaGuardadoLabel }} ·
+                {{ resultado.ultimoGuardado.totalLiquidoLabel }}
+              </p>
+            }
+          </section>
+
+          <section class="mt-5">
+            <h3 class="text-xs font-semibold uppercase text-slate-600">Advertencias guardadas con el resultado</h3>
+            @if (resultado.ultimoGuardado) {
+              <p class="mt-2 text-sm text-gray-700">{{ resultado.ultimoGuardado.advertenciasLabel }}</p>
+            } @else if (resultado.advertencias.length) {
+              <p class="mt-2 text-sm text-gray-700">
+                Este resultado tiene {{ resultado.advertencias.length }} advertencia(s) no bloqueante(s). Al guardar,
+                quedaran asociadas al resultado preliminar.
+              </p>
+            } @else {
+              <p class="mt-2 text-sm text-gray-700">Resultado sin advertencias para guardar.</p>
+            }
+          </section>
+
+          <section class="mt-5 flex flex-wrap items-center gap-2">
+            <app-button variant="outline" size="sm" [disabled]="!resultado.acciones.puedeRecalcular" (click)="calcularPreliminar()">
+              Recalcular preliminar
+            </app-button>
+            <app-button variant="outline" size="sm" (click)="revisarBaseNomina()">
+              Revisar base de nomina
+            </app-button>
+            <a routerLink="/remuneraciones/novedades-mensuales" class="text-sm font-medium text-blue-700 underline">
+              Revisar movimientos del mes
+            </a>
+            <a routerLink="/remuneraciones/haberes-descuentos" class="text-sm font-medium text-blue-700 underline">
+              Revisar asignaciones recurrentes
+            </a>
+            <app-button variant="primary" size="sm" [disabled]="!resultado.acciones.puedeGuardarPreliminar" (click)="guardarSnapshotPreliminar()">
+              {{ guardandoSnapshot() ? 'Guardando...' : 'Guardar resultado preliminar' }}
+            </app-button>
+          </section>
+          <p class="mt-2 text-xs text-gray-500">
+            {{ resultado.acciones.helperGuardar }}
+          </p>
+          @if (resultado.acciones.razonNoPuedeGuardar) {
+            <p class="mt-2 text-sm text-gray-600">
+              No puedes guardar todavia. {{ resultado.acciones.razonNoPuedeGuardar }}
+            </p>
+          }
+        }
+      }
+    </app-card-content>
+  </app-card>
+
+  <app-card>
+    <app-card-content className="p-4">
+      <div class="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h2 class="text-sm font-semibold text-gray-900">Ultimo resultado preliminar guardado</h2>
+          <p class="mt-1 text-sm text-gray-600">
+            Conserva una version revisable del calculo. Esto no emite liquidaciones, no cierra el periodo y no genera archivos legales.
+          </p>
+        </div>
+        <div class="flex flex-wrap items-center gap-2">
+          <app-button variant="outline" size="sm" [disabled]="consultandoSnapshot()" (click)="verSnapshotActivo()">
+            {{ consultandoSnapshot() ? 'Consultando...' : 'Consultar ultimo guardado' }}
+          </app-button>
+          <app-button variant="outline" size="sm" [disabled]="!puedeGuardarSnapshot()" (click)="recalcularYReemplazarSnapshot()">
+            Recalcular y reemplazar resultado preliminar
+          </app-button>
+          <app-button variant="primary" size="sm" [disabled]="!puedeGuardarSnapshot()" (click)="guardarSnapshotPreliminar()">
+            {{ guardandoSnapshot() ? 'Guardando...' : 'Guardar resultado preliminar' }}
+          </app-button>
+        </div>
+      </div>
+
+      @if (resultadoPreliminar().ultimoGuardado; as guardado) {
+        <dl class="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-5 text-sm">
+          <div>
+            <dt class="text-gray-500">Estado</dt>
+            <dd class="font-semibold text-gray-900">{{ guardado.estadoLabel }}</dd>
+          </div>
+          <div>
+            <dt class="text-gray-500">Fecha de guardado</dt>
+            <dd class="font-semibold text-gray-900">{{ guardado.fechaGuardadoLabel }}</dd>
+          </div>
+          <div>
+            <dt class="text-gray-500">Version guardada</dt>
+            <dd class="font-semibold text-gray-900">{{ guardado.versionLabel }}</dd>
+          </div>
+          <div>
+            <dt class="text-gray-500">Trabajadores calculados</dt>
+            <dd class="font-semibold text-gray-900">{{ guardado.trabajadoresCalculados }}</dd>
+          </div>
+          <div>
+            <dt class="text-gray-500">Liquido preliminar</dt>
+            <dd class="font-semibold text-gray-900">{{ guardado.totalLiquidoLabel }}</dd>
+          </div>
+        </dl>
+        <dl class="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-4 text-sm">
+          <div>
+            <dt class="text-gray-500">Trabajadores con observaciones</dt>
+            <dd class="font-semibold text-gray-900">{{ guardado.trabajadoresConObservaciones }}</dd>
+          </div>
+          <div>
+            <dt class="text-gray-500">Trabajadores omitidos</dt>
+            <dd class="font-semibold text-gray-900">{{ guardado.trabajadoresOmitidos }}</dd>
+          </div>
+          <div>
+            <dt class="text-gray-500">Version del calculo</dt>
+            <dd class="font-semibold text-gray-900">{{ guardado.versionCalculoLabel }}</dd>
+          </div>
+          <div>
+            <dt class="text-gray-500">Identificador tecnico</dt>
+            <dd class="font-semibold text-gray-900">{{ guardado.identificadorTecnicoLabel }}</dd>
+          </div>
+        </dl>
+        <p class="mt-3 text-sm text-gray-700">
+          {{ guardado.advertenciasLabel }}
+        </p>
+        <p class="mt-2 text-xs text-gray-500">
+          Resultado preliminar guardado. No emite liquidaciones, no cierra el periodo y no genera archivos legales.
+        </p>
+      } @else {
+        <p class="mt-3 text-sm text-gray-600">
+          Aun no hay resultado preliminar guardado para este periodo.
+        </p>
+      }
+    </app-card-content>
+  </app-card>
+
+  <app-card>
+    <app-card-content className="p-4">
+      @if (revisionAprobacion(); as revision) {
+        <div class="flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <div class="flex flex-wrap items-center gap-2">
+              <h2 class="text-sm font-semibold text-gray-900">Revision para aprobacion</h2>
+              <app-badge [variant]="badgeVariantRevisionAprobacion(revision.estado)" size="sm">
+                {{ revision.estadoLabel }}
+              </app-badge>
+            </div>
+            <p class="mt-1 text-sm text-gray-700">{{ revision.descripcion }}</p>
+          </div>
+          <div class="flex flex-wrap items-center gap-2">
+            @if (revision.puedeGuardarActualizado) {
+              <app-button variant="primary" size="sm" [disabled]="guardandoSnapshot()" (click)="guardarSnapshotPreliminar()">
+                {{ guardandoSnapshot() ? 'Guardando...' : revision.accionPrincipalLabel }}
+              </app-button>
+            } @else if (revision.estado === 'sin_resultado_guardado') {
+              <app-button variant="outline" size="sm" [disabled]="!revision.puedeRecalcular" (click)="calcularPreliminar()">
+                {{ revision.accionPrincipalLabel }}
+              </app-button>
+            } @else {
+              <app-button variant="outline" size="sm" [disabled]="consultandoSnapshot()" (click)="verSnapshotActivo()">
+                {{ consultandoSnapshot() ? 'Consultando...' : revision.accionPrincipalLabel }}
+              </app-button>
+            }
+            <app-button variant="outline" size="sm" [disabled]="!revision.puedeRecalcular" (click)="calcularPreliminar()">
+              Recalcular preliminar
+            </app-button>
+            <app-button variant="primary" size="sm" [disabled]="!revision.puedeAprobar" (click)="aprobarResultadoPreliminar()">
+              Aprobar resultado preliminar
+            </app-button>
+          </div>
+        </div>
+
+        <div class="mt-4 rounded-md border border-blue-100 bg-blue-50 px-3 py-2 text-sm text-blue-900">
+          {{ revision.notaAprobacion }} No emite liquidaciones, no cierra el periodo y no genera archivos legales.
+        </div>
+        @if (revision.razonNoPuedeAprobar) {
+          <p class="mt-2 text-sm text-gray-600">
+            No puedes aprobar todavia. {{ revision.razonNoPuedeAprobar }}
+          </p>
+        }
+
+        @if (revision.aprobacion; as aprobacion) {
+          <section class="mt-4 rounded-md border border-emerald-100 bg-emerald-50 p-3">
+            <div class="flex flex-wrap items-start justify-between gap-3">
+              <div>
+                <h3 class="text-xs font-semibold uppercase text-emerald-800">Aprobacion operativa</h3>
+                <p class="mt-1 text-sm font-medium text-gray-900">{{ revision.estadoLabel }}</p>
+                <p class="mt-1 text-sm text-gray-700">
+                  Esta aprobacion es interna y no reemplaza el cierre del periodo ni la emision de liquidaciones oficiales.
+                </p>
+              </div>
+              <app-badge [variant]="badgeVariantRevisionAprobacion(revision.estado)" size="sm">
+                {{ revision.estadoLabel }}
+              </app-badge>
+            </div>
+            <dl class="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-4 text-sm">
+              <div>
+                <dt class="text-gray-500">Estado</dt>
+                <dd class="font-semibold text-gray-900">{{ revision.estadoLabel }}</dd>
+              </div>
+              <div>
+                <dt class="text-gray-500">Fecha de aprobacion</dt>
+                <dd class="font-semibold text-gray-900">{{ aprobacion.fechaAprobacionLabel }}</dd>
+              </div>
+              <div>
+                <dt class="text-gray-500">Usuario</dt>
+                <dd class="font-semibold text-gray-900">{{ aprobacion.usuarioLabel }}</dd>
+              </div>
+              <div>
+                <dt class="text-gray-500">Version del calculo</dt>
+                <dd class="font-semibold text-gray-900">{{ aprobacion.versionCalculoLabel }}</dd>
+              </div>
+              <div>
+                <dt class="text-gray-500">Identificador tecnico</dt>
+                <dd class="font-semibold text-gray-900">{{ aprobacion.identificadorTecnicoLabel }}</dd>
+              </div>
+              <div>
+                <dt class="text-gray-500">Trabajadores calculados</dt>
+                <dd class="font-semibold text-gray-900">{{ aprobacion.trabajadoresCalculados }}</dd>
+              </div>
+              <div>
+                <dt class="text-gray-500">Total haberes</dt>
+                <dd class="font-semibold text-gray-900">{{ aprobacion.totalHaberesLabel }}</dd>
+              </div>
+              <div>
+                <dt class="text-gray-500">Total descuentos</dt>
+                <dd class="font-semibold text-gray-900">{{ aprobacion.totalDescuentosLabel }}</dd>
+              </div>
+              <div>
+                <dt class="text-gray-500">Liquido preliminar</dt>
+                <dd class="font-semibold text-gray-900">{{ aprobacion.totalLiquidoLabel }}</dd>
+              </div>
+            </dl>
+            @if (revision.estado === 'aprobado_desactualizado') {
+              <p class="mt-3 text-sm font-medium text-yellow-900">
+                Existe un calculo o resultado posterior al aprobado. Debes revisar, guardar y aprobar nuevamente.
+              </p>
+            }
+            @if (aprobacion.advertencias.length) {
+              <div class="mt-3">
+                <p class="text-sm font-semibold text-gray-900">Advertencias al aprobar</p>
+                <ul class="mt-2 space-y-1 text-sm text-gray-700">
+                  @for (advertencia of aprobacion.advertencias; track advertencia) {
+                    <li>{{ advertencia }}</li>
+                  }
+                </ul>
+              </div>
+            }
+          </section>
+        }
+
+        <section class="mt-4">
+          <h3 class="text-xs font-semibold uppercase text-slate-600">Checklist operativo</h3>
+          <div class="mt-2 grid gap-2 md:grid-cols-2">
+            @for (item of revision.checklist; track item.titulo) {
+              <div class="rounded-md border border-slate-200 bg-white px-3 py-2">
+                <div class="flex items-start justify-between gap-2">
+                  <p class="text-sm font-medium text-gray-900">{{ item.titulo }}</p>
+                  <app-badge [variant]="badgeVariantRevisionChecklist(item.estado)" size="sm">
+                    {{ item.estado }}
+                  </app-badge>
+                </div>
+                <p class="mt-1 text-sm text-gray-600">{{ item.descripcion }}</p>
+              </div>
+            }
+          </div>
+        </section>
+
+        <section class="mt-4">
+          <h3 class="text-xs font-semibold uppercase text-slate-600">Observaciones para decidir</h3>
+          @if (revision.bloqueos.length || revision.advertencias.length || revision.informaciones.length) {
+            <div class="mt-2 grid gap-3 lg:grid-cols-3">
+              <div>
+                <p class="text-sm font-semibold text-gray-900">Bloqueos</p>
+                @if (revision.bloqueos.length) {
+                  <ul class="mt-2 space-y-2 text-sm text-gray-700">
+                    @for (bloqueo of revision.bloqueos; track bloqueo.codigo) {
+                      <li>
+                        <span class="font-medium">{{ bloqueo.titulo }}:</span>
+                        {{ bloqueo.descripcion }}
+                      </li>
+                    }
+                  </ul>
+                } @else {
+                  <p class="mt-2 text-sm text-gray-600">Sin bloqueos visibles.</p>
+                }
+              </div>
+              <div>
+                <p class="text-sm font-semibold text-gray-900">Advertencias</p>
+                @if (revision.advertencias.length) {
+                  <ul class="mt-2 space-y-2 text-sm text-gray-700">
+                    @for (advertencia of revision.advertencias; track advertencia.codigo) {
+                      <li>
+                        <span class="font-medium">{{ advertencia.titulo }}:</span>
+                        {{ advertencia.descripcion }}
+                      </li>
+                    }
+                  </ul>
+                } @else {
+                  <p class="mt-2 text-sm text-gray-600">Sin advertencias pendientes.</p>
+                }
+              </div>
+              <div>
+                <p class="text-sm font-semibold text-gray-900">Informacion</p>
+                @if (revision.informaciones.length) {
+                  <ul class="mt-2 space-y-2 text-sm text-gray-700">
+                    @for (info of revision.informaciones; track info.codigo) {
+                      <li>
+                        <span class="font-medium">{{ info.titulo }}:</span>
+                        {{ info.descripcion }}
+                      </li>
+                    }
+                  </ul>
+                } @else {
+                  <p class="mt-2 text-sm text-gray-600">Sin informacion adicional.</p>
+                }
+              </div>
+            </div>
+          } @else {
+            <p class="mt-2 text-sm text-gray-600">Sin observaciones pendientes para la revision.</p>
+          }
+        </section>
+
+        <section class="mt-4 flex flex-wrap items-center gap-2">
+          <app-button variant="outline" size="sm" (click)="revisarBaseNomina()">
+            Revisar base de nomina
+          </app-button>
+          <a routerLink="/remuneraciones/novedades-mensuales" class="text-sm font-medium text-blue-700 underline">
+            Revisar movimientos del mes
+          </a>
+          <a routerLink="/remuneraciones/haberes-descuentos" class="text-sm font-medium text-blue-700 underline">
+            Revisar asignaciones recurrentes
+          </a>
+        </section>
+      }
+    </app-card-content>
+  </app-card>
+
+  <div class="rounded-md border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-gray-700">
+    Salidas legales y cierre quedan fuera de esta fase. Se habilitaran cuando existan liquidaciones oficiales.
   </div>
 </div>

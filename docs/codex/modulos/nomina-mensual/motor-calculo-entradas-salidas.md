@@ -21,6 +21,42 @@ type MotorCalculoInput = {
 };
 ```
 
+## MOTOR-04 - Entradas mensuales canonicas
+
+MOTOR-04 agrega al contrato TypeScript real un arreglo preparatorio:
+
+```ts
+type MotorCalculoInput = {
+  entradasMensuales: EntradaMensualMotor[];
+};
+
+type EntradaMensualMotor = {
+  idEntrada: string | number;
+  origen: 'recurrente' | 'novedad_mensual' | 'legacy_movimiento_variable';
+  origenId: string | number | null;
+  periodo: string;
+  idPersona: number;
+  idContrato: number | null;
+  idConcepto: number;
+  tipoEntrada: string;
+  categoria: string | null;
+  tipoMovimiento: string | null;
+  cantidad: number | null;
+  unidad: string | null;
+  monto: number | null;
+  moneda: string | null;
+  estado: string;
+  afectaBase: boolean | null;
+  metadata: Record<string, unknown>;
+};
+```
+
+Decision: contrato preparatorio. El motor recibe estas entradas, pero no las suma todavia a haberes, descuentos, bases, impuestos ni liquido.
+
+Solo llegan entradas aptas para pre-nomina: aprobadas y sin bloqueo critico. Borrador, pendiente_revision, observada, rechazada, anulada y legacy bloqueado quedan excluidas. Legacy validado puede entrar como transicion si ya fue normalizado como aprobado.
+
+No se modifican formulas previsionales, tributarias ni legales en MOTOR-04.
+
 ## Parametros legales minimos
 
 | Grupo | Fuente canonica |

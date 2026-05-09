@@ -48,7 +48,7 @@ export const routes: Routes = [
           {
             path: '',
             pathMatch: 'full',
-            redirectTo: 'conceptos',
+            redirectTo: 'proceso-mensual',
           },
           {
             path: 'conceptos',

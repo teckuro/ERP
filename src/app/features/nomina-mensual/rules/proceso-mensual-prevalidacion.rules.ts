@@ -362,7 +362,7 @@ export function construirPrevalidacionMensual(hechos: ProcesoMensualHechosPreval
       'CONCEPTOS_VACIO',
       'CONCEPTOS',
       'ADVERTENCIA',
-      'No hay filas en mantenimiento de conceptos; el motor futuro requerira catalogo.',
+      'No hay filas en mantenimiento de conceptos; el calculo de nomina requerira catalogo.',
     );
     itemConc = 'CON_PROBLEMAS';
     detalleConc = 'Catalogo vacio';
@@ -372,7 +372,7 @@ export function construirPrevalidacionMensual(hechos: ProcesoMensualHechosPreval
       'CONCEPTOS_CLASIFICACION_FUTURA',
       'CONCEPTOS',
       'ADVERTENCIA',
-      'Hay conceptos vigentes sin tipo o naturaleza; revisar antes del motor de calculo.',
+      'Hay conceptos vigentes sin tipo o naturaleza; revisar antes del calculo de nomina.',
     );
     itemConc = 'CON_PROBLEMAS';
     detalleConc = 'Clasificacion incompleta en algun concepto';
@@ -499,7 +499,7 @@ export function construirPrevalidacionMensual(hechos: ProcesoMensualHechosPreval
     'PROCESO_LIQUIDACIONES_FUTURO',
     'PROCESO',
     'INFO',
-    'Liquidaciones y motor son fases futuras; este modulo no calcula ni genera liquidaciones.',
+    'Liquidaciones oficiales son una fase futura; este modulo prepara y revisa el calculo preliminar.',
   );
   items.push({
     area: 'PROCESO',
@@ -554,7 +554,7 @@ function completarItemsVacios(parcial: ProcesoMensualItem[]): ProcesoMensualItem
     CONCEPTOS: 'Conceptos',
     HABERES_RECURRENTES: 'Haberes recurrentes',
     ENTRADAS_MENSUALES: 'Entradas mensuales',
-    MOVIMIENTOS_VARIABLES: 'Movimientos variables',
+    MOVIMIENTOS_VARIABLES: 'Movimientos del mes',
     PROCESO: 'Liquidaciones futuras',
   };
   const out = [...parcial];

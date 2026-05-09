@@ -3,7 +3,9 @@ import type { HaberDescuentoAsignacionPrevalidacionMensualFila } from '../../hab
 import type { EmpleadoFichaDetalle, EmpleadoListado } from '../../empleados/models/empleado-listado.model';
 import type {
   EntradaMensualEstado,
+  EntradaMensualOrigen,
   EntradaMensualPeriodo,
+  EntradaMensualTipo,
   ResumenEntradasMensualesPeriodo,
 } from '../entradas/models/entrada-mensual-periodo.model';
 import type {
@@ -112,6 +114,34 @@ export type ProcesoMensualPreNominaEstado =
   | 'GENERADA'
   | 'GENERADA_CON_ADVERTENCIAS';
 
+export type BaseNominaTrabajadorEstado = 'listo' | 'con_observaciones' | 'bloqueado' | 'excluido';
+
+export type BaseNominaParametrosEstado = 'listos' | 'con_observaciones' | 'por_revisar' | 'sin_evaluar';
+
+export interface BaseNominaTrabajadorResumen {
+  idPersona: number;
+  trabajadorLabel: string;
+  rutLabel: string;
+  contratoLabel: string;
+  estado: BaseNominaTrabajadorEstado;
+  asignacionesRecurrentes: number;
+  movimientosDelMes: number;
+  observacion: string;
+}
+
+export interface BaseNominaTrazabilidad {
+  trabajadores: BaseNominaTrabajadorResumen[];
+  trabajadoresConsiderados: number;
+  listosParaCalculo: number;
+  conObservaciones: number;
+  bloqueados: number;
+  excluidos: number;
+  asignacionesRecurrentesIncluidas: number;
+  movimientosDelMesIncluidos: number;
+  parametrosEstado: BaseNominaParametrosEstado;
+  observacionParametros: string;
+}
+
 export interface ProcesoMensualPreNominaPeriodo {
   periodo: string;
   estado: ProcesoMensualPreNominaEstado;
@@ -128,6 +158,7 @@ export interface ProcesoMensualPreNominaPeriodo {
   codigosBloqueo: string[];
   codigosAdvertencia: string[];
   origenPrevalidacion: ProcesoMensualEstado;
+  trazabilidad?: BaseNominaTrazabilidad;
 }
 
 export type MotorCalculoSeveridad = 'BLOQUEO' | 'ADVERTENCIA' | 'INFO';
@@ -193,6 +224,26 @@ export interface EmpresaLey16744CalculoSnapshot {
   vigenciaFin: string | null;
 }
 
+export interface EntradaMensualMotor {
+  idEntrada: string | number;
+  origen: EntradaMensualOrigen;
+  origenId: string | number | null;
+  periodo: string;
+  idPersona: number;
+  idContrato: number | null;
+  idConcepto: number;
+  tipoEntrada: EntradaMensualTipo;
+  categoria: string | null;
+  tipoMovimiento: string | null;
+  cantidad: number | null;
+  unidad: string | null;
+  monto: number | null;
+  moneda: string | null;
+  estado: EntradaMensualEstado;
+  afectaBase: boolean | null;
+  metadata: Record<string, unknown>;
+}
+
 export interface MotorCalculoInput {
   periodo: string;
   preNomina: ProcesoMensualPreNominaPeriodo;
@@ -201,6 +252,7 @@ export interface MotorCalculoInput {
   catalogos: ParametrosGeneralesCatalogos;
   trabajadores: TrabajadorMotorCalculoSnapshot[];
   recurrentes: HaberDescuentoAsignacionPrevalidacionMensualFila[];
+  entradasMensuales: EntradaMensualMotor[];
   empresaLey16744: EmpresaLey16744CalculoSnapshot | null;
 }
 

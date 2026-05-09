@@ -30,6 +30,8 @@ Estados validos:
 
 7. Para bases creadas antes del modelo base de Novedades mensuales, ejecutar `partes/18_novedades_mensuales.sql` una vez. Crea `novedad_remuneracion_periodo` con relaciones a periodo, persona, contrato opcional y concepto; no implementa UI, motor ni liquidaciones.
 
+8. Para habilitar permisos/RLS de Novedades mensuales, ejecutar `partes/19_novedades_mensuales_rls.sql` despues de `18_novedades_mensuales.sql`. Otorga `SELECT`, `INSERT` y `UPDATE` a `authenticated`, no otorga permisos a `anon` ni habilita `DELETE` directo.
+
 `12_migracion_lre_datos_incremental.sql` requiere que existan `persona`/`contrato` con IDs coherentes si se dejan los datos demo.
 
 ### Orden de ejecucion fresh local (`partes/`)
@@ -51,6 +53,7 @@ Estados validos:
 15. `15_nomina_calculo_snapshot.sql`: tablas de snapshots preliminares de nomina mensual (MOTOR-03B/MOTOR-03C), sin liquidacion oficial ni cierre.
 16. `17_parametros_reconciliacion_cliente.sql`: columnas de decision de reconciliacion en `parametros_generales_cliente`.
 17. `18_novedades_mensuales.sql`: tabla base `novedad_remuneracion_periodo` para hechos del periodo, sin calculo ni resultado de liquidacion.
+18. `19_novedades_mensuales_rls.sql`: RLS y permisos minimos para Novedades mensuales (`authenticated`; sin `anon` ni `DELETE` directo).
 
 ### Ejecucion fresh local
 

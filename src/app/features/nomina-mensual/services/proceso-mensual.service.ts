@@ -2,6 +2,7 @@ import { inject, Injectable } from '@angular/core';
 
 import type { HaberDescuentoAsignacionPrevalidacionMensualFila } from '../../haberes-descuentos/models/haber-descuento-asignacion.model';
 import { EmpleadosService } from '../../empleados/services/empleados.service';
+import type { EmpleadoListado } from '../../empleados/models/empleado-listado.model';
 import { HaberesDescuentosService } from '../../haberes-descuentos/services/haberes-descuentos.service';
 import type {
   MovimientoVariableEstado,
@@ -14,7 +15,15 @@ import { ParametrosGeneralesService } from '../../parametros-generales/services/
 import type { EntradaMensualPeriodo } from '../entradas/models/entrada-mensual-periodo.model';
 import { EntradasMensualesPeriodoService } from '../entradas/services/entradas-mensuales-periodo.service';
 import { validarPeriodoEntradaMensual } from '../entradas/rules/entradas-mensuales-periodo.rules';
+import {
+  entradaBloqueaProceso,
+  entradaRequiereRevision,
+  puedeEntrarAPreNomina,
+} from '../entradas/rules/entradas-mensuales-periodo.rules';
 import type {
+  BaseNominaParametrosEstado,
+  BaseNominaTrabajadorEstado,
+  BaseNominaTrazabilidad,
   GuardarSnapshotPreliminarResult,
   MotorCalculoPeriodoResultado,
   MotorCalculoInput,
@@ -32,6 +41,7 @@ import {
 } from '../rules/proceso-mensual-snapshot.rules';
 import { revisarGruposParametrosMinimos } from '../rules/proceso-mensual-parametros-minimos.rules';
 import { construirPreNominaPeriodo } from '../rules/proceso-mensual-prenomina.rules';
+import { construirEntradasMensualesMotor } from '../rules/proceso-mensual-motor-entradas.rules';
 import {
   construirPrevalidacionMensual,
   contarRecurrentesParaPrevalidacionMensual,
@@ -71,7 +81,12 @@ export class ProcesoMensualService {
 
   async generarPreNominaPeriodo(periodo: string): Promise<ProcesoMensualPreNominaPeriodo> {
     const prevalidacion = await this.ejecutarPrevalidaciones(periodo);
-    return construirPreNominaPeriodo(prevalidacion, new Date().toISOString());
+    const preNomina = construirPreNominaPeriodo(prevalidacion, new Date().toISOString());
+    const empleados = await this.empleados.listar();
+    return {
+      ...preNomina,
+      trazabilidad: this.construirTrazabilidadBaseNomina(prevalidacion, preNomina, empleados),
+    };
   }
 
   async generarCalculoPeriodo(periodo: string): Promise<MotorCalculoPeriodoResultado> {
@@ -350,6 +365,110 @@ export class ProcesoMensualService {
     return typeof origenLegacy === 'string' ? (origenLegacy as MovimientoVariableOrigen) : 'MANUAL';
   }
 
+  private construirTrazabilidadBaseNomina(
+    prevalidacion: ProcesoMensualPrevalidacion,
+    preNomina: ProcesoMensualPreNominaPeriodo,
+    empleados: readonly EmpleadoListado[],
+  ): BaseNominaTrazabilidad {
+    const activos = empleados.filter((e) => e.estado === 'activo');
+    const entradas = prevalidacion.entradasMensuales ?? [];
+    const entradasPorPersona = new Map<number, EntradaMensualPeriodo[]>();
+    for (const entrada of entradas) {
+      const personaEntradas = entradasPorPersona.get(entrada.idPersona) ?? [];
+      personaEntradas.push(entrada);
+      entradasPorPersona.set(entrada.idPersona, personaEntradas);
+    }
+
+    const trabajadores = activos.map((empleado) => {
+      const personaEntradas = entradasPorPersona.get(empleado.id) ?? [];
+      const aptas = personaEntradas.filter(puedeEntrarAPreNomina);
+      const asignacionesRecurrentes = aptas.filter((entrada) => entrada.origen === 'recurrente').length;
+      const movimientosDelMes = aptas.filter((entrada) => entrada.origen !== 'recurrente').length;
+      const tieneBloqueos = personaEntradas.some(entradaBloqueaProceso);
+      const tieneObservaciones =
+        personaEntradas.some((entrada) => entradaRequiereRevision(entrada) || entrada.warnings.length > 0) ||
+        empleado.idContrato == null;
+      const estado = this.estadoTrabajadorBaseNomina(empleado, tieneBloqueos, tieneObservaciones);
+
+      return {
+        idPersona: empleado.id,
+        trabajadorLabel: empleado.nombre?.trim() || 'Trabajador sin ficha visible',
+        rutLabel: empleado.rut?.trim() || 'RUT no disponible',
+        contratoLabel: empleado.idContrato == null ? 'Contrato no disponible' : 'Contrato vigente',
+        estado,
+        asignacionesRecurrentes,
+        movimientosDelMes,
+        observacion: this.observacionTrabajadorBaseNomina(empleado, estado, personaEntradas),
+      };
+    });
+
+    const parametrosEstado = this.estadoParametrosBaseNomina(prevalidacion);
+    return {
+      trabajadores,
+      trabajadoresConsiderados: trabajadores.filter((t) => t.estado !== 'excluido').length,
+      listosParaCalculo: trabajadores.filter((t) => t.estado === 'listo').length,
+      conObservaciones: trabajadores.filter((t) => t.estado === 'con_observaciones').length,
+      bloqueados: trabajadores.filter((t) => t.estado === 'bloqueado').length,
+      excluidos: trabajadores.filter((t) => t.estado === 'excluido').length,
+      asignacionesRecurrentesIncluidas:
+        preNomina.recurrentesIncluidos || entradas.filter((entrada) => entrada.origen === 'recurrente' && puedeEntrarAPreNomina(entrada)).length,
+      movimientosDelMesIncluidos: entradas.filter((entrada) => entrada.origen !== 'recurrente' && puedeEntrarAPreNomina(entrada)).length,
+      parametrosEstado,
+      observacionParametros: this.observacionParametrosBaseNomina(prevalidacion, parametrosEstado),
+    };
+  }
+
+  private estadoTrabajadorBaseNomina(
+    empleado: EmpleadoListado,
+    tieneBloqueos: boolean,
+    tieneObservaciones: boolean,
+  ): BaseNominaTrabajadorEstado {
+    if (!empleado.aptoParaRemuneraciones) return 'excluido';
+    if (tieneBloqueos) return 'bloqueado';
+    if (tieneObservaciones) return 'con_observaciones';
+    return 'listo';
+  }
+
+  private observacionTrabajadorBaseNomina(
+    empleado: EmpleadoListado,
+    estado: BaseNominaTrabajadorEstado,
+    entradas: readonly EntradaMensualPeriodo[],
+  ): string {
+    if (estado === 'excluido') return 'Ficha no apta para remuneraciones.';
+    const bloqueantes = entradas.filter(entradaBloqueaProceso).length;
+    if (bloqueantes > 0) return `${bloqueantes} entrada(s) bloqueante(s).`;
+    const porRevisar = entradas.filter((entrada) => entradaRequiereRevision(entrada) || entrada.warnings.length > 0).length;
+    if (porRevisar > 0) return `${porRevisar} entrada(s) requieren revision.`;
+    if (empleado.idContrato == null) return 'Contrato no disponible.';
+    return 'Sin observaciones';
+  }
+
+  private estadoParametrosBaseNomina(prevalidacion: ProcesoMensualPrevalidacion): BaseNominaParametrosEstado {
+    if (!prevalidacion.resumen.parametrosOperativos) return 'por_revisar';
+    if (prevalidacion.bloqueos.some((m) => m.area === 'PARAMETROS')) return 'por_revisar';
+    if (prevalidacion.advertencias.some((m) => m.area === 'PARAMETROS')) return 'con_observaciones';
+    if (prevalidacion.estado === 'SIN_EVALUAR') return 'sin_evaluar';
+    return 'listos';
+  }
+
+  private observacionParametrosBaseNomina(
+    prevalidacion: ProcesoMensualPrevalidacion,
+    estado: BaseNominaParametrosEstado,
+  ): string {
+    const mensaje = [...prevalidacion.bloqueos, ...prevalidacion.advertencias].find((m) => m.area === 'PARAMETROS');
+    if (mensaje) return mensaje.texto;
+    switch (estado) {
+      case 'listos':
+        return 'Parametros del periodo disponibles para preparar la base.';
+      case 'con_observaciones':
+        return 'Parametros disponibles con observaciones del periodo.';
+      case 'por_revisar':
+        return 'Parametros del periodo requieren revision antes del calculo.';
+      default:
+        return 'Parametros del periodo sin evaluar.';
+    }
+  }
+
   private async construirInputMotorPeriodo(periodo: string): Promise<MotorCalculoInput> {
     const [prevalidacion, parametrosPeriodo, catalogos, empleadosListado, recurrentes] = await Promise.all([
       this.ejecutarPrevalidaciones(periodo),
@@ -371,6 +490,7 @@ export class ProcesoMensualService {
       catalogos,
       trabajadores,
       recurrentes,
+      entradasMensuales: construirEntradasMensualesMotor(prevalidacion.entradasMensuales ?? []),
       empresaLey16744: null,
     };
   }
