@@ -1,4 +1,167 @@
+## 2026-05-10 - DOCS-UX-01 - Capa de diseño usable y comercial para Cursor
+
+- Se agrega carpeta `docs/codex/ux-comercial/` con contrato de diseño comercial, patrones de pantallas, sistema de estados/acciones, dashboard comercial, copywriting, checklist para Cursor y anti-patrones UI.
+- Se agrega `docs/codex/prompts-cursor/CURSOR-UX-COMERCIAL-REVIEW-01.md` como prompt reutilizable para mejoras visuales controladas.
+- Se profundiza `UX-COMERCIAL-01` como fase futura posterior a `LIQ-OFICIAL-01`.
+- Se actualizan indices/roadmap para reforzar que el foco comercial viene despues de cierre operativo y liquidaciones oficiales.
+- No se modifica codigo, SQL, RPC, RLS, tests ni configuracion.
+
+## 2026-05-10 - NOM-CIERRE-DESIGN-01 - Diseno de cierre operativo de nomina
+
+- Se cierra documentalmente el diseno funcional y tecnico del cierre operativo de nomina.
+- Decisiones cerradas para `NOM-CIERRE-01`: persistir cierre v1 en `nomina_calculo_periodo`, no tocar `periodo_remuneracion.estado`, no bloquear por advertencias, no implementar reapertura en v1, cerrar por RPC atomica y usar el nombre visible `Cerrar nomina del periodo`.
+- Se crea `docs/codex/fases/nomina/NOM-CIERRE-DESIGN-01.md` con definicion, precondiciones, acciones bloqueadas/permitidas, contrato tecnico, contrato UI y fuera de alcance.
+- Se actualizan Nomina, MOTOR-03B, roadmap, decisiones pendientes y estado de fases para dejar la siguiente fase como `NOM-CIERRE-01 - Implementar cierre operativo controlado`.
+- No se modifica codigo, SQL, RPC, RLS, tests ni configuracion.
+
+# 2026-05-10 - DOCS-INTEGRATION-01 - Integracion documental docs/codex
+
+Tipo: documental.
+
+Se integra y normaliza la base documental actual de `docs/codex` sin tocar codigo, SQL, RPC, RLS, tests ni configuracion.
+
+Cambios principales:
+
+- Se agrega `orquestador/auditoria-documental-global.md`.
+- Se agrega `orquestador/mapa-global-fases.md` como vista canonica rapida.
+- Se crea `docs/codex/fases/` con resumenes canonicos por fase.
+- Se agrega modulo documental futuro `modulos/liquidaciones-oficiales/`.
+- Se actualiza el roadmap para avanzar hasta `Liquidaciones oficiales` y luego pasar a `UX-COMERCIAL-01`.
+- Se deja Previred, LRE, banco y contabilidad como fases futuras no inmediatas.
+- Se refuerza que nomina esta validada hasta aprobacion operativa persistida y E2E real, pero cierre/liquidaciones no estan implementados.
+
+Fuera de alcance respetado:
+
+- No codigo.
+- No SQL/RPC/RLS.
+- No tests.
+- No package/config.
+- No funcionalidad nueva.
+
+---
+
 # CHANGELOG
+
+## NOM-E2E-CLOSE-01 - Cierre documental E2E real de nomina
+
+Fecha: 2026-05-10
+
+- Objetivo: consolidar documentalmente el hito E2E real authenticated de `Preparar nomina` y cerrar el estado operativo previo a diseno de cierre.
+- Flujo validado: login real, periodo `2026-04`, validar periodo, generar base, calcular preliminar, guardar por RPC real, consultar `Resultado guardado desde BD`, aprobar operativamente, recargar y recuperar snapshot/aprobacion.
+- Evidencia E2E consolidada: `npx playwright test tests/nomina-mensual.e2e.spec.ts --workers=1` OK, 1 passed / 1 skipped.
+- SQL post-guardado: snapshot activo `id_calculo_periodo=11`, 2 trabajadores, 16 conceptos, 12 observaciones, 72 trazas, `aprobacion_operativa_estado=aprobado_operativamente`, duplicados activos 0.
+- Estado cerrado: NOM-E2E-02 queda superado por NOM-SAVE-DIAG-01/NOM-E2E-CLOSE-01; el flujo real authenticated ya no queda bloqueado por entorno en este hito.
+- SQL/RPC/RLS: no se modificaron scripts, politicas ni permisos; no se reaplico migracion.
+- Alcance respetado: no implementa cierre, reapertura, liquidacion oficial, PDF, Previred, LRE, banco, roles finos, seeds, `service_role`, cambios de formulas ni cambios de motor legal.
+- Siguiente fase: `NOM-CIERRE-DESIGN-01 - Diseno funcional y tecnico del cierre operativo de nomina`.
+
+## NOM-SAVE-DIAG-01 - Diagnostico guardado RPC resultado preliminar
+
+Fecha: 2026-05-10
+
+- Objetivo: reproducir el fallo real de `Guardar resultado preliminar`, capturar el error tecnico sanitizado y corregir solo la causa minima.
+- Punto reproducido: E2E real authenticated para periodo `2026-04` llegaba a calculo preliminar y fallaba al guardar con el mensaje visible seguro `No se pudo guardar el resultado preliminar completo. No se realizaron cambios parciales.`
+- Error real capturado desde la respuesta RPC: `code=22007`, `message=invalid input syntax for type date: "2026-04"`, `details=null`, `hint=null`.
+- Causa raiz: trazabilidad de snapshot enviaba vigencias con formato mensual `YYYY-MM` hacia columnas `DATE` (`vigencia_inicio`/`vigencia_fin`) en `nomina_calculo_trazabilidad`.
+- Correccion: el mapper/payload de snapshot normaliza `YYYY-MM` a `YYYY-MM-01` y descarta fechas no validas antes de llamar la RPC.
+- Diagnostico seguro: el repository registra en dev/test nombre de RPC, periodo, conteos de payload y error Supabase sanitizado; el E2E adjunta errores de consola y respuesta RPC sin tokens ni headers.
+- SQL/RPC/RLS: no se modificaron scripts SQL, RPC ni politicas RLS; no requiere reaplicar SQL.
+- Validacion E2E posterior: `npx playwright test tests/nomina-mensual.e2e.spec.ts --workers=1` OK, 1 passed / 1 skipped; guarda, consulta BD, aprueba operativamente y recupera tras recargar.
+- SQL post-guardado: periodo `2026-04`, snapshot activo `id_calculo_periodo=11`, 2 trabajadores, 16 conceptos, 12 observaciones, 72 trazas, `aprobado_operativamente`, 0 duplicados activos.
+- Pruebas: `npx ng test --watch=false` OK (415), `npm run build` OK con warnings existentes de budget CSS en Empleados.
+- Alcance respetado: sin cambios de formulas legales, motor legal, cierre, liquidaciones oficiales, PDF, Previred, LRE, banco, `service_role`, secretos ni apertura a `anon`.
+
+## EMP-ADV-FICHA-01 - Alinear alta avanzada, ficha y aptitud real para nomina
+
+Fecha: 2026-05-09
+
+- Objetivo: alinear la aptitud de Empleados/Ficha con los bloqueos reales del motor de nomina, sin seeds ni parches SQL de datos.
+- Reglas: `tipoPrevision = NINGUNA` deja de ser advertencia y pasa a bloqueo de aptitud para remuneraciones; AFP/IPS con salud completa siguen siendo caminos aptos.
+- Jornada: el formulario avanzado ya no autocompleta `horasSemanales` con `45`; la jornada queda pendiente hasta ingreso explicito.
+- E2E Empleados: el flujo de finalizar alta desde borrador usa jornada `40` y selecciona AFP, salud, moneda/valor plan y GES, sin APVI.
+- Ficha: la accion `Validar para remuneraciones` sigue dependiendo del helper central; con `Sin prevision` no debe marcar `estado_ficha=VALIDO` ni `apto_para_remuneraciones=true`.
+- Nomina: no se modifico motor, RPC, RLS, formulas ni datos del periodo; `DATA-E2E-01` queda pausada hasta estabilizar alta/ficha.
+- Documentacion: se registra que `Sin prevision` puede existir en borrador/en proceso, pero no equivale a trabajador calculable por nomina.
+- Pruebas: `npx ng test --watch=false --include src/app/features/empleados/utils/empleado-completitud.rules.spec.ts --include src/app/features/empleados/components/form-empleado/form-empleado.spec.ts --include src/app/features/empleados/containers/ficha-empleado-container/ficha-empleado-container.spec.ts`.
+
+## ENV-E2E-01 - Preparacion de entorno E2E nomina
+
+Fecha: 2026-05-09
+
+- Objetivo: preparar entorno, variables, usuario y periodo de prueba para desbloquear el E2E real de nomina authenticated.
+- Ambiente definido: Supabase remoto/controlado apuntado por `public/app-config.json`; `SUPABASE_DB_URL` existe en `.env` local y permite conexion SQL sin versionar la cadena.
+- Variables: se agregan placeholders seguros en `.env.example` para `E2E_NOMINA_REAL`, `E2E_SUPABASE_AUTH_EMAIL`, `E2E_SUPABASE_AUTH_PASSWORD`, `E2E_NOMINA_PERIODO`, `E2E_SUPABASE_URL`, `E2E_SUPABASE_ANON_KEY` y `SUPABASE_DB_URL`.
+- Validacion SQL: conexion OK; permisos RPC confirmados sin exponer secretos: `authenticated=true`, `anon=false` para `guardar_nomina_calculo_snapshot`.
+- Bloqueo restante: faltan usuario Supabase Auth de desarrollo, password local y periodo E2E definido; por eso no se puede validar login manual ni ejecutar el E2E real.
+- Datos de prueba: no se crearon ni modificaron trabajadores, periodos, parametros, snapshots ni usuarios.
+- Seguridad: no se uso `service_role`, no se imprimieron tokens/passwords y no se commiteo `.env`.
+- Pruebas: `npx playwright test tests/nomina-mensual.e2e.spec.ts --workers=1`, `npx ng test --watch=false`, `npm run build`.
+
+## NOM-E2E-02 - Ejecucion real de nomina authenticated
+
+Fecha: 2026-05-09
+
+- Objetivo: ejecutar el flujo real `login -> Preparar nomina -> calcular -> guardar RPC -> consultar snapshot -> aprobar -> recargar` con usuario Supabase `authenticated`.
+- Resultado local: ejecucion parcial bloqueada porque no existen `E2E_NOMINA_REAL`, `E2E_SUPABASE_AUTH_EMAIL`, `E2E_SUPABASE_AUTH_PASSWORD`, `E2E_NOMINA_PERIODO` ni `SUPABASE_DB_URL` en el entorno de esta sesion.
+- E2E ejecutado: `npx playwright test tests/nomina-mensual.e2e.spec.ts --workers=1`; resultado OK en modo seguro, 1 passed / 1 skipped. El caso real quedo omitido sin escribir en BD.
+- SQL post-E2E: no ejecutado porque falta `SUPABASE_DB_URL` y no hubo `id_calculo_periodo` real generado por UI.
+- Datos de prueba: no se crearon usuarios, periodos, snapshots ni datos de nomina; no se inventaron credenciales ni se uso `service_role`.
+- Alcance: no se modifico UI, formulas legales, RLS/RPC, cierre, liquidaciones oficiales, Previred, LRE, banco ni PDF.
+- Pruebas: `npx ng test --watch=false`, `npm run build`, `npx playwright test tests/nomina-mensual.e2e.spec.ts --workers=1`.
+
+## AUTH-BASE-01 - Autenticacion base y sesion de desarrollo
+
+Fecha: 2026-05-09
+
+- Objetivo: crear una base minima de autenticacion para operar el ERP con sesion Supabase `authenticated`.
+- UI: se agrega `/login` con email, contrasena, validaciones basicas, estado cargando y error operativo sin exponer detalles sensibles.
+- Auth: se agrega `AuthService` sobre el cliente Supabase existente, con login, logout, sesion actual, usuario actual y escucha de cambios de sesion.
+- Rutas: las rutas internas bajo `LayoutShellComponent` quedan protegidas con `authChildGuard`; sin sesion redirigen a `/login` preservando `returnUrl`.
+- Layout: el header muestra email del usuario o fallback operativo, estado `Sesion activa` y accion `Cerrar sesion`.
+- E2E: `tests/nomina-mensual.e2e.spec.ts` inicia por UI de login cuando existen variables reales; sin variables sigue omitido.
+- Seguridad: no se usa `service_role`, no se hardcodean credenciales, no se imprimen tokens ni passwords, no se implementan roles avanzados.
+- Alcance: no crea modulo completo de usuarios, permisos finos, cierre, liquidaciones oficiales, Previred, LRE, banco ni cambios de formulas legales.
+- Pruebas: `npx ng test --watch=false`.
+
+## NOM-E2E-01 - Validacion end-to-end operativa con sesion authenticated real
+
+Fecha: 2026-05-09
+
+- Objetivo: validar desde `Preparar nomina` el flujo real `validar -> calcular -> guardar por RPC -> consultar BD -> aprobar -> recargar -> recuperar`.
+- Resultado local: no se ejecuto el flujo real porque el checkout no tiene credenciales `E2E_SUPABASE_AUTH_EMAIL`, `E2E_SUPABASE_AUTH_PASSWORD` ni periodo `E2E_NOMINA_PERIODO`; no se inventaron usuarios ni se uso `service_role`.
+- Test E2E agregado: `tests/nomina-mensual.e2e.spec.ts`, condicionado por `E2E_NOMINA_REAL=1` y variables de sesion authenticated. Sin variables, queda omitido con mensaje explicito.
+- Cobertura del test cuando se habilite: inicia sesion Supabase `authenticated`, inyecta la sesion en `angular-erp-auth`, ejecuta Preparar nomina, guarda por RPC, valida cabecera/detalles en BD, aprueba operativamente y confirma recuperacion tras recarga.
+- Alcance: no cierra periodo, no emite liquidaciones, no genera Previred, LRE, banco ni PDF, no cambia formulas legales ni reabre Liquidaciones.
+
+## NOM-DB-APPLY-01 - Aplicacion y validacion controlada SQL/RPC en BD real
+
+Fecha: 2026-05-09
+
+- Objetivo: aplicar y validar en BD real/controlada la persistencia de snapshots, RLS y RPC versionadas para el flujo de resultado preliminar guardado.
+- Ambiente: Supabase remoto configurado en `.env` mediante `SUPABASE_DB_URL` (host pooler AWS sa-east-1, base `postgres`); no se documentan secretos ni connection string completa.
+- Aplicacion: se ejecutaron con `psql` los scripts `15_nomina_calculo_snapshot.sql`, `16_nomina_calculo_snapshot_rls.sql` y `20_nomina_calculo_snapshot_rpc.sql`.
+- Ajuste de seguridad: durante la validacion se detecto `anon` con EXECUTE explicito sobre `guardar_nomina_calculo_snapshot`; se actualizo la RPC para revocar `anon` ademas de `PUBLIC` y se reaplico.
+- Validacion schema: existen las 6 columnas `aprobacion_operativa_*`; la RPC `guardar_nomina_calculo_snapshot` existe y compila como `SECURITY INVOKER`.
+- Validacion permisos: `authenticated` puede ejecutar la RPC, `anon` no puede ejecutarla y ACL no conserva permiso `PUBLIC`; RLS sigue habilitado en las 5 tablas `nomina_calculo_*`.
+- Validacion atomica: en transaccion con `ROLLBACK`, periodo de prueba `2099-12`, se valido primer guardado, reemplazo, solo un activo, anterior reemplazado, aprobacion historica conservada y nuevo resultado sin aprobacion heredada.
+- Validacion rollback: una llamada invalida con concepto asociado a trabajador inexistente fallo y no cambio el conteo ni el activo; luego se confirmo que no quedaron filas permanentes del periodo de prueba.
+- Frontend: no se valido flujo manual UI con sesion real; queda pendiente prueba end-to-end con usuario `authenticated` desde la app. Se mantiene validacion automatizada de repositorio/servicio/componente.
+- Alcance: no cierra periodo, no emite liquidaciones, no genera Previred, LRE, banco ni PDF, no cambia formulas legales.
+- Pruebas: `npx ng test --watch=false`, `npm run build`.
+
+## NOM-ATOMIC-01 - Reemplazo atomico/transaccional del resultado guardado
+
+Fecha: 2026-05-09
+
+- Objetivo: endurecer el guardado/reemplazo del resultado preliminar para que no existan cabeceras activas incompletas ni reemplazos parciales.
+- SQL/RPC: se agrega `guardar_nomina_calculo_snapshot` en `bd/base/v11/partes/20_nomina_calculo_snapshot_rpc.sql`, incluida en `run_all.sql`.
+- Atomicidad: la funcion inserta cabecera, trabajadores, conceptos, observaciones y trazabilidad dentro de una llamada PostgreSQL; si falla cualquier parte, la llamada completa se revierte.
+- Reemplazo: si existe resultado activo, se bloquea la fila, se crea el nuevo resultado completo inicialmente inactivo y solo al final se marca el anterior como `anulado`/reemplazado y el nuevo como activo.
+- Aprobacion: el nuevo resultado no hereda la aprobacion operativa del anterior; la aprobacion historica queda asociada al `id_calculo_periodo` anterior.
+- Repository/UI: `NominaCalculoSnapshotRepository.guardarSnapshotPreliminar` usa la RPC y `Preparar nomina` muestra error operativo: `No se pudo guardar el resultado preliminar completo. No se realizaron cambios parciales.`
+- Seguridad: `security invoker`, `REVOKE` a `PUBLIC` y `GRANT EXECUTE` solo a `authenticated`; no usa `service_role` desde frontend.
+- Alcance: no cierra periodo, no emite liquidaciones, no genera Previred, LRE, banco ni PDF, no cambia formulas legales.
+- Pruebas: `nomina-calculo-snapshot.repository.spec.ts`, `proceso-mensual.service.spec.ts`, `proceso-mensual-container.spec.ts`, `npx ng test --watch=false`, `npm run build`.
 
 ## NOM-SNAPSHOT-01 - Snapshot completo consultable desde BD
 
@@ -9,7 +172,7 @@ Fecha: 2026-05-09
 - UI: `Preparar nomina` incorpora `Resultado guardado desde BD`, con estado vigente/reemplazado, resumen, trabajadores guardados, conceptos, observaciones y trazabilidad en lenguaje operativo.
 - Trazabilidad usuario final: la pantalla diferencia detalle operativo de identificadores tecnicos; muestra errores de consulta y empty state sin inventar datos.
 - Alcance: lectura consultable del snapshot preliminar; no recalcula movimientos/parametros, no cierra periodo, no emite liquidaciones, no genera Previred, LRE, banco ni PDF.
-- Pendiente posterior: endurecer reemplazo atomico, cierre/reapertura, historico avanzado y validaciones de cierre sobre snapshot completo.
+- Pendiente posterior: cierre/reapertura, historico avanzado y validaciones de cierre sobre snapshot completo.
 - Pruebas: `nomina-calculo-snapshot.repository.spec.ts`, `proceso-mensual.service.spec.ts`, `proceso-mensual-container.spec.ts`, `npx ng test --watch=false`, `npm run build`.
 
 ## NOM-PERSIST-01 - Persistencia formal de aprobacion operativa
@@ -376,3 +539,5 @@ Entradas anteriores se encuentran en resúmenes del memento; esta changelog las 
 - Decision: `novedad_remuneracion_periodo` queda como tabla canonica futura para hechos del periodo y `movimiento_variable_mensual` como tabla legacy/transicion.
 - No se borra documentacion historica; se agregan notas de integracion y referencias cruzadas.
 - Ajuste de validacion: roadmap y tablero dejan de empujar mejoras nuevas sobre Movimientos variables y priorizan `EntradasMensualesPeriodoService`.
+
+Resumen de integracion: [`orquestador/integracion-documental-2026-05-10.md`](./orquestador/integracion-documental-2026-05-10.md).

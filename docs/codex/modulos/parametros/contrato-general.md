@@ -47,3 +47,8 @@ El estado visual de Parametros no debe depender solo de `periodo_remuneracion.es
 ## Pruebas
 
 Ver [`tests-parametros.md`](./tests-parametros.md).
+
+
+## Regla canonica de completitud 2026-05-10
+
+La completitud estricta de Parametros no debe bloquear operacion parcial durante el mes. Debe reservarse para cierre, reconciliacion o carga final del periodo.

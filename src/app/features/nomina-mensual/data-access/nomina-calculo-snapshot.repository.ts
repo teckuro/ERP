@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, isDevMode } from '@angular/core';
 
 import type { Database, Json } from '../../../core/models/database.types';
 import { injectSupabase } from '../../../core/services/supabase.service';
@@ -26,6 +26,14 @@ type NominaCalculoConceptoInsert = Tables['nomina_calculo_concepto']['Insert'];
 type NominaCalculoIssueInsert = Tables['nomina_calculo_issue']['Insert'];
 type NominaCalculoTrazabilidadInsert = Tables['nomina_calculo_trazabilidad']['Insert'];
 
+interface GuardarSnapshotRpcPayload {
+  cabecera: Record<string, Json>;
+  trabajadores: Array<Record<string, Json>>;
+  conceptos: Array<Record<string, Json>>;
+  observaciones: Array<Record<string, Json>>;
+  trazabilidad: Array<Record<string, Json>>;
+}
+
 @Injectable({ providedIn: 'root' })
 export class NominaCalculoSnapshotRepository {
   private readonly supabase = injectSupabase();
@@ -35,28 +43,28 @@ export class NominaCalculoSnapshotRepository {
     reemplazoSnapshotAnterior: boolean;
   }> {
     const anterior = await this.obtenerSnapshotActivo(snapshot.periodo, snapshot.idEmpresa);
-    if (anterior?.idCalculoPeriodo) {
-      await this.marcarInactivo(anterior.idCalculoPeriodo, 'anulado');
+    const payload = buildGuardarSnapshotRpcPayload(snapshot);
+    const { data, error } = await this.supabase.rpc('guardar_nomina_calculo_snapshot', {
+      p_periodo: snapshot.periodo,
+      p_id_empresa: snapshot.idEmpresa,
+      p_cabecera: payload.cabecera,
+      p_trabajadores: payload.trabajadores,
+      p_conceptos: payload.conceptos,
+      p_observaciones: payload.observaciones,
+      p_trazabilidad: payload.trazabilidad,
+    });
+    if (error || typeof data !== 'number') {
+      logGuardarSnapshotRpcError(snapshot, payload, error, data);
+      throw new Error('No se pudo guardar el resultado preliminar completo. No se realizaron cambios parciales.');
     }
 
-    const cabecera = await this.insertarCabecera({
-      ...snapshot,
-      estado: anterior ? 'recalculado' : snapshot.estado,
-      origen: anterior ? 'recalculo' : snapshot.origen,
-    });
-    const trabajadores = await this.insertarTrabajadores(cabecera.idCalculoPeriodo!, snapshot.trabajadores);
-    const idTrabajadorPorPersona = new Map(trabajadores.map((t) => [t.idPersona, t.idCalculoTrabajador!]));
-
-    await this.insertarConceptos(snapshot.trabajadores, idTrabajadorPorPersona);
-    await this.insertarIssues(cabecera.idCalculoPeriodo!, snapshot.issues, snapshot.trabajadores, idTrabajadorPorPersona);
-    await this.insertarTrazabilidad(cabecera.idCalculoPeriodo!, snapshot.trabajadores, idTrabajadorPorPersona);
-
-    if (anterior?.idCalculoPeriodo) {
-      await this.actualizarReemplazo(anterior.idCalculoPeriodo, cabecera.idCalculoPeriodo!);
+    const completo = await this.obtenerSnapshotCompletoPorId(data);
+    if (!completo) {
+      throw new Error('El resultado se guardo, pero no fue posible consultar el detalle guardado.');
     }
 
     return {
-      snapshot: { ...snapshot, ...cabecera, trabajadores },
+      snapshot: completo.cabecera,
       reemplazoSnapshotAnterior: !!anterior,
     };
   }
@@ -380,6 +388,191 @@ export class NominaCalculoSnapshotRepository {
   }
 }
 
+function logGuardarSnapshotRpcError(
+  snapshot: NominaCalculoPeriodoSnapshot,
+  payload: GuardarSnapshotRpcPayload,
+  error: unknown,
+  data: unknown,
+): void {
+  if (!isDevMode()) return;
+
+  console.error('[nomina-snapshot] Error guardando snapshot preliminar', {
+    rpc: 'guardar_nomina_calculo_snapshot',
+    periodo: snapshot.periodo,
+    idEmpresa: snapshot.idEmpresa,
+    resumen: {
+      trabajadores: payload.trabajadores.length,
+      conceptos: payload.conceptos.length,
+      observaciones: payload.observaciones.length,
+      trazabilidad: payload.trazabilidad.length,
+    },
+    diagnosticoPayload: diagnoseGuardarSnapshotRpcPayload(payload),
+    rpcResultType: typeof data,
+    error: sanitizeSupabaseError(error),
+  });
+}
+
+function sanitizeSupabaseError(error: unknown): unknown {
+  if (!error || typeof error !== 'object') return error;
+
+  const source = error as {
+    code?: unknown;
+    message?: unknown;
+    details?: unknown;
+    hint?: unknown;
+    name?: unknown;
+  };
+
+  return {
+    name: source.name,
+    code: source.code,
+    message: source.message,
+    details: source.details,
+    hint: source.hint,
+  };
+}
+
+function diagnoseGuardarSnapshotRpcPayload(payload: GuardarSnapshotRpcPayload): Record<string, number> {
+  return {
+    cabeceraUndefined: countUndefinedValues(payload.cabecera),
+    cabeceraInvalidNumbers: countInvalidNumbers(payload.cabecera),
+    trabajadoresUndefined: countUndefinedValues(payload.trabajadores),
+    trabajadoresInvalidNumbers: countInvalidNumbers(payload.trabajadores),
+    conceptosUndefined: countUndefinedValues(payload.conceptos),
+    conceptosInvalidNumbers: countInvalidNumbers(payload.conceptos),
+    observacionesUndefined: countUndefinedValues(payload.observaciones),
+    observacionesInvalidNumbers: countInvalidNumbers(payload.observaciones),
+    trazabilidadUndefined: countUndefinedValues(payload.trazabilidad),
+    trazabilidadInvalidNumbers: countInvalidNumbers(payload.trazabilidad),
+  };
+}
+
+function countUndefinedValues(value: unknown): number {
+  if (value === undefined) return 1;
+  if (value == null || typeof value !== 'object') return 0;
+  if (Array.isArray(value)) return value.reduce((total, item) => total + countUndefinedValues(item), 0);
+  return Object.values(value).reduce((total, item) => total + countUndefinedValues(item), 0);
+}
+
+function countInvalidNumbers(value: unknown): number {
+  if (typeof value === 'number') return Number.isFinite(value) ? 0 : 1;
+  if (value == null || typeof value !== 'object') return 0;
+  if (Array.isArray(value)) return value.reduce((total, item) => total + countInvalidNumbers(item), 0);
+  return Object.values(value).reduce((total, item) => total + countInvalidNumbers(item), 0);
+}
+
+function buildGuardarSnapshotRpcPayload(snapshot: NominaCalculoPeriodoSnapshot): GuardarSnapshotRpcPayload {
+  const trabajadores = snapshot.trabajadores.map((trabajador, trabajadorIndex) => ({
+    trabajador_index: trabajadorIndex,
+    id_persona: trabajador.idPersona,
+    rut: trabajador.rut,
+    nombre_completo_snapshot: trabajador.nombreCompletoSnapshot,
+    estado: trabajador.estado,
+    sueldo_base: trabajador.sueldoBase,
+    base_imponible_previsional: trabajador.baseImponiblePrevisional,
+    base_tributable: trabajador.baseTributable,
+    total_haberes_imponibles: trabajador.totalHaberesImponibles,
+    total_haberes_no_imponibles: trabajador.totalHaberesNoImponibles,
+    total_descuentos_legales: trabajador.totalDescuentosLegales,
+    total_descuentos_voluntarios: trabajador.totalDescuentosVoluntarios,
+    impuesto_unico: trabajador.impuestoUnico,
+    liquido_preliminar: trabajador.liquidoPreliminar,
+    cotizacion_afp: trabajador.cotizacionAfp,
+    cotizacion_salud: trabajador.cotizacionSalud,
+    cotizacion_afc: trabajador.cotizacionAfc,
+    cotizacion_sis: trabajador.cotizacionSis,
+    cotizacion_sanna: trabajador.cotizacionSanna,
+    cotizacion_ley_16744_empleador: trabajador.cotizacionLey16744Empleador,
+  })) satisfies Array<Record<string, Json>>;
+
+  const conceptos = snapshot.trabajadores.flatMap((trabajador, trabajadorIndex) =>
+    trabajador.conceptos.map((concepto) => ({
+      trabajador_index: trabajadorIndex,
+      id_concepto: concepto.idConcepto,
+      tipo: concepto.tipo,
+      nombre_concepto_snapshot: concepto.nombreConceptoSnapshot,
+      codigo_lre_snapshot: concepto.codigoLreSnapshot,
+      monto: concepto.monto,
+      imponible: concepto.imponible,
+      tributable: concepto.tributable,
+      afecta_liquido: concepto.afectaLiquido,
+      origen: concepto.origen,
+      trazabilidad_json: concepto.trazabilidadJson as Json | null,
+    })),
+  ) satisfies Array<Record<string, Json>>;
+
+  const observaciones = [
+    ...snapshot.issues.map((issue) => buildIssueRpcPayload(issue, null)),
+    ...snapshot.trabajadores.flatMap((trabajador, trabajadorIndex) =>
+      trabajador.issues.map((issue) => buildIssueRpcPayload(issue, trabajadorIndex)),
+    ),
+  ];
+
+  const trazabilidad = [
+    ...snapshot.trazabilidad.map((traza) => buildTrazabilidadRpcPayload(traza, null)),
+    ...snapshot.trabajadores.flatMap((trabajador, trabajadorIndex) =>
+      trabajador.trazabilidad.map((traza) => buildTrazabilidadRpcPayload(traza, trabajadorIndex)),
+    ),
+  ];
+
+  return {
+    cabecera: {
+      periodo: snapshot.periodo,
+      id_empresa: snapshot.idEmpresa,
+      estado: snapshot.estado,
+      fecha_generacion: snapshot.fechaGeneracion,
+      usuario_generador: snapshot.usuarioGenerador,
+      total_trabajadores: snapshot.totalTrabajadores,
+      total_haberes: snapshot.totalHaberes,
+      total_descuentos: snapshot.totalDescuentos,
+      total_liquido: snapshot.totalLiquido,
+      total_bloqueados: snapshot.totalBloqueados,
+      total_advertencias: snapshot.totalAdvertencias,
+      version_motor: snapshot.versionMotor,
+      hash_snapshot: snapshot.hashSnapshot,
+      origen: snapshot.origen,
+    },
+    trabajadores,
+    conceptos,
+    observaciones,
+    trazabilidad,
+  };
+}
+
+function buildIssueRpcPayload(
+  issue: NominaCalculoIssueSnapshot,
+  trabajadorIndex: number | null,
+): Record<string, Json> {
+  return {
+    trabajador_index: trabajadorIndex,
+    codigo: issue.codigo,
+    severidad: issue.severidad,
+    origen: issue.origen,
+    mensaje: issue.mensaje,
+    campo: issue.campo,
+    entidad_id: issue.entidadId == null ? null : String(issue.entidadId),
+  };
+}
+
+function buildTrazabilidadRpcPayload(
+  traza: NominaCalculoTrazabilidadSnapshot,
+  trabajadorIndex: number | null,
+): Record<string, Json> {
+  return {
+    trabajador_index: trabajadorIndex,
+    codigo: traza.codigo,
+    origen: traza.origen,
+    tabla_fuente: traza.tablaFuente,
+    campo_fuente: traza.campoFuente,
+    vigencia_inicio: normalizeRpcDate(traza.vigenciaInicio),
+    vigencia_fin: normalizeRpcDate(traza.vigenciaFin),
+    valor_entrada: traza.valorEntrada as Json | null,
+    formula: traza.formula,
+    valor_resultado: traza.valorResultado as Json | null,
+    observacion: traza.observacion,
+  };
+}
+
 function mapPeriodoRow(row: NominaCalculoPeriodoRow): NominaCalculoPeriodoSnapshot {
   return {
     idCalculoPeriodo: row.id_calculo_periodo,
@@ -649,11 +842,19 @@ function mapTrazabilidadRow(
     origen: traza.origen,
     tabla_fuente: traza.tablaFuente,
     campo_fuente: traza.campoFuente,
-    vigencia_inicio: traza.vigenciaInicio,
-    vigencia_fin: traza.vigenciaFin,
+    vigencia_inicio: normalizeRpcDate(traza.vigenciaInicio),
+    vigencia_fin: normalizeRpcDate(traza.vigenciaFin),
     valor_entrada: traza.valorEntrada as Json | null,
     formula: traza.formula,
     valor_resultado: traza.valorResultado as Json | null,
     observacion: traza.observacion,
   };
+}
+
+function normalizeRpcDate(value: string | null | undefined): string | null {
+  if (!value) return null;
+  const candidate = /^\d{4}-(0[1-9]|1[0-2])$/.test(value) ? `${value}-01` : value;
+  if (!/^\d{4}-(0[1-9]|1[0-2])-[0-9]{2}$/.test(candidate)) return null;
+  const parsed = new Date(`${candidate}T00:00:00.000Z`);
+  return Number.isNaN(parsed.getTime()) || parsed.toISOString().slice(0, 10) !== candidate ? null : candidate;
 }

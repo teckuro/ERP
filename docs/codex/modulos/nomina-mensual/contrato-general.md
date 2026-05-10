@@ -17,6 +17,7 @@ El modelo documental de **Novedades mensuales** queda definido en [`novedades-me
 - **Validacion operativa USAB-NOM-05**: antes de `Calcular preliminar`, la UI muestra estado de calculo, bloqueos, advertencias, informacion, razon visible de deshabilitado y siguiente accion recomendada.
 - **Resultado preliminar revisable USAB-NOM-06**: despues de calcular, la UI muestra resumen operativo, trabajadores calculados/con observaciones/omitidos, observaciones del resultado, detalle tecnico secundario y acciones de recalculo, revision y guardado preliminar.
 - **Guardado/versionado operativo USAB-NOM-07**: el resultado preliminar muestra estado de guardado, razon visible cuando no se puede guardar, confirmacion antes de guardar, ultimo resultado guardado, fecha, version del calculo, identificador tecnico y advertencias asociadas. Guardar crea o reemplaza una version revisable del periodo; no es liquidacion oficial.
+- **Reemplazo atomico NOM-ATOMIC-01**: el guardado/reemplazo del resultado preliminar usa la RPC `guardar_nomina_calculo_snapshot`. La operacion escribe cabecera, trabajadores, conceptos, observaciones y trazabilidad dentro de una llamada transaccional; si falla una parte, no quedan cambios parciales.
 - **Revision para aprobacion USAB-NOM-08**: sobre el resultado preliminar guardado, la UI muestra estado de preparacion, checklist operativo y bloqueos/advertencias/informacion para decidir. La accion deshabilitada de solicitud fue reemplazada por `Aprobar resultado preliminar` en USAB-NOM-09.
 - **Aprobacion operativa USAB-NOM-09 + NOM-PERSIST-01**: sobre el resultado preliminar guardado vigente, RRHH puede marcar `Aprobar resultado preliminar` con confirmacion previa. La aprobacion se persiste en `nomina_calculo_periodo` asociada a `id_calculo_periodo`; la UI muestra fecha/hora, usuario real si existe o `Usuario no disponible en esta sesion`, version del calculo, identificador tecnico, trabajadores y totales aprobados, y advertencias al aprobar. Si se recalcula/guarda un resultado posterior, la aprobacion anterior no aprueba automaticamente el nuevo resultado.
 - **Snapshot completo consultable NOM-SNAPSHOT-01**: el resultado guardado puede consultarse completo desde BD por periodo activo o por `id_calculo_periodo`, incluyendo cabecera, trabajadores, conceptos, observaciones, trazabilidad y aprobacion operativa. La consulta no recalcula con movimientos, parametros ni reglas actuales.
@@ -29,6 +30,10 @@ El modelo documental de **Novedades mensuales** queda definido en [`novedades-me
 - Desde USAB-NOM-05, `Calcular preliminar` se habilita solo con periodo valido, base generada, trabajadores considerados, parametros minimos disponibles, sin bloqueos ni error activo.
 - Desde USAB-NOM-06, `Resultado preliminar` es una salida revisable del calculo. Guardarlo no equivale a liquidacion oficial, no cierra periodo y no genera Previred/LRE/banco.
 - Desde USAB-NOM-07, `Guardar resultado preliminar` usa el soporte existente de snapshots preliminares. El repositorio reemplaza el resultado activo del periodo marcando el anterior inactivo/anulado y vinculando el reemplazo. La UI no inventa version numerica incremental; muestra fecha, version del calculo e identificador tecnico disponibles.
+- Desde NOM-ATOMIC-01, ese reemplazo se realiza dentro de la RPC `guardar_nomina_calculo_snapshot`. El nuevo resultado no se activa hasta que cabecera y detalles quedan insertados, y el anterior no se anula si falla el guardado.
+- Desde NOM-SAVE-DIAG-01, el payload de trazabilidad del snapshot debe enviar `vigenciaInicio`/`vigenciaFin` como fecha SQL valida (`YYYY-MM-DD`) o `null`. Si una regla del motor tiene solo periodo mensual `YYYY-MM`, el snapshot lo normaliza al primer dia del mes (`YYYY-MM-01`) antes de persistir. Esto evita el error RPC `22007 invalid input syntax for type date` sin cambiar formulas legales ni la RPC.
+- Desde NOM-E2E-CLOSE-01, el flujo real authenticated queda validado y documentado para `2026-04`: login real, validar periodo, generar base, calcular preliminar, guardar por RPC, consultar `Resultado guardado desde BD`, aprobar operativamente y recuperar snapshot/aprobacion tras recargar. Esto no habilita cierre, liquidacion oficial ni salidas legales.
+- Desde NOM-CIERRE-DESIGN-01, el cierre operativo v1 queda disenado como estado del snapshot activo aprobado. Se persistira en `nomina_calculo_periodo`, no tocara `periodo_remuneracion.estado`, no implementara reapertura, no bloqueara por advertencias por defecto y debera ejecutarse mediante RPC atomica en una fase posterior.
 - Desde USAB-NOM-08, `Revision para aprobacion` prepara la decision operativa con checklist y observaciones visibles; desde USAB-NOM-09 esa revision puede marcar aprobacion operativa interna.
 - Desde NOM-PERSIST-01, `Aprobar resultado preliminar` es una marca operativa interna persistida sobre el resultado guardado vigente. No usa `aprobado_para_liquidacion`, no cierra periodo, no emite liquidaciones oficiales, no genera Previred/LRE/banco y no cambia formulas legales.
 - Desde NOM-SNAPSHOT-01, `Resultado guardado desde BD` muestra el detalle persistido del snapshot completo. No usa datos actuales para reconstruir montos y no reemplaza el cierre operativo futuro.
@@ -50,6 +55,8 @@ Lectura via `ParametrosGeneralesService`: `obtenerUltimoHastaPeriodo(periodo)`, 
 ## 5. Relacion con empleados
 
 Conteo de trabajadores **activos** con `aptoParaRemuneraciones` via `EmpleadosService.listar()` (sin conteos demo inventados).
+
+Desde EMP-ADV-FICHA-01, Empleados/Ficha debe alinear `aptoParaRemuneraciones` con requisitos minimos del motor: contrato y jornada reales, sueldo/moneda, pago y prevision calculable. `tipoPrevision = NINGUNA` no habilita nomina mensual; puede existir en borrador o ficha incompleta, pero no debe llegar como trabajador apto al proceso mensual.
 
 ## 6. Relacion con conceptos
 
@@ -245,7 +252,8 @@ Reglas:
 Persistencia real:
 
 - se usa `ProcesoMensualService.guardarSnapshotPreliminar` y `NominaCalculoSnapshotRepository`;
-- el guardado reemplaza el resultado activo del periodo: el anterior se marca inactivo/anulado y se vincula con `reemplazadoPor`;
+- desde NOM-ATOMIC-01, `NominaCalculoSnapshotRepository` llama la RPC `guardar_nomina_calculo_snapshot` para hacer el commit real en BD;
+- el guardado reemplaza el resultado activo del periodo dentro de la misma transaccion: el anterior se marca inactivo/anulado y se vincula con `reemplazadoPor` solo despues de insertar el nuevo resultado completo;
 - no existe version numerica incremental funcional propia, por lo que la UI no la inventa;
 - la identificacion disponible es fecha de guardado, `versionMotor`, `hashSnapshot` e `idCalculoPeriodo` como referencia tecnica secundaria.
 
@@ -256,6 +264,299 @@ Fuera de alcance:
 - Previred, LRE, banco o archivos legales;
 - cambios de formulas legales;
 - SQL/RLS, migraciones o cambios de seguridad.
+
+## 12.2.1.1 Reemplazo atomico/transaccional del resultado guardado
+
+NOM-ATOMIC-01 define el guardado/reemplazo como una operacion transaccional de BD. El cliente no debe encadenar inserts y updates separados para crear el resultado guardado.
+
+RPC vigente:
+
+- funcion: `guardar_nomina_calculo_snapshot`;
+- archivo SQL: `bd/base/v11/partes/20_nomina_calculo_snapshot_rpc.sql`;
+- seguridad: `security invoker`, `REVOKE` a `PUBLIC` y `GRANT EXECUTE` solo a `authenticated`;
+- payload: periodo, empresa opcional, cabecera, trabajadores, conceptos, observaciones y trazabilidad;
+- retorno: `id_calculo_periodo` del resultado nuevo.
+
+Reglas transaccionales:
+
+- la RPC valida periodo, cabecera y arrays minimos;
+- bloquea el resultado activo actual del periodo/empresa con `FOR UPDATE`;
+- inserta el resultado nuevo inicialmente como `activo = false`;
+- inserta trabajadores, conceptos, observaciones y trazabilidad;
+- al final, si habia resultado activo anterior, lo marca `activo = false`, `estado = anulado` y `reemplazado_por = nuevo_id`;
+- solo al final activa el nuevo resultado;
+- si falla cualquier insercion o validacion, PostgreSQL revierte la llamada completa.
+
+Aprobacion operativa:
+
+- el nuevo resultado se crea sin aprobacion operativa;
+- la aprobacion del resultado anterior no se copia;
+- si se consulta el resultado anterior por `id_calculo_periodo`, conserva su aprobacion historica;
+- el resultado activo nuevo queda pendiente de aprobacion operativa propia.
+
+La UI debe mostrar error claro si la RPC falla: `No se pudo guardar el resultado preliminar completo. No se realizaron cambios parciales.`
+
+### Validacion en BD real NOM-DB-APPLY-01
+
+NOM-DB-APPLY-01 aplica y valida los scripts de snapshots/RLS/RPC en la BD Supabase remota controlada configurada en `.env`.
+
+Resultado de validacion:
+
+- aplicados con `psql`: `15_nomina_calculo_snapshot.sql`, `16_nomina_calculo_snapshot_rls.sql` y `20_nomina_calculo_snapshot_rpc.sql`;
+- existen las 6 columnas `aprobacion_operativa_*` en `nomina_calculo_periodo`;
+- `guardar_nomina_calculo_snapshot` existe y compila como `SECURITY INVOKER`;
+- `authenticated` puede ejecutar la RPC;
+- `anon` no puede ejecutar la RPC;
+- ACL de la funcion no conserva permiso `PUBLIC`;
+- RLS sigue habilitado en `nomina_calculo_periodo`, `nomina_calculo_trabajador`, `nomina_calculo_concepto`, `nomina_calculo_issue` y `nomina_calculo_trazabilidad`;
+- no hay grupos con mas de un snapshot activo por periodo/empresa;
+- prueba transaccional con periodo `2099-12` valido primer guardado, reemplazo, aprobacion historica conservada, nuevo resultado sin aprobacion heredada y rollback ante payload invalido;
+- la prueba termino con `ROLLBACK` y se verifico que no quedaron filas permanentes para `2099-12`.
+
+Pendiente acotado: prueba manual end-to-end desde UI con sesion `authenticated` real. La validacion automatizada y de BD confirma que la infraestructura soporta el flujo; la prueba UX queda para una sesion operativa disponible.
+
+### Validacion E2E operativa NOM-E2E-01
+
+NOM-E2E-01 prepara la validacion real de `Preparar nomina` desde UI con sesion Supabase `authenticated`.
+
+E2E agregado:
+
+- archivo: `tests/nomina-mensual.e2e.spec.ts`;
+- activacion: `E2E_NOMINA_REAL=1`;
+- credenciales requeridas fuera del codigo: `E2E_SUPABASE_AUTH_EMAIL`, `E2E_SUPABASE_AUTH_PASSWORD`;
+- periodo requerido: `E2E_NOMINA_PERIODO`;
+- fuente de configuracion: `public/app-config.json` o `E2E_SUPABASE_URL`/`E2E_SUPABASE_ANON_KEY`.
+
+Cobertura esperada cuando se habilite:
+
+- iniciar sesion con `signInWithPassword` y guardar la sesion en `angular-erp-auth`;
+- abrir `Preparar nomina`;
+- validar periodo, generar base, calcular resultado preliminar;
+- guardar resultado preliminar con la RPC real;
+- consultar `Resultado guardado desde BD`;
+- validar en BD que existe un unico snapshot activo con cabecera y detalles;
+- aprobar operativamente;
+- recargar y recuperar snapshot/aprobacion persistidos.
+
+Estado del entorno revisado:
+
+- no hay variables `E2E_SUPABASE_AUTH_EMAIL`, `E2E_SUPABASE_AUTH_PASSWORD` ni `E2E_NOMINA_PERIODO`;
+- no se inventa usuario, no se usa `service_role` y no se escriben datos de prueba sin ambiente confirmado;
+- estado historico: esa ejecucion quedo bloqueada por credenciales/periodo E2E reales; el hito fue cerrado despues por NOM-E2E-CLOSE-01 para `2026-04`.
+
+### Diagnostico de guardado real NOM-SAVE-DIAG-01
+
+NOM-SAVE-DIAG-01 ejecuta el flujo real authenticated para `2026-04` y convierte el error generico de UI en diagnostico verificable.
+
+Resultado:
+
+- punto de fallo reproducido: al guardar resultado preliminar por RPC;
+- error tecnico sanitizado: `code=22007`, `message=invalid input syntax for type date: "2026-04"`, `details=null`, `hint=null`;
+- causa raiz: trazabilidad del snapshot enviaba periodo mensual `YYYY-MM` hacia columnas `DATE`;
+- correccion: normalizar vigencias de trazabilidad a fecha SQL valida (`YYYY-MM-01`) o `null` antes de persistir;
+- SQL/RPC/RLS: no se modifican y no requieren reaplicacion;
+- E2E posterior: guarda resultado preliminar, consulta `Resultado guardado desde BD`, aprueba operativamente y recupera tras recargar;
+- SQL post-guardado: un unico snapshot activo para `2026-04`, aprobado operativamente, sin duplicados activos.
+
+La instrumentacion agregada es segura para desarrollo/E2E: registra nombre de RPC, periodo, conteos del payload y error Supabase sanitizado. No registra tokens, passwords, headers, connection strings ni payload completo con datos personales.
+
+### Cierre documental E2E real NOM-E2E-CLOSE-01
+
+NOM-E2E-CLOSE-01 consolida como hito cerrado el E2E real authenticated de nomina mensual.
+
+Flujo validado:
+
+1. Login real con usuario Supabase `authenticated`.
+2. Periodo `2026-04`.
+3. Validar periodo.
+4. Generar base de nomina.
+5. Calcular resultado preliminar.
+6. Guardar resultado preliminar mediante `guardar_nomina_calculo_snapshot`.
+7. Consultar `Resultado guardado desde BD`.
+8. Aprobar operativamente.
+9. Recargar y recuperar snapshot/aprobacion persistidos.
+
+Evidencia:
+
+- comando: `npx playwright test tests/nomina-mensual.e2e.spec.ts --workers=1`;
+- resultado: OK, 1 passed / 1 skipped;
+- SQL post-guardado: snapshot activo `id_calculo_periodo=11`, 2 trabajadores, 16 conceptos, 12 observaciones, 72 trazas;
+- aprobacion: `aprobacion_operativa_estado=aprobado_operativamente`;
+- duplicados activos: 0.
+
+Interpretacion funcional:
+
+- el resultado preliminar guardado y aprobado es una revision operativa interna asociada al `id_calculo_periodo` activo;
+- la aprobacion operativa no es cierre de periodo, no es liquidacion oficial y no usa `aprobado_para_liquidacion`;
+- un nuevo snapshot/recalculo no hereda automaticamente la aprobacion del resultado anterior;
+- el snapshot consultado desde BD es la fuente de revision del resultado guardado, no una reconstruccion con parametros actuales.
+
+Fuera de alcance de este cierre documental:
+
+- cierre operativo o legal;
+- reapertura, anulacion formal o rectificacion;
+- liquidaciones oficiales;
+- PDF, Previred, LRE, banco o contabilidad;
+- roles finos/JWT/RLS por rol;
+- cambios de SQL/RPC/RLS, formulas legales, motor o seeds.
+
+Siguiente fase recomendada despues del diseno: `NOM-CIERRE-01 - Implementar cierre operativo controlado`.
+
+Preguntas que debe resolver esa fase:
+
+- que entidad se cierra: `nomina_calculo_periodo`, `periodo_remuneracion` o ambas;
+- que estado persistido representa el cierre y quien puede cambiarlo;
+- que bloqueos impiden cerrar;
+- como se comportan recalculo, reemplazo de snapshot y aprobacion despues del cierre;
+- como se reabre o rectifica un periodo cerrado;
+- como se relaciona el cierre con liquidacion oficial futura;
+- que auditoria minima se exige para cerrar/reabrir.
+
+### Diseno de cierre operativo NOM-CIERRE-DESIGN-01
+
+NOM-CIERRE-DESIGN-01 cierra documentalmente las decisiones para implementar despues `NOM-CIERRE-01 - Implementar cierre operativo controlado`.
+
+Definicion:
+
+```txt
+El cierre operativo congela el snapshot de nomina aprobado operativamente para un periodo, impidiendo recalcular, reemplazar o aprobar otro resultado para ese mismo periodo mientras el cierre este vigente.
+```
+
+No significa:
+
+- cierre legal;
+- liquidacion oficial;
+- PDF;
+- Previred;
+- LRE;
+- archivo banco;
+- contabilidad;
+- firma o envio de documentos.
+
+Decisiones vigentes para NOM-CIERRE-01:
+
+| Decision | Definicion v1 |
+|---|---|
+| Persistencia | Agregar columnas `cierre_operativo_*` en `nomina_calculo_periodo`. |
+| `periodo_remuneracion.estado` | No tocar en v1. |
+| Advertencias | No bloquean por defecto; se muestran y registran en metadata. |
+| Reapertura | Fuera de NOM-CIERRE-01; requiere fase propia. |
+| Mecanismo | RPC atomica `cerrar_nomina_operativa`. |
+| Nombre visible | `Cerrar nomina del periodo`. |
+
+Precondiciones para cerrar:
+
+- periodo valido seleccionado;
+- snapshot activo guardado en BD;
+- snapshot no reemplazado;
+- aprobacion operativa persistida sobre el `id_calculo_periodo` activo;
+- no existe resultado actualizado sin guardar;
+- no existen bloqueos impeditivos;
+- no existe cierre operativo vigente;
+- usuario con sesion `authenticated`.
+
+Despues de cerrar, deben bloquearse recalculo, nuevo guardado preliminar, reemplazo de snapshot activo, aprobacion de otro resultado y edicion de la preparacion como abierta. Debe seguir permitida la consulta del resultado cerrado, snapshot desde BD, trabajadores, conceptos, observaciones, trazabilidad, aprobacion operativa y cierre operativo.
+
+Contrato tecnico propuesto para NOM-CIERRE-01:
+
+```sql
+cierre_operativo_estado text null,
+cierre_operativo_fecha timestamptz null,
+cierre_operativo_usuario_id uuid null,
+cierre_operativo_usuario_label text null,
+cierre_operativo_observacion text null,
+cierre_operativo_metadata jsonb not null default '{}'::jsonb
+```
+
+CHECK sugerido:
+
+```sql
+cierre_operativo_estado is null
+or cierre_operativo_estado in ('cerrado_operativamente')
+```
+
+La RPC `cerrar_nomina_operativa` debe validar atomicamente que el snapshot existe, el periodo coincide, `activo = true`, `reemplazado_por is null`, `aprobacion_operativa_estado = 'aprobado_operativamente'`, `cierre_operativo_estado is null` y que el usuario sea `authenticated`. Debe revocar `PUBLIC` y `anon`, y permitir ejecucion solo a `authenticated`.
+
+Contrato UI propuesto:
+
+- bloque visible: `Cierre operativo`;
+- ubicacion: despues de `Aprobacion operativa` y antes de salidas futuras;
+- estados: `No disponible`, `Disponible para cierre`, `Cerrada operativamente`, `Cerrada con advertencias`;
+- accion: `Cerrar nomina del periodo`;
+- helper obligatorio: `El cierre operativo congela este resultado para continuar con etapas posteriores. No emite liquidaciones ni genera archivos legales.`
+
+Documento especifico: [`../../fases/nomina/NOM-CIERRE-DESIGN-01.md`](../../fases/nomina/NOM-CIERRE-DESIGN-01.md).
+
+Siguiente fase: `NOM-CIERRE-01 - Implementar cierre operativo controlado`.
+
+### Ejecucion NOM-E2E-02
+
+NOM-E2E-02 intento ejecutar el flujo real authenticated despues de AUTH-BASE-01. En la ejecucion inicial quedo parcial por precondiciones faltantes, pero el hito fue completado posteriormente por NOM-SAVE-DIAG-01 y consolidado por NOM-E2E-CLOSE-01.
+
+Entorno local del 2026-05-09:
+
+- faltan `E2E_NOMINA_REAL`, `E2E_SUPABASE_AUTH_EMAIL`, `E2E_SUPABASE_AUTH_PASSWORD` y `E2E_NOMINA_PERIODO`;
+- falta `SUPABASE_DB_URL` para consultas SQL post-E2E;
+- no se pudo autenticar un usuario real ni probar un periodo real;
+- no se creo snapshot por UI, no se aprobo operativamente y no hubo `id_calculo_periodo` para consultas posteriores.
+
+Comandos ejecutados:
+
+- `npx playwright test tests/nomina-mensual.e2e.spec.ts --workers=1`: OK en modo seguro, 1 passed / 1 skipped;
+- `npx ng test --watch=false`: OK, 409 tests;
+- `npm run build`: OK, con warnings conocidos de budget CSS en Empleados.
+
+Estado actualizado 2026-05-10: cerrada por NOM-E2E-CLOSE-01. La evidencia final corresponde al periodo `2026-04`, con guardado RPC real, consulta BD, aprobacion operativa y recuperacion tras recargar.
+
+### Preparacion de entorno ENV-E2E-01
+
+ENV-E2E-01 prepara el entorno para repetir NOM-E2E-02 en modo real sin exponer secretos.
+
+Ambiente definido:
+
+- Supabase remoto/controlado apuntado por `public/app-config.json`;
+- `SUPABASE_DB_URL` disponible en `.env` local para SQL post-E2E;
+- `.env` ignorado por Git;
+- `.env.example` contiene solo nombres de variables y placeholders vacios.
+
+Variables requeridas:
+
+- `E2E_NOMINA_REAL`;
+- `E2E_SUPABASE_AUTH_EMAIL`;
+- `E2E_SUPABASE_AUTH_PASSWORD`;
+- `E2E_NOMINA_PERIODO`;
+- `SUPABASE_DB_URL`;
+- opcionales: `E2E_SUPABASE_URL` y `E2E_SUPABASE_ANON_KEY`.
+
+Validacion ejecutada:
+
+- conexion SQL OK usando `SUPABASE_DB_URL` local;
+- permisos de `guardar_nomina_calculo_snapshot`: `authenticated=true`, `anon=false`;
+- E2E modo seguro OK con el caso real omitido mientras faltan usuario/periodo.
+
+Bloqueos restantes:
+
+- para repetir la prueba en otro ambiente: crear o confirmar usuario Supabase Auth de desarrollo;
+- configurar email/password solo en `.env` local o sesion PowerShell;
+- elegir `E2E_NOMINA_PERIODO`;
+- confirmar que ese periodo tenga parametros, trabajador activo, contrato vigente, datos previsionales/salud minimos y entradas suficientes;
+- ejecutar el E2E real y SQL post-guardado en ese ambiente.
+
+No se crearon datos de prueba ni usuarios en esta fase. No se uso `service_role`, no se modifico RLS/RPC y no se cambiaron formulas legales.
+
+### Autenticacion base AUTH-BASE-01
+
+AUTH-BASE-01 agrega la base minima para que `Preparar nomina` opere con sesion Supabase `authenticated` real.
+
+Cambios relevantes para Nomina:
+
+- `/login` permite iniciar sesion con email/password de Supabase Auth;
+- las rutas internas, incluida `/remuneraciones/proceso-mensual`, quedan protegidas;
+- el header muestra la sesion activa y permite cerrar sesion;
+- el E2E de nomina inicia por UI de login cuando existen variables reales;
+- la aprobacion operativa puede recuperar usuario/email desde Supabase Auth mediante el cliente existente.
+
+La fase no agrega roles avanzados, permisos finos, modulo de usuarios, cierre, liquidaciones oficiales, Previred, LRE, banco ni cambios de formulas legales.
 
 ## 12.2.2 Revision operativa para aprobacion
 
@@ -356,8 +657,8 @@ Reglas de saneamiento:
 
 - `Aprobar resultado preliminar` es una aprobacion interna persistida desde NOM-PERSIST-01 en la cabecera del resultado guardado.
 - La persistencia formal disponible no equivale a cierre; cierre/reapertura e historico avanzado deben definirse antes de emitir liquidaciones oficiales.
-- El snapshot completo ya puede consultarse desde BD para revision operativa desde NOM-SNAPSHOT-01; antes de cierre aun deben definirse validaciones formales de cierre, historico avanzado y atomicidad de reemplazo.
-- El reemplazo de snapshot activo debe endurecerse con atomicidad real si el flujo de cierre depende de el.
+- El snapshot completo ya puede consultarse desde BD para revision operativa desde NOM-SNAPSHOT-01.
+- El reemplazo de snapshot activo ya usa RPC transaccional desde NOM-ATOMIC-01; antes de cierre aun deben definirse validaciones formales de cierre e historico avanzado.
 - `window.confirm` es deuda de UX; antes de cierre operativo debe reemplazarse por un dialogo propio auditable y testeable.
 - Cierre, reapertura, anulacion o rectificacion de periodo requieren contrato propio; no se infieren desde USAB-NOM-09.
 - Las pantallas de Liquidaciones no deben mostrar datos demo ni acciones aparentes de firma, descarga, impresion, envio o liquidacion oficial hasta que exista modulo real.
@@ -367,7 +668,8 @@ Fuera de alcance de este saneamiento:
 - no implementar liquidaciones oficiales;
 - no crear cierre de periodo;
 - no generar Previred, LRE, PDF ni archivo de banco;
-- no cambiar formulas legales, motor, SQL/RLS, migraciones, RPC ni permisos.
+- no cambiar formulas legales ni motor;
+- no implementar cierre, liquidacion oficial, Previred, LRE, banco ni PDF.
 
 ## 12.1 Calculo preliminar MOTOR-01/MOTOR-02
 
@@ -504,3 +806,22 @@ Decision vigente:
 - `MovimientosVariablesService` y `movimiento_variable_mensual` pueden seguir existiendo como transicion, pero no son la arquitectura final.
 - Proceso mensual consume `EntradasMensualesPeriodoService` desde UNIF-NOM-03; los alias legacy se conservan solo como compatibilidad temporal.
 - El motor preliminar y los snapshots no equivalen aun a liquidacion oficial cerrada.
+
+
+## Contrato canonico 2026-05-10
+
+El resultado preliminar guardado es un snapshot persistido y reemplazable. La aprobacion operativa se asocia al `id_calculo_periodo` vigente.
+
+La aprobacion operativa:
+
+- no equivale a cierre operativo;
+- no equivale a cierre legal;
+- no emite liquidaciones oficiales;
+- no genera PDF;
+- no genera Previred;
+- no genera LRE;
+- no genera archivo banco;
+- no genera contabilidad;
+- no debe heredarse a un nuevo snapshot reemplazante.
+
+El cierre operativo ya tiene diseno cerrado en `NOM-CIERRE-DESIGN-01` y debe implementarse en fase separada: `NOM-CIERRE-01`.

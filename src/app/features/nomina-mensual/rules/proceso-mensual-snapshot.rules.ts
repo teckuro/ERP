@@ -206,13 +206,21 @@ function mapTrazabilidad(traza: MotorCalculoPeriodoResultado['liquidaciones'][nu
     origen: traza.origen,
     tablaFuente: traza.tabla,
     campoFuente: traza.campo,
-    vigenciaInicio: traza.vigenciaInicio ?? null,
-    vigenciaFin: traza.vigenciaFin ?? null,
+    vigenciaInicio: normalizeSnapshotDate(traza.vigenciaInicio),
+    vigenciaFin: normalizeSnapshotDate(traza.vigenciaFin),
     valorEntrada: traza.valorEntrada,
     formula: traza.formula,
     valorResultado: traza.valorResultado,
     observacion: traza.observacion ?? null,
   };
+}
+
+function normalizeSnapshotDate(value: string | null | undefined): string | null {
+  if (!value) return null;
+  const candidate = /^\d{4}-(0[1-9]|1[0-2])$/.test(value) ? `${value}-01` : value;
+  if (!/^\d{4}-(0[1-9]|1[0-2])-[0-9]{2}$/.test(candidate)) return null;
+  const parsed = new Date(`${candidate}T00:00:00.000Z`);
+  return Number.isNaN(parsed.getTime()) || parsed.toISOString().slice(0, 10) !== candidate ? null : candidate;
 }
 
 function stableStringify(value: unknown): string {

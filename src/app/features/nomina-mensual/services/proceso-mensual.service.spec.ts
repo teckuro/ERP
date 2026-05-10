@@ -355,6 +355,18 @@ describe('ProcesoMensualService', () => {
     expect(snapshots.guardarSnapshotPreliminar).toHaveBeenCalled();
   });
 
+  it('propaga error operativo si falla el guardado atomico del snapshot', async () => {
+    snapshots.guardarSnapshotPreliminar.mockRejectedValueOnce(
+      new Error('No se pudo guardar el resultado preliminar completo. No se realizaron cambios parciales.'),
+    );
+    const svc = TestBed.inject(ProcesoMensualService);
+    await svc.generarCalculoPeriodo('2026-05');
+
+    await expect(svc.guardarSnapshotPreliminar('2026-05')).rejects.toThrow(
+      'No se pudo guardar el resultado preliminar completo. No se realizaron cambios parciales.',
+    );
+  });
+
   it('no guarda snapshot si el calculo tiene bloqueos', async () => {
     empleados.obtenerPorId.mockResolvedValueOnce({
       id: 1,

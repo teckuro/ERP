@@ -912,7 +912,7 @@ export class ProcesoMensualContainer implements OnInit {
         this.identificadorResultadoGuardadoActual.set(r.snapshot.hashSnapshot ?? null);
         this.errorAprobacionOperativa.set(null);
         void this.cargarSnapshotCompletoActivo(p);
-        this.exitoGuardadoResultado.set('Resultado preliminar guardado. Quedo disponible como version revisable del periodo.');
+        this.exitoGuardadoResultado.set('Resultado preliminar guardado correctamente. Revisa y aprueba operativamente este nuevo resultado si corresponde.');
       })
       .catch((e: unknown) => {
         this.errorGuardadoResultado.set(e instanceof Error ? e.message : String(e));
@@ -951,6 +951,8 @@ export class ProcesoMensualContainer implements OnInit {
     const p = this.periodoSeleccionado();
     this.guardandoSnapshot.set(true);
     this.errorEjecucion.set(null);
+    this.errorGuardadoResultado.set(null);
+    this.exitoGuardadoResultado.set(null);
     void this.procesoMensual
       .reemplazarSnapshotPreliminar(p)
       .then((r) => {
@@ -963,7 +965,7 @@ export class ProcesoMensualContainer implements OnInit {
         this.identificadorResultadoGuardadoActual.set(r.snapshot.hashSnapshot ?? null);
         this.errorAprobacionOperativa.set(null);
         void this.cargarSnapshotCompletoActivo(p);
-        this.exitoGuardadoResultado.set('Resultado preliminar guardado. Quedo disponible como version revisable del periodo.');
+        this.exitoGuardadoResultado.set('Resultado preliminar guardado correctamente. Revisa y aprueba operativamente este nuevo resultado si corresponde.');
       })
       .catch((e: unknown) => {
         this.errorGuardadoResultado.set(e instanceof Error ? e.message : String(e));

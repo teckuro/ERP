@@ -2,6 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ActivatedRoute } from '@angular/router';
 import { provideRouter } from '@angular/router';
 
+import { EMPTY_EMPLEADO_FORM_CATALOGOS } from '../../models/empleado-catalogos.model';
 import { EmpleadoFichaDetalle } from '../../models/empleado-listado.model';
 import { EmpleadosCatalogosService } from '../../services/empleados-catalogos.service';
 import { EmpleadosService } from '../../services/empleados.service';
@@ -75,8 +76,8 @@ function empleado(over: Partial<EmpleadoFichaDetalle> = {}): EmpleadoFichaDetall
         idTramoCarga: null,
       },
       previsionSalud: {
-        tipoRegimenPrevisional: 'NINGUNA',
-        idAfp: null,
+        tipoRegimenPrevisional: 'AFP',
+        idAfp: 1,
         idMonedaCuenta2: null,
         valorCuenta2: null,
         idEntidadPrevisionalIps: null,
@@ -85,10 +86,10 @@ function empleado(over: Partial<EmpleadoFichaDetalle> = {}): EmpleadoFichaDetall
         nombreExCaja: '',
         regimenExCaja: '',
         tasaExCaja: null,
-        idSalud: null,
-        idMonedaPlan: null,
-        valorPlan: null,
-        adicionalAugeGes: null,
+        idSalud: 1,
+        idMonedaPlan: 1,
+        valorPlan: 4.2,
+        adicionalAugeGes: 0,
         tieneApv: false,
         idInstitucionApv: null,
         idMonedaApv: null,
@@ -136,13 +137,38 @@ describe('FichaEmpleadoContainer', () => {
         },
         {
           provide: EmpleadosCatalogosService,
-          useValue: { obtenerFormulario: async () => ({}) },
+          useValue: {
+            obtenerFormulario: async () => ({
+              ...EMPTY_EMPLEADO_FORM_CATALOGOS,
+              tiposRegimenPrevisional: [
+                { value: 'AFP', label: 'AFP' },
+                { value: 'IPS', label: 'IPS' },
+                { value: 'NINGUNA', label: 'Sin prevision' },
+              ],
+              regimenesPrevisionales: [
+                { value: 1, label: 'AFP' },
+                { value: 2, label: 'IPS' },
+              ],
+            }),
+          },
         },
       ],
     }).compileComponents();
 
     fixture = TestBed.createComponent(FichaEmpleadoContainer);
     component = fixture.componentInstance;
+    component.catalogos.set({
+      ...EMPTY_EMPLEADO_FORM_CATALOGOS,
+      tiposRegimenPrevisional: [
+        { value: 'AFP', label: 'AFP' },
+        { value: 'IPS', label: 'IPS' },
+        { value: 'NINGUNA', label: 'Sin prevision' },
+      ],
+      regimenesPrevisionales: [
+        { value: 1, label: 'AFP' },
+        { value: 2, label: 'IPS' },
+      ],
+    });
   });
 
   it('muestra bloqueos principales desde el helper central', () => {
@@ -261,6 +287,26 @@ describe('FichaEmpleadoContainer', () => {
 
     expect(empleadosServiceMock.validarFichaParaRemuneraciones).not.toHaveBeenCalled();
     expect(component.validationBlockingItems()).toContain('Ingresa sueldo base válido.');
+  });
+
+  it('ficha con Sin prevision bloquea validar y recomienda Prevision y salud', () => {
+    const employee = empleado();
+    component.evaluacionEmpleado = vi.fn().mockReturnValue({
+      estadoFicha: 'INCOMPLETO',
+      aptoParaRemuneraciones: false,
+      bloqueos: [
+        'La opcion "Sin prevision" no habilita calculo de nomina. Selecciona AFP o IPS antes de validar para remuneraciones.',
+      ],
+      advertencias: [],
+      defaultsTecnicosDetectados: [],
+      seccionesPendientes: ['prevision y salud'],
+    });
+
+    expect(component.canValidateForPayroll(employee)).toBe(false);
+    expect(component.pendingItemsEvaluados(employee).length).toBeGreaterThan(0);
+    expect(component.primaryActionEvaluadaLabel(employee)).toBe('Revisar pendientes');
+    component.selectRecommendedTab(employee);
+    expect(component.activeTab()).not.toBeNull();
   });
 
   it('borrador basico sin paso no muestra validar', () => {

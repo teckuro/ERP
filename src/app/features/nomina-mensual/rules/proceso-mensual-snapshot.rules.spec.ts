@@ -127,6 +127,27 @@ describe('proceso-mensual-snapshot.rules', () => {
     expect(snapshot.trabajadores[0].trazabilidad.some((t) => t.codigo === 'LIQUIDO_PRELIMINAR')).toBe(true);
   });
 
+  it('normaliza periodos mensuales como fecha valida para trazabilidad SQL', () => {
+    const base = resultado();
+    const snapshot = mapResultadoMotorToSnapshotPayload({
+      resultado: {
+        ...base,
+        liquidaciones: [{
+          ...base.liquidaciones[0],
+          trazabilidad: [{
+            ...base.liquidaciones[0].trazabilidad[0],
+            vigenciaInicio: '2026-04',
+            vigenciaFin: 'fecha-invalida',
+          }],
+        }],
+      },
+      fechaGeneracion: 'now',
+    });
+
+    expect(snapshot.trabajadores[0].trazabilidad[0].vigenciaInicio).toBe('2026-04-01');
+    expect(snapshot.trabajadores[0].trazabilidad[0].vigenciaFin).toBeNull();
+  });
+
   it('marca origen recalculo al construir reemplazo', () => {
     const snapshot = mapResultadoMotorToSnapshotPayload({
       resultado: resultado(),

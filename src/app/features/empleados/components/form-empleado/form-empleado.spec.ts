@@ -88,6 +88,13 @@ describe('FormEmpleadoComponent - completitud de borrador avanzado', () => {
     expect(component.wizardStepUiKind(3)).toBe('pendiente');
   });
 
+  it('jornada semanal parte pendiente y no usa 45 como default tecnico', async () => {
+    const component = await setup();
+
+    expect(component.form.controls.contrato.controls.horasSemanales.value).toBeNull();
+    expect(component.getWizardStepValidationSummary(3).blockingPending).toBeGreaterThan(0);
+  });
+
   it('cuenta DRAFT no completa el paso Bancario', async () => {
     const component = await setup();
     component.form.patchValue({

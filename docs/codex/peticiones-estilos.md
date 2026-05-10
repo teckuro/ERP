@@ -1,5 +1,14 @@
 ## Peticiones de estilos (bitácora)
 
+## 2026-05-09 - NOM-ATOMIC-01 guardado atomico
+
+- `Preparar nomina` mantiene el flujo visual existente de `Guardar resultado preliminar`.
+- El mensaje de exito queda orientado a la siguiente accion: revisar y aprobar operativamente el nuevo resultado si corresponde.
+- Si falla el guardado completo, la UI muestra: `No se pudo guardar el resultado preliminar completo. No se realizaron cambios parciales.`
+- No se agregan acciones de cierre, liquidacion, Previred, LRE, banco ni PDF.
+- Se mantienen cards compactas y Tailwind existente; no hay paleta nueva ni redisenio profundo.
+- Archivos: `src/app/features/nomina-mensual/containers/proceso-mensual-container/proceso-mensual-container.{ts,spec.ts}`.
+
 ## 2026-05-09 - NOM-SNAPSHOT-01 resultado guardado desde BD
 
 - `Preparar nomina` agrega el bloque `Resultado guardado desde BD` despues de `Ultimo resultado preliminar guardado`.
@@ -783,3 +792,40 @@ sin mezclarlo con las reglas base.
 - En `/parametros`, cuando no existe configuracion cliente del periodo, la toolbar mantiene una sola accion **Modificar**.
 - Al modificar se muestra decision inicial con **Usar ultima disponible**, **Crear desde cero** y **Cancelar**; no se crea fila hasta guardar.
 - Cambio acotado al flujo de botones/modal, sin redisenar la pantalla ni cambiar paleta.
+
+# 2026-05-09 - AUTH-BASE-01 login y sesion
+
+- Se agrega pantalla `/login` con card compacta, labels visibles, validaciones cercanas al campo, error operativo y boton principal **Iniciar sesion**.
+- El header reemplaza el usuario fijo por email de sesion, estado **Sesion activa** y accion **Cerrar sesion**.
+- Cambio acotado a autenticacion base; sin nueva paleta, sin dashboard decorativo, sin roles visibles ni modulo de usuarios.
+# EMP-ADV-FICHA-01 - Copy de bloqueo de prevision
+
+Fecha: 2026-05-09
+
+- Se registra cambio de copy operativo asociado a aptitud: `Sin prevision` ya no se presenta como advertencia para ficha apta, sino como bloqueo de prevision/salud antes de validar remuneraciones o finalizar alta avanzada.
+- No se modificaron estilos, layout, paleta ni componentes visuales.
+
+## 2026-05-10 - NOM-SAVE-DIAG-01 diagnostico guardado RPC
+
+- Fase sin cambio visual ni copy visible de usuario: se conserva el mensaje seguro `No se pudo guardar el resultado preliminar completo. No se realizaron cambios parciales.`
+- Se agrego diagnostico tecnico seguro para desarrollo/E2E y captura de respuesta RPC en Playwright.
+- No se modificaron layout, paleta, estilos, botones ni estructura visual de `Preparar nomina`.
+- Archivos funcionales/test: `src/app/features/nomina-mensual/rules/proceso-mensual-snapshot.rules.ts`, `src/app/features/nomina-mensual/data-access/nomina-calculo-snapshot.repository.ts`, `tests/nomina-mensual.e2e.spec.ts`.
+
+
+## 2026-05-10 - DOCS-UX-01 - Guia documental de diseño comercial
+
+Tipo: documental / diseño futuro.
+
+Se agrega capa `ux-comercial` para orientar a Cursor en mejoras visuales futuras sin tocar logica funcional. No corresponde a un cambio visual aplicado en la app; es un contrato de diseño y checklist para fases posteriores.
+
+Documentos:
+
+- `docs/codex/ux-comercial/README.md`
+- `docs/codex/ux-comercial/contrato-diseno-comercial.md`
+- `docs/codex/ux-comercial/patrones-pantallas-erp.md`
+- `docs/codex/ux-comercial/sistema-estados-acciones.md`
+- `docs/codex/ux-comercial/checklist-cursor-ux.md`
+- `docs/codex/prompts-cursor/CURSOR-UX-COMERCIAL-REVIEW-01.md`
+
+Regla: despues de liquidaciones oficiales, el foco pasa a experiencia usable, dinamica y comercial antes de Previred/LRE/banco/contabilidad.

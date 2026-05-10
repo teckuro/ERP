@@ -32,3 +32,21 @@ Contratos y guías del ciclo de vida del trabajador en Angular: listado, altas (
 ## Fase siguiente (producto)
 
 **Conceptos de remuneración** (catálogo maestro); no mezclar con asignaciones por trabajador. Ver [`../../orquestador/contexto-proyecto.md`](../../orquestador/contexto-proyecto.md) §10 y §12.
+
+
+## Estado canonico 2026-05-10
+
+Empleados/Ficha quedo alineado con Nomina por `EMP-ADV-FICHA-01`.
+
+Reglas vigentes:
+
+- `Sin prevision` bloquea aptitud para remuneraciones.
+- AFP + salud permite aptitud.
+- IPS + salud permite aptitud.
+- APVI sigue opcional si no aplica.
+- La jornada semanal no debe partir con default tecnico 45.
+- El E2E de alta avanzada usa jornada segura y datos previsionales/salud reales.
+
+Fase canonica:
+
+- `../../fases/empleados/EMP-ADV-FICHA-01.md`

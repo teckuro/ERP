@@ -19,7 +19,7 @@ import {  applyEstadoBorradorFilter,
 const runPersistencia = isE2eEmpleadosBorradorEnabled();
 const describePersist = runPersistencia ? test.describe : test.describe.skip;
 
-/** Completa pasos 1–5 y 7 mínimos para poder finalizar en paso 9 (previsión NINGUNA). */
+/** Completa pasos 1-5 y 7 minimos para poder finalizar en paso 9 con prevision y salud calculables. */
 async function fillWizardMinimalParaFinalizar(page: import('@playwright/test').Page): Promise<void> {
   await selectWizardStepByIndex(page, 0);
   await page.locator('#empleado-apellido-paterno').click();
@@ -42,7 +42,7 @@ async function fillWizardMinimalParaFinalizar(page: import('@playwright/test').P
 
   await selectWizardStepByIndex(page, 3);
   await pickFirstSearchSelectOption(page, 'empleado-tipo-jornada');
-  await page.locator('#empleado-horas-semanales').fill('45');
+  await page.locator('#empleado-horas-semanales').fill('40');
   await page.locator('#empleado-dias-semanales').fill('5');
   await page.locator('#empleado-sueldo-base').fill('1800000');
   await pickFirstSearchSelectOption(page, 'empleado-id-moneda');
@@ -54,7 +54,13 @@ async function fillWizardMinimalParaFinalizar(page: import('@playwright/test').P
   await page.locator('#empleado-cargas').blur();
 
   await selectWizardStepByIndex(page, 5);
-  await pickSearchSelectOption(page, 'empleado-tipo-regimen-previsional', /Sin prevision/i);
+  await pickSearchSelectOption(page, 'empleado-tipo-regimen-previsional', /^AFP$/i);
+  await pickFirstSearchSelectOption(page, 'empleado-afp');
+  await pickFirstSearchSelectOption(page, 'empleado-salud');
+  await pickFirstSearchSelectOption(page, 'empleado-moneda-plan');
+  await page.locator('#empleado-valor-plan').fill('4.2');
+  await page.locator('#empleado-auge-ges').fill('0');
+  await page.locator('#empleado-tiene-apv').setChecked(false);
 
   await selectWizardStepByIndex(page, 7);
   await pickFirstSearchSelectOption(page, 'empleado-banco');
