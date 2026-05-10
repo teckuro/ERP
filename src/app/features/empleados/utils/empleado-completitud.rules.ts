@@ -61,7 +61,7 @@ export function evaluarCompletitudYAptitudEmpleado(
   validarContrato(payload, bloquear, detectarDefault);
   validarJornada(payload, bloquear, detectarDefault);
   validarRemuneracion(payload, bloquear, detectarDefault);
-  validarPrevisionSalud(payload, bloquear, detectarDefault, advertencias);
+  validarPrevisionSalud(payload, bloquear, detectarDefault);
   validarPago(payload, bloquear, detectarDefault);
 
   const aptoParaRemuneraciones = bloqueos.length === 0;
@@ -187,7 +187,6 @@ function validarPrevisionSalud(
   payload: CrearEmpleadoPayload,
   bloquear: (seccion: string, mensaje: string) => void,
   detectarDefault: (seccion: string, codigo: string, mensaje: string) => void,
-  advertencias: string[],
 ): void {
   if (!hasText(payload.tipoPrevision)) {
     bloquear('prevision y salud', 'Selecciona el regimen previsional antes de activar la ficha.');
@@ -195,8 +194,9 @@ function validarPrevisionSalud(
   }
 
   if (payload.tipoPrevision === 'NINGUNA') {
-    advertencias.push(
-      'El modelo actual no distingue si Sin prevision fue elegido explicitamente o viene de un default tecnico.',
+    bloquear(
+      'prevision y salud',
+      'La opcion "Sin prevision" no habilita calculo de nomina. Selecciona AFP o IPS antes de validar para remuneraciones.',
     );
     return;
   }

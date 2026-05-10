@@ -1,3 +1,54 @@
+# Integracion documental canonica 2026-05-10
+
+Esta base incluye una capa canonica agregada por `DOCS-INTEGRATION-01` para ordenar fases, roadmap y lectura rapida sin borrar ni mover documentos historicos.
+
+## Lectura rapida por tipo de tarea
+
+| Tarea | Leer primero |
+|---|---|
+| Nueva fase | `orquestador/mapa-global-fases.md`, `orquestador/estado-fases.md`, `orquestador/roadmap-operativo.md` |
+| Cambios UI | `AGENTS.md`, `ui-form-guidelines.md`, `ui-button-guidelines.md`, `ui-tables.md`, `estilos/README.md`, `peticiones-estilos.md` |
+| Auth/E2E | `modulos/auth/README.md`, `modulos/auth/contrato-general.md`, `fases/auth/` |
+| Empleados | `modulos/empleados/README.md`, `modulos/empleados/contrato-general.md`, `modulos/empleados/validar-remuneraciones.md`, `fases/empleados/EMP-ADV-FICHA-01.md` |
+| Parametros | `modulos/parametros/README.md`, `modulos/parametros/contrato-general.md`, `modulos/parametros/vigencia-y-periodo.md` |
+| Nomina | `modulos/nomina-mensual/README.md`, `modulos/nomina-mensual/contrato-general.md`, `modulos/nomina-mensual/motor-calculo-persistencia-03B.md`, `fases/nomina/` |
+| Liquidaciones oficiales | `modulos/liquidaciones-oficiales/README.md`, `modulos/liquidaciones-oficiales/contrato-general.md`, `fases/nomina/LIQ-DESIGN-01.md` |
+| UX comercial | `fases/ux-comercial/UX-COMERCIAL-01.md`, guias UI, `peticiones-estilos.md` |
+
+## Roadmap vigente resumido
+
+```txt
+NOM-CIERRE-01
+-> LIQ-DESIGN-01
+-> LIQ-OFICIAL-01
+-> UX-COMERCIAL-01
+-> PREVIRED / LRE / BANCO / CONTABILIDAD como futuro
+```
+
+Regla: no saltar a Previred/LRE/banco/contabilidad antes de cerrar nomina, implementar liquidaciones oficiales y consolidar UX comercial.
+
+
+---
+
+## Capa UX comercial agregada 2026-05-10 v2
+
+Se agrega una capa canonica para mejorar diseno usable, dinamico y comercial sin mezclarla con fases funcionales aun pendientes.
+
+Leer cuando la tarea sea de experiencia visual, demo comercial o rediseño transversal:
+
+| Documento | Uso |
+|---|---|
+| [`ux-comercial/README.md`](./ux-comercial/README.md) | Indice de la capa UX comercial. |
+| [`ux-comercial/contrato-diseno-comercial.md`](./ux-comercial/contrato-diseno-comercial.md) | Principios de diseño comercial y operativo. |
+| [`ux-comercial/patrones-pantallas-erp.md`](./ux-comercial/patrones-pantallas-erp.md) | Patrones para pantallas ERP. |
+| [`ux-comercial/sistema-estados-acciones.md`](./ux-comercial/sistema-estados-acciones.md) | Estados, severidades y CTAs. |
+| [`ux-comercial/checklist-cursor-ux.md`](./ux-comercial/checklist-cursor-ux.md) | Tips concretos para Cursor antes de tocar UI. |
+| [`prompts-cursor/CURSOR-UX-COMERCIAL-REVIEW-01.md`](./prompts-cursor/CURSOR-UX-COMERCIAL-REVIEW-01.md) | Prompt reutilizable para mejoras visuales controladas. |
+
+Regla: la etapa UX comercial fuerte viene despues de `LIQ-OFICIAL-01`. Antes de eso solo aplicar mejoras visuales acotadas que no cambien logica.
+
+---
+
 # Documentación ERP - índice padre (reglas y módulos)
 
 **Punto de entrada** para normas de producto, UI y flujos en `docs/codex`. Las definiciones por dominio viven en **`modulos/`**; `temas/` conserva **flujos transversales**, **stubs de redirección** y documentos no migrados.
@@ -41,6 +92,7 @@
 
 | Módulo | README |
 |--------|--------|
+| Auth | [`modulos/auth/README.md`](./modulos/auth/README.md) |
 | Empleados | [`modulos/empleados/README.md`](./modulos/empleados/README.md) |
 | Parámetros | [`modulos/parametros/README.md`](./modulos/parametros/README.md) |
 | Conceptos remuneración | [`modulos/conceptos-remuneracion/README.md`](./modulos/conceptos-remuneracion/README.md) (diagnóstico + [`contrato-funcional.md`](./modulos/conceptos-remuneracion/contrato-funcional.md)) |
@@ -146,3 +198,5 @@ Decision canonica:
 - **Movimientos variables** queda como termino legacy/tecnico de transicion.
 - `movimiento_variable_mensual` queda como tabla legacy de transicion.
 - No crear nuevas mejoras funcionales sobre el flujo legacy salvo bugs criticos o compatibilidad temporal.
+
+Documento de integracion aplicado: [`orquestador/integracion-documental-2026-05-10.md`](./orquestador/integracion-documental-2026-05-10.md).

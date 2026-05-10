@@ -1,10 +1,16 @@
 import { Routes } from '@angular/router';
+import { authChildGuard } from './core/auth/auth.guard';
 import { LayoutShellComponent } from './layout/layout-shell.component';
 
 export const routes: Routes = [
   {
+    path: 'login',
+    loadComponent: () => import('./pages/login.page').then((m) => m.LoginPage),
+  },
+  {
     path: '',
     component: LayoutShellComponent,
+    canActivateChild: [authChildGuard],
     children: [
       {
         path: '',

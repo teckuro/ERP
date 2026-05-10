@@ -42,3 +42,20 @@ Columnas: `estado_reconciliacion_oficial`, `fecha_reconciliacion_oficial`, `orig
 ## Auditoria PARAM-CHILE-01 (proceso mensual vs demo)
 
 La pantalla **Proceso mensual** (`/remuneraciones/proceso-mensual`) no debe mostrar cifras normativas demo: quedo alineado en **PARAM-CHILE-01** con enlace a **`/parametros`** como fuente de valores. Informe ASCII: [`../../auditorias/param-chile-01-parametros-y-demo-proceso.md`](../../auditorias/param-chile-01-parametros-y-demo-proceso.md). La lectura automatica en ese flujo usa `obtenerUltimoHastaPeriodo`, `obtenerPeriodoRemuneracion` y **`listarCatalogos`** para prevalidaciones (**9.5A** + **9.5B**); ver [`../nomina-mensual/prevalidaciones-9-5A.md`](../nomina-mensual/prevalidaciones-9-5A.md) y [`../nomina-mensual/prevalidaciones-9-5B.md`](../nomina-mensual/prevalidaciones-9-5B.md).
+
+
+## Estado canonico 2026-05-10
+
+Parametros mantiene dos dimensiones separadas:
+
+- Datos oficiales/cargados por sistema o Python.
+- Configuracion cliente editable durante el mes.
+
+Regla vigente:
+
+```txt
+Durante el mes: permitir configuracion parcial.
+Cierre/reconciliacion: aplicar validacion completa.
+```
+
+No exigir completitud total durante el mes salvo fase explicita.

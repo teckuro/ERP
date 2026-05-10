@@ -179,7 +179,49 @@ describe('evaluarCompletitudYAptitudEmpleado', () => {
     expect(evaluacion.aptoParaRemuneraciones).toBe(true);
   });
 
-  it('IPS no exige APVI', () => {
+  it('Sin prevision bloquea aptitud para remuneraciones', () => {
+    const evaluacion = evaluarCompletitudYAptitudEmpleado({
+      payload: payloadCompleto({
+        tipoPrevision: 'NINGUNA',
+        idRegimenPrevisional: null,
+        idAfp: null,
+        idSalud: null,
+        idMonedaPlan: null,
+        valorPlan: null,
+        adicionalAugeGes: null,
+      }),
+    });
+
+    expect(evaluacion.aptoParaRemuneraciones).toBe(false);
+    expect(evaluacion.estadoFicha).toBe('INCOMPLETO');
+    expect(
+      evaluacion.bloqueos.some(
+        (bloqueo) =>
+          bloqueo.includes('Sin prevision') || bloqueo.includes('AFP') || bloqueo.includes('IPS'),
+      ),
+    ).toBe(true);
+    expect(evaluacion.seccionesPendientes).toContain('prevision y salud');
+  });
+
+  it('AFP con salud completa queda apta', () => {
+    const evaluacion = evaluarCompletitudYAptitudEmpleado({
+      payload: payloadCompleto({
+        tipoPrevision: 'AFP',
+        idRegimenPrevisional: 1,
+        idAfp: 1,
+        idSalud: 1,
+        idMonedaPlan: 1,
+        valorPlan: 4.2,
+        adicionalAugeGes: 0,
+        tieneApv: false,
+      }),
+    });
+
+    expect(evaluacion.aptoParaRemuneraciones).toBe(true);
+    expect(evaluacion.estadoFicha).toBe('VALIDO');
+  });
+
+  it('IPS con salud completa queda apta y no exige APVI', () => {
     const evaluacion = evaluarCompletitudYAptitudEmpleado({
       payload: payloadCompleto({
         tipoPrevision: 'IPS',
@@ -193,6 +235,27 @@ describe('evaluarCompletitudYAptitudEmpleado', () => {
     });
 
     expect(evaluacion.aptoParaRemuneraciones).toBe(true);
+  });
+
+  it('borrador con NINGUNA sigue siendo persistible como borrador, pero no apto', () => {
+    const evaluacion = evaluarCompletitudYAptitudEmpleado({
+      payload: payloadCompleto({
+        estado: 'borrador',
+        tipoPrevision: 'NINGUNA',
+        idRegimenPrevisional: null,
+        idAfp: null,
+        idSalud: null,
+        idMonedaPlan: null,
+        valorPlan: null,
+        adicionalAugeGes: null,
+      }),
+      pasoAltaAvanzada: 5,
+    });
+
+    expect(evaluacion.aptoParaRemuneraciones).toBe(false);
+    expect(evaluacion.estadoFicha).toBe('INCOMPLETO');
+    expect(evaluacion.seccionesPendientes).toContain('alta avanzada');
+    expect(evaluacion.seccionesPendientes).toContain('prevision y salud');
   });
 
   it('paso_alta_avanzada distinto de null bloquea aptitud aunque los datos esten completos', () => {

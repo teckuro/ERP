@@ -1027,7 +1027,7 @@ describe('ProcesoMensualContainer', () => {
     expect(guardarSnapshotPreliminar).toHaveBeenCalledWith('2026-05');
     const text = fixture.nativeElement.textContent as string;
     expect(text).toContain('Resultado preliminar guardado');
-    expect(text).toContain('Quedo disponible como version revisable del periodo');
+    expect(text).toContain('Revisa y aprueba operativamente este nuevo resultado si corresponde');
     expect(text).toContain('No emite liquidaciones');
     expect(text).toContain('No cierra el periodo');
     expect(text).toContain('Fecha de guardado');
@@ -1041,6 +1041,38 @@ describe('ProcesoMensualContainer', () => {
     const aprobar = ([...fixture.nativeElement.querySelectorAll('button')] as HTMLButtonElement[])
       .find((b) => (b.textContent ?? '').includes('Aprobar resultado preliminar'));
     expect(aprobar?.disabled).toBe(false);
+  });
+
+  it('muestra error atomico si falla el guardado completo del resultado preliminar', async () => {
+    guardarSnapshotPreliminar.mockRejectedValueOnce(
+      new Error('No se pudo guardar el resultado preliminar completo. No se realizaron cambios parciales.'),
+    );
+    ejecutarPrevalidaciones.mockResolvedValueOnce(prevalidacionLista());
+    generarPreNominaPeriodo.mockResolvedValueOnce(baseNominaLista());
+
+    let buttons = [...fixture.nativeElement.querySelectorAll('button')] as HTMLButtonElement[];
+    buttons.find((b) => (b.textContent ?? '').includes('Validar periodo'))!.click();
+    await fixture.whenStable();
+    fixture.detectChanges();
+    buttons = [...fixture.nativeElement.querySelectorAll('button')] as HTMLButtonElement[];
+    buttons.find((b) => (b.textContent ?? '').includes('Generar base de nomina'))!.click();
+    await fixture.whenStable();
+    fixture.detectChanges();
+    buttons = [...fixture.nativeElement.querySelectorAll('button')] as HTMLButtonElement[];
+    buttons.find((b) => (b.textContent ?? '').includes('Calcular preliminar'))!.click();
+    await fixture.whenStable();
+    fixture.detectChanges();
+    buttons = [...fixture.nativeElement.querySelectorAll('button')] as HTMLButtonElement[];
+    buttons.find((b) => (b.textContent ?? '').includes('Guardar resultado preliminar'))!.click();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    const text = fixture.nativeElement.textContent as string;
+    expect(text).toContain('No se pudo guardar el resultado preliminar completo. No se realizaron cambios parciales.');
+    expect(text).toContain('Pendiente de guardado');
+    expect(text).not.toContain('Cierre ejecutado');
+    expect(text).not.toContain('Previred generado');
+    expect(text).not.toContain('LRE generado');
   });
 
   it('muestra estado no guardado y habilita guardar con resultado sin bloqueos', async () => {

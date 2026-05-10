@@ -1,3 +1,18 @@
+# Lectura canonica 2026-05-10
+
+Para orientar nuevas fases, leer en este orden:
+
+1. `mapa-global-fases.md`
+2. `estado-fases.md`
+3. `roadmap-operativo.md`
+4. `dependencias-fases.md`
+5. `decisiones-pendientes.md`
+6. Archivo de fase en `../fases/`
+
+El hito actual de nomina llega hasta aprobacion operativa persistida y E2E real. Cierre y liquidaciones son siguientes/futuras.
+
+---
+
 # Orquestador de contexto (`docs/codex/orquestador`)
 
 ## Qué es esta carpeta

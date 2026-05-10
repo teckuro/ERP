@@ -8,6 +8,7 @@ La ficha **completa** según el helper **no** pasa sola a apta. El usuario debe 
 
 - `paso_alta_avanzada === null`
 - Helper sin bloqueos (`bloqueos.length === 0`) y sin `defaultsTecnicosDetectados`
+- `tipoPrevision` distinto de `NINGUNA`; AFP o IPS deben tener salud completa segun el helper central
 - Sin secciones pendientes bloqueantes
 - Aún no validada (`estado_ficha` / `apto_para_remuneraciones` según reglas del contrato)
 - Estado operativo **en proceso** o **activo** (no borrador operativo, no `estado_ficha` BORRADOR, etc.)

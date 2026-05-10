@@ -12,3 +12,9 @@ export function isE2eEmpleadosBorradorEnabled(): boolean {
   const v = (process.env['E2E_EMPLEADOS_BORRADOR'] ?? '').trim().toLowerCase();
   return v === '1' || v === 'true' || v === 'yes' || v === 'on';
 }
+
+/** Activa E2E real de Preparar nomina con sesion Supabase authenticated. */
+export function isE2eNominaRealEnabled(): boolean {
+  const v = (process.env['E2E_NOMINA_REAL'] ?? '').trim().toLowerCase();
+  return v === '1' || v === 'true' || v === 'yes' || v === 'on';
+}

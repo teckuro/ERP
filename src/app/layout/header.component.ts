@@ -1,8 +1,10 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
 import { LucideAngularModule } from 'lucide-angular';
 
+import { AuthService } from '../core/auth/auth.service';
 import { PeriodoActivoService } from '../core/services/periodo-activo.service';
 
 @Component({
@@ -58,13 +60,21 @@ import { PeriodoActivoService } from '../core/services/periodo-activo.service';
 
           <div class="flex items-center gap-3 border-l border-gray-200 pl-4">
             <div class="text-right">
-              <p class="text-sm font-semibold text-gray-900">Maria Gonzalez</p>
-              <p class="text-xs text-gray-500">RRHH Admin</p>
+              <p class="max-w-52 truncate text-sm font-semibold text-gray-900">{{ usuarioLabel() }}</p>
+              <p class="text-xs text-gray-500">Sesion activa</p>
             </div>
             <div class="flex h-9 w-9 items-center justify-center rounded-md bg-blue-600">
-              <span class="text-sm font-semibold text-white">MG</span>
+              <span class="text-sm font-semibold text-white">{{ inicialUsuario() }}</span>
             </div>
-            <lucide-icon name="chevron-down" class="h-4 w-4 text-gray-500"></lucide-icon>
+            <button
+              type="button"
+              class="inline-flex h-9 items-center gap-2 rounded-md border border-gray-200 px-3 text-xs font-semibold text-gray-700 transition-colors hover:bg-gray-50"
+              [disabled]="cerrandoSesion()"
+              (click)="cerrarSesion()"
+            >
+              <lucide-icon name="lock" class="h-4 w-4 text-gray-500"></lucide-icon>
+              {{ cerrandoSesion() ? 'Cerrando...' : 'Cerrar sesion' }}
+            </button>
           </div>
         </div>
       </div>
@@ -102,6 +112,9 @@ import { PeriodoActivoService } from '../core/services/periodo-activo.service';
 })
 export class HeaderComponent {
   readonly periodoActivo = inject(PeriodoActivoService);
+  readonly auth = inject(AuthService);
+  readonly router = inject(Router);
+  readonly cerrandoSesion = signal(false);
 
   readonly monthOptions: readonly { value: string; label: string }[] = [
     { value: '01', label: 'Enero' },
@@ -121,6 +134,13 @@ export class HeaderComponent {
   readonly anioPeriodo = computed(() => this.periodoActivo.periodoYm().slice(0, 4));
 
   readonly mesPeriodo = computed(() => this.periodoActivo.periodoYm().slice(5, 7));
+
+  readonly usuarioLabel = computed(() => this.auth.currentEmail() ?? 'Usuario conectado');
+
+  readonly inicialUsuario = computed(() => {
+    const label = this.usuarioLabel().trim();
+    return label ? label[0].toUpperCase() : 'U';
+  });
 
   readonly yearOptions = computed(() => {
     const ym = this.periodoActivo.periodoYm();
@@ -148,5 +168,15 @@ export class HeaderComponent {
   onMesChange(raw: string): void {
     const anio = this.periodoActivo.periodoYm().slice(0, 4);
     this.periodoActivo.setPeriodoYm(`${anio}-${raw}`);
+  }
+
+  async cerrarSesion(): Promise<void> {
+    this.cerrandoSesion.set(true);
+    try {
+      await this.auth.logout();
+      await this.router.navigateByUrl('/login');
+    } finally {
+      this.cerrandoSesion.set(false);
+    }
   }
 }

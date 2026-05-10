@@ -32,6 +32,8 @@ Estados validos:
 
 8. Para habilitar permisos/RLS de Novedades mensuales, ejecutar `partes/19_novedades_mensuales_rls.sql` despues de `18_novedades_mensuales.sql`. Otorga `SELECT`, `INSERT` y `UPDATE` a `authenticated`, no otorga permisos a `anon` ni habilita `DELETE` directo.
 
+9. Para habilitar guardado/reemplazo atomico de snapshots preliminares, ejecutar `partes/20_nomina_calculo_snapshot_rpc.sql` despues de `15_nomina_calculo_snapshot.sql` y `16_nomina_calculo_snapshot_rls.sql`. Crea la RPC `guardar_nomina_calculo_snapshot` con `security invoker`, revoca `PUBLIC`/`anon` y permite ejecucion a `authenticated`.
+
 `12_migracion_lre_datos_incremental.sql` requiere que existan `persona`/`contrato` con IDs coherentes si se dejan los datos demo.
 
 ### Orden de ejecucion fresh local (`partes/`)
@@ -54,6 +56,7 @@ Estados validos:
 16. `17_parametros_reconciliacion_cliente.sql`: columnas de decision de reconciliacion en `parametros_generales_cliente`.
 17. `18_novedades_mensuales.sql`: tabla base `novedad_remuneracion_periodo` para hechos del periodo, sin calculo ni resultado de liquidacion.
 18. `19_novedades_mensuales_rls.sql`: RLS y permisos minimos para Novedades mensuales (`authenticated`; sin `anon` ni `DELETE` directo).
+19. `20_nomina_calculo_snapshot_rpc.sql`: RPC `guardar_nomina_calculo_snapshot` para guardar/reemplazar snapshots preliminares de forma atomica (`authenticated`; sin `anon`).
 
 ### Ejecucion fresh local
 

@@ -107,3 +107,7 @@ npx playwright test tests/dashboard.spec.ts --update-snapshots
 | Config Playwright | `playwright.config.ts` |
 
 Cambios visuales: [`../../peticiones-estilos.md`](../../peticiones-estilos.md).
+
+## Regla EMP-ADV-FICHA-01 para prevision
+
+`Sin prevision` no equivale a trabajador apto para nomina. La ficha puede conservar ese valor mientras esta incompleta o en proceso, pero la accion **Validar para remuneraciones** debe quedar bloqueada hasta seleccionar AFP o IPS y completar salud. El bloqueo se muestra como pendiente de **Prevision y salud** y no debe persistir `estado_ficha = VALIDO` ni `apto_para_remuneraciones = true`.

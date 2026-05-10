@@ -4281,6 +4281,18 @@ export type Database = {
           total_liquido: number
         }[]
       }
+      guardar_nomina_calculo_snapshot: {
+        Args: {
+          p_cabecera: Json
+          p_conceptos?: Json
+          p_id_empresa: number | null
+          p_observaciones?: Json
+          p_periodo: string
+          p_trabajadores: Json
+          p_trazabilidad?: Json
+        }
+        Returns: number
+      }
       fn_obtener_afc_parametro: {
         Args: {
           p_codigo_tipo_contrato: Database["public"]["Enums"]["tipo_contrato_enum"]

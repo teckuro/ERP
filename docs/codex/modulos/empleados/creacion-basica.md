@@ -22,7 +22,7 @@ Antes de aplicar este modo, respetar:
 
 ---
 
-## ðŸ§  Concepto
+## ï¿½  Concepto
 
 El modo bÃ¡sico NO es una pantalla nueva.
 

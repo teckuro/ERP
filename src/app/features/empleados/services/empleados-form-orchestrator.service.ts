@@ -148,7 +148,7 @@ export class EmpleadosFormOrchestratorService {
         cargas: new FormControl<number | null>(0, {
           validators: [Validators.min(0)],
         }),
-        horasSemanales: new FormControl<number | null>(45, {
+        horasSemanales: new FormControl<number | null>(null, {
           validators: [Validators.required, Validators.min(1), Validators.max(168)],
         }),
         diasSemanales: new FormControl<number | null>(5, {

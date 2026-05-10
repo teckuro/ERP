@@ -122,3 +122,8 @@ Contratos por dominio para estos módulos: **pendientes** (añadir bajo `modulos
 
 - **Organización:** [`organizacion-por-modulo-y-flujos.md`](./organizacion-por-modulo-y-flujos.md)
 - **Flujos app:** [`flujos/README.md`](./flujos/README.md)
+
+
+## Nota canonica 2026-05-10
+
+Los documentos en `temas/` pueden ser transversales, historicos o stubs de migracion. Antes de usarlos como fuente de verdad, revisar el README/contrato del modulo correspondiente y `orquestador/mapa-global-fases.md`.

@@ -1,3 +1,20 @@
+# Actualizacion canonica 2026-05-10
+
+Documentos agregados para lectura rapida:
+
+| Documento | Rol |
+|---|---|
+| `orquestador/auditoria-documental-global.md` | Auditoria de coherencia, historicos e inconsistencias documentales. |
+| `orquestador/mapa-global-fases.md` | Mapa rapido de fases, estados, tipo, evidencia y siguiente paso. |
+| `fases/README.md` | Indice canonico de fases por carpeta. |
+| `fases/nomina/NOM-CIERRE-DESIGN-01.md` | Diseno funcional y tecnico cerrado del cierre operativo de nomina. |
+| `modulos/liquidaciones-oficiales/README.md` | Modulo futuro para liquidaciones oficiales. |
+| `assets/README.md` | Regla de uso de capturas/evidencias visuales. |
+
+El mapa no reemplaza contratos por modulo; los enlaza.
+
+---
+
 # Mapa de documentación (`docs/codex`)
 
 ## 1. Globales (siempre relevantes)
@@ -106,3 +123,19 @@ Nota de mapa:
 - `modulos/movimientos-variables/` conserva historia y contratos legacy de las fases 9.4.
 - `modulos/nomina-mensual/novedades-mensuales.md` es la referencia funcional canonica para hechos del periodo.
 - Fases futuras deben evitar duplicar mejoras entre ambos modulos.
+
+- [`integracion-documental-2026-05-10.md`](./integracion-documental-2026-05-10.md): resumen de la integracion documental DOCS-INTEGRATION-01.
+
+
+## UX comercial y diseño usable
+
+| Documento | Uso |
+|---|---|
+| `docs/codex/ux-comercial/README.md` | Punto de entrada de diseño comercial. |
+| `docs/codex/ux-comercial/contrato-diseno-comercial.md` | Principios visuales/producto. |
+| `docs/codex/ux-comercial/patrones-pantallas-erp.md` | Estructura de pantallas ERP. |
+| `docs/codex/ux-comercial/sistema-estados-acciones.md` | Estados, bloqueos, advertencias y CTAs. |
+| `docs/codex/ux-comercial/checklist-cursor-ux.md` | Tips para Cursor en cambios visuales. |
+| `docs/codex/prompts-cursor/CURSOR-UX-COMERCIAL-REVIEW-01.md` | Prompt reutilizable para revisión visual. |
+
+Regla: esta capa es canonica para mejoras visuales posteriores a liquidaciones oficiales y para pequeñas mejoras controladas antes de esa fase.
