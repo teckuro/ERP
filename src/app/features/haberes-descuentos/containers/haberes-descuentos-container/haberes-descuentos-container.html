@@ -11,12 +11,11 @@
     <div class="hd-head-actions">
       <div class="hd-period-wrap">
         <div class="hd-period-global" aria-live="polite">
-          <span class="hd-period-global-k">Período activo:</span>
+          <span class="hd-period-global-k">Periodo activo:</span>
           <span class="hd-period-global-v">{{ periodoActivo.etiqueta() }}</span>
         </div>
         <p class="hd-period-hint">
-          Las fechas de vigencia de cada asignación se comparan con este período para filtros y etiquetas; no hay un
-          período independiente en este módulo.
+          Las vigencias se evaluan contra este periodo.
         </p>
       </div>
       <div class="hd-head-buttons">
@@ -28,21 +27,19 @@
           <lucide-icon icon class="w-4 h-4" [img]="plusIcon"></lucide-icon>
           Nueva asignacion recurrente
         </app-button>
-        @if (!personaIdSeleccionada()) {
-          <span class="hd-disabled-reason">Selecciona un trabajador para crear una asignacion.</span>
-        }
+        <span class="hd-disabled-reason">
+          {{ personaIdSeleccionada() ? 'Accion principal disponible para el trabajador seleccionado.' : 'Accion principal: seleccionar trabajador para crear una asignacion.' }}
+        </span>
       </div>
     </div>
   </header>
 
-  <details class="hd-nomina-hint">
-    <summary>Como impacta en nomina</summary>
+  <div class="hd-nomina-hint" role="note">
     <p>
-      Los movimientos puntuales del periodo se cargan en
-      <a routerLink="/remuneraciones/novedades-mensuales" class="hd-nomina-hint-link">Movimientos del mes</a>.
-      <strong>Preparar nomina</strong> integra esas lineas junto con asignaciones recurrentes y parametros.
+      <strong>Impacto en nomina.</strong>
+      Las asignaciones vigentes del trabajador se consideran al preparar la nomina del periodo activo.
     </p>
-  </details>
+  </div>
 
   <app-card className="hd-worker-card">
     <app-card-header className="hd-worker-card-head">
@@ -72,7 +69,7 @@
         <div class="hd-worker-panel hd-worker-panel--summary">
           @if (!personaIdSeleccionada()) {
             <div class="hd-empty-worker" role="status">
-              <p>Selecciona un trabajador para ver que asignaciones impactan su nomina del periodo.</p>
+              <p>Elige un trabajador para ver o crear asignaciones recurrentes.</p>
             </div>
           } @else if (empleadoActual(); as emp) {
             <div class="hd-worker-detail">
@@ -108,9 +105,15 @@
       </div>
 
       @if (personaIdSeleccionada()) {
+        <div class="hd-summary-strip" aria-label="Resumen de asignaciones">
+          <div><span>Activas</span><strong>{{ resumenAsignaciones().activas }}</strong></div>
+          <div><span>Futuras</span><strong>{{ resumenAsignaciones().futuras }}</strong></div>
+          <div><span>Vencidas/cerradas</span><strong>{{ resumenAsignaciones().vencidasOCerradas }}</strong></div>
+          <div><span>Invalidas</span><strong>{{ resumenAsignaciones().invalidas }}</strong></div>
+        </div>
         <div class="hd-grid-wrap">
           <app-data-grid
-            title="Asignaciones recurrentes del trabajador"
+            title="Asignaciones recurrentes"
             [rows]="filas()"
             [columns]="columns"
             [filters]="filters"

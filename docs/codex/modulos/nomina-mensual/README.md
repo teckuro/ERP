@@ -4,6 +4,18 @@
 
 **Prevalidaciones 9.5A + 9.5B** implementadas (sin motor ni liquidaciones): recurrentes por mes, grupos minimos de parametros + catalogos, resumen en UI. Proceso productivo end-to-end sigue **pendiente**. Vision de producto: [`vision-futura.md`](./vision-futura.md); orquestador: [`../../orquestador/estado-fases.md`](../../orquestador/estado-fases.md).
 
+## REM-MOV-UNIFY-01 aplicado
+
+El nombre visible oficial del flujo de hechos puntuales del periodo es **Movimientos del mes**. La ruta canonica visible se mantiene en `/remuneraciones/novedades-mensuales` por compatibilidad tecnica, pero RRHH no debe ver `Novedades mensuales`, `Movimientos variables` ni `Entradas mensuales` como nombres equivalentes del flujo.
+
+La pantalla usa `PeriodoActivoService.periodoYm()` como fuente unica, muestra resumen por estado, formulario guiado y listado operativo. Los movimientos aprobados del periodo son los que se consideran al preparar nomina; borradores y pendientes quedan fuera hasta su aprobacion.
+
+## REM-MOV-MODAL-01 aplicado
+
+La accion **Registrar movimiento** abre un modal grande responsive dentro de `Movimientos del mes`. El periodo activo global se muestra solo como contexto del registro y no puede editarse desde el modal.
+
+El modal mantiene header y footer estables, scroll interno para el formulario, accion primaria unica **Guardar movimiento** y accion secundaria **Cancelar**. Cancelar descarta directo si no hay cambios; con cambios sin guardar solicita confirmacion con el patron `app-message-box`.
+
 ## Documentos
 
 | Archivo | Rol |
@@ -101,3 +113,36 @@ Periodo activo global
 ```
 
 El avance visible usa etapas de negocio: `Preparacion`, `Revision`, `Aprobacion y cierre`, `Liquidaciones`. Los pasos internos de validacion, base, calculo, guardado y persistencia quedan dentro del detalle operativo secundario.
+
+## REM-UX-FLOWS-02 aplicado
+
+`Preparar nomina` queda como hub operativo guiado por estado:
+
+```txt
+estado del periodo
+accion principal unica
+resumen minimo
+pendientes / bloqueos / advertencias
+revision operativa del periodo
+informacion interna y alcance
+```
+
+La pantalla conserva solo el avance compacto superior y elimina el rail lateral duplicado. La revision operativa renderiza la etapa relevante segun `estadoClave` / `disclosureActivo`; en estado pendiente de validacion no expone todas las etapas internas.
+
+`Movimientos del mes` usa el periodo activo global como fuente unica para listar y crear movimientos. Ya no muestra selector local editable de periodo ni boton `Buscar` asociado a ese selector.
+
+## REM-PERIOD-GLOBAL-01 / REM-NAV-IA-01 aplicado
+
+El header global es la unica fuente editable de periodo en Remuneraciones. `Preparar nomina` limpia resultado, pre-nomina, calculo, snapshot, aprobacion/cierre y mensajes al cambiar el periodo, y consulta el snapshot activo del nuevo periodo.
+
+Rutas visibles del flujo:
+
+```txt
+/remuneraciones/proceso-mensual
+/remuneraciones/novedades-mensuales
+/remuneraciones/haberes-descuentos
+/remuneraciones/liquidaciones
+/remuneraciones/conceptos
+```
+
+`/remuneraciones/movimientos-variables` queda como redirect legacy a `novedades-mensuales`.

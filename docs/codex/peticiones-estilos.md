@@ -1,5 +1,42 @@
 ## Peticiones de estilos (bitácora)
 
+### 2026-05-11 - REM-MOV-MODAL-01 - Modal grande para Registrar movimiento
+
+- **Modulo:** Remuneraciones / Movimientos del mes.
+- **Modal:** `Registrar movimiento` pasa de formulario largo incrustado a dialogo grande responsive con header y footer estables.
+- **Responsive:** desktop usa ancho maximo de trabajo y altura ajustada al viewport; mobile/tablet usa superficie fullscreen/nearly-fullscreen.
+- **Formulario:** secciones `Datos principales`, `Detalle opcional` y `Resumen`; errores junto a campos y scroll interno del contenido.
+- **Acciones:** footer estable con `Cancelar` y `Guardar movimiento`; cancelacion con cambios usa confirmacion `app-message-box`.
+- **Periodo:** solo contexto de `Periodo activo`, sin selector local ni `input type="month"`.
+- **Restricciones:** sin SQL/RPC/RLS/BD, sin formulas legales ni motor, sin liquidaciones oficiales, Previred/LRE/banco, PDF/firma/envio.
+
+### 2026-05-11 - REM-MOV-UNIFY-01 - Movimientos del mes
+
+- **Modulo:** Remuneraciones / Movimientos del mes.
+- **Header operativo:** titulo y descripcion orientados a negocio, periodo activo como badge de contexto y accion primaria unica `Registrar movimiento`.
+- **Resumen:** cards compactas para total, borradores, pendientes, aprobados y secundarios; nota unica de impacto en preparacion de nomina.
+- **Formulario:** secciones `Datos principales`, `Clasificacion` y `Detalle opcional`; periodo no editable; monto CLP y fecha del movimiento quedan en el bloque principal.
+- **Listado:** grilla como bloque protagonista con titulo `Movimientos registrados`, filtros operativos, empty state accionable y acciones por fila con `Enviar a revision`.
+- **Restricciones:** sin SQL/RPC/RLS/BD, sin formulas legales ni motor, sin liquidaciones oficiales, Previred/LRE/banco, PDF/firma/envio.
+
+### 2026-05-11 - REM-PERIOD-GLOBAL-01 + REM-NAV-IA-01 - Periodo global y navegacion canonica
+
+- **Modulo:** Remuneraciones transversal.
+- **Periodo global:** las pantallas hijas muestran `Periodo activo` como contexto y no exponen selector mensual local; el cambio de periodo desde header limpia/recarga vistas operativas.
+- **Navegacion:** sidebar queda en orden operativo: Preparar nomina, Movimientos del mes, Asignaciones recurrentes, Liquidaciones oficiales, Conceptos de remuneracion.
+- **Rutas visibles:** Liquidaciones oficiales usa `/remuneraciones/liquidaciones`; `liquidaciones-oficiales` y `movimientos-variables` quedan como redirects legacy.
+- **Restricciones:** sin SQL/RPC/RLS/BD, sin formulas legales ni motor, sin PDF/firma/envio, sin Previred/LRE/banco/contabilidad.
+
+### 2026-05-11 - REM-UX-FLOWS-02 - Orden operativo transversal
+
+- **Modulo:** Remuneraciones transversal.
+- **Preparar nomina:** se elimina el rail duplicado `Recorrido visible`; queda solo avance compacto superior. La seccion principal pasa a `Revision operativa del periodo` y renderiza solo la etapa relevante por estado.
+- **Movimientos del mes:** se retira el selector local `input type="month"` y el boton `Buscar` asociado; la pantalla muestra `Periodo activo` como contexto y usa `Actualizar` como accion secundaria.
+- **Asignaciones recurrentes:** el collapsable `Como impacta en nomina` se reemplaza por nota compacta visible y se agrega resumen de asignaciones activas, futuras, vencidas/cerradas e invalidas.
+- **Liquidaciones oficiales:** se compacta la referencia al periodo y el disclosure final queda como `Informacion interna y alcance`.
+- **Rutas visibles:** Dashboard, Reportes y Detalle apuntaban a `/remuneraciones/liquidaciones-oficiales` en esta fase; REM-NAV-IA-01 lo reemplaza por `/remuneraciones/liquidaciones`.
+- **Restricciones:** sin SQL/RPC/RLS/BD, sin formulas legales ni motor, sin PDF/firma/envio, sin Previred/LRE/banco/contabilidad.
+
 ### 2026-05-11 - REM-UX-FLOWS-01 V3 - Visibilidad cliente vs aplicacion
 
 - **Modulo:** Remuneraciones transversal.

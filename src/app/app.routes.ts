@@ -24,7 +24,7 @@ export const routes: Routes = [
       {
         path: 'movimientos-variables',
         pathMatch: 'full',
-        redirectTo: '/remuneraciones/movimientos-variables',
+        redirectTo: '/remuneraciones/novedades-mensuales',
       },
       {
         path: 'haberes-descuentos',
@@ -68,8 +68,8 @@ export const routes: Routes = [
           },
           {
             path: 'movimientos-variables',
-            loadComponent: () =>
-              import('./pages/movimientos-variables.page').then((m) => m.MovimientosVariablesPage),
+            pathMatch: 'full',
+            redirectTo: 'novedades-mensuales',
           },
           {
             path: 'novedades-mensuales',
@@ -82,12 +82,13 @@ export const routes: Routes = [
               import('./pages/proceso-remuneraciones.page').then((m) => m.ProcesoRemuneracionesPage),
           },
           {
-            path: 'liquidaciones-oficiales',
+            path: 'liquidaciones',
             loadComponent: () => import('./pages/liquidaciones.page').then((m) => m.LiquidacionesPage),
           },
           {
-            path: 'liquidaciones',
-            loadComponent: () => import('./pages/liquidaciones.page').then((m) => m.LiquidacionesPage),
+            path: 'liquidaciones-oficiales',
+            pathMatch: 'full',
+            redirectTo: 'liquidaciones',
           },
           {
             path: 'liquidaciones/:id',

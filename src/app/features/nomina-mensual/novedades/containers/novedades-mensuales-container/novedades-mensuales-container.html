@@ -5,8 +5,8 @@
       title="Movimientos del mes"
     ></app-record-breadcrumb>
     <p class="nm-lead">
-      Registra movimientos puntuales del periodo, como bonos, descuentos, anticipos, ajustes u otros hechos mensuales
-      que deben revisarse antes de preparar la nomina.
+      Registra bonos, descuentos, anticipos, ausencias, ajustes u otros hechos puntuales del periodo antes de preparar
+      la nomina.
     </p>
 
     <div class="nm-head-actions">
@@ -22,11 +22,11 @@
       <div class="nm-head-buttons">
         <app-button variant="outline" size="md" (click)="cargarNovedades()">
           <lucide-icon icon class="w-4 h-4" [img]="refreshIcon"></lucide-icon>
-          Reintentar carga
+          {{ loading() ? 'Reintentar carga' : 'Actualizar' }}
         </app-button>
         <app-button variant="primary" size="md" (click)="abrirNuevo()">
           <lucide-icon icon class="w-4 h-4" [img]="plusIcon"></lucide-icon>
-          Nuevo movimiento del mes
+          Registrar movimiento
         </app-button>
       </div>
     </div>
@@ -34,263 +34,290 @@
 
   <app-card>
     <app-card-header className="px-4 py-3 border-b border-gray-100">
-      <h2 class="text-sm font-semibold text-gray-900">Contexto del periodo</h2>
+      <div class="flex flex-wrap items-center justify-between gap-2">
+        <div>
+          <h2 class="text-sm font-semibold text-gray-900">Resumen del periodo</h2>
+          <p class="nm-form-sub">Periodo activo: {{ periodoActivo.etiqueta() }}</p>
+        </div>
+      </div>
     </app-card-header>
     <app-card-content className="px-4 py-3">
       <div class="nm-context-grid">
-        <div>
-          <label class="nm-field-label" for="nm-periodo">Periodo (YYYY-MM)</label>
-          <input
-            id="nm-periodo"
-            type="month"
-            class="nm-input"
-            [ngModel]="periodoFiltro()"
-            (ngModelChange)="periodoFiltro.set($event)"
-          />
-        </div>
-        <div class="nm-context-card">
-          <span class="nm-context-k">Total</span>
-          <strong>{{ totalNovedades() }}</strong>
-        </div>
-        @for (item of conteosEstado(); track item.estado) {
-          @if (item.total > 0) {
-            <div class="nm-context-card">
-              <span class="nm-context-k">{{ item.label }}</span>
-              <strong>{{ item.total }}</strong>
-            </div>
-          }
+        @for (item of resumenPeriodo(); track item.label) {
+          <div class="nm-context-card">
+            <span class="nm-context-k">{{ item.label }}</span>
+            <strong>{{ item.total }}</strong>
+          </div>
         }
-        <div class="nm-context-action">
-          <app-button variant="primary" size="md" (click)="cargarNovedades()">Buscar</app-button>
-        </div>
       </div>
     </app-card-content>
   </app-card>
 
   <div class="nm-nomina-hint" role="note">
     <p>
-      Impacto en nomina: los movimientos aprobados del periodo se consideran al preparar la nomina. Si no hay filas,
-      registra el primer bono, descuento, anticipo o ajuste antes de validar el cierre mensual.
+      Los movimientos aprobados del periodo se consideran al preparar la nomina. Los borradores o pendientes no se
+      incorporan todavia.
     </p>
   </div>
 
   @if (formAbierto()) {
-    <app-card>
-      <app-card-header className="px-4 py-3 border-b border-gray-100">
-        <div class="nm-form-head">
+    <div class="nm-modal-root" role="presentation">
+      <div class="nm-modal-backdrop" (click)="cerrarFormulario()"></div>
+      <section class="nm-modal-movimiento" role="dialog" aria-modal="true" aria-labelledby="nm-modal-title">
+        <header class="nm-modal-header">
           <div>
-            <h2 class="text-sm font-semibold text-gray-900">
-              {{ novedadEditando() ? 'Editar movimiento del mes' : 'Nuevo movimiento del mes' }}
-            </h2>
-            <p class="nm-form-sub">
-              Guarde el borrador antes de enviarlo a revision. Esta pantalla no calcula liquidaciones.
-            </p>
+            <h2 id="nm-modal-title">{{ novedadEditando() ? 'Editar movimiento' : 'Registrar movimiento' }}</h2>
+            <p><strong>Periodo activo:</strong> {{ periodoActivo.etiqueta() }}</p>
+            <p>Este movimiento se aplicara al periodo activo.</p>
           </div>
-        </div>
-      </app-card-header>
-      <app-card-content className="px-4 py-4">
-        <div class="nm-form-section">
-          <h3>Identificacion</h3>
-          <div class="nm-form-grid">
-            <label class="nm-field">
-              <span class="nm-field-label">Periodo</span>
-              <input
-                type="month"
-                class="nm-input"
-                [ngModel]="form().periodo"
-                (ngModelChange)="actualizarForm('periodo', $event)"
-              />
-            </label>
-            <label class="nm-field nm-form-span2">
-              <span class="nm-field-label">Trabajador</span>
-              <app-search-select
-                id="nm-trabajador"
-                placeholder="Selecciona trabajador"
-                searchPlaceholder="Buscar por nombre o RUT"
-                emptyText="No hay trabajadores disponibles"
-                [options]="empleadoOptions()"
-                [ngModel]="form().idPersona"
-                (ngModelChange)="onTrabajadorChange($event == null ? null : +$event)"
-                [disabled]="guardando() || soporteLoading()"
-                [clearable]="true"
-              ></app-search-select>
-            </label>
-            <label class="nm-field">
-              <span class="nm-field-label">Contrato</span>
-              <select
-                class="nm-input"
-                [ngModel]="form().idContrato"
-                (ngModelChange)="actualizarForm('idContrato', $event == null || $event === '' ? null : +$event)"
-                [disabled]="guardando() || contratosLoading() || !form().idPersona || contratosPersona().length <= 1"
-              >
-                <option [ngValue]="null">
-                  {{ form().idPersona ? 'Sin contrato especifico' : 'Selecciona trabajador primero' }}
-                </option>
-                @for (contrato of contratosPersona(); track contrato.idContrato) {
-                  <option [ngValue]="contrato.idContrato">{{ contrato.etiqueta }}</option>
+          <button type="button" class="nm-modal-close" aria-label="Cerrar modal" (click)="cerrarFormulario()">
+            <lucide-icon [img]="closeIcon"></lucide-icon>
+          </button>
+        </header>
+
+        <div class="nm-modal-body">
+          @if (formErrores().general) {
+            <div class="nm-form-alert" role="alert">{{ formErrores().general }}</div>
+          }
+
+          <div class="nm-form-section">
+            <h3>Datos principales</h3>
+            <div class="nm-form-grid">
+              <label class="nm-field nm-form-span2" [attr.data-nm-error]="!!errorCampo('idPersona')">
+                <span class="nm-field-label">Trabajador</span>
+                <app-search-select
+                  id="nm-trabajador"
+                  placeholder="Selecciona trabajador"
+                  searchPlaceholder="Buscar por nombre o RUT"
+                  emptyText="No hay trabajadores disponibles"
+                  [options]="empleadoOptions()"
+                  [ngModel]="form().idPersona"
+                  (ngModelChange)="onTrabajadorChange($event == null ? null : +$event)"
+                  [disabled]="guardando() || soporteLoading()"
+                  [clearable]="true"
+                ></app-search-select>
+                @if (errorCampo('idPersona')) {
+                  <small class="nm-field-error">{{ errorCampo('idPersona') }}</small>
                 }
-              </select>
-            </label>
-            <label class="nm-field nm-form-span2">
-              <span class="nm-field-label">Concepto</span>
-              <app-search-select
-                id="nm-concepto"
-                placeholder="Selecciona concepto"
-                searchPlaceholder="Buscar concepto"
-                emptyText="No hay conceptos disponibles"
-                [options]="conceptoOptions()"
-                [ngModel]="form().idConcepto"
-                (ngModelChange)="onConceptoChange($event == null ? null : +$event)"
-                [disabled]="guardando() || soporteLoading()"
-                [clearable]="true"
-              ></app-search-select>
-            </label>
+              </label>
+
+              <label class="nm-field nm-form-span2" [attr.data-nm-error]="!!errorCampo('idConcepto')">
+                <span class="nm-field-label">Concepto</span>
+                <app-search-select
+                  id="nm-concepto"
+                  placeholder="Selecciona concepto"
+                  searchPlaceholder="Buscar concepto"
+                  emptyText="No hay conceptos disponibles"
+                  [options]="conceptoOptions()"
+                  [ngModel]="form().idConcepto"
+                  (ngModelChange)="onConceptoChange($event == null ? null : +$event)"
+                  [disabled]="guardando() || soporteLoading()"
+                  [clearable]="true"
+                ></app-search-select>
+                @if (errorCampo('idConcepto')) {
+                  <small class="nm-field-error">{{ errorCampo('idConcepto') }}</small>
+                }
+              </label>
+
+              <label class="nm-field" [attr.data-nm-error]="!!errorCampo('tipoMovimiento')">
+                <span class="nm-field-label">Tipo de movimiento</span>
+                <select
+                  class="nm-input"
+                  [class.nm-input--invalid]="!!errorCampo('tipoMovimiento')"
+                  [ngModel]="form().tipoMovimiento"
+                  (ngModelChange)="actualizarForm('tipoMovimiento', $event)"
+                >
+                  @for (tipo of tiposMovimiento; track tipo) {
+                    <option [ngValue]="tipo">{{ etiquetaTipoMovimiento(tipo) }}</option>
+                  }
+                </select>
+                @if (errorCampo('tipoMovimiento')) {
+                  <small class="nm-field-error">{{ errorCampo('tipoMovimiento') }}</small>
+                }
+              </label>
+
+              <label class="nm-field" [attr.data-nm-error]="!!errorCampo('monto')">
+                <span class="nm-field-label">Monto</span>
+                <input
+                  type="number"
+                  min="0"
+                  step="1"
+                  class="nm-input"
+                  [class.nm-input--invalid]="!!errorCampo('monto')"
+                  [ngModel]="form().monto"
+                  (ngModelChange)="actualizarForm('monto', $event == null || $event === '' ? null : +$event)"
+                />
+                @if (errorCampo('monto')) {
+                  <small class="nm-field-error">{{ errorCampo('monto') }}</small>
+                }
+              </label>
+
+              <label class="nm-field">
+                <span class="nm-field-label">Fecha</span>
+                <input
+                  type="date"
+                  class="nm-input"
+                  [ngModel]="form().fechaEvento"
+                  (ngModelChange)="actualizarForm('fechaEvento', $event)"
+                />
+              </label>
+            </div>
           </div>
+
+          <div class="nm-form-section">
+            <h3>Detalle opcional</h3>
+            <div class="nm-form-grid">
+              <label class="nm-field" [attr.data-nm-error]="!!errorCampo('categoria')">
+                <span class="nm-field-label">Categoria</span>
+                <select
+                  class="nm-input"
+                  [class.nm-input--invalid]="!!errorCampo('categoria')"
+                  [ngModel]="form().categoria"
+                  (ngModelChange)="actualizarForm('categoria', $event)"
+                >
+                  @for (categoria of categorias; track categoria) {
+                    <option [ngValue]="categoria">{{ etiquetaCategoria(categoria) }}</option>
+                  }
+                </select>
+                @if (errorCampo('categoria')) {
+                  <small class="nm-field-error">{{ errorCampo('categoria') }}</small>
+                }
+              </label>
+
+              <label class="nm-field">
+                <span class="nm-field-label">Contrato</span>
+                <select
+                  class="nm-input"
+                  [ngModel]="form().idContrato"
+                  (ngModelChange)="actualizarForm('idContrato', $event == null || $event === '' ? null : +$event)"
+                  [disabled]="guardando() || contratosLoading() || !form().idPersona || contratosPersona().length <= 1"
+                >
+                  <option [ngValue]="null">
+                    {{ form().idPersona ? 'Sin contrato especifico' : 'Selecciona trabajador primero' }}
+                  </option>
+                  @for (contrato of contratosPersona(); track contrato.idContrato) {
+                    <option [ngValue]="contrato.idContrato">{{ contrato.etiqueta }}</option>
+                  }
+                </select>
+              </label>
+
+              <label class="nm-field">
+                <span class="nm-field-label">Referencia</span>
+                <input
+                  type="text"
+                  class="nm-input"
+                  [ngModel]="form().referenciaExterna"
+                  (ngModelChange)="actualizarForm('referenciaExterna', $event)"
+                />
+              </label>
+
+              <label class="nm-field" [attr.data-nm-error]="!!errorCampo('cantidad')">
+                <span class="nm-field-label">Cantidad</span>
+                <input
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  class="nm-input"
+                  [class.nm-input--invalid]="!!errorCampo('cantidad')"
+                  [ngModel]="form().cantidad"
+                  (ngModelChange)="actualizarForm('cantidad', $event == null || $event === '' ? null : +$event)"
+                />
+                @if (errorCampo('cantidad')) {
+                  <small class="nm-field-error">{{ errorCampo('cantidad') }}</small>
+                }
+              </label>
+
+              <label class="nm-field">
+                <span class="nm-field-label">Unidad</span>
+                <input
+                  type="text"
+                  class="nm-input"
+                  [ngModel]="form().unidad"
+                  (ngModelChange)="actualizarForm('unidad', $event)"
+                />
+              </label>
+
+              <label class="nm-field">
+                <span class="nm-field-label">Origen</span>
+                <select class="nm-input" [ngModel]="form().origen" (ngModelChange)="actualizarForm('origen', $event)">
+                  @for (origen of origenes; track origen) {
+                    <option [ngValue]="origen">{{ etiquetaOrigen(origen) }}</option>
+                  }
+                </select>
+              </label>
+
+              <label class="nm-field nm-form-span2">
+                <span class="nm-field-label">Observacion</span>
+                <textarea
+                  rows="3"
+                  class="nm-input nm-textarea"
+                  [ngModel]="form().observacion"
+                  (ngModelChange)="actualizarForm('observacion', $event)"
+                ></textarea>
+              </label>
+            </div>
+          </div>
+
+          @if (resumenFormulario().visible) {
+            <section class="nm-form-summary" aria-label="Resumen antes de guardar">
+              <h3>Resumen</h3>
+              <dl>
+                <div>
+                  <dt>Trabajador</dt>
+                  <dd>{{ resumenFormulario().trabajador || 'Sin seleccionar' }}</dd>
+                </div>
+                <div>
+                  <dt>Concepto</dt>
+                  <dd>{{ resumenFormulario().concepto || 'Sin seleccionar' }}</dd>
+                </div>
+                <div>
+                  <dt>Monto</dt>
+                  <dd>{{ resumenFormulario().monto || 'Sin monto' }}</dd>
+                </div>
+                <div>
+                  <dt>Periodo</dt>
+                  <dd>{{ resumenFormulario().periodo }}</dd>
+                </div>
+              </dl>
+            </section>
+          }
         </div>
 
-        <div class="nm-form-section">
-          <h3>Movimiento</h3>
-          <div class="nm-form-grid">
-            <label class="nm-field">
-              <span class="nm-field-label">Categoria</span>
-              <select
-                class="nm-input"
-                [ngModel]="form().categoria"
-                (ngModelChange)="actualizarForm('categoria', $event)"
-              >
-                @for (categoria of categorias; track categoria) {
-                  <option [ngValue]="categoria">{{ etiquetaCategoria(categoria) }}</option>
-                }
-              </select>
-            </label>
-            <label class="nm-field">
-              <span class="nm-field-label">Tipo movimiento</span>
-              <select
-                class="nm-input"
-                [ngModel]="form().tipoMovimiento"
-                (ngModelChange)="actualizarForm('tipoMovimiento', $event)"
-              >
-                @for (tipo of tiposMovimiento; track tipo) {
-                  <option [ngValue]="tipo">{{ etiquetaTipoMovimiento(tipo) }}</option>
-                }
-              </select>
-            </label>
-            <label class="nm-field">
-              <span class="nm-field-label">Cantidad</span>
-              <input
-                type="number"
-                min="0"
-                step="0.01"
-                class="nm-input"
-                [ngModel]="form().cantidad"
-                (ngModelChange)="actualizarForm('cantidad', $event == null || $event === '' ? null : +$event)"
-              />
-            </label>
-            <label class="nm-field">
-              <span class="nm-field-label">Unidad</span>
-              <input
-                type="text"
-                class="nm-input"
-                [ngModel]="form().unidad"
-                (ngModelChange)="actualizarForm('unidad', $event)"
-              />
-            </label>
-            <label class="nm-field">
-              <span class="nm-field-label">Monto</span>
-              <input
-                type="number"
-                min="0"
-                step="1"
-                class="nm-input"
-                [ngModel]="form().monto"
-                (ngModelChange)="actualizarForm('monto', $event == null || $event === '' ? null : +$event)"
-              />
-            </label>
-            <label class="nm-field">
-              <span class="nm-field-label">Moneda</span>
-              <input
-                type="text"
-                maxlength="3"
-                class="nm-input"
-                [ngModel]="form().moneda"
-                (ngModelChange)="actualizarForm('moneda', $event)"
-              />
-            </label>
-          </div>
-        </div>
-
-        <div class="nm-form-section">
-          <h3>Contexto</h3>
-          <div class="nm-form-grid">
-            <label class="nm-field">
-              <span class="nm-field-label">Origen</span>
-              <select class="nm-input" [ngModel]="form().origen" (ngModelChange)="actualizarForm('origen', $event)">
-                @for (origen of origenes; track origen) {
-                  <option [ngValue]="origen">{{ etiquetaOrigen(origen) }}</option>
-                }
-              </select>
-            </label>
-            <label class="nm-field">
-              <span class="nm-field-label">Fecha evento</span>
-              <input
-                type="date"
-                class="nm-input"
-                [ngModel]="form().fechaEvento"
-                (ngModelChange)="actualizarForm('fechaEvento', $event)"
-              />
-            </label>
-            <label class="nm-field">
-              <span class="nm-field-label">Referencia externa</span>
-              <input
-                type="text"
-                class="nm-input"
-                [ngModel]="form().referenciaExterna"
-                (ngModelChange)="actualizarForm('referenciaExterna', $event)"
-              />
-            </label>
-            <label class="nm-field nm-form-span2">
-              <span class="nm-field-label">Observacion</span>
-              <textarea
-                rows="3"
-                class="nm-input nm-textarea"
-                [ngModel]="form().observacion"
-                (ngModelChange)="actualizarForm('observacion', $event)"
-              ></textarea>
-            </label>
-          </div>
-        </div>
-
-        <div class="nm-form-actions">
-          <app-button variant="outline" size="md" [disabled]="guardando()" (click)="cerrarFormulario()">Cancelar</app-button>
-          <app-button variant="primary" size="md" [disabled]="guardando()" (click)="guardarFormulario()">
-            {{ guardando() ? 'Guardando...' : 'Guardar borrador' }}
+        <footer class="nm-modal-footer">
+          <app-button variant="outline" size="md" [disabled]="guardando()" (click)="cerrarFormulario()">
+            Cancelar
           </app-button>
-        </div>
-      </app-card-content>
-    </app-card>
+          <app-button variant="primary" size="md" [disabled]="guardando()" (click)="guardarFormulario()">
+            {{ guardando() ? 'Guardando...' : 'Guardar movimiento' }}
+          </app-button>
+        </footer>
+      </section>
+    </div>
   }
 
   <app-card>
     <app-card-header className="px-4 py-3 border-b border-gray-100">
       <div class="nm-action-observation">
         <div>
-          <h2 class="text-sm font-semibold text-gray-900">Listado del periodo</h2>
-          <p class="nm-form-sub">Use la observacion solo para rechazar o anular movimientos del mes.</p>
+          <h2 class="text-sm font-semibold text-gray-900">Movimientos registrados</h2>
+          <p class="nm-form-sub">Usa esta observacion solo si vas a rechazar o anular un movimiento.</p>
         </div>
-        <label>
-          <span class="nm-field-label">Observacion para accion</span>
-          <input
-            type="text"
-            class="nm-input"
-            [ngModel]="observacionAccion()"
-            (ngModelChange)="observacionAccion.set($event)"
-          />
-        </label>
+        @if (movimientosPendientesAccion()) {
+          <label>
+            <span class="nm-field-label">Observacion para rechazar o anular</span>
+            <input
+              type="text"
+              class="nm-input"
+              [ngModel]="observacionAccion()"
+              (ngModelChange)="observacionAccion.set($event)"
+            />
+          </label>
+        }
       </div>
     </app-card-header>
     <app-card-content className="p-0">
       <app-data-grid
-        title="Movimientos del periodo"
+        title="Movimientos registrados"
         [rows]="filas()"
         [columns]="columns"
         [filters]="filters"
@@ -300,8 +327,8 @@
         [selectable]="false"
         [trackBy]="trackNovedad"
         gridHeight="min(34rem, calc(100vh - 26rem))"
-        emptyTitle="No hay movimientos registrados para este periodo."
-        emptyDescription="Registra bonos, descuentos, anticipos o ajustes y envialos a revision antes de preparar la nomina."
+        emptyTitle="No hay movimientos del mes registrados"
+        emptyDescription="Todavia no se han registrado bonos, descuentos, anticipos, ausencias o ajustes para el periodo activo. Usa Registrar movimiento para crear el primero."
       >
         <ng-template appDataGridCell="estado" let-row>
           <span [class]="claseEstado(row.estado)">{{ etiquetaEstado(row.estado) }}</span>
@@ -312,7 +339,7 @@
               <button type="button" class="nm-action-btn" (click)="editarNovedad(row)">Editar</button>
             }
             @if (puedeEnviarRevision(row)) {
-              <button type="button" class="nm-action-btn" (click)="enviarRevision(row)">Enviar</button>
+              <button type="button" class="nm-action-btn" (click)="enviarRevision(row)">Enviar a revision</button>
             }
             @if (puedeAprobar(row)) {
               <button type="button" class="nm-action-btn nm-action-btn--ok" (click)="aprobar(row)">Aprobar</button>
@@ -342,6 +369,20 @@
       [detail]="msg.detail ?? ''"
       primaryLabel="Aceptar"
       (action)="cerrarMensaje()"
+    ></app-message-box>
+  }
+
+  @if (confirmarCancelarAbierto()) {
+    <app-message-box
+      variant="warning"
+      mode="modal"
+      [modalHeadlineSplit]="true"
+      title="Descartar cambios"
+      message="Hay cambios sin guardar en el movimiento. Si cancelas, se perderan los datos ingresados."
+      primaryLabel="Descartar"
+      secondaryLabel="Seguir editando"
+      (action)="confirmarDescartarFormulario()"
+      (secondary)="cerrarConfirmacionCancelar()"
     ></app-message-box>
   }
 </section>

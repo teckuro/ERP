@@ -27,6 +27,7 @@ import {
   TriangleAlert,
   X,
 } from 'lucide-angular/src/icons';
+import { vi } from 'vitest';
 
 import { PeriodoActivoService } from '../../../../core/services/periodo-activo.service';
 import { EmpleadosService } from '../../../empleados/services/empleados.service';
@@ -37,8 +38,19 @@ import { MovimientosVariablesContainer } from './movimientos-variables-container
 describe('MovimientosVariablesContainer', () => {
   let fixture: ComponentFixture<MovimientosVariablesContainer>;
   let component: MovimientosVariablesContainer;
+  let periodoActivo: PeriodoActivoService;
+  let movimientosService: {
+    listarPorPeriodo: ReturnType<typeof vi.fn>;
+    crear: ReturnType<typeof vi.fn>;
+    anular: ReturnType<typeof vi.fn>;
+  };
 
   beforeEach(async () => {
+    movimientosService = {
+      listarPorPeriodo: vi.fn().mockResolvedValue([]),
+      crear: vi.fn().mockResolvedValue({}),
+      anular: vi.fn().mockResolvedValue({}),
+    };
     await TestBed.configureTestingModule({
       imports: [MovimientosVariablesContainer],
       providers: [
@@ -73,11 +85,7 @@ describe('MovimientosVariablesContainer', () => {
         PeriodoActivoService,
         {
           provide: MovimientosVariablesService,
-          useValue: {
-            listarPorPeriodo: async () => [],
-            crear: async () => ({}),
-            anular: async () => ({}),
-          },
+          useValue: movimientosService,
         },
         {
           provide: EmpleadosService,
@@ -94,6 +102,8 @@ describe('MovimientosVariablesContainer', () => {
       ],
     }).compileComponents();
 
+    periodoActivo = TestBed.inject(PeriodoActivoService);
+    periodoActivo.setPeriodoYm('2026-05');
     fixture = TestBed.createComponent(MovimientosVariablesContainer);
     component = fixture.componentInstance;
     await fixture.whenStable();
@@ -106,6 +116,36 @@ describe('MovimientosVariablesContainer', () => {
   it('should expose remuneraciones breadcrumb', () => {
     expect(component.breadcrumbItems[0].label).toBe('Remuneraciones');
     expect(component.breadcrumbItems[0].link).toBe('/remuneraciones');
-    expect(component.breadcrumbItems[1].label).toBe('Movimientos variables');
+    expect(component.breadcrumbItems[1].label).toBe('Movimientos del mes');
+  });
+
+  it('usa periodo global y no muestra selector mensual local', async () => {
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelector('input[type="month"]')).toBeNull();
+    expect(fixture.nativeElement.textContent).toContain('Periodo activo');
+    expect(fixture.nativeElement.textContent).toContain('Mayo 2026');
+    expect(fixture.nativeElement.textContent).toContain('Cambia el periodo desde la cabecera global.');
+  });
+
+  it('buscar usa periodo global', async () => {
+    periodoActivo.setPeriodoYm('2026-06');
+
+    await component.buscar();
+
+    expect(movimientosService.listarPorPeriodo).toHaveBeenCalledWith('2026-06');
+  });
+
+  it('guardarNuevo envia periodo global', async () => {
+    periodoActivo.setPeriodoYm('2026-06');
+    component.formPersonaId.set(10);
+    component.formConceptoId.set(20);
+    component.formMonto.set(50000);
+
+    await component.guardarNuevo();
+
+    expect(movimientosService.crear).toHaveBeenCalledWith(expect.objectContaining({ periodo: '2026-06' }));
   });
 });

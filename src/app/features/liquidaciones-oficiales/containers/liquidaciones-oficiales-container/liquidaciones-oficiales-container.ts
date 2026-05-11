@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, effect, inject, signal, untracked } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { LucideAngularModule } from 'lucide-angular';
@@ -106,7 +106,13 @@ export class LiquidacionesOficialesContainer {
   });
 
   constructor() {
-    void this.consultar();
+    effect(() => {
+      this.periodoSeleccionado();
+      untracked(() => {
+        this.resetearEstadoPeriodo();
+        void this.consultar();
+      });
+    });
   }
 
   consultar(): Promise<void> {
@@ -116,12 +122,28 @@ export class LiquidacionesOficialesContainer {
     this.trabajadorSeleccionado.set(null);
     this.conceptosDetalle.set([]);
     return this.service.consultarEstadoPeriodo(periodo)
-      .then((estado) => this.estadoPeriodo.set(estado))
+      .then((estado) => {
+        if (this.periodoSeleccionado().trim() !== periodo) {
+          return;
+        }
+        this.estadoPeriodo.set(estado);
+      })
       .catch((error: unknown) => {
+        if (this.periodoSeleccionado().trim() !== periodo) {
+          return;
+        }
         this.estadoPeriodo.set(null);
         this.error.set(error instanceof Error ? error.message : 'No se pudo consultar liquidaciones oficiales.');
       })
       .finally(() => this.cargando.set(false));
+  }
+
+  private resetearEstadoPeriodo(): void {
+    this.estadoPeriodo.set(null);
+    this.error.set(null);
+    this.trabajadorSeleccionado.set(null);
+    this.conceptosDetalle.set([]);
+    this.confirmacionGeneracionVisible.set(false);
   }
 
   generarLiquidaciones(): void {

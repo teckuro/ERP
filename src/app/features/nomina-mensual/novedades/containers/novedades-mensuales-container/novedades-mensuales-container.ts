@@ -2,14 +2,17 @@ import { CommonModule } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
+  OnDestroy,
   OnInit,
   computed,
+  effect,
   inject,
   signal,
+  untracked,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { LucideAngularModule } from 'lucide-angular';
-import { Plus, RefreshCw } from 'lucide-angular/src/icons';
+import { Plus, RefreshCw, X } from 'lucide-angular/src/icons';
 
 import { PeriodoActivoService } from '../../../../../core/services/periodo-activo.service';
 import { ButtonComponent } from '../../../../../shared/components/ui/button.component';
@@ -71,9 +74,11 @@ type NovedadGridRow = NovedadMensual & {
   trabajadorEtiqueta: string;
   conceptoEtiqueta: string;
   categoriaEtiqueta: string;
+  tipoCategoriaEtiqueta: string;
   estadoEtiqueta: string;
   origenEtiqueta: string;
   cantidadEtiqueta: string;
+  fechaEventoEtiqueta: string;
   montoEtiqueta: string;
   busqueda: string;
 };
@@ -95,35 +100,38 @@ type NovedadForm = {
   referenciaExterna: string;
 };
 
+type NovedadFormCampo = keyof NovedadForm;
+type NovedadFormErrores = Partial<Record<NovedadFormCampo | 'general', string>>;
+
 const USUARIO_UI_BASE = '00000000-0000-0000-0000-000000000000';
 
 const ESTADO_LABELS: Record<NovedadMensualEstado, string> = {
   borrador: 'Borrador',
-  pendiente_revision: 'Pendiente revision',
+  pendiente_revision: 'Pendiente revisión',
   aprobada: 'Aprobada',
   rechazada: 'Rechazada',
-  incorporada_a_pre_nomina: 'En pre-nomina',
+  incorporada_a_pre_nomina: 'En pre-nómina',
   calculada: 'Calculada',
   anulada: 'Anulada',
 };
 
 const CATEGORIA_LABELS: Record<NovedadMensualCategoria, string> = {
-  haber_variable: 'Haber variable',
-  tiempo_trabajado_adicional: 'Tiempo adicional',
+  haber_variable: 'Haber puntual',
+  tiempo_trabajado_adicional: 'Horas o tiempo adicional',
   ausencia_descuento_tiempo: 'Ausencia o descuento de tiempo',
   licencia_permiso: 'Licencia o permiso',
-  anticipo_descuento_unico: 'Anticipo o descuento unico',
+  anticipo_descuento_unico: 'Anticipo o descuento único',
   retroactivo_reintegro: 'Retroactivo o reintegro',
-  ajuste_manual_controlado: 'Ajuste manual controlado',
+  ajuste_manual_controlado: 'Ajuste controlado',
 };
 
 const ORIGEN_LABELS: Record<NovedadMensualOrigen, string> = {
   manual: 'Manual',
   asistencia: 'Asistencia',
-  importacion: 'Importacion',
-  integracion_externa: 'Integracion externa',
+  importacion: 'Importación',
+  integracion_externa: 'Integración externa',
   ajuste_administrativo: 'Ajuste administrativo',
-  regularizacion: 'Regularizacion',
+  regularizacion: 'Regularización',
   sistema: 'Sistema',
 };
 
@@ -174,11 +182,13 @@ function formInicial(periodo: string): NovedadForm {
   styleUrl: './novedades-mensuales-container.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class NovedadesMensualesContainer implements OnInit {
+export class NovedadesMensualesContainer implements OnInit, OnDestroy {
   private readonly novedadesService = inject(NovedadesMensualesService);
   private readonly empleadosService = inject(EmpleadosService);
   private readonly haberesDescuentosService = inject(HaberesDescuentosService);
   readonly periodoActivo = inject(PeriodoActivoService);
+  private pantallaInicializada = false;
+  private bodyOverflowAnterior: string | null = null;
 
   readonly breadcrumbItems: readonly RecordBreadcrumbItem[] = [
     { label: 'Remuneraciones', link: '/remuneraciones' },
@@ -187,13 +197,14 @@ export class NovedadesMensualesContainer implements OnInit {
 
   readonly plusIcon = Plus;
   readonly refreshIcon = RefreshCw;
+  readonly closeIcon = X;
 
   readonly estados = NOVEDAD_MENSUAL_ESTADOS;
   readonly categorias = NOVEDAD_MENSUAL_CATEGORIAS;
   readonly origenes = NOVEDAD_MENSUAL_ORIGENES;
   readonly tiposMovimiento = NOVEDAD_MENSUAL_TIPOS_MOVIMIENTO;
 
-  readonly periodoFiltro = signal('');
+  readonly periodoActual = computed(() => this.periodoActivo.periodoYm());
   readonly loading = signal(false);
   readonly soporteLoading = signal(false);
   readonly contratosLoading = signal(false);
@@ -206,6 +217,9 @@ export class NovedadesMensualesContainer implements OnInit {
   readonly formAbierto = signal(false);
   readonly novedadEditando = signal<NovedadMensual | null>(null);
   readonly form = signal<NovedadForm>(formInicial(''));
+  readonly formSnapshot = signal('');
+  readonly formErrores = signal<NovedadFormErrores>({});
+  readonly confirmarCancelarAbierto = signal(false);
   readonly observacionAccion = signal('');
   readonly mensaje = signal<{
     variant: MessageBoxVariant;
@@ -215,6 +229,9 @@ export class NovedadesMensualesContainer implements OnInit {
   } | null>(null);
 
   readonly totalNovedades = computed(() => this.filas().length);
+  readonly movimientosPendientesAccion = computed(() =>
+    this.filas().some((fila) => this.puedeRechazar(fila) || this.puedeAnular(fila)),
+  );
   readonly conceptoOptions = computed<SearchSelectOption<number>[]>(() =>
     this.conceptos().map((concepto) => ({
       value: concepto.idConcepto,
@@ -229,6 +246,29 @@ export class NovedadesMensualesContainer implements OnInit {
       total: this.filas().filter((fila) => fila.estado === estado).length,
     })),
   );
+  readonly resumenPeriodo = computed(() => {
+    const filas = this.filas();
+    const contar = (estado: NovedadMensualEstado) => filas.filter((fila) => fila.estado === estado).length;
+    const secundarios = contar('rechazada') + contar('anulada') + contar('calculada') + contar('incorporada_a_pre_nomina');
+    return [
+      { label: 'Total', total: filas.length },
+      { label: 'Borradores', total: contar('borrador') },
+      { label: 'Pendientes', total: contar('pendiente_revision') },
+      { label: 'Aprobados', total: contar('aprobada') },
+      { label: 'Observados / rechazados / anulados', total: secundarios },
+    ];
+  });
+  readonly formConCambios = computed(() => this.formAbierto() && this.serializarForm(this.form()) !== this.formSnapshot());
+  readonly resumenFormulario = computed(() => {
+    const form = this.form();
+    return {
+      trabajador: form.idPersona == null ? '' : this.etiquetaTrabajador(form.idPersona),
+      concepto: form.idConcepto == null ? '' : this.etiquetaConcepto(form.idConcepto),
+      monto: form.monto == null ? '' : `${form.moneda || 'CLP'} ${Number(form.monto).toLocaleString('es-CL')}`,
+      periodo: this.periodoActivo.etiqueta(),
+      visible: form.idPersona != null || form.idConcepto != null || form.monto != null,
+    };
+  });
 
   readonly columns: DataGridColumn<NovedadGridRow>[] = [
     {
@@ -249,17 +289,17 @@ export class NovedadesMensualesContainer implements OnInit {
       filterable: false,
     },
     {
-      id: 'categoriaEtiqueta',
-      header: 'Categoria',
-      field: 'categoriaEtiqueta',
+      id: 'tipoCategoriaEtiqueta',
+      header: 'Tipo / Categoría',
+      field: 'tipoCategoriaEtiqueta',
       type: 'text',
       sortable: true,
       filterable: false,
     },
     {
-      id: 'cantidadEtiqueta',
-      header: 'Cantidad',
-      field: 'cantidadEtiqueta',
+      id: 'fechaEventoEtiqueta',
+      header: 'Fecha',
+      field: 'fechaEventoEtiqueta',
       type: 'text',
       sortable: true,
       filterable: false,
@@ -310,7 +350,7 @@ export class NovedadesMensualesContainer implements OnInit {
     },
     {
       id: 'categoria',
-      label: 'Categoria',
+      label: 'Categoría',
       field: 'categoria',
       type: 'select',
       operator: 'equals',
@@ -322,17 +362,42 @@ export class NovedadesMensualesContainer implements OnInit {
       field: 'busqueda',
       type: 'text',
       operator: 'contains',
-      placeholder: 'Trabajador, concepto, estado u origen',
+      placeholder: 'Buscar por trabajador, RUT, concepto o estado',
     },
   ];
 
   readonly trackNovedad = (_index: number, row: NovedadGridRow): number => row.idNovedad;
 
+  constructor() {
+    effect(() => {
+      const periodo = this.periodoActual();
+      untracked(() => this.form.update((actual) => ({ ...actual, periodo })));
+      if (!this.pantallaInicializada) {
+        return;
+      }
+      untracked(() => {
+        this.formAbierto.set(false);
+        this.restaurarScrollPagina();
+        this.novedadEditando.set(null);
+        this.confirmarCancelarAbierto.set(false);
+        this.formErrores.set({});
+        this.contratosPersona.set([]);
+        this.observacionAccion.set('');
+        this.mensaje.set(null);
+        this.filas.set([]);
+        void this.cargarNovedades();
+      });
+    });
+  }
+
   ngOnInit(): void {
     const periodo = this.periodoActivo.periodoYm();
-    this.periodoFiltro.set(periodo);
     this.form.set(formInicial(periodo));
     void this.inicializarPantalla();
+  }
+
+  ngOnDestroy(): void {
+    this.restaurarScrollPagina();
   }
 
   etiquetaEstado(estado: NovedadMensualEstado): string {
@@ -352,7 +417,7 @@ export class NovedadesMensualesContainer implements OnInit {
   }
 
   async cargarNovedades(): Promise<void> {
-    const periodo = this.periodoFiltro().trim();
+    const periodo = this.periodoActual().trim();
     if (!validarPeriodoNovedad(periodo)) {
       this.filas.set([]);
       this.mensaje.set({
@@ -378,8 +443,16 @@ export class NovedadesMensualesContainer implements OnInit {
   abrirNuevo(): void {
     this.novedadEditando.set(null);
     this.contratosPersona.set([]);
-    this.form.set(formInicial(this.periodoFiltro().trim() || this.periodoActivo.periodoYm()));
+    this.abrirFormularioCon(formInicial(this.periodoActual()));
+  }
+
+  private abrirFormularioCon(form: NovedadForm): void {
+    this.form.set(form);
+    this.formErrores.set({});
+    this.confirmarCancelarAbierto.set(false);
+    this.formSnapshot.set(this.serializarForm(form));
     this.formAbierto.set(true);
+    this.bloquearScrollPagina();
   }
 
   editarNovedad(novedad: NovedadMensual): void {
@@ -387,7 +460,7 @@ export class NovedadesMensualesContainer implements OnInit {
       return;
     }
     this.novedadEditando.set(novedad);
-    this.form.set({
+    this.abrirFormularioCon({
       periodo: novedad.periodo,
       idPersona: novedad.idPersona,
       idContrato: novedad.idContrato,
@@ -403,7 +476,6 @@ export class NovedadesMensualesContainer implements OnInit {
       observacion: novedad.observacion ?? '',
       referenciaExterna: novedad.referenciaExterna ?? '',
     });
-    this.formAbierto.set(true);
     if (novedad.idPersona) {
       void this.cargarContratosPersona(novedad.idPersona);
     } else {
@@ -412,12 +484,36 @@ export class NovedadesMensualesContainer implements OnInit {
   }
 
   cerrarFormulario(): void {
+    if (this.formConCambios()) {
+      this.confirmarCancelarAbierto.set(true);
+      return;
+    }
+    this.cerrarFormularioDirecto();
+  }
+
+  confirmarDescartarFormulario(): void {
+    this.confirmarCancelarAbierto.set(false);
+    this.cerrarFormularioDirecto();
+  }
+
+  cerrarConfirmacionCancelar(): void {
+    this.confirmarCancelarAbierto.set(false);
+  }
+
+  cerrarFormularioDirecto(): void {
     this.formAbierto.set(false);
+    this.restaurarScrollPagina();
     this.novedadEditando.set(null);
+    this.formErrores.set({});
+    this.confirmarCancelarAbierto.set(false);
+    this.contratosPersona.set([]);
+    this.form.set(formInicial(this.periodoActual()));
+    this.formSnapshot.set(this.serializarForm(this.form()));
   }
 
   actualizarForm<K extends keyof NovedadForm>(campo: K, valor: NovedadForm[K]): void {
     this.form.update((actual) => ({ ...actual, [campo]: valor }));
+    this.limpiarErrorCampo(campo);
   }
 
   async onTrabajadorChange(idPersona: number | null): Promise<void> {
@@ -443,14 +539,17 @@ export class NovedadesMensualesContainer implements OnInit {
     const input = this.inputDesdeForm();
     const resultado = validarNovedadMensualInput({ ...input, estado: this.novedadEditando()?.estado ?? 'borrador' });
     if (!resultado.valido) {
+      this.formErrores.set(this.erroresDesdeValidacion(resultado.errores));
       this.mensaje.set({
         variant: 'warning',
         title: 'Datos incompletos',
         message: this.mensajeOperativo(resultado.errores[0]?.mensaje) ?? 'Revise los datos del movimiento del mes.',
       });
+      this.enfocarPrimerError();
       return;
     }
 
+    this.formErrores.set({});
     this.guardando.set(true);
     try {
       const editando = this.novedadEditando();
@@ -459,17 +558,17 @@ export class NovedadesMensualesContainer implements OnInit {
         this.mensaje.set({
           variant: 'success',
           title: 'Movimiento actualizado',
-          message: 'El movimiento del mes quedo actualizado.',
+          message: 'El movimiento quedo actualizado.',
         });
       } else {
         await this.novedadesService.crearNovedad(input);
         this.mensaje.set({
           variant: 'success',
           title: 'Movimiento guardado',
-          message: 'Movimiento guardado como borrador.',
+          message: 'Movimiento guardado correctamente.',
         });
       }
-      this.cerrarFormulario();
+      this.cerrarFormularioDirecto();
       await this.cargarNovedades();
     } catch (err) {
       this.mostrarError(err, 'No se pudo guardar el movimiento del mes.');
@@ -505,8 +604,8 @@ export class NovedadesMensualesContainer implements OnInit {
   async enviarRevision(novedad: NovedadMensual): Promise<void> {
     await this.ejecutarAccion(
       () => this.novedadesService.enviarARevision(novedad.idNovedad),
-      'Movimiento enviado a revision.',
-      'No se pudo enviar el movimiento a revision.',
+      'Movimiento enviado a revisión.',
+      'No se pudo enviar el movimiento a revisión.',
     );
   }
 
@@ -549,6 +648,10 @@ export class NovedadesMensualesContainer implements OnInit {
     this.mensaje.set(null);
   }
 
+  errorCampo(campo: NovedadFormCampo): string {
+    return this.formErrores()[campo] ?? '';
+  }
+
   claseEstado(estado: NovedadMensualEstado): string {
     switch (estado) {
       case 'aprobada':
@@ -587,6 +690,7 @@ export class NovedadesMensualesContainer implements OnInit {
   private async inicializarPantalla(): Promise<void> {
     await this.cargarDatosSoporte();
     await this.cargarNovedades();
+    this.pantallaInicializada = true;
   }
 
   private async cargarDatosSoporte(): Promise<void> {
@@ -627,7 +731,7 @@ export class NovedadesMensualesContainer implements OnInit {
   private inputDesdeForm(): CrearNovedadMensualInput & ActualizarNovedadMensualInput {
     const form = this.form();
     return {
-      periodo: form.periodo.trim(),
+      periodo: this.periodoActual().trim(),
       idPersona: form.idPersona ?? 0,
       idContrato: form.idContrato,
       idConcepto: form.idConcepto ?? 0,
@@ -644,17 +748,100 @@ export class NovedadesMensualesContainer implements OnInit {
     };
   }
 
+  private limpiarErrorCampo(campo: NovedadFormCampo): void {
+    const actual = this.formErrores();
+    if (!actual[campo] && !actual.general) {
+      return;
+    }
+    const { [campo]: _campo, general: _general, ...rest } = actual;
+    this.formErrores.set(rest);
+  }
+
+  private erroresDesdeValidacion(errores: { codigo: string; mensaje: string }[]): NovedadFormErrores {
+    const formErrores: NovedadFormErrores = {};
+    for (const item of errores) {
+      const mensaje = this.mensajeOperativo(item.mensaje) ?? item.mensaje;
+      switch (item.codigo) {
+        case 'NOVEDAD_PERIODO_INVALIDO':
+          formErrores.periodo ??= mensaje;
+          break;
+        case 'NOVEDAD_PERSONA_REQUERIDA':
+          formErrores.idPersona ??= mensaje;
+          break;
+        case 'NOVEDAD_CONCEPTO_REQUERIDO':
+          formErrores.idConcepto ??= mensaje;
+          break;
+        case 'NOVEDAD_CATEGORIA_INVALIDA':
+          formErrores.categoria ??= mensaje;
+          break;
+        case 'NOVEDAD_TIPO_MOVIMIENTO_INVALIDO':
+          formErrores.tipoMovimiento ??= mensaje;
+          break;
+        case 'NOVEDAD_ORIGEN_INVALIDO':
+          formErrores.origen ??= mensaje;
+          break;
+        case 'NOVEDAD_MONTO_INVALIDO':
+        case 'NOVEDAD_MONTO_REQUERIDO':
+          formErrores.monto ??= mensaje;
+          break;
+        case 'NOVEDAD_CANTIDAD_INVALIDA':
+        case 'NOVEDAD_CANTIDAD_REQUERIDA':
+          formErrores.cantidad ??= mensaje;
+          break;
+        case 'NOVEDAD_MONEDA_INVALIDA':
+          formErrores.moneda ??= mensaje;
+          break;
+        default:
+          formErrores.general ??= mensaje;
+      }
+    }
+    return formErrores;
+  }
+
+  private enfocarPrimerError(): void {
+    setTimeout(() => {
+      if (typeof document === 'undefined') {
+        return;
+      }
+      const el = document.querySelector<HTMLElement>('[data-nm-error="true"] input, [data-nm-error="true"] select, [data-nm-error="true"] textarea, [data-nm-error="true"] button');
+      el?.focus();
+    });
+  }
+
+  private serializarForm(form: NovedadForm): string {
+    return JSON.stringify(form);
+  }
+
+  private bloquearScrollPagina(): void {
+    if (typeof document === 'undefined' || this.bodyOverflowAnterior !== null) {
+      return;
+    }
+    this.bodyOverflowAnterior = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+  }
+
+  private restaurarScrollPagina(): void {
+    if (typeof document === 'undefined' || this.bodyOverflowAnterior === null) {
+      return;
+    }
+    document.body.style.overflow = this.bodyOverflowAnterior;
+    this.bodyOverflowAnterior = null;
+  }
+
   private aGridRow(novedad: NovedadMensual): NovedadGridRow {
     const trabajadorEtiqueta = this.etiquetaTrabajador(novedad.idPersona);
     const conceptoEtiqueta = this.etiquetaConcepto(novedad.idConcepto);
     const categoriaEtiqueta = this.etiquetaCategoria(novedad.categoria);
+    const tipoCategoriaEtiqueta = `${this.etiquetaTipoMovimiento(novedad.tipoMovimiento)} / ${categoriaEtiqueta}`;
     const estadoEtiqueta = this.etiquetaEstado(novedad.estado);
     const origenEtiqueta = this.etiquetaOrigen(novedad.origen);
     const cantidadEtiqueta = novedad.cantidad == null ? '-' : `${novedad.cantidad}${novedad.unidad ? ` ${novedad.unidad}` : ''}`;
+    const fechaEventoEtiqueta = novedad.fechaEvento ? this.formatearFecha(novedad.fechaEvento) : '-';
     const montoEtiqueta = novedad.monto == null ? '-' : `${novedad.moneda} ${Number(novedad.monto).toLocaleString('es-CL')}`;
     const busqueda = [
       trabajadorEtiqueta,
       conceptoEtiqueta,
+      tipoCategoriaEtiqueta,
       categoriaEtiqueta,
       estadoEtiqueta,
       origenEtiqueta,
@@ -668,12 +855,19 @@ export class NovedadesMensualesContainer implements OnInit {
       trabajadorEtiqueta,
       conceptoEtiqueta,
       categoriaEtiqueta,
+      tipoCategoriaEtiqueta,
       estadoEtiqueta,
       origenEtiqueta,
       cantidadEtiqueta,
+      fechaEventoEtiqueta,
       montoEtiqueta,
       busqueda,
     };
+  }
+
+  private formatearFecha(fecha: string): string {
+    const [yyyy, mm, dd] = fecha.split('-');
+    return yyyy && mm && dd ? `${dd}/${mm}/${yyyy}` : fecha;
   }
 
   private etiquetaTrabajador(idPersona: number | null): string {

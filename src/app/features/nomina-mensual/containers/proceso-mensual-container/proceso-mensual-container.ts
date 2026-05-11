@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, effect, inject, signal, untracked } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { LucideAngularModule } from 'lucide-angular';
@@ -270,7 +270,7 @@ interface PasoPeriodoView {
   templateUrl: './proceso-mensual-container.html',
   styleUrl: './proceso-mensual-container.css',
 })
-export class ProcesoMensualContainer implements OnInit {
+export class ProcesoMensualContainer {
   readonly periodoActivo = inject(PeriodoActivoService);
   readonly procesoMensual = inject(ProcesoMensualService);
 
@@ -297,8 +297,14 @@ export class ProcesoMensualContainer implements OnInit {
   readonly cerrandoNomina = signal(false);
   readonly snapshotCompleto = signal<NominaSnapshotCompletoView | null>(null);
 
-  ngOnInit(): void {
-    this.verSnapshotActivo();
+  constructor() {
+    effect(() => {
+      this.periodoSeleccionado();
+      untracked(() => {
+        this.resetearEstadoPeriodo();
+        this.verSnapshotActivo();
+      });
+    });
   }
 
   readonly baseNominaTrazabilidad = computed(() => this.preNomina()?.trazabilidad ?? null);
@@ -754,7 +760,7 @@ export class ProcesoMensualContainer implements OnInit {
       advertencias.push({
         codigo: 'ADV-001',
         titulo: 'No hay movimientos del mes registrados',
-        descripcion: 'Puedes continuar si este periodo no requiere movimientos variables.',
+        descripcion: 'Puedes continuar si este periodo no requiere movimientos puntuales.',
         severidad: 'advertencia',
         accionLabel: 'Revisar movimientos del mes',
         ruta: '/remuneraciones/novedades-mensuales',
@@ -901,6 +907,34 @@ export class ProcesoMensualContainer implements OnInit {
     return this.estadoOperativo().disclosureActivo;
   });
 
+  mostrarDetalleOperativo(etapa: EtapaOperativaActiva): boolean {
+    const estado = this.estadoOperativo().estadoClave;
+    const orden: Record<EtapaOperativaActiva, number> = {
+      base: 1,
+      calculo: 2,
+      resultado: 2,
+      guardado: 3,
+      aprobacion: 4,
+      cierre: 5,
+      liquidaciones: 6,
+    };
+    const etapaPorEstado: Record<string, number> = {
+      pendiente_validacion: 0,
+      periodo_con_pendientes: 1,
+      listo_para_generar_base: 1,
+      base_lista: 2,
+      resultado_con_bloqueos: 2,
+      resultado_preliminar_revisable: 2,
+      resultado_listo_para_guardar: 2,
+      resultado_guardado: 4,
+      aprobado_operativamente: 5,
+      nomina_cerrada: 6,
+      liquidaciones_disponibles: 6,
+    };
+    const maxEtapa = etapaPorEstado[estado] ?? 0;
+    return orden[etapa] <= maxEtapa && maxEtapa > 0;
+  }
+
   readonly pasosPeriodo = computed<PasoPeriodoView[]>(() => {
     return this.estadoOperativo().timeline;
   });
@@ -1039,6 +1073,9 @@ export class ProcesoMensualContainer implements OnInit {
     void this.procesoMensual
       .obtenerSnapshotActivo(p)
       .then((snapshot) => {
+        if (this.periodoSeleccionado() !== p) {
+          return null;
+        }
         this.aplicarSnapshotActivo(snapshot);
         this.errorGuardadoResultado.set(null);
         this.errorAprobacionOperativa.set(null);
@@ -1047,6 +1084,9 @@ export class ProcesoMensualContainer implements OnInit {
         return this.cargarSnapshotCompletoActivo(p);
       })
       .catch((e: unknown) => {
+        if (this.periodoSeleccionado() !== p) {
+          return;
+        }
         this.errorEjecucion.set(e instanceof Error ? e.message : String(e));
       })
       .finally(() => {
@@ -1056,6 +1096,22 @@ export class ProcesoMensualContainer implements OnInit {
 
   consultarDetalleResultadoGuardado(): void {
     void this.cargarSnapshotCompletoActivo(this.periodoSeleccionado());
+  }
+
+  private resetearEstadoPeriodo(): void {
+    this.resultado.set(null);
+    this.preNomina.set(null);
+    this.calculo.set(null);
+    this.snapshotActivo.set(null);
+    this.snapshotCompleto.set(null);
+    this.errorEjecucion.set(null);
+    this.errorGuardadoResultado.set(null);
+    this.errorAprobacionOperativa.set(null);
+    this.errorCierreOperativo.set(null);
+    this.errorSnapshotCompleto.set(null);
+    this.exitoGuardadoResultado.set(null);
+    this.identificadorResultadoGuardadoActual.set(null);
+    this.aprobacionOperativa.set(null);
   }
 
   recalcularYReemplazarSnapshot(): void {
@@ -1882,9 +1938,15 @@ export class ProcesoMensualContainer implements OnInit {
     this.errorSnapshotCompleto.set(null);
     return this.procesoMensual.obtenerSnapshotCompletoActivo(periodo)
       .then((snapshot) => {
+        if (this.periodoSeleccionado() !== periodo) {
+          return;
+        }
         this.snapshotCompleto.set(snapshot);
       })
       .catch(() => {
+        if (this.periodoSeleccionado() !== periodo) {
+          return;
+        }
         this.snapshotCompleto.set(null);
         this.errorSnapshotCompleto.set('No se pudo cargar el detalle del resultado guardado. Intenta nuevamente o revisa la conexion.');
       })

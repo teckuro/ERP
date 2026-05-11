@@ -94,7 +94,7 @@
 
   <app-card>
     <app-card-content className="p-4">
-      <div class="grid gap-4 lg:grid-cols-[minmax(0,1fr)_260px]">
+      <div class="grid gap-4">
         <div>
           <div class="flex flex-wrap items-center gap-2">
             <h2 class="text-sm font-semibold text-gray-900">Que falta ahora</h2>
@@ -137,12 +137,6 @@
           }
         </div>
 
-        <aside class="rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-gray-700">
-          <p class="font-medium text-gray-900">Periodo activo: {{ periodoActivo.etiqueta() }}</p>
-          <p class="mt-1 text-xs text-gray-500">
-            Cambialo desde el selector superior. Esta pantalla genera comprobantes desde la nomina cerrada y no recalcula montos.
-          </p>
-        </aside>
       </div>
     </app-card-content>
   </app-card>
@@ -190,7 +184,7 @@
   </app-card>
 
   <details class="rounded-md border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-gray-700">
-    <summary class="cursor-pointer font-medium text-gray-900">Trazabilidad secundaria y alcance</summary>
+    <summary class="cursor-pointer font-medium text-gray-900">Informacion interna y alcance</summary>
     <p class="mt-2">
       Esta salida interna usa la nomina cerrada del periodo y no recalcula montos. Salidas legales, firma, envio,
       portal trabajador, archivo banco, contabilidad, reapertura, anulacion, rectificacion y reliquidacion quedan fuera de esta fase.

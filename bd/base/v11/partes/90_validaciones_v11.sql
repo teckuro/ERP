@@ -345,3 +345,58 @@ SELECT 'salud_plan.id_salud' AS referencia, sp.id_salud_plan AS id_origen
 FROM salud_plan sp
 LEFT JOIN salud s ON s.id_salud = sp.id_salud
 WHERE s.id_salud IS NULL;
+
+\echo '22_lre_catalogo_oficial_minimo'
+WITH expected(codigo_lre) AS (
+    VALUES
+        ('1101'),('1102'),('1103'),('1104'),('1105'),('1106'),('1170'),('1146'),('1107'),('1108'),
+        ('1109'),('1141'),('1142'),('1143'),('1151'),('1110'),('1152'),('1111'),('1112'),('1113'),
+        ('1114'),('1171'),('1172'),('1173'),('1174'),('1175'),('1176'),('1177'),('1178'),('1179'),
+        ('1180'),('1115'),('1116'),('1117'),('1118'),('1154'),('1155'),('1157'),('1131'),('1132'),
+        ('2101'),('2102'),('2103'),('2104'),('2105'),('2106'),('2107'),('2108'),('2109'),('2110'),
+        ('2111'),('2112'),('2113'),('2114'),('2115'),('2116'),('2117'),('2118'),('2119'),('2120'),
+        ('2121'),('2122'),('2123'),('2124'),('2161'),('2201'),('2202'),('2203'),('2204'),('2301'),
+        ('2302'),('2303'),('2304'),('2305'),('2311'),('2306'),('2307'),('2308'),('2309'),('2347'),
+        ('2310'),('2312'),('2313'),('2314'),('2315'),('2316'),('2331'),('2417'),('2418'),('3141'),
+        ('3143'),('3144'),('3151'),('3146'),('3147'),('3155'),('3156'),('3157'),('3158'),('3161'),
+        ('3162'),('3163'),('3164'),('3165'),('3166'),('3167'),('3171'),('3172'),('3173'),('3174'),
+        ('3175'),('3176'),('3177'),('3178'),('3179'),('3180'),('3110'),('3181'),('3182'),('3183'),
+        ('3154'),('3184'),('3185'),('3186'),('3187'),('3188'),('4151'),('4152'),('4131'),('4154'),
+        ('4155'),('4157'),('5201'),('5210'),('5220'),('5230'),('5240'),('5301'),('5361'),('5362'),
+        ('5341'),('5302'),('5410'),('5501'),('5502'),('5564'),('5565')
+)
+SELECT e.codigo_lre AS codigo_faltante
+FROM expected e
+LEFT JOIN catalogo_lre l ON l.codigo_lre = e.codigo_lre
+WHERE l.codigo_lre IS NULL;
+
+\echo '23_lre_mapeos_conceptos_base'
+WITH expected(codigo_concepto, codigo_lre) AS (
+    VALUES
+        ('SUELDO_BASE','2101'),
+        ('GRATIFICACION','2106'),
+        ('HORAS_EXTRAS','2102'),
+        ('BONO_RESPONSABILIDAD','2111'),
+        ('AGUINALDO','2110'),
+        ('COLACION','2301'),
+        ('MOVILIZACION','2302'),
+        ('ASIGNACION_FAMILIAR','2311'),
+        ('AFP','3141'),
+        ('SALUD','3143'),
+        ('CESANTIA','3151'),
+        ('IMPUESTO_RENTA','3161'),
+        ('PRESTAMO','3188'),
+        ('ANTICIPO','3188'),
+        ('DESCUENTO_CONVENIO','3183'),
+        ('PENSION_ALIMENTOS','3186'),
+        ('AFC_EMPLEADOR','4151'),
+        ('SIS_EMPLEADOR','4155')
+)
+SELECT
+    e.codigo_concepto,
+    e.codigo_lre AS codigo_lre_esperado,
+    l.codigo_lre AS codigo_lre_actual
+FROM expected e
+LEFT JOIN concepto c ON c.codigo = e.codigo_concepto
+LEFT JOIN catalogo_lre l ON l.id_catalogo_lre = c.id_catalogo_lre
+WHERE l.codigo_lre IS DISTINCT FROM e.codigo_lre;
