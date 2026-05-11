@@ -1,4 +1,4 @@
-# Módulo Empleados - punto de entrada
+# Módulo Empleados — punto de entrada
 
 ## Qué documenta esta carpeta
 
@@ -15,38 +15,20 @@ Contratos y guías del ciclo de vida del trabajador en Angular: listado, altas (
 | [`validar-remuneraciones.md`](./validar-remuneraciones.md) | Opción B, condiciones del botón, persistencia, exclusiones |
 | [`tests-empleados.md`](./tests-empleados.md) | Unitarios, Playwright, brechas |
 
-**Transversal (sigue en `temas/`):** arquitectura por carpetas del feature - [`../../temas/base-angular-empleados.md`](../../temas/base-angular-empleados.md).  
+**Transversal (sigue en `temas/`):** arquitectura por carpetas del feature — [`../../temas/base-angular-empleados.md`](../../temas/base-angular-empleados.md).  
 **Rutas y recorrido unificado:** [`../../temas/flujos/empleados.md`](../../temas/flujos/empleados.md).
 
 ## Orden de lectura recomendado
 
-1. [`contrato-general.md`](./contrato-general.md) - marco de negocio y datos.
+1. [`contrato-general.md`](./contrato-general.md) — marco de negocio y datos.
 2. Según la pantalla: `listado` → `creacion-basica` / `creacion-avanzada` / `borrador-continuar-alta` → `ficha-empleado` → `validar-remuneraciones`.
 3. [`tests-empleados.md`](./tests-empleados.md) antes de tocar CI o E2E.
 
 ## Estado del módulo (resumen)
 
-- **Fases 3-8 cerradas** (estados, helper, listado/ficha, selects, rehidratación borrador, validar remuneraciones). Detalle: [`../../orquestador/estado-fases.md`](../../orquestador/estado-fases.md).
+- **Fases 3–8 cerradas** (estados, helper, listado/ficha, selects, rehidratación borrador, validar remuneraciones). Detalle: [`../../orquestador/estado-fases.md`](../../orquestador/estado-fases.md).
 - **Fase cerrada (documentación):** contratos vigentes bajo `modulos/empleados/`; los `.md` homónimos en `docs/codex/temas/` son **stubs** que apuntan aquí.
 
 ## Fase siguiente (producto)
 
 **Conceptos de remuneración** (catálogo maestro); no mezclar con asignaciones por trabajador. Ver [`../../orquestador/contexto-proyecto.md`](../../orquestador/contexto-proyecto.md) §10 y §12.
-
-
-## Estado canonico 2026-05-10
-
-Empleados/Ficha quedo alineado con Nomina por `EMP-ADV-FICHA-01`.
-
-Reglas vigentes:
-
-- `Sin prevision` bloquea aptitud para remuneraciones.
-- AFP + salud permite aptitud.
-- IPS + salud permite aptitud.
-- APVI sigue opcional si no aplica.
-- La jornada semanal no debe partir con default tecnico 45.
-- El E2E de alta avanzada usa jornada segura y datos previsionales/salud reales.
-
-Fase canonica:
-
-- `../../fases/empleados/EMP-ADV-FICHA-01.md`

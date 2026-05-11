@@ -557,7 +557,7 @@ La normalizacion ocurre solo al hidratar el borrador para UI. No cambia la regla
 de guardado de borrador: se puede seguir persistiendo parcialmente con defaults
 tecnicos cuando la BD lo exige.
 
-Detalle de implementacion (alineado al contrato «persistencia �  seleccion»):
+Detalle de implementacion (alineado al contrato «persistencia ≠ seleccion»):
 
 - Si existe `paso_alta_avanzada`, la lectura desde BD hacia `formValue` evita
   rellenar con defaults de ficha completa (p. ej. tipo de contrato o
@@ -577,17 +577,3 @@ quedan defaults tecnicos o datos pendientes, muestra pendientes y no permite
 finalizar alta. Tras intentar finalizar, el paso 9 puede listar mensajes de
 negocio (sin nombres de tablas ni columnas). Finalizar alta sigue ejecutando el
 helper central y bloquea defaults tecnicos antes de activar o dejar apta la ficha.
-
-## EMP-ADV-FICHA-01 - Alineacion con nomina
-
-- `tipoPrevision = NINGUNA` puede existir en borrador, ficha incompleta o caso especial, pero bloquea aptitud para remuneraciones.
-- Una ficha apta para nomina requiere prevision calculable: AFP o IPS con salud completa, ademas de contrato, jornada, sueldo/moneda y pago validos.
-- La accion `Validar para remuneraciones` y la finalizacion de alta avanzada deben reusar `evaluarCompletitudYAptitudEmpleado`; si queda `Sin prevision`, no se debe persistir `estado_ficha = VALIDO` ni `apto_para_remuneraciones = true`.
-- La jornada semanal no debe autocompletarse con 45 como default tecnico; debe ser ingresada explicitamente por el usuario.
-
-
-## Regla canonica de aptitud 2026-05-10
-
-Una ficha puede guardarse incompleta o en borrador, pero no debe quedar apta para remuneraciones si selecciona `Sin prevision` o si falta salud/prevision requerida.
-
-Esta regla existe para evitar que Nomina omita trabajadores por datos que Empleados permitio finalizar como aptos.

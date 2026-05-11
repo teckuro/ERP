@@ -1,0 +1,2 @@
+-- Documento migrado. Fuente vigente: docs/codex/modulos/parametros/permisos-bd-ejemplo.sql
+-- (Este archivo conserva la ruta histórica en temas/; usar el .sql en modulos/parametros para el contenido completo.)

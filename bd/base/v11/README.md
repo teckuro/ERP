@@ -34,6 +34,10 @@ Estados validos:
 
 9. Para habilitar guardado/reemplazo atomico de snapshots preliminares, ejecutar `partes/20_nomina_calculo_snapshot_rpc.sql` despues de `15_nomina_calculo_snapshot.sql` y `16_nomina_calculo_snapshot_rls.sql`. Crea la RPC `guardar_nomina_calculo_snapshot` con `security invoker`, revoca `PUBLIC`/`anon` y permite ejecucion a `authenticated`.
 
+10. Para habilitar cierre operativo controlado, ejecutar `partes/21_nomina_cierre_operativo_rpc.sql` despues de `20_nomina_calculo_snapshot_rpc.sql`. Crea la RPC `cerrar_nomina_operativa`, valida snapshot activo aprobado y sin reemplazo, persiste `cierre_operativo_*`, no toca `periodo_remuneracion.estado`, revoca `PUBLIC`/`anon` y permite ejecucion solo a `authenticated`.
+
+11. Para habilitar liquidaciones oficiales internas, ejecutar `partes/22_liquidaciones_oficiales.sql` y luego `partes/23_liquidaciones_oficiales_rpc.sql` despues de `21_nomina_cierre_operativo_rpc.sql`. Crea tablas `nomina_liquidacion_*`, RLS para `authenticated`, RPC `generar_liquidaciones_oficiales`, revoca `PUBLIC`/`anon`, valida snapshot activo aprobado/cerrado/no reemplazado y bloquea duplicados por `id_calculo_periodo`.
+
 `12_migracion_lre_datos_incremental.sql` requiere que existan `persona`/`contrato` con IDs coherentes si se dejan los datos demo.
 
 ### Orden de ejecucion fresh local (`partes/`)
@@ -57,6 +61,9 @@ Estados validos:
 17. `18_novedades_mensuales.sql`: tabla base `novedad_remuneracion_periodo` para hechos del periodo, sin calculo ni resultado de liquidacion.
 18. `19_novedades_mensuales_rls.sql`: RLS y permisos minimos para Novedades mensuales (`authenticated`; sin `anon` ni `DELETE` directo).
 19. `20_nomina_calculo_snapshot_rpc.sql`: RPC `guardar_nomina_calculo_snapshot` para guardar/reemplazar snapshots preliminares de forma atomica (`authenticated`; sin `anon`).
+20. `21_nomina_cierre_operativo_rpc.sql`: RPC `cerrar_nomina_operativa` para congelar el snapshot activo aprobado operativamente (`authenticated`; sin `anon`, sin reapertura v1).
+21. `22_liquidaciones_oficiales.sql`: tablas `nomina_liquidacion_periodo`, `nomina_liquidacion_trabajador` y `nomina_liquidacion_concepto`, con RLS minima para `authenticated`.
+22. `23_liquidaciones_oficiales_rpc.sql`: RPC `generar_liquidaciones_oficiales`, atomica, `SECURITY INVOKER`, sin `anon`, desde snapshot cerrado sin recalculo.
 
 ### Ejecucion fresh local
 

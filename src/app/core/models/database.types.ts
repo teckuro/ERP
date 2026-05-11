@@ -2025,6 +2025,12 @@ export type Database = {
           aprobacion_operativa_metadata: Json
           aprobacion_operativa_usuario_id: string | null
           aprobacion_operativa_usuario_label: string | null
+          cierre_operativo_estado: string | null
+          cierre_operativo_fecha: string | null
+          cierre_operativo_metadata: Json
+          cierre_operativo_observacion: string | null
+          cierre_operativo_usuario_id: string | null
+          cierre_operativo_usuario_label: string | null
           created_at: string
           estado: string
           fecha_generacion: string
@@ -2053,6 +2059,12 @@ export type Database = {
           aprobacion_operativa_metadata?: Json
           aprobacion_operativa_usuario_id?: string | null
           aprobacion_operativa_usuario_label?: string | null
+          cierre_operativo_estado?: string | null
+          cierre_operativo_fecha?: string | null
+          cierre_operativo_metadata?: Json
+          cierre_operativo_observacion?: string | null
+          cierre_operativo_usuario_id?: string | null
+          cierre_operativo_usuario_label?: string | null
           created_at?: string
           estado?: string
           fecha_generacion?: string
@@ -2081,6 +2093,12 @@ export type Database = {
           aprobacion_operativa_metadata?: Json
           aprobacion_operativa_usuario_id?: string | null
           aprobacion_operativa_usuario_label?: string | null
+          cierre_operativo_estado?: string | null
+          cierre_operativo_fecha?: string | null
+          cierre_operativo_metadata?: Json
+          cierre_operativo_observacion?: string | null
+          cierre_operativo_usuario_id?: string | null
+          cierre_operativo_usuario_label?: string | null
           created_at?: string
           estado?: string
           fecha_generacion?: string
@@ -2281,6 +2299,244 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "nomina_calculo_trabajador"
             referencedColumns: ["id_calculo_trabajador"]
+          },
+        ]
+      }
+      nomina_liquidacion_concepto: {
+        Row: {
+          base: number | null
+          cantidad: number | null
+          clasificacion: string | null
+          codigo: string | null
+          codigo_lre: string | null
+          created_at: string
+          id_concepto: number | null
+          id_liquidacion_concepto: number
+          id_liquidacion_trabajador: number
+          metadata: Json
+          monto: number
+          nombre: string
+          orden: number
+          tasa: number | null
+          tipo: string
+        }
+        Insert: {
+          base?: number | null
+          cantidad?: number | null
+          clasificacion?: string | null
+          codigo?: string | null
+          codigo_lre?: string | null
+          created_at?: string
+          id_concepto?: number | null
+          id_liquidacion_concepto?: number
+          id_liquidacion_trabajador: number
+          metadata?: Json
+          monto?: number
+          nombre: string
+          orden?: number
+          tasa?: number | null
+          tipo: string
+        }
+        Update: {
+          base?: number | null
+          cantidad?: number | null
+          clasificacion?: string | null
+          codigo?: string | null
+          codigo_lre?: string | null
+          created_at?: string
+          id_concepto?: number | null
+          id_liquidacion_concepto?: number
+          id_liquidacion_trabajador?: number
+          metadata?: Json
+          monto?: number
+          nombre?: string
+          orden?: number
+          tasa?: number | null
+          tipo?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "nomina_liquidacion_concepto_id_concepto_fkey"
+            columns: ["id_concepto"]
+            isOneToOne: false
+            referencedRelation: "concepto"
+            referencedColumns: ["id_concepto"]
+          },
+          {
+            foreignKeyName: "nomina_liquidacion_concepto_id_liquidacion_trabajador_fkey"
+            columns: ["id_liquidacion_trabajador"]
+            isOneToOne: false
+            referencedRelation: "nomina_liquidacion_trabajador"
+            referencedColumns: ["id_liquidacion_trabajador"]
+          },
+        ]
+      }
+      nomina_liquidacion_periodo: {
+        Row: {
+          activo: boolean
+          created_at: string
+          estado: string
+          fecha_generacion: string
+          id_calculo_periodo: number
+          id_empresa: number | null
+          id_liquidacion_periodo: number
+          metadata: Json
+          periodo: string
+          total_descuentos: number
+          total_haberes: number
+          total_liquido: number
+          total_trabajadores: number
+          updated_at: string
+          usuario_generacion_id: string | null
+          usuario_generacion_label: string | null
+        }
+        Insert: {
+          activo?: boolean
+          created_at?: string
+          estado?: string
+          fecha_generacion?: string
+          id_calculo_periodo: number
+          id_empresa?: number | null
+          id_liquidacion_periodo?: number
+          metadata?: Json
+          periodo: string
+          total_descuentos?: number
+          total_haberes?: number
+          total_liquido?: number
+          total_trabajadores?: number
+          updated_at?: string
+          usuario_generacion_id?: string | null
+          usuario_generacion_label?: string | null
+        }
+        Update: {
+          activo?: boolean
+          created_at?: string
+          estado?: string
+          fecha_generacion?: string
+          id_calculo_periodo?: number
+          id_empresa?: number | null
+          id_liquidacion_periodo?: number
+          metadata?: Json
+          periodo?: string
+          total_descuentos?: number
+          total_haberes?: number
+          total_liquido?: number
+          total_trabajadores?: number
+          updated_at?: string
+          usuario_generacion_id?: string | null
+          usuario_generacion_label?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "nomina_liquidacion_periodo_id_calculo_periodo_fkey"
+            columns: ["id_calculo_periodo"]
+            isOneToOne: false
+            referencedRelation: "nomina_calculo_periodo"
+            referencedColumns: ["id_calculo_periodo"]
+          },
+          {
+            foreignKeyName: "nomina_liquidacion_periodo_id_empresa_fkey"
+            columns: ["id_empresa"]
+            isOneToOne: false
+            referencedRelation: "empresa"
+            referencedColumns: ["id_empresa"]
+          },
+        ]
+      }
+      nomina_liquidacion_trabajador: {
+        Row: {
+          base_imponible: number
+          base_tributable: number
+          cargo: string | null
+          centro_costo: string | null
+          created_at: string
+          dias_trabajados: number | null
+          estado: string
+          fecha_ingreso: string | null
+          id_calculo_periodo: number
+          id_contrato: number | null
+          id_liquidacion_periodo: number
+          id_liquidacion_trabajador: number
+          id_persona: number | null
+          liquido_pagar: number
+          metadata: Json
+          nombre_trabajador: string
+          observaciones: Json
+          rut: string | null
+          total_aportes_empleador_referencia: number
+          total_descuentos: number
+          total_haberes: number
+          updated_at: string
+        }
+        Insert: {
+          base_imponible?: number
+          base_tributable?: number
+          cargo?: string | null
+          centro_costo?: string | null
+          created_at?: string
+          dias_trabajados?: number | null
+          estado?: string
+          fecha_ingreso?: string | null
+          id_calculo_periodo: number
+          id_contrato?: number | null
+          id_liquidacion_periodo: number
+          id_liquidacion_trabajador?: number
+          id_persona?: number | null
+          liquido_pagar?: number
+          metadata?: Json
+          nombre_trabajador: string
+          observaciones?: Json
+          rut?: string | null
+          total_aportes_empleador_referencia?: number
+          total_descuentos?: number
+          total_haberes?: number
+          updated_at?: string
+        }
+        Update: {
+          base_imponible?: number
+          base_tributable?: number
+          cargo?: string | null
+          centro_costo?: string | null
+          created_at?: string
+          dias_trabajados?: number | null
+          estado?: string
+          fecha_ingreso?: string | null
+          id_calculo_periodo?: number
+          id_contrato?: number | null
+          id_liquidacion_periodo?: number
+          id_liquidacion_trabajador?: number
+          id_persona?: number | null
+          liquido_pagar?: number
+          metadata?: Json
+          nombre_trabajador?: string
+          observaciones?: Json
+          rut?: string | null
+          total_aportes_empleador_referencia?: number
+          total_descuentos?: number
+          total_haberes?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "nomina_liquidacion_trabajador_id_liquidacion_periodo_fkey"
+            columns: ["id_liquidacion_periodo"]
+            isOneToOne: false
+            referencedRelation: "nomina_liquidacion_periodo"
+            referencedColumns: ["id_liquidacion_periodo"]
+          },
+          {
+            foreignKeyName: "nomina_liquidacion_trabajador_id_persona_fkey"
+            columns: ["id_persona"]
+            isOneToOne: false
+            referencedRelation: "persona"
+            referencedColumns: ["id_persona"]
+          },
+          {
+            foreignKeyName: "nomina_liquidacion_trabajador_id_persona_fkey"
+            columns: ["id_persona"]
+            isOneToOne: false
+            referencedRelation: "vw_persona_factores"
+            referencedColumns: ["id_persona"]
           },
         ]
       }
@@ -4237,6 +4493,54 @@ export type Database = {
       }
     }
     Functions: {
+      cerrar_nomina_operativa: {
+        Args: {
+          p_id_calculo_periodo: number
+          p_metadata?: Json
+          p_observacion?: string
+          p_periodo: string
+        }
+        Returns: {
+          activo: boolean
+          aprobacion_operativa_advertencias: Json
+          aprobacion_operativa_estado: string | null
+          aprobacion_operativa_fecha: string | null
+          aprobacion_operativa_metadata: Json
+          aprobacion_operativa_usuario_id: string | null
+          aprobacion_operativa_usuario_label: string | null
+          cierre_operativo_estado: string | null
+          cierre_operativo_fecha: string | null
+          cierre_operativo_metadata: Json
+          cierre_operativo_observacion: string | null
+          cierre_operativo_usuario_id: string | null
+          cierre_operativo_usuario_label: string | null
+          created_at: string
+          estado: string
+          fecha_generacion: string
+          hash_snapshot: string | null
+          id_calculo_periodo: number
+          id_empresa: number | null
+          observacion_anulacion: string | null
+          origen: string
+          periodo: string
+          reemplazado_por: number | null
+          total_advertencias: number
+          total_bloqueados: number
+          total_descuentos: number
+          total_haberes: number
+          total_liquido: number
+          total_trabajadores: number
+          updated_at: string
+          usuario_generador: string | null
+          version_motor: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "nomina_calculo_periodo"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       dblink_dteconfiguracion: { Args: never; Returns: string }
       empleado_historial_changed_fields: {
         Args: { p_new: Json; p_old: Json }
@@ -4280,18 +4584,6 @@ export type Database = {
           mensaje: string
           total_liquido: number
         }[]
-      }
-      guardar_nomina_calculo_snapshot: {
-        Args: {
-          p_cabecera: Json
-          p_conceptos?: Json
-          p_id_empresa: number | null
-          p_observaciones?: Json
-          p_periodo: string
-          p_trabajadores: Json
-          p_trazabilidad?: Json
-        }
-        Returns: number
       }
       fn_obtener_afc_parametro: {
         Args: {
@@ -4351,6 +4643,49 @@ export type Database = {
           ok: boolean
           validacion: string
         }[]
+      }
+      generar_liquidaciones_oficiales: {
+        Args: {
+          p_id_calculo_periodo: number
+          p_metadata?: Json
+          p_periodo: string
+        }
+        Returns: {
+          activo: boolean
+          created_at: string
+          estado: string
+          fecha_generacion: string
+          id_calculo_periodo: number
+          id_empresa: number | null
+          id_liquidacion_periodo: number
+          metadata: Json
+          periodo: string
+          total_descuentos: number
+          total_haberes: number
+          total_liquido: number
+          total_trabajadores: number
+          updated_at: string
+          usuario_generacion_id: string | null
+          usuario_generacion_label: string | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "nomina_liquidacion_periodo"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      guardar_nomina_calculo_snapshot: {
+        Args: {
+          p_cabecera: Json
+          p_conceptos?: Json
+          p_id_empresa: number | null
+          p_observaciones?: Json
+          p_periodo: string
+          p_trabajadores: Json
+          p_trazabilidad?: Json
+        }
+        Returns: number
       }
       unaccent: { Args: { "": string }; Returns: string }
     }

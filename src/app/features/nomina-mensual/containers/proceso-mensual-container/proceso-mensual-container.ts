@@ -177,6 +177,26 @@ interface AprobacionOperativaRegistroView {
   advertencias: string[];
 }
 
+interface CierreOperativoView {
+  estadoLabel: string;
+  descripcion: string;
+  puedeCerrar: boolean;
+  razonNoPuedeCerrar?: string;
+  fechaCierreLabel?: string;
+  usuarioLabel?: string;
+  observacionLabel?: string;
+  resumen: {
+    periodo: string;
+    identificadorTecnicoLabel: string;
+    versionCalculoLabel: string;
+    trabajadoresCalculados: number;
+    totalHaberesLabel: string;
+    totalDescuentosLabel: string;
+    totalLiquidoLabel: string;
+    advertenciasLabel: string;
+  } | null;
+}
+
 interface SnapshotCompletoTrabajadorView {
   id: number | string;
   trabajadorLabel: string;
@@ -253,11 +273,13 @@ export class ProcesoMensualContainer implements OnInit {
   readonly errorEjecucion = signal<string | null>(null);
   readonly errorGuardadoResultado = signal<string | null>(null);
   readonly errorAprobacionOperativa = signal<string | null>(null);
+  readonly errorCierreOperativo = signal<string | null>(null);
   readonly errorSnapshotCompleto = signal<string | null>(null);
   readonly exitoGuardadoResultado = signal<string | null>(null);
   readonly identificadorResultadoGuardadoActual = signal<string | null>(null);
   readonly aprobacionOperativa = signal<AprobacionOperativaRegistroView | null>(null);
   readonly aprobandoResultado = signal(false);
+  readonly cerrandoNomina = signal(false);
   readonly snapshotCompleto = signal<NominaSnapshotCompletoView | null>(null);
 
   ngOnInit(): void {
@@ -265,6 +287,45 @@ export class ProcesoMensualContainer implements OnInit {
   }
 
   readonly baseNominaTrazabilidad = computed(() => this.preNomina()?.trazabilidad ?? null);
+
+  readonly cierreOperativo = computed<CierreOperativoView>(() => {
+    const snapshot = this.snapshotActivo();
+    const cierre = snapshot?.cierreOperativo ?? null;
+    const resumen = snapshot ? {
+      periodo: snapshot.periodo,
+      identificadorTecnicoLabel: snapshot.hashSnapshot || 'Identificador tecnico no disponible',
+      versionCalculoLabel: snapshot.versionMotor || 'Version no disponible',
+      trabajadoresCalculados: snapshot.totalTrabajadores,
+      totalHaberesLabel: this.formatoMonto(snapshot.totalHaberes),
+      totalDescuentosLabel: this.formatoMonto(snapshot.totalDescuentos),
+      totalLiquidoLabel: this.formatoMonto(snapshot.totalLiquido),
+      advertenciasLabel: snapshot.totalAdvertencias > 0
+        ? `${snapshot.totalAdvertencias} advertencia(s) visibles quedaran registradas en metadata.`
+        : 'Sin advertencias visibles al cierre.',
+    } : null;
+
+    if (cierre) {
+      return {
+        estadoLabel: 'Nomina cerrada operativamente',
+        descripcion: 'La nomina del periodo esta cerrada operativamente. Para modificarla se requerira una fase futura de reapertura.',
+        puedeCerrar: false,
+        razonNoPuedeCerrar: 'La nomina ya esta cerrada operativamente.',
+        fechaCierreLabel: this.formatoFechaHora(cierre.fecha),
+        usuarioLabel: cierre.usuarioLabel,
+        observacionLabel: cierre.observacion ?? undefined,
+        resumen,
+      };
+    }
+
+    const razonNoPuedeCerrar = this.motivoNoPuedeCerrarNomina();
+    return {
+      estadoLabel: razonNoPuedeCerrar ? 'Cierre no disponible' : 'Disponible para cierre',
+      descripcion: 'El cierre operativo congela este resultado para continuar con etapas posteriores. No emite liquidaciones ni genera archivos legales.',
+      puedeCerrar: !razonNoPuedeCerrar,
+      razonNoPuedeCerrar,
+      resumen,
+    };
+  });
 
   readonly snapshotCompletoDetalle = computed<SnapshotCompletoDetalleView | null>(() => {
     const completo = this.snapshotCompleto();
@@ -517,7 +578,8 @@ export class ProcesoMensualContainer implements OnInit {
       (guardado?.trabajadoresOmitidos ?? 0) === 0 &&
       validarPeriodoEntradaMensual(this.periodoSeleccionado()) &&
       !this.guardandoSnapshot() &&
-      !this.aprobandoResultado();
+      !this.aprobandoResultado() &&
+      !this.nominaEstaCerradaOperativamente();
 
     return {
       estado,
@@ -571,6 +633,16 @@ export class ProcesoMensualContainer implements OnInit {
         descripcion: 'Selecciona un periodo valido antes de preparar la nomina.',
         severidad: 'bloqueo',
         accionLabel: 'Seleccionar periodo valido',
+      });
+    }
+
+    if (this.nominaEstaCerradaOperativamente()) {
+      bloqueos.push({
+        codigo: 'BLOQ-CIERRE-OPERATIVO',
+        titulo: 'Nomina cerrada operativamente',
+        descripcion: 'La nomina del periodo esta cerrada operativamente. Para modificarla se requerira una fase futura de reapertura.',
+        severidad: 'bloqueo',
+        accionLabel: 'Consultar resultado guardado',
       });
     }
 
@@ -826,6 +898,7 @@ export class ProcesoMensualContainer implements OnInit {
         this.snapshotActivo.set(null);
         this.errorGuardadoResultado.set(null);
         this.errorAprobacionOperativa.set(null);
+        this.errorCierreOperativo.set(null);
         this.exitoGuardadoResultado.set(null);
         this.identificadorResultadoGuardadoActual.set(null);
         this.aprobacionOperativa.set(null);
@@ -854,6 +927,7 @@ export class ProcesoMensualContainer implements OnInit {
         this.snapshotActivo.set(null);
         this.errorGuardadoResultado.set(null);
         this.errorAprobacionOperativa.set(null);
+        this.errorCierreOperativo.set(null);
         this.exitoGuardadoResultado.set(null);
         this.identificadorResultadoGuardadoActual.set(null);
         this.aprobacionOperativa.set(null);
@@ -900,6 +974,7 @@ export class ProcesoMensualContainer implements OnInit {
     this.guardandoSnapshot.set(true);
     this.errorEjecucion.set(null);
     this.errorGuardadoResultado.set(null);
+    this.errorCierreOperativo.set(null);
     this.exitoGuardadoResultado.set(null);
     void this.procesoMensual
       .guardarSnapshotPreliminar(p)
@@ -911,6 +986,7 @@ export class ProcesoMensualContainer implements OnInit {
         this.aplicarSnapshotActivo(r.snapshot);
         this.identificadorResultadoGuardadoActual.set(r.snapshot.hashSnapshot ?? null);
         this.errorAprobacionOperativa.set(null);
+        this.errorCierreOperativo.set(null);
         void this.cargarSnapshotCompletoActivo(p);
         this.exitoGuardadoResultado.set('Resultado preliminar guardado correctamente. Revisa y aprueba operativamente este nuevo resultado si corresponde.');
       })
@@ -932,6 +1008,7 @@ export class ProcesoMensualContainer implements OnInit {
         this.aplicarSnapshotActivo(snapshot);
         this.errorGuardadoResultado.set(null);
         this.errorAprobacionOperativa.set(null);
+        this.errorCierreOperativo.set(null);
         this.exitoGuardadoResultado.set(null);
         return this.cargarSnapshotCompletoActivo(p);
       })
@@ -1030,11 +1107,11 @@ export class ProcesoMensualContainer implements OnInit {
 
   puedeGenerarPreNomina(): boolean {
     const r = this.resultado();
-    return !!r && r.estado !== 'BLOQUEADO' && !this.validando() && !this.generandoPreNomina();
+    return !!r && r.estado !== 'BLOQUEADO' && !this.nominaEstaCerradaOperativamente() && !this.validando() && !this.generandoPreNomina();
   }
 
   puedeCalcularPreliminar(): boolean {
-    return this.validacionCalculo().puedeCalcular && !this.validando() && !this.generandoPreNomina() && !this.calculandoPreliminar();
+    return this.validacionCalculo().puedeCalcular && !this.nominaEstaCerradaOperativamente() && !this.validando() && !this.generandoPreNomina() && !this.calculandoPreliminar();
   }
 
   aprobarResultadoPreliminar(): void {
@@ -1073,11 +1150,75 @@ export class ProcesoMensualContainer implements OnInit {
   puedeGuardarSnapshot(): boolean {
     const calc = this.calculo();
     if (!validarPeriodoEntradaMensual(this.periodoSeleccionado())) return false;
+    if (this.nominaEstaCerradaOperativamente()) return false;
     if (!calc || this.errorEjecucion()) return false;
     if (this.guardandoSnapshot()) return false;
     if (calc.estado === 'con_bloqueos' || calc.issues.some((i) => i.severidad === 'BLOQUEO')) return false;
     const snapshot = this.snapshotActivo();
     return !snapshot || this.identificadorResultadoGuardadoActual() !== snapshot.hashSnapshot;
+  }
+
+  nominaEstaCerradaOperativamente(): boolean {
+    return this.snapshotActivo()?.cierreOperativo?.estado === 'cerrado_operativamente';
+  }
+
+  puedeCerrarNominaOperativa(): boolean {
+    return !this.motivoNoPuedeCerrarNomina();
+  }
+
+  motivoNoPuedeCerrarNomina(): string | undefined {
+    const snapshot = this.snapshotActivo();
+    if (!validarPeriodoEntradaMensual(this.periodoSeleccionado())) return 'El periodo seleccionado no es valido.';
+    if (!snapshot?.idCalculoPeriodo) return 'Primero debe existir un resultado preliminar guardado vigente.';
+    if (snapshot.cierreOperativo?.estado === 'cerrado_operativamente') return 'La nomina ya esta cerrada operativamente.';
+    if (snapshot.aprobacionOperativa?.estado !== 'aprobado_operativamente') return 'El resultado debe estar aprobado operativamente antes de cerrar.';
+    if (this.resultadoPreliminar().estado === 'actualizado_sin_guardar') return 'Hay un resultado actualizado sin guardar.';
+    if (snapshot.totalBloqueados > 0) return 'Existen bloqueos operativos pendientes en el resultado guardado.';
+    if (this.guardandoSnapshot() || this.aprobandoResultado() || this.cerrandoNomina()) return 'Hay una operacion en curso.';
+    return undefined;
+  }
+
+  confirmarCierreNominaOperativa(): boolean {
+    const periodo = this.periodoSeleccionado();
+    const mensaje = [
+      `Vas a cerrar operativamente la nomina de ${periodo}.`,
+      '',
+      'Esta accion congelara el resultado aprobado y bloqueara nuevos calculos o reemplazos para el periodo mientras no exista un flujo de reapertura.',
+      '',
+      'No se emitiran liquidaciones oficiales.',
+      'No se generaran archivos Previred, LRE, banco ni PDF.',
+      '',
+      'Deseas continuar?',
+    ].join('\n');
+    try {
+      return typeof window === 'undefined' || typeof window.confirm !== 'function' ? true : window.confirm(mensaje);
+    } catch {
+      return true;
+    }
+  }
+
+  cerrarNominaOperativa(): void {
+    const snapshot = this.snapshotActivo();
+    if (!snapshot?.idCalculoPeriodo || !this.puedeCerrarNominaOperativa()) return;
+    if (!this.confirmarCierreNominaOperativa()) return;
+
+    this.cerrandoNomina.set(true);
+    this.errorCierreOperativo.set(null);
+    void this.procesoMensual
+      .cerrarNominaOperativamente({
+        idCalculoPeriodo: snapshot.idCalculoPeriodo,
+        periodo: this.periodoSeleccionado(),
+      })
+      .then((persistido) => {
+        this.aplicarSnapshotActivo(persistido);
+        void this.cargarSnapshotCompletoActivo(this.periodoSeleccionado());
+      })
+      .catch(() => {
+        this.errorCierreOperativo.set('No se pudo cerrar operativamente la nomina. No se realizaron cambios parciales.');
+      })
+      .finally(() => {
+        this.cerrandoNomina.set(false);
+      });
   }
 
   etiquetaArea(area: ProcesoMensualArea, fallback?: string): string {
@@ -1588,6 +1729,7 @@ export class ProcesoMensualContainer implements OnInit {
 
   private razonNoPuedeGuardarResultado(bloqueos: ResultadoObservacionView[]): string {
     if (!validarPeriodoEntradaMensual(this.periodoSeleccionado())) return 'El periodo seleccionado no es valido.';
+    if (this.nominaEstaCerradaOperativamente()) return 'La nomina del periodo esta cerrada operativamente. Para modificarla se requerira una fase futura de reapertura.';
     if (!this.calculo()) return 'Primero calcula preliminarmente la nomina.';
     if (this.errorEjecucion()) return 'Hay un error tecnico activo que debes resolver antes de guardar.';
     if (bloqueos.length > 0) return 'El resultado tiene bloqueos que deben revisarse.';
@@ -1726,6 +1868,7 @@ export class ProcesoMensualContainer implements OnInit {
     aprobacionVigente: boolean;
   }): string | undefined {
     if (input.aprobacionVigente) return 'El resultado preliminar guardado ya esta aprobado operativamente.';
+    if (this.nominaEstaCerradaOperativamente()) return 'La nomina del periodo esta cerrada operativamente. Para modificarla se requerira una fase futura de reapertura.';
     if (!validarPeriodoEntradaMensual(this.periodoSeleccionado())) return 'El periodo no es valido para aprobacion operativa.';
     if (!input.hayResultadoActual && !input.hayGuardado) return 'Primero calcula el resultado preliminar.';
     if (!input.hayGuardado) return 'Primero guarda el resultado preliminar.';

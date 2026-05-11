@@ -1,12 +1,8 @@
 # Modulo Haberes y descuentos - punto de entrada
 
-> Nombre visible en UI: `Asignaciones recurrentes`.
-> Nombre tecnico/documental: `Haberes y descuentos`.
-> Tabla principal: `haberdescuento_persona`.
-
 ## Estado
 
-Fases 9.3A, 9.3B y 9.3C cerradas en alcance funcional: el uso esta acotado a **asignaciones recurrentes** por trabajador, con validacion de concepto asignable, vigencias coherentes, bloqueo de duplicados activos, bloqueo de rangos superpuestos, cierre/desactivacion controlada sin eliminacion fisica y vista historica filtrable por estado de vigencia derivado. **Preparar nomina (9.5B)** consume `listarAsignacionesParaPrevalidacionMensual` para prerequisitos por `YYYY-MM`; ver [`../nomina-mensual/prevalidaciones-9-5B.md`](../nomina-mensual/prevalidaciones-9-5B.md). Los movimientos puntuales del periodo se cargan en **Movimientos del mes**, nombre visible del flujo tecnico de Novedades mensuales.
+Fases 9.3A, 9.3B y 9.3C cerradas en alcance funcional: el uso esta acotado a **asignaciones recurrentes** por trabajador, con validacion de concepto asignable, vigencias coherentes, bloqueo de duplicados activos, bloqueo de rangos superpuestos, cierre/desactivacion controlada sin eliminacion fisica y vista historica filtrable por estado de vigencia derivado. **Proceso mensual (9.5B)** consume `listarAsignacionesParaPrevalidacionMensual` para prerequisitos por `YYYY-MM`; ver [`../nomina-mensual/prevalidaciones-9-5B.md`](../nomina-mensual/prevalidaciones-9-5B.md). Los **movimientos variables mensuales** (haberes/descuentos puntuales por periodo) son otro modulo: [`../movimientos-variables/README.md`](../movimientos-variables/README.md) (9.4A documental; 9.4B modelo TS y validaciones puras).
 
 ## Documentos
 

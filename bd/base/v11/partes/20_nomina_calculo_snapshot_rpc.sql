@@ -298,6 +298,15 @@ BEGIN
     END LOOP;
 
     IF v_id_calculo_anterior IS NOT NULL THEN
+        IF EXISTS (
+            SELECT 1
+            FROM nomina_calculo_periodo
+            WHERE id_calculo_periodo = v_id_calculo_anterior
+              AND cierre_operativo_estado IS NOT NULL
+        ) THEN
+            RAISE EXCEPTION 'La nomina del periodo esta cerrada operativamente';
+        END IF;
+
         UPDATE nomina_calculo_periodo
         SET activo = FALSE,
             estado = 'anulado',

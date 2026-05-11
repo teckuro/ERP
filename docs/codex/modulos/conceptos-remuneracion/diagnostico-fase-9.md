@@ -1,4 +1,4 @@
-# Diagnóstico - Fase 9 (Conceptos de remuneración)
+# Diagnóstico — Fase 9 (Conceptos de remuneración)
 
 Fecha de referencia del inventario: alineado al código y esquema **v11** del repo. Complementa el contrato en [`contrato-funcional.md`](./contrato-funcional.md).
 
@@ -36,7 +36,7 @@ Definiciones relevantes en `bd/base/v11/partes/02_tablas.sql`:
 | **`liquidacion_detalle`** | Líneas de liquidación con `id_concepto`. |
 | **`movimiento`** | Referencia opcional a `id_concepto` (movimientos variables / futuro). |
 
-**Propuesta histórica** (no ejecutada como migración en el fragmento leído): `bd/base/v11/partes/PROPUESTA_MIGRACION_LRE_concepto_haberdescuento.sql` documenta evolución LRE / flags automáticos - útil como contexto, no como fuente normativa de la app hasta que se adopte.
+**Propuesta histórica** (no ejecutada como migración en el fragmento leído): `bd/base/v11/partes/PROPUESTA_MIGRACION_LRE_concepto_haberdescuento.sql` documenta evolución LRE / flags automáticos — útil como contexto, no como fuente normativa de la app hasta que se adopte.
 
 ## 5. Seguridad (RLS)
 

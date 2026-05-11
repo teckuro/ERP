@@ -134,6 +134,7 @@ describe('ProcesoMensualService', () => {
     listarSnapshotsPeriodo: ReturnType<typeof vi.fn>;
     anularSnapshotActivo: ReturnType<typeof vi.fn>;
     aprobarResultadoPreliminarOperativamente: ReturnType<typeof vi.fn>;
+    cerrarNominaOperativa: ReturnType<typeof vi.fn>;
   };
 
   beforeEach(() => {
@@ -207,6 +208,18 @@ describe('ProcesoMensualService', () => {
           usuarioLabel: 'Usuario no disponible en esta sesion',
           advertencias: params.advertencias,
           metadata: {},
+        },
+      })),
+      cerrarNominaOperativa: vi.fn().mockImplementation((params) => Promise.resolve({
+        idCalculoPeriodo: params.idCalculoPeriodo,
+        periodo: params.periodo,
+        cierreOperativo: {
+          estado: 'cerrado_operativamente',
+          fecha: '2026-05-05T12:00:00.000Z',
+          usuarioId: null,
+          usuarioLabel: 'Usuario no disponible en esta sesion',
+          observacion: null,
+          metadata: params.metadata,
         },
       })),
     };
@@ -445,5 +458,61 @@ describe('ProcesoMensualService', () => {
     const svc = TestBed.inject(ProcesoMensualService);
     await svc.obtenerSnapshotCompletoPorId(5);
     expect(snapshots.obtenerSnapshotCompletoPorId).toHaveBeenCalledWith(5);
+  });
+
+  it('no permite cerrar sin snapshot activo', async () => {
+    const svc = TestBed.inject(ProcesoMensualService);
+    await expect(svc.cerrarNominaOperativamente({ idCalculoPeriodo: 1, periodo: '2026-05' })).rejects.toThrow(
+      'No existe un resultado preliminar guardado vigente para cerrar.',
+    );
+    expect(snapshots.cerrarNominaOperativa).not.toHaveBeenCalled();
+  });
+
+  it('no permite cerrar sin aprobacion operativa', async () => {
+    snapshots.obtenerSnapshotActivo.mockResolvedValueOnce({
+      idCalculoPeriodo: 1,
+      periodo: '2026-05',
+      aprobacionOperativa: null,
+      cierreOperativo: null,
+    });
+    const svc = TestBed.inject(ProcesoMensualService);
+    await expect(svc.cerrarNominaOperativamente({ idCalculoPeriodo: 1, periodo: '2026-05' })).rejects.toThrow(
+      'El resultado debe estar aprobado operativamente antes de cerrar.',
+    );
+    expect(snapshots.cerrarNominaOperativa).not.toHaveBeenCalled();
+  });
+
+  it('construye metadata y cierra nomina operativa aprobada', async () => {
+    snapshots.obtenerSnapshotActivo.mockResolvedValueOnce({
+      idCalculoPeriodo: 1,
+      periodo: '2026-05',
+      versionMotor: 'MOTOR-03B',
+      hashSnapshot: 'fnv1a32:123',
+      totalTrabajadores: 2,
+      totalHaberes: 900000,
+      totalDescuentos: 180000,
+      totalLiquido: 720000,
+      aprobacionOperativa: {
+        estado: 'aprobado_operativamente',
+        fecha: '2026-05-05T11:00:00.000Z',
+        usuarioId: null,
+        usuarioLabel: 'rrhh@empresa.cl',
+        advertencias: ['Advertencia visible'],
+        metadata: {},
+      },
+      cierreOperativo: null,
+    });
+    const svc = TestBed.inject(ProcesoMensualService);
+    const r = await svc.cerrarNominaOperativamente({ idCalculoPeriodo: 1, periodo: '2026-05' });
+
+    expect(snapshots.cerrarNominaOperativa).toHaveBeenCalledWith(expect.objectContaining({
+      idCalculoPeriodo: 1,
+      periodo: '2026-05',
+      metadata: expect.objectContaining({
+        totalTrabajadores: 2,
+        advertenciasVisibles: ['Advertencia visible'],
+      }),
+    }));
+    expect(r.cierreOperativo?.estado).toBe('cerrado_operativamente');
   });
 });

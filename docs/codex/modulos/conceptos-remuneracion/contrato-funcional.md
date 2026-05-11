@@ -182,10 +182,3 @@ El catalogo **concepto** es la **fuente** de definiciones que luego se aplican p
 
 Contrato del modulo movimientos variables: [`../movimientos-variables/README.md`](../movimientos-variables/README.md). Persistencia local de la fila puntual (tabla `movimiento_variable_mensual`, sin RLS productivo aun): [`../movimientos-variables/persistencia-9-4C.md`](../movimientos-variables/persistencia-9-4C.md). Pendiente de producto: flag o regla **asignable recurrente vs variable vs ambos** (documentado alli; sin cambio de codigo en 9.4A).
 
-<!-- ARQ-ERP-01-INTEGRACION -->
-
-## Nota canonica 2026-05-07
-
-Las secciones historicas sobre **Movimientos variables** quedan como antecedentes de la nueva nomenclatura funcional **Novedades mensuales**. No borrar ni reescribir las fases 9.4; usarlas como referencia para validaciones y hardening durante la transicion.
-
-Decision actual: nuevas reglas de uso de conceptos deben contemplar `asignable_recurrente`, `asignable_novedad_mensual` o equivalente, sin mezclar con el resultado de liquidacion.

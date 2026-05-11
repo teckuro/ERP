@@ -1,20 +1,3 @@
-# Actualizacion canonica 2026-05-10
-
-Documentos agregados para lectura rapida:
-
-| Documento | Rol |
-|---|---|
-| `orquestador/auditoria-documental-global.md` | Auditoria de coherencia, historicos e inconsistencias documentales. |
-| `orquestador/mapa-global-fases.md` | Mapa rapido de fases, estados, tipo, evidencia y siguiente paso. |
-| `fases/README.md` | Indice canonico de fases por carpeta. |
-| `fases/nomina/NOM-CIERRE-DESIGN-01.md` | Diseno funcional y tecnico cerrado del cierre operativo de nomina. |
-| `modulos/liquidaciones-oficiales/README.md` | Modulo futuro para liquidaciones oficiales. |
-| `assets/README.md` | Regla de uso de capturas/evidencias visuales. |
-
-El mapa no reemplaza contratos por modulo; los enlaza.
-
----
-
 # Mapa de documentación (`docs/codex`)
 
 ## 1. Globales (siempre relevantes)
@@ -29,28 +12,11 @@ El mapa no reemplaza contratos por modulo; los enlaza.
 | [`../ui-tables.md`](../ui-tables.md)                                               | Tablas / DataGrid                                                                      |
 | [`../estilos/README.md`](../estilos/README.md)                                     | Grilla y checklist visual                                                              |
 | [`../manual-base-proyecto.md`](../manual-base-proyecto.md)                         | Lectura del repo                                                                       |
-| [`diccionario-tablas-canonicas.md`](./diccionario-tablas-canonicas.md)             | Tablas canonicas; obligatorio antes de consultas, servicios, mappers, SQL o docs tecnicas |
-| [`../contrato-general.md`](../contrato-general.md)                                 | Contrato documental transversal del ERP de remuneraciones                              |
-| [`../criterios-globales.md`](../criterios-globales.md)                             | Criterios transversales de validacion y bloqueo                                       |
-| [`../criterios-severidad.md`](../criterios-severidad.md)                           | Severidades documentales                                                              |
-| [`../normativa/matriz-normativa-operativa.md`](../normativa/matriz-normativa-operativa.md) | Matriz normativa operativa                                                        |
 | [`README.md`](./README.md)                                                         | Rol del orquestador                                                                    |
 | [`contexto-proyecto.md`](./contexto-proyecto.md)                                   | Visión, módulos, camino a remuneraciones                                               |
 | [`diseno-operativo-erp.md`](./diseno-operativo-erp.md)                             | Diseño operativo de pantallas; camino oficial **SEG-01 -> CONC-02 -> MOTOR-00**        |
 | [`estado-fases.md`](./estado-fases.md)                                             | Tablero de fases                                                                       |
 | **Este archivo**                                                                   | Inventario: global / por módulo / vigente / histórico / reemplazado                    |
-
-## 1.1 Orquestacion y roadmap operativo
-
-| Documento                                                    | Proposito                                                                                                                                                      | Estado               |
-| ------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------- |
-| `docs/codex/orquestador/roadmap-operativo.md`                | Define el orden funcional del ERP, separa fases funcionales de visuales y fija la ruta hacia motor, liquidaciones, cierre, Previred y LRE.                     | Vigente              |
-| `docs/codex/orquestador/dependencias-fases.md`               | Documenta la cadena critica entre empleados, parametros, conceptos, recurrentes, movimientos variables, proceso mensual, motor, liquidaciones y exportaciones. | Vigente              |
-| `docs/codex/orquestador/criterios-cierre-fases.md`           | Define cuando una fase puede considerarse cerrada, cerrada base, parcial, bloqueada o pendiente.                                                               | Vigente              |
-| `docs/codex/orquestador/orden-prioridades.md`                | Ordena prioridades altas, medias y bajas para evitar saltar a motor, liquidaciones o visual antes de tiempo.                                                   | Vigente              |
-| `docs/codex/orquestador/roadmap-maestro-pendientes-fases.md` | Documento puente usado para integrar ORDEN-01 y ordenar SEG-01, CONC-02, MOTOR-00 y fases posteriores.                                                         | Insumo vigente       |
-| `docs/codex/orquestador/matriz-roles-permisos.md`            | Contrato base documental de SEG-01 para roles, permisos, JWT/RLS, acciones por modulo y bloqueos por fase futura.                                              | SEG-01 en definicion |
-
 
 ## 2. Por módulo (`docs/codex/modulos/`)
 
@@ -58,11 +24,10 @@ El mapa no reemplaza contratos por modulo; los enlaza.
 | --------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | Empleados                         | [`../modulos/empleados/README.md`](../modulos/empleados/README.md)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
 | Parámetros                        | [`../modulos/parametros/README.md`](../modulos/parametros/README.md)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
-| Conceptos remuneración            | [`../modulos/conceptos-remuneracion/README.md`](../modulos/conceptos-remuneracion/README.md) - además [`diagnostico-fase-9.md`](../modulos/conceptos-remuneracion/diagnostico-fase-9.md), [`decisiones-operativas.md`](../modulos/conceptos-remuneracion/decisiones-operativas.md), [`contrato-funcional.md`](../modulos/conceptos-remuneracion/contrato-funcional.md), [`contrato-general.md`](../modulos/conceptos-remuneracion/contrato-general.md)                                                                                                                                                                                                                               |
-| Haberes y descuentos              | [`../modulos/haberes-descuentos/README.md`](../modulos/haberes-descuentos/README.md) - rutas oficiales bajo `/remuneraciones/*` (Fase 9.3B.1 en [`estado-fases.md`](./estado-fases.md))                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
-| Movimientos variables (mensuales) | [`../modulos/movimientos-variables/README.md`](../modulos/movimientos-variables/README.md) - contrato 9.4A; modelo TS/reglas 9.4B en [`modelo-tecnico-9-4B.md`](../modulos/movimientos-variables/modelo-tecnico-9-4B.md); persistencia 9.4C en [`persistencia-9-4C.md`](../modulos/movimientos-variables/persistencia-9-4C.md); service 9.4D en [`service-9-4D.md`](../modulos/movimientos-variables/service-9-4D.md); UI carga manual 9.4E en [`ui-9-4E.md`](../modulos/movimientos-variables/ui-9-4E.md); endurecimiento CHILE-FIX-01 en [`hardening-chile-fix-01.md`](../modulos/movimientos-variables/hardening-chile-fix-01.md); tablero [`estado-fases.md`](./estado-fases.md) |
-| Nómina mensual / proceso mensual  | [`../modulos/nomina-mensual/README.md`](../modulos/nomina-mensual/README.md) - [`arquitectura-funcional-remuneraciones.md`](../modulos/nomina-mensual/arquitectura-funcional-remuneraciones.md), [`novedades-mensuales.md`](../modulos/nomina-mensual/novedades-mensuales.md) (NOM-01/NOM-01B/NOM-01C/NOM-01D), [`contrato-general.md`](../modulos/nomina-mensual/contrato-general.md), [`prevalidaciones-9-5A.md`](../modulos/nomina-mensual/prevalidaciones-9-5A.md), [`prevalidaciones-9-5B.md`](../modulos/nomina-mensual/prevalidaciones-9-5B.md)                                                                                                                                                                                                                    |
-| LRE                               | [`../modulos/lre/contrato-general.md`](../modulos/lre/contrato-general.md) - catalogo, estructura, exportacion, validaciones, estados, errores y rectificaciones. Documental; sin implementacion de codigo. |
+| Conceptos remuneración            | [`../modulos/conceptos-remuneracion/README.md`](../modulos/conceptos-remuneracion/README.md) — además [`diagnostico-fase-9.md`](../modulos/conceptos-remuneracion/diagnostico-fase-9.md), [`decisiones-operativas.md`](../modulos/conceptos-remuneracion/decisiones-operativas.md), [`contrato-funcional.md`](../modulos/conceptos-remuneracion/contrato-funcional.md), [`contrato-general.md`](../modulos/conceptos-remuneracion/contrato-general.md)                                                                                                                                                                                                                               |
+| Haberes y descuentos              | [`../modulos/haberes-descuentos/README.md`](../modulos/haberes-descuentos/README.md) — rutas oficiales bajo `/remuneraciones/*` (Fase 9.3B.1 en [`estado-fases.md`](./estado-fases.md))                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
+| Movimientos variables (mensuales) | [`../modulos/movimientos-variables/README.md`](../modulos/movimientos-variables/README.md) — contrato 9.4A; modelo TS/reglas 9.4B en [`modelo-tecnico-9-4B.md`](../modulos/movimientos-variables/modelo-tecnico-9-4B.md); persistencia 9.4C en [`persistencia-9-4C.md`](../modulos/movimientos-variables/persistencia-9-4C.md); service 9.4D en [`service-9-4D.md`](../modulos/movimientos-variables/service-9-4D.md); UI carga manual 9.4E en [`ui-9-4E.md`](../modulos/movimientos-variables/ui-9-4E.md); endurecimiento CHILE-FIX-01 en [`hardening-chile-fix-01.md`](../modulos/movimientos-variables/hardening-chile-fix-01.md); tablero [`estado-fases.md`](./estado-fases.md) |
+| Nómina mensual / proceso mensual  | [`../modulos/nomina-mensual/README.md`](../modulos/nomina-mensual/README.md) — [`contrato-general.md`](../modulos/nomina-mensual/contrato-general.md), [`prevalidaciones-9-5A.md`](../modulos/nomina-mensual/prevalidaciones-9-5A.md), [`prevalidaciones-9-5B.md`](../modulos/nomina-mensual/prevalidaciones-9-5B.md)                                                                                                                                                                                                                                                                                                                                                                |
 
 ## 3. Vigentes en `temas/` (transversal o no migrado)
 
@@ -105,37 +70,30 @@ Los siguientes nombres en **`docs/codex/temas/*.md`** (y el SQL listado) son **r
 
 ## 6. Archivo
 
-[`../archivo/README.md`](../archivo/README.md) - criterio para documentos obsoletos movidos explícitamente.
+[`../archivo/README.md`](../archivo/README.md) — criterio para documentos obsoletos movidos explícitamente.
 
-<!-- ARQ-ERP-01-INTEGRACION -->
+## 1.1 Orquestacion y roadmap operativo
 
-## Integracion canonica y transicion Nomina
+| Documento                                                    | Proposito                                                                                                                                                      | Estado               |
+| ------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------- |
+| `docs/codex/orquestador/roadmap-operativo.md`                | Define el orden funcional del ERP, separa fases funcionales de visuales y fija la ruta hacia motor, liquidaciones, cierre, Previred y LRE.                     | Vigente              |
+| `docs/codex/orquestador/dependencias-fases.md`               | Documenta la cadena critica entre empleados, parametros, conceptos, recurrentes, movimientos variables, proceso mensual, motor, liquidaciones y exportaciones. | Vigente              |
+| `docs/codex/orquestador/criterios-cierre-fases.md`           | Define cuando una fase puede considerarse cerrada, cerrada base, parcial, bloqueada o pendiente.                                                               | Vigente              |
+| `docs/codex/orquestador/orden-prioridades.md`                | Ordena prioridades altas, medias y bajas para evitar saltar a motor, liquidaciones o visual antes de tiempo.                                                   | Vigente              |
+| `docs/codex/orquestador/roadmap-maestro-pendientes-fases.md` | Documento puente usado para integrar ORDEN-01 y ordenar SEG-01, CONC-02, MOTOR-00 y fases posteriores.                                                         | Insumo vigente       |
+| `docs/codex/orquestador/matriz-roles-permisos.md`            | Contrato base documental de SEG-01 para roles, permisos, JWT/RLS, acciones por modulo y bloqueos por fase futura.                                              | SEG-01 en definicion |
 
-| Documento | Rol |
-|---|---|
-| [`estructura-canonica-erp.md`](./estructura-canonica-erp.md) | Documento puente principal para entender modulos canonicos, tablas canonicas y legacy. |
-| [`plan-transicion-novedades-movimientos.md`](./plan-transicion-novedades-movimientos.md) | Plan especifico para unificar Movimientos variables y Novedades mensuales. |
-| [`../modulos/nomina-mensual/benchmark-novedades-pre-nomina.md`](../modulos/nomina-mensual/benchmark-novedades-pre-nomina.md) | Benchmark funcional antes de ampliar la UI de Novedades/Pre-nomina. |
-| [`integracion-documental-2026-05-07.md`](./integracion-documental-2026-05-07.md) | Resumen de cambios documentales integrados. |
+<!-- UX-COMERCIAL-01-MAPA -->
 
-Nota de mapa:
-
-- `modulos/movimientos-variables/` conserva historia y contratos legacy de las fases 9.4.
-- `modulos/nomina-mensual/novedades-mensuales.md` es la referencia funcional canonica para hechos del periodo.
-- Fases futuras deben evitar duplicar mejoras entre ambos modulos.
-
-- [`integracion-documental-2026-05-10.md`](./integracion-documental-2026-05-10.md): resumen de la integracion documental DOCS-INTEGRATION-01.
-
-
-## UX comercial y diseño usable
+## Documentos UX comercial
 
 | Documento | Uso |
 |---|---|
-| `docs/codex/ux-comercial/README.md` | Punto de entrada de diseño comercial. |
-| `docs/codex/ux-comercial/contrato-diseno-comercial.md` | Principios visuales/producto. |
-| `docs/codex/ux-comercial/patrones-pantallas-erp.md` | Estructura de pantallas ERP. |
-| `docs/codex/ux-comercial/sistema-estados-acciones.md` | Estados, bloqueos, advertencias y CTAs. |
-| `docs/codex/ux-comercial/checklist-cursor-ux.md` | Tips para Cursor en cambios visuales. |
-| `docs/codex/prompts-cursor/CURSOR-UX-COMERCIAL-REVIEW-01.md` | Prompt reutilizable para revisión visual. |
-
-Regla: esta capa es canonica para mejoras visuales posteriores a liquidaciones oficiales y para pequeñas mejoras controladas antes de esa fase.
+| [`../ux-comercial/README.md`](../ux-comercial/README.md) | Punto de entrada UX comercial |
+| [`../ux-comercial/contrato-diseno-comercial.md`](../ux-comercial/contrato-diseno-comercial.md) | Reglas de experiencia vendible |
+| [`../ux-comercial/patrones-pantallas-erp.md`](../ux-comercial/patrones-pantallas-erp.md) | Patron base de pantalla operativa |
+| [`../ux-comercial/sistema-estados-acciones.md`](../ux-comercial/sistema-estados-acciones.md) | Estados macro y siguiente accion |
+| [`../ux-comercial/copywriting-operativo.md`](../ux-comercial/copywriting-operativo.md) | Lenguaje visible recomendado |
+| [`../ux-comercial/checklist-cursor-ux.md`](../ux-comercial/checklist-cursor-ux.md) | Checklist antes de cerrar fase UX |
+| [`../fases/ux-comercial/UX-COMERCIAL-01.md`](../fases/ux-comercial/UX-COMERCIAL-01.md) | Fase canonica siguiente |
+| [`../prompts-cursor/CURSOR-UX-COMERCIAL-01.md`](../prompts-cursor/CURSOR-UX-COMERCIAL-01.md) | Prompt de ejecucion para Cursor |

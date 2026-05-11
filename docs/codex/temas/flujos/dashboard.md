@@ -1,8 +1,8 @@
-# Flujo - Dashboard (inicio)
+# Flujo — Dashboard (inicio)
 
 ## Ruta
 
-- **`/`** - `DashboardPage` (`src/app/pages/dashboard.page.ts`).
+- **`/`** — `DashboardPage` (`src/app/pages/dashboard.page.ts`).
 
 ## Objetivo del usuario
 

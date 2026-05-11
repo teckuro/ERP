@@ -25,6 +25,9 @@ type NominaPeriodoRow = {
   aprobacion_operativa_fecha: string | null;
   aprobacion_operativa_usuario_id: string | null;
   aprobacion_operativa_usuario_label: string | null;
+  cierre_operativo_estado?: string | null;
+  cierre_operativo_fecha?: string | null;
+  cierre_operativo_usuario_label?: string | null;
 };
 
 const runNominaReal =
@@ -34,6 +37,7 @@ const runNominaReal =
   Boolean(process.env['E2E_NOMINA_PERIODO']);
 
 const describeNominaReal = runNominaReal ? test.describe : test.describe.skip;
+const runNominaCierreReal = runNominaReal && process.env['E2E_NOMINA_CIERRE_REAL'] === '1';
 
 function loadAppConfig(): AppConfig {
   const path = resolve(process.cwd(), 'public', 'app-config.json');
@@ -108,6 +112,10 @@ async function countConceptos(supabase: SupabaseClient, idCalculoPeriodo: number
   return count ?? 0;
 }
 
+function cierreOperativoVisible(page: Page) {
+  return page.getByRole('heading', { name: 'Nomina cerrada operativamente' });
+}
+
 describeNominaReal('nomina mensual - E2E real authenticated', () => {
   test.describe.configure({ mode: 'serial', timeout: 300_000 });
 
@@ -144,6 +152,29 @@ describeNominaReal('nomina mensual - E2E real authenticated', () => {
       await page.locator('#pm-periodo').fill(periodo);
       await clickAndWaitIdle(page, /Validar periodo/);
       await expect(page.getByText('Estado para calculo preliminar')).toBeVisible({ timeout: 60_000 });
+
+      if (runNominaCierreReal) {
+        const { data: existingRows, error: existingError } = await supabase
+          .from('nomina_calculo_periodo')
+          .select('id_calculo_periodo,cierre_operativo_estado,cierre_operativo_fecha')
+          .eq('periodo', periodo)
+          .eq('activo', true)
+          .is('reemplazado_por', null)
+          .order('created_at', { ascending: false });
+        expect(existingError).toBeNull();
+        const existingClosed = (existingRows ?? [])[0]?.cierre_operativo_estado === 'cerrado_operativamente';
+        if (existingClosed) {
+          await expect(cierreOperativoVisible(page)).toBeVisible({ timeout: 60_000 });
+          await expect(page.getByRole('button', { name: /Calcular preliminar/ }).first()).toBeDisabled();
+          await expect(page.getByRole('button', { name: /Guardar resultado preliminar/ }).first()).toBeDisabled();
+          await expect(page.getByRole('button', { name: /Aprobar resultado preliminar/ }).first()).toBeDisabled();
+          await page.reload();
+          await page.locator('#pm-periodo').fill(periodo);
+          await clickAndWaitIdle(page, /Validar periodo/);
+          await expect(cierreOperativoVisible(page)).toBeVisible({ timeout: 60_000 });
+          return;
+        }
+      }
 
       await expect(page.getByRole('button', { name: /Generar base de nomina/ }).first()).toBeEnabled({
         timeout: 60_000,
@@ -202,6 +233,43 @@ describeNominaReal('nomina mensual - E2E real authenticated', () => {
       expect(approved?.aprobacion_operativa_estado).toBe('aprobado_operativamente');
       expect(approved?.aprobacion_operativa_fecha).toBeTruthy();
 
+      await expect(page.getByRole('heading', { name: 'Cierre operativo' })).toBeVisible({ timeout: 60_000 });
+      if (runNominaCierreReal) {
+        const { data: cierrePrevio, error: cierrePrevioError } = await supabase
+          .from('nomina_calculo_periodo')
+          .select('cierre_operativo_estado,cierre_operativo_fecha')
+          .eq('id_calculo_periodo', activeId)
+          .maybeSingle();
+        expect(cierrePrevioError).toBeNull();
+
+        if (cierrePrevio?.cierre_operativo_estado !== 'cerrado_operativamente') {
+          await expect(page.getByRole('button', { name: /Cerrar nomina del periodo/ }).first()).toBeEnabled({
+            timeout: 60_000,
+          });
+          await page.getByRole('button', { name: /Cerrar nomina del periodo/ }).click();
+          await expect(cierreOperativoVisible(page)).toBeVisible({ timeout: 60_000 });
+        } else {
+          await expect(cierreOperativoVisible(page)).toBeVisible({ timeout: 60_000 });
+        }
+
+        const { data: cerrado, error: cerradoError } = await supabase
+          .from('nomina_calculo_periodo')
+          .select('cierre_operativo_estado,cierre_operativo_fecha')
+          .eq('id_calculo_periodo', activeId)
+          .maybeSingle();
+        expect(cerradoError).toBeNull();
+        expect(cerrado?.cierre_operativo_estado).toBe('cerrado_operativamente');
+        expect(cerrado?.cierre_operativo_fecha).toBeTruthy();
+        await expect(page.getByRole('button', { name: /Calcular preliminar/ }).first()).toBeDisabled();
+        await expect(page.getByRole('button', { name: /Guardar resultado preliminar/ }).first()).toBeDisabled();
+        await expect(page.getByRole('button', { name: /Aprobar resultado preliminar/ }).first()).toBeDisabled();
+      } else {
+        await testInfo.attach('nomina-cierre-real.md', {
+          body: 'E2E cierre real omitido por seguridad: falta E2E_NOMINA_CIERRE_REAL=1.',
+          contentType: 'text/markdown',
+        });
+      }
+
       await page.reload();
       await page.locator('#pm-periodo').fill(periodo);
       await clickAndWaitIdle(page, /Validar periodo/);
@@ -209,8 +277,11 @@ describeNominaReal('nomina mensual - E2E real authenticated', () => {
       await expect(page.getByText('Resultado preliminar aprobado operativamente.', { exact: true })).toBeVisible({
         timeout: 60_000,
       });
+      if (runNominaCierreReal) {
+        await expect(cierreOperativoVisible(page)).toBeVisible({ timeout: 60_000 });
+      }
       await expect(page.getByRole('link', { name: /Liquidaciones/ })).toHaveCount(0);
-      await expect(page.getByText('Salidas legales y cierre quedan fuera de esta fase.')).toBeVisible();
+      await expect(page.getByText('Salidas legales quedan fuera de esta fase.')).toBeVisible();
     } catch (error) {
       await testInfo.attach('nomina-console-errors.md', {
         body: consoleErrors.length > 0 ? consoleErrors.join('\n\n') : 'Sin errores de consola capturados.',

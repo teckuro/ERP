@@ -1,4 +1,4 @@
-# Tests - módulo Parámetros
+# Tests — módulo Parámetros
 
 ## Playwright / capturas
 
@@ -15,13 +15,7 @@ npx playwright test tests/parametros-tabs.screenshots.spec.ts --workers=1
 
 ## Unitarios
 
-Lógica de `ParametrosPage`, servicios y repositorios según cambios en `src/app/features/parametros-generales` y `src/app/pages/parametros.page.ts` - ejecutar `npx ng test --watch=false` filtrando suites tocadas.
-
-### Completitud mensual
-
-| Spec | Que cubre |
-|------|-----------|
-| `src/app/features/parametros-generales/rules/parametros-completitud.rules.spec.ts` | `evaluarCompletitudParametrosMensual(...)`: cerrado completo, parcial sin configuracion cliente, pendiente sin oficiales, vigencia aplicable de trabajo pesado por solape, falta de trabajo pesado, diferencias oficial/cliente y error tecnico. |
+Lógica de `ParametrosPage`, servicios y repositorios según cambios en `src/app/features/parametros-generales` y `src/app/pages/parametros.page.ts` — ejecutar `npx ng test --watch=false` filtrando suites tocadas.
 
 ## Assets vigentes
 

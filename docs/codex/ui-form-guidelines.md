@@ -1,369 +1,196 @@
-# UI Form Guidelines
+# UI y Formularios - Guia Central
 
-Guia canonica para formularios del ERP. Complementa [`AGENTS.md`](./AGENTS.md), [`estilos/README.md`](./estilos/README.md), [`ui-button-guidelines.md`](./ui-button-guidelines.md) y [`ui-tables.md`](./ui-tables.md).
+Este archivo es la fuente unica para reglas visuales, formularios, loading, botones, mensajes y checklist de UI del ERP.
 
-## Objetivo
+Para el índice padre de documentación y enlaces por tema, usar [`README.md`](./README.md).
 
-Definir patrones consistentes para formularios de captura, revision y mantenedores. El formulario debe ser claro, compacto y estable, sin ocultar errores ni mezclar responsabilidades funcionales.
+Documentos relacionados:
 
-## Definiciones
+- `docs/codex/ui-button-guidelines.md` (botones)
 
-| Concepto | Definicion | Uso esperado |
-|---|---|---|
-| Formulario | Conjunto de campos que captura o edita datos de una entidad o hecho operativo. | Alta de empleado, novedad mensual, concepto, parametro cliente. |
-| Formulario de creacion | Captura inicial de un registro nuevo. | Debe priorizar pocos campos, orden natural y accion primaria clara. |
-| Formulario de edicion | Modificacion de un registro existente. | Debe mostrar estado actual, restricciones y campos editables. |
-| Formulario de revision | Pantalla para validar, aprobar, rechazar o corregir. | Debe mostrar contexto, estado y acciones por estado. |
-| Shell de pagina | Marco que contiene header, acciones y contenido principal. | Debe dar estabilidad de altura/ancho; no contiene reglas de negocio. |
-| Bloque protagonista | Card o panel donde ocurre la tarea principal. | Debe ser unico salvo flujos complejos justificados. |
-| Resumen compacto | Bloque breve con estado, alcance o pendientes reales. | Opcional; se usa solo si ayuda a decidir o continuar. |
-| Seccion | Agrupacion logica de campos dentro del formulario. | Identificacion, Movimiento, Contexto, Contrato, etc. |
-| Campo | Unidad compuesta por label, control, ayuda y error. | Debe tener label visible y error cercano. |
-| Control | Input, select, textarea, search-select, switch o calendario. | Debe respetar altura y ancho del sistema. |
-| Footer de formulario | Zona estable para acciones de la captura. | Orden `[Secundario] [Primario]`. |
-| Toolbar de pagina | Acciones que afectan la pantalla o listado completo. | Crear, refrescar, limpiar filtros, exportar. |
-| Estado visual | Badge, chip o mensaje que comunica situacion. | No debe depender solo del color. |
-| Densidad | Relacion entre cantidad de informacion, espaciado y tamanos. | Debe ser compacta sin perder legibilidad. |
+## Direccion visual
 
-## Regla madre
+- Interfaz enterprise, compacta y sobria.
+- Neutros dominan; azul primario solo guia foco, seleccion y accion principal.
+- Estados usan color para informar, no para decorar.
+- Sin gradientes decorativos, orbs, fondos saturados ni sombras pesadas.
+- Cards con radio maximo `8px`; controles compactos con `5px` o `6px`.
+- No usar cards dentro de cards salvo modales, items repetidos o herramientas realmente enmarcadas.
 
-Un formulario debe responder antes de implementarse:
+## Tokens
 
-- que dato se captura;
-- quien lo captura;
-- en que momento del flujo;
-- que campos son obligatorios;
-- que campos son solo contexto;
-- que accion principal deja el dato listo;
-- que reglas viven en UI y cuales viven en rules/service;
-- que no debe prometer esta pantalla.
+Tipografia (base global en `src/styles.css` `:root` + `body`):
 
-## Principios
-
-- El formulario es el bloque protagonista: debe ser claro, breve y ordenado.
-- Usar labels visibles encima de los inputs; no usar placeholders como labels.
-- Preferir una columna; usar dos columnas solo cuando mejore la lectura.
-- Agrupar campos por secuencia natural del usuario.
-- Separar secciones con bordes suaves, no con cards anidadas.
-- Mantener acciones en un footer estable.
-- No duplicar titulos entre card, seccion y campo.
-
-## Referencia base: Empleados
-
-Para nuevas pantallas de creacion o captura, usar **Empleados** como referencia funcional y visual.
-
-Fuente de referencia:
-
-- `src/app/features/empleados/components/form-empleado/form-empleado.html`;
-- `src/app/features/empleados/components/form-empleado/form-empleado.css`;
-- `src/app/features/empleados/components/secciones/datos-personales/datos-personales.css`;
-- `docs/codex/modulos/empleados/creacion-basica.md`.
-
-Que se debe heredar como criterio:
-
-- shell unico de pagina con header, acciones y bloque protagonista;
-- card o panel principal sin anidar cards innecesarias;
-- resumen compacto solo si aporta contexto de negocio;
-- grillas de captura de maximo 4 columnas en desktop;
-- tablet a 2 columnas y mobile a 1 columna;
-- clases de layout por bloque/capa, no selectores genericos;
-- acciones estables, sin duplicar botoneras;
-- copy breve orientado a la tarea.
-
-Que no se debe hacer:
-
-- copiar clases `employee-*` en otro feature sin necesidad;
-- usar el wizard de empleados para formularios simples;
-- forzar todas las creaciones a tener resumen si no agrega valor;
-- mezclar reglas de negocio del modulo Empleados con otros modulos.
-
-## Tokens de densidad
-
-| Token | Valor | Uso |
-|---|---:|---|
-| Input compacto ERP | `22px` | Alta avanzada de Empleados y grillas de captura densas. Referencia: `--erp-control-height`. |
-| Checkbox compacto | `22px` min | Booleanos dentro de grillas densas. |
-| Input normal | `34px` a `38px` | Formularios simples, filtros y componentes no densos. |
-| Search-select / calendario | `34px` a `40px` | Selectores con busqueda, fechas o componentes compartidos con interaccion propia. |
-| Textarea compacto | `72px` a `96px` | Observaciones breves. No estirar para llenar pantalla. |
-| Boton de fila | `24px` a `32px` | Acciones compactas en tablas, mapas o pasos. |
-| Boton secundario de formulario | `34px` a `38px` | Cancelar, volver, guardar borrador. |
-| Boton principal | `36px` a `40px` | Accion primaria de formulario o pagina. |
-| Separacion chica | `4px` | Label-error, icono-texto, chips. |
-| Separacion base | `8px` | Campos relacionados, chips, acciones compactas. |
-| Separacion media | `12px` | Secciones compactas, cards pequeñas. |
-| Separacion amplia | `16px` | Padding de panel y gaps principales. |
-| Separacion de bloque | `24px` | Separacion entre grupos mayores. |
-| Separacion excepcional | `32px` | Solo cuando el flujo necesita aire visual real. |
-| Radio control | `6px` a `8px` | Inputs, botones, chips rectangulares. |
-| Radio card | `8px` | Cards y paneles del ERP. |
-| Borde | `1px` | Separadores y contenedores. |
-
-Regla importante:
-
-- No subir todos los inputs a `38px` o `42px`. El patron base de **creacion avanzada de Empleados** usa controles de `22px` para mantener densidad y escaneo rapido.
-- Usar `38px` a `42px` solo en controles de mayor interaccion o pantallas menos densas.
-- Si un formulario tiene muchos campos, preferir controles compactos y buena grilla antes que inputs altos.
-- Si un campo requiere busqueda, calendario o lista compleja, puede usar mayor altura que los inputs nativos compactos.
-
-Colores base:
-
-| Uso | Color |
-|---|---|
-| Primario | `#2563EB` |
-| Primario hover | `#1D4ED8` |
-| Fondo pagina | `#F8FAFC` |
-| Superficie | `#FFFFFF` |
-| Borde | `#E5E7EB` |
-| Texto principal | `#111827` |
-| Texto secundario | `#6B7280` |
-| Error | `#DC2626` |
-| Warning | `#F59E0B` |
-| Exito | `#16A34A` |
-| Info | `#0EA5E9` |
-
-Tipografia recomendada:
-
-| Elemento | Tamano | Peso | Nota |
-|---|---:|---:|---|
-| Titulo de pagina | `1.125rem` a `1.25rem` | `650` a `700` | Usar en header, no dentro de cards chicas. |
-| Titulo de seccion | `0.82rem` a `0.9rem` | `650` a `700` | Compacto y escaneable. |
-| Label compacto | `0.665rem` a `0.72rem` | `500` a `600` | Alta avanzada y grillas densas. |
-| Label normal | `0.75rem` | `600` | Formularios simples. |
-| Texto de ayuda | `0.665rem` a `0.78rem` | `400` a `500` | Breve, no reemplaza label. |
-| Texto de campo compacto | `0.72rem` | `500` | Controles de `22px`. |
-| Texto de campo normal | `0.82rem` a `0.875rem` | `400` a `500` | Controles altos o formularios menos densos. |
-| Error de campo | `0.665rem` a `0.78rem` | `400` a `600` | Cerca del campo. |
-
-## Densidades por contexto
-
-| Contexto | Control | Grilla | Uso |
-|---|---|---|---|
-| Alta avanzada Empleados | `22px`, texto `0.72rem` | Hasta 4 columnas | Captura densa por pasos. |
-| Alta basica Empleados | `22px` a `34px` segun control | Hasta 4 columnas, bloques contenidos | Captura minima sin ruido. |
-| Formulario simple nuevo | `34px` a `38px` | 1 a 2 columnas | Pocos campos, menos densidad. |
-| Mantenedor denso | `22px` a `34px` | 4 u 8 columnas justificadas | Comparacion de muchos campos. |
-| Filtros de tabla | `32px` a `38px` | Grilla de filtros | Busqueda y segmentacion. |
-| Acciones de tabla | `24px` a `32px` | Inline | Acciones por fila. |
-
-Elegir densidad por cantidad de campos y frecuencia de uso. No por gusto visual.
-
-## Composicion
-
-Estructura recomendada:
-
-1. Header de pantalla con breadcrumb y titulo.
-2. Botonera superior solo si son acciones de pagina.
-3. Card o bloque principal con el formulario.
-4. Secciones logicas dentro del formulario.
-5. Footer estable con `[Secundario] [Primario]`.
-
-No colocar la botonera principal dentro del cuerpo de campos si corresponde al flujo completo. No duplicar la misma accion arriba y abajo.
-
-Para creaciones nuevas, seguir este patron de Empleados:
-
-1. `Header`: breadcrumb + titulo.
-2. `Resumen compacto` opcional: estado, alcance o pendientes reales.
-3. `Formulario`: secciones visibles, sin ruido.
-4. `Acciones`: una sola botonera estable.
-5. `Mensajes`: `MessageBox` para errores globales, errores locales junto al campo.
-
-## Anatomia de un campo
-
-Cada campo debe tener esta estructura logica:
-
-1. Label visible.
-2. Control.
-3. Ayuda breve si aporta.
-4. Error local si existe.
-
-Ejemplo conceptual:
-
-```html
-<label class="form-field">
-  <span class="form-label">Monto</span>
-  <input class="form-input" type="number" min="0" step="1" />
-  <span class="form-help">Ingrese monto en CLP.</span>
-  <span class="form-error">El monto no puede ser negativo.</span>
-</label>
-```
-
-Reglas:
-
-- el label no debe desaparecer cuando el campo tiene valor;
-- el placeholder solo orienta formato o ejemplo;
-- el error pertenece al campo, no a un toast;
-- la ayuda debe ser corta y especifica;
-- no usar tooltips para errores criticos;
-- no mezclar dos conceptos de negocio en un solo campo.
-
-## Secciones
-
-Usar nombres funcionales y concretos:
-
-- Identificacion.
-- Datos personales.
-- Contrato.
-- Movimiento.
-- Contexto.
-- Configuracion.
-- Observaciones.
-
-Evitar secciones genericas como "Datos" o "Informacion" si no aclaran la tarea.
-
-Definicion de seccion:
-
-- titulo corto;
-- campos relacionados;
-- una responsabilidad clara;
-- sin acciones propias salvo casos justificados;
-- separador suave respecto de la seccion anterior.
-
-No crear secciones para uno o dos campos si basta con agruparlos visualmente dentro del mismo bloque.
-
-## Campos
-
-- Cada input debe tener label visible.
-- Selects con muchas opciones deben incluir busqueda si existe componente disponible.
-- Fechas deben usar formato de guardado `yyyy-mm-dd`; la UI puede mostrar ayuda si el control lo requiere.
-- Numeros deben declarar `min`, `step` y unidad cuando corresponda.
-- Campos opcionales deben verse como opcionales por contexto o ayuda breve, no por ausencia de validacion.
-- No inflar ancho de campos cortos si el flujo se entiende mejor con ancho acotado.
-
-Grilla recomendada para captura inspirada en Empleados:
-
-- desktop: maximo 4 columnas;
-- tablet: 2 columnas;
-- mobile: 1 columna;
-- campos largos pueden ocupar 2 columnas;
-- secciones con pocos campos pueden acotarse con `max-width`;
-- mantener el orden DOM y no reordenar campos por CSS.
-
-La grilla de 8 columnas no es default para formularios nuevos. Reservarla para Parametros o mantenedores densos con muchos campos comparables.
-
-## Tipos de control
-
-| Tipo | Usar cuando | Reglas |
-|---|---|---|
-| `input text` | Texto corto, codigo, nombre, referencia. | No usar para seleccionar entidades si hay catalogo. |
-| `input number` | Monto, cantidad, tasa o dias. | Definir `min`, `step` y unidad visible. |
-| `input date` | Fecha exacta. | Guardar `yyyy-mm-dd`; no mezclar formatos visibles. |
-| `input month` | Periodo `YYYY-MM`. | Usar en remuneraciones y parametros por periodo. |
-| `select` | 2 a 5 opciones estables. | Labels funcionales, no valores tecnicos crudos. |
-| `search-select` | Catalogos medianos o grandes. | Buscar por nombre/codigo/RUT si aplica. |
-| `textarea` | Observacion breve. | Altura compacta; no usar como caja principal. |
-| `checkbox/switch` | Booleanos claros. | Label debe explicar la decision. |
-| `radio/segmented` | Decision excluyente corta. | Maximo 3 o 4 opciones visibles. |
-
-## Estados de formulario
-
-| Estado | Definicion | UI esperada |
-|---|---|---|
-| Inicial | Sin ediciones del usuario. | Campos listos, sin errores prematuros. |
-| Editando | Usuario cambio valores. | Acciones guardar/cancelar disponibles. |
-| Guardando | Persistencia en curso. | Botones bloqueados, mensaje/loading claro. |
-| Guardado | Persistencia exitosa. | Mensaje breve y siguiente accion clara. |
-| Error local | Campo invalido. | Error junto al campo. |
-| Error global | Falla de carga, permisos o servicio. | `MessageBox` o bloque superior. |
-| Solo lectura | No se puede editar por estado o periodo. | Campos deshabilitados o vista detalle. |
-| Bloqueado | No se puede continuar por regla. | Explicar motivo y accion posible. |
-
-## Resumen compacto
-
-Usar resumen compacto cuando ayuda al usuario a entender contexto antes de capturar.
-
-Puede mostrar:
-
-- estado del registro;
-- periodo;
-- alcance de la accion;
-- pendientes reales;
-- referencia funcional.
-
-No debe mostrar:
-
-- instrucciones largas;
-- datos tecnicos irrelevantes;
-- listas extensas;
-- explicaciones de funcionalidades futuras;
-- texto duplicado del titulo.
-
-## Validaciones
-
-- Mostrar error cerca del campo.
-- Usar resumen superior solo para errores multiples o bloqueos generales.
-- No ocultar errores criticos en tooltips.
-- Deshabilitar campos o acciones no aplicables y explicar el motivo cuando no sea obvio.
-- No duplicar reglas complejas en el componente si ya existen rules/service.
-
-Separacion de responsabilidades:
-
-| Capa | Responsabilidad |
-|---|---|
-| Template | Mostrar errores, estados y disabled. |
-| Componente | Orquestar eventos, normalizar input simple y llamar service/rules. |
-| Rules | Validaciones puras, transiciones y restricciones. |
-| Service | Casos de uso, persistencia indirecta y errores controlados. |
-| Repository | Lectura/escritura sin reglas de negocio complejas. |
-
-Validar en UI solo lo necesario para feedback inmediato. Las reglas de negocio deben vivir en rules/service.
+- Familia: **`--erp-font-sans`** — `Inter` (hoja cargada en `src/index.html`) con fallback `ui-sans-serif, system-ui, sans-serif`.
+- Escala de texto: **`--erp-text-scale`** (`0.9`), tamaños **`--erp-text-xs`**, **`--erp-text-sm`**, **`--erp-text-md`**, titulos **`--erp-title-sm`**, **`--erp-title-md`**.
+- Cuerpo de aplicacion: `body` usa `--erp-font-sans`, `--erp-text-md`, peso `400`, `line-height` ~`1.5`, antialiasing activado.
+- Controles y etiquetas de formulario ERP: preferir pesos **500–600** (labels secundarios mas ligeros que valores).
 
 Colores:
 
-- error: `#DC2626`;
-- warning: `#F59E0B`;
-- exito: `#16A34A`;
-- info: `#0EA5E9`.
+- Primario: `#2563EB`
+- Primario hover: `#1D4ED8`
+- Primario soft: `#EFF6FF`
+- Fondo general: `#F8FAFC`
+- Superficie: `#FFFFFF`
+- Borde: `#E5E7EB`
+- Texto principal: `#111827`
+- Texto secundario: `#6B7280`
+- Texto deshabilitado: `#9CA3AF`
+- Error: `#DC2626`, soft `#FEF2F2`
+- Warning: `#F59E0B`, soft `#FFFBEB`
+- Success: `#16A34A`, soft `#ECFDF5`
+- Info: `#0EA5E9`, soft `#F0F9FF`
 
-## Acciones
+Espaciado permitido:
 
-Orden estandar:
+- `2px`, `3px`, `4px`, `8px`, `12px`, `16px`, `24px`, `32px`
 
-- accion secundaria a la izquierda o antes;
-- accion primaria al final;
-- accion destructiva separada o con tono peligro claro.
+Alturas:
 
-Ejemplo:
+- Inputs y selects compactos: **`--erp-control-height`** = `22px` (antes `23px`; mas ligero visualmente). Usar siempre `var(--erp-control-height)` en inputs de formulario, `app-search-select`, `app-calendar-input` y `.employee-control` para alineacion.
+- Botones compactos: `28px` a `32px`.
+- Botones principales de pagina: `36px` a `40px`.
+- Iconos en botones: `14px` a `16px`.
 
-```text
-Cancelar   Guardar borrador
-```
+## Layout ERP
 
-No usar botones de texto largo si existe icono claro para herramientas. Para acciones de negocio, usar texto directo.
+Todas las pantallas deben mantener:
 
-Tipos de accion:
+1. Header con breadcrumb arriba a la izquierda y titulo de la vista.
+2. Botonera separada debajo del header, alineada a la derecha.
+3. Contenido principal en una superficie blanca con borde cuando la vista lo requiera.
 
-| Tipo | Ejemplos | Ubicacion |
-|---|---|---|
-| Primaria | Guardar, Crear, Aprobar, Calcular preliminar. | Derecha del footer o toolbar. |
-| Secundaria | Cancelar, Volver, Limpiar. | Antes de la primaria. |
-| Destructiva | Eliminar, Anular, Rechazar. | Separada, confirmada o por estado. |
-| Navegacion | Volver, Ver ficha, Continuar. | Header, breadcrumb o accion de fila. |
-| Utilidad | Refrescar, Exportar, Mostrar filtros. | Toolbar. |
+Regla adicional (altura):
 
-No mostrar acciones que el modulo no implementa. No dejar botones deshabilitados sin razon visible si son relevantes para el usuario.
+- El contenedor padre de la pantalla debe poder llegar al **límite inferior** (`min-height: 100%`) y, si usa grilla, el contenido debe crecer con `minmax(0, 1fr)` (ver `docs/codex/estilos/README.md`).
+- Este es un estándar transversal: formularios y wizards deben estirar el **marco padre** hasta el alto disponible, manteniendo cards/campos compactos. No usar textareas, cards internas o padding artificial para rellenar altura.
 
-## Responsive
+Referencia de implementacion (UI base del ERP):
 
-- En pantallas pequenas, apilar campos.
-- Evitar scroll horizontal global.
-- Permitir scroll interno en tablas/listas.
-- Mantener visible el titulo, el contexto y la accion principal.
-- No usar escalado de fuente basado en viewport.
+- `src/app/features/empleados/components/form-empleado/form-empleado.html`
+- `src/styles.css` (bloque `app-form-empleado { ... }`) define tokens y patrones de:
+  - tabs sobrios (sin gradientes)
+  - cards con borde y radios 6–8px
+  - loading overlay contextual
+  - botonera consistente
 
-## Checklist de cierre
+Reglas:
 
-1. Labels visibles en todos los campos.
-2. Secciones logicas sin cards anidadas.
-3. Footer estable con orden secundario/primario.
-4. Validaciones cerca del campo.
-5. Inputs no se desbordan en mobile.
-6. No se duplican reglas que ya viven en rules/service.
-7. No se promete una accion que el modulo aun no implementa.
-8. Cambio visual registrado en [`peticiones-estilos.md`](./peticiones-estilos.md) si corresponde.
-9. Si es una creacion nueva, el layout fue comparado contra el patron Empleados.
-10. La grilla no supera 4 columnas salvo mantenedor denso justificado.
+- Orden de botones: secundario y luego primario.
+- La accion primaria va arriba a la derecha y no se duplica.
+- En mobile, conservar lectura vertical: breadcrumb, titulo, botonera, contenido.
+- El bloque protagonista debe ser evidente: formulario, tabla, detalle o flujo mixto.
 
-## Compatibilidad historica
+## Formularios
 
-La ruta anterior [`temas/ui-form-guidelines.md`](./temas/ui-form-guidelines.md) queda como wrapper historico hacia este documento.
+- Labels siempre visibles arriba del input.
+- Nunca usar placeholder como label.
+- Una columna por defecto; dos columnas solo si mejora lectura.
+- Agrupar campos por contexto y secuencia visual.
+- Validaciones junto al campo y resumen superior si hay multiples errores.
+- Selects de catalogo con busqueda cuando tengan mas de 5 opciones o busqueda por texto.
+- Fechas con escritura guiada `dd/mm/aaaa` y valor interno ISO si aplica.
+- Mantener altura visual consistente entre inputs, selects, calendarios y controles complejos.
+- Tamaño de inputs (regla base):
+  - Alto estándar: token **`--erp-control-height`** (`22px`).
+  - Ancho mínimo por campo: **`--erp-field-min-width`** (`190px`; evitar inputs gigantes; “término medio”).
+- Ancho en formularios:
+  - No ocupar siempre el `100%` del ancho disponible.
+  - Reservar `width: 100%` para barras de filtros o controles que realmente lo requieran (ej. buscadores globales).
+
+### Regla (ERP) — grillas de captura: máximo 4 columnas
+
+En formularios normales de captura (p.ej. creación básica), evitar grillas “tipo 8 columnas” que introducen ruido.
+
+- **Desktop**: máximo **4 columnas**.
+- **Tablet**: **2 columnas**.
+- **Móvil**: **1 columna**.
+- Secciones con 2 campos deben tener **ancho contenido** (usar `max-width` del bloque interno) y no estirar por llenar pantalla.
+- La **grilla de 8 columnas** se reserva para mantenedores densos (ej. **Parámetros**) o casos explícitos de alta densidad.
+- Radios y checks:
+  - Radios: el control **siempre va alineado al label en la misma línea**.
+  - Checks:
+    - En listas/opciones (ej. elección entre alternativas): inline con el label.
+    - En grillas tipo “param-check” (ej. flags/tope legal): label arriba y checkbox abajo, **centrado**.
+### Grilla 8 columnas (mantenedor Parámetros)
+
+Implementacion y estilos en `src/app/pages/parametros.page.ts` (view encapsulation none; selector raíz `.parametros-page`).
+
+- **Rejilla maestra** `field-grid` + modificadores (`field-grid--values`, `--rentas`, `--topes`, etc.): `grid-template-columns: repeat(8, minmax(0, 1fr))`.
+- Cada **input, select o campo con unidad** (`.param-field` **hijo directo** del `field-grid`) usa **`grid-column: span 2`** (“de a dos” sobre la grilla de 8).
+- **No es obligatorio llenar la fila**: si hay tres campos, ocupan 6 columnas y **quedan 2 libres** a la derecha; el flujo es natural, alineado al inicio (`justify-content: start` en el grid).
+- **Subtítulos de bloque** dentro de la rejilla (`.param-subsection-title`, p. ej. AFP / IPS en Topes): **`span 8`** (fila completa).
+- **Excepción (pestaña Información de Valores)**: radios (`.erp-choice-radio`) y checks inline de gratificación (`.param-checkbox-inline`) usan **`span 1`** por ser controles compactos; el resto de campos sigue en span 2.
+- Evitar **contenedores** tipo `.field-grid-slot--2/--3` que partían todo el ancho en mitades o tercios: los campos deben participar **directamente** en la grilla de 8 para respetar el cálculo de columnas libres.
+- Unidades (`$`, `%`, UF, etc.) van en `.unit-field` / `.param-input`; línea de ayuda al contenido: `--param-content-max-width` en el grupo si se limita el ancho útil del formulario.
+
+**Responsive**: por defecto, en `max-width: 980px` la grilla pasa a **4** columnas (cada `span 2` sigue siendo “medio ancho”); en `max-width: 760px` una columna (`span 1` en hijos).
+
+### Grillas empleados (alta / ficha)
+
+Patrones distintos (`employee-grid`, rejillas de 8 columnas en pasos básicos, etc.): mantener **consistencia visual** con el ERP (labels arriba, altura `--erp-control-height`) según sección; no replican la misma fórmula span-2/8 de Parámetros en todos los bloques.
+
+## MessageBox
+
+`app-message-box` es el componente unico para mensajes inline y modales de estado.
+
+Uso:
+
+- `variant="success"` para confirmaciones.
+- `variant="error"` para errores bloqueantes.
+- `variant="warning"` para advertencias que requieren atencion.
+- `variant="info"` para informacion neutral.
+- `variant="loading"` para esperas.
+- `mode="inline"` dentro del flujo.
+- `mode="modal"` cuando el usuario debe esperar o confirmar un estado global.
+
+Estilo:
+
+- Fondo blanco, borde simple y acento lateral por estado.
+- Icono lucide real, no texto como `OK`, `i` o `x`.
+- Radio `8px` en contenedor y `6px` en botones.
+- Sin gradientes.
+- Botones estables, `inline-flex`, con altura minima `32px`.
+
+## Loading
+
+- Si carga una tabla o listado, el loading vive dentro del cuerpo de la grilla.
+- Si carga una pantalla completa, usar `app-message-box variant="loading" mode="modal"` para centrar y bloquear la vista.
+- No bloquear toda la pantalla cuando solo cambia una parte.
+- Usar texto contextual: `Cargando listado de empleados...`, `Cargando ficha...`, `Guardando ficha...`.
+
+## Botones e iconos
+
+- Todo boton con icono y texto usa `inline-flex`, `align-items: center`, `justify-content: center` y `gap`.
+- Iconos con ancho y alto definidos.
+- No alinear iconos con `margin-top` manual.
+- Preferir simbolos conocidos para acciones compactas: cerrar, guardar, editar, volver, descargar.
+
+## Estados de negocio de empleados
+
+El origen de creacion define el estado inicial:
+
+- `basico`: `estado = 'EN_PROCESO'`, `estado_ficha = 'INCOMPLETO'`, `apto_para_remuneraciones = false`.
+- `avanzado`: al finalizar queda `estado = 'ACTIVO'`, `estado_ficha = 'VALIDO'`, `apto_para_remuneraciones = true`.
+
+Para alta avanzada, persistir en fases si la base exige restricciones de activacion:
+
+1. Insertar persona en estado intermedio.
+2. Insertar contrato, remuneracion, prevision, salud, banco y centro de costo.
+3. Activar persona al final.
+
+## Checklist
+
+Antes de cerrar un cambio UI:
+
+- Hay un unico bloque protagonista.
+- Header, botonera y contenido respetan el layout ERP.
+- Colores, radios, espaciado y alturas usan los tokens definidos.
+- Formularios tienen labels visibles, errores claros y flujo legible.
+- Tablas y datagrids no compiten con sidebars o cards extras.
+- Loading aparece donde ocurre la espera.
+- MessageBox usa el componente compartido.
+- Mobile no tiene textos superpuestos ni controles desbordados.
+- No se introdujeron paletas, gradientes o decoraciones nuevas.
+- Formularios del mantenedor **Parámetros** respetan la grilla de 8 columnas y `span` documentados arriba (sin rejillas anidadas que rompan el cómputo de columnas libres).

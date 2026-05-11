@@ -8,6 +8,12 @@ type MenuItem = {
   label: string;
   icon: string;
   exact?: boolean;
+  hint?: string;
+};
+
+type MenuSection = {
+  label?: string;
+  items: MenuItem[];
 };
 
 @Component({
@@ -29,28 +35,50 @@ type MenuItem = {
       </div>
 
       <nav class="flex-1 overflow-y-auto py-4">
-        <ul class="space-y-1 px-3">
-          @for (item of menuItems; track item.path) {
+        <ul class="space-y-4 px-3">
+          @for (section of menuSections; track section.label ?? 'principal') {
             <li>
-              <a
-                [routerLink]="item.path"
-                routerLinkActive="is-active bg-blue-50 text-blue-700 font-semibold"
-                [routerLinkActiveOptions]="{ exact: item.exact ?? false }"
-                #rla="routerLinkActive"
-                class="sidebar-link flex items-center gap-3 rounded-md px-3 py-2.5 transition-colors duration-150"
-                [class.text-blue-700]="rla.isActive"
-                [class.bg-blue-50]="rla.isActive"
-                [class.font-semibold]="rla.isActive"
-                [class.text-gray-700]="!rla.isActive"
-                [class.hover:bg-gray-50]="!rla.isActive"
-                [class.hover:text-gray-900]="!rla.isActive"
-              >
-                <lucide-icon
-                  [name]="item.icon"
-                  [class]="'h-5 w-5 ' + (rla.isActive ? 'text-blue-600' : 'text-gray-500')"
-                ></lucide-icon>
-                <span class="text-sm">{{ item.label }}</span>
-              </a>
+              @if (section.label) {
+                <p class="px-3 pb-1 text-[11px] font-semibold uppercase tracking-wide text-gray-500">
+                  {{ section.label }}
+                </p>
+              }
+              <ul class="space-y-1">
+                @for (item of section.items; track item.path) {
+                  <li>
+                    <a
+                      [routerLink]="item.path"
+                      routerLinkActive="is-active bg-blue-50 text-blue-700 font-semibold"
+                      [routerLinkActiveOptions]="{ exact: item.exact ?? false }"
+                      #rla="routerLinkActive"
+                      class="sidebar-link flex items-start gap-3 rounded-md px-3 py-2.5 transition-colors duration-150"
+                      [class.text-blue-700]="rla.isActive"
+                      [class.bg-blue-50]="rla.isActive"
+                      [class.font-semibold]="rla.isActive"
+                      [class.text-gray-700]="!rla.isActive"
+                      [class.hover:bg-gray-50]="!rla.isActive"
+                      [class.hover:text-gray-900]="!rla.isActive"
+                    >
+                      <lucide-icon
+                        [name]="item.icon"
+                        [class]="'mt-0.5 h-5 w-5 flex-shrink-0 ' + (rla.isActive ? 'text-blue-600' : 'text-gray-500')"
+                      ></lucide-icon>
+                      <span class="min-w-0">
+                        <span class="block text-sm leading-5">{{ item.label }}</span>
+                        @if (item.hint) {
+                          <span
+                            class="mt-0.5 block text-[11px] leading-4"
+                            [class.text-blue-600]="rla.isActive"
+                            [class.text-gray-500]="!rla.isActive"
+                          >
+                            {{ item.hint }}
+                          </span>
+                        }
+                      </span>
+                    </a>
+                  </li>
+                }
+              </ul>
             </li>
           }
         </ul>
@@ -107,15 +135,39 @@ type MenuItem = {
   ],
 })
 export class SidebarComponent {
-  readonly menuItems: MenuItem[] = [
-    { path: '/', label: 'Dashboard', icon: 'layout-dashboard', exact: true },
-    { path: '/empleados', label: 'Empleados', icon: 'users' },
-    { path: '/remuneraciones/proceso-mensual', label: 'Preparar nomina', icon: 'file-text' },
-    { path: '/remuneraciones/novedades-mensuales', label: 'Movimientos del mes', icon: 'calendar-plus' },
-    { path: '/remuneraciones/haberes-descuentos', label: 'Asignaciones recurrentes', icon: 'repeat' },
-    { path: '/remuneraciones/conceptos', label: 'Conceptos de remuneración', icon: 'tags', exact: true },
-    { path: '/licencias-medicas', label: 'Licencias Medicas', icon: 'heart-pulse' },
-    { path: '/reportes', label: 'Reportes', icon: 'bar-chart-3' },
-    { path: '/parametros', label: 'Parametros', icon: 'settings' },
+  readonly menuSections: MenuSection[] = [
+    {
+      items: [
+        { path: '/', label: 'Dashboard', icon: 'layout-dashboard', exact: true },
+        { path: '/empleados', label: 'Empleados', icon: 'users' },
+      ],
+    },
+    {
+      label: 'Remuneraciones',
+      items: [
+        {
+          path: '/remuneraciones/proceso-mensual',
+          label: 'Preparar nomina',
+          icon: 'file-text',
+          hint: 'Estado, pendientes y cierre',
+        },
+        {
+          path: '/remuneraciones/liquidaciones-oficiales',
+          label: 'Liquidaciones oficiales',
+          icon: 'file-check-2',
+          hint: 'Salida interna desde nomina cerrada',
+        },
+        { path: '/remuneraciones/novedades-mensuales', label: 'Movimientos del mes', icon: 'calendar-plus' },
+        { path: '/remuneraciones/haberes-descuentos', label: 'Asignaciones recurrentes', icon: 'repeat' },
+        { path: '/remuneraciones/conceptos', label: 'Conceptos de remuneracion', icon: 'tags', exact: true },
+      ],
+    },
+    {
+      items: [
+        { path: '/licencias-medicas', label: 'Licencias Medicas', icon: 'heart-pulse' },
+        { path: '/reportes', label: 'Reportes', icon: 'bar-chart-3' },
+        { path: '/parametros', label: 'Parametros', icon: 'settings' },
+      ],
+    },
   ];
 }

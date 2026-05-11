@@ -1,8 +1,8 @@
-# Flujo - Licencias médicas
+# Flujo — Licencias médicas
 
 ## Ruta
 
-- **`/licencias-medicas`** - `LicenciasMedicasPage` (`src/app/pages/licencias-medicas.page.ts`).
+- **`/licencias-medicas`** — `LicenciasMedicasPage` (`src/app/pages/licencias-medicas.page.ts`).
 
 ## Objetivo del usuario
 
@@ -17,7 +17,7 @@ Registrar o consultar **licencias médicas** según la funcionalidad implementad
 
 | Tipo | Enlace |
 |------|--------|
-| Contrato del módulo | **Pendiente** - `temas/licencias-medicas-*.md`. |
+| Contrato del módulo | **Pendiente** — `temas/licencias-medicas-*.md`. |
 | Formularios / tablas | [`../../ui-form-guidelines.md`](../../ui-form-guidelines.md), [`../../ui-tables.md`](../../ui-tables.md) |
 
 ## Pruebas
