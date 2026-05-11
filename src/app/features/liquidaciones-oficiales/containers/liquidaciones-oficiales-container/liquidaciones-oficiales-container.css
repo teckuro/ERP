@@ -1,0 +1,25 @@
+.liq-page {
+  display: grid;
+  gap: 16px;
+}
+
+.liq-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.liq-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+@media (max-width: 720px) {
+  .liq-header,
+  .liq-actions {
+    justify-content: flex-start;
+  }
+}

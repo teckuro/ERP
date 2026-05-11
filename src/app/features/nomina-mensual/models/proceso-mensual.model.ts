@@ -314,6 +314,7 @@ export type NominaCalculoSnapshotEstado =
 export type NominaCalculoSnapshotOrigen = 'preliminar' | 'manual' | 'recalculo';
 export type NominaCalculoConceptoTipo = 'haber' | 'descuento' | 'cotizacion' | 'impuesto';
 export type EstadoAprobacionOperativaPersistida = 'aprobado_operativamente';
+export type NominaCierreOperativoEstado = 'cerrado_operativamente';
 
 export interface AprobacionOperativaPersistida {
   estado: EstadoAprobacionOperativaPersistida;
@@ -328,6 +329,21 @@ export interface AprobarResultadoPreliminarOperativamenteParams {
   idCalculoPeriodo: number;
   periodo: string;
   advertencias: string[];
+}
+
+export interface NominaCierreOperativo {
+  estado: NominaCierreOperativoEstado;
+  fecha: string;
+  usuarioId: string | null;
+  usuarioLabel: string;
+  observacion: string | null;
+  metadata: Record<string, unknown>;
+}
+
+export interface CerrarNominaOperativamenteParams {
+  idCalculoPeriodo: number;
+  periodo: string;
+  observacion?: string | null;
 }
 
 export interface NominaCalculoConceptoSnapshot {
@@ -419,6 +435,7 @@ export interface NominaCalculoPeriodoSnapshot {
   activo: boolean;
   reemplazadoPor: number | null;
   aprobacionOperativa: AprobacionOperativaPersistida | null;
+  cierreOperativo: NominaCierreOperativo | null;
   trabajadores: NominaCalculoTrabajadorSnapshot[];
   issues: NominaCalculoIssueSnapshot[];
   trazabilidad: NominaCalculoTrazabilidadSnapshot[];
@@ -448,6 +465,7 @@ export interface NominaSnapshotCompletoView {
   observaciones: NominaCalculoIssueSnapshot[];
   trazabilidad: NominaCalculoTrazabilidadSnapshot[];
   aprobacionOperativa: AprobacionOperativaPersistida | null;
+  cierreOperativo: NominaCierreOperativo | null;
   resumen: NominaSnapshotCompletoResumen;
 }
 

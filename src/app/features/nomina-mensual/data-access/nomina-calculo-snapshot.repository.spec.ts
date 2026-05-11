@@ -31,6 +31,12 @@ const baseRow = {
   aprobacion_operativa_usuario_label: null,
   aprobacion_operativa_advertencias: [],
   aprobacion_operativa_metadata: {},
+  cierre_operativo_estado: null,
+  cierre_operativo_fecha: null,
+  cierre_operativo_usuario_id: null,
+  cierre_operativo_usuario_label: null,
+  cierre_operativo_observacion: null,
+  cierre_operativo_metadata: {},
 };
 
 const trabajadorRow = {
@@ -317,6 +323,72 @@ describe('NominaCalculoSnapshotRepository', () => {
     expect(snapshot?.aprobacionOperativa?.estado).toBe('aprobado_operativamente');
     expect(snapshot?.aprobacionOperativa?.usuarioLabel).toBe('rrhh@empresa.cl');
     expect(snapshot?.aprobacionOperativa?.advertencias).toEqual(['Advertencia visible']);
+  });
+
+  it('llama RPC cerrar_nomina_operativa con parametros correctos y mapea cierre', async () => {
+    const cerradoRow = {
+      ...baseRow,
+      cierre_operativo_estado: 'cerrado_operativamente',
+      cierre_operativo_fecha: '2026-05-05T12:00:00.000Z',
+      cierre_operativo_usuario_id: '00000000-0000-0000-0000-000000000001',
+      cierre_operativo_usuario_label: 'rrhh@empresa.cl',
+      cierre_operativo_observacion: 'Cierre E2E',
+      cierre_operativo_metadata: { periodo: '2026-05' },
+    };
+    const rpc = vi.fn().mockResolvedValue({ data: cerradoRow, error: null });
+
+    TestBed.configureTestingModule({
+      providers: [
+        NominaCalculoSnapshotRepository,
+        {
+          provide: SUPABASE_CLIENT,
+          useValue: {
+            from: vi.fn(),
+            rpc,
+            auth: { getUser: vi.fn() },
+          },
+        },
+      ],
+    });
+
+    const repo = TestBed.inject(NominaCalculoSnapshotRepository);
+    const snapshot = await repo.cerrarNominaOperativa({
+      idCalculoPeriodo: 1,
+      periodo: '2026-05',
+      observacion: 'Cierre E2E',
+      metadata: { totalTrabajadores: 1 },
+    });
+
+    expect(rpc).toHaveBeenCalledWith('cerrar_nomina_operativa', {
+      p_id_calculo_periodo: 1,
+      p_periodo: '2026-05',
+      p_observacion: 'Cierre E2E',
+      p_metadata: { totalTrabajadores: 1 },
+    });
+    expect(snapshot.cierreOperativo?.estado).toBe('cerrado_operativamente');
+    expect(snapshot.cierreOperativo?.usuarioLabel).toBe('rrhh@empresa.cl');
+  });
+
+  it('sanitiza error operativo si falla RPC de cierre', async () => {
+    const rpc = vi.fn().mockResolvedValue({ data: null, error: { message: 'detalle sql sensible' } });
+    TestBed.configureTestingModule({
+      providers: [
+        NominaCalculoSnapshotRepository,
+        {
+          provide: SUPABASE_CLIENT,
+          useValue: {
+            from: vi.fn(),
+            rpc,
+            auth: { getUser: vi.fn() },
+          },
+        },
+      ],
+    });
+
+    const repo = TestBed.inject(NominaCalculoSnapshotRepository);
+    await expect(repo.cerrarNominaOperativa({ idCalculoPeriodo: 1, periodo: '2026-05' })).rejects.toThrow(
+      'No se pudo cerrar operativamente la nomina. No se realizaron cambios parciales.',
+    );
   });
 
   it('persiste aprobacion por id_calculo_periodo activo y retorna la aprobacion guardada', async () => {

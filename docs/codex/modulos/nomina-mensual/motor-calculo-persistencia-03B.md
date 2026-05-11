@@ -1,5 +1,20 @@
 # MOTOR-03B - Persistencia controlada de snapshots preliminares
 
+## Evidencia NOM-CIERRE-DB-APPLY-01
+
+La aplicacion real/controlada del cierre operativo se ejecuto el 2026-05-10:
+
+- `15_nomina_calculo_snapshot.sql`: aplicado/idempotente, con columnas `cierre_operativo_*` presentes;
+- `21_nomina_cierre_operativo_rpc.sql`: aplicado, RPC `cerrar_nomina_operativa` creada/reemplazada;
+- validacion BD: constraint de estado presente, RPC `SECURITY INVOKER`, `authenticated=true`, `anon=false`;
+- E2E real authenticated con `E2E_NOMINA_CIERRE_REAL=1`: `npx playwright test tests/nomina-mensual.e2e.spec.ts --workers=1` OK, 1 passed / 1 skipped;
+- cierre real ejecutado y recuperado desde UI/E2E;
+- periodo observado: `2026-04`, snapshot activo `id_calculo_periodo=15`, aprobado operativamente y cerrado operativamente;
+- duplicados activos: 0;
+- `periodo_remuneracion.codigo=2026-04`: estado `cargado`, sin cambio provocado por la fase.
+
+Pendiente funcional posterior: disenar liquidaciones oficiales desde snapshot cerrado.
+
 ## Objetivo
 
 Permitir guardar, consultar y reemplazar snapshots preliminares del calculo de nomina mensual generado por MOTOR-01/MOTOR-02.
@@ -141,11 +156,11 @@ Evidencia consolidada:
 
 No se modifican SQL, RPC, RLS, formulas legales ni motor. La validacion no convierte el snapshot preliminar en liquidacion oficial ni cierre de periodo.
 
-## Diseno de cierre operativo NOM-CIERRE-DESIGN-01
+## Cierre operativo NOM-CIERRE-01
 
-NOM-CIERRE-DESIGN-01 define el cierre operativo v1 como una transicion futura sobre el snapshot activo aprobado.
+NOM-CIERRE-01 implementa el cierre operativo v1 como una transicion sobre el snapshot activo aprobado.
 
-Decision de persistencia para NOM-CIERRE-01:
+Decision de persistencia aplicada:
 
 - agregar columnas `cierre_operativo_*` en `nomina_calculo_periodo`;
 - no crear tabla historica nueva en v1;
@@ -155,7 +170,7 @@ Decision de persistencia para NOM-CIERRE-01:
 - cerrar mediante RPC atomica `cerrar_nomina_operativa`;
 - usar como nombre visible `Cerrar nomina del periodo`.
 
-Columnas propuestas:
+Columnas versionadas:
 
 ```sql
 cierre_operativo_estado text null,
@@ -166,7 +181,7 @@ cierre_operativo_observacion text null,
 cierre_operativo_metadata jsonb not null default '{}'::jsonb
 ```
 
-La RPC futura debe validar en BD que el `id_calculo_periodo` existe, el periodo coincide, el snapshot esta activo, no fue reemplazado, esta aprobado operativamente, no esta cerrado y la sesion es `authenticated`. Debe fallar si el snapshot no esta aprobado, ya esta cerrado, fue reemplazado, el periodo no coincide o no hay usuario authenticated.
+La RPC `cerrar_nomina_operativa` valida en BD que el `id_calculo_periodo` existe, el periodo coincide, el snapshot esta activo, no fue reemplazado, esta aprobado operativamente, no esta cerrado y la sesion es `authenticated`. Falla si el snapshot no esta aprobado, ya esta cerrado, fue reemplazado, el periodo no coincide o no hay usuario authenticated.
 
 El cierre operativo no convierte este snapshot en liquidacion oficial ni genera PDF, Previred, LRE, banco o contabilidad.
 
@@ -239,14 +254,14 @@ Casos cubiertos:
 
 - Mantener tipos Supabase sincronizados si se regenera contra el proyecto remoto.
 - Definir historico avanzado de aprobaciones/resultados si se requiere auditoria extendida.
-- Definir validaciones formales de cierre sobre el snapshot completo consultable desde BD.
-- Definir contrato de cierre/reapertura/rectificacion antes de emitir liquidaciones oficiales o salidas legales.
+- Aplicar NOM-CIERRE-01 en BD real/controlada y validar permisos de `cerrar_nomina_operativa`.
+- Definir contrato de reapertura/rectificacion antes de modificar un periodo cerrado.
 - Definir RLS real por roles.
 - Reemplazar confirmaciones nativas (`window.confirm`) por dialogos propios si la accion pasa a tener consecuencia formal.
 
 ## Siguiente fase recomendada
 
-NOM-CIERRE-01 - Implementar cierre operativo controlado.
+LIQ-DESIGN-01 - Diseno funcional y tecnico de liquidaciones oficiales.
 
 ## Cierre MOTOR-03C
 

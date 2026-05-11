@@ -1,6 +1,7 @@
 <div class="space-y-6">
   <div class="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
     <div>
+      <nav class="text-xs text-gray-500">Remuneraciones / Preparar nomina</nav>
       <h1 class="text-xl font-semibold text-gray-900">Preparar nomina</h1>
       <p class="mt-1 text-sm text-gray-600">
         Centro operativo del periodo: revisa trabajadores, parametros, asignaciones recurrentes y movimientos del mes
@@ -36,7 +37,7 @@
           <div class="space-y-1 text-sm text-gray-700">
             <p class="font-medium text-gray-900">Esta pantalla prepara la nomina del periodo.</p>
             <p>
-              No cierra el periodo, no emite liquidaciones oficiales y no genera Previred, banco ni LRE.
+              Prepara, calcula y deja trazable el resultado interno antes de la salida oficial del periodo.
             </p>
           </div>
         </div>
@@ -1261,7 +1262,115 @@
     </app-card-content>
   </app-card>
 
+  <app-card>
+    <app-card-content className="p-4">
+      @if (cierreOperativo(); as cierre) {
+        <div class="flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <div class="flex flex-wrap items-center gap-2">
+              <h2 class="text-sm font-semibold text-gray-900">Cierre operativo</h2>
+              <app-badge [variant]="nominaEstaCerradaOperativamente() ? 'success' : cierre.puedeCerrar ? 'warning' : 'default'" size="sm">
+                {{ cierre.estadoLabel }}
+              </app-badge>
+            </div>
+            <p class="mt-1 text-sm text-gray-700">{{ cierre.descripcion }}</p>
+          </div>
+          <app-button variant="primary" size="sm" [disabled]="!cierre.puedeCerrar" (click)="cerrarNominaOperativa()">
+            {{ cerrandoNomina() ? 'Cerrando...' : 'Cerrar nomina del periodo' }}
+          </app-button>
+        </div>
+
+        <div class="mt-4 rounded-md border border-blue-100 bg-blue-50 px-3 py-2 text-sm text-blue-900">
+          El cierre operativo congela este resultado para continuar con etapas posteriores. No emite liquidaciones ni genera archivos legales.
+        </div>
+
+        @if (cierre.razonNoPuedeCerrar && !nominaEstaCerradaOperativamente()) {
+          <p class="mt-2 text-sm text-gray-600">No puedes cerrar todavia. {{ cierre.razonNoPuedeCerrar }}</p>
+        }
+        @if (errorCierreOperativo()) {
+          <p class="mt-2 rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800">
+            {{ errorCierreOperativo() }}
+          </p>
+        }
+
+        @if (nominaEstaCerradaOperativamente()) {
+          <section class="mt-4 rounded-md border border-emerald-100 bg-emerald-50 p-3">
+            <h3 class="text-xs font-semibold uppercase text-emerald-800">Nomina cerrada operativamente</h3>
+            <p class="mt-1 text-sm text-gray-700">
+              La nomina del periodo esta cerrada operativamente. Para modificarla se requerira una fase futura de reapertura.
+            </p>
+            <dl class="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-4 text-sm">
+              <div>
+                <dt class="text-gray-500">Fecha de cierre</dt>
+                <dd class="font-semibold text-gray-900">{{ cierre.fechaCierreLabel }}</dd>
+              </div>
+              <div>
+                <dt class="text-gray-500">Usuario</dt>
+                <dd class="font-semibold text-gray-900">{{ cierre.usuarioLabel }}</dd>
+              </div>
+              @if (cierre.observacionLabel) {
+                <div class="sm:col-span-2">
+                  <dt class="text-gray-500">Observacion</dt>
+                  <dd class="font-semibold text-gray-900">{{ cierre.observacionLabel }}</dd>
+                </div>
+              }
+            </dl>
+          </section>
+        }
+
+        @if (cierre.resumen; as resumen) {
+          <dl class="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4 text-sm">
+            <div>
+              <dt class="text-gray-500">Periodo</dt>
+              <dd class="font-semibold text-gray-900">{{ resumen.periodo }}</dd>
+            </div>
+            <div>
+              <dt class="text-gray-500">Version del calculo</dt>
+              <dd class="font-semibold text-gray-900">{{ resumen.versionCalculoLabel }}</dd>
+            </div>
+            <div>
+              <dt class="text-gray-500">Trabajadores calculados</dt>
+              <dd class="font-semibold text-gray-900">{{ resumen.trabajadoresCalculados }}</dd>
+            </div>
+            <div>
+              <dt class="text-gray-500">Liquido preliminar</dt>
+              <dd class="font-semibold text-gray-900">{{ resumen.totalLiquidoLabel }}</dd>
+            </div>
+            <div>
+              <dt class="text-gray-500">Haberes</dt>
+              <dd class="font-semibold text-gray-900">{{ resumen.totalHaberesLabel }}</dd>
+            </div>
+            <div>
+              <dt class="text-gray-500">Descuentos</dt>
+              <dd class="font-semibold text-gray-900">{{ resumen.totalDescuentosLabel }}</dd>
+            </div>
+            <div class="sm:col-span-2">
+              <dt class="text-gray-500">Identificador tecnico</dt>
+              <dd class="font-semibold text-gray-900">{{ resumen.identificadorTecnicoLabel }}</dd>
+            </div>
+          </dl>
+          <p class="mt-3 text-sm text-gray-700">{{ resumen.advertenciasLabel }}</p>
+        } @else {
+          <p class="mt-3 text-sm text-gray-600">Cierre no disponible. Primero debe existir un resultado guardado aprobado operativamente.</p>
+        }
+
+        @if (nominaEstaCerradaOperativamente()) {
+          <div class="mt-3 flex flex-wrap items-center gap-2">
+            <app-button variant="outline" size="sm" routerLink="/remuneraciones/liquidaciones-oficiales">
+              Ver liquidaciones oficiales
+            </app-button>
+            <p class="text-xs text-gray-500">Se habilitan despues del cierre operativo y no ejecutan salidas legales ni archivos externos.</p>
+          </div>
+        } @else {
+          <p class="mt-3 text-xs text-gray-500">
+            Liquidaciones oficiales se habilitaran despues del cierre operativo. No ejecuta salidas legales ni archivos externos.
+          </p>
+        }
+      }
+    </app-card-content>
+  </app-card>
+
   <div class="rounded-md border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-gray-700">
-    Salidas legales y cierre quedan fuera de esta fase. Se habilitaran cuando existan liquidaciones oficiales.
+    Salidas legales y archivos externos quedan fuera de esta fase. El foco es preparar, aprobar y cerrar operativamente la nomina del periodo.
   </div>
 </div>

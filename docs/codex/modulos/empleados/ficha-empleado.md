@@ -4,7 +4,7 @@ Documento único del **flujo de pantalla** (tabs, bloques, guardado) y del **com
 
 ---
 
-# Parte A - Flujo UX y pestañas
+# Parte A — Flujo UX y pestañas
 
 ## Objetivo
 
@@ -28,7 +28,7 @@ Describir el flujo **real** de la pantalla **`/empleados/:id`** (`FichaEmpleadoC
 4. Cuerpo (file-body): tabs + bloques + panel lateral (file-status-panel)
 ```
 
-## 3. Pestañas - orden, persistencia y bloques
+## 3. Pestañas — orden, persistencia y bloques
 
 Orden en código (`tabs` en `ficha-empleado-container.ts`). **`saveTarget`**: valor enviado a `guardarSeccionFicha` (null = sin persistencia en ese tab).
 
@@ -46,13 +46,13 @@ Al guardar se validan los controles del **`editingBlock`**; el `saveTarget` es e
 
 ## 4. Flujo por pestaña
 
-1. **General** - Identificación, nombre, contacto, domicilio. Editar → Guardar / Cancelar.
-2. **Laboral** - Relación laboral, contrato, centro de costo, cargo.
-3. **Remuneración** - Jornada, sueldo, gratificación, cargas, zona extrema, semana corrida. Enlace a haberes si `aptoParaRemuneraciones`.
-4. **Previsión y salud** - AFP / IPS / Ninguna; APVI condicional.
-5. **Pago** - Banco, tipo cuenta, número.
-6. **Documentos** - Solo lectura.
-7. **Historial** - Tabla; sin edición inline.
+1. **General** — Identificación, nombre, contacto, domicilio. Editar → Guardar / Cancelar.
+2. **Laboral** — Relación laboral, contrato, centro de costo, cargo.
+3. **Remuneración** — Jornada, sueldo, gratificación, cargas, zona extrema, semana corrida. Enlace a haberes si `aptoParaRemuneraciones`.
+4. **Previsión y salud** — AFP / IPS / Ninguna; APVI condicional.
+5. **Pago** — Banco, tipo cuenta, número.
+6. **Documentos** — Solo lectura.
+7. **Historial** — Tabla; sin edición inline.
 
 ## 5. Acciones globales
 
@@ -64,7 +64,7 @@ Al guardar se validan los controles del **`editingBlock`**; el `saveTarget` es e
 
 ## 6. Referencia de código
 
-`ficha-empleado-container.ts` / `.html` - `tabs`, `detailItems()`, `detailBlocks()`, `saveTargetForTab()`, `saveSection()`, `editComponentForBlock()`.
+`ficha-empleado-container.ts` / `.html` — `tabs`, `detailItems()`, `detailBlocks()`, `saveTargetForTab()`, `saveSection()`, `editComponentForBlock()`.
 
 Formularios: [`../../ui-form-guidelines.md`](../../ui-form-guidelines.md).
 
@@ -72,7 +72,7 @@ Alta básica y llegada a ficha: [`creacion-basica.md`](./creacion-basica.md).
 
 ---
 
-# Parte B - Carga técnica y tests de imagen
+# Parte B — Carga técnica y tests de imagen
 
 ## B.1 Ruta y componente
 
@@ -90,7 +90,7 @@ Carga paralela: `EmpleadosCatalogosService.obtenerFormulario()` + `EmpleadosServ
 
 ## B.3 Playwright
 
-- Config: `playwright.config.ts` (`snapshotDir: tests/__snapshots__`, viewport 1440�-900).
+- Config: `playwright.config.ts` (`snapshotDir: tests/__snapshots__`, viewport 1440×900).
 - Snapshots rutas: `tests/dashboard.spec.ts`; wizard nueva ficha; `tests/empleados-basic-create.spec.ts` (modo básico).
 - **No** hay aún spec estable de capturas de `/empleados/:id` por dependencia de datos; ver criterios en tests-empleados.
 
@@ -107,7 +107,3 @@ npx playwright test tests/dashboard.spec.ts --update-snapshots
 | Config Playwright | `playwright.config.ts` |
 
 Cambios visuales: [`../../peticiones-estilos.md`](../../peticiones-estilos.md).
-
-## Regla EMP-ADV-FICHA-01 para prevision
-
-`Sin prevision` no equivale a trabajador apto para nomina. La ficha puede conservar ese valor mientras esta incompleta o en proceso, pero la accion **Validar para remuneraciones** debe quedar bloqueada hasta seleccionar AFP o IPS y completar salud. El bloqueo se muestra como pendiente de **Prevision y salud** y no debe persistir `estado_ficha = VALIDO` ni `apto_para_remuneraciones = true`.

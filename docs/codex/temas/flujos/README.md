@@ -11,7 +11,7 @@ Convención de organización: [`../organizacion-por-modulo-y-flujos.md`](../orga
 | Shell / inicio | `/` | [`dashboard.md`](./dashboard.md) |
 | Empleados | `/empleados`, `/empleados/nuevo`, `/empleados/:id` | [`empleados.md`](./empleados.md) |
 | Parámetros | `/parametros` | [`parametros.md`](./parametros.md) |
-| Remuneraciones - conceptos | `/remuneraciones`, `/remuneraciones/conceptos` | [`remuneraciones-conceptos.md`](./remuneraciones-conceptos.md) |
+| Remuneraciones — conceptos | `/remuneraciones`, `/remuneraciones/conceptos` | [`remuneraciones-conceptos.md`](./remuneraciones-conceptos.md) |
 | Haberes y descuentos | `/remuneraciones/haberes-descuentos` (redirect desde `/haberes-descuentos`) | [`haberes-descuentos.md`](./haberes-descuentos.md) |
 | Proceso mensual | `/remuneraciones/proceso-mensual` (redirect desde `/proceso-remuneraciones`) | [`proceso-remuneraciones.md`](./proceso-remuneraciones.md) |
 | Liquidaciones | `/remuneraciones/liquidaciones`, `/remuneraciones/liquidaciones/:id` (redirects desde `/liquidaciones`) | [`liquidaciones.md`](./liquidaciones.md) |

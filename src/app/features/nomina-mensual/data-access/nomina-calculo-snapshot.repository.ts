@@ -5,11 +5,13 @@ import { injectSupabase } from '../../../core/services/supabase.service';
 import type {
   AprobacionOperativaPersistida,
   AprobarResultadoPreliminarOperativamenteParams,
+  CerrarNominaOperativamenteParams,
   NominaCalculoConceptoSnapshot,
   NominaCalculoIssueSnapshot,
   NominaCalculoPeriodoSnapshot,
   NominaCalculoSnapshotEstado,
   NominaCalculoSnapshotOrigen,
+  NominaCierreOperativo,
   NominaSnapshotCompletoView,
   NominaCalculoTrabajadorSnapshot,
   NominaCalculoTrazabilidadSnapshot,
@@ -161,6 +163,7 @@ export class NominaCalculoSnapshotRepository {
       observaciones,
       trazabilidad,
       aprobacionOperativa: cabecera.aprobacionOperativa,
+      cierreOperativo: cabecera.cierreOperativo,
       resumen: {
         totalConceptos: conceptos.length,
         totalObservaciones: observaciones.length,
@@ -207,6 +210,22 @@ export class NominaCalculoSnapshotRepository {
       .single();
     if (error) throw new Error(`No se pudo registrar la aprobacion operativa: ${error.message}`);
     return mapPeriodoRow(data);
+  }
+
+  async cerrarNominaOperativa(params: CerrarNominaOperativamenteParams & {
+    metadata?: Record<string, unknown>;
+  }): Promise<NominaCalculoPeriodoSnapshot> {
+    const { data, error } = await this.supabase.rpc('cerrar_nomina_operativa', {
+      p_id_calculo_periodo: params.idCalculoPeriodo,
+      p_periodo: params.periodo,
+      p_observacion: params.observacion ?? undefined,
+      p_metadata: (params.metadata ?? {}) as Json,
+    });
+    if (error || !data) {
+      logCerrarNominaOperativaRpcError(params, error);
+      throw new Error('No se pudo cerrar operativamente la nomina. No se realizaron cambios parciales.');
+    }
+    return mapPeriodoRow(data as NominaCalculoPeriodoRow);
   }
 
   private async insertarCabecera(snapshot: NominaCalculoPeriodoSnapshot): Promise<NominaCalculoPeriodoSnapshot> {
@@ -412,6 +431,20 @@ function logGuardarSnapshotRpcError(
   });
 }
 
+function logCerrarNominaOperativaRpcError(
+  params: CerrarNominaOperativamenteParams,
+  error: unknown,
+): void {
+  if (!isDevMode()) return;
+
+  console.error('[nomina-cierre] Error cerrando nomina operativa', {
+    rpc: 'cerrar_nomina_operativa',
+    periodo: params.periodo,
+    idCalculoPeriodo: params.idCalculoPeriodo,
+    error: sanitizeSupabaseError(error),
+  });
+}
+
 function sanitizeSupabaseError(error: unknown): unknown {
   if (!error || typeof error !== 'object') return error;
 
@@ -593,9 +626,25 @@ function mapPeriodoRow(row: NominaCalculoPeriodoRow): NominaCalculoPeriodoSnapsh
     activo: row.activo === true,
     reemplazadoPor: row.reemplazado_por ?? null,
     aprobacionOperativa: mapAprobacionOperativa(row),
+    cierreOperativo: mapCierreOperativo(row),
     trabajadores: [],
     issues: [],
     trazabilidad: [],
+  };
+}
+
+function mapCierreOperativo(row: NominaCalculoPeriodoRow): NominaCierreOperativo | null {
+  if (row.cierre_operativo_estado !== 'cerrado_operativamente' || !row.cierre_operativo_fecha) {
+    return null;
+  }
+
+  return {
+    estado: 'cerrado_operativamente',
+    fecha: row.cierre_operativo_fecha,
+    usuarioId: row.cierre_operativo_usuario_id ?? null,
+    usuarioLabel: row.cierre_operativo_usuario_label || 'Usuario no disponible en esta sesion',
+    observacion: row.cierre_operativo_observacion ?? null,
+    metadata: parseRecord(row.cierre_operativo_metadata),
   };
 }
 

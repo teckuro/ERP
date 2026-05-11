@@ -1,4 +1,4 @@
-# Flujo - Remuneraciones (outlet dominio)
+# Flujo — Remuneraciones (outlet dominio)
 
 ## Rutas
 

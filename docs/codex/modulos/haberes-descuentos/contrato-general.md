@@ -1,9 +1,5 @@
 # Haberes y descuentos - contrato general
 
-> Nombre visible en UI: `Asignaciones recurrentes`.
-> Nombre tecnico/documental: `Haberes y descuentos`.
-> Tabla principal: `haberdescuento_persona`.
-
 ## Que si cubre
 
 - Asignaciones recurrentes por trabajador alineadas al periodo de remuneracion.
@@ -12,7 +8,7 @@
 ## Que no cubre
 
 - No son liquidaciones ni resultado de calculo mensual cerrado.
-- No son movimientos puntuales del periodo (bonos puntuales del mes, comision del periodo, HE del periodo, etc.); ese dominio se muestra en UI como **Movimientos del mes** y se documenta tecnicamente como **Novedades mensuales** sobre `novedad_remuneracion_periodo`. Movimientos variables queda como legacy/transicion.
+- No son **movimientos variables mensuales** (bonos puntuales del mes, comision del periodo, HE del periodo, etc.); ese dominio tiene contrato en [`../movimientos-variables/contrato-general.md`](../movimientos-variables/contrato-general.md) (Fase 9.4A), persistencia en [`../movimientos-variables/persistencia-9-4C.md`](../movimientos-variables/persistencia-9-4C.md) y carga puntual en UI [`../movimientos-variables/ui-9-4E.md`](../movimientos-variables/ui-9-4E.md) (ruta `/remuneraciones/movimientos-variables`).
 - No sustituye el catalogo de Conceptos; las asignaciones deben referenciar conceptos gobernados.
 
 ## Navegacion oficial
@@ -31,7 +27,7 @@ Ruta antigua de compatibilidad temporal (redirect):
 /haberes-descuentos -> /remuneraciones/haberes-descuentos
 ```
 
-Asignaciones recurrentes administra conceptos repetitivos o con vigencia por trabajador. No es catalogo maestro, no es movimiento del mes y no calcula liquidaciones.
+Haberes y descuentos administra asignaciones recurrentes por trabajador. No es catalogo maestro, no es movimiento variable y no calcula liquidaciones.
 
 ## Dependencia
 
@@ -173,15 +169,3 @@ Esta fase no implementa auditoria avanzada, movimientos variables, proceso mensu
 ## Integracion Proceso mensual (Fase 9.5B)
 
 El modulo expone listado global de asignaciones con concepto (`HaberesDescuentosRepository.listarTodasAsignacionesConConcepto`) y el metodo `HaberesDescuentosService.listarAsignacionesParaPrevalidacionMensual(periodo)`, que reutiliza `vigenciaIntersecaMes` y `clasificarVigenciaAsignacion` para alimentar prevalidaciones de **Nomina mensual** sin calcular liquidaciones. Contrato del consumidor: [`../nomina-mensual/prevalidaciones-9-5B.md`](../nomina-mensual/prevalidaciones-9-5B.md).
-
-<!-- ARQ-ERP-01-INTEGRACION -->
-
-## Nota canonica 2026-05-07
-
-Donde este contrato hable de Movimientos variables, entender que el nombre funcional oficial futuro es **Novedades mensuales**.
-
-Regla:
-
-- Si se repite o queda pactado, vive en Haberes y descuentos recurrentes (`haberdescuento_persona`).
-- Si ocurre solo en el periodo, vive en Novedades mensuales (`novedad_remuneracion_periodo`).
-- No duplicar el mismo pago/descuento en recurrentes y novedades sin regla de negocio explicita.

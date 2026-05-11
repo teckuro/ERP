@@ -1,9 +1,9 @@
-# Flujo - Haberes y descuentos
+# Flujo — Haberes y descuentos
 
 ## Ruta
 
-- **Oficial:** **`/remuneraciones/haberes-descuentos`** - `HaberesDescuentosPage` (`src/app/pages/haberes-descuentos.page.ts`), hija de `RemuneracionesOutletComponent`.
-- **Compatibilidad temporal:** **`/haberes-descuentos`** - `redirectTo` -> `/remuneraciones/haberes-descuentos` (`pathMatch: 'full'` en `src/app/app.routes.ts`).
+- **Oficial:** **`/remuneraciones/haberes-descuentos`** — `HaberesDescuentosPage` (`src/app/pages/haberes-descuentos.page.ts`), hija de `RemuneracionesOutletComponent`.
+- **Compatibilidad temporal:** **`/haberes-descuentos`** — `redirectTo` -> `/remuneraciones/haberes-descuentos` (`pathMatch: 'full'` en `src/app/app.routes.ts`).
 
 ## Objetivo del usuario
 
@@ -19,7 +19,7 @@ Gestionar **asignaciones recurrentes** (u otras operaciones que exponga la pági
 
 | Tipo | Enlace |
 |------|--------|
-| Contrato funcional del módulo | **Pendiente** - `temas/haberes-descuentos-*.md` cuando se documente negocio y períodos. |
+| Contrato funcional del módulo | **Pendiente** — `temas/haberes-descuentos-*.md` cuando se documente negocio y períodos. |
 | DataGrid / tablas | [`../../ui-tables.md`](../../ui-tables.md) |
 | Contexto producto (haberes vs conceptos) | [`../../orquestador/contexto-proyecto.md`](../../orquestador/contexto-proyecto.md) § Haberes |
 

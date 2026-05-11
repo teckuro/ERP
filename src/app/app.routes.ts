@@ -82,6 +82,10 @@ export const routes: Routes = [
               import('./pages/proceso-remuneraciones.page').then((m) => m.ProcesoRemuneracionesPage),
           },
           {
+            path: 'liquidaciones-oficiales',
+            loadComponent: () => import('./pages/liquidaciones.page').then((m) => m.LiquidacionesPage),
+          },
+          {
             path: 'liquidaciones',
             loadComponent: () => import('./pages/liquidaciones.page').then((m) => m.LiquidacionesPage),
           },

@@ -8,7 +8,6 @@ La ficha **completa** según el helper **no** pasa sola a apta. El usuario debe 
 
 - `paso_alta_avanzada === null`
 - Helper sin bloqueos (`bloqueos.length === 0`) y sin `defaultsTecnicosDetectados`
-- `tipoPrevision` distinto de `NINGUNA`; AFP o IPS deben tener salud completa segun el helper central
 - Sin secciones pendientes bloqueantes
 - Aún no validada (`estado_ficha` / `apto_para_remuneraciones` según reglas del contrato)
 - Estado operativo **en proceso** o **activo** (no borrador operativo, no `estado_ficha` BORRADOR, etc.)
@@ -22,7 +21,7 @@ Diálogo breve (título con «¿…?», cuerpo con tildes). Botones **Cancelar**
 1. Comprobar estado operativo en servidor; si no aplica, error sin persistir.
 2. Reejecutar `evaluarCompletitudYAptitudEmpleado` con `paso_alta_avanzada` desde BD.
 3. Si hay bloqueos: no actualizar; mostrar hasta cinco pendientes y conteo «y X pendientes más».
-4. Si no hay bloqueos: actualizar **solo** `persona` - `estado_ficha = VALIDO`, `apto_para_remuneraciones = true`, `estado = ACTIVO` si venía en proceso, `fecha_activacion` si estaba vacía, `paso_alta_avanzada = null`.
+4. Si no hay bloqueos: actualizar **solo** `persona` — `estado_ficha = VALIDO`, `apto_para_remuneraciones = true`, `estado = ACTIVO` si venía en proceso, `fecha_activacion` si estaba vacía, `paso_alta_avanzada = null`.
 
 **No** actualiza: contrato, remuneración detallada, previsión, banco, APVI ni otros datos de ficha. No completa datos faltantes. No duplica persona.
 

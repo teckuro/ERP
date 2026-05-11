@@ -174,6 +174,7 @@ function snapshotGuardado(overrides: Record<string, unknown> = {}) {
     activo: true,
     reemplazadoPor: null,
     aprobacionOperativa: null,
+    cierreOperativo: null,
     trabajadores: [],
     issues: [],
     trazabilidad: [],
@@ -272,6 +273,7 @@ describe('ProcesoMensualContainer', () => {
   const guardarSnapshotPreliminar = vi.fn();
   const reemplazarSnapshotPreliminar = vi.fn();
   const aprobarResultadoPreliminarOperativamente = vi.fn();
+  const cerrarNominaOperativamente = vi.fn();
   const obtenerResultadoCalculoPeriodo = vi.fn();
   const obtenerSnapshotActivo = vi.fn();
   const obtenerSnapshotCompletoActivo = vi.fn();
@@ -285,6 +287,7 @@ describe('ProcesoMensualContainer', () => {
     guardarSnapshotPreliminar.mockReset();
     reemplazarSnapshotPreliminar.mockReset();
     aprobarResultadoPreliminarOperativamente.mockReset();
+    cerrarNominaOperativamente.mockReset();
     obtenerResultadoCalculoPeriodo.mockReset();
     obtenerSnapshotActivo.mockReset();
     obtenerSnapshotCompletoActivo.mockReset();
@@ -442,6 +445,28 @@ describe('ProcesoMensualContainer', () => {
         metadata: { idCalculoPeriodo: 1, periodo: '2026-05' },
       },
     });
+    cerrarNominaOperativamente.mockImplementation(({ idCalculoPeriodo, periodo }) => Promise.resolve({
+      ...snapshotGuardado({
+        idCalculoPeriodo,
+        periodo,
+        aprobacionOperativa: {
+          estado: 'aprobado_operativamente',
+          fecha: '2026-05-05T11:00:00.000Z',
+          usuarioId: null,
+          usuarioLabel: 'Usuario no disponible en esta sesion',
+          advertencias: [],
+          metadata: { idCalculoPeriodo, periodo },
+        },
+        cierreOperativo: {
+          estado: 'cerrado_operativamente',
+          fecha: '2026-05-05T12:00:00.000Z',
+          usuarioId: null,
+          usuarioLabel: 'Usuario no disponible en esta sesion',
+          observacion: null,
+          metadata: { idCalculoPeriodo, periodo },
+        },
+      }),
+    }));
     obtenerSnapshotActivo.mockResolvedValue(null);
     obtenerSnapshotCompletoActivo.mockResolvedValue(null);
     obtenerSnapshotCompletoPorId.mockResolvedValue(null);
@@ -460,6 +485,7 @@ describe('ProcesoMensualContainer', () => {
             guardarSnapshotPreliminar,
             reemplazarSnapshotPreliminar,
             aprobarResultadoPreliminarOperativamente,
+            cerrarNominaOperativamente,
             obtenerResultadoCalculoPeriodo,
             obtenerSnapshotActivo,
             obtenerSnapshotCompletoActivo,
@@ -509,6 +535,17 @@ describe('ProcesoMensualContainer', () => {
     expect(text).toContain('Este detalle corresponde al resultado preliminar guardado en base de datos.');
     expect(text).toContain('No hay resultado preliminar guardado para consultar.');
     expect(text).toContain('Actualizar consulta');
+  });
+
+  it('muestra Cierre operativo deshabilitado sin aprobacion', () => {
+    const text = fixture.nativeElement.textContent as string;
+    const cerrar = ([...fixture.nativeElement.querySelectorAll('button')] as HTMLButtonElement[])
+      .find((b) => (b.textContent ?? '').includes('Cerrar nomina del periodo'));
+    expect(text).toContain('Cierre operativo');
+    expect(text).toContain('Cierre no disponible');
+    expect(text).toContain('No puedes cerrar todavia. Primero debe existir un resultado preliminar guardado vigente.');
+    expect(text).toContain('No emite liquidaciones ni genera archivos legales.');
+    expect(cerrar?.disabled).toBe(true);
   });
 
   it('muestra selector de periodo (input month)', () => {
@@ -1029,7 +1066,7 @@ describe('ProcesoMensualContainer', () => {
     expect(text).toContain('Resultado preliminar guardado');
     expect(text).toContain('Revisa y aprueba operativamente este nuevo resultado si corresponde');
     expect(text).toContain('No emite liquidaciones');
-    expect(text).toContain('No cierra el periodo');
+    expect(text).toContain('Prepara, calcula y deja trazable el resultado interno antes de la salida oficial del periodo.');
     expect(text).toContain('Fecha de guardado');
     expect(text).toContain('Version guardada');
     expect(text).toContain('Identificador tecnico');
@@ -1037,7 +1074,7 @@ describe('ProcesoMensualContainer', () => {
     expect(text).toContain('Revision para aprobacion');
     expect(text).toContain('Listo para aprobar');
     expect(text).toContain('La version guardada coincide con el ultimo resultado disponible.');
-    expect(text).toContain('Liquidaciones oficiales, cierre, Previred, LRE y bancos no se ejecutan en esta revision.');
+    expect(text).toContain('Salidas legales y archivos externos quedan fuera de esta fase.');
     const aprobar = ([...fixture.nativeElement.querySelectorAll('button')] as HTMLButtonElement[])
       .find((b) => (b.textContent ?? '').includes('Aprobar resultado preliminar'));
     expect(aprobar?.disabled).toBe(false);
@@ -1271,6 +1308,41 @@ describe('ProcesoMensualContainer', () => {
     expect(text).toContain('rrhh@empresa.cl');
     expect(text).toContain('Advertencia registrada al aprobar.');
     expect(aprobar?.disabled).toBe(true);
+  });
+
+  it('cierra nomina aprobada, muestra estado cerrado y bloquea acciones', async () => {
+    obtenerSnapshotActivo.mockResolvedValueOnce(snapshotGuardado({
+      aprobacionOperativa: {
+        estado: 'aprobado_operativamente',
+        fecha: '2026-05-05T11:00:00.000Z',
+        usuarioId: null,
+        usuarioLabel: 'rrhh@empresa.cl',
+        advertencias: [],
+        metadata: { idCalculoPeriodo: 1, periodo: '2026-05' },
+      },
+    }));
+
+    const localFixture = TestBed.createComponent(ProcesoMensualContainer);
+    localFixture.detectChanges();
+    await localFixture.whenStable();
+    localFixture.detectChanges();
+
+    let buttons = [...localFixture.nativeElement.querySelectorAll('button')] as HTMLButtonElement[];
+    const cerrar = buttons.find((b) => (b.textContent ?? '').includes('Cerrar nomina del periodo'));
+    expect(cerrar?.disabled).toBe(false);
+    cerrar!.click();
+    await localFixture.whenStable();
+    localFixture.detectChanges();
+
+    expect(window.confirm).toHaveBeenLastCalledWith(expect.stringContaining('Vas a cerrar operativamente la nomina de 2026-05.'));
+    expect(cerrarNominaOperativamente).toHaveBeenCalledWith({ idCalculoPeriodo: 1, periodo: '2026-05' });
+    const text = localFixture.nativeElement.textContent as string;
+    expect(text).toContain('Nomina cerrada operativamente');
+    expect(text).toContain('Para modificarla se requerira una fase futura de reapertura.');
+    buttons = [...localFixture.nativeElement.querySelectorAll('button')] as HTMLButtonElement[];
+    expect(buttons.find((b) => (b.textContent ?? '').includes('Calcular preliminar'))?.disabled).toBe(true);
+    expect(buttons.find((b) => (b.textContent ?? '').includes('Guardar resultado preliminar'))?.disabled).toBe(true);
+    expect(buttons.find((b) => (b.textContent ?? '').includes('Aprobar resultado preliminar'))?.disabled).toBe(true);
   });
 
   it('muestra resumen, trabajadores, conceptos y trazabilidad del snapshot completo desde BD', async () => {

@@ -65,6 +65,7 @@ export function mapResultadoMotorToSnapshotPayload(args: {
     activo: true,
     reemplazadoPor: null,
     aprobacionOperativa: null,
+    cierreOperativo: null,
     trabajadores,
     issues: resultado.issues.map(mapIssue),
     trazabilidad: resultado.liquidaciones.flatMap((l) => l.trazabilidad.map(mapTrazabilidad)),

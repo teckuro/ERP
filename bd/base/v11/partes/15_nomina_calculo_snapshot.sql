@@ -27,6 +27,12 @@ CREATE TABLE IF NOT EXISTS nomina_calculo_periodo (
     aprobacion_operativa_usuario_label TEXT NULL,
     aprobacion_operativa_advertencias JSONB NOT NULL DEFAULT '[]'::JSONB,
     aprobacion_operativa_metadata JSONB NOT NULL DEFAULT '{}'::JSONB,
+    cierre_operativo_estado TEXT NULL,
+    cierre_operativo_fecha TIMESTAMPTZ NULL,
+    cierre_operativo_usuario_id UUID NULL,
+    cierre_operativo_usuario_label TEXT NULL,
+    cierre_operativo_observacion TEXT NULL,
+    cierre_operativo_metadata JSONB NOT NULL DEFAULT '{}'::JSONB,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     CONSTRAINT chk_nomina_calc_periodo_fmt CHECK (periodo ~ '^[0-9]{4}-(0[1-9]|1[0-2])$'),
@@ -52,6 +58,10 @@ CREATE TABLE IF NOT EXISTS nomina_calculo_periodo (
         aprobacion_operativa_estado IS NULL
         OR aprobacion_operativa_estado IN ('aprobado_operativamente')
     ),
+    CONSTRAINT nomina_calculo_periodo_cierre_operativo_estado_chk CHECK (
+        cierre_operativo_estado IS NULL
+        OR cierre_operativo_estado IN ('cerrado_operativamente')
+    ),
     CONSTRAINT chk_nomina_calc_periodo_origen CHECK (origen IN ('preliminar', 'manual', 'recalculo'))
 );
 
@@ -61,7 +71,13 @@ ALTER TABLE nomina_calculo_periodo
     ADD COLUMN IF NOT EXISTS aprobacion_operativa_usuario_id UUID NULL,
     ADD COLUMN IF NOT EXISTS aprobacion_operativa_usuario_label TEXT NULL,
     ADD COLUMN IF NOT EXISTS aprobacion_operativa_advertencias JSONB NOT NULL DEFAULT '[]'::JSONB,
-    ADD COLUMN IF NOT EXISTS aprobacion_operativa_metadata JSONB NOT NULL DEFAULT '{}'::JSONB;
+    ADD COLUMN IF NOT EXISTS aprobacion_operativa_metadata JSONB NOT NULL DEFAULT '{}'::JSONB,
+    ADD COLUMN IF NOT EXISTS cierre_operativo_estado TEXT NULL,
+    ADD COLUMN IF NOT EXISTS cierre_operativo_fecha TIMESTAMPTZ NULL,
+    ADD COLUMN IF NOT EXISTS cierre_operativo_usuario_id UUID NULL,
+    ADD COLUMN IF NOT EXISTS cierre_operativo_usuario_label TEXT NULL,
+    ADD COLUMN IF NOT EXISTS cierre_operativo_observacion TEXT NULL,
+    ADD COLUMN IF NOT EXISTS cierre_operativo_metadata JSONB NOT NULL DEFAULT '{}'::JSONB;
 
 DO $$
 BEGIN
@@ -74,6 +90,21 @@ BEGIN
             ADD CONSTRAINT chk_nomina_calc_periodo_aprobacion_operativa CHECK (
                 aprobacion_operativa_estado IS NULL
                 OR aprobacion_operativa_estado IN ('aprobado_operativamente')
+            );
+    END IF;
+END $$;
+
+DO $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1
+        FROM pg_constraint
+        WHERE conname = 'nomina_calculo_periodo_cierre_operativo_estado_chk'
+    ) THEN
+        ALTER TABLE nomina_calculo_periodo
+            ADD CONSTRAINT nomina_calculo_periodo_cierre_operativo_estado_chk CHECK (
+                cierre_operativo_estado IS NULL
+                OR cierre_operativo_estado IN ('cerrado_operativamente')
             );
     END IF;
 END $$;

@@ -8,10 +8,10 @@ Fijar **cómo debe sentirse y comportarse** la aplicación para el usuario opera
 
 Cada pantalla debe ayudar a responder, **en este orden**:
 
-1. **Estado** - en qué situación está el contexto o el registro.
-2. **Qué falta** - pocos pendientes claros (no listas interminables).
-3. **Acción siguiente** - un CTA coherente con el estado.
-4. **Detalle bajo demanda** - pestañas, paneles o enlaces; no exponer todo a la vez.
+1. **Estado** — en qué situación está el contexto o el registro.
+2. **Qué falta** — pocos pendientes claros (no listas interminables).
+3. **Acción siguiente** — un CTA coherente con el estado.
+4. **Detalle bajo demanda** — pestañas, paneles o enlaces; no exponer todo a la vez.
 
 ## 3. Qué evitar en UI operativa
 
@@ -70,25 +70,3 @@ SEG-01 -> CONC-02 -> Haberes recurrentes -> Movimientos variables -> Proceso men
 - **Haberes recurrentes:** asignaciones por trabajador con vigencia en el tiempo.
 - **Movimientos variables:** lineas puntuales por trabajador, concepto y periodo `YYYY-MM` (contrato: [`../modulos/movimientos-variables/README.md`](../modulos/movimientos-variables/README.md); **9.4B** modelo TS/reglas; **9.4C** tabla + repository; **9.4D** `MovimientosVariablesService`; **9.4E** pantalla `/remuneraciones/movimientos-variables` para listado y carga manual; **CHILE-FIX-01** validacion servidor catalogo + aptitud/contrato: [`../modulos/movimientos-variables/hardening-chile-fix-01.md`](../modulos/movimientos-variables/hardening-chile-fix-01.md)).
 - **Proceso mensual / MOTOR-00 / Motor / Liquidaciones / Previred:** etapas posteriores segun [`roadmap-operativo.md`](./roadmap-operativo.md), [`dependencias-fases.md`](./dependencias-fases.md) y [`estado-fases.md`](./estado-fases.md).
-
-<!-- ARQ-ERP-01-INTEGRACION -->
-
-## Decision operativa integrada 2026-05-07
-
-El flujo operativo canonico queda:
-
-```txt
-Empleados aptos
-  -> Parametros reconciliados
-  -> Conceptos gobernados
-  -> Asignaciones recurrentes vigentes
-  -> Novedades mensuales aprobadas
-  -> Entradas mensuales canonicas
-  -> Proceso mensual / Pre-nomina
-  -> Motor
-  -> Liquidacion oficial / snapshot cerrado
-  -> Previred / LRE
-  -> Reportes
-```
-
-Movimientos variables se conserva como antecedente/legacy y no debe ser el flujo principal para nuevas funcionalidades.

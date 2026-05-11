@@ -30,6 +30,7 @@ import type {
   NominaCalculoPeriodoSnapshot,
   NominaSnapshotCompletoView,
   AprobarResultadoPreliminarOperativamenteParams,
+  CerrarNominaOperativamenteParams,
   ProcesoMensualPreNominaPeriodo,
   ProcesoMensualPrevalidacion,
 } from '../models/proceso-mensual.model';
@@ -173,6 +174,27 @@ export class ProcesoMensualService {
     return this.snapshots.aprobarResultadoPreliminarOperativamente({
       ...params,
       periodo: params.periodo.trim(),
+    });
+  }
+
+  async cerrarNominaOperativamente(
+    params: CerrarNominaOperativamenteParams,
+  ): Promise<NominaCalculoPeriodoSnapshot> {
+    const snapshot = await this.snapshots.obtenerSnapshotActivo(params.periodo.trim());
+    if (!snapshot?.idCalculoPeriodo || snapshot.idCalculoPeriodo !== params.idCalculoPeriodo) {
+      throw new Error('No existe un resultado preliminar guardado vigente para cerrar.');
+    }
+    if (snapshot.aprobacionOperativa?.estado !== 'aprobado_operativamente') {
+      throw new Error('El resultado debe estar aprobado operativamente antes de cerrar.');
+    }
+    if (snapshot.cierreOperativo?.estado === 'cerrado_operativamente') {
+      throw new Error('La nomina ya esta cerrada operativamente.');
+    }
+
+    return this.snapshots.cerrarNominaOperativa({
+      ...params,
+      periodo: params.periodo.trim(),
+      metadata: buildCierreOperativoMetadata(snapshot),
     });
   }
 
@@ -513,4 +535,20 @@ export class ProcesoMensualService {
       empresaLey16744: null,
     };
   }
+}
+
+function buildCierreOperativoMetadata(snapshot: NominaCalculoPeriodoSnapshot): Record<string, unknown> {
+  const aprobacion = snapshot.aprobacionOperativa;
+  return {
+    periodo: snapshot.periodo,
+    idCalculoPeriodo: snapshot.idCalculoPeriodo ?? null,
+    versionCalculo: snapshot.versionMotor,
+    identificadorTecnico: snapshot.hashSnapshot,
+    totalTrabajadores: snapshot.totalTrabajadores,
+    totalHaberes: snapshot.totalHaberes,
+    totalDescuentos: snapshot.totalDescuentos,
+    totalLiquido: snapshot.totalLiquido,
+    advertenciasVisibles: aprobacion?.advertencias ?? [],
+    notaAlcance: 'Cierre operativo. No emite liquidaciones ni genera archivos legales.',
+  };
 }
