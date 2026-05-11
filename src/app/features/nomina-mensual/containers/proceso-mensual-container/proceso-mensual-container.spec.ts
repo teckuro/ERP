@@ -529,10 +529,10 @@ describe('ProcesoMensualContainer', () => {
     expect(aprobar?.disabled).toBe(true);
   });
 
-  it('muestra seccion de resultado guardado desde BD sin snapshot guardado', () => {
+  it('muestra seccion de detalle del resultado guardado sin snapshot guardado', () => {
     const text = fixture.nativeElement.textContent as string;
-    expect(text).toContain('Resultado guardado desde BD');
-    expect(text).toContain('Este detalle corresponde al resultado preliminar guardado en base de datos.');
+    expect(text).toContain('Detalle del resultado guardado');
+    expect(text).toContain('Este detalle corresponde al resultado preliminar guardado para el periodo.');
     expect(text).toContain('No hay resultado preliminar guardado para consultar.');
     expect(text).toContain('Actualizar consulta');
   });
@@ -548,9 +548,12 @@ describe('ProcesoMensualContainer', () => {
     expect(cerrar?.disabled).toBe(true);
   });
 
-  it('muestra selector de periodo (input month)', () => {
+  it('muestra periodo global como contexto, sin selector local editable', () => {
     const input = fixture.nativeElement.querySelector('input[type="month"]') as HTMLInputElement | null;
-    expect(input).toBeTruthy();
+    const text = fixture.nativeElement.textContent as string;
+    expect(input).toBeNull();
+    expect(text).toContain('Periodo activo:');
+    expect(text).toContain('Para cambiarlo, usa el selector superior.');
   });
 
   it('al pulsar Validar periodo llama al servicio de prevalidacion', async () => {
@@ -561,6 +564,12 @@ describe('ProcesoMensualContainer', () => {
     fixture.detectChanges();
     await fixture.whenStable();
     expect(ejecutarPrevalidaciones).toHaveBeenCalled();
+  });
+
+  it('muestra un solo CTA Validar periodo', () => {
+    const buttons = [...fixture.nativeElement.querySelectorAll('button')] as HTMLButtonElement[];
+    const validar = buttons.filter((b) => (b.textContent ?? '').includes('Validar periodo'));
+    expect(validar).toHaveLength(1);
   });
 
   it('tras validar muestra texto de bloqueos', async () => {
@@ -583,9 +592,10 @@ describe('ProcesoMensualContainer', () => {
     await fixture.whenStable();
     fixture.detectChanges();
     const text = fixture.nativeElement.textContent as string;
-    expect(text).toContain('Resumen operativo del periodo');
+    expect(text).toContain('Resumen minimo del periodo');
     expect(text).toContain('Siguiente accion recomendada');
-    expect(text).toContain('Checklist del periodo');
+    expect(text).toContain('Que falta ahora');
+    expect(text).toContain('Recorrido visible');
     expect(text).toContain('Revisar parametros');
   });
 
@@ -980,8 +990,8 @@ describe('ProcesoMensualContainer', () => {
     expect(text).toContain('Observaciones');
     expect(text).toContain('Ana Perez');
     expect(text).toContain('Calculado');
-    expect(text).toContain('Version del calculo');
-    expect(text).toContain('Identificador tecnico');
+    expect(text).toContain('Version interna');
+    expect(text).toContain('Referencia interna');
     expect(text).toContain('Fecha de generacion');
     expect(text).toContain('Recalcular preliminar');
     expect(text).toContain('Guardar resultado preliminar');
@@ -1069,7 +1079,7 @@ describe('ProcesoMensualContainer', () => {
     expect(text).toContain('Prepara, calcula y deja trazable el resultado interno antes de la salida oficial del periodo.');
     expect(text).toContain('Fecha de guardado');
     expect(text).toContain('Version guardada');
-    expect(text).toContain('Identificador tecnico');
+    expect(text).toContain('Referencia interna');
     expect(text).toContain('MOTOR-03B');
     expect(text).toContain('Revision para aprobacion');
     expect(text).toContain('Listo para aprobar');
@@ -1272,8 +1282,8 @@ describe('ProcesoMensualContainer', () => {
     expect(text).toContain('Resultado preliminar aprobado operativamente.');
     expect(text).toContain('Fecha de aprobacion');
     expect(text).toContain('Usuario no disponible en esta sesion');
-    expect(text).toContain('Version del calculo');
-    expect(text).toContain('Identificador tecnico');
+    expect(text).toContain('Version interna');
+    expect(text).toContain('Referencia interna');
     expect(text).toContain('Trabajadores calculados');
     expect(text).toContain('Total haberes');
     expect(text).toContain('Total descuentos');
@@ -1358,7 +1368,7 @@ describe('ProcesoMensualContainer', () => {
     const text = localFixture.nativeElement.textContent as string;
     expect(obtenerSnapshotCompletoActivo).toHaveBeenCalledWith('2026-05');
     expect(generarCalculoPeriodo).not.toHaveBeenCalled();
-    expect(text).toContain('Resultado guardado desde BD');
+    expect(text).toContain('Detalle del resultado guardado');
     expect(text).toContain('Resultado guardado vigente');
     expect(text).toContain('Trabajadores guardados');
     expect(text).toContain('Ana Perez');

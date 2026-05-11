@@ -38,6 +38,12 @@ test.describe('catalogo visual de ventanas', () => {
     await mkdir(outputDir, { recursive: true });
 
     await page.goto('/login');
+    await page.evaluate(() => {
+      localStorage.removeItem('angular-erp-auth');
+      sessionStorage.clear();
+    });
+
+    await page.goto('/login');
     await expect(page.locator('#login-title')).toContainText('Iniciar sesion');
     await page.screenshot({ path: resolve(outputDir, 'login.png'), fullPage: true });
 
@@ -45,12 +51,20 @@ test.describe('catalogo visual de ventanas', () => {
     await page.locator('#login-password').fill(credentials.password);
     await page.getByRole('button', { name: /iniciar sesion/i }).click();
     await expect(page).not.toHaveURL(/\/login/);
+    await expect(page.getByRole('heading', { name: /dashboard operativo/i })).toBeVisible();
+    await expect(page.locator('app-sidebar')).toContainText('Preparar nomina');
+    await expect(page.locator('app-header select').first()).toHaveValue(/\d{4}/);
 
     for (const item of windows) {
       await page.goto(item.path);
       await page.waitForLoadState('networkidle');
       await page.locator('body').waitFor({ state: 'visible' });
-      await page.waitForTimeout(500);
+      await expect(page.locator('app-header header')).toBeVisible();
+      await expect(page.locator('app-sidebar aside')).toBeVisible();
+      await expect(page.locator('app-layout-shell > div > main')).toContainText(
+        /Periodo|Dashboard|Empleados|Nomina|Liquidaciones|Reportes|Parametros|Licencias/i,
+      );
+      await page.waitForTimeout(250);
       await page.screenshot({ path: resolve(outputDir, `${item.name}.png`), fullPage: true });
     }
   });

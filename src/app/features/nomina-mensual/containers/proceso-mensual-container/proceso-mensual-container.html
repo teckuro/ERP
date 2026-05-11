@@ -1,25 +1,21 @@
-<div class="space-y-6">
+<div class="space-y-4">
   <div class="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
     <div>
       <nav class="text-xs text-gray-500">Remuneraciones / Preparar nomina</nav>
       <h1 class="text-xl font-semibold text-gray-900">Preparar nomina</h1>
       <p class="mt-1 text-sm text-gray-600">
-        Centro operativo del periodo: revisa trabajadores, parametros, asignaciones recurrentes y movimientos del mes
-        antes del calculo preliminar.
+        Revisa pendientes del periodo antes de calcular y dejar una version interna lista para revision.
       </p>
     </div>
     <div class="flex flex-wrap items-center gap-2">
-      <label class="text-sm font-medium text-gray-700" for="pm-periodo">Periodo a validar</label>
-      <input
-        id="pm-periodo"
-        type="month"
-        class="rounded-md border border-gray-300 px-2 py-1 text-sm text-gray-900"
-        [value]="periodoSeleccionado()"
-        (change)="onPeriodoInput($event)"
-      />
-      <app-button variant="primary" size="sm" [disabled]="validando()" (click)="validarPeriodo()">
-        {{ validando() ? 'Validando...' : 'Validar periodo' }}
-      </app-button>
+      <app-badge [variant]="badgeVariantEstadoOperativo(estadoOperativo().severidad)" size="sm">
+        {{ estadoOperativo().titulo }}
+      </app-badge>
+      <div class="rounded-md border border-slate-200 bg-white px-3 py-2 text-sm text-gray-700">
+        <span class="font-medium text-gray-900">Periodo activo:</span>
+        {{ periodoActivo.etiqueta() }}
+        <span class="ml-1 text-xs text-gray-500">Para cambiarlo, usa el selector superior.</span>
+      </div>
     </div>
   </div>
 
@@ -29,201 +25,273 @@
     </div>
   }
 
+  <section class="grid gap-4 xl:grid-cols-[minmax(0,1fr)_22rem]">
+    <div class="space-y-4">
   <app-card>
-    <app-card-content className="p-4">
-      <div class="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-        <div class="flex items-start gap-3">
-          <lucide-icon class="mt-0.5 h-5 w-5 flex-shrink-0 text-slate-600" name="info"></lucide-icon>
-          <div class="space-y-1 text-sm text-gray-700">
-            <p class="font-medium text-gray-900">Esta pantalla prepara la nomina del periodo.</p>
-            <p>
-              Prepara, calcula y deja trazable el resultado interno antes de la salida oficial del periodo.
-            </p>
-          </div>
+    <app-card-content className="p-3">
+      <div class="mb-3 flex flex-wrap items-center justify-between gap-2">
+        <div>
+          <h2 class="text-sm font-semibold text-gray-900">Avance del periodo</h2>
+          <p class="text-xs text-gray-500">Vista de negocio desde la preparacion hasta liquidaciones internas.</p>
         </div>
-        <a routerLink="/parametros" class="text-sm font-medium text-blue-700 underline">Revisar parametros</a>
+        <app-badge [variant]="nominaEstaCerradaOperativamente() ? 'success' : 'info'" size="sm">
+          {{ nominaEstaCerradaOperativamente() ? 'Nomina cerrada' : 'En preparacion' }}
+        </app-badge>
       </div>
+
+      <ol class="pm-timeline-compact" aria-label="Avance visible del periodo">
+        @for (paso of pasosPeriodo(); track paso.numero) {
+          <li>
+            <div class="flex items-start justify-between gap-2">
+              <p class="text-xs font-medium text-gray-500">{{ paso.numero }}. {{ paso.titulo }}</p>
+              <app-badge [variant]="badgeVariantPasoPeriodo(paso.estado)" size="sm">
+                {{ paso.estado }}
+              </app-badge>
+            </div>
+            <p class="mt-1 text-sm font-semibold text-gray-900">{{ paso.descripcion }}</p>
+          </li>
+        }
+      </ol>
     </app-card-content>
   </app-card>
 
-  <section class="grid gap-4 xl:grid-cols-[minmax(0,1fr)_22rem]">
-    <app-card>
-      <app-card-content className="p-4">
-        <div class="mb-4 flex flex-wrap items-center justify-between gap-2">
-          <div>
-            <h2 class="text-sm font-semibold text-gray-900">Resumen operativo del periodo</h2>
-            <p class="text-xs text-gray-500">Indicadores disponibles despues de validar el periodo.</p>
-          </div>
-          <app-badge [variant]="badgeVariantEstado(dashboardResumen().estadoPeriodo)">
-            {{ etiquetaEstadoGlobal(dashboardResumen().estadoPeriodo) }}
-          </app-badge>
-        </div>
-
-        <dl class="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-          <div class="rounded-md border border-slate-200 bg-white p-3">
-            <dt class="text-xs font-medium text-gray-500">Trabajadores aptos</dt>
-            <dd class="mt-1 text-lg font-semibold text-gray-900">
-              {{ dashboardResumen().trabajadoresAptos ?? 'Sin evaluar' }}
-            </dd>
-          </div>
-          <div class="rounded-md border border-slate-200 bg-white p-3">
-            <dt class="text-xs font-medium text-gray-500">Trabajadores por revisar</dt>
-            <dd class="mt-1 text-lg font-semibold text-gray-900">
-              {{ dashboardResumen().trabajadoresPorRevisar ?? 'Sin evaluar' }}
-            </dd>
-          </div>
-          <div class="rounded-md border border-slate-200 bg-white p-3">
-            <dt class="text-xs font-medium text-gray-500">Parametros</dt>
-            <dd class="mt-1 text-sm font-semibold text-gray-900">
-              @if (dashboardResumen().parametrosListos == null) {
-                Sin evaluar
-              } @else {
-                {{ dashboardResumen().parametrosListos ? 'Parametros listos' : 'Parametros por revisar' }}
-              }
-            </dd>
-          </div>
-          <div class="rounded-md border border-slate-200 bg-white p-3">
-            <dt class="text-xs font-medium text-gray-500">Movimientos aprobados</dt>
-            <dd class="mt-1 text-lg font-semibold text-gray-900">{{ dashboardResumen().movimientosAprobados }}</dd>
-          </div>
-          <div class="rounded-md border border-slate-200 bg-white p-3">
-            <dt class="text-xs font-medium text-gray-500">Movimientos pendientes</dt>
-            <dd class="mt-1 text-lg font-semibold text-gray-900">{{ dashboardResumen().movimientosPendientes }}</dd>
-          </div>
-          <div class="rounded-md border border-slate-200 bg-white p-3">
-            <dt class="text-xs font-medium text-gray-500">Asignaciones recurrentes</dt>
-            <dd class="mt-1 text-sm font-semibold text-gray-900">
-              @if (dashboardResumen().asignacionesAplicables == null) {
-                Sin evaluar
-              } @else {
-                {{ dashboardResumen().asignacionesAplicables }} aplicables ·
-                {{ dashboardResumen().asignacionesPorRevisar }} por revisar
-              }
-            </dd>
-          </div>
-        </dl>
-      </app-card-content>
-    </app-card>
-
-    <app-card>
-      <app-card-content className="p-4">
-        <h2 class="text-sm font-semibold text-gray-900">Siguiente accion recomendada</h2>
-        <p class="mt-2 text-sm font-medium text-gray-900">{{ validacionCalculo().siguienteAccion.label }}</p>
-        <p class="mt-1 text-sm text-gray-700">{{ validacionCalculo().siguienteAccion.descripcion }}</p>
-        <div class="mt-4 flex flex-wrap gap-2">
-          @if (validacionCalculo().siguienteAccion.ruta) {
-            <a [routerLink]="validacionCalculo().siguienteAccion.ruta" class="text-sm font-medium text-blue-700 underline">
-              {{ validacionCalculo().siguienteAccion.label }}
-            </a>
-          }
-          @if (validacionCalculo().siguienteAccion.accionLocal) {
-            <button
-              type="button"
-              class="text-sm font-medium text-blue-700 underline"
-              (click)="ejecutarAccionValidacion(validacionCalculo().siguienteAccion.accionLocal!)"
-            >
-              {{ validacionCalculo().siguienteAccion.label }}
-            </button>
-          }
-          <a routerLink="/remuneraciones/novedades-mensuales" class="text-sm font-medium text-blue-700 underline">
-            Revisar movimientos
-          </a>
-          <a routerLink="/remuneraciones/haberes-descuentos" class="text-sm font-medium text-blue-700 underline">
-            Revisar asignaciones
-          </a>
-        </div>
-      </app-card-content>
-    </app-card>
-  </section>
-
-  <section class="grid gap-4 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)]">
-    <app-card>
-      <app-card-content className="p-4">
-        <h2 class="text-sm font-semibold text-gray-900">Checklist del periodo</h2>
-        <div class="mt-3 divide-y divide-slate-100">
-          @for (it of resultado()?.items ?? []; track it.area) {
-            <div class="flex flex-col gap-2 py-3 sm:flex-row sm:items-center sm:justify-between">
-              <div>
-                <p class="text-sm font-medium text-gray-900">{{ etiquetaArea(it.area, it.etiqueta) }}</p>
-                @if (it.detalle) {
-                  <p class="mt-0.5 text-xs text-gray-500">{{ it.detalle }}</p>
-                }
-              </div>
-              <div class="flex flex-wrap items-center gap-2">
-                <app-badge [variant]="badgeVariantItemEstado(it.estado)" size="sm">
-                  {{ etiquetaItemEstado(it.estado) }}
-                </app-badge>
-                @if (accionArea(it.area); as accion) {
-                  <a [routerLink]="accion.route" class="text-xs font-medium text-blue-700 underline">
-                    {{ accion.label }}
-                  </a>
-                }
-              </div>
+      <app-card>
+        <app-card-content className="p-4">
+          <div class="mb-3 flex flex-wrap items-center justify-between gap-2">
+            <div>
+              <h2 class="text-sm font-semibold text-gray-900">Resumen minimo del periodo</h2>
+              <p class="text-xs text-gray-500">Datos principales para decidir el siguiente paso.</p>
             </div>
-          } @empty {
-            <p class="py-3 text-sm text-gray-600">
-              Ejecute "Validar periodo" para revisar Parametros, Trabajadores, Conceptos, Asignaciones recurrentes y
-              Movimientos del mes.
-            </p>
-          }
-        </div>
-      </app-card-content>
-    </app-card>
+            <app-badge [variant]="badgeVariantEstado(dashboardResumen().estadoPeriodo)" size="sm">
+              {{ etiquetaEstadoGlobal(dashboardResumen().estadoPeriodo) }}
+            </app-badge>
+          </div>
 
-    <app-card>
-      <app-card-content className="p-4">
-        <h2 class="text-sm font-semibold text-gray-900">Bloqueos y advertencias</h2>
-        <div class="mt-3 space-y-4">
-          <section>
-            <h3 class="text-xs font-semibold uppercase text-red-700">Bloqueos que impiden calcular</h3>
-            @if (resultado()?.bloqueos?.length) {
-              <ul class="mt-2 space-y-2 text-sm text-red-800">
-                @for (b of resultado()!.bloqueos; track b.codigo) {
-                  <li>
-                    <p>{{ b.texto }}</p>
-                    <p class="text-xs text-red-600">{{ referenciaTecnica(b) }}</p>
-                  </li>
+          <dl class="grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
+            <div class="rounded-md border border-slate-200 bg-white p-2">
+              <dt class="text-xs font-medium text-gray-500">Trabajadores</dt>
+              <dd class="mt-1 text-sm font-semibold text-gray-900">
+                @if (dashboardResumen().trabajadoresAptos == null) {
+                  Sin evaluar
+                } @else {
+                  {{ dashboardResumen().trabajadoresAptos }} aptos / {{ dashboardResumen().trabajadoresPorRevisar }} por revisar
                 }
-              </ul>
-            } @else {
-              <p class="mt-2 text-sm text-gray-600">Sin bloqueos en la ultima evaluacion.</p>
+              </dd>
+            </div>
+            <div class="rounded-md border border-slate-200 bg-white p-2">
+              <dt class="text-xs font-medium text-gray-500">Parametros</dt>
+              <dd class="mt-1 text-sm font-semibold text-gray-900">
+                @if (dashboardResumen().parametrosListos == null) {
+                  Sin evaluar
+                } @else {
+                  {{ dashboardResumen().parametrosListos ? 'Listos' : 'Por revisar' }}
+                }
+              </dd>
+            </div>
+            <div class="rounded-md border border-slate-200 bg-white p-2">
+              <dt class="text-xs font-medium text-gray-500">Movimientos</dt>
+              <dd class="mt-1 text-sm font-semibold text-gray-900">
+                {{ dashboardResumen().movimientosAprobados }} aprobados / {{ dashboardResumen().movimientosPendientes }} pendientes
+              </dd>
+            </div>
+            <div class="rounded-md border border-slate-200 bg-white p-2">
+              <dt class="text-xs font-medium text-gray-500">Asignaciones</dt>
+              <dd class="mt-1 text-sm font-semibold text-gray-900">
+                @if (dashboardResumen().asignacionesAplicables == null) {
+                  Sin evaluar
+                } @else {
+                  {{ dashboardResumen().asignacionesAplicables }} aplicables / {{ dashboardResumen().asignacionesPorRevisar }} por revisar
+                }
+              </dd>
+            </div>
+          </dl>
+        </app-card-content>
+      </app-card>
+
+    </div>
+    <aside class="space-y-4">
+      <app-card>
+        <app-card-content className="p-4">
+          <section class="pm-next-action-panel" aria-labelledby="pm-accion-recomendada">
+            <div class="flex flex-wrap items-start justify-between gap-2">
+              <div>
+                <p class="text-xs font-semibold uppercase text-blue-700">Siguiente accion recomendada</p>
+                <h2 id="pm-accion-recomendada" class="mt-1 text-base font-semibold text-gray-900">
+                  {{ estadoOperativo().accionPrincipal.label }}
+                </h2>
+              </div>
+              <app-badge [variant]="badgeVariantEstadoOperativo(estadoOperativo().severidad)" size="sm">
+                {{ estadoOperativo().titulo }}
+              </app-badge>
+            </div>
+            <p class="mt-2 text-sm text-gray-700">{{ estadoOperativo().accionPrincipal.descripcion }}</p>
+            @if (estadoOperativo().accionPrincipal.disabledReason) {
+              <p class="mt-2 rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-gray-700">
+                {{ estadoOperativo().accionPrincipal.disabledReason }}
+              </p>
             }
+            <div class="mt-3 flex flex-wrap items-center gap-2">
+              @if (estadoOperativo().accionPrincipal.tipo === 'ruta') {
+                <a
+                  [routerLink]="estadoOperativo().accionPrincipal.ruta"
+                  class="inline-flex min-h-9 items-center rounded-md bg-blue-600 px-3 text-sm font-medium text-white hover:bg-blue-700"
+                >
+                  {{ estadoOperativo().accionPrincipal.label }}
+                </a>
+              }
+              @if (estadoOperativo().accionPrincipal.tipo === 'local' && estadoOperativo().accionPrincipal.accionLocal) {
+                <button
+                  type="button"
+                  class="inline-flex min-h-9 items-center rounded-md bg-blue-600 px-3 text-sm font-medium text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
+                  [disabled]="estadoOperativo().accionPrincipal.disabled || validando() || generandoPreNomina() || calculandoPreliminar() || guardandoSnapshot() || aprobandoResultado() || cerrandoNomina()"
+                  (click)="ejecutarAccionValidacion(estadoOperativo().accionPrincipal.accionLocal!)"
+                >
+                  {{ estadoOperativo().accionPrincipal.label }}
+                </button>
+              }
+            </div>
           </section>
+        </app-card-content>
+      </app-card>
 
-          <section>
-            <h3 class="text-xs font-semibold uppercase text-yellow-700">Advertencias del periodo</h3>
-            @if (resultado()?.advertencias?.length) {
-              <ul class="mt-2 space-y-2 text-sm text-yellow-900">
-                @for (a of resultado()!.advertencias; track a.codigo) {
-                  <li>
-                    <p>{{ a.texto }}</p>
-                    <p class="text-xs text-yellow-700">{{ referenciaTecnica(a) }}</p>
-                  </li>
-                }
-              </ul>
-            } @else {
-              <p class="mt-2 text-sm text-gray-600">Sin advertencias en la ultima evaluacion.</p>
+      <app-card>
+        <app-card-content className="p-4">
+          <h2 class="text-sm font-semibold text-gray-900">Accesos rapidos</h2>
+          <div class="mt-3 grid gap-2 text-sm">
+            @for (acceso of estadoOperativo().accionesRapidas; track acceso.codigo) {
+              <a [routerLink]="acceso.ruta!" class="rounded-md border border-slate-200 px-3 py-2 font-medium text-blue-700 hover:bg-blue-50">
+                {{ acceso.accionLabel }}
+              </a>
             }
-          </section>
-
-          @if (resultado()?.informaciones?.length) {
-            <section>
-              <h3 class="text-xs font-semibold uppercase text-slate-700">Informacion y pendientes de integracion</h3>
-              <ul class="mt-2 space-y-2 text-sm text-gray-700">
-                @for (i of resultado()!.informaciones; track i.codigo) {
-                  <li>
-                    <p>{{ i.texto }}</p>
-                    <p class="text-xs text-gray-500">{{ referenciaTecnica(i) }}</p>
-                  </li>
-                }
-              </ul>
-            </section>
-          }
-        </div>
-      </app-card-content>
-    </app-card>
+          </div>
+        </app-card-content>
+      </app-card>
+    </aside>
   </section>
 
+  <section class="pm-pending-panel" aria-labelledby="pm-que-falta-ahora">
+    <div class="pm-pending-panel__header">
+      <div>
+        <h2 id="pm-que-falta-ahora">Que falta ahora</h2>
+        <p>{{ estadoOperativo().descripcion }}</p>
+      </div>
+      <app-badge [variant]="badgeVariantEstadoOperativo(estadoOperativo().severidad)" size="sm">
+        {{ estadoOperativo().titulo }}
+      </app-badge>
+    </div>
+
+    <div class="pm-pending-grid">
+      <section class="pm-pending-column">
+        <div class="pm-pending-column__title">
+          <h3>Prioridad actual</h3>
+          <span>{{ estadoOperativo().queFaltaAhora.length }}</span>
+        </div>
+        <div class="pm-pending-list">
+          @for (item of estadoOperativo().queFaltaAhora; track item.codigo) {
+            <article
+              class="pm-pending-item"
+              [class.pm-pending-item--danger]="item.severidad === 'danger'"
+              [class.pm-pending-item--warning]="item.severidad === 'warning'"
+              [class.pm-pending-item--info]="item.severidad === 'info'"
+            >
+              <div>
+                <p>{{ item.titulo }}</p>
+                <small>{{ item.descripcion }}</small>
+              </div>
+              @if (item.ruta) {
+                <a [routerLink]="item.ruta">{{ item.accionLabel }}</a>
+              } @else if (item.accionLocal) {
+                <button type="button" (click)="ejecutarAccionValidacion(item.accionLocal)">
+                  {{ item.accionLabel }}
+                </button>
+              }
+            </article>
+          } @empty {
+            <p class="pm-pending-empty">No hay pendientes principales para este estado.</p>
+          }
+        </div>
+      </section>
+
+      <section class="pm-pending-column">
+        <div class="pm-pending-column__title pm-pending-column__title--danger">
+          <h3>Bloqueos</h3>
+          <span>{{ estadoOperativo().bloqueos.length }}</span>
+        </div>
+        <div class="pm-pending-list">
+          @for (item of estadoOperativo().bloqueos; track item.codigo) {
+            <article class="pm-pending-item pm-pending-item--danger">
+              <div>
+                <p>{{ item.titulo }}</p>
+                <small>{{ item.descripcion }}</small>
+              </div>
+            </article>
+          } @empty {
+            <p class="pm-pending-empty">Sin bloqueos visibles.</p>
+          }
+        </div>
+      </section>
+
+      <section class="pm-pending-column">
+        <div class="pm-pending-column__title pm-pending-column__title--warning">
+          <h3>Advertencias</h3>
+          <span>{{ estadoOperativo().advertencias.length }}</span>
+        </div>
+        <div class="pm-pending-list">
+          @for (item of estadoOperativo().advertencias; track item.codigo) {
+            <article class="pm-pending-item pm-pending-item--warning">
+              <div>
+                <p>{{ item.titulo }}</p>
+                <small>{{ item.descripcion }}</small>
+              </div>
+            </article>
+          } @empty {
+            <p class="pm-pending-empty">Sin advertencias pendientes.</p>
+          }
+        </div>
+      </section>
+    </div>
+  </section>
+
+  <details class="rounded-md border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-gray-700">
+    <summary class="cursor-pointer font-medium text-gray-900">Alcance de esta pantalla</summary>
+    <div class="mt-2 flex flex-col gap-2 lg:flex-row lg:items-center lg:justify-between">
+      <p>Prepara, calcula y deja trazable el resultado interno antes de la salida oficial del periodo.</p>
+      <a routerLink="/parametros" class="font-medium text-blue-700 underline">Revisar parametros</a>
+    </div>
+  </details>
+
+  <div class="pt-2">
+    <h2 class="text-base font-semibold text-gray-900">Detalle y trazabilidad secundaria</h2>
+    <p class="mt-1 text-sm text-gray-600">
+      El detalle interno queda debajo de la accion principal para revisar datos, observaciones y respaldo del periodo.
+    </p>
+  </div>
+
+  <section class="pm-detail-layout">
+    <aside class="pm-stage-rail" aria-label="Recorrido visible del periodo">
+      <h3>Recorrido visible</h3>
+      <ol>
+        @for (paso of pasosPeriodo(); track paso.numero) {
+          <li>
+            <span>{{ paso.numero }}</span>
+            <div>
+              <p>{{ paso.titulo }}</p>
+              <small>{{ paso.descripcion }}</small>
+            </div>
+            <app-badge [variant]="badgeVariantPasoPeriodo(paso.estado)" size="sm">
+              {{ paso.estado }}
+            </app-badge>
+          </li>
+        }
+      </ol>
+    </aside>
+
+    <div class="pm-detail-stack">
+  <details class="pm-operational-detail" [open]="etapaOperativaActiva() === 'base'">
+    <summary>
+      <span>Base de nomina</span>
+      <span>{{ preNomina() ? 'Base generada' : resultado() && validacionCalculo().bloqueos.length ? 'Bloqueada' : resultado() ? 'Lista para generar' : 'Pendiente de validacion' }}</span>
+    </summary>
   <app-card>
     <app-card-content className="p-4">
       <div class="flex flex-wrap items-center justify-between gap-3">
@@ -407,7 +475,13 @@
       }
     </app-card-content>
   </app-card>
+  </details>
 
+  <details class="pm-operational-detail" [open]="etapaOperativaActiva() === 'calculo' || etapaOperativaActiva() === 'resultado'">
+    <summary>
+      <span>Calculo preliminar</span>
+      <span>{{ calculo() ? 'Resultado calculado' : preNomina() ? 'Disponible' : 'Pendiente de base' }}</span>
+    </summary>
   <app-card>
     <app-card-content className="p-4">
       @if (validacionCalculo(); as validacion) {
@@ -725,11 +799,11 @@
             <h3 class="text-xs font-semibold uppercase text-slate-600">Detalle tecnico</h3>
             <dl class="mt-2 grid gap-3 sm:grid-cols-3 text-sm">
               <div>
-                <dt class="text-gray-500">Version del calculo</dt>
+                <dt class="text-gray-500">Version interna</dt>
                 <dd class="font-medium text-gray-900">{{ resultado.detalleTecnico.versionCalculo }}</dd>
               </div>
               <div>
-                <dt class="text-gray-500">Identificador tecnico</dt>
+                <dt class="text-gray-500">Referencia interna</dt>
                 <dd class="font-medium text-gray-900">{{ resultado.detalleTecnico.identificadorTecnico }}</dd>
               </div>
               <div>
@@ -805,7 +879,13 @@
       }
     </app-card-content>
   </app-card>
+  </details>
 
+  <details class="pm-operational-detail" [open]="etapaOperativaActiva() === 'guardado'">
+    <summary>
+      <span>Resultado guardado</span>
+      <span>{{ snapshotActivo() ? 'Resultado vigente' : calculo() ? 'Pendiente de guardar' : 'Sin resultado guardado' }}</span>
+    </summary>
   <app-card>
     <app-card-content className="p-4">
       <div class="flex flex-wrap items-center justify-between gap-3">
@@ -861,11 +941,11 @@
             <dd class="font-semibold text-gray-900">{{ guardado.trabajadoresOmitidos }}</dd>
           </div>
           <div>
-            <dt class="text-gray-500">Version del calculo</dt>
+            <dt class="text-gray-500">Version interna</dt>
             <dd class="font-semibold text-gray-900">{{ guardado.versionCalculoLabel }}</dd>
           </div>
           <div>
-            <dt class="text-gray-500">Identificador tecnico</dt>
+            <dt class="text-gray-500">Referencia interna</dt>
             <dd class="font-semibold text-gray-900">{{ guardado.identificadorTecnicoLabel }}</dd>
           </div>
         </dl>
@@ -882,14 +962,20 @@
       }
     </app-card-content>
   </app-card>
+  </details>
 
+  <details class="pm-operational-detail" [open]="etapaOperativaActiva() === 'guardado'">
+    <summary>
+      <span>Detalle del resultado guardado</span>
+      <span>{{ snapshotCompletoDetalle() ? 'Detalle consultado' : snapshotActivo() ? 'Disponible para consultar' : 'Sin resultado guardado' }}</span>
+    </summary>
   <app-card>
     <app-card-content className="p-4">
       <div class="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h2 class="text-sm font-semibold text-gray-900">Resultado guardado desde BD</h2>
+          <h2 class="text-sm font-semibold text-gray-900">Detalle del resultado guardado</h2>
           <p class="mt-1 text-sm text-gray-600">
-            Este detalle corresponde al resultado preliminar guardado en base de datos. No recalcula movimientos ni parametros actuales.
+            Este detalle corresponde al resultado preliminar guardado para el periodo. No recalcula movimientos ni parametros actuales.
           </p>
         </div>
         <app-button variant="outline" size="sm" [disabled]="consultandoSnapshotCompleto()" (click)="consultarDetalleResultadoGuardado()">
@@ -964,12 +1050,12 @@
             <dd class="font-semibold text-gray-900">{{ detalle.resumen.totalTrazas }}</dd>
           </div>
           <div>
-            <dt class="text-gray-500">Version del calculo</dt>
+            <dt class="text-gray-500">Version interna</dt>
             <dd class="font-semibold text-gray-900">{{ detalle.resumen.versionCalculoLabel }}</dd>
           </div>
         </dl>
         <p class="mt-3 text-xs text-gray-500">
-          Identificador tecnico: {{ detalle.resumen.identificadorTecnicoLabel }}
+          Referencia interna: {{ detalle.resumen.identificadorTecnicoLabel }}
         </p>
 
         <section class="mt-5">
@@ -1051,7 +1137,13 @@
       }
     </app-card-content>
   </app-card>
+  </details>
 
+  <details class="pm-operational-detail" [open]="etapaOperativaActiva() === 'aprobacion'">
+    <summary>
+      <span>Aprobacion operativa</span>
+      <span>{{ aprobacionOperativa() ? 'Aprobado' : snapshotActivo() ? 'Pendiente de aprobar' : 'Sin resultado guardado' }}</span>
+    </summary>
   <app-card>
     <app-card-content className="p-4">
       @if (revisionAprobacion(); as revision) {
@@ -1133,11 +1225,11 @@
                 <dd class="font-semibold text-gray-900">{{ aprobacion.usuarioLabel }}</dd>
               </div>
               <div>
-                <dt class="text-gray-500">Version del calculo</dt>
+                <dt class="text-gray-500">Version interna</dt>
                 <dd class="font-semibold text-gray-900">{{ aprobacion.versionCalculoLabel }}</dd>
               </div>
               <div>
-                <dt class="text-gray-500">Identificador tecnico</dt>
+                <dt class="text-gray-500">Referencia interna</dt>
                 <dd class="font-semibold text-gray-900">{{ aprobacion.identificadorTecnicoLabel }}</dd>
               </div>
               <div>
@@ -1261,7 +1353,13 @@
       }
     </app-card-content>
   </app-card>
+  </details>
 
+  <details class="pm-operational-detail" [open]="etapaOperativaActiva() === 'cierre' || etapaOperativaActiva() === 'liquidaciones'">
+    <summary>
+      <span>Cierre operativo y liquidaciones</span>
+      <span>{{ nominaEstaCerradaOperativamente() ? 'Liquidaciones internas disponibles' : aprobacionOperativa() ? 'Disponible para cerrar' : 'Pendiente de aprobacion' }}</span>
+    </summary>
   <app-card>
     <app-card-content className="p-4">
       @if (cierreOperativo(); as cierre) {
@@ -1325,7 +1423,7 @@
               <dd class="font-semibold text-gray-900">{{ resumen.periodo }}</dd>
             </div>
             <div>
-              <dt class="text-gray-500">Version del calculo</dt>
+              <dt class="text-gray-500">Version interna</dt>
               <dd class="font-semibold text-gray-900">{{ resumen.versionCalculoLabel }}</dd>
             </div>
             <div>
@@ -1345,7 +1443,7 @@
               <dd class="font-semibold text-gray-900">{{ resumen.totalDescuentosLabel }}</dd>
             </div>
             <div class="sm:col-span-2">
-              <dt class="text-gray-500">Identificador tecnico</dt>
+              <dt class="text-gray-500">Referencia interna</dt>
               <dd class="font-semibold text-gray-900">{{ resumen.identificadorTecnicoLabel }}</dd>
             </div>
           </dl>
@@ -1369,6 +1467,9 @@
       }
     </app-card-content>
   </app-card>
+  </details>
+    </div>
+  </section>
 
   <div class="rounded-md border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-gray-700">
     Salidas legales y archivos externos quedan fuera de esta fase. El foco es preparar, aprobar y cerrar operativamente la nomina del periodo.

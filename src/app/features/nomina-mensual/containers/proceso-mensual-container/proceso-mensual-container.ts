@@ -28,10 +28,16 @@ import type {
 } from '../../models/proceso-mensual.model';
 import { ProcesoMensualService } from '../../services/proceso-mensual.service';
 import { validarPeriodoEntradaMensual } from '../../entradas/rules/entradas-mensuales-periodo.rules';
+import {
+  resolverEstadoOperativoProcesoMensual,
+  type ProcesoMensualAccionLocal,
+  type ProcesoMensualEstadoSeveridad,
+  type ProcesoMensualPendienteVm,
+} from '../../rules/proceso-mensual-estado-operativo.rules';
 
 type ValidacionCalculoEstado = 'pendiente' | 'listo' | 'advertencias' | 'bloqueado';
 type ValidacionOperativaSeveridad = 'bloqueo' | 'advertencia' | 'info';
-type ValidacionAccionLocal = 'validarPeriodo' | 'generarBase' | 'actualizarBase' | 'calcularPreliminar';
+type ValidacionAccionLocal = ProcesoMensualAccionLocal;
 type ResultadoPreliminarEstado =
   | 'sin_resultado'
   | 'no_guardado'
@@ -49,6 +55,8 @@ type RevisionAprobacionEstado =
   | 'aprobado'
   | 'aprobado_desactualizado';
 type RevisionChecklistEstado = 'Completo' | 'Pendiente' | 'Requiere atencion' | 'No aplica';
+type EtapaOperativaActiva = 'base' | 'calculo' | 'resultado' | 'guardado' | 'aprobacion' | 'cierre' | 'liquidaciones';
+type PasoPeriodoEstado = 'Actual' | 'Completo' | 'Pendiente' | 'Bloqueada';
 
 interface ValidacionOperativaItemView {
   codigo: string;
@@ -239,6 +247,13 @@ interface SnapshotCompletoDetalleView {
   reemplazoLabel: string | null;
 }
 
+interface PasoPeriodoView {
+  numero: string;
+  titulo: string;
+  estado: PasoPeriodoEstado;
+  descripcion: string;
+}
+
 @Component({
   selector: 'app-proceso-mensual-container',
   standalone: true,
@@ -259,7 +274,7 @@ export class ProcesoMensualContainer implements OnInit {
   readonly periodoActivo = inject(PeriodoActivoService);
   readonly procesoMensual = inject(ProcesoMensualService);
 
-  readonly periodoSeleccionado = signal(this.periodoActivo.periodoYm());
+  readonly periodoSeleccionado = computed(() => this.periodoActivo.periodoYm());
   readonly resultado = signal<ProcesoMensualPrevalidacion | null>(null);
   readonly preNomina = signal<ProcesoMensualPreNominaPeriodo | null>(null);
   readonly calculo = signal<MotorCalculoPeriodoResultado | null>(null);
@@ -293,14 +308,14 @@ export class ProcesoMensualContainer implements OnInit {
     const cierre = snapshot?.cierreOperativo ?? null;
     const resumen = snapshot ? {
       periodo: snapshot.periodo,
-      identificadorTecnicoLabel: snapshot.hashSnapshot || 'Identificador tecnico no disponible',
+      identificadorTecnicoLabel: snapshot.hashSnapshot || 'Referencia interna no disponible',
       versionCalculoLabel: snapshot.versionMotor || 'Version no disponible',
       trabajadoresCalculados: snapshot.totalTrabajadores,
       totalHaberesLabel: this.formatoMonto(snapshot.totalHaberes),
       totalDescuentosLabel: this.formatoMonto(snapshot.totalDescuentos),
       totalLiquidoLabel: this.formatoMonto(snapshot.totalLiquido),
       advertenciasLabel: snapshot.totalAdvertencias > 0
-        ? `${snapshot.totalAdvertencias} advertencia(s) visibles quedaran registradas en metadata.`
+        ? `${snapshot.totalAdvertencias} advertencia(s) visibles quedaran registradas en la trazabilidad interna.`
         : 'Sin advertencias visibles al cierre.',
     } : null;
 
@@ -365,7 +380,7 @@ export class ProcesoMensualContainer implements OnInit {
         periodo: completo.cabecera.periodo,
         fechaGeneracionLabel: this.formatoFechaHora(completo.cabecera.fechaGeneracion),
         versionCalculoLabel: completo.cabecera.versionMotor || 'Version no disponible',
-        identificadorTecnicoLabel: completo.cabecera.hashSnapshot || 'Identificador tecnico no disponible',
+        identificadorTecnicoLabel: completo.cabecera.hashSnapshot || 'Referencia interna no disponible',
         trabajadores: completo.trabajadores.length,
         totalHaberesLabel: this.formatoMonto(completo.cabecera.totalHaberes),
         totalDescuentosLabel: this.formatoMonto(completo.cabecera.totalDescuentos),
@@ -426,7 +441,7 @@ export class ProcesoMensualContainer implements OnInit {
           : [],
         detalleTecnico: {
           versionCalculo: snapshot?.versionMotor ?? 'Version no disponible',
-          identificadorTecnico: snapshot?.hashSnapshot ?? 'Identificador tecnico no disponible',
+          identificadorTecnico: snapshot?.hashSnapshot ?? 'Referencia interna no disponible',
           generadoEn: snapshot?.fechaGeneracion ?? 'Fecha no disponible',
         },
         ultimoGuardado: snapshot ? this.ultimoGuardadoDesdeSnapshot(snapshot) : undefined,
@@ -512,7 +527,7 @@ export class ProcesoMensualContainer implements OnInit {
       }],
       detalleTecnico: {
         versionCalculo: snapshot?.versionMotor ?? 'Version no disponible',
-        identificadorTecnico: snapshot?.hashSnapshot ?? 'Identificador tecnico no disponible',
+        identificadorTecnico: snapshot?.hashSnapshot ?? 'Referencia interna no disponible',
         generadoEn: calculo.generadoEn,
       },
       ultimoGuardado: snapshot ? this.ultimoGuardadoDesdeSnapshot(snapshot) : undefined,
@@ -851,6 +866,45 @@ export class ProcesoMensualContainer implements OnInit {
     };
   });
 
+  readonly estadoOperativo = computed(() => {
+    const validacion = this.validacionCalculo();
+    const resultado = this.resultadoPreliminar();
+    const revision = this.revisionAprobacion();
+    return resolverEstadoOperativoProcesoMensual({
+      periodoValido: validarPeriodoEntradaMensual(this.periodoSeleccionado()),
+      tienePrevalidacion: this.resultado() != null,
+      bloqueosPrevalidacion: validacion.bloqueos.map((item) => this.pendienteDesdeValidacion(item)),
+      advertenciasPrevalidacion: validacion.advertencias.map((item) => this.pendienteDesdeValidacion(item, 'warning')),
+      informacionesPrevalidacion: validacion.informaciones.map((item) => this.pendienteDesdeValidacion(item, 'info')),
+      baseGenerada: this.preNomina() != null,
+      calculoGenerado: this.calculo() != null,
+      calculoConBloqueos: resultado.bloqueos.length > 0 || this.calculo()?.estado === 'con_bloqueos',
+      calculoConAdvertencias: resultado.advertencias.length > 0,
+      bloqueosCalculo: resultado.bloqueos.map((item) => this.pendienteDesdeResultado(item, 'danger')),
+      advertenciasCalculo: resultado.advertencias.map((item) => this.pendienteDesdeResultado(item, 'warning')),
+      resultadoGuardado: this.snapshotActivo() != null,
+      aprobadoOperativamente: this.aprobacionOperativa() != null,
+      cerradoOperativamente: this.nominaEstaCerradaOperativamente(),
+      liquidacionesDisponibles: false,
+      puedeGenerarBase: this.puedeGenerarPreNomina(),
+      puedeCalcular: this.puedeCalcularPreliminar(),
+      puedeGuardarResultado: resultado.acciones.puedeGuardarPreliminar,
+      puedeAprobar: revision.puedeAprobar,
+      puedeCerrar: this.puedeCerrarNominaOperativa(),
+      razonNoPuedeGuardar: resultado.acciones.razonNoPuedeGuardar,
+      razonNoPuedeAprobar: revision.razonNoPuedeAprobar,
+      razonNoPuedeCerrar: this.cierreOperativo().razonNoPuedeCerrar,
+    });
+  });
+
+  readonly etapaOperativaActiva = computed<EtapaOperativaActiva>(() => {
+    return this.estadoOperativo().disclosureActivo;
+  });
+
+  readonly pasosPeriodo = computed<PasoPeriodoView[]>(() => {
+    return this.estadoOperativo().timeline;
+  });
+
   readonly siguienteAccion = computed(() => {
     const accion = this.validacionCalculo().siguienteAccion;
     const calculo = this.calculo();
@@ -864,26 +918,6 @@ export class ProcesoMensualContainer implements OnInit {
     }
     return 'Resultado preliminar disponible para revision.';
   });
-
-  onPeriodoInput(event: Event): void {
-    const el = event.target as HTMLInputElement;
-    const v = el.value?.trim();
-    if (v) {
-      this.periodoSeleccionado.set(v);
-      this.resultado.set(null);
-      this.preNomina.set(null);
-      this.calculo.set(null);
-      this.snapshotActivo.set(null);
-      this.errorEjecucion.set(null);
-      this.errorGuardadoResultado.set(null);
-      this.errorAprobacionOperativa.set(null);
-      this.exitoGuardadoResultado.set(null);
-      this.identificadorResultadoGuardadoActual.set(null);
-      this.aprobacionOperativa.set(null);
-      this.snapshotCompleto.set(null);
-      this.errorSnapshotCompleto.set(null);
-    }
-  }
 
   validarPeriodo(): void {
     const p = this.periodoSeleccionado();
@@ -1147,6 +1181,10 @@ export class ProcesoMensualContainer implements OnInit {
     document.querySelector('#base-nomina')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 
+  revisarBloqueosOperativos(): void {
+    document.querySelector('#pm-que-falta-ahora')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
   puedeGuardarSnapshot(): boolean {
     const calc = this.calculo();
     if (!validarPeriodoEntradaMensual(this.periodoSeleccionado())) return false;
@@ -1194,6 +1232,35 @@ export class ProcesoMensualContainer implements OnInit {
       return typeof window === 'undefined' || typeof window.confirm !== 'function' ? true : window.confirm(mensaje);
     } catch {
       return true;
+    }
+  }
+
+  badgeVariantPasoPeriodo(estado: PasoPeriodoEstado): 'success' | 'warning' | 'error' | 'default' | 'info' {
+    switch (estado) {
+      case 'Completo':
+        return 'success';
+      case 'Actual':
+        return 'info';
+      case 'Bloqueada':
+        return 'error';
+      default:
+        return 'default';
+    }
+  }
+
+  badgeVariantEstadoOperativo(severidad: ProcesoMensualEstadoSeveridad): 'success' | 'warning' | 'error' | 'default' | 'info' {
+    switch (severidad) {
+      case 'success':
+        return 'success';
+      case 'warning':
+        return 'warning';
+      case 'danger':
+        return 'error';
+      case 'info':
+        return 'info';
+      case 'neutral':
+      default:
+        return 'default';
     }
   }
 
@@ -1451,6 +1518,18 @@ export class ProcesoMensualContainer implements OnInit {
       case 'calcularPreliminar':
         this.calcularPreliminar();
         break;
+      case 'guardarResultado':
+        this.guardarSnapshotPreliminar();
+        break;
+      case 'aprobarResultado':
+        this.aprobarResultadoPreliminar();
+        break;
+      case 'cerrarNomina':
+        this.cerrarNominaOperativa();
+        break;
+      case 'revisarBloqueos':
+        this.revisarBloqueosOperativos();
+        break;
     }
   }
 
@@ -1570,6 +1649,35 @@ export class ProcesoMensualContainer implements OnInit {
       descripcion: item.descripcion,
       accionLabel: item.accionLabel,
       ruta: item.ruta,
+    };
+  }
+
+  private pendienteDesdeValidacion(
+    item: ValidacionOperativaItemView,
+    severidad: ProcesoMensualEstadoSeveridad = item.severidad === 'bloqueo' ? 'danger' : item.severidad === 'advertencia' ? 'warning' : 'info',
+  ): ProcesoMensualPendienteVm {
+    return {
+      codigo: item.codigo,
+      titulo: item.titulo,
+      descripcion: item.descripcion,
+      severidad,
+      ruta: item.ruta,
+      accionLocal: item.accionLocal,
+      accionLabel: item.accionLabel,
+    };
+  }
+
+  private pendienteDesdeResultado(
+    item: ResultadoObservacionView,
+    severidad: ProcesoMensualEstadoSeveridad,
+  ): ProcesoMensualPendienteVm {
+    return {
+      codigo: item.codigo,
+      titulo: item.titulo,
+      descripcion: item.descripcion,
+      severidad,
+      ruta: item.ruta,
+      accionLabel: item.accionLabel,
     };
   }
 
@@ -1745,11 +1853,11 @@ export class ProcesoMensualContainer implements OnInit {
     const advertencias = snapshot.totalAdvertencias ?? 0;
     return {
       versionLabel: snapshot.idCalculoPeriodo
-        ? `Disponible por identificador tecnico ${snapshot.idCalculoPeriodo}`
+        ? `Disponible como referencia interna ${snapshot.idCalculoPeriodo}`
         : 'Version numerica no disponible en esta etapa.',
       fechaGuardadoLabel: this.formatoFechaHora(snapshot.fechaGeneracion),
       versionCalculoLabel: snapshot.versionMotor || 'Version no disponible',
-      identificadorTecnicoLabel: snapshot.hashSnapshot || 'Identificador tecnico no disponible',
+      identificadorTecnicoLabel: snapshot.hashSnapshot || 'Referencia interna no disponible',
       estadoLabel: this.etiquetaEstadoSnapshot(snapshot.estado),
       trabajadoresCalculados: snapshot.totalTrabajadores,
       trabajadoresConObservaciones: advertencias,
@@ -1797,7 +1905,7 @@ export class ProcesoMensualContainer implements OnInit {
       fechaAprobacionLabel: this.formatoFechaHora(aprobacion.fecha),
       usuarioLabel: aprobacion.usuarioLabel || 'Usuario no disponible en esta sesion',
       versionCalculoLabel: snapshot.versionMotor || 'Version no disponible',
-      identificadorTecnicoLabel: snapshot.hashSnapshot || 'Identificador tecnico no disponible',
+      identificadorTecnicoLabel: snapshot.hashSnapshot || 'Referencia interna no disponible',
       identificadorResultado: snapshot.hashSnapshot ?? null,
       idCalculoPeriodo: snapshot.idCalculoPeriodo ?? null,
       trabajadoresCalculados: snapshot.totalTrabajadores,

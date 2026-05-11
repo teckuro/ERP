@@ -1,5 +1,22 @@
 ## Peticiones de estilos (bitácora)
 
+### 2026-05-11 - REM-UX-FLOWS-01 V3 - Visibilidad cliente vs aplicacion
+
+- **Modulo:** Remuneraciones transversal.
+- **Preparar nomina:** el avance principal muestra etapas comprensibles para usuario final: `Preparacion`, `Revision`, `Aprobacion y cierre`, `Liquidaciones`. El flujo interno queda como detalle y trazabilidad secundaria.
+- **Copy visible:** se reemplazan etiquetas tecnicas principales (`Resultado guardado desde BD`, `Identificador tecnico`, `Version del calculo`) por `Detalle del resultado guardado`, `Referencia interna` y `Version interna`.
+- **Liquidaciones oficiales:** `Que falta ahora` conserva solo estado, pendiente, advertencias y accion; la trazabilidad interna baja al disclosure final.
+- **Ajuste posterior:** `Que falta ahora` sale de la columna lateral del CTA y pasa a una banda propia de ancho completo con columnas compactas y listas con altura contenida; esto evita espacios en blanco cuando hay muchos bloqueos o advertencias.
+- **Restricciones:** sin SQL/RPC/RLS/BD, sin formulas legales ni motor, sin PDF/firma/envio, sin Previred/LRE/banco/contabilidad.
+
+### 2026-05-10 - REM-UX-FLOWS-01 V2 - Periodo global y accion principal
+
+- **Modulo:** Remuneraciones transversal.
+- **Preparar nomina:** se elimina el selector local editable `Periodo a validar` y el boton duplicado `Validar periodo` del header. El periodo queda como contexto compacto del periodo activo global y el CTA principal vive en `Siguiente accion recomendada`.
+- **Liquidaciones oficiales:** se elimina el selector local editable de periodo y el CTA primario duplicado en la botonera superior; `Generar liquidaciones oficiales` queda como accion principal del bloque operativo.
+- **Auditoria:** Asignaciones recurrentes, Dashboard y Reportes ya muestran periodo global como contexto. Movimientos del mes mantiene selector local justificado como consulta/listado por periodo y queda como deuda para una fase de unificacion si se requiere.
+- **Restricciones:** sin SQL/RPC/RLS/BD, sin formulas legales ni motor, sin PDF/firma/envio, sin Previred/LRE/banco/contabilidad.
+
 ### 2026-05-04 - Fase 9.5B - Resumen recurrentes y grupos de parametros (Proceso mensual)
 
 - **Modulo:** Remuneraciones / Proceso mensual (`/remuneraciones/proceso-mensual`).
@@ -645,3 +662,51 @@ sin mezclarlo con las reglas base.
 - **Liquidaciones oficiales**: resumen ejecutivo, siguiente accion, bloqueos/advertencias/informacion, contenido principal y trazabilidad secundaria colapsable.
 - **Confirmacion**: generacion de liquidaciones oficiales usa `app-message-box` modal en vez de `window.confirm`.
 - **Alcance respetado**: sin cambios SQL/RPC/RLS, formulas legales ni motor de calculo.
+
+## 2026-05-10 - UX-COMERCIAL-01 V4 usabilidad T00-T09
+
+- **Dashboard**: sin KPIs demo ni salidas externas activas; muestra flujo operativo real, siguiente accion y capacidades futuras separadas.
+- **Reportes**: se convierte en consulta operativa con enlaces a vistas disponibles; reportes formales quedan marcados como fase posterior.
+- **Preparar nomina**: se agrega avance del cierre mensual de 6 pasos, manteniendo resumen ejecutivo y siguiente accion.
+- **Detalle liquidacion**: empty state con motivo, CTA a Liquidaciones oficiales y CTA a Preparar nomina.
+- **Movimientos/asignaciones**: empty states orientados a impacto en nomina y motivo visible cuando una accion depende de seleccionar trabajador.
+- **Restriccion**: no se implementan ni activan Previred, LRE, banco, contabilidad, PDF, firma ni envio.
+
+## 2026-05-10 - UX-QA-01-FIX V5 - Tabs, collapsables y densidad
+
+- **Dashboard**: se agrega status strip compacto, quick links bajos para navegacion y salidas futuras en disclosure/lista compacta.
+- **Preparar nomina**: timeline de 6 pasos pasa a formato compacto, con metricas de resumen mas densas.
+- **Liquidaciones oficiales**: estado no disponible compacto, ocultamiento de resumen sin datos y empty state reducido para trabajadores.
+- **Reportes**: tabbar real `Disponibles / No disponible en esta fase`, con lista futura compacta y sin acciones externas activas.
+- **Detalle liquidacion**: empty state reducido, manteniendo CTA primario y nota tecnica secundaria.
+- **Asignaciones recurrentes**: ayuda contextual pasa a collapsable y empty state agrega accion secundaria compacta.
+- **Restricciones**: sin SQL/RPC/RLS/BD, sin formulas/motor, sin PDF/firma/envio, sin Previred/LRE/banco/contabilidad.
+
+## 2026-05-10 - UX-PREP-NOM-MAQUETACION-REAL-02
+
+- **Preparar nomina**: la accion siguiente queda como primer bloque operativo, con un unico CTA principal derivado de `validacionCalculo().siguienteAccion`.
+- **Workspace**: se agrega layout superior de dos columnas con avance del cierre a la izquierda y pendientes/alertas/accesos rapidos a la derecha.
+- **Densidad**: el resumen se reduce a indicadores operativos y el alcance explicativo pasa a disclosure secundario.
+- **Detalle operativo**: Base, calculo preliminar, guardado, aprobacion y cierre interno quedan agrupados debajo de la decision principal.
+- **Restricciones**: sin SQL/RPC/RLS/BD, sin formulas/motor, sin Previred/LRE/banco/contabilidad/PDF/firma/envio.
+
+## 2026-05-10 - UX-PREP-NOM-ORDEN-GUIADO-04
+
+- **Preparar nomina**: se ordena como flujo guiado del periodo: accion recomendada, avance compacto, resumen minimo y panel derecho de pendientes.
+- **Panel derecho**: antes de validar ya no muestra falsos "sin bloqueos"; presenta pendiente de validacion y alcance de revision.
+- **Detalle operativo**: las etapas quedan en disclosures por estado (base, calculo/resultado, guardado, aprobacion, cierre/liquidaciones) para evitar mostrar todo abierto.
+- **Restricciones**: solo maquetacion UI; sin SQL/RPC/RLS/BD, sin formulas/motor, sin activar Previred/LRE/banco/contabilidad/PDF/firma/envio.
+
+## 2026-05-10 - UX-PREP-NOM-USABILIDAD-DISTRIBUCION
+
+- **Preparar nomina**: se elimina markup duplicado oculto y se reduce competencia entre el boton de header y la accion principal.
+- **Detalle operativo**: se agrega indice lateral de etapas con estado y descripcion breve, dejando el contenido largo en una columna principal.
+- **Responsive**: el indice de etapas pasa a grilla compacta en tablet y a una columna en mobile.
+- **Restricciones**: solo distribucion/maquetacion; sin cambios de motor, persistencia, formulas, SQL, RPC ni salidas externas.
+
+## 2026-05-10 - NOM-UX-STATE-01
+
+- **Preparar nomina**: se centraliza el guiado operativo por estado en una regla pura de UI dentro de `features/nomina-mensual/rules`.
+- **Accion principal**: el CTA superior ahora deriva de la matriz de estado del periodo, evitando invitar a guardar si hay bloqueos.
+- **Panel derecho y avance**: `Que falta ahora`, timeline e indice lateral consumen el mismo modelo de estado operativo.
+- **Restricciones**: sin motor, formulas, SQL/RPC/RLS, BD, liquidaciones oficiales nuevas, cierre operativo nuevo ni salidas externas.

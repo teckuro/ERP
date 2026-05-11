@@ -37,3 +37,21 @@ Boton deshabilitado sin motivo.
 Preparar nomina sin siguiente accion.
 Liquidaciones sin explicar cierre.
 ```
+
+## Resultado ejecucion 2026-05-10
+
+```txt
+Preparar nomina: 9/10
+Liquidaciones oficiales: 9/10
+Detalle liquidacion: 8/10
+Dashboard/reportes: 8/10
+Movimientos/asignaciones: 8/10
+Shell/header: 8/10
+```
+
+Notas:
+
+- Dashboard y Reportes separan capacidades futuras y no muestran acciones activas de salidas externas.
+- Detalle vacio incluye CTA de regreso y CTA hacia Preparar nomina.
+- Movimientos/asignaciones explican impacto en nomina y condicion de accion principal.
+- Validacion automatica: `npx ng test --watch=false` OK, 43 archivos / 434 tests; `npm run build` OK con warnings CSS conocidos.

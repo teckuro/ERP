@@ -109,6 +109,20 @@
   justify-self: end;
 }
 
+.nm-nomina-hint {
+  border: 1px solid #dbeafe;
+  border-radius: 6px;
+  background: #eff6ff;
+  padding: 0.55rem 0.7rem;
+  color: #1e3a8a;
+  font-size: var(--nm-text-sm);
+  line-height: 1.4;
+}
+
+.nm-nomina-hint p {
+  margin: 0;
+}
+
 .nm-field-label {
   display: block;
   margin-bottom: 0.18rem;

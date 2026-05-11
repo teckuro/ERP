@@ -9,7 +9,7 @@ Guiar el **proceso mensual** por periodo `YYYY-MM`: revisar prerequisitos (param
 - Pantalla **Proceso mensual** bajo `/remuneraciones/proceso-mensual`.
 - **Prevalidaciones** orquestadas por `ProcesoMensualService` con reglas puras en `proceso-mensual-prevalidacion.rules.ts`, grupos minimos en `proceso-mensual-parametros-minimos.rules.ts` y conteos de recurrentes en `proceso-mensual-recurrentes.rules.ts`.
 - UI en `features/nomina-mensual/containers/proceso-mensual-container/`; pagina de ruta solo wrapper (`frontend-interfaces`).
-- Selector de periodo y accion **Validar periodo**; muestra estado global, bloqueos, advertencias, informaciones y filas por area; resumen con conteos de recurrentes y linea compacta `parametrosGrupos` (ids y clasificacion, sin cifras normativas).
+- Periodo activo global como fuente de verdad; la pantalla hija no duplica selector editable. La accion **Validar periodo** queda como CTA principal guiado por estado, no como boton repetido en el header. Muestra estado global, bloqueos, advertencias, informaciones y filas por area; resumen con conteos de recurrentes y linea compacta `parametrosGrupos` (ids y clasificacion, sin cifras normativas).
 
 ## 3. Fuera de alcance (explicito)
 
@@ -74,3 +74,26 @@ Despues de validar cierre operativo y liquidaciones oficiales internas, el modul
 ```
 
 No se deben agregar nuevas salidas legales/financieras en `UX-COMERCIAL-01`.
+
+<!-- REM-UX-FLOWS-01-V2 -->
+
+## Regla transversal de periodo y accion principal
+
+## Regla transversal de visibilidad cliente vs aplicacion
+
+La pantalla `Preparar nomina` debe priorizar la comprension del usuario final:
+
+```txt
+Periodo activo global
+-> Estado final visible
+-> Accion principal
+-> Que falta ahora
+-> Informacion final
+-> Trazabilidad secundaria
+```
+
+No se deben promover como flujo principal terminos de aplicacion como snapshot, metadata, persistencia, payload, RPC, version tecnica, hash o identificadores internos. Si son necesarios para soporte o auditoria, deben quedar en disclosures secundarios y con copy de negocio (`Referencia interna`, `Version interna`, `Detalle del resultado guardado`).
+
+En flujos operativos de Remuneraciones, `PeriodoActivoService` es la fuente visual y funcional del periodo activo. `Preparar nomina` debe mostrarlo como contexto compacto y validar/generar/calcular/guardar/aprobar/cerrar sobre ese periodo.
+
+No debe existir un segundo `input type="month"` local en `Preparar nomina` mientras el header/padre ya tenga selector global. La accion principal visible se resuelve en la matriz de estado operativo; el header conserva estado y contexto, no un CTA duplicado.

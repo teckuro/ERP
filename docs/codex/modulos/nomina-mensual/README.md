@@ -49,3 +49,55 @@ trazabilidad secundaria
 ```
 
 No agregar Previred, LRE, banco, contabilidad, PDF ni firma en esta etapa.
+
+## UX-COMERCIAL-01 V4 aplicado
+
+`Preparar nomina` mantiene el patron:
+
+```txt
+header operativo
+avanzar cierre mensual
+resumen ejecutivo
+siguiente accion
+bloqueos / advertencias / informacion
+resultado y cierre
+trazabilidad secundaria
+```
+
+Tambien se reforzaron entradas del flujo:
+
+- Movimientos del mes explica impacto en nomina y guia el empty state hacia registrar bonos, descuentos, anticipos o ajustes.
+- Asignaciones recurrentes muestra motivo visible cuando no se puede crear sin trabajador seleccionado.
+- Dashboard y Reportes ya no presentan salidas futuras como acciones disponibles.
+
+## REM-UX-FLOWS-01 V2 aplicado
+
+`Preparar nomina` consume el periodo activo global expuesto por el header/padre. La pantalla ya no muestra un segundo selector editable de periodo ni duplica el boton `Validar periodo` en el header.
+
+La prioridad visual queda:
+
+```txt
+Periodo activo global
+-> Estado del flujo
+-> Siguiente accion recomendada
+-> Que falta ahora
+-> Detalle operativo
+-> Trazabilidad secundaria
+```
+
+Para cambiar el periodo se usa el selector superior global. La pantalla hija solo muestra el periodo como contexto y ejecuta sus acciones sobre esa fuente.
+
+## REM-UX-FLOWS-01 V3 aplicado
+
+`Preparar nomina` separa lectura de cliente y trazabilidad interna:
+
+```txt
+Periodo activo global
+-> Estado visible del periodo
+-> Siguiente accion recomendada
+-> Que falta ahora
+-> Resumen final visible
+-> Detalle y trazabilidad secundaria
+```
+
+El avance visible usa etapas de negocio: `Preparacion`, `Revision`, `Aprobacion y cierre`, `Liquidaciones`. Los pasos internos de validacion, base, calculo, guardado y persistencia quedan dentro del detalle operativo secundario.

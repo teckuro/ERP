@@ -114,6 +114,14 @@
   align-items: center;
 }
 
+.hd-disabled-reason {
+  flex-basis: 100%;
+  color: #64748b;
+  font-size: 0.72rem;
+  line-height: 1.35;
+  text-align: right;
+}
+
 .hd-field-label {
   display: block;
   margin-bottom: 0.25rem;
@@ -566,8 +574,8 @@
 }
 
 .hd-empty-tab {
-  padding: 1.25rem 1rem;
-  border-radius: 10px;
+  padding: 0.9rem 1rem;
+  border-radius: 6px;
   border: 1px dashed #cbd5e1;
   background: #f8fafc;
   color: #64748b;
@@ -857,8 +865,8 @@
 
 .hd-nomina-hint {
   margin: 0;
-  padding: 0.65rem 1rem;
-  border-radius: 0.5rem;
+  padding: 0;
+  border-radius: 6px;
   border: 1px solid #e2e8f0;
   background: #f8fafc;
   font-size: 0.8125rem;
@@ -866,8 +874,17 @@
   line-height: 1.45;
 }
 
+.hd-nomina-hint summary {
+  min-height: 2.5rem;
+  cursor: pointer;
+  padding: 0.55rem 0.75rem;
+  font-weight: 700;
+  color: #0f172a;
+}
+
 .hd-nomina-hint p {
   margin: 0;
+  padding: 0 0.75rem 0.75rem;
 }
 
 .hd-nomina-hint-link {

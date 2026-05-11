@@ -67,6 +67,13 @@
     </app-card-content>
   </app-card>
 
+  <div class="nm-nomina-hint" role="note">
+    <p>
+      Impacto en nomina: los movimientos aprobados del periodo se consideran al preparar la nomina. Si no hay filas,
+      registra el primer bono, descuento, anticipo o ajuste antes de validar el cierre mensual.
+    </p>
+  </div>
+
   @if (formAbierto()) {
     <app-card>
       <app-card-header className="px-4 py-3 border-b border-gray-100">
@@ -294,7 +301,7 @@
         [trackBy]="trackNovedad"
         gridHeight="min(34rem, calc(100vh - 26rem))"
         emptyTitle="No hay movimientos registrados para este periodo."
-        emptyDescription="Puedes registrar movimientos del mes y enviarlos a revision antes de preparar la nomina."
+        emptyDescription="Registra bonos, descuentos, anticipos o ajustes y envialos a revision antes de preparar la nomina."
       >
         <ng-template appDataGridCell="estado" let-row>
           <span [class]="claseEstado(row.estado)">{{ etiquetaEstado(row.estado) }}</span>

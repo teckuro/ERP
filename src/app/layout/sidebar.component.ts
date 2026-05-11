@@ -36,51 +36,44 @@ type MenuSection = {
 
       <nav class="flex-1 overflow-y-auto py-4">
         <ul class="space-y-4 px-3">
-          @for (section of menuSections; track section.label ?? 'principal') {
-            <li>
-              @if (section.label) {
-                <p class="px-3 pb-1 text-[11px] font-semibold uppercase tracking-wide text-gray-500">
-                  {{ section.label }}
-                </p>
-              }
+          <li *ngFor="let section of menuSections; trackBy: trackSection">
+            <p *ngIf="section.label" class="px-3 pb-1 text-[11px] font-semibold uppercase tracking-wide text-gray-500">
+              {{ section.label }}
+            </p>
               <ul class="space-y-1">
-                @for (item of section.items; track item.path) {
-                  <li>
-                    <a
-                      [routerLink]="item.path"
-                      routerLinkActive="is-active bg-blue-50 text-blue-700 font-semibold"
-                      [routerLinkActiveOptions]="{ exact: item.exact ?? false }"
-                      #rla="routerLinkActive"
-                      class="sidebar-link flex items-start gap-3 rounded-md px-3 py-2.5 transition-colors duration-150"
-                      [class.text-blue-700]="rla.isActive"
-                      [class.bg-blue-50]="rla.isActive"
-                      [class.font-semibold]="rla.isActive"
-                      [class.text-gray-700]="!rla.isActive"
-                      [class.hover:bg-gray-50]="!rla.isActive"
-                      [class.hover:text-gray-900]="!rla.isActive"
-                    >
-                      <lucide-icon
-                        [name]="item.icon"
-                        [class]="'mt-0.5 h-5 w-5 flex-shrink-0 ' + (rla.isActive ? 'text-blue-600' : 'text-gray-500')"
-                      ></lucide-icon>
-                      <span class="min-w-0">
-                        <span class="block text-sm leading-5">{{ item.label }}</span>
-                        @if (item.hint) {
-                          <span
-                            class="mt-0.5 block text-[11px] leading-4"
-                            [class.text-blue-600]="rla.isActive"
-                            [class.text-gray-500]="!rla.isActive"
-                          >
-                            {{ item.hint }}
-                          </span>
-                        }
+                <li *ngFor="let item of section.items; trackBy: trackItem">
+                  <a
+                    [routerLink]="item.path"
+                    routerLinkActive="is-active bg-blue-50 text-blue-700 font-semibold"
+                    [routerLinkActiveOptions]="{ exact: item.exact ?? false }"
+                    #rla="routerLinkActive"
+                    class="sidebar-link flex items-start gap-3 rounded-md px-3 py-2.5 transition-colors duration-150"
+                    [class.text-blue-700]="rla.isActive"
+                    [class.bg-blue-50]="rla.isActive"
+                    [class.font-semibold]="rla.isActive"
+                    [class.text-gray-700]="!rla.isActive"
+                    [class.hover:bg-gray-50]="!rla.isActive"
+                    [class.hover:text-gray-900]="!rla.isActive"
+                  >
+                    <lucide-icon
+                      [name]="item.icon"
+                      [class]="'mt-0.5 h-5 w-5 flex-shrink-0 ' + (rla.isActive ? 'text-blue-600' : 'text-gray-500')"
+                    ></lucide-icon>
+                    <span class="min-w-0">
+                      <span class="block text-sm leading-5">{{ item.label }}</span>
+                      <span
+                        *ngIf="item.hint"
+                        class="mt-0.5 block text-[11px] leading-4"
+                        [class.text-blue-600]="rla.isActive"
+                        [class.text-gray-500]="!rla.isActive"
+                      >
+                        {{ item.hint }}
                       </span>
-                    </a>
-                  </li>
-                }
+                    </span>
+                  </a>
+                </li>
               </ul>
-            </li>
-          }
+          </li>
         </ul>
       </nav>
 
@@ -170,4 +163,12 @@ export class SidebarComponent {
       ],
     },
   ];
+
+  trackSection(index: number, section: MenuSection): string {
+    return section.label ?? `principal-${index}`;
+  }
+
+  trackItem(_index: number, item: MenuItem): string {
+    return item.path;
+  }
 }
