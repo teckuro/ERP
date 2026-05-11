@@ -28,17 +28,21 @@
           <lucide-icon icon class="w-4 h-4" [img]="plusIcon"></lucide-icon>
           Nueva asignacion recurrente
         </app-button>
+        @if (!personaIdSeleccionada()) {
+          <span class="hd-disabled-reason">Selecciona un trabajador para crear una asignacion.</span>
+        }
       </div>
     </div>
   </header>
 
-  <div class="hd-nomina-hint" role="note">
+  <details class="hd-nomina-hint">
+    <summary>Como impacta en nomina</summary>
     <p>
       Los movimientos puntuales del periodo se cargan en
       <a routerLink="/remuneraciones/novedades-mensuales" class="hd-nomina-hint-link">Movimientos del mes</a>.
       <strong>Preparar nomina</strong> integra esas lineas junto con asignaciones recurrentes y parametros.
     </p>
-  </div>
+  </details>
 
   <app-card className="hd-worker-card">
     <app-card-header className="hd-worker-card-head">
@@ -68,7 +72,7 @@
         <div class="hd-worker-panel hd-worker-panel--summary">
           @if (!personaIdSeleccionada()) {
             <div class="hd-empty-worker" role="status">
-              <p>Selecciona un trabajador para administrar sus asignaciones recurrentes.</p>
+              <p>Selecciona un trabajador para ver que asignaciones impactan su nomina del periodo.</p>
             </div>
           } @else if (empleadoActual(); as emp) {
             <div class="hd-worker-detail">
@@ -117,7 +121,7 @@
             [trackBy]="trackHdRow"
             gridHeight="min(32rem, calc(100vh - 22rem))"
             emptyTitle="Sin asignaciones recurrentes"
-            emptyDescription="No hay asignaciones recurrentes para este trabajador."
+            emptyDescription="Crea una asignacion recurrente si este trabajador debe recibir un haber, descuento o aporte vigente en nomina."
           >
             <ng-template appDataGridCell="tipoConcepto" let-row>
               @if (row.tipoConcepto === 'HABER') {
@@ -179,7 +183,8 @@
         </div>
       } @else {
         <div class="hd-empty-tab">
-          <p>Selecciona un trabajador para ver sus asignaciones recurrentes.</p>
+          <p>Selecciona un trabajador para ver sus asignaciones recurrentes y su impacto en Preparar nomina.</p>
+          <button type="button" class="hd-link-btn" (click)="refrescar()">Refrescar trabajadores</button>
         </div>
       }
     </div>

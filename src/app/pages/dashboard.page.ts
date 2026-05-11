@@ -1,365 +1,307 @@
-import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Component, inject } from '@angular/core';
+import { RouterLink } from '@angular/router';
 import { LucideAngularModule } from 'lucide-angular';
-import {
-  CardComponent,
-  CardContentComponent,
-  CardHeaderComponent,
-} from '../shared/components/ui/card.component';
-import { BadgeComponent } from '../shared/components/ui/badge.component';
-import { ButtonComponent } from '../shared/components/ui/button.component';
+
 import { PeriodoActivoService } from '../core/services/periodo-activo.service';
+import { BadgeComponent } from '../shared/components/ui/badge.component';
+import { CardComponent, CardContentComponent, CardHeaderComponent } from '../shared/components/ui/card.component';
 
 @Component({
   selector: 'app-dashboard-page',
   standalone: true,
-  imports: [
-    CommonModule,
-    LucideAngularModule,
-    CardComponent,
-    CardHeaderComponent,
-    CardContentComponent,
-    BadgeComponent,
-    ButtonComponent,
-  ],
+  imports: [CommonModule, RouterLink, LucideAngularModule, CardComponent, CardHeaderComponent, CardContentComponent, BadgeComponent],
   template: `
-    <div class="space-y-6">
-      <!-- Header -->
-      <div class="flex items-center justify-between">
+    <div class="space-y-4">
+      <header class="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
         <div>
-          <h1 class="text-xl font-semibold text-gray-900">Dashboard de Gestión</h1>
-          <p class="text-sm text-gray-600 mt-1">Centro de mando · Período activo {{ periodoActivo.etiqueta() }}</p>
+          <nav class="text-xs text-gray-500">Inicio / Dashboard</nav>
+          <h1 class="text-xl font-semibold text-gray-900">Dashboard operativo</h1>
+          <p class="mt-1 text-sm text-gray-600">
+            Vista de entrada para operar el periodo {{ periodoActivo.etiqueta() }} sin mezclar salidas futuras.
+          </p>
         </div>
-        <app-button variant="primary">
-          <lucide-icon icon class="w-4 h-4" name="file-text"></lucide-icon>
-          Generar Reporte
-        </app-button>
-      </div>
+        <a
+          routerLink="/remuneraciones/proceso-mensual"
+          class="inline-flex h-9 items-center justify-center gap-2 rounded-md border border-blue-600 bg-blue-600 px-3 text-sm font-semibold text-white hover:bg-blue-700"
+        >
+          <lucide-icon class="h-4 w-4" name="calculator"></lucide-icon>
+          Preparar nomina
+        </a>
+      </header>
 
-      <!-- KPI Cards - Principales -->
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <app-card [hover]="true" className="border-l-4 border-l-blue-600">
-          <app-card-content>
-            <div class="flex items-start justify-between">
+      <section class="dashboard-status-strip" aria-label="Estado operativo del periodo">
+        <div>
+          <strong>Periodo {{ periodoActivo.etiqueta() }}</strong>
+          <span>Siguiente accion: validar y preparar nomina</span>
+        </div>
+        <a routerLink="/remuneraciones/proceso-mensual">Ir a preparar nomina</a>
+      </section>
+
+      <section>
+        <app-card>
+          <app-card-content className="p-4">
+            <div class="mb-4 flex flex-wrap items-center justify-between gap-2">
               <div>
-                <p class="text-sm text-gray-600 mb-1">Costo Empresa Total</p>
-                <p class="text-xl font-semibold text-gray-900">$20.800.000</p>
-                <div class="flex items-center gap-1 mt-2">
-                  <lucide-icon class="w-4 h-4 text-green-600" name="arrow-up-right"></lucide-icon>
-                  <span class="text-sm text-green-600 font-medium">+3.5%</span>
-                  <span class="text-sm text-gray-500">vs mes anterior</span>
-                </div>
-                <p class="text-xs text-gray-500 mt-2">Incluye leyes sociales y AFC</p>
+                <h2 class="text-sm font-semibold text-gray-900">Flujo validado del periodo</h2>
+                <p class="text-xs text-gray-500">Usa estas pantallas para avanzar y revisar el estado real.</p>
               </div>
-              <div class="w-12 h-12 bg-blue-50 rounded-lg flex items-center justify-center">
-                <lucide-icon class="w-6 h-6 text-blue-600" name="dollar-sign"></lucide-icon>
-              </div>
+              <app-badge variant="info">Operativo</app-badge>
+            </div>
+
+            <div class="dashboard-quick-links">
+              <a routerLink="/remuneraciones/proceso-mensual" class="dashboard-tile">
+                <span>
+                  <strong>Preparar nomina</strong>
+                  <small>Valida trabajadores, parametros, movimientos y asignaciones del periodo.</small>
+                </span>
+                <lucide-icon class="h-4 w-4 shrink-0 text-gray-400" name="arrow-up-right"></lucide-icon>
+              </a>
+              <a routerLink="/remuneraciones/liquidaciones" class="dashboard-tile">
+                <span>
+                  <strong>Liquidaciones oficiales</strong>
+                  <small>Revisa la salida interna generada desde una nomina cerrada operativamente.</small>
+                </span>
+                <lucide-icon class="h-4 w-4 shrink-0 text-gray-400" name="arrow-up-right"></lucide-icon>
+              </a>
+              <a routerLink="/remuneraciones/novedades-mensuales" class="dashboard-tile">
+                <span>
+                  <strong>Movimientos del mes</strong>
+                  <small>Registra bonos, descuentos, anticipos y ajustes puntuales antes del calculo.</small>
+                </span>
+                <lucide-icon class="h-4 w-4 shrink-0 text-gray-400" name="arrow-up-right"></lucide-icon>
+              </a>
+              <a routerLink="/remuneraciones/haberes-descuentos" class="dashboard-tile">
+                <span>
+                  <strong>Asignaciones recurrentes</strong>
+                  <small>Mantiene haberes, descuentos y aportes vigentes por trabajador.</small>
+                </span>
+                <lucide-icon class="h-4 w-4 shrink-0 text-gray-400" name="arrow-up-right"></lucide-icon>
+              </a>
+              <a routerLink="/empleados" class="dashboard-tile">
+                <span>
+                  <strong>Empleados</strong>
+                  <small>Completa fichas y datos necesarios antes de preparar el periodo.</small>
+                </span>
+                <lucide-icon class="h-4 w-4 shrink-0 text-gray-400" name="arrow-up-right"></lucide-icon>
+              </a>
+              <a routerLink="/parametros" class="dashboard-tile">
+                <span>
+                  <strong>Parametros</strong>
+                  <small>Revisa valores del sistema que habilitan la preparacion mensual.</small>
+                </span>
+                <lucide-icon class="h-4 w-4 shrink-0 text-gray-400" name="arrow-up-right"></lucide-icon>
+              </a>
             </div>
           </app-card-content>
         </app-card>
+      </section>
 
-        <app-card [hover]="true" className="border-l-4 border-l-green-600">
-          <app-card-content>
-            <div class="flex items-start justify-between">
-              <div>
-                <p class="text-sm text-gray-600 mb-1">Total Líquido a Pagar</p>
-                <p class="text-xl font-semibold text-gray-900">$16.200.000</p>
-                <div class="flex items-center gap-1 mt-2">
-                  <lucide-icon class="w-4 h-4 text-green-600" name="arrow-up-right"></lucide-icon>
-                  <span class="text-sm text-green-600 font-medium">+3.2%</span>
-                  <span class="text-sm text-gray-500">vs mes anterior</span>
-                </div>
-                <p class="text-xs text-gray-500 mt-2">38 de 42 liquidaciones generadas</p>
-              </div>
-              <div class="w-12 h-12 bg-green-50 rounded-lg flex items-center justify-center">
-                <lucide-icon class="w-6 h-6 text-green-600" name="trending-up"></lucide-icon>
-              </div>
-            </div>
-          </app-card-content>
-        </app-card>
-
-        <app-card [hover]="true" className="border-l-4 border-l-purple-600">
-          <app-card-content>
-            <div class="flex items-start justify-between">
-              <div>
-                <p class="text-sm text-gray-600 mb-1">Estado Previred</p>
-                <p class="text-lg font-semibold text-gray-900">Sin Cargar</p>
-                <div class="mt-3">
-                  <app-badge variant="warning">Pendiente</app-badge>
-                </div>
-                <p class="text-xs text-gray-500 mt-2">Vencimiento: 10/05/2026</p>
-              </div>
-              <div class="w-12 h-12 bg-purple-50 rounded-lg flex items-center justify-center">
-                <lucide-icon class="w-6 h-6 text-purple-600" name="upload"></lucide-icon>
-              </div>
-            </div>
-          </app-card-content>
-        </app-card>
-
-        <app-card [hover]="true" className="border-l-4 border-l-yellow-600">
-          <app-card-content>
-            <div class="flex items-start justify-between">
-              <div>
-                <p class="text-sm text-gray-600 mb-1">Días para Cierre</p>
-                <p class="text-xl font-semibold text-gray-900">{{ diasParaCierre }} días</p>
-                <div class="mt-3">
-                  <app-badge [variant]="badgeVariantDiasParaCierre">
-                    {{ badgeLabelDiasParaCierre }}
-                  </app-badge>
-                </div>
-                <p class="text-xs text-gray-500 mt-2">Cierre: 30/04/2026</p>
-              </div>
-              <div class="w-12 h-12 bg-yellow-50 rounded-lg flex items-center justify-center">
-                <lucide-icon class="w-6 h-6 text-yellow-600" name="calendar"></lucide-icon>
-              </div>
-            </div>
-          </app-card-content>
-        </app-card>
-      </div>
-
-      <!-- Gráfico Comparativo y Acceso Rápido -->
-      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <!-- “Chart” mock (para pixel perfect del layout primero) -->
-        <app-card className="lg:col-span-2">
-          <app-card-header>
-            <h3 class="font-semibold text-gray-900">Comparativo de Costos Mensuales</h3>
-            <p class="text-sm text-gray-600 mt-1">Últimos 7 meses - Costo Empresa vs Líquido a Pagar</p>
-          </app-card-header>
-          <app-card-content>
-            <div class="w-full h-[320px] rounded-lg border border-gray-200 bg-white">
-              <div class="h-full p-4 flex items-end gap-3">
-                @for (item of costosComparativos; track item.mes) {
-                  <div class="flex-1 flex flex-col items-center gap-2">
-                    <div class="w-full flex items-end gap-1 h-56">
-                      <div
-                        class="flex-1 rounded-t-md bg-blue-600"
-                        [style.height.%]="heightPct(item.costoEmpresa)"
-                      ></div>
-                      <div
-                        class="flex-1 rounded-t-md bg-green-600"
-                        [style.height.%]="heightPct(item.liquidoPagar)"
-                      ></div>
-                    </div>
-                    <div class="text-xs text-gray-600">{{ item.mes }}</div>
-                  </div>
-                }
-              </div>
-            </div>
-          </app-card-content>
-        </app-card>
-
-        <!-- Acceso Rápido -->
-        <app-card className="bg-gradient-to-br from-blue-50 to-blue-100">
-          <app-card-header>
-            <h3 class="font-semibold text-blue-900">Acceso Rápido</h3>
-            <p class="text-sm text-blue-700 mt-1">Archivos legales obligatorios</p>
-          </app-card-header>
-          <app-card-content className="space-y-3">
-            <app-button
-              variant="primary"
-              className="w-full justify-start bg-white hover:bg-gray-50 text-blue-900 border border-blue-200"
-            >
-              <lucide-icon icon class="w-5 h-5" name="file-text"></lucide-icon>
-              <div class="text-left flex-1">
-                <p class="font-medium">Libro de Remuneraciones</p>
-                <p class="text-xs text-blue-700 font-normal">LRE - Obligatorio mensual</p>
-              </div>
-              <lucide-icon class="w-4 h-4" name="download"></lucide-icon>
-            </app-button>
-
-            <app-button
-              variant="primary"
-              className="w-full justify-start bg-white hover:bg-gray-50 text-purple-900 border border-purple-200"
-            >
-              <lucide-icon icon class="w-5 h-5 text-purple-600" name="upload"></lucide-icon>
-              <div class="text-left flex-1">
-                <p class="font-medium text-purple-900">Archivo PREVIRED</p>
-                <p class="text-xs text-purple-700 font-normal">TXT - Vence 10/05/2026</p>
-              </div>
-              <lucide-icon class="w-4 h-4 text-purple-900" name="download"></lucide-icon>
-            </app-button>
-
-            <app-button variant="outline" className="w-full justify-start">
-              <lucide-icon icon class="w-5 h-5" name="file-text"></lucide-icon>
-              <div class="text-left flex-1">
-                <p class="font-medium">CSV Carga Bancaria</p>
-                <p class="text-xs text-gray-600 font-normal">Para pago de nómina</p>
-              </div>
-              <lucide-icon class="w-4 h-4" name="download"></lucide-icon>
-            </app-button>
-
-            <div class="pt-3 border-t border-blue-200">
-              <p class="text-xs text-blue-800"><strong>Recordatorio:</strong> Todos los archivos deben generarse antes del cierre del periodo.</p>
-            </div>
-          </app-card-content>
-        </app-card>
-      </div>
-
-      <!-- Alertas y Actividad -->
-      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <!-- Alerts -->
+      <section class="grid gap-4 lg:grid-cols-2">
         <app-card>
           <app-card-header>
-            <div class="flex items-center justify-between">
-              <h3 class="font-semibold text-gray-900">Alertas y Validaciones</h3>
-              <app-badge variant="warning">{{ alerts.length }}</app-badge>
-            </div>
+            <h2 class="text-sm font-semibold text-gray-900">Accesos implementados</h2>
           </app-card-header>
-          <app-card-content className="space-y-3">
-            @for (alert of alerts; track alert.id) {
-              <div
-                class="p-3 rounded-lg border"
-                [class.bg-red-50]="alert.type === 'error'"
-                [class.border-red-200]="alert.type === 'error'"
-                [class.bg-yellow-50]="alert.type === 'warning'"
-                [class.border-yellow-200]="alert.type === 'warning'"
-                [class.bg-blue-50]="alert.type === 'info'"
-                [class.border-blue-200]="alert.type === 'info'"
-              >
-                <div class="flex items-start gap-2">
-                  @if (alert.type === 'error') {
-                    <lucide-icon class="w-4 h-4 text-red-600 mt-0.5 flex-shrink-0" name="alert-triangle"></lucide-icon>
-                  } @else if (alert.type === 'warning') {
-                    <lucide-icon class="w-4 h-4 text-yellow-600 mt-0.5 flex-shrink-0" name="clock"></lucide-icon>
-                  } @else {
-                    <lucide-icon class="w-4 h-4 text-blue-600 mt-0.5 flex-shrink-0" name="check-circle"></lucide-icon>
-                  }
-                  <div class="flex-1 min-w-0">
-                    <p class="text-sm text-gray-900">{{ alert.message }}</p>
-                    <p class="text-xs text-gray-600 mt-1">Prioridad: {{ alert.priority }}</p>
-                  </div>
-                </div>
-              </div>
-            }
-
-            <app-button variant="outline" size="sm" className="w-full">Ver Todas las Alertas</app-button>
-          </app-card-content>
-        </app-card>
-
-        <!-- Recent Activity -->
-        <app-card>
-          <app-card-header>
-            <h3 class="font-semibold text-gray-900">Actividad Reciente</h3>
-          </app-card-header>
-          <app-card-content className="space-y-4">
-            @for (activity of recentActivity; track activity.id) {
-              <div class="flex items-start gap-3">
-                <div class="w-2 h-2 bg-blue-600 rounded-full mt-2 flex-shrink-0"></div>
-                <div class="flex-1 min-w-0">
-                  <p class="text-sm font-medium text-gray-900">{{ activity.action }}</p>
-                  <p class="text-sm text-gray-600">{{ activity.employee }}</p>
-                  <p class="text-xs text-gray-500 mt-1">{{ activity.time }}</p>
-                </div>
-              </div>
-            }
-          </app-card-content>
-        </app-card>
-      </div>
-
-      <!-- KPIs Secundarios -->
-      <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <app-card>
-          <app-card-content>
-            <div class="flex items-center justify-between">
-              <div>
-                <p class="text-xs text-gray-600">Empleados Activos</p>
-                <p class="text-lg font-semibold text-gray-900 mt-1">42</p>
-              </div>
-              <lucide-icon class="w-8 h-8 text-blue-600" name="users"></lucide-icon>
+          <app-card-content className="p-4">
+            <div class="grid gap-2 sm:grid-cols-2">
+              <a routerLink="/empleados" class="dashboard-link">Empleados</a>
+              <a routerLink="/parametros" class="dashboard-link">Parametros</a>
+              <a routerLink="/remuneraciones/conceptos" class="dashboard-link">Conceptos de remuneracion</a>
+              <a routerLink="/reportes" class="dashboard-link">Reportes</a>
             </div>
           </app-card-content>
         </app-card>
 
-        <app-card>
-          <app-card-content>
-            <div class="flex items-center justify-between">
-              <div>
-                <p class="text-xs text-gray-600">Licencias Activas</p>
-                <p class="text-lg font-semibold text-gray-900 mt-1">3</p>
+        <details class="dashboard-disclosure">
+          <summary>
+            <span>Salidas futuras no disponibles</span>
+            <app-badge variant="default" size="sm">4</app-badge>
+          </summary>
+          <div class="space-y-2 p-3">
+              <div class="dashboard-future">
+                <div><strong>Previred</strong><app-badge variant="default" size="sm">Fase posterior</app-badge></div>
+                <p>No hay generacion ni descarga activa desde el dashboard.</p>
               </div>
-              <lucide-icon class="w-8 h-8 text-yellow-600" name="file-text"></lucide-icon>
-            </div>
-          </app-card-content>
-        </app-card>
+              <div class="dashboard-future">
+                <div><strong>Libro de remuneraciones</strong><app-badge variant="default" size="sm">Fase posterior</app-badge></div>
+                <p>Queda separado de la operacion actual hasta una fase dedicada.</p>
+              </div>
+              <div class="dashboard-future">
+                <div><strong>Archivo banco</strong><app-badge variant="default" size="sm">Fase posterior</app-badge></div>
+                <p>No se ofrece como accion activa mientras no exista el flujo validado.</p>
+              </div>
+              <div class="dashboard-future">
+                <div><strong>Centralizacion contable</strong><app-badge variant="default" size="sm">Fase posterior</app-badge></div>
+                <p>Se reserva para una fase posterior con reglas y revision propias.</p>
+              </div>
+          </div>
+        </details>
+      </section>
 
-        <app-card>
-          <app-card-content>
-            <div class="flex items-center justify-between">
-              <div>
-                <p class="text-xs text-gray-600">Promedio Sueldo</p>
-                <p class="text-lg font-semibold text-gray-900 mt-1">$1.2M</p>
-              </div>
-              <lucide-icon class="w-8 h-8 text-green-600" name="dollar-sign"></lucide-icon>
+      <app-card>
+        <app-card-content className="p-4">
+          <div class="flex items-start gap-3">
+            <lucide-icon class="mt-0.5 h-5 w-5 shrink-0 text-slate-500" name="info"></lucide-icon>
+            <div>
+              <h2 class="text-sm font-semibold text-gray-900">Actividad del dashboard</h2>
+              <p class="mt-1 text-sm text-gray-600">
+                Esta vista no inventa montos, vencimientos ni eventos. La trazabilidad detallada queda en Preparar nomina
+                y Liquidaciones oficiales.
+              </p>
             </div>
-          </app-card-content>
-        </app-card>
-
-        <app-card>
-          <app-card-content>
-            <div class="flex items-center justify-between">
-              <div>
-                <p class="text-xs text-gray-600">Tasa Rotación</p>
-                <p class="text-lg font-semibold text-gray-900 mt-1">2.4%</p>
-              </div>
-              <lucide-icon class="w-8 h-8 text-purple-600" name="trending-up"></lucide-icon>
-            </div>
-          </app-card-content>
-        </app-card>
-      </div>
+          </div>
+        </app-card-content>
+      </app-card>
     </div>
   `,
+  styles: [
+    `
+      .dashboard-tile {
+        display: flex;
+        min-height: 4rem;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 0.75rem;
+        border: 1px solid #e2e8f0;
+        border-radius: 0.375rem;
+        background: #fff;
+        padding: 0.65rem 0.75rem;
+        text-decoration: none;
+        transition:
+          border-color 150ms ease,
+          background 150ms ease;
+      }
+
+      .dashboard-status-strip {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.75rem;
+        border: 1px solid #bfdbfe;
+        border-radius: 0.375rem;
+        background: #eff6ff;
+        padding: 0.65rem 0.75rem;
+      }
+
+      .dashboard-status-strip strong,
+      .dashboard-status-strip span {
+        color: #1f2937;
+        font-size: 0.875rem;
+      }
+
+      .dashboard-status-strip span {
+        margin-left: 0.75rem;
+        color: #4b5563;
+      }
+
+      .dashboard-status-strip a {
+        color: #1d4ed8;
+        font-size: 0.875rem;
+        font-weight: 700;
+        text-decoration: underline;
+      }
+
+      .dashboard-quick-links {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 0.5rem;
+      }
+
+      .dashboard-tile:hover {
+        border-color: #93c5fd;
+        background: #eff6ff;
+      }
+
+      .dashboard-tile strong,
+      .dashboard-future strong {
+        display: block;
+        color: #111827;
+        font-size: 0.875rem;
+        font-weight: 700;
+        line-height: 1.25;
+      }
+
+      .dashboard-tile small,
+      .dashboard-future p {
+        display: block;
+        margin-top: 0.25rem;
+        color: #4b5563;
+        font-size: 0.75rem;
+        line-height: 1.45;
+      }
+
+      .dashboard-link {
+        display: inline-flex;
+        min-height: 2.75rem;
+        align-items: center;
+        justify-content: space-between;
+        border: 1px solid #e5e7eb;
+        border-radius: 0.375rem;
+        padding: 0.5rem 0.75rem;
+        color: #1f2937;
+        font-size: 0.875rem;
+        font-weight: 600;
+        text-decoration: none;
+      }
+
+      .dashboard-link:hover {
+        border-color: #93c5fd;
+        background: #eff6ff;
+      }
+
+      .dashboard-future {
+        border-bottom: 1px solid #e5e7eb;
+        padding: 0.45rem 0;
+      }
+
+      .dashboard-future > div {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.5rem;
+      }
+
+      .dashboard-disclosure {
+        border: 1px solid #e5e7eb;
+        border-radius: 0.375rem;
+        background: #fff;
+      }
+
+      .dashboard-disclosure summary {
+        display: flex;
+        min-height: 2.75rem;
+        cursor: pointer;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.75rem;
+        padding: 0 0.75rem;
+        color: #111827;
+        font-size: 0.875rem;
+        font-weight: 700;
+      }
+
+      @media (max-width: 980px) {
+        .dashboard-quick-links {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+      }
+
+      @media (max-width: 640px) {
+        .dashboard-quick-links {
+          grid-template-columns: 1fr;
+        }
+
+        .dashboard-status-strip span {
+          display: block;
+          margin-left: 0;
+          margin-top: 0.15rem;
+        }
+      }
+    `,
+  ],
 })
 export class DashboardPage {
   readonly periodoActivo = inject(PeriodoActivoService);
-
-  readonly costosComparativos = [
-    { mes: 'Oct', costoEmpresa: 18200000, liquidoPagar: 14100000 },
-    { mes: 'Nov', costoEmpresa: 18800000, liquidoPagar: 14600000 },
-    { mes: 'Dic', costoEmpresa: 22400000, liquidoPagar: 17800000 },
-    { mes: 'Ene', costoEmpresa: 19100000, liquidoPagar: 14900000 },
-    { mes: 'Feb', costoEmpresa: 19500000, liquidoPagar: 15200000 },
-    { mes: 'Mar', costoEmpresa: 20100000, liquidoPagar: 15700000 },
-    { mes: 'Abr', costoEmpresa: 20800000, liquidoPagar: 16200000 },
-  ];
-
-  readonly alerts = [
-    { id: 1, type: 'error' as const, message: '3 empleados con errores en datos previsionales', priority: 'Alta' },
-    { id: 2, type: 'warning' as const, message: '5 licencias médicas pendientes de registro', priority: 'Media' },
-    { id: 3, type: 'info' as const, message: 'Actualización de UF disponible (valor 10/04: $37.245,23)', priority: 'Baja' },
-  ];
-
-  readonly recentActivity = [
-    { id: 1, action: 'Liquidación generada', employee: 'Juan Pérez', time: 'Hace 2 horas' },
-    { id: 2, action: 'Empleado creado', employee: 'Ana Martínez', time: 'Hace 3 horas' },
-    { id: 3, action: 'Licencia médica registrada', employee: 'Carlos López', time: 'Hace 5 horas' },
-    { id: 4, action: 'Proceso cerrado', employee: 'Periodo Marzo 2026', time: 'Hace 1 día' },
-  ];
-
-  get diasParaCierre(): number {
-    const hoy = new Date();
-    const finDeMes = new Date(hoy.getFullYear(), hoy.getMonth() + 1, 0);
-    return Math.max(0, Math.ceil((finDeMes.getTime() - hoy.getTime()) / (1000 * 60 * 60 * 24)));
-  }
-
-  get badgeVariantDiasParaCierre(): 'success' | 'warning' | 'error' {
-    if (this.diasParaCierre <= 5) return 'error';
-    if (this.diasParaCierre <= 10) return 'warning';
-    return 'success';
-  }
-
-  get badgeLabelDiasParaCierre(): string {
-    if (this.diasParaCierre <= 5) return 'Urgente';
-    if (this.diasParaCierre <= 10) return 'Próximo';
-    return 'En plazo';
-  }
-
-  private get maxCosto(): number {
-    return Math.max(...this.costosComparativos.map((x) => x.costoEmpresa));
-  }
-
-  heightPct(value: number): number {
-    const max = this.maxCosto || 1;
-    return Math.max(2, Math.round((value / max) * 100));
-  }
 }
-

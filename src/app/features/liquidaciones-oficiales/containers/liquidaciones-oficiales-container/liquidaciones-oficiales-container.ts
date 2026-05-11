@@ -1,6 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { LucideAngularModule } from 'lucide-angular';
 
@@ -25,7 +24,6 @@ import { LiquidacionesOficialesService } from '../../services/liquidaciones-ofic
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     CommonModule,
-    FormsModule,
     RouterLink,
     LucideAngularModule,
     BadgeComponent,
@@ -41,10 +39,10 @@ import { LiquidacionesOficialesService } from '../../services/liquidaciones-ofic
   styleUrl: './liquidaciones-oficiales-container.css',
 })
 export class LiquidacionesOficialesContainer {
-  private readonly periodoActivo = inject(PeriodoActivoService);
+  readonly periodoActivo = inject(PeriodoActivoService);
   private readonly service = inject(LiquidacionesOficialesService);
 
-  readonly periodoSeleccionado = signal(this.periodoActivo.getPeriodo());
+  readonly periodoSeleccionado = computed(() => this.periodoActivo.getPeriodo());
   readonly estadoPeriodo = signal<LiquidacionesEstadoPeriodo | null>(null);
   readonly cargando = signal(false);
   readonly generando = signal(false);
@@ -95,7 +93,7 @@ export class LiquidacionesOficialesContainer {
         descripcion: 'Las liquidaciones del periodo ya estan disponibles para revisar por trabajador.',
       };
     }
-    if (this.puedeGenerar()) {
+    if (estado?.estado === 'lista_para_generar') {
       return {
         titulo: 'Generar liquidaciones oficiales',
         descripcion: 'La nomina esta cerrada operativamente. Puedes generar la salida interna del periodo.',
@@ -113,7 +111,6 @@ export class LiquidacionesOficialesContainer {
 
   consultar(): Promise<void> {
     const periodo = this.periodoSeleccionado().trim();
-    this.periodoActivo.setPeriodoYm(periodo);
     this.cargando.set(true);
     this.error.set(null);
     this.trabajadorSeleccionado.set(null);

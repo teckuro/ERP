@@ -1,326 +1,271 @@
-import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
+import { RouterLink } from '@angular/router';
 import { LucideAngularModule } from 'lucide-angular';
-import {
-  CardComponent,
-  CardContentComponent,
-  CardHeaderComponent,
-} from '../shared/components/ui/card.component';
-import { ButtonComponent } from '../shared/components/ui/button.component';
-import {
-  TabsComponent,
-  TabsContentDirective,
-  TabsListComponent,
-  TabsTriggerDirective,
-} from '../shared/components/ui/tabs.component';
+
 import { PeriodoActivoService } from '../core/services/periodo-activo.service';
+import { BadgeComponent } from '../shared/components/ui/badge.component';
+import { CardComponent, CardContentComponent, CardHeaderComponent } from '../shared/components/ui/card.component';
 
 @Component({
   selector: 'app-reportes-page',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    CommonModule,
-    LucideAngularModule,
-    CardComponent,
-    CardContentComponent,
-    CardHeaderComponent,
-    ButtonComponent,
-    TabsComponent,
-    TabsListComponent,
-    TabsTriggerDirective,
-    TabsContentDirective,
-  ],
+  imports: [CommonModule, RouterLink, LucideAngularModule, CardComponent, CardContentComponent, CardHeaderComponent, BadgeComponent],
   template: `
-    <div class="space-y-6">
-      <!-- Header -->
-      <div>
-        <h1 class="text-xl font-semibold text-gray-900">Reportes</h1>
-        <p class="text-sm text-gray-600 mt-1">Genera y exporta reportes del sistema</p>
-      </div>
+    <div class="space-y-4">
+      <header class="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
+        <div>
+          <nav class="text-xs text-gray-500">Inicio / Reportes</nav>
+          <h1 class="text-xl font-semibold text-gray-900">Reportes</h1>
+          <p class="mt-1 text-sm text-gray-600">
+            Consulta operativa del periodo {{ periodoActivo.etiqueta() }}. Las salidas formales quedan deshabilitadas
+            hasta una fase dedicada.
+          </p>
+        </div>
+        <a routerLink="/remuneraciones/liquidaciones" class="report-link report-link--primary">
+          <lucide-icon class="h-4 w-4" name="file-search"></lucide-icon>
+          Ver liquidaciones internas
+        </a>
+      </header>
 
-      <!-- Contexto período (global, cabecera) -->
       <app-card>
         <app-card-content>
           <div class="flex items-start gap-3">
-            <lucide-icon class="w-5 h-5 shrink-0 text-gray-500" name="calendar"></lucide-icon>
+            <lucide-icon class="mt-0.5 h-5 w-5 shrink-0 text-slate-500" name="calendar"></lucide-icon>
             <div class="text-sm text-gray-700">
-              <p class="font-medium text-gray-900">Período para la generación de reportes</p>
-              <p class="mt-1">
-                Período activo: <strong>{{ periodoActivo.etiqueta() }}</strong>. Cambie el mes en la cabecera del sistema;
-                aquí no se duplica el selector.
-              </p>
+              <p class="font-medium text-gray-900">Periodo activo: {{ periodoActivo.etiqueta() }}</p>
+              <p class="mt-1">Cambia el periodo desde la cabecera global. Esta pantalla no duplica selector ni genera archivos.</p>
             </div>
           </div>
         </app-card-content>
       </app-card>
 
-      <!-- Tabs -->
-      <app-tabs defaultValue="legal" className="space-y-6">
-        <app-tabs-list className="bg-white border border-gray-200 p-1">
-          <button appTabsTrigger="legal" className="gap-2">
-            <lucide-icon class="w-4 h-4" name="scale"></lucide-icon>
-            Reportes Legales
-          </button>
-          <button appTabsTrigger="previred" className="gap-2">
-            <lucide-icon class="w-4 h-4" name="building-2"></lucide-icon>
-            PREVIRED
-          </button>
-          <button appTabsTrigger="interno" className="gap-2">
-            <lucide-icon class="w-4 h-4" name="folder-open"></lucide-icon>
-            Reportes Internos
-          </button>
-        </app-tabs-list>
+      <div class="report-tabbar" role="tablist" aria-label="Secciones de reportes">
+        <button
+          type="button"
+          role="tab"
+          id="report-tab-disponibles"
+          aria-controls="report-panel-disponibles"
+          [attr.aria-selected]="activeTab() === 'disponibles'"
+          [class.is-active]="activeTab() === 'disponibles'"
+          (click)="activeTab.set('disponibles')"
+          (keydown)="onTabKeydown($event)"
+        >
+          Disponibles
+        </button>
+        <button
+          type="button"
+          role="tab"
+          id="report-tab-futuros"
+          aria-controls="report-panel-futuros"
+          [attr.aria-selected]="activeTab() === 'futuros'"
+          [class.is-active]="activeTab() === 'futuros'"
+          (click)="activeTab.set('futuros')"
+          (keydown)="onTabKeydown($event)"
+        >
+          No disponible en esta fase
+        </button>
+      </div>
 
-        <div appTabsContent="legal">
-          <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            @for (reporte of reportesLegales(); track reporte.id) {
-              <app-card [hover]="true">
-                <app-card-content className="p-6">
-                  <div class="flex gap-4">
-                    <div class="flex-shrink-0 w-12 h-12 bg-blue-50 rounded-lg flex items-center justify-center">
-                      <lucide-icon class="w-6 h-6 text-blue-600" [name]="reporte.icon"></lucide-icon>
-                    </div>
-                    <div class="flex-1 min-w-0">
-                      <h3 class="font-medium text-gray-900 mb-1">{{ reporte.nombre }}</h3>
-                      <p class="text-sm text-gray-600 mb-3">{{ reporte.descripcion }}</p>
-                      <div class="flex flex-wrap gap-2">
-                        @for (formato of reporte.formatos; track formato) {
-                          <app-button variant="outline" size="sm">
-                            <lucide-icon
-                              icon
-                              class="w-4 h-4"
-                              [name]="formato === 'PDF' ? 'file-text' : 'file-spreadsheet'"
-                            ></lucide-icon>
-                            Descargar {{ formato }}
-                          </app-button>
-                        }
-                      </div>
-                    </div>
-                  </div>
-                </app-card-content>
-              </app-card>
-            }
+      @if (activeTab() === 'disponibles') {
+        <app-card>
+          <div id="report-panel-disponibles" role="tabpanel" aria-labelledby="report-tab-disponibles">
+          <app-card-header>
+            <div class="flex items-center justify-between gap-2">
+              <h2 class="text-sm font-semibold text-gray-900">Vistas disponibles</h2>
+              <app-badge variant="info" size="sm">Consulta</app-badge>
+            </div>
+          </app-card-header>
+          <app-card-content className="space-y-3 p-4">
+            <a routerLink="/remuneraciones/proceso-mensual" class="report-tile">
+              <strong>Preparar nomina</strong>
+              <span>Estado del periodo, bloqueos, advertencias y trazabilidad operativa.</span>
+            </a>
+            <a routerLink="/remuneraciones/liquidaciones" class="report-tile">
+              <strong>Liquidaciones oficiales internas</strong>
+              <span>Listado y detalle interno generado desde una nomina cerrada.</span>
+            </a>
+            <a routerLink="/remuneraciones/novedades-mensuales" class="report-tile">
+              <strong>Movimientos del mes</strong>
+              <span>Bonos, descuentos, anticipos y ajustes que impactan el periodo.</span>
+            </a>
+            <a routerLink="/remuneraciones/haberes-descuentos" class="report-tile">
+              <strong>Asignaciones recurrentes</strong>
+              <span>Haberes, descuentos y aportes vigentes por trabajador.</span>
+            </a>
+          </app-card-content>
           </div>
-        </div>
+        </app-card>
+      } @else {
 
-        <div appTabsContent="previred">
-          <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            @for (reporte of reportesPrevired(); track reporte.id) {
-              <app-card [hover]="true">
-                <app-card-content className="p-6">
-                  <div class="flex gap-4">
-                    <div class="flex-shrink-0 w-12 h-12 bg-green-50 rounded-lg flex items-center justify-center">
-                      <lucide-icon class="w-6 h-6 text-green-600" [name]="reporte.icon"></lucide-icon>
-                    </div>
-                    <div class="flex-1 min-w-0">
-                      <h3 class="font-medium text-gray-900 mb-1">{{ reporte.nombre }}</h3>
-                      <p class="text-sm text-gray-600 mb-3">{{ reporte.descripcion }}</p>
-                      <div class="flex flex-wrap gap-2">
-                        @for (formato of reporte.formatos; track formato) {
-                          <app-button variant="outline" size="sm">
-                            <lucide-icon
-                              icon
-                              class="w-4 h-4"
-                              [name]="formato === 'PDF' ? 'file-text' : 'file-spreadsheet'"
-                            ></lucide-icon>
-                            Descargar {{ formato }}
-                          </app-button>
-                        }
-                      </div>
-                    </div>
-                  </div>
-                </app-card-content>
-              </app-card>
-            }
+        <app-card>
+          <div id="report-panel-futuros" role="tabpanel" aria-labelledby="report-tab-futuros">
+          <app-card-header>
+            <div class="flex items-center justify-between gap-2">
+              <h2 class="text-sm font-semibold text-gray-900">No disponible en esta fase</h2>
+              <app-badge variant="default" size="sm">Bloqueado</app-badge>
+            </div>
+          </app-card-header>
+          <app-card-content className="space-y-3 p-4">
+            <div class="report-future-list">
+            <div class="report-future">
+              <strong>Libro de remuneraciones</strong>
+              <span>Requiere una fase especifica de salida formal y validacion normativa.</span>
+            </div>
+            <div class="report-future">
+              <strong>Previred</strong>
+              <span>No hay generacion ni envio habilitado en esta fase UX.</span>
+            </div>
+            <div class="report-future">
+              <strong>Archivo de pago</strong>
+              <span>La integracion de pagos no forma parte del alcance actual.</span>
+            </div>
+            <div class="report-future">
+              <strong>Centralizacion contable</strong>
+              <span>Queda separada hasta definir reglas contables y revision propia.</span>
+            </div>
+            <div class="report-future">
+              <strong>Descargas documentales</strong>
+              <span>No se habilitan descargas formales ni paquetes desde esta pantalla.</span>
+            </div>
+            <div class="report-future">
+              <strong>Programacion de envios</strong>
+              <span>El sistema no agenda ni ejecuta envios en esta etapa.</span>
+            </div>
+            </div>
+          </app-card-content>
           </div>
-        </div>
+        </app-card>
+      }
 
-        <div appTabsContent="interno">
-          <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            @for (reporte of reportesInternos(); track reporte.id) {
-              <app-card [hover]="true">
-                <app-card-content className="p-6">
-                  <div class="flex gap-4">
-                    <div class="flex-shrink-0 w-12 h-12 bg-purple-50 rounded-lg flex items-center justify-center">
-                      <lucide-icon class="w-6 h-6 text-purple-600" [name]="reporte.icon"></lucide-icon>
-                    </div>
-                    <div class="flex-1 min-w-0">
-                      <h3 class="font-medium text-gray-900 mb-1">{{ reporte.nombre }}</h3>
-                      <p class="text-sm text-gray-600 mb-3">{{ reporte.descripcion }}</p>
-                      <div class="flex flex-wrap gap-2">
-                        @for (formato of reporte.formatos; track formato) {
-                          <app-button variant="outline" size="sm">
-                            <lucide-icon
-                              icon
-                              class="w-4 h-4"
-                              [name]="formato === 'PDF' ? 'file-text' : 'file-spreadsheet'"
-                            ></lucide-icon>
-                            Descargar {{ formato }}
-                          </app-button>
-                        }
-                      </div>
-                    </div>
-                  </div>
-                </app-card-content>
-              </app-card>
-            }
-          </div>
-        </div>
-      </app-tabs>
-
-      <!-- Quick Actions -->
       <app-card>
-        <app-card-header>
-          <h3 class="font-semibold text-gray-900">Acciones Rápidas</h3>
-        </app-card-header>
-        <app-card-content>
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <app-button variant="primary" className="w-full">
-              <lucide-icon icon class="w-4 h-4" name="download"></lucide-icon>
-              Descargar Todo (ZIP)
-            </app-button>
-            <app-button variant="outline" className="w-full">
-              <lucide-icon icon class="w-4 h-4" name="file-text"></lucide-icon>
-              Programar Envío
-            </app-button>
-            <app-button variant="outline" className="w-full">
-              <lucide-icon icon class="w-4 h-4" name="calendar"></lucide-icon>
-              Historial de Reportes
-            </app-button>
-          </div>
-        </app-card-content>
-      </app-card>
-
-      <!-- Info Box -->
-      <app-card>
-        <app-card-content>
-          <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
-            <h4 class="font-medium text-blue-900 mb-2">Información Importante</h4>
-            <ul class="text-sm text-blue-800 space-y-1 list-disc list-inside">
-              <li>El archivo PREVIRED debe ser enviado antes del día 10 de cada mes</li>
-              <li>El Libro de Remuneraciones es obligatorio mantenerlo actualizado mensualmente</li>
-              <li>Los certificados anuales deben emitirse antes del 28 de febrero</li>
-              <li>Todos los reportes usan el período activo definido en la cabecera del layout</li>
-            </ul>
+        <app-card-content className="p-4">
+          <div class="flex items-start gap-3">
+            <lucide-icon class="mt-0.5 h-5 w-5 shrink-0 text-amber-600" name="circle-alert"></lucide-icon>
+            <div>
+              <h2 class="text-sm font-semibold text-gray-900">Acciones deshabilitadas</h2>
+              <p class="mt-1 text-sm text-gray-600">
+                Esta pantalla no descarga paquetes, no agenda envios y no crea archivos externos. Primero se conserva el
+                circuito validado: preparar nomina, cerrar operativamente y consultar liquidaciones internas.
+              </p>
+            </div>
           </div>
         </app-card-content>
       </app-card>
     </div>
   `,
+  styles: [
+    `
+      .report-link,
+      .report-tile {
+        text-decoration: none;
+      }
+
+      .report-link {
+        display: inline-flex;
+        height: 2.25rem;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        border: 1px solid #e5e7eb;
+        border-radius: 0.375rem;
+        background: #fff;
+        padding: 0 0.75rem;
+        color: #1f2937;
+        font-size: 0.875rem;
+        font-weight: 700;
+      }
+
+      .report-link:hover,
+      .report-tile:hover {
+        border-color: #93c5fd;
+        background: #eff6ff;
+      }
+
+      .report-tile,
+      .report-future {
+        display: block;
+        border: 1px solid #e5e7eb;
+        border-radius: 0.375rem;
+        padding: 0.75rem;
+      }
+
+      .report-tile {
+        background: #fff;
+      }
+
+      .report-future {
+        background: #f9fafb;
+      }
+
+      .report-tabbar {
+        display: flex;
+        gap: 1rem;
+        overflow-x: auto;
+        border-bottom: 1px solid #e5e7eb;
+      }
+
+      .report-tabbar button {
+        min-height: 2.5rem;
+        border: 0;
+        border-bottom: 2px solid transparent;
+        background: transparent;
+        color: #4b5563;
+        font-size: 0.875rem;
+        font-weight: 700;
+        padding: 0 0.25rem;
+        white-space: nowrap;
+      }
+
+      .report-tabbar button.is-active {
+        border-bottom-color: #2563eb;
+        color: #111827;
+      }
+
+      .report-future-list {
+        display: grid;
+        gap: 0;
+      }
+
+      .report-future {
+        border-width: 0 0 1px;
+        border-radius: 0;
+        padding: 0.6rem 0;
+      }
+
+      .report-tile strong,
+      .report-future strong {
+        display: block;
+        color: #111827;
+        font-size: 0.875rem;
+        font-weight: 700;
+        line-height: 1.25;
+      }
+
+      .report-tile span,
+      .report-future span {
+        display: block;
+        margin-top: 0.25rem;
+        color: #4b5563;
+        font-size: 0.75rem;
+        line-height: 1.45;
+      }
+    `,
+  ],
 })
 export class ReportesPage {
   readonly periodoActivo = inject(PeriodoActivoService);
+  readonly activeTab = signal<'disponibles' | 'futuros'>('disponibles');
 
-  private readonly reportes = signal<Reporte[]>([
-    {
-      id: 1,
-      nombre: 'Libro de Remuneraciones',
-      descripcion: 'Registro mensual obligatorio de todas las remuneraciones pagadas',
-      icon: 'file-text',
-      formatos: ['PDF', 'Excel'],
-      categoria: 'legal',
-    },
-    {
-      id: 2,
-      nombre: 'Archivo PREVIRED',
-      descripcion: 'Archivo TXT para envío de cotizaciones previsionales',
-      icon: 'file-spreadsheet',
-      formatos: ['PDF', 'CSV'],
-      categoria: 'previred',
-    },
-    {
-      id: 3,
-      nombre: 'Certificado de Renta Anual',
-      descripcion: 'Certificado para declaración de impuestos (Formulario 1887)',
-      icon: 'file-text',
-      formatos: ['PDF'],
-      categoria: 'legal',
-    },
-    {
-      id: 4,
-      nombre: 'Resumen de Costos',
-      descripcion: 'Análisis de costos totales de remuneraciones por periodo',
-      icon: 'file-spreadsheet',
-      formatos: ['PDF', 'Excel'],
-      categoria: 'interno',
-    },
-    {
-      id: 5,
-      nombre: 'Planilla de Haberes',
-      descripcion: 'Detalle de haberes pagados por empleado',
-      icon: 'file-spreadsheet',
-      formatos: ['Excel', 'CSV'],
-      categoria: 'interno',
-    },
-    {
-      id: 6,
-      nombre: 'Planilla de Descuentos',
-      descripcion: 'Detalle de descuentos aplicados por empleado',
-      icon: 'file-spreadsheet',
-      formatos: ['Excel', 'CSV'],
-      categoria: 'interno',
-    },
-    {
-      id: 7,
-      nombre: 'Centralización Contable',
-      descripcion: 'Asientos contables generados por remuneraciones',
-      icon: 'file-text',
-      formatos: ['PDF', 'Excel'],
-      categoria: 'interno',
-    },
-    {
-      id: 8,
-      nombre: 'Reporte de AFP',
-      descripcion: 'Detalle de cotizaciones por AFP',
-      icon: 'file-spreadsheet',
-      formatos: ['Excel', 'CSV'],
-      categoria: 'previred',
-    },
-    {
-      id: 9,
-      nombre: 'Reporte de Isapres',
-      descripcion: 'Detalle de cotizaciones de salud',
-      icon: 'file-spreadsheet',
-      formatos: ['Excel', 'CSV'],
-      categoria: 'previred',
-    },
-    {
-      id: 10,
-      nombre: 'Finiquitos del Periodo',
-      descripcion: 'Listado de finiquitos procesados',
-      icon: 'file-text',
-      formatos: ['PDF', 'Excel'],
-      categoria: 'legal',
-    },
-    {
-      id: 11,
-      nombre: 'Licencias Médicas',
-      descripcion: 'Resumen de licencias médicas y subsidios',
-      icon: 'file-text',
-      formatos: ['PDF', 'Excel'],
-      categoria: 'interno',
-    },
-    {
-      id: 12,
-      nombre: 'Vacaciones Pendientes',
-      descripcion: 'Reporte de vacaciones acumuladas por empleado',
-      icon: 'file-spreadsheet',
-      formatos: ['Excel', 'CSV'],
-      categoria: 'interno',
-    },
-  ]);
-
-  readonly reportesLegales = computed(() => this.reportes().filter((r) => r.categoria === 'legal'));
-  readonly reportesPrevired = computed(() => this.reportes().filter((r) => r.categoria === 'previred'));
-  readonly reportesInternos = computed(() => this.reportes().filter((r) => r.categoria === 'interno'));
+  onTabKeydown(event: KeyboardEvent): void {
+    if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
+    event.preventDefault();
+    const next = event.key === 'ArrowLeft' || event.key === 'Home' ? 'disponibles' : 'futuros';
+    this.activeTab.set(next);
+    queueMicrotask(() => {
+      const id = next === 'disponibles' ? 'report-tab-disponibles' : 'report-tab-futuros';
+      document.getElementById(id)?.focus();
+    });
+  }
 }
-
-type Reporte = {
-  id: number;
-  nombre: string;
-  descripcion: string;
-  icon: string;
-  formatos: Array<'PDF' | 'Excel' | 'CSV'>;
-  categoria: 'legal' | 'interno' | 'previred';
-};

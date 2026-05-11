@@ -18,11 +18,17 @@
       <lucide-icon icon name="refresh-cw" class="h-4 w-4"></lucide-icon>
       Recargar
     </app-button>
-    <app-button variant="primary" [disabled]="!puedeGenerar()" (click)="generarLiquidaciones()">
-      <lucide-icon icon name="file-check-2" class="h-4 w-4"></lucide-icon>
-      {{ generando() ? 'Generando...' : 'Generar liquidaciones oficiales' }}
-    </app-button>
   </div>
+
+  @if (!estadoPeriodo()?.liquidacion && !estadoPeriodo()?.snapshot) {
+    <section class="liq-status-strip">
+      <div>
+        <strong>No hay nomina cerrada disponible.</strong>
+        <span>Para generar liquidaciones, primero cierra operativamente la nomina.</span>
+      </div>
+      <a routerLink="/remuneraciones/proceso-mensual">Preparar nomina</a>
+    </section>
+  }
 
   <section class="grid gap-4 lg:grid-cols-[minmax(0,1fr)_280px]">
     <app-card>
@@ -30,7 +36,7 @@
         <div class="mb-3 flex flex-wrap items-center justify-between gap-2">
           <div>
             <h2 class="text-sm font-semibold text-gray-900">Resumen ejecutivo</h2>
-            <p class="text-xs text-gray-500">Periodo {{ estadoPeriodo()?.periodo ?? periodoSeleccionado() }}</p>
+            <p class="text-xs text-gray-500">Periodo activo: {{ periodoActivo.etiqueta() }}</p>
           </div>
           <app-badge [variant]="badgeVariant()" size="sm">{{ estadoLabel() }}</app-badge>
         </div>
@@ -68,8 +74,8 @@
         <p class="mt-2 text-sm font-medium text-gray-900">{{ siguienteAccion().titulo }}</p>
         <p class="mt-1 text-sm text-gray-700">{{ siguienteAccion().descripcion }}</p>
         <div class="mt-4 flex flex-wrap gap-2">
-          @if (puedeGenerar()) {
-            <app-button variant="primary" size="sm" [disabled]="generando()" (click)="generarLiquidaciones()">
+          @if (estadoPeriodo()?.estado === 'lista_para_generar') {
+            <app-button variant="primary" size="sm" [disabled]="!puedeGenerar()" (click)="generarLiquidaciones()">
               Generar liquidaciones oficiales
             </app-button>
           } @else if (estadoPeriodo()?.liquidacion) {
@@ -91,7 +97,7 @@
       <div class="grid gap-4 lg:grid-cols-[minmax(0,1fr)_260px]">
         <div>
           <div class="flex flex-wrap items-center gap-2">
-            <h2 class="text-sm font-semibold text-gray-900">Bloqueos, advertencias e informacion</h2>
+            <h2 class="text-sm font-semibold text-gray-900">Que falta ahora</h2>
             <app-badge [variant]="badgeVariant()" size="sm">{{ estadoLabel() }}</app-badge>
           </div>
           @if (estadoPeriodo(); as estado) {
@@ -115,16 +121,10 @@
               </ul>
             }
 
-            @if (estado.snapshot; as snapshot) {
-              <details class="mt-4 rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-gray-700">
-                <summary class="cursor-pointer font-medium text-gray-900">Trazabilidad secundaria</summary>
-                <dl class="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-                  <div><dt class="text-gray-500">Identificador tecnico</dt><dd class="font-semibold text-gray-900">#{{ snapshot.idCalculoPeriodo }}</dd></div>
-                  <div><dt class="text-gray-500">Trabajadores</dt><dd class="font-semibold text-gray-900">{{ snapshot.totalTrabajadores }}</dd></div>
-                  <div><dt class="text-gray-500">Liquido cerrado</dt><dd class="font-semibold text-gray-900">{{ money(snapshot.totalLiquido) }}</dd></div>
-                  <div><dt class="text-gray-500">Version del calculo</dt><dd class="font-semibold text-gray-900">{{ snapshot.versionMotor }}</dd></div>
-                </dl>
-              </details>
+            @if (estado.snapshot) {
+              <p class="mt-3 text-xs text-gray-500">
+                La trazabilidad interna queda disponible al final de la pantalla para no competir con la accion principal.
+              </p>
             }
           } @else {
             <p class="mt-2 text-sm text-gray-700">
@@ -137,23 +137,19 @@
           }
         </div>
 
-        <label class="block">
-          <span class="text-xs font-medium text-gray-600">Periodo</span>
-          <input
-            type="month"
-            class="mt-1 h-9 w-full rounded-md border border-gray-300 px-3 text-sm text-gray-900"
-            [ngModel]="periodoSeleccionado()"
-            (ngModelChange)="periodoSeleccionado.set($event); consultar()"
-          />
-          <span class="mt-2 block text-xs text-gray-500">
-            Se generaran comprobantes por trabajador desde la nomina cerrada. No recalcula montos ni ejecuta salidas legales.
-          </span>
-        </label>
+        <aside class="rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-gray-700">
+          <p class="font-medium text-gray-900">Periodo activo: {{ periodoActivo.etiqueta() }}</p>
+          <p class="mt-1 text-xs text-gray-500">
+            Cambialo desde el selector superior. Esta pantalla genera comprobantes desde la nomina cerrada y no recalcula montos.
+          </p>
+        </aside>
       </div>
     </app-card-content>
   </app-card>
 
-  <app-liquidacion-resumen-card [liquidacion]="estadoPeriodo()?.liquidacion ?? null" />
+  @if (estadoPeriodo()?.liquidacion) {
+    <app-liquidacion-resumen-card [liquidacion]="estadoPeriodo()?.liquidacion ?? null" />
+  }
 
   <app-card>
     <app-card-content className="p-4">
@@ -165,11 +161,20 @@
         <app-badge variant="default" size="sm">{{ estadoPeriodo()?.trabajadores?.length ?? 0 }} trabajador(es)</app-badge>
       </div>
 
-      <app-liquidaciones-trabajadores-grid
-        [trabajadores]="estadoPeriodo()?.trabajadores ?? []"
-        [seleccionado]="trabajadorSeleccionado()"
-        (verDetalle)="verDetalleTrabajador($event)"
-      />
+      @if ((estadoPeriodo()?.trabajadores?.length ?? 0) > 0) {
+        <app-liquidaciones-trabajadores-grid
+          [trabajadores]="estadoPeriodo()?.trabajadores ?? []"
+          [seleccionado]="trabajadorSeleccionado()"
+          (verDetalle)="verDetalleTrabajador($event)"
+        />
+      } @else {
+        <div class="liq-empty-compact">
+          <p class="font-medium text-gray-900">Sin trabajadores liquidados</p>
+          <p class="mt-1 text-sm text-gray-600">
+            Cuando exista una liquidacion oficial interna, aqui aparecera el listado por trabajador.
+          </p>
+        </div>
+      }
 
       <div class="mt-4">
         @if (cargandoDetalle()) {
@@ -190,6 +195,14 @@
       Esta salida interna usa la nomina cerrada del periodo y no recalcula montos. Salidas legales, firma, envio,
       portal trabajador, archivo banco, contabilidad, reapertura, anulacion, rectificacion y reliquidacion quedan fuera de esta fase.
     </p>
+    @if (estadoPeriodo()?.snapshot; as snapshot) {
+      <dl class="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        <div><dt class="text-gray-500">Referencia interna</dt><dd class="font-semibold text-gray-900">#{{ snapshot.idCalculoPeriodo }}</dd></div>
+        <div><dt class="text-gray-500">Trabajadores</dt><dd class="font-semibold text-gray-900">{{ snapshot.totalTrabajadores }}</dd></div>
+        <div><dt class="text-gray-500">Liquido cerrado</dt><dd class="font-semibold text-gray-900">{{ money(snapshot.totalLiquido) }}</dd></div>
+        <div><dt class="text-gray-500">Version interna</dt><dd class="font-semibold text-gray-900">{{ snapshot.versionMotor }}</dd></div>
+      </dl>
+    }
   </details>
 
   @if (confirmacionGeneracionVisible()) {

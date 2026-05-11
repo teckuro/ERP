@@ -62,6 +62,19 @@ describe('LiquidacionesOficialesContainer', () => {
     expect(fixture.componentInstance.puedeGenerar()).toBe(true);
   });
 
+  it('consume el periodo global como contexto y no muestra selector local', () => {
+    const input = fixture.nativeElement.querySelector('input[type="month"]') as HTMLInputElement | null;
+    const text = fixture.nativeElement.textContent as string;
+    expect(input).toBeNull();
+    expect(text).toContain('Periodo activo:');
+    expect(text).toContain('Cambialo desde el selector superior.');
+  });
+
+  it('no duplica el CTA principal de generar en la botonera superior', () => {
+    const actionBar = fixture.nativeElement.querySelector('.liq-actions') as HTMLElement | null;
+    expect(actionBar?.textContent ?? '').not.toContain('Generar liquidaciones oficiales');
+  });
+
   it('abre confirmacion visible antes de generar', () => {
     fixture.componentInstance.generarLiquidaciones();
     fixture.detectChanges();

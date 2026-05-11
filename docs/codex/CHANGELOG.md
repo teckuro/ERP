@@ -1,3 +1,24 @@
+## REM-UX-FLOWS-01 V3 - Visibilidad cliente vs aplicacion
+
+Fecha: 2026-05-11
+
+- Se ajusta `Preparar nomina` para priorizar lectura de usuario: periodo activo, estado final visible, accion principal, que falta ahora, informacion final y trazabilidad secundaria.
+- El avance visible pasa de pasos internos (`Validar`, `Base`, `Calculo`, `Guardar`) a etapas de negocio: `Preparacion`, `Revision`, `Aprobacion y cierre`, `Liquidaciones`.
+- Se renombran textos visibles tecnicos: `Resultado guardado desde BD` pasa a `Detalle del resultado guardado`; `Identificador tecnico` y `Version del calculo` pasan a `Referencia interna` y `Version interna`.
+- En `Liquidaciones oficiales`, la trazabilidad deja de aparecer dentro de `Que falta ahora` y queda al final como detalle secundario.
+- Alcance respetado: sin SQL/RPC/RLS/BD, sin formulas legales ni motor, sin PDF/firma/envio, sin Previred/LRE/banco/contabilidad.
+
+## REM-UX-FLOWS-01 V2 - Periodo global y accion unica en Remuneraciones
+
+Fecha: 2026-05-10
+
+- Se aplica el patron transversal: periodo activo global -> estado del flujo -> accion principal -> que falta ahora -> detalle -> trazabilidad.
+- Preparar nomina deja de mostrar un selector local editable y elimina el boton duplicado Validar periodo del header; la validacion usa el periodo activo global y queda como CTA principal por estado.
+- Liquidaciones oficiales consume el periodo activo global, retira el selector local editable y deja Generar liquidaciones oficiales solo como accion principal del bloque operativo.
+- Flujos revisados: Preparar nomina, Liquidaciones oficiales, Movimientos del mes, Asignaciones recurrentes, Conceptos de remuneracion, Reportes y Dashboard.
+- Deuda documentada: Movimientos del mes mantiene selector local por consulta historica/listado por periodo; no debe competir con el periodo activo del cierre mensual.
+- Alcance respetado: sin SQL/RPC/RLS/BD, sin formulas legales ni motor, sin PDF/firma/envio, sin Previred/LRE/banco/contabilidad.
+
 ## UX-COMERCIAL-01 - Base documental para redisenio usable, dinamico y comercial
 
 Fecha: 2026-05-10
@@ -7,6 +28,30 @@ Fecha: 2026-05-10
 - Se agrega fase canonica `docs/codex/fases/ux-comercial/UX-COMERCIAL-01.md` y prompt operativo `docs/codex/prompts-cursor/CURSOR-UX-COMERCIAL-01.md`.
 - Alcance futuro inmediato: mejorar navegacion, Preparar nomina, Liquidaciones oficiales, estados, siguiente accion, copy y trazabilidad secundaria.
 - Fuera de alcance: SQL/RPC/RLS, formulas, motor, Previred, LRE, banco, contabilidad, PDF, firma, envio, reapertura y rectificacion.
+
+## UX-COMERCIAL-01 V4 - Usabilidad transversal T00-T09
+
+Fecha: 2026-05-10
+
+- Se ejecuto el runbook `CURSOR_UX_COMERCIAL_01_V4_USABILITY_SYSTEM` para tickets T00 a T09.
+- Dashboard y Reportes dejan de mostrar montos demo, vencimientos inventados y acciones activas de salidas futuras; ahora separan vistas operativas reales de capacidades de fase posterior.
+- Preparar nomina incorpora avance visible del cierre mensual y mantiene siguiente accion, resumen, bloqueos y trazabilidad como patron principal.
+- Detalle de liquidacion vacio ahora explica el motivo y ofrece CTAs a Liquidaciones oficiales y Preparar nomina.
+- Movimientos del mes y Asignaciones recurrentes refuerzan empty states con impacto en nomina, accion primaria y motivo visible de boton deshabilitado.
+- Documentacion actualizada: estado de fases, roadmap, modulos de nomina/liquidaciones, fase UX y peticiones de estilos.
+- Alcance respetado: sin SQL/RPC/RLS/BD, sin formulas ni motor, sin Previred/LRE/banco/contabilidad, sin PDF/firma/envio.
+
+## UX-QA-01-FIX V5 - Tabs, collapsables y densidad
+
+Fecha: 2026-05-10
+
+- Se ejecuto `CURSOR_UX_TABS_COLLAPSE_POLISH_V5` para tickets T00 a T07.
+- Dashboard usa status strip, quick links compactos y disclosure para salidas futuras.
+- Reportes incorpora tabbar real para separar vistas disponibles de capacidades no disponibles en esta fase.
+- Preparar nomina compacta el timeline de 6 pasos y metricas superiores.
+- Liquidaciones oficiales reduce estado no disponible, evita resumen sin datos y compacta empty state de trabajadores.
+- Asignaciones recurrentes usa collapsable para ayuda contextual y mantiene motivo visible en accion deshabilitada.
+- Alcance respetado: sin SQL/RPC/RLS/BD, sin formulas ni motor, sin salidas externas activas.
 
 ## LIQ-DB-APPLY-01 - Aplicacion y validacion de liquidaciones oficiales en BD real controlada
 

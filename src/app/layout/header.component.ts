@@ -28,9 +28,7 @@ import { PeriodoActivoService } from '../core/services/periodo-activo.service';
                 (ngModelChange)="onAnioChange($event)"
                 aria-label="Año del período activo"
               >
-                @for (y of yearOptions(); track y) {
-                  <option [value]="stringYear(y)">{{ y }}</option>
-                }
+                <option *ngFor="let y of yearOptions(); trackBy: trackYear" [value]="stringYear(y)">{{ y }}</option>
               </select>
               <label class="sr-only" for="header-periodo-mes">Mes</label>
               <select
@@ -40,9 +38,7 @@ import { PeriodoActivoService } from '../core/services/periodo-activo.service';
                 (ngModelChange)="onMesChange($event)"
                 aria-label="Mes del período activo"
               >
-                @for (m of monthOptions; track m.value) {
-                  <option [value]="m.value">{{ m.label }}</option>
-                }
+                <option *ngFor="let m of monthOptions; trackBy: trackMonth" [value]="m.value">{{ m.label }}</option>
               </select>
             </div>
           </div>
@@ -131,9 +127,17 @@ export class HeaderComponent {
     { value: '12', label: 'Diciembre' },
   ];
 
-  readonly anioPeriodo = computed(() => this.periodoActivo.periodoYm().slice(0, 4));
+  readonly anioPeriodo = computed(() => {
+    const raw = this.periodoActivo.periodoYm();
+    const year = raw.slice(0, 4);
+    return /^\d{4}$/.test(year) ? year : String(new Date().getFullYear());
+  });
 
-  readonly mesPeriodo = computed(() => this.periodoActivo.periodoYm().slice(5, 7));
+  readonly mesPeriodo = computed(() => {
+    const raw = this.periodoActivo.periodoYm();
+    const month = raw.slice(5, 7).padStart(2, '0');
+    return /^(0[1-9]|1[0-2])$/.test(month) ? month : String(new Date().getMonth() + 1).padStart(2, '0');
+  });
 
   readonly usuarioLabel = computed(() => this.auth.currentEmail() ?? 'Usuario conectado');
 
@@ -158,6 +162,14 @@ export class HeaderComponent {
 
   stringYear(y: number): string {
     return String(y);
+  }
+
+  trackYear(_index: number, y: number): number {
+    return y;
+  }
+
+  trackMonth(_index: number, m: { value: string; label: string }): string {
+    return m.value;
   }
 
   onAnioChange(raw: string): void {
