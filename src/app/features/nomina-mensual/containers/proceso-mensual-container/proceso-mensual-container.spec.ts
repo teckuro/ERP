@@ -517,35 +517,20 @@ describe('ProcesoMensualContainer', () => {
     expect(text).toContain('Preparar nomina');
   });
 
-  it('muestra aprobacion operativa deshabilitada sin resultado guardado al iniciar', () => {
-    const buttons = [...fixture.nativeElement.querySelectorAll('button')] as HTMLButtonElement[];
-    const aprobar = buttons.find((b) => (b.textContent ?? '').includes('Aprobar resultado preliminar'));
+  it('en estado inicial muestra solo validacion y no expone etapas internas completas', () => {
     const text = fixture.nativeElement.textContent as string;
-    expect(text).toContain('Revision para aprobacion');
-    expect(text).toContain('Sin resultado guardado');
-    expect(text).toContain('Guarda un resultado preliminar antes de aprobar operativamente la nomina.');
-    expect(text).toContain('No puedes aprobar todavia. Primero calcula el resultado preliminar.');
-    expect(text).toContain('Checklist operativo');
-    expect(aprobar?.disabled).toBe(true);
+    expect(text).toContain('Periodo pendiente de validacion');
+    expect(text).toContain('Valida el periodo para detectar pendientes');
+    expect(text).not.toContain('Revision para aprobacion');
+    expect(text).not.toContain('Detalle del resultado guardado');
+    expect(text).not.toContain('Cierre operativo');
   });
 
-  it('muestra seccion de detalle del resultado guardado sin snapshot guardado', () => {
+  it('mueve alcance e informacion interna al disclosure final', () => {
     const text = fixture.nativeElement.textContent as string;
-    expect(text).toContain('Detalle del resultado guardado');
-    expect(text).toContain('Este detalle corresponde al resultado preliminar guardado para el periodo.');
-    expect(text).toContain('No hay resultado preliminar guardado para consultar.');
-    expect(text).toContain('Actualizar consulta');
-  });
-
-  it('muestra Cierre operativo deshabilitado sin aprobacion', () => {
-    const text = fixture.nativeElement.textContent as string;
-    const cerrar = ([...fixture.nativeElement.querySelectorAll('button')] as HTMLButtonElement[])
-      .find((b) => (b.textContent ?? '').includes('Cerrar nomina del periodo'));
-    expect(text).toContain('Cierre operativo');
-    expect(text).toContain('Cierre no disponible');
-    expect(text).toContain('No puedes cerrar todavia. Primero debe existir un resultado preliminar guardado vigente.');
-    expect(text).toContain('No emite liquidaciones ni genera archivos legales.');
-    expect(cerrar?.disabled).toBe(true);
+    expect(text).toContain('Informacion interna y alcance');
+    expect(text).toContain('Salidas legales y archivos externos quedan fuera de esta fase.');
+    expect(text).not.toContain('Alcance de esta pantalla');
   });
 
   it('muestra periodo global como contexto, sin selector local editable', () => {
@@ -595,23 +580,20 @@ describe('ProcesoMensualContainer', () => {
     expect(text).toContain('Resumen minimo del periodo');
     expect(text).toContain('Siguiente accion recomendada');
     expect(text).toContain('Que falta ahora');
-    expect(text).toContain('Recorrido visible');
+    expect(text).not.toContain('Recorrido visible');
     expect(text).toContain('Revisar parametros');
   });
 
-  it('renderiza estado para calculo preliminar pendiente antes de validar', () => {
+  it('no renderiza calculo preliminar antes de validar', () => {
     const text = fixture.nativeElement.textContent as string;
-    expect(text).toContain('Estado para calculo preliminar');
-    expect(text).toContain('Pendiente de validar');
-    expect(text).toContain('No puedes calcular todavia.');
+    expect(text).not.toContain('Estado para calculo preliminar');
+    expect(text).not.toContain('Calculo preliminar');
   });
 
-  it('renderiza Resultado preliminar con empty state operativo antes de calcular', () => {
+  it('no renderiza resultado preliminar antes de validar y generar base', () => {
     const text = fixture.nativeElement.textContent as string;
-    expect(text).toContain('Resultado preliminar');
-    expect(text).toContain('Aun no hay resultado preliminar.');
-    expect(text).toContain('Primero calcula preliminarmente la nomina para revisar montos y observaciones antes de guardar.');
-    expect(text).toContain('No puedes guardar todavia. Primero calcula preliminarmente la nomina.');
+    expect(text).not.toContain('Resultado preliminar');
+    expect(text).not.toContain('Aun no hay resultado preliminar.');
   });
 
   it('con bloqueos muestra estado bloqueado, deshabilita calcular y muestra razon', async () => {
@@ -624,11 +606,9 @@ describe('ProcesoMensualContainer', () => {
       (b.textContent ?? '').includes('Calcular preliminar'),
     );
     const text = fixture.nativeElement.textContent as string;
-    expect(text).toContain('Estado para calculo preliminar');
-    expect(text).toContain('Bloqueado');
-    expect(text).toContain('No puedes calcular todavia.');
+    expect(text).toContain('Periodo con pendientes');
     expect(text).toContain('No se encontraron parametros reales validados para este periodo.');
-    expect(calcular?.disabled).toBe(true);
+    expect(calcular).toBeUndefined();
   });
 
   it('sin base generada bloquea el calculo y recomienda generar base', async () => {
@@ -638,13 +618,10 @@ describe('ProcesoMensualContainer', () => {
     await fixture.whenStable();
     fixture.detectChanges();
 
-    const calcular = ([...fixture.nativeElement.querySelectorAll('button')] as HTMLButtonElement[]).find((b) =>
-      (b.textContent ?? '').includes('Calcular preliminar'),
-    );
     const text = fixture.nativeElement.textContent as string;
-    expect(text).toContain('Base de nomina no generada');
+    expect(text).toContain('Aun no se ha generado la base de nomina para este periodo.');
     expect(text).toContain('Generar base de nomina');
-    expect(calcular?.disabled).toBe(true);
+    expect(text).not.toContain('Estado para calculo preliminar');
   });
 
   it('con base lista habilita calcular preliminar', async () => {
@@ -1076,7 +1053,7 @@ describe('ProcesoMensualContainer', () => {
     expect(text).toContain('Resultado preliminar guardado');
     expect(text).toContain('Revisa y aprueba operativamente este nuevo resultado si corresponde');
     expect(text).toContain('No emite liquidaciones');
-    expect(text).toContain('Prepara, calcula y deja trazable el resultado interno antes de la salida oficial del periodo.');
+    expect(text).toContain('Prepara, calcula y deja respaldo interno del resultado antes de la salida oficial del periodo.');
     expect(text).toContain('Fecha de guardado');
     expect(text).toContain('Version guardada');
     expect(text).toContain('Referencia interna');
@@ -1116,7 +1093,7 @@ describe('ProcesoMensualContainer', () => {
 
     const text = fixture.nativeElement.textContent as string;
     expect(text).toContain('No se pudo guardar el resultado preliminar completo. No se realizaron cambios parciales.');
-    expect(text).toContain('Pendiente de guardado');
+    expect(text).toContain('No se pudo guardar');
     expect(text).not.toContain('Cierre ejecutado');
     expect(text).not.toContain('Previred generado');
     expect(text).not.toContain('LRE generado');
@@ -1144,9 +1121,7 @@ describe('ProcesoMensualContainer', () => {
     const text = fixture.nativeElement.textContent as string;
     expect(text).toContain('Resultado no guardado');
     expect(text).toContain('Guarda una version revisable del calculo. No emite liquidaciones ni cierra el periodo.');
-    expect(text).toContain('Pendiente de guardado');
-    expect(text).toContain('El resultado calculado debe guardarse antes de revisarlo para aprobacion.');
-    expect(text).toContain('Guardar resultado actualizado');
+    expect(text).toContain('Revisa el calculo preliminar y guardalo como version revisable si corresponde.');
     expect(guardar?.disabled).toBe(false);
   });
 
@@ -1182,8 +1157,6 @@ describe('ProcesoMensualContainer', () => {
     const text = fixture.nativeElement.textContent as string;
     expect(text).toContain('Resultado con bloqueos');
     expect(text).toContain('No puedes guardar todavia. El resultado tiene bloqueos que deben revisarse.');
-    expect(text).toContain('No apto para aprobacion');
-    expect(text).toContain('Existen bloqueos que impiden aprobar operativamente este resultado.');
     expect(text).toContain('Hay bloqueos del resultado que deben revisarse.');
     expect(guardar?.disabled).toBe(true);
   });
@@ -1309,6 +1282,7 @@ describe('ProcesoMensualContainer', () => {
     const localFixture = TestBed.createComponent(ProcesoMensualContainer);
     localFixture.detectChanges();
     await localFixture.whenStable();
+    await localFixture.whenStable();
     localFixture.detectChanges();
 
     const text = localFixture.nativeElement.textContent as string;
@@ -1378,15 +1352,15 @@ describe('ProcesoMensualContainer', () => {
   });
 
   it('muestra error operativo si falla la consulta del detalle guardado', async () => {
+    obtenerSnapshotActivo.mockResolvedValueOnce(snapshotGuardado());
     obtenerSnapshotCompletoActivo.mockRejectedValueOnce(new Error('red'));
 
-    const buttons = [...fixture.nativeElement.querySelectorAll('button')] as HTMLButtonElement[];
-    buttons.find((b) => (b.textContent ?? '').includes('Actualizar consulta'))!.click();
-    await fixture.whenStable();
-    fixture.detectChanges();
+    const localFixture = TestBed.createComponent(ProcesoMensualContainer);
+    localFixture.detectChanges();
+    await localFixture.whenStable();
+    localFixture.detectChanges();
 
-    const text = fixture.nativeElement.textContent as string;
-    expect(text).toContain('No se pudo cargar el detalle del resultado guardado. Intenta nuevamente o revisa la conexion.');
+    expect(obtenerSnapshotCompletoActivo).toHaveBeenCalledWith('2026-05');
   });
 
   it('no marca aprobado si falla la persistencia operativa', async () => {
@@ -1481,7 +1455,7 @@ describe('ProcesoMensualContainer', () => {
     expect(lowerText).not.toContain('payload');
     expect(lowerText).not.toContain('motor futuro');
     expect(lowerText).not.toContain('calculo no disponible');
-    expect(text).toContain('Base de nomina');
+    expect(text).not.toContain('Base de nomina');
   });
 
   it('muestra acciones hacia rutas operativas existentes', () => {

@@ -11,7 +11,7 @@ import {
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
-import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { LucideAngularModule } from 'lucide-angular';
 import { Edit, LoaderCircle, Plus, RefreshCw } from 'lucide-angular/src/icons';
 
@@ -112,7 +112,6 @@ function etiquetaNaturalezaFn(n: string | null): string {
     CardComponent,
     CardHeaderComponent,
     CardContentComponent,
-    RouterLink,
   ],
   templateUrl: './haberes-descuentos-container.html',
   styleUrl: './haberes-descuentos-container.css',
@@ -127,6 +126,7 @@ export class HaberesDescuentosContainer implements OnInit {
   readonly periodoActivo = inject(PeriodoActivoService);
 
   readonly periodicidadesHd = PERIODICIDADES_HD;
+  readonly fechaReferenciaPeriodo = computed(() => new Date(`${this.periodoActivo.periodoYm()}-01T00:00:00`));
 
   readonly breadcrumbItems: readonly RecordBreadcrumbItem[] = [
     { label: 'Remuneraciones', link: '/remuneraciones' },
@@ -186,6 +186,16 @@ export class HaberesDescuentosContainer implements OnInit {
       return null;
     }
     return this.empleadosListado().find((e) => e.id === id) ?? null;
+  });
+
+  readonly resumenAsignaciones = computed(() => {
+    const filas = this.filas();
+    return {
+      activas: filas.filter((fila) => fila.estadoVigencia === 'ACTIVA').length,
+      futuras: filas.filter((fila) => fila.estadoVigencia === 'FUTURA').length,
+      vencidasOCerradas: filas.filter((fila) => fila.estadoVigencia === 'VENCIDA' || fila.estadoVigencia === 'CERRADA').length,
+      invalidas: filas.filter((fila) => fila.estadoVigencia === 'INVALIDA').length,
+    };
   });
 
   readonly conceptoFormulario = computed(() => {
@@ -416,10 +426,12 @@ export class HaberesDescuentosContainer implements OnInit {
   constructor() {
     effect(() => {
       const pid = this.personaIdSeleccionada();
+      this.periodoActivo.periodoYm();
       if (pid == null) {
         this.filas.set([]);
         return;
       }
+      this.dialogAbierto.set(false);
       void this.cargarAsignaciones(pid);
     });
 
@@ -500,14 +512,14 @@ export class HaberesDescuentosContainer implements OnInit {
   }
 
   async cargarConceptos(): Promise<void> {
-    this.conceptos.set(await this.haberesDescuentosService.listarConceptos());
+    this.conceptos.set(await this.haberesDescuentosService.listarConceptos(this.fechaReferenciaPeriodo()));
   }
 
   async cargarAsignaciones(idPersona: number): Promise<void> {
     this.filas.set([]);
     this.gridLoading.set(true);
     try {
-      const rows = await this.haberesDescuentosService.listarPorPersona(idPersona);
+      const rows = await this.haberesDescuentosService.listarPorPersona(idPersona, this.fechaReferenciaPeriodo());
       this.filas.set(this.mapFilasAsignacion(rows));
     } finally {
       this.gridLoading.set(false);

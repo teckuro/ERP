@@ -22,3 +22,4 @@
 \ir partes/21_nomina_cierre_operativo_rpc.sql
 \ir partes/22_liquidaciones_oficiales.sql
 \ir partes/23_liquidaciones_oficiales_rpc.sql
+\ir partes/24_lre_catalogo_oficial.sql

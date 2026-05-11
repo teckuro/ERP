@@ -252,41 +252,31 @@
     </div>
   </section>
 
-  <details class="rounded-md border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-gray-700">
-    <summary class="cursor-pointer font-medium text-gray-900">Alcance de esta pantalla</summary>
-    <div class="mt-2 flex flex-col gap-2 lg:flex-row lg:items-center lg:justify-between">
-      <p>Prepara, calcula y deja trazable el resultado interno antes de la salida oficial del periodo.</p>
-      <a routerLink="/parametros" class="font-medium text-blue-700 underline">Revisar parametros</a>
-    </div>
-  </details>
-
   <div class="pt-2">
-    <h2 class="text-base font-semibold text-gray-900">Detalle y trazabilidad secundaria</h2>
+    <h2 class="text-base font-semibold text-gray-900">Revision operativa del periodo</h2>
     <p class="mt-1 text-sm text-gray-600">
-      El detalle interno queda debajo de la accion principal para revisar datos, observaciones y respaldo del periodo.
+      Revisa solo la etapa relevante para el estado actual. La informacion interna queda al final.
     </p>
   </div>
 
-  <section class="pm-detail-layout">
-    <aside class="pm-stage-rail" aria-label="Recorrido visible del periodo">
-      <h3>Recorrido visible</h3>
-      <ol>
-        @for (paso of pasosPeriodo(); track paso.numero) {
-          <li>
-            <span>{{ paso.numero }}</span>
-            <div>
-              <p>{{ paso.titulo }}</p>
-              <small>{{ paso.descripcion }}</small>
-            </div>
-            <app-badge [variant]="badgeVariantPasoPeriodo(paso.estado)" size="sm">
-              {{ paso.estado }}
-            </app-badge>
-          </li>
-        }
-      </ol>
-    </aside>
+  <section class="pm-detail-stack">
+  @if (estadoOperativo().estadoClave === 'pendiente_validacion') {
+    <app-card>
+      <app-card-content className="p-4">
+        <div class="flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <h2 class="text-sm font-semibold text-gray-900">Periodo pendiente de validacion</h2>
+            <p class="mt-1 text-sm text-gray-700">
+              Valida el periodo para detectar pendientes en trabajadores, parametros, movimientos del mes y asignaciones recurrentes.
+            </p>
+          </div>
+          <app-badge variant="default" size="sm">Pendiente</app-badge>
+        </div>
+      </app-card-content>
+    </app-card>
+  }
 
-    <div class="pm-detail-stack">
+  @if (mostrarDetalleOperativo('base')) {
   <details class="pm-operational-detail" [open]="etapaOperativaActiva() === 'base'">
     <summary>
       <span>Base de nomina</span>
@@ -307,7 +297,7 @@
           } @else {
             <app-badge variant="default">{{ etiquetaEstadoPreNomina(null) }}</app-badge>
           }
-          <app-button variant="primary" size="sm" [disabled]="!puedeGenerarPreNomina()" (click)="generarPreNomina()">
+          <app-button variant="outline" size="sm" [disabled]="!puedeGenerarPreNomina()" (click)="generarPreNomina()">
             {{ generandoPreNomina() ? 'Generando...' : 'Generar base de nomina' }}
           </app-button>
         </div>
@@ -476,7 +466,9 @@
     </app-card-content>
   </app-card>
   </details>
+  }
 
+  @if (mostrarDetalleOperativo('calculo')) {
   <details class="pm-operational-detail" [open]="etapaOperativaActiva() === 'calculo' || etapaOperativaActiva() === 'resultado'">
     <summary>
       <span>Calculo preliminar</span>
@@ -863,7 +855,7 @@
             <a routerLink="/remuneraciones/haberes-descuentos" class="text-sm font-medium text-blue-700 underline">
               Revisar asignaciones recurrentes
             </a>
-            <app-button variant="primary" size="sm" [disabled]="!resultado.acciones.puedeGuardarPreliminar" (click)="guardarSnapshotPreliminar()">
+            <app-button variant="outline" size="sm" [disabled]="!resultado.acciones.puedeGuardarPreliminar" (click)="guardarSnapshotPreliminar()">
               {{ guardandoSnapshot() ? 'Guardando...' : 'Guardar resultado preliminar' }}
             </app-button>
           </section>
@@ -880,7 +872,9 @@
     </app-card-content>
   </app-card>
   </details>
+  }
 
+  @if (mostrarDetalleOperativo('guardado')) {
   <details class="pm-operational-detail" [open]="etapaOperativaActiva() === 'guardado'">
     <summary>
       <span>Resultado guardado</span>
@@ -1138,7 +1132,9 @@
     </app-card-content>
   </app-card>
   </details>
+  }
 
+  @if (mostrarDetalleOperativo('aprobacion')) {
   <details class="pm-operational-detail" [open]="etapaOperativaActiva() === 'aprobacion'">
     <summary>
       <span>Aprobacion operativa</span>
@@ -1159,7 +1155,7 @@
           </div>
           <div class="flex flex-wrap items-center gap-2">
             @if (revision.puedeGuardarActualizado) {
-              <app-button variant="primary" size="sm" [disabled]="guardandoSnapshot()" (click)="guardarSnapshotPreliminar()">
+              <app-button variant="outline" size="sm" [disabled]="guardandoSnapshot()" (click)="guardarSnapshotPreliminar()">
                 {{ guardandoSnapshot() ? 'Guardando...' : revision.accionPrincipalLabel }}
               </app-button>
             } @else if (revision.estado === 'sin_resultado_guardado') {
@@ -1354,7 +1350,9 @@
     </app-card-content>
   </app-card>
   </details>
+  }
 
+  @if (mostrarDetalleOperativo('cierre') || mostrarDetalleOperativo('liquidaciones')) {
   <details class="pm-operational-detail" [open]="etapaOperativaActiva() === 'cierre' || etapaOperativaActiva() === 'liquidaciones'">
     <summary>
       <span>Cierre operativo y liquidaciones</span>
@@ -1373,7 +1371,7 @@
             </div>
             <p class="mt-1 text-sm text-gray-700">{{ cierre.descripcion }}</p>
           </div>
-          <app-button variant="primary" size="sm" [disabled]="!cierre.puedeCerrar" (click)="cerrarNominaOperativa()">
+          <app-button variant="outline" size="sm" [disabled]="!cierre.puedeCerrar" (click)="cerrarNominaOperativa()">
             {{ cerrandoNomina() ? 'Cerrando...' : 'Cerrar nomina del periodo' }}
           </app-button>
         </div>
@@ -1454,7 +1452,7 @@
 
         @if (nominaEstaCerradaOperativamente()) {
           <div class="mt-3 flex flex-wrap items-center gap-2">
-            <app-button variant="outline" size="sm" routerLink="/remuneraciones/liquidaciones-oficiales">
+            <app-button variant="outline" size="sm" routerLink="/remuneraciones/liquidaciones">
               Ver liquidaciones oficiales
             </app-button>
             <p class="text-xs text-gray-500">Se habilitan despues del cierre operativo y no ejecutan salidas legales ni archivos externos.</p>
@@ -1468,10 +1466,15 @@
     </app-card-content>
   </app-card>
   </details>
-    </div>
+  }
   </section>
 
-  <div class="rounded-md border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-gray-700">
-    Salidas legales y archivos externos quedan fuera de esta fase. El foco es preparar, aprobar y cerrar operativamente la nomina del periodo.
-  </div>
+  <details class="rounded-md border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-gray-700">
+    <summary class="cursor-pointer font-medium text-gray-900">Informacion interna y alcance</summary>
+    <div class="mt-2 grid gap-2">
+      <p>Prepara, calcula y deja respaldo interno del resultado antes de la salida oficial del periodo.</p>
+      <p>Salidas legales y archivos externos quedan fuera de esta fase. El foco es preparar, aprobar y cerrar operativamente la nomina del periodo.</p>
+      <a routerLink="/parametros" class="font-medium text-blue-700 underline">Revisar parametros</a>
+    </div>
+  </details>
 </div>

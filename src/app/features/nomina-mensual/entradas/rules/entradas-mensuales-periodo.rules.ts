@@ -157,7 +157,7 @@ export function normalizarEntradaMovimientoLegacy(movimiento: MovimientoVariable
     referenciaExterna: null,
     requiereRevision: estado === 'borrador' || estado === 'observada' || bloqueaProceso,
     bloqueaProceso,
-    warnings: bloqueaProceso ? ['Movimiento variable legacy bloqueado.'] : [],
+    warnings: bloqueaProceso ? ['Movimiento legacy bloqueado.'] : [],
     metadata: {
       origenTecnico: 'movimiento_variable_mensual',
       estadoLegacy: movimiento.estado,

@@ -7,7 +7,8 @@
 -- =============================================================================
 SET search_path = public;
 
--- Catálogo y conceptos nuevos: igual que 05_inserts_upserts.sql (truncado a este módulo)
+-- Catálogo y conceptos nuevos: base mínima histórica.
+-- LRE-CATALOG-01 agrega el catálogo oficial completo en 24_lre_catalogo_oficial.sql.
 
 INSERT INTO motivo_inasistencia (
     id_motivo_inasistencia,
@@ -24,6 +25,8 @@ INSERT INTO catalogo_lre (
     imponible, tributable, afecta_liquido, vigente
 ) VALUES
     ('2101', 'Sueldo', 'HABERES', 'HABERES_21XX', 'HABER_IMPONIBLE_TRIBUTABLE', TRUE, TRUE, TRUE, TRUE),
+    ('2102', 'Sobresueldo', 'HABERES', 'HABERES_21XX', 'HABER_IMPONIBLE_TRIBUTABLE', TRUE, TRUE, TRUE, TRUE),
+    ('2106', 'Gratificación (mensual)', 'HABERES', 'HABERES_21XX', 'HABER_IMPONIBLE_TRIBUTABLE', TRUE, TRUE, TRUE, TRUE),
     ('2110', 'Aguinaldo', 'HABERES', 'HABERES_21XX', 'HABER_IMPONIBLE_TRIBUTABLE', TRUE, TRUE, TRUE, TRUE),
     ('2111', 'Bonos u otras remuneraciones fijas mensuales', 'HABERES', 'HABERES_21XX', 'HABER_IMPONIBLE_TRIBUTABLE', TRUE, TRUE, TRUE, TRUE),
     ('2113', 'Bonos u otras remuneraciones variables mensuales o superiores a un mes', 'HABERES', 'HABERES_21XX', 'HABER_IMPONIBLE_TRIBUTABLE', TRUE, TRUE, TRUE, TRUE),
@@ -33,6 +36,7 @@ INSERT INTO catalogo_lre (
     ('3141', 'Cotización obligatoria previsional (AFP o IPS)', 'DESCUENTOS', 'DESCUENTOS_31XX', 'DESCUENTO_LEGAL', FALSE, FALSE, TRUE, TRUE),
     ('3143', 'Cotización obligatoria salud 7%', 'DESCUENTOS', 'DESCUENTOS_31XX', 'DESCUENTO_LEGAL', FALSE, FALSE, TRUE, TRUE),
     ('3151', 'Cotización AFC - trabajador', 'DESCUENTOS', 'DESCUENTOS_31XX', 'DESCUENTO_LEGAL', FALSE, FALSE, TRUE, TRUE),
+    ('3161', 'Impuesto retenido por remuneraciones', 'DESCUENTOS', 'DESCUENTOS_31XX', 'DESCUENTO_IMPUESTO', FALSE, FALSE, TRUE, TRUE),
     ('3183', 'Otros descuentos autorizados y solicitados por el trabajador', 'DESCUENTOS', 'DESCUENTOS_31XX', 'OTRO_DESCUENTO', FALSE, FALSE, TRUE, TRUE),
     ('3186', 'Pensiones de alimentos', 'DESCUENTOS', 'DESCUENTOS_31XX', 'OTRO_DESCUENTO', FALSE, FALSE, TRUE, TRUE),
     ('3188', 'Descuentos por anticipos y préstamos', 'DESCUENTOS', 'DESCUENTOS_31XX', 'OTRO_DESCUENTO', FALSE, FALSE, TRUE, TRUE),
@@ -82,11 +86,16 @@ SET id_catalogo_lre = l.id_catalogo_lre
 FROM catalogo_lre l
 WHERE c.codigo = 'SUELDO_BASE' AND l.codigo_lre = '2101';
 
--- Ver comentario en 05_inserts_upserts.sql: duda normativa HORAS_EXTRAS vs 2113 / 2102.
 UPDATE concepto c
 SET id_catalogo_lre = l.id_catalogo_lre
 FROM catalogo_lre l
-WHERE c.codigo = 'HORAS_EXTRAS' AND l.codigo_lre = '2113';
+WHERE c.codigo = 'GRATIFICACION' AND l.codigo_lre = '2106';
+
+-- LRE-CATALOG-01: HORAS_EXTRAS se mapea a 2102 Sobresueldo.
+UPDATE concepto c
+SET id_catalogo_lre = l.id_catalogo_lre
+FROM catalogo_lre l
+WHERE c.codigo = 'HORAS_EXTRAS' AND l.codigo_lre = '2102';
 
 UPDATE concepto c
 SET id_catalogo_lre = l.id_catalogo_lre
@@ -117,6 +126,11 @@ UPDATE concepto c
 SET id_catalogo_lre = l.id_catalogo_lre
 FROM catalogo_lre l
 WHERE c.codigo = 'CESANTIA' AND l.codigo_lre = '3151';
+
+UPDATE concepto c
+SET id_catalogo_lre = l.id_catalogo_lre
+FROM catalogo_lre l
+WHERE c.codigo = 'IMPUESTO_RENTA' AND l.codigo_lre = '3161';
 
 UPDATE concepto c
 SET id_catalogo_lre = l.id_catalogo_lre
@@ -389,3 +403,6 @@ ON CONFLICT (id_movimiento) DO UPDATE SET
     monto = EXCLUDED.monto,
     cantidad = EXCLUDED.cantidad,
     observacion = EXCLUDED.observacion;
+
+-- LRE-CATALOG-01: para alinear una BD existente con el catálogo oficial completo, ejecutar también:
+-- psql ... -f bd/base/v11/partes/24_lre_catalogo_oficial.sql

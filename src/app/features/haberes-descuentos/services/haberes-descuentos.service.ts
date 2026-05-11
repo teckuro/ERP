@@ -150,7 +150,7 @@ export class HaberesDescuentosService {
     const ref = inicioDiaReferencia(refDate);
     const tipoNorm = (meta.tipo ?? '').trim().toUpperCase();
     if (tipoNorm === 'APORTE_EMPLEADOR') {
-      throw new Error('Los aportes del empleador no se registran como movimientos variables del trabajador.');
+      throw new Error('Los aportes del empleador no se registran como movimientos del mes del trabajador.');
     }
     if (meta.esSistema || meta.calculoAutomatico) {
       throw new Error('Los conceptos automaticos o de sistema no se cargan manualmente.');
@@ -165,7 +165,7 @@ export class HaberesDescuentosService {
     };
     if (!esConceptoAsignable(input, ref)) {
       const motivos = motivosNoAsignableConcepto(input, ref);
-      throw new Error(motivos[0] ?? 'El concepto seleccionado no puede usarse como movimiento variable manual.');
+      throw new Error(motivos[0] ?? 'El concepto seleccionado no puede usarse como movimiento puntual manual.');
     }
     return {
       tipo: meta.tipo ?? null,

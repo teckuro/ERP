@@ -26,16 +26,16 @@ import {
 const MSG_PERIODO_INVALIDO = 'El periodo debe tener formato YYYY-MM.';
 const MSG_TRABAJADOR = 'Debe seleccionar un trabajador.';
 const MSG_CONCEPTO = 'Debe seleccionar un concepto.';
-const MSG_NO_ENCONTRADO = 'No se encontró el movimiento variable.';
-const MSG_NO_MODIFICA = 'El movimiento variable no puede modificarse en su estado actual.';
-const MSG_NO_ANULA = 'El movimiento variable no puede anularse en su estado actual.';
-const MSG_DUPLICADO = 'Ya existe un movimiento variable operativo para este trabajador, concepto y periodo.';
+const MSG_NO_ENCONTRADO = 'No se encontro el movimiento del mes.';
+const MSG_NO_MODIFICA = 'El movimiento del mes no puede modificarse en su estado actual.';
+const MSG_NO_ANULA = 'El movimiento del mes no puede anularse en su estado actual.';
+const MSG_DUPLICADO = 'Ya existe un movimiento del mes operativo para este trabajador, concepto y periodo.';
 const MSG_ID_MOVIMIENTO = 'Debe indicar un movimiento valido.';
 const MSG_TRABAJADOR_NO_ENCONTRADO = 'No se encontro el trabajador seleccionado.';
 const MSG_TRABAJADOR_NO_APTO =
-  'El trabajador no esta apto para registrar movimientos variables de remuneraciones.';
+  'El trabajador no esta apto para registrar movimientos del mes.';
 const MSG_TRABAJADOR_NO_ACTIVO =
-  'Solo trabajadores activos pueden registrar movimientos variables en esta version.';
+  'Solo trabajadores activos pueden registrar movimientos del mes en esta version.';
 const MSG_CONTRATO_SIN_INGRESO =
   'El contrato del trabajador no tiene fecha de ingreso registrada.';
 const MSG_CONTRATO_NO_VIGENTE_EN_PERIODO =

@@ -1,65 +1,41 @@
-<section class="mv-page" aria-label="Movimientos variables">
+<section class="mv-page" aria-label="Movimientos del mes">
   <header class="mv-head">
     <app-record-breadcrumb
       [items]="breadcrumbItems"
-      title="Movimientos variables"
+      title="Movimientos del mes"
     ></app-record-breadcrumb>
     <p class="mv-lead">
-      Cargue montos puntuales por trabajador, concepto y período (<strong>YYYY-MM</strong>). El selector de concepto usa
-      el mismo universo <strong>asignable</strong> que Haberes y descuentos. Los recurrentes del mes siguen en
-      <a routerLink="/remuneraciones/haberes-descuentos" class="mv-inline-link">Haberes y descuentos</a>.
+      Cargue montos puntuales por trabajador y concepto para el periodo activo. El selector de concepto usa
+      el mismo universo asignable que Asignaciones recurrentes.
     </p>
     <div class="mv-head-actions">
       <div class="mv-period-wrap">
         <div class="mv-period-global" aria-live="polite">
-          <span class="mv-period-global-k">Período activo (referencia):</span>
+          <span class="mv-period-global-k">Periodo activo</span>
           <span class="mv-period-global-v">{{ periodoActivo.etiqueta() }}</span>
         </div>
-        <p class="mv-period-hint">
-          El listado usa el período que elija abajo; puede diferir del período activo mientras el proceso mensual no
-          bloquee cargas.
-        </p>
+        <p class="mv-period-hint">Cambia el periodo desde la cabecera global.</p>
       </div>
       <div class="mv-head-buttons">
         <app-button variant="outline" size="md" (click)="refrescar()">
           <lucide-icon icon class="w-4 h-4" [img]="refreshIcon"></lucide-icon>
-          Refrescar
+          Actualizar
         </app-button>
         <app-button variant="primary" size="md" (click)="abrirNuevo()">
           <lucide-icon icon class="w-4 h-4" [img]="plusIcon"></lucide-icon>
-          Nuevo movimiento
+          Registrar movimiento
         </app-button>
       </div>
     </div>
   </header>
 
-  <app-card>
-    <app-card-header className="px-4 py-3 border-b border-gray-100">
-      <h2 class="text-sm font-semibold text-gray-900">Filtro por período</h2>
-    </app-card-header>
-    <app-card-content className="px-4 py-3">
-      <div class="flex flex-wrap items-end gap-3">
-        <div class="min-w-[12rem]">
-          <label class="mv-field-label" for="mv-periodo">Período (YYYY-MM)</label>
-          <input
-            id="mv-periodo"
-            type="month"
-            class="mv-input"
-            [ngModel]="periodoFiltro()"
-            (ngModelChange)="periodoFiltro.set($event)"
-          />
-        </div>
-        <app-button variant="primary" size="md" (click)="buscar()">Buscar</app-button>
-        @if (catalogosLoading()) {
-          <span class="text-xs text-gray-500">Cargando catálogos…</span>
-        }
-      </div>
-    </app-card-content>
-  </app-card>
+  @if (catalogosLoading()) {
+    <span class="text-xs text-gray-500">Cargando catalogos...</span>
+  }
 
   <div class="mv-grid-wrap">
     <app-data-grid
-      title="Movimientos del período"
+      title="Movimientos registrados"
       [rows]="filas()"
       [columns]="columns"
       [filters]="filters"
@@ -69,8 +45,8 @@
       [selectable]="false"
       [trackBy]="trackMvRow"
       gridHeight="min(32rem, calc(100vh - 24rem))"
-      emptyTitle="Sin movimientos"
-      emptyDescription="No hay registros para este período. Cree uno con «Nuevo movimiento» o elija otro período."
+      emptyTitle="No hay movimientos del mes registrados"
+      emptyDescription="Todavia no hay bonos, descuentos, anticipos, ausencias o ajustes para el periodo activo."
     >
       <ng-template appDataGridCell="estado" let-row>
         @switch (row.estado) {
@@ -111,8 +87,8 @@
     <div class="mv-modal-root" role="presentation">
       <div class="mv-modal-backdrop" (click)="cerrarNuevo()"></div>
       <div class="mv-modal" role="dialog" aria-modal="true" aria-labelledby="mv-modal-nuevo-title">
-        <h2 id="mv-modal-nuevo-title" class="mv-modal-title">Nuevo movimiento variable</h2>
-        <p class="mv-modal-sub">Período: <strong>{{ periodoFiltro() }}</strong> · Origen: manual</p>
+        <h2 id="mv-modal-nuevo-title" class="mv-modal-title">Registrar movimiento</h2>
+        <p class="mv-modal-sub">Periodo activo: <strong>{{ periodoActivo.etiqueta() }}</strong> - Origen: manual</p>
 
         <div class="mv-modal-body">
           <div class="mv-modal-group">
@@ -165,7 +141,7 @@
               </select>
             </div>
             <div class="mv-modal-span2">
-              <label class="mv-field-label" for="mv-obs">Observación</label>
+              <label class="mv-field-label" for="mv-obs">Observacion</label>
               <textarea
                 id="mv-obs"
                 class="mv-input mv-textarea"
@@ -184,7 +160,7 @@
           </button>
           <button type="button" class="mv-btn mv-btn--primary" [disabled]="guardarNuevoLoading()" (click)="guardarNuevo()">
             @if (guardarNuevoLoading()) {
-              Guardando…
+              Guardando...
             } @else {
               Guardar
             }
@@ -201,8 +177,8 @@
         <h2 id="mv-anular-title" class="mv-modal-title">Anular movimiento</h2>
         <div class="mv-modal-body">
           <p class="mv-modal-text">
-            ¿Confirma la anulación del movimiento de
-            <strong>{{ row.trabajadorEtiqueta }}</strong> · {{ row.conceptoEtiqueta }} ·
+            Confirma la anulacion del movimiento de
+            <strong>{{ row.trabajadorEtiqueta }}</strong> - {{ row.conceptoEtiqueta }} -
             {{ formatMonto(row.monto) }}?
           </p>
           <label class="mv-field-label" for="mv-motivo-anul">Motivo (opcional)</label>
@@ -212,7 +188,7 @@
             rows="2"
             [ngModel]="motivoAnulacion()"
             (ngModelChange)="motivoAnulacion.set($event)"
-            placeholder="Ej. corrección solicitada por el cliente interno"
+            placeholder="Ej. correccion solicitada por el cliente interno"
           ></textarea>
         </div>
         <div class="mv-modal-actions">

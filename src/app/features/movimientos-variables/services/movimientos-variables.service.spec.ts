@@ -230,7 +230,7 @@ describe('MovimientosVariablesService', () => {
 
     it('crear falla si el catalogo rechaza el concepto', async () => {
       haberesDescuentosService.resolverSnapshotConceptoParaMovimientoVariableManual.mockRejectedValueOnce(
-        new Error('Los aportes del empleador no se registran como movimientos variables del trabajador.'),
+        new Error('Los aportes del empleador no se registran como movimientos del mes del trabajador.'),
       );
 
       await expect(service.crear(crearPayloadBase())).rejects.toThrow(/aportes/);

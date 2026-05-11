@@ -4,20 +4,16 @@ import {
   Component,
   OnInit,
   computed,
+  effect,
   inject,
   signal,
+  untracked,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
 import { LucideAngularModule } from 'lucide-angular';
 import { Plus, RefreshCw } from 'lucide-angular/src/icons';
 
 import { PeriodoActivoService } from '../../../../core/services/periodo-activo.service';
-import {
-  CardComponent,
-  CardContentComponent,
-  CardHeaderComponent,
-} from '../../../../shared/components/ui/card.component';
 import { ButtonComponent } from '../../../../shared/components/ui/button.component';
 import {
   DataGridCellDirective,
@@ -113,10 +109,6 @@ function etiquetaOrigen(origen: string): string {
     DataGridCellDirective,
     MessageBoxComponent,
     SearchSelectComponent,
-    CardComponent,
-    CardHeaderComponent,
-    CardContentComponent,
-    RouterLink,
   ],
   templateUrl: './movimientos-variables-container.html',
   styleUrl: './movimientos-variables-container.css',
@@ -130,7 +122,7 @@ export class MovimientosVariablesContainer implements OnInit {
 
   readonly breadcrumbItems: readonly RecordBreadcrumbItem[] = [
     { label: 'Remuneraciones', link: '/remuneraciones' },
-    { label: 'Movimientos variables' },
+    { label: 'Movimientos del mes' },
   ];
 
   readonly plusIcon = Plus;
@@ -144,8 +136,7 @@ export class MovimientosVariablesContainer implements OnInit {
   readonly empleadoOptions = signal<SearchSelectOption<number>[]>([]);
   readonly conceptos = signal<ConceptoListado[]>([]);
 
-  /** Periodo del listado (YYYY-MM). Inicial desde periodo activo global. */
-  readonly periodoFiltro = signal<string>('');
+  readonly periodoActual = computed(() => this.periodoActivo.periodoYm());
 
   readonly filas = signal<MovVarGridRow[]>([]);
 
@@ -165,6 +156,7 @@ export class MovimientosVariablesContainer implements OnInit {
 
   readonly confirmAnular = signal<MovVarGridRow | null>(null);
   readonly motivoAnulacion = signal<string>('');
+  private pantallaInicializada = false;
 
   readonly conceptoOpciones = computed<SearchSelectOption<number>[]>(() =>
     this.conceptos().map((c) => ({
@@ -275,8 +267,22 @@ export class MovimientosVariablesContainer implements OnInit {
 
   readonly trackMvRow = (_index: number, row: MovVarGridRow): number => row.idMovimiento;
 
+  constructor() {
+    effect(() => {
+      this.periodoActual();
+      if (!this.pantallaInicializada) {
+        return;
+      }
+      untracked(() => {
+        this.cerrarNuevo();
+        this.confirmAnular.set(null);
+        this.modalMsg.set(null);
+        void this.buscar();
+      });
+    });
+  }
+
   ngOnInit(): void {
-    this.periodoFiltro.set(this.periodoActivo.periodoYm());
     void this.inicializar();
   }
 
@@ -286,6 +292,7 @@ export class MovimientosVariablesContainer implements OnInit {
   async inicializar(): Promise<void> {
     await this.cargarCatalogos();
     await this.buscar();
+    this.pantallaInicializada = true;
   }
 
   async refrescar(): Promise<void> {
@@ -314,7 +321,7 @@ export class MovimientosVariablesContainer implements OnInit {
   }
 
   async buscar(): Promise<void> {
-    const p = this.periodoFiltro().trim();
+    const p = this.periodoActual().trim();
     if (!esPeriodoRemuneracionValido(p)) {
       this.modalMsg.set({
         variant: 'error',
@@ -354,7 +361,7 @@ export class MovimientosVariablesContainer implements OnInit {
     const idPersona = this.formPersonaId();
     const idConcepto = this.formConceptoId();
     const monto = this.formMonto();
-    const periodo = this.periodoFiltro().trim();
+    const periodo = this.periodoActual().trim();
 
     if (idPersona == null || idPersona <= 0) {
       this.modalMsg.set({
@@ -408,7 +415,7 @@ export class MovimientosVariablesContainer implements OnInit {
       this.modalMsg.set({
         variant: 'success',
         title: 'Movimiento creado',
-        message: 'El movimiento variable se registró correctamente.',
+        message: 'El movimiento del mes se registro correctamente.',
       });
       await this.buscar();
     } catch (err) {

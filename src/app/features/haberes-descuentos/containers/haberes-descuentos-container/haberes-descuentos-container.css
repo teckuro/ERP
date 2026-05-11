@@ -865,7 +865,7 @@
 
 .hd-nomina-hint {
   margin: 0;
-  padding: 0;
+  padding: 0.55rem 0.75rem;
   border-radius: 6px;
   border: 1px solid #e2e8f0;
   background: #f8fafc;
@@ -874,17 +874,8 @@
   line-height: 1.45;
 }
 
-.hd-nomina-hint summary {
-  min-height: 2.5rem;
-  cursor: pointer;
-  padding: 0.55rem 0.75rem;
-  font-weight: 700;
-  color: #0f172a;
-}
-
 .hd-nomina-hint p {
   margin: 0;
-  padding: 0 0.75rem 0.75rem;
 }
 
 .hd-nomina-hint-link {
@@ -903,6 +894,38 @@
   max-height: min(92vh, 52rem);
   overflow-x: hidden;
   overflow-y: auto;
+}
+
+.hd-summary-strip {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.5rem;
+}
+
+.hd-summary-strip div {
+  min-height: 2.75rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  background: #ffffff;
+  padding: 0.4rem 0.55rem;
+}
+
+.hd-summary-strip span,
+.hd-summary-strip strong {
+  display: block;
+}
+
+.hd-summary-strip span {
+  color: #64748b;
+  font-size: 0.72rem;
+  font-weight: 600;
+}
+
+.hd-summary-strip strong {
+  margin-top: 0.1rem;
+  color: #0f172a;
+  font-size: 1rem;
+  font-weight: 700;
 }
 
 .hd-check-grid {

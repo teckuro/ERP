@@ -18,7 +18,7 @@ const windows = [
   { name: 'empleados-nuevo', path: '/empleados/nuevo' },
   { name: 'empleados-ficha-id-1', path: '/empleados/1' },
   { name: 'remuneraciones-preparar-nomina', path: '/remuneraciones/proceso-mensual' },
-  { name: 'remuneraciones-liquidaciones-oficiales', path: '/remuneraciones/liquidaciones-oficiales' },
+  { name: 'remuneraciones-liquidaciones', path: '/remuneraciones/liquidaciones' },
   { name: 'remuneraciones-liquidaciones-detalle-id-1', path: '/remuneraciones/liquidaciones/1' },
   { name: 'remuneraciones-movimientos-del-mes', path: '/remuneraciones/novedades-mensuales' },
   { name: 'remuneraciones-asignaciones-recurrentes', path: '/remuneraciones/haberes-descuentos' },

@@ -1,3 +1,59 @@
+## LRE-CATALOG-01 - Catalogo oficial LRE y mapeo base de conceptos
+
+Fecha: 2026-05-11
+
+- Se agrega `bd/base/v11/partes/24_lre_catalogo_oficial.sql` con catalogo `catalogo_lre` completo segun suplemento DT LRE enero 2022: identificacion `11xx`, haberes `21xx/22xx/23xx/24xx`, descuentos `31xx`, aportes `41xx` y totales `5xxx`.
+- `run_all.sql` incluye el nuevo script para fresh install local; BD existente debe ejecutar el script 24 despues de la estructura LRE.
+- Se actualiza el mapeo base de `concepto.id_catalogo_lre`: `GRATIFICACION -> 2106`, `HORAS_EXTRAS -> 2102`, `IMPUESTO_RENTA -> 3161`, y se mantienen mapeos existentes de sueldo, bonos, asignaciones, descuentos y aportes.
+- `INASISTENCIA`, `ZONA_EXTREMA` y `AFP_EMPLEADOR` quedan explicitamente sin mapeo forzado por riesgo de interpretacion normativa.
+- Se agregan validaciones no destructivas `22_lre_catalogo_oficial_minimo` y `23_lre_mapeos_conceptos_base` en `90_validaciones_v11.sql`.
+- Alcance respetado: sin exportador LRE, sin cambios de motor/formulas, sin aplicar SQL contra BD real, sin Previred/banco/PDF/firma/envio.
+
+## REM-MOV-MODAL-01 - Registro de movimiento en modal responsive
+
+Fecha: 2026-05-11
+
+- `Movimientos del mes` abre `Registrar movimiento` en un modal grande responsive con header, footer y scroll interno.
+- El periodo activo global se muestra solo como contexto dentro del modal; no se agrego selector local ni `input type="month"`.
+- El formulario queda ordenado en datos principales, detalle opcional y resumen antes de guardar; `Guardar movimiento` es la accion primaria unica.
+- Cancelar cierra directo si no hay cambios y pide confirmacion con `app-message-box` cuando hay datos sin guardar.
+- Validaciones de formulario quedan visibles junto a los campos y mantienen el modal abierto.
+- Alcance respetado: sin SQL/RPC/RLS/BD, sin formulas legales ni motor, sin liquidaciones oficiales, Previred/LRE/banco, PDF/firma/envio.
+
+## REM-MOV-UNIFY-01 - Consolidacion de lenguaje y flujo de Movimientos del mes
+
+Fecha: 2026-05-11
+
+- Copy visible consolidado: el flujo operativo se presenta como `Movimientos del mes`.
+- Formulario reordenado en datos principales, clasificacion y detalle opcional; periodo global solo como contexto no editable.
+- Resumen operativo por estado del periodo: total, borradores, pendientes, aprobados y secundarios.
+- Listado principal ajustado con empty state operativo y accion primaria `Registrar movimiento`.
+- Preparar nomina reemplaza copy visible residual de movimientos variables por movimientos puntuales/del mes.
+- Alcance respetado: sin SQL/RPC/RLS/BD, sin formulas legales ni motor, sin liquidaciones oficiales, Previred/LRE/banco, PDF/firma/envio.
+
+## REM-PERIOD-GLOBAL-01 + REM-NAV-IA-01 - Periodo global y rutas canonicas
+
+Fecha: 2026-05-11
+
+- Header global queda como unica fuente editable de periodo en Remuneraciones; pantallas hijas consumen `PeriodoActivoService.periodoYm()`.
+- `Movimientos del mes` y legacy `Movimientos variables` no exponen `input type="month"` local; altas/listados usan periodo global.
+- `Preparar nomina` y `Liquidaciones oficiales` limpian estado anterior y consultan el nuevo periodo al cambiar el header.
+- `Asignaciones recurrentes` clasifica vigencias contra el primer dia del periodo global.
+- Navegacion visible canonica: `/remuneraciones/proceso-mensual`, `/remuneraciones/novedades-mensuales`, `/remuneraciones/haberes-descuentos`, `/remuneraciones/liquidaciones`, `/remuneraciones/conceptos`.
+- Redirects legacy: `/remuneraciones/movimientos-variables` -> `/remuneraciones/novedades-mensuales`; `/remuneraciones/liquidaciones-oficiales` -> `/remuneraciones/liquidaciones`.
+- Alcance respetado: sin SQL/RPC/RLS/BD, sin formulas legales ni motor, sin PDF/firma/envio, sin Previred/LRE/banco/contabilidad.
+
+## REM-UX-FLOWS-02 - Orden operativo transversal de Remuneraciones
+
+Fecha: 2026-05-11
+
+- Se reordena `Preparar nomina` hacia estado del periodo, accion principal unica, resumen, pendientes, revision operativa e informacion interna al final.
+- Se elimina el doble recorrido visible: queda solo el avance compacto superior; el rail lateral `Recorrido visible` deja de renderizarse.
+- `Movimientos del mes` deja de exponer selector local editable de periodo y registra altas contra el periodo activo global.
+- `Asignaciones recurrentes` reemplaza el collapsable de impacto por una nota compacta visible y agrega resumen por trabajador seleccionado.
+- `Liquidaciones oficiales`, Dashboard, Reportes y Detalle usaban en esa fase la ruta visible `/remuneraciones/liquidaciones-oficiales`; REM-NAV-IA-01 la reemplaza por `/remuneraciones/liquidaciones`.
+- Alcance respetado: sin SQL/RPC/RLS/BD, sin formulas legales ni motor, sin PDF/firma/envio, sin Previred/LRE/banco/contabilidad.
+
 ## REM-UX-FLOWS-01 V3 - Visibilidad cliente vs aplicacion
 
 Fecha: 2026-05-11

@@ -5,6 +5,7 @@ import { LucideAngularModule } from 'lucide-angular';
 import { ArrowLeft, FileCheck2, RefreshCw } from 'lucide-angular/src/icons';
 import { vi } from 'vitest';
 
+import { PeriodoActivoService } from '../../../../core/services/periodo-activo.service';
 import { LiquidacionesOficialesService } from '../../services/liquidaciones-oficiales.service';
 import { LiquidacionesOficialesContainer } from './liquidaciones-oficiales-container';
 
@@ -15,6 +16,7 @@ describe('LiquidacionesOficialesContainer', () => {
     generarLiquidaciones: ReturnType<typeof vi.fn>;
     obtenerDetalleTrabajador: ReturnType<typeof vi.fn>;
   };
+  let periodoActivo: PeriodoActivoService;
 
   beforeEach(async () => {
     service = {
@@ -47,10 +49,13 @@ describe('LiquidacionesOficialesContainer', () => {
       providers: [
         provideRouter([]),
         importProvidersFrom(LucideAngularModule.pick({ ArrowLeft, FileCheck2, RefreshCw })),
+        PeriodoActivoService,
         { provide: LiquidacionesOficialesService, useValue: service },
       ],
     }).compileComponents();
 
+    periodoActivo = TestBed.inject(PeriodoActivoService);
+    periodoActivo.setPeriodoYm('2026-04');
     fixture = TestBed.createComponent(LiquidacionesOficialesContainer);
     fixture.detectChanges();
     await fixture.whenStable();
@@ -67,7 +72,7 @@ describe('LiquidacionesOficialesContainer', () => {
     const text = fixture.nativeElement.textContent as string;
     expect(input).toBeNull();
     expect(text).toContain('Periodo activo:');
-    expect(text).toContain('Cambialo desde el selector superior.');
+    expect(text).toContain('Informacion interna y alcance');
   });
 
   it('no duplica el CTA principal de generar en la botonera superior', () => {
@@ -120,5 +125,53 @@ describe('LiquidacionesOficialesContainer', () => {
     await fixture.whenStable();
 
     expect(service.generarLiquidaciones).toHaveBeenCalledWith('2026-04');
+  });
+
+  it('al cambiar periodo global consulta nuevo periodo y limpia detalle', async () => {
+    fixture.componentInstance.trabajadorSeleccionado.set({
+      idLiquidacionTrabajador: 99,
+      idPersona: 10,
+      idContrato: null,
+      rut: '11.111.111-1',
+      nombreTrabajador: 'Ana Perez',
+      cargo: null,
+      centroCosto: null,
+      fechaIngreso: null,
+      diasTrabajados: null,
+      baseImponible: 100,
+      baseTributable: 100,
+      totalHaberes: 100,
+      totalDescuentos: 20,
+      totalAportesEmpleadorReferencia: 0,
+      liquidoPagar: 80,
+      estado: 'generada',
+      observaciones: [],
+      metadata: {},
+    });
+    fixture.componentInstance.conceptosDetalle.set([
+      {
+        idLiquidacionConcepto: 1,
+        idLiquidacionTrabajador: 99,
+        idConcepto: 20,
+        codigo: 'BONO',
+        codigoLre: null,
+        nombre: 'Bono',
+        tipo: 'HABER',
+        clasificacion: null,
+        cantidad: null,
+        base: null,
+        tasa: null,
+        monto: 100,
+        orden: 1,
+        metadata: {},
+      },
+    ]);
+
+    periodoActivo.setPeriodoYm('2026-06');
+    await fixture.whenStable();
+
+    expect(service.consultarEstadoPeriodo).toHaveBeenCalledWith('2026-06');
+    expect(fixture.componentInstance.trabajadorSeleccionado()).toBeNull();
+    expect(fixture.componentInstance.conceptosDetalle()).toEqual([]);
   });
 });

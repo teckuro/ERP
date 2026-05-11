@@ -16,6 +16,7 @@ Un **concepto de remuneraciÃ³n** es una fila del catÃ¡logo maestro `concepto
 ### 2.1 CatÃ¡logo LRE (`catalogo_lre`)
 
 - Es el **maestro oficial** de cÃ³digos LRE; el concepto enlaza con `id_catalogo_lre` opcional.
+- **LRE-CATALOG-01:** `catalogo_lre` se completa via `bd/base/v11/partes/24_lre_catalogo_oficial.sql`; conceptos base mapeados: `GRATIFICACION -> 2106`, `HORAS_EXTRAS -> 2102`, `IMPUESTO_RENTA -> 3161`.
 - Criterios de obligatoriedad, cambio de mapeo y estado â€œsin LREâ€: ver [`decisiones-operativas.md`](./decisiones-operativas.md) Â§8. La UI debe permitir **desvincular** LRE (`null`) salvo polÃ­tica futura distinta aprobada por producto.
 
 ### 2.2 Concepto (`concepto`)

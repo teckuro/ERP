@@ -65,7 +65,7 @@ export class EntradasMensualesPeriodoService {
       const novedades = await this.novedadesMensualesService.listarNovedadesPeriodo(periodo.trim());
       return novedades.map((novedad) => normalizarEntradaNovedadMensual(novedad));
     } catch (error) {
-      throw errorFuente('Novedades mensuales', error);
+      throw errorFuente('Movimientos del mes', error);
     }
   }
 
@@ -75,7 +75,7 @@ export class EntradasMensualesPeriodoService {
       const movimientos = await this.movimientosVariablesService.listarPorPeriodo(periodo.trim());
       return movimientos.map((movimiento) => normalizarEntradaMovimientoLegacy(movimiento));
     } catch (error) {
-      throw errorFuente('Movimientos variables legacy', error);
+      throw errorFuente('Movimientos del mes legacy', error);
     }
   }
 
@@ -87,7 +87,7 @@ export class EntradasMensualesPeriodoService {
         .map((fila) => normalizarEntradaRecurrente(fila, periodo.trim()))
         .filter((entrada): entrada is EntradaMensualPeriodo => entrada != null);
     } catch (error) {
-      throw errorFuente('Haberes y descuentos recurrentes', error);
+      throw errorFuente('Asignaciones recurrentes', error);
     }
   }
 

@@ -142,7 +142,7 @@ describe('EntradasMensualesPeriodoService', () => {
   it('si una fuente falla, rechaza con contexto de fuente', async () => {
     movimientosVariablesService.listarPorPeriodo.mockRejectedValueOnce(new Error('fallo legacy'));
 
-    await expect(service.listarEntradasPeriodo('2026-05')).rejects.toThrow(/Movimientos variables legacy/);
+    await expect(service.listarEntradasPeriodo('2026-05')).rejects.toThrow(/Movimientos del mes legacy/);
   });
 
   it('legacy queda marcado como origen legacy_movimiento_variable', async () => {

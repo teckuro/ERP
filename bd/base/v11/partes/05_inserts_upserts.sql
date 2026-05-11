@@ -1231,6 +1231,8 @@ INSERT INTO catalogo_lre (
     imponible, tributable, afecta_liquido, vigente
 ) VALUES
     ('2101', 'Sueldo', 'HABERES', 'HABERES_21XX', 'HABER_IMPONIBLE_TRIBUTABLE', TRUE, TRUE, TRUE, TRUE),
+    ('2102', 'Sobresueldo', 'HABERES', 'HABERES_21XX', 'HABER_IMPONIBLE_TRIBUTABLE', TRUE, TRUE, TRUE, TRUE),
+    ('2106', 'Gratificación (mensual)', 'HABERES', 'HABERES_21XX', 'HABER_IMPONIBLE_TRIBUTABLE', TRUE, TRUE, TRUE, TRUE),
     ('2110', 'Aguinaldo', 'HABERES', 'HABERES_21XX', 'HABER_IMPONIBLE_TRIBUTABLE', TRUE, TRUE, TRUE, TRUE),
     ('2111', 'Bonos u otras remuneraciones fijas mensuales', 'HABERES', 'HABERES_21XX', 'HABER_IMPONIBLE_TRIBUTABLE', TRUE, TRUE, TRUE, TRUE),
     ('2113', 'Bonos u otras remuneraciones variables mensuales o superiores a un mes', 'HABERES', 'HABERES_21XX', 'HABER_IMPONIBLE_TRIBUTABLE', TRUE, TRUE, TRUE, TRUE),
@@ -1240,6 +1242,7 @@ INSERT INTO catalogo_lre (
     ('3141', 'Cotización obligatoria previsional (AFP o IPS)', 'DESCUENTOS', 'DESCUENTOS_31XX', 'DESCUENTO_LEGAL', FALSE, FALSE, TRUE, TRUE),
     ('3143', 'Cotización obligatoria salud 7%', 'DESCUENTOS', 'DESCUENTOS_31XX', 'DESCUENTO_LEGAL', FALSE, FALSE, TRUE, TRUE),
     ('3151', 'Cotización AFC - trabajador', 'DESCUENTOS', 'DESCUENTOS_31XX', 'DESCUENTO_LEGAL', FALSE, FALSE, TRUE, TRUE),
+    ('3161', 'Impuesto retenido por remuneraciones', 'DESCUENTOS', 'DESCUENTOS_31XX', 'DESCUENTO_IMPUESTO', FALSE, FALSE, TRUE, TRUE),
     ('3183', 'Otros descuentos autorizados y solicitados por el trabajador', 'DESCUENTOS', 'DESCUENTOS_31XX', 'OTRO_DESCUENTO', FALSE, FALSE, TRUE, TRUE),
     ('3186', 'Pensiones de alimentos', 'DESCUENTOS', 'DESCUENTOS_31XX', 'OTRO_DESCUENTO', FALSE, FALSE, TRUE, TRUE),
     ('3188', 'Descuentos por anticipos y préstamos', 'DESCUENTOS', 'DESCUENTOS_31XX', 'OTRO_DESCUENTO', FALSE, FALSE, TRUE, TRUE),
@@ -1280,13 +1283,17 @@ SET id_catalogo_lre = l.id_catalogo_lre
 FROM catalogo_lre l
 WHERE c.codigo = 'SUELDO_BASE' AND l.codigo_lre = '2101';
 
--- DUDA NORMATIVA (LRE DT): HORAS_EXTRAS permanece en 2113 (remuneraciones variables mensuales o superiores a un mes).
--- Alternativa frecuente según criterio contable/asesoría: 2102 Sobresueldo u otra línea del suplemento vigente.
--- Validar con manual LRE y política de la empresa antes de producción.
 UPDATE concepto c
 SET id_catalogo_lre = l.id_catalogo_lre
 FROM catalogo_lre l
-WHERE c.codigo = 'HORAS_EXTRAS' AND l.codigo_lre = '2113';
+WHERE c.codigo = 'GRATIFICACION' AND l.codigo_lre = '2106';
+
+-- LRE-CATALOG-01: HORAS_EXTRAS se mapea a 2102 Sobresueldo.
+-- 2113 queda reservado para bonos u otras remuneraciones variables.
+UPDATE concepto c
+SET id_catalogo_lre = l.id_catalogo_lre
+FROM catalogo_lre l
+WHERE c.codigo = 'HORAS_EXTRAS' AND l.codigo_lre = '2102';
 
 UPDATE concepto c
 SET id_catalogo_lre = l.id_catalogo_lre
@@ -1317,6 +1324,11 @@ UPDATE concepto c
 SET id_catalogo_lre = l.id_catalogo_lre
 FROM catalogo_lre l
 WHERE c.codigo = 'CESANTIA' AND l.codigo_lre = '3151';
+
+UPDATE concepto c
+SET id_catalogo_lre = l.id_catalogo_lre
+FROM catalogo_lre l
+WHERE c.codigo = 'IMPUESTO_RENTA' AND l.codigo_lre = '3161';
 
 UPDATE concepto c
 SET id_catalogo_lre = l.id_catalogo_lre

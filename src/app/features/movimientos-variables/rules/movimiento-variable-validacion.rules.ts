@@ -93,13 +93,13 @@ export function validarMovimientoVariableInput(
   if (concepto != null) {
     const tipo = (concepto.tipo ?? '').trim().toUpperCase();
     if (tipo !== 'HABER' && tipo !== 'DESCUENTO') {
-      motivos.push('El concepto debe ser tipo HABER o DESCUENTO para movimiento variable v1.');
+      motivos.push('El concepto debe ser tipo HABER o DESCUENTO para movimiento puntual v1.');
     }
     if (concepto.calculoAutomatico === true) {
-      motivos.push('No se permiten conceptos con calculo automatico para movimiento variable manual en v1.');
+      motivos.push('No se permiten conceptos con calculo automatico para movimiento puntual manual en v1.');
     }
     if (concepto.esSistema === true) {
-      motivos.push('No se permiten conceptos de sistema para movimiento variable manual en v1.');
+      motivos.push('No se permiten conceptos de sistema para movimiento puntual manual en v1.');
     }
   }
 
