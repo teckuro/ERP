@@ -34,12 +34,10 @@ yarn-error.log
 
 # Guías y bitácora Codex (copia local del contrato de agente; no publicar en remoto)
 /docs/codex/*
-!/docs/codex/observaciones.md
 !/docs/codex/ui-form-guidelines.md
 !/docs/codex/estilos/
 /docs/codex/estilos/*
 !/docs/codex/estilos/README.md
-!/docs/codex/estilos/observaciones.md
 !/docs/codex/modulos/
 /docs/codex/modulos/*
 !/docs/codex/modulos/auth/
