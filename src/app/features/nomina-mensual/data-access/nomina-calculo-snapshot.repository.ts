@@ -48,7 +48,7 @@ export class NominaCalculoSnapshotRepository {
     const payload = buildGuardarSnapshotRpcPayload(snapshot);
     const { data, error } = await this.supabase.rpc('guardar_nomina_calculo_snapshot', {
       p_periodo: snapshot.periodo,
-      p_id_empresa: snapshot.idEmpresa,
+      p_id_empresa: snapshot.idEmpresa ?? 0,
       p_cabecera: payload.cabecera,
       p_trabajadores: payload.trabajadores,
       p_conceptos: payload.conceptos,

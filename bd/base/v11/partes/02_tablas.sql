@@ -887,6 +887,9 @@ CREATE TABLE concepto (
     calculo_automatico BOOLEAN NOT NULL DEFAULT FALSE,
     formula_json JSONB,
     id_catalogo_lre INT REFERENCES catalogo_lre (id_catalogo_lre) ON DELETE SET NULL,
+    estrategia_lre VARCHAR(40) NOT NULL DEFAULT 'DIRECTO',
+    requiere_exportacion_lre BOOLEAN NOT NULL DEFAULT TRUE,
+    observacion_normativa_lre TEXT,
     afecta_liquido BOOLEAN NOT NULL DEFAULT TRUE,
     es_sistema BOOLEAN NOT NULL DEFAULT FALSE,
     vigente BOOLEAN NOT NULL DEFAULT TRUE,
@@ -896,10 +899,22 @@ CREATE TABLE concepto (
         vigencia_fin IS NULL
         OR vigencia_inicio IS NULL
         OR vigencia_fin >= vigencia_inicio
+    ),
+    CONSTRAINT chk_concepto_estrategia_lre CHECK (
+        estrategia_lre IN (
+            'DIRECTO',
+            'DERIVA_DIAS_TRABAJADOS',
+            'DERIVA_REBAJA_TRIBUTARIA',
+            'DESCOMPONER_CONCEPTO',
+            'PENDIENTE_NORMATIVO',
+            'NO_EXPORTABLE'
+        )
     )
 );
 
 CREATE INDEX idx_concepto_catalogo_lre ON concepto (id_catalogo_lre);
+CREATE INDEX idx_concepto_estrategia_lre ON concepto (estrategia_lre);
+CREATE INDEX idx_concepto_requiere_exportacion_lre ON concepto (requiere_exportacion_lre);
 CREATE INDEX idx_concepto_vigente ON concepto (vigente);
 CREATE INDEX idx_concepto_es_sistema ON concepto (es_sistema);
 

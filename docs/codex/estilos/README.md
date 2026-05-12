@@ -46,6 +46,17 @@ No es el patrón por defecto para captura normal.
 
 ---
 
+## Tipografía local/sistema
+
+- El ERP no debe depender de Google Fonts ni de servicios externos de fuentes en runtime.
+- `src/index.html` no debe declarar `preconnect` ni `stylesheet` hacia `fonts.googleapis.com` o `fonts.gstatic.com`.
+- La fuente base se controla desde `src/styles.css` con `--erp-font-sans`.
+- Valor vigente: `ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif`.
+- Componentes y hojas locales deben usar `font-family: var(--erp-font-sans, system-ui, sans-serif)` o heredar la fuente del contenedor.
+- Si se incorpora una fuente de marca en el futuro, debe servirse como asset local versionado y documentarse aquí antes de usarla.
+
+---
+
 ## Maquetación por capas (scoping de CSS)
 
 Para evitar CSS “genérico” que se pisa entre pantallas o modos (y obliga a duplicar reglas), el layout debe definirse por **capa explícita**.

@@ -32,6 +32,53 @@
                 : 'Estamos guardando la ficha completa del empleado.'
             "
           ></app-message-box>
+        } @else if (advancedActionModal(); as modal) {
+          <app-message-box
+            mode="modal"
+            [variant]="modal.variant"
+            [modalHeadlineSplit]="true"
+            [title]="modal.title"
+            [message]="modal.message"
+            [primaryLabel]="modal.primaryLabel"
+            [secondaryLabel]="modal.secondaryLabel || ''"
+            (action)="handleAdvancedActionModalPrimary()"
+            (secondary)="handleAdvancedActionModalSecondary()"
+          >
+            <div class="advanced-action-modal" role="region" aria-label="Detalle de validación">
+              @if (modal.blockingItems.length > 0) {
+                <section class="advanced-action-modal__section advanced-action-modal__section--blocking">
+                  <h3>Datos obligatorios pendientes</h3>
+                  <ul>
+                    @for (item of modal.blockingItems; track item) {
+                      <li>{{ item }}</li>
+                    }
+                  </ul>
+                </section>
+              }
+
+              @if (modal.warningItems.length > 0) {
+                <section class="advanced-action-modal__section advanced-action-modal__section--warning">
+                  <h3>Advertencias de revisión</h3>
+                  <ul>
+                    @for (item of modal.warningItems; track item) {
+                      <li>{{ item }}</li>
+                    }
+                  </ul>
+                </section>
+              }
+
+              @if (modal.infoItems.length > 0) {
+                <section class="advanced-action-modal__section advanced-action-modal__section--info">
+                  <h3>Información útil</h3>
+                  <ul>
+                    @for (item of modal.infoItems; track item) {
+                      <li>{{ item }}</li>
+                    }
+                  </ul>
+                </section>
+              }
+            </div>
+          </app-message-box>
         } @else if (duplicateRutModalRut(); as rutDup) {
           <app-message-box
             mode="modal"
@@ -95,7 +142,7 @@
                   <h3 class="basic-success-followup__title" id="basic-success-next-title">Próximo paso</h3>
                   <p class="basic-success-followup__text">
                     La ficha queda en proceso. Completa contrato, previsión, salud, banco y remuneración desde la
-                    ficha del empleado cuando corresponda; hasta entonces no está lista para liquidar.
+                    ficha del empleado cuando corresponda. Hasta entonces no está lista para liquidar.
                   </p>
                 </div>
                 @if (createdEmployeeId(); as fichaId) {
@@ -150,7 +197,7 @@
                         <button
                           type="button"
                           data-testid="guardar-borrador-avanzado"
-                          class="erp-toolbar-button erp-action-button border-gray-200 bg-white text-gray-700 hover:border-gray-300 hover:bg-gray-50 hover:text-gray-900"
+                          class="advanced-save-draft-button"
                           [disabled]="isSavingBorrador() || isSaving() || isLoadingCatalogs()"
                           (click)="onGuardarBorrador()"
                         >
@@ -167,10 +214,6 @@
                         ></app-page-actions>
                       </div>
                     </header>
-                    @if (borradorFeedback(); as bf) {
-                      <p class="advanced-draft-feedback" role="status">{{ bf }}</p>
-                    }
-
                     <div class="advanced-wizard-layout">
                       <aside class="advanced-wizard-map" aria-label="Mapa de ficha">
                         <div class="advanced-wizard-map__head">
@@ -292,7 +335,7 @@
                                 La ficha está lista para finalizar el alta.
                               }
                             } @else {
-                              Completa la ficha por etapas. Puedes volver a pasos anteriores; los datos no se pierden.
+                              Completa la ficha por etapas. Puedes volver a pasos anteriores sin perder los datos ingresados.
                             }
                           </p>
                         </section>

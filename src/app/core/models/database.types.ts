@@ -494,13 +494,16 @@ export type Database = {
           codigo: string
           codigo_motor: string | null
           es_sistema: boolean
+          estrategia_lre: string
           formula_json: Json | null
           id_catalogo_lre: number | null
           id_concepto: number
           imponible: boolean
           naturaleza: string | null
           nombre: string
+          observacion_normativa_lre: string | null
           orden_impresion: number
+          requiere_exportacion_lre: boolean
           tipo: string | null
           tributable: boolean
           vigencia_fin: string | null
@@ -517,13 +520,16 @@ export type Database = {
           codigo: string
           codigo_motor?: string | null
           es_sistema?: boolean
+          estrategia_lre?: string
           formula_json?: Json | null
           id_catalogo_lre?: number | null
           id_concepto?: number
           imponible?: boolean
           naturaleza?: string | null
           nombre: string
+          observacion_normativa_lre?: string | null
           orden_impresion?: number
+          requiere_exportacion_lre?: boolean
           tipo?: string | null
           tributable?: boolean
           vigencia_fin?: string | null
@@ -540,13 +546,16 @@ export type Database = {
           codigo?: string
           codigo_motor?: string | null
           es_sistema?: boolean
+          estrategia_lre?: string
           formula_json?: Json | null
           id_catalogo_lre?: number | null
           id_concepto?: number
           imponible?: boolean
           naturaleza?: string | null
           nombre?: string
+          observacion_normativa_lre?: string | null
           orden_impresion?: number
+          requiere_exportacion_lre?: boolean
           tipo?: string | null
           tributable?: boolean
           vigencia_fin?: string | null
@@ -2356,13 +2365,6 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "nomina_liquidacion_concepto_id_concepto_fkey"
-            columns: ["id_concepto"]
-            isOneToOne: false
-            referencedRelation: "concepto"
-            referencedColumns: ["id_concepto"]
-          },
-          {
             foreignKeyName: "nomina_liquidacion_concepto_id_liquidacion_trabajador_fkey"
             columns: ["id_liquidacion_trabajador"]
             isOneToOne: false
@@ -2426,22 +2428,7 @@ export type Database = {
           usuario_generacion_id?: string | null
           usuario_generacion_label?: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "nomina_liquidacion_periodo_id_calculo_periodo_fkey"
-            columns: ["id_calculo_periodo"]
-            isOneToOne: false
-            referencedRelation: "nomina_calculo_periodo"
-            referencedColumns: ["id_calculo_periodo"]
-          },
-          {
-            foreignKeyName: "nomina_liquidacion_periodo_id_empresa_fkey"
-            columns: ["id_empresa"]
-            isOneToOne: false
-            referencedRelation: "empresa"
-            referencedColumns: ["id_empresa"]
-          },
-        ]
+        Relationships: []
       }
       nomina_liquidacion_trabajador: {
         Row: {
@@ -2523,20 +2510,6 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "nomina_liquidacion_periodo"
             referencedColumns: ["id_liquidacion_periodo"]
-          },
-          {
-            foreignKeyName: "nomina_liquidacion_trabajador_id_persona_fkey"
-            columns: ["id_persona"]
-            isOneToOne: false
-            referencedRelation: "persona"
-            referencedColumns: ["id_persona"]
-          },
-          {
-            foreignKeyName: "nomina_liquidacion_trabajador_id_persona_fkey"
-            columns: ["id_persona"]
-            isOneToOne: false
-            referencedRelation: "vw_persona_factores"
-            referencedColumns: ["id_persona"]
           },
         ]
       }
@@ -4679,7 +4652,7 @@ export type Database = {
         Args: {
           p_cabecera: Json
           p_conceptos?: Json
-          p_id_empresa: number | null
+          p_id_empresa: number
           p_observaciones?: Json
           p_periodo: string
           p_trabajadores: Json
