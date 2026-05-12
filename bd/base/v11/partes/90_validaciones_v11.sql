@@ -400,3 +400,45 @@ FROM expected e
 LEFT JOIN concepto c ON c.codigo = e.codigo_concepto
 LEFT JOIN catalogo_lre l ON l.id_catalogo_lre = c.id_catalogo_lre
 WHERE l.codigo_lre IS DISTINCT FROM e.codigo_lre;
+
+\echo '24_conceptos_directos_sin_codigo_lre'
+SELECT
+    codigo,
+    nombre,
+    estrategia_lre,
+    requiere_exportacion_lre
+FROM concepto
+WHERE vigente = TRUE
+  AND requiere_exportacion_lre = TRUE
+  AND estrategia_lre = 'DIRECTO'
+  AND id_catalogo_lre IS NULL
+ORDER BY codigo;
+
+\echo '25_conceptos_no_directos_controlados'
+WITH expected(codigo, estrategia_lre) AS (
+    VALUES
+        ('INASISTENCIA', 'DERIVA_DIAS_TRABAJADOS'),
+        ('ZONA_EXTREMA', 'DESCOMPONER_CONCEPTO'),
+        ('AFP_EMPLEADOR', 'PENDIENTE_NORMATIVO')
+)
+SELECT
+    e.codigo,
+    e.estrategia_lre AS estrategia_esperada,
+    c.estrategia_lre AS estrategia_encontrada,
+    c.id_catalogo_lre,
+    c.requiere_exportacion_lre
+FROM expected e
+LEFT JOIN concepto c ON c.codigo = e.codigo
+WHERE c.codigo IS NULL
+   OR c.estrategia_lre IS DISTINCT FROM e.estrategia_lre
+   OR c.id_catalogo_lre IS NOT NULL;
+
+\echo '26_conceptos_no_directos_sin_observacion'
+SELECT
+    codigo,
+    nombre,
+    estrategia_lre
+FROM concepto
+WHERE estrategia_lre <> 'DIRECTO'
+  AND COALESCE(TRIM(observacion_normativa_lre), '') = ''
+ORDER BY codigo;

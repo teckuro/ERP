@@ -4,11 +4,6 @@
 
 **Fase fuerte del producto en curso:** la **documentación** Fase 9 incluye diagnóstico, contrato funcional y **decisiones operativas** ([`decisiones-operativas.md`](./decisiones-operativas.md)). **Fase 9.2A** dejó el **listado base** del catálogo (columnas, filtros, regla `esConceptoAsignable`, vacíos). **Fase 9.2B** añadió **detalle** al **Revisar** (modal), motivos de no asignabilidad/resumen, vigencia `INVALIDO` si fechas incoherentes, y **blindaje de acciones** (`concepto-acciones.rules.ts` + deshabilitado en grilla). **Fase 9.2C** alineó **Haberes y descuentos** al listado de asignables del catálogo (`HaberesDescuentosService.listarConceptos` + validación al guardar con `esConceptoAsignable`). Siguen brechas de **permisos/JWT**, **CRUD completo alineado a roles**, **reglas de cálculo en UI**, **E2E visual estable** y **RLS** según diagnóstico §8 y decisiones §2 / §10.
 
-
-## Estado LRE-CATALOG-01
-
-La fase **LRE-CATALOG-01** completa el maestro `catalogo_lre` con los codigos oficiales del suplemento DT LRE enero 2022 y alinea mapeos base de `concepto.id_catalogo_lre`. Cambios clave: `GRATIFICACION -> 2106`, `HORAS_EXTRAS -> 2102`, `IMPUESTO_RENTA -> 3161`. `INASISTENCIA`, `ZONA_EXTREMA` y `AFP_EMPLEADOR` quedan sin mapeo forzado por decision normativa pendiente. Ver [`../lre/catalogo-lre.md`](../lre/catalogo-lre.md).
-
 ## Orden de lectura
 
 1. [`diagnostico-fase-9.md`](./diagnostico-fase-9.md) — estado real del repo (UI, API, BD, pruebas).  
@@ -38,3 +33,13 @@ El código del mantenedor comparte **`HaberesDescuentosService`** con asignacion
 ## Relacion con Movimientos variables
 
 Los movimientos variables mensuales **referencian** conceptos del catalogo pero no son el mantenedor de `concepto`. Contrato, decisiones y modelo v1 (validacion opcional por snapshot sin acoplar a `concepto-asignabilidad`): [`../movimientos-variables/README.md`](../movimientos-variables/README.md), [`contrato-funcional.md`](./contrato-funcional.md) §17.
+
+## LRE-CONCEPT-RULES-01
+
+El modulo Conceptos incorpora metadata para tratamiento LRE:
+
+- `estrategia_lre`
+- `requiere_exportacion_lre`
+- `observacion_normativa_lre`
+
+Esto permite diferenciar conceptos directos, derivados, ambiguos, pendientes o internos sin forzar codigos LRE incorrectos.

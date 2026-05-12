@@ -16,7 +16,6 @@ Un **concepto de remuneraciÃ³n** es una fila del catÃ¡logo maestro `concepto
 ### 2.1 CatÃ¡logo LRE (`catalogo_lre`)
 
 - Es el **maestro oficial** de cÃ³digos LRE; el concepto enlaza con `id_catalogo_lre` opcional.
-- **LRE-CATALOG-01:** `catalogo_lre` se completa via `bd/base/v11/partes/24_lre_catalogo_oficial.sql`; conceptos base mapeados: `GRATIFICACION -> 2106`, `HORAS_EXTRAS -> 2102`, `IMPUESTO_RENTA -> 3161`.
 - Criterios de obligatoriedad, cambio de mapeo y estado â€œsin LREâ€: ver [`decisiones-operativas.md`](./decisiones-operativas.md) Â§8. La UI debe permitir **desvincular** LRE (`null`) salvo polÃ­tica futura distinta aprobada por producto.
 
 ### 2.2 Concepto (`concepto`)
@@ -183,3 +182,21 @@ El catalogo **concepto** es la **fuente** de definiciones que luego se aplican p
 
 Contrato del modulo movimientos variables: [`../movimientos-variables/README.md`](../movimientos-variables/README.md). Persistencia local de la fila puntual (tabla `movimiento_variable_mensual`, sin RLS productivo aun): [`../movimientos-variables/persistencia-9-4C.md`](../movimientos-variables/persistencia-9-4C.md). Pendiente de producto: flag o regla **asignable recurrente vs variable vs ambos** (documentado alli; sin cambio de codigo en 9.4A).
 
+## LRE-CONCEPT-RULES-01 - Contrato funcional
+
+Conceptos ya no debe interpretar `id_catalogo_lre IS NULL` como error universal.
+
+La regla funcional es:
+
+```txt
+Si estrategia_lre = DIRECTO y requiere_exportacion_lre = TRUE, debe existir id_catalogo_lre.
+Si estrategia_lre <> DIRECTO, debe existir observacion_normativa_lre y una decision documentada.
+```
+
+Conceptos foco:
+
+- `INASISTENCIA`: `DERIVA_DIAS_TRABAJADOS`.
+- `ZONA_EXTREMA`: `DESCOMPONER_CONCEPTO`.
+- `AFP_EMPLEADOR`: `PENDIENTE_NORMATIVO`.
+
+No se cambian formulas ni calculos automaticos en esta fase.

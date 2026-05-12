@@ -42,6 +42,15 @@ ALTER TABLE concepto
     ADD COLUMN IF NOT EXISTS id_catalogo_lre INT REFERENCES catalogo_lre (id_catalogo_lre) ON DELETE SET NULL;
 
 ALTER TABLE concepto
+    ADD COLUMN IF NOT EXISTS estrategia_lre VARCHAR(40) NOT NULL DEFAULT 'DIRECTO';
+
+ALTER TABLE concepto
+    ADD COLUMN IF NOT EXISTS requiere_exportacion_lre BOOLEAN NOT NULL DEFAULT TRUE;
+
+ALTER TABLE concepto
+    ADD COLUMN IF NOT EXISTS observacion_normativa_lre TEXT;
+
+ALTER TABLE concepto
     ADD COLUMN IF NOT EXISTS afecta_liquido BOOLEAN NOT NULL DEFAULT TRUE;
 
 ALTER TABLE concepto
@@ -70,7 +79,29 @@ BEGIN
     END IF;
 END $$;
 
+
+DO $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1 FROM pg_constraint WHERE conname = 'chk_concepto_estrategia_lre'
+    ) THEN
+        ALTER TABLE concepto
+            ADD CONSTRAINT chk_concepto_estrategia_lre CHECK (
+                estrategia_lre IN (
+                    'DIRECTO',
+                    'DERIVA_DIAS_TRABAJADOS',
+                    'DERIVA_REBAJA_TRIBUTARIA',
+                    'DESCOMPONER_CONCEPTO',
+                    'PENDIENTE_NORMATIVO',
+                    'NO_EXPORTABLE'
+                )
+            );
+    END IF;
+END $$;
+
 CREATE INDEX IF NOT EXISTS idx_concepto_catalogo_lre ON concepto (id_catalogo_lre);
+CREATE INDEX IF NOT EXISTS idx_concepto_estrategia_lre ON concepto (estrategia_lre);
+CREATE INDEX IF NOT EXISTS idx_concepto_requiere_exportacion_lre ON concepto (requiere_exportacion_lre);
 CREATE INDEX IF NOT EXISTS idx_concepto_vigente ON concepto (vigente);
 CREATE INDEX IF NOT EXISTS idx_concepto_es_sistema ON concepto (es_sistema);
 

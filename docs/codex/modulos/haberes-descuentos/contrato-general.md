@@ -169,31 +169,3 @@ Esta fase no implementa auditoria avanzada, movimientos variables, proceso mensu
 ## Integracion Proceso mensual (Fase 9.5B)
 
 El modulo expone listado global de asignaciones con concepto (`HaberesDescuentosRepository.listarTodasAsignacionesConConcepto`) y el metodo `HaberesDescuentosService.listarAsignacionesParaPrevalidacionMensual(periodo)`, que reutiliza `vigenciaIntersecaMes` y `clasificarVigenciaAsignacion` para alimentar prevalidaciones de **Nomina mensual** sin calcular liquidaciones. Contrato del consumidor: [`../nomina-mensual/prevalidaciones-9-5B.md`](../nomina-mensual/prevalidaciones-9-5B.md).
-
-## REM-UX-FLOWS-02 - Flujo visual de asignaciones
-
-La UI de asignaciones recurrentes no debe exponer un selector local de periodo. Usa el periodo activo global solo como contexto para evaluar vigencias.
-
-Estado inicial:
-
-- accion principal funcional: seleccionar trabajador;
-- `Nueva asignacion recurrente` permanece deshabilitada con motivo visible;
-- no se muestra la grilla como protagonista hasta seleccionar trabajador.
-
-Con trabajador seleccionado:
-
-- accion principal: `Nueva asignacion recurrente`;
-- se muestra resumen del trabajador;
-- se muestra resumen de asignaciones activas, futuras, vencidas/cerradas e invalidas;
-- luego se muestra la grilla operativa.
-
-## REM-PERIOD-GLOBAL-01 - Vigencia alineada al periodo global
-
-La pantalla visible `Asignaciones recurrentes` no expone selector local de periodo. Para clasificar vigencias en UI debe pasar una fecha de referencia derivada de `PeriodoActivoService.periodoYm()` (`YYYY-MM-01`) a `listarConceptos` y `listarPorPersona`.
-
-Al cambiar el periodo global:
-
-- se recargan conceptos;
-- se recargan asignaciones si hay trabajador seleccionado;
-- se cierra el dialogo de alta/edicion para evitar guardar con contexto anterior;
-- una nueva asignacion propone `vigenciaInicio` como primer dia del periodo activo.

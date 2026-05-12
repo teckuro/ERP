@@ -39,7 +39,7 @@ import {
   CardComponent,
   CardContentComponent,
 } from '../../../../shared/components/ui/card.component';
-import { MessageBoxComponent } from '../../../../shared/components/ui/message-box.component';
+import { MessageBoxComponent, MessageBoxVariant } from '../../../../shared/components/ui/message-box.component';
 import { PageActionsComponent } from '../../../../shared/components/ui/page-actions.component';
 import {
   RecordBreadcrumbComponent,
@@ -58,6 +58,35 @@ type ValidationStepId = TabId;
 type ValidationSeverity = 'error' | 'warning' | 'info';
 type StepValidationStatus = 'pending' | 'in-progress' | 'invalid' | 'complete';
 type FormEmpleadoModo = 'basico' | 'avanzado';
+
+type AdvancedActionModalKind =
+  | 'next-step-review'
+  | 'draft-invalid'
+  | 'draft-success'
+  | 'finish-invalid'
+  | 'finish-confirm';
+type AdvancedActionModalAction =
+  | 'dismiss'
+  | 'continue-next'
+  | 'focus-current-step'
+  | 'focus-draft-minimum'
+  | 'focus-first-blocking'
+  | 'execute-finish';
+
+interface AdvancedActionModal {
+  kind: AdvancedActionModalKind;
+  variant: MessageBoxVariant;
+  title: string;
+  message: string;
+  primaryLabel: string;
+  secondaryLabel?: string;
+  blockingItems: readonly string[];
+  warningItems: readonly string[];
+  infoItems: readonly string[];
+  targetStep?: number;
+  primaryAction: AdvancedActionModalAction;
+  secondaryAction?: AdvancedActionModalAction;
+}
 
 interface ValidationRule {
   id: string;
@@ -107,37 +136,37 @@ const TAB_ORDER: readonly TabId[] = [...EMPLEADO_FORM_TAB_ORDER];
 
 /** Mensajes de negocio al intentar finalizar con bloqueos (paso 9); no exponer detalle técnico de BD. */
 const MENSAJES_FINALIZAR_ALTA: Partial<Record<string, string>> = {
-  'contract.position': 'Define un cargo real antes de finalizar.',
-  'contract.branch': 'Selecciona sucursal y organización antes de finalizar.',
-  'contract.worker-type': 'Selecciona un tipo de trabajador real antes de finalizar.',
-  'contract.schedule-type': 'Selecciona un tipo de jornada real antes de finalizar.',
-  'contract.contract-type': 'Selecciona el tipo de contrato antes de finalizar.',
-  'contract.start-date': 'Ingresa la fecha de ingreso antes de finalizar.',
-  'contract.document-date': 'Ingresa la fecha de contrato antes de finalizar.',
-  'contract.end-date': 'Completa la fecha de término del contrato antes de finalizar.',
-  'contract.salary': 'Ingresa un sueldo base válido antes de finalizar.',
-  'contract.currency': 'Selecciona la moneda de remuneración antes de finalizar.',
-  'contract.weekly-hours': 'Completa la jornada semanal antes de finalizar.',
-  'contract.weekly-days': 'Completa los días semanales antes de finalizar.',
-  'prevision.regime': 'Completa previsión y salud antes de finalizar.',
-  'prevision.afp': 'Completa AFP y régimen previsional antes de finalizar.',
-  'prevision.health': 'Completa institución de salud y plan antes de finalizar.',
-  'prevision.health-currency': 'Completa moneda y valor del plan de salud antes de finalizar.',
-  'prevision.health-plan': 'Completa el valor del plan de salud antes de finalizar.',
-  'prevision.apv-institution': 'Completa APVI o desactiva "Tiene APVI".',
-  'prevision.apv-currency': 'Completa APVI o desactiva "Tiene APVI".',
-  'prevision.apv-amount': 'Completa APVI o desactiva "Tiene APVI".',
-  'prevision.apv-payment': 'Completa APVI o desactiva "Tiene APVI".',
-  'prevision.apv-agreement': 'Completa APVI o desactiva "Tiene APVI".',
-  'prevision.ips-name': 'Completa la información de previsión IPS antes de finalizar.',
-  'prevision.ips-regime': 'Completa la información de previsión IPS antes de finalizar.',
-  'prevision.ips-rate': 'Completa la información de previsión IPS antes de finalizar.',
-  'prevision.health-ges': 'Completa el adicional Auge/GES del plan de salud antes de finalizar.',
-  'prevision.account2-currency': 'Completa Cuenta 2 AFP o deja los montos en blanco.',
-  'prevision.account2-value': 'Completa Cuenta 2 AFP o deja los montos en blanco.',
-  'bank.bank': 'Selecciona un banco real antes de finalizar.',
-  'bank.account-type': 'Selecciona un tipo de cuenta real antes de finalizar.',
-  'bank.account-number': 'Reemplaza la cuenta bancaria temporal o ingresa una cuenta real.',
+  'contract.position': 'Ingresa el cargo o función que tendrá el trabajador.',
+  'contract.branch': 'Selecciona la sucursal u organización donde prestará servicios.',
+  'contract.worker-type': 'Selecciona el tipo de trabajador que corresponde al contrato.',
+  'contract.schedule-type': 'Selecciona el tipo de jornada pactada.',
+  'contract.contract-type': 'Selecciona el tipo de contrato laboral.',
+  'contract.start-date': 'Ingresa la fecha de ingreso del trabajador.',
+  'contract.document-date': 'Ingresa la fecha del contrato.',
+  'contract.end-date': 'Completa la fecha de término cuando el contrato no sea indefinido.',
+  'contract.salary': 'Ingresa un sueldo base válido para remuneraciones.',
+  'contract.currency': 'Selecciona la moneda de remuneración.',
+  'contract.weekly-hours': 'Completa las horas semanales pactadas.',
+  'contract.weekly-days': 'Completa los días semanales de trabajo.',
+  'prevision.regime': 'Selecciona el régimen previsional del trabajador.',
+  'prevision.afp': 'Selecciona la AFP cuando el régimen previsional sea AFP.',
+  'prevision.health': 'Selecciona la institución de salud del trabajador.',
+  'prevision.health-currency': 'Selecciona la moneda del plan de salud.',
+  'prevision.health-plan': 'Ingresa el valor del plan de salud.',
+  'prevision.apv-institution': 'Selecciona la institución APVI o desactiva APVI si no corresponde.',
+  'prevision.apv-currency': 'Selecciona la moneda APVI o desactiva APVI si no corresponde.',
+  'prevision.apv-amount': 'Ingresa el monto APVI o desactiva APVI si no corresponde.',
+  'prevision.apv-payment': 'Selecciona la forma de pago APVI o desactiva APVI si no corresponde.',
+  'prevision.apv-agreement': 'Completa el depósito convenido APVI o desactiva APVI si no corresponde.',
+  'prevision.ips-name': 'Ingresa la entidad o ex caja del régimen IPS.',
+  'prevision.ips-regime': 'Ingresa el régimen IPS que corresponde.',
+  'prevision.ips-rate': 'Ingresa la tasa IPS que corresponde.',
+  'prevision.health-ges': 'Ingresa el adicional Auge o GES del plan de salud.',
+  'prevision.account2-currency': 'Completa la moneda de Cuenta 2 AFP o deja Cuenta 2 sin monto.',
+  'prevision.account2-value': 'Completa el valor de Cuenta 2 AFP o deja Cuenta 2 sin monto.',
+  'bank.bank': 'Selecciona el banco para el pago por transferencia.',
+  'bank.account-type': 'Selecciona el tipo de cuenta bancaria.',
+  'bank.account-number': 'Ingresa una cuenta bancaria real y reemplaza cualquier dato temporal.',
 };
 
 @Component({
@@ -189,6 +218,7 @@ export class FormEmpleadoComponent implements OnInit {
   readonly borradorPersonaId = signal<number | null>(null);
   readonly isSavingBorrador = signal(false);
   readonly borradorFeedback = signal<string | null>(null);
+  readonly advancedActionModal = signal<AdvancedActionModal | null>(null);
   readonly catalogos = signal<EmpleadoFormCatalogos>(EMPTY_EMPLEADO_FORM_CATALOGOS);
   readonly isLoadingCatalogs = signal(true);
   readonly catalogosError = signal<string | null>(null);
@@ -262,22 +292,35 @@ export class FormEmpleadoComponent implements OnInit {
     if (!this.isAdvancedMode() || this.isSavingBorrador() || this.isSaving()) {
       return;
     }
+
+    this.advancedActionModal.set(null);
+
     if (this.isLoadingCatalogs()) {
       this.borradorFeedback.set(null);
-      this.errorMessage.set(
-        'La informacion base del formulario aun se esta cargando. Espera unos segundos e intenta nuevamente.',
-      );
+      this.openAdvancedActionModal({
+        kind: 'draft-invalid',
+        variant: 'warning',
+        title: 'Espera a que cargue el formulario',
+        message: 'La información base del formulario aún se está preparando. Intenta guardar el borrador nuevamente en unos segundos.',
+        primaryLabel: 'Aceptar',
+        blockingItems: [],
+        warningItems: ['Catálogos y datos base aún en carga.'],
+        infoItems: [],
+        primaryAction: 'dismiss',
+      });
       return;
     }
 
     const err = validateBorradorAvanzadoFormMinimo(this.form);
     if (err) {
       this.borradorFeedback.set(null);
-      this.errorMessage.set(err);
+      this.openDraftInvalidModal(err);
       return;
     }
 
     this.errorMessage.set(null);
+    this.duplicateRutModalRut.set(null);
+    this.successMessage.set(null);
     this.borradorFeedback.set(null);
     this.isSavingBorrador.set(true);
     const prevId = this.borradorPersonaId();
@@ -300,7 +343,7 @@ export class FormEmpleadoComponent implements OnInit {
         queryParamsHandling: 'merge',
         replaceUrl: true,
       });
-      window.setTimeout(() => this.borradorFeedback.set(null), 4500);
+      this.openDraftSuccessModal(prevId === null);
     } catch (error) {
       if (error instanceof EmpleadoRutDuplicadoError) {
         this.duplicateRutModalRut.set(error.rut);
@@ -384,6 +427,7 @@ export class FormEmpleadoComponent implements OnInit {
       return;
     }
 
+    this.advancedActionModal.set(null);
     this.attemptedSave.set(true);
     if (this.isBasicMode()) {
       this.attemptBasicGroups();
@@ -418,12 +462,26 @@ export class FormEmpleadoComponent implements OnInit {
 
     if (firstBadStep !== null || this.form.invalid) {
       this.syncCompletedTabsFromValidity();
-      this.showInvalidWizardStep(firstBadStep ?? 0);
+      this.openFinishInvalidModal(firstBadStep ?? 0);
+      return;
+    }
+
+    this.markAllValidTabsAsCompleted();
+    this.openFinishConfirmModal();
+  }
+
+  private async submitAdvancedMode(): Promise<void> {
+    if (this.isSaving()) {
       return;
     }
 
     this.markAllValidTabsAsCompleted();
     this.isSaving.set(true);
+    this.errorMessage.set(null);
+    this.duplicateRutModalRut.set(null);
+    this.successMessage.set(null);
+    this.successFlow.set(null);
+    this.createdEmployeeId.set(null);
 
     try {
       const borradorId = this.borradorPersonaId();
@@ -433,7 +491,7 @@ export class FormEmpleadoComponent implements OnInit {
           mapEmpleadoFormToPayload(this.form, this.catalogos()),
         );
         this.successMessage.set(
-          'La ficha avanzada fue guardada correctamente y el empleado quedo listo para operar.',
+          'La ficha avanzada fue guardada correctamente y el empleado quedó listo para operar.',
         );
         this.successFlow.set('avanzado');
         this.createdEmployeeId.set(borradorId);
@@ -446,7 +504,7 @@ export class FormEmpleadoComponent implements OnInit {
         );
 
         this.successMessage.set(
-          'La ficha avanzada fue guardada correctamente y el empleado quedo listo para operar.',
+          'La ficha avanzada fue guardada correctamente y el empleado quedó listo para operar.',
         );
         this.successFlow.set('avanzado');
         this.createdEmployeeId.set(created.id);
@@ -477,6 +535,50 @@ export class FormEmpleadoComponent implements OnInit {
 
   handleSuccessAction(): void {
     this.goToEmployeeList();
+  }
+
+  handleAdvancedActionModalPrimary(): void {
+    this.handleAdvancedActionModalAction(this.advancedActionModal()?.primaryAction ?? 'dismiss');
+  }
+
+  handleAdvancedActionModalSecondary(): void {
+    this.handleAdvancedActionModalAction(this.advancedActionModal()?.secondaryAction ?? 'dismiss');
+  }
+
+  dismissAdvancedActionModal(): void {
+    this.advancedActionModal.set(null);
+  }
+
+  private handleAdvancedActionModalAction(action: AdvancedActionModalAction): void {
+    const modal = this.advancedActionModal();
+
+    switch (action) {
+      case 'continue-next':
+        this.advancedActionModal.set(null);
+        this.advanceToNextWizardStep();
+        break;
+      case 'focus-current-step':
+        this.advancedActionModal.set(null);
+        this.markWizardStepTouched(this.activeWizardStep());
+        this.focusFirstPendingControl(this.activeWizardStep());
+        break;
+      case 'focus-draft-minimum':
+        this.advancedActionModal.set(null);
+        this.showInvalidWizardStep(0);
+        break;
+      case 'focus-first-blocking':
+        this.advancedActionModal.set(null);
+        this.showInvalidWizardStep(modal?.targetStep ?? this.findFirstWizardStepWithBlockingIssues() ?? 0);
+        break;
+      case 'execute-finish':
+        this.advancedActionModal.set(null);
+        void this.submitAdvancedMode();
+        break;
+      case 'dismiss':
+      default:
+        this.advancedActionModal.set(null);
+        break;
+    }
   }
 
   isBasicMode(): boolean {
@@ -535,9 +637,28 @@ export class FormEmpleadoComponent implements OnInit {
   }
 
   goToNextTab(): void {
+    if (!this.isAdvancedMode()) {
+      this.advanceToNextWizardStep();
+      return;
+    }
+
+    const currentStep = this.activeWizardStep();
+    this.markWizardStepAttempted(currentStep);
+    this.markWizardStepTouched(currentStep);
+    this.syncCompletedTabsFromValidity();
+
+    const pending = this.pendingValidationItemsForWizardStep(currentStep);
+    if (pending.length > 0) {
+      this.openNextStepReviewModal(currentStep, pending);
+      return;
+    }
+
+    this.advanceToNextWizardStep();
+  }
+
+  private advanceToNextWizardStep(): void {
     const seq = this.linearWizardSequence();
     let idx = seq.indexOf(this.activeWizardStep());
-    this.markWizardStepAttempted(this.activeWizardStep());
     if (idx === -1) {
       const cur = this.activeWizardStep();
       const next = seq.find((s) => s > cur);
@@ -1197,7 +1318,7 @@ export class FormEmpleadoComponent implements OnInit {
       this.rule(
         'personal.identity',
         'datosPersonales',
-        'RUT valido o pasaporte valido',
+        'Ingresa un RUT válido o un identificador extranjero válido',
         'error',
         true,
         'datosPersonales.rut',
@@ -1210,7 +1331,7 @@ export class FormEmpleadoComponent implements OnInit {
       this.rule(
         'personal.birthdate',
         'datosPersonales',
-        'Fecha nacimiento obligatoria',
+        'Ingresa la fecha de nacimiento del trabajador',
         'error',
         true,
         'datosPersonales.fechaNacimiento',
@@ -1220,7 +1341,7 @@ export class FormEmpleadoComponent implements OnInit {
       this.rule(
         'personal.names',
         'datosPersonales',
-        'Nombres obligatorios',
+        'Ingresa los nombres del trabajador',
         'error',
         true,
         'datosPersonales.nombres',
@@ -1230,7 +1351,7 @@ export class FormEmpleadoComponent implements OnInit {
       this.rule(
         'personal.lastname',
         'datosPersonales',
-        'Apellido paterno obligatorio',
+        'Ingresa el apellido paterno',
         'error',
         true,
         'datosPersonales.apellidoPaterno',
@@ -1240,7 +1361,7 @@ export class FormEmpleadoComponent implements OnInit {
       this.rule(
         'personal.sex',
         'datosPersonales',
-        'Sexo obligatorio',
+        'Selecciona el sexo registral para la ficha laboral',
         'error',
         true,
         'datosPersonales.sexo',
@@ -1250,7 +1371,7 @@ export class FormEmpleadoComponent implements OnInit {
       this.rule(
         'personal.country',
         'datosPersonales',
-        'Nacionalidad obligatoria',
+        'Selecciona país o nacionalidad',
         'error',
         true,
         'datosPersonales.idPais',
@@ -1260,7 +1381,7 @@ export class FormEmpleadoComponent implements OnInit {
       this.rule(
         'personal.marital-status',
         'datosPersonales',
-        'Estado civil obligatorio',
+        'Selecciona el estado civil',
         'error',
         true,
         'datosPersonales.estadoCivil',
@@ -1270,7 +1391,7 @@ export class FormEmpleadoComponent implements OnInit {
       this.rule(
         'personal.email-format',
         'datosPersonales',
-        'Email con formato valido',
+        'Corrige el formato del correo electrónico',
         'error',
         true,
         'contacto.email',
@@ -1281,7 +1402,7 @@ export class FormEmpleadoComponent implements OnInit {
       this.rule(
         'personal.phone-format',
         'datosPersonales',
-        'Telefono con formato valido',
+        'Corrige el formato del teléfono',
         'error',
         true,
         'contacto.telefono',
@@ -1292,7 +1413,7 @@ export class FormEmpleadoComponent implements OnInit {
       this.rule(
         'personal.email-empty',
         'datosPersonales',
-        'Email no ingresado',
+        'Agrega correo de contacto si la empresa lo usará para comunicaciones laborales',
         'warning',
         false,
         'contacto.email',
@@ -1302,7 +1423,7 @@ export class FormEmpleadoComponent implements OnInit {
       this.rule(
         'personal.phone-empty',
         'datosPersonales',
-        'Telefono no ingresado',
+        'Agrega teléfono de contacto si la empresa lo usará para comunicaciones laborales',
         'warning',
         false,
         'contacto.telefono',
@@ -1312,7 +1433,7 @@ export class FormEmpleadoComponent implements OnInit {
       this.rule(
         'personal.passport-review',
         'datosPersonales',
-        'Uso de pasaporte sin validacion adicional',
+        'Revisa la identificación extranjera antes de finalizar la contratación',
         'warning',
         false,
         'datosPersonales.pasaporte',
@@ -1323,7 +1444,7 @@ export class FormEmpleadoComponent implements OnInit {
       this.rule(
         'contact.commune',
         'datosPersonales',
-        'Comuna obligatoria',
+        'Selecciona la comuna del domicilio contractual',
         'error',
         true,
         'contacto.idComuna',
@@ -1335,7 +1456,7 @@ export class FormEmpleadoComponent implements OnInit {
       this.rule(
         'contract.position',
         'contrato',
-        'Cargo obligatorio',
+        'Ingresa el cargo o función del trabajador',
         'error',
         true,
         'contrato.cargo',
@@ -1345,7 +1466,7 @@ export class FormEmpleadoComponent implements OnInit {
       this.rule(
         'contract.branch',
         'contrato',
-        'Sucursal obligatoria',
+        'Selecciona sucursal u organización',
         'error',
         true,
         'contrato.idSucursal',
@@ -1355,7 +1476,7 @@ export class FormEmpleadoComponent implements OnInit {
       this.rule(
         'contract.worker-type',
         'contrato',
-        'Tipo trabajador obligatorio',
+        'Selecciona el tipo de trabajador',
         'error',
         true,
         'contrato.idTipoTrabajador',
@@ -1365,7 +1486,7 @@ export class FormEmpleadoComponent implements OnInit {
       this.rule(
         'contract.schedule-type',
         'contrato',
-        'Tipo jornada obligatorio',
+        'Selecciona el tipo de jornada',
         'error',
         true,
         'contrato.idTipoJornada',
@@ -1375,7 +1496,7 @@ export class FormEmpleadoComponent implements OnInit {
       this.rule(
         'contract.contract-type',
         'contrato',
-        'Tipo contrato obligatorio',
+        'Selecciona el tipo de contrato',
         'error',
         true,
         'contrato.tipoContrato',
@@ -1385,7 +1506,7 @@ export class FormEmpleadoComponent implements OnInit {
       this.rule(
         'contract.start-date',
         'contrato',
-        'Fecha ingreso obligatoria',
+        'Ingresa la fecha de ingreso',
         'error',
         true,
         'contrato.fechaIngreso',
@@ -1395,7 +1516,7 @@ export class FormEmpleadoComponent implements OnInit {
       this.rule(
         'contract.document-date',
         'contrato',
-        'Fecha contrato obligatoria',
+        'Ingresa la fecha del contrato',
         'error',
         true,
         'contrato.fechaContrato',
@@ -1405,7 +1526,7 @@ export class FormEmpleadoComponent implements OnInit {
       this.rule(
         'contract.end-date',
         'contrato',
-        'Fecha termino obligatoria',
+        'Ingresa la fecha de término del contrato',
         'error',
         true,
         'contrato.fechaTermino',
@@ -1417,7 +1538,7 @@ export class FormEmpleadoComponent implements OnInit {
       this.rule(
         'contract.salary',
         'contrato',
-        'Sueldo base obligatorio',
+        'Ingresa sueldo base válido',
         'error',
         true,
         'contrato.sueldoBase',
@@ -1427,7 +1548,7 @@ export class FormEmpleadoComponent implements OnInit {
       this.rule(
         'contract.currency',
         'contrato',
-        'Moneda obligatoria',
+        'Selecciona la moneda de remuneración',
         'error',
         true,
         'contrato.idMoneda',
@@ -1437,7 +1558,7 @@ export class FormEmpleadoComponent implements OnInit {
       this.rule(
         'contract.weekly-hours',
         'contrato',
-        'Horas semanales obligatorias',
+        'Completa las horas semanales pactadas',
         'error',
         true,
         'contrato.horasSemanales',
@@ -1447,7 +1568,7 @@ export class FormEmpleadoComponent implements OnInit {
       this.rule(
         'contract.weekly-days',
         'contrato',
-        'Dias semanales obligatorios',
+        'Completa los días semanales de trabajo',
         'error',
         true,
         'contrato.diasSemanales',
@@ -1457,7 +1578,7 @@ export class FormEmpleadoComponent implements OnInit {
       this.rule(
         'contract.week-run',
         'contrato',
-        'Dias de semana corrida pendientes',
+        'Completa los días laborables para semana corrida',
         'error',
         true,
         'contrato.semanaCorridaDiasLaborables',
@@ -1468,7 +1589,7 @@ export class FormEmpleadoComponent implements OnInit {
       this.rule(
         'contract.extreme-zone-area',
         'contrato',
-        'Territorio de zona extrema pendiente',
+        'Selecciona el territorio asociado a zona extrema',
         'error',
         true,
         'contrato.zonaExtremaTerritorio',
@@ -1479,7 +1600,7 @@ export class FormEmpleadoComponent implements OnInit {
       this.rule(
         'contract.extreme-zone-rate',
         'contrato',
-        'Porcentaje de zona extrema pendiente',
+        'Ingresa el porcentaje de zona extrema',
         'error',
         true,
         'contrato.zonaExtremaPorcentaje',
@@ -1490,7 +1611,7 @@ export class FormEmpleadoComponent implements OnInit {
       this.rule(
         'contract.family-allowance',
         'contrato',
-        'Tramo de cargas familiares pendiente',
+        'Confirma el tramo de cargas familiares antes de usar la asignación en remuneraciones',
         'warning',
         false,
         'contrato.idTramoCarga',
@@ -1502,7 +1623,7 @@ export class FormEmpleadoComponent implements OnInit {
       this.rule(
         'prevision.regime',
         'previsionSalud',
-        'Regimen previsional obligatorio',
+        'Selecciona el régimen previsional',
         'error',
         true,
         'previsionSalud.tipoRegimenPrevisional',
@@ -1512,7 +1633,7 @@ export class FormEmpleadoComponent implements OnInit {
       this.rule(
         'prevision.afp',
         'previsionSalud',
-        'AFP obligatoria',
+        'Selecciona la AFP del trabajador',
         'error',
         true,
         'previsionSalud.idAfp',
@@ -1523,7 +1644,7 @@ export class FormEmpleadoComponent implements OnInit {
       this.rule(
         'prevision.ips-name',
         'previsionSalud',
-        'Nombre Ex-Caja obligatorio',
+        'Ingresa la entidad o ex caja IPS',
         'error',
         true,
         'previsionSalud.nombreExCaja',
@@ -1534,7 +1655,7 @@ export class FormEmpleadoComponent implements OnInit {
       this.rule(
         'prevision.ips-regime',
         'previsionSalud',
-        'Regimen Ex-Caja obligatorio',
+        'Ingresa el régimen IPS',
         'error',
         true,
         'previsionSalud.regimenExCaja',
@@ -1545,7 +1666,7 @@ export class FormEmpleadoComponent implements OnInit {
       this.rule(
         'prevision.ips-rate',
         'previsionSalud',
-        'Tasa Ex-Caja obligatoria',
+        'Ingresa la tasa IPS',
         'error',
         true,
         'previsionSalud.tasaExCaja',
@@ -1556,7 +1677,7 @@ export class FormEmpleadoComponent implements OnInit {
       this.rule(
         'prevision.health',
         'previsionSalud',
-        'Institucion de salud obligatoria',
+        'Selecciona la institución de salud',
         'error',
         true,
         'previsionSalud.idSalud',
@@ -1567,7 +1688,7 @@ export class FormEmpleadoComponent implements OnInit {
       this.rule(
         'prevision.health-currency',
         'previsionSalud',
-        'Moneda del plan de salud obligatoria',
+        'Selecciona la moneda del plan de salud',
         'error',
         true,
         'previsionSalud.idMonedaPlan',
@@ -1578,7 +1699,7 @@ export class FormEmpleadoComponent implements OnInit {
       this.rule(
         'prevision.health-plan',
         'previsionSalud',
-        'Valor del plan de salud obligatorio',
+        'Ingresa el valor del plan de salud',
         'error',
         true,
         'previsionSalud.valorPlan',
@@ -1589,7 +1710,7 @@ export class FormEmpleadoComponent implements OnInit {
       this.rule(
         'prevision.health-ges',
         'previsionSalud',
-        'Adicional Auge/GES obligatorio',
+        'Ingresa el adicional Auge o GES',
         'error',
         true,
         'previsionSalud.adicionalAugeGes',
@@ -1600,7 +1721,7 @@ export class FormEmpleadoComponent implements OnInit {
       this.rule(
         'prevision.account2-currency',
         'previsionSalud',
-        'Moneda Cuenta 2 pendiente',
+        'Selecciona la moneda de Cuenta 2 AFP',
         'error',
         true,
         'previsionSalud.idMonedaCuenta2',
@@ -1611,7 +1732,7 @@ export class FormEmpleadoComponent implements OnInit {
       this.rule(
         'prevision.account2-value',
         'previsionSalud',
-        'Valor Cuenta 2 pendiente',
+        'Ingresa el valor de Cuenta 2 AFP',
         'error',
         true,
         'previsionSalud.valorCuenta2',
@@ -1622,7 +1743,7 @@ export class FormEmpleadoComponent implements OnInit {
       this.rule(
         'prevision.apv-institution',
         'previsionSalud',
-        'Institucion APVI pendiente',
+        'Selecciona la institución APVI',
         'error',
         true,
         'previsionSalud.idInstitucionApv',
@@ -1633,7 +1754,7 @@ export class FormEmpleadoComponent implements OnInit {
       this.rule(
         'prevision.apv-currency',
         'previsionSalud',
-        'Moneda APVI pendiente',
+        'Selecciona la moneda APVI',
         'error',
         true,
         'previsionSalud.idMonedaApv',
@@ -1644,7 +1765,7 @@ export class FormEmpleadoComponent implements OnInit {
       this.rule(
         'prevision.apv-amount',
         'previsionSalud',
-        'Monto APVI pendiente',
+        'Ingresa el monto APVI',
         'error',
         true,
         'previsionSalud.montoApv',
@@ -1655,7 +1776,7 @@ export class FormEmpleadoComponent implements OnInit {
       this.rule(
         'prevision.apv-payment',
         'previsionSalud',
-        'Forma de pago APVI pendiente',
+        'Selecciona la forma de pago APVI',
         'error',
         true,
         'previsionSalud.idFormaPagoApv',
@@ -1666,7 +1787,7 @@ export class FormEmpleadoComponent implements OnInit {
       this.rule(
         'prevision.apv-agreement',
         'previsionSalud',
-        'Deposito convenido APVI pendiente',
+        'Completa el depósito convenido APVI',
         'error',
         true,
         'previsionSalud.depositoConvenidoApvi',
@@ -1678,7 +1799,7 @@ export class FormEmpleadoComponent implements OnInit {
       this.rule(
         'bank.bank',
         'bancario',
-        'Banco obligatorio',
+        'Selecciona el banco para la transferencia',
         'error',
         true,
         'bancario.idBanco',
@@ -1688,7 +1809,7 @@ export class FormEmpleadoComponent implements OnInit {
       this.rule(
         'bank.account-type',
         'bancario',
-        'Tipo de cuenta obligatorio',
+        'Selecciona el tipo de cuenta bancaria',
         'error',
         true,
         'bancario.idTipoCuentaBancaria',
@@ -1698,7 +1819,7 @@ export class FormEmpleadoComponent implements OnInit {
       this.rule(
         'bank.account-number',
         'bancario',
-        'Numero de cuenta obligatorio',
+        'Ingresa una cuenta bancaria real',
         'error',
         true,
         'bancario.numeroCuenta',
@@ -1725,6 +1846,201 @@ export class FormEmpleadoComponent implements OnInit {
         category: rule.category,
       };
     });
+  }
+
+  private pendingValidationItemsForWizardStep(wizardStep: number): EvaluatedValidationRule[] {
+    return this.evaluateValidationRules()
+      .filter((item) => item.visible && item.wizardStep === wizardStep && !item.complete)
+      .sort((a, b) => this.validationSortWeight(a) - this.validationSortWeight(b));
+  }
+
+  private pendingValidationItemsForFinalization(): EvaluatedValidationRule[] {
+    return this.evaluateValidationRules()
+      .filter((item) => item.visible && !item.complete)
+      .sort((a, b) => {
+        const byStep = a.wizardStep - b.wizardStep;
+        return byStep !== 0 ? byStep : this.validationSortWeight(a) - this.validationSortWeight(b);
+      });
+  }
+
+  private openAdvancedActionModal(modal: AdvancedActionModal): void {
+    this.errorMessage.set(null);
+    this.duplicateRutModalRut.set(null);
+    this.successMessage.set(null);
+    this.advancedActionModal.set(modal);
+  }
+
+  private openNextStepReviewModal(step: number, pending: readonly EvaluatedValidationRule[]): void {
+    const blocking = pending.filter((item) => item.blocking && item.severity === 'error');
+    const warnings = pending.filter((item) => item.severity === 'warning');
+    const label = this.wizardStepShortLabel(step);
+
+    this.openAdvancedActionModal({
+      kind: 'next-step-review',
+      variant: blocking.length > 0 ? 'warning' : 'info',
+      title: blocking.length > 0 ? 'Datos pendientes en esta sección' : 'Advertencias de revisión',
+      message:
+        blocking.length > 0
+          ? `La sección "${label}" aún tiene información necesaria para finalizar el alta del trabajador. Puedes corregirla ahora o continuar con la siguiente sección y volver más adelante.`
+          : `La sección "${label}" tiene advertencias administrativas que conviene revisar antes de finalizar el alta. Puedes continuar y volver más adelante.`,
+      primaryLabel: 'Continuar',
+      secondaryLabel: 'Corregir ahora',
+      blockingItems: this.validationModalLabels(blocking, 6),
+      warningItems: this.validationModalLabels(warnings, 6),
+      infoItems: [
+        'Puedes seguir completando otras secciones sin perder lo avanzado.',
+        'Finalizar alta exigirá resolver los datos obligatorios pendientes.',
+      ],
+      targetStep: step,
+      primaryAction: 'continue-next',
+      secondaryAction: 'focus-current-step',
+    });
+  }
+
+  private openDraftInvalidModal(message: string): void {
+    this.openAdvancedActionModal({
+      kind: 'draft-invalid',
+      variant: 'warning',
+      title: 'No se puede guardar el borrador',
+      message: 'Para guardar un borrador necesitamos identificar al trabajador con datos mínimos. Completa la información pendiente y vuelve a guardar.',
+      primaryLabel: 'Ir al primer dato pendiente',
+      secondaryLabel: 'Cerrar',
+      blockingItems: this.draftMinimumPendingLabels(),
+      warningItems: [],
+      infoItems: [
+        'El borrador solo requiere datos mínimos de identificación.',
+        'El resto de la ficha puede completarse después.',
+      ],
+      targetStep: 0,
+      primaryAction: 'focus-draft-minimum',
+      secondaryAction: 'dismiss',
+    });
+  }
+
+  private openDraftSuccessModal(isNewDraft: boolean): void {
+    this.openAdvancedActionModal({
+      kind: 'draft-success',
+      variant: 'success',
+      title: isNewDraft ? 'Borrador guardado' : 'Borrador actualizado',
+      message: 'La ficha fue guardada correctamente. Puedes seguir completando la creación avanzada ahora o continuar más tarde desde el listado de empleados.',
+      primaryLabel: 'Aceptar',
+      blockingItems: [],
+      warningItems: [],
+      infoItems: ['La ficha seguirá en borrador hasta que finalices el alta.'],
+      primaryAction: 'dismiss',
+    });
+  }
+
+  private openFinishInvalidModal(firstBadStep: number): void {
+    const pending = this.pendingValidationItemsForFinalization();
+    const blocking = pending.filter((item) => item.blocking && item.severity === 'error');
+    const warnings = pending.filter((item) => item.severity === 'warning');
+
+    this.openAdvancedActionModal({
+      kind: 'finish-invalid',
+      variant: 'error',
+      title: 'La ficha no está lista para finalizar',
+      message:
+        'Aún faltan datos administrativos necesarios para crear el trabajador y dejarlo preparado para remuneraciones. Revisa los puntos pendientes antes de finalizar.',
+      primaryLabel: 'Ir al primer pendiente',
+      secondaryLabel: 'Cerrar',
+      blockingItems: this.validationModalLabels(blocking, 10),
+      warningItems: this.validationModalLabels(warnings, 8),
+      infoItems: [
+        'Puedes cerrar este aviso y guardar un borrador si necesitas completar la información después.',
+      ],
+      targetStep: firstBadStep,
+      primaryAction: 'focus-first-blocking',
+      secondaryAction: 'dismiss',
+    });
+  }
+
+  private openFinishConfirmModal(): void {
+    this.openAdvancedActionModal({
+      kind: 'finish-confirm',
+      variant: 'success',
+      title: 'Finalizar alta del trabajador',
+      message:
+        'La ficha cuenta con los datos mínimos para crear el trabajador y continuar con los procesos administrativos y de remuneraciones. Antes de finalizar, revisa que la información ingresada sea correcta.',
+      primaryLabel: 'Finalizar alta',
+      secondaryLabel: 'Cancelar',
+      blockingItems: [],
+      warningItems: [],
+      infoItems: ['Después podrás revisar información complementaria desde la ficha del empleado.'],
+      primaryAction: 'execute-finish',
+      secondaryAction: 'dismiss',
+    });
+  }
+
+  private validationModalLabels(items: readonly EvaluatedValidationRule[], max: number): readonly string[] {
+    const seen = new Set<string>();
+    const out: string[] = [];
+
+    for (const item of items) {
+      const text = this.validationModalLabel(item);
+      if (seen.has(text)) {
+        continue;
+      }
+      seen.add(text);
+      out.push(text);
+      if (out.length >= max) {
+        break;
+      }
+    }
+
+    const remaining = Math.max(0, items.length - out.length);
+    if (remaining > 0) {
+      out.push(`Además hay ${remaining} dato${remaining === 1 ? '' : 's'} pendiente${remaining === 1 ? '' : 's'} adicional${remaining === 1 ? '' : 'es'}.`);
+    }
+
+    return out;
+  }
+
+  private validationModalLabel(item: EvaluatedValidationRule): string {
+    const negocio = MENSAJES_FINALIZAR_ALTA[item.id];
+    if (negocio) {
+      return negocio;
+    }
+
+    return this.ensureSentence(item.label);
+  }
+
+  private ensureSentence(text: string): string {
+    const clean = text.trim();
+    if (!clean) {
+      return clean;
+    }
+
+    return /[.!?]$/.test(clean) ? clean : `${clean}.`;
+  }
+
+  private draftMinimumPendingLabels(): readonly string[] {
+    const dp = this.form.controls.datosPersonales.controls;
+    const pending: string[] = [];
+
+    if (dp.rut.invalid) {
+      pending.push('RUT válido o identificador extranjero del trabajador.');
+    }
+    if (!String(dp.nombres.value || '').trim()) {
+      pending.push('Nombres del trabajador.');
+    }
+    if (!String(dp.apellidoPaterno.value || '').trim()) {
+      pending.push('Apellido paterno.');
+    }
+    if (!String(dp.fechaNacimiento.value || '').trim()) {
+      pending.push('Fecha de nacimiento.');
+    }
+    if (dp.idPais.value === null || dp.idPais.value < 1) {
+      pending.push('País o nacionalidad.');
+    }
+    if (dp.sexo.value === null) {
+      pending.push('Sexo registral.');
+    }
+    if (dp.estadoCivil.value === null) {
+      pending.push('Estado civil.');
+    }
+
+    return pending.length > 0 ? pending : ['Revisa los datos personales mínimos.'];
   }
 
   private rule(
@@ -1831,6 +2147,25 @@ export class FormEmpleadoComponent implements OnInit {
     return 'pendiente';
   }
 
+  private focusFirstPendingControl(wizardStep: number = this.activeWizardStep()): void {
+    window.setTimeout(() => {
+      const sorted = [...this.evaluateValidationRules()].sort(
+        (a, b) => this.validationSortWeight(a) - this.validationSortWeight(b),
+      );
+      const firstPendingRule = sorted.find(
+        (item) => item.visible && item.wizardStep === wizardStep && !item.complete,
+      );
+      const control = this.findControlForRule(firstPendingRule) ?? this.findFirstNgInvalidControl();
+
+      if (!control) {
+        return;
+      }
+
+      control.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      control.focus({ preventScroll: true });
+    });
+  }
+
   private focusFirstInvalidControl(wizardStep: number = this.activeWizardStep()): void {
     window.setTimeout(() => {
       const sorted = [...this.evaluateValidationRules()].sort(
@@ -1843,18 +2178,7 @@ export class FormEmpleadoComponent implements OnInit {
           item.blocking &&
           !item.complete,
       );
-      const controlName = firstPendingRule?.sourcePath.split('.').at(-1);
-
-      let firstInvalidControl: HTMLElement | null = null;
-
-      if (controlName) {
-        const controlHost = this.hostElement.nativeElement.querySelector<HTMLElement>(
-          `.step-panel [formControlName="${controlName}"], .step-panel [formcontrolname="${controlName}"]`,
-        );
-        firstInvalidControl = this.getFocusableField(controlHost);
-      }
-
-      firstInvalidControl ??= this.findFirstNgInvalidControl();
+      const firstInvalidControl = this.findControlForRule(firstPendingRule) ?? this.findFirstNgInvalidControl();
 
       if (!firstInvalidControl) {
         return;
@@ -1863,6 +2187,18 @@ export class FormEmpleadoComponent implements OnInit {
       firstInvalidControl.scrollIntoView({ behavior: 'smooth', block: 'center' });
       firstInvalidControl.focus({ preventScroll: true });
     });
+  }
+
+  private findControlForRule(rule: EvaluatedValidationRule | undefined): HTMLElement | null {
+    const controlName = rule?.sourcePath.split('.').at(-1);
+    if (!controlName) {
+      return null;
+    }
+
+    const controlHost = this.hostElement.nativeElement.querySelector<HTMLElement>(
+      `.step-panel [formControlName="${controlName}"], .step-panel [formcontrolname="${controlName}"]`,
+    );
+    return this.getFocusableField(controlHost);
   }
 
   private findFirstNgInvalidControl(): HTMLElement | null {

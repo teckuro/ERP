@@ -190,7 +190,7 @@ WITH mapping(codigo_concepto, codigo_lre, criterio) AS (
     VALUES
         ('SUELDO_BASE', '2101', 'Sueldo base -> Sueldo.'),
         ('GRATIFICACION', '2106', 'Gratificación legal mensual -> Gratificación mensual.'),
-        ('HORAS_EXTRAS', '2102', 'Horas extras -> Sobresueldo. Reemplaza mapeo provisorio previo 2113.'),
+        ('HORAS_EXTRAS', '2102', 'Horas extras -> Sobresueldo.'),
         ('BONO_RESPONSABILIDAD', '2111', 'Bono fijo mensual de responsabilidad.'),
         ('AGUINALDO', '2110', 'Aguinaldo.'),
         ('COLACION', '2301', 'Colación.'),

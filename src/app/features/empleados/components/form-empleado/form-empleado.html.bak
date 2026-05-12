@@ -1,0 +1,744 @@
+<form class="form-shell w-full" [formGroup]="form" (submit)="handleFormSubmit($event)">
+  <div class="form-stack w-full">
+    <header class="form-page-head" aria-label="Encabezado de alta">
+      <app-record-breadcrumb
+        [items]="breadcrumbItems"
+        [title]="pageTitle()"
+      ></app-record-breadcrumb>
+    </header>
+
+    <app-card className="editor-shell">
+      <app-card-content className="editor-frame">
+        <div class="status-stack">
+          @if (catalogosError(); as message) {
+            <app-message-box
+              variant="error"
+              title="Catálogos no disponibles"
+              [message]="message"
+              actionLabel="Reintentar"
+              (action)="loadCatalogos()"
+            ></app-message-box>
+          }
+        </div>
+
+        @if (isSaving()) {
+          <app-message-box
+            mode="modal"
+            variant="loading"
+            title="Guardando ficha"
+            [message]="
+              isBasicMode()
+                ? 'Estamos guardando la ficha básica del empleado.'
+                : 'Estamos guardando la ficha completa del empleado.'
+            "
+          ></app-message-box>
+        } @else if (duplicateRutModalRut(); as rutDup) {
+          <app-message-box
+            mode="modal"
+            variant="error"
+            [modalHeadlineSplit]="true"
+            title="Ficha ya registrada"
+            [message]="'Ya existe un empleado registrado con el RUT ' + rutDup + '.'"
+            primaryLabel="Aceptar"
+            (action)="dismissErrorMessage()"
+          >
+            <div
+              class="basic-success-followup"
+              role="region"
+              aria-labelledby="duplicate-rut-detail-title"
+            >
+              <div class="basic-success-followup__panel">
+                <h3 class="basic-success-followup__title" id="duplicate-rut-detail-title">Detalle</h3>
+                <p class="basic-success-followup__text">
+                  Revisa el listado o edita la ficha existente antes de crear una nueva.
+                </p>
+              </div>
+              <div class="basic-success-followup__meta">
+                <span class="basic-success-followup__meta-label">RUT</span>
+                <span class="basic-success-followup__meta-value">{{ rutDup }}</span>
+              </div>
+            </div>
+          </app-message-box>
+        } @else if (errorMessage(); as message) {
+          <app-message-box
+            mode="modal"
+            variant="error"
+            [title]="
+              isBasicMode() ? 'No fue posible registrar la ficha' : 'No fue posible registrar el empleado'
+            "
+            [message]="
+              isBasicMode()
+                ? message
+                : 'Ocurrió un problema al intentar guardar la ficha avanzada.'
+            "
+            [detail]="isBasicMode() ? '' : message"
+            primaryLabel="Aceptar"
+            (action)="dismissErrorMessage()"
+          ></app-message-box>
+        } @else if (successMessage(); as message) {
+          <app-message-box
+            mode="modal"
+            variant="success"
+            [modalHeadlineSplit]="true"
+            [title]="successModalTitle()"
+            [message]="message"
+            [primaryLabel]="successModalPrimaryLabel()"
+            (action)="handleSuccessAction()"
+          >
+            @if (successFlow() === 'basico') {
+              <div
+                class="basic-success-followup"
+                role="region"
+                aria-labelledby="basic-success-next-title"
+              >
+                <div class="basic-success-followup__panel">
+                  <h3 class="basic-success-followup__title" id="basic-success-next-title">Próximo paso</h3>
+                  <p class="basic-success-followup__text">
+                    La ficha queda en proceso. Completa contrato, previsión, salud, banco y remuneración desde la
+                    ficha del empleado cuando corresponda; hasta entonces no está lista para liquidar.
+                  </p>
+                </div>
+                @if (createdEmployeeId(); as fichaId) {
+                  <div class="basic-success-followup__meta">
+                    <span class="basic-success-followup__meta-label">Referencia</span>
+                    <span class="basic-success-followup__meta-value">Ficha N° {{ fichaId }}</span>
+                  </div>
+                }
+              </div>
+            } @else {
+              <div
+                class="basic-success-followup"
+                role="region"
+                aria-labelledby="advanced-success-detail-title"
+              >
+                <div class="basic-success-followup__panel">
+                  <h3 class="basic-success-followup__title" id="advanced-success-detail-title">Detalle</h3>
+                  <p class="basic-success-followup__text">
+                    Puedes revisar o completar información adicional desde la ficha del empleado.
+                  </p>
+                </div>
+                @if (createdEmployeeId(); as fichaId) {
+                  <div class="basic-success-followup__meta">
+                    <span class="basic-success-followup__meta-label">Referencia</span>
+                    <span class="basic-success-followup__meta-value">Ficha N° {{ fichaId }}</span>
+                  </div>
+                }
+              </div>
+            }
+          </app-message-box>
+        }
+
+        <section class="workspace-grid" aria-label="Workspace de nueva ficha">
+          <div class="workspace-main">
+            <section
+              class="content-shell"
+              [class.content-shell--basic]="isBasicMode()"
+              aria-label="Ficha del empleado"
+            >
+              @if (isAdvancedMode()) {
+                <section class="advanced-create-shell" aria-label="Wizard de creación avanzada">
+                  <div class="advanced-create-inner">
+                    <header class="summary-identity advanced-create-header">
+                      <div class="summary-person">
+                        <div class="summary-title-row">
+                          <h2>Creación avanzada</h2>
+                          <span class="summary-status-badge">{{ advancedStatusBadgeLabel() }}</span>
+                        </div>
+                      </div>
+
+                      <div class="summary-actions summary-actions--advanced">
+                        <button
+                          type="button"
+                          data-testid="guardar-borrador-avanzado"
+                          class="erp-toolbar-button erp-action-button border-gray-200 bg-white text-gray-700 hover:border-gray-300 hover:bg-gray-50 hover:text-gray-900"
+                          [disabled]="isSavingBorrador() || isSaving() || isLoadingCatalogs()"
+                          (click)="onGuardarBorrador()"
+                        >
+                          @if (isSavingBorrador()) {
+                            Guardando...
+                          } @else {
+                            Guardar borrador
+                          }
+                        </button>
+                        <app-page-actions
+                          [visibleActions]="headerVisibleActions()"
+                          backLabel="Volver"
+                          backLink="/empleados"
+                        ></app-page-actions>
+                      </div>
+                    </header>
+                    @if (borradorFeedback(); as bf) {
+                      <p class="advanced-draft-feedback" role="status">{{ bf }}</p>
+                    }
+
+                    <div class="advanced-wizard-layout">
+                      <aside class="advanced-wizard-map" aria-label="Mapa de ficha">
+                        <div class="advanced-wizard-map__head">
+                          <h3 class="advanced-wizard-map__title">Mapa de ficha</h3>
+                          <div class="advanced-wizard-map__progress" aria-label="Progreso de la ficha">
+                            <div class="advanced-wizard-map__progress-row">
+                              <span>Paso {{ activeWizardStep() + 1 }} de {{ totalSteps }}</span>
+                              <strong>{{ wizardProgressPercent() }}% recorrido</strong>
+                            </div>
+                            <span class="advanced-wizard-map__progress-track" aria-hidden="true">
+                              <span
+                                class="advanced-wizard-map__progress-fill"
+                                [style.width.%]="wizardProgressPercent()"
+                              ></span>
+                            </span>
+                          </div>
+                          <p class="advanced-wizard-map__summary">
+                            {{ wizardMapSummaryLabel() }}
+                          </p>
+                        </div>
+
+                        <ol class="advanced-wizard-map__list" aria-label="Timeline de pasos">
+                          @for (step of advancedWizardLabels; track step; let index = $index) {
+                            <li
+                              class="advanced-wizard-map__step"
+                              [class.is-active]="isWizardStepActive(index)"
+                              [class.is-invalid]="wizardStepUiKind(index) === 'errores'"
+                              [class.is-complete]="wizardStepUiKind(index) === 'completo'"
+                              [class.is-na]="wizardStepUiKind(index) === 'no-aplica'"
+                            >
+                              <button
+                                type="button"
+                                class="advanced-wizard-map__item"
+                                [class.is-active]="isWizardStepActive(index)"
+                                [class.is-invalid]="wizardStepUiKind(index) === 'errores'"
+                                [class.is-complete]="wizardStepUiKind(index) === 'completo'"
+                                [class.is-na]="wizardStepUiKind(index) === 'no-aplica'"
+                                [attr.aria-current]="isWizardStepActive(index) ? 'step' : null"
+                                (click)="selectWizardStep(index)"
+                              >
+                                <span class="advanced-wizard-map__marker" aria-hidden="true">
+                                  <span class="advanced-wizard-map__num">{{ index + 1 }}</span>
+                                </span>
+                                <span class="advanced-wizard-map__body">
+                                  <span class="advanced-wizard-map__label">
+                                    {{ wizardStepShortLabel(index) }}
+                                  </span>
+                                </span>
+                                <span class="advanced-wizard-map__state">
+                                  {{ wizardStepUiLabel(wizardStepUiKind(index)) }}
+                                </span>
+                              </button>
+                            </li>
+                          }
+                        </ol>
+                      </aside>
+
+                      <div class="advanced-wizard-content" aria-label="Contenido del paso">
+                        <section
+                          class="advanced-step-header"
+                          aria-label="Paso actual y acciones del asistente"
+                        >
+                          <div class="advanced-step-header__main">
+                            <div class="advanced-step-heading advanced-step-context">
+                              <p class="advanced-step-kicker">
+                                Paso {{ activeWizardStep() + 1 }} de {{ totalSteps }} ·
+                                {{ advancedWizardLabels[activeWizardStep()] }}
+                              </p>
+                              <p class="advanced-step-copy">
+                                {{ wizardStepDescription(activeWizardStep()) }}
+                              </p>
+                            </div>
+                            <div class="advanced-step-actions">
+                              <button
+                                type="button"
+                                class="form-action-button form-action-button--secondary advanced-step-nav-btn"
+                                [disabled]="isFirstTab()"
+                                (click)="goToPreviousTab()"
+                              >
+                                Anterior
+                              </button>
+                              @if (activeWizardStep() !== 8) {
+                                <button
+                                  type="button"
+                                  class="form-action-button form-action-button--primary advanced-step-nav-btn advanced-step-nav-btn--primary"
+                                  [disabled]="isNextDisabled()"
+                                  (click)="goToNextTab()"
+                                >
+                                  Siguiente
+                                </button>
+                              } @else {
+                                <button
+                                  type="button"
+                                  data-testid="finalizar-alta"
+                                  class="form-action-button form-action-button--primary advanced-step-nav-btn advanced-step-nav-btn--primary"
+                                  [disabled]="isSaving() || isLoadingCatalogs()"
+                                  (click)="onSubmit()"
+                                >
+                                  @if (isSaving()) {
+                                    <span class="form-button-spinner" aria-hidden="true"></span>
+                                  } @else {
+                                    <lucide-icon class="h-4 w-4" name="save"></lucide-icon>
+                                  }
+                                  {{ isSaving() ? 'Guardando ficha...' : 'Finalizar alta' }}
+                                </button>
+                              }
+                            </div>
+                          </div>
+                          <p class="advanced-step-hint" aria-live="polite">
+                            @if (
+                              getWizardStepValidationSummary(activeWizardStep()).blockingPending > 0 &&
+                              attemptedWizardSteps().has(activeWizardStep())
+                            ) {
+                              Hay datos obligatorios pendientes o con error en esta etapa.
+                            } @else if (activeWizardStep() === 8) {
+                              @if (wizardMapPendingCount() + wizardMapErrorCount() > 0) {
+                                Corrige las etapas pendientes antes de finalizar la ficha.
+                              } @else {
+                                La ficha está lista para finalizar el alta.
+                              }
+                            } @else {
+                              Completa la ficha por etapas. Puedes volver a pasos anteriores; los datos no se pierden.
+                            }
+                          </p>
+                        </section>
+
+                        <div class="content-head advanced-stepper-scroll" aria-label="Navegación de pasos">
+                          <ol class="flow-tabs" aria-label="Pasos del alta">
+                            @for (step of advancedWizardLabels; track step; let index = $index) {
+                              <li>
+                                <button
+                                  type="button"
+                                  class="flow-tab"
+                                  [class.is-active]="isWizardStepActive(index)"
+                                  [class.flow-tab--complete]="wizardStepUiKind(index) === 'completo'"
+                                  [class.flow-tab--pending]="wizardStepUiKind(index) === 'pendiente'"
+                                  [class.flow-tab--invalid]="wizardStepUiKind(index) === 'errores'"
+                                  [class.flow-tab--optional]="wizardStepUiKind(index) === 'opcional'"
+                                  [class.flow-tab--na]="wizardStepUiKind(index) === 'no-aplica'"
+                                  [attr.aria-current]="isWizardStepActive(index) ? 'step' : null"
+                                  (click)="selectWizardStep(index)"
+                                >
+                                  <span class="flow-tab-num">{{ index + 1 }}</span>
+                                  <div class="flow-tab-body">
+                                    <p class="flow-tab-title">{{ wizardStepShortLabel(index) }}</p>
+                                    <small class="flow-tab-state">
+                                      {{ wizardStepUiLabel(wizardStepUiKind(index)) }}
+                                    </small>
+                                  </div>
+                                </button>
+                              </li>
+                            }
+                          </ol>
+                        </div>
+                        <div class="advanced-wizard-step">
+                          <div class="content-body">
+                @if (isLoadingCatalogs()) {
+                  <div class="form-loading-overlay" role="status" aria-live="polite">
+                    <div class="form-loading-indicator" aria-hidden="true"></div>
+                    <span>Preparando campos</span>
+                  </div>
+                }
+
+                @if (activeWizardStep() === 0) {
+                  <div class="step-panel">
+                    <app-empleado-datos-personales
+                      [formGroup]="form.controls.datosPersonales"
+                      [contactoFormGroup]="form.controls.contacto"
+                      [sexos]="catalogos().sexos"
+                      [estadosCivil]="catalogos().estadosCivil"
+                      [paises]="catalogos().paises"
+                      [visibleBlocks]="['identificacion', 'nombre', 'base', 'contacto']"
+                      [advancedGridLayout]="true"
+                    ></app-empleado-datos-personales>
+                  </div>
+                } @else if (activeWizardStep() === 1) {
+                  <div class="step-panel step-panel--domicilio">
+                    <app-empleado-contacto
+                      [formGroup]="form.controls.contacto"
+                      [comunas]="catalogos().comunas"
+                      [visibleBlocks]="['ubicacion']"
+                      [domicilioAvanzado]="true"
+                      [advancedGridLayout]="true"
+                    ></app-empleado-contacto>
+                  </div>
+                } @else if (activeWizardStep() === 2) {
+                  <div class="step-panel step-panel--contrato">
+                    <app-empleado-contrato
+                      [formGroup]="form.controls.contrato"
+                      [centrosCosto]="catalogos().centrosCosto"
+                      [sucursales]="catalogos().sucursales"
+                      [departamentos]="catalogos().departamentos"
+                      [tiposTrabajador]="catalogos().tiposTrabajador"
+                      [tiposJornada]="catalogos().tiposJornada"
+                      [tiposContrato]="catalogos().tiposContrato"
+                      [tiposGratificacion]="catalogos().tiposGratificacion"
+                      [monedas]="catalogos().monedas"
+                      [tramosCarga]="catalogos().tramosCarga"
+                      [visibleBlocks]="['relacion', 'contratoBase', 'centroCosto']"
+                      [advancedGridLayout]="true"
+                    ></app-empleado-contrato>
+                  </div>
+                } @else if (activeWizardStep() === 3) {
+                  <div class="step-panel step-panel--jornada">
+                    <app-empleado-contrato
+                      [formGroup]="form.controls.contrato"
+                      [centrosCosto]="catalogos().centrosCosto"
+                      [sucursales]="catalogos().sucursales"
+                      [departamentos]="catalogos().departamentos"
+                      [tiposTrabajador]="catalogos().tiposTrabajador"
+                      [tiposJornada]="catalogos().tiposJornada"
+                      [tiposContrato]="catalogos().tiposContrato"
+                      [tiposGratificacion]="catalogos().tiposGratificacion"
+                      [monedas]="catalogos().monedas"
+                      [tramosCarga]="catalogos().tramosCarga"
+                      [visibleBlocks]="['remuneracion']"
+                      [advancedGridLayout]="true"
+                    ></app-empleado-contrato>
+                  </div>
+                } @else if (activeWizardStep() === 4) {
+                  <div class="step-panel step-panel--asignaciones">
+                    <app-empleado-contrato
+                      [formGroup]="form.controls.contrato"
+                      [centrosCosto]="catalogos().centrosCosto"
+                      [sucursales]="catalogos().sucursales"
+                      [departamentos]="catalogos().departamentos"
+                      [tiposTrabajador]="catalogos().tiposTrabajador"
+                      [tiposJornada]="catalogos().tiposJornada"
+                      [tiposContrato]="catalogos().tiposContrato"
+                      [tiposGratificacion]="catalogos().tiposGratificacion"
+                      [monedas]="catalogos().monedas"
+                      [tramosCarga]="catalogos().tramosCarga"
+                      [visibleBlocks]="['cargas', 'zonaExtrema', 'semanaCorrida']"
+                      [advancedGridLayout]="true"
+                    ></app-empleado-contrato>
+                  </div>
+                } @else if (activeWizardStep() === 5) {
+                  <div class="step-panel step-panel--prevision">
+                    <app-empleado-prevision-salud
+                      [formGroup]="form.controls.previsionSalud"
+                      [tiposRegimenPrevisional]="catalogos().tiposRegimenPrevisional"
+                      [regimenesPrevisionales]="catalogos().regimenesPrevisionales"
+                      [entidadesPrevisionalesIps]="catalogos().entidadesPrevisionalesIps"
+                      [exCajasPrevisionales]="catalogos().exCajasPrevisionales"
+                      [regimenesExCaja]="catalogos().regimenesExCaja"
+                      [afps]="catalogos().afps"
+                      [entidadesSalud]="catalogos().entidadesSalud"
+                      [monedas]="catalogos().monedas"
+                      [institucionesApv]="catalogos().institucionesApv"
+                      [formasPagoApv]="catalogos().formasPagoApv"
+                      [visibleBlocks]="['regimen', 'afp', 'ips', 'salud']"
+                      [advancedGridLayout]="true"
+                    ></app-empleado-prevision-salud>
+                  </div>
+                } @else if (activeWizardStep() === 6) {
+                  <div class="step-panel">
+                    @if (form.controls.previsionSalud.controls.tipoRegimenPrevisional.value !== 'AFP') {
+                      <div class="wizard-na-panel" role="status">
+                        <h3 class="wizard-na-title">No aplica</h3>
+                        <p class="wizard-na-text">
+                          APVI solo corresponde cuando el régimen previsional es AFP. Puedes continuar con el
+                          alta.
+                        </p>
+                      </div>
+                    } @else if (!form.controls.previsionSalud.controls.tieneApv.value) {
+                      <div class="wizard-optional-panel" role="status">
+                        <h3 class="wizard-optional-title">Opcional</h3>
+                        <p class="wizard-optional-text">
+                          El trabajador no tiene APVI activo. Si no aplica, continúa al siguiente paso.
+                        </p>
+                      </div>
+                    } @else {
+                      <app-empleado-prevision-salud
+                        [formGroup]="form.controls.previsionSalud"
+                        [tiposRegimenPrevisional]="catalogos().tiposRegimenPrevisional"
+                        [regimenesPrevisionales]="catalogos().regimenesPrevisionales"
+                        [entidadesPrevisionalesIps]="catalogos().entidadesPrevisionalesIps"
+                        [exCajasPrevisionales]="catalogos().exCajasPrevisionales"
+                        [regimenesExCaja]="catalogos().regimenesExCaja"
+                        [afps]="catalogos().afps"
+                        [entidadesSalud]="catalogos().entidadesSalud"
+                        [monedas]="catalogos().monedas"
+                        [institucionesApv]="catalogos().institucionesApv"
+                        [formasPagoApv]="catalogos().formasPagoApv"
+                        [visibleBlocks]="['apvi']"
+                        [advancedGridLayout]="true"
+                      ></app-empleado-prevision-salud>
+                    }
+                  </div>
+                } @else if (activeWizardStep() === 7) {
+                  <div class="step-panel step-panel--final">
+                    <app-empleado-bancario
+                      [formGroup]="form.controls.bancario"
+                      [bancos]="catalogos().bancos"
+                      [tiposCuentaBancaria]="catalogos().tiposCuentaBancaria"
+                      [advancedGridLayout]="true"
+                    ></app-empleado-bancario>
+                  </div>
+                } @else {
+                  <div class="step-panel step-panel--resumen">
+                    <app-card className="resumen-card">
+                      <app-card-content className="resumen-card-inner">
+                        <h3 class="resumen-title">Resumen final</h3>
+                        <p class="resumen-lead">
+                          Revisa los datos antes de finalizar. El guardado definitivo ocurre solo al presionar
+                          <strong>Finalizar alta</strong>.
+                        </p>
+                        <dl class="resumen-dl">
+                          <div class="resumen-dl-row">
+                            <dt>Nombre</dt>
+                            <dd>{{ fullNameVisible() }}</dd>
+                          </div>
+                          <div class="resumen-dl-row">
+                            <dt>RUT o pasaporte</dt>
+                            <dd>{{ identificacionResumen() }}</dd>
+                          </div>
+                          <div class="resumen-dl-row">
+                            <dt>Cargo</dt>
+                            <dd>{{ cargoVisible() }}</dd>
+                          </div>
+                          <div class="resumen-dl-row">
+                            <dt>Sucursal</dt>
+                            <dd>{{ sucursalVisible() }}</dd>
+                          </div>
+                        </dl>
+                        <h4 class="resumen-checklist-title">Estado por etapa</h4>
+                        <ul class="resumen-checklist">
+                          @for (row of advancedReviewRows(); track row.stepIndex) {
+                            <li
+                              class="resumen-checklist-item"
+                              [ngClass]="checklistStatusClass(row.kind)"
+                            >
+                              <div class="resumen-checklist-main">
+                                <span class="resumen-checklist-num" aria-hidden="true">
+                                  {{ row.stepIndex + 1 }}
+                                </span>
+                                <span class="resumen-checklist-text">
+                                  <span class="resumen-checklist-step">{{ row.label }}</span>
+                                  <!-- Detalle removido: evita duplicar copy (se resuelve en el estado del paso). -->
+                                </span>
+                              </div>
+                              <div class="resumen-checklist-actions">
+                                <span class="resumen-checklist-state">{{ wizardStepUiLabel(row.kind) }}</span>
+                                @if (
+                                  row.stepIndex < 8 &&
+                                  row.kind !== 'completo' &&
+                                  row.kind !== 'no-aplica'
+                                ) {
+                                  <button
+                                    type="button"
+                                    class="resumen-review-button"
+                                    (click)="selectWizardStep(row.stepIndex)"
+                                  >
+                                    Revisar
+                                  </button>
+                                }
+                              </div>
+                            </li>
+                          }
+                        </ul>
+                        @if (activeWizardStep() === 8 && attemptedSave() && resumenPendientesNegocio().length > 0) {
+                          <div class="resumen-pendientes-negocio" role="alert">
+                            <p class="resumen-pendientes-title">Pendientes para finalizar</p>
+                            <ul class="resumen-pendientes-list">
+                              @for (msg of resumenPendientesNegocio(); track msg) {
+                                <li>{{ msg }}</li>
+                              }
+                            </ul>
+                          </div>
+                        }
+                      </app-card-content>
+                    </app-card>
+                  </div>
+                }
+              </div>
+                          </div>
+                        </div>
+                      </div>
+
+                    </div>
+                </section>
+              } @else {
+                <div class="basic-create-page" aria-label="Creación básica de empleado">
+                  <div class="basic-create-shell">
+                    <div class="basic-create-inner">
+                      <header class="summary-identity summary-identity--basic">
+                        <div class="summary-person summary-person--basic">
+                          <div class="summary-title-row">
+                            <h2>Creación básica</h2>
+                            <span class="summary-mode-badge" aria-label="Modo de alta">Básica</span>
+                          </div>
+                          <p class="summary-subtitle">
+                            Registra la información mínima para abrir una ficha de empleado.
+                          </p>
+                        </div>
+
+                        <div class="summary-actions">
+                          <app-page-actions
+                            [visibleActions]="headerVisibleActions()"
+                            backLabel="Volver"
+                            [saveLabel]="saveActionLabel()"
+                            backLink="/empleados"
+                            [saveDisabled]="isSaving() || isLoadingCatalogs()"
+                            (saveClick)="onSubmit()"
+                          ></app-page-actions>
+                        </div>
+                      </header>
+
+                      <div class="content-body content-body--basic">
+                        @if (isLoadingCatalogs()) {
+                          <div class="form-loading-overlay" role="status" aria-live="polite">
+                            <div class="form-loading-indicator" aria-hidden="true"></div>
+                            <span>Preparando campos</span>
+                          </div>
+                        }
+
+                        <div class="basic-create-stack">
+                          <section class="basic-create-summary-card" aria-label="Resumen del alta básica">
+                            <div class="basic-create-summary-card__head">
+                              <h3 class="basic-create-summary-card__title">Alta rápida de empleado</h3>
+                              <span class="basic-create-status-chip" role="status">Ficha en proceso</span>
+                            </div>
+                            <p class="basic-create-summary-card__lead">
+                              Solo se guardan los datos mínimos para abrir la ficha.
+                            </p>
+                            <div class="basic-create-summary-card__pending">
+                              <span class="basic-create-summary-card__pending-label"
+                                >Pendiente desde la ficha:</span
+                              >
+                              <div class="basic-create-summary-card__chips" role="list">
+                                <span class="basic-create-summary-chip" role="listitem"
+                                  >Contrato y organización</span
+                                >
+                                <span class="basic-create-summary-chip" role="listitem"
+                                  >Jornada y remuneración</span
+                                >
+                                <span class="basic-create-summary-chip" role="listitem"
+                                  >Previsión y salud</span
+                                >
+                                <span class="basic-create-summary-chip" role="listitem">Banco</span>
+                              </div>
+                            </div>
+                          </section>
+
+                          <div class="basic-create-form">
+                            <div class="step-panel step-panel--basic basic-wizard">
+                              <div class="basic-create-form-shell">
+                                <app-empleado-datos-personales
+                                  [formGroup]="form.controls.datosPersonales"
+                                  [contactoFormGroup]="form.controls.contacto"
+                                  [sexos]="catalogos().sexos"
+                                  [estadosCivil]="catalogos().estadosCivil"
+                                  [paises]="catalogos().paises"
+                                  [basicSectionLeads]="true"
+                                ></app-empleado-datos-personales>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              }
+            </section>
+          </div>
+
+          <!-- <aside class="side-panel" aria-label="Progreso y validaciones">
+            <div class="side-panel-card side-panel-card--sticky">
+              <section class="side-section side-section--progress">
+                <div class="side-section-head">
+                  <p class="side-kicker">Panel de control</p>
+                  <h3>Alta en curso</h3>
+                  <progress
+                    class="side-progress-meter"
+                    [value]="completedStepCount()"
+                    [max]="totalSteps"
+                  ></progress>
+                  <p class="side-progress-line">
+                    Paso activo: {{ activeStepNumber() }} de {{ totalSteps }}
+                  </p>
+                </div>
+              </section>
+
+              <section class="side-section side-section--validations">
+                <div class="side-section-head">
+                  <p class="side-kicker">Validaciones</p>
+                  <h3>{{ pendingValidationCount() }} pendientes</h3>
+                </div>
+
+                @if (pendingValidationCount() > 0) {
+                  <div class="validation-columns">
+                    <div class="validation-group">
+                      <div class="validation-group-head">
+                        <span>Errores bloqueantes</span>
+                        <strong>{{ blockingValidationPanelItems().length }}</strong>
+                      </div>
+                      <ul class="validation-list">
+                        @for (item of blockingValidationPanelItems().slice(0, 3); track item.id) {
+                          <li class="validation-item is-error">
+                            <span class="validation-dot" aria-hidden="true"></span>
+                            <span>{{ item.label }}</span>
+                          </li>
+                        } @empty {
+                          <li class="validation-item is-complete">
+                            <span class="validation-dot" aria-hidden="true"></span>
+                            <span>Sin errores bloqueantes.</span>
+                          </li>
+                        }
+                        @if (blockingValidationPanelItems().length > 3) {
+                          <li class="validation-more">
+                            +{{ blockingValidationPanelItems().length - 3 }} mas por resolver
+                          </li>
+                        }
+                      </ul>
+                    </div>
+
+                    <div class="validation-group">
+                      <div class="validation-group-head">
+                        <span>Advertencias</span>
+                        <strong>{{ warningValidationPanelItems().length }}</strong>
+                      </div>
+                      <ul class="validation-list">
+                        @for (item of warningValidationPanelItems().slice(0, 3); track item.id) {
+                          <li class="validation-item is-warning">
+                            <span class="validation-dot" aria-hidden="true"></span>
+                            <span>{{ item.label }}</span>
+                          </li>
+                        } @empty {
+                          <li class="validation-item is-complete">
+                            <span class="validation-dot" aria-hidden="true"></span>
+                            <span>Sin advertencias pendientes.</span>
+                          </li>
+                        }
+                        @if (warningValidationPanelItems().length > 3) {
+                          <li class="validation-more">
+                            +{{ warningValidationPanelItems().length - 3 }} mas por revisar
+                          </li>
+                        }
+                      </ul>
+                    </div>
+                  </div>
+                } @else {
+                  <ul class="validation-list">
+                    <li class="validation-item is-complete">
+                      <span class="validation-dot" aria-hidden="true"></span>
+                      <span>Sin validaciones pendientes en este paso.</span>
+                    </li>
+                  </ul>
+                }
+              </section>
+
+              <section class="side-section side-section--global">
+                <div class="side-section-head">
+                  <p class="side-kicker">Resumen global</p>
+                  <h3>Estado de ficha</h3>
+                </div>
+
+                <p class="side-summary-line">
+                  {{ getGlobalValidationSummary().completeSteps }}/{{ totalSteps }} etapas completas
+                  - {{ getGlobalValidationSummary().blockingPending }} bloqueantes -
+                  {{ getGlobalValidationSummary().warningsPending }} advertencias
+                </p>
+              </section>
+            </div>
+          </aside> -->
+        </section>
+      </app-card-content>
+    </app-card>
+  </div>
+</form>

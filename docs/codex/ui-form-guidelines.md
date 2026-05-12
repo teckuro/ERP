@@ -21,7 +21,7 @@ Documentos relacionados:
 
 Tipografia (base global en `src/styles.css` `:root` + `body`):
 
-- Familia: **`--erp-font-sans`** — `Inter` (hoja cargada en `src/index.html`) con fallback `ui-sans-serif, system-ui, sans-serif`.
+- Familia: **`--erp-font-sans`** — pila local/sistema (`ui-sans-serif`, `system-ui`, `-apple-system`, `Segoe UI`, `Roboto`, `Helvetica Neue`, `Arial`, `sans-serif`). No cargar Google Fonts ni otra fuente remota en runtime.
 - Escala de texto: **`--erp-text-scale`** (`0.9`), tamaños **`--erp-text-xs`**, **`--erp-text-sm`**, **`--erp-text-md`**, titulos **`--erp-title-sm`**, **`--erp-title-md`**.
 - Cuerpo de aplicacion: `body` usa `--erp-font-sans`, `--erp-text-md`, peso `400`, `line-height` ~`1.5`, antialiasing activado.
 - Controles y etiquetas de formulario ERP: preferir pesos **500–600** (labels secundarios mas ligeros que valores).

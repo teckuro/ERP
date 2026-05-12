@@ -32,3 +32,20 @@ Contratos y guías del ciclo de vida del trabajador en Angular: listado, altas (
 ## Fase siguiente (producto)
 
 **Conceptos de remuneración** (catálogo maestro); no mezclar con asignaciones por trabajador. Ver [`../../orquestador/contexto-proyecto.md`](../../orquestador/contexto-proyecto.md) §10 y §12.
+
+## Actualizacion 2026-05-11 - Creacion avanzada: validaciones por accion
+
+- Creacion avanzada mantiene el mapa de ficha como resumen permanente.
+- Las validaciones chilenas de cada paso se muestran al actuar, no como tarjeta fija:
+  - `Siguiente`: MsgBox informativo/flexible con opcion `Continuar`.
+  - `Guardar borrador`: MsgBox si faltan datos minimos o confirmacion de borrador guardado.
+  - `Finalizar alta`: MsgBox con datos obligatorios pendientes y advertencias. Solo desde ahi se navega al primer pendiente.
+- Guardar borrador sigue flexible; finalizar alta sigue estricto.
+
+## Actualizacion 2026-05-11 - Copy administrativo en validaciones
+
+- Los MsgBox de creacion avanzada usan lenguaje administrativo y frases breves.
+- Los listados se muestran con guion visual y punto final.
+- No se usan punto y coma en textos visibles del flujo.
+- `Continuar de todos modos` queda reemplazado por `Continuar`.
+- `Ir al primer bloqueo` queda reemplazado por `Ir al primer pendiente`.

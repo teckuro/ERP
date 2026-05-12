@@ -1,9 +1,8 @@
 @import './styles/index.css';
 
 :root {
-  /* Tipografia base ERP (ligera, legible; Inter cargada en index.html) */
-  --erp-font-sans: 'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial,
-    sans-serif;
+  /* Tipografia base ERP: local/sistema, sin dependencia runtime de Google Fonts. */
+  --erp-font-sans: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
   --erp-text-scale: 0.9;
   --erp-text-xs: 0.665rem;
   --erp-text-sm: 0.72rem;
