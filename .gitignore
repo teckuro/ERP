@@ -38,6 +38,7 @@ yarn-error.log
 !/docs/codex/estilos/
 /docs/codex/estilos/*
 !/docs/codex/estilos/README.md
+!/docs/codex/estilos/observaciones.md
 !/docs/codex/modulos/
 /docs/codex/modulos/*
 !/docs/codex/modulos/auth/
