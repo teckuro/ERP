@@ -1,3 +1,15 @@
+## EMP-ADV-LAYOUT-CONSISTENCY-01 - Pulido visual local de Creacion avanzada
+
+Fecha: 2026-05-12
+
+- Se aplica pulido visual local sobre Creacion avanzada usando la base con Honorarios ya implementado.
+- Se amplia el ancho util del wizard y se reduce el peso visual del mapa lateral para que el formulario sea el bloque protagonista.
+- `Guardar borrador` pasa a clase local `advanced-draft-button` y mantiene comportamiento, data-testid y accion existente como secundaria destacada.
+- Se reducen alturas minimas artificiales en pasos cortos y se compacta el resumen final para evitar espacio vacio innecesario.
+- Se compactan paddings, gaps y grillas locales de Contrato y Bancario solo cuando se usan en modo avanzado.
+- Se respeta la tipografia del ERP mediante `--erp-font-sans`; no se agregan fuentes, paletas ni estilos globales.
+- Alcance respetado: sin cambios de flujo, pasos, validaciones, guardado, payloads, mappers, SQL/RPC/RLS/BD, creacion basica, ficha empleado ni remuneraciones.
+
 ## EMP-ADV-HONORARIOS-UX-01 - Modo boleta de honorarios en Creacion avanzada
 
 Fecha: 2026-05-12

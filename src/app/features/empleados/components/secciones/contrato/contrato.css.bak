@@ -2,7 +2,7 @@
 
 :host {
   display: block;
-  font-family: var(--erp-font-sans, system-ui, sans-serif);
+  font-family: var(--erp-font-sans, Inter, system-ui, sans-serif);
   color: #111827;
 }
 
@@ -766,4 +766,27 @@
     justify-content: flex-start;
   }
 
+}
+
+:host .honorarios-note {
+  display: grid;
+  gap: 3px;
+  margin-top: 10px;
+  padding: 10px 12px;
+  border: 1px solid #bfdbfe;
+  border-radius: 8px;
+  background: #eff6ff;
+  color: #1e3a8a;
+  font-size: var(--erp-text-xs, 0.72rem);
+  line-height: 1.45;
+}
+
+:host .honorarios-note strong {
+  color: #1d4ed8;
+  font-size: var(--erp-text-sm, 0.78rem);
+  font-weight: 700;
+}
+
+:host .labor-block--honorarios {
+  border-color: #bfdbfe;
 }
