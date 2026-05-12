@@ -1,3 +1,15 @@
+## EMP-ADV-HONORARIOS-UX-01 - Modo boleta de honorarios en Creacion avanzada
+
+Fecha: 2026-05-12
+
+- Se agrega modo visual/controlado para `Boleta de honorarios` en Creacion avanzada sin persistencia final de honorarios.
+- Al seleccionar honorarios se muestra MsgBox administrativo de confirmacion y se aclara que no corresponde trabajador dependiente.
+- Se ocultan o marcan como no aplicables jornada laboral, gratificacion, prevision/salud dependiente, APVI, cargas, zona extrema y semana corrida.
+- El paso de remuneracion cambia a `Monto de honorarios` usando el monto bruto como dato administrativo.
+- Bancario pasa a `Datos para pago` recomendados y no se trata como cuenta de remuneraciones.
+- Finalizar alta queda bloqueado para honorarios con MsgBox y accion para guardar borrador.
+- Alcance respetado: sin SQL/RPC/RLS/BD, sin payload final de honorarios, sin motor, sin formulas, sin liquidaciones, sin LRE/Previred/banco/PDF/firma/envio.
+
 ## REM-UX-FLOWS-01 V3 - Visibilidad cliente vs aplicacion
 
 Fecha: 2026-05-11

@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, DestroyRef, ElementRef, OnInit, inject, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { AbstractControl, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { LucideAngularModule } from 'lucide-angular';
@@ -28,6 +29,7 @@ import {
   EmpleadoFormTabId,
 } from '../../models/empleado-form.manifest';
 import { EmpleadoFormGroup } from '../../models/empleado-form.model';
+import { RelacionLaboral } from '../../models/empleado.model';
 import { EmpleadosFormOrchestratorService } from '../../services/empleados-form-orchestrator.service';
 import { EmpleadosCatalogosService } from '../../services/empleados-catalogos.service';
 import {
@@ -64,14 +66,19 @@ type AdvancedActionModalKind =
   | 'draft-invalid'
   | 'draft-success'
   | 'finish-invalid'
-  | 'finish-confirm';
+  | 'finish-confirm'
+  | 'honorarios-confirm'
+  | 'honorarios-finish-blocked';
 type AdvancedActionModalAction =
   | 'dismiss'
   | 'continue-next'
   | 'focus-current-step'
   | 'focus-draft-minimum'
   | 'focus-first-blocking'
-  | 'execute-finish';
+  | 'execute-finish'
+  | 'confirm-honorarios'
+  | 'cancel-honorarios'
+  | 'save-honorarios-draft';
 
 interface AdvancedActionModal {
   kind: AdvancedActionModalKind;
@@ -137,6 +144,9 @@ const TAB_ORDER: readonly TabId[] = [...EMPLEADO_FORM_TAB_ORDER];
 /** Mensajes de negocio al intentar finalizar con bloqueos (paso 9); no exponer detalle técnico de BD. */
 const MENSAJES_FINALIZAR_ALTA: Partial<Record<string, string>> = {
   'contract.position': 'Ingresa el cargo o función que tendrá el trabajador.',
+  'honorarios.service': 'Ingresa el servicio o función que prestará la persona a honorarios.',
+  'honorarios.amount': 'Ingresa el monto bruto pactado para la boleta de honorarios.',
+  'honorarios.currency': 'Selecciona la moneda del monto bruto de honorarios.',
   'contract.branch': 'Selecciona la sucursal u organización donde prestará servicios.',
   'contract.worker-type': 'Selecciona el tipo de trabajador que corresponde al contrato.',
   'contract.schedule-type': 'Selecciona el tipo de jornada pactada.',
@@ -197,6 +207,8 @@ export class FormEmpleadoComponent implements OnInit {
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
   private readonly hostElement = inject<ElementRef<HTMLElement>>(ElementRef);
+  private suppressRelacionLaboralModal = false;
+  private previousRelacionLaboral: RelacionLaboral = 'CONTRATO';
 
   readonly modo = signal<FormEmpleadoModo>('avanzado');
   /** Creacion avanzada: indice de etapa 0..8 (9 pasos). */
@@ -270,6 +282,7 @@ export class FormEmpleadoComponent implements OnInit {
     this.empleadosFormService.configureFormBehavior(this.form, this.destroyRef, () =>
       this.catalogos(),
     );
+    this.configureRelacionLaboralUx();
     await this.loadCatalogos();
     if (this.modo() === 'avanzado') {
       const rawId = this.route.snapshot.queryParamMap.get('idPersona');
@@ -369,10 +382,53 @@ export class FormEmpleadoComponent implements OnInit {
   }
 
   wizardStepShortLabel(stepIndex: number): string {
+    if (this.isHonorariosMode()) {
+      const honorariosLabels: Record<number, string> = {
+        2: 'Servicio',
+        3: 'Honorarios',
+        7: 'Datos para pago',
+        8: 'Resumen honorarios',
+      };
+      if ([4, 5, 6].includes(stepIndex)) {
+        return this.advancedWizardShortLabels[stepIndex] ?? '';
+      }
+      return honorariosLabels[stepIndex] ?? this.advancedWizardShortLabels[stepIndex] ?? '';
+    }
+
     return this.advancedWizardShortLabels[stepIndex] ?? this.advancedWizardLabels[stepIndex] ?? '';
   }
 
+  wizardStepFullLabel(stepIndex: number): string {
+    if (this.isHonorariosMode()) {
+      const honorariosLabels: Record<number, string> = {
+        2: 'Datos del servicio',
+        3: 'Monto de honorarios',
+        4: 'Asignaciones laborales',
+        5: 'Previsión y salud',
+        6: 'APVI',
+        7: 'Datos para pago',
+        8: 'Resumen de honorarios',
+      };
+      return honorariosLabels[stepIndex] ?? this.advancedWizardLabels[stepIndex] ?? '';
+    }
+
+    return this.advancedWizardLabels[stepIndex] ?? '';
+  }
+
   wizardStepDescription(stepIndex: number): string {
+    if (this.isHonorariosMode()) {
+      const honorariosDescriptions: Record<number, string> = {
+        2: 'Registra el servicio, fecha de inicio y ubicación administrativa del prestador a honorarios.',
+        3: 'Informa el monto bruto pactado para la boleta. No corresponde jornada laboral dependiente.',
+        4: 'Las asignaciones laborales no aplican para boleta de honorarios en esta alta.',
+        5: 'Previsión y salud no se capturan como trabajador dependiente en este flujo.',
+        6: 'APVI no aplica dentro de la alta de prestador a honorarios.',
+        7: 'Registra datos de pago del prestador si se usará transferencia.',
+        8: 'Revisa que este registro queda como borrador de honorarios y no como trabajador dependiente.',
+      };
+      return honorariosDescriptions[stepIndex] ?? this.advancedWizardStepDescriptions[stepIndex] ?? '';
+    }
+
     return this.advancedWizardStepDescriptions[stepIndex] ?? '';
   }
 
@@ -412,6 +468,10 @@ export class FormEmpleadoComponent implements OnInit {
 
   /** Secuencia de indices al usar Siguiente / Anterior (omite APVI si no aplica). */
   linearWizardSequence(): readonly number[] {
+    if (this.isHonorariosMode()) {
+      return [0, 1, 2, 3, 7, 8] as const;
+    }
+
     const base = [0, 1, 2, 3, 4, 5] as const;
     const p = this.form.controls.previsionSalud.controls;
     const incluyeApvi =
@@ -455,6 +515,12 @@ export class FormEmpleadoComponent implements OnInit {
       }
 
       await this.submitBasicMode();
+      return;
+    }
+
+    if (this.isHonorariosMode()) {
+      this.syncCompletedTabsFromValidity();
+      this.openHonorariosFinishBlockedModal();
       return;
     }
 
@@ -574,6 +640,18 @@ export class FormEmpleadoComponent implements OnInit {
         this.advancedActionModal.set(null);
         void this.submitAdvancedMode();
         break;
+      case 'confirm-honorarios':
+        this.advancedActionModal.set(null);
+        this.confirmHonorariosMode();
+        break;
+      case 'cancel-honorarios':
+        this.advancedActionModal.set(null);
+        this.cancelHonorariosModeChange();
+        break;
+      case 'save-honorarios-draft':
+        this.advancedActionModal.set(null);
+        void this.onGuardarBorrador();
+        break;
       case 'dismiss':
       default:
         this.advancedActionModal.set(null);
@@ -587,6 +665,10 @@ export class FormEmpleadoComponent implements OnInit {
 
   isAdvancedMode(): boolean {
     return this.modo() === 'avanzado';
+  }
+
+  isHonorariosMode(): boolean {
+    return this.form.controls.contrato.controls.relacionLaboral.value === 'HONORARIOS';
   }
 
   pageTitle(): string {
@@ -846,6 +928,10 @@ export class FormEmpleadoComponent implements OnInit {
       return 'pendiente';
     }
 
+    if (this.isHonorariosMode() && [4, 5, 6].includes(stepIndex)) {
+      return 'no-aplica';
+    }
+
     const previsionTipo = this.form.controls.previsionSalud.controls.tipoRegimenPrevisional.value;
     const tieneApv = this.form.controls.previsionSalud.controls.tieneApv.value;
 
@@ -901,9 +987,9 @@ export class FormEmpleadoComponent implements OnInit {
   }
 
   advancedReviewRows(): { stepIndex: number; label: string; kind: WizardStepUiKind }[] {
-    return this.advancedWizardLabels.map((label, stepIndex) => ({
+    return this.advancedWizardLabels.map((_, stepIndex) => ({
       stepIndex,
-      label,
+      label: this.wizardStepFullLabel(stepIndex),
       kind: this.reviewStepUiKind(stepIndex),
     }));
   }
@@ -1307,6 +1393,8 @@ export class FormEmpleadoComponent implements OnInit {
     const contrato = this.form.controls.contrato.controls;
     const prevision = this.form.controls.previsionSalud.controls;
     const bancario = this.form.controls.bancario.controls;
+    const esHonorarios = this.isHonorariosMode();
+    const esContratoDependiente = !esHonorarios;
     const hasCuenta2 =
       prevision.tipoRegimenPrevisional.value === 'AFP' &&
       (prevision.idMonedaCuenta2.value !== null || prevision.valorCuenta2.value !== null);
@@ -1450,17 +1538,28 @@ export class FormEmpleadoComponent implements OnInit {
         'contacto.idComuna',
         'Domicilio',
         () => contacto.idComuna.valid,
-        () => this.isAdvancedMode(),
+        () => this.isAdvancedMode() && esContratoDependiente,
+      ),
+      this.rule(
+        'contact.commune-honorarios',
+        'datosPersonales',
+        'Agrega comuna del prestador si se usará como dato administrativo de contacto',
+        'warning',
+        false,
+        'contacto.idComuna',
+        'Domicilio',
+        () => contacto.idComuna.valid,
+        () => this.isAdvancedMode() && esHonorarios,
       ),
 
       this.rule(
-        'contract.position',
+        esHonorarios ? 'honorarios.service' : 'contract.position',
         'contrato',
-        'Ingresa el cargo o función del trabajador',
+        esHonorarios ? 'Ingresa el servicio o función del prestador' : 'Ingresa el cargo o función del trabajador',
         'error',
         true,
         'contrato.cargo',
-        'Contrato',
+        esHonorarios ? 'Honorarios' : 'Contrato',
         () => contrato.cargo.valid && !this.isTechnicalCargo(contrato.cargo.value),
       ),
       this.rule(
@@ -1472,6 +1571,18 @@ export class FormEmpleadoComponent implements OnInit {
         'contrato.idSucursal',
         'Contrato',
         () => contrato.idSucursal.value !== null,
+        () => esContratoDependiente,
+      ),
+      this.rule(
+        'honorarios.cost-center',
+        'contrato',
+        'Selecciona sucursal o centro de costo si necesitas imputar internamente el servicio',
+        'warning',
+        false,
+        'contrato.idSucursal',
+        'Honorarios',
+        () => contrato.idSucursal.value !== null || contrato.idCentroCosto.value !== null,
+        () => esHonorarios,
       ),
       this.rule(
         'contract.worker-type',
@@ -1482,6 +1593,7 @@ export class FormEmpleadoComponent implements OnInit {
         'contrato.idTipoTrabajador',
         'Contrato',
         () => contrato.idTipoTrabajador.valid,
+        () => esContratoDependiente,
       ),
       this.rule(
         'contract.schedule-type',
@@ -1492,6 +1604,7 @@ export class FormEmpleadoComponent implements OnInit {
         'contrato.idTipoJornada',
         'Jornada',
         () => contrato.idTipoJornada.valid,
+        () => esContratoDependiente,
       ),
       this.rule(
         'contract.contract-type',
@@ -1502,6 +1615,7 @@ export class FormEmpleadoComponent implements OnInit {
         'contrato.tipoContrato',
         'Contrato',
         () => contrato.tipoContrato.valid,
+        () => esContratoDependiente,
       ),
       this.rule(
         'contract.start-date',
@@ -1522,6 +1636,7 @@ export class FormEmpleadoComponent implements OnInit {
         'contrato.fechaContrato',
         'Fechas',
         () => contrato.fechaContrato.valid,
+        () => esContratoDependiente,
       ),
       this.rule(
         'contract.end-date',
@@ -1533,26 +1648,27 @@ export class FormEmpleadoComponent implements OnInit {
         'Fechas',
         () => contrato.fechaTermino.valid,
         () =>
+          esContratoDependiente &&
           contrato.tipoContrato.value !== null && contrato.tipoContrato.value !== 'INDEFINIDO',
       ),
       this.rule(
-        'contract.salary',
+        esHonorarios ? 'honorarios.amount' : 'contract.salary',
         'contrato',
-        'Ingresa sueldo base válido',
+        esHonorarios ? 'Ingresa el monto bruto de honorarios' : 'Ingresa sueldo base válido',
         'error',
         true,
         'contrato.sueldoBase',
-        'Remuneracion',
+        esHonorarios ? 'Honorarios' : 'Remuneracion',
         () => contrato.sueldoBase.valid,
       ),
       this.rule(
-        'contract.currency',
+        esHonorarios ? 'honorarios.currency' : 'contract.currency',
         'contrato',
-        'Selecciona la moneda de remuneración',
+        esHonorarios ? 'Selecciona la moneda del monto bruto de honorarios' : 'Selecciona la moneda de remuneración',
         'error',
         true,
         'contrato.idMoneda',
-        'Remuneracion',
+        esHonorarios ? 'Honorarios' : 'Remuneracion',
         () => contrato.idMoneda.value !== null,
       ),
       this.rule(
@@ -1564,6 +1680,7 @@ export class FormEmpleadoComponent implements OnInit {
         'contrato.horasSemanales',
         'Jornada',
         () => contrato.horasSemanales.valid,
+        () => esContratoDependiente,
       ),
       this.rule(
         'contract.weekly-days',
@@ -1574,6 +1691,7 @@ export class FormEmpleadoComponent implements OnInit {
         'contrato.diasSemanales',
         'Jornada',
         () => contrato.diasSemanales.valid,
+        () => esContratoDependiente,
       ),
       this.rule(
         'contract.week-run',
@@ -1584,7 +1702,7 @@ export class FormEmpleadoComponent implements OnInit {
         'contrato.semanaCorridaDiasLaborables',
         'Semana corrida',
         () => contrato.semanaCorridaDiasLaborables.valid,
-        () => contrato.semanaCorridaActiva.value,
+        () => esContratoDependiente && contrato.semanaCorridaActiva.value,
       ),
       this.rule(
         'contract.extreme-zone-area',
@@ -1595,7 +1713,7 @@ export class FormEmpleadoComponent implements OnInit {
         'contrato.zonaExtremaTerritorio',
         'Zona extrema',
         () => contrato.zonaExtremaTerritorio.valid,
-        () => contrato.zonaExtremaActiva.value,
+        () => esContratoDependiente && contrato.zonaExtremaActiva.value,
       ),
       this.rule(
         'contract.extreme-zone-rate',
@@ -1606,7 +1724,7 @@ export class FormEmpleadoComponent implements OnInit {
         'contrato.zonaExtremaPorcentaje',
         'Zona extrema',
         () => contrato.zonaExtremaPorcentaje.valid,
-        () => contrato.zonaExtremaActiva.value,
+        () => esContratoDependiente && contrato.zonaExtremaActiva.value,
       ),
       this.rule(
         'contract.family-allowance',
@@ -1617,7 +1735,7 @@ export class FormEmpleadoComponent implements OnInit {
         'contrato.idTramoCarga',
         'Cargas',
         () => contrato.idTramoCarga.value !== null,
-        () => Number(contrato.cargas.value ?? 0) > 0,
+        () => esContratoDependiente && Number(contrato.cargas.value ?? 0) > 0,
       ),
 
       this.rule(
@@ -1629,6 +1747,7 @@ export class FormEmpleadoComponent implements OnInit {
         'previsionSalud.tipoRegimenPrevisional',
         'Prevision',
         () => prevision.tipoRegimenPrevisional.valid,
+        () => esContratoDependiente,
       ),
       this.rule(
         'prevision.afp',
@@ -1639,7 +1758,7 @@ export class FormEmpleadoComponent implements OnInit {
         'previsionSalud.idAfp',
         'Prevision',
         () => prevision.idAfp.valid,
-        () => prevision.tipoRegimenPrevisional.value === 'AFP',
+        () => esContratoDependiente && prevision.tipoRegimenPrevisional.value === 'AFP',
       ),
       this.rule(
         'prevision.ips-name',
@@ -1650,7 +1769,7 @@ export class FormEmpleadoComponent implements OnInit {
         'previsionSalud.nombreExCaja',
         'IPS',
         () => prevision.nombreExCaja.valid,
-        () => prevision.tipoRegimenPrevisional.value === 'IPS',
+        () => esContratoDependiente && prevision.tipoRegimenPrevisional.value === 'IPS',
       ),
       this.rule(
         'prevision.ips-regime',
@@ -1661,7 +1780,7 @@ export class FormEmpleadoComponent implements OnInit {
         'previsionSalud.regimenExCaja',
         'IPS',
         () => prevision.regimenExCaja.valid,
-        () => prevision.tipoRegimenPrevisional.value === 'IPS',
+        () => esContratoDependiente && prevision.tipoRegimenPrevisional.value === 'IPS',
       ),
       this.rule(
         'prevision.ips-rate',
@@ -1672,7 +1791,7 @@ export class FormEmpleadoComponent implements OnInit {
         'previsionSalud.tasaExCaja',
         'IPS',
         () => prevision.tasaExCaja.valid,
-        () => prevision.tipoRegimenPrevisional.value === 'IPS',
+        () => esContratoDependiente && prevision.tipoRegimenPrevisional.value === 'IPS',
       ),
       this.rule(
         'prevision.health',
@@ -1683,7 +1802,7 @@ export class FormEmpleadoComponent implements OnInit {
         'previsionSalud.idSalud',
         'Salud',
         () => prevision.idSalud.valid,
-        () => requiereSalud,
+        () => esContratoDependiente && requiereSalud,
       ),
       this.rule(
         'prevision.health-currency',
@@ -1694,7 +1813,7 @@ export class FormEmpleadoComponent implements OnInit {
         'previsionSalud.idMonedaPlan',
         'Salud',
         () => prevision.idMonedaPlan.valid,
-        () => requiereSalud,
+        () => esContratoDependiente && requiereSalud,
       ),
       this.rule(
         'prevision.health-plan',
@@ -1705,7 +1824,7 @@ export class FormEmpleadoComponent implements OnInit {
         'previsionSalud.valorPlan',
         'Salud',
         () => prevision.valorPlan.valid,
-        () => requiereSalud,
+        () => esContratoDependiente && requiereSalud,
       ),
       this.rule(
         'prevision.health-ges',
@@ -1716,7 +1835,7 @@ export class FormEmpleadoComponent implements OnInit {
         'previsionSalud.adicionalAugeGes',
         'Salud',
         () => prevision.adicionalAugeGes.valid,
-        () => requiereSalud,
+        () => esContratoDependiente && requiereSalud,
       ),
       this.rule(
         'prevision.account2-currency',
@@ -1727,7 +1846,7 @@ export class FormEmpleadoComponent implements OnInit {
         'previsionSalud.idMonedaCuenta2',
         'Cuenta 2',
         () => prevision.idMonedaCuenta2.valid,
-        () => hasCuenta2,
+        () => esContratoDependiente && hasCuenta2,
       ),
       this.rule(
         'prevision.account2-value',
@@ -1738,7 +1857,7 @@ export class FormEmpleadoComponent implements OnInit {
         'previsionSalud.valorCuenta2',
         'Cuenta 2',
         () => prevision.valorCuenta2.valid,
-        () => hasCuenta2,
+        () => esContratoDependiente && hasCuenta2,
       ),
       this.rule(
         'prevision.apv-institution',
@@ -1749,7 +1868,7 @@ export class FormEmpleadoComponent implements OnInit {
         'previsionSalud.idInstitucionApv',
         'APVI',
         () => prevision.idInstitucionApv.valid,
-        () => prevision.tipoRegimenPrevisional.value === 'AFP' && prevision.tieneApv.value,
+        () => esContratoDependiente && prevision.tipoRegimenPrevisional.value === 'AFP' && prevision.tieneApv.value,
       ),
       this.rule(
         'prevision.apv-currency',
@@ -1760,7 +1879,7 @@ export class FormEmpleadoComponent implements OnInit {
         'previsionSalud.idMonedaApv',
         'APVI',
         () => prevision.idMonedaApv.valid,
-        () => prevision.tipoRegimenPrevisional.value === 'AFP' && prevision.tieneApv.value,
+        () => esContratoDependiente && prevision.tipoRegimenPrevisional.value === 'AFP' && prevision.tieneApv.value,
       ),
       this.rule(
         'prevision.apv-amount',
@@ -1771,7 +1890,7 @@ export class FormEmpleadoComponent implements OnInit {
         'previsionSalud.montoApv',
         'APVI',
         () => prevision.montoApv.valid,
-        () => prevision.tipoRegimenPrevisional.value === 'AFP' && prevision.tieneApv.value,
+        () => esContratoDependiente && prevision.tipoRegimenPrevisional.value === 'AFP' && prevision.tieneApv.value,
       ),
       this.rule(
         'prevision.apv-payment',
@@ -1782,7 +1901,7 @@ export class FormEmpleadoComponent implements OnInit {
         'previsionSalud.idFormaPagoApv',
         'APVI',
         () => prevision.idFormaPagoApv.valid,
-        () => prevision.tipoRegimenPrevisional.value === 'AFP' && prevision.tieneApv.value,
+        () => esContratoDependiente && prevision.tipoRegimenPrevisional.value === 'AFP' && prevision.tieneApv.value,
       ),
       this.rule(
         'prevision.apv-agreement',
@@ -1793,7 +1912,7 @@ export class FormEmpleadoComponent implements OnInit {
         'previsionSalud.depositoConvenidoApvi',
         'APVI',
         () => prevision.depositoConvenidoApvi.valid,
-        () => prevision.tipoRegimenPrevisional.value === 'AFP' && prevision.tieneApv.value,
+        () => esContratoDependiente && prevision.tipoRegimenPrevisional.value === 'AFP' && prevision.tieneApv.value,
       ),
 
       this.rule(
@@ -1805,6 +1924,7 @@ export class FormEmpleadoComponent implements OnInit {
         'bancario.idBanco',
         'Bancario',
         () => bancario.idBanco.valid,
+        () => esContratoDependiente,
       ),
       this.rule(
         'bank.account-type',
@@ -1815,6 +1935,7 @@ export class FormEmpleadoComponent implements OnInit {
         'bancario.idTipoCuentaBancaria',
         'Bancario',
         () => bancario.idTipoCuentaBancaria.valid,
+        () => esContratoDependiente,
       ),
       this.rule(
         'bank.account-number',
@@ -1825,6 +1946,22 @@ export class FormEmpleadoComponent implements OnInit {
         'bancario.numeroCuenta',
         'Bancario',
         () => bancario.numeroCuenta.valid && !this.isDraftAccount(bancario.numeroCuenta.value),
+        () => esContratoDependiente,
+      ),
+      this.rule(
+        'honorarios.bank-data',
+        'bancario',
+        'Agrega datos de pago si el prestador recibirá transferencia',
+        'warning',
+        false,
+        'bancario.idBanco',
+        'Honorarios',
+        () =>
+          bancario.idBanco.value !== null &&
+          bancario.idTipoCuentaBancaria.value !== null &&
+          Boolean(bancario.numeroCuenta.value.trim()) &&
+          !this.isDraftAccount(bancario.numeroCuenta.value),
+        () => esHonorarios,
       ),
     ];
   }
@@ -1970,6 +2107,123 @@ export class FormEmpleadoComponent implements OnInit {
       primaryAction: 'execute-finish',
       secondaryAction: 'dismiss',
     });
+  }
+
+
+  private openHonorariosConfirmModal(): void {
+    this.openAdvancedActionModal({
+      kind: 'honorarios-confirm',
+      variant: 'warning',
+      title: 'Cambiar a boleta de honorarios',
+      message:
+        'Este registro se tratará como prestador de servicios y no como trabajador dependiente. El formulario ocultará los datos laborales que no corresponden a esta modalidad.',
+      primaryLabel: 'Confirmar cambio',
+      secondaryLabel: 'Cancelar',
+      blockingItems: [],
+      warningItems: [
+        'Jornada laboral, gratificación, previsión, salud, APVI y asignaciones laborales quedarán como no aplicables.',
+        'La ficha podrá guardarse como borrador, pero no finalizarse como trabajador dependiente.',
+      ],
+      infoItems: [
+        'El monto informado será el monto bruto de honorarios.',
+        'La persistencia completa de honorarios se habilitará en una fase posterior.',
+      ],
+      primaryAction: 'confirm-honorarios',
+      secondaryAction: 'cancel-honorarios',
+    });
+  }
+
+  private openHonorariosFinishBlockedModal(): void {
+    this.openAdvancedActionModal({
+      kind: 'honorarios-finish-blocked',
+      variant: 'warning',
+      title: 'Alta de honorarios pendiente de habilitación',
+      message:
+        'La ficha está marcada como boleta de honorarios. Este tipo de registro no debe finalizarse como trabajador dependiente con el flujo actual.',
+      primaryLabel: 'Guardar como borrador',
+      secondaryLabel: 'Cerrar',
+      blockingItems: [
+        'La persistencia final de honorarios aún no está habilitada.',
+        'No se generará contrato laboral, jornada, previsión dependiente ni liquidación de sueldo.',
+      ],
+      warningItems: [
+        'Mantén esta ficha como borrador hasta implementar el flujo completo de prestadores a honorarios.',
+      ],
+      infoItems: [
+        'Fase posterior: monto bruto, retención vigente, datos tributarios y separación de nómina dependiente.',
+      ],
+      targetStep: 8,
+      primaryAction: 'save-honorarios-draft',
+      secondaryAction: 'dismiss',
+    });
+  }
+
+  private configureRelacionLaboralUx(): void {
+    const control = this.form.controls.contrato.controls.relacionLaboral;
+    this.previousRelacionLaboral = control.value;
+
+    control.valueChanges.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((value) => {
+      if (this.suppressRelacionLaboralModal) {
+        this.previousRelacionLaboral = value;
+        return;
+      }
+
+      if (value === 'HONORARIOS' && this.previousRelacionLaboral !== 'HONORARIOS') {
+        this.openHonorariosConfirmModal();
+        return;
+      }
+
+      this.previousRelacionLaboral = value;
+    });
+  }
+
+  private confirmHonorariosMode(): void {
+    this.previousRelacionLaboral = 'HONORARIOS';
+    this.applyHonorariosVisualState();
+    this.syncCompletedTabsFromValidity();
+  }
+
+  private cancelHonorariosModeChange(): void {
+    this.suppressRelacionLaboralModal = true;
+    this.form.controls.contrato.controls.relacionLaboral.setValue(this.previousRelacionLaboral, {
+      emitEvent: true,
+    });
+    this.suppressRelacionLaboralModal = false;
+    this.syncCompletedTabsFromValidity();
+  }
+
+  private applyHonorariosVisualState(): void {
+    const contrato = this.form.controls.contrato.controls;
+    const prevision = this.form.controls.previsionSalud.controls;
+
+    const independiente = this.catalogos().tiposTrabajador.find((option) =>
+      option.label.toLowerCase().includes('independiente'),
+    );
+    if (independiente) {
+      contrato.idTipoTrabajador.setValue(independiente.value, { emitEvent: false });
+    }
+
+    contrato.tipoContrato.setValue(null, { emitEvent: false });
+    contrato.fechaContrato.setValue('', { emitEvent: false });
+    contrato.fechaTermino.setValue('', { emitEvent: false });
+    contrato.idTipoJornada.setValue(null, { emitEvent: false });
+    contrato.horasSemanales.setValue(null, { emitEvent: false });
+    contrato.diasSemanales.setValue(null, { emitEvent: false });
+    contrato.distribucionJornada.setValue('', { emitEvent: false });
+    contrato.tiempoColacionMinutos.setValue(null, { emitEvent: false });
+    contrato.tipoGratificacion.setValue(null, { emitEvent: false });
+    contrato.seguroCesantia.setValue(false, { emitEvent: false });
+    contrato.sueldoVariable.setValue(false, { emitEvent: false });
+    contrato.semanaCorridaActiva.setValue(false, { emitEvent: false });
+    contrato.semanaCorridaDiasLaborables.setValue([], { emitEvent: false });
+    contrato.zonaExtremaActiva.setValue(false, { emitEvent: false });
+    contrato.zonaExtremaTerritorio.setValue('', { emitEvent: false });
+    contrato.zonaExtremaPorcentaje.setValue(null, { emitEvent: false });
+    contrato.cargas.setValue(0, { emitEvent: false });
+    contrato.idTramoCarga.setValue(null, { emitEvent: false });
+
+    prevision.tipoRegimenPrevisional.setValue(null, { emitEvent: false });
+    prevision.tieneApv.setValue(false, { emitEvent: false });
   }
 
   private validationModalLabels(items: readonly EvaluatedValidationRule[], max: number): readonly string[] {

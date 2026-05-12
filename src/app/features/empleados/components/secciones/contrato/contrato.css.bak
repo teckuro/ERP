@@ -1,0 +1,769 @@
+@import '../../form-empleado-shared.css';
+
+:host {
+  display: block;
+  font-family: var(--erp-font-sans, system-ui, sans-serif);
+  color: #111827;
+}
+
+.labor-shell {
+  display: grid;
+  gap: 16px;
+}
+
+.labor-block {
+  display: block;
+  padding: 0;
+  border-color: #e5e7eb;
+  border-radius: 8px;
+  background: #ffffff;
+  box-shadow: none;
+}
+
+.labor-block-title {
+  margin: 0;
+  padding: 16px 16px 12px;
+  border-bottom: 1px solid #e5e7eb;
+  background: #f8fafc;
+  color: #111827;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 20px;
+}
+
+.labor-block-head {
+  display: grid;
+  gap: 4px;
+  margin: 0;
+  padding: 12px 14px 8px;
+  border-bottom: 1px solid #e5e7eb;
+  background: #f8fafc;
+}
+
+.labor-block-head h4 {
+  margin: 0;
+  color: #111827;
+  font-size: var(--erp-title-sm, 0.92rem);
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+.labor-block-head p {
+  margin: 0;
+  max-width: 42rem;
+  color: #64748b;
+  font-size: var(--erp-text-sm, 0.72rem);
+  line-height: 1.4;
+}
+
+.labor-grid {
+  display: grid;
+  width: min(100%, 72rem);
+  gap: 12px 16px;
+}
+
+.labor-block > .labor-grid,
+.labor-block > .relation-grid {
+  padding: 16px;
+}
+
+.labor-grid--contract {
+  grid-template-columns: repeat(3, minmax(13rem, 1fr));
+}
+
+.labor-grid--schedule,
+.labor-grid--base-pay {
+  grid-template-columns: minmax(16rem, 1.4fr) minmax(8rem, 0.8fr) minmax(8rem, 0.8fr);
+}
+
+.labor-grid--distribution {
+  grid-template-columns: minmax(20rem, 2fr) minmax(10rem, 0.8fr);
+}
+
+.labor-grid--pay-conditions {
+  width: min(100%, 44rem);
+  grid-template-columns: repeat(2, minmax(12rem, 1fr));
+}
+
+.labor-grid--loads,
+.labor-grid--zone,
+.labor-grid--footer,
+.labor-grid--week {
+  width: min(100%, 52rem);
+  grid-template-columns: minmax(18rem, 24rem) minmax(12rem, 18rem);
+}
+
+
+.labor-field-section {
+  margin: 4px 0 0;
+}
+
+.labor-field-section--span {
+  grid-column: 1 / -1;
+}
+
+.labor-field-section-title {
+  margin: 0;
+  padding: 0 0 6px;
+  border-bottom: 1px solid #f1f5f9;
+  color: #64748b;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  line-height: 1.3;
+  text-transform: uppercase;
+}
+
+:host .field-message--hint {
+  margin: 0;
+  min-height: 1.1rem;
+  color: #64748b;
+  font-size: 0.7rem;
+  font-weight: 450;
+  line-height: 1.35;
+}
+
+.labor-span-2 {
+  grid-column: span 2;
+}
+
+.labor-span-3 {
+  grid-column: span 3;
+}
+
+.labor-grid--week .labor-span-3 {
+  grid-column: auto;
+}
+
+.relation-grid {
+  display: flex;
+  flex-wrap: wrap;
+  width: min(100%, 52rem);
+  gap: 8px;
+}
+
+.relation-option {
+  display: inline-flex;
+  box-sizing: border-box;
+  height: var(--erp-control-height, 22px);
+  min-height: var(--erp-control-height, 22px);
+  align-items: center;
+  gap: 8px;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  background: #ffffff;
+  padding: 0 10px;
+  color: #111827;
+  font-size: var(--erp-text-sm, 0.72rem);
+  font-weight: 500;
+}
+
+.relation-option input {
+  margin: 0;
+}
+
+.form-field--checkbox {
+  align-content: start;
+}
+
+.readonly-field {
+  display: flex;
+  min-height: var(--erp-control-height, 22px);
+  align-items: center;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  background: #f8fafc;
+  padding: 0 12px;
+  color: #111827;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.readonly-field.readonly-field--calculated {
+  border-style: dashed;
+  color: #334155;
+  font-weight: 650;
+  letter-spacing: 0.01em;
+}
+
+.period-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border-radius: 999px;
+  border: 1px solid #e5e7eb;
+  background: #f8fafc;
+  padding: 2px 8px;
+  color: #64748b;
+  font-size: 0.68rem;
+  font-weight: 550;
+  line-height: 1.2;
+}
+
+.period-chip.period-chip--warning {
+  border-color: #fde68a;
+  background: #fffbeb;
+  color: #92400e;
+}
+
+.field-message--muted {
+  color: #64748b;
+}
+
+.form-field--compact {
+  max-width: 11rem;
+}
+
+.form-field--wide {
+  min-width: 0;
+}
+
+.zone-extrema-placeholder {
+  align-content: center;
+}
+
+.zone-extrema-note,
+.week-running-note {
+  align-content: center;
+}
+
+/* Cuando Zona extrema está inactiva, la nota va al costado derecho (igual que Semana corrida). */
+:host.labor-layout-advanced .labor-grid--zone .zone-extrema-note,
+:host.labor-layout-advanced .labor-grid--week .week-running-note {
+  grid-column: 2 / -1;
+}
+
+.weekday-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(6.75rem, 1fr));
+  gap: 8px;
+}
+
+.weekday-chip {
+  display: inline-flex;
+  box-sizing: border-box;
+  width: 100%;
+  align-items: center;
+  gap: 8px;
+  height: auto;
+  min-height: var(--erp-control-height, 22px);
+  padding: 0 10px;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  background: #ffffff;
+  color: #111827;
+  font-size: var(--erp-text-sm, 0.72rem);
+  font-weight: 500;
+  line-height: 1.25;
+  transition:
+    border-color 160ms ease,
+    background 160ms ease,
+    color 160ms ease;
+}
+
+.labor-toggle-field,
+.labor-detail-field,
+.weekday-chip span:last-child {
+  min-width: 0;
+}
+
+.weekday-chip span:last-child {
+  overflow-wrap: anywhere;
+}
+
+.weekday-chip.is-selected {
+  border-color: #2563eb;
+  background: #eff6ff;
+  color: #1d4ed8;
+}
+
+.weekday-chip.is-disabled {
+  opacity: 0.55;
+}
+
+.weekday-box {
+  width: 0.9rem;
+  height: 0.9rem;
+  border: 1px solid #9ca3af;
+  border-radius: 4px;
+  background: #ffffff;
+}
+
+.weekday-chip.is-selected .weekday-box {
+  border-color: #2563eb;
+  background: #2563eb;
+  box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.92);
+}
+
+@media (max-width: 1280px) {
+  :host:not(.labor-layout-advanced) .labor-grid--contract {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+
+  :host:not(.labor-layout-advanced) .labor-span-3 {
+    grid-column: auto;
+  }
+}
+
+@media (max-width: 1024px) {
+  .labor-block {
+    padding: 0;
+  }
+
+  :host:not(.labor-layout-advanced) .labor-grid--contract,
+  :host:not(.labor-layout-advanced) .labor-grid--loads,
+  :host:not(.labor-layout-advanced) .labor-grid--zone,
+  :host:not(.labor-layout-advanced) .labor-grid--footer,
+  :host:not(.labor-layout-advanced) .labor-grid--week {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .weekday-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  :host:not(.labor-layout-advanced) .labor-span-2 {
+    grid-column: auto;
+  }
+}
+
+:host.labor-layout-advanced .labor-shell {
+  gap: 1.25rem;
+}
+
+:host.labor-layout-advanced .labor-grid {
+  width: 100%;
+  max-width: none;
+}
+
+:host.labor-layout-advanced .relation-grid {
+  width: 100%;
+  max-width: none;
+}
+
+:host.labor-layout-advanced .labor-field-section-title {
+  border-bottom-color: #f1f5f9;
+  color: #64748b;
+}
+
+:host.labor-layout-advanced .labor-grid--contract,
+:host.labor-layout-advanced .labor-grid--schedule,
+:host.labor-layout-advanced .labor-grid--distribution,
+:host.labor-layout-advanced .labor-grid--base-pay,
+:host.labor-layout-advanced .labor-grid--pay-conditions {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+:host.labor-layout-advanced .labor-grid--footer {
+  width: 100%;
+  max-width: none;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+:host.labor-layout-advanced .labor-grid--contract > :nth-child(1) {
+  grid-column: span 2;
+}
+
+:host.labor-layout-advanced .labor-grid--contract > :nth-child(2) {
+  grid-column: span 2;
+}
+
+:host.labor-layout-advanced .labor-grid--contract > :nth-child(4),
+:host.labor-layout-advanced .labor-grid--contract > :nth-child(5),
+:host.labor-layout-advanced .labor-grid--contract > :nth-child(6) {
+  grid-column: span 2;
+}
+
+:host.labor-layout-advanced .labor-grid--contract > :nth-child(7) {
+  grid-column: span 2;
+}
+
+:host.labor-layout-advanced .labor-grid--contract > :nth-child(9),
+:host.labor-layout-advanced .labor-grid--contract > :nth-child(10) {
+  grid-column: span 2;
+}
+
+:host.labor-layout-advanced .labor-grid--footer > :nth-child(1),
+:host.labor-layout-advanced .labor-grid--footer > :nth-child(2) {
+  grid-column: span 3;
+}
+
+:host.labor-layout-advanced .labor-grid--footer > :nth-child(3) {
+  grid-column: span 2;
+}
+
+:host.labor-layout-advanced .labor-shell {
+  gap: 8px;
+}
+
+:host.labor-layout-advanced .labor-block-head {
+  padding: 10px 14px 7px;
+}
+
+:host.labor-layout-advanced .labor-block > .labor-grid,
+:host.labor-layout-advanced .labor-block > .relation-grid {
+  padding: 10px 14px 12px;
+}
+
+:host.labor-layout-advanced .relation-grid {
+  gap: 6px 8px;
+}
+
+:host.labor-layout-advanced .relation-option {
+  gap: 6px;
+  padding-inline: 9px;
+}
+
+:host.labor-layout-advanced .labor-grid--contract {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  align-items: start;
+  gap: 6px 14px;
+}
+
+:host.labor-layout-advanced .labor-grid--contract > :nth-child(1),
+:host.labor-layout-advanced .labor-grid--contract > :nth-child(2),
+:host.labor-layout-advanced .labor-grid--contract > :nth-child(3),
+:host.labor-layout-advanced .labor-grid--contract > :nth-child(5),
+:host.labor-layout-advanced .labor-grid--contract > :nth-child(6),
+:host.labor-layout-advanced .labor-grid--contract > :nth-child(7) {
+  grid-column: span 1;
+}
+
+:host.labor-layout-advanced .labor-grid--contract > .labor-field-section--span {
+  grid-column: 1 / -1;
+}
+
+:host.labor-layout-advanced .labor-grid--contract .form-field--checkbox {
+  align-self: start;
+}
+
+:host.labor-layout-advanced .labor-grid--contract .field-message--hint {
+  max-width: 14rem;
+  min-height: 0;
+  margin-top: 2px;
+  color: #94a3b8;
+  font-size: 0.66rem;
+  line-height: 1.25;
+}
+
+:host.labor-layout-advanced .labor-grid--contract .labor-field-section {
+  margin: 0;
+}
+
+:host.labor-layout-advanced .labor-grid--contract .labor-field-section-title {
+  padding: 0 0 3px;
+  border-bottom-color: #f8fafc;
+  color: #94a3b8;
+  font-size: 0.66rem;
+  font-weight: 550;
+  letter-spacing: 0.02em;
+  text-transform: none;
+}
+
+:host.labor-layout-advanced .labor-grid--organization {
+  width: 100%;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px 14px;
+}
+
+:host.labor-layout-advanced .labor-grid--footer {
+  grid-template-columns: minmax(0, 1.05fr) minmax(0, 2fr) minmax(0, 0.95fr);
+  gap: 8px 14px;
+}
+
+:host.labor-layout-advanced .labor-grid--footer > :nth-child(1) {
+  grid-column: span 1;
+}
+
+:host.labor-layout-advanced .labor-grid--footer > :nth-child(2) {
+  grid-column: span 1;
+}
+
+:host.labor-layout-advanced .labor-grid--footer > :nth-child(3) {
+  grid-column: span 1;
+}
+
+:host.labor-layout-advanced .labor-grid--schedule {
+  grid-template-columns: minmax(0, 1.5fr) minmax(0, 0.75fr) minmax(0, 0.75fr);
+  gap: 8px 14px;
+}
+
+:host.labor-layout-advanced .labor-grid--distribution {
+  width: 100%;
+  grid-template-columns: minmax(0, 2.4fr) minmax(8rem, 0.6fr);
+  gap: 6px 12px;
+}
+
+:host.labor-layout-advanced .labor-grid--base-pay {
+  grid-template-columns: minmax(0, 1.45fr) minmax(0, 0.8fr) minmax(0, 1fr);
+  gap: 8px 14px;
+}
+
+:host.labor-layout-advanced .labor-grid--pay-conditions {
+  width: 100%;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px 12px;
+}
+
+:host.labor-layout-advanced .labor-grid--pay-conditions .field-message--hint {
+  max-width: 14rem;
+  min-height: 0;
+  margin-top: 1px;
+  color: #94a3b8;
+  font-size: 0.63rem;
+  line-height: 1.18;
+}
+
+:host.labor-layout-advanced .labor-block--distribution .labor-block-head,
+:host.labor-layout-advanced .labor-block--pay-conditions .labor-block-head {
+  padding: 8px 14px 6px;
+}
+
+:host.labor-layout-advanced .labor-block--distribution .labor-block-head p {
+  max-width: 38rem;
+  font-size: 0.66rem;
+  line-height: 1.25;
+}
+
+:host.labor-layout-advanced .labor-block--distribution > .labor-grid,
+:host.labor-layout-advanced .labor-block--pay-conditions > .labor-grid {
+  padding-top: 8px;
+  padding-bottom: 10px;
+}
+
+:host.labor-layout-advanced .labor-block--pay-conditions .employee-checkbox-row {
+  min-height: var(--erp-control-height, 22px);
+}
+
+:host.labor-layout-advanced .labor-grid--base-pay .field-message {
+  min-height: 0.95rem;
+  line-height: 1.2;
+}
+
+:host.labor-layout-advanced :is(.labor-block--loads, .labor-block--zone, .labor-block--week) .labor-block-head {
+  padding: 9px 14px 6px;
+}
+
+:host.labor-layout-advanced :is(.labor-block--loads, .labor-block--zone, .labor-block--week) .labor-block-head p {
+  max-width: 42rem;
+  font-size: 0.66rem;
+  line-height: 1.25;
+}
+
+:host.labor-layout-advanced :is(.labor-block--loads, .labor-block--zone, .labor-block--week) > .labor-grid {
+  padding-top: 9px;
+  padding-bottom: 11px;
+}
+
+:host.labor-layout-advanced .labor-grid--loads {
+  width: 100%;
+  grid-template-columns: minmax(7rem, 0.65fr) minmax(14rem, 1.45fr) minmax(9rem, 0.9fr);
+  gap: 8px 14px;
+}
+
+:host.labor-layout-advanced .labor-block--loads .readonly-field {
+  border-style: dashed;
+  background: #f8fafc;
+  color: #334155;
+  font-weight: 600;
+}
+
+:host.labor-layout-advanced .labor-grid--zone {
+  width: 100%;
+  grid-template-columns: minmax(11rem, 0.85fr) minmax(14rem, 1.5fr) minmax(7.5rem, 0.75fr);
+  gap: 8px 14px;
+}
+
+:host.labor-layout-advanced :is(.labor-block--zone, .labor-block--week) .employee-checkbox-row {
+  min-height: var(--erp-control-height, 22px);
+}
+
+:host.labor-layout-advanced :is(.labor-block--zone, .labor-block--week) .employee-checkbox-row span {
+  overflow-wrap: normal;
+  white-space: nowrap;
+}
+
+:host.labor-layout-advanced .labor-grid--week {
+  width: 100%;
+  grid-template-columns: minmax(11rem, 0.85fr) minmax(0, 2.25fr);
+  gap: 8px 14px;
+}
+
+:host.labor-layout-advanced .labor-grid--week > .labor-span-3 {
+  grid-column: 2 / -1;
+}
+
+:host.labor-layout-advanced .labor-block--week .weekday-grid {
+  grid-template-columns: repeat(auto-fit, minmax(6.25rem, 1fr));
+  gap: 6px;
+}
+
+:host.labor-layout-advanced .labor-block--week .weekday-chip {
+  padding-inline: 8px;
+}
+
+@media (max-width: 1280px) {
+  :host.labor-layout-advanced .labor-grid--zone {
+    grid-template-columns: max-content minmax(0, 1fr) minmax(7rem, 0.45fr);
+  }
+
+  :host.labor-layout-advanced .labor-grid--week {
+    grid-template-columns: max-content minmax(0, 1fr);
+  }
+
+  :host.labor-layout-advanced .labor-grid--zone > .labor-detail-field--primary {
+    grid-column: span 1;
+  }
+
+  :host.labor-layout-advanced .labor-grid--zone > .labor-detail-field--compact {
+    grid-column: span 1;
+    max-width: none;
+  }
+
+  :host.labor-layout-advanced :is(.labor-grid--zone:has(.zone-extrema-note), .labor-grid--week:has(.week-running-note)) > .labor-toggle-field {
+    grid-column: span 1;
+  }
+
+  :host.labor-layout-advanced :is(.labor-grid--zone .zone-extrema-note, .labor-grid--week .week-running-note) {
+    grid-column: 2 / -1;
+  }
+
+  :host.labor-layout-advanced .labor-grid--week > .labor-detail-field--days {
+    grid-column: span 1;
+  }
+}
+
+@media (max-width: 1024px) {
+  :host.labor-layout-advanced .labor-grid--contract,
+  :host.labor-layout-advanced .labor-grid--schedule,
+  :host.labor-layout-advanced .labor-grid--distribution,
+  :host.labor-layout-advanced .labor-grid--base-pay,
+  :host.labor-layout-advanced .labor-grid--pay-conditions,
+  :host.labor-layout-advanced .labor-grid--loads,
+  :host.labor-layout-advanced .labor-grid--footer {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  :host.labor-layout-advanced .labor-grid--zone {
+    grid-template-columns: max-content minmax(0, 1fr) minmax(7rem, 0.45fr);
+  }
+
+  :host.labor-layout-advanced .labor-grid--week {
+    grid-template-columns: max-content minmax(0, 1fr);
+  }
+
+  :host.labor-layout-advanced .labor-grid--contract > .form-field,
+  :host.labor-layout-advanced .labor-grid--schedule > .form-field,
+  :host.labor-layout-advanced .labor-grid--distribution > .form-field,
+  :host.labor-layout-advanced .labor-grid--base-pay > .form-field,
+  :host.labor-layout-advanced .labor-grid--pay-conditions > .form-field,
+  :host.labor-layout-advanced .labor-grid--loads > .form-field,
+  :host.labor-layout-advanced .labor-grid--footer > .form-field {
+    grid-column: span 2;
+  }
+
+  :host.labor-layout-advanced .labor-grid--schedule > :nth-child(1) {
+    grid-column: span 4;
+  }
+
+  :host.labor-layout-advanced .labor-grid--contract > .labor-field-section--span {
+    grid-column: span 4;
+  }
+
+  :host.labor-layout-advanced .labor-grid--week > :nth-child(1) {
+    grid-column: span 1;
+  }
+
+  :host.labor-layout-advanced .labor-grid--week > .labor-detail-field--days {
+    grid-column: span 1;
+  }
+
+  :host.labor-layout-advanced .labor-grid--zone > .labor-toggle-field {
+    grid-column: span 1;
+  }
+
+  :host.labor-layout-advanced .labor-grid--zone > .labor-detail-field--primary {
+    grid-column: span 1;
+  }
+
+  :host.labor-layout-advanced .labor-grid--zone > .labor-detail-field--compact {
+    grid-column: span 1;
+    max-width: none;
+  }
+
+  :host.labor-layout-advanced :is(.labor-grid--zone:has(.zone-extrema-note), .labor-grid--week:has(.week-running-note)) > .labor-toggle-field {
+    grid-column: span 1;
+  }
+
+  :host.labor-layout-advanced :is(.labor-grid--zone .zone-extrema-note, .labor-grid--week .week-running-note) {
+    grid-column: 2 / -1;
+  }
+
+}
+
+@media (max-width: 1130px) {
+  :host.labor-layout-advanced :is(.labor-grid--loads, .labor-grid--zone, .labor-grid--week) {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  :host.labor-layout-advanced :is(.labor-grid--loads, .labor-grid--zone, .labor-grid--week) > * {
+    grid-column: 1 / -1;
+  }
+
+  :host.labor-layout-advanced :is(.labor-grid--loads, .labor-grid--zone) > .form-field--compact {
+    max-width: none;
+  }
+
+  :host.labor-layout-advanced :is(.labor-grid--loads, .labor-grid--zone) .readonly-field {
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  :host.labor-layout-advanced .labor-grid--week > .labor-detail-field--days {
+    grid-column: 1 / -1;
+  }
+
+  :host.labor-layout-advanced :is(.labor-grid--zone .zone-extrema-note, .labor-grid--week .week-running-note) {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 760px) {
+  :host.labor-layout-advanced .labor-grid--organization {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  :host.labor-layout-advanced .labor-grid--organization > * {
+    grid-column: 1 / -1;
+  }
+
+  :host.labor-layout-advanced .labor-grid--contract,
+  :host.labor-layout-advanced .labor-grid--schedule,
+  :host.labor-layout-advanced .labor-grid--distribution,
+  :host.labor-layout-advanced .labor-grid--base-pay,
+  :host.labor-layout-advanced .labor-grid--pay-conditions,
+  :host.labor-layout-advanced .labor-grid--loads,
+  :host.labor-layout-advanced .labor-grid--zone,
+  :host.labor-layout-advanced .labor-grid--footer,
+  :host.labor-layout-advanced .labor-grid--week {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  :host.labor-layout-advanced .labor-grid--contract > *,
+  :host.labor-layout-advanced .labor-grid--schedule > *,
+  :host.labor-layout-advanced .labor-grid--distribution > *,
+  :host.labor-layout-advanced .labor-grid--base-pay > *,
+  :host.labor-layout-advanced .labor-grid--pay-conditions > *,
+  :host.labor-layout-advanced .labor-grid--loads > *,
+  :host.labor-layout-advanced .labor-grid--zone > *,
+  :host.labor-layout-advanced .labor-grid--footer > *,
+  :host.labor-layout-advanced .labor-grid--week > * {
+    grid-column: 1 / -1;
+  }
+
+  :host.labor-layout-advanced :is(.labor-grid--zone:has(.zone-extrema-note), .labor-grid--week:has(.week-running-note)) .employee-checkbox-row {
+    width: fit-content;
+    justify-content: flex-start;
+  }
+
+}

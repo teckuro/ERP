@@ -110,4 +110,45 @@ describe('FormEmpleadoComponent - completitud de borrador avanzado', () => {
     expect(summary.blockingPending).toBeGreaterThan(0);
     expect(component.wizardStepUiKind(7)).toBe('pendiente');
   });
+
+  it('Siguiente muestra MsgBox de revision cuando el paso tiene pendientes y permite continuar', async () => {
+    const component = await setup();
+
+    component.goToNextTab();
+
+    expect(component.activeWizardStep()).toBe(0);
+    expect(component.advancedActionModal()?.kind).toBe('next-step-review');
+    expect(component.advancedActionModal()?.primaryLabel).toBe('Continuar');
+
+    component.handleAdvancedActionModalPrimary();
+
+    expect(component.advancedActionModal()).toBeNull();
+    expect(component.activeWizardStep()).toBe(1);
+  });
+
+  it('Guardar borrador usa MsgBox cuando falta validacion minima', async () => {
+    const component = await setup();
+
+    await component.onGuardarBorrador();
+
+    expect(component.advancedActionModal()?.kind).toBe('draft-invalid');
+    expect(component.advancedActionModal()?.title).toBe('No se puede guardar el borrador');
+    expect(component.errorMessage()).toBeNull();
+  });
+
+  it('Finalizar alta usa MsgBox y no cambia de paso hasta elegir ir al bloqueo', async () => {
+    const component = await setup();
+    component.selectWizardStep(8);
+
+    await component.onSubmit();
+
+    expect(component.activeWizardStep()).toBe(8);
+    expect(component.advancedActionModal()?.kind).toBe('finish-invalid');
+
+    component.handleAdvancedActionModalPrimary();
+
+    expect(component.advancedActionModal()).toBeNull();
+    expect(component.activeWizardStep()).toBe(0);
+  });
+
 });

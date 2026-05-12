@@ -78,3 +78,8 @@ src/app/supabase
 /.env
 /src/app/shared/components/ui/peticion.txt
   
+# Ignorar archivos comprimidos
+*.zip
+*.rar
+*.7z
+*.tar.gz

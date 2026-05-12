@@ -1,3 +1,9 @@
+## Actualizacion 2026-05-12 - EMP-ADV-HONORARIOS-UX-01
+
+| Fase | Estado | Resumen | Pruebas |
+|---|---|---|---|
+| `EMP-ADV-HONORARIOS-UX-01` | **Implementada en ZIP** | Creacion avanzada trata `Boleta de honorarios` como modo visual controlado: confirma el cambio, oculta o marca no aplicables campos dependientes, permite borrador y bloquea finalizar alta como trabajador dependiente hasta persistencia real. | `npx tsc -p tsconfig.app.json --noEmit`; `npx tsc -p tsconfig.spec.json --noEmit`; `npx ng build --configuration development`. Build productivo queda sujeto a disponibilidad de Google Fonts; sin SQL/BD. |
+
 # Estado de fases del proyecto
 
 ## 1. Propósito
