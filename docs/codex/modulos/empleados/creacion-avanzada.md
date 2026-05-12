@@ -1,3 +1,13 @@
+## EMP-PERFIL-LABORAL-SQL-01 - Base previa a UI de perfil laboral
+
+Antes de agregar HTML para pensionado, menor de 18, mayor de 65 u otras condiciones, la base debe usar el modelo SQL de condiciones especiales:
+
+- `tipo_trabajador` no debe ampliarse como select gigante. Sigue siendo categoria base.
+- Las condiciones persistidas viven en `persona_condicion_trabajador`.
+- Menor de 18 y mayor de 65 se muestran como perfil derivado desde fecha de nacimiento y periodo, no como checkbox manual.
+- La UI futura debe consumir `fn_obtener_perfil_laboral_persona` y guardar solo condiciones reales que requieran respaldo o decision RRHH.
+- Esta fase no modifica el wizard, HTML, CSS ni TypeScript.
+
 ## EMP-ADV-LAYOUT-CONSISTENCY-01 - Pulido de layout avanzado
 
 Sobre la base con `EMP-ADV-HONORARIOS-UX-01`, Creacion avanzada debe mantener el mismo flujo y solo mejora la presentacion local:

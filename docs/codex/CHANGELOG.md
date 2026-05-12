@@ -1,3 +1,16 @@
+## EMP-PERFIL-LABORAL-SQL-01 - Condiciones especiales del trabajador en BD
+
+Fecha: 2026-05-12
+
+- Se agrega base SQL para modelar condiciones especiales del trabajador sin convertir `tipo_trabajador` en un select gigante.
+- `tipo_trabajador` se mantiene como categoria base (`DEPENDIENTE` / `INDEPENDIENTE`).
+- Se crean `tipo_condicion_trabajador` y `persona_condicion_trabajador` para persistir condiciones como pensionado, invalidez parcial/total, exencion de cotizacion de pension, trabajador adolescente protegido, autorizacion de menor, tecnico extranjero exento y discapacidad.
+- Se crea `fn_obtener_perfil_laboral_persona(p_id_persona, p_periodo)` para derivar edad laboral, tramo de ingreso minimo y banderas previsionales desde `persona.fecha_nacimiento`, periodo y condiciones vigentes.
+- Menor de 18, adulto 18 a 65 y mayor de 65 no se guardan como condiciones manuales; se derivan por fecha de nacimiento y periodo.
+- Se agrega RLS/permisos locales para las nuevas tablas y `GRANT EXECUTE` de la funcion, porque la parte 26 corre despues de `08_seguridad_rls.sql`.
+- Se actualizan `run_all.sql`, monolito integrado, validaciones v11, diccionario canonico y documentacion de Empleados.
+- Alcance respetado: sin HTML, CSS, TypeScript de UI, servicios Angular, motor, liquidaciones, LRE, Previred, creacion basica, ficha empleado ni enums de contrato.
+
 ## EMP-ADV-LAYOUT-CONSISTENCY-01 - Pulido visual local de Creacion avanzada
 
 Fecha: 2026-05-12

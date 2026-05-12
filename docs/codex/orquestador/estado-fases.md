@@ -1,3 +1,9 @@
+## Actualizacion 2026-05-12 - EMP-PERFIL-LABORAL-SQL-01
+
+| Fase | Estado | Resumen | Pruebas |
+|---|---|---|---|
+| `EMP-PERFIL-LABORAL-SQL-01` | **Implementada en ZIP** | Base SQL para condiciones especiales del trabajador: nuevas tablas canonicas `tipo_condicion_trabajador` y `persona_condicion_trabajador`, seeds minimos, RLS/permisos locales y funcion `fn_obtener_perfil_laboral_persona` para derivar tramo de edad laboral y banderas previsionales por periodo. | Validacion estatica SQL/docs; `unzip -t` del entregable. No se ejecuto BD real ni `tsc` porque la fase no toca front y el ZIP base no incluye `node_modules`. |
+
 ## Actualizacion 2026-05-12 - EMP-ADV-LAYOUT-CONSISTENCY-01
 
 | Fase | Estado | Resumen | Pruebas |

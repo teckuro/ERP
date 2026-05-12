@@ -442,3 +442,73 @@ FROM concepto
 WHERE estrategia_lre <> 'DIRECTO'
   AND COALESCE(TRIM(observacion_normativa_lre), '') = ''
 ORDER BY codigo;
+
+\echo '27_perfil_laboral_tablas_requeridas'
+WITH expected(tabla) AS (
+    VALUES
+        ('tipo_condicion_trabajador'),
+        ('persona_condicion_trabajador')
+)
+SELECT e.tabla AS tabla_faltante
+FROM expected e
+WHERE to_regclass('public.' || e.tabla) IS NULL;
+
+\echo '28_perfil_laboral_condiciones_seed_minimas'
+WITH expected(codigo) AS (
+    VALUES
+        ('PENSIONADO'),
+        ('PENSIONADO_INVALIDEZ_PARCIAL'),
+        ('PENSIONADO_INVALIDEZ_TOTAL'),
+        ('EXENTO_COTIZACION_PENSION'),
+        ('TRABAJADOR_ADOLESCENTE_PROTEGIDO'),
+        ('AUTORIZACION_MENOR_REGISTRADA'),
+        ('TECNICO_EXTRANJERO_EXENTO'),
+        ('DISCAPACIDAD')
+)
+SELECT e.codigo AS condicion_faltante
+FROM expected e
+LEFT JOIN tipo_condicion_trabajador tct
+    ON tct.codigo = e.codigo
+WHERE tct.codigo IS NULL;
+
+\echo '29_perfil_laboral_funcion_requerida'
+SELECT 'fn_obtener_perfil_laboral_persona' AS funcion_faltante
+WHERE to_regprocedure('public.fn_obtener_perfil_laboral_persona(integer, character varying)') IS NULL;
+
+\echo '30_perfil_laboral_codigos_edad_no_deben_persistirse'
+SELECT
+    codigo,
+    nombre
+FROM tipo_condicion_trabajador
+WHERE codigo IN ('MENOR_18', 'MAYOR_65', 'ADULTO_18_65');
+
+\echo '31_perfil_laboral_funcion_deriva_edad_desde_persona'
+WITH fn AS (
+    SELECT pg_get_functiondef(to_regprocedure('public.fn_obtener_perfil_laboral_persona(integer, character varying)')) AS definicion
+    WHERE to_regprocedure('public.fn_obtener_perfil_laboral_persona(integer, character varying)') IS NOT NULL
+)
+SELECT 'fn_obtener_perfil_laboral_persona no evidencia derivacion de edad desde persona.fecha_nacimiento' AS problema
+WHERE NOT EXISTS (
+    SELECT 1
+    FROM fn
+    WHERE definicion ILIKE '%fecha_nacimiento%'
+      AND definicion ILIKE '%MENOR_18%'
+      AND definicion ILIKE '%MAYOR_65%'
+);
+
+\echo '32_perfil_laboral_persona_demo'
+WITH perfil AS (
+    SELECT *
+    FROM fn_obtener_perfil_laboral_persona(1, '2024-01')
+)
+SELECT 'persona demo sin perfil laboral adulto esperado' AS problema
+WHERE EXISTS (SELECT 1 FROM persona WHERE id_persona = 1)
+  AND NOT EXISTS (
+      SELECT 1
+      FROM perfil
+      WHERE id_persona = 1
+        AND periodo = '2024-01'
+        AND tramo_edad_laboral = 'ADULTO_18_65'
+        AND es_adulto_18_65 = TRUE
+        AND aplica_imm_general = TRUE
+  );

@@ -1,3 +1,14 @@
+## EMP-PERFIL-LABORAL-SQL-01
+
+Empleados incorpora base SQL para condiciones especiales del trabajador, sin cambios visuales todavia:
+
+- `tipo_trabajador` queda como categoria base: Dependiente / Independiente.
+- `tipo_condicion_trabajador` cataloga condiciones especiales persistibles.
+- `persona_condicion_trabajador` relaciona condiciones con persona y opcionalmente contrato.
+- Menor de 18, adulto 18 a 65 y mayor de 65 se derivan desde `persona.fecha_nacimiento` y periodo; no se guardan como condiciones manuales.
+- `fn_obtener_perfil_laboral_persona` entrega el perfil laboral/previsional derivado para front y motor futuro.
+- La UI/HTML queda para fase posterior `EMP-PERFIL-LABORAL-UI-01`.
+
 ## EMP-ADV-LAYOUT-CONSISTENCY-01
 
 Creacion avanzada recibe pulido visual local sobre la base con Honorarios aplicado:
@@ -32,6 +43,7 @@ Contratos y guías del ciclo de vida del trabajador en Angular: listado, altas (
 | [`listado.md`](./listado.md) | Listado, estados visibles, CTAs |
 | [`creacion-basica.md`](./creacion-basica.md) | Ruta modo básico, campos mínimos, `EN_PROCESO`, qué no persiste |
 | [`creacion-avanzada.md`](./creacion-avanzada.md) | Wizard, pasos, tabs, APVI condicional, paso 9, finalizar |
+| [`perfil-laboral-previsional.md`](./perfil-laboral-previsional.md) | Modelo SQL para categoria base, condiciones especiales persistidas y perfil laboral/previsional derivado |
 | [`borrador-continuar-alta.md`](./borrador-continuar-alta.md) | Guardar borrador, `paso_alta_avanzada`, rehidratación, E2E opt-in |
 | [`ficha-empleado.md`](./ficha-empleado.md) | Pestañas, bloques, panel superior, guardado, carga técnica, Playwright |
 | [`validar-remuneraciones.md`](./validar-remuneraciones.md) | Opción B, condiciones del botón, persistencia, exclusiones |

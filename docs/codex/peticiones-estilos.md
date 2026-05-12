@@ -17,6 +17,14 @@
 
 ## Peticiones de estilos (bitácora)
 
+### 2026-05-12 - EMP-PERFIL-LABORAL-SQL-01 - Sin cambios visuales
+
+- **Modulo:** Empleados / base SQL.
+- **Cambio:** se prepara la persistencia de condiciones especiales del trabajador y el perfil laboral derivado.
+- **UI:** no se modifica HTML, CSS ni TypeScript; cualquier tarjeta o formulario visible queda para `EMP-PERFIL-LABORAL-UI-01`.
+- **Restricciones:** no tocar estilos globales, flujo del wizard, motor, liquidaciones, LRE ni Previred.
+
+
 ### 2026-05-11 - REM-UX-FLOWS-01 V3 - Visibilidad cliente vs aplicacion
 
 - **Modulo:** Remuneraciones transversal.
