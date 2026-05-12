@@ -280,7 +280,7 @@
                             <div class="advanced-step-heading advanced-step-context">
                               <p class="advanced-step-kicker">
                                 Paso {{ activeWizardStep() + 1 }} de {{ totalSteps }} ·
-                                {{ advancedWizardLabels[activeWizardStep()] }}
+                                {{ wizardStepFullLabel(activeWizardStep()) }}
                               </p>
                               <p class="advanced-step-copy">
                                 {{ wizardStepDescription(activeWizardStep()) }}
@@ -329,7 +329,9 @@
                             ) {
                               Hay datos obligatorios pendientes o con error en esta etapa.
                             } @else if (activeWizardStep() === 8) {
-                              @if (wizardMapPendingCount() + wizardMapErrorCount() > 0) {
+                              @if (isHonorariosMode()) {
+                                Puedes guardar el avance como borrador. La finalización de honorarios queda pendiente de habilitación.
+                              } @else if (wizardMapPendingCount() + wizardMapErrorCount() > 0) {
                                 Corrige las etapas pendientes antes de finalizar la ficha.
                               } @else {
                                 La ficha está lista para finalizar el alta.
@@ -435,42 +437,69 @@
                   </div>
                 } @else if (activeWizardStep() === 4) {
                   <div class="step-panel step-panel--asignaciones">
-                    <app-empleado-contrato
-                      [formGroup]="form.controls.contrato"
-                      [centrosCosto]="catalogos().centrosCosto"
-                      [sucursales]="catalogos().sucursales"
-                      [departamentos]="catalogos().departamentos"
-                      [tiposTrabajador]="catalogos().tiposTrabajador"
-                      [tiposJornada]="catalogos().tiposJornada"
-                      [tiposContrato]="catalogos().tiposContrato"
-                      [tiposGratificacion]="catalogos().tiposGratificacion"
-                      [monedas]="catalogos().monedas"
-                      [tramosCarga]="catalogos().tramosCarga"
-                      [visibleBlocks]="['cargas', 'zonaExtrema', 'semanaCorrida']"
-                      [advancedGridLayout]="true"
-                    ></app-empleado-contrato>
+                    @if (isHonorariosMode()) {
+                      <div class="wizard-na-panel wizard-na-panel--honorarios" role="status">
+                        <h3 class="wizard-na-title">No aplica para honorarios</h3>
+                        <p class="wizard-na-text">
+                          Cargas familiares, zona extrema y semana corrida corresponden a remuneraciones dependientes.
+                          Este registro queda fuera de esos cálculos.
+                        </p>
+                      </div>
+                    } @else {
+                      <app-empleado-contrato
+                        [formGroup]="form.controls.contrato"
+                        [centrosCosto]="catalogos().centrosCosto"
+                        [sucursales]="catalogos().sucursales"
+                        [departamentos]="catalogos().departamentos"
+                        [tiposTrabajador]="catalogos().tiposTrabajador"
+                        [tiposJornada]="catalogos().tiposJornada"
+                        [tiposContrato]="catalogos().tiposContrato"
+                        [tiposGratificacion]="catalogos().tiposGratificacion"
+                        [monedas]="catalogos().monedas"
+                        [tramosCarga]="catalogos().tramosCarga"
+                        [visibleBlocks]="['cargas', 'zonaExtrema', 'semanaCorrida']"
+                        [advancedGridLayout]="true"
+                      ></app-empleado-contrato>
+                    }
                   </div>
                 } @else if (activeWizardStep() === 5) {
                   <div class="step-panel step-panel--prevision">
-                    <app-empleado-prevision-salud
-                      [formGroup]="form.controls.previsionSalud"
-                      [tiposRegimenPrevisional]="catalogos().tiposRegimenPrevisional"
-                      [regimenesPrevisionales]="catalogos().regimenesPrevisionales"
-                      [entidadesPrevisionalesIps]="catalogos().entidadesPrevisionalesIps"
-                      [exCajasPrevisionales]="catalogos().exCajasPrevisionales"
-                      [regimenesExCaja]="catalogos().regimenesExCaja"
-                      [afps]="catalogos().afps"
-                      [entidadesSalud]="catalogos().entidadesSalud"
-                      [monedas]="catalogos().monedas"
-                      [institucionesApv]="catalogos().institucionesApv"
-                      [formasPagoApv]="catalogos().formasPagoApv"
-                      [visibleBlocks]="['regimen', 'afp', 'ips', 'salud']"
-                      [advancedGridLayout]="true"
-                    ></app-empleado-prevision-salud>
+                    @if (isHonorariosMode()) {
+                      <div class="wizard-na-panel wizard-na-panel--honorarios" role="status">
+                        <h3 class="wizard-na-title">No aplica en nómina dependiente</h3>
+                        <p class="wizard-na-text">
+                          Previsión y salud de trabajadores independientes no se capturan como descuentos de trabajador
+                          dependiente en esta alta.
+                        </p>
+                      </div>
+                    } @else {
+                      <app-empleado-prevision-salud
+                        [formGroup]="form.controls.previsionSalud"
+                        [tiposRegimenPrevisional]="catalogos().tiposRegimenPrevisional"
+                        [regimenesPrevisionales]="catalogos().regimenesPrevisionales"
+                        [entidadesPrevisionalesIps]="catalogos().entidadesPrevisionalesIps"
+                        [exCajasPrevisionales]="catalogos().exCajasPrevisionales"
+                        [regimenesExCaja]="catalogos().regimenesExCaja"
+                        [afps]="catalogos().afps"
+                        [entidadesSalud]="catalogos().entidadesSalud"
+                        [monedas]="catalogos().monedas"
+                        [institucionesApv]="catalogos().institucionesApv"
+                        [formasPagoApv]="catalogos().formasPagoApv"
+                        [visibleBlocks]="['regimen', 'afp', 'ips', 'salud']"
+                        [advancedGridLayout]="true"
+                      ></app-empleado-prevision-salud>
+                    }
                   </div>
                 } @else if (activeWizardStep() === 6) {
                   <div class="step-panel">
-                    @if (form.controls.previsionSalud.controls.tipoRegimenPrevisional.value !== 'AFP') {
+                    @if (isHonorariosMode()) {
+                      <div class="wizard-na-panel wizard-na-panel--honorarios" role="status">
+                        <h3 class="wizard-na-title">No aplica para honorarios</h3>
+                        <p class="wizard-na-text">
+                          APVI no forma parte de la alta de prestador a honorarios en este flujo.
+                        </p>
+                      </div>
+                    } @else if (form.controls.previsionSalud.controls.tipoRegimenPrevisional.value !== 'AFP') {
                       <div class="wizard-na-panel" role="status">
                         <h3 class="wizard-na-title">No aplica</h3>
                         <p class="wizard-na-text">
@@ -505,6 +534,15 @@
                   </div>
                 } @else if (activeWizardStep() === 7) {
                   <div class="step-panel step-panel--final">
+                    @if (isHonorariosMode()) {
+                      <div class="honorarios-payment-note" role="note">
+                        <h3>Datos para pago del prestador</h3>
+                        <p>
+                          Estos datos son administrativos y recomendados si el pago se realizará por transferencia.
+                          No se tratan como cuenta de remuneraciones dependientes.
+                        </p>
+                      </div>
+                    }
                     <app-empleado-bancario
                       [formGroup]="form.controls.bancario"
                       [bancos]="catalogos().bancos"
@@ -521,6 +559,18 @@
                           Revisa los datos antes de finalizar. El guardado definitivo ocurre solo al presionar
                           <strong>Finalizar alta</strong>.
                         </p>
+                        @if (isHonorariosMode()) {
+                          <div class="honorarios-summary-panel" role="status">
+                            <h4>Ficha de prestador a honorarios</h4>
+                            <p>
+                              Este registro no ingresa al cálculo de nómina dependiente ni debe finalizarse como trabajador activo en esta fase.
+                            </p>
+                            <ul>
+                              <li>No aplica jornada laboral, previsión dependiente, APVI ni asignaciones laborales.</li>
+                              <li>Puedes guardar el avance como borrador hasta habilitar la persistencia completa de honorarios.</li>
+                            </ul>
+                          </div>
+                        }
                         <dl class="resumen-dl">
                           <div class="resumen-dl-row">
                             <dt>Nombre</dt>
@@ -531,7 +581,7 @@
                             <dd>{{ identificacionResumen() }}</dd>
                           </div>
                           <div class="resumen-dl-row">
-                            <dt>Cargo</dt>
+                            <dt>{{ isHonorariosMode() ? 'Servicio o función' : 'Cargo' }}</dt>
                             <dd>{{ cargoVisible() }}</dd>
                           </div>
                           <div class="resumen-dl-row">

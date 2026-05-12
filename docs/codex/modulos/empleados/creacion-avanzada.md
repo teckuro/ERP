@@ -1,3 +1,23 @@
+## EMP-ADV-HONORARIOS-UX-01 - Boleta de honorarios
+
+La opcion `Boleta de honorarios` ya no debe comportarse como contrato laboral dependiente.
+
+Reglas de UX implementadas:
+
+- Al cambiar desde `Contrato` a `Boleta de honorarios`, se pide confirmacion con `app-message-box`.
+- El cambio oculta o marca no aplicables los datos de jornada, gratificacion, prevision/salud dependiente, APVI y asignaciones laborales.
+- El monto se comunica como `Monto bruto de honorarios`.
+- Bancario se comunica como `Datos para pago del prestador`.
+- El resumen final avisa que el registro no ingresa a nomina dependiente.
+- `Finalizar alta` queda bloqueado para honorarios hasta implementar persistencia real.
+- `Guardar borrador` sigue disponible con validacion minima.
+
+Fuera de alcance:
+
+- Persistir honorarios como entidad final.
+- Calcular retencion.
+- Generar boletas, pagos, LRE, liquidaciones o nomina dependiente.
+
 # Creacion avanzada: bloques del formulario (inventario)
 
 El alta avanzada (`form-empleado`) organiza los pasos como **tabs internos** (`TAB_ORDER`): `datosPersonales`, `contrato`, `previsionSalud`, `bancario`. Los textos del stepper se muestran en `conceptualSteps` en [`form-empleado.ts`](../../../src/app/features/empleados/components/form-empleado/form-empleado.ts).

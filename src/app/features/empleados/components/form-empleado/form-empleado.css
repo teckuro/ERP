@@ -1498,3 +1498,45 @@
   border-color: #bfdbfe;
   background: #eff6ff;
 }
+
+:host .wizard-na-panel--honorarios,
+:host .honorarios-payment-note,
+:host .honorarios-summary-panel {
+  border: 1px solid #bfdbfe;
+  border-radius: 10px;
+  background: #eff6ff;
+  color: #1e3a8a;
+}
+
+:host .honorarios-payment-note,
+:host .honorarios-summary-panel {
+  display: grid;
+  gap: 6px;
+  padding: 12px 14px;
+  margin-bottom: 12px;
+}
+
+:host .honorarios-payment-note h3,
+:host .honorarios-summary-panel h4 {
+  margin: 0;
+  color: #1d4ed8;
+  font-size: 0.86rem;
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+:host .honorarios-payment-note p,
+:host .honorarios-summary-panel p {
+  margin: 0;
+  color: #1e40af;
+  font-size: var(--erp-text-sm, 0.78rem);
+  line-height: 1.45;
+}
+
+:host .honorarios-summary-panel ul {
+  margin: 2px 0 0;
+  padding-left: 1.1rem;
+  color: #1e40af;
+  font-size: var(--erp-text-sm, 0.78rem);
+  line-height: 1.45;
+}

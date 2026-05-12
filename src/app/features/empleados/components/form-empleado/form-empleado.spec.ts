@@ -47,7 +47,9 @@ describe('FormEmpleadoComponent - completitud de borrador avanzado', () => {
     }).compileComponents();
 
     const fixture = TestBed.createComponent(FormEmpleadoComponent);
-    return fixture.componentInstance;
+    const component = fixture.componentInstance;
+    component.isLoadingCatalogs.set(false);
+    return component;
   }
 
   it('cargo Sin cargo no completa el paso Contrato y organizacion', async () => {
@@ -149,6 +151,31 @@ describe('FormEmpleadoComponent - completitud de borrador avanzado', () => {
 
     expect(component.advancedActionModal()).toBeNull();
     expect(component.activeWizardStep()).toBe(0);
+  });
+
+
+  it('Boleta de honorarios omite pasos laborales dependientes en la navegacion lineal', async () => {
+    const component = await setup();
+
+    component.form.controls.contrato.controls.relacionLaboral.setValue('HONORARIOS');
+
+    expect(component.linearWizardSequence()).toEqual([0, 1, 2, 3, 7, 8]);
+    expect(component.wizardStepUiKind(4)).toBe('no-aplica');
+    expect(component.wizardStepUiKind(5)).toBe('no-aplica');
+    expect(component.wizardStepUiKind(6)).toBe('no-aplica');
+  });
+
+  it('Boleta de honorarios bloquea finalizar alta activa y ofrece guardar borrador', async () => {
+    const component = await setup();
+
+    component.form.controls.contrato.controls.relacionLaboral.setValue('HONORARIOS');
+    component.selectWizardStep(8);
+
+    await component.onSubmit();
+
+    expect(component.advancedActionModal()?.kind).toBe('honorarios-finish-blocked');
+    expect(component.advancedActionModal()?.primaryLabel).toBe('Guardar como borrador');
+    expect(component.advancedActionModal()?.secondaryLabel).toBe('Cerrar');
   });
 
 });

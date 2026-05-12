@@ -1,3 +1,10 @@
+## EMP-ADV-HONORARIOS-UX-01 - Boleta de honorarios
+
+- En Creacion avanzada, `Boleta de honorarios` se trata como modo visual propio y no como contrato dependiente.
+- Las fases que no corresponden se muestran como `No aplica` con copy administrativo.
+- El usuario puede guardar borrador, pero no finalizar como trabajador dependiente hasta implementar la persistencia real.
+- Los mensajes usan `app-message-box`, tono RRHH y acciones claras: confirmar cambio, guardar borrador o cerrar.
+
 ## Peticiones de estilos (bitácora)
 
 ### 2026-05-11 - REM-UX-FLOWS-01 V3 - Visibilidad cliente vs aplicacion

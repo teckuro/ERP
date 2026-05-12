@@ -1,3 +1,14 @@
+## EMP-ADV-HONORARIOS-UX-01
+
+Creacion avanzada incorpora modo visual para `Boleta de honorarios`:
+
+- `Datos personales` y `Domicilio` se mantienen como datos administrativos.
+- `Contrato y organizacion` cambia el lenguaje a datos del servicio.
+- `Jornada y remuneracion` muestra monto bruto de honorarios y oculta jornada laboral dependiente.
+- `Asignaciones`, `Prevision/salud` y `APVI` quedan como no aplican.
+- `Banco` queda como datos para pago recomendados.
+- `Finalizar alta` se bloquea para evitar guardar honorarios como trabajador dependiente; se permite guardar borrador.
+
 # Módulo Empleados — punto de entrada
 
 ## Qué documenta esta carpeta
