@@ -1,3 +1,13 @@
+## EMP-ADV-LAYOUT-CONSISTENCY-01 - Pulido visual local de Creacion avanzada
+
+- En Creacion avanzada, el wizard usa mas ancho disponible sin cambiar estructura ni flujo.
+- El mapa de ficha queda como soporte lateral secundario y mas compacto; el contenido del paso mantiene el protagonismo.
+- Se reducen alturas minimas en pasos cortos para evitar cards artificialmente altas.
+- `Guardar borrador` queda como accion secundaria local en azul suave mediante `advanced-draft-button`.
+- El resumen final queda mas compacto, con menos padding y checklist mas denso.
+- Contrato y Bancario ajustan paddings/gaps solo bajo modo avanzado, manteniendo la maqueta y tipografia del ERP.
+- Restricciones: cero estilos globales, cero cambios de logica/flujo, cero SQL/RPC/RLS/BD, cero cambios en creacion basica, ficha empleado o remuneraciones.
+
 ## EMP-ADV-HONORARIOS-UX-01 - Boleta de honorarios
 
 - En Creacion avanzada, `Boleta de honorarios` se trata como modo visual propio y no como contrato dependiente.

@@ -1,3 +1,9 @@
+## Actualizacion 2026-05-12 - EMP-ADV-LAYOUT-CONSISTENCY-01
+
+| Fase | Estado | Resumen | Pruebas |
+|---|---|---|---|
+| `EMP-ADV-LAYOUT-CONSISTENCY-01` | **Implementada en ZIP** | Pulido visual local de Creacion avanzada sobre la base con Honorarios aplicado: mayor ancho util del wizard, mapa lateral mas compacto, alturas minimas menos artificiales, resumen final mas denso y grillas locales de Contrato/Bancario ajustadas solo en modo avanzado. | Validacion estatica de alcance; `unzip -t` del entregable. `tsc/build` no ejecutados por ausencia de `node_modules` en el ZIP base. |
+
 ## Actualizacion 2026-05-12 - EMP-ADV-HONORARIOS-UX-01
 
 | Fase | Estado | Resumen | Pruebas |

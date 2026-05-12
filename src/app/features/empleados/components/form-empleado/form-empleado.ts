@@ -679,6 +679,14 @@ export class FormEmpleadoComponent implements OnInit {
     return this.isBasicMode() ? 'Guardar ficha básica' : 'Crear empleado activo';
   }
 
+  finalWizardActionLabel(): string {
+    if (this.isSaving()) {
+      return this.isHonorariosMode() ? 'Guardando borrador...' : 'Guardando ficha...';
+    }
+
+    return this.isHonorariosMode() ? 'Guardar borrador' : 'Finalizar alta';
+  }
+
   /** Avanzada: guardado en el pie. Básica: Volver + Guardar en cabecera (modo-basico / sin duplicar pie). */
   headerVisibleActions(): readonly ('back' | 'save')[] {
     return this.isBasicMode() ? (['back', 'save'] as const) : (['back'] as const);
@@ -2137,9 +2145,9 @@ export class FormEmpleadoComponent implements OnInit {
     this.openAdvancedActionModal({
       kind: 'honorarios-finish-blocked',
       variant: 'warning',
-      title: 'Alta de honorarios pendiente de habilitación',
+      title: 'Guardar borrador de honorarios',
       message:
-        'La ficha está marcada como boleta de honorarios. Este tipo de registro no debe finalizarse como trabajador dependiente con el flujo actual.',
+        'La ficha está marcada como boleta de honorarios. Se puede conservar como borrador, pero no finalizar como trabajador dependiente con el flujo actual.',
       primaryLabel: 'Guardar como borrador',
       secondaryLabel: 'Cerrar',
       blockingItems: [
@@ -2180,6 +2188,7 @@ export class FormEmpleadoComponent implements OnInit {
   private confirmHonorariosMode(): void {
     this.previousRelacionLaboral = 'HONORARIOS';
     this.applyHonorariosVisualState();
+    this.moveHonorariosFlowToApplicableStep();
     this.syncCompletedTabsFromValidity();
   }
 
@@ -2224,6 +2233,14 @@ export class FormEmpleadoComponent implements OnInit {
 
     prevision.tipoRegimenPrevisional.setValue(null, { emitEvent: false });
     prevision.tieneApv.setValue(false, { emitEvent: false });
+  }
+
+  private moveHonorariosFlowToApplicableStep(): void {
+    if ([4, 5, 6].includes(this.activeWizardStep())) {
+      this.activeWizardStep.set(7);
+      this.markWizardStepVisited(7);
+      this.scrollToCurrentStepStart({ focusFirstField: true });
+    }
   }
 
   private validationModalLabels(items: readonly EvaluatedValidationRule[], max: number): readonly string[] {

@@ -197,7 +197,7 @@
                         <button
                           type="button"
                           data-testid="guardar-borrador-avanzado"
-                          class="advanced-save-draft-button"
+                          class="advanced-draft-button"
                           [disabled]="isSavingBorrador() || isSaving() || isLoadingCatalogs()"
                           (click)="onGuardarBorrador()"
                         >
@@ -317,7 +317,7 @@
                                   } @else {
                                     <lucide-icon class="h-4 w-4" name="save"></lucide-icon>
                                   }
-                                  {{ isSaving() ? 'Guardando ficha...' : 'Finalizar alta' }}
+                                  {{ finalWizardActionLabel() }}
                                 </button>
                               }
                             </div>
@@ -556,8 +556,7 @@
                       <app-card-content className="resumen-card-inner">
                         <h3 class="resumen-title">Resumen final</h3>
                         <p class="resumen-lead">
-                          Revisa los datos antes de finalizar. El guardado definitivo ocurre solo al presionar
-                          <strong>Finalizar alta</strong>.
+                          Revisa los datos antes de continuar. La acción final depende de la relación laboral seleccionada.
                         </p>
                         @if (isHonorariosMode()) {
                           <div class="honorarios-summary-panel" role="status">

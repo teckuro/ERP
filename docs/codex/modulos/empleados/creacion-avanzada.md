@@ -1,3 +1,14 @@
+## EMP-ADV-LAYOUT-CONSISTENCY-01 - Pulido de layout avanzado
+
+Sobre la base con `EMP-ADV-HONORARIOS-UX-01`, Creacion avanzada debe mantener el mismo flujo y solo mejora la presentacion local:
+
+- El wizard puede usar mas ancho horizontal, pero el mapa lateral no debe competir con el formulario.
+- La navegacion, pasos, validaciones y acciones se mantienen intactas.
+- Los pasos cortos no deben forzar alturas grandes solo para igualar el resumen final.
+- El resumen final debe ser compacto y revisable.
+- Contrato y Bancario pueden ajustar grillas/gaps/paddings solo mediante clases de modo avanzado.
+- No tocar estilos globales, SQL/RPC/RLS/BD, mappers, payloads, creacion basica, ficha empleado ni remuneraciones.
+
 ## EMP-ADV-HONORARIOS-UX-01 - Boleta de honorarios
 
 La opcion `Boleta de honorarios` ya no debe comportarse como contrato laboral dependiente.

@@ -174,8 +174,33 @@ describe('FormEmpleadoComponent - completitud de borrador avanzado', () => {
     await component.onSubmit();
 
     expect(component.advancedActionModal()?.kind).toBe('honorarios-finish-blocked');
+    expect(component.advancedActionModal()?.title).toBe('Guardar borrador de honorarios');
     expect(component.advancedActionModal()?.primaryLabel).toBe('Guardar como borrador');
     expect(component.advancedActionModal()?.secondaryLabel).toBe('Cerrar');
+  });
+
+  it('Boleta de honorarios usa accion final de borrador en el resumen', async () => {
+    const component = await setup();
+
+    expect(component.finalWizardActionLabel()).toBe('Finalizar alta');
+
+    component.form.controls.contrato.controls.relacionLaboral.setValue('HONORARIOS');
+
+    expect(component.finalWizardActionLabel()).toBe('Guardar borrador');
+  });
+
+  it('Confirmar honorarios mueve una etapa no aplicable al siguiente paso util', async () => {
+    const component = await setup();
+    await component.ngOnInit();
+
+    component.selectWizardStep(5);
+    component.form.controls.contrato.controls.relacionLaboral.setValue('HONORARIOS');
+
+    expect(component.advancedActionModal()?.kind).toBe('honorarios-confirm');
+
+    component.handleAdvancedActionModalPrimary();
+
+    expect(component.activeWizardStep()).toBe(7);
   });
 
 });

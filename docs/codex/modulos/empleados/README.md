@@ -1,3 +1,14 @@
+## EMP-ADV-LAYOUT-CONSISTENCY-01
+
+Creacion avanzada recibe pulido visual local sobre la base con Honorarios aplicado:
+
+- Wizard con mayor ancho util para aprovechar mejor el espacio disponible.
+- Mapa lateral mas compacto y secundario frente al formulario.
+- Alturas minimas reducidas en pasos cortos para evitar aire artificial.
+- `Guardar borrador` mantiene el mismo comportamiento y queda como accion secundaria destacada.
+- Contrato y Bancario compactan grillas, gaps y padding solo en modo avanzado.
+- No cambia flujo, pasos, validaciones, guardado, payloads, BD, creacion basica ni ficha empleado.
+
 ## EMP-ADV-HONORARIOS-UX-01
 
 Creacion avanzada incorpora modo visual para `Boleta de honorarios`:
