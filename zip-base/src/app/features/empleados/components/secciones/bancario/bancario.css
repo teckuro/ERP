@@ -1,0 +1,80 @@
+@import '../../form-empleado-shared.css';
+
+:host:not(.employee-layout-advanced) .employee-grid--four {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+:host:not(.employee-layout-advanced) .employee-grid--four > .form-field:nth-child(1),
+:host:not(.employee-layout-advanced) .employee-grid--four > .form-field:nth-child(2) {
+  grid-column: span 2;
+}
+
+:host:not(.employee-layout-advanced) .employee-grid--four > .form-field:nth-child(3) {
+  grid-column: 1 / -1;
+}
+
+@media (max-width: 1024px) {
+  :host:not(.employee-layout-advanced) .employee-grid--four {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  :host:not(.employee-layout-advanced) .employee-grid--four > .form-field:nth-child(1),
+  :host:not(.employee-layout-advanced) .employee-grid--four > .form-field:nth-child(2) {
+    grid-column: span 2;
+  }
+
+  :host:not(.employee-layout-advanced) .employee-grid--four > .form-field:nth-child(3) {
+    grid-column: span 4;
+  }
+}
+
+:host.employee-layout-advanced .employee-section-shell {
+  gap: 1.25rem;
+}
+
+:host.employee-layout-advanced .employee-grid-adv-bancario {
+  width: 100%;
+  max-width: none;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  justify-content: start;
+  align-content: start;
+}
+
+:host.employee-layout-advanced .employee-grid-adv-bancario > .form-field {
+  min-width: 0;
+}
+
+/* Desktop: número de cuenta con más aire que tipo */
+:host.employee-layout-advanced .employee-grid-adv-bancario > .form-field:nth-child(1) {
+  grid-column: span 1;
+}
+
+:host.employee-layout-advanced .employee-grid-adv-bancario > .form-field:nth-child(2) {
+  grid-column: span 1;
+}
+
+:host.employee-layout-advanced .employee-grid-adv-bancario > .form-field:nth-child(3) {
+  grid-column: span 2;
+}
+
+@media (max-width: 1024px) {
+  :host.employee-layout-advanced .employee-grid-adv-bancario {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  :host.employee-layout-advanced .employee-grid-adv-bancario > .form-field:nth-child(1),
+  :host.employee-layout-advanced .employee-grid-adv-bancario > .form-field:nth-child(2),
+  :host.employee-layout-advanced .employee-grid-adv-bancario > .form-field:nth-child(3) {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 760px) {
+  :host.employee-layout-advanced .employee-grid-adv-bancario {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  :host.employee-layout-advanced .employee-grid-adv-bancario > .form-field {
+    grid-column: 1 / -1;
+  }
+}

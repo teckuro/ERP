@@ -64,6 +64,22 @@ export type ContratoFormGroup = FormGroup<{
   idTramoCarga: FormControl<number | null>;
 }>;
 
+
+export type PerfilLaboralFormGroup = FormGroup<{
+  pensionado: FormControl<boolean>;
+  pensionadoInvalidezParcial: FormControl<boolean>;
+  pensionadoInvalidezTotal: FormControl<boolean>;
+  exentoCotizacionPension: FormControl<boolean>;
+  trabajadorAdolescenteProtegido: FormControl<boolean>;
+  autorizacionMenorRegistrada: FormControl<boolean>;
+  tecnicoExtranjeroExento: FormControl<boolean>;
+  discapacidad: FormControl<boolean>;
+  vigenciaInicio: FormControl<string>;
+  vigenciaFin: FormControl<string>;
+  respaldoRegistrado: FormControl<boolean>;
+  observacion: FormControl<string>;
+}>;
+
 export type PrevisionSaludFormGroup = FormGroup<{
   tipoRegimenPrevisional: FormControl<TipoRegimenPrevisional | null>;
   idAfp: FormControl<number | null>;
@@ -97,6 +113,7 @@ export type EmpleadoFormGroup = FormGroup<{
   datosPersonales: DatosPersonalesFormGroup;
   contacto: ContactoFormGroup;
   contrato: ContratoFormGroup;
+  perfilLaboral: PerfilLaboralFormGroup;
   previsionSalud: PrevisionSaludFormGroup;
   bancario: BancarioFormGroup;
 }>;

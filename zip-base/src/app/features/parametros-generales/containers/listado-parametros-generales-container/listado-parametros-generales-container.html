@@ -1,0 +1,30 @@
+<section class="parametros-page" aria-label="Parámetros generales">
+  <header class="parametros-header">
+    <app-record-breadcrumb
+      [items]="breadcrumbItems"
+      title="Parámetros generales"
+    ></app-record-breadcrumb>
+  </header>
+
+  @if (errorCargaDetalle(); as errDet) {
+    <app-message-box
+      variant="error"
+      mode="modal"
+      [modalHeadlineSplit]="true"
+      title="No fue posible completar la operación"
+      message="No fue posible cargar el listado de parámetros generales."
+      [detail]="errDet"
+      primaryLabel="Aceptar"
+      (action)="cerrarErrorCarga()"
+    ></app-message-box>
+  }
+
+  <div class="parametros-content">
+    <app-tabla-parametros-generales
+      class="block w-full min-w-0"
+      [rows]="rows()"
+      [loading]="isLoading()"
+      [errorMessage]="''"
+    ></app-tabla-parametros-generales>
+  </div>
+</section>

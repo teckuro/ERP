@@ -1540,6 +1540,7 @@ export class FichaEmpleadoContainer implements OnInit {
         : null,
       estado: raw.contrato.estado,
       idTramoCarga: raw.contrato.idTramoCarga,
+      condicionesTrabajador: [],
       tipoPrevision,
       idRegimenPrevisional: this.resolveRegimenPrevisionalId(tipoPrevision),
       idAfp: tipoPrevision === 'AFP' ? raw.previsionSalud.idAfp : null,

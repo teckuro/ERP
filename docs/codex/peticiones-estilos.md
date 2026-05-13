@@ -17,6 +17,14 @@
 
 ## Peticiones de estilos (bitácora)
 
+### 2026-05-12 - EMP-PERFIL-LABORAL-SQL-01 - Sin cambios visuales
+
+- **Modulo:** Empleados / base SQL.
+- **Cambio:** se prepara la persistencia de condiciones especiales del trabajador y el perfil laboral derivado.
+- **UI:** no se modifica HTML, CSS ni TypeScript; cualquier tarjeta o formulario visible queda para `EMP-PERFIL-LABORAL-UI-01`.
+- **Restricciones:** no tocar estilos globales, flujo del wizard, motor, liquidaciones, LRE ni Previred.
+
+
 ### 2026-05-11 - REM-UX-FLOWS-01 V3 - Visibilidad cliente vs aplicacion
 
 - **Modulo:** Remuneraciones transversal.
@@ -745,3 +753,35 @@ sin mezclarlo con las reglas base.
 - **Secciones**: `Bloqueos` cambia a `Datos obligatorios pendientes`, `Advertencias` a `Advertencias de revisión` e `Información` a `Información útil`.
 - **Copy visible**: no usar punto y coma en mensajes visibles del usuario. Separar ideas en frases cortas.
 - **Restricciones**: sin cambios de lógica de guardado, payloads, SQL, motor, ficha empleado ni creación básica.
+
+## 2026-05-12 - EMP-PERFIL-LABORAL-UI-01
+
+- **Creacion avanzada**: el paso 4 incorpora bloque `Perfil laboral y previsional` con card de perfil detectado, nota de regla de captura, grilla de condiciones especiales y panel de vigencia/respaldo.
+- **Tipografia/espaciado**: estilos locales del nuevo componente usan `--erp-font-sans`, radios, bordes y densidad coherentes con la maqueta existente.
+- **Resumen final**: agrega filas compactas de perfil laboral y condiciones especiales sin duplicar informacion tecnica.
+- **Restricciones**: sin estilos globales, sin fuentes nuevas, sin cambios visuales fuera de Creacion avanzada.
+
+
+
+## 2026-05-12 - EMP-PERFIL-LABORAL-UI-01-POLISH
+
+- **Creacion avanzada**: `Perfil laboral y condiciones` pasa a etapa propia despues de Banco y antes de Resumen final, evitando que la informacion quede flotando dentro de asignaciones.
+- **Asignaciones laborales**: el paso vuelve a enfocarse solo en cargas familiares, zona extrema y semana corrida.
+- **Componente perfil laboral**: bloques locales alineados a Contrato/Bancario: cabecera gris clara, borde 8px, densidad compacta, sin sombras ni radios grandes.
+- **Vigencia/respaldo**: panel bajo demanda; aparece solo al seleccionar condiciones especiales.
+- **Restricciones**: sin estilos globales, sin fuentes nuevas, sin SQL, sin persistencia nueva y sin cambios a Honorarios.
+
+## 2026-05-12 - EMP-CONDICIONES-ESPECIALES-UX-01
+
+- **Creacion avanzada**: el paso se comunica como `Condiciones especiales`, no como formulario tecnico de perfil laboral.
+- **Revision administrativa**: primera tarjeta con situacion detectada, tipo de relacion, edad al ingreso y referencia.
+- **Uso RRHH**: grilla de condiciones con chip `Solo si aplica`; trabajador estandar puede continuar sin marcar nada.
+- **Estado sin seleccion**: empty state contextual (`Trabajador estandar`, `Revision pendiente` o revision sugerida) para que la informacion no quede flotando.
+- **Resumen final**: fila `Revision administrativa` y `Condiciones especiales` como lectura compacta.
+- **Restricciones**: solo copy/maquetacion local; sin estilos globales, SQL/RPC/RLS, persistencia nueva, motor, nomina ni cambios a Honorarios.
+
+## 2026-05-12 - EMP-CONDICIONES-ESPECIALES-AUTODETECT-01
+
+- **Creacion avanzada / Condiciones especiales**: se agrega bloque compacto `pre-marcado desde pasos anteriores` cuando hay condiciones detectadas por edad, tipo trabajador o regimen previsional.
+- **Cards de condicion**: se agrega chip local `Detectada` y razon breve para distinguir sugerencia automatica de declaracion manual, sin cambiar estilos globales.
+- **Patron UX**: autodeteccion asistida con revision RRHH; el sistema pre-marca lo evidente, pero mantiene respaldo y correccion manual antes de finalizar.

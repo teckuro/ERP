@@ -1,3 +1,13 @@
+## EMP-PERFIL-LABORAL-SQL-01 - Base previa a UI de perfil laboral
+
+Antes de agregar HTML para pensionado, menor de 18, mayor de 65 u otras condiciones, la base debe usar el modelo SQL de condiciones especiales:
+
+- `tipo_trabajador` no debe ampliarse como select gigante. Sigue siendo categoria base.
+- Las condiciones persistidas viven en `persona_condicion_trabajador`.
+- Menor de 18 y mayor de 65 se muestran como perfil derivado desde fecha de nacimiento y periodo, no como checkbox manual.
+- La UI futura debe consumir `fn_obtener_perfil_laboral_persona` y guardar solo condiciones reales que requieran respaldo o decision RRHH.
+- Esta fase no modifica el wizard, HTML, CSS ni TypeScript.
+
 ## EMP-ADV-LAYOUT-CONSISTENCY-01 - Pulido de layout avanzado
 
 Sobre la base con `EMP-ADV-HONORARIOS-UX-01`, Creacion avanzada debe mantener el mismo flujo y solo mejora la presentacion local:
@@ -67,3 +77,43 @@ Regla UX: no duplicar la informacion del mapa con tarjetas permanentes dentro de
 - Usar `datos obligatorios pendientes`, `advertencias de revisión` e `información útil`.
 - No usar punto y coma en textos visibles. Separar ideas en frases cortas.
 - Los listados del MsgBox deben usar guion visual o viñeta y cerrar cada idea con punto final.
+
+
+## EMP-PERFIL-LABORAL-UI-01 - Perfil laboral en paso propio
+
+- El flujo presenta `Condiciones especiales` como paso propio despues de Banco y antes de Resumen final. El paso 4 queda reservado para asignaciones laborales: cargas familiares, zona extrema y semana corrida.
+- La edad laboral se calcula en UI desde `datosPersonales.fechaNacimiento` y `contrato.fechaIngreso` para orientar a RRHH antes de guardar. La verdad canonica por periodo sigue siendo `fn_obtener_perfil_laboral_persona` en ficha/nomina futura.
+- Menor de 18, adulto y mayor de 65 no se capturan manualmente. Se muestran como perfil detectado.
+- Las condiciones especiales que si se pueden capturar son las persistibles en `persona_condicion_trabajador`: pensionado, invalidez parcial/total, exento cotizacion pension, trabajador adolescente protegido, autorizacion de menor, tecnico extranjero exento y discapacidad.
+- Cada conjunto seleccionado usa vigencia de inicio, vigencia fin opcional, respaldo administrativo registrado y observacion interna. No se adjuntan archivos en esta fase.
+- El resumen final muestra el perfil laboral detectado y las condiciones declaradas.
+- Honorarios mantiene el comportamiento aprobado: no aplica este bloque y no se habilita finalizacion como trabajador dependiente.
+
+
+
+### Pulido EMP-PERFIL-LABORAL-UI-01-POLISH
+
+- `Condiciones especiales` no debe quedar mezclado con asignaciones laborales ni sentirse como formulario obligatorio para todos.
+- La etapa se ubica despues de completar datos principales, prevision, APVI si aplica y banco, antes de Resumen final.
+- La maqueta debe reutilizar el patron de bloques de los otros pasos: cabecera neutra, borde 8px, padding compacto y sin sombras decorativas.
+- `Vigencia y respaldo` se muestra solo si existe al menos una condicion especial seleccionada.
+- El resumen final solo resume; no debe duplicar el formulario completo.
+
+### Pulido EMP-CONDICIONES-ESPECIALES-UX-01
+
+- El nombre visible del paso es `Condiciones especiales` para que RRHH lo interprete como control administrativo de casos excepcionales.
+- La primera tarjeta se llama `Revision administrativa`: muestra edad/categoria base como dato detectado y no como campo editable.
+- Para un trabajador adulto sin casos especiales, el estado debe indicar `Trabajador estandar` y permitir continuar sin seleccionar nada.
+- La seleccion de pensionado, exencion, menor protegido, tecnico extranjero o discapacidad se comunica como `Solo si aplica`.
+- `Vigencia y respaldo` se mantiene bajo demanda al seleccionar condiciones.
+- El resumen final muestra `Revision administrativa` y `Condiciones especiales` como lectura de control, no como duplicado del formulario.
+
+### Pulido EMP-CONDICIONES-ESPECIALES-AUTODETECT-01
+
+- El paso `Condiciones especiales` no debe obligar a RRHH a volver a marcar informacion que ya existe en los pasos anteriores.
+- Se pre-marcan condiciones cuando el origen es claro:
+  - menor de 18 anos desde fecha de nacimiento + fecha de ingreso -> `Trabajador adolescente protegido`;
+  - tipo trabajador con texto pensionado/invalidez/exento/tecnico extranjero/discapacidad -> condicion equivalente;
+  - regimen previsional `NINGUNA` -> `Exento de cotizacion de pension` para revision administrativa.
+- Las condiciones pre-marcadas se muestran con chip `Detectada` y bloque de resumen `pre-marcado desde pasos anteriores`.
+- RRHH mantiene control final: puede revisar, corregir, marcar respaldo y completar observacion/vigencia.

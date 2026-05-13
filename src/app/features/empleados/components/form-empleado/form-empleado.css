@@ -1076,6 +1076,7 @@
 :host .step-panel--jornada,
 :host .step-panel--asignaciones,
 :host .step-panel--prevision,
+:host .step-panel--perfil-laboral,
 :host .step-panel--resumen {
   display: flex;
   flex-direction: column;
@@ -1089,6 +1090,7 @@
   :host .step-panel--jornada,
   :host .step-panel--asignaciones,
   :host .step-panel--prevision,
+  :host .step-panel--perfil-laboral,
   :host .step-panel--resumen {
     min-height: 24rem;
   }
@@ -1104,6 +1106,7 @@
   :host .step-panel--jornada,
   :host .step-panel--asignaciones,
   :host .step-panel--prevision,
+  :host .step-panel--perfil-laboral,
   :host .step-panel--resumen {
     min-height: 0;
   }
@@ -1539,4 +1542,8 @@
   color: #1e40af;
   font-size: var(--erp-text-sm, 0.78rem);
   line-height: 1.45;
+}
+
+:host .step-panel--asignaciones {
+  gap: 1rem;
 }

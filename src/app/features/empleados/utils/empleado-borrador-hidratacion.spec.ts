@@ -56,6 +56,20 @@ function formValue(overrides: Partial<FichaFormValue> = {}): FichaFormValue {
       cargas: 0,
       idTramoCarga: null,
     },
+    perfilLaboral: {
+      pensionado: false,
+      pensionadoInvalidezParcial: false,
+      pensionadoInvalidezTotal: false,
+      exentoCotizacionPension: false,
+      trabajadorAdolescenteProtegido: false,
+      autorizacionMenorRegistrada: false,
+      tecnicoExtranjeroExento: false,
+      discapacidad: false,
+      vigenciaInicio: '2026-05-02',
+      vigenciaFin: '',
+      respaldoRegistrado: false,
+      observacion: '',
+    },
     previsionSalud: {
       tipoRegimenPrevisional: 'NINGUNA',
       idAfp: null,
@@ -132,7 +146,21 @@ describe('normalizarBorradorAvanzadoParaFormulario', () => {
     const normalized = normalizarBorradorAvanzadoParaFormulario(
       {
         ...base,
-        previsionSalud: {
+        perfilLaboral: {
+      pensionado: false,
+      pensionadoInvalidezParcial: false,
+      pensionadoInvalidezTotal: false,
+      exentoCotizacionPension: false,
+      trabajadorAdolescenteProtegido: false,
+      autorizacionMenorRegistrada: false,
+      tecnicoExtranjeroExento: false,
+      discapacidad: false,
+      vigenciaInicio: '2026-05-02',
+      vigenciaFin: '',
+      respaldoRegistrado: false,
+      observacion: '',
+    },
+    previsionSalud: {
           ...base.previsionSalud,
           tipoRegimenPrevisional: 'AFP',
           idAfp: 1,
@@ -202,7 +230,21 @@ describe('normalizarBorradorAvanzadoParaFormulario', () => {
     const normalized = normalizarBorradorAvanzadoParaFormulario(
       {
         ...base,
-        previsionSalud: {
+        perfilLaboral: {
+      pensionado: false,
+      pensionadoInvalidezParcial: false,
+      pensionadoInvalidezTotal: false,
+      exentoCotizacionPension: false,
+      trabajadorAdolescenteProtegido: false,
+      autorizacionMenorRegistrada: false,
+      tecnicoExtranjeroExento: false,
+      discapacidad: false,
+      vigenciaInicio: '2026-05-02',
+      vigenciaFin: '',
+      respaldoRegistrado: false,
+      observacion: '',
+    },
+    previsionSalud: {
           ...base.previsionSalud,
           tipoRegimenPrevisional: 'AFP',
           idAfp: 1,

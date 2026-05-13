@@ -38,7 +38,7 @@ Estados validos:
 
 11. Para habilitar liquidaciones oficiales internas, ejecutar `partes/22_liquidaciones_oficiales.sql` y luego `partes/23_liquidaciones_oficiales_rpc.sql` despues de `21_nomina_cierre_operativo_rpc.sql`. Crea tablas `nomina_liquidacion_*`, RLS para `authenticated`, RPC `generar_liquidaciones_oficiales`, revoca `PUBLIC`/`anon`, valida snapshot activo aprobado/cerrado/no reemplazado y bloquea duplicados por `id_calculo_periodo`.
 
-12. Para completar el catalogo oficial LRE y alinear mapeos base de conceptos, ejecutar `partes/24_lre_catalogo_oficial.sql`. Es idempotente, no crea exportador LRE y no recalcula nomina.
+12. Para completar el contrato LRE de catalogo y conceptos no directos, ejecutar `partes/24_lre_catalogo_oficial.sql` y luego `partes/25_lre_concept_rules.sql`. El script 25 agrega `estrategia_lre`, `requiere_exportacion_lre` y `observacion_normativa_lre` a `concepto`; no implementa exportador LRE ni modifica formulas legales.
 
 `12_migracion_lre_datos_incremental.sql` requiere que existan `persona`/`contrato` con IDs coherentes si se dejan los datos demo.
 
@@ -66,7 +66,8 @@ Estados validos:
 20. `21_nomina_cierre_operativo_rpc.sql`: RPC `cerrar_nomina_operativa` para congelar el snapshot activo aprobado operativamente (`authenticated`; sin `anon`, sin reapertura v1).
 21. `22_liquidaciones_oficiales.sql`: tablas `nomina_liquidacion_periodo`, `nomina_liquidacion_trabajador` y `nomina_liquidacion_concepto`, con RLS minima para `authenticated`.
 22. `23_liquidaciones_oficiales_rpc.sql`: RPC `generar_liquidaciones_oficiales`, atomica, `SECURITY INVOKER`, sin `anon`, desde snapshot cerrado sin recalculo.
-23. `24_lre_catalogo_oficial.sql`: catalogo oficial LRE completo y mapeo base de conceptos (`GRATIFICACION -> 2106`, `HORAS_EXTRAS -> 2102`, `IMPUESTO_RENTA -> 3161`).
+23. `24_lre_catalogo_oficial.sql`: catalogo LRE oficial y mapeo base de conceptos directos.
+24. `25_lre_concept_rules.sql`: estrategia LRE para conceptos no directos o ambiguos.
 
 ### Ejecucion fresh local
 

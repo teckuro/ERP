@@ -14,6 +14,7 @@ export function normalizarBorradorAvanzadoParaFormulario(
   const datosPersonales = { ...formValue.datosPersonales };
   const contacto = { ...formValue.contacto };
   const contrato = { ...formValue.contrato };
+  const perfilLaboral = { ...(formValue.perfilLaboral ?? {}) };
   const previsionSalud = { ...formValue.previsionSalud };
   const bancario = { ...formValue.bancario };
 
@@ -77,6 +78,13 @@ export function normalizarBorradorAvanzadoParaFormulario(
     contrato['zonaExtremaActiva'] = false;
     contrato['zonaExtremaTerritorio'] = '';
     contrato['zonaExtremaPorcentaje'] = null;
+    limpiarPerfilLaboral(perfilLaboral);
+  }
+
+  if (!hasText(perfilLaboral['vigenciaInicio'])) {
+    perfilLaboral['vigenciaInicio'] = hasText(contrato['fechaIngreso'])
+      ? contrato['fechaIngreso']
+      : new Date().toISOString().slice(0, 10);
   }
 
   if (previsionSalud['tipoRegimenPrevisional'] === 'NINGUNA' || paso < 5) {
@@ -134,9 +142,25 @@ export function normalizarBorradorAvanzadoParaFormulario(
     datosPersonales,
     contacto,
     contrato,
+    perfilLaboral,
     previsionSalud,
     bancario,
   };
+}
+
+
+function limpiarPerfilLaboral(perfilLaboral: Record<string, unknown>): void {
+  perfilLaboral['pensionado'] = false;
+  perfilLaboral['pensionadoInvalidezParcial'] = false;
+  perfilLaboral['pensionadoInvalidezTotal'] = false;
+  perfilLaboral['exentoCotizacionPension'] = false;
+  perfilLaboral['trabajadorAdolescenteProtegido'] = false;
+  perfilLaboral['autorizacionMenorRegistrada'] = false;
+  perfilLaboral['tecnicoExtranjeroExento'] = false;
+  perfilLaboral['discapacidad'] = false;
+  perfilLaboral['vigenciaFin'] = '';
+  perfilLaboral['respaldoRegistrado'] = false;
+  perfilLaboral['observacion'] = '';
 }
 
 function limpiarCamposApvi(previsionSalud: Record<string, unknown>): void {

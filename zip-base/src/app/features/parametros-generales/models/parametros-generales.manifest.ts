@@ -1,0 +1,70 @@
+/**
+ * Inventario tipado en código (ítems del flujo parametros-generales sin doc externo).
+ * Mantener sincronizado con ParametroGeneral y patchForm/parametrización guardada.
+ */
+
+import type { ParametroGeneral, ParametrosGeneralesCatalogos } from './parametro-general.model';
+
+export const PARAMETRO_GENERAL_FORM_KEYS = [
+  'periodo',
+  'uf',
+  'utm',
+  'uta',
+  'sueldoMinimo',
+  'sueldoMinimo18a65',
+  'sueldoMinimoMenor18Mayor65',
+  'sueldoMinimoCasaParticular',
+  'ingresoMinimoNoRemuneracional',
+  'topeAfpUf',
+  'gratificacion',
+  'immGratificacion',
+  'topeAfp',
+  'topeIpsUf',
+  'topeIps',
+  'topeCesantiaUf',
+  'topeCesantia',
+  'topeApvMensualUf',
+  'topeApvMensual',
+  'topeApvAnualUf',
+  'topeApvAnual',
+  'topeDepositoConvenidoAnualUf',
+  'topeDepositoConvenidoAnual',
+  'topeAfpVoluntario',
+  'sis',
+  'sanna',
+  'seguroSocialExpectativaVida',
+  'aporteEmpleadorAfp',
+  'saludObligatoria',
+  'saludCcaf',
+  'saludFonasaConCcaf',
+  'descuentosBasePorDia',
+  'afcTrabajadorIndefinido',
+  'afcEmpleadorIndefinido',
+  'afcEmpleadorPlazo',
+  'afcEmpleadorIndefinidoOnceAnosMas',
+  'afcEmpleadorCasaParticular',
+  'trabajoPesadoEmpleador',
+  'trabajoPesadoTrabajador',
+  'trabajoMenosPesadoEmpleador',
+  'trabajoMenosPesadoTrabajador',
+  'fechaActualizacion',
+] as const satisfies ReadonlyArray<keyof ParametroGeneral>;
+
+/** Claves de arrays devueltos por listarCatalogos(). */
+export const PARAMETROS_CATALOGO_ARRAY_KEYS = [
+  'afp',
+  'isapres',
+  'saludInstituciones',
+  'tramosCarga',
+  'tramosImpuesto',
+  'tablaImpuestoUnico',
+  'reformaPensiones',
+  'trabajosPesados',
+  'reformaPrevisional',
+  'ley16744Parametros',
+  'organismosLey16744',
+  'ccafEntidades',
+  'apvInstituciones',
+  'apvFormasPago',
+  'afcParametros',
+] as const satisfies ReadonlyArray<keyof ParametrosGeneralesCatalogos>;

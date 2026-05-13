@@ -1,0 +1,375 @@
+-- =============================================================================
+-- PROPUESTA (NO APLICAR SIN CONFIRMACIÓN)
+-- Compatibilidad con Libro de Remuneraciones Electrónico (LRE)
+-- y asignaciones de haberes/descuentos con vigencia.
+--
+-- Contexto:
+-- El mantenedor Angular Fase 1 usa actualmente las columnas existentes de:
+-- - concepto
+-- - haberdescuento_persona
+--
+-- Este script NO debe ejecutarse directamente en producción.
+-- Su objetivo es documentar extensiones sugeridas para una Fase 2 normativa,
+-- permitiendo que los conceptos del ERP puedan mapearse correctamente al
+-- Libro de Remuneraciones Electrónico.
+--
+-- IMPORTANTE:
+-- El LRE corresponde a la Dirección del Trabajo (DT).
+-- Revisar nombres, códigos, clasificaciones, módulos y reglas con la normativa
+-- oficial vigente de la Dirección del Trabajo, especialmente:
+-- - Manual de Usuario del Libro de Remuneraciones Electrónico.
+-- - Suplemento del Libro de Remuneraciones Electrónico.
+-- - Instrucciones de carga del LRE.
+--
+-- No insertar códigos LRE como constantes hardcodeadas en Angular.
+-- Los códigos deben venir desde catálogo/seed controlado.
+-- =============================================================================
+
+
+-- =============================================================================
+-- 1) CATÁLOGO OFICIAL LRE
+-- =============================================================================
+-- Objetivo:
+-- Crear una tabla independiente para almacenar los códigos oficiales del LRE.
+--
+-- Justificación:
+-- El código LRE no debería guardarse solo como texto libre dentro de `concepto`.
+-- Conviene separar:
+--
+-- catalogo_lre:
+--   Códigos oficiales / clasificación normativa DT.
+--
+-- concepto:
+--   Conceptos internos del ERP/empresa enlazados al catálogo oficial.
+--
+-- Ejemplo:
+--   Concepto interno: Bono responsabilidad
+--   Código LRE: 2111 Bonos u otras remuneraciones fijas mensuales
+-- =============================================================================
+
+-- CREATE TABLE catalogo_lre (
+--   id_catalogo_lre SERIAL PRIMARY KEY,
+--
+--   codigo_lre VARCHAR(10) NOT NULL UNIQUE,
+--   nombre_lre VARCHAR(200) NOT NULL,
+--
+--   modulo_lre VARCHAR(40) NOT NULL,
+--   -- Valores orientativos, validar contra suplemento oficial:
+--   -- IDENTIFICACION
+--   -- HABERES
+--   -- DESCUENTOS
+--   -- APORTES_EMPLEADOR
+--   -- TOTALES
+--
+--   grupo_lre VARCHAR(50),
+--   -- Ejemplos orientativos:
+--   -- HABERES_21XX
+--   -- HABERES_22XX
+--   -- HABERES_23XX
+--   -- HABERES_24XX
+--   -- DESCUENTOS_31XX
+--   -- APORTES_41XX
+--   -- TOTALES_52XX
+--
+--   clasificacion_lre VARCHAR(60),
+--   -- Ejemplos orientativos:
+--   -- HABER_IMPONIBLE_TRIBUTABLE
+--   -- HABER_IMPONIBLE_NO_TRIBUTABLE
+--   -- HABER_NO_IMPONIBLE_NO_TRIBUTABLE
+--   -- HABER_NO_IMPONIBLE_TRIBUTABLE
+--   -- DESCUENTO_LEGAL
+--   -- DESCUENTO_TRIBUTARIO
+--   -- OTRO_DESCUENTO
+--   -- APORTE_EMPLEADOR
+--   -- TOTAL_INFORMATIVO
+--
+--   imponible BOOLEAN,
+--   tributable BOOLEAN,
+--   afecta_liquido BOOLEAN,
+--
+--   vigente BOOLEAN NOT NULL DEFAULT TRUE,
+--   vigencia_inicio DATE,
+--   vigencia_fin DATE,
+--
+--   observacion TEXT,
+--
+--   CONSTRAINT chk_catalogo_lre_vigencia
+--     CHECK (
+--       vigencia_fin IS NULL
+--       OR vigencia_inicio IS NULL
+--       OR vigencia_fin >= vigencia_inicio
+--     )
+-- );
+
+-- Índices sugeridos:
+-- CREATE INDEX idx_catalogo_lre_codigo ON catalogo_lre (codigo_lre);
+-- CREATE INDEX idx_catalogo_lre_modulo ON catalogo_lre (modulo_lre);
+-- CREATE INDEX idx_catalogo_lre_grupo ON catalogo_lre (grupo_lre);
+-- CREATE INDEX idx_catalogo_lre_clasificacion ON catalogo_lre (clasificacion_lre);
+-- CREATE INDEX idx_catalogo_lre_vigente ON catalogo_lre (vigente);
+
+
+-- =============================================================================
+-- 2) TABLA concepto: vínculo al catálogo LRE y control del concepto interno
+-- =============================================================================
+-- Objetivo:
+-- Mantener `concepto` como catálogo interno del ERP, pero enlazado al catálogo
+-- oficial LRE.
+--
+-- No se recomienda duplicar codigo_lre, nombre_lre, grupo_lre y clasificación
+-- directamente en concepto si se crea `catalogo_lre`.
+--
+-- En vez de eso:
+--   concepto.id_catalogo_lre -> catalogo_lre.id_catalogo_lre
+--
+-- Esto permite:
+-- - Un concepto interno de empresa asociado a un código oficial LRE.
+-- - Reutilizar el mismo código LRE para distintos conceptos internos si el
+--   negocio lo requiere.
+-- - Actualizar catálogo LRE sin alterar todos los conceptos.
+-- =============================================================================
+
+-- ALTER TABLE concepto
+--   ADD COLUMN id_catalogo_lre INT NULL
+--   REFERENCES catalogo_lre(id_catalogo_lre) ON DELETE SET NULL;
+
+-- ALTER TABLE concepto
+--   ADD COLUMN afecta_liquido BOOLEAN NOT NULL DEFAULT TRUE;
+
+-- ALTER TABLE concepto
+--   ADD COLUMN es_sistema BOOLEAN NOT NULL DEFAULT FALSE;
+
+-- ALTER TABLE concepto
+--   ADD COLUMN vigente BOOLEAN NOT NULL DEFAULT TRUE;
+
+-- ALTER TABLE concepto
+--   ADD COLUMN vigencia_inicio DATE;
+
+-- ALTER TABLE concepto
+--   ADD COLUMN vigencia_fin DATE;
+
+-- ALTER TABLE concepto
+--   ADD CONSTRAINT chk_concepto_vigencia
+--   CHECK (
+--     vigencia_fin IS NULL
+--     OR vigencia_inicio IS NULL
+--     OR vigencia_fin >= vigencia_inicio
+--   );
+
+-- Índices sugeridos:
+-- CREATE INDEX idx_concepto_catalogo_lre ON concepto (id_catalogo_lre);
+-- CREATE INDEX idx_concepto_vigente ON concepto (vigente);
+-- CREATE INDEX idx_concepto_es_sistema ON concepto (es_sistema);
+
+
+-- =============================================================================
+-- 3) REGLA DE CONCEPTOS DE SISTEMA
+-- =============================================================================
+-- Objetivo:
+-- Diferenciar conceptos que el motor de liquidación genera automáticamente
+-- de conceptos que el usuario puede asignar manualmente a un trabajador.
+--
+-- Conceptos de sistema sugeridos:
+-- - Sueldo base
+-- - Gratificación legal automática
+-- - AFP trabajador
+-- - Salud obligatoria 7%
+-- - AFC trabajador
+-- - SIS empleador
+-- - AFC empleador
+-- - Impuesto único
+-- - Aportes empleador
+-- - Totales
+--
+-- Estos conceptos pueden existir en `concepto`, pero deberían marcarse como:
+--   es_sistema = true
+--   calculo_automatico = true
+--
+-- Regla recomendada:
+-- - No permitir asignarlos manualmente desde haberdescuento_persona.
+-- - Solo el motor de liquidación debería generarlos en liquidacion_detalle.
+-- =============================================================================
+
+
+-- =============================================================================
+-- 4) Tabla haberdescuento_persona: vigencia, contrato y observación
+-- =============================================================================
+-- Objetivo:
+-- Mejorar la asignación de conceptos recurrentes al trabajador.
+--
+-- Situación actual:
+-- haberdescuento_persona permite asociar persona + concepto + monto/porcentaje,
+-- pero no tiene vigencia, observación ni contrato específico.
+--
+-- Extensión sugerida:
+-- - id_contrato opcional.
+-- - vigencia_inicio.
+-- - vigencia_fin.
+-- - observacion.
+-- - periodicidad.
+--
+-- Esto permite:
+-- - Conceptos recurrentes por persona.
+-- - Conceptos acotados a un contrato.
+-- - Conceptos vigentes solo en ciertas fechas.
+-- - Mejor trazabilidad.
+-- =============================================================================
+
+-- ALTER TABLE haberdescuento_persona
+--   ADD COLUMN id_contrato INT NULL
+--   REFERENCES contrato(id_contrato) ON DELETE SET NULL;
+
+-- ALTER TABLE haberdescuento_persona
+--   ADD COLUMN vigencia_inicio DATE;
+
+-- ALTER TABLE haberdescuento_persona
+--   ADD COLUMN vigencia_fin DATE;
+
+-- ALTER TABLE haberdescuento_persona
+--   ADD COLUMN observacion TEXT;
+
+-- ALTER TABLE haberdescuento_persona
+--   ADD COLUMN periodicidad VARCHAR(30);
+--   -- Valores orientativos:
+--   -- MENSUAL
+--   -- QUINCENAL
+--   -- OCASIONAL
+--   -- UNICA
+
+-- ALTER TABLE haberdescuento_persona
+--   ADD CONSTRAINT chk_hd_vigencia
+--   CHECK (
+--     vigencia_fin IS NULL
+--     OR vigencia_inicio IS NULL
+--     OR vigencia_fin >= vigencia_inicio
+--   );
+
+-- ALTER TABLE haberdescuento_persona
+--   ADD CONSTRAINT chk_hd_periodicidad
+--   CHECK (
+--     periodicidad IS NULL
+--     OR periodicidad IN ('MENSUAL', 'QUINCENAL', 'OCASIONAL', 'UNICA')
+--   );
+
+-- Índices sugeridos:
+-- CREATE INDEX idx_hd_persona_estado
+--   ON haberdescuento_persona (id_persona, estado);
+
+-- CREATE INDEX idx_hd_contrato_estado
+--   ON haberdescuento_persona (id_contrato, estado);
+
+-- CREATE INDEX idx_hd_concepto
+--   ON haberdescuento_persona (id_concepto);
+
+-- CREATE INDEX idx_hd_vigencia
+--   ON haberdescuento_persona (vigencia_inicio, vigencia_fin);
+
+
+-- =============================================================================
+-- 5) Reglas sugeridas para el mantenedor Angular
+-- =============================================================================
+-- El mantenedor Haberes y Descuentos debería separar:
+--
+-- 1. Catálogo de conceptos
+--    Fuente: concepto
+--    Relación LRE: concepto.id_catalogo_lre
+--
+-- 2. Catálogo oficial LRE
+--    Fuente: catalogo_lre
+--    Uso: selector/consulta para mapear conceptos.
+--
+-- 3. Asignaciones del trabajador
+--    Fuente: haberdescuento_persona
+--
+-- Reglas:
+-- - No hardcodear códigos LRE en Angular.
+-- - No permitir asignar manualmente conceptos con es_sistema = true.
+-- - No permitir asignar manualmente conceptos con calculo_automatico = true,
+--   salvo perfil administrador y advertencia explícita.
+-- - Conceptos de empresa deben enlazarse a un código LRE.
+-- - Imponible/tributable debería venir preferentemente desde catalogo_lre.
+-- - Si el usuario puede sobreescribir imponible/tributable, debe ser con perfil
+--   administrador y quedar auditado.
+-- =============================================================================
+
+
+-- =============================================================================
+-- 6) Referencia de códigos LRE
+-- =============================================================================
+-- Ejemplos orientativos.
+-- Validar siempre contra el Suplemento oficial vigente de la Dirección del Trabajo.
+--
+-- Haberes:
+-- 2101 Sueldo
+-- 2102 Sobresueldo
+-- 2103 Comisiones
+-- 2104 Semana corrida
+-- 2110 Aguinaldo
+-- 2111 Bonos u otras remuneraciones fijas mensuales
+-- 2113 Bonos u otras remuneraciones variables mensuales
+--
+-- Haberes no imponibles / no tributables:
+-- 2301 Colación
+-- 2302 Movilización
+-- 2311 Asignación familiar legal
+--
+-- Descuentos:
+-- 3141 Cotización obligatoria previsional
+-- 3143 Cotización obligatoria salud 7%
+-- 3185 Otros descuentos Art. 58
+-- 3186 Pensiones de alimentos
+-- 3188 Descuentos por anticipos o préstamos
+--
+-- Aportes empleador:
+-- 4151 Aporte empleador seguro cesantía
+-- 4154 Aporte adicional trabajo pesado empleador
+-- 4155 Aporte empleador seguro invalidez y sobrevivencia
+--
+-- Totales:
+-- 5201 Total haberes
+-- 5301 Total descuentos
+-- 5410 Total aportes empleador
+-- =============================================================================
+
+
+-- =============================================================================
+-- 7) Orden sugerido de aplicación futura
+-- =============================================================================
+-- NO EJECUTAR TODO SIN PRUEBAS.
+--
+-- Paso 1:
+-- Crear catalogo_lre.
+--
+-- Paso 2:
+-- Cargar seed oficial del catálogo LRE desde archivo controlado.
+--
+-- Paso 3:
+-- Agregar id_catalogo_lre y campos de control a concepto.
+--
+-- Paso 4:
+-- Mapear conceptos existentes a catalogo_lre.
+--
+-- Paso 5:
+-- Marcar conceptos automáticos:
+--   es_sistema = true
+--   calculo_automatico = true
+--
+-- Paso 6:
+-- Agregar vigencia y observación a haberdescuento_persona.
+--
+-- Paso 7:
+-- Ajustar Angular para:
+-- - seleccionar código LRE desde catalogo_lre;
+-- - mostrar clasificación;
+-- - bloquear conceptos de sistema;
+-- - permitir asignaciones recurrentes con vigencia.
+--
+-- Paso 8:
+-- Validar que fn_generar_liquidacion siga leyendo los conceptos existentes
+-- sin romper compatibilidad.
+-- =============================================================================
+
+
+-- =============================================================================
+-- FIN PROPUESTA
+-- =============================================================================
