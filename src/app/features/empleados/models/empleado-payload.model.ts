@@ -1,4 +1,5 @@
 import { EmpleadoEstado } from './empleado-listado.model';
+import { CondicionTrabajadorPayload } from './empleado-perfil-laboral.model';
 import {
   EmpleadoSexo,
   TipoContrato,
@@ -53,6 +54,7 @@ export interface CrearEmpleadoPayload {
   zonaExtremaPorcentaje: number | null;
   estado: EmpleadoEstado;
   idTramoCarga: number | null;
+  condicionesTrabajador: CondicionTrabajadorPayload[];
   tipoPrevision: TipoRegimenPrevisional;
   idRegimenPrevisional: number | null;
   idAfp: number | null;

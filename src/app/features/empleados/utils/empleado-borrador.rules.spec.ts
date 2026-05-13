@@ -51,6 +51,7 @@ function basePayload(over: Partial<CrearEmpleadoPayload> = {}): CrearEmpleadoPay
     zonaExtremaPorcentaje: null,
     estado: 'borrador',
     idTramoCarga: null,
+    condicionesTrabajador: [],
     tipoPrevision: 'NINGUNA',
     idRegimenPrevisional: null,
     idAfp: null,

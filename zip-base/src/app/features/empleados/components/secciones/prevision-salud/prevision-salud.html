@@ -1,0 +1,567 @@
+<div class="prevision-shell" [formGroup]="formGroup">
+  <div class="employee-section-head is-hidden">
+    <p class="employee-section-kicker">Previsión y beneficios</p>
+    <h3 class="employee-section-title">Previsión y salud</h3>
+  </div>
+
+  @if (isBlockVisible('regimen')) {
+    <app-card className="prevision-card">
+      <app-card-header className="prevision-card-header">
+        <div class="prevision-card-title-row">
+          <div>
+            <h4>Régimen previsional</h4>
+          </div>
+          <span
+            class="prevision-status-chip"
+            [class.is-afp]="esAfp"
+            [class.is-ips]="esIps"
+            [class.is-none]="sinPrevision"
+            [class.is-pending]="tipoPrevision === null"
+          >
+            {{ regimenStatusLabel }}
+          </span>
+        </div>
+      </app-card-header>
+      <app-card-content className="prevision-card-content">
+        <div
+          class="prevision-grid prevision-grid--two"
+          [class.prevision-grid-adv]="advancedGridLayout"
+        >
+          <div class="form-field prevision-field--regimen">
+            <div class="field-label-row">
+              <label
+                for="empleado-tipo-regimen-previsional"
+              >
+                Tipo de previsión
+              </label>
+              @if (isRequired('tipoRegimenPrevisional')) {
+                <span class="field-required" aria-hidden="true">*</span>
+              }
+            </div>
+            <app-search-select
+              id="empleado-tipo-regimen-previsional"
+              formControlName="tipoRegimenPrevisional"
+              placeholder="Selecciona una opción"
+              searchPlaceholder="Buscar tipo de previsión"
+              [options]="tiposRegimenSelectOptions"
+              [invalid]="hasError('tipoRegimenPrevisional')"
+            ></app-search-select>
+            @if (hasError('tipoRegimenPrevisional', 'required')) {
+              <p class="field-message">Debes seleccionar el tipo de previsión.</p>
+            } @else {
+              <p class="field-message"></p>
+            }
+          </div>
+
+          @if (esAfp) {
+            <div class="form-field form-field--checkbox apvi-toggle-field">
+              <div class="field-label-row">
+                <label for="empleado-tiene-apv"
+                  >APVI (Ahorro Previsional Voluntario Individual)</label
+                >
+              </div>
+              <label class="employee-checkbox-row">
+                <input
+                  id="empleado-tiene-apv"
+                  type="checkbox"
+                  formControlName="tieneApv"
+                />
+                <span>Tiene APVI</span>
+              </label>
+              <p class="field-message"></p>
+            </div>
+          }
+        </div>
+      </app-card-content>
+    </app-card>
+  }
+
+  @if (sinPrevision && isBlockVisible('regimen')) {
+    <div class="prevision-state-note is-none" role="status">
+      <span class="prevision-state-note__label">Sin previsión</span>
+      <p>No se solicitarán datos de AFP, IPS ni APVI para este trabajador.</p>
+    </div>
+  }
+
+  @if (esAfp && isBlockVisible('afp')) {
+    <app-card className="prevision-card">
+      <app-card-header className="prevision-card-header">
+        <h4>Datos AFP</h4>
+      </app-card-header>
+      <app-card-content className="prevision-card-content">
+        <div
+          class="prevision-grid prevision-grid--three"
+          [class.prevision-grid-adv]="advancedGridLayout"
+        >
+          <div class="form-field prevision-field--afp">
+            <div class="field-label-row">
+              <label for="empleado-afp">Nombre AFP</label>
+              @if (isRequired('idAfp')) {
+                <span class="field-required" aria-hidden="true">*</span>
+              }
+            </div>
+            <app-search-select
+              id="empleado-afp"
+              formControlName="idAfp"
+              placeholder="Selecciona una AFP"
+              searchPlaceholder="Buscar AFP"
+              [options]="afpSelectOptions"
+              [invalid]="hasError('idAfp')"
+            ></app-search-select>
+            @if (hasError('idAfp', 'required')) {
+              <p class="field-message">La AFP es obligatoria.</p>
+            } @else {
+              <p class="field-message"></p>
+            }
+          </div>
+
+          <div class="form-field prevision-field--medium">
+            <div class="field-label-row">
+              <label for="empleado-moneda-cuenta2">
+                Moneda Cuenta 2
+              </label>
+              @if (isRequired('idMonedaCuenta2')) {
+                <span class="field-required" aria-hidden="true">*</span>
+              }
+            </div>
+            <app-search-select
+              id="empleado-moneda-cuenta2"
+              formControlName="idMonedaCuenta2"
+              placeholder="Opcional"
+              searchPlaceholder="Buscar moneda"
+              [options]="monedaCuenta2SelectOptions"
+              [invalid]="hasError('idMonedaCuenta2')"
+            ></app-search-select>
+            @if (hasError('idMonedaCuenta2', 'required')) {
+              <p class="field-message">Selecciona la moneda si informas Cuenta 2.</p>
+            } @else {
+              <p class="field-message"></p>
+            }
+          </div>
+
+          <div class="form-field prevision-field--amount">
+            <div class="field-label-row">
+              <label for="empleado-valor-cuenta2">
+                Valor Cuenta 2
+              </label>
+              @if (isRequired('valorCuenta2')) {
+                <span class="field-required" aria-hidden="true">*</span>
+              }
+            </div>
+            <input
+              id="empleado-valor-cuenta2"
+              type="number"
+              min="0"
+              step="1000"
+              formControlName="valorCuenta2"
+              [class]="controlClass('valorCuenta2')"
+            />
+            @if (hasError('valorCuenta2', 'required')) {
+              <p class="field-message">Ingresa el valor si informas Cuenta 2.</p>
+            } @else if (hasError('valorCuenta2', 'min')) {
+              <p class="field-message">El valor de Cuenta 2 no puede ser negativo.</p>
+            } @else {
+              <p class="field-message"></p>
+            }
+          </div>
+        </div>
+      </app-card-content>
+    </app-card>
+  }
+
+  @if (esIps && isBlockVisible('ips')) {
+    <app-card className="prevision-card">
+      <app-card-header className="prevision-card-header">
+        <h4>Datos IPS</h4>
+      </app-card-header>
+      <app-card-content className="prevision-card-content">
+        <div
+          class="prevision-grid prevision-grid--four prevision-grid--ips"
+          [class.prevision-grid-adv]="advancedGridLayout"
+        >
+          <div class="form-field prevision-field--ips">
+            <div class="field-label-row">
+              <label
+                for="empleado-entidad-previsional-ips"
+              >
+                Entidad IPS
+              </label>
+              @if (isRequired('idEntidadPrevisionalIps')) {
+                <span class="field-required" aria-hidden="true">*</span>
+              }
+            </div>
+            <app-search-select
+              id="empleado-entidad-previsional-ips"
+              formControlName="idEntidadPrevisionalIps"
+              placeholder="Selecciona una entidad"
+              searchPlaceholder="Buscar entidad IPS"
+              [options]="entidadIpsSelectOptions"
+              [invalid]="hasError('idEntidadPrevisionalIps')"
+            ></app-search-select>
+            @if (hasError('idEntidadPrevisionalIps', 'required')) {
+              <p class="field-message">La entidad IPS es obligatoria.</p>
+            } @else {
+              <p class="field-message"></p>
+            }
+          </div>
+
+          <div class="form-field prevision-field--excaja">
+            <div class="field-label-row">
+              <label for="empleado-nombre-ex-caja">
+                Ex-Caja
+              </label>
+              @if (isRequired('idExCajaPrevisional')) {
+                <span class="field-required" aria-hidden="true">*</span>
+              }
+            </div>
+            <app-search-select
+              id="empleado-nombre-ex-caja"
+              formControlName="idExCajaPrevisional"
+              placeholder="Selecciona una Ex-Caja"
+              searchPlaceholder="Buscar Ex-Caja"
+              [options]="exCajaSelectOptions"
+              [invalid]="hasError('idExCajaPrevisional')"
+            ></app-search-select>
+            @if (hasError('idExCajaPrevisional', 'required')) {
+              <p class="field-message">El nombre Ex-Caja es obligatorio.</p>
+            } @else {
+              <p class="field-message"></p>
+            }
+          </div>
+
+          <div class="form-field prevision-field--regimen-excaja">
+            <div class="field-label-row">
+              <label for="empleado-regimen-ex-caja">
+                Régimen Ex-Caja
+              </label>
+              @if (isRequired('idRegimenExCaja')) {
+                <span class="field-required" aria-hidden="true">*</span>
+              }
+            </div>
+            <app-search-select
+              id="empleado-regimen-ex-caja"
+              formControlName="idRegimenExCaja"
+              placeholder="Selecciona un régimen"
+              searchPlaceholder="Buscar régimen Ex-Caja"
+              [options]="regimenExCajaSelectOptions"
+              [invalid]="hasError('idRegimenExCaja')"
+            ></app-search-select>
+            @if (hasError('idRegimenExCaja', 'required')) {
+              <p class="field-message">El régimen Ex-Caja es obligatorio.</p>
+            } @else if (!regimenesExCajaFiltrados.length) {
+              <p class="field-message field-message--warning">
+                No hay regímenes para la Ex-Caja seleccionada.
+              </p>
+            } @else {
+              <p class="field-message"></p>
+            }
+          </div>
+
+          <div class="form-field prevision-field--rate">
+            <div class="field-label-row">
+              <label for="empleado-tasa-ex-caja">
+                Tasa Ex-Caja (%)
+              </label>
+              @if (isRequired('tasaExCaja')) {
+                <span class="field-required" aria-hidden="true">*</span>
+              }
+            </div>
+            <input
+              id="empleado-tasa-ex-caja"
+              type="number"
+              min="0"
+              step="0.01"
+              formControlName="tasaExCaja"
+              [class]="controlClass('tasaExCaja')"
+            />
+            @if (hasError('tasaExCaja', 'required')) {
+              <p class="field-message">La tasa Ex-Caja es obligatoria.</p>
+            } @else if (hasError('tasaExCaja', 'min')) {
+              <p class="field-message">La tasa Ex-Caja no puede ser negativa.</p>
+            } @else {
+              <p class="field-message">Ingresa la tasa informada para este trabajador.</p>
+            }
+          </div>
+        </div>
+      </app-card-content>
+    </app-card>
+  }
+
+  @if (mostrarSalud && isBlockVisible('salud')) {
+    <app-card className="prevision-card">
+      <app-card-header className="prevision-card-header">
+        <h4>Salud</h4>
+      </app-card-header>
+      <app-card-content className="prevision-card-content">
+        <div
+          class="prevision-grid prevision-grid--four prevision-grid--salud"
+          [class.prevision-grid-adv]="advancedGridLayout"
+        >
+          <div class="form-field prevision-field--salud">
+            <div class="field-label-row">
+              <label for="empleado-salud"
+                >Institución de salud</label
+              >
+              @if (isRequired('idSalud')) {
+                <span class="field-required" aria-hidden="true">*</span>
+              }
+            </div>
+            <app-search-select
+              id="empleado-salud"
+              formControlName="idSalud"
+              placeholder="Selecciona una institución"
+              searchPlaceholder="Buscar institución de salud"
+              [options]="saludSelectOptions"
+              [invalid]="hasError('idSalud')"
+            ></app-search-select>
+            @if (hasError('idSalud', 'required')) {
+              <p class="field-message">La institución de salud es obligatoria.</p>
+            } @else {
+              <p class="field-message"></p>
+            }
+          </div>
+
+          <div class="form-field prevision-field--medium">
+            <div class="field-label-row">
+              <label for="empleado-moneda-plan"
+                >Moneda plan salud</label
+              >
+              @if (isRequired('idMonedaPlan')) {
+                <span class="field-required" aria-hidden="true">*</span>
+              }
+            </div>
+            <app-search-select
+              id="empleado-moneda-plan"
+              formControlName="idMonedaPlan"
+              placeholder="Selecciona una moneda"
+              searchPlaceholder="Buscar moneda"
+              [options]="monedaPlanSelectOptions"
+              [invalid]="hasError('idMonedaPlan')"
+            ></app-search-select>
+            @if (hasError('idMonedaPlan', 'required')) {
+              <p class="field-message">La moneda del plan de salud es obligatoria.</p>
+            } @else {
+              <p class="field-message"></p>
+            }
+          </div>
+
+          <div class="form-field prevision-field--amount">
+            <div class="field-label-row">
+              <label for="empleado-valor-plan"
+                >Valor plan</label
+              >
+              @if (isRequired('valorPlan')) {
+                <span class="field-required" aria-hidden="true">*</span>
+              }
+            </div>
+            <input
+              id="empleado-valor-plan"
+              type="number"
+              min="0"
+              step="1000"
+              formControlName="valorPlan"
+              [class]="controlClass('valorPlan')"
+            />
+            @if (hasError('valorPlan', 'required')) {
+              <p class="field-message">El valor del plan es obligatorio.</p>
+            } @else if (hasError('valorPlan', 'min')) {
+              <p class="field-message">El valor del plan no puede ser negativo.</p>
+            } @else {
+              <p class="field-message"></p>
+            }
+          </div>
+
+          <div class="form-field prevision-field--amount">
+            <div class="field-label-row">
+              <label for="empleado-auge-ges">
+                Adicional GES (UF)
+              </label>
+              @if (isRequired('adicionalAugeGes')) {
+                <span class="field-required" aria-hidden="true">*</span>
+              }
+            </div>
+            <input
+              id="empleado-auge-ges"
+              type="number"
+              min="0"
+              step="1000"
+              formControlName="adicionalAugeGes"
+              [class]="controlClass('adicionalAugeGes')"
+            />
+            @if (hasError('adicionalAugeGes', 'required')) {
+              <p class="field-message">El adicional Plan Auge es obligatorio.</p>
+            } @else if (hasError('adicionalAugeGes', 'min')) {
+              <p class="field-message">El adicional Plan Auge no puede ser negativo.</p>
+            } @else {
+              <p class="field-message"></p>
+            }
+          </div>
+        </div>
+      </app-card-content>
+    </app-card>
+  } @else if (isBlockVisible('salud') && tipoPrevision !== null) {
+    <div class="prevision-state-note is-neutral" role="status">
+      <span class="prevision-state-note__label">Salud sin datos requeridos</span>
+      <p>La selección actual no solicita datos de salud en este paso.</p>
+    </div>
+  }
+
+  @if (advancedGridLayout && isBlockVisible('regimen')) {
+    <div
+      class="prevision-impact"
+      [class.is-enabled]="esAfp && formGroup.controls.tieneApv.value"
+      [class.is-optional]="esAfp && !formGroup.controls.tieneApv.value"
+      [class.is-na]="!esAfp"
+      role="status"
+    >
+      <div class="prevision-impact__main">
+        <span class="prevision-impact__eyebrow">Al continuar: {{ apviDestinationLabel }}</span>
+        <strong>{{ apviImpactLabel }}</strong>
+      </div>
+    </div>
+  }
+
+  @if (esAfp && isBlockVisible('apvi') && mostrarApvi) {
+      <app-card className="prevision-card">
+        <app-card-header className="prevision-card-header">
+          <h4>APVI - Ahorro Previsional Voluntario Individual</h4>
+        </app-card-header>
+
+        <app-card-content className="prevision-card-content">
+          <p class="apvi-step-lead">
+            Completa estos datos solo si el trabajador tiene APVI configurado.
+          </p>
+          <div
+            class="prevision-grid prevision-grid--three prevision-grid--apvi"
+            [class.prevision-grid-adv]="advancedGridLayout"
+          >
+            <div class="form-field">
+              <div class="field-label-row">
+                <label for="empleado-institucion-apv">
+                  Institución APVI
+                </label>
+                @if (isRequired('idInstitucionApv')) {
+                  <span class="field-required" aria-hidden="true">*</span>
+                }
+              </div>
+              <app-search-select
+                id="empleado-institucion-apv"
+                formControlName="idInstitucionApv"
+                placeholder="Selecciona una institución"
+                searchPlaceholder="Buscar institución APVI"
+                [options]="institucionApvSelectOptions"
+                [invalid]="hasError('idInstitucionApv')"
+              ></app-search-select>
+              @if (hasError('idInstitucionApv', 'required')) {
+                <p class="field-message">La institución APVI es obligatoria.</p>
+              } @else {
+                <p class="field-message"></p>
+              }
+            </div>
+
+            <div class="form-field">
+              <div class="field-label-row">
+                <label for="empleado-moneda-apv">
+                  Moneda APVI
+                </label>
+                @if (isRequired('idMonedaApv')) {
+                  <span class="field-required" aria-hidden="true">*</span>
+                }
+              </div>
+              <app-search-select
+                id="empleado-moneda-apv"
+                formControlName="idMonedaApv"
+                placeholder="Selecciona una moneda"
+                searchPlaceholder="Buscar moneda"
+                [options]="monedaApvSelectOptions"
+                [invalid]="hasError('idMonedaApv')"
+              ></app-search-select>
+              @if (hasError('idMonedaApv', 'required')) {
+                <p class="field-message">La moneda APVI es obligatoria.</p>
+              } @else {
+                <p class="field-message"></p>
+              }
+            </div>
+
+            <div class="form-field">
+              <div class="field-label-row">
+                <label for="empleado-monto-apv">
+                  Valor APVI
+                </label>
+                @if (isRequired('montoApv')) {
+                  <span class="field-required" aria-hidden="true">*</span>
+                }
+              </div>
+              <input
+                id="empleado-monto-apv"
+                type="number"
+                min="0"
+                step="1000"
+                formControlName="montoApv"
+                [class]="controlClass('montoApv')"
+              />
+              @if (hasError('montoApv', 'required')) {
+                <p class="field-message">El valor APVI es obligatorio.</p>
+              } @else if (hasError('montoApv', 'min')) {
+                <p class="field-message">El valor APVI no puede ser negativo.</p>
+              } @else {
+                <p class="field-message"></p>
+              }
+            </div>
+
+            <div class="form-field">
+              <div class="field-label-row">
+                <label for="empleado-forma-pago-apv">
+                  Forma de Pago APVI
+                </label>
+                @if (isRequired('idFormaPagoApv')) {
+                  <span class="field-required" aria-hidden="true">*</span>
+                }
+              </div>
+              <app-search-select
+                id="empleado-forma-pago-apv"
+                formControlName="idFormaPagoApv"
+                placeholder="Selecciona una forma de pago"
+                searchPlaceholder="Buscar forma de pago"
+                [options]="formaPagoApvSelectOptions"
+                [invalid]="hasError('idFormaPagoApv')"
+              ></app-search-select>
+              @if (hasError('idFormaPagoApv', 'required')) {
+                <p class="field-message">La forma de pago APVI es obligatoria.</p>
+              } @else {
+                <p class="field-message"></p>
+              }
+            </div>
+
+            <div class="form-field">
+              <div class="field-label-row">
+                <label
+                  for="empleado-deposito-convenido-apvi"
+                >
+                  Deposito Convenido APVI
+                </label>
+                @if (isRequired('depositoConvenidoApvi')) {
+                  <span class="field-required" aria-hidden="true">*</span>
+                }
+              </div>
+              <input
+                id="empleado-deposito-convenido-apvi"
+                type="number"
+                min="0"
+                step="1000"
+                formControlName="depositoConvenidoApvi"
+                [class]="controlClass('depositoConvenidoApvi')"
+              />
+              @if (hasError('depositoConvenidoApvi', 'required')) {
+                <p class="field-message">El deposito convenido APVI es obligatorio.</p>
+              } @else if (hasError('depositoConvenidoApvi', 'min')) {
+                <p class="field-message">El deposito convenido APVI no puede ser negativo.</p>
+              } @else {
+                <p class="field-message"></p>
+              }
+            </div>
+          </div>
+        </app-card-content>
+      </app-card>
+  }
+</div>

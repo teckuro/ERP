@@ -256,6 +256,7 @@ export class EmpleadosFormOrchestratorService {
     this.configureInputNormalization(form, destroyRef);
     this.configureContratoBehavior(form, destroyRef, getCatalogos);
     this.configurePrevisionSaludBehavior(form, destroyRef, getCatalogos);
+    this.updateBancarioValidators(form);
   }
 
   /**
@@ -295,6 +296,12 @@ export class EmpleadosFormOrchestratorService {
     getCatalogos: () => EmpleadoFormCatalogos,
   ): void {
     const controls = form.controls.contrato.controls;
+
+    controls.relacionLaboral.valueChanges.pipe(takeUntilDestroyed(destroyRef)).subscribe(() => {
+      this.updateContratoValidators(form);
+      this.updatePrevisionSaludValidators(form);
+      this.updateBancarioValidators(form);
+    });
 
     controls.tipoContrato.valueChanges.pipe(takeUntilDestroyed(destroyRef)).subscribe((tipo) => {
       if (tipo === 'INDEFINIDO') {
@@ -344,11 +351,41 @@ export class EmpleadosFormOrchestratorService {
 
   private updateContratoValidators(form: EmpleadoFormGroup): void {
     const controls = form.controls.contrato.controls;
-    const requiereTermino = controls.tipoContrato.value !== null && controls.tipoContrato.value !== 'INDEFINIDO';
-    const semanaCorridaActiva = controls.semanaCorridaActiva.value;
-    const zonaExtremaActiva = controls.zonaExtremaActiva.value;
+    const esHonorarios = controls.relacionLaboral.value === 'HONORARIOS';
+    const requiereTermino =
+      !esHonorarios && controls.tipoContrato.value !== null && controls.tipoContrato.value !== 'INDEFINIDO';
+    const semanaCorridaActiva = !esHonorarios && controls.semanaCorridaActiva.value;
+    const zonaExtremaActiva = !esHonorarios && controls.zonaExtremaActiva.value;
 
+    this.setControlValidators(
+      controls.tipoContrato,
+      esHonorarios ? [] : [Validators.required],
+    );
+    this.setControlValidators(
+      controls.idTipoTrabajador,
+      esHonorarios ? [] : [Validators.required],
+    );
+    this.setControlValidators(
+      controls.idTipoJornada,
+      esHonorarios ? [] : [Validators.required],
+    );
+    this.setControlValidators(
+      controls.fechaContrato,
+      esHonorarios ? [] : [Validators.required],
+    );
     this.setControlValidators(controls.fechaTermino, requiereTermino ? [Validators.required] : []);
+    this.setControlValidators(
+      controls.horasSemanales,
+      esHonorarios ? [] : [Validators.required, Validators.min(1), Validators.max(168)],
+    );
+    this.setControlValidators(
+      controls.diasSemanales,
+      esHonorarios ? [] : [Validators.required, Validators.min(1), Validators.max(7)],
+    );
+    this.setControlValidators(
+      controls.tipoGratificacion,
+      esHonorarios ? [] : [Validators.required],
+    );
     this.setControlValidators(
       controls.semanaCorridaDiasLaborables,
       semanaCorridaActiva ? [atLeastOneArrayValueValidator] : [],
@@ -434,12 +471,36 @@ export class EmpleadosFormOrchestratorService {
 
   private updatePrevisionSaludValidators(form: EmpleadoFormGroup): void {
     const controls = form.controls.previsionSalud.controls;
+    const esHonorarios = form.controls.contrato.controls.relacionLaboral.value === 'HONORARIOS';
     const tipo = controls.tipoRegimenPrevisional.value;
     const requiereSalud = tipo !== null && tipo !== 'NINGUNA';
     const tieneCuenta2 =
       tipo === 'AFP' &&
       (controls.idMonedaCuenta2.value !== null || controls.valorCuenta2.value !== null);
     const requiereApvi = tipo === 'AFP' && controls.tieneApv.value;
+
+    if (esHonorarios) {
+      this.setControlValidators(controls.tipoRegimenPrevisional, []);
+      this.setControlValidators(controls.idAfp, []);
+      this.setControlValidators(controls.idMonedaCuenta2, []);
+      this.setControlValidators(controls.valorCuenta2, [Validators.min(0)]);
+      this.setControlValidators(controls.idEntidadPrevisionalIps, []);
+      this.setControlValidators(controls.idExCajaPrevisional, []);
+      this.setControlValidators(controls.idRegimenExCaja, []);
+      this.setControlValidators(controls.nombreExCaja, [Validators.maxLength(150)]);
+      this.setControlValidators(controls.regimenExCaja, [Validators.maxLength(150)]);
+      this.setControlValidators(controls.tasaExCaja, [Validators.min(0)]);
+      this.setControlValidators(controls.idSalud, []);
+      this.setControlValidators(controls.idMonedaPlan, []);
+      this.setControlValidators(controls.valorPlan, [Validators.min(0)]);
+      this.setControlValidators(controls.adicionalAugeGes, [Validators.min(0)]);
+      this.setControlValidators(controls.idInstitucionApv, []);
+      this.setControlValidators(controls.idMonedaApv, []);
+      this.setControlValidators(controls.montoApv, [Validators.min(0)]);
+      this.setControlValidators(controls.idFormaPagoApv, []);
+      this.setControlValidators(controls.depositoConvenidoApvi, [Validators.min(0)]);
+      return;
+    }
 
     this.setControlValidators(controls.tipoRegimenPrevisional, [Validators.required]);
     this.setControlValidators(controls.idAfp, tipo === 'AFP' ? [Validators.required] : []);
@@ -641,6 +702,26 @@ export class EmpleadosFormOrchestratorService {
     controls.montoApv.setValue(null, { emitEvent: false });
     controls.idFormaPagoApv.setValue(null, { emitEvent: false });
     controls.depositoConvenidoApvi.setValue(null, { emitEvent: false });
+  }
+
+  private updateBancarioValidators(form: EmpleadoFormGroup): void {
+    const controls = form.controls.bancario.controls;
+    const esHonorarios = form.controls.contrato.controls.relacionLaboral.value === 'HONORARIOS';
+
+    this.setControlValidators(
+      controls.idBanco,
+      esHonorarios ? [] : [Validators.required],
+    );
+    this.setControlValidators(
+      controls.idTipoCuentaBancaria,
+      esHonorarios ? [] : [Validators.required],
+    );
+    this.setControlValidators(
+      controls.numeroCuenta,
+      esHonorarios
+        ? [Validators.maxLength(50), digitsOnlyValidator]
+        : [Validators.required, Validators.maxLength(50), digitsOnlyValidator],
+    );
   }
 
   private setControlValidators(

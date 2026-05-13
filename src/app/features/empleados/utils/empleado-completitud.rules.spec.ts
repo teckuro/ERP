@@ -48,6 +48,7 @@ function payloadCompleto(overrides: Partial<CrearEmpleadoPayload> = {}): CrearEm
     zonaExtremaPorcentaje: null,
     estado: 'activo',
     idTramoCarga: null,
+    condicionesTrabajador: [],
     tipoPrevision: 'AFP',
     idRegimenPrevisional: 1,
     idAfp: 1,

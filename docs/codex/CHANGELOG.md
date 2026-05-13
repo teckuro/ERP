@@ -139,3 +139,52 @@ Fecha: 2026-05-11
 - Se mantiene mapa de ficha como resumen permanente; no se duplica una tarjeta de validaciones dentro del contenido.
 - Alcance respetado: sin SQL/RPC/RLS/BD, sin payloads/mappers, sin reglas de motor, sin creacion basica, sin ficha empleado ni remuneraciones.
 - Validacion local: `npx tsc -p tsconfig.app.json --noEmit` OK y `npx tsc -p tsconfig.spec.json --noEmit` OK. `npm run build` no cierra en sandbox Linux por `node_modules` Windows (`@esbuild/win32-x64` / `lightningcss`).
+
+## EMP-PERFIL-LABORAL-UI-01 - Perfil laboral y condiciones especiales en Creacion avanzada
+
+Fecha: 2026-05-12
+
+- Se agrega bloque visual `Perfil laboral y previsional` en Creacion avanzada; el pulido posterior lo separa como paso propio antes del resumen.
+- La UI deriva el tramo de edad laboral desde fecha de nacimiento y fecha de ingreso: menor de 18, adulto 18 a 65 y mayor de 65 no son checks manuales.
+- Se habilita seleccion de condiciones especiales reales: pensionado, invalidez parcial/total, exento cotizacion pension, trabajador adolescente protegido, autorizacion de menor, tecnico extranjero exento y discapacidad.
+- Se agrega vigencia, respaldo administrativo registrado y observacion interna para las condiciones seleccionadas.
+- El resumen final muestra perfil laboral detectado y condiciones especiales declaradas.
+- Se conecta el payload y repositorio para reemplazar condiciones en `persona_condicion_trabajador` usando el catalogo `tipo_condicion_trabajador`, sin crear SQL nuevo.
+- Se mantiene Honorarios fuera de este bloque: el paso sigue marcado como no aplicable y la finalizacion de honorarios continua bloqueada hasta su fase de persistencia propia.
+- Alcance respetado: sin estilos globales, sin cambios de motor, nomina, liquidaciones, LRE, Previred, SQL/RPC/RLS, creacion basica ni formulas legales.
+- Validaciones: `npx tsc -p tsconfig.app.json --noEmit` OK; `npx tsc -p tsconfig.spec.json --noEmit` OK; `unzip -t` OK. `ng build --configuration development` queda no cerrado en sandbox por timeout.
+
+
+
+## EMP-PERFIL-LABORAL-UI-01-POLISH - Paso propio y maqueta alineada
+
+Fecha: 2026-05-12
+
+- Se separa `Perfil laboral y condiciones` como paso propio de Creacion avanzada, ubicado despues de Banco y antes de Resumen final.
+- El paso 4 vuelve a quedar enfocado solo en asignaciones laborales: cargas familiares, zona extrema y semana corrida.
+- El componente de perfil laboral adopta la misma maqueta local de los otros pasos: bloques con cabecera neutra, borde 8px, densidad compacta, sin sombras ni cards sobredimensionadas.
+- `Vigencia y respaldo` queda bajo demanda: aparece solo cuando RRHH selecciona al menos una condicion especial.
+- El resumen final conserva una lectura compacta del perfil detectado y condiciones declaradas, sin duplicar el formulario.
+- Alcance respetado: sin SQL/RPC/RLS, sin persistencia nueva, sin motor, sin nomina, sin liquidaciones, sin estilos globales y sin cambiar Honorarios.
+- Validaciones: `npm ci --ignore-scripts` OK; `npx tsc -p tsconfig.app.json --noEmit` OK; `npx tsc -p tsconfig.spec.json --noEmit` OK. `npm run build -- --configuration development` no cerro en sandbox por timeout, sin error de codigo antes del corte.
+
+## EMP-CONDICIONES-ESPECIALES-UX-01 - Enfoque administrativo RRHH
+
+Fecha: 2026-05-12
+
+- El paso visible pasa de enfoque `Perfil laboral` a `Condiciones especiales`, manteniendo su ubicacion despues de Banco y antes de Resumen final.
+- La UI abre con `Revision administrativa`: situacion detectada por edad, tipo de relacion, edad al ingreso y fecha de referencia.
+- La seleccion queda comunicada como `Solo si aplica`; un trabajador adulto estandar puede continuar sin marcar condiciones.
+- El estado vacio deja de sentirse como bloque flotante: muestra `Trabajador estandar`, `Revision pendiente` o revision sugerida segun edad detectada.
+- `Vigencia y respaldo` sigue bajo demanda solo cuando existe una condicion seleccionada.
+- El resumen final cambia la fila a `Revision administrativa` y mantiene `Condiciones especiales` como lectura compacta.
+- Alcance respetado: sin SQL/RPC/RLS, sin persistencia nueva, sin motor, sin nomina, sin liquidaciones, sin estilos globales y sin cambiar Honorarios.
+
+## EMP-CONDICIONES-ESPECIALES-AUTODETECT-01 - Pre-marcado desde datos existentes
+
+- `Condiciones especiales` en Creacion avanzada ahora separa condiciones declarables manualmente de condiciones pre-marcadas por datos ya capturados.
+- El formulario pre-marca `Trabajador adolescente protegido` cuando fecha de nacimiento + fecha de ingreso detectan menor de 18 anos.
+- El formulario pre-marca condiciones previsionales/administrativas cuando el `Tipo trabajador` seleccionado las informa explicitamente en su nombre: pensionado, pensionado por invalidez parcial/total, exento cotizacion pension, tecnico extranjero exento o discapacidad.
+- Si el regimen previsional queda como `NINGUNA`, se pre-marca `Exento de cotizacion de pension` para que RRHH revise respaldo antes de finalizar.
+- La UI muestra un bloque `pre-marcado desde pasos anteriores` y un chip `Detectada` en cada condicion sugerida; RRHH puede corregir antes de finalizar.
+- No se agregan SQL/RPC/RLS, motor, nomina, liquidaciones ni reglas nuevas de persistencia.

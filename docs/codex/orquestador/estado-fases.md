@@ -366,3 +366,29 @@ Decision central: `id_catalogo_lre` no es la unica forma de cumplir LRE. Un conc
 | Fase | Estado | Resumen | Pruebas |
 |---|---|---|---|
 | `EMP-ADV-VALIDATION-CL-02` | **Implementada** | Ajusta validaciones chilenas de Creacion avanzada para mostrarlas por accion usando `app-message-box`; elimina enfoque de tarjeta fija por paso; mantiene Siguiente flexible, borrador minimo y Finalizar alta estricto. | `npx tsc -p tsconfig.app.json --noEmit` OK; `npx tsc -p tsconfig.spec.json --noEmit` OK; build bloqueado en sandbox por binarios Windows de node_modules. |
+
+## Actualizacion 2026-05-12 - EMP-PERFIL-LABORAL-UI-01
+
+| Fase | Estado | Resumen | Pruebas |
+|---|---|---|---|
+| `EMP-PERFIL-LABORAL-UI-01` | **Implementada en ZIP** | Creacion avanzada incorpora perfil laboral/previsional: edad laboral derivada por fecha, condiciones especiales respaldables, vigencia, observacion, resumen final y persistencia en `persona_condicion_trabajador` usando el catalogo SQL existente. El pulido posterior lo separa como paso propio antes del resumen. Honorarios se mantiene no aplicable. | `npx tsc -p tsconfig.app.json --noEmit` OK; `npx tsc -p tsconfig.spec.json --noEmit` OK; `unzip -t` OK. `ng build --configuration development` no cerro en sandbox por timeout. |
+
+
+
+## Actualizacion 2026-05-12 - EMP-PERFIL-LABORAL-UI-01-POLISH
+
+| Fase | Estado | Resumen | Pruebas |
+|---|---|---|---|
+| `EMP-PERFIL-LABORAL-UI-01-POLISH` | **Implementada en ZIP** | Creacion avanzada separa `Perfil laboral y condiciones` como paso propio despues de Banco y antes de Resumen final. El paso de asignaciones vuelve a quedar enfocado en cargas, zona extrema y semana corrida. La maqueta del perfil se alinea a los otros pasos con bloques compactos, cabeceras neutras y respaldo bajo demanda. | `npm ci --ignore-scripts` OK; `npx tsc -p tsconfig.app.json --noEmit` OK; `npx tsc -p tsconfig.spec.json --noEmit` OK; `npm run build -- --configuration development` no cerro en sandbox por timeout, sin error de codigo antes del corte. |
+
+## Actualizacion 2026-05-12 - EMP-CONDICIONES-ESPECIALES-UX-01
+
+| Fase | Estado | Resumen | Pruebas |
+|---|---|---|---|
+| `EMP-CONDICIONES-ESPECIALES-UX-01` | **Implementada en ZIP** | Creacion avanzada mantiene el paso despues de Banco, pero lo reenfoca como `Condiciones especiales`: revision administrativa detectada, seleccion `Solo si aplica`, estado estandar cuando no hay condiciones y resumen final compacto. | `npm ci --ignore-scripts` OK; `npx tsc -p tsconfig.app.json --noEmit` OK; `npx tsc -p tsconfig.spec.json --noEmit` OK; `npm run build -- --configuration development` no cerro en sandbox por timeout, sin error de codigo antes del corte. |
+
+## Actualizacion 2026-05-12 - EMP-CONDICIONES-ESPECIALES-AUTODETECT-01
+
+| Fase | Estado | Resumen | Validacion |
+|------|--------|---------|------------|
+| `EMP-CONDICIONES-ESPECIALES-AUTODETECT-01` | **Implementada en ZIP** | Creacion avanzada pre-marca condiciones especiales cuando la informacion ya fue capturada en pasos previos: menor de 18 por fecha nacimiento/ingreso, tipo trabajador pensionado/invalidez/exento/tecnico extranjero/discapacidad y regimen previsional `NINGUNA` como exencion a revisar. La UI muestra el origen como `Detectada` y conserva revision/edicion RRHH. | `npm ci --ignore-scripts` OK; `npx tsc -p tsconfig.app.json --noEmit` OK; `npx tsc -p tsconfig.spec.json --noEmit` OK; `npm run build -- --configuration development` no cerro en sandbox por timeout, sin error de codigo antes del corte. |

@@ -8,6 +8,10 @@ import {
   TipoRegimenPrevisional,
 } from '../models/empleado.model';
 import { CrearEmpleadoPayload } from '../models/empleado-payload.model';
+import {
+  CONDICIONES_TRABAJADOR_UI,
+  CondicionTrabajadorPayload,
+} from '../models/empleado-perfil-laboral.model';
 import { normalizeText } from '../utils/empleado-form.helpers';
 
 export function mapEmpleadoFormToPayload(
@@ -80,6 +84,7 @@ export function mapEmpleadoFormToPayload(
       : null,
     estado: 'activo',
     idTramoCarga: rawValue.contrato.idTramoCarga,
+    condicionesTrabajador: mapCondicionesTrabajador(rawValue),
     tipoPrevision,
     idRegimenPrevisional: resolveRegimenPrevisionalId(
       tipoPrevision,
@@ -205,6 +210,7 @@ export function mapEmpleadoFormToPayloadBasico(form: EmpleadoFormGroup): CrearEm
     zonaExtremaPorcentaje: null,
     estado: 'en_proceso',
     idTramoCarga: null,
+    condicionesTrabajador: [],
     tipoPrevision: 'NINGUNA',
     idRegimenPrevisional: null,
     idAfp: null,
@@ -356,6 +362,7 @@ export function mapEmpleadoFormToPayloadBorrador(
       : null,
     estado: 'borrador',
     idTramoCarga: rawValue.contrato.idTramoCarga,
+    condicionesTrabajador: mapCondicionesTrabajador(rawValue),
     cargas: rawValue.contrato.cargas ?? 0,
     tipoPrevision,
     idRegimenPrevisional,
@@ -383,6 +390,24 @@ export function mapEmpleadoFormToPayloadBorrador(
     idTipoCuentaBancaria,
     numeroCuenta,
   };
+}
+
+
+function mapCondicionesTrabajador(rawValue: ReturnType<EmpleadoFormGroup['getRawValue']>): CondicionTrabajadorPayload[] {
+  const perfil = rawValue.perfilLaboral;
+  const vigenciaInicio = perfil.vigenciaInicio || rawValue.contrato.fechaIngreso || new Date().toISOString().slice(0, 10);
+  const vigenciaFin = perfil.vigenciaFin.trim() || null;
+  const observacion = perfil.observacion.trim() || null;
+
+  return CONDICIONES_TRABAJADOR_UI
+    .filter((condition) => perfil[condition.controlName])
+    .map((condition) => ({
+      codigo: condition.codigo,
+      vigenciaInicio,
+      vigenciaFin,
+      respaldoRegistrado: perfil.respaldoRegistrado,
+      observacion,
+    }));
 }
 
 function resolveRegimenPrevisionalId(

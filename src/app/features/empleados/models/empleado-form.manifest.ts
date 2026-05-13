@@ -12,16 +12,17 @@ export const EMPLEADO_FORM_TAB_ORDER = [
 
 export type EmpleadoFormTabId = (typeof EMPLEADO_FORM_TAB_ORDER)[number];
 
-/** Pasos del asistente en creacion avanzada (9 etapas). */
+/** Pasos del asistente en creacion avanzada (10 etapas). */
 export const EMPLEADO_ADVANCED_WIZARD_LABELS = [
   'Datos personales',
   'Domicilio particular',
   'Contrato y organización',
   'Jornada y remuneración',
-  'Asignaciones y condiciones especiales',
+  'Asignaciones laborales',
   'Previsión y salud',
   'APVI',
   'Bancario',
+  'Condiciones especiales',
   'Resumen final',
 ] as const;
 
@@ -37,6 +38,7 @@ export const EMPLEADO_FORM_STEP_BLOCK_IDS: Record<EmpleadoFormTabId, readonly st
     'cargas',
     'zonaExtrema',
     'semanaCorrida',
+    'perfilLaboral',
     'centroCosto',
   ],
   previsionSalud: ['regimen', 'afp', 'ips', 'salud', 'apvi'],

@@ -1,0 +1,88 @@
+# See https://docs.github.com/get-started/getting-started-with-git/ignoring-files for more about ignoring files.
+
+# Compiled output
+/dist
+/tmp
+/out-tsc
+/bazel-out
+
+# Node
+/node_modules
+npm-debug.log
+yarn-error.log
+
+# IDEs and editors
+.idea/
+.project
+.classpath
+.c9/
+*.launch
+.settings/
+*.sublime-workspace
+
+# Visual Studio Code
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+!.vscode/mcp.json
+.history/*
+
+# Cursor (workspace rules/skills; local by default)
+.cursor/
+
+# Guías y bitácora Codex (copia local del contrato de agente; no publicar en remoto)
+/docs/codex/*
+!/docs/codex/observaciones.md
+!/docs/codex/flujo-git-developer-main.md
+!/docs/codex/ui-form-guidelines.md
+!/docs/codex/estilos/
+/docs/codex/estilos/*
+!/docs/codex/estilos/README.md
+!/docs/codex/estilos/observaciones.md
+!/docs/codex/modulos/
+/docs/codex/modulos/*
+!/docs/codex/modulos/auth/
+!/docs/codex/modulos/auth/README.md
+!/docs/codex/modulos/auth/contrato-general.md
+
+# Miscellaneous
+# Copia local de respaldo del proyecto (no versionar)
+/angular-erp.zip
+/.angular/cache
+.sass-cache/
+/connect.lock
+/coverage
+/libpeerconnection.log
+testem.log
+/typings
+__screenshots__/
+/public/app-config.json
+
+# System files
+.DS_Store
+Thumbs.db
+
+src/app/supabase
+/tests/*
+!/tests/nomina-mensual.e2e.spec.ts
+/test-results
+/bd/*
+!/bd/README.md
+!/bd/base/
+/bd/base/*
+!/bd/base/README.md
+!/bd/base/v11/
+!/bd/base/v11/**
+!/bd/base/historico/
+/bd/base/historico/*
+!/bd/base/historico/crear_sql_v6_10_integrada.sql
+/.env
+/src/app/shared/components/ui/peticion.txt
+  
+# Ignorar archivos comprimidos
+*.zip
+*.rar
+*.7z
+*.tar.gz

@@ -1,0 +1,429 @@
+<section class="employee-section-shell">
+  @if (isBlockVisible('identificacion')) {
+    <app-card className="employee-block employee-block--wide" [formGroup]="formGroup">
+      <div class="employee-block-head">
+        <h4>
+          Identificación legal
+          <span class="field-required" aria-hidden="true">*</span>
+        </h4>
+        @if (basicSectionLeads) {
+          <p class="employee-block-lead">RUT o pasaporte (uno obligatorio).</p>
+        }
+      </div>
+
+      <div
+        class="employee-grid"
+        [class.employee-grid-basic--ident]="basicSectionLeads"
+        [class.employee-grid--two]="!basicSectionLeads"
+        [class.employee-grid-adv]="advancedGridLayout"
+        [class.employee-grid-adv--ident]="advancedGridLayout"
+      >
+        <div class="form-field form-field--rut">
+          <div class="field-label-row">
+            <label for="empleado-rut">RUT</label>
+          </div>
+          <input
+            id="empleado-rut"
+            type="text"
+            inputmode="text"
+            maxlength="12"
+            formControlName="rut"
+            placeholder="Ej: 12.345.678-9"
+            [class]="controlClass('rut')"
+          />
+          @if (hasIdentityError()) {
+            <p class="field-message">Ingresa RUT o pasaporte.</p>
+          } @else if (hasError('rut', 'rut')) {
+            <p class="field-message">Ingresa un RUT válido, por ejemplo 12.345.678-5.</p>
+          } @else {
+            <p class="field-message"></p>
+          }
+        </div>
+
+        <div class="form-field form-field--passport">
+          <div class="field-label-row">
+            <label for="empleado-pasaporte">Pasaporte (opcional)</label>
+          </div>
+          <input
+            id="empleado-pasaporte"
+            type="text"
+            formControlName="pasaporte"
+            placeholder="Ej: AA1234567"
+            [class]="controlClass('pasaporte')"
+          />
+          @if (hasError('pasaporte', 'passport')) {
+            <p class="field-message">Ingresa un pasaporte válido de 5 a 30 caracteres.</p>
+          } @else {
+            <p class="field-message"></p>
+          }
+        </div>
+
+        <div class="form-field form-field--date">
+          <div class="field-label-row">
+            <label for="empleado-fecha-nacimiento">Fecha nacimiento</label>
+            @if (isRequired('fechaNacimiento')) {
+              <span class="field-required" aria-hidden="true">*</span>
+            }
+          </div>
+          <app-calendar-input
+            id="empleado-fecha-nacimiento"
+            formControlName="fechaNacimiento"
+            placeholder="dd/mm/aaaa"
+            [invalid]="hasError('fechaNacimiento')"
+            [max]="today"
+          ></app-calendar-input>
+          @if (hasError('fechaNacimiento', 'required')) {
+            <p class="field-message">La fecha de nacimiento es obligatoria.</p>
+          } @else if (hasError('fechaNacimiento', 'futureDate')) {
+            <p class="field-message">La fecha de nacimiento no puede ser futura.</p>
+          } @else if (hasError('fechaNacimiento', 'date')) {
+            <p class="field-message">Ingresa una fecha de nacimiento válida.</p>
+          } @else {
+            <p class="field-message"></p>
+          }
+        </div>
+
+        <div class="form-field form-field--sex">
+          <div class="field-label-row">
+            <label for="empleado-sexo">Sexo</label>
+            @if (isRequired('sexo')) {
+              <span class="field-required" aria-hidden="true">*</span>
+            }
+          </div>
+          <app-search-select
+            id="empleado-sexo"
+            formControlName="sexo"
+            placeholder="Selecciona sexo"
+            searchPlaceholder="Buscar sexo"
+            [options]="sexoSelectOptions"
+            [invalid]="hasError('sexo')"
+          ></app-search-select>
+          @if (hasError('sexo', 'required')) {
+            <p class="field-message">El sexo es obligatorio.</p>
+          } @else {
+            <p class="field-message"></p>
+          }
+        </div>
+      </div>
+
+    </app-card>
+  }
+
+  @if (isBlockVisible('nombre')) {
+    <app-card className="employee-block employee-block--wide" [formGroup]="formGroup">
+      <div class="employee-block-head">
+        <h4>Nombre del empleado</h4>
+        @if (basicSectionLeads) {
+          <p class="employee-block-lead">Nombre visible en listados y comunicaciones.</p>
+        }
+      </div>
+
+      <div
+        class="employee-grid"
+        [class.employee-grid-basic--nombre]="basicSectionLeads"
+        [class.employee-grid--three]="!basicSectionLeads"
+        [class.employee-grid-adv]="advancedGridLayout"
+        [class.employee-grid-adv--nombre]="advancedGridLayout"
+      >
+        <div class="form-field form-field--wide">
+          <div class="field-label-row">
+            <label for="empleado-nombres">Nombres</label>
+            @if (isRequired('nombres')) {
+              <span class="field-required" aria-hidden="true">*</span>
+            }
+          </div>
+          <input
+            id="empleado-nombres"
+            type="text"
+            formControlName="nombres"
+            placeholder="Ej: Camila Andrea"
+            [class]="controlClass('nombres')"
+          />
+          @if (hasError('nombres', 'required')) {
+            <p class="field-message">Los nombres son obligatorios.</p>
+          } @else if (hasError('nombres', 'personName')) {
+            <p class="field-message">Usa solo letras, espacios, apóstrofes o guiones.</p>
+          } @else if (hasError('nombres', 'maxlength')) {
+            <p class="field-message">Los nombres superan el largo permitido.</p>
+          } @else {
+            <p class="field-message"></p>
+          }
+        </div>
+
+        <div class="form-field">
+          <div class="field-label-row">
+            <label for="empleado-apellido-paterno">Apellido paterno</label>
+            @if (isRequired('apellidoPaterno')) {
+              <span class="field-required" aria-hidden="true">*</span>
+            }
+          </div>
+          <input
+            id="empleado-apellido-paterno"
+            type="text"
+            formControlName="apellidoPaterno"
+            placeholder="Ej: Soto"
+            [class]="controlClass('apellidoPaterno')"
+          />
+          @if (hasError('apellidoPaterno', 'required')) {
+            <p class="field-message">El apellido paterno es obligatorio.</p>
+          } @else if (hasError('apellidoPaterno', 'personName')) {
+            <p class="field-message">Usa solo letras, espacios, apóstrofes o guiones.</p>
+          } @else if (hasError('apellidoPaterno', 'maxlength')) {
+            <p class="field-message">El apellido paterno supera el largo permitido.</p>
+          } @else {
+            <p class="field-message"></p>
+          }
+        </div>
+
+        <div class="form-field">
+          <div class="field-label-row">
+            <label for="empleado-apellido-materno">Apellido materno</label>
+          </div>
+          <input
+            id="empleado-apellido-materno"
+            type="text"
+            formControlName="apellidoMaterno"
+            placeholder="Ej: Rojas"
+            [class]="controlClass('apellidoMaterno')"
+          />
+          @if (hasError('apellidoMaterno', 'personName')) {
+            <p class="field-message">Usa solo letras, espacios, apóstrofes o guiones.</p>
+          } @else if (hasError('apellidoMaterno', 'maxlength')) {
+            <p class="field-message">El apellido materno supera el largo permitido.</p>
+          } @else {
+            <p class="field-message"></p>
+          }
+        </div>
+      </div>
+    </app-card>
+  }
+
+  @if (isBlockVisible('base')) {
+    @if (basicSectionLeads) {
+      <div class="employee-basic-bottom-grid" aria-label="Datos personales y contacto">
+        <app-card className="employee-block employee-block--narrow">
+          <div class="employee-block-head">
+            <h4>Datos personales</h4>
+            <p class="employee-block-lead">Nacionalidad y estado civil.</p>
+          </div>
+
+          <div
+            class="employee-grid employee-grid-basic--base"
+            [formGroup]="formGroup"
+          >
+            <div class="form-field form-field--span-2">
+              <div class="field-label-row">
+                <label for="empleado-idPais">Nacionalidad</label>
+                @if (isRequired('idPais')) {
+                  <span class="field-required" aria-hidden="true">*</span>
+                }
+              </div>
+              <app-search-select
+                id="empleado-idPais"
+                formControlName="idPais"
+                placeholder="Selecciona un país"
+                searchPlaceholder="Buscar país"
+                [options]="paisSelectOptions"
+                [invalid]="hasError('idPais')"
+              ></app-search-select>
+              @if (hasError('idPais', 'required')) {
+                <p class="field-message">El país es obligatorio.</p>
+              } @else if (!paises.length) {
+                <p class="field-message field-message--warning">
+                  No hay países cargados desde Supabase.
+                </p>
+              } @else {
+                <p class="field-message"></p>
+              }
+            </div>
+
+            <div class="form-field form-field--span-2">
+              <div class="field-label-row">
+                <label for="empleado-estadoCivil">Estado civil</label>
+                @if (isRequired('estadoCivil')) {
+                  <span class="field-required" aria-hidden="true">*</span>
+                }
+              </div>
+              <app-search-select
+                id="empleado-estadoCivil"
+                formControlName="estadoCivil"
+                placeholder="Selecciona un estado civil"
+                searchPlaceholder="Buscar estado civil"
+                [options]="estadoCivilSelectOptions"
+                [invalid]="hasError('estadoCivil')"
+              ></app-search-select>
+              @if (hasError('estadoCivil', 'required')) {
+                <p class="field-message">El estado civil es obligatorio.</p>
+              } @else {
+                <p class="field-message"></p>
+              }
+            </div>
+          </div>
+        </app-card>
+
+        @if (isBlockVisible('contacto')) {
+          <app-card className="employee-block employee-block--narrow">
+            <div class="employee-block-head">
+              <h4>Contacto</h4>
+              <p class="employee-block-lead">Email y teléfono opcionales.</p>
+            </div>
+
+            <div class="employee-grid employee-grid-basic--contact" [formGroup]="contactoFormGroup">
+              <div class="form-field form-field--wide">
+                <div class="field-label-row">
+                  <label for="empleado-email">Email</label>
+                </div>
+                <input
+                  id="empleado-email"
+                  type="email"
+                  formControlName="email"
+                  placeholder="Ej: nombre@empresa.cl"
+                  [class]="contactoControlClass('email')"
+                />
+                @if (hasContactoError('email', 'email')) {
+                  <p class="field-message">Ingresa un email válido.</p>
+                } @else {
+                  <p class="field-message"></p>
+                }
+              </div>
+
+              <div class="form-field">
+                <div class="field-label-row">
+                  <label for="empleado-telefono">Teléfono</label>
+                </div>
+                <input
+                  id="empleado-telefono"
+                  type="text"
+                  inputmode="tel"
+                  maxlength="20"
+                  formControlName="telefono"
+                  placeholder="Ej: +56 9 1234 5678"
+                  [class]="contactoControlClass('telefono')"
+                />
+                @if (
+                  hasContactoError('telefono', 'phoneFormat') || hasContactoError('telefono', 'maxlength')
+                ) {
+                  <p class="field-message">Ingresa un teléfono válido.</p>
+                } @else {
+                  <p class="field-message"></p>
+                }
+              </div>
+            </div>
+          </app-card>
+        }
+      </div>
+    } @else {
+      <app-card className="employee-block employee-block--narrow">
+        <div class="employee-block-head">
+          <h4>Datos personales</h4>
+        </div>
+        <div
+          class="employee-grid employee-grid--four"
+          [formGroup]="formGroup"
+          [class.employee-grid-adv]="advancedGridLayout"
+          [class.employee-grid-adv--base]="advancedGridLayout"
+        >
+          <div class="form-field">
+            <div class="field-label-row">
+              <label for="empleado-idPais">Nacionalidad</label>
+              @if (isRequired('idPais')) {
+                <span class="field-required" aria-hidden="true">*</span>
+              }
+            </div>
+            <app-search-select
+              id="empleado-idPais"
+              formControlName="idPais"
+              placeholder="Selecciona un país"
+              searchPlaceholder="Buscar país"
+              [options]="paisSelectOptions"
+              [invalid]="hasError('idPais')"
+            ></app-search-select>
+            @if (hasError('idPais', 'required')) {
+              <p class="field-message">El país es obligatorio.</p>
+            } @else {
+              <p class="field-message"></p>
+            }
+          </div>
+
+          <div class="form-field">
+            <div class="field-label-row">
+              <label for="empleado-estadoCivil">Estado civil</label>
+              @if (isRequired('estadoCivil')) {
+                <span class="field-required" aria-hidden="true">*</span>
+              }
+            </div>
+            <app-search-select
+              id="empleado-estadoCivil"
+              formControlName="estadoCivil"
+              placeholder="Selecciona un estado civil"
+              searchPlaceholder="Buscar estado civil"
+              [options]="estadoCivilSelectOptions"
+              [invalid]="hasError('estadoCivil')"
+            ></app-search-select>
+            @if (hasError('estadoCivil', 'required')) {
+              <p class="field-message">El estado civil es obligatorio.</p>
+            } @else {
+              <p class="field-message"></p>
+            }
+          </div>
+        </div>
+      </app-card>
+
+      @if (isBlockVisible('contacto')) {
+        <app-card className="employee-block employee-block--narrow" [formGroup]="contactoFormGroup">
+          <div class="employee-block-head">
+            <h4>Contacto</h4>
+            <p class="employee-block-lead">Email y teléfono son opcionales para coordinación interna.</p>
+          </div>
+
+          <div
+            class="employee-grid employee-grid--two"
+            [class.employee-grid-adv]="advancedGridLayout"
+            [class.employee-grid-adv--contact]="advancedGridLayout"
+          >
+            <div class="form-field form-field--wide">
+              <div class="field-label-row">
+                <label for="empleado-email">Email (opcional)</label>
+              </div>
+              <input
+                id="empleado-email"
+                type="email"
+                inputmode="email"
+                formControlName="email"
+                placeholder="Ej: nombre@empresa.cl"
+                [class]="contactoControlClass('email')"
+              />
+              @if (hasContactoError('email', 'email')) {
+                <p class="field-message">Ingresa un email válido.</p>
+              } @else {
+                <p class="field-message"></p>
+              }
+            </div>
+
+            <div class="form-field">
+              <div class="field-label-row">
+                <label for="empleado-telefono">Teléfono (opcional)</label>
+              </div>
+              <input
+                id="empleado-telefono"
+                type="text"
+                inputmode="tel"
+                maxlength="20"
+                formControlName="telefono"
+                placeholder="Ej: +56 9 1234 5678"
+                [class]="contactoControlClass('telefono')"
+              />
+              @if (
+                hasContactoError('telefono', 'phoneFormat') || hasContactoError('telefono', 'maxlength')
+              ) {
+                <p class="field-message">Ingresa un teléfono válido.</p>
+              } @else {
+                <p class="field-message"></p>
+              }
+            </div>
+          </div>
+        </app-card>
+      }
+    }
+  }
+</section>

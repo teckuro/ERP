@@ -189,6 +189,46 @@ export class EmpleadosFormOrchestratorService {
         }),
         idTramoCarga: new FormControl<number | null>(null),
       }),
+      perfilLaboral: new FormGroup({
+        pensionado: new FormControl(false, {
+          nonNullable: true,
+        }),
+        pensionadoInvalidezParcial: new FormControl(false, {
+          nonNullable: true,
+        }),
+        pensionadoInvalidezTotal: new FormControl(false, {
+          nonNullable: true,
+        }),
+        exentoCotizacionPension: new FormControl(false, {
+          nonNullable: true,
+        }),
+        trabajadorAdolescenteProtegido: new FormControl(false, {
+          nonNullable: true,
+        }),
+        autorizacionMenorRegistrada: new FormControl(false, {
+          nonNullable: true,
+        }),
+        tecnicoExtranjeroExento: new FormControl(false, {
+          nonNullable: true,
+        }),
+        discapacidad: new FormControl(false, {
+          nonNullable: true,
+        }),
+        vigenciaInicio: new FormControl(buildTodayValue(), {
+          nonNullable: true,
+          validators: [Validators.required],
+        }),
+        vigenciaFin: new FormControl('', {
+          nonNullable: true,
+        }),
+        respaldoRegistrado: new FormControl(false, {
+          nonNullable: true,
+        }),
+        observacion: new FormControl('', {
+          nonNullable: true,
+          validators: [Validators.maxLength(250)],
+        }),
+      }),
       previsionSalud: new FormGroup({
         tipoRegimenPrevisional: new FormControl<TipoRegimenPrevisional | null>(null, {
           validators: [Validators.required],
@@ -319,6 +359,12 @@ export class EmpleadosFormOrchestratorService {
       .pipe(takeUntilDestroyed(destroyRef))
       .subscribe(() => this.ensureTramoCargaSelection(form, getCatalogos()));
 
+    controls.fechaIngreso.valueChanges
+      .pipe(takeUntilDestroyed(destroyRef))
+      .subscribe((fechaIngreso) => this.syncPerfilLaboralVigenciaInicio(form, fechaIngreso));
+
+    this.syncPerfilLaboralVigenciaInicio(form, controls.fechaIngreso.value);
+
     controls.idTramoCarga.valueChanges.pipe(takeUntilDestroyed(destroyRef)).subscribe(() => {
       if (controls.idTramoCarga.dirty) {
         this.tramoCargaTouchedByForm.set(form, true);
@@ -347,6 +393,20 @@ export class EmpleadosFormOrchestratorService {
       });
 
     this.updateContratoValidators(form);
+  }
+
+  private syncPerfilLaboralVigenciaInicio(form: EmpleadoFormGroup, fechaIngreso: string): void {
+    const control = form.controls.perfilLaboral.controls.vigenciaInicio;
+    const value = fechaIngreso?.trim();
+
+    if (!value) {
+      return;
+    }
+
+    if (!control.value || control.pristine) {
+      control.setValue(value, { emitEvent: false });
+      control.markAsPristine();
+    }
   }
 
   private updateContratoValidators(form: EmpleadoFormGroup): void {

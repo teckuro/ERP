@@ -17,6 +17,7 @@ function empleadoFichaDetalleBase(over: Partial<EmpleadoFichaDetalle> = {}): Emp
     datosPersonales: {},
     contacto: {},
     contrato: { fechaIngreso: '2026-01-01', fechaTermino: null as string | null },
+    perfilLaboral: {},
     previsionSalud: {},
     bancario: {},
   };
@@ -265,6 +266,7 @@ describe('MovimientosVariablesService', () => {
             datosPersonales: {},
             contacto: {},
             contrato: { fechaIngreso: '', fechaTermino: null },
+            perfilLaboral: {},
             previsionSalud: {},
             bancario: {},
           },
@@ -282,6 +284,7 @@ describe('MovimientosVariablesService', () => {
             datosPersonales: {},
             contacto: {},
             contrato: { fechaIngreso: '2026-06-01', fechaTermino: null },
+            perfilLaboral: {},
             previsionSalud: {},
             bancario: {},
           },

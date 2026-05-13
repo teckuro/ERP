@@ -35,6 +35,7 @@ export class EmpleadosWriteService {
       await this.empleadosRepository.insertarCuenta2Afp(payload, contratoId);
       await this.empleadosRepository.insertarSemanaCorrida(payload, contratoId);
       await this.empleadosRepository.insertarZonaExtrema(payload, contratoId);
+      await this.empleadosRepository.reemplazarCondicionesTrabajador(personaId, contratoId, payload);
       await this.empleadosRepository.insertarApv(payload, contratoId);
       await this.empleadosRepository.insertarCuentaBancaria(payload, personaId);
       await this.empleadosRepository.insertarContratoCentroCosto(payload, contratoId);

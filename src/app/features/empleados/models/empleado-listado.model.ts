@@ -32,6 +32,7 @@ export interface EmpleadoFichaDetalle extends EmpleadoListado {
     datosPersonales: Record<string, unknown>;
     contacto: Record<string, unknown>;
     contrato: Record<string, unknown>;
+    perfilLaboral: Record<string, unknown>;
     previsionSalud: Record<string, unknown>;
     bancario: Record<string, unknown>;
   };

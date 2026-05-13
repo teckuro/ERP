@@ -1,0 +1,178 @@
+<section class="employee-section-shell employee-section-shell--compact" [formGroup]="formGroup">
+  @if (isBlockVisible('contacto')) {
+    <app-card className="employee-block">
+      <div class="employee-block-head">
+        <h4>Contacto</h4>
+        <p class="employee-block-lead">Email y teléfono para notificaciones o coordinación interna.</p>
+      </div>
+
+      <div class="employee-grid employee-grid--two">
+        <div class="form-field">
+          <div class="field-label-row">
+            <label for="empleado-email">Email (opcional)</label>
+          </div>
+          <input
+            id="empleado-email"
+            type="email"
+            inputmode="email"
+            formControlName="email"
+            placeholder="Ej: nombre@empresa.cl"
+            [class]="controlClass('email')"
+          />
+          @if (hasError('email', 'email')) {
+            <p class="field-message">Ingresa un email válido.</p>
+          } @else if (hasError('email', 'maxlength')) {
+            <p class="field-message">El email supera el largo permitido.</p>
+          } @else {
+            <p class="field-message"></p>
+          }
+        </div>
+
+        <div class="form-field">
+          <div class="field-label-row">
+            <label for="empleado-telefono">Teléfono (opcional)</label>
+          </div>
+          <input
+            id="empleado-telefono"
+            type="text"
+            inputmode="tel"
+            maxlength="30"
+            formControlName="telefono"
+            placeholder="Ej: +56 9 1234 5678"
+            [class]="controlClass('telefono')"
+          />
+          @if (hasError('telefono', 'phone')) {
+            <p class="field-message">Ingresa un teléfono válido.</p>
+          } @else if (hasError('telefono', 'maxlength')) {
+            <p class="field-message">El teléfono supera el largo permitido.</p>
+          } @else {
+            <p class="field-message"></p>
+          }
+        </div>
+      </div>
+    </app-card>
+  }
+
+  @if (isBlockVisible('ubicacion')) {
+    <app-card className="employee-block" [class.employee-block--domicilio-avanzado]="domicilioAvanzado">
+      <div class="employee-block-head">
+        <h4>Domicilio particular</h4>
+        @if (domicilioAvanzado) {
+          <p class="employee-block-lead">
+            La comuna es obligatoria para asociar correctamente la ubicación del colaborador.
+          </p>
+        }
+      </div>
+
+      <div
+        class="employee-grid employee-grid--four"
+        [class.employee-grid-adv-domicilio]="advancedGridLayout"
+      >
+        <div class="form-field form-field--wide">
+          <div class="field-label-row">
+            <label for="empleado-direccion">Calle o avenida</label>
+            @if (isRequired('direccion')) {
+              <span class="field-required" aria-hidden="true">*</span>
+            }
+          </div>
+          <input
+            id="empleado-direccion"
+            type="text"
+            formControlName="direccion"
+            placeholder="Ej: Av. Libertad 123"
+            [class]="controlClass('direccion')"
+          />
+          @if (hasError('direccion', 'required')) {
+            <p class="field-message">La dirección es obligatoria.</p>
+          } @else {
+            <p class="field-message"></p>
+          }
+        </div>
+
+        <div class="form-field">
+          <div class="field-label-row">
+            <label for="empleado-numero-direccion">Numero</label>
+          </div>
+          <input
+            id="empleado-numero-direccion"
+            type="text"
+            inputmode="numeric"
+            maxlength="20"
+            formControlName="numeroDireccion"
+            placeholder="Ej: 123"
+            [class]="controlClass('numeroDireccion')"
+          />
+          @if (hasError('numeroDireccion', 'digitsOnly')) {
+            <p class="field-message">Ingresa solo números.</p>
+          } @else if (hasError('numeroDireccion', 'maxlength')) {
+            <p class="field-message">El número supera el largo permitido.</p>
+          } @else {
+            <p class="field-message"></p>
+          }
+        </div>
+
+        <div class="form-field">
+          <div class="field-label-row">
+            <label for="empleado-departamento-direccion">Depto. u oficina</label>
+          </div>
+          <input
+            id="empleado-departamento-direccion"
+            type="text"
+            formControlName="departamentoDireccion"
+            placeholder="Ej: Depto 402"
+            [class]="controlClass('departamentoDireccion')"
+          />
+          @if (hasError('departamentoDireccion', 'maxlength')) {
+            <p class="field-message">El departamento u oficina supera el largo permitido.</p>
+          } @else {
+            <p class="field-message"></p>
+          }
+        </div>
+
+        <div class="form-field">
+          <div class="field-label-row">
+            <label for="empleado-comuna">Comuna</label>
+            @if (isRequired('idComuna')) {
+              <span class="field-required" aria-hidden="true">*</span>
+            }
+          </div>
+          <app-search-select
+            id="empleado-comuna"
+            formControlName="idComuna"
+            placeholder="Selecciona una comuna"
+            searchPlaceholder="Buscar comuna"
+            [options]="comunaSelectOptions"
+            [invalid]="hasError('idComuna')"
+          ></app-search-select>
+          @if (hasError('idComuna', 'required')) {
+            <p class="field-message">Selecciona una comuna.</p>
+          } @else if (!comunas.length) {
+            <p class="field-message field-message--warning">
+              No hay comunas cargadas desde Supabase.
+            </p>
+          } @else {
+            <p class="field-message"></p>
+          }
+        </div>
+
+        <div class="form-field">
+          <div class="field-label-row">
+            <label for="empleado-observaciones-direccion">Observaciones</label>
+          </div>
+          <textarea
+            id="empleado-observaciones-direccion"
+            rows="3"
+            formControlName="observacionesDireccion"
+            placeholder="Ej: referencia de domicilio, torre, block, sector u otra indicación."
+            [class]="controlClass('observacionesDireccion') + ' employee-control--textarea'"
+          ></textarea>
+          @if (hasError('observacionesDireccion', 'maxlength')) {
+            <p class="field-message">Las observaciones superan el largo permitido.</p>
+          } @else {
+            <p class="field-message"></p>
+          }
+        </div>
+      </div>
+    </app-card>
+  }
+</section>

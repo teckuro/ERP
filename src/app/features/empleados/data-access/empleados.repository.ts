@@ -85,6 +85,14 @@ type Cuenta2AfpRow = Tables<'cuenta2_afp'>;
 type CentroCostoRow = Tables<'centro_costo'>;
 type EmpleadoHistorialRow = Tables<'empleado_historial'>;
 
+interface CondicionTrabajadorPersistida {
+  codigo: string;
+  vigenciaInicio: string | null;
+  vigenciaFin: string | null;
+  respaldoRegistrado: boolean;
+  observacion: string | null;
+}
+
 interface CentroCostoLookupRow {
   id_contrato: number;
   centro_costo: Pick<CentroCostoRow, 'nombre'> | null;
@@ -458,6 +466,7 @@ export class EmpleadosRepository {
       await this.upsertRemuneracionDesdePayload(contratoId!, payload);
       await this.upsertSemanaCorridaDesdePayload(contratoId!, payload);
       await this.upsertZonaExtremaDesdePayload(contratoId!, payload);
+      await this.reemplazarCondicionesTrabajador(personaId, contratoId!, payload);
     }
 
     if (seccion === 'prevision') {
@@ -713,6 +722,7 @@ export class EmpleadosRepository {
     await this.upsertRemuneracionDesdePayload(contratoId, payload);
     await this.upsertSemanaCorridaDesdePayload(contratoId, payload);
     await this.upsertZonaExtremaDesdePayload(contratoId, payload);
+    await this.reemplazarCondicionesTrabajador(personaId, contratoId, payload);
     await this.upsertPrevisionDesdePayload(contratoId, payload);
     await this.upsertSaludDesdePayload(contratoId, payload);
     await this.upsertCuenta2DesdePayload(contratoId, payload);
@@ -773,6 +783,7 @@ export class EmpleadosRepository {
     await this.upsertRemuneracionDesdePayload(contratoId, payload);
     await this.upsertSemanaCorridaDesdePayload(contratoId, payload);
     await this.upsertZonaExtremaDesdePayload(contratoId, payload);
+    await this.reemplazarCondicionesTrabajador(personaId, contratoId, payload);
     if (puedePersistirPrevisionBorrador(payload)) {
       await this.upsertPrevisionDesdePayload(contratoId, payload);
       await this.upsertSaludDesdePayload(contratoId, payload);
@@ -1231,6 +1242,7 @@ export class EmpleadosRepository {
       zonaExtrema,
       apv,
       cuenta2,
+      condicionesTrabajador,
       historial,
     ] = contratoId
       ? await Promise.all([
@@ -1242,9 +1254,10 @@ export class EmpleadosRepository {
           this.fetchLatestByContrato('zona_extrema', contratoId, 'id_zona_extrema'),
           this.fetchLatestByContrato('apv', contratoId, 'id_apv'),
           this.fetchLatestByContrato('cuenta2_afp', contratoId, 'id_cuenta2_afp'),
+          this.fetchCondicionesTrabajador(resumen.id, contratoId),
           this.obtenerHistorialFicha(resumen.id),
         ])
-      : [null, null, null, null, null, null, null, null, await this.obtenerHistorialFicha(resumen.id)];
+      : [null, null, null, null, null, null, null, null, [], await this.obtenerHistorialFicha(resumen.id)];
 
     const sinDefaultsLecturaBorrador = resumen.pasoAltaAvanzada !== null;
 
@@ -1264,8 +1277,167 @@ export class EmpleadosRepository {
         zonaExtrema as ZonaExtremaRow | null,
         apv as ApvRow | null,
         cuenta2 as Cuenta2AfpRow | null,
+        condicionesTrabajador as CondicionTrabajadorPersistida[],
         { sinDefaultsLecturaBorrador },
       ),
+    };
+  }
+
+
+  async reemplazarCondicionesTrabajador(
+    personaId: number,
+    contratoId: number,
+    payload: CrearEmpleadoPayload,
+  ): Promise<void> {
+    const supabase = this.supabase as any;
+
+    const deleteResult = await supabase
+      .from('persona_condicion_trabajador')
+      .delete()
+      .eq('id_persona', personaId)
+      .eq('id_contrato', contratoId);
+
+    if (deleteResult.error) {
+      throw buildRepositoryError(
+        'No fue posible actualizar las condiciones laborales del trabajador.',
+        deleteResult.error.message,
+      );
+    }
+
+    if (payload.condicionesTrabajador.length === 0) {
+      return;
+    }
+
+    const codigos = payload.condicionesTrabajador.map((condition) => condition.codigo);
+    const { data: tipos, error: tiposError } = await supabase
+      .from('tipo_condicion_trabajador')
+      .select('id_tipo_condicion_trabajador,codigo')
+      .in('codigo', codigos);
+
+    if (tiposError) {
+      throw buildRepositoryError(
+        'No fue posible validar el catálogo de condiciones laborales.',
+        tiposError.message,
+      );
+    }
+
+    const idsByCode = new Map<string, number>(
+      ((tipos ?? []) as Array<{ codigo: string; id_tipo_condicion_trabajador: number }>).map(
+        (row) => [row.codigo, row.id_tipo_condicion_trabajador],
+      ),
+    );
+
+    const missing = codigos.filter((codigo) => !idsByCode.has(codigo));
+    if (missing.length > 0) {
+      throw buildRepositoryError(
+        'No fue posible validar las condiciones laborales seleccionadas.',
+        `Condiciones no encontradas: ${missing.join(', ')}`,
+      );
+    }
+
+    const rows = payload.condicionesTrabajador.map((condition) => ({
+      id_persona: personaId,
+      id_contrato: contratoId,
+      id_tipo_condicion_trabajador: idsByCode.get(condition.codigo),
+      activa: true,
+      vigencia_inicio: condition.vigenciaInicio,
+      vigencia_fin: condition.vigenciaFin,
+      respaldo_registrado: condition.respaldoRegistrado,
+      observacion: condition.observacion,
+    }));
+
+    const insertResult = await supabase.from('persona_condicion_trabajador').insert(rows);
+
+    if (insertResult.error) {
+      throw buildRepositoryError(
+        'No fue posible registrar las condiciones laborales del trabajador.',
+        insertResult.error.message,
+      );
+    }
+  }
+
+  private async fetchCondicionesTrabajador(
+    personaId: number,
+    contratoId: number,
+  ): Promise<CondicionTrabajadorPersistida[]> {
+    const supabase = this.supabase as any;
+    const { data: rows, error } = await supabase
+      .from('persona_condicion_trabajador')
+      .select('id_tipo_condicion_trabajador,vigencia_inicio,vigencia_fin,respaldo_registrado,observacion')
+      .eq('id_persona', personaId)
+      .eq('id_contrato', contratoId)
+      .eq('activa', true);
+
+    if (error) {
+      throw buildRepositoryError(
+        'No fue posible cargar las condiciones laborales del trabajador.',
+        error.message,
+      );
+    }
+
+    const typedRows = (rows ?? []) as Array<{
+      id_tipo_condicion_trabajador: number;
+      vigencia_inicio: string | null;
+      vigencia_fin: string | null;
+      respaldo_registrado: boolean | null;
+      observacion: string | null;
+    }>;
+
+    if (typedRows.length === 0) {
+      return [];
+    }
+
+    const ids = typedRows.map((row) => row.id_tipo_condicion_trabajador);
+    const { data: tipos, error: tiposError } = await supabase
+      .from('tipo_condicion_trabajador')
+      .select('id_tipo_condicion_trabajador,codigo')
+      .in('id_tipo_condicion_trabajador', ids);
+
+    if (tiposError) {
+      throw buildRepositoryError(
+        'No fue posible cargar el catálogo de condiciones laborales.',
+        tiposError.message,
+      );
+    }
+
+    const codeById = new Map<number, string>(
+      ((tipos ?? []) as Array<{ id_tipo_condicion_trabajador: number; codigo: string }>).map(
+        (row) => [row.id_tipo_condicion_trabajador, row.codigo],
+      ),
+    );
+
+    return typedRows
+      .map((row) => ({
+        codigo: codeById.get(row.id_tipo_condicion_trabajador) ?? '',
+        vigenciaInicio: row.vigencia_inicio,
+        vigenciaFin: row.vigencia_fin,
+        respaldoRegistrado: row.respaldo_registrado === true,
+        observacion: row.observacion,
+      }))
+      .filter((row) => row.codigo.length > 0);
+  }
+
+  private mapCondicionesTrabajadorFormValue(
+    condiciones: CondicionTrabajadorPersistida[],
+    fallbackVigenciaInicio: string,
+  ): Record<string, unknown> {
+    const codigos = new Set(condiciones.map((condition) => condition.codigo));
+    const first = condiciones[0];
+
+    return {
+      pensionado: codigos.has('PENSIONADO'),
+      pensionadoInvalidezParcial: codigos.has('PENSIONADO_INVALIDEZ_PARCIAL'),
+      pensionadoInvalidezTotal: codigos.has('PENSIONADO_INVALIDEZ_TOTAL'),
+      exentoCotizacionPension: codigos.has('EXENTO_COTIZACION_PENSION'),
+      trabajadorAdolescenteProtegido: codigos.has('TRABAJADOR_ADOLESCENTE_PROTEGIDO'),
+      autorizacionMenorRegistrada: codigos.has('AUTORIZACION_MENOR_REGISTRADA'),
+      tecnicoExtranjeroExento: codigos.has('TECNICO_EXTRANJERO_EXENTO'),
+      discapacidad: codigos.has('DISCAPACIDAD'),
+      vigenciaInicio: first?.vigenciaInicio ?? fallbackVigenciaInicio,
+      vigenciaFin: first?.vigenciaFin ?? '',
+      respaldoRegistrado:
+        condiciones.length > 0 && condiciones.every((condition) => condition.respaldoRegistrado),
+      observacion: first?.observacion ?? '',
     };
   }
 
@@ -1412,6 +1584,7 @@ export class EmpleadosRepository {
     zonaExtrema: ZonaExtremaRow | null,
     apv: ApvRow | null,
     cuenta2: Cuenta2AfpRow | null,
+    condicionesTrabajador: CondicionTrabajadorPersistida[],
     opciones?: { sinDefaultsLecturaBorrador?: boolean },
   ): EmpleadoFichaDetalle['formValue'] {
     const sinDef = opciones?.sinDefaultsLecturaBorrador === true;
@@ -1472,6 +1645,10 @@ export class EmpleadosRepository {
         cargas: persona.cargas ?? 0,
         idTramoCarga: persona.id_tramo_carga,
       },
+      perfilLaboral: this.mapCondicionesTrabajadorFormValue(
+        condicionesTrabajador,
+        contrato?.fecha_inicio ?? new Date().toISOString().slice(0, 10),
+      ),
       previsionSalud: {
         tipoRegimenPrevisional: prevision?.tipo_prevision ?? null,
         idAfp: prevision?.id_afp ?? null,
