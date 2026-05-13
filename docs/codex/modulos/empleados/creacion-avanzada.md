@@ -117,3 +117,38 @@ Regla UX: no duplicar la informacion del mapa con tarjetas permanentes dentro de
   - regimen previsional `NINGUNA` -> `Exento de cotizacion de pension` para revision administrativa.
 - Las condiciones pre-marcadas se muestran con chip `Detectada` y bloque de resumen `pre-marcado desde pasos anteriores`.
 - RRHH mantiene control final: puede revisar, corregir, marcar respaldo y completar observacion/vigencia.
+
+## EMP-ALTA-REGLAS-COHERENCIA-01 - Validaciones asistidas con decision RRHH
+
+La alta avanzada incorpora una capa de coherencia administrativa para no permitir que combinaciones laborales/previsionales pasen en silencio.
+
+Principios:
+
+- El sistema avisa y recomienda; no cambia datos automaticamente sin decision del usuario.
+- RRHH puede aplicar la correccion sugerida o mantener la situacion bajo revision administrativa.
+- Las revisiones mantenidas quedan visibles en el Resumen final.
+- Esta capa no calcula cotizaciones ni reemplaza al motor de nomina.
+
+Casos iniciales:
+
+- Seguro de Cesantia:
+  - Contrato indefinido: aplica, distribucion trabajador + empleador.
+  - Plazo fijo u obra/servicio: aplica, aporte de cargo del empleador.
+  - Menor de 18: revisar/no aplica.
+  - Pensionado: revisar, salvo invalidez parcial.
+  - Tecnico extranjero exento: la exencion previsional no apaga por si sola el Seguro de Cesantia.
+- Jornada:
+  - Jornada ordinaria vigente: maximo administrativo 42 horas semanales.
+  - Jornada parcial o menor de 18: maximo administrativo 30 horas semanales.
+- Prevision:
+  - Regimen `NINGUNA` exige condicion especial y respaldo administrativo.
+- Condiciones especiales:
+  - Menor de 18 sin trabajador adolescente protegido/autorizacion genera decision asistida.
+
+Patron de uso:
+
+1. Aviso inline en el paso actual.
+2. MsgBox al avanzar o finalizar cuando hay una decision corregible.
+3. Boton primario aplica la recomendacion.
+4. Boton secundario mantiene bajo revision y permite continuar.
+5. Resumen final conserva la revision pendiente.

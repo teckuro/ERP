@@ -18,6 +18,11 @@ import {
   type SearchSelectOption,
 } from '../../../../../shared/components/ui/search-select.component';
 import { withEmptyNumberCatalog, withEmptyStringCatalog } from '../../../utils/empleado-select-options';
+import {
+  buscarTipoTrabajadorBase,
+  descripcionTipoTrabajadorBase,
+  tipoTrabajadorBaseParaRelacion,
+} from '../../../rules/empleado-tipo-trabajador-flow.rules';
 
 type ContratoControlName = keyof ContratoFormGroup['controls'];
 
@@ -69,6 +74,35 @@ export class ContratoComponent {
 
   get isHonorariosMode(): boolean {
     return this.formGroup.controls.relacionLaboral.value === 'HONORARIOS';
+  }
+
+  get tipoTrabajadorBaseEsperado(): 'DEPENDIENTE' | 'INDEPENDIENTE' {
+    return tipoTrabajadorBaseParaRelacion(this.formGroup.controls.relacionLaboral.value);
+  }
+
+  get tipoTrabajadorBaseLabel(): string {
+    const selectedId = this.formGroup.controls.idTipoTrabajador.value;
+    const selected = this.tiposTrabajador.find((option) => option.value === selectedId);
+
+    return selected?.label ?? this.tipoTrabajadorBaseEsperado;
+  }
+
+  get tipoTrabajadorBaseDescription(): string {
+    return descripcionTipoTrabajadorBase(this.tipoTrabajadorBaseEsperado);
+  }
+
+  get tipoTrabajadorBaseWarning(): string | null {
+    const selectedId = this.formGroup.controls.idTipoTrabajador.value;
+    if (selectedId !== null) {
+      return null;
+    }
+
+    const expected = buscarTipoTrabajadorBase(this.tiposTrabajador, this.tipoTrabajadorBaseEsperado);
+    if (expected) {
+      return null;
+    }
+
+    return `No se encontró ${this.tipoTrabajadorBaseEsperado} en el catálogo tipo_trabajador.`;
   }
 
   serviceOrPositionLabel(): string {

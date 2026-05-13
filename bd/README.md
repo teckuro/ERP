@@ -40,6 +40,8 @@ Estados validos:
 
 12. Para completar el contrato LRE de catalogo y conceptos no directos, ejecutar `partes/24_lre_catalogo_oficial.sql` y luego `partes/25_lre_concept_rules.sql`. El script 25 agrega `estrategia_lre`, `requiere_exportacion_lre` y `observacion_normativa_lre` a `concepto`; no implementa exportador LRE ni modifica formulas legales.
 
+13. Para habilitar condiciones especiales del trabajador y perfil laboral/previsional derivado, ejecutar `partes/26_empleados_condiciones_trabajador.sql` despues de `25_lre_concept_rules.sql`. Crea `tipo_condicion_trabajador`, `persona_condicion_trabajador`, seeds minimos, RLS/permisos locales y `fn_obtener_perfil_laboral_persona`; no modifica HTML, motor ni liquidaciones.
+
 `12_migracion_lre_datos_incremental.sql` requiere que existan `persona`/`contrato` con IDs coherentes si se dejan los datos demo.
 
 ### Orden de ejecucion fresh local (`partes/`)
@@ -68,6 +70,7 @@ Estados validos:
 22. `23_liquidaciones_oficiales_rpc.sql`: RPC `generar_liquidaciones_oficiales`, atomica, `SECURITY INVOKER`, sin `anon`, desde snapshot cerrado sin recalculo.
 23. `24_lre_catalogo_oficial.sql`: catalogo LRE oficial y mapeo base de conceptos directos.
 24. `25_lre_concept_rules.sql`: estrategia LRE para conceptos no directos o ambiguos.
+25. `26_empleados_condiciones_trabajador.sql`: condiciones especiales del trabajador y perfil laboral/previsional derivado.
 
 ### Ejecucion fresh local
 

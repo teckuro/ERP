@@ -1,3 +1,4 @@
+import { describe, expect, it, vi } from 'vitest';
 import { TestBed } from '@angular/core/testing';
 import { ActivatedRoute, Router } from '@angular/router';
 
@@ -7,7 +8,7 @@ import { EmpleadosService } from '../../services/empleados.service';
 import { FormEmpleadoComponent } from './form-empleado';
 
 describe('FormEmpleadoComponent - completitud de borrador avanzado', () => {
-  async function setup() {
+  async function setup(catalogos = EMPTY_EMPLEADO_FORM_CATALOGOS) {
     await TestBed.configureTestingModule({
       imports: [FormEmpleadoComponent],
       providers: [
@@ -24,7 +25,7 @@ describe('FormEmpleadoComponent - completitud de borrador avanzado', () => {
         {
           provide: EmpleadosCatalogosService,
           useValue: {
-            obtenerFormulario: vi.fn().mockResolvedValue(EMPTY_EMPLEADO_FORM_CATALOGOS),
+            obtenerFormulario: vi.fn().mockResolvedValue(catalogos),
           },
         },
         {
@@ -202,5 +203,80 @@ describe('FormEmpleadoComponent - completitud de borrador avanzado', () => {
 
     expect(component.activeWizardStep()).toBe(7);
   });
+
+
+  it('Siguiente muestra MsgBox de coherencia y permite activar seguro de cesantia', async () => {
+    const component = await setup();
+    component.selectWizardStep(3);
+    component.form.patchValue({
+      contrato: {
+        tipoContrato: 'INDEFINIDO',
+        idTipoJornada: 1,
+        sueldoBase: 500000,
+        idMoneda: 1,
+        horasSemanales: 42,
+        diasSemanales: 5,
+        seguroCesantia: false,
+      },
+    } as never);
+
+    component.goToNextTab();
+
+    expect(component.advancedActionModal()?.kind).toBe('coherence-decision');
+    expect(component.advancedActionModal()?.primaryLabel).toBe('Activar seguro de cesantía');
+
+    component.handleAdvancedActionModalPrimary();
+
+    expect(component.form.controls.contrato.controls.seguroCesantia.value).toBe(true);
+    expect(component.activeWizardStep()).toBe(3);
+  });
+
+  it('Mantener revision de coherencia permite continuar sin cambiar el dato', async () => {
+    const component = await setup();
+    component.selectWizardStep(3);
+    component.form.patchValue({
+      contrato: {
+        tipoContrato: 'INDEFINIDO',
+        idTipoJornada: 1,
+        sueldoBase: 500000,
+        idMoneda: 1,
+        horasSemanales: 42,
+        diasSemanales: 5,
+        seguroCesantia: false,
+      },
+    } as never);
+
+    component.goToNextTab();
+    component.handleAdvancedActionModalSecondary();
+
+    expect(component.form.controls.contrato.controls.seguroCesantia.value).toBe(false);
+    expect(component.activeWizardStep()).toBe(4);
+    expect(component.coherenciaResumenItems()).toContain('Seguro de Cesantía desactivado en contrato indefinido.');
+  });
+
+  it('sincroniza tipo trabajador base desde relacion laboral', async () => {
+    const component = await setup({
+      ...EMPTY_EMPLEADO_FORM_CATALOGOS,
+      tiposTrabajador: [
+        { value: 1, label: 'DEPENDIENTE' },
+        { value: 2, label: 'INDEPENDIENTE' },
+      ],
+    });
+
+    await component.ngOnInit();
+
+    expect(component.form.controls.contrato.controls.idTipoTrabajador.value).toBe(1);
+
+    component.form.controls.contrato.controls.relacionLaboral.setValue('HONORARIOS');
+
+    expect(component.form.controls.contrato.controls.idTipoTrabajador.value).toBe(2);
+    expect(component.advancedActionModal()?.kind).toBe('honorarios-confirm');
+
+    component.handleAdvancedActionModalSecondary();
+
+    expect(component.form.controls.contrato.controls.relacionLaboral.value).toBe('CONTRATO');
+    expect(component.form.controls.contrato.controls.idTipoTrabajador.value).toBe(1);
+  });
+
 
 });

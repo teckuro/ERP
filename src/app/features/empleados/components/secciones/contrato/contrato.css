@@ -790,3 +790,25 @@
 :host .labor-block--honorarios {
   border-color: #bfdbfe;
 }
+
+.field-badge {
+  display: inline-flex;
+  min-height: 18px;
+  align-items: center;
+  border: 1px solid #dbeafe;
+  border-radius: 999px;
+  background: #eff6ff;
+  padding: 0 8px;
+  color: #1d4ed8;
+  font-size: 0.68rem;
+  font-weight: 600;
+  line-height: 1;
+}
+
+.form-field--derived .readonly-field {
+  justify-content: space-between;
+}
+
+.tipo-trabajador-derived {
+  text-transform: uppercase;
+}

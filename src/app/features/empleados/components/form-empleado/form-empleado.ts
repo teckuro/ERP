@@ -35,6 +35,16 @@ import {
   CondicionTrabajadorControlName,
 } from '../../models/empleado-perfil-laboral.model';
 import { RelacionLaboral } from '../../models/empleado.model';
+import {
+  buscarTipoTrabajadorBase,
+  tipoTrabajadorBaseParaRelacion,
+} from '../../rules/empleado-tipo-trabajador-flow.rules';
+import {
+  AltaCoherenciaAction,
+  AltaCoherenciaIssue,
+  AltaCoherenciaState,
+  evaluarAltaCoherencia,
+} from '../../rules/empleado-alta-coherencia.rules';
 import { EmpleadosFormOrchestratorService } from '../../services/empleados-form-orchestrator.service';
 import { EmpleadosCatalogosService } from '../../services/empleados-catalogos.service';
 import {
@@ -68,6 +78,7 @@ type FormEmpleadoModo = 'basico' | 'avanzado';
 
 type AdvancedActionModalKind =
   | 'next-step-review'
+  | 'coherence-decision'
   | 'draft-invalid'
   | 'draft-success'
   | 'finish-invalid'
@@ -76,6 +87,8 @@ type AdvancedActionModalKind =
   | 'honorarios-finish-blocked';
 type AdvancedActionModalAction =
   | 'dismiss'
+  | 'apply-coherence-suggestion'
+  | 'keep-coherence-review'
   | 'continue-next'
   | 'focus-current-step'
   | 'focus-draft-minimum'
@@ -244,6 +257,8 @@ export class FormEmpleadoComponent implements OnInit {
   readonly advancedActionModal = signal<AdvancedActionModal | null>(null);
   readonly catalogos = signal<EmpleadoFormCatalogos>(EMPTY_EMPLEADO_FORM_CATALOGOS);
   readonly perfilLaboralAutoDetections = signal<readonly PerfilLaboralAutoDetection[]>([]);
+  readonly pendingCoherenceDecision = signal<{ issue: AltaCoherenciaIssue; context: 'next' | 'finish' } | null>(null);
+  readonly acknowledgedCoherenceIssueIds = signal<ReadonlySet<string>>(new Set());
   readonly isLoadingCatalogs = signal(true);
   readonly catalogosError = signal<string | null>(null);
   readonly completedTabs = signal<ReadonlySet<TabId>>(new Set());
@@ -297,6 +312,7 @@ export class FormEmpleadoComponent implements OnInit {
       this.catalogos(),
     );
     this.configureRelacionLaboralUx();
+    this.configureTipoTrabajadorFlow();
     this.configurePerfilLaboralAutodetection();
     await this.loadCatalogos();
     if (this.modo() === 'avanzado') {
@@ -308,6 +324,7 @@ export class FormEmpleadoComponent implements OnInit {
       }
       try {
         await this.loadContinuacionBorradorSiAplica();
+        this.syncTipoTrabajadorConRelacionLaboral();
         this.applyPerfilLaboralAutodetection();
       } finally {
         if (debeHidratarBorrador) {
@@ -463,6 +480,7 @@ export class FormEmpleadoComponent implements OnInit {
       const catalogos = await this.empleadosCatalogosService.obtenerFormulario();
       this.catalogos.set(catalogos);
       this.empleadosFormService.applyCatalogDefaults(this.form, catalogos);
+      this.syncTipoTrabajadorConRelacionLaboral();
       this.applyPerfilLaboralAutodetection();
     } catch {
       this.catalogosError.set(
@@ -552,6 +570,13 @@ export class FormEmpleadoComponent implements OnInit {
       return;
     }
 
+    const coherenceIssue = this.firstUnacknowledgedCoherenceDecision();
+    if (coherenceIssue) {
+      this.syncCompletedTabsFromValidity();
+      this.openCoherenceDecisionModal(coherenceIssue, 'finish');
+      return;
+    }
+
     this.markAllValidTabsAsCompleted();
     this.openFinishConfirmModal();
   }
@@ -632,6 +657,7 @@ export class FormEmpleadoComponent implements OnInit {
   }
 
   dismissAdvancedActionModal(): void {
+    this.pendingCoherenceDecision.set(null);
     this.advancedActionModal.set(null);
   }
 
@@ -639,6 +665,12 @@ export class FormEmpleadoComponent implements OnInit {
     const modal = this.advancedActionModal();
 
     switch (action) {
+      case 'apply-coherence-suggestion':
+        this.applyPendingCoherenceSuggestion();
+        break;
+      case 'keep-coherence-review':
+        this.keepPendingCoherenceReview();
+        break;
       case 'continue-next':
         this.advancedActionModal.set(null);
         this.advanceToNextWizardStep();
@@ -756,6 +788,12 @@ export class FormEmpleadoComponent implements OnInit {
     this.markWizardStepAttempted(currentStep);
     this.markWizardStepTouched(currentStep);
     this.syncCompletedTabsFromValidity();
+
+    const coherenceIssue = this.firstCoherenceDecisionForStep(currentStep);
+    if (coherenceIssue) {
+      this.openCoherenceDecisionModal(coherenceIssue, 'next');
+      return;
+    }
 
     const pending = this.pendingValidationItemsForWizardStep(currentStep);
     if (pending.length > 0) {
@@ -2079,6 +2117,76 @@ export class FormEmpleadoComponent implements OnInit {
     });
   }
 
+  altaCoherenciaState(): AltaCoherenciaState {
+    const contrato = this.form.controls.contrato.controls;
+    const personal = this.form.controls.datosPersonales.controls;
+    const prevision = this.form.controls.previsionSalud.controls;
+    const perfil = this.form.controls.perfilLaboral.controls;
+
+    return evaluarAltaCoherencia({
+      relacionLaboral: contrato.relacionLaboral.value,
+      tipoContrato: contrato.tipoContrato.value,
+      tipoJornadaLabel: this.selectedTipoJornadaLabel(),
+      fechaNacimiento: personal.fechaNacimiento.value,
+      fechaIngreso: contrato.fechaIngreso.value,
+      horasSemanales: contrato.horasSemanales.value,
+      seguroCesantia: contrato.seguroCesantia.value,
+      tipoRegimenPrevisional: prevision.tipoRegimenPrevisional.value,
+      condiciones: {
+        pensionado: perfil.pensionado.value,
+        pensionadoInvalidezParcial: perfil.pensionadoInvalidezParcial.value,
+        pensionadoInvalidezTotal: perfil.pensionadoInvalidezTotal.value,
+        exentoCotizacionPension: perfil.exentoCotizacionPension.value,
+        trabajadorAdolescenteProtegido: perfil.trabajadorAdolescenteProtegido.value,
+        autorizacionMenorRegistrada: perfil.autorizacionMenorRegistrada.value,
+        tecnicoExtranjeroExento: perfil.tecnicoExtranjeroExento.value,
+        discapacidad: perfil.discapacidad.value,
+        respaldoRegistrado: perfil.respaldoRegistrado.value,
+      },
+    });
+  }
+
+  coherenciaIssues(): readonly AltaCoherenciaIssue[] {
+    return this.altaCoherenciaState().issues;
+  }
+
+  coherenciaIssuesForActiveStep(): readonly AltaCoherenciaIssue[] {
+    return this.coherenciaIssuesForStep(this.activeWizardStep());
+  }
+
+  coherenciaIssuesForStep(stepIndex: number): readonly AltaCoherenciaIssue[] {
+    return this.coherenciaIssues().filter((issue) => issue.stepIndex === stepIndex);
+  }
+
+  coherenciaResumenItems(): readonly string[] {
+    return this.coherenciaIssues().map((issue) => issue.summary).slice(0, 6);
+  }
+
+  coherenciaStatusRows(): readonly { label: string; detail: string; tone: string }[] {
+    const state = this.altaCoherenciaState();
+    return [
+      { label: `Seguro de Cesantía: ${state.seguroCesantia.label}`, detail: state.seguroCesantia.detail, tone: state.seguroCesantia.tone },
+      { label: `Jornada: ${state.jornada.label}`, detail: state.jornada.detail, tone: state.jornada.tone },
+      { label: `Previsión: ${state.prevision.label}`, detail: state.prevision.detail, tone: state.prevision.tone },
+    ];
+  }
+
+  private firstCoherenceDecisionForStep(stepIndex: number): AltaCoherenciaIssue | null {
+    return (
+      this.coherenciaIssuesForStep(stepIndex).find(
+        (issue) => issue.action && !this.acknowledgedCoherenceIssueIds().has(issue.id),
+      ) ?? null
+    );
+  }
+
+  private firstUnacknowledgedCoherenceDecision(): AltaCoherenciaIssue | null {
+    return (
+      this.coherenciaIssues().find(
+        (issue) => issue.action && !this.acknowledgedCoherenceIssueIds().has(issue.id),
+      ) ?? null
+    );
+  }
+
   private pendingValidationItemsForWizardStep(wizardStep: number): EvaluatedValidationRule[] {
     return this.evaluateValidationRules()
       .filter((item) => item.visible && item.wizardStep === wizardStep && !item.complete)
@@ -2099,6 +2207,102 @@ export class FormEmpleadoComponent implements OnInit {
     this.duplicateRutModalRut.set(null);
     this.successMessage.set(null);
     this.advancedActionModal.set(modal);
+  }
+
+  private openCoherenceDecisionModal(issue: AltaCoherenciaIssue, context: 'next' | 'finish'): void {
+    this.pendingCoherenceDecision.set({ issue, context });
+    this.openAdvancedActionModal({
+      kind: 'coherence-decision',
+      variant: 'warning',
+      title: issue.title,
+      message:
+        context === 'finish'
+          ? 'Antes de finalizar, el sistema detectó una combinación que conviene decidir. Puedes aplicar la corrección sugerida o mantenerla bajo revisión administrativa.'
+          : 'El sistema detectó una combinación que conviene revisar antes de seguir. Puedes aplicar la corrección sugerida o mantenerla bajo revisión administrativa.',
+      primaryLabel: issue.recommendedActionLabel ?? 'Aplicar corrección sugerida',
+      secondaryLabel: context === 'finish' ? 'Mantener y finalizar' : 'Mantener y continuar',
+      blockingItems: [],
+      warningItems: [issue.detail],
+      infoItems: [
+        'RRHH mantiene la decisión final del dato ingresado.',
+        'Si mantienes la condición, quedará visible como revisión pendiente en el resumen final.',
+      ],
+      targetStep: issue.stepIndex,
+      primaryAction: 'apply-coherence-suggestion',
+      secondaryAction: 'keep-coherence-review',
+    });
+  }
+
+  private applyPendingCoherenceSuggestion(): void {
+    const pending = this.pendingCoherenceDecision();
+    if (!pending) {
+      this.advancedActionModal.set(null);
+      return;
+    }
+
+    this.applyCoherenceAction(pending.issue.action, pending.issue.actionValue);
+    this.pendingCoherenceDecision.set(null);
+    this.advancedActionModal.set(null);
+    this.acknowledgedCoherenceIssueIds.update((prev) => {
+      const next = new Set(prev);
+      next.delete(pending.issue.id);
+      return next;
+    });
+    this.syncCompletedTabsFromValidity();
+    this.selectWizardStep(pending.issue.stepIndex);
+  }
+
+  private keepPendingCoherenceReview(): void {
+    const pending = this.pendingCoherenceDecision();
+    if (!pending) {
+      this.advancedActionModal.set(null);
+      return;
+    }
+
+    this.acknowledgedCoherenceIssueIds.update((prev) => new Set([...prev, pending.issue.id]));
+    this.pendingCoherenceDecision.set(null);
+    this.advancedActionModal.set(null);
+    this.syncCompletedTabsFromValidity();
+
+    if (pending.context === 'finish') {
+      this.markAllValidTabsAsCompleted();
+      this.openFinishConfirmModal();
+      return;
+    }
+
+    this.advanceToNextWizardStep();
+  }
+
+  private applyCoherenceAction(action: AltaCoherenciaAction | undefined, value: boolean | number | undefined): void {
+    const contrato = this.form.controls.contrato.controls;
+    const perfil = this.form.controls.perfilLaboral.controls;
+
+    switch (action) {
+      case 'activarSeguroCesantia':
+      case 'desactivarSeguroCesantia':
+        contrato.seguroCesantia.setValue(Boolean(value));
+        contrato.seguroCesantia.markAsDirty();
+        contrato.seguroCesantia.markAsTouched();
+        break;
+      case 'ajustarHorasSemanales':
+        contrato.horasSemanales.setValue(typeof value === 'number' ? value : null);
+        contrato.horasSemanales.markAsDirty();
+        contrato.horasSemanales.markAsTouched();
+        break;
+      case 'marcarTrabajadorAdolescenteProtegido':
+        perfil.trabajadorAdolescenteProtegido.setValue(true);
+        perfil.trabajadorAdolescenteProtegido.markAsDirty();
+        perfil.trabajadorAdolescenteProtegido.markAsTouched();
+        break;
+      case 'marcarExentoCotizacionPension':
+        perfil.exentoCotizacionPension.setValue(true);
+        perfil.exentoCotizacionPension.markAsDirty();
+        perfil.exentoCotizacionPension.markAsTouched();
+        this.selectWizardStep(this.perfilLaboralWizardStepIndex());
+        break;
+      default:
+        break;
+    }
   }
 
   private openNextStepReviewModal(step: number, pending: readonly EvaluatedValidationRule[]): void {
@@ -2252,11 +2456,44 @@ export class FormEmpleadoComponent implements OnInit {
     });
   }
 
+  private configureTipoTrabajadorFlow(): void {
+    const relacion = this.form.controls.contrato.controls.relacionLaboral;
+
+    relacion.valueChanges
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(() => this.syncTipoTrabajadorConRelacionLaboral());
+  }
+
+  private syncTipoTrabajadorConRelacionLaboral(): void {
+    const contrato = this.form.controls.contrato.controls;
+    const base = tipoTrabajadorBaseParaRelacion(contrato.relacionLaboral.value);
+    const option = buscarTipoTrabajadorBase(this.catalogos().tiposTrabajador, base);
+
+    if (!option) {
+      contrato.idTipoTrabajador.setValue(null, { emitEvent: false });
+      contrato.idTipoTrabajador.updateValueAndValidity({ emitEvent: false });
+      return;
+    }
+
+    if (contrato.idTipoTrabajador.value !== option.value) {
+      contrato.idTipoTrabajador.setValue(option.value, { emitEvent: false });
+    }
+    contrato.idTipoTrabajador.markAsPristine();
+    contrato.idTipoTrabajador.updateValueAndValidity({ emitEvent: false });
+  }
+
   selectedTipoTrabajadorLabel(): string {
     const selectedId = this.form.controls.contrato.controls.idTipoTrabajador.value;
     const option = this.catalogos().tiposTrabajador.find((item) => item.value === selectedId);
 
     return option?.label ?? 'Tipo trabajador pendiente';
+  }
+
+  selectedTipoJornadaLabel(): string {
+    const selectedId = this.form.controls.contrato.controls.idTipoJornada.value;
+    const option = this.catalogos().tiposJornada.find((item) => item.value === selectedId);
+
+    return option?.label ?? 'Jornada pendiente';
   }
 
   private configurePerfilLaboralAutodetection(): void {
@@ -2267,7 +2504,6 @@ export class FormEmpleadoComponent implements OnInit {
     const sources: AbstractControl[] = [
       personal.fechaNacimiento,
       contrato.fechaIngreso,
-      contrato.idTipoTrabajador,
       contrato.relacionLaboral,
       prevision.tipoRegimenPrevisional,
     ];
@@ -2293,7 +2529,6 @@ export class FormEmpleadoComponent implements OnInit {
   private detectPerfilLaboralConditions(): readonly PerfilLaboralAutoDetection[] {
     const detections = new Map<CondicionTrabajadorControlName, string>();
     const edadResumen = this.perfilLaboralEdadResumen();
-    const tipoTrabajadorLabel = this.normalizeCatalogLabel(this.selectedTipoTrabajadorLabel());
     const regimenPrevisional = this.form.controls.previsionSalud.controls.tipoRegimenPrevisional.value;
 
     if (edadResumen.kind === 'menor') {
@@ -2303,53 +2538,11 @@ export class FormEmpleadoComponent implements OnInit {
       );
     }
 
-    if (tipoTrabajadorLabel.includes('pensionado')) {
-      if (tipoTrabajadorLabel.includes('invalidez') && tipoTrabajadorLabel.includes('parcial')) {
-        detections.set(
-          'pensionadoInvalidezParcial',
-          'Detectado desde el tipo de trabajador seleccionado.',
-        );
-      } else if (tipoTrabajadorLabel.includes('invalidez') && tipoTrabajadorLabel.includes('total')) {
-        detections.set(
-          'pensionadoInvalidezTotal',
-          'Detectado desde el tipo de trabajador seleccionado.',
-        );
-      } else {
-        detections.set('pensionado', 'Detectado desde el tipo de trabajador seleccionado.');
-      }
-    }
-
-    if (
-      tipoTrabajadorLabel.includes('exento') &&
-      (tipoTrabajadorLabel.includes('cotizacion') ||
-        tipoTrabajadorLabel.includes('prevision') ||
-        tipoTrabajadorLabel.includes('pension'))
-    ) {
-      detections.set(
-        'exentoCotizacionPension',
-        'Detectado desde el tipo de trabajador seleccionado.',
-      );
-    }
-
     if (regimenPrevisional === 'NINGUNA') {
       detections.set(
         'exentoCotizacionPension',
         'Detectado desde el régimen previsional informado como sin AFP/IPS.',
       );
-    }
-
-    if (
-      (tipoTrabajadorLabel.includes('tecnico') && tipoTrabajadorLabel.includes('extranjero')) ||
-      (tipoTrabajadorLabel.includes('extranjero') && tipoTrabajadorLabel.includes('exento'))
-    ) {
-      detections.set(
-        'tecnicoExtranjeroExento',
-        'Detectado desde el tipo de trabajador seleccionado.',
-      );
-    }
-
-    if (tipoTrabajadorLabel.includes('discapacidad')) {
-      detections.set('discapacidad', 'Detectado desde el tipo de trabajador seleccionado.');
     }
 
     return Array.from(detections.entries()).map(([controlName, reason]) => ({ controlName, reason }));
@@ -2420,12 +2613,7 @@ export class FormEmpleadoComponent implements OnInit {
     const contrato = this.form.controls.contrato.controls;
     const prevision = this.form.controls.previsionSalud.controls;
 
-    const independiente = this.catalogos().tiposTrabajador.find((option) =>
-      option.label.toLowerCase().includes('independiente'),
-    );
-    if (independiente) {
-      contrato.idTipoTrabajador.setValue(independiente.value, { emitEvent: false });
-    }
+    this.syncTipoTrabajadorConRelacionLaboral();
 
     contrato.tipoContrato.setValue(null, { emitEvent: false });
     contrato.fechaContrato.setValue('', { emitEvent: false });

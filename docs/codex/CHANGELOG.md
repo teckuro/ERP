@@ -188,3 +188,14 @@ Fecha: 2026-05-12
 - Si el regimen previsional queda como `NINGUNA`, se pre-marca `Exento de cotizacion de pension` para que RRHH revise respaldo antes de finalizar.
 - La UI muestra un bloque `pre-marcado desde pasos anteriores` y un chip `Detectada` en cada condicion sugerida; RRHH puede corregir antes de finalizar.
 - No se agregan SQL/RPC/RLS, motor, nomina, liquidaciones ni reglas nuevas de persistencia.
+
+## EMP-ALTA-REGLAS-COHERENCIA-01 - Validaciones asistidas con decision RRHH
+
+Fecha: 2026-05-13
+
+- Se agrega regla pura central `empleado-alta-coherencia.rules.ts` para evaluar coherencia administrativa del alta avanzada sin mezclar reglas en HTML.
+- La regla detecta avisos para Seguro de Cesantia, jornada, regimen previsional `NINGUNA` y condiciones especiales derivadas de menor de edad.
+- `Siguiente` y `Finalizar alta` usan `app-message-box` cuando existe una combinacion corregible: RRHH puede aplicar la recomendacion o mantener la situacion bajo revision administrativa.
+- El formulario muestra avisos inline compactos por paso y un bloque de `Coherencia administrativa` en Resumen final.
+- Se agregan tests unitarios de la regla y casos de componente para aplicar/mantener una decision de coherencia.
+- Alcance respetado: sin SQL/RPC/RLS, sin motor, sin nomina, sin liquidaciones, sin LRE/Previred, sin creacion basica, sin ficha empleado y sin estilos globales.

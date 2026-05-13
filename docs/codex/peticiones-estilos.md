@@ -785,3 +785,10 @@ sin mezclarlo con las reglas base.
 - **Creacion avanzada / Condiciones especiales**: se agrega bloque compacto `pre-marcado desde pasos anteriores` cuando hay condiciones detectadas por edad, tipo trabajador o regimen previsional.
 - **Cards de condicion**: se agrega chip local `Detectada` y razon breve para distinguir sugerencia automatica de declaracion manual, sin cambiar estilos globales.
 - **Patron UX**: autodeteccion asistida con revision RRHH; el sistema pre-marca lo evidente, pero mantiene respaldo y correccion manual antes de finalizar.
+
+## 2026-05-13 - EMP-ALTA-REGLAS-COHERENCIA-01
+
+- **Creacion avanzada**: se agrega aviso inline compacto `Revision asistida` cuando el paso actual tiene una incoherencia laboral/previsional corregible.
+- **Resumen final**: se agrega bloque `Coherencia administrativa` con tres tarjetas compactas: Seguro de Cesantia, Jornada y Prevision.
+- **MessageBox**: las decisiones de coherencia usan `app-message-box` modal con accion recomendada y opcion de mantener bajo revision, sin bloquear el flujo por defecto.
+- **Estilo**: solo CSS local de `form-empleado.css`, usando borde simple, radio 8px y colores warning existentes. Sin estilos globales ni fuentes nuevas.

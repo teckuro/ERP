@@ -392,3 +392,36 @@ Decision central: `id_catalogo_lre` no es la unica forma de cumplir LRE. Un conc
 | Fase | Estado | Resumen | Validacion |
 |------|--------|---------|------------|
 | `EMP-CONDICIONES-ESPECIALES-AUTODETECT-01` | **Implementada en ZIP** | Creacion avanzada pre-marca condiciones especiales cuando la informacion ya fue capturada en pasos previos: menor de 18 por fecha nacimiento/ingreso, tipo trabajador pensionado/invalidez/exento/tecnico extranjero/discapacidad y regimen previsional `NINGUNA` como exencion a revisar. La UI muestra el origen como `Detectada` y conserva revision/edicion RRHH. | `npm ci --ignore-scripts` OK; `npx tsc -p tsconfig.app.json --noEmit` OK; `npx tsc -p tsconfig.spec.json --noEmit` OK; `npm run build -- --configuration development` no cerro en sandbox por timeout, sin error de codigo antes del corte. |
+
+## EMP-ALTA-REGLAS-COHERENCIA-01 - Cerrada
+
+Fecha: 2026-05-13
+
+Estado: cerrada.
+
+Alcance aplicado:
+
+- Alta avanzada incorpora una capa central de coherencia administrativa en `src/app/features/empleados/rules/empleado-alta-coherencia.rules.ts`.
+- La coherencia no bloquea automaticamente ni modifica datos en silencio. Cuando hay una recomendacion, `app-message-box` permite aplicar la correccion sugerida o mantener la revision.
+- Casos cubiertos en esta fase:
+  - Seguro de Cesantia activo/no activo segun relacion laboral, contrato, menor de edad, pensionado y tecnico extranjero exento.
+  - Jornada sobre maximo administrativo 42 horas, o 30 horas en jornada parcial/menor de edad.
+  - Regimen previsional `NINGUNA` sin condicion especial previsional asociada.
+  - Menor de edad sin condicion administrativa confirmada.
+- Resumen final muestra `Coherencia administrativa` para dejar visibles las revisiones mantenidas por RRHH.
+
+Restricciones respetadas:
+
+- Sin SQL/RPC/RLS ni cambios de BD.
+- Sin motor de calculo, nomina, liquidaciones, LRE, Previred ni formulas de montos.
+- Sin cambios a creacion basica, ficha empleado ni persistencia final de honorarios.
+- Sin estilos globales.
+
+Validaciones realizadas:
+
+- `npm ci --ignore-scripts` OK.
+- `npx tsc -p tsconfig.app.json --noEmit` OK.
+- `npx tsc -p tsconfig.spec.json --noEmit` OK.
+- `npm run build -- --configuration development` OK con warning preexistente de orden de `@import` en `src/styles/tailwind.css`.
+- `npx vitest run src/app/features/empleados/rules/empleado-alta-coherencia.rules.spec.ts` OK, 5 tests.
+- `npm test -- --watch=false` compilo suite, pero quedo en timeout de sandbox durante ejecucion general.

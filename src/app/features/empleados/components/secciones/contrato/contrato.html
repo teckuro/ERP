@@ -41,27 +41,18 @@
       }
     </div>
     <div class="labor-grid labor-grid--contract">
-      <div class="form-field">
+      <div class="form-field form-field--derived">
         <div class="field-label-row">
-          <label for="empleado-tipo-trabajador"
-            >Tipo trabajador</label
-          >
-          @if (isRequired('idTipoTrabajador')) {
-            <span class="field-required" aria-hidden="true">*</span>
-          }
+          <label>Tipo trabajador</label>
+          <span class="field-badge">Derivado</span>
         </div>
-        <app-search-select
-          id="empleado-tipo-trabajador"
-          formControlName="idTipoTrabajador"
-          placeholder="Selecciona un tipo"
-          searchPlaceholder="Buscar tipo trabajador"
-          [options]="tiposTrabajadorSelectOptions"
-          [invalid]="hasError('idTipoTrabajador')"
-        ></app-search-select>
-        @if (hasError('idTipoTrabajador', 'required')) {
-          <p class="field-message">El tipo de trabajador es obligatorio.</p>
+        <div class="readonly-field readonly-field--calculated tipo-trabajador-derived" aria-live="polite">
+          <span>{{ tipoTrabajadorBaseLabel }}</span>
+        </div>
+        @if (tipoTrabajadorBaseWarning) {
+          <p class="field-message field-message--warning">{{ tipoTrabajadorBaseWarning }}</p>
         } @else {
-          <p class="field-message"></p>
+          <p class="field-message field-message--hint">{{ tipoTrabajadorBaseDescription }}</p>
         }
       </div>
 

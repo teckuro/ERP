@@ -23,13 +23,22 @@
         </label>
       }
     </div>
+    @if (isHonorariosMode) {
+      <div class="honorarios-note" role="status">
+        <strong>Boleta de honorarios</strong>
+        <span>Este registro se tratará como prestador de servicios. No corresponde jornada laboral, gratificación, previsión dependiente ni asignaciones laborales.</span>
+      </div>
+    }
   </app-card>
   }
 
   @if (isBlockVisible('contratoBase')) {
   <app-card className="labor-block">
     <div class="labor-block-head">
-      <h4>Contrato</h4>
+      <h4>{{ isHonorariosMode ? 'Datos del servicio' : 'Contrato' }}</h4>
+      @if (isHonorariosMode) {
+        <p>Registra los datos administrativos del servicio a honorarios. No se genera contrato laboral dependiente.</p>
+      }
     </div>
     <div class="labor-grid labor-grid--contract">
       <div class="form-field">
@@ -56,54 +65,56 @@
         }
       </div>
 
-      <div class="form-field">
-        <div class="field-label-row">
-          <label for="empleado-tipo-contrato"
-            >Tipo de contrato</label
-          >
-          @if (isRequired('tipoContrato')) {
-            <span class="field-required" aria-hidden="true">*</span>
-          }
+      @if (!isHonorariosMode) {
+        <div class="form-field">
+          <div class="field-label-row">
+            <label for="empleado-tipo-contrato"
+              >Tipo de contrato</label
+            >
+            @if (isRequired('tipoContrato')) {
+              <span class="field-required" aria-hidden="true">*</span>
+            }
+          </div>
+          <app-search-select
+            id="empleado-tipo-contrato"
+            formControlName="tipoContrato"
+            placeholder="Tipo de contrato"
+            searchPlaceholder="Buscar tipo de contrato"
+            [options]="tipoContratoSelectOptions"
+            [invalid]="hasError('tipoContrato')"
+          ></app-search-select>
+          <p class="field-message"></p>
         </div>
-        <app-search-select
-          id="empleado-tipo-contrato"
-          formControlName="tipoContrato"
-          placeholder="Tipo de contrato"
-          searchPlaceholder="Buscar tipo de contrato"
-          [options]="tipoContratoSelectOptions"
-          [invalid]="hasError('tipoContrato')"
-        ></app-search-select>
-        <p class="field-message"></p>
-      </div>
 
-      <div class="form-field form-field--checkbox labor-toggle-field">
-        <div class="field-label-row">
-          <label for="empleado-indefinido"
-            >Indefinido</label
-          >
+        <div class="form-field form-field--checkbox labor-toggle-field">
+          <div class="field-label-row">
+            <label for="empleado-indefinido"
+              >Indefinido</label
+            >
+          </div>
+          <label class="employee-checkbox-row">
+            <input
+              id="empleado-indefinido"
+              type="checkbox"
+              [checked]="isIndefinido"
+              (change)="onIndefinidoToggle($any($event.target).checked)"
+            />
+            <span>Contrato indefinido</span>
+          </label>
+          <p class="field-message field-message--hint">
+            Si el contrato es indefinido, no se exige fecha de término.
+          </p>
         </div>
-        <label class="employee-checkbox-row">
-          <input
-            id="empleado-indefinido"
-            type="checkbox"
-            [checked]="isIndefinido"
-            (change)="onIndefinidoToggle($any($event.target).checked)"
-          />
-          <span>Contrato indefinido</span>
-        </label>
-        <p class="field-message field-message--hint">
-          Si el contrato es indefinido, no se exige fecha de término.
-        </p>
-      </div>
+      }
 
       <div class="labor-field-section labor-field-section--span">
-        <p class="labor-field-section-title">Fechas del contrato</p>
+        <p class="labor-field-section-title">{{ isHonorariosMode ? 'Fechas del servicio' : 'Fechas del contrato' }}</p>
       </div>
 
       <div class="form-field">
         <div class="field-label-row">
           <label for="empleado-fecha-ingreso"
-            >Fecha ingreso</label
+            >{{ isHonorariosMode ? 'Fecha inicio del servicio' : 'Fecha ingreso' }}</label
           >
           @if (isRequired('fechaIngreso')) {
             <span class="field-required" aria-hidden="true">*</span>
@@ -116,57 +127,59 @@
           [invalid]="hasError('fechaIngreso')"
         ></app-calendar-input>
         @if (hasError('fechaIngreso', 'required')) {
-          <p class="field-message">La fecha de ingreso es obligatoria.</p>
+          <p class="field-message">{{ isHonorariosMode ? 'La fecha de inicio del servicio es obligatoria.' : 'La fecha de ingreso es obligatoria.' }}</p>
         } @else {
           <p class="field-message"></p>
         }
       </div>
 
-      <div class="form-field">
-        <div class="field-label-row">
-          <label for="empleado-fecha-contrato"
-            >Fecha contrato</label
-          >
-          @if (isRequired('fechaContrato')) {
-            <span class="field-required" aria-hidden="true">*</span>
+      @if (!isHonorariosMode) {
+        <div class="form-field">
+          <div class="field-label-row">
+            <label for="empleado-fecha-contrato"
+              >Fecha contrato</label
+            >
+            @if (isRequired('fechaContrato')) {
+              <span class="field-required" aria-hidden="true">*</span>
+            }
+          </div>
+          <app-calendar-input
+            id="empleado-fecha-contrato"
+            formControlName="fechaContrato"
+            placeholder="dd/mm/aaaa"
+            [invalid]="hasError('fechaContrato')"
+          ></app-calendar-input>
+          @if (hasError('fechaContrato', 'required')) {
+            <p class="field-message">La fecha de contrato es obligatoria.</p>
+          } @else {
+            <p class="field-message"></p>
           }
         </div>
-        <app-calendar-input
-          id="empleado-fecha-contrato"
-          formControlName="fechaContrato"
-          placeholder="dd/mm/aaaa"
-          [invalid]="hasError('fechaContrato')"
-        ></app-calendar-input>
-        @if (hasError('fechaContrato', 'required')) {
-          <p class="field-message">La fecha de contrato es obligatoria.</p>
-        } @else {
-          <p class="field-message"></p>
-        }
-      </div>
 
-      <div class="form-field">
-        <div class="field-label-row">
-          <label for="empleado-fecha-termino"
-            >Fecha término</label
-          >
-          @if (isRequired('fechaTermino')) {
-            <span class="field-required" aria-hidden="true">*</span>
+        <div class="form-field">
+          <div class="field-label-row">
+            <label for="empleado-fecha-termino"
+              >Fecha término</label
+            >
+            @if (isRequired('fechaTermino')) {
+              <span class="field-required" aria-hidden="true">*</span>
+            }
+          </div>
+          <app-calendar-input
+            id="empleado-fecha-termino"
+            formControlName="fechaTermino"
+            placeholder="dd/mm/aaaa"
+            [invalid]="hasError('fechaTermino')"
+          ></app-calendar-input>
+          @if (hasError('fechaTermino', 'required')) {
+            <p class="field-message">
+              La fecha de término es obligatoria para contratos no indefinidos.
+            </p>
+          } @else {
+            <p class="field-message"></p>
           }
         </div>
-        <app-calendar-input
-          id="empleado-fecha-termino"
-          formControlName="fechaTermino"
-          placeholder="dd/mm/aaaa"
-          [invalid]="hasError('fechaTermino')"
-        ></app-calendar-input>
-        @if (hasError('fechaTermino', 'required')) {
-          <p class="field-message">
-            La fecha de término es obligatoria para contratos no indefinidos.
-          </p>
-        } @else {
-          <p class="field-message"></p>
-        }
-      </div>
+      }
 
     </div>
   </app-card>
@@ -202,8 +215,10 @@
 
       <div class="form-field">
         <div class="field-label-row">
-          <label for="empleado-sucursal">Sucursal</label>
-          <span class="field-required" aria-hidden="true">*</span>
+          <label for="empleado-sucursal">{{ isHonorariosMode ? 'Sucursal / imputación interna' : 'Sucursal' }}</label>
+          @if (!isHonorariosMode) {
+            <span class="field-required" aria-hidden="true">*</span>
+          }
         </div>
         <app-search-select
           id="empleado-sucursal"
@@ -220,6 +235,50 @@
   }
 
   @if (isBlockVisible('remuneracion')) {
+  @if (isHonorariosMode) {
+    <app-card className="labor-block labor-block--honorarios">
+      <div class="labor-block-head">
+        <h4>Monto de honorarios</h4>
+        <p>Informa el monto bruto pactado. Este dato no genera jornada laboral ni remuneración dependiente.</p>
+      </div>
+      <div class="labor-grid labor-grid--base-pay">
+        <div class="form-field">
+          <div class="field-label-row">
+            <label for="empleado-sueldo-base">{{ baseAmountLabel() }}</label>
+            @if (isRequired('sueldoBase')) {
+              <span class="field-required" aria-hidden="true">*</span>
+            }
+          </div>
+          <input
+            id="empleado-sueldo-base"
+            type="number"
+            formControlName="sueldoBase"
+            [class]="controlClass('sueldoBase')"
+          />
+          @if (hasError('sueldoBase')) {
+            <p class="field-message">El monto bruto debe ser mayor a cero.</p>
+          } @else {
+            <p class="field-message field-message--hint">{{ baseAmountHelpText() }}</p>
+          }
+        </div>
+
+        <div class="form-field">
+          <div class="field-label-row">
+            <label for="empleado-id-moneda">Moneda</label>
+          </div>
+          <app-search-select
+            id="empleado-id-moneda"
+            formControlName="idMoneda"
+            placeholder="Selecciona una moneda"
+            searchPlaceholder="Buscar moneda"
+            [options]="monedasSelectOptions"
+            [invalid]="hasError('idMoneda')"
+          ></app-search-select>
+          <p class="field-message"></p>
+        </div>
+      </div>
+    </app-card>
+  } @else {
   <app-card className="labor-block labor-block--schedule">
     <div class="labor-block-head">
       <h4>Jornada laboral</h4>
@@ -346,7 +405,7 @@
       <div class="form-field">
         <div class="field-label-row">
           <label for="empleado-sueldo-base"
-            >Sueldo base mensual</label
+            >{{ baseAmountLabel() }}</label
           >
           @if (isRequired('sueldoBase')) {
             <span class="field-required" aria-hidden="true">*</span>
@@ -359,7 +418,7 @@
           [class]="controlClass('sueldoBase')"
         />
         @if (hasError('sueldoBase')) {
-          <p class="field-message">El sueldo base debe ser mayor a cero.</p>
+          <p class="field-message">{{ baseAmountHelpText() }}</p>
         } @else {
           <p class="field-message"></p>
         }
@@ -438,6 +497,7 @@
       </div>
     </div>
   </app-card>
+  }
   }
 
   @if (isBlockVisible('cargas')) {
@@ -664,7 +724,7 @@
 
       <div class="form-field">
         <div class="field-label-row">
-          <label for="empleado-cargo">Cargo</label>
+          <label for="empleado-cargo">{{ serviceOrPositionLabel() }}</label>
           @if (isRequired('cargo')) {
             <span class="field-required" aria-hidden="true">*</span>
           }
@@ -673,10 +733,11 @@
           id="empleado-cargo"
           type="text"
           formControlName="cargo"
+          [placeholder]="serviceOrPositionPlaceholder()"
           [class]="controlClass('cargo')"
         />
         @if (hasError('cargo', 'required')) {
-          <p class="field-message">El cargo es obligatorio.</p>
+          <p class="field-message">{{ isHonorariosMode ? 'El servicio o función es obligatorio.' : 'El cargo es obligatorio.' }}</p>
         } @else {
           <p class="field-message"></p>
         }

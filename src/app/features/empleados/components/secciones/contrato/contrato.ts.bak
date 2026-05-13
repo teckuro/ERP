@@ -66,6 +66,29 @@ export class ContratoComponent {
     { value: 'HONORARIOS', label: 'Boleta de honorarios' },
   ];
 
+
+  get isHonorariosMode(): boolean {
+    return this.formGroup.controls.relacionLaboral.value === 'HONORARIOS';
+  }
+
+  serviceOrPositionLabel(): string {
+    return this.isHonorariosMode ? 'Servicio o función' : 'Cargo';
+  }
+
+  serviceOrPositionPlaceholder(): string {
+    return this.isHonorariosMode ? 'Ej.: asesoría contable mensual' : '';
+  }
+
+  baseAmountLabel(): string {
+    return this.isHonorariosMode ? 'Monto bruto de honorarios' : 'Sueldo base mensual';
+  }
+
+  baseAmountHelpText(): string {
+    return this.isHonorariosMode
+      ? 'Corresponde al valor bruto pactado por servicios a honorarios. No genera jornada laboral ni remuneración dependiente.'
+      : 'El sueldo base debe ser mayor a cero.';
+  }
+
   readonly weekdayOptions: WeekdayOption[] = [
     { value: 1, label: 'Lunes' },
     { value: 2, label: 'Martes' },

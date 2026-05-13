@@ -295,7 +295,7 @@
                               >
                                 Anterior
                               </button>
-                              @if (activeWizardStep() !== 8) {
+                              @if (activeWizardStep() !== summaryWizardStepIndex()) {
                                 <button
                                   type="button"
                                   class="form-action-button form-action-button--primary advanced-step-nav-btn advanced-step-nav-btn--primary"
@@ -328,7 +328,7 @@
                               attemptedWizardSteps().has(activeWizardStep())
                             ) {
                               Hay datos obligatorios pendientes o con error en esta etapa.
-                            } @else if (activeWizardStep() === 8) {
+                            } @else if (activeWizardStep() === summaryWizardStepIndex()) {
                               @if (isHonorariosMode()) {
                                 Puedes guardar el avance como borrador. La finalización de honorarios queda pendiente de habilitación.
                               } @else if (wizardMapPendingCount() + wizardMapErrorCount() > 0) {
@@ -550,6 +550,26 @@
                       [advancedGridLayout]="true"
                     ></app-empleado-bancario>
                   </div>
+                } @else if (activeWizardStep() === perfilLaboralWizardStepIndex()) {
+                  <div class="step-panel step-panel--perfil-laboral">
+                    @if (isHonorariosMode()) {
+                      <div class="wizard-na-panel wizard-na-panel--honorarios" role="status">
+                        <h3 class="wizard-na-title">No aplica para honorarios</h3>
+                        <p class="wizard-na-text">
+                          Las condiciones especiales de trabajadores dependientes no se declaran para boleta de honorarios en esta fase.
+                        </p>
+                      </div>
+                    } @else {
+                      <app-empleado-perfil-laboral
+                        [formGroup]="form.controls.perfilLaboral"
+                        [fechaNacimiento]="form.controls.datosPersonales.controls.fechaNacimiento.value"
+                        [fechaIngreso]="form.controls.contrato.controls.fechaIngreso.value"
+                        [relacionLaboral]="form.controls.contrato.controls.relacionLaboral.value"
+                        [tipoTrabajadorLabel]="selectedTipoTrabajadorLabel()"
+                        [autoDetectedConditions]="perfilLaboralAutoDetections()"
+                      ></app-empleado-perfil-laboral>
+                    }
+                  </div>
                 } @else {
                   <div class="step-panel step-panel--resumen">
                     <app-card className="resumen-card">
@@ -587,6 +607,16 @@
                             <dt>Sucursal</dt>
                             <dd>{{ sucursalVisible() }}</dd>
                           </div>
+                          @if (!isHonorariosMode()) {
+                            <div class="resumen-dl-row">
+                              <dt>Revisión administrativa</dt>
+                              <dd>{{ perfilLaboralResumenLabel() }}</dd>
+                            </div>
+                            <div class="resumen-dl-row">
+                              <dt>Condiciones especiales</dt>
+                              <dd>{{ condicionesPerfilResumenLabel() }}</dd>
+                            </div>
+                          }
                         </dl>
                         <h4 class="resumen-checklist-title">Estado por etapa</h4>
                         <ul class="resumen-checklist">
@@ -607,7 +637,7 @@
                               <div class="resumen-checklist-actions">
                                 <span class="resumen-checklist-state">{{ wizardStepUiLabel(row.kind) }}</span>
                                 @if (
-                                  row.stepIndex < 8 &&
+                                  row.stepIndex < summaryWizardStepIndex() &&
                                   row.kind !== 'completo' &&
                                   row.kind !== 'no-aplica'
                                 ) {
@@ -623,7 +653,7 @@
                             </li>
                           }
                         </ul>
-                        @if (activeWizardStep() === 8 && attemptedSave() && resumenPendientesNegocio().length > 0) {
+                        @if (activeWizardStep() === summaryWizardStepIndex() && attemptedSave() && resumenPendientesNegocio().length > 0) {
                           <div class="resumen-pendientes-negocio" role="alert">
                             <p class="resumen-pendientes-title">Pendientes para finalizar</p>
                             <ul class="resumen-pendientes-list">
