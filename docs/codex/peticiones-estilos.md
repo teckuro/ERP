@@ -807,3 +807,26 @@ sin mezclarlo con las reglas base.
 - **Flujo**: `Contrato` sincroniza `DEPENDIENTE`; `Boleta de honorarios` sincroniza `INDEPENDIENTE`.
 - **Condiciones especiales**: pensionado, invalidez, tecnico extranjero y discapacidad quedan como declaracion RRHH en el paso `Condiciones especiales`.
 - **Restricciones**: solo logica/UI local de alta avanzada; sin estilos globales, SQL/RPC/RLS, motor, nomina ni ficha empleado.
+
+## 2026-05-14 - EMP-ALTA-COHERENCIA-GLOBAL-01
+
+- **Creación avanzada**: se agrega bloque compacto `Matriz de aplicabilidad` en Resumen final.
+- **Diseño**: usa card local neutra, borde 8px, chip compacto y grilla responsive; no introduce paleta nueva ni estilos globales.
+- **Separación conceptual**: `Matriz de aplicabilidad` explica qué aplica/no aplica/deriva/requiere revisión; `Coherencia administrativa` conserva las advertencias y decisiones RRHH.
+- **Restricciones**: sin cambios SQL/RPC/RLS, sin motor, sin nómina, sin ficha empleado, sin creación básica y sin persistencia final de honorarios.
+
+
+## 2026-05-14 - EMP-ALTA-DIAGNOSTICO-CONTRACTUAL-UX-01
+
+- **Creación avanzada / Resumen final**: `Matriz de aplicabilidad` pasa a `Diagnóstico contractual`, con `Caso detectado` y copy administrativo para RRHH.
+- **Estilo**: se elimina `border-left` decorativo fuerte en diagnóstico/coherencia; se mantienen fondos suaves de información/advertencia y bordes completos locales.
+- **Condiciones especiales**: la razón de condición detectada deja de usar barra lateral azul y pasa a bloque compacto con fondo informativo suave.
+- **Restricciones**: sin estilos globales, sin fuentes nuevas, sin SQL/RPC/RLS, sin motor, sin nómina ni ficha empleado.
+
+
+## 2026-05-14 - EMP-ALTA-MSGBOX-ERROR-UX-01
+
+- **MessageBox de error**: el modal de error de guardado usa el mismo patrón del éxito (`modalHeadlineSplit`, panel de detalle y bloque de referencia).
+- **Copy administrativo**: los errores conocidos se presentan como `Qué revisar`, `Acción recomendada` y `Paso sugerido`, evitando textos técnicos planos.
+- **Sin previsión**: el mensaje orienta a revisar `Previsión y salud` y seleccionar AFP o IPS cuando el trabajador quedará habilitado para remuneraciones.
+- **Estilo**: paneles con borde completo, fondo suave y radio local; sin `border-left` decorativo fuerte ni estilos globales.

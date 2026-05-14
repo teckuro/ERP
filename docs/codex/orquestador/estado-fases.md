@@ -1,3 +1,39 @@
+## EMP-ALTA-MSGBOX-ERROR-UX-01 - Mensajes de error estructurados
+
+| Campo | Estado |
+|---|---|
+| Estado | Implementada en ZIP |
+| Tipo | UX local + copy administrativo |
+| Alcance | Modal de error de guardado en Creación de empleado; estructura visual basada en el mensaje de éxito. |
+| Entrega | Error con `Qué revisar`, `Acción recomendada` y `Paso sugerido`; caso `Sin previsión` orienta a `Previsión y salud`. |
+| Pruebas | `tsc app/spec`, build development y vitest de reglas de empleados. |
+| Fuera de alcance | SQL/RPC/RLS, motor, nómina, liquidaciones, ficha empleado, creación básica funcional, reglas de aptitud y estilos globales. |
+| Siguiente fase sugerida | `EMP-CONDICIONES-ESPECIALES-REVIEW-01` o pulido del resumen final como pantalla de decisión. |
+
+## EMP-ALTA-DIAGNOSTICO-CONTRACTUAL-UX-01 - Diagnóstico contractual en Resumen final
+
+| Campo | Estado |
+|---|---|
+| Estado | Implementada en ZIP |
+| Tipo | UX local + copy de Resumen final |
+| Alcance | Creación avanzada; reemplaza la lectura visible de `Matriz de aplicabilidad` por `Diagnóstico contractual` sin eliminar la regla interna. |
+| Entrega | Resumen final con `Caso detectado`, copy operativo y estilos locales sin `border-left` decorativo. |
+| Pruebas | `tsc app/spec`, build development y vitest de reglas de aplicabilidad/tipo trabajador/coherencia. |
+| Fuera de alcance | SQL/RPC/RLS, motor, nómina, liquidaciones, LRE/Previred, ficha empleado, creación básica, honorarios final y estilos globales. |
+| Siguiente fase sugerida | `EMP-CONDICIONES-ESPECIALES-REVIEW-01` o pulido de MsgBox por caso contractual. |
+
+## EMP-ALTA-COHERENCIA-GLOBAL-01 - Matriz única de aplicabilidad y coherencia
+
+| Campo | Estado |
+|---|---|
+| Estado | Implementada en ZIP |
+| Tipo | Lógica local + UX de resumen |
+| Alcance | Creación avanzada; matriz central para campos obligatorios, opcionales, derivados, no aplicables, en revisión, advertencia o bloqueados por fase. |
+| Entrega | `empleado-alta-aplicabilidad.rules.ts`, spec unitario, consumo en wizard y bloque `Matriz de aplicabilidad` en Resumen final. |
+| Pruebas | `tsc app/spec`, build development y vitest de reglas de aplicabilidad/tipo trabajador/coherencia. |
+| Fuera de alcance | SQL/RPC/RLS, motor, nómina, liquidaciones, LRE/Previred, ficha empleado, creación básica, persistencia final de honorarios y estilos globales. |
+| Siguiente fase sugerida | `EMP-CONDICIONES-ESPECIALES-REVIEW-01` para separar detectada/manual/pendiente/confirmada/descartada. |
+
 ## Actualizacion 2026-05-12 - EMP-PERFIL-LABORAL-SQL-01
 
 ## EMP-ALTA-COHERENCIA-GLOBAL-00 - Auditoría de coherencia del alta avanzada

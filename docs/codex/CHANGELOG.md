@@ -1,5 +1,36 @@
 # CHANGELOG
 
+## EMP-ALTA-MSGBOX-ERROR-UX-01 - Mensajes de error estructurados
+
+Fecha: 2026-05-14
+
+- El modal de error de guardado usa el mismo patrón visual del éxito (`modalHeadlineSplit` + paneles de detalle) para evitar mensajes planos o técnicos.
+- Se agregan bloques `Qué revisar`, `Acción recomendada` y `Paso sugerido` cuando el error permite inferirlo.
+- El caso `Sin previsión` se presenta con copy administrativo y recomienda volver a `Previsión y salud` para seleccionar AFP o IPS si el trabajador quedará habilitado para remuneraciones.
+- Se normalizan acentos en mensajes visibles conocidos (`opción`, `previsión`, `cálculo`, `nómina`, `información`).
+- Alcance respetado: sin SQL/RPC/RLS, sin motor, nómina, liquidaciones, ficha empleado, creación básica funcional ni estilos globales.
+
+## EMP-ALTA-DIAGNOSTICO-CONTRACTUAL-UX-01 - Diagnóstico contractual en Resumen final
+
+Fecha: 2026-05-14
+
+- El bloque visible `Matriz de aplicabilidad` pasa a `Diagnóstico contractual`, manteniendo la matriz como lógica interna.
+- El resumen final muestra `Caso detectado` con edad laboral y relación contractual para que RRHH lea el contexto antes de finalizar.
+- Los estados técnicos se traducen a copy operativo (`Definido por sistema`, `Necesario`, `Revisar`) sin exponer la matriz como concepto técnico.
+- Se elimina el patrón visual `border-left` fuerte en los bloques de diagnóstico/coherencia y en la razón de condiciones detectadas; se mantienen fondos suaves y bordes completos coherentes con el ERP.
+- Alcance respetado: sin SQL/RPC/RLS, sin motor, nómina, liquidaciones, LRE/Previred, ficha empleado, creación básica ni persistencia final de honorarios.
+
+## EMP-ALTA-COHERENCIA-GLOBAL-01 - Matriz única de aplicabilidad y coherencia
+
+Fecha: 2026-05-14
+
+- Se implementa la regla pura `empleado-alta-aplicabilidad.rules.ts` para centralizar estados `required`, `optional`, `derived`, `not_applicable`, `review`, `warning` y `blocked` en Creación avanzada.
+- La matriz cubre relación laboral, `tipo_trabajador`, contrato, jornada, remuneración/honorarios, Seguro de Cesantía, asignaciones, previsión/salud, APVI, banco, condiciones especiales y resumen final.
+- El wizard consume la matriz para estados claros de `No aplica` y `Opcional`, evitando depender solo de condiciones sueltas repartidas en el componente.
+- El resumen final agrega el bloque `Matriz de aplicabilidad`, separado de `Coherencia administrativa`, para distinguir qué corresponde exigir/mostrar versus qué combinación requiere revisión RRHH.
+- Se agregan tests unitarios de aplicabilidad para contrato dependiente, honorarios, fecha término, previsión `NINGUNA` y menor de edad.
+- Alcance respetado: sin SQL/RPC/RLS, sin motor, nómina, liquidaciones, LRE/Previred, ficha empleado, creación básica, persistencia final de honorarios ni estilos globales.
+
 ## EMP-ALTA-COHERENCIA-GLOBAL-00 - Auditoría de coherencia del alta avanzada
 
 Fecha: 2026-05-13
@@ -196,7 +227,7 @@ Fecha: 2026-05-12
 
 - `Condiciones especiales` en Creacion avanzada ahora separa condiciones declarables manualmente de condiciones pre-marcadas por datos ya capturados.
 - El formulario pre-marca `Trabajador adolescente protegido` cuando fecha de nacimiento + fecha de ingreso detectan menor de 18 anos.
-- El formulario pre-marca condiciones previsionales/administrativas cuando el `Tipo trabajador` seleccionado las informa explicitamente en su nombre: pensionado, pensionado por invalidez parcial/total, exento cotizacion pension, tecnico extranjero exento o discapacidad.
+- El formulario ya no usa `Tipo trabajador` para detectar pensionado/invalidez/extranjero/discapacidad; `tipo_trabajador` se mantiene como categoria base y esas situaciones quedan en Condiciones especiales.
 - Si el regimen previsional queda como `NINGUNA`, se pre-marca `Exento de cotizacion de pension` para que RRHH revise respaldo antes de finalizar.
 - La UI muestra un bloque `pre-marcado desde pasos anteriores` y un chip `Detectada` en cada condicion sugerida; RRHH puede corregir antes de finalizar.
 - No se agregan SQL/RPC/RLS, motor, nomina, liquidaciones ni reglas nuevas de persistencia.

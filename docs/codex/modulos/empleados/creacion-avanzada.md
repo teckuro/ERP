@@ -113,7 +113,7 @@ Regla UX: no duplicar la informacion del mapa con tarjetas permanentes dentro de
 - El paso `Condiciones especiales` no debe obligar a RRHH a volver a marcar informacion que ya existe en los pasos anteriores.
 - Se pre-marcan condiciones cuando el origen es claro:
   - menor de 18 anos desde fecha de nacimiento + fecha de ingreso -> `Trabajador adolescente protegido`;
-  - tipo trabajador con texto pensionado/invalidez/exento/tecnico extranjero/discapacidad -> condicion equivalente;
+  - categoria base `tipo_trabajador` se deriva desde la relacion laboral: `CONTRATO` -> `DEPENDIENTE`, `HONORARIOS` -> `INDEPENDIENTE`;
   - regimen previsional `NINGUNA` -> `Exento de cotizacion de pension` para revision administrativa.
 - Las condiciones pre-marcadas se muestran con chip `Detectada` y bloque de resumen `pre-marcado desde pasos anteriores`.
 - RRHH mantiene control final: puede revisar, corregir, marcar respaldo y completar observacion/vigencia.
@@ -165,3 +165,51 @@ Principios vigentes:
 - Las incoherencias relevantes deben avisar con `app-message-box` y permitir que RRHH aplique la corrección sugerida o mantenga bajo revisión.
 - La siguiente implementación debe crear una matriz única que alimente templates, validaciones, mapa lateral, resumen final y limpieza de honorarios.
 
+
+## EMP-ALTA-COHERENCIA-GLOBAL-01 - Implementación de matriz única
+
+Creación avanzada ahora cuenta con una regla pura de aplicabilidad:
+
+```txt
+src/app/features/empleados/rules/empleado-alta-aplicabilidad.rules.ts
+```
+
+La regla no reemplaza las validaciones ni la coherencia administrativa. Ordena qué corresponde exigir, mostrar como derivado, tratar como opcional, marcar como no aplicable o mantener bajo revisión según `CONTRATO` / `HONORARIOS`, régimen previsional, APVI, condiciones especiales y edad laboral.
+
+Uso visible:
+
+- el wizard consume la matriz para estados `No aplica` y `Opcional`;
+- el resumen final muestra `Matriz de aplicabilidad`;
+- `Coherencia administrativa` queda como bloque separado para combinaciones que requieren decisión RRHH.
+
+Restricciones mantenidas: sin SQL/RPC/RLS, sin motor, sin nómina, sin creación básica, sin ficha empleado y sin persistencia final de honorarios.
+
+
+## EMP-ALTA-DIAGNOSTICO-CONTRACTUAL-UX-01 - Diagnóstico contractual visible
+
+La matriz única de aplicabilidad no debe exponerse como una matriz técnica en el Resumen final.
+
+Patrón vigente:
+
+- la regla `empleado-alta-aplicabilidad.rules.ts` sigue definiendo estados internos;
+- el usuario ve `Diagnóstico contractual`;
+- el bloque muestra `Caso detectado` y tarjetas operativas;
+- `Coherencia administrativa` queda separada para revisiones y decisiones RRHH;
+- los bloques informativos/advertencia usan fondos suaves y bordes completos, sin `border-left` fuerte ni barras laterales de color.
+
+Restricciones mantenidas: sin SQL/RPC/RLS, sin motor, sin nómina, sin creación básica, sin ficha empleado y sin persistencia final de honorarios.
+
+
+## EMP-ALTA-MSGBOX-ERROR-UX-01 - Error de guardado estructurado
+
+Los errores de guardado en alta avanzada deben usar el mismo lenguaje visual del éxito: modal con encabezado, panel de detalle y acción recomendada.
+
+Patrón vigente:
+
+- evitar mensajes planos debajo del título;
+- separar `Qué revisar` de `Acción recomendada`;
+- sugerir el paso de corrección cuando sea posible;
+- mantener copy administrativo para RRHH;
+- no mostrar stack técnico ni transformar reglas de aptitud en textos crudos.
+
+Ejemplo: si el error indica `Sin previsión`, el modal debe orientar al paso `Previsión y salud` y explicar que AFP o IPS son necesarios para validar remuneraciones, salvo excepción respaldada.

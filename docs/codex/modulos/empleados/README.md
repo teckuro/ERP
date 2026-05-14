@@ -45,6 +45,7 @@ Contratos y guías del ciclo de vida del trabajador en Angular: listado, altas (
 | [`creacion-avanzada.md`](./creacion-avanzada.md) | Wizard, pasos, tabs, APVI condicional, paso 9, finalizar |
 | [`perfil-laboral-previsional.md`](./perfil-laboral-previsional.md) | Modelo SQL para categoria base, condiciones especiales persistidas y perfil laboral/previsional derivado |
 | [`alta-coherencia-global-00.md`](./alta-coherencia-global-00.md) | Auditoría de aplicabilidad, validaciones asistidas, campos que aplican/no aplican y matriz para la fase global de coherencia |
+| [`alta-diagnostico-contractual-ux-01.md`](./alta-diagnostico-contractual-ux-01.md) | Pulido UX del Resumen final: diagnóstico contractual visible, caso detectado y regla visual sin barras laterales fuertes |
 | [`borrador-continuar-alta.md`](./borrador-continuar-alta.md) | Guardar borrador, `paso_alta_avanzada`, rehidratación, E2E opt-in |
 | [`ficha-empleado.md`](./ficha-empleado.md) | Pestañas, bloques, panel superior, guardado, carga técnica, Playwright |
 | [`validar-remuneraciones.md`](./validar-remuneraciones.md) | Opción B, condiciones del botón, persistencia, exclusiones |
@@ -111,3 +112,48 @@ Se documenta la matriz global de coherencia del alta avanzada para unir relació
 
 La fase no cambia código funcional: deja definido qué aplica, qué no aplica, qué se deriva, qué debe validar el formulario, qué debe abrir `app-message-box` y qué queda como revisión administrativa para una futura `EMP-ALTA-COHERENCIA-GLOBAL-01`.
 
+
+## EMP-ALTA-COHERENCIA-GLOBAL-01
+
+Se implementa la matriz única de aplicabilidad definida en `EMP-ALTA-COHERENCIA-GLOBAL-00`.
+
+La regla pura `empleado-alta-aplicabilidad.rules.ts` centraliza estados de campos y pasos para Creación avanzada:
+
+- `required`: obligatorio;
+- `optional`: opcional;
+- `derived`: derivado por el sistema;
+- `not_applicable`: no aplica al flujo;
+- `review`: requiere confirmación RRHH;
+- `warning`: advertencia administrativa;
+- `blocked`: bloqueado por fase.
+
+La UI usa la matriz para el estado del wizard y agrega `Matriz de aplicabilidad` en el resumen final. La coherencia administrativa sigue separada y mantiene `app-message-box` para decisiones RRHH.
+
+## EMP-ALTA-DIAGNOSTICO-CONTRACTUAL-UX-01
+
+El Resumen final deja de presentar la matriz como concepto técnico visible y muestra `Diagnóstico contractual`.
+
+La matriz de aplicabilidad sigue como fuente interna, pero RRHH ve:
+
+- caso detectado;
+- datos definidos por sistema;
+- puntos necesarios;
+- revisiones pendientes;
+- coherencia administrativa separada.
+
+Regla visual: no usar `border-left` decorativo fuerte en estos bloques; mantener fondos suaves de información/advertencia y bordes completos locales.
+
+
+## EMP-ALTA-MSGBOX-ERROR-UX-01
+
+El error de guardado de la ficha ya no se presenta como texto plano. Usa el mismo patrón visual del éxito:
+
+- título claro;
+- mensaje principal breve;
+- panel `Qué revisar`;
+- panel `Acción recomendada`;
+- `Paso sugerido` cuando se pueda inferir.
+
+Caso relevante: `Sin previsión` recomienda revisar el paso `Previsión y salud` y seleccionar AFP o IPS si el trabajador quedará habilitado para remuneraciones.
+
+Restricciones mantenidas: sin SQL/RPC/RLS, sin motor, sin nómina, sin ficha empleado, sin creación básica funcional ni estilos globales.

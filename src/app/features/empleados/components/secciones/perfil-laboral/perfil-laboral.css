@@ -382,10 +382,14 @@
 
 .perfil-condition-reason {
   display: block;
-  border-left: 2px solid #93c5fd;
+  width: fit-content;
+  max-width: 100%;
+  border: 1px solid #bfdbfe;
+  border-radius: 8px;
+  background: #eff6ff;
   color: #1e3a8a;
   font-size: var(--erp-text-xs, 0.665rem);
   font-weight: 500;
   line-height: 1.35;
-  padding-left: 7px;
+  padding: 4px 7px;
 }

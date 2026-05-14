@@ -36,6 +36,10 @@ import {
 } from '../../models/empleado-perfil-laboral.model';
 import { RelacionLaboral } from '../../models/empleado.model';
 import {
+  buscarTipoTrabajadorBase,
+  tipoTrabajadorBaseParaRelacion,
+} from '../../rules/empleado-tipo-trabajador-flow.rules';
+import {
   AltaCoherenciaAction,
   AltaCoherenciaIssue,
   AltaCoherenciaState,
@@ -308,6 +312,7 @@ export class FormEmpleadoComponent implements OnInit {
       this.catalogos(),
     );
     this.configureRelacionLaboralUx();
+    this.configureTipoTrabajadorFlow();
     this.configurePerfilLaboralAutodetection();
     await this.loadCatalogos();
     if (this.modo() === 'avanzado') {
@@ -319,6 +324,7 @@ export class FormEmpleadoComponent implements OnInit {
       }
       try {
         await this.loadContinuacionBorradorSiAplica();
+        this.syncTipoTrabajadorConRelacionLaboral();
         this.applyPerfilLaboralAutodetection();
       } finally {
         if (debeHidratarBorrador) {
@@ -474,6 +480,7 @@ export class FormEmpleadoComponent implements OnInit {
       const catalogos = await this.empleadosCatalogosService.obtenerFormulario();
       this.catalogos.set(catalogos);
       this.empleadosFormService.applyCatalogDefaults(this.form, catalogos);
+      this.syncTipoTrabajadorConRelacionLaboral();
       this.applyPerfilLaboralAutodetection();
     } catch {
       this.catalogosError.set(
@@ -2449,6 +2456,32 @@ export class FormEmpleadoComponent implements OnInit {
     });
   }
 
+  private configureTipoTrabajadorFlow(): void {
+    const relacion = this.form.controls.contrato.controls.relacionLaboral;
+
+    relacion.valueChanges
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(() => this.syncTipoTrabajadorConRelacionLaboral());
+  }
+
+  private syncTipoTrabajadorConRelacionLaboral(): void {
+    const contrato = this.form.controls.contrato.controls;
+    const base = tipoTrabajadorBaseParaRelacion(contrato.relacionLaboral.value);
+    const option = buscarTipoTrabajadorBase(this.catalogos().tiposTrabajador, base);
+
+    if (!option) {
+      contrato.idTipoTrabajador.setValue(null, { emitEvent: false });
+      contrato.idTipoTrabajador.updateValueAndValidity({ emitEvent: false });
+      return;
+    }
+
+    if (contrato.idTipoTrabajador.value !== option.value) {
+      contrato.idTipoTrabajador.setValue(option.value, { emitEvent: false });
+    }
+    contrato.idTipoTrabajador.markAsPristine();
+    contrato.idTipoTrabajador.updateValueAndValidity({ emitEvent: false });
+  }
+
   selectedTipoTrabajadorLabel(): string {
     const selectedId = this.form.controls.contrato.controls.idTipoTrabajador.value;
     const option = this.catalogos().tiposTrabajador.find((item) => item.value === selectedId);
@@ -2471,7 +2504,6 @@ export class FormEmpleadoComponent implements OnInit {
     const sources: AbstractControl[] = [
       personal.fechaNacimiento,
       contrato.fechaIngreso,
-      contrato.idTipoTrabajador,
       contrato.relacionLaboral,
       prevision.tipoRegimenPrevisional,
     ];
@@ -2497,7 +2529,6 @@ export class FormEmpleadoComponent implements OnInit {
   private detectPerfilLaboralConditions(): readonly PerfilLaboralAutoDetection[] {
     const detections = new Map<CondicionTrabajadorControlName, string>();
     const edadResumen = this.perfilLaboralEdadResumen();
-    const tipoTrabajadorLabel = this.normalizeCatalogLabel(this.selectedTipoTrabajadorLabel());
     const regimenPrevisional = this.form.controls.previsionSalud.controls.tipoRegimenPrevisional.value;
 
     if (edadResumen.kind === 'menor') {
@@ -2507,53 +2538,11 @@ export class FormEmpleadoComponent implements OnInit {
       );
     }
 
-    if (tipoTrabajadorLabel.includes('pensionado')) {
-      if (tipoTrabajadorLabel.includes('invalidez') && tipoTrabajadorLabel.includes('parcial')) {
-        detections.set(
-          'pensionadoInvalidezParcial',
-          'Detectado desde el tipo de trabajador seleccionado.',
-        );
-      } else if (tipoTrabajadorLabel.includes('invalidez') && tipoTrabajadorLabel.includes('total')) {
-        detections.set(
-          'pensionadoInvalidezTotal',
-          'Detectado desde el tipo de trabajador seleccionado.',
-        );
-      } else {
-        detections.set('pensionado', 'Detectado desde el tipo de trabajador seleccionado.');
-      }
-    }
-
-    if (
-      tipoTrabajadorLabel.includes('exento') &&
-      (tipoTrabajadorLabel.includes('cotizacion') ||
-        tipoTrabajadorLabel.includes('prevision') ||
-        tipoTrabajadorLabel.includes('pension'))
-    ) {
-      detections.set(
-        'exentoCotizacionPension',
-        'Detectado desde el tipo de trabajador seleccionado.',
-      );
-    }
-
     if (regimenPrevisional === 'NINGUNA') {
       detections.set(
         'exentoCotizacionPension',
         'Detectado desde el régimen previsional informado como sin AFP/IPS.',
       );
-    }
-
-    if (
-      (tipoTrabajadorLabel.includes('tecnico') && tipoTrabajadorLabel.includes('extranjero')) ||
-      (tipoTrabajadorLabel.includes('extranjero') && tipoTrabajadorLabel.includes('exento'))
-    ) {
-      detections.set(
-        'tecnicoExtranjeroExento',
-        'Detectado desde el tipo de trabajador seleccionado.',
-      );
-    }
-
-    if (tipoTrabajadorLabel.includes('discapacidad')) {
-      detections.set('discapacidad', 'Detectado desde el tipo de trabajador seleccionado.');
     }
 
     return Array.from(detections.entries()).map(([controlName, reason]) => ({ controlName, reason }));
@@ -2624,12 +2613,7 @@ export class FormEmpleadoComponent implements OnInit {
     const contrato = this.form.controls.contrato.controls;
     const prevision = this.form.controls.previsionSalud.controls;
 
-    const independiente = this.catalogos().tiposTrabajador.find((option) =>
-      option.label.toLowerCase().includes('independiente'),
-    );
-    if (independiente) {
-      contrato.idTipoTrabajador.setValue(independiente.value, { emitEvent: false });
-    }
+    this.syncTipoTrabajadorConRelacionLaboral();
 
     contrato.tipoContrato.setValue(null, { emitEvent: false });
     contrato.fechaContrato.setValue('', { emitEvent: false });
