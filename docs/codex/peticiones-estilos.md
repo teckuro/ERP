@@ -1,3 +1,10 @@
+
+### 2026-05-13 (Empleados - auditoría de coherencia global del alta)
+
+- **Sin cambio visual aplicado**: se documenta la matriz de aplicabilidad y coherencia para futuras mejoras de Creación avanzada.
+- **Criterio UX definido**: diferenciar validación obligatoria, campo no aplicable/derivado y revisión administrativa con decisión RRHH vía `app-message-box`.
+- **Referencia**: `docs/codex/modulos/empleados/alta-coherencia-global-00.md`.
+
 ## EMP-ADV-LAYOUT-CONSISTENCY-01 - Pulido visual local de Creacion avanzada
 
 - En Creacion avanzada, el wizard usa mas ancho disponible sin cambiar estructura ni flujo.
@@ -782,7 +789,7 @@ sin mezclarlo con las reglas base.
 
 ## 2026-05-12 - EMP-CONDICIONES-ESPECIALES-AUTODETECT-01
 
-- **Creacion avanzada / Condiciones especiales**: se agrega bloque compacto `pre-marcado desde pasos anteriores` cuando hay condiciones detectadas por edad, tipo trabajador o regimen previsional.
+- **Creacion avanzada / Condiciones especiales**: se agrega bloque compacto `pre-marcado desde pasos anteriores` cuando hay condiciones detectadas por edad o regimen previsional.
 - **Cards de condicion**: se agrega chip local `Detectada` y razon breve para distinguir sugerencia automatica de declaracion manual, sin cambiar estilos globales.
 - **Patron UX**: autodeteccion asistida con revision RRHH; el sistema pre-marca lo evidente, pero mantiene respaldo y correccion manual antes de finalizar.
 
@@ -792,3 +799,11 @@ sin mezclarlo con las reglas base.
 - **Resumen final**: se agrega bloque `Coherencia administrativa` con tres tarjetas compactas: Seguro de Cesantia, Jornada y Prevision.
 - **MessageBox**: las decisiones de coherencia usan `app-message-box` modal con accion recomendada y opcion de mantener bajo revision, sin bloquear el flujo por defecto.
 - **Estilo**: solo CSS local de `form-empleado.css`, usando borde simple, radio 8px y colores warning existentes. Sin estilos globales ni fuentes nuevas.
+
+
+## 2026-05-13 - EMP-TIPO-TRABAJADOR-FLOW-01
+
+- **Creacion avanzada / Contrato**: `Tipo trabajador` se muestra como dato derivado con chip `Derivado`, no como seleccion manual.
+- **Flujo**: `Contrato` sincroniza `DEPENDIENTE`; `Boleta de honorarios` sincroniza `INDEPENDIENTE`.
+- **Condiciones especiales**: pensionado, invalidez, tecnico extranjero y discapacidad quedan como declaracion RRHH en el paso `Condiciones especiales`.
+- **Restricciones**: solo logica/UI local de alta avanzada; sin estilos globales, SQL/RPC/RLS, motor, nomina ni ficha empleado.

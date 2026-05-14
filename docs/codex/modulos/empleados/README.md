@@ -44,6 +44,7 @@ Contratos y guías del ciclo de vida del trabajador en Angular: listado, altas (
 | [`creacion-basica.md`](./creacion-basica.md) | Ruta modo básico, campos mínimos, `EN_PROCESO`, qué no persiste |
 | [`creacion-avanzada.md`](./creacion-avanzada.md) | Wizard, pasos, tabs, APVI condicional, paso 9, finalizar |
 | [`perfil-laboral-previsional.md`](./perfil-laboral-previsional.md) | Modelo SQL para categoria base, condiciones especiales persistidas y perfil laboral/previsional derivado |
+| [`alta-coherencia-global-00.md`](./alta-coherencia-global-00.md) | Auditoría de aplicabilidad, validaciones asistidas, campos que aplican/no aplican y matriz para la fase global de coherencia |
 | [`borrador-continuar-alta.md`](./borrador-continuar-alta.md) | Guardar borrador, `paso_alta_avanzada`, rehidratación, E2E opt-in |
 | [`ficha-empleado.md`](./ficha-empleado.md) | Pestañas, bloques, panel superior, guardado, carga técnica, Playwright |
 | [`validar-remuneraciones.md`](./validar-remuneraciones.md) | Opción B, condiciones del botón, persistencia, exclusiones |
@@ -104,3 +105,9 @@ Creacion avanzada ajusta el paso posterior a Banco para que el usuario lo entien
 - La grilla de condiciones se presenta como `Solo si aplica`; para trabajadores normales no obliga captura adicional.
 - `Vigencia y respaldo` sigue apareciendo solo cuando RRHH selecciona una condicion especial.
 - El resumen final mantiene lectura compacta como revision, sin duplicar el formulario.
+## EMP-ALTA-COHERENCIA-GLOBAL-00
+
+Se documenta la matriz global de coherencia del alta avanzada para unir relación laboral, `tipo_trabajador`, contrato, jornada, Seguro de Cesantía, previsión/salud, banco, condiciones especiales y resumen final.
+
+La fase no cambia código funcional: deja definido qué aplica, qué no aplica, qué se deriva, qué debe validar el formulario, qué debe abrir `app-message-box` y qué queda como revisión administrativa para una futura `EMP-ALTA-COHERENCIA-GLOBAL-01`.
+

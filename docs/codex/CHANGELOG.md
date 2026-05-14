@@ -1,3 +1,15 @@
+# CHANGELOG
+
+## EMP-ALTA-COHERENCIA-GLOBAL-00 - Auditoría de coherencia del alta avanzada
+
+Fecha: 2026-05-13
+
+- Se agrega documento de auditoría para unificar reglas de aplicabilidad, validación y coherencia administrativa del alta avanzada.
+- Se inventarian campos por relación laboral `CONTRATO` / `HONORARIOS`, distinguiendo datos requeridos, derivados, no aplicables y bajo revisión.
+- Se consolida matriz de comportamiento para `tipo_trabajador`, contrato, jornada, Seguro de Cesantía, previsión/salud, APVI, banco y condiciones especiales.
+- Se documenta qué falta, qué sobra y qué debe alimentar la futura regla pura `empleado-alta-aplicabilidad.rules.ts`.
+- Alcance respetado: fase documental, sin cambios funcionales en Angular, sin SQL/RPC/RLS, sin motor, nómina, liquidaciones, LRE, Previred, ficha empleado ni estilos globales.
+
 ## EMP-PERFIL-LABORAL-SQL-01 - Condiciones especiales del trabajador en BD
 
 Fecha: 2026-05-12
@@ -199,3 +211,14 @@ Fecha: 2026-05-13
 - El formulario muestra avisos inline compactos por paso y un bloque de `Coherencia administrativa` en Resumen final.
 - Se agregan tests unitarios de la regla y casos de componente para aplicar/mantener una decision de coherencia.
 - Alcance respetado: sin SQL/RPC/RLS, sin motor, sin nomina, sin liquidaciones, sin LRE/Previred, sin creacion basica, sin ficha empleado y sin estilos globales.
+
+
+## EMP-TIPO-TRABAJADOR-FLOW-01 - Categoria base derivada
+
+Fecha: 2026-05-13
+
+- Se integra el flujo correcto de `tipo_trabajador` en Creacion avanzada: `CONTRATO` deriva `DEPENDIENTE` y `HONORARIOS` deriva `INDEPENDIENTE`.
+- El campo deja de operar como selector manual de condiciones y se muestra como dato derivado en el paso Contrato/Datos del servicio.
+- Se elimina la autodeteccion de pensionado, invalidez, tecnico extranjero y discapacidad desde texto de `tipo_trabajador`; esas situaciones se mantienen como Condiciones especiales declaradas por RRHH.
+- La autodeteccion actual queda limitada a fuentes reales del flujo: menor de 18 por fechas y regimen previsional `NINGUNA` como exencion de pension a revisar.
+- Alcance respetado: sin SQL/RPC/RLS, sin motor, sin nomina, sin liquidaciones, sin creacion basica, sin ficha empleado y sin estilos globales.

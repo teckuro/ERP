@@ -152,3 +152,16 @@ Patron de uso:
 3. Boton primario aplica la recomendacion.
 4. Boton secundario mantiene bajo revision y permite continuar.
 5. Resumen final conserva la revision pendiente.
+## EMP-ALTA-COHERENCIA-GLOBAL-00 - Matriz de aplicabilidad y coherencia
+
+La auditoría [`alta-coherencia-global-00.md`](./alta-coherencia-global-00.md) queda como contrato previo para las próximas mejoras de Creación avanzada.
+
+Principios vigentes:
+
+- `relacionLaboral` ordena el flujo completo: `CONTRATO` usa trabajador dependiente; `HONORARIOS` usa prestador independiente y finalización bloqueada.
+- `tipo_trabajador` no es una condición especial: se deriva como `DEPENDIENTE` o `INDEPENDIENTE`.
+- Las condiciones como pensionado, invalidez, técnico extranjero, discapacidad, exento de cotización y menor protegido se declaran en `Condiciones especiales`.
+- Validación obligatoria, aplicabilidad y coherencia administrativa no son lo mismo.
+- Las incoherencias relevantes deben avisar con `app-message-box` y permitir que RRHH aplique la corrección sugerida o mantenga bajo revisión.
+- La siguiente implementación debe crear una matriz única que alimente templates, validaciones, mapa lateral, resumen final y limpieza de honorarios.
+

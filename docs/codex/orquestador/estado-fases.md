@@ -1,5 +1,17 @@
 ## Actualizacion 2026-05-12 - EMP-PERFIL-LABORAL-SQL-01
 
+## EMP-ALTA-COHERENCIA-GLOBAL-00 - Auditoría de coherencia del alta avanzada
+
+| Campo | Estado |
+|---|---|
+| Estado | Documentada |
+| Tipo | Documentación técnica / matriz de decisión |
+| Alcance | Creación avanzada de empleados; relación laboral, tipo trabajador, contrato, jornada, Seguro de Cesantía, previsión/salud, banco, condiciones especiales y resumen final |
+| Entrega | `docs/codex/modulos/empleados/alta-coherencia-global-00.md` |
+| Decisión | Próxima fase recomendada: `EMP-ALTA-COHERENCIA-GLOBAL-01`, matriz única de aplicabilidad y coherencia |
+| Fuera de alcance | Sin cambios Angular funcionales, SQL/RPC/RLS, motor, nómina, liquidaciones, LRE/Previred, ficha empleado, creación básica ni estilos globales |
+
+
 | Fase | Estado | Resumen | Pruebas |
 |---|---|---|---|
 | `EMP-PERFIL-LABORAL-SQL-01` | **Implementada en ZIP** | Base SQL para condiciones especiales del trabajador: nuevas tablas canonicas `tipo_condicion_trabajador` y `persona_condicion_trabajador`, seeds minimos, RLS/permisos locales y funcion `fn_obtener_perfil_laboral_persona` para derivar tramo de edad laboral y banderas previsionales por periodo. | Validacion estatica SQL/docs; `unzip -t` del entregable. No se ejecuto BD real ni `tsc` porque la fase no toca front y el ZIP base no incluye `node_modules`. |
@@ -391,7 +403,7 @@ Decision central: `id_catalogo_lre` no es la unica forma de cumplir LRE. Un conc
 
 | Fase | Estado | Resumen | Validacion |
 |------|--------|---------|------------|
-| `EMP-CONDICIONES-ESPECIALES-AUTODETECT-01` | **Implementada en ZIP** | Creacion avanzada pre-marca condiciones especiales cuando la informacion ya fue capturada en pasos previos: menor de 18 por fecha nacimiento/ingreso, tipo trabajador pensionado/invalidez/exento/tecnico extranjero/discapacidad y regimen previsional `NINGUNA` como exencion a revisar. La UI muestra el origen como `Detectada` y conserva revision/edicion RRHH. | `npm ci --ignore-scripts` OK; `npx tsc -p tsconfig.app.json --noEmit` OK; `npx tsc -p tsconfig.spec.json --noEmit` OK; `npm run build -- --configuration development` no cerro en sandbox por timeout, sin error de codigo antes del corte. |
+| `EMP-CONDICIONES-ESPECIALES-AUTODETECT-01` | **Implementada en ZIP** | Creacion avanzada pre-marca condiciones especiales cuando la informacion ya fue capturada en pasos previos: menor de 18 por fecha nacimiento/ingreso, categoria base derivada desde relacion laboral y regimen previsional `NINGUNA` como exencion a revisar. La UI muestra el origen como `Detectada` y conserva revision/edicion RRHH. | `npm ci --ignore-scripts` OK; `npx tsc -p tsconfig.app.json --noEmit` OK; `npx tsc -p tsconfig.spec.json --noEmit` OK; `npm run build -- --configuration development` no cerro en sandbox por timeout, sin error de codigo antes del corte. |
 
 ## EMP-ALTA-REGLAS-COHERENCIA-01 - Cerrada
 
@@ -425,3 +437,14 @@ Validaciones realizadas:
 - `npm run build -- --configuration development` OK con warning preexistente de orden de `@import` en `src/styles/tailwind.css`.
 - `npx vitest run src/app/features/empleados/rules/empleado-alta-coherencia.rules.spec.ts` OK, 5 tests.
 - `npm test -- --watch=false` compilo suite, pero quedo en timeout de sandbox durante ejecucion general.
+
+
+## EMP-TIPO-TRABAJADOR-FLOW-01 - Categoria base derivada
+
+| Campo | Estado |
+|---|---|
+| Estado | Implementada en ZIP |
+| Tipo | UI + logica local de Creacion avanzada |
+| Alcance | `tipo_trabajador` se deriva desde relacion laboral: `CONTRATO` -> `DEPENDIENTE`, `HONORARIOS` -> `INDEPENDIENTE`; las condiciones especiales no se detectan desde ese catalogo. |
+| Fuera de alcance | SQL/RPC/RLS, motor, nomina, liquidaciones, ficha empleado, creacion basica, fuentes canonicas futuras para pensionado/invalidez/extranjero/discapacidad. |
+| Validacion | `tsc app/spec`, build development y specs de reglas. |
