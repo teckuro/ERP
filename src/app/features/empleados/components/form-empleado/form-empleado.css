@@ -1466,7 +1466,7 @@
 
 .advanced-action-modal {
   display: grid;
-  gap: 12px;
+  gap: 10px;
   min-width: 0;
 }
 
@@ -1482,9 +1482,9 @@
 .advanced-action-modal__section h3 {
   margin: 0;
   color: #111827;
-  font-size: 0.78rem;
-  font-weight: 700;
-  letter-spacing: 0.01em;
+  font-size: 0.8rem;
+  font-weight: 650;
+  letter-spacing: 0;
 }
 
 .advanced-action-modal__section ul {
@@ -1501,16 +1501,20 @@
 
 .advanced-action-modal__section li {
   display: grid;
-  grid-template-columns: 14px minmax(0, 1fr);
-  gap: 6px;
+  grid-template-columns: 18px minmax(0, 1fr);
+  gap: 8px;
   align-items: start;
 }
 
 .advanced-action-modal__section li::before {
-  content: '–';
-  color: #64748b;
-  font-weight: 700;
-  line-height: 1.45;
+  content: '';
+  width: 7px;
+  height: 7px;
+  margin-top: 0.48em;
+  border: 1px solid #94a3b8;
+  border-radius: 999px;
+  background: #ffffff;
+  box-shadow: inset 0 0 0 2px #f8fafc;
 }
 
 .advanced-action-modal__section--blocking {
@@ -1526,6 +1530,23 @@
 .advanced-action-modal__section--info {
   border-color: #bfdbfe;
   background: #eff6ff;
+  gap: 6px;
+  padding: 8px 10px;
+}
+
+.advanced-action-modal__section--info ul {
+  gap: 5px;
+  font-size: 0.8rem;
+  line-height: 1.35;
+}
+
+.advanced-action-modal__section--info li {
+  grid-template-columns: 14px minmax(0, 1fr);
+}
+
+.advanced-action-modal__section--info li::before {
+  width: 6px;
+  height: 6px;
 }
 
 :host .wizard-na-panel--honorarios,

@@ -40,6 +40,13 @@ import {
   tipoTrabajadorBaseParaRelacion,
 } from '../../rules/empleado-tipo-trabajador-flow.rules';
 import {
+  AltaAplicabilidadCampo,
+  AltaAplicabilidadItem,
+  AltaAplicabilidadState,
+  altaAplicabilidadStep,
+  evaluarAltaAplicabilidad,
+} from '../../rules/empleado-alta-aplicabilidad.rules';
+import {
   AltaCoherenciaAction,
   AltaCoherenciaIssue,
   AltaCoherenciaState,
@@ -637,6 +644,66 @@ export class FormEmpleadoComponent implements OnInit {
     this.duplicateRutModalRut.set(null);
   }
 
+  errorModalTitle(): string {
+    return this.isBasicMode() ? 'No fue posible registrar la ficha' : 'No fue posible registrar el empleado';
+  }
+
+  errorModalMessage(): string {
+    return this.isBasicMode()
+      ? 'El registro no se completó. Revisa el detalle y vuelve a intentarlo.'
+      : 'La ficha avanzada no se guardó porque hay una condición que debe revisarse antes de finalizar.';
+  }
+
+  normalizedErrorMessage(message: string): string {
+    return message
+      .replace(/Sin prevision/g, 'Sin previsión')
+      .replace(/sin prevision/g, 'sin previsión')
+      .replace(/opcion/g, 'opción')
+      .replace(/calculo/g, 'cálculo')
+      .replace(/nomina/g, 'nómina')
+      .replace(/informacion/g, 'información');
+  }
+
+  errorRecommendedAction(message: string): string {
+    const normalizedMessage = this.normalizedErrorMessage(message).toLowerCase();
+
+    if (normalizedMessage.includes('sin previsión') && normalizedMessage.includes('afp')) {
+      return 'Vuelve al paso Previsión y salud. Selecciona AFP o IPS si el trabajador quedará habilitado para remuneraciones, o mantén el caso como revisión administrativa si corresponde a una excepción respaldada.';
+    }
+
+    if (normalizedMessage.includes('rut') && normalizedMessage.includes('existe')) {
+      return 'Revisa el listado de empleados antes de crear una nueva ficha. Si corresponde, continúa la ficha existente.';
+    }
+
+    if (normalizedMessage.includes('rls') || normalizedMessage.includes('supabase')) {
+      return 'Revisa la configuración de base de datos y permisos antes de intentar guardar nuevamente.';
+    }
+
+    return 'Revisa el paso indicado o la información marcada como pendiente. Luego intenta guardar nuevamente.';
+  }
+
+  errorSuggestedStep(message: string): string | null {
+    const normalizedMessage = this.normalizedErrorMessage(message).toLowerCase();
+
+    if (normalizedMessage.includes('sin previsión') || normalizedMessage.includes('afp') || normalizedMessage.includes('ips')) {
+      return 'Previsión y salud';
+    }
+
+    if (normalizedMessage.includes('rut')) {
+      return 'Datos personales';
+    }
+
+    if (normalizedMessage.includes('banco') || normalizedMessage.includes('cuenta')) {
+      return 'Banco';
+    }
+
+    if (normalizedMessage.includes('contrato') || normalizedMessage.includes('cesantía')) {
+      return 'Contrato';
+    }
+
+    return this.isAdvancedMode() ? 'Resumen final' : null;
+  }
+
   goToEmployeeList(): void {
     this.successMessage.set(null);
     this.successFlow.set(null);
@@ -1002,18 +1069,13 @@ export class FormEmpleadoComponent implements OnInit {
       return 'pendiente';
     }
 
-    if (this.isHonorariosMode() && [4, 5, 6, this.perfilLaboralWizardStepIndex()].includes(stepIndex)) {
+    const aplicabilidadStep = altaAplicabilidadStep(this.altaAplicabilidadState(), stepIndex);
+
+    if (aplicabilidadStep.estado === 'not_applicable') {
       return 'no-aplica';
     }
 
-    const previsionTipo = this.form.controls.previsionSalud.controls.tipoRegimenPrevisional.value;
-    const tieneApv = this.form.controls.previsionSalud.controls.tieneApv.value;
-
-    if (stepIndex === 6 && previsionTipo !== 'AFP') {
-      return 'no-aplica';
-    }
-
-    if (stepIndex === 6 && previsionTipo === 'AFP' && !tieneApv) {
+    if (aplicabilidadStep.estado === 'optional') {
       return 'opcional';
     }
 
@@ -1036,8 +1098,8 @@ export class FormEmpleadoComponent implements OnInit {
       return 'completo';
     }
 
-    if (stepIndex === 6 && previsionTipo === 'AFP' && tieneApv && summary.applicable === 0) {
-      return 'opcional';
+    if (aplicabilidadStep.estado === 'review' || aplicabilidadStep.estado === 'warning') {
+      return 'pendiente';
     }
 
     return 'pendiente';
@@ -2144,6 +2206,123 @@ export class FormEmpleadoComponent implements OnInit {
         respaldoRegistrado: perfil.respaldoRegistrado.value,
       },
     });
+  }
+
+  altaAplicabilidadState(): AltaAplicabilidadState {
+    const contrato = this.form.controls.contrato.controls;
+    const prevision = this.form.controls.previsionSalud.controls;
+    const perfil = this.form.controls.perfilLaboral.controls;
+    const edadResumen = this.perfilLaboralEdadResumen();
+
+    return evaluarAltaAplicabilidad({
+      relacionLaboral: contrato.relacionLaboral.value,
+      tipoContrato: contrato.tipoContrato.value,
+      tipoRegimenPrevisional: prevision.tipoRegimenPrevisional.value,
+      tieneApv: prevision.tieneApv.value,
+      tieneCondicionesEspeciales: this.hasPerfilLaboralCondicionesSeleccionadas(),
+      tieneRespaldoCondiciones: perfil.respaldoRegistrado.value,
+      esMenorEdad: edadResumen.kind === 'menor',
+      esMayor65: edadResumen.kind === 'mayor',
+    });
+  }
+
+  aplicabilidadItem(campo: AltaAplicabilidadCampo): AltaAplicabilidadItem {
+    return this.altaAplicabilidadState().items[campo];
+  }
+
+  aplicabilidadStepMotivo(stepIndex: number): string {
+    return altaAplicabilidadStep(this.altaAplicabilidadState(), stepIndex).motivo;
+  }
+
+  diagnosticoContractualRows(): readonly { label: string; estado: string; motivo: string; tone: string }[] {
+    const state = this.altaAplicabilidadState();
+    const campos: readonly AltaAplicabilidadCampo[] = this.isHonorariosMode()
+      ? ['tipoTrabajador', 'montoHonorarios', 'banco', 'resumenFinal']
+      : ['tipoTrabajador', 'jornadaLaboral', 'seguroCesantia', 'regimenPrevisional', 'condicionesEspeciales'];
+
+    return campos.map((campo) => {
+      const item = state.items[campo];
+      return {
+        label: item.label,
+        estado: this.diagnosticoEstadoLabel(item.estado),
+        motivo: item.motivo,
+        tone: item.estado,
+      };
+    });
+  }
+
+  diagnosticoContractualBadge(): string {
+    const resumen = this.altaAplicabilidadState().resumen;
+    const revisiones = resumen.review + resumen.warning + resumen.blocked;
+
+    if (revisiones > 0) {
+      return `${revisiones} punto(s) a revisar`;
+    }
+
+    if (this.isHonorariosMode()) {
+      return 'Borrador disponible';
+    }
+
+    return 'Alta coherente';
+  }
+
+  diagnosticoContractualDescripcion(): string {
+    const resumen = this.altaAplicabilidadState().resumen;
+    const revisiones = resumen.review + resumen.warning + resumen.blocked;
+
+    if (this.isHonorariosMode()) {
+      return 'El sistema identificó un alta a honorarios y separó los datos de pago de los campos laborales dependientes.';
+    }
+
+    if (revisiones > 0) {
+      return 'El sistema encontró puntos contractuales o previsionales que conviene resolver antes de finalizar.';
+    }
+
+    return 'El sistema revisó contrato, jornada, previsión y condiciones especiales según la relación seleccionada.';
+  }
+
+  diagnosticoContractualCasoLabel(): string {
+    const edad = this.perfilLaboralEdadResumen().label;
+
+    if (this.isHonorariosMode()) {
+      return `${edad} · Prestador a honorarios / independiente`;
+    }
+
+    return `${edad} · Trabajador dependiente / ${this.tipoContratoResumenLabel()}`;
+  }
+
+  private diagnosticoEstadoLabel(estado: AltaAplicabilidadItem['estado']): string {
+    switch (estado) {
+      case 'required':
+        return 'Necesario';
+      case 'optional':
+        return 'Opcional';
+      case 'derived':
+        return 'Definido por sistema';
+      case 'not_applicable':
+        return 'No aplica';
+      case 'review':
+        return 'Revisar';
+      case 'warning':
+        return 'Advertencia';
+      case 'blocked':
+        return 'Bloqueado';
+    }
+  }
+
+  private tipoContratoResumenLabel(): string {
+    switch (this.form.controls.contrato.controls.tipoContrato.value) {
+      case 'INDEFINIDO':
+        return 'contrato indefinido';
+      case 'PLAZO_FIJO':
+        return 'contrato a plazo fijo';
+      case 'OBRA_SERVICIO':
+        return 'contrato por obra o servicio';
+      case 'CASA_PARTICULAR':
+        return 'contrato de casa particular';
+      default:
+        return 'contrato pendiente';
+    }
   }
 
   coherenciaIssues(): readonly AltaCoherenciaIssue[] {

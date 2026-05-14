@@ -213,3 +213,18 @@ Patrón vigente:
 - no mostrar stack técnico ni transformar reglas de aptitud en textos crudos.
 
 Ejemplo: si el error indica `Sin previsión`, el modal debe orientar al paso `Previsión y salud` y explicar que AFP o IPS son necesarios para validar remuneraciones, salvo excepción respaldada.
+
+## EMP-ALTA-VALIDACIONES-ASISTIDAS-01 - Validaciones visibles guiadas
+
+La alta avanzada centraliza la salida visible en `empleado-alta-validaciones.rules.ts`. Esta capa no decide por sí sola qué aplica ni qué combinación es incoherente: traduce lo que ya entregan aplicabilidad, coherencia y validadores del formulario.
+
+Reglas de UX:
+
+- Los datos obligatorios pendientes se muestran mediante `app-message-box` al presionar `Siguiente` o `Finalizar`.
+- Los campos fuera de flujo se muestran como `Campos no aplicables`, no como error.
+- `tipo_trabajador` se muestra como `Definido por sistema`.
+- Régimen `NINGUNA` se muestra como revisión administrativa en `Previsión y salud`, con copy explícito sobre `Sin previsión`.
+- `app-message-box` se reserva para decisiones: aplicar corrección sugerida, mantener bajo revisión, volver al formulario o finalizar.
+- Honorarios no muestra errores de contrato laboral, jornada, previsión dependiente, asignaciones ni APVI; permite borrador y mantiene finalización bloqueada por fase.
+
+El Resumen final mantiene `Estado por etapa` como lectura consolidada. Los mensajes de paso se mantienen en MsgBox para no recargar ni duplicar información en el formulario.

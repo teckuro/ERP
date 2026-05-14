@@ -110,18 +110,33 @@
           <app-message-box
             mode="modal"
             variant="error"
-            [title]="
-              isBasicMode() ? 'No fue posible registrar la ficha' : 'No fue posible registrar el empleado'
-            "
-            [message]="
-              isBasicMode()
-                ? message
-                : 'Ocurrió un problema al intentar guardar la ficha avanzada.'
-            "
-            [detail]="isBasicMode() ? '' : message"
+            [modalHeadlineSplit]="true"
+            [title]="errorModalTitle()"
+            [message]="errorModalMessage()"
             primaryLabel="Aceptar"
             (action)="dismissErrorMessage()"
-          ></app-message-box>
+          >
+            <div
+              class="basic-success-followup error-followup"
+              role="region"
+              aria-labelledby="save-error-detail-title"
+            >
+              <div class="basic-success-followup__panel error-followup__panel">
+                <h3 class="basic-success-followup__title" id="save-error-detail-title">Qué revisar</h3>
+                <p class="basic-success-followup__text">{{ normalizedErrorMessage(message) }}</p>
+              </div>
+              <div class="basic-success-followup__panel error-followup__panel">
+                <h3 class="basic-success-followup__title">Acción recomendada</h3>
+                <p class="basic-success-followup__text">{{ errorRecommendedAction(message) }}</p>
+              </div>
+              @if (errorSuggestedStep(message); as suggestedStep) {
+                <div class="basic-success-followup__meta error-followup__meta">
+                  <span class="basic-success-followup__meta-label">Paso sugerido</span>
+                  <span class="basic-success-followup__meta-value">{{ suggestedStep }}</span>
+                </div>
+              }
+            </div>
+          </app-message-box>
         } @else if (successMessage(); as message) {
           <app-message-box
             mode="modal"
@@ -635,6 +650,34 @@
                             </div>
                           }
                         </dl>
+                        <section class="contract-diagnosis-panel" aria-label="Diagnóstico contractual del alta">
+                          <div class="contract-diagnosis-panel__head">
+                            <div>
+                              <span class="contract-diagnosis-panel__eyebrow">Revisión del alta</span>
+                              <h4>Diagnóstico contractual</h4>
+                              <p>{{ diagnosticoContractualDescripcion() }}</p>
+                            </div>
+                            <span>{{ diagnosticoContractualBadge() }}</span>
+                          </div>
+                          <div class="contract-diagnosis-case" role="status">
+                            <strong>Caso detectado</strong>
+                            <span>{{ diagnosticoContractualCasoLabel() }}</span>
+                          </div>
+                          <div class="contract-diagnosis-grid">
+                            @for (row of diagnosticoContractualRows(); track row.label) {
+                              <article
+                                class="contract-diagnosis-card"
+                                [class.is-derived]="row.tone === 'derived'"
+                                [class.is-na]="row.tone === 'not_applicable'"
+                                [class.is-review]="row.tone === 'review' || row.tone === 'warning' || row.tone === 'blocked'"
+                              >
+                                <span>{{ row.estado }}</span>
+                                <strong>{{ row.label }}</strong>
+                                <p>{{ row.motivo }}</p>
+                              </article>
+                            }
+                          </div>
+                        </section>
                         @if (!isHonorariosMode()) {
                           <section class="coherence-summary-panel" aria-label="Coherencia administrativa del alta">
                             <div class="coherence-summary-panel__head">

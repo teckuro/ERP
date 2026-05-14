@@ -1,4 +1,12 @@
 
+## 2026-05-14 - EMP-ALTA-VALIDACIONES-ASISTIDAS-01
+
+- **Creación avanzada:** los mensajes del paso vuelven a concentrarse en `app-message-box`; no quedan tarjetas inline permanentes dentro del formulario.
+- **MessageBox:** se amplía el ancho útil del modal y se mejora la lectura de descripciones/listas para que los pendientes y revisiones no se sientan comprimidos.
+- **Resumen final:** se mantiene `Estado por etapa` como consolidado único; no se duplica con un bloque adicional de validaciones asistidas.
+- **Interacción:** `Siguiente` vuelve a mostrar MsgBox cuando hay pendientes o revisiones; las acciones siguen siendo `Continuar` o `Corregir ahora`.
+- **Estilo:** fondos suaves por intención, borde completo, radio 8px y densidad compacta. Sin `border-left` decorativo fuerte ni estilos globales.
+
 ### 2026-05-13 (Empleados - auditoría de coherencia global del alta)
 
 - **Sin cambio visual aplicado**: se documenta la matriz de aplicabilidad y coherencia para futuras mejoras de Creación avanzada.

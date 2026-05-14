@@ -875,6 +875,32 @@
   letter-spacing: 0.01em;
 }
 
+
+/* Modal de error — mismo patrón de lectura que el éxito: paneles neutros, detalle y acción. */
+:host .error-followup {
+  margin-top: 0;
+}
+
+:host .error-followup__panel {
+  background: #fef2f2;
+  border-color: #fee2e2;
+}
+
+:host .error-followup__panel .basic-success-followup__title {
+  border-bottom-color: #fee2e2;
+  background: #ffffff;
+  color: #991b1b;
+}
+
+:host .error-followup__panel .basic-success-followup__text {
+  color: #374151;
+}
+
+:host .error-followup__meta {
+  background: #fff7ed;
+  border-color: #fed7aa;
+}
+
 :host .flow-tab-body {
   display: grid;
   gap: 2px;
@@ -1551,7 +1577,6 @@
 .coherence-inline-panel,
 .coherence-summary-panel {
   border: 1px solid #FDE68A;
-  border-left: 3px solid #F59E0B;
   border-radius: 8px;
   background: #FFFBEB;
   color: #111827;
@@ -1652,6 +1677,157 @@
 
 @media (max-width: 980px) {
   .coherence-summary-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+:host .contract-diagnosis-panel {
+  display: grid;
+  gap: 10px;
+  margin: 12px 0 14px;
+  padding: 12px;
+  border: 1px solid #E5E7EB;
+  border-radius: 8px;
+  background: #F8FAFC;
+  color: #111827;
+}
+
+:host .contract-diagnosis-panel__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+:host .contract-diagnosis-panel__head h4,
+:host .contract-diagnosis-panel__head p,
+:host .contract-diagnosis-card p {
+  margin: 0;
+}
+
+:host .contract-diagnosis-panel__eyebrow {
+  display: inline-flex;
+  margin-bottom: 3px;
+  color: #475569;
+  font-size: var(--erp-text-xs);
+  font-weight: 600;
+  line-height: 1.3;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+:host .contract-diagnosis-panel__head h4,
+:host .contract-diagnosis-card strong,
+:host .contract-diagnosis-case strong {
+  color: #111827;
+  font-weight: 600;
+}
+
+:host .contract-diagnosis-panel__head p,
+:host .contract-diagnosis-card p,
+:host .contract-diagnosis-case span {
+  color: #6B7280;
+  font-size: var(--erp-text-xs);
+  line-height: 1.45;
+}
+
+:host .contract-diagnosis-panel__head > span {
+  display: inline-flex;
+  align-items: center;
+  flex: 0 0 auto;
+  width: fit-content;
+  padding: 3px 9px;
+  border: 1px solid #BFDBFE;
+  border-radius: 999px;
+  background: #EFF6FF;
+  color: #1D4ED8;
+  font-size: var(--erp-text-xs);
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+:host .contract-diagnosis-case {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  min-width: 0;
+  padding: 8px 10px;
+  border: 1px solid #E5E7EB;
+  border-radius: 8px;
+  background: #FFFFFF;
+}
+
+:host .contract-diagnosis-case span {
+  text-align: right;
+}
+
+:host .contract-diagnosis-grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 8px;
+}
+
+:host .contract-diagnosis-card {
+  display: grid;
+  align-content: start;
+  gap: 4px;
+  min-width: 0;
+  padding: 8px;
+  border: 1px solid #E5E7EB;
+  border-radius: 8px;
+  background: #FFFFFF;
+}
+
+:host .contract-diagnosis-card span {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  padding: 2px 7px;
+  border: 1px solid #E5E7EB;
+  border-radius: 999px;
+  background: #F9FAFB;
+  color: #4B5563;
+  font-size: var(--erp-text-xs);
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+:host .contract-diagnosis-card.is-derived span {
+  border-color: #BFDBFE;
+  background: #EFF6FF;
+  color: #1D4ED8;
+}
+
+:host .contract-diagnosis-card.is-na span {
+  border-color: #E5E7EB;
+  background: #F3F4F6;
+  color: #6B7280;
+}
+
+:host .contract-diagnosis-card.is-review {
+  border-color: #FDE68A;
+  background: #FFFBEB;
+}
+
+:host .contract-diagnosis-card.is-review span {
+  border-color: #FDE68A;
+  background: #FFFFFF;
+  color: #92400E;
+}
+
+@media (max-width: 1180px) {
+  :host .contract-diagnosis-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 720px) {
+  :host .contract-diagnosis-panel__head {
+    display: grid;
+  }
+
+  :host .contract-diagnosis-grid {
     grid-template-columns: 1fr;
   }
 }

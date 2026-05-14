@@ -1,3 +1,15 @@
+## EMP-ALTA-VALIDACIONES-ASISTIDAS-01 - Validaciones visibles guiadas
+
+| Campo | Estado |
+|---|---|
+| Estado | Implementada en ZIP |
+| Tipo | Lógica local + UX de validaciones visibles |
+| Alcance | Creación avanzada; capa visible que consume aplicabilidad, coherencia y pendientes reales del formulario. |
+| Entrega | `empleado-alta-validaciones.rules.ts`, spec unitario, bloques inline por paso y sección `Revisión del alta` en Resumen final. |
+| Pruebas | `tsc app`, vitest de la regla nueva; validación completa de fase documentada en entrega. |
+| Fuera de alcance | SQL/RPC/RLS, motor, nómina, liquidaciones, LRE/Previred, ficha empleado, creación básica funcional, persistencia final de honorarios y estilos globales. |
+| Siguiente fase sugerida | Trazabilidad formal de revisiones administrativas mantenidas, si el producto lo requiere. |
+
 ## EMP-ALTA-MSGBOX-ERROR-UX-01 - Mensajes de error estructurados
 
 | Campo | Estado |

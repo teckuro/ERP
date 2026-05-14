@@ -394,23 +394,6 @@
                   </div>
                 }
 
-                @if (!isHonorariosMode() && coherenciaIssuesForActiveStep().length > 0) {
-                  <section class="coherence-inline-panel" aria-label="Avisos de coherencia del alta">
-                    <div class="coherence-inline-panel__head">
-                      <span class="coherence-inline-panel__eyebrow">Revisión asistida</span>
-                      <strong>El sistema detectó combinaciones que conviene revisar.</strong>
-                    </div>
-                    <ul class="coherence-inline-panel__list">
-                      @for (issue of coherenciaIssuesForActiveStep(); track issue.id) {
-                        <li>
-                          <span>{{ issue.title }}</span>
-                          <small>{{ issue.detail }}</small>
-                        </li>
-                      }
-                    </ul>
-                  </section>
-                }
-
                 @if (activeWizardStep() === 0) {
                   <div class="step-panel">
                     <app-empleado-datos-personales
@@ -682,7 +665,13 @@
                           <section class="coherence-summary-panel" aria-label="Coherencia administrativa del alta">
                             <div class="coherence-summary-panel__head">
                               <h4>Coherencia administrativa</h4>
-                              <span>{{ coherenciaResumenItems().length === 0 ? 'Sin revisiones pendientes' : coherenciaResumenItems().length + ' revisión(es)' }}</span>
+                              <span>
+                                {{
+                                  coherenciaResumenItems().length === 0
+                                    ? 'Sin revisiones'
+                                    : coherenciaResumenItems().length + ' punto(s) a revisar'
+                                }}
+                              </span>
                             </div>
                             <div class="coherence-summary-grid">
                               @for (row of coherenciaStatusRows(); track row.label) {

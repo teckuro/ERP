@@ -46,6 +46,7 @@ Contratos y guías del ciclo de vida del trabajador en Angular: listado, altas (
 | [`perfil-laboral-previsional.md`](./perfil-laboral-previsional.md) | Modelo SQL para categoria base, condiciones especiales persistidas y perfil laboral/previsional derivado |
 | [`alta-coherencia-global-00.md`](./alta-coherencia-global-00.md) | Auditoría de aplicabilidad, validaciones asistidas, campos que aplican/no aplican y matriz para la fase global de coherencia |
 | [`alta-diagnostico-contractual-ux-01.md`](./alta-diagnostico-contractual-ux-01.md) | Pulido UX del Resumen final: diagnóstico contractual visible, caso detectado y regla visual sin barras laterales fuertes |
+| [`alta-validaciones-asistidas-01.md`](./alta-validaciones-asistidas-01.md) | Capa visible de validaciones guiadas: faltantes, no aplica, definido por sistema, revisión administrativa y MsgBox solo para decisiones |
 | [`borrador-continuar-alta.md`](./borrador-continuar-alta.md) | Guardar borrador, `paso_alta_avanzada`, rehidratación, E2E opt-in |
 | [`ficha-empleado.md`](./ficha-empleado.md) | Pestañas, bloques, panel superior, guardado, carga técnica, Playwright |
 | [`validar-remuneraciones.md`](./validar-remuneraciones.md) | Opción B, condiciones del botón, persistencia, exclusiones |
@@ -157,3 +158,13 @@ El error de guardado de la ficha ya no se presenta como texto plano. Usa el mism
 Caso relevante: `Sin previsión` recomienda revisar el paso `Previsión y salud` y seleccionar AFP o IPS si el trabajador quedará habilitado para remuneraciones.
 
 Restricciones mantenidas: sin SQL/RPC/RLS, sin motor, sin nómina, sin ficha empleado, sin creación básica funcional ni estilos globales.
+
+## EMP-ALTA-VALIDACIONES-ASISTIDAS-01
+
+Creación avanzada agrega una capa visible de validaciones guiadas en `empleado-alta-validaciones.rules.ts`.
+
+La regla consume aplicabilidad, coherencia administrativa y pendientes reales del formulario para mostrar datos necesarios pendientes, revisiones asistidas, campos no aplicables, datos definidos por sistema, avisos administrativos y bloqueos por fase.
+
+`Siguiente` vuelve a mostrar `app-message-box` cuando faltan datos o hay revisiones del paso. El modal usa descripciones más amplias y acciones claras para continuar o corregir ahora.
+
+Restricciones mantenidas: sin SQL/RPC/RLS, sin motor, sin nómina, sin liquidaciones, sin ficha empleado, sin creación básica funcional y sin estilos globales.

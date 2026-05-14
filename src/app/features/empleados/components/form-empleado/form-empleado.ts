@@ -173,6 +173,7 @@ const TAB_ORDER: readonly TabId[] = [...EMPLEADO_FORM_TAB_ORDER];
 
 /** Mensajes de negocio al intentar finalizar con bloqueos (paso 9); no exponer detalle técnico de BD. */
 const MENSAJES_FINALIZAR_ALTA: Partial<Record<string, string>> = {
+  'personal.identity': 'Ingresa un RUT válido o un identificador extranjero válido.',
   'contract.position': 'Ingresa el cargo o función que tendrá el trabajador.',
   'honorarios.service': 'Ingresa el servicio o función que prestará la persona a honorarios.',
   'honorarios.amount': 'Ingresa el monto bruto pactado para la boleta de honorarios.',
@@ -2252,8 +2253,12 @@ export class FormEmpleadoComponent implements OnInit {
   }
 
   diagnosticoContractualBadge(): string {
-    const resumen = this.altaAplicabilidadState().resumen;
-    const revisiones = resumen.review + resumen.warning + resumen.blocked;
+    const bloqueos = this.altaAplicabilidadState().resumen.blocked;
+    const revisiones = this.coherenciaIssues().length;
+
+    if (bloqueos > 0) {
+      return `${bloqueos} bloqueo(s) de fase`;
+    }
 
     if (revisiones > 0) {
       return `${revisiones} punto(s) a revisar`;
@@ -2267,15 +2272,19 @@ export class FormEmpleadoComponent implements OnInit {
   }
 
   diagnosticoContractualDescripcion(): string {
-    const resumen = this.altaAplicabilidadState().resumen;
-    const revisiones = resumen.review + resumen.warning + resumen.blocked;
+    const bloqueos = this.altaAplicabilidadState().resumen.blocked;
+    const revisiones = this.coherenciaIssues().length;
 
     if (this.isHonorariosMode()) {
       return 'El sistema identificó un alta a honorarios y separó los datos de pago de los campos laborales dependientes.';
     }
 
+    if (bloqueos > 0) {
+      return 'Hay una restricción de fase que impide finalizar con el flujo actual.';
+    }
+
     if (revisiones > 0) {
-      return 'El sistema encontró puntos contractuales o previsionales que conviene resolver antes de finalizar.';
+      return 'Hay revisiones administrativas que deben decidirse antes de finalizar o quedar mantenidas bajo revisión.';
     }
 
     return 'El sistema revisó contrato, jornada, previsión y condiciones especiales según la relación seleccionada.';
@@ -2294,7 +2303,7 @@ export class FormEmpleadoComponent implements OnInit {
   private diagnosticoEstadoLabel(estado: AltaAplicabilidadItem['estado']): string {
     switch (estado) {
       case 'required':
-        return 'Necesario';
+        return 'Aplica';
       case 'optional':
         return 'Opcional';
       case 'derived':
@@ -2302,9 +2311,9 @@ export class FormEmpleadoComponent implements OnInit {
       case 'not_applicable':
         return 'No aplica';
       case 'review':
-        return 'Revisar';
+        return 'Revisión RRHH';
       case 'warning':
-        return 'Advertencia';
+        return 'Revisión RRHH';
       case 'blocked':
         return 'Bloqueado';
     }
@@ -2339,6 +2348,24 @@ export class FormEmpleadoComponent implements OnInit {
 
   coherenciaResumenItems(): readonly string[] {
     return this.coherenciaIssues().map((issue) => issue.summary).slice(0, 6);
+  }
+
+  coherenciaResumenBadge(): string {
+    const issues = this.coherenciaIssues();
+
+    if (issues.length === 0) {
+      return 'Sin revisiones';
+    }
+
+    const porDecidir = issues.filter(
+      (issue) => issue.action && !this.acknowledgedCoherenceIssueIds().has(issue.id),
+    ).length;
+
+    if (porDecidir > 0) {
+      return `${porDecidir} por decidir`;
+    }
+
+    return `${issues.length} mantenida(s) bajo revisiÃ³n`;
   }
 
   coherenciaStatusRows(): readonly { label: string; detail: string; tone: string }[] {
@@ -2403,8 +2430,8 @@ export class FormEmpleadoComponent implements OnInit {
       blockingItems: [],
       warningItems: [issue.detail],
       infoItems: [
-        'RRHH mantiene la decisión final del dato ingresado.',
-        'Si mantienes la condición, quedará visible como revisión pendiente en el resumen final.',
+        'RRHH decide si corrige o mantiene revisión.',
+        'La revisión quedará visible en el resumen.',
       ],
       targetStep: issue.stepIndex,
       primaryAction: 'apply-coherence-suggestion',
@@ -2495,15 +2522,15 @@ export class FormEmpleadoComponent implements OnInit {
       title: blocking.length > 0 ? 'Datos pendientes en esta sección' : 'Advertencias de revisión',
       message:
         blocking.length > 0
-          ? `La sección "${label}" aún tiene información necesaria para finalizar el alta del trabajador. Puedes corregirla ahora o continuar con la siguiente sección y volver más adelante.`
-          : `La sección "${label}" tiene advertencias administrativas que conviene revisar antes de finalizar el alta. Puedes continuar y volver más adelante.`,
+          ? `La sección "${label}" aún tiene información necesaria para finalizar el alta. Puedes corregirla ahora o continuar con el resto del formulario y volver a este punto antes de finalizar.`
+          : `La sección "${label}" tiene revisiones administrativas que no impiden avanzar, pero conviene dejarlas claras antes de cerrar el alta.`,
       primaryLabel: 'Continuar',
       secondaryLabel: 'Corregir ahora',
       blockingItems: this.validationModalLabels(blocking, 6),
       warningItems: this.validationModalLabels(warnings, 6),
       infoItems: [
-        'Puedes seguir completando otras secciones sin perder lo avanzado.',
-        'Finalizar alta exigirá resolver los datos obligatorios pendientes.',
+        'Puedes continuar y volver antes de finalizar.',
+        'El resumen final mantendrá estos pendientes.',
       ],
       targetStep: step,
       primaryAction: 'continue-next',
@@ -2522,8 +2549,8 @@ export class FormEmpleadoComponent implements OnInit {
       blockingItems: this.draftMinimumPendingLabels(),
       warningItems: [],
       infoItems: [
-        'El borrador solo requiere datos mínimos de identificación.',
-        'El resto de la ficha puede completarse después.',
+        'El borrador requiere identificación mínima.',
+        'Puedes completar el resto después.',
       ],
       targetStep: 0,
       primaryAction: 'focus-draft-minimum',
@@ -2540,7 +2567,7 @@ export class FormEmpleadoComponent implements OnInit {
       primaryLabel: 'Aceptar',
       blockingItems: [],
       warningItems: [],
-      infoItems: ['La ficha seguirá en borrador hasta que finalices el alta.'],
+      infoItems: ['La ficha seguirá en borrador.'],
       primaryAction: 'dismiss',
     });
   }
@@ -2561,7 +2588,7 @@ export class FormEmpleadoComponent implements OnInit {
       blockingItems: this.validationModalLabels(blocking, 10),
       warningItems: this.validationModalLabels(warnings, 8),
       infoItems: [
-        'Puedes cerrar este aviso y guardar un borrador si necesitas completar la información después.',
+        'Puedes guardar borrador y completar después.',
       ],
       targetStep: firstBadStep,
       primaryAction: 'focus-first-blocking',
@@ -2580,7 +2607,7 @@ export class FormEmpleadoComponent implements OnInit {
       secondaryLabel: 'Cancelar',
       blockingItems: [],
       warningItems: [],
-      infoItems: ['Después podrás revisar información complementaria desde la ficha del empleado.'],
+      infoItems: ['La ficha quedará disponible para revisión posterior.'],
       primaryAction: 'execute-finish',
       secondaryAction: 'dismiss',
     });
@@ -2602,8 +2629,8 @@ export class FormEmpleadoComponent implements OnInit {
         'La ficha podrá guardarse como borrador, pero no finalizarse como trabajador dependiente.',
       ],
       infoItems: [
-        'El monto informado será el monto bruto de honorarios.',
-        'La persistencia completa de honorarios se habilitará en una fase posterior.',
+        'El monto será bruto de honorarios.',
+        'La persistencia final queda para otra fase.',
       ],
       primaryAction: 'confirm-honorarios',
       secondaryAction: 'cancel-honorarios',
@@ -2627,7 +2654,7 @@ export class FormEmpleadoComponent implements OnInit {
         'Mantén esta ficha como borrador hasta implementar el flujo completo de prestadores a honorarios.',
       ],
       infoItems: [
-        'Fase posterior: monto bruto, retención vigente, datos tributarios y separación de nómina dependiente.',
+        'Fase posterior: retención, datos tributarios y pago.',
       ],
       targetStep: 8,
       primaryAction: 'save-honorarios-draft',
@@ -2872,7 +2899,7 @@ export class FormEmpleadoComponent implements OnInit {
     const pending: string[] = [];
 
     if (dp.rut.invalid) {
-      pending.push('RUT válido o identificador extranjero del trabajador.');
+      pending.push('Ingresa un RUT válido o un identificador extranjero válido.');
     }
     if (!String(dp.nombres.value || '').trim()) {
       pending.push('Nombres del trabajador.');
