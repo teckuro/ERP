@@ -1,4 +1,15 @@
 # CHANGELOG
+## ERP-CONTEXT-OPTIMIZATION-01 - Contexto liviano para Cursor/Codex
+
+Fecha: 2026-05-15
+
+- Se crea `docs/codex/contexto-rapido.md` como resumen oficial corto para iniciar fases sin arrastrar todo el historial.
+- Se agregan reglas persistentes Cursor: `.cursor/rules/erp-ui-noia.mdc` y `.cursor/rules/erp-protected-files.mdc`.
+- Se agrega `.cursorignore` para excluir artefactos pesados, dependencias, logs, zips, entornos locales y resultados de pruebas sin ocultar `docs/codex`, `.cursor`, `src/app`, `bd` ni `scripts`.
+- Se crea `scripts/build-context-pack.ps1` para generar ZIPs pequeños de contexto por módulo o fase.
+- Se documenta la fase en `docs/codex/diseno/erp-context-optimization-01.md`.
+- Alcance respetado: sin Angular funcional, sin HTML/CSS visual de pantallas, sin estilos globales protegidos, sin SQL/RPC/RLS, sin motor, sin nómina, sin liquidaciones, sin servicios, sin mappers, sin payloads y sin dependencias nuevas.
+
 ## EMP-ADV-CSS-BUDGET-REDUCE-01 - Reduccion de presupuesto CSS en Creacion avanzada
 
 Fecha: 2026-05-15

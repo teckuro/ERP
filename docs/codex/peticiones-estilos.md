@@ -881,3 +881,12 @@ Creación avanzada incorpora una identidad de producto local para dejar de senti
 - **Presupuesto Angular:** el error productivo de `form-empleado.css` baja desde 36.37 kB sobre presupuesto de 24.00 kB a build sin error `anyComponentStyle`.
 - **Estilo:** se conservan Bitacora Laboral y NOIA; no se cambian paleta, presupuestos, estilos globales ni comportamiento.
 - **Restricciones:** sin `angular.json`, sin `src/styles*`, sin Tailwind/PostCSS, sin SQL/RPC/RLS, sin motor, sin nomina, sin liquidaciones y sin servicios/mappers/rutas/reglas/payloads.
+
+## 2026-05-15 - ERP-CONTEXT-OPTIMIZATION-01
+
+- **Contexto de trabajo:** se agrega `docs/codex/contexto-rapido.md` para iniciar fases con menos tokens y sin perder restricciones críticas.
+- **Reglas Cursor:** se agregan reglas permanentes para NOIA/Bitácora Operativa y archivos protegidos.
+- **Empaquetado:** se agrega `scripts/build-context-pack.ps1` para generar ZIPs pequeños de contexto por fase o módulo.
+- **Estilo:** sin cambio visual aplicado; la fase solo refuerza reglas para mantener NOIA en trabajos futuros.
+- **Restricciones:** sin Angular funcional, sin HTML/CSS visual, sin estilos globales, sin SQL/RPC/RLS, sin motor, sin nómina, sin liquidaciones y sin servicios/mappers/persistencia.
+

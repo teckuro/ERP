@@ -545,3 +545,19 @@ Fecha: 2026-05-15
 | Resultado | El build productivo ya no falla por presupuesto de `form-empleado.css`; tamano inicial reportado 36.37 kB, final sin error `anyComponentStyle` y hojas fuente de 19,060 / 9,442 / 10,517 bytes. |
 | Validaciones | `tsc app` OK; `tsc spec` OK; `ng build development` OK; `npm run build` OK. |
 | Restricciones | Sin cambios a presupuestos, `angular.json`, estilos globales, Tailwind/PostCSS, SQL/RPC/RLS, motor, nomina, liquidaciones, servicios, mappers, rutas, reglas ni payloads. |
+
+## ERP-CONTEXT-OPTIMIZATION-01 - Contexto liviano para Cursor/Codex
+
+Fecha: 2026-05-15
+
+| Campo | Estado |
+|---|---|
+| Estado | Implementada |
+| Tipo | Documentación técnica + reglas Cursor + script auxiliar |
+| Alcance | Contexto rápido oficial, reglas persistentes NOIA/protegidos, `.cursorignore` y generador de context packs pequeños. |
+| Entrega | `docs/codex/contexto-rapido.md`, `docs/codex/diseno/erp-context-optimization-01.md`, `.cursor/rules/erp-ui-noia.mdc`, `.cursor/rules/erp-protected-files.mdc`, `.cursorignore`, `scripts/build-context-pack.ps1`. |
+| Validación | Existencia de archivos, revisión de referencias y verificación documental. No requiere build Angular porque no toca `src/` funcional ni estilos de pantalla. |
+| Restricciones | Sin Angular funcional, sin HTML/CSS visual, sin estilos globales protegidos, sin SQL/RPC/RLS, sin motor, nómina, liquidaciones, servicios, mappers, payloads ni persistencia crítica. |
+| Uso | Para fases futuras, partir por `docs/codex/contexto-rapido.md` y generar context pack cuando el análisis no requiera el ZIP completo. |
+| Documento | [`../diseno/erp-context-optimization-01.md`](../diseno/erp-context-optimization-01.md) |
+

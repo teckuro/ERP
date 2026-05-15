@@ -1,0 +1,44 @@
+# Cursor context exclusions for ERP Remuneraciones
+# Objetivo: reducir ruido/tokens sin ocultar la fuente de verdad del proyecto.
+
+# Dependencias y artefactos
+node_modules/
+dist/
+.angular/
+coverage/
+test-results/
+playwright-report/
+out-tsc/
+tmp/
+.cache/
+
+# Paquetes y respaldos pesados
+*.zip
+*.rar
+*.7z
+*.tar.gz
+*.bak
+*.tmp
+*.log
+npm-debug.log
+yarn-error.log
+
+# Entorno local / secretos
+.env
+.env.*
+!.env.example
+public/app-config.json
+
+# Sistema / editor
+.DS_Store
+Thumbs.db
+.history/
+.vscode/
+.idea/
+
+# Mantener disponibles para Cursor/Codex:
+# docs/codex/
+# .cursor/
+# src/app/
+# bd/
+# scripts/

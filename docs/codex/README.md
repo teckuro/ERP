@@ -4,6 +4,8 @@
 
 ## Orden de lectura (obligatorio para agentes y personas)
 
+Para fases acotadas o diagnóstico rápido, partir por [`contexto-rapido.md`](./contexto-rapido.md) y luego seguir la jerarquía completa de este README. El contexto rápido no reemplaza los contratos; solo reduce ruido inicial.
+
 1. **Orquestador** — contexto global, diseño operativo y fases: [`orquestador/README.md`](./orquestador/README.md), [`orquestador/contexto-proyecto.md`](./orquestador/contexto-proyecto.md), [`orquestador/diseno-operativo-erp.md`](./orquestador/diseno-operativo-erp.md), [`orquestador/estado-fases.md`](./orquestador/estado-fases.md).
 2. **Mapa de documentación** — inventario global / por módulo / histórico: [`orquestador/mapa-documentacion.md`](./orquestador/mapa-documentacion.md).
 3. **Arquitectura frontend (Angular)** — páginas wrapper, contenedores, capas: [`arquitectura/frontend-interfaces.md`](./arquitectura/frontend-interfaces.md) (leer antes de rutas/pantallas/feature nuevos o refactors grandes).
@@ -52,6 +54,7 @@
 
 | Documento | Contenido |
 |-----------|-----------|
+| [`contexto-rapido.md`](./contexto-rapido.md) | Resumen operativo corto para Cursor/Codex: fuente de verdad, restricciones, NOIA, fases recientes y validaciones por tipo de fase |
 | [`AGENTS.md`](./AGENTS.md) | Contrato agente, prioridades, tokens resumidos, layout ERP, anti‑patrones |
 | [`ui-form-guidelines.md`](./ui-form-guidelines.md) | Tokens completos, formularios, MessageBox, loading, checklist |
 | [`ui-button-guidelines.md`](./ui-button-guidelines.md) | Botones, toolbar, variantes |
@@ -138,3 +141,9 @@ Regla: despues de liquidaciones oficiales internas, el foco inmediato es UX come
 Documento rector: [`diseno/bitacora-operativa-noia.md`](./diseno/bitacora-operativa-noia.md).
 
 Define el ERP como `Bitacora Operativa` bajo criterio NOIA: pantallas sobrias, administrativas, con estado, decision, trazabilidad y cierre visible. Es regla transversal para nuevas fases UX antes de intervenir pantallas operativas.
+
+## ERP-CONTEXT-OPTIMIZATION-01 - Contexto liviano para Cursor/Codex
+
+Documento de fase: [`diseno/erp-context-optimization-01.md`](./diseno/erp-context-optimization-01.md).
+
+Agrega `contexto-rapido.md`, reglas Cursor NOIA/protegidos, `.cursorignore` y `scripts/build-context-pack.ps1` para reducir tokens y ruido en fases futuras sin tocar pantallas ni lógica de negocio.
