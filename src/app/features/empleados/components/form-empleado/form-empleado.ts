@@ -263,7 +263,11 @@ const MENSAJES_FINALIZAR_ALTA: Partial<Record<string, string>> = {
     BancarioComponent,
   ],
   templateUrl: "./form-empleado.html",
-  styleUrl: "./form-empleado.css",
+  styleUrls: [
+    "./form-empleado.css",
+    "./form-empleado.wizard.css",
+    "./form-empleado.feedback.css",
+  ],
 })
 export class FormEmpleadoComponent implements OnInit {
   private readonly empleadosService = inject(EmpleadosService);

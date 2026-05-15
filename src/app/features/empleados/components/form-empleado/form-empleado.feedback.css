@@ -1,0 +1,538 @@
+
+.advanced-draft-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 34px;
+  padding: 0 14px;
+  border: 1px solid #bfdbfe;
+  border-radius: 8px;
+  background: #eff6ff;
+  color: #1d4ed8;
+  cursor: pointer;
+  font-size: var(--erp-text-sm, 0.875rem);
+  font-weight: 650;
+  line-height: 1;
+  transition:
+    background 140ms ease,
+    border-color 140ms ease,
+    color 140ms ease,
+    box-shadow 140ms ease;
+}
+
+.advanced-draft-button:hover:not(:disabled) {
+  border-color: #93c5fd;
+  background: #dbeafe;
+  color: #1e40af;
+}
+
+.advanced-draft-button:focus-visible {
+  outline: 2px solid #93c5fd;
+  outline-offset: 2px;
+}
+
+.advanced-draft-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.62;
+}
+
+.advanced-action-modal {
+  display: grid;
+  gap: 10px;
+  min-width: 0;
+}
+
+.advanced-action-modal__section {
+  display: grid;
+  gap: 8px;
+  padding: 10px 12px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  background: #ffffff;
+}
+
+.advanced-action-modal__section h3 {
+  margin: 0;
+  color: #111827;
+  font-size: 0.8rem;
+  font-weight: 650;
+  letter-spacing: 0;
+}
+
+.advanced-action-modal__section ul {
+  display: grid;
+  gap: 7px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  color: #374151;
+  font-size: 0.83rem;
+  font-weight: 500;
+  line-height: 1.45;
+}
+
+.advanced-action-modal__section li {
+  display: grid;
+  grid-template-columns: 18px minmax(0, 1fr);
+  gap: 8px;
+  align-items: start;
+}
+
+.advanced-action-modal__section li::before {
+  content: "";
+  width: 7px;
+  height: 7px;
+  margin-top: 0.48em;
+  border: 1px solid #94a3b8;
+  border-radius: 999px;
+  background: #ffffff;
+  box-shadow: inset 0 0 0 2px #f8fafc;
+}
+
+.advanced-action-modal__section--blocking {
+  border-color: #fecaca;
+  background: #fef2f2;
+}
+
+.advanced-action-modal__section--warning {
+  border-color: #fde68a;
+  background: #fffbeb;
+}
+
+.advanced-action-modal__section--info {
+  border-color: #bfdbfe;
+  background: #eff6ff;
+  gap: 6px;
+  padding: 8px 10px;
+}
+
+.advanced-action-modal__section--info ul {
+  gap: 5px;
+  font-size: 0.8rem;
+  line-height: 1.35;
+}
+
+.advanced-action-modal__section--info li {
+  grid-template-columns: 14px minmax(0, 1fr);
+}
+
+.advanced-action-modal__section--info li::before {
+  width: 6px;
+  height: 6px;
+}
+
+.wizard-na-panel--honorarios,
+.honorarios-payment-note,
+.honorarios-summary-panel {
+  border: 1px solid #bfdbfe;
+  border-radius: 10px;
+  background: #eff6ff;
+  color: #1e3a8a;
+}
+
+.honorarios-payment-note,
+.honorarios-summary-panel {
+  display: grid;
+  gap: 6px;
+  padding: 12px 14px;
+  margin-bottom: 12px;
+}
+
+.honorarios-payment-note h3,
+.honorarios-summary-panel h4 {
+  margin: 0;
+  color: #1d4ed8;
+  font-size: 0.86rem;
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+.honorarios-payment-note p,
+.honorarios-summary-panel p {
+  margin: 0;
+  color: #1e40af;
+  font-size: var(--erp-text-sm, 0.78rem);
+  line-height: 1.45;
+}
+
+.honorarios-summary-panel ul {
+  margin: 2px 0 0;
+  padding-left: 1.1rem;
+  color: #1e40af;
+  font-size: var(--erp-text-sm, 0.78rem);
+  line-height: 1.45;
+}
+
+.step-panel--asignaciones {
+  gap: 1rem;
+}
+
+.coherence-summary-panel {
+  border: 1px solid #fde68a;
+  border-radius: 8px;
+  background: #fffbeb;
+  color: #111827;
+}
+
+.coherence-summary-panel__head h4,
+.coherence-summary-card strong {
+  font-weight: 600;
+}
+
+.coherence-summary-panel__head span {
+  color: #92400e;
+  font-size: var(--erp-text-xs);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.coherence-summary-list {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding-left: 16px;
+}
+
+.coherence-summary-card p,
+.coherence-summary-list li {
+  color: #6b7280;
+  font-size: var(--erp-text-xs);
+  line-height: 1.45;
+}
+
+.coherence-summary-panel {
+  display: grid;
+  gap: 10px;
+  margin: 12px 0 14px;
+  padding: 12px;
+}
+
+.coherence-summary-panel__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.coherence-summary-panel__head h4,
+.coherence-summary-card p {
+  margin: 0;
+}
+
+.coherence-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.coherence-summary-card {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+  padding: 8px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  background: #ffffff;
+}
+
+.coherence-summary-card.is-warning,
+.coherence-summary-card.is-review {
+  border-color: #fde68a;
+}
+
+@media (max-width: 980px) {
+  .coherence-summary-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.contract-diagnosis-panel {
+  display: grid;
+  gap: 10px;
+  margin: 12px 0 14px;
+  padding: 12px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  background: #f8fafc;
+  color: #111827;
+}
+
+.contract-diagnosis-panel__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.contract-diagnosis-panel__head h4,
+.contract-diagnosis-panel__head p,
+.contract-diagnosis-card p {
+  margin: 0;
+}
+
+.contract-diagnosis-panel__eyebrow {
+  display: inline-flex;
+  margin-bottom: 3px;
+  color: #475569;
+  font-size: var(--erp-text-xs);
+  font-weight: 600;
+  line-height: 1.3;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.contract-diagnosis-panel__head h4,
+.contract-diagnosis-card strong,
+.contract-diagnosis-case strong {
+  color: #111827;
+  font-weight: 600;
+}
+
+.contract-diagnosis-panel__head p,
+.contract-diagnosis-card p,
+.contract-diagnosis-case span {
+  color: #6b7280;
+  font-size: var(--erp-text-xs);
+  line-height: 1.45;
+}
+
+.contract-diagnosis-panel__head > span {
+  display: inline-flex;
+  align-items: center;
+  flex: 0 0 auto;
+  width: fit-content;
+  padding: 3px 9px;
+  border: 1px solid #bfdbfe;
+  border-radius: 999px;
+  background: #eff6ff;
+  color: #1d4ed8;
+  font-size: var(--erp-text-xs);
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+.contract-diagnosis-case {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  min-width: 0;
+  padding: 8px 10px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  background: #ffffff;
+}
+
+.contract-diagnosis-case span {
+  text-align: right;
+}
+
+.contract-diagnosis-grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.contract-diagnosis-card {
+  display: grid;
+  align-content: start;
+  gap: 4px;
+  min-width: 0;
+  padding: 8px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  background: #ffffff;
+}
+
+.contract-diagnosis-card span {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  padding: 2px 7px;
+  border: 1px solid #e5e7eb;
+  border-radius: 999px;
+  background: #f9fafb;
+  color: #4b5563;
+  font-size: var(--erp-text-xs);
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+.contract-diagnosis-card.is-derived span {
+  border-color: #bfdbfe;
+  background: #eff6ff;
+  color: #1d4ed8;
+}
+
+.contract-diagnosis-card.is-na span {
+  border-color: #e5e7eb;
+  background: #f3f4f6;
+  color: #6b7280;
+}
+
+.contract-diagnosis-card.is-review {
+  border-color: #fde68a;
+  background: #fffbeb;
+}
+
+.contract-diagnosis-card.is-review span {
+  border-color: #fde68a;
+  background: #ffffff;
+  color: #92400e;
+}
+
+@media (max-width: 1180px) {
+  .contract-diagnosis-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 720px) {
+  .contract-diagnosis-panel__head {
+    display: grid;
+  }
+
+  .contract-diagnosis-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.bitacora-decision-card {
+  display: grid;
+  gap: 8px;
+  max-width: 42rem;
+  border-color: var(--bitacora-border);
+  background: var(--bitacora-surface-soft);
+}
+
+.bitacora-decision-card--optional {
+  background: #ffffff;
+}
+
+.bitacora-decision-card__eyebrow {
+  display: inline-flex;
+  width: fit-content;
+  color: var(--bitacora-ink);
+  font-size: 0.66rem;
+  font-weight: 650;
+  line-height: 1.25;
+  letter-spacing: 0.045em;
+  text-transform: uppercase;
+}
+
+.bitacora-decision-card__meta {
+  display: grid;
+  gap: 6px;
+  margin: 2px 0 0;
+  padding: 8px 10px;
+  border: 1px solid var(--bitacora-border);
+  border-radius: 7px;
+  background: #ffffff;
+}
+
+.bitacora-decision-card__meta div {
+  display: grid;
+  gap: 2px;
+}
+
+.bitacora-decision-card__meta dt,
+.bitacora-decision-card__meta dd {
+  margin: 0;
+}
+
+.bitacora-decision-card__meta dt {
+  color: var(--bitacora-subtle);
+  font-size: 0.64rem;
+  font-weight: 650;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.bitacora-decision-card__meta dd {
+  color: var(--bitacora-text);
+  font-size: 0.73rem;
+  line-height: 1.4;
+}
+
+.resumen-card-inner {
+  gap: 11px;
+  background: #ffffff;
+}
+
+.resumen-title {
+  color: var(--bitacora-text);
+  letter-spacing: -0.012em;
+}
+
+.resumen-section-title,
+.resumen-checklist-title {
+  margin: 4px 0 0;
+  color: var(--bitacora-ink);
+  font-size: 0.76rem;
+  font-weight: 650;
+  line-height: 1.25;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.resumen-dl,
+.step-panel--resumen .resumen-dl,
+.contract-diagnosis-panel,
+.coherence-summary-panel {
+  border-color: var(--bitacora-border);
+  background: var(--bitacora-surface-soft);
+}
+
+.contract-diagnosis-panel__eyebrow {
+  color: var(--bitacora-ink);
+}
+
+.contract-diagnosis-panel__head > span,
+.resumen-checklist-item.is-optional .resumen-checklist-state {
+  border-color: #bfd3ef;
+  background: var(--bitacora-primary-soft);
+  color: var(--bitacora-primary);
+}
+
+.contract-diagnosis-case,
+.contract-diagnosis-card,
+.coherence-summary-card,
+.resumen-checklist-item {
+  border-color: var(--bitacora-border);
+}
+
+.resumen-checklist-item {
+  padding: 8px 9px;
+}
+
+.resumen-checklist-num {
+  width: 26px;
+  border-radius: 6px;
+  background: var(--bitacora-surface-soft);
+  color: var(--bitacora-ink);
+  letter-spacing: 0.04em;
+}
+
+.resumen-checklist-state {
+  border-color: var(--bitacora-border);
+  background: #ffffff;
+}
+
+.resumen-pendientes-negocio {
+  border-color: #f6d58d;
+  background: var(--bitacora-review-soft);
+}
+
+@media (max-width: 1024px) {
+  .advanced-wizard-layout {
+    padding: 0;
+    border: 0;
+    background: transparent;
+  }
+
+  .advanced-wizard-content {
+    border-radius: 8px;
+  }
+}
+

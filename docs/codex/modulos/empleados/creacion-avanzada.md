@@ -251,3 +251,16 @@ La Creacion avanzada es el primer caso local de la identidad global [`NOIA / Bit
 - Cada paso debe sentirse como registro administrativo con estado, decision y cierre, no como wizard generico.
 - Futuras mejoras deben respetar la narrativa: ficha en construccion, revision RRHH y acta final.
 - Esta regla es documental y no cambia guardado, mappers, rutas, SQL, motor ni estilos globales.
+## EMP-ADV-CSS-BUDGET-REDUCE-01 - Presupuesto CSS del componente
+
+La alta avanzada conserva su estructura visual de `Bitacora laboral`, pero el CSS del componente se organiza por responsabilidad para no exceder `anyComponentStyle`.
+
+Regla vigente:
+
+- `form-empleado.css`: shell, modo basico, marco avanzado y exito/error base.
+- `form-empleado.wizard.css`: navegacion de pasos, paneles de paso y resumen/checklist.
+- `form-empleado.feedback.css`: acciones asistidas, honorarios, diagnostico contractual, coherencia y overrides Bitacora del cierre.
+
+No mover estas reglas a estilos globales ni subir budgets para resolver regresiones futuras; primero compactar CSS local o separar por responsabilidad manteniendo encapsulacion Angular.
+
+Documento de fase: [`emp-adv-css-budget-reduce-01.md`](./emp-adv-css-budget-reduce-01.md).

@@ -875,3 +875,9 @@ Creación avanzada incorpora una identidad de producto local para dejar de senti
 - **Componentes base:** cards, botones, badges, titulos, breadcrumbs, DataGrid, SearchSelect y MessageBox se alinean a NOIA con bordes completos, densidad compacta y color funcional.
 - **Tablas y empty states:** DataGrid usa filtros sobrios, seleccion sin barra lateral fuerte y estados vacios con causa visible y accion siguiente.
 - **Restricciones:** sin SQL/RPC/RLS, sin motor, sin servicios de negocio, sin mappers, sin fuentes nuevas y sin unificar movimientos.
+## 2026-05-15 - EMP-ADV-CSS-BUDGET-REDUCE-01
+
+- **Creacion avanzada / CSS local:** `app-form-empleado` queda dividido en hojas locales por responsabilidad: base, wizard/resumen y feedback/diagnosticos.
+- **Presupuesto Angular:** el error productivo de `form-empleado.css` baja desde 36.37 kB sobre presupuesto de 24.00 kB a build sin error `anyComponentStyle`.
+- **Estilo:** se conservan Bitacora Laboral y NOIA; no se cambian paleta, presupuestos, estilos globales ni comportamiento.
+- **Restricciones:** sin `angular.json`, sin `src/styles*`, sin Tailwind/PostCSS, sin SQL/RPC/RLS, sin motor, sin nomina, sin liquidaciones y sin servicios/mappers/rutas/reglas/payloads.

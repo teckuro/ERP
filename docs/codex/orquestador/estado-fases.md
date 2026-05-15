@@ -533,3 +533,15 @@ Resumen: la alta avanzada deja de comunicarse como wizard genérico y adopta `Bi
 | Fuera de alcance | Angular, HTML, CSS, SQL/RPC/RLS, rutas, servicios, motor de nomina, estilos globales y cambios funcionales. |
 | Siguiente fase sugerida | `NOM-MOVIMIENTOS-UNIFICADOS-UX-01` o `ERP-SHELL-BITACORA-OPERATIVA-01`, segun prioridad producto. |
 | Documento | [`../diseno/bitacora-operativa-noia.md`](../diseno/bitacora-operativa-noia.md) |
+## EMP-ADV-CSS-BUDGET-REDUCE-01 - Cerrada
+
+Fecha: 2026-05-15
+
+| Campo | Estado |
+|---|---|
+| Estado | Implementada |
+| Tipo | Refactor CSS local de componente |
+| Alcance | `app-form-empleado`: reduccion de selectores locales, eliminacion de duplicados y division en `form-empleado.css`, `form-empleado.wizard.css` y `form-empleado.feedback.css`. |
+| Resultado | El build productivo ya no falla por presupuesto de `form-empleado.css`; tamano inicial reportado 36.37 kB, final sin error `anyComponentStyle` y hojas fuente de 19,060 / 9,442 / 10,517 bytes. |
+| Validaciones | `tsc app` OK; `tsc spec` OK; `ng build development` OK; `npm run build` OK. |
+| Restricciones | Sin cambios a presupuestos, `angular.json`, estilos globales, Tailwind/PostCSS, SQL/RPC/RLS, motor, nomina, liquidaciones, servicios, mappers, rutas, reglas ni payloads. |

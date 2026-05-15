@@ -181,3 +181,10 @@ Empleados queda alineado a la identidad global [`Bitacora Operativa / NOIA`](../
 - Creacion avanzada conserva su patron local `Bitacora laboral` como caso concreto de la regla global.
 - La ficha y futuras vistas del trabajador deben comunicar estado documental, decisiones RRHH y vigencia laboral antes que decoracion visual.
 - Esta referencia es documental; no habilita cambios de SQL, persistencia, motor, nomina, liquidaciones ni estilos globales.
+## EMP-ADV-CSS-BUDGET-REDUCE-01
+
+Creacion avanzada mantiene el patron `Bitacora laboral`, pero su CSS local queda segmentado para cumplir el presupuesto de componente de Angular sin tocar presupuestos ni estilos globales.
+
+Resultado: el build productivo deja de fallar por `form-empleado.css` (inicial 36.37 kB sobre 24.00 kB). Las hojas fuente finales quedan en `form-empleado.css` 19,060 bytes, `form-empleado.wizard.css` 9,442 bytes y `form-empleado.feedback.css` 10,517 bytes.
+
+Detalle: [`emp-adv-css-budget-reduce-01.md`](./emp-adv-css-budget-reduce-01.md).

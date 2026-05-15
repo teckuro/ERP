@@ -1,4 +1,13 @@
 # CHANGELOG
+## EMP-ADV-CSS-BUDGET-REDUCE-01 - Reduccion de presupuesto CSS en Creacion avanzada
+
+Fecha: 2026-05-15
+
+- Se reduce y segmenta el CSS local de `app-form-empleado` en tres hojas encapsuladas por el mismo componente: base, wizard/resumen y feedback/diagnosticos.
+- El build productivo deja de fallar por `form-empleado.css`: antes reportaba 36.37 kB contra presupuesto de 24.00 kB; ahora no emite error de componente.
+- Se eliminaron selectores locales sin uso y duplicaciones de overrides Bitacora sin cambiar el diseno ni mover reglas a estilos globales.
+- Se mantiene el warning existente de `contrato.css` en 23.26 kB, fuera del alcance de esta fase y bajo el umbral de error.
+- Alcance respetado: sin `angular.json`, sin estilos globales protegidos, sin Tailwind/PostCSS, sin SQL/RPC/RLS, sin motor, nomina, liquidaciones, servicios, mappers, rutas, reglas ni payloads.
 
 ## EMP-ALTA-MSGBOX-ERROR-UX-01 - Mensajes de error estructurados
 
