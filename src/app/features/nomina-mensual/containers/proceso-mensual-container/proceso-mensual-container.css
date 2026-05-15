@@ -1,21 +1,32 @@
 .pm-timeline-compact {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 0;
-  overflow: hidden;
+  gap: 6px;
+  overflow: visible;
   border: 1px solid #e5e7eb;
-  border-radius: 6px;
-  background: #ffffff;
+  border-radius: 8px;
+  background: #f8fafc;
+  padding: 6px;
 }
 
 .pm-timeline-compact li {
+  position: relative;
   min-height: 58px;
-  border-right: 1px solid #e5e7eb;
-  padding: 8px 10px;
+  border: 1px solid #e2e8f0;
+  border-radius: 7px;
+  background: #ffffff;
+  padding: 8px 10px 8px 18px;
 }
 
-.pm-timeline-compact li:last-child {
-  border-right: 0;
+.pm-timeline-compact li::before {
+  content: '';
+  position: absolute;
+  left: 8px;
+  top: 14px;
+  width: 5px;
+  height: 5px;
+  border-radius: 999px;
+  background: #94a3b8;
 }
 
 .pm-next-action-panel {
@@ -279,11 +290,11 @@
   }
 
   .pm-timeline-compact li:nth-child(3) {
-    border-right: 0;
+    border-right: 1px solid #e2e8f0;
   }
 
   .pm-timeline-compact li:nth-child(n + 4) {
-    border-top: 1px solid #e5e7eb;
+    border-top: 1px solid #e2e8f0;
   }
 }
 
@@ -297,8 +308,8 @@
   }
 
   .pm-timeline-compact li {
-    border-right: 0;
-    border-top: 1px solid #e5e7eb;
+    border-right: 1px solid #e2e8f0;
+    border-top: 1px solid #e2e8f0;
   }
 
   .pm-timeline-compact li:first-child {

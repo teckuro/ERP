@@ -105,6 +105,21 @@ export type PageActionType = 'back' | 'save' | 'edit' | 'export' | 'import';
         gap: 8px;
         width: 100%;
       }
+
+      .page-actions-toolbar lucide-icon,
+      .page-actions-toolbar svg {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        flex: 0 0 auto;
+        line-height: 1;
+      }
+
+      .page-actions-toolbar lucide-icon svg {
+        display: block;
+        width: 100%;
+        height: 100%;
+      }
     `,
   ],
 })

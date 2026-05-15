@@ -30,6 +30,7 @@ import { Component, HostBinding, Input } from '@angular/core';
 
       .folder-header {
         position: relative;
+        z-index: 2;
       }
 
       .folder-body {
@@ -37,8 +38,8 @@ import { Component, HostBinding, Input } from '@angular/core';
         z-index: 1;
         margin-top: -1px;
         min-height: 22rem;
-        padding: 1.25rem;
-        border: 1px solid rgba(203, 213, 225, 0.95);
+        padding: 1rem;
+        border: 1px solid #dbe2ea;
         border-radius: 0 8px 8px 8px;
         background: #ffffff;
         box-shadow: none;
@@ -46,7 +47,7 @@ import { Component, HostBinding, Input } from '@angular/core';
 
       @media (min-width: 768px) {
         .folder-body {
-          padding: 1.5rem;
+          padding: 1.15rem;
         }
       }
     `,

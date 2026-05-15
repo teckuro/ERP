@@ -34,7 +34,7 @@ export interface TabbarItem {
   standalone: true,
   imports: [CommonModule],
   template: `
-    <div #track class="tabbar-track" [class.is-focus-active-mode]="displayMode === 'focus-active'">
+    <div #track class="tabbar-track" role="tablist" [class.is-focus-active-mode]="displayMode === 'focus-active'">
       <div
         class="tabbar-indicator"
         [style.transform]="indicatorTransform()"
@@ -53,11 +53,13 @@ export interface TabbarItem {
           [class.is-upcoming]="item.id !== activeId && (!item.status || item.status === 'pending')"
           [class.is-disabled]="item.disabled"
           [disabled]="item.disabled"
-          [attr.aria-pressed]="activeId === item.id"
+          role="tab"
+          [attr.aria-selected]="activeId === item.id"
           (click)="select(item.id)"
         >
           <span class="tabbar-copy">
             <span class="tabbar-label-row">
+              <span class="tabbar-status-dot" aria-hidden="true"></span>
               <span class="tabbar-label">{{ item.label }}</span>
             </span>
 
@@ -78,14 +80,27 @@ export interface TabbarItem {
 
       .tabbar-track {
         position: relative;
-        display: grid;
-        grid-template-columns: repeat(var(--tab-count, 1), minmax(var(--tab-min-width), 1fr));
-        width: var(--tabbar-width);
-        padding: 0.2rem 0.25rem 0;
-        border: 0;
-        border-radius: 8px 8px 0 0;
-        background: transparent;
+        display: flex;
+        align-items: flex-end;
+        width: 100%;
+        max-width: 100%;
+        gap: 3px;
+        padding: 6px 6px 0;
+        border: 1px solid #e2e8f0;
+        border-bottom-color: #dbe2ea;
+        border-radius: 10px 10px 0 0;
+        background: #fafaf7;
         box-shadow: none;
+        overflow-x: auto;
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+        -webkit-overflow-scrolling: touch;
+      }
+
+      .tabbar-track::-webkit-scrollbar {
+        display: none;
+        width: 0;
+        height: 0;
       }
 
       .tabbar-track.is-focus-active-mode {
@@ -94,19 +109,7 @@ export interface TabbarItem {
       }
 
       .tabbar-indicator {
-        position: absolute;
-        left: 0;
-        bottom: 0;
-        z-index: 0;
-        border-radius: 8px 8px 0 0;
-        background: #ffffff;
-        border: 1px solid rgba(203, 213, 225, 0.95);
-        border-bottom-color: rgba(248, 250, 252, 1);
-        box-shadow: none;
-        transition:
-          transform 280ms cubic-bezier(0.22, 1, 0.36, 1),
-          width 280ms cubic-bezier(0.22, 1, 0.36, 1),
-          opacity 180ms ease;
+        display: none;
       }
 
       .tabbar-button {
@@ -115,16 +118,17 @@ export interface TabbarItem {
         display: flex;
         align-items: center;
         justify-content: flex-start;
-        min-height: 3.65rem;
-        width: 100%;
-        max-width: 130px;
-        border: 1px solid rgba(203, 213, 225, 0.9);
-        border-bottom-color: transparent;
+        min-height: 2.75rem;
+        min-width: max-content;
+        max-width: none;
+        flex: 0 0 auto;
+        border: 1px solid #dbe2ea;
+        border-bottom-color: #dbe2ea;
         border-radius: 8px 8px 0 0;
-        background: #f8fafc;
-        padding: 0.7rem 0.8rem;
+        background: #ffffff;
+        padding: 0.5rem 0.68rem 0.56rem;
         color: #64748b;
-        opacity: 0.92;
+        opacity: 0.96;
         text-align: left;
         cursor: pointer;
         box-shadow: none;
@@ -132,20 +136,20 @@ export interface TabbarItem {
           color 180ms ease,
           opacity 180ms ease,
           background 180ms ease,
+          border-color 180ms ease,
+          box-shadow 180ms ease,
           width 180ms cubic-bezier(0.22, 1, 0.36, 1),
           min-width 180ms cubic-bezier(0.22, 1, 0.36, 1),
           flex-basis 180ms cubic-bezier(0.22, 1, 0.36, 1),
-          flex-grow 180ms cubic-bezier(0.22, 1, 0.36, 1),
-          border-color 180ms ease;
+          flex-grow 180ms cubic-bezier(0.22, 1, 0.36, 1);
       }
 
       .is-focus-active-mode .tabbar-button {
         flex: 0 0 var(--tab-collapsed-width);
         min-width: var(--tab-collapsed-width);
-        max-width: 130px;
+        max-width: none;
         padding-inline: 0.7rem;
-        transform: translateY(0.5rem);
-        opacity: 0.88;
+        opacity: 0.9;
       }
 
       .is-focus-active-mode .tabbar-button.is-active {
@@ -153,72 +157,30 @@ export interface TabbarItem {
         width: var(--tab-min-width);
         min-width: var(--tab-min-width);
         max-width: var(--tab-min-width);
-        padding-inline: 0.8rem;
-        transform: translateY(0);
+        padding-inline: 0.76rem;
         opacity: 1;
-      }
-
-      .tabbar-button::after {
-        content: '';
-        position: absolute;
-        left: 0.8rem;
-        right: 0.8rem;
-        bottom: 0.3rem;
-        height: 2px;
-        border-radius: 999px;
-        background: rgba(203, 213, 225, 0.7);
-        transition:
-          background 180ms ease,
-          opacity 180ms ease,
-          transform 180ms ease;
       }
 
       .tabbar-button:hover:not(.is-disabled) {
         color: #334155;
-        background: #ffffff;
-        border-color: #94a3b8;
-      }
-
-      .tabbar-button:hover:not(.is-disabled)::after {
-        opacity: 1;
-        transform: scaleX(1);
+        background: #f8fafc;
+        border-color: #cbd5e1;
       }
 
       .tabbar-button:focus-visible {
-        outline: 2px solid rgba(14, 165, 233, 0.35);
-        outline-offset: 2px;
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
       }
 
       .tabbar-button.is-active {
-        color: #0f172a;
-        margin-bottom: -1px;
+        color: #172033;
         z-index: 2;
         opacity: 1;
-        transform: translateY(0);
-        border-color: rgba(203, 213, 225, 0.9);
-        border-bottom-color: transparent;
+        border-color: #c7d0c4;
+        border-bottom-color: #ffffff;
         background: #ffffff;
-        box-shadow: none;
-      }
-
-      .tabbar-button:not(.is-active) {
-        z-index: 0;
-      }
-
-      .tabbar-button.is-active::after {
-        background: #2563eb;
-      }
-
-      .tabbar-button.is-complete::after {
-        background: #059669;
-      }
-
-      .tabbar-button.is-invalid::after {
-        background: #dc2626;
-      }
-
-      .tabbar-button.is-upcoming::after {
-        background: rgba(148, 163, 184, 0.7);
+        margin-bottom: -1px;
+        box-shadow: inset 0 0 0 1px #eef2f7;
       }
 
       .tabbar-button.is-disabled {
@@ -242,12 +204,38 @@ export interface TabbarItem {
         display: flex;
         align-items: center;
         justify-content: flex-start;
-        gap: 0.5rem;
+        gap: 0.45rem;
+        min-width: 0;
+      }
+
+      .tabbar-status-dot {
+        width: 6px;
+        height: 6px;
+        flex: 0 0 auto;
+        border-radius: 999px;
+        background: #cbd5e1;
+      }
+
+      .tabbar-button.is-active .tabbar-status-dot {
+        background: #2563eb;
+      }
+
+      .tabbar-button.is-complete .tabbar-status-dot {
+        background: #166534;
+      }
+
+      .tabbar-button.is-invalid .tabbar-status-dot {
+        background: #b91c1c;
+      }
+
+      .tabbar-button.is-upcoming .tabbar-status-dot {
+        background: #94a3b8;
       }
 
       .tabbar-label {
-        font-size: 0.84rem;
-        font-weight: 500;
+        min-width: 0;
+        font-size: 0.82rem;
+        font-weight: 600;
         letter-spacing: 0;
         overflow: hidden;
         text-overflow: ellipsis;
@@ -260,7 +248,7 @@ export interface TabbarItem {
 
       .tabbar-description {
         font-size: 0.68rem;
-        line-height: 1.2;
+        line-height: 1.25;
         color: rgba(100, 116, 139, 0.92);
       }
 
@@ -270,16 +258,11 @@ export interface TabbarItem {
 
       .is-focus-active-mode .tabbar-button:not(.is-active) .tabbar-copy {
         gap: 0.1rem;
-        transform: translateY(0.08rem);
-      }
-
-      .is-focus-active-mode .tabbar-button:not(.is-active) .tabbar-label-row {
-        justify-content: flex-start;
       }
 
       .is-focus-active-mode .tabbar-button:not(.is-active) .tabbar-label {
-        font-size: 0.8rem;
-        max-width: calc(min(var(--tab-collapsed-width), 130px) - 1.4rem);
+        font-size: 0.78rem;
+        max-width: calc(min(var(--tab-collapsed-width), 150px) - 1.8rem);
       }
 
       .is-focus-active-mode .tabbar-button.is-active .tabbar-label {

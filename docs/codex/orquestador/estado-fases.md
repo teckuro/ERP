@@ -561,3 +561,26 @@ Fecha: 2026-05-15
 | Uso | Para fases futuras, partir por `docs/codex/contexto-rapido.md` y generar context pack cuando el análisis no requiera el ZIP completo. |
 | Documento | [`../diseno/erp-context-optimization-01.md`](../diseno/erp-context-optimization-01.md) |
 
+## PARAM-NOIA-CIERRE-UX-01
+
+| Campo | Estado |
+|---|---|
+| Estado | Ejecutada |
+| Tipo | UX/UI operativa + proteccion tecnica acotada |
+| Objetivo | Convertir Parametros en panel normativo del periodo y evitar sobrescrituras silenciosas al aplicar cargas mensuales. |
+| Alcance | Header/cierre normativo, estados por pestana, resumen de faltantes e impacto, wrapper terminal seguro. |
+| Guardia | `PARAM-MENSUAL-OVERWRITE-GUARD-01` en `scripts/run-parametros-mensuales.ps1`; bloquea aplicar SQL si detecta datos existentes y no viene `-Force`. |
+| Restricciones | Sin SQL estructural, RLS/RPC, motor, nomina/liquidaciones productivas, estilos globales protegidos ni budgets. |
+| Documento | [`../diseno/param-noia-cierre-ux-01.md`](../diseno/param-noia-cierre-ux-01.md) |
+
+## PARAM-CLIENT-CONFIG-SEPARATION-AUDIT-01
+
+| Campo | Estado |
+|---|---|
+| Estado | Ejecutada |
+| Tipo | Auditoria + guardia minima de wrapper + documentacion |
+| Objetivo | Confirmar que la carga mensual full no pise `parametros_generales_cliente`. |
+| Resultado | Python mensual no escribe `parametros_generales_cliente`; Angular guarda configuracion cliente con `guardarClienteConfig`; reconciliacion UI es explicita. |
+| Fix | `PARAM-CLIENT-CONFIG-SEPARATION-FIX-01`: el wrapper separa datos oficiales existentes de configuracion cliente existente y aclara el alcance de `-Force`. |
+| Restricciones | Sin SQL estructural, RLS/RPC, motor, nomina/liquidaciones productivas, estilos globales protegidos ni budgets. |
+| Documento | [`../diseno/param-client-config-separation-audit-01.md`](../diseno/param-client-config-separation-audit-01.md) |

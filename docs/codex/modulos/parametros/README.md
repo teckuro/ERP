@@ -39,3 +39,11 @@ Parametros queda alineado a [`NOIA / Bitacora Operativa`](../../diseno/bitacora-
 - Las pantallas deben mostrar vigencia, fuente normativa, estado y efecto operacional sobre nomina.
 - Evitar presentar parametros como catalogos genericos sin contexto de periodo o impacto.
 - Esta referencia es documental; no modifica semillas, SQL, servicios, motor ni estilos globales.
+
+## PARAM-NOIA-CIERRE-UX-01
+
+Parametros incorpora `Cierre normativo del periodo`, estados por pestana y una guardia terminal para evitar que una carga mensual full pise datos existentes sin advertencia. Ver [`cierre-operativo-parametros.md`](./cierre-operativo-parametros.md) y [`../../diseno/param-noia-cierre-ux-01.md`](../../diseno/param-noia-cierre-ux-01.md).
+
+## PARAM-CLIENT-CONFIG-SEPARATION-AUDIT-01
+
+La regla vigente queda documentada en [`separacion-oficial-cliente.md`](./separacion-oficial-cliente.md): `parametros_generales` es snapshot oficial mensual, `parametros_generales_cliente` es configuracion cliente protegida y la reconciliacion siempre debe ser una decision explicita del usuario.

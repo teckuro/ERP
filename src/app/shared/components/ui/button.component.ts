@@ -64,6 +64,21 @@ type ButtonSize = 'sm' | 'md' | 'lg';
       .erp-button:disabled {
         pointer-events: none;
       }
+
+      .erp-button ::ng-deep lucide-icon,
+      .erp-button ::ng-deep svg {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        flex: 0 0 auto;
+        line-height: 1;
+      }
+
+      .erp-button ::ng-deep lucide-icon svg {
+        display: block;
+        width: 100%;
+        height: 100%;
+      }
     `,
   ],
 })

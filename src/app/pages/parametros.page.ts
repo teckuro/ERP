@@ -298,7 +298,7 @@ interface ParametrosDialogState {
               [attr.aria-current]="activeTab() === tab.id ? 'page' : null"
               (click)="seleccionarTab(tab.id)"
             >
-              {{ tab.label }}
+              <span>{{ tab.label }}</span>
             </button>
           }
         </nav>
@@ -659,7 +659,7 @@ interface ParametrosDialogState {
         align-items: center;
         justify-content: space-between;
         gap: 8px 12px;
-        margin-bottom: 8px;
+        margin-bottom: 0;
       }
 
       .param-subhead__tabs {
@@ -740,55 +740,49 @@ interface ParametrosDialogState {
         position: relative;
       }
 
-      .parametros-content::before,
-      .parametros-content::after {
-        content: '';
-        position: absolute;
-        top: 1px;
-        z-index: 12;
-        width: 16px;
-        height: 44px;
-        pointer-events: none;
-      }
-
-      .parametros-content::before {
-        left: 1px;
-        background: linear-gradient(to right, var(--prm-soft, #f8fafc), rgba(248, 250, 252, 0));
-      }
-
-      .parametros-content::after {
-        right: 1px;
-        background: linear-gradient(to left, var(--prm-soft, #f8fafc), rgba(248, 250, 252, 0));
-      }
-
       .parametros-content > .folder-tabs {
         flex: 0 0 auto;
       }
 
       .folder-tabs {
         display: flex;
+        align-items: flex-end;
+        width: 100%;
+        max-width: 100%;
         min-width: 0;
         overflow-x: auto;
         border-bottom: 1px solid var(--prm-line, #e5e7eb);
-        background: var(--prm-soft, #f8fafc);
-        padding: 10px 24px 0;
-        gap: 6px;
+        background: #fafaf7;
+        padding: 6px 8px 0;
+        gap: 3px;
         z-index: 10;
         overscroll-behavior-x: contain;
-        scrollbar-width: thin;
-        scroll-padding-inline: 24px;
+        scrollbar-width: none;
+        scroll-padding-inline: 10px;
+        -ms-overflow-style: none;
+        -webkit-overflow-scrolling: touch;
+      }
+
+      .folder-tabs::-webkit-scrollbar {
+        display: none;
+        width: 0;
+        height: 0;
       }
 
       .folder-tab {
         position: relative;
-        min-width: 150px;
-        min-height: 34px;
+        display: inline-flex;
+        min-width: 116px;
+        min-height: 32px;
         flex: 0 0 auto;
-        border: 1px solid transparent;
-        border-bottom: 0;
+        align-items: center;
+        justify-content: center;
+        gap: 7px;
+        border: 1px solid #dbe2ea;
+        border-bottom-color: #dbe2ea;
         border-radius: 8px 8px 0 0;
-        background: transparent;
-        padding: 0 12px;
+        background: #ffffff;
+        padding: 0 10px 1px;
         color: #475569;
         cursor: pointer;
         font-size: 0.78rem;
@@ -798,28 +792,40 @@ interface ParametrosDialogState {
         transition:
           background 160ms ease,
           border-color 160ms ease,
-          color 160ms ease;
+          color 160ms ease,
+          box-shadow 160ms ease;
+      }
+
+      .folder-tab::before {
+        content: '';
+        width: 6px;
+        height: 6px;
+        flex: 0 0 auto;
+        border-radius: 999px;
+        background: #cbd5e1;
+        transition: background 160ms ease, transform 160ms ease;
       }
 
       .folder-tab:hover:not(.folder-tab--active) {
         border-color: #cbd5e1;
-        background: var(--prm-soft, #f8fafc);
+        background: #f8fafc;
         color: var(--prm-ink, #111827);
       }
 
       .folder-tab:focus-visible {
         outline: none;
-        box-shadow: 0 0 0 3px var(--prm-blue-soft, #eff6ff);
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
       }
 
       @media (max-width: 760px) {
         .folder-tabs {
-          padding: 10px 16px 0;
-          scroll-padding-inline: 16px;
+          width: 100%;
+          padding: 6px 8px 0;
+          scroll-padding-inline: 8px;
         }
 
         .folder-tab {
-          min-width: 132px;
+          min-width: 116px;
           font-size: 0.76rem;
           padding: 0 10px;
         }
@@ -827,21 +833,17 @@ interface ParametrosDialogState {
 
       .folder-tab--active {
         z-index: 2;
-        border-color: var(--prm-line, #e5e7eb);
-        border-top-color: var(--prm-blue, #2563eb);
+        border-color: #c7d0c4;
+        border-bottom-color: #ffffff;
         background: var(--prm-panel, #ffffff);
         color: var(--prm-ink, #111827);
+        margin-bottom: -1px;
+        box-shadow: inset 0 0 0 1px #eef2f7;
       }
 
-      .folder-tab--active::after {
-        content: '';
-        position: absolute;
-        right: 12px;
-        bottom: 6px;
-        left: 12px;
-        height: 2px;
-        border-radius: 999px;
+      .folder-tab--active::before {
         background: var(--prm-blue, #2563eb);
+        transform: scale(1.08);
       }
 
       .parametros-page .tab-panel {
@@ -850,18 +852,22 @@ interface ParametrosDialogState {
         flex: 1 1 auto;
         min-height: 0;
         min-width: 0;
-        gap: 12px;
+        gap: 8px;
         background: #ffffff;
-        padding: 12px 12px 16px;
+        padding: 8px 10px 12px;
         box-sizing: border-box;
         width: 100%;
         overflow-x: hidden;
         overflow-y: auto;
       }
 
+      .parametros-page .tab-panel.parametros-tab-panel {
+        gap: 0;
+      }
+
       .tab-panel--compact {
-        gap: 8px;
-        padding: 10px;
+        gap: 6px;
+        padding: 8px;
       }
 
       .parametros-page .param-tab-subview {
@@ -870,6 +876,7 @@ interface ParametrosDialogState {
         min-width: 0;
         display: flex;
         flex-direction: column;
+        gap: 0;
       }
 
       .parametros-page .param-tab-subview > .catalog-section {
@@ -883,8 +890,8 @@ interface ParametrosDialogState {
 
       @media (max-width: 760px) {
         .parametros-page .tab-panel {
-          padding: 10px;
-          gap: 10px;
+          padding: 8px;
+          gap: 8px;
           min-height: 0;
         }
       }
@@ -1469,12 +1476,18 @@ interface ParametrosDialogState {
         min-height: 0;
         min-width: 0;
         width: 100%;
-        gap: 10px;
+        gap: 0;
         overflow: hidden;
-        border: 1px solid #e5e7eb;
+        border: 1px solid #dbe2ea;
         border-radius: 8px;
         background: #ffffff;
-        box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+        box-shadow: none;
+      }
+
+      .parametros-page .param-subhead + .param-tab-subview > .catalog-section {
+        margin-top: -1px;
+        border-top-left-radius: 0;
+        border-top-right-radius: 0;
       }
 
       .catalog-section > h2 {
@@ -1487,7 +1500,7 @@ interface ParametrosDialogState {
         min-height: 0;
         width: 100%;
         min-width: 0;
-        padding: 0 12px 12px;
+        padding: 0;
       }
 
       .catalog-section > .catalog-grid {
@@ -1500,8 +1513,8 @@ interface ParametrosDialogState {
         width: 100%;
         min-width: 0;
         min-height: 0;
-        gap: 12px;
-        padding: 12px;
+        gap: 8px;
+        padding: 8px;
         grid-template-columns: repeat(2, minmax(0, 1fr));
         grid-auto-rows: minmax(0, 1fr);
         justify-items: stretch;
@@ -1512,6 +1525,46 @@ interface ParametrosDialogState {
         min-width: 0;
         min-height: 0;
         height: 100%;
+      }
+
+      .parametros-page .catalog-section app-data-grid app-card.erp-card {
+        border: 0;
+        border-radius: 0;
+        height: auto !important;
+        min-height: 0;
+        box-shadow: none;
+      }
+
+      .parametros-page .catalog-grid app-data-grid app-card.erp-card {
+        border: 1px solid #dbe2ea;
+        border-radius: 7px;
+        height: 100% !important;
+      }
+
+      .parametros-page .catalog-section app-data-grid .data-grid-filter-panel {
+        padding: 10px 14px !important;
+        border-color: #dbe2ea !important;
+      }
+
+      .parametros-page .catalog-section app-data-grid .data-grid-footer {
+        padding: 10px 14px !important;
+      }
+
+      .parametros-page .catalog-section app-data-grid .data-grid-scroll {
+        flex: 0 1 auto;
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+      }
+
+      .parametros-page .catalog-grid app-data-grid .data-grid-scroll,
+      .parametros-page .catalog-section.catalog-section--split app-data-grid .data-grid-scroll {
+        flex: 1 1 auto;
+      }
+
+      .parametros-page .catalog-section app-data-grid .data-grid-scroll::-webkit-scrollbar {
+        display: none;
+        width: 0;
+        height: 0;
       }
 
       @media (max-width: 980px) {

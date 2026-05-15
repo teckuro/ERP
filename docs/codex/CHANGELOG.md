@@ -319,3 +319,34 @@ Fecha: 2026-05-15
 - `app-search-select` y `app-message-box` se alinean al mismo tono: bordes completos, fondos suaves funcionales y sin sombras o barras decorativas fuertes.
 - Se documenta la fase en `docs/codex/diseno/erp-shell-bitacora-operativa-01.md`.
 - Alcance respetado: sin SQL/RPC/RLS, sin motor, sin servicios de negocio, sin mappers, sin persistencia critica, sin fuentes nuevas y sin unificar movimientos.
+
+## PARAM-NOIA-CIERRE-UX-01 - Cierre operativo de Parametros
+
+Fecha: 2026-05-15
+
+- El modulo Parametros se reorganiza como panel normativo operativo del periodo, con lectura clara de estado, faltantes, impacto y siguiente accion.
+- Se agrega `Cierre normativo del periodo`, estados por pestana y resumen de secciones listas o pendientes.
+- Se aplica criterio `NOIA / Bitacora Operativa`: bordes completos, fondos funcionales, menos azul dominante y lenguaje administrativo.
+- Se incorpora `PARAM-MENSUAL-OVERWRITE-GUARD-01` con wrapper `scripts/run-parametros-mensuales.ps1`.
+- El wrapper genera SQL mensual, no aplica por defecto, revisa datos existentes antes de aplicar y exige `-Force` si detecta registros del periodo.
+- Angular no aplica cargas mensuales full; si la carga se ejecuta desde terminal, la proteccion vive en el wrapper.
+- No se toca SQL estructural, RLS/RPC, motor, nomina, liquidaciones, estilos globales protegidos ni budgets.
+
+## PARAM-CLIENT-CONFIG-SEPARATION-AUDIT-01 - Auditoria oficial vs configuracion cliente
+
+Fecha: 2026-05-15
+
+- Se audita la separacion entre `parametros_generales` como snapshot oficial mensual y `parametros_generales_cliente` como configuracion cliente protegida.
+- Se verifica que el flujo Python mensual no escriba ni reemplace `parametros_generales_cliente`.
+- Se confirma que la UI de Parametros guarda configuracion editable en `parametros_generales_cliente` y mantiene reconciliacion frente a oficiales.
+- Se revisa el wrapper `scripts/run-parametros-mensuales.ps1` para distinguir datos oficiales existentes de configuracion cliente existente antes de aplicar SQL mensual.
+- Se documenta que `-Force` autoriza reemplazar/actualizar snapshot oficial del periodo, pero no debe interpretarse como permiso para pisar configuracion cliente.
+- No se toca SQL estructural, RLS/RPC, motor, nomina/liquidaciones, estilos globales protegidos ni budgets.
+
+## PARAM-CLIENT-CONFIG-SEPARATION-FIX-01 - Ajustes de guardia oficial/cliente
+
+Fecha: 2026-05-15
+
+- Se ajusta la guardia del wrapper para informar configuracion cliente existente sin tratarla como objetivo de reemplazo por la carga oficial.
+- Se separan en consola datos oficiales existentes, configuracion cliente existente y estado operativo del periodo.
+- `-Force` queda descrito como autorizacion operativa para actualizar el snapshot oficial, no para modificar `parametros_generales_cliente`.

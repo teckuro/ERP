@@ -1,4 +1,15 @@
 
+## 2026-05-15 - ERP-TABS-NOIA-UX-01
+
+- **Navegacion secundaria transversal:** tabs, subtabs y steppers se alinean a `NOIA / Bitacora Operativa` con borde completo, fondo suave, foco visible y punto compacto de estado/activo.
+- **Componentes base:** `app-stepper`, `app-tabbar` y `app-tabs` dejan de depender de subrayados o estados genericos; el stepper usa lenguaje visible `En edicion`, `Listo`, `Requiere datos` y `Pendiente`.
+- **Parametros:** tabs principales y subtabs conservan scroll interno, pero el activo pasa a tab administrativo con borde completo y marca discreta; no se altera la logica periodo/vigencia/catalogo.
+- **Empleados:** Ficha y Creacion avanzada mantienen `Bitacora laboral`, con chips/tabs mas sobrios y foco accesible sin barras fuertes ni sombras.
+- **Nomina mensual y Reportes:** timeline/tabbar se compactan como navegacion operativa, evitando subrayado azul dominante y manteniendo estados como lectura secundaria.
+- **Ajuste posterior:** tabbars quedan como pestanas tipo archivo, conectadas al panel y con distribucion flexible para ocupar el ancho disponible antes de hacer scroll horizontal.
+- **Compactacion posterior:** las barras dejan de forzar 100% cuando no corresponde; los tabs usan ancho por contenido, menos separacion y quedan mas cerca del panel.
+- **Restricciones:** sin SQL/RPC/RLS, sin motor, sin servicios, sin mappers, sin payloads, sin rutas/guards, sin estilos globales protegidos y sin subir budgets.
+
 ## 2026-05-14 - EMP-ALTA-VALIDACIONES-ASISTIDAS-01
 
 - **Creación avanzada:** los mensajes del paso vuelven a concentrarse en `app-message-box`; no quedan tarjetas inline permanentes dentro del formulario.
@@ -890,3 +901,25 @@ Creación avanzada incorpora una identidad de producto local para dejar de senti
 - **Estilo:** sin cambio visual aplicado; la fase solo refuerza reglas para mantener NOIA en trabajos futuros.
 - **Restricciones:** sin Angular funcional, sin HTML/CSS visual, sin estilos globales, sin SQL/RPC/RLS, sin motor, sin nómina, sin liquidaciones y sin servicios/mappers/persistencia.
 
+## 2026-05-15 - ERP-TABS-NOIA-UX-01 ajuste integracion
+
+- **Parametros:** tabs y subtabs conservan scroll horizontal funcional, pero sin scrollbar visible; el borde queda unido al contenido.
+- **Tablas:** DataGrid de catalogos queda acoplado al panel, sin tarjeta interna duplicada, con filtros/footer compactos y sin scrollbars decorativas visibles.
+- **Densidad:** se reduce el aire entre tabbar, subtabs y tabla para que la navegacion secundaria no se separe del trabajo.
+- **Correccion de cabecera:** los headers grises de tabbar vuelven a cubrir 100% del contenedor; solo las pestanas miden por contenido.
+- **Union subtab/contenido:** `param-subhead` y `param-tab-subview` quedan sin separacion; el borde superior del catalogo se solapa 1px con la cabecera de subtabs.
+- **Restricciones:** solo CSS local/componente; sin estilos globales, sin budgets, sin SQL/RPC/RLS ni cambios funcionales.
+
+## 2026-05-15 - PARAM-NOIA-CIERRE-UX-01
+
+- **Parametros:** se agrega bloque `Cierre normativo del periodo` con estado operativo, secciones listas, revisiones e impacto en nomina.
+- **Tabs:** cada pestana muestra estado humano compacto (`Listo`, `Parcial`, `Requiere datos`, `Revisar`).
+- **Guardia:** la proteccion contra sobrescritura mensual queda en wrapper terminal; Angular no puede interceptar cargas ejecutadas por Python/psql.
+- **Restricciones:** sin estilos globales, sin budgets, sin SQL estructural, sin motor ni nomina/liquidaciones productivas.
+
+## 2026-05-15 - PARAM-CLIENT-CONFIG-SEPARATION-AUDIT-01
+
+- **Parametros:** se documenta la separacion visible entre datos oficiales del periodo, configuracion cliente y reconciliacion.
+- **Wrapper:** el mensaje de consola deja de mezclar `parametros_generales_cliente` con datos oficiales que la carga mensual puede reemplazar.
+- **Criterio UX:** la configuracion cliente se comunica como protegida; cualquier diferencia con oficiales debe resolverse con accion explicita en Parametros.
+- **Restricciones:** sin redisenio de pantalla, sin estilos globales, sin SQL estructural, sin motor, sin nomina/liquidaciones y sin budgets.

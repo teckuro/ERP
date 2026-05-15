@@ -201,26 +201,65 @@ import { CardComponent, CardContentComponent, CardHeaderComponent } from '../sha
 
       .report-tabbar {
         display: flex;
-        gap: 1rem;
+        align-items: flex-end;
+        width: fit-content;
+        max-width: 100%;
+        gap: 0.2rem;
         overflow-x: auto;
-        border-bottom: 1px solid #e5e7eb;
+        border: 1px solid #e5e7eb;
+        border-bottom-color: #dbe2ea;
+        border-radius: 8px 8px 0 0;
+        background: #f8fafc;
+        padding: 0.3rem 0.3rem 0;
       }
 
       .report-tabbar button {
-        min-height: 2.5rem;
-        border: 0;
-        border-bottom: 2px solid transparent;
-        background: transparent;
+        position: relative;
+        min-height: 2.1rem;
+        flex: 0 0 auto;
+        border: 1px solid transparent;
+        border-bottom-color: #dbe2ea;
+        border-radius: 7px 7px 0 0;
+        background: #ffffff;
         color: #4b5563;
         font-size: 0.875rem;
         font-weight: 700;
-        padding: 0 0.25rem;
+        padding: 0 0.68rem 0 1.25rem;
         white-space: nowrap;
       }
 
+      .report-tabbar button::before {
+        content: '';
+        position: absolute;
+        left: 0.65rem;
+        top: 50%;
+        width: 0.38rem;
+        height: 0.38rem;
+        border-radius: 999px;
+        background: #cbd5e1;
+        transform: translateY(-50%);
+      }
+
+      .report-tabbar button:hover {
+        border-color: #cbd5e1;
+        background: #f8fafc;
+      }
+
+      .report-tabbar button:focus-visible {
+        outline: 2px solid #bfdbfe;
+        outline-offset: 2px;
+      }
+
       .report-tabbar button.is-active {
-        border-bottom-color: #2563eb;
+        border-color: #c7d0c4;
+        border-bottom-color: #ffffff;
+        background: #ffffff;
         color: #111827;
+        margin-bottom: -1px;
+      }
+
+      .report-tabbar button.is-active::before {
+        background: #2563eb;
       }
 
       .report-future-list {
