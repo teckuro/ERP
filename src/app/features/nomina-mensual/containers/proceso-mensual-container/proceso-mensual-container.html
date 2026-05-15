@@ -1477,4 +1477,29 @@
       <a routerLink="/parametros" class="font-medium text-blue-700 underline">Revisar parametros</a>
     </div>
   </details>
+
+  @if (confirmacionProceso(); as confirmacion) {
+    <app-message-box
+      variant="warning"
+      mode="modal"
+      [title]="confirmacion.titulo"
+      [message]="confirmacion.mensaje"
+      [detail]="confirmacion.detalle"
+      [primaryLabel]="confirmacion.primaryLabel"
+      [secondaryLabel]="confirmacion.secondaryLabel"
+      [modalHeadlineSplit]="true"
+      (action)="confirmarAccionProceso()"
+      (secondary)="cancelarAccionProceso()"
+      (dismiss)="cancelarAccionProceso()"
+    >
+      <div class="pm-confirmation-detail">
+        <p>Que debe revisar RRHH</p>
+        <ul>
+          @for (punto of confirmacion.puntos; track punto) {
+            <li>{{ punto }}</li>
+          }
+        </ul>
+      </div>
+    </app-message-box>
+  }
 </div>

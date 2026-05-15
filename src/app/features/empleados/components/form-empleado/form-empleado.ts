@@ -1,109 +1,123 @@
-import { CommonModule } from '@angular/common';
-import { Component, DestroyRef, ElementRef, OnInit, inject, signal } from '@angular/core';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { AbstractControl, ReactiveFormsModule, Validators } from '@angular/forms';
-import { ActivatedRoute, Router } from '@angular/router';
-import { LucideAngularModule } from 'lucide-angular';
+import { CommonModule } from "@angular/common";
+import {
+  Component,
+  DestroyRef,
+  ElementRef,
+  OnInit,
+  inject,
+  signal,
+} from "@angular/core";
+import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
+import {
+  AbstractControl,
+  ReactiveFormsModule,
+  Validators,
+} from "@angular/forms";
+import { ActivatedRoute, Router } from "@angular/router";
+import { LucideAngularModule } from "lucide-angular";
 
-import { BancarioComponent } from '../secciones/bancario/bancario';
-import { ContratoComponent } from '../secciones/contrato/contrato';
-import { DatosPersonalesComponent } from '../secciones/datos-personales/datos-personales';
-import { ContactoComponent } from '../secciones/contacto/contacto';
-import { PrevisionSaludComponent } from '../secciones/prevision-salud/prevision-salud';
-import { PerfilLaboralComponent } from '../secciones/perfil-laboral/perfil-laboral';
+import { BancarioComponent } from "../secciones/bancario/bancario";
+import { ContratoComponent } from "../secciones/contrato/contrato";
+import { DatosPersonalesComponent } from "../secciones/datos-personales/datos-personales";
+import { ContactoComponent } from "../secciones/contacto/contacto";
+import { PrevisionSaludComponent } from "../secciones/prevision-salud/prevision-salud";
+import { PerfilLaboralComponent } from "../secciones/perfil-laboral/perfil-laboral";
 import {
   mapEmpleadoFormToPayload,
   mapEmpleadoFormToPayloadBasico,
   mapEmpleadoFormToPayloadBorrador,
-} from '../../mappers/empleado-form.mapper';
-import { validateBorradorAvanzadoFormMinimo } from '../../utils/empleado-borrador-form.validation';
-import { normalizarBorradorAvanzadoParaFormulario } from '../../utils/empleado-borrador-hidratacion';
+} from "../../mappers/empleado-form.mapper";
+import { validateBorradorAvanzadoFormMinimo } from "../../utils/empleado-borrador-form.validation";
+import { normalizarBorradorAvanzadoParaFormulario } from "../../utils/empleado-borrador-hidratacion";
 import {
   EMPTY_EMPLEADO_FORM_CATALOGOS,
   EmpleadoFormCatalogos,
-} from '../../models/empleado-catalogos.model';
+} from "../../models/empleado-catalogos.model";
 import {
   EMPLEADO_ADVANCED_WIZARD_LABELS,
   EMPLEADO_ADVANCED_WIZARD_STEP_COUNT,
   EMPLEADO_FORM_STEP_BLOCK_IDS,
   EMPLEADO_FORM_TAB_ORDER,
   EmpleadoFormTabId,
-} from '../../models/empleado-form.manifest';
-import { EmpleadoFormGroup } from '../../models/empleado-form.model';
+} from "../../models/empleado-form.manifest";
+import { EmpleadoFormGroup } from "../../models/empleado-form.model";
 import {
   CONDICIONES_TRABAJADOR_UI,
   CondicionTrabajadorControlName,
-} from '../../models/empleado-perfil-laboral.model';
-import { RelacionLaboral } from '../../models/empleado.model';
+} from "../../models/empleado-perfil-laboral.model";
+import { RelacionLaboral } from "../../models/empleado.model";
 import {
   buscarTipoTrabajadorBase,
   tipoTrabajadorBaseParaRelacion,
-} from '../../rules/empleado-tipo-trabajador-flow.rules';
+} from "../../rules/empleado-tipo-trabajador-flow.rules";
 import {
   AltaAplicabilidadCampo,
   AltaAplicabilidadItem,
   AltaAplicabilidadState,
   altaAplicabilidadStep,
   evaluarAltaAplicabilidad,
-} from '../../rules/empleado-alta-aplicabilidad.rules';
+} from "../../rules/empleado-alta-aplicabilidad.rules";
 import {
   AltaCoherenciaAction,
   AltaCoherenciaIssue,
   AltaCoherenciaState,
   evaluarAltaCoherencia,
-} from '../../rules/empleado-alta-coherencia.rules';
-import { EmpleadosFormOrchestratorService } from '../../services/empleados-form-orchestrator.service';
-import { EmpleadosCatalogosService } from '../../services/empleados-catalogos.service';
+} from "../../rules/empleado-alta-coherencia.rules";
+import { EmpleadosFormOrchestratorService } from "../../services/empleados-form-orchestrator.service";
+import { EmpleadosCatalogosService } from "../../services/empleados-catalogos.service";
 import {
   EmpleadoReferenciaInvalidaError,
   EmpleadoRutDuplicadoError,
   EmpleadosService,
-} from '../../services/empleados.service';
+} from "../../services/empleados.service";
 import {
   CardComponent,
   CardContentComponent,
-} from '../../../../shared/components/ui/card.component';
-import { MessageBoxComponent, MessageBoxVariant } from '../../../../shared/components/ui/message-box.component';
-import { PageActionsComponent } from '../../../../shared/components/ui/page-actions.component';
+} from "../../../../shared/components/ui/card.component";
+import {
+  MessageBoxComponent,
+  MessageBoxVariant,
+} from "../../../../shared/components/ui/message-box.component";
+import { PageActionsComponent } from "../../../../shared/components/ui/page-actions.component";
 import {
   RecordBreadcrumbComponent,
   RecordBreadcrumbItem,
-} from '../../../../shared/components/ui/record-breadcrumb.component';
+} from "../../../../shared/components/ui/record-breadcrumb.component";
 
 type TabId = EmpleadoFormTabId;
 type WizardStepUiKind =
-  | 'actual'
-  | 'completo'
-  | 'pendiente'
-  | 'errores'
-  | 'opcional'
-  | 'no-aplica';
+  | "actual"
+  | "completo"
+  | "pendiente"
+  | "errores"
+  | "opcional"
+  | "no-aplica";
 type ValidationStepId = TabId;
-type ValidationSeverity = 'error' | 'warning' | 'info';
-type StepValidationStatus = 'pending' | 'in-progress' | 'invalid' | 'complete';
-type FormEmpleadoModo = 'basico' | 'avanzado';
+type ValidationSeverity = "error" | "warning" | "info";
+type StepValidationStatus = "pending" | "in-progress" | "invalid" | "complete";
+type FormEmpleadoModo = "basico" | "avanzado";
 
 type AdvancedActionModalKind =
-  | 'next-step-review'
-  | 'coherence-decision'
-  | 'draft-invalid'
-  | 'draft-success'
-  | 'finish-invalid'
-  | 'finish-confirm'
-  | 'honorarios-confirm'
-  | 'honorarios-finish-blocked';
+  | "next-step-review"
+  | "coherence-decision"
+  | "draft-invalid"
+  | "draft-success"
+  | "finish-invalid"
+  | "finish-confirm"
+  | "honorarios-confirm"
+  | "honorarios-finish-blocked";
 type AdvancedActionModalAction =
-  | 'dismiss'
-  | 'apply-coherence-suggestion'
-  | 'keep-coherence-review'
-  | 'continue-next'
-  | 'focus-current-step'
-  | 'focus-draft-minimum'
-  | 'focus-first-blocking'
-  | 'execute-finish'
-  | 'confirm-honorarios'
-  | 'cancel-honorarios'
-  | 'save-honorarios-draft';
+  | "dismiss"
+  | "apply-coherence-suggestion"
+  | "keep-coherence-review"
+  | "continue-next"
+  | "focus-current-step"
+  | "focus-draft-minimum"
+  | "focus-first-blocking"
+  | "execute-finish"
+  | "confirm-honorarios"
+  | "cancel-honorarios"
+  | "save-honorarios-draft";
 
 interface AdvancedActionModal {
   kind: AdvancedActionModalKind;
@@ -169,49 +183,69 @@ interface GlobalValidationSummary {
   pendingTotal: number;
 }
 
+interface WizardMapGroup {
+  title: string;
+  description: string;
+  stepIndexes: readonly number[];
+}
+
 const TAB_ORDER: readonly TabId[] = [...EMPLEADO_FORM_TAB_ORDER];
 
 /** Mensajes de negocio al intentar finalizar con bloqueos (paso 9); no exponer detalle técnico de BD. */
 const MENSAJES_FINALIZAR_ALTA: Partial<Record<string, string>> = {
-  'personal.identity': 'Ingresa un RUT válido o un identificador extranjero válido.',
-  'contract.position': 'Ingresa el cargo o función que tendrá el trabajador.',
-  'honorarios.service': 'Ingresa el servicio o función que prestará la persona a honorarios.',
-  'honorarios.amount': 'Ingresa el monto bruto pactado para la boleta de honorarios.',
-  'honorarios.currency': 'Selecciona la moneda del monto bruto de honorarios.',
-  'contract.branch': 'Selecciona la sucursal u organización donde prestará servicios.',
-  'contract.worker-type': 'Selecciona el tipo de trabajador que corresponde al contrato.',
-  'contract.schedule-type': 'Selecciona el tipo de jornada pactada.',
-  'contract.contract-type': 'Selecciona el tipo de contrato laboral.',
-  'contract.start-date': 'Ingresa la fecha de ingreso del trabajador.',
-  'contract.document-date': 'Ingresa la fecha del contrato.',
-  'contract.end-date': 'Completa la fecha de término cuando el contrato no sea indefinido.',
-  'contract.salary': 'Ingresa un sueldo base válido para remuneraciones.',
-  'contract.currency': 'Selecciona la moneda de remuneración.',
-  'contract.weekly-hours': 'Completa las horas semanales pactadas.',
-  'contract.weekly-days': 'Completa los días semanales de trabajo.',
-  'prevision.regime': 'Selecciona el régimen previsional del trabajador.',
-  'prevision.afp': 'Selecciona la AFP cuando el régimen previsional sea AFP.',
-  'prevision.health': 'Selecciona la institución de salud del trabajador.',
-  'prevision.health-currency': 'Selecciona la moneda del plan de salud.',
-  'prevision.health-plan': 'Ingresa el valor del plan de salud.',
-  'prevision.apv-institution': 'Selecciona la institución APVI o desactiva APVI si no corresponde.',
-  'prevision.apv-currency': 'Selecciona la moneda APVI o desactiva APVI si no corresponde.',
-  'prevision.apv-amount': 'Ingresa el monto APVI o desactiva APVI si no corresponde.',
-  'prevision.apv-payment': 'Selecciona la forma de pago APVI o desactiva APVI si no corresponde.',
-  'prevision.apv-agreement': 'Completa el depósito convenido APVI o desactiva APVI si no corresponde.',
-  'prevision.ips-name': 'Ingresa la entidad o ex caja del régimen IPS.',
-  'prevision.ips-regime': 'Ingresa el régimen IPS que corresponde.',
-  'prevision.ips-rate': 'Ingresa la tasa IPS que corresponde.',
-  'prevision.health-ges': 'Ingresa el adicional Auge o GES del plan de salud.',
-  'prevision.account2-currency': 'Completa la moneda de Cuenta 2 AFP o deja Cuenta 2 sin monto.',
-  'prevision.account2-value': 'Completa el valor de Cuenta 2 AFP o deja Cuenta 2 sin monto.',
-  'bank.bank': 'Selecciona el banco para el pago por transferencia.',
-  'bank.account-type': 'Selecciona el tipo de cuenta bancaria.',
-  'bank.account-number': 'Ingresa una cuenta bancaria real y reemplaza cualquier dato temporal.',
+  "personal.identity":
+    "Ingresa un RUT válido o un identificador extranjero válido.",
+  "contract.position": "Ingresa el cargo o función que tendrá el trabajador.",
+  "honorarios.service":
+    "Ingresa el servicio o función que prestará la persona a honorarios.",
+  "honorarios.amount":
+    "Ingresa el monto bruto pactado para la boleta de honorarios.",
+  "honorarios.currency": "Selecciona la moneda del monto bruto de honorarios.",
+  "contract.branch":
+    "Selecciona la sucursal u organización donde prestará servicios.",
+  "contract.worker-type":
+    "Selecciona el tipo de trabajador que corresponde al contrato.",
+  "contract.schedule-type": "Selecciona el tipo de jornada pactada.",
+  "contract.contract-type": "Selecciona el tipo de contrato laboral.",
+  "contract.start-date": "Ingresa la fecha de ingreso del trabajador.",
+  "contract.document-date": "Ingresa la fecha del contrato.",
+  "contract.end-date":
+    "Completa la fecha de término cuando el contrato no sea indefinido.",
+  "contract.salary": "Ingresa un sueldo base válido para remuneraciones.",
+  "contract.currency": "Selecciona la moneda de remuneración.",
+  "contract.weekly-hours": "Completa las horas semanales pactadas.",
+  "contract.weekly-days": "Completa los días semanales de trabajo.",
+  "prevision.regime": "Selecciona el régimen previsional del trabajador.",
+  "prevision.afp": "Selecciona la AFP cuando el régimen previsional sea AFP.",
+  "prevision.health": "Selecciona la institución de salud del trabajador.",
+  "prevision.health-currency": "Selecciona la moneda del plan de salud.",
+  "prevision.health-plan": "Ingresa el valor del plan de salud.",
+  "prevision.apv-institution":
+    "Selecciona la institución APVI o desactiva APVI si no corresponde.",
+  "prevision.apv-currency":
+    "Selecciona la moneda APVI o desactiva APVI si no corresponde.",
+  "prevision.apv-amount":
+    "Ingresa el monto APVI o desactiva APVI si no corresponde.",
+  "prevision.apv-payment":
+    "Selecciona la forma de pago APVI o desactiva APVI si no corresponde.",
+  "prevision.apv-agreement":
+    "Completa el depósito convenido APVI o desactiva APVI si no corresponde.",
+  "prevision.ips-name": "Ingresa la entidad o ex caja del régimen IPS.",
+  "prevision.ips-regime": "Ingresa el régimen IPS que corresponde.",
+  "prevision.ips-rate": "Ingresa la tasa IPS que corresponde.",
+  "prevision.health-ges": "Ingresa el adicional Auge o GES del plan de salud.",
+  "prevision.account2-currency":
+    "Completa la moneda de Cuenta 2 AFP o deja Cuenta 2 sin monto.",
+  "prevision.account2-value":
+    "Completa el valor de Cuenta 2 AFP o deja Cuenta 2 sin monto.",
+  "bank.bank": "Selecciona el banco para el pago por transferencia.",
+  "bank.account-type": "Selecciona el tipo de cuenta bancaria.",
+  "bank.account-number":
+    "Ingresa una cuenta bancaria real y reemplaza cualquier dato temporal.",
 };
 
 @Component({
-  selector: 'app-form-empleado',
+  selector: "app-form-empleado",
   imports: [
     CommonModule,
     ReactiveFormsModule,
@@ -228,21 +262,25 @@ const MENSAJES_FINALIZAR_ALTA: Partial<Record<string, string>> = {
     PrevisionSaludComponent,
     BancarioComponent,
   ],
-  templateUrl: './form-empleado.html',
-  styleUrl: './form-empleado.css',
+  templateUrl: "./form-empleado.html",
+  styleUrl: "./form-empleado.css",
 })
 export class FormEmpleadoComponent implements OnInit {
   private readonly empleadosService = inject(EmpleadosService);
-  private readonly empleadosCatalogosService = inject(EmpleadosCatalogosService);
-  private readonly empleadosFormService = inject(EmpleadosFormOrchestratorService);
+  private readonly empleadosCatalogosService = inject(
+    EmpleadosCatalogosService,
+  );
+  private readonly empleadosFormService = inject(
+    EmpleadosFormOrchestratorService,
+  );
   private readonly destroyRef = inject(DestroyRef);
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
   private readonly hostElement = inject<ElementRef<HTMLElement>>(ElementRef);
   private suppressRelacionLaboralModal = false;
-  private previousRelacionLaboral: RelacionLaboral = 'CONTRATO';
+  private previousRelacionLaboral: RelacionLaboral = "CONTRATO";
 
-  readonly modo = signal<FormEmpleadoModo>('avanzado');
+  readonly modo = signal<FormEmpleadoModo>("avanzado");
   /** Creacion avanzada: indice de etapa 0..9 (10 pasos). */
   readonly activeWizardStep = signal(0);
   readonly isSaving = signal(false);
@@ -252,7 +290,7 @@ export class FormEmpleadoComponent implements OnInit {
   readonly duplicateRutModalRut = signal<string | null>(null);
 
   advancedStatusBadgeLabel(): string {
-    return 'Avanzada';
+    return "Bitácora laboral";
   }
   readonly successMessage = signal<string | null>(null);
   /** Flujo que originó el último guardado exitoso (para el modal, sin depender solo de la ruta). */
@@ -263,10 +301,19 @@ export class FormEmpleadoComponent implements OnInit {
   readonly isSavingBorrador = signal(false);
   readonly borradorFeedback = signal<string | null>(null);
   readonly advancedActionModal = signal<AdvancedActionModal | null>(null);
-  readonly catalogos = signal<EmpleadoFormCatalogos>(EMPTY_EMPLEADO_FORM_CATALOGOS);
-  readonly perfilLaboralAutoDetections = signal<readonly PerfilLaboralAutoDetection[]>([]);
-  readonly pendingCoherenceDecision = signal<{ issue: AltaCoherenciaIssue; context: 'next' | 'finish' } | null>(null);
-  readonly acknowledgedCoherenceIssueIds = signal<ReadonlySet<string>>(new Set());
+  readonly catalogos = signal<EmpleadoFormCatalogos>(
+    EMPTY_EMPLEADO_FORM_CATALOGOS,
+  );
+  readonly perfilLaboralAutoDetections = signal<
+    readonly PerfilLaboralAutoDetection[]
+  >([]);
+  readonly pendingCoherenceDecision = signal<{
+    issue: AltaCoherenciaIssue;
+    context: "next" | "finish";
+  } | null>(null);
+  readonly acknowledgedCoherenceIssueIds = signal<ReadonlySet<string>>(
+    new Set(),
+  );
   readonly isLoadingCatalogs = signal(true);
   readonly catalogosError = signal<string | null>(null);
   readonly completedTabs = signal<ReadonlySet<TabId>>(new Set());
@@ -276,34 +323,57 @@ export class FormEmpleadoComponent implements OnInit {
   readonly form: EmpleadoFormGroup = this.empleadosFormService.createForm();
   readonly totalSteps = EMPLEADO_ADVANCED_WIZARD_STEP_COUNT;
   readonly breadcrumbItems: readonly RecordBreadcrumbItem[] = [
-    { label: 'Empleados', link: '/empleados' },
-    { label: 'Creación de ficha' },
+    { label: "Empleados", link: "/empleados" },
+    { label: "Creación de ficha" },
   ];
   readonly advancedWizardLabels = [...EMPLEADO_ADVANCED_WIZARD_LABELS];
   readonly advancedWizardShortLabels: readonly string[] = [
-    'Datos personales',
-    'Domicilio',
-    'Contrato',
-    'Jornada',
-    'Asignaciones',
-    'Previsión y salud',
-    'APVI',
-    'Banco',
-    'Condiciones',
-    'Resumen',
+    "Datos personales",
+    "Domicilio",
+    "Contrato",
+    "Jornada",
+    "Asignaciones",
+    "Previsión y salud",
+    "APVI",
+    "Banco",
+    "Condiciones",
+    "Resumen",
   ] as const;
 
   readonly advancedWizardStepDescriptions: readonly string[] = [
-    'Registra la identidad legal, datos personales y contacto base del colaborador.',
-    'Registra la dirección particular del colaborador para mantener actualizada su información de contacto.',
-    'Define la relación laboral, fechas contractuales y ubicación organizacional del colaborador.',
-    'Define la jornada laboral, distribución de horario y remuneración base del colaborador.',
-    'Registra cargas, zona extrema y semana corrida cuando correspondan al contrato dependiente.',
-    'Define el régimen previsional y la institución de salud del trabajador.',
-    'Registra APVI solo si aplica.',
-    'Define banco, cuenta y forma de pago.',
-    'Confirma si existen condiciones laborales o previsionales especiales. Si no aplica, continúa sin declarar condiciones.',
-    'Revisa la información capturada antes de finalizar la creación de la ficha.',
+    "Información legal mínima para abrir la ficha laboral y reconocer al colaborador.",
+    "Dirección particular y datos territoriales usados para mantener la ficha actualizada.",
+    "Vínculo contractual, fechas y organización donde quedará asociado el trabajador.",
+    "Jornada pactada y base de remuneración que alimentará los cálculos posteriores.",
+    "Beneficios o condiciones laborales que solo se registran cuando correspondan.",
+    "Régimen previsional e institución de salud que respaldan los descuentos del trabajador.",
+    "Registro APVI solo cuando el régimen previsional y la declaración del trabajador lo requieren.",
+    "Cuenta de abono que se usará para preparar pagos futuros.",
+    "Control administrativo de situaciones especiales antes de cerrar el alta.",
+    "Acta de revisión con datos principales, decisiones registradas y pendientes de cierre.",
+  ] as const;
+
+  readonly wizardMapGroups: readonly WizardMapGroup[] = [
+    {
+      title: "Identidad",
+      description: "Apertura de ficha",
+      stepIndexes: [0, 1],
+    },
+    {
+      title: "Relación laboral",
+      description: "Contrato y jornada",
+      stepIndexes: [2, 3, 4],
+    },
+    {
+      title: "Pago y previsión",
+      description: "Cotizaciones y abono",
+      stepIndexes: [5, 6, 7],
+    },
+    {
+      title: "Revisión",
+      description: "Control y cierre",
+      stepIndexes: [8, 9],
+    },
   ] as const;
 
   /** Inventario de bloques por paso (manifest); referencia unica frente a templates de seccion. */
@@ -312,21 +382,28 @@ export class FormEmpleadoComponent implements OnInit {
   async ngOnInit(): Promise<void> {
     const modo = this.resolveModo();
     this.modo.set(modo);
-    if (modo === 'avanzado') {
-      this.form.controls.contacto.controls.idComuna.addValidators(Validators.required);
-      this.form.controls.contacto.controls.idComuna.updateValueAndValidity({ emitEvent: false });
+    if (modo === "avanzado") {
+      this.form.controls.contacto.controls.idComuna.addValidators(
+        Validators.required,
+      );
+      this.form.controls.contacto.controls.idComuna.updateValueAndValidity({
+        emitEvent: false,
+      });
     }
-    this.empleadosFormService.configureFormBehavior(this.form, this.destroyRef, () =>
-      this.catalogos(),
+    this.empleadosFormService.configureFormBehavior(
+      this.form,
+      this.destroyRef,
+      () => this.catalogos(),
     );
     this.configureRelacionLaboralUx();
     this.configureTipoTrabajadorFlow();
     this.configurePerfilLaboralAutodetection();
     await this.loadCatalogos();
-    if (this.modo() === 'avanzado') {
-      const rawId = this.route.snapshot.queryParamMap.get('idPersona');
+    if (this.modo() === "avanzado") {
+      const rawId = this.route.snapshot.queryParamMap.get("idPersona");
       const idPersona = rawId ? Number(rawId) : NaN;
-      const debeHidratarBorrador = Number.isInteger(idPersona) && idPersona >= 1;
+      const debeHidratarBorrador =
+        Number.isInteger(idPersona) && idPersona >= 1;
       if (debeHidratarBorrador) {
         this.isLoadingCatalogs.set(true);
       }
@@ -352,15 +429,16 @@ export class FormEmpleadoComponent implements OnInit {
     if (this.isLoadingCatalogs()) {
       this.borradorFeedback.set(null);
       this.openAdvancedActionModal({
-        kind: 'draft-invalid',
-        variant: 'warning',
-        title: 'Espera a que cargue el formulario',
-        message: 'La información base del formulario aún se está preparando. Intenta guardar el borrador nuevamente en unos segundos.',
-        primaryLabel: 'Aceptar',
+        kind: "draft-invalid",
+        variant: "warning",
+        title: "Espera a que cargue el formulario",
+        message:
+          "La información base del formulario aún se está preparando. Intenta guardar el borrador nuevamente en unos segundos.",
+        primaryLabel: "Aceptar",
         blockingItems: [],
-        warningItems: ['Catálogos y datos base aún en carga.'],
+        warningItems: ["Catálogos y datos base aún en carga."],
         infoItems: [],
-        primaryAction: 'dismiss',
+        primaryAction: "dismiss",
       });
       return;
     }
@@ -380,7 +458,10 @@ export class FormEmpleadoComponent implements OnInit {
     const prevId = this.borradorPersonaId();
 
     try {
-      const payload = mapEmpleadoFormToPayloadBorrador(this.form, this.catalogos());
+      const payload = mapEmpleadoFormToPayloadBorrador(
+        this.form,
+        this.catalogos(),
+      );
       const resumen = await this.empleadosService.guardarBorradorAvanzado(
         prevId,
         payload,
@@ -388,13 +469,15 @@ export class FormEmpleadoComponent implements OnInit {
       );
       this.borradorPersonaId.set(resumen.id);
       this.borradorFeedback.set(
-        prevId === null ? 'Borrador guardado correctamente.' : 'Borrador actualizado.',
+        prevId === null
+          ? "Borrador guardado correctamente."
+          : "Borrador actualizado.",
       );
       this.form.markAsPristine();
       void this.router.navigate([], {
         relativeTo: this.route,
         queryParams: { idPersona: resumen.id },
-        queryParamsHandling: 'merge',
+        queryParamsHandling: "merge",
         replaceUrl: true,
       });
       this.openDraftSuccessModal(prevId === null);
@@ -403,7 +486,9 @@ export class FormEmpleadoComponent implements OnInit {
         this.duplicateRutModalRut.set(error.rut);
       } else {
         this.errorMessage.set(
-          error instanceof Error ? error.message : 'No fue posible guardar el borrador.',
+          error instanceof Error
+            ? error.message
+            : "No fue posible guardar el borrador.",
         );
       }
     } finally {
@@ -425,55 +510,71 @@ export class FormEmpleadoComponent implements OnInit {
   wizardStepShortLabel(stepIndex: number): string {
     if (this.isHonorariosMode()) {
       const honorariosLabels: Record<number, string> = {
-        2: 'Servicio',
-        3: 'Honorarios',
-        7: 'Datos para pago',
-        8: 'Condiciones',
-        9: 'Resumen honorarios',
+        2: "Servicio",
+        3: "Honorarios",
+        7: "Datos para pago",
+        8: "Condiciones",
+        9: "Resumen honorarios",
       };
       if ([4, 5, 6, this.perfilLaboralWizardStepIndex()].includes(stepIndex)) {
-        return this.advancedWizardShortLabels[stepIndex] ?? '';
+        return this.advancedWizardShortLabels[stepIndex] ?? "";
       }
-      return honorariosLabels[stepIndex] ?? this.advancedWizardShortLabels[stepIndex] ?? '';
+      return (
+        honorariosLabels[stepIndex] ??
+        this.advancedWizardShortLabels[stepIndex] ??
+        ""
+      );
     }
 
-    return this.advancedWizardShortLabels[stepIndex] ?? this.advancedWizardLabels[stepIndex] ?? '';
+    return (
+      this.advancedWizardShortLabels[stepIndex] ??
+      this.advancedWizardLabels[stepIndex] ??
+      ""
+    );
   }
 
   wizardStepFullLabel(stepIndex: number): string {
     if (this.isHonorariosMode()) {
       const honorariosLabels: Record<number, string> = {
-        2: 'Datos del servicio',
-        3: 'Monto de honorarios',
-        4: 'Asignaciones laborales',
-        5: 'Previsión y salud',
-        6: 'APVI',
-        7: 'Datos para pago',
-        8: 'Condiciones',
-        9: 'Resumen de honorarios',
+        2: "Datos del servicio",
+        3: "Monto de honorarios",
+        4: "Asignaciones laborales",
+        5: "Previsión y salud",
+        6: "APVI",
+        7: "Datos para pago",
+        8: "Condiciones",
+        9: "Resumen de honorarios",
       };
-      return honorariosLabels[stepIndex] ?? this.advancedWizardLabels[stepIndex] ?? '';
+      return (
+        honorariosLabels[stepIndex] ??
+        this.advancedWizardLabels[stepIndex] ??
+        ""
+      );
     }
 
-    return this.advancedWizardLabels[stepIndex] ?? '';
+    return this.advancedWizardLabels[stepIndex] ?? "";
   }
 
   wizardStepDescription(stepIndex: number): string {
     if (this.isHonorariosMode()) {
       const honorariosDescriptions: Record<number, string> = {
-        2: 'Registra el servicio, fecha de inicio y ubicación administrativa del prestador a honorarios.',
-        3: 'Informa el monto bruto pactado para la boleta. No corresponde jornada laboral dependiente.',
-        4: 'Las asignaciones laborales no aplican para boleta de honorarios en esta alta.',
-        5: 'Previsión y salud no se capturan como trabajador dependiente en este flujo.',
-        6: 'APVI no aplica dentro de la alta de prestador a honorarios.',
-        7: 'Registra datos de pago del prestador si se usará transferencia.',
-        8: 'Las condiciones especiales de trabajadores dependientes no se declaran para honorarios en esta fase.',
-        9: 'Revisa que este registro queda como borrador de honorarios y no como trabajador dependiente.',
+        2: "Registra el servicio, fecha de inicio y ubicación administrativa del prestador a honorarios.",
+        3: "Informa el monto bruto pactado para la boleta. No corresponde jornada laboral dependiente.",
+        4: "Las asignaciones laborales no aplican para boleta de honorarios en esta alta.",
+        5: "Previsión y salud no se capturan como trabajador dependiente en este flujo.",
+        6: "APVI no aplica dentro de la alta de prestador a honorarios.",
+        7: "Registra datos de pago del prestador si se usará transferencia.",
+        8: "Las condiciones especiales de trabajadores dependientes no se declaran para honorarios en esta fase.",
+        9: "Revisa que este registro queda como borrador de honorarios y no como trabajador dependiente.",
       };
-      return honorariosDescriptions[stepIndex] ?? this.advancedWizardStepDescriptions[stepIndex] ?? '';
+      return (
+        honorariosDescriptions[stepIndex] ??
+        this.advancedWizardStepDescriptions[stepIndex] ??
+        ""
+      );
     }
 
-    return this.advancedWizardStepDescriptions[stepIndex] ?? '';
+    return this.advancedWizardStepDescriptions[stepIndex] ?? "";
   }
 
   wizardProgressPercent(): number {
@@ -485,14 +586,15 @@ export class FormEmpleadoComponent implements OnInit {
     this.isLoadingCatalogs.set(true);
 
     try {
-      const catalogos = await this.empleadosCatalogosService.obtenerFormulario();
+      const catalogos =
+        await this.empleadosCatalogosService.obtenerFormulario();
       this.catalogos.set(catalogos);
       this.empleadosFormService.applyCatalogDefaults(this.form, catalogos);
       this.syncTipoTrabajadorConRelacionLaboral();
       this.applyPerfilLaboralAutodetection();
     } catch {
       this.catalogosError.set(
-        'No fue posible preparar la informacion requerida para el formulario. Intenta nuevamente.',
+        "No fue posible preparar la informacion requerida para el formulario. Intenta nuevamente.",
       );
     } finally {
       this.isLoadingCatalogs.set(false);
@@ -502,7 +604,10 @@ export class FormEmpleadoComponent implements OnInit {
   handleFormSubmit(event: SubmitEvent): void {
     event.preventDefault();
     event.stopPropagation();
-    if (this.isAdvancedMode() && this.activeWizardStep() !== this.summaryWizardStepIndex()) {
+    if (
+      this.isAdvancedMode() &&
+      this.activeWizardStep() !== this.summaryWizardStepIndex()
+    ) {
       return;
     }
     void this.onSubmit();
@@ -521,11 +626,22 @@ export class FormEmpleadoComponent implements OnInit {
     const base = [0, 1, 2, 3, 4, 5] as const;
     const p = this.form.controls.previsionSalud.controls;
     const incluyeApvi =
-      p.tipoRegimenPrevisional.value === 'AFP' && p.tieneApv.value === true;
+      p.tipoRegimenPrevisional.value === "AFP" && p.tieneApv.value === true;
     if (incluyeApvi) {
-      return [...base, 6, 7, this.perfilLaboralWizardStepIndex(), this.summaryWizardStepIndex()];
+      return [
+        ...base,
+        6,
+        7,
+        this.perfilLaboralWizardStepIndex(),
+        this.summaryWizardStepIndex(),
+      ];
     }
-    return [...base, 7, this.perfilLaboralWizardStepIndex(), this.summaryWizardStepIndex()];
+    return [
+      ...base,
+      7,
+      this.perfilLaboralWizardStepIndex(),
+      this.summaryWizardStepIndex(),
+    ];
   }
 
   async onSubmit(): Promise<void> {
@@ -549,7 +665,7 @@ export class FormEmpleadoComponent implements OnInit {
 
     if (this.isLoadingCatalogs()) {
       this.errorMessage.set(
-        'La informacion base del formulario aun se esta cargando. Espera unos segundos e intenta nuevamente.',
+        "La informacion base del formulario aun se esta cargando. Espera unos segundos e intenta nuevamente.",
       );
       return;
     }
@@ -581,7 +697,7 @@ export class FormEmpleadoComponent implements OnInit {
     const coherenceIssue = this.firstUnacknowledgedCoherenceDecision();
     if (coherenceIssue) {
       this.syncCompletedTabsFromValidity();
-      this.openCoherenceDecisionModal(coherenceIssue, 'finish');
+      this.openCoherenceDecisionModal(coherenceIssue, "finish");
       return;
     }
 
@@ -610,22 +726,22 @@ export class FormEmpleadoComponent implements OnInit {
           mapEmpleadoFormToPayload(this.form, this.catalogos()),
         );
         this.successMessage.set(
-          'La ficha avanzada fue guardada correctamente y el empleado quedó listo para operar.',
+          "La ficha avanzada fue guardada correctamente y el empleado quedó listo para operar.",
         );
-        this.successFlow.set('avanzado');
+        this.successFlow.set("avanzado");
         this.createdEmployeeId.set(borradorId);
         this.borradorPersonaId.set(null);
         this.form.markAsPristine();
-        void this.router.navigate(['/empleados/nuevo'], { replaceUrl: true });
+        void this.router.navigate(["/empleados/nuevo"], { replaceUrl: true });
       } else {
         const created = await this.empleadosService.crear(
           mapEmpleadoFormToPayload(this.form, this.catalogos()),
         );
 
         this.successMessage.set(
-          'La ficha avanzada fue guardada correctamente y el empleado quedó listo para operar.',
+          "La ficha avanzada fue guardada correctamente y el empleado quedó listo para operar.",
         );
-        this.successFlow.set('avanzado');
+        this.successFlow.set("avanzado");
         this.createdEmployeeId.set(created.id);
         this.form.markAsPristine();
       }
@@ -646,70 +762,93 @@ export class FormEmpleadoComponent implements OnInit {
   }
 
   errorModalTitle(): string {
-    return this.isBasicMode() ? 'No fue posible registrar la ficha' : 'No fue posible registrar el empleado';
+    return this.isBasicMode()
+      ? "No fue posible registrar la ficha"
+      : "No fue posible registrar el empleado";
   }
 
   errorModalMessage(): string {
     return this.isBasicMode()
-      ? 'El registro no se completó. Revisa el detalle y vuelve a intentarlo.'
-      : 'La ficha avanzada no se guardó porque hay una condición que debe revisarse antes de finalizar.';
+      ? "El registro no se completó. Revisa el detalle y vuelve a intentarlo."
+      : "La ficha avanzada no se guardó porque hay una condición que debe revisarse antes de finalizar.";
   }
 
   normalizedErrorMessage(message: string): string {
     return message
-      .replace(/Sin prevision/g, 'Sin previsión')
-      .replace(/sin prevision/g, 'sin previsión')
-      .replace(/opcion/g, 'opción')
-      .replace(/calculo/g, 'cálculo')
-      .replace(/nomina/g, 'nómina')
-      .replace(/informacion/g, 'información');
+      .replace(/Sin prevision/g, "Sin previsión")
+      .replace(/sin prevision/g, "sin previsión")
+      .replace(/opcion/g, "opción")
+      .replace(/calculo/g, "cálculo")
+      .replace(/nomina/g, "nómina")
+      .replace(/informacion/g, "información");
   }
 
   errorRecommendedAction(message: string): string {
-    const normalizedMessage = this.normalizedErrorMessage(message).toLowerCase();
+    const normalizedMessage =
+      this.normalizedErrorMessage(message).toLowerCase();
 
-    if (normalizedMessage.includes('sin previsión') && normalizedMessage.includes('afp')) {
-      return 'Vuelve al paso Previsión y salud. Selecciona AFP o IPS si el trabajador quedará habilitado para remuneraciones, o mantén el caso como revisión administrativa si corresponde a una excepción respaldada.';
+    if (
+      normalizedMessage.includes("sin previsión") &&
+      normalizedMessage.includes("afp")
+    ) {
+      return "Vuelve al paso Previsión y salud. Selecciona AFP o IPS si el trabajador quedará habilitado para remuneraciones, o mantén el caso como revisión administrativa si corresponde a una excepción respaldada.";
     }
 
-    if (normalizedMessage.includes('rut') && normalizedMessage.includes('existe')) {
-      return 'Revisa el listado de empleados antes de crear una nueva ficha. Si corresponde, continúa la ficha existente.';
+    if (
+      normalizedMessage.includes("rut") &&
+      normalizedMessage.includes("existe")
+    ) {
+      return "Revisa el listado de empleados antes de crear una nueva ficha. Si corresponde, continúa la ficha existente.";
     }
 
-    if (normalizedMessage.includes('rls') || normalizedMessage.includes('supabase')) {
-      return 'Revisa la configuración de base de datos y permisos antes de intentar guardar nuevamente.';
+    if (
+      normalizedMessage.includes("rls") ||
+      normalizedMessage.includes("supabase")
+    ) {
+      return "Revisa la configuración de base de datos y permisos antes de intentar guardar nuevamente.";
     }
 
-    return 'Revisa el paso indicado o la información marcada como pendiente. Luego intenta guardar nuevamente.';
+    return "Revisa el paso indicado o la información marcada como pendiente. Luego intenta guardar nuevamente.";
   }
 
   errorSuggestedStep(message: string): string | null {
-    const normalizedMessage = this.normalizedErrorMessage(message).toLowerCase();
+    const normalizedMessage =
+      this.normalizedErrorMessage(message).toLowerCase();
 
-    if (normalizedMessage.includes('sin previsión') || normalizedMessage.includes('afp') || normalizedMessage.includes('ips')) {
-      return 'Previsión y salud';
+    if (
+      normalizedMessage.includes("sin previsión") ||
+      normalizedMessage.includes("afp") ||
+      normalizedMessage.includes("ips")
+    ) {
+      return "Previsión y salud";
     }
 
-    if (normalizedMessage.includes('rut')) {
-      return 'Datos personales';
+    if (normalizedMessage.includes("rut")) {
+      return "Datos personales";
     }
 
-    if (normalizedMessage.includes('banco') || normalizedMessage.includes('cuenta')) {
-      return 'Banco';
+    if (
+      normalizedMessage.includes("banco") ||
+      normalizedMessage.includes("cuenta")
+    ) {
+      return "Banco";
     }
 
-    if (normalizedMessage.includes('contrato') || normalizedMessage.includes('cesantía')) {
-      return 'Contrato';
+    if (
+      normalizedMessage.includes("contrato") ||
+      normalizedMessage.includes("cesantía")
+    ) {
+      return "Contrato";
     }
 
-    return this.isAdvancedMode() ? 'Resumen final' : null;
+    return this.isAdvancedMode() ? "Acta de revisión" : null;
   }
 
   goToEmployeeList(): void {
     this.successMessage.set(null);
     this.successFlow.set(null);
     this.createdEmployeeId.set(null);
-    void this.router.navigate(['/empleados']);
+    void this.router.navigate(["/empleados"]);
   }
 
   handleSuccessAction(): void {
@@ -717,11 +856,15 @@ export class FormEmpleadoComponent implements OnInit {
   }
 
   handleAdvancedActionModalPrimary(): void {
-    this.handleAdvancedActionModalAction(this.advancedActionModal()?.primaryAction ?? 'dismiss');
+    this.handleAdvancedActionModalAction(
+      this.advancedActionModal()?.primaryAction ?? "dismiss",
+    );
   }
 
   handleAdvancedActionModalSecondary(): void {
-    this.handleAdvancedActionModalAction(this.advancedActionModal()?.secondaryAction ?? 'dismiss');
+    this.handleAdvancedActionModalAction(
+      this.advancedActionModal()?.secondaryAction ?? "dismiss",
+    );
   }
 
   dismissAdvancedActionModal(): void {
@@ -729,50 +872,56 @@ export class FormEmpleadoComponent implements OnInit {
     this.advancedActionModal.set(null);
   }
 
-  private handleAdvancedActionModalAction(action: AdvancedActionModalAction): void {
+  private handleAdvancedActionModalAction(
+    action: AdvancedActionModalAction,
+  ): void {
     const modal = this.advancedActionModal();
 
     switch (action) {
-      case 'apply-coherence-suggestion':
+      case "apply-coherence-suggestion":
         this.applyPendingCoherenceSuggestion();
         break;
-      case 'keep-coherence-review':
+      case "keep-coherence-review":
         this.keepPendingCoherenceReview();
         break;
-      case 'continue-next':
+      case "continue-next":
         this.advancedActionModal.set(null);
         this.advanceToNextWizardStep();
         break;
-      case 'focus-current-step':
+      case "focus-current-step":
         this.advancedActionModal.set(null);
         this.markWizardStepTouched(this.activeWizardStep());
         this.focusFirstPendingControl(this.activeWizardStep());
         break;
-      case 'focus-draft-minimum':
+      case "focus-draft-minimum":
         this.advancedActionModal.set(null);
         this.showInvalidWizardStep(0);
         break;
-      case 'focus-first-blocking':
+      case "focus-first-blocking":
         this.advancedActionModal.set(null);
-        this.showInvalidWizardStep(modal?.targetStep ?? this.findFirstWizardStepWithBlockingIssues() ?? 0);
+        this.showInvalidWizardStep(
+          modal?.targetStep ??
+            this.findFirstWizardStepWithBlockingIssues() ??
+            0,
+        );
         break;
-      case 'execute-finish':
+      case "execute-finish":
         this.advancedActionModal.set(null);
         void this.submitAdvancedMode();
         break;
-      case 'confirm-honorarios':
+      case "confirm-honorarios":
         this.advancedActionModal.set(null);
         this.confirmHonorariosMode();
         break;
-      case 'cancel-honorarios':
+      case "cancel-honorarios":
         this.advancedActionModal.set(null);
         this.cancelHonorariosModeChange();
         break;
-      case 'save-honorarios-draft':
+      case "save-honorarios-draft":
         this.advancedActionModal.set(null);
         void this.onGuardarBorrador();
         break;
-      case 'dismiss':
+      case "dismiss":
       default:
         this.advancedActionModal.set(null);
         break;
@@ -780,48 +929,57 @@ export class FormEmpleadoComponent implements OnInit {
   }
 
   isBasicMode(): boolean {
-    return this.modo() === 'basico';
+    return this.modo() === "basico";
   }
 
   isAdvancedMode(): boolean {
-    return this.modo() === 'avanzado';
+    return this.modo() === "avanzado";
   }
 
   isHonorariosMode(): boolean {
-    return this.form.controls.contrato.controls.relacionLaboral.value === 'HONORARIOS';
+    return (
+      this.form.controls.contrato.controls.relacionLaboral.value ===
+      "HONORARIOS"
+    );
   }
 
   pageTitle(): string {
-    return 'Crear empleado';
+    return "Crear empleado";
   }
 
   saveActionLabel(): string {
-    return this.isBasicMode() ? 'Guardar ficha básica' : 'Crear empleado activo';
+    return this.isBasicMode()
+      ? "Guardar ficha básica"
+      : "Crear empleado activo";
   }
 
   finalWizardActionLabel(): string {
     if (this.isSaving()) {
-      return this.isHonorariosMode() ? 'Guardando borrador...' : 'Guardando ficha...';
+      return this.isHonorariosMode()
+        ? "Guardando borrador..."
+        : "Guardando ficha...";
     }
 
-    return this.isHonorariosMode() ? 'Guardar borrador' : 'Finalizar alta';
+    return this.isHonorariosMode() ? "Guardar borrador" : "Finalizar alta";
   }
 
   /** Avanzada: guardado en el pie. Básica: Volver + Guardar en cabecera (modo-basico / sin duplicar pie). */
-  headerVisibleActions(): readonly ('back' | 'save')[] {
-    return this.isBasicMode() ? (['back', 'save'] as const) : (['back'] as const);
+  headerVisibleActions(): readonly ("back" | "save")[] {
+    return this.isBasicMode()
+      ? (["back", "save"] as const)
+      : (["back"] as const);
   }
 
   /** Modal de exito: titulo (solo copia distinta en creacion basica). */
   successModalTitle(): string {
-    return this.successFlow() === 'basico'
-      ? 'Empleado registrado correctamente'
-      : 'Empleado registrado correctamente';
+    return this.successFlow() === "basico"
+      ? "Empleado registrado correctamente"
+      : "Empleado registrado correctamente";
   }
 
   /** Modal de exito: texto del boton principal. */
   successModalPrimaryLabel(): string {
-    return 'Ir al listado';
+    return "Ir al listado";
   }
 
   goToPreviousTab(): void {
@@ -830,7 +988,9 @@ export class FormEmpleadoComponent implements OnInit {
     if (idx === -1) {
       const cur = this.activeWizardStep();
       const candidates = seq.filter((s) => s < cur);
-      const prev = candidates.length ? candidates[candidates.length - 1]! : seq[0]!;
+      const prev = candidates.length
+        ? candidates[candidates.length - 1]!
+        : seq[0]!;
       this.syncCompletedTabsFromValidity();
       this.activeWizardStep.set(prev);
       this.markWizardStepVisited(prev);
@@ -859,7 +1019,7 @@ export class FormEmpleadoComponent implements OnInit {
 
     const coherenceIssue = this.firstCoherenceDecisionForStep(currentStep);
     if (coherenceIssue) {
-      this.openCoherenceDecisionModal(coherenceIssue, 'next');
+      this.openCoherenceDecisionModal(coherenceIssue, "next");
       return;
     }
 
@@ -928,7 +1088,7 @@ export class FormEmpleadoComponent implements OnInit {
   completedStepCount(): number {
     let n = 0;
     for (let i = 0; i < EMPLEADO_ADVANCED_WIZARD_STEP_COUNT; i++) {
-      if (this.getWizardStepValidationSummary(i).status === 'complete') {
+      if (this.getWizardStepValidationSummary(i).status === "complete") {
         n++;
       }
     }
@@ -950,11 +1110,15 @@ export class FormEmpleadoComponent implements OnInit {
   }
 
   blockingValidationPanelItems(): EvaluatedValidationRule[] {
-    return this.pendingValidationPanelItems().filter((item) => item.severity === 'error');
+    return this.pendingValidationPanelItems().filter(
+      (item) => item.severity === "error",
+    );
   }
 
   warningValidationPanelItems(): EvaluatedValidationRule[] {
-    return this.pendingValidationPanelItems().filter((item) => item.severity === 'warning');
+    return this.pendingValidationPanelItems().filter(
+      (item) => item.severity === "warning",
+    );
   }
 
   getStepValidationSummary(stepId: ValidationStepId): StepValidationSummary {
@@ -964,18 +1128,21 @@ export class FormEmpleadoComponent implements OnInit {
       );
       const pending = evaluated.filter((item) => !item.complete);
       const blockingPending = pending.filter((item) => item.blocking).length;
-      const warningsPending = pending.filter((item) => item.severity === 'warning').length;
-      const wasAttempted = this.attemptedTabs().has(stepId) || this.attemptedSave();
+      const warningsPending = pending.filter(
+        (item) => item.severity === "warning",
+      ).length;
+      const wasAttempted =
+        this.attemptedTabs().has(stepId) || this.attemptedSave();
       const hasInteraction = this.hasStepInteraction(stepId);
 
-      let status: StepValidationStatus = 'pending';
+      let status: StepValidationStatus = "pending";
 
       if (blockingPending > 0 && wasAttempted) {
-        status = 'invalid';
+        status = "invalid";
       } else if (blockingPending === 0 && evaluated.length > 0) {
-        status = 'complete';
+        status = "complete";
       } else if (hasInteraction || pending.length > 0) {
-        status = 'in-progress';
+        status = "in-progress";
       }
 
       return {
@@ -992,22 +1159,31 @@ export class FormEmpleadoComponent implements OnInit {
     const indices = this.wizardStepsForTab(stepId);
     const parts = indices.map((i) => this.computeWizardStepValidationCore(i));
     const pending = parts.reduce((sum, p) => sum + p.pending, 0);
-    const blockingPending = parts.reduce((sum, p) => sum + p.blockingPending, 0);
-    const warningsPending = parts.reduce((sum, p) => sum + p.warningsPending, 0);
+    const blockingPending = parts.reduce(
+      (sum, p) => sum + p.blockingPending,
+      0,
+    );
+    const warningsPending = parts.reduce(
+      (sum, p) => sum + p.warningsPending,
+      0,
+    );
     const applicable = parts.reduce((sum, p) => sum + p.applicable, 0);
     const complete = parts.reduce((sum, p) => sum + p.complete, 0);
     const wasAttempted =
-      this.attemptedSave() || indices.some((i) => this.attemptedWizardSteps().has(i));
-    const hasInteraction = indices.some((i) => this.hasWizardStepInteraction(i));
+      this.attemptedSave() ||
+      indices.some((i) => this.attemptedWizardSteps().has(i));
+    const hasInteraction = indices.some((i) =>
+      this.hasWizardStepInteraction(i),
+    );
 
-    let status: StepValidationStatus = 'pending';
+    let status: StepValidationStatus = "pending";
 
     if (blockingPending > 0 && wasAttempted) {
-      status = 'invalid';
+      status = "invalid";
     } else if (blockingPending === 0 && applicable > 0 && pending === 0) {
-      status = 'complete';
+      status = "complete";
     } else if (hasInteraction || pending > 0) {
-      status = 'in-progress';
+      status = "in-progress";
     }
 
     return {
@@ -1021,25 +1197,27 @@ export class FormEmpleadoComponent implements OnInit {
     };
   }
 
-  getWizardStepValidationSummary(wizardStepIndex: number): StepValidationSummary {
+  getWizardStepValidationSummary(
+    wizardStepIndex: number,
+  ): StepValidationSummary {
     if (wizardStepIndex === this.summaryWizardStepIndex()) {
       const blockingUpstream =
         Array.from({ length: this.summaryWizardStepIndex() }, (_, i) => i).some(
           (i) => this.computeWizardStepValidationCore(i).blockingPending > 0,
         ) || this.form.invalid;
       const wasAttempted = this.attemptedSave();
-      let status: StepValidationStatus = 'pending';
+      let status: StepValidationStatus = "pending";
 
       if (!blockingUpstream) {
-        status = 'complete';
+        status = "complete";
       } else if (wasAttempted) {
-        status = 'invalid';
+        status = "invalid";
       } else {
-        status = 'in-progress';
+        status = "in-progress";
       }
 
       return {
-        stepId: 'bancario',
+        stepId: "bancario",
         pending: blockingUpstream ? 1 : 0,
         blockingPending: blockingUpstream ? 1 : 0,
         warningsPending: 0,
@@ -1059,25 +1237,28 @@ export class FormEmpleadoComponent implements OnInit {
     if (stepIndex === this.summaryWizardStepIndex()) {
       const summary = this.getWizardStepValidationSummary(stepIndex);
       if (summary.blockingPending > 0 && this.attemptedSave()) {
-        return 'errores';
+        return "errores";
       }
       if (isActive) {
-        return 'actual';
+        return "actual";
       }
       if (summary.blockingPending === 0) {
-        return 'completo';
+        return "completo";
       }
-      return 'pendiente';
+      return "pendiente";
     }
 
-    const aplicabilidadStep = altaAplicabilidadStep(this.altaAplicabilidadState(), stepIndex);
+    const aplicabilidadStep = altaAplicabilidadStep(
+      this.altaAplicabilidadState(),
+      stepIndex,
+    );
 
-    if (aplicabilidadStep.estado === 'not_applicable') {
-      return 'no-aplica';
+    if (aplicabilidadStep.estado === "not_applicable") {
+      return "no-aplica";
     }
 
-    if (aplicabilidadStep.estado === 'optional') {
-      return 'opcional';
+    if (aplicabilidadStep.estado === "optional") {
+      return "opcional";
     }
 
     const summary = this.getWizardStepValidationSummary(stepIndex);
@@ -1085,45 +1266,101 @@ export class FormEmpleadoComponent implements OnInit {
     const stepRelevantForUi = this.wizardStepShownAsProgressed(stepIndex);
 
     if (summary.blockingPending > 0 && stepWasAttempted) {
-      return 'errores';
+      return "errores";
     }
 
     if (isActive) {
-      return 'actual';
+      return "actual";
     }
 
-    if (summary.blockingPending === 0 && summary.status === 'complete') {
+    if (summary.blockingPending === 0 && summary.status === "complete") {
       if (!stepRelevantForUi) {
-        return 'pendiente';
+        return "pendiente";
       }
-      return 'completo';
+      return "completo";
     }
 
-    if (aplicabilidadStep.estado === 'review' || aplicabilidadStep.estado === 'warning') {
-      return 'pendiente';
+    if (
+      aplicabilidadStep.estado === "review" ||
+      aplicabilidadStep.estado === "warning"
+    ) {
+      return "pendiente";
     }
 
-    return 'pendiente';
+    return "pendiente";
   }
 
   wizardStepUiLabel(kind: WizardStepUiKind): string {
     switch (kind) {
-      case 'actual':
-        return 'Actual';
-      case 'completo':
-        return 'Completado';
-      case 'pendiente':
-        return 'Pendiente';
-      case 'errores':
-        return 'Con errores';
-      case 'opcional':
-        return 'Opcional';
-      case 'no-aplica':
-        return 'No aplica';
+      case "actual":
+        return "En edición";
+      case "completo":
+        return "Listo";
+      case "pendiente":
+        return "Requiere datos";
+      case "errores":
+        return "Revisar";
+      case "opcional":
+        return "Solo si aplica";
+      case "no-aplica":
+        return "No requerido";
     }
   }
 
-  advancedReviewRows(): { stepIndex: number; label: string; kind: WizardStepUiKind }[] {
+  wizardStepNumberLabel(stepIndex: number): string {
+    return String(stepIndex + 1).padStart(2, "0");
+  }
+
+  wizardStepStageLabel(stepIndex: number): string {
+    if (this.isHonorariosMode()) {
+      const honorariosStages: Record<number, string> = {
+        2: "Registro del servicio",
+        3: "Registro de honorarios",
+        7: "Registro de pago",
+        9: "Acta de honorarios",
+      };
+      return honorariosStages[stepIndex] ?? "Registro administrativo";
+    }
+
+    if (stepIndex <= 1) {
+      return "Registro de identidad";
+    }
+    if (stepIndex <= 4) {
+      return "Registro laboral";
+    }
+    if (stepIndex <= 7) {
+      return "Registro de pago y previsión";
+    }
+    if (stepIndex === this.summaryWizardStepIndex()) {
+      return "Acta de revisión";
+    }
+    return "Registro de revisión";
+  }
+
+  wizardStepDecisionLabel(stepIndex: number): string {
+    const kind = this.wizardStepUiKind(stepIndex);
+    switch (kind) {
+      case "actual":
+        return "Registro abierto";
+      case "completo":
+        return "Registro listo";
+      case "errores":
+        return "Requiere corrección";
+      case "opcional":
+        return "Registrar solo si corresponde";
+      case "no-aplica":
+        return "Fuera de este caso";
+      case "pendiente":
+      default:
+        return "Pendiente de datos";
+    }
+  }
+
+  advancedReviewRows(): {
+    stepIndex: number;
+    label: string;
+    kind: WizardStepUiKind;
+  }[] {
     return this.advancedWizardLabels.map((_, stepIndex) => ({
       stepIndex,
       label: this.wizardStepFullLabel(stepIndex),
@@ -1135,7 +1372,11 @@ export class FormEmpleadoComponent implements OnInit {
    * Paso 9: pendientes en lenguaje de negocio tras intentar finalizar (reglas bloqueantes).
    */
   resumenPendientesNegocio(): string[] {
-    if (!this.isAdvancedMode() || this.activeWizardStep() !== this.summaryWizardStepIndex() || !this.attemptedSave()) {
+    if (
+      !this.isAdvancedMode() ||
+      this.activeWizardStep() !== this.summaryWizardStepIndex() ||
+      !this.attemptedSave()
+    ) {
       return [];
     }
 
@@ -1144,7 +1385,12 @@ export class FormEmpleadoComponent implements OnInit {
     let blockingSinMensaje = 0;
 
     for (const item of this.evaluateValidationRules()) {
-      if (!item.visible || item.complete || !item.blocking || item.severity !== 'error') {
+      if (
+        !item.visible ||
+        item.complete ||
+        !item.blocking ||
+        item.severity !== "error"
+      ) {
         continue;
       }
 
@@ -1160,78 +1406,98 @@ export class FormEmpleadoComponent implements OnInit {
     }
 
     if (out.length === 0 && blockingSinMensaje > 0) {
-      out.push('Revisa las etapas con pendientes o errores antes de finalizar.');
+      out.push(
+        "Revisa las etapas con pendientes o errores antes de finalizar.",
+      );
     }
 
     return out.slice(0, 10);
   }
 
-  reviewRowDescription(row: { stepIndex: number; kind: WizardStepUiKind }): string {
+  reviewRowDescription(row: {
+    stepIndex: number;
+    kind: WizardStepUiKind;
+  }): string {
     switch (row.kind) {
-      case 'errores':
-        return 'Corrige los datos obligatorios antes de finalizar.';
-      case 'pendiente':
-        return 'Faltan datos obligatorios o revisión de esta etapa.';
-      case 'opcional':
-        return 'Completa esta etapa solo si corresponde.';
-      case 'no-aplica':
-        return 'Esta etapa no corresponde para la configuración actual.';
+      case "errores":
+        return "Corrige este registro antes de cerrar la ficha.";
+      case "pendiente":
+        return "Faltan datos o revisión administrativa en este registro.";
+      case "opcional":
+        return "Se completa solo si corresponde al caso laboral.";
+      case "no-aplica":
+        return "Registro no requerido para la configuración actual.";
       default:
-        return '';
+        return "";
     }
   }
 
   hasReviewBlockingStates(): boolean {
     return this.advancedReviewRows().some((row) =>
-      ['pendiente', 'errores'].includes(row.kind),
+      ["pendiente", "errores"].includes(row.kind),
     );
   }
 
   identificacionResumen(): string {
     const rut = this.form.controls.datosPersonales.controls.rut.value.trim();
-    const pas = this.form.controls.datosPersonales.controls.pasaporte.value.trim();
+    const pas =
+      this.form.controls.datosPersonales.controls.pasaporte.value.trim();
     if (rut) {
       return rut;
     }
     if (pas) {
       return `Pasaporte ${pas}`;
     }
-    return 'Sin información';
+    return "Sin información";
   }
 
   getGlobalValidationSummary(): GlobalValidationSummary {
-    const summaries = TAB_ORDER.map((stepId) => this.getStepValidationSummary(stepId));
+    const summaries = TAB_ORDER.map((stepId) =>
+      this.getStepValidationSummary(stepId),
+    );
 
     return {
-      blockingPending: summaries.reduce((total, summary) => total + summary.blockingPending, 0),
-      warningsPending: summaries.reduce((total, summary) => total + summary.warningsPending, 0),
-      completeSteps: summaries.filter((summary) => summary.status === 'complete').length,
-      invalidSteps: summaries.filter((summary) => summary.status === 'invalid').length,
-      pendingTotal: summaries.reduce((total, summary) => total + summary.pending, 0),
+      blockingPending: summaries.reduce(
+        (total, summary) => total + summary.blockingPending,
+        0,
+      ),
+      warningsPending: summaries.reduce(
+        (total, summary) => total + summary.warningsPending,
+        0,
+      ),
+      completeSteps: summaries.filter(
+        (summary) => summary.status === "complete",
+      ).length,
+      invalidSteps: summaries.filter((summary) => summary.status === "invalid")
+        .length,
+      pendingTotal: summaries.reduce(
+        (total, summary) => total + summary.pending,
+        0,
+      ),
     };
   }
 
   wizardMapPendingCount(): number {
     return this.advancedWizardLabels.filter(
-      (_, index) => this.wizardStepUiKind(index) === 'pendiente',
+      (_, index) => this.wizardStepUiKind(index) === "pendiente",
     ).length;
   }
 
   wizardMapOptionalCount(): number {
     return this.advancedWizardLabels.filter(
-      (_, index) => this.wizardStepUiKind(index) === 'opcional',
+      (_, index) => this.wizardStepUiKind(index) === "opcional",
     ).length;
   }
 
   wizardMapErrorCount(): number {
     return this.advancedWizardLabels.filter(
-      (_, index) => this.wizardStepUiKind(index) === 'errores',
+      (_, index) => this.wizardStepUiKind(index) === "errores",
     ).length;
   }
 
   wizardMapNotApplicableCount(): number {
     return this.advancedWizardLabels.filter(
-      (_, index) => this.wizardStepUiKind(index) === 'no-aplica',
+      (_, index) => this.wizardStepUiKind(index) === "no-aplica",
     ).length;
   }
 
@@ -1243,50 +1509,64 @@ export class FormEmpleadoComponent implements OnInit {
     const parts: string[] = [];
 
     if (errors > 0) {
-      parts.push(`${errors} ${errors === 1 ? 'paso con errores' : 'pasos con errores'}`);
+      parts.push(
+        `${errors} ${errors === 1 ? "registro por revisar" : "registros por revisar"}`,
+      );
     }
 
     if (pending > 0) {
-      parts.push(`${pending} ${pending === 1 ? 'paso pendiente' : 'pasos pendientes'}`);
+      parts.push(
+        `${pending} ${pending === 1 ? "registro pendiente" : "registros pendientes"}`,
+      );
     }
 
     if (optional > 0) {
-      parts.push(`${optional} ${optional === 1 ? 'paso opcional' : 'pasos opcionales'}`);
+      parts.push(
+        `${optional} ${optional === 1 ? "registro condicional" : "registros condicionales"}`,
+      );
     }
 
     if (errors === 0 && notApplicable > 0) {
-      parts.push(`${notApplicable} ${notApplicable === 1 ? 'paso no aplica' : 'pasos no aplican'}`);
+      parts.push(
+        `${notApplicable} ${notApplicable === 1 ? "registro no requerido" : "registros no requeridos"}`,
+      );
     }
 
-    return parts.length ? parts.join(' · ') : 'Sin pendientes visibles';
+    return parts.length
+      ? parts.join(" · ")
+      : "Bitácora sin pendientes visibles";
   }
 
   private resolveWizardStep(rule: ValidationRule): number {
-    if (rule.sourcePath === 'contacto.idComuna') {
+    if (rule.sourcePath === "contacto.idComuna") {
       return 1;
     }
 
-    if (rule.stepId === 'datosPersonales') {
+    if (rule.stepId === "datosPersonales") {
       return 0;
     }
 
-    if (rule.stepId === 'bancario') {
+    if (rule.stepId === "bancario") {
       return 7;
     }
 
-    if (rule.stepId === 'previsionSalud') {
-      return rule.category === 'APVI' ? 6 : 5;
+    if (rule.stepId === "previsionSalud") {
+      return rule.category === "APVI" ? 6 : 5;
     }
 
-    if (rule.stepId === 'contrato') {
-      const cat = rule.category ?? '';
-      if (cat === 'Perfil laboral' || cat === 'Condiciones especiales') {
+    if (rule.stepId === "contrato") {
+      const cat = rule.category ?? "";
+      if (cat === "Perfil laboral" || cat === "Condiciones especiales") {
         return this.perfilLaboralWizardStepIndex();
       }
-      if (cat === 'Zona extrema' || cat === 'Cargas' || cat === 'Semana corrida') {
+      if (
+        cat === "Zona extrema" ||
+        cat === "Cargas" ||
+        cat === "Semana corrida"
+      ) {
         return 4;
       }
-      if (cat === 'Jornada' || cat === 'Remuneracion') {
+      if (cat === "Jornada" || cat === "Remuneracion") {
         return 3;
       }
       return 2;
@@ -1297,28 +1577,28 @@ export class FormEmpleadoComponent implements OnInit {
 
   private wizardStepsForTab(tabId: TabId): number[] {
     switch (tabId) {
-      case 'datosPersonales':
+      case "datosPersonales":
         return [0, 1];
-      case 'contrato':
+      case "contrato":
         return [2, 3, 4, this.perfilLaboralWizardStepIndex()];
-      case 'previsionSalud':
+      case "previsionSalud":
         return [5, 6];
-      case 'bancario':
+      case "bancario":
         return [7];
     }
   }
 
   private primaryTabForWizardStep(step: number): TabId {
     if (step <= 1) {
-      return 'datosPersonales';
+      return "datosPersonales";
     }
     if (step <= 4 || step === this.perfilLaboralWizardStepIndex()) {
-      return 'contrato';
+      return "contrato";
     }
     if (step <= 6) {
-      return 'previsionSalud';
+      return "previsionSalud";
     }
-    return 'bancario';
+    return "bancario";
   }
 
   private hasWizardStepInteraction(wizardStepIndex: number): boolean {
@@ -1370,25 +1650,33 @@ export class FormEmpleadoComponent implements OnInit {
     return iStep <= iAct;
   }
 
-  private computeWizardStepValidationCore(wizardStepIndex: number): StepValidationSummary {
+  private computeWizardStepValidationCore(
+    wizardStepIndex: number,
+  ): StepValidationSummary {
     const evaluated = this.evaluateValidationRules().filter(
       (item) => item.wizardStep === wizardStepIndex && item.visible,
     );
     const pending = evaluated.filter((item) => !item.complete);
     const blockingPending = pending.filter((item) => item.blocking).length;
-    const warningsPending = pending.filter((item) => item.severity === 'warning').length;
+    const warningsPending = pending.filter(
+      (item) => item.severity === "warning",
+    ).length;
     const wasAttempted =
       this.attemptedWizardSteps().has(wizardStepIndex) || this.attemptedSave();
     const hasInteraction = this.hasWizardStepInteraction(wizardStepIndex);
 
-    let status: StepValidationStatus = 'pending';
+    let status: StepValidationStatus = "pending";
 
     if (blockingPending > 0 && wasAttempted) {
-      status = 'invalid';
-    } else if (blockingPending === 0 && evaluated.length > 0 && pending.length === 0) {
-      status = 'complete';
+      status = "invalid";
+    } else if (
+      blockingPending === 0 &&
+      evaluated.length > 0 &&
+      pending.length === 0
+    ) {
+      status = "complete";
     } else if (hasInteraction || pending.length > 0) {
-      status = 'in-progress';
+      status = "in-progress";
     }
 
     return {
@@ -1451,11 +1739,13 @@ export class FormEmpleadoComponent implements OnInit {
   }
 
   private resolveModo(): FormEmpleadoModo {
-    return this.route.snapshot.queryParamMap.get('modo') === 'basico' ? 'basico' : 'avanzado';
+    return this.route.snapshot.queryParamMap.get("modo") === "basico"
+      ? "basico"
+      : "avanzado";
   }
 
   private async loadContinuacionBorradorSiAplica(): Promise<void> {
-    const raw = this.route.snapshot.queryParamMap.get('idPersona');
+    const raw = this.route.snapshot.queryParamMap.get("idPersona");
     const id = raw ? Number(raw) : NaN;
     if (!Number.isInteger(id) || id < 1) {
       return;
@@ -1464,25 +1754,38 @@ export class FormEmpleadoComponent implements OnInit {
     try {
       const detalle = await this.empleadosService.obtenerPorId(id);
       if (!detalle) {
-        this.catalogosError.set('No se encontro la ficha indicada para continuar el alta.');
+        this.catalogosError.set(
+          "No se encontro la ficha indicada para continuar el alta.",
+        );
         return;
       }
-      if (detalle.pasoAltaAvanzada === null || detalle.pasoAltaAvanzada === undefined) {
+      if (
+        detalle.pasoAltaAvanzada === null ||
+        detalle.pasoAltaAvanzada === undefined
+      ) {
         this.catalogosError.set(
-          'Esta ficha no tiene un borrador de creacion avanzada guardado. Usa la ficha del empleado para completar por secciones.',
+          "Esta ficha no tiene un borrador de creacion avanzada guardado. Usa la ficha del empleado para completar por secciones.",
         );
         return;
       }
 
-      const paso = Math.min(Math.max(0, detalle.pasoAltaAvanzada), this.totalSteps - 1);
-      const formValue = normalizarBorradorAvanzadoParaFormulario(detalle.formValue, paso);
+      const paso = Math.min(
+        Math.max(0, detalle.pasoAltaAvanzada),
+        this.totalSteps - 1,
+      );
+      const formValue = normalizarBorradorAvanzadoParaFormulario(
+        detalle.formValue,
+        paso,
+      );
       this.borradorPersonaId.set(id);
       this.form.patchValue(formValue as never);
       this.activeWizardStep.set(paso);
       this.visitedWizardSteps.update((prev) => new Set([...prev, paso]));
       this.form.markAsPristine();
     } catch {
-      this.catalogosError.set('No fue posible cargar el borrador para continuar el alta.');
+      this.catalogosError.set(
+        "No fue posible cargar el borrador para continuar el alta.",
+      );
     }
   }
 
@@ -1497,11 +1800,14 @@ export class FormEmpleadoComponent implements OnInit {
   }
 
   private attemptBasicGroups(): void {
-    this.attemptedTabs.set(new Set<TabId>(['datosPersonales']));
+    this.attemptedTabs.set(new Set<TabId>(["datosPersonales"]));
   }
 
   private isBasicFormInvalid(): boolean {
-    return this.form.controls.datosPersonales.invalid || this.form.controls.contacto.invalid;
+    return (
+      this.form.controls.datosPersonales.invalid ||
+      this.form.controls.contacto.invalid
+    );
   }
 
   private async submitBasicMode(): Promise<void> {
@@ -1515,7 +1821,7 @@ export class FormEmpleadoComponent implements OnInit {
       this.successMessage.set(
         'La creación básica fue guardada y la ficha quedó en estado "En proceso".',
       );
-      this.successFlow.set('basico');
+      this.successFlow.set("basico");
       this.createdEmployeeId.set(created.id);
       this.form.markAsPristine();
     } catch (error) {
@@ -1540,13 +1846,15 @@ export class FormEmpleadoComponent implements OnInit {
     const esHonorarios = this.isHonorariosMode();
     const esContratoDependiente = !esHonorarios;
     const hasCuenta2 =
-      prevision.tipoRegimenPrevisional.value === 'AFP' &&
-      (prevision.idMonedaCuenta2.value !== null || prevision.valorCuenta2.value !== null);
+      prevision.tipoRegimenPrevisional.value === "AFP" &&
+      (prevision.idMonedaCuenta2.value !== null ||
+        prevision.valorCuenta2.value !== null);
     const requiereSalud =
       prevision.tipoRegimenPrevisional.value !== null &&
-      prevision.tipoRegimenPrevisional.value !== 'NINGUNA';
-    const hayCondicionesPerfil = this.hasPerfilLaboralCondicionesSeleccionadas();
-    const perfilMenorEdad = this.perfilLaboralEdadResumen().kind === 'menor';
+      prevision.tipoRegimenPrevisional.value !== "NINGUNA";
+    const hayCondicionesPerfil =
+      this.hasPerfilLaboralCondicionesSeleccionadas();
+    const perfilMenorEdad = this.perfilLaboralEdadResumen().kind === "menor";
     const requiereRevisionMenor =
       perfilMenorEdad &&
       !perfilLaboral.trabajadorAdolescenteProtegido.value &&
@@ -1554,603 +1862,642 @@ export class FormEmpleadoComponent implements OnInit {
 
     return [
       this.rule(
-        'personal.identity',
-        'datosPersonales',
-        'Ingresa un RUT válido o un identificador extranjero válido',
-        'error',
+        "personal.identity",
+        "datosPersonales",
+        "Ingresa un RUT válido o un identificador extranjero válido",
+        "error",
         true,
-        'datosPersonales.rut',
-        'Identificacion legal',
+        "datosPersonales.rut",
+        "Identificacion legal",
         () =>
-          !personalGroup.hasError('rutOrPassport') &&
+          !personalGroup.hasError("rutOrPassport") &&
           personal.rut.valid &&
           personal.pasaporte.valid,
       ),
       this.rule(
-        'personal.birthdate',
-        'datosPersonales',
-        'Ingresa la fecha de nacimiento del trabajador',
-        'error',
+        "personal.birthdate",
+        "datosPersonales",
+        "Ingresa la fecha de nacimiento del trabajador",
+        "error",
         true,
-        'datosPersonales.fechaNacimiento',
-        'Identificacion legal',
+        "datosPersonales.fechaNacimiento",
+        "Identificacion legal",
         () => personal.fechaNacimiento.valid,
       ),
       this.rule(
-        'personal.names',
-        'datosPersonales',
-        'Ingresa los nombres del trabajador',
-        'error',
+        "personal.names",
+        "datosPersonales",
+        "Ingresa los nombres del trabajador",
+        "error",
         true,
-        'datosPersonales.nombres',
-        'Nombre del empleado',
+        "datosPersonales.nombres",
+        "Nombre del empleado",
         () => personal.nombres.valid,
       ),
       this.rule(
-        'personal.lastname',
-        'datosPersonales',
-        'Ingresa el apellido paterno',
-        'error',
+        "personal.lastname",
+        "datosPersonales",
+        "Ingresa el apellido paterno",
+        "error",
         true,
-        'datosPersonales.apellidoPaterno',
-        'Nombre del empleado',
+        "datosPersonales.apellidoPaterno",
+        "Nombre del empleado",
         () => personal.apellidoPaterno.valid,
       ),
       this.rule(
-        'personal.sex',
-        'datosPersonales',
-        'Selecciona el sexo registral para la ficha laboral',
-        'error',
+        "personal.sex",
+        "datosPersonales",
+        "Selecciona el sexo registral para la ficha laboral",
+        "error",
         true,
-        'datosPersonales.sexo',
-        'Identificacion legal',
+        "datosPersonales.sexo",
+        "Identificacion legal",
         () => personal.sexo.valid,
       ),
       this.rule(
-        'personal.country',
-        'datosPersonales',
-        'Selecciona país o nacionalidad',
-        'error',
+        "personal.country",
+        "datosPersonales",
+        "Selecciona país o nacionalidad",
+        "error",
         true,
-        'datosPersonales.idPais',
-        'Informacion base',
+        "datosPersonales.idPais",
+        "Informacion base",
         () => personal.idPais.valid,
       ),
       this.rule(
-        'personal.marital-status',
-        'datosPersonales',
-        'Selecciona el estado civil',
-        'error',
+        "personal.marital-status",
+        "datosPersonales",
+        "Selecciona el estado civil",
+        "error",
         true,
-        'datosPersonales.estadoCivil',
-        'Informacion base',
+        "datosPersonales.estadoCivil",
+        "Informacion base",
         () => personal.estadoCivil.valid,
       ),
       this.rule(
-        'personal.email-format',
-        'datosPersonales',
-        'Corrige el formato del correo electrónico',
-        'error',
+        "personal.email-format",
+        "datosPersonales",
+        "Corrige el formato del correo electrónico",
+        "error",
         true,
-        'contacto.email',
-        'Informacion base',
+        "contacto.email",
+        "Informacion base",
         () => contacto.email.valid,
         () => Boolean(contacto.email.value.trim()),
       ),
       this.rule(
-        'personal.phone-format',
-        'datosPersonales',
-        'Corrige el formato del teléfono',
-        'error',
+        "personal.phone-format",
+        "datosPersonales",
+        "Corrige el formato del teléfono",
+        "error",
         true,
-        'contacto.telefono',
-        'Informacion base',
+        "contacto.telefono",
+        "Informacion base",
         () => contacto.telefono.valid,
         () => Boolean(contacto.telefono.value.trim()),
       ),
       this.rule(
-        'personal.email-empty',
-        'datosPersonales',
-        'Agrega correo de contacto si la empresa lo usará para comunicaciones laborales',
-        'warning',
+        "personal.email-empty",
+        "datosPersonales",
+        "Agrega correo de contacto si la empresa lo usará para comunicaciones laborales",
+        "warning",
         false,
-        'contacto.email',
-        'Informacion base',
+        "contacto.email",
+        "Informacion base",
         () => Boolean(contacto.email.value.trim()),
       ),
       this.rule(
-        'personal.phone-empty',
-        'datosPersonales',
-        'Agrega teléfono de contacto si la empresa lo usará para comunicaciones laborales',
-        'warning',
+        "personal.phone-empty",
+        "datosPersonales",
+        "Agrega teléfono de contacto si la empresa lo usará para comunicaciones laborales",
+        "warning",
         false,
-        'contacto.telefono',
-        'Informacion base',
+        "contacto.telefono",
+        "Informacion base",
         () => Boolean(contacto.telefono.value.trim()),
       ),
       this.rule(
-        'personal.passport-review',
-        'datosPersonales',
-        'Revisa la identificación extranjera antes de finalizar la contratación',
-        'warning',
+        "personal.passport-review",
+        "datosPersonales",
+        "Revisa la identificación extranjera antes de finalizar la contratación",
+        "warning",
         false,
-        'datosPersonales.pasaporte',
-        'Identificacion legal',
+        "datosPersonales.pasaporte",
+        "Identificacion legal",
         () => Boolean(personal.rut.value.trim()),
-        () => Boolean(personal.pasaporte.value.trim()) && !Boolean(personal.rut.value.trim()),
+        () =>
+          Boolean(personal.pasaporte.value.trim()) &&
+          !Boolean(personal.rut.value.trim()),
       ),
       this.rule(
-        'contact.commune',
-        'datosPersonales',
-        'Selecciona la comuna del domicilio contractual',
-        'error',
+        "contact.commune",
+        "datosPersonales",
+        "Selecciona la comuna del domicilio contractual",
+        "error",
         true,
-        'contacto.idComuna',
-        'Domicilio',
+        "contacto.idComuna",
+        "Domicilio",
         () => contacto.idComuna.valid,
         () => this.isAdvancedMode() && esContratoDependiente,
       ),
       this.rule(
-        'contact.commune-honorarios',
-        'datosPersonales',
-        'Agrega comuna del prestador si se usará como dato administrativo de contacto',
-        'warning',
+        "contact.commune-honorarios",
+        "datosPersonales",
+        "Agrega comuna del prestador si se usará como dato administrativo de contacto",
+        "warning",
         false,
-        'contacto.idComuna',
-        'Domicilio',
+        "contacto.idComuna",
+        "Domicilio",
         () => contacto.idComuna.valid,
         () => this.isAdvancedMode() && esHonorarios,
       ),
 
       this.rule(
-        esHonorarios ? 'honorarios.service' : 'contract.position',
-        'contrato',
-        esHonorarios ? 'Ingresa el servicio o función del prestador' : 'Ingresa el cargo o función del trabajador',
-        'error',
+        esHonorarios ? "honorarios.service" : "contract.position",
+        "contrato",
+        esHonorarios
+          ? "Ingresa el servicio o función del prestador"
+          : "Ingresa el cargo o función del trabajador",
+        "error",
         true,
-        'contrato.cargo',
-        esHonorarios ? 'Honorarios' : 'Contrato',
-        () => contrato.cargo.valid && !this.isTechnicalCargo(contrato.cargo.value),
+        "contrato.cargo",
+        esHonorarios ? "Honorarios" : "Contrato",
+        () =>
+          contrato.cargo.valid && !this.isTechnicalCargo(contrato.cargo.value),
       ),
       this.rule(
-        'contract.branch',
-        'contrato',
-        'Selecciona sucursal u organización',
-        'error',
+        "contract.branch",
+        "contrato",
+        "Selecciona sucursal u organización",
+        "error",
         true,
-        'contrato.idSucursal',
-        'Contrato',
+        "contrato.idSucursal",
+        "Contrato",
         () => contrato.idSucursal.value !== null,
         () => esContratoDependiente,
       ),
       this.rule(
-        'honorarios.cost-center',
-        'contrato',
-        'Selecciona sucursal o centro de costo si necesitas imputar internamente el servicio',
-        'warning',
+        "honorarios.cost-center",
+        "contrato",
+        "Selecciona sucursal o centro de costo si necesitas imputar internamente el servicio",
+        "warning",
         false,
-        'contrato.idSucursal',
-        'Honorarios',
-        () => contrato.idSucursal.value !== null || contrato.idCentroCosto.value !== null,
+        "contrato.idSucursal",
+        "Honorarios",
+        () =>
+          contrato.idSucursal.value !== null ||
+          contrato.idCentroCosto.value !== null,
         () => esHonorarios,
       ),
       this.rule(
-        'contract.worker-type',
-        'contrato',
-        'Selecciona el tipo de trabajador',
-        'error',
+        "contract.worker-type",
+        "contrato",
+        "Selecciona el tipo de trabajador",
+        "error",
         true,
-        'contrato.idTipoTrabajador',
-        'Contrato',
+        "contrato.idTipoTrabajador",
+        "Contrato",
         () => contrato.idTipoTrabajador.valid,
         () => esContratoDependiente,
       ),
       this.rule(
-        'contract.schedule-type',
-        'contrato',
-        'Selecciona el tipo de jornada',
-        'error',
+        "contract.schedule-type",
+        "contrato",
+        "Selecciona el tipo de jornada",
+        "error",
         true,
-        'contrato.idTipoJornada',
-        'Jornada',
+        "contrato.idTipoJornada",
+        "Jornada",
         () => contrato.idTipoJornada.valid,
         () => esContratoDependiente,
       ),
       this.rule(
-        'contract.contract-type',
-        'contrato',
-        'Selecciona el tipo de contrato',
-        'error',
+        "contract.contract-type",
+        "contrato",
+        "Selecciona el tipo de contrato",
+        "error",
         true,
-        'contrato.tipoContrato',
-        'Contrato',
+        "contrato.tipoContrato",
+        "Contrato",
         () => contrato.tipoContrato.valid,
         () => esContratoDependiente,
       ),
       this.rule(
-        'contract.start-date',
-        'contrato',
-        'Ingresa la fecha de ingreso',
-        'error',
+        "contract.start-date",
+        "contrato",
+        "Ingresa la fecha de ingreso",
+        "error",
         true,
-        'contrato.fechaIngreso',
-        'Fechas',
+        "contrato.fechaIngreso",
+        "Fechas",
         () => contrato.fechaIngreso.valid,
       ),
       this.rule(
-        'contract.document-date',
-        'contrato',
-        'Ingresa la fecha del contrato',
-        'error',
+        "contract.document-date",
+        "contrato",
+        "Ingresa la fecha del contrato",
+        "error",
         true,
-        'contrato.fechaContrato',
-        'Fechas',
+        "contrato.fechaContrato",
+        "Fechas",
         () => contrato.fechaContrato.valid,
         () => esContratoDependiente,
       ),
       this.rule(
-        'contract.end-date',
-        'contrato',
-        'Ingresa la fecha de término del contrato',
-        'error',
+        "contract.end-date",
+        "contrato",
+        "Ingresa la fecha de término del contrato",
+        "error",
         true,
-        'contrato.fechaTermino',
-        'Fechas',
+        "contrato.fechaTermino",
+        "Fechas",
         () => contrato.fechaTermino.valid,
         () =>
           esContratoDependiente &&
-          contrato.tipoContrato.value !== null && contrato.tipoContrato.value !== 'INDEFINIDO',
+          contrato.tipoContrato.value !== null &&
+          contrato.tipoContrato.value !== "INDEFINIDO",
       ),
       this.rule(
-        esHonorarios ? 'honorarios.amount' : 'contract.salary',
-        'contrato',
-        esHonorarios ? 'Ingresa el monto bruto de honorarios' : 'Ingresa sueldo base válido',
-        'error',
+        esHonorarios ? "honorarios.amount" : "contract.salary",
+        "contrato",
+        esHonorarios
+          ? "Ingresa el monto bruto de honorarios"
+          : "Ingresa sueldo base válido",
+        "error",
         true,
-        'contrato.sueldoBase',
-        esHonorarios ? 'Honorarios' : 'Remuneracion',
+        "contrato.sueldoBase",
+        esHonorarios ? "Honorarios" : "Remuneracion",
         () => contrato.sueldoBase.valid,
       ),
       this.rule(
-        esHonorarios ? 'honorarios.currency' : 'contract.currency',
-        'contrato',
-        esHonorarios ? 'Selecciona la moneda del monto bruto de honorarios' : 'Selecciona la moneda de remuneración',
-        'error',
+        esHonorarios ? "honorarios.currency" : "contract.currency",
+        "contrato",
+        esHonorarios
+          ? "Selecciona la moneda del monto bruto de honorarios"
+          : "Selecciona la moneda de remuneración",
+        "error",
         true,
-        'contrato.idMoneda',
-        esHonorarios ? 'Honorarios' : 'Remuneracion',
+        "contrato.idMoneda",
+        esHonorarios ? "Honorarios" : "Remuneracion",
         () => contrato.idMoneda.value !== null,
       ),
       this.rule(
-        'contract.weekly-hours',
-        'contrato',
-        'Completa las horas semanales pactadas',
-        'error',
+        "contract.weekly-hours",
+        "contrato",
+        "Completa las horas semanales pactadas",
+        "error",
         true,
-        'contrato.horasSemanales',
-        'Jornada',
+        "contrato.horasSemanales",
+        "Jornada",
         () => contrato.horasSemanales.valid,
         () => esContratoDependiente,
       ),
       this.rule(
-        'contract.weekly-days',
-        'contrato',
-        'Completa los días semanales de trabajo',
-        'error',
+        "contract.weekly-days",
+        "contrato",
+        "Completa los días semanales de trabajo",
+        "error",
         true,
-        'contrato.diasSemanales',
-        'Jornada',
+        "contrato.diasSemanales",
+        "Jornada",
         () => contrato.diasSemanales.valid,
         () => esContratoDependiente,
       ),
       this.rule(
-        'contract.week-run',
-        'contrato',
-        'Completa los días laborables para semana corrida',
-        'error',
+        "contract.week-run",
+        "contrato",
+        "Completa los días laborables para semana corrida",
+        "error",
         true,
-        'contrato.semanaCorridaDiasLaborables',
-        'Semana corrida',
+        "contrato.semanaCorridaDiasLaborables",
+        "Semana corrida",
         () => contrato.semanaCorridaDiasLaborables.valid,
         () => esContratoDependiente && contrato.semanaCorridaActiva.value,
       ),
       this.rule(
-        'contract.extreme-zone-area',
-        'contrato',
-        'Selecciona el territorio asociado a zona extrema',
-        'error',
+        "contract.extreme-zone-area",
+        "contrato",
+        "Selecciona el territorio asociado a zona extrema",
+        "error",
         true,
-        'contrato.zonaExtremaTerritorio',
-        'Zona extrema',
+        "contrato.zonaExtremaTerritorio",
+        "Zona extrema",
         () => contrato.zonaExtremaTerritorio.valid,
         () => esContratoDependiente && contrato.zonaExtremaActiva.value,
       ),
       this.rule(
-        'contract.extreme-zone-rate',
-        'contrato',
-        'Ingresa el porcentaje de zona extrema',
-        'error',
+        "contract.extreme-zone-rate",
+        "contrato",
+        "Ingresa el porcentaje de zona extrema",
+        "error",
         true,
-        'contrato.zonaExtremaPorcentaje',
-        'Zona extrema',
+        "contrato.zonaExtremaPorcentaje",
+        "Zona extrema",
         () => contrato.zonaExtremaPorcentaje.valid,
         () => esContratoDependiente && contrato.zonaExtremaActiva.value,
       ),
       this.rule(
-        'contract.family-allowance',
-        'contrato',
-        'Confirma el tramo de cargas familiares antes de usar la asignación en remuneraciones',
-        'warning',
+        "contract.family-allowance",
+        "contrato",
+        "Confirma el tramo de cargas familiares antes de usar la asignación en remuneraciones",
+        "warning",
         false,
-        'contrato.idTramoCarga',
-        'Cargas',
+        "contrato.idTramoCarga",
+        "Cargas",
         () => contrato.idTramoCarga.value !== null,
         () => esContratoDependiente && Number(contrato.cargas.value ?? 0) > 0,
       ),
 
       this.rule(
-        'profile-laboral.minor-review',
-        'contrato',
-        'Menor de 18 detectado: revisa si corresponde trabajador adolescente protegido o autorización de menor',
-        'warning',
+        "profile-laboral.minor-review",
+        "contrato",
+        "Menor de 18 detectado: revisa si corresponde trabajador adolescente protegido o autorización de menor",
+        "warning",
         false,
-        'perfilLaboral.trabajadorAdolescenteProtegido',
-        'Condiciones especiales',
+        "perfilLaboral.trabajadorAdolescenteProtegido",
+        "Condiciones especiales",
         () => !requiereRevisionMenor,
         () => esContratoDependiente && perfilMenorEdad,
       ),
       this.rule(
-        'profile-laboral.support',
-        'contrato',
-        'Marca respaldo administrativo registrado para las condiciones especiales seleccionadas',
-        'warning',
+        "profile-laboral.support",
+        "contrato",
+        "Marca respaldo administrativo registrado para las condiciones especiales seleccionadas",
+        "warning",
         false,
-        'perfilLaboral.respaldoRegistrado',
-        'Condiciones especiales',
+        "perfilLaboral.respaldoRegistrado",
+        "Condiciones especiales",
         () => perfilLaboral.respaldoRegistrado.value,
         () => esContratoDependiente && hayCondicionesPerfil,
       ),
       this.rule(
-        'profile-laboral.valid-from',
-        'contrato',
-        'Completa la vigencia de inicio de las condiciones especiales',
-        'error',
+        "profile-laboral.valid-from",
+        "contrato",
+        "Completa la vigencia de inicio de las condiciones especiales",
+        "error",
         true,
-        'perfilLaboral.vigenciaInicio',
-        'Condiciones especiales',
+        "perfilLaboral.vigenciaInicio",
+        "Condiciones especiales",
         () => perfilLaboral.vigenciaInicio.valid,
         () => esContratoDependiente && hayCondicionesPerfil,
       ),
       this.rule(
-        'profile-laboral.observation-length',
-        'contrato',
-        'Reduce la observación interna de condiciones especiales',
-        'error',
+        "profile-laboral.observation-length",
+        "contrato",
+        "Reduce la observación interna de condiciones especiales",
+        "error",
         true,
-        'perfilLaboral.observacion',
-        'Condiciones especiales',
+        "perfilLaboral.observacion",
+        "Condiciones especiales",
         () => perfilLaboral.observacion.valid,
-        () => esContratoDependiente && Boolean(perfilLaboral.observacion.value.trim()),
+        () =>
+          esContratoDependiente &&
+          Boolean(perfilLaboral.observacion.value.trim()),
       ),
 
       this.rule(
-        'prevision.regime',
-        'previsionSalud',
-        'Selecciona el régimen previsional',
-        'error',
+        "prevision.regime",
+        "previsionSalud",
+        "Selecciona el régimen previsional",
+        "error",
         true,
-        'previsionSalud.tipoRegimenPrevisional',
-        'Prevision',
+        "previsionSalud.tipoRegimenPrevisional",
+        "Prevision",
         () => prevision.tipoRegimenPrevisional.valid,
         () => esContratoDependiente,
       ),
       this.rule(
-        'prevision.afp',
-        'previsionSalud',
-        'Selecciona la AFP del trabajador',
-        'error',
+        "prevision.afp",
+        "previsionSalud",
+        "Selecciona la AFP del trabajador",
+        "error",
         true,
-        'previsionSalud.idAfp',
-        'Prevision',
+        "previsionSalud.idAfp",
+        "Prevision",
         () => prevision.idAfp.valid,
-        () => esContratoDependiente && prevision.tipoRegimenPrevisional.value === 'AFP',
+        () =>
+          esContratoDependiente &&
+          prevision.tipoRegimenPrevisional.value === "AFP",
       ),
       this.rule(
-        'prevision.ips-name',
-        'previsionSalud',
-        'Ingresa la entidad o ex caja IPS',
-        'error',
+        "prevision.ips-name",
+        "previsionSalud",
+        "Ingresa la entidad o ex caja IPS",
+        "error",
         true,
-        'previsionSalud.nombreExCaja',
-        'IPS',
+        "previsionSalud.nombreExCaja",
+        "IPS",
         () => prevision.nombreExCaja.valid,
-        () => esContratoDependiente && prevision.tipoRegimenPrevisional.value === 'IPS',
+        () =>
+          esContratoDependiente &&
+          prevision.tipoRegimenPrevisional.value === "IPS",
       ),
       this.rule(
-        'prevision.ips-regime',
-        'previsionSalud',
-        'Ingresa el régimen IPS',
-        'error',
+        "prevision.ips-regime",
+        "previsionSalud",
+        "Ingresa el régimen IPS",
+        "error",
         true,
-        'previsionSalud.regimenExCaja',
-        'IPS',
+        "previsionSalud.regimenExCaja",
+        "IPS",
         () => prevision.regimenExCaja.valid,
-        () => esContratoDependiente && prevision.tipoRegimenPrevisional.value === 'IPS',
+        () =>
+          esContratoDependiente &&
+          prevision.tipoRegimenPrevisional.value === "IPS",
       ),
       this.rule(
-        'prevision.ips-rate',
-        'previsionSalud',
-        'Ingresa la tasa IPS',
-        'error',
+        "prevision.ips-rate",
+        "previsionSalud",
+        "Ingresa la tasa IPS",
+        "error",
         true,
-        'previsionSalud.tasaExCaja',
-        'IPS',
+        "previsionSalud.tasaExCaja",
+        "IPS",
         () => prevision.tasaExCaja.valid,
-        () => esContratoDependiente && prevision.tipoRegimenPrevisional.value === 'IPS',
+        () =>
+          esContratoDependiente &&
+          prevision.tipoRegimenPrevisional.value === "IPS",
       ),
       this.rule(
-        'prevision.health',
-        'previsionSalud',
-        'Selecciona la institución de salud',
-        'error',
+        "prevision.health",
+        "previsionSalud",
+        "Selecciona la institución de salud",
+        "error",
         true,
-        'previsionSalud.idSalud',
-        'Salud',
+        "previsionSalud.idSalud",
+        "Salud",
         () => prevision.idSalud.valid,
         () => esContratoDependiente && requiereSalud,
       ),
       this.rule(
-        'prevision.health-currency',
-        'previsionSalud',
-        'Selecciona la moneda del plan de salud',
-        'error',
+        "prevision.health-currency",
+        "previsionSalud",
+        "Selecciona la moneda del plan de salud",
+        "error",
         true,
-        'previsionSalud.idMonedaPlan',
-        'Salud',
+        "previsionSalud.idMonedaPlan",
+        "Salud",
         () => prevision.idMonedaPlan.valid,
         () => esContratoDependiente && requiereSalud,
       ),
       this.rule(
-        'prevision.health-plan',
-        'previsionSalud',
-        'Ingresa el valor del plan de salud',
-        'error',
+        "prevision.health-plan",
+        "previsionSalud",
+        "Ingresa el valor del plan de salud",
+        "error",
         true,
-        'previsionSalud.valorPlan',
-        'Salud',
+        "previsionSalud.valorPlan",
+        "Salud",
         () => prevision.valorPlan.valid,
         () => esContratoDependiente && requiereSalud,
       ),
       this.rule(
-        'prevision.health-ges',
-        'previsionSalud',
-        'Ingresa el adicional Auge o GES',
-        'error',
+        "prevision.health-ges",
+        "previsionSalud",
+        "Ingresa el adicional Auge o GES",
+        "error",
         true,
-        'previsionSalud.adicionalAugeGes',
-        'Salud',
+        "previsionSalud.adicionalAugeGes",
+        "Salud",
         () => prevision.adicionalAugeGes.valid,
         () => esContratoDependiente && requiereSalud,
       ),
       this.rule(
-        'prevision.account2-currency',
-        'previsionSalud',
-        'Selecciona la moneda de Cuenta 2 AFP',
-        'error',
+        "prevision.account2-currency",
+        "previsionSalud",
+        "Selecciona la moneda de Cuenta 2 AFP",
+        "error",
         true,
-        'previsionSalud.idMonedaCuenta2',
-        'Cuenta 2',
+        "previsionSalud.idMonedaCuenta2",
+        "Cuenta 2",
         () => prevision.idMonedaCuenta2.valid,
         () => esContratoDependiente && hasCuenta2,
       ),
       this.rule(
-        'prevision.account2-value',
-        'previsionSalud',
-        'Ingresa el valor de Cuenta 2 AFP',
-        'error',
+        "prevision.account2-value",
+        "previsionSalud",
+        "Ingresa el valor de Cuenta 2 AFP",
+        "error",
         true,
-        'previsionSalud.valorCuenta2',
-        'Cuenta 2',
+        "previsionSalud.valorCuenta2",
+        "Cuenta 2",
         () => prevision.valorCuenta2.valid,
         () => esContratoDependiente && hasCuenta2,
       ),
       this.rule(
-        'prevision.apv-institution',
-        'previsionSalud',
-        'Selecciona la institución APVI',
-        'error',
+        "prevision.apv-institution",
+        "previsionSalud",
+        "Selecciona la institución APVI",
+        "error",
         true,
-        'previsionSalud.idInstitucionApv',
-        'APVI',
+        "previsionSalud.idInstitucionApv",
+        "APVI",
         () => prevision.idInstitucionApv.valid,
-        () => esContratoDependiente && prevision.tipoRegimenPrevisional.value === 'AFP' && prevision.tieneApv.value,
+        () =>
+          esContratoDependiente &&
+          prevision.tipoRegimenPrevisional.value === "AFP" &&
+          prevision.tieneApv.value,
       ),
       this.rule(
-        'prevision.apv-currency',
-        'previsionSalud',
-        'Selecciona la moneda APVI',
-        'error',
+        "prevision.apv-currency",
+        "previsionSalud",
+        "Selecciona la moneda APVI",
+        "error",
         true,
-        'previsionSalud.idMonedaApv',
-        'APVI',
+        "previsionSalud.idMonedaApv",
+        "APVI",
         () => prevision.idMonedaApv.valid,
-        () => esContratoDependiente && prevision.tipoRegimenPrevisional.value === 'AFP' && prevision.tieneApv.value,
+        () =>
+          esContratoDependiente &&
+          prevision.tipoRegimenPrevisional.value === "AFP" &&
+          prevision.tieneApv.value,
       ),
       this.rule(
-        'prevision.apv-amount',
-        'previsionSalud',
-        'Ingresa el monto APVI',
-        'error',
+        "prevision.apv-amount",
+        "previsionSalud",
+        "Ingresa el monto APVI",
+        "error",
         true,
-        'previsionSalud.montoApv',
-        'APVI',
+        "previsionSalud.montoApv",
+        "APVI",
         () => prevision.montoApv.valid,
-        () => esContratoDependiente && prevision.tipoRegimenPrevisional.value === 'AFP' && prevision.tieneApv.value,
+        () =>
+          esContratoDependiente &&
+          prevision.tipoRegimenPrevisional.value === "AFP" &&
+          prevision.tieneApv.value,
       ),
       this.rule(
-        'prevision.apv-payment',
-        'previsionSalud',
-        'Selecciona la forma de pago APVI',
-        'error',
+        "prevision.apv-payment",
+        "previsionSalud",
+        "Selecciona la forma de pago APVI",
+        "error",
         true,
-        'previsionSalud.idFormaPagoApv',
-        'APVI',
+        "previsionSalud.idFormaPagoApv",
+        "APVI",
         () => prevision.idFormaPagoApv.valid,
-        () => esContratoDependiente && prevision.tipoRegimenPrevisional.value === 'AFP' && prevision.tieneApv.value,
+        () =>
+          esContratoDependiente &&
+          prevision.tipoRegimenPrevisional.value === "AFP" &&
+          prevision.tieneApv.value,
       ),
       this.rule(
-        'prevision.apv-agreement',
-        'previsionSalud',
-        'Completa el depósito convenido APVI',
-        'error',
+        "prevision.apv-agreement",
+        "previsionSalud",
+        "Completa el depósito convenido APVI",
+        "error",
         true,
-        'previsionSalud.depositoConvenidoApvi',
-        'APVI',
+        "previsionSalud.depositoConvenidoApvi",
+        "APVI",
         () => prevision.depositoConvenidoApvi.valid,
-        () => esContratoDependiente && prevision.tipoRegimenPrevisional.value === 'AFP' && prevision.tieneApv.value,
+        () =>
+          esContratoDependiente &&
+          prevision.tipoRegimenPrevisional.value === "AFP" &&
+          prevision.tieneApv.value,
       ),
 
       this.rule(
-        'bank.bank',
-        'bancario',
-        'Selecciona el banco para la transferencia',
-        'error',
+        "bank.bank",
+        "bancario",
+        "Selecciona el banco para la transferencia",
+        "error",
         true,
-        'bancario.idBanco',
-        'Bancario',
+        "bancario.idBanco",
+        "Bancario",
         () => bancario.idBanco.valid,
         () => esContratoDependiente,
       ),
       this.rule(
-        'bank.account-type',
-        'bancario',
-        'Selecciona el tipo de cuenta bancaria',
-        'error',
+        "bank.account-type",
+        "bancario",
+        "Selecciona el tipo de cuenta bancaria",
+        "error",
         true,
-        'bancario.idTipoCuentaBancaria',
-        'Bancario',
+        "bancario.idTipoCuentaBancaria",
+        "Bancario",
         () => bancario.idTipoCuentaBancaria.valid,
         () => esContratoDependiente,
       ),
       this.rule(
-        'bank.account-number',
-        'bancario',
-        'Ingresa una cuenta bancaria real',
-        'error',
+        "bank.account-number",
+        "bancario",
+        "Ingresa una cuenta bancaria real",
+        "error",
         true,
-        'bancario.numeroCuenta',
-        'Bancario',
-        () => bancario.numeroCuenta.valid && !this.isDraftAccount(bancario.numeroCuenta.value),
+        "bancario.numeroCuenta",
+        "Bancario",
+        () =>
+          bancario.numeroCuenta.valid &&
+          !this.isDraftAccount(bancario.numeroCuenta.value),
         () => esContratoDependiente,
       ),
       this.rule(
-        'honorarios.bank-data',
-        'bancario',
-        'Agrega datos de pago si el prestador recibirá transferencia',
-        'warning',
+        "honorarios.bank-data",
+        "bancario",
+        "Agrega datos de pago si el prestador recibirá transferencia",
+        "warning",
         false,
-        'bancario.idBanco',
-        'Honorarios',
+        "bancario.idBanco",
+        "Honorarios",
         () =>
           bancario.idBanco.value !== null &&
           bancario.idTipoCuentaBancaria.value !== null &&
@@ -2200,7 +2547,8 @@ export class FormEmpleadoComponent implements OnInit {
         pensionadoInvalidezParcial: perfil.pensionadoInvalidezParcial.value,
         pensionadoInvalidezTotal: perfil.pensionadoInvalidezTotal.value,
         exentoCotizacionPension: perfil.exentoCotizacionPension.value,
-        trabajadorAdolescenteProtegido: perfil.trabajadorAdolescenteProtegido.value,
+        trabajadorAdolescenteProtegido:
+          perfil.trabajadorAdolescenteProtegido.value,
         autorizacionMenorRegistrada: perfil.autorizacionMenorRegistrada.value,
         tecnicoExtranjeroExento: perfil.tecnicoExtranjeroExento.value,
         discapacidad: perfil.discapacidad.value,
@@ -2220,10 +2568,11 @@ export class FormEmpleadoComponent implements OnInit {
       tipoContrato: contrato.tipoContrato.value,
       tipoRegimenPrevisional: prevision.tipoRegimenPrevisional.value,
       tieneApv: prevision.tieneApv.value,
-      tieneCondicionesEspeciales: this.hasPerfilLaboralCondicionesSeleccionadas(),
+      tieneCondicionesEspeciales:
+        this.hasPerfilLaboralCondicionesSeleccionadas(),
       tieneRespaldoCondiciones: perfil.respaldoRegistrado.value,
-      esMenorEdad: edadResumen.kind === 'menor',
-      esMayor65: edadResumen.kind === 'mayor',
+      esMenorEdad: edadResumen.kind === "menor",
+      esMayor65: edadResumen.kind === "mayor",
     });
   }
 
@@ -2232,14 +2581,26 @@ export class FormEmpleadoComponent implements OnInit {
   }
 
   aplicabilidadStepMotivo(stepIndex: number): string {
-    return altaAplicabilidadStep(this.altaAplicabilidadState(), stepIndex).motivo;
+    return altaAplicabilidadStep(this.altaAplicabilidadState(), stepIndex)
+      .motivo;
   }
 
-  diagnosticoContractualRows(): readonly { label: string; estado: string; motivo: string; tone: string }[] {
+  diagnosticoContractualRows(): readonly {
+    label: string;
+    estado: string;
+    motivo: string;
+    tone: string;
+  }[] {
     const state = this.altaAplicabilidadState();
     const campos: readonly AltaAplicabilidadCampo[] = this.isHonorariosMode()
-      ? ['tipoTrabajador', 'montoHonorarios', 'banco', 'resumenFinal']
-      : ['tipoTrabajador', 'jornadaLaboral', 'seguroCesantia', 'regimenPrevisional', 'condicionesEspeciales'];
+      ? ["tipoTrabajador", "montoHonorarios", "banco", "resumenFinal"]
+      : [
+          "tipoTrabajador",
+          "jornadaLaboral",
+          "seguroCesantia",
+          "regimenPrevisional",
+          "condicionesEspeciales",
+        ];
 
     return campos.map((campo) => {
       const item = state.items[campo];
@@ -2265,10 +2626,10 @@ export class FormEmpleadoComponent implements OnInit {
     }
 
     if (this.isHonorariosMode()) {
-      return 'Borrador disponible';
+      return "Borrador disponible";
     }
 
-    return 'Alta coherente';
+    return "Alta coherente";
   }
 
   diagnosticoContractualDescripcion(): string {
@@ -2276,18 +2637,18 @@ export class FormEmpleadoComponent implements OnInit {
     const revisiones = this.coherenciaIssues().length;
 
     if (this.isHonorariosMode()) {
-      return 'El sistema identificó un alta a honorarios y separó los datos de pago de los campos laborales dependientes.';
+      return "El sistema identificó un alta a honorarios y separó los datos de pago de los campos laborales dependientes.";
     }
 
     if (bloqueos > 0) {
-      return 'Hay una restricción de fase que impide finalizar con el flujo actual.';
+      return "Hay una restricción de fase que impide finalizar con el flujo actual.";
     }
 
     if (revisiones > 0) {
-      return 'Hay revisiones administrativas que deben decidirse antes de finalizar o quedar mantenidas bajo revisión.';
+      return "Hay revisiones administrativas que deben decidirse antes de finalizar o quedar mantenidas bajo revisión.";
     }
 
-    return 'El sistema revisó contrato, jornada, previsión y condiciones especiales según la relación seleccionada.';
+    return "El sistema revisó contrato, jornada, previsión y condiciones especiales según la relación seleccionada.";
   }
 
   diagnosticoContractualCasoLabel(): string {
@@ -2300,37 +2661,39 @@ export class FormEmpleadoComponent implements OnInit {
     return `${edad} · Trabajador dependiente / ${this.tipoContratoResumenLabel()}`;
   }
 
-  private diagnosticoEstadoLabel(estado: AltaAplicabilidadItem['estado']): string {
+  private diagnosticoEstadoLabel(
+    estado: AltaAplicabilidadItem["estado"],
+  ): string {
     switch (estado) {
-      case 'required':
-        return 'Aplica';
-      case 'optional':
-        return 'Opcional';
-      case 'derived':
-        return 'Definido por sistema';
-      case 'not_applicable':
-        return 'No aplica';
-      case 'review':
-        return 'Revisión RRHH';
-      case 'warning':
-        return 'Revisión RRHH';
-      case 'blocked':
-        return 'Bloqueado';
+      case "required":
+        return "Aplica";
+      case "optional":
+        return "Solo si aplica";
+      case "derived":
+        return "Definido por sistema";
+      case "not_applicable":
+        return "No requerido";
+      case "review":
+        return "Revisión RRHH";
+      case "warning":
+        return "Revisión RRHH";
+      case "blocked":
+        return "Bloqueado";
     }
   }
 
   private tipoContratoResumenLabel(): string {
     switch (this.form.controls.contrato.controls.tipoContrato.value) {
-      case 'INDEFINIDO':
-        return 'contrato indefinido';
-      case 'PLAZO_FIJO':
-        return 'contrato a plazo fijo';
-      case 'OBRA_SERVICIO':
-        return 'contrato por obra o servicio';
-      case 'CASA_PARTICULAR':
-        return 'contrato de casa particular';
+      case "INDEFINIDO":
+        return "contrato indefinido";
+      case "PLAZO_FIJO":
+        return "contrato a plazo fijo";
+      case "OBRA_SERVICIO":
+        return "contrato por obra o servicio";
+      case "CASA_PARTICULAR":
+        return "contrato de casa particular";
       default:
-        return 'contrato pendiente';
+        return "contrato pendiente";
     }
   }
 
@@ -2343,22 +2706,27 @@ export class FormEmpleadoComponent implements OnInit {
   }
 
   coherenciaIssuesForStep(stepIndex: number): readonly AltaCoherenciaIssue[] {
-    return this.coherenciaIssues().filter((issue) => issue.stepIndex === stepIndex);
+    return this.coherenciaIssues().filter(
+      (issue) => issue.stepIndex === stepIndex,
+    );
   }
 
   coherenciaResumenItems(): readonly string[] {
-    return this.coherenciaIssues().map((issue) => issue.summary).slice(0, 6);
+    return this.coherenciaIssues()
+      .map((issue) => issue.summary)
+      .slice(0, 6);
   }
 
   coherenciaResumenBadge(): string {
     const issues = this.coherenciaIssues();
 
     if (issues.length === 0) {
-      return 'Sin revisiones';
+      return "Sin revisiones";
     }
 
     const porDecidir = issues.filter(
-      (issue) => issue.action && !this.acknowledgedCoherenceIssueIds().has(issue.id),
+      (issue) =>
+        issue.action && !this.acknowledgedCoherenceIssueIds().has(issue.id),
     ).length;
 
     if (porDecidir > 0) {
@@ -2368,19 +2736,38 @@ export class FormEmpleadoComponent implements OnInit {
     return `${issues.length} mantenida(s) bajo revisiÃ³n`;
   }
 
-  coherenciaStatusRows(): readonly { label: string; detail: string; tone: string }[] {
+  coherenciaStatusRows(): readonly {
+    label: string;
+    detail: string;
+    tone: string;
+  }[] {
     const state = this.altaCoherenciaState();
     return [
-      { label: `Seguro de Cesantía: ${state.seguroCesantia.label}`, detail: state.seguroCesantia.detail, tone: state.seguroCesantia.tone },
-      { label: `Jornada: ${state.jornada.label}`, detail: state.jornada.detail, tone: state.jornada.tone },
-      { label: `Previsión: ${state.prevision.label}`, detail: state.prevision.detail, tone: state.prevision.tone },
+      {
+        label: `Seguro de Cesantía: ${state.seguroCesantia.label}`,
+        detail: state.seguroCesantia.detail,
+        tone: state.seguroCesantia.tone,
+      },
+      {
+        label: `Jornada: ${state.jornada.label}`,
+        detail: state.jornada.detail,
+        tone: state.jornada.tone,
+      },
+      {
+        label: `Previsión: ${state.prevision.label}`,
+        detail: state.prevision.detail,
+        tone: state.prevision.tone,
+      },
     ];
   }
 
-  private firstCoherenceDecisionForStep(stepIndex: number): AltaCoherenciaIssue | null {
+  private firstCoherenceDecisionForStep(
+    stepIndex: number,
+  ): AltaCoherenciaIssue | null {
     return (
       this.coherenciaIssuesForStep(stepIndex).find(
-        (issue) => issue.action && !this.acknowledgedCoherenceIssueIds().has(issue.id),
+        (issue) =>
+          issue.action && !this.acknowledgedCoherenceIssueIds().has(issue.id),
       ) ?? null
     );
   }
@@ -2388,15 +2775,23 @@ export class FormEmpleadoComponent implements OnInit {
   private firstUnacknowledgedCoherenceDecision(): AltaCoherenciaIssue | null {
     return (
       this.coherenciaIssues().find(
-        (issue) => issue.action && !this.acknowledgedCoherenceIssueIds().has(issue.id),
+        (issue) =>
+          issue.action && !this.acknowledgedCoherenceIssueIds().has(issue.id),
       ) ?? null
     );
   }
 
-  private pendingValidationItemsForWizardStep(wizardStep: number): EvaluatedValidationRule[] {
+  private pendingValidationItemsForWizardStep(
+    wizardStep: number,
+  ): EvaluatedValidationRule[] {
     return this.evaluateValidationRules()
-      .filter((item) => item.visible && item.wizardStep === wizardStep && !item.complete)
-      .sort((a, b) => this.validationSortWeight(a) - this.validationSortWeight(b));
+      .filter(
+        (item) =>
+          item.visible && item.wizardStep === wizardStep && !item.complete,
+      )
+      .sort(
+        (a, b) => this.validationSortWeight(a) - this.validationSortWeight(b),
+      );
   }
 
   private pendingValidationItemsForFinalization(): EvaluatedValidationRule[] {
@@ -2404,7 +2799,9 @@ export class FormEmpleadoComponent implements OnInit {
       .filter((item) => item.visible && !item.complete)
       .sort((a, b) => {
         const byStep = a.wizardStep - b.wizardStep;
-        return byStep !== 0 ? byStep : this.validationSortWeight(a) - this.validationSortWeight(b);
+        return byStep !== 0
+          ? byStep
+          : this.validationSortWeight(a) - this.validationSortWeight(b);
       });
   }
 
@@ -2415,27 +2812,32 @@ export class FormEmpleadoComponent implements OnInit {
     this.advancedActionModal.set(modal);
   }
 
-  private openCoherenceDecisionModal(issue: AltaCoherenciaIssue, context: 'next' | 'finish'): void {
+  private openCoherenceDecisionModal(
+    issue: AltaCoherenciaIssue,
+    context: "next" | "finish",
+  ): void {
     this.pendingCoherenceDecision.set({ issue, context });
     this.openAdvancedActionModal({
-      kind: 'coherence-decision',
-      variant: 'warning',
+      kind: "coherence-decision",
+      variant: "warning",
       title: issue.title,
       message:
-        context === 'finish'
-          ? 'Antes de finalizar, el sistema detectó una combinación que conviene decidir. Puedes aplicar la corrección sugerida o mantenerla bajo revisión administrativa.'
-          : 'El sistema detectó una combinación que conviene revisar antes de seguir. Puedes aplicar la corrección sugerida o mantenerla bajo revisión administrativa.',
-      primaryLabel: issue.recommendedActionLabel ?? 'Aplicar corrección sugerida',
-      secondaryLabel: context === 'finish' ? 'Mantener y finalizar' : 'Mantener y continuar',
+        context === "finish"
+          ? "Antes de finalizar, el sistema detectó una combinación que conviene decidir. Puedes aplicar la corrección sugerida o mantenerla bajo revisión administrativa."
+          : "El sistema detectó una combinación que conviene revisar antes de seguir. Puedes aplicar la corrección sugerida o mantenerla bajo revisión administrativa.",
+      primaryLabel:
+        issue.recommendedActionLabel ?? "Aplicar corrección sugerida",
+      secondaryLabel:
+        context === "finish" ? "Mantener y finalizar" : "Mantener y continuar",
       blockingItems: [],
       warningItems: [issue.detail],
       infoItems: [
-        'RRHH decide si corrige o mantiene revisión.',
-        'La revisión quedará visible en el resumen.',
+        "RRHH decide si corrige o mantiene revisión.",
+        "La revisión quedará visible en el resumen.",
       ],
       targetStep: issue.stepIndex,
-      primaryAction: 'apply-coherence-suggestion',
-      secondaryAction: 'keep-coherence-review',
+      primaryAction: "apply-coherence-suggestion",
+      secondaryAction: "keep-coherence-review",
     });
   }
 
@@ -2465,12 +2867,14 @@ export class FormEmpleadoComponent implements OnInit {
       return;
     }
 
-    this.acknowledgedCoherenceIssueIds.update((prev) => new Set([...prev, pending.issue.id]));
+    this.acknowledgedCoherenceIssueIds.update(
+      (prev) => new Set([...prev, pending.issue.id]),
+    );
     this.pendingCoherenceDecision.set(null);
     this.advancedActionModal.set(null);
     this.syncCompletedTabsFromValidity();
 
-    if (pending.context === 'finish') {
+    if (pending.context === "finish") {
       this.markAllValidTabsAsCompleted();
       this.openFinishConfirmModal();
       return;
@@ -2479,28 +2883,33 @@ export class FormEmpleadoComponent implements OnInit {
     this.advanceToNextWizardStep();
   }
 
-  private applyCoherenceAction(action: AltaCoherenciaAction | undefined, value: boolean | number | undefined): void {
+  private applyCoherenceAction(
+    action: AltaCoherenciaAction | undefined,
+    value: boolean | number | undefined,
+  ): void {
     const contrato = this.form.controls.contrato.controls;
     const perfil = this.form.controls.perfilLaboral.controls;
 
     switch (action) {
-      case 'activarSeguroCesantia':
-      case 'desactivarSeguroCesantia':
+      case "activarSeguroCesantia":
+      case "desactivarSeguroCesantia":
         contrato.seguroCesantia.setValue(Boolean(value));
         contrato.seguroCesantia.markAsDirty();
         contrato.seguroCesantia.markAsTouched();
         break;
-      case 'ajustarHorasSemanales':
-        contrato.horasSemanales.setValue(typeof value === 'number' ? value : null);
+      case "ajustarHorasSemanales":
+        contrato.horasSemanales.setValue(
+          typeof value === "number" ? value : null,
+        );
         contrato.horasSemanales.markAsDirty();
         contrato.horasSemanales.markAsTouched();
         break;
-      case 'marcarTrabajadorAdolescenteProtegido':
+      case "marcarTrabajadorAdolescenteProtegido":
         perfil.trabajadorAdolescenteProtegido.setValue(true);
         perfil.trabajadorAdolescenteProtegido.markAsDirty();
         perfil.trabajadorAdolescenteProtegido.markAsTouched();
         break;
-      case 'marcarExentoCotizacionPension':
+      case "marcarExentoCotizacionPension":
         perfil.exentoCotizacionPension.setValue(true);
         perfil.exentoCotizacionPension.markAsDirty();
         perfil.exentoCotizacionPension.markAsTouched();
@@ -2511,154 +2920,161 @@ export class FormEmpleadoComponent implements OnInit {
     }
   }
 
-  private openNextStepReviewModal(step: number, pending: readonly EvaluatedValidationRule[]): void {
-    const blocking = pending.filter((item) => item.blocking && item.severity === 'error');
-    const warnings = pending.filter((item) => item.severity === 'warning');
+  private openNextStepReviewModal(
+    step: number,
+    pending: readonly EvaluatedValidationRule[],
+  ): void {
+    const blocking = pending.filter(
+      (item) => item.blocking && item.severity === "error",
+    );
+    const warnings = pending.filter((item) => item.severity === "warning");
     const label = this.wizardStepShortLabel(step);
 
     this.openAdvancedActionModal({
-      kind: 'next-step-review',
-      variant: blocking.length > 0 ? 'warning' : 'info',
-      title: blocking.length > 0 ? 'Datos pendientes en esta sección' : 'Advertencias de revisión',
+      kind: "next-step-review",
+      variant: blocking.length > 0 ? "warning" : "info",
+      title:
+        blocking.length > 0
+          ? "Datos pendientes en esta sección"
+          : "Advertencias de revisión",
       message:
         blocking.length > 0
           ? `La sección "${label}" aún tiene información necesaria para finalizar el alta. Puedes corregirla ahora o continuar con el resto del formulario y volver a este punto antes de finalizar.`
           : `La sección "${label}" tiene revisiones administrativas que no impiden avanzar, pero conviene dejarlas claras antes de cerrar el alta.`,
-      primaryLabel: 'Continuar',
-      secondaryLabel: 'Corregir ahora',
+      primaryLabel: "Continuar",
+      secondaryLabel: "Corregir ahora",
       blockingItems: this.validationModalLabels(blocking, 6),
       warningItems: this.validationModalLabels(warnings, 6),
       infoItems: [
-        'Puedes continuar y volver antes de finalizar.',
-        'El resumen final mantendrá estos pendientes.',
+        "Puedes continuar y volver antes de finalizar.",
+        "El resumen final mantendrá estos pendientes.",
       ],
       targetStep: step,
-      primaryAction: 'continue-next',
-      secondaryAction: 'focus-current-step',
+      primaryAction: "continue-next",
+      secondaryAction: "focus-current-step",
     });
   }
 
   private openDraftInvalidModal(message: string): void {
     this.openAdvancedActionModal({
-      kind: 'draft-invalid',
-      variant: 'warning',
-      title: 'No se puede guardar el borrador',
-      message: 'Para guardar un borrador necesitamos identificar al trabajador con datos mínimos. Completa la información pendiente y vuelve a guardar.',
-      primaryLabel: 'Ir al primer dato pendiente',
-      secondaryLabel: 'Cerrar',
+      kind: "draft-invalid",
+      variant: "warning",
+      title: "No se puede guardar el borrador",
+      message:
+        "Para guardar un borrador necesitamos identificar al trabajador con datos mínimos. Completa la información pendiente y vuelve a guardar.",
+      primaryLabel: "Ir al primer dato pendiente",
+      secondaryLabel: "Cerrar",
       blockingItems: this.draftMinimumPendingLabels(),
       warningItems: [],
       infoItems: [
-        'El borrador requiere identificación mínima.',
-        'Puedes completar el resto después.',
+        "El borrador requiere identificación mínima.",
+        "Puedes completar el resto después.",
       ],
       targetStep: 0,
-      primaryAction: 'focus-draft-minimum',
-      secondaryAction: 'dismiss',
+      primaryAction: "focus-draft-minimum",
+      secondaryAction: "dismiss",
     });
   }
 
   private openDraftSuccessModal(isNewDraft: boolean): void {
     this.openAdvancedActionModal({
-      kind: 'draft-success',
-      variant: 'success',
-      title: isNewDraft ? 'Borrador guardado' : 'Borrador actualizado',
-      message: 'La ficha fue guardada correctamente. Puedes seguir completando la creación avanzada ahora o continuar más tarde desde el listado de empleados.',
-      primaryLabel: 'Aceptar',
+      kind: "draft-success",
+      variant: "success",
+      title: isNewDraft ? "Borrador guardado" : "Borrador actualizado",
+      message:
+        "La ficha fue guardada correctamente. Puedes seguir completando la creación avanzada ahora o continuar más tarde desde el listado de empleados.",
+      primaryLabel: "Aceptar",
       blockingItems: [],
       warningItems: [],
-      infoItems: ['La ficha seguirá en borrador.'],
-      primaryAction: 'dismiss',
+      infoItems: ["La ficha seguirá en borrador."],
+      primaryAction: "dismiss",
     });
   }
 
   private openFinishInvalidModal(firstBadStep: number): void {
     const pending = this.pendingValidationItemsForFinalization();
-    const blocking = pending.filter((item) => item.blocking && item.severity === 'error');
-    const warnings = pending.filter((item) => item.severity === 'warning');
+    const blocking = pending.filter(
+      (item) => item.blocking && item.severity === "error",
+    );
+    const warnings = pending.filter((item) => item.severity === "warning");
 
     this.openAdvancedActionModal({
-      kind: 'finish-invalid',
-      variant: 'error',
-      title: 'La ficha no está lista para finalizar',
+      kind: "finish-invalid",
+      variant: "error",
+      title: "La ficha no está lista para finalizar",
       message:
-        'Aún faltan datos administrativos necesarios para crear el trabajador y dejarlo preparado para remuneraciones. Revisa los puntos pendientes antes de finalizar.',
-      primaryLabel: 'Ir al primer pendiente',
-      secondaryLabel: 'Cerrar',
+        "Aún faltan datos administrativos necesarios para crear el trabajador y dejarlo preparado para remuneraciones. Revisa los puntos pendientes antes de finalizar.",
+      primaryLabel: "Ir al primer pendiente",
+      secondaryLabel: "Cerrar",
       blockingItems: this.validationModalLabels(blocking, 10),
       warningItems: this.validationModalLabels(warnings, 8),
-      infoItems: [
-        'Puedes guardar borrador y completar después.',
-      ],
+      infoItems: ["Puedes guardar borrador y completar después."],
       targetStep: firstBadStep,
-      primaryAction: 'focus-first-blocking',
-      secondaryAction: 'dismiss',
+      primaryAction: "focus-first-blocking",
+      secondaryAction: "dismiss",
     });
   }
 
   private openFinishConfirmModal(): void {
     this.openAdvancedActionModal({
-      kind: 'finish-confirm',
-      variant: 'success',
-      title: 'Finalizar alta del trabajador',
+      kind: "finish-confirm",
+      variant: "success",
+      title: "Finalizar alta del trabajador",
       message:
-        'La ficha cuenta con los datos mínimos para crear el trabajador y continuar con los procesos administrativos y de remuneraciones. Antes de finalizar, revisa que la información ingresada sea correcta.',
-      primaryLabel: 'Finalizar alta',
-      secondaryLabel: 'Cancelar',
+        "La ficha cuenta con los datos mínimos para crear el trabajador y continuar con los procesos administrativos y de remuneraciones. Antes de finalizar, revisa que la información ingresada sea correcta.",
+      primaryLabel: "Finalizar alta",
+      secondaryLabel: "Cancelar",
       blockingItems: [],
       warningItems: [],
-      infoItems: ['La ficha quedará disponible para revisión posterior.'],
-      primaryAction: 'execute-finish',
-      secondaryAction: 'dismiss',
+      infoItems: ["La ficha quedará disponible para revisión posterior."],
+      primaryAction: "execute-finish",
+      secondaryAction: "dismiss",
     });
   }
 
-
   private openHonorariosConfirmModal(): void {
     this.openAdvancedActionModal({
-      kind: 'honorarios-confirm',
-      variant: 'warning',
-      title: 'Cambiar a boleta de honorarios',
+      kind: "honorarios-confirm",
+      variant: "warning",
+      title: "Cambiar a boleta de honorarios",
       message:
-        'Este registro se tratará como prestador de servicios y no como trabajador dependiente. El formulario ocultará los datos laborales que no corresponden a esta modalidad.',
-      primaryLabel: 'Confirmar cambio',
-      secondaryLabel: 'Cancelar',
+        "Este registro se tratará como prestador de servicios y no como trabajador dependiente. El formulario ocultará los datos laborales que no corresponden a esta modalidad.",
+      primaryLabel: "Confirmar cambio",
+      secondaryLabel: "Cancelar",
       blockingItems: [],
       warningItems: [
-        'Jornada laboral, gratificación, previsión, salud, APVI y asignaciones laborales quedarán como no aplicables.',
-        'La ficha podrá guardarse como borrador, pero no finalizarse como trabajador dependiente.',
+        "Jornada laboral, gratificación, previsión, salud, APVI y asignaciones laborales quedarán como no aplicables.",
+        "La ficha podrá guardarse como borrador, pero no finalizarse como trabajador dependiente.",
       ],
       infoItems: [
-        'El monto será bruto de honorarios.',
-        'La persistencia final queda para otra fase.',
+        "El monto será bruto de honorarios.",
+        "La persistencia final queda para otra fase.",
       ],
-      primaryAction: 'confirm-honorarios',
-      secondaryAction: 'cancel-honorarios',
+      primaryAction: "confirm-honorarios",
+      secondaryAction: "cancel-honorarios",
     });
   }
 
   private openHonorariosFinishBlockedModal(): void {
     this.openAdvancedActionModal({
-      kind: 'honorarios-finish-blocked',
-      variant: 'warning',
-      title: 'Guardar borrador de honorarios',
+      kind: "honorarios-finish-blocked",
+      variant: "warning",
+      title: "Guardar borrador de honorarios",
       message:
-        'La ficha está marcada como boleta de honorarios. Se puede conservar como borrador, pero no finalizar como trabajador dependiente con el flujo actual.',
-      primaryLabel: 'Guardar como borrador',
-      secondaryLabel: 'Cerrar',
+        "La ficha está marcada como boleta de honorarios. Se puede conservar como borrador, pero no finalizar como trabajador dependiente con el flujo actual.",
+      primaryLabel: "Guardar como borrador",
+      secondaryLabel: "Cerrar",
       blockingItems: [
-        'La persistencia final de honorarios aún no está habilitada.',
-        'No se generará contrato laboral, jornada, previsión dependiente ni liquidación de sueldo.',
+        "La persistencia final de honorarios aún no está habilitada.",
+        "No se generará contrato laboral, jornada, previsión dependiente ni liquidación de sueldo.",
       ],
       warningItems: [
-        'Mantén esta ficha como borrador hasta implementar el flujo completo de prestadores a honorarios.',
+        "Mantén esta ficha como borrador hasta implementar el flujo completo de prestadores a honorarios.",
       ],
-      infoItems: [
-        'Fase posterior: retención, datos tributarios y pago.',
-      ],
+      infoItems: ["Fase posterior: retención, datos tributarios y pago."],
       targetStep: 8,
-      primaryAction: 'save-honorarios-draft',
-      secondaryAction: 'dismiss',
+      primaryAction: "save-honorarios-draft",
+      secondaryAction: "dismiss",
     });
   }
 
@@ -2673,7 +3089,10 @@ export class FormEmpleadoComponent implements OnInit {
   private syncTipoTrabajadorConRelacionLaboral(): void {
     const contrato = this.form.controls.contrato.controls;
     const base = tipoTrabajadorBaseParaRelacion(contrato.relacionLaboral.value);
-    const option = buscarTipoTrabajadorBase(this.catalogos().tiposTrabajador, base);
+    const option = buscarTipoTrabajadorBase(
+      this.catalogos().tiposTrabajador,
+      base,
+    );
 
     if (!option) {
       contrato.idTipoTrabajador.setValue(null, { emitEvent: false });
@@ -2689,17 +3108,22 @@ export class FormEmpleadoComponent implements OnInit {
   }
 
   selectedTipoTrabajadorLabel(): string {
-    const selectedId = this.form.controls.contrato.controls.idTipoTrabajador.value;
-    const option = this.catalogos().tiposTrabajador.find((item) => item.value === selectedId);
+    const selectedId =
+      this.form.controls.contrato.controls.idTipoTrabajador.value;
+    const option = this.catalogos().tiposTrabajador.find(
+      (item) => item.value === selectedId,
+    );
 
-    return option?.label ?? 'Tipo trabajador pendiente';
+    return option?.label ?? "Tipo trabajador pendiente";
   }
 
   selectedTipoJornadaLabel(): string {
     const selectedId = this.form.controls.contrato.controls.idTipoJornada.value;
-    const option = this.catalogos().tiposJornada.find((item) => item.value === selectedId);
+    const option = this.catalogos().tiposJornada.find(
+      (item) => item.value === selectedId,
+    );
 
-    return option?.label ?? 'Jornada pendiente';
+    return option?.label ?? "Jornada pendiente";
   }
 
   private configurePerfilLaboralAutodetection(): void {
@@ -2722,7 +3146,10 @@ export class FormEmpleadoComponent implements OnInit {
   }
 
   private applyPerfilLaboralAutodetection(): void {
-    if (this.form.controls.contrato.controls.relacionLaboral.value === 'HONORARIOS') {
+    if (
+      this.form.controls.contrato.controls.relacionLaboral.value ===
+      "HONORARIOS"
+    ) {
       this.perfilLaboralAutoDetections.set([]);
       return;
     }
@@ -2735,26 +3162,32 @@ export class FormEmpleadoComponent implements OnInit {
   private detectPerfilLaboralConditions(): readonly PerfilLaboralAutoDetection[] {
     const detections = new Map<CondicionTrabajadorControlName, string>();
     const edadResumen = this.perfilLaboralEdadResumen();
-    const regimenPrevisional = this.form.controls.previsionSalud.controls.tipoRegimenPrevisional.value;
+    const regimenPrevisional =
+      this.form.controls.previsionSalud.controls.tipoRegimenPrevisional.value;
 
-    if (edadResumen.kind === 'menor') {
+    if (edadResumen.kind === "menor") {
       detections.set(
-        'trabajadorAdolescenteProtegido',
-        'Detectado por fecha de nacimiento y fecha de ingreso.',
+        "trabajadorAdolescenteProtegido",
+        "Detectado por fecha de nacimiento y fecha de ingreso.",
       );
     }
 
-    if (regimenPrevisional === 'NINGUNA') {
+    if (regimenPrevisional === "NINGUNA") {
       detections.set(
-        'exentoCotizacionPension',
-        'Detectado desde el régimen previsional informado como sin AFP/IPS.',
+        "exentoCotizacionPension",
+        "Detectado desde el régimen previsional informado como sin AFP/IPS.",
       );
     }
 
-    return Array.from(detections.entries()).map(([controlName, reason]) => ({ controlName, reason }));
+    return Array.from(detections.entries()).map(([controlName, reason]) => ({
+      controlName,
+      reason,
+    }));
   }
 
-  private syncAutoDetectedPerfilControls(detections: readonly PerfilLaboralAutoDetection[]): void {
+  private syncAutoDetectedPerfilControls(
+    detections: readonly PerfilLaboralAutoDetection[],
+  ): void {
     const perfil = this.form.controls.perfilLaboral.controls;
 
     for (const detection of detections) {
@@ -2765,17 +3198,21 @@ export class FormEmpleadoComponent implements OnInit {
     }
 
     if (detections.length > 0 && !perfil.vigenciaInicio.value) {
-      const fechaIngreso = this.form.controls.contrato.controls.fechaIngreso.value;
-      perfil.vigenciaInicio.setValue(fechaIngreso || new Date().toISOString().slice(0, 10), {
-        emitEvent: false,
-      });
+      const fechaIngreso =
+        this.form.controls.contrato.controls.fechaIngreso.value;
+      perfil.vigenciaInicio.setValue(
+        fechaIngreso || new Date().toISOString().slice(0, 10),
+        {
+          emitEvent: false,
+        },
+      );
     }
   }
 
   private normalizeCatalogLabel(value: string): string {
     return value
-      .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '')
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
       .toLowerCase()
       .trim();
   }
@@ -2784,23 +3221,28 @@ export class FormEmpleadoComponent implements OnInit {
     const control = this.form.controls.contrato.controls.relacionLaboral;
     this.previousRelacionLaboral = control.value;
 
-    control.valueChanges.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((value) => {
-      if (this.suppressRelacionLaboralModal) {
+    control.valueChanges
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((value) => {
+        if (this.suppressRelacionLaboralModal) {
+          this.previousRelacionLaboral = value;
+          return;
+        }
+
+        if (
+          value === "HONORARIOS" &&
+          this.previousRelacionLaboral !== "HONORARIOS"
+        ) {
+          this.openHonorariosConfirmModal();
+          return;
+        }
+
         this.previousRelacionLaboral = value;
-        return;
-      }
-
-      if (value === 'HONORARIOS' && this.previousRelacionLaboral !== 'HONORARIOS') {
-        this.openHonorariosConfirmModal();
-        return;
-      }
-
-      this.previousRelacionLaboral = value;
-    });
+      });
   }
 
   private confirmHonorariosMode(): void {
-    this.previousRelacionLaboral = 'HONORARIOS';
+    this.previousRelacionLaboral = "HONORARIOS";
     this.applyHonorariosVisualState();
     this.moveHonorariosFlowToApplicableStep();
     this.syncCompletedTabsFromValidity();
@@ -2808,9 +3250,12 @@ export class FormEmpleadoComponent implements OnInit {
 
   private cancelHonorariosModeChange(): void {
     this.suppressRelacionLaboralModal = true;
-    this.form.controls.contrato.controls.relacionLaboral.setValue(this.previousRelacionLaboral, {
-      emitEvent: true,
-    });
+    this.form.controls.contrato.controls.relacionLaboral.setValue(
+      this.previousRelacionLaboral,
+      {
+        emitEvent: true,
+      },
+    );
     this.suppressRelacionLaboralModal = false;
     this.syncCompletedTabsFromValidity();
   }
@@ -2822,12 +3267,12 @@ export class FormEmpleadoComponent implements OnInit {
     this.syncTipoTrabajadorConRelacionLaboral();
 
     contrato.tipoContrato.setValue(null, { emitEvent: false });
-    contrato.fechaContrato.setValue('', { emitEvent: false });
-    contrato.fechaTermino.setValue('', { emitEvent: false });
+    contrato.fechaContrato.setValue("", { emitEvent: false });
+    contrato.fechaTermino.setValue("", { emitEvent: false });
     contrato.idTipoJornada.setValue(null, { emitEvent: false });
     contrato.horasSemanales.setValue(null, { emitEvent: false });
     contrato.diasSemanales.setValue(null, { emitEvent: false });
-    contrato.distribucionJornada.setValue('', { emitEvent: false });
+    contrato.distribucionJornada.setValue("", { emitEvent: false });
     contrato.tiempoColacionMinutos.setValue(null, { emitEvent: false });
     contrato.tipoGratificacion.setValue(null, { emitEvent: false });
     contrato.seguroCesantia.setValue(false, { emitEvent: false });
@@ -2835,7 +3280,7 @@ export class FormEmpleadoComponent implements OnInit {
     contrato.semanaCorridaActiva.setValue(false, { emitEvent: false });
     contrato.semanaCorridaDiasLaborables.setValue([], { emitEvent: false });
     contrato.zonaExtremaActiva.setValue(false, { emitEvent: false });
-    contrato.zonaExtremaTerritorio.setValue('', { emitEvent: false });
+    contrato.zonaExtremaTerritorio.setValue("", { emitEvent: false });
     contrato.zonaExtremaPorcentaje.setValue(null, { emitEvent: false });
     contrato.cargas.setValue(0, { emitEvent: false });
     contrato.idTramoCarga.setValue(null, { emitEvent: false });
@@ -2852,7 +3297,10 @@ export class FormEmpleadoComponent implements OnInit {
     }
   }
 
-  private validationModalLabels(items: readonly EvaluatedValidationRule[], max: number): readonly string[] {
+  private validationModalLabels(
+    items: readonly EvaluatedValidationRule[],
+    max: number,
+  ): readonly string[] {
     const seen = new Set<string>();
     const out: string[] = [];
 
@@ -2870,7 +3318,9 @@ export class FormEmpleadoComponent implements OnInit {
 
     const remaining = Math.max(0, items.length - out.length);
     if (remaining > 0) {
-      out.push(`Además hay ${remaining} dato${remaining === 1 ? '' : 's'} pendiente${remaining === 1 ? '' : 's'} adicional${remaining === 1 ? '' : 'es'}.`);
+      out.push(
+        `Además hay ${remaining} dato${remaining === 1 ? "" : "s"} pendiente${remaining === 1 ? "" : "s"} adicional${remaining === 1 ? "" : "es"}.`,
+      );
     }
 
     return out;
@@ -2899,28 +3349,32 @@ export class FormEmpleadoComponent implements OnInit {
     const pending: string[] = [];
 
     if (dp.rut.invalid) {
-      pending.push('Ingresa un RUT válido o un identificador extranjero válido.');
+      pending.push(
+        "Ingresa un RUT válido o un identificador extranjero válido.",
+      );
     }
-    if (!String(dp.nombres.value || '').trim()) {
-      pending.push('Nombres del trabajador.');
+    if (!String(dp.nombres.value || "").trim()) {
+      pending.push("Nombres del trabajador.");
     }
-    if (!String(dp.apellidoPaterno.value || '').trim()) {
-      pending.push('Apellido paterno.');
+    if (!String(dp.apellidoPaterno.value || "").trim()) {
+      pending.push("Apellido paterno.");
     }
-    if (!String(dp.fechaNacimiento.value || '').trim()) {
-      pending.push('Fecha de nacimiento.');
+    if (!String(dp.fechaNacimiento.value || "").trim()) {
+      pending.push("Fecha de nacimiento.");
     }
     if (dp.idPais.value === null || dp.idPais.value < 1) {
-      pending.push('País o nacionalidad.');
+      pending.push("País o nacionalidad.");
     }
     if (dp.sexo.value === null) {
-      pending.push('Sexo registral.');
+      pending.push("Sexo registral.");
     }
     if (dp.estadoCivil.value === null) {
-      pending.push('Estado civil.');
+      pending.push("Estado civil.");
     }
 
-    return pending.length > 0 ? pending : ['Revisa los datos personales mínimos.'];
+    return pending.length > 0
+      ? pending
+      : ["Revisa los datos personales mínimos."];
   }
 
   private rule(
@@ -2954,11 +3408,11 @@ export class FormEmpleadoComponent implements OnInit {
       return 30;
     }
 
-    if (item.severity === 'error' && item.blocking) {
+    if (item.severity === "error" && item.blocking) {
       return 0;
     }
 
-    if (item.severity === 'warning') {
+    if (item.severity === "warning") {
       return 10;
     }
 
@@ -2968,68 +3422,85 @@ export class FormEmpleadoComponent implements OnInit {
   fullNameVisible(): string {
     const { nombres, apellidoPaterno, apellidoMaterno } =
       this.form.controls.datosPersonales.controls;
-    const fullName = [nombres.value, apellidoPaterno.value, apellidoMaterno.value]
+    const fullName = [
+      nombres.value,
+      apellidoPaterno.value,
+      apellidoMaterno.value,
+    ]
       .map((value) => value.trim())
       .filter(Boolean)
-      .join(' ');
+      .join(" ");
 
     if (fullName) {
       return fullName;
     }
 
-    return 'Sin información';
+    return "Sin información";
   }
 
   rutVisible(): string {
-    return this.form.controls.datosPersonales.controls.rut.value.trim() || 'Sin RUT';
+    return (
+      this.form.controls.datosPersonales.controls.rut.value.trim() || "Sin RUT"
+    );
   }
 
   cargoVisible(): string {
     const cargo = this.form.controls.contrato.controls.cargo.value.trim();
-    return cargo && !this.isTechnicalCargo(cargo) ? cargo : 'Sin informacion';
+    return cargo && !this.isTechnicalCargo(cargo) ? cargo : "Sin informacion";
   }
 
   sucursalVisible(): string {
     const selectedId = this.form.controls.contrato.controls.idSucursal.value;
-    const sucursal = this.catalogos().sucursales.find((option) => option.value === selectedId);
+    const sucursal = this.catalogos().sucursales.find(
+      (option) => option.value === selectedId,
+    );
 
-    return sucursal?.label || 'Sin información';
+    return sucursal?.label || "Sin información";
   }
 
   perfilLaboralResumenLabel(): string {
     const resumen = this.perfilLaboralEdadResumen();
-    return `${resumen.label} · ${this.isHonorariosMode() ? 'Independiente / honorarios' : 'Dependiente / contrato'}`;
+    return `${resumen.label} · ${this.isHonorariosMode() ? "Independiente / honorarios" : "Dependiente / contrato"}`;
   }
 
   condicionesPerfilResumenLabel(): string {
-    const selected = CONDICIONES_TRABAJADOR_UI
-      .filter((condition) => this.form.controls.perfilLaboral.controls[condition.controlName].value)
-      .map((condition) => condition.label);
+    const selected = CONDICIONES_TRABAJADOR_UI.filter(
+      (condition) =>
+        this.form.controls.perfilLaboral.controls[condition.controlName].value,
+    ).map((condition) => condition.label);
 
     if (selected.length === 0) {
-      return 'Sin condiciones especiales declaradas';
+      return "Sin condiciones especiales declaradas";
     }
 
     if (selected.length <= 3) {
-      return selected.join(', ');
+      return selected.join(", ");
     }
 
-    return `${selected.slice(0, 3).join(', ')} y ${selected.length - 3} más`;
+    return `${selected.slice(0, 3).join(", ")} y ${selected.length - 3} más`;
   }
 
   private hasPerfilLaboralCondicionesSeleccionadas(): boolean {
     return CONDICIONES_TRABAJADOR_UI.some(
-      (condition) => this.form.controls.perfilLaboral.controls[condition.controlName].value,
+      (condition) =>
+        this.form.controls.perfilLaboral.controls[condition.controlName].value,
     );
   }
 
-  private perfilLaboralEdadResumen(): { label: string; kind: 'pendiente' | 'menor' | 'adulto' | 'mayor' } {
-    const nacimiento = this.parseIsoDate(this.form.controls.datosPersonales.controls.fechaNacimiento.value);
+  private perfilLaboralEdadResumen(): {
+    label: string;
+    kind: "pendiente" | "menor" | "adulto" | "mayor";
+  } {
+    const nacimiento = this.parseIsoDate(
+      this.form.controls.datosPersonales.controls.fechaNacimiento.value,
+    );
     const referencia =
-      this.parseIsoDate(this.form.controls.contrato.controls.fechaIngreso.value) ?? new Date();
+      this.parseIsoDate(
+        this.form.controls.contrato.controls.fechaIngreso.value,
+      ) ?? new Date();
 
     if (!nacimiento || nacimiento > referencia) {
-      return { label: 'Edad laboral pendiente', kind: 'pendiente' };
+      return { label: "Edad laboral pendiente", kind: "pendiente" };
     }
 
     let edad = referencia.getFullYear() - nacimiento.getFullYear();
@@ -3041,14 +3512,14 @@ export class FormEmpleadoComponent implements OnInit {
     }
 
     if (edad < 18) {
-      return { label: `Menor de 18 años (${edad})`, kind: 'menor' };
+      return { label: `Menor de 18 años (${edad})`, kind: "menor" };
     }
 
     if (edad > 65) {
-      return { label: `Mayor de 65 años (${edad})`, kind: 'mayor' };
+      return { label: `Mayor de 65 años (${edad})`, kind: "mayor" };
     }
 
-    return { label: `Adulto 18 a 65 años (${edad})`, kind: 'adulto' };
+    return { label: `Adulto 18 a 65 años (${edad})`, kind: "adulto" };
   }
 
   private parseIsoDate(value: string): Date | null {
@@ -3056,7 +3527,7 @@ export class FormEmpleadoComponent implements OnInit {
       return null;
     }
 
-    const [year, month, day] = value.split('-').map(Number);
+    const [year, month, day] = value.split("-").map(Number);
     const parsed = new Date(year, month - 1, day);
 
     return Number.isNaN(parsed.getTime()) ? null : parsed;
@@ -3064,55 +3535,62 @@ export class FormEmpleadoComponent implements OnInit {
 
   checklistStatusClass(kind: WizardStepUiKind): string {
     switch (kind) {
-      case 'completo':
-        return 'is-complete';
-      case 'errores':
-        return 'is-error';
-      case 'opcional':
-        return 'is-optional';
-      case 'no-aplica':
-        return 'is-na';
+      case "completo":
+        return "is-complete";
+      case "errores":
+        return "is-error";
+      case "opcional":
+        return "is-optional";
+      case "no-aplica":
+        return "is-na";
       default:
-        return 'is-pending';
+        return "is-pending";
     }
   }
 
   private reviewStepUiKind(stepIndex: number): WizardStepUiKind {
     const kind = this.wizardStepUiKind(stepIndex);
-    if (kind !== 'actual') {
+    if (kind !== "actual") {
       return kind;
     }
 
     const summary = this.getWizardStepValidationSummary(stepIndex);
     if (summary.blockingPending > 0 && this.attemptedSave()) {
-      return 'errores';
+      return "errores";
     }
-    if (summary.blockingPending === 0 && summary.status === 'complete') {
-      return 'completo';
+    if (summary.blockingPending === 0 && summary.status === "complete") {
+      return "completo";
     }
-    return 'pendiente';
+    return "pendiente";
   }
 
-  private focusFirstPendingControl(wizardStep: number = this.activeWizardStep()): void {
+  private focusFirstPendingControl(
+    wizardStep: number = this.activeWizardStep(),
+  ): void {
     window.setTimeout(() => {
       const sorted = [...this.evaluateValidationRules()].sort(
         (a, b) => this.validationSortWeight(a) - this.validationSortWeight(b),
       );
       const firstPendingRule = sorted.find(
-        (item) => item.visible && item.wizardStep === wizardStep && !item.complete,
+        (item) =>
+          item.visible && item.wizardStep === wizardStep && !item.complete,
       );
-      const control = this.findControlForRule(firstPendingRule) ?? this.findFirstNgInvalidControl();
+      const control =
+        this.findControlForRule(firstPendingRule) ??
+        this.findFirstNgInvalidControl();
 
       if (!control) {
         return;
       }
 
-      control.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      control.scrollIntoView({ behavior: "smooth", block: "center" });
       control.focus({ preventScroll: true });
     });
   }
 
-  private focusFirstInvalidControl(wizardStep: number = this.activeWizardStep()): void {
+  private focusFirstInvalidControl(
+    wizardStep: number = this.activeWizardStep(),
+  ): void {
     window.setTimeout(() => {
       const sorted = [...this.evaluateValidationRules()].sort(
         (a, b) => this.validationSortWeight(a) - this.validationSortWeight(b),
@@ -3124,38 +3602,49 @@ export class FormEmpleadoComponent implements OnInit {
           item.blocking &&
           !item.complete,
       );
-      const firstInvalidControl = this.findControlForRule(firstPendingRule) ?? this.findFirstNgInvalidControl();
+      const firstInvalidControl =
+        this.findControlForRule(firstPendingRule) ??
+        this.findFirstNgInvalidControl();
 
       if (!firstInvalidControl) {
         return;
       }
 
-      firstInvalidControl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      firstInvalidControl.scrollIntoView({
+        behavior: "smooth",
+        block: "center",
+      });
       firstInvalidControl.focus({ preventScroll: true });
     });
   }
 
-  private findControlForRule(rule: EvaluatedValidationRule | undefined): HTMLElement | null {
-    const controlName = rule?.sourcePath.split('.').at(-1);
+  private findControlForRule(
+    rule: EvaluatedValidationRule | undefined,
+  ): HTMLElement | null {
+    const controlName = rule?.sourcePath.split(".").at(-1);
     if (!controlName) {
       return null;
     }
 
-    const controlHost = this.hostElement.nativeElement.querySelector<HTMLElement>(
-      `.step-panel [formControlName="${controlName}"], .step-panel [formcontrolname="${controlName}"]`,
-    );
+    const controlHost =
+      this.hostElement.nativeElement.querySelector<HTMLElement>(
+        `.step-panel [formControlName="${controlName}"], .step-panel [formcontrolname="${controlName}"]`,
+      );
     return this.getFocusableField(controlHost);
   }
 
   private findFirstNgInvalidControl(): HTMLElement | null {
-    const invalidHost = this.hostElement.nativeElement.querySelector<HTMLElement>(
-      '.step-panel input.ng-invalid:not([type="hidden"]), .step-panel select.ng-invalid, .step-panel textarea.ng-invalid, .step-panel [formControlName].ng-invalid, .step-panel [formcontrolname].ng-invalid',
-    );
+    const invalidHost =
+      this.hostElement.nativeElement.querySelector<HTMLElement>(
+        '.step-panel input.ng-invalid:not([type="hidden"]), .step-panel select.ng-invalid, .step-panel textarea.ng-invalid, .step-panel [formControlName].ng-invalid, .step-panel [formcontrolname].ng-invalid',
+      );
 
     return this.getFocusableField(invalidHost);
   }
 
-  private getFocusableField(controlHost: HTMLElement | null): HTMLElement | null {
+  private getFocusableField(
+    controlHost: HTMLElement | null,
+  ): HTMLElement | null {
     if (!controlHost) {
       return null;
     }
@@ -3172,9 +3661,9 @@ export class FormEmpleadoComponent implements OnInit {
   private isFocusableFormField(element: HTMLElement): boolean {
     return (
       element.matches('input:not([type="hidden"]):not([disabled])') ||
-      element.matches('select:not([disabled])') ||
-      element.matches('textarea:not([disabled])') ||
-      element.matches('button:not([disabled])') ||
+      element.matches("select:not([disabled])") ||
+      element.matches("textarea:not([disabled])") ||
+      element.matches("button:not([disabled])") ||
       element.matches('[tabindex]:not([tabindex="-1"])')
     );
   }
@@ -3182,30 +3671,43 @@ export class FormEmpleadoComponent implements OnInit {
   private scrollToPageStart(): void {
     window.setTimeout(() => {
       const formStart =
-        this.hostElement.nativeElement.querySelector<HTMLElement>('.form-page-head') ??
-        this.hostElement.nativeElement;
+        this.hostElement.nativeElement.querySelector<HTMLElement>(
+          ".form-page-head",
+        ) ?? this.hostElement.nativeElement;
 
-      formStart.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      formStart.scrollIntoView({ behavior: "smooth", block: "start" });
     });
   }
 
-  private scrollToCurrentStepStart(options: { focusFirstField: boolean }): void {
+  private scrollToCurrentStepStart(options: {
+    focusFirstField: boolean;
+  }): void {
     const run = (): void => {
       const host = this.hostElement.nativeElement;
-      const stepHeader = host.querySelector<HTMLElement>('.advanced-step-header');
-      const stepPanel = host.querySelector<HTMLElement>('.advanced-wizard-step .step-panel');
-      const target = stepHeader ?? stepPanel ?? host.querySelector<HTMLElement>('.advanced-wizard-content');
+      const stepHeader = host.querySelector<HTMLElement>(
+        ".advanced-step-header",
+      );
+      const stepPanel = host.querySelector<HTMLElement>(
+        ".advanced-wizard-step .step-panel",
+      );
+      const target =
+        stepHeader ??
+        stepPanel ??
+        host.querySelector<HTMLElement>(".advanced-wizard-content");
 
       if (!target) {
         return;
       }
 
       // Mantener el cambio de paso estable: sube al inicio útil del paso.
-      target.scrollIntoView({ behavior: 'auto', block: 'start' });
+      target.scrollIntoView({ behavior: "auto", block: "start" });
 
       // En desktop, opcionalmente enfocar el primer campo habilitado para dejar el cursor listo.
       // En mobile/tablet evitamos enfocar para no abrir el teclado automáticamente.
-      if (!options.focusFirstField || window.matchMedia('(max-width: 1024px)').matches) {
+      if (
+        !options.focusFirstField ||
+        window.matchMedia("(max-width: 1024px)").matches
+      ) {
         return;
       }
 
@@ -3252,7 +3754,9 @@ export class FormEmpleadoComponent implements OnInit {
   }
 
   private markAllValidTabsAsCompleted(): void {
-    this.completedTabs.set(new Set(TAB_ORDER.filter((tabId) => !this.isTabInvalid(tabId))));
+    this.completedTabs.set(
+      new Set(TAB_ORDER.filter((tabId) => !this.isTabInvalid(tabId))),
+    );
   }
 
   private markTabAsCompleted(tabId: TabId): void {
@@ -3276,31 +3780,31 @@ export class FormEmpleadoComponent implements OnInit {
     }
 
     if (error instanceof Error) {
-      if (error.message.toLowerCase().includes('row-level security')) {
-        return 'Supabase bloqueo la escritura por politicas RLS. Ejecuta bd/base/v11/run_all.sql (esquema por partes) o el monolito crear_sql_v6_11_integrada.sql y vuelve a intentar.';
+      if (error.message.toLowerCase().includes("row-level security")) {
+        return "Supabase bloqueo la escritura por politicas RLS. Ejecuta bd/base/v11/run_all.sql (esquema por partes) o el monolito crear_sql_v6_11_integrada.sql y vuelve a intentar.";
       }
 
       return error.message;
     }
 
-    return 'No fue posible registrar la ficha. Revisa la informacion e intenta nuevamente.';
+    return "No fue posible registrar la ficha. Revisa la informacion e intenta nuevamente.";
   }
 
   private getSection(tabId: TabId) {
     switch (tabId) {
-      case 'datosPersonales':
+      case "datosPersonales":
         return this.form.controls.datosPersonales;
-      case 'contrato':
+      case "contrato":
         return this.form.controls.contrato;
-      case 'previsionSalud':
+      case "previsionSalud":
         return this.form.controls.previsionSalud;
-      case 'bancario':
+      case "bancario":
         return this.form.controls.bancario;
     }
   }
 
   private isFormSectionInvalid(tabId: TabId): boolean {
-    return tabId === 'datosPersonales'
+    return tabId === "datosPersonales"
       ? this.getPersonalSectionState().invalid
       : this.getSection(tabId).invalid;
   }
@@ -3314,7 +3818,7 @@ export class FormEmpleadoComponent implements OnInit {
       return true;
     }
 
-    if (tabId === 'datosPersonales') {
+    if (tabId === "datosPersonales") {
       const personal = this.getPersonalSectionState();
       return personal.dirty || personal.touched;
     }
@@ -3336,17 +3840,20 @@ export class FormEmpleadoComponent implements OnInit {
   }
 
   private isTechnicalCargo(value: string): boolean {
-    return this.normalizeTechnicalText(value) === this.normalizeTechnicalText('Sin cargo');
+    return (
+      this.normalizeTechnicalText(value) ===
+      this.normalizeTechnicalText("Sin cargo")
+    );
   }
 
   private isDraftAccount(value: string): boolean {
-    return value.trim().toUpperCase().startsWith('DRAFT-');
+    return value.trim().toUpperCase().startsWith("DRAFT-");
   }
 
   private normalizeTechnicalText(value: string): string {
     return value
-      .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '')
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
       .trim()
       .toLowerCase();
   }

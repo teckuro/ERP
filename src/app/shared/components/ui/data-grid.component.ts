@@ -491,11 +491,11 @@ export class DataGridPrimaryActionMenuDirective {
 
                 @if (showColumnPanel) {
                   <div
-                    class="absolute right-0 top-10 z-50 w-72 max-w-[calc(100vw-2rem)] overflow-hidden rounded-xl border border-slate-200 bg-white text-sm shadow-[0_16px_34px_rgba(15,23,42,0.12)] ring-1 ring-slate-950/[0.03]"
+                    class="absolute right-0 top-10 z-50 w-72 max-w-[calc(100vw-2rem)] overflow-hidden rounded-md border border-slate-200 bg-white text-sm shadow-[0_8px_20px_rgba(15,23,42,0.08)] ring-1 ring-slate-950/[0.03]"
                     role="dialog"
                     aria-label="Columnas visibles"
                   >
-                    <div class="border-b border-slate-100 bg-[linear-gradient(180deg,#f8fbff_0%,#fdfefe_100%)] px-3.5 py-2.5">
+                    <div class="border-b border-slate-100 bg-slate-50 px-3.5 py-2.5">
                       <div class="flex items-start justify-between gap-3">
                         <div>
                           <p class="text-[0.68rem] font-medium uppercase tracking-[0.18em] text-slate-500">

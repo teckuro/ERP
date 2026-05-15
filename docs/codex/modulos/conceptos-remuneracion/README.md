@@ -43,3 +43,11 @@ El modulo Conceptos incorpora metadata para tratamiento LRE:
 - `observacion_normativa_lre`
 
 Esto permite diferenciar conceptos directos, derivados, ambiguos, pendientes o internos sin forzar codigos LRE incorrectos.
+## ERP-NOIA-BITACORA-OPERATIVA-00 - Lectura de modulo
+
+Conceptos de remuneracion queda alineado a [`NOIA / Bitacora Operativa`](../../diseno/bitacora-operativa-noia.md) como catalogo normativo de conceptos, separado de los movimientos aplicados a trabajadores.
+
+- `Concepto` define naturaleza, imponibilidad, tributacion, reglas y vigencia.
+- `Movimiento` registra aplicacion concreta por trabajador o periodo.
+- Esta separacion debe mantenerse en futuras fases UX para evitar mezclar catalogo con bitacora operacional.
+- Esta referencia es documental; no cambia SQL, servicios, motor, rutas ni estilos globales.

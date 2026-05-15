@@ -133,3 +133,8 @@ Para cambios de experiencia visible leer:
 - [`prompts-cursor/CURSOR-UX-COMERCIAL-01.md`](./prompts-cursor/CURSOR-UX-COMERCIAL-01.md)
 
 Regla: despues de liquidaciones oficiales internas, el foco inmediato es UX comercial antes de Previred/LRE/banco/contabilidad.
+## ERP-NOIA-BITACORA-OPERATIVA-00 - Identidad global
+
+Documento rector: [`diseno/bitacora-operativa-noia.md`](./diseno/bitacora-operativa-noia.md).
+
+Define el ERP como `Bitacora Operativa` bajo criterio NOIA: pantallas sobrias, administrativas, con estado, decision, trazabilidad y cierre visible. Es regla transversal para nuevas fases UX antes de intervenir pantallas operativas.

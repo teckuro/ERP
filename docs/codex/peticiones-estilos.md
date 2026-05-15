@@ -838,3 +838,33 @@ sin mezclarlo con las reglas base.
 - **Copy administrativo**: los errores conocidos se presentan como `Qué revisar`, `Acción recomendada` y `Paso sugerido`, evitando textos técnicos planos.
 - **Sin previsión**: el mensaje orienta a revisar `Previsión y salud` y seleccionar AFP o IPS cuando el trabajador quedará habilitado para remuneraciones.
 - **Estilo**: paneles con borde completo, fondo suave y radio local; sin `border-left` decorativo fuerte ni estilos globales.
+
+## 2026-05-15 - ERP-AUDIT-REPAIR-UX-01
+
+- **Modulo:** Nomina mensual / Preparar nomina.
+- **Cambio:** las confirmaciones criticas de guardar resultado preliminar, aprobar resultado y cerrar nomina dejan de usar `window.confirm` y pasan a `app-message-box` modal.
+- **UX:** el modal muestra motivo, alcance, puntos de revision RRHH y acciones claras; cancelar no persiste cambios.
+- **Estilo:** CSS local compacto con borde completo neutro, fondo suave y radio 6px; sin barras laterales decorativas, sin estilos globales.
+- **Restricciones:** sin SQL/RPC/RLS, sin motor, sin cambios en liquidaciones oficiales ni configuracion Angular/Tailwind/PostCSS.
+
+## EMP-ADV-BITACORA-LABORAL-UX-01 - Identidad visual local de Bitácora Laboral
+
+Fecha: 2026-05-15
+
+Creación avanzada incorpora una identidad de producto local para dejar de sentirse como wizard genérico:
+
+- El flujo se comunica como `Bitácora laboral`, no como lista técnica de pasos.
+- Mapa lateral agrupado por sentido: Identidad, Relación laboral, Pago y previsión, Revisión.
+- Numeración de registros `01` a `10` para reforzar expediente laboral.
+- Estados visibles más humanos: `En edición`, `Listo`, `Requiere datos`, `Revisar`, `Solo si aplica`, `No requerido`.
+- Header de paso con tipo de registro y título separado.
+- APVI no requerido/opcional se muestra como decisión del sistema con siguiente acción.
+- Cierre como `Acta de revisión de la ficha` y `Registros de la bitácora`.
+- Se mantiene system-ui/`--erp-font-sans`; sin Google Fonts, sin estilos globales, sin `border-left` fuerte y sin sombras decorativas.
+## 2026-05-15 - ERP-NOIA-BITACORA-OPERATIVA-00
+
+- **Identidad global:** el ERP adopta la lectura `NOIA / Bitacora Operativa`: sobrio, administrativo, humano, trazable y orientado al cierre del periodo.
+- **Regla visual:** evitar estetica SaaS generica, hero cards, gradientes decorativos, sombras fuertes, paletas monotono azul/morado y textos comerciales en pantallas operativas.
+- **Gramatica:** cada pantalla debe mostrar contexto, estado, registros, decisiones, alertas con accion y cierre operativo.
+- **Modulos:** Empleados = registro laboral; Nomina = bitacora del periodo; Movimientos = registros remuneracionales; Parametros = registro normativo; Liquidaciones = acta de salida.
+- **Restricciones:** fase documental; sin Angular, HTML, CSS, SQL/RPC/RLS, rutas, servicios, motor, estilos globales ni cambios funcionales.

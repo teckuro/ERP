@@ -1,4 +1,8 @@
-<form class="form-shell w-full" [formGroup]="form" (submit)="handleFormSubmit($event)">
+<form
+  class="form-shell w-full"
+  [formGroup]="form"
+  (submit)="handleFormSubmit($event)"
+>
   <div class="form-stack w-full">
     <header class="form-page-head" aria-label="Encabezado de alta">
       <app-record-breadcrumb
@@ -11,183 +15,226 @@
       <app-card-content className="editor-frame">
         <div class="status-stack">
           @if (catalogosError(); as message) {
-            <app-message-box
-              variant="error"
-              title="Catálogos no disponibles"
-              [message]="message"
-              actionLabel="Reintentar"
-              (action)="loadCatalogos()"
-            ></app-message-box>
+          <app-message-box
+            variant="error"
+            title="Catálogos no disponibles"
+            [message]="message"
+            actionLabel="Reintentar"
+            (action)="loadCatalogos()"
+          ></app-message-box>
           }
         </div>
 
         @if (isSaving()) {
-          <app-message-box
-            mode="modal"
-            variant="loading"
-            title="Guardando ficha"
-            [message]="
+        <app-message-box
+          mode="modal"
+          variant="loading"
+          title="Guardando ficha"
+          [message]="
               isBasicMode()
                 ? 'Estamos guardando la ficha básica del empleado.'
                 : 'Estamos guardando la ficha completa del empleado.'
             "
-          ></app-message-box>
+        ></app-message-box>
         } @else if (advancedActionModal(); as modal) {
-          <app-message-box
-            mode="modal"
-            [variant]="modal.variant"
-            [modalHeadlineSplit]="true"
-            [title]="modal.title"
-            [message]="modal.message"
-            [primaryLabel]="modal.primaryLabel"
-            [secondaryLabel]="modal.secondaryLabel || ''"
-            (action)="handleAdvancedActionModalPrimary()"
-            (secondary)="handleAdvancedActionModalSecondary()"
+        <app-message-box
+          mode="modal"
+          [variant]="modal.variant"
+          [modalHeadlineSplit]="true"
+          [title]="modal.title"
+          [message]="modal.message"
+          [primaryLabel]="modal.primaryLabel"
+          [secondaryLabel]="modal.secondaryLabel || ''"
+          (action)="handleAdvancedActionModalPrimary()"
+          (secondary)="handleAdvancedActionModalSecondary()"
+        >
+          <div
+            class="advanced-action-modal"
+            role="region"
+            aria-label="Detalle de validación"
           >
-            <div class="advanced-action-modal" role="region" aria-label="Detalle de validación">
-              @if (modal.blockingItems.length > 0) {
-                <section class="advanced-action-modal__section advanced-action-modal__section--blocking">
-                  <h3>Datos obligatorios pendientes</h3>
-                  <ul>
-                    @for (item of modal.blockingItems; track item) {
-                      <li>{{ item }}</li>
-                    }
-                  </ul>
-                </section>
-              }
-
-              @if (modal.warningItems.length > 0) {
-                <section class="advanced-action-modal__section advanced-action-modal__section--warning">
-                  <h3>Advertencias de revisión</h3>
-                  <ul>
-                    @for (item of modal.warningItems; track item) {
-                      <li>{{ item }}</li>
-                    }
-                  </ul>
-                </section>
-              }
-
-              @if (modal.infoItems.length > 0) {
-                <section class="advanced-action-modal__section advanced-action-modal__section--info">
-                  <h3>Información útil</h3>
-                  <ul>
-                    @for (item of modal.infoItems; track item) {
-                      <li>{{ item }}</li>
-                    }
-                  </ul>
-                </section>
-              }
-            </div>
-          </app-message-box>
-        } @else if (duplicateRutModalRut(); as rutDup) {
-          <app-message-box
-            mode="modal"
-            variant="error"
-            [modalHeadlineSplit]="true"
-            title="Ficha ya registrada"
-            [message]="'Ya existe un empleado registrado con el RUT ' + rutDup + '.'"
-            primaryLabel="Aceptar"
-            (action)="dismissErrorMessage()"
-          >
-            <div
-              class="basic-success-followup"
-              role="region"
-              aria-labelledby="duplicate-rut-detail-title"
+            @if (modal.blockingItems.length > 0) {
+            <section
+              class="advanced-action-modal__section advanced-action-modal__section--blocking"
             >
-              <div class="basic-success-followup__panel">
-                <h3 class="basic-success-followup__title" id="duplicate-rut-detail-title">Detalle</h3>
-                <p class="basic-success-followup__text">
-                  Revisa el listado o edita la ficha existente antes de crear una nueva.
-                </p>
-              </div>
-              <div class="basic-success-followup__meta">
-                <span class="basic-success-followup__meta-label">RUT</span>
-                <span class="basic-success-followup__meta-value">{{ rutDup }}</span>
-              </div>
-            </div>
-          </app-message-box>
-        } @else if (errorMessage(); as message) {
-          <app-message-box
-            mode="modal"
-            variant="error"
-            [modalHeadlineSplit]="true"
-            [title]="errorModalTitle()"
-            [message]="errorModalMessage()"
-            primaryLabel="Aceptar"
-            (action)="dismissErrorMessage()"
-          >
-            <div
-              class="basic-success-followup error-followup"
-              role="region"
-              aria-labelledby="save-error-detail-title"
+              <h3>Datos obligatorios pendientes</h3>
+              <ul>
+                @for (item of modal.blockingItems; track item) {
+                <li>{{ item }}</li>
+                }
+              </ul>
+            </section>
+            } @if (modal.warningItems.length > 0) {
+            <section
+              class="advanced-action-modal__section advanced-action-modal__section--warning"
             >
-              <div class="basic-success-followup__panel error-followup__panel">
-                <h3 class="basic-success-followup__title" id="save-error-detail-title">Qué revisar</h3>
-                <p class="basic-success-followup__text">{{ normalizedErrorMessage(message) }}</p>
-              </div>
-              <div class="basic-success-followup__panel error-followup__panel">
-                <h3 class="basic-success-followup__title">Acción recomendada</h3>
-                <p class="basic-success-followup__text">{{ errorRecommendedAction(message) }}</p>
-              </div>
-              @if (errorSuggestedStep(message); as suggestedStep) {
-                <div class="basic-success-followup__meta error-followup__meta">
-                  <span class="basic-success-followup__meta-label">Paso sugerido</span>
-                  <span class="basic-success-followup__meta-value">{{ suggestedStep }}</span>
-                </div>
-              }
-            </div>
-          </app-message-box>
-        } @else if (successMessage(); as message) {
-          <app-message-box
-            mode="modal"
-            variant="success"
-            [modalHeadlineSplit]="true"
-            [title]="successModalTitle()"
-            [message]="message"
-            [primaryLabel]="successModalPrimaryLabel()"
-            (action)="handleSuccessAction()"
-          >
-            @if (successFlow() === 'basico') {
-              <div
-                class="basic-success-followup"
-                role="region"
-                aria-labelledby="basic-success-next-title"
-              >
-                <div class="basic-success-followup__panel">
-                  <h3 class="basic-success-followup__title" id="basic-success-next-title">Próximo paso</h3>
-                  <p class="basic-success-followup__text">
-                    La ficha queda en proceso. Completa contrato, previsión, salud, banco y remuneración desde la
-                    ficha del empleado cuando corresponda. Hasta entonces no está lista para liquidar.
-                  </p>
-                </div>
-                @if (createdEmployeeId(); as fichaId) {
-                  <div class="basic-success-followup__meta">
-                    <span class="basic-success-followup__meta-label">Referencia</span>
-                    <span class="basic-success-followup__meta-value">Ficha N° {{ fichaId }}</span>
-                  </div>
+              <h3>Advertencias de revisión</h3>
+              <ul>
+                @for (item of modal.warningItems; track item) {
+                <li>{{ item }}</li>
                 }
-              </div>
-            } @else {
-              <div
-                class="basic-success-followup"
-                role="region"
-                aria-labelledby="advanced-success-detail-title"
-              >
-                <div class="basic-success-followup__panel">
-                  <h3 class="basic-success-followup__title" id="advanced-success-detail-title">Detalle</h3>
-                  <p class="basic-success-followup__text">
-                    Puedes revisar o completar información adicional desde la ficha del empleado.
-                  </p>
-                </div>
-                @if (createdEmployeeId(); as fichaId) {
-                  <div class="basic-success-followup__meta">
-                    <span class="basic-success-followup__meta-label">Referencia</span>
-                    <span class="basic-success-followup__meta-value">Ficha N° {{ fichaId }}</span>
-                  </div>
+              </ul>
+            </section>
+            } @if (modal.infoItems.length > 0) {
+            <section
+              class="advanced-action-modal__section advanced-action-modal__section--info"
+            >
+              <h3>Información útil</h3>
+              <ul>
+                @for (item of modal.infoItems; track item) {
+                <li>{{ item }}</li>
                 }
-              </div>
+              </ul>
+            </section>
             }
-          </app-message-box>
+          </div>
+        </app-message-box>
+        } @else if (duplicateRutModalRut(); as rutDup) {
+        <app-message-box
+          mode="modal"
+          variant="error"
+          [modalHeadlineSplit]="true"
+          title="Ficha ya registrada"
+          [message]="'Ya existe un empleado registrado con el RUT ' + rutDup + '.'"
+          primaryLabel="Aceptar"
+          (action)="dismissErrorMessage()"
+        >
+          <div
+            class="basic-success-followup"
+            role="region"
+            aria-labelledby="duplicate-rut-detail-title"
+          >
+            <div class="basic-success-followup__panel">
+              <h3
+                class="basic-success-followup__title"
+                id="duplicate-rut-detail-title"
+              >
+                Detalle
+              </h3>
+              <p class="basic-success-followup__text">
+                Revisa el listado o edita la ficha existente antes de crear una
+                nueva.
+              </p>
+            </div>
+            <div class="basic-success-followup__meta">
+              <span class="basic-success-followup__meta-label">RUT</span>
+              <span class="basic-success-followup__meta-value"
+                >{{ rutDup }}</span
+              >
+            </div>
+          </div>
+        </app-message-box>
+        } @else if (errorMessage(); as message) {
+        <app-message-box
+          mode="modal"
+          variant="error"
+          [modalHeadlineSplit]="true"
+          [title]="errorModalTitle()"
+          [message]="errorModalMessage()"
+          primaryLabel="Aceptar"
+          (action)="dismissErrorMessage()"
+        >
+          <div
+            class="basic-success-followup error-followup"
+            role="region"
+            aria-labelledby="save-error-detail-title"
+          >
+            <div class="basic-success-followup__panel error-followup__panel">
+              <h3
+                class="basic-success-followup__title"
+                id="save-error-detail-title"
+              >
+                Qué revisar
+              </h3>
+              <p class="basic-success-followup__text">
+                {{ normalizedErrorMessage(message) }}
+              </p>
+            </div>
+            <div class="basic-success-followup__panel error-followup__panel">
+              <h3 class="basic-success-followup__title">Acción recomendada</h3>
+              <p class="basic-success-followup__text">
+                {{ errorRecommendedAction(message) }}
+              </p>
+            </div>
+            @if (errorSuggestedStep(message); as suggestedStep) {
+            <div class="basic-success-followup__meta error-followup__meta">
+              <span class="basic-success-followup__meta-label"
+                >Paso sugerido</span
+              >
+              <span class="basic-success-followup__meta-value"
+                >{{ suggestedStep }}</span
+              >
+            </div>
+            }
+          </div>
+        </app-message-box>
+        } @else if (successMessage(); as message) {
+        <app-message-box
+          mode="modal"
+          variant="success"
+          [modalHeadlineSplit]="true"
+          [title]="successModalTitle()"
+          [message]="message"
+          [primaryLabel]="successModalPrimaryLabel()"
+          (action)="handleSuccessAction()"
+        >
+          @if (successFlow() === 'basico') {
+          <div
+            class="basic-success-followup"
+            role="region"
+            aria-labelledby="basic-success-next-title"
+          >
+            <div class="basic-success-followup__panel">
+              <h3
+                class="basic-success-followup__title"
+                id="basic-success-next-title"
+              >
+                Próximo paso
+              </h3>
+              <p class="basic-success-followup__text">
+                La ficha queda en proceso. Completa contrato, previsión, salud,
+                banco y remuneración desde la ficha del empleado cuando
+                corresponda. Hasta entonces no está lista para liquidar.
+              </p>
+            </div>
+            @if (createdEmployeeId(); as fichaId) {
+            <div class="basic-success-followup__meta">
+              <span class="basic-success-followup__meta-label">Referencia</span>
+              <span class="basic-success-followup__meta-value"
+                >Ficha N° {{ fichaId }}</span
+              >
+            </div>
+            }
+          </div>
+          } @else {
+          <div
+            class="basic-success-followup"
+            role="region"
+            aria-labelledby="advanced-success-detail-title"
+          >
+            <div class="basic-success-followup__panel">
+              <h3
+                class="basic-success-followup__title"
+                id="advanced-success-detail-title"
+              >
+                Detalle
+              </h3>
+              <p class="basic-success-followup__text">
+                Puedes revisar o completar información adicional desde la ficha
+                del empleado.
+              </p>
+            </div>
+            @if (createdEmployeeId(); as fichaId) {
+            <div class="basic-success-followup__meta">
+              <span class="basic-success-followup__meta-label">Referencia</span>
+              <span class="basic-success-followup__meta-value"
+                >Ficha N° {{ fichaId }}</span
+              >
+            </div>
+            }
+          </div>
+          }
+        </app-message-box>
         }
 
         <section class="workspace-grid" aria-label="Workspace de nueva ficha">
@@ -198,60 +245,98 @@
               aria-label="Ficha del empleado"
             >
               @if (isAdvancedMode()) {
-                <section class="advanced-create-shell" aria-label="Wizard de creación avanzada">
-                  <div class="advanced-create-inner">
-                    <header class="summary-identity advanced-create-header">
-                      <div class="summary-person">
-                        <div class="summary-title-row">
-                          <h2>Creación avanzada</h2>
-                          <span class="summary-status-badge">{{ advancedStatusBadgeLabel() }}</span>
-                        </div>
-                      </div>
-
-                      <div class="summary-actions summary-actions--advanced">
-                        <button
-                          type="button"
-                          data-testid="guardar-borrador-avanzado"
-                          class="advanced-draft-button"
-                          [disabled]="isSavingBorrador() || isSaving() || isLoadingCatalogs()"
-                          (click)="onGuardarBorrador()"
+              <section
+                class="advanced-create-shell"
+                aria-label="Wizard de creación avanzada"
+              >
+                <div class="advanced-create-inner">
+                  <header class="summary-identity advanced-create-header">
+                    <div
+                      class="summary-person advanced-create-header__identity"
+                    >
+                      <div class="summary-title-row">
+                        <h2>Alta del trabajador</h2>
+                        <span class="summary-status-badge"
+                          >{{ advancedStatusBadgeLabel() }}</span
                         >
-                          @if (isSavingBorrador()) {
-                            Guardando...
-                          } @else {
-                            Guardar borrador
-                          }
-                        </button>
-                        <app-page-actions
-                          [visibleActions]="headerVisibleActions()"
-                          backLabel="Volver"
-                          backLink="/empleados"
-                        ></app-page-actions>
                       </div>
-                    </header>
-                    <div class="advanced-wizard-layout">
-                      <aside class="advanced-wizard-map" aria-label="Mapa de ficha">
-                        <div class="advanced-wizard-map__head">
-                          <h3 class="advanced-wizard-map__title">Mapa de ficha</h3>
-                          <div class="advanced-wizard-map__progress" aria-label="Progreso de la ficha">
-                            <div class="advanced-wizard-map__progress-row">
-                              <span>Paso {{ activeWizardStep() + 1 }} de {{ totalSteps }}</span>
-                              <strong>{{ wizardProgressPercent() }}% recorrido</strong>
-                            </div>
-                            <span class="advanced-wizard-map__progress-track" aria-hidden="true">
-                              <span
-                                class="advanced-wizard-map__progress-fill"
-                                [style.width.%]="wizardProgressPercent()"
-                              ></span>
-                            </span>
-                          </div>
-                          <p class="advanced-wizard-map__summary">
-                            {{ wizardMapSummaryLabel() }}
-                          </p>
-                        </div>
+                      <p class="advanced-create-header__subtitle">
+                        Ficha en construcción con registros, decisiones y
+                        pendientes visibles para RRHH.
+                      </p>
+                    </div>
 
-                        <ol class="advanced-wizard-map__list" aria-label="Timeline de pasos">
-                          @for (step of advancedWizardLabels; track step; let index = $index) {
+                    <div class="summary-actions summary-actions--advanced">
+                      <button
+                        type="button"
+                        data-testid="guardar-borrador-avanzado"
+                        class="advanced-draft-button"
+                        [disabled]="isSavingBorrador() || isSaving() || isLoadingCatalogs()"
+                        (click)="onGuardarBorrador()"
+                      >
+                        @if (isSavingBorrador()) { Guardando... } @else {
+                        Guardar borrador }
+                      </button>
+                      <app-page-actions
+                        [visibleActions]="headerVisibleActions()"
+                        backLabel="Volver"
+                        backLink="/empleados"
+                      ></app-page-actions>
+                    </div>
+                  </header>
+                  <div class="advanced-wizard-layout">
+                    <aside
+                      class="advanced-wizard-map"
+                      aria-label="Bitácora laboral"
+                    >
+                      <div class="advanced-wizard-map__head">
+                        <h3 class="advanced-wizard-map__title">
+                          Bitácora laboral
+                        </h3>
+                        <div
+                          class="advanced-wizard-map__progress"
+                          aria-label="Progreso de la ficha"
+                        >
+                          <div class="advanced-wizard-map__progress-row">
+                            <span
+                              >Registro {{
+                              wizardStepNumberLabel(activeWizardStep()) }} de {{
+                              totalSteps }}</span
+                            >
+                            <strong
+                              >{{ wizardProgressPercent() }}% recorrido</strong
+                            >
+                          </div>
+                          <span
+                            class="advanced-wizard-map__progress-track"
+                            aria-hidden="true"
+                          >
+                            <span
+                              class="advanced-wizard-map__progress-fill"
+                              [style.width.%]="wizardProgressPercent()"
+                            ></span>
+                          </span>
+                        </div>
+                        <p class="advanced-wizard-map__summary">
+                          {{ wizardMapSummaryLabel() }}
+                        </p>
+                      </div>
+
+                      <div
+                        class="advanced-wizard-map__groups"
+                        aria-label="Registros agrupados de la bitácora"
+                      >
+                        @for (group of wizardMapGroups; track group.title) {
+                        <section
+                          class="advanced-wizard-map__group"
+                          [attr.aria-label]="group.title"
+                        >
+                          <div class="advanced-wizard-map__group-head">
+                            <strong>{{ group.title }}</strong>
+                            <span>{{ group.description }}</span>
+                          </div>
+                          <ol class="advanced-wizard-map__list">
+                            @for (index of group.stepIndexes; track index) {
                             <li
                               class="advanced-wizard-map__step"
                               [class.is-active]="isWizardStepActive(index)"
@@ -267,561 +352,771 @@
                                 [class.is-complete]="wizardStepUiKind(index) === 'completo'"
                                 [class.is-na]="wizardStepUiKind(index) === 'no-aplica'"
                                 [attr.aria-current]="isWizardStepActive(index) ? 'step' : null"
+                                [attr.aria-label]="wizardStepFullLabel(index) + ': ' + wizardStepUiLabel(wizardStepUiKind(index))"
                                 (click)="selectWizardStep(index)"
                               >
-                                <span class="advanced-wizard-map__marker" aria-hidden="true">
-                                  <span class="advanced-wizard-map__num">{{ index + 1 }}</span>
+                                <span
+                                  class="advanced-wizard-map__marker"
+                                  aria-hidden="true"
+                                >
+                                  <span class="advanced-wizard-map__num"
+                                    >{{ wizardStepNumberLabel(index) }}</span
+                                  >
                                 </span>
                                 <span class="advanced-wizard-map__body">
                                   <span class="advanced-wizard-map__label">
                                     {{ wizardStepShortLabel(index) }}
                                   </span>
+                                  <span class="advanced-wizard-map__decision">
+                                    {{ wizardStepDecisionLabel(index) }}
+                                  </span>
                                 </span>
                                 <span class="advanced-wizard-map__state">
-                                  {{ wizardStepUiLabel(wizardStepUiKind(index)) }}
+                                  {{ wizardStepUiLabel(wizardStepUiKind(index))
+                                  }}
                                 </span>
                               </button>
                             </li>
-                          }
-                        </ol>
-                      </aside>
-
-                      <div class="advanced-wizard-content" aria-label="Contenido del paso">
-                        <section
-                          class="advanced-step-header"
-                          aria-label="Paso actual y acciones del asistente"
-                        >
-                          <div class="advanced-step-header__main">
-                            <div class="advanced-step-heading advanced-step-context">
-                              <p class="advanced-step-kicker">
-                                Paso {{ activeWizardStep() + 1 }} de {{ totalSteps }} ·
-                                {{ wizardStepFullLabel(activeWizardStep()) }}
-                              </p>
-                              <p class="advanced-step-copy">
-                                {{ wizardStepDescription(activeWizardStep()) }}
-                              </p>
-                            </div>
-                            <div class="advanced-step-actions">
-                              <button
-                                type="button"
-                                class="form-action-button form-action-button--secondary advanced-step-nav-btn"
-                                [disabled]="isFirstTab()"
-                                (click)="goToPreviousTab()"
-                              >
-                                Anterior
-                              </button>
-                              @if (activeWizardStep() !== summaryWizardStepIndex()) {
-                                <button
-                                  type="button"
-                                  class="form-action-button form-action-button--primary advanced-step-nav-btn advanced-step-nav-btn--primary"
-                                  [disabled]="isNextDisabled()"
-                                  (click)="goToNextTab()"
-                                >
-                                  Siguiente
-                                </button>
-                              } @else {
-                                <button
-                                  type="button"
-                                  data-testid="finalizar-alta"
-                                  class="form-action-button form-action-button--primary advanced-step-nav-btn advanced-step-nav-btn--primary"
-                                  [disabled]="isSaving() || isLoadingCatalogs()"
-                                  (click)="onSubmit()"
-                                >
-                                  @if (isSaving()) {
-                                    <span class="form-button-spinner" aria-hidden="true"></span>
-                                  } @else {
-                                    <lucide-icon class="h-4 w-4" name="save"></lucide-icon>
-                                  }
-                                  {{ finalWizardActionLabel() }}
-                                </button>
-                              }
-                            </div>
-                          </div>
-                          <p class="advanced-step-hint" aria-live="polite">
-                            @if (
-                              getWizardStepValidationSummary(activeWizardStep()).blockingPending > 0 &&
-                              attemptedWizardSteps().has(activeWizardStep())
-                            ) {
-                              Hay datos obligatorios pendientes o con error en esta etapa.
-                            } @else if (activeWizardStep() === summaryWizardStepIndex()) {
-                              @if (isHonorariosMode()) {
-                                Puedes guardar el avance como borrador. La finalización de honorarios queda pendiente de habilitación.
-                              } @else if (wizardMapPendingCount() + wizardMapErrorCount() > 0) {
-                                Corrige las etapas pendientes antes de finalizar la ficha.
-                              } @else {
-                                La ficha está lista para finalizar el alta.
-                              }
-                            } @else {
-                              Completa la ficha por etapas. Puedes volver a pasos anteriores sin perder los datos ingresados.
-                            }
-                          </p>
-                        </section>
-
-                        <div class="content-head advanced-stepper-scroll" aria-label="Navegación de pasos">
-                          <ol class="flow-tabs" aria-label="Pasos del alta">
-                            @for (step of advancedWizardLabels; track step; let index = $index) {
-                              <li>
-                                <button
-                                  type="button"
-                                  class="flow-tab"
-                                  [class.is-active]="isWizardStepActive(index)"
-                                  [class.flow-tab--complete]="wizardStepUiKind(index) === 'completo'"
-                                  [class.flow-tab--pending]="wizardStepUiKind(index) === 'pendiente'"
-                                  [class.flow-tab--invalid]="wizardStepUiKind(index) === 'errores'"
-                                  [class.flow-tab--optional]="wizardStepUiKind(index) === 'opcional'"
-                                  [class.flow-tab--na]="wizardStepUiKind(index) === 'no-aplica'"
-                                  [attr.aria-current]="isWizardStepActive(index) ? 'step' : null"
-                                  (click)="selectWizardStep(index)"
-                                >
-                                  <span class="flow-tab-num">{{ index + 1 }}</span>
-                                  <div class="flow-tab-body">
-                                    <p class="flow-tab-title">{{ wizardStepShortLabel(index) }}</p>
-                                    <small class="flow-tab-state">
-                                      {{ wizardStepUiLabel(wizardStepUiKind(index)) }}
-                                    </small>
-                                  </div>
-                                </button>
-                              </li>
                             }
                           </ol>
-                        </div>
-                        <div class="advanced-wizard-step">
-                          <div class="content-body">
-                @if (isLoadingCatalogs()) {
-                  <div class="form-loading-overlay" role="status" aria-live="polite">
-                    <div class="form-loading-indicator" aria-hidden="true"></div>
-                    <span>Preparando campos</span>
-                  </div>
-                }
-
-                @if (activeWizardStep() === 0) {
-                  <div class="step-panel">
-                    <app-empleado-datos-personales
-                      [formGroup]="form.controls.datosPersonales"
-                      [contactoFormGroup]="form.controls.contacto"
-                      [sexos]="catalogos().sexos"
-                      [estadosCivil]="catalogos().estadosCivil"
-                      [paises]="catalogos().paises"
-                      [visibleBlocks]="['identificacion', 'nombre', 'base', 'contacto']"
-                      [advancedGridLayout]="true"
-                    ></app-empleado-datos-personales>
-                  </div>
-                } @else if (activeWizardStep() === 1) {
-                  <div class="step-panel step-panel--domicilio">
-                    <app-empleado-contacto
-                      [formGroup]="form.controls.contacto"
-                      [comunas]="catalogos().comunas"
-                      [visibleBlocks]="['ubicacion']"
-                      [domicilioAvanzado]="true"
-                      [advancedGridLayout]="true"
-                    ></app-empleado-contacto>
-                  </div>
-                } @else if (activeWizardStep() === 2) {
-                  <div class="step-panel step-panel--contrato">
-                    <app-empleado-contrato
-                      [formGroup]="form.controls.contrato"
-                      [centrosCosto]="catalogos().centrosCosto"
-                      [sucursales]="catalogos().sucursales"
-                      [departamentos]="catalogos().departamentos"
-                      [tiposTrabajador]="catalogos().tiposTrabajador"
-                      [tiposJornada]="catalogos().tiposJornada"
-                      [tiposContrato]="catalogos().tiposContrato"
-                      [tiposGratificacion]="catalogos().tiposGratificacion"
-                      [monedas]="catalogos().monedas"
-                      [tramosCarga]="catalogos().tramosCarga"
-                      [visibleBlocks]="['relacion', 'contratoBase', 'centroCosto']"
-                      [advancedGridLayout]="true"
-                    ></app-empleado-contrato>
-                  </div>
-                } @else if (activeWizardStep() === 3) {
-                  <div class="step-panel step-panel--jornada">
-                    <app-empleado-contrato
-                      [formGroup]="form.controls.contrato"
-                      [centrosCosto]="catalogos().centrosCosto"
-                      [sucursales]="catalogos().sucursales"
-                      [departamentos]="catalogos().departamentos"
-                      [tiposTrabajador]="catalogos().tiposTrabajador"
-                      [tiposJornada]="catalogos().tiposJornada"
-                      [tiposContrato]="catalogos().tiposContrato"
-                      [tiposGratificacion]="catalogos().tiposGratificacion"
-                      [monedas]="catalogos().monedas"
-                      [tramosCarga]="catalogos().tramosCarga"
-                      [visibleBlocks]="['remuneracion']"
-                      [advancedGridLayout]="true"
-                    ></app-empleado-contrato>
-                  </div>
-                } @else if (activeWizardStep() === 4) {
-                  <div class="step-panel step-panel--asignaciones">
-                    @if (isHonorariosMode()) {
-                      <div class="wizard-na-panel wizard-na-panel--honorarios" role="status">
-                        <h3 class="wizard-na-title">No aplica para honorarios</h3>
-                        <p class="wizard-na-text">
-                          Cargas familiares, zona extrema y semana corrida corresponden a remuneraciones dependientes.
-                          Este registro queda fuera de esos cálculos.
-                        </p>
-                      </div>
-                    } @else {
-                      <app-empleado-contrato
-                        [formGroup]="form.controls.contrato"
-                        [centrosCosto]="catalogos().centrosCosto"
-                        [sucursales]="catalogos().sucursales"
-                        [departamentos]="catalogos().departamentos"
-                        [tiposTrabajador]="catalogos().tiposTrabajador"
-                        [tiposJornada]="catalogos().tiposJornada"
-                        [tiposContrato]="catalogos().tiposContrato"
-                        [tiposGratificacion]="catalogos().tiposGratificacion"
-                        [monedas]="catalogos().monedas"
-                        [tramosCarga]="catalogos().tramosCarga"
-                        [visibleBlocks]="['cargas', 'zonaExtrema', 'semanaCorrida']"
-                        [advancedGridLayout]="true"
-                      ></app-empleado-contrato>
-                    }
-                  </div>
-                } @else if (activeWizardStep() === 5) {
-                  <div class="step-panel step-panel--prevision">
-                    @if (isHonorariosMode()) {
-                      <div class="wizard-na-panel wizard-na-panel--honorarios" role="status">
-                        <h3 class="wizard-na-title">No aplica en nómina dependiente</h3>
-                        <p class="wizard-na-text">
-                          Previsión y salud de trabajadores independientes no se capturan como descuentos de trabajador
-                          dependiente en esta alta.
-                        </p>
-                      </div>
-                    } @else {
-                      <app-empleado-prevision-salud
-                        [formGroup]="form.controls.previsionSalud"
-                        [tiposRegimenPrevisional]="catalogos().tiposRegimenPrevisional"
-                        [regimenesPrevisionales]="catalogos().regimenesPrevisionales"
-                        [entidadesPrevisionalesIps]="catalogos().entidadesPrevisionalesIps"
-                        [exCajasPrevisionales]="catalogos().exCajasPrevisionales"
-                        [regimenesExCaja]="catalogos().regimenesExCaja"
-                        [afps]="catalogos().afps"
-                        [entidadesSalud]="catalogos().entidadesSalud"
-                        [monedas]="catalogos().monedas"
-                        [institucionesApv]="catalogos().institucionesApv"
-                        [formasPagoApv]="catalogos().formasPagoApv"
-                        [visibleBlocks]="['regimen', 'afp', 'ips', 'salud']"
-                        [advancedGridLayout]="true"
-                      ></app-empleado-prevision-salud>
-                    }
-                  </div>
-                } @else if (activeWizardStep() === 6) {
-                  <div class="step-panel">
-                    @if (isHonorariosMode()) {
-                      <div class="wizard-na-panel wizard-na-panel--honorarios" role="status">
-                        <h3 class="wizard-na-title">No aplica para honorarios</h3>
-                        <p class="wizard-na-text">
-                          APVI no forma parte de la alta de prestador a honorarios en este flujo.
-                        </p>
-                      </div>
-                    } @else if (form.controls.previsionSalud.controls.tipoRegimenPrevisional.value !== 'AFP') {
-                      <div class="wizard-na-panel" role="status">
-                        <h3 class="wizard-na-title">No aplica</h3>
-                        <p class="wizard-na-text">
-                          APVI solo corresponde cuando el régimen previsional es AFP. Puedes continuar con el
-                          alta.
-                        </p>
-                      </div>
-                    } @else if (!form.controls.previsionSalud.controls.tieneApv.value) {
-                      <div class="wizard-optional-panel" role="status">
-                        <h3 class="wizard-optional-title">Opcional</h3>
-                        <p class="wizard-optional-text">
-                          El trabajador no tiene APVI activo. Si no aplica, continúa al siguiente paso.
-                        </p>
-                      </div>
-                    } @else {
-                      <app-empleado-prevision-salud
-                        [formGroup]="form.controls.previsionSalud"
-                        [tiposRegimenPrevisional]="catalogos().tiposRegimenPrevisional"
-                        [regimenesPrevisionales]="catalogos().regimenesPrevisionales"
-                        [entidadesPrevisionalesIps]="catalogos().entidadesPrevisionalesIps"
-                        [exCajasPrevisionales]="catalogos().exCajasPrevisionales"
-                        [regimenesExCaja]="catalogos().regimenesExCaja"
-                        [afps]="catalogos().afps"
-                        [entidadesSalud]="catalogos().entidadesSalud"
-                        [monedas]="catalogos().monedas"
-                        [institucionesApv]="catalogos().institucionesApv"
-                        [formasPagoApv]="catalogos().formasPagoApv"
-                        [visibleBlocks]="['apvi']"
-                        [advancedGridLayout]="true"
-                      ></app-empleado-prevision-salud>
-                    }
-                  </div>
-                } @else if (activeWizardStep() === 7) {
-                  <div class="step-panel step-panel--final">
-                    @if (isHonorariosMode()) {
-                      <div class="honorarios-payment-note" role="note">
-                        <h3>Datos para pago del prestador</h3>
-                        <p>
-                          Estos datos son administrativos y recomendados si el pago se realizará por transferencia.
-                          No se tratan como cuenta de remuneraciones dependientes.
-                        </p>
-                      </div>
-                    }
-                    <app-empleado-bancario
-                      [formGroup]="form.controls.bancario"
-                      [bancos]="catalogos().bancos"
-                      [tiposCuentaBancaria]="catalogos().tiposCuentaBancaria"
-                      [advancedGridLayout]="true"
-                    ></app-empleado-bancario>
-                  </div>
-                } @else if (activeWizardStep() === perfilLaboralWizardStepIndex()) {
-                  <div class="step-panel step-panel--perfil-laboral">
-                    @if (isHonorariosMode()) {
-                      <div class="wizard-na-panel wizard-na-panel--honorarios" role="status">
-                        <h3 class="wizard-na-title">No aplica para honorarios</h3>
-                        <p class="wizard-na-text">
-                          Las condiciones especiales de trabajadores dependientes no se declaran para boleta de honorarios en esta fase.
-                        </p>
-                      </div>
-                    } @else {
-                      <app-empleado-perfil-laboral
-                        [formGroup]="form.controls.perfilLaboral"
-                        [fechaNacimiento]="form.controls.datosPersonales.controls.fechaNacimiento.value"
-                        [fechaIngreso]="form.controls.contrato.controls.fechaIngreso.value"
-                        [relacionLaboral]="form.controls.contrato.controls.relacionLaboral.value"
-                        [tipoTrabajadorLabel]="selectedTipoTrabajadorLabel()"
-                        [autoDetectedConditions]="perfilLaboralAutoDetections()"
-                      ></app-empleado-perfil-laboral>
-                    }
-                  </div>
-                } @else {
-                  <div class="step-panel step-panel--resumen">
-                    <app-card className="resumen-card">
-                      <app-card-content className="resumen-card-inner">
-                        <h3 class="resumen-title">Resumen final</h3>
-                        <p class="resumen-lead">
-                          Revisa los datos antes de continuar. La acción final depende de la relación laboral seleccionada.
-                        </p>
-                        @if (isHonorariosMode()) {
-                          <div class="honorarios-summary-panel" role="status">
-                            <h4>Ficha de prestador a honorarios</h4>
-                            <p>
-                              Este registro no ingresa al cálculo de nómina dependiente ni debe finalizarse como trabajador activo en esta fase.
-                            </p>
-                            <ul>
-                              <li>No aplica jornada laboral, previsión dependiente, APVI ni asignaciones laborales.</li>
-                              <li>Puedes guardar el avance como borrador hasta habilitar la persistencia completa de honorarios.</li>
-                            </ul>
-                          </div>
-                        }
-                        <dl class="resumen-dl">
-                          <div class="resumen-dl-row">
-                            <dt>Nombre</dt>
-                            <dd>{{ fullNameVisible() }}</dd>
-                          </div>
-                          <div class="resumen-dl-row">
-                            <dt>RUT o pasaporte</dt>
-                            <dd>{{ identificacionResumen() }}</dd>
-                          </div>
-                          <div class="resumen-dl-row">
-                            <dt>{{ isHonorariosMode() ? 'Servicio o función' : 'Cargo' }}</dt>
-                            <dd>{{ cargoVisible() }}</dd>
-                          </div>
-                          <div class="resumen-dl-row">
-                            <dt>Sucursal</dt>
-                            <dd>{{ sucursalVisible() }}</dd>
-                          </div>
-                          @if (!isHonorariosMode()) {
-                            <div class="resumen-dl-row">
-                              <dt>Revisión administrativa</dt>
-                              <dd>{{ perfilLaboralResumenLabel() }}</dd>
-                            </div>
-                            <div class="resumen-dl-row">
-                              <dt>Condiciones especiales</dt>
-                              <dd>{{ condicionesPerfilResumenLabel() }}</dd>
-                            </div>
-                          }
-                        </dl>
-                        <section class="contract-diagnosis-panel" aria-label="Diagnóstico contractual del alta">
-                          <div class="contract-diagnosis-panel__head">
-                            <div>
-                              <span class="contract-diagnosis-panel__eyebrow">Revisión del alta</span>
-                              <h4>Diagnóstico contractual</h4>
-                              <p>{{ diagnosticoContractualDescripcion() }}</p>
-                            </div>
-                            <span>{{ diagnosticoContractualBadge() }}</span>
-                          </div>
-                          <div class="contract-diagnosis-case" role="status">
-                            <strong>Caso detectado</strong>
-                            <span>{{ diagnosticoContractualCasoLabel() }}</span>
-                          </div>
-                          <div class="contract-diagnosis-grid">
-                            @for (row of diagnosticoContractualRows(); track row.label) {
-                              <article
-                                class="contract-diagnosis-card"
-                                [class.is-derived]="row.tone === 'derived'"
-                                [class.is-na]="row.tone === 'not_applicable'"
-                                [class.is-review]="row.tone === 'review' || row.tone === 'warning' || row.tone === 'blocked'"
-                              >
-                                <span>{{ row.estado }}</span>
-                                <strong>{{ row.label }}</strong>
-                                <p>{{ row.motivo }}</p>
-                              </article>
-                            }
-                          </div>
                         </section>
-                        @if (!isHonorariosMode()) {
-                          <section class="coherence-summary-panel" aria-label="Coherencia administrativa del alta">
-                            <div class="coherence-summary-panel__head">
-                              <h4>Coherencia administrativa</h4>
-                              <span>
-                                {{
-                                  coherenciaResumenItems().length === 0
-                                    ? 'Sin revisiones'
-                                    : coherenciaResumenItems().length + ' punto(s) a revisar'
-                                }}
-                              </span>
-                            </div>
-                            <div class="coherence-summary-grid">
-                              @for (row of coherenciaStatusRows(); track row.label) {
-                                <article class="coherence-summary-card" [class.is-warning]="row.tone === 'warning'" [class.is-review]="row.tone === 'review'">
-                                  <strong>{{ row.label }}</strong>
-                                  <p>{{ row.detail }}</p>
-                                </article>
-                              }
-                            </div>
-                            @if (coherenciaResumenItems().length > 0) {
-                              <ul class="coherence-summary-list">
-                                @for (item of coherenciaResumenItems(); track item) {
-                                  <li>{{ item }}</li>
-                                }
-                              </ul>
-                            }
-                          </section>
                         }
-
-                        <h4 class="resumen-checklist-title">Estado por etapa</h4>
-                        <ul class="resumen-checklist">
-                          @for (row of advancedReviewRows(); track row.stepIndex) {
-                            <li
-                              class="resumen-checklist-item"
-                              [ngClass]="checklistStatusClass(row.kind)"
-                            >
-                              <div class="resumen-checklist-main">
-                                <span class="resumen-checklist-num" aria-hidden="true">
-                                  {{ row.stepIndex + 1 }}
-                                </span>
-                                <span class="resumen-checklist-text">
-                                  <span class="resumen-checklist-step">{{ row.label }}</span>
-                                  <!-- Detalle removido: evita duplicar copy (se resuelve en el estado del paso). -->
-                                </span>
-                              </div>
-                              <div class="resumen-checklist-actions">
-                                <span class="resumen-checklist-state">{{ wizardStepUiLabel(row.kind) }}</span>
-                                @if (
-                                  row.stepIndex < summaryWizardStepIndex() &&
-                                  row.kind !== 'completo' &&
-                                  row.kind !== 'no-aplica'
-                                ) {
-                                  <button
-                                    type="button"
-                                    class="resumen-review-button"
-                                    (click)="selectWizardStep(row.stepIndex)"
-                                  >
-                                    Revisar
-                                  </button>
-                                }
-                              </div>
-                            </li>
-                          }
-                        </ul>
-                        @if (activeWizardStep() === summaryWizardStepIndex() && attemptedSave() && resumenPendientesNegocio().length > 0) {
-                          <div class="resumen-pendientes-negocio" role="alert">
-                            <p class="resumen-pendientes-title">Pendientes para finalizar</p>
-                            <ul class="resumen-pendientes-list">
-                              @for (msg of resumenPendientesNegocio(); track msg) {
-                                <li>{{ msg }}</li>
-                              }
-                            </ul>
-                          </div>
-                        }
-                      </app-card-content>
-                    </app-card>
-                  </div>
-                }
-              </div>
-                          </div>
-                        </div>
                       </div>
+                    </aside>
 
-                    </div>
-                </section>
-              } @else {
-                <div class="basic-create-page" aria-label="Creación básica de empleado">
-                  <div class="basic-create-shell">
-                    <div class="basic-create-inner">
-                      <header class="summary-identity summary-identity--basic">
-                        <div class="summary-person summary-person--basic">
-                          <div class="summary-title-row">
-                            <h2>Creación básica</h2>
-                            <span class="summary-mode-badge" aria-label="Modo de alta">Básica</span>
+                    <div
+                      class="advanced-wizard-content"
+                      aria-label="Contenido del paso"
+                    >
+                      <section
+                        class="advanced-step-header"
+                        aria-label="Paso actual y acciones del asistente"
+                      >
+                        <div class="advanced-step-header__main">
+                          <div
+                            class="advanced-step-heading advanced-step-context"
+                          >
+                            <p class="advanced-step-kicker">
+                              {{ wizardStepStageLabel(activeWizardStep()) }} ·
+                              Registro {{
+                              wizardStepNumberLabel(activeWizardStep()) }} de {{
+                              totalSteps }}
+                            </p>
+                            <h3 class="advanced-step-title">
+                              {{ wizardStepFullLabel(activeWizardStep()) }}
+                            </h3>
+                            <p class="advanced-step-copy">
+                              {{ wizardStepDescription(activeWizardStep()) }}
+                            </p>
                           </div>
-                          <p class="summary-subtitle">
-                            Registra la información mínima para abrir una ficha de empleado.
-                          </p>
+                          <div class="advanced-step-actions">
+                            <button
+                              type="button"
+                              class="form-action-button form-action-button--secondary advanced-step-nav-btn"
+                              [disabled]="isFirstTab()"
+                              (click)="goToPreviousTab()"
+                            >
+                              Anterior
+                            </button>
+                            @if (activeWizardStep() !==
+                            summaryWizardStepIndex()) {
+                            <button
+                              type="button"
+                              class="form-action-button form-action-button--primary advanced-step-nav-btn advanced-step-nav-btn--primary"
+                              [disabled]="isNextDisabled()"
+                              (click)="goToNextTab()"
+                            >
+                              Siguiente
+                            </button>
+                            } @else {
+                            <button
+                              type="button"
+                              data-testid="finalizar-alta"
+                              class="form-action-button form-action-button--primary advanced-step-nav-btn advanced-step-nav-btn--primary"
+                              [disabled]="isSaving() || isLoadingCatalogs()"
+                              (click)="onSubmit()"
+                            >
+                              @if (isSaving()) {
+                              <span
+                                class="form-button-spinner"
+                                aria-hidden="true"
+                              ></span>
+                              } @else {
+                              <lucide-icon
+                                class="h-4 w-4"
+                                name="save"
+                              ></lucide-icon>
+                              } {{ finalWizardActionLabel() }}
+                            </button>
+                            }
+                          </div>
                         </div>
+                        <p class="advanced-step-hint" aria-live="polite">
+                          @if (
+                          getWizardStepValidationSummary(activeWizardStep()).blockingPending
+                          > 0 && attemptedWizardSteps().has(activeWizardStep())
+                          ) { Hay datos obligatorios pendientes en este registro
+                          de la bitácora. } @else if (activeWizardStep() ===
+                          summaryWizardStepIndex()) { @if (isHonorariosMode()) {
+                          Puedes guardar el avance como borrador. La
+                          finalización de honorarios queda pendiente de
+                          habilitación. } @else if (wizardMapPendingCount() +
+                          wizardMapErrorCount() > 0) { Cierra los registros
+                          pendientes antes de finalizar la ficha. } @else { La
+                          bitácora está lista para cerrar el alta. } } @else {
+                          Completa los registros de la bitácora. Puedes volver a
+                          pasos anteriores sin perder datos. }
+                        </p>
+                      </section>
 
-                        <div class="summary-actions">
-                          <app-page-actions
-                            [visibleActions]="headerVisibleActions()"
-                            backLabel="Volver"
-                            [saveLabel]="saveActionLabel()"
-                            backLink="/empleados"
-                            [saveDisabled]="isSaving() || isLoadingCatalogs()"
-                            (saveClick)="onSubmit()"
-                          ></app-page-actions>
-                        </div>
-                      </header>
-
-                      <div class="content-body content-body--basic">
-                        @if (isLoadingCatalogs()) {
-                          <div class="form-loading-overlay" role="status" aria-live="polite">
-                            <div class="form-loading-indicator" aria-hidden="true"></div>
+                      <div
+                        class="content-head advanced-stepper-scroll"
+                        aria-label="Navegación de pasos"
+                      >
+                        <ol class="flow-tabs" aria-label="Pasos del alta">
+                          @for (step of advancedWizardLabels; track step; let
+                          index = $index) {
+                          <li>
+                            <button
+                              type="button"
+                              class="flow-tab"
+                              [class.is-active]="isWizardStepActive(index)"
+                              [class.flow-tab--complete]="wizardStepUiKind(index) === 'completo'"
+                              [class.flow-tab--pending]="wizardStepUiKind(index) === 'pendiente'"
+                              [class.flow-tab--invalid]="wizardStepUiKind(index) === 'errores'"
+                              [class.flow-tab--optional]="wizardStepUiKind(index) === 'opcional'"
+                              [class.flow-tab--na]="wizardStepUiKind(index) === 'no-aplica'"
+                              [attr.aria-current]="isWizardStepActive(index) ? 'step' : null"
+                              (click)="selectWizardStep(index)"
+                            >
+                              <span class="flow-tab-num"
+                                >{{ wizardStepNumberLabel(index) }}</span
+                              >
+                              <div class="flow-tab-body">
+                                <p class="flow-tab-title">
+                                  {{ wizardStepShortLabel(index) }}
+                                </p>
+                                <small class="flow-tab-state">
+                                  {{ wizardStepUiLabel(wizardStepUiKind(index))
+                                  }}
+                                </small>
+                              </div>
+                            </button>
+                          </li>
+                          }
+                        </ol>
+                      </div>
+                      <div class="advanced-wizard-step">
+                        <div class="content-body">
+                          @if (isLoadingCatalogs()) {
+                          <div
+                            class="form-loading-overlay"
+                            role="status"
+                            aria-live="polite"
+                          >
+                            <div
+                              class="form-loading-indicator"
+                              aria-hidden="true"
+                            ></div>
                             <span>Preparando campos</span>
                           </div>
-                        }
-
-                        <div class="basic-create-stack">
-                          <section class="basic-create-summary-card" aria-label="Resumen del alta básica">
-                            <div class="basic-create-summary-card__head">
-                              <h3 class="basic-create-summary-card__title">Alta rápida de empleado</h3>
-                              <span class="basic-create-status-chip" role="status">Ficha en proceso</span>
+                          } @if (activeWizardStep() === 0) {
+                          <div class="step-panel">
+                            <app-empleado-datos-personales
+                              [formGroup]="form.controls.datosPersonales"
+                              [contactoFormGroup]="form.controls.contacto"
+                              [sexos]="catalogos().sexos"
+                              [estadosCivil]="catalogos().estadosCivil"
+                              [paises]="catalogos().paises"
+                              [visibleBlocks]="['identificacion', 'nombre', 'base', 'contacto']"
+                              [advancedGridLayout]="true"
+                            ></app-empleado-datos-personales>
+                          </div>
+                          } @else if (activeWizardStep() === 1) {
+                          <div class="step-panel step-panel--domicilio">
+                            <app-empleado-contacto
+                              [formGroup]="form.controls.contacto"
+                              [comunas]="catalogos().comunas"
+                              [visibleBlocks]="['ubicacion']"
+                              [domicilioAvanzado]="true"
+                              [advancedGridLayout]="true"
+                            ></app-empleado-contacto>
+                          </div>
+                          } @else if (activeWizardStep() === 2) {
+                          <div class="step-panel step-panel--contrato">
+                            <app-empleado-contrato
+                              [formGroup]="form.controls.contrato"
+                              [centrosCosto]="catalogos().centrosCosto"
+                              [sucursales]="catalogos().sucursales"
+                              [departamentos]="catalogos().departamentos"
+                              [tiposTrabajador]="catalogos().tiposTrabajador"
+                              [tiposJornada]="catalogos().tiposJornada"
+                              [tiposContrato]="catalogos().tiposContrato"
+                              [tiposGratificacion]="catalogos().tiposGratificacion"
+                              [monedas]="catalogos().monedas"
+                              [tramosCarga]="catalogos().tramosCarga"
+                              [visibleBlocks]="['relacion', 'contratoBase', 'centroCosto']"
+                              [advancedGridLayout]="true"
+                            ></app-empleado-contrato>
+                          </div>
+                          } @else if (activeWizardStep() === 3) {
+                          <div class="step-panel step-panel--jornada">
+                            <app-empleado-contrato
+                              [formGroup]="form.controls.contrato"
+                              [centrosCosto]="catalogos().centrosCosto"
+                              [sucursales]="catalogos().sucursales"
+                              [departamentos]="catalogos().departamentos"
+                              [tiposTrabajador]="catalogos().tiposTrabajador"
+                              [tiposJornada]="catalogos().tiposJornada"
+                              [tiposContrato]="catalogos().tiposContrato"
+                              [tiposGratificacion]="catalogos().tiposGratificacion"
+                              [monedas]="catalogos().monedas"
+                              [tramosCarga]="catalogos().tramosCarga"
+                              [visibleBlocks]="['remuneracion']"
+                              [advancedGridLayout]="true"
+                            ></app-empleado-contrato>
+                          </div>
+                          } @else if (activeWizardStep() === 4) {
+                          <div class="step-panel step-panel--asignaciones">
+                            @if (isHonorariosMode()) {
+                            <div
+                              class="wizard-na-panel wizard-na-panel--honorarios"
+                              role="status"
+                            >
+                              <h3 class="wizard-na-title">
+                                Registro no requerido para honorarios
+                              </h3>
+                              <p class="wizard-na-text">
+                                Cargas familiares, zona extrema y semana corrida
+                                corresponden a remuneraciones dependientes. Este
+                                registro queda fuera de esos cálculos.
+                              </p>
                             </div>
-                            <p class="basic-create-summary-card__lead">
-                              Solo se guardan los datos mínimos para abrir la ficha.
-                            </p>
-                            <div class="basic-create-summary-card__pending">
-                              <span class="basic-create-summary-card__pending-label"
-                                >Pendiente desde la ficha:</span
+                            } @else {
+                            <app-empleado-contrato
+                              [formGroup]="form.controls.contrato"
+                              [centrosCosto]="catalogos().centrosCosto"
+                              [sucursales]="catalogos().sucursales"
+                              [departamentos]="catalogos().departamentos"
+                              [tiposTrabajador]="catalogos().tiposTrabajador"
+                              [tiposJornada]="catalogos().tiposJornada"
+                              [tiposContrato]="catalogos().tiposContrato"
+                              [tiposGratificacion]="catalogos().tiposGratificacion"
+                              [monedas]="catalogos().monedas"
+                              [tramosCarga]="catalogos().tramosCarga"
+                              [visibleBlocks]="['cargas', 'zonaExtrema', 'semanaCorrida']"
+                              [advancedGridLayout]="true"
+                            ></app-empleado-contrato>
+                            }
+                          </div>
+                          } @else if (activeWizardStep() === 5) {
+                          <div class="step-panel step-panel--prevision">
+                            @if (isHonorariosMode()) {
+                            <div
+                              class="wizard-na-panel wizard-na-panel--honorarios"
+                              role="status"
+                            >
+                              <h3 class="wizard-na-title">
+                                Registro fuera de nómina dependiente
+                              </h3>
+                              <p class="wizard-na-text">
+                                Previsión y salud de trabajadores independientes
+                                no se capturan como descuentos de trabajador
+                                dependiente en esta alta.
+                              </p>
+                            </div>
+                            } @else {
+                            <app-empleado-prevision-salud
+                              [formGroup]="form.controls.previsionSalud"
+                              [tiposRegimenPrevisional]="catalogos().tiposRegimenPrevisional"
+                              [regimenesPrevisionales]="catalogos().regimenesPrevisionales"
+                              [entidadesPrevisionalesIps]="catalogos().entidadesPrevisionalesIps"
+                              [exCajasPrevisionales]="catalogos().exCajasPrevisionales"
+                              [regimenesExCaja]="catalogos().regimenesExCaja"
+                              [afps]="catalogos().afps"
+                              [entidadesSalud]="catalogos().entidadesSalud"
+                              [monedas]="catalogos().monedas"
+                              [institucionesApv]="catalogos().institucionesApv"
+                              [formasPagoApv]="catalogos().formasPagoApv"
+                              [visibleBlocks]="['regimen', 'afp', 'ips', 'salud']"
+                              [advancedGridLayout]="true"
+                            ></app-empleado-prevision-salud>
+                            }
+                          </div>
+                          } @else if (activeWizardStep() === 6) {
+                          <div class="step-panel">
+                            @if (isHonorariosMode()) {
+                            <div
+                              class="wizard-na-panel wizard-na-panel--honorarios"
+                              role="status"
+                            >
+                              <h3 class="wizard-na-title">
+                                Registro no requerido para honorarios
+                              </h3>
+                              <p class="wizard-na-text">
+                                APVI no forma parte de la alta de prestador a
+                                honorarios en este flujo.
+                              </p>
+                            </div>
+                            } @else if
+                            (form.controls.previsionSalud.controls.tipoRegimenPrevisional.value
+                            !== 'AFP') {
+                            <div
+                              class="wizard-na-panel bitacora-decision-card"
+                              role="status"
+                            >
+                              <span class="bitacora-decision-card__eyebrow"
+                                >Decisión del sistema</span
                               >
-                              <div class="basic-create-summary-card__chips" role="list">
-                                <span class="basic-create-summary-chip" role="listitem"
-                                  >Contrato y organización</span
-                                >
-                                <span class="basic-create-summary-chip" role="listitem"
-                                  >Jornada y remuneración</span
-                                >
-                                <span class="basic-create-summary-chip" role="listitem"
-                                  >Previsión y salud</span
-                                >
-                                <span class="basic-create-summary-chip" role="listitem">Banco</span>
-                              </div>
+                              <h3 class="wizard-na-title">APVI no requerido</h3>
+                              <p class="wizard-na-text">
+                                Este registro se activa solo cuando el régimen
+                                previsional corresponde a AFP. Para este caso
+                                puedes continuar con la bitácora.
+                              </p>
+                              <dl class="bitacora-decision-card__meta">
+                                <div>
+                                  <dt>Siguiente acción</dt>
+                                  <dd>
+                                    Avanzar al registro de pago o guardar como
+                                    borrador.
+                                  </dd>
+                                </div>
+                              </dl>
                             </div>
-                          </section>
+                            } @else if
+                            (!form.controls.previsionSalud.controls.tieneApv.value)
+                            {
+                            <div
+                              class="wizard-optional-panel bitacora-decision-card bitacora-decision-card--optional"
+                              role="status"
+                            >
+                              <span class="bitacora-decision-card__eyebrow"
+                                >Registro condicional</span
+                              >
+                              <h3 class="wizard-optional-title">
+                                APVI solo si aplica
+                              </h3>
+                              <p class="wizard-optional-text">
+                                El trabajador no tiene APVI activo. Si existe
+                                una declaración vigente, actívala en Previsión y
+                                salud; si no corresponde, continúa con la
+                                bitácora.
+                              </p>
+                              <dl class="bitacora-decision-card__meta">
+                                <div>
+                                  <dt>Siguiente acción</dt>
+                                  <dd>Continuar al registro de pago.</dd>
+                                </div>
+                              </dl>
+                            </div>
+                            } @else {
+                            <app-empleado-prevision-salud
+                              [formGroup]="form.controls.previsionSalud"
+                              [tiposRegimenPrevisional]="catalogos().tiposRegimenPrevisional"
+                              [regimenesPrevisionales]="catalogos().regimenesPrevisionales"
+                              [entidadesPrevisionalesIps]="catalogos().entidadesPrevisionalesIps"
+                              [exCajasPrevisionales]="catalogos().exCajasPrevisionales"
+                              [regimenesExCaja]="catalogos().regimenesExCaja"
+                              [afps]="catalogos().afps"
+                              [entidadesSalud]="catalogos().entidadesSalud"
+                              [monedas]="catalogos().monedas"
+                              [institucionesApv]="catalogos().institucionesApv"
+                              [formasPagoApv]="catalogos().formasPagoApv"
+                              [visibleBlocks]="['apvi']"
+                              [advancedGridLayout]="true"
+                            ></app-empleado-prevision-salud>
+                            }
+                          </div>
+                          } @else if (activeWizardStep() === 7) {
+                          <div class="step-panel step-panel--final">
+                            @if (isHonorariosMode()) {
+                            <div class="honorarios-payment-note" role="note">
+                              <h3>Datos para pago del prestador</h3>
+                              <p>
+                                Estos datos son administrativos y recomendados
+                                si el pago se realizará por transferencia. No se
+                                tratan como cuenta de remuneraciones
+                                dependientes.
+                              </p>
+                            </div>
+                            }
+                            <app-empleado-bancario
+                              [formGroup]="form.controls.bancario"
+                              [bancos]="catalogos().bancos"
+                              [tiposCuentaBancaria]="catalogos().tiposCuentaBancaria"
+                              [advancedGridLayout]="true"
+                            ></app-empleado-bancario>
+                          </div>
+                          } @else if (activeWizardStep() ===
+                          perfilLaboralWizardStepIndex()) {
+                          <div class="step-panel step-panel--perfil-laboral">
+                            @if (isHonorariosMode()) {
+                            <div
+                              class="wizard-na-panel wizard-na-panel--honorarios"
+                              role="status"
+                            >
+                              <h3 class="wizard-na-title">
+                                Registro no requerido para honorarios
+                              </h3>
+                              <p class="wizard-na-text">
+                                Las condiciones especiales de trabajadores
+                                dependientes no se declaran para boleta de
+                                honorarios en esta fase.
+                              </p>
+                            </div>
+                            } @else {
+                            <app-empleado-perfil-laboral
+                              [formGroup]="form.controls.perfilLaboral"
+                              [fechaNacimiento]="form.controls.datosPersonales.controls.fechaNacimiento.value"
+                              [fechaIngreso]="form.controls.contrato.controls.fechaIngreso.value"
+                              [relacionLaboral]="form.controls.contrato.controls.relacionLaboral.value"
+                              [tipoTrabajadorLabel]="selectedTipoTrabajadorLabel()"
+                              [autoDetectedConditions]="perfilLaboralAutoDetections()"
+                            ></app-empleado-perfil-laboral>
+                            }
+                          </div>
+                          } @else {
+                          <div class="step-panel step-panel--resumen">
+                            <app-card className="resumen-card">
+                              <app-card-content className="resumen-card-inner">
+                                <h3 class="resumen-title">
+                                  Acta de revisión de la ficha
+                                </h3>
+                                <p class="resumen-lead">
+                                  Cierre administrativo de la bitácora: datos
+                                  principales, decisiones registradas y
+                                  pendientes visibles.
+                                </p>
+                                @if (isHonorariosMode()) {
+                                <div
+                                  class="honorarios-summary-panel"
+                                  role="status"
+                                >
+                                  <h4>Ficha de prestador a honorarios</h4>
+                                  <p>
+                                    Este registro no ingresa al cálculo de
+                                    nómina dependiente ni debe finalizarse como
+                                    trabajador activo en esta fase.
+                                  </p>
+                                  <ul>
+                                    <li>
+                                      No requiere jornada laboral, previsión
+                                      dependiente, APVI ni asignaciones
+                                      laborales.
+                                    </li>
+                                    <li>
+                                      Puedes guardar el avance como borrador
+                                      hasta habilitar la persistencia completa
+                                      de honorarios.
+                                    </li>
+                                  </ul>
+                                </div>
+                                }
+                                <h4 class="resumen-section-title">
+                                  Datos principales
+                                </h4>
+                                <dl class="resumen-dl">
+                                  <div class="resumen-dl-row">
+                                    <dt>Nombre</dt>
+                                    <dd>{{ fullNameVisible() }}</dd>
+                                  </div>
+                                  <div class="resumen-dl-row">
+                                    <dt>RUT o pasaporte</dt>
+                                    <dd>{{ identificacionResumen() }}</dd>
+                                  </div>
+                                  <div class="resumen-dl-row">
+                                    <dt>
+                                      {{ isHonorariosMode() ? 'Servicio o
+                                      función' : 'Cargo' }}
+                                    </dt>
+                                    <dd>{{ cargoVisible() }}</dd>
+                                  </div>
+                                  <div class="resumen-dl-row">
+                                    <dt>Sucursal</dt>
+                                    <dd>{{ sucursalVisible() }}</dd>
+                                  </div>
+                                  @if (!isHonorariosMode()) {
+                                  <div class="resumen-dl-row">
+                                    <dt>Revisión administrativa</dt>
+                                    <dd>{{ perfilLaboralResumenLabel() }}</dd>
+                                  </div>
+                                  <div class="resumen-dl-row">
+                                    <dt>Condiciones especiales</dt>
+                                    <dd>
+                                      {{ condicionesPerfilResumenLabel() }}
+                                    </dd>
+                                  </div>
+                                  }
+                                </dl>
+                                <section
+                                  class="contract-diagnosis-panel"
+                                  aria-label="Diagnóstico contractual del alta"
+                                >
+                                  <div class="contract-diagnosis-panel__head">
+                                    <div>
+                                      <span
+                                        class="contract-diagnosis-panel__eyebrow"
+                                        >Decisiones registradas</span
+                                      >
+                                      <h4>Diagnóstico del expediente</h4>
+                                      <p>
+                                        {{ diagnosticoContractualDescripcion()
+                                        }}
+                                      </p>
+                                    </div>
+                                    <span
+                                      >{{ diagnosticoContractualBadge() }}</span
+                                    >
+                                  </div>
+                                  <div
+                                    class="contract-diagnosis-case"
+                                    role="status"
+                                  >
+                                    <strong>Caso detectado</strong>
+                                    <span
+                                      >{{ diagnosticoContractualCasoLabel()
+                                      }}</span
+                                    >
+                                  </div>
+                                  <div class="contract-diagnosis-grid">
+                                    @for (row of diagnosticoContractualRows();
+                                    track row.label) {
+                                    <article
+                                      class="contract-diagnosis-card"
+                                      [class.is-derived]="row.tone === 'derived'"
+                                      [class.is-na]="row.tone === 'not_applicable'"
+                                      [class.is-review]="row.tone === 'review' || row.tone === 'warning' || row.tone === 'blocked'"
+                                    >
+                                      <span>{{ row.estado }}</span>
+                                      <strong>{{ row.label }}</strong>
+                                      <p>{{ row.motivo }}</p>
+                                    </article>
+                                    }
+                                  </div>
+                                </section>
+                                @if (!isHonorariosMode()) {
+                                <section
+                                  class="coherence-summary-panel"
+                                  aria-label="Coherencia administrativa del alta"
+                                >
+                                  <div class="coherence-summary-panel__head">
+                                    <h4>Revisión guiada</h4>
+                                    <span>
+                                      {{ coherenciaResumenItems().length === 0 ?
+                                      'Sin alertas' :
+                                      coherenciaResumenItems().length + '
+                                      punto(s) a revisar' }}
+                                    </span>
+                                  </div>
+                                  <div class="coherence-summary-grid">
+                                    @for (row of coherenciaStatusRows(); track
+                                    row.label) {
+                                    <article
+                                      class="coherence-summary-card"
+                                      [class.is-warning]="row.tone === 'warning'"
+                                      [class.is-review]="row.tone === 'review'"
+                                    >
+                                      <strong>{{ row.label }}</strong>
+                                      <p>{{ row.detail }}</p>
+                                    </article>
+                                    }
+                                  </div>
+                                  @if (coherenciaResumenItems().length > 0) {
+                                  <ul class="coherence-summary-list">
+                                    @for (item of coherenciaResumenItems();
+                                    track item) {
+                                    <li>{{ item }}</li>
+                                    }
+                                  </ul>
+                                  }
+                                </section>
+                                }
 
-                          <div class="basic-create-form">
-                            <div class="step-panel step-panel--basic basic-wizard">
-                              <div class="basic-create-form-shell">
-                                <app-empleado-datos-personales
-                                  [formGroup]="form.controls.datosPersonales"
-                                  [contactoFormGroup]="form.controls.contacto"
-                                  [sexos]="catalogos().sexos"
-                                  [estadosCivil]="catalogos().estadosCivil"
-                                  [paises]="catalogos().paises"
-                                  [basicSectionLeads]="true"
-                                ></app-empleado-datos-personales>
-                              </div>
+                                <h4 class="resumen-checklist-title">
+                                  Registros de la bitácora
+                                </h4>
+                                <ul class="resumen-checklist">
+                                  @for (row of advancedReviewRows(); track
+                                  row.stepIndex) {
+                                  <li
+                                    class="resumen-checklist-item"
+                                    [ngClass]="checklistStatusClass(row.kind)"
+                                  >
+                                    <div class="resumen-checklist-main">
+                                      <span
+                                        class="resumen-checklist-num"
+                                        aria-hidden="true"
+                                      >
+                                        {{ row.stepIndex + 1 }}
+                                      </span>
+                                      <span class="resumen-checklist-text">
+                                        <span class="resumen-checklist-step"
+                                          >{{ row.label }}</span
+                                        >
+                                        <!-- Detalle removido: evita duplicar copy (se resuelve en el estado del paso). -->
+                                      </span>
+                                    </div>
+                                    <div class="resumen-checklist-actions">
+                                      <span class="resumen-checklist-state"
+                                        >{{ wizardStepUiLabel(row.kind) }}</span
+                                      >
+                                      @if ( row.stepIndex <
+                                      summaryWizardStepIndex() && row.kind !==
+                                      'completo' && row.kind !== 'no-aplica' ) {
+                                      <button
+                                        type="button"
+                                        class="resumen-review-button"
+                                        (click)="selectWizardStep(row.stepIndex)"
+                                      >
+                                        Revisar
+                                      </button>
+                                      }
+                                    </div>
+                                  </li>
+                                  }
+                                </ul>
+                                @if (activeWizardStep() ===
+                                summaryWizardStepIndex() && attemptedSave() &&
+                                resumenPendientesNegocio().length > 0) {
+                                <div
+                                  class="resumen-pendientes-negocio"
+                                  role="alert"
+                                >
+                                  <p class="resumen-pendientes-title">
+                                    Pendientes para cierre
+                                  </p>
+                                  <ul class="resumen-pendientes-list">
+                                    @for (msg of resumenPendientesNegocio();
+                                    track msg) {
+                                    <li>{{ msg }}</li>
+                                    }
+                                  </ul>
+                                </div>
+                                }
+                              </app-card-content>
+                            </app-card>
+                          </div>
+                          }
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </section>
+              } @else {
+              <div
+                class="basic-create-page"
+                aria-label="Creación básica de empleado"
+              >
+                <div class="basic-create-shell">
+                  <div class="basic-create-inner">
+                    <header class="summary-identity summary-identity--basic">
+                      <div class="summary-person summary-person--basic">
+                        <div class="summary-title-row">
+                          <h2>Creación básica</h2>
+                          <span
+                            class="summary-mode-badge"
+                            aria-label="Modo de alta"
+                            >Básica</span
+                          >
+                        </div>
+                        <p class="summary-subtitle">
+                          Registra la información mínima para abrir una ficha de
+                          empleado.
+                        </p>
+                      </div>
+
+                      <div class="summary-actions">
+                        <app-page-actions
+                          [visibleActions]="headerVisibleActions()"
+                          backLabel="Volver"
+                          [saveLabel]="saveActionLabel()"
+                          backLink="/empleados"
+                          [saveDisabled]="isSaving() || isLoadingCatalogs()"
+                          (saveClick)="onSubmit()"
+                        ></app-page-actions>
+                      </div>
+                    </header>
+
+                    <div class="content-body content-body--basic">
+                      @if (isLoadingCatalogs()) {
+                      <div
+                        class="form-loading-overlay"
+                        role="status"
+                        aria-live="polite"
+                      >
+                        <div
+                          class="form-loading-indicator"
+                          aria-hidden="true"
+                        ></div>
+                        <span>Preparando campos</span>
+                      </div>
+                      }
+
+                      <div class="basic-create-stack">
+                        <section
+                          class="basic-create-summary-card"
+                          aria-label="Resumen del alta básica"
+                        >
+                          <div class="basic-create-summary-card__head">
+                            <h3 class="basic-create-summary-card__title">
+                              Alta rápida de empleado
+                            </h3>
+                            <span class="basic-create-status-chip" role="status"
+                              >Ficha en proceso</span
+                            >
+                          </div>
+                          <p class="basic-create-summary-card__lead">
+                            Solo se guardan los datos mínimos para abrir la
+                            ficha.
+                          </p>
+                          <div class="basic-create-summary-card__pending">
+                            <span
+                              class="basic-create-summary-card__pending-label"
+                              >Pendiente desde la ficha:</span
+                            >
+                            <div
+                              class="basic-create-summary-card__chips"
+                              role="list"
+                            >
+                              <span
+                                class="basic-create-summary-chip"
+                                role="listitem"
+                                >Contrato y organización</span
+                              >
+                              <span
+                                class="basic-create-summary-chip"
+                                role="listitem"
+                                >Jornada y remuneración</span
+                              >
+                              <span
+                                class="basic-create-summary-chip"
+                                role="listitem"
+                                >Previsión y salud</span
+                              >
+                              <span
+                                class="basic-create-summary-chip"
+                                role="listitem"
+                                >Banco</span
+                              >
+                            </div>
+                          </div>
+                        </section>
+
+                        <div class="basic-create-form">
+                          <div
+                            class="step-panel step-panel--basic basic-wizard"
+                          >
+                            <div class="basic-create-form-shell">
+                              <app-empleado-datos-personales
+                                [formGroup]="form.controls.datosPersonales"
+                                [contactoFormGroup]="form.controls.contacto"
+                                [sexos]="catalogos().sexos"
+                                [estadosCivil]="catalogos().estadosCivil"
+                                [paises]="catalogos().paises"
+                                [basicSectionLeads]="true"
+                              ></app-empleado-datos-personales>
                             </div>
                           </div>
                         </div>
@@ -829,6 +1124,7 @@
                     </div>
                   </div>
                 </div>
+              </div>
               }
             </section>
           </div>

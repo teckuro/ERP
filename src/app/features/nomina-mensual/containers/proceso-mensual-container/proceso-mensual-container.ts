@@ -7,6 +7,7 @@ import { PeriodoActivoService } from '../../../../core/services/periodo-activo.s
 import { BadgeComponent } from '../../../../shared/components/ui/badge.component';
 import { ButtonComponent } from '../../../../shared/components/ui/button.component';
 import { CardComponent, CardContentComponent } from '../../../../shared/components/ui/card.component';
+import { MessageBoxComponent } from '../../../../shared/components/ui/message-box.component';
 import type {
   BaseNominaParametrosEstado,
   BaseNominaTrabajadorEstado,
@@ -57,6 +58,18 @@ type RevisionAprobacionEstado =
 type RevisionChecklistEstado = 'Completo' | 'Pendiente' | 'Requiere atencion' | 'No aplica';
 type EtapaOperativaActiva = 'base' | 'calculo' | 'resultado' | 'guardado' | 'aprobacion' | 'cierre' | 'liquidaciones';
 type PasoPeriodoEstado = 'Actual' | 'Completo' | 'Pendiente' | 'Bloqueada';
+type ConfirmacionProcesoMensualTipo = 'guardar_preliminar' | 'aprobar_preliminar' | 'cerrar_nomina';
+
+interface ConfirmacionProcesoMensualView {
+  tipo: ConfirmacionProcesoMensualTipo;
+  titulo: string;
+  mensaje: string;
+  detalle: string;
+  puntos: string[];
+  primaryLabel: string;
+  secondaryLabel: string;
+  advertenciasAprobacion?: string[];
+}
 
 interface ValidacionOperativaItemView {
   codigo: string;
@@ -266,6 +279,7 @@ interface PasoPeriodoView {
     CardContentComponent,
     BadgeComponent,
     ButtonComponent,
+    MessageBoxComponent,
   ],
   templateUrl: './proceso-mensual-container.html',
   styleUrl: './proceso-mensual-container.css',
@@ -296,6 +310,7 @@ export class ProcesoMensualContainer {
   readonly aprobandoResultado = signal(false);
   readonly cerrandoNomina = signal(false);
   readonly snapshotCompleto = signal<NominaSnapshotCompletoView | null>(null);
+  readonly confirmacionProceso = signal<ConfirmacionProcesoMensualView | null>(null);
 
   constructor() {
     effect(() => {
@@ -1037,7 +1052,21 @@ export class ProcesoMensualContainer {
   }
 
   guardarSnapshotPreliminar(): void {
-    if (!this.confirmarGuardarPreliminar()) return;
+    this.confirmacionProceso.set({
+      tipo: 'guardar_preliminar',
+      titulo: 'Guardar resultado preliminar',
+      mensaje: 'Se guardara una version revisable del calculo preliminar para este periodo.',
+      detalle: 'No emite liquidaciones, no cierra el periodo y no genera archivos legales.',
+      puntos: [
+        'Quedara disponible para revision y aprobacion operativa.',
+        'Si cambias datos del periodo, deberas calcular y guardar una nueva version.',
+      ],
+      primaryLabel: 'Guardar resultado',
+      secondaryLabel: 'Cancelar',
+    });
+  }
+
+  private ejecutarGuardarSnapshotPreliminar(): void {
     const p = this.periodoSeleccionado();
     this.guardandoSnapshot.set(true);
     this.errorEjecucion.set(null);
@@ -1112,6 +1141,7 @@ export class ProcesoMensualContainer {
     this.exitoGuardadoResultado.set(null);
     this.identificadorResultadoGuardadoActual.set(null);
     this.aprobacionOperativa.set(null);
+    this.confirmacionProceso.set(null);
   }
 
   recalcularYReemplazarSnapshot(): void {
@@ -1212,8 +1242,29 @@ export class ProcesoMensualContainer {
     if (advertenciasAprobacion.length === 0 && snapshot.totalAdvertencias > 0) {
       advertenciasAprobacion.push(`Resultado guardado con ${snapshot.totalAdvertencias} advertencia(s) no bloqueante(s).`);
     }
-    if (!this.confirmarAprobacionOperativa(advertenciasAprobacion.length > 0)) return;
+    this.confirmacionProceso.set({
+      tipo: 'aprobar_preliminar',
+      titulo: 'Aprobar resultado preliminar',
+      mensaje: 'Marca el resultado guardado como aprobado operativamente para revision interna.',
+      detalle: 'No emite liquidaciones, no cierra el periodo y no genera archivos legales.',
+      puntos: advertenciasAprobacion.length > 0
+        ? [
+            'Existen advertencias visibles que quedaran registradas como observaciones de revision.',
+            'RRHH puede continuar si las advertencias no bloquean el proceso.',
+          ]
+        : [
+            'El resultado guardado pasara a la etapa de cierre operativo.',
+            'La aprobacion no reemplaza el cierre del periodo.',
+          ],
+      primaryLabel: 'Aprobar resultado',
+      secondaryLabel: 'Cancelar',
+      advertenciasAprobacion,
+    });
+  }
 
+  private ejecutarAprobacionOperativa(advertenciasAprobacion: string[]): void {
+    const snapshot = this.snapshotActivo();
+    if (!snapshot?.idCalculoPeriodo) return;
     this.aprobandoResultado.set(true);
     this.errorAprobacionOperativa.set(null);
     void this.procesoMensual
@@ -1272,23 +1323,20 @@ export class ProcesoMensualContainer {
     return undefined;
   }
 
-  confirmarCierreNominaOperativa(): boolean {
-    const periodo = this.periodoSeleccionado();
-    const mensaje = [
-      `Vas a cerrar operativamente la nomina de ${periodo}.`,
-      '',
-      'Esta accion congelara el resultado aprobado y bloqueara nuevos calculos o reemplazos para el periodo mientras no exista un flujo de reapertura.',
-      '',
-      'No se emitiran liquidaciones oficiales.',
-      'No se generaran archivos Previred, LRE, banco ni PDF.',
-      '',
-      'Deseas continuar?',
-    ].join('\n');
-    try {
-      return typeof window === 'undefined' || typeof window.confirm !== 'function' ? true : window.confirm(mensaje);
-    } catch {
-      return true;
-    }
+  abrirConfirmacionCierreNominaOperativa(): void {
+    this.confirmacionProceso.set({
+      tipo: 'cerrar_nomina',
+      titulo: 'Cerrar nomina del periodo',
+      mensaje: `Vas a cerrar operativamente la nomina de ${this.periodoSeleccionado()}.`,
+      detalle: 'El resultado aprobado quedara congelado mientras no exista un flujo de reapertura.',
+      puntos: [
+        'Bloquea nuevos calculos o reemplazos para el periodo.',
+        'No emite liquidaciones oficiales.',
+        'No genera archivos Previred, LRE, banco ni PDF.',
+      ],
+      primaryLabel: 'Cerrar nomina',
+      secondaryLabel: 'Cancelar',
+    });
   }
 
   badgeVariantPasoPeriodo(estado: PasoPeriodoEstado): 'success' | 'warning' | 'error' | 'default' | 'info' {
@@ -1323,8 +1371,12 @@ export class ProcesoMensualContainer {
   cerrarNominaOperativa(): void {
     const snapshot = this.snapshotActivo();
     if (!snapshot?.idCalculoPeriodo || !this.puedeCerrarNominaOperativa()) return;
-    if (!this.confirmarCierreNominaOperativa()) return;
+    this.abrirConfirmacionCierreNominaOperativa();
+  }
 
+  private ejecutarCierreNominaOperativa(): void {
+    const snapshot = this.snapshotActivo();
+    if (!snapshot?.idCalculoPeriodo || !this.puedeCerrarNominaOperativa()) return;
     this.cerrandoNomina.set(true);
     this.errorCierreOperativo.set(null);
     void this.procesoMensual
@@ -1342,6 +1394,27 @@ export class ProcesoMensualContainer {
       .finally(() => {
         this.cerrandoNomina.set(false);
       });
+  }
+
+  confirmarAccionProceso(): void {
+    const confirmacion = this.confirmacionProceso();
+    if (!confirmacion) return;
+    this.confirmacionProceso.set(null);
+    switch (confirmacion.tipo) {
+      case 'guardar_preliminar':
+        this.ejecutarGuardarSnapshotPreliminar();
+        break;
+      case 'aprobar_preliminar':
+        this.ejecutarAprobacionOperativa(confirmacion.advertenciasAprobacion ?? []);
+        break;
+      case 'cerrar_nomina':
+        this.ejecutarCierreNominaOperativa();
+        break;
+    }
+  }
+
+  cancelarAccionProceso(): void {
+    this.confirmacionProceso.set(null);
   }
 
   etiquetaArea(area: ProcesoMensualArea, fallback?: string): string {
@@ -2045,45 +2118,6 @@ export class ProcesoMensualContainer {
     if (input.actualizadoSinGuardar) return 'Hay un resultado actualizado sin guardar.';
     if (input.bloqueos.length > 0 || input.omitidos > 0) return 'Existen bloqueos operativos pendientes.';
     return undefined;
-  }
-
-  private confirmarAprobacionOperativa(tieneAdvertencias: boolean): boolean {
-    const partes = [
-      'Aprobar resultado preliminar',
-      '',
-      'Esta accion marca el resultado preliminar guardado como aprobado operativamente para revision interna.',
-      'No emite liquidaciones, no cierra el periodo y no genera archivos legales.',
-    ];
-    if (tieneAdvertencias) {
-      partes.push(
-        '',
-        'Existen advertencias visibles. Puedes aprobar operativamente, pero quedaran registradas como observaciones de revision.',
-      );
-    }
-    partes.push('', 'Deseas aprobar el resultado preliminar?');
-    try {
-      return typeof window === 'undefined' || typeof window.confirm !== 'function'
-        ? true
-        : window.confirm(partes.join('\n'));
-    } catch {
-      return true;
-    }
-  }
-
-  private confirmarGuardarPreliminar(): boolean {
-    const mensaje = [
-      'Guardar resultado preliminar',
-      '',
-      'Se guardara una version revisable del calculo preliminar para este periodo.',
-      'Esto no emite liquidaciones, no cierra el periodo y no genera archivos legales.',
-      '',
-      'Deseas continuar?',
-    ].join('\n');
-    try {
-      return typeof window === 'undefined' || typeof window.confirm !== 'function' ? true : window.confirm(mensaje);
-    } catch {
-      return true;
-    }
   }
 
   private estadoResultadoTrabajador(estado: string): TrabajadorResultadoPreliminarView['estadoLabel'] {

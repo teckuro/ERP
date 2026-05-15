@@ -15,3 +15,10 @@ Fases 9.3A, 9.3B y 9.3C cerradas en alcance funcional: el uso esta acotado a **a
 Ruta oficial de la aplicacion: `/remuneraciones/haberes-descuentos`. Compatibilidad temporal: `/haberes-descuentos` redirige a la oficial.
 
 Detalle en [`../../temas/flujos/haberes-descuentos.md`](../../temas/flujos/haberes-descuentos.md) y en [`contrato-general.md`](./contrato-general.md) (seccion Navegacion oficial).
+## ERP-NOIA-BITACORA-OPERATIVA-00 - Lectura de modulo
+
+Haberes y descuentos queda alineado a [`NOIA / Bitacora Operativa`](../../diseno/bitacora-operativa-noia.md) como fuente de asignaciones recurrentes dentro de la futura lectura `Movimientos de remuneracion`.
+
+- Debe distinguirse de `Conceptos`: aqui se registran montos o asignaciones aplicadas a trabajadores.
+- La narrativa visible debe priorizar vigencia, periodicidad, estado y efecto en nomina.
+- Esta referencia es documental; no cambia SQL, motor, rutas, servicios ni persistencia.

@@ -26,24 +26,27 @@ import { Component, Input } from '@angular/core';
         display: grid;
         justify-items: center;
         gap: 4px;
+        min-width: 0;
+        border-bottom: 1px solid #daddd6;
+        padding-bottom: 0.65rem;
         text-align: center;
-        border-bottom: 1px solid #e5e7eb;
       }
 
       .page-title-heading {
         margin: 0;
-        color: #111827;
-        font-size: 1.375rem;
-        font-weight: 600;
-        letter-spacing: 0;
+        color: #172033;
+        font-size: 1.26rem;
+        font-weight: 650;
+        letter-spacing: -0.01em;
         line-height: 1.2;
       }
 
       .page-title-copy {
         margin: 0;
-        max-width: 48rem;
-        color: #6b7280;
-        font-size: 0.9rem;
+        max-width: 50rem;
+        color: #647084;
+        font-size: 0.84rem;
+        font-weight: 450;
         line-height: 1.45;
       }
     `,

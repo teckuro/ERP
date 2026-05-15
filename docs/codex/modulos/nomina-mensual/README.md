@@ -146,3 +146,21 @@ Rutas visibles del flujo:
 ```
 
 `/remuneraciones/movimientos-variables` queda como redirect legacy a `novedades-mensuales`.
+
+## ERP-AUDIT-REPAIR-UX-01 aplicado
+
+`Preparar nomina` reemplaza confirmaciones nativas (`window.confirm`) por `app-message-box` modal en acciones criticas:
+
+- Guardar resultado preliminar.
+- Aprobar resultado preliminar.
+- Cerrar nomina del periodo.
+
+La confirmacion muestra motivo, alcance y puntos de revision RRHH. Cancelar no ejecuta persistencia. No cambia motor, SQL/RPC/RLS, liquidaciones oficiales ni salidas externas.
+## ERP-NOIA-BITACORA-OPERATIVA-00 - Lectura de modulo
+
+Nomina mensual queda alineada a [`NOIA / Bitacora Operativa`](../../diseno/bitacora-operativa-noia.md) como `Bitacora del periodo`.
+
+- Preparar nomina debe comunicar periodo, trabajadores incluidos/excluidos, incidencias, decisiones RRHH y cierre operativo.
+- Los resultados preliminares y cierres deben sentirse como registros del periodo, no como pantallas sueltas de calculo.
+- Fase futura recomendada: `NOM-MOVIMIENTOS-UNIFICADOS-UX-01` para ordenar `Movimientos de remuneracion`.
+- Esta referencia es documental; no cambia motor, SQL, liquidaciones, servicios ni estilos globales.

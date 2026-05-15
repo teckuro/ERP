@@ -11,7 +11,7 @@ type ButtonSize = 'sm' | 'md' | 'lg';
     <button
       type="button"
       [disabled]="disabled"
-      class="inline-flex items-center justify-center gap-2 rounded-md border font-medium transition-colors duration-150"
+      class="erp-button inline-flex items-center justify-center gap-2 rounded-md border font-medium transition-colors duration-150"
       [class.bg-blue-600]="variant === 'primary'"
       [class.border-blue-600]="variant === 'primary'"
       [class.text-white]="variant === 'primary' || variant === 'danger'"
@@ -46,6 +46,26 @@ type ButtonSize = 'sm' | 'md' | 'lg';
       <ng-content />
     </button>
   `,
+  styles: [
+    `
+      .erp-button {
+        min-width: 0;
+        border-radius: 0.5rem;
+        font-weight: 600;
+        letter-spacing: 0;
+        box-shadow: none;
+      }
+
+      .erp-button:focus-visible {
+        outline: none;
+        box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.18);
+      }
+
+      .erp-button:disabled {
+        pointer-events: none;
+      }
+    `,
+  ],
 })
 export class ButtonComponent {
   @Input() variant: ButtonVariant = 'primary';

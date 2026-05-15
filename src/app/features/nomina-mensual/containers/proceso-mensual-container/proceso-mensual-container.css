@@ -23,6 +23,32 @@
   padding: 2px;
 }
 
+.pm-confirmation-detail {
+  margin-top: 10px;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  background: #f8fafc;
+  padding: 10px 12px;
+}
+
+.pm-confirmation-detail p {
+  margin: 0;
+  color: #111827;
+  font-size: 0.8125rem;
+  font-weight: 650;
+}
+
+.pm-confirmation-detail ul {
+  margin: 6px 0 0;
+  padding-left: 18px;
+  color: #4b5563;
+  font-size: 0.8125rem;
+}
+
+.pm-confirmation-detail li + li {
+  margin-top: 4px;
+}
+
 .pm-pending-panel {
   border: 1px solid #e5e7eb;
   border-radius: 8px;

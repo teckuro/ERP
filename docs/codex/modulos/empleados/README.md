@@ -168,3 +168,16 @@ La regla consume aplicabilidad, coherencia administrativa y pendientes reales de
 `Siguiente` vuelve a mostrar `app-message-box` cuando faltan datos o hay revisiones del paso. El modal usa descripciones más amplias y acciones claras para continuar o corregir ahora.
 
 Restricciones mantenidas: sin SQL/RPC/RLS, sin motor, sin nómina, sin liquidaciones, sin ficha empleado, sin creación básica funcional y sin estilos globales.
+
+## EMP-ADV-BITACORA-LABORAL-UX-01
+
+La Creación avanzada incorpora una identidad local de `Bitácora laboral`: el alta del trabajador se presenta como una ficha en construcción, con registros agrupados, estados humanos, decisiones visibles y cierre como acta de revisión. El cambio es visual/copy local y no modifica flujo, lógica, persistencia, SQL/RPC/RLS, motor ni estilos globales.
+
+Detalle: [`bitacora-laboral-ux-01.md`](./bitacora-laboral-ux-01.md).
+## ERP-NOIA-BITACORA-OPERATIVA-00 - Lectura de modulo
+
+Empleados queda alineado a la identidad global [`Bitacora Operativa / NOIA`](../../diseno/bitacora-operativa-noia.md) como `Registro laboral` y `Expediente del trabajador`.
+
+- Creacion avanzada conserva su patron local `Bitacora laboral` como caso concreto de la regla global.
+- La ficha y futuras vistas del trabajador deben comunicar estado documental, decisiones RRHH y vigencia laboral antes que decoracion visual.
+- Esta referencia es documental; no habilita cambios de SQL, persistencia, motor, nomina, liquidaciones ni estilos globales.

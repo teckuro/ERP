@@ -4,6 +4,25 @@ import { Component, HostBinding, Input } from '@angular/core';
   selector: 'app-card',
   standalone: true,
   template: ` <ng-content /> `,
+  styles: [
+    `
+      :host {
+        border-color: #daddd6;
+        box-shadow: none;
+      }
+
+      :host(.erp-card--hover) {
+        transition:
+          border-color 150ms ease,
+          background-color 150ms ease;
+      }
+
+      :host(.erp-card--hover:hover) {
+        border-color: #c7d0c4;
+        background: #fafaf7;
+      }
+    `,
+  ],
 })
 export class CardComponent {
   @Input() className = '';
@@ -11,9 +30,9 @@ export class CardComponent {
 
   @HostBinding('class')
   get hostClass(): string {
-    return `block rounded-lg border border-gray-200 bg-white ${
-      this.hover ? 'transition-colors duration-150 hover:border-gray-300' : ''
-    } ${this.className}`.trim();
+    return `erp-card block rounded-md border border-gray-200 bg-white ${this.hover ? 'erp-card--hover' : ''} ${
+      this.className
+    }`.trim();
   }
 }
 
@@ -27,7 +46,7 @@ export class CardHeaderComponent {
 
   @HostBinding('class')
   get hostClass(): string {
-    return `block border-b border-gray-200 px-4 py-3 ${this.className}`.trim();
+    return `block border-b border-gray-200 bg-gray-50 px-4 py-3 ${this.className}`.trim();
   }
 }
 
@@ -44,4 +63,3 @@ export class CardContentComponent {
     return `block p-4 ${this.className}`.trim();
   }
 }
-

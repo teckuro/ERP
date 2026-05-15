@@ -1092,16 +1092,22 @@ export type Database = {
       }
       ex_caja_previsional: {
         Row: {
+          codigo_base: string | null
+          codigo_previred_ejemplo: string | null
           id_ex_caja_previsional: number
           nombre: string
           vigente: boolean
         }
         Insert: {
+          codigo_base?: string | null
+          codigo_previred_ejemplo?: string | null
           id_ex_caja_previsional?: number
           nombre: string
           vigente?: boolean
         }
         Update: {
+          codigo_base?: string | null
+          codigo_previred_ejemplo?: string | null
           id_ex_caja_previsional?: number
           nombre?: string
           vigente?: boolean
@@ -3424,31 +3430,46 @@ export type Database = {
       reforma_previsional_parametro: {
         Row: {
           aporte_empleador_total: number
+          codigo: string | null
+          cotizacion_rentabilidad_protegida: number
           cuenta_capitalizacion_individual: number
           fapp_seguro_social: number
           fuente: string | null
           id_reforma_previsional_parametro: number
+          ley_referencia: string | null
+          observacion: string | null
           periodo: string | null
+          seguro_social_sis_cev: number
           vigencia_fin: string | null
           vigencia_inicio: string
         }
         Insert: {
           aporte_empleador_total: number
+          codigo?: string | null
+          cotizacion_rentabilidad_protegida?: number
           cuenta_capitalizacion_individual: number
           fapp_seguro_social: number
           fuente?: string | null
           id_reforma_previsional_parametro?: number
+          ley_referencia?: string | null
+          observacion?: string | null
           periodo?: string | null
+          seguro_social_sis_cev?: number
           vigencia_fin?: string | null
           vigencia_inicio: string
         }
         Update: {
           aporte_empleador_total?: number
+          codigo?: string | null
+          cotizacion_rentabilidad_protegida?: number
           cuenta_capitalizacion_individual?: number
           fapp_seguro_social?: number
           fuente?: string | null
           id_reforma_previsional_parametro?: number
+          ley_referencia?: string | null
+          observacion?: string | null
           periodo?: string | null
+          seguro_social_sis_cev?: number
           vigencia_fin?: string | null
           vigencia_inicio?: string
         }
@@ -3456,6 +3477,10 @@ export type Database = {
       }
       regimen_ex_caja: {
         Row: {
+          codigo_base: string | null
+          codigo_previred: string | null
+          codigo_subcaja: string | null
+          glosa_previred: string | null
           id_ex_caja_previsional: number
           id_regimen_ex_caja: number
           nombre: string
@@ -3463,6 +3488,10 @@ export type Database = {
           vigente: boolean
         }
         Insert: {
+          codigo_base?: string | null
+          codigo_previred?: string | null
+          codigo_subcaja?: string | null
+          glosa_previred?: string | null
           id_ex_caja_previsional: number
           id_regimen_ex_caja?: number
           nombre: string
@@ -3470,6 +3499,10 @@ export type Database = {
           vigente?: boolean
         }
         Update: {
+          codigo_base?: string | null
+          codigo_previred?: string | null
+          codigo_subcaja?: string | null
+          glosa_previred?: string | null
           id_ex_caja_previsional?: number
           id_regimen_ex_caja?: number
           nombre?: string

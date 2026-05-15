@@ -1,3 +1,15 @@
+## ERP-AUDIT-REPAIR-UX-01 - Auditoria integral + reparacion segura + mejora UX/UI controlada
+
+| Campo | Estado |
+|---|---|
+| Estado | Implementada |
+| Tipo | Reparacion UI local + tests + documentacion |
+| Alcance | Nomina mensual / Preparar nomina; confirmaciones de guardar resultado preliminar, aprobar resultado y cerrar nomina. |
+| Entrega | `app-message-box` modal reemplaza `window.confirm`; las acciones criticas no persisten antes de confirmacion; spec del contenedor actualizado. |
+| Pruebas | `tsc app`, `tsc spec` y spec Angular del contenedor OK. Validacion completa registrada en documento de auditoria. |
+| Fuera de alcance | SQL/RPC/RLS, motor, liquidaciones oficiales, LRE/Previred, estilos globales, configuracion Angular/Tailwind/PostCSS y otros modulos. |
+| Documento | [`../auditorias/erp-audit-repair-ux-01.md`](../auditorias/erp-audit-repair-ux-01.md) |
+
 ## EMP-ALTA-VALIDACIONES-ASISTIDAS-01 - Validaciones visibles guiadas
 
 | Campo | Estado |
@@ -496,3 +508,28 @@ Validaciones realizadas:
 | Alcance | `tipo_trabajador` se deriva desde relacion laboral: `CONTRATO` -> `DEPENDIENTE`, `HONORARIOS` -> `INDEPENDIENTE`; las condiciones especiales no se detectan desde ese catalogo. |
 | Fuera de alcance | SQL/RPC/RLS, motor, nomina, liquidaciones, ficha empleado, creacion basica, fuentes canonicas futuras para pensionado/invalidez/extranjero/discapacidad. |
 | Validacion | `tsc app/spec`, build development y specs de reglas. |
+
+## EMP-ADV-BITACORA-LABORAL-UX-01 - Bitácora Laboral
+
+| Campo | Estado |
+|---|---|
+| Estado | Implementada |
+| Tipo | UI/copy local + documentación |
+| Alcance | Creación avanzada de empleados: mapa lateral, header de paso, estados visibles, APVI no requerido/opcional y acta de revisión |
+| Entrega | `form-empleado.ts/html/css` + docs Codex |
+| Fuera de alcance | SQL/RPC/RLS, motor, nómina, liquidaciones, persistencia crítica, mappers, creación básica, ficha empleado, estilos globales protegidos |
+| Validaciones | `npm ci --ignore-scripts`; `tsc app`; `tsc spec`; `build development`; vitest reglas empleados 18 tests OK. `npm test -- --watch=false` quedó en timeout durante suite completa |
+
+Resumen: la alta avanzada deja de comunicarse como wizard genérico y adopta `Bitácora laboral`: registros agrupados por sentido, estados humanos y cierre como acta administrativa.
+## ERP-NOIA-BITACORA-OPERATIVA-00 - Identidad global NOIA / Bitacora Operativa
+
+| Campo | Estado |
+|---|---|
+| Estado | Documentada |
+| Tipo | Documento rector UX/producto |
+| Alcance | Identidad global del ERP como bitacora operativa del periodo; reglas visuales, narrativa administrativa y gramatica por modulo. |
+| Entrega | Nueva guia en `docs/codex/diseno/bitacora-operativa-noia.md`; referencias en README, estilos y modulos relacionados. |
+| Pruebas | No requiere build ni tests de codigo; validacion documental de existencia y enlaces. |
+| Fuera de alcance | Angular, HTML, CSS, SQL/RPC/RLS, rutas, servicios, motor de nomina, estilos globales y cambios funcionales. |
+| Siguiente fase sugerida | `NOM-MOVIMIENTOS-UNIFICADOS-UX-01` o `ERP-SHELL-BITACORA-OPERATIVA-01`, segun prioridad producto. |
+| Documento | [`../diseno/bitacora-operativa-noia.md`](../diseno/bitacora-operativa-noia.md) |

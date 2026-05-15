@@ -253,3 +253,37 @@ Fecha: 2026-05-13
 - Se elimina la autodeteccion de pensionado, invalidez, tecnico extranjero y discapacidad desde texto de `tipo_trabajador`; esas situaciones se mantienen como Condiciones especiales declaradas por RRHH.
 - La autodeteccion actual queda limitada a fuentes reales del flujo: menor de 18 por fechas y regimen previsional `NINGUNA` como exencion de pension a revisar.
 - Alcance respetado: sin SQL/RPC/RLS, sin motor, sin nomina, sin liquidaciones, sin creacion basica, sin ficha empleado y sin estilos globales.
+
+## ERP-AUDIT-REPAIR-UX-01 - Auditoria controlada UX/UI
+
+Fecha: 2026-05-15
+
+- Se acota la reparacion a Nomina mensual / Preparar nomina por hallazgo real: confirmaciones criticas aun usaban `window.confirm`.
+- Guardar resultado preliminar, aprobar resultado preliminar y cerrar nomina ahora usan `app-message-box` modal con motivo, alcance, puntos de revision RRHH y acciones claras.
+- Las acciones de servicio se ejecutan solo despues de confirmar en el modal; cancelar no persiste cambios.
+- Se actualiza el spec del contenedor para cubrir que no guarda, aprueba ni cierra antes de la confirmacion.
+- Alcance respetado: sin SQL/RPC/RLS, sin motor, sin cambios de liquidaciones, sin estilos globales ni configuracion Angular/Tailwind/PostCSS.
+
+## EMP-ADV-BITACORA-LABORAL-UX-01 - Bitácora Laboral en Creación avanzada
+
+Fecha: 2026-05-15
+
+- Creación avanzada adopta el patrón visual local `Bitácora laboral`: alta del trabajador como ficha en construcción, registros agrupados, decisiones visibles y cierre como acta.
+- El mapa lateral se agrupa en `Identidad`, `Relación laboral`, `Pago y previsión` y `Revisión`; los pasos pasan a numeración de registro `01`, `02`, etc.
+- Se ajusta el lenguaje visible de estados para RRHH: `En edición`, `Listo`, `Requiere datos`, `Revisar`, `Solo si aplica` y `No requerido`.
+- El header del paso muestra el tipo de registro (`Registro de identidad`, `Registro laboral`, `Registro de pago y previsión`, `Registro de revisión`, `Acta de revisión`) y separa título/copy con jerarquía más editorial.
+- APVI no requerido/opcional se presenta como tarjeta de decisión con contexto y siguiente acción, evitando alertas genéricas vacías.
+- `Resumen final` pasa a `Acta de revisión de la ficha`; `Estado por etapa` pasa a `Registros de la bitácora`; `Coherencia administrativa` pasa a `Revisión guiada`.
+- Se agregan variables CSS locales scoped a `.advanced-create-shell` para un tono de papel técnico administrativo, sin tocar estilos globales ni cargar fuentes nuevas.
+- Alcance respetado: sin SQL/RPC/RLS, sin motor, sin nómina, sin liquidaciones, sin persistencia crítica, sin mappers, sin creación básica, sin ficha empleado y sin estilos globales protegidos.
+- Validaciones: `npm ci --ignore-scripts` OK; `npx tsc -p tsconfig.app.json --noEmit` OK; `npx tsc -p tsconfig.spec.json --noEmit` OK; `npm run build -- --configuration development` OK con warning preexistente de `@import` en `src/styles/tailwind.css`; `npx vitest run` de reglas empleados OK, 18 tests. `npm test -- --watch=false` quedó en timeout de sandbox durante la ejecución completa.
+
+## ERP-NOIA-BITACORA-OPERATIVA-00 - Identidad global NOIA / Bitacora Operativa
+
+Fecha: 2026-05-15
+
+- Se documenta la identidad global del ERP como `Bitacora Operativa` bajo criterio NOIA: sobria, administrativa, humana, trazable y enfocada en cerrar periodos.
+- Se crea `docs/codex/diseno/bitacora-operativa-noia.md` como guia rectora para pantallas y futuras fases UX.
+- Se define gramatica visual por modulo: Empleados, Nomina mensual, Movimientos de remuneracion, Conceptos, Parametros, Liquidaciones y Reportes.
+- Se registra la decision de evolucion futura: unificar visualmente `Movimientos del mes` y `Asignaciones recurrentes` bajo `Movimientos de remuneracion`, separando conceptos del catalogo.
+- Alcance respetado: fase documental; sin Angular, HTML, CSS, SQL/RPC/RLS, rutas, servicios, motor de nomina, estilos globales ni cambios funcionales.

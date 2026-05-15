@@ -228,3 +228,26 @@ Reglas de UX:
 - Honorarios no muestra errores de contrato laboral, jornada, previsión dependiente, asignaciones ni APVI; permite borrador y mantiene finalización bloqueada por fase.
 
 El Resumen final mantiene `Estado por etapa` como lectura consolidada. Los mensajes de paso se mantienen en MsgBox para no recargar ni duplicar información en el formulario.
+
+## EMP-ADV-BITACORA-LABORAL-UX-01 - Patrón Bitácora Laboral
+
+Creación avanzada adopta el patrón `Bitácora laboral` como identidad local del flujo:
+
+- El alta se presenta como ficha en construcción con registros, decisiones y pendientes.
+- El mapa lateral se agrupa por bloques funcionales, sin cambiar orden ni cantidad de pasos.
+- Los estados visibles se traducen a lenguaje operativo RRHH.
+- Los pasos cortos y estados no requeridos deben explicar decisión y siguiente acción, no quedar como alertas vacías.
+- El resumen se presenta como `Acta de revisión de la ficha`, con datos principales, diagnóstico del expediente, revisión guiada y registros de bitácora.
+
+Restricciones mantenidas: sin SQL/RPC/RLS, sin motor, sin nómina, sin creación básica, sin ficha empleado, sin persistencia final de honorarios y sin estilos globales protegidos.
+
+Documento de fase: [`bitacora-laboral-ux-01.md`](./bitacora-laboral-ux-01.md).
+
+## ERP-NOIA-BITACORA-OPERATIVA-00 - Relacion con identidad global
+
+La Creacion avanzada es el primer caso local de la identidad global [`NOIA / Bitacora Operativa`](../../diseno/bitacora-operativa-noia.md).
+
+- `Bitacora laboral` se mantiene como nombre de experiencia local.
+- Cada paso debe sentirse como registro administrativo con estado, decision y cierre, no como wizard generico.
+- Futuras mejoras deben respetar la narrativa: ficha en construccion, revision RRHH y acta final.
+- Esta regla es documental y no cambia guardado, mappers, rutas, SQL, motor ni estilos globales.

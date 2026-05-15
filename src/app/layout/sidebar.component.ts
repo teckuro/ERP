@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
-import { LucideAngularModule } from 'lucide-angular';
+import { LucideAngularModule, ReceiptTextIcon } from 'lucide-angular';
 
 type MenuItem = {
   path: string;
@@ -21,106 +21,303 @@ type MenuSection = {
   standalone: true,
   imports: [CommonModule, RouterLink, RouterLinkActive, LucideAngularModule],
   template: `
-    <aside class="fixed left-0 top-0 flex h-screen w-64 flex-col border-r border-gray-200 bg-white">
-      <div class="flex h-16 items-center border-b border-gray-200 px-6">
-        <div class="flex items-center gap-3">
-          <div class="flex h-8 w-8 items-center justify-center rounded-md bg-blue-600">
-            <lucide-icon name="receipt" class="h-5 w-5 text-white"></lucide-icon>
-          </div>
-          <div>
-            <h1 class="text-sm font-semibold text-gray-900">Remuneraciones</h1>
-            <p class="text-xs text-gray-500">Sistema PYME</p>
-          </div>
+    <aside class="erp-sidebar" aria-label="Navegación principal">
+      <div class="erp-sidebar__brand">
+        <div class="erp-sidebar__brand-mark" aria-hidden="true">
+          <lucide-icon [img]="receiptTextIcon"></lucide-icon>
+        </div>
+        <div class="erp-sidebar__brand-copy">
+          <h1>Remuneraciones</h1>
+          <p>Bitácora operativa</p>
         </div>
       </div>
 
-      <nav class="flex-1 overflow-y-auto py-4">
-        <ul class="space-y-4 px-3">
-          <li *ngFor="let section of menuSections; trackBy: trackSection">
-            <p *ngIf="section.label" class="px-3 pb-1 text-[11px] font-semibold uppercase tracking-wide text-gray-500">
-              {{ section.label }}
-            </p>
-              <ul class="space-y-1">
-                <li *ngFor="let item of section.items; trackBy: trackItem">
-                  <a
-                    [routerLink]="item.path"
-                    routerLinkActive="is-active bg-blue-50 text-blue-700 font-semibold"
-                    [routerLinkActiveOptions]="{ exact: item.exact ?? false }"
-                    #rla="routerLinkActive"
-                    class="sidebar-link flex items-start gap-3 rounded-md px-3 py-2.5 transition-colors duration-150"
-                    [class.text-blue-700]="rla.isActive"
-                    [class.bg-blue-50]="rla.isActive"
-                    [class.font-semibold]="rla.isActive"
-                    [class.text-gray-700]="!rla.isActive"
-                    [class.hover:bg-gray-50]="!rla.isActive"
-                    [class.hover:text-gray-900]="!rla.isActive"
-                  >
-                    <lucide-icon
-                      [name]="item.icon"
-                      [class]="'mt-0.5 h-5 w-5 flex-shrink-0 ' + (rla.isActive ? 'text-blue-600' : 'text-gray-500')"
-                    ></lucide-icon>
-                    <span class="min-w-0">
-                      <span class="block text-sm leading-5">{{ item.label }}</span>
-                      <span
-                        *ngIf="item.hint"
-                        class="mt-0.5 block text-[11px] leading-4"
-                        [class.text-blue-600]="rla.isActive"
-                        [class.text-gray-500]="!rla.isActive"
-                      >
-                        {{ item.hint }}
-                      </span>
-                    </span>
-                  </a>
-                </li>
-              </ul>
+      <nav class="erp-sidebar__nav">
+        <ul class="erp-sidebar__sections">
+          <li *ngFor="let section of menuSections; trackBy: trackSection" class="erp-sidebar__section">
+            <p *ngIf="section.label" class="erp-sidebar__section-label">{{ section.label }}</p>
+            <ul class="erp-sidebar__items">
+              <li *ngFor="let item of section.items; trackBy: trackItem">
+                <a
+                  [routerLink]="item.path"
+                  routerLinkActive="is-active"
+                  [routerLinkActiveOptions]="{ exact: item.exact ?? false }"
+                  #rla="routerLinkActive"
+                  class="erp-sidebar__link"
+                  [attr.aria-current]="rla.isActive ? 'page' : null"
+                >
+                  <span class="erp-sidebar__icon" aria-hidden="true">
+                    <lucide-icon [name]="item.icon"></lucide-icon>
+                  </span>
+                  <span class="erp-sidebar__item-copy">
+                    <span class="erp-sidebar__item-label">{{ item.label }}</span>
+                    <span *ngIf="item.hint" class="erp-sidebar__item-hint">{{ item.hint }}</span>
+                  </span>
+                  <span class="erp-sidebar__active-dot" aria-hidden="true"></span>
+                </a>
+              </li>
+            </ul>
           </li>
         </ul>
       </nav>
 
-      <div class="border-t border-gray-200 p-4">
-        <div class="rounded-md border border-blue-100 bg-blue-50 p-3">
-          <p class="text-xs font-semibold text-blue-900">Necesitas ayuda?</p>
-          <p class="mt-1 text-xs text-blue-700">Contacta a soporte</p>
+      <div class="erp-sidebar__footer">
+        <div class="erp-sidebar__note">
+          <span class="erp-sidebar__note-label">Criterio NOIA</span>
+          <p>Estado, pendiente y acción antes que decoración.</p>
         </div>
       </div>
     </aside>
   `,
   styles: [
     `
-      .sidebar-link {
-        position: relative;
-        overflow: hidden;
+      .erp-sidebar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        z-index: 20;
+        display: flex;
+        width: 16rem;
+        height: 100vh;
+        flex-direction: column;
+        border-right: 1px solid #daddd6;
+        background: #ffffff;
+        color: #172033;
       }
 
-      .sidebar-link::before {
-        content: '';
+      .erp-sidebar__brand {
+        display: flex;
+        min-height: 4.25rem;
+        align-items: center;
+        gap: 0.75rem;
+        border-bottom: 1px solid #daddd6;
+        padding: 0 1rem;
+        background: #fafaf7;
+      }
+
+      .erp-sidebar__brand-mark {
+        display: grid;
+        width: 2.25rem;
+        height: 2.25rem;
+        flex: 0 0 2.25rem;
+        place-items: center;
+        border: 1px solid #bfdbfe;
+        border-radius: 0.5rem;
+        background: #eff6ff;
+        color: #1e40af;
+      }
+
+      .erp-sidebar__brand-mark lucide-icon,
+      .erp-sidebar__icon lucide-icon {
+        display: grid;
+        width: 1rem;
+        height: 1rem;
+        place-items: center;
+      }
+
+      .erp-sidebar__brand-copy {
+        min-width: 0;
+      }
+
+      .erp-sidebar__brand-copy h1,
+      .erp-sidebar__brand-copy p,
+      .erp-sidebar__note p,
+      .erp-sidebar__section-label {
+        margin: 0;
+      }
+
+      .erp-sidebar__brand-copy h1 {
+        color: #172033;
+        font-size: 0.9rem;
+        font-weight: 650;
+        line-height: 1.15;
+      }
+
+      .erp-sidebar__brand-copy p {
+        margin-top: 0.15rem;
+        color: #647084;
+        font-size: 0.72rem;
+        font-weight: 500;
+        line-height: 1.2;
+      }
+
+      .erp-sidebar__nav {
+        min-height: 0;
+        flex: 1 1 auto;
+        overflow-y: auto;
+        padding: 0.85rem 0.75rem;
+        scrollbar-color: #c7d0c4 #eef1ec;
+        scrollbar-width: thin;
+      }
+
+      .erp-sidebar__sections,
+      .erp-sidebar__items {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+      }
+
+      .erp-sidebar__sections {
+        display: grid;
+        gap: 1rem;
+      }
+
+      .erp-sidebar__section {
+        display: grid;
+        gap: 0.35rem;
+      }
+
+      .erp-sidebar__section-label {
+        padding: 0 0.55rem;
+        color: #8a94a6;
+        font-size: 0.66rem;
+        font-weight: 650;
+        letter-spacing: 0.12em;
+        line-height: 1.2;
+        text-transform: uppercase;
+      }
+
+      .erp-sidebar__items {
+        display: grid;
+        gap: 0.25rem;
+      }
+
+      .erp-sidebar__link {
+        position: relative;
+        display: flex;
+        min-height: 2.65rem;
+        align-items: flex-start;
+        gap: 0.65rem;
+        overflow: hidden;
+        border: 1px solid transparent;
+        border-radius: 0.55rem;
+        padding: 0.55rem 0.65rem;
+        color: #4b5563;
+        text-decoration: none;
+        transition:
+          background-color 150ms ease,
+          border-color 150ms ease,
+          color 150ms ease;
+      }
+
+      .erp-sidebar__link:hover {
+        border-color: #daddd6;
+        background: #fafaf7;
+        color: #172033;
+      }
+
+      .erp-sidebar__link.is-active {
+        border-color: #bfdbfe;
+        background: #eff6ff;
+        color: #1e40af;
+      }
+
+      .erp-sidebar__icon {
+        display: grid;
+        width: 1.25rem;
+        height: 1.25rem;
+        flex: 0 0 1.25rem;
+        place-items: center;
+        color: #647084;
+        transition: color 150ms ease;
+      }
+
+      .erp-sidebar__link.is-active .erp-sidebar__icon {
+        color: #2563eb;
+      }
+
+      .erp-sidebar__item-copy {
+        display: grid;
+        min-width: 0;
+        gap: 0.15rem;
+      }
+
+      .erp-sidebar__item-label {
+        overflow: hidden;
+        color: inherit;
+        font-size: 0.82rem;
+        font-weight: 600;
+        line-height: 1.25;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .erp-sidebar__item-hint {
+        display: -webkit-box;
+        overflow: hidden;
+        color: #647084;
+        font-size: 0.68rem;
+        font-weight: 500;
+        line-height: 1.25;
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: 2;
+      }
+
+      .erp-sidebar__link.is-active .erp-sidebar__item-hint {
+        color: #1e40af;
+      }
+
+      .erp-sidebar__active-dot {
         position: absolute;
-        top: 8px;
-        bottom: 8px;
-        left: 0;
-        width: 3px;
-        border-radius: 6px;
+        top: 0.65rem;
+        right: 0.65rem;
+        width: 0.38rem;
+        height: 0.38rem;
+        border-radius: 999px;
         background: #2563eb;
         opacity: 0;
-        transform: scaleY(0.5);
+        transform: scale(0.7);
         transition:
           opacity 150ms ease,
           transform 150ms ease;
       }
 
-      .sidebar-link.is-active::before {
+      .erp-sidebar__link.is-active .erp-sidebar__active-dot {
         opacity: 1;
-        transform: scaleY(1);
+        transform: scale(1);
       }
 
-      .sidebar-link lucide-icon {
-        transition: color 150ms ease;
+      .erp-sidebar__footer {
+        border-top: 1px solid #daddd6;
+        padding: 0.85rem;
+        background: #fafaf7;
+      }
+
+      .erp-sidebar__note {
+        border: 1px solid #daddd6;
+        border-radius: 0.55rem;
+        background: #ffffff;
+        padding: 0.75rem;
+      }
+
+      .erp-sidebar__note-label {
+        display: block;
+        color: #172033;
+        font-size: 0.68rem;
+        font-weight: 650;
+        letter-spacing: 0.1em;
+        line-height: 1;
+        text-transform: uppercase;
+      }
+
+      .erp-sidebar__note p {
+        margin-top: 0.45rem;
+        color: #647084;
+        font-size: 0.72rem;
+        font-weight: 500;
+        line-height: 1.35;
+      }
+
+      @media (max-width: 1024px) {
+        .erp-sidebar {
+          display: none;
+        }
       }
 
       @media (prefers-reduced-motion: reduce) {
-        .sidebar-link,
-        .sidebar-link::before,
-        .sidebar-link lucide-icon {
+        .erp-sidebar__link,
+        .erp-sidebar__icon,
+        .erp-sidebar__active-dot {
           transition: none;
         }
       }
@@ -128,11 +325,18 @@ type MenuSection = {
   ],
 })
 export class SidebarComponent {
+  readonly receiptTextIcon = ReceiptTextIcon;
+
   readonly menuSections: MenuSection[] = [
     {
+      label: 'Inicio',
+      items: [{ path: '/', label: 'Dashboard', icon: 'layout-dashboard', exact: true, hint: 'Mesa del periodo' }],
+    },
+    {
+      label: 'Personas',
       items: [
-        { path: '/', label: 'Dashboard', icon: 'layout-dashboard', exact: true },
-        { path: '/empleados', label: 'Empleados', icon: 'users' },
+        { path: '/empleados', label: 'Empleados', icon: 'users', hint: 'Registro laboral y expedientes' },
+        { path: '/licencias-medicas', label: 'Licencias médicas', icon: 'heart-pulse', hint: 'Control de ausencias' },
       ],
     },
     {
@@ -140,36 +344,42 @@ export class SidebarComponent {
       items: [
         {
           path: '/remuneraciones/proceso-mensual',
-          label: 'Preparar nomina',
+          label: 'Preparar nómina',
           icon: 'file-text',
-          hint: 'Estado, pendientes y cierre',
+          hint: 'Bitácora del periodo',
         },
         {
           path: '/remuneraciones/novedades-mensuales',
           label: 'Movimientos del mes',
           icon: 'calendar-plus',
-          hint: 'Bonos, descuentos, anticipos y ajustes del periodo',
+          hint: 'Registros del periodo',
         },
         {
           path: '/remuneraciones/haberes-descuentos',
           label: 'Asignaciones recurrentes',
           icon: 'repeat',
-          hint: 'Haberes, descuentos y aportes vigentes',
+          hint: 'Registros con vigencia',
         },
         {
           path: '/remuneraciones/liquidaciones',
           label: 'Liquidaciones oficiales',
           icon: 'file-check-2',
-          hint: 'Salida interna desde nomina cerrada',
+          hint: 'Acta de salida interna',
         },
-        { path: '/remuneraciones/conceptos', label: 'Conceptos de remuneracion', icon: 'tags', exact: true },
+        {
+          path: '/remuneraciones/conceptos',
+          label: 'Conceptos de remuneración',
+          icon: 'tags',
+          exact: true,
+          hint: 'Catálogo maestro',
+        },
       ],
     },
     {
+      label: 'Administración',
       items: [
-        { path: '/licencias-medicas', label: 'Licencias Medicas', icon: 'heart-pulse' },
-        { path: '/reportes', label: 'Reportes', icon: 'bar-chart-3' },
-        { path: '/parametros', label: 'Parametros', icon: 'settings' },
+        { path: '/reportes', label: 'Reportes', icon: 'bar-chart-3', hint: 'Vistas operativas' },
+        { path: '/parametros', label: 'Parámetros', icon: 'settings', hint: 'Registro normativo' },
       ],
     },
   ];

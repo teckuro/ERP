@@ -1047,6 +1047,12 @@ describe('ProcesoMensualContainer', () => {
     buttons.find((b) => (b.textContent ?? '').includes('Guardar resultado preliminar'))!.click();
     await fixture.whenStable();
     fixture.detectChanges();
+    expect(guardarSnapshotPreliminar).not.toHaveBeenCalled();
+    expect(fixture.nativeElement.textContent).toContain('Que debe revisar RRHH');
+    buttons = [...fixture.nativeElement.querySelectorAll('button')] as HTMLButtonElement[];
+    buttons.find((b) => (b.textContent ?? '').trim() === 'Guardar resultado')!.click();
+    await fixture.whenStable();
+    fixture.detectChanges();
 
     expect(guardarSnapshotPreliminar).toHaveBeenCalledWith('2026-05');
     const text = fixture.nativeElement.textContent as string;
@@ -1088,6 +1094,10 @@ describe('ProcesoMensualContainer', () => {
     fixture.detectChanges();
     buttons = [...fixture.nativeElement.querySelectorAll('button')] as HTMLButtonElement[];
     buttons.find((b) => (b.textContent ?? '').includes('Guardar resultado preliminar'))!.click();
+    await fixture.whenStable();
+    fixture.detectChanges();
+    buttons = [...fixture.nativeElement.querySelectorAll('button')] as HTMLButtonElement[];
+    buttons.find((b) => (b.textContent ?? '').trim() === 'Guardar resultado')!.click();
     await fixture.whenStable();
     fixture.detectChanges();
 
@@ -1204,6 +1214,10 @@ describe('ProcesoMensualContainer', () => {
     buttons.find((b) => (b.textContent ?? '').includes('Guardar resultado preliminar'))!.click();
     await fixture.whenStable();
     fixture.detectChanges();
+    buttons = [...fixture.nativeElement.querySelectorAll('button')] as HTMLButtonElement[];
+    buttons.find((b) => (b.textContent ?? '').trim() === 'Guardar resultado')!.click();
+    await fixture.whenStable();
+    fixture.detectChanges();
 
     const text = fixture.nativeElement.textContent as string;
     expect(text).toContain('Listo para aprobar con advertencias');
@@ -1235,6 +1249,10 @@ describe('ProcesoMensualContainer', () => {
     buttons.find((b) => (b.textContent ?? '').includes('Guardar resultado preliminar'))!.click();
     await fixture.whenStable();
     fixture.detectChanges();
+    buttons = [...fixture.nativeElement.querySelectorAll('button')] as HTMLButtonElement[];
+    buttons.find((b) => (b.textContent ?? '').trim() === 'Guardar resultado')!.click();
+    await fixture.whenStable();
+    fixture.detectChanges();
 
     buttons = [...fixture.nativeElement.querySelectorAll('button')] as HTMLButtonElement[];
     const aprobar = buttons.find((b) => (b.textContent ?? '').includes('Aprobar resultado preliminar'));
@@ -1242,8 +1260,13 @@ describe('ProcesoMensualContainer', () => {
     aprobar!.click();
     await fixture.whenStable();
     fixture.detectChanges();
+    expect(aprobarResultadoPreliminarOperativamente).not.toHaveBeenCalled();
+    expect(fixture.nativeElement.textContent).toContain('Marca el resultado guardado como aprobado operativamente');
+    buttons = [...fixture.nativeElement.querySelectorAll('button')] as HTMLButtonElement[];
+    buttons.find((b) => (b.textContent ?? '').trim() === 'Aprobar resultado')!.click();
+    await fixture.whenStable();
+    fixture.detectChanges();
 
-    expect(window.confirm).toHaveBeenLastCalledWith(expect.stringContaining('Aprobar resultado preliminar'));
     expect(aprobarResultadoPreliminarOperativamente).toHaveBeenCalledWith({
       idCalculoPeriodo: 1,
       periodo: '2026-05',
@@ -1317,8 +1340,13 @@ describe('ProcesoMensualContainer', () => {
     cerrar!.click();
     await localFixture.whenStable();
     localFixture.detectChanges();
+    expect(cerrarNominaOperativamente).not.toHaveBeenCalled();
+    expect(localFixture.nativeElement.textContent).toContain('El resultado aprobado quedara congelado');
+    buttons = [...localFixture.nativeElement.querySelectorAll('button')] as HTMLButtonElement[];
+    buttons.find((b) => (b.textContent ?? '').trim() === 'Cerrar nomina')!.click();
+    await localFixture.whenStable();
+    localFixture.detectChanges();
 
-    expect(window.confirm).toHaveBeenLastCalledWith(expect.stringContaining('Vas a cerrar operativamente la nomina de 2026-05.'));
     expect(cerrarNominaOperativamente).toHaveBeenCalledWith({ idCalculoPeriodo: 1, periodo: '2026-05' });
     const text = localFixture.nativeElement.textContent as string;
     expect(text).toContain('Nomina cerrada operativamente');
@@ -1385,7 +1413,15 @@ describe('ProcesoMensualContainer', () => {
     await fixture.whenStable();
     fixture.detectChanges();
     buttons = [...fixture.nativeElement.querySelectorAll('button')] as HTMLButtonElement[];
+    buttons.find((b) => (b.textContent ?? '').trim() === 'Guardar resultado')!.click();
+    await fixture.whenStable();
+    fixture.detectChanges();
+    buttons = [...fixture.nativeElement.querySelectorAll('button')] as HTMLButtonElement[];
     buttons.find((b) => (b.textContent ?? '').includes('Aprobar resultado preliminar'))!.click();
+    await fixture.whenStable();
+    fixture.detectChanges();
+    buttons = [...fixture.nativeElement.querySelectorAll('button')] as HTMLButtonElement[];
+    buttons.find((b) => (b.textContent ?? '').trim() === 'Aprobar resultado')!.click();
     await fixture.whenStable();
     fixture.detectChanges();
 
@@ -1414,9 +1450,17 @@ describe('ProcesoMensualContainer', () => {
     buttons.find((b) => (b.textContent ?? '').includes('Guardar resultado preliminar'))!.click();
     await fixture.whenStable();
     fixture.detectChanges();
+    buttons = [...fixture.nativeElement.querySelectorAll('button')] as HTMLButtonElement[];
+    buttons.find((b) => (b.textContent ?? '').trim() === 'Guardar resultado')!.click();
+    await fixture.whenStable();
+    fixture.detectChanges();
 
     buttons = [...fixture.nativeElement.querySelectorAll('button')] as HTMLButtonElement[];
     buttons.find((b) => (b.textContent ?? '').includes('Aprobar resultado preliminar'))!.click();
+    await fixture.whenStable();
+    fixture.detectChanges();
+    buttons = [...fixture.nativeElement.querySelectorAll('button')] as HTMLButtonElement[];
+    buttons.find((b) => (b.textContent ?? '').trim() === 'Aprobar resultado')!.click();
     await fixture.whenStable();
     fixture.detectChanges();
 
