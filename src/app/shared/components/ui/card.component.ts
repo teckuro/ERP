@@ -9,6 +9,7 @@ import { Component, HostBinding, Input } from '@angular/core';
       :host {
         border-color: #daddd6;
         box-shadow: none;
+        color: #172033;
       }
 
       :host(.erp-card--hover) {
@@ -46,7 +47,7 @@ export class CardHeaderComponent {
 
   @HostBinding('class')
   get hostClass(): string {
-    return `block border-b border-gray-200 bg-gray-50 px-4 py-3 ${this.className}`.trim();
+    return `block border-b border-gray-200 bg-[#fafaf7] px-4 py-3 ${this.className}`.trim();
   }
 }
 

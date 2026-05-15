@@ -868,3 +868,10 @@ Creación avanzada incorpora una identidad de producto local para dejar de senti
 - **Gramatica:** cada pantalla debe mostrar contexto, estado, registros, decisiones, alertas con accion y cierre operativo.
 - **Modulos:** Empleados = registro laboral; Nomina = bitacora del periodo; Movimientos = registros remuneracionales; Parametros = registro normativo; Liquidaciones = acta de salida.
 - **Restricciones:** fase documental; sin Angular, HTML, CSS, SQL/RPC/RLS, rutas, servicios, motor, estilos globales ni cambios funcionales.
+
+## 2026-05-15 - ERP-SHELL-BITACORA-OPERATIVA-01
+
+- **Shell global:** sidebar, header y contenedor principal adoptan lectura `Bitacora operativa`, con fondo administrativo plano y navegacion agrupada por sentido.
+- **Componentes base:** cards, botones, badges, titulos, breadcrumbs, DataGrid, SearchSelect y MessageBox se alinean a NOIA con bordes completos, densidad compacta y color funcional.
+- **Tablas y empty states:** DataGrid usa filtros sobrios, seleccion sin barra lateral fuerte y estados vacios con causa visible y accion siguiente.
+- **Restricciones:** sin SQL/RPC/RLS, sin motor, sin servicios de negocio, sin mappers, sin fuentes nuevas y sin unificar movimientos.

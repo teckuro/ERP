@@ -854,33 +854,36 @@ export class DataGridPrimaryActionMenuDirective {
             </div>
           </div>
         } @else {
-          <div class="data-grid-state">
-            <div
-              class="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full border border-neutral-200 bg-neutral-50"
-            >
-              <lucide-icon class="h-8 w-8 text-neutral-400" [img]="emptyIcon"></lucide-icon>
-            </div>
-            <h3 class="mb-1 text-lg font-medium text-neutral-900">{{ resolvedEmptyTitle }}</h3>
-            <p class="text-sm text-neutral-600">{{ resolvedEmptyDescription }}</p>
+          <div class="data-grid-state data-grid-state--empty">
+            <div class="data-grid-state-panel">
+              <div class="data-grid-state-mark" aria-hidden="true">
+                <lucide-icon [img]="emptyIcon"></lucide-icon>
+              </div>
+              <p class="data-grid-state-kicker">
+                {{ hasActiveFilters ? 'Filtro sin resultados' : 'Registro pendiente' }}
+              </p>
+              <h3>{{ resolvedEmptyTitle }}</h3>
+              <p>{{ resolvedEmptyDescription }}</p>
 
-            @if (hasActiveFilters) {
-              <button
-                type="button"
-                class="mt-4 inline-flex h-9 items-center rounded-md border border-neutral-200 bg-white px-3 text-sm font-medium text-neutral-700 transition hover:bg-neutral-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
-                (click)="clearAllFilters()"
-              >
-                Limpiar filtros
-              </button>
-            } @else if (primaryActionLabel) {
-              <button
-                type="button"
-                class="mt-4 inline-flex h-9 items-center gap-1.5 rounded-md border border-blue-600 bg-blue-600 px-3 text-sm font-medium text-white transition hover:border-blue-700 hover:bg-blue-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
-                (click)="primaryAction.emit()"
-              >
-                <lucide-icon class="h-4 w-4" [img]="plusIcon"></lucide-icon>
-                {{ primaryActionLabel }}
-              </button>
-            }
+              @if (hasActiveFilters) {
+                <button
+                  type="button"
+                  class="data-grid-state-action"
+                  (click)="clearAllFilters()"
+                >
+                  Limpiar filtros
+                </button>
+              } @else if (primaryActionLabel) {
+                <button
+                  type="button"
+                  class="data-grid-state-action data-grid-state-action--primary"
+                  (click)="primaryAction.emit()"
+                >
+                  <lucide-icon class="h-4 w-4" [img]="plusIcon"></lucide-icon>
+                  {{ primaryActionLabel }}
+                </button>
+              }
+            </div>
           </div>
         }
       </div>
@@ -999,13 +1002,13 @@ export class DataGridPrimaryActionMenuDirective {
   styles: [
     `
       :host {
-        --data-grid-border: #dbe3ee;
-        --data-grid-border-soft: #e7edf5;
-        --data-grid-head-bg: #f8fafc;
-        --data-grid-row-hover: #f8fafc;
+        --data-grid-border: #daddd6;
+        --data-grid-border-soft: #eef1ec;
+        --data-grid-head-bg: #fafaf7;
+        --data-grid-row-hover: #fafaf7;
         --data-grid-row-selected: #eff6ff;
-        --data-grid-scrollbar-track: #f1f5f9;
-        --data-grid-scrollbar-thumb: #cbd5e1;
+        --data-grid-scrollbar-track: #eef1ec;
+        --data-grid-scrollbar-thumb: #c7d0c4;
         --data-grid-text-xs: 0.64rem;
         --data-grid-text-sm: 0.72rem;
         --data-grid-text-md: 0.76rem;
@@ -1035,6 +1038,8 @@ export class DataGridPrimaryActionMenuDirective {
 
       .data-grid-filter-panel {
         --data-grid-filter-h: var(--erp-control-height, 22px);
+        background: #fafaf7 !important;
+        border-color: var(--data-grid-border) !important;
       }
 
       .data-grid-filter-control {
@@ -1045,15 +1050,15 @@ export class DataGridPrimaryActionMenuDirective {
         max-height: var(--data-grid-filter-h);
         min-height: var(--data-grid-filter-h);
         margin: 0;
-        border: 1px solid #e2e8f0;
+        border: 1px solid #daddd6;
         border-radius: 0.5rem;
         background: #ffffff;
         padding: 0 0.625rem;
-        color: #334155;
+        color: #172033;
         font-size: 0.74rem;
         font-weight: 500;
         line-height: 1;
-        box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+        box-shadow: none;
         outline: none;
         transition:
           border-color 150ms ease,
@@ -1062,18 +1067,18 @@ export class DataGridPrimaryActionMenuDirective {
       }
 
       .data-grid-filter-control::placeholder {
-        color: #94a3b8;
+        color: #8a94a6;
       }
 
       .data-grid-filter-control:hover {
-        border-color: #cbd5e1;
-        background: #f8fafc;
+        border-color: #c7d0c4;
+        background: #fafaf7;
       }
 
       .data-grid-filter-control:focus {
-        border-color: #3b82f6;
+        border-color: #2563eb;
         background: #ffffff;
-        box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.18);
+        box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.14);
       }
 
       select.data-grid-filter-control {
@@ -1090,10 +1095,10 @@ export class DataGridPrimaryActionMenuDirective {
         max-height: var(--data-grid-filter-h);
         min-height: var(--data-grid-filter-h);
         padding: 0 0.75rem;
-        border: 1px solid #cbd5e1;
+        border: 1px solid #daddd6;
         border-radius: 0.5rem;
         background: #ffffff;
-        color: #475569;
+        color: #647084;
         font-size: var(--data-grid-text-sm);
         font-weight: 500;
         line-height: 1;
@@ -1106,21 +1111,21 @@ export class DataGridPrimaryActionMenuDirective {
       }
 
       .data-grid-filter-action:hover {
-        border-color: #94a3b8;
-        background: #f8fafc;
-        color: #0f172a;
+        border-color: #c7d0c4;
+        background: #fafaf7;
+        color: #172033;
       }
 
       .data-grid-filter-action:focus-visible {
         outline: none;
-        box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.35);
+        box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.18);
       }
 
       .data-grid-filter-action--primary {
         border-color: #2563eb;
         background: #2563eb;
         color: #ffffff;
-        box-shadow: 0 6px 16px rgba(37, 99, 235, 0.18);
+        box-shadow: none;
       }
 
       .data-grid-filter-action--primary:hover {
@@ -1157,11 +1162,11 @@ export class DataGridPrimaryActionMenuDirective {
         height: var(--data-grid-filter-h);
         align-items: center;
         gap: 0.35rem;
-        border: 1px solid #e5e7eb;
+        border: 1px solid #daddd6;
         border-radius: 999px;
-        background: #f8fafc;
+        background: #ffffff;
         padding: 0 0.625rem;
-        color: #374151;
+        color: #172033;
         font-size: var(--data-grid-text-sm);
         font-weight: 600;
         line-height: 1;
@@ -1171,18 +1176,18 @@ export class DataGridPrimaryActionMenuDirective {
       }
 
       .data-grid-filter-chip:hover {
-        border-color: #cbd5e1;
-        background: #ffffff;
+        border-color: #c7d0c4;
+        background: #fafaf7;
       }
 
       .data-grid-filter-chip__label {
-        color: #6b7280;
+        color: #647084;
       }
 
       .data-grid-filter-chip__value {
         max-width: 11rem;
         overflow: hidden;
-        color: #111827;
+        color: #172033;
         text-overflow: ellipsis;
         white-space: nowrap;
       }
@@ -1206,7 +1211,7 @@ export class DataGridPrimaryActionMenuDirective {
         font-weight: 600;
         letter-spacing: 0.1em;
         text-transform: uppercase;
-        color: #475569;
+        color: #647084;
       }
 
       .data-grid-filter-range {
@@ -1231,13 +1236,13 @@ export class DataGridPrimaryActionMenuDirective {
       }
 
       .data-grid-scroll::-webkit-scrollbar-thumb {
-        border: 1px solid #f8fafc;
+        border: 1px solid #fafaf7;
         border-radius: 999px;
         background: var(--data-grid-scrollbar-thumb);
       }
 
       .data-grid-scroll::-webkit-scrollbar-thumb:hover {
-        background: #94a3b8;
+        background: #8a94a6;
       }
 
       .data-grid-scroll::-webkit-scrollbar-corner {
@@ -1245,7 +1250,7 @@ export class DataGridPrimaryActionMenuDirective {
       }
 
       .data-grid-row-selected {
-        box-shadow: inset 3px 0 0 #2563eb;
+        box-shadow: inset 0 0 0 1px #bfdbfe;
       }
 
       .data-grid-table-region {
@@ -1325,7 +1330,7 @@ export class DataGridPrimaryActionMenuDirective {
       .data-grid-head th {
         border-color: var(--data-grid-border);
         background: var(--data-grid-head-bg);
-        color: #475569;
+        color: #647084;
         font-weight: 600;
       }
 
@@ -1359,7 +1364,7 @@ export class DataGridPrimaryActionMenuDirective {
         display: inline-block;
         overflow: hidden;
         position: relative;
-        background: #e5e7eb;
+        background: #eef1ec;
       }
 
       .data-grid-skeleton-line {
@@ -1395,9 +1400,113 @@ export class DataGridPrimaryActionMenuDirective {
         display: grid;
         min-height: 14rem;
         place-items: center;
-        padding: 3.5rem 1.5rem;
+        padding: 2.25rem 1.25rem;
         background: #ffffff;
         text-align: center;
+      }
+
+      .data-grid-state-panel {
+        display: grid;
+        width: min(100%, 30rem);
+        justify-items: center;
+        gap: 0.55rem;
+        border: 1px solid #daddd6;
+        border-radius: 0.6rem;
+        background: #fafaf7;
+        padding: 1.25rem;
+      }
+
+      .data-grid-state-mark {
+        display: grid;
+        width: 2.4rem;
+        height: 2.4rem;
+        place-items: center;
+        border: 1px solid #daddd6;
+        border-radius: 0.5rem;
+        background: #ffffff;
+        color: #647084;
+      }
+
+      .data-grid-state-mark lucide-icon {
+        display: grid;
+        width: 1.15rem;
+        height: 1.15rem;
+        place-items: center;
+      }
+
+      .data-grid-state-kicker,
+      .data-grid-state h3,
+      .data-grid-state p {
+        margin: 0;
+      }
+
+      .data-grid-state-kicker {
+        color: #647084;
+        font-size: 0.68rem;
+        font-weight: 650;
+        letter-spacing: 0.1em;
+        line-height: 1;
+        text-transform: uppercase;
+      }
+
+      .data-grid-state h3 {
+        color: #172033;
+        font-size: 0.96rem;
+        font-weight: 650;
+        line-height: 1.25;
+      }
+
+      .data-grid-state p {
+        max-width: 26rem;
+        color: #647084;
+        font-size: 0.82rem;
+        font-weight: 450;
+        line-height: 1.45;
+      }
+
+      .data-grid-state-action {
+        display: inline-flex;
+        height: 2.1rem;
+        align-items: center;
+        justify-content: center;
+        gap: 0.4rem;
+        margin-top: 0.25rem;
+        border: 1px solid #daddd6;
+        border-radius: 0.5rem;
+        background: #ffffff;
+        color: #4b5563;
+        padding: 0 0.8rem;
+        font-size: 0.78rem;
+        font-weight: 650;
+        line-height: 1;
+        transition:
+          border-color 150ms ease,
+          background-color 150ms ease,
+          color 150ms ease,
+          box-shadow 150ms ease;
+      }
+
+      .data-grid-state-action:hover {
+        border-color: #c7d0c4;
+        background: #fafaf7;
+        color: #172033;
+      }
+
+      .data-grid-state-action:focus-visible {
+        outline: none;
+        box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.18);
+      }
+
+      .data-grid-state-action--primary {
+        border-color: #2563eb;
+        background: #2563eb;
+        color: #ffffff;
+      }
+
+      .data-grid-state-action--primary:hover {
+        border-color: #1d4ed8;
+        background: #1d4ed8;
+        color: #ffffff;
       }
 
       .data-grid-state--error {

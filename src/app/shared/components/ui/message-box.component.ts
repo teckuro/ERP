@@ -123,12 +123,11 @@ export type MessageBoxMode = 'inline' | 'modal';
         gap: 12px;
         align-items: start;
         width: 100%;
-        border: 1px solid #e5e7eb;
-        border-left-width: 3px;
+        border: 1px solid #daddd6;
         border-radius: 8px;
         background: #ffffff;
         padding: 12px;
-        color: #111827;
+        color: #172033;
         box-shadow: none;
       }
 
@@ -137,7 +136,7 @@ export type MessageBoxMode = 'inline' | 'modal';
         width: min(100%, 30rem);
         border-left-width: 1px;
         padding: 16px;
-        box-shadow: 0 24px 56px rgba(15, 23, 42, 0.22);
+        box-shadow: 0 20px 44px rgba(15, 23, 42, 0.18);
       }
 
       /* Modal compacto: título arriba a la izquierda, ícono arriba a la derecha (opt-in desde el padre). */
@@ -149,10 +148,10 @@ export type MessageBoxMode = 'inline' | 'modal';
         width: min(100%, 32rem);
         padding: 22px 24px 20px;
         border-radius: 10px;
-        border: 1px solid #e5e7eb;
+        border: 1px solid #daddd6;
         box-shadow:
-          0 4px 6px -1px rgba(15, 23, 42, 0.07),
-          0 24px 48px -12px rgba(15, 23, 42, 0.18);
+          0 4px 6px -1px rgba(15, 23, 42, 0.05),
+          0 22px 42px -12px rgba(15, 23, 42, 0.16);
       }
 
       .message-modal-headline-row {
@@ -163,14 +162,14 @@ export type MessageBoxMode = 'inline' | 'modal';
         min-width: 0;
         padding-bottom: 16px;
         margin-bottom: 4px;
-        border-bottom: 1px solid #f1f5f9;
+        border-bottom: 1px solid #eef1ec;
       }
 
       .message-title--headline {
         flex: 1;
         min-width: 0;
         margin: 0;
-        color: #1f2937;
+        color: #172033;
         font-size: 1.0625rem;
         font-weight: 600;
         letter-spacing: -0.02em;
@@ -198,7 +197,7 @@ export type MessageBoxMode = 'inline' | 'modal';
       .message-modal.message-modal--headline .message-copy--headline > .message-text {
         margin: 0 0 16px;
         max-width: 38rem;
-        color: #4b5563;
+        color: #647084;
         font-size: 0.875rem;
         font-weight: 400;
         line-height: 1.55;
@@ -209,7 +208,7 @@ export type MessageBoxMode = 'inline' | 'modal';
         width: 100%;
         margin-top: 18px;
         padding-top: 16px;
-        border-top: 1px solid #e5e7eb;
+        border-top: 1px solid #daddd6;
       }
 
       .message-modal.message-modal--headline .message-button-primary {
@@ -321,10 +320,10 @@ export type MessageBoxMode = 'inline' | 'modal';
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        border: 1px solid #e5e7eb;
+        border: 1px solid #daddd6;
         border-radius: 6px;
         background: #ffffff;
-        color: #374151;
+        color: #4b5563;
         cursor: pointer;
         font-size: 0.82rem;
         font-weight: 500;
@@ -344,9 +343,9 @@ export type MessageBoxMode = 'inline' | 'modal';
       }
 
       .message-button-secondary {
-        border-color: #e5e7eb;
+        border-color: #daddd6;
         background: #ffffff;
-        color: #374151;
+        color: #4b5563;
       }
 
       .message-dismiss {
@@ -362,13 +361,13 @@ export type MessageBoxMode = 'inline' | 'modal';
 
       .message-button-secondary:hover,
       .message-dismiss:hover {
-        border-color: #cbd5e1;
-        background: #f8fafc;
+        border-color: #c7d0c4;
+        background: #fafaf7;
       }
 
       .message-success {
         border-color: #bbf7d0;
-        border-left-color: #16a34a;
+        background: #f0fdf4;
       }
 
       .message-success .message-icon {
@@ -378,19 +377,19 @@ export type MessageBoxMode = 'inline' | 'modal';
 
       /* Éxito en modal headline: sin barra lateral; el check ya indica el estado. */
       .message-modal.message-modal--headline.message-success {
-        border: 1px solid #e5e7eb;
+        border: 1px solid #daddd6;
         background: #ffffff;
       }
 
       /* Error en modal headline: misma caja neutra que éxito; el ícono indica el estado. */
       .message-modal.message-modal--headline.message-error {
-        border: 1px solid #e5e7eb;
+        border: 1px solid #daddd6;
         background: #ffffff;
       }
 
       .message-error {
         border-color: #fecaca;
-        border-left-color: #dc2626;
+        background: #fef2f2;
       }
 
       .message-error .message-icon {
@@ -400,7 +399,7 @@ export type MessageBoxMode = 'inline' | 'modal';
 
       .message-warning {
         border-color: #fde68a;
-        border-left-color: #f59e0b;
+        background: #fffbeb;
       }
 
       .message-warning .message-icon {
@@ -411,7 +410,7 @@ export type MessageBoxMode = 'inline' | 'modal';
       .message-info,
       .message-loading {
         border-color: #bae6fd;
-        border-left-color: #0ea5e9;
+        background: #f0f9ff;
       }
 
       .message-info .message-icon,

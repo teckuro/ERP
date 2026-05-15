@@ -287,3 +287,15 @@ Fecha: 2026-05-15
 - Se define gramatica visual por modulo: Empleados, Nomina mensual, Movimientos de remuneracion, Conceptos, Parametros, Liquidaciones y Reportes.
 - Se registra la decision de evolucion futura: unificar visualmente `Movimientos del mes` y `Asignaciones recurrentes` bajo `Movimientos de remuneracion`, separando conceptos del catalogo.
 - Alcance respetado: fase documental; sin Angular, HTML, CSS, SQL/RPC/RLS, rutas, servicios, motor de nomina, estilos globales ni cambios funcionales.
+
+## ERP-SHELL-BITACORA-OPERATIVA-01 - Shell con Bitacora Operativa
+
+Fecha: 2026-05-15
+
+- Se aplica la identidad `NOIA / Bitacora Operativa` al marco comun: shell, header, sidebar, titulos, breadcrumbs, cards, badges, botones, tablas y empty states base.
+- El header comunica `Bitacora operativa` y mantiene el periodo activo como contexto de trabajo.
+- El sidebar queda agrupado por sentido operativo: Inicio, Personas, Remuneraciones y Administracion, manteniendo rutas existentes.
+- `app-data-grid` adopta paleta administrativa, filtros sobrios, seleccion sin barra lateral fuerte y empty states con causa/accion.
+- `app-search-select` y `app-message-box` se alinean al mismo tono: bordes completos, fondos suaves funcionales y sin sombras o barras decorativas fuertes.
+- Se documenta la fase en `docs/codex/diseno/erp-shell-bitacora-operativa-01.md`.
+- Alcance respetado: sin SQL/RPC/RLS, sin motor, sin servicios de negocio, sin mappers, sin persistencia critica, sin fuentes nuevas y sin unificar movimientos.

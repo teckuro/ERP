@@ -149,7 +149,10 @@ export interface SearchSelectOption<T extends SearchSelectValue = SearchSelectVa
                 }
               </button>
             } @empty {
-              <p class="select-empty">{{ emptyText }}</p>
+              <div class="select-empty" role="status">
+                <span>Sin coincidencias</span>
+                <small>{{ emptyText }}</small>
+              </div>
             }
           </div>
         </div>
@@ -194,11 +197,11 @@ export interface SearchSelectOption<T extends SearchSelectValue = SearchSelectVa
         width: 100%;
         height: var(--erp-control-height, 22px);
         min-height: var(--erp-control-height, 22px);
-        border: 1px solid #e5e7eb;
+        border: 1px solid #daddd6;
         border-radius: 6px;
         background: #ffffff;
         padding: 0 4px 0 8px;
-        color: #9ca3af;
+        color: #8a94a6;
         font: inherit;
         font-size: var(--erp-text-sm, 0.72rem);
         font-weight: 500;
@@ -207,13 +210,13 @@ export interface SearchSelectOption<T extends SearchSelectValue = SearchSelectVa
       }
 
       .select-field:hover {
-        border-color: #cbd5e1;
+        border-color: #c7d0c4;
       }
 
       .select-field:focus,
       .select-field.is-open {
         border-color: #2563eb;
-        box-shadow: 0 0 0 3px #eff6ff;
+        box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.14);
         outline: none;
       }
 
@@ -222,11 +225,11 @@ export interface SearchSelectOption<T extends SearchSelectValue = SearchSelectVa
       }
 
       .select-field.is-invalid:focus {
-        box-shadow: 0 0 0 3px #fef2f2;
+        box-shadow: 0 0 0 2px #fef2f2;
       }
 
       .select-field.has-value {
-        color: #111827;
+        color: #172033;
       }
 
       .select-value {
@@ -255,12 +258,12 @@ export interface SearchSelectOption<T extends SearchSelectValue = SearchSelectVa
         align-items: center;
         justify-content: center;
         border-radius: 5px;
-        color: #6b7280;
+        color: #647084;
       }
 
       .select-icon-button:hover {
-        background: #f9fafb;
-        color: #111827;
+        background: #fafaf7;
+        color: #172033;
       }
 
       .select-icon-button lucide-icon,
@@ -278,20 +281,16 @@ export interface SearchSelectOption<T extends SearchSelectValue = SearchSelectVa
         z-index: var(--erp-select-panel-z);
         transition: none;
         animation: none;
-        border: 1px solid #2563eb;
+        border: 1px solid #c7d0c4;
         border-radius: 0 0 6px 6px;
         background: #ffffff;
         padding: 6px;
-        box-shadow:
-          0 1px 0 #2563eb inset,
-          0 16px 30px rgba(15, 23, 42, 0.14);
+        box-shadow: 0 10px 24px rgba(15, 23, 42, 0.1);
       }
 
       .select-panel.opens-above {
         border-radius: 6px 6px 0 0;
-        box-shadow:
-          0 -1px 0 #2563eb inset,
-          0 16px 30px rgba(15, 23, 42, 0.14);
+        box-shadow: 0 10px 24px rgba(15, 23, 42, 0.1);
       }
 
       .select-search {
@@ -299,11 +298,11 @@ export interface SearchSelectOption<T extends SearchSelectValue = SearchSelectVa
         grid-template-columns: 18px minmax(0, 1fr);
         align-items: center;
         height: calc(var(--erp-control-height, 22px) + 6px);
-        border: 1px solid #e5e7eb;
+        border: 1px solid #daddd6;
         border-radius: 5px;
         background: #ffffff;
         padding: 0 8px;
-        color: #6b7280;
+        color: #647084;
       }
 
       .select-search lucide-icon {
@@ -318,7 +317,7 @@ export interface SearchSelectOption<T extends SearchSelectValue = SearchSelectVa
 
       .select-search:focus-within {
         border-color: #2563eb;
-        box-shadow: 0 0 0 2px #eff6ff;
+        box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.14);
       }
 
       .select-search input {
@@ -327,7 +326,7 @@ export interface SearchSelectOption<T extends SearchSelectValue = SearchSelectVa
         border: 0;
         background: transparent;
         padding: 0 0 0 8px;
-        color: #111827;
+        color: #172033;
         font: inherit;
         font-size: var(--erp-text-sm, 0.72rem);
         font-weight: 500;
@@ -340,9 +339,9 @@ export interface SearchSelectOption<T extends SearchSelectValue = SearchSelectVa
         align-items: center;
         justify-content: space-between;
         gap: 8px;
-        border-bottom: 1px solid #eef2f7;
+        border-bottom: 1px solid #eef1ec;
         padding: 0 2px;
-        color: #6b7280;
+        color: #647084;
         font-size: 11px;
         font-weight: 500;
       }
@@ -350,7 +349,7 @@ export interface SearchSelectOption<T extends SearchSelectValue = SearchSelectVa
       .select-panel-current {
         min-width: 0;
         overflow: hidden;
-        color: #111827;
+        color: #172033;
         text-overflow: ellipsis;
         white-space: nowrap;
       }
@@ -359,7 +358,7 @@ export interface SearchSelectOption<T extends SearchSelectValue = SearchSelectVa
         max-height: 216px;
         overflow: auto;
         padding-top: 4px;
-        scrollbar-color: #cbd5e1 #f8fafc;
+        scrollbar-color: #c7d0c4 #eef1ec;
         scrollbar-width: thin;
       }
 
@@ -374,18 +373,18 @@ export interface SearchSelectOption<T extends SearchSelectValue = SearchSelectVa
         border-radius: 5px;
         background: transparent;
         padding: 6px 8px;
-        color: #111827;
+        color: #172033;
         text-align: left;
       }
 
       .select-option:hover:not(:disabled),
       .select-option.is-active {
-        background: #f8fafc;
+        background: #fafaf7;
       }
 
       .select-option.is-selected {
         background: #eff6ff;
-        color: #1d4ed8;
+        color: #1e40af;
       }
 
       .select-option-marker {
@@ -396,7 +395,7 @@ export interface SearchSelectOption<T extends SearchSelectValue = SearchSelectVa
       }
 
       .select-option.is-active .select-option-marker {
-        background: #cbd5e1;
+        background: #c7d0c4;
       }
 
       .select-option.is-selected .select-option-marker {
@@ -424,7 +423,7 @@ export interface SearchSelectOption<T extends SearchSelectValue = SearchSelectVa
       }
 
       .select-option-text small {
-        color: #6b7280;
+        color: #647084;
         font-size: 11px;
         font-weight: 600;
       }
@@ -444,12 +443,29 @@ export interface SearchSelectOption<T extends SearchSelectValue = SearchSelectVa
       }
 
       .select-empty {
-        margin: 0;
-        padding: 12px 8px;
-        color: #6b7280;
-        font-size: 12px;
-        font-weight: 600;
+        display: grid;
+        gap: 3px;
+        margin: 4px 0 0;
+        border: 1px solid #daddd6;
+        border-radius: 6px;
+        background: #fafaf7;
+        padding: 10px 8px;
+        color: #647084;
         text-align: center;
+      }
+
+      .select-empty span {
+        color: #172033;
+        font-size: 12px;
+        font-weight: 650;
+        line-height: 1.2;
+      }
+
+      .select-empty small {
+        color: #647084;
+        font-size: 11px;
+        font-weight: 500;
+        line-height: 1.3;
       }
 
       .is-disabled {
