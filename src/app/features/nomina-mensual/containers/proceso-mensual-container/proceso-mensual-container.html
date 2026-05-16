@@ -267,7 +267,7 @@
           <div>
             <h2 class="text-sm font-semibold text-gray-900">Periodo pendiente de validacion</h2>
             <p class="mt-1 text-sm text-gray-700">
-              Valida el periodo para detectar pendientes en trabajadores, parametros, movimientos del mes y asignaciones recurrentes.
+              Valida el periodo para detectar pendientes en trabajadores, parametros y movimientos de remuneracion.
             </p>
           </div>
           <app-badge variant="default" size="sm">Pendiente</app-badge>
@@ -288,7 +288,7 @@
         <div>
           <h2 id="base-nomina" class="text-sm font-semibold text-gray-900">Base de nomina</h2>
           <p class="mt-1 text-sm text-gray-600">
-            Consolida trabajadores aptos, asignaciones recurrentes aplicables y movimientos del mes aprobados.
+            Consolida trabajadores aptos, movimientos del mes aprobados y recurrentes aplicables.
           </p>
         </div>
         <div class="flex flex-wrap items-center gap-2">
@@ -325,7 +325,7 @@
                 <dd class="mt-1 text-lg font-semibold text-gray-900">{{ base.bloqueados }}</dd>
               </div>
               <div class="rounded-md border border-slate-200 bg-white p-3">
-                <dt class="text-gray-500">Asignaciones recurrentes incluidas</dt>
+                <dt class="text-gray-500">Recurrentes incluidos</dt>
                 <dd class="mt-1 text-lg font-semibold text-gray-900">{{ base.asignacionesRecurrentesIncluidas }}</dd>
               </div>
               <div class="rounded-md border border-slate-200 bg-white p-3">
@@ -354,7 +354,7 @@
                     <th class="px-3 py-2">Trabajador</th>
                     <th class="px-3 py-2">Estado</th>
                     <th class="px-3 py-2">Contrato</th>
-                    <th class="px-3 py-2 text-right">Asignaciones recurrentes</th>
+                    <th class="px-3 py-2 text-right">Recurrentes</th>
                     <th class="px-3 py-2 text-right">Movimientos del mes</th>
                     <th class="px-3 py-2">Observaciones</th>
                   </tr>
@@ -392,19 +392,19 @@
             <h3 class="text-xs font-semibold uppercase text-slate-600">Entradas consideradas</h3>
             <div class="mt-2 grid gap-3 md:grid-cols-3">
               <div class="rounded-md border border-slate-200 bg-white p-3 text-sm">
-                <p class="font-medium text-gray-900">Asignaciones recurrentes</p>
+                <p class="font-medium text-gray-900">Recurrentes</p>
                 <p class="mt-1 text-2xl font-semibold text-gray-900">{{ base.asignacionesRecurrentesIncluidas }}</p>
-                <p class="mt-1 text-xs text-gray-500">Incluidas desde asignaciones vigentes del periodo.</p>
+                <p class="mt-1 text-xs text-gray-500">Incluidos desde movimientos vigentes del periodo.</p>
                 <a routerLink="/remuneraciones/haberes-descuentos" class="mt-2 inline-block text-xs font-medium text-blue-700 underline">
-                  Revisar asignaciones recurrentes
+                  Revisar recurrentes
                 </a>
               </div>
               <div class="rounded-md border border-slate-200 bg-white p-3 text-sm">
-                <p class="font-medium text-gray-900">Movimientos del mes</p>
+                <p class="font-medium text-gray-900">Este mes</p>
                 <p class="mt-1 text-2xl font-semibold text-gray-900">{{ base.movimientosDelMesIncluidos }}</p>
                 <p class="mt-1 text-xs text-gray-500">Movimientos aprobados incluidos en la base.</p>
                 <a routerLink="/remuneraciones/novedades-mensuales" class="mt-2 inline-block text-xs font-medium text-blue-700 underline">
-                  Revisar movimientos del mes
+                  Revisar movimientos
                 </a>
               </div>
               <div class="rounded-md border border-slate-200 bg-white p-3 text-sm">
@@ -427,10 +427,10 @@
               Actualizar base de nomina
             </app-button>
             <a routerLink="/remuneraciones/novedades-mensuales" class="text-sm font-medium text-blue-700 underline">
-              Revisar movimientos del mes
+              Revisar movimientos
             </a>
             <a routerLink="/remuneraciones/haberes-descuentos" class="text-sm font-medium text-blue-700 underline">
-              Revisar asignaciones recurrentes
+              Revisar recurrentes
             </a>
           </section>
         } @else {
@@ -440,7 +440,7 @@
               <dd class="font-semibold text-gray-900">{{ pn.trabajadoresIncluidos }}</dd>
             </div>
             <div>
-              <dt class="text-gray-500">Asignaciones recurrentes incluidas</dt>
+              <dt class="text-gray-500">Recurrentes incluidos</dt>
               <dd class="font-semibold text-gray-900">{{ pn.recurrentesIncluidos }}</dd>
             </div>
             <div>
@@ -450,7 +450,7 @@
               </dd>
             </div>
             <div>
-              <dt class="text-gray-500">Movimientos del mes por revisar</dt>
+              <dt class="text-gray-500">Movimientos por revisar</dt>
               <dd class="font-semibold text-gray-900">
                 {{ pn.entradasMensualesPendientesRevision ?? pn.movimientosVariablesBorrador }}
               </dd>
@@ -850,10 +850,10 @@
               Revisar base de nomina
             </app-button>
             <a routerLink="/remuneraciones/novedades-mensuales" class="text-sm font-medium text-blue-700 underline">
-              Revisar movimientos del mes
+              Revisar movimientos
             </a>
             <a routerLink="/remuneraciones/haberes-descuentos" class="text-sm font-medium text-blue-700 underline">
-              Revisar asignaciones recurrentes
+              Revisar recurrentes
             </a>
             <app-button variant="outline" size="sm" [disabled]="!resultado.acciones.puedeGuardarPreliminar" (click)="guardarSnapshotPreliminar()">
               {{ guardandoSnapshot() ? 'Guardando...' : 'Guardar resultado preliminar' }}
@@ -1340,10 +1340,10 @@
             Revisar base de nomina
           </app-button>
           <a routerLink="/remuneraciones/novedades-mensuales" class="text-sm font-medium text-blue-700 underline">
-            Revisar movimientos del mes
+            Revisar movimientos
           </a>
           <a routerLink="/remuneraciones/haberes-descuentos" class="text-sm font-medium text-blue-700 underline">
-            Revisar asignaciones recurrentes
+            Revisar recurrentes
           </a>
         </section>
       }

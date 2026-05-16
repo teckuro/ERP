@@ -190,12 +190,12 @@ describe('NovedadesMensualesContainer', () => {
     expect(component.totalNovedades()).toBe(1);
   });
 
-  it('muestra estado vacio cuando no hay movimientos del mes', async () => {
+  it('muestra estado vacio cuando no hay movimientos del periodo', async () => {
     fixture.detectChanges();
     await fixture.whenStable();
     fixture.detectChanges();
 
-    expect(fixture.nativeElement.textContent).toContain('No hay movimientos del mes registrados');
+    expect(fixture.nativeElement.textContent).toContain('Aun no hay movimientos para este periodo');
   });
 
   it('renderiza titulo visible y no muestra lenguaje legacy en texto de usuario', async () => {
@@ -203,7 +203,10 @@ describe('NovedadesMensualesContainer', () => {
     await esperarCargaInicial(fixture);
 
     const text = fixture.nativeElement.textContent as string;
-    expect(text).toContain('Movimientos del mes');
+    expect(text).toContain('Movimientos de remuneracion');
+    expect(text).toContain('Este mes');
+    expect(text).toContain('Recurrentes');
+    expect(text).toContain('En cuotas');
     expect(text).toContain('Registrar movimiento');
     expect(text).not.toContain('Novedades mensuales');
     expect(text).not.toContain('Movimiento variable');

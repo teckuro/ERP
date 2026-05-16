@@ -1,6 +1,19 @@
+## Regla anti-card
+
+- Evitar cards repetidas sin jerarquia.
+- Antes de usar card, evaluar franja operativa, registro de bitacora, panel dividido, linea de estado, lista de revision, bloque editorial, tabla contextual, disclosure o MessageBox.
+- Una card solo corresponde si el bloque representa entidad, resumen, decision, resultado agrupado o ficha/expediente acotado.
+
+## 2026-05-15 - NOM-MOVIMIENTOS-SIMPLE-00
+
+- **Remuneraciones:** fase documental para unificar conceptualmente `Movimientos del mes` y `Asignaciones recurrentes` bajo `Movimientos de remuneracion`.
+- **Duracion visible:** se definen `Solo este mes`, `Recurrente` y `En cuotas` como lectura simple para RRHH.
+- **Preparar nomina:** queda recomendado mostrar resumen de movimientos detectados y accion `Revisar movimientos`, sin duplicar edicion.
+- **Restricciones:** sin Angular, rutas, SQL/RPC/RLS, motor, liquidaciones, servicios productivos, mappers, payloads ni estilos globales.
 ## 2026-05-15 - PARAM-BITACORA-LAYOUT-ALIGN-01
 
 - **Parametros:** la pantalla se ordena como bitacora normativa del periodo, reforzando cabecera, estado mensual y accion recomendada.
+- **v2: cierre normativo:** la franja principal distingue lectura oficial y configuracion cliente, con el cierre normativo como protagonista.
 - **Tabs:** labels principales mas compactos como navegacion normativa; la logica de tabs no cambia.
 - **Registro activo:** se agrega contexto humano corto para la seccion visible y los filtros del DataGrid quedan con menor peso visual.
 - **Separacion oficial/cliente:** `Configurar cliente` y `Modificar configuracion` se comunican como configuracion cliente; los datos oficiales siguen siendo lectura/referencia.
@@ -936,3 +949,19 @@ Creación avanzada incorpora una identidad de producto local para dejar de senti
 - **Decision postergada:** `Revisar despues` deja de comportarse como pendiente invasivo y queda como decision registrada.
 - **Criterio UX:** la revision queda disponible sin interrumpir repetidamente al usuario.
 - **Restricciones:** sin estilos globales, sin Python, sin wrapper, sin SQL estructural, sin motor y sin nomina/liquidaciones.
+## 2026-05-15 - NOM-MOVIMIENTOS-SIMPLE-01
+
+- **Remuneraciones:** el menu visible pasa a `Movimientos` y deja de presentar `Movimientos del mes` + `Asignaciones recurrentes` como dos accesos principales.
+- **Movimientos:** la pantalla mensual se titula `Movimientos de remuneracion` y muestra vistas `Este mes`, `Recurrentes` y `Todos`.
+- **Recurrentes:** la pantalla de haberes/descuentos se comunica como vista recurrente dentro de la misma experiencia.
+- **Cuotas:** `En cuotas` queda explicado como duracion para prestamos, anticipos o descuentos pactados, sin calculo nuevo.
+- **Restricciones:** sin estilos globales, sin SQL/RPC/RLS, sin motor, sin servicios productivos, sin mappers ni payloads.
+
+## 2026-05-15 - NOM-MOVIMIENTOS-SIMPLE-01-FORM-POLISH
+
+- **Modal:** `Registrar movimiento` deja de ser una grilla plana y se ordena en Movimiento, Duracion, Detalle administrativo y Resumen.
+- **Duracion visible:** se incorporan radio cards para `Solo este mes`, `Recurrente` y `En cuotas`.
+- **Cuotas:** `En cuotas` se explica para prestamos, anticipos, reintegros o descuentos pactados y muestra campos UI especificos.
+- **Detalle:** `Cantidad` queda como dato administrativo de unidad, separado de `Cantidad de cuotas`.
+- **Resumen:** se agrega lectura RRHH antes de guardar, sin afirmar cambios de calculo.
+- **Restricciones:** sin estilos globales, sin SQL/RPC/RLS, sin motor, sin servicios productivos, sin mappers, sin rutas ni payloads.

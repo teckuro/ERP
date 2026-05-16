@@ -67,6 +67,11 @@ export const routes: Routes = [
               import('./pages/haberes-descuentos.page').then((m) => m.HaberesDescuentosPage),
           },
           {
+            path: 'movimientos',
+            pathMatch: 'full',
+            redirectTo: 'novedades-mensuales',
+          },
+          {
             path: 'movimientos-variables',
             pathMatch: 'full',
             redirectTo: 'novedades-mensuales',

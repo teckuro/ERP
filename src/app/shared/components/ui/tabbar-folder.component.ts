@@ -25,12 +25,16 @@ import { Component, HostBinding, Input } from '@angular/core';
 
       .folder-shell {
         position: relative;
+        display: flex;
+        flex-direction: column;
+        gap: 0;
         width: 100%;
       }
 
       .folder-header {
         position: relative;
         z-index: 2;
+        margin-bottom: -1px;
       }
 
       .folder-body {

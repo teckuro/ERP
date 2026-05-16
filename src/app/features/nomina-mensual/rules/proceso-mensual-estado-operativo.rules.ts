@@ -97,20 +97,20 @@ export interface ProcesoMensualEstadoOperativoInput {
 
 const ACCESOS_RAPIDOS: ProcesoMensualPendienteVm[] = [
   {
-    codigo: 'MOVIMIENTOS_MES',
-    titulo: 'Movimientos del mes',
-    descripcion: 'Revisar bonos, descuentos, anticipos o ajustes del periodo.',
+    codigo: 'MOVIMIENTOS_REMUNERACION',
+    titulo: 'Movimientos de remuneracion',
+    descripcion: 'Revisar bonos, descuentos, anticipos, recurrentes y cuotas que impactan el periodo.',
     severidad: 'neutral',
     ruta: '/remuneraciones/novedades-mensuales',
-    accionLabel: 'Revisar movimientos del mes',
+    accionLabel: 'Revisar movimientos',
   },
   {
-    codigo: 'ASIGNACIONES_RECURRENTES',
-    titulo: 'Asignaciones recurrentes',
-    descripcion: 'Revisar asignaciones vigentes que entran a la base.',
+    codigo: 'MOVIMIENTOS_RECURRENTES',
+    titulo: 'Vista recurrente',
+    descripcion: 'Administrar movimientos vigentes que se repiten mes a mes.',
     severidad: 'neutral',
     ruta: '/remuneraciones/haberes-descuentos',
-    accionLabel: 'Revisar asignaciones recurrentes',
+    accionLabel: 'Revisar recurrentes',
   },
   {
     codigo: 'PARAMETROS',
@@ -230,7 +230,7 @@ export function resolverEstadoOperativoProcesoMensual(
       titulo: 'Pendiente de validacion',
       descripcion: 'Selecciona y valida un periodo antes de preparar la nomina.',
       severidad: 'neutral',
-      accionPrincipal: local('Validar periodo', 'Revisa trabajadores, parametros, asignaciones recurrentes y movimientos del mes.', 'validarPeriodo', !input.periodoValido),
+      accionPrincipal: local('Validar periodo', 'Revisa trabajadores, parametros y movimientos de remuneracion.', 'validarPeriodo', !input.periodoValido),
       etapaActiva: 'validar',
       disclosureActivo: 'base',
       queFaltaAhora: [info('VALIDAR_PERIODO', 'Validar periodo', 'Selecciona un periodo valido y valida para detectar bloqueos, advertencias y tareas pendientes.')],
@@ -262,7 +262,7 @@ export function resolverEstadoOperativoProcesoMensual(
     etapaActiva: 'base',
     disclosureActivo: 'base',
     queFaltaAhora: [
-      info('FALTA_BASE', 'Generar base de nomina', 'La base consolida trabajadores aptos, movimientos del mes y asignaciones recurrentes.'),
+      info('FALTA_BASE', 'Generar base de nomina', 'La base consolida trabajadores aptos y movimientos de remuneracion del periodo.'),
       ...input.advertenciasPrevalidacion,
     ],
   });

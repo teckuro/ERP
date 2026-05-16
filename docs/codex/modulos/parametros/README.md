@@ -54,3 +54,5 @@ La reconciliacion oficial/cliente registra `Revisar despues` como decision expli
 ## PARAM-BITACORA-LAYOUT-ALIGN-01
 
 Parametros alinea su layout visible al patron `Bitacora Operativa / NOIA`: cabecera normativa del periodo, accion de configuracion cliente mas clara, tabs compactos, contexto humano de la seccion activa y filtros con menor peso visual. No cambia la separacion oficial/cliente, reconciliacion, Python, wrapper, SQL ni servicios. Ver [`../../diseno/param-bitacora-layout-align-01.md`](../../diseno/param-bitacora-layout-align-01.md).
+
+La v2 deja Parametros como cierre normativo protagonista: distingue lectura oficial de configuracion cliente y mantiene el scope solo en layout local/documentacion.

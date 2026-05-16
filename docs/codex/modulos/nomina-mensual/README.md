@@ -164,3 +164,13 @@ Nomina mensual queda alineada a [`NOIA / Bitacora Operativa`](../../diseno/bitac
 - Los resultados preliminares y cierres deben sentirse como registros del periodo, no como pantallas sueltas de calculo.
 - Fase futura recomendada: `NOM-MOVIMIENTOS-UNIFICADOS-UX-01` para ordenar `Movimientos de remuneracion`.
 - Esta referencia es documental; no cambia motor, SQL, liquidaciones, servicios ni estilos globales.
+
+## NOM-MOVIMIENTOS-SIMPLE-00
+
+La decision documental vigente define `Movimientos de remuneracion` como experiencia futura que unifica `Movimientos del mes` y `Asignaciones recurrentes` desde la duracion del registro: `Solo este mes`, `Recurrente` o `En cuotas`. Documento rector: [`../remuneraciones/movimientos-remuneracion-simple.md`](../remuneraciones/movimientos-remuneracion-simple.md).
+
+Esta fase no cambia rutas, servicios, SQL, motor ni pantallas actuales.
+
+## NOM-MOVIMIENTOS-SIMPLE-01
+
+Preparar nomina queda alineado a la primera capa visible de `Movimientos de remuneracion`: sus accesos y textos hablan de movimientos del periodo y recurrentes como vistas de una misma gestion. No duplica edicion ni cambia el calculo, SQL, servicios, mappers o payloads.

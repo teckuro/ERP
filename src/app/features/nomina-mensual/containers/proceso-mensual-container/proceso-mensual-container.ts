@@ -774,10 +774,10 @@ export class ProcesoMensualContainer {
     if (totalMovimientosMes === 0) {
       advertencias.push({
         codigo: 'ADV-001',
-        titulo: 'No hay movimientos del mes registrados',
-        descripcion: 'Puedes continuar si este periodo no requiere movimientos puntuales.',
+        titulo: 'No hay movimientos del periodo registrados',
+        descripcion: 'Puedes continuar si este periodo no requiere bonos, descuentos, anticipos o ajustes.',
         severidad: 'advertencia',
-        accionLabel: 'Revisar movimientos del mes',
+        accionLabel: 'Revisar movimientos',
         ruta: '/remuneraciones/novedades-mensuales',
       });
     }
@@ -785,10 +785,10 @@ export class ProcesoMensualContainer {
     if (resultado.resumen.recurrentesAplicablesAlPeriodo === 0) {
       advertencias.push({
         codigo: 'ADV-002',
-        titulo: 'No hay asignaciones recurrentes activas',
-        descripcion: 'Puedes continuar si no aplican asignaciones recurrentes para este periodo.',
+        titulo: 'No hay movimientos recurrentes activos',
+        descripcion: 'Puedes continuar si no aplican movimientos recurrentes para este periodo.',
         severidad: 'advertencia',
-        accionLabel: 'Revisar asignaciones recurrentes',
+        accionLabel: 'Revisar recurrentes',
         ruta: '/remuneraciones/haberes-descuentos',
       });
     }
@@ -834,16 +834,16 @@ export class ProcesoMensualContainer {
     if (totalMovimientosMes > 0) {
       informaciones.push({
         codigo: 'INFO-003',
-        titulo: 'Movimientos del mes cargados',
-        descripcion: 'Hay movimientos del mes disponibles para la revision del periodo.',
+        titulo: 'Movimientos del periodo cargados',
+        descripcion: 'Hay movimientos de remuneracion disponibles para la revision del periodo.',
         severidad: 'info',
       });
     }
     if (resultado.resumen.recurrentesAplicablesAlPeriodo > 0) {
       informaciones.push({
         codigo: 'INFO-004',
-        titulo: 'Asignaciones recurrentes cargadas',
-        descripcion: 'Hay asignaciones recurrentes vigentes consideradas para el periodo.',
+        titulo: 'Movimientos recurrentes cargados',
+        descripcion: 'Hay movimientos recurrentes vigentes considerados para el periodo.',
         severidad: 'info',
       });
     }
@@ -1426,10 +1426,10 @@ export class ProcesoMensualContainer {
       case 'CONCEPTOS':
         return 'Conceptos de remuneracion';
       case 'HABERES_RECURRENTES':
-        return 'Asignaciones recurrentes';
+        return 'Movimientos recurrentes';
       case 'ENTRADAS_MENSUALES':
       case 'MOVIMIENTOS_VARIABLES':
-        return 'Movimientos del mes';
+        return 'Movimientos del periodo';
       case 'PROCESO':
         return 'Preparacion del periodo';
       default:
@@ -1471,7 +1471,7 @@ export class ProcesoMensualContainer {
       case 'CONCEPTOS':
         return { label: 'Revisar conceptos', route: '/remuneraciones/conceptos' };
       case 'HABERES_RECURRENTES':
-        return { label: 'Revisar asignaciones', route: '/remuneraciones/haberes-descuentos' };
+        return { label: 'Revisar recurrentes', route: '/remuneraciones/haberes-descuentos' };
       case 'ENTRADAS_MENSUALES':
       case 'MOVIMIENTOS_VARIABLES':
         return { label: 'Revisar movimientos', route: '/remuneraciones/novedades-mensuales' };
@@ -1895,8 +1895,8 @@ export class ProcesoMensualContainer {
   private tituloMensajeOperativo(mensaje: ProcesoMensualMensaje): string {
     if (mensaje.area === 'PARAMETROS') return 'Parametros del periodo por revisar';
     if (mensaje.area === 'TRABAJADORES') return 'Trabajadores por revisar';
-    if (mensaje.area === 'HABERES_RECURRENTES') return 'Asignaciones recurrentes por revisar';
-    if (mensaje.area === 'ENTRADAS_MENSUALES' || mensaje.area === 'MOVIMIENTOS_VARIABLES') return 'Movimientos del mes por revisar';
+    if (mensaje.area === 'HABERES_RECURRENTES') return 'Movimientos recurrentes por revisar';
+    if (mensaje.area === 'ENTRADAS_MENSUALES' || mensaje.area === 'MOVIMIENTOS_VARIABLES') return 'Movimientos del periodo por revisar';
     if (mensaje.area === 'CONCEPTOS') return 'Conceptos de remuneracion por revisar';
     return 'Preparacion del periodo por revisar';
   }
@@ -2155,10 +2155,10 @@ export class ProcesoMensualContainer {
   ): Pick<ResultadoObservacionView, 'accionLabel' | 'ruta'> {
     const origen = issues.map((issue) => `${issue.origen} ${issue.codigo}`.toLowerCase()).join(' ');
     if (origen.includes('entrada') || origen.includes('movimiento')) {
-      return { accionLabel: 'Revisar movimientos del mes', ruta: '/remuneraciones/novedades-mensuales' };
+      return { accionLabel: 'Revisar movimientos', ruta: '/remuneraciones/novedades-mensuales' };
     }
     if (origen.includes('recurrente') || origen.includes('haber')) {
-      return { accionLabel: 'Revisar asignaciones recurrentes', ruta: '/remuneraciones/haberes-descuentos' };
+      return { accionLabel: 'Revisar recurrentes', ruta: '/remuneraciones/haberes-descuentos' };
     }
     return { accionLabel: 'Revisar base de nomina' };
   }

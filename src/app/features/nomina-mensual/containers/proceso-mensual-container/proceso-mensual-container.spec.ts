@@ -685,7 +685,7 @@ describe('ProcesoMensualContainer', () => {
     );
     const text = fixture.nativeElement.textContent as string;
     expect(text).toContain('Con advertencias');
-    expect(text).toContain('No hay movimientos del mes registrados');
+    expect(text).toContain('No hay movimientos del periodo registrados');
     expect(text).toContain('No bloquea el calculo preliminar.');
     expect(calcular?.disabled).toBe(false);
   });
@@ -876,7 +876,7 @@ describe('ProcesoMensualContainer', () => {
     expect(text).toContain('Listos para calculo');
     expect(text).toContain('Con observaciones');
     expect(text).toContain('Bloqueados');
-    expect(text).toContain('Asignaciones recurrentes incluidas');
+    expect(text).toContain('Recurrentes incluidos');
     expect(text).toContain('Movimientos del mes incluidos');
     expect(text).toContain('Ana Perez');
     expect(text).toContain('11.111.111-1');
@@ -888,8 +888,8 @@ describe('ProcesoMensualContainer', () => {
     expect(text).toContain('Entradas consideradas');
     expect(text).toContain('Parametros del periodo');
     expect(text).toContain('Revisar parametros');
-    expect(text).toContain('Revisar movimientos del mes');
-    expect(text).toContain('Revisar asignaciones recurrentes');
+    expect(text).toContain('Revisar movimientos');
+    expect(text).toContain('Revisar recurrentes');
     expect(text).toContain('Actualizar base de nomina');
   });
 

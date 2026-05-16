@@ -1,12 +1,12 @@
-<section class="nm-page" aria-label="Movimientos del mes">
+<section class="nm-page" aria-label="Movimientos de remuneracion">
   <header class="nm-head">
     <app-record-breadcrumb
       [items]="breadcrumbItems"
-      title="Movimientos del mes"
+      title="Movimientos de remuneracion"
     ></app-record-breadcrumb>
     <p class="nm-lead">
-      Registra bonos, descuentos, anticipos, ausencias, ajustes u otros hechos puntuales del periodo antes de preparar
-      la nomina.
+      Registra y revisa bonos, descuentos, anticipos, prestamos, asignaciones y ajustes que afectan la remuneracion del
+      periodo.
     </p>
 
     <div class="nm-head-actions">
@@ -16,7 +16,7 @@
           <span class="nm-period-global-v">{{ periodoActivo.etiqueta() }}</span>
         </div>
         <p class="nm-period-hint">
-          Registra los movimientos del periodo antes de preparar la nomina.
+          Primero registra que afecta la remuneracion. Despues define si ocurre una vez, se repite o se pacta en cuotas.
         </p>
       </div>
       <div class="nm-head-buttons">
@@ -32,33 +32,41 @@
     </div>
   </header>
 
-  <app-card>
-    <app-card-header className="px-4 py-3 border-b border-gray-100">
-      <div class="flex flex-wrap items-center justify-between gap-2">
-        <div>
-          <h2 class="text-sm font-semibold text-gray-900">Resumen del periodo</h2>
-          <p class="nm-form-sub">Periodo activo: {{ periodoActivo.etiqueta() }}</p>
-        </div>
-      </div>
-    </app-card-header>
-    <app-card-content className="px-4 py-3">
-      <div class="nm-context-grid">
-        @for (item of resumenPeriodo(); track item.label) {
-          <div class="nm-context-card">
-            <span class="nm-context-k">{{ item.label }}</span>
-            <strong>{{ item.total }}</strong>
-          </div>
-        }
-      </div>
-    </app-card-content>
-  </app-card>
+  <section class="nm-view-folder">
+    <nav class="nm-view-tabs" aria-label="Vistas de movimientos de remuneracion">
+      <a routerLink="/remuneraciones/novedades-mensuales" class="is-active" aria-current="page">Este mes</a>
+      <a routerLink="/remuneraciones/haberes-descuentos">Recurrentes</a>
+      <span aria-disabled="true">Todos</span>
+    </nav>
 
-  <div class="nm-nomina-hint" role="note">
-    <p>
-      Los movimientos aprobados del periodo se consideran al preparar la nomina. Los borradores o pendientes no se
-      incorporan todavia.
-    </p>
-  </div>
+    <div class="nm-view-panel">
+      <app-card className="nm-summary-card">
+        <app-card-header className="px-4 py-3 border-b border-gray-100">
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <div>
+              <h2 class="text-sm font-semibold text-gray-900">Franja operativa del periodo</h2>
+              <p class="nm-form-sub">Revisa todo lo que impacta la remuneracion de {{ periodoActivo.etiqueta() }}.</p>
+            </div>
+          </div>
+        </app-card-header>
+        <app-card-content className="px-4 py-3">
+          <div class="nm-context-grid">
+            @for (item of resumenPeriodo(); track item.label) {
+              <div class="nm-context-card">
+                <span class="nm-context-k">{{ item.label }}</span>
+                <strong>{{ item.total }}</strong>
+              </div>
+            }
+          </div>
+        </app-card-content>
+      </app-card>
+
+      <div class="nm-nomina-hint" role="note">
+        <p>
+          Duracion del movimiento: Solo este mes, Recurrente o En cuotas. En cuotas se usa para prestamos, anticipos o
+          descuentos pactados en una cantidad definida de meses; esta fase solo prepara el lenguaje visible.
+        </p>
+      </div>
 
   @if (formAbierto()) {
     <div class="nm-modal-root" role="presentation">
@@ -81,7 +89,8 @@
           }
 
           <div class="nm-form-section">
-            <h3>Datos principales</h3>
+            <h3>Movimiento</h3>
+            <p class="nm-section-help">Define el trabajador, concepto, tipo y monto que impactara la remuneracion.</p>
             <div class="nm-form-grid">
               <label class="nm-field nm-form-span2" [attr.data-nm-error]="!!errorCampo('idPersona')">
                 <span class="nm-field-label">Trabajador</span>
@@ -143,6 +152,7 @@
                   min="0"
                   step="1"
                   class="nm-input"
+                  placeholder="Ej: 80000"
                   [class.nm-input--invalid]="!!errorCampo('monto')"
                   [ngModel]="form().monto"
                   (ngModelChange)="actualizarForm('monto', $event == null || $event === '' ? null : +$event)"
@@ -165,7 +175,153 @@
           </div>
 
           <div class="nm-form-section">
-            <h3>Detalle opcional</h3>
+            <h3>Duracion del movimiento</h3>
+            <p class="nm-section-help">
+              Indica si se aplica una vez, se repite todos los meses o se paga/descuenta en cuotas.
+            </p>
+
+            <div class="nm-duration-grid" [attr.data-nm-error]="!!errorCampo('duracionMovimiento')">
+              @for (item of duracionesMovimiento; track item.id) {
+                <label class="nm-duration-card" [class.is-active]="form().duracionMovimiento === item.id">
+                  <input
+                    type="radio"
+                    name="nm-duracion-movimiento"
+                    [value]="item.id"
+                    [ngModel]="form().duracionMovimiento"
+                    (ngModelChange)="seleccionarDuracion($event)"
+                  />
+                  <span class="nm-duration-title">{{ item.label }}</span>
+                  <span class="nm-duration-desc">{{ item.description }}</span>
+                </label>
+              }
+            </div>
+            @if (errorCampo('duracionMovimiento')) {
+              <small class="nm-field-error">{{ errorCampo('duracionMovimiento') }}</small>
+            }
+
+            @if (form().duracionMovimiento === 'solo_mes') {
+              <div class="nm-duration-note">Este movimiento se aplicara solo en el periodo activo.</div>
+            }
+
+            @if (form().duracionMovimiento === 'recurrente') {
+              <div class="nm-duration-config">
+                <p class="nm-duration-note">
+                  Se repetira cada mes desde el periodo de inicio hasta que sea pausado, finalizado o llegue a su
+                  termino.
+                </p>
+                <div class="nm-form-grid nm-form-grid--compact">
+                  <label class="nm-field" [attr.data-nm-error]="!!errorCampo('periodoInicio')">
+                    <span class="nm-field-label">Periodo de inicio</span>
+                    <input
+                      type="month"
+                      class="nm-input"
+                      [class.nm-input--invalid]="!!errorCampo('periodoInicio')"
+                      [ngModel]="form().periodoInicio"
+                      (ngModelChange)="actualizarForm('periodoInicio', $event)"
+                    />
+                    @if (errorCampo('periodoInicio')) {
+                      <small class="nm-field-error">{{ errorCampo('periodoInicio') }}</small>
+                    }
+                  </label>
+                  <label class="nm-field">
+                    <span class="nm-field-label">Periodo de termino, opcional</span>
+                    <input
+                      type="month"
+                      class="nm-input"
+                      [ngModel]="form().periodoTermino"
+                      (ngModelChange)="actualizarForm('periodoTermino', $event)"
+                    />
+                  </label>
+                </div>
+              </div>
+            }
+
+            @if (form().duracionMovimiento === 'cuotas') {
+              <div class="nm-duration-config">
+                <p class="nm-duration-note">
+                  Usa esta opcion para prestamos, anticipos, reintegros o descuentos pactados en varios meses.
+                  Ejemplo: prestamo empresa de $300.000 en 6 cuotas de $50.000.
+                </p>
+                <div class="nm-form-grid nm-form-grid--compact">
+                  <label class="nm-field" [attr.data-nm-error]="!!errorCampo('cantidadCuotas')">
+                    <span class="nm-field-label">Cantidad de cuotas</span>
+                    <input
+                      type="number"
+                      min="1"
+                      step="1"
+                      class="nm-input"
+                      [class.nm-input--invalid]="!!errorCampo('cantidadCuotas')"
+                      [ngModel]="form().cantidadCuotas"
+                      (ngModelChange)="actualizarForm('cantidadCuotas', $event == null || $event === '' ? null : +$event)"
+                    />
+                    @if (errorCampo('cantidadCuotas')) {
+                      <small class="nm-field-error">{{ errorCampo('cantidadCuotas') }}</small>
+                    }
+                  </label>
+                  <label class="nm-field" [attr.data-nm-error]="!!errorCampo('montoCuota')">
+                    <span class="nm-field-label">Monto por cuota</span>
+                    <input
+                      type="number"
+                      min="0"
+                      step="1"
+                      class="nm-input"
+                      placeholder="Ej: 50000"
+                      [class.nm-input--invalid]="!!errorCampo('montoCuota')"
+                      [ngModel]="form().montoCuota"
+                      (ngModelChange)="actualizarForm('montoCuota', $event == null || $event === '' ? null : +$event)"
+                    />
+                    @if (errorCampo('montoCuota')) {
+                      <small class="nm-field-error">{{ errorCampo('montoCuota') }}</small>
+                    }
+                  </label>
+                  <label class="nm-field" [attr.data-nm-error]="!!errorCampo('cuotaInicial')">
+                    <span class="nm-field-label">Cuota inicial</span>
+                    <input
+                      type="number"
+                      min="1"
+                      step="1"
+                      class="nm-input"
+                      [class.nm-input--invalid]="!!errorCampo('cuotaInicial')"
+                      [ngModel]="form().cuotaInicial"
+                      (ngModelChange)="actualizarForm('cuotaInicial', $event == null || $event === '' ? null : +$event)"
+                    />
+                    @if (errorCampo('cuotaInicial')) {
+                      <small class="nm-field-error">{{ errorCampo('cuotaInicial') }}</small>
+                    }
+                  </label>
+                  <label class="nm-field" [attr.data-nm-error]="!!errorCampo('periodoInicio')">
+                    <span class="nm-field-label">Periodo de inicio</span>
+                    <input
+                      type="month"
+                      class="nm-input"
+                      [class.nm-input--invalid]="!!errorCampo('periodoInicio')"
+                      [ngModel]="form().periodoInicio"
+                      (ngModelChange)="actualizarForm('periodoInicio', $event)"
+                    />
+                    @if (errorCampo('periodoInicio')) {
+                      <small class="nm-field-error">{{ errorCampo('periodoInicio') }}</small>
+                    }
+                  </label>
+                  <label class="nm-field">
+                    <span class="nm-field-label">Periodo estimado de termino</span>
+                    <input
+                      type="month"
+                      class="nm-input"
+                      [ngModel]="form().periodoTermino"
+                      (ngModelChange)="actualizarForm('periodoTermino', $event)"
+                    />
+                  </label>
+                </div>
+              </div>
+            }
+          </div>
+
+          <div class="nm-form-section nm-form-section--admin">
+            <h3>Detalle administrativo opcional</h3>
+            <p class="nm-section-help">
+              Completa esta informacion solo si necesitas dejar una referencia interna, contrato asociado u observacion
+              administrativa.
+            </p>
             <div class="nm-form-grid">
               <label class="nm-field" [attr.data-nm-error]="!!errorCampo('categoria')">
                 <span class="nm-field-label">Categoria</span>
@@ -213,6 +369,7 @@
 
               <label class="nm-field" [attr.data-nm-error]="!!errorCampo('cantidad')">
                 <span class="nm-field-label">Cantidad</span>
+                <span class="nm-field-help">Unidad administrativa; no corresponde a cantidad de cuotas.</span>
                 <input
                   type="number"
                   min="0"
@@ -258,29 +415,15 @@
             </div>
           </div>
 
-          @if (resumenFormulario().visible) {
-            <section class="nm-form-summary" aria-label="Resumen antes de guardar">
-              <h3>Resumen</h3>
-              <dl>
-                <div>
-                  <dt>Trabajador</dt>
-                  <dd>{{ resumenFormulario().trabajador || 'Sin seleccionar' }}</dd>
-                </div>
-                <div>
-                  <dt>Concepto</dt>
-                  <dd>{{ resumenFormulario().concepto || 'Sin seleccionar' }}</dd>
-                </div>
-                <div>
-                  <dt>Monto</dt>
-                  <dd>{{ resumenFormulario().monto || 'Sin monto' }}</dd>
-                </div>
-                <div>
-                  <dt>Periodo</dt>
-                  <dd>{{ resumenFormulario().periodo }}</dd>
-                </div>
-              </dl>
-            </section>
-          }
+          <section class="nm-form-summary" aria-label="Resumen antes de guardar">
+            <h3>Resumen</h3>
+            @if (resumenFormulario().principal) {
+              <p class="nm-summary-main">{{ resumenFormulario().principal }}</p>
+              <p class="nm-summary-detail">{{ resumenFormulario().detalleDuracion }}</p>
+            } @else {
+              <p class="nm-summary-detail">Completa trabajador, concepto y monto para ver el resumen del movimiento.</p>
+            }
+          </section>
         </div>
 
         <footer class="nm-modal-footer">
@@ -327,8 +470,8 @@
         [selectable]="false"
         [trackBy]="trackNovedad"
         gridHeight="min(34rem, calc(100vh - 26rem))"
-        emptyTitle="No hay movimientos del mes registrados"
-        emptyDescription="Todavia no se han registrado bonos, descuentos, anticipos, ausencias o ajustes para el periodo activo. Usa Registrar movimiento para crear el primero."
+        emptyTitle="Aun no hay movimientos para este periodo"
+        emptyDescription="Registra bonos, descuentos, anticipos o asignaciones que deban impactar esta nomina."
       >
         <ng-template appDataGridCell="estado" let-row>
           <span [class]="claseEstado(row.estado)">{{ etiquetaEstado(row.estado) }}</span>
@@ -358,6 +501,8 @@
       </app-data-grid>
     </app-card-content>
   </app-card>
+    </div>
+  </section>
 
   @if (mensaje(); as msg) {
     <app-message-box

@@ -8,36 +8,6 @@ import { FormGroup, ReactiveFormsModule } from '@angular/forms';
   imports: [CommonModule, ReactiveFormsModule],
   template: `
     <form class="tab-panel parametros-tab-panel parametros-form" [formGroup]="form" (ngSubmit)="onSubmit?.()">
-      @if (!hasPeriodoData) {
-        <section class="param-pending-notice" aria-label="Estado de carga mensual">
-          <div>
-            <h2>
-              @if (hasClienteConfig) {
-                Configuracion cliente para {{ periodoLabel }}.
-              } @else if (referenciaPeriodoLabel) {
-                Valores de referencia disponibles.
-              } @else {
-                Sin base mensual para {{ periodoLabel }}.
-              }
-            </h2>
-            <p>
-              @if (hasClienteConfig) {
-                La configuracion pertenece al periodo seleccionado; los oficiales siguen pendientes.
-              } @else if (referenciaPeriodoLabel) {
-                Estos valores son una referencia anterior. La carga oficial del periodo aun no esta disponible.
-              } @else {
-                Puedes crear una configuracion inicial desde Modificar.
-              }
-            </p>
-          </div>
-          @if (!hasClienteConfig && referenciaPeriodoLabel) {
-            <button type="button" class="param-reference-callout__action" (click)="verReferenciaPeriodoAnterior?.()">
-              Ver referencia {{ referenciaPeriodoLabel }}
-            </button>
-          }
-        </section>
-      }
-
       <section class="param-group parametros-section-card" aria-labelledby="indicadores-title">
         <h2 id="indicadores-title">Indicadores mensuales</h2>
         <p class="param-section-lead">UF, UTM y UTA del periodo.</p>

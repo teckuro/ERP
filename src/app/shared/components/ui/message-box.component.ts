@@ -4,13 +4,14 @@ import { LucideAngularModule } from 'lucide-angular';
 import {
   AlertCircle,
   CheckCircle2,
+  CircleHelp,
   Info,
   LoaderCircle,
   TriangleAlert,
   X as XIcon,
 } from 'lucide-angular/src/icons';
 
-export type MessageBoxVariant = 'success' | 'error' | 'warning' | 'info' | 'loading';
+export type MessageBoxVariant = 'success' | 'error' | 'warning' | 'info' | 'confirm' | 'loading';
 export type MessageBoxMode = 'inline' | 'modal';
 
 @Component({
@@ -27,20 +28,7 @@ export type MessageBoxMode = 'inline' | 'modal';
       [attr.aria-modal]="mode === 'modal'"
       [attr.aria-live]="liveRegion()"
     >
-      @if (useModalHeadlineLayout()) {
-        <div class="message-modal-headline-row">
-          @if (title) {
-            <p class="message-title message-title--headline">{{ title }}</p>
-          }
-          <div class="message-icon" aria-hidden="true">
-            <lucide-icon
-              class="message-icon-svg"
-              [class.message-icon-spin]="variant === 'loading'"
-              [img]="icon()"
-            ></lucide-icon>
-          </div>
-        </div>
-      } @else {
+      <header class="message-header">
         <div class="message-icon" aria-hidden="true">
           <lucide-icon
             class="message-icon-svg"
@@ -48,14 +36,22 @@ export type MessageBoxMode = 'inline' | 'modal';
             [img]="icon()"
           ></lucide-icon>
         </div>
-      }
 
-      <!-- Un solo ng-content: Angular proyecta solo en el primer slot del template; antes el bloque de “Próximo paso” no llegaba en modo headline. -->
-      <div class="message-copy" [class.message-copy--headline]="useModalHeadlineLayout()">
-        @if (!useModalHeadlineLayout() && title) {
-          <p class="message-title">{{ title }}</p>
+        <div class="message-heading">
+          @if (title) {
+            <p class="message-title">{{ title }}</p>
+          }
+        </div>
+
+        @if (dismissible) {
+          <button type="button" class="message-dismiss" [attr.aria-label]="dismissLabel" (click)="dismiss.emit()">
+            <lucide-icon class="message-dismiss-icon" [img]="closeIcon"></lucide-icon>
+          </button>
         }
+      </header>
 
+      <!-- Un solo ng-content: Angular proyecta solo en el primer slot del template. -->
+      <div class="message-body" [class.message-copy--headline]="useModalHeadlineLayout()">
         @if (message) {
           <p class="message-text">{{ message }}</p>
         }
@@ -67,16 +63,16 @@ export type MessageBoxMode = 'inline' | 'modal';
         <ng-content></ng-content>
       </div>
 
-      <div class="message-actions" [class.message-actions--headline]="useModalHeadlineLayout()">
-        @if (tertiaryLabel) {
-          <button type="button" class="message-button message-button-secondary" (click)="tertiary.emit()">
-            {{ tertiaryLabel }}
-          </button>
-        }
-
+      <footer class="message-actions" [class.message-actions--headline]="useModalHeadlineLayout()">
         @if (secondaryLabel) {
           <button type="button" class="message-button message-button-secondary" (click)="secondary.emit()">
             {{ secondaryLabel }}
+          </button>
+        }
+
+        @if (tertiaryLabel) {
+          <button type="button" class="message-button message-button-secondary" (click)="tertiary.emit()">
+            {{ tertiaryLabel }}
           </button>
         }
 
@@ -92,12 +88,7 @@ export type MessageBoxMode = 'inline' | 'modal';
           </button>
         }
 
-        @if (dismissible) {
-          <button type="button" class="message-dismiss" [attr.aria-label]="dismissLabel" (click)="dismiss.emit()">
-            <lucide-icon class="message-dismiss-icon" [img]="closeIcon"></lucide-icon>
-          </button>
-        }
-      </div>
+      </footer>
     </section>
   `,
   styles: [
@@ -119,138 +110,44 @@ export type MessageBoxMode = 'inline' | 'modal';
 
       .message-box {
         display: grid;
-        grid-template-columns: auto minmax(0, 1fr) auto;
-        gap: 12px;
-        align-items: start;
+        grid-template-columns: minmax(0, 1fr);
+        gap: 0;
         width: 100%;
-        border: 1px solid #daddd6;
+        border: 1px solid #d8dee8;
         border-radius: 8px;
         background: #ffffff;
         padding: 12px;
-        color: #172033;
+        color: #111827;
         box-shadow: none;
       }
 
-      .message-modal {
-        grid-template-columns: auto minmax(0, 1fr);
-        width: min(100%, 30rem);
-        border-left-width: 1px;
-        padding: 16px;
-        box-shadow: 0 20px 44px rgba(15, 23, 42, 0.18);
-      }
-
-      /* Modal compacto: título arriba a la izquierda, ícono arriba a la derecha (opt-in desde el padre). */
+      .message-modal,
       .message-modal.message-modal--headline {
-        grid-template-columns: minmax(0, 1fr);
-        grid-template-rows: auto auto auto;
-        gap: 0;
-        align-items: start;
-        width: min(100%, 32rem);
-        padding: 22px 24px 20px;
-        border-radius: 10px;
-        border: 1px solid #daddd6;
-        box-shadow:
-          0 4px 6px -1px rgba(15, 23, 42, 0.05),
-          0 22px 42px -12px rgba(15, 23, 42, 0.16);
-      }
-
-      .message-modal-headline-row {
-        display: flex;
-        align-items: flex-start;
-        justify-content: space-between;
-        gap: 16px;
-        min-width: 0;
-        padding-bottom: 16px;
-        margin-bottom: 4px;
-        border-bottom: 1px solid #eef1ec;
-      }
-
-      .message-title--headline {
-        flex: 1;
-        min-width: 0;
-        margin: 0;
-        color: #172033;
-        font-size: 1.0625rem;
-        font-weight: 600;
-        letter-spacing: -0.02em;
-        line-height: 1.35;
-      }
-
-      .message-modal.message-modal--headline .message-icon {
-        flex-shrink: 0;
-        width: 44px;
-        height: 44px;
-        border-radius: 12px;
-      }
-
-      .message-modal.message-modal--headline .message-icon-svg {
-        width: 22px;
-        height: 22px;
-      }
-
-      .message-copy--headline {
-        display: grid;
-        gap: 0;
-        padding-top: 0;
-      }
-
-      .message-modal.message-modal--headline .message-copy--headline > .message-text {
-        margin: 0 0 16px;
-        max-width: 38rem;
-        color: #647084;
-        font-size: 0.875rem;
-        font-weight: 400;
-        line-height: 1.55;
-      }
-
-      .message-modal.message-modal--headline .message-actions--headline {
-        grid-column: auto;
-        width: 100%;
-        margin-top: 18px;
-        padding-top: 16px;
-        border-top: 1px solid #daddd6;
-      }
-
-      .message-modal.message-modal--headline .message-button-primary {
-        min-height: 36px;
-        padding: 0 16px;
-        font-size: 0.84rem;
-        font-weight: 600;
+        width: min(100%, 34rem);
+        padding: 0;
+        border: 1px solid #cfd7e3;
         border-radius: 8px;
+        background: #ffffff;
+        box-shadow: 0 18px 42px rgba(15, 23, 42, 0.2);
       }
 
-      /* Loading modal: centrado, más limpio y con icono protagonista */
-      .message-modal.message-loading {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        text-align: center;
+      .message-header {
+        display: grid;
+        grid-template-columns: 34px minmax(0, 1fr) auto;
         gap: 10px;
-        padding: 22px 18px;
+        align-items: center;
+        min-width: 0;
+        border-bottom: 1px solid #edf1f5;
+        padding: 12px;
       }
 
-      .message-modal.message-loading .message-icon {
-        width: 44px;
-        height: 44px;
-        border-radius: 12px;
-        background: #eff6ff;
-        color: #2563eb;
+      .message-modal .message-header {
+        grid-template-columns: 38px minmax(0, 1fr) auto;
+        padding: 14px 16px;
       }
 
-      .message-modal.message-loading .message-icon-svg {
-        width: 22px;
-        height: 22px;
-      }
-
-      .message-modal.message-loading .message-copy {
-        padding-top: 0;
-        justify-items: center;
-      }
-
-      .message-modal.message-loading .message-actions,
-      .message-modal.message-loading .message-dismiss {
-        display: none;
+      .message-heading {
+        min-width: 0;
       }
 
       .message-icon {
@@ -259,32 +156,72 @@ export type MessageBoxMode = 'inline' | 'modal';
         justify-content: center;
         width: 32px;
         height: 32px;
-        border-radius: 6px;
+        min-width: 32px;
+        min-height: 32px;
+        border: 1px solid #d8dee8;
+        border-radius: 8px;
         background: #f8fafc;
-        color: #0ea5e9;
+        color: #2563eb;
+        line-height: 1;
+      }
+
+      .message-modal .message-icon,
+      .message-modal.message-modal--headline .message-icon {
+        width: 36px;
+        height: 36px;
+        min-width: 36px;
+        min-height: 36px;
       }
 
       .message-icon-svg,
       .message-dismiss-icon {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
         width: 16px;
         height: 16px;
-        stroke-width: 2.25;
+        line-height: 1;
+        stroke-width: 2.2;
       }
 
-      .message-copy {
+      .message-modal .message-icon-svg,
+      .message-modal.message-modal--headline .message-icon-svg {
+        width: 18px;
+        height: 18px;
+      }
+
+      :host ::ng-deep .message-icon-svg svg,
+      :host ::ng-deep .message-dismiss-icon svg {
+        display: block;
+        width: 100%;
+        height: 100%;
+      }
+
+      .message-body,
+      .message-copy--headline {
         display: grid;
-        gap: 4px;
+        gap: 6px;
         min-width: 0;
-        padding-top: 1px;
+        padding: 12px;
       }
 
-      .message-title {
+      .message-modal .message-body {
+        padding: 14px 16px;
+      }
+
+      .message-title,
+      .message-title--headline {
         margin: 0;
         color: #111827;
-        font-size: 0.9rem;
-        font-weight: 600;
+        font-size: 0.92rem;
+        font-weight: 700;
         letter-spacing: 0;
-        line-height: 1.3;
+        line-height: 1.25;
+      }
+
+      .message-modal .message-title,
+      .message-modal.message-modal--headline .message-title {
+        font-size: 0.98rem;
       }
 
       .message-text,
@@ -292,7 +229,7 @@ export type MessageBoxMode = 'inline' | 'modal';
         margin: 0;
         color: #4b5563;
         font-size: 0.84rem;
-        font-weight: 550;
+        font-weight: 500;
         line-height: 1.45;
       }
 
@@ -300,19 +237,28 @@ export type MessageBoxMode = 'inline' | 'modal';
         white-space: pre-line;
       }
 
-      .message-actions {
+      .message-actions,
+      .message-actions--headline {
         display: inline-flex;
         flex-wrap: wrap;
         gap: 8px;
         justify-content: flex-end;
         min-width: 0;
+        padding: 12px;
+        border-top: 1px solid #edf1f5;
+        background: #f8fafc;
       }
 
-      .message-modal .message-actions {
-        grid-column: 1 / -1;
-        justify-content: flex-end;
+      .message-modal .message-actions,
+      .message-modal.message-modal--headline .message-actions--headline {
         width: 100%;
-        padding-top: 4px;
+        padding: 12px 16px;
+        justify-content: flex-end;
+      }
+
+      .message-modal.message-confirm .message-actions {
+        background: #ffffff;
+        justify-content: flex-end;
       }
 
       .message-button,
@@ -320,13 +266,13 @@ export type MessageBoxMode = 'inline' | 'modal';
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        border: 1px solid #daddd6;
+        border: 1px solid #cfd7e3;
         border-radius: 6px;
         background: #ffffff;
-        color: #4b5563;
+        color: #374151;
         cursor: pointer;
         font-size: 0.82rem;
-        font-weight: 500;
+        font-weight: 650;
         line-height: 1;
         transition: border-color 140ms ease, background 140ms ease, color 140ms ease;
       }
@@ -336,6 +282,19 @@ export type MessageBoxMode = 'inline' | 'modal';
         padding: 0 12px;
       }
 
+      .message-modal .message-button {
+        min-height: 34px;
+        padding: 0 14px;
+      }
+
+      .message-modal .message-button-secondary {
+        background: #ffffff;
+      }
+
+      .message-modal .message-button-primary {
+        min-width: 8.75rem;
+      }
+
       .message-button-primary {
         border-color: #2563eb;
         background: #2563eb;
@@ -343,9 +302,9 @@ export type MessageBoxMode = 'inline' | 'modal';
       }
 
       .message-button-secondary {
-        border-color: #daddd6;
+        border-color: #cfd7e3;
         background: #ffffff;
-        color: #4b5563;
+        color: #374151;
       }
 
       .message-dismiss {
@@ -361,62 +320,48 @@ export type MessageBoxMode = 'inline' | 'modal';
 
       .message-button-secondary:hover,
       .message-dismiss:hover {
-        border-color: #c7d0c4;
-        background: #fafaf7;
-      }
-
-      .message-success {
-        border-color: #bbf7d0;
-        background: #f0fdf4;
+        border-color: #94a3b8;
+        background: #f8fafc;
+        color: #111827;
       }
 
       .message-success .message-icon {
-        background: #ecfdf5;
-        color: #16a34a;
-      }
-
-      /* Éxito en modal headline: sin barra lateral; el check ya indica el estado. */
-      .message-modal.message-modal--headline.message-success {
-        border: 1px solid #daddd6;
-        background: #ffffff;
-      }
-
-      /* Error en modal headline: misma caja neutra que éxito; el ícono indica el estado. */
-      .message-modal.message-modal--headline.message-error {
-        border: 1px solid #daddd6;
-        background: #ffffff;
-      }
-
-      .message-error {
-        border-color: #fecaca;
-        background: #fef2f2;
+        border-color: #bbf7d0;
+        background: #f0fdf4;
+        color: #15803d;
       }
 
       .message-error .message-icon {
+        border-color: #fecaca;
         background: #fef2f2;
         color: #dc2626;
       }
 
-      .message-warning {
+      .message-warning .message-icon {
         border-color: #fde68a;
         background: #fffbeb;
-      }
-
-      .message-warning .message-icon {
-        background: #fffbeb;
-        color: #f59e0b;
-      }
-
-      .message-info,
-      .message-loading {
-        border-color: #bae6fd;
-        background: #f0f9ff;
+        color: #b45309;
       }
 
       .message-info .message-icon,
+      .message-confirm .message-icon,
       .message-loading .message-icon {
-        background: #f0f9ff;
-        color: #0ea5e9;
+        border-color: #bfdbfe;
+        background: #eff6ff;
+        color: #2563eb;
+      }
+
+      .message-loading.message-modal {
+        text-align: left;
+      }
+
+      .message-loading .message-actions,
+      .message-loading .message-dismiss {
+        display: none;
+      }
+
+      .message-loading .message-body {
+        padding-top: 10px;
       }
 
       .message-icon-spin {
@@ -431,29 +376,23 @@ export type MessageBoxMode = 'inline' | 'modal';
 
       @media (max-width: 640px) {
         .message-box,
-        .message-modal {
-          grid-template-columns: auto minmax(0, 1fr);
-        }
-
+        .message-modal,
         .message-modal.message-modal--headline {
-          grid-template-columns: minmax(0, 1fr);
+          width: 100%;
         }
 
-        .message-actions {
-          grid-column: 1 / -1;
-          justify-content: flex-start;
-        }
-
+        .message-actions,
+        .message-modal .message-actions,
         .message-modal.message-modal--headline .message-actions--headline {
+          justify-content: flex-end;
+        }
+
+        .message-modal.message-confirm .message-actions {
           justify-content: flex-end;
         }
 
         .message-button {
           flex: 1 1 auto;
-        }
-
-        .message-modal.message-modal--headline .message-button-primary {
-          flex: 0 0 auto;
         }
       }
 
@@ -496,6 +435,7 @@ export class MessageBoxComponent {
   private readonly errorIcon = AlertCircle;
   private readonly warningIcon = TriangleAlert;
   private readonly infoIcon = Info;
+  private readonly confirmIcon = CircleHelp;
   private readonly loadingIcon = LoaderCircle;
 
   @HostBinding('class.message-box-host-modal')
@@ -531,6 +471,8 @@ export class MessageBoxComponent {
         return this.errorIcon;
       case 'warning':
         return this.warningIcon;
+      case 'confirm':
+        return this.confirmIcon;
       case 'loading':
         return this.loadingIcon;
       default:

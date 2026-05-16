@@ -350,15 +350,9 @@ export class SidebarComponent {
         },
         {
           path: '/remuneraciones/novedades-mensuales',
-          label: 'Movimientos del mes',
+          label: 'Movimientos',
           icon: 'calendar-plus',
-          hint: 'Registros del periodo',
-        },
-        {
-          path: '/remuneraciones/haberes-descuentos',
-          label: 'Asignaciones recurrentes',
-          icon: 'repeat',
-          hint: 'Registros con vigencia',
+          hint: 'Del mes, recurrentes y cuotas',
         },
         {
           path: '/remuneraciones/liquidaciones',

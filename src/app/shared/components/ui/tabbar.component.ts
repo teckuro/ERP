@@ -76,20 +76,22 @@ export interface TabbarItem {
       :host {
         display: block;
         width: 100%;
+        margin-bottom: -1px;
       }
 
       .tabbar-track {
         position: relative;
+        z-index: 2;
         display: flex;
         align-items: flex-end;
         width: 100%;
         max-width: 100%;
-        gap: 3px;
-        padding: 6px 6px 0;
+        gap: 2px;
+        padding: 4px 6px 0;
         border: 1px solid #e2e8f0;
         border-bottom-color: #dbe2ea;
-        border-radius: 10px 10px 0 0;
-        background: #fafaf7;
+        border-radius: 8px 8px 0 0;
+        background: #f8fafc;
         box-shadow: none;
         overflow-x: auto;
         scrollbar-width: none;

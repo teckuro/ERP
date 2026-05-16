@@ -16,25 +16,6 @@ import { ParametrosGeneralesCatalogos } from '../../models/parametro-general.mod
   imports: [CommonModule, FormsModule, ReactiveFormsModule, SearchSelectComponent],
   template: `
     <form class="tab-panel parametros-tab-panel parametros-form" [formGroup]="form" (ngSubmit)="onSubmit?.()">
-      <section class="param-pending-notice" aria-label="Estado configuracion cliente">
-        <div>
-          <h2>
-            @if (hasClienteConfig) {
-              Configuracion cliente del periodo.
-            } @else {
-              Configuracion cliente pendiente.
-            }
-          </h2>
-          <p>
-            @if (hasClienteConfig) {
-              La configuracion pertenece a {{ periodoLabel }} y puede guardarse parcial durante el mes.
-            } @else {
-              Usa Modificar para crear una configuracion inicial para {{ periodoLabel }}.
-            }
-          </p>
-        </div>
-      </section>
-
       <section class="param-group parametros-section-card" aria-labelledby="gratificacion-title">
         <h2 id="gratificacion-title">Gratificacion</h2>
         <div class="field-grid parametros-form-grid field-grid--gratificacion">

@@ -1019,6 +1019,23 @@ export class DataGridPrimaryActionMenuDirective {
         --data-grid-padding-skel: 0.65rem;
       }
 
+      :host ::ng-deep lucide-icon {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        flex: 0 0 auto;
+        align-self: center;
+        line-height: 1;
+        vertical-align: middle;
+      }
+
+      :host ::ng-deep lucide-icon svg {
+        display: block;
+        width: 100%;
+        height: 100%;
+        margin: auto;
+      }
+
       .data-grid-scroll {
         position: relative;
         min-height: 0;

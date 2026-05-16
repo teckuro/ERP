@@ -11,7 +11,7 @@ import {
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { LucideAngularModule } from 'lucide-angular';
 import { Edit, LoaderCircle, Plus, RefreshCw } from 'lucide-angular/src/icons';
 
@@ -102,6 +102,7 @@ function etiquetaNaturalezaFn(n: string | null): string {
   imports: [
     CommonModule,
     FormsModule,
+    RouterLink,
     LucideAngularModule,
     RecordBreadcrumbComponent,
     ButtonComponent,
@@ -130,7 +131,8 @@ export class HaberesDescuentosContainer implements OnInit {
 
   readonly breadcrumbItems: readonly RecordBreadcrumbItem[] = [
     { label: 'Remuneraciones', link: '/remuneraciones' },
-    { label: 'Asignaciones recurrentes' },
+    { label: 'Movimientos de remuneracion' },
+    { label: 'Recurrentes' },
   ];
 
   readonly loaderIcon = LoaderCircle;
@@ -234,7 +236,7 @@ export class HaberesDescuentosContainer implements OnInit {
   });
 
   readonly tituloModal = computed(() =>
-    this.dialogEditId() == null ? 'Nueva asignacion recurrente' : 'Editar asignacion recurrente',
+    this.dialogEditId() == null ? 'Registrar recurrente' : 'Editar movimiento recurrente',
   );
 
   readonly conceptoOpciones = computed<SearchSelectOption<number>[]>(() => {

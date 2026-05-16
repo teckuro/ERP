@@ -34,6 +34,7 @@ yarn-error.log
 
 # Guías y bitácora Codex (copia local del contrato de agente; no publicar en remoto)
 /docs/codex/*
+!/docs/codex/contexto-rapido.md
 !/docs/codex/observaciones.md
 !/docs/codex/flujo-git-developer-main.md
 !/docs/codex/ui-form-guidelines.md
@@ -46,6 +47,12 @@ yarn-error.log
 !/docs/codex/modulos/auth/
 !/docs/codex/modulos/auth/README.md
 !/docs/codex/modulos/auth/contrato-general.md
+!/docs/codex/modulos/movimientos-variables/
+/docs/codex/modulos/movimientos-variables/*
+!/docs/codex/modulos/movimientos-variables/README.md
+!/docs/codex/modulos/remuneraciones/
+/docs/codex/modulos/remuneraciones/*
+!/docs/codex/modulos/remuneraciones/movimientos-remuneracion-simple.md
 
 # Miscellaneous
 # Copia local de respaldo del proyecto (no versionar)

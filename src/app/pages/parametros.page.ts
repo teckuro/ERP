@@ -153,43 +153,6 @@ interface ParametrosDialogState {
       <app-card className="parametros-shell">
         <app-card-content className="parametros-frame">
           <div class="parametros-viewhead">
-        <div class="parametros-toolbar" aria-label="Acciones de parámetros">
-          @if (!hasAnySyncedData()) {
-            <app-button
-              variant="outline"
-              size="md"
-              className="erp-toolbar-button erp-action-button"
-              [disabled]="parametrosUiBloqueada()"
-              (click)="sincronizar()"
-            >
-              <lucide-icon icon class="h-4 w-4" name="refresh-cw"></lucide-icon>
-              Sincronizar
-            </app-button>
-          }
-
-          <div class="parametros-toolbar__end parametros-period-actions">
-            @if (generalesEditando()) {
-              <app-page-actions
-                [visibleActions]="['back', 'save']"
-                backLabel="Volver"
-                [saveLabel]="saveLabel()"
-                backLink="/"
-                [saveDisabled]="isSaving() || isLoading() || isLoadingPlantilla() || form.invalid"
-                (saveClick)="guardar()"
-                (backClick)="volverParametrosAction()"
-              ></app-page-actions>
-            } @else {
-              <app-page-actions
-                [visibleActions]="['edit']"
-                [editLabel]="accionConfigClienteLabel()"
-                [editTooltip]="modificarTooltipConsulta()"
-                [editDisabled]="modificarDeshabilitado()"
-                (editClick)="editarParametros()"
-              ></app-page-actions>
-            }
-          </div>
-        </div>
-
         <div class="period-row parametros-period-band" aria-label="Periodo">
           <div class="period-row__left parametros-period-left">
             <div class="period-row__left-top">
@@ -250,20 +213,41 @@ interface ParametrosDialogState {
             </div>
             <p class="period-mensual__detail parametros-period-status-detail">{{ periodoEstadoDetalle() }}</p>
           </div>
-        </div>
-        <section class="param-bitacora-summary" aria-label="Lectura normativa del periodo">
-          <div class="param-bitacora-summary__main">
-            <span class="param-eyebrow">Registro normativo</span>
-            <h1>ParÃ¡metros del periodo</h1>
-            <p>Datos oficiales y configuraciÃ³n cliente para {{ periodoSeleccionadoLabel() }}.</p>
-          </div>
 
-          <div class="param-bitacora-summary__status">
-            <span>AcciÃ³n recomendada</span>
-            <strong>{{ periodoEstadoChip() }}</strong>
-            <p>{{ accionConfigClienteHint() }}</p>
+          <div class="parametros-period-actions" aria-label="Acciones del periodo">
+            @if (!hasAnySyncedData()) {
+              <app-button
+                variant="outline"
+                size="md"
+                className="erp-toolbar-button erp-action-button"
+                [disabled]="parametrosUiBloqueada()"
+                (click)="sincronizar()"
+              >
+                <lucide-icon icon class="h-4 w-4" name="refresh-cw"></lucide-icon>
+                Sincronizar
+              </app-button>
+            }
+
+            @if (generalesEditando()) {
+              <app-page-actions
+                [visibleActions]="['back', 'save']"
+                backLabel="Cancelar"
+                [saveLabel]="saveLabel()"
+                [saveDisabled]="isSaving() || isLoading() || isLoadingPlantilla() || form.invalid"
+                (saveClick)="guardar()"
+                (backClick)="volverParametrosAction()"
+              ></app-page-actions>
+            } @else {
+              <app-page-actions
+                [visibleActions]="['edit']"
+                [editLabel]="accionConfigClienteLabel()"
+                [editTooltip]="modificarTooltipConsulta()"
+                [editDisabled]="modificarDeshabilitado()"
+                (editClick)="editarParametros()"
+              ></app-page-actions>
+            }
           </div>
-        </section>
+        </div>
           </div>
 
       <div class="parametros-content parametros-panel">
@@ -295,10 +279,13 @@ interface ParametrosDialogState {
             [secondaryLabel]="dlg.secondaryLabel ?? ''"
             [tertiaryLabel]="dlg.tertiaryLabel ?? ''"
             [fourthLabel]="dlg.fourthLabel ?? ''"
+            [dismissible]="dlg.kind === 'confirmar-config-cliente-extendido'"
+            dismissLabel="Cerrar"
             (action)="onDialogoAccionPrimaria()"
             (secondary)="onDialogoAccionSecundaria()"
             (tertiary)="onDialogoAccionTerciaria()"
             (fourth)="onDialogoAccionCuarta()"
+            (dismiss)="cerrarDialogo()"
           ></app-message-box>
         }
 
@@ -628,38 +615,6 @@ interface ParametrosDialogState {
         text-transform: uppercase;
       }
 
-      .param-bitacora-summary {
-        display: grid;
-        grid-template-columns: minmax(0, 1fr) minmax(18rem, 24rem);
-        gap: 10px;
-        align-items: stretch;
-        border: 1px solid #d7dee8;
-        border-radius: 8px;
-        background: #ffffff;
-        padding: 10px;
-      }
-
-      .param-bitacora-summary__main,
-      .param-bitacora-summary__status {
-        display: grid;
-        align-content: center;
-        min-width: 0;
-      }
-
-      .param-bitacora-summary__main {
-        gap: 3px;
-      }
-
-      .param-bitacora-summary__main h1 {
-        margin: 0;
-        color: #111827;
-        font-size: 1rem;
-        font-weight: 760;
-        line-height: 1.18;
-      }
-
-      .param-bitacora-summary__main p,
-      .param-bitacora-summary__status p,
       .param-record-header p {
         margin: 0;
         color: #64748b;
@@ -668,33 +623,88 @@ interface ParametrosDialogState {
         line-height: 1.35;
       }
 
-      .param-bitacora-summary__status {
-        gap: 3px;
-        border: 1px solid #e2e8f0;
-        border-radius: 7px;
-        background: #f8fafc;
-        padding: 8px 10px;
+      .parametros-period-band {
+        display: grid;
+        grid-template-columns: minmax(20rem, 1fr) minmax(16rem, 0.9fr) auto;
+        gap: 10px 14px;
+        align-items: center;
+        border: 1px solid #d8dee8;
+        border-radius: 8px;
+        background: #ffffff;
+        padding: 10px;
       }
 
-      .param-bitacora-summary__status span {
-        color: #64748b;
-        font-size: 0.66rem;
-        font-weight: 750;
-        line-height: 1.15;
-        text-transform: uppercase;
+      .parametros-period-left,
+      .parametros-period-status {
+        min-width: 0;
       }
 
-      .param-bitacora-summary__status strong {
+      .period-row__left-top,
+      .parametros-period-controls,
+      .period-mensual__head,
+      .parametros-period-actions {
+        display: flex;
+        align-items: center;
+        min-width: 0;
+      }
+
+      .period-row__left-top {
+        flex-wrap: wrap;
+        gap: 8px 10px;
+      }
+
+      .parametros-period-controls {
+        gap: 6px;
+      }
+
+      .period-mensual__head {
+        justify-content: space-between;
+        gap: 8px;
+      }
+
+      .parametros-period-actions {
+        justify-content: flex-end;
+        gap: 8px;
+      }
+
+      .parametros-period-actions app-page-actions {
+        flex: 0 0 auto;
+      }
+
+      .period-label,
+      .parametros-period-status-title {
         color: #111827;
         font-size: 0.82rem;
-        font-weight: 760;
+        font-weight: 720;
         line-height: 1.2;
       }
 
-      @media (max-width: 900px) {
-        .param-bitacora-summary {
-          grid-template-columns: 1fr;
-        }
+      .parametros-period-sync,
+      .parametros-period-status-detail {
+        margin: 4px 0 0;
+        color: #64748b;
+        font-size: 0.72rem;
+        font-weight: 560;
+        line-height: 1.35;
+      }
+
+      .period-arrow {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: var(--erp-control-height, 22px);
+        height: var(--erp-control-height, 22px);
+        min-width: var(--erp-control-height, 22px);
+        border: 1px solid #d1d5db;
+        border-radius: 6px;
+        background: #ffffff;
+        color: #475569;
+        cursor: pointer;
+      }
+
+      .period-arrow:disabled {
+        cursor: not-allowed;
+        opacity: 0.55;
       }
 
       .parametros-toolbar {
@@ -856,8 +866,8 @@ interface ParametrosDialogState {
         min-width: 0;
         overflow-x: auto;
         border-bottom: 1px solid var(--prm-line, #e5e7eb);
-        background: #fafaf7;
-        padding: 5px 6px 0;
+        background: #f8fafc;
+        padding: 4px 6px 0;
         gap: 2px;
         z-index: 10;
         overscroll-behavior-x: contain;
@@ -876,8 +886,8 @@ interface ParametrosDialogState {
       .folder-tab {
         position: relative;
         display: inline-flex;
-        min-width: 102px;
-        min-height: 28px;
+        min-width: 92px;
+        min-height: 26px;
         flex: 0 0 auto;
         align-items: center;
         justify-content: center;
@@ -886,10 +896,10 @@ interface ParametrosDialogState {
         border-bottom-color: #dbe2ea;
         border-radius: 8px 8px 0 0;
         background: #ffffff;
-        padding: 0 9px 1px;
+        padding: 0 8px 1px;
         color: #475569;
         cursor: pointer;
-        font-size: 0.74rem;
+        font-size: 0.72rem;
         font-weight: 600;
         line-height: 1.15;
         text-align: center;
@@ -929,9 +939,9 @@ interface ParametrosDialogState {
         }
 
         .folder-tab {
-          min-width: 102px;
-          font-size: 0.76rem;
-          padding: 0 10px;
+          min-width: 90px;
+          font-size: 0.72rem;
+          padding: 0 8px;
         }
       }
 
@@ -957,7 +967,7 @@ interface ParametrosDialogState {
         gap: 3px;
         border-bottom: 1px solid #e5e7eb;
         background: #ffffff;
-        padding: 8px 10px;
+        padding: 7px 10px;
         overflow: visible;
       }
 
@@ -1082,70 +1092,6 @@ interface ParametrosDialogState {
         font-size: 0.72rem;
         font-weight: 600;
         line-height: 1.35;
-      }
-
-      .param-reference-callout,
-      .param-pending-notice {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 8px 12px;
-        margin: 0 12px;
-        padding: 9px 10px;
-        border: 1px solid #bfdbfe;
-        border-radius: 6px;
-        background: #eff6ff;
-        color: #1e3a8a;
-      }
-
-      .param-pending-notice {
-        margin: 0;
-      }
-
-      .param-reference-callout__label,
-      .param-pending-notice h2 {
-        display: block;
-        margin: 0;
-        color: #1e3a8a;
-        font-size: 0.76rem;
-        font-weight: 650;
-        line-height: 1.25;
-      }
-
-      .param-reference-callout p,
-      .param-pending-notice p {
-        margin: 2px 0 0;
-        color: #475569;
-        font-size: 0.7rem;
-        font-weight: 500;
-        line-height: 1.3;
-      }
-
-      .param-reference-callout__action {
-        flex: 0 0 auto;
-        min-height: 30px;
-        border: 1px solid #bfdbfe;
-        border-radius: 6px;
-        background: #ffffff;
-        padding: 0 10px;
-        color: #1d4ed8;
-        cursor: pointer;
-        font-size: 0.72rem;
-        font-weight: 650;
-        line-height: 1;
-      }
-
-      .param-reference-callout__action:hover {
-        border-color: #93c5fd;
-        background: #f8fafc;
-      }
-
-      @media (max-width: 760px) {
-        .param-reference-callout,
-        .param-pending-notice {
-          flex-direction: column;
-          align-items: flex-start;
-        }
       }
 
       .param-subsection-title {
@@ -1735,6 +1681,15 @@ interface ParametrosDialogState {
       }
 
       @media (max-width: 720px) {
+        .parametros-period-band {
+          grid-template-columns: 1fr;
+          align-items: stretch;
+        }
+
+        .parametros-period-actions {
+          justify-content: flex-end;
+        }
+
         .parametros-toolbar {
           align-items: stretch;
           flex-direction: column;
@@ -1878,14 +1833,7 @@ export class ParametrosPage implements OnInit {
     if (this.isPreparingEdit() || this.isPreparandoDialogoCrear()) {
       return 'Preparando...';
     }
-    return this.clienteConfig() ? 'Modificar configuracion' : 'Configurar cliente';
-  });
-
-  readonly accionConfigClienteHint = computed(() => {
-    if (this.clienteConfig()) {
-      return 'La configuracion cliente queda separada de los datos oficiales del periodo.';
-    }
-    return 'Crea la configuracion cliente del periodo sin reemplazar el snapshot oficial.';
+    return 'Modificar';
   });
 
   volverParametrosAction(): void {
@@ -2012,26 +1960,26 @@ export class ParametrosPage implements OnInit {
       case 'editando':
         return 'Configuración guardada con pendientes. Pueden completarse valores de fin de mes.';
       case 'cargado':
-        return 'Valores oficiales y configuracion cliente estan alineados. Listo para revisar.';
+        return 'Periodo listo para revisar.';
       case 'pendiente_reconciliacion':
-        return 'Hay diferencias entre tu configuracion y los valores oficiales cargados.';
+        return 'Diferencias pendientes de revisar.';
       case 'oficial_sin_config':
-        return 'Hay valores oficiales actuales. Falta crear configuracion cliente del periodo.';
+        return 'Datos oficiales cargados. Falta configuracion cliente.';
       case 'configuracion_parcial':
-        return 'Puedes trabajar con la configuracion guardada. La carga oficial del periodo sigue pendiente.';
+        return 'Configuracion guardada. Carga oficial pendiente.';
       case 'referencia_anterior':
-        return 'Datos oficiales pendientes. Se muestra la ultima referencia disponible.';
+        return 'Carga oficial pendiente.';
       case 'sin_base':
-        return 'No hay datos oficiales ni referencia anterior para este periodo. Puedes crear una configuracion inicial.';
+        return 'Sin base mensual para el periodo.';
       case 'corregido':
         return 'Datos revisados por flujo controlado.';
       case 'cerrado':
         return 'Período cerrado. No se permite edición sin flujo de reapertura.';
       case 'parcial':
-        return this.completitudDetalle('Período preparado. Faltan datos oficiales mensuales o vigencias, pero puedes guardar configuración cliente.');
+        return this.completitudDetalle('Periodo parcial.');
       case 'pendiente':
       default:
-        return this.completitudDetalle('Datos oficiales pendientes de carga. Vigencias y catálogos siguen disponibles para consulta.');
+        return this.completitudDetalle('Carga oficial pendiente.');
     }
   });
 
@@ -2046,13 +1994,13 @@ export class ParametrosPage implements OnInit {
       case 'pendiente_reconciliacion':
         return 'Reconciliacion pendiente';
       case 'oficial_sin_config':
-        return 'Configurar cliente';
+        return 'Sin config.';
       case 'configuracion_parcial':
         return 'Configuracion parcial';
       case 'referencia_anterior':
         return this.referenciaVisualPrincipalCodigo() ? `Referencia ${this.referenciaVisualPrincipalCodigo()}` : 'Referencia anterior';
       case 'sin_base':
-        return 'Crear configuracion';
+        return 'Sin base';
       case 'corregido':
         return 'Corregido';
       case 'cerrado':
@@ -2098,7 +2046,7 @@ export class ParametrosPage implements OnInit {
       case 'remuneraciones':
         return 'Datos oficiales';
       default:
-        return 'Registro normativo';
+        return 'Cierre normativo';
     }
   });
 
@@ -2129,28 +2077,28 @@ export class ParametrosPage implements OnInit {
     switch (this.activeTab()) {
       case 'configCliente':
         return this.clienteConfig()
-          ? `Valores propios de la empresa para ${this.periodoSeleccionadoLabel()}. No modifican el snapshot oficial.`
-          : `Falta crear configuracion cliente para ${this.periodoSeleccionadoLabel()}.`;
+          ? `Configuracion vigente para ${this.periodoSeleccionadoLabel()}.`
+          : `Pendiente para ${this.periodoSeleccionadoLabel()}.`;
       case 'valores':
         return this.hasSelectedInRows()
-          ? 'Valores cargados desde la fuente mensual y usados como referencia normativa.'
-          : 'Sin carga oficial del periodo; la vista puede mostrar referencia anterior o configuracion cliente.';
+          ? 'UF, UTM y UTA del periodo.'
+          : 'Carga oficial pendiente.';
       case 'remuneraciones':
         return this.hasSelectedInRows()
-          ? 'Montos, topes y porcentajes aplicables al periodo seleccionado.'
-          : 'Datos mensuales pendientes; la configuracion cliente se mantiene separada.';
+          ? 'Montos y topes del periodo.'
+          : 'Carga mensual pendiente.';
       case 'ccafMutual':
-        return `${this.catalogos().ccafEntidades.length + this.catalogos().organismosLey16744.length + this.catalogos().ley16744Parametros.length} registros consultables para ${this.periodoSeleccionadoLabel()}.`;
+        return `${this.catalogos().ccafEntidades.length + this.catalogos().organismosLey16744.length + this.catalogos().ley16744Parametros.length} registros.`;
       case 'tramosCarga':
-        return `${this.tramosCargaPorPeriodo().length} registros aplicables al periodo seleccionado.`;
+        return `${this.tramosCargaPorPeriodo().length} registros.`;
       case 'impuestoUnico':
-        return `${this.tramosImpuestoPorPeriodo().length + this.tablaImpuestoPorPeriodo().length} registros de tramos y tabla vigentes.`;
+        return `${this.tramosImpuestoPorPeriodo().length + this.tablaImpuestoPorPeriodo().length} registros.`;
       case 'salud':
-        return `${this.isapresPorPeriodo().length + this.saludOtrasInstitucionesPorPeriodo().length} instituciones consultables.`;
+        return `${this.isapresPorPeriodo().length + this.saludOtrasInstitucionesPorPeriodo().length} instituciones.`;
       case 'prevision':
-        return `${this.afpPorPeriodo().length} registros previsionales consultables.`;
+        return `${this.afpPorPeriodo().length} registros.`;
       case 'reforma':
-        return `${this.reformaPensionesPorPeriodo().length + this.reformaPrevisionalPorPeriodo().length + this.trabajosPesadosPorPeriodo().length} registros normativos asociados.`;
+        return `${this.reformaPensionesPorPeriodo().length + this.reformaPrevisionalPorPeriodo().length + this.trabajosPesadosPorPeriodo().length} registros.`;
     }
   });
 
@@ -3049,7 +2997,12 @@ export class ParametrosPage implements OnInit {
       referenciaAnteriorDisponible: hasReferencia,
       oficialesActualesDisponibles: hasOficiales,
     })
-      .filter((opcion): opcion is Exclude<ParametrosConfigClienteBaseOpcion, 'cero'> => opcion !== 'cero')
+      .filter(
+        (opcion): opcion is Exclude<ParametrosConfigClienteBaseOpcion, 'cero' | 'cancelar'> =>
+          opcion !== 'cero' && opcion !== 'cancelar',
+      )
+      .sort((left, right) => this.configClienteBasePrioridad(left) - this.configClienteBasePrioridad(right))
+      .slice(0, 2)
       .map((opcion) => ({
         label: this.configClienteBaseLabel(opcion),
         action: this.configClienteBaseAction(opcion),
@@ -3057,36 +3010,42 @@ export class ParametrosPage implements OnInit {
 
     this.dialogState.set({
       kind: 'confirmar-config-cliente-extendido',
-      variant: 'info',
+      variant: 'confirm',
       title: 'Configurar periodo',
-      message: 'No existe configuracion propia del cliente para este periodo.',
-      detail: `Periodo: ${periodo}\nElige como iniciar la configuracion del cliente. No se creara una fila hasta guardar.`,
-      primaryLabel: 'Crear configuracion desde cero',
+      message: 'No existe configuracion cliente para este periodo.',
+      detail: `Periodo: ${periodo}\nSelecciona una base para continuar. Se creara solo al guardar.`,
+      primaryLabel: 'Crear desde cero',
       secondaryLabel: actions[0]?.label,
       secondaryAction: actions[0]?.action,
       tertiaryLabel: actions[1]?.label,
       tertiaryAction: actions[1]?.action,
-      fourthLabel: actions[2]?.label,
-      fourthAction: actions[2]?.action,
     });
     this.cdr.markForCheck();
   }
 
-  private configClienteBaseLabel(opcion: Exclude<ParametrosConfigClienteBaseOpcion, 'cero'>): string {
+  private configClienteBasePrioridad(opcion: Exclude<ParametrosConfigClienteBaseOpcion, 'cero' | 'cancelar'>): number {
     switch (opcion) {
-      case 'ultima':
-        return 'Usar ultima configuracion disponible';
-      case 'referencia':
-        return 'Usar referencia anterior como base';
       case 'oficiales':
-        return 'Usar valores oficiales actuales';
-      case 'cancelar':
-      default:
-        return 'Cancelar';
+        return 1;
+      case 'ultima':
+        return 2;
+      case 'referencia':
+        return 3;
     }
   }
 
-  private configClienteBaseAction(opcion: Exclude<ParametrosConfigClienteBaseOpcion, 'cero'>): ParametrosDialogAction {
+  private configClienteBaseLabel(opcion: Exclude<ParametrosConfigClienteBaseOpcion, 'cero' | 'cancelar'>): string {
+    switch (opcion) {
+      case 'ultima':
+        return 'Usar ultima configuracion';
+      case 'referencia':
+        return 'Usar referencia anterior';
+      case 'oficiales':
+        return 'Usar oficiales';
+    }
+  }
+
+  private configClienteBaseAction(opcion: Exclude<ParametrosConfigClienteBaseOpcion, 'cero' | 'cancelar'>): ParametrosDialogAction {
     switch (opcion) {
       case 'ultima':
         return 'usar-ultima-config';
@@ -3094,9 +3053,6 @@ export class ParametrosPage implements OnInit {
         return 'usar-referencia';
       case 'oficiales':
         return 'usar-oficiales';
-      case 'cancelar':
-      default:
-        return 'cancelar';
     }
   }
 

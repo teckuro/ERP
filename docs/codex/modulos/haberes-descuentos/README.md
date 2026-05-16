@@ -22,3 +22,13 @@ Haberes y descuentos queda alineado a [`NOIA / Bitacora Operativa`](../../diseno
 - Debe distinguirse de `Conceptos`: aqui se registran montos o asignaciones aplicadas a trabajadores.
 - La narrativa visible debe priorizar vigencia, periodicidad, estado y efecto en nomina.
 - Esta referencia es documental; no cambia SQL, motor, rutas, servicios ni persistencia.
+
+## NOM-MOVIMIENTOS-SIMPLE-00
+
+La decision documental vigente define `Movimientos de remuneracion` como experiencia futura que unifica `Movimientos del mes` y `Asignaciones recurrentes` desde la duracion del registro: `Solo este mes`, `Recurrente` o `En cuotas`. Documento rector: [`../remuneraciones/movimientos-remuneracion-simple.md`](../remuneraciones/movimientos-remuneracion-simple.md).
+
+Esta fase no cambia rutas, servicios, SQL, motor ni pantallas actuales.
+
+## NOM-MOVIMIENTOS-SIMPLE-01
+
+La pantalla `/remuneraciones/haberes-descuentos` queda comunicada como vista `Recurrentes` dentro de `Movimientos de remuneracion`. La logica de asignaciones recurrentes, servicios y persistencia no cambian.

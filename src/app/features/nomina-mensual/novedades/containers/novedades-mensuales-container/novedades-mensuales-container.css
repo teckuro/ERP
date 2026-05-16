@@ -83,6 +83,95 @@
   gap: 0.45rem;
 }
 
+.nm-view-folder {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  width: 100%;
+}
+
+.nm-view-tabs {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  width: 100%;
+  max-width: 100%;
+  align-items: flex-end;
+  gap: 0.125rem;
+  overflow-x: auto;
+  border: 1px solid #e5e7eb;
+  border-bottom-color: #dbe2ea;
+  border-radius: 8px 8px 0 0;
+  background: #f8fafc;
+  padding: 0.25rem 0.35rem 0;
+  margin-bottom: -1px;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+.nm-view-tabs::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
+}
+
+.nm-view-tabs a,
+.nm-view-tabs span {
+  display: inline-flex;
+  min-height: 2.1rem;
+  align-items: center;
+  border: 1px solid transparent;
+  border-bottom-color: #dbe2ea;
+  border-radius: 7px 7px 0 0;
+  background: #ffffff;
+  color: #4b5563;
+  font-size: 0.78rem;
+  font-weight: 700;
+  line-height: 1;
+  padding: 0 0.75rem;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.nm-view-tabs a:hover {
+  border-color: #cbd5e1;
+  background: #f8fafc;
+  color: #111827;
+}
+
+.nm-view-tabs .is-active {
+  border-color: #c7d0c4;
+  border-bottom-color: #ffffff;
+  margin-bottom: -1px;
+  color: #111827;
+}
+
+.nm-view-tabs span {
+  color: #94a3b8;
+}
+
+.nm-view-panel {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-top: -1px;
+  border: 1px solid #dbe2ea;
+  border-radius: 0 0 8px 8px;
+  background: #ffffff;
+  padding: 0.75rem;
+}
+
+:host ::ng-deep .nm-view-panel > app-card {
+  border-color: #e2e8f0 !important;
+}
+
+:host ::ng-deep app-card.nm-summary-card {
+  border-color: #dbe2ea !important;
+}
+
 .nm-context-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(7rem, 1fr));
@@ -129,6 +218,14 @@
   color: var(--nm-muted);
   font-size: var(--nm-text-xs);
   font-weight: 500;
+  line-height: 1.25;
+}
+
+.nm-field-help {
+  display: block;
+  margin: -0.08rem 0 0.22rem;
+  color: #94a3b8;
+  font-size: 0.64rem;
   line-height: 1.25;
 }
 
@@ -187,6 +284,20 @@
   line-height: 1.25;
 }
 
+.nm-section-help {
+  margin: -0.25rem 0 0.6rem;
+  color: var(--nm-muted);
+  font-size: var(--nm-text-xs);
+  line-height: 1.4;
+}
+
+.nm-form-section--admin {
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  background: #f8fafc;
+  padding: 0.75rem;
+}
+
 .nm-details {
   border-top: 1px solid #f1f5f9;
 }
@@ -206,9 +317,78 @@
 
 .nm-form-grid {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 0.5rem 0.75rem;
   align-items: start;
+}
+
+.nm-form-grid--compact {
+  margin-top: 0.55rem;
+}
+
+.nm-duration-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.5rem;
+}
+
+.nm-duration-card {
+  position: relative;
+  display: flex;
+  min-height: 5.2rem;
+  cursor: pointer;
+  flex-direction: column;
+  gap: 0.25rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #475569;
+  padding: 0.65rem;
+  transition:
+    border-color 140ms ease,
+    background-color 140ms ease;
+}
+
+.nm-duration-card input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.nm-duration-card:hover,
+.nm-duration-card.is-active {
+  border-color: #93c5fd;
+  background: #eff6ff;
+}
+
+.nm-duration-title {
+  color: #0f172a;
+  font-size: 0.78rem;
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+.nm-duration-desc {
+  color: #64748b;
+  font-size: var(--nm-text-xs);
+  line-height: 1.35;
+}
+
+.nm-duration-note {
+  margin: 0.55rem 0 0;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  background: #f8fafc;
+  color: #475569;
+  font-size: var(--nm-text-sm);
+  line-height: 1.4;
+  padding: 0.55rem 0.65rem;
+}
+
+.nm-duration-config {
+  margin-top: 0.55rem;
 }
 
 .nm-field {
@@ -465,8 +645,10 @@
 
 .nm-form-summary {
   margin-top: 0.75rem;
-  border-top: 1px solid #f1f5f9;
-  padding-top: 0.75rem;
+  border: 1px solid #dbeafe;
+  border-radius: 8px;
+  background: #eff6ff;
+  padding: 0.75rem;
 }
 
 .nm-form-summary h3 {
@@ -477,35 +659,23 @@
   line-height: 1.25;
 }
 
-.nm-form-summary dl {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 0.5rem 0.75rem;
+.nm-summary-main,
+.nm-summary-detail {
   margin: 0;
-}
-
-.nm-form-summary div {
-  min-width: 0;
-  border: 1px solid var(--nm-border);
-  border-radius: 6px;
-  background: var(--nm-soft);
-  padding: 0.4rem 0.5rem;
-}
-
-.nm-form-summary dt {
-  color: var(--nm-muted);
-  font-size: var(--nm-text-xs);
-  font-weight: 600;
-  line-height: 1.25;
-}
-
-.nm-form-summary dd {
-  margin: 0.1rem 0 0;
   overflow-wrap: anywhere;
+  line-height: 1.4;
+}
+
+.nm-summary-main {
   color: #0f172a;
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.nm-summary-detail {
+  margin-top: 0.25rem;
+  color: #1e3a8a;
   font-size: var(--nm-text-sm);
-  font-weight: 600;
-  line-height: 1.35;
 }
 
 body:has(.nm-modal-root) {
@@ -515,7 +685,7 @@ body:has(.nm-modal-root) {
 @media (max-width: 720px) {
   .nm-context-grid,
   .nm-form-grid,
-  .nm-form-summary dl,
+  .nm-duration-grid,
   :host ::ng-deep .data-grid-filter-grid {
     grid-template-columns: 1fr !important;
   }
@@ -550,11 +720,8 @@ body:has(.nm-modal-root) {
 }
 
 @media (max-width: 980px) and (min-width: 721px) {
-  .nm-form-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .nm-form-summary dl {
+  .nm-form-grid,
+  .nm-duration-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 

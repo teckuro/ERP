@@ -53,7 +53,7 @@ import { CardComponent, CardContentComponent, CardHeaderComponent } from '../sha
               <a routerLink="/remuneraciones/proceso-mensual" class="dashboard-tile">
                 <span>
                   <strong>Preparar nomina</strong>
-                  <small>Valida trabajadores, parametros, movimientos y asignaciones del periodo.</small>
+                  <small>Valida trabajadores, parametros y movimientos de remuneracion del periodo.</small>
                 </span>
                 <lucide-icon class="h-4 w-4 shrink-0 text-gray-400" name="arrow-up-right"></lucide-icon>
               </a>
@@ -66,15 +66,8 @@ import { CardComponent, CardContentComponent, CardHeaderComponent } from '../sha
               </a>
               <a routerLink="/remuneraciones/novedades-mensuales" class="dashboard-tile">
                 <span>
-                  <strong>Movimientos del mes</strong>
-                  <small>Registra bonos, descuentos, anticipos y ajustes puntuales antes del calculo.</small>
-                </span>
-                <lucide-icon class="h-4 w-4 shrink-0 text-gray-400" name="arrow-up-right"></lucide-icon>
-              </a>
-              <a routerLink="/remuneraciones/haberes-descuentos" class="dashboard-tile">
-                <span>
-                  <strong>Asignaciones recurrentes</strong>
-                  <small>Mantiene haberes, descuentos y aportes vigentes por trabajador.</small>
+                  <strong>Movimientos</strong>
+                  <small>Registra bonos, descuentos, anticipos, recurrentes y cuotas del periodo.</small>
                 </span>
                 <lucide-icon class="h-4 w-4 shrink-0 text-gray-400" name="arrow-up-right"></lucide-icon>
               </a>

@@ -1,3 +1,24 @@
+## NOM-MOVIMIENTOS-SIMPLE-00 - Movimientos de remuneracion
+
+| Campo | Estado |
+|---|---|
+| Estado | Documentada |
+| Tipo | Decision funcional/UX documental |
+| Alcance | Unificacion conceptual de Movimientos del mes y Asignaciones recurrentes bajo Movimientos de remuneracion. |
+| Entrega | Tres duraciones visibles: Solo este mes, Recurrente y En cuotas; auditoria de fuentes actuales y fases siguientes. |
+| Restricciones | Sin Angular, SQL/RPC/RLS, rutas, motor, liquidaciones, servicios productivos, mappers, payloads ni estilos globales. |
+| Documento | [../modulos/remuneraciones/movimientos-remuneracion-simple.md](../modulos/remuneraciones/movimientos-remuneracion-simple.md) |
+
+## PARAM-BITACORA-LAYOUT-ALIGN-01 v2 - Parametros cierre normativo
+
+| Campo | Estado |
+|---|---|
+| Estado | Implementada |
+| Tipo | UX local + documentacion |
+| Alcance | Pantalla Parametros: franja de cierre normativo, accion Configurar cliente, tabs compactos, lectura oficial vs cliente y filtros locales. |
+| Restricciones | Sin SQL/RPC/RLS, sin Python, sin wrapper, sin servicios/repositorios/mappers, sin rutas/guards, sin reconciliacion nueva y sin estilos globales. |
+| Documento | [../diseno/param-bitacora-layout-align-01.md](../diseno/param-bitacora-layout-align-01.md) |
+
 ## ERP-AUDIT-REPAIR-UX-01 - Auditoria integral + reparacion segura + mejora UX/UI controlada
 
 | Campo | Estado |
@@ -617,3 +638,49 @@ Restricciones:
 | Alcance | Cabecera del periodo, estado mensual, accion configurar cliente, tabs principales, contexto de seccion activa, filtros DataGrid y CSS local de Parametros. |
 | Restricciones | Sin SQL/RPC/RLS, Python, wrapper, motor, nomina/liquidaciones, servicios/repositorios, reconciliacion nueva ni estilos globales protegidos. |
 | Documento | [`../diseno/param-bitacora-layout-align-01.md`](../diseno/param-bitacora-layout-align-01.md) |
+## ERP-NOIA-DECISION-SYSTEM-01
+
+Estado: Ejecutada
+
+Tipo: Documental / reglas de diseno
+
+Objetivo:
+Crear un sistema de decision para que Cursor/Codex no disene por acumulacion de cards, sino por tipo de pantalla, fuente de verdad, estado, accion, riesgo y patron visual adecuado.
+
+Alcance:
+- Matriz de decision NOIA.
+- Regla anti-card.
+- Patrones de maquetacion.
+- Arquetipos de pantalla.
+- Recetas de componentes.
+- Reglas Cursor.
+
+Restricciones:
+- Sin cambios en Angular funcional.
+- Sin HTML/CSS de pantallas.
+- Sin SQL/RPC/RLS.
+- Sin Python ni wrapper.
+- Sin motor.
+- Sin nomina/liquidaciones.
+- Sin estilos globales protegidos.
+## NOM-MOVIMIENTOS-SIMPLE-01 - Primera capa visible de movimientos
+
+| Campo | Estado |
+|---|---|
+| Estado | Implementada |
+| Tipo | UX/UI visible + documentacion |
+| Alcance | Menu `Movimientos`, pantalla `Movimientos de remuneracion`, vista `Recurrentes`, copy de Preparar nomina, Dashboard y Reportes. |
+| Entrega | Ruta corta `/remuneraciones/movimientos` como redirect; tabs visibles `Este mes`, `Recurrentes`, `Todos`; comunicacion de `En cuotas` sin calculo. |
+| Restricciones | Sin SQL/RPC/RLS, motor, liquidaciones productivas, servicios productivos, mappers, payloads, persistencia critica ni estilos globales. |
+| Documento | [../diseno/nom-movimientos-simple-01.md](../diseno/nom-movimientos-simple-01.md) |
+
+## NOM-MOVIMIENTOS-SIMPLE-01-FORM-POLISH
+
+| Campo | Estado |
+|---|---|
+| Estado | Implementada |
+| Tipo | UX/UI local del modal |
+| Alcance | Modal `Registrar movimiento`: bloques principales, duracion visible, campos UI de cuotas, detalle administrativo secundario y resumen operativo. |
+| Entrega | Duraciones `Solo este mes`, `Recurrente`, `En cuotas`; validacion local para cuotas; sin cambio de payload productivo. |
+| Restricciones | Sin SQL/RPC/RLS, motor, liquidaciones, servicios productivos, mappers, rutas, estilos globales ni persistencia critica. |
+| Documento | [../diseno/nom-movimientos-simple-01.md](../diseno/nom-movimientos-simple-01.md) |

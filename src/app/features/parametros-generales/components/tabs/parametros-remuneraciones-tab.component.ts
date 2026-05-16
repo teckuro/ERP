@@ -8,35 +8,6 @@ import { FormGroup, ReactiveFormsModule } from '@angular/forms';
   imports: [CommonModule, ReactiveFormsModule],
   template: `
     <form class="tab-panel parametros-tab-panel parametros-form" [formGroup]="form" (ngSubmit)="onSubmit?.()">
-      @if (!hasPeriodoData) {
-        <section class="param-pending-notice" aria-label="Estado de carga mensual">
-          <div>
-            <h2>
-              @if (hasClienteConfig) {
-                Configuracion cliente para {{ periodoLabel }}.
-              } @else if (referenciaPeriodoLabel) {
-                Remuneraciones de referencia disponibles.
-              } @else {
-                Sin base mensual para {{ periodoLabel }}.
-              }
-            </h2>
-            <p>
-              @if (hasClienteConfig) {
-                Puedes trabajar con la configuracion guardada mientras llega la carga oficial.
-              } @else if (referenciaPeriodoLabel) {
-                Estos valores son una referencia anterior. No corresponden a la carga oficial actual.
-              } @else {
-                Puedes crear una configuracion inicial desde Modificar.
-              }
-            </p>
-          </div>
-          @if (!hasClienteConfig && referenciaPeriodoLabel) {
-            <button type="button" class="param-reference-callout__action" (click)="verReferenciaPeriodoAnterior?.()">
-              Ver referencia {{ referenciaPeriodoLabel }}
-            </button>
-          }
-        </section>
-      }
       <section class="param-group parametros-section-card" aria-labelledby="rentas-title">
         <h2 id="rentas-title">Remuneraciones</h2>
         <p class="param-section-lead">Rentas mínimas imponibles y montos base.</p>

@@ -31,17 +31,6 @@ type ImpuestoSubId = 'tramos' | 'tabla';
       <div class="param-tab-subview">
         @if (activeSub() === 'tramos') {
           <section class="catalog-section parametros-grid-shell" aria-label="Tramos impuesto">
-            @if (referenciaTramosPeriodoLabel) {
-              <div class="param-reference-callout" role="note">
-                <div>
-                  <span class="param-reference-callout__label">Referencia {{ referenciaTramosPeriodoLabel }}</span>
-                  <p>No se usara para calculo de {{ periodoLabel }}.</p>
-                </div>
-                <button type="button" class="param-reference-callout__action" (click)="verReferenciaPeriodoAnterior?.()">
-                  Ver referencia {{ referenciaTramosPeriodoLabel }}
-                </button>
-              </div>
-            }
             <app-data-grid
               title="Tramos impuesto por periodo"
               [rows]="tramosRows"
@@ -62,17 +51,6 @@ type ImpuestoSubId = 'tramos' | 'tabla';
 
         @if (activeSub() === 'tabla') {
           <section class="catalog-section parametros-grid-shell" aria-label="Tabla impuesto unico">
-            @if (referenciaTablaPeriodoLabel) {
-              <div class="param-reference-callout" role="note">
-                <div>
-                  <span class="param-reference-callout__label">Referencia {{ referenciaTablaPeriodoLabel }}</span>
-                  <p>No se usara para calculo de {{ periodoLabel }}.</p>
-                </div>
-                <button type="button" class="param-reference-callout__action" (click)="verReferenciaPeriodoAnterior?.()">
-                  Ver referencia {{ referenciaTablaPeriodoLabel }}
-                </button>
-              </div>
-            }
             <app-data-grid
               title="Tabla impuesto unico"
               [rows]="tablaRows"

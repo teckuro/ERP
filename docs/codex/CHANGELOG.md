@@ -1,8 +1,29 @@
 # CHANGELOG
+## NOM-MOVIMIENTOS-SIMPLE-00 - Unificacion documental de movimientos
+
+Fecha: 2026-05-15
+
+- Se crea el documento rector `docs/codex/modulos/remuneraciones/movimientos-remuneracion-simple.md`.
+- Se define que `Movimientos del mes` y `Asignaciones recurrentes` deben evolucionar a la experiencia visible `Movimientos de remuneracion`.
+- Se fijan tres duraciones visibles: `Solo este mes`, `Recurrente` y `En cuotas`.
+- Se documenta auditoria actual: `nomina_novedad_mensual`, `movimiento_variable_mensual` legacy, `haberdescuento_persona`, `concepto` y `EntradasMensualesPeriodoService`.
+- Alcance respetado: fase documental, sin Angular, SQL/RPC/RLS, rutas, motor, liquidaciones, servicios productivos, mappers, payloads ni estilos globales.
+
+## ERP-NOIA-DECISION-SYSTEM-01 - Sistema de decisiones de diseno NOIA
+
+Fecha: 2026-05-15
+
+- Se crea un sistema documental para que Cursor/Codex evalue tipo de pantalla, fuente de verdad, accion principal, riesgo y patron visual antes de modificar UI.
+- Se define la regla anti-card: no resolver pantallas con cards por defecto.
+- Se documentan patrones alternativos: franja operativa, registro de bitacora, panel dividido, linea de estado, lista de revision, bloque editorial, tabla contextual, MessageBox, disclosure y card justificada.
+- Se agregan arquetipos de pantalla y recetas de componentes.
+- No se toca Angular funcional, HTML/CSS de pantallas, SQL/RPC/RLS, Python, wrapper, motor, nomina, liquidaciones, servicios, mappers ni estilos globales protegidos.
+
 ## PARAM-BITACORA-LAYOUT-ALIGN-01 - Parametros alineado a Bitacora Operativa
 
 Fecha: 2026-05-15
 
+- v2 ejecuta la lectura obligatoria NOIA/Parametros, explicita la matriz de decision y refuerza cierre normativo como protagonista visual.
 - Se ordena visualmente la pantalla Parametros para alinearla al patron `Bitacora Operativa / NOIA`.
 - La cabecera del periodo refuerza la lectura normativa: periodo, estado mensual, detalle operativo y accion recomendada.
 - Se ajusta la lectura visual de tabs principales como navegacion normativa compacta, sin cambiar su logica.
@@ -371,3 +392,24 @@ Fecha: 2026-05-15
 - `Mantener mi configuracion` conserva los valores cliente y registra la decision.
 - `Revisar despues` conserva los valores cliente, registra la postergacion y deja la revision disponible sin interrumpir repetidamente.
 - No se toca Python, wrapper, SQL estructural, RLS/RPC, motor, nomina, liquidaciones ni estilos globales protegidos.
+## NOM-MOVIMIENTOS-SIMPLE-01 - Primera experiencia visible de movimientos
+
+Fecha: 2026-05-15
+
+- El menu de Remuneraciones simplifica el acceso visible a `Movimientos`.
+- La pantalla mensual se presenta como `Movimientos de remuneracion` con vistas `Este mes`, `Recurrentes` y `Todos` preparado como pendiente.
+- `Asignaciones recurrentes` queda tratada como vista `Recurrentes`, sin eliminar su ruta ni logica actual.
+- Preparar nomina, Dashboard y Reportes alinean enlaces y textos hacia `Movimientos de remuneracion`.
+- `En cuotas` queda explicado como duracion para prestamos, anticipos o descuentos pactados, sin implementar calculo ni persistencia nueva.
+- Alcance respetado: sin SQL/RPC/RLS, sin motor, sin servicios productivos, sin mappers, sin payloads, sin persistencia critica y sin estilos globales protegidos.
+
+## NOM-MOVIMIENTOS-SIMPLE-01-FORM-POLISH - Pulido modal Registrar movimiento
+
+Fecha: 2026-05-15
+
+- El modal `Registrar movimiento` queda organizado en cuatro bloques: Movimiento, Duracion del movimiento, Detalle administrativo opcional y Resumen.
+- Se agrega selector visible de duracion: `Solo este mes`, `Recurrente` y `En cuotas`.
+- `En cuotas` muestra campos UI para cantidad de cuotas, monto por cuota, cuota inicial, periodo de inicio y periodo estimado de termino.
+- `Cantidad` administrativa queda aclarada como dato de unidad, no como cantidad de cuotas.
+- El resumen operativo explica en lenguaje RRHH que se guardara, con resumen parcial si faltan trabajador, concepto o monto.
+- Limite documentado: duracion/cuotas quedan como UI preparada y validacion local; no se agregan payloads, SQL, motor ni persistencia critica.

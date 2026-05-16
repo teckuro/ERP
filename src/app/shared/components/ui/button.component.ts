@@ -71,13 +71,16 @@ type ButtonSize = 'sm' | 'md' | 'lg';
         align-items: center;
         justify-content: center;
         flex: 0 0 auto;
+        align-self: center;
         line-height: 1;
+        vertical-align: middle;
       }
 
       .erp-button ::ng-deep lucide-icon svg {
         display: block;
         width: 100%;
         height: 100%;
+        margin: auto;
       }
     `,
   ],

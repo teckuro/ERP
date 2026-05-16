@@ -11,6 +11,7 @@ import {
   untracked,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { RouterLink } from '@angular/router';
 import { LucideAngularModule } from 'lucide-angular';
 import { Plus, RefreshCw, X } from 'lucide-angular/src/icons';
 
@@ -83,6 +84,8 @@ type NovedadGridRow = NovedadMensual & {
   busqueda: string;
 };
 
+type DuracionMovimiento = 'solo_mes' | 'recurrente' | 'cuotas';
+
 type NovedadForm = {
   periodo: string;
   idPersona: number | null;
@@ -96,6 +99,12 @@ type NovedadForm = {
   moneda: string;
   origen: NovedadMensualOrigen;
   fechaEvento: string;
+  duracionMovimiento: DuracionMovimiento;
+  periodoInicio: string;
+  periodoTermino: string;
+  cantidadCuotas: number | null;
+  montoCuota: number | null;
+  cuotaInicial: number | null;
   observacion: string;
   referenciaExterna: string;
 };
@@ -142,6 +151,28 @@ const TIPO_MOVIMIENTO_LABELS: Record<NovedadMensualTipoMovimiento, string> = {
   informativo: 'Informativo',
 };
 
+const DURACION_MOVIMIENTO_OPTIONS: readonly {
+  id: DuracionMovimiento;
+  label: string;
+  description: string;
+}[] = [
+  {
+    id: 'solo_mes',
+    label: 'Solo este mes',
+    description: 'Se aplica unicamente al periodo activo.',
+  },
+  {
+    id: 'recurrente',
+    label: 'Recurrente',
+    description: 'Se repite todos los meses hasta que sea pausado o finalizado.',
+  },
+  {
+    id: 'cuotas',
+    label: 'En cuotas',
+    description: 'Para prestamos, anticipos, reintegros o descuentos pactados en varios meses.',
+  },
+];
+
 function formInicial(periodo: string): NovedadForm {
   return {
     periodo,
@@ -156,6 +187,12 @@ function formInicial(periodo: string): NovedadForm {
     moneda: 'CLP',
     origen: 'manual',
     fechaEvento: '',
+    duracionMovimiento: 'solo_mes',
+    periodoInicio: periodo,
+    periodoTermino: '',
+    cantidadCuotas: null,
+    montoCuota: null,
+    cuotaInicial: 1,
     observacion: '',
     referenciaExterna: '',
   };
@@ -167,6 +204,7 @@ function formInicial(periodo: string): NovedadForm {
   imports: [
     CommonModule,
     FormsModule,
+    RouterLink,
     LucideAngularModule,
     RecordBreadcrumbComponent,
     ButtonComponent,
@@ -192,7 +230,7 @@ export class NovedadesMensualesContainer implements OnInit, OnDestroy {
 
   readonly breadcrumbItems: readonly RecordBreadcrumbItem[] = [
     { label: 'Remuneraciones', link: '/remuneraciones' },
-    { label: 'Movimientos del mes' },
+    { label: 'Movimientos de remuneracion' },
   ];
 
   readonly plusIcon = Plus;
@@ -203,6 +241,7 @@ export class NovedadesMensualesContainer implements OnInit, OnDestroy {
   readonly categorias = NOVEDAD_MENSUAL_CATEGORIAS;
   readonly origenes = NOVEDAD_MENSUAL_ORIGENES;
   readonly tiposMovimiento = NOVEDAD_MENSUAL_TIPOS_MOVIMIENTO;
+  readonly duracionesMovimiento = DURACION_MOVIMIENTO_OPTIONS;
 
   readonly periodoActual = computed(() => this.periodoActivo.periodoYm());
   readonly loading = signal(false);
@@ -252,20 +291,32 @@ export class NovedadesMensualesContainer implements OnInit, OnDestroy {
     const secundarios = contar('rechazada') + contar('anulada') + contar('calculada') + contar('incorporada_a_pre_nomina');
     return [
       { label: 'Total', total: filas.length },
+      { label: 'Solo este mes', total: filas.length },
+      { label: 'Recurrentes activos', total: '-' },
+      { label: 'En cuotas', total: '-' },
       { label: 'Borradores', total: contar('borrador') },
       { label: 'Pendientes', total: contar('pendiente_revision') },
       { label: 'Aprobados', total: contar('aprobada') },
-      { label: 'Observados / rechazados / anulados', total: secundarios },
+      { label: 'Por revisar', total: contar('pendiente_revision') + secundarios },
     ];
   });
   readonly formConCambios = computed(() => this.formAbierto() && this.serializarForm(this.form()) !== this.formSnapshot());
   readonly resumenFormulario = computed(() => {
     const form = this.form();
+    const trabajador = form.idPersona == null ? '' : this.etiquetaTrabajador(form.idPersona);
+    const concepto = form.idConcepto == null ? '' : this.etiquetaConcepto(form.idConcepto);
+    const monto = form.monto == null ? '' : `${form.moneda || 'CLP'} ${Number(form.monto).toLocaleString('es-CL')}`;
+    const tipo = this.etiquetaTipoMovimiento(form.tipoMovimiento);
+    const datosPrincipales = trabajador && concepto && monto;
     return {
-      trabajador: form.idPersona == null ? '' : this.etiquetaTrabajador(form.idPersona),
-      concepto: form.idConcepto == null ? '' : this.etiquetaConcepto(form.idConcepto),
-      monto: form.monto == null ? '' : `${form.moneda || 'CLP'} ${Number(form.monto).toLocaleString('es-CL')}`,
+      trabajador,
+      concepto,
+      monto,
+      tipo,
       periodo: this.periodoActivo.etiqueta(),
+      duracion: this.etiquetaDuracionMovimiento(form.duracionMovimiento),
+      principal: datosPrincipales ? `${tipo} de ${monto} para ${trabajador}.` : '',
+      detalleDuracion: this.resumenDuracion(form),
       visible: form.idPersona != null || form.idConcepto != null || form.monto != null,
     };
   });
@@ -473,6 +524,12 @@ export class NovedadesMensualesContainer implements OnInit, OnDestroy {
       moneda: novedad.moneda,
       origen: novedad.origen,
       fechaEvento: novedad.fechaEvento ?? '',
+      duracionMovimiento: 'solo_mes',
+      periodoInicio: novedad.periodo,
+      periodoTermino: '',
+      cantidadCuotas: null,
+      montoCuota: null,
+      cuotaInicial: 1,
       observacion: novedad.observacion ?? '',
       referenciaExterna: novedad.referenciaExterna ?? '',
     });
@@ -535,8 +592,33 @@ export class NovedadesMensualesContainer implements OnInit, OnDestroy {
     this.actualizarForm('idConcepto', idConcepto);
   }
 
+  seleccionarDuracion(duracion: DuracionMovimiento): void {
+    this.form.update((actual) => ({
+      ...actual,
+      duracionMovimiento: duracion,
+      periodoInicio: actual.periodoInicio || this.periodoActual(),
+      cantidadCuotas: duracion === 'cuotas' ? actual.cantidadCuotas : null,
+      montoCuota: duracion === 'cuotas' ? actual.montoCuota : null,
+      cuotaInicial: duracion === 'cuotas' ? (actual.cuotaInicial ?? 1) : null,
+      periodoTermino: duracion === 'solo_mes' ? '' : actual.periodoTermino,
+    }));
+    this.limpiarErrorCampo('duracionMovimiento');
+  }
+
   async guardarFormulario(): Promise<void> {
     const input = this.inputDesdeForm();
+    const erroresDuracion = this.validarDuracionUi();
+    if (Object.keys(erroresDuracion).length > 0) {
+      this.formErrores.set(erroresDuracion);
+      this.mensaje.set({
+        variant: 'warning',
+        title: 'Duracion incompleta',
+        message: 'Revise la duracion del movimiento antes de guardar.',
+      });
+      this.enfocarPrimerError();
+      return;
+    }
+
     const resultado = validarNovedadMensualInput({ ...input, estado: this.novedadEditando()?.estado ?? 'borrador' });
     if (!resultado.valido) {
       this.formErrores.set(this.erroresDesdeValidacion(resultado.errores));
@@ -652,6 +734,14 @@ export class NovedadesMensualesContainer implements OnInit, OnDestroy {
     return this.formErrores()[campo] ?? '';
   }
 
+  etiquetaDuracionMovimiento(duracion: DuracionMovimiento): string {
+    return this.duracionesMovimiento.find((item) => item.id === duracion)?.label ?? 'Solo este mes';
+  }
+
+  descripcionDuracionMovimiento(duracion: DuracionMovimiento): string {
+    return this.duracionesMovimiento.find((item) => item.id === duracion)?.description ?? '';
+  }
+
   claseEstado(estado: NovedadMensualEstado): string {
     switch (estado) {
       case 'aprobada':
@@ -746,6 +836,52 @@ export class NovedadesMensualesContainer implements OnInit, OnDestroy {
       observacion: form.observacion.trim() || null,
       referenciaExterna: form.referenciaExterna.trim() || null,
     };
+  }
+
+  private validarDuracionUi(): NovedadFormErrores {
+    const form = this.form();
+    const errores: NovedadFormErrores = {};
+
+    if (!form.duracionMovimiento) {
+      errores.duracionMovimiento = 'Seleccione la duracion del movimiento.';
+    }
+
+    if ((form.duracionMovimiento === 'recurrente' || form.duracionMovimiento === 'cuotas') && !form.periodoInicio) {
+      errores.periodoInicio = 'Indique el periodo de inicio.';
+    }
+
+    if (form.duracionMovimiento === 'cuotas') {
+      if (form.cantidadCuotas == null || form.cantidadCuotas <= 0) {
+        errores.cantidadCuotas = 'Indique una cantidad de cuotas mayor a cero.';
+      }
+      if (form.montoCuota == null || form.montoCuota <= 0) {
+        errores.montoCuota = 'Indique el monto por cuota.';
+      }
+      if (form.cuotaInicial == null || form.cuotaInicial <= 0) {
+        errores.cuotaInicial = 'Indique la cuota inicial.';
+      }
+    }
+
+    return errores;
+  }
+
+  private resumenDuracion(form: NovedadForm): string {
+    if (form.duracionMovimiento === 'recurrente') {
+      const inicio = form.periodoInicio || this.periodoActual();
+      return form.periodoTermino
+        ? `Se repetira desde ${inicio} hasta ${form.periodoTermino}.`
+        : `Se repetira desde ${inicio} hasta que sea pausado o finalizado.`;
+    }
+
+    if (form.duracionMovimiento === 'cuotas') {
+      const cuotas = form.cantidadCuotas ? `${form.cantidadCuotas} cuotas` : 'cuotas por definir';
+      const montoCuota =
+        form.montoCuota == null ? 'monto por cuota pendiente' : `${form.moneda || 'CLP'} ${Number(form.montoCuota).toLocaleString('es-CL')}`;
+      const inicio = form.periodoInicio || this.periodoActual();
+      return `Se aplicara en ${cuotas} de ${montoCuota}, desde ${inicio}.`;
+    }
+
+    return `Se aplicara solo en ${this.periodoActivo.etiqueta()}.`;
   }
 
   private limpiarErrorCampo(campo: NovedadFormCampo): void {

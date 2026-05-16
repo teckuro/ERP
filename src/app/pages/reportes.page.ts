@@ -87,12 +87,8 @@ import { CardComponent, CardContentComponent, CardHeaderComponent } from '../sha
               <span>Listado y detalle interno generado desde una nomina cerrada.</span>
             </a>
             <a routerLink="/remuneraciones/novedades-mensuales" class="report-tile">
-              <strong>Movimientos del mes</strong>
-              <span>Bonos, descuentos, anticipos y ajustes que impactan el periodo.</span>
-            </a>
-            <a routerLink="/remuneraciones/haberes-descuentos" class="report-tile">
-              <strong>Asignaciones recurrentes</strong>
-              <span>Haberes, descuentos y aportes vigentes por trabajador.</span>
+              <strong>Movimientos de remuneracion</strong>
+              <span>Bonos, descuentos, anticipos, recurrentes y ajustes que impactan el periodo.</span>
             </a>
           </app-card-content>
           </div>

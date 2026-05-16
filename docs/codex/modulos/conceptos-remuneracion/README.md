@@ -51,3 +51,13 @@ Conceptos de remuneracion queda alineado a [`NOIA / Bitacora Operativa`](../../d
 - `Movimiento` registra aplicacion concreta por trabajador o periodo.
 - Esta separacion debe mantenerse en futuras fases UX para evitar mezclar catalogo con bitacora operacional.
 - Esta referencia es documental; no cambia SQL, servicios, motor, rutas ni estilos globales.
+
+## NOM-MOVIMIENTOS-SIMPLE-00
+
+La decision documental vigente define `Movimientos de remuneracion` como experiencia futura que unifica `Movimientos del mes` y `Asignaciones recurrentes` desde la duracion del registro: `Solo este mes`, `Recurrente` o `En cuotas`. Documento rector: [`../remuneraciones/movimientos-remuneracion-simple.md`](../remuneraciones/movimientos-remuneracion-simple.md).
+
+Esta fase no cambia rutas, servicios, SQL, motor ni pantallas actuales.
+
+## NOM-MOVIMIENTOS-SIMPLE-01
+
+La capa visible de movimientos no cambia el catalogo maestro. `Conceptos de remuneracion` sigue separado: define conceptos; `Movimientos de remuneracion` aplica conceptos a trabajadores y periodos.
