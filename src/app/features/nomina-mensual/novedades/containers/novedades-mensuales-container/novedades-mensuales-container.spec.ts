@@ -241,7 +241,7 @@ describe('NovedadesMensualesContainer', () => {
     const text = fixture.nativeElement.textContent as string;
     expect(text).toContain('Selecciona trabajador');
     expect(text).toContain('Selecciona concepto');
-    expect(text).toContain('Este movimiento se aplicará solo al período activo.');
+    expect(text).toContain('Movimiento puntual del período activo.');
     expect(text).not.toContain('Trabajador / idPersona');
     expect(text).not.toContain('Contrato / idContrato');
     expect(text).not.toContain('Concepto / idConcepto');

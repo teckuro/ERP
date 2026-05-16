@@ -28,6 +28,8 @@ Conjunto de documentos **globales y breves** para que Codex, Cursor, ChatGPT u o
 12. [`../README.md`](../README.md) — índice padre y jerarquía.
 13. **[`../modulos/<módulo>/README.md`](../modulos/empleados/README.md)** y luego el **documento del subflujo** que corresponda.
 
+**Movimientos de remuneración:** antes del detalle en `modulos/remuneraciones/`, leer [`resumen-trabajo-movimientos-remuneracion.md`](./resumen-trabajo-movimientos-remuneracion.md).
+
 Siempre debe quedar claro: primero **contexto + roadmap + dependencias + fases + mapa**, despues **contrato (`AGENTS` + UI + arquitectura frontend si aplica)**, despues **modulo**, despues **pantalla**. Los recorridos por ruta siguen en [`../temas/flujos/README.md`](../temas/flujos/README.md).
 
 ## Relación con `docs/codex/modulos` y `docs/codex/temas`

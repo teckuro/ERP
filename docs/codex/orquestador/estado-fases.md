@@ -1,3 +1,23 @@
+## NOM-MOVIMIENTOS-MODAL-UX-02 - Modales contexto, calendario y retorno a gestión
+
+| Campo | Estado |
+|---|---|
+| Estado | Implementada |
+| Tipo | UX/UI local |
+| Alcance | Modales movimiento del mes y recurrente: franja contexto, `app-calendar-input`, pie con Volver a gestión, toolbar en Gestionar sin pie duplicado. |
+| Restricciones | Sin SQL/RPC/RLS, motor, payloads, estilos globales ni servicios de negocio. |
+| Documento | [`../orquestador/resumen-trabajo-movimientos-remuneracion.md`](../orquestador/resumen-trabajo-movimientos-remuneracion.md), [`../peticiones-estilos.md`](../peticiones-estilos.md) |
+
+## NOM-MOVIMIENTOS-GESTION-TABLA-UNICA-01 - Grilla única en Gestionar
+
+| Campo | Estado |
+|---|---|
+| Estado | Implementada |
+| Tipo | UX/UI local |
+| Alcance | Modal Gestionar: una grilla unificada (mes + recurrentes), filtros chips, contadores con filtro preseleccionado. |
+| Restricciones | Sin SQL/RPC/RLS, motor, payloads, estilos globales ni servicios. |
+| Documento | [`../modulos/remuneraciones/movimientos-de-remuneracion.md`](../modulos/remuneraciones/movimientos-de-remuneracion.md) |
+
 ## DOCS-CODEX-MERGE-PRUNE-QUALITY-01
 
 | Campo | Estado |

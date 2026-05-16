@@ -311,3 +311,19 @@ Cuotas = recurrente con pagos o descuentos definidos en varios meses.
 La grilla principal conserva contadores por trabajador. Los contadores de movimientos del mes, recurrentes y revisión abren detalle contextual dentro de la pantalla, sin navegación externa. `Agregar movimiento del mes` abre el modal mensual. `Agregar recurrente` abre el modal recurrente.
 
 El flujo recurrente se gestiona en esta misma pantalla con las capacidades existentes: crear, editar y finalizar. Pausar, aprobar u observar recurrentes quedan como acciones no disponibles cuando el modelo actual no las soporta, sin inventar persistencia nueva.
+
+### Cierre NOM-MOVIMIENTOS-GESTION-TABLA-UNICA-01
+
+El modal **Gestionar** deja de usar grillas separadas por tipo. Una sola grilla unifica movimientos del mes y recurrentes, con columna **Ámbito**, filtros locales (`Todos`, `Del mes`, `Recurrentes`, `Por revisar`) y acciones condicionadas. Los contadores de la grilla principal abren el mismo modal con filtro preseleccionado.
+
+### Cierre NOM-MOVIMIENTOS-MODAL-UX-02
+
+Los modales mensual y recurrente incorporan franja de contexto, fechas con `app-calendar-input`, pie dividido con **Volver a gestión** cuando el flujo nace en Gestionar, y cierre alineado (`cancelar*`) que restaura el hub del trabajador. El modal Gestionar concentra las altas en toolbar superior sin pie duplicado.
+
+### Cierre NOM-MOVIMIENTOS-RECURRENTES-PARITY-01
+
+Paridad entre Movimientos y Haberes en bloque Cuotas (UI), query params `persona` / `accion=registrar`, y enlaces desde Preparar nómina y ficha empleado hacia recurrentes con trabajador preseleccionado. Haberes deja de usar tabbar como pantalla principal de recurrentes.
+
+---
+
+**Context pack operativo (estado UI consolidado):** [`../../orquestador/resumen-trabajo-movimientos-remuneracion.md`](../../orquestador/resumen-trabajo-movimientos-remuneracion.md).

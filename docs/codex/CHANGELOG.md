@@ -1,5 +1,14 @@
 # CHANGELOG
 
+## DOCS-MOVIMIENTOS-ALIGN-01 - Alineación documental Movimientos
+
+Fecha: 2026-05-16
+
+- Se creó [`orquestador/resumen-trabajo-movimientos-remuneracion.md`](./orquestador/resumen-trabajo-movimientos-remuneracion.md) como context pack para agentes.
+- Se amplió [`modulos/remuneraciones/movimientos-de-remuneracion.md`](./modulos/remuneraciones/movimientos-de-remuneracion.md) como documento vivo del producto.
+- Se actualizaron cierres de fase en `movimientos-remuneracion-simple.md`, §1.1 de `novedades-mensuales.md`, `contexto-rapido.md`, `estado-fases.md` y se redujo duplicidad en `movimientos-variables/README.md`.
+- Sin cambios en `src/`, SQL, motor ni estilos globales.
+
 ## DOCS-CODEX-MERGE-PRUNE-QUALITY-01
 
 Fecha: 2026-05-16

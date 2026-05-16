@@ -111,22 +111,12 @@ Movimientos variables queda alineado a [`NOIA / Bitacora Operativa`](../../disen
 - La evolucion UX recomendada es unir la lectura visible con asignaciones recurrentes, manteniendo distinta la fuente y periodicidad.
 - Esta referencia es documental; no fusiona rutas, tablas, servicios ni reglas de calculo.
 
-## NOM-MOVIMIENTOS-SIMPLE-00
+## Movimientos de remuneración (lectura unificada)
 
-La decision documental vigente define `Movimientos de remuneracion` como experiencia futura que unifica `Movimientos del mes` y `Asignaciones recurrentes` desde la duracion del registro: `Solo este mes`, `Recurrente` o `En cuotas`. Documento rector: [`../remuneraciones/movimientos-remuneracion-simple.md`](../remuneraciones/movimientos-remuneracion-simple.md).
+La UI visible del mes vive en **`/remuneraciones/novedades-mensuales`** (Movimientos de remuneración). Este módulo (`movimientos-variables`) conserva contratos técnicos legacy (9.4A–9.4E, persistencia, servicio).
 
-Esta fase no cambia rutas, servicios, SQL, motor ni pantallas actuales.
+**No duplicar** aquí el detalle de fases NOM-MOVIMIENTOS. Usar:
 
-## NOM-MOVIMIENTOS-SIMPLE-01
-
-La ruta visible mensual queda presentada como vista `Este mes` dentro de `Movimientos de remuneracion`. `movimientos-variables` sigue siendo nombre tecnico legacy y no se migra persistencia ni servicio.
-
-## NOM-MOVIMIENTOS-POR-TRABAJADOR-01
-
-La mesa visible de Movimientos prioriza trabajadores del periodo. Movimientos variables/mensuales quedan representados como `Mov. mes` dentro de la fila del trabajador, sin cambiar persistencia legacy ni motor.
-
-## NOM-MOVIMIENTOS-GESTION-INTEGRAL-01
-
-La pantalla `Movimientos de remuneración` queda como menú único por trabajador, pero mantiene separados los flujos. Los movimientos mensuales se registran como puntuales del período activo y no muestran recurrentes ni cuotas en su formulario.
-
-Los recurrentes se administran en el mismo menú con un formulario propio. Las cuotas se tratan como parte del flujo recurrente, no como un tipo principal de movimiento mensual.
+- [`../remuneraciones/movimientos-de-remuneracion.md`](../remuneraciones/movimientos-de-remuneracion.md) — producto vivo
+- [`../../orquestador/resumen-trabajo-movimientos-remuneracion.md`](../../orquestador/resumen-trabajo-movimientos-remuneracion.md) — context pack
+- [`../remuneraciones/movimientos-remuneracion-simple.md`](../remuneraciones/movimientos-remuneracion-simple.md) — cierres por fase

@@ -1,69 +1,70 @@
-# DocumentaciÛn ERP ó Ìndice padre (reglas y mÛdulos)
+# Documentaci√≥n ERP ‚Äî √≠ndice padre (reglas y m√≥dulos)
 
-**Punto de entrada** para normas de producto, UI y flujos en `docs/codex`. Las definiciones por dominio viven en **`modulos/`**; `temas/` conserva **flujos transversales**, **stubs de redirecciÛn** y documentos no migrados.
+**Punto de entrada** para normas de producto, UI y flujos en `docs/codex`. Las definiciones por dominio viven en **`modulos/`**; `temas/` conserva **flujos transversales**, **stubs de redirecci√≥n** y documentos no migrados.
 
 ## Orden de lectura (obligatorio para agentes y personas)
 
-Para fases acotadas o diagnÛstico r·pido, partir por [`contexto-rapido.md`](./contexto-rapido.md) y luego seguir la jerarquÌa completa de este README. El contexto r·pido no reemplaza los contratos; solo reduce ruido inicial.
+Para fases acotadas o diagn√≥stico r√°pido, partir por [`contexto-rapido.md`](./contexto-rapido.md) y luego seguir la jerarqu√≠a completa de este README. El contexto r√°pido no reemplaza los contratos; solo reduce ruido inicial.
 
-1. **Orquestador** ó contexto global, diseÒo operativo y fases: [`orquestador/README.md`](./orquestador/README.md), [`orquestador/contexto-proyecto.md`](./orquestador/contexto-proyecto.md), [`orquestador/diseno-operativo-erp.md`](./orquestador/diseno-operativo-erp.md), [`orquestador/estado-fases.md`](./orquestador/estado-fases.md).
-2. **Mapa de documentaciÛn** ó inventario global / por mÛdulo / histÛrico: [`orquestador/mapa-documentacion.md`](./orquestador/mapa-documentacion.md).
-3. **Arquitectura frontend (Angular)** ó p·ginas wrapper, contenedores, capas: [`arquitectura/frontend-interfaces.md`](./arquitectura/frontend-interfaces.md) (leer antes de rutas/pantallas/feature nuevos o refactors grandes).
-4. **Contrato del agente y guÌas UI** ó [`AGENTS.md`](./AGENTS.md), [`ui-form-guidelines.md`](./ui-form-guidelines.md), [`ui-button-guidelines.md`](./ui-button-guidelines.md), [`ui-tables.md`](./ui-tables.md), [`estilos/README.md`](./estilos/README.md).
-5. **MÛdulo** ó [`modulos/<mÛdulo>/README.md`](./modulos/empleados/README.md) (elegir carpeta: `empleados`, `parametros`, etc.).
-6. **Subflujo / pantalla** ó el `.md` concreto dentro de esa carpeta (p. ej. [`modulos/empleados/ficha-empleado.md`](./modulos/empleados/ficha-empleado.md)).
-7. **`temas/`** ó solo si hace falta un **flujo por rutas** ([`temas/flujos/README.md`](./temas/flujos/README.md)), UI de implementaciÛn ([`temas/implementacion-ui.md`](./temas/implementacion-ui.md)), men˙ ([`temas/crear-menu-base.md`](./temas/crear-menu-base.md)) o un doc **a˙n no migrado**. Muchos `.md` en la raÌz de `temas/` son **stubs** (ìDocumento migradoÖî) hacia `modulos/`.
+1. **Orquestador** ‚Äî contexto global, dise√±o operativo y fases: [`orquestador/README.md`](./orquestador/README.md), [`orquestador/contexto-proyecto.md`](./orquestador/contexto-proyecto.md), [`orquestador/diseno-operativo-erp.md`](./orquestador/diseno-operativo-erp.md), [`orquestador/estado-fases.md`](./orquestador/estado-fases.md).
+2. **Mapa de documentaci√≥n** ‚Äî inventario global / por m√≥dulo / hist√≥rico: [`orquestador/mapa-documentacion.md`](./orquestador/mapa-documentacion.md).
+3. **Arquitectura frontend (Angular)** ‚Äî p√°ginas wrapper, contenedores, capas: [`arquitectura/frontend-interfaces.md`](./arquitectura/frontend-interfaces.md) (leer antes de rutas/pantallas/feature nuevos o refactors grandes).
+4. **Contrato del agente y gu√≠as UI** ‚Äî [`AGENTS.md`](./AGENTS.md), [`ui-form-guidelines.md`](./ui-form-guidelines.md), [`ui-button-guidelines.md`](./ui-button-guidelines.md), [`ui-tables.md`](./ui-tables.md), [`estilos/README.md`](./estilos/README.md).
+5. **M√≥dulo** ‚Äî [`modulos/<m√≥dulo>/README.md`](./modulos/empleados/README.md) (elegir carpeta: `empleados`, `parametros`, etc.).
+6. **Subflujo / pantalla** ‚Äî el `.md` concreto dentro de esa carpeta (p. ej. [`modulos/empleados/ficha-empleado.md`](./modulos/empleados/ficha-empleado.md)).
+7. **`temas/`** ‚Äî solo si hace falta un **flujo por rutas** ([`temas/flujos/README.md`](./temas/flujos/README.md)), UI de implementaci√≥n ([`temas/implementacion-ui.md`](./temas/implementacion-ui.md)), men√∫ ([`temas/crear-menu-base.md`](./temas/crear-menu-base.md)) o un doc **a√∫n no migrado**. Muchos `.md` en la ra√≠z de `temas/` son **stubs** (‚ÄúDocumento migrado‚Ä¶‚Äù) hacia `modulos/`.
 
-### Cada peticiÛn: quÈ pedir y quÈ se aplica
+### Cada petici√≥n: qu√© pedir y qu√© se aplica
 
 1. **Alcance**: pantalla, archivo o flujo concreto.
-2. **Tipo de cambio**: solo UI, solo lÛgica, o ambos; si el contrato dice ´solo UIª, no tocar guardado, servicios ni `formControlName` sin acuerdo explÌcito.
+2. **Tipo de cambio**: solo UI, solo l√≥gica, o ambos; si el contrato dice ¬´solo UI¬ª, no tocar guardado, servicios ni `formControlName` sin acuerdo expl√≠cito.
 3. **Fuente de verdad** si hay lista cerrada: p. ej. [`peticiones-fusion-items-1-65.md`](./peticiones-fusion-items-1-65.md).
-4. **JerarquÌa** (en conflicto gana el primero):
+4. **Jerarqu√≠a** (en conflicto gana el primero):
    1. [`AGENTS.md`](./AGENTS.md)
-   2. **Este README** ó Ìndice y orden de lectura; no sustituye `AGENTS.md`.
-   3. [`arquitectura/frontend-interfaces.md`](./arquitectura/frontend-interfaces.md) ó estructura Angular (`pages` vs `features`, contenedores, capas).
+   2. **Este README** ‚Äî √≠ndice y orden de lectura; no sustituye `AGENTS.md`.
+   3. [`arquitectura/frontend-interfaces.md`](./arquitectura/frontend-interfaces.md) ‚Äî estructura Angular (`pages` vs `features`, contenedores, capas).
    4. [`ui-form-guidelines.md`](./ui-form-guidelines.md)
    5. Documentos bajo [`modulos/`](./modulos/empleados/README.md) (y transversales en `temas/` cuando aplique).
 
 ---
 
-## `docs/codex/arquitectura/` ó contratos transversales de cÛdigo
+## `docs/codex/arquitectura/` ‚Äî contratos transversales de c√≥digo
 
 | Documento | Contenido |
 |-------------|-------------|
-| [`arquitectura/README.md`](./arquitectura/README.md) | Õndice de esta carpeta |
-| [`arquitectura/frontend-interfaces.md`](./arquitectura/frontend-interfaces.md) | Contrato frontend Angular (inglÈs): wrappers en `pages/`, contenedores, servicios, reglas |
+| [`arquitectura/README.md`](./arquitectura/README.md) | √çndice de esta carpeta |
+| [`arquitectura/frontend-interfaces.md`](./arquitectura/frontend-interfaces.md) | Contrato frontend Angular (ingl√©s): wrappers en `pages/`, contenedores, servicios, reglas |
 
 ---
 
-## `docs/codex/modulos/` ó contratos por mÛdulo
+## `docs/codex/modulos/` ‚Äî contratos por m√≥dulo
 
-| MÛdulo | README |
+| M√≥dulo | README |
 |--------|--------|
 | Empleados | [`modulos/empleados/README.md`](./modulos/empleados/README.md) |
-| Par·metros | [`modulos/parametros/README.md`](./modulos/parametros/README.md) |
-| Conceptos remuneraciÛn | [`modulos/conceptos-remuneracion/README.md`](./modulos/conceptos-remuneracion/README.md) (diagnÛstico + [`contrato-funcional.md`](./modulos/conceptos-remuneracion/contrato-funcional.md)) |
+| Par√°metros | [`modulos/parametros/README.md`](./modulos/parametros/README.md) |
+| Conceptos remuneraci√≥n | [`modulos/conceptos-remuneracion/README.md`](./modulos/conceptos-remuneracion/README.md) (diagn√≥stico + [`contrato-funcional.md`](./modulos/conceptos-remuneracion/contrato-funcional.md)) |
 | Haberes y descuentos | [`modulos/haberes-descuentos/README.md`](./modulos/haberes-descuentos/README.md) |
 | Movimientos variables (mensuales) | [`modulos/movimientos-variables/README.md`](./modulos/movimientos-variables/README.md) |
 | Remuneraciones (punto de entrada) | [`modulos/remuneraciones/README.md`](./modulos/remuneraciones/README.md) |
-| Movimientos de remuneraciÛn (producto) | [`modulos/remuneraciones/movimientos-de-remuneracion.md`](./modulos/remuneraciones/movimientos-de-remuneracion.md) |
-| Remuneraciones ó fases y decisiÛn | [`modulos/remuneraciones/movimientos-remuneracion-simple.md`](./modulos/remuneraciones/movimientos-remuneracion-simple.md) |
-| NÛmina mensual (visiÛn) | [`modulos/nomina-mensual/README.md`](./modulos/nomina-mensual/README.md) |
+| Movimientos de remuneraci√≥n (producto) | [`modulos/remuneraciones/movimientos-de-remuneracion.md`](./modulos/remuneraciones/movimientos-de-remuneracion.md) |
+| Movimientos ‚Äî resumen para agentes | [`orquestador/resumen-trabajo-movimientos-remuneracion.md`](./orquestador/resumen-trabajo-movimientos-remuneracion.md) |
+| Remuneraciones ‚Äî fases y decisi√≥n | [`modulos/remuneraciones/movimientos-remuneracion-simple.md`](./modulos/remuneraciones/movimientos-remuneracion-simple.md) |
+| N√≥mina mensual (visi√≥n) | [`modulos/nomina-mensual/README.md`](./modulos/nomina-mensual/README.md) |
 
 ---
 
 ## Poda documental
 
-`docs/codex` mantiene solo documentaciÛn activa, modular, histÛrica mÌnima y context-packs (cuando existan).
+`docs/codex` mantiene solo documentaci√≥n activa, modular, hist√≥rica m√≠nima y context-packs (cuando existan).
 
 Se eliminaron del repo activo:
 
 - respaldos `.bak`;
 - assets antiguos pesados en `archivo/assets-antiguos/`;
-- duplicados raÌz reemplazados por documentos modulares (prevalidaciones 9.5A/9.5B, planes de prueba por mÛdulo).
+- duplicados ra√≠z reemplazados por documentos modulares (prevalidaciones 9.5A/9.5B, planes de prueba por m√≥dulo).
 
-La documentaciÛn histÛrica mÌnima se conserva en [`archivo/fases-cerradas/`](./archivo/fases-cerradas/). No usar [`archivo/`](./archivo/README.md) como fuente principal de contratos.
+La documentaci√≥n hist√≥rica m√≠nima se conserva en [`archivo/fases-cerradas/`](./archivo/fases-cerradas/). No usar [`archivo/`](./archivo/README.md) como fuente principal de contratos.
 
 ---
 
@@ -81,37 +82,37 @@ La documentaciÛn histÛrica mÌnima se conserva en [`archivo/fases-cerradas/`](./a
 | [`AGENTS.md`](./AGENTS.md) | Contrato agente, prioridades, tokens resumidos, layout ERP, anti-patrones |
 | [`ui-form-guidelines.md`](./ui-form-guidelines.md) | Tokens completos, formularios, MessageBox, loading, checklist |
 | [`ui-button-guidelines.md`](./ui-button-guidelines.md) | Botones, toolbar, variantes |
-| [`ui-tables.md`](./ui-tables.md) | Est·ndar de tablas, DataGrid, columnas, formatos, filtros, empty states y responsive |
-| [`estilos/README.md`](./estilos/README.md) | Grilla 8 columnas, anchos, checklist de cierre (7 Ìtems) |
-| [`temas/implementacion-ui.md`](./temas/implementacion-ui.md) | DÛnde est· el CSS y componentes en el repo (sin duplicar tokens) |
-| [`temas/organizacion-por-modulo-y-flujos.md`](./temas/organizacion-por-modulo-y-flujos.md) | ConvenciÛn `modulos/` + `temas/` + `flujos/` |
-| [`temas/flujos/README.md`](./temas/flujos/README.md) | Õndice de flujos de la app (rutas ? recorridos) |
+| [`ui-tables.md`](./ui-tables.md) | Est√°ndar de tablas, DataGrid, columnas, formatos, filtros, empty states y responsive |
+| [`estilos/README.md`](./estilos/README.md) | Grilla 8 columnas, anchos, checklist de cierre (7 √≠tems) |
+| [`temas/implementacion-ui.md`](./temas/implementacion-ui.md) | D√≥nde est√° el CSS y componentes en el repo (sin duplicar tokens) |
+| [`temas/organizacion-por-modulo-y-flujos.md`](./temas/organizacion-por-modulo-y-flujos.md) | Convenci√≥n `modulos/` + `temas/` + `flujos/` |
+| [`temas/flujos/README.md`](./temas/flujos/README.md) | √çndice de flujos de la app (rutas ? recorridos) |
 
 ---
 
-## Proyecto y tipografÌa
+## Proyecto y tipograf√≠a
 
 | Documento | Contenido |
 |-----------|-----------|
-| [`manual-base-proyecto.md`](./manual-base-proyecto.md) | Lectura del proyecto, regla tipogr·fica (pesos) |
-| [`../../README.md`](../../README.md) | VisiÛn producto y stack (raÌz repo) |
+| [`manual-base-proyecto.md`](./manual-base-proyecto.md) | Lectura del proyecto, regla tipogr√°fica (pesos) |
+| [`../../README.md`](../../README.md) | Visi√≥n producto y stack (ra√≠z repo) |
 
 ---
 
-## Bit·coras (no son normativa base)
+## Bit√°coras (no son normativa base)
 
 | Documento | Contenido |
 |-----------|-----------|
 | [`peticiones-estilos.md`](./peticiones-estilos.md) | Registro de mejoras visuales por fecha |
-| [`peticiones-fusion-items-1-65.md`](./peticiones-fusion-items-1-65.md) | Õndice de trabajo fusionado |
+| [`peticiones-fusion-items-1-65.md`](./peticiones-fusion-items-1-65.md) | √çndice de trabajo fusionado |
 
 ---
 
-## AuditorÌas (hallazgos priorizados)
+## Auditor√≠as (hallazgos priorizados)
 
 | Documento | Contenido |
 |-----------|-----------|
-| [`auditorias/README.md`](./auditorias/README.md) | Õndice de auditorÌas |
+| [`auditorias/README.md`](./auditorias/README.md) | √çndice de auditor√≠as |
 | [`auditorias/qa-chile-01-remuneraciones.md`](./auditorias/qa-chile-01-remuneraciones.md) | QA-CHILE-01: remuneraciones chilenas (riesgos, brechas, checklist) |
 | [`auditorias/param-chile-01-parametros-y-demo-proceso.md`](./auditorias/param-chile-01-parametros-y-demo-proceso.md) | PARAM-CHILE-01: parametros reales vs demo en proceso mensual (ALTO-004) |
 
@@ -119,20 +120,20 @@ La documentaciÛn histÛrica mÌnima se conserva en [`archivo/fases-cerradas/`](./a
 
 ## Base de datos e infra (fuera de UI)
 
-| UbicaciÛn | Contenido |
+| Ubicaci√≥n | Contenido |
 |-----------|-----------|
 | [`../../SUPABASE_SETUP.md`](../../SUPABASE_SETUP.md) | Supabase |
 | [`../../bd/README.md`](../../bd/README.md), [`../../bd/base/README.md`](../../bd/base/README.md), [`../../bd/base/v11/README.md`](../../bd/base/v11/README.md) | Esquema SQL (`bd/` solo `base/`) |
 
 ---
 
-## `temas/` ó transversal, histÛrico o pendiente de migraciÛn
+## `temas/` ‚Äî transversal, hist√≥rico o pendiente de migraci√≥n
 
 - **Flujos por ruta**: [`temas/flujos/`](./temas/flujos/README.md).
-- **Stubs**: varios archivos `temas/*.md` con el mismo nombre histÛrico redirigen a **`modulos/`** (ver [`orquestador/mapa-documentacion.md`](./orquestador/mapa-documentacion.md) ß5).
-- **Archivo de documentos viejos** (si se mueven explÌcitamente): [`archivo/README.md`](./archivo/README.md).
+- **Stubs**: varios archivos `temas/*.md` con el mismo nombre hist√≥rico redirigen a **`modulos/`** (ver [`orquestador/mapa-documentacion.md`](./orquestador/mapa-documentacion.md) ¬ß5).
+- **Archivo de documentos viejos** (si se mueven expl√≠citamente): [`archivo/README.md`](./archivo/README.md).
 
-**Mejoras visuales**: registrar en [`peticiones-estilos.md`](./peticiones-estilos.md) cuando proceda seg˙n [`AGENTS.md`](./AGENTS.md).
+**Mejoras visuales**: registrar en [`peticiones-estilos.md`](./peticiones-estilos.md) cuando proceda seg√∫n [`AGENTS.md`](./AGENTS.md).
 
 <!-- UX-COMERCIAL-01-INTEGRACION -->
 
@@ -169,7 +170,7 @@ Define el ERP como `Bitacora Operativa` bajo criterio NOIA: pantallas sobrias, a
 
 Documento de fase: [`diseno/erp-context-optimization-01.md`](./diseno/erp-context-optimization-01.md).
 
-Agrega `contexto-rapido.md`, reglas Cursor NOIA/protegidos, `.cursorignore` y `scripts/build-context-pack.ps1` para reducir tokens y ruido en fases futuras sin tocar pantallas ni lÛgica de negocio.
+Agrega `contexto-rapido.md`, reglas Cursor NOIA/protegidos, `.cursorignore` y `scripts/build-context-pack.ps1` para reducir tokens y ruido en fases futuras sin tocar pantallas ni l√≥gica de negocio.
 
 ## NOM-MOVIMIENTOS-SIMPLE-01 - Movimientos visible
 

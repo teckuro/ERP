@@ -24,7 +24,7 @@
 |---|---|
 | UI general NOIA | `context-packs/ui-noia.md` (cuando exista) + [`../diseno/bitacora-operativa-noia.md`](../diseno/bitacora-operativa-noia.md) |
 | Remuneraciones | `context-packs/remuneraciones.md` (cuando exista) + [`../modulos/remuneraciones/README.md`](../modulos/remuneraciones/README.md) |
-| Movimientos | [`../modulos/remuneraciones/movimientos-de-remuneracion.md`](../modulos/remuneraciones/movimientos-de-remuneracion.md) |
+| Movimientos (producto + context pack) | [`../modulos/remuneraciones/movimientos-de-remuneracion.md`](../modulos/remuneraciones/movimientos-de-remuneracion.md), [`./resumen-trabajo-movimientos-remuneracion.md`](./resumen-trabajo-movimientos-remuneracion.md) |
 | Empleados | `context-packs/empleados.md` (cuando exista) + [`../modulos/empleados/README.md`](../modulos/empleados/README.md) |
 | Parámetros | `context-packs/parametros.md` (cuando exista) + [`../modulos/parametros/README.md`](../modulos/parametros/README.md) |
 

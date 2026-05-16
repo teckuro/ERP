@@ -36,7 +36,7 @@ No existen respaldos `.bak` activos en `docs/codex`. Los assets antiguos pesados
 - Dominio: remuneraciones Chile.
 - Diseño: UI clara para RRHH, trazable, guiada por estado y acción.
 - Arquitectura preferida: por features, con componentes reutilizables y contenedores por módulo.
-- Movimientos de remuneración: la pantalla principal parte desde trabajadores del período. Es el menú único para gestionar movimientos del mes y recurrentes, pero con formularios separados. El modal mensual solo registra un movimiento puntual del período activo; no incluye duración, recurrentes ni cuotas. Las cuotas pertenecen al flujo recurrente.
+- Movimientos de remuneración: grilla por trabajador del período; hub **Gestionar** con tabla única (mes + recurrentes); formularios separados mensual/recurrente; fechas con `app-calendar-input`. Context pack: [`orquestador/resumen-trabajo-movimientos-remuneracion.md`](./orquestador/resumen-trabajo-movimientos-remuneracion.md). Producto vivo: [`modulos/remuneraciones/movimientos-de-remuneracion.md`](./modulos/remuneraciones/movimientos-de-remuneracion.md).
 
 ## 3. Archivos y zonas protegidas
 
@@ -226,18 +226,10 @@ La reconciliacion oficial/cliente de Parametros registra `Revisar despues` como 
 
 Parametros ordena su pantalla como bitacora normativa del periodo: cabecera con estado/accion, tabs compactos, contexto de seccion activa y filtros secundarios. Es UX local; no toca oficial/cliente, reconciliacion, Python, wrapper, SQL ni servicios.
 
-### `NOM-MOVIMIENTOS-SIMPLE-00`
+### Movimientos de remuneración (fases NOM-MOVIMIENTOS)
 
-Fase documental. Define `Movimientos de remuneracion` como experiencia futura que absorbe `Movimientos del mes` y `Asignaciones recurrentes` desde tres duraciones visibles: `Solo este mes`, `Recurrente` y `En cuotas`. Documento rector: `docs/codex/modulos/remuneraciones/movimientos-remuneracion-simple.md`. No habilita cambios de Angular, SQL, rutas, motor ni servicios productivos.
+**Leer primero:** [`orquestador/resumen-trabajo-movimientos-remuneracion.md`](./orquestador/resumen-trabajo-movimientos-remuneracion.md).
 
-### `NOM-MOVIMIENTOS-SIMPLE-01`
+Estado UI (2026-05-16): pantalla por trabajador; modal Gestionar con grilla única y filtros; modales mensual/recurrente separados; retorno a gestión; `app-calendar-input`. Cierres en `movimientos-remuneracion-simple.md` y `peticiones-estilos.md`.
 
-Primera capa visible. El menu principal muestra `Movimientos`, la pantalla mensual se titula `Movimientos de remuneracion` y `Asignaciones recurrentes` queda como vista `Recurrentes`. `En cuotas` se comunica como duracion para prestamos/anticipos/descuentos pactados, sin calculo ni tablas nuevas. Documento: `docs/codex/diseno/nom-movimientos-simple-01.md`.
-
-### `NOM-MOVIMIENTOS-SIMPLE-01-FORM-POLISH`
-
-Pulido local del modal `Registrar movimiento`. Organiza el formulario en `Movimiento`, `Duracion del movimiento`, `Detalle administrativo opcional` y `Resumen`. Agrega duraciones visibles `Solo este mes`, `Recurrente` y `En cuotas`, con campos UI de cuotas y validacion local. No cambia SQL, motor, servicios, payloads ni persistencia critica.
-
-### `NOM-MOVIMIENTOS-POR-TRABAJADOR-01`
-
-Decision corregida: `Movimientos de remuneracion` se administra por trabajador. La pantalla principal muestra trabajadores del periodo con contadores de movimientos del mes, recurrentes y pendientes de revision. No se unifican formularios; `Agregar movimiento del mes` y `Agregar recurrente` son flujos separados. Las cuotas pertenecen al flujo recurrente, no al modal mensual.
+**Obsoleto en código actual:** modal mensual con selector de duración/cuotas (FORM-POLISH histórico); tabbar principal `Este mes | Recurrentes | Todos`; tres grillas en Gestionar.

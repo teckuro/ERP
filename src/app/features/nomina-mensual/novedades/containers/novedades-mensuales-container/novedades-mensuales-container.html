@@ -23,83 +23,257 @@
           <lucide-icon icon class="w-4 h-4" [img]="refreshIcon"></lucide-icon>
           {{ loading() ? 'Reintentar carga' : 'Actualizar' }}
         </app-button>
+        <app-button variant="primary" size="md" (click)="abrirNuevo()">
+          <lucide-icon icon class="w-4 h-4" [img]="plusIcon"></lucide-icon>
+          Registrar movimiento del mes
+        </app-button>
       </div>
     </div>
   </header>
 
   <section class="nm-view-folder">
     <div class="nm-view-panel">
-      <app-card className="nm-summary-card">
-        <app-card-header className="px-4 py-3 border-b border-gray-100">
-          <div class="flex flex-wrap items-center justify-between gap-2">
-            <div>
-              <h2 class="text-sm font-semibold text-gray-900">Franja operativa del periodo</h2>
-              <p class="nm-form-sub">Selecciona un trabajador para ver qué impacta {{ periodoActivo.etiqueta() }}.</p>
+      <section class="nm-operativa-franja" aria-label="Resumen del periodo">
+        <header class="nm-operativa-franja-head">
+          <h2>Franja operativa del periodo</h2>
+          <p>Selecciona un trabajador para ver qué impacta {{ periodoActivo.etiqueta() }}.</p>
+        </header>
+        <div class="nm-context-grid">
+          @for (item of resumenPeriodo(); track item.label) {
+            <div class="nm-context-card" [ngClass]="tonoResumenPeriodo(item.label)">
+              <span class="nm-context-k">{{ item.label }}</span>
+              <strong>{{ item.total }}</strong>
             </div>
-          </div>
-        </app-card-header>
-        <app-card-content className="px-4 py-3">
-          <div class="nm-context-grid">
-            @for (item of resumenPeriodo(); track item.label) {
-              <div class="nm-context-card">
-                <span class="nm-context-k">{{ item.label }}</span>
-                <strong>{{ item.total }}</strong>
-              </div>
-            }
-          </div>
-        </app-card-content>
-      </app-card>
+          }
+        </div>
+      </section>
 
-      <div class="nm-nomina-hint" role="note">
+      <div class="nm-nomina-hint nm-nomina-hint--info" role="note">
         <p>
           Las cuotas se gestionan dentro de recurrentes, por ejemplo préstamos o anticipos pactados.
         </p>
       </div>
 
-  @if (formAbierto()) {
-    <div class="nm-modal-root" role="presentation">
-      <div class="nm-modal-backdrop" (click)="cerrarFormulario()"></div>
-      <section class="nm-modal-movimiento" role="dialog" aria-modal="true" aria-labelledby="nm-modal-title">
+  <app-data-grid
+    title="Trabajadores del periodo"
+    [rows]="trabajadoresMovimientos()"
+    [columns]="trabajadorColumns"
+    [filters]="trabajadorFilters"
+    [filtersEnabled]="true"
+    [loading]="loading()"
+    [showExportAction]="false"
+    [selectable]="false"
+    [trackBy]="trackTrabajador"
+    gridHeight="min(52rem, calc(100dvh - 13.5rem))"
+    emptyTitle="No hay trabajadores para el filtro seleccionado"
+    emptyDescription="Ajusta los filtros o actualiza la información del periodo."
+  >
+    <ng-template appDataGridCell="trabajador" let-row>
+      <div class="nm-worker-cell">
+        <strong>{{ row.trabajador }}</strong>
+        <span>{{ row.rut }} · {{ row.cargo }}</span>
+      </div>
+    </ng-template>
+    <ng-template appDataGridCell="movimientosMes" let-row>
+      @if (row.movimientosMes > 0) {
+        <button type="button" class="nm-count-info" [attr.aria-label]="'Ver movimientos del mes de ' + row.trabajador" (click)="abrirDetalleTrabajador(row, 'mensual')">
+          {{ row.movimientosMes }} movimientos
+        </button>
+      } @else {
+        <span class="nm-count-zero">Sin movimientos</span>
+      }
+    </ng-template>
+    <ng-template appDataGridCell="recurrentes" let-row>
+      @if (row.recurrentes > 0) {
+        <button type="button" class="nm-count-info" [attr.aria-label]="'Ver recurrentes de ' + row.trabajador" (click)="abrirDetalleTrabajador(row, 'recurrente')">
+          {{ row.recurrentes }} recurrentes
+        </button>
+      } @else {
+        <span class="nm-count-zero">Sin recurrentes</span>
+      }
+    </ng-template>
+    <ng-template appDataGridCell="revisar" let-row>
+      @if (row.revisar > 0) {
+        <button type="button" class="nm-count-info nm-count-info--warn" [attr.aria-label]="'Ver revisiones de ' + row.trabajador" (click)="abrirDetalleTrabajador(row, 'revision')">
+          {{ row.revisar }} revisión
+        </button>
+      } @else {
+        <span class="nm-count-zero">Sin revisión</span>
+      }
+    </ng-template>
+    <ng-template appDataGridCell="estado" let-row>
+      <span [class]="claseEstadoTrabajador(row.estado)">{{ row.estado }}</span>
+    </ng-template>
+    <ng-template appDataGridCell="acciones" let-row>
+      <app-button variant="outline" size="sm" className="nm-grid-action" [attr.aria-label]="'Abrir gestion de movimientos de ' + row.trabajador" [attr.title]="'Abrir gestion de movimientos de ' + row.trabajador" (click)="abrirDetalleTrabajador(row, 'todos')">
+        {{ row.movimientosMes || row.recurrentes ? 'Gestionar' : 'Asignar' }}
+      </app-button>
+    </ng-template>
+  </app-data-grid>
+    </div>
+  </section>
+
+  @if (trabajadorDetalle(); as detalle) {
+    <div
+      class="nm-modal-root nm-modal-root--parent"
+      [class.nm-modal-root--behind]="formAbierto() || recurrenteFormAbierto()"
+      role="presentation"
+    >
+      <div class="nm-modal-backdrop" (click)="cerrarDetalleTrabajador()"></div>
+      <section class="nm-worker-modal" role="dialog" aria-modal="true" aria-labelledby="nm-worker-modal-title">
         <header class="nm-modal-header">
           <div>
-            <h2 id="nm-modal-title">{{ novedadEditando() ? 'Editar movimiento del mes' : 'Registrar movimiento del mes' }}</h2>
-            <p><strong>Periodo activo:</strong> {{ periodoActivo.etiqueta() }}</p>
-            <p>Este movimiento se aplicará solo al período activo.</p>
+            <h2 id="nm-worker-modal-title">Gestionar movimientos</h2>
+            <p class="nm-modal-context-line">
+              {{ detalle.row.trabajador }} · {{ detalle.row.rut }} · {{ periodoActivo.etiqueta() }}
+            </p>
           </div>
-          <button type="button" class="nm-modal-close" aria-label="Cerrar modal" (click)="cerrarFormulario()">
+          <button type="button" class="nm-modal-close" aria-label="Cerrar" (click)="cerrarDetalleTrabajador()">
             <lucide-icon [img]="closeIcon"></lucide-icon>
           </button>
         </header>
 
-        <div class="nm-modal-body nm-modal-body--form">
-          @if (formErrores().general) {
+        <div class="nm-modal-body nm-modal-body--worker nm-modal-body--gestion">
+          <section class="nm-gestion-unificada">
+            <div class="nm-gestion-toolbar">
+              <p class="nm-gestion-lead">La columna Ámbito distingue movimiento mensual y recurrente.</p>
+              <div class="nm-gestion-toolbar-actions">
+                <app-button variant="primary" size="sm" (click)="abrirNuevoParaTrabajador(detalle.row, 'mensual')">
+                  <lucide-icon icon class="w-4 h-4" [img]="plusIcon"></lucide-icon>
+                  Agregar movimiento del mes
+                </app-button>
+                <app-button variant="outline" size="sm" (click)="abrirRecurrenteParaTrabajador(detalle.row, undefined, 'recurrente')">
+                  Agregar recurrente
+                </app-button>
+              </div>
+            </div>
+
+            <app-data-grid
+              [showHeader]="false"
+              [rows]="filasGestionUnificada(detalle.row.idPersona, 'todos')"
+              [columns]="gestionUnificadaColumnsGeneric"
+              [filtersEnabled]="false"
+              [showExportAction]="false"
+              [selectable]="false"
+              [trackBy]="trackGestionUnificada"
+              gridHeight="min(24rem, calc(100vh - 15rem))"
+              emptyTitle="Sin movimientos registrados"
+              emptyDescription="Agrega un movimiento del mes o un recurrente para este trabajador."
+            >
+              <ng-template appDataGridCell="ambito" let-row>
+                <span [class]="claseAmbitoGestion(row.ambito)">{{ row.ambitoEtiqueta }}</span>
+              </ng-template>
+              <ng-template appDataGridCell="concepto" let-row>
+                <strong>{{ row.concepto }}</strong>
+              </ng-template>
+              <ng-template appDataGridCell="estado" let-row>
+                <span [class]="row.estadoClase">{{ row.estadoEtiqueta }}</span>
+              </ng-template>
+              <ng-template appDataGridCell="acciones" let-row>
+                @if (tieneAccionesGestionUnificada(row)) {
+                  <div class="nm-actions">
+                    @if (row.novedad; as novedad) {
+                      @if (puedeEditar(novedad)) {
+                        <app-button variant="outline" size="sm" className="nm-detail-action" (click)="editarMovimientoDesdeDetalle(novedad)">Editar</app-button>
+                      }
+                      @if (puedeEnviarRevision(novedad)) {
+                        <app-button variant="outline" size="sm" className="nm-detail-action" (click)="enviarRevision(novedad)">Enviar a revisión</app-button>
+                      }
+                      @if (puedeAprobar(novedad)) {
+                        <app-button variant="outline" size="sm" className="nm-detail-action" (click)="aprobar(novedad)">Aprobar</app-button>
+                      }
+                      @if (puedeRechazar(novedad)) {
+                        <app-button variant="outline" size="sm" className="nm-detail-action" (click)="observarDesdeDetalle(novedad)">Observar</app-button>
+                      }
+                    }
+                    @if (row.recurrente; as recurrente) {
+                      @if (puedeEditarRecurrente(recurrente)) {
+                        <app-button variant="outline" size="sm" className="nm-detail-action" (click)="editarRecurrenteDesdeDetalle(recurrente)">Editar</app-button>
+                      }
+                      @if (puedeFinalizarRecurrente(recurrente)) {
+                        <app-button variant="outline" size="sm" className="nm-detail-action" (click)="pedirFinalizarRecurrente(recurrente)">Finalizar</app-button>
+                      }
+                    }
+                  </div>
+                } @else {
+                  <span class="nm-grid-muted">—</span>
+                }
+              </ng-template>
+            </app-data-grid>
+          </section>
+        </div>
+
+        <footer class="nm-modal-footer nm-modal-footer--gestion">
+          <app-button variant="outline" size="md" (click)="cerrarDetalleTrabajador()">Cerrar</app-button>
+        </footer>
+
+
+
+      </section>
+    </div>
+  }
+
+  @if (formAbierto()) {
+    <div class="nm-modal-root nm-modal-root--child" role="presentation">
+      <div class="nm-modal-backdrop" (click)="cancelarFormularioMensual()"></div>
+      <section class="nm-modal-movimiento nm-modal-movimiento--hijo" role="dialog" aria-modal="true" aria-labelledby="nm-modal-title">
+        <header class="nm-modal-header">
+          <div>
+            <h2 id="nm-modal-title">{{ novedadEditando() ? 'Editar movimiento del mes' : 'Registrar movimiento del mes' }}</h2>
+            <p class="nm-modal-sub">Movimiento puntual del período activo.</p>
+          </div>
+          <button type="button" class="nm-modal-close" [attr.aria-label]="etiquetaCerrarModalMensual()" (click)="cancelarFormularioMensual()">
+            <lucide-icon [img]="closeIcon"></lucide-icon>
+          </button>
+        </header>
+
+        <div class="nm-modal-context nm-modal-context--hijo" aria-label="Contexto del movimiento">
+          @if (retornoGestionTrabajador(); as trabajadorCtx) {
+            <p class="nm-modal-context-line"><strong>{{ trabajadorCtx.trabajador }}</strong> · {{ periodoActivo.etiqueta() }}</p>
+          }
+          <p>Este movimiento se aplicará solo al período activo.</p>
+        </div>
+
+        <div class="nm-modal-body nm-modal-body--form nm-bitacora-form">
+          @if (formErrores().general && formValidacionActiva()) {
             <div class="nm-form-alert" role="alert">{{ formErrores().general }}</div>
           }
 
-          <div class="nm-form-section">
-            <h3>Movimiento</h3>
-            <p class="nm-section-help">Define el trabajador, concepto, tipo y monto que impactará la remuneración.</p>
-            <div class="nm-form-grid">
-              <label class="nm-field nm-form-span2" [attr.data-nm-error]="!!errorCampo('idPersona')">
-                <span class="nm-field-label">Trabajador</span>
-                <span class="nm-field-help">Trabajador seleccionado desde la grilla del período.</span>
-                <app-search-select
-                  id="nm-trabajador"
-                  placeholder="Selecciona trabajador"
-                  searchPlaceholder="Buscar por nombre o RUT"
-                  emptyText="No hay trabajadores disponibles"
-                  [options]="empleadoOptions()"
-                  [ngModel]="form().idPersona"
-                  (ngModelChange)="onTrabajadorChange($event == null ? null : +$event)"
-                  [disabled]="guardando() || soporteLoading()"
-                  [clearable]="true"
-                ></app-search-select>
-                @if (errorCampo('idPersona')) {
-                  <small class="nm-field-error">{{ errorCampo('idPersona') }}</small>
-                }
-              </label>
+          <section class="nm-bitacora-block nm-bitacora-block--datos">
+            <header class="nm-bitacora-block-head">
+              <h3>Datos del movimiento</h3>
+              <p class="nm-section-help">Concepto, tipo, monto y fecha de referencia del período.</p>
+            </header>
+            <div class="nm-form-grid nm-form-grid--movimiento">
+              @if (formTrabajadorBloqueado() && retornoGestionTrabajador(); as trabajadorCtx) {
+            <section class="nm-worker-ficha" aria-label="Trabajador seleccionado">
+              <span class="nm-worker-ficha-k">Trabajador seleccionado</span>
+              <strong>{{ trabajadorCtx.trabajador }}</strong>
+              <span>{{ trabajadorCtx.rut }} · {{ contratoEtiquetaTrabajador(trabajadorCtx) }}</span>
+            </section>
+          } @else {
+            <label class="nm-field nm-form-span2" [attr.data-nm-error]="!!errorCampo('idPersona')">
+              <span class="nm-field-label">Trabajador</span>
+              <span class="nm-field-help">Selecciona quién recibe el movimiento.</span>
+              <app-search-select
+                id="nm-trabajador"
+                placeholder="Selecciona trabajador"
+                searchPlaceholder="Buscar por nombre o RUT"
+                emptyText="No hay trabajadores disponibles"
+                [options]="empleadoOptions()"
+                [ngModel]="form().idPersona"
+                (ngModelChange)="onTrabajadorChange($event == null ? null : +$event)"
+                (blur)="marcarCampoFormularioTocado('idPersona')"
+                [disabled]="guardando() || soporteLoading()"
+                [clearable]="true"
+              ></app-search-select>
+              @if (errorCampo('idPersona')) {
+                <small class="nm-field-error">{{ errorCampo('idPersona') }}</small>
+              }
+            </label>
+          }
 
-              <label class="nm-field nm-form-span2" [attr.data-nm-error]="!!errorCampo('idConcepto')">
+          <label class="nm-field nm-form-span2" [attr.data-nm-error]="!!errorCampo('idConcepto')">
                 <span class="nm-field-label">Concepto</span>
                 <app-search-select
                   id="nm-concepto"
@@ -151,24 +325,30 @@
                 }
               </label>
 
-              <label class="nm-field">
+              <label class="nm-field" [attr.data-nm-error]="!!errorCampo('fechaEvento')">
                 <span class="nm-field-label">Fecha de referencia</span>
-                <span class="nm-field-help">Se usará dentro del período activo.</span>
-                <input
-                  type="date"
-                  class="nm-input"
+                <span class="nm-field-help">Dentro de {{ periodoActivo.etiqueta() }}.</span>
+                <app-calendar-input
+                  id="nm-fecha-evento"
+                  placeholder="dd/mm/aaaa"
+                  [min]="periodoFechaMin()"
+                  [max]="periodoFechaMax()"
+                  [invalid]="!!errorCampo('fechaEvento')"
+                  [disabled]="guardando()"
                   [ngModel]="form().fechaEvento"
                   (ngModelChange)="actualizarForm('fechaEvento', $event)"
-                />
+                ></app-calendar-input>
+                @if (errorCampo('fechaEvento')) {
+                  <small class="nm-field-error">{{ errorCampo('fechaEvento') }}</small>
+                }
               </label>
             </div>
-          </div>
+          </section>
 
-          <div class="nm-form-section nm-form-section--admin">
-            <h3>Detalle administrativo opcional</h3>
+          <details class="nm-details nm-bitacora-block nm-bitacora-block--admin">
+            <summary>Detalle administrativo opcional</summary>
             <p class="nm-section-help">
-              Completa esta información solo si necesitas dejar una referencia interna, contrato asociado u observación
-              administrativa.
+              Solo si necesitas referencia interna, contrato asociado u observación administrativa.
             </p>
             <div class="nm-form-grid">
               <label class="nm-field" [attr.data-nm-error]="!!errorCampo('categoria')">
@@ -215,33 +395,6 @@
                 />
               </label>
 
-              <label class="nm-field" [attr.data-nm-error]="!!errorCampo('cantidad')">
-                <span class="nm-field-label">Cantidad</span>
-                <span class="nm-field-help">Unidad administrativa; no corresponde a cantidad de cuotas.</span>
-                <input
-                  type="number"
-                  min="0"
-                  step="0.01"
-                  class="nm-input"
-                  [class.nm-input--invalid]="!!errorCampo('cantidad')"
-                  [ngModel]="form().cantidad"
-                  (ngModelChange)="actualizarForm('cantidad', $event == null || $event === '' ? null : +$event)"
-                />
-                @if (errorCampo('cantidad')) {
-                  <small class="nm-field-error">{{ errorCampo('cantidad') }}</small>
-                }
-              </label>
-
-              <label class="nm-field">
-                <span class="nm-field-label">Unidad</span>
-                <input
-                  type="text"
-                  class="nm-input"
-                  [ngModel]="form().unidad"
-                  (ngModelChange)="actualizarForm('unidad', $event)"
-                />
-              </label>
-
               <label class="nm-field">
                 <span class="nm-field-label">Origen</span>
                 <select class="nm-input" [ngModel]="form().origen" (ngModelChange)="actualizarForm('origen', $event)">
@@ -254,230 +407,89 @@
               <label class="nm-field nm-form-span2">
                 <span class="nm-field-label">Observación</span>
                 <textarea
-                  rows="3"
+                  rows="2"
                   class="nm-input nm-textarea"
                   [ngModel]="form().observacion"
                   (ngModelChange)="actualizarForm('observacion', $event)"
                 ></textarea>
               </label>
-            </div>
-          </div>
 
-          <section class="nm-form-summary" aria-label="Resumen del movimiento">
-            <h3>Resumen</h3>
+              <label class="nm-field">
+                <span class="nm-field-label">Unidad</span>
+                <input
+                  type="text"
+                  class="nm-input"
+                  [ngModel]="form().unidad"
+                  (ngModelChange)="actualizarForm('unidad', $event)"
+                />
+              </label>
+
+              <label class="nm-field" [attr.data-nm-error]="!!errorCampo('cantidad')">
+                <span class="nm-field-label">Cantidad</span>
+                <span class="nm-field-help">Cantidad administrativa; no corresponde a cantidad de cuotas.</span>
+                <input
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  class="nm-input"
+                  [class.nm-input--invalid]="!!errorCampo('cantidad')"
+                  [ngModel]="form().cantidad"
+                  (ngModelChange)="actualizarForm('cantidad', $event == null || $event === '' ? null : +$event)"
+                  (blur)="marcarCampoFormularioTocado('cantidad')"
+                />
+                @if (errorCampo('cantidad')) {
+                  <small class="nm-field-error">{{ errorCampo('cantidad') }}</small>
+                }
+              </label>
+            </div>
+          </details>
+
+          <section class="nm-bitacora-resumen" aria-label="Resumen del movimiento">
+            <h3>Resumen antes de guardar</h3>
             @if (resumenFormulario().principal) {
               <p class="nm-summary-main">{{ resumenFormulario().principal }}</p>
               <p class="nm-summary-detail">Se aplicará en {{ periodoActivo.etiqueta() }}.</p>
+            } @else if (resumenFormulario().faltante) {
+              <p class="nm-summary-detail">{{ resumenFormulario().faltante }}</p>
             } @else {
               <p class="nm-summary-detail">Completa trabajador, concepto y monto para revisar el movimiento antes de guardarlo.</p>
             }
           </section>
         </div>
-        <footer class="nm-modal-footer">
-          <app-button variant="outline" size="md" [disabled]="guardando()" (click)="cerrarFormulario()">
-            Cancelar
-          </app-button>
+        <footer class="nm-modal-footer nm-modal-footer--sticky">
+          <app-button variant="outline" size="md" [disabled]="guardando()" (click)="cancelarFormularioMensual()">Cancelar</app-button>
           <app-button variant="primary" size="md" [disabled]="guardando()" (click)="guardarFormulario()">
-            {{ guardando() ? 'Guardando...' : 'Guardar movimiento' }}
+            {{ etiquetaGuardarFormulario() }}
           </app-button>
         </footer>
       </section>
     </div>
   }
 
-  <app-data-grid
-    title="Trabajadores del periodo"
-    [rows]="trabajadoresMovimientos()"
-    [columns]="trabajadorColumns"
-    [filters]="trabajadorFilters"
-    [filtersEnabled]="true"
-    [loading]="loading()"
-    [showExportAction]="false"
-    [selectable]="false"
-    [trackBy]="trackTrabajador"
-    gridHeight="min(52rem, calc(100dvh - 13.5rem))"
-    emptyTitle="No hay trabajadores para el filtro seleccionado"
-    emptyDescription="Ajusta los filtros o actualiza la información del periodo."
-  >
-    <ng-template appDataGridCell="trabajador" let-row>
-      <div class="nm-worker-cell">
-        <strong>{{ row.trabajador }}</strong>
-        <span>{{ row.rut }} · {{ row.cargo }}</span>
-      </div>
-    </ng-template>
-    <ng-template appDataGridCell="movimientosMes" let-row>
-      @if (row.movimientosMes > 0) {
-        <button type="button" class="nm-count-info" [attr.aria-label]="'Ver movimientos del mes de ' + row.trabajador" (click)="abrirDetalleTrabajador(row, 'mensual')">
-          {{ row.movimientosMes }} movimientos
-        </button>
-      } @else {
-        <span class="nm-count-zero">Sin movimientos</span>
-      }
-    </ng-template>
-    <ng-template appDataGridCell="recurrentes" let-row>
-      @if (row.recurrentes > 0) {
-        <button type="button" class="nm-count-info" [attr.aria-label]="'Ver recurrentes de ' + row.trabajador" (click)="abrirDetalleTrabajador(row, 'recurrente')">
-          {{ row.recurrentes }} recurrentes
-        </button>
-      } @else {
-        <span class="nm-count-zero">Sin recurrentes</span>
-      }
-    </ng-template>
-    <ng-template appDataGridCell="revisar" let-row>
-      @if (row.revisar > 0) {
-        <button type="button" class="nm-count-info nm-count-info--warn" [attr.aria-label]="'Ver revisiones de ' + row.trabajador" (click)="abrirDetalleTrabajador(row, 'revision')">
-          {{ row.revisar }} revisión
-        </button>
-      } @else {
-        <span class="nm-count-zero">Sin revisión</span>
-      }
-    </ng-template>
-    <ng-template appDataGridCell="estado" let-row>
-      <span class="nm-worker-status">{{ row.estado }}</span>
-    </ng-template>
-    <ng-template appDataGridCell="acciones" let-row>
-      <app-button variant="outline" size="sm" className="nm-grid-action" [attr.aria-label]="'Abrir gestion de movimientos de ' + row.trabajador" [attr.title]="'Abrir gestion de movimientos de ' + row.trabajador" (click)="abrirDetalleTrabajador(row, 'todos')">
-        {{ row.movimientosMes || row.recurrentes ? 'Gestionar' : 'Asignar' }}
-      </app-button>
-    </ng-template>
-  </app-data-grid>
-    </div>
-  </section>
-
-  @if (trabajadorDetalle(); as detalle) {
-    <div class="nm-modal-root" role="presentation">
-      <div class="nm-modal-backdrop" (click)="cerrarDetalleTrabajador()"></div>
-      <section class="nm-worker-modal" role="dialog" aria-modal="true" aria-labelledby="nm-worker-modal-title">
-        <header class="nm-modal-header">
-          <div>
-            <h2 id="nm-worker-modal-title">Gestionar movimientos</h2>
-            <p><strong>{{ detalle.row.trabajador }}</strong> · {{ detalle.row.rut }}</p>
-            <p>Periodo {{ periodoActivo.etiqueta() }} · {{ detalle.row.contrato }}</p>
-          </div>
-          <button type="button" class="nm-modal-close" aria-label="Cerrar modal" (click)="cerrarDetalleTrabajador()">
-            <lucide-icon [img]="closeIcon"></lucide-icon>
-          </button>
-        </header>
-
-        <div class="nm-modal-body nm-modal-body--worker">
-          <div class="nm-worker-resume">
-            <span>Mov. mes <strong>{{ detalle.row.movimientosMes }}</strong></span>
-            <span>Monto mes <strong>{{ totalMovimientosTrabajador(detalle.row.idPersona) }}</strong></span>
-            <span>Recurrentes <strong>{{ detalle.row.recurrentes }} / {{ totalRecurrentesTrabajador(detalle.row.idPersona) }}</strong></span>
-            <span>Revisar <strong>{{ detalle.row.revisar }}</strong></span>
-          </div>
-
-          <section class="nm-detail-section nm-grid-section nm-gestion-unificada">
-              <div class="nm-detail-section-head">
-                <h3>Movimientos del trabajador</h3>
-                <span>
-                  {{ detalle.row.movimientosMes }} del mes · {{ detalle.row.recurrentes }} recurrentes
-                  @if (detalle.row.revisar > 0) {
-                    · {{ detalle.row.revisar }} por revisar
-                  }
-                </span>
-            </div>
-            <div class="nm-gestion-filtros" role="toolbar" aria-label="Filtrar movimientos del trabajador">
-              @for (filtro of filtrosGestion; track filtro) {
-                @if (mostrarFiltroGestion(filtro, detalle.row)) {
-                  <app-button
-                    variant="outline"
-                    size="sm"
-                    [className]="detalle.filtro === filtro ? 'nm-gestion-filtro nm-gestion-filtro--active' : 'nm-gestion-filtro'"
-                    [attr.aria-pressed]="detalle.filtro === filtro"
-                    (click)="cambiarFiltroGestion(filtro)"
-                  >
-                    {{ etiquetaFiltroGestion(filtro) }}
-                  </app-button>
-                }
-              }
-            </div>
-            <app-data-grid
-              title="Movimientos del trabajador"
-              [rows]="filasGestionUnificada(detalle.row.idPersona, detalle.filtro)"
-              [columns]="gestionUnificadaColumns"
-              [filtersEnabled]="false"
-              [showExportAction]="false"
-              [selectable]="false"
-              [trackBy]="trackGestionUnificada"
-              gridHeight="min(26rem, calc(100vh - 14rem))"
-              [emptyTitle]="emptyGestionTitulo(detalle.filtro)"
-              [emptyDescription]="emptyGestionDescripcion(detalle.filtro)"
-            >
-                <ng-template appDataGridCell="ambito" let-row>
-                  <span [class]="claseAmbitoGestion(row.ambito)">{{ row.ambitoEtiqueta }}</span>
-                </ng-template>
-                <ng-template appDataGridCell="concepto" let-row>
-                  <strong>{{ row.concepto }}</strong>
-                </ng-template>
-                <ng-template appDataGridCell="estado" let-row>
-                  <span [class]="row.estadoClase">{{ row.estadoEtiqueta }}</span>
-                </ng-template>
-                <ng-template appDataGridCell="detalle" let-row>
-                  <span class="nm-grid-muted">{{ row.detalle }}</span>
-                </ng-template>
-                <ng-template appDataGridCell="acciones" let-row>
-                  @if (tieneAccionesGestionUnificada(row)) {
-                  <div class="nm-actions">
-                    @if (row.novedad; as novedad) {
-                      @if (puedeEditar(novedad)) {
-                        <app-button variant="outline" size="sm" className="nm-detail-action" (click)="editarMovimientoDesdeDetalle(novedad)">Editar</app-button>
-                      }
-                      @if (puedeEnviarRevision(novedad)) {
-                        <app-button variant="outline" size="sm" className="nm-detail-action" (click)="enviarRevision(novedad)">Enviar a revisión</app-button>
-                      }
-                      @if (puedeAprobar(novedad)) {
-                        <app-button variant="outline" size="sm" className="nm-detail-action" (click)="aprobar(novedad)">Aprobar</app-button>
-                      }
-                      @if (puedeRechazar(novedad)) {
-                        <app-button variant="outline" size="sm" className="nm-detail-action" (click)="observarDesdeDetalle(novedad)">Observar</app-button>
-                      }
-                    }
-                    @if (row.recurrente; as recurrente) {
-                      @if (puedeEditarRecurrente(recurrente)) {
-                        <app-button variant="outline" size="sm" className="nm-detail-action" (click)="editarRecurrenteDesdeDetalle(recurrente)">Editar</app-button>
-                      }
-                      @if (puedeFinalizarRecurrente(recurrente)) {
-                        <app-button variant="outline" size="sm" className="nm-detail-action" (click)="pedirFinalizarRecurrente(recurrente)">Finalizar</app-button>
-                      }
-                    }
-                  </div>
-                  } @else {
-                  <span class="nm-grid-muted">Sin acciones</span>
-                  }
-                </ng-template>
-              </app-data-grid>
-          </section>
-
-        </div>
-
-        <footer class="nm-modal-footer">
-          <app-button variant="outline" size="md" (click)="abrirRecurrenteParaTrabajador(detalle.row)">
-            Agregar recurrente
-          </app-button>
-          <app-button variant="primary" size="md" (click)="abrirNuevoParaTrabajador(detalle.row)">
-            <lucide-icon icon class="w-4 h-4" [img]="plusIcon"></lucide-icon>
-            Agregar movimiento del mes
-          </app-button>
-        </footer>
-      </section>
-    </div>
-  }
 
   @if (recurrenteFormAbierto() && recurrenteTrabajador(); as trabajador) {
-    <div class="nm-modal-root" role="presentation">
-      <div class="nm-modal-backdrop" (click)="cerrarRecurrente()"></div>
+    <div class="nm-modal-root nm-modal-root--child" role="presentation">
+      <div class="nm-modal-backdrop" (click)="cancelarRecurrente()"></div>
       <section class="nm-modal-movimiento nm-modal-movimiento--recurrente" role="dialog" aria-modal="true" aria-labelledby="nm-recurrente-title">
         <header class="nm-modal-header">
           <div>
             <h2 id="nm-recurrente-title">{{ recurrenteEditandoId() == null ? 'Registrar recurrente' : 'Editar recurrente' }}</h2>
-            <p><strong>{{ trabajador.trabajador }}</strong> · {{ trabajador.rut }}</p>
-            <p>Este movimiento se repetirá según su vigencia.</p>
+            <p class="nm-modal-sub">Movimiento que se repetirá según su vigencia.</p>
           </div>
-          <button type="button" class="nm-modal-close" aria-label="Cerrar modal" (click)="cerrarRecurrente()">
+          <button type="button" class="nm-modal-close" [attr.aria-label]="etiquetaCerrarModalRecurrente()" (click)="cancelarRecurrente()">
             <lucide-icon [img]="closeIcon"></lucide-icon>
           </button>
         </header>
+
+        <div class="nm-modal-context" aria-label="Contexto del recurrente">
+          <span class="nm-modal-context-k">Trabajador</span>
+          <strong>{{ trabajador.trabajador }}</strong>
+          <span class="nm-modal-context-sep">·</span>
+          <span>{{ trabajador.rut }}</span>
+          <span class="nm-modal-context-sep">·</span>
+          <span class="nm-modal-context-k">Periodo activo</span>
+          <strong>{{ periodoActivo.etiqueta() }}</strong>
+        </div>
 
         <div class="nm-modal-body nm-modal-body--form">
           <div class="nm-form-section">
@@ -585,13 +597,15 @@
 
               <label class="nm-field" [attr.data-nm-error]="!!errorRecurrente('vigenciaInicio')">
                 <span class="nm-field-label">Vigencia inicio</span>
-                <input
-                  type="date"
-                  class="nm-input"
-                  [class.nm-input--invalid]="!!errorRecurrente('vigenciaInicio')"
+                <span class="nm-field-help">Desde cuándo aplica el recurrente.</span>
+                <app-calendar-input
+                  id="nm-recurrente-vigencia-inicio"
+                  placeholder="dd/mm/aaaa"
+                  [invalid]="!!errorRecurrente('vigenciaInicio')"
+                  [disabled]="recurrenteGuardando()"
                   [ngModel]="recurrenteVigenciaInicio()"
                   (ngModelChange)="actualizarRecurrenteVigenciaInicio($event)"
-                />
+                ></app-calendar-input>
                 @if (errorRecurrente('vigenciaInicio')) {
                   <small class="nm-field-error">{{ errorRecurrente('vigenciaInicio') }}</small>
                 }
@@ -599,13 +613,17 @@
 
               <label class="nm-field" [attr.data-nm-error]="!!errorRecurrente('vigenciaFin')">
                 <span class="nm-field-label">Vigencia fin</span>
-                <input
-                  type="date"
-                  class="nm-input"
-                  [class.nm-input--invalid]="!!errorRecurrente('vigenciaFin')"
+                <span class="nm-field-help">Opcional. Dejar vacío si no tiene término.</span>
+                <app-calendar-input
+                  id="nm-recurrente-vigencia-fin"
+                  placeholder="dd/mm/aaaa"
+                  [min]="recurrenteVigenciaFinMin()"
+                  [invalid]="!!errorRecurrente('vigenciaFin')"
+                  [disabled]="recurrenteGuardando()"
+                  [clearable]="true"
                   [ngModel]="recurrenteVigenciaFin()"
                   (ngModelChange)="actualizarRecurrenteVigenciaFin($event)"
-                />
+                ></app-calendar-input>
                 @if (errorRecurrente('vigenciaFin')) {
                   <small class="nm-field-error">{{ errorRecurrente('vigenciaFin') }}</small>
                 }
@@ -655,10 +673,8 @@
           }
         </div>
 
-        <footer class="nm-modal-footer">
-          <app-button variant="outline" size="md" [disabled]="recurrenteGuardando()" (click)="cerrarRecurrente()">
-            Cancelar
-          </app-button>
+        <footer class="nm-modal-footer nm-modal-footer--sticky">
+          <app-button variant="outline" size="md" [disabled]="recurrenteGuardando()" (click)="cancelarRecurrente()">Cancelar</app-button>
           <app-button variant="primary" size="md" [disabled]="recurrenteGuardando()" (click)="guardarRecurrente()">
             {{ recurrenteGuardando() ? 'Guardando...' : recurrenteEditandoId() == null ? 'Registrar recurrente' : 'Guardar cambios' }}
           </app-button>
@@ -668,6 +684,7 @@
   }
 
   @if (recurrenteCerrarPendiente(); as recurrentePendiente) {
+    <div class="nm-overlay-layer">
     <app-message-box
       variant="warning"
       mode="modal"
@@ -680,9 +697,11 @@
       (action)="confirmarFinalizarRecurrente()"
       (secondary)="cerrarConfirmacionRecurrente()"
     ></app-message-box>
+    </div>
   }
 
   @if (mensaje(); as msg) {
+    <div class="nm-overlay-layer">
     <app-message-box
       [variant]="msg.variant"
       mode="modal"
@@ -693,9 +712,11 @@
       primaryLabel="Aceptar"
       (action)="cerrarMensaje()"
     ></app-message-box>
+    </div>
   }
 
   @if (confirmarCancelarAbierto()) {
+    <div class="nm-overlay-layer">
     <app-message-box
       variant="warning"
       mode="modal"
@@ -707,5 +728,22 @@
       (action)="confirmarDescartarFormulario()"
       (secondary)="cerrarConfirmacionCancelar()"
     ></app-message-box>
+    </div>
+  }
+
+  @if (confirmarCancelarRecurrenteAbierto()) {
+    <div class="nm-overlay-layer">
+    <app-message-box
+      variant="warning"
+      mode="modal"
+      [modalHeadlineSplit]="true"
+      title="Descartar cambios"
+      message="Hay cambios sin guardar en el recurrente. Si sales ahora, se perderán los datos ingresados."
+      primaryLabel="Descartar"
+      secondaryLabel="Seguir editando"
+      (action)="confirmarDescartarRecurrente()"
+      (secondary)="cerrarConfirmacionCancelarRecurrente()"
+    ></app-message-box>
+    </div>
   }
 </section>

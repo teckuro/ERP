@@ -14,13 +14,12 @@ import { FormsModule } from '@angular/forms';
 import { LucideAngularModule } from 'lucide-angular';
 import { Plus, RefreshCw, X } from 'lucide-angular/src/icons';
 
-import { PeriodoActivoService, primerDiaSqlDesdeYm } from '../../../../../core/services/periodo-activo.service';
-import { ButtonComponent } from '../../../../../shared/components/ui/button.component';
 import {
-  CardComponent,
-  CardContentComponent,
-  CardHeaderComponent,
-} from '../../../../../shared/components/ui/card.component';
+  PeriodoActivoService,
+  primerDiaSqlDesdeYm,
+  ultimoDiaSqlDesdeYm,
+} from '../../../../../core/services/periodo-activo.service';
+import { ButtonComponent } from '../../../../../shared/components/ui/button.component';
 import {
   DataGridCellDirective,
   DataGridColumn,
@@ -31,6 +30,7 @@ import {
   MessageBoxComponent,
   MessageBoxVariant,
 } from '../../../../../shared/components/ui/message-box.component';
+import { CalendarInputComponent } from '../../../../../shared/components/ui/calendar-input.component';
 import {
   RecordBreadcrumbComponent,
   RecordBreadcrumbItem,
@@ -219,13 +219,11 @@ function formInicial(periodo: string): NovedadForm {
     LucideAngularModule,
     RecordBreadcrumbComponent,
     ButtonComponent,
-    CardComponent,
-    CardHeaderComponent,
-    CardContentComponent,
     DataGridComponent,
     DataGridCellDirective,
     MessageBoxComponent,
     SearchSelectComponent,
+    CalendarInputComponent,
   ],
   templateUrl: './novedades-mensuales-container.html',
   styleUrl: './novedades-mensuales-container.css',
@@ -255,6 +253,12 @@ export class NovedadesMensualesContainer implements OnInit, OnDestroy {
   readonly periodicidadesHd = PERIODICIDADES_HD;
 
   readonly periodoActual = computed(() => this.periodoActivo.periodoYm());
+  readonly periodoFechaMin = computed(() => primerDiaSqlDesdeYm(this.periodoActual()));
+  readonly periodoFechaMax = computed(() => ultimoDiaSqlDesdeYm(this.periodoActual()));
+  readonly recurrenteVigenciaFinMin = computed(() => this.recurrenteVigenciaInicio() || this.periodoFechaMin());
+  readonly formTrabajadorBloqueado = computed(
+    () => this.retornoGestionTrabajador() != null && this.form().idPersona != null,
+  );
   readonly loading = signal(false);
   readonly soporteLoading = signal(false);
   readonly contratosLoading = signal(false);
@@ -266,6 +270,8 @@ export class NovedadesMensualesContainer implements OnInit, OnDestroy {
   readonly filas = signal<NovedadGridRow[]>([]);
   readonly recurrentesPeriodo = signal<HaberDescuentoAsignacionPrevalidacionMensualFila[]>([]);
   readonly trabajadorDetalle = signal<TrabajadorDetalleState | null>(null);
+  readonly retornoGestionTrabajador = signal<TrabajadorMovimientoRow | null>(null);
+  readonly retornoGestionFiltro = signal<GestionFiltro>('todos');
   readonly formAbierto = signal(false);
   readonly recurrenteFormAbierto = signal(false);
   readonly recurrenteGuardando = signal(false);
@@ -286,7 +292,14 @@ export class NovedadesMensualesContainer implements OnInit, OnDestroy {
   readonly form = signal<NovedadForm>(formInicial(''));
   readonly formSnapshot = signal('');
   readonly formErrores = signal<NovedadFormErrores>({});
+  readonly formValidacionActiva = signal(false);
+  readonly formCamposTocados = signal<Partial<Record<NovedadFormCampo, boolean>>>({});
   readonly confirmarCancelarAbierto = signal(false);
+  readonly confirmarCancelarRecurrenteAbierto = signal(false);
+  readonly recurrenteSnapshot = signal('');
+  readonly recurrenteConCambios = computed(
+    () => this.recurrenteFormAbierto() && this.serializarRecurrente() !== this.recurrenteSnapshot(),
+  );
   readonly observacionAccion = signal('');
   readonly mensaje = signal<{
     variant: MessageBoxVariant;
@@ -374,11 +387,23 @@ export class NovedadesMensualesContainer implements OnInit, OnDestroy {
   readonly formConCambios = computed(() => this.formAbierto() && this.serializarForm(this.form()) !== this.formSnapshot());
   readonly resumenFormulario = computed(() => {
     const form = this.form();
-    const trabajador = form.idPersona == null ? '' : this.etiquetaTrabajador(form.idPersona);
+    const trabajadorCtx = this.retornoGestionTrabajador();
+    const trabajador =
+      trabajadorCtx?.trabajador ?? (form.idPersona == null ? '' : this.etiquetaTrabajador(form.idPersona));
     const concepto = form.idConcepto == null ? '' : this.etiquetaConcepto(form.idConcepto);
     const monto = form.monto == null ? '' : `${form.moneda || 'CLP'} ${Number(form.monto).toLocaleString('es-CL')}`;
     const tipo = this.etiquetaTipoMovimiento(form.tipoMovimiento);
-    const datosPrincipales = trabajador && concepto && monto;
+    const faltantes: string[] = [];
+    if (!concepto) {
+      faltantes.push('seleccionar concepto');
+    }
+    if (form.monto == null) {
+      faltantes.push('indicar monto');
+    }
+    if (!trabajador && form.idPersona == null) {
+      faltantes.push('seleccionar trabajador');
+    }
+    const datosPrincipales = trabajador && concepto && form.monto != null;
     return {
       trabajador,
       concepto,
@@ -386,7 +411,8 @@ export class NovedadesMensualesContainer implements OnInit, OnDestroy {
       tipo,
       periodo: this.periodoActivo.etiqueta(),
       principal: datosPrincipales ? `${tipo} de ${monto} para ${trabajador}.` : '',
-      visible: form.idPersona != null || form.idConcepto != null || form.monto != null,
+      faltante: faltantes.length > 0 ? `Falta ${faltantes.join(' y ')} para completar el resumen.` : '',
+      visible: form.idPersona != null || form.idConcepto != null || form.monto != null || !!trabajadorCtx,
     };
   });
 
@@ -519,6 +545,9 @@ export class NovedadesMensualesContainer implements OnInit, OnDestroy {
   readonly movimientosInfoColumns: DataGridColumn<NovedadGridRow>[] = this.movimientosDetalleColumns.filter(
     (column) => column.id !== 'acciones',
   );
+  readonly movimientosGestionColumns: DataGridColumn<NovedadGridRow>[] = this.movimientosDetalleColumns.filter(
+    (column) => column.id !== 'ultimaAccion',
+  );
 
   readonly recurrentesDetalleColumns: DataGridColumn<RecurrenteDetalleRow>[] = [
     {
@@ -578,6 +607,77 @@ export class NovedadesMensualesContainer implements OnInit, OnDestroy {
   readonly recurrentesInfoColumns: DataGridColumn<RecurrenteDetalleRow>[] = this.recurrentesDetalleColumns.filter(
     (column) => column.id !== 'acciones',
   );
+  readonly recurrentesGestionColumns: DataGridColumn<RecurrenteDetalleRow>[] = this.recurrentesDetalleColumns.filter(
+    (column) => column.id !== 'impacto',
+  );
+
+  readonly gestionUnificadaColumnsGeneric: DataGridColumn<MovimientoGestionUnificadoRow>[] = [
+    {
+      id: 'ambito',
+      header: 'Ámbito',
+      field: 'ambitoEtiqueta',
+      type: 'text',
+      sortable: true,
+      filterable: false,
+      minWidth: '7.5rem',
+      priorityResponsive: 'primary',
+    },
+    {
+      id: 'concepto',
+      header: 'Concepto',
+      field: 'concepto',
+      type: 'text',
+      sortable: true,
+      filterable: false,
+      minWidth: '12rem',
+    },
+    {
+      id: 'tipo',
+      header: 'Tipo',
+      field: 'tipo',
+      type: 'text',
+      sortable: true,
+      filterable: false,
+      minWidth: '9rem',
+    },
+    {
+      id: 'monto',
+      header: 'Monto',
+      field: 'monto',
+      type: 'text',
+      align: 'right',
+      sortable: false,
+      filterable: false,
+      minWidth: '8rem',
+    },
+    {
+      id: 'vigencia',
+      header: 'Vigencia / fecha',
+      field: 'vigencia',
+      type: 'text',
+      sortable: false,
+      filterable: false,
+      minWidth: '10rem',
+    },
+    {
+      id: 'estado',
+      header: 'Estado',
+      field: 'estadoEtiqueta',
+      type: 'text',
+      sortable: true,
+      filterable: false,
+      minWidth: '8rem',
+    },
+    {
+      id: 'acciones',
+      header: 'Acciones',
+      align: 'center',
+      sortable: false,
+      hideable: false,
+      filterable: false,
+      minWidth: '14rem',
+    },
+  ];
 
   readonly gestionUnificadaColumns: DataGridColumn<MovimientoGestionUnificadoRow>[] = [
     {
@@ -800,9 +900,42 @@ export class NovedadesMensualesContainer implements OnInit, OnDestroy {
     this.abrirFormularioCon(formInicial(this.periodoActual()));
   }
 
-  abrirNuevoParaTrabajador(row: TrabajadorMovimientoRow): void {
-    const form = { ...formInicial(this.periodoActual()), idPersona: row.idPersona };
-    this.trabajadorDetalle.set(null);
+  tonoResumenPeriodo(label: string): string {
+    const normalizado = label.toLowerCase();
+    if (normalizado.includes('revisar')) {
+      return 'nm-context-card--review';
+    }
+    if (normalizado.includes('movimientos')) {
+      return 'nm-context-card--info';
+    }
+    if (normalizado.includes('recurrentes')) {
+      return 'nm-context-card--ok';
+    }
+    return 'nm-context-card--neutral';
+  }
+
+  claseEstadoTrabajador(estado: TrabajadorMovimientoRow['estado']): string {
+    switch (estado) {
+      case 'Revisar':
+        return 'nm-worker-status nm-worker-status--review';
+      case 'Listo':
+        return 'nm-worker-status nm-worker-status--ok';
+      case 'Incompleto':
+        return 'nm-worker-status nm-worker-status--muted';
+      case 'Sin movimientos':
+        return 'nm-worker-status nm-worker-status--neutral';
+      default:
+        return 'nm-worker-status';
+    }
+  }
+
+  abrirNuevoParaTrabajador(row: TrabajadorMovimientoRow, filtro: GestionFiltro = 'mensual'): void {
+    this.prepararRetornoGestion(row, filtro);
+    const form = {
+      ...formInicial(this.periodoActual()),
+      idPersona: row.idPersona,
+      fechaEvento: this.periodoFechaMin(),
+    };
     this.novedadEditando.set(null);
     this.abrirFormularioCon(form);
     void this.onTrabajadorChange(row.idPersona);
@@ -831,7 +964,7 @@ export class NovedadesMensualesContainer implements OnInit, OnDestroy {
   etiquetaFiltroGestion(filtro: GestionFiltro): string {
     switch (filtro) {
       case 'mensual':
-        return 'Del mes';
+        return 'Mensual';
       case 'recurrente':
         return 'Recurrentes';
       case 'revision':
@@ -857,8 +990,9 @@ export class NovedadesMensualesContainer implements OnInit, OnDestroy {
   abrirRecurrenteParaTrabajador(
     row: TrabajadorMovimientoRow,
     recurrente?: HaberDescuentoAsignacionPrevalidacionMensualFila,
+    filtro: GestionFiltro = 'recurrente',
   ): void {
-    this.trabajadorDetalle.set(null);
+    this.prepararRetornoGestion(row, filtro);
     this.recurrenteTrabajador.set(row);
     this.recurrenteEditandoId.set(recurrente?.asignacion.idAsignacion ?? null);
     this.recurrenteConceptoId.set(recurrente?.asignacion.idConcepto ?? null);
@@ -873,8 +1007,18 @@ export class NovedadesMensualesContainer implements OnInit, OnDestroy {
     this.contratosPersona.set([]);
     this.recurrenteIdContrato.set(recurrente?.asignacion.idContrato ?? null);
     this.recurrenteFormAbierto.set(true);
+    this.confirmarCancelarRecurrenteAbierto.set(false);
+    this.recurrenteSnapshot.set(this.serializarRecurrente());
     this.bloquearScrollPagina();
     void this.prepararContratosRecurrente(row.idPersona, recurrente?.asignacion.idContrato ?? null);
+  }
+
+  etiquetaCerrarModalMensual(): string {
+    return this.retornoGestionTrabajador() ? 'Volver a gestión' : 'Cerrar';
+  }
+
+  etiquetaCerrarModalRecurrente(): string {
+    return this.retornoGestionTrabajador() ? 'Volver a gestión' : 'Cerrar';
   }
 
   verRecurrentesTrabajador(row: TrabajadorMovimientoRow): void {
@@ -884,6 +1028,8 @@ export class NovedadesMensualesContainer implements OnInit, OnDestroy {
   private abrirFormularioCon(form: NovedadForm): void {
     this.form.set(form);
     this.formErrores.set({});
+    this.formValidacionActiva.set(false);
+    this.formCamposTocados.set({});
     this.confirmarCancelarAbierto.set(false);
     this.formSnapshot.set(this.serializarForm(form));
     this.formAbierto.set(true);
@@ -925,6 +1071,88 @@ export class NovedadesMensualesContainer implements OnInit, OnDestroy {
     this.recurrenteErrores.set({});
     this.contratosPersona.set([]);
     this.restaurarScrollPagina();
+  }
+
+  cancelarRecurrente(): void {
+    if (this.retornoGestionTrabajador()) {
+      this.volverAGestionDesdeRecurrente();
+      return;
+    }
+    if (this.recurrenteConCambios()) {
+      this.confirmarCancelarRecurrenteAbierto.set(true);
+      return;
+    }
+    this.cerrarRecurrente();
+    this.limpiarRetornoGestion();
+  }
+
+  cancelarFormularioMensual(): void {
+    if (this.retornoGestionTrabajador()) {
+      this.volverAGestionDesdeFormulario();
+      return;
+    }
+    this.cerrarFormulario();
+  }
+
+  volverAGestionDesdeFormulario(): void {
+    if (this.formConCambios()) {
+      this.confirmarCancelarAbierto.set(true);
+      return;
+    }
+    this.cerrarFormularioDirecto();
+    if (!this.trabajadorDetalle()) {
+      this.restaurarGestionSiCorresponde();
+    }
+  }
+
+  volverAGestionDesdeRecurrente(): void {
+    if (this.recurrenteConCambios()) {
+      this.confirmarCancelarRecurrenteAbierto.set(true);
+      return;
+    }
+    this.cerrarRecurrente();
+    this.restaurarGestionSiCorresponde();
+  }
+
+  confirmarDescartarRecurrente(): void {
+    this.confirmarCancelarRecurrenteAbierto.set(false);
+    const restaurar = this.retornoGestionTrabajador() != null;
+    this.cerrarRecurrente();
+    if (restaurar && !this.trabajadorDetalle()) {
+      this.restaurarGestionSiCorresponde();
+    } else if (!restaurar) {
+      this.limpiarRetornoGestion();
+    }
+  }
+
+  cerrarConfirmacionCancelarRecurrente(): void {
+    this.confirmarCancelarRecurrenteAbierto.set(false);
+  }
+
+  private prepararRetornoGestion(row: TrabajadorMovimientoRow, filtro: GestionFiltro): void {
+    this.retornoGestionTrabajador.set(row);
+    this.retornoGestionFiltro.set(filtro);
+  }
+
+  private limpiarRetornoGestion(): void {
+    this.retornoGestionTrabajador.set(null);
+    this.retornoGestionFiltro.set('todos');
+  }
+
+  private restaurarGestionSiCorresponde(): void {
+    const row = this.retornoGestionTrabajador();
+    if (!row) {
+      return;
+    }
+    const filtro = this.retornoGestionFiltro();
+    this.limpiarRetornoGestion();
+    const actualizado = this.trabajadoresMovimientos().find((item) => item.idPersona === row.idPersona) ?? row;
+    const detalle = this.trabajadorDetalle();
+    if (detalle) {
+      this.trabajadorDetalle.set({ row: actualizado, filtro: detalle.filtro });
+    } else {
+      this.abrirDetalleTrabajador(actualizado, filtro);
+    }
   }
 
   onConceptoRecurrenteChange(idConcepto: number | null): void {
@@ -1001,8 +1229,22 @@ export class NovedadesMensualesContainer implements OnInit, OnDestroy {
             : 'El movimiento recurrente fue actualizado correctamente.',
         detail: trabajador.trabajador,
       });
-      this.cerrarRecurrente();
       await this.cargarNovedades();
+      this.cerrarRecurrente();
+      if (this.trabajadorDetalle()) {
+        const retorno = this.retornoGestionTrabajador();
+        if (retorno) {
+          const actualizado =
+            this.trabajadoresMovimientos().find((item) => item.idPersona === retorno.idPersona) ?? retorno;
+          this.trabajadorDetalle.set({
+            row: actualizado,
+            filtro: this.trabajadorDetalle()!.filtro,
+          });
+          this.limpiarRetornoGestion();
+        }
+      } else {
+        this.restaurarGestionSiCorresponde();
+      }
     } catch (err) {
       this.mostrarError(err, 'No se pudo guardar el movimiento recurrente.');
     } finally {
@@ -1011,7 +1253,10 @@ export class NovedadesMensualesContainer implements OnInit, OnDestroy {
   }
 
   editarMovimientoDesdeDetalle(novedad: NovedadMensual): void {
-    this.trabajadorDetalle.set(null);
+    const detalle = this.trabajadorDetalle();
+    if (detalle) {
+      this.prepararRetornoGestion(detalle.row, detalle.filtro);
+    }
     this.editarNovedad(novedad);
   }
 
@@ -1026,6 +1271,9 @@ export class NovedadesMensualesContainer implements OnInit, OnDestroy {
   confirmarDescartarFormulario(): void {
     this.confirmarCancelarAbierto.set(false);
     this.cerrarFormularioDirecto();
+    if (!this.trabajadorDetalle()) {
+      this.restaurarGestionSiCorresponde();
+    }
   }
 
   cerrarConfirmacionCancelar(): void {
@@ -1037,10 +1285,15 @@ export class NovedadesMensualesContainer implements OnInit, OnDestroy {
     this.restaurarScrollPagina();
     this.novedadEditando.set(null);
     this.formErrores.set({});
+    this.formValidacionActiva.set(false);
+    this.formCamposTocados.set({});
     this.confirmarCancelarAbierto.set(false);
     this.contratosPersona.set([]);
     this.form.set(formInicial(this.periodoActual()));
     this.formSnapshot.set(this.serializarForm(this.form()));
+    if (!this.retornoGestionTrabajador()) {
+      this.limpiarRetornoGestion();
+    }
   }
 
   actualizarForm<K extends keyof NovedadForm>(campo: K, valor: NovedadForm[K]): void {
@@ -1068,6 +1321,7 @@ export class NovedadesMensualesContainer implements OnInit, OnDestroy {
   }
 
   async guardarFormulario(): Promise<void> {
+    this.formValidacionActiva.set(true);
     const input = this.inputDesdeForm();
     const resultado = validarNovedadMensualInput({ ...input, estado: this.novedadEditando()?.estado ?? 'borrador' });
     if (!resultado.valido) {
@@ -1102,6 +1356,20 @@ export class NovedadesMensualesContainer implements OnInit, OnDestroy {
       }
       this.cerrarFormularioDirecto();
       await this.cargarNovedades();
+      if (this.trabajadorDetalle()) {
+        const retorno = this.retornoGestionTrabajador();
+        if (retorno) {
+          const actualizado =
+            this.trabajadoresMovimientos().find((item) => item.idPersona === retorno.idPersona) ?? retorno;
+          this.trabajadorDetalle.set({
+            row: actualizado,
+            filtro: this.trabajadorDetalle()!.filtro,
+          });
+          this.limpiarRetornoGestion();
+        }
+      } else {
+        this.restaurarGestionSiCorresponde();
+      }
     } catch (err) {
       this.mostrarError(err, 'No se pudo guardar el movimiento del mes.');
     } finally {
@@ -1186,7 +1454,44 @@ export class NovedadesMensualesContainer implements OnInit, OnDestroy {
   }
 
   errorCampo(campo: NovedadFormCampo): string {
-    return this.formErrores()[campo] ?? '';
+    const errores = this.formErrores();
+    if (!errores[campo]) {
+      return '';
+    }
+    if (!this.formValidacionActiva() && !this.formCamposTocados()[campo]) {
+      return '';
+    }
+    return errores[campo] ?? '';
+  }
+
+  marcarCampoFormularioTocado(campo: NovedadFormCampo): void {
+    if (!this.formCamposTocados()[campo]) {
+      this.formCamposTocados.update((actual) => ({ ...actual, [campo]: true }));
+    }
+  }
+
+  contratoEtiquetaTrabajador(row: TrabajadorMovimientoRow): string {
+    return row.contrato?.trim() ? row.contrato : 'Sin contrato específico';
+  }
+
+  textoPendienteRevision(row: NovedadGridRow): string {
+    const partes = [row.conceptoEtiqueta, row.estadoEtiqueta];
+    const observacion = row.observacion?.trim();
+    if (observacion) {
+      partes.push(observacion);
+    }
+    return partes.join(' · ');
+  }
+
+  etiquetaGuardarFormulario(): string {
+    if (this.guardando()) {
+      return 'Guardando...';
+    }
+    return this.novedadEditando() ? 'Guardar cambios' : 'Guardar movimiento';
+  }
+
+  tipoRecurrenteEtiqueta(item: HaberDescuentoAsignacionPrevalidacionMensualFila): string {
+    return item.asignacion.tipoConcepto === 'DESCUENTO' ? 'Descuento' : 'Haber';
   }
 
   movimientosMesTrabajador(idPersona: number): NovedadGridRow[] {
@@ -1201,7 +1506,7 @@ export class NovedadesMensualesContainer implements OnInit, OnDestroy {
     const mensual: MovimientoGestionUnificadoRow[] = this.movimientosMesTrabajador(idPersona).map((row) => ({
       rowId: `mes-${row.idNovedad}`,
       ambito: 'mensual',
-      ambitoEtiqueta: 'Del mes',
+      ambitoEtiqueta: 'Mensual',
       concepto: row.conceptoEtiqueta,
       tipo: row.tipoCategoriaEtiqueta,
       monto: row.montoEtiqueta,
@@ -1312,11 +1617,11 @@ export class NovedadesMensualesContainer implements OnInit, OnDestroy {
   }
 
   editarRecurrenteDesdeDetalle(item: HaberDescuentoAsignacionPrevalidacionMensualFila): void {
-    const row = this.trabajadorDetalle()?.row;
-    if (!row || !this.puedeEditarRecurrente(item)) {
+    const detalle = this.trabajadorDetalle();
+    if (!detalle?.row || !this.puedeEditarRecurrente(item)) {
       return;
     }
-    this.abrirRecurrenteParaTrabajador(row, item);
+    this.abrirRecurrenteParaTrabajador(detalle.row, item, detalle.filtro);
   }
 
   pedirFinalizarRecurrente(item: HaberDescuentoAsignacionPrevalidacionMensualFila): void {
@@ -1617,6 +1922,20 @@ export class NovedadesMensualesContainer implements OnInit, OnDestroy {
 
   private serializarForm(form: NovedadForm): string {
     return JSON.stringify(form);
+  }
+
+  private serializarRecurrente(): string {
+    return JSON.stringify({
+      idConcepto: this.recurrenteConceptoId(),
+      tipoValor: this.recurrenteTipoValor(),
+      idContrato: this.recurrenteIdContrato(),
+      monto: this.recurrenteMonto(),
+      porcentaje: this.recurrentePorcentaje(),
+      periodicidad: this.recurrentePeriodicidad(),
+      vigenciaInicio: this.recurrenteVigenciaInicio(),
+      vigenciaFin: this.recurrenteVigenciaFin(),
+      observacion: this.recurrenteObservacion(),
+    });
   }
 
   private bloquearScrollPagina(): void {

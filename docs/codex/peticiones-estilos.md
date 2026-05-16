@@ -1,3 +1,33 @@
+## 2026-05-16 - NOM-MOVIMIENTOS-BITACORA-UI-01
+
+- **Bitácora operativa:** tokens locales (`--nm-*`) alineados a `bitacora-operativa-noia.md`; franja operativa sin card; contadores con tonos info/review/ok; estados de trabajador con color funcional.
+- **Registrar movimiento del mes:** maquetación en bloque primario (3 columnas: tipo/monto/fecha), administrativo en `<details>`, resumen info antes de guardar.
+- **Cabecera:** CTA primario **Registrar movimiento del mes** en la pantalla principal.
+- **Archivos:** `novedades-mensuales-container.{html,ts,css}`.
+
+## 2026-05-16 - NOM-MOVIMIENTOS-MODAL-MENSUAL-UX-02
+
+- **Jerarquía de modales:** modal padre **Gestionar** amplio (mesa de trabajo: movimientos del mes, recurrentes, pendientes de revisión); modal hijo mensual compacto (860px) para registrar/editar un movimiento puntual.
+- **Padre:** tres secciones con grillas compactas y CTA por bloque; footer **Cerrar**; el padre permanece abierto al abrir hijos mensual/recurrente.
+- **Hijo mensual:** ficha informativa del trabajador (sin campo editable desde gestión), bloque **Datos del movimiento** neutro (sin azul dominante), validación solo al guardar o tras tocar campo, resumen dinámico, footer **Cancelar** + **Guardar movimiento/cambios**.
+- **Z-index:** padre 1200, hijo 1310, `app-message-box` 1400.
+- **Archivos:** `novedades-mensuales-container.{html,ts,css}`; sin estilos globales, SQL, motor ni payloads.
+
+## 2026-05-16 - NOM-MOVIMIENTOS-MODAL-UX-03
+
+- **Acciones de cierre:** sin botón **Cancelar** duplicado; **X** y backdrop con etiqueta **Volver a gestión** o **Cerrar** según contexto; pie solo con acción primaria (guardar).
+- **Modal Gestionar:** contexto unificado (trabajador + resumen en franja), barra de altas sin caja «Acción recomendada», grilla sin cabecera duplicada, filtros neutros.
+- **Estilo:** resumen y hints en gris neutro (sin bloques azules decorativos); alineación de `app-calendar-input` en formularios.
+- **Archivos:** `novedades-mensuales-container.{html,ts,css}`.
+
+## 2026-05-16 - NOM-MOVIMIENTOS-MODAL-UX-02
+
+- **Modales movimiento mensual y recurrente:** franja de contexto (periodo/trabajador), pie dividido con **Volver a gestión** cuando se abre desde Gestionar, backdrop y cierre alineados a `cancelar*` con retorno a la grilla del trabajador.
+- **Fechas:** `app-calendar-input` en fecha de referencia (mes) y vigencia inicio/fin (recurrente); fin opcional con `clearable` y mínimo según inicio.
+- **Modal Gestionar:** toolbar superior con acciones recomendadas; sin pie duplicado de altas.
+- **Archivos:** `novedades-mensuales-container.{html,ts,css,spec.ts}`.
+- **Restricciones:** sin estilos globales, SQL, motor, servicios ni payloads.
+
 ## 2026-05-16 - NOM-MOVIMIENTOS-GESTION-TABLA-UNICA-01
 
 - **Modal Gestionar:** una sola grilla unifica movimientos del mes y recurrentes, con columna **Ámbito**, filtros locales (`Todos`, `Del mes`, `Recurrentes`, `Por revisar`) y acciones solo cuando aplican.
