@@ -1,3 +1,30 @@
+## 2026-05-16 - NOM-MOVIMIENTOS-GESTION-TABLA-UNICA-01
+
+- **Modal Gestionar:** una sola grilla unifica movimientos del mes y recurrentes del trabajador, con columna **Ámbito** y acciones según tipo.
+- **Contadores del modal:** resumen en cabecera de sección (del mes, recurrentes, por revisar); sin tres tablas separadas.
+- **Vistas filtradas** (contadores mes/recurrentes/revisar): mantienen tabla dedicada al abrir desde la grilla principal.
+- **Archivos:** `novedades-mensuales-container.{html,ts,css}`.
+- **Restricciones:** sin estilos globales, SQL, motor, servicios ni payloads.
+
+## 2026-05-16 - NOM-MOVIMIENTOS-RECURRENTES-PARITY-01
+
+- **Haberes / recurrentes:** modal alineado a Movimientos con bloque **Cuotas** (UI preparada, campos deshabilitados) según concepto préstamo/anticipo/cuota.
+- **Query params:** `?persona=` y `?accion=registrar` abren registro recurrente; la acción se limpia de la URL al consumirse.
+- **Preparar nómina:** contador de recurrentes por trabajador enlaza a haberes con `persona` preseleccionada.
+- **Ficha empleado:** copy `Revisar movimientos recurrentes` (enlace con `persona`).
+- **Tests:** `haberes-descuentos-container.spec.ts` (sin tabbar, query params, modal registrar).
+- **Archivos:** `haberes-descuentos-container/*`, `ficha-empleado-container.html`, `proceso-mensual-container.html`.
+- **Restricciones:** sin estilos globales, SQL, motor, servicios ni payloads.
+
+## 2026-05-16 - NOM-MOVIMIENTOS-RECURRENTES-TABBAR-01
+
+- **Haberes / recurrentes (`/remuneraciones/haberes-descuentos`):** se elimina el tabbar `Este mes | Recurrentes | Todos` para alinear con `NOM-MOVIMIENTOS-POR-TRABAJADOR-02`.
+- **Navegación:** el retorno a movimientos del período queda en el lead y en el breadcrumb (`Movimientos de remuneración` enlaza a novedades-mensuales).
+- **Guía:** nota operativa breve sobre cuotas (sin disclosure de duraciones del flujo mensual).
+- **Copy:** tildes en título visible y textos principales.
+- **Archivos:** `src/app/features/haberes-descuentos/containers/haberes-descuentos-container/haberes-descuentos-container.{html,css,ts}`.
+- **Restricciones:** sin estilos globales, SQL, motor, servicios ni payloads.
+
 ## Regla anti-card
 
 - Evitar cards repetidas sin jerarquia.

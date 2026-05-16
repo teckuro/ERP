@@ -126,12 +126,14 @@ export class HaberesDescuentosContainer implements OnInit {
   private readonly haberesDescuentosService = inject(HaberesDescuentosService);
   readonly periodoActivo = inject(PeriodoActivoService);
 
+  private accionRegistrarPendiente = false;
+
   readonly periodicidadesHd = PERIODICIDADES_HD;
   readonly fechaReferenciaPeriodo = computed(() => new Date(`${this.periodoActivo.periodoYm()}-01T00:00:00`));
 
   readonly breadcrumbItems: readonly RecordBreadcrumbItem[] = [
     { label: 'Remuneraciones', link: '/remuneraciones' },
-    { label: 'Movimientos de remuneracion' },
+    { label: 'Movimientos de remuneración', link: '/remuneraciones/novedades-mensuales' },
     { label: 'Recurrentes' },
   ];
 
@@ -190,16 +192,6 @@ export class HaberesDescuentosContainer implements OnInit {
     return this.empleadosListado().find((e) => e.id === id) ?? null;
   });
 
-  readonly resumenAsignaciones = computed(() => {
-    const filas = this.filas();
-    return {
-      activas: filas.filter((fila) => fila.estadoVigencia === 'ACTIVA').length,
-      futuras: filas.filter((fila) => fila.estadoVigencia === 'FUTURA').length,
-      vencidasOCerradas: filas.filter((fila) => fila.estadoVigencia === 'VENCIDA' || fila.estadoVigencia === 'CERRADA').length,
-      invalidas: filas.filter((fila) => fila.estadoVigencia === 'INVALIDA').length,
-    };
-  });
-
   readonly conceptoFormulario = computed(() => {
     const id = this.formConceptoId();
     if (id == null) {
@@ -238,6 +230,17 @@ export class HaberesDescuentosContainer implements OnInit {
   readonly tituloModal = computed(() =>
     this.dialogEditId() == null ? 'Registrar recurrente' : 'Editar movimiento recurrente',
   );
+
+  readonly mostrarCuotasRecurrente = computed(() => {
+    const concepto = this.conceptoFormulario();
+    if (!concepto) {
+      return false;
+    }
+    const texto = this.normalizarTexto(
+      [concepto.codigo, concepto.nombre, concepto.tipo, concepto.naturaleza].filter(Boolean).join(' '),
+    );
+    return ['prestamo', 'anticipo', 'reintegro', 'cuota', 'pactado'].some((token) => texto.includes(token));
+  });
 
   readonly conceptoOpciones = computed<SearchSelectOption<number>[]>(() => {
     const base = this.conceptos().map((c) => ({
@@ -454,12 +457,39 @@ export class HaberesDescuentosContainer implements OnInit {
     this.route.queryParamMap.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((params) => {
       const raw = params.get('persona');
       const id = raw ? Number(raw) : NaN;
-      if (Number.isInteger(id) && id > 0) {
+      const personaValida = Number.isInteger(id) && id > 0;
+      if (personaValida) {
         this.personaIdSeleccionada.set(id);
       } else {
         this.personaIdSeleccionada.set(null);
       }
+
+      const accion = params.get('accion');
+      if (accion === 'registrar') {
+        this.accionRegistrarPendiente = personaValida;
+        if (personaValida) {
+          setTimeout(() => this.consumirAccionRegistrar(), 0);
+        }
+      } else {
+        this.accionRegistrarPendiente = false;
+      }
     });
+  }
+
+  private consumirAccionRegistrar(): void {
+    if (!this.accionRegistrarPendiente || this.personaIdSeleccionada() == null) {
+      return;
+    }
+    this.accionRegistrarPendiente = false;
+    void this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: { accion: null },
+      queryParamsHandling: 'merge',
+      replaceUrl: true,
+    });
+    if (!this.dialogAbierto()) {
+      this.abrirNuevo();
+    }
   }
 
   async refrescar(): Promise<void> {
@@ -530,9 +560,11 @@ export class HaberesDescuentosContainer implements OnInit {
 
   onEmpleadoChange(id: number | null): void {
     this.personaIdSeleccionada.set(id);
+    this.accionRegistrarPendiente = false;
     void this.router.navigate([], {
       relativeTo: this.route,
-      queryParams: id ? { persona: id } : {},
+      queryParams: id ? { persona: id, accion: null } : { persona: null, accion: null },
+      queryParamsHandling: 'merge',
       replaceUrl: true,
     });
     if (!id) {
@@ -812,6 +844,13 @@ export class HaberesDescuentosContainer implements OnInit {
     })
       .format(date)
       .replaceAll('/', '-');
+  }
+
+  private normalizarTexto(valor: string): string {
+    return valor
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase();
   }
 }
 

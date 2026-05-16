@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common';
+﻿import { CommonModule } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -102,6 +102,21 @@ type TrabajadorMovimientoRow = {
 };
 
 type TrabajadorDetalleTipo = 'gestion' | 'mes' | 'recurrentes' | 'revisar';
+
+type MovimientoGestionUnificadoRow = {
+  rowId: string;
+  ambito: 'mensual' | 'recurrente';
+  ambitoEtiqueta: string;
+  concepto: string;
+  tipo: string;
+  monto: string;
+  vigencia: string;
+  estadoEtiqueta: string;
+  estadoClase: string;
+  detalle: string;
+  novedad: NovedadGridRow | null;
+  recurrente: RecurrenteDetalleRow | null;
+};
 
 type NovedadForm = {
   periodo: string;
@@ -559,6 +574,83 @@ export class NovedadesMensualesContainer implements OnInit, OnDestroy {
     (column) => column.id !== 'acciones',
   );
 
+  readonly gestionUnificadaColumns: DataGridColumn<MovimientoGestionUnificadoRow>[] = [
+    {
+      id: 'ambito',
+      header: 'Ámbito',
+      field: 'ambitoEtiqueta',
+      type: 'text',
+      sortable: true,
+      filterable: false,
+      minWidth: '7.5rem',
+    },
+    {
+      id: 'concepto',
+      header: 'Concepto',
+      field: 'concepto',
+      type: 'text',
+      sortable: true,
+      filterable: false,
+      minWidth: '12rem',
+      priorityResponsive: 'primary',
+    },
+    {
+      id: 'tipo',
+      header: 'Tipo',
+      field: 'tipo',
+      type: 'text',
+      sortable: true,
+      filterable: false,
+      minWidth: '9rem',
+    },
+    {
+      id: 'monto',
+      header: 'Monto',
+      field: 'monto',
+      type: 'text',
+      align: 'right',
+      sortable: false,
+      filterable: false,
+      minWidth: '8rem',
+    },
+    {
+      id: 'vigencia',
+      header: 'Vigencia / fecha',
+      field: 'vigencia',
+      type: 'text',
+      sortable: false,
+      filterable: false,
+      minWidth: '10rem',
+    },
+    {
+      id: 'estado',
+      header: 'Estado',
+      field: 'estadoEtiqueta',
+      type: 'text',
+      sortable: true,
+      filterable: false,
+      minWidth: '8rem',
+    },
+    {
+      id: 'detalle',
+      header: 'Detalle',
+      field: 'detalle',
+      type: 'text',
+      sortable: false,
+      filterable: false,
+      minWidth: '10rem',
+    },
+    {
+      id: 'acciones',
+      header: 'Acciones',
+      align: 'center',
+      sortable: false,
+      hideable: false,
+      filterable: false,
+      minWidth: '14rem',
+    },
+  ];
+
   readonly trabajadorFilters: DataGridFilter<TrabajadorMovimientoRow>[] = [
     {
       id: 'estado',
@@ -613,6 +705,7 @@ export class NovedadesMensualesContainer implements OnInit, OnDestroy {
   readonly trackTrabajador = (_index: number, row: TrabajadorMovimientoRow): number => row.idPersona;
   readonly trackNovedadDetalle = (_index: number, row: NovedadGridRow): number => row.idNovedad;
   readonly trackRecurrenteDetalle = (_index: number, row: RecurrenteDetalleRow): number => row.asignacion.idAsignacion;
+  readonly trackGestionUnificada = (_index: number, row: MovimientoGestionUnificadoRow): string => row.rowId;
 
 
   constructor() {
@@ -1062,6 +1155,49 @@ export class NovedadesMensualesContainer implements OnInit, OnDestroy {
 
   movimientosDetalleTrabajador(idPersona: number, tipo: TrabajadorDetalleTipo): NovedadGridRow[] {
     return tipo === 'revisar' ? this.movimientosRevisionTrabajador(idPersona) : this.movimientosMesTrabajador(idPersona);
+  }
+
+  filasGestionUnificada(idPersona: number): MovimientoGestionUnificadoRow[] {
+    const mensual: MovimientoGestionUnificadoRow[] = this.movimientosMesTrabajador(idPersona).map((row) => ({
+      rowId: `mes-${row.idNovedad}`,
+      ambito: 'mensual',
+      ambitoEtiqueta: 'Del mes',
+      concepto: row.conceptoEtiqueta,
+      tipo: row.tipoCategoriaEtiqueta,
+      monto: row.montoEtiqueta,
+      vigencia: row.fechaEventoEtiqueta !== '—' ? row.fechaEventoEtiqueta : `Período ${this.periodoActivo.etiqueta()}`,
+      estadoEtiqueta: row.estadoEtiqueta,
+      estadoClase: this.claseEstado(row.estado),
+      detalle: this.ultimaAccionMovimiento(row),
+      novedad: row,
+      recurrente: null,
+    }));
+
+    const recurrente: MovimientoGestionUnificadoRow[] = this.recurrentesTrabajador(idPersona).map((item) => ({
+      rowId: `rec-${item.asignacion.idAsignacion}`,
+      ambito: 'recurrente',
+      ambitoEtiqueta: 'Recurrente',
+      concepto: item.asignacion.nombreConcepto,
+      tipo: item.asignacion.tipoConcepto || 'Concepto',
+      monto: this.montoRecurrenteEtiqueta(item),
+      vigencia: this.vigenciaRecurrenteEtiqueta(item),
+      estadoEtiqueta: item.asignacion.estadoVigenciaEtiqueta || item.estadoVigencia,
+      estadoClase: 'nm-chip nm-chip--ok',
+      detalle: this.impactoRecurrenteEtiqueta(item),
+      novedad: null,
+      recurrente: item,
+    }));
+
+    return [...mensual, ...recurrente].sort((a, b) => {
+      if (a.ambito !== b.ambito) {
+        return a.ambito === 'mensual' ? -1 : 1;
+      }
+      return a.concepto.localeCompare(b.concepto, 'es');
+    });
+  }
+
+  claseAmbitoGestion(ambito: MovimientoGestionUnificadoRow['ambito']): string {
+    return ambito === 'mensual' ? 'nm-chip nm-chip--mes' : 'nm-chip nm-chip--recurrente';
   }
 
   ultimaAccionMovimiento(row: NovedadGridRow): string {

@@ -378,117 +378,64 @@
           </div>
 
           @if (detalle.tipo === 'gestion') {
-            <section class="nm-detail-section nm-grid-section">
+            <section class="nm-detail-section nm-grid-section nm-gestion-unificada">
               <div class="nm-detail-section-head">
-                <h3>Movimientos del mes</h3>
-                <span>{{ detalle.row.movimientosMes }} registros</span>
+                <h3>Movimientos del trabajador</h3>
+                <span>
+                  {{ detalle.row.movimientosMes }} del mes · {{ detalle.row.recurrentes }} recurrentes
+                  @if (detalle.row.revisar > 0) {
+                    · {{ detalle.row.revisar }} por revisar
+                  }
+                </span>
               </div>
               <app-data-grid
-                title="Movimientos del mes"
-                [rows]="movimientosDetalleTrabajador(detalle.row.idPersona, 'mes')"
-                [columns]="movimientosDetalleColumns"
+                title="Movimientos del trabajador"
+                [rows]="filasGestionUnificada(detalle.row.idPersona)"
+                [columns]="gestionUnificadaColumns"
                 [filtersEnabled]="false"
                 [showExportAction]="false"
                 [selectable]="false"
-                [trackBy]="trackNovedadDetalle"
-                gridHeight="16rem"
-                emptyTitle="Sin movimientos del mes"
-                emptyDescription="Este trabajador no tiene movimientos puntuales registrados para el período."
+                [trackBy]="trackGestionUnificada"
+                gridHeight="min(26rem, calc(100vh - 14rem))"
+                emptyTitle="Sin movimientos registrados"
+                emptyDescription="Agrega un movimiento del mes o un recurrente para este trabajador."
               >
-                <ng-template appDataGridCell="estado" let-row>
-                  <span [class]="claseEstado(row.estado)">{{ row.estadoEtiqueta }}</span>
+                <ng-template appDataGridCell="ambito" let-row>
+                  <span [class]="claseAmbitoGestion(row.ambito)">{{ row.ambitoEtiqueta }}</span>
                 </ng-template>
-                <ng-template appDataGridCell="ultimaAccion" let-row>
-                  <span class="nm-grid-muted">{{ ultimaAccionMovimiento(row) }}</span>
+                <ng-template appDataGridCell="concepto" let-row>
+                  <strong>{{ row.concepto }}</strong>
+                </ng-template>
+                <ng-template appDataGridCell="estado" let-row>
+                  <span [class]="row.estadoClase">{{ row.estadoEtiqueta }}</span>
+                </ng-template>
+                <ng-template appDataGridCell="detalle" let-row>
+                  <span class="nm-grid-muted">{{ row.detalle }}</span>
                 </ng-template>
                 <ng-template appDataGridCell="acciones" let-row>
                   <div class="nm-actions">
-                    @if (puedeEditar(row)) {
-                      <app-button variant="outline" size="sm" className="nm-detail-action" (click)="editarMovimientoDesdeDetalle(row)">Editar</app-button>
+                    @if (row.novedad; as novedad) {
+                      @if (puedeEditar(novedad)) {
+                        <app-button variant="outline" size="sm" className="nm-detail-action" (click)="editarMovimientoDesdeDetalle(novedad)">Editar</app-button>
+                      }
+                      @if (puedeEnviarRevision(novedad)) {
+                        <app-button variant="outline" size="sm" className="nm-detail-action" (click)="enviarRevision(novedad)">Enviar a revisión</app-button>
+                      }
+                      @if (puedeAprobar(novedad)) {
+                        <app-button variant="outline" size="sm" className="nm-detail-action" (click)="aprobar(novedad)">Aprobar</app-button>
+                      }
+                      @if (puedeRechazar(novedad)) {
+                        <app-button variant="outline" size="sm" className="nm-detail-action" (click)="observarDesdeDetalle(novedad)">Observar</app-button>
+                      }
                     }
-                    @if (puedeEnviarRevision(row)) {
-                      <app-button variant="outline" size="sm" className="nm-detail-action" (click)="enviarRevision(row)">Enviar a revisión</app-button>
-                    }
-                    @if (puedeAprobar(row)) {
-                      <app-button variant="outline" size="sm" className="nm-detail-action" (click)="aprobar(row)">Aprobar</app-button>
-                    }
-                    @if (puedeRechazar(row)) {
-                      <app-button variant="outline" size="sm" className="nm-detail-action" (click)="observarDesdeDetalle(row)">Observar</app-button>
-                    }
-                  </div>
-                </ng-template>
-              </app-data-grid>
-            </section>
-
-            <section class="nm-detail-section nm-grid-section">
-              <div class="nm-detail-section-head">
-                <h3>Recurrentes</h3>
-                <span>{{ detalle.row.recurrentes }} vigentes</span>
-              </div>
-              <app-data-grid
-                title="Recurrentes"
-                [rows]="recurrentesTrabajador(detalle.row.idPersona)"
-                [columns]="recurrentesDetalleColumns"
-                [filtersEnabled]="false"
-                [showExportAction]="false"
-                [selectable]="false"
-                [trackBy]="trackRecurrenteDetalle"
-                gridHeight="16rem"
-                emptyTitle="Sin recurrentes vigentes"
-                emptyDescription="Este trabajador no tiene recurrentes que impacten el período."
-              >
-                <ng-template appDataGridCell="concepto" let-row><strong>{{ row.asignacion.nombreConcepto }}</strong></ng-template>
-                <ng-template appDataGridCell="tipo" let-row>{{ row.asignacion.tipoConcepto || 'Concepto' }}</ng-template>
-                <ng-template appDataGridCell="monto" let-row>{{ montoRecurrenteEtiqueta(row) }}</ng-template>
-                <ng-template appDataGridCell="vigencia" let-row>{{ vigenciaRecurrenteEtiqueta(row) }}</ng-template>
-                <ng-template appDataGridCell="estado" let-row>
-                  <span class="nm-chip nm-chip--ok">{{ row.asignacion.estadoVigenciaEtiqueta || row.estadoVigencia }}</span>
-                </ng-template>
-                <ng-template appDataGridCell="impacto" let-row>{{ impactoRecurrenteEtiqueta(row) }}</ng-template>
-                <ng-template appDataGridCell="acciones" let-row>
-                  <div class="nm-actions">
-                    @if (puedeEditarRecurrente(row)) {
-                      <app-button variant="outline" size="sm" className="nm-detail-action" (click)="editarRecurrenteDesdeDetalle(row)">Editar</app-button>
-                    }
-                    <app-button variant="outline" size="sm" className="nm-detail-action" [disabled]="true" [attr.title]="recurrenteAccionNoDisponible()">Pausar</app-button>
-                    @if (puedeFinalizarRecurrente(row)) {
-                      <app-button variant="outline" size="sm" className="nm-detail-action" (click)="pedirFinalizarRecurrente(row)">Finalizar</app-button>
-                    }
-                  </div>
-                </ng-template>
-              </app-data-grid>
-            </section>
-
-            <section class="nm-detail-section nm-grid-section">
-              <div class="nm-detail-section-head">
-                <h3>Pendientes de revisión</h3>
-                <span>{{ detalle.row.revisar }} registros</span>
-              </div>
-              <app-data-grid
-                title="Pendientes de revisión"
-                [rows]="movimientosDetalleTrabajador(detalle.row.idPersona, 'revisar')"
-                [columns]="movimientosDetalleColumns"
-                [filtersEnabled]="false"
-                [showExportAction]="false"
-                [selectable]="false"
-                [trackBy]="trackNovedadDetalle"
-                gridHeight="14rem"
-                emptyTitle="Sin pendientes de revisión"
-                emptyDescription="No hay movimientos pendientes para este trabajador."
-              >
-                <ng-template appDataGridCell="estado" let-row>
-                  <span [class]="claseEstado(row.estado)">{{ row.estadoEtiqueta }}</span>
-                </ng-template>
-                <ng-template appDataGridCell="ultimaAccion" let-row>
-                  <span class="nm-grid-muted">{{ ultimaAccionMovimiento(row) }}</span>
-                </ng-template>
-                <ng-template appDataGridCell="acciones" let-row>
-                  <div class="nm-actions">
-                    @if (puedeAprobar(row)) {
-                      <app-button variant="outline" size="sm" className="nm-detail-action" (click)="aprobar(row)">Aprobar</app-button>
-                    }
-                    @if (puedeRechazar(row)) {
-                      <app-button variant="outline" size="sm" className="nm-detail-action" (click)="observarDesdeDetalle(row)">Observar</app-button>
+                    @if (row.recurrente; as recurrente) {
+                      @if (puedeEditarRecurrente(recurrente)) {
+                        <app-button variant="outline" size="sm" className="nm-detail-action" (click)="editarRecurrenteDesdeDetalle(recurrente)">Editar</app-button>
+                      }
+                      <app-button variant="outline" size="sm" className="nm-detail-action" [disabled]="true" [attr.title]="recurrenteAccionNoDisponible()">Pausar</app-button>
+                      @if (puedeFinalizarRecurrente(recurrente)) {
+                        <app-button variant="outline" size="sm" className="nm-detail-action" (click)="pedirFinalizarRecurrente(recurrente)">Finalizar</app-button>
+                      }
                     }
                   </div>
                 </ng-template>

@@ -549,6 +549,24 @@
   color: #334155;
 }
 
+.nm-chip--mes {
+  border-color: #bfdbfe;
+  background: #eff6ff;
+  color: #1d4ed8;
+}
+
+.nm-chip--recurrente {
+  border-color: #d8b4fe;
+  background: #f5f3ff;
+  color: #6d28d9;
+}
+
+.nm-gestion-unificada :host ::ng-deep app-data-grid,
+.nm-gestion-unificada app-data-grid {
+  display: block;
+  min-height: 0;
+}
+
 .nm-chip--ok {
   border-color: #bbf7d0;
   background: #ecfdf5;

@@ -372,7 +372,19 @@
                         </app-badge>
                       </td>
                       <td class="px-3 py-2 text-gray-700">{{ trabajador.contratoLabel }}</td>
-                      <td class="px-3 py-2 text-right text-gray-900">{{ trabajador.asignacionesRecurrentes }}</td>
+                      <td class="px-3 py-2 text-right text-gray-900">
+                        @if (trabajador.asignacionesRecurrentes > 0) {
+                          <a
+                            [routerLink]="['/remuneraciones/haberes-descuentos']"
+                            [queryParams]="{ persona: trabajador.idPersona }"
+                            class="font-medium text-blue-700 underline"
+                          >
+                            {{ trabajador.asignacionesRecurrentes }}
+                          </a>
+                        } @else {
+                          {{ trabajador.asignacionesRecurrentes }}
+                        }
+                      </td>
                       <td class="px-3 py-2 text-right text-gray-900">{{ trabajador.movimientosDelMes }}</td>
                       <td class="px-3 py-2 text-gray-700">{{ trabajador.observacion }}</td>
                     </tr>

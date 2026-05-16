@@ -1,12 +1,13 @@
-<section class="hd-page" aria-label="Movimientos de remuneracion recurrentes">
+<section class="hd-page" aria-label="Movimientos recurrentes de remuneración">
   <header class="hd-head">
     <app-record-breadcrumb
       [items]="breadcrumbItems"
-      title="Movimientos de remuneracion"
+      title="Movimientos de remuneración"
     ></app-record-breadcrumb>
     <p class="hd-lead">
-      Administra movimientos que se repiten mes a mes, como bonos pactados, asignaciones fijas o descuentos periodicos.
-      Es la vista recurrente de Movimientos de remuneracion.
+      Administra movimientos que se repiten mes a mes: bonos pactados, asignaciones fijas o descuentos periódicos.
+      Para el período activo, los movimientos puntuales se registran en
+      <a routerLink="/remuneraciones/novedades-mensuales" class="hd-lead-link">Movimientos de remuneración</a>.
     </p>
     <div class="hd-head-actions">
       <div class="hd-period-wrap">
@@ -36,21 +37,12 @@
   </header>
 
   <section class="hd-view-folder">
-    <nav class="hd-view-tabs" aria-label="Vistas de movimientos de remuneracion">
-      <a routerLink="/remuneraciones/novedades-mensuales">Este mes</a>
-      <a routerLink="/remuneraciones/haberes-descuentos" class="is-active" aria-current="page">Recurrentes</a>
-      <span aria-disabled="true">Todos</span>
-    </nav>
-
     <div class="hd-view-panel">
-    <details class="hd-nomina-hint">
-      <summary>Duracion del movimiento</summary>
+    <div class="hd-context-note" role="note">
       <p>
-        Todo registro es un movimiento: <strong>Solo este mes</strong>, <strong>Recurrente</strong> o
-        <strong>En cuotas</strong>. En cuotas se reserva para prestamos, anticipos o descuentos pactados en varios meses.
-        <a routerLink="/remuneraciones/novedades-mensuales" class="hd-nomina-hint-link">Ver movimientos de este mes</a>.
+        Las cuotas (préstamos, anticipos o descuentos pactados) se gestionan como recurrentes con vigencia definida.
       </p>
-    </details>
+    </div>
 
   <app-card className="hd-worker-card">
     <app-card-header className="hd-worker-card-head">
@@ -397,6 +389,37 @@
                 ></textarea>
               </div>
             </div>
+
+            @if (mostrarCuotasRecurrente()) {
+              <section class="hd-modal-cuotas" aria-label="Cuotas preparadas">
+                <h3 class="hd-modal-cuotas-title">Cuotas</h3>
+                <p class="hd-modal-cuotas-help">
+                  Usa cuotas para préstamos, anticipos, reintegros o descuentos pactados en varios meses.
+                </p>
+                <label class="hd-check hd-modal-cuotas-check">
+                  <input type="checkbox" disabled />
+                  <span>¿Tiene cuotas?</span>
+                </label>
+                <div class="hd-modal-cuotas-grid" aria-disabled="true">
+                  <label class="hd-modal-cuotas-field">
+                    <span class="hd-field-label">Cantidad de cuotas</span>
+                    <input type="number" class="hd-input" disabled />
+                  </label>
+                  <label class="hd-modal-cuotas-field">
+                    <span class="hd-field-label">Monto por cuota</span>
+                    <input type="number" class="hd-input" disabled />
+                  </label>
+                  <label class="hd-modal-cuotas-field">
+                    <span class="hd-field-label">Cuota inicial</span>
+                    <input type="month" class="hd-input" disabled />
+                  </label>
+                  <label class="hd-modal-cuotas-field">
+                    <span class="hd-field-label">Saldo referencial</span>
+                    <input type="number" class="hd-input" disabled />
+                  </label>
+                </div>
+              </section>
+            }
           </div>
         </div>
 
