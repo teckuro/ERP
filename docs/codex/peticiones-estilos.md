@@ -15,7 +15,8 @@
 
 ## 2026-05-16 - NOM-MOVIMIENTOS-MODAL-UX-03
 
-- **Acciones de cierre:** sin botón **Cancelar** duplicado; **X** y backdrop con etiqueta **Volver a gestión** o **Cerrar** según contexto; pie solo con acción primaria (guardar).
+- **Acciones de cierre:** sin **Cerrar**/**Cancelar** en pie si hay **X**; sin pistas genéricas en cabecera; modal mensual sin franja duplicada de trabajador; `<details>` con chevron; ayuda con **CircleHelp** y tooltip con cola al icono; rejilla modal (`nm-form-grid--modal`) con labels y controles alineados; sin **Resumen antes de guardar**.
+- **Confirmaciones:** mensaje único al descartar (`Descartar y cerrar` / `Seguir editando`); finalizar recurrente con `No finalizar`.
 - **Modal Gestionar:** contexto unificado (trabajador + resumen en franja), barra de altas sin caja «Acción recomendada», grilla sin cabecera duplicada, filtros neutros.
 - **Estilo:** resumen y hints en gris neutro (sin bloques azules decorativos); alineación de `app-calendar-input` en formularios.
 - **Archivos:** `novedades-mensuales-container.{html,ts,css}`.

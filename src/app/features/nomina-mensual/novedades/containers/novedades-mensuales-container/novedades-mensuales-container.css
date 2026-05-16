@@ -259,12 +259,122 @@
   line-height: 1.25;
 }
 
-.nm-field-help {
+.nm-field-label-row {
+  display: flex;
+  align-items: center;
+  gap: 0.2rem;
+  width: 100%;
+  min-height: 1.25rem;
+  margin-bottom: 0;
+}
+
+.nm-field-label-row .nm-field-label {
+  margin-bottom: 0;
+}
+
+.nm-field-tip {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 1.125rem;
+  height: 1.125rem;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--nm-muted);
+  cursor: help;
+  vertical-align: middle;
+}
+
+.nm-field-tip:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--nm-primary-soft);
+  color: var(--nm-primary);
+}
+
+.nm-field-tip {
+  anchor-name: --nm-field-tip-trigger;
+}
+
+.nm-field-tip__popover {
+  --nm-tip-bg: #ffffff;
+  --nm-tip-border: var(--nm-border);
+  position: fixed;
+  top: anchor(bottom);
+  left: anchor(center);
+  z-index: var(--nm-floating-ui-z, 1390);
   display: block;
-  margin: -0.08rem 0 0.22rem;
-  color: #94a3b8;
-  font-size: 0.64rem;
-  line-height: 1.25;
+  width: max-content;
+  max-width: min(15rem, calc(100vw - 2.5rem));
+  margin: 0;
+  padding: 0.5rem 0.625rem;
+  border: 1px solid var(--nm-tip-border);
+  border-radius: 8px;
+  background: var(--nm-tip-bg);
+  color: var(--nm-text);
+  font-size: var(--nm-text-xs);
+  font-weight: 500;
+  line-height: 1.4;
+  text-align: left;
+  white-space: normal;
+  filter: drop-shadow(0 4px 12px rgba(15, 23, 42, 0.12));
+  translate: -50% 8px;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition:
+    opacity 0.14s ease,
+    translate 0.14s ease,
+    visibility 0.14s ease;
+}
+
+@supports not (anchor-name: --nm-field-tip-trigger) {
+  .nm-field-tip__popover {
+    position: absolute;
+    top: calc(100% + 0.5rem);
+    left: 50%;
+    translate: -50% -3px;
+  }
+}
+
+/* Cola integrada (mismo fondo y borde que el cuerpo) */
+.nm-field-tip__popover::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 0;
+  z-index: -1;
+  width: 9px;
+  height: 9px;
+  border: 1px solid var(--nm-tip-border);
+  border-bottom: none;
+  border-right: none;
+  background: var(--nm-tip-bg);
+  transform: translate(-50%, -50%) rotate(45deg);
+}
+
+.nm-field-tip:hover .nm-field-tip__popover,
+.nm-field-tip:focus-visible .nm-field-tip__popover {
+  opacity: 1;
+  visibility: visible;
+  translate: -50% 8px;
+}
+
+@supports not (anchor-name: --nm-field-tip-trigger) {
+  .nm-field-tip:hover .nm-field-tip__popover,
+  .nm-field-tip:focus-visible .nm-field-tip__popover {
+    translate: -50% 0;
+  }
+}
+
+:host ::ng-deep .nm-field-tip lucide-icon,
+:host ::ng-deep .nm-field-tip lucide-icon svg {
+  display: block;
+  width: 0.875rem;
+  height: 0.875rem;
 }
 
 .nm-input {
@@ -382,6 +492,88 @@
   grid-column: 1 / -1;
 }
 
+/* Modales: campos alineados y controles a altura uniforme */
+.nm-modal-movimiento .nm-form-grid--modal {
+  gap: 0.65rem 0.85rem;
+  align-items: stretch;
+}
+
+.nm-modal-movimiento .nm-form-grid--modal > .nm-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.28rem;
+  min-width: 0;
+}
+
+.nm-modal-movimiento .nm-form-grid--modal > .nm-field > .nm-field-label {
+  display: flex;
+  align-items: center;
+  min-height: 1.25rem;
+  margin-bottom: 0;
+}
+
+.nm-modal-movimiento .nm-form-grid--modal > .nm-field > .nm-input,
+.nm-modal-movimiento .nm-form-grid--modal > .nm-field > select.nm-input,
+.nm-modal-movimiento .nm-form-grid--modal > .nm-field > textarea.nm-input,
+.nm-modal-movimiento .nm-form-grid--modal > .nm-field > app-search-select,
+.nm-modal-movimiento .nm-form-grid--modal > .nm-field > app-calendar-input {
+  width: 100%;
+}
+
+.nm-modal-movimiento .nm-form-grid--modal > .nm-field > .nm-field-error {
+  margin-top: 0.05rem;
+}
+
+.nm-modal-movimiento .nm-bitacora-block-head {
+  margin-bottom: 0.55rem;
+}
+
+.nm-modal-movimiento .nm-bitacora-block-head + .nm-form-grid--modal {
+  margin-top: 0;
+}
+
+.nm-modal-movimiento .nm-form-section .nm-section-help {
+  margin-bottom: 0.55rem;
+}
+
+:host ::ng-deep .nm-modal-movimiento .nm-form-grid--modal app-search-select .select-root {
+  width: 100%;
+}
+
+:host ::ng-deep .nm-modal-movimiento .nm-form-grid--modal app-search-select .select-field {
+  box-sizing: border-box;
+  width: 100%;
+  min-height: var(--nm-control-height);
+  height: var(--nm-control-height);
+}
+
+:host ::ng-deep .nm-modal-movimiento .nm-form-grid--modal app-calendar-input .calendar-root {
+  width: 100%;
+}
+
+:host ::ng-deep .nm-modal-movimiento .nm-form-grid--modal app-calendar-input .calendar-field {
+  box-sizing: border-box;
+  width: 100%;
+  min-height: var(--nm-control-height);
+  height: var(--nm-control-height);
+}
+
+:host ::ng-deep .nm-modal-root app-search-select.select-panel-host-open {
+  z-index: var(--nm-floating-ui-z, 1390);
+}
+
+:host ::ng-deep .nm-modal-root app-search-select .select-panel {
+  z-index: var(--nm-floating-ui-z, 1390);
+}
+
+:host ::ng-deep .nm-modal-root app-calendar-input .calendar-root {
+  overflow: visible;
+}
+
+:host ::ng-deep .nm-modal-root app-calendar-input .calendar-popover {
+  z-index: var(--nm-floating-ui-z, 1390);
+}
+
 .nm-bitacora-resumen {
   border: 1px solid var(--nm-info-border);
   border-radius: 8px;
@@ -403,6 +595,8 @@
 }
 
 .nm-details.nm-bitacora-block > summary {
+  display: flex;
+  align-items: center;
   padding: 0.65rem 0.75rem;
   margin: 0;
   list-style: none;
@@ -410,6 +604,44 @@
   color: var(--nm-ink);
   font-size: 0.78rem;
   font-weight: 650;
+}
+
+.nm-details-summary-inner {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  min-height: 1.375rem;
+}
+
+.nm-details-chevron-wrap {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.125rem;
+  height: 1.125rem;
+  flex-shrink: 0;
+  color: var(--nm-muted);
+}
+
+.nm-details-chevron {
+  display: block;
+  transition: transform 0.15s ease;
+}
+
+.nm-details[open] .nm-details-chevron {
+  transform: rotate(90deg);
+}
+
+:host ::ng-deep .nm-details-chevron-wrap lucide-icon,
+:host ::ng-deep .nm-details-chevron-wrap lucide-icon svg {
+  display: block;
+  width: 0.875rem;
+  height: 0.875rem;
+}
+
+.nm-details-summary-label {
+  line-height: 1.35;
 }
 
 .nm-details.nm-bitacora-block > summary::-webkit-details-marker {
@@ -1125,6 +1357,9 @@
 
 /* Large responsive dialog */
 .nm-modal-root {
+  --nm-floating-ui-z: 1500;
+  --erp-select-panel-z: var(--nm-floating-ui-z);
+  --erp-select-host-z-open: var(--nm-floating-ui-z);
   position: fixed;
   inset: 0;
   z-index: 1200;
@@ -1137,10 +1372,13 @@
 
 .nm-modal-root--parent {
   z-index: 1200;
+  --nm-floating-ui-z: 1250;
 }
 
 .nm-modal-root--child {
   z-index: 1350;
+  /* Encima del pie/cuerpo del modal hijo; debajo de message-box (1400) */
+  --nm-floating-ui-z: 1390;
 }
 
 .nm-modal-root--parent.nm-modal-root--behind .nm-worker-modal {
@@ -1266,6 +1504,26 @@
   padding: 1rem 1.25rem;
 }
 
+/* Formularios: scroll interno; tooltips/select/calendario por encima del pie */
+.nm-modal-movimiento .nm-modal-body--form {
+  overflow: visible;
+}
+
+.nm-modal-movimiento .nm-modal-body--form.nm-bitacora-form,
+.nm-modal-movimiento .nm-modal-body--form:not(.nm-bitacora-form) {
+  overflow-x: visible;
+  overflow-y: auto;
+}
+
+.nm-modal-movimiento .nm-bitacora-block,
+.nm-modal-movimiento .nm-form-section,
+.nm-modal-movimiento .nm-details,
+.nm-modal-movimiento .nm-field,
+.nm-modal-movimiento .nm-field-label-row,
+.nm-modal-movimiento .nm-field-tip {
+  overflow: visible;
+}
+
 .nm-modal-footer {
   display: flex;
   flex-wrap: wrap;
@@ -1292,6 +1550,17 @@
   color: var(--nm-muted);
   font-size: var(--nm-text-sm);
   line-height: 1.35;
+}
+
+.nm-modal-nav-hint {
+  margin-top: 0.35rem;
+  color: var(--nm-muted);
+  font-size: var(--nm-text-xs);
+  line-height: 1.35;
+}
+
+.nm-modal-footer--solo {
+  justify-content: flex-end;
 }
 
 .nm-modal-context {

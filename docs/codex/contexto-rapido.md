@@ -111,6 +111,7 @@ Antes de tocar UI, Codex debe completar la matriz NOIA: tipo de pantalla, usuari
 Regla anti-card: no resolver todo con cards. Elegir el patron correcto: franja operativa, registro de bitacora, panel dividido, linea de estado, lista de revision, bloque editorial, tabla contextual, MessageBox, disclosure o card justificada.
 
 Orden: ordenar, reducir, jerarquizar, reusar patrones existentes y crear solo si hace falta.
+
 ## 6. Fases recientes relevantes
 
 ### `ERP-NOIA-BITACORA-OPERATIVA-00`
@@ -177,6 +178,7 @@ Objetivo:
 ...
 
 Leer antes:
+
 - docs/codex/contexto-rapido.md
 - docs/codex/AGENTS.md
 - docs/codex/orquestador/estado-fases.md
@@ -184,15 +186,19 @@ Leer antes:
 - docs/codex/<módulo-o-fase>.md
 
 Tocar solo:
+
 - ...
 
 No tocar:
+
 - ...
 
 Validar:
+
 - ...
 
 Respuesta esperada:
+
 - resumen de cambios
 - archivos tocados
 - validaciones
@@ -218,6 +224,7 @@ El context pack no reemplaza el ZIP completo para ejecución final, pero reduce 
 ### `PARAM-CLIENT-CONFIG-SEPARATION-AUDIT-01`
 
 Parametros mantiene separacion estricta: `parametros_generales` es snapshot oficial mensual, `parametros_generales_cliente` es configuracion cliente protegida y `periodo_remuneracion` es estado operativo. Python mensual no debe escribir la tabla cliente; `-Force` solo autoriza actualizar el snapshot oficial.
+
 ### `PARAM-RECONCILIACION-MSGBOX-FIX-01`
 
 La reconciliacion oficial/cliente de Parametros registra `Revisar despues` como decision explicita (`estadoReconciliacionOficial = revisar_despues`) y no vuelve a abrir el MsgBox en bucle para esa misma decision. No existe aun fingerprint de nueva version oficial; queda como fase futura si se requiere detectar nuevas cargas con precision.

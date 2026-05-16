@@ -265,7 +265,7 @@ describe('NovedadesMensualesContainer', () => {
     expect(modal).not.toBeNull();
     expect(modal?.getAttribute('role')).toBe('dialog');
     expect(modal?.textContent).toContain('Registrar movimiento del mes');
-    expect(modal?.textContent).toContain('Periodo activo');
+    expect(modal?.textContent).toContain('período activo');
     expect(modal?.textContent).toContain('Mayo 2026');
     expect(fixture.nativeElement.querySelector('input[type="month"]')).toBeNull();
   });
@@ -291,7 +291,7 @@ describe('NovedadesMensualesContainer', () => {
     expect(modal).not.toBeNull();
     expect(modal?.textContent).toContain('Registrar recurrente');
     expect(modal?.textContent).toContain('Ana Perez');
-    expect(component.trabajadorDetalle()).toBeNull();
+    expect(component.trabajadorDetalle()).not.toBeNull();
   });
 
   it('guardar recurrente llama al servicio de asignaciones y recarga periodo', async () => {
@@ -457,7 +457,7 @@ describe('NovedadesMensualesContainer', () => {
     fixture.detectChanges();
 
     expect(fixture.nativeElement.textContent).toContain('Gestionar movimientos');
-    expect(fixture.nativeElement.textContent).toContain('Del mes');
+    expect(fixture.nativeElement.textContent).toContain('Mensual');
     expect(fixture.nativeElement.textContent).toContain('Bono puntual (BONO)');
   });
 

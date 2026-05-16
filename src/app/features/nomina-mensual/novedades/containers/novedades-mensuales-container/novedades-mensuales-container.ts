@@ -12,7 +12,7 @@ import {
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { LucideAngularModule } from 'lucide-angular';
-import { Plus, RefreshCw, X } from 'lucide-angular/src/icons';
+import { ChevronRight, CircleHelp, Plus, RefreshCw, X } from 'lucide-angular/src/icons';
 
 import {
   PeriodoActivoService,
@@ -245,6 +245,8 @@ export class NovedadesMensualesContainer implements OnInit, OnDestroy {
   readonly plusIcon = Plus;
   readonly refreshIcon = RefreshCw;
   readonly closeIcon = X;
+  readonly chevronRightIcon = ChevronRight;
+  readonly fieldTipIcon = CircleHelp;
 
   readonly estados = NOVEDAD_MENSUAL_ESTADOS;
   readonly categorias = NOVEDAD_MENSUAL_CATEGORIAS;
@@ -1013,12 +1015,19 @@ export class NovedadesMensualesContainer implements OnInit, OnDestroy {
     void this.prepararContratosRecurrente(row.idPersona, recurrente?.asignacion.idContrato ?? null);
   }
 
-  etiquetaCerrarModalMensual(): string {
-    return this.retornoGestionTrabajador() ? 'Volver a gestión' : 'Cerrar';
+  /** Cierre por X en modal padre (sin botón Cerrar en pie). */
+  etiquetaCerrarModalPadre(): string {
+    return 'Cerrar gestión del trabajador';
   }
 
-  etiquetaCerrarModalRecurrente(): string {
-    return this.retornoGestionTrabajador() ? 'Volver a gestión' : 'Cerrar';
+  /** Cierre por X en modales hijo (sin Cancelar en pie). */
+  etiquetaCerrarModalHijo(): string {
+    return this.retornoGestionTrabajador() ? 'Cerrar y volver al trabajador' : 'Cerrar formulario';
+  }
+
+  mensajeDescartarCambios(tipo: 'mensual' | 'recurrente'): string {
+    const alcance = tipo === 'mensual' ? 'el movimiento del mes' : 'el recurrente';
+    return `Hay cambios sin guardar. Si cierras ahora, se perderán los datos de ${alcance}.`;
   }
 
   verRecurrentesTrabajador(row: TrabajadorMovimientoRow): void {

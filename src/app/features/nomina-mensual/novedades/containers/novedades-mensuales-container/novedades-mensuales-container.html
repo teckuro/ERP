@@ -128,7 +128,7 @@
               {{ detalle.row.trabajador }} · {{ detalle.row.rut }} · {{ periodoActivo.etiqueta() }}
             </p>
           </div>
-          <button type="button" class="nm-modal-close" aria-label="Cerrar" (click)="cerrarDetalleTrabajador()">
+          <button type="button" class="nm-modal-close" [attr.aria-label]="etiquetaCerrarModalPadre()" (click)="cerrarDetalleTrabajador()">
             <lucide-icon [img]="closeIcon"></lucide-icon>
           </button>
         </header>
@@ -203,12 +203,6 @@
           </section>
         </div>
 
-        <footer class="nm-modal-footer nm-modal-footer--gestion">
-          <app-button variant="outline" size="md" (click)="cerrarDetalleTrabajador()">Cerrar</app-button>
-        </footer>
-
-
-
       </section>
     </div>
   }
@@ -222,17 +216,10 @@
             <h2 id="nm-modal-title">{{ novedadEditando() ? 'Editar movimiento del mes' : 'Registrar movimiento del mes' }}</h2>
             <p class="nm-modal-sub">Movimiento puntual del período activo.</p>
           </div>
-          <button type="button" class="nm-modal-close" [attr.aria-label]="etiquetaCerrarModalMensual()" (click)="cancelarFormularioMensual()">
+          <button type="button" class="nm-modal-close" [attr.aria-label]="etiquetaCerrarModalHijo()" (click)="cancelarFormularioMensual()">
             <lucide-icon [img]="closeIcon"></lucide-icon>
           </button>
         </header>
-
-        <div class="nm-modal-context nm-modal-context--hijo" aria-label="Contexto del movimiento">
-          @if (retornoGestionTrabajador(); as trabajadorCtx) {
-            <p class="nm-modal-context-line"><strong>{{ trabajadorCtx.trabajador }}</strong> · {{ periodoActivo.etiqueta() }}</p>
-          }
-          <p>Este movimiento se aplicará solo al período activo.</p>
-        </div>
 
         <div class="nm-modal-body nm-modal-body--form nm-bitacora-form">
           @if (formErrores().general && formValidacionActiva()) {
@@ -244,7 +231,7 @@
               <h3>Datos del movimiento</h3>
               <p class="nm-section-help">Concepto, tipo, monto y fecha de referencia del período.</p>
             </header>
-            <div class="nm-form-grid nm-form-grid--movimiento">
+            <div class="nm-form-grid nm-form-grid--movimiento nm-form-grid--modal">
               @if (formTrabajadorBloqueado() && retornoGestionTrabajador(); as trabajadorCtx) {
             <section class="nm-worker-ficha" aria-label="Trabajador seleccionado">
               <span class="nm-worker-ficha-k">Trabajador seleccionado</span>
@@ -253,8 +240,13 @@
             </section>
           } @else {
             <label class="nm-field nm-form-span2" [attr.data-nm-error]="!!errorCampo('idPersona')">
-              <span class="nm-field-label">Trabajador</span>
-              <span class="nm-field-help">Selecciona quién recibe el movimiento.</span>
+              <span class="nm-field-label-row">
+                <span class="nm-field-label">Trabajador</span>
+                <button type="button" class="nm-field-tip" aria-label="Ayuda: trabajador">
+                  <lucide-icon [img]="fieldTipIcon"></lucide-icon>
+                  <span class="nm-field-tip__popover" role="tooltip">Selecciona quién recibe el movimiento.</span>
+                </button>
+              </span>
               <app-search-select
                 id="nm-trabajador"
                 placeholder="Selecciona trabajador"
@@ -326,8 +318,13 @@
               </label>
 
               <label class="nm-field" [attr.data-nm-error]="!!errorCampo('fechaEvento')">
-                <span class="nm-field-label">Fecha de referencia</span>
-                <span class="nm-field-help">Dentro de {{ periodoActivo.etiqueta() }}.</span>
+                <span class="nm-field-label-row">
+                  <span class="nm-field-label">Fecha de referencia</span>
+                  <button type="button" class="nm-field-tip" aria-label="Ayuda: fecha de referencia">
+                    <lucide-icon [img]="fieldTipIcon"></lucide-icon>
+                    <span class="nm-field-tip__popover" role="tooltip">Dentro de {{ periodoActivo.etiqueta() }}.</span>
+                  </button>
+                </span>
                 <app-calendar-input
                   id="nm-fecha-evento"
                   placeholder="dd/mm/aaaa"
@@ -346,11 +343,18 @@
           </section>
 
           <details class="nm-details nm-bitacora-block nm-bitacora-block--admin">
-            <summary>Detalle administrativo opcional</summary>
+            <summary>
+              <span class="nm-details-summary-inner">
+                <span class="nm-details-chevron-wrap" aria-hidden="true">
+                  <lucide-icon class="nm-details-chevron" [img]="chevronRightIcon"></lucide-icon>
+                </span>
+                <span class="nm-details-summary-label">Detalle administrativo opcional</span>
+              </span>
+            </summary>
             <p class="nm-section-help">
               Solo si necesitas referencia interna, contrato asociado u observación administrativa.
             </p>
-            <div class="nm-form-grid">
+            <div class="nm-form-grid nm-form-grid--modal">
               <label class="nm-field" [attr.data-nm-error]="!!errorCampo('categoria')">
                 <span class="nm-field-label">Categoría</span>
                 <select
@@ -425,8 +429,13 @@
               </label>
 
               <label class="nm-field" [attr.data-nm-error]="!!errorCampo('cantidad')">
-                <span class="nm-field-label">Cantidad</span>
-                <span class="nm-field-help">Cantidad administrativa; no corresponde a cantidad de cuotas.</span>
+                <span class="nm-field-label-row">
+                  <span class="nm-field-label">Cantidad</span>
+                  <button type="button" class="nm-field-tip" aria-label="Ayuda: cantidad">
+                    <lucide-icon [img]="fieldTipIcon"></lucide-icon>
+                    <span class="nm-field-tip__popover" role="tooltip">Cantidad administrativa; no corresponde a cantidad de cuotas.</span>
+                  </button>
+                </span>
                 <input
                   type="number"
                   min="0"
@@ -443,21 +452,8 @@
               </label>
             </div>
           </details>
-
-          <section class="nm-bitacora-resumen" aria-label="Resumen del movimiento">
-            <h3>Resumen antes de guardar</h3>
-            @if (resumenFormulario().principal) {
-              <p class="nm-summary-main">{{ resumenFormulario().principal }}</p>
-              <p class="nm-summary-detail">Se aplicará en {{ periodoActivo.etiqueta() }}.</p>
-            } @else if (resumenFormulario().faltante) {
-              <p class="nm-summary-detail">{{ resumenFormulario().faltante }}</p>
-            } @else {
-              <p class="nm-summary-detail">Completa trabajador, concepto y monto para revisar el movimiento antes de guardarlo.</p>
-            }
-          </section>
         </div>
-        <footer class="nm-modal-footer nm-modal-footer--sticky">
-          <app-button variant="outline" size="md" [disabled]="guardando()" (click)="cancelarFormularioMensual()">Cancelar</app-button>
+        <footer class="nm-modal-footer nm-modal-footer--sticky nm-modal-footer--solo">
           <app-button variant="primary" size="md" [disabled]="guardando()" (click)="guardarFormulario()">
             {{ etiquetaGuardarFormulario() }}
           </app-button>
@@ -476,7 +472,7 @@
             <h2 id="nm-recurrente-title">{{ recurrenteEditandoId() == null ? 'Registrar recurrente' : 'Editar recurrente' }}</h2>
             <p class="nm-modal-sub">Movimiento que se repetirá según su vigencia.</p>
           </div>
-          <button type="button" class="nm-modal-close" [attr.aria-label]="etiquetaCerrarModalRecurrente()" (click)="cancelarRecurrente()">
+          <button type="button" class="nm-modal-close" [attr.aria-label]="etiquetaCerrarModalHijo()" (click)="cancelarRecurrente()">
             <lucide-icon [img]="closeIcon"></lucide-icon>
           </button>
         </header>
@@ -495,7 +491,7 @@
           <div class="nm-form-section">
             <h3>Movimiento recurrente</h3>
             <p class="nm-section-help">Registra haberes o descuentos que se repiten mes a mes para el trabajador.</p>
-            <div class="nm-form-grid">
+            <div class="nm-form-grid nm-form-grid--modal">
               <label class="nm-field nm-form-span2" [attr.data-nm-error]="!!errorRecurrente('idConcepto')">
                 <span class="nm-field-label">Concepto</span>
                 <app-search-select
@@ -596,8 +592,13 @@
               }
 
               <label class="nm-field" [attr.data-nm-error]="!!errorRecurrente('vigenciaInicio')">
-                <span class="nm-field-label">Vigencia inicio</span>
-                <span class="nm-field-help">Desde cuándo aplica el recurrente.</span>
+                <span class="nm-field-label-row">
+                  <span class="nm-field-label">Vigencia inicio</span>
+                  <button type="button" class="nm-field-tip" aria-label="Ayuda: vigencia inicio">
+                    <lucide-icon [img]="fieldTipIcon"></lucide-icon>
+                    <span class="nm-field-tip__popover" role="tooltip">Desde cuándo aplica el recurrente.</span>
+                  </button>
+                </span>
                 <app-calendar-input
                   id="nm-recurrente-vigencia-inicio"
                   placeholder="dd/mm/aaaa"
@@ -612,8 +613,13 @@
               </label>
 
               <label class="nm-field" [attr.data-nm-error]="!!errorRecurrente('vigenciaFin')">
-                <span class="nm-field-label">Vigencia fin</span>
-                <span class="nm-field-help">Opcional. Dejar vacío si no tiene término.</span>
+                <span class="nm-field-label-row">
+                  <span class="nm-field-label">Vigencia fin</span>
+                  <button type="button" class="nm-field-tip" aria-label="Ayuda: vigencia fin">
+                    <lucide-icon [img]="fieldTipIcon"></lucide-icon>
+                    <span class="nm-field-tip__popover" role="tooltip">Opcional. Dejar vacío si no tiene término.</span>
+                  </button>
+                </span>
                 <app-calendar-input
                   id="nm-recurrente-vigencia-fin"
                   placeholder="dd/mm/aaaa"
@@ -673,8 +679,7 @@
           }
         </div>
 
-        <footer class="nm-modal-footer nm-modal-footer--sticky">
-          <app-button variant="outline" size="md" [disabled]="recurrenteGuardando()" (click)="cancelarRecurrente()">Cancelar</app-button>
+        <footer class="nm-modal-footer nm-modal-footer--sticky nm-modal-footer--solo">
           <app-button variant="primary" size="md" [disabled]="recurrenteGuardando()" (click)="guardarRecurrente()">
             {{ recurrenteGuardando() ? 'Guardando...' : recurrenteEditandoId() == null ? 'Registrar recurrente' : 'Guardar cambios' }}
           </app-button>
@@ -693,7 +698,7 @@
       message="El movimiento recurrente dejará de aplicar y quedará disponible como historial."
       [detail]="recurrentePendiente.trabajador + ' · ' + recurrentePendiente.nombre"
       primaryLabel="Finalizar"
-      secondaryLabel="Cancelar"
+      secondaryLabel="No finalizar"
       (action)="confirmarFinalizarRecurrente()"
       (secondary)="cerrarConfirmacionRecurrente()"
     ></app-message-box>
@@ -722,8 +727,8 @@
       mode="modal"
       [modalHeadlineSplit]="true"
       title="Descartar cambios"
-      message="Hay cambios sin guardar en el movimiento. Si cancelas, se perderán los datos ingresados."
-      primaryLabel="Descartar"
+      [message]="mensajeDescartarCambios('mensual')"
+      primaryLabel="Descartar y cerrar"
       secondaryLabel="Seguir editando"
       (action)="confirmarDescartarFormulario()"
       (secondary)="cerrarConfirmacionCancelar()"
@@ -738,8 +743,8 @@
       mode="modal"
       [modalHeadlineSplit]="true"
       title="Descartar cambios"
-      message="Hay cambios sin guardar en el recurrente. Si sales ahora, se perderán los datos ingresados."
-      primaryLabel="Descartar"
+      [message]="mensajeDescartarCambios('recurrente')"
+      primaryLabel="Descartar y cerrar"
       secondaryLabel="Seguir editando"
       (action)="confirmarDescartarRecurrente()"
       (secondary)="cerrarConfirmacionCancelarRecurrente()"
