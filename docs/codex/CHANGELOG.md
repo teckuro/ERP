@@ -350,3 +350,13 @@ Fecha: 2026-05-15
 - Se ajusta la guardia del wrapper para informar configuracion cliente existente sin tratarla como objetivo de reemplazo por la carga oficial.
 - Se separan en consola datos oficiales existentes, configuracion cliente existente y estado operativo del periodo.
 - `-Force` queda descrito como autorizacion operativa para actualizar el snapshot oficial, no para modificar `parametros_generales_cliente`.
+## PARAM-RECONCILIACION-MSGBOX-FIX-01 - Ajuste de decision Revisar despues
+
+Fecha: 2026-05-15
+
+- Se ajusta la reconciliacion oficial/cliente en Parametros para que `Revisar despues` quede como decision explicita y no reabra el MsgBox en bucle.
+- El MsgBox de diferencias mantiene la regla de no actualizar automaticamente `parametros_generales_cliente`.
+- `Actualizar con oficiales` sigue copiando el snapshot oficial hacia la configuracion cliente mediante el flujo existente.
+- `Mantener mi configuracion` conserva los valores cliente y registra la decision.
+- `Revisar despues` conserva los valores cliente, registra la postergacion y deja la revision disponible sin interrumpir repetidamente.
+- No se toca Python, wrapper, SQL estructural, RLS/RPC, motor, nomina, liquidaciones ni estilos globales protegidos.

@@ -584,3 +584,26 @@ Fecha: 2026-05-15
 | Fix | `PARAM-CLIENT-CONFIG-SEPARATION-FIX-01`: el wrapper separa datos oficiales existentes de configuracion cliente existente y aclara el alcance de `-Force`. |
 | Restricciones | Sin SQL estructural, RLS/RPC, motor, nomina/liquidaciones productivas, estilos globales protegidos ni budgets. |
 | Documento | [`../diseno/param-client-config-separation-audit-01.md`](../diseno/param-client-config-separation-audit-01.md) |
+### PARAM-RECONCILIACION-MSGBOX-FIX-01
+
+Estado: Ejecutada
+
+Tipo: Fix UX/flujo acotado
+
+Objetivo:
+Cerrar el comportamiento de la decision `Revisar despues` en la reconciliacion oficial/cliente de Parametros, evitando reapertura repetitiva del MsgBox y manteniendo la decision explicita del usuario.
+
+Alcance:
+- MsgBox de reconciliacion.
+- Decisiones oficial/cliente.
+- Registro de postergacion.
+- Documentacion Codex.
+
+Restricciones:
+- Sin Python.
+- Sin wrapper.
+- Sin SQL estructural.
+- Sin RLS/RPC.
+- Sin motor.
+- Sin nomina/liquidaciones.
+- Sin estilos globales protegidos.

@@ -212,23 +212,23 @@ describe('parametros-completitud.rules', () => {
     expect(resultado.advertencias).toEqual([]);
   });
 
-  it('revisar despues mantiene pendiente la reconciliacion', () => {
+  it('revisar despues registra decision y no mantiene la reconciliacion en bucle', () => {
     const resultado = evaluarCompletitudParametrosMensual({
       periodo,
       periodoRemuneracion: periodoInfo('cargado'),
       oficial: parametroOficial(),
       clienteConfig: clienteConfig({
         uf: 40000,
-        estadoReconciliacionOficial: 'pendiente',
+        estadoReconciliacionOficial: 'revisar_despues',
         origenReconciliacion: 'revisar_despues',
       }),
       catalogos: catalogosCompletos(),
     });
 
-    expect(resultado.reconciliacionPendiente).toBe(true);
-    expect(resultado.advertencias).toContain(
-      'Existen diferencias pendientes entre valores oficiales y configuracion cliente.',
-    );
+    expect(resultado.diferencias).toEqual([{ campo: 'uf', oficial: 38000, cliente: 40000 }]);
+    expect(resultado.reconciliacionPendiente).toBe(false);
+    expect(resultado.grupos.consistencia.completo).toBe(true);
+    expect(resultado.advertencias).toEqual([]);
   });
 
   it('decision cliente_confirmado no se muestra como pendiente bloqueante', () => {

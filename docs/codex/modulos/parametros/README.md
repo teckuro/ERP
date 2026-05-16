@@ -47,3 +47,6 @@ Parametros incorpora `Cierre normativo del periodo`, estados por pestana y una g
 ## PARAM-CLIENT-CONFIG-SEPARATION-AUDIT-01
 
 La regla vigente queda documentada en [`separacion-oficial-cliente.md`](./separacion-oficial-cliente.md): `parametros_generales` es snapshot oficial mensual, `parametros_generales_cliente` es configuracion cliente protegida y la reconciliacion siempre debe ser una decision explicita del usuario.
+## PARAM-RECONCILIACION-MSGBOX-FIX-01
+
+La reconciliacion oficial/cliente registra `Revisar despues` como decision explicita y evita reabrir el MsgBox en bucle. Ver [`../../diseno/param-reconciliacion-msgbox-fix-01.md`](../../diseno/param-reconciliacion-msgbox-fix-01.md).

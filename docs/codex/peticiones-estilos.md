@@ -923,3 +923,9 @@ Creación avanzada incorpora una identidad de producto local para dejar de senti
 - **Wrapper:** el mensaje de consola deja de mezclar `parametros_generales_cliente` con datos oficiales que la carga mensual puede reemplazar.
 - **Criterio UX:** la configuracion cliente se comunica como protegida; cualquier diferencia con oficiales debe resolverse con accion explicita en Parametros.
 - **Restricciones:** sin redisenio de pantalla, sin estilos globales, sin SQL estructural, sin motor, sin nomina/liquidaciones y sin budgets.
+## 2026-05-15 - PARAM-RECONCILIACION-MSGBOX-FIX-01
+
+- **Parametros:** el MsgBox de diferencias oficial/cliente aclara que nada se actualiza automaticamente.
+- **Decision postergada:** `Revisar despues` deja de comportarse como pendiente invasivo y queda como decision registrada.
+- **Criterio UX:** la revision queda disponible sin interrumpir repetidamente al usuario.
+- **Restricciones:** sin estilos globales, sin Python, sin wrapper, sin SQL estructural, sin motor y sin nomina/liquidaciones.

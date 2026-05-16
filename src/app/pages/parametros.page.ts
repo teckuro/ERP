@@ -98,6 +98,7 @@ type ParametrosDialogAction =
   | 'usar-ultima-config'
   | 'usar-referencia'
   | 'usar-oficiales'
+  | 'actualizar-con-oficiales'
   | 'cancelar'
   | 'mantener-config'
   | 'revisar-despues';
@@ -2532,7 +2533,7 @@ export class ParametrosPage implements OnInit {
     }
     if (dlg.kind === 'reconciliacion-diferencias') {
       this.dialogState.set(null);
-      void this.actualizarClienteConOficiales();
+      void this.mantenerConfiguracionCliente();
       return;
     }
     if (dlg.kind === 'config-cliente-sin-base') {
@@ -2602,6 +2603,9 @@ export class ParametrosPage implements OnInit {
         return;
       case 'usar-oficiales':
         this.prepararConfigClienteDesdeOficiales();
+        return;
+      case 'actualizar-con-oficiales':
+        await this.actualizarClienteConOficiales();
         return;
       case 'mantener-config':
         await this.mantenerConfiguracionCliente();
@@ -2899,12 +2903,12 @@ export class ParametrosPage implements OnInit {
     this.dialogState.set({
       kind: 'reconciliacion-diferencias',
       variant: 'warning',
-      title: 'Pendiente de reconciliacion',
-      message: 'Se cargaron parametros oficiales para este periodo y tu configuracion tiene diferencias.',
-      detail: 'Puedes actualizar la configuracion cliente con valores oficiales, mantener tu configuracion o revisar despues.',
-      primaryLabel: 'Actualizar con oficiales',
-      secondaryLabel: 'Mantener mi configuracion',
-      secondaryAction: 'mantener-config',
+      title: 'Hay diferencias con los valores oficiales del periodo',
+      message: 'Este periodo ya tiene una configuracion guardada por el cliente, pero la carga oficial contiene valores distintos. Nada se actualizara automaticamente.',
+      detail: 'Se encontro configuracion cliente guardada, datos oficiales cargados y diferencias entre ambos registros. Puedes mantener tu configuracion, actualizarla con oficiales o revisar las diferencias mas tarde.',
+      primaryLabel: 'Mantener mi configuracion',
+      secondaryLabel: 'Actualizar con oficiales',
+      secondaryAction: 'actualizar-con-oficiales',
       tertiaryLabel: 'Revisar despues',
       tertiaryAction: 'revisar-despues',
     });
@@ -2953,15 +2957,15 @@ export class ParametrosPage implements OnInit {
 
   private async revisarReconciliacionDespues(): Promise<void> {
     await this.registrarDecisionReconciliacion(
-      'pendiente',
       'revisar_despues',
-      'La reconciliacion queda pendiente.',
-      'La advertencia puede volver a mostrarse mientras existan diferencias sin confirmar.',
+      'revisar_despues',
+      'La revision de diferencias quedo postergada.',
+      'Nada se actualizo automaticamente. Puedes volver a revisar la configuracion cliente cuando corresponda.',
     );
   }
 
   private async registrarDecisionReconciliacion(
-    estado: 'pendiente' | 'cliente_confirmado',
+    estado: 'revisar_despues' | 'cliente_confirmado',
     origen: 'mantener_configuracion' | 'revisar_despues',
     message: string,
     detail: string,
@@ -2984,7 +2988,7 @@ export class ParametrosPage implements OnInit {
       this.dialogState.set({
         kind: 'alerta',
         variant: estado === 'cliente_confirmado' ? 'info' : 'warning',
-        title: estado === 'cliente_confirmado' ? 'Configuracion mantenida' : 'Revisar despues',
+        title: estado === 'cliente_confirmado' ? 'Configuracion mantenida' : 'Revision postergada',
         message,
         detail,
         primaryLabel: 'Aceptar',

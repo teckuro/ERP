@@ -395,7 +395,8 @@ function resolverEstado(
 
 function requiereReconciliacionOficial(cliente: ParametrosGeneralesClienteConfig | null): boolean {
   return cliente?.estadoReconciliacionOficial !== 'cliente_confirmado'
-    && cliente?.estadoReconciliacionOficial !== 'actualizado_con_oficiales';
+    && cliente?.estadoReconciliacionOficial !== 'actualizado_con_oficiales'
+    && cliente?.estadoReconciliacionOficial !== 'revisar_despues';
 }
 
 export function resolverEstadoVisualParametros(input: ResolverEstadoVisualParametrosInput): ParametrosEstadoVisual {
