@@ -352,7 +352,7 @@ export class SidebarComponent {
           path: '/remuneraciones/novedades-mensuales',
           label: 'Movimientos',
           icon: 'calendar-plus',
-          hint: 'Del mes, recurrentes y cuotas',
+          hint: 'Movimientos por trabajador',
         },
         {
           path: '/remuneraciones/liquidaciones',

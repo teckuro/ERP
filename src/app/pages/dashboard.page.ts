@@ -67,7 +67,7 @@ import { CardComponent, CardContentComponent, CardHeaderComponent } from '../sha
               <a routerLink="/remuneraciones/novedades-mensuales" class="dashboard-tile">
                 <span>
                   <strong>Movimientos</strong>
-                  <small>Registra bonos, descuentos, anticipos, recurrentes y cuotas del periodo.</small>
+                  <small>Registra bonos, descuentos, anticipos y recurrentes del período.</small>
                 </span>
                 <lucide-icon class="h-4 w-4 shrink-0 text-gray-400" name="arrow-up-right"></lucide-icon>
               </a>

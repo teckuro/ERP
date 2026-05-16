@@ -281,3 +281,31 @@ Se pulio el modal `Registrar movimiento` como capa UX local. El formulario queda
 La experiencia visible se corrige hacia administracion por trabajador. `Movimientos de remuneracion` muestra una grilla de trabajadores del periodo con contadores de movimientos mensuales, recurrentes y pendientes de revision. Los contadores abren detalles filtrados y la accion por fila abre gestion del trabajador.
 
 No se unifican formularios. El flujo mensual registra movimientos puntuales del periodo. El flujo recurrente permanece separado y recibe al trabajador por query param. Las cuotas quedan como variante del recurrente, especialmente para prestamos, anticipos, reintegros o descuentos pactados.
+
+### Cierre NOM-MOVIMIENTOS-POR-TRABAJADOR-02
+
+La pagina principal de `Movimientos de remuneracion` no debe mostrar tabbar visible. La vista mensual del periodo activo es la pantalla principal: franja operativa, mensaje guia, filtros y grilla de trabajadores.
+
+La navegacion a recurrentes vive en acciones del trabajador y en el detalle filtrado de recurrentes. No corresponde mostrar `Este mes | Recurrentes | Todos` como navegacion superior ni dejar una pestana unica `Este mes`.
+
+### Cierre NOM-MOVIMIENTOS-MODAL-MENSUAL-UX-01
+
+El modal mensual queda como operacion compacta para registrar un movimiento puntual del periodo activo. El titulo visible es `Registrar movimiento del mes`, el resumen queda al final antes del footer y el bloque administrativo se mantiene secundario.
+
+El modal mensual no configura reglas de duracion, recurrentes ni cuotas. Las cuotas siguen perteneciendo al flujo recurrente y se gestionan desde `Haberes y descuentos`.
+
+### Cierre NOM-MOVIMIENTOS-GESTION-INTEGRAL-01
+
+`Movimientos de remuneración` pasa a ser el menú único de gestión por trabajador. La pantalla no mezcla todos los casos en un formulario gigante: mantiene un modal principal del trabajador como hub y abre formularios separados para movimiento mensual puntual y recurrente.
+
+Regla vigente:
+
+```txt
+Movimiento mensual = puntual del período.
+Recurrente = se repite por vigencia.
+Cuotas = recurrente con pagos o descuentos definidos en varios meses.
+```
+
+La grilla principal conserva contadores por trabajador. Los contadores de movimientos del mes, recurrentes y revisión abren detalle contextual dentro de la pantalla, sin navegación externa. `Agregar movimiento del mes` abre el modal mensual. `Agregar recurrente` abre el modal recurrente.
+
+El flujo recurrente se gestiona en esta misma pantalla con las capacidades existentes: crear, editar y finalizar. Pausar, aprobar u observar recurrentes quedan como acciones no disponibles cuando el modelo actual no las soporta, sin inventar persistencia nueva.

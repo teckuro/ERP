@@ -1,4 +1,25 @@
 # CHANGELOG
+## NOM-MOVIMIENTOS-GESTION-INTEGRAL-01 - Gesti√≥n mensual y recurrente por trabajador
+
+Fecha: 2026-05-16
+
+- `Movimientos de remuneraci√≥n` queda como men√∫ √∫nico para gestionar movimientos puntuales del per√≠odo y recurrentes por trabajador.
+- La grilla por trabajador se mantiene como entrada principal: contadores de movimientos, recurrentes y revisi√≥n abren detalle contextual sin navegar fuera de la pantalla.
+- `Gestionar` abre un modal del trabajador con secciones separadas: movimientos del mes, recurrentes y pendientes de revisi√≥n.
+- `Agregar movimiento del mes` abre el modal mensual puntual. `Agregar recurrente` abre un modal recurrente separado dentro de la misma pantalla.
+- Las cuotas se muestran solo dentro del flujo recurrente como capacidad preparada, sin cambiar SQL, motor, payloads ni persistencia cr√≠tica.
+- Se eliminan navegaciones externas innecesarias hacia recurrentes desde este flujo y se usan acciones locales soportadas por los servicios actuales: crear, editar y finalizar recurrente.
+- Alcance respetado: sin SQL/RPC/RLS, sin motor, sin liquidaciones productivas, sin estilos globales y sin tests nuevos.
+
+## NOM-MOVIMIENTOS-MODAL-MENSUAL-UX-01 - Modal mensual compacto
+
+Fecha: 2026-05-16
+
+- Se pule el modal `Registrar movimiento del mes` dentro de `Movimientos de remuneraci√≥n`.
+- El modal queda enfocado solo en movimientos puntuales del per√≠odo activo: trabajador, concepto, tipo, monto, fecha de referencia y detalle administrativo opcional.
+- Se elimina la columna lateral `Antes de guardar`; el resumen queda como bloque inferior antes del footer.
+- Se mantiene fuera del modal mensual cualquier duraci√≥n, recurrente o cuota. Las cuotas siguen perteneciendo al flujo recurrente.
+- Alcance local: contenedor de novedades mensuales, copy visible relacionado y documentaci√≥n. Sin SQL, motor, persistencia cr√≠tica ni estilos globales.
 ## NOM-MOVIMIENTOS-SIMPLE-00 - Unificacion documental de movimientos
 
 Fecha: 2026-05-15
@@ -38,9 +59,9 @@ Fecha: 2026-05-15
 - Se crea `docs/codex/contexto-rapido.md` como resumen oficial corto para iniciar fases sin arrastrar todo el historial.
 - Se agregan reglas persistentes Cursor: `.cursor/rules/erp-ui-noia.mdc` y `.cursor/rules/erp-protected-files.mdc`.
 - Se agrega `.cursorignore` para excluir artefactos pesados, dependencias, logs, zips, entornos locales y resultados de pruebas sin ocultar `docs/codex`, `.cursor`, `src/app`, `bd` ni `scripts`.
-- Se crea `scripts/build-context-pack.ps1` para generar ZIPs pequeÒos de contexto por mÛdulo o fase.
+- Se crea `scripts/build-context-pack.ps1` para generar ZIPs peque√±os de contexto por m√≥dulo o fase.
 - Se documenta la fase en `docs/codex/diseno/erp-context-optimization-01.md`.
-- Alcance respetado: sin Angular funcional, sin HTML/CSS visual de pantallas, sin estilos globales protegidos, sin SQL/RPC/RLS, sin motor, sin nÛmina, sin liquidaciones, sin servicios, sin mappers, sin payloads y sin dependencias nuevas.
+- Alcance respetado: sin Angular funcional, sin HTML/CSS visual de pantallas, sin estilos globales protegidos, sin SQL/RPC/RLS, sin motor, sin n√≥mina, sin liquidaciones, sin servicios, sin mappers, sin payloads y sin dependencias nuevas.
 
 ## EMP-ADV-CSS-BUDGET-REDUCE-01 - Reduccion de presupuesto CSS en Creacion avanzada
 
@@ -56,42 +77,42 @@ Fecha: 2026-05-15
 
 Fecha: 2026-05-14
 
-- El modal de error de guardado usa el mismo patrÛn visual del Èxito (`modalHeadlineSplit` + paneles de detalle) para evitar mensajes planos o tÈcnicos.
-- Se agregan bloques `QuÈ revisar`, `AcciÛn recomendada` y `Paso sugerido` cuando el error permite inferirlo.
-- El caso `Sin previsiÛn` se presenta con copy administrativo y recomienda volver a `PrevisiÛn y salud` para seleccionar AFP o IPS si el trabajador quedar· habilitado para remuneraciones.
-- Se normalizan acentos en mensajes visibles conocidos (`opciÛn`, `previsiÛn`, `c·lculo`, `nÛmina`, `informaciÛn`).
-- Alcance respetado: sin SQL/RPC/RLS, sin motor, nÛmina, liquidaciones, ficha empleado, creaciÛn b·sica funcional ni estilos globales.
+- El modal de error de guardado usa el mismo patr√≥n visual del √©xito (`modalHeadlineSplit` + paneles de detalle) para evitar mensajes planos o t√©cnicos.
+- Se agregan bloques `Qu√© revisar`, `Acci√≥n recomendada` y `Paso sugerido` cuando el error permite inferirlo.
+- El caso `Sin previsi√≥n` se presenta con copy administrativo y recomienda volver a `Previsi√≥n y salud` para seleccionar AFP o IPS si el trabajador quedar√° habilitado para remuneraciones.
+- Se normalizan acentos en mensajes visibles conocidos (`opci√≥n`, `previsi√≥n`, `c√°lculo`, `n√≥mina`, `informaci√≥n`).
+- Alcance respetado: sin SQL/RPC/RLS, sin motor, n√≥mina, liquidaciones, ficha empleado, creaci√≥n b√°sica funcional ni estilos globales.
 
-## EMP-ALTA-DIAGNOSTICO-CONTRACTUAL-UX-01 - DiagnÛstico contractual en Resumen final
-
-Fecha: 2026-05-14
-
-- El bloque visible `Matriz de aplicabilidad` pasa a `DiagnÛstico contractual`, manteniendo la matriz como lÛgica interna.
-- El resumen final muestra `Caso detectado` con edad laboral y relaciÛn contractual para que RRHH lea el contexto antes de finalizar.
-- Los estados tÈcnicos se traducen a copy operativo (`Definido por sistema`, `Necesario`, `Revisar`) sin exponer la matriz como concepto tÈcnico.
-- Se elimina el patrÛn visual `border-left` fuerte en los bloques de diagnÛstico/coherencia y en la razÛn de condiciones detectadas; se mantienen fondos suaves y bordes completos coherentes con el ERP.
-- Alcance respetado: sin SQL/RPC/RLS, sin motor, nÛmina, liquidaciones, LRE/Previred, ficha empleado, creaciÛn b·sica ni persistencia final de honorarios.
-
-## EMP-ALTA-COHERENCIA-GLOBAL-01 - Matriz ˙nica de aplicabilidad y coherencia
+## EMP-ALTA-DIAGNOSTICO-CONTRACTUAL-UX-01 - Diagn√≥stico contractual en Resumen final
 
 Fecha: 2026-05-14
 
-- Se implementa la regla pura `empleado-alta-aplicabilidad.rules.ts` para centralizar estados `required`, `optional`, `derived`, `not_applicable`, `review`, `warning` y `blocked` en CreaciÛn avanzada.
-- La matriz cubre relaciÛn laboral, `tipo_trabajador`, contrato, jornada, remuneraciÛn/honorarios, Seguro de CesantÌa, asignaciones, previsiÛn/salud, APVI, banco, condiciones especiales y resumen final.
+- El bloque visible `Matriz de aplicabilidad` pasa a `Diagn√≥stico contractual`, manteniendo la matriz como l√≥gica interna.
+- El resumen final muestra `Caso detectado` con edad laboral y relaci√≥n contractual para que RRHH lea el contexto antes de finalizar.
+- Los estados t√©cnicos se traducen a copy operativo (`Definido por sistema`, `Necesario`, `Revisar`) sin exponer la matriz como concepto t√©cnico.
+- Se elimina el patr√≥n visual `border-left` fuerte en los bloques de diagn√≥stico/coherencia y en la raz√≥n de condiciones detectadas; se mantienen fondos suaves y bordes completos coherentes con el ERP.
+- Alcance respetado: sin SQL/RPC/RLS, sin motor, n√≥mina, liquidaciones, LRE/Previred, ficha empleado, creaci√≥n b√°sica ni persistencia final de honorarios.
+
+## EMP-ALTA-COHERENCIA-GLOBAL-01 - Matriz √∫nica de aplicabilidad y coherencia
+
+Fecha: 2026-05-14
+
+- Se implementa la regla pura `empleado-alta-aplicabilidad.rules.ts` para centralizar estados `required`, `optional`, `derived`, `not_applicable`, `review`, `warning` y `blocked` en Creaci√≥n avanzada.
+- La matriz cubre relaci√≥n laboral, `tipo_trabajador`, contrato, jornada, remuneraci√≥n/honorarios, Seguro de Cesant√≠a, asignaciones, previsi√≥n/salud, APVI, banco, condiciones especiales y resumen final.
 - El wizard consume la matriz para estados claros de `No aplica` y `Opcional`, evitando depender solo de condiciones sueltas repartidas en el componente.
-- El resumen final agrega el bloque `Matriz de aplicabilidad`, separado de `Coherencia administrativa`, para distinguir quÈ corresponde exigir/mostrar versus quÈ combinaciÛn requiere revisiÛn RRHH.
-- Se agregan tests unitarios de aplicabilidad para contrato dependiente, honorarios, fecha tÈrmino, previsiÛn `NINGUNA` y menor de edad.
-- Alcance respetado: sin SQL/RPC/RLS, sin motor, nÛmina, liquidaciones, LRE/Previred, ficha empleado, creaciÛn b·sica, persistencia final de honorarios ni estilos globales.
+- El resumen final agrega el bloque `Matriz de aplicabilidad`, separado de `Coherencia administrativa`, para distinguir qu√© corresponde exigir/mostrar versus qu√© combinaci√≥n requiere revisi√≥n RRHH.
+- Se agregan tests unitarios de aplicabilidad para contrato dependiente, honorarios, fecha t√©rmino, previsi√≥n `NINGUNA` y menor de edad.
+- Alcance respetado: sin SQL/RPC/RLS, sin motor, n√≥mina, liquidaciones, LRE/Previred, ficha empleado, creaci√≥n b√°sica, persistencia final de honorarios ni estilos globales.
 
-## EMP-ALTA-COHERENCIA-GLOBAL-00 - AuditorÌa de coherencia del alta avanzada
+## EMP-ALTA-COHERENCIA-GLOBAL-00 - Auditor√≠a de coherencia del alta avanzada
 
 Fecha: 2026-05-13
 
-- Se agrega documento de auditorÌa para unificar reglas de aplicabilidad, validaciÛn y coherencia administrativa del alta avanzada.
-- Se inventarian campos por relaciÛn laboral `CONTRATO` / `HONORARIOS`, distinguiendo datos requeridos, derivados, no aplicables y bajo revisiÛn.
-- Se consolida matriz de comportamiento para `tipo_trabajador`, contrato, jornada, Seguro de CesantÌa, previsiÛn/salud, APVI, banco y condiciones especiales.
-- Se documenta quÈ falta, quÈ sobra y quÈ debe alimentar la futura regla pura `empleado-alta-aplicabilidad.rules.ts`.
-- Alcance respetado: fase documental, sin cambios funcionales en Angular, sin SQL/RPC/RLS, sin motor, nÛmina, liquidaciones, LRE, Previred, ficha empleado ni estilos globales.
+- Se agrega documento de auditor√≠a para unificar reglas de aplicabilidad, validaci√≥n y coherencia administrativa del alta avanzada.
+- Se inventarian campos por relaci√≥n laboral `CONTRATO` / `HONORARIOS`, distinguiendo datos requeridos, derivados, no aplicables y bajo revisi√≥n.
+- Se consolida matriz de comportamiento para `tipo_trabajador`, contrato, jornada, Seguro de Cesant√≠a, previsi√≥n/salud, APVI, banco y condiciones especiales.
+- Se documenta qu√© falta, qu√© sobra y qu√© debe alimentar la futura regla pura `empleado-alta-aplicabilidad.rules.ts`.
+- Alcance respetado: fase documental, sin cambios funcionales en Angular, sin SQL/RPC/RLS, sin motor, n√≥mina, liquidaciones, LRE, Previred, ficha empleado ni estilos globales.
 
 ## EMP-PERFIL-LABORAL-SQL-01 - Condiciones especiales del trabajador en BD
 
@@ -215,13 +236,13 @@ Fecha: 2026-05-10
 
 Fecha: 2026-05-11
 
-- Se pulen los mensajes de `app-message-box` en CreaciÛn avanzada con tono administrativo para RRHH.
-- Se reemplaza `Continuar de todos modos` por `Continuar`, evitando que la acciÛn suene riesgosa o culposa.
-- Se reemplaza `Ir al primer bloqueo` por `Ir al primer pendiente`, manteniendo el comportamiento de navegaciÛn y foco.
-- Las secciones del modal quedan como `Datos obligatorios pendientes`, `Advertencias de revisiÛn` e `InformaciÛn ˙til`.
+- Se pulen los mensajes de `app-message-box` en Creaci√≥n avanzada con tono administrativo para RRHH.
+- Se reemplaza `Continuar de todos modos` por `Continuar`, evitando que la acci√≥n suene riesgosa o culposa.
+- Se reemplaza `Ir al primer bloqueo` por `Ir al primer pendiente`, manteniendo el comportamiento de navegaci√≥n y foco.
+- Las secciones del modal quedan como `Datos obligatorios pendientes`, `Advertencias de revisi√≥n` e `Informaci√≥n √∫til`.
 - Los listados del MsgBox usan guion visual y frases completas con punto final para mejorar lectura.
 - Se eliminan punto y coma de textos visibles del flujo.
-- Alcance respetado: sin SQL/RPC/RLS/BD, sin payloads/mappers, sin motor, sin creaciÛn b·sica, sin ficha empleado ni remuneraciones.
+- Alcance respetado: sin SQL/RPC/RLS/BD, sin payloads/mappers, sin motor, sin creaci√≥n b√°sica, sin ficha empleado ni remuneraciones.
 
 ## EMP-ADV-VALIDATION-CL-02 - Validaciones chilenas accionadas por MsgBox
 
@@ -316,19 +337,19 @@ Fecha: 2026-05-15
 - Se actualiza el spec del contenedor para cubrir que no guarda, aprueba ni cierra antes de la confirmacion.
 - Alcance respetado: sin SQL/RPC/RLS, sin motor, sin cambios de liquidaciones, sin estilos globales ni configuracion Angular/Tailwind/PostCSS.
 
-## EMP-ADV-BITACORA-LABORAL-UX-01 - Bit·cora Laboral en CreaciÛn avanzada
+## EMP-ADV-BITACORA-LABORAL-UX-01 - Bit√°cora Laboral en Creaci√≥n avanzada
 
 Fecha: 2026-05-15
 
-- CreaciÛn avanzada adopta el patrÛn visual local `Bit·cora laboral`: alta del trabajador como ficha en construcciÛn, registros agrupados, decisiones visibles y cierre como acta.
-- El mapa lateral se agrupa en `Identidad`, `RelaciÛn laboral`, `Pago y previsiÛn` y `RevisiÛn`; los pasos pasan a numeraciÛn de registro `01`, `02`, etc.
-- Se ajusta el lenguaje visible de estados para RRHH: `En ediciÛn`, `Listo`, `Requiere datos`, `Revisar`, `Solo si aplica` y `No requerido`.
-- El header del paso muestra el tipo de registro (`Registro de identidad`, `Registro laboral`, `Registro de pago y previsiÛn`, `Registro de revisiÛn`, `Acta de revisiÛn`) y separa tÌtulo/copy con jerarquÌa m·s editorial.
-- APVI no requerido/opcional se presenta como tarjeta de decisiÛn con contexto y siguiente acciÛn, evitando alertas genÈricas vacÌas.
-- `Resumen final` pasa a `Acta de revisiÛn de la ficha`; `Estado por etapa` pasa a `Registros de la bit·cora`; `Coherencia administrativa` pasa a `RevisiÛn guiada`.
-- Se agregan variables CSS locales scoped a `.advanced-create-shell` para un tono de papel tÈcnico administrativo, sin tocar estilos globales ni cargar fuentes nuevas.
-- Alcance respetado: sin SQL/RPC/RLS, sin motor, sin nÛmina, sin liquidaciones, sin persistencia crÌtica, sin mappers, sin creaciÛn b·sica, sin ficha empleado y sin estilos globales protegidos.
-- Validaciones: `npm ci --ignore-scripts` OK; `npx tsc -p tsconfig.app.json --noEmit` OK; `npx tsc -p tsconfig.spec.json --noEmit` OK; `npm run build -- --configuration development` OK con warning preexistente de `@import` en `src/styles/tailwind.css`; `npx vitest run` de reglas empleados OK, 18 tests. `npm test -- --watch=false` quedÛ en timeout de sandbox durante la ejecuciÛn completa.
+- Creaci√≥n avanzada adopta el patr√≥n visual local `Bit√°cora laboral`: alta del trabajador como ficha en construcci√≥n, registros agrupados, decisiones visibles y cierre como acta.
+- El mapa lateral se agrupa en `Identidad`, `Relaci√≥n laboral`, `Pago y previsi√≥n` y `Revisi√≥n`; los pasos pasan a numeraci√≥n de registro `01`, `02`, etc.
+- Se ajusta el lenguaje visible de estados para RRHH: `En edici√≥n`, `Listo`, `Requiere datos`, `Revisar`, `Solo si aplica` y `No requerido`.
+- El header del paso muestra el tipo de registro (`Registro de identidad`, `Registro laboral`, `Registro de pago y previsi√≥n`, `Registro de revisi√≥n`, `Acta de revisi√≥n`) y separa t√≠tulo/copy con jerarqu√≠a m√°s editorial.
+- APVI no requerido/opcional se presenta como tarjeta de decisi√≥n con contexto y siguiente acci√≥n, evitando alertas gen√©ricas vac√≠as.
+- `Resumen final` pasa a `Acta de revisi√≥n de la ficha`; `Estado por etapa` pasa a `Registros de la bit√°cora`; `Coherencia administrativa` pasa a `Revisi√≥n guiada`.
+- Se agregan variables CSS locales scoped a `.advanced-create-shell` para un tono de papel t√©cnico administrativo, sin tocar estilos globales ni cargar fuentes nuevas.
+- Alcance respetado: sin SQL/RPC/RLS, sin motor, sin n√≥mina, sin liquidaciones, sin persistencia cr√≠tica, sin mappers, sin creaci√≥n b√°sica, sin ficha empleado y sin estilos globales protegidos.
+- Validaciones: `npm ci --ignore-scripts` OK; `npx tsc -p tsconfig.app.json --noEmit` OK; `npx tsc -p tsconfig.spec.json --noEmit` OK; `npm run build -- --configuration development` OK con warning preexistente de `@import` en `src/styles/tailwind.css`; `npx vitest run` de reglas empleados OK, 18 tests. `npm test -- --watch=false` qued√≥ en timeout de sandbox durante la ejecuci√≥n completa.
 
 ## ERP-NOIA-BITACORA-OPERATIVA-00 - Identidad global NOIA / Bitacora Operativa
 

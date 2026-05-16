@@ -1,6 +1,6 @@
 import { importProvidersFrom } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { provideRouter } from '@angular/router';
+import { provideRouter, Router } from '@angular/router';
 import { LucideAngularModule } from 'lucide-angular';
 import {
   AlertCircle,
@@ -197,8 +197,7 @@ describe('NovedadesMensualesContainer', () => {
 
   it('muestra grilla de trabajadores cuando no hay movimientos del periodo', async () => {
     fixture.detectChanges();
-    await fixture.whenStable();
-    fixture.detectChanges();
+    await esperarCargaInicial(fixture);
 
     expect(fixture.nativeElement.textContent).toContain('Trabajadores del periodo');
     expect(fixture.nativeElement.textContent).toContain('Ana Perez');
@@ -210,10 +209,11 @@ describe('NovedadesMensualesContainer', () => {
     await esperarCargaInicial(fixture);
 
     const text = fixture.nativeElement.textContent as string;
-    expect(text).toContain('Movimientos de remuneracion');
-    expect(text).toContain('Este mes');
-    expect(text).toContain('Recurrentes');
+    expect(text).toContain('Movimientos de remuneración');
     expect(text).toContain('Trabajadores del periodo');
+    expect(fixture.nativeElement.querySelector('.nm-view-tabs')).toBeNull();
+    expect(text).not.toContain('Este mes');
+    expect(text).not.toContain('Todos');
     expect(text).not.toContain('Novedades mensuales');
     expect(text).not.toContain('Movimiento variable');
     expect(text).not.toContain('Movimientos variables');
@@ -241,7 +241,7 @@ describe('NovedadesMensualesContainer', () => {
     const text = fixture.nativeElement.textContent as string;
     expect(text).toContain('Selecciona trabajador');
     expect(text).toContain('Selecciona concepto');
-    expect(text).toContain('Este movimiento se aplicara al periodo activo.');
+    expect(text).toContain('Este movimiento se aplicará solo al período activo.');
     expect(text).not.toContain('Trabajador / idPersona');
     expect(text).not.toContain('Contrato / idContrato');
     expect(text).not.toContain('Concepto / idConcepto');
@@ -264,10 +264,62 @@ describe('NovedadesMensualesContainer', () => {
     const modal = fixture.nativeElement.querySelector('.nm-modal-movimiento') as HTMLElement | null;
     expect(modal).not.toBeNull();
     expect(modal?.getAttribute('role')).toBe('dialog');
-    expect(modal?.textContent).toContain('Registrar movimiento');
+    expect(modal?.textContent).toContain('Registrar movimiento del mes');
     expect(modal?.textContent).toContain('Periodo activo');
     expect(modal?.textContent).toContain('Mayo 2026');
     expect(fixture.nativeElement.querySelector('input[type="month"]')).toBeNull();
+  });
+
+  it('agregar recurrente abre modal local con trabajador preseleccionado', async () => {
+    const router = TestBed.inject(Router);
+    const navigateSpy = vi.spyOn(router, 'navigate').mockResolvedValue(true);
+
+    fixture.detectChanges();
+    await esperarCargaInicial(fixture);
+
+    const buttons = Array.from(fixture.nativeElement.querySelectorAll('button')) as HTMLButtonElement[];
+    buttons.find((button) => button.textContent?.includes('Gestionar') || button.textContent?.includes('Asignar'))?.click();
+    fixture.detectChanges();
+
+    const modalButtons = Array.from(fixture.nativeElement.querySelectorAll('button')) as HTMLButtonElement[];
+    modalButtons.find((button) => button.textContent?.includes('Agregar recurrente'))?.click();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    const modal = fixture.nativeElement.querySelector('.nm-modal-movimiento--recurrente') as HTMLElement | null;
+    expect(navigateSpy).not.toHaveBeenCalled();
+    expect(modal).not.toBeNull();
+    expect(modal?.textContent).toContain('Registrar recurrente');
+    expect(modal?.textContent).toContain('Ana Perez');
+    expect(component.trabajadorDetalle()).toBeNull();
+  });
+
+  it('guardar recurrente llama al servicio de asignaciones y recarga periodo', async () => {
+    fixture.detectChanges();
+    await esperarCargaInicial(fixture);
+    service.listarNovedadesPeriodo.mockClear();
+
+    const row = component.trabajadoresMovimientos()[0];
+    component.abrirRecurrenteParaTrabajador(row);
+    await fixture.whenStable();
+    component.onConceptoRecurrenteChange(20);
+    component.actualizarRecurrenteMonto(120000);
+
+    await component.guardarRecurrente();
+
+    expect(haberesDescuentosService.crear).toHaveBeenCalledWith(
+      expect.objectContaining({
+        idPersona: 10,
+        idContrato: 100,
+        idConcepto: 20,
+        tipoValor: 'FIJO',
+        monto: 120000,
+        periodicidad: 'MENSUAL',
+        vigenciaInicio: '2026-05-01',
+      }),
+    );
+    expect(component.recurrenteFormAbierto()).toBe(false);
+    expect(service.listarNovedadesPeriodo).toHaveBeenCalledWith('2026-05');
   });
 
   it('Cancelar cierra modal si no hay cambios', async () => {
@@ -388,7 +440,7 @@ describe('NovedadesMensualesContainer', () => {
     expect(component.filas()).toEqual([]);
   });
 
-  it('grilla muestra trabajador y concepto por nombre operativo', async () => {
+  it('grilla muestra trabajador y detalle filtrado por nombre operativo', async () => {
     service.listarNovedadesPeriodo.mockResolvedValue([novedad()]);
 
     fixture.detectChanges();
@@ -397,9 +449,15 @@ describe('NovedadesMensualesContainer', () => {
     const text = fixture.nativeElement.textContent as string;
     expect(text).toContain('Ana Perez');
     expect(text).toContain('11.111.111-1');
-    expect(text).toContain('Bono puntual (BONO)');
     expect(text).not.toContain('Persona 10');
     expect(text).not.toContain('Concepto 20');
+
+    const buttons = Array.from(fixture.nativeElement.querySelectorAll('button')) as HTMLButtonElement[];
+    buttons.find((button) => button.textContent?.includes('1 movimientos'))?.click();
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.textContent).toContain('Movimientos del mes');
+    expect(fixture.nativeElement.textContent).toContain('Bono puntual (BONO)');
   });
 
   it('muestra conteos operativos del periodo por estado', async () => {
@@ -414,23 +472,21 @@ describe('NovedadesMensualesContainer', () => {
     await esperarCargaInicial(fixture);
 
     expect(component.resumenPeriodo()).toEqual([
-      { label: 'Total', total: 4 },
-      { label: 'Borradores', total: 1 },
-      { label: 'Pendientes', total: 1 },
-      { label: 'Aprobados', total: 1 },
-      { label: 'Observados / rechazados / anulados', total: 1 },
+      { label: 'Trabajadores activos', total: 1 },
+      { label: 'Con movimientos', total: 1 },
+      { label: 'Con recurrentes', total: 0 },
+      { label: 'Por revisar', total: 1 },
     ]);
   });
 
-  it('fallback de grilla no expone ids tecnicos cuando no encuentra datos visibles', async () => {
+  it('grilla por trabajador no expone ids tecnicos de movimientos sin ficha visible', async () => {
     service.listarNovedadesPeriodo.mockResolvedValue([novedad({ idPersona: 999, idConcepto: 999 })]);
 
     fixture.detectChanges();
     await esperarCargaInicial(fixture);
 
     const text = fixture.nativeElement.textContent as string;
-    expect(text).toContain('Trabajador sin ficha visible');
-    expect(text).toContain('Concepto no disponible');
+    expect(text).toContain('Ana Perez');
     expect(text).not.toContain('Persona 999');
     expect(text).not.toContain('Concepto 999');
   });

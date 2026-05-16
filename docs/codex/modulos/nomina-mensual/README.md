@@ -16,6 +16,12 @@ La accion **Registrar movimiento** abre un modal grande responsive dentro de `Mo
 
 El modal mantiene header y footer estables, scroll interno para el formulario, accion primaria unica **Guardar movimiento** y accion secundaria **Cancelar**. Cancelar descarta directo si no hay cambios; con cambios sin guardar solicita confirmacion con el patron `app-message-box`.
 
+## NOM-MOVIMIENTOS-MODAL-MENSUAL-UX-01 aplicado
+
+El modal visible se titula **Registrar movimiento del mes** y queda enfocado solo en movimientos puntuales del periodo activo. No contiene duracion, recurrentes ni cuotas; las cuotas pertenecen al flujo recurrente de Haberes y descuentos.
+
+La estructura queda compacta y vertical: bloque Movimiento, Detalle administrativo opcional y Resumen inferior antes del footer.
+
 ## Documentos
 
 | Archivo | Rol |
@@ -178,3 +184,9 @@ Preparar nomina queda alineado a la primera capa visible de `Movimientos de remu
 ## NOM-MOVIMIENTOS-POR-TRABAJADOR-01
 
 Movimientos de remuneracion queda administrado por trabajador en la vista mensual. La grilla del periodo muestra contadores de movimientos del mes, recurrentes y pendientes de revision. El modal mensual queda restringido a movimientos puntuales del periodo y no muestra duracion ni cuotas.
+
+## NOM-MOVIMIENTOS-GESTION-INTEGRAL-01
+
+`Movimientos de remuneración` es el menú único para gestionar movimientos mensuales y recurrentes por trabajador. La pantalla mantiene la grilla de trabajadores como entrada principal y usa un modal de gestión del trabajador con tres secciones: movimientos del mes, recurrentes y pendientes de revisión.
+
+El alta mensual y el alta recurrente son formularios separados. El modal mensual registra solo movimientos puntuales del período activo. El modal recurrente registra o edita asignaciones recurrentes y concentra la futura sección de cuotas. No se agregan tablas, SQL, motor ni payloads nuevos.

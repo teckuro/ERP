@@ -1,3 +1,23 @@
+## NOM-MOVIMIENTOS-GESTION-INTEGRAL-01 - Gestión integral por trabajador
+
+| Campo | Estado |
+|---|---|
+| Estado | Implementada |
+| Tipo | UX/UI local + documentación |
+| Alcance | `Movimientos de remuneración` opera como menú único para movimientos del mes y recurrentes por trabajador, con modal de gestión y formularios separados. |
+| Entrega | Grilla por trabajador, detalle contextual de movimientos/recurrentes/revisión, alta mensual puntual, alta/edición/finalización recurrente dentro de la misma pantalla. |
+| Restricciones | Sin SQL/RPC/RLS, sin motor, sin liquidaciones productivas, sin persistencia crítica, sin payloads nuevos, sin estilos globales y sin tests nuevos. |
+| Documento | [../modulos/remuneraciones/movimientos-remuneracion-simple.md](../modulos/remuneraciones/movimientos-remuneracion-simple.md) |
+
+## NOM-MOVIMIENTOS-MODAL-MENSUAL-UX-01 - Modal mensual compacto
+
+| Campo | Estado |
+|---|---|
+| Estado | Implementada |
+| Tipo | UX/UI local |
+| Alcance | Pulido del modal `Registrar movimiento del mes`: estructura vertical compacta, resumen inferior, copy con acentos y detalle administrativo secundario. |
+| Restricciones | Sin SQL/RPC/RLS, sin motor, sin liquidaciones, sin persistencia critica, sin payloads productivos y sin estilos globales. |
+| Documento | [../modulos/remuneraciones/movimientos-remuneracion-simple.md](../modulos/remuneraciones/movimientos-remuneracion-simple.md) |
 ## NOM-MOVIMIENTOS-SIMPLE-00 - Movimientos de remuneracion
 
 | Campo | Estado |

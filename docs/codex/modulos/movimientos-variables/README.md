@@ -6,6 +6,8 @@ Definir el modulo de **movimientos variables mensuales**: haberes o descuentos *
 
 > REM-MOV-UNIFY-01: `movimientos-variables` queda como nombre tecnico legacy/deuda historica. El flujo visible principal para RRHH es **Movimientos del mes** en `/remuneraciones/novedades-mensuales`.
 
+> NOM-MOVIMIENTOS-MODAL-MENSUAL-UX-01: el modal mensual solo registra movimientos puntuales del periodo activo. No configura duracion, recurrentes ni cuotas; esas decisiones pertenecen al flujo recurrente.
+
 ## Que es un movimiento variable mensual
 
 Registro puntual asociado a **trabajador + concepto + periodo** (`YYYY-MM`), con monto o valor y estado operativo. No se repite en meses siguientes salvo nuevo registro o importacion.
@@ -122,3 +124,9 @@ La ruta visible mensual queda presentada como vista `Este mes` dentro de `Movimi
 ## NOM-MOVIMIENTOS-POR-TRABAJADOR-01
 
 La mesa visible de Movimientos prioriza trabajadores del periodo. Movimientos variables/mensuales quedan representados como `Mov. mes` dentro de la fila del trabajador, sin cambiar persistencia legacy ni motor.
+
+## NOM-MOVIMIENTOS-GESTION-INTEGRAL-01
+
+La pantalla `Movimientos de remuneración` queda como menú único por trabajador, pero mantiene separados los flujos. Los movimientos mensuales se registran como puntuales del período activo y no muestran recurrentes ni cuotas en su formulario.
+
+Los recurrentes se administran en el mismo menú con un formulario propio. Las cuotas se tratan como parte del flujo recurrente, no como un tipo principal de movimiento mensual.

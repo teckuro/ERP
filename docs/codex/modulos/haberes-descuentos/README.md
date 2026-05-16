@@ -36,3 +36,9 @@ La pantalla `/remuneraciones/haberes-descuentos` queda comunicada como vista `Re
 ## NOM-MOVIMIENTOS-POR-TRABAJADOR-01
 
 Recurrentes queda como flujo separado dentro de Movimientos de remuneracion. Desde la gestion por trabajador se navega a `Recurrentes` con la persona seleccionada. Las cuotas se tratan como variante del recurrente, no como opcion del modal mensual.
+
+## NOM-MOVIMIENTOS-GESTION-INTEGRAL-01
+
+Recurrentes se gestiona desde `Movimientos de remuneración` cuando el usuario trabaja por trabajador. La pantalla mensual puede crear, editar y finalizar asignaciones recurrentes usando los servicios existentes de Haberes y descuentos, sin cambiar la persistencia ni el contrato técnico del módulo.
+
+La ruta `/remuneraciones/haberes-descuentos` se conserva como mantenedor técnico/operativo de recurrentes, pero el flujo principal de RRHH para un trabajador parte desde `Movimientos de remuneración`. Las cuotas pertenecen al flujo recurrente y no al formulario mensual puntual.

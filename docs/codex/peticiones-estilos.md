@@ -4,6 +4,15 @@
 - Antes de usar card, evaluar franja operativa, registro de bitacora, panel dividido, linea de estado, lista de revision, bloque editorial, tabla contextual, disclosure o MessageBox.
 - Una card solo corresponde si el bloque representa entidad, resumen, decision, resultado agrupado o ficha/expediente acotado.
 
+## 2026-05-16 - NOM-MOVIMIENTOS-GESTION-INTEGRAL-01
+
+- **Movimientos de remuneración:** la pantalla queda como menú único de gestión de movimientos del mes y recurrentes.
+- **Patrón:** la grilla por trabajador sigue siendo la entrada principal; `Gestionar` abre el contexto del trabajador antes de cualquier formulario.
+- **Modales:** el modal del trabajador separa `Movimientos del mes`, `Recurrentes` y `Pendientes de revisión`; los formularios de movimiento mensual y recurrente son modales distintos.
+- **Recurrentes:** se gestionan dentro de la pantalla con alta/edición/finalización usando capacidades existentes. Las acciones sin soporte real quedan no disponibles.
+- **Cuotas:** aparecen solo dentro del formulario recurrente como sección preparada, nunca dentro del modal mensual.
+- **Restricciones:** sin estilos globales, sin SQL/RPC/RLS, sin motor, sin persistencia crítica y sin tests nuevos.
+
 ## 2026-05-15 - NOM-MOVIMIENTOS-SIMPLE-00
 
 - **Remuneraciones:** fase documental para unificar conceptualmente `Movimientos del mes` y `Asignaciones recurrentes` bajo `Movimientos de remuneracion`.
@@ -974,3 +983,19 @@ Creación avanzada incorpora una identidad de producto local para dejar de senti
 - **Flujos:** movimiento mensual y recurrente quedan separados; cuotas pertenece al recurrente.
 - **Correccion:** el modal mensual ya no incluye duracion, recurrente ni cuotas.
 - **Restricciones:** sin estilos globales, SQL/RPC/RLS, motor, liquidaciones, persistencia critica, rutas nuevas ni payloads productivos.
+
+## 2026-05-16 - NOM-MOVIMIENTOS-POR-TRABAJADOR-02
+
+- **Sin tabbar principal:** `Movimientos de remuneracion` entra directo a la vista mensual del periodo activo; no mostrar `Este mes | Recurrentes | Todos` ni una pestana unica.
+- **Pagina principal:** lo que antes era `Este mes` queda como contenido base: franja operativa, guia, filtros y grilla de trabajadores.
+- **Detalle:** los contadores abren informacion util por trabajador: monto, estado, origen, fecha, referencia, observacion y acciones permitidas.
+- **Recurrentes:** se revisan desde el detalle del trabajador y la gestion nueva navega al flujo real de haberes/descuentos con `persona` en query params.
+- **Criterio NOIA:** evitar apariencia generica; ordenar por decision operativa y no por acumulacion de tabs, cards o explicaciones largas.
+
+## 2026-05-16 - NOM-MOVIMIENTOS-MODAL-MENSUAL-UX-01
+
+- **Modal mensual:** `Registrar movimiento del mes` queda compacto y enfocado en trabajador, concepto, tipo, monto, fecha de referencia y detalle administrativo opcional.
+- **Resumen:** se elimina la columna lateral `Antes de guardar`; el resumen queda como bloque inferior antes del footer.
+- **Alcance:** el modal solo registra movimientos puntuales del periodo activo. No muestra duracion, recurrentes ni cuotas.
+- **Cuotas:** permanecen dentro del flujo recurrente; no deben aparecer como accion o configuracion del modal mensual.
+- **Copy:** se corrigen acentos visibles principales y el sidebar deja de presentar cuotas como flujo principal.

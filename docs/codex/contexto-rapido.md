@@ -1,33 +1,34 @@
-# Contexto rápido ERP Remuneraciones Chile
+# Contexto rÃ¡pido ERP Remuneraciones Chile
 
 Fecha base: 2026-05-15
 
-Este archivo es un resumen operativo corto para iniciar tareas en Cursor/Codex sin cargar todo el historial del proyecto. No reemplaza la documentación completa: apunta a los documentos que mandan.
+Este archivo es un resumen operativo corto para iniciar tareas en Cursor/Codex sin cargar todo el historial del proyecto. No reemplaza la documentaciÃ³n completa: apunta a los documentos que mandan.
 
 ## 1. Fuente de verdad
 
-Antes de modificar, leer según alcance:
+Antes de modificar, leer segÃºn alcance:
 
 1. `docs/codex/AGENTS.md`
 2. `docs/codex/README.md`
 3. `docs/codex/orquestador/estado-fases.md`
 4. `docs/codex/peticiones-estilos.md`
-5. Documento del módulo o fase bajo `docs/codex/modulos/` o `docs/codex/diseno/`
-6. Contratos del módulo y archivos reales del ZIP actual
+5. Documento del mÃ³dulo o fase bajo `docs/codex/modulos/` o `docs/codex/diseno/`
+6. Contratos del mÃ³dulo y archivos reales del ZIP actual
 
-La memoria o resúmenes externos solo sirven como apoyo. Si contradicen el ZIP o `docs/codex`, gana el proyecto.
+La memoria o resÃºmenes externos solo sirven como apoyo. Si contradicen el ZIP o `docs/codex`, gana el proyecto.
 
-## 2. Stack y alcance técnico
+## 2. Stack y alcance tÃ©cnico
 
 - Frontend: Angular standalone.
 - Backend: Supabase/PostgreSQL.
 - Dominio: remuneraciones Chile.
-- Diseño: UI clara para RRHH, trazable, guiada por estado y acción.
-- Arquitectura preferida: por features, con componentes reutilizables y contenedores por módulo.
+- DiseÃ±o: UI clara para RRHH, trazable, guiada por estado y acciÃ³n.
+- Arquitectura preferida: por features, con componentes reutilizables y contenedores por mÃ³dulo.
+- Movimientos de remuneraciÃ³n: la pantalla principal parte desde trabajadores del perÃ­odo. Es el menÃº Ãºnico para gestionar movimientos del mes y recurrentes, pero con formularios separados. El modal mensual solo registra un movimiento puntual del perÃ­odo activo; no incluye duraciÃ³n, recurrentes ni cuotas. Las cuotas pertenecen al flujo recurrente.
 
 ## 3. Archivos y zonas protegidas
 
-No tocar salvo fase explícita:
+No tocar salvo fase explÃ­cita:
 
 - `angular.json`
 - `postcss.config.*`
@@ -38,12 +39,12 @@ No tocar salvo fase explícita:
 - `src/styles/fonts.css`
 - `src/styles/theme.css`
 - SQL/RPC/RLS/BD
-- motor de cálculo
-- nómina productiva
+- motor de cÃ¡lculo
+- nÃ³mina productiva
 - liquidaciones productivas
-- servicios de negocio, mappers, payloads o persistencia crítica
+- servicios de negocio, mappers, payloads o persistencia crÃ­tica
 
-Si una fase es visual, no debe cambiar contratos de datos, `formControlName`, guardado, servicios ni rutas sin autorización explícita.
+Si una fase es visual, no debe cambiar contratos de datos, `formControlName`, guardado, servicios ni rutas sin autorizaciÃ³n explÃ­cita.
 
 ## 4. Identidad visual actual
 
@@ -51,45 +52,45 @@ Si una fase es visual, no debe cambiar contratos de datos, `formControlName`, gu
 
 `NOIA = No parecer IA`.
 
-La interfaz debe evitar apariencia genérica, decorativa o tipo plantilla. Cada pantalla debe responder:
+La interfaz debe evitar apariencia genÃ©rica, decorativa o tipo plantilla. Cada pantalla debe responder:
 
-- qué está pasando;
-- qué falta;
-- qué está listo;
-- qué no aplica;
-- qué acción sigue;
-- qué queda trazado.
+- quÃ© estÃ¡ pasando;
+- quÃ© falta;
+- quÃ© estÃ¡ listo;
+- quÃ© no aplica;
+- quÃ© acciÃ³n sigue;
+- quÃ© queda trazado.
 
-### Bitácora Operativa
+### BitÃ¡cora Operativa
 
-El ERP se entiende como una bitácora operativa del periodo: registrar, revisar, preparar y cerrar remuneraciones con trazabilidad.
+El ERP se entiende como una bitÃ¡cora operativa del periodo: registrar, revisar, preparar y cerrar remuneraciones con trazabilidad.
 
-### Bitácora Laboral
+### BitÃ¡cora Laboral
 
-En Creación avanzada de empleados, el alta se comunica como `Bitácora laboral`: ficha en construcción, registros agrupados, decisiones visibles, pendientes claros y cierre como acta.
+En CreaciÃ³n avanzada de empleados, el alta se comunica como `BitÃ¡cora laboral`: ficha en construcciÃ³n, registros agrupados, decisiones visibles, pendientes claros y cierre como acta.
 
-## 5. Reglas visuales rápidas
+## 5. Reglas visuales rÃ¡pidas
 
 Evitar:
 
 - `border-left` fuerte como marcador visual;
 - gradientes decorativos;
 - sombras fuertes;
-- cards repetidas sin jerarquía;
+- cards repetidas sin jerarquÃ­a;
 - botones azules para todo;
 - badges excesivos;
-- texto técnico visible para RRHH;
-- pantallas largas sin acción principal clara.
+- texto tÃ©cnico visible para RRHH;
+- pantallas largas sin acciÃ³n principal clara.
 
 Preferir:
 
 - bordes completos y neutros;
-- fondos suaves funcionales para info/alerta/error/éxito;
+- fondos suaves funcionales para info/alerta/error/Ã©xito;
 - densidad compacta;
-- una acción principal por zona;
+- una acciÃ³n principal por zona;
 - lenguaje administrativo claro;
-- empty states con causa y acción;
-- tablas con filtros sobrios y selección sin barras laterales fuertes.
+- empty states con causa y acciÃ³n;
+- tablas con filtros sobrios y selecciÃ³n sin barras laterales fuertes.
 
 ## Decision de maquetacion NOIA
 
@@ -102,7 +103,7 @@ Orden: ordenar, reducir, jerarquizar, reusar patrones existentes y crear solo si
 
 ### `ERP-NOIA-BITACORA-OPERATIVA-00`
 
-Fase documental. Define `NOIA / Bitácora Operativa` en `docs/codex/diseno/bitacora-operativa-noia.md`.
+Fase documental. Define `NOIA / BitÃ¡cora Operativa` en `docs/codex/diseno/bitacora-operativa-noia.md`.
 
 ### `ERP-SHELL-BITACORA-OPERATIVA-01`
 
@@ -110,7 +111,7 @@ Aplica identidad al shell y componentes base: header, sidebar, cards, botones, b
 
 ### `EMP-ADV-BITACORA-LABORAL-UX-01`
 
-Creación avanzada adopta `Bitácora laboral` como identidad local del flujo.
+CreaciÃ³n avanzada adopta `BitÃ¡cora laboral` como identidad local del flujo.
 
 ### `EMP-ADV-CSS-BUDGET-REDUCE-01`
 
@@ -122,23 +123,23 @@ Parametros funciona como cierre normativo del periodo: muestra estado operativo,
 
 ## 7. Decisiones de producto vigentes
 
-- `Movimientos del mes` y `Asignaciones recurrentes` deben evolucionar a una experiencia unificada visible: `Movimientos de remuneración`.
+- `Movimientos del mes` y `Asignaciones recurrentes` deben evolucionar a una experiencia unificada visible: `Movimientos de remuneraciÃ³n`.
 - La diferencia real es temporal:
   - `Del periodo`: impacto puntual del periodo.
   - `Recurrentes`: impacto vigente o repetible.
-- `Conceptos de remuneración` se mantiene separado como catálogo maestro.
-- `tipo_trabajador` es categoría base derivada:
+- `Conceptos de remuneraciÃ³n` se mantiene separado como catÃ¡logo maestro.
+- `tipo_trabajador` es categorÃ­a base derivada:
   - `CONTRATO` -> `DEPENDIENTE`
   - `HONORARIOS` -> `INDEPENDIENTE`
 - Condiciones especiales se manejan como condiciones separadas, no como variantes de `tipo_trabajador`.
 
 ## 8. Validaciones recomendadas por tipo de fase
 
-### Documentación / reglas / scripts auxiliares
+### DocumentaciÃ³n / reglas / scripts auxiliares
 
 - Verificar existencia de archivos nuevos.
 - Verificar enlaces o referencias agregadas.
-- No requiere build Angular si no se tocó `src/`.
+- No requiere build Angular si no se tocÃ³ `src/`.
 
 ### UI Angular / componentes
 
@@ -146,16 +147,16 @@ Parametros funciona como cierre normativo del periodo: muestra estado operativo,
 - `npx tsc -p tsconfig.app.json --noEmit`
 - `npx tsc -p tsconfig.spec.json --noEmit`
 - `npx ng build --configuration development`
-- Tests unitarios específicos si existen.
+- Tests unitarios especÃ­ficos si existen.
 
 ### Productivo
 
 - `npm run build`
-- Si falla, distinguir entre error nuevo y deuda preexistente. No subir budgets sin fase explícita.
+- Si falla, distinguir entre error nuevo y deuda preexistente. No subir budgets sin fase explÃ­cita.
 
-## 9. Cómo pedir a Codex con menos tokens
+## 9. CÃ³mo pedir a Codex con menos tokens
 
-Usar un MD de fase con esta estructura mínima:
+Usar un MD de fase con esta estructura mÃ­nima:
 
 ```md
 # FASE-ID - Nombre
@@ -168,7 +169,7 @@ Leer antes:
 - docs/codex/AGENTS.md
 - docs/codex/orquestador/estado-fases.md
 - docs/codex/peticiones-estilos.md
-- docs/codex/<módulo-o-fase>.md
+- docs/codex/<mÃ³dulo-o-fase>.md
 
 Tocar solo:
 - ...
@@ -188,7 +189,7 @@ Respuesta esperada:
 
 ## 10. Uso de context pack
 
-Para tareas acotadas, generar un paquete pequeño con:
+Para tareas acotadas, generar un paquete pequeÃ±o con:
 
 ```powershell
 ./scripts/build-context-pack.ps1 -IncludeEmpleadoAdvanced
@@ -200,7 +201,7 @@ O pasar archivos puntuales:
 ./scripts/build-context-pack.ps1 -ExtraFiles "src/app/features/empleados/pages/form-empleado/form-empleado.css","docs/codex/modulos/empleados/creacion-avanzada.md"
 ```
 
-El context pack no reemplaza el ZIP completo para ejecución final, pero reduce tokens en diagnóstico, revisión y planificación.
+El context pack no reemplaza el ZIP completo para ejecuciÃ³n final, pero reduce tokens en diagnÃ³stico, revisiÃ³n y planificaciÃ³n.
 
 ### `PARAM-CLIENT-CONFIG-SEPARATION-AUDIT-01`
 
