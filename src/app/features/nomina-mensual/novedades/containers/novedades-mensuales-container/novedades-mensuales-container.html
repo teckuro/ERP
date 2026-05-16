@@ -307,7 +307,7 @@
     </ng-template>
     <ng-template appDataGridCell="movimientosMes" let-row>
       @if (row.movimientosMes > 0) {
-        <button type="button" class="nm-count-info" [attr.aria-label]="'Ver movimientos del mes de ' + row.trabajador" (click)="abrirDetalleTrabajador(row, 'mes')">
+        <button type="button" class="nm-count-info" [attr.aria-label]="'Ver movimientos del mes de ' + row.trabajador" (click)="abrirDetalleTrabajador(row, 'mensual')">
           {{ row.movimientosMes }} movimientos
         </button>
       } @else {
@@ -316,7 +316,7 @@
     </ng-template>
     <ng-template appDataGridCell="recurrentes" let-row>
       @if (row.recurrentes > 0) {
-        <button type="button" class="nm-count-info" [attr.aria-label]="'Ver recurrentes de ' + row.trabajador" (click)="abrirDetalleTrabajador(row, 'recurrentes')">
+        <button type="button" class="nm-count-info" [attr.aria-label]="'Ver recurrentes de ' + row.trabajador" (click)="abrirDetalleTrabajador(row, 'recurrente')">
           {{ row.recurrentes }} recurrentes
         </button>
       } @else {
@@ -325,7 +325,7 @@
     </ng-template>
     <ng-template appDataGridCell="revisar" let-row>
       @if (row.revisar > 0) {
-        <button type="button" class="nm-count-info nm-count-info--warn" [attr.aria-label]="'Ver revisiones de ' + row.trabajador" (click)="abrirDetalleTrabajador(row, 'revisar')">
+        <button type="button" class="nm-count-info nm-count-info--warn" [attr.aria-label]="'Ver revisiones de ' + row.trabajador" (click)="abrirDetalleTrabajador(row, 'revision')">
           {{ row.revisar }} revisión
         </button>
       } @else {
@@ -336,7 +336,7 @@
       <span class="nm-worker-status">{{ row.estado }}</span>
     </ng-template>
     <ng-template appDataGridCell="acciones" let-row>
-      <app-button variant="outline" size="sm" className="nm-grid-action" [attr.aria-label]="'Abrir gestion de movimientos de ' + row.trabajador" [attr.title]="'Abrir gestion de movimientos de ' + row.trabajador" (click)="abrirDetalleTrabajador(row, 'gestion')">
+      <app-button variant="outline" size="sm" className="nm-grid-action" [attr.aria-label]="'Abrir gestion de movimientos de ' + row.trabajador" [attr.title]="'Abrir gestion de movimientos de ' + row.trabajador" (click)="abrirDetalleTrabajador(row, 'todos')">
         {{ row.movimientosMes || row.recurrentes ? 'Gestionar' : 'Asignar' }}
       </app-button>
     </ng-template>
@@ -350,17 +350,7 @@
       <section class="nm-worker-modal" role="dialog" aria-modal="true" aria-labelledby="nm-worker-modal-title">
         <header class="nm-modal-header">
           <div>
-            <h2 id="nm-worker-modal-title">
-              @if (detalle.tipo === 'mes') {
-                Movimientos del mes
-              } @else if (detalle.tipo === 'recurrentes') {
-                Movimientos recurrentes
-              } @else if (detalle.tipo === 'revisar') {
-                Movimientos por revisar
-              } @else {
-                Gestionar movimientos
-              }
-            </h2>
+            <h2 id="nm-worker-modal-title">Gestionar movimientos</h2>
             <p><strong>{{ detalle.row.trabajador }}</strong> · {{ detalle.row.rut }}</p>
             <p>Periodo {{ periodoActivo.etiqueta() }} · {{ detalle.row.contrato }}</p>
           </div>
@@ -377,8 +367,7 @@
             <span>Revisar <strong>{{ detalle.row.revisar }}</strong></span>
           </div>
 
-          @if (detalle.tipo === 'gestion') {
-            <section class="nm-detail-section nm-grid-section nm-gestion-unificada">
+          <section class="nm-detail-section nm-grid-section nm-gestion-unificada">
               <div class="nm-detail-section-head">
                 <h3>Movimientos del trabajador</h3>
                 <span>
@@ -387,19 +376,34 @@
                     · {{ detalle.row.revisar }} por revisar
                   }
                 </span>
-              </div>
-              <app-data-grid
-                title="Movimientos del trabajador"
-                [rows]="filasGestionUnificada(detalle.row.idPersona)"
-                [columns]="gestionUnificadaColumns"
-                [filtersEnabled]="false"
-                [showExportAction]="false"
-                [selectable]="false"
-                [trackBy]="trackGestionUnificada"
-                gridHeight="min(26rem, calc(100vh - 14rem))"
-                emptyTitle="Sin movimientos registrados"
-                emptyDescription="Agrega un movimiento del mes o un recurrente para este trabajador."
-              >
+            </div>
+            <div class="nm-gestion-filtros" role="toolbar" aria-label="Filtrar movimientos del trabajador">
+              @for (filtro of filtrosGestion; track filtro) {
+                @if (mostrarFiltroGestion(filtro, detalle.row)) {
+                  <app-button
+                    variant="outline"
+                    size="sm"
+                    [className]="detalle.filtro === filtro ? 'nm-gestion-filtro nm-gestion-filtro--active' : 'nm-gestion-filtro'"
+                    [attr.aria-pressed]="detalle.filtro === filtro"
+                    (click)="cambiarFiltroGestion(filtro)"
+                  >
+                    {{ etiquetaFiltroGestion(filtro) }}
+                  </app-button>
+                }
+              }
+            </div>
+            <app-data-grid
+              title="Movimientos del trabajador"
+              [rows]="filasGestionUnificada(detalle.row.idPersona, detalle.filtro)"
+              [columns]="gestionUnificadaColumns"
+              [filtersEnabled]="false"
+              [showExportAction]="false"
+              [selectable]="false"
+              [trackBy]="trackGestionUnificada"
+              gridHeight="min(26rem, calc(100vh - 14rem))"
+              [emptyTitle]="emptyGestionTitulo(detalle.filtro)"
+              [emptyDescription]="emptyGestionDescripcion(detalle.filtro)"
+            >
                 <ng-template appDataGridCell="ambito" let-row>
                   <span [class]="claseAmbitoGestion(row.ambito)">{{ row.ambitoEtiqueta }}</span>
                 </ng-template>
@@ -413,6 +417,7 @@
                   <span class="nm-grid-muted">{{ row.detalle }}</span>
                 </ng-template>
                 <ng-template appDataGridCell="acciones" let-row>
+                  @if (tieneAccionesGestionUnificada(row)) {
                   <div class="nm-actions">
                     @if (row.novedad; as novedad) {
                       @if (puedeEditar(novedad)) {
@@ -432,75 +437,28 @@
                       @if (puedeEditarRecurrente(recurrente)) {
                         <app-button variant="outline" size="sm" className="nm-detail-action" (click)="editarRecurrenteDesdeDetalle(recurrente)">Editar</app-button>
                       }
-                      <app-button variant="outline" size="sm" className="nm-detail-action" [disabled]="true" [attr.title]="recurrenteAccionNoDisponible()">Pausar</app-button>
                       @if (puedeFinalizarRecurrente(recurrente)) {
                         <app-button variant="outline" size="sm" className="nm-detail-action" (click)="pedirFinalizarRecurrente(recurrente)">Finalizar</app-button>
                       }
                     }
                   </div>
+                  } @else {
+                  <span class="nm-grid-muted">Sin acciones</span>
+                  }
                 </ng-template>
               </app-data-grid>
-            </section>
-          } @else if (detalle.tipo === 'recurrentes') {
-            <app-data-grid
-              title="Recurrentes del período"
-              [rows]="recurrentesTrabajador(detalle.row.idPersona)"
-              [columns]="recurrentesInfoColumns"
-              [filtersEnabled]="false"
-              [showExportAction]="false"
-              [selectable]="false"
-              [trackBy]="trackRecurrenteDetalle"
-              gridHeight="22rem"
-              emptyTitle="Sin recurrentes vigentes"
-              emptyDescription="Este trabajador no tiene recurrentes que impacten el período."
-            >
-              <ng-template appDataGridCell="concepto" let-row><strong>{{ row.asignacion.nombreConcepto }}</strong></ng-template>
-              <ng-template appDataGridCell="tipo" let-row>{{ row.asignacion.tipoConcepto || 'Concepto' }}</ng-template>
-              <ng-template appDataGridCell="monto" let-row>{{ montoRecurrenteEtiqueta(row) }}</ng-template>
-              <ng-template appDataGridCell="vigencia" let-row>{{ vigenciaRecurrenteEtiqueta(row) }}</ng-template>
-              <ng-template appDataGridCell="estado" let-row>
-                <span class="nm-chip nm-chip--ok">{{ row.asignacion.estadoVigenciaEtiqueta || row.estadoVigencia }}</span>
-              </ng-template>
-              <ng-template appDataGridCell="impacto" let-row>{{ impactoRecurrenteEtiqueta(row) }}</ng-template>
-            </app-data-grid>
-          } @else {
-            <app-data-grid
-              [title]="detalle.tipo === 'revisar' ? 'Movimientos por revisar' : 'Movimientos del mes'"
-              [rows]="movimientosDetalleTrabajador(detalle.row.idPersona, detalle.tipo)"
-              [columns]="movimientosInfoColumns"
-              [filtersEnabled]="false"
-              [showExportAction]="false"
-              [selectable]="false"
-              [trackBy]="trackNovedadDetalle"
-              gridHeight="22rem"
-              emptyTitle="Sin movimientos"
-              emptyDescription="No hay movimientos para esta vista del trabajador."
-            >
-              <ng-template appDataGridCell="estado" let-row>
-                <span [class]="claseEstado(row.estado)">{{ row.estadoEtiqueta }}</span>
-              </ng-template>
-              <ng-template appDataGridCell="ultimaAccion" let-row>
-                <span class="nm-grid-muted">{{ ultimaAccionMovimiento(row) }}</span>
-              </ng-template>
-            </app-data-grid>
-          }
-
+          </section>
 
         </div>
 
         <footer class="nm-modal-footer">
-          <app-button variant="outline" size="md" (click)="cerrarDetalleTrabajador()">
-            Cerrar
+          <app-button variant="outline" size="md" (click)="abrirRecurrenteParaTrabajador(detalle.row)">
+            Agregar recurrente
           </app-button>
-          @if (detalle.tipo === 'gestion') {
-            <app-button variant="outline" size="md" (click)="abrirRecurrenteParaTrabajador(detalle.row)">
-              Agregar recurrente
-            </app-button>
-            <app-button variant="primary" size="md" (click)="abrirNuevoParaTrabajador(detalle.row)">
-              <lucide-icon icon class="w-4 h-4" [img]="plusIcon"></lucide-icon>
-              Agregar movimiento del mes
-            </app-button>
-          }
+          <app-button variant="primary" size="md" (click)="abrirNuevoParaTrabajador(detalle.row)">
+            <lucide-icon icon class="w-4 h-4" [img]="plusIcon"></lucide-icon>
+            Agregar movimiento del mes
+          </app-button>
         </footer>
       </section>
     </div>

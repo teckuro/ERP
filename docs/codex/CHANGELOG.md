@@ -1,4 +1,18 @@
 # CHANGELOG
+
+## DOCS-CODEX-MERGE-PRUNE-QUALITY-01
+
+Fecha: 2026-05-16
+
+- Se eliminaron respaldos `.bak` del repo activo (carpeta `archivo/backups/` ya ausente).
+- Se eliminaron assets antiguos pesados ya archivados (`archivo/assets-antiguos/` ya ausente).
+- Se eliminaron duplicados raíz de prevalidaciones tras confirmar fuentes modulares en `modulos/nomina-mensual/`.
+- Se migraron escenarios útiles de tests raíz a documentos modulares (`modulos/empleados/tests-empleados.md`, `modulos/parametros/tests-parametros.md`).
+- Se corrigieron referencias internas afectadas por la poda (flujos `empleados`/`parametros`, `plan-pruebas`, índices).
+- Se actualizó el mapa de documentación y la regla de lectura para Cursor.
+- Se crearon `modulos/remuneraciones/README.md` y `movimientos-de-remuneracion.md` como punto de entrada del producto.
+- No se tocó `src/`, `bd/`, Angular, SQL, motor, servicios ni estilos globales.
+
 ## NOM-MOVIMIENTOS-GESTION-INTEGRAL-01 - Gestión mensual y recurrente por trabajador
 
 Fecha: 2026-05-16

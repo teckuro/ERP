@@ -1,5 +1,7 @@
 # NOM-MOVIMIENTOS-SIMPLE-00 - Movimientos de remuneracion
 
+Punto de entrada del producto (menú, rutas, lectura operativa): [`movimientos-de-remuneracion.md`](./movimientos-de-remuneracion.md).
+
 Fecha: 2026-05-15
 
 Tipo: decision funcional/UX documental. No modifica Angular, SQL, rutas, motor, servicios productivos ni calculo de nomina.

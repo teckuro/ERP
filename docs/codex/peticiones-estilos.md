@@ -1,9 +1,9 @@
 ## 2026-05-16 - NOM-MOVIMIENTOS-GESTION-TABLA-UNICA-01
 
-- **Modal Gestionar:** una sola grilla unifica movimientos del mes y recurrentes del trabajador, con columna **Ámbito** y acciones según tipo.
-- **Contadores del modal:** resumen en cabecera de sección (del mes, recurrentes, por revisar); sin tres tablas separadas.
-- **Vistas filtradas** (contadores mes/recurrentes/revisar): mantienen tabla dedicada al abrir desde la grilla principal.
-- **Archivos:** `novedades-mensuales-container.{html,ts,css}`.
+- **Modal Gestionar:** una sola grilla unifica movimientos del mes y recurrentes, con columna **Ámbito**, filtros locales (`Todos`, `Del mes`, `Recurrentes`, `Por revisar`) y acciones solo cuando aplican.
+- **Grilla principal:** los contadores (mes, recurrentes, revisión) abren el mismo modal con filtro preseleccionado; sin grillas duplicadas ni botón **Cerrar** redundante en el pie (cierre por X y backdrop).
+- **Acciones:** se oculta **Pausar** (no implementado) y la columna muestra «Sin acciones» si no hay CTA válida.
+- **Archivos:** `novedades-mensuales-container.{html,ts,css,spec.ts}`.
 - **Restricciones:** sin estilos globales, SQL, motor, servicios ni payloads.
 
 ## 2026-05-16 - NOM-MOVIMIENTOS-RECURRENTES-PARITY-01

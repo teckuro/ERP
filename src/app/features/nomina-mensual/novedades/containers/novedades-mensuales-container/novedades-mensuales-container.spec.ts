@@ -456,7 +456,8 @@ describe('NovedadesMensualesContainer', () => {
     buttons.find((button) => button.textContent?.includes('1 movimientos'))?.click();
     fixture.detectChanges();
 
-    expect(fixture.nativeElement.textContent).toContain('Movimientos del mes');
+    expect(fixture.nativeElement.textContent).toContain('Gestionar movimientos');
+    expect(fixture.nativeElement.textContent).toContain('Del mes');
     expect(fixture.nativeElement.textContent).toContain('Bono puntual (BONO)');
   });
 
@@ -525,6 +526,45 @@ describe('NovedadesMensualesContainer', () => {
 
   it('novedad anulada no muestra accion aprobar', () => {
     expect(component.puedeAprobar(novedad({ estado: 'anulada' }))).toBe(false);
+  });
+
+  it('filtra filas unificadas por ambito y revision', async () => {
+    service.listarNovedadesPeriodo.mockResolvedValue([
+      novedad({ idNovedad: 1, estado: 'pendiente_revision' }),
+      novedad({ idNovedad: 2, estado: 'aprobada' }),
+    ]);
+    haberesDescuentosService.listarAsignacionesParaPrevalidacionMensual.mockResolvedValue([
+      {
+        asignacion: {
+          idAsignacion: 50,
+          idPersona: 10,
+          idConcepto: 20,
+          idContrato: 100,
+          nombreConcepto: 'Bono fijo',
+          tipoConcepto: 'HABER',
+          tipoValor: 'FIJO',
+          monto: 50000,
+          porcentaje: null,
+          periodicidad: 'MENSUAL',
+          vigenciaInicio: '2026-05-01',
+          vigenciaFin: null,
+          observacion: null,
+          estado: true,
+          estadoVigenciaEtiqueta: 'Activa',
+        },
+        intersectaPeriodo: true,
+        estadoVigencia: 'ACTIVA',
+      },
+    ]);
+
+    fixture.detectChanges();
+    await esperarCargaInicial(fixture);
+
+    const row = component.trabajadoresMovimientos()[0];
+    component.abrirDetalleTrabajador(row, 'revision');
+    expect(component.filasGestionUnificada(row.idPersona, 'revision')).toHaveLength(1);
+    expect(component.filasGestionUnificada(row.idPersona, 'recurrente')).toHaveLength(1);
+    expect(component.filasGestionUnificada(row.idPersona, 'todos')).toHaveLength(3);
   });
 
   it('errores del service muestran mensaje contextual', async () => {

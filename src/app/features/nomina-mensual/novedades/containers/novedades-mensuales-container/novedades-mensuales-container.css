@@ -561,6 +561,19 @@
   color: #6d28d9;
 }
 
+.nm-gestion-filtros {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin: 0 0 0.5rem;
+}
+
+.nm-gestion-filtro--active {
+  border-color: #93c5fd;
+  background: #eff6ff;
+  color: #1d4ed8;
+}
+
 .nm-gestion-unificada :host ::ng-deep app-data-grid,
 .nm-gestion-unificada app-data-grid {
   display: block;

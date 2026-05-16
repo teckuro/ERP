@@ -46,8 +46,24 @@ Para fases acotadas o diagnóstico rápido, partir por [`contexto-rapido.md`](./co
 | Conceptos remuneración | [`modulos/conceptos-remuneracion/README.md`](./modulos/conceptos-remuneracion/README.md) (diagnóstico + [`contrato-funcional.md`](./modulos/conceptos-remuneracion/contrato-funcional.md)) |
 | Haberes y descuentos | [`modulos/haberes-descuentos/README.md`](./modulos/haberes-descuentos/README.md) |
 | Movimientos variables (mensuales) | [`modulos/movimientos-variables/README.md`](./modulos/movimientos-variables/README.md) |
-| Remuneraciones - movimientos unificados | [`modulos/remuneraciones/movimientos-remuneracion-simple.md`](./modulos/remuneraciones/movimientos-remuneracion-simple.md) |
+| Remuneraciones (punto de entrada) | [`modulos/remuneraciones/README.md`](./modulos/remuneraciones/README.md) |
+| Movimientos de remuneración (producto) | [`modulos/remuneraciones/movimientos-de-remuneracion.md`](./modulos/remuneraciones/movimientos-de-remuneracion.md) |
+| Remuneraciones — fases y decisión | [`modulos/remuneraciones/movimientos-remuneracion-simple.md`](./modulos/remuneraciones/movimientos-remuneracion-simple.md) |
 | Nómina mensual (visión) | [`modulos/nomina-mensual/README.md`](./modulos/nomina-mensual/README.md) |
+
+---
+
+## Poda documental
+
+`docs/codex` mantiene solo documentación activa, modular, histórica mínima y context-packs (cuando existan).
+
+Se eliminaron del repo activo:
+
+- respaldos `.bak`;
+- assets antiguos pesados en `archivo/assets-antiguos/`;
+- duplicados raíz reemplazados por documentos modulares (prevalidaciones 9.5A/9.5B, planes de prueba por módulo).
+
+La documentación histórica mínima se conserva en [`archivo/fases-cerradas/`](./archivo/fases-cerradas/). No usar [`archivo/`](./archivo/README.md) como fuente principal de contratos.
 
 ---
 

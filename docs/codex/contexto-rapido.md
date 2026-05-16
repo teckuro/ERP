@@ -17,6 +17,18 @@ Antes de modificar, leer según alcance:
 
 La memoria o resúmenes externos solo sirven como apoyo. Si contradicen el ZIP o `docs/codex`, gana el proyecto.
 
+## Regla documental vigente
+
+Para nuevas fases:
+
+1. Leer `docs/codex/contexto-rapido.md`.
+2. Leer el `context-pack` correspondiente (cuando exista bajo `docs/codex/context-packs/`).
+3. Leer el documento vivo del módulo en `docs/codex/modulos/<módulo>/`.
+4. Revisar archivos reales de la base actual.
+5. No usar `docs/codex/archivo/` como fuente principal.
+
+No existen respaldos `.bak` activos en `docs/codex`. Los assets antiguos pesados fueron eliminados del repo activo; la referencia visual activa de parámetros es `docs/codex/assets/parametros-tabs/`.
+
 ## 2. Stack y alcance técnico
 
 - Frontend: Angular standalone.

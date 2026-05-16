@@ -1,3 +1,14 @@
+## DOCS-CODEX-MERGE-PRUNE-QUALITY-01
+
+| Campo | Estado |
+|---|---|
+| Estado | Ejecutada |
+| Tipo | Documentación / poda |
+| Objetivo | Reducir peso y ruido de `docs/codex` eliminando respaldos, assets antiguos y duplicados raíz, manteniendo documentos vivos y trazabilidad mínima. |
+| Entrega | Duplicados raíz eliminados; tests y prevalidaciones solo en `modulos/`; índices y flujos actualizados; entrada `movimientos-de-remuneracion.md`. |
+| Restricciones | Sin cambios en `src/`, `bd/`, Angular, SQL, motor, servicios, mappers, payloads ni estilos globales. |
+| Documento | [`../CHANGELOG.md`](../CHANGELOG.md) (entrada DOCS-CODEX-MERGE-PRUNE-QUALITY-01) |
+
 ## NOM-MOVIMIENTOS-GESTION-INTEGRAL-01 - Gestión integral por trabajador
 
 | Campo | Estado |

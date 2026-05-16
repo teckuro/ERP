@@ -18,6 +18,18 @@
 | [`estado-fases.md`](./estado-fases.md)                                             | Tablero de fases                                                                       |
 | **Este archivo**                                                                   | Inventario: global / por módulo / vigente / histórico / reemplazado                    |
 
+### Lectura rápida por tarea
+
+| Tarea | Leer primero |
+|---|---|
+| UI general NOIA | `context-packs/ui-noia.md` (cuando exista) + [`../diseno/bitacora-operativa-noia.md`](../diseno/bitacora-operativa-noia.md) |
+| Remuneraciones | `context-packs/remuneraciones.md` (cuando exista) + [`../modulos/remuneraciones/README.md`](../modulos/remuneraciones/README.md) |
+| Movimientos | [`../modulos/remuneraciones/movimientos-de-remuneracion.md`](../modulos/remuneraciones/movimientos-de-remuneracion.md) |
+| Empleados | `context-packs/empleados.md` (cuando exista) + [`../modulos/empleados/README.md`](../modulos/empleados/README.md) |
+| Parámetros | `context-packs/parametros.md` (cuando exista) + [`../modulos/parametros/README.md`](../modulos/parametros/README.md) |
+
+**Regla:** no usar [`../archivo/`](../archivo/README.md) como fuente principal. No hay respaldos `.bak` en `docs/codex`. Assets activos: [`../assets/parametros-tabs/`](../assets/parametros-tabs/).
+
 ## 2. Por módulo (`docs/codex/modulos/`)
 
 | Módulo                            | README                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
@@ -28,6 +40,7 @@
 | Haberes y descuentos              | [`../modulos/haberes-descuentos/README.md`](../modulos/haberes-descuentos/README.md) — rutas oficiales bajo `/remuneraciones/*` (Fase 9.3B.1 en [`estado-fases.md`](./estado-fases.md))                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
 | Movimientos variables (mensuales) | [`../modulos/movimientos-variables/README.md`](../modulos/movimientos-variables/README.md) — contrato 9.4A; modelo TS/reglas 9.4B en [`modelo-tecnico-9-4B.md`](../modulos/movimientos-variables/modelo-tecnico-9-4B.md); persistencia 9.4C en [`persistencia-9-4C.md`](../modulos/movimientos-variables/persistencia-9-4C.md); service 9.4D en [`service-9-4D.md`](../modulos/movimientos-variables/service-9-4D.md); UI carga manual 9.4E en [`ui-9-4E.md`](../modulos/movimientos-variables/ui-9-4E.md); endurecimiento CHILE-FIX-01 en [`hardening-chile-fix-01.md`](../modulos/movimientos-variables/hardening-chile-fix-01.md); tablero [`estado-fases.md`](./estado-fases.md) |
 | Nómina mensual / proceso mensual  | [`../modulos/nomina-mensual/README.md`](../modulos/nomina-mensual/README.md) — [`contrato-general.md`](../modulos/nomina-mensual/contrato-general.md), [`prevalidaciones-9-5A.md`](../modulos/nomina-mensual/prevalidaciones-9-5A.md), [`prevalidaciones-9-5B.md`](../modulos/nomina-mensual/prevalidaciones-9-5B.md)                                                                                                                                                                                                                                                                                                                                                                |
+| Remuneraciones (movimientos)      | [`../modulos/remuneraciones/README.md`](../modulos/remuneraciones/README.md) — [`movimientos-de-remuneracion.md`](../modulos/remuneraciones/movimientos-de-remuneracion.md), [`movimientos-remuneracion-simple.md`](../modulos/remuneraciones/movimientos-remuneracion-simple.md)                                                                                                                                                                                                                                                                                                                                                                                                      |
 
 ## 3. Vigentes en `temas/` (transversal o no migrado)
 

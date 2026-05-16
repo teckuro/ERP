@@ -101,7 +101,12 @@ type TrabajadorMovimientoRow = {
   busqueda: string;
 };
 
-type TrabajadorDetalleTipo = 'gestion' | 'mes' | 'recurrentes' | 'revisar';
+type GestionFiltro = 'todos' | 'mensual' | 'recurrente' | 'revision';
+
+type TrabajadorDetalleState = {
+  row: TrabajadorMovimientoRow;
+  filtro: GestionFiltro;
+};
 
 type MovimientoGestionUnificadoRow = {
   rowId: string;
@@ -260,7 +265,7 @@ export class NovedadesMensualesContainer implements OnInit, OnDestroy {
   readonly contratosPersona = signal<ContratoResumenPersona[]>([]);
   readonly filas = signal<NovedadGridRow[]>([]);
   readonly recurrentesPeriodo = signal<HaberDescuentoAsignacionPrevalidacionMensualFila[]>([]);
-  readonly trabajadorDetalle = signal<{ tipo: TrabajadorDetalleTipo; row: TrabajadorMovimientoRow } | null>(null);
+  readonly trabajadorDetalle = signal<TrabajadorDetalleState | null>(null);
   readonly formAbierto = signal(false);
   readonly recurrenteFormAbierto = signal(false);
   readonly recurrenteGuardando = signal(false);
@@ -706,6 +711,7 @@ export class NovedadesMensualesContainer implements OnInit, OnDestroy {
   readonly trackNovedadDetalle = (_index: number, row: NovedadGridRow): number => row.idNovedad;
   readonly trackRecurrenteDetalle = (_index: number, row: RecurrenteDetalleRow): number => row.asignacion.idAsignacion;
   readonly trackGestionUnificada = (_index: number, row: MovimientoGestionUnificadoRow): string => row.rowId;
+  readonly filtrosGestion: GestionFiltro[] = ['todos', 'mensual', 'recurrente', 'revision'];
 
 
   constructor() {
@@ -802,12 +808,50 @@ export class NovedadesMensualesContainer implements OnInit, OnDestroy {
     void this.onTrabajadorChange(row.idPersona);
   }
 
-  abrirDetalleTrabajador(row: TrabajadorMovimientoRow, tipo: TrabajadorDetalleTipo): void {
-    this.trabajadorDetalle.set({ row, tipo });
+  abrirDetalleTrabajador(row: TrabajadorMovimientoRow, filtro: GestionFiltro = 'todos'): void {
+    this.trabajadorDetalle.set({ row, filtro });
+  }
+
+  cambiarFiltroGestion(filtro: GestionFiltro): void {
+    const detalle = this.trabajadorDetalle();
+    if (!detalle) {
+      return;
+    }
+    this.trabajadorDetalle.set({ ...detalle, filtro });
   }
 
   cerrarDetalleTrabajador(): void {
     this.trabajadorDetalle.set(null);
+  }
+
+  gestionFiltroActivo(): GestionFiltro {
+    return this.trabajadorDetalle()?.filtro ?? 'todos';
+  }
+
+  etiquetaFiltroGestion(filtro: GestionFiltro): string {
+    switch (filtro) {
+      case 'mensual':
+        return 'Del mes';
+      case 'recurrente':
+        return 'Recurrentes';
+      case 'revision':
+        return 'Por revisar';
+      default:
+        return 'Todos';
+    }
+  }
+
+  mostrarFiltroGestion(filtro: GestionFiltro, row: TrabajadorMovimientoRow): boolean {
+    switch (filtro) {
+      case 'mensual':
+        return row.movimientosMes > 0;
+      case 'recurrente':
+        return row.recurrentes > 0;
+      case 'revision':
+        return row.revisar > 0;
+      default:
+        return true;
+    }
   }
 
   abrirRecurrenteParaTrabajador(
@@ -834,7 +878,7 @@ export class NovedadesMensualesContainer implements OnInit, OnDestroy {
   }
 
   verRecurrentesTrabajador(row: TrabajadorMovimientoRow): void {
-    this.trabajadorDetalle.set({ row, tipo: 'recurrentes' });
+    this.abrirDetalleTrabajador(row, 'recurrente');
   }
 
   private abrirFormularioCon(form: NovedadForm): void {
@@ -1153,11 +1197,7 @@ export class NovedadesMensualesContainer implements OnInit, OnDestroy {
     return this.movimientosMesTrabajador(idPersona).filter((fila) => fila.estado === 'pendiente_revision');
   }
 
-  movimientosDetalleTrabajador(idPersona: number, tipo: TrabajadorDetalleTipo): NovedadGridRow[] {
-    return tipo === 'revisar' ? this.movimientosRevisionTrabajador(idPersona) : this.movimientosMesTrabajador(idPersona);
-  }
-
-  filasGestionUnificada(idPersona: number): MovimientoGestionUnificadoRow[] {
+  filasGestionUnificada(idPersona: number, filtro?: GestionFiltro): MovimientoGestionUnificadoRow[] {
     const mensual: MovimientoGestionUnificadoRow[] = this.movimientosMesTrabajador(idPersona).map((row) => ({
       rowId: `mes-${row.idNovedad}`,
       ambito: 'mensual',
@@ -1188,12 +1228,67 @@ export class NovedadesMensualesContainer implements OnInit, OnDestroy {
       recurrente: item,
     }));
 
-    return [...mensual, ...recurrente].sort((a, b) => {
+    const ordenadas = [...mensual, ...recurrente].sort((a, b) => {
       if (a.ambito !== b.ambito) {
         return a.ambito === 'mensual' ? -1 : 1;
       }
       return a.concepto.localeCompare(b.concepto, 'es');
     });
+
+    const activo = filtro ?? this.trabajadorDetalle()?.filtro ?? 'todos';
+    switch (activo) {
+      case 'mensual':
+        return ordenadas.filter((fila) => fila.ambito === 'mensual');
+      case 'recurrente':
+        return ordenadas.filter((fila) => fila.ambito === 'recurrente');
+      case 'revision':
+        return ordenadas.filter((fila) => fila.novedad?.estado === 'pendiente_revision');
+      default:
+        return ordenadas;
+    }
+  }
+
+  emptyGestionTitulo(filtro: GestionFiltro): string {
+    switch (filtro) {
+      case 'mensual':
+        return 'Sin movimientos del mes';
+      case 'recurrente':
+        return 'Sin recurrentes vigentes';
+      case 'revision':
+        return 'Sin movimientos por revisar';
+      default:
+        return 'Sin movimientos registrados';
+    }
+  }
+
+  emptyGestionDescripcion(filtro: GestionFiltro): string {
+    switch (filtro) {
+      case 'mensual':
+        return 'Agrega un movimiento del mes para este trabajador.';
+      case 'recurrente':
+        return 'Registra un recurrente que impacte el período activo.';
+      case 'revision':
+        return 'No hay movimientos pendientes de revisión en este filtro.';
+      default:
+        return 'Agrega un movimiento del mes o un recurrente para este trabajador.';
+    }
+  }
+
+  tieneAccionesGestionUnificada(row: MovimientoGestionUnificadoRow): boolean {
+    if (row.novedad) {
+      const novedad = row.novedad;
+      return (
+        this.puedeEditar(novedad) ||
+        this.puedeEnviarRevision(novedad) ||
+        this.puedeAprobar(novedad) ||
+        this.puedeRechazar(novedad)
+      );
+    }
+    if (row.recurrente) {
+      const recurrente = row.recurrente;
+      return this.puedeEditarRecurrente(recurrente) || this.puedeFinalizarRecurrente(recurrente);
+    }
+    return false;
   }
 
   claseAmbitoGestion(ambito: MovimientoGestionUnificadoRow['ambito']): string {
@@ -1298,10 +1393,6 @@ export class NovedadesMensualesContainer implements OnInit, OnDestroy {
 
   puedeFinalizarRecurrente(item: HaberDescuentoAsignacionPrevalidacionMensualFila): boolean {
     return item.estadoVigencia === 'ACTIVA' || item.estadoVigencia === 'FUTURA';
-  }
-
-  recurrenteAccionNoDisponible(): string {
-    return 'No disponible con el modelo actual';
   }
 
   claseEstado(estado: NovedadMensualEstado): string {
