@@ -181,7 +181,7 @@ interface ParametrosDialogState {
             } @else {
               <app-page-actions
                 [visibleActions]="['edit']"
-                editLabel="Modificar"
+                [editLabel]="accionConfigClienteLabel()"
                 [editTooltip]="modificarTooltipConsulta()"
                 [editDisabled]="modificarDeshabilitado()"
                 (editClick)="editarParametros()"
@@ -251,6 +251,19 @@ interface ParametrosDialogState {
             <p class="period-mensual__detail parametros-period-status-detail">{{ periodoEstadoDetalle() }}</p>
           </div>
         </div>
+        <section class="param-bitacora-summary" aria-label="Lectura normativa del periodo">
+          <div class="param-bitacora-summary__main">
+            <span class="param-eyebrow">Registro normativo</span>
+            <h1>ParÃ¡metros del periodo</h1>
+            <p>Datos oficiales y configuraciÃ³n cliente para {{ periodoSeleccionadoLabel() }}.</p>
+          </div>
+
+          <div class="param-bitacora-summary__status">
+            <span>AcciÃ³n recomendada</span>
+            <strong>{{ periodoEstadoChip() }}</strong>
+            <p>{{ accionConfigClienteHint() }}</p>
+          </div>
+        </section>
           </div>
 
       <div class="parametros-content parametros-panel">
@@ -299,12 +312,20 @@ interface ParametrosDialogState {
               [attr.aria-current]="activeTab() === tab.id ? 'page' : null"
               (click)="seleccionarTab(tab.id)"
             >
-              <span>{{ tab.label }}</span>
+              <span>{{ tabLabel(tab.id) }}</span>
             </button>
           }
         </nav>
 
         <div class="parametros-tab-body" role="region" aria-label="Contenido de la sección">
+        <header class="param-record-header" aria-label="Contexto de la seccion activa">
+          <div>
+            <span class="param-eyebrow">{{ activeRecordKind() }}</span>
+            <h2>{{ activeRecordTitle() }}</h2>
+            <p>{{ activeRecordDetail() }}</p>
+          </div>
+        </header>
+
         @switch (activeTab()) {
           @case ('configCliente') {
             <app-parametros-config-cliente-tab
@@ -592,10 +613,88 @@ interface ParametrosDialogState {
 
       .parametros-viewhead {
         display: grid;
-        gap: 6px;
-        padding: 0 0 8px;
+        gap: 8px;
+        padding: 0 0 10px;
         border-radius: 8px;
-        background: linear-gradient(to bottom, #f9fafb 0%, #f9fafb 88%, #f3f4f6 100%);
+        background: #f9fafb;
+      }
+
+      .param-eyebrow {
+        display: inline-flex;
+        color: #64748b;
+        font-size: 0.66rem;
+        font-weight: 750;
+        line-height: 1.15;
+        text-transform: uppercase;
+      }
+
+      .param-bitacora-summary {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(18rem, 24rem);
+        gap: 10px;
+        align-items: stretch;
+        border: 1px solid #d7dee8;
+        border-radius: 8px;
+        background: #ffffff;
+        padding: 10px;
+      }
+
+      .param-bitacora-summary__main,
+      .param-bitacora-summary__status {
+        display: grid;
+        align-content: center;
+        min-width: 0;
+      }
+
+      .param-bitacora-summary__main {
+        gap: 3px;
+      }
+
+      .param-bitacora-summary__main h1 {
+        margin: 0;
+        color: #111827;
+        font-size: 1rem;
+        font-weight: 760;
+        line-height: 1.18;
+      }
+
+      .param-bitacora-summary__main p,
+      .param-bitacora-summary__status p,
+      .param-record-header p {
+        margin: 0;
+        color: #64748b;
+        font-size: 0.72rem;
+        font-weight: 560;
+        line-height: 1.35;
+      }
+
+      .param-bitacora-summary__status {
+        gap: 3px;
+        border: 1px solid #e2e8f0;
+        border-radius: 7px;
+        background: #f8fafc;
+        padding: 8px 10px;
+      }
+
+      .param-bitacora-summary__status span {
+        color: #64748b;
+        font-size: 0.66rem;
+        font-weight: 750;
+        line-height: 1.15;
+        text-transform: uppercase;
+      }
+
+      .param-bitacora-summary__status strong {
+        color: #111827;
+        font-size: 0.82rem;
+        font-weight: 760;
+        line-height: 1.2;
+      }
+
+      @media (max-width: 900px) {
+        .param-bitacora-summary {
+          grid-template-columns: 1fr;
+        }
       }
 
       .parametros-toolbar {
@@ -652,6 +751,10 @@ interface ParametrosDialogState {
 
       .parametros-toolbar app-button {
         white-space: nowrap;
+      }
+
+      .parametros-toolbar__end app-page-actions {
+        --erp-action-button-min-width: 0;
       }
 
       .param-subhead {
@@ -754,8 +857,8 @@ interface ParametrosDialogState {
         overflow-x: auto;
         border-bottom: 1px solid var(--prm-line, #e5e7eb);
         background: #fafaf7;
-        padding: 6px 8px 0;
-        gap: 3px;
+        padding: 5px 6px 0;
+        gap: 2px;
         z-index: 10;
         overscroll-behavior-x: contain;
         scrollbar-width: none;
@@ -773,8 +876,8 @@ interface ParametrosDialogState {
       .folder-tab {
         position: relative;
         display: inline-flex;
-        min-width: 116px;
-        min-height: 32px;
+        min-width: 102px;
+        min-height: 28px;
         flex: 0 0 auto;
         align-items: center;
         justify-content: center;
@@ -783,10 +886,10 @@ interface ParametrosDialogState {
         border-bottom-color: #dbe2ea;
         border-radius: 8px 8px 0 0;
         background: #ffffff;
-        padding: 0 10px 1px;
+        padding: 0 9px 1px;
         color: #475569;
         cursor: pointer;
-        font-size: 0.78rem;
+        font-size: 0.74rem;
         font-weight: 600;
         line-height: 1.15;
         text-align: center;
@@ -826,7 +929,7 @@ interface ParametrosDialogState {
         }
 
         .folder-tab {
-          min-width: 116px;
+          min-width: 102px;
           font-size: 0.76rem;
           padding: 0 10px;
         }
@@ -845,6 +948,25 @@ interface ParametrosDialogState {
       .folder-tab--active::before {
         background: var(--prm-blue, #2563eb);
         transform: scale(1.08);
+      }
+
+      .parametros-page .param-record-header {
+        flex: 0 0 auto;
+        display: grid;
+        min-width: 0;
+        gap: 3px;
+        border-bottom: 1px solid #e5e7eb;
+        background: #ffffff;
+        padding: 8px 10px;
+        overflow: visible;
+      }
+
+      .parametros-page .param-record-header h2 {
+        margin: 0;
+        color: #111827;
+        font-size: 0.86rem;
+        font-weight: 740;
+        line-height: 1.2;
       }
 
       .parametros-page .tab-panel {
@@ -1543,12 +1665,13 @@ interface ParametrosDialogState {
       }
 
       .parametros-page .catalog-section app-data-grid .data-grid-filter-panel {
-        padding: 10px 14px !important;
+        gap: 6px !important;
+        padding: 7px 10px !important;
         border-color: #dbe2ea !important;
       }
 
       .parametros-page .catalog-section app-data-grid .data-grid-footer {
-        padding: 10px 14px !important;
+        padding: 7px 10px !important;
       }
 
       .parametros-page .catalog-section app-data-grid .data-grid-scroll {
@@ -1643,7 +1766,7 @@ export class ParametrosPage implements OnInit {
 
   readonly breadcrumbItems: readonly RecordBreadcrumbItem[] = [{ label: 'Parámetros' }];
   readonly tabs: readonly ParametrosTab[] = [
-    { id: 'configCliente', label: 'Config. cliente' },
+    { id: 'configCliente', label: 'Cliente' },
     { id: 'valores', label: 'Información de Valores' },
     { id: 'remuneraciones', label: 'Información de Remuneraciones' },
     { id: 'ccafMutual', label: 'CCAF y Mutual' },
@@ -1751,8 +1874,45 @@ export class ParametrosPage implements OnInit {
     return 'Guardar';
   });
 
+  readonly accionConfigClienteLabel = computed(() => {
+    if (this.isPreparingEdit() || this.isPreparandoDialogoCrear()) {
+      return 'Preparando...';
+    }
+    return this.clienteConfig() ? 'Modificar configuracion' : 'Configurar cliente';
+  });
+
+  readonly accionConfigClienteHint = computed(() => {
+    if (this.clienteConfig()) {
+      return 'La configuracion cliente queda separada de los datos oficiales del periodo.';
+    }
+    return 'Crea la configuracion cliente del periodo sin reemplazar el snapshot oficial.';
+  });
+
   volverParametrosAction(): void {
     this.volverParametros();
+  }
+
+  tabLabel(tabId: ParametrosTabId): string {
+    switch (tabId) {
+      case 'configCliente':
+        return 'Cliente';
+      case 'valores':
+        return 'Valores';
+      case 'remuneraciones':
+        return 'Remuneraciones';
+      case 'ccafMutual':
+        return 'CCAF / Mutual';
+      case 'tramosCarga':
+        return 'Cargas';
+      case 'impuestoUnico':
+        return 'Impuesto';
+      case 'salud':
+        return 'Salud';
+      case 'prevision':
+        return 'Prevision';
+      case 'reforma':
+        return 'Reforma';
+    }
   }
 
   /** Aísla filtros/paginación del DataGrid por periodo al cambiar el selector. */
@@ -1927,6 +2087,70 @@ export class ParametrosPage implements OnInit {
       case 'pendiente':
       default:
         return 'period-chip--warning';
+    }
+  });
+
+  readonly activeRecordKind = computed(() => {
+    switch (this.activeTab()) {
+      case 'configCliente':
+        return 'Configuracion cliente';
+      case 'valores':
+      case 'remuneraciones':
+        return 'Datos oficiales';
+      default:
+        return 'Registro normativo';
+    }
+  });
+
+  readonly activeRecordTitle = computed(() => {
+    switch (this.activeTab()) {
+      case 'configCliente':
+        return 'Configuracion cliente del periodo';
+      case 'valores':
+        return 'Valores oficiales del periodo';
+      case 'remuneraciones':
+        return 'Parametros remuneracionales';
+      case 'ccafMutual':
+        return 'CCAF, mutuales y Ley 16.744';
+      case 'tramosCarga':
+        return 'Tramos de cargas familiares';
+      case 'impuestoUnico':
+        return 'Impuesto unico de segunda categoria';
+      case 'salud':
+        return 'Instituciones de salud';
+      case 'prevision':
+        return 'Prevision y AFP';
+      case 'reforma':
+        return 'Reforma previsional y registros asociados';
+    }
+  });
+
+  readonly activeRecordDetail = computed(() => {
+    switch (this.activeTab()) {
+      case 'configCliente':
+        return this.clienteConfig()
+          ? `Valores propios de la empresa para ${this.periodoSeleccionadoLabel()}. No modifican el snapshot oficial.`
+          : `Falta crear configuracion cliente para ${this.periodoSeleccionadoLabel()}.`;
+      case 'valores':
+        return this.hasSelectedInRows()
+          ? 'Valores cargados desde la fuente mensual y usados como referencia normativa.'
+          : 'Sin carga oficial del periodo; la vista puede mostrar referencia anterior o configuracion cliente.';
+      case 'remuneraciones':
+        return this.hasSelectedInRows()
+          ? 'Montos, topes y porcentajes aplicables al periodo seleccionado.'
+          : 'Datos mensuales pendientes; la configuracion cliente se mantiene separada.';
+      case 'ccafMutual':
+        return `${this.catalogos().ccafEntidades.length + this.catalogos().organismosLey16744.length + this.catalogos().ley16744Parametros.length} registros consultables para ${this.periodoSeleccionadoLabel()}.`;
+      case 'tramosCarga':
+        return `${this.tramosCargaPorPeriodo().length} registros aplicables al periodo seleccionado.`;
+      case 'impuestoUnico':
+        return `${this.tramosImpuestoPorPeriodo().length + this.tablaImpuestoPorPeriodo().length} registros de tramos y tabla vigentes.`;
+      case 'salud':
+        return `${this.isapresPorPeriodo().length + this.saludOtrasInstitucionesPorPeriodo().length} instituciones consultables.`;
+      case 'prevision':
+        return `${this.afpPorPeriodo().length} registros previsionales consultables.`;
+      case 'reforma':
+        return `${this.reformaPensionesPorPeriodo().length + this.reformaPrevisionalPorPeriodo().length + this.trabajosPesadosPorPeriodo().length} registros normativos asociados.`;
     }
   });
 

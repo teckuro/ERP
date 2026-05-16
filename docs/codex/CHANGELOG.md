@@ -1,4 +1,15 @@
 # CHANGELOG
+## PARAM-BITACORA-LAYOUT-ALIGN-01 - Parametros alineado a Bitacora Operativa
+
+Fecha: 2026-05-15
+
+- Se ordena visualmente la pantalla Parametros para alinearla al patron `Bitacora Operativa / NOIA`.
+- La cabecera del periodo refuerza la lectura normativa: periodo, estado mensual, detalle operativo y accion recomendada.
+- Se ajusta la lectura visual de tabs principales como navegacion normativa compacta, sin cambiar su logica.
+- Se agrega contexto local de la seccion activa y se reduce el peso visual de filtros del DataGrid.
+- `Configurar cliente` queda conectado al estado del periodo y `Modificar configuracion` se mantiene asociado a configuracion cliente, no a datos oficiales.
+- No se crea flujo nuevo, no se cambia reconciliacion oficial/cliente, no se toca Python, wrapper, SQL, servicios, motor, nomina, liquidaciones ni estilos globales protegidos.
+
 ## ERP-CONTEXT-OPTIMIZATION-01 - Contexto liviano para Cursor/Codex
 
 Fecha: 2026-05-15

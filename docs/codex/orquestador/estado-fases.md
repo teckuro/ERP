@@ -607,3 +607,13 @@ Restricciones:
 - Sin motor.
 - Sin nomina/liquidaciones.
 - Sin estilos globales protegidos.
+## PARAM-BITACORA-LAYOUT-ALIGN-01
+
+| Campo | Estado |
+|---|---|
+| Estado | Ejecutada |
+| Tipo | UX/UI local de layout |
+| Objetivo | Ordenar la pantalla Parametros para coincidir visualmente con `Bitacora Operativa / NOIA`, manteniendo intacto el funcionamiento oficial/cliente. |
+| Alcance | Cabecera del periodo, estado mensual, accion configurar cliente, tabs principales, contexto de seccion activa, filtros DataGrid y CSS local de Parametros. |
+| Restricciones | Sin SQL/RPC/RLS, Python, wrapper, motor, nomina/liquidaciones, servicios/repositorios, reconciliacion nueva ni estilos globales protegidos. |
+| Documento | [`../diseno/param-bitacora-layout-align-01.md`](../diseno/param-bitacora-layout-align-01.md) |

@@ -1,3 +1,10 @@
+## 2026-05-15 - PARAM-BITACORA-LAYOUT-ALIGN-01
+
+- **Parametros:** la pantalla se ordena como bitacora normativa del periodo, reforzando cabecera, estado mensual y accion recomendada.
+- **Tabs:** labels principales mas compactos como navegacion normativa; la logica de tabs no cambia.
+- **Registro activo:** se agrega contexto humano corto para la seccion visible y los filtros del DataGrid quedan con menor peso visual.
+- **Separacion oficial/cliente:** `Configurar cliente` y `Modificar configuracion` se comunican como configuracion cliente; los datos oficiales siguen siendo lectura/referencia.
+- **Restricciones:** sin estilos globales, sin budgets, sin SQL/RPC/RLS, sin Python, sin wrapper, sin servicios/repositorios y sin reconciliacion nueva.
 
 ## 2026-05-15 - ERP-TABS-NOIA-UX-01
 
