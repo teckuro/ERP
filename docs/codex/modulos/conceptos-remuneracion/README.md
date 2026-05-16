@@ -61,3 +61,7 @@ Esta fase no cambia rutas, servicios, SQL, motor ni pantallas actuales.
 ## NOM-MOVIMIENTOS-SIMPLE-01
 
 La capa visible de movimientos no cambia el catalogo maestro. `Conceptos de remuneracion` sigue separado: define conceptos; `Movimientos de remuneracion` aplica conceptos a trabajadores y periodos.
+
+## NOM-MOVIMIENTOS-POR-TRABAJADOR-01
+
+Conceptos se mantiene como catalogo maestro. La gestion por trabajador usa conceptos existentes para movimientos mensuales o recurrentes, sin mezclar catalogo con aplicacion concreta del movimiento.

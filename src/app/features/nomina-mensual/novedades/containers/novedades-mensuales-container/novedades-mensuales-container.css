@@ -326,71 +326,6 @@
   margin-top: 0.55rem;
 }
 
-.nm-duration-grid {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 0.5rem;
-}
-
-.nm-duration-card {
-  position: relative;
-  display: flex;
-  min-height: 5.2rem;
-  cursor: pointer;
-  flex-direction: column;
-  gap: 0.25rem;
-  border: 1px solid #e5e7eb;
-  border-radius: 8px;
-  background: #ffffff;
-  color: #475569;
-  padding: 0.65rem;
-  transition:
-    border-color 140ms ease,
-    background-color 140ms ease;
-}
-
-.nm-duration-card input {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  opacity: 0;
-  pointer-events: none;
-}
-
-.nm-duration-card:hover,
-.nm-duration-card.is-active {
-  border-color: #93c5fd;
-  background: #eff6ff;
-}
-
-.nm-duration-title {
-  color: #0f172a;
-  font-size: 0.78rem;
-  font-weight: 700;
-  line-height: 1.25;
-}
-
-.nm-duration-desc {
-  color: #64748b;
-  font-size: var(--nm-text-xs);
-  line-height: 1.35;
-}
-
-.nm-duration-note {
-  margin: 0.55rem 0 0;
-  border: 1px solid #e2e8f0;
-  border-radius: 6px;
-  background: #f8fafc;
-  color: #475569;
-  font-size: var(--nm-text-sm);
-  line-height: 1.4;
-  padding: 0.55rem 0.65rem;
-}
-
-.nm-duration-config {
-  margin-top: 0.55rem;
-}
-
 .nm-field {
   min-width: 0;
 }
@@ -401,6 +336,134 @@
 
 .nm-action-observation > label {
   width: min(24rem, 100%);
+}
+
+.nm-worker-cell strong,
+.nm-worker-cell span {
+  display: block;
+}
+
+.nm-worker-cell strong {
+  color: #0f172a;
+  font-weight: 700;
+}
+
+.nm-worker-cell span {
+  margin-top: 0.08rem;
+  color: #64748b;
+  font-size: var(--nm-text-xs);
+}
+
+.nm-count-link,
+.nm-count-zero,
+.nm-worker-status {
+  display: inline-flex;
+  align-items: center;
+  min-height: 1.55rem;
+  border-radius: 999px;
+  padding: 0 0.5rem;
+  font-size: var(--nm-text-xs);
+  font-weight: 700;
+  line-height: 1;
+}
+
+.nm-count-link {
+  border: 1px solid #bfdbfe;
+  background: #eff6ff;
+  color: #1d4ed8;
+  cursor: pointer;
+}
+
+.nm-count-link:hover {
+  border-color: #93c5fd;
+  background: #dbeafe;
+}
+
+.nm-count-link--warn {
+  border-color: #fde68a;
+  background: #fffbeb;
+  color: #b45309;
+}
+
+.nm-count-zero {
+  border: 1px solid #e5e7eb;
+  background: #f8fafc;
+  color: #94a3b8;
+}
+
+.nm-worker-status {
+  border: 1px solid #dbe2ea;
+  background: #ffffff;
+  color: #334155;
+}
+
+.nm-worker-modal {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  width: min(860px, calc(100vw - 32px));
+  max-height: calc(100dvh - 48px);
+  overflow: hidden;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  background: #ffffff;
+  box-shadow: 0 24px 56px rgba(15, 23, 42, 0.22);
+}
+
+.nm-worker-resume {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.nm-worker-resume span {
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  background: #f8fafc;
+  color: #64748b;
+  font-size: var(--nm-text-xs);
+  padding: 0.45rem 0.55rem;
+}
+
+.nm-worker-resume strong {
+  display: block;
+  margin-top: 0.1rem;
+  color: #0f172a;
+  font-size: 0.82rem;
+}
+
+.nm-detail-list {
+  display: grid;
+  gap: 0.45rem;
+}
+
+.nm-detail-row {
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  background: #ffffff;
+  padding: 0.55rem 0.65rem;
+}
+
+.nm-detail-row strong {
+  display: block;
+  color: #0f172a;
+  font-size: 0.82rem;
+}
+
+.nm-detail-row span,
+.nm-detail-empty {
+  color: #64748b;
+  font-size: var(--nm-text-sm);
+}
+
+.nm-detail-empty {
+  margin: 0;
+  border: 1px dashed #cbd5e1;
+  border-radius: 6px;
+  background: #f8fafc;
+  padding: 0.75rem;
 }
 
 .nm-chip {
@@ -685,7 +748,6 @@ body:has(.nm-modal-root) {
 @media (max-width: 720px) {
   .nm-context-grid,
   .nm-form-grid,
-  .nm-duration-grid,
   :host ::ng-deep .data-grid-filter-grid {
     grid-template-columns: 1fr !important;
   }
@@ -720,8 +782,7 @@ body:has(.nm-modal-root) {
 }
 
 @media (max-width: 980px) and (min-width: 721px) {
-  .nm-form-grid,
-  .nm-duration-grid {
+  .nm-form-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 

@@ -118,3 +118,7 @@ Esta fase no cambia rutas, servicios, SQL, motor ni pantallas actuales.
 ## NOM-MOVIMIENTOS-SIMPLE-01
 
 La ruta visible mensual queda presentada como vista `Este mes` dentro de `Movimientos de remuneracion`. `movimientos-variables` sigue siendo nombre tecnico legacy y no se migra persistencia ni servicio.
+
+## NOM-MOVIMIENTOS-POR-TRABAJADOR-01
+
+La mesa visible de Movimientos prioriza trabajadores del periodo. Movimientos variables/mensuales quedan representados como `Mov. mes` dentro de la fila del trabajador, sin cambiar persistencia legacy ni motor.

@@ -45,6 +45,7 @@ import { EmpleadosService } from '../../../../empleados/services/empleados.servi
 import type {
   ConceptoListado,
   ContratoResumenPersona,
+  HaberDescuentoAsignacionPrevalidacionMensualFila,
 } from '../../../../haberes-descuentos/models/haber-descuento-asignacion.model';
 import { HaberesDescuentosService } from '../../../../haberes-descuentos/services/haberes-descuentos.service';
 import {
@@ -84,7 +85,20 @@ type NovedadGridRow = NovedadMensual & {
   busqueda: string;
 };
 
-type DuracionMovimiento = 'solo_mes' | 'recurrente' | 'cuotas';
+type TrabajadorMovimientoRow = {
+  idPersona: number;
+  trabajador: string;
+  rut: string;
+  cargo: string;
+  contrato: string;
+  movimientosMes: number;
+  recurrentes: number;
+  revisar: number;
+  estado: 'Listo' | 'Sin movimientos' | 'Revisar' | 'Incompleto';
+  busqueda: string;
+};
+
+type TrabajadorDetalleTipo = 'gestion' | 'mes' | 'recurrentes' | 'revisar';
 
 type NovedadForm = {
   periodo: string;
@@ -99,12 +113,6 @@ type NovedadForm = {
   moneda: string;
   origen: NovedadMensualOrigen;
   fechaEvento: string;
-  duracionMovimiento: DuracionMovimiento;
-  periodoInicio: string;
-  periodoTermino: string;
-  cantidadCuotas: number | null;
-  montoCuota: number | null;
-  cuotaInicial: number | null;
   observacion: string;
   referenciaExterna: string;
 };
@@ -151,28 +159,6 @@ const TIPO_MOVIMIENTO_LABELS: Record<NovedadMensualTipoMovimiento, string> = {
   informativo: 'Informativo',
 };
 
-const DURACION_MOVIMIENTO_OPTIONS: readonly {
-  id: DuracionMovimiento;
-  label: string;
-  description: string;
-}[] = [
-  {
-    id: 'solo_mes',
-    label: 'Solo este mes',
-    description: 'Se aplica unicamente al periodo activo.',
-  },
-  {
-    id: 'recurrente',
-    label: 'Recurrente',
-    description: 'Se repite todos los meses hasta que sea pausado o finalizado.',
-  },
-  {
-    id: 'cuotas',
-    label: 'En cuotas',
-    description: 'Para prestamos, anticipos, reintegros o descuentos pactados en varios meses.',
-  },
-];
-
 function formInicial(periodo: string): NovedadForm {
   return {
     periodo,
@@ -187,12 +173,6 @@ function formInicial(periodo: string): NovedadForm {
     moneda: 'CLP',
     origen: 'manual',
     fechaEvento: '',
-    duracionMovimiento: 'solo_mes',
-    periodoInicio: periodo,
-    periodoTermino: '',
-    cantidadCuotas: null,
-    montoCuota: null,
-    cuotaInicial: 1,
     observacion: '',
     referenciaExterna: '',
   };
@@ -241,7 +221,6 @@ export class NovedadesMensualesContainer implements OnInit, OnDestroy {
   readonly categorias = NOVEDAD_MENSUAL_CATEGORIAS;
   readonly origenes = NOVEDAD_MENSUAL_ORIGENES;
   readonly tiposMovimiento = NOVEDAD_MENSUAL_TIPOS_MOVIMIENTO;
-  readonly duracionesMovimiento = DURACION_MOVIMIENTO_OPTIONS;
 
   readonly periodoActual = computed(() => this.periodoActivo.periodoYm());
   readonly loading = signal(false);
@@ -253,6 +232,16 @@ export class NovedadesMensualesContainer implements OnInit, OnDestroy {
   readonly conceptos = signal<ConceptoListado[]>([]);
   readonly contratosPersona = signal<ContratoResumenPersona[]>([]);
   readonly filas = signal<NovedadGridRow[]>([]);
+  readonly recurrentesPeriodo = signal<HaberDescuentoAsignacionPrevalidacionMensualFila[]>([]);
+  readonly trabajadorDetalle = signal<{ tipo: TrabajadorDetalleTipo; row: TrabajadorMovimientoRow } | null>(null);
+  readonly recurrenteTrabajador = signal<TrabajadorMovimientoRow | null>(null);
+  readonly recurrenteConceptoId = signal<number | null>(null);
+  readonly recurrenteMonto = signal<number | null>(null);
+  readonly recurrenteVigenciaInicio = signal('');
+  readonly recurrenteVigenciaFin = signal('');
+  readonly recurrenteObservacion = signal('');
+  readonly recurrenteGuardando = signal(false);
+  readonly recurrenteError = signal('');
   readonly formAbierto = signal(false);
   readonly novedadEditando = signal<NovedadMensual | null>(null);
   readonly form = signal<NovedadForm>(formInicial(''));
@@ -287,18 +276,54 @@ export class NovedadesMensualesContainer implements OnInit, OnDestroy {
   );
   readonly resumenPeriodo = computed(() => {
     const filas = this.filas();
+    const trabajadores = this.trabajadoresMovimientos();
     const contar = (estado: NovedadMensualEstado) => filas.filter((fila) => fila.estado === estado).length;
     const secundarios = contar('rechazada') + contar('anulada') + contar('calculada') + contar('incorporada_a_pre_nomina');
     return [
-      { label: 'Total', total: filas.length },
-      { label: 'Solo este mes', total: filas.length },
-      { label: 'Recurrentes activos', total: '-' },
-      { label: 'En cuotas', total: '-' },
+      { label: 'Trabajadores activos', total: trabajadores.length },
+      { label: 'Con movimientos del mes', total: trabajadores.filter((row) => row.movimientosMes > 0).length },
+      { label: 'Con recurrentes', total: trabajadores.filter((row) => row.recurrentes > 0).length },
+      { label: 'Con revision pendiente', total: trabajadores.filter((row) => row.revisar > 0).length },
       { label: 'Borradores', total: contar('borrador') },
       { label: 'Pendientes', total: contar('pendiente_revision') },
       { label: 'Aprobados', total: contar('aprobada') },
       { label: 'Por revisar', total: contar('pendiente_revision') + secundarios },
     ];
+  });
+  readonly trabajadoresMovimientos = computed<TrabajadorMovimientoRow[]>(() => {
+    const movimientos = this.filas();
+    const recurrentes = this.recurrentesPeriodo();
+
+    return this.empleadosListado()
+      .filter((empleado) => empleado.estado !== 'inactivo' && empleado.estado !== 'desvinculado')
+      .map((empleado) => {
+        const movimientosPersona = movimientos.filter((mov) => mov.idPersona === empleado.id);
+        const recurrentesPersona = recurrentes.filter(
+          (item) => item.asignacion.idPersona === empleado.id && item.intersectaPeriodo && item.asignacion.estado,
+        );
+        const revisar = movimientosPersona.filter((mov) => mov.estado === 'pendiente_revision').length;
+        const incompleto = !empleado.aptoParaRemuneraciones || empleado.estadoFicha !== 'VALIDO';
+        const estado: TrabajadorMovimientoRow['estado'] = incompleto
+          ? 'Incompleto'
+          : revisar > 0
+            ? 'Revisar'
+            : movimientosPersona.length === 0 && recurrentesPersona.length === 0
+              ? 'Sin movimientos'
+              : 'Listo';
+        const row: TrabajadorMovimientoRow = {
+          idPersona: empleado.id,
+          trabajador: empleado.nombre,
+          rut: empleado.rut,
+          cargo: empleado.cargo || 'Sin cargo',
+          contrato: empleado.idContrato ? `Contrato ${empleado.idContrato}` : 'Sin contrato visible',
+          movimientosMes: movimientosPersona.length,
+          recurrentes: recurrentesPersona.length,
+          revisar,
+          estado,
+          busqueda: `${empleado.nombre} ${empleado.rut} ${empleado.cargo} ${estado}`.toLowerCase(),
+        };
+        return row;
+      });
   });
   readonly formConCambios = computed(() => this.formAbierto() && this.serializarForm(this.form()) !== this.formSnapshot());
   readonly resumenFormulario = computed(() => {
@@ -314,55 +339,60 @@ export class NovedadesMensualesContainer implements OnInit, OnDestroy {
       monto,
       tipo,
       periodo: this.periodoActivo.etiqueta(),
-      duracion: this.etiquetaDuracionMovimiento(form.duracionMovimiento),
       principal: datosPrincipales ? `${tipo} de ${monto} para ${trabajador}.` : '',
-      detalleDuracion: this.resumenDuracion(form),
       visible: form.idPersona != null || form.idConcepto != null || form.monto != null,
     };
   });
 
-  readonly columns: DataGridColumn<NovedadGridRow>[] = [
+  readonly trabajadorColumns: DataGridColumn<TrabajadorMovimientoRow>[] = [
     {
-      id: 'trabajadorEtiqueta',
+      id: 'trabajador',
       header: 'Trabajador',
-      field: 'trabajadorEtiqueta',
+      field: 'trabajador',
       type: 'text',
       sortable: true,
       priorityResponsive: 'primary',
       filterable: false,
+      minWidth: '15rem',
     },
     {
-      id: 'conceptoEtiqueta',
-      header: 'Concepto',
-      field: 'conceptoEtiqueta',
+      id: 'contrato',
+      header: 'Contrato',
+      field: 'contrato',
       type: 'text',
       sortable: true,
       filterable: false,
+      minWidth: '9rem',
     },
     {
-      id: 'tipoCategoriaEtiqueta',
-      header: 'Tipo / Categoría',
-      field: 'tipoCategoriaEtiqueta',
-      type: 'text',
+      id: 'movimientosMes',
+      header: 'Mov. mes',
+      field: 'movimientosMes',
+      type: 'number',
+      align: 'center',
       sortable: true,
       filterable: false,
+      minWidth: '8rem',
     },
     {
-      id: 'fechaEventoEtiqueta',
-      header: 'Fecha',
-      field: 'fechaEventoEtiqueta',
-      type: 'text',
+      id: 'recurrentes',
+      header: 'Recurrentes',
+      field: 'recurrentes',
+      type: 'number',
+      align: 'center',
       sortable: true,
       filterable: false,
+      minWidth: '8rem',
     },
     {
-      id: 'montoEtiqueta',
-      header: 'Monto',
-      field: 'montoEtiqueta',
-      type: 'text',
-      align: 'right',
+      id: 'revisar',
+      header: 'Revisar',
+      field: 'revisar',
+      type: 'number',
+      align: 'center',
       sortable: true,
       filterable: false,
+      minWidth: '7rem',
     },
     {
       id: 'estado',
@@ -371,53 +401,72 @@ export class NovedadesMensualesContainer implements OnInit, OnDestroy {
       type: 'text',
       sortable: true,
       filterable: false,
-    },
-    {
-      id: 'origenEtiqueta',
-      header: 'Origen',
-      field: 'origenEtiqueta',
-      type: 'text',
-      sortable: true,
-      visible: false,
-      filterable: false,
+      minWidth: '8rem',
     },
     {
       id: 'acciones',
-      header: 'Acciones',
+      header: 'Accion',
       align: 'center',
       sortable: false,
       hideable: false,
+      filterable: false,
+      minWidth: '7rem',
     },
   ];
 
-  readonly filters: DataGridFilter<NovedadGridRow>[] = [
+  readonly trabajadorFilters: DataGridFilter<TrabajadorMovimientoRow>[] = [
     {
       id: 'estado',
       label: 'Estado',
       field: 'estado',
       type: 'select',
       operator: 'equals',
-      options: this.estados.map((estado) => ({ value: estado, label: this.etiquetaEstado(estado) })),
+      options: [
+        { value: 'Listo', label: 'Listo' },
+        { value: 'Sin movimientos', label: 'Sin movimientos' },
+        { value: 'Revisar', label: 'Revisar' },
+        { value: 'Incompleto', label: 'Incompleto' },
+      ],
     },
     {
-      id: 'categoria',
-      label: 'Categoría',
-      field: 'categoria',
+      id: 'tipoConteo',
+      label: 'Con movimientos',
+      field: 'estado',
       type: 'select',
       operator: 'equals',
-      options: this.categorias.map((categoria) => ({ value: categoria, label: this.etiquetaCategoria(categoria) })),
+      options: [
+        { value: 'mes', label: 'Mov. mes' },
+        { value: 'recurrentes', label: 'Recurrentes' },
+        { value: 'revisar', label: 'Por revisar' },
+        { value: 'sin', label: 'Sin movimientos' },
+      ],
+      predicate: (row, value) => {
+        switch (value) {
+          case 'mes':
+            return row.movimientosMes > 0;
+          case 'recurrentes':
+            return row.recurrentes > 0;
+          case 'revisar':
+            return row.revisar > 0;
+          case 'sin':
+            return row.movimientosMes === 0 && row.recurrentes === 0;
+          default:
+            return true;
+        }
+      },
     },
     {
       id: 'busqueda',
-      label: 'Buscar',
+      label: 'Buscar trabajador',
       field: 'busqueda',
       type: 'text',
       operator: 'contains',
-      placeholder: 'Buscar por trabajador, RUT, concepto o estado',
+      placeholder: 'Nombre, RUT o cargo',
     },
   ];
 
-  readonly trackNovedad = (_index: number, row: NovedadGridRow): number => row.idNovedad;
+  readonly trackTrabajador = (_index: number, row: TrabajadorMovimientoRow): number => row.idPersona;
+
 
   constructor() {
     effect(() => {
@@ -431,6 +480,8 @@ export class NovedadesMensualesContainer implements OnInit, OnDestroy {
         this.restaurarScrollPagina();
         this.novedadEditando.set(null);
         this.confirmarCancelarAbierto.set(false);
+        this.trabajadorDetalle.set(null);
+        this.recurrenteTrabajador.set(null);
         this.formErrores.set({});
         this.contratosPersona.set([]);
         this.observacionAccion.set('');
@@ -481,10 +532,15 @@ export class NovedadesMensualesContainer implements OnInit, OnDestroy {
 
     this.loading.set(true);
     try {
-      const novedades = await this.novedadesService.listarNovedadesPeriodo(periodo);
+      const [novedades, recurrentes] = await Promise.all([
+        this.novedadesService.listarNovedadesPeriodo(periodo),
+        this.haberesDescuentosService.listarAsignacionesParaPrevalidacionMensual(periodo),
+      ]);
       this.filas.set(novedades.map((novedad) => this.aGridRow(novedad)));
+      this.recurrentesPeriodo.set(recurrentes);
     } catch (err) {
       this.filas.set([]);
+      this.recurrentesPeriodo.set([]);
       this.mostrarError(err, 'No se pudieron cargar los movimientos del periodo.');
     } finally {
       this.loading.set(false);
@@ -495,6 +551,78 @@ export class NovedadesMensualesContainer implements OnInit, OnDestroy {
     this.novedadEditando.set(null);
     this.contratosPersona.set([]);
     this.abrirFormularioCon(formInicial(this.periodoActual()));
+  }
+
+  abrirNuevoParaTrabajador(row: TrabajadorMovimientoRow): void {
+    const form = { ...formInicial(this.periodoActual()), idPersona: row.idPersona };
+    this.trabajadorDetalle.set(null);
+    this.novedadEditando.set(null);
+    this.abrirFormularioCon(form);
+    void this.onTrabajadorChange(row.idPersona);
+  }
+
+  abrirDetalleTrabajador(row: TrabajadorMovimientoRow, tipo: TrabajadorDetalleTipo): void {
+    this.trabajadorDetalle.set({ row, tipo });
+  }
+
+  cerrarDetalleTrabajador(): void {
+    this.trabajadorDetalle.set(null);
+  }
+
+  abrirRecurrenteParaTrabajador(row: TrabajadorMovimientoRow): void {
+    this.trabajadorDetalle.set(null);
+    this.recurrenteTrabajador.set(row);
+    this.recurrenteConceptoId.set(null);
+    this.recurrenteMonto.set(null);
+    this.recurrenteVigenciaInicio.set(`${this.periodoActual()}-01`);
+    this.recurrenteVigenciaFin.set('');
+    this.recurrenteObservacion.set('');
+    this.recurrenteError.set('');
+  }
+
+  cerrarRecurrenteTrabajador(): void {
+    this.recurrenteTrabajador.set(null);
+    this.recurrenteError.set('');
+  }
+
+  async guardarRecurrenteTrabajador(): Promise<void> {
+    const trabajador = this.recurrenteTrabajador();
+    const conceptoId = this.recurrenteConceptoId();
+    const monto = this.recurrenteMonto();
+    if (!trabajador || !conceptoId || monto == null || monto < 0) {
+      this.recurrenteError.set('Seleccione concepto e indique un monto mensual valido.');
+      return;
+    }
+
+    this.recurrenteGuardando.set(true);
+    this.recurrenteError.set('');
+    try {
+      await this.haberesDescuentosService.crear({
+        idPersona: trabajador.idPersona,
+        idConcepto: conceptoId,
+        idContrato: null,
+        tipoValor: 'FIJO',
+        monto,
+        porcentaje: null,
+        tipohaber: null,
+        periodicidad: 'MENSUAL',
+        vigenciaInicio: this.recurrenteVigenciaInicio().trim() || null,
+        vigenciaFin: this.recurrenteVigenciaFin().trim() || null,
+        observacion: this.recurrenteObservacion().trim() || null,
+        estado: true,
+      });
+      this.cerrarRecurrenteTrabajador();
+      await this.cargarNovedades();
+      this.mensaje.set({
+        variant: 'success',
+        title: 'Recurrente guardado',
+        message: 'El movimiento recurrente quedo registrado para el trabajador.',
+      });
+    } catch (err) {
+      this.recurrenteError.set(err instanceof Error ? err.message : 'No se pudo guardar el recurrente.');
+    } finally {
+      this.recurrenteGuardando.set(false);
+    }
   }
 
   private abrirFormularioCon(form: NovedadForm): void {
@@ -524,12 +652,6 @@ export class NovedadesMensualesContainer implements OnInit, OnDestroy {
       moneda: novedad.moneda,
       origen: novedad.origen,
       fechaEvento: novedad.fechaEvento ?? '',
-      duracionMovimiento: 'solo_mes',
-      periodoInicio: novedad.periodo,
-      periodoTermino: '',
-      cantidadCuotas: null,
-      montoCuota: null,
-      cuotaInicial: 1,
       observacion: novedad.observacion ?? '',
       referenciaExterna: novedad.referenciaExterna ?? '',
     });
@@ -592,33 +714,8 @@ export class NovedadesMensualesContainer implements OnInit, OnDestroy {
     this.actualizarForm('idConcepto', idConcepto);
   }
 
-  seleccionarDuracion(duracion: DuracionMovimiento): void {
-    this.form.update((actual) => ({
-      ...actual,
-      duracionMovimiento: duracion,
-      periodoInicio: actual.periodoInicio || this.periodoActual(),
-      cantidadCuotas: duracion === 'cuotas' ? actual.cantidadCuotas : null,
-      montoCuota: duracion === 'cuotas' ? actual.montoCuota : null,
-      cuotaInicial: duracion === 'cuotas' ? (actual.cuotaInicial ?? 1) : null,
-      periodoTermino: duracion === 'solo_mes' ? '' : actual.periodoTermino,
-    }));
-    this.limpiarErrorCampo('duracionMovimiento');
-  }
-
   async guardarFormulario(): Promise<void> {
     const input = this.inputDesdeForm();
-    const erroresDuracion = this.validarDuracionUi();
-    if (Object.keys(erroresDuracion).length > 0) {
-      this.formErrores.set(erroresDuracion);
-      this.mensaje.set({
-        variant: 'warning',
-        title: 'Duracion incompleta',
-        message: 'Revise la duracion del movimiento antes de guardar.',
-      });
-      this.enfocarPrimerError();
-      return;
-    }
-
     const resultado = validarNovedadMensualInput({ ...input, estado: this.novedadEditando()?.estado ?? 'borrador' });
     if (!resultado.valido) {
       this.formErrores.set(this.erroresDesdeValidacion(resultado.errores));
@@ -734,12 +831,18 @@ export class NovedadesMensualesContainer implements OnInit, OnDestroy {
     return this.formErrores()[campo] ?? '';
   }
 
-  etiquetaDuracionMovimiento(duracion: DuracionMovimiento): string {
-    return this.duracionesMovimiento.find((item) => item.id === duracion)?.label ?? 'Solo este mes';
+  movimientosMesTrabajador(idPersona: number): NovedadGridRow[] {
+    return this.filas().filter((fila) => fila.idPersona === idPersona);
   }
 
-  descripcionDuracionMovimiento(duracion: DuracionMovimiento): string {
-    return this.duracionesMovimiento.find((item) => item.id === duracion)?.description ?? '';
+  movimientosRevisionTrabajador(idPersona: number): NovedadGridRow[] {
+    return this.movimientosMesTrabajador(idPersona).filter((fila) => fila.estado === 'pendiente_revision');
+  }
+
+  recurrentesTrabajador(idPersona: number): HaberDescuentoAsignacionPrevalidacionMensualFila[] {
+    return this.recurrentesPeriodo().filter(
+      (item) => item.asignacion.idPersona === idPersona && item.intersectaPeriodo && item.asignacion.estado,
+    );
   }
 
   claseEstado(estado: NovedadMensualEstado): string {
@@ -836,52 +939,6 @@ export class NovedadesMensualesContainer implements OnInit, OnDestroy {
       observacion: form.observacion.trim() || null,
       referenciaExterna: form.referenciaExterna.trim() || null,
     };
-  }
-
-  private validarDuracionUi(): NovedadFormErrores {
-    const form = this.form();
-    const errores: NovedadFormErrores = {};
-
-    if (!form.duracionMovimiento) {
-      errores.duracionMovimiento = 'Seleccione la duracion del movimiento.';
-    }
-
-    if ((form.duracionMovimiento === 'recurrente' || form.duracionMovimiento === 'cuotas') && !form.periodoInicio) {
-      errores.periodoInicio = 'Indique el periodo de inicio.';
-    }
-
-    if (form.duracionMovimiento === 'cuotas') {
-      if (form.cantidadCuotas == null || form.cantidadCuotas <= 0) {
-        errores.cantidadCuotas = 'Indique una cantidad de cuotas mayor a cero.';
-      }
-      if (form.montoCuota == null || form.montoCuota <= 0) {
-        errores.montoCuota = 'Indique el monto por cuota.';
-      }
-      if (form.cuotaInicial == null || form.cuotaInicial <= 0) {
-        errores.cuotaInicial = 'Indique la cuota inicial.';
-      }
-    }
-
-    return errores;
-  }
-
-  private resumenDuracion(form: NovedadForm): string {
-    if (form.duracionMovimiento === 'recurrente') {
-      const inicio = form.periodoInicio || this.periodoActual();
-      return form.periodoTermino
-        ? `Se repetira desde ${inicio} hasta ${form.periodoTermino}.`
-        : `Se repetira desde ${inicio} hasta que sea pausado o finalizado.`;
-    }
-
-    if (form.duracionMovimiento === 'cuotas') {
-      const cuotas = form.cantidadCuotas ? `${form.cantidadCuotas} cuotas` : 'cuotas por definir';
-      const montoCuota =
-        form.montoCuota == null ? 'monto por cuota pendiente' : `${form.moneda || 'CLP'} ${Number(form.montoCuota).toLocaleString('es-CL')}`;
-      const inicio = form.periodoInicio || this.periodoActual();
-      return `Se aplicara en ${cuotas} de ${montoCuota}, desde ${inicio}.`;
-    }
-
-    return `Se aplicara solo en ${this.periodoActivo.etiqueta()}.`;
   }
 
   private limpiarErrorCampo(campo: NovedadFormCampo): void {

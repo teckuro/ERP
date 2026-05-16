@@ -684,3 +684,14 @@ Restricciones:
 | Entrega | Duraciones `Solo este mes`, `Recurrente`, `En cuotas`; validacion local para cuotas; sin cambio de payload productivo. |
 | Restricciones | Sin SQL/RPC/RLS, motor, liquidaciones, servicios productivos, mappers, rutas, estilos globales ni persistencia critica. |
 | Documento | [../diseno/nom-movimientos-simple-01.md](../diseno/nom-movimientos-simple-01.md) |
+
+## NOM-MOVIMIENTOS-POR-TRABAJADOR-01
+
+| Campo | Estado |
+|---|---|
+| Estado | Implementada |
+| Tipo | UX/UI local de Movimientos de remuneracion |
+| Alcance | Pantalla mensual como grilla de trabajadores, contadores accionables, modal de gestion por trabajador y correccion del modal mensual. |
+| Entrega | Gestionar/Asignar por trabajador; detalles filtrados; flujo mensual separado del recurrente; cuotas como variante del recurrente. |
+| Restricciones | Sin SQL/RPC/RLS, motor, liquidaciones, persistencia critica, servicios/mappers/payloads productivos nuevos, rutas nuevas ni estilos globales. |
+| Documento | [../diseno/nom-movimientos-por-trabajador-01.md](../diseno/nom-movimientos-por-trabajador-01.md) |

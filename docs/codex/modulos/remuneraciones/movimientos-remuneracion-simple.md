@@ -275,3 +275,9 @@ Implementada como primera capa visible. Menu `Movimientos`, pantalla `Movimiento
 Se pulio el modal `Registrar movimiento` como capa UX local. El formulario queda guiado por bloques: Movimiento, Duracion del movimiento, Detalle administrativo opcional y Resumen. La duracion visible ya permite seleccionar `Solo este mes`, `Recurrente` o `En cuotas`.
 
 `En cuotas` queda tratado como UI preparada para prestamos, anticipos, reintegros o descuentos pactados: cantidad de cuotas, monto por cuota, cuota inicial, periodo de inicio y periodo estimado de termino. Esta fase no cambia SQL, motor, servicios, payloads ni persistencia critica; el guardado productivo sigue usando el contrato existente de novedades mensuales.
+
+### Cierre NOM-MOVIMIENTOS-POR-TRABAJADOR-01
+
+La experiencia visible se corrige hacia administracion por trabajador. `Movimientos de remuneracion` muestra una grilla de trabajadores del periodo con contadores de movimientos mensuales, recurrentes y pendientes de revision. Los contadores abren detalles filtrados y la accion por fila abre gestion del trabajador.
+
+No se unifican formularios. El flujo mensual registra movimientos puntuales del periodo. El flujo recurrente permanece separado y recibe al trabajador por query param. Las cuotas quedan como variante del recurrente, especialmente para prestamos, anticipos, reintegros o descuentos pactados.

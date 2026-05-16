@@ -413,3 +413,16 @@ Fecha: 2026-05-15
 - `Cantidad` administrativa queda aclarada como dato de unidad, no como cantidad de cuotas.
 - El resumen operativo explica en lenguaje RRHH que se guardara, con resumen parcial si faltan trabajador, concepto o monto.
 - Limite documentado: duracion/cuotas quedan como UI preparada y validacion local; no se agregan payloads, SQL, motor ni persistencia critica.
+
+## NOM-MOVIMIENTOS-POR-TRABAJADOR-01 - Movimientos por trabajador
+
+Fecha: 2026-05-15
+
+- `Movimientos de remuneracion` se reordena como grilla de trabajadores del periodo.
+- Cada fila muestra contadores de movimientos del mes, recurrentes y pendientes de revision.
+- Los contadores mayores a cero abren detalle filtrado; los ceros quedan neutros.
+- `Gestionar`/`Asignar` abre contexto del trabajador antes de formularios.
+- `Agregar movimiento del mes` abre el flujo mensual con trabajador precargado.
+- `Agregar recurrente` navega al flujo recurrente existente filtrado por trabajador.
+- Se corrige el modal mensual: ya no pregunta duracion ni muestra cuotas; cuotas queda como variante del recurrente.
+- Alcance respetado: sin SQL/RPC/RLS, sin motor, sin persistencia critica, sin servicios/mappers/payloads productivos nuevos y sin estilos globales.

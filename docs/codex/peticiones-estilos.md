@@ -965,3 +965,12 @@ Creación avanzada incorpora una identidad de producto local para dejar de senti
 - **Detalle:** `Cantidad` queda como dato administrativo de unidad, separado de `Cantidad de cuotas`.
 - **Resumen:** se agrega lectura RRHH antes de guardar, sin afirmar cambios de calculo.
 - **Restricciones:** sin estilos globales, sin SQL/RPC/RLS, sin motor, sin servicios productivos, sin mappers, sin rutas ni payloads.
+
+## 2026-05-15 - NOM-MOVIMIENTOS-POR-TRABAJADOR-01
+
+- **Mesa de trabajo:** Movimientos parte desde trabajadores del periodo, no desde un formulario global.
+- **Contadores:** movimientos del mes, recurrentes y revisar son visibles por trabajador; solo valores mayores a cero son accionables.
+- **Gestion:** `Gestionar`/`Asignar` abre contexto del trabajador antes de actuar.
+- **Flujos:** movimiento mensual y recurrente quedan separados; cuotas pertenece al recurrente.
+- **Correccion:** el modal mensual ya no incluye duracion, recurrente ni cuotas.
+- **Restricciones:** sin estilos globales, SQL/RPC/RLS, motor, liquidaciones, persistencia critica, rutas nuevas ni payloads productivos.

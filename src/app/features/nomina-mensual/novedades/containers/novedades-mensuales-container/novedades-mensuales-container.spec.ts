@@ -87,6 +87,8 @@ describe('NovedadesMensualesContainer', () => {
   let haberesDescuentosService: {
     listarConceptos: ReturnType<typeof vi.fn>;
     listarContratosPersona: ReturnType<typeof vi.fn>;
+    listarAsignacionesParaPrevalidacionMensual: ReturnType<typeof vi.fn>;
+    crear: ReturnType<typeof vi.fn>;
   };
   let periodoActivo: PeriodoActivoService;
 
@@ -133,6 +135,8 @@ describe('NovedadesMensualesContainer', () => {
         },
       ]),
       listarContratosPersona: vi.fn().mockResolvedValue([{ idContrato: 100, etiqueta: 'Contrato indefinido' }]),
+      listarAsignacionesParaPrevalidacionMensual: vi.fn().mockResolvedValue([]),
+      crear: vi.fn().mockResolvedValue(undefined),
     };
 
     await TestBed.configureTestingModule({
@@ -186,16 +190,19 @@ describe('NovedadesMensualesContainer', () => {
 
     expect(empleadosService.listar).toHaveBeenCalled();
     expect(haberesDescuentosService.listarConceptos).toHaveBeenCalled();
+    expect(haberesDescuentosService.listarAsignacionesParaPrevalidacionMensual).toHaveBeenCalledWith('2026-05');
     expect(service.listarNovedadesPeriodo).toHaveBeenCalledWith('2026-05');
     expect(component.totalNovedades()).toBe(1);
   });
 
-  it('muestra estado vacio cuando no hay movimientos del periodo', async () => {
+  it('muestra grilla de trabajadores cuando no hay movimientos del periodo', async () => {
     fixture.detectChanges();
     await fixture.whenStable();
     fixture.detectChanges();
 
-    expect(fixture.nativeElement.textContent).toContain('Aun no hay movimientos para este periodo');
+    expect(fixture.nativeElement.textContent).toContain('Trabajadores del periodo');
+    expect(fixture.nativeElement.textContent).toContain('Ana Perez');
+    expect(fixture.nativeElement.textContent).toContain('Sin movimientos');
   });
 
   it('renderiza titulo visible y no muestra lenguaje legacy en texto de usuario', async () => {
@@ -206,8 +213,7 @@ describe('NovedadesMensualesContainer', () => {
     expect(text).toContain('Movimientos de remuneracion');
     expect(text).toContain('Este mes');
     expect(text).toContain('Recurrentes');
-    expect(text).toContain('En cuotas');
-    expect(text).toContain('Registrar movimiento');
+    expect(text).toContain('Trabajadores del periodo');
     expect(text).not.toContain('Novedades mensuales');
     expect(text).not.toContain('Movimiento variable');
     expect(text).not.toContain('Movimientos variables');
@@ -241,12 +247,18 @@ describe('NovedadesMensualesContainer', () => {
     expect(text).not.toContain('Concepto / idConcepto');
   });
 
-  it('boton Registrar movimiento abre modal grande con periodo activo', async () => {
+  it('accion por trabajador abre gestion y permite agregar movimiento del mes', async () => {
     fixture.detectChanges();
     await esperarCargaInicial(fixture);
 
     const buttons = Array.from(fixture.nativeElement.querySelectorAll('button')) as HTMLButtonElement[];
-    buttons.find((button) => button.textContent?.includes('Registrar movimiento'))?.click();
+    buttons.find((button) => button.textContent?.includes('Gestionar') || button.textContent?.includes('Asignar'))?.click();
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.textContent).toContain('Gestionar movimientos');
+
+    const modalButtons = Array.from(fixture.nativeElement.querySelectorAll('button')) as HTMLButtonElement[];
+    modalButtons.find((button) => button.textContent?.includes('Agregar movimiento del mes'))?.click();
     fixture.detectChanges();
 
     const modal = fixture.nativeElement.querySelector('.nm-modal-movimiento') as HTMLElement | null;

@@ -174,3 +174,7 @@ Esta fase no cambia rutas, servicios, SQL, motor ni pantallas actuales.
 ## NOM-MOVIMIENTOS-SIMPLE-01
 
 Preparar nomina queda alineado a la primera capa visible de `Movimientos de remuneracion`: sus accesos y textos hablan de movimientos del periodo y recurrentes como vistas de una misma gestion. No duplica edicion ni cambia el calculo, SQL, servicios, mappers o payloads.
+
+## NOM-MOVIMIENTOS-POR-TRABAJADOR-01
+
+Movimientos de remuneracion queda administrado por trabajador en la vista mensual. La grilla del periodo muestra contadores de movimientos del mes, recurrentes y pendientes de revision. El modal mensual queda restringido a movimientos puntuales del periodo y no muestra duracion ni cuotas.

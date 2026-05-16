@@ -32,3 +32,7 @@ Esta fase no cambia rutas, servicios, SQL, motor ni pantallas actuales.
 ## NOM-MOVIMIENTOS-SIMPLE-01
 
 La pantalla `/remuneraciones/haberes-descuentos` queda comunicada como vista `Recurrentes` dentro de `Movimientos de remuneracion`. La logica de asignaciones recurrentes, servicios y persistencia no cambian.
+
+## NOM-MOVIMIENTOS-POR-TRABAJADOR-01
+
+Recurrentes queda como flujo separado dentro de Movimientos de remuneracion. Desde la gestion por trabajador se navega a `Recurrentes` con la persona seleccionada. Las cuotas se tratan como variante del recurrente, no como opcion del modal mensual.

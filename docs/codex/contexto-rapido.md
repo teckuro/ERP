@@ -224,3 +224,7 @@ Primera capa visible. El menu principal muestra `Movimientos`, la pantalla mensu
 ### `NOM-MOVIMIENTOS-SIMPLE-01-FORM-POLISH`
 
 Pulido local del modal `Registrar movimiento`. Organiza el formulario en `Movimiento`, `Duracion del movimiento`, `Detalle administrativo opcional` y `Resumen`. Agrega duraciones visibles `Solo este mes`, `Recurrente` y `En cuotas`, con campos UI de cuotas y validacion local. No cambia SQL, motor, servicios, payloads ni persistencia critica.
+
+### `NOM-MOVIMIENTOS-POR-TRABAJADOR-01`
+
+Decision corregida: `Movimientos de remuneracion` se administra por trabajador. La pantalla principal muestra trabajadores del periodo con contadores de movimientos del mes, recurrentes y pendientes de revision. No se unifican formularios; `Agregar movimiento del mes` y `Agregar recurrente` son flujos separados. Las cuotas pertenecen al flujo recurrente, no al modal mensual.
