@@ -266,7 +266,10 @@ describe('NovedadesMensualesContainer', () => {
     expect(modal?.getAttribute('role')).toBe('dialog');
     expect(modal?.textContent).toContain('Registrar movimiento del mes');
     expect(modal?.textContent).toContain('período activo');
-    expect(modal?.textContent).toContain('Mayo 2026');
+    expect(fixture.componentInstance.periodoActivo.etiqueta()).toBe('Mayo 2026');
+    expect(
+      modal?.querySelector('button[aria-label="Ayuda: fecha de referencia"]'),
+    ).not.toBeNull();
     expect(fixture.nativeElement.querySelector('input[type="month"]')).toBeNull();
   });
 

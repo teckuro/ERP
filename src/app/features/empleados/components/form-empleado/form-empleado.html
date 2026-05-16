@@ -40,14 +40,16 @@
         <app-message-box
           mode="modal"
           [variant]="modal.variant"
-          [modalHeadlineSplit]="true"
+          [eyebrow]="modal.eyebrow ?? ''"
           [title]="modal.title"
           [message]="modal.message"
+          [sections]="modal.sections ?? []"
           [primaryLabel]="modal.primaryLabel"
           [secondaryLabel]="modal.secondaryLabel || ''"
           (action)="handleAdvancedActionModalPrimary()"
           (secondary)="handleAdvancedActionModalSecondary()"
         >
+          @if (!modal.sections?.length) {
           <div
             class="advanced-action-modal"
             role="region"
@@ -88,6 +90,7 @@
             </section>
             }
           </div>
+          }
         </app-message-box>
         } @else if (duplicateRutModalRut(); as rutDup) {
         <app-message-box

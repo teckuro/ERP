@@ -1,3 +1,13 @@
+## ERP-MSGBOX-NOIA-UX-01-FIX-02 - MessageBox decisión operativa NOIA
+
+| Campo | Estado |
+|---|---|
+| Estado | Implementada |
+| Tipo | UX/UI local |
+| Alcance | `app-message-box` modal v3.1 neutro (sin bordes de color por variante); secciones compactas; footer izq/der; borrador inválido en Creación avanzada. |
+| Restricciones | Sin estilos globales, SQL, motor, payloads ni servicios. |
+| Documento | [`../diseno/erp-msgbox-noia-ux-01.md`](../diseno/erp-msgbox-noia-ux-01.md), [`../peticiones-estilos.md`](../peticiones-estilos.md) |
+
 ## NOM-MOVIMIENTOS-MODAL-UX-02 - Modales contexto, calendario y retorno a gestión
 
 | Campo | Estado |

@@ -76,6 +76,7 @@ import {
 } from "../../../../shared/components/ui/card.component";
 import {
   MessageBoxComponent,
+  MessageBoxSection,
   MessageBoxVariant,
 } from "../../../../shared/components/ui/message-box.component";
 import { PageActionsComponent } from "../../../../shared/components/ui/page-actions.component";
@@ -122,8 +123,10 @@ type AdvancedActionModalAction =
 interface AdvancedActionModal {
   kind: AdvancedActionModalKind;
   variant: MessageBoxVariant;
+  eyebrow?: string;
   title: string;
   message: string;
+  sections?: readonly MessageBoxSection[];
   primaryLabel: string;
   secondaryLabel?: string;
   blockingItems: readonly string[];
@@ -2959,21 +2962,36 @@ export class FormEmpleadoComponent implements OnInit {
     });
   }
 
-  private openDraftInvalidModal(message: string): void {
+  private openDraftInvalidModal(_message: string): void {
     this.openAdvancedActionModal({
       kind: "draft-invalid",
       variant: "warning",
+      eyebrow: "Revisión administrativa",
       title: "No se puede guardar el borrador",
       message:
-        "Para guardar un borrador necesitamos identificar al trabajador con datos mínimos. Completa la información pendiente y vuelve a guardar.",
-      primaryLabel: "Ir al primer dato pendiente",
-      secondaryLabel: "Cerrar",
-      blockingItems: this.draftMinimumPendingLabels(),
-      warningItems: [],
-      infoItems: [
-        "El borrador requiere identificación mínima.",
-        "Puedes completar el resto después.",
+        "Faltan datos mínimos para identificar al trabajador. Completa el primer pendiente y vuelve a guardar.",
+      sections: [
+        {
+          title: "Pendiente principal",
+          text: "Completar los datos mínimos de identificación del trabajador antes de guardar el borrador.",
+          tone: "attention",
+        },
+        {
+          title: "Por qué importa",
+          text: "El borrador necesita una identificación mínima para quedar trazable en la bitácora laboral.",
+          tone: "neutral",
+        },
+        {
+          title: "Acción recomendada",
+          text: "Ir al primer campo pendiente, completar la información mínima y volver a guardar.",
+          tone: "info",
+        },
       ],
+      primaryLabel: "Ir al primer pendiente",
+      secondaryLabel: "Cerrar",
+      blockingItems: [],
+      warningItems: [],
+      infoItems: [],
       targetStep: 0,
       primaryAction: "focus-draft-minimum",
       secondaryAction: "dismiss",

@@ -272,109 +272,12 @@
   margin-bottom: 0;
 }
 
-.nm-field-tip {
-  position: relative;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  width: 1.125rem;
-  height: 1.125rem;
-  padding: 0;
-  border: 0;
-  border-radius: 999px;
-  background: transparent;
-  color: var(--nm-muted);
-  cursor: help;
-  vertical-align: middle;
-}
-
-.nm-field-tip:focus-visible {
-  outline: none;
-  box-shadow: 0 0 0 2px var(--nm-primary-soft);
-  color: var(--nm-primary);
-}
-
-.nm-field-tip {
-  anchor-name: --nm-field-tip-trigger;
-}
-
-.nm-field-tip__popover {
-  --nm-tip-bg: #ffffff;
-  --nm-tip-border: var(--nm-border);
-  position: fixed;
-  top: anchor(bottom);
-  left: anchor(center);
-  z-index: var(--nm-floating-ui-z, 1390);
-  display: block;
-  width: max-content;
-  max-width: min(15rem, calc(100vw - 2.5rem));
-  margin: 0;
-  padding: 0.5rem 0.625rem;
-  border: 1px solid var(--nm-tip-border);
-  border-radius: 8px;
-  background: var(--nm-tip-bg);
-  color: var(--nm-text);
-  font-size: var(--nm-text-xs);
-  font-weight: 500;
-  line-height: 1.4;
-  text-align: left;
-  white-space: normal;
-  filter: drop-shadow(0 4px 12px rgba(15, 23, 42, 0.12));
-  translate: -50% 8px;
-  opacity: 0;
-  visibility: hidden;
-  pointer-events: none;
-  transition:
-    opacity 0.14s ease,
-    translate 0.14s ease,
-    visibility 0.14s ease;
-}
-
-@supports not (anchor-name: --nm-field-tip-trigger) {
-  .nm-field-tip__popover {
-    position: absolute;
-    top: calc(100% + 0.5rem);
-    left: 50%;
-    translate: -50% -3px;
-  }
-}
-
-/* Cola integrada (mismo fondo y borde que el cuerpo) */
-.nm-field-tip__popover::before {
-  content: '';
-  position: absolute;
-  left: 50%;
-  top: 0;
-  z-index: -1;
-  width: 9px;
-  height: 9px;
-  border: 1px solid var(--nm-tip-border);
-  border-bottom: none;
-  border-right: none;
-  background: var(--nm-tip-bg);
-  transform: translate(-50%, -50%) rotate(45deg);
-}
-
-.nm-field-tip:hover .nm-field-tip__popover,
-.nm-field-tip:focus-visible .nm-field-tip__popover {
-  opacity: 1;
-  visibility: visible;
-  translate: -50% 8px;
-}
-
-@supports not (anchor-name: --nm-field-tip-trigger) {
-  .nm-field-tip:hover .nm-field-tip__popover,
-  .nm-field-tip:focus-visible .nm-field-tip__popover {
-    translate: -50% 0;
-  }
-}
-
-:host ::ng-deep .nm-field-tip lucide-icon,
-:host ::ng-deep .nm-field-tip lucide-icon svg {
-  display: block;
-  width: 0.875rem;
-  height: 0.875rem;
+.nm-field-label-row app-field-help-tip {
+  flex: 0 0 auto;
+  width: auto;
+  max-width: none;
+  align-self: center;
+  margin-left: 2px;
 }
 
 .nm-input {
@@ -1358,6 +1261,7 @@
 /* Large responsive dialog */
 .nm-modal-root {
   --nm-floating-ui-z: 1500;
+  --erp-floating-ui-z: var(--nm-floating-ui-z);
   --erp-select-panel-z: var(--nm-floating-ui-z);
   --erp-select-host-z-open: var(--nm-floating-ui-z);
   position: fixed;
@@ -1520,7 +1424,7 @@
 .nm-modal-movimiento .nm-details,
 .nm-modal-movimiento .nm-field,
 .nm-modal-movimiento .nm-field-label-row,
-.nm-modal-movimiento .nm-field-tip {
+.nm-modal-movimiento app-field-help-tip {
   overflow: visible;
 }
 

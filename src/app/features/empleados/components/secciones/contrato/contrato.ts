@@ -23,6 +23,7 @@ import {
   descripcionTipoTrabajadorBase,
   tipoTrabajadorBaseParaRelacion,
 } from '../../../rules/empleado-tipo-trabajador-flow.rules';
+import { EmpleadoFieldTipComponent } from '../../empleado-field-tip/empleado-field-tip.component';
 
 type ContratoControlName = keyof ContratoFormGroup['controls'];
 
@@ -38,7 +39,13 @@ interface WeekdayOption {
 
 @Component({
   selector: 'app-empleado-contrato',
-  imports: [ReactiveFormsModule, CalendarInputComponent, CardComponent, SearchSelectComponent],
+  imports: [
+    ReactiveFormsModule,
+    CalendarInputComponent,
+    CardComponent,
+    SearchSelectComponent,
+    EmpleadoFieldTipComponent,
+  ],
   templateUrl: './contrato.html',
   styleUrl: './contrato.css',
 })
@@ -121,6 +128,13 @@ export class ContratoComponent {
     return this.isHonorariosMode
       ? 'Corresponde al valor bruto pactado por servicios a honorarios. No genera jornada laboral ni remuneración dependiente.'
       : 'El sueldo base debe ser mayor a cero.';
+  }
+
+  /** Ayuda operativa en tooltip (alta avanzada). */
+  baseAmountFieldHint(): string {
+    return this.isHonorariosMode
+      ? 'Corresponde al valor bruto pactado por servicios a honorarios. No genera jornada laboral ni remuneración dependiente.'
+      : 'Monto base mensual pactado en la moneda del contrato.';
   }
 
   readonly weekdayOptions: WeekdayOption[] = [

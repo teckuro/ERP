@@ -97,18 +97,26 @@
           <div class="field-label-row">
             <label for="perfil-vigencia-inicio">Vigencia inicio</label>
             <span class="field-required" aria-hidden="true">*</span>
+            <app-empleado-field-tip
+              text="Por defecto usa la fecha de ingreso."
+              ariaLabel="Ayuda: vigencia inicio"
+            ></app-empleado-field-tip>
           </div>
           <app-calendar-input
             id="perfil-vigencia-inicio"
             formControlName="vigenciaInicio"
             placeholder="dd/mm/aaaa"
           ></app-calendar-input>
-          <p class="field-message field-message--hint">Por defecto usa la fecha de ingreso.</p>
+          <p class="field-message"></p>
         </div>
 
         <div class="form-field">
           <div class="field-label-row">
             <label for="perfil-vigencia-fin">Vigencia fin</label>
+            <app-empleado-field-tip
+              text="Completa solo si tiene término conocido."
+              ariaLabel="Ayuda: vigencia fin"
+            ></app-empleado-field-tip>
           </div>
           <app-calendar-input
             id="perfil-vigencia-fin"
@@ -116,24 +124,32 @@
             placeholder="Opcional"
             [clearable]="true"
           ></app-calendar-input>
-          <p class="field-message field-message--hint">Completa solo si tiene término conocido.</p>
+          <p class="field-message"></p>
         </div>
 
         <div class="form-field form-field--checkbox perfil-respaldo-check">
           <div class="field-label-row">
             <label for="perfil-respaldo">Respaldo</label>
+            <app-empleado-field-tip
+              text="Certificado, autorización o antecedente revisado por RRHH."
+              ariaLabel="Ayuda: respaldo"
+            ></app-empleado-field-tip>
           </div>
           <label class="employee-checkbox-row">
             <input id="perfil-respaldo" type="checkbox" formControlName="respaldoRegistrado" />
             <span>Respaldo administrativo registrado</span>
           </label>
-          <p class="field-message field-message--hint">Certificado, autorización o antecedente revisado por RRHH.</p>
+          <p class="field-message"></p>
         </div>
       </div>
 
       <div class="form-field perfil-observacion-field">
         <div class="field-label-row">
           <label for="perfil-observacion">Observación interna</label>
+          <app-empleado-field-tip
+            text="Trazabilidad operativa. No reemplaza respaldo formal."
+            ariaLabel="Ayuda: observación interna"
+          ></app-empleado-field-tip>
         </div>
         <textarea
           id="perfil-observacion"
@@ -143,7 +159,7 @@
           maxlength="250"
           placeholder="Ej.: respaldo revisado por RRHH, caso pendiente de validación, comentario operativo."
         ></textarea>
-        <p class="field-message field-message--hint">Trazabilidad operativa. No reemplaza respaldo formal.</p>
+        <p class="field-message"></p>
       </div>
     </app-card>
   } @else {

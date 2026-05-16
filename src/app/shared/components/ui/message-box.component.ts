@@ -1,482 +1,362 @@
-import { CommonModule } from '@angular/common';
-import { Component, EventEmitter, HostBinding, Input, Output } from '@angular/core';
-import { LucideAngularModule } from 'lucide-angular';
+import { DOCUMENT, NgClass } from '@angular/common';
 import {
-  AlertCircle,
-  CheckCircle2,
-  CircleHelp,
-  Info,
-  LoaderCircle,
-  TriangleAlert,
-  X as XIcon,
-} from 'lucide-angular/src/icons';
+  AfterViewInit,
+  Component,
+  ElementRef,
+  EventEmitter,
+  HostBinding,
+  HostListener,
+  Input,
+  OnDestroy,
+  Output,
+  QueryList,
+  ViewChild,
+  ViewChildren,
+  inject,
+} from '@angular/core';
+import { LucideAngularModule } from 'lucide-angular';
+import { LoaderCircle, X as XIcon } from 'lucide-angular/src/icons';
 
-export type MessageBoxVariant = 'success' | 'error' | 'warning' | 'info' | 'confirm' | 'loading';
-export type MessageBoxMode = 'inline' | 'modal';
+import type {
+  MessageBoxAction,
+  MessageBoxMode,
+  MessageBoxResolvedVariant,
+  MessageBoxSection,
+  MessageBoxSectionTone,
+  MessageBoxVariant,
+  MessageBoxVariantInput,
+  MessageBoxWidth,
+} from './message-box.types';
+
+export type {
+  MessageBoxAction,
+  MessageBoxConfig,
+  MessageBoxMode,
+  MessageBoxSection,
+  MessageBoxSectionTone,
+  MessageBoxVariant,
+  MessageBoxVariantInput,
+  MessageBoxWidth,
+} from './message-box.types';
+
+const DEFAULT_EYEBROW: Record<MessageBoxResolvedVariant, string> = {
+  info: 'Información',
+  success: 'Registro actualizado',
+  warning: 'Revisión administrativa',
+  danger: 'Error de guardado',
+  decision: 'Decisión requerida',
+  blocked: 'Bloqueo operativo',
+  loading: 'Procesando',
+};
+
+interface NormalizedMessageBoxSection {
+  title: string;
+  text: string;
+  items: string[];
+  tone: MessageBoxSectionTone;
+}
 
 @Component({
   selector: 'app-message-box',
   standalone: true,
-  imports: [CommonModule, LucideAngularModule],
-  template: `
-    <section
-      class="message-box"
-      [class.message-modal]="mode === 'modal'"
-      [class.message-modal--headline]="useModalHeadlineLayout()"
-      [ngClass]="variantClass()"
-      [attr.role]="mode === 'modal' ? 'dialog' : liveRole()"
-      [attr.aria-modal]="mode === 'modal'"
-      [attr.aria-live]="liveRegion()"
-    >
-      <header class="message-header">
-        <div class="message-icon" aria-hidden="true">
-          <lucide-icon
-            class="message-icon-svg"
-            [class.message-icon-spin]="variant === 'loading'"
-            [img]="icon()"
-          ></lucide-icon>
-        </div>
-
-        <div class="message-heading">
-          @if (title) {
-            <p class="message-title">{{ title }}</p>
-          }
-        </div>
-
-        @if (dismissible) {
-          <button type="button" class="message-dismiss" [attr.aria-label]="dismissLabel" (click)="dismiss.emit()">
-            <lucide-icon class="message-dismiss-icon" [img]="closeIcon"></lucide-icon>
-          </button>
-        }
-      </header>
-
-      <!-- Un solo ng-content: Angular proyecta solo en el primer slot del template. -->
-      <div class="message-body" [class.message-copy--headline]="useModalHeadlineLayout()">
-        @if (message) {
-          <p class="message-text">{{ message }}</p>
-        }
-
-        @if (detail) {
-          <p class="message-detail">{{ detail }}</p>
-        }
-
-        <ng-content></ng-content>
-      </div>
-
-      <footer class="message-actions" [class.message-actions--headline]="useModalHeadlineLayout()">
-        @if (secondaryLabel) {
-          <button type="button" class="message-button message-button-secondary" (click)="secondary.emit()">
-            {{ secondaryLabel }}
-          </button>
-        }
-
-        @if (tertiaryLabel) {
-          <button type="button" class="message-button message-button-secondary" (click)="tertiary.emit()">
-            {{ tertiaryLabel }}
-          </button>
-        }
-
-        @if (fourthLabel) {
-          <button type="button" class="message-button message-button-secondary" (click)="fourth.emit()">
-            {{ fourthLabel }}
-          </button>
-        }
-
-        @if (primaryActionLabel()) {
-          <button type="button" class="message-button message-button-primary" (click)="action.emit()">
-            {{ primaryActionLabel() }}
-          </button>
-        }
-
-      </footer>
-    </section>
-  `,
-  styles: [
-    `
-      :host {
-        display: block;
-      }
-
-      :host.message-box-host-modal {
-        position: fixed;
-        inset: 0;
-        z-index: 13000;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        padding: 16px;
-        background: rgba(15, 23, 42, 0.42);
-      }
-
-      .message-box {
-        display: grid;
-        grid-template-columns: minmax(0, 1fr);
-        gap: 0;
-        width: 100%;
-        border: 1px solid #d8dee8;
-        border-radius: 8px;
-        background: #ffffff;
-        padding: 12px;
-        color: #111827;
-        box-shadow: none;
-      }
-
-      .message-modal,
-      .message-modal.message-modal--headline {
-        width: min(100%, 34rem);
-        padding: 0;
-        border: 1px solid #cfd7e3;
-        border-radius: 8px;
-        background: #ffffff;
-        box-shadow: 0 18px 42px rgba(15, 23, 42, 0.2);
-      }
-
-      .message-header {
-        display: grid;
-        grid-template-columns: 34px minmax(0, 1fr) auto;
-        gap: 10px;
-        align-items: center;
-        min-width: 0;
-        border-bottom: 1px solid #edf1f5;
-        padding: 12px;
-      }
-
-      .message-modal .message-header {
-        grid-template-columns: 38px minmax(0, 1fr) auto;
-        padding: 14px 16px;
-      }
-
-      .message-heading {
-        min-width: 0;
-      }
-
-      .message-icon {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        width: 32px;
-        height: 32px;
-        min-width: 32px;
-        min-height: 32px;
-        border: 1px solid #d8dee8;
-        border-radius: 8px;
-        background: #f8fafc;
-        color: #2563eb;
-        line-height: 1;
-      }
-
-      .message-modal .message-icon,
-      .message-modal.message-modal--headline .message-icon {
-        width: 36px;
-        height: 36px;
-        min-width: 36px;
-        min-height: 36px;
-      }
-
-      .message-icon-svg,
-      .message-dismiss-icon {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        width: 16px;
-        height: 16px;
-        line-height: 1;
-        stroke-width: 2.2;
-      }
-
-      .message-modal .message-icon-svg,
-      .message-modal.message-modal--headline .message-icon-svg {
-        width: 18px;
-        height: 18px;
-      }
-
-      :host ::ng-deep .message-icon-svg svg,
-      :host ::ng-deep .message-dismiss-icon svg {
-        display: block;
-        width: 100%;
-        height: 100%;
-      }
-
-      .message-body,
-      .message-copy--headline {
-        display: grid;
-        gap: 6px;
-        min-width: 0;
-        padding: 12px;
-      }
-
-      .message-modal .message-body {
-        padding: 14px 16px;
-      }
-
-      .message-title,
-      .message-title--headline {
-        margin: 0;
-        color: #111827;
-        font-size: 0.92rem;
-        font-weight: 700;
-        letter-spacing: 0;
-        line-height: 1.25;
-      }
-
-      .message-modal .message-title,
-      .message-modal.message-modal--headline .message-title {
-        font-size: 0.98rem;
-      }
-
-      .message-text,
-      :host ::ng-deep .message-detail {
-        margin: 0;
-        color: #4b5563;
-        font-size: 0.84rem;
-        font-weight: 500;
-        line-height: 1.45;
-      }
-
-      :host ::ng-deep .message-detail {
-        white-space: pre-line;
-      }
-
-      .message-actions,
-      .message-actions--headline {
-        display: inline-flex;
-        flex-wrap: wrap;
-        gap: 8px;
-        justify-content: flex-end;
-        min-width: 0;
-        padding: 12px;
-        border-top: 1px solid #edf1f5;
-        background: #f8fafc;
-      }
-
-      .message-modal .message-actions,
-      .message-modal.message-modal--headline .message-actions--headline {
-        width: 100%;
-        padding: 12px 16px;
-        justify-content: flex-end;
-      }
-
-      .message-modal.message-confirm .message-actions {
-        background: #ffffff;
-        justify-content: flex-end;
-      }
-
-      .message-button,
-      .message-dismiss {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        border: 1px solid #cfd7e3;
-        border-radius: 6px;
-        background: #ffffff;
-        color: #374151;
-        cursor: pointer;
-        font-size: 0.82rem;
-        font-weight: 650;
-        line-height: 1;
-        transition: border-color 140ms ease, background 140ms ease, color 140ms ease;
-      }
-
-      .message-button {
-        min-height: 32px;
-        padding: 0 12px;
-      }
-
-      .message-modal .message-button {
-        min-height: 34px;
-        padding: 0 14px;
-      }
-
-      .message-modal .message-button-secondary {
-        background: #ffffff;
-      }
-
-      .message-modal .message-button-primary {
-        min-width: 8.75rem;
-      }
-
-      .message-button-primary {
-        border-color: #2563eb;
-        background: #2563eb;
-        color: #ffffff;
-      }
-
-      .message-button-secondary {
-        border-color: #cfd7e3;
-        background: #ffffff;
-        color: #374151;
-      }
-
-      .message-dismiss {
-        width: 32px;
-        height: 32px;
-        padding: 0;
-      }
-
-      .message-button-primary:hover {
-        border-color: #1d4ed8;
-        background: #1d4ed8;
-      }
-
-      .message-button-secondary:hover,
-      .message-dismiss:hover {
-        border-color: #94a3b8;
-        background: #f8fafc;
-        color: #111827;
-      }
-
-      .message-success .message-icon {
-        border-color: #bbf7d0;
-        background: #f0fdf4;
-        color: #15803d;
-      }
-
-      .message-error .message-icon {
-        border-color: #fecaca;
-        background: #fef2f2;
-        color: #dc2626;
-      }
-
-      .message-warning .message-icon {
-        border-color: #fde68a;
-        background: #fffbeb;
-        color: #b45309;
-      }
-
-      .message-info .message-icon,
-      .message-confirm .message-icon,
-      .message-loading .message-icon {
-        border-color: #bfdbfe;
-        background: #eff6ff;
-        color: #2563eb;
-      }
-
-      .message-loading.message-modal {
-        text-align: left;
-      }
-
-      .message-loading .message-actions,
-      .message-loading .message-dismiss {
-        display: none;
-      }
-
-      .message-loading .message-body {
-        padding-top: 10px;
-      }
-
-      .message-icon-spin {
-        animation: message-spin 850ms linear infinite;
-      }
-
-      @keyframes message-spin {
-        to {
-          transform: rotate(360deg);
-        }
-      }
-
-      @media (max-width: 640px) {
-        .message-box,
-        .message-modal,
-        .message-modal.message-modal--headline {
-          width: 100%;
-        }
-
-        .message-actions,
-        .message-modal .message-actions,
-        .message-modal.message-modal--headline .message-actions--headline {
-          justify-content: flex-end;
-        }
-
-        .message-modal.message-confirm .message-actions {
-          justify-content: flex-end;
-        }
-
-        .message-button {
-          flex: 1 1 auto;
-        }
-      }
-
-      @media (prefers-reduced-motion: reduce) {
-        .message-icon-spin {
-          animation: none;
-        }
-      }
-    `,
-  ],
+  imports: [LucideAngularModule, NgClass],
+  templateUrl: './message-box.component.html',
+  styleUrl: './message-box.component.css',
 })
-export class MessageBoxComponent {
-  @Input() variant: MessageBoxVariant = 'info';
+export class MessageBoxComponent implements AfterViewInit, OnDestroy {
+  private static nextId = 0;
+
+  private readonly doc = inject(DOCUMENT);
+
+  readonly instanceId = MessageBoxComponent.nextId++;
+  readonly titleId = `erp-message-box-title-${this.instanceId}`;
+  readonly messageId = `erp-message-box-message-${this.instanceId}`;
+  readonly closeIcon = XIcon;
+  readonly loadingIcon = LoaderCircle;
+
+  private triggerElement: HTMLElement | null = null;
+
+  @Input() variant: MessageBoxVariantInput = 'info';
   @Input() mode: MessageBoxMode = 'inline';
+  @Input() eyebrow = '';
+  /** @deprecated Usar `eyebrow`. */
+  @Input() category = '';
   @Input() title = '';
   @Input() message = '';
-  /** Texto secundario (p. ej. periodo, detalle técnico). Opcional. */
   @Input() detail = '';
+  @Input() sections: readonly MessageBoxSection[] = [];
+  @Input() actions: MessageBoxAction[] = [];
+  @Input() width: MessageBoxWidth = 'md';
+  @Input() disableClose = false;
+  @Input() initialFocus: 'primary' | 'secondary' | 'close' = 'primary';
+
   @Input() actionLabel = '';
-  /** Texto del botón principal; si está vacío se usa `actionLabel`. Si ambos están vacíos, no se muestra el botón. */
   @Input() primaryLabel = '';
   @Input() secondaryLabel = '';
   @Input() tertiaryLabel = '';
   @Input() fourthLabel = '';
   @Input() dismissible = false;
-  @Input() dismissLabel = 'Cerrar mensaje';
-  /**
-   * Si es true y `mode === 'modal'`, el título y el ícono comparten una fila (título izquierda, ícono derecha).
-   * Por defecto false: layout clásico del ERP sin cambios.
-   */
+  @Input() dismissLabel = 'Cerrar';
+  /** @deprecated Sin efecto visual. */
   @Input() modalHeadlineSplit = false;
+
   @Output() readonly action = new EventEmitter<void>();
   @Output() readonly secondary = new EventEmitter<void>();
   @Output() readonly tertiary = new EventEmitter<void>();
   @Output() readonly fourth = new EventEmitter<void>();
   @Output() readonly dismiss = new EventEmitter<void>();
+  @Output() readonly actionSelect = new EventEmitter<string>();
 
-  readonly closeIcon = XIcon;
-  private readonly successIcon = CheckCircle2;
-  private readonly errorIcon = AlertCircle;
-  private readonly warningIcon = TriangleAlert;
-  private readonly infoIcon = Info;
-  private readonly confirmIcon = CircleHelp;
-  private readonly loadingIcon = LoaderCircle;
+  @ViewChild('dialogPanel') private dialogPanel?: ElementRef<HTMLElement>;
+  @ViewChild('closeBtn') private closeBtn?: ElementRef<HTMLButtonElement>;
+  @ViewChildren('actionBtn') private actionButtons?: QueryList<ElementRef<HTMLButtonElement>>;
 
   @HostBinding('class.message-box-host-modal')
   get isModal(): boolean {
     return this.mode === 'modal';
   }
 
-  variantClass(): string {
-    return `message-${this.variant}`;
+  ngAfterViewInit(): void {
+    if (this.mode === 'modal') {
+      this.triggerElement = this.doc.activeElement as HTMLElement | null;
+      queueMicrotask(() => this.applyInitialFocus());
+    }
+  }
+
+  ngOnDestroy(): void {
+    this.restoreFocus();
+  }
+
+  @HostListener('document:keydown.escape', ['$event'])
+  onEscape(event: Event): void {
+    if (this.mode !== 'modal' || this.disableClose) {
+      return;
+    }
+    event.preventDefault();
+    this.onDismiss();
+  }
+
+  resolvedVariant(): MessageBoxResolvedVariant {
+    if (this.variant === 'error') {
+      return 'danger';
+    }
+    if (this.variant === 'confirm') {
+      return 'decision';
+    }
+    return this.variant as MessageBoxResolvedVariant;
+  }
+
+  panelClasses(): string[] {
+    const classes: string[] = [];
+    if (this.mode === 'modal') {
+      classes.push(`noia-msgbox--${this.resolvedWidth()}`);
+      if (this.resolvedVariant() === 'loading') {
+        classes.push('noia-msgbox--loading');
+      }
+    }
+    return classes;
+  }
+
+  resolvedWidth(): MessageBoxWidth {
+    if (this.width) {
+      return this.width;
+    }
+    if (this.normalizedSections().length > 2) {
+      return 'lg';
+    }
+    if (!this.message && !this.normalizedSections().length) {
+      return 'sm';
+    }
+    return 'md';
+  }
+
+  resolvedEyebrow(): string {
+    const custom = (this.eyebrow || this.category)?.trim();
+    if (custom) {
+      return custom;
+    }
+    if (this.mode === 'inline') {
+      return '';
+    }
+    return DEFAULT_EYEBROW[this.resolvedVariant()] ?? '';
+  }
+
+  normalizedSections(): NormalizedMessageBoxSection[] {
+    return (this.sections ?? [])
+      .map((section) => this.normalizeSection(section))
+      .filter((section) => section.title || section.text || section.items.length)
+      .slice(0, 3);
+  }
+
+  hasStructuredSections(): boolean {
+    return this.normalizedSections().length > 0;
+  }
+
+  hasBodyContent(): boolean {
+    return !!(this.detail || this.hasStructuredSections());
+  }
+
+  sectionToneClass(tone: MessageBoxSectionTone): string {
+    return tone === 'neutral' ? 'noia-msgbox__section--neutral' : `noia-msgbox__section--${tone}`;
+  }
+
+  sectionTrack(section: NormalizedMessageBoxSection): string {
+    return `${section.title}|${section.text}|${section.items.join(',')}`;
+  }
+
+  describedByIds(): string | null {
+    return this.message ? this.messageId : null;
   }
 
   liveRole(): 'status' | 'alert' {
-    return this.variant === 'error' || this.variant === 'warning' ? 'alert' : 'status';
+    const v = this.resolvedVariant();
+    return v === 'danger' || v === 'warning' || v === 'blocked' ? 'alert' : 'status';
   }
 
   liveRegion(): 'polite' | 'assertive' {
-    return this.variant === 'error' || this.variant === 'warning' ? 'assertive' : 'polite';
+    return this.liveRole() === 'alert' ? 'assertive' : 'polite';
+  }
+
+  showClose(): boolean {
+    return this.mode === 'modal' && !this.disableClose;
   }
 
   primaryActionLabel(): string {
     return this.primaryLabel || this.actionLabel;
   }
 
-  useModalHeadlineLayout(): boolean {
-    return this.modalHeadlineSplit && this.mode === 'modal';
+  legacyActions(): MessageBoxAction[] {
+    const items: MessageBoxAction[] = [];
+    if (this.secondaryLabel) {
+      items.push({ label: this.secondaryLabel, value: 'secondary', role: 'secondary', align: 'left' });
+    }
+    if (this.tertiaryLabel) {
+      items.push({ label: this.tertiaryLabel, value: 'tertiary', role: 'secondary', align: 'left' });
+    }
+    if (this.fourthLabel) {
+      items.push({ label: this.fourthLabel, value: 'fourth', role: 'secondary', align: 'left' });
+    }
+    if (this.primaryActionLabel()) {
+      items.push({
+        label: this.primaryActionLabel(),
+        value: 'primary',
+        role: 'primary',
+        align: 'right',
+      });
+    }
+    return items;
   }
 
-  icon() {
-    switch (this.variant) {
-      case 'success':
-        return this.successIcon;
-      case 'error':
-        return this.errorIcon;
-      case 'warning':
-        return this.warningIcon;
-      case 'confirm':
-        return this.confirmIcon;
-      case 'loading':
-        return this.loadingIcon;
+  allActions(): MessageBoxAction[] {
+    return this.actions?.length ? this.actions : this.legacyActions();
+  }
+
+  leftActions(): MessageBoxAction[] {
+    return this.allActions().filter((a) => (a.align ?? 'right') === 'left');
+  }
+
+  rightActions(): MessageBoxAction[] {
+    return this.allActions().filter((a) => (a.align ?? 'right') === 'right');
+  }
+
+  hasActions(): boolean {
+    return this.resolvedVariant() !== 'loading' && this.allActions().length > 0;
+  }
+
+  actionClass(action: MessageBoxAction): Record<string, boolean> {
+    return {
+      'noia-msgbox__action--primary': action.role === 'primary',
+      'noia-msgbox__action--danger': action.role === 'danger',
+      'noia-msgbox__action--ghost': action.role === 'ghost',
+    };
+  }
+
+  actionTrack(action: MessageBoxAction, index: number): string {
+    return action.value ?? `${action.role ?? 'action'}-${index}-${action.label}`;
+  }
+
+  onConfigAction(action: MessageBoxAction, index: number): void {
+    const value = action.value ?? this.defaultActionValue(action, index);
+    this.actionSelect.emit(value);
+    switch (value) {
+      case 'primary':
+        this.action.emit();
+        break;
+      case 'secondary':
+        this.secondary.emit();
+        break;
+      case 'tertiary':
+        this.tertiary.emit();
+        break;
+      case 'fourth':
+        this.fourth.emit();
+        break;
       default:
-        return this.infoIcon;
+        if (action.role === 'primary') {
+          this.action.emit();
+        } else if (action.role === 'secondary' || action.role === 'ghost') {
+          this.secondary.emit();
+        }
+        break;
+    }
+  }
+
+  onDismiss(): void {
+    this.dismiss.emit();
+    this.restoreFocus();
+  }
+
+  private normalizeSection(section: MessageBoxSection): NormalizedMessageBoxSection {
+    const title = (section.title ?? section.label ?? '').trim();
+    const text = (section.text ?? section.body ?? '').trim();
+    const items = section.items?.map((item) => item.trim()).filter(Boolean) ?? [];
+    return {
+      title,
+      text,
+      items,
+      tone: this.normalizeSectionTone(section.tone),
+    };
+  }
+
+  private normalizeSectionTone(tone?: MessageBoxSection['tone'] | string): MessageBoxSectionTone {
+    if (tone === 'attention' || tone === 'info' || tone === 'success' || tone === 'neutral') {
+      return tone;
+    }
+    if (tone === 'warning' || tone === 'danger') {
+      return 'attention';
+    }
+    return 'neutral';
+  }
+
+  private defaultActionValue(action: MessageBoxAction, index: number): string {
+    if (action.role === 'primary') {
+      return 'primary';
+    }
+    if (action.role === 'secondary' || action.role === 'ghost') {
+      return 'secondary';
+    }
+    return `action-${index}`;
+  }
+
+  private applyInitialFocus(): void {
+    if (this.initialFocus === 'close' && this.closeBtn) {
+      this.closeBtn.nativeElement.focus();
+      return;
+    }
+    const primary = this.actionButtons?.first;
+    if (this.initialFocus === 'primary' && primary) {
+      primary.nativeElement.focus();
+      return;
+    }
+    if (this.closeBtn && this.showClose()) {
+      this.closeBtn.nativeElement.focus();
+    }
+  }
+
+  private restoreFocus(): void {
+    if (this.triggerElement && typeof this.triggerElement.focus === 'function') {
+      this.triggerElement.focus();
+      this.triggerElement = null;
     }
   }
 }

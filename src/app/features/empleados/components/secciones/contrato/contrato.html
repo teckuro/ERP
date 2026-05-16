@@ -45,6 +45,12 @@
         <div class="field-label-row">
           <label>Tipo trabajador</label>
           <span class="field-badge">Derivado</span>
+          @if (advancedGridLayout && !tipoTrabajadorBaseWarning) {
+            <app-empleado-field-tip
+              [text]="tipoTrabajadorBaseDescription"
+              ariaLabel="Ayuda: tipo trabajador"
+            ></app-empleado-field-tip>
+          }
         </div>
         <div class="readonly-field readonly-field--calculated tipo-trabajador-derived" aria-live="polite">
           <span>{{ tipoTrabajadorBaseLabel }}</span>
@@ -52,7 +58,7 @@
         @if (tipoTrabajadorBaseWarning) {
           <p class="field-message field-message--warning">{{ tipoTrabajadorBaseWarning }}</p>
         } @else {
-          <p class="field-message field-message--hint">{{ tipoTrabajadorBaseDescription }}</p>
+          <p class="field-message"></p>
         }
       </div>
 
@@ -82,6 +88,12 @@
             <label for="empleado-indefinido"
               >Indefinido</label
             >
+            @if (advancedGridLayout) {
+              <app-empleado-field-tip
+                text="Si el contrato es indefinido, no se exige fecha de término."
+                ariaLabel="Ayuda: contrato indefinido"
+              ></app-empleado-field-tip>
+            }
           </div>
           <label class="employee-checkbox-row">
             <input
@@ -92,9 +104,7 @@
             />
             <span>Contrato indefinido</span>
           </label>
-          <p class="field-message field-message--hint">
-            Si el contrato es indefinido, no se exige fecha de término.
-          </p>
+          <p class="field-message"></p>
         </div>
       }
 
@@ -239,6 +249,12 @@
             @if (isRequired('sueldoBase')) {
               <span class="field-required" aria-hidden="true">*</span>
             }
+            @if (advancedGridLayout) {
+              <app-empleado-field-tip
+                [text]="baseAmountFieldHint()"
+                ariaLabel="Ayuda: monto"
+              ></app-empleado-field-tip>
+            }
           </div>
           <input
             id="empleado-sueldo-base"
@@ -249,7 +265,7 @@
           @if (hasError('sueldoBase')) {
             <p class="field-message">El monto bruto debe ser mayor a cero.</p>
           } @else {
-            <p class="field-message field-message--hint">{{ baseAmountHelpText() }}</p>
+            <p class="field-message"></p>
           }
         </div>
 
@@ -462,14 +478,18 @@
           <label for="empleado-seguro-cesantia"
             >Seguro de cesantía</label
           >
+          @if (advancedGridLayout) {
+            <app-empleado-field-tip
+              text="Aplica seguro de cesantía cuando corresponda según el tipo de contrato."
+              ariaLabel="Ayuda: seguro de cesantía"
+            ></app-empleado-field-tip>
+          }
         </div>
         <label class="employee-checkbox-row">
           <input id="empleado-seguro-cesantia" type="checkbox" formControlName="seguroCesantia" />
           <span>Activo</span>
         </label>
-        <p class="field-message field-message--hint">
-          Aplica seguro de cesantía cuando corresponda según el tipo de contrato.
-        </p>
+        <p class="field-message"></p>
       </div>
 
       <div class="form-field form-field--checkbox">
@@ -477,14 +497,18 @@
           <label for="empleado-sueldo-variable"
             >Sueldo variable</label
           >
+          @if (advancedGridLayout) {
+            <app-empleado-field-tip
+              text="Marca si el colaborador puede recibir remuneraciones variables."
+              ariaLabel="Ayuda: sueldo variable"
+            ></app-empleado-field-tip>
+          }
         </div>
         <label class="employee-checkbox-row">
           <input id="empleado-sueldo-variable" type="checkbox" formControlName="sueldoVariable" />
           <span>Aplica componente variable</span>
         </label>
-        <p class="field-message field-message--hint">
-          Marca si el colaborador puede recibir remuneraciones variables.
-        </p>
+        <p class="field-message"></p>
       </div>
     </div>
   </app-card>

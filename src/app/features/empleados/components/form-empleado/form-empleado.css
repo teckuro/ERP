@@ -369,6 +369,10 @@
 }
 
 .advanced-wizard-layout {
+  --employee-floating-ui-z: 220;
+  --erp-floating-ui-z: var(--employee-floating-ui-z);
+  --erp-select-panel-z: var(--employee-floating-ui-z);
+  --erp-select-host-z-open: var(--employee-floating-ui-z);
   flex: 1 1 auto;
   min-height: 34rem;
   align-items: stretch;

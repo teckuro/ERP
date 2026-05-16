@@ -1,5 +1,14 @@
 # CHANGELOG
 
+## ERP-MSGBOX-NOIA-UX-01-FIX-02 - MessageBox decisión operativa
+
+Fecha: 2026-05-16
+
+- `app-message-box` modal alineado a NOIA v3.1: panel neutro, header editorial, secciones compactas sin bordes de color por variante, primario `#1e3a8a`.
+- Creación avanzada: borrador inválido usa `sections` (pendiente / por qué / acción) sin lista dominante de campos.
+- Doc: `docs/codex/diseno/erp-msgbox-noia-ux-01.md`.
+- Sin estilos globales, SQL, motor ni payloads.
+
 ## DOCS-MOVIMIENTOS-ALIGN-01 - Alineación documental Movimientos
 
 Fecha: 2026-05-16

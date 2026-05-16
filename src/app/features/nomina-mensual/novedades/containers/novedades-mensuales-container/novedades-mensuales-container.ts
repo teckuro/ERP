@@ -12,7 +12,7 @@ import {
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { LucideAngularModule } from 'lucide-angular';
-import { ChevronRight, CircleHelp, Plus, RefreshCw, X } from 'lucide-angular/src/icons';
+import { ChevronRight, Plus, RefreshCw, X } from 'lucide-angular/src/icons';
 
 import {
   PeriodoActivoService,
@@ -30,7 +30,9 @@ import {
   MessageBoxComponent,
   MessageBoxVariant,
 } from '../../../../../shared/components/ui/message-box.component';
+import type { MessageBoxSection } from '../../../../../shared/components/ui/message-box.types';
 import { CalendarInputComponent } from '../../../../../shared/components/ui/calendar-input.component';
+import { FieldHelpTipComponent } from '../../../../../shared/components/ui/field-help-tip.component';
 import {
   RecordBreadcrumbComponent,
   RecordBreadcrumbItem,
@@ -224,6 +226,7 @@ function formInicial(periodo: string): NovedadForm {
     MessageBoxComponent,
     SearchSelectComponent,
     CalendarInputComponent,
+    FieldHelpTipComponent,
   ],
   templateUrl: './novedades-mensuales-container.html',
   styleUrl: './novedades-mensuales-container.css',
@@ -246,7 +249,6 @@ export class NovedadesMensualesContainer implements OnInit, OnDestroy {
   readonly refreshIcon = RefreshCw;
   readonly closeIcon = X;
   readonly chevronRightIcon = ChevronRight;
-  readonly fieldTipIcon = CircleHelp;
 
   readonly estados = NOVEDAD_MENSUAL_ESTADOS;
   readonly categorias = NOVEDAD_MENSUAL_CATEGORIAS;
@@ -1027,7 +1029,46 @@ export class NovedadesMensualesContainer implements OnInit, OnDestroy {
 
   mensajeDescartarCambios(tipo: 'mensual' | 'recurrente'): string {
     const alcance = tipo === 'mensual' ? 'el movimiento del mes' : 'el recurrente';
-    return `Hay cambios sin guardar. Si cierras ahora, se perderán los datos de ${alcance}.`;
+    return `Si cierras ahora, se perderán los datos de ${alcance} sin guardar.`;
+  }
+
+  seccionesDescartarCambios(tipo: 'mensual' | 'recurrente'): MessageBoxSection[] {
+    const alcance = tipo === 'mensual' ? 'el movimiento del mes' : 'el recurrente';
+    return [
+      {
+        label: 'Situación detectada',
+        body: `Hay cambios sin guardar en ${alcance}.`,
+      },
+      {
+        label: 'Impacto si cierras ahora',
+        body: 'Los datos ingresados en este formulario no quedarán registrados.',
+        tone: 'warning',
+      },
+      {
+        label: 'Acción recomendada',
+        body: 'Seguir editando si aún debes registrar o ajustar el movimiento.',
+        tone: 'info',
+      },
+    ];
+  }
+
+  seccionesFinalizarRecurrente(trabajador: string, nombre: string): MessageBoxSection[] {
+    return [
+      {
+        label: 'Movimiento',
+        body: `${trabajador} · ${nombre}`,
+      },
+      {
+        label: 'Impacto',
+        body: 'El recurrente dejará de aplicar en períodos futuros y quedará disponible solo como historial.',
+        tone: 'warning',
+      },
+      {
+        label: 'Acción recomendada',
+        body: 'Finalizar solo si confirmas que no debe seguir aplicándose.',
+        tone: 'info',
+      },
+    ];
   }
 
   verRecurrentesTrabajador(row: TrabajadorMovimientoRow): void {

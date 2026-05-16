@@ -1,3 +1,10 @@
+## 2026-05-16 - MESSAGE-BOX-NOIA-UX-01-FIX-02
+
+- **`app-message-box`:** cuadro de decisión NOIA v3.1 — contenedor blanco borde `#d5dce8`, header `#f8fafc`, hasta 3 secciones compactas con tonos suaves (`attention`/`info`/`neutral`), footer secundaria izq / primaria der (`#1e3a8a`); sin línea superior de color, chips ni cards rojas/azules.
+- **Creación avanzada:** modal «No se puede guardar el borrador» con copy operativo y secciones; sin lista dominante de campos.
+- **Archivos:** `message-box.component.{ts,html,css,spec.ts}`; `form-empleado.{ts,html}`.
+- **Doc:** `docs/codex/diseno/erp-msgbox-noia-ux-01.md`.
+
 ## 2026-05-16 - NOM-MOVIMIENTOS-BITACORA-UI-01
 
 - **Bitácora operativa:** tokens locales (`--nm-*`) alineados a `bitacora-operativa-noia.md`; franja operativa sin card; contadores con tonos info/review/ok; estados de trabajador con color funcional.
@@ -12,6 +19,38 @@
 - **Hijo mensual:** ficha informativa del trabajador (sin campo editable desde gestión), bloque **Datos del movimiento** neutro (sin azul dominante), validación solo al guardar o tras tocar campo, resumen dinámico, footer **Cancelar** + **Guardar movimiento/cambios**.
 - **Z-index:** padre 1200, hijo 1310, `app-message-box` 1400.
 - **Archivos:** `novedades-mensuales-container.{html,ts,css}`; sin estilos globales, SQL, motor ni payloads.
+
+## 2026-05-16 - MESSAGE-BOX-FIGMA-V3-01
+
+- **Alineación Figma v3:** panel con `message-content`, categoría + punto, secciones en bloque, botón primario relleno ink en modal, tokens NOIA, cierre absoluto arriba-derecha.
+- **Movimientos:** confirmaciones migradas a `variant="decision"`, `sections` y copy operativo (sin `Aceptar`).
+
+## 2026-05-16 - MESSAGE-BOX-NOIA-UX-01
+
+- **Fase ERP-MSGBOX-NOIA-UX-01:** rebuild `app-message-box` v3 sin chips; línea superior 3px; categoría + punto; secciones estructuradas; footer izq/der; variantes `danger`/`decision`/`blocked`; API `sections`/`actions`/`width`; a11y Escape y foco; compat `error`/`confirm` y labels legacy. Doc: `docs/codex/diseno/erp-msgbox-noia-ux-01.md`.
+
+## 2026-05-16 - MESSAGE-BOX-NOIA-02
+
+- **`app-message-box`:** sin franja lateral ni iconos de estado en modal; panel tipo mini-diálogo ERP (borde neutro, título + texto + pie). Inline con tinte suave en todo el bloque. Botones outline discretos.
+
+## 2026-05-16 - MESSAGE-BOX-NOIA-01
+
+- (Revertido visualmente) franja lateral descartada por lectura genérica/IA.
+
+## 2026-05-16 - SHARED-FIELD-HELP-TIP-02
+
+- **Tooltip:** icono `?` más compacto (11px / hit 14px), popover en `body` para anclaje correcto en modales, flecha con `staticSide` Floating UI, sin flash previo al posicionar.
+
+## 2026-05-16 - SHARED-FIELD-HELP-TIP-01
+
+- **Componente compartido:** `app-field-help-tip` en `shared/components/ui` con Floating UI (`flip` arriba/abajo, `shift`, `arrow` alineado al icono).
+- **Consumidores:** movimientos (`novedades-mensuales`), alta avanzada (`app-empleado-field-tip` alias), variable `--erp-floating-ui-z` en modales y wizard.
+
+## 2026-05-16 - EMP-ALTA-AVANZADA-FIELD-TIP-01
+
+- **Creación avanzada:** hints migrados a `app-empleado-field-tip` → tooltip compartido.
+- **Secciones:** hints de `contrato` y `perfil-laboral` migrados de `field-message--hint` a tooltip en label; capa `--employee-floating-ui-z` en `.advanced-wizard-layout` para select/calendario.
+- **Archivos:** `empleado-field-tip/*`, `contrato.*`, `perfil-laboral.*`, `form-empleado-shared.css`, `form-empleado.css`.
 
 ## 2026-05-16 - NOM-MOVIMIENTOS-MODAL-UX-03
 

@@ -221,6 +221,19 @@
   gap: 4px;
 }
 
+.field-label-row app-empleado-field-tip,
+.field-label-row app-field-help-tip {
+  flex: 0 0 auto;
+  width: auto;
+  max-width: none;
+  align-self: center;
+  margin-left: 2px;
+}
+
+.form-field:has(app-field-help-tip) {
+  overflow: visible;
+}
+
 .field-label-row label {
   color: var(--form-muted, #6b7280);
   font-size: var(--erp-text-xs, 0.665rem);

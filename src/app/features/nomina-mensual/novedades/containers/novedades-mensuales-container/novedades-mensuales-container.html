@@ -242,10 +242,10 @@
             <label class="nm-field nm-form-span2" [attr.data-nm-error]="!!errorCampo('idPersona')">
               <span class="nm-field-label-row">
                 <span class="nm-field-label">Trabajador</span>
-                <button type="button" class="nm-field-tip" aria-label="Ayuda: trabajador">
-                  <lucide-icon [img]="fieldTipIcon"></lucide-icon>
-                  <span class="nm-field-tip__popover" role="tooltip">Selecciona quién recibe el movimiento.</span>
-                </button>
+                <app-field-help-tip
+                  text="Selecciona quién recibe el movimiento."
+                  ariaLabel="Ayuda: trabajador"
+                ></app-field-help-tip>
               </span>
               <app-search-select
                 id="nm-trabajador"
@@ -320,10 +320,10 @@
               <label class="nm-field" [attr.data-nm-error]="!!errorCampo('fechaEvento')">
                 <span class="nm-field-label-row">
                   <span class="nm-field-label">Fecha de referencia</span>
-                  <button type="button" class="nm-field-tip" aria-label="Ayuda: fecha de referencia">
-                    <lucide-icon [img]="fieldTipIcon"></lucide-icon>
-                    <span class="nm-field-tip__popover" role="tooltip">Dentro de {{ periodoActivo.etiqueta() }}.</span>
-                  </button>
+                  <app-field-help-tip
+                    [text]="'Dentro de ' + periodoActivo.etiqueta() + '.'"
+                    ariaLabel="Ayuda: fecha de referencia"
+                  ></app-field-help-tip>
                 </span>
                 <app-calendar-input
                   id="nm-fecha-evento"
@@ -431,10 +431,10 @@
               <label class="nm-field" [attr.data-nm-error]="!!errorCampo('cantidad')">
                 <span class="nm-field-label-row">
                   <span class="nm-field-label">Cantidad</span>
-                  <button type="button" class="nm-field-tip" aria-label="Ayuda: cantidad">
-                    <lucide-icon [img]="fieldTipIcon"></lucide-icon>
-                    <span class="nm-field-tip__popover" role="tooltip">Cantidad administrativa; no corresponde a cantidad de cuotas.</span>
-                  </button>
+                  <app-field-help-tip
+                    text="Cantidad administrativa; no corresponde a cantidad de cuotas."
+                    ariaLabel="Ayuda: cantidad"
+                  ></app-field-help-tip>
                 </span>
                 <input
                   type="number"
@@ -594,10 +594,10 @@
               <label class="nm-field" [attr.data-nm-error]="!!errorRecurrente('vigenciaInicio')">
                 <span class="nm-field-label-row">
                   <span class="nm-field-label">Vigencia inicio</span>
-                  <button type="button" class="nm-field-tip" aria-label="Ayuda: vigencia inicio">
-                    <lucide-icon [img]="fieldTipIcon"></lucide-icon>
-                    <span class="nm-field-tip__popover" role="tooltip">Desde cuándo aplica el recurrente.</span>
-                  </button>
+                  <app-field-help-tip
+                    text="Desde cuándo aplica el recurrente."
+                    ariaLabel="Ayuda: vigencia inicio"
+                  ></app-field-help-tip>
                 </span>
                 <app-calendar-input
                   id="nm-recurrente-vigencia-inicio"
@@ -615,10 +615,10 @@
               <label class="nm-field" [attr.data-nm-error]="!!errorRecurrente('vigenciaFin')">
                 <span class="nm-field-label-row">
                   <span class="nm-field-label">Vigencia fin</span>
-                  <button type="button" class="nm-field-tip" aria-label="Ayuda: vigencia fin">
-                    <lucide-icon [img]="fieldTipIcon"></lucide-icon>
-                    <span class="nm-field-tip__popover" role="tooltip">Opcional. Dejar vacío si no tiene término.</span>
-                  </button>
+                  <app-field-help-tip
+                    text="Opcional. Dejar vacío si no tiene término."
+                    ariaLabel="Ayuda: vigencia fin"
+                  ></app-field-help-tip>
                 </span>
                 <app-calendar-input
                   id="nm-recurrente-vigencia-fin"
@@ -691,13 +691,13 @@
   @if (recurrenteCerrarPendiente(); as recurrentePendiente) {
     <div class="nm-overlay-layer">
     <app-message-box
-      variant="warning"
+      variant="decision"
       mode="modal"
-      [modalHeadlineSplit]="true"
-      title="Finalizar recurrente"
-      message="El movimiento recurrente dejará de aplicar y quedará disponible como historial."
-      [detail]="recurrentePendiente.trabajador + ' · ' + recurrentePendiente.nombre"
-      primaryLabel="Finalizar"
+      width="md"
+      title="¿Finalizar movimiento recurrente?"
+      message="El movimiento dejará de aplicarse en períodos futuros."
+      [sections]="seccionesFinalizarRecurrente(recurrentePendiente.trabajador, recurrentePendiente.nombre)"
+      primaryLabel="Finalizar recurrente"
       secondaryLabel="No finalizar"
       (action)="confirmarFinalizarRecurrente()"
       (secondary)="cerrarConfirmacionRecurrente()"
@@ -710,11 +710,11 @@
     <app-message-box
       [variant]="msg.variant"
       mode="modal"
-      [modalHeadlineSplit]="true"
+      width="sm"
       [title]="msg.title"
       [message]="msg.message"
       [detail]="msg.detail ?? ''"
-      primaryLabel="Aceptar"
+      primaryLabel="Entendido"
       (action)="cerrarMensaje()"
     ></app-message-box>
     </div>
@@ -723,11 +723,12 @@
   @if (confirmarCancelarAbierto()) {
     <div class="nm-overlay-layer">
     <app-message-box
-      variant="warning"
+      variant="decision"
       mode="modal"
-      [modalHeadlineSplit]="true"
-      title="Descartar cambios"
+      width="md"
+      title="¿Descartar cambios del movimiento?"
       [message]="mensajeDescartarCambios('mensual')"
+      [sections]="seccionesDescartarCambios('mensual')"
       primaryLabel="Descartar y cerrar"
       secondaryLabel="Seguir editando"
       (action)="confirmarDescartarFormulario()"
@@ -739,11 +740,12 @@
   @if (confirmarCancelarRecurrenteAbierto()) {
     <div class="nm-overlay-layer">
     <app-message-box
-      variant="warning"
+      variant="decision"
       mode="modal"
-      [modalHeadlineSplit]="true"
-      title="Descartar cambios"
+      width="md"
+      title="¿Descartar cambios del recurrente?"
       [message]="mensajeDescartarCambios('recurrente')"
+      [sections]="seccionesDescartarCambios('recurrente')"
       primaryLabel="Descartar y cerrar"
       secondaryLabel="Seguir editando"
       (action)="confirmarDescartarRecurrente()"

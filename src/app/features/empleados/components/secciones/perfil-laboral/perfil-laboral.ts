@@ -9,6 +9,7 @@ import { PerfilLaboralFormGroup } from '../../../models/empleado-form.model';
 import { RelacionLaboral } from '../../../models/empleado.model';
 import { CalendarInputComponent } from '../../../../../shared/components/ui/calendar-input.component';
 import { CardComponent } from '../../../../../shared/components/ui/card.component';
+import { EmpleadoFieldTipComponent } from '../../empleado-field-tip/empleado-field-tip.component';
 
 interface EdadLaboralInfo {
   label: string;
@@ -24,7 +25,7 @@ interface PerfilLaboralAutoDetection {
 
 @Component({
   selector: 'app-empleado-perfil-laboral',
-  imports: [ReactiveFormsModule, CalendarInputComponent, CardComponent],
+  imports: [ReactiveFormsModule, CalendarInputComponent, CardComponent, EmpleadoFieldTipComponent],
   templateUrl: './perfil-laboral.html',
   styleUrl: './perfil-laboral.css',
 })

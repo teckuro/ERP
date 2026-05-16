@@ -122,6 +122,10 @@ Fase documental. Define `NOIA / Bitácora Operativa` en `docs/codex/diseno/bitac
 
 Aplica identidad al shell y componentes base: header, sidebar, cards, botones, badges, breadcrumbs, DataGrid, SearchSelect y MessageBox.
 
+### `ERP-MSGBOX-NOIA-UX-01-FIX-02`
+
+`app-message-box` modal: cuadro de decisión neutro (header `#f8fafc`, secciones compactas, primario `#1e3a8a`); ver `diseno/erp-msgbox-noia-ux-01.md`.
+
 ### `EMP-ADV-BITACORA-LABORAL-UX-01`
 
 Creación avanzada adopta `Bitácora laboral` como identidad local del flujo.
