@@ -53,6 +53,24 @@ describe('MessageBoxComponent', () => {
     expect(el.querySelector('.noia-msgbox__section ul')).toBeNull();
   });
 
+  it('la X del modal emite secondary cuando hay acción de cierre', () => {
+    const fixture = TestBed.createComponent(MessageBoxComponent);
+    fixture.componentInstance.mode = 'modal';
+    fixture.componentInstance.title = 'Confirmar';
+    fixture.componentInstance.primaryLabel = 'Aplicar';
+    fixture.componentInstance.secondaryLabel = 'Cerrar';
+    let secondary = 0;
+    fixture.componentInstance.secondary.subscribe(() => secondary++);
+    fixture.detectChanges();
+
+    const closeBtn = (fixture.nativeElement as HTMLElement).querySelector(
+      '.noia-msgbox__close',
+    ) as HTMLButtonElement;
+    expect(closeBtn).not.toBeNull();
+    closeBtn.click();
+    expect(secondary).toBe(1);
+  });
+
   it('limita a tres bloques de decisión', () => {
     const fixture = TestBed.createComponent(MessageBoxComponent);
     fixture.componentInstance.mode = 'modal';

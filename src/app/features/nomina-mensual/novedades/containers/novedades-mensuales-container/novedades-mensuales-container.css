@@ -15,7 +15,7 @@
   --nm-muted: #647084;
   --nm-subtle: #8a94a6;
   --nm-soft: #fafaf7;
-  --nm-primary: #2563eb;
+  --nm-primary: var(--erp-primary, #1e3a8a);
   --nm-primary-soft: #eff6ff;
   --nm-primary-border: #bfdbfe;
   --nm-review: #a16207;
@@ -536,7 +536,15 @@
   transform: rotate(90deg);
 }
 
-:host ::ng-deep .nm-details-chevron-wrap lucide-icon,
+:host ::ng-deep .nm-details-chevron-wrap lucide-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 0.875rem;
+  height: 0.875rem;
+  line-height: 0;
+}
+
 :host ::ng-deep .nm-details-chevron-wrap lucide-icon svg {
   display: block;
   width: 0.875rem;
@@ -1106,6 +1114,9 @@
 }
 
 .nm-modal-body--gestion {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
   padding-top: 0.75rem;
 }
 
@@ -1139,10 +1150,21 @@
   color: #0f172a;
 }
 
-.nm-gestion-unificada :host ::ng-deep app-data-grid,
-.nm-gestion-unificada app-data-grid {
-  display: block;
+.nm-gestion-unificada {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  gap: 0.5rem;
   min-height: 0;
+  border-top: 0;
+  padding-top: 0;
+}
+
+.nm-gestion-unificada app-data-grid {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-height: min(24rem, calc(100vh - 15rem));
 }
 
 .nm-chip--ok {
@@ -1393,6 +1415,7 @@
   justify-content: center;
   width: 16px;
   height: 16px;
+  line-height: 0;
 }
 
 :host ::ng-deep .nm-modal-close lucide-icon svg {
@@ -1540,13 +1563,6 @@
 
 .nm-worker-modal .nm-modal-body--worker {
   padding-top: 0.75rem;
-}
-
-.nm-gestion-unificada {
-  display: grid;
-  gap: 0.5rem;
-  border-top: 0;
-  padding-top: 0;
 }
 
 .nm-gestion-unificada .nm-gestion-filtros {

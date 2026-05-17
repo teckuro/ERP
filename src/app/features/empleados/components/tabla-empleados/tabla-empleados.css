@@ -117,10 +117,14 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  line-height: 0;
 }
 
 .empleados-create-menu-icon-wrap lucide-icon ::ng-deep svg {
   display: block;
+  width: 1rem;
+  height: 1rem;
+  margin: 0;
 }
 
 .empleados-create-menu-icon {

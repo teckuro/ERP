@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from 'vitest';
+ï»¿import { describe, expect, it, vi } from 'vitest';
 import { TestBed } from '@angular/core/testing';
 import { ActivatedRoute, Router } from '@angular/router';
 
@@ -120,8 +120,10 @@ describe('FormEmpleadoComponent - completitud de borrador avanzado', () => {
     component.goToNextTab();
 
     expect(component.activeWizardStep()).toBe(0);
-    expect(component.advancedActionModal()?.kind).toBe('next-step-review');
-    expect(component.advancedActionModal()?.primaryLabel).toBe('Continuar');
+    const modal = component.advancedActionModal();
+    expect(modal?.kind).toBe('next-step-review');
+    expect(modal?.primaryLabel).toBe('Continuar');
+    expect(modal?.sections?.length).toBe(3);
 
     component.handleAdvancedActionModalPrimary();
 
@@ -134,8 +136,10 @@ describe('FormEmpleadoComponent - completitud de borrador avanzado', () => {
 
     await component.onGuardarBorrador();
 
-    expect(component.advancedActionModal()?.kind).toBe('draft-invalid');
-    expect(component.advancedActionModal()?.title).toBe('No se puede guardar el borrador');
+    const modal = component.advancedActionModal();
+    expect(modal?.kind).toBe('draft-invalid');
+    expect(modal?.title).toBe('No se puede guardar el borrador');
+    expect(modal?.sections?.length).toBe(3);
     expect(component.errorMessage()).toBeNull();
   });
 
@@ -223,7 +227,7 @@ describe('FormEmpleadoComponent - completitud de borrador avanzado', () => {
     component.goToNextTab();
 
     expect(component.advancedActionModal()?.kind).toBe('coherence-decision');
-    expect(component.advancedActionModal()?.primaryLabel).toBe('Activar seguro de cesantía');
+    expect(component.advancedActionModal()?.primaryLabel).toBe('Activar seguro de cesantÂa');
 
     component.handleAdvancedActionModalPrimary();
 
@@ -251,7 +255,7 @@ describe('FormEmpleadoComponent - completitud de borrador avanzado', () => {
 
     expect(component.form.controls.contrato.controls.seguroCesantia.value).toBe(false);
     expect(component.activeWizardStep()).toBe(4);
-    expect(component.coherenciaResumenItems()).toContain('Seguro de Cesantía desactivado en contrato indefinido.');
+    expect(component.coherenciaResumenItems()).toContain('Seguro de CesantÂa desactivado en contrato indefinido.');
   });
 
   it('sincroniza tipo trabajador base desde relacion laboral', async () => {
@@ -277,6 +281,4 @@ describe('FormEmpleadoComponent - completitud de borrador avanzado', () => {
     expect(component.form.controls.contrato.controls.relacionLaboral.value).toBe('CONTRATO');
     expect(component.form.controls.contrato.controls.idTipoTrabajador.value).toBe(1);
   });
-
-
 });

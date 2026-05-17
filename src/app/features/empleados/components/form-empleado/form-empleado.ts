@@ -106,9 +106,14 @@ type AdvancedActionModalKind =
   | "finish-invalid"
   | "finish-confirm"
   | "honorarios-confirm"
-  | "honorarios-finish-blocked";
+  | "honorarios-finish-blocked"
+  | "basic-success"
+  | "basic-error"
+  | "basic-duplicate-rut"
+  | "basic-catalog-wait";
 type AdvancedActionModalAction =
   | "dismiss"
+  | "go-to-list"
   | "apply-coherence-suggestion"
   | "keep-coherence-review"
   | "continue-next"
@@ -438,12 +443,21 @@ export class FormEmpleadoComponent implements OnInit {
       this.openAdvancedActionModal({
         kind: "draft-invalid",
         variant: "warning",
+        eyebrow: "Revisión administrativa",
         title: "Espera a que cargue el formulario",
         message:
-          "La información base del formulario aún se está preparando. Intenta guardar el borrador nuevamente en unos segundos.",
+          "La información base aún se está preparando. Intenta guardar el borrador en unos segundos.",
+        sections: this.buildBitacoraMsgboxSections({
+          pendientePrincipal:
+            "Esperar a que terminen de cargar catálogos y datos base del formulario.",
+          porQueImporta:
+            "Sin catálogos no se puede registrar un borrador trazable en la bitácora.",
+          accionRecomendada: "Reintentar guardar el borrador cuando el formulario esté listo.",
+          pendienteTone: "info",
+        }),
         primaryLabel: "Aceptar",
         blockingItems: [],
-        warningItems: ["Catálogos y datos base aún en carga."],
+        warningItems: [],
         infoItems: [],
         primaryAction: "dismiss",
       });
@@ -671,9 +685,13 @@ export class FormEmpleadoComponent implements OnInit {
     this.markSubmitControlsAsTouched();
 
     if (this.isLoadingCatalogs()) {
-      this.errorMessage.set(
-        "La informacion base del formulario aun se esta cargando. Espera unos segundos e intenta nuevamente.",
-      );
+      if (this.isBasicMode()) {
+        this.openBasicCatalogWaitModal();
+      } else {
+        this.errorMessage.set(
+          "La informacion base del formulario aun se esta cargando. Espera unos segundos e intenta nuevamente.",
+        );
+      }
       return;
     }
 
@@ -927,6 +945,10 @@ export class FormEmpleadoComponent implements OnInit {
       case "save-honorarios-draft":
         this.advancedActionModal.set(null);
         void this.onGuardarBorrador();
+        break;
+      case "go-to-list":
+        this.advancedActionModal.set(null);
+        this.goToEmployeeList();
         break;
       case "dismiss":
       default:
@@ -1825,21 +1847,118 @@ export class FormEmpleadoComponent implements OnInit {
         mapEmpleadoFormToPayloadBasico(this.form),
       );
 
-      this.successMessage.set(
-        'La creación básica fue guardada y la ficha quedó en estado "En proceso".',
-      );
-      this.successFlow.set("basico");
-      this.createdEmployeeId.set(created.id);
       this.form.markAsPristine();
+      this.openBasicSuccessModal(created.id);
     } catch (error) {
       if (error instanceof EmpleadoRutDuplicadoError) {
-        this.duplicateRutModalRut.set(error.rut);
+        this.openBasicDuplicateRutModal(error.rut);
       } else {
-        this.errorMessage.set(this.resolveSaveErrorMessage(error));
+        this.openBasicErrorModal(this.resolveSaveErrorMessage(error));
       }
     } finally {
       this.isSaving.set(false);
     }
+  }
+
+  private openBasicSuccessModal(employeeId: number): void {
+    this.successFlow.set("basico");
+    this.createdEmployeeId.set(employeeId);
+    this.openAdvancedActionModal({
+      kind: "basic-success",
+      variant: "success",
+      eyebrow: "Registro actualizado",
+      title: "Empleado registrado correctamente",
+      message:
+        'La ficha quedó en estado «En proceso». Puedes completar contrato, previsión y banco desde la ficha del empleado.',
+      sections: this.buildBitacoraMsgboxSections({
+        pendientePrincipal:
+          "La creación básica quedó registrada con los datos personales y de contacto ingresados.",
+        detailItems: [`Ficha N° ${employeeId}`],
+        porQueImporta:
+          "El alta parcial queda trazable; hasta completar contrato y previsión la ficha no está lista para liquidar.",
+        accionRecomendada:
+          "Ir al listado para continuar con otras fichas o abrir la ficha del empleado para completar datos laborales.",
+        pendienteTone: "success",
+      }),
+      primaryLabel: "Ir al listado",
+      blockingItems: [],
+      warningItems: [],
+      infoItems: [],
+      primaryAction: "go-to-list",
+    });
+  }
+
+  private openBasicErrorModal(message: string): void {
+    const suggestedStep = this.errorSuggestedStep(message);
+    this.openAdvancedActionModal({
+      kind: "basic-error",
+      variant: "danger",
+      eyebrow: "Error de guardado",
+      title: "No fue posible registrar la ficha",
+      message:
+        "El registro no se completó. Revisa el detalle y vuelve a intentarlo.",
+      sections: this.buildBitacoraMsgboxSections({
+        pendientePrincipal: this.normalizedErrorMessage(message),
+        detailItems: suggestedStep ? [`Revisar: ${suggestedStep}`] : undefined,
+        porQueImporta:
+          "Sin corregir el problema no se puede dejar la ficha registrada en el sistema.",
+        accionRecomendada: this.errorRecommendedAction(message),
+      }),
+      primaryLabel: "Cerrar",
+      blockingItems: [],
+      warningItems: [],
+      infoItems: [],
+      primaryAction: "dismiss",
+    });
+  }
+
+  private openBasicDuplicateRutModal(rut: string): void {
+    this.openAdvancedActionModal({
+      kind: "basic-duplicate-rut",
+      variant: "danger",
+      eyebrow: "Revisión administrativa",
+      title: "Ficha ya registrada",
+      message: `Ya existe un empleado registrado con el RUT ${rut}.`,
+      sections: this.buildBitacoraMsgboxSections({
+        pendientePrincipal:
+          "No se puede crear una nueva ficha con un RUT ya registrado en el sistema.",
+        detailItems: [`RUT ${rut}`],
+        porQueImporta:
+          "Evita duplicar la identificación del trabajador y mantiene coherencia en nómina y remuneraciones.",
+        accionRecomendada:
+          "Revisar el listado de empleados o editar la ficha existente antes de intentar de nuevo.",
+      }),
+      primaryLabel: "Cerrar",
+      blockingItems: [],
+      warningItems: [],
+      infoItems: [],
+      primaryAction: "dismiss",
+    });
+  }
+
+  private openBasicCatalogWaitModal(): void {
+    this.openAdvancedActionModal({
+      kind: "basic-catalog-wait",
+      variant: "warning",
+      eyebrow: "Revisión administrativa",
+      title: "Formulario en preparación",
+      message:
+        "Los catálogos y datos base aún se están cargando. Espera unos segundos e intenta guardar de nuevo.",
+      sections: this.buildBitacoraMsgboxSections({
+        pendientePrincipal:
+          "Esperar a que termine la carga de catálogos antes de registrar la ficha.",
+        porQueImporta:
+          "Sin catálogos no se puede validar ni guardar datos personales de forma trazable.",
+        accionRecomendada:
+          "Reintentar el guardado cuando el formulario muestre los datos listos.",
+        pendienteTone: "info",
+      }),
+      primaryLabel: "Cerrar",
+      blockingItems: [],
+      warningItems: [],
+      infoItems: [],
+      primaryAction: "dismiss",
+    });
   }
 
   private getAllValidationRules(): ValidationRule[] {
@@ -2827,21 +2946,28 @@ export class FormEmpleadoComponent implements OnInit {
     this.openAdvancedActionModal({
       kind: "coherence-decision",
       variant: "warning",
+      eyebrow: "Revisión administrativa",
       title: issue.title,
       message:
         context === "finish"
-          ? "Antes de finalizar, el sistema detectó una combinación que conviene decidir. Puedes aplicar la corrección sugerida o mantenerla bajo revisión administrativa."
-          : "El sistema detectó una combinación que conviene revisar antes de seguir. Puedes aplicar la corrección sugerida o mantenerla bajo revisión administrativa.",
+          ? "Antes de finalizar conviene decidir esta combinación en la bitácora."
+          : "Antes de seguir conviene decidir esta combinación en la bitácora.",
+      sections: this.buildBitacoraMsgboxSections({
+        pendientePrincipal: issue.detail,
+        porQueImporta:
+          "La decisión queda visible en la bitácora y en el resumen hasta que la cierres o apliques la corrección.",
+        accionRecomendada:
+          context === "finish"
+            ? "Aplicar la corrección sugerida o mantener bajo revisión y revisar el resumen antes de finalizar."
+            : "Aplicar la corrección sugerida o mantener bajo revisión y continuar el recorrido.",
+      }),
       primaryLabel:
         issue.recommendedActionLabel ?? "Aplicar corrección sugerida",
       secondaryLabel:
         context === "finish" ? "Mantener y finalizar" : "Mantener y continuar",
       blockingItems: [],
-      warningItems: [issue.detail],
-      infoItems: [
-        "RRHH decide si corrige o mantiene revisión.",
-        "La revisión quedará visible en el resumen.",
-      ],
+      warningItems: [],
+      infoItems: [],
       targetStep: issue.stepIndex,
       primaryAction: "apply-coherence-suggestion",
       secondaryAction: "keep-coherence-review",
@@ -2936,26 +3062,39 @@ export class FormEmpleadoComponent implements OnInit {
     );
     const warnings = pending.filter((item) => item.severity === "warning");
     const label = this.wizardStepShortLabel(step);
+    const hasBlocking = blocking.length > 0;
+    const detailItems = this.validationModalLabels(
+      hasBlocking ? blocking : warnings,
+      6,
+    );
 
     this.openAdvancedActionModal({
       kind: "next-step-review",
-      variant: blocking.length > 0 ? "warning" : "info",
-      title:
-        blocking.length > 0
-          ? "Datos pendientes en esta sección"
-          : "Advertencias de revisión",
-      message:
-        blocking.length > 0
-          ? `La sección "${label}" aún tiene información necesaria para finalizar el alta. Puedes corregirla ahora o continuar con el resto del formulario y volver a este punto antes de finalizar.`
-          : `La sección "${label}" tiene revisiones administrativas que no impiden avanzar, pero conviene dejarlas claras antes de cerrar el alta.`,
+      variant: hasBlocking ? "warning" : "info",
+      eyebrow: "Revisión administrativa",
+      title: hasBlocking
+        ? "Datos pendientes en este registro"
+        : "Advertencias de revisión",
+      message: hasBlocking
+        ? `El registro «${label}» aún tiene datos obligatorios. Puedes corregirlos ahora o continuar y volver antes de finalizar.`
+        : `El registro «${label}» tiene revisiones que no bloquean el avance, pero conviene dejarlas claras.`,
+      sections: this.buildBitacoraMsgboxSections({
+        pendientePrincipal: hasBlocking
+          ? `Completar los datos obligatorios del registro «${label}» antes de cerrar el alta.`
+          : `Revisar las advertencias administrativas del registro «${label}».`,
+        detailItems,
+        porQueImporta:
+          "Cada pendiente queda trazado en la bitácora laboral hasta que lo cierres o decidas continuar con revisión pendiente.",
+        accionRecomendada: hasBlocking
+          ? "Corregir ahora el primer campo pendiente o continuar y volver a este registro desde la bitácora."
+          : "Aclarar las revisiones ahora o continuar; el resumen final mantendrá lo pendiente.",
+        pendienteTone: hasBlocking ? "attention" : "info",
+      }),
       primaryLabel: "Continuar",
       secondaryLabel: "Corregir ahora",
-      blockingItems: this.validationModalLabels(blocking, 6),
-      warningItems: this.validationModalLabels(warnings, 6),
-      infoItems: [
-        "Puedes continuar y volver antes de finalizar.",
-        "El resumen final mantendrá estos pendientes.",
-      ],
+      blockingItems: [],
+      warningItems: [],
+      infoItems: [],
       targetStep: step,
       primaryAction: "continue-next",
       secondaryAction: "focus-current-step",
@@ -3002,13 +3141,24 @@ export class FormEmpleadoComponent implements OnInit {
     this.openAdvancedActionModal({
       kind: "draft-success",
       variant: "success",
+      eyebrow: "Registro actualizado",
       title: isNewDraft ? "Borrador guardado" : "Borrador actualizado",
       message:
-        "La ficha fue guardada correctamente. Puedes seguir completando la creación avanzada ahora o continuar más tarde desde el listado de empleados.",
+        "La ficha quedó guardada. Puedes seguir completando la bitácora ahora o retomarla más tarde.",
+      sections: this.buildBitacoraMsgboxSections({
+        pendientePrincipal: isNewDraft
+          ? "El borrador quedó registrado con los datos mínimos ingresados hasta ahora."
+          : "Los cambios del borrador quedaron actualizados en la bitácora laboral.",
+        porQueImporta:
+          "El avance parcial queda trazable para retomar la creación avanzada sin perder lo ya registrado.",
+        accionRecomendada:
+          "Continuar completando los registros de la bitácora o volver al listado de empleados.",
+        pendienteTone: "success",
+      }),
       primaryLabel: "Aceptar",
       blockingItems: [],
       warningItems: [],
-      infoItems: ["La ficha seguirá en borrador."],
+      infoItems: [],
       primaryAction: "dismiss",
     });
   }
@@ -3018,19 +3168,28 @@ export class FormEmpleadoComponent implements OnInit {
     const blocking = pending.filter(
       (item) => item.blocking && item.severity === "error",
     );
-    const warnings = pending.filter((item) => item.severity === "warning");
 
     this.openAdvancedActionModal({
       kind: "finish-invalid",
       variant: "error",
+      eyebrow: "Revisión administrativa",
       title: "La ficha no está lista para finalizar",
       message:
-        "Aún faltan datos administrativos necesarios para crear el trabajador y dejarlo preparado para remuneraciones. Revisa los puntos pendientes antes de finalizar.",
+        "Aún hay registros de la bitácora con datos obligatorios pendientes. Ciérralos antes de finalizar el alta.",
+      sections: this.buildBitacoraMsgboxSections({
+        pendientePrincipal:
+          "Completar los datos administrativos mínimos en los registros pendientes de la bitácora laboral.",
+        detailItems: this.validationModalLabels(blocking, 8),
+        porQueImporta:
+          "Sin esos datos la ficha no puede quedar lista para remuneraciones ni cerrarse en la bitácora.",
+        accionRecomendada:
+          "Ir al primer registro con bloqueo, completar lo pendiente o guardar borrador y retomar después.",
+      }),
       primaryLabel: "Ir al primer pendiente",
       secondaryLabel: "Cerrar",
-      blockingItems: this.validationModalLabels(blocking, 10),
-      warningItems: this.validationModalLabels(warnings, 8),
-      infoItems: ["Puedes guardar borrador y completar después."],
+      blockingItems: [],
+      warningItems: [],
+      infoItems: [],
       targetStep: firstBadStep,
       primaryAction: "focus-first-blocking",
       secondaryAction: "dismiss",
@@ -3041,14 +3200,24 @@ export class FormEmpleadoComponent implements OnInit {
     this.openAdvancedActionModal({
       kind: "finish-confirm",
       variant: "success",
+      eyebrow: "Decisión requerida",
       title: "Finalizar alta del trabajador",
       message:
-        "La ficha cuenta con los datos mínimos para crear el trabajador y continuar con los procesos administrativos y de remuneraciones. Antes de finalizar, revisa que la información ingresada sea correcta.",
+        "La bitácora laboral está lista para cerrar el alta. Revisa que la información sea correcta antes de confirmar.",
+      sections: this.buildBitacoraMsgboxSections({
+        pendientePrincipal:
+          "Confirmar el cierre del alta con los registros de la bitácora en estado listo.",
+        porQueImporta:
+          "Al finalizar, la ficha queda habilitada para procesos administrativos y de remuneraciones.",
+        accionRecomendada:
+          "Finalizar el alta si los datos son correctos, o cancelar para revisar algún registro de la bitácora.",
+        pendienteTone: "success",
+      }),
       primaryLabel: "Finalizar alta",
       secondaryLabel: "Cancelar",
       blockingItems: [],
       warningItems: [],
-      infoItems: ["La ficha quedará disponible para revisión posterior."],
+      infoItems: [],
       primaryAction: "execute-finish",
       secondaryAction: "dismiss",
     });
@@ -3058,20 +3227,27 @@ export class FormEmpleadoComponent implements OnInit {
     this.openAdvancedActionModal({
       kind: "honorarios-confirm",
       variant: "warning",
+      eyebrow: "Decisión requerida",
       title: "Cambiar a boleta de honorarios",
       message:
-        "Este registro se tratará como prestador de servicios y no como trabajador dependiente. El formulario ocultará los datos laborales que no corresponden a esta modalidad.",
+        "El registro pasará a prestador de servicios. Los pasos laborales dependientes quedarán como no aplicables en la bitácora.",
+      sections: this.buildBitacoraMsgboxSections({
+        pendientePrincipal:
+          "Confirmar el cambio a boleta de honorarios y ocultar datos de relación laboral dependiente.",
+        detailItems: [
+          "Jornada, gratificación, previsión, salud, APVI y asignaciones laborales: no aplicables.",
+          "La ficha podrá guardarse como borrador; no se finaliza como trabajador dependiente.",
+        ],
+        porQueImporta:
+          "La bitácora debe reflejar la modalidad correcta para no solicitar datos que no corresponden al prestador.",
+        accionRecomendada:
+          "Confirmar el cambio si la modalidad es correcta, o cancelar y mantener relación laboral dependiente.",
+      }),
       primaryLabel: "Confirmar cambio",
       secondaryLabel: "Cancelar",
       blockingItems: [],
-      warningItems: [
-        "Jornada laboral, gratificación, previsión, salud, APVI y asignaciones laborales quedarán como no aplicables.",
-        "La ficha podrá guardarse como borrador, pero no finalizarse como trabajador dependiente.",
-      ],
-      infoItems: [
-        "El monto será bruto de honorarios.",
-        "La persistencia final queda para otra fase.",
-      ],
+      warningItems: [],
+      infoItems: [],
       primaryAction: "confirm-honorarios",
       secondaryAction: "cancel-honorarios",
     });
@@ -3081,19 +3257,27 @@ export class FormEmpleadoComponent implements OnInit {
     this.openAdvancedActionModal({
       kind: "honorarios-finish-blocked",
       variant: "warning",
+      eyebrow: "Revisión administrativa",
       title: "Guardar borrador de honorarios",
       message:
-        "La ficha está marcada como boleta de honorarios. Se puede conservar como borrador, pero no finalizar como trabajador dependiente con el flujo actual.",
+        "La ficha está en modalidad honorarios. Puedes guardar borrador; la finalización como dependiente no está disponible.",
+      sections: this.buildBitacoraMsgboxSections({
+        pendientePrincipal:
+          "Conservar el avance como borrador de prestador a honorarios.",
+        detailItems: [
+          "La persistencia final de honorarios aún no está habilitada.",
+          "No se generará contrato laboral dependiente ni liquidación de sueldo.",
+        ],
+        porQueImporta:
+          "La bitácora debe cerrarse solo con flujos habilitados; el alta dependiente queda pendiente de otra fase.",
+        accionRecomendada:
+          "Guardar como borrador y completar retención, datos tributarios y pago cuando el flujo esté disponible.",
+      }),
       primaryLabel: "Guardar como borrador",
       secondaryLabel: "Cerrar",
-      blockingItems: [
-        "La persistencia final de honorarios aún no está habilitada.",
-        "No se generará contrato laboral, jornada, previsión dependiente ni liquidación de sueldo.",
-      ],
-      warningItems: [
-        "Mantén esta ficha como borrador hasta implementar el flujo completo de prestadores a honorarios.",
-      ],
-      infoItems: ["Fase posterior: retención, datos tributarios y pago."],
+      blockingItems: [],
+      warningItems: [],
+      infoItems: [],
       targetStep: 8,
       primaryAction: "save-honorarios-draft",
       secondaryAction: "dismiss",
@@ -3317,6 +3501,34 @@ export class FormEmpleadoComponent implements OnInit {
       this.markWizardStepVisited(7);
       this.scrollToCurrentStepStart({ focusFirstField: true });
     }
+  }
+
+  private buildBitacoraMsgboxSections(options: {
+    pendientePrincipal: string;
+    detailItems?: readonly string[];
+    porQueImporta: string;
+    accionRecomendada: string;
+    pendienteTone?: MessageBoxSection["tone"];
+  }): readonly MessageBoxSection[] {
+    const items = options.detailItems?.filter((item) => item.trim());
+    return [
+      {
+        title: "Pendiente principal",
+        text: options.pendientePrincipal,
+        items: items?.length ? [...items] : undefined,
+        tone: options.pendienteTone ?? "attention",
+      },
+      {
+        title: "Por qué importa",
+        text: options.porQueImporta,
+        tone: "neutral",
+      },
+      {
+        title: "Acción recomendada",
+        text: options.accionRecomendada,
+        tone: "info",
+      },
+    ];
   }
 
   private validationModalLabels(

@@ -53,6 +53,12 @@ Preparar nomina
 -> Liquidaciones oficiales internas
 ```
 
+**NOM-PREPARAR-NOMINA-BITACORA-V3-POLISH-UX-01 (2026-05-17):** pulido visual post-V3 — timeline de etapas, acta del período, panel de apoyo, resumen en grilla. Ver [`../../diseno/nom-preparar-nomina-bitacora-v3-polish-ux-01.md`](../../diseno/nom-preparar-nomina-bitacora-v3-polish-ux-01.md).
+
+**NOM-PREPARAR-NOMINA-BITACORA-V3-UX-01 (2026-05-16):** bitácora V3 — padre único, 5 etapas + subpasos, acta activa y detalle progresivo. Ver [`preparar-nomina/05-bitacora-v3-ux.md`](preparar-nomina/05-bitacora-v3-ux.md).
+
+**NOM-PREPARAR-NOMINA-NOIA-LAYOUT-UX-01 (2026-05-16):** layout bitácora operativa — franja del período, workspace `Mesa de preparación` + `Siguiente acción`, disclosure de alcance. Ver [`diseno/nom-preparar-nomina-noia-layout-ux-01.md`](../../diseno/nom-preparar-nomina-noia-layout-ux-01.md).
+
 Para fases siguientes de UI, `Preparar nomina` debe presentarse como tablero operativo/comercial del periodo:
 
 ```txt

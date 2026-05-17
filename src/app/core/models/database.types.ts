@@ -3175,6 +3175,84 @@ export type Database = {
           },
         ]
       }
+      persona_condicion_trabajador: {
+        Row: {
+          activa: boolean
+          created_at: string
+          id_contrato: number | null
+          id_persona: number
+          id_persona_condicion_trabajador: number
+          id_tipo_condicion_trabajador: number
+          observacion: string | null
+          respaldo_registrado: boolean
+          updated_at: string | null
+          vigencia_fin: string | null
+          vigencia_inicio: string
+        }
+        Insert: {
+          activa?: boolean
+          created_at?: string
+          id_contrato?: number | null
+          id_persona: number
+          id_persona_condicion_trabajador?: number
+          id_tipo_condicion_trabajador: number
+          observacion?: string | null
+          respaldo_registrado?: boolean
+          updated_at?: string | null
+          vigencia_fin?: string | null
+          vigencia_inicio?: string
+        }
+        Update: {
+          activa?: boolean
+          created_at?: string
+          id_contrato?: number | null
+          id_persona?: number
+          id_persona_condicion_trabajador?: number
+          id_tipo_condicion_trabajador?: number
+          observacion?: string | null
+          respaldo_registrado?: boolean
+          updated_at?: string | null
+          vigencia_fin?: string | null
+          vigencia_inicio?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "persona_condicion_trabajador_id_contrato_fkey"
+            columns: ["id_contrato"]
+            isOneToOne: false
+            referencedRelation: "contrato"
+            referencedColumns: ["id_contrato"]
+          },
+          {
+            foreignKeyName: "persona_condicion_trabajador_id_contrato_fkey"
+            columns: ["id_contrato"]
+            isOneToOne: false
+            referencedRelation: "vw_persona_factores"
+            referencedColumns: ["id_contrato"]
+          },
+          {
+            foreignKeyName: "persona_condicion_trabajador_id_persona_fkey"
+            columns: ["id_persona"]
+            isOneToOne: false
+            referencedRelation: "persona"
+            referencedColumns: ["id_persona"]
+          },
+          {
+            foreignKeyName: "persona_condicion_trabajador_id_persona_fkey"
+            columns: ["id_persona"]
+            isOneToOne: false
+            referencedRelation: "vw_persona_factores"
+            referencedColumns: ["id_persona"]
+          },
+          {
+            foreignKeyName: "persona_condicion_trabajador_id_tipo_condicion_trabajador_fkey"
+            columns: ["id_tipo_condicion_trabajador"]
+            isOneToOne: false
+            referencedRelation: "tipo_condicion_trabajador"
+            referencedColumns: ["id_tipo_condicion_trabajador"]
+          },
+        ]
+      }
       persona_tramo_carga: {
         Row: {
           id_persona: number
@@ -3967,6 +4045,54 @@ export type Database = {
         }
         Relationships: []
       }
+      tipo_condicion_trabajador: {
+        Row: {
+          afecta_afc: boolean
+          afecta_prevision: boolean
+          afecta_salud: boolean
+          codigo: string
+          created_at: string
+          descripcion: string | null
+          grupo: string
+          id_tipo_condicion_trabajador: number
+          nombre: string
+          orden: number
+          requiere_respaldo: boolean
+          updated_at: string | null
+          vigente: boolean
+        }
+        Insert: {
+          afecta_afc?: boolean
+          afecta_prevision?: boolean
+          afecta_salud?: boolean
+          codigo: string
+          created_at?: string
+          descripcion?: string | null
+          grupo?: string
+          id_tipo_condicion_trabajador?: number
+          nombre: string
+          orden?: number
+          requiere_respaldo?: boolean
+          updated_at?: string | null
+          vigente?: boolean
+        }
+        Update: {
+          afecta_afc?: boolean
+          afecta_prevision?: boolean
+          afecta_salud?: boolean
+          codigo?: string
+          created_at?: string
+          descripcion?: string | null
+          grupo?: string
+          id_tipo_condicion_trabajador?: number
+          nombre?: string
+          orden?: number
+          requiere_respaldo?: boolean
+          updated_at?: string | null
+          vigente?: boolean
+        }
+        Relationships: []
+      }
       tipo_cuenta_bancaria: {
         Row: {
           activo: boolean
@@ -4617,6 +4743,27 @@ export type Database = {
       fn_obtener_parametro: {
         Args: { p_fecha: string; p_nombre: string }
         Returns: number
+      }
+      fn_obtener_perfil_laboral_persona: {
+        Args: { p_id_persona: number; p_periodo: string }
+        Returns: {
+          aplica_imm_general: boolean
+          aplica_imm_menor18_mayor65: boolean
+          autorizacion_menor_registrada: boolean
+          edad_periodo: number
+          es_adulto_18_65: boolean
+          es_mayor_65: boolean
+          es_menor_18: boolean
+          es_pensionado: boolean
+          es_pensionado_invalidez_parcial: boolean
+          es_pensionado_invalidez_total: boolean
+          exento_cotizacion_pension: boolean
+          id_persona: number
+          periodo: string
+          requiere_revision_rrhh: boolean
+          trabajador_adolescente_protegido: boolean
+          tramo_edad_laboral: string
+        }[]
       }
       fn_obtener_remuneracion: {
         Args: { p_fecha: string; p_id_contrato: number }

@@ -854,7 +854,10 @@ export class DataGridPrimaryActionMenuDirective {
             </div>
           </div>
         } @else {
-          <div class="data-grid-state data-grid-state--empty">
+          <div
+            class="data-grid-state data-grid-state--empty"
+            [class.data-grid-state--filtered]="hasActiveFilters"
+          >
             <div class="data-grid-state-panel">
               <div class="data-grid-state-mark" aria-hidden="true">
                 <lucide-icon [img]="emptyIcon"></lucide-icon>
@@ -1002,6 +1005,8 @@ export class DataGridPrimaryActionMenuDirective {
   styles: [
     `
       :host {
+        display: block;
+        min-height: 0;
         --data-grid-border: #daddd6;
         --data-grid-border-soft: #eef1ec;
         --data-grid-head-bg: #fafaf7;
@@ -1019,13 +1024,23 @@ export class DataGridPrimaryActionMenuDirective {
         --data-grid-padding-skel: 0.65rem;
       }
 
+      :host.data-grid-host--sized {
+        display: flex;
+        flex-direction: column;
+      }
+
+      :host.data-grid-host--sized > app-card {
+        flex: 1 1 auto;
+        min-height: 0;
+      }
+
       :host ::ng-deep lucide-icon {
         display: inline-flex;
         align-items: center;
         justify-content: center;
         flex: 0 0 auto;
         align-self: center;
-        line-height: 1;
+        line-height: 0;
         vertical-align: middle;
       }
 
@@ -1033,7 +1048,8 @@ export class DataGridPrimaryActionMenuDirective {
         display: block;
         width: 100%;
         height: 100%;
-        margin: auto;
+        margin: 0;
+        overflow: visible;
       }
 
       .data-grid-scroll {
@@ -1045,6 +1061,11 @@ export class DataGridPrimaryActionMenuDirective {
         scrollbar-gutter: auto;
         scrollbar-color: var(--data-grid-scrollbar-thumb) var(--data-grid-scrollbar-track);
         scrollbar-width: thin;
+      }
+
+      .data-grid-scroll:has(> .data-grid-state--empty) {
+        display: flex;
+        flex-direction: column;
       }
 
       .data-grid-filter-grid {
@@ -1093,7 +1114,7 @@ export class DataGridPrimaryActionMenuDirective {
       }
 
       .data-grid-filter-control:focus {
-        border-color: #2563eb;
+        border-color: var(--erp-primary, #1e3a8a);
         background: #ffffff;
         box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.14);
       }
@@ -1139,15 +1160,15 @@ export class DataGridPrimaryActionMenuDirective {
       }
 
       .data-grid-filter-action--primary {
-        border-color: #2563eb;
-        background: #2563eb;
+        border-color: var(--erp-primary, #1e3a8a);
+        background: var(--erp-primary, #1e3a8a);
         color: #ffffff;
         box-shadow: none;
       }
 
       .data-grid-filter-action--primary:hover {
-        border-color: #1d4ed8;
-        background: #1d4ed8;
+        border-color: var(--erp-primary-hover, #1d4ed8);
+        background: var(--erp-primary-hover, #1d4ed8);
         color: #ffffff;
       }
 
@@ -1422,6 +1443,35 @@ export class DataGridPrimaryActionMenuDirective {
         text-align: center;
       }
 
+      .data-grid-state--empty {
+        display: flex;
+        flex: 1 1 auto;
+        align-self: stretch;
+        align-items: stretch;
+        justify-content: stretch;
+        width: 100%;
+        min-height: 100%;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      .data-grid-state--empty .data-grid-state-panel {
+        display: flex;
+        flex: 1 1 auto;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        max-width: none;
+        min-height: 100%;
+        border: none;
+        border-radius: 0;
+        background: #f8fafc;
+        padding: 2rem 1.65rem;
+        gap: 0.65rem;
+        text-align: center;
+      }
+
       .data-grid-state-panel {
         display: grid;
         width: min(100%, 30rem);
@@ -1445,10 +1495,18 @@ export class DataGridPrimaryActionMenuDirective {
       }
 
       .data-grid-state-mark lucide-icon {
-        display: grid;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
         width: 1.15rem;
         height: 1.15rem;
-        place-items: center;
+        line-height: 0;
+      }
+
+      .data-grid-state-mark lucide-icon svg {
+        display: block;
+        width: 1.15rem;
+        height: 1.15rem;
       }
 
       .data-grid-state-kicker,
@@ -1479,6 +1537,14 @@ export class DataGridPrimaryActionMenuDirective {
         font-size: 0.82rem;
         font-weight: 450;
         line-height: 1.45;
+      }
+
+      .data-grid-state--empty h3 {
+        max-width: 28rem;
+      }
+
+      .data-grid-state--empty p {
+        max-width: 32rem;
       }
 
       .data-grid-state-action {
@@ -1515,14 +1581,14 @@ export class DataGridPrimaryActionMenuDirective {
       }
 
       .data-grid-state-action--primary {
-        border-color: #2563eb;
-        background: #2563eb;
+        border-color: var(--erp-primary, #1e3a8a);
+        background: var(--erp-primary, #1e3a8a);
         color: #ffffff;
       }
 
       .data-grid-state-action--primary:hover {
-        border-color: #1d4ed8;
-        background: #1d4ed8;
+        border-color: var(--erp-primary-hover, #1d4ed8);
+        background: var(--erp-primary-hover, #1d4ed8);
         color: #ffffff;
       }
 
@@ -1680,6 +1746,27 @@ export class DataGridPrimaryActionMenuDirective {
   ],
 })
 export class DataGridComponent<T = unknown> implements OnChanges, OnDestroy {
+  @HostBinding('class.data-grid-host--sized')
+  get hostSizedClass(): boolean {
+    return !!this.normalizeCssSize(this.gridHeight);
+  }
+
+  @HostBinding('style')
+  get hostStyles(): Record<string, string> {
+    const height = this.normalizeCssSize(this.gridHeight);
+    if (!height) {
+      return {};
+    }
+
+    return {
+      display: 'flex',
+      'flex-direction': 'column',
+      height,
+      'max-height': height,
+      'min-height': '0',
+    };
+  }
+
   @Input() title = '';
   @Input() showHeader = true;
   @Input() columns: DataGridColumn<T>[] = [];
@@ -1865,7 +1952,9 @@ export class DataGridComponent<T = unknown> implements OnChanges, OnDestroy {
   }
 
   get gridCardClass(): string {
-    return `relative flex h-full min-h-0 w-full min-w-0 flex-col overflow-hidden rounded-lg border border-slate-200 bg-white shadow-none ${this.cardClassName}`.trim();
+    const sized = !!this.normalizeCssSize(this.gridHeight);
+    const heightClass = sized ? 'h-full min-h-full' : 'min-h-0';
+    return `relative flex ${heightClass} w-full min-w-0 flex-1 flex-col overflow-hidden rounded-lg border border-slate-200 bg-white shadow-none ${this.cardClassName}`.trim();
   }
 
   get gridCardStyle(): Record<string, string> {

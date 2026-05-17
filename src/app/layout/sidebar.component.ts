@@ -107,12 +107,34 @@ type MenuSection = {
         color: #1e40af;
       }
 
-      .erp-sidebar__brand-mark lucide-icon,
+      .erp-sidebar__brand-mark lucide-icon {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 1.375rem;
+        height: 1.375rem;
+        line-height: 0;
+      }
+
+      .erp-sidebar__brand-mark lucide-icon svg {
+        display: block;
+        width: 1.375rem;
+        height: 1.375rem;
+      }
+
       .erp-sidebar__icon lucide-icon {
-        display: grid;
-        width: 1rem;
-        height: 1rem;
-        place-items: center;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 1.25rem;
+        height: 1.25rem;
+        line-height: 0;
+      }
+
+      .erp-sidebar__icon lucide-icon svg {
+        display: block;
+        width: 1.25rem;
+        height: 1.25rem;
       }
 
       .erp-sidebar__brand-copy {
@@ -186,7 +208,7 @@ type MenuSection = {
         position: relative;
         display: flex;
         min-height: 2.65rem;
-        align-items: flex-start;
+        align-items: center;
         gap: 0.65rem;
         overflow: hidden;
         border: 1px solid transparent;
@@ -214,9 +236,9 @@ type MenuSection = {
 
       .erp-sidebar__icon {
         display: grid;
-        width: 1.25rem;
-        height: 1.25rem;
-        flex: 0 0 1.25rem;
+        width: 1.5rem;
+        height: 1.5rem;
+        flex: 0 0 1.5rem;
         place-items: center;
         color: #647084;
         transition: color 150ms ease;

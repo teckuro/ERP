@@ -1,3 +1,44 @@
+## 2026-05-17 - NOM-PREPARAR-NOMINA-BITACORA-V3-POLISH-UX-01
+
+- **Preparar nómina (pulido V3):** bitácora con rail vertical y subpasos en filas (etiqueta + estado); sin chips en navegación.
+- **Acta del período:** bloque central editorial (`payroll-acta`) con separadores suaves; acordeón de revisión guiada más bajo.
+- **Panel de apoyo:** prioridades y correcciones en filas compactas; información interna cerrada por defecto.
+- **Resumen:** franja `Resumen del período` en grilla de 4 columnas.
+- **Restricciones:** solo HTML/CSS local; sin lógica, motor, servicios, SQL ni estilos globales.
+
+## 2026-05-16 - NOM-PREPARAR-NOMINA-BITACORA-V3-UX-01
+
+- **Preparar nómina V3:** bitácora operativa en un solo contenedor padre (`payroll-ledger-shell`).
+- **5 etapas visibles** con subpasos solo en la etapa activa (`estadoOperativo().etapaActiva`); sin chips decorativos en navegación.
+- **Cuerpo:** bitácora de etapas + acta del paso activo + detalle progresivo (pendientes, bloqueos, correcciones, alcance plegable).
+- **Revisión guiada** bajo demanda en acordeón; registro compacto en pie.
+- **Restricciones:** solo HTML/CSS local; sin lógica, motor, servicios, SQL ni estilos globales.
+
+## 2026-05-16 - NOM-PREPARAR-NOMINA-NOIA-LAYOUT-UX-01
+
+- **Preparar nómina:** la pantalla se reordena como bitácora operativa del período.
+- **Franja operativa:** fusiona avance y resumen mínimo para mostrar estado, etapas e indicadores del período.
+- **Workspace:** se organiza en `Mesa de preparación` y `Siguiente acción`.
+- **Panel de acción:** integra acción principal, qué falta ahora, bloqueos, advertencias y accesos `Corregir en`.
+- **Alcance:** información interna queda como disclosure secundario.
+- **Restricciones:** sin estilos globales, SQL/RPC/RLS, motor, servicios, mappers, payloads, rutas ni persistencia crítica.
+
+## 2026-05-16 - ERP-PRIMARY-COLOR-01
+
+- **Primario global:** tokens `--erp-primary` / `--erp-primary-hover` (`#1e3a8a` / `#1d4ed8`) en `styles.css`; Tailwind `blue-600`/`blue-700` alineados; `app-button`, DataGrid, MessageBox y movimientos usan el mismo azul.
+- **MessageBox:** botón X cierra el modal (emite `secondary` o `action` según acciones visibles); icono con `pointer-events: none`.
+
+## 2026-05-16 - DATA-GRID-EMPTY-FILTER-UX-01
+
+- **`app-data-grid`:** estado vacío (con o sin filtros) ocupa todo el cuerpo de la grilla (`#f8fafc`, sin card pequeña centrada); host con `gridHeight` estira card y scroll.
+- **Gestionar movimientos:** modal con flex para que la grilla llene el área bajo la toolbar.
+- **Archivos:** `data-grid.component.ts`, `novedades-mensuales-container.css`.
+
+## 2026-05-16 - EMP-BASICO-MSGBOX-NOIA-01
+
+- **Creación básica:** éxito, error, RUT duplicado y catálogos en carga usan `app-message-box` modal NOIA (secciones operativas); sin paneles `basic-success-followup` legacy en modo básico.
+- **Archivos:** `form-empleado.{ts,html}`.
+
 ## 2026-05-16 - MESSAGE-BOX-NOIA-UX-01-FIX-02
 
 - **`app-message-box`:** cuadro de decisión NOIA v3.1 — contenedor blanco borde `#d5dce8`, header `#f8fafc`, hasta 3 secciones compactas con tonos suaves (`attention`/`info`/`neutral`), footer secundaria izq / primaria der (`#1e3a8a`); sin línea superior de color, chips ni cards rojas/azules.

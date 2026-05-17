@@ -92,7 +92,7 @@
           </div>
           }
         </app-message-box>
-        } @else if (duplicateRutModalRut(); as rutDup) {
+        } @else if (!isBasicMode() && duplicateRutModalRut(); as rutDup) {
         <app-message-box
           mode="modal"
           variant="error"
@@ -127,7 +127,7 @@
             </div>
           </div>
         </app-message-box>
-        } @else if (errorMessage(); as message) {
+        } @else if (!isBasicMode() && errorMessage(); as message) {
         <app-message-box
           mode="modal"
           variant="error"
@@ -171,7 +171,7 @@
             }
           </div>
         </app-message-box>
-        } @else if (successMessage(); as message) {
+        } @else if (!isBasicMode() && successMessage(); as message) {
         <app-message-box
           mode="modal"
           variant="success"

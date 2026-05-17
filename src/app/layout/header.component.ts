@@ -131,10 +131,20 @@ import { PeriodoActivoService } from '../core/services/periodo-activo.service';
       .erp-shell-header__mark lucide-icon,
       .erp-shell-header__icon-button lucide-icon,
       .erp-shell-header__logout lucide-icon {
-        display: grid;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
         width: 1rem;
         height: 1rem;
-        place-items: center;
+        line-height: 0;
+      }
+
+      .erp-shell-header__mark lucide-icon svg,
+      .erp-shell-header__icon-button lucide-icon svg,
+      .erp-shell-header__logout lucide-icon svg {
+        display: block;
+        width: 1rem;
+        height: 1rem;
       }
 
       .erp-shell-header__copy {

@@ -303,6 +303,15 @@ export class MessageBoxComponent implements AfterViewInit, OnDestroy {
 
   onDismiss(): void {
     this.dismiss.emit();
+
+    if (this.mode === 'modal') {
+      if (this.secondaryLabel || this.leftActions().length > 0) {
+        this.secondary.emit();
+      } else if (this.primaryActionLabel()) {
+        this.action.emit();
+      }
+    }
+
     this.restoreFocus();
   }
 

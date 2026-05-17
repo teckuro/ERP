@@ -96,7 +96,15 @@ const ARROW_EDGE_PADDING = 8;
         color: var(--erp-field-help-tip-focus, #2563eb);
       }
 
-      .erp-field-help-tip__icon,
+      .erp-field-help-tip__icon {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: var(--erp-field-help-tip-icon, 0.6875rem);
+        height: var(--erp-field-help-tip-icon, 0.6875rem);
+        line-height: 0;
+      }
+
       .erp-field-help-tip__icon svg {
         display: block;
         width: var(--erp-field-help-tip-icon, 0.6875rem);

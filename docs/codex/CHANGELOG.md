@@ -1,5 +1,22 @@
 # CHANGELOG
 
+### NOM-PREPARAR-NOMINA-BITACORA-V3-POLISH-UX-01
+
+Fecha: 2026-05-17
+
+- Pulido visual de **Preparar nómina** (post-V3): bitácora con línea de etapas y subpasos en filas; acta operativa central; panel de apoyo compacto; franja de resumen en grilla.
+- Copy visible con acentos en shell y cabeceras de revisión guiada; sin chips decorativos ni cards extra en navegación.
+- Solo `proceso-mensual-container.html/css`; sin lógica, motor, servicios, SQL, rutas ni estilos globales.
+
+### NOM-PREPARAR-NOMINA-BITACORA-V3-UX-01
+
+Fecha: 2026-05-16
+
+- Se reorganiza visualmente **Preparar nómina** como bitácora operativa del período en un contenedor padre único.
+- Se reemplaza la navegación larga por **5 etapas principales** con subpasos progresivos solo en la etapa activa.
+- Se reduce el uso de cards y chips decorativos en la navegación; acta activa + detalle progresivo + revisión guiada plegable.
+- No se modifica lógica, motor, servicios, SQL, rutas ni estilos globales.
+
 ## ERP-MSGBOX-NOIA-UX-01-FIX-02 - MessageBox decisión operativa
 
 Fecha: 2026-05-16

@@ -10,6 +10,12 @@
   --erp-title-sm: 0.92rem;
   --erp-title-md: 1.08rem;
 
+  /* Acción primaria ERP (alineada a MessageBox NOIA) */
+  --erp-primary: #1e3a8a;
+  --erp-primary-hover: #1d4ed8;
+  --erp-primary-soft: #eff6ff;
+  --erp-primary-ring: rgba(30, 58, 138, 0.18);
+
   /* ERP form controls (fuente de verdad: docs/codex/ui-form-guidelines.md) */
   --erp-control-height: 22px;
   --erp-field-min-width: 190px;
@@ -402,6 +408,24 @@ body {
   line-height: 0;
 }
 
+/* Lucide Angular: centrado óptico en contenedores flex/grid/cuadrados */
+lucide-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  line-height: 0;
+  vertical-align: middle;
+}
+
+lucide-icon svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  overflow: visible;
+}
+
 .erp-action-button {
   display: inline-flex;
   min-height: 38px;
@@ -425,9 +449,9 @@ app-form-empleado {
   --emp-muted: #6b7280;
   --emp-line: #e5e7eb;
   --emp-soft: #f8fafc;
-  --emp-blue: #2563eb;
-  --emp-blue-hover: #1d4ed8;
-  --emp-blue-soft: #eff6ff;
+  --emp-blue: var(--erp-primary);
+  --emp-blue-hover: var(--erp-primary-hover);
+  --emp-blue-soft: var(--erp-primary-soft);
   --emp-error: #dc2626;
   --emp-warning: #f59e0b;
   --emp-success: #16a34a;
@@ -904,7 +928,7 @@ app-form-empleado .flow-tab.is-active p {
 }
 
 app-form-empleado .flow-tab.is-active::after {
-  background: #2563eb;
+  background: var(--erp-primary);
   opacity: 1;
 }
 

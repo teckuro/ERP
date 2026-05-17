@@ -1,3 +1,23 @@
+## NOM-PREPARAR-NOMINA-BITACORA-V3-POLISH-UX-01 - Pulido bitácora V3 Preparar nómina
+
+| Campo | Estado |
+|---|---|
+| Estado | Implementada |
+| Tipo | UX/UI local |
+| Alcance | Timeline de etapas, acta del período, panel de apoyo, resumen en grilla, copy con acentos; menos sensación wireframe. |
+| Restricciones | Solo `proceso-mensual-container.html/css`; sin lógica, motor, servicios, SQL ni estilos globales. |
+| Documento | [`../diseno/nom-preparar-nomina-bitacora-v3-polish-ux-01.md`](../diseno/nom-preparar-nomina-bitacora-v3-polish-ux-01.md), [`../peticiones-estilos.md`](../peticiones-estilos.md) |
+
+## NOM-PREPARAR-NOMINA-BITACORA-V3-UX-01 - Bitácora operativa V3 Preparar nómina
+
+| Campo | Estado |
+|---|---|
+| Estado | Implementada |
+| Tipo | UX/UI local |
+| Alcance | Contenedor padre único; 5 etapas + subpasos; acta activa; detalle progresivo; revisión guiada en acordeón; registro compacto. |
+| Restricciones | Solo `proceso-mensual-container.html/css`; sin lógica, motor, servicios, SQL ni estilos globales. |
+| Documento | [`../modulos/nomina-mensual/preparar-nomina/05-bitacora-v3-ux.md`](../modulos/nomina-mensual/preparar-nomina/05-bitacora-v3-ux.md), [`../peticiones-estilos.md`](../peticiones-estilos.md) |
+
 ## ERP-MSGBOX-NOIA-UX-01-FIX-02 - MessageBox decisión operativa NOIA
 
 | Campo | Estado |
