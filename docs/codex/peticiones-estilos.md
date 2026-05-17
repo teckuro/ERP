@@ -1,3 +1,16 @@
+## 2026-05-17 - NOM-PREPARAR-NOMINA-BITACORA-V3-STEPS-FOCUS-UX-01
+
+- **Bitácora del período:** 5 etapas con línea de resumen; subpasos (✓ ● ○) solo en etapa activa; máximo 4 subpasos.
+- **Detalle bajo demanda:** «Ver detalle completo» → revisión guiada; bloqueos/advertencias → panel de apoyo.
+- **No regresión:** sin 12 pasos visibles; sin chips; acta central conserva acción principal.
+
+## 2026-05-17 - NOM-PREPARAR-NOMINA-BITACORA-V3-COPY-DENSITY-FIX-01
+
+- **Preparar nómina:** copy visible con acentos; lenguaje operativo RRHH en acta y panel.
+- **Densidad:** shell y columnas más compactas; registro del período con franja propia; revisión guiada cerrada hasta haber avance real.
+- **No regresión:** 5 etapas visibles con subpasos progresivos; sin chips decorativos; detalle bajo demanda.
+- **Restricciones:** sin lógica, motor, servicios, SQL ni estilos globales.
+
 ## 2026-05-17 - NOM-PREPARAR-NOMINA-BITACORA-V3-POLISH-UX-01
 
 - **Preparar nómina (pulido V3):** bitácora con rail vertical y subpasos en filas (etiqueta + estado); sin chips en navegación.

@@ -1,5 +1,22 @@
 # CHANGELOG
 
+### NOM-PREPARAR-NOMINA-BITACORA-V3-STEPS-FOCUS-UX-01
+
+Fecha: 2026-05-17
+
+- Bitácora del período enfocada: resumen por etapa, subpasos solo en etapa activa (máx. 4), marcas ✓ ● ○.
+- Enlaces «Ver detalle completo» y «Ver en panel de apoyo»; etapas inactivas compactas.
+- View-model `bitacoraEtapas` en contenedor (presentación); sin cambio de lógica de negocio.
+
+### NOM-PREPARAR-NOMINA-BITACORA-V3-COPY-DENSITY-FIX-01
+
+Fecha: 2026-05-17
+
+- Copy visible con acentos y lenguaje RRHH en Preparar nómina (acta, panel, revisión guiada).
+- Densidad visual: shell más compacto, registro del período reforzado, revisión guiada cerrada en estado inicial.
+- Jerarquía acta sin duplicar label de acción; reglas de estado operativo con copy alineado.
+- Sin lógica, motor, servicios, SQL, rutas ni estilos globales.
+
 ### NOM-PREPARAR-NOMINA-BITACORA-V3-POLISH-UX-01
 
 Fecha: 2026-05-17

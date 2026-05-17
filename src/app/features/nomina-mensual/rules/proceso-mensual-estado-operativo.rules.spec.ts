@@ -44,7 +44,7 @@ describe('proceso-mensual-estado-operativo.rules', () => {
     const vm = resolverEstadoOperativoProcesoMensual(inputBase());
 
     expect(vm.estadoClave).toBe('pendiente_validacion');
-    expect(vm.accionPrincipal.label).toBe('Validar periodo');
+    expect(vm.accionPrincipal.label).toBe('Validar período');
     expect(vm.etapaActiva).toBe('validar');
     expect(vm.disclosureActivo).toBe('base');
   });
@@ -56,9 +56,9 @@ describe('proceso-mensual-estado-operativo.rules', () => {
     }));
 
     expect(vm.estadoClave).toBe('periodo_con_pendientes');
-    expect(vm.accionPrincipal.label).toBe('Revisar parametros');
+    expect(vm.accionPrincipal.label).toBe('Revisar parámetros');
     expect(vm.accionPrincipal.ruta).toBe('/parametros');
-    expect(vm.timeline[0].titulo).toBe('Preparacion');
+    expect(vm.timeline[0].titulo).toBe('Preparación');
     expect(vm.timeline[0].estado).toBe('Actual');
   });
 
@@ -76,12 +76,12 @@ describe('proceso-mensual-estado-operativo.rules', () => {
     }));
 
     expect(vm.estadoClave).toBe('listo_para_generar_base');
-    expect(vm.accionPrincipal.label).toBe('Generar base de nomina');
+    expect(vm.accionPrincipal.label).toBe('Generar base de nómina');
     expect(vm.etapaActiva).toBe('base');
     expect(vm.timeline.map((paso) => paso.titulo)).toEqual([
-      'Preparacion',
-      'Revision',
-      'Aprobacion y cierre',
+      'Preparación',
+      'Revisión',
+      'Aprobación y cierre',
       'Liquidaciones',
     ]);
   });

@@ -1,3 +1,23 @@
+## NOM-PREPARAR-NOMINA-BITACORA-V3-STEPS-FOCUS-UX-01 - Bitácora de etapas enfocada
+
+| Campo | Estado |
+|---|---|
+| Estado | Implementada |
+| Tipo | UX/UI local |
+| Alcance | Resumen por etapa, subpasos progresivos solo activos, detalle bajo demanda. |
+| Restricciones | HTML/CSS + VM presentación en contenedor; sin motor/SQL/servicios. |
+| Documento | [`../diseno/nom-preparar-nomina-bitacora-v3-steps-focus-ux-01.md`](../diseno/nom-preparar-nomina-bitacora-v3-steps-focus-ux-01.md) |
+
+## NOM-PREPARAR-NOMINA-BITACORA-V3-COPY-DENSITY-FIX-01 - Copy y densidad bitácora V3
+
+| Campo | Estado |
+|---|---|
+| Estado | Implementada |
+| Tipo | UX/UI local + copy |
+| Alcance | Acentos, copy RRHH, densidad shell/acta/panel, revisión guiada cerrada al inicio, registro compacto. |
+| Restricciones | Contenedor + reglas de estado operativo (copy); sin lógica, motor, SQL ni estilos globales. |
+| Documento | [`../diseno/nom-preparar-nomina-bitacora-v3-copy-density-fix-01.md`](../diseno/nom-preparar-nomina-bitacora-v3-copy-density-fix-01.md) |
+
 ## NOM-PREPARAR-NOMINA-BITACORA-V3-POLISH-UX-01 - Pulido bitácora V3 Preparar nómina
 
 | Campo | Estado |

@@ -6,12 +6,12 @@
 .payroll-ledger-shell {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 12px;
   min-width: 0;
   border: 1px solid #e5e7eb;
   border-radius: 8px;
   background: #ffffff;
-  padding: 20px 24px;
+  padding: 16px 20px;
 }
 
 .payroll-ledger-header {
@@ -134,8 +134,8 @@
 
 .payroll-ledger-body {
   display: grid;
-  grid-template-columns: minmax(260px, 300px) minmax(0, 1fr) minmax(220px, 260px);
-  gap: 16px;
+  grid-template-columns: minmax(248px, 288px) minmax(0, 1fr) minmax(212px, 248px);
+  gap: 12px;
   align-items: start;
   min-width: 0;
 }
@@ -167,7 +167,11 @@
 
 .payroll-stage-group {
   position: relative;
-  padding: 0 0 12px 0;
+  padding: 0 0 8px 0;
+}
+
+.payroll-stage-group:not(.payroll-stage-group--active) .payroll-stage-group__head {
+  padding: 4px 8px;
 }
 
 .payroll-stage-group:last-child {
@@ -236,47 +240,57 @@
   line-height: 1.3;
 }
 
-.payroll-stage-group__hint {
+.payroll-stage-group__resumen {
   color: #6b7280;
   font-size: 0.75rem;
+  line-height: 1.35;
 }
 
 .payroll-stage-group--active .payroll-stage-group__label {
   color: #1e3a8a;
 }
 
-.payroll-stage-group--done .payroll-stage-group__hint {
+.payroll-stage-group--active .payroll-stage-group__resumen {
+  color: #374151;
+}
+
+.payroll-stage-group--done .payroll-stage-group__resumen {
   color: #4b5563;
 }
 
+.payroll-stage-group--pending .payroll-stage-group__label,
+.payroll-stage-group--pending .payroll-stage-group__resumen {
+  color: #9ca3af;
+}
+
 .payroll-substep-rows {
-  margin: 4px 0 0 20px;
+  margin: 6px 0 0 18px;
   padding: 0;
   list-style: none;
   display: grid;
-  gap: 2px;
+  gap: 1px;
 }
 
 .payroll-substep-row {
   display: flex;
-  align-items: baseline;
-  justify-content: space-between;
+  align-items: center;
   gap: 8px;
-  padding: 4px 8px 4px 0;
+  padding: 3px 8px 3px 0;
   color: #6b7280;
   font-size: 0.75rem;
 }
 
-.payroll-substep-row__label {
-  min-width: 0;
+.payroll-substep-mark {
+  flex: 0 0 0.75rem;
+  width: 0.75rem;
+  text-align: center;
+  font-size: 0.6875rem;
+  line-height: 1;
+  color: #9ca3af;
 }
 
-.payroll-substep-row__state {
-  flex: 0 0 auto;
-  color: #9ca3af;
-  font-size: 0.6875rem;
-  font-weight: 500;
-  text-align: right;
+.payroll-substep-row__label {
+  min-width: 0;
 }
 
 .payroll-substep-row--current .payroll-substep-row__label {
@@ -284,20 +298,51 @@
   font-weight: 500;
 }
 
-.payroll-substep-row--current .payroll-substep-row__state {
+.payroll-substep-row--current .payroll-substep-mark {
   color: #1e3a8a;
+}
+
+.payroll-substep-row--done .payroll-substep-mark {
+  color: #6b7280;
+}
+
+.payroll-stage-group__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 10px;
+  margin: 6px 0 0 18px;
+}
+
+.payroll-stage-detail-link {
+  border: 0;
+  background: transparent;
+  padding: 0;
+  color: #1d4ed8;
+  font-size: 0.75rem;
   font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+}
+
+.payroll-stage-detail-link--muted {
+  color: #6b7280;
+  font-weight: 500;
+}
+
+.payroll-stage-detail-link:hover {
+  color: #1e3a8a;
 }
 
 .payroll-acta {
   border: 1px solid #e5e7eb;
   border-radius: 8px;
   background: #ffffff;
-  padding: 16px 18px;
+  padding: 14px 16px;
 }
 
 .payroll-acta__kicker {
-  margin: 0 0 12px;
+  margin: 0 0 10px;
   color: #6b7280;
   font-size: 0.6875rem;
   font-weight: 600;
@@ -334,16 +379,13 @@
 }
 
 .payroll-acta__sep {
-  margin: 14px 0;
+  margin: 10px 0;
   border: 0;
   border-top: 1px solid #e5e7eb;
 }
 
-.payroll-acta__action-name {
-  margin: 4px 0 0;
-  color: #111827;
-  font-size: 0.9375rem;
-  font-weight: 600;
+.payroll-acta__text--action {
+  margin-top: 4px;
 }
 
 .payroll-acta__note {
@@ -399,7 +441,7 @@
 }
 
 .payroll-acta__accordion {
-  margin-top: 14px;
+  margin-top: 10px;
   border: 1px solid #e5e7eb;
   border-radius: 6px;
   background: #fafafa;
@@ -420,9 +462,9 @@
 }
 
 .payroll-support-panel {
-  padding: 4px 0 4px 4px;
+  padding: 2px 0 2px 4px;
   display: grid;
-  gap: 14px;
+  gap: 10px;
   align-content: start;
   max-height: min(70vh, 42rem);
   overflow: auto;
@@ -569,14 +611,26 @@
 }
 
 .payroll-ledger-footer {
-  padding-top: 12px;
-  border-top: 1px solid #e5e7eb;
+  padding: 10px 12px;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  background: #f8fafc;
 }
 
-.payroll-ledger-footer p {
-  margin: 0;
+.payroll-ledger-footer__title {
+  margin: 0 0 4px;
   color: #6b7280;
-  font-size: 0.75rem;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.payroll-ledger-footer__trail {
+  margin: 0;
+  color: #374151;
+  font-size: 0.8125rem;
+  line-height: 1.4;
 }
 
 /* Detalle operativo heredado (acordeones internos) */
@@ -591,12 +645,12 @@
 }
 
 .pm-operational-detail + .pm-operational-detail {
-  margin-top: 10px;
+  margin-top: 8px;
 }
 
 .pm-operational-detail > summary {
   display: flex;
-  min-height: 40px;
+  min-height: 36px;
   cursor: pointer;
   align-items: center;
   justify-content: space-between;

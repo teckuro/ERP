@@ -53,6 +53,10 @@ Preparar nomina
 -> Liquidaciones oficiales internas
 ```
 
+**NOM-PREPARAR-NOMINA-BITACORA-V3-STEPS-FOCUS-UX-01 (2026-05-17):** bitácora de etapas enfocada (resumen + subpasos solo activos). Ver [`../../diseno/nom-preparar-nomina-bitacora-v3-steps-focus-ux-01.md`](../../diseno/nom-preparar-nomina-bitacora-v3-steps-focus-ux-01.md).
+
+**NOM-PREPARAR-NOMINA-BITACORA-V3-COPY-DENSITY-FIX-01 (2026-05-17):** acentos, copy RRHH y densidad en bitácora V3. Ver [`../../diseno/nom-preparar-nomina-bitacora-v3-copy-density-fix-01.md`](../../diseno/nom-preparar-nomina-bitacora-v3-copy-density-fix-01.md).
+
 **NOM-PREPARAR-NOMINA-BITACORA-V3-POLISH-UX-01 (2026-05-17):** pulido visual post-V3 — timeline de etapas, acta del período, panel de apoyo, resumen en grilla. Ver [`../../diseno/nom-preparar-nomina-bitacora-v3-polish-ux-01.md`](../../diseno/nom-preparar-nomina-bitacora-v3-polish-ux-01.md).
 
 **NOM-PREPARAR-NOMINA-BITACORA-V3-UX-01 (2026-05-16):** bitácora V3 — padre único, 5 etapas + subpasos, acta activa y detalle progresivo. Ver [`preparar-nomina/05-bitacora-v3-ux.md`](preparar-nomina/05-bitacora-v3-ux.md).

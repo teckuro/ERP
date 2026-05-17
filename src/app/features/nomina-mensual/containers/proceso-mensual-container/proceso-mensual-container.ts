@@ -267,6 +267,24 @@ interface PasoPeriodoView {
   descripcion: string;
 }
 
+type BitacoraEtapaClave = 'validar' | 'base' | 'calculo' | 'aprobar_cerrar' | 'liquidaciones';
+type BitacoraSubpasoMarca = 'hecho' | 'actual' | 'pendiente';
+
+interface BitacoraSubpasoVm {
+  marca: BitacoraSubpasoMarca;
+  etiqueta: string;
+}
+
+interface BitacoraEtapaVm {
+  clave: BitacoraEtapaClave;
+  etiqueta: string;
+  resumen: string;
+  activa: boolean;
+  completada: boolean;
+  bloqueada: boolean;
+  subpasos: BitacoraSubpasoVm[];
+}
+
 @Component({
   selector: 'app-proceso-mensual-container',
   standalone: true,
@@ -342,10 +360,10 @@ export class ProcesoMensualContainer {
 
     if (cierre) {
       return {
-        estadoLabel: 'Nomina cerrada operativamente',
-        descripcion: 'La nomina del periodo esta cerrada operativamente. Para modificarla se requerira una fase futura de reapertura.',
+        estadoLabel: 'Nómina cerrada operativamente',
+        descripcion: 'La nómina del período está cerrada. Para modificarla, será necesario reabrir el período en una fase posterior.',
         puedeCerrar: false,
-        razonNoPuedeCerrar: 'La nomina ya esta cerrada operativamente.',
+        razonNoPuedeCerrar: 'La nómina ya está cerrada operativamente.',
         fechaCierreLabel: this.formatoFechaHora(cierre.fecha),
         usuarioLabel: cierre.usuarioLabel,
         observacionLabel: cierre.observacion ?? undefined,
@@ -409,7 +427,7 @@ export class ProcesoMensualContainer {
         totalConceptos: completo.resumen.totalConceptos,
         totalObservaciones: completo.resumen.totalObservaciones,
         totalTrazas: completo.resumen.totalTrazas,
-        aprobacionLabel: completo.aprobacionOperativa ? 'Aprobado operativamente' : 'Pendiente de aprobacion',
+        aprobacionLabel: completo.aprobacionOperativa ? 'Aprobado operativamente' : 'Pendiente de aprobación',
       },
       trabajadores,
       observaciones,
@@ -471,8 +489,8 @@ export class ProcesoMensualContainer {
           puedeGuardarPreliminar: false,
           razonNoPuedeGuardar: guardado
             ? 'No hay cambios para guardar. El resultado preliminar actual ya esta guardado.'
-            : 'Primero calcula preliminarmente la nomina.',
-          helperGuardar: 'Guarda una version revisable del calculo. No emite liquidaciones ni cierra el periodo.',
+            : 'Primero calcula preliminarmente la nómina.',
+          helperGuardar: 'Guarda una versión revisable del cálculo. No emite liquidaciones ni cierra el período.',
           modoGuardadoLabel: 'Al guardar, se reemplazara el resultado preliminar activo del periodo.',
         },
       };
@@ -492,7 +510,7 @@ export class ProcesoMensualContainer {
         descuentosLabel: 'Monto no disponible',
         liquidoLabel: 'Monto no disponible',
         observacionLabel: trabajador.observacion || 'No calculado en el resultado preliminar.',
-        accionLabel: 'Revisar base de nomina',
+        accionLabel: 'Revisar base de nómina',
       }));
     const trabajadores = [
       ...calculo.liquidaciones.map<TrabajadorResultadoPreliminarView>((liq) => {
@@ -516,7 +534,7 @@ export class ProcesoMensualContainer {
         codigo: String(omitido.idPersona),
         titulo: 'Trabajador omitido del calculo',
         descripcion: omitido.observacionLabel,
-        accionLabel: 'Revisar base de nomina',
+        accionLabel: 'Revisar base de nómina',
       });
     }
 
@@ -558,7 +576,7 @@ export class ProcesoMensualContainer {
         razonNoPuedeGuardar: puedeGuardarPreliminar
           ? undefined
           : this.razonNoPuedeGuardarResultado(bloqueos),
-        helperGuardar: 'Guarda una version revisable del calculo. No emite liquidaciones ni cierra el periodo.',
+        helperGuardar: 'Guarda una versión revisable del cálculo. No emite liquidaciones ni cierra el período.',
         modoGuardadoLabel: 'Al guardar, se reemplazara el resultado preliminar activo del periodo.',
       },
     };
@@ -649,7 +667,7 @@ export class ProcesoMensualContainer {
         aprobacionVigente,
       }),
       aprobacion,
-      notaAprobacion: 'Esta aprobacion es interna y no reemplaza el cierre del periodo ni la emision de liquidaciones oficiales.',
+      notaAprobacion: 'Esta aprobación es interna y no reemplaza el cierre del período ni la emisión de liquidaciones oficiales.',
     };
   });
 
@@ -665,18 +683,18 @@ export class ProcesoMensualContainer {
     if (!validarPeriodoEntradaMensual(periodo)) {
       bloqueos.push({
         codigo: 'BLOQ-001',
-        titulo: 'Periodo invalido',
-        descripcion: 'Selecciona un periodo valido antes de preparar la nomina.',
+        titulo: 'Período inválido',
+        descripcion: 'Selecciona un período válido antes de preparar la nómina.',
         severidad: 'bloqueo',
-        accionLabel: 'Seleccionar periodo valido',
+        accionLabel: 'Seleccionar período válido',
       });
     }
 
     if (this.nominaEstaCerradaOperativamente()) {
       bloqueos.push({
         codigo: 'BLOQ-CIERRE-OPERATIVO',
-        titulo: 'Nomina cerrada operativamente',
-        descripcion: 'La nomina del periodo esta cerrada operativamente. Para modificarla se requerira una fase futura de reapertura.',
+        titulo: 'Nómina cerrada operativamente',
+        descripcion: 'La nómina del período está cerrada. Para modificarla, será necesario reabrir el período en una fase posterior.',
         severidad: 'bloqueo',
         accionLabel: 'Consultar resultado guardado',
       });
@@ -685,10 +703,10 @@ export class ProcesoMensualContainer {
     if (this.errorEjecucion()) {
       bloqueos.push({
         codigo: 'BLOQ-002',
-        titulo: 'No fue posible cargar la informacion',
-        descripcion: this.errorEjecucion() ?? 'Reintenta la validacion del periodo.',
+        titulo: 'No fue posible cargar la información',
+        descripcion: this.errorEjecucion() ?? 'Reintenta la validación del período.',
         severidad: 'bloqueo',
-        accionLabel: 'Validar periodo',
+        accionLabel: 'Validar período',
         accionLocal: 'validarPeriodo',
       });
     }
@@ -701,16 +719,16 @@ export class ProcesoMensualContainer {
         estadoForzado: bloqueos.length ? 'bloqueado' : 'pendiente',
         razonDeshabilitado: bloqueos.length
           ? bloqueos[0].descripcion
-          : 'Valida el periodo para revisar la base antes de calcular.',
+          : 'Valida el período para revisar la base antes de calcular.',
         siguienteAccion: bloqueos.length
           ? {
-              label: bloqueos[0].accionLabel ?? 'Validar periodo',
+              label: bloqueos[0].accionLabel ?? 'Validar período',
               descripcion: bloqueos[0].descripcion,
               accionLocal: bloqueos[0].accionLocal,
             }
           : {
-              label: 'Validar periodo',
-              descripcion: 'Revisa trabajadores, parametros, asignaciones recurrentes y movimientos del mes.',
+              label: 'Validar período',
+              descripcion: 'Revisa trabajadores, parámetros, movimientos y recurrentes antes de construir la base del período.',
               accionLocal: 'validarPeriodo',
             },
       });
@@ -724,10 +742,10 @@ export class ProcesoMensualContainer {
     if (faltantesMinimos.length > 0 && !bloqueos.some((b) => b.codigo === 'BLOQ-004')) {
       bloqueos.push({
         codigo: 'BLOQ-004',
-        titulo: 'Faltan parametros minimos para calcular',
-        descripcion: 'Revisa los parametros obligatorios del periodo antes de calcular preliminarmente.',
+        titulo: 'Faltan parámetros mínimos para calcular',
+        descripcion: 'Revisa los parámetros obligatorios del período antes de calcular preliminarmente.',
         severidad: 'bloqueo',
-        accionLabel: 'Revisar parametros',
+        accionLabel: 'Revisar parámetros',
         ruta: '/parametros',
       });
     }
@@ -738,7 +756,7 @@ export class ProcesoMensualContainer {
         titulo: 'Base de nomina no generada',
         descripcion: 'Genera la base de nomina para revisar trabajadores y entradas consideradas.',
         severidad: 'bloqueo',
-        accionLabel: 'Generar base de nomina',
+        accionLabel: 'Generar base de nómina',
         accionLocal: 'generarBase',
       });
     } else if ((base?.trabajadoresConsiderados ?? preNomina.trabajadoresIncluidos) === 0) {
@@ -747,7 +765,7 @@ export class ProcesoMensualContainer {
         titulo: 'No hay trabajadores considerados',
         descripcion: 'La base de nomina no tiene trabajadores para calcular.',
         severidad: 'bloqueo',
-        accionLabel: 'Actualizar base de nomina',
+        accionLabel: 'Actualizar base de nómina',
         accionLocal: 'actualizarBase',
       });
     }
@@ -758,7 +776,7 @@ export class ProcesoMensualContainer {
         titulo: 'Hay trabajadores bloqueados',
         descripcion: 'Revisa los trabajadores bloqueados en la base antes de calcular.',
         severidad: 'bloqueo',
-        accionLabel: 'Revisar base de nomina',
+        accionLabel: 'Revisar base de nómina',
       });
     }
 
@@ -799,7 +817,7 @@ export class ProcesoMensualContainer {
         titulo: 'Hay trabajadores con observaciones',
         descripcion: 'Las observaciones no bloqueantes deben revisarse antes de guardar un resultado.',
         severidad: 'advertencia',
-        accionLabel: 'Revisar base de nomina',
+        accionLabel: 'Revisar base de nómina',
       });
     }
 
@@ -810,7 +828,7 @@ export class ProcesoMensualContainer {
         titulo: 'Hay parametros opcionales pendientes',
         descripcion: 'Puedes calcular preliminarmente; estos datos quedan para cierre o reconciliacion.',
         severidad: 'advertencia',
-        accionLabel: 'Revisar parametros',
+        accionLabel: 'Revisar parámetros',
         ruta: '/parametros',
       });
     }
@@ -920,6 +938,162 @@ export class ProcesoMensualContainer {
 
   readonly etapaOperativaActiva = computed<EtapaOperativaActiva>(() => {
     return this.estadoOperativo().disclosureActivo;
+  });
+
+  readonly bitacoraEtapas = computed<BitacoraEtapaVm[]>(() => {
+    const estado = this.estadoOperativo();
+    const etapaActiva = estado.etapaActiva;
+    const validado = this.resultado() != null;
+    const baseLista = this.preNomina() != null;
+    const calculoListo = this.calculo() != null;
+    const guardado = this.snapshotActivo() != null;
+    const aprobado = this.aprobacionOperativa() != null;
+    const cerrada = this.nominaEstaCerradaOperativamente();
+    const advertencias = estado.advertencias.length;
+    const bloqueos = estado.bloqueos.length;
+
+    const marca = (hecho: boolean, actual: boolean): BitacoraSubpasoMarca =>
+      hecho ? 'hecho' : actual ? 'actual' : 'pendiente';
+
+    const etapaCalculoActiva = etapaActiva === 'calculo' || etapaActiva === 'guardar';
+    const calculoBloqueada = estado.estadoClave === 'resultado_con_bloqueos';
+
+    const resumenValidar = (): string => {
+      if (validado && etapaActiva !== 'validar') return 'Datos base revisados';
+      if (etapaActiva === 'validar') return validado ? 'Datos base revisados' : 'Validación del período en curso';
+      return 'Pendiente de validación';
+    };
+
+    const resumenBase = (): string => {
+      if (baseLista) return 'Base generada para el período';
+      if (etapaActiva === 'base') return 'Generar base del período';
+      return validado ? 'Pendiente de base' : 'Requiere validación previa';
+    };
+
+    const resumenCalculo = (): string => {
+      if (calculoBloqueada) return bloqueos === 1 ? '1 bloqueo por resolver' : `${bloqueos} bloqueos por resolver`;
+      if (guardado && !etapaCalculoActiva) return 'Versión interna guardada';
+      if (advertencias && (calculoListo || etapaCalculoActiva)) {
+        return advertencias === 1 ? '1 advertencia revisable' : `${advertencias} advertencias revisables`;
+      }
+      if (calculoListo) return 'Resultado preliminar en revisión';
+      if (etapaCalculoActiva) return 'Cálculo preliminar en curso';
+      return baseLista ? 'Pendiente de cálculo' : 'Requiere base generada';
+    };
+
+    const resumenAprobar = (): string => {
+      if (cerrada) return 'Nómina cerrada operativamente';
+      if (aprobado) return 'Pendiente de cierre del período';
+      if (guardado) return 'Pendiente de aprobación operativa';
+      if (etapaActiva === 'aprobar_cerrar') return 'Aprobación y cierre en curso';
+      return 'Pendiente de versión interna';
+    };
+
+    const resumenLiquidaciones = (): string => {
+      if (estado.estadoClave === 'liquidaciones_disponibles') return 'Liquidaciones disponibles';
+      if (cerrada) return 'Listas para consulta interna';
+      if (etapaActiva === 'liquidaciones') return 'Consulta interna en curso';
+      return 'Disponible al cerrar nómina';
+    };
+
+    const subpasosValidar = (): BitacoraSubpasoVm[] => {
+      if (etapaActiva !== 'validar') return [];
+      return [
+        { marca: marca(validado, !validado), etiqueta: 'Validar período' },
+        { marca: 'pendiente', etiqueta: 'Revisar trabajadores' },
+        { marca: 'pendiente', etiqueta: 'Revisar parámetros' },
+        { marca: 'pendiente', etiqueta: 'Movimientos y recurrentes' },
+      ];
+    };
+
+    const subpasosBase = (): BitacoraSubpasoVm[] => {
+      if (etapaActiva !== 'base') return [];
+      return [
+        { marca: marca(baseLista, !baseLista), etiqueta: 'Generar base' },
+        { marca: marca(false, baseLista), etiqueta: 'Revisar base' },
+      ];
+    };
+
+    const subpasosCalculo = (): BitacoraSubpasoVm[] => {
+      if (!etapaCalculoActiva) return [];
+      return [
+        { marca: marca(calculoListo, !calculoListo), etiqueta: 'Calcular preliminar' },
+        {
+          marca: marca(guardado, calculoListo && !guardado),
+          etiqueta: 'Revisar resultado',
+        },
+        {
+          marca: !advertencias ? 'hecho' : calculoListo ? 'actual' : 'pendiente',
+          etiqueta: 'Resolver advertencias',
+        },
+        { marca: marca(guardado, calculoListo && !guardado && !advertencias), etiqueta: 'Guardar versión interna' },
+      ];
+    };
+
+    const subpasosAprobar = (): BitacoraSubpasoVm[] => {
+      if (etapaActiva !== 'aprobar_cerrar') return [];
+      return [
+        { marca: marca(aprobado, !aprobado), etiqueta: 'Aprobar operativamente' },
+        { marca: marca(cerrada, aprobado && !cerrada), etiqueta: 'Cerrar nómina' },
+      ];
+    };
+
+    const subpasosLiquidaciones = (): BitacoraSubpasoVm[] => {
+      if (etapaActiva !== 'liquidaciones') return [];
+      return [
+        { marca: marca(cerrada, !cerrada), etiqueta: 'Generar vista interna' },
+        { marca: 'pendiente', etiqueta: 'Revisar trabajador' },
+        { marca: 'pendiente', etiqueta: 'Descargar comprobante' },
+      ];
+    };
+
+    return [
+      {
+        clave: 'validar',
+        etiqueta: 'Preparar datos',
+        resumen: resumenValidar(),
+        activa: etapaActiva === 'validar',
+        completada: validado && etapaActiva !== 'validar',
+        bloqueada: false,
+        subpasos: subpasosValidar(),
+      },
+      {
+        clave: 'base',
+        etiqueta: 'Construir base',
+        resumen: resumenBase(),
+        activa: etapaActiva === 'base',
+        completada: baseLista && etapaActiva !== 'validar' && etapaActiva !== 'base',
+        bloqueada: false,
+        subpasos: subpasosBase(),
+      },
+      {
+        clave: 'calculo',
+        etiqueta: 'Calcular y revisar',
+        resumen: resumenCalculo(),
+        activa: etapaCalculoActiva,
+        completada: guardado && !etapaCalculoActiva,
+        bloqueada: calculoBloqueada,
+        subpasos: subpasosCalculo(),
+      },
+      {
+        clave: 'aprobar_cerrar',
+        etiqueta: 'Aprobar y cerrar',
+        resumen: resumenAprobar(),
+        activa: etapaActiva === 'aprobar_cerrar',
+        completada: cerrada,
+        bloqueada: false,
+        subpasos: subpasosAprobar(),
+      },
+      {
+        clave: 'liquidaciones',
+        etiqueta: 'Liquidaciones internas',
+        resumen: resumenLiquidaciones(),
+        activa: etapaActiva === 'liquidaciones',
+        completada: estado.estadoClave === 'liquidaciones_disponibles',
+        bloqueada: false,
+        subpasos: subpasosLiquidaciones(),
+      },
+    ];
   });
 
   mostrarDetalleOperativo(etapa: EtapaOperativaActiva): boolean {
@@ -1292,6 +1466,18 @@ export class ProcesoMensualContainer {
     document.querySelector('#pm-que-falta-ahora')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 
+  abrirRevisionGuiada(): void {
+    const acordeon = document.querySelector('#payroll-revision-guiada') as HTMLDetailsElement | null;
+    if (acordeon) {
+      acordeon.open = true;
+      acordeon.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }
+
+  enfocarPanelApoyo(): void {
+    document.querySelector('#payroll-support-panel')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
   puedeGuardarSnapshot(): boolean {
     const calc = this.calculo();
     if (!validarPeriodoEntradaMensual(this.periodoSeleccionado())) return false;
@@ -1315,7 +1501,7 @@ export class ProcesoMensualContainer {
     const snapshot = this.snapshotActivo();
     if (!validarPeriodoEntradaMensual(this.periodoSeleccionado())) return 'El periodo seleccionado no es valido.';
     if (!snapshot?.idCalculoPeriodo) return 'Primero debe existir un resultado preliminar guardado vigente.';
-    if (snapshot.cierreOperativo?.estado === 'cerrado_operativamente') return 'La nomina ya esta cerrada operativamente.';
+    if (snapshot.cierreOperativo?.estado === 'cerrado_operativamente') return 'La nómina ya está cerrada operativamente.';
     if (snapshot.aprobacionOperativa?.estado !== 'aprobado_operativamente') return 'El resultado debe estar aprobado operativamente antes de cerrar.';
     if (this.resultadoPreliminar().estado === 'actualizado_sin_guardar') return 'Hay un resultado actualizado sin guardar.';
     if (snapshot.totalBloqueados > 0) return 'Existen bloqueos operativos pendientes en el resultado guardado.';
@@ -1326,7 +1512,7 @@ export class ProcesoMensualContainer {
   abrirConfirmacionCierreNominaOperativa(): void {
     this.confirmacionProceso.set({
       tipo: 'cerrar_nomina',
-      titulo: 'Cerrar nomina del periodo',
+      titulo: 'Cerrar nómina del período',
       mensaje: `Vas a cerrar operativamente la nomina de ${this.periodoSeleccionado()}.`,
       detalle: 'El resultado aprobado quedara congelado mientras no exista un flujo de reapertura.',
       puntos: [
@@ -1334,7 +1520,7 @@ export class ProcesoMensualContainer {
         'No emite liquidaciones oficiales.',
         'No genera archivos Previred, LRE, banco ni PDF.',
       ],
-      primaryLabel: 'Cerrar nomina',
+      primaryLabel: 'Cerrar nómina',
       secondaryLabel: 'Cancelar',
     });
   }
@@ -1467,7 +1653,7 @@ export class ProcesoMensualContainer {
   accionArea(area: ProcesoMensualArea): { label: string; route: string } | null {
     switch (area) {
       case 'PARAMETROS':
-        return { label: 'Revisar parametros', route: '/parametros' };
+        return { label: 'Revisar parámetros', route: '/parametros' };
       case 'CONCEPTOS':
         return { label: 'Revisar conceptos', route: '/remuneraciones/conceptos' };
       case 'HABERES_RECURRENTES':
@@ -1872,7 +2058,7 @@ export class ProcesoMensualContainer {
     }
     return {
       label: 'Calcular preliminar',
-      descripcion: 'La base de nomina esta lista para calcular preliminarmente.',
+      descripcion: 'La base de nómina está lista para calcular preliminarmente.',
       accionLocal: 'calcularPreliminar',
     };
   }
@@ -1893,7 +2079,7 @@ export class ProcesoMensualContainer {
   }
 
   private tituloMensajeOperativo(mensaje: ProcesoMensualMensaje): string {
-    if (mensaje.area === 'PARAMETROS') return 'Parametros del periodo por revisar';
+    if (mensaje.area === 'PARAMETROS') return 'Parámetros del período por revisar';
     if (mensaje.area === 'TRABAJADORES') return 'Trabajadores por revisar';
     if (mensaje.area === 'HABERES_RECURRENTES') return 'Movimientos recurrentes por revisar';
     if (mensaje.area === 'ENTRADAS_MENSUALES' || mensaje.area === 'MOVIMIENTOS_VARIABLES') return 'Movimientos del periodo por revisar';
@@ -1966,8 +2152,8 @@ export class ProcesoMensualContainer {
 
   private razonNoPuedeGuardarResultado(bloqueos: ResultadoObservacionView[]): string {
     if (!validarPeriodoEntradaMensual(this.periodoSeleccionado())) return 'El periodo seleccionado no es valido.';
-    if (this.nominaEstaCerradaOperativamente()) return 'La nomina del periodo esta cerrada operativamente. Para modificarla se requerira una fase futura de reapertura.';
-    if (!this.calculo()) return 'Primero calcula preliminarmente la nomina.';
+    if (this.nominaEstaCerradaOperativamente()) return 'La nómina del período está cerrada. Para modificarla, será necesario reabrir el período en una fase posterior.';
+    if (!this.calculo()) return 'Primero calcula preliminarmente la nómina.';
     if (this.errorEjecucion()) return 'Hay un error tecnico activo que debes resolver antes de guardar.';
     if (bloqueos.length > 0) return 'El resultado tiene bloqueos que deben revisarse.';
     const snapshot = this.snapshotActivo();
@@ -2111,7 +2297,7 @@ export class ProcesoMensualContainer {
     aprobacionVigente: boolean;
   }): string | undefined {
     if (input.aprobacionVigente) return 'El resultado preliminar guardado ya esta aprobado operativamente.';
-    if (this.nominaEstaCerradaOperativamente()) return 'La nomina del periodo esta cerrada operativamente. Para modificarla se requerira una fase futura de reapertura.';
+    if (this.nominaEstaCerradaOperativamente()) return 'La nómina del período está cerrada. Para modificarla, será necesario reabrir el período en una fase posterior.';
     if (!validarPeriodoEntradaMensual(this.periodoSeleccionado())) return 'El periodo no es valido para aprobacion operativa.';
     if (!input.hayResultadoActual && !input.hayGuardado) return 'Primero calcula el resultado preliminar.';
     if (!input.hayGuardado) return 'Primero guarda el resultado preliminar.';
@@ -2160,7 +2346,7 @@ export class ProcesoMensualContainer {
     if (origen.includes('recurrente') || origen.includes('haber')) {
       return { accionLabel: 'Revisar recurrentes', ruta: '/remuneraciones/haberes-descuentos' };
     }
-    return { accionLabel: 'Revisar base de nomina' };
+    return { accionLabel: 'Revisar base de nómina' };
   }
 
   private formatoMonto(valor: number | null | undefined): string {
