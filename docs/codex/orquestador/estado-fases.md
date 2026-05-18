@@ -1,3 +1,25 @@
+## NOM-MODALES-PERIODO-INFO-02 - Información guiada post-generación
+
+| Campo | Estado |
+|---|---|
+| Estado | Implementada (alcance mínimo) |
+| Tipo | UX/UI local + rules |
+| Alcance | `InformacionPeriodoView`, rules, signal `informacionPeriodo`, modal MessageBox informativo, banner condicionado, rail contextual. |
+| Restricciones | Sin `ProcesoMensualOverlay` completo, sin `app-proceso-mensual-overlays`, sin tocar `app-message-box` compartido, store contracts, SQL, motor, servicios ni estilos globales. |
+| Documento | [`../modulos/nomina-mensual/modales-periodo-info-02.md`](../modulos/nomina-mensual/modales-periodo-info-02.md) |
+| Siguiente | `NOM-MODALES-PERIODO-STATE-03` — overlay unificado + reparo `proceso-mensual-container.spec.ts`. |
+
+## NOM-MODALES-PERIODO-01 - Matriz overlays/modales (documental)
+
+| Campo | Estado |
+|---|---|
+| Estado | Implementada (documental) |
+| Tipo | Criterio NOIA / diseño técnico-operativo |
+| Alcance | Matriz cuándo usar revisión tabulada, MessageBox decisión/información, inline y rail; contrato propuesto `ProcesoMensualOverlay`; prioridad post-generación. |
+| Restricciones | Sin HTML/CSS/TS productivo, shared components, facade/store productivo, SQL, motor, estilos globales. |
+| Documento | [`../modulos/nomina-mensual/modales-periodo-01.md`](../modulos/nomina-mensual/modales-periodo-01.md) |
+| Siguiente | Cerrada; implementación en INFO-02. |
+
 ## NOM-MENSUAL-CONTAINER-MODULAR-01 - Contenedor modular (fases 1-5)
 
 | Campo | Estado |

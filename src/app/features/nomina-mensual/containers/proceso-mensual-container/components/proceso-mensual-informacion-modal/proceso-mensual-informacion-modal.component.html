@@ -1,0 +1,16 @@
+@let f = facade;
+@if (f.informacionPeriodo(); as info) {
+  <app-message-box
+    [variant]="variant(info)"
+    mode="modal"
+    [title]="info.titulo"
+    [message]="info.bajada ?? ''"
+    [sections]="sections(info)"
+    [primaryLabel]="primaryLabel(info)"
+    [secondaryLabel]="secondaryLabel(info)"
+    [dismissible]="true"
+    (action)="f.confirmarInformacionPeriodo()"
+    (secondary)="f.cancelarInformacionPeriodo()"
+    (dismiss)="f.cancelarInformacionPeriodo()"
+  />
+}

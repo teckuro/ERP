@@ -1,3 +1,9 @@
+## 2026-05-18 - NOM-MODALES-PERIODO-INFO-02
+
+- **Módulo:** Nómina mensual / proceso mensual container.
+- **Cambio visual:** errores y bloqueos post-generación pasan a `app-message-box` modal informativo (`app-proceso-mensual-informacion-modal`); el banner crudo de `errorEjecucion` se oculta cuando hay información guiada; el rail «Ver detalle» abre el tab contextual según bloqueos/advertencias.
+- **Restricciones:** sin cambios al `app-message-box` compartido, sin estilos globales, sin SQL/motor/servicios.
+
 ## 2026-05-18 - NOM-MENSUAL-WORKSPACE-UI-01
 
 - **Modulo:** Nomina mensual.

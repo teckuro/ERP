@@ -18,13 +18,15 @@
     </div>
   </header>
 
-  @if (errorEjecucion(); as err) {
-    <div class="payroll-ledger-error" role="alert">{{ err }}</div>
+  @if (errorEjecucion() && !informacionPeriodo()) {
+    <div class="payroll-ledger-error" role="alert">{{ errorEjecucion() }}</div>
   }
 
   <app-proceso-mensual-workspace />
 
   <app-proceso-mensual-detalle-modal />
+
+  <app-proceso-mensual-informacion-modal />
 
   @if (confirmacionProceso(); as confirmacion) {
     <app-message-box

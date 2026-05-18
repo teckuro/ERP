@@ -57,6 +57,32 @@ export interface ConfirmacionProcesoMensualView {
   secciones?: Array<{ titulo: string; items: string[] }>;
 }
 
+export type InformacionPeriodoDestino =
+  | 'parametros'
+  | 'trabajadores'
+  | 'movimientos'
+  | 'asignaciones'
+  | 'resultado'
+  | 'reintentar'
+  | 'cerrar';
+
+export interface InformacionPeriodoView {
+  tone: 'info' | 'warning' | 'danger' | 'success';
+  titulo: string;
+  bajada?: string;
+  puntos?: string[];
+  secciones?: Array<{ titulo: string; items: string[] }>;
+  accionPrincipal?: {
+    label: string;
+    destino: InformacionPeriodoDestino;
+  };
+  accionSecundaria?: {
+    label: string;
+    destino: 'cerrar';
+  };
+  reintentarAccion?: ValidacionAccionLocal;
+}
+
 export interface NominaVisualFrameView {
   frame: NominaVisualFrame;
   chip: string;

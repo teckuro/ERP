@@ -6,6 +6,7 @@ import {
   RecordBreadcrumbComponent,
 } from '../../../../shared/components/ui/record-breadcrumb.component';
 import { ProcesoMensualDetalleModalComponent } from './components/proceso-mensual-detalle-modal/proceso-mensual-detalle-modal.component';
+import { ProcesoMensualInformacionModalComponent } from './components/proceso-mensual-informacion-modal/proceso-mensual-informacion-modal.component';
 import { ProcesoMensualWorkspaceComponent } from './components/proceso-mensual-workspace/proceso-mensual-workspace.component';
 import { ProcesoMensualPresentacionFacade } from './facade/proceso-mensual-presentacion.facade';
 import { ProcesoMensualPeriodoStore } from './store/proceso-mensual-periodo.store';
@@ -24,6 +25,7 @@ import { ProcesoMensualPeriodoStore } from './store/proceso-mensual-periodo.stor
     MessageBoxComponent,
     ProcesoMensualWorkspaceComponent,
     ProcesoMensualDetalleModalComponent,
+    ProcesoMensualInformacionModalComponent,
   ],
   templateUrl: './proceso-mensual-container.html',
   styleUrl: './proceso-mensual-container.css',

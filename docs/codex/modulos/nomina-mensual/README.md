@@ -45,10 +45,20 @@ El modal visible se titula **Registrar movimiento del mes** y queda enfocado sol
 
 La estructura queda compacta y vertical: bloque Movimiento, Detalle administrativo opcional y Resumen inferior antes del footer.
 
+## NOM-MODALES-PERIODO-INFO-02 aplicado
+
+Información guiada post-generación: rules `proceso-mensual-informacion-periodo`, signal `informacionPeriodo`, modal `app-proceso-mensual-informacion-modal`, banner condicionado y rail contextual. Documento: [`modales-periodo-info-02.md`](./modales-periodo-info-02.md).
+
+## NOM-MODALES-PERIODO-01 aplicado (documental)
+
+Matriz NOIA de overlays y modales para la pantalla modular (`proceso-mensual-workspace`, `proceso-mensual-detalle-modal`, `app-message-box`, banner `errorEjecucion`). Define contrato propuesto `ProcesoMensualOverlay` y fase siguiente **NOM-MODALES-PERIODO-INFO-02** (errores/bloqueos post-generación). Sin cambios en UI productiva en esta fase. Documento: [`modales-periodo-01.md`](./modales-periodo-01.md).
+
 ## Documentos
 
 | Archivo | Rol |
 |---------|-----|
+| [`modales-periodo-01.md`](./modales-periodo-01.md) | Matriz overlays/modales NOIA, inventario, contrato propuesto, entradas y prioridades (NOM-MODALES-PERIODO-01) |
+| [`nom-mensual-container-modular-01.md`](./nom-mensual-container-modular-01.md) | Refactor contenedor modular fases 1-5 (store, facade, hijos) |
 | [`contrato-general.md`](./contrato-general.md) | Objetivo, alcance, relaciones con Parametros, empleados, conceptos, MV, motor futuro |
 | [`nomina-mensual-confirmacion-flow.md`](./nomina-mensual-confirmacion-flow.md) | Define nómina mensual confirmada como fuente oficial para generar liquidaciones |
 | [`nomina-mensual-diseno-visual-pruebas-unitarias-2026-05-18.md`](./nomina-mensual-diseno-visual-pruebas-unitarias-2026-05-18.md) | Diseno visual actual respaldado por pruebas unitarias y de componente |

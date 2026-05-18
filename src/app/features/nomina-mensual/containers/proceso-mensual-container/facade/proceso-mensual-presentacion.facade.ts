@@ -32,6 +32,11 @@ import {
 } from '../../../rules/proceso-mensual-estado-operativo.rules';
 import { buildValidacionCalculoPreliminarView } from '../../../rules/proceso-mensual-validacion-calculo.rules';
 import {
+  buildInformacionPeriodoView,
+  mapDestinoToDetalleTab,
+  resolveDetalleTabForRevision,
+} from '../../../rules/proceso-mensual-informacion-periodo.rules';
+import {
   buildAlertasPeriodoResumen,
   buildBitacoraEtapas,
   buildNominaFrameView,
@@ -60,6 +65,8 @@ import type {
   BitacoraRailEtapaVm,
   CierreOperativoView,
   ConfirmacionProcesoMensualView,
+  InformacionPeriodoDestino,
+  InformacionPeriodoView,
   DetalleOperativoTab,
   EtapaOperativaActiva,
   NominaResumenSuperiorVm,
@@ -125,7 +132,9 @@ export class ProcesoMensualPresentacionFacade {
   readonly cerrandoNomina = this.store.cerrandoNomina;
   readonly snapshotCompleto = this.store.snapshotCompleto;
   readonly confirmacionProceso = signal<ConfirmacionProcesoMensualView | null>(null);
+  readonly informacionPeriodo = signal<InformacionPeriodoView | null>(null);
   readonly detalleOperativoAbierto = signal(false);
+  private informacionPeriodoSuprimida = false;
   readonly detalleOperativoTabActivo = signal<DetalleOperativoTab>('trabajadores');
   readonly nominaWorkspaceTab = signal<NominaWorkspaceTab>('guia');
   readonly actaOperativaPreparada = signal(false);
@@ -618,6 +627,24 @@ export class ProcesoMensualPresentacionFacade {
     untracked(() => this.nominaWorkspaceTab.set(tab));
   });
 
+  private readonly syncInformacionPeriodoEffect = effect(() => {
+    this.store.errorEjecucion();
+    this.store.resultado();
+    this.store.preNomina();
+    this.store.calculo();
+    this.store.snapshotActivo();
+    this.validacionCalculo();
+    this.estadoOperativo();
+    this.nominaVisualFrame();
+    this.store.validando();
+    this.store.generandoPreNomina();
+    this.store.calculandoPreliminar();
+    if (this.store.validando() || this.store.generandoPreNomina() || this.store.calculandoPreliminar()) {
+      return;
+    }
+    untracked(() => this.sincronizarInformacionPeriodo());
+  });
+
   readonly nominaFrame = computed<NominaVisualFrameView>(() => {
     const estado = this.estadoOperativo();
     return buildNominaFrameView({
@@ -989,19 +1016,82 @@ export class ProcesoMensualPresentacionFacade {
   });
 
   validarPeriodo(): void {
+    this.informacionPeriodoSuprimida = false;
     this.store.validarPeriodo();
   }
 
   generarPreNomina(): void {
+    this.informacionPeriodoSuprimida = false;
     this.store.generarPreNomina();
   }
 
   calcularPreliminar(): void {
     if (!this.puedeCalcularPreliminar()) return;
+    this.informacionPeriodoSuprimida = false;
     this.store.calcularPreliminar();
   }
 
+  sincronizarInformacionPeriodo(): void {
+    if (this.informacionPeriodoSuprimida) return;
+    if (this.confirmacionProceso() || this.detalleOperativoAbierto()) return;
+
+    const view = buildInformacionPeriodoView({
+      errorEjecucion: this.store.errorEjecucion(),
+      validacionCalculo: this.validacionCalculo(),
+      paraContinuar: this.paraContinuarLista(),
+      bloqueosOperativos: this.estadoOperativo().bloqueos,
+      advertenciasOperativas: this.estadoOperativo().advertencias,
+      nominaFrame: this.nominaVisualFrame(),
+      tienePreNomina: this.store.preNomina() != null,
+      tieneCalculo: this.store.calculo() != null,
+      tieneResultado: this.store.resultado() != null || this.store.snapshotActivo() != null,
+    });
+    this.informacionPeriodo.set(view);
+  }
+
+  cerrarInformacionPeriodo(): void {
+    this.informacionPeriodo.set(null);
+    this.informacionPeriodoSuprimida = true;
+  }
+
+  confirmarInformacionPeriodo(): void {
+    const info = this.informacionPeriodo();
+    if (!info) return;
+    const destino = info.accionPrincipal?.destino;
+    const reintentarAccion = info.reintentarAccion;
+    this.informacionPeriodo.set(null);
+    if (destino === 'reintentar') {
+      this.informacionPeriodoSuprimida = false;
+    } else {
+      this.informacionPeriodoSuprimida = true;
+    }
+    if (!destino) return;
+    this.ejecutarDestinoInformacionPeriodo(destino, reintentarAccion);
+  }
+
+  cancelarInformacionPeriodo(): void {
+    this.cerrarInformacionPeriodo();
+  }
+
+  private ejecutarDestinoInformacionPeriodo(
+    destino: InformacionPeriodoDestino,
+    reintentarAccion?: ValidacionAccionLocal,
+  ): void {
+    if (destino === 'reintentar') {
+      if (reintentarAccion) {
+        this.ejecutarAccionValidacion(reintentarAccion);
+      }
+      return;
+    }
+    if (destino === 'cerrar') return;
+    const tab = mapDestinoToDetalleTab(destino);
+    if (tab) {
+      this.abrirDetalleOperativo(tab);
+    }
+  }
+
   guardarSnapshotPreliminar(): void {
+    this.cerrarInformacionPeriodo();
     this.confirmacionProceso.set({
       tipo: 'guardar_preliminar',
       titulo: 'Guardar versión revisable',
@@ -1108,6 +1198,7 @@ export class ProcesoMensualPresentacionFacade {
     if (advertenciasAprobacion.length === 0 && snapshot.totalAdvertencias > 0) {
       advertenciasAprobacion.push(`Resultado guardado con ${snapshot.totalAdvertencias} advertencia(s) no bloqueante(s).`);
     }
+    this.cerrarInformacionPeriodo();
     this.confirmacionProceso.set({
       tipo: 'aprobar_preliminar',
       titulo: 'Confirmar revisión de nómina',
@@ -1144,7 +1235,18 @@ export class ProcesoMensualPresentacionFacade {
     this.abrirDetalleOperativo('trabajadores');
   }
 
+  abrirDetalleOperativoContextual(): void {
+    const tab = resolveDetalleTabForRevision({
+      errorEjecucion: this.store.errorEjecucion(),
+      validacionCalculo: this.validacionCalculo(),
+      bloqueosOperativos: this.estadoOperativo().bloqueos,
+      advertenciasOperativas: this.estadoOperativo().advertencias,
+    });
+    this.abrirDetalleOperativo(tab);
+  }
+
   abrirDetalleOperativo(tab: DetalleOperativoTab = 'trabajadores'): void {
+    this.informacionPeriodo.set(null);
     this.detalleOperativoTabActivo.set(tab);
     this.detalleOperativoAbierto.set(true);
   }
@@ -1159,6 +1261,10 @@ export class ProcesoMensualPresentacionFacade {
 
   @HostListener('document:keydown.escape')
   cerrarModalesConEscape(): void {
+    if (this.informacionPeriodo()) {
+      this.cerrarInformacionPeriodo();
+      return;
+    }
     if (this.detalleOperativoAbierto()) {
       this.cerrarDetalleOperativo();
       return;
@@ -1201,6 +1307,7 @@ export class ProcesoMensualPresentacionFacade {
   }
 
   abrirConfirmacionCierreNominaOperativa(): void {
+    this.cerrarInformacionPeriodo();
     this.confirmacionProceso.set({
       tipo: 'cerrar_nomina',
       titulo: 'Confirmar nómina mensual',
@@ -1255,6 +1362,7 @@ export class ProcesoMensualPresentacionFacade {
     const acta = this.actaPreparacion();
     if (!acta.accionDisponible) return;
     const tieneObservaciones = acta.estado === 'REQUIERE_REVISION';
+    this.cerrarInformacionPeriodo();
     this.confirmacionProceso.set({
       tipo: 'preparar_acta',
       titulo: 'Preparar acta operativa del periodo',

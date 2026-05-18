@@ -1,5 +1,18 @@
 # CHANGELOG
 
+## 2026-05-18 - NOM-MODALES-PERIODO-INFO-02
+
+- **UI:** modal informativo `app-proceso-mensual-informacion-modal` para errores/bloqueos post-generación; banner `errorEjecucion` condicionado; rail «Ver detalle» contextual.
+- **Rules:** `proceso-mensual-informacion-periodo.rules.ts` + spec (4 tests).
+- **Facade:** signal `informacionPeriodo` con sincronización y exclusión mutua respecto a confirmación y detalle operativo.
+- **Deuda:** `proceso-mensual-container.spec.ts` pendiente de alinear al DOM modular.
+
+## 2026-05-18 - NOM-MODALES-PERIODO-01
+
+- **Nómina mensual:** matriz NOIA de overlays y modales (revisión vs MessageBox vs inline vs rail).
+- **Documentación:** [`modulos/nomina-mensual/modales-periodo-01.md`](./modulos/nomina-mensual/modales-periodo-01.md) — inventario, contrato propuesto `ProcesoMensualOverlay`, entradas, prioridades y fase siguiente `NOM-MODALES-PERIODO-INFO-02`.
+- **Alcance:** solo Codex; sin cambios en HTML/CSS/TS productivo, servicios, SQL, motor ni estilos globales.
+
 ## 2026-05-18 - NOM-MENSUAL-WORKSPACE-UI-01
 
 - **Nómina mensual:** la pantalla visible deja de presentarse como `Preparar nómina` y pasa a leerse como workspace operativo del período.
