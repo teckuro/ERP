@@ -70,7 +70,7 @@ type RevisionChecklistEstado = 'Completo' | 'Pendiente' | 'Requiere atencion' | 
 type EtapaOperativaActiva = 'base' | 'calculo' | 'resultado' | 'guardado' | 'aprobacion' | 'cierre' | 'liquidaciones';
 type PasoPeriodoEstado = 'Actual' | 'Completo' | 'Pendiente' | 'Bloqueada';
 type ConfirmacionProcesoMensualTipo = 'guardar_preliminar' | 'aprobar_preliminar' | 'cerrar_nomina' | 'preparar_acta';
-type DetalleOperativoTab = 'guia' | 'resumen' | 'trabajadores' | 'movimientos' | 'recurrentes' | 'observaciones' | 'resultado';
+type DetalleOperativoTab = 'resumen' | 'trabajadores' | 'parametros' | 'movimientos_recurrentes' | 'resultado';
 type NominaWorkspaceTab = 'guia' | 'trabajadores' | 'detalle';
 type NominaVisualFrame =
   | 'sin_generar'
@@ -106,6 +106,15 @@ interface NominaVisualFrameView {
   ctaAccion?: ValidacionAccionLocal;
   secundariaLabel?: string;
   secundariaAccion?: () => void;
+}
+
+interface NominaResumenSuperiorVm {
+  trabajadores: string;
+  parametros: string;
+  movimientos: string;
+  recurrentes: string;
+  cambios: number;
+  bloqueos: number;
 }
 
 interface ValidacionOperativaItemView {
@@ -385,6 +394,15 @@ interface PayrollResultDetailRow {
   observacion: string;
 }
 
+interface PayrollSeguimientoItem {
+  titulo: string;
+  descripcion: string;
+  estado: string;
+  estadoClase: string;
+  accion: string;
+  ruta?: string;
+}
+
 @Component({
   selector: 'app-proceso-mensual-container',
   standalone: true,
@@ -438,17 +456,54 @@ export class ProcesoMensualContainer {
   readonly confirmacionProceso = signal<ConfirmacionProcesoMensualView | null>(null);
   readonly revisionGuiadaAbierta = signal(false);
   readonly detalleOperativoAbierto = signal(false);
-  readonly detalleOperativoTabActivo = signal<DetalleOperativoTab>('guia');
+  readonly detalleOperativoTabActivo = signal<DetalleOperativoTab>('trabajadores');
   readonly nominaWorkspaceTab = signal<NominaWorkspaceTab>('guia');
   readonly actaOperativaPreparada = signal(false);
 
+  accionPeriodoEnCurso(): boolean {
+    return (
+      this.validando() ||
+      this.generandoPreNomina() ||
+      this.calculandoPreliminar() ||
+      this.guardandoSnapshot() ||
+      this.aprobandoResultado() ||
+      this.cerrandoNomina()
+    );
+  }
+
+  seleccionarNominaWorkspaceTab(tab: NominaWorkspaceTab): void {
+    this.nominaWorkspaceTab.set(tab);
+  }
+
+  claseChipRevision(estado: string): string {
+    const normalizado = estado.toLowerCase();
+    if (normalizado.includes('bloque') || normalizado.includes('omitido')) {
+      return 'payroll-state-chip payroll-state-chip--danger';
+    }
+    if (normalizado.includes('observ') || normalizado.includes('advert') || normalizado.includes('cambio')) {
+      return 'payroll-state-chip payroll-state-chip--warning';
+    }
+    if (normalizado.includes('revis')) return 'payroll-state-chip payroll-state-chip--info';
+    return 'payroll-state-chip payroll-state-chip--success';
+  }
+
+  clasePendienteVisual(severidad: ProcesoMensualEstadoSeveridad): string {
+    if (severidad === 'danger') return 'payroll-state-chip payroll-state-chip--danger';
+    if (severidad === 'warning') return 'payroll-state-chip payroll-state-chip--warning';
+    return 'payroll-state-chip payroll-state-chip--info';
+  }
+
+  etiquetaPendienteVisual(severidad: ProcesoMensualEstadoSeveridad): string {
+    if (severidad === 'danger') return 'Bloqueado';
+    if (severidad === 'warning') return 'Cambio detectado';
+    return 'Revisar';
+  }
+
   readonly detalleOperativoTabs: Array<{ id: DetalleOperativoTab; label: string }> = [
-    { id: 'guia', label: 'Guía' },
     { id: 'resumen', label: 'Resumen operativo' },
     { id: 'trabajadores', label: 'Trabajadores' },
-    { id: 'movimientos', label: 'Movimientos' },
-    { id: 'recurrentes', label: 'Recurrentes' },
-    { id: 'observaciones', label: 'Observaciones' },
+    { id: 'parametros', label: 'Parámetros' },
+    { id: 'movimientos_recurrentes', label: 'Movimientos y recurrentes' },
     { id: 'resultado', label: 'Nómina generada' },
   ];
 
@@ -527,11 +582,6 @@ export class ProcesoMensualContainer {
         this.resetearEstadoPeriodo();
         this.verSnapshotActivo();
       });
-    });
-
-    effect(() => {
-      const tab = this.nominaWorkspaceTabSugerida();
-      untracked(() => this.nominaWorkspaceTab.set(tab));
     });
   }
 
@@ -1131,6 +1181,26 @@ export class ProcesoMensualContainer {
     });
   });
 
+  readonly nominaResumenSuperior = computed<NominaResumenSuperiorVm>(() => {
+    const resumen = this.dashboardResumen();
+    const snapshot = this.snapshotActivo();
+    return {
+      trabajadores:
+        resumen.trabajadoresAptos == null
+          ? 'Sin evaluar'
+          : `${resumen.trabajadoresAptos} incluido${resumen.trabajadoresAptos === 1 ? '' : 's'}`,
+      parametros:
+        resumen.parametrosListos == null ? 'Sin evaluar' : resumen.parametrosListos ? 'Revisados' : 'Por revisar',
+      movimientos: `${resumen.movimientosAprobados} aprobados · ${resumen.movimientosPendientes} pendientes`,
+      recurrentes:
+        resumen.asignacionesAplicables == null
+          ? 'Sin evaluar'
+          : `${resumen.asignacionesAplicables} vigente${resumen.asignacionesAplicables === 1 ? '' : 's'}`,
+      cambios: this.estadoOperativo().advertencias.length + (snapshot?.totalAdvertencias ?? 0),
+      bloqueos: this.estadoOperativo().bloqueos.length + (snapshot?.totalBloqueados ?? 0),
+    };
+  });
+
   readonly nominaVisualFrame = computed<NominaVisualFrame>(() => {
     if (this.validando() || this.generandoPreNomina() || this.calculandoPreliminar()) return 'generando';
 
@@ -1150,6 +1220,11 @@ export class ProcesoMensualContainer {
     if (frame === 'en_revision' || frame === 'con_pendientes') return 'trabajadores';
     if (frame === 'confirmada' || frame === 'liquidaciones_generadas') return 'detalle';
     return 'guia';
+  });
+
+  private readonly syncNominaWorkspaceTab = effect(() => {
+    const tab = this.nominaWorkspaceTabSugerida();
+    untracked(() => this.nominaWorkspaceTab.set(tab));
   });
 
   readonly nominaFrame = computed<NominaVisualFrameView>(() => {
@@ -1226,23 +1301,6 @@ export class ProcesoMensualContainer {
             : 'La nómina confirmada será la base oficial para generar liquidaciones.',
         });
     }
-  });
-
-  readonly nominaResumenSuperior = computed(() => {
-    const resumen = this.dashboardResumen();
-    const snapshot = this.snapshotActivo();
-    return {
-      trabajadores: resumen.trabajadoresAptos == null
-        ? 'Sin evaluar'
-        : `${resumen.trabajadoresAptos} incluido${resumen.trabajadoresAptos === 1 ? '' : 's'}`,
-      parametros: resumen.parametrosListos == null ? 'Sin evaluar' : (resumen.parametrosListos ? 'Revisados' : 'Por revisar'),
-      movimientos: `${resumen.movimientosAprobados} aprobados · ${resumen.movimientosPendientes} pendientes`,
-      recurrentes: resumen.asignacionesAplicables == null
-        ? 'Sin evaluar'
-        : `${resumen.asignacionesAplicables} vigente${resumen.asignacionesAplicables === 1 ? '' : 's'}`,
-      cambios: this.estadoOperativo().advertencias.length + (snapshot?.totalAdvertencias ?? 0),
-      bloqueos: this.estadoOperativo().bloqueos.length + (snapshot?.totalBloqueados ?? 0),
-    };
   });
 
   readonly nominaPendientesVisuales = computed<ProcesoMensualPendienteVm[]>(() => {
@@ -1652,6 +1710,94 @@ export class ProcesoMensualContainer {
     return rows;
   });
 
+  readonly payrollParametroSeguimientoItems = computed<PayrollSeguimientoItem[]>(() => {
+    const estado = this.estadoOperativo();
+    const items = [...estado.bloqueos, ...estado.advertencias, ...estado.informaciones]
+      .filter((item) => item.ruta === '/parametros' || this.ambitoDesdeCodigo(item.codigo) === 'Parámetros')
+      .map((item) => ({
+        titulo: item.titulo,
+        descripcion: item.descripcion,
+        estado: this.etiquetaPendienteVisual(item.severidad),
+        estadoClase: this.clasePendienteVisual(item.severidad),
+        accion: item.accionLabel ?? 'Revisar parámetros',
+        ruta: item.ruta ?? '/parametros',
+      }));
+
+    if (items.length) return items;
+
+    const parametrosListos = this.dashboardResumen().parametrosListos;
+    return [{
+      titulo: parametrosListos ? 'Parámetros revisados' : 'Parámetros del período',
+      descripcion: parametrosListos == null
+        ? 'Genera la nómina mensual para evaluar parámetros del período.'
+        : parametrosListos
+          ? 'Los parámetros mínimos del período están disponibles para la nómina.'
+          : 'Hay parámetros del período que requieren revisión antes de confirmar.',
+      estado: parametrosListos ? 'Revisados' : parametrosListos == null ? 'Sin evaluar' : 'Revisar',
+      estadoClase: parametrosListos ? 'payroll-state-chip payroll-state-chip--success' : 'payroll-state-chip payroll-state-chip--warning',
+      accion: 'Abrir parámetros',
+      ruta: '/parametros',
+    }];
+  });
+
+  readonly payrollMovimientoRecurrenteSeguimientoItems = computed<PayrollSeguimientoItem[]>(() => {
+    const movimientos = this.payrollMovementDetailRows().map((row) => ({
+      titulo: row.concepto,
+      descripcion: `${row.trabajador} · ${row.tipo} · ${row.monto}`,
+      estado: row.estado,
+      estadoClase: this.claseChipRevision(row.estado),
+      accion: row.accion === 'Sin acción pendiente' ? 'Ver movimientos' : row.accion,
+      ruta: '/remuneraciones/novedades-mensuales',
+    }));
+    const recurrentes = this.payrollRecurrentDetailRows().map((row) => ({
+      titulo: row.concepto,
+      descripcion: `${row.trabajador} · ${row.periodicidad} · ${row.monto}`,
+      estado: row.estado,
+      estadoClase: this.claseChipRevision(row.estado),
+      accion: row.accion === 'Sin acción pendiente' ? 'Ver recurrentes' : row.accion,
+      ruta: '/remuneraciones/haberes-descuentos',
+    }));
+    const items = [...movimientos, ...recurrentes].slice(0, 12);
+    if (items.length) return items;
+
+    return [{
+      titulo: 'Movimientos y recurrentes',
+      descripcion: 'No hay movimientos del mes ni asignaciones recurrentes aplicables visibles para este período.',
+      estado: 'Sin movimientos',
+      estadoClase: 'payroll-state-chip payroll-state-chip--info',
+      accion: 'Abrir movimientos',
+      ruta: '/remuneraciones/novedades-mensuales',
+    }];
+  });
+
+  readonly payrollResultadoSeguimientoItems = computed<PayrollSeguimientoItem[]>(() => {
+    const resultado = this.resultadoPreliminar();
+    const snapshot = this.snapshotActivo();
+    return [
+      {
+        titulo: 'Trabajadores calculados',
+        descripcion: `${resultado.resumen.trabajadoresCalculados} trabajadores calculados, ${resultado.resumen.trabajadoresConObservaciones} con observaciones y ${resultado.resumen.trabajadoresOmitidos} omitidos.`,
+        estado: resultado.estadoLabel,
+        estadoClase: this.claseChipRevision(resultado.estadoLabel),
+        accion: 'Revisar trabajadores',
+      },
+      {
+        titulo: 'Totales preliminares',
+        descripcion: `Haberes ${this.formatoMonto(resultado.resumen.totalHaberes)} · Descuentos ${this.formatoMonto(resultado.resumen.totalDescuentos)} · Líquido ${this.formatoMonto(resultado.resumen.totalLiquido)}.`,
+        estado: resultado.resumen.totalLiquido == null ? 'Sin resultado' : 'Calculado',
+        estadoClase: resultado.resumen.totalLiquido == null ? 'payroll-state-chip payroll-state-chip--info' : 'payroll-state-chip payroll-state-chip--success',
+        accion: 'Ver resumen',
+      },
+      {
+        titulo: 'Versión revisable',
+        descripcion: snapshot ? `Guardada el ${this.formatoFechaHora(snapshot.fechaGeneracion)}.` : 'Aún no existe una versión revisable guardada para confirmar.',
+        estado: snapshot ? 'Guardada' : 'Pendiente',
+        estadoClase: snapshot ? 'payroll-state-chip payroll-state-chip--success' : 'payroll-state-chip payroll-state-chip--warning',
+        accion: snapshot ? 'Ver detalle' : 'Generar nómina',
+      },
+    ];
+  });
+
   readonly payrollResultDetailRows = computed<PayrollResultDetailRow[]>(() => {
     return this.resultadoPreliminar().trabajadores.map((trabajador) => ({
       trabajador: trabajador.trabajadorLabel,
@@ -2035,20 +2181,16 @@ export class ProcesoMensualContainer {
   }
 
   abrirRevisionGuiada(): void {
-    this.abrirDetalleOperativo('guia');
+    this.abrirDetalleOperativo('trabajadores');
   }
 
   cerrarRevisionGuiada(): void {
     this.revisionGuiadaAbierta.set(false);
   }
 
-  abrirDetalleOperativo(tab: DetalleOperativoTab = 'guia'): void {
+  abrirDetalleOperativo(tab: DetalleOperativoTab = 'trabajadores'): void {
     this.detalleOperativoTabActivo.set(tab);
     this.detalleOperativoAbierto.set(true);
-  }
-
-  seleccionarNominaWorkspaceTab(tab: NominaWorkspaceTab): void {
-    this.nominaWorkspaceTab.set(tab);
   }
 
   cerrarDetalleOperativo(): void {
@@ -2057,6 +2199,11 @@ export class ProcesoMensualContainer {
 
   seleccionarDetalleOperativoTab(tab: DetalleOperativoTab): void {
     this.detalleOperativoTabActivo.set(tab);
+  }
+
+  abrirSeguimientoDesdeGuia(tab: DetalleOperativoTab): void {
+    this.revisionGuiadaAbierta.set(false);
+    this.abrirDetalleOperativo(tab);
   }
 
   @HostListener('document:keydown.escape')
@@ -2072,30 +2219,6 @@ export class ProcesoMensualContainer {
 
   enfocarPanelApoyo(): void {
     document.querySelector('#payroll-support-panel')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  }
-
-  accionPeriodoEnCurso(): boolean {
-    return this.validando() || this.generandoPreNomina() || this.calculandoPreliminar() || this.guardandoSnapshot() || this.aprobandoResultado() || this.cerrandoNomina();
-  }
-
-  claseChipRevision(estado: string): string {
-    const normalizado = estado.toLowerCase();
-    if (normalizado.includes('bloque') || normalizado.includes('omitido')) return 'payroll-state-chip payroll-state-chip--danger';
-    if (normalizado.includes('observ') || normalizado.includes('advert') || normalizado.includes('cambio')) return 'payroll-state-chip payroll-state-chip--warning';
-    if (normalizado.includes('revis')) return 'payroll-state-chip payroll-state-chip--info';
-    return 'payroll-state-chip payroll-state-chip--success';
-  }
-
-  clasePendienteVisual(severidad: ProcesoMensualEstadoSeveridad): string {
-    if (severidad === 'danger') return 'payroll-state-chip payroll-state-chip--danger';
-    if (severidad === 'warning') return 'payroll-state-chip payroll-state-chip--warning';
-    return 'payroll-state-chip payroll-state-chip--info';
-  }
-
-  etiquetaPendienteVisual(severidad: ProcesoMensualEstadoSeveridad): string {
-    if (severidad === 'danger') return 'Bloqueado';
-    if (severidad === 'warning') return 'Cambio detectado';
-    return 'Revisar';
   }
 
   puedeGuardarSnapshot(): boolean {

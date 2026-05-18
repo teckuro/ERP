@@ -35,19 +35,19 @@
         </button>
       </li>
       <li>
-        <button type="button" class="payroll-franja-operativa__item" (click)="abrirDetalleOperativo('observaciones')" aria-label="Ver observaciones del período">
+        <button type="button" class="payroll-franja-operativa__item" (click)="abrirDetalleOperativo('parametros')" aria-label="Ver parámetros del período">
           <span class="payroll-franja-operativa__k">Parámetros</span>
           <span class="payroll-franja-operativa__v">{{ resumen.parametros }}</span>
         </button>
       </li>
       <li>
-        <button type="button" class="payroll-franja-operativa__item" (click)="abrirDetalleOperativo('movimientos')" aria-label="Ver movimientos del mes">
+        <button type="button" class="payroll-franja-operativa__item" (click)="abrirDetalleOperativo('movimientos_recurrentes')" aria-label="Ver movimientos y recurrentes">
           <span class="payroll-franja-operativa__k">Movimientos</span>
           <span class="payroll-franja-operativa__v">{{ resumen.movimientos }}</span>
         </button>
       </li>
       <li>
-        <button type="button" class="payroll-franja-operativa__item" (click)="abrirDetalleOperativo('recurrentes')" aria-label="Ver asignaciones recurrentes">
+        <button type="button" class="payroll-franja-operativa__item" (click)="abrirDetalleOperativo('movimientos_recurrentes')" aria-label="Ver movimientos y recurrentes">
           <span class="payroll-franja-operativa__k">Recurrentes</span>
           <span class="payroll-franja-operativa__v">{{ resumen.recurrentes }}</span>
         </button>
@@ -96,7 +96,7 @@
             }
           </div>
           @if (alertas.mostrarDetalle) {
-            <button type="button" class="payroll-rail-link" (click)="abrirDetalleOperativo('observaciones')">
+            <button type="button" class="payroll-rail-link" (click)="abrirDetalleOperativo('parametros')">
               Ver detalle
             </button>
           }
@@ -105,10 +105,9 @@
 
       <nav class="payroll-rail-nav" aria-label="Ir a otros módulos">
         <span class="payroll-rail-nav__k">Resolver en</span>
-        <a routerLink="/empleados">Trabajadores</a>
-        <a routerLink="/parametros">Parámetros</a>
-        <a routerLink="/remuneraciones/novedades-mensuales">Movimientos</a>
-        <a routerLink="/remuneraciones/haberes-descuentos">Recurrentes</a>
+        <button type="button" (click)="abrirDetalleOperativo('trabajadores')">Trabajadores</button>
+        <button type="button" (click)="abrirDetalleOperativo('parametros')">Parámetros</button>
+        <button type="button" (click)="abrirDetalleOperativo('movimientos_recurrentes')">Movimientos y recurrentes</button>
       </nav>
 
     </aside>
@@ -221,7 +220,7 @@
                     } @else if (item.accionLocal) {
                       <button type="button" (click)="ejecutarAccionValidacion(item.accionLocal)">Resolver</button>
                     } @else {
-                      <button type="button" (click)="abrirDetalleOperativo('observaciones')">{{ item.accionLabel ?? 'Revisar' }}</button>
+                      <button type="button" (click)="abrirDetalleOperativo('parametros')">{{ item.accionLabel ?? 'Revisar' }}</button>
                     }
                   </div>
                 }
@@ -349,10 +348,9 @@
               <div>
                 <h3>Dónde corregir</h3>
                 <div class="payroll-guided-review-step__links">
-                  <a routerLink="/empleados">Trabajadores</a>
-                  <a routerLink="/parametros">Parámetros</a>
-                  <a routerLink="/remuneraciones/novedades-mensuales">Movimientos</a>
-                  <a routerLink="/remuneraciones/haberes-descuentos">Recurrentes</a>
+                  <button type="button" (click)="abrirSeguimientoDesdeGuia('trabajadores')">Trabajadores</button>
+                  <button type="button" (click)="abrirSeguimientoDesdeGuia('parametros')">Parámetros</button>
+                  <button type="button" (click)="abrirSeguimientoDesdeGuia('movimientos_recurrentes')">Movimientos y recurrentes</button>
                 </div>
               </div>
             </section>
@@ -1679,64 +1677,6 @@
 
         <div class="payroll-operational-detail-modal__body">
           @switch (detalleOperativoTabActivo()) {
-            @case ('guia') {
-              <section class="payroll-review-guide">
-                <div class="payroll-review-guide__item">
-                  <span>1</span>
-                  <div>
-                    <h3>Qué pasa ahora</h3>
-                    <p>{{ estadoOperativo().descripcion }}</p>
-                  </div>
-                </div>
-                <div class="payroll-review-guide__item">
-                  <span>2</span>
-                  <div>
-                    <h3>Qué falta para avanzar</h3>
-                    @if (estadoOperativo().queFaltaAhora.length) {
-                      <ul>
-                        @for (item of estadoOperativo().queFaltaAhora.slice(0, 4); track item.codigo) {
-                          <li>{{ item.titulo }}</li>
-                        }
-                      </ul>
-                    } @else {
-                      <p>No hay pendientes principales para la etapa actual.</p>
-                    }
-                  </div>
-                </div>
-                <div class="payroll-review-guide__item">
-                  <span>3</span>
-                  <div>
-                    <h3>Qué debes corregir</h3>
-                    @if (estadoOperativo().bloqueos.length) {
-                      <p>{{ estadoOperativo().bloqueos.length }} bloqueo{{ estadoOperativo().bloqueos.length === 1 ? '' : 's' }} debe{{ estadoOperativo().bloqueos.length === 1 ? '' : 'n' }} resolverse antes de continuar.</p>
-                    } @else if (estadoOperativo().advertencias.length) {
-                      <p>{{ estadoOperativo().advertencias.length }} advertencia{{ estadoOperativo().advertencias.length === 1 ? '' : 's' }} requiere{{ estadoOperativo().advertencias.length === 1 ? '' : 'n' }} revisión administrativa.</p>
-                    } @else {
-                      <p>Sin bloqueos críticos ni advertencias pendientes para la etapa actual.</p>
-                    }
-                  </div>
-                </div>
-                <div class="payroll-review-guide__item">
-                  <span>4</span>
-                  <div>
-                    <h3>Dónde corregir</h3>
-                    <div class="payroll-review-guide__links">
-                      <a routerLink="/empleados">Trabajadores</a>
-                      <a routerLink="/parametros">Parámetros</a>
-                      <a routerLink="/remuneraciones/novedades-mensuales">Movimientos del mes</a>
-                      <a routerLink="/remuneraciones/haberes-descuentos">Asignaciones recurrentes</a>
-                    </div>
-                  </div>
-                </div>
-                <div class="payroll-review-guide__item">
-                  <span>5</span>
-                  <div>
-                    <h3>Qué ocurre después</h3>
-                    <p>{{ estadoOperativo().accionPrincipal.descripcion }}</p>
-                  </div>
-                </div>
-              </section>
-            }
             @case ('resumen') {
               <section class="payroll-operational-summary">
                 <div>
@@ -1783,73 +1723,73 @@
     emptyDescription="Genera la nómina para revisar el detalle."
               ></app-data-grid>
             }
-            @case ('movimientos') {
-              <app-data-grid
-                title="Movimientos del mes"
-                [rows]="payrollMovementDetailRows()"
-                [columns]="payrollMovementDetailColumns"
-                [filters]="payrollMovementDetailFilters"
-                [filtersEnabled]="true"
-                [filterChipsDisplay]="'never'"
-                [headerCountDisplay]="'text'"
-                headerCountNoun="registros"
-                [showExportAction]="false"
-                [selectable]="false"
-                [maxItems]="10"
-                emptyTitle="No hay movimientos del mes para este período."
-                emptyDescription="Puedes continuar si no corresponde registrar bonos, descuentos o ajustes."
-              ></app-data-grid>
+            @case ('parametros') {
+              <section class="payroll-follow-section" aria-label="Seguimiento de parámetros">
+                <header>
+                  <h3>Parámetros</h3>
+                  <p>Valores del período y catálogos mínimos que condicionan la nómina mensual.</p>
+                </header>
+                <div class="payroll-follow-list">
+                  @for (item of payrollParametroSeguimientoItems(); track item.titulo + item.descripcion) {
+                    <article class="payroll-follow-row">
+                      <div>
+                        <h4>{{ item.titulo }}</h4>
+                        <p>{{ item.descripcion }}</p>
+                      </div>
+                      <span [class]="item.estadoClase">{{ item.estado }}</span>
+                      @if (item.ruta) {
+                        <a [routerLink]="item.ruta">{{ item.accion }}</a>
+                      } @else {
+                        <button type="button" (click)="abrirDetalleOperativo('resumen')">{{ item.accion }}</button>
+                      }
+                    </article>
+                  }
+                </div>
+              </section>
             }
-            @case ('recurrentes') {
-              <app-data-grid
-                title="Asignaciones recurrentes"
-                [rows]="payrollRecurrentDetailRows()"
-                [columns]="payrollRecurrentDetailColumns"
-                [filters]="payrollRecurrentDetailFilters"
-                [filtersEnabled]="true"
-                [filterChipsDisplay]="'never'"
-                [headerCountDisplay]="'text'"
-                headerCountNoun="registros"
-                [showExportAction]="false"
-                [selectable]="false"
-                [maxItems]="10"
-                emptyTitle="No hay asignaciones recurrentes aplicables."
-                emptyDescription="Revisa el registro de asignaciones si esperabas ver conceptos mensuales."
-              ></app-data-grid>
-            }
-            @case ('observaciones') {
-              <app-data-grid
-                title="Observaciones"
-                [rows]="payrollObservationDetailRows()"
-                [columns]="payrollObservationDetailColumns"
-                [filters]="payrollObservationDetailFilters"
-                [filtersEnabled]="true"
-                [filterChipsDisplay]="'never'"
-                [headerCountDisplay]="'text'"
-                headerCountNoun="registros"
-                [showExportAction]="false"
-                [selectable]="false"
-                [maxItems]="10"
-                emptyTitle="No hay observaciones para revisar."
-                emptyDescription="El período no presenta bloqueos ni advertencias visibles."
-              ></app-data-grid>
+            @case ('movimientos_recurrentes') {
+              <section class="payroll-follow-section" aria-label="Seguimiento de movimientos y recurrentes">
+                <header>
+                  <h3>Movimientos y recurrentes</h3>
+                  <p>Bonos, descuentos, ausencias, licencias y asignaciones vigentes consideradas en el período.</p>
+                </header>
+                <div class="payroll-follow-list">
+                  @for (item of payrollMovimientoRecurrenteSeguimientoItems(); track item.titulo + item.descripcion) {
+                    <article class="payroll-follow-row">
+                      <div>
+                        <h4>{{ item.titulo }}</h4>
+                        <p>{{ item.descripcion }}</p>
+                      </div>
+                      <span [class]="item.estadoClase">{{ item.estado }}</span>
+                      @if (item.ruta) {
+                        <a [routerLink]="item.ruta">{{ item.accion }}</a>
+                      } @else {
+                        <button type="button" (click)="abrirDetalleOperativo('resumen')">{{ item.accion }}</button>
+                      }
+                    </article>
+                  }
+                </div>
+              </section>
             }
             @case ('resultado') {
-              <app-data-grid
-                title="Resultado preliminar"
-                [rows]="payrollResultDetailRows()"
-                [columns]="payrollResultDetailColumns"
-                [filters]="payrollResultDetailFilters"
-                [filtersEnabled]="true"
-                [filterChipsDisplay]="'never'"
-                [headerCountDisplay]="'text'"
-                headerCountNoun="registros"
-                [showExportAction]="false"
-                [selectable]="false"
-                [maxItems]="10"
-                emptyTitle="Aún no hay resultado preliminar."
-                emptyDescription="Calcula la nómina para revisar el detalle."
-              ></app-data-grid>
+              <section class="payroll-follow-section" aria-label="Seguimiento de nómina generada">
+                <header>
+                  <h3>Nómina generada</h3>
+                  <p>Resumen de la versión preliminar o guardada, sin grilla ni detalle de liquidaciones reales.</p>
+                </header>
+                <div class="payroll-follow-list">
+                  @for (item of payrollResultadoSeguimientoItems(); track item.titulo) {
+                    <article class="payroll-follow-row">
+                      <div>
+                        <h4>{{ item.titulo }}</h4>
+                        <p>{{ item.descripcion }}</p>
+                      </div>
+                      <span [class]="item.estadoClase">{{ item.estado }}</span>
+                      <button type="button" (click)="seleccionarDetalleOperativoTab(item.accion === 'Revisar trabajadores' ? 'trabajadores' : 'resumen')">{{ item.accion }}</button>
+                    </article>
+                  }
+                </div>
+              </section>
             }
           }
 
