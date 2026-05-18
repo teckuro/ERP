@@ -1,0 +1,368 @@
+import type { ProcesoMensualAccionLocal } from '../../../rules/proceso-mensual-estado-operativo.rules';
+
+export type ValidacionCalculoEstado = 'pendiente' | 'listo' | 'advertencias' | 'bloqueado';
+export type ValidacionOperativaSeveridad = 'bloqueo' | 'advertencia' | 'info';
+export type ValidacionAccionLocal = ProcesoMensualAccionLocal;
+export type ResultadoPreliminarEstado =
+  | 'sin_resultado'
+  | 'no_guardado'
+  | 'guardado'
+  | 'actualizado_sin_guardar'
+  | 'error_guardado'
+  | 'con_bloqueos';
+export type RevisionAprobacionEstado =
+  | 'sin_resultado_guardado'
+  | 'pendiente_guardado'
+  | 'pendiente_revision'
+  | 'actualizado_sin_guardar'
+  | 'no_apto'
+  | 'listo'
+  | 'aprobado'
+  | 'aprobado_desactualizado';
+export type RevisionChecklistEstado = 'Completo' | 'Pendiente' | 'Requiere atencion' | 'No aplica';
+export type EtapaOperativaActiva =
+  | 'base'
+  | 'calculo'
+  | 'resultado'
+  | 'guardado'
+  | 'aprobacion'
+  | 'cierre'
+  | 'liquidaciones';
+export type PasoPeriodoEstado = 'Actual' | 'Completo' | 'Pendiente' | 'Bloqueada';
+export type ConfirmacionProcesoMensualTipo =
+  | 'guardar_preliminar'
+  | 'aprobar_preliminar'
+  | 'cerrar_nomina'
+  | 'preparar_acta';
+export type DetalleOperativoTab = 'resumen' | 'trabajadores' | 'parametros' | 'movimientos_recurrentes' | 'resultado';
+export type NominaWorkspaceTab = 'guia' | 'trabajadores' | 'detalle';
+export type NominaVisualFrame =
+  | 'sin_generar'
+  | 'generando'
+  | 'en_revision'
+  | 'con_pendientes'
+  | 'lista_para_confirmar'
+  | 'confirmada'
+  | 'liquidaciones_generadas';
+
+export interface ConfirmacionProcesoMensualView {
+  tipo: ConfirmacionProcesoMensualTipo;
+  titulo: string;
+  mensaje: string;
+  detalle: string;
+  puntos: string[];
+  primaryLabel: string;
+  secondaryLabel: string;
+  advertenciasAprobacion?: string[];
+  secciones?: Array<{ titulo: string; items: string[] }>;
+}
+
+export interface NominaVisualFrameView {
+  frame: NominaVisualFrame;
+  chip: string;
+  titulo: string;
+  texto: string;
+  info: string;
+  ctaLabel: string;
+  ctaDisabled: boolean;
+  ctaTipo: 'local' | 'ruta' | 'ninguna';
+  ctaRuta?: string;
+  ctaAccion?: ValidacionAccionLocal;
+  secundariaLabel?: string;
+  secundariaAccion?: () => void;
+}
+
+export interface NominaResumenSuperiorVm {
+  trabajadores: string;
+  parametros: string;
+  movimientos: string;
+  recurrentes: string;
+  cambios: number;
+  bloqueos: number;
+}
+
+export interface ValidacionOperativaItemView {
+  codigo: string;
+  titulo: string;
+  descripcion: string;
+  severidad: ValidacionOperativaSeveridad;
+  accionLabel?: string;
+  ruta?: string;
+  accionLocal?: ValidacionAccionLocal;
+}
+
+export interface ValidacionCalculoPreliminarView {
+  estado: ValidacionCalculoEstado;
+  estadoLabel: string;
+  puedeCalcular: boolean;
+  razonDeshabilitado?: string;
+  siguienteAccion: {
+    label: string;
+    descripcion: string;
+    ruta?: string;
+    accionLocal?: ValidacionAccionLocal;
+  };
+  bloqueos: ValidacionOperativaItemView[];
+  advertencias: ValidacionOperativaItemView[];
+  informaciones: ValidacionOperativaItemView[];
+}
+
+export interface ResultadoObservacionView {
+  codigo: string;
+  titulo: string;
+  descripcion: string;
+  accionLabel?: string;
+  ruta?: string;
+}
+
+export interface TrabajadorResultadoPreliminarView {
+  idPersona: number | string;
+  trabajadorLabel: string;
+  rutLabel: string;
+  estadoLabel: 'Calculado' | 'Con observaciones' | 'Omitido' | 'No calculado';
+  haberesLabel: string;
+  descuentosLabel: string;
+  liquidoLabel: string;
+  observacionLabel: string;
+  accionLabel?: string;
+  ruta?: string;
+}
+
+export interface ResultadoPreliminarView {
+  estado: ResultadoPreliminarEstado;
+  estadoLabel: string;
+  descripcionEstado: string;
+  resumen: {
+    trabajadoresCalculados: number;
+    trabajadoresConObservaciones: number;
+    trabajadoresOmitidos: number;
+    totalHaberes: number | null;
+    totalDescuentos: number | null;
+    totalLiquido: number | null;
+    totalCostoEmpresa: number | null;
+  };
+  trabajadores: TrabajadorResultadoPreliminarView[];
+  bloqueos: ResultadoObservacionView[];
+  advertencias: ResultadoObservacionView[];
+  informaciones: ResultadoObservacionView[];
+  detalleTecnico: {
+    versionCalculo: string;
+    identificadorTecnico: string;
+    generadoEn: string;
+  };
+  ultimoGuardado?: {
+    versionLabel: string;
+    fechaGuardadoLabel: string;
+    versionCalculoLabel: string;
+    identificadorTecnicoLabel: string;
+    estadoLabel: string;
+    trabajadoresCalculados: number;
+    trabajadoresConObservaciones: number;
+    trabajadoresOmitidos: number;
+    totalLiquidoLabel: string;
+    advertenciasLabel: string;
+  };
+  acciones: {
+    puedeRecalcular: boolean;
+    puedeGuardarPreliminar: boolean;
+    razonNoPuedeGuardar?: string;
+    helperGuardar: string;
+    modoGuardadoLabel: string;
+  };
+}
+
+export interface RevisionAprobacionChecklistItemView {
+  titulo: string;
+  descripcion: string;
+  estado: RevisionChecklistEstado;
+}
+
+export interface RevisionAprobacionView {
+  estado: RevisionAprobacionEstado;
+  estadoLabel: string;
+  descripcion: string;
+  checklist: RevisionAprobacionChecklistItemView[];
+  bloqueos: ResultadoObservacionView[];
+  advertencias: ResultadoObservacionView[];
+  informaciones: ResultadoObservacionView[];
+  accionPrincipalLabel: string;
+  puedeGuardarActualizado: boolean;
+  puedeRecalcular: boolean;
+  puedeAprobar: boolean;
+  razonNoPuedeAprobar?: string;
+  aprobacion: AprobacionOperativaRegistroView | null;
+  notaAprobacion: string;
+}
+
+export interface AprobacionOperativaRegistroView {
+  fechaAprobacionLabel: string;
+  usuarioLabel: string;
+  versionCalculoLabel: string;
+  identificadorTecnicoLabel: string;
+  identificadorResultado: string | null;
+  idCalculoPeriodo: number | null;
+  trabajadoresCalculados: number;
+  totalHaberesLabel: string;
+  totalDescuentosLabel: string;
+  totalLiquidoLabel: string;
+  advertencias: string[];
+}
+
+export interface CierreOperativoView {
+  estadoLabel: string;
+  descripcion: string;
+  puedeCerrar: boolean;
+  razonNoPuedeCerrar?: string;
+  fechaCierreLabel?: string;
+  usuarioLabel?: string;
+  observacionLabel?: string;
+  resumen: {
+    periodo: string;
+    identificadorTecnicoLabel: string;
+    versionCalculoLabel: string;
+    trabajadoresCalculados: number;
+    totalHaberesLabel: string;
+    totalDescuentosLabel: string;
+    totalLiquidoLabel: string;
+    advertenciasLabel: string;
+  } | null;
+}
+
+export interface SnapshotCompletoTrabajadorView {
+  id: number | string;
+  trabajadorLabel: string;
+  estadoLabel: string;
+  haberesLabel: string;
+  descuentosLabel: string;
+  liquidoLabel: string;
+  conceptos: string[];
+  observaciones: string[];
+}
+
+export interface SnapshotCompletoObservacionView {
+  codigo: string;
+  nivelLabel: 'Bloqueo' | 'Advertencia' | 'Informacion';
+  mensaje: string;
+  trabajadorLabel: string;
+}
+
+export interface SnapshotCompletoDetalleView {
+  estadoLabel: string;
+  descripcion: string;
+  resumen: {
+    periodo: string;
+    fechaGeneracionLabel: string;
+    versionCalculoLabel: string;
+    identificadorTecnicoLabel: string;
+    trabajadores: number;
+    totalHaberesLabel: string;
+    totalDescuentosLabel: string;
+    totalLiquidoLabel: string;
+    totalConceptos: number;
+    totalObservaciones: number;
+    totalTrazas: number;
+    aprobacionLabel: string;
+  };
+  trabajadores: SnapshotCompletoTrabajadorView[];
+  observaciones: SnapshotCompletoObservacionView[];
+  trazabilidad: string[];
+  advertenciaDetalleFaltante: string | null;
+  reemplazoLabel: string | null;
+}
+
+export interface PasoPeriodoView {
+  numero: string;
+  titulo: string;
+  estado: PasoPeriodoEstado;
+  descripcion: string;
+}
+
+export type BitacoraEtapaClave = 'validar' | 'base' | 'calculo' | 'aprobar_cerrar' | 'liquidaciones';
+export type BitacoraSubpasoMarca = 'hecho' | 'actual' | 'pendiente';
+
+export interface BitacoraSubpasoVm {
+  marca: BitacoraSubpasoMarca;
+  etiqueta: string;
+}
+
+export interface BitacoraEtapaVm {
+  clave: BitacoraEtapaClave;
+  etiqueta: string;
+  resumen: string;
+  activa: boolean;
+  completada: boolean;
+  bloqueada: boolean;
+  subpasos: BitacoraSubpasoVm[];
+}
+
+export interface BitacoraRailEtapaVm {
+  clave: string;
+  etiqueta: string;
+  estadoCorto: string;
+  marca: 'hecho' | 'actual' | 'pendiente' | 'bloqueado';
+  activa: boolean;
+}
+
+export interface AlertasPeriodoResumenVm {
+  modo: 'evaluando' | 'sin-evaluar' | 'ok' | 'alertas';
+  mensaje?: string;
+  criticas: number;
+  advertencias: number;
+  mostrarDetalle: boolean;
+}
+
+export interface ParaContinuarItemVm {
+  titulo: string;
+  detalle: string;
+}
+
+export interface PayrollWorkerDetailRow {
+  trabajador: string;
+  rut: string;
+  estado: string;
+  observacion: string;
+  accion: string;
+}
+
+export interface PayrollMovementDetailRow {
+  trabajador: string;
+  concepto: string;
+  tipo: string;
+  monto: string;
+  estado: string;
+  accion: string;
+}
+
+export interface PayrollRecurrentDetailRow {
+  trabajador: string;
+  concepto: string;
+  periodicidad: string;
+  monto: string;
+  estado: string;
+  accion: string;
+}
+
+export interface PayrollObservationDetailRow {
+  severidad: 'Bloqueo' | 'Advertencia' | 'Información';
+  ambito: string;
+  mensaje: string;
+  accion: string;
+}
+
+export interface PayrollResultDetailRow {
+  trabajador: string;
+  haberes: string;
+  descuentos: string;
+  liquido: string;
+  estado: string;
+  observacion: string;
+}
+
+export interface PayrollSeguimientoItem {
+  titulo: string;
+  descripcion: string;
+  estado: string;
+  estadoClase: string;
+  accion: string;
+  ruta?: string;
+}

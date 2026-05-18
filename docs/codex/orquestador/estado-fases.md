@@ -1,3 +1,14 @@
+## NOM-MENSUAL-CONTAINER-MODULAR-01 - Contenedor modular (fases 1-5)
+
+| Campo | Estado |
+|---|---|
+| Estado | Implementada (fases 1-5) |
+| Tipo | Refactor estructural / presentacion |
+| Alcance | VMs, grid config, rules; `ProcesoMensualPeriodoStore` (async); `ProcesoMensualPresentacionFacade` (computeds/UI); shell `proceso-mensual-container` + hijos `proceso-mensual-workspace` y `proceso-mensual-detalle-modal`. |
+| Restricciones | Sin motor/SQL/servicios de negocio nuevos, rutas globales ni estilos globales. |
+| Documento | [`../modulos/nomina-mensual/nom-mensual-container-modular-01.md`](../modulos/nomina-mensual/nom-mensual-container-modular-01.md) |
+| Siguiente | Ajustar `proceso-mensual-container.spec.ts` al DOM con hijos; opcional: adelgazar facade moviendo mas computeds a rules. |
+
 ## NOM-MENSUAL-WORKSPACE-UI-01 - Nomina mensual como workspace operativo
 
 | Campo | Estado |
