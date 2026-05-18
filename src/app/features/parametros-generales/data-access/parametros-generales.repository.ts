@@ -1076,14 +1076,25 @@ export class ParametrosGeneralesRepository {
     const { data, error } = await this.supabaseUntyped
       .from('parametros_legales')
       .select('*')
-      .eq('vigencia_inicio', vigenciaInicio)
-      .in('nombre', [...this.legalConfigNames]);
+      .lte('vigencia_inicio', vigenciaInicio)
+      .in('nombre', [...this.legalConfigNames])
+      .order('vigencia_inicio', { ascending: false });
 
     if (error) {
       throw new Error(error.message);
     }
 
-    return ((data ?? []) as ParametroLegalRow[]).map((item) => this.toParametroLegal(item));
+    const vigentesPorNombre = new Map<string, ParametroLegalRow>();
+    for (const item of (data ?? []) as ParametroLegalRow[]) {
+      if (item.vigencia_fin !== null && item.vigencia_fin < vigenciaInicio) {
+        continue;
+      }
+      if (!vigentesPorNombre.has(item.nombre)) {
+        vigentesPorNombre.set(item.nombre, item);
+      }
+    }
+
+    return [...vigentesPorNombre.values()].map((item) => this.toParametroLegal(item));
   }
 
   private async listarAfcParametrosPorVigencia(vigenciaInicio: string): Promise<AfcParametro[]> {

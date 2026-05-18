@@ -4,9 +4,6 @@ import { RouterLink } from '@angular/router';
 import { LucideAngularModule } from 'lucide-angular';
 
 import { PeriodoActivoService } from '../../../../core/services/periodo-activo.service';
-import { BadgeComponent } from '../../../../shared/components/ui/badge.component';
-import { ButtonComponent } from '../../../../shared/components/ui/button.component';
-import { CardComponent, CardContentComponent } from '../../../../shared/components/ui/card.component';
 import { MessageBoxComponent } from '../../../../shared/components/ui/message-box.component';
 import {
   DataGridColumn,
@@ -411,10 +408,6 @@ interface PayrollSeguimientoItem {
     CommonModule,
     RouterLink,
     LucideAngularModule,
-    CardComponent,
-    CardContentComponent,
-    BadgeComponent,
-    ButtonComponent,
     MessageBoxComponent,
     DataGridComponent,
     RecordBreadcrumbComponent,
@@ -454,7 +447,6 @@ export class ProcesoMensualContainer {
   readonly cerrandoNomina = signal(false);
   readonly snapshotCompleto = signal<NominaSnapshotCompletoView | null>(null);
   readonly confirmacionProceso = signal<ConfirmacionProcesoMensualView | null>(null);
-  readonly revisionGuiadaAbierta = signal(false);
   readonly detalleOperativoAbierto = signal(false);
   readonly detalleOperativoTabActivo = signal<DetalleOperativoTab>('trabajadores');
   readonly nominaWorkspaceTab = signal<NominaWorkspaceTab>('guia');
@@ -2184,10 +2176,6 @@ export class ProcesoMensualContainer {
     this.abrirDetalleOperativo('trabajadores');
   }
 
-  cerrarRevisionGuiada(): void {
-    this.revisionGuiadaAbierta.set(false);
-  }
-
   abrirDetalleOperativo(tab: DetalleOperativoTab = 'trabajadores'): void {
     this.detalleOperativoTabActivo.set(tab);
     this.detalleOperativoAbierto.set(true);
@@ -2201,19 +2189,11 @@ export class ProcesoMensualContainer {
     this.detalleOperativoTabActivo.set(tab);
   }
 
-  abrirSeguimientoDesdeGuia(tab: DetalleOperativoTab): void {
-    this.revisionGuiadaAbierta.set(false);
-    this.abrirDetalleOperativo(tab);
-  }
-
   @HostListener('document:keydown.escape')
   cerrarModalesConEscape(): void {
     if (this.detalleOperativoAbierto()) {
       this.cerrarDetalleOperativo();
       return;
-    }
-    if (this.revisionGuiadaAbierta()) {
-      this.cerrarRevisionGuiada();
     }
   }
 

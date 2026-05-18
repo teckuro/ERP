@@ -29,8 +29,13 @@ yarn-error.log
 !.vscode/mcp.json
 .history/*
 
-# Cursor (workspace rules/skills; local by default)
+# Cursor (reglas/skills operativos versionables; el resto sigue local)
 .cursor/
+!.cursor/
+!.cursor/rules/
+.cursor/rules/*
+!.cursor/rules/erp-ui-noia.mdc
+!.cursor/rules/erp-ui-visual-guardrails.mdc
 
 # Guías y bitácora Codex (copia local del contrato de agente; no publicar en remoto)
 /docs/codex/*

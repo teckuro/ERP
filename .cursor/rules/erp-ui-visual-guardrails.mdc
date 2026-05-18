@@ -1,0 +1,80 @@
+---
+description: Reglas obligatorias de diseño visual NOIA para cambios UI del ERP
+globs:
+  - "src/**/*.html"
+  - "src/**/*.css"
+  - "src/**/*.scss"
+  - "src/**/*.ts"
+alwaysApply: true
+---
+
+# Reglas visuales obligatorias NOIA
+
+Antes de modificar UI, leer:
+
+- `docs/codex/contexto-rapido.md`
+- `docs/codex/diseno/noia-ui-manual.md`
+- `docs/codex/diseno/noia-bases-sistema-referencia.md`
+- `docs/codex/diseno/noia-ui-guardrails.md`
+- `docs/codex/diseno/noia-antipatrones-ia.md`
+- `docs/codex/diseno/noia-ui-review-checklist.md`
+- `docs/codex/peticiones-estilos.md`
+
+## Prohibiciones
+
+No cambiar estilos globales salvo instrucción explícita.
+
+No tocar:
+
+- `angular.json`
+- `postcss.config.json`
+- `src/styles.css`
+- `src/styles/index.css`
+- `src/styles/tailwind.css`
+- `src/styles/fonts.css`
+- `src/styles/theme.css`
+
+No introducir fuentes nuevas.
+
+No usar cards por defecto para resolver layout.
+
+No usar títulos excesivamente grandes.
+
+No usar sombras fuertes, gradientes decorativos ni barras laterales fuertes.
+
+No exponer nombres técnicos de base de datos, RPC, enums o funciones al usuario final.
+
+No usar colores extravagantes, neón, gradientes decorativos, paletas nuevas o `bg-[#...]` arbitrarios como solución visual.
+
+No inflar espacio con padding/gap grandes, columnas vacías, héroes o scroll para ver la acción principal.
+
+No volcar muros de utilidades Tailwind en HTML si el módulo usa CSS local; reutilizar patrones del repo.
+
+## Obligatorio
+
+Antes de codificar UI: buscar pantalla similar en el repo y reutilizar estructura, prefijo CSS y escala.
+
+Cada cambio UI debe:
+
+- respetar la fuente actual;
+- usar colores existentes del manual NOIA y evitar la lista negra de antipatrones;
+- mantener densidad compacta;
+- usar lenguaje RRHH;
+- definir una acción principal;
+- reducir ruido visual;
+- usar estados claros;
+- actualizar documentación en `docs/codex` cuando corresponda;
+- dejar evidencia de archivos tocados y no tocados.
+
+## Revisión final obligatoria
+
+Antes de responder, verificar con `docs/codex/diseno/noia-ui-review-checklist.md`:
+
+- no hay cambios globales no solicitados;
+- no hay cards innecesarias;
+- no hay textos técnicos visibles;
+- no hay duplicidad de acciones;
+- el layout usa bien el espacio;
+- no hay colores fuera de sistema ni apariencia SaaS/IA;
+- se reutilizó patrón existente del repo cuando era posible;
+- la pantalla mantiene identidad NOIA.

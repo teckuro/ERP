@@ -24,8 +24,7 @@
 .payroll-focus__bar,
 .payroll-pending-row,
 .payroll-operational-detail-modal__header,
-.payroll-operational-detail-modal__footer,
-.payroll-guided-review-modal__header {
+.payroll-operational-detail-modal__footer {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
@@ -242,12 +241,7 @@
 .payroll-pending-row button,
 .payroll-pending-row a,
 .payroll-follow-row a,
-.payroll-follow-row button,
-.payroll-guided-review-step__links a,
-.payroll-guided-review-step__links button,
-.payroll-review-guide__links a,
-.payroll-review-guide__links button,
-.payroll-guided-review-modal__link {
+.payroll-follow-row button {
   border: 0;
   background: transparent;
   padding: 0;
@@ -265,9 +259,7 @@
 .payroll-pending-row button:hover,
 .payroll-pending-row a:hover,
 .payroll-follow-row a:hover,
-.payroll-follow-row button:hover,
-.payroll-guided-review-step__links button:hover,
-.payroll-review-guide__links button:hover {
+.payroll-follow-row button:hover {
   text-decoration: underline;
 }
 
@@ -669,7 +661,6 @@
   font-weight: 700;
 }
 
-.payroll-guided-review-overlay,
 .payroll-operational-detail-overlay {
   position: fixed;
   inset: 0;
@@ -682,7 +673,6 @@
   padding: 24px;
 }
 
-.payroll-guided-review-modal,
 .payroll-operational-detail-modal {
   width: min(1120px, calc(100vw - 48px));
   max-height: calc(100vh - 48px);
@@ -705,7 +695,6 @@
   box-shadow: 0 24px 60px rgba(15, 23, 42, 0.22);
 }
 
-.payroll-guided-review-modal__header,
 .payroll-operational-detail-modal__header,
 .payroll-operational-detail-modal__footer {
   border-bottom: 1px solid #e2e8f0;
@@ -722,7 +711,6 @@
   border-bottom: 0;
 }
 
-.payroll-guided-review-modal__body,
 .payroll-operational-detail-modal__body {
   max-height: calc(100vh - 180px);
   overflow: auto;
@@ -735,21 +723,18 @@
   padding: 22px;
 }
 
-.payroll-guided-review-modal__title,
 .payroll-operational-detail-modal__header h2 {
   margin: 0;
   font-size: 1rem;
   font-weight: 700;
 }
 
-.payroll-guided-review-modal__estado,
 .payroll-operational-detail-modal__header p {
   margin: 4px 0 0;
   color: #64748b;
   font-size: 0.8125rem;
 }
 
-.payroll-guided-review-modal__close,
 .payroll-modal-secondary {
   min-height: 34px;
   border: 1px solid #d1d5db;
@@ -787,15 +772,11 @@
   color: #0f172a;
 }
 
-.payroll-review-guide,
-.payroll-guided-review-steps,
 .payroll-operational-summary {
   display: grid;
   gap: 10px;
 }
 
-.payroll-review-guide__item,
-.payroll-guided-review-step,
 .payroll-operational-summary > div,
 .payroll-operational-internal,
 .pm-operational-detail {
@@ -805,16 +786,11 @@
   padding: 12px;
 }
 
-.payroll-review-guide__item h3,
-.payroll-guided-review-step h3,
 .payroll-operational-summary h3 {
   margin: 0 0 6px;
   font-size: 0.875rem;
 }
 
-.payroll-review-guide__item p,
-.payroll-guided-review-step p,
-.payroll-guided-review-step ul,
 .payroll-operational-internal p {
   margin: 0;
   color: #475569;

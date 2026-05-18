@@ -37,8 +37,15 @@ Thumbs.db
 .idea/
 
 # Mantener disponibles para Cursor/Codex:
-# docs/codex/
-# .cursor/
-# src/app/
-# bd/
-# scripts/
+!.cursor/
+!.cursor/**
+!docs/
+!docs/codex/
+!docs/codex/**
+!src/
+!src/app/
+!src/app/**
+!bd/
+!bd/**
+!scripts/
+!scripts/**
