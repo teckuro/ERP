@@ -7,6 +7,8 @@ import {
   Calculator,
   Check,
   CheckCircle,
+  ChevronRight,
+  Home,
   FileSpreadsheet,
   FileText,
   Info,
@@ -19,6 +21,29 @@ import { PeriodoActivoService } from '../../../../core/services/periodo-activo.s
 import type { ProcesoMensualPrevalidacion } from '../../models/proceso-mensual.model';
 import { ProcesoMensualService } from '../../services/proceso-mensual.service';
 import { ProcesoMensualContainer } from './proceso-mensual-container';
+
+function textoIncluye(haystack: string, needle: string): boolean {
+  const fold = (value: string) =>
+    value
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase();
+  return fold(haystack).includes(fold(needle));
+}
+
+function expectTexto(haystack: string, needle: string): void {
+  expect(textoIncluye(haystack, needle)).toBe(true);
+}
+
+function expectTextoNo(haystack: string, needle: string): void {
+  expect(textoIncluye(haystack, needle)).toBe(false);
+}
+
+function botonPorTexto(root: ParentNode, fragmento: string): HTMLButtonElement | undefined {
+  return [...root.querySelectorAll('button')].find((b) =>
+    textoIncluye(b.textContent ?? '', fragmento),
+  ) as HTMLButtonElement | undefined;
+}
 
 function prevalidacionLista(overrides: Partial<ProcesoMensualPrevalidacion> = {}): ProcesoMensualPrevalidacion {
   return {
@@ -498,6 +523,8 @@ describe('ProcesoMensualContainer', () => {
             Calculator,
             Check,
             CheckCircle,
+            ChevronRight,
+            Home,
             FileSpreadsheet,
             FileText,
             Info,
@@ -514,36 +541,36 @@ describe('ProcesoMensualContainer', () => {
 
   it('crea la vista y muestra titulo preparar nomina', () => {
     const text = fixture.nativeElement.textContent as string;
-    expect(text).toContain('Preparar nomina');
+    expectTexto(text, 'Preparar nomina');
   });
 
   it('en estado inicial muestra solo validacion y no expone etapas internas completas', () => {
     const text = fixture.nativeElement.textContent as string;
-    expect(text).toContain('Periodo pendiente de validacion');
-    expect(text).toContain('Valida el periodo para detectar pendientes');
-    expect(text).not.toContain('Revision para aprobacion');
-    expect(text).not.toContain('Detalle del resultado guardado');
-    expect(text).not.toContain('Cierre operativo');
+    expectTexto(text, 'Pendiente de validacion');
+    expectTexto(text, 'Valida el periodo activo para detectar bloqueos');
+    expectTextoNo(text, 'Revision para aprobacion');
+    expectTextoNo(text, 'Detalle del resultado guardado');
+    expectTextoNo(text, 'Cierre operativo');
   });
 
   it('mueve alcance e informacion interna al disclosure final', () => {
     const text = fixture.nativeElement.textContent as string;
-    expect(text).toContain('Informacion interna y alcance');
-    expect(text).toContain('Salidas legales y archivos externos quedan fuera de esta fase.');
-    expect(text).not.toContain('Alcance de esta pantalla');
+    expectTexto(text, 'Informacion interna y alcance');
+    expectTexto(text, 'Salidas legales y archivos externos quedan fuera de esta fase.');
+    expectTextoNo(text, 'Alcance de esta pantalla');
   });
 
   it('muestra periodo global como contexto, sin selector local editable', () => {
     const input = fixture.nativeElement.querySelector('input[type="month"]') as HTMLInputElement | null;
     const text = fixture.nativeElement.textContent as string;
     expect(input).toBeNull();
-    expect(text).toContain('Periodo activo:');
-    expect(text).toContain('Para cambiarlo, usa el selector superior.');
+    expectTexto(text, 'Período activo');
+    expectTexto(text, 'Mayo 2026');
   });
 
   it('al pulsar Validar periodo llama al servicio de prevalidacion', async () => {
     const buttons = [...fixture.nativeElement.querySelectorAll('button')] as HTMLButtonElement[];
-    const btn = buttons.find((b) => (b.textContent ?? '').includes('Validar periodo'));
+    const btn = botonPorTexto(fixture.nativeElement, 'Validar periodo');
     expect(btn).toBeTruthy();
     btn!.click();
     fixture.detectChanges();
@@ -553,85 +580,98 @@ describe('ProcesoMensualContainer', () => {
 
   it('muestra un solo CTA Validar periodo', () => {
     const buttons = [...fixture.nativeElement.querySelectorAll('button')] as HTMLButtonElement[];
-    const validar = buttons.filter((b) => (b.textContent ?? '').includes('Validar periodo'));
+    const validar = buttons.filter((b) => textoIncluye(b.textContent ?? '', 'Validar periodo'));
     expect(validar).toHaveLength(1);
   });
 
   it('renderiza el bloque Acta operativa del periodo en estado bloqueado inicial', () => {
     const text = fixture.nativeElement.textContent as string;
-    const prepararActa = ([...fixture.nativeElement.querySelectorAll('button')] as HTMLButtonElement[]).find((b) =>
-      (b.textContent ?? '').includes('Preparar acta para liquidaciones'),
-    );
-    expect(text).toContain('Acta operativa del periodo');
-    expect(text).toContain('Aun no se puede preparar el acta');
-    expect(text).toContain('Contexto revisado');
-    expect(text).toContain('Decision operativa');
-    expect(text).toContain('Evidencia para liquidaciones');
-    expect(prepararActa?.disabled).toBe(true);
+    expectTexto(text, 'Acta operativa del período');
+    expectTexto(text, 'Disponible después de validar el período');
+    expectTexto(text, 'Primero valida el período para habilitar el respaldo operativo');
+    expectTextoNo(text, 'Contexto revisado');
+    expectTextoNo(text, 'Corregir antes de avanzar');
+  });
+
+  it('en estado sin validar muestra riesgo sin evaluar y no riesgo bajo', () => {
+    const text = fixture.nativeElement.textContent as string;
+    expectTexto(text, 'Sin evaluar');
+    expectTextoNo(text, 'Riesgo bajo');
+    expectTexto(text, 'Siguiente acción');
+    expectTexto(text, 'Validar período');
+    expectTexto(text, 'Aún no hay bloqueos ni advertencias evaluadas');
+  });
+
+  it('conserva las 5 etapas en la bitacora del periodo', () => {
+    const text = fixture.nativeElement.textContent as string;
+    expectTexto(text, 'Preparar datos');
+    expectTexto(text, 'Construir base');
+    expectTexto(text, 'Calcular y revisar');
+    expectTexto(text, 'Aprobar y cerrar');
+    expectTexto(text, 'Liquidaciones internas');
   });
 
   it('tras validar muestra texto de bloqueos', async () => {
     const buttons = [...fixture.nativeElement.querySelectorAll('button')] as HTMLButtonElement[];
-    buttons.find((b) => (b.textContent ?? '').includes('Validar per'))!.click();
+    botonPorTexto(fixture.nativeElement, 'Validar per')!.click();
     await fixture.whenStable();
     fixture.detectChanges();
     const text = fixture.nativeElement.textContent as string;
-    expect(text).toContain('No se encontraron parametros reales validados para este periodo.');
+    expectTexto(text, 'No se encontraron parametros reales validados para este periodo.');
   });
 
   it('con validacion apta muestra CTA para preparar acta con revision', async () => {
     ejecutarPrevalidaciones.mockResolvedValueOnce(prevalidacionLista());
     const buttons = [...fixture.nativeElement.querySelectorAll('button')] as HTMLButtonElement[];
-    buttons.find((b) => (b.textContent ?? '').includes('Validar per'))!.click();
+    botonPorTexto(fixture.nativeElement, 'Validar per')!.click();
     await fixture.whenStable();
     fixture.detectChanges();
 
-    const prepararActa = ([...fixture.nativeElement.querySelectorAll('button')] as HTMLButtonElement[]).find((b) =>
-      (b.textContent ?? '').includes('Preparar acta con revision'),
+    const prepararActa = ([...fixture.nativeElement.querySelectorAll('button')] as HTMLButtonElement[]).find((b) => textoIncluye(b.textContent ?? '', 'Preparar acta con revision'),
     );
     const text = fixture.nativeElement.textContent as string;
-    expect(text).toContain('Preparar acta con observaciones');
-    expect(text).toContain('El periodo tiene revisiones pendientes.');
+    expectTexto(text, 'Preparar acta con observaciones');
+    expectTexto(text, 'El periodo tiene revisiones pendientes.');
     expect(prepararActa?.disabled).toBe(false);
   });
 
   it('al presionar preparar acta abre app-message-box', async () => {
     ejecutarPrevalidaciones.mockResolvedValueOnce(prevalidacionLista());
     let buttons = [...fixture.nativeElement.querySelectorAll('button')] as HTMLButtonElement[];
-    buttons.find((b) => (b.textContent ?? '').includes('Validar per'))!.click();
+    botonPorTexto(fixture.nativeElement, 'Validar per')!.click();
     await fixture.whenStable();
     fixture.detectChanges();
 
     buttons = [...fixture.nativeElement.querySelectorAll('button')] as HTMLButtonElement[];
-    buttons.find((b) => (b.textContent ?? '').includes('Preparar acta con revision'))!.click();
+    botonPorTexto(fixture.nativeElement, 'Preparar acta con revision')!.click();
     fixture.detectChanges();
 
     const messageBox = fixture.nativeElement.querySelector('app-message-box');
     const text = fixture.nativeElement.textContent as string;
     expect(messageBox).toBeTruthy();
-    expect(text).toContain('Preparar acta operativa del periodo');
-    expect(text).toContain('Que se incluye');
-    expect(text).toContain('Que no hace todavia');
+    expectTexto(text, 'Preparar acta operativa del periodo');
+    expectTexto(text, 'Que se incluye');
+    expectTexto(text, 'Que no hace todavia');
   });
 
   it('al confirmar acta cambia a estado visual preparada sin persistir ni generar liquidaciones', async () => {
     ejecutarPrevalidaciones.mockResolvedValueOnce(prevalidacionLista());
     let buttons = [...fixture.nativeElement.querySelectorAll('button')] as HTMLButtonElement[];
-    buttons.find((b) => (b.textContent ?? '').includes('Validar periodo'))!.click();
+    botonPorTexto(fixture.nativeElement, 'Validar periodo')!.click();
     await fixture.whenStable();
     fixture.detectChanges();
 
     buttons = [...fixture.nativeElement.querySelectorAll('button')] as HTMLButtonElement[];
-    buttons.find((b) => (b.textContent ?? '').includes('Preparar acta con revision'))!.click();
+    botonPorTexto(fixture.nativeElement, 'Preparar acta con revision')!.click();
     fixture.detectChanges();
     buttons = [...fixture.nativeElement.querySelectorAll('button')] as HTMLButtonElement[];
-    buttons.find((b) => (b.textContent ?? '').includes('Preparar con observaciones'))!.click();
+    botonPorTexto(fixture.nativeElement, 'Preparar con observaciones')!.click();
     await fixture.whenStable();
     fixture.detectChanges();
 
     const text = fixture.nativeElement.textContent as string;
-    expect(text).toContain('Acta preparada');
-    expect(text).toContain('Ir a Liquidaciones oficiales');
+    expectTexto(text, 'Acta preparada');
+    expectTexto(text, 'Ir a Liquidaciones oficiales');
     expect(guardarSnapshotPreliminar).not.toHaveBeenCalled();
     expect(cerrarNominaOperativamente).not.toHaveBeenCalled();
   });
@@ -643,55 +683,54 @@ describe('ProcesoMensualContainer', () => {
 
   it('tras validar muestra dashboard operativo y accion recomendada', async () => {
     const buttons = [...fixture.nativeElement.querySelectorAll('button')] as HTMLButtonElement[];
-    buttons.find((b) => (b.textContent ?? '').includes('Validar periodo'))!.click();
+    botonPorTexto(fixture.nativeElement, 'Validar periodo')!.click();
     await fixture.whenStable();
     fixture.detectChanges();
     const text = fixture.nativeElement.textContent as string;
-    expect(text).toContain('Resumen minimo del periodo');
-    expect(text).toContain('Siguiente accion recomendada');
-    expect(text).toContain('Que falta ahora');
-    expect(text).not.toContain('Recorrido visible');
-    expect(text).toContain('Revisar parametros');
+    expectTexto(text, 'Resumen minimo del periodo');
+    expectTexto(text, 'Siguiente accion recomendada');
+    expectTexto(text, 'Que falta ahora');
+    expectTextoNo(text, 'Recorrido visible');
+    expectTexto(text, 'Parametros');
   });
 
   it('no renderiza calculo preliminar antes de validar', () => {
     const text = fixture.nativeElement.textContent as string;
-    expect(text).not.toContain('Estado para calculo preliminar');
-    expect(text).not.toContain('Calculo preliminar');
+    expectTextoNo(text, 'Estado para calculo preliminar');
+    expectTextoNo(text, 'Calculo preliminar');
   });
 
   it('no renderiza resultado preliminar antes de validar y generar base', () => {
     const text = fixture.nativeElement.textContent as string;
-    expect(text).not.toContain('Resultado preliminar');
-    expect(text).not.toContain('Aun no hay resultado preliminar.');
+    expectTextoNo(text, 'Resultado preliminar');
+    expectTextoNo(text, 'Aun no hay resultado preliminar.');
   });
 
   it('con bloqueos muestra estado bloqueado, deshabilita calcular y muestra razon', async () => {
     const buttons = [...fixture.nativeElement.querySelectorAll('button')] as HTMLButtonElement[];
-    buttons.find((b) => (b.textContent ?? '').includes('Validar periodo'))!.click();
+    botonPorTexto(fixture.nativeElement, 'Validar periodo')!.click();
     await fixture.whenStable();
     fixture.detectChanges();
 
-    const calcular = ([...fixture.nativeElement.querySelectorAll('button')] as HTMLButtonElement[]).find((b) =>
-      (b.textContent ?? '').includes('Calcular preliminar'),
+    const calcular = ([...fixture.nativeElement.querySelectorAll('button')] as HTMLButtonElement[]).find((b) => textoIncluye(b.textContent ?? '', 'Calcular preliminar'),
     );
     const text = fixture.nativeElement.textContent as string;
-    expect(text).toContain('Periodo con pendientes');
-    expect(text).toContain('No se encontraron parametros reales validados para este periodo.');
+    expectTexto(text, 'Periodo con pendientes');
+    expectTexto(text, 'No se encontraron parametros reales validados para este periodo.');
     expect(calcular).toBeUndefined();
   });
 
   it('sin base generada bloquea el calculo y recomienda generar base', async () => {
     ejecutarPrevalidaciones.mockResolvedValueOnce(prevalidacionLista());
     const buttons = [...fixture.nativeElement.querySelectorAll('button')] as HTMLButtonElement[];
-    buttons.find((b) => (b.textContent ?? '').includes('Validar periodo'))!.click();
+    botonPorTexto(fixture.nativeElement, 'Validar periodo')!.click();
     await fixture.whenStable();
     fixture.detectChanges();
 
     const text = fixture.nativeElement.textContent as string;
-    expect(text).toContain('Aun no se ha generado la base de nomina para este periodo.');
-    expect(text).toContain('Generar base de nomina');
-    expect(text).not.toContain('Estado para calculo preliminar');
+    expectTexto(text, 'Aun no se ha generado la base de nomina para este periodo.');
+    expectTexto(text, 'Generar base de nomina');
+    expectTextoNo(text, 'Estado para calculo preliminar');
   });
 
   it('con base lista habilita calcular preliminar', async () => {
@@ -699,21 +738,20 @@ describe('ProcesoMensualContainer', () => {
     generarPreNominaPeriodo.mockResolvedValueOnce(baseNominaLista());
 
     let buttons = [...fixture.nativeElement.querySelectorAll('button')] as HTMLButtonElement[];
-    buttons.find((b) => (b.textContent ?? '').includes('Validar periodo'))!.click();
+    botonPorTexto(fixture.nativeElement, 'Validar periodo')!.click();
     await fixture.whenStable();
     fixture.detectChanges();
 
     buttons = [...fixture.nativeElement.querySelectorAll('button')] as HTMLButtonElement[];
-    buttons.find((b) => (b.textContent ?? '').includes('Generar base de nomina'))!.click();
+    botonPorTexto(fixture.nativeElement, 'Generar base de nomina')!.click();
     await fixture.whenStable();
     fixture.detectChanges();
 
-    const calcular = ([...fixture.nativeElement.querySelectorAll('button')] as HTMLButtonElement[]).find((b) =>
-      (b.textContent ?? '').includes('Calcular preliminar'),
+    const calcular = ([...fixture.nativeElement.querySelectorAll('button')] as HTMLButtonElement[]).find((b) => textoIncluye(b.textContent ?? '', 'Calcular preliminar'),
     );
     const text = fixture.nativeElement.textContent as string;
-    expect(text).toContain('Listo para calcular');
-    expect(text).toContain('La base de nomina esta lista para calcular preliminarmente.');
+    expectTexto(text, 'Listo para calcular');
+    expectTexto(text, 'La base de nomina esta lista para calcular preliminarmente.');
     expect(calcular?.disabled).toBe(false);
   });
 
@@ -742,21 +780,20 @@ describe('ProcesoMensualContainer', () => {
     });
 
     let buttons = [...fixture.nativeElement.querySelectorAll('button')] as HTMLButtonElement[];
-    buttons.find((b) => (b.textContent ?? '').includes('Validar periodo'))!.click();
+    botonPorTexto(fixture.nativeElement, 'Validar periodo')!.click();
     await fixture.whenStable();
     fixture.detectChanges();
     buttons = [...fixture.nativeElement.querySelectorAll('button')] as HTMLButtonElement[];
-    buttons.find((b) => (b.textContent ?? '').includes('Generar base de nomina'))!.click();
+    botonPorTexto(fixture.nativeElement, 'Generar base de nomina')!.click();
     await fixture.whenStable();
     fixture.detectChanges();
 
-    const calcular = ([...fixture.nativeElement.querySelectorAll('button')] as HTMLButtonElement[]).find((b) =>
-      (b.textContent ?? '').includes('Calcular preliminar'),
+    const calcular = ([...fixture.nativeElement.querySelectorAll('button')] as HTMLButtonElement[]).find((b) => textoIncluye(b.textContent ?? '', 'Calcular preliminar'),
     );
     const text = fixture.nativeElement.textContent as string;
-    expect(text).toContain('Con advertencias');
-    expect(text).toContain('No hay movimientos del periodo registrados');
-    expect(text).toContain('No bloquea el calculo preliminar.');
+    expectTexto(text, 'Con advertencias');
+    expectTexto(text, 'No hay movimientos del periodo registrados');
+    expectTexto(text, 'No bloquea el calculo preliminar.');
     expect(calcular?.disabled).toBe(false);
   });
 
@@ -777,20 +814,19 @@ describe('ProcesoMensualContainer', () => {
     });
 
     let buttons = [...fixture.nativeElement.querySelectorAll('button')] as HTMLButtonElement[];
-    buttons.find((b) => (b.textContent ?? '').includes('Validar periodo'))!.click();
+    botonPorTexto(fixture.nativeElement, 'Validar periodo')!.click();
     await fixture.whenStable();
     fixture.detectChanges();
     buttons = [...fixture.nativeElement.querySelectorAll('button')] as HTMLButtonElement[];
-    buttons.find((b) => (b.textContent ?? '').includes('Generar base de nomina'))!.click();
+    botonPorTexto(fixture.nativeElement, 'Generar base de nomina')!.click();
     await fixture.whenStable();
     fixture.detectChanges();
 
-    const calcular = ([...fixture.nativeElement.querySelectorAll('button')] as HTMLButtonElement[]).find((b) =>
-      (b.textContent ?? '').includes('Calcular preliminar'),
+    const calcular = ([...fixture.nativeElement.querySelectorAll('button')] as HTMLButtonElement[]).find((b) => textoIncluye(b.textContent ?? '', 'Calcular preliminar'),
     );
     const text = fixture.nativeElement.textContent as string;
-    expect(text).toContain('No hay asignaciones recurrentes activas');
-    expect(text).toContain('No bloquea el calculo preliminar.');
+    expectTexto(text, 'No hay asignaciones recurrentes activas');
+    expectTexto(text, 'No bloquea el calculo preliminar.');
     expect(calcular?.disabled).toBe(false);
   });
 
@@ -813,20 +849,19 @@ describe('ProcesoMensualContainer', () => {
     });
 
     let buttons = [...fixture.nativeElement.querySelectorAll('button')] as HTMLButtonElement[];
-    buttons.find((b) => (b.textContent ?? '').includes('Validar periodo'))!.click();
+    botonPorTexto(fixture.nativeElement, 'Validar periodo')!.click();
     await fixture.whenStable();
     fixture.detectChanges();
     buttons = [...fixture.nativeElement.querySelectorAll('button')] as HTMLButtonElement[];
-    buttons.find((b) => (b.textContent ?? '').includes('Generar base de nomina'))!.click();
+    botonPorTexto(fixture.nativeElement, 'Generar base de nomina')!.click();
     await fixture.whenStable();
     fixture.detectChanges();
 
-    const calcular = ([...fixture.nativeElement.querySelectorAll('button')] as HTMLButtonElement[]).find((b) =>
-      (b.textContent ?? '').includes('Calcular preliminar'),
+    const calcular = ([...fixture.nativeElement.querySelectorAll('button')] as HTMLButtonElement[]).find((b) => textoIncluye(b.textContent ?? '', 'Calcular preliminar'),
     );
     const text = fixture.nativeElement.textContent as string;
-    expect(text).toContain('No hay trabajadores considerados');
-    expect(text).toContain('La base de nomina no tiene trabajadores para calcular.');
+    expectTexto(text, 'No hay trabajadores considerados');
+    expectTexto(text, 'La base de nomina no tiene trabajadores para calcular.');
     expect(calcular?.disabled).toBe(true);
   });
 
@@ -843,21 +878,20 @@ describe('ProcesoMensualContainer', () => {
     generarPreNominaPeriodo.mockResolvedValueOnce(baseNominaLista());
 
     let buttons = [...fixture.nativeElement.querySelectorAll('button')] as HTMLButtonElement[];
-    buttons.find((b) => (b.textContent ?? '').includes('Validar periodo'))!.click();
+    botonPorTexto(fixture.nativeElement, 'Validar periodo')!.click();
     await fixture.whenStable();
     fixture.detectChanges();
     buttons = [...fixture.nativeElement.querySelectorAll('button')] as HTMLButtonElement[];
-    buttons.find((b) => (b.textContent ?? '').includes('Generar base de nomina'))!.click();
+    botonPorTexto(fixture.nativeElement, 'Generar base de nomina')!.click();
     await fixture.whenStable();
     fixture.detectChanges();
 
-    const calcular = ([...fixture.nativeElement.querySelectorAll('button')] as HTMLButtonElement[]).find((b) =>
-      (b.textContent ?? '').includes('Calcular preliminar'),
+    const calcular = ([...fixture.nativeElement.querySelectorAll('button')] as HTMLButtonElement[]).find((b) => textoIncluye(b.textContent ?? '', 'Calcular preliminar'),
     );
     const text = fixture.nativeElement.textContent as string;
-    expect(text).toContain('Faltan parametros minimos para calcular');
-    expect(text).toContain('Hay parametros opcionales pendientes');
-    expect(text).toContain('Revisar parametros');
+    expectTexto(text, 'Faltan parametros minimos para calcular');
+    expectTexto(text, 'Hay parametros opcionales pendientes');
+    expectTexto(text, 'Parametros');
     expect(calcular?.disabled).toBe(true);
   });
 
@@ -886,12 +920,11 @@ describe('ProcesoMensualContainer', () => {
     } as ProcesoMensualPrevalidacion);
 
     const buttons = [...fixture.nativeElement.querySelectorAll('button')] as HTMLButtonElement[];
-    buttons.find((b) => (b.textContent ?? '').includes('Validar periodo'))!.click();
+    botonPorTexto(fixture.nativeElement, 'Validar periodo')!.click();
     await fixture.whenStable();
     fixture.detectChanges();
 
-    const btnBaseNomina = ([...fixture.nativeElement.querySelectorAll('button')] as HTMLButtonElement[]).find((b) =>
-      (b.textContent ?? '').includes('Generar base de nomina'),
+    const btnBaseNomina = ([...fixture.nativeElement.querySelectorAll('button')] as HTMLButtonElement[]).find((b) => textoIncluye(b.textContent ?? '', 'Generar base de nomina'),
     );
     expect(btnBaseNomina).toBeTruthy();
     btnBaseNomina!.click();
@@ -900,9 +933,9 @@ describe('ProcesoMensualContainer', () => {
 
     expect(generarPreNominaPeriodo).toHaveBeenCalledWith('2026-05');
     const text = fixture.nativeElement.textContent as string;
-    expect(text).toContain('Base generada con advertencias');
-    expect(text).toContain('Resumen de base');
-    expect(text).toContain('Trabajadores considerados');
+    expectTexto(text, 'Base generada con advertencias');
+    expectTexto(text, 'Resumen de base');
+    expectTexto(text, 'Trabajadores considerados');
   });
 
   it('muestra trazabilidad operativa de la base de nomina', async () => {
@@ -930,37 +963,37 @@ describe('ProcesoMensualContainer', () => {
     } as ProcesoMensualPrevalidacion);
 
     let buttons = [...fixture.nativeElement.querySelectorAll('button')] as HTMLButtonElement[];
-    buttons.find((b) => (b.textContent ?? '').includes('Validar periodo'))!.click();
+    botonPorTexto(fixture.nativeElement, 'Validar periodo')!.click();
     await fixture.whenStable();
     fixture.detectChanges();
 
     buttons = [...fixture.nativeElement.querySelectorAll('button')] as HTMLButtonElement[];
-    buttons.find((b) => (b.textContent ?? '').includes('Generar base de nomina'))!.click();
+    botonPorTexto(fixture.nativeElement, 'Generar base de nomina')!.click();
     await fixture.whenStable();
     fixture.detectChanges();
 
     const text = fixture.nativeElement.textContent as string;
-    expect(text).toContain('Resumen de base');
-    expect(text).toContain('Trabajadores incluidos');
-    expect(text).toContain('Trabajadores considerados');
-    expect(text).toContain('Listos para calculo');
-    expect(text).toContain('Con observaciones');
-    expect(text).toContain('Bloqueados');
-    expect(text).toContain('Recurrentes incluidos');
-    expect(text).toContain('Movimientos del mes incluidos');
-    expect(text).toContain('Ana Perez');
-    expect(text).toContain('11.111.111-1');
-    expect(text).toContain('Luis Soto');
-    expect(text).toContain('Contrato no disponible');
-    expect(text).toContain('Marta Rojas');
-    expect(text).toContain('Listo para calculo');
-    expect(text).toContain('Bloqueado');
-    expect(text).toContain('Entradas consideradas');
-    expect(text).toContain('Parametros del periodo');
-    expect(text).toContain('Revisar parametros');
-    expect(text).toContain('Revisar movimientos');
-    expect(text).toContain('Revisar recurrentes');
-    expect(text).toContain('Actualizar base de nomina');
+    expectTexto(text, 'Resumen de base');
+    expectTexto(text, 'Trabajadores incluidos');
+    expectTexto(text, 'Trabajadores considerados');
+    expectTexto(text, 'Listos para calculo');
+    expectTexto(text, 'Con observaciones');
+    expectTexto(text, 'Bloqueados');
+    expectTexto(text, 'Recurrentes incluidos');
+    expectTexto(text, 'Movimientos del mes incluidos');
+    expectTexto(text, 'Ana Perez');
+    expectTexto(text, '11.111.111-1');
+    expectTexto(text, 'Luis Soto');
+    expectTexto(text, 'Contrato no disponible');
+    expectTexto(text, 'Marta Rojas');
+    expectTexto(text, 'Listo para calculo');
+    expectTexto(text, 'Bloqueado');
+    expectTexto(text, 'Entradas consideradas');
+    expectTexto(text, 'Parametros del periodo');
+    expectTexto(text, 'Parametros');
+    expectTexto(text, 'Movimientos');
+    expectTexto(text, 'Revisar recurrentes');
+    expectTexto(text, 'Actualizar base de nomina');
   });
 
   it('mantiene fuera de la base los labels tecnicos visibles', async () => {
@@ -988,24 +1021,24 @@ describe('ProcesoMensualContainer', () => {
     } as ProcesoMensualPrevalidacion);
 
     let buttons = [...fixture.nativeElement.querySelectorAll('button')] as HTMLButtonElement[];
-    buttons.find((b) => (b.textContent ?? '').includes('Validar periodo'))!.click();
+    botonPorTexto(fixture.nativeElement, 'Validar periodo')!.click();
     await fixture.whenStable();
     fixture.detectChanges();
 
     buttons = [...fixture.nativeElement.querySelectorAll('button')] as HTMLButtonElement[];
-    buttons.find((b) => (b.textContent ?? '').includes('Generar base de nomina'))!.click();
+    botonPorTexto(fixture.nativeElement, 'Generar base de nomina')!.click();
     await fixture.whenStable();
     fixture.detectChanges();
 
     const text = fixture.nativeElement.textContent as string;
-    expect(text).not.toContain('Pre-nomina');
-    expect(text).not.toContain('Issues');
-    expect(text).not.toContain('Novedades');
-    expect(text).not.toContain('Payload');
-    expect(text).not.toContain('Hash');
-    expect(text).not.toContain('idPersona');
-    expect(text).not.toContain('idContrato');
-    expect(text).not.toContain('idConcepto');
+    expectTextoNo(text, 'Pre-nomina');
+    expectTextoNo(text, 'Issues');
+    expectTextoNo(text, 'Novedades');
+    expectTextoNo(text, 'Payload');
+    expectTextoNo(text, 'Hash');
+    expectTextoNo(text, 'idPersona');
+    expectTextoNo(text, 'idContrato');
+    expectTextoNo(text, 'idConcepto');
   });
 
   it('calcula preliminar posterior a pre-nomina generada y muestra tabla resultado', async () => {
@@ -1013,35 +1046,35 @@ describe('ProcesoMensualContainer', () => {
     generarPreNominaPeriodo.mockResolvedValueOnce(baseNominaLista());
 
     let buttons = [...fixture.nativeElement.querySelectorAll('button')] as HTMLButtonElement[];
-    buttons.find((b) => (b.textContent ?? '').includes('Validar periodo'))!.click();
+    botonPorTexto(fixture.nativeElement, 'Validar periodo')!.click();
     await fixture.whenStable();
     fixture.detectChanges();
 
     buttons = [...fixture.nativeElement.querySelectorAll('button')] as HTMLButtonElement[];
-    buttons.find((b) => (b.textContent ?? '').includes('Generar base de nomina'))!.click();
+    botonPorTexto(fixture.nativeElement, 'Generar base de nomina')!.click();
     await fixture.whenStable();
     fixture.detectChanges();
 
     buttons = [...fixture.nativeElement.querySelectorAll('button')] as HTMLButtonElement[];
-    buttons.find((b) => (b.textContent ?? '').includes('Calcular preliminar'))!.click();
+    botonPorTexto(fixture.nativeElement, 'Calcular preliminar')!.click();
     await fixture.whenStable();
     fixture.detectChanges();
 
     expect(generarCalculoPeriodo).toHaveBeenCalledWith('2026-05');
     const text = fixture.nativeElement.textContent as string;
-    expect(text).toContain('Resultado preliminar generado');
-    expect(text).toContain('Trabajadores calculados');
-    expect(text).toContain('Total haberes');
-    expect(text).toContain('Total descuentos');
-    expect(text).toContain('Liquido preliminar');
-    expect(text).toContain('Observaciones');
-    expect(text).toContain('Ana Perez');
-    expect(text).toContain('Calculado');
-    expect(text).toContain('Version interna');
-    expect(text).toContain('Referencia interna');
-    expect(text).toContain('Fecha de generacion');
-    expect(text).toContain('Recalcular preliminar');
-    expect(text).toContain('Guardar resultado preliminar');
+    expectTexto(text, 'Resultado preliminar generado');
+    expectTexto(text, 'Trabajadores calculados');
+    expectTexto(text, 'Total haberes');
+    expectTexto(text, 'Total descuentos');
+    expectTexto(text, 'Liquido preliminar');
+    expectTexto(text, 'Observaciones');
+    expectTexto(text, 'Ana Perez');
+    expectTexto(text, 'Calculado');
+    expectTexto(text, 'Version interna');
+    expectTexto(text, 'Referencia interna');
+    expectTexto(text, 'Fecha de generacion');
+    expectTexto(text, 'Recalcular preliminar');
+    expectTexto(text, 'Guardar resultado preliminar');
   });
 
   it('muestra trabajadores con observaciones y omitidos en el resultado preliminar', async () => {
@@ -1070,31 +1103,31 @@ describe('ProcesoMensualContainer', () => {
     generarCalculoPeriodo.mockResolvedValueOnce(calculoConObservacionesYOmitidos());
 
     let buttons = [...fixture.nativeElement.querySelectorAll('button')] as HTMLButtonElement[];
-    buttons.find((b) => (b.textContent ?? '').includes('Validar periodo'))!.click();
+    botonPorTexto(fixture.nativeElement, 'Validar periodo')!.click();
     await fixture.whenStable();
     fixture.detectChanges();
     buttons = [...fixture.nativeElement.querySelectorAll('button')] as HTMLButtonElement[];
-    buttons.find((b) => (b.textContent ?? '').includes('Generar base de nomina'))!.click();
+    botonPorTexto(fixture.nativeElement, 'Generar base de nomina')!.click();
     await fixture.whenStable();
     fixture.detectChanges();
     buttons = [...fixture.nativeElement.querySelectorAll('button')] as HTMLButtonElement[];
-    buttons.find((b) => (b.textContent ?? '').includes('Calcular preliminar'))!.click();
+    botonPorTexto(fixture.nativeElement, 'Calcular preliminar')!.click();
     await fixture.whenStable();
     fixture.detectChanges();
 
     const text = fixture.nativeElement.textContent as string;
-    expect(text).toContain('Resultado con bloqueos');
-    expect(text).toContain('Trabajadores con observaciones');
-    expect(text).toContain('Trabajadores omitidos');
-    expect(text).toContain('Con observaciones');
-    expect(text).toContain('Omitido');
-    expect(text).toContain('Luis Soto');
-    expect(text).toContain('Contrato no disponible.');
-    expect(text).toContain('Advertencias del resultado');
-    expect(text).toContain('Dato opcional pendiente de revision.');
-    expect(text).toContain('Bloqueos del resultado');
-    expect(text).toContain('Trabajador omitido del calculo');
-    expect(text).toContain('Revisar base de nomina');
+    expectTexto(text, 'Resultado con bloqueos');
+    expectTexto(text, 'Trabajadores con observaciones');
+    expectTexto(text, 'Trabajadores omitidos');
+    expectTexto(text, 'Con observaciones');
+    expectTexto(text, 'Omitido');
+    expectTexto(text, 'Luis Soto');
+    expectTexto(text, 'Contrato no disponible.');
+    expectTexto(text, 'Advertencias del resultado');
+    expectTexto(text, 'Dato opcional pendiente de revision.');
+    expectTexto(text, 'Bloqueos del resultado');
+    expectTexto(text, 'Trabajador omitido del calculo');
+    expectTexto(text, 'Revisar base de nomina');
   });
 
   it('guarda snapshot preliminar posterior a calculo sin bloqueos', async () => {
@@ -1102,19 +1135,19 @@ describe('ProcesoMensualContainer', () => {
     generarPreNominaPeriodo.mockResolvedValueOnce(baseNominaLista());
 
     let buttons = [...fixture.nativeElement.querySelectorAll('button')] as HTMLButtonElement[];
-    buttons.find((b) => (b.textContent ?? '').includes('Validar periodo'))!.click();
+    botonPorTexto(fixture.nativeElement, 'Validar periodo')!.click();
     await fixture.whenStable();
     fixture.detectChanges();
     buttons = [...fixture.nativeElement.querySelectorAll('button')] as HTMLButtonElement[];
-    buttons.find((b) => (b.textContent ?? '').includes('Generar base de nomina'))!.click();
+    botonPorTexto(fixture.nativeElement, 'Generar base de nomina')!.click();
     await fixture.whenStable();
     fixture.detectChanges();
     buttons = [...fixture.nativeElement.querySelectorAll('button')] as HTMLButtonElement[];
-    buttons.find((b) => (b.textContent ?? '').includes('Calcular preliminar'))!.click();
+    botonPorTexto(fixture.nativeElement, 'Calcular preliminar')!.click();
     await fixture.whenStable();
     fixture.detectChanges();
     buttons = [...fixture.nativeElement.querySelectorAll('button')] as HTMLButtonElement[];
-    buttons.find((b) => (b.textContent ?? '').includes('Guardar resultado preliminar'))!.click();
+    botonPorTexto(fixture.nativeElement, 'Guardar resultado preliminar')!.click();
     await fixture.whenStable();
     fixture.detectChanges();
     expect(guardarSnapshotPreliminar).not.toHaveBeenCalled();
@@ -1126,20 +1159,20 @@ describe('ProcesoMensualContainer', () => {
 
     expect(guardarSnapshotPreliminar).toHaveBeenCalledWith('2026-05');
     const text = fixture.nativeElement.textContent as string;
-    expect(text).toContain('Resultado preliminar guardado');
-    expect(text).toContain('Revisa y aprueba operativamente este nuevo resultado si corresponde');
-    expect(text).toContain('No emite liquidaciones');
-    expect(text).toContain('Prepara, calcula y deja respaldo interno del resultado antes de la salida oficial del periodo.');
-    expect(text).toContain('Fecha de guardado');
-    expect(text).toContain('Version guardada');
-    expect(text).toContain('Referencia interna');
-    expect(text).toContain('MOTOR-03B');
-    expect(text).toContain('Revision para aprobacion');
-    expect(text).toContain('Listo para aprobar');
-    expect(text).toContain('La version guardada coincide con el ultimo resultado disponible.');
-    expect(text).toContain('Salidas legales y archivos externos quedan fuera de esta fase.');
+    expectTexto(text, 'Resultado preliminar guardado');
+    expectTexto(text, 'Revisa y aprueba operativamente este nuevo resultado si corresponde');
+    expectTexto(text, 'No emite liquidaciones');
+    expectTexto(text, 'Prepara, calcula y deja respaldo interno del resultado antes de la salida oficial del periodo.');
+    expectTexto(text, 'Fecha de guardado');
+    expectTexto(text, 'Version guardada');
+    expectTexto(text, 'Referencia interna');
+    expectTexto(text, 'MOTOR-03B');
+    expectTexto(text, 'Revision para aprobacion');
+    expectTexto(text, 'Listo para aprobar');
+    expectTexto(text, 'La version guardada coincide con el ultimo resultado disponible.');
+    expectTexto(text, 'Salidas legales y archivos externos quedan fuera de esta fase.');
     const aprobar = ([...fixture.nativeElement.querySelectorAll('button')] as HTMLButtonElement[])
-      .find((b) => (b.textContent ?? '').includes('Aprobar resultado preliminar'));
+      .find((b) => textoIncluye(b.textContent ?? '', 'Aprobar resultado preliminar'));
     expect(aprobar?.disabled).toBe(false);
   });
 
@@ -1151,19 +1184,19 @@ describe('ProcesoMensualContainer', () => {
     generarPreNominaPeriodo.mockResolvedValueOnce(baseNominaLista());
 
     let buttons = [...fixture.nativeElement.querySelectorAll('button')] as HTMLButtonElement[];
-    buttons.find((b) => (b.textContent ?? '').includes('Validar periodo'))!.click();
+    botonPorTexto(fixture.nativeElement, 'Validar periodo')!.click();
     await fixture.whenStable();
     fixture.detectChanges();
     buttons = [...fixture.nativeElement.querySelectorAll('button')] as HTMLButtonElement[];
-    buttons.find((b) => (b.textContent ?? '').includes('Generar base de nomina'))!.click();
+    botonPorTexto(fixture.nativeElement, 'Generar base de nomina')!.click();
     await fixture.whenStable();
     fixture.detectChanges();
     buttons = [...fixture.nativeElement.querySelectorAll('button')] as HTMLButtonElement[];
-    buttons.find((b) => (b.textContent ?? '').includes('Calcular preliminar'))!.click();
+    botonPorTexto(fixture.nativeElement, 'Calcular preliminar')!.click();
     await fixture.whenStable();
     fixture.detectChanges();
     buttons = [...fixture.nativeElement.querySelectorAll('button')] as HTMLButtonElement[];
-    buttons.find((b) => (b.textContent ?? '').includes('Guardar resultado preliminar'))!.click();
+    botonPorTexto(fixture.nativeElement, 'Guardar resultado preliminar')!.click();
     await fixture.whenStable();
     fixture.detectChanges();
     buttons = [...fixture.nativeElement.querySelectorAll('button')] as HTMLButtonElement[];
@@ -1172,11 +1205,11 @@ describe('ProcesoMensualContainer', () => {
     fixture.detectChanges();
 
     const text = fixture.nativeElement.textContent as string;
-    expect(text).toContain('No se pudo guardar el resultado preliminar completo. No se realizaron cambios parciales.');
-    expect(text).toContain('No se pudo guardar');
-    expect(text).not.toContain('Cierre ejecutado');
-    expect(text).not.toContain('Previred generado');
-    expect(text).not.toContain('LRE generado');
+    expectTexto(text, 'No se pudo guardar el resultado preliminar completo. No se realizaron cambios parciales.');
+    expectTexto(text, 'No se pudo guardar');
+    expectTextoNo(text, 'Cierre ejecutado');
+    expectTextoNo(text, 'Previred generado');
+    expectTextoNo(text, 'LRE generado');
   });
 
   it('muestra estado no guardado y habilita guardar con resultado sin bloqueos', async () => {
@@ -1184,24 +1217,24 @@ describe('ProcesoMensualContainer', () => {
     generarPreNominaPeriodo.mockResolvedValueOnce(baseNominaLista());
 
     let buttons = [...fixture.nativeElement.querySelectorAll('button')] as HTMLButtonElement[];
-    buttons.find((b) => (b.textContent ?? '').includes('Validar periodo'))!.click();
+    botonPorTexto(fixture.nativeElement, 'Validar periodo')!.click();
     await fixture.whenStable();
     fixture.detectChanges();
     buttons = [...fixture.nativeElement.querySelectorAll('button')] as HTMLButtonElement[];
-    buttons.find((b) => (b.textContent ?? '').includes('Generar base de nomina'))!.click();
+    botonPorTexto(fixture.nativeElement, 'Generar base de nomina')!.click();
     await fixture.whenStable();
     fixture.detectChanges();
     buttons = [...fixture.nativeElement.querySelectorAll('button')] as HTMLButtonElement[];
-    buttons.find((b) => (b.textContent ?? '').includes('Calcular preliminar'))!.click();
+    botonPorTexto(fixture.nativeElement, 'Calcular preliminar')!.click();
     await fixture.whenStable();
     fixture.detectChanges();
 
     buttons = [...fixture.nativeElement.querySelectorAll('button')] as HTMLButtonElement[];
-    const guardar = buttons.find((b) => (b.textContent ?? '').includes('Guardar resultado preliminar'));
+    const guardar = buttons.find((b) => textoIncluye(b.textContent ?? '', 'Guardar resultado preliminar'));
     const text = fixture.nativeElement.textContent as string;
-    expect(text).toContain('Resultado no guardado');
-    expect(text).toContain('Guarda una version revisable del calculo. No emite liquidaciones ni cierra el periodo.');
-    expect(text).toContain('Revisa el calculo preliminar y guardalo como version revisable si corresponde.');
+    expectTexto(text, 'Resultado no guardado');
+    expectTexto(text, 'Guarda una version revisable del calculo. No emite liquidaciones ni cierra el periodo.');
+    expectTexto(text, 'Revisa el calculo preliminar y guardalo como version revisable si corresponde.');
     expect(guardar?.disabled).toBe(false);
   });
 
@@ -1220,24 +1253,24 @@ describe('ProcesoMensualContainer', () => {
     });
 
     let buttons = [...fixture.nativeElement.querySelectorAll('button')] as HTMLButtonElement[];
-    buttons.find((b) => (b.textContent ?? '').includes('Validar periodo'))!.click();
+    botonPorTexto(fixture.nativeElement, 'Validar periodo')!.click();
     await fixture.whenStable();
     fixture.detectChanges();
     buttons = [...fixture.nativeElement.querySelectorAll('button')] as HTMLButtonElement[];
-    buttons.find((b) => (b.textContent ?? '').includes('Generar base de nomina'))!.click();
+    botonPorTexto(fixture.nativeElement, 'Generar base de nomina')!.click();
     await fixture.whenStable();
     fixture.detectChanges();
     buttons = [...fixture.nativeElement.querySelectorAll('button')] as HTMLButtonElement[];
-    buttons.find((b) => (b.textContent ?? '').includes('Calcular preliminar'))!.click();
+    botonPorTexto(fixture.nativeElement, 'Calcular preliminar')!.click();
     await fixture.whenStable();
     fixture.detectChanges();
 
     buttons = [...fixture.nativeElement.querySelectorAll('button')] as HTMLButtonElement[];
-    const guardar = buttons.find((b) => (b.textContent ?? '').includes('Guardar resultado preliminar'));
+    const guardar = buttons.find((b) => textoIncluye(b.textContent ?? '', 'Guardar resultado preliminar'));
     const text = fixture.nativeElement.textContent as string;
-    expect(text).toContain('Resultado con bloqueos');
-    expect(text).toContain('No puedes guardar todavia. El resultado tiene bloqueos que deben revisarse.');
-    expect(text).toContain('Hay bloqueos del resultado que deben revisarse.');
+    expectTexto(text, 'Resultado con bloqueos');
+    expectTexto(text, 'No puedes guardar todavia. El resultado tiene bloqueos que deben revisarse.');
+    expectTexto(text, 'Hay bloqueos del resultado que deben revisarse.');
     expect(guardar?.disabled).toBe(true);
   });
 
@@ -1269,19 +1302,19 @@ describe('ProcesoMensualContainer', () => {
     });
 
     let buttons = [...fixture.nativeElement.querySelectorAll('button')] as HTMLButtonElement[];
-    buttons.find((b) => (b.textContent ?? '').includes('Validar periodo'))!.click();
+    botonPorTexto(fixture.nativeElement, 'Validar periodo')!.click();
     await fixture.whenStable();
     fixture.detectChanges();
     buttons = [...fixture.nativeElement.querySelectorAll('button')] as HTMLButtonElement[];
-    buttons.find((b) => (b.textContent ?? '').includes('Generar base de nomina'))!.click();
+    botonPorTexto(fixture.nativeElement, 'Generar base de nomina')!.click();
     await fixture.whenStable();
     fixture.detectChanges();
     buttons = [...fixture.nativeElement.querySelectorAll('button')] as HTMLButtonElement[];
-    buttons.find((b) => (b.textContent ?? '').includes('Calcular preliminar'))!.click();
+    botonPorTexto(fixture.nativeElement, 'Calcular preliminar')!.click();
     await fixture.whenStable();
     fixture.detectChanges();
     buttons = [...fixture.nativeElement.querySelectorAll('button')] as HTMLButtonElement[];
-    buttons.find((b) => (b.textContent ?? '').includes('Guardar resultado preliminar'))!.click();
+    botonPorTexto(fixture.nativeElement, 'Guardar resultado preliminar')!.click();
     await fixture.whenStable();
     fixture.detectChanges();
     buttons = [...fixture.nativeElement.querySelectorAll('button')] as HTMLButtonElement[];
@@ -1290,12 +1323,12 @@ describe('ProcesoMensualContainer', () => {
     fixture.detectChanges();
 
     const text = fixture.nativeElement.textContent as string;
-    expect(text).toContain('Listo para aprobar con advertencias');
-    expect(text).toContain('El resultado preliminar guardado esta listo para aprobacion operativa, con advertencias visibles para decision RRHH.');
-    expect(text).toContain('Advertencias visibles para decision RRHH');
-    expect(text).toContain('Dato opcional pendiente de revision.');
+    expectTexto(text, 'Listo para aprobar con advertencias');
+    expectTexto(text, 'El resultado preliminar guardado esta listo para aprobacion operativa, con advertencias visibles para decision RRHH.');
+    expectTexto(text, 'Advertencias visibles para decision RRHH');
+    expectTexto(text, 'Dato opcional pendiente de revision.');
     const aprobar = ([...fixture.nativeElement.querySelectorAll('button')] as HTMLButtonElement[])
-      .find((b) => (b.textContent ?? '').includes('Aprobar resultado preliminar'));
+      .find((b) => textoIncluye(b.textContent ?? '', 'Aprobar resultado preliminar'));
     expect(aprobar?.disabled).toBe(false);
   });
 
@@ -1304,19 +1337,19 @@ describe('ProcesoMensualContainer', () => {
     generarPreNominaPeriodo.mockResolvedValueOnce(baseNominaLista());
 
     let buttons = [...fixture.nativeElement.querySelectorAll('button')] as HTMLButtonElement[];
-    buttons.find((b) => (b.textContent ?? '').includes('Validar periodo'))!.click();
+    botonPorTexto(fixture.nativeElement, 'Validar periodo')!.click();
     await fixture.whenStable();
     fixture.detectChanges();
     buttons = [...fixture.nativeElement.querySelectorAll('button')] as HTMLButtonElement[];
-    buttons.find((b) => (b.textContent ?? '').includes('Generar base de nomina'))!.click();
+    botonPorTexto(fixture.nativeElement, 'Generar base de nomina')!.click();
     await fixture.whenStable();
     fixture.detectChanges();
     buttons = [...fixture.nativeElement.querySelectorAll('button')] as HTMLButtonElement[];
-    buttons.find((b) => (b.textContent ?? '').includes('Calcular preliminar'))!.click();
+    botonPorTexto(fixture.nativeElement, 'Calcular preliminar')!.click();
     await fixture.whenStable();
     fixture.detectChanges();
     buttons = [...fixture.nativeElement.querySelectorAll('button')] as HTMLButtonElement[];
-    buttons.find((b) => (b.textContent ?? '').includes('Guardar resultado preliminar'))!.click();
+    botonPorTexto(fixture.nativeElement, 'Guardar resultado preliminar')!.click();
     await fixture.whenStable();
     fixture.detectChanges();
     buttons = [...fixture.nativeElement.querySelectorAll('button')] as HTMLButtonElement[];
@@ -1325,7 +1358,7 @@ describe('ProcesoMensualContainer', () => {
     fixture.detectChanges();
 
     buttons = [...fixture.nativeElement.querySelectorAll('button')] as HTMLButtonElement[];
-    const aprobar = buttons.find((b) => (b.textContent ?? '').includes('Aprobar resultado preliminar'));
+    const aprobar = buttons.find((b) => textoIncluye(b.textContent ?? '', 'Aprobar resultado preliminar'));
     expect(aprobar?.disabled).toBe(false);
     aprobar!.click();
     await fixture.whenStable();
@@ -1343,21 +1376,21 @@ describe('ProcesoMensualContainer', () => {
       advertencias: [],
     });
     const text = fixture.nativeElement.textContent as string;
-    expect(text).toContain('Aprobacion operativa');
-    expect(text).toContain('Aprobado operativamente');
-    expect(text).toContain('Resultado preliminar aprobado operativamente.');
-    expect(text).toContain('Fecha de aprobacion');
-    expect(text).toContain('Usuario no disponible en esta sesion');
-    expect(text).toContain('Version interna');
-    expect(text).toContain('Referencia interna');
-    expect(text).toContain('Trabajadores calculados');
-    expect(text).toContain('Total haberes');
-    expect(text).toContain('Total descuentos');
-    expect(text).toContain('Liquido preliminar');
-    expect(text).toContain('Esta aprobacion es interna y no reemplaza el cierre del periodo ni la emision de liquidaciones oficiales.');
-    expect(text).not.toContain('Cierre ejecutado');
-    expect(text).not.toContain('Previred generado');
-    expect(text).not.toContain('LRE generado');
+    expectTexto(text, 'Aprobacion operativa');
+    expectTexto(text, 'Aprobado operativamente');
+    expectTexto(text, 'Resultado preliminar aprobado operativamente.');
+    expectTexto(text, 'Fecha de aprobacion');
+    expectTexto(text, 'Usuario no disponible en esta sesion');
+    expectTexto(text, 'Version interna');
+    expectTexto(text, 'Referencia interna');
+    expectTexto(text, 'Trabajadores calculados');
+    expectTexto(text, 'Total haberes');
+    expectTexto(text, 'Total descuentos');
+    expectTexto(text, 'Liquido preliminar');
+    expectTexto(text, 'Esta aprobacion es interna y no reemplaza el cierre del periodo ni la emision de liquidaciones oficiales.');
+    expectTextoNo(text, 'Cierre ejecutado');
+    expectTextoNo(text, 'Previred generado');
+    expectTextoNo(text, 'LRE generado');
   });
 
   it('muestra aprobacion persistida al cargar resultado guardado desde BD', async () => {
@@ -1380,10 +1413,10 @@ describe('ProcesoMensualContainer', () => {
 
     const text = localFixture.nativeElement.textContent as string;
     const aprobar = ([...localFixture.nativeElement.querySelectorAll('button')] as HTMLButtonElement[])
-      .find((b) => (b.textContent ?? '').includes('Aprobar resultado preliminar'));
-    expect(text).toContain('Resultado preliminar aprobado operativamente.');
-    expect(text).toContain('rrhh@empresa.cl');
-    expect(text).toContain('Advertencia registrada al aprobar.');
+      .find((b) => textoIncluye(b.textContent ?? '', 'Aprobar resultado preliminar'));
+    expectTexto(text, 'Resultado preliminar aprobado operativamente.');
+    expectTexto(text, 'rrhh@empresa.cl');
+    expectTexto(text, 'Advertencia registrada al aprobar.');
     expect(aprobar?.disabled).toBe(true);
   });
 
@@ -1405,7 +1438,7 @@ describe('ProcesoMensualContainer', () => {
     localFixture.detectChanges();
 
     let buttons = [...localFixture.nativeElement.querySelectorAll('button')] as HTMLButtonElement[];
-    const cerrar = buttons.find((b) => (b.textContent ?? '').includes('Cerrar nomina del periodo'));
+    const cerrar = buttons.find((b) => textoIncluye(b.textContent ?? '', 'Cerrar nomina del periodo'));
     expect(cerrar?.disabled).toBe(false);
     cerrar!.click();
     await localFixture.whenStable();
@@ -1419,12 +1452,12 @@ describe('ProcesoMensualContainer', () => {
 
     expect(cerrarNominaOperativamente).toHaveBeenCalledWith({ idCalculoPeriodo: 1, periodo: '2026-05' });
     const text = localFixture.nativeElement.textContent as string;
-    expect(text).toContain('Nomina cerrada operativamente');
-    expect(text).toContain('Para modificarla se requerira una fase futura de reapertura.');
+    expectTexto(text, 'Nomina cerrada operativamente');
+    expectTexto(text, 'Para modificarla se requerira una fase futura de reapertura.');
     buttons = [...localFixture.nativeElement.querySelectorAll('button')] as HTMLButtonElement[];
-    expect(buttons.find((b) => (b.textContent ?? '').includes('Calcular preliminar'))?.disabled).toBe(true);
-    expect(buttons.find((b) => (b.textContent ?? '').includes('Guardar resultado preliminar'))?.disabled).toBe(true);
-    expect(buttons.find((b) => (b.textContent ?? '').includes('Aprobar resultado preliminar'))?.disabled).toBe(true);
+    expect(buttons.find((b) => textoIncluye(b.textContent ?? '', 'Calcular preliminar'))?.disabled).toBe(true);
+    expect(buttons.find((b) => textoIncluye(b.textContent ?? '', 'Guardar resultado preliminar'))?.disabled).toBe(true);
+    expect(buttons.find((b) => textoIncluye(b.textContent ?? '', 'Aprobar resultado preliminar'))?.disabled).toBe(true);
   });
 
   it('muestra resumen, trabajadores, conceptos y trazabilidad del snapshot completo desde BD', async () => {
@@ -1440,13 +1473,13 @@ describe('ProcesoMensualContainer', () => {
     const text = localFixture.nativeElement.textContent as string;
     expect(obtenerSnapshotCompletoActivo).toHaveBeenCalledWith('2026-05');
     expect(generarCalculoPeriodo).not.toHaveBeenCalled();
-    expect(text).toContain('Detalle del resultado guardado');
-    expect(text).toContain('Resultado guardado vigente');
-    expect(text).toContain('Trabajadores guardados');
-    expect(text).toContain('Ana Perez');
-    expect(text).toContain('Sueldo base (HAB001)');
-    expect(text).toContain('Informacion guardada del resultado.');
-    expect(text).toContain('Liquido calculado guardado.');
+    expectTexto(text, 'Detalle del resultado guardado');
+    expectTexto(text, 'Resultado guardado vigente');
+    expectTexto(text, 'Trabajadores guardados');
+    expectTexto(text, 'Ana Perez');
+    expectTexto(text, 'Sueldo base (HAB001)');
+    expectTexto(text, 'Informacion guardada del resultado.');
+    expectTexto(text, 'Liquido calculado guardado.');
   });
 
   it('muestra error operativo si falla la consulta del detalle guardado', async () => {
@@ -1467,19 +1500,19 @@ describe('ProcesoMensualContainer', () => {
     generarPreNominaPeriodo.mockResolvedValueOnce(baseNominaLista());
 
     let buttons = [...fixture.nativeElement.querySelectorAll('button')] as HTMLButtonElement[];
-    buttons.find((b) => (b.textContent ?? '').includes('Validar periodo'))!.click();
+    botonPorTexto(fixture.nativeElement, 'Validar periodo')!.click();
     await fixture.whenStable();
     fixture.detectChanges();
     buttons = [...fixture.nativeElement.querySelectorAll('button')] as HTMLButtonElement[];
-    buttons.find((b) => (b.textContent ?? '').includes('Generar base de nomina'))!.click();
+    botonPorTexto(fixture.nativeElement, 'Generar base de nomina')!.click();
     await fixture.whenStable();
     fixture.detectChanges();
     buttons = [...fixture.nativeElement.querySelectorAll('button')] as HTMLButtonElement[];
-    buttons.find((b) => (b.textContent ?? '').includes('Calcular preliminar'))!.click();
+    botonPorTexto(fixture.nativeElement, 'Calcular preliminar')!.click();
     await fixture.whenStable();
     fixture.detectChanges();
     buttons = [...fixture.nativeElement.querySelectorAll('button')] as HTMLButtonElement[];
-    buttons.find((b) => (b.textContent ?? '').includes('Guardar resultado preliminar'))!.click();
+    botonPorTexto(fixture.nativeElement, 'Guardar resultado preliminar')!.click();
     await fixture.whenStable();
     fixture.detectChanges();
     buttons = [...fixture.nativeElement.querySelectorAll('button')] as HTMLButtonElement[];
@@ -1487,7 +1520,7 @@ describe('ProcesoMensualContainer', () => {
     await fixture.whenStable();
     fixture.detectChanges();
     buttons = [...fixture.nativeElement.querySelectorAll('button')] as HTMLButtonElement[];
-    buttons.find((b) => (b.textContent ?? '').includes('Aprobar resultado preliminar'))!.click();
+    botonPorTexto(fixture.nativeElement, 'Aprobar resultado preliminar')!.click();
     await fixture.whenStable();
     fixture.detectChanges();
     buttons = [...fixture.nativeElement.querySelectorAll('button')] as HTMLButtonElement[];
@@ -1496,8 +1529,8 @@ describe('ProcesoMensualContainer', () => {
     fixture.detectChanges();
 
     const text = fixture.nativeElement.textContent as string;
-    expect(text).toContain('No se pudo registrar la aprobacion operativa. Intenta nuevamente o revisa la conexion.');
-    expect(text).not.toContain('Resultado preliminar aprobado operativamente.');
+    expectTexto(text, 'No se pudo registrar la aprobacion operativa. Intenta nuevamente o revisa la conexion.');
+    expectTextoNo(text, 'Resultado preliminar aprobado operativamente.');
   });
 
   it('si se recalcula despues de guardar muestra resultado actualizado sin guardar', async () => {
@@ -1505,19 +1538,19 @@ describe('ProcesoMensualContainer', () => {
     generarPreNominaPeriodo.mockResolvedValueOnce(baseNominaLista());
 
     let buttons = [...fixture.nativeElement.querySelectorAll('button')] as HTMLButtonElement[];
-    buttons.find((b) => (b.textContent ?? '').includes('Validar periodo'))!.click();
+    botonPorTexto(fixture.nativeElement, 'Validar periodo')!.click();
     await fixture.whenStable();
     fixture.detectChanges();
     buttons = [...fixture.nativeElement.querySelectorAll('button')] as HTMLButtonElement[];
-    buttons.find((b) => (b.textContent ?? '').includes('Generar base de nomina'))!.click();
+    botonPorTexto(fixture.nativeElement, 'Generar base de nomina')!.click();
     await fixture.whenStable();
     fixture.detectChanges();
     buttons = [...fixture.nativeElement.querySelectorAll('button')] as HTMLButtonElement[];
-    buttons.find((b) => (b.textContent ?? '').includes('Calcular preliminar'))!.click();
+    botonPorTexto(fixture.nativeElement, 'Calcular preliminar')!.click();
     await fixture.whenStable();
     fixture.detectChanges();
     buttons = [...fixture.nativeElement.querySelectorAll('button')] as HTMLButtonElement[];
-    buttons.find((b) => (b.textContent ?? '').includes('Guardar resultado preliminar'))!.click();
+    botonPorTexto(fixture.nativeElement, 'Guardar resultado preliminar')!.click();
     await fixture.whenStable();
     fixture.detectChanges();
     buttons = [...fixture.nativeElement.querySelectorAll('button')] as HTMLButtonElement[];
@@ -1526,7 +1559,7 @@ describe('ProcesoMensualContainer', () => {
     fixture.detectChanges();
 
     buttons = [...fixture.nativeElement.querySelectorAll('button')] as HTMLButtonElement[];
-    buttons.find((b) => (b.textContent ?? '').includes('Aprobar resultado preliminar'))!.click();
+    botonPorTexto(fixture.nativeElement, 'Aprobar resultado preliminar')!.click();
     await fixture.whenStable();
     fixture.detectChanges();
     buttons = [...fixture.nativeElement.querySelectorAll('button')] as HTMLButtonElement[];
@@ -1535,49 +1568,49 @@ describe('ProcesoMensualContainer', () => {
     fixture.detectChanges();
 
     buttons = [...fixture.nativeElement.querySelectorAll('button')] as HTMLButtonElement[];
-    buttons.find((b) => (b.textContent ?? '').includes('Recalcular preliminar'))!.click();
+    botonPorTexto(fixture.nativeElement, 'Recalcular preliminar')!.click();
     await fixture.whenStable();
     fixture.detectChanges();
 
     const text = fixture.nativeElement.textContent as string;
-    expect(text).toContain('Resultado actualizado sin guardar');
-    expect(text).toContain('Volviste a calcular despues del ultimo guardado.');
-    expect(text).toContain('Ultimo resultado preliminar guardado');
-    expect(text).toContain('Aprobacion desactualizada');
-    expect(text).toContain('La aprobacion operativa anterior quedo desactualizada porque existe un resultado posterior. Guarda y aprueba nuevamente el resultado actualizado.');
-    expect(text).toContain('El calculo actual es mas reciente que la version guardada.');
-    expect(text).toContain('Existe un calculo o resultado posterior al aprobado. Debes revisar, guardar y aprobar nuevamente.');
+    expectTexto(text, 'Resultado actualizado sin guardar');
+    expectTexto(text, 'Volviste a calcular despues del ultimo guardado.');
+    expectTexto(text, 'Ultimo resultado preliminar guardado');
+    expectTexto(text, 'Aprobacion desactualizada');
+    expectTexto(text, 'La aprobacion operativa anterior quedo desactualizada porque existe un resultado posterior. Guarda y aprueba nuevamente el resultado actualizado.');
+    expectTexto(text, 'El calculo actual es mas reciente que la version guardada.');
+    expectTexto(text, 'Existe un calculo o resultado posterior al aprobado. Debes revisar, guardar y aprobar nuevamente.');
   });
 
   it('no muestra labels tecnicos ni pasos futuros como flujo principal', () => {
     const text = fixture.nativeElement.textContent as string;
     const lowerText = text.toLowerCase();
-    expect(text).not.toContain('Pre-nomina');
-    expect(text).not.toContain('Issues');
-    expect(text).not.toContain('Hash');
-    expect(text).not.toContain('Payload');
-    expect(text).not.toContain('Codigos');
-    expect(text).not.toContain('idPersona');
-    expect(text).not.toContain('idContrato');
-    expect(text).not.toContain('idConcepto');
-    expect(text).not.toContain('Paso 1 de 4');
-    expect(text).not.toContain('MOVIMIENTOS_VARIABLES');
-    expect(text).not.toContain('CON_PROBLEMAS');
-    expect(text).not.toContain('Liquidacion oficial');
-    expect(text).not.toContain('Cerrar periodo');
+    expectTextoNo(text, 'Pre-nomina');
+    expectTextoNo(text, 'Issues');
+    expectTextoNo(text, 'Hash');
+    expectTextoNo(text, 'Payload');
+    expectTextoNo(text, 'Codigos');
+    expectTextoNo(text, 'idPersona');
+    expectTextoNo(text, 'idContrato');
+    expectTextoNo(text, 'idConcepto');
+    expectTextoNo(text, 'Paso 1 de 4');
+    expectTextoNo(text, 'MOVIMIENTOS_VARIABLES');
+    expectTextoNo(text, 'CON_PROBLEMAS');
+    expectTextoNo(text, 'Liquidacion oficial');
+    expectTextoNo(text, 'Cerrar periodo');
     expect(lowerText).not.toContain('issues');
     expect(lowerText).not.toContain('payload');
     expect(lowerText).not.toContain('motor futuro');
     expect(lowerText).not.toContain('calculo no disponible');
-    expect(text).not.toContain('Base de nomina');
+    expectTextoNo(text, 'Base de nomina');
   });
 
   it('muestra acciones hacia rutas operativas existentes', () => {
     const links = [...fixture.nativeElement.querySelectorAll('a')] as HTMLAnchorElement[];
     const text = fixture.nativeElement.textContent as string;
-    expect(text).toContain('Revisar parametros');
-    expect(text).toContain('Revisar movimientos');
-    expect(text).toContain('Revisar asignaciones');
+    expectTexto(text, 'Parametros');
+    expectTexto(text, 'Movimientos');
+    expectTexto(text, 'Recurrentes');
     expect(links.length).toBeGreaterThan(0);
   });
 });

@@ -63,7 +63,7 @@ No contradecir la jerarquía siguiente.
 
 | Situación | Leer primero |
 |-----------|----------------|
-| Pantalla nueva o refino UI general | `AGENTS.md` → `arquitectura/frontend-interfaces.md` (si afecta rutas/contenedor/feature) → `ui-form-guidelines.md` → `ui-button-guidelines.md` |
+| Pantalla nueva o refino UI general | `AGENTS.md` → `diseno/noia-bases-sistema-referencia.md` → `diseno/noia-ui-guardrails.md` → `diseno/noia-antipatrones-ia.md` → `arquitectura/frontend-interfaces.md` (si afecta rutas/contenedor/feature) → `ui-form-guidelines.md` → `ui-button-guidelines.md` → cerrar con `diseno/noia-ui-review-checklist.md` |
 | Grilla / anchos / checklist 7 ítems | `docs/codex/estilos/README.md` |
 | Dónde está CSS y componentes compartidos | `docs/codex/temas/implementacion-ui.md` |
 | Módulos al estilo empleados | `docs/codex/temas/base-angular-empleados.md` |

@@ -81,7 +81,21 @@ El ERP se entiende como una bitácora operativa del periodo: registrar, revisar,
 
 En Creación avanzada de empleados, el alta se comunica como `Bitácora laboral`: ficha en construcción, registros agrupados, decisiones visibles, pendientes claros y cierre como acta.
 
-## 5. Reglas visuales rápidas
+## 5. Guardia visual NOIA (obligatoria en fases UI)
+
+Antes de pulir Nómina, Parámetros, Empleados u otra pantalla, leer:
+
+1. [`diseno/noia-ui-manual.md`](./diseno/noia-ui-manual.md) — fuente unica de decision UI NOIA
+2. [`diseno/noia-bases-sistema-referencia.md`](./diseno/noia-bases-sistema-referencia.md) — que copiar (Creación avanzada / Preparar nómina)
+3. [`diseno/noia-ui-guardrails.md`](./diseno/noia-ui-guardrails.md)
+4. [`diseno/noia-antipatrones-ia.md`](./diseno/noia-antipatrones-ia.md) — colores, espacio, no inventar
+5. Cerrar con [`diseno/noia-ui-review-checklist.md`](./diseno/noia-ui-review-checklist.md)
+
+Fase documental: `ERP-NOIA-UI-GUARDRAILS-01`. Regla Cursor: `.cursor/rules/erp-ui-visual-guardrails.mdc`.
+
+> No improvisar estilos. No usar cards por defecto. No colores extravagantes ni espacio inflado. Reutilizar patrones del repo. Diseñar como Bitácora Operativa.
+
+## 6. Reglas visuales rápidas
 
 Evitar:
 
@@ -112,7 +126,7 @@ Regla anti-card: no resolver todo con cards. Elegir el patron correcto: franja o
 
 Orden: ordenar, reducir, jerarquizar, reusar patrones existentes y crear solo si hace falta.
 
-## 6. Fases recientes relevantes
+## 7. Fases recientes relevantes
 
 ### `ERP-NOIA-BITACORA-OPERATIVA-00`
 
@@ -138,7 +152,7 @@ Reduce el error de budget CSS de `app-form-empleado` sin tocar budgets, estilos 
 
 Parametros funciona como cierre normativo del periodo: muestra estado operativo, secciones listas, faltantes, impacto en nomina y siguiente accion. La guardia `PARAM-MENSUAL-OVERWRITE-GUARD-01` vive en `scripts/run-parametros-mensuales.ps1`: no aplica SQL mensual si detecta datos existentes salvo `-Force`.
 
-## 7. Decisiones de producto vigentes
+## 8. Decisiones de producto vigentes
 
 - `Movimientos del mes` y `Asignaciones recurrentes` deben evolucionar a una experiencia unificada visible: `Movimientos de remuneración`.
 - La diferencia real es temporal:
@@ -150,7 +164,7 @@ Parametros funciona como cierre normativo del periodo: muestra estado operativo,
   - `HONORARIOS` -> `INDEPENDIENTE`
 - Condiciones especiales se manejan como condiciones separadas, no como variantes de `tipo_trabajador`.
 
-## 8. Validaciones recomendadas por tipo de fase
+## 9. Validaciones recomendadas por tipo de fase
 
 ### Documentación / reglas / scripts auxiliares
 
@@ -171,7 +185,7 @@ Parametros funciona como cierre normativo del periodo: muestra estado operativo,
 - `npm run build`
 - Si falla, distinguir entre error nuevo y deuda preexistente. No subir budgets sin fase explícita.
 
-## 9. Cómo pedir a Codex con menos tokens
+## 10. Cómo pedir a Codex con menos tokens
 
 Usar un MD de fase con esta estructura mínima:
 
@@ -209,7 +223,7 @@ Respuesta esperada:
 - restricciones respetadas
 ```
 
-## 10. Uso de context pack
+## 11. Uso de context pack
 
 Para tareas acotadas, generar un paquete pequeño con:
 

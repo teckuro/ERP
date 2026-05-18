@@ -29,24 +29,35 @@ export function buildActaOperativaPeriodoViewModel(input: BuildActaOperativaPeri
   const pendientes = compactUnique([...bloqueos, ...advertencias, ...input.pendientes]).slice(0, 4);
   const estado = resolveEstado(input, bloqueos, advertencias);
   const observaciones = compactUnique([...bloqueos, ...advertencias]);
+  const modoCompacto = !input.tieneValidacionMinima && estado === 'BLOQUEADA';
 
   return {
     estado,
-    titulo: tituloEstado(estado),
-    descripcion: descripcionEstado(estado),
+    modoCompacto,
+    titulo: modoCompacto ? 'Acta operativa del período' : tituloEstado(estado),
+    descripcion: modoCompacto
+      ? 'Disponible después de validar el período. La evidencia se preparará cuando existan datos revisados.'
+      : descripcionEstado(estado),
+    notaCompacta: modoCompacto ? 'Primero valida el período para habilitar el respaldo operativo.' : undefined,
     periodoLabel: input.periodoLabel || 'No disponible en esta fase',
     estadoLabel: etiquetaEstado(estado),
     estadoTone: toneEstado(estado),
     accionLabel: estado === 'REQUIERE_REVISION' ? 'Preparar acta con revision' : 'Preparar acta para liquidaciones',
     accionDisponible: estado === 'REQUIERE_REVISION' || estado === 'LISTA',
     preparada: estado === 'PREPARADA',
-    contexto: buildContexto(input),
+    contexto: modoCompacto ? [] : buildContexto(input),
     decision: {
-      titulo: 'Decision operativa',
-      descripcion: decisionEstado(estado),
+      titulo: modoCompacto ? 'Respaldo operativo' : 'Decision operativa',
+      descripcion: modoCompacto
+        ? 'El acta respalda la evidencia cuando el período ya fue revisado.'
+        : decisionEstado(estado),
     },
-    evidencia: buildEvidencia(input, observaciones),
-    pendientes: pendientes.length ? pendientes : ['Sin pendientes visibles en esta revision.'],
+    evidencia: modoCompacto ? [] : buildEvidencia(input, observaciones),
+    pendientes: modoCompacto
+      ? ['Primero valida el período para habilitar el respaldo operativo.']
+      : pendientes.length
+        ? pendientes
+        : ['Sin pendientes visibles en esta revision.'],
     observaciones,
     alcance: estado === 'PREPARADA'
       ? 'Acta preparada en esta sesion. La generacion formal se implementara en Liquidaciones oficiales.'
@@ -128,7 +139,7 @@ function descripcionEstado(estado: ActaOperativaEstado): string {
       return 'El periodo tiene revisiones pendientes. Puedes dejar el acta preparada como respaldo operativo, indicando que liquidaciones debe revisar estas observaciones.';
     case 'BLOQUEADA':
     default:
-      return 'Primero valida el periodo y revisa los bloqueos principales antes de preparar la evidencia para liquidaciones.';
+      return 'Corrige los bloqueos críticos antes de preparar evidencia para liquidaciones.';
   }
 }
 
@@ -163,8 +174,9 @@ function etiquetaEstado(estado: ActaOperativaEstado): string {
 function toneEstado(estado: ActaOperativaEstado): ActaOperativaTone {
   switch (estado) {
     case 'PREPARADA':
-    case 'LISTA':
       return 'success';
+    case 'LISTA':
+      return 'info';
     case 'REQUIERE_REVISION':
       return 'warning';
     case 'BLOQUEADA':

@@ -7,6 +7,7 @@ import { ActaOperativaPeriodoComponent } from './acta-operativa-periodo.componen
 
 const vm = (overrides: Partial<ActaOperativaPeriodoViewModel> = {}): ActaOperativaPeriodoViewModel => ({
   estado: 'LISTA',
+  modoCompacto: false,
   titulo: 'Lista para preparar acta',
   descripcion: 'El periodo tiene contexto suficiente para preparar la evidencia.',
   periodoLabel: 'Mayo 2026',
@@ -50,7 +51,7 @@ describe('ActaOperativaPeriodoComponent', () => {
   it('renderiza titulo, estado, contexto y evidencia', async () => {
     await render();
     const text = fixture.nativeElement.textContent as string;
-    expect(text).toContain('Acta operativa del periodo');
+    expect(text).toContain('Acta operativa del período');
     expect(text).toContain('Lista');
     expect(text).toContain('Mayo 2026');
     expect(text).toContain('Periodo revisado');
@@ -78,6 +79,23 @@ describe('ActaOperativaPeriodoComponent', () => {
     const button = fixture.nativeElement.querySelector('button') as HTMLButtonElement;
     button.click();
     expect(emitted).toBe(true);
+  });
+
+  it('en modo compacto no renderiza grilla extensa de evidencia', async () => {
+    await render(vm({
+      estado: 'BLOQUEADA',
+      modoCompacto: true,
+      titulo: 'Acta operativa del período',
+      descripcion: 'Disponible después de validar el período.',
+      notaCompacta: 'Primero valida el período para habilitar el respaldo operativo.',
+      accionDisponible: false,
+      contexto: [],
+      evidencia: [],
+    }));
+    const text = fixture.nativeElement.textContent as string;
+    expect(text).toContain('Disponible después de validar el período');
+    expect(fixture.nativeElement.querySelector('.nom-acta__context-strip')).toBeNull();
+    expect(fixture.nativeElement.querySelector('.nom-acta__evidence-list')).toBeNull();
   });
 
   it('en estado preparada muestra nota y accion secundaria', async () => {

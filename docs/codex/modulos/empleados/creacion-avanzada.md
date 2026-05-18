@@ -41,6 +41,10 @@ Fuera de alcance:
 
 # Creacion avanzada: bloques del formulario (inventario)
 
+**Referencia visual NOIA del sistema:** [`../../diseno/noia-bases-sistema-referencia.md`](../../diseno/noia-bases-sistema-referencia.md) — tokens `--bitacora-*`, layout `268px | 1fr`, clases `advanced-*` y `employee-*`. Copiar este módulo antes de inventar otro wizard.
+
+---
+
 El alta avanzada (`form-empleado`) organiza los pasos como **tabs internos** (`TAB_ORDER`): `datosPersonales`, `contrato`, `previsionSalud`, `bancario`. Los textos del stepper se muestran en `conceptualSteps` en [`form-empleado.ts`](../../../src/app/features/empleados/components/form-empleado/form-empleado.ts).
 
 | Paso UI (conceptualSteps) | TabId (`TAB_ORDER`) | Componentes principales |

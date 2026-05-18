@@ -34,6 +34,10 @@ import type {
 } from '../../models/proceso-mensual.model';
 import { ProcesoMensualService } from '../../services/proceso-mensual.service';
 import { ActaOperativaPeriodoComponent } from '../../components/acta-operativa-periodo/acta-operativa-periodo.component';
+import {
+  RecordBreadcrumbComponent,
+  type RecordBreadcrumbItem,
+} from '../../../../shared/components/ui/record-breadcrumb.component';
 import type { ActaOperativaPeriodoViewModel } from '../../models/acta-operativa-periodo.model';
 import { validarPeriodoEntradaMensual } from '../../entradas/rules/entradas-mensuales-periodo.rules';
 import { buildActaOperativaPeriodoViewModel } from '../../rules/acta-operativa-periodo.rules';
@@ -295,6 +299,27 @@ interface BitacoraEtapaVm {
   subpasos: BitacoraSubpasoVm[];
 }
 
+interface BitacoraRailEtapaVm {
+  clave: string;
+  etiqueta: string;
+  estadoCorto: string;
+  marca: 'hecho' | 'actual' | 'pendiente' | 'bloqueado';
+  activa: boolean;
+}
+
+interface AlertasPeriodoResumenVm {
+  modo: 'evaluando' | 'sin-evaluar' | 'ok' | 'alertas';
+  mensaje?: string;
+  criticas: number;
+  advertencias: number;
+  mostrarDetalle: boolean;
+}
+
+interface ParaContinuarItemVm {
+  titulo: string;
+  detalle: string;
+}
+
 interface PayrollWorkerDetailRow {
   trabajador: string;
   rut: string;
@@ -352,6 +377,7 @@ interface PayrollResultDetailRow {
     MessageBoxComponent,
     DataGridComponent,
     ActaOperativaPeriodoComponent,
+    RecordBreadcrumbComponent,
   ],
   templateUrl: './proceso-mensual-container.html',
   styleUrl: './proceso-mensual-container.css',
@@ -359,6 +385,11 @@ interface PayrollResultDetailRow {
 export class ProcesoMensualContainer {
   readonly periodoActivo = inject(PeriodoActivoService);
   readonly procesoMensual = inject(ProcesoMensualService);
+
+  readonly breadcrumbItems: readonly RecordBreadcrumbItem[] = [
+    { label: 'Remuneraciones', link: '/remuneraciones' },
+    { label: 'Preparar nómina' },
+  ];
 
   readonly periodoSeleccionado = computed(() => this.periodoActivo.periodoYm());
   readonly resultado = signal<ProcesoMensualPrevalidacion | null>(null);
@@ -1248,6 +1279,81 @@ export class ProcesoMensualContainer {
     }
     return partes.join(' · ');
   });
+
+  readonly bitacoraRailEtapas = computed<BitacoraRailEtapaVm[]>(() =>
+    this.bitacoraEtapas().map((etapa) => ({
+      clave: etapa.clave,
+      etiqueta: etapa.etiqueta,
+      estadoCorto: etapa.bloqueada
+        ? 'Bloqueado'
+        : etapa.completada && !etapa.activa
+          ? 'Listo'
+          : etapa.activa
+            ? 'En curso'
+            : 'Pendiente',
+      marca: etapa.bloqueada
+        ? 'bloqueado'
+        : etapa.completada && !etapa.activa
+          ? 'hecho'
+          : etapa.activa
+            ? 'actual'
+            : 'pendiente',
+      activa: etapa.activa,
+    })),
+  );
+
+  readonly alertasPeriodoResumen = computed<AlertasPeriodoResumenVm>(() => {
+    if (this.validando()) {
+      return {
+        modo: 'evaluando',
+        mensaje: 'Evaluando el período…',
+        criticas: 0,
+        advertencias: 0,
+        mostrarDetalle: false,
+      };
+    }
+
+    const estado = this.estadoOperativo();
+    const criticas = estado.bloqueos.length;
+    const advertencias = estado.advertencias.length;
+
+    if (this.resultado() == null) {
+      return {
+        modo: 'sin-evaluar',
+        mensaje: 'Valida el período para ver críticas y advertencias.',
+        criticas: 0,
+        advertencias: 0,
+        mostrarDetalle: false,
+      };
+    }
+
+    if (!criticas && !advertencias) {
+      return {
+        modo: 'ok',
+        mensaje: 'Sin bloqueos críticos ni advertencias.',
+        criticas: 0,
+        advertencias: 0,
+        mostrarDetalle: false,
+      };
+    }
+
+    return {
+      modo: 'alertas',
+      criticas,
+      advertencias,
+      mostrarDetalle: true,
+    };
+  });
+
+  readonly paraContinuarLista = computed<ParaContinuarItemVm[]>(() =>
+    this.estadoOperativo()
+      .queFaltaAhora.slice(0, 6)
+      .map((item) => ({
+        titulo: this.humanizarCopyOperativo(item.titulo),
+        detalle: this.humanizarCopyOperativo(item.descripcion),
+      }))
+      .filter((item) => item.titulo.length > 0),
+  );
 
   readonly actaPreparacion = computed<ActaOperativaPeriodoViewModel>(() => {
     const estadoOperativo = this.estadoOperativo();
@@ -2810,5 +2916,16 @@ export class ProcesoMensualContainer {
       dateStyle: 'short',
       timeStyle: 'short',
     }).format(fecha);
+  }
+
+  private humanizarCopyOperativo(texto: string): string {
+    const limpio = texto
+      .replace(/\bFALTANTE\b/gi, '')
+      .replace(/\bis_null\b/gi, '')
+      .replace(/sis_fila_mensual/gi, '')
+      .replace(/\b(rpc_|tbl_|sis_)[a-z0-9_]+\b/gi, '')
+      .replace(/\s{2,}/g, ' ')
+      .trim();
+    return limpio || 'Revisar antes de continuar.';
   }
 }

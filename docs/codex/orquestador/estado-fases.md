@@ -1,3 +1,23 @@
+## ERP-NOIA-UI-GUARDRAILS-01 - Guardia visual NOIA
+
+| Campo | Estado |
+|---|---|
+| Estado | Implementada (documental) |
+| Tipo | Diseño / gobernanza UI |
+| Alcance | Centralizar reglas visuales obligatorias para Cursor/Codex: guardrails, tokens, layout, componentes, checklist; regla `.cursor/rules/erp-ui-visual-guardrails.mdc`. |
+| Restricciones | Sin Angular funcional, SQL, motor, servicios, persistencia ni estilos globales. |
+| Documentos | [`../diseno/noia-bases-sistema-referencia.md`](../diseno/noia-bases-sistema-referencia.md), [`../diseno/noia-ui-guardrails.md`](../diseno/noia-ui-guardrails.md), [`../diseno/noia-antipatrones-ia.md`](../diseno/noia-antipatrones-ia.md), [`../diseno/noia-prompt-cursor.md`](../diseno/noia-prompt-cursor.md), [`../diseno/noia-visual-tokens.md`](../diseno/noia-visual-tokens.md), [`../diseno/noia-layout-rules.md`](../diseno/noia-layout-rules.md), [`../diseno/noia-component-rules.md`](../diseno/noia-component-rules.md), [`../diseno/noia-ui-review-checklist.md`](../diseno/noia-ui-review-checklist.md) |
+
+## NOM-PREPARAR-NOMINA-ESTADOS-VISUALES-PREMIUM-UX-01 - Estados visuales premium
+
+| Campo | Estado |
+|---|---|
+| Estado | Implementada |
+| Tipo | UX/UI local |
+| Alcance | Estados visuales por etapa, anti-redundancia, acta compacta, bandeja por contexto, evidencia neutra. |
+| Restricciones | Presentación en contenedor + acta; sin motor/SQL/servicios/estilos globales. |
+| Documento | [`../modulos/nomina-mensual/nom-preparar-nomina-estados-visuales-premium-ux-01.md`](../modulos/nomina-mensual/nom-preparar-nomina-estados-visuales-premium-ux-01.md) |
+
 ## NOM-PREPARAR-NOMINA-ACTA-DISENO-ESTRUCTURADO-UX-01 - Diseno estructurado del acta operativa
 
 | Campo | Estado |

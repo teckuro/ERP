@@ -1,5 +1,7 @@
 # Codex Agent Instructions - ERP UI System
 
+> UI NOIA: la fuente unica de decision es [`diseno/noia-ui-manual.md`](./diseno/noia-ui-manual.md). Este archivo queda como contrato del agente, alcance tecnico y restricciones de cambio.
+
 Este archivo define la base de trabajo para Codex en este proyecto. Antes de generar o modificar UI, Codex debe leer estas reglas y aplicarlas como contrato visual y tecnico del ERP.
 
 ## Pedidos al agente (como comunicar mejor)
@@ -11,6 +13,8 @@ Este archivo define la base de trabajo para Codex en este proyecto. Antes de gen
 - No duplicar en documentación nueva lo que ya define `AGENTS.md` o `ui-form-guidelines.md`; enlazar y repartir por tema.
 
 ## Prioridad de reglas
+
+Para UI visible, aplicar primero la jerarquia de [`diseno/noia-ui-manual.md`](./diseno/noia-ui-manual.md). La lista historica siguiente queda como respaldo general del proyecto:
 
 1. `docs/codex/AGENTS.md`
 2. `docs/codex/README.md` (índice padre: cómo pedir, jerarquía y enlaces por tema; no sustituye este archivo)
@@ -95,8 +99,8 @@ Botonera
 - Orden: secundario, primario
 
 Contenido
-- Una card principal con borde, radio, padding y fondo blanco
-- Dentro: formulario, tabla, tabs o vista principal
+- Una superficie principal segun arquetipo: formulario, tabla, consola, bitacora, panel dividido o franja operativa
+- Card solo si contiene una entidad, decision o resumen autonomo con accion propia
 ```
 
 No poner la botonera abajo ni dentro de la card de contenido.
@@ -109,7 +113,7 @@ No poner la botonera abajo ni dentro de la card de contenido.
 - Preferir una columna.
 - Usar maximo dos columnas solo si mejora la lectura.
 - Organizar por secuencia visual, no por una grilla global rigida.
-- Usar una card principal y secciones internas.
+- Usar una superficie principal y secciones internas; en NOIA no crear cards por defecto.
 - Cada seccion puede tener su propia grilla.
 - Evitar formularios largos sin separacion.
 - Controles complejos, como calendarios o selects con panel, deben conservar la misma altura visual que los inputs base.
@@ -203,7 +207,7 @@ No hacer:
 Antes de cerrar un cambio UI, validar:
 
 - Existe un unico bloque protagonista.
-- Header, botonera y contenido respetan el layout base.
+- Header, botonera y contenido respetan el arquetipo NOIA definido en `noia-ui-manual.md`.
 - Labels, inputs y errores son claros.
 - La botonera esta arriba a la derecha.
 - El espaciado usa tokens permitidos.

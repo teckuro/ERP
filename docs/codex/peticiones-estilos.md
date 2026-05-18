@@ -1,3 +1,16 @@
+## 2026-05-18 - NOM-CIERRE-VISUAL-CLEAN-02
+
+- **Módulo:** Nómina mensual / Preparar nómina.
+- **Cambio visual:** franja operativa liviana del resumen; bloque `payroll-focus` con CTA ink cerca del copy; acta compacta en teaser o en «Más revisiones»; lista «Para continuar» editorial; registro del período solo en disclosure; rail sin card; footer de registro eliminado.
+- **Restricciones:** solo HTML/CSS local; sin lógica, servicios, motor, SQL ni estilos globales.
+
+## 2026-05-18 - NOM-PREPARAR-NOMINA-BASE-NOIA-UX-01
+
+- **Módulo:** Nómina mensual / Preparar nómina.
+- **Cambio visual:** cabecera con `app-record-breadcrumb`, panel `payroll-view-panel`, workspace en 2 columnas (rail bitácora + alertas | consola del paso actual), resumen del período en franja superior; se elimina la tercera columna de panel de apoyo duplicado.
+- **Tokens:** `--bitacora-*` locales en el contenedor; copy operativo en lista «Para continuar».
+- **Restricciones:** solo CSS/HTML/VM de presentación; sin estilos globales, SQL, motor, servicios ni persistencia.
+
 ## 2026-05-18 - NOM-PREPARAR-NOMINA-ACTA-DISENO-ESTRUCTURADO-UX-01
 
 - **Modulo:** Nomina mensual / Preparar nomina.

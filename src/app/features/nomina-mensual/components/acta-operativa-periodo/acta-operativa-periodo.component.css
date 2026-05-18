@@ -227,9 +227,37 @@
 }
 
 .nom-acta__evidence-item[data-state='incluida'] .nom-acta__evidence-state {
-  border-color: #bbf7d0;
-  background: #f0fdf4;
-  color: #166534;
+  border-color: #e2e8f0;
+  background: #f8fafc;
+  color: #64748b;
+}
+
+.nom-acta__evidence-item[data-state='pendiente'] .nom-acta__evidence-state {
+  border-color: #fde68a;
+  background: #fffbeb;
+  color: #92400e;
+}
+
+.nom-acta--compact {
+  background: #fafafa;
+}
+
+.nom-acta--compact .nom-acta__header {
+  padding: 12px 14px;
+  background: #ffffff;
+}
+
+.nom-acta--compact .nom-acta__title {
+  font-size: 0.9375rem;
+}
+
+.nom-acta__note--inline {
+  margin-top: 8px;
+}
+
+.nom-acta__decision-text--muted {
+  color: #64748b;
+  font-size: 0.8125rem;
 }
 
 .nom-acta__evidence-item strong,

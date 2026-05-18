@@ -20,8 +20,10 @@ export interface ActaOperativaEvidencia {
 
 export interface ActaOperativaPeriodoViewModel {
   estado: ActaOperativaEstado;
+  modoCompacto: boolean;
   titulo: string;
   descripcion: string;
+  notaCompacta?: string;
   periodoLabel: string;
   estadoLabel: string;
   estadoTone: ActaOperativaTone;

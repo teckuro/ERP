@@ -1,6 +1,532 @@
 :host {
   display: block;
   font-family: var(--erp-font-sans, system-ui, sans-serif);
+  --bitacora-bg: #f6f7f4;
+  --bitacora-surface: #ffffff;
+  --bitacora-surface-soft: #fafaf7;
+  --bitacora-border: #dadfd7;
+  --bitacora-ink: #243b53;
+  --bitacora-text: #172033;
+  --bitacora-muted: #647084;
+  --bitacora-subtle: #8a94a6;
+  --bitacora-primary: #2563eb;
+  --bitacora-primary-soft: #eff6ff;
+  --bitacora-ok: #166534;
+  --bitacora-ok-soft: #f0fdf4;
+  --bitacora-danger: #b91c1c;
+  --bitacora-danger-soft: #fef2f2;
+  --bitacora-review-soft: #fffbeb;
+  --payroll-text-xs: 0.6875rem;
+  --payroll-text-sm: 0.8125rem;
+}
+
+.payroll-page {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  min-width: 0;
+  color: var(--bitacora-text);
+}
+
+.payroll-head {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.payroll-lead {
+  margin: 0;
+  max-width: 44rem;
+  color: var(--bitacora-muted);
+  font-size: var(--payroll-text-sm);
+  line-height: 1.45;
+}
+
+.payroll-period-global {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.2rem 0.55rem;
+}
+
+.payroll-period-global__k {
+  color: var(--bitacora-muted);
+  font-size: var(--payroll-text-xs);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.payroll-period-global__v {
+  color: var(--bitacora-ink);
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+.payroll-period-global__state {
+  color: var(--bitacora-muted);
+  font-size: var(--payroll-text-sm);
+  font-weight: 600;
+}
+
+.payroll-view-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+}
+
+.payroll-workspace {
+  display: grid;
+  grid-template-columns: minmax(260px, 300px) minmax(0, 1fr);
+  gap: 14px;
+  align-items: start;
+  min-width: 0;
+}
+
+.payroll-rail {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-width: 0;
+  padding: 0 4px 0 0;
+  border-right: 1px solid var(--bitacora-border);
+}
+
+.payroll-rail-block__title {
+  margin: 0 0 8px;
+  color: var(--bitacora-muted);
+  font-size: var(--payroll-text-xs);
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.payroll-rail-track {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.payroll-rail-step {
+  display: grid;
+  grid-template-columns: 1.1rem minmax(0, 1fr) auto;
+  gap: 6px;
+  align-items: center;
+  padding: 5px 6px;
+  border-radius: 6px;
+  color: var(--bitacora-text);
+  font-size: var(--payroll-text-sm);
+}
+
+.payroll-rail-step--active {
+  background: var(--bitacora-surface-soft);
+  color: var(--bitacora-ink);
+  font-weight: 600;
+}
+
+.payroll-rail-step--done .payroll-rail-step__mark {
+  color: var(--bitacora-ok);
+}
+
+.payroll-rail-step--blocked {
+  opacity: 0.72;
+}
+
+.payroll-rail-step__mark {
+  color: var(--bitacora-subtle);
+  font-size: 0.75rem;
+  text-align: center;
+}
+
+.payroll-rail-step__label {
+  min-width: 0;
+  line-height: 1.3;
+}
+
+.payroll-rail-step__state {
+  color: var(--bitacora-muted);
+  font-size: var(--payroll-text-xs);
+  white-space: nowrap;
+}
+
+.payroll-rail-alertas__msg {
+  margin: 0;
+  color: var(--bitacora-muted);
+  font-size: var(--payroll-text-sm);
+  line-height: 1.4;
+}
+
+.payroll-rail-alertas__msg--ok {
+  color: var(--bitacora-ok);
+}
+
+.payroll-rail-alertas__pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.payroll-rail-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 999px;
+  border: 1px solid var(--bitacora-border);
+  font-size: var(--payroll-text-xs);
+  font-weight: 600;
+}
+
+.payroll-rail-pill--danger {
+  border-color: #fecaca;
+  background: var(--bitacora-danger-soft);
+  color: var(--bitacora-danger);
+}
+
+.payroll-rail-pill--warning {
+  border-color: #fde68a;
+  background: var(--bitacora-review-soft);
+  color: #a16207;
+}
+
+.payroll-rail-link {
+  margin-top: 8px;
+  border: 0;
+  background: transparent;
+  padding: 0;
+  color: var(--bitacora-ink);
+  font-size: var(--payroll-text-sm);
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+}
+
+.payroll-rail-registro {
+  margin: 0;
+  color: var(--bitacora-subtle);
+  font-size: var(--payroll-text-xs);
+  line-height: 1.4;
+}
+
+.payroll-rail-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 10px;
+  align-items: center;
+  font-size: var(--payroll-text-xs);
+}
+
+.payroll-rail-nav__k {
+  width: 100%;
+  color: var(--bitacora-muted);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.payroll-rail-nav a {
+  color: var(--bitacora-primary);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.payroll-rail-nav a:hover {
+  text-decoration: underline;
+}
+
+.payroll-rail-internal {
+  margin-top: 4px;
+  border-top: 1px solid var(--bitacora-border);
+  padding-top: 8px;
+}
+
+.payroll-rail-internal > summary {
+  color: var(--bitacora-muted);
+  font-size: var(--payroll-text-xs);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.payroll-rail-internal__body {
+  margin-top: 6px;
+  color: var(--bitacora-muted);
+  font-size: var(--payroll-text-xs);
+  line-height: 1.4;
+}
+
+.payroll-rail-internal__body p {
+  margin: 0 0 6px;
+}
+
+.payroll-franja-operativa {
+  padding: 6px 0 8px;
+  border-bottom: 1px solid var(--bitacora-border);
+}
+
+.payroll-franja-operativa__list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0;
+}
+
+.payroll-franja-operativa__list > li + li {
+  border-left: 1px solid var(--bitacora-border);
+}
+
+.payroll-franja-operativa__item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  width: 100%;
+  min-height: 0;
+  border: 0;
+  background: transparent;
+  padding: 4px 10px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.payroll-franja-operativa__item:hover {
+  background: var(--bitacora-surface-soft);
+}
+
+.payroll-franja-operativa__k {
+  color: var(--bitacora-muted);
+  font-size: var(--payroll-text-xs);
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.payroll-franja-operativa__v {
+  color: var(--bitacora-ink);
+  font-size: var(--payroll-text-sm);
+  font-weight: 500;
+  line-height: 1.35;
+}
+
+.payroll-main {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-width: 0;
+}
+
+.payroll-focus {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--bitacora-border);
+}
+
+.payroll-focus__title {
+  margin: 0;
+  color: var(--bitacora-ink);
+  font-size: 1.125rem;
+  font-weight: 650;
+  line-height: 1.3;
+}
+
+.payroll-focus__lead,
+.payroll-focus__hint {
+  margin: 0;
+  color: var(--bitacora-muted);
+  font-size: var(--payroll-text-sm);
+  line-height: 1.45;
+}
+
+.payroll-focus__hint {
+  color: var(--bitacora-text);
+}
+
+.payroll-focus__note {
+  margin: 0;
+  padding: 6px 8px;
+  border: 1px solid var(--bitacora-border);
+  border-radius: 6px;
+  background: var(--bitacora-review-soft);
+  color: var(--bitacora-text);
+  font-size: var(--payroll-text-sm);
+  line-height: 1.4;
+}
+
+.payroll-focus__actions {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+  margin-top: 4px;
+}
+
+.payroll-focus__primary {
+  display: inline-flex;
+  min-height: 34px;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--bitacora-ink);
+  border-radius: 6px;
+  background: var(--bitacora-ink);
+  padding: 0 14px;
+  color: #ffffff;
+  font-size: var(--payroll-text-sm);
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.payroll-focus__primary:hover {
+  background: #1a2f44;
+  border-color: #1a2f44;
+}
+
+.payroll-focus__primary:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.payroll-focus__secondary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 12px;
+}
+
+.payroll-focus__link {
+  border: 0;
+  background: transparent;
+  padding: 0;
+  color: var(--bitacora-muted);
+  font-size: var(--payroll-text-sm);
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+}
+
+.payroll-focus__link:hover {
+  color: var(--bitacora-ink);
+}
+
+.payroll-acta-slot :host,
+.payroll-acta-slot .nom-acta {
+  border-radius: 8px;
+}
+
+.payroll-acta-teaser {
+  margin: 0;
+  padding: 8px 0;
+  color: var(--bitacora-muted);
+  font-size: var(--payroll-text-sm);
+  line-height: 1.4;
+}
+
+.payroll-acta-teaser__k {
+  display: block;
+  margin-bottom: 2px;
+  color: var(--bitacora-subtle);
+  font-size: var(--payroll-text-xs);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.payroll-para-continuar {
+  margin: 0;
+}
+
+.payroll-para-continuar__heading {
+  margin: 0 0 6px;
+  color: var(--bitacora-muted);
+  font-size: var(--payroll-text-xs);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.payroll-para-continuar__list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.payroll-para-continuar__list li {
+  padding: 8px 0;
+  border-bottom: 1px solid var(--bitacora-border);
+}
+
+.payroll-para-continuar__list li:last-child {
+  border-bottom: 0;
+}
+
+.payroll-para-continuar__title {
+  display: block;
+  color: var(--bitacora-ink);
+  font-size: var(--payroll-text-sm);
+  font-weight: 600;
+}
+
+.payroll-para-continuar__detalle {
+  display: block;
+  margin-top: 2px;
+  color: var(--bitacora-muted);
+  font-size: var(--payroll-text-sm);
+  line-height: 1.4;
+}
+
+.payroll-main-more {
+  margin: 0;
+  border-top: 1px solid var(--bitacora-border);
+  padding-top: 8px;
+}
+
+.payroll-main-more > summary {
+  padding: 4px 0;
+  color: var(--bitacora-muted);
+  font-size: var(--payroll-text-sm);
+  font-weight: 600;
+  cursor: pointer;
+  list-style-position: outside;
+}
+
+.payroll-main-more__body {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 8px 0 4px;
+}
+
+.payroll-main-more__block {
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--bitacora-border);
+}
+
+.payroll-main-more__registro {
+  margin: 0;
+  color: var(--bitacora-subtle);
+  font-size: var(--payroll-text-xs);
+  line-height: 1.45;
+}
+
+.payroll-main-more__registro-k {
+  display: block;
+  margin-bottom: 2px;
+  color: var(--bitacora-muted);
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.payroll-main-more__links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 12px;
 }
 
 .payroll-ledger-shell {
@@ -1416,47 +1942,51 @@
 }
 
 @media (max-width: 1199px) {
-  .payroll-ledger-body {
+  .payroll-workspace {
     grid-template-columns: minmax(240px, 280px) minmax(0, 1fr);
   }
 
-  .payroll-support-panel {
-    grid-column: 1 / -1;
-    max-height: none;
-  }
-
-  .payroll-ledger-summary__grid {
+  .payroll-franja-operativa__list {
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    row-gap: 8px;
+    row-gap: 4px;
   }
 
-  .payroll-ledger-summary__grid > div:nth-child(2) {
-    border-right: 0;
+  .payroll-franja-operativa__list > li:nth-child(odd) {
+    border-left: 0;
   }
 
-  .payroll-ledger-summary__grid > div:nth-child(odd) {
-    padding-left: 0;
+  .payroll-franja-operativa__list > li:nth-child(2) {
+    border-left: 1px solid var(--bitacora-border);
   }
 }
 
 @media (max-width: 979px) {
-  .payroll-ledger-body {
+  .payroll-workspace {
     grid-template-columns: 1fr;
   }
 
-  .payroll-stage-ledger {
+  .payroll-rail {
     order: 1;
-    min-height: 0;
     border-right: 0;
-    padding-right: 0;
+    padding: 12px 0 0;
+    border-top: 1px solid var(--bitacora-border);
   }
 
-  .payroll-acta {
+  .payroll-franja-operativa__list {
+    grid-template-columns: 1fr;
+  }
+
+  .payroll-franja-operativa__list > li {
+    border-left: 0 !important;
+    border-top: 1px solid var(--bitacora-border);
+  }
+
+  .payroll-franja-operativa__list > li:first-child {
+    border-top: 0;
+  }
+
+  .payroll-main {
     order: 0;
-  }
-
-  .payroll-support-panel {
-    order: 2;
   }
 }
 
@@ -1465,13 +1995,9 @@
     padding: 16px;
   }
 
-  .payroll-ledger-header {
+  .payroll-period-global {
     flex-direction: column;
     align-items: flex-start;
-  }
-
-  .payroll-ledger-header__context {
-    text-align: left;
   }
 
   .payroll-acta__header {

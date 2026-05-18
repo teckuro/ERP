@@ -3,7 +3,11 @@ import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output } from 
 import { RouterLink } from '@angular/router';
 
 import { BadgeComponent } from '../../../../shared/components/ui/badge.component';
-import type { ActaOperativaPeriodoViewModel, ActaOperativaTone } from '../../models/acta-operativa-periodo.model';
+import type {
+  ActaOperativaEvidenciaEstado,
+  ActaOperativaPeriodoViewModel,
+  ActaOperativaTone,
+} from '../../models/acta-operativa-periodo.model';
 
 @Component({
   selector: 'app-acta-operativa-periodo',
@@ -21,6 +25,18 @@ export class ActaOperativaPeriodoComponent {
   onPrepararActa(): void {
     if (!this.vm.accionDisponible) return;
     this.prepararActa.emit();
+  }
+
+  etiquetaEvidencia(estado: ActaOperativaEvidenciaEstado): string {
+    switch (estado) {
+      case 'revision':
+        return 'Revisión';
+      case 'pendiente':
+        return 'Pendiente';
+      case 'incluida':
+      default:
+        return 'Incluida';
+    }
   }
 
   badgeVariant(tone: ActaOperativaTone): 'success' | 'warning' | 'error' | 'default' | 'info' {

@@ -1,5 +1,39 @@
 # CHANGELOG
 
+### ERP-NOIA-UI-GUARDRAILS-01 (bases sistema + Creación avanzada)
+
+Fecha: 2026-05-18
+
+- `noia-bases-sistema-referencia.md`: jerarquía documental, tokens `--form-*` / `--bitacora-*` / `payroll-*`, ejemplo canónico Creación avanzada vs Preparar nómina.
+- Enlaces desde guardrails, antipatrones, tokens, prompt, README, `creacion-avanzada.md`, `bitacora-operativa-noia.md`.
+
+### ERP-NOIA-UI-GUARDRAILS-01 (ampliación antipatrones)
+
+Fecha: 2026-05-18
+
+- `noia-antipatrones-ia.md`: colores extravagantes, mal uso de espacio, Tailwind improvisado, regla de reutilización.
+- `noia-prompt-cursor.md`: prompt largo y corto para User/Project Rules.
+- Tokens, layout, checklist y regla Cursor reforzados contra UI tipo IA/SaaS.
+
+### ERP-NOIA-UI-GUARDRAILS-01
+
+Fecha: 2026-05-18
+
+- Constitución visual NOIA: guardrails, tokens, layout, componentes y checklist de revisión en `docs/codex/diseno/`.
+- Regla Cursor `erp-ui-visual-guardrails.mdc` (alwaysApply en `src/**`).
+- Índices actualizados: `README.md`, `contexto-rapido.md`, `estado-fases.md`, `peticiones-estilos.md`, `erp-ui-noia.mdc`.
+- Sin cambios en Angular funcional, SQL, motor ni estilos globales.
+
+### NOM-PREPARAR-NOMINA-ESTADOS-VISUALES-PREMIUM-UX-01
+
+Fecha: 2026-05-18
+
+- Estados visuales por etapa del flujo; riesgo sin evaluar antes de validar.
+- Decisión del período como foco; bandeja RRHH agrupada por contexto/severidad.
+- Acta compacta sin validación; evidencia incluida en tono neutro.
+- Eliminada redundancia entre resumen, decisión, acta y bandeja.
+- Bitácora conservada; sin cambios de motor, SQL, servicios ni estilos globales.
+
 ### NOM-PREPARAR-NOMINA-ACTA-DISENO-ESTRUCTURADO-UX-01
 
 Fecha: 2026-05-18
@@ -597,3 +631,24 @@ Fecha: 2026-05-15
 - `Agregar recurrente` navega al flujo recurrente existente filtrado por trabajador.
 - Se corrige el modal mensual: ya no pregunta duracion ni muestra cuotas; cuotas queda como variante del recurrente.
 - Alcance respetado: sin SQL/RPC/RLS, sin motor, sin persistencia critica, sin servicios/mappers/payloads productivos nuevos y sin estilos globales.
+
+## ERP-NOIA-BREADCRUMB-GUARDRAIL-01 - Breadcrumb operativo obligatorio
+
+Fecha: 2026-05-18
+
+- Se integra el breadcrumb operativo al manual NOIA: guardrails, antipatrones, bases del sistema, prompt para Cursor/Codex y checklist de cierre.
+- Regla: toda pantalla ERP nueva o redisenada debe iniciar con breadcrumb arriba a la izquierda, en lenguaje de negocio, con segmentos anteriores navegables y vista actual como texto.
+- Se prohibe usar rutas tecnicas, tablas, RPC, enums, badges/cards o peso de CTA en el breadcrumb.
+- Alcance respetado: fase documental; sin Angular, HTML/CSS productivo, estilos globales, rutas, servicios, motor, SQL/RPC/RLS ni persistencia.
+
+## ERP-NOIA-DOCS-CIERRE-01 - Manual UI NOIA unificado
+
+Fecha: 2026-05-18
+
+- Se crea `docs/codex/diseno/noia-ui-manual.md` como fuente unica de decision UI NOIA.
+- Se ordena la jerarquia documental: manual NOIA, contrato agente, guardrails, tokens/formularios, bases canonicas, antipatrones, modulo/fase y checklist.
+- Se aclara el conflicto historico de "card principal": en NOIA se interpreta como superficie segun arquetipo; card solo si tiene entidad, decision o resumen autonomo.
+- Se consolidan en el manual los antiguos auxiliares NOIA de tokens, layout, componentes, recetas, arquetipos y sistema de decision; esos archivos se retiran del set activo.
+- Se actualizan README, contexto rapido, AGENTS, ui-form-guidelines, guardrails, prompt, bases, antipatrones y checklist para apuntar al manual.
+- `.gitignore` deja versionables solo los documentos activos de `docs/codex/diseno/` y mantiene ignorados los documentos historicos/de fase.
+- Alcance respetado: fase documental; sin Angular, HTML/CSS productivo, estilos globales, rutas, servicios, motor, SQL/RPC/RLS ni persistencia.

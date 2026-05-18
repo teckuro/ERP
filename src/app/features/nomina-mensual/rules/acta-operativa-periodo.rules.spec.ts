@@ -24,7 +24,11 @@ describe('buildActaOperativaPeriodoViewModel', () => {
   it('queda bloqueada sin validacion minima', () => {
     const vm = buildActaOperativaPeriodoViewModel(baseInput({ tieneValidacionMinima: false }));
     expect(vm.estado).toBe('BLOQUEADA');
+    expect(vm.modoCompacto).toBe(true);
     expect(vm.accionDisponible).toBe(false);
+    expect(vm.descripcion).toContain('Disponible después de validar el período');
+    expect(vm.contexto).toHaveLength(0);
+    expect(vm.evidencia).toHaveLength(0);
   });
 
   it('queda bloqueada con bloqueos criticos', () => {

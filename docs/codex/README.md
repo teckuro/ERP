@@ -9,7 +9,7 @@ Para fases acotadas o diagnóstico rápido, partir por [`contexto-rapido.md`](./
 1. **Orquestador** — contexto global, diseño operativo y fases: [`orquestador/README.md`](./orquestador/README.md), [`orquestador/contexto-proyecto.md`](./orquestador/contexto-proyecto.md), [`orquestador/diseno-operativo-erp.md`](./orquestador/diseno-operativo-erp.md), [`orquestador/estado-fases.md`](./orquestador/estado-fases.md).
 2. **Mapa de documentación** — inventario global / por módulo / histórico: [`orquestador/mapa-documentacion.md`](./orquestador/mapa-documentacion.md).
 3. **Arquitectura frontend (Angular)** — páginas wrapper, contenedores, capas: [`arquitectura/frontend-interfaces.md`](./arquitectura/frontend-interfaces.md) (leer antes de rutas/pantallas/feature nuevos o refactors grandes).
-4. **Contrato del agente y guías UI** — [`AGENTS.md`](./AGENTS.md), [`ui-form-guidelines.md`](./ui-form-guidelines.md), [`ui-button-guidelines.md`](./ui-button-guidelines.md), [`ui-tables.md`](./ui-tables.md), [`estilos/README.md`](./estilos/README.md).
+4. **Contrato del agente y guías UI** — para UI visible leer primero [`diseno/noia-ui-manual.md`](./diseno/noia-ui-manual.md), luego [`AGENTS.md`](./AGENTS.md), [`ui-form-guidelines.md`](./ui-form-guidelines.md), [`ui-button-guidelines.md`](./ui-button-guidelines.md), [`ui-tables.md`](./ui-tables.md), [`estilos/README.md`](./estilos/README.md).
 5. **Módulo** — [`modulos/<módulo>/README.md`](./modulos/empleados/README.md) (elegir carpeta: `empleados`, `parametros`, etc.).
 6. **Subflujo / pantalla** — el `.md` concreto dentro de esa carpeta (p. ej. [`modulos/empleados/ficha-empleado.md`](./modulos/empleados/ficha-empleado.md)).
 7. **`temas/`** — solo si hace falta un **flujo por rutas** ([`temas/flujos/README.md`](./temas/flujos/README.md)), UI de implementación ([`temas/implementacion-ui.md`](./temas/implementacion-ui.md)), menú ([`temas/crear-menu-base.md`](./temas/crear-menu-base.md)) o un doc **aún no migrado**. Muchos `.md` en la raíz de `temas/` son **stubs** (“Documento migrado…”) hacia `modulos/`.
@@ -20,11 +20,12 @@ Para fases acotadas o diagnóstico rápido, partir por [`contexto-rapido.md`](./
 2. **Tipo de cambio**: solo UI, solo lógica, o ambos; si el contrato dice «solo UI», no tocar guardado, servicios ni `formControlName` sin acuerdo explícito.
 3. **Fuente de verdad** si hay lista cerrada: p. ej. [`peticiones-fusion-items-1-65.md`](./peticiones-fusion-items-1-65.md).
 4. **Jerarquía** (en conflicto gana el primero):
-   1. [`AGENTS.md`](./AGENTS.md)
-   2. **Este README** — índice y orden de lectura; no sustituye `AGENTS.md`.
-   3. [`arquitectura/frontend-interfaces.md`](./arquitectura/frontend-interfaces.md) — estructura Angular (`pages` vs `features`, contenedores, capas).
-   4. [`ui-form-guidelines.md`](./ui-form-guidelines.md)
-   5. Documentos bajo [`modulos/`](./modulos/empleados/README.md) (y transversales en `temas/` cuando aplique).
+   1. [`diseno/noia-ui-manual.md`](./diseno/noia-ui-manual.md) para UI visible.
+   2. [`AGENTS.md`](./AGENTS.md)
+   3. **Este README** — índice y orden de lectura; no sustituye `AGENTS.md`.
+   4. [`arquitectura/frontend-interfaces.md`](./arquitectura/frontend-interfaces.md) — estructura Angular (`pages` vs `features`, contenedores, capas).
+   5. [`ui-form-guidelines.md`](./ui-form-guidelines.md)
+   6. Documentos bajo [`modulos/`](./modulos/empleados/README.md) (y transversales en `temas/` cuando aplique).
 
 ---
 
@@ -70,10 +71,17 @@ La documentación histórica mínima se conserva en [`archivo/fases-cerradas/`](
 
 ### Diseno NOIA y decisiones de maquetacion
 
-- [`diseno/noia-decision-system.md`](./diseno/noia-decision-system.md)
-- [`diseno/noia-layout-patterns.md`](./diseno/noia-layout-patterns.md)
-- [`diseno/noia-screen-archetypes.md`](./diseno/noia-screen-archetypes.md)
-- [`diseno/noia-component-recipes.md`](./diseno/noia-component-recipes.md)
+**Constitución visual (obligatoria antes de fases UI):**
+
+- [`diseno/noia-ui-manual.md`](./diseno/noia-ui-manual.md) — **fuente unica de decision UI NOIA**: jerarquia, flujo obligatorio, que crear y que no hacer
+- [`diseno/noia-bases-sistema-referencia.md`](./diseno/noia-bases-sistema-referencia.md) — **bases del sistema** + ejemplo canónico Creación avanzada
+- [`diseno/noia-ui-guardrails.md`](./diseno/noia-ui-guardrails.md) — reglas visuales obligatorias
+- [`diseno/noia-antipatrones-ia.md`](./diseno/noia-antipatrones-ia.md) — colores extravagantes, espacio mal usado, UI tipo IA (rechazar)
+- [`diseno/noia-prompt-cursor.md`](./diseno/noia-prompt-cursor.md) — prompt copiable para Cursor
+- [`diseno/noia-ui-review-checklist.md`](./diseno/noia-ui-review-checklist.md) — checklist de cierre
+- [`diseno/bitacora-operativa-noia.md`](./diseno/bitacora-operativa-noia.md) — identidad Bitácora Operativa
+
+Los antiguos auxiliares de tokens/layout/componentes/arquetipos fueron consolidados en `noia-ui-manual.md` para evitar reglas paralelas.
 ## Contrato y formularios (UI central)
 
 | Documento | Contenido |
