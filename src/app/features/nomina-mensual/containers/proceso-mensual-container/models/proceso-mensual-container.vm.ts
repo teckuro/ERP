@@ -83,6 +83,12 @@ export interface InformacionPeriodoView {
   reintentarAccion?: ValidacionAccionLocal;
 }
 
+export type ProcesoMensualOverlay =
+  | { kind: 'cerrado' }
+  | { kind: 'revision'; tab: DetalleOperativoTab }
+  | { kind: 'decision'; view: ConfirmacionProcesoMensualView }
+  | { kind: 'informacion'; view: InformacionPeriodoView };
+
 export interface NominaVisualFrameView {
   frame: NominaVisualFrame;
   chip: string;

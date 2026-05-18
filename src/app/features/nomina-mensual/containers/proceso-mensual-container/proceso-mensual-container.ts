@@ -1,12 +1,10 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
-import { MessageBoxComponent } from '../../../../shared/components/ui/message-box.component';
 import {
   RecordBreadcrumbComponent,
 } from '../../../../shared/components/ui/record-breadcrumb.component';
-import { ProcesoMensualDetalleModalComponent } from './components/proceso-mensual-detalle-modal/proceso-mensual-detalle-modal.component';
-import { ProcesoMensualInformacionModalComponent } from './components/proceso-mensual-informacion-modal/proceso-mensual-informacion-modal.component';
+import { ProcesoMensualOverlaysComponent } from './components/proceso-mensual-overlays/proceso-mensual-overlays.component';
 import { ProcesoMensualWorkspaceComponent } from './components/proceso-mensual-workspace/proceso-mensual-workspace.component';
 import { ProcesoMensualPresentacionFacade } from './facade/proceso-mensual-presentacion.facade';
 import { ProcesoMensualPeriodoStore } from './store/proceso-mensual-periodo.store';
@@ -22,10 +20,8 @@ import { ProcesoMensualPeriodoStore } from './store/proceso-mensual-periodo.stor
   imports: [
     CommonModule,
     RecordBreadcrumbComponent,
-    MessageBoxComponent,
     ProcesoMensualWorkspaceComponent,
-    ProcesoMensualDetalleModalComponent,
-    ProcesoMensualInformacionModalComponent,
+    ProcesoMensualOverlaysComponent,
   ],
   templateUrl: './proceso-mensual-container.html',
   styleUrl: './proceso-mensual-container.css',

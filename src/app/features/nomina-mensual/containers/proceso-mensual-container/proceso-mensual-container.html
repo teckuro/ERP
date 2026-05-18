@@ -18,58 +18,11 @@
     </div>
   </header>
 
-  @if (errorEjecucion() && !informacionPeriodo()) {
+  @if (errorEjecucion() && overlay().kind !== 'informacion') {
     <div class="payroll-ledger-error" role="alert">{{ errorEjecucion() }}</div>
   }
 
   <app-proceso-mensual-workspace />
 
-  <app-proceso-mensual-detalle-modal />
-
-  <app-proceso-mensual-informacion-modal />
-
-  @if (confirmacionProceso(); as confirmacion) {
-    <app-message-box
-      variant="warning"
-      mode="modal"
-      [title]="confirmacion.titulo"
-      [message]="confirmacion.mensaje"
-      [detail]="confirmacion.detalle"
-      [primaryLabel]="confirmacion.primaryLabel"
-      [secondaryLabel]="confirmacion.secondaryLabel"
-      [modalHeadlineSplit]="true"
-      (action)="confirmarAccionProceso()"
-      (secondary)="cancelarAccionProceso()"
-      (dismiss)="cancelarAccionProceso()"
-    >
-      <div class="nom-acta-modal">
-        <section class="nom-acta-modal__summary">
-          <p>Qué debe revisar RRHH</p>
-          <ul>
-            @for (punto of confirmacion.puntos; track punto) {
-              <li>{{ punto }}</li>
-            }
-          </ul>
-        </section>
-        @if (confirmacion.secciones?.length) {
-          <div class="nom-acta-modal__grid">
-            @for (seccion of confirmacion.secciones; track seccion.titulo) {
-              <section class="nom-acta-modal__block">
-                <p class="nom-acta-modal__title">{{ seccion.titulo }}</p>
-                <ul class="nom-acta-modal__list">
-                  @for (item of seccion.items; track item) {
-                    <li>{{ item }}</li>
-                  }
-                </ul>
-              </section>
-            }
-          </div>
-        }
-        <section class="nom-acta-modal__next">
-          <p>Próxima acción</p>
-          <span>Revisar Liquidaciones oficiales con este contexto como respaldo.</span>
-        </section>
-      </div>
-    </app-message-box>
-  }
+  <app-proceso-mensual-overlays />
 </section>

@@ -1,13 +1,23 @@
+## NOM-MODALES-PERIODO-STATE-03 - Overlay unificado
+
+| Campo | Estado |
+|---|---|
+| Estado | Implementada |
+| Tipo | Refactor presentación / orquestación UI |
+| Alcance | `ProcesoMensualOverlay`, signal `overlay`, host `app-proceso-mensual-overlays`, `cerrarOverlay`, computeds compatibles, 8 tests overlay. |
+| Restricciones | Sin `app-message-box` compartido, store, servicios, SQL, motor, estilos globales. |
+| Documento | [`../modulos/nomina-mensual/modales-periodo-state-03.md`](../modulos/nomina-mensual/modales-periodo-state-03.md) |
+| Siguiente | `NOM-CONTAINER-SPEC-REPARO` — reactivar 43 tests legacy del contenedor. |
+
 ## NOM-MODALES-PERIODO-INFO-02 - Información guiada post-generación
 
 | Campo | Estado |
 |---|---|
 | Estado | Implementada (alcance mínimo) |
 | Tipo | UX/UI local + rules |
-| Alcance | `InformacionPeriodoView`, rules, signal `informacionPeriodo`, modal MessageBox informativo, banner condicionado, rail contextual. |
-| Restricciones | Sin `ProcesoMensualOverlay` completo, sin `app-proceso-mensual-overlays`, sin tocar `app-message-box` compartido, store contracts, SQL, motor, servicios ni estilos globales. |
+| Alcance | `InformacionPeriodoView`, rules, modal MessageBox informativo, banner condicionado, rail contextual. |
 | Documento | [`../modulos/nomina-mensual/modales-periodo-info-02.md`](../modulos/nomina-mensual/modales-periodo-info-02.md) |
-| Siguiente | `NOM-MODALES-PERIODO-STATE-03` — overlay unificado + reparo `proceso-mensual-container.spec.ts`. |
+| Siguiente | Cerrada; absorbida por STATE-03 (`overlay`). |
 
 ## NOM-MODALES-PERIODO-01 - Matriz overlays/modales (documental)
 

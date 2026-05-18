@@ -45,6 +45,10 @@ El modal visible se titula **Registrar movimiento del mes** y queda enfocado sol
 
 La estructura queda compacta y vertical: bloque Movimiento, Detalle administrativo opcional y Resumen inferior antes del footer.
 
+## NOM-MODALES-PERIODO-STATE-03 aplicado
+
+Overlay unificado: `ProcesoMensualOverlay`, signal `overlay`, host `app-proceso-mensual-overlays`, `cerrarOverlay()`. Documento: [`modales-periodo-state-03.md`](./modales-periodo-state-03.md).
+
 ## NOM-MODALES-PERIODO-INFO-02 aplicado
 
 Información guiada post-generación: rules `proceso-mensual-informacion-periodo`, signal `informacionPeriodo`, modal `app-proceso-mensual-informacion-modal`, banner condicionado y rail contextual. Documento: [`modales-periodo-info-02.md`](./modales-periodo-info-02.md).

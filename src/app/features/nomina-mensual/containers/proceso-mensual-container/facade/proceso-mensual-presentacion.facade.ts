@@ -67,6 +67,7 @@ import type {
   ConfirmacionProcesoMensualView,
   InformacionPeriodoDestino,
   InformacionPeriodoView,
+  ProcesoMensualOverlay,
   DetalleOperativoTab,
   EtapaOperativaActiva,
   NominaResumenSuperiorVm,
@@ -131,11 +132,25 @@ export class ProcesoMensualPresentacionFacade {
   readonly aprobandoResultado = this.store.aprobandoResultado;
   readonly cerrandoNomina = this.store.cerrandoNomina;
   readonly snapshotCompleto = this.store.snapshotCompleto;
-  readonly confirmacionProceso = signal<ConfirmacionProcesoMensualView | null>(null);
-  readonly informacionPeriodo = signal<InformacionPeriodoView | null>(null);
-  readonly detalleOperativoAbierto = signal(false);
+  readonly overlay = signal<ProcesoMensualOverlay>({ kind: 'cerrado' });
   private informacionPeriodoSuprimida = false;
-  readonly detalleOperativoTabActivo = signal<DetalleOperativoTab>('trabajadores');
+
+  readonly confirmacionProceso = computed(() => {
+    const current = this.overlay();
+    return current.kind === 'decision' ? current.view : null;
+  });
+
+  readonly informacionPeriodo = computed(() => {
+    const current = this.overlay();
+    return current.kind === 'informacion' ? current.view : null;
+  });
+
+  readonly detalleOperativoAbierto = computed(() => this.overlay().kind === 'revision');
+
+  readonly detalleOperativoTabActivo = computed(() => {
+    const current = this.overlay();
+    return current.kind === 'revision' ? current.tab : 'trabajadores';
+  });
   readonly nominaWorkspaceTab = signal<NominaWorkspaceTab>('guia');
   readonly actaOperativaPreparada = signal(false);
 
@@ -1031,9 +1046,46 @@ export class ProcesoMensualPresentacionFacade {
     this.store.calcularPreliminar();
   }
 
+  abrirOverlayRevision(tab: DetalleOperativoTab): void {
+    this.overlay.set({ kind: 'revision', tab });
+  }
+
+  abrirOverlayDecision(view: ConfirmacionProcesoMensualView): void {
+    this.overlay.set({ kind: 'decision', view });
+  }
+
+  abrirOverlayInformacion(view: InformacionPeriodoView | null): void {
+    if (!view) {
+      if (this.overlay().kind === 'informacion') {
+        this.overlay.set({ kind: 'cerrado' });
+      }
+      return;
+    }
+    this.overlay.set({ kind: 'informacion', view });
+  }
+
+  cerrarOverlay(): void {
+    const current = this.overlay();
+    switch (current.kind) {
+      case 'informacion':
+        this.informacionPeriodoSuprimida = true;
+        this.overlay.set({ kind: 'cerrado' });
+        break;
+      case 'revision':
+        this.overlay.set({ kind: 'cerrado' });
+        break;
+      case 'decision':
+        this.cancelarAccionProceso();
+        break;
+      case 'cerrado':
+        break;
+    }
+  }
+
   sincronizarInformacionPeriodo(): void {
     if (this.informacionPeriodoSuprimida) return;
-    if (this.confirmacionProceso() || this.detalleOperativoAbierto()) return;
+    const current = this.overlay();
+    if (current.kind === 'decision' || current.kind === 'revision') return;
 
     const view = buildInformacionPeriodoView({
       errorEjecucion: this.store.errorEjecucion(),
@@ -1046,20 +1098,23 @@ export class ProcesoMensualPresentacionFacade {
       tieneCalculo: this.store.calculo() != null,
       tieneResultado: this.store.resultado() != null || this.store.snapshotActivo() != null,
     });
-    this.informacionPeriodo.set(view);
+    this.abrirOverlayInformacion(view);
   }
 
   cerrarInformacionPeriodo(): void {
-    this.informacionPeriodo.set(null);
-    this.informacionPeriodoSuprimida = true;
+    if (this.overlay().kind === 'informacion') {
+      this.informacionPeriodoSuprimida = true;
+      this.overlay.set({ kind: 'cerrado' });
+    }
   }
 
   confirmarInformacionPeriodo(): void {
-    const info = this.informacionPeriodo();
-    if (!info) return;
+    const current = this.overlay();
+    if (current.kind !== 'informacion') return;
+    const info = current.view;
     const destino = info.accionPrincipal?.destino;
     const reintentarAccion = info.reintentarAccion;
-    this.informacionPeriodo.set(null);
+    this.overlay.set({ kind: 'cerrado' });
     if (destino === 'reintentar') {
       this.informacionPeriodoSuprimida = false;
     } else {
@@ -1091,8 +1146,7 @@ export class ProcesoMensualPresentacionFacade {
   }
 
   guardarSnapshotPreliminar(): void {
-    this.cerrarInformacionPeriodo();
-    this.confirmacionProceso.set({
+    this.abrirOverlayDecision({
       tipo: 'guardar_preliminar',
       titulo: 'Guardar versión revisable',
       mensaje: 'Se guardara una version revisable de la nomina mensual para este periodo.',
@@ -1120,7 +1174,8 @@ export class ProcesoMensualPresentacionFacade {
 
   private resetearEstadoPeriodo(): void {
     this.store.resetearEstadoPeriodo();
-    this.confirmacionProceso.set(null);
+    this.overlay.set({ kind: 'cerrado' });
+    this.informacionPeriodoSuprimida = false;
     this.actaOperativaPreparada.set(false);
   }
 
@@ -1198,8 +1253,7 @@ export class ProcesoMensualPresentacionFacade {
     if (advertenciasAprobacion.length === 0 && snapshot.totalAdvertencias > 0) {
       advertenciasAprobacion.push(`Resultado guardado con ${snapshot.totalAdvertencias} advertencia(s) no bloqueante(s).`);
     }
-    this.cerrarInformacionPeriodo();
-    this.confirmacionProceso.set({
+    this.abrirOverlayDecision({
       tipo: 'aprobar_preliminar',
       titulo: 'Confirmar revisión de nómina',
       mensaje: 'Marca la version revisable como confirmada por RRHH antes de confirmar la nomina oficial.',
@@ -1246,28 +1300,25 @@ export class ProcesoMensualPresentacionFacade {
   }
 
   abrirDetalleOperativo(tab: DetalleOperativoTab = 'trabajadores'): void {
-    this.informacionPeriodo.set(null);
-    this.detalleOperativoTabActivo.set(tab);
-    this.detalleOperativoAbierto.set(true);
+    this.abrirOverlayRevision(tab);
   }
 
   cerrarDetalleOperativo(): void {
-    this.detalleOperativoAbierto.set(false);
+    if (this.overlay().kind === 'revision') {
+      this.overlay.set({ kind: 'cerrado' });
+    }
   }
 
   seleccionarDetalleOperativoTab(tab: DetalleOperativoTab): void {
-    this.detalleOperativoTabActivo.set(tab);
+    if (this.overlay().kind === 'revision') {
+      this.overlay.set({ kind: 'revision', tab });
+    }
   }
 
   @HostListener('document:keydown.escape')
   cerrarModalesConEscape(): void {
-    if (this.informacionPeriodo()) {
-      this.cerrarInformacionPeriodo();
-      return;
-    }
-    if (this.detalleOperativoAbierto()) {
-      this.cerrarDetalleOperativo();
-      return;
+    if (this.overlay().kind !== 'cerrado') {
+      this.cerrarOverlay();
     }
   }
 
@@ -1307,8 +1358,7 @@ export class ProcesoMensualPresentacionFacade {
   }
 
   abrirConfirmacionCierreNominaOperativa(): void {
-    this.cerrarInformacionPeriodo();
-    this.confirmacionProceso.set({
+    this.abrirOverlayDecision({
       tipo: 'cerrar_nomina',
       titulo: 'Confirmar nómina mensual',
       mensaje: `Vas a confirmar la nomina mensual de ${this.store.periodoSeleccionado()}.`,
@@ -1362,8 +1412,7 @@ export class ProcesoMensualPresentacionFacade {
     const acta = this.actaPreparacion();
     if (!acta.accionDisponible) return;
     const tieneObservaciones = acta.estado === 'REQUIERE_REVISION';
-    this.cerrarInformacionPeriodo();
-    this.confirmacionProceso.set({
+    this.abrirOverlayDecision({
       tipo: 'preparar_acta',
       titulo: 'Preparar acta operativa del periodo',
       mensaje: 'Se dejara preparada una evidencia visual del contexto revisado para continuar hacia Liquidaciones oficiales.',
@@ -1411,9 +1460,10 @@ export class ProcesoMensualPresentacionFacade {
   }
 
   confirmarAccionProceso(): void {
-    const confirmacion = this.confirmacionProceso();
-    if (!confirmacion) return;
-    this.confirmacionProceso.set(null);
+    const current = this.overlay();
+    if (current.kind !== 'decision') return;
+    const confirmacion = current.view;
+    this.overlay.set({ kind: 'cerrado' });
     switch (confirmacion.tipo) {
       case 'guardar_preliminar':
         this.ejecutarGuardarSnapshotPreliminar();
@@ -1431,7 +1481,9 @@ export class ProcesoMensualPresentacionFacade {
   }
 
   cancelarAccionProceso(): void {
-    this.confirmacionProceso.set(null);
+    if (this.overlay().kind === 'decision') {
+      this.overlay.set({ kind: 'cerrado' });
+    }
   }
 
   etiquetaArea(area: ProcesoMensualArea, fallback?: string): string {

@@ -1,5 +1,11 @@
 # CHANGELOG
 
+## 2026-05-18 - NOM-MODALES-PERIODO-STATE-03
+
+- **Facade:** signal único `overlay: ProcesoMensualOverlay`; `cerrarOverlay()`; computeds compatibles para templates hijos.
+- **UI:** host `app-proceso-mensual-overlays` (revision, informacion, decision/acta inline); shell sin overlays dispersos.
+- **Tests:** 8 tests overlay OK; 43 tests legacy en `describe.skip` (deuda NOM-CONTAINER-SPEC-REPARO).
+
 ## 2026-05-18 - NOM-MODALES-PERIODO-INFO-02
 
 - **UI:** modal informativo `app-proceso-mensual-informacion-modal` para errores/bloqueos post-generación; banner `errorEjecucion` condicionado; rail «Ver detalle» contextual.

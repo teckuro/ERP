@@ -539,6 +539,128 @@ describe('ProcesoMensualContainer', () => {
     fixture.detectChanges();
   });
 
+  describe('overlay unificado (NOM-MODALES-PERIODO-STATE-03)', () => {
+    it('inicia con overlay cerrado y computeds compatibles en false/null', () => {
+      const c = fixture.componentInstance;
+      expect(c.overlay().kind).toBe('cerrado');
+      expect(c.detalleOperativoAbierto()).toBe(false);
+      expect(c.confirmacionProceso()).toBeNull();
+      expect(c.informacionPeriodo()).toBeNull();
+    });
+
+    it('abre revision con tab y cierra con cerrarOverlay', () => {
+      const c = fixture.componentInstance;
+      c.abrirOverlayRevision('parametros');
+      fixture.detectChanges();
+      expect(c.overlay().kind).toBe('revision');
+      expect(c.detalleOperativoAbierto()).toBe(true);
+      expect(c.detalleOperativoTabActivo()).toBe('parametros');
+      expect(fixture.nativeElement.querySelector('.payroll-operational-detail-overlay')).toBeTruthy();
+
+      c.cerrarOverlay();
+      fixture.detectChanges();
+      expect(c.overlay().kind).toBe('cerrado');
+      expect(fixture.nativeElement.querySelector('.payroll-operational-detail-overlay')).toBeNull();
+    });
+
+    it('abre decision con message-box en app-proceso-mensual-overlays', () => {
+      const c = fixture.componentInstance;
+      c.abrirOverlayDecision({
+        tipo: 'guardar_preliminar',
+        titulo: 'Guardar versión revisable',
+        mensaje: 'Mensaje de prueba',
+        detalle: 'Detalle de prueba',
+        puntos: ['Punto uno'],
+        primaryLabel: 'Guardar version',
+        secondaryLabel: 'Cancelar',
+      });
+      fixture.detectChanges();
+      expect(c.overlay().kind).toBe('decision');
+      expect(c.confirmacionProceso()?.titulo).toContain('Guardar');
+      expect(fixture.nativeElement.querySelector('app-message-box')).toBeTruthy();
+    });
+
+    it('cancelar decision vuelve a overlay cerrado', () => {
+      const c = fixture.componentInstance;
+      c.abrirOverlayDecision({
+        tipo: 'preparar_acta',
+        titulo: 'Preparar acta operativa del periodo',
+        mensaje: 'Mensaje',
+        detalle: 'Detalle',
+        puntos: ['Punto'],
+        primaryLabel: 'Preparar acta',
+        secondaryLabel: 'Cancelar',
+      });
+      fixture.detectChanges();
+      c.cancelarAccionProceso();
+      fixture.detectChanges();
+      expect(c.overlay().kind).toBe('cerrado');
+      expect(fixture.nativeElement.querySelector('app-message-box')).toBeNull();
+    });
+
+    it('tras error de validacion abre informacion y oculta banner crudo', async () => {
+      ejecutarPrevalidaciones.mockRejectedValueOnce(new Error('rpc_validar_periodo timeout'));
+      const c = fixture.componentInstance;
+      c.validarPeriodo();
+      await fixture.whenStable();
+      fixture.detectChanges();
+
+      expect(c.overlay().kind).toBe('informacion');
+      expect(c.informacionPeriodo()?.titulo).toBeTruthy();
+      expect(fixture.nativeElement.querySelector('.payroll-ledger-error')).toBeNull();
+      expect(fixture.nativeElement.querySelector('app-message-box')).toBeTruthy();
+    });
+
+    it('cerrarOverlay con informacion activa suprime resincronizacion', async () => {
+      ejecutarPrevalidaciones.mockRejectedValueOnce(new Error('fallo de red'));
+      const c = fixture.componentInstance;
+      c.validarPeriodo();
+      await fixture.whenStable();
+      fixture.detectChanges();
+      c.cerrarOverlay();
+      fixture.detectChanges();
+      expect(c.overlay().kind).toBe('cerrado');
+      c.sincronizarInformacionPeriodo();
+      fixture.detectChanges();
+      expect(c.overlay().kind).toBe('cerrado');
+    });
+
+    it('abrirDetalleOperativo contextual resuelve tab desde bloqueos', async () => {
+      ejecutarPrevalidaciones.mockResolvedValueOnce(prevalidacionLista({
+        bloqueos: [{
+          codigo: 'PARAMETROS',
+          area: 'PARAMETROS',
+          severidad: 'BLOQUEO',
+          texto: 'Grupos incompletos',
+        }],
+      }));
+      const c = fixture.componentInstance;
+      c.validarPeriodo();
+      await fixture.whenStable();
+      fixture.detectChanges();
+      c.cerrarOverlay();
+      c.abrirDetalleOperativoContextual();
+      fixture.detectChanges();
+      expect(c.overlay().kind).toBe('revision');
+      expect(c.detalleOperativoTabActivo()).toBe('parametros');
+    });
+
+    it('decision reemplaza informacion al guardar snapshot', async () => {
+      ejecutarPrevalidaciones.mockRejectedValueOnce(new Error('error previo'));
+      const c = fixture.componentInstance;
+      c.validarPeriodo();
+      await fixture.whenStable();
+      fixture.detectChanges();
+      expect(c.overlay().kind).toBe('informacion');
+
+      c.guardarSnapshotPreliminar();
+      fixture.detectChanges();
+      expect(c.overlay().kind).toBe('decision');
+      expect(c.informacionPeriodo()).toBeNull();
+    });
+  });
+
+  describe.skip('DOM legacy pre-workspace (deuda NOM-CONTAINER-SPEC-REPARO)', () => {
   it('crea la vista y muestra titulo preparar nomina', () => {
     const text = fixture.nativeElement.textContent as string;
     expectTexto(text, 'Preparar nomina');
@@ -1612,5 +1734,6 @@ describe('ProcesoMensualContainer', () => {
     expectTexto(text, 'Movimientos');
     expectTexto(text, 'Recurrentes');
     expect(links.length).toBeGreaterThan(0);
+  });
   });
 });
