@@ -2,6 +2,18 @@
 
 ## Estado
 
+## NOM-MODALES-PERIODO-DETALLE-POLISH-01 aplicado
+
+Modal de revisión (`app-proceso-mensual-detalle-modal`): footer sin duplicar CTA del workspace, copy operativo, CSS local y sin bloque técnico visible. Documento: [`nom-modales-periodo-detalle-polish-01.md`](./nom-modales-periodo-detalle-polish-01.md).
+
+## NOM-CONTAINER-SPEC-REPARO aplicado
+
+Specs de integración del contenedor alineados al shell modular (workspace + overlays): sin `describe.skip` legacy; helpers `proceso-mensual-container.spec.helpers.ts`; cobertura equivalente vía rules existentes + ~31 tests container. Documento: [`nom-mensual-container-spec-reparo-01.md`](./nom-mensual-container-spec-reparo-01.md).
+
+## NOM-MENSUAL-PERSISTENCIA-ESTADO-01 aplicado
+
+Al entrar o cambiar de periodo, si existe version revisable activa en BD, el store rehidrata cabecera y detalle sin vaciar el snapshot antes del fetch; la facade infiere prevalidacion, base y calculo desde el snapshot para bitacora, franja y estado operativo. Sin guardar version revisable, la pantalla sigue en «Generar nomina». Documento: [`nom-mensual-persistencia-estado-01.md`](./nom-mensual-persistencia-estado-01.md).
+
 ## NOM-MENSUAL-WORKSPACE-UI-01 aplicado
 
 La pantalla principal se orienta como **Nomina mensual** y workspace operativo de RRHH. El flujo visible prioriza:

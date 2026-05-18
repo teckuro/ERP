@@ -1,3 +1,9 @@
+## 2026-05-18 - NOM-MODALES-PERIODO-DETALLE-POLISH-01
+
+- **Módulo:** Nómina mensual / modal revisión (`app-proceso-mensual-detalle-modal`).
+- **Cambio visual:** footer sin duplicar CTA del workspace; acción contextual por tab; CSS movido al componente; sombra modal suavizada; eliminado disclosure con datos técnicos.
+- **Restricciones:** sin facade slim, store, servicios, SQL, `app-message-box` ni estilos globales.
+
 ## 2026-05-18 - NOM-MENSUAL-WORKSPACE-LAYOUT-POLISH-01
 
 - **Módulo:** Nómina mensual / workspace del contenedor.

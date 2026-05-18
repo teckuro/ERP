@@ -11,7 +11,7 @@ import { ProcesoMensualPresentacionFacade } from '../../facade/proceso-mensual-p
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CommonModule, RouterLink, DataGridComponent],
   templateUrl: './proceso-mensual-detalle-modal.component.html',
-  styleUrl: '../../proceso-mensual-container.css',
+  styleUrl: './proceso-mensual-detalle-modal.component.css',
 })
 export class ProcesoMensualDetalleModalComponent {
   readonly facade = inject(ProcesoMensualPresentacionFacade);

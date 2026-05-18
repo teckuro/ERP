@@ -19,11 +19,14 @@ export interface NominaVisualFrameInput {
   validando: boolean;
   generandoPreNomina: boolean;
   calculandoPreliminar: boolean;
+  rehidratandoPeriodo: boolean;
   estadoClave: ProcesoMensualEstadoClave;
 }
 
 export function resolveNominaVisualFrame(input: NominaVisualFrameInput): NominaVisualFrame {
-  if (input.validando || input.generandoPreNomina || input.calculandoPreliminar) return 'generando';
+  if (input.validando || input.generandoPreNomina || input.calculandoPreliminar || input.rehidratandoPeriodo) {
+    return 'generando';
+  }
 
   const estado = input.estadoClave;
   if (estado === 'liquidaciones_disponibles') return 'liquidaciones_generadas';

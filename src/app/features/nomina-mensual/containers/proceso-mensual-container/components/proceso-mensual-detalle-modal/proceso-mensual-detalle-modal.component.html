@@ -1,181 +1,174 @@
 @let f = facade;
-    <div
-      class="payroll-operational-detail-overlay"
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="payroll-operational-detail-title"
-      (click)="f.cerrarDetalleOperativo()"
-    >
-      <div class="payroll-operational-detail-modal" (click)="$event.stopPropagation()">
-        <header class="payroll-operational-detail-modal__header">
-          <div>
-            <h2 id="payroll-operational-detail-title">Revisión de nómina mensual</h2>
-            <p>{{ f.periodoActivo.etiqueta() }} · {{ f.estadoOperativo().titulo }} · Información revisable por RRHH antes de continuar.</p>
-          </div>
-          <button type="button" class="payroll-modal-secondary" (click)="f.cerrarDetalleOperativo()" aria-label="Cerrar detalle operativo">
-            Cerrar
-          </button>
-        </header>
+@let footer = f.detalleRevisionFooterAccion();
+<div
+  class="payroll-operational-detail-overlay"
+  role="dialog"
+  aria-modal="true"
+  aria-labelledby="payroll-operational-detail-title"
+  (click)="f.cerrarDetalleOperativo()"
+>
+  <div class="payroll-operational-detail-modal" (click)="$event.stopPropagation()">
+    <header class="payroll-operational-detail-modal__header">
+      <div>
+        <h2 id="payroll-operational-detail-title">{{ f.detalleRevisionModalTitulo }}</h2>
+        <p>{{ f.detalleRevisionModalLead() }}</p>
+      </div>
+      <button type="button" class="payroll-modal-secondary" (click)="f.cerrarDetalleOperativo()" aria-label="Cerrar revisión">
+        Cerrar
+      </button>
+    </header>
 
-        <nav class="payroll-operational-tabs" aria-label="Detalle de nómina mensual">
-          @for (tab of f.detalleOperativoTabs; track tab.id) {
-            <button
-              type="button"
-              class="payroll-operational-tab"
-              [class.payroll-operational-tab--active]="f.detalleOperativoTabActivo() === tab.id"
-              (click)="f.seleccionarDetalleOperativoTab(tab.id)"
-            >
-              {{ tab.label }}
+    <nav class="payroll-operational-tabs" aria-label="Detalle de nómina mensual">
+      @for (tab of f.detalleOperativoTabs; track tab.id) {
+        <button
+          type="button"
+          class="payroll-operational-tab"
+          [class.payroll-operational-tab--active]="f.detalleOperativoTabActivo() === tab.id"
+          (click)="f.seleccionarDetalleOperativoTab(tab.id)"
+        >
+          {{ tab.label }}
+        </button>
+      }
+    </nav>
+
+    <div class="payroll-operational-detail-modal__body">
+      @switch (f.detalleOperativoTabActivo()) {
+        @case ('resumen') {
+          <section class="payroll-operational-summary">
+            <div>
+              <h3>Nómina mensual</h3>
+              <dl>
+                <div><dt>Trabajadores considerados</dt><dd>{{ f.baseNominaTrazabilidad()?.trabajadoresConsiderados ?? f.dashboardResumen().trabajadoresAptos ?? 0 }}</dd></div>
+                <div><dt>Movimientos incluidos</dt><dd>{{ f.baseNominaTrazabilidad()?.movimientosDelMesIncluidos ?? f.dashboardResumen().movimientosAprobados }}</dd></div>
+                <div><dt>Recurrentes considerados</dt><dd>{{ f.baseNominaTrazabilidad()?.asignacionesRecurrentesIncluidas ?? f.dashboardResumen().asignacionesAplicables ?? 0 }}</dd></div>
+              </dl>
+            </div>
+            <div>
+              <h3>Resultado preliminar</h3>
+              <dl>
+                <div><dt>Trabajadores calculados</dt><dd>{{ f.resultadoPreliminar().resumen.trabajadoresCalculados }}</dd></div>
+                <div><dt>Total haberes</dt><dd>{{ f.formatoMonto(f.resultadoPreliminar().resumen.totalHaberes) }}</dd></div>
+                <div><dt>Total descuentos</dt><dd>{{ f.formatoMonto(f.resultadoPreliminar().resumen.totalDescuentos) }}</dd></div>
+                <div><dt>Líquido preliminar</dt><dd>{{ f.formatoMonto(f.resultadoPreliminar().resumen.totalLiquido) }}</dd></div>
+              </dl>
+            </div>
+            <div>
+              <h3>Estado de revisión</h3>
+              <dl>
+                <div><dt>Bloqueos</dt><dd>{{ f.estadoOperativo().bloqueos.length }}</dd></div>
+                <div><dt>Advertencias</dt><dd>{{ f.estadoOperativo().advertencias.length }}</dd></div>
+                <div><dt>Información</dt><dd>{{ f.estadoOperativo().informaciones.length }}</dd></div>
+              </dl>
+            </div>
+          </section>
+        }
+        @case ('trabajadores') {
+          <app-data-grid
+            title="Trabajadores considerados"
+            [rows]="f.payrollWorkerDetailRows()"
+            [columns]="f.payrollWorkerDetailColumns"
+            [filters]="f.payrollWorkerDetailFilters"
+            [filtersEnabled]="true"
+            [filterChipsDisplay]="'never'"
+            [headerCountDisplay]="'text'"
+            headerCountNoun="registros"
+            [showExportAction]="false"
+            [selectable]="false"
+            [maxItems]="10"
+            emptyTitle="Aún no hay trabajadores en la nómina mensual."
+            emptyDescription="Genera la nómina para revisar el detalle."
+          ></app-data-grid>
+        }
+        @case ('parametros') {
+          <section class="payroll-follow-section" aria-label="Seguimiento de parámetros">
+            <header>
+              <h3>Parámetros</h3>
+              <p>Valores del período y catálogos mínimos que condicionan la nómina mensual.</p>
+            </header>
+            <div class="payroll-follow-list">
+              @for (item of f.payrollParametroSeguimientoItems(); track item.titulo + item.descripcion) {
+                <article class="payroll-follow-row">
+                  <div>
+                    <h4>{{ item.titulo }}</h4>
+                    <p>{{ item.descripcion }}</p>
+                  </div>
+                  <span [class]="item.estadoClase">{{ item.estado }}</span>
+                  @if (item.ruta) {
+                    <a [routerLink]="item.ruta">{{ item.accion }}</a>
+                  } @else {
+                    <button type="button" (click)="f.abrirDetalleOperativo('resumen')">{{ item.accion }}</button>
+                  }
+                </article>
+              }
+            </div>
+          </section>
+        }
+        @case ('movimientos_recurrentes') {
+          <section class="payroll-follow-section" aria-label="Seguimiento de movimientos y recurrentes">
+            <header>
+              <h3>Movimientos y recurrentes</h3>
+              <p>Bonos, descuentos, ausencias, licencias y asignaciones vigentes consideradas en el período.</p>
+            </header>
+            <div class="payroll-follow-list">
+              @for (item of f.payrollMovimientoRecurrenteSeguimientoItems(); track item.titulo + item.descripcion) {
+                <article class="payroll-follow-row">
+                  <div>
+                    <h4>{{ item.titulo }}</h4>
+                    <p>{{ item.descripcion }}</p>
+                  </div>
+                  <span [class]="item.estadoClase">{{ item.estado }}</span>
+                  @if (item.ruta) {
+                    <a [routerLink]="item.ruta">{{ item.accion }}</a>
+                  } @else {
+                    <button type="button" (click)="f.abrirDetalleOperativo('resumen')">{{ item.accion }}</button>
+                  }
+                </article>
+              }
+            </div>
+          </section>
+        }
+        @case ('resultado') {
+          <section class="payroll-follow-section" aria-label="Seguimiento de nómina generada">
+            <header>
+              <h3>Nómina generada</h3>
+              <p>Resumen de la versión preliminar o guardada, sin grilla ni detalle de liquidaciones reales.</p>
+            </header>
+            <div class="payroll-follow-list">
+              @for (item of f.payrollResultadoSeguimientoItems(); track item.titulo) {
+                <article class="payroll-follow-row">
+                  <div>
+                    <h4>{{ item.titulo }}</h4>
+                    <p>{{ item.descripcion }}</p>
+                  </div>
+                  <span [class]="item.estadoClase">{{ item.estado }}</span>
+                  <button type="button" (click)="f.seleccionarDetalleOperativoTab(item.accion === 'Revisar trabajadores' ? 'trabajadores' : 'resumen')">{{ item.accion }}</button>
+                </article>
+              }
+            </div>
+          </section>
+        }
+      }
+    </div>
+
+    <footer class="payroll-operational-detail-modal__footer">
+      <button type="button" class="payroll-modal-secondary" (click)="f.cerrarDetalleOperativo()">Cerrar</button>
+      <div class="payroll-modal-footer-actions">
+        @switch (footer.kind) {
+          @case ('cerrar') {
+            <button type="button" class="payroll-modal-primary" (click)="f.cerrarDetalleOperativo()">
+              {{ footer.label }}
             </button>
           }
-        </nav>
-
-        <div class="payroll-operational-detail-modal__body">
-          @switch (f.detalleOperativoTabActivo()) {
-            @case ('resumen') {
-              <section class="payroll-operational-summary">
-                <div>
-                <h3>Nómina mensual</h3>
-                  <dl>
-                    <div><dt>Trabajadores considerados</dt><dd>{{ f.baseNominaTrazabilidad()?.trabajadoresConsiderados ?? f.dashboardResumen().trabajadoresAptos ?? 0 }}</dd></div>
-                    <div><dt>Movimientos incluidos</dt><dd>{{ f.baseNominaTrazabilidad()?.movimientosDelMesIncluidos ?? f.dashboardResumen().movimientosAprobados }}</dd></div>
-                    <div><dt>Recurrentes considerados</dt><dd>{{ f.baseNominaTrazabilidad()?.asignacionesRecurrentesIncluidas ?? f.dashboardResumen().asignacionesAplicables ?? 0 }}</dd></div>
-                  </dl>
-                </div>
-                <div>
-                  <h3>Resultado preliminar</h3>
-                  <dl>
-                    <div><dt>Trabajadores calculados</dt><dd>{{ f.resultadoPreliminar().resumen.trabajadoresCalculados }}</dd></div>
-                    <div><dt>Total haberes</dt><dd>{{ f.formatoMonto(f.resultadoPreliminar().resumen.totalHaberes) }}</dd></div>
-                    <div><dt>Total descuentos</dt><dd>{{ f.formatoMonto(f.resultadoPreliminar().resumen.totalDescuentos) }}</dd></div>
-                    <div><dt>Líquido preliminar</dt><dd>{{ f.formatoMonto(f.resultadoPreliminar().resumen.totalLiquido) }}</dd></div>
-                  </dl>
-                </div>
-                <div>
-                  <h3>Estado de revisión</h3>
-                  <dl>
-                    <div><dt>Bloqueos</dt><dd>{{ f.estadoOperativo().bloqueos.length }}</dd></div>
-                    <div><dt>Advertencias</dt><dd>{{ f.estadoOperativo().advertencias.length }}</dd></div>
-                    <div><dt>Información</dt><dd>{{ f.estadoOperativo().informaciones.length }}</dd></div>
-                  </dl>
-                </div>
-              </section>
-            }
-            @case ('trabajadores') {
-              <app-data-grid
-                title="Trabajadores considerados"
-                [rows]="f.payrollWorkerDetailRows()"
-                [columns]="f.payrollWorkerDetailColumns"
-                [filters]="f.payrollWorkerDetailFilters"
-                [filtersEnabled]="true"
-                [filterChipsDisplay]="'never'"
-                [headerCountDisplay]="'text'"
-                headerCountNoun="registros"
-                [showExportAction]="false"
-                [selectable]="false"
-                [maxItems]="10"
-    emptyTitle="Aún no hay trabajadores en la nómina mensual."
-    emptyDescription="Genera la nómina para revisar el detalle."
-              ></app-data-grid>
-            }
-            @case ('parametros') {
-              <section class="payroll-follow-section" aria-label="Seguimiento de parámetros">
-                <header>
-                  <h3>Parámetros</h3>
-                  <p>Valores del período y catálogos mínimos que condicionan la nómina mensual.</p>
-                </header>
-                <div class="payroll-follow-list">
-                  @for (item of f.payrollParametroSeguimientoItems(); track item.titulo + item.descripcion) {
-                    <article class="payroll-follow-row">
-                      <div>
-                        <h4>{{ item.titulo }}</h4>
-                        <p>{{ item.descripcion }}</p>
-                      </div>
-                      <span [class]="item.estadoClase">{{ item.estado }}</span>
-                      @if (item.ruta) {
-                        <a [routerLink]="item.ruta">{{ item.accion }}</a>
-                      } @else {
-                        <button type="button" (click)="f.abrirDetalleOperativo('resumen')">{{ item.accion }}</button>
-                      }
-                    </article>
-                  }
-                </div>
-              </section>
-            }
-            @case ('movimientos_recurrentes') {
-              <section class="payroll-follow-section" aria-label="Seguimiento de movimientos y recurrentes">
-                <header>
-                  <h3>Movimientos y recurrentes</h3>
-                  <p>Bonos, descuentos, ausencias, licencias y asignaciones vigentes consideradas en el período.</p>
-                </header>
-                <div class="payroll-follow-list">
-                  @for (item of f.payrollMovimientoRecurrenteSeguimientoItems(); track item.titulo + item.descripcion) {
-                    <article class="payroll-follow-row">
-                      <div>
-                        <h4>{{ item.titulo }}</h4>
-                        <p>{{ item.descripcion }}</p>
-                      </div>
-                      <span [class]="item.estadoClase">{{ item.estado }}</span>
-                      @if (item.ruta) {
-                        <a [routerLink]="item.ruta">{{ item.accion }}</a>
-                      } @else {
-                        <button type="button" (click)="f.abrirDetalleOperativo('resumen')">{{ item.accion }}</button>
-                      }
-                    </article>
-                  }
-                </div>
-              </section>
-            }
-            @case ('resultado') {
-              <section class="payroll-follow-section" aria-label="Seguimiento de nómina generada">
-                <header>
-                  <h3>Nómina generada</h3>
-                  <p>Resumen de la versión preliminar o guardada, sin grilla ni detalle de liquidaciones reales.</p>
-                </header>
-                <div class="payroll-follow-list">
-                  @for (item of f.payrollResultadoSeguimientoItems(); track item.titulo) {
-                    <article class="payroll-follow-row">
-                      <div>
-                        <h4>{{ item.titulo }}</h4>
-                        <p>{{ item.descripcion }}</p>
-                      </div>
-                      <span [class]="item.estadoClase">{{ item.estado }}</span>
-                      <button type="button" (click)="f.seleccionarDetalleOperativoTab(item.accion === 'Revisar trabajadores' ? 'trabajadores' : 'resumen')">{{ item.accion }}</button>
-                    </article>
-                  }
-                </div>
-              </section>
-            }
+          @case ('tab') {
+            <button type="button" class="payroll-modal-primary" (click)="f.seleccionarDetalleOperativoTab(footer.tab)">
+              {{ footer.label }}
+            </button>
           }
-
-          <details class="payroll-operational-internal">
-            <summary>Información interna</summary>
-            <div>
-              <p>Versión interna: {{ f.resultadoPreliminar().detalleTecnico.versionCalculo }}</p>
-              <p>Fecha de generación: {{ f.resultadoPreliminar().detalleTecnico.generadoEn }}</p>
-              <p>Estado técnico traducido: {{ f.resultadoPreliminar().estadoLabel }}</p>
-            </div>
-          </details>
-        </div>
-        <footer class="payroll-operational-detail-modal__footer">
-          <button type="button" class="payroll-modal-secondary" (click)="f.cerrarDetalleOperativo()">Cerrar</button>
-          <div class="payroll-modal-footer-actions">
-            @if (f.estadoOperativo().accionPrincipal.tipo === 'ruta') {
-              <a [routerLink]="f.estadoOperativo().accionPrincipal.ruta" class="payroll-modal-primary">
-                {{ f.estadoOperativo().accionPrincipal.label }}
-              </a>
-            }
-            @if (f.estadoOperativo().accionPrincipal.tipo === 'local' && f.estadoOperativo().accionPrincipal.accionLocal) {
-              <button
-                type="button"
-                class="payroll-modal-primary"
-                [disabled]="f.estadoOperativo().accionPrincipal.disabled || f.validando() || f.generandoPreNomina() || f.calculandoPreliminar() || f.guardandoSnapshot() || f.aprobandoResultado() || f.cerrandoNomina()"
-                (click)="f.ejecutarAccionValidacion(f.estadoOperativo().accionPrincipal.accionLocal!)"
-              >
-                {{ f.estadoOperativo().accionPrincipal.label }}
-              </button>
-            }
-          </div>
-        </footer>
+          @case ('ruta') {
+            <a [routerLink]="footer.ruta" class="payroll-modal-primary">{{ footer.label }}</a>
+          }
+        }
       </div>
-    </div>
+    </footer>
+  </div>
+</div>

@@ -21,12 +21,14 @@ export interface ValidacionCalculoPreliminarInput {
   base: BaseNominaTrazabilidad | null;
   errorEjecucion: string | null;
   nominaCerradaOperativamente: boolean;
+  tieneSnapshotPersistido?: boolean;
 }
 
 export function buildValidacionCalculoPreliminarView(
   input: ValidacionCalculoPreliminarInput,
 ): ValidacionCalculoPreliminarView {
-  const { periodo, resultado, preNomina, base, errorEjecucion, nominaCerradaOperativamente } = input;
+  const { periodo, resultado, preNomina, base, errorEjecucion, nominaCerradaOperativamente, tieneSnapshotPersistido } =
+    input;
   const bloqueos: ValidacionOperativaItemView[] = [];
   const advertencias: ValidacionOperativaItemView[] = [];
   const informaciones: ValidacionOperativaItemView[] = [];
@@ -105,7 +107,7 @@ export function buildValidacionCalculoPreliminarView(
     });
   }
 
-  if (!preNomina) {
+  if (!preNomina && !tieneSnapshotPersistido) {
     bloqueos.push({
       codigo: 'BLOQ-005',
       titulo: 'Nómina mensual no generada',
@@ -114,7 +116,7 @@ export function buildValidacionCalculoPreliminarView(
       accionLabel: 'Generar nómina',
       accionLocal: 'generarBase',
     });
-  } else if ((base?.trabajadoresConsiderados ?? preNomina.trabajadoresIncluidos) === 0) {
+  } else if (preNomina && (base?.trabajadoresConsiderados ?? preNomina.trabajadoresIncluidos) === 0) {
     bloqueos.push({
       codigo: 'BLOQ-003',
       titulo: 'No hay trabajadores considerados',

@@ -1,3 +1,36 @@
+## NOM-MODALES-PERIODO-DETALLE-POLISH-01 - Pulido modal revisión
+
+| Campo | Estado |
+|---|---|
+| Estado | Implementada |
+| Tipo | UX/UI local (modal detalle) |
+| Alcance | Copy header/footer contextual; sin disclosure técnico; CSS local del modal; sombra NOIA; rules + specs. |
+| Restricciones | Sin facade slim, store, servicios, SQL, motor, `app-message-box`. |
+| Documento | [`../modulos/nomina-mensual/nom-modales-periodo-detalle-polish-01.md`](../modulos/nomina-mensual/nom-modales-periodo-detalle-polish-01.md) |
+| Siguiente | `NOM-MENSUAL-FACADE-SLIM-01` o E2E modales. |
+
+## NOM-CONTAINER-SPEC-REPARO - Reparación specs contenedor
+
+| Campo | Estado |
+|---|---|
+| Estado | Implementada |
+| Tipo | Tests + documentación |
+| Alcance | Eliminado `describe.skip` (43 legacy); helpers `proceso-mensual-container.spec.helpers.ts`; sub-describes shell/workspace, flujo integración, overlay y rehidratación (~31 tests container). Matriz MIGRAR/ADAPTAR/RETIRAR en doc módulo. |
+| Restricciones | Sin producción salvo `rehidratandoPeriodo` en facade (lectura tests); sin SQL/motor/estilos globales. |
+| Documento | [`../modulos/nomina-mensual/nom-mensual-container-spec-reparo-01.md`](../modulos/nomina-mensual/nom-mensual-container-spec-reparo-01.md) |
+| Siguiente | Cerrada; pulido modal en DETALLE-POLISH-01. |
+
+## NOM-MENSUAL-PERSISTENCIA-ESTADO-01 - Rehidratación estado período
+
+| Campo | Estado |
+|---|---|
+| Estado | Implementada |
+| Tipo | Store / facade / rules (sin SQL nuevo) |
+| Alcance | `rehidratarPeriodoActivo`, inferencia de contexto desde snapshot, tests rehidratación. |
+| Restricciones | Sin guardar borrador en BD; sin `liquidacionesDisponibles` desde BD. |
+| Documento | [`../modulos/nomina-mensual/nom-mensual-persistencia-estado-01.md`](../modulos/nomina-mensual/nom-mensual-persistencia-estado-01.md) |
+| Siguiente | Cerrada; specs en NOM-CONTAINER-SPEC-REPARO. |
+
 ## NOM-MENSUAL-WORKSPACE-COPY-POLISH-01 - Pulido copy workspace
 
 | Campo | Estado |
@@ -7,7 +40,7 @@
 | Alcance | Textos visibles workspace + lead shell; rules workspace y strings acotados estado operativo; spec `proceso-mensual-workspace.rules.spec.ts`. |
 | Restricciones | Sin CSS/layout, overlays, store, servicios, SQL, motor; mismos `accionLocal` y flujos. |
 | Documento | [`../modulos/nomina-mensual/nom-mensual-workspace-copy-polish-01.md`](../modulos/nomina-mensual/nom-mensual-workspace-copy-polish-01.md) |
-| Siguiente | `NOM-CONTAINER-SPEC-REPARO` o pulido modal detalle (prioridad 5 modales). |
+| Siguiente | Pulido modal detalle (prioridad 5 modales). |
 
 ## NOM-MENSUAL-WORKSPACE-LAYOUT-POLISH-01 - Pulido layout workspace
 
@@ -29,7 +62,7 @@
 | Alcance | `ProcesoMensualOverlay`, signal `overlay`, host `app-proceso-mensual-overlays`, `cerrarOverlay`, computeds compatibles, 8 tests overlay. |
 | Restricciones | Sin `app-message-box` compartido, store, servicios, SQL, motor, estilos globales. |
 | Documento | [`../modulos/nomina-mensual/modales-periodo-state-03.md`](../modulos/nomina-mensual/modales-periodo-state-03.md) |
-| Siguiente | `NOM-CONTAINER-SPEC-REPARO` — reactivar 43 tests legacy del contenedor. |
+| Siguiente | Cerrada; specs reparados en NOM-CONTAINER-SPEC-REPARO. |
 
 ## NOM-MODALES-PERIODO-INFO-02 - Información guiada post-generación
 

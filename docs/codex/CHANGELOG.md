@@ -1,5 +1,18 @@
 # CHANGELOG
 
+## 2026-05-18 - NOM-MODALES-PERIODO-DETALLE-POLISH-01
+
+- **UI:** pulido modal revisión — footer contextual, sin disclosure técnico, CSS local, sombra suavizada.
+- **Rules:** `proceso-mensual-detalle-modal.rules.ts` (lead + footer por tab).
+- **Tests:** +4 componente, +3 rules; container spec ajustado.
+
+## 2026-05-18 - NOM-CONTAINER-SPEC-REPARO
+
+- **Tests:** eliminado `describe.skip` (43 legacy); `proceso-mensual-container.spec.helpers.ts`; ~31 tests integración container (shell, flujo, overlay, rehidratación).
+- **Docs:** [`modulos/nomina-mensual/nom-mensual-container-spec-reparo-01.md`](./modulos/nomina-mensual/nom-mensual-container-spec-reparo-01.md); matriz MIGRAR/ADAPTAR/RETIRAR.
+- **Build:** `*.spec.helpers.ts` excluido de `tsconfig.app.json`.
+- **Copy:** timeline estado operativo alineado a «Generar nómina» / «Confirmar nómina».
+
 ## 2026-05-18 - NOM-MENSUAL-WORKSPACE-LAYOUT-POLISH-01
 
 - **UI:** pulido de layout del workspace (franja, rail editorial, focus operativo, tabs, confirmación sin card, responsive).

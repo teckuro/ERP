@@ -39,13 +39,13 @@ export class ProcesoMensualPeriodoStore {
   readonly aprobandoResultado = signal(false);
   readonly cerrandoNomina = signal(false);
   readonly snapshotCompleto = signal<NominaSnapshotCompletoView | null>(null);
+  readonly rehidratandoPeriodo = signal(false);
 
   constructor() {
     effect(() => {
-      this.periodoSeleccionado();
+      const periodo = this.periodoSeleccionado();
       untracked(() => {
-        this.resetearEstadoPeriodo();
-        this.verSnapshotActivo();
+        this.rehidratarPeriodoActivo(periodo);
       });
     });
   }
@@ -178,32 +178,50 @@ export class ProcesoMensualPeriodoStore {
       });
   }
 
-  verSnapshotActivo(): void {
-    const p = this.periodoSeleccionado();
+  rehidratarPeriodoActivo(periodo: string): void {
+    this.rehidratandoPeriodo.set(true);
     this.consultandoSnapshot.set(true);
     this.errorEjecucion.set(null);
+    this.errorGuardadoResultado.set(null);
+    this.errorAprobacionOperativa.set(null);
+    this.errorCierreOperativo.set(null);
+    this.errorSnapshotCompleto.set(null);
+    this.exitoGuardadoResultado.set(null);
+
     void this.procesoMensual
-      .obtenerSnapshotActivo(p)
-      .then((snapshot) => {
-        if (this.periodoSeleccionado() !== p) {
-          return null;
-        }
-        this.aplicarSnapshotActivo(snapshot);
-        this.errorGuardadoResultado.set(null);
-        this.errorAprobacionOperativa.set(null);
-        this.errorCierreOperativo.set(null);
-        this.exitoGuardadoResultado.set(null);
-        return this.cargarSnapshotCompletoActivo(p);
-      })
-      .catch((e: unknown) => {
-        if (this.periodoSeleccionado() !== p) {
+      .rehidratarPeriodo(periodo)
+      .then(({ snapshot, completo }) => {
+        if (this.periodoSeleccionado() !== periodo) {
           return;
         }
+        if (snapshot) {
+          this.resultado.set(null);
+          this.preNomina.set(null);
+          this.calculo.set(null);
+          this.identificadorResultadoGuardadoActual.set(snapshot.hashSnapshot ?? null);
+          this.aplicarSnapshotActivo(snapshot);
+          this.snapshotCompleto.set(completo);
+        } else {
+          this.limpiarSenalesVolatiles();
+        }
+      })
+      .catch((e: unknown) => {
+        if (this.periodoSeleccionado() !== periodo) {
+          return;
+        }
+        this.limpiarSenalesVolatiles();
         this.errorEjecucion.set(e instanceof Error ? e.message : String(e));
       })
       .finally(() => {
-        this.consultandoSnapshot.set(false);
+        if (this.periodoSeleccionado() === periodo) {
+          this.consultandoSnapshot.set(false);
+          this.rehidratandoPeriodo.set(false);
+        }
       });
+  }
+
+  verSnapshotActivo(): void {
+    this.rehidratarPeriodoActivo(this.periodoSeleccionado());
   }
 
   consultarDetalleResultadoGuardado(): void {
@@ -211,6 +229,10 @@ export class ProcesoMensualPeriodoStore {
   }
 
   resetearEstadoPeriodo(): void {
+    this.limpiarSenalesVolatiles();
+  }
+
+  private limpiarSenalesVolatiles(): void {
     this.resultado.set(null);
     this.preNomina.set(null);
     this.calculo.set(null);

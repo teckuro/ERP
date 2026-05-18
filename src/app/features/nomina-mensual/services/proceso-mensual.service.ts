@@ -152,6 +152,19 @@ export class ProcesoMensualService {
     return this.snapshots.obtenerSnapshotActivo(periodo.trim());
   }
 
+  async rehidratarPeriodo(periodo: string): Promise<{
+    snapshot: NominaCalculoPeriodoSnapshot | null;
+    completo: NominaSnapshotCompletoView | null;
+  }> {
+    const p = periodo.trim();
+    const snapshot = await this.obtenerSnapshotActivo(p);
+    if (!snapshot) {
+      return { snapshot: null, completo: null };
+    }
+    const completo = await this.obtenerSnapshotCompletoActivo(p);
+    return { snapshot, completo };
+  }
+
   obtenerSnapshotCompletoActivo(periodo: string): Promise<NominaSnapshotCompletoView | null> {
     return this.snapshots.obtenerSnapshotCompletoActivo(periodo.trim());
   }

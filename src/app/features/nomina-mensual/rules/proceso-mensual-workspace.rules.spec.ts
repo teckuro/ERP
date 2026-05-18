@@ -148,6 +148,7 @@ describe('proceso-mensual-workspace.rules', () => {
         validando: false,
         generandoPreNomina: false,
         calculandoPreliminar: false,
+        rehidratandoPeriodo: false,
         estadoClave: 'base_lista',
       }),
     ).toBe('en_revision');

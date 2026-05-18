@@ -30,7 +30,13 @@ import {
   type ProcesoMensualEstadoSeveridad,
   type ProcesoMensualPendienteVm,
 } from '../../../rules/proceso-mensual-estado-operativo.rules';
+import { inferirContextoOperativoPeriodo } from '../../../rules/proceso-mensual-rehidratacion.rules';
 import { buildValidacionCalculoPreliminarView } from '../../../rules/proceso-mensual-validacion-calculo.rules';
+import {
+  buildDetalleRevisionFooterAccion,
+  buildDetalleRevisionModalLead,
+  DETALLE_REVISION_MODAL_TITULO,
+} from '../../../rules/proceso-mensual-detalle-modal.rules';
 import {
   buildInformacionPeriodoView,
   mapDestinoToDetalleTab,
@@ -124,6 +130,7 @@ export class ProcesoMensualPresentacionFacade {
   readonly guardandoSnapshot = this.store.guardandoSnapshot;
   readonly consultandoSnapshot = this.store.consultandoSnapshot;
   readonly consultandoSnapshotCompleto = this.store.consultandoSnapshotCompleto;
+  readonly rehidratandoPeriodo = this.store.rehidratandoPeriodo;
   readonly errorEjecucion = this.store.errorEjecucion;
   readonly errorGuardadoResultado = this.store.errorGuardadoResultado;
   readonly errorAprobacionOperativa = this.store.errorAprobacionOperativa;
@@ -154,6 +161,16 @@ export class ProcesoMensualPresentacionFacade {
     const current = this.overlay();
     return current.kind === 'revision' ? current.tab : 'trabajadores';
   });
+  readonly detalleRevisionModalTitulo = DETALLE_REVISION_MODAL_TITULO;
+  readonly detalleRevisionModalLead = computed(() =>
+    buildDetalleRevisionModalLead({
+      periodoEtiqueta: this.periodoActivo.etiqueta(),
+      estadoTitulo: this.estadoOperativo().titulo,
+    }),
+  );
+  readonly detalleRevisionFooterAccion = computed(() =>
+    buildDetalleRevisionFooterAccion(this.detalleOperativoTabActivo()),
+  );
   readonly nominaWorkspaceTab = signal<NominaWorkspaceTab>('guia');
   readonly actaOperativaPreparada = signal(false);
 
@@ -532,6 +549,15 @@ export class ProcesoMensualPresentacionFacade {
     };
   });
 
+  readonly contextoOperativoPeriodo = computed(() =>
+    inferirContextoOperativoPeriodo({
+      resultado: this.store.resultado(),
+      preNomina: this.store.preNomina(),
+      calculo: this.store.calculo(),
+      snapshot: this.store.snapshotActivo(),
+    }),
+  );
+
   readonly validacionCalculo = computed<ValidacionCalculoPreliminarView>(() =>
     buildValidacionCalculoPreliminarView({
       periodo: this.store.periodoSeleccionado(),
@@ -540,6 +566,7 @@ export class ProcesoMensualPresentacionFacade {
       base: this.baseNominaTrazabilidad(),
       errorEjecucion: this.store.errorEjecucion(),
       nominaCerradaOperativamente: this.nominaEstaCerradaOperativamente(),
+      tieneSnapshotPersistido: this.store.snapshotActivo() != null,
     }),
   );
 
@@ -548,6 +575,7 @@ export class ProcesoMensualPresentacionFacade {
     const preNomina = this.store.preNomina();
     const calculo = this.store.calculo();
     const snapshot = this.store.snapshotActivo();
+    const contexto = this.contextoOperativoPeriodo();
     const resumen = resultado?.resumen;
     const conteoEstados = resumen?.conteoEntradasPorEstado ?? {};
     const movimientosAprobados =
@@ -562,9 +590,9 @@ export class ProcesoMensualPresentacionFacade {
 
     return {
       estadoPeriodo: resultado?.estado ?? null,
-      trabajadoresAptos: resumen?.trabajadoresActivosAptos ?? null,
+      trabajadoresAptos: contexto.trabajadoresAptos,
       trabajadoresPorRevisar: resumen?.trabajadoresActivosNoAptos ?? null,
-      parametrosListos: resumen?.parametrosOperativos ?? null,
+      parametrosListos: resumen?.parametrosOperativos ?? (snapshot ? true : null),
       movimientosAprobados,
       movimientosPendientes,
       asignacionesAplicables: resumen?.recurrentesAplicablesAlPeriodo ?? null,
@@ -583,19 +611,20 @@ export class ProcesoMensualPresentacionFacade {
     const validacion = this.validacionCalculo();
     const resultado = this.resultadoPreliminar();
     const revision = this.revisionAprobacion();
+    const contexto = this.contextoOperativoPeriodo();
     return resolverEstadoOperativoProcesoMensual({
       periodoValido: validarPeriodoEntradaMensual(this.store.periodoSeleccionado()),
-      tienePrevalidacion: this.store.resultado() != null,
+      tienePrevalidacion: contexto.tienePrevalidacion,
       bloqueosPrevalidacion: validacion.bloqueos.map((item) => this.pendienteDesdeValidacion(item)),
       advertenciasPrevalidacion: validacion.advertencias.map((item) => this.pendienteDesdeValidacion(item, 'warning')),
       informacionesPrevalidacion: validacion.informaciones.map((item) => this.pendienteDesdeValidacion(item, 'info')),
-      baseGenerada: this.store.preNomina() != null,
-      calculoGenerado: this.store.calculo() != null,
+      baseGenerada: contexto.baseGenerada,
+      calculoGenerado: contexto.calculoGenerado,
       calculoConBloqueos: resultado.bloqueos.length > 0 || this.store.calculo()?.estado === 'con_bloqueos',
       calculoConAdvertencias: resultado.advertencias.length > 0,
       bloqueosCalculo: resultado.bloqueos.map((item) => this.pendienteDesdeResultado(item, 'danger')),
       advertenciasCalculo: resultado.advertencias.map((item) => this.pendienteDesdeResultado(item, 'warning')),
-      resultadoGuardado: this.store.snapshotActivo() != null,
+      resultadoGuardado: contexto.resultadoGuardado,
       aprobadoOperativamente: this.store.aprobacionOperativa() != null,
       cerradoOperativamente: this.nominaEstaCerradaOperativamente(),
       liquidacionesDisponibles: false,
@@ -632,6 +661,7 @@ export class ProcesoMensualPresentacionFacade {
       validando: this.store.validando(),
       generandoPreNomina: this.store.generandoPreNomina(),
       calculandoPreliminar: this.store.calculandoPreliminar(),
+      rehidratandoPeriodo: this.store.rehidratandoPeriodo(),
       estadoClave: this.estadoOperativo().estadoClave,
     }),
   );
@@ -721,17 +751,18 @@ export class ProcesoMensualPresentacionFacade {
     return this.estadoOperativo().disclosureActivo;
   });
 
-  readonly bitacoraEtapas = computed<BitacoraEtapaVm[]>(() =>
-    buildBitacoraEtapas({
+  readonly bitacoraEtapas = computed<BitacoraEtapaVm[]>(() => {
+    const contexto = this.contextoOperativoPeriodo();
+    return buildBitacoraEtapas({
       estado: this.estadoOperativo(),
-      tieneResultado: this.store.resultado() != null,
-      tienePreNomina: this.store.preNomina() != null,
-      tieneCalculo: this.store.calculo() != null,
-      tieneSnapshot: this.store.snapshotActivo() != null,
+      tieneResultado: contexto.tienePrevalidacion,
+      tienePreNomina: contexto.baseGenerada,
+      tieneCalculo: contexto.calculoGenerado,
+      tieneSnapshot: contexto.resultadoGuardado,
       tieneAprobacion: this.store.aprobacionOperativa() != null,
       nominaCerrada: this.nominaEstaCerradaOperativamente(),
-    }),
-  );
+    });
+  });
 
   readonly registroPeriodoLinea = computed(() => {
     const partes = [

@@ -306,7 +306,7 @@ function construirTimeline(
   return [
     {
       numero: '1',
-      titulo: 'Generar nomina',
+      titulo: 'Generar nómina',
       estado: preparacionCompleta ? 'Completo' : preparacionActual ? 'Actual' : 'Pendiente',
       descripcion: preparacionCompleta
         ? 'Nomina generada'
@@ -334,7 +334,7 @@ function construirTimeline(
     },
     {
       numero: '3',
-      titulo: 'Confirmar nomina',
+      titulo: 'Confirmar nómina',
       estado: aprobacionCompleta ? 'Completo' : aprobacionActual ? 'Actual' : 'Pendiente',
       descripcion: input.cerradoOperativamente
         ? 'Nomina confirmada'
