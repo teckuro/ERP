@@ -154,6 +154,8 @@ Parametros funciona como cierre normativo del periodo: muestra estado operativo,
 
 ## 8. Decisiones de producto vigentes
 
+
+- Nómina mensual confirmada es la fuente oficial para generar liquidaciones: el flujo futuro visible debe ser generar nómina, revisar trabajadores, confirmar nómina y generar liquidaciones desde esa versión. Documento rector: [`modulos/nomina-mensual/nomina-mensual-confirmacion-flow.md`](./modulos/nomina-mensual/nomina-mensual-confirmacion-flow.md).
 - `Movimientos del mes` y `Asignaciones recurrentes` deben evolucionar a una experiencia unificada visible: `Movimientos de remuneración`.
 - La diferencia real es temporal:
   - `Del periodo`: impacto puntual del periodo.

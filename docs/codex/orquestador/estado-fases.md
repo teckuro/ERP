@@ -1,3 +1,13 @@
+## NOM-MENSUAL-WORKSPACE-UI-01 - Nomina mensual como workspace operativo
+
+| Campo | Estado |
+|---|---|
+| Estado | Implementada |
+| Tipo | UX/UI local + copy |
+| Alcance | Reorienta la pantalla a `Nomina mensual`: generar nomina, revisar trabajadores, confirmar nomina y generar liquidaciones; refuerza que la nomina confirmada es base oficial para liquidaciones. |
+| Restricciones | Sin SQL/RPC/RLS, motor, servicios, persistencia, rutas, mappers, estilos globales ni liquidaciones productivas nuevas. |
+| Documento | [`../diseno/nom-mensual-workspace-ui-01.md`](../diseno/nom-mensual-workspace-ui-01.md) |
+
 ## ERP-NOIA-UI-GUARDRAILS-01 - Guardia visual NOIA
 
 | Campo | Estado |
@@ -886,3 +896,20 @@ Restricciones:
 | Entrega | Gestionar/Asignar por trabajador; detalles filtrados; flujo mensual separado del recurrente; cuotas como variante del recurrente. |
 | Restricciones | Sin SQL/RPC/RLS, motor, liquidaciones, persistencia critica, servicios/mappers/payloads productivos nuevos, rutas nuevas ni estilos globales. |
 | Documento | [../diseno/nom-movimientos-por-trabajador-01.md](../diseno/nom-movimientos-por-trabajador-01.md) |
+
+## NOM-MENSUAL-CONFIRMACION-FLOW-00 - Nómina mensual confirmada
+
+Fecha: 2026-05-18
+
+| Campo | Estado |
+|---|---|
+| Estado | Documentada |
+| Tipo | Definición documental de producto, UX y arquitectura funcional |
+| Alcance | Redefinir Nómina mensual como workspace del período: generar, revisar trabajadores, confirmar y generar liquidaciones desde la versión confirmada. |
+| Decisión | `Nómina mensual confirmada = fuente oficial para generar liquidaciones`. |
+| Entrega | `docs/codex/modulos/nomina-mensual/nomina-mensual-confirmacion-flow.md` y referencias en README/contratos de Nómina mensual y Liquidaciones oficiales. |
+| Validación | Existencia de documento rector y referencias; sin build Angular por no tocar `src/`. |
+| Fuera de alcance | Angular, HTML/CSS, rutas, SQL/RPC/RLS, motor, servicios, mappers, payloads, persistencia, liquidaciones productivas y estilos globales. |
+| Fases futuras | `NOM-MENSUAL-WORKSPACE-01`, `NOM-MENSUAL-TRABAJADORES-02`, `NOM-MENSUAL-CONFIRMAR-03`, `NOM-LIQ-DESDE-NOMINA-CONFIRMADA-04`. |
+
+Resumen: se deja de orientar nuevas fases desde un tablero tecnico de `Preparar nómina` y se adopta el ciclo real de RRHH: nómina mensual generada, revisada por trabajador, confirmada y usada como fuente oficial para liquidaciones.

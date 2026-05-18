@@ -1,0 +1,29 @@
+Archivo: angular-erp-NOM-MENSUAL-CONFIRMACION-FLOW-00.zip
+Base: angular-erp-base-clean.zip
+Fase aplicada: NOM-MENSUAL-CONFIRMACION-FLOW-00
+Generado: 2026-05-18
+
+Incluye:
+- archivos base de Angular y npm
+- src
+- scripts
+- bd
+- docs
+- .cursor
+- public/app-config.example.json
+
+Cambios de esta fase:
+- definición documental de Nómina mensual confirmada como fuente oficial para generar liquidaciones
+- actualización de docs/codex de Nómina mensual y Liquidaciones oficiales
+- actualización de CHANGELOG, estado-fases, contexto rápido y peticiones-estilos
+
+Excluye:
+- node_modules
+- dist
+- .angular
+- .git
+- zips previos
+- .env
+- .env.local
+- public/app-config.json
+- *.bak

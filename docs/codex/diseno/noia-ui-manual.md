@@ -32,6 +32,21 @@ Si hay conflicto, gana el documento de menor numero.
 
 `noia-prompt-cursor.md` es solo una ayuda operativa. Los antiguos auxiliares de tokens, layout, componentes, recetas y arquetipos fueron consolidados en este manual para evitar reglas paralelas.
 
+## Regla modulo Nomina mensual
+
+Para Nomina mensual aplica la decision `NOM-MENSUAL-CONFIRMACION-FLOW-00`: la pantalla visible debe entenderse como `Nomina mensual`, con accion inicial `Generar nomina`, revision trabajador por trabajador, confirmacion de nomina y generacion de liquidaciones desde la nomina confirmada.
+
+`Preparar nomina` queda como referencia historica y tecnica del contenedor/patron `payroll-*`, no como concepto principal visible para RRHH.
+
+Regla de trazabilidad:
+
+```txt
+Liquidaciones no se generan desde datos vivos.
+Liquidaciones se generan desde nomina_mensual_confirmada o equivalente tecnico confirmado.
+```
+
+Documento rector: [`../modulos/nomina-mensual/nomina-mensual-confirmacion-flow.md`](../modulos/nomina-mensual/nomina-mensual-confirmacion-flow.md).
+
 ## Flujo obligatorio para una tarea UI
 
 1. Leer este manual.
@@ -125,7 +140,7 @@ La regla anti-card de NOIA tiene prioridad cuando la card solo agrega marco visu
 | Tipo de pantalla | Copiar de |
 |------------------|-----------|
 | Expediente, alta guiada, pasos | Creacion avanzada de empleados: `form-empleado.*`, `advanced-*`, `employee-*`, `--bitacora-*` |
-| Mesa de periodo, cierre, diagnostico | Preparar nomina: `proceso-mensual-container.*`, `payroll-*` |
+| Mesa de periodo, cierre, diagnostico | Nomina mensual: reutilizar el patron tecnico existente de `proceso-mensual-container.*` / `payroll-*`, pero con copy visible segun `NOM-MENSUAL-CONFIRMACION-FLOW-00` |
 | Listado con filtros y tabla | Listados existentes y `app-data-grid` |
 | Parametros / mantenedores densos | `parametros.page.ts` y reglas de grilla documentadas |
 

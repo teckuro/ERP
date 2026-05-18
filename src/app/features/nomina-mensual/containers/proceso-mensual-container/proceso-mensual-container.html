@@ -1,16 +1,23 @@
-﻿<section class="payroll-page payroll-ledger-shell" aria-label="Preparar nómina">
-  <header class="payroll-head">
-    <app-record-breadcrumb
-      [items]="breadcrumbItems"
-      title="Preparar nómina"
-    ></app-record-breadcrumb>
-    <p class="payroll-lead">
-      Bitácora operativa del período: valida datos, construye la base, calcula y deja trazado el cierre interno.
-    </p>
-    <div class="payroll-period-global" aria-live="polite">
-      <span class="payroll-period-global__k">Período activo</span>
-      <span class="payroll-period-global__v">{{ periodoActivo.etiqueta() }}</span>
-      <span class="payroll-period-global__state">{{ estadoOperativo().titulo }}</span>
+﻿<section class="payroll-page payroll-ledger-shell" aria-label="Nómina mensual">
+  @let frame = nominaFrame();
+  @let resumen = nominaResumenSuperior();
+
+  <header class="payroll-head payroll-head--workspace">
+    <app-record-breadcrumb [items]="breadcrumbItems" title="Nómina mensual"></app-record-breadcrumb>
+    <div class="payroll-title-row">
+      <div>
+        <div class="payroll-title-row__main">
+          <h1>Nómina mensual</h1>
+          <span class="payroll-status-chip">{{ frame.chip }}</span>
+        </div>
+        <p class="payroll-lead">
+          Workspace operativo del período: genera la nómina mensual, revisa trabajadores y confirma la versión que será base de liquidaciones.
+        </p>
+      </div>
+      <div class="payroll-period-box" aria-live="polite">
+        <span>Período</span>
+        <strong>{{ periodoActivo.etiqueta() }}</strong>
+      </div>
     </div>
   </header>
 
@@ -22,39 +29,27 @@
   <section class="payroll-franja-operativa" aria-label="Resumen del período">
     <ul class="payroll-franja-operativa__list">
       <li>
-        <button type="button" class="payroll-franja-operativa__item" (click)="abrirDetalleOperativo('trabajadores')" aria-label="Ver trabajadores considerados">
+        <button type="button" class="payroll-franja-operativa__item" (click)="seleccionarNominaWorkspaceTab('trabajadores')" aria-label="Ver trabajadores considerados">
           <span class="payroll-franja-operativa__k">Trabajadores</span>
-          <span class="payroll-franja-operativa__v">
-            @if (dashboardResumen().trabajadoresAptos == null) {
-              Sin evaluar
-            } @else {
-              {{ dashboardResumen().trabajadoresAptos }} apto{{ dashboardResumen().trabajadoresAptos === 1 ? '' : 's' }} · {{ dashboardResumen().trabajadoresPorRevisar }} por revisar
-            }
-          </span>
+          <span class="payroll-franja-operativa__v">{{ resumen.trabajadores }}</span>
         </button>
       </li>
       <li>
         <button type="button" class="payroll-franja-operativa__item" (click)="abrirDetalleOperativo('observaciones')" aria-label="Ver observaciones del período">
           <span class="payroll-franja-operativa__k">Parámetros</span>
-          <span class="payroll-franja-operativa__v">{{ dashboardResumen().parametrosListos == null ? 'Sin evaluar' : (dashboardResumen().parametrosListos ? 'Listos' : 'Por revisar') }}</span>
+          <span class="payroll-franja-operativa__v">{{ resumen.parametros }}</span>
         </button>
       </li>
       <li>
         <button type="button" class="payroll-franja-operativa__item" (click)="abrirDetalleOperativo('movimientos')" aria-label="Ver movimientos del mes">
           <span class="payroll-franja-operativa__k">Movimientos</span>
-          <span class="payroll-franja-operativa__v">{{ dashboardResumen().movimientosAprobados }} aprobados · {{ dashboardResumen().movimientosPendientes }} pendientes</span>
+          <span class="payroll-franja-operativa__v">{{ resumen.movimientos }}</span>
         </button>
       </li>
       <li>
         <button type="button" class="payroll-franja-operativa__item" (click)="abrirDetalleOperativo('recurrentes')" aria-label="Ver asignaciones recurrentes">
           <span class="payroll-franja-operativa__k">Recurrentes</span>
-          <span class="payroll-franja-operativa__v">
-            @if (dashboardResumen().asignacionesAplicables == null) {
-              Sin evaluar
-            } @else {
-              {{ dashboardResumen().asignacionesAplicables }} aplicables · {{ dashboardResumen().asignacionesPorRevisar }} por revisar
-            }
-          </span>
+          <span class="payroll-franja-operativa__v">{{ resumen.recurrentes }}</span>
         </button>
       </li>
     </ul>
@@ -63,7 +58,7 @@
   <div class="payroll-workspace">
     <aside class="payroll-rail" aria-label="Seguimiento del período">
       <section class="payroll-rail-block payroll-rail-block--bitacora" aria-labelledby="payroll-rail-bitacora-title">
-        <h2 id="payroll-rail-bitacora-title" class="payroll-rail-block__title">Bitácora</h2>
+        <h2 id="payroll-rail-bitacora-title" class="payroll-rail-block__title">Bitácora del período</h2>
         <ol class="payroll-rail-track">
           @for (etapa of bitacoraRailEtapas(); track etapa.clave) {
             <li
@@ -83,7 +78,7 @@
       </section>
 
       <section class="payroll-rail-block payroll-rail-block--alertas" aria-labelledby="payroll-rail-alertas-title">
-        <h2 id="payroll-rail-alertas-title" class="payroll-rail-block__title">Alertas del período</h2>
+        <h2 id="payroll-rail-alertas-title" class="payroll-rail-block__title">Revisión</h2>
         @let alertas = alertasPeriodoResumen();
         @if (alertas.modo === 'evaluando') {
           <p class="payroll-rail-alertas__msg">{{ alertas.mensaje }}</p>
@@ -109,108 +104,187 @@
       </section>
 
       <nav class="payroll-rail-nav" aria-label="Ir a otros módulos">
-        <span class="payroll-rail-nav__k">Corregir en</span>
+        <span class="payroll-rail-nav__k">Resolver en</span>
         <a routerLink="/empleados">Trabajadores</a>
         <a routerLink="/parametros">Parámetros</a>
         <a routerLink="/remuneraciones/novedades-mensuales">Movimientos</a>
         <a routerLink="/remuneraciones/haberes-descuentos">Recurrentes</a>
       </nav>
 
-      <details class="payroll-rail-internal">
-        <summary>Información interna y alcance</summary>
-        <div class="payroll-rail-internal__body">
-          <p>Salidas legales y archivos externos quedan fuera de esta fase.</p>
-          <p>Prepara, calcula y deja respaldo interno del resultado antes de la salida oficial del período.</p>
-        </div>
-      </details>
     </aside>
 
     <main class="payroll-main" aria-labelledby="payroll-focus-title">
-      <section class="payroll-focus" aria-labelledby="payroll-focus-title">
-        <h2 id="payroll-focus-title" class="payroll-focus__title">{{ estadoOperativo().titulo }}</h2>
-        <p class="payroll-focus__lead">{{ estadoOperativo().descripcion }}</p>
-        <p class="payroll-focus__hint">{{ estadoOperativo().accionPrincipal.descripcion }}</p>
-        @if (estadoOperativo().accionPrincipal.disabledReason) {
-          <p class="payroll-focus__note">{{ estadoOperativo().accionPrincipal.disabledReason }}</p>
-        }
-        <div class="payroll-focus__actions" aria-label="Acciones del período">
-          @if (estadoOperativo().accionPrincipal.tipo === 'ruta') {
-            <a [routerLink]="estadoOperativo().accionPrincipal.ruta" class="payroll-focus__primary">
-              {{ estadoOperativo().accionPrincipal.label }}
-            </a>
-          }
-          @if (estadoOperativo().accionPrincipal.tipo === 'local' && estadoOperativo().accionPrincipal.accionLocal) {
-            <button
-              type="button"
-              class="payroll-focus__primary"
-              [disabled]="estadoOperativo().accionPrincipal.disabled || validando() || generandoPreNomina() || calculandoPreliminar() || guardandoSnapshot() || aprobandoResultado() || cerrandoNomina()"
-              (click)="ejecutarAccionValidacion(estadoOperativo().accionPrincipal.accionLocal!)"
-            >
-              {{ estadoOperativo().accionPrincipal.label }}
-            </button>
-          }
-          <div class="payroll-focus__secondary">
-            <button type="button" class="payroll-focus__link" (click)="abrirRevisionGuiada()">Revisión guiada</button>
-            <button type="button" class="payroll-focus__link" (click)="abrirDetalleOperativo('guia')">Revisión del período</button>
-            <button type="button" class="payroll-focus__link" (click)="abrirDetalleOperativo('resumen')">Detalle operativo</button>
+      <section class="payroll-focus payroll-focus--prototype" aria-labelledby="payroll-focus-title">
+        <header class="payroll-focus__bar">
+          <div class="payroll-focus__state">
+            <span
+              class="payroll-focus__dot"
+              [class.payroll-focus__dot--active]="frame.frame === 'generando'"
+              [class.payroll-focus__dot--danger]="frame.frame === 'con_pendientes'"
+              [class.payroll-focus__dot--success]="frame.frame === 'lista_para_confirmar' || frame.frame === 'confirmada' || frame.frame === 'liquidaciones_generadas'"
+            ></span>
+            <span>{{ frame.chip }}</span>
           </div>
+          <div class="payroll-focus__actions" aria-label="Acciones del período">
+            @if (frame.ctaTipo === 'ruta') {
+              <a [routerLink]="frame.ctaRuta" class="payroll-focus__primary">{{ frame.ctaLabel }}</a>
+            }
+            @if (frame.ctaTipo === 'local' && frame.ctaAccion) {
+              <button
+                type="button"
+                class="payroll-focus__primary"
+                [disabled]="frame.ctaDisabled"
+                (click)="ejecutarAccionValidacion(frame.ctaAccion)"
+              >
+                {{ frame.ctaDisabled && accionPeriodoEnCurso() ? 'Generando...' : frame.ctaLabel }}
+              </button>
+            }
+          </div>
+        </header>
+
+        <div class="payroll-focus__body">
+          <h2 id="payroll-focus-title" class="payroll-focus__title">{{ frame.titulo }}</h2>
+          <p class="payroll-focus__lead">{{ frame.texto }}</p>
+          <p class="payroll-focus__hint">
+            <lucide-icon name="info" aria-hidden="true"></lucide-icon>
+            <span>{{ frame.info }}</span>
+          </p>
+          @if (estadoOperativo().accionPrincipal.disabledReason) {
+            <p class="payroll-focus__note">{{ estadoOperativo().accionPrincipal.disabledReason }}</p>
+          }
         </div>
       </section>
 
-      @if (!actaPreparacion().modoCompacto) {
-        <section class="payroll-acta-slot" aria-label="Acta operativa del período">
-          <app-acta-operativa-periodo
-            [vm]="actaPreparacion()"
-            (prepararActa)="prepararActaOperativaPeriodo()"
-            (verEvidencia)="verEvidenciaActaOperativa()"
-          />
-        </section>
-      } @else {
-        <p class="payroll-acta-teaser">
-          <span class="payroll-acta-teaser__k">Acta operativa</span>
-          {{ actaPreparacion().notaCompacta ?? actaPreparacion().descripcion }}
-        </p>
-      }
+      <nav class="payroll-workspace-tabs" aria-label="Nómina mensual">
+        <button type="button" [class.payroll-workspace-tab--active]="nominaWorkspaceTab() === 'guia'" (click)="seleccionarNominaWorkspaceTab('guia')">Guía de revisión</button>
+        <button type="button" [class.payroll-workspace-tab--active]="nominaWorkspaceTab() === 'trabajadores'" (click)="seleccionarNominaWorkspaceTab('trabajadores')">Trabajadores y revisión</button>
+        <button type="button" [class.payroll-workspace-tab--active]="nominaWorkspaceTab() === 'detalle'" (click)="seleccionarNominaWorkspaceTab('detalle')">Detalle</button>
+      </nav>
 
-      @if (paraContinuarLista().length) {
-        <section class="payroll-para-continuar" aria-labelledby="payroll-para-continuar-title">
-          <h3 id="payroll-para-continuar-title" class="payroll-para-continuar__heading">Para continuar</h3>
-          <ul class="payroll-para-continuar__list">
-            @for (item of paraContinuarLista(); track item.titulo) {
-              <li>
-                <strong class="payroll-para-continuar__title">{{ item.titulo }}</strong>
-                <span class="payroll-para-continuar__detalle">{{ item.detalle }}</span>
-              </li>
+      <section class="payroll-tab-panel" aria-live="polite">
+        @switch (nominaWorkspaceTab()) {
+          @case ('guia') {
+            @if (frame.frame === 'lista_para_confirmar') {
+              <div class="payroll-confirm-grid">
+                <section>
+                  <h3>Resumen</h3>
+                  <dl class="payroll-confirm-list">
+                    <div><dt>Trabajadores incluidos</dt><dd>{{ dashboardResumen().trabajadoresAptos ?? snapshotActivo()?.totalTrabajadores ?? 0 }}</dd></div>
+                    <div><dt>Bloqueos críticos</dt><dd>{{ resumen.bloqueos }}</dd></div>
+                    <div><dt>Cambios confirmados</dt><dd>{{ resumen.cambios }}</dd></div>
+                    <div><dt>Movimientos considerados</dt><dd>{{ dashboardResumen().movimientosAprobados }}</dd></div>
+                    <div><dt>Recurrentes vigentes</dt><dd>{{ dashboardResumen().asignacionesAplicables ?? 0 }}</dd></div>
+                  </dl>
+                </section>
+                <section class="payroll-confirm-box">
+                  <h3>Confirmar nómina mensual de {{ periodoActivo.etiqueta() }}</h3>
+                  <p>Esta acción dejará una versión oficial para generar liquidaciones.</p>
+                </section>
+              </div>
+            } @else if (frame.frame === 'generando') {
+              <div class="payroll-guide">
+                <h3>Proceso en curso</h3>
+                <ul>
+                  <li>Validación del período activo.</li>
+                  <li>Lectura de trabajadores habilitados.</li>
+                  <li>Cruce de movimientos y recurrentes.</li>
+                  <li>Preparación del borrador por trabajador.</li>
+                </ul>
+              </div>
+            } @else {
+              <div class="payroll-guide">
+                <h3>Antes de generar</h3>
+                <p>Primero genera la nómina mensual preliminar. Después podrás revisar trabajador por trabajador antes de confirmar.</p>
+                <ul>
+                  <li>Trabajadores habilitados para el período.</li>
+                  <li>Parámetros mensuales.</li>
+                  <li>Movimientos aprobados y pendientes.</li>
+                  <li>Asignaciones recurrentes vigentes.</li>
+                </ul>
+              </div>
             }
-          </ul>
-        </section>
-      }
-
-      <details class="payroll-main-more">
-        <summary>Más revisiones en esta pantalla</summary>
-        <div class="payroll-main-more__body">
-          @if (actaPreparacion().modoCompacto) {
-            <section class="payroll-main-more__block" aria-label="Acta operativa del período">
-              <app-acta-operativa-periodo
-                [vm]="actaPreparacion()"
-                (prepararActa)="prepararActaOperativaPeriodo()"
-                (verEvidencia)="verEvidenciaActaOperativa()"
-              />
-            </section>
           }
-          <p class="payroll-main-more__registro">
-            <span class="payroll-main-more__registro-k">Registro del período</span>
-            {{ registroPeriodoLinea() }}
-          </p>
-          <div class="payroll-main-more__links">
-            <button type="button" class="payroll-focus__link" (click)="abrirRevisionGuiada()">Guía</button>
-            <button type="button" class="payroll-focus__link" (click)="abrirDetalleOperativo('resumen')">Resumen</button>
-            <button type="button" class="payroll-focus__link" (click)="abrirDetalleOperativo('trabajadores')">Trabajadores</button>
-            <button type="button" class="payroll-focus__link" (click)="abrirDetalleOperativo('movimientos')">Movimientos</button>
-            <button type="button" class="payroll-focus__link" (click)="abrirDetalleOperativo('observaciones')">Observaciones</button>
-          </div>
-        </div>
-      </details>
+          @case ('trabajadores') {
+            @if (frame.frame === 'con_pendientes') {
+              <div class="payroll-pending-list">
+                @for (item of nominaPendientesVisuales(); track item.codigo) {
+                  <div class="payroll-pending-row">
+                    <div>
+                      <strong>{{ item.titulo }}</strong>
+                      <p>
+                        <span [class]="clasePendienteVisual(item.severidad)">{{ etiquetaPendienteVisual(item.severidad) }}</span>
+                        {{ item.descripcion }}
+                      </p>
+                    </div>
+                    @if (item.ruta) {
+                      <a [routerLink]="item.ruta">Resolver</a>
+                    } @else if (item.accionLocal) {
+                      <button type="button" (click)="ejecutarAccionValidacion(item.accionLocal)">Resolver</button>
+                    } @else {
+                      <button type="button" (click)="abrirDetalleOperativo('observaciones')">{{ item.accionLabel ?? 'Revisar' }}</button>
+                    }
+                  </div>
+                }
+              </div>
+            } @else if (payrollWorkerDetailRows().length) {
+              <div class="payroll-worker-table">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Estado</th>
+                      <th>Trabajador</th>
+                      <th>Revisión</th>
+                      <th>Acción</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (row of payrollWorkerDetailRows().slice(0, 8); track row.trabajador + row.rut) {
+                      <tr>
+                        <td><span [class]="claseChipRevision(row.estado)">{{ row.estado }}</span></td>
+                        <td><strong>{{ row.trabajador }}</strong><small>{{ row.rut }}</small></td>
+                        <td>{{ row.observacion }}</td>
+                        <td>
+                          <button type="button" (click)="abrirDetalleOperativo('trabajadores')">{{ row.accion }}</button>
+                        </td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            } @else {
+              <p class="payroll-empty-line">Genera la nómina mensual para ver trabajadores que requieren revisión.</p>
+            }
+          }
+          @case ('detalle') {
+            @if (frame.frame === 'confirmada' || frame.frame === 'liquidaciones_generadas') {
+              <div class="payroll-official-snapshot">
+                <h3>Snapshot oficial de nómina mensual</h3>
+                <dl>
+                  <div><dt>Versión confirmada</dt><dd>{{ cierreOperativo().fechaCierreLabel ?? snapshotActivo()?.fechaGeneracion ?? 'No disponible' }}</dd></div>
+                  <div><dt>Trabajadores</dt><dd>{{ snapshotActivo()?.totalTrabajadores ?? dashboardResumen().trabajadoresAptos ?? 0 }}</dd></div>
+                  <div><dt>Bloqueos críticos</dt><dd>{{ snapshotActivo()?.totalBloqueados ?? estadoOperativo().bloqueos.length }}</dd></div>
+                  <div><dt>Estado</dt><dd><span class="payroll-state-chip payroll-state-chip--success">Base oficial para liquidaciones</span></dd></div>
+                </dl>
+                <div class="payroll-history">
+                  @for (item of nominaHistorialVisual(); track item.hora + item.texto) {
+                    <p [class.payroll-history__item--strong]="item.destacado"><span>{{ item.hora }}</span>{{ item.texto }}</p>
+                  }
+                </div>
+              </div>
+            } @else {
+              <div class="payroll-official-snapshot">
+                <h3>Detalle del período</h3>
+                <dl>
+                  <div><dt>Trabajadores considerados</dt><dd>{{ baseNominaTrazabilidad()?.trabajadoresConsiderados ?? dashboardResumen().trabajadoresAptos ?? 0 }}</dd></div>
+                  <div><dt>Movimientos incluidos</dt><dd>{{ baseNominaTrazabilidad()?.movimientosDelMesIncluidos ?? dashboardResumen().movimientosAprobados }}</dd></div>
+                  <div><dt>Recurrentes considerados</dt><dd>{{ baseNominaTrazabilidad()?.asignacionesRecurrentesIncluidas ?? dashboardResumen().asignacionesAplicables ?? 0 }}</dd></div>
+                  <div><dt>Líquido preliminar</dt><dd>{{ formatoMonto(resultadoPreliminar().resumen.totalLiquido) }}</dd></div>
+                </dl>
+              </div>
+            }
+          }
+        }
+      </section>
     </main>
   </div>
   </section>
@@ -353,7 +427,7 @@
           <div>
             <h2 class="text-sm font-semibold text-gray-900">Período pendiente de validación</h2>
             <p class="mt-1 text-sm text-gray-700">
-              Valida el período activo para detectar bloqueos, advertencias y tareas pendientes antes de preparar la nómina.
+              Genera la nómina mensual del período para detectar trabajadores incluidos, bloqueos, advertencias y cambios por revisar.
             </p>
           </div>
           <app-badge variant="default" size="sm">Pendiente</app-badge>
@@ -365,14 +439,14 @@
   @if (mostrarDetalleOperativo('base')) {
   <details class="pm-operational-detail" [open]="etapaOperativaActiva() === 'base'">
     <summary>
-      <span>Base de nómina</span>
-      <span>{{ preNomina() ? 'Base generada' : resultado() && validacionCalculo().bloqueos.length ? 'Bloqueada' : resultado() ? 'Lista para generar' : 'Pendiente de validación' }}</span>
+      <span>Nómina mensual</span>
+      <span>{{ preNomina() ? 'Borrador generado' : resultado() && validacionCalculo().bloqueos.length ? 'Bloqueada' : resultado() ? 'Lista para generar' : 'Sin generar' }}</span>
     </summary>
   <app-card>
     <app-card-content className="p-4">
       <div class="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h2 id="base-nomina" class="text-sm font-semibold text-gray-900">Base de nómina</h2>
+          <h2 id="base-nomina" class="text-sm font-semibold text-gray-900">Nómina mensual</h2>
           <p class="mt-1 text-sm text-gray-600">
             Consolida trabajadores aptos, movimientos del mes aprobados y recurrentes aplicables.
           </p>
@@ -384,7 +458,7 @@
             <app-badge variant="default">{{ etiquetaEstadoPreNomina(null) }}</app-badge>
           }
           <app-button variant="outline" size="sm" [disabled]="!puedeGenerarPreNomina()" (click)="generarPreNomina()">
-            {{ generandoPreNomina() ? 'Generando...' : 'Generar base de nómina' }}
+            {{ generandoPreNomina() ? 'Generando...' : 'Generar nómina' }}
           </app-button>
         </div>
       </div>
@@ -522,7 +596,7 @@
 
           <section class="mt-5 flex flex-wrap items-center gap-2">
             <app-button variant="outline" size="sm" [disabled]="!puedeGenerarPreNomina()" (click)="generarPreNomina()">
-              Actualizar base de nómina
+              Actualizar nómina
             </app-button>
             <a routerLink="/remuneraciones/novedades-mensuales" class="text-sm font-medium text-blue-700 underline">
               Revisar movimientos
@@ -557,7 +631,7 @@
         }
       } @else {
         <p class="mt-3 text-sm text-gray-600">
-          Aún no se ha generado la base de nómina para este período. Valida el período y genera la base para revisar los
+          Aún no se ha generado la nómina mensual para este período. Genera la nómina para revisar los
           trabajadores y entradas consideradas.
         </p>
       }
@@ -585,9 +659,9 @@
                 } @else if (validacion.estado === 'advertencias') {
                   Puedes calcular preliminarmente con {{ validacion.advertencias.length }} advertencia(s) no bloqueante(s).
                 } @else if (validacion.estado === 'listo') {
-                  La base de nómina está lista para calcular preliminarmente.
+                  La nómina mensual está lista para revisar trabajadores.
                 } @else {
-                  Valida el período y genera la base de nómina antes de calcular.
+                  Genera la nómina mensual antes de revisar trabajadores.
                 }
               </p>
             </div>
@@ -680,7 +754,7 @@
 
       <div class="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h2 class="text-sm font-semibold text-gray-900">Resultado preliminar</h2>
+          <h2 class="text-sm font-semibold text-gray-900">Nómina generada</h2>
           <p class="mt-1 text-sm text-gray-600">
             Revisión del cálculo por trabajador antes de guardar. No emite liquidaciones ni cierra el período.
           </p>
@@ -700,7 +774,7 @@
       @if (resultadoPreliminar(); as resultado) {
         @if (resultado.estado === 'sin_resultado') {
           <div class="mt-4 rounded-md border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-gray-700">
-            <p class="font-medium text-gray-900">Aún no hay resultado preliminar.</p>
+            <p class="font-medium text-gray-900">Aún no hay nómina generada.</p>
             <p class="mt-1">{{ resultado.descripcionEstado }}</p>
             <p class="mt-2 text-gray-600">No puedes guardar todavía. Primero calcula preliminarmente la nómina.</p>
           </div>
@@ -945,7 +1019,7 @@
               Recalcular preliminar
             </app-button>
             <app-button variant="outline" size="sm" (click)="revisarBaseNomina()">
-              Revisar base de nómina
+              Revisar trabajadores
             </app-button>
             <a routerLink="/remuneraciones/novedades-mensuales" class="text-sm font-medium text-blue-700 underline">
               Revisar movimientos
@@ -954,7 +1028,7 @@
               Revisar recurrentes
             </a>
             <app-button variant="outline" size="sm" [disabled]="!resultado.acciones.puedeGuardarPreliminar" (click)="guardarSnapshotPreliminar()">
-              {{ guardandoSnapshot() ? 'Guardando...' : 'Guardar resultado preliminar' }}
+              {{ guardandoSnapshot() ? 'Guardando...' : 'Guardar versión revisable' }}
             </app-button>
           </section>
           <p class="mt-2 text-xs text-gray-500">
@@ -982,7 +1056,7 @@
     <app-card-content className="p-4">
       <div class="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h2 class="text-sm font-semibold text-gray-900">Ultimo resultado preliminar guardado</h2>
+          <h2 class="text-sm font-semibold text-gray-900">Última versión revisable</h2>
           <p class="mt-1 text-sm text-gray-600">
             Conserva una versión revisable del cálculo. Esto no emite liquidaciones, no cierra el período y no genera archivos legales.
           </p>
@@ -992,10 +1066,10 @@
             {{ consultandoSnapshot() ? 'Consultando...' : 'Consultar ultimo guardado' }}
           </app-button>
           <app-button variant="outline" size="sm" [disabled]="!puedeGuardarSnapshot()" (click)="recalcularYReemplazarSnapshot()">
-            Recalcular y reemplazar resultado preliminar
+            Recalcular y reemplazar versión
           </app-button>
           <app-button variant="primary" size="sm" [disabled]="!puedeGuardarSnapshot()" (click)="guardarSnapshotPreliminar()">
-            {{ guardandoSnapshot() ? 'Guardando...' : 'Guardar resultado preliminar' }}
+            {{ guardandoSnapshot() ? 'Guardando...' : 'Guardar versión revisable' }}
           </app-button>
         </div>
       </div>
@@ -1045,11 +1119,11 @@
           {{ guardado.advertenciasLabel }}
         </p>
         <p class="mt-2 text-xs text-gray-500">
-          Resultado preliminar guardado. No emite liquidaciones, no cierra el período y no genera archivos legales.
+          Versión revisable guardada. No emite liquidaciones ni confirma la nómina.
         </p>
       } @else {
         <p class="mt-3 text-sm text-gray-600">
-          Aún no hay resultado preliminar guardado para este período.
+          Aún no hay versión revisable guardada para este período.
         </p>
       }
     </app-card-content>
@@ -1235,8 +1309,8 @@
   @if (mostrarDetalleOperativo('aprobacion')) {
   <details class="pm-operational-detail" [open]="etapaOperativaActiva() === 'aprobacion'">
     <summary>
-      <span>Aprobación operativa</span>
-      <span>{{ aprobacionOperativa() ? 'Aprobado' : snapshotActivo() ? 'Pendiente de aprobar' : 'Sin resultado guardado' }}</span>
+      <span>Confirmación de nómina</span>
+      <span>{{ aprobacionOperativa() ? 'Revisión confirmada' : snapshotActivo() ? 'Pendiente de confirmar' : 'Sin versión revisable' }}</span>
     </summary>
   <app-card>
     <app-card-content className="p-4">
@@ -1269,7 +1343,7 @@
               Recalcular preliminar
             </app-button>
             <app-button variant="primary" size="sm" [disabled]="!revision.puedeAprobar" (click)="aprobarResultadoPreliminar()">
-              {{ aprobandoResultado() ? 'Registrando...' : 'Aprobar resultado preliminar' }}
+              {{ aprobandoResultado() ? 'Registrando...' : 'Confirmar revisión' }}
             </app-button>
           </div>
         </div>
@@ -1453,8 +1527,8 @@
   @if (mostrarDetalleOperativo('cierre') || mostrarDetalleOperativo('liquidaciones')) {
   <details class="pm-operational-detail" [open]="etapaOperativaActiva() === 'cierre' || etapaOperativaActiva() === 'liquidaciones'">
     <summary>
-      <span>Cierre operativo y liquidaciones</span>
-      <span>{{ nominaEstaCerradaOperativamente() ? 'Liquidaciones internas disponibles' : aprobacionOperativa() ? 'Disponible para cerrar' : 'Pendiente de aprobación' }}</span>
+      <span>Nómina confirmada y liquidaciones</span>
+      <span>{{ nominaEstaCerradaOperativamente() ? 'Liquidaciones disponibles' : aprobacionOperativa() ? 'Lista para confirmar' : 'Pendiente de confirmación' }}</span>
     </summary>
   <app-card>
     <app-card-content className="p-4">
@@ -1462,7 +1536,7 @@
         <div class="flex flex-wrap items-start justify-between gap-3">
           <div>
             <div class="flex flex-wrap items-center gap-2">
-              <h2 class="text-sm font-semibold text-gray-900">Cierre operativo</h2>
+              <h2 class="text-sm font-semibold text-gray-900">Nómina confirmada</h2>
               <app-badge [variant]="nominaEstaCerradaOperativamente() ? 'success' : cierre.puedeCerrar ? 'warning' : 'default'" size="sm">
                 {{ cierre.estadoLabel }}
               </app-badge>
@@ -1470,16 +1544,16 @@
             <p class="mt-1 text-sm text-gray-700">{{ cierre.descripcion }}</p>
           </div>
           <app-button variant="outline" size="sm" [disabled]="!cierre.puedeCerrar" (click)="cerrarNominaOperativa()">
-            {{ cerrandoNomina() ? 'Cerrando...' : 'Cerrar nómina del período' }}
+            {{ cerrandoNomina() ? 'Confirmando...' : 'Confirmar nómina' }}
           </app-button>
         </div>
 
         <div class="mt-4 rounded-md border border-blue-100 bg-blue-50 px-3 py-2 text-sm text-blue-900">
-          El cierre operativo congela este resultado para continuar con etapas posteriores. No emite liquidaciones ni genera archivos legales.
+          La confirmación congela esta versión como base oficial para generar liquidaciones.
         </div>
 
         @if (cierre.razonNoPuedeCerrar && !nominaEstaCerradaOperativamente()) {
-          <p class="mt-2 text-sm text-gray-600">No puedes cerrar todavia. {{ cierre.razonNoPuedeCerrar }}</p>
+          <p class="mt-2 text-sm text-gray-600">No puedes confirmar todavía. {{ cierre.razonNoPuedeCerrar }}</p>
         }
         @if (errorCierreOperativo()) {
           <p class="mt-2 rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800">
@@ -1553,11 +1627,11 @@
             <app-button variant="outline" size="sm" routerLink="/remuneraciones/liquidaciones">
               Ver liquidaciones oficiales
             </app-button>
-            <p class="text-xs text-gray-500">Se habilitan después del cierre operativo y no ejecutan salidas legales ni archivos externos.</p>
+            <p class="text-xs text-gray-500">Se habilitan después de confirmar la nómina y no ejecutan salidas legales ni archivos externos.</p>
           </div>
         } @else {
           <p class="mt-3 text-xs text-gray-500">
-            Liquidaciones oficiales se habilitarán después del cierre operativo. No ejecuta salidas legales ni archivos externos.
+            Liquidaciones oficiales se habilitarán después de confirmar la nómina. No ejecuta salidas legales ni archivos externos.
           </p>
         }
       }
@@ -1582,7 +1656,7 @@
       <div class="payroll-operational-detail-modal" (click)="$event.stopPropagation()">
         <header class="payroll-operational-detail-modal__header">
           <div>
-            <h2 id="payroll-operational-detail-title">Revisión del período</h2>
+            <h2 id="payroll-operational-detail-title">Revisión de nómina mensual</h2>
             <p>{{ periodoActivo.etiqueta() }} · {{ estadoOperativo().titulo }} · Información revisable por RRHH antes de continuar.</p>
           </div>
           <button type="button" class="payroll-guided-review-modal__close" (click)="cerrarDetalleOperativo()" aria-label="Cerrar detalle operativo">
@@ -1590,7 +1664,7 @@
           </button>
         </header>
 
-        <nav class="payroll-operational-tabs" aria-label="Detalle operativo">
+        <nav class="payroll-operational-tabs" aria-label="Detalle de nómina mensual">
           @for (tab of detalleOperativoTabs; track tab.id) {
             <button
               type="button"
@@ -1666,7 +1740,7 @@
             @case ('resumen') {
               <section class="payroll-operational-summary">
                 <div>
-                  <h3>Base de nómina</h3>
+                <h3>Nómina mensual</h3>
                   <dl>
                     <div><dt>Trabajadores considerados</dt><dd>{{ baseNominaTrazabilidad()?.trabajadoresConsiderados ?? dashboardResumen().trabajadoresAptos ?? 0 }}</dd></div>
                     <div><dt>Movimientos incluidos</dt><dd>{{ baseNominaTrazabilidad()?.movimientosDelMesIncluidos ?? dashboardResumen().movimientosAprobados }}</dd></div>
@@ -1705,8 +1779,8 @@
                 [showExportAction]="false"
                 [selectable]="false"
                 [maxItems]="10"
-                emptyTitle="Aún no hay trabajadores en la base de nómina."
-                emptyDescription="Genera la base para revisar el detalle."
+    emptyTitle="Aún no hay trabajadores en la nómina mensual."
+    emptyDescription="Genera la nómina para revisar el detalle."
               ></app-data-grid>
             }
             @case ('movimientos') {

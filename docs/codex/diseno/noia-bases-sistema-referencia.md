@@ -21,6 +21,8 @@ Documento que **unifica** dónde están las bases reales del ERP y **qué copiar
 
 ---
 
+Nota vigente: esta tabla es una referencia historica de bases del sistema. Si entra en conflicto con [`noia-ui-manual.md`](./noia-ui-manual.md), manda el manual. La jerarquia actual es: manual NOIA, AGENTS, guardrails, ui-form-guidelines, bases canonicas, antipatrones y documento de modulo/fase.
+
 ## 2. Dos capas de tokens (coherentes entre sí)
 
 ### A. Tokens ERP / formularios (`AGENTS` + `ui-form-guidelines`)
@@ -123,7 +125,7 @@ Copiar de las referencias reales:
 
 Reglas:
 
-- usar dominio y flujo en lenguaje de negocio: `Remuneraciones / Preparar nomina`;
+- usar dominio y flujo en lenguaje de negocio: `Remuneraciones / Nomina mensual`;
 - navegar solo segmentos anteriores; la vista actual queda como texto;
 - mantener color, tamano y peso secundarios;
 - no meterlo en card, badge, chip ni boton principal;
@@ -157,7 +159,7 @@ Documentado en fases: `EMP-ADV-LAYOUT-CONSISTENCY-01`, `EMP-PERFIL-LABORAL-UI-01
 
 ---
 
-## 4. Referencia secundaria: Preparar nómina (mesa operativa)
+## 4. Referencia secundaria: Nomina mensual (mesa operativa)
 
 Para **cierre de período**, **consola de decisión** y **bandeja de severidad** (arquetipo **A. Mesa operativa**):
 
@@ -165,15 +167,18 @@ Para **cierre de período**, **consola de decisión** y **bandeja de severidad**
 |-------------|------------|
 | `payroll-*` | [`proceso-mensual-container.css`](../../../src/app/features/nomina-mensual/containers/proceso-mensual-container/proceso-mensual-container.css) |
 
-Estructura: bitácora lateral + consola central + bandeja RRHH + modal diagnóstico.  
-Doc: [`../modulos/nomina-mensual/preparar-nomina/`](../modulos/nomina-mensual/preparar-nomina/README.md).
+Estructura: bitacora lateral + consola central + bandeja RRHH + modal diagnostico.
+
+Decision funcional vigente: [`NOM-MENSUAL-CONFIRMACION-FLOW-00`](../modulos/nomina-mensual/nomina-mensual-confirmacion-flow.md). La pantalla visible debe comunicar `Nomina mensual`, `Generar nomina`, `Revisar trabajadores`, `Confirmar nomina` y `Generar liquidaciones`. `Preparar nomina` queda como nombre historico/tecnico del patron existente, no como concepto principal visible.
+
+Doc tecnico historico: [`../modulos/nomina-mensual/preparar-nomina/`](../modulos/nomina-mensual/preparar-nomina/README.md).
 
 **Cuándo usar cuál referencia:**
 
 | Tipo de pantalla | Copiar de |
 |------------------|-----------|
 | Wizard / alta / ficha en construcción / pasos | **Creación avanzada** (`advanced-*`, `--bitacora-*`, `employee-*`) |
-| Cierre período / validar / diagnóstico / acta | **Preparar nómina** (`payroll-*`) |
+| Cierre período / validar / diagnóstico / acta | **Nomina mensual** (`payroll-*`, copy visible segun `NOM-MENSUAL-CONFIRMACION-FLOW-00`) |
 | Listado + filtros + tabla | Listado empleados / movimientos (patrón B) |
 | Parámetros por tabs | Parámetros (patrón D) |
 

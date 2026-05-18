@@ -24,7 +24,7 @@ Si falta alcance (pantalla, solo UI vs lógica, criterio de listo), preguntar an
 
 ## No inventar — reutilizar
 - Flujo guiado / pasos / expediente → Creación avanzada: form-empleado.css, --bitacora-*, advanced-wizard-map, employee-section-*.
-- Cierre de período / consola → Preparar nómina: payroll-*.
+- Cierre de periodo / consola -> Nomina mensual: reutilizar `payroll-*`, pero el copy visible sigue `NOM-MENSUAL-CONFIRMACION-FLOW-00` (`Generar nomina`, `Revisar trabajadores`, `Confirmar nomina`, `Generar liquidaciones`).
 - Ver noia-bases-sistema-referencia.md. No importar estética SaaS ni Tailwind marketing.
 
 ## Identidad (no negociable)

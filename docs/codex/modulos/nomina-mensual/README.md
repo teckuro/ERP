@@ -2,6 +2,29 @@
 
 ## Estado
 
+## NOM-MENSUAL-WORKSPACE-UI-01 aplicado
+
+La pantalla principal se orienta como **Nomina mensual** y workspace operativo de RRHH. El flujo visible prioriza:
+
+```txt
+Generar nomina
+-> Revisar trabajadores
+-> Confirmar nomina
+-> Generar liquidaciones
+```
+
+La UI refuerza que la nomina mensual confirmada es la base oficial para liquidaciones. Esta fase solo ajusta UI/copy/maquetacion local y documentacion; no implementa persistencia nueva, motor, SQL/RPC/RLS, servicios ni liquidaciones productivas. Documento: [`../../diseno/nom-mensual-workspace-ui-01.md`](../../diseno/nom-mensual-workspace-ui-01.md).
+
+## NOM-MENSUAL-CONFIRMACION-FLOW-00 aplicado
+
+Se documenta la decision rectora del modulo:
+
+```txt
+Nómina mensual confirmada = fuente oficial para generar liquidaciones.
+```
+
+La experiencia futura debe entenderse como `Nómina mensual`: generar nómina, revisar trabajadores, confirmar la versión oficial y generar liquidaciones desde esa versión. `Preparar nómina` puede seguir existiendo como ruta/componente por compatibilidad, pero deja de ser el concepto principal de producto para nuevas fases. Documento rector: [`nomina-mensual-confirmacion-flow.md`](./nomina-mensual-confirmacion-flow.md).
+
 **Prevalidaciones 9.5A + 9.5B** implementadas (sin motor ni liquidaciones): recurrentes por mes, grupos minimos de parametros + catalogos, resumen en UI. Proceso productivo end-to-end sigue **pendiente**. Vision de producto: [`vision-futura.md`](./vision-futura.md); orquestador: [`../../orquestador/estado-fases.md`](../../orquestador/estado-fases.md).
 
 ## REM-MOV-UNIFY-01 aplicado
@@ -27,6 +50,7 @@ La estructura queda compacta y vertical: bloque Movimiento, Detalle administrati
 | Archivo | Rol |
 |---------|-----|
 | [`contrato-general.md`](./contrato-general.md) | Objetivo, alcance, relaciones con Parametros, empleados, conceptos, MV, motor futuro |
+| [`nomina-mensual-confirmacion-flow.md`](./nomina-mensual-confirmacion-flow.md) | Define nómina mensual confirmada como fuente oficial para generar liquidaciones |
 | [`nomina-mensual-diseno-visual-pruebas-unitarias-2026-05-18.md`](./nomina-mensual-diseno-visual-pruebas-unitarias-2026-05-18.md) | Diseno visual actual respaldado por pruebas unitarias y de componente |
 | [`nomina-mensual-fases-casos-uso-2026-05-18.md`](./nomina-mensual-fases-casos-uso-2026-05-18.md) | Estado actual por fases y casos de uso de Nomina mensual |
 | [`nomina-mensual-premium-design-mejoras-ux-2026-05-18.md`](./nomina-mensual-premium-design-mejoras-ux-2026-05-18.md) | Diseno premium y mejoras premium propuestas para Nomina mensual |

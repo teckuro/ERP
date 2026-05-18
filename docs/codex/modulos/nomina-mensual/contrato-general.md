@@ -1,5 +1,27 @@
 # Nomina mensual (Chile) - contrato general
 
+## NOM-MENSUAL-CONFIRMACION-FLOW-00 - Regla rectora
+
+Para nuevas fases de producto y UX, el modulo se entiende como `Nómina mensual` del periodo activo. La regla central es:
+
+```txt
+Nómina mensual confirmada = fuente oficial para generar liquidaciones.
+```
+
+La experiencia visible debe evolucionar hacia:
+
+```txt
+Generar nómina
+-> Revisar trabajadores
+-> Confirmar nómina
+-> Generar liquidaciones
+```
+
+Los pasos tecnicos de validacion, base, calculo, snapshot, aprobacion y cierre pueden seguir existiendo internamente, pero no deben dominar el copy principal para RRHH. La revision debe bajar a nivel trabajador: listo, revisar, bloqueado, cambio detectado u omitido.
+
+Esta decision no cambia por si sola rutas, servicios, SQL, motor ni persistencia. Orienta las fases futuras para que `Preparar nómina` deje de ser tablero tecnico y pase a ser workspace de nómina mensual confirmable.
+
+
 ## 1. Objetivo del modulo
 
 Guiar el **proceso mensual** por periodo `YYYY-MM`: revisar prerequisitos (parametros, trabajadores, conceptos, recurrentes, movimientos variables) antes de una **futura** fase de calculo y liquidaciones. En la version actual **no calcula** remuneraciones ni genera liquidaciones.

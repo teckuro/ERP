@@ -1,5 +1,20 @@
 # CHANGELOG
 
+## 2026-05-18 - NOM-MENSUAL-WORKSPACE-UI-01
+
+- **Nómina mensual:** la pantalla visible deja de presentarse como `Preparar nómina` y pasa a leerse como workspace operativo del período.
+- **Flujo UI:** `Generar nómina -> Revisar trabajadores -> Confirmar nómina -> Generar liquidaciones`.
+- **Trazabilidad:** la experiencia refuerza que la nómina mensual confirmada es la base oficial para liquidaciones.
+- **Alcance:** UI/copy/maquetación local y documentación; sin SQL/RPC/RLS, motor, servicios, persistencia, rutas, mappers, estilos globales ni liquidaciones productivas nuevas.
+
+## 2026-05-18 - NOM-MENSUAL-CONFIRMACION-FLOW-00
+
+- **Nómina mensual:** se documenta la regla rectora `Nómina mensual confirmada = fuente oficial para generar liquidaciones`.
+- **Producto/UX:** el flujo futuro se entiende como generar nómina, revisar trabajadores, confirmar nómina y generar liquidaciones desde esa versión.
+- **Liquidaciones:** se mantiene la regla de no recalcular; el lenguaje visible debe preferir `nómina mensual confirmada` sobre términos técnicos como snapshot.
+- **Alcance:** fase documental; sin Angular, HTML, CSS, SQL/RPC/RLS, motor, servicios, mappers, persistencia ni estilos globales.
+
+
 ### ERP-NOIA-UI-GUARDRAILS-01 (bases sistema + Creación avanzada)
 
 Fecha: 2026-05-18

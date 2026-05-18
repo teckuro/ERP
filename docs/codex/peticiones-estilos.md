@@ -1,3 +1,10 @@
+## 2026-05-18 - NOM-MENSUAL-WORKSPACE-UI-01
+
+- **Modulo:** Nomina mensual.
+- **Cambio visual:** la pantalla se presenta como workspace operativo de RRHH: header compacto, rail izquierdo de bitacora/revision y foco derecho con estado + CTA principal.
+- **Copy:** se priorizan `Generar nomina`, `Revisar trabajadores`, `Confirmar nomina`, `Generar liquidaciones` y `Nomina confirmada como base oficial para liquidaciones`.
+- **Restricciones:** sin cards por defecto, sin gradientes, sin colores nuevos, sin estilos globales, sin motor, sin servicios, sin persistencia y sin liquidaciones productivas nuevas.
+
 ## 2026-05-18 - NOM-CIERRE-VISUAL-CLEAN-02
 
 - **Módulo:** Nómina mensual / Preparar nómina.
@@ -1233,3 +1240,10 @@ Creación avanzada incorpora una identidad de producto local para dejar de senti
 - **Alcance:** el modal solo registra movimientos puntuales del periodo activo. No muestra duracion, recurrentes ni cuotas.
 - **Cuotas:** permanecen dentro del flujo recurrente; no deben aparecer como accion o configuracion del modal mensual.
 - **Copy:** se corrigen acentos visibles principales y el sidebar deja de presentar cuotas como flujo principal.
+
+## 2026-05-18 - NOM-MENSUAL-CONFIRMACION-FLOW-00
+
+- **Nómina mensual:** se fija como criterio rector que la nómina mensual confirmada es la fuente oficial para generar liquidaciones.
+- **UX futura:** nuevas fases deben priorizar `Generar nómina`, `Revisar trabajadores`, `Confirmar nómina` y `Generar liquidaciones` antes que diagnósticos técnicos del proceso.
+- **Copy:** para RRHH, preferir `nómina mensual confirmada` y estados por trabajador (`Listo`, `Revisar`, `Bloqueado`, `Cambio detectado`, `Omitido`) sobre términos como snapshot, payload, RPC o flags internos.
+- **Restricciones:** fase documental; sin cambio visual aplicado, sin Angular, sin estilos globales, sin SQL/RPC/RLS, sin motor, sin servicios ni persistencia.

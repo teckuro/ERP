@@ -174,7 +174,7 @@ Ejemplos:
 
 **Bien:**
 
-- `Remuneraciones / Preparar nomina`
+- `Remuneraciones / Nomina mensual`
 - `Personas / Alta avanzada / Bitacora laboral`
 - `Parametros / Informacion de valores`
 
@@ -242,7 +242,7 @@ Si la respuesta es no, no crear una card nueva.
 
 1. Abrir [`noia-bases-sistema-referencia.md`](./noia-bases-sistema-referencia.md) y elegir referencia por arquetipo.
 2. **Expediente / pasos:** Creación avanzada → `form-empleado.css`, `--bitacora-*`, `advanced-wizard-map`.
-3. **Mesa de período:** Preparar nómina → `payroll-*`.
+3. **Mesa de periodo:** Nomina mensual -> reutilizar `payroll-*`, pero con copy visible segun `NOM-MENSUAL-CONFIRMACION-FLOW-00`.
 4. Copiar el **breadcrumb operativo** del arquetipo antes de inventar header nuevo.
 5. Copiar **estructura HTML**, **prefijo CSS** y **escala** (padding, tipografía, bordes).
 6. Solo crear clase nueva si el patrón no existe; documentar en fase del módulo.

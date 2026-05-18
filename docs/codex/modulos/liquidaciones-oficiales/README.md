@@ -1,0 +1,134 @@
+# Modulo Liquidaciones oficiales
+
+## Proposito
+
+Permitir generar y revisar liquidaciones oficiales internas desde una nomina cerrada operativamente.
+
+## Estado actual
+
+**Implementado y validado en BD real/controlada** mediante `LIQ-OFICIAL-01` y `LIQ-DB-APPLY-01`.
+
+## Flujo
+
+```txt
+Preparar nomina
+-> Resultado preliminar
+-> Aprobacion operativa
+-> Cierre operativo
+-> Liquidaciones oficiales internas
+```
+
+## Regla central
+
+```txt
+Liquidaciones oficiales no recalcula.
+Materializa el snapshot cerrado.
+```
+
+## NOM-MENSUAL-CONFIRMACION-FLOW-00
+
+Liquidaciones oficiales queda alineado a la nueva regla rectora de Nómina mensual:
+
+```txt
+Nómina mensual confirmada = fuente oficial para generar liquidaciones.
+```
+
+La regla actual se mantiene: Liquidaciones no recalcula. En lenguaje visible futuro, preferir `nómina mensual confirmada` sobre `snapshot cerrado` cuando se explique la condicion de entrada a RRHH.
+
+
+## NOM-LIQ-ACTA-GUIADA-DESIGN-00
+
+Liquidaciones oficiales queda documentado como acta de salida interna del flujo `Preparar nomina -> Liquidaciones oficiales`.
+
+La pantalla debe explicar la condicion de entrada, confirmar que no recalcula y mostrar evidencia despues de generar o revisar liquidaciones. Ver [`../../diseno/nom-liq-acta-guiada-design-00.md`](../../diseno/nom-liq-acta-guiada-design-00.md).
+
+La fase `NOM-PREPARAR-NOMINA-ACTA-ACCION-UX-01` deja preparada en `Preparar nomina` una evidencia visual local previa a este modulo. Liquidaciones no recibe datos nuevos ni recalcula por esa accion; la persistencia formal queda para `NOM-LIQ-ACTA-GENERACION-UX-01`.
+
+## Incluye v1
+
+```txt
+estado del periodo
+boton Generar liquidaciones oficiales
+confirmacion previa temporal
+resumen de totales
+grilla de trabajadores
+detalle por trabajador con conceptos
+persistencia en tablas nomina_liquidacion_*
+RPC generar_liquidaciones_oficiales
+```
+
+## Fuera de alcance v1
+
+```txt
+PDF
+firma
+recepcion
+envio
+portal trabajador
+Previred
+LRE operativo
+archivo banco
+contabilidad
+reapertura
+anulacion
+rectificacion
+reliquidacion
+```
+
+## Evidencia real/controlada
+
+```txt
+Periodo: 2026-04
+id_calculo_periodo: 1
+id_liquidacion_periodo: 1
+Trabajadores: 1
+Conceptos: 8
+Haberes: 750001.88
+Descuentos: 588301.48
+Liquido: 161700.40
+Duplicados activos: 0
+```
+
+## Pruebas registradas
+
+```txt
+npx playwright test tests/liquidaciones-oficiales.e2e.spec.ts --workers=1 --timeout=120000: OK, 1 passed
+npx ng test --watch=false: OK, 433 tests
+npm run build: OK con warnings CSS conocidos
+```
+
+## Deuda UX
+
+La confirmacion fue reemplazada por modal/MsgBox estandar durante UX-COMERCIAL-01.
+
+## UX-COMERCIAL-01 V4 aplicado
+
+- La pantalla explica que la salida nace desde nomina cerrada operativamente.
+- Resumen, siguiente accion, bloqueos/advertencias e informacion quedan por sobre la trazabilidad tecnica.
+- El detalle vacio ya no queda sin salida: ofrece volver a Liquidaciones oficiales o preparar la nomina.
+- Acciones futuras siguen fuera de alcance: sin PDF, firma, envio, Previred, LRE, banco ni contabilidad.
+
+## REM-UX-FLOWS-01 V2 aplicado
+
+- `Liquidaciones oficiales` consume el periodo activo global y lo muestra como contexto compacto.
+- Se elimina el selector local editable de periodo para evitar dos fuentes visuales de verdad.
+- El header queda con acciones secundarias; `Generar liquidaciones oficiales` vive como accion principal del bloque operativo segun estado.
+- `Que falta ahora` explica si falta cerrar nomina, si ya existen liquidaciones o si puede generarse la salida interna.
+
+## REM-UX-FLOWS-01 V3 aplicado
+
+- La vista prioriza disponibilidad, resumen y accion principal antes de cualquier detalle interno.
+- `Que falta ahora` no muestra identificadores ni versionado tecnico; solo estado, pendiente, advertencias y siguiente accion.
+- La trazabilidad queda al final en un disclosure secundario con etiquetas de negocio (`Referencia interna`, `Version interna`).
+- Salidas externas siguen fuera de alcance: sin PDF, firma, envio, Previred, LRE, banco ni contabilidad.
+## ERP-NOIA-BITACORA-OPERATIVA-00 - Lectura de modulo
+
+Liquidaciones oficiales queda alineado a [`NOIA / Bitacora Operativa`](../../diseno/bitacora-operativa-noia.md) como `Acta de salida interna` del periodo.
+
+- La pantalla debe comunicar origen del cierre, trabajadores incluidos, estado de emision y trazabilidad antes que decoracion visual.
+- El documento liquidacion se entiende como salida oficial del periodo ya cerrado.
+- Esta referencia es documental; no cambia calculo, motor, PDF, SQL, rutas ni estilos globales.
+
+## NOM-MOVIMIENTOS-SIMPLE-01
+
+Liquidaciones no cambia. La relacion con movimientos sigue entrando por el resultado cerrado de Preparar nomina; no se recalculan cuotas, recurrentes ni movimientos desde Liquidaciones.

@@ -40,11 +40,11 @@ function inputBase(overrides: Partial<ProcesoMensualEstadoOperativoInput> = {}):
 }
 
 describe('proceso-mensual-estado-operativo.rules', () => {
-  it('sin prevalidacion pide validar periodo', () => {
+  it('sin prevalidacion pide generar nomina', () => {
     const vm = resolverEstadoOperativoProcesoMensual(inputBase());
 
     expect(vm.estadoClave).toBe('pendiente_validacion');
-    expect(vm.accionPrincipal.label).toBe('Validar período');
+    expect(vm.accionPrincipal.label).toBe('Generar nomina');
     expect(vm.etapaActiva).toBe('validar');
     expect(vm.disclosureActivo).toBe('base');
   });
@@ -58,7 +58,7 @@ describe('proceso-mensual-estado-operativo.rules', () => {
     expect(vm.estadoClave).toBe('periodo_con_pendientes');
     expect(vm.accionPrincipal.label).toBe('Revisar parámetros');
     expect(vm.accionPrincipal.ruta).toBe('/parametros');
-    expect(vm.timeline[0].titulo).toBe('Preparación');
+    expect(vm.timeline[0].titulo).toBe('Generar nomina');
     expect(vm.timeline[0].estado).toBe('Actual');
   });
 
@@ -76,17 +76,17 @@ describe('proceso-mensual-estado-operativo.rules', () => {
     }));
 
     expect(vm.estadoClave).toBe('listo_para_generar_base');
-    expect(vm.accionPrincipal.label).toBe('Generar base de nómina');
+    expect(vm.accionPrincipal.label).toBe('Generar nomina');
     expect(vm.etapaActiva).toBe('base');
     expect(vm.timeline.map((paso) => paso.titulo)).toEqual([
-      'Preparación',
-      'Revisión',
-      'Aprobación y cierre',
-      'Liquidaciones',
+      'Generar nomina',
+      'Revisar trabajadores',
+      'Confirmar nomina',
+      'Generar liquidaciones',
     ]);
   });
 
-  it('base generada pide calcular preliminar', () => {
+  it('borrador generado pide revisar trabajadores', () => {
     const vm = resolverEstadoOperativoProcesoMensual(inputBase({
       tienePrevalidacion: true,
       baseGenerada: true,
@@ -94,7 +94,7 @@ describe('proceso-mensual-estado-operativo.rules', () => {
     }));
 
     expect(vm.estadoClave).toBe('base_lista');
-    expect(vm.accionPrincipal.label).toBe('Calcular preliminar');
+    expect(vm.accionPrincipal.label).toBe('Revisar trabajadores');
     expect(vm.disclosureActivo).toBe('calculo');
   });
 
@@ -113,11 +113,11 @@ describe('proceso-mensual-estado-operativo.rules', () => {
     }));
 
     expect(vm.estadoClave).toBe('resultado_con_bloqueos');
-    expect(vm.accionPrincipal.label).toBe('Revisar bloqueos');
+    expect(vm.accionPrincipal.label).toBe('Revisar trabajadores');
     expect(vm.accionPrincipal.label).not.toBe('Guardar resultado preliminar');
   });
 
-  it('resultado guardado pide aprobacion operativa', () => {
+  it('resultado guardado pide confirmar nomina', () => {
     const vm = resolverEstadoOperativoProcesoMensual(inputBase({
       tienePrevalidacion: true,
       baseGenerada: true,
@@ -127,7 +127,7 @@ describe('proceso-mensual-estado-operativo.rules', () => {
     }));
 
     expect(vm.estadoClave).toBe('resultado_guardado');
-    expect(vm.accionPrincipal.label).toBe('Aprobar resultado preliminar');
+    expect(vm.accionPrincipal.label).toBe('Confirmar nomina');
     expect(vm.etapaActiva).toBe('aprobar_cerrar');
   });
 
@@ -139,7 +139,7 @@ describe('proceso-mensual-estado-operativo.rules', () => {
     }));
 
     expect(vm.estadoClave).toBe('nomina_cerrada');
-    expect(vm.accionPrincipal.label).toBe('Ir a liquidaciones oficiales');
+    expect(vm.accionPrincipal.label).toBe('Generar liquidaciones');
     expect(vm.etapaActiva).toBe('liquidaciones');
   });
 });

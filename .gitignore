@@ -47,6 +47,7 @@ yarn-error.log
 !/docs/codex/diseno/noia-ui-guardrails.md
 !/docs/codex/diseno/noia-ui-manual.md
 !/docs/codex/diseno/noia-ui-review-checklist.md
+!/docs/codex/diseno/nom-mensual-workspace-ui-01.md
 !/docs/codex/estilos/
 /docs/codex/estilos/*
 !/docs/codex/estilos/README.md
@@ -59,6 +60,15 @@ yarn-error.log
 !/docs/codex/modulos/movimientos-variables/
 /docs/codex/modulos/movimientos-variables/*
 !/docs/codex/modulos/movimientos-variables/README.md
+!/docs/codex/modulos/nomina-mensual/
+/docs/codex/modulos/nomina-mensual/*
+!/docs/codex/modulos/nomina-mensual/README.md
+!/docs/codex/modulos/nomina-mensual/contrato-general.md
+!/docs/codex/modulos/nomina-mensual/nomina-mensual-confirmacion-flow.md
+!/docs/codex/modulos/liquidaciones-oficiales/
+/docs/codex/modulos/liquidaciones-oficiales/*
+!/docs/codex/modulos/liquidaciones-oficiales/README.md
+!/docs/codex/modulos/liquidaciones-oficiales/contrato-general.md
 !/docs/codex/modulos/remuneraciones/
 /docs/codex/modulos/remuneraciones/*
 !/docs/codex/modulos/remuneraciones/movimientos-remuneracion-simple.md
