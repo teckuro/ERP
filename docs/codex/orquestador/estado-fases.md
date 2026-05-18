@@ -1,3 +1,73 @@
+## NOM-PREPARAR-NOMINA-ACTA-DISENO-ESTRUCTURADO-UX-01 - Diseno estructurado del acta operativa
+
+| Campo | Estado |
+|---|---|
+| Estado | Implementada |
+| Tipo | UX/UI local |
+| Alcance | Reestructura visualmente el acta: header operativo, franja de contexto, decision, evidencia, alcance y modal operativo. |
+| Restricciones | Sin cambios de logica, persistencia, servicios, rutas, motor, SQL/RPC/RLS, estilos globales ni Liquidaciones oficiales. |
+| Documento | [`../modulos/nomina-mensual/nom-preparar-nomina-acta-diseno-estructurado-ux-01.md`](../modulos/nomina-mensual/nom-preparar-nomina-acta-diseno-estructurado-ux-01.md) |
+
+## NOM-PREPARAR-NOMINA-ACTA-ACCION-UX-01 - Acta operativa del periodo
+
+| Campo | Estado |
+|---|---|
+| Estado | Implementada |
+| Tipo | UX/UI local |
+| Alcance | Agrega acta operativa local en Preparar nomina con componente dedicado, regla pura de estado, evidencia para liquidaciones y confirmacion `app-message-box`. |
+| Restricciones | Sin persistencia de actas, sin liquidaciones productivas, sin rutas, sin menu lateral, sin motor, SQL/RPC/RLS ni estilos globales. |
+| Documento | [`../modulos/nomina-mensual/nom-preparar-nomina-acta-accion-ux-01.md`](../modulos/nomina-mensual/nom-preparar-nomina-acta-accion-ux-01.md) |
+
+## NOM-LIQ-ACTA-GUIADA-DESIGN-00 - Acta guiada Preparar nomina -> Liquidaciones
+
+| Campo | Estado |
+|---|---|
+| Estado | Documentada |
+| Tipo | Diseno operativo/documental |
+| Alcance | Define actas guiadas por accion critica, matriz antes/despues y contrato para Preparar nomina y Liquidaciones oficiales. |
+| Restricciones | Sin Angular, servicios, rutas, motor, SQL/RPC/RLS, estilos globales ni DataGrid compartido. |
+| Documento | [`../diseno/nom-liq-acta-guiada-design-00.md`](../diseno/nom-liq-acta-guiada-design-00.md) |
+
+## NOM-PREPARAR-NOMINA-ADMIN-WORKSPACE-DESIGN-00 - Maqueta administrativa de Preparar nómina
+
+| Campo | Estado |
+|---|---|
+| Estado | Documentada |
+| Tipo | Diseño operativo/documental |
+| Alcance | Define maqueta final: pantalla principal para decidir, revisión guiada para entender, modal grande para revisar, DataGrid para listar, panel de apoyo para corregir. |
+| Restricciones | Sin Angular, servicios, rutas, motor, SQL/RPC/RLS, estilos globales ni DataGrid compartido. |
+| Documento | [`../diseno/nom-preparar-nomina-admin-workspace-design-00.md`](../diseno/nom-preparar-nomina-admin-workspace-design-00.md) |
+
+## NOM-PREPARAR-NOMINA-ADMIN-WORKSPACE-UX-01 - Mesa administrativa de Preparar nómina
+
+| Campo | Estado |
+|---|---|
+| Estado | Implementada |
+| Tipo | UX/UI local |
+| Alcance | Pantalla principal como mesa administrativa; modal grande de revisión con Guía + tabs; panel de apoyo separado por revisar/corregir/interno. |
+| Restricciones | Contenedor local + documentación; sin DataGrid compartido, motor, SQL, servicios, rutas ni estilos globales. |
+| Documento | [`../diseno/nom-preparar-nomina-admin-workspace-ux-01.md`](../diseno/nom-preparar-nomina-admin-workspace-ux-01.md) |
+
+## NOM-PREPARAR-NOMINA-BITACORA-V3-CLIENT-SAFE-DATAGRID-UX-01 - Revisión segura y detalle con DataGrid
+
+| Campo | Estado |
+|---|---|
+| Estado | Implementada |
+| Tipo | UX/UI local |
+| Alcance | Revisión guiada cliente-segura; detalle operativo en modal ancho con tabs y `app-data-grid`; información interna cerrada. |
+| Restricciones | Contenedor local + documentación; sin DataGrid compartido, motor, SQL, servicios, rutas ni estilos globales. |
+| Documento | [`../diseno/nom-preparar-nomina-bitacora-v3-client-safe-datagrid-ux-01.md`](../diseno/nom-preparar-nomina-bitacora-v3-client-safe-datagrid-ux-01.md) |
+
+## NOM-PREPARAR-NOMINA-BITACORA-V3-NONLINEAR-FLOW-UX-01 - Mesa operativa no lineal
+
+| Campo | Estado |
+|---|---|
+| Estado | Implementada |
+| Tipo | UX/UI local |
+| Alcance | Revisión guiada en modal; acta y panel livianos; registro en una línea; sin rehacer V3. |
+| Restricciones | HTML/CSS + señal local en contenedor; sin motor/SQL/servicios/rutas. |
+| Documento | [`../diseno/nom-preparar-nomina-bitacora-v3-nonlinear-flow-ux-01.md`](../diseno/nom-preparar-nomina-bitacora-v3-nonlinear-flow-ux-01.md) |
+
 ## NOM-PREPARAR-NOMINA-BITACORA-V3-STEPS-FOCUS-UX-01 - Bitácora de etapas enfocada
 
 | Campo | Estado |

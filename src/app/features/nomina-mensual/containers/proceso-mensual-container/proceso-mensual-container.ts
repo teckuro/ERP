@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, effect, inject, signal, untracked } from '@angular/core';
+import { ChangeDetectionStrategy, Component, HostListener, computed, effect, inject, signal, untracked } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { LucideAngularModule } from 'lucide-angular';
@@ -8,6 +8,11 @@ import { BadgeComponent } from '../../../../shared/components/ui/badge.component
 import { ButtonComponent } from '../../../../shared/components/ui/button.component';
 import { CardComponent, CardContentComponent } from '../../../../shared/components/ui/card.component';
 import { MessageBoxComponent } from '../../../../shared/components/ui/message-box.component';
+import {
+  DataGridColumn,
+  DataGridComponent,
+  DataGridFilter,
+} from '../../../../shared/components/ui/data-grid.component';
 import type {
   BaseNominaParametrosEstado,
   BaseNominaTrabajadorEstado,
@@ -28,7 +33,10 @@ import type {
   ProcesoMensualPrevalidacion,
 } from '../../models/proceso-mensual.model';
 import { ProcesoMensualService } from '../../services/proceso-mensual.service';
+import { ActaOperativaPeriodoComponent } from '../../components/acta-operativa-periodo/acta-operativa-periodo.component';
+import type { ActaOperativaPeriodoViewModel } from '../../models/acta-operativa-periodo.model';
 import { validarPeriodoEntradaMensual } from '../../entradas/rules/entradas-mensuales-periodo.rules';
+import { buildActaOperativaPeriodoViewModel } from '../../rules/acta-operativa-periodo.rules';
 import {
   resolverEstadoOperativoProcesoMensual,
   type ProcesoMensualAccionLocal,
@@ -58,7 +66,8 @@ type RevisionAprobacionEstado =
 type RevisionChecklistEstado = 'Completo' | 'Pendiente' | 'Requiere atencion' | 'No aplica';
 type EtapaOperativaActiva = 'base' | 'calculo' | 'resultado' | 'guardado' | 'aprobacion' | 'cierre' | 'liquidaciones';
 type PasoPeriodoEstado = 'Actual' | 'Completo' | 'Pendiente' | 'Bloqueada';
-type ConfirmacionProcesoMensualTipo = 'guardar_preliminar' | 'aprobar_preliminar' | 'cerrar_nomina';
+type ConfirmacionProcesoMensualTipo = 'guardar_preliminar' | 'aprobar_preliminar' | 'cerrar_nomina' | 'preparar_acta';
+type DetalleOperativoTab = 'guia' | 'resumen' | 'trabajadores' | 'movimientos' | 'recurrentes' | 'observaciones' | 'resultado';
 
 interface ConfirmacionProcesoMensualView {
   tipo: ConfirmacionProcesoMensualTipo;
@@ -69,6 +78,7 @@ interface ConfirmacionProcesoMensualView {
   primaryLabel: string;
   secondaryLabel: string;
   advertenciasAprobacion?: string[];
+  secciones?: Array<{ titulo: string; items: string[] }>;
 }
 
 interface ValidacionOperativaItemView {
@@ -285,6 +295,48 @@ interface BitacoraEtapaVm {
   subpasos: BitacoraSubpasoVm[];
 }
 
+interface PayrollWorkerDetailRow {
+  trabajador: string;
+  rut: string;
+  estado: string;
+  observacion: string;
+  accion: string;
+}
+
+interface PayrollMovementDetailRow {
+  trabajador: string;
+  concepto: string;
+  tipo: string;
+  monto: string;
+  estado: string;
+  accion: string;
+}
+
+interface PayrollRecurrentDetailRow {
+  trabajador: string;
+  concepto: string;
+  periodicidad: string;
+  monto: string;
+  estado: string;
+  accion: string;
+}
+
+interface PayrollObservationDetailRow {
+  severidad: 'Bloqueo' | 'Advertencia' | 'Información';
+  ambito: string;
+  mensaje: string;
+  accion: string;
+}
+
+interface PayrollResultDetailRow {
+  trabajador: string;
+  haberes: string;
+  descuentos: string;
+  liquido: string;
+  estado: string;
+  observacion: string;
+}
+
 @Component({
   selector: 'app-proceso-mensual-container',
   standalone: true,
@@ -298,6 +350,8 @@ interface BitacoraEtapaVm {
     BadgeComponent,
     ButtonComponent,
     MessageBoxComponent,
+    DataGridComponent,
+    ActaOperativaPeriodoComponent,
   ],
   templateUrl: './proceso-mensual-container.html',
   styleUrl: './proceso-mensual-container.css',
@@ -329,6 +383,88 @@ export class ProcesoMensualContainer {
   readonly cerrandoNomina = signal(false);
   readonly snapshotCompleto = signal<NominaSnapshotCompletoView | null>(null);
   readonly confirmacionProceso = signal<ConfirmacionProcesoMensualView | null>(null);
+  readonly revisionGuiadaAbierta = signal(false);
+  readonly detalleOperativoAbierto = signal(false);
+  readonly detalleOperativoTabActivo = signal<DetalleOperativoTab>('guia');
+  readonly actaOperativaPreparada = signal(false);
+
+  readonly detalleOperativoTabs: Array<{ id: DetalleOperativoTab; label: string }> = [
+    { id: 'guia', label: 'Guía' },
+    { id: 'resumen', label: 'Resumen operativo' },
+    { id: 'trabajadores', label: 'Trabajadores' },
+    { id: 'movimientos', label: 'Movimientos' },
+    { id: 'recurrentes', label: 'Recurrentes' },
+    { id: 'observaciones', label: 'Observaciones' },
+    { id: 'resultado', label: 'Resultado preliminar' },
+  ];
+
+  readonly payrollWorkerDetailColumns: DataGridColumn<PayrollWorkerDetailRow>[] = [
+    { id: 'trabajador', header: 'Trabajador', field: 'trabajador', sortable: true, priorityResponsive: 'primary' },
+    { id: 'rut', header: 'RUT', field: 'rut', sortable: true, priorityResponsive: 'secondary' },
+    { id: 'estado', header: 'Estado', field: 'estado', sortable: true },
+    { id: 'observacion', header: 'Observación', field: 'observacion' },
+    { id: 'accion', header: 'Acción sugerida', field: 'accion' },
+  ];
+
+  readonly payrollWorkerDetailFilters: DataGridFilter<PayrollWorkerDetailRow>[] = [
+    { id: 'estado', label: 'Estado', field: 'estado', type: 'select', emptyLabel: 'Todos los estados' },
+    { id: 'trabajador', label: 'Buscar trabajador', field: 'trabajador', type: 'text', matchMode: 'tokens' },
+  ];
+
+  readonly payrollMovementDetailColumns: DataGridColumn<PayrollMovementDetailRow>[] = [
+    { id: 'trabajador', header: 'Trabajador', field: 'trabajador', sortable: true, priorityResponsive: 'primary' },
+    { id: 'concepto', header: 'Concepto', field: 'concepto', sortable: true },
+    { id: 'tipo', header: 'Tipo', field: 'tipo', sortable: true },
+    { id: 'monto', header: 'Monto', field: 'monto', align: 'right' },
+    { id: 'estado', header: 'Estado', field: 'estado', sortable: true },
+    { id: 'accion', header: 'Acción', field: 'accion' },
+  ];
+
+  readonly payrollMovementDetailFilters: DataGridFilter<PayrollMovementDetailRow>[] = [
+    { id: 'estado', label: 'Estado', field: 'estado', type: 'select', emptyLabel: 'Todos los estados' },
+    { id: 'tipo', label: 'Tipo', field: 'tipo', type: 'select', emptyLabel: 'Todos los tipos' },
+    { id: 'trabajador', label: 'Buscar trabajador/concepto', field: 'trabajador', type: 'text', matchMode: 'tokens' },
+  ];
+
+  readonly payrollRecurrentDetailColumns: DataGridColumn<PayrollRecurrentDetailRow>[] = [
+    { id: 'trabajador', header: 'Trabajador', field: 'trabajador', sortable: true, priorityResponsive: 'primary' },
+    { id: 'concepto', header: 'Concepto', field: 'concepto', sortable: true },
+    { id: 'periodicidad', header: 'Periodicidad', field: 'periodicidad' },
+    { id: 'monto', header: 'Monto', field: 'monto', align: 'right' },
+    { id: 'estado', header: 'Estado', field: 'estado', sortable: true },
+    { id: 'accion', header: 'Acción', field: 'accion' },
+  ];
+
+  readonly payrollRecurrentDetailFilters: DataGridFilter<PayrollRecurrentDetailRow>[] = [
+    { id: 'estado', label: 'Estado', field: 'estado', type: 'select', emptyLabel: 'Todos los estados' },
+    { id: 'trabajador', label: 'Buscar trabajador/concepto', field: 'trabajador', type: 'text', matchMode: 'tokens' },
+  ];
+
+  readonly payrollObservationDetailColumns: DataGridColumn<PayrollObservationDetailRow>[] = [
+    { id: 'severidad', header: 'Severidad', field: 'severidad', sortable: true, priorityResponsive: 'primary' },
+    { id: 'ambito', header: 'Ámbito', field: 'ambito', sortable: true },
+    { id: 'mensaje', header: 'Mensaje', field: 'mensaje' },
+    { id: 'accion', header: 'Acción sugerida', field: 'accion' },
+  ];
+
+  readonly payrollObservationDetailFilters: DataGridFilter<PayrollObservationDetailRow>[] = [
+    { id: 'severidad', label: 'Severidad', field: 'severidad', type: 'select', emptyLabel: 'Todas' },
+    { id: 'ambito', label: 'Ámbito', field: 'ambito', type: 'select', emptyLabel: 'Todos los ámbitos' },
+  ];
+
+  readonly payrollResultDetailColumns: DataGridColumn<PayrollResultDetailRow>[] = [
+    { id: 'trabajador', header: 'Trabajador', field: 'trabajador', sortable: true, priorityResponsive: 'primary' },
+    { id: 'haberes', header: 'Haberes', field: 'haberes', align: 'right' },
+    { id: 'descuentos', header: 'Descuentos', field: 'descuentos', align: 'right' },
+    { id: 'liquido', header: 'Líquido preliminar', field: 'liquido', align: 'right' },
+    { id: 'estado', header: 'Estado', field: 'estado', sortable: true },
+    { id: 'observacion', header: 'Observación', field: 'observacion' },
+  ];
+
+  readonly payrollResultDetailFilters: DataGridFilter<PayrollResultDetailRow>[] = [
+    { id: 'estado', label: 'Estado', field: 'estado', type: 'select', emptyLabel: 'Todos los estados' },
+    { id: 'trabajador', label: 'Buscar trabajador', field: 'trabajador', type: 'text', matchMode: 'tokens' },
+  ];
 
   constructor() {
     effect(() => {
@@ -1096,6 +1232,157 @@ export class ProcesoMensualContainer {
     ];
   });
 
+  readonly registroPeriodoLinea = computed(() => {
+    const partes = [
+      this.resultado() ? 'validación lista' : 'validación pendiente',
+      this.preNomina() ? 'base generada' : 'base pendiente',
+      this.calculo() ? 'cálculo ejecutado' : 'cálculo pendiente',
+      this.snapshotActivo() ? 'versión interna guardada' : 'versión interna pendiente',
+    ];
+    if (this.nominaEstaCerradaOperativamente()) {
+      partes.push('nómina cerrada');
+    } else if (this.aprobacionOperativa()) {
+      partes.push('aprobación operativa');
+    } else if (this.snapshotActivo()) {
+      partes.push('aprobación pendiente');
+    }
+    return partes.join(' · ');
+  });
+
+  readonly actaPreparacion = computed<ActaOperativaPeriodoViewModel>(() => {
+    const estadoOperativo = this.estadoOperativo();
+    const resumen = this.dashboardResumen();
+    const resultado = this.resultadoPreliminar();
+    const snapshot = this.snapshotActivo();
+    const bloqueos = [
+      ...estadoOperativo.bloqueos.map((item) => item.titulo),
+      ...resultado.bloqueos.map((item) => item.titulo),
+    ];
+    const advertencias = [
+      ...estadoOperativo.advertencias.map((item) => item.titulo),
+      ...resultado.advertencias.map((item) => item.titulo),
+    ];
+    const tieneValidacionMinima = validarPeriodoEntradaMensual(this.periodoSeleccionado()) && (
+      this.resultado() != null || this.preNomina() != null || this.calculo() != null || snapshot != null
+    );
+    return buildActaOperativaPeriodoViewModel({
+      periodoLabel: this.periodoActivo.etiqueta() || this.periodoSeleccionado(),
+      periodoValido: validarPeriodoEntradaMensual(this.periodoSeleccionado()),
+      tieneValidacionMinima,
+      actaPreparadaEnSesion: this.actaOperativaPreparada(),
+      estadoPeriodoLabel: estadoOperativo.titulo,
+      parametrosLabel: resumen.parametrosListos == null ? 'Pendiente de validacion' : resumen.parametrosListos ? 'Listos' : 'Por revisar',
+      trabajadoresLabel: resumen.trabajadoresAptos == null
+        ? 'Pendiente de validacion'
+        : `${resumen.trabajadoresAptos} apto${resumen.trabajadoresAptos === 1 ? '' : 's'} / ${resumen.trabajadoresPorRevisar} por revisar`,
+      movimientosLabel: `${resumen.movimientosAprobados} aprobados / ${resumen.movimientosPendientes} pendientes`,
+      asignacionesLabel: resumen.asignacionesAplicables == null
+        ? 'Pendiente de validacion'
+        : `${resumen.asignacionesAplicables} aplicables / ${resumen.asignacionesPorRevisar} por revisar`,
+      resultadoPreliminarLabel: resumen.resultadoPreliminar,
+      resultadoGuardado: snapshot != null,
+      bloqueos,
+      advertencias,
+      pendientes: estadoOperativo.queFaltaAhora.map((item) => item.titulo),
+    });
+  });
+
+  readonly payrollWorkerDetailRows = computed<PayrollWorkerDetailRow[]>(() => {
+    const base = this.baseNominaTrazabilidad();
+    if (base?.trabajadores.length) {
+      return base.trabajadores.map((trabajador) => ({
+        trabajador: trabajador.trabajadorLabel || 'Trabajador sin ficha visible',
+        rut: trabajador.rutLabel || 'RUT no disponible',
+        estado: this.etiquetaEstadoBaseTrabajador(trabajador.estado),
+        observacion: trabajador.observacion || 'Sin observaciones',
+        accion: trabajador.estado === 'bloqueado' || trabajador.estado === 'excluido'
+          ? 'Revisar ficha del trabajador'
+          : trabajador.estado === 'con_observaciones'
+            ? 'Revisar antes de calcular'
+            : 'Sin acción pendiente',
+      }));
+    }
+
+    return this.resultadoPreliminar().trabajadores.map((trabajador) => ({
+      trabajador: trabajador.trabajadorLabel,
+      rut: trabajador.rutLabel,
+      estado: trabajador.estadoLabel,
+      observacion: trabajador.observacionLabel,
+      accion: trabajador.accionLabel ?? 'Sin acción pendiente',
+    }));
+  });
+
+  readonly payrollMovementDetailRows = computed<PayrollMovementDetailRow[]>(() => {
+    const trabajadorPorId = this.trabajadorLabelPorId();
+    return (this.resultado()?.entradasMensuales ?? [])
+      .filter((entrada) => entrada.origen !== 'recurrente')
+      .map((entrada) => ({
+        trabajador: trabajadorPorId.get(entrada.idPersona) ?? 'Trabajador por revisar',
+        concepto: this.etiquetaConceptoEntrada(entrada.idConcepto, entrada.tipoMovimiento, entrada.categoria),
+        tipo: this.etiquetaTipoEntrada(entrada.tipoEntrada),
+        monto: this.formatoMonto(entrada.monto),
+        estado: this.etiquetaEstadoEntrada(entrada.estado),
+        accion: entrada.bloqueaProceso || entrada.requiereRevision ? 'Revisar movimiento del mes' : 'Sin acción pendiente',
+      }));
+  });
+
+  readonly payrollRecurrentDetailRows = computed<PayrollRecurrentDetailRow[]>(() => {
+    const trabajadorPorId = this.trabajadorLabelPorId();
+    const recurrentesDesdeEntradas = (this.resultado()?.entradasMensuales ?? [])
+      .filter((entrada) => entrada.origen === 'recurrente')
+      .map<PayrollRecurrentDetailRow>((entrada) => ({
+        trabajador: trabajadorPorId.get(entrada.idPersona) ?? 'Trabajador por revisar',
+        concepto: this.etiquetaConceptoEntrada(entrada.idConcepto, entrada.tipoMovimiento, entrada.categoria),
+        periodicidad: 'Mensual',
+        monto: this.formatoMonto(entrada.monto),
+        estado: this.etiquetaEstadoEntrada(entrada.estado),
+        accion: entrada.bloqueaProceso || entrada.requiereRevision ? 'Revisar asignación recurrente' : 'Sin acción pendiente',
+      }));
+
+    if (recurrentesDesdeEntradas.length) {
+      return recurrentesDesdeEntradas;
+    }
+
+    return (this.baseNominaTrazabilidad()?.trabajadores ?? [])
+      .filter((trabajador) => trabajador.asignacionesRecurrentes > 0)
+      .map((trabajador) => ({
+        trabajador: trabajador.trabajadorLabel || 'Trabajador sin ficha visible',
+        concepto: `${trabajador.asignacionesRecurrentes} asignación(es) recurrente(s)`,
+        periodicidad: 'Mensual',
+        monto: 'Ver detalle en recurrentes',
+        estado: trabajador.estado === 'bloqueado' ? 'Por revisar' : 'Considerada',
+        accion: 'Ir a asignaciones recurrentes',
+      }));
+  });
+
+  readonly payrollObservationDetailRows = computed<PayrollObservationDetailRow[]>(() => {
+    const estado = this.estadoOperativo();
+    const rows: PayrollObservationDetailRow[] = [
+      ...estado.bloqueos.map((item) => this.observacionGridDesdePendiente(item, 'Bloqueo')),
+      ...estado.advertencias.map((item) => this.observacionGridDesdePendiente(item, 'Advertencia')),
+      ...estado.informaciones.map((item) => this.observacionGridDesdePendiente(item, 'Información')),
+    ];
+
+    for (const item of this.resultadoPreliminar().bloqueos) {
+      rows.push(this.observacionGridDesdeResultado(item, 'Bloqueo'));
+    }
+    for (const item of this.resultadoPreliminar().advertencias) {
+      rows.push(this.observacionGridDesdeResultado(item, 'Advertencia'));
+    }
+    return rows;
+  });
+
+  readonly payrollResultDetailRows = computed<PayrollResultDetailRow[]>(() => {
+    return this.resultadoPreliminar().trabajadores.map((trabajador) => ({
+      trabajador: trabajador.trabajadorLabel,
+      haberes: trabajador.haberesLabel,
+      descuentos: trabajador.descuentosLabel,
+      liquido: trabajador.liquidoLabel,
+      estado: trabajador.estadoLabel,
+      observacion: trabajador.observacionLabel,
+    }));
+  });
+
   mostrarDetalleOperativo(etapa: EtapaOperativaActiva): boolean {
     const estado = this.estadoOperativo().estadoClave;
     const orden: Record<EtapaOperativaActiva, number> = {
@@ -1316,6 +1603,7 @@ export class ProcesoMensualContainer {
     this.identificadorResultadoGuardadoActual.set(null);
     this.aprobacionOperativa.set(null);
     this.confirmacionProceso.set(null);
+    this.actaOperativaPreparada.set(false);
   }
 
   recalcularYReemplazarSnapshot(): void {
@@ -1463,14 +1751,38 @@ export class ProcesoMensualContainer {
   }
 
   revisarBloqueosOperativos(): void {
-    document.querySelector('#pm-que-falta-ahora')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    this.abrirRevisionGuiada();
   }
 
   abrirRevisionGuiada(): void {
-    const acordeon = document.querySelector('#payroll-revision-guiada') as HTMLDetailsElement | null;
-    if (acordeon) {
-      acordeon.open = true;
-      acordeon.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    this.abrirDetalleOperativo('guia');
+  }
+
+  cerrarRevisionGuiada(): void {
+    this.revisionGuiadaAbierta.set(false);
+  }
+
+  abrirDetalleOperativo(tab: DetalleOperativoTab = 'guia'): void {
+    this.detalleOperativoTabActivo.set(tab);
+    this.detalleOperativoAbierto.set(true);
+  }
+
+  cerrarDetalleOperativo(): void {
+    this.detalleOperativoAbierto.set(false);
+  }
+
+  seleccionarDetalleOperativoTab(tab: DetalleOperativoTab): void {
+    this.detalleOperativoTabActivo.set(tab);
+  }
+
+  @HostListener('document:keydown.escape')
+  cerrarModalesConEscape(): void {
+    if (this.detalleOperativoAbierto()) {
+      this.cerrarDetalleOperativo();
+      return;
+    }
+    if (this.revisionGuiadaAbierta()) {
+      this.cerrarRevisionGuiada();
     }
   }
 
@@ -1560,6 +1872,52 @@ export class ProcesoMensualContainer {
     this.abrirConfirmacionCierreNominaOperativa();
   }
 
+  prepararActaOperativaPeriodo(): void {
+    const acta = this.actaPreparacion();
+    if (!acta.accionDisponible) return;
+    const tieneObservaciones = acta.estado === 'REQUIERE_REVISION';
+    this.confirmacionProceso.set({
+      tipo: 'preparar_acta',
+      titulo: 'Preparar acta operativa del periodo',
+      mensaje: 'Se dejara preparada una evidencia visual del contexto revisado para continuar hacia Liquidaciones oficiales.',
+      detalle: 'No genera liquidaciones, no cierra el periodo, no guarda un acta definitiva y no exporta PDF.',
+      puntos: [
+        'Periodo, estado de validacion y resumen de trabajadores.',
+        'Movimientos del mes, asignaciones recurrentes y observaciones visibles.',
+        'Proxima accion: revisar Liquidaciones oficiales con este contexto como respaldo.',
+      ],
+      secciones: [
+        {
+          titulo: 'Que se incluye',
+          items: [
+            `Periodo ${this.periodoActivo.etiqueta() || this.periodoSeleccionado()}.`,
+            `Estado actual: ${this.estadoOperativo().titulo}.`,
+            this.dashboardResumen().trabajadoresAptos == null
+              ? 'Resumen de trabajadores pendiente de validacion.'
+              : `Resumen de trabajadores: ${this.dashboardResumen().trabajadoresAptos} aptos y ${this.dashboardResumen().trabajadoresPorRevisar} por revisar.`,
+            `Movimientos y asignaciones: ${this.dashboardResumen().movimientosAprobados} movimientos aprobados y ${this.dashboardResumen().asignacionesAplicables ?? 0} recurrentes aplicables.`,
+            tieneObservaciones ? 'Observaciones visibles para revision.' : 'Sin observaciones bloqueantes visibles.',
+          ],
+        },
+        {
+          titulo: 'Que no hace todavia',
+          items: [
+            'No genera liquidaciones.',
+            'No cierra el periodo.',
+            'No guarda un acta definitiva.',
+            'No exporta PDF.',
+          ],
+        },
+      ],
+      primaryLabel: tieneObservaciones ? 'Preparar con observaciones' : 'Preparar acta',
+      secondaryLabel: 'Cancelar',
+    });
+  }
+
+  verEvidenciaActaOperativa(): void {
+    this.abrirDetalleOperativo('resumen');
+  }
+
   private ejecutarCierreNominaOperativa(): void {
     const snapshot = this.snapshotActivo();
     if (!snapshot?.idCalculoPeriodo || !this.puedeCerrarNominaOperativa()) return;
@@ -1595,6 +1953,9 @@ export class ProcesoMensualContainer {
         break;
       case 'cerrar_nomina':
         this.ejecutarCierreNominaOperativa();
+        break;
+      case 'preparar_acta':
+        this.actaOperativaPreparada.set(true);
         break;
     }
   }
@@ -2349,7 +2710,90 @@ export class ProcesoMensualContainer {
     return { accionLabel: 'Revisar base de nómina' };
   }
 
-  private formatoMonto(valor: number | null | undefined): string {
+  private trabajadorLabelPorId(): Map<number, string> {
+    const trabajadores = new Map<number, string>();
+    for (const trabajador of this.baseNominaTrazabilidad()?.trabajadores ?? []) {
+      trabajadores.set(trabajador.idPersona, trabajador.trabajadorLabel || 'Trabajador sin ficha visible');
+    }
+    for (const trabajador of this.resultadoPreliminar().trabajadores) {
+      if (typeof trabajador.idPersona === 'number') {
+        trabajadores.set(trabajador.idPersona, trabajador.trabajadorLabel);
+      }
+    }
+    return trabajadores;
+  }
+
+  private observacionGridDesdePendiente(
+    item: ProcesoMensualPendienteVm,
+    severidad: PayrollObservationDetailRow['severidad'],
+  ): PayrollObservationDetailRow {
+    return {
+      severidad,
+      ambito: this.ambitoDesdeCodigo(item.codigo),
+      mensaje: item.descripcion || item.titulo,
+      accion: item.accionLabel ?? (item.ruta ? 'Revisar origen' : 'Revisar en el período'),
+    };
+  }
+
+  private observacionGridDesdeResultado(
+    item: ResultadoObservacionView,
+    severidad: PayrollObservationDetailRow['severidad'],
+  ): PayrollObservationDetailRow {
+    return {
+      severidad,
+      ambito: this.ambitoDesdeCodigo(item.codigo),
+      mensaje: item.descripcion || item.titulo,
+      accion: item.accionLabel ?? 'Revisar resultado preliminar',
+    };
+  }
+
+  private ambitoDesdeCodigo(codigo: string): string {
+    const normalizado = codigo.toLowerCase();
+    if (normalizado.includes('param')) return 'Parámetros';
+    if (normalizado.includes('mov') || normalizado.includes('entrada')) return 'Movimientos';
+    if (normalizado.includes('recurrente') || normalizado.includes('haber')) return 'Recurrentes';
+    if (normalizado.includes('trab') || normalizado.includes('persona')) return 'Trabajadores';
+    if (normalizado.includes('cierre')) return 'Cierre operativo';
+    return 'Período';
+  }
+
+  private etiquetaConceptoEntrada(idConcepto: number, tipoMovimiento: string | null, categoria: string | null): string {
+    const partes = [tipoMovimiento, categoria].filter((item): item is string => Boolean(item?.trim()));
+    return partes.length ? partes.join(' · ') : `Concepto ${idConcepto}`;
+  }
+
+  private etiquetaTipoEntrada(tipo: string): string {
+    const labels: Record<string, string> = {
+      haber: 'Haber',
+      descuento: 'Descuento',
+      ausencia: 'Ausencia',
+      licencia: 'Licencia',
+      anticipo: 'Anticipo',
+      ajuste: 'Ajuste',
+      retroactivo: 'Retroactivo',
+      reintegro: 'Reintegro',
+      otro: 'Otro',
+    };
+    return labels[tipo] ?? tipo;
+  }
+
+  private etiquetaEstadoEntrada(estado: string): string {
+    const labels: Record<string, string> = {
+      borrador: 'Borrador',
+      pendiente_revision: 'Pendiente de revisión',
+      observada: 'Observada',
+      aprobada: 'Aprobada',
+      rechazada: 'Rechazada',
+      incorporada_a_pre_nomina: 'Incorporada a base',
+      calculada: 'Calculada',
+      anulada: 'Anulada',
+      legacy_validado: 'Validada',
+      legacy_bloqueado: 'Bloqueada',
+    };
+    return labels[estado] ?? estado;
+  }
+
+  formatoMonto(valor: number | null | undefined): string {
     if (typeof valor !== 'number' || !Number.isFinite(valor)) return 'Monto no disponible';
     return new Intl.NumberFormat('es-CL', {
       style: 'currency',

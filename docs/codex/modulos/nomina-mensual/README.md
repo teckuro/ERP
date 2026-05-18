@@ -27,6 +27,8 @@ La estructura queda compacta y vertical: bloque Movimiento, Detalle administrati
 | Archivo | Rol |
 |---------|-----|
 | [`contrato-general.md`](./contrato-general.md) | Objetivo, alcance, relaciones con Parametros, empleados, conceptos, MV, motor futuro |
+| [`nomina-mensual-diseno-visual-pruebas-unitarias-2026-05-18.md`](./nomina-mensual-diseno-visual-pruebas-unitarias-2026-05-18.md) | Diseno visual actual respaldado por pruebas unitarias y de componente |
+| [`nomina-mensual-fases-casos-uso-2026-05-18.md`](./nomina-mensual-fases-casos-uso-2026-05-18.md) | Estado actual por fases y casos de uso de Nomina mensual |
 | [`prevalidaciones-9-5A.md`](./prevalidaciones-9-5A.md) | Reglas base 9.5A (periodo, fila PG, calendario, empleados, conceptos, MV) |
 | [`prevalidaciones-9-5B.md`](./prevalidaciones-9-5B.md) | Recurrentes por `YYYY-MM`, grupos minimos de parametros, archivos y pruebas 9.5B |
 | [`vision-futura.md`](./vision-futura.md) | Checklist orientativo y relación con otros módulos |
@@ -53,6 +55,8 @@ Preparar nomina
 -> Liquidaciones oficiales internas
 ```
 
+**NOM-PREPARAR-NOMINA-BITACORA-V3-NONLINEAR-FLOW-UX-01 (2026-05-17):** mesa operativa no lineal — revisión guiada en modal; acta y panel livianos. Ver [`../../diseno/nom-preparar-nomina-bitacora-v3-nonlinear-flow-ux-01.md`](../../diseno/nom-preparar-nomina-bitacora-v3-nonlinear-flow-ux-01.md).
+
 **NOM-PREPARAR-NOMINA-BITACORA-V3-STEPS-FOCUS-UX-01 (2026-05-17):** bitácora de etapas enfocada (resumen + subpasos solo activos). Ver [`../../diseno/nom-preparar-nomina-bitacora-v3-steps-focus-ux-01.md`](../../diseno/nom-preparar-nomina-bitacora-v3-steps-focus-ux-01.md).
 
 **NOM-PREPARAR-NOMINA-BITACORA-V3-COPY-DENSITY-FIX-01 (2026-05-17):** acentos, copy RRHH y densidad en bitácora V3. Ver [`../../diseno/nom-preparar-nomina-bitacora-v3-copy-density-fix-01.md`](../../diseno/nom-preparar-nomina-bitacora-v3-copy-density-fix-01.md).
@@ -77,6 +81,18 @@ trazabilidad secundaria
 ```
 
 No agregar Previred, LRE, banco, contabilidad, PDF ni firma en esta etapa.
+
+**NOM-PREPARAR-NOMINA-BITACORA-V3-CLIENT-SAFE-DATAGRID-UX-01 (2026-05-17):** revisión guiada cliente-segura y detalle operativo con `app-data-grid` en modal ancho. Ver [`../../diseno/nom-preparar-nomina-bitacora-v3-client-safe-datagrid-ux-01.md`](../../diseno/nom-preparar-nomina-bitacora-v3-client-safe-datagrid-ux-01.md).
+
+**NOM-PREPARAR-NOMINA-ADMIN-WORKSPACE-UX-01 (2026-05-17):** mesa administrativa del período; `Revisión guiada` abre el modal grande en tab Guía; panel de apoyo separado entre revisar en pantalla y corregir en otros módulos. Ver [`../../diseno/nom-preparar-nomina-admin-workspace-ux-01.md`](../../diseno/nom-preparar-nomina-admin-workspace-ux-01.md).
+
+**NOM-PREPARAR-NOMINA-ADMIN-WORKSPACE-DESIGN-00 (2026-05-17):** maqueta documental cerrada para `Preparar nómina`: pantalla principal decide, guía explica, modal revisa, DataGrid lista y panel corrige. Ver [`../../diseno/nom-preparar-nomina-admin-workspace-design-00.md`](../../diseno/nom-preparar-nomina-admin-workspace-design-00.md).
+
+**NOM-LIQ-ACTA-GUIADA-DESIGN-00 (2026-05-17):** contrato documental del flujo `Preparar nomina -> Liquidaciones oficiales`: cada accion critica debe tener contexto antes y evidencia despues. Ver [`../../diseno/nom-liq-acta-guiada-design-00.md`](../../diseno/nom-liq-acta-guiada-design-00.md).
+
+**NOM-PREPARAR-NOMINA-ACTA-ACCION-UX-01 (2026-05-17):** `Acta operativa del periodo` en Preparar nomina; muestra contexto revisado, decision y evidencia local antes de Liquidaciones oficiales. Ver [`nom-preparar-nomina-acta-accion-ux-01.md`](nom-preparar-nomina-acta-accion-ux-01.md).
+
+**NOM-PREPARAR-NOMINA-ACTA-DISENO-ESTRUCTURADO-UX-01 (2026-05-18):** refinamiento visual del acta como pieza de cierre operativo, sin cambios de logica ni persistencia. Ver [`nom-preparar-nomina-acta-diseno-estructurado-ux-01.md`](nom-preparar-nomina-acta-diseno-estructurado-ux-01.md).
 
 ## UX-COMERCIAL-01 V4 aplicado
 

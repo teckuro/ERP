@@ -557,13 +557,83 @@ describe('ProcesoMensualContainer', () => {
     expect(validar).toHaveLength(1);
   });
 
+  it('renderiza el bloque Acta operativa del periodo en estado bloqueado inicial', () => {
+    const text = fixture.nativeElement.textContent as string;
+    const prepararActa = ([...fixture.nativeElement.querySelectorAll('button')] as HTMLButtonElement[]).find((b) =>
+      (b.textContent ?? '').includes('Preparar acta para liquidaciones'),
+    );
+    expect(text).toContain('Acta operativa del periodo');
+    expect(text).toContain('Aun no se puede preparar el acta');
+    expect(text).toContain('Contexto revisado');
+    expect(text).toContain('Decision operativa');
+    expect(text).toContain('Evidencia para liquidaciones');
+    expect(prepararActa?.disabled).toBe(true);
+  });
+
   it('tras validar muestra texto de bloqueos', async () => {
     const buttons = [...fixture.nativeElement.querySelectorAll('button')] as HTMLButtonElement[];
-    buttons.find((b) => (b.textContent ?? '').includes('Validar periodo'))!.click();
+    buttons.find((b) => (b.textContent ?? '').includes('Validar per'))!.click();
     await fixture.whenStable();
     fixture.detectChanges();
     const text = fixture.nativeElement.textContent as string;
     expect(text).toContain('No se encontraron parametros reales validados para este periodo.');
+  });
+
+  it('con validacion apta muestra CTA para preparar acta con revision', async () => {
+    ejecutarPrevalidaciones.mockResolvedValueOnce(prevalidacionLista());
+    const buttons = [...fixture.nativeElement.querySelectorAll('button')] as HTMLButtonElement[];
+    buttons.find((b) => (b.textContent ?? '').includes('Validar per'))!.click();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    const prepararActa = ([...fixture.nativeElement.querySelectorAll('button')] as HTMLButtonElement[]).find((b) =>
+      (b.textContent ?? '').includes('Preparar acta con revision'),
+    );
+    const text = fixture.nativeElement.textContent as string;
+    expect(text).toContain('Preparar acta con observaciones');
+    expect(text).toContain('El periodo tiene revisiones pendientes.');
+    expect(prepararActa?.disabled).toBe(false);
+  });
+
+  it('al presionar preparar acta abre app-message-box', async () => {
+    ejecutarPrevalidaciones.mockResolvedValueOnce(prevalidacionLista());
+    let buttons = [...fixture.nativeElement.querySelectorAll('button')] as HTMLButtonElement[];
+    buttons.find((b) => (b.textContent ?? '').includes('Validar per'))!.click();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    buttons = [...fixture.nativeElement.querySelectorAll('button')] as HTMLButtonElement[];
+    buttons.find((b) => (b.textContent ?? '').includes('Preparar acta con revision'))!.click();
+    fixture.detectChanges();
+
+    const messageBox = fixture.nativeElement.querySelector('app-message-box');
+    const text = fixture.nativeElement.textContent as string;
+    expect(messageBox).toBeTruthy();
+    expect(text).toContain('Preparar acta operativa del periodo');
+    expect(text).toContain('Que se incluye');
+    expect(text).toContain('Que no hace todavia');
+  });
+
+  it('al confirmar acta cambia a estado visual preparada sin persistir ni generar liquidaciones', async () => {
+    ejecutarPrevalidaciones.mockResolvedValueOnce(prevalidacionLista());
+    let buttons = [...fixture.nativeElement.querySelectorAll('button')] as HTMLButtonElement[];
+    buttons.find((b) => (b.textContent ?? '').includes('Validar periodo'))!.click();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    buttons = [...fixture.nativeElement.querySelectorAll('button')] as HTMLButtonElement[];
+    buttons.find((b) => (b.textContent ?? '').includes('Preparar acta con revision'))!.click();
+    fixture.detectChanges();
+    buttons = [...fixture.nativeElement.querySelectorAll('button')] as HTMLButtonElement[];
+    buttons.find((b) => (b.textContent ?? '').includes('Preparar con observaciones'))!.click();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    const text = fixture.nativeElement.textContent as string;
+    expect(text).toContain('Acta preparada');
+    expect(text).toContain('Ir a Liquidaciones oficiales');
+    expect(guardarSnapshotPreliminar).not.toHaveBeenCalled();
+    expect(cerrarNominaOperativamente).not.toHaveBeenCalled();
   });
 
   it('no muestra valores normativos tipo UF demo en el copy base', () => {

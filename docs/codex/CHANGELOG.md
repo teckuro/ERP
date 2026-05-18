@@ -1,5 +1,89 @@
 # CHANGELOG
 
+### NOM-PREPARAR-NOMINA-ACTA-DISENO-ESTRUCTURADO-UX-01
+
+Fecha: 2026-05-18
+
+- `Acta operativa del periodo` se reorganiza como pieza de cierre operativo: header con estado/accion, franja compacta de contexto, panel dividido decision/evidencia y pie de alcance.
+- El CTA principal queda visible en el header del acta y el estado `PREPARADA` muestra acciones secundarias.
+- El contenido proyectado en `app-message-box` se ordena como confirmacion operativa con secciones y proxima accion.
+- Sin cambios de logica, servicios, persistencia, rutas, motor, SQL/RPC/RLS, estilos globales ni Liquidaciones oficiales.
+
+### NOM-PREPARAR-NOMINA-ACTA-ACCION-UX-01
+
+Fecha: 2026-05-17
+
+- Preparar nomina agrega `Acta operativa del periodo` dentro del acta principal, cerca de la accion recomendada.
+- El acta usa componente local `app-acta-operativa-periodo` y regla pura `buildActaOperativaPeriodoViewModel`.
+- El acta deriva estados locales `BLOQUEADA`, `REQUIERE_REVISION`, `LISTA` y `PREPARADA`.
+- La accion abre `app-message-box` antes de marcar visualmente el acta como preparada en la sesion.
+- La evidencia muestra contexto revisado, decision operativa y respaldo para Liquidaciones oficiales sin persistir actas ni generar liquidaciones.
+- Sin cambios en servicios, rutas, motor, SQL/RPC/RLS, estilos globales, menu lateral ni liquidaciones productivas.
+
+### NOM-LIQ-ACTA-GUIADA-DESIGN-00
+
+Fecha: 2026-05-17
+
+- Fase documental: se define el contrato de acta guiada para el flujo `Preparar nomina -> Liquidaciones oficiales`.
+- Se fija la regla central: cada accion critica debe tener contexto antes y evidencia despues.
+- Se documenta la matriz de actas para validar periodo, generar base, calcular preliminar, aprobar/cerrar nomina y generar/revisar liquidaciones internas.
+- Sin cambios en Angular, servicios, rutas, motor, SQL/RPC/RLS, estilos globales ni DataGrid compartido.
+
+### NOM-PREPARAR-NOMINA-ADMIN-WORKSPACE-DESIGN-00
+
+Fecha: 2026-05-17
+
+- Fase documental: se define la maqueta final de `Preparar nómina` como mesa administrativa del período.
+- Se fija la separación de responsabilidades: pantalla principal para decidir, revisión guiada para entender, modal grande para revisar, DataGrid para listar y panel de apoyo para corregir.
+- Se documentan reglas de acta, panel de apoyo, modal grande, tabs y uso selectivo de DataGrid.
+- Sin cambios en Angular, servicios, rutas, motor, SQL/RPC/RLS, estilos globales ni DataGrid compartido.
+
+### NOM-PREPARAR-NOMINA-ADMIN-WORKSPACE-UX-01
+
+Fecha: 2026-05-17
+
+- Preparar nómina queda ordenada como mesa administrativa: encabezado, estado del período, bitácora, acta, panel de apoyo y registro compacto.
+- `Revisión guiada` abre el modal grande de revisión en tab `Guía`; el modal concentra guía, resumen operativo y tabs con DataGrid.
+- Panel de apoyo separa revisar en pantalla y corregir en otros módulos con labels administrativos.
+- Modal grande con header/body/footer ordenados; DataGrid solo en colecciones revisables.
+- Sin cambios en servicios, rutas, motor, SQL/RPC/RLS, estilos globales ni DataGrid compartido.
+
+### NOM-PREPARAR-NOMINA-DECISION-LAYOUT-UX-01
+
+Fecha: 2026-05-17
+
+- Preparar nómina: acta reorganizada como zona de decisión con cabecera, acción recomendada, CTA principal y acciones secundarias juntas.
+- Revisión resumida pasa a tres accesos compactos para bloqueos, advertencias y prioridades.
+- Panel de apoyo ordena detalles como botonera compacta, evitando enlaces sueltos y mejorando escaneo.
+- Sin cambios en servicios, rutas, motor, SQL/RPC/RLS, estilos globales ni DataGrid compartido.
+
+### NOM-PREPARAR-NOMINA-DETAIL-CTA-UX-01
+
+Fecha: 2026-05-17
+
+- Preparar nómina: resumen superior clickeable abre el detalle operativo en el tab correcto.
+- Revisión resumida y panel de apoyo abren observaciones/trabajadores/movimientos/recurrentes según intención.
+- La bitácora lateral se estira hasta el final útil de la pantalla en desktop.
+- Sin cambios en servicios, rutas, motor, SQL/RPC/RLS, estilos globales ni DataGrid compartido.
+
+### NOM-PREPARAR-NOMINA-BITACORA-V3-CLIENT-SAFE-DATAGRID-UX-01
+
+Fecha: 2026-05-17
+
+- Preparar nómina separa revisión guiada cliente-segura y detalle operativo bajo demanda.
+- El detalle operativo abre en modal ancho con tabs y usa `app-data-grid` para trabajadores, movimientos, recurrentes, observaciones y resultado preliminar.
+- Información interna queda cerrada por defecto; la pantalla principal conserva 5 etapas, acta, panel de apoyo y registro compacto.
+- Sin cambios en DataGrid compartido, servicios, rutas, motor, SQL/RPC/RLS ni estilos globales.
+
+### NOM-PREPARAR-NOMINA-BITACORA-V3-NONLINEAR-FLOW-UX-01
+
+Fecha: 2026-05-17
+
+- Preparar nómina: mesa de decisión sin revisión guiada inline; detalle en modal local.
+- Acta con resumen y «Ver revisión guiada»; panel de apoyo sin duplicar bloqueos/advertencias completos.
+- Registro del período en una línea operativa (`registroPeriodoLinea`).
+- Sin cambios de motor, servicios, SQL, rutas ni estilos globales.
+
 ### NOM-PREPARAR-NOMINA-BITACORA-V3-STEPS-FOCUS-UX-01
 
 Fecha: 2026-05-17

@@ -1,3 +1,73 @@
+## 2026-05-18 - NOM-PREPARAR-NOMINA-ACTA-DISENO-ESTRUCTURADO-UX-01
+
+- **Modulo:** Nomina mensual / Preparar nomina.
+- **Cambio visual:** el acta deja de leerse como card generica y queda como pieza de cierre operativo con header, contexto, decision, evidencia y alcance.
+- **Modal:** `app-message-box` conserva el componente base, pero el contenido proyectado se ordena en secciones operativas.
+- **Restricciones:** estilos locales, sin `border-left` fuerte, sin estilos globales, sin cambios de logica, sin persistencia y sin Liquidaciones oficiales.
+
+## 2026-05-17 - NOM-PREPARAR-NOMINA-ACTA-ACCION-UX-01
+
+- **Modulo:** Nomina mensual / Preparar nomina.
+- **Cambio visual:** se agrega `Acta operativa del periodo` como componente local dentro del acta principal, con contexto revisado, decision operativa, evidencia para liquidaciones y accion confirmada por `app-message-box`.
+- **Estados:** bloqueada, requiere revision, lista y preparada; cada estado usa borde completo neutro/funcional y fondos suaves.
+- **Maquetacion:** header operativo, franja de contexto, panel dividido decision/evidencia y footer de alcance; no se uso card generica ni barra lateral fuerte.
+- **Archivos tocados:** componente local `acta-operativa-periodo`, regla/modelo local, `proceso-mensual-container.ts/html/spec.ts` y documentacion Codex.
+- **Restricciones:** sin estilos globales, sin barra lateral fuerte, sin SQL/RPC/RLS, sin motor, sin servicios, sin rutas, sin menu lateral ni DataGrid compartido.
+
+## 2026-05-17 - NOM-LIQ-ACTA-GUIADA-DESIGN-00
+
+- **Flujo Preparar nomina -> Liquidaciones:** fase documental para cerrar el contrato de actas guiadas por accion critica.
+- **Regla central:** antes de ejecutar debe verse contexto, condicion y consecuencia; despues debe verse evidencia, registro y siguiente paso.
+- **Pantallas:** Preparar nomina decide y cierra; Liquidaciones oficiales materializa y revisa el snapshot cerrado sin recalcular.
+- **DataGrid:** se reserva para colecciones revisables; el acta conserva la decision principal.
+- **Restricciones:** sin Angular, sin estilos globales, sin SQL/RPC/RLS, sin motor, sin servicios, sin rutas ni DataGrid compartido.
+
+## 2026-05-17 - NOM-PREPARAR-NOMINA-ADMIN-WORKSPACE-DESIGN-00
+
+- **Preparar nómina:** fase documental para cerrar la maqueta como mesa administrativa del período.
+- **Regla central:** pantalla principal decide, revisión guiada explica, modal grande revisa, DataGrid lista, panel de apoyo corrige e información interna queda cerrada.
+- **Contrato visual:** acta como centro de decisión, botones secundarios a la izquierda y primario a la derecha, panel separado en revisar/corregir/interno.
+- **Restricciones:** sin Angular, sin estilos globales, sin SQL/RPC/RLS, sin motor, sin servicios, sin rutas ni DataGrid compartido.
+
+## 2026-05-17 - NOM-PREPARAR-NOMINA-ADMIN-WORKSPACE-UX-01
+
+- **Preparar nómina:** pantalla principal reforzada como mesa administrativa del período.
+- **Acta:** concentra etapa, decisión, CTA principal, acciones secundarias y revisión resumida.
+- **Modal grande:** `Revisión guiada` abre la pestaña `Guía`; el modal concentra guía, resumen operativo y DataGrid solo en tabs tabulares.
+- **Panel de apoyo:** separa `Revisar en esta pantalla` de `Corregir en otro módulo`, con labels claros para trabajadores, parámetros, movimientos del mes y asignaciones recurrentes.
+- **Restricciones:** sin estilos globales, SQL/RPC/RLS, motor, servicios, rutas ni DataGrid compartido.
+
+## 2026-05-17 - NOM-PREPARAR-NOMINA-DECISION-LAYOUT-UX-01
+
+- **Preparar nómina:** el acta se reorganiza como zona de decisión: contexto arriba, acción recomendada al centro y revisión resumida abajo.
+- **Botones:** CTA principal y acciones secundarias quedan juntos, evitando que `Revisión guiada` y `Detalle operativo` floten separados.
+- **Revisión:** bloqueos, advertencias y prioridades se muestran como tres accesos compactos y accionables.
+- **Panel de apoyo:** detalles pasa a botonera operativa (`Guía`, `Obs.`, `Trabajadores`, `Movimientos`, `Recurrentes`) para mejorar escaneo.
+- **Restricciones:** solo HTML/CSS local del contenedor; sin servicios, rutas, motor, SQL/RPC/RLS, estilos globales ni DataGrid compartido.
+
+## 2026-05-17 - NOM-PREPARAR-NOMINA-DETAIL-CTA-UX-01
+
+- **Preparar nómina:** los indicadores del resumen superior abren el detalle operativo en el tab correspondiente.
+- **Revisión resumida:** bloqueos, advertencias y prioridades abren `Observaciones` directamente.
+- **Panel de apoyo:** accesos compactos a observaciones, trabajadores, movimientos y recurrentes.
+- **Bitácora lateral:** el menú de etapas se estira hasta el final útil de la pantalla en desktop y vuelve a altura natural en móvil.
+- **Restricciones:** solo contenedor local; sin servicios, SQL/RPC/RLS, motor, rutas, estilos globales ni DataGrid compartido.
+
+## 2026-05-17 - NOM-PREPARAR-NOMINA-BITACORA-V3-CLIENT-SAFE-DATAGRID-UX-01
+
+- **Preparar nómina:** revisión guiada cliente-segura en modal corto; no muestra grillas, IDs, payloads, JSON, RPC ni trazabilidad técnica.
+- **Detalle operativo:** modal ancho con tabs `Resumen`, `Trabajadores`, `Movimientos`, `Recurrentes`, `Observaciones` y `Resultado preliminar`.
+- **DataGrid:** se reutiliza `app-data-grid` existente con filtros sobrios, conteo textual, sin exportación ni selección masiva.
+- **Pantalla principal:** conserva 5 etapas, acta del período, panel de apoyo liviano y registro compacto; sin grillas inline.
+- **Restricciones:** sin estilos globales, SQL/RPC/RLS, motor, servicios, rutas ni cambios al DataGrid compartido.
+
+## 2026-05-17 - NOM-PREPARAR-NOMINA-BITACORA-V3-NONLINEAR-FLOW-UX-01
+
+- **Preparar nómina:** revisión guiada en modal (`payroll-guided-review-overlay` / `payroll-guided-review-modal`); acta con `payroll-secondary-action`.
+- **Panel de apoyo:** prioridad única + enlace al modal; sin listas largas de bloqueos/advertencias.
+- **Registro:** línea compacta con separador `·`.
+- **No regresión:** 5 etapas, subpasos solo activos, V3 intacta.
+
 ## 2026-05-17 - NOM-PREPARAR-NOMINA-BITACORA-V3-STEPS-FOCUS-UX-01
 
 - **Bitácora del período:** 5 etapas con línea de resumen; subpasos (✓ ● ○) solo en etapa activa; máximo 4 subpasos.

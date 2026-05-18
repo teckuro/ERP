@@ -1,0 +1,76 @@
+<section
+  class="nom-acta"
+  [class.nom-acta--blocked]="vm.estado === 'BLOQUEADA'"
+  [class.nom-acta--review]="vm.estado === 'REQUIERE_REVISION'"
+  [class.nom-acta--ready]="vm.estado === 'LISTA'"
+  [class.nom-acta--prepared]="vm.estado === 'PREPARADA'"
+  aria-labelledby="nom-acta-title"
+>
+  <header class="nom-acta__header">
+    <div class="nom-acta__identity">
+      <p class="nom-acta__period">Periodo {{ vm.periodoLabel }}</p>
+      <h3 id="nom-acta-title" class="nom-acta__title">{{ vm.titulo }}</h3>
+      <p class="nom-acta__kicker">Acta operativa del periodo</p>
+      <p class="nom-acta__subtitle">Resume el contexto revisado antes de llevarlo a Liquidaciones oficiales.</p>
+    </div>
+    <div class="nom-acta__header-actions">
+      <app-badge [variant]="badgeVariant(vm.estadoTone)" size="sm">{{ vm.estadoLabel }}</app-badge>
+      @if (!vm.preparada) {
+        <button type="button" class="nom-acta__primary-action" [disabled]="!vm.accionDisponible" (click)="onPrepararActa()">
+          {{ vm.accionLabel }}
+        </button>
+      } @else {
+        <button type="button" class="nom-acta__secondary-action" (click)="verEvidencia.emit()">Ver evidencia</button>
+      }
+    </div>
+  </header>
+
+  <dl class="nom-acta__context-strip" aria-label="Contexto revisado">
+    @for (item of vm.contexto; track item.label) {
+      <div class="nom-acta__context-item" [attr.data-state]="item.estado">
+        <dt class="nom-acta__context-label">{{ item.label }}</dt>
+        <dd class="nom-acta__context-value">{{ item.valor }}</dd>
+      </div>
+    }
+  </dl>
+
+  <div class="nom-acta__body">
+    <section class="nom-acta__decision" aria-labelledby="nom-acta-decision-title">
+      <p class="nom-acta__section-kicker">Decisión</p>
+      <h4 id="nom-acta-decision-title" class="nom-acta__decision-title">{{ vm.decision.titulo }}</h4>
+      <p class="nom-acta__decision-text">{{ vm.decision.descripcion }}</p>
+      <ul class="nom-acta__pending-list">
+        @for (pendiente of vm.pendientes; track pendiente) {
+          <li>{{ pendiente }}</li>
+        }
+      </ul>
+    </section>
+
+    <section class="nom-acta__evidence" aria-labelledby="nom-acta-evidence-title">
+      <p class="nom-acta__section-kicker">Respaldo</p>
+      <h4 id="nom-acta-evidence-title" class="nom-acta__section-title">Evidencia para liquidaciones</h4>
+      <ul class="nom-acta__evidence-list">
+        @for (item of vm.evidencia; track item.label) {
+          <li class="nom-acta__evidence-item" [attr.data-state]="item.estado">
+            <span class="nom-acta__evidence-state">{{ item.estado === 'revision' ? 'Revision' : item.estado === 'pendiente' ? 'Pendiente' : 'Incluida' }}</span>
+            <div>
+              <strong>{{ item.label }}</strong>
+              @if (item.detalle) {
+                <small>{{ item.detalle }}</small>
+              }
+            </div>
+          </li>
+        }
+      </ul>
+    </section>
+  </div>
+
+  <footer class="nom-acta__footer">
+    <p class="nom-acta__note">{{ vm.alcance }}</p>
+    <div class="nom-acta__actions">
+      @if (vm.preparada) {
+        <a routerLink="/remuneraciones/liquidaciones" class="nom-acta__secondary-action">Ir a Liquidaciones oficiales</a>
+      }
+    </div>
+  </footer>
+</section>
