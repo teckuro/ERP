@@ -45,6 +45,10 @@ El modal visible se titula **Registrar movimiento del mes** y queda enfocado sol
 
 La estructura queda compacta y vertical: bloque Movimiento, Detalle administrativo opcional y Resumen inferior antes del footer.
 
+## NOM-MENSUAL-WORKSPACE-LAYOUT-POLISH-01 aplicado
+
+Pulido de maquetación del workspace (franja, rail, focus, tabs, responsive). Documento: [`nom-mensual-workspace-layout-polish-01.md`](./nom-mensual-workspace-layout-polish-01.md).
+
 ## NOM-MODALES-PERIODO-STATE-03 aplicado
 
 Overlay unificado: `ProcesoMensualOverlay`, signal `overlay`, host `app-proceso-mensual-overlays`, `cerrarOverlay()`. Documento: [`modales-periodo-state-03.md`](./modales-periodo-state-03.md).

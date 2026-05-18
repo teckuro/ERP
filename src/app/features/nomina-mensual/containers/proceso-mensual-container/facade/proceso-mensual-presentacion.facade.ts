@@ -39,8 +39,11 @@ import {
 import {
   buildAlertasPeriodoResumen,
   buildBitacoraEtapas,
+  buildNominaDetallePanelCopy,
   buildNominaFrameView,
+  buildNominaGuiaPanelCopy,
   buildNominaResumenSuperior,
+  buildResumenRevisionTrabajadores,
   mapBitacoraRailEtapas,
   resolveNominaVisualFrame,
   suggestNominaWorkspaceTab,
@@ -182,7 +185,7 @@ export class ProcesoMensualPresentacionFacade {
 
   etiquetaPendienteVisual(severidad: ProcesoMensualEstadoSeveridad): string {
     if (severidad === 'danger') return 'Bloqueado';
-    if (severidad === 'warning') return 'Cambio detectado';
+    if (severidad === 'warning') return 'Pendiente de revisión';
     return 'Revisar';
   }
 
@@ -664,6 +667,7 @@ export class ProcesoMensualPresentacionFacade {
     const estado = this.estadoOperativo();
     return buildNominaFrameView({
       frame: this.nominaVisualFrame(),
+      estadoClave: estado.estadoClave,
       accion: estado.accionPrincipal,
       periodoEtiqueta: this.periodoActivo.etiqueta(),
       bloqueosCount: estado.bloqueos.length,
@@ -673,6 +677,12 @@ export class ProcesoMensualPresentacionFacade {
       accionPeriodoEnCurso: this.accionPeriodoEnCurso(),
     });
   });
+
+  readonly nominaGuiaPanel = computed(() =>
+    buildNominaGuiaPanelCopy(this.nominaVisualFrame(), this.periodoActivo.etiqueta()),
+  );
+
+  readonly nominaDetallePanel = computed(() => buildNominaDetallePanelCopy(this.nominaVisualFrame()));
 
   readonly nominaPendientesVisuales = computed<ProcesoMensualPendienteVm[]>(() => {
     const pendientes = [
@@ -697,8 +707,8 @@ export class ProcesoMensualPresentacionFacade {
     const snapshot = this.store.snapshotActivo();
     const cierre = snapshot?.cierreOperativo;
     const items: Array<{ hora: string; texto: string; destacado: boolean }> = [];
-    if (this.store.preNomina()) items.push({ hora: this.horaCorta(this.store.preNomina()?.generadoEn), texto: 'Se generó nómina mensual preliminar.', destacado: false });
-    if (snapshot) items.push({ hora: this.horaCorta(snapshot.fechaGeneracion), texto: 'Se guardó una versión revisable del período.', destacado: false });
+    if (this.store.preNomina()) items.push({ hora: this.horaCorta(this.store.preNomina()?.generadoEn), texto: 'Se generó el borrador de nómina mensual.', destacado: false });
+    if (snapshot) items.push({ hora: this.horaCorta(snapshot.fechaGeneracion), texto: 'Se guardó una versión para revisión del período.', destacado: false });
     if (snapshot?.aprobacionOperativa) items.push({ hora: this.horaCorta(snapshot.aprobacionOperativa.fecha), texto: 'Se revisó la nómina mensual.', destacado: false });
     if (cierre) items.push({ hora: this.horaCorta(cierre.fecha), texto: 'Se confirmó la nómina mensual.', destacado: true });
     if (!items.length) {
@@ -811,7 +821,7 @@ export class ProcesoMensualPresentacionFacade {
         accion: trabajador.estado === 'bloqueado' || trabajador.estado === 'excluido'
           ? 'Revisar ficha del trabajador'
           : trabajador.estado === 'con_observaciones'
-            ? 'Revisar antes de calcular'
+            ? 'Revisar antes de confirmar'
             : 'Sin acción pendiente',
       }));
     }
@@ -2172,13 +2182,23 @@ export class ProcesoMensualPresentacionFacade {
   private resumenRevisionTrabajadores(): string {
     const trazabilidad = this.baseNominaTrazabilidad();
     if (trazabilidad) {
-      return `${trazabilidad.listosParaCalculo} listos, ${trazabilidad.conObservaciones} por revisar y ${trazabilidad.bloqueados} bloqueados`;
+      return buildResumenRevisionTrabajadores({
+        listos: trazabilidad.listosParaCalculo,
+        porRevisar: trazabilidad.conObservaciones,
+        bloqueados: trazabilidad.bloqueados,
+        tieneDatos: true,
+      });
     }
     const resultado = this.resultadoPreliminar();
     if (resultado.trabajadores.length) {
-      return `${resultado.resumen.trabajadoresCalculados} calculados, ${resultado.resumen.trabajadoresConObservaciones} por revisar y ${resultado.resumen.trabajadoresOmitidos} bloqueados`;
+      return buildResumenRevisionTrabajadores({
+        listos: resultado.resumen.trabajadoresCalculados,
+        porRevisar: resultado.resumen.trabajadoresConObservaciones,
+        bloqueados: resultado.resumen.trabajadoresOmitidos,
+        tieneDatos: true,
+      });
     }
-    return 'sin observaciones disponibles';
+    return buildResumenRevisionTrabajadores({ listos: 0, porRevisar: 0, bloqueados: 0, tieneDatos: false });
   }
 
   private humanizarCopyOperativo(texto: string): string {

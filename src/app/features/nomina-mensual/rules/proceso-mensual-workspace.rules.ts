@@ -78,6 +78,7 @@ export function buildNominaResumenSuperior(input: NominaResumenSuperiorInput): N
 
 export interface BuildNominaFrameViewInput {
   frame: NominaVisualFrame;
+  estadoClave: ProcesoMensualEstadoClave;
   accion: ProcesoMensualAccionPrincipalVm;
   periodoEtiqueta: string;
   bloqueosCount: number;
@@ -87,9 +88,108 @@ export interface BuildNominaFrameViewInput {
   accionPeriodoEnCurso: boolean;
 }
 
+export interface ResumenRevisionTrabajadoresInput {
+  listos: number;
+  porRevisar: number;
+  bloqueados: number;
+  tieneDatos: boolean;
+}
+
+export function buildResumenRevisionTrabajadores(input: ResumenRevisionTrabajadoresInput): string {
+  if (!input.tieneDatos) return 'sin observaciones disponibles';
+  return `${input.listos} listos, ${input.porRevisar} por revisar y ${input.bloqueados} bloqueados`;
+}
+
+export type NominaGuiaPanelVariant = 'confirmar' | 'en_curso' | 'antes_generar';
+
+export interface NominaGuiaPanelCopy {
+  variant: NominaGuiaPanelVariant;
+  titulo: string;
+  parrafo?: string;
+  items: string[];
+  asideTitulo?: string;
+  asideTexto?: string;
+}
+
+export interface NominaDetallePanelCopy {
+  titulo: string;
+  oficial: boolean;
+  campo1: string;
+  campo2: string;
+  campo3: string;
+  campo4: string;
+  estadoOficialLabel?: string;
+}
+
+export function buildNominaGuiaPanelCopy(frame: NominaVisualFrame, periodoEtiqueta: string): NominaGuiaPanelCopy {
+  if (frame === 'lista_para_confirmar') {
+    return {
+      variant: 'confirmar',
+      titulo: 'Resumen',
+      items: [],
+      asideTitulo: `Confirmar nómina mensual de ${periodoEtiqueta}`,
+      asideTexto: 'Esta acción dejará una versión oficial para generar liquidaciones.',
+    };
+  }
+  if (frame === 'generando') {
+    return {
+      variant: 'en_curso',
+      titulo: 'Proceso en curso',
+      items: [
+        'Revisión del período activo.',
+        'Lectura de trabajadores habilitados.',
+        'Cruce de movimientos y recurrentes.',
+        'Preparación del borrador por trabajador.',
+      ],
+    };
+  }
+  return {
+    variant: 'antes_generar',
+    titulo: 'Antes de generar',
+    parrafo:
+      'Primero genera la nómina mensual del período. Después podrás revisar trabajador por trabajador antes de confirmar.',
+    items: [
+      'Trabajadores habilitados para el período.',
+      'Parámetros mensuales.',
+      'Movimientos aprobados y pendientes.',
+      'Asignaciones recurrentes vigentes.',
+    ],
+  };
+}
+
+export function buildNominaDetallePanelCopy(frame: NominaVisualFrame): NominaDetallePanelCopy {
+  if (frame === 'confirmada' || frame === 'liquidaciones_generadas') {
+    return {
+      titulo: 'Versión oficial del período',
+      oficial: true,
+      campo1: 'Versión confirmada',
+      campo2: 'Trabajadores',
+      campo3: 'Bloqueos críticos',
+      campo4: 'Estado',
+      estadoOficialLabel: 'Base oficial para liquidaciones',
+    };
+  }
+  return {
+    titulo: 'Detalle del período',
+    oficial: false,
+    campo1: 'Trabajadores considerados',
+    campo2: 'Movimientos incluidos',
+    campo3: 'Recurrentes considerados',
+    campo4: 'Total líquido estimado',
+  };
+}
+
 export function buildNominaFrameView(input: BuildNominaFrameViewInput): NominaVisualFrameView {
-  const { frame, accion, periodoEtiqueta, bloqueosCount, advertenciasCount, trabajadoresCount, resumenRevisionTrabajadores } =
-    input;
+  const {
+    frame,
+    estadoClave,
+    accion,
+    periodoEtiqueta,
+    bloqueosCount,
+    advertenciasCount,
+    trabajadoresCount,
+    resumenRevisionTrabajadores,
+  } = input;
 
   const base = (
     data: Omit<NominaVisualFrameView, 'frame' | 'ctaLabel' | 'ctaDisabled' | 'ctaTipo' | 'ctaRuta' | 'ctaAccion'>,
@@ -108,16 +208,21 @@ export function buildNominaFrameView(input: BuildNominaFrameViewInput): NominaVi
       return base({
         chip: 'Generando',
         titulo: 'Estamos preparando la nómina mensual.',
-        texto: 'El sistema está revisando trabajadores, parámetros, movimientos y recurrentes para construir el borrador del período.',
-        info: 'Este paso genera una versión preliminar, todavía no oficial.',
+        texto:
+          'Estamos revisando trabajadores, parámetros, movimientos y recurrentes para armar el borrador del período.',
+        info: 'Este paso genera una versión de trabajo; todavía no es la base oficial.',
       });
-    case 'en_revision':
+    case 'en_revision': {
+      const esBorrador = estadoClave === 'base_lista';
       return base({
-        chip: 'En revisión',
-        titulo: 'Nómina preliminar generada.',
-        texto: 'Revisa trabajadores con cambios, advertencias o bloqueos antes de confirmar la nómina mensual.',
+        chip: esBorrador ? 'Borrador generado' : 'En revisión',
+        titulo: esBorrador ? 'Borrador de nómina mensual generado.' : 'Nómina en revisión.',
+        texto: esBorrador
+          ? 'Revisa trabajadores incluidos, movimientos y recurrentes antes de continuar.'
+          : 'Revisa trabajadores con cambios, advertencias o bloqueos antes de confirmar la nómina mensual.',
         info: `Hay ${trabajadoresCount} trabajadores incluidos: ${resumenRevisionTrabajadores}.`,
       });
+    }
     case 'con_pendientes':
       return base({
         chip: 'Con pendientes',
@@ -140,21 +245,21 @@ export function buildNominaFrameView(input: BuildNominaFrameViewInput): NominaVi
         chip: 'Confirmada',
         titulo: 'Nómina mensual confirmada.',
         texto: 'Esta versión quedó bloqueada como base oficial para generar liquidaciones del período.',
-        info: 'Si cambian datos posteriores, se requerirá una nueva versión o recálculo explícito.',
+        info: 'Si cambian datos posteriores, se requerirá una nueva versión o una revisión explícita.',
       });
     case 'liquidaciones_generadas':
       return base({
-        chip: 'Liquidaciones generadas',
+        chip: 'Liquidaciones disponibles',
         titulo: 'Liquidaciones generadas desde la nómina confirmada.',
         texto: 'Las liquidaciones del período ya fueron emitidas usando la versión oficial de la nómina mensual.',
-        info: `La trazabilidad queda asociada al snapshot confirmado de ${periodoEtiqueta}.`,
+        info: `La trazabilidad queda asociada a la versión confirmada de ${periodoEtiqueta}.`,
       });
     case 'sin_generar':
     default:
       return base({
         chip: 'Sin generar',
         titulo: `Todavía no existe una nómina mensual para ${periodoEtiqueta}.`,
-        texto: 'Genera una versión preliminar para revisar trabajadores, parámetros, movimientos y recurrentes antes de confirmar.',
+        texto: 'Genera la nómina del período para revisar trabajadores, parámetros, movimientos y recurrentes antes de confirmar.',
         info:
           advertenciasCount > 0
             ? `El período tiene ${advertenciasCount} advertencia${advertenciasCount === 1 ? '' : 's'} revisable${advertenciasCount === 1 ? '' : 's'} antes de generar.`
@@ -172,7 +277,7 @@ export function buildAlertasPeriodoResumen(input: {
   if (input.validando) {
     return {
       modo: 'evaluando',
-      mensaje: 'Generando revisión del período...',
+      mensaje: 'Preparando revisión del período...',
       criticas: 0,
       advertencias: 0,
       mostrarDetalle: false,
@@ -236,49 +341,49 @@ export function buildBitacoraEtapas(input: BitacoraEtapasInput): BitacoraEtapaVm
   const calculoBloqueada = estado.estadoClave === 'resultado_con_bloqueos';
 
   const resumenValidar = (): string => {
-    if (validado && etapaActiva !== 'validar') return 'Periodo revisado';
-    if (etapaActiva === 'validar') return validado ? 'Periodo revisado' : 'Generacion de nomina en curso';
+    if (validado && etapaActiva !== 'validar') return 'Período revisado';
+    if (etapaActiva === 'validar') return validado ? 'Período revisado' : 'Generación de nómina en curso';
     return 'Sin generar';
   };
 
   const resumenBase = (): string => {
     if (baseLista) return 'Borrador generado';
-    if (etapaActiva === 'base') return 'Generar nomina mensual';
-    return validado ? 'Pendiente de nomina' : 'Requiere revision previa';
+    if (etapaActiva === 'base') return 'Generar nómina mensual';
+    return validado ? 'Pendiente de nómina' : 'Requiere revisión previa';
   };
 
   const resumenCalculo = (): string => {
     if (calculoBloqueada) return bloqueos === 1 ? '1 bloqueo por resolver' : `${bloqueos} bloqueos por resolver`;
-    if (guardado && !etapaCalculoActiva) return 'Version revisable guardada';
+    if (guardado && !etapaCalculoActiva) return 'Versión guardada para revisión';
     if (advertencias && (calculoListo || etapaCalculoActiva)) {
       return advertencias === 1 ? '1 advertencia revisable' : `${advertencias} advertencias revisables`;
     }
-    if (calculoListo) return 'Trabajadores en revision';
-    if (etapaCalculoActiva) return 'Revision de trabajadores en curso';
-    return baseLista ? 'Pendiente de revision' : 'Requiere nomina generada';
+    if (calculoListo) return 'Trabajadores en revisión';
+    if (etapaCalculoActiva) return 'Revisión de trabajadores en curso';
+    return baseLista ? 'Pendiente de revisión' : 'Requiere nómina generada';
   };
 
   const resumenAprobar = (): string => {
-    if (cerrada) return 'Nomina confirmada';
+    if (cerrada) return 'Nómina confirmada';
     if (aprobado) return 'Lista para confirmar';
-    if (guardado) return 'Pendiente de confirmacion';
-    if (etapaActiva === 'aprobar_cerrar') return 'Confirmacion en curso';
-    return 'Pendiente de version revisable';
+    if (guardado) return 'Pendiente de confirmación';
+    if (etapaActiva === 'aprobar_cerrar') return 'Confirmación en curso';
+    return 'Pendiente de versión guardada';
   };
 
   const resumenLiquidaciones = (): string => {
     if (estado.estadoClave === 'liquidaciones_disponibles') return 'Liquidaciones generadas';
     if (cerrada) return 'Listas para generar';
-    if (etapaActiva === 'liquidaciones') return 'Generacion disponible';
-    return 'Disponible al confirmar nomina';
+    if (etapaActiva === 'liquidaciones') return 'Generación disponible';
+    return 'Disponible al confirmar nómina';
   };
 
   const subpasosValidar = (): BitacoraSubpasoVm[] => {
     if (etapaActiva !== 'validar') return [];
     return [
-      { marca: marca(validado, !validado), etiqueta: 'Generar nomina' },
+      { marca: marca(validado, !validado), etiqueta: 'Generar nómina' },
       { marca: 'pendiente', etiqueta: 'Revisar trabajadores' },
-      { marca: 'pendiente', etiqueta: 'Revisar parametros' },
+      { marca: 'pendiente', etiqueta: 'Revisar parámetros' },
       { marca: 'pendiente', etiqueta: 'Movimientos y recurrentes' },
     ];
   };
@@ -300,15 +405,15 @@ export function buildBitacoraEtapas(input: BitacoraEtapasInput): BitacoraEtapaVm
         marca: !advertencias ? 'hecho' : calculoListo ? 'actual' : 'pendiente',
         etiqueta: 'Resolver advertencias',
       },
-      { marca: marca(guardado, calculoListo && !guardado && !advertencias), etiqueta: 'Guardar version revisable' },
+      { marca: marca(guardado, calculoListo && !guardado && !advertencias), etiqueta: 'Guardar versión para revisión' },
     ];
   };
 
   const subpasosAprobar = (): BitacoraSubpasoVm[] => {
     if (etapaActiva !== 'aprobar_cerrar') return [];
     return [
-      { marca: marca(aprobado, !aprobado), etiqueta: 'Confirmar revision' },
-      { marca: marca(cerrada, aprobado && !cerrada), etiqueta: 'Confirmar nomina' },
+      { marca: marca(aprobado, !aprobado), etiqueta: 'Confirmar revisión' },
+      { marca: marca(cerrada, aprobado && !cerrada), etiqueta: 'Confirmar nómina' },
     ];
   };
 

@@ -548,6 +548,12 @@ describe('ProcesoMensualContainer', () => {
       expect(c.informacionPeriodo()).toBeNull();
     });
 
+    it('renderiza workspace con focus operativo pulido', () => {
+      expect(fixture.nativeElement.querySelector('.payroll-workspace')).toBeTruthy();
+      expect(fixture.nativeElement.querySelector('.payroll-focus--operativo')).toBeTruthy();
+      expect(fixture.nativeElement.querySelector('.payroll-focus--prototype')).toBeNull();
+    });
+
     it('abre revision con tab y cierra con cerrarOverlay', () => {
       const c = fixture.componentInstance;
       c.abrirOverlayRevision('parametros');

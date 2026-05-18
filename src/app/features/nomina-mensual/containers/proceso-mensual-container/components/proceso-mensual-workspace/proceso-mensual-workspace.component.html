@@ -89,7 +89,7 @@
     </aside>
 
     <main class="payroll-main" aria-labelledby="payroll-focus-title">
-      <section class="payroll-focus payroll-focus--prototype" aria-labelledby="payroll-focus-title">
+      <section class="payroll-focus payroll-focus--operativo" aria-labelledby="payroll-focus-title">
         <header class="payroll-focus__bar">
           <div class="payroll-focus__state">
             <span
@@ -139,10 +139,11 @@
       <section class="payroll-tab-panel" aria-live="polite">
         @switch (f.nominaWorkspaceTab()) {
           @case ('guia') {
-            @if (frame.frame === 'lista_para_confirmar') {
+            @let guia = f.nominaGuiaPanel();
+            @if (guia.variant === 'confirmar') {
               <div class="payroll-confirm-grid">
                 <section>
-                  <h3>Resumen</h3>
+                  <h3>{{ guia.titulo }}</h3>
                   <dl class="payroll-confirm-list">
                     <div><dt>Trabajadores incluidos</dt><dd>{{ f.dashboardResumen().trabajadoresAptos ?? f.snapshotActivo()?.totalTrabajadores ?? 0 }}</dd></div>
                     <div><dt>Bloqueos críticos</dt><dd>{{ resumen.bloqueos }}</dd></div>
@@ -151,30 +152,21 @@
                     <div><dt>Recurrentes vigentes</dt><dd>{{ f.dashboardResumen().asignacionesAplicables ?? 0 }}</dd></div>
                   </dl>
                 </section>
-                <section class="payroll-confirm-box">
-                  <h3>Confirmar nómina mensual de {{ f.periodoActivo.etiqueta() }}</h3>
-                  <p>Esta acción dejará una versión oficial para generar liquidaciones.</p>
+                <section class="payroll-editorial-aside">
+                  <h3>{{ guia.asideTitulo }}</h3>
+                  <p>{{ guia.asideTexto }}</p>
                 </section>
-              </div>
-            } @else if (frame.frame === 'generando') {
-              <div class="payroll-guide">
-                <h3>Proceso en curso</h3>
-                <ul>
-                  <li>Validación del período activo.</li>
-                  <li>Lectura de trabajadores habilitados.</li>
-                  <li>Cruce de movimientos y recurrentes.</li>
-                  <li>Preparación del borrador por trabajador.</li>
-                </ul>
               </div>
             } @else {
               <div class="payroll-guide">
-                <h3>Antes de generar</h3>
-                <p>Primero genera la nómina mensual preliminar. Después podrás revisar trabajador por trabajador antes de confirmar.</p>
+                <h3>{{ guia.titulo }}</h3>
+                @if (guia.parrafo) {
+                  <p>{{ guia.parrafo }}</p>
+                }
                 <ul>
-                  <li>Trabajadores habilitados para el período.</li>
-                  <li>Parámetros mensuales.</li>
-                  <li>Movimientos aprobados y pendientes.</li>
-                  <li>Asignaciones recurrentes vigentes.</li>
+                  @for (item of guia.items; track item) {
+                    <li>{{ item }}</li>
+                  }
                 </ul>
               </div>
             }
@@ -231,14 +223,15 @@
             }
           }
           @case ('detalle') {
-            @if (frame.frame === 'confirmada' || frame.frame === 'liquidaciones_generadas') {
+            @let detalle = f.nominaDetallePanel();
+            @if (detalle.oficial) {
               <div class="payroll-official-snapshot">
-                <h3>Snapshot oficial de nómina mensual</h3>
+                <h3>{{ detalle.titulo }}</h3>
                 <dl>
-                  <div><dt>Versión confirmada</dt><dd>{{ f.cierreOperativo().fechaCierreLabel ?? f.snapshotActivo()?.fechaGeneracion ?? 'No disponible' }}</dd></div>
-                  <div><dt>Trabajadores</dt><dd>{{ f.snapshotActivo()?.totalTrabajadores ?? f.dashboardResumen().trabajadoresAptos ?? 0 }}</dd></div>
-                  <div><dt>Bloqueos críticos</dt><dd>{{ f.snapshotActivo()?.totalBloqueados ?? f.estadoOperativo().bloqueos.length }}</dd></div>
-                  <div><dt>Estado</dt><dd><span class="payroll-state-chip payroll-state-chip--success">Base oficial para liquidaciones</span></dd></div>
+                  <div><dt>{{ detalle.campo1 }}</dt><dd>{{ f.cierreOperativo().fechaCierreLabel ?? f.snapshotActivo()?.fechaGeneracion ?? 'No disponible' }}</dd></div>
+                  <div><dt>{{ detalle.campo2 }}</dt><dd>{{ f.snapshotActivo()?.totalTrabajadores ?? f.dashboardResumen().trabajadoresAptos ?? 0 }}</dd></div>
+                  <div><dt>{{ detalle.campo3 }}</dt><dd>{{ f.snapshotActivo()?.totalBloqueados ?? f.estadoOperativo().bloqueos.length }}</dd></div>
+                  <div><dt>{{ detalle.campo4 }}</dt><dd><span class="payroll-state-chip payroll-state-chip--success">{{ detalle.estadoOficialLabel }}</span></dd></div>
                 </dl>
                 <div class="payroll-history">
                   @for (item of f.nominaHistorialVisual(); track item.hora + item.texto) {
@@ -248,12 +241,12 @@
               </div>
             } @else {
               <div class="payroll-official-snapshot">
-                <h3>Detalle del período</h3>
+                <h3>{{ detalle.titulo }}</h3>
                 <dl>
-                  <div><dt>Trabajadores considerados</dt><dd>{{ f.baseNominaTrazabilidad()?.trabajadoresConsiderados ?? f.dashboardResumen().trabajadoresAptos ?? 0 }}</dd></div>
-                  <div><dt>Movimientos incluidos</dt><dd>{{ f.baseNominaTrazabilidad()?.movimientosDelMesIncluidos ?? f.dashboardResumen().movimientosAprobados }}</dd></div>
-                  <div><dt>Recurrentes considerados</dt><dd>{{ f.baseNominaTrazabilidad()?.asignacionesRecurrentesIncluidas ?? f.dashboardResumen().asignacionesAplicables ?? 0 }}</dd></div>
-                  <div><dt>Líquido preliminar</dt><dd>{{ f.formatoMonto(f.resultadoPreliminar().resumen.totalLiquido) }}</dd></div>
+                  <div><dt>{{ detalle.campo1 }}</dt><dd>{{ f.baseNominaTrazabilidad()?.trabajadoresConsiderados ?? f.dashboardResumen().trabajadoresAptos ?? 0 }}</dd></div>
+                  <div><dt>{{ detalle.campo2 }}</dt><dd>{{ f.baseNominaTrazabilidad()?.movimientosDelMesIncluidos ?? f.dashboardResumen().movimientosAprobados }}</dd></div>
+                  <div><dt>{{ detalle.campo3 }}</dt><dd>{{ f.baseNominaTrazabilidad()?.asignacionesRecurrentesIncluidas ?? f.dashboardResumen().asignacionesAplicables ?? 0 }}</dd></div>
+                  <div><dt>{{ detalle.campo4 }}</dt><dd>{{ f.formatoMonto(f.resultadoPreliminar().resumen.totalLiquido) }}</dd></div>
                 </dl>
               </div>
             }
@@ -262,4 +255,4 @@
       </section>
     </main>
   </div>
-  </section>
+  </section>

@@ -1,3 +1,25 @@
+## NOM-MENSUAL-WORKSPACE-COPY-POLISH-01 - Pulido copy workspace
+
+| Campo | Estado |
+|---|---|
+| Estado | Implementada |
+| Tipo | Copy / UX operativo |
+| Alcance | Textos visibles workspace + lead shell; rules workspace y strings acotados estado operativo; spec `proceso-mensual-workspace.rules.spec.ts`. |
+| Restricciones | Sin CSS/layout, overlays, store, servicios, SQL, motor; mismos `accionLocal` y flujos. |
+| Documento | [`../modulos/nomina-mensual/nom-mensual-workspace-copy-polish-01.md`](../modulos/nomina-mensual/nom-mensual-workspace-copy-polish-01.md) |
+| Siguiente | `NOM-CONTAINER-SPEC-REPARO` o pulido modal detalle (prioridad 5 modales). |
+
+## NOM-MENSUAL-WORKSPACE-LAYOUT-POLISH-01 - Pulido layout workspace
+
+| Campo | Estado |
+|---|---|
+| Estado | Implementada |
+| Tipo | UX/UI local (CSS + micro-HTML) |
+| Alcance | Franja, rail, focus operativo, tabs, paneles guía/trabajadores, responsive en `proceso-mensual-container.css`. |
+| Restricciones | Sin facade/store/rules/overlays; sin estilos globales; sin contenido nuevo (disclosure/acta/paraContinuar). |
+| Documento | [`../modulos/nomina-mensual/nom-mensual-workspace-layout-polish-01.md`](../modulos/nomina-mensual/nom-mensual-workspace-layout-polish-01.md) |
+| Siguiente | `NOM-MENSUAL-WORKSPACE-COPY-POLISH-01` (cerrada). |
+
 ## NOM-MODALES-PERIODO-STATE-03 - Overlay unificado
 
 | Campo | Estado |

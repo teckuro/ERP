@@ -1,3 +1,9 @@
+## 2026-05-18 - NOM-MENSUAL-WORKSPACE-LAYOUT-POLISH-01
+
+- **Módulo:** Nómina mensual / workspace del contenedor.
+- **Cambio visual:** densidad compacta, rail sin card, focus `payroll-focus--operativo`, aside editorial en confirmación, franja y tabs ajustados; responsive 980px/760px.
+- **Restricciones:** solo CSS/HTML local del contenedor; sin lógica ni estilos globales.
+
 ## 2026-05-18 - NOM-MODALES-PERIODO-INFO-02
 
 - **Módulo:** Nómina mensual / proceso mensual container.

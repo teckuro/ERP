@@ -1,5 +1,11 @@
 # CHANGELOG
 
+## 2026-05-18 - NOM-MENSUAL-WORKSPACE-LAYOUT-POLISH-01
+
+- **UI:** pulido de layout del workspace (franja, rail editorial, focus operativo, tabs, confirmación sin card, responsive).
+- **Archivos:** `proceso-mensual-workspace.component.html`, `proceso-mensual-container.css`.
+- **Tests:** +1 humo overlay; legacy 43 skipped.
+
 ## 2026-05-18 - NOM-MODALES-PERIODO-STATE-03
 
 - **Facade:** signal único `overlay: ProcesoMensualOverlay`; `cerrarOverlay()`; computeds compatibles para templates hijos.
