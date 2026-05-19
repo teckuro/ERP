@@ -1,3 +1,10 @@
+## 2026-05-18 - NOM-WORKSPACE-BITACORA-POLISH-02
+
+- **Módulo:** Nómina mensual / consola workspace LOC.
+- **Cambio:** tokens `--erp-*` en `.payroll-console`; bitácora con rail vertical y estados funcionales; sidebar unificado (separadores, títulos, pills, enlace revisión secundario); focus/tabs/tab-summary/follow-row con paleta bitácora; bitácora 1 columna en responsive.
+- **Archivos:** `proceso-mensual-container.css`, `payroll-operational-tabs.css`, `proceso-mensual-workspace.component.html`; doc `nom-workspace-bitacora-polish-02.md`.
+- **No tocado:** rules workspace, motor, store, SQL, estilos globales, `angular.json`.
+
 ## 2026-05-19 - NOM-REVISION-UX-CONSOLIDAR-01
 
 - **Módulo:** Nómina mensual / workspace y modal revisión.

@@ -186,13 +186,14 @@
 
           <section class="payroll-rail-block payroll-rail-block--bitacora" aria-labelledby="payroll-sidebar-bitacora-title">
             <h3 id="payroll-sidebar-bitacora-title" class="payroll-resumen-block__title">Bitácora del período</h3>
-            <ol class="payroll-bitacora-steps payroll-bitacora-steps--compact">
+            <ol class="payroll-bitacora-rail payroll-bitacora-steps payroll-bitacora-steps--compact">
               @for (etapa of f.bitacoraRailEtapas(); track etapa.clave) {
                 <li
                   class="payroll-rail-step"
                   [class.payroll-rail-step--active]="etapa.activa"
                   [class.payroll-rail-step--done]="etapa.marca === 'hecho'"
                   [class.payroll-rail-step--blocked]="etapa.marca === 'bloqueado'"
+                  [class.payroll-rail-step--pendiente]="etapa.marca === 'pendiente'"
                 >
                   <span class="payroll-rail-step__mark" aria-hidden="true">{{
                     etapa.marca === 'hecho' ? '✓' : etapa.marca === 'actual' ? '●' : etapa.marca === 'bloqueado' ? '—' : '○'
@@ -233,7 +234,7 @@
           @let guiaSidebar = f.nominaGuiaPanel();
           @if (guiaSidebar.variant === 'confirmar') {
             <section class="payroll-sidebar-card" aria-label="Confirmación del período">
-              <h3>{{ guiaSidebar.asideTitulo }}</h3>
+              <h3 class="payroll-resumen-block__title">{{ guiaSidebar.asideTitulo }}</h3>
               <p>{{ guiaSidebar.asideTexto }}</p>
               <dl class="payroll-sidebar-metrics">
                 <div><dt>Trabajadores</dt><dd>{{ f.dashboardResumen().trabajadoresAptos ?? f.snapshotActivo()?.totalTrabajadores ?? 0 }}</dd></div>
@@ -243,7 +244,7 @@
             </section>
           } @else {
             <section class="payroll-sidebar-card" aria-label="Guía operativa">
-              <h3>{{ guiaSidebar.titulo }}</h3>
+              <h3 class="payroll-resumen-block__title">{{ guiaSidebar.titulo }}</h3>
               @if (guiaSidebar.parrafo) {
                 <p>{{ guiaSidebar.parrafo }}</p>
               }

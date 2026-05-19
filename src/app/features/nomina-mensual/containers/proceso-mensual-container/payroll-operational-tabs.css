@@ -4,13 +4,13 @@
   gap: 4px;
   overflow-x: auto;
   scrollbar-width: thin;
-  border-bottom: 1px solid #e2e8f0;
+  border-bottom: 1px solid var(--erp-border, #dadfd7);
   padding: 10px 22px 0;
 }
 
 .payroll-operational-tabs--workspace {
   padding: 0 14px;
-  background: #ffffff;
+  background: var(--erp-surface, #ffffff);
 }
 
 .payroll-operational-tab {
@@ -23,7 +23,7 @@
   border-bottom: 2px solid transparent;
   background: transparent;
   padding: 0 10px;
-  color: #64748b;
+  color: var(--erp-muted, #647084);
   font-size: 0.8125rem;
   font-weight: 700;
   white-space: nowrap;
@@ -31,7 +31,7 @@
 }
 
 .payroll-operational-tab:focus-visible {
-  outline: 2px solid #1d4ed8;
+  outline: 2px solid var(--erp-primary, #2563eb);
   outline-offset: 2px;
 }
 
@@ -48,44 +48,47 @@
 }
 
 .payroll-operational-tab--atencion {
-  background: #fffbeb;
-  color: #92400e;
+  background: var(--erp-review-soft, #fffbeb);
+  color: var(--erp-review, #a16207);
 }
 
 .payroll-operational-tab--atencion .payroll-operational-tab__indicador {
-  background: #fef3c7;
-  color: #92400e;
+  border: 1px solid var(--erp-review-border, #fde68a);
+  background: var(--erp-surface, #ffffff);
+  color: var(--erp-review, #a16207);
 }
 
 .payroll-operational-tab--bloqueo {
-  background: #fef2f2;
-  color: #991b1b;
+  background: var(--erp-danger-soft, #fef2f2);
+  color: var(--erp-danger, #b91c1c);
 }
 
 .payroll-operational-tab--bloqueo .payroll-operational-tab__indicador {
-  background: #fee2e2;
-  color: #991b1b;
+  border: 1px solid var(--erp-danger-border, #fecaca);
+  background: var(--erp-surface, #ffffff);
+  color: var(--erp-danger, #b91c1c);
 }
 
 .payroll-operational-tab--listo {
-  background: #ecfdf5;
-  color: #065f46;
+  background: var(--erp-ok-soft, #f0fdf4);
+  color: var(--erp-ok, #166534);
 }
 
 .payroll-operational-tab--listo .payroll-operational-tab__indicador {
-  background: #d1fae5;
-  color: #065f46;
+  border: 1px solid var(--erp-ok-border, #bbf7d0);
+  background: var(--erp-surface, #ffffff);
+  color: var(--erp-ok, #166534);
 }
 
 .payroll-operational-tab--active {
-  border-bottom-color: #0f172a;
-  color: #0f172a;
+  border-bottom-color: var(--erp-ink, #172033);
+  color: var(--erp-ink, #172033);
 }
 
 .payroll-operational-tab--atencion.payroll-operational-tab--active,
 .payroll-operational-tab--bloqueo.payroll-operational-tab--active,
 .payroll-operational-tab--listo.payroll-operational-tab--active {
-  border-bottom-color: #0f172a;
+  border-bottom-color: var(--erp-ink, #172033);
 }
 
 @media (max-width: 1200px) {
