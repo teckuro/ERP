@@ -1,0 +1,95 @@
+.payroll-operational-tabs {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 4px;
+  overflow-x: auto;
+  scrollbar-width: thin;
+  border-bottom: 1px solid #e2e8f0;
+  padding: 10px 22px 0;
+}
+
+.payroll-operational-tabs--workspace {
+  padding: 0 14px;
+  background: #ffffff;
+}
+
+.payroll-operational-tab {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 6px;
+  min-height: 34px;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  background: transparent;
+  padding: 0 10px;
+  color: #64748b;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.payroll-operational-tab:focus-visible {
+  outline: 2px solid #1d4ed8;
+  outline-offset: 2px;
+}
+
+.payroll-operational-tab__label {
+  white-space: nowrap;
+}
+
+.payroll-operational-tab__indicador {
+  border-radius: 4px;
+  padding: 1px 6px;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.payroll-operational-tab--atencion {
+  background: #fffbeb;
+  color: #92400e;
+}
+
+.payroll-operational-tab--atencion .payroll-operational-tab__indicador {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.payroll-operational-tab--bloqueo {
+  background: #fef2f2;
+  color: #991b1b;
+}
+
+.payroll-operational-tab--bloqueo .payroll-operational-tab__indicador {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.payroll-operational-tab--listo {
+  background: #ecfdf5;
+  color: #065f46;
+}
+
+.payroll-operational-tab--listo .payroll-operational-tab__indicador {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+.payroll-operational-tab--active {
+  border-bottom-color: #0f172a;
+  color: #0f172a;
+}
+
+.payroll-operational-tab--atencion.payroll-operational-tab--active,
+.payroll-operational-tab--bloqueo.payroll-operational-tab--active,
+.payroll-operational-tab--listo.payroll-operational-tab--active {
+  border-bottom-color: #0f172a;
+}
+
+@media (max-width: 1200px) {
+  .payroll-operational-tabs--workspace {
+    gap: 12px;
+  }
+}

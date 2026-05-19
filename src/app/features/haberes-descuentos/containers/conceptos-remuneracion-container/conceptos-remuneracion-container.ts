@@ -11,10 +11,6 @@ import {
   DataGridFilter,
 } from '../../../../shared/components/ui/data-grid.component';
 import { MessageBoxComponent, MessageBoxVariant } from '../../../../shared/components/ui/message-box.component';
-import {
-  RecordBreadcrumbComponent,
-  RecordBreadcrumbItem,
-} from '../../../../shared/components/ui/record-breadcrumb.component';
 import { SearchSelectComponent, SearchSelectOption } from '../../../../shared/components/ui/search-select.component';
 import { HaberesDescuentosService } from '../../services/haberes-descuentos.service';
 import {
@@ -82,7 +78,6 @@ function etiquetaNaturalezaFn(n: string | null): string {
     CommonModule,
     FormsModule,
     LucideAngularModule,
-    RecordBreadcrumbComponent,
     DataGridComponent,
     DataGridCellDirective,
     MessageBoxComponent,
@@ -94,11 +89,6 @@ function etiquetaNaturalezaFn(n: string | null): string {
 })
 export class ConceptosRemuneracionContainer implements OnInit {
   private readonly haberesDescuentosService = inject(HaberesDescuentosService);
-
-  readonly breadcrumbItems: readonly RecordBreadcrumbItem[] = [
-    { label: 'Remuneraciones', link: '/remuneraciones' },
-    { label: 'Conceptos de remuneración' },
-  ];
 
   readonly editIcon = Edit;
   readonly eyeIcon = Eye;

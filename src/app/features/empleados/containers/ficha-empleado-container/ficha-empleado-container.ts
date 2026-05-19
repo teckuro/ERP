@@ -43,10 +43,7 @@ import {
   DataGridColumn,
   DataGridComponent,
 } from '../../../../shared/components/ui/data-grid.component';
-import {
-  RecordBreadcrumbComponent,
-  RecordBreadcrumbItem,
-} from '../../../../shared/components/ui/record-breadcrumb.component';
+import { bindShellPageContext } from '../../../../layout/shell-page-context.binding';
 
 type EmployeeFileTab =
   | 'general'
@@ -93,7 +90,6 @@ interface EmployeeHistoryRow {
     ReactiveFormsModule,
     RouterLink,
     LucideAngularModule,
-    RecordBreadcrumbComponent,
     DatosPersonalesComponent,
     ContactoComponent,
     ContratoComponent,
@@ -130,10 +126,6 @@ export class FichaEmpleadoContainer implements OnInit {
   readonly editingBlock = signal<string | null>(null);
   readonly catalogos = signal<EmpleadoFormCatalogos>(EMPTY_EMPLEADO_FORM_CATALOGOS);
   readonly form: EmpleadoFormGroup = this.empleadosFormService.createForm();
-  readonly breadcrumbItems: readonly RecordBreadcrumbItem[] = [
-    { label: 'Empleados', link: '/empleados' },
-    { label: 'Ficha' },
-  ];
 
   readonly arrowLeftIcon = ArrowLeft;
   readonly alertIcon = AlertCircle;
@@ -199,6 +191,19 @@ export class FichaEmpleadoContainer implements OnInit {
   ];
 
   readonly trackHistoryRow = (_index: number, row: EmployeeHistoryRow): string => row.id;
+
+  constructor() {
+    bindShellPageContext(this.destroyRef, () => {
+      const emp = this.empleado();
+      const etiqueta = emp?.nombre?.trim() || 'Ficha empleado';
+      return {
+        breadcrumbs: [
+          { label: 'Empleados', path: '/empleados' },
+          { label: etiqueta },
+        ],
+      };
+    });
+  }
 
   async ngOnInit(): Promise<void> {
     if (!Number.isInteger(this.empleadoId) || this.empleadoId <= 0) {

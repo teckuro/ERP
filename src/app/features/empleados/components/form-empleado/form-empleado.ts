@@ -80,10 +80,7 @@ import {
   MessageBoxVariant,
 } from "../../../../shared/components/ui/message-box.component";
 import { PageActionsComponent } from "../../../../shared/components/ui/page-actions.component";
-import {
-  RecordBreadcrumbComponent,
-  RecordBreadcrumbItem,
-} from "../../../../shared/components/ui/record-breadcrumb.component";
+import { bindShellPageContext } from "../../../../layout/shell-page-context.binding";
 
 type TabId = EmpleadoFormTabId;
 type WizardStepUiKind =
@@ -260,7 +257,6 @@ const MENSAJES_FINALIZAR_ALTA: Partial<Record<string, string>> = {
     LucideAngularModule,
     CardComponent,
     CardContentComponent,
-    RecordBreadcrumbComponent,
     PageActionsComponent,
     MessageBoxComponent,
     DatosPersonalesComponent,
@@ -334,10 +330,6 @@ export class FormEmpleadoComponent implements OnInit {
   readonly attemptedWizardSteps = signal<ReadonlySet<number>>(new Set());
   readonly form: EmpleadoFormGroup = this.empleadosFormService.createForm();
   readonly totalSteps = EMPLEADO_ADVANCED_WIZARD_STEP_COUNT;
-  readonly breadcrumbItems: readonly RecordBreadcrumbItem[] = [
-    { label: "Empleados", link: "/empleados" },
-    { label: "Creación de ficha" },
-  ];
   readonly advancedWizardLabels = [...EMPLEADO_ADVANCED_WIZARD_LABELS];
   readonly advancedWizardShortLabels: readonly string[] = [
     "Datos personales",
@@ -392,6 +384,13 @@ export class FormEmpleadoComponent implements OnInit {
   readonly stepBlockIds = EMPLEADO_FORM_STEP_BLOCK_IDS;
 
   async ngOnInit(): Promise<void> {
+    bindShellPageContext(this.destroyRef, () => ({
+      breadcrumbs: [
+        { label: "Empleados", path: "/empleados" },
+        { label: this.pageTitle() },
+      ],
+    }));
+
     const modo = this.resolveModo();
     this.modo.set(modo);
     if (modo === "avanzado") {

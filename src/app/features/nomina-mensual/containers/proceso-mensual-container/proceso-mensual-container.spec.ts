@@ -9,11 +9,19 @@ import {
   CheckCircle,
   ChevronRight,
   Home,
+  CircleAlert,
+  FileCheck2,
   FileSpreadsheet,
   FileText,
   Info,
+  ListChecks,
   Lock,
+  Receipt,
+  Repeat,
+  RefreshCw,
+  Sliders,
   Upload,
+  Users,
 } from 'lucide-angular/src/icons';
 import { vi } from 'vitest';
 
@@ -531,12 +539,20 @@ describe('ProcesoMensualContainer', () => {
             Check,
             CheckCircle,
             ChevronRight,
+            CircleAlert,
             Home,
+            FileCheck2,
             FileSpreadsheet,
             FileText,
             Info,
+            ListChecks,
             Lock,
+            Receipt,
+            Repeat,
+            RefreshCw,
+            Sliders,
             Upload,
+            Users,
           }),
         ),
       ],
@@ -557,7 +573,7 @@ describe('ProcesoMensualContainer', () => {
     });
 
     it('renderiza workspace con focus operativo pulido', () => {
-      expect(fixture.nativeElement.querySelector('.payroll-workspace')).toBeTruthy();
+      expect(fixture.nativeElement.querySelector('.payroll-console')).toBeTruthy();
       expect(fixture.nativeElement.querySelector('.payroll-focus--operativo')).toBeTruthy();
       expect(fixture.nativeElement.querySelector('.payroll-focus--prototype')).toBeNull();
     });
@@ -610,6 +626,18 @@ describe('ProcesoMensualContainer', () => {
       fixture.detectChanges();
       expect(c.overlay().kind).toBe('cerrado');
       expect(fixture.nativeElement.querySelector('app-message-box')).toBeNull();
+    });
+
+    it('tras validacion exitosa abre modal de revision del periodo', async () => {
+      ejecutarPrevalidaciones.mockResolvedValueOnce(prevalidacionLista());
+      const c = fixture.componentInstance;
+      c.validarPeriodo();
+      await fixture.whenStable();
+      fixture.detectChanges();
+
+      expect(c.overlay().kind).toBe('informacion');
+      expect(c.informacionPeriodo()?.titulo).toBe('Período listo para generar');
+      expect(fixture.nativeElement.querySelector('app-message-box')).toBeTruthy();
     });
 
     it('tras error de validacion abre informacion y oculta banner crudo', async () => {
@@ -762,7 +790,7 @@ describe('ProcesoMensualContainer', () => {
 
       expect(obtenerSnapshotCompletoActivo).toHaveBeenCalledWith(PERIODO_TEST);
       expect(generarCalculoPeriodo).not.toHaveBeenCalled();
-      localFixture.componentInstance.seleccionarNominaWorkspaceTab('detalle');
+      localFixture.componentInstance.seleccionarNominaWorkspaceTab('historial');
       localFixture.detectChanges();
 
       const text = localFixture.nativeElement.textContent as string;
@@ -809,28 +837,30 @@ describe('ProcesoMensualContainer', () => {
   });
 
   describe('shell y workspace (NOM-CONTAINER-SPEC-REPARO)', () => {
-    it('muestra titulo Nomina mensual y lead operativo', () => {
+    it('muestra lead operativo sin cabecera duplicada de pagina', () => {
       const text = fixture.nativeElement.textContent as string;
-      expectTexto(text, 'Nomina mensual');
-      expectTexto(text, 'revisa trabajadores');
+      expect(fixture.nativeElement.querySelector('.payroll-head')).toBeNull();
+      expectTexto(text, 'Generar nomina');
     });
 
-    it('muestra periodo global sin selector local editable', () => {
+    it('no muestra selector de periodo local editable en la pagina', () => {
       const input = fixture.nativeElement.querySelector('input[type="month"]');
       expect(input).toBeNull();
-      expectTexto(fixture.nativeElement.textContent as string, 'Mayo 2026');
     });
 
-    it('renderiza workspace con franja rail y tabs', () => {
+    it('renderiza workspace una columna con franja y siete tabs', () => {
       const el = fixture.nativeElement;
-      expect(el.querySelector('.payroll-workspace')).toBeTruthy();
+      expect(el.querySelector('.payroll-console')).toBeTruthy();
       expect(el.querySelector('.payroll-franja-operativa')).toBeTruthy();
-      expect(el.querySelector('.payroll-rail-track')).toBeTruthy();
-      expectTexto(el.textContent as string, 'Guia de revision');
-      expectTexto(el.textContent as string, 'Trabajadores y revision');
+      expect(el.querySelector('.payroll-rail')).toBeNull();
+      expect(el.querySelectorAll('.payroll-operational-tabs button').length).toBe(7);
+      expectTexto(el.textContent as string, 'Resumen');
+      expectTexto(el.textContent as string, 'Historial');
     });
 
-    it('bitacora rail usa etiquetas del flujo mensual', () => {
+    it('bitacora en tab resumen usa etiquetas del flujo mensual', () => {
+      fixture.componentInstance.seleccionarNominaWorkspaceTab('resumen');
+      fixture.detectChanges();
       const text = fixture.nativeElement.textContent as string;
       expectTexto(text, 'Generar nomina');
       expectTexto(text, 'Revisar trabajadores');

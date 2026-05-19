@@ -3,6 +3,7 @@ import {
   ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
+  DestroyRef,
   ElementRef,
   effect,
   isDevMode,
@@ -56,10 +57,6 @@ import {
   MessageBoxVariant,
 } from '../shared/components/ui/message-box.component';
 import { PageActionsComponent } from '../shared/components/ui/page-actions.component';
-import {
-  RecordBreadcrumbComponent,
-  RecordBreadcrumbItem,
-} from '../shared/components/ui/record-breadcrumb.component';
 import { ParametrosRemuneracionesTabComponent } from '../features/parametros-generales/components/tabs/parametros-remuneraciones-tab.component';
 import { ParametrosValoresTabComponent } from '../features/parametros-generales/components/tabs/parametros-valores-tab.component';
 import { ParametrosConfigClienteTabComponent } from '../features/parametros-generales/components/tabs/parametros-config-cliente-tab.component';
@@ -73,6 +70,7 @@ import { ParametrosReformaTabComponent } from '../features/parametros-generales/
 import { ParametrosTramosCargaTabComponent } from '../features/parametros-generales/components/tabs/parametros-tramos-carga-tab.component';
 import { ParametrosTramosRentaTabComponent } from '../features/parametros-generales/components/tabs/parametros-tramos-renta-tab.component';
 import { PeriodoActivoService } from '../core/services/periodo-activo.service';
+import { bindShellPageContext } from '../layout/shell-page-context.binding';
 
 interface ParametrosTab {
   id: ParametrosTabId;
@@ -131,7 +129,6 @@ interface ParametrosDialogState {
     ButtonComponent,
     PageActionsComponent,
     MessageBoxComponent,
-    RecordBreadcrumbComponent,
     CardComponent,
     CardContentComponent,
     ParametrosValoresTabComponent,
@@ -146,10 +143,6 @@ interface ParametrosDialogState {
   ],
   template: `
     <section class="parametros-page" aria-label="Mantenedor de parámetros">
-      <header class="parametros-header">
-        <app-record-breadcrumb [items]="breadcrumbItems" title="Parámetros del sistema"></app-record-breadcrumb>
-      </header>
-
       <app-card className="parametros-shell">
         <app-card-content className="parametros-frame">
           <div class="parametros-viewhead">
@@ -1719,7 +1712,6 @@ export class ParametrosPage implements OnInit {
   private readonly hostElement = inject<ElementRef<HTMLElement>>(ElementRef);
   readonly periodoGlobal = inject(PeriodoActivoService);
 
-  readonly breadcrumbItems: readonly RecordBreadcrumbItem[] = [{ label: 'Parámetros' }];
   readonly tabs: readonly ParametrosTab[] = [
     { id: 'configCliente', label: 'Cliente' },
     { id: 'valores', label: 'Información de Valores' },
@@ -2264,6 +2256,10 @@ export class ParametrosPage implements OnInit {
   });
 
   constructor() {
+    bindShellPageContext(inject(DestroyRef), () => ({
+      breadcrumbs: [{ label: 'Parámetros' }],
+    }));
+
     this.actualizarValidadorImm(this.form.controls.gratificacion.value);
     this.form.controls.gratificacion.valueChanges.subscribe((value) => this.actualizarValidadorImm(value));
 

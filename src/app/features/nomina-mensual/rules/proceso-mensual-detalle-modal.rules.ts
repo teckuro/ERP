@@ -448,6 +448,31 @@ function contarIncidenciasTab(
   return { bloqueos, advertencias, total: items.length };
 }
 
+export function buildTabMetaFromIncidenciaList(
+  items: IncidenciaPeriodo[],
+  input: { tieneDatos: boolean; tieneActividadPeriodo: boolean },
+): Pick<DetalleRevisionTabMeta, 'severidad' | 'indicador'> {
+  let bloqueos = 0;
+  let advertencias = 0;
+  for (const inc of items) {
+    if (inc.severidad === 'bloqueo') {
+      bloqueos += 1;
+    } else if (inc.severidad === 'advertencia') {
+      advertencias += 1;
+    }
+  }
+  const severidad = resolverSeveridadTab({
+    bloqueos,
+    advertencias,
+    tieneDatos: input.tieneDatos,
+    tieneActividadPeriodo: input.tieneActividadPeriodo,
+  });
+  return {
+    severidad,
+    indicador: indicadorDesdeConteos(severidad, bloqueos, advertencias, items.length),
+  };
+}
+
 function resolverSeveridadTab(input: {
   bloqueos: number;
   advertencias: number;
@@ -558,7 +583,7 @@ export function claseDetalleRevisionTab(severidad: DetalleRevisionTabSeveridad, 
   return activo ? `${base} payroll-operational-tab--active` : base;
 }
 
-function claseDetalleRevisionTabSeveridad(severidad: DetalleRevisionTabSeveridad): string {
+export function claseDetalleRevisionTabSeveridad(severidad: DetalleRevisionTabSeveridad): string {
   switch (severidad) {
     case 'bloqueo':
       return 'payroll-operational-tab payroll-operational-tab--bloqueo';

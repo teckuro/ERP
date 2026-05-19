@@ -1,140 +1,171 @@
 @let f = facade;
 @let frame = f.nominaFrame();
 @let resumen = f.nominaResumenSuperior();
-  <section class="payroll-view-panel" aria-label="Consola del período">
+@let pres = focusPresentacion();
+<section class="payroll-view-panel" aria-label="Consola del período">
+  <div class="payroll-console">
   <section class="payroll-franja-operativa" aria-label="Resumen del período">
     <ul class="payroll-franja-operativa__list">
       <li>
-        <button type="button" class="payroll-franja-operativa__item" (click)="f.seleccionarNominaWorkspaceTab('trabajadores')" aria-label="Ver trabajadores considerados">
-          <span class="payroll-franja-operativa__k">Trabajadores</span>
-          <span class="payroll-franja-operativa__v">{{ resumen.trabajadores }}</span>
+        <button
+          type="button"
+          class="payroll-franja-operativa__item"
+          [class]="franjaItemClase(resumen.trabajadores, 'trabajadores')"
+          (click)="f.seleccionarNominaWorkspaceTab('trabajadores')"
+          aria-label="Ver trabajadores considerados"
+        >
+          <span class="payroll-franja-operativa__icon" aria-hidden="true">
+            <lucide-icon [name]="franjaIcono.trabajadores"></lucide-icon>
+          </span>
+          <span class="payroll-franja-operativa__copy">
+            <span class="payroll-franja-operativa__k">Trabajadores</span>
+            <span class="payroll-franja-operativa__v">{{ resumen.trabajadores }}</span>
+          </span>
+          <lucide-icon name="chevron-right" class="payroll-franja-operativa__chevron" aria-hidden="true"></lucide-icon>
         </button>
       </li>
       <li>
-        <button type="button" class="payroll-franja-operativa__item" (click)="f.abrirDetalleOperativo('parametros')" aria-label="Ver parámetros del período">
-          <span class="payroll-franja-operativa__k">Parámetros</span>
-          <span class="payroll-franja-operativa__v">{{ resumen.parametros }}</span>
+        <button
+          type="button"
+          class="payroll-franja-operativa__item"
+          [class]="franjaItemClase(resumen.parametros, 'parametros')"
+          (click)="f.seleccionarNominaWorkspaceTab('parametros')"
+          aria-label="Ver parámetros del período"
+        >
+          <span class="payroll-franja-operativa__icon" aria-hidden="true">
+            <lucide-icon [name]="franjaIcono.parametros"></lucide-icon>
+          </span>
+          <span class="payroll-franja-operativa__copy">
+            <span class="payroll-franja-operativa__k">Parámetros</span>
+            <span class="payroll-franja-operativa__v">{{ resumen.parametros }}</span>
+          </span>
+          <lucide-icon name="chevron-right" class="payroll-franja-operativa__chevron" aria-hidden="true"></lucide-icon>
         </button>
       </li>
       <li>
-        <button type="button" class="payroll-franja-operativa__item" (click)="f.abrirDetalleOperativo('movimientos_recurrentes')" aria-label="Ver movimientos y recurrentes">
-          <span class="payroll-franja-operativa__k">Movimientos</span>
-          <span class="payroll-franja-operativa__v">{{ resumen.movimientos }}</span>
+        <button
+          type="button"
+          class="payroll-franja-operativa__item"
+          [class]="franjaItemClase(resumen.movimientos, 'movimientos')"
+          (click)="f.seleccionarNominaWorkspaceTab('movimientos')"
+          aria-label="Ver movimientos del período"
+        >
+          <span class="payroll-franja-operativa__icon" aria-hidden="true">
+            <lucide-icon [name]="franjaIcono.movimientos"></lucide-icon>
+          </span>
+          <span class="payroll-franja-operativa__copy">
+            <span class="payroll-franja-operativa__k">Movimientos</span>
+            <span class="payroll-franja-operativa__v">{{ resumen.movimientos }}</span>
+          </span>
+          <lucide-icon name="chevron-right" class="payroll-franja-operativa__chevron" aria-hidden="true"></lucide-icon>
         </button>
       </li>
       <li>
-        <button type="button" class="payroll-franja-operativa__item" (click)="f.abrirDetalleOperativo('movimientos_recurrentes')" aria-label="Ver movimientos y recurrentes">
-          <span class="payroll-franja-operativa__k">Recurrentes</span>
-          <span class="payroll-franja-operativa__v">{{ resumen.recurrentes }}</span>
+        <button
+          type="button"
+          class="payroll-franja-operativa__item"
+          [class]="franjaItemClase(resumen.recurrentes, 'recurrentes')"
+          (click)="f.seleccionarNominaWorkspaceTab('recurrentes')"
+          aria-label="Ver recurrentes del período"
+        >
+          <span class="payroll-franja-operativa__icon" aria-hidden="true">
+            <lucide-icon [name]="franjaIcono.recurrentes"></lucide-icon>
+          </span>
+          <span class="payroll-franja-operativa__copy">
+            <span class="payroll-franja-operativa__k">Recurrentes</span>
+            <span class="payroll-franja-operativa__v">{{ resumen.recurrentes }}</span>
+          </span>
+          <lucide-icon name="chevron-right" class="payroll-franja-operativa__chevron" aria-hidden="true"></lucide-icon>
         </button>
       </li>
     </ul>
   </section>
 
-  <div class="payroll-workspace">
-    <aside class="payroll-rail" aria-label="Seguimiento del período">
-      <section class="payroll-rail-block payroll-rail-block--bitacora" aria-labelledby="payroll-rail-bitacora-title">
-        <h2 id="payroll-rail-bitacora-title" class="payroll-rail-block__title">Bitácora del período</h2>
-        <ol class="payroll-rail-track">
-          @for (etapa of f.bitacoraRailEtapas(); track etapa.clave) {
-            <li
-              class="payroll-rail-step"
-              [class.payroll-rail-step--active]="etapa.activa"
-              [class.payroll-rail-step--done]="etapa.marca === 'hecho'"
-              [class.payroll-rail-step--blocked]="etapa.marca === 'bloqueado'"
-            >
-              <span class="payroll-rail-step__mark" aria-hidden="true">{{
-                etapa.marca === 'hecho' ? '✓' : etapa.marca === 'actual' ? '●' : etapa.marca === 'bloqueado' ? '—' : '○'
-              }}</span>
-              <span class="payroll-rail-step__label">{{ etapa.etiqueta }}</span>
-              <span class="payroll-rail-step__state">{{ etapa.estadoCorto }}</span>
-            </li>
-          }
-        </ol>
-      </section>
-
-      <section class="payroll-rail-block payroll-rail-block--alertas" aria-labelledby="payroll-rail-alertas-title">
-        <h2 id="payroll-rail-alertas-title" class="payroll-rail-block__title">Revisión</h2>
-        @let alertas = f.alertasPeriodoResumen();
-        @if (alertas.modo === 'evaluando') {
-          <p class="payroll-rail-alertas__msg">{{ alertas.mensaje }}</p>
-        } @else if (alertas.modo === 'sin-evaluar') {
-          <p class="payroll-rail-alertas__msg">{{ alertas.mensaje }}</p>
-        } @else if (alertas.modo === 'ok') {
-          <p class="payroll-rail-alertas__msg payroll-rail-alertas__msg--ok">{{ alertas.mensaje }}</p>
-        } @else {
-          <div class="payroll-rail-alertas__pills">
-            @if (alertas.criticas) {
-              <span class="payroll-rail-pill payroll-rail-pill--danger">{{ alertas.criticas }} crítica{{ alertas.criticas === 1 ? '' : 's' }}</span>
-            }
-            @if (alertas.advertencias) {
-              <span class="payroll-rail-pill payroll-rail-pill--warning">{{ alertas.advertencias }} advertencia{{ alertas.advertencias === 1 ? '' : 's' }}</span>
-            }
-          </div>
-          @if (alertas.mostrarDetalle) {
-            <button type="button" class="payroll-rail-link" (click)="f.abrirDetalleOperativoContextual()">
-              Ver detalle
-            </button>
-          }
-        }
-      </section>
-
-      <nav class="payroll-rail-nav" aria-label="Ir a otros módulos">
-        <span class="payroll-rail-nav__k">Resolver en</span>
-        <button type="button" (click)="f.abrirDetalleOperativo('trabajadores')">Trabajadores</button>
-        <button type="button" (click)="f.abrirDetalleOperativo('parametros')">Parámetros</button>
-        <button type="button" (click)="f.abrirDetalleOperativo('movimientos_recurrentes')">Movimientos y recurrentes</button>
-      </nav>
-
-    </aside>
-
     <main class="payroll-main" aria-labelledby="payroll-focus-title">
-      <section class="payroll-focus payroll-focus--operativo" aria-labelledby="payroll-focus-title">
-        <header class="payroll-focus__bar">
-          <div class="payroll-focus__state">
-            <span
-              class="payroll-focus__dot"
-              [class.payroll-focus__dot--active]="frame.frame === 'generando'"
-              [class.payroll-focus__dot--danger]="frame.frame === 'con_pendientes'"
-              [class.payroll-focus__dot--success]="frame.frame === 'lista_para_confirmar' || frame.frame === 'confirmada' || frame.frame === 'liquidaciones_generadas'"
-            ></span>
-            <span>{{ frame.chip }}</span>
-          </div>
-          <div class="payroll-focus__actions" aria-label="Acciones del período">
-            @if (frame.ctaTipo === 'ruta') {
-              <a [routerLink]="frame.ctaRuta" class="payroll-focus__primary">{{ frame.ctaLabel }}</a>
-            }
-            @if (frame.ctaTipo === 'local' && frame.ctaAccion) {
-              <button
-                type="button"
-                class="payroll-focus__primary"
-                [disabled]="frame.ctaDisabled"
-                (click)="f.ejecutarAccionValidacion(frame.ctaAccion)"
-              >
-                {{ frame.ctaDisabled && f.accionPeriodoEnCurso() ? 'Generando...' : frame.ctaLabel }}
-              </button>
-            }
-          </div>
-        </header>
-
+      <section
+        class="payroll-focus payroll-focus--operativo"
+        [class.payroll-focus--hero]="pres.layout === 'hero'"
+        [class.payroll-focus--compact]="pres.layout === 'compact'"
+        [class.payroll-focus--banner]="pres.layout === 'banner'"
+        [class.payroll-focus--neutral]="pres.variant === 'neutral'"
+        [class.payroll-focus--active]="pres.variant === 'active'"
+        [class.payroll-focus--info]="pres.variant === 'info'"
+        [class.payroll-focus--review]="pres.variant === 'review'"
+        [class.payroll-focus--success]="pres.variant === 'success'"
+        aria-labelledby="payroll-focus-title"
+      >
         <div class="payroll-focus__body">
-          <h2 id="payroll-focus-title" class="payroll-focus__title">{{ frame.titulo }}</h2>
-          <p class="payroll-focus__lead">{{ frame.texto }}</p>
-          <p class="payroll-focus__hint">
-            <lucide-icon name="info" aria-hidden="true"></lucide-icon>
-            <span>{{ frame.info }}</span>
-          </p>
+          <div class="payroll-focus__band">
+            <div class="payroll-focus__visual" aria-hidden="true">
+              <lucide-icon [name]="pres.icon"></lucide-icon>
+            </div>
+            <div class="payroll-focus__copy">
+              <span class="payroll-focus__chip">{{ frame.chip }}</span>
+              <h2 id="payroll-focus-title" class="payroll-focus__title">{{ frame.titulo }}</h2>
+              <p class="payroll-focus__lead">{{ frame.texto }}</p>
+            </div>
+            @if (pres.hintInline && frame.info) {
+              <p class="payroll-focus__meta">{{ frame.info }}</p>
+            }
+          </div>
+          @if (pres.showAreas) {
+            <ul class="payroll-focus__areas" aria-label="Áreas que revisarás al generar">
+              <li>
+                <lucide-icon name="users" aria-hidden="true"></lucide-icon>
+                <span>Trabajadores del período</span>
+              </li>
+              <li>
+                <lucide-icon name="sliders" aria-hidden="true"></lucide-icon>
+                <span>Parámetros legales</span>
+              </li>
+              <li>
+                <lucide-icon name="list-checks" aria-hidden="true"></lucide-icon>
+                <span>Movimientos del mes</span>
+              </li>
+              <li>
+                <lucide-icon name="repeat" aria-hidden="true"></lucide-icon>
+                <span>Recurrentes vigentes</span>
+              </li>
+            </ul>
+          }
+          @if (!pres.hintInline && frame.info) {
+            <p class="payroll-focus__hint">
+              <lucide-icon name="info" aria-hidden="true"></lucide-icon>
+              <span>{{ frame.info }}</span>
+            </p>
+          }
           @if (f.estadoOperativo().accionPrincipal.disabledReason) {
             <p class="payroll-focus__note">{{ f.estadoOperativo().accionPrincipal.disabledReason }}</p>
           }
         </div>
       </section>
 
+      @let ex = f.nominaExceptionStrip();
+      @if (ex.visible) {
+        <section class="payroll-exception-strip" aria-label="Pendientes del período">
+          <div class="payroll-exception-strip__pills">
+            @if (ex.criticas > 0) {
+              <span class="payroll-rail-pill payroll-rail-pill--danger">
+                {{ ex.criticas }} crítica{{ ex.criticas === 1 ? '' : 's' }}
+              </span>
+            }
+            @if (ex.advertencias > 0) {
+              <span class="payroll-rail-pill payroll-rail-pill--warning">
+                {{ ex.advertencias }} advertencia{{ ex.advertencias === 1 ? '' : 's' }}
+              </span>
+            }
+          </div>
+          <button type="button" class="payroll-rail-link" (click)="f.abrirDetalleOperativoContextual()">
+            Ver revisión completa
+          </button>
+        </section>
+      }
+
       @if (f.mostrarAccionesPeriodoNomina()) {
         <section class="payroll-period-actions" aria-label="Acciones del período">
           <header class="payroll-period-actions__header">
             <h3>Acciones del período</h3>
-            <p>Operaciones sobre la versión generada. No reemplazan el flujo principal de arriba.</p>
+            <p>Operaciones sobre la versión generada. La acción principal del flujo está en la barra superior.</p>
           </header>
           @if (f.exitoAccionPeriodo()) {
             <p class="payroll-period-actions__feedback payroll-period-actions__feedback--success" role="status">
@@ -201,46 +232,103 @@
         </section>
       }
 
-      <nav class="payroll-workspace-tabs" aria-label="Nómina mensual">
-        <button type="button" [class.payroll-workspace-tab--active]="f.nominaWorkspaceTab() === 'guia'" (click)="f.seleccionarNominaWorkspaceTab('guia')">Guía de revisión</button>
-        <button type="button" [class.payroll-workspace-tab--active]="f.nominaWorkspaceTab() === 'trabajadores'" (click)="f.seleccionarNominaWorkspaceTab('trabajadores')">Trabajadores y revisión</button>
-        <button type="button" [class.payroll-workspace-tab--active]="f.nominaWorkspaceTab() === 'detalle'" (click)="f.seleccionarNominaWorkspaceTab('detalle')">Detalle</button>
+      <nav class="payroll-operational-tabs payroll-operational-tabs--workspace" aria-label="Nómina mensual">
+        @for (tab of f.nominaWorkspaceTabsMeta(); track tab.id) {
+          <button
+            type="button"
+            [class]="claseWorkspaceTab(tab.severidad, f.nominaWorkspaceTab() === tab.id)"
+            (click)="f.seleccionarNominaWorkspaceTab(tab.id)"
+          >
+            <span class="payroll-operational-tab__label">{{ tab.label }}</span>
+            @if (tab.indicador) {
+              <span class="payroll-operational-tab__indicador">{{ tab.indicador }}</span>
+            }
+          </button>
+        }
       </nav>
 
       <section class="payroll-tab-panel" aria-live="polite">
         @switch (f.nominaWorkspaceTab()) {
-          @case ('guia') {
-            @let guia = f.nominaGuiaPanel();
-            @if (guia.variant === 'confirmar') {
-              <div class="payroll-confirm-grid">
-                <section>
-                  <h3>{{ guia.titulo }}</h3>
-                  <dl class="payroll-confirm-list">
-                    <div><dt>Trabajadores incluidos</dt><dd>{{ f.dashboardResumen().trabajadoresAptos ?? f.snapshotActivo()?.totalTrabajadores ?? 0 }}</dd></div>
-                    <div><dt>Bloqueos críticos</dt><dd>{{ resumen.bloqueos }}</dd></div>
-                    <div><dt>Cambios confirmados</dt><dd>{{ resumen.cambios }}</dd></div>
-                    <div><dt>Movimientos considerados</dt><dd>{{ f.dashboardResumen().movimientosAprobados }}</dd></div>
-                    <div><dt>Recurrentes vigentes</dt><dd>{{ f.dashboardResumen().asignacionesAplicables ?? 0 }}</dd></div>
-                  </dl>
-                </section>
-                <section class="payroll-editorial-aside">
-                  <h3>{{ guia.asideTitulo }}</h3>
-                  <p>{{ guia.asideTexto }}</p>
-                </section>
-              </div>
-            } @else {
-              <div class="payroll-guide">
-                <h3>{{ guia.titulo }}</h3>
-                @if (guia.parrafo) {
-                  <p>{{ guia.parrafo }}</p>
-                }
-                <ul>
-                  @for (item of guia.items; track item) {
-                    <li>{{ item }}</li>
+          @case ('resumen') {
+            <div class="payroll-resumen-block">
+              <section class="payroll-rail-block payroll-rail-block--alertas" aria-labelledby="payroll-resumen-alertas-title">
+                <h3 id="payroll-resumen-alertas-title" class="payroll-resumen-block__title">Revisión</h3>
+                @let alertas = f.alertasPeriodoResumen();
+                @if (alertas.modo === 'evaluando') {
+                  <p class="payroll-rail-alertas__msg">{{ alertas.mensaje }}</p>
+                } @else if (alertas.modo === 'sin-evaluar') {
+                  <p class="payroll-rail-alertas__msg">{{ alertas.mensaje }}</p>
+                } @else if (alertas.modo === 'ok') {
+                  <p class="payroll-rail-alertas__msg payroll-rail-alertas__msg--ok">{{ alertas.mensaje }}</p>
+                } @else {
+                  <div class="payroll-rail-alertas__pills">
+                    @if (alertas.criticas) {
+                      <span class="payroll-rail-pill payroll-rail-pill--danger">{{ alertas.criticas }} crítica{{ alertas.criticas === 1 ? '' : 's' }}</span>
+                    }
+                    @if (alertas.advertencias) {
+                      <span class="payroll-rail-pill payroll-rail-pill--warning">{{ alertas.advertencias }} advertencia{{ alertas.advertencias === 1 ? '' : 's' }}</span>
+                    }
+                  </div>
+                  @if (alertas.mostrarDetalle) {
+                    <button type="button" class="payroll-rail-link" (click)="f.abrirDetalleOperativoContextual()">
+                      Ver revisión completa
+                    </button>
                   }
-                </ul>
-              </div>
-            }
+                }
+              </section>
+
+              <section class="payroll-rail-block payroll-rail-block--bitacora" aria-labelledby="payroll-resumen-bitacora-title">
+                <h3 id="payroll-resumen-bitacora-title" class="payroll-resumen-block__title">Bitácora del período</h3>
+                <ol class="payroll-bitacora-steps payroll-bitacora-steps--compact">
+                  @for (etapa of f.bitacoraRailEtapas(); track etapa.clave) {
+                    <li
+                      class="payroll-rail-step"
+                      [class.payroll-rail-step--active]="etapa.activa"
+                      [class.payroll-rail-step--done]="etapa.marca === 'hecho'"
+                      [class.payroll-rail-step--blocked]="etapa.marca === 'bloqueado'"
+                    >
+                      <span class="payroll-rail-step__mark" aria-hidden="true">{{
+                        etapa.marca === 'hecho' ? '✓' : etapa.marca === 'actual' ? '●' : etapa.marca === 'bloqueado' ? '—' : '○'
+                      }}</span>
+                      <span class="payroll-rail-step__label">{{ etapa.etiqueta }}</span>
+                      <span class="payroll-rail-step__state">{{ etapa.estadoCorto }}</span>
+                    </li>
+                  }
+                </ol>
+              </section>
+
+              @let guia = f.nominaGuiaPanel();
+              @if (guia.variant === 'confirmar') {
+                <div class="payroll-confirm-grid">
+                  <section>
+                    <h3>{{ guia.titulo }}</h3>
+                    <dl class="payroll-confirm-list">
+                      <div><dt>Trabajadores incluidos</dt><dd>{{ f.dashboardResumen().trabajadoresAptos ?? f.snapshotActivo()?.totalTrabajadores ?? 0 }}</dd></div>
+                      <div><dt>Bloqueos críticos</dt><dd>{{ resumen.bloqueos }}</dd></div>
+                      <div><dt>Cambios confirmados</dt><dd>{{ resumen.cambios }}</dd></div>
+                      <div><dt>Movimientos considerados</dt><dd>{{ f.dashboardResumen().movimientosAprobados }}</dd></div>
+                      <div><dt>Recurrentes vigentes</dt><dd>{{ f.dashboardResumen().asignacionesAplicables ?? 0 }}</dd></div>
+                    </dl>
+                  </section>
+                  <section class="payroll-editorial-aside">
+                    <h3>{{ guia.asideTitulo }}</h3>
+                    <p>{{ guia.asideTexto }}</p>
+                  </section>
+                </div>
+              } @else {
+                <div class="payroll-guide">
+                  <h3>{{ guia.titulo }}</h3>
+                  @if (guia.parrafo) {
+                    <p>{{ guia.parrafo }}</p>
+                  }
+                  <ul>
+                    @for (item of guia.items; track item) {
+                      <li>{{ item }}</li>
+                    }
+                  </ul>
+                </div>
+              }
+            </div>
           }
           @case ('trabajadores') {
             @if (frame.frame === 'con_pendientes') {
@@ -259,11 +347,16 @@
                     } @else if (item.accionLocal) {
                       <button type="button" (click)="f.ejecutarAccionValidacion(item.accionLocal)">Resolver</button>
                     } @else {
-                      <button type="button" (click)="f.abrirDetalleOperativo('parametros')">{{ item.accionLabel ?? 'Revisar' }}</button>
+                      <button type="button" (click)="f.abrirDetalleOperativo('trabajadores')">{{ item.accionLabel ?? 'Revisar' }}</button>
                     }
                   </div>
                 }
               </div>
+              <p class="payroll-tab-panel__enlace">
+                <button type="button" class="payroll-rail-link" (click)="f.abrirRevisionDesdeWorkspace('trabajadores')">
+                  Abrir revisión masiva de trabajadores
+                </button>
+              </p>
             } @else if (f.payrollWorkerDetailRows().length) {
               <div class="payroll-worker-table">
                 <table>
@@ -289,13 +382,142 @@
                   </tbody>
                 </table>
               </div>
+              <p class="payroll-tab-panel__enlace">
+                <button type="button" class="payroll-rail-link" (click)="f.abrirRevisionDesdeWorkspace('trabajadores')">
+                  Ver todos en revisión completa
+                </button>
+              </p>
             } @else {
               <p class="payroll-empty-line">Genera la nómina mensual para ver trabajadores que requieren revisión.</p>
             }
           }
-          @case ('detalle') {
+          @case ('parametros') {
+            @let panel = f.nominaWorkspacePanelInline();
+            @if (panel) {
+              <section class="payroll-follow-section" aria-label="Parámetros del período">
+                <header>
+                  <h3>{{ panel.tituloParametros }}</h3>
+                  <p>{{ panel.lead }}</p>
+                </header>
+                @if (panel.listaParametros.length) {
+                  <div class="payroll-revision-lista">
+                    @for (item of panel.listaParametros; track item.titulo + item.descripcion) {
+                      <article class="payroll-follow-row">
+                        <div>
+                          <h4>{{ item.titulo }}</h4>
+                          <p>{{ item.descripcion }}</p>
+                        </div>
+                        <span [class]="item.estadoClase">{{ item.estado }}</span>
+                        @if (item.ruta && item.accion) {
+                          <a [routerLink]="item.ruta">{{ item.accion }}</a>
+                        }
+                      </article>
+                    }
+                  </div>
+                } @else {
+                  <p class="payroll-revision-empty">{{ panel.emptyTitulo }}. {{ panel.emptyDescripcion }}</p>
+                }
+                <p class="payroll-tab-panel__enlace">
+                  <button type="button" class="payroll-rail-link" (click)="f.abrirRevisionDesdeWorkspace('parametros')">
+                    Ver revisión completa
+                  </button>
+                </p>
+              </section>
+            }
+          }
+          @case ('movimientos') {
+            @let panel = f.nominaWorkspacePanelInline();
+            @if (panel) {
+              <section class="payroll-follow-section" aria-label="Movimientos del período">
+                <header>
+                  <h3>Movimientos del mes</h3>
+                  <p>Bonos, descuentos y hechos puntuales considerados en la nómina mensual.</p>
+                </header>
+                @if (panel.listaMovimientos.length) {
+                  <div class="payroll-revision-lista">
+                    @for (item of panel.listaMovimientos; track item.titulo + item.descripcion) {
+                      <article class="payroll-follow-row">
+                        <div>
+                          <h4>{{ item.titulo }}</h4>
+                          <p>{{ item.descripcion }}</p>
+                        </div>
+                        <span [class]="item.estadoClase">{{ item.estado }}</span>
+                        @if (item.ruta && item.accion) {
+                          <a [routerLink]="item.ruta">{{ item.accion }}</a>
+                        }
+                      </article>
+                    }
+                  </div>
+                } @else {
+                  <p class="payroll-revision-empty">{{ panel.emptyTitulo }}. {{ panel.emptyDescripcion }}</p>
+                }
+                <p class="payroll-tab-panel__enlace">
+                  <button type="button" class="payroll-rail-link" (click)="f.abrirRevisionDesdeWorkspace('movimientos')">
+                    Ver revisión completa
+                  </button>
+                </p>
+              </section>
+            }
+          }
+          @case ('recurrentes') {
+            @let panel = f.nominaWorkspacePanelInline();
+            @if (panel) {
+              <section class="payroll-follow-section" aria-label="Recurrentes del período">
+                <header>
+                  <h3>Recurrentes</h3>
+                  <p>Asignaciones vigentes consideradas en la nómina mensual.</p>
+                </header>
+                @if (panel.listaRecurrentes.length) {
+                  <div class="payroll-revision-lista">
+                    @for (item of panel.listaRecurrentes; track item.titulo + item.descripcion) {
+                      <article class="payroll-follow-row">
+                        <div>
+                          <h4>{{ item.titulo }}</h4>
+                          <p>{{ item.descripcion }}</p>
+                        </div>
+                        <span [class]="item.estadoClase">{{ item.estado }}</span>
+                        @if (item.ruta && item.accion) {
+                          <a [routerLink]="item.ruta">{{ item.accion }}</a>
+                        }
+                      </article>
+                    }
+                  </div>
+                } @else {
+                  <p class="payroll-revision-empty">Sin recurrentes visibles en este período.</p>
+                }
+                <p class="payroll-tab-panel__enlace">
+                  <button type="button" class="payroll-rail-link" (click)="f.abrirRevisionDesdeWorkspace('recurrentes')">
+                    Ver revisión completa
+                  </button>
+                </p>
+              </section>
+            }
+          }
+          @case ('liquidaciones') {
+            <section class="payroll-liquidaciones-panel" aria-label="Liquidaciones del período">
+              <h3>Liquidaciones</h3>
+              <p>
+                @if (f.liquidacionesGeneradasCount() > 0) {
+                  Hay {{ f.liquidacionesGeneradasCount() }} liquidación{{ f.liquidacionesGeneradasCount() === 1 ? '' : 'es' }} generada{{ f.liquidacionesGeneradasCount() === 1 ? '' : 's' }} para este período.
+                } @else if (f.nominaEstaCerradaOperativamente()) {
+                  La nómina está confirmada. Puede generar liquidaciones desde el módulo correspondiente.
+                } @else {
+                  Confirme la nómina mensual para habilitar la generación de liquidaciones.
+                }
+              </p>
+              <dl>
+                <div><dt>Estado</dt><dd>{{ f.liquidacionesGeneradasCount() > 0 ? 'Generadas' : 'Pendiente' }}</dd></div>
+                <div><dt>Período</dt><dd>{{ f.periodoActivo.etiqueta() }}</dd></div>
+              </dl>
+              <a routerLink="/remuneraciones/liquidaciones" class="payroll-focus__primary payroll-focus__primary--link">
+                Ir a liquidaciones
+              </a>
+            </section>
+          }
+          @case ('historial') {
             @let expediente = f.expedienteNominaPeriodo();
             @let detalle = f.nominaDetallePanel();
+            @let panel = f.nominaWorkspacePanelInline();
             @if (expediente.visible) {
               @if (expediente.estado === 'cargando' || expediente.estado === 'error_carga' || expediente.estado === 'detalle_no_disponible') {
                 <div class="payroll-expediente-panel payroll-expediente-panel--estado">
@@ -341,16 +563,6 @@
                       </ul>
                     </section>
                   }
-                  @if (expediente.problemas.length) {
-                    <section class="payroll-expediente-panel__lista" aria-label="Observaciones del período">
-                      <h4>Observaciones</h4>
-                      <ul>
-                        @for (p of expediente.problemas.slice(0, 3); track p.titulo + p.detalle) {
-                          <li>{{ p.detalle }}</li>
-                        }
-                      </ul>
-                    </section>
-                  }
                   <button type="button" class="payroll-rail-link" (click)="f.abrirDetalleOperativoContextual()">
                     Ver revisión completa
                   </button>
@@ -381,10 +593,28 @@
                   <div><dt>{{ detalle.campo4 }}</dt><dd>{{ f.formatoMonto(f.resultadoPreliminar().resumen.totalLiquido) }}</dd></div>
                 </dl>
               </div>
+              @if (panel && panel.listaResultadoSeguimiento.length) {
+                <div class="payroll-revision-lista">
+                  @for (item of panel.listaResultadoSeguimiento; track item.titulo + item.descripcion) {
+                    <article class="payroll-follow-row">
+                      <div>
+                        <h4>{{ item.titulo }}</h4>
+                        <p>{{ item.descripcion }}</p>
+                      </div>
+                      <span [class]="item.estadoClase">{{ item.estado }}</span>
+                    </article>
+                  }
+                </div>
+              }
+              <div class="payroll-history">
+                @for (item of f.nominaHistorialVisual(); track item.hora + item.texto) {
+                  <p [class.payroll-history__item--strong]="item.destacado"><span>{{ item.hora }}</span>{{ item.texto }}</p>
+                }
+              </div>
             }
           }
         }
       </section>
     </main>
   </div>
-  </section>
+</section>

@@ -2,6 +2,7 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  DestroyRef,
   OnDestroy,
   OnInit,
   computed,
@@ -33,10 +34,7 @@ import {
 import type { MessageBoxSection } from '../../../../../shared/components/ui/message-box.types';
 import { CalendarInputComponent } from '../../../../../shared/components/ui/calendar-input.component';
 import { FieldHelpTipComponent } from '../../../../../shared/components/ui/field-help-tip.component';
-import {
-  RecordBreadcrumbComponent,
-  RecordBreadcrumbItem,
-} from '../../../../../shared/components/ui/record-breadcrumb.component';
+import { bindShellPageContext } from '../../../../../layout/shell-page-context.binding';
 import {
   SearchSelectComponent,
   type SearchSelectOption,
@@ -219,7 +217,6 @@ function formInicial(periodo: string): NovedadForm {
     CommonModule,
     FormsModule,
     LucideAngularModule,
-    RecordBreadcrumbComponent,
     ButtonComponent,
     DataGridComponent,
     DataGridCellDirective,
@@ -236,14 +233,10 @@ export class NovedadesMensualesContainer implements OnInit, OnDestroy {
   private readonly novedadesService = inject(NovedadesMensualesService);
   private readonly empleadosService = inject(EmpleadosService);
   private readonly haberesDescuentosService = inject(HaberesDescuentosService);
+  private readonly destroyRef = inject(DestroyRef);
   readonly periodoActivo = inject(PeriodoActivoService);
   private pantallaInicializada = false;
   private bodyOverflowAnterior: string | null = null;
-
-  readonly breadcrumbItems: readonly RecordBreadcrumbItem[] = [
-    { label: 'Remuneraciones', link: '/remuneraciones' },
-    { label: 'Movimientos de remuneración' },
-  ];
 
   readonly plusIcon = Plus;
   readonly refreshIcon = RefreshCw;
@@ -819,6 +812,21 @@ export class NovedadesMensualesContainer implements OnInit, OnDestroy {
 
 
   constructor() {
+    bindShellPageContext(
+      this.destroyRef,
+      () => ({
+        breadcrumbs: [
+          { label: 'Remuneraciones', path: '/remuneraciones/proceso-mensual' },
+          { label: 'Movimientos' },
+        ],
+        primaryAction: {
+          label: 'Registrar movimiento del mes',
+          actionId: 'registrar-movimiento',
+        },
+      }),
+      { onPrimaryAction: () => this.abrirNuevo() },
+    );
+
     effect(() => {
       const periodo = this.periodoActual();
       untracked(() => this.form.update((actual) => ({ ...actual, periodo })));

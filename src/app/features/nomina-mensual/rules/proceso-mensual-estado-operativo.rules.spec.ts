@@ -17,6 +17,7 @@ function inputBase(overrides: Partial<ProcesoMensualEstadoOperativoInput> = {}):
   return {
     periodoValido: true,
     tienePrevalidacion: false,
+    parametrosOperativos: false,
     bloqueosPrevalidacion: [],
     advertenciasPrevalidacion: [],
     informacionesPrevalidacion: [],
@@ -52,6 +53,7 @@ describe('proceso-mensual-estado-operativo.rules', () => {
   it('con parametros bloqueantes dirige a parametros', () => {
     const vm = resolverEstadoOperativoProcesoMensual(inputBase({
       tienePrevalidacion: true,
+      parametrosOperativos: false,
       bloqueosPrevalidacion: [bloqueoParametros],
     }));
 
@@ -60,6 +62,37 @@ describe('proceso-mensual-estado-operativo.rules', () => {
     expect(vm.accionPrincipal.ruta).toBe('/parametros');
     expect(vm.timeline[0].titulo).toBe('Generar nómina');
     expect(vm.timeline[0].estado).toBe('Actual');
+  });
+
+  it('con BLOQ-004 pero parametros operativos prioriza trabajadores', () => {
+    const vm = resolverEstadoOperativoProcesoMensual(inputBase({
+      tienePrevalidacion: true,
+      parametrosOperativos: true,
+      bloqueosPrevalidacion: [bloqueoParametros],
+    }));
+
+    expect(vm.estadoClave).toBe('periodo_con_pendientes');
+    expect(vm.accionPrincipal.label).toBe('Revisar trabajadores');
+    expect(vm.accionPrincipal.accionLocal).toBe('revisarBloqueos');
+  });
+
+  it('con bloqueo de trabajadores y BLOQ-004 prioriza trabajadores', () => {
+    const vm = resolverEstadoOperativoProcesoMensual(inputBase({
+      tienePrevalidacion: true,
+      parametrosOperativos: false,
+      bloqueosPrevalidacion: [
+        bloqueoParametros,
+        {
+          codigo: 'BLOQ-006',
+          titulo: 'Hay trabajadores bloqueados',
+          descripcion: 'Revisa trabajadores.',
+          severidad: 'danger',
+        },
+      ],
+    }));
+
+    expect(vm.accionPrincipal.label).toBe('Revisar trabajadores');
+    expect(vm.accionPrincipal.accionLocal).toBe('revisarBloqueos');
   });
 
   it('validado sin bloqueos queda listo para generar base aunque exista bloqueo sintetico de base pendiente', () => {

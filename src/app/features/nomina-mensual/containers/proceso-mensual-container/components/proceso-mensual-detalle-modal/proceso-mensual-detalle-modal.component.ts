@@ -14,7 +14,10 @@ import { ProcesoMensualPresentacionFacade } from '../../facade/proceso-mensual-p
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CommonModule, RouterLink, DataGridComponent, DataGridCellDirective],
   templateUrl: './proceso-mensual-detalle-modal.component.html',
-  styleUrl: './proceso-mensual-detalle-modal.component.css',
+  styleUrls: [
+    '../../payroll-operational-tabs.css',
+    './proceso-mensual-detalle-modal.component.css',
+  ],
 })
 export class ProcesoMensualDetalleModalComponent {
   readonly facade = inject(ProcesoMensualPresentacionFacade);

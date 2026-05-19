@@ -44,9 +44,11 @@ export function resolveNominaVisualFrame(input: NominaVisualFrameInput): NominaV
 }
 
 export function suggestNominaWorkspaceTab(frame: NominaVisualFrame): NominaWorkspaceTab {
-  if (frame === 'en_revision' || frame === 'con_pendientes') return 'trabajadores';
-  if (frame === 'confirmada' || frame === 'liquidaciones_generadas') return 'detalle';
-  return 'guia';
+  if (frame === 'con_pendientes') return 'trabajadores';
+  if (frame === 'liquidaciones_generadas') return 'liquidaciones';
+  if (frame === 'confirmada') return 'historial';
+  if (frame === 'en_revision' || frame === 'lista_para_confirmar') return 'resumen';
+  return 'resumen';
 }
 
 export interface NominaResumenSuperiorInput {

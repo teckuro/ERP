@@ -1,4 +1,59 @@
-﻿## NOM-MENSUAL-MASIVO-LAYOUT-01 - Tab Trabajadores masivo
+﻿## NOM-PERIODO-VERIFICAR-MODAL-02 - Modal tras verificar período
+
+| Campo | Estado |
+|---|---|
+| Estado | Implementada |
+| Tipo | Rules + facade (UI modal) |
+| Alcance | `buildInformacionPeriodoView` paso verificación; destino `generar_nomina`; sin BD. |
+| Documento | [`../modulos/nomina-mensual/nom-periodo-diagnostico-persist-01.md`](../modulos/nomina-mensual/nom-periodo-diagnostico-persist-01.md) |
+| Precede | NOM-PREVALIDACION-PARAMETROS-CTA-01 |
+| Siguiente | NOM-PERIODO-DIAGNOSTICO-PERSIST-01 (BD) |
+
+## NOM-PERIODO-DIAGNOSTICO-PERSIST-01 - Diagnóstico período en BD
+
+| Campo | Estado |
+|---|---|
+| Estado | Documentada (implementación BD pendiente) |
+| Tipo | Producto + persistencia + UX modal paso 1 |
+| Alcance | Tabla/RPC `nomina_periodo_diagnostico`, rehidratación sin localStorage, modal tras verificar. |
+| Precede | NOM-PREVALIDACION-PARAMETROS-CTA-01 (implementada) |
+| Siguiente | Autorización `bd/` → SQL + repository + store |
+| Documento | [`../modulos/nomina-mensual/nom-periodo-diagnostico-persist-01.md`](../modulos/nomina-mensual/nom-periodo-diagnostico-persist-01.md) |
+
+## NOM-PREVALIDACION-PARAMETROS-CTA-01 - CTA parámetros alineada a prevalidación
+
+| Campo | Estado |
+|---|---|
+| Estado | Implementada |
+| Tipo | Rules (sin SQL) |
+| Alcance | `BLOQ-004` condicionado a `parametrosOperativos`; prioridad trabajadores en estado operativo. |
+| Documento | [`../modulos/nomina-mensual/nom-periodo-diagnostico-persist-01.md`](../modulos/nomina-mensual/nom-periodo-diagnostico-persist-01.md) § Fase A |
+
+## ERP-SHELL-CONTEXT-ROLLOUT-02 - Contexto solo en topbar
+
+| Campo | Estado |
+|---|---|
+| Estado | Implementada |
+| Tipo | UI shell + migracion pantallas |
+| Alcance | `bindShellPageContext`, fallback rutas, quitar breadcrumbs locales en modulos ERP. |
+| Restricciones | Sin SQL/motor/store; sin estilos globales. |
+| Documento | [`../diseno/erp-shell-sidebar-topbar-polish-01.md`](../diseno/erp-shell-sidebar-topbar-polish-01.md) |
+| Precede | ERP-SHELL-SIDEBAR-TOPBAR-POLISH-01 |
+| Siguiente | Validacion manual responsive; E2E si aplica. |
+
+## ERP-SHELL-SIDEBAR-TOPBAR-POLISH-01 - Shell sidebar + topbar
+
+| Campo | Estado |
+|---|---|
+| Estado | Implementada |
+| Tipo | UI shell + presentación Nómina |
+| Alcance | Nav global 220 px; topbar 52 px con contexto de página; Nómina sin rail, 7 tabs, bitácora en Resumen. |
+| Restricciones | Sin SQL/motor/store; sin estilos globales. |
+| Documento | [`../diseno/erp-shell-sidebar-topbar-polish-01.md`](../diseno/erp-shell-sidebar-topbar-polish-01.md) |
+| Precede | Modales período / reapertura nómina |
+| Siguiente | Validación manual responsive shell; E2E Nómina si aplica. |
+
+## NOM-MENSUAL-MASIVO-LAYOUT-01 - Tab Trabajadores masivo
 
 | Campo | Estado |
 |---|---|

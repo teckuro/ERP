@@ -27,7 +27,10 @@ export class ProcesoMensualInformacionModalComponent {
       return info.secciones.map((seccion) => ({
         title: seccion.titulo,
         items: seccion.items,
-        tone: info.tone === 'warning' ? 'attention' : 'info',
+        tone:
+          seccion.titulo === 'Críticos' || info.tone === 'warning' || info.tone === 'danger'
+            ? 'attention'
+            : 'info',
       }));
     }
     if (info.puntos?.length) {

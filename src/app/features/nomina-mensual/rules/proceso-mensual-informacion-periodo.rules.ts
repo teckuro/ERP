@@ -16,6 +16,8 @@ export interface BuildInformacionPeriodoInput {
   bloqueosOperativos: ProcesoMensualPendienteVm[];
   advertenciasOperativas: ProcesoMensualPendienteVm[];
   nominaFrame: NominaVisualFrame;
+  tienePrevalidacion: boolean;
+  puedeGenerarNomina: boolean;
   tienePreNomina: boolean;
   tieneCalculo: boolean;
   tieneResultado: boolean;
@@ -97,6 +99,8 @@ export function buildInformacionPeriodoView(input: BuildInformacionPeriodoInput)
     bloqueosOperativos,
     advertenciasOperativas,
     nominaFrame,
+    tienePrevalidacion,
+    puedeGenerarNomina,
     tienePreNomina,
     tieneCalculo,
     tieneResultado,
@@ -180,7 +184,99 @@ export function buildInformacionPeriodoView(input: BuildInformacionPeriodoInput)
     };
   }
 
+  const verificacion = buildVerificacionPeriodoInformacionView({
+    tienePrevalidacion,
+    puedeGenerarNomina,
+    hayActividad,
+    validacionCalculo,
+  });
+  if (verificacion) {
+    return verificacion;
+  }
+
   return null;
+}
+
+interface BuildVerificacionPeriodoInput {
+  tienePrevalidacion: boolean;
+  puedeGenerarNomina: boolean;
+  hayActividad: boolean;
+  validacionCalculo: ValidacionCalculoPreliminarView;
+}
+
+function buildVerificacionPeriodoInformacionView(
+  input: BuildVerificacionPeriodoInput,
+): InformacionPeriodoView | null {
+  if (!input.tienePrevalidacion || input.hayActividad) {
+    return null;
+  }
+
+  const bloqueos = input.validacionCalculo.bloqueos.filter((item) => item.codigo !== 'BLOQ-005');
+  const advertencias = input.validacionCalculo.advertencias;
+
+  if (bloqueos.length === 0 && advertencias.length === 0) {
+    return {
+      tone: 'success',
+      titulo: 'Período listo para generar',
+      bajada: 'No hay bloqueos críticos. Puedes generar la nómina mensual del período.',
+      accionPrincipal: input.puedeGenerarNomina
+        ? { label: 'Generar nómina', destino: 'generar_nomina' }
+        : undefined,
+      accionSecundaria: { label: 'Cerrar', destino: 'cerrar' },
+    };
+  }
+
+  const secciones: Array<{ titulo: string; items: string[] }> = [];
+  if (bloqueos.length > 0) {
+    secciones.push({
+      titulo: 'Críticos',
+      items: bloqueos.slice(0, 6).map((item) => `${item.titulo}: ${humanizarErrorEjecucion(item.descripcion)}`),
+    });
+  }
+  if (advertencias.length > 0) {
+    secciones.push({
+      titulo: 'Advertencias',
+      items: advertencias.slice(0, 6).map((item) => `${item.titulo}: ${humanizarErrorEjecucion(item.descripcion)}`),
+    });
+  }
+
+  if (bloqueos.length > 0) {
+    const tabDestino = resolveDetalleTabFromCodigo(
+      bloqueos[0].codigo,
+      bloqueos[0].accionLocal,
+    );
+    const destinoRevision = mapDetalleTabToDestino(tabDestino);
+    return {
+      tone: 'warning',
+      titulo: 'Revisión del período antes de generar',
+      bajada: 'Corrige los puntos críticos antes de generar la nómina mensual.',
+      secciones,
+      accionPrincipal: {
+        label: 'Corregir pendientes',
+        destino: destinoRevision,
+      },
+      accionSecundaria: { label: 'Cerrar por ahora', destino: 'cerrar' },
+    };
+  }
+
+  const destinoAdvertencia = mapDetalleTabToDestino(
+    resolveDetalleTabFromCodigo(advertencias[0].codigo, advertencias[0].accionLocal),
+  );
+  return {
+    tone: 'info',
+    titulo: 'Revisión del período antes de generar',
+    bajada: input.puedeGenerarNomina
+      ? 'Hay advertencias que puedes revisar o continuar para generar la nómina.'
+      : 'Revisa las advertencias del período antes de continuar.',
+    secciones,
+    accionPrincipal: input.puedeGenerarNomina
+      ? { label: 'Generar nómina', destino: 'generar_nomina' }
+      : {
+          label: labelDestinoRevision(destinoAdvertencia),
+          destino: destinoAdvertencia,
+        },
+    accionSecundaria: { label: 'Cerrar por ahora', destino: 'cerrar' },
+  };
 }
 
 function mapDetalleTabToDestino(tab: DetalleOperativoTab): InformacionPeriodoDestino {
@@ -211,6 +307,8 @@ function labelDestinoRevision(destino: InformacionPeriodoDestino): string {
       return 'Revisar recurrentes';
     case 'resultado':
       return 'Revisar resultado';
+    case 'generar_nomina':
+      return 'Generar nómina';
     case 'reintentar':
       return 'Reintentar';
     case 'cerrar':

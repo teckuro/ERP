@@ -204,12 +204,14 @@ describe('NovedadesMensualesContainer', () => {
     expect(fixture.nativeElement.textContent).toContain('Sin movimientos');
   });
 
-  it('renderiza titulo visible y no muestra lenguaje legacy en texto de usuario', async () => {
+  it('renderiza lead operativo sin titulo duplicado ni lenguaje legacy', async () => {
     fixture.detectChanges();
     await esperarCargaInicial(fixture);
 
-    const text = fixture.nativeElement.textContent as string;
-    expect(text).toContain('Movimientos de remuneración');
+    const root = fixture.nativeElement as HTMLElement;
+    const text = root.textContent as string;
+    expect(root.querySelector('.nm-lead')?.textContent).toContain('movimientos del mes');
+    expect(root.querySelector('.nm-page')?.getAttribute('aria-label')).toBe('Movimientos de remuneración');
     expect(text).toContain('Trabajadores del periodo');
     expect(fixture.nativeElement.querySelector('.nm-view-tabs')).toBeNull();
     expect(text).not.toContain('Este mes');
@@ -219,15 +221,16 @@ describe('NovedadesMensualesContainer', () => {
     expect(text).not.toContain('Movimientos variables');
   });
 
-  it('usa periodo activo global sin selector local ni boton buscar', async () => {
+  it('usa periodo en franja operativa sin caja Periodo activo local ni selector mes', async () => {
     fixture.detectChanges();
     await esperarCargaInicial(fixture);
 
-    const input = fixture.nativeElement.querySelector('input[type="month"]') as HTMLInputElement | null;
-    const text = fixture.nativeElement.textContent as string;
+    const root = fixture.nativeElement as HTMLElement;
+    const input = root.querySelector('input[type="month"]') as HTMLInputElement | null;
+    const text = root.textContent as string;
 
     expect(input).toBeNull();
-    expect(text).toContain('Periodo activo');
+    expect(root.querySelector('.nm-period-global')).toBeNull();
     expect(text).toContain('Mayo 2026');
     expect(text).not.toContain('Periodo (YYYY-MM)');
   });

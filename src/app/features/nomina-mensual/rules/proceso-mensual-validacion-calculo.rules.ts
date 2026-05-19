@@ -96,7 +96,11 @@ export function buildValidacionCalculoPreliminarView(
   const faltantesMinimos = resultado.resumen.parametrosGrupos.filter((g) =>
     parametroMinimoBloqueante(g.id, g.clasificacion),
   );
-  if (faltantesMinimos.length > 0 && !bloqueos.some((b) => b.codigo === 'BLOQ-004')) {
+  if (
+    !resultado.resumen.parametrosOperativos &&
+    faltantesMinimos.length > 0 &&
+    !bloqueos.some((b) => b.codigo === 'BLOQ-004')
+  ) {
     bloqueos.push({
       codigo: 'BLOQ-004',
       titulo: 'Faltan parámetros mínimos para calcular',
@@ -341,9 +345,14 @@ function accionArea(area: ProcesoMensualArea): { label: string; route: string } 
   }
 }
 
+const GRUPOS_PARAMETRO_OBLIGATORIO = new Set([
+  'mensuales_uf_utm_sueldo',
+  'topes_base',
+  'catalogos_afp_impuesto',
+]);
+
 function parametroMinimoBloqueante(id: string, clasificacion: ClasificacionParametroGrupo): boolean {
-  const obligatorios = new Set(['mensuales_uf_utm_sueldo', 'topes_base', 'catalogos_afp_impuesto']);
-  return obligatorios.has(id) && (clasificacion === 'FALTANTE' || clasificacion === 'PARCIAL');
+  return GRUPOS_PARAMETRO_OBLIGATORIO.has(id) && (clasificacion === 'FALTANTE' || clasificacion === 'PARCIAL');
 }
 
 function parametroMinimoBloqueanteDesdeCodigo(codigo: string): boolean {

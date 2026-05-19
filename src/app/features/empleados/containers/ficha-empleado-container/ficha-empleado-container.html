@@ -1,8 +1,4 @@
 <section class="employee-file-page" aria-label="Ficha de empleado">
-  <header class="file-page-head" aria-label="Encabezado de ficha">
-    <app-record-breadcrumb [items]="breadcrumbItems" title="Ficha empleado"></app-record-breadcrumb>
-  </header>
-
   @if (isLoading() || errorMessage()) {
     <div class="file-toolbar file-toolbar--minimal" aria-label="Acciones">
       <a

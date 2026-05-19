@@ -1,31 +1,17 @@
 <section class="nm-page" aria-label="Movimientos de remuneración">
   <header class="nm-head">
-    <app-record-breadcrumb
-      [items]="breadcrumbItems"
-      title="Movimientos de remuneración"
-    ></app-record-breadcrumb>
     <p class="nm-lead">
       Registra, revisa y aprueba movimientos del mes y recurrentes que afectan la remuneración de los trabajadores.
     </p>
 
     <div class="nm-head-actions">
-      <div class="nm-period-wrap">
-        <div class="nm-period-global" aria-live="polite">
-          <span class="nm-period-global-k">Periodo activo</span>
-          <span class="nm-period-global-v">{{ periodoActivo.etiqueta() }}</span>
-        </div>
-        <p class="nm-period-hint">
+      <p class="nm-period-hint">
           Selecciona un trabajador para gestionar sus movimientos del período o sus recurrentes.
         </p>
-      </div>
       <div class="nm-head-buttons">
         <app-button variant="outline" size="md" (click)="cargarNovedades()">
           <lucide-icon icon class="w-4 h-4" [img]="refreshIcon"></lucide-icon>
           {{ loading() ? 'Reintentar carga' : 'Actualizar' }}
-        </app-button>
-        <app-button variant="primary" size="md" (click)="abrirNuevo()">
-          <lucide-icon icon class="w-4 h-4" [img]="plusIcon"></lucide-icon>
-          Registrar movimiento del mes
         </app-button>
       </div>
     </div>

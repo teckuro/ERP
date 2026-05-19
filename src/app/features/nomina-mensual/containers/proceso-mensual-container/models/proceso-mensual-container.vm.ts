@@ -39,7 +39,24 @@ export type ConfirmacionProcesoMensualTipo =
   | 'forzar_apertura'
   | 'forzar_eliminacion';
 export type DetalleOperativoTab = 'resumen' | 'trabajadores' | 'parametros' | 'movimientos_recurrentes' | 'resultado';
-export type NominaWorkspaceTab = 'guia' | 'trabajadores' | 'detalle';
+export type NominaWorkspaceTab =
+  | 'resumen'
+  | 'trabajadores'
+  | 'parametros'
+  | 'movimientos'
+  | 'recurrentes'
+  | 'liquidaciones'
+  | 'historial';
+
+export const NOMINA_WORKSPACE_TABS: ReadonlyArray<{ id: NominaWorkspaceTab; label: string }> = [
+  { id: 'resumen', label: 'Resumen' },
+  { id: 'trabajadores', label: 'Trabajadores' },
+  { id: 'parametros', label: 'Parámetros' },
+  { id: 'movimientos', label: 'Movimientos' },
+  { id: 'recurrentes', label: 'Recurrentes' },
+  { id: 'liquidaciones', label: 'Liquidaciones' },
+  { id: 'historial', label: 'Historial' },
+];
 export type NominaVisualFrame =
   | 'sin_generar'
   | 'generando'
@@ -67,6 +84,7 @@ export type InformacionPeriodoDestino =
   | 'movimientos'
   | 'asignaciones'
   | 'resultado'
+  | 'generar_nomina'
   | 'reintentar'
   | 'cerrar';
 

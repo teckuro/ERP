@@ -72,6 +72,8 @@ export interface ProcesoMensualEstadoOperativoVm {
 export interface ProcesoMensualEstadoOperativoInput {
   periodoValido: boolean;
   tienePrevalidacion: boolean;
+  /** Calendario + fila parametros_generales del período listos (prevalidación). */
+  parametrosOperativos: boolean;
   bloqueosPrevalidacion: ProcesoMensualPendienteVm[];
   advertenciasPrevalidacion: ProcesoMensualPendienteVm[];
   informacionesPrevalidacion: ProcesoMensualPendienteVm[];
@@ -126,7 +128,6 @@ export function resolverEstadoOperativoProcesoMensual(
   input: ProcesoMensualEstadoOperativoInput,
 ): ProcesoMensualEstadoOperativoVm {
   const bloqueosCriticosPrevalidacion = input.bloqueosPrevalidacion.filter((b) => b.codigo !== 'BLOQ-005');
-  const bloqueoParametros = bloqueosCriticosPrevalidacion.find((b) => b.ruta === '/parametros' || b.codigo === 'BLOQ-004');
 
   if (input.liquidacionesDisponibles) {
     return buildEstado(input, {
@@ -246,9 +247,7 @@ export function resolverEstadoOperativoProcesoMensual(
   }
 
   if (bloqueosCriticosPrevalidacion.length > 0) {
-    const accion = bloqueoParametros
-      ? ruta('Revisar parámetros', 'Corrige los parámetros bloqueantes antes de avanzar.', '/parametros')
-      : local('Revisar trabajadores', 'Resuelve los bloqueos antes de confirmar la nómina mensual.', 'revisarBloqueos');
+    const accion = resolverAccionPrincipalPeriodoConPendientes(input, bloqueosCriticosPrevalidacion);
     return buildEstado(input, {
       estadoClave: 'periodo_con_pendientes',
       titulo: 'En revisión',
@@ -351,6 +350,42 @@ function construirTimeline(
       descripcion: input.liquidacionesDisponibles ? 'Generadas' : input.cerradoOperativamente ? 'Listas para generar' : 'Pendiente',
     },
   ];
+}
+
+function bloqueoDestinoParametros(bloqueo: ProcesoMensualPendienteVm): boolean {
+  return bloqueo.ruta === '/parametros' || bloqueo.codigo === 'BLOQ-004';
+}
+
+function bloqueoDestinoTrabajadores(bloqueo: ProcesoMensualPendienteVm): boolean {
+  const codigo = bloqueo.codigo.toUpperCase();
+  return (
+    bloqueo.accionLocal === 'revisarBloqueos' ||
+    codigo === 'BLOQ-003' ||
+    codigo === 'BLOQ-006' ||
+    codigo.includes('TRABAJ')
+  );
+}
+
+function resolverAccionPrincipalPeriodoConPendientes(
+  input: ProcesoMensualEstadoOperativoInput,
+  bloqueosCriticos: readonly ProcesoMensualPendienteVm[],
+): ProcesoMensualAccionPrincipalVm {
+  const bloqueoTrabajadores = bloqueosCriticos.find(bloqueoDestinoTrabajadores);
+  if (bloqueoTrabajadores) {
+    return local(
+      'Revisar trabajadores',
+      'Resuelve los bloqueos antes de confirmar la nómina mensual.',
+      'revisarBloqueos',
+    );
+  }
+  if (!input.parametrosOperativos && bloqueosCriticos.some(bloqueoDestinoParametros)) {
+    return ruta('Revisar parámetros', 'Corrige los parámetros bloqueantes antes de avanzar.', '/parametros');
+  }
+  return local(
+    'Revisar trabajadores',
+    'Resuelve los bloqueos antes de confirmar la nómina mensual.',
+    'revisarBloqueos',
+  );
 }
 
 function local(

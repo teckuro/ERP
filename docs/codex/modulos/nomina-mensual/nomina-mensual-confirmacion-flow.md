@@ -58,12 +58,15 @@ Los pasos técnicos pueden seguir existiendo internamente, pero no deben dominar
 
 ```txt
 Nómina mensual del período
+-> Verificar período (prevalidación; diagnóstico persistente en BD — ver nom-periodo-diagnostico-persist-01)
 -> Generar borrador de nómina
 -> Revisar trabajadores incluidos, omitidos, bloqueados y con cambios
 -> Resolver faltantes o confirmar advertencias
 -> Confirmar nómina mensual
 -> Generar liquidaciones desde nómina confirmada
 ```
+
+CTA «Revisar parámetros» en consola solo cuando el período **no** está operativo en prevalidación (`parametrosOperativos === false`); ver `NOM-PREVALIDACION-PARAMETROS-CTA-01`.
 
 ## 5. Estados de la nómina mensual
 

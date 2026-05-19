@@ -511,6 +511,12 @@ Restricciones sugeridas:
 
 Aplicar identidad global al marco comun: sidebar, header, breadcrumbs, titulos, botones, cards base, badges, empty states, tablas y estados.
 
+### Shell — una sola barra superior de contexto
+
+- Navegacion entre modulos: **sidebar** global (220 px).
+- Breadcrumb, chip de estado, periodo activo y CTA principal de pagina: **topbar** (52 px) via `ShellPageContextService`.
+- Las pantallas bajo `layout-shell` no repiten breadcrumb ni selector de periodo local; publican contexto con `bindShellPageContext` o heredan fallback de `shell-route-context.config.ts`.
+
 No redisenar todos los modulos en una sola fase.
 
 ### NOM-BITACORA-PERIODO-UX-01

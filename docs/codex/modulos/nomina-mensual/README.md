@@ -2,6 +2,18 @@
 
 ## Estado
 
+## NOM-PREVALIDACION-PARAMETROS-CTA-01 aplicado
+
+Fix rules: CTA «Revisar parámetros» solo si `!parametrosOperativos`; prioridad a trabajadores cuando el período ya está operativo. Sin BD ni localStorage.
+
+## NOM-PERIODO-VERIFICAR-MODAL-02 aplicado
+
+Modal automático tras verificar el período (MessageBox): críticos, advertencias o período listo con CTA «Generar nómina». Documento: [`nom-periodo-diagnostico-persist-01.md`](./nom-periodo-diagnostico-persist-01.md).
+
+## NOM-PERIODO-DIAGNOSTICO-PERSIST-01 (documentada)
+
+Verificación del período con diagnóstico **persistente en servidor** (paso 1 + modal); diseño tabla/RPC y rehidratación. Implementación SQL pendiente de autorización. Documento: [`nom-periodo-diagnostico-persist-01.md`](./nom-periodo-diagnostico-persist-01.md).
+
 ## NOM-MENSUAL-MASIVO-LAYOUT-01 aplicado
 
 Tab `Trabajadores` del modal de revision preparado para nomina masiva: resumen agregado, filtros compactos, busqueda, DataGrid paginado y detalle unico bajo demanda. Mantiene `incidenciasPeriodo()` como fuente unica; las incidencias globales permanecen en Resumen y no se duplican por trabajador. Documento: [`nom-mensual-masivo-layout-01.md`](./nom-mensual-masivo-layout-01.md).

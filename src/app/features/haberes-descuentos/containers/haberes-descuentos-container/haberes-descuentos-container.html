@@ -1,33 +1,18 @@
 <section class="hd-page" aria-label="Movimientos recurrentes de remuneración">
   <header class="hd-head">
-    <app-record-breadcrumb
-      [items]="breadcrumbItems"
-      title="Movimientos de remuneración"
-    ></app-record-breadcrumb>
     <p class="hd-lead">
       Administra movimientos que se repiten mes a mes: bonos pactados, asignaciones fijas o descuentos periódicos.
       Para el período activo, los movimientos puntuales se registran en
       <a routerLink="/remuneraciones/novedades-mensuales" class="hd-lead-link">Movimientos de remuneración</a>.
     </p>
     <div class="hd-head-actions">
-      <div class="hd-period-wrap">
-        <div class="hd-period-global" aria-live="polite">
-          <span class="hd-period-global-k">Período activo:</span>
-          <span class="hd-period-global-v">{{ periodoActivo.etiqueta() }}</span>
-        </div>
-        <p class="hd-period-hint">
-          Las fechas de vigencia de cada asignación se comparan con este período para filtros y etiquetas; no hay un
-          período independiente en este módulo.
-        </p>
-      </div>
+      <p class="hd-period-hint">
+        Las fechas de vigencia de cada asignación se comparan con el período activo del sistema para filtros y etiquetas.
+      </p>
       <div class="hd-head-buttons">
         <app-button variant="outline" size="md" (click)="refrescar()">
           <lucide-icon icon class="w-4 h-4" [img]="refreshIcon"></lucide-icon>
           Refrescar
-        </app-button>
-        <app-button variant="primary" size="md" [disabled]="!personaIdSeleccionada()" (click)="abrirNuevo()">
-          <lucide-icon icon class="w-4 h-4" [img]="plusIcon"></lucide-icon>
-          Registrar recurrente
         </app-button>
         @if (!personaIdSeleccionada()) {
           <span class="hd-disabled-reason">Selecciona un trabajador para registrar un movimiento recurrente.</span>

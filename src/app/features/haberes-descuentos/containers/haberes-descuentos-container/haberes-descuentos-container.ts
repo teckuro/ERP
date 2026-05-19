@@ -33,10 +33,7 @@ import {
   MessageBoxComponent,
   MessageBoxVariant,
 } from '../../../../shared/components/ui/message-box.component';
-import {
-  RecordBreadcrumbComponent,
-  RecordBreadcrumbItem,
-} from '../../../../shared/components/ui/record-breadcrumb.component';
+import { bindShellPageContext } from '../../../../layout/shell-page-context.binding';
 import {
   SearchSelectComponent,
   SearchSelectOption,
@@ -104,7 +101,6 @@ function etiquetaNaturalezaFn(n: string | null): string {
     FormsModule,
     RouterLink,
     LucideAngularModule,
-    RecordBreadcrumbComponent,
     ButtonComponent,
     DataGridComponent,
     DataGridCellDirective,
@@ -130,12 +126,6 @@ export class HaberesDescuentosContainer implements OnInit {
 
   readonly periodicidadesHd = PERIODICIDADES_HD;
   readonly fechaReferenciaPeriodo = computed(() => new Date(`${this.periodoActivo.periodoYm()}-01T00:00:00`));
-
-  readonly breadcrumbItems: readonly RecordBreadcrumbItem[] = [
-    { label: 'Remuneraciones', link: '/remuneraciones' },
-    { label: 'Movimientos de remuneración', link: '/remuneraciones/novedades-mensuales' },
-    { label: 'Recurrentes' },
-  ];
 
   readonly loaderIcon = LoaderCircle;
   readonly plusIcon = Plus;
@@ -429,6 +419,22 @@ export class HaberesDescuentosContainer implements OnInit {
   etiquetaFicha = etiquetaEstadoFicha;
 
   constructor() {
+    bindShellPageContext(
+      this.destroyRef,
+      () => ({
+        breadcrumbs: [
+          { label: 'Remuneraciones', path: '/remuneraciones/proceso-mensual' },
+          { label: 'Recurrentes' },
+        ],
+        primaryAction: {
+          label: 'Registrar recurrente',
+          disabled: this.personaIdSeleccionada() == null,
+          actionId: 'registrar-recurrente',
+        },
+      }),
+      { onPrimaryAction: () => this.abrirNuevo() },
+    );
+
     effect(() => {
       const pid = this.personaIdSeleccionada();
       this.periodoActivo.periodoYm();

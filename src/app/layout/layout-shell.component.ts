@@ -1,7 +1,9 @@
-import { Component } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
+import { Component, inject } from '@angular/core';
+import { NavigationEnd, Router, RouterOutlet } from '@angular/router';
+import { filter } from 'rxjs/operators';
 import { SidebarComponent } from './sidebar.component';
 import { HeaderComponent } from './header.component';
+import { ShellPageContextService } from './shell-page-context.service';
 
 @Component({
   selector: 'app-layout-shell',
@@ -29,10 +31,10 @@ import { HeaderComponent } from './header.component';
       }
 
       .erp-shell-main {
-        margin-left: 16rem;
+        margin-left: 220px;
         height: 100vh;
         overflow: hidden;
-        padding-top: 4.25rem;
+        padding-top: 52px;
       }
 
       .erp-shell-scroll {
@@ -48,7 +50,7 @@ import { HeaderComponent } from './header.component';
       @media (max-width: 1024px) {
         .erp-shell-main {
           margin-left: 0;
-          padding-top: 4.25rem;
+          padding-top: 52px;
         }
 
         .erp-shell-scroll {
@@ -58,4 +60,14 @@ import { HeaderComponent } from './header.component';
     `,
   ],
 })
-export class LayoutShellComponent {}
+export class LayoutShellComponent {
+  private readonly router = inject(Router);
+  private readonly shellContext = inject(ShellPageContextService);
+
+  constructor() {
+    this.shellContext.applyRouteFallback(this.router.url);
+    this.router.events.pipe(filter((e): e is NavigationEnd => e instanceof NavigationEnd)).subscribe((e) => {
+      this.shellContext.applyRouteFallback(e.urlAfterRedirects);
+    });
+  }
+}

@@ -1,9 +1,10 @@
-import { ChangeDetectionStrategy, Component, computed, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { LucideAngularModule } from 'lucide-angular';
 import { CardComponent, CardContentComponent } from '../shared/components/ui/card.component';
 import { BadgeComponent } from '../shared/components/ui/badge.component';
 import { ButtonComponent } from '../shared/components/ui/button.component';
+import { bindShellPageContext } from '../layout/shell-page-context.binding';
 
 @Component({
   selector: 'app-licencias-medicas-page',
@@ -19,17 +20,7 @@ import { ButtonComponent } from '../shared/components/ui/button.component';
   ],
   template: `
     <div class="space-y-6">
-      <!-- Header -->
-      <div class="flex items-center justify-between">
-        <div>
-          <h1 class="text-xl font-semibold text-gray-900">Licencias Médicas</h1>
-          <p class="text-sm text-gray-600 mt-1">{{ licencias().length }} licencias registradas</p>
-        </div>
-        <app-button variant="primary" (click)="showModal.set(true)">
-          <lucide-icon icon class="w-4 h-4" name="plus"></lucide-icon>
-          Registrar Licencia
-        </app-button>
-      </div>
+      <p class="text-sm text-gray-600">{{ licencias().length }} licencias registradas</p>
 
       <!-- Stats -->
       <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
@@ -277,6 +268,22 @@ import { ButtonComponent } from '../shared/components/ui/button.component';
   `,
 })
 export class LicenciasMedicasPage {
+  constructor() {
+    bindShellPageContext(
+      inject(DestroyRef),
+      () => ({
+        breadcrumbs: [{ label: 'Licencias médicas' }],
+        primaryAction: {
+          label: 'Registrar licencia',
+          actionId: 'registrar-licencia',
+        },
+      }),
+      {
+        onPrimaryAction: () => this.showModal.set(true),
+      },
+    );
+  }
+
   readonly showModal = signal(false);
   readonly estados = ['todas', 'emitida', 'aprobada', 'rechazada', 'pagada'] as const;
   readonly filter = signal<(typeof this.estados)[number]>('todas');

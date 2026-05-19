@@ -27,11 +27,58 @@ describe('proceso-mensual-informacion-periodo.rules', () => {
       bloqueosOperativos: [],
       advertenciasOperativas: [],
       nominaFrame: 'sin_generar',
+      tienePrevalidacion: false,
+      puedeGenerarNomina: false,
       tienePreNomina: false,
       tieneCalculo: false,
       tieneResultado: false,
     });
     expect(vm).toBeNull();
+  });
+
+  it('tras verificar periodo listo muestra modal de exito con generar nomina', () => {
+    const vm = buildInformacionPeriodoView({
+      errorEjecucion: null,
+      validacionCalculo: validacionBase(),
+      paraContinuar: [],
+      bloqueosOperativos: [],
+      advertenciasOperativas: [],
+      nominaFrame: 'sin_generar',
+      tienePrevalidacion: true,
+      puedeGenerarNomina: true,
+      tienePreNomina: false,
+      tieneCalculo: false,
+      tieneResultado: false,
+    });
+
+    expect(vm?.tone).toBe('success');
+    expect(vm?.titulo).toBe('Período listo para generar');
+    expect(vm?.accionPrincipal?.destino).toBe('generar_nomina');
+  });
+
+  it('tras verificar con bloqueos criticos muestra seccion criticos', () => {
+    const vm = buildInformacionPeriodoView({
+      errorEjecucion: null,
+      validacionCalculo: validacionBase({
+        bloqueos: [
+          { codigo: 'BLOQ-004', titulo: 'Parámetros', descripcion: 'Faltan datos', severidad: 'bloqueo', ruta: '/parametros' },
+          { codigo: 'BLOQ-005', titulo: 'Sin nómina', descripcion: 'Generar', severidad: 'bloqueo' },
+        ],
+      }),
+      paraContinuar: [],
+      bloqueosOperativos: [],
+      advertenciasOperativas: [],
+      nominaFrame: 'sin_generar',
+      tienePrevalidacion: true,
+      puedeGenerarNomina: false,
+      tienePreNomina: false,
+      tieneCalculo: false,
+      tieneResultado: false,
+    });
+
+    expect(vm?.titulo).toBe('Revisión del período antes de generar');
+    expect(vm?.secciones?.some((s) => s.titulo === 'Críticos')).toBe(true);
+    expect(vm?.accionPrincipal?.destino).toBe('parametros');
   });
 
   it('arma informacion cuando hay error de ejecucion', () => {
@@ -46,6 +93,8 @@ describe('proceso-mensual-informacion-periodo.rules', () => {
       bloqueosOperativos: [],
       advertenciasOperativas: [],
       nominaFrame: 'sin_generar',
+      tienePrevalidacion: false,
+      puedeGenerarNomina: false,
       tienePreNomina: false,
       tieneCalculo: false,
       tieneResultado: false,
@@ -67,6 +116,8 @@ describe('proceso-mensual-informacion-periodo.rules', () => {
       bloqueosOperativos: [],
       advertenciasOperativas: [],
       nominaFrame: 'con_pendientes',
+      tienePrevalidacion: true,
+      puedeGenerarNomina: false,
       tienePreNomina: true,
       tieneCalculo: false,
       tieneResultado: true,

@@ -9,14 +9,9 @@ import {
   DataGridBulkActionEvent,
   DataGridBulkActionResult,
 } from '../../../../shared/components/ui/data-grid.component';
-import {
-  RecordBreadcrumbComponent,
-  RecordBreadcrumbItem,
-} from '../../../../shared/components/ui/record-breadcrumb.component';
-
 @Component({
   selector: 'app-listado-empleados',
-  imports: [CommonModule, RecordBreadcrumbComponent, TablaEmpleadosComponent],
+  imports: [CommonModule, TablaEmpleadosComponent],
   templateUrl: './listado-empleados-container.html',
   styleUrl: './listado-empleados-container.css',
 })
@@ -24,7 +19,6 @@ export class ListadoEmpleadosContainer {
   private readonly empleadosService = inject(EmpleadosService);
   private readonly router = inject(Router);
 
-  readonly breadcrumbItems: readonly RecordBreadcrumbItem[] = [{ label: 'Empleados' }];
   readonly empleados = signal<EmpleadoListado[]>([]);
   readonly isLoading = signal(true);
   readonly errorMessage = signal<string | null>(null);

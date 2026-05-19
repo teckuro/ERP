@@ -1,4 +1,13 @@
-import { ChangeDetectionStrategy, Component, computed, effect, inject, signal, untracked } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  DestroyRef,
+  computed,
+  effect,
+  inject,
+  signal,
+  untracked,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { LucideAngularModule } from 'lucide-angular';
@@ -17,6 +26,8 @@ import type {
   LiquidacionTrabajador,
 } from '../../models/liquidacion-oficial.model';
 import { LiquidacionesOficialesService } from '../../services/liquidaciones-oficiales.service';
+import { bindShellPageContext } from '../../../../layout/shell-page-context.binding';
+import type { ShellStatusChipTone } from '../../../../layout/shell-page-context.service';
 
 @Component({
   selector: 'app-liquidaciones-oficiales-container',
@@ -106,6 +117,18 @@ export class LiquidacionesOficialesContainer {
   });
 
   constructor() {
+    const destroyRef = inject(DestroyRef);
+    bindShellPageContext(destroyRef, () => ({
+      breadcrumbs: [
+        { label: 'Remuneraciones', path: '/remuneraciones/proceso-mensual' },
+        { label: 'Liquidaciones' },
+      ],
+      statusChip: {
+        label: this.estadoLabel(),
+        tone: this.tonoEstadoLiquidaciones(),
+      },
+    }));
+
     effect(() => {
       this.periodoSeleccionado();
       untracked(() => {
@@ -197,6 +220,21 @@ export class LiquidacionesOficialesContainer {
         return 'error';
       default:
         return 'default';
+    }
+  }
+
+  tonoEstadoLiquidaciones(): ShellStatusChipTone {
+    switch (this.estadoUi()) {
+      case 'generadas':
+      case 'generadas_con_advertencias':
+        return 'success';
+      case 'lista_para_generar':
+      case 'generando':
+        return 'warning';
+      case 'error':
+        return 'danger';
+      default:
+        return 'neutral';
     }
   }
 

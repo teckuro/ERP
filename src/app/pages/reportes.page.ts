@@ -1,9 +1,10 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { ChangeDetectionStrategy, Component, DestroyRef, inject, signal } from '@angular/core';
+import { Router, RouterLink } from '@angular/router';
 import { LucideAngularModule } from 'lucide-angular';
 
 import { PeriodoActivoService } from '../core/services/periodo-activo.service';
+import { bindShellPageContext } from '../layout/shell-page-context.binding';
 import { BadgeComponent } from '../shared/components/ui/badge.component';
 import { CardComponent, CardContentComponent, CardHeaderComponent } from '../shared/components/ui/card.component';
 
@@ -14,19 +15,11 @@ import { CardComponent, CardContentComponent, CardHeaderComponent } from '../sha
   imports: [CommonModule, RouterLink, LucideAngularModule, CardComponent, CardContentComponent, CardHeaderComponent, BadgeComponent],
   template: `
     <div class="space-y-4">
-      <header class="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
-        <div>
-          <nav class="text-xs text-gray-500">Inicio / Reportes</nav>
-          <h1 class="text-xl font-semibold text-gray-900">Reportes</h1>
-          <p class="mt-1 text-sm text-gray-600">
-            Consulta operativa del periodo {{ periodoActivo.etiqueta() }}. Las salidas formales quedan deshabilitadas
-            hasta una fase dedicada.
-          </p>
-        </div>
-        <a routerLink="/remuneraciones/liquidaciones" class="report-link report-link--primary">
-          <lucide-icon class="h-4 w-4" name="file-search"></lucide-icon>
-          Ver liquidaciones internas
-        </a>
+      <header class="report-page-lead">
+        <p class="mt-1 text-sm text-gray-600">
+          Consulta operativa del periodo {{ periodoActivo.etiqueta() }}. Las salidas formales quedan deshabilitadas
+          hasta una fase dedicada.
+        </p>
       </header>
 
       <app-card>
@@ -291,7 +284,26 @@ import { CardComponent, CardContentComponent, CardHeaderComponent } from '../sha
 })
 export class ReportesPage {
   readonly periodoActivo = inject(PeriodoActivoService);
+  private readonly router = inject(Router);
   readonly activeTab = signal<'disponibles' | 'futuros'>('disponibles');
+
+  constructor() {
+    bindShellPageContext(
+      inject(DestroyRef),
+      () => ({
+        breadcrumbs: [{ label: 'Reportes' }],
+        primaryAction: {
+          label: 'Ver liquidaciones',
+          actionId: 'ruta:/remuneraciones/liquidaciones',
+        },
+      }),
+      {
+        onPrimaryAction: () => {
+          void this.router.navigateByUrl('/remuneraciones/liquidaciones');
+        },
+      },
+    );
+  }
 
   onTabKeydown(event: KeyboardEvent): void {
     if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;

@@ -1,5 +1,17 @@
 # CHANGELOG
 
+## 2026-05-18 - ERP-SHELL-CONTEXT-ROLLOUT-02
+
+- **Shell:** `bindShellPageContext`, `shell-route-context.config`, fallback en `layout-shell`.
+- **UI:** migracion de breadcrumbs/cabeceras locales a topbar en dashboard, empleados, parametros, remuneraciones, reportes y licencias.
+- **Tests:** specs binding, route context y header fallback.
+
+## 2026-05-18 - ERP-SHELL-SIDEBAR-TOPBAR-POLISH-01
+
+- **Shell:** `shell-navigation.config`, sidebar 220 px, topbar 52 px, `ShellPageContextService` (breadcrumb, estado, período, CTA).
+- **Nómina:** cabecera de página duplicada eliminada; rail lateral quitado; tabs `resumen` … `historial`; CTA principal solo en topbar.
+- **Tests:** specs sidebar, header, shell-nav y container actualizados.
+
 ## 2026-05-19 - NOM-MENSUAL-MASIVO-LAYOUT-01
 
 - **Modal trabajadores:** tab `Trabajadores` pasa a revision masiva con resumen agregado, filtros compactos, busqueda, DataGrid paginado y detalle bajo demanda.

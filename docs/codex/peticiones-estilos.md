@@ -1,3 +1,58 @@
+## 2026-05-19 - NOM-PERIODO-VERIFICAR-MODAL-02
+
+- **Módulo:** Nómina mensual / verificación período.
+- **Cambio:** modal automático tras `validarPeriodo` vía `buildInformacionPeriodoView` (secciones Críticos/Advertencias, éxito con «Generar nómina», destino `generar_nomina`).
+- **Archivos:** `proceso-mensual-informacion-periodo.rules.ts`, facade, `proceso-mensual-container.vm.ts`, specs.
+- **No tocado:** BD, localStorage, estilos globales.
+
+## 2026-05-19 - NOM-PREVALIDACION-PARAMETROS-CTA-01
+
+- **Módulo:** Nómina mensual / prevalidación y CTA.
+- **Cambio:** `BLOQ-004` solo si `!parametrosOperativos`; estado operativo recibe `parametrosOperativos` y prioriza «Revisar trabajadores» sobre parámetros cuando el período ya está operativo.
+- **Archivos:** `proceso-mensual-validacion-calculo.rules.ts`, `proceso-mensual-estado-operativo.rules.ts`, `proceso-mensual-presentacion.facade.ts`, specs.
+- **No tocado:** BD, SQL, localStorage, estilos globales.
+
+## 2026-05-19 - NOM-WORKSPACE-TABS-OPERATIONAL-01
+
+- **Módulo:** Nómina mensual / workspace (7 tabs LOC).
+- **Cambio:** tabs unificados con patrón `payroll-operational-tabs` del modal; CSS compartido `payroll-operational-tabs.css`; clases vía `claseDetalleRevisionTab`; nav con borde inferior, fondos por severidad, activo `ink/primary`.
+- **Archivos:** `payroll-operational-tabs.css`, `proceso-mensual-container.css`, workspace/modal HTML+TS, `proceso-mensual-workspace-presentacion.rules.ts`.
+- **No tocado:** estilos globales, facade/store, lógica `buildNominaWorkspaceTabsMeta`.
+
+## 2026-05-19 - NOM-CONSOLE-LOC-01
+
+- **Módulo:** Nómina mensual / `payroll-console`.
+- **Cambio:** franja de excepciones (`payroll-exception-strip`) con pills críticas/advertencias; 7 tabs con indicador vía `buildNominaWorkspaceTabsMeta` (reusa rules del modal + ámbito movimientos/recurrentes).
+- **Restricciones:** CSS local; sin estilos globales.
+
+## 2026-05-19 - NOM-CONSOLE-LOC-PATRON-ADOPTADO
+
+- **Decisión:** patrón **Consola operativa en capas (LOC)** como base del sistema para Nómina y mesas de período (doc `nomina-mensual-figma-maquetacion.md` §0).
+
+## 2026-05-19 - NOM-WORKSPACE-CONSOLE-PREMIUM-02
+
+- **Módulo:** Nómina mensual / consola del período.
+- **Cambio:** `payroll-console` unifica franja, focus y tabs; `resolveFocusPresentacion` por frame (hero/compact/banner + variantes); franja tipo tarjetas con tab activo resaltado; focus compacto en borrador con meta lateral sin caja info duplicada.
+- **Restricciones:** CSS local; sin estilos globales; CTA en topbar.
+
+## 2026-05-19 - NOM-WORKSPACE-FRANJA-FOCUS-ICONS-01
+
+- **Módulo:** Nómina mensual / workspace (franja + focus sin generar).
+- **Cambio:** iconos Lucide en métricas clicables, tonos por estado, chevron de navegación; focus «sin generar» en dos columnas con checklist de áreas y visual compacto.
+- **Restricciones:** CSS local `proceso-mensual-container.css`; CTA sigue en topbar.
+
+## 2026-05-18 - ERP-SHELL-CONTEXT-ROLLOUT-02
+
+- **Módulo:** Shell global + pantallas ERP bajo `layout-shell`.
+- **Cambio:** `bindShellPageContext` + fallback por ruta; eliminacion de `app-record-breadcrumb` y periodo duplicado en movimientos/recurrentes; CTA principal en topbar donde aplica.
+- **Restricciones:** sin estilos globales ni motor/store.
+
+## 2026-05-18 - ERP-SHELL-SIDEBAR-TOPBAR-POLISH-01
+
+- **Módulo:** Shell global + Nómina mensual (presentación).
+- **Cambio:** sidebar 220 px (Principal/Gestión/Administración), topbar 52 px con breadcrumb/chips/CTA vía `ShellPageContextService`; Nómina sin `payroll-rail`, 7 tabs horizontales, bitácora y revisión en tab Resumen.
+- **Restricciones:** CSS local layout + contenedor nómina; sin estilos globales ni motor/store.
+
 ## 2026-05-19 - NOM-MENSUAL-REAPERTURA-ELIMINACION-01
 
 - **Módulo:** Nómina mensual / workspace operativo.

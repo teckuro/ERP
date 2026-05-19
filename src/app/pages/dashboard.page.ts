@@ -1,9 +1,10 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { Component, DestroyRef, inject } from '@angular/core';
+import { Router, RouterLink } from '@angular/router';
 import { LucideAngularModule } from 'lucide-angular';
 
 import { PeriodoActivoService } from '../core/services/periodo-activo.service';
+import { bindShellPageContext } from '../layout/shell-page-context.binding';
 import { BadgeComponent } from '../shared/components/ui/badge.component';
 import { CardComponent, CardContentComponent, CardHeaderComponent } from '../shared/components/ui/card.component';
 
@@ -13,21 +14,10 @@ import { CardComponent, CardContentComponent, CardHeaderComponent } from '../sha
   imports: [CommonModule, RouterLink, LucideAngularModule, CardComponent, CardHeaderComponent, CardContentComponent, BadgeComponent],
   template: `
     <div class="space-y-4">
-      <header class="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
-        <div>
-          <nav class="text-xs text-gray-500">Inicio / Dashboard</nav>
-          <h1 class="text-xl font-semibold text-gray-900">Dashboard operativo</h1>
-          <p class="mt-1 text-sm text-gray-600">
-            Vista de entrada para operar el periodo {{ periodoActivo.etiqueta() }} sin mezclar salidas futuras.
-          </p>
-        </div>
-        <a
-          routerLink="/remuneraciones/proceso-mensual"
-          class="inline-flex h-9 items-center justify-center gap-2 rounded-md border border-blue-600 bg-blue-600 px-3 text-sm font-semibold text-white hover:bg-blue-700"
-        >
-          <lucide-icon class="h-4 w-4" name="calculator"></lucide-icon>
-          Preparar nomina
-        </a>
+      <header class="dashboard-page-lead">
+        <p class="text-sm text-gray-600">
+          Vista de entrada para operar el periodo {{ periodoActivo.etiqueta() }} sin mezclar salidas futuras.
+        </p>
       </header>
 
       <section class="dashboard-status-strip" aria-label="Estado operativo del periodo">
@@ -297,4 +287,24 @@ import { CardComponent, CardContentComponent, CardHeaderComponent } from '../sha
 })
 export class DashboardPage {
   readonly periodoActivo = inject(PeriodoActivoService);
+  private readonly router = inject(Router);
+
+  constructor() {
+    const destroyRef = inject(DestroyRef);
+    bindShellPageContext(
+      destroyRef,
+      () => ({
+        breadcrumbs: [{ label: 'Resumen' }],
+        primaryAction: {
+          label: 'Ir a nómina mensual',
+          actionId: 'ruta:/remuneraciones/proceso-mensual',
+        },
+      }),
+      {
+        onPrimaryAction: () => {
+          void this.router.navigateByUrl('/remuneraciones/proceso-mensual');
+        },
+      },
+    );
+  }
 }

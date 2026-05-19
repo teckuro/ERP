@@ -1,72 +1,82 @@
 import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
-import { LucideAngularModule, ReceiptTextIcon } from 'lucide-angular';
+import { Building2Icon, LucideAngularModule, SettingsIcon } from 'lucide-angular';
 
-type MenuItem = {
-  path: string;
-  label: string;
-  icon: string;
-  exact?: boolean;
-  hint?: string;
-};
-
-type MenuSection = {
-  label?: string;
-  items: MenuItem[];
-};
+import { AuthService } from '../core/auth/auth.service';
+import { mesCortoDesdeYm, PeriodoActivoService } from '../core/services/periodo-activo.service';
+import {
+  SHELL_NAV_FOOTER_CONFIG,
+  SHELL_NAV_SECTIONS,
+  SHELL_NAV_WIDTH_PX,
+  type ShellNavItem,
+  type ShellNavSection,
+} from './shell-navigation.config';
 
 @Component({
   selector: 'app-sidebar',
   standalone: true,
   imports: [CommonModule, RouterLink, RouterLinkActive, LucideAngularModule],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <aside class="erp-sidebar" aria-label="Navegación principal">
+    <aside class="erp-sidebar" [style.width.px]="navWidth" aria-label="Navegación principal">
       <div class="erp-sidebar__brand">
         <div class="erp-sidebar__brand-mark" aria-hidden="true">
-          <lucide-icon [img]="receiptTextIcon"></lucide-icon>
+          <lucide-icon [img]="buildingIcon"></lucide-icon>
         </div>
         <div class="erp-sidebar__brand-copy">
-          <h1>Remuneraciones</h1>
-          <p>Bitácora operativa</p>
+          <span class="erp-sidebar__brand-title">Empresa ERP</span>
+          <span class="erp-sidebar__brand-sub">Remuneraciones</span>
         </div>
       </div>
 
       <nav class="erp-sidebar__nav">
         <ul class="erp-sidebar__sections">
-          <li *ngFor="let section of menuSections; trackBy: trackSection" class="erp-sidebar__section">
-            <p *ngIf="section.label" class="erp-sidebar__section-label">{{ section.label }}</p>
-            <ul class="erp-sidebar__items">
-              <li *ngFor="let item of section.items; trackBy: trackItem">
-                <a
-                  [routerLink]="item.path"
-                  routerLinkActive="is-active"
-                  [routerLinkActiveOptions]="{ exact: item.exact ?? false }"
-                  #rla="routerLinkActive"
-                  class="erp-sidebar__link"
-                  [attr.aria-current]="rla.isActive ? 'page' : null"
-                >
-                  <span class="erp-sidebar__icon" aria-hidden="true">
-                    <lucide-icon [name]="item.icon"></lucide-icon>
-                  </span>
-                  <span class="erp-sidebar__item-copy">
-                    <span class="erp-sidebar__item-label">{{ item.label }}</span>
-                    <span *ngIf="item.hint" class="erp-sidebar__item-hint">{{ item.hint }}</span>
-                  </span>
-                  <span class="erp-sidebar__active-dot" aria-hidden="true"></span>
-                </a>
-              </li>
-            </ul>
-          </li>
+          @for (section of menuSections; track section.label) {
+            <li class="erp-sidebar__section">
+              <p class="erp-sidebar__section-label">{{ section.label }}</p>
+              <ul class="erp-sidebar__items">
+                @for (item of section.items; track item.path) {
+                  <li>
+                    <a
+                      [routerLink]="item.path"
+                      routerLinkActive="is-active"
+                      [routerLinkActiveOptions]="{ exact: item.exact ?? false }"
+                      #rla="routerLinkActive"
+                      class="erp-sidebar__link"
+                      [attr.aria-current]="rla.isActive ? 'page' : null"
+                    >
+                      <span class="erp-sidebar__icon" aria-hidden="true">
+                        <lucide-icon [name]="item.icon"></lucide-icon>
+                      </span>
+                      <span class="erp-sidebar__item-label">{{ item.label }}</span>
+                      @if (badgeFor(item); as badge) {
+                        <span class="erp-sidebar__badge">{{ badge }}</span>
+                      }
+                    </a>
+                  </li>
+                }
+              </ul>
+            </li>
+          }
         </ul>
       </nav>
 
-      <div class="erp-sidebar__footer">
-        <div class="erp-sidebar__note">
-          <span class="erp-sidebar__note-label">Criterio NOIA</span>
-          <p>Estado, pendiente y acción antes que decoración.</p>
+      <footer class="erp-sidebar__footer">
+        @if (footerConfig.configuracionPath) {
+          <a [routerLink]="footerConfig.configuracionPath" class="erp-sidebar__footer-link">
+            <lucide-icon [img]="settingsIcon"></lucide-icon>
+            <span>{{ footerConfig.configuracionLabel }}</span>
+          </a>
+        }
+        <div class="erp-sidebar__user" aria-label="Usuario conectado">
+          <span class="erp-sidebar__user-avatar" aria-hidden="true">{{ inicialesUsuario() }}</span>
+          <span class="erp-sidebar__user-copy">
+            <span class="erp-sidebar__user-name">{{ nombreUsuario() }}</span>
+            <span class="erp-sidebar__user-role">{{ rolUsuario() }}</span>
+          </span>
         </div>
-      </div>
+      </footer>
     </aside>
   `,
   styles: [
@@ -77,89 +87,59 @@ type MenuSection = {
         left: 0;
         z-index: 20;
         display: flex;
-        width: 16rem;
         height: 100vh;
         flex-direction: column;
-        border-right: 1px solid #daddd6;
+        border-right: 1px solid #e2e8f0;
         background: #ffffff;
-        color: #172033;
+        color: #334155;
+        font-family: var(--erp-font-sans, Inter, system-ui, sans-serif);
       }
 
       .erp-sidebar__brand {
         display: flex;
-        min-height: 4.25rem;
+        height: 60px;
         align-items: center;
-        gap: 0.75rem;
-        border-bottom: 1px solid #daddd6;
-        padding: 0 1rem;
-        background: #fafaf7;
+        gap: 10px;
+        border-bottom: 1px solid #e2e8f0;
+        padding: 0 18px;
       }
 
       .erp-sidebar__brand-mark {
         display: grid;
-        width: 2.25rem;
-        height: 2.25rem;
-        flex: 0 0 2.25rem;
+        width: 28px;
+        height: 28px;
+        flex: 0 0 28px;
         place-items: center;
-        border: 1px solid #bfdbfe;
-        border-radius: 0.5rem;
-        background: #eff6ff;
-        color: #1e40af;
+        border-radius: 6px;
+        background: #0c447c;
+        color: #ffffff;
       }
 
       .erp-sidebar__brand-mark lucide-icon {
         display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        width: 1.375rem;
-        height: 1.375rem;
-        line-height: 0;
-      }
-
-      .erp-sidebar__brand-mark lucide-icon svg {
-        display: block;
-        width: 1.375rem;
-        height: 1.375rem;
-      }
-
-      .erp-sidebar__icon lucide-icon {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        width: 1.25rem;
-        height: 1.25rem;
-        line-height: 0;
-      }
-
-      .erp-sidebar__icon lucide-icon svg {
-        display: block;
-        width: 1.25rem;
-        height: 1.25rem;
+        width: 16px;
+        height: 16px;
       }
 
       .erp-sidebar__brand-copy {
+        display: grid;
         min-width: 0;
+        gap: 2px;
       }
 
-      .erp-sidebar__brand-copy h1,
-      .erp-sidebar__brand-copy p,
-      .erp-sidebar__note p,
-      .erp-sidebar__section-label {
-        margin: 0;
-      }
-
-      .erp-sidebar__brand-copy h1 {
-        color: #172033;
-        font-size: 0.9rem;
-        font-weight: 650;
-        line-height: 1.15;
-      }
-
-      .erp-sidebar__brand-copy p {
-        margin-top: 0.15rem;
-        color: #647084;
-        font-size: 0.72rem;
+      .erp-sidebar__brand-title {
+        overflow: hidden;
+        color: #0f172a;
+        font-size: 13px;
         font-weight: 500;
+        line-height: 1.2;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .erp-sidebar__brand-sub {
+        color: #64748b;
+        font-size: 11px;
         line-height: 1.2;
       }
 
@@ -167,8 +147,7 @@ type MenuSection = {
         min-height: 0;
         flex: 1 1 auto;
         overflow-y: auto;
-        padding: 0.85rem 0.75rem;
-        scrollbar-color: #c7d0c4 #eef1ec;
+        padding: 20px 0 12px;
         scrollbar-width: thin;
       }
 
@@ -181,153 +160,158 @@ type MenuSection = {
 
       .erp-sidebar__sections {
         display: grid;
-        gap: 1rem;
+        gap: 14px;
       }
 
-      .erp-sidebar__section {
-        display: grid;
-        gap: 0.35rem;
+      .erp-sidebar__section:first-child {
+        margin-top: 0;
       }
 
       .erp-sidebar__section-label {
-        padding: 0 0.55rem;
-        color: #8a94a6;
-        font-size: 0.66rem;
+        margin: 0 0 6px;
+        padding: 0 16px 0 16px;
+        color: #64748b;
+        font-size: 10px;
         font-weight: 650;
-        letter-spacing: 0.12em;
+        letter-spacing: 0.08em;
         line-height: 1.2;
         text-transform: uppercase;
       }
 
       .erp-sidebar__items {
         display: grid;
-        gap: 0.25rem;
+        gap: 2px;
       }
 
       .erp-sidebar__link {
-        position: relative;
         display: flex;
-        min-height: 2.65rem;
+        min-height: 36px;
         align-items: center;
-        gap: 0.65rem;
-        overflow: hidden;
-        border: 1px solid transparent;
-        border-radius: 0.55rem;
-        padding: 0.55rem 0.65rem;
-        color: #4b5563;
+        gap: 9px;
+        margin: 0 8px;
+        border: 0.5px solid transparent;
+        border-radius: 8px;
+        padding: 0 10px;
+        color: #64748b;
+        font-size: 13px;
+        font-weight: 500;
         text-decoration: none;
         transition:
-          background-color 150ms ease,
-          border-color 150ms ease,
-          color 150ms ease;
+          background-color 120ms ease,
+          border-color 120ms ease,
+          color 120ms ease;
       }
 
       .erp-sidebar__link:hover {
-        border-color: #daddd6;
-        background: #fafaf7;
-        color: #172033;
+        background: #ffffff;
+        color: #0f172a;
       }
 
       .erp-sidebar__link.is-active {
-        border-color: #bfdbfe;
-        background: #eff6ff;
-        color: #1e40af;
+        border-color: #cbd5e1;
+        background: #ffffff;
+        color: #0c447c;
+        font-weight: 500;
       }
 
       .erp-sidebar__icon {
-        display: grid;
-        width: 1.5rem;
-        height: 1.5rem;
-        flex: 0 0 1.5rem;
-        place-items: center;
-        color: #647084;
-        transition: color 150ms ease;
-      }
-
-      .erp-sidebar__link.is-active .erp-sidebar__icon {
-        color: #2563eb;
-      }
-
-      .erp-sidebar__item-copy {
-        display: grid;
-        min-width: 0;
-        gap: 0.15rem;
+        display: inline-flex;
+        width: 15px;
+        height: 15px;
+        flex: 0 0 15px;
+        color: currentColor;
       }
 
       .erp-sidebar__item-label {
+        flex: 1 1 auto;
+        min-width: 0;
         overflow: hidden;
-        color: inherit;
-        font-size: 0.82rem;
-        font-weight: 600;
-        line-height: 1.25;
         text-overflow: ellipsis;
         white-space: nowrap;
       }
 
-      .erp-sidebar__item-hint {
-        display: -webkit-box;
-        overflow: hidden;
-        color: #647084;
-        font-size: 0.68rem;
-        font-weight: 500;
-        line-height: 1.25;
-        -webkit-box-orient: vertical;
-        -webkit-line-clamp: 2;
-      }
-
-      .erp-sidebar__link.is-active .erp-sidebar__item-hint {
-        color: #1e40af;
-      }
-
-      .erp-sidebar__active-dot {
-        position: absolute;
-        top: 0.65rem;
-        right: 0.65rem;
-        width: 0.38rem;
-        height: 0.38rem;
+      .erp-sidebar__badge {
+        flex: 0 0 auto;
         border-radius: 999px;
-        background: #2563eb;
-        opacity: 0;
-        transform: scale(0.7);
-        transition:
-          opacity 150ms ease,
-          transform 150ms ease;
-      }
-
-      .erp-sidebar__link.is-active .erp-sidebar__active-dot {
-        opacity: 1;
-        transform: scale(1);
+        background: #e6f1fb;
+        padding: 2px 7px;
+        color: #0c447c;
+        font-size: 10px;
+        font-weight: 600;
+        line-height: 1.2;
       }
 
       .erp-sidebar__footer {
-        border-top: 1px solid #daddd6;
-        padding: 0.85rem;
-        background: #fafaf7;
+        display: grid;
+        gap: 10px;
+        margin-top: auto;
+        border-top: 1px solid #e2e8f0;
+        padding: 12px 8px 14px;
       }
 
-      .erp-sidebar__note {
-        border: 1px solid #daddd6;
-        border-radius: 0.55rem;
-        background: #ffffff;
-        padding: 0.75rem;
-      }
-
-      .erp-sidebar__note-label {
-        display: block;
-        color: #172033;
-        font-size: 0.68rem;
-        font-weight: 650;
-        letter-spacing: 0.1em;
-        line-height: 1;
-        text-transform: uppercase;
-      }
-
-      .erp-sidebar__note p {
-        margin-top: 0.45rem;
-        color: #647084;
-        font-size: 0.72rem;
+      .erp-sidebar__footer-link {
+        display: flex;
+        min-height: 36px;
+        align-items: center;
+        gap: 9px;
+        border-radius: 8px;
+        padding: 0 10px;
+        color: #64748b;
+        font-size: 13px;
         font-weight: 500;
-        line-height: 1.35;
+        text-decoration: none;
+      }
+
+      .erp-sidebar__footer-link:hover {
+        background: #f8fafc;
+        color: #0f172a;
+      }
+
+      .erp-sidebar__footer-link lucide-icon {
+        width: 15px;
+        height: 15px;
+      }
+
+      .erp-sidebar__user {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 4px 10px 0;
+      }
+
+      .erp-sidebar__user-avatar {
+        display: grid;
+        width: 26px;
+        height: 26px;
+        flex: 0 0 26px;
+        place-items: center;
+        border-radius: 999px;
+        background: #e6f1fb;
+        color: #0c447c;
+        font-size: 11px;
+        font-weight: 600;
+      }
+
+      .erp-sidebar__user-copy {
+        display: grid;
+        min-width: 0;
+        gap: 1px;
+      }
+
+      .erp-sidebar__user-name {
+        overflow: hidden;
+        color: #0f172a;
+        font-size: 12px;
+        font-weight: 500;
+        line-height: 1.2;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .erp-sidebar__user-role {
+        color: #64748b;
+        font-size: 10px;
+        line-height: 1.2;
       }
 
       @media (max-width: 1024px) {
@@ -335,76 +319,61 @@ type MenuSection = {
           display: none;
         }
       }
-
-      @media (prefers-reduced-motion: reduce) {
-        .erp-sidebar__link,
-        .erp-sidebar__icon,
-        .erp-sidebar__active-dot {
-          transition: none;
-        }
-      }
     `,
   ],
 })
 export class SidebarComponent {
-  readonly receiptTextIcon = ReceiptTextIcon;
+  readonly buildingIcon = Building2Icon;
+  readonly settingsIcon = SettingsIcon;
+  readonly navWidth = SHELL_NAV_WIDTH_PX;
+  readonly menuSections = SHELL_NAV_SECTIONS;
+  readonly footerConfig = SHELL_NAV_FOOTER_CONFIG;
 
-  readonly menuSections: MenuSection[] = [
-    {
-      label: 'Inicio',
-      items: [{ path: '/', label: 'Dashboard', icon: 'layout-dashboard', exact: true, hint: 'Mesa del periodo' }],
-    },
-    {
-      label: 'Personas',
-      items: [
-        { path: '/empleados', label: 'Empleados', icon: 'users', hint: 'Registro laboral y expedientes' },
-        { path: '/licencias-medicas', label: 'Licencias médicas', icon: 'heart-pulse', hint: 'Control de ausencias' },
-      ],
-    },
-    {
-      label: 'Remuneraciones',
-      items: [
-        {
-          path: '/remuneraciones/proceso-mensual',
-          label: 'Preparar nómina',
-          icon: 'file-text',
-          hint: 'Bitácora del periodo',
-        },
-        {
-          path: '/remuneraciones/novedades-mensuales',
-          label: 'Movimientos',
-          icon: 'calendar-plus',
-          hint: 'Movimientos por trabajador',
-        },
-        {
-          path: '/remuneraciones/liquidaciones',
-          label: 'Liquidaciones oficiales',
-          icon: 'file-check-2',
-          hint: 'Acta de salida interna',
-        },
-        {
-          path: '/remuneraciones/conceptos',
-          label: 'Conceptos de remuneración',
-          icon: 'tags',
-          exact: true,
-          hint: 'Catálogo maestro',
-        },
-      ],
-    },
-    {
-      label: 'Administración',
-      items: [
-        { path: '/reportes', label: 'Reportes', icon: 'bar-chart-3', hint: 'Vistas operativas' },
-        { path: '/parametros', label: 'Parámetros', icon: 'settings', hint: 'Registro normativo' },
-      ],
-    },
-  ];
+  private readonly auth = inject(AuthService);
+  private readonly periodoActivo = inject(PeriodoActivoService);
 
-  trackSection(index: number, section: MenuSection): string {
-    return section.label ?? `principal-${index}`;
-  }
+  readonly mesPeriodoBadge = computed(() => mesCortoDesdeYm(this.periodoActivo.periodoYm()));
 
-  trackItem(_index: number, item: MenuItem): string {
-    return item.path;
+  readonly inicialesUsuario = computed(() => {
+    const user = this.auth.currentUser();
+    const meta = user?.user_metadata as Record<string, unknown> | undefined;
+    const nombre = typeof meta?.['full_name'] === 'string' ? meta['full_name'] : this.auth.currentEmail() ?? 'U';
+    const parts = nombre.trim().split(/\s+/).filter(Boolean);
+    if (parts.length >= 2) {
+      return `${parts[0][0]}${parts[1][0]}`.toUpperCase();
+    }
+    return (parts[0]?.[0] ?? 'U').toUpperCase();
+  });
+
+  readonly nombreUsuario = computed(() => {
+    const user = this.auth.currentUser();
+    const meta = user?.user_metadata as Record<string, unknown> | undefined;
+    if (typeof meta?.['full_name'] === 'string' && meta['full_name'].trim()) {
+      return meta['full_name'].trim();
+    }
+    const email = this.auth.currentEmail();
+    if (email) {
+      return email.split('@')[0] ?? 'Usuario';
+    }
+    return 'Usuario';
+  });
+
+  readonly rolUsuario = computed(() => {
+    const user = this.auth.currentUser();
+    const appRole = (user?.app_metadata as Record<string, unknown> | undefined)?.['role'];
+    const userRole = (user?.user_metadata as Record<string, unknown> | undefined)?.['role'];
+    const role = appRole ?? userRole;
+    if (role === 'admin') return 'Admin';
+    if (typeof role === 'string' && role.trim()) {
+      return role.charAt(0).toUpperCase() + role.slice(1);
+    }
+    return 'RRHH';
+  });
+
+  badgeFor(item: ShellNavItem): string | null {
+    if (item.badgeKey === 'periodoMes') {
+      return this.mesPeriodoBadge();
+    }
+    return null;
   }
 }

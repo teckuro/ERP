@@ -10,6 +10,7 @@ function inputEstado(overrides: Partial<ProcesoMensualEstadoOperativoInput> = {}
   return {
     periodoValido: true,
     tienePrevalidacion: false,
+    parametrosOperativos: false,
     bloqueosPrevalidacion: [],
     advertenciasPrevalidacion: [],
     informacionesPrevalidacion: [],

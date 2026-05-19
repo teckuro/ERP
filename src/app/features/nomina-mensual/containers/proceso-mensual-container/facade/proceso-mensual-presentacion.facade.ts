@@ -1,6 +1,11 @@
-import { HostListener, Injectable, computed, effect, inject, signal, untracked } from '@angular/core';
+import { DestroyRef, HostListener, Injectable, computed, effect, inject, signal, untracked } from '@angular/core';
 import { Router } from '@angular/router';
 import { PeriodoActivoService } from '../../../../../core/services/periodo-activo.service';
+import { bindShellPageContext } from '../../../../../layout/shell-page-context.binding';
+import {
+  ShellPageContextService,
+  type ShellStatusChipTone,
+} from '../../../../../layout/shell-page-context.service';
 import type {
   BaseNominaParametrosEstado,
   BaseNominaTrabajadorEstado,
@@ -96,6 +101,10 @@ import {
   suggestNominaWorkspaceTab,
 } from '../../../rules/proceso-mensual-workspace.rules';
 import {
+  buildNominaExceptionStrip,
+  buildNominaWorkspaceTabsMeta,
+} from '../../../rules/proceso-mensual-workspace-presentacion.rules';
+import {
   DETALLE_OPERATIVO_TABS,
   PAYROLL_MOVEMENT_DETAIL_COLUMNS,
   PAYROLL_MOVEMENT_DETAIL_FILTERS,
@@ -145,6 +154,7 @@ import type {
   ValidacionCalculoPreliminarView,
   ValidacionOperativaItemView,
 } from '../models/proceso-mensual-container.vm';
+import { NOMINA_WORKSPACE_TABS } from '../models/proceso-mensual-container.vm';
 
 @Injectable()
 export class ProcesoMensualPresentacionFacade {
@@ -152,9 +162,12 @@ export class ProcesoMensualPresentacionFacade {
   readonly periodoActivo = inject(PeriodoActivoService);
   private readonly router = inject(Router);
   private readonly nominaCapabilities = inject(NominaMensualCapabilitiesService);
+  private readonly shellContext = inject(ShellPageContextService);
+
+  readonly nominaWorkspaceTabs = NOMINA_WORKSPACE_TABS;
 
   readonly breadcrumbItems: readonly RecordBreadcrumbItem[] = [
-    { label: 'Remuneraciones', link: '/remuneraciones' },
+    { label: 'Remuneraciones', link: '/remuneraciones/proceso-mensual' },
     { label: 'Nómina mensual' },
   ];
 
@@ -311,7 +324,44 @@ export class ProcesoMensualPresentacionFacade {
       liquidacionesDisponibles: this.store.liquidacionesGeneradasCount() > 0,
     }),
   );
-  readonly nominaWorkspaceTab = signal<NominaWorkspaceTab>('guia');
+  readonly nominaWorkspaceTab = signal<NominaWorkspaceTab>('resumen');
+
+  constructor() {
+    const destroyRef = inject(DestroyRef);
+    bindShellPageContext(
+      destroyRef,
+      () => {
+        const frame = this.nominaFrame();
+        return {
+          breadcrumbs: [
+            { label: 'Remuneraciones', path: '/remuneraciones/proceso-mensual' },
+            { label: 'Nómina mensual' },
+          ],
+          statusChip: {
+            label: frame.chip,
+            tone: toneDesdeNominaFrame(frame.frame),
+          },
+          primaryAction:
+            frame.ctaTipo === 'local' && frame.ctaAccion
+              ? {
+                  label: frame.ctaLabel,
+                  disabled: frame.ctaDisabled,
+                  loading: this.accionPeriodoEnCurso(),
+                  actionId: frame.ctaAccion,
+                }
+              : frame.ctaTipo === 'ruta' && frame.ctaRuta
+                ? {
+                    label: frame.ctaLabel,
+                    disabled: frame.ctaDisabled,
+                    loading: false,
+                    actionId: `ruta:${frame.ctaRuta}`,
+                  }
+                : undefined,
+        };
+      },
+      { onPrimaryAction: () => this.ejecutarShellPrimaryAction() },
+    );
+  }
   readonly nominaMasivaFiltro = signal<NominaMasivaFiltro>('todos');
   readonly nominaMasivaBusqueda = signal('');
   readonly nominaMasivaTrabajadorSeleccionadoId = signal<number | string | null>(null);
@@ -323,6 +373,48 @@ export class ProcesoMensualPresentacionFacade {
 
   seleccionarNominaWorkspaceTab(tab: NominaWorkspaceTab): void {
     this.nominaWorkspaceTab.set(tab);
+  }
+
+  readonly nominaWorkspacePanelInline = computed(() => {
+    const tab = this.nominaWorkspaceTab();
+    const detalleTab = detalleTabDesdeWorkspaceTab(tab);
+    if (!detalleTab) {
+      return null;
+    }
+    const tabMeta = this.detalleRevisionTabs().find((item) => item.id === detalleTab);
+    return buildDetalleRevisionTabPanel({
+      tab: detalleTab,
+      tabSeveridad: tabMeta?.severidad ?? 'neutral',
+      periodoEtiqueta: this.periodoActivo.etiqueta(),
+      estadoTitulo: this.estadoOperativo().titulo,
+      incidencias: this.incidenciasPeriodo(),
+      workerRowCount: this.payrollWorkerDetailRows().length,
+      movementRowCount: this.payrollMovementDetailRows().length,
+      recurrentRowCount: this.payrollRecurrentDetailRows().length,
+      resultRowCount: this.payrollResultDetailRows().length,
+      parametroItems: this.payrollParametroSeguimientoItems(),
+      resultadoSeguimientoItems: this.payrollResultadoSeguimientoItems(),
+      movementRows: this.payrollMovementDetailRows(),
+      recurrentRows: this.payrollRecurrentDetailRows(),
+    });
+  });
+
+  abrirRevisionDesdeWorkspace(tab: NominaWorkspaceTab): void {
+    const detalleTab = detalleTabDesdeWorkspaceTab(tab);
+    if (detalleTab) {
+      this.abrirOverlayRevision(detalleTab);
+    }
+  }
+
+  private ejecutarShellPrimaryAction(): void {
+    const frame = this.nominaFrame();
+    if (frame.ctaTipo === 'local' && frame.ctaAccion) {
+      this.ejecutarAccionValidacion(frame.ctaAccion);
+      return;
+    }
+    if (frame.ctaTipo === 'ruta' && frame.ctaRuta) {
+      void this.router.navigateByUrl(frame.ctaRuta);
+    }
   }
 
   claseChipRevision(estado: string): string {
@@ -563,9 +655,11 @@ export class ProcesoMensualPresentacionFacade {
     const resultado = this.resultadoPreliminar();
     const revision = this.revisionAprobacion();
     const contexto = this.contextoOperativoPeriodo();
+    const resultadoPrevalidacion = this.store.resultado();
     return resolverEstadoOperativoProcesoMensual({
       periodoValido: validarPeriodoEntradaMensual(this.store.periodoSeleccionado()),
       tienePrevalidacion: contexto.tienePrevalidacion,
+      parametrosOperativos: resultadoPrevalidacion?.resumen.parametrosOperativos ?? false,
       bloqueosPrevalidacion: validacion.bloqueos.map((item) => this.pendienteDesdeValidacion(item)),
       advertenciasPrevalidacion: validacion.advertencias.map((item) => this.pendienteDesdeValidacion(item, 'warning')),
       informacionesPrevalidacion: validacion.informaciones.map((item) => this.pendienteDesdeValidacion(item, 'info')),
@@ -743,6 +837,22 @@ export class ProcesoMensualPresentacionFacade {
       advertenciasCount: estado.advertencias.length,
     });
   });
+
+  readonly nominaExceptionStrip = computed(() => buildNominaExceptionStrip(this.alertasPeriodoResumen()));
+
+  readonly nominaWorkspaceTabsMeta = computed(() =>
+    buildNominaWorkspaceTabsMeta({
+      tabs: NOMINA_WORKSPACE_TABS,
+      detalleTabs: this.detalleRevisionTabs(),
+      incidencias: this.incidenciasPeriodo(),
+      tieneActividadPeriodo:
+        this.store.preNomina() != null
+        || this.store.calculo() != null
+        || this.store.snapshotActivo() != null,
+      liquidacionesGeneradas: this.store.liquidacionesGeneradasCount() > 0,
+      nominaCerrada: this.nominaEstaCerradaOperativamente(),
+    }),
+  );
 
   readonly paraContinuarLista = computed<ParaContinuarItemVm[]>(() =>
     this.estadoOperativo()
@@ -1001,9 +1111,11 @@ export class ProcesoMensualPresentacionFacade {
       bloqueosOperativos: this.estadoOperativo().bloqueos,
       advertenciasOperativas: this.estadoOperativo().advertencias,
       nominaFrame: this.nominaVisualFrame(),
+      tienePrevalidacion: this.store.resultado() != null,
+      puedeGenerarNomina: this.puedeGenerarPreNomina(),
       tienePreNomina: this.store.preNomina() != null,
       tieneCalculo: this.store.calculo() != null,
-      tieneResultado: this.store.resultado() != null || this.store.snapshotActivo() != null,
+      tieneResultado: this.store.snapshotActivo() != null,
     });
     this.abrirOverlayInformacion(view);
   }
@@ -1046,6 +1158,10 @@ export class ProcesoMensualPresentacionFacade {
       return;
     }
     if (destino === 'cerrar') return;
+    if (destino === 'generar_nomina') {
+      this.ejecutarAccionValidacion('generarBase');
+      return;
+    }
     const tab = mapDestinoToDetalleTab(destino);
     if (tab) {
       this.abrirDetalleOperativo(tab);
@@ -1817,4 +1933,35 @@ export class ProcesoMensualPresentacionFacade {
     return buildResumenRevisionTrabajadores({ listos: 0, porRevisar: 0, bloqueados: 0, tieneDatos: false });
   }
 
+}
+
+function toneDesdeNominaFrame(frame: NominaVisualFrame): ShellStatusChipTone {
+  switch (frame) {
+    case 'con_pendientes':
+    case 'generando':
+      return 'warning';
+    case 'lista_para_confirmar':
+    case 'confirmada':
+    case 'liquidaciones_generadas':
+      return 'success';
+    case 'sin_generar':
+    default:
+      return 'neutral';
+  }
+}
+
+function detalleTabDesdeWorkspaceTab(tab: NominaWorkspaceTab): DetalleOperativoTab | null {
+  switch (tab) {
+    case 'parametros':
+      return 'parametros';
+    case 'movimientos':
+    case 'recurrentes':
+      return 'movimientos_recurrentes';
+    case 'trabajadores':
+      return 'trabajadores';
+    case 'historial':
+      return 'resultado';
+    default:
+      return null;
+  }
 }
