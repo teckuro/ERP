@@ -1,3 +1,14 @@
+## 2026-05-18 - NOM-WORKSPACE-POLISH-03 (corrección)
+
+- **Corrección:** eliminado `border-left` coloreado en franja KPI activa (antipatrón NOIA); activo solo con borde completo + `box-shadow` ya definido en sidebar.
+
+## 2026-05-18 - NOM-WORKSPACE-POLISH-03
+
+- **Módulo:** Nómina mensual / consola workspace LOC.
+- **Cambio:** tokens residuales y links secundarios; bitácora Lucide + nodo rail activo; follow-row modo lista; tab-summary neutral; tabs sticky; acciones del período en panel derecho (`--workspace`); ocultar checklist focus duplicado.
+- **Archivos:** `proceso-mensual-container.css`, `payroll-operational-tabs.css`, `proceso-mensual-workspace.component.html`, `proceso-mensual-workspace-presentacion.rules.ts`, `app.config.ts`; doc `nom-workspace-polish-03.md`.
+- **No tocado:** motor, store, SQL, estilos globales, `angular.json`.
+
 ## 2026-05-18 - NOM-WORKSPACE-BITACORA-POLISH-02
 
 - **Módulo:** Nómina mensual / consola workspace LOC.

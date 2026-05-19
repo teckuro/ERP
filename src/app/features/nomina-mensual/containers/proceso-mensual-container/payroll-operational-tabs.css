@@ -13,6 +13,13 @@
   background: var(--erp-surface, #ffffff);
 }
 
+.payroll-console .payroll-operational-tabs--workspace {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: var(--erp-surface, #ffffff);
+}
+
 .payroll-operational-tab {
   display: inline-flex;
   flex: 0 0 auto;

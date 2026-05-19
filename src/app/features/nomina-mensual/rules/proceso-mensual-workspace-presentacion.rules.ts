@@ -1,4 +1,5 @@
 import type {
+  BitacoraRailEtapaVm,
   DetalleOperativoTab,
   NominaWorkspaceDetailItemVm,
   NominaWorkspaceDetailSeverity,
@@ -415,6 +416,20 @@ export function buildNominaWorkspaceDetailItems(input: {
       };
     })
     .sort((a, b) => ordenSeverity(a.severity) - ordenSeverity(b.severity) || a.titulo.localeCompare(b.titulo));
+}
+
+export function resolveBitacoraRailIcon(marca: BitacoraRailEtapaVm['marca']): string {
+  switch (marca) {
+    case 'hecho':
+      return 'check';
+    case 'actual':
+      return 'circle-dot';
+    case 'bloqueado':
+      return 'minus';
+    case 'pendiente':
+    default:
+      return 'circle';
+  }
 }
 
 export function resolveFranjaItemTono(valor: string): 'neutral' | 'review' | 'ok' {

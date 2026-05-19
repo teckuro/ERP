@@ -171,29 +171,11 @@
   padding: 8px 10px;
   text-align: left;
   cursor: pointer;
-  transition:
-    background-color 0.12s ease,
-    border-color 0.12s ease,
-    box-shadow 0.12s ease;
 }
 
 .payroll-franja-operativa__item:hover {
-  border-color: #cbd5e1;
-  background: #ffffff;
-}
-
-.payroll-franja-operativa__item--active {
-  border-color: #0c447c;
-  background: #ffffff;
-  box-shadow: 0 0 0 1px #0c447c;
-}
-
-.payroll-franja-operativa__item--active .payroll-franja-operativa__k {
-  color: #0c447c;
-}
-
-.payroll-franja-operativa__item--active .payroll-franja-operativa__chevron {
-  color: #0c447c;
+  border-color: var(--erp-border-strong, #c7d0c4);
+  background: var(--erp-surface, #fff);
 }
 
 .payroll-franja-operativa__icon {
@@ -370,14 +352,6 @@
   gap: 10px;
   padding-top: 16px;
   border-top: 1px solid var(--erp-border);
-}
-
-.payroll-rail-block--bitacora {
-  padding-top: 16px;
-}
-
-.payroll-rail-block--alertas {
-  padding-top: 16px;
 }
 
 .payroll-bitacora-rail {
@@ -1015,23 +989,6 @@
   font-size: 0.75rem;
 }
 
-.payroll-follow-row a,
-.payroll-follow-row button {
-  border: 0;
-  background: transparent;
-  padding: 0;
-  color: #1d4ed8;
-  font: inherit;
-  font-size: 0.8125rem;
-  text-decoration: none;
-  cursor: pointer;
-}
-
-.payroll-follow-row a:hover,
-.payroll-follow-row button:hover {
-  text-decoration: underline;
-}
-
 .payroll-official-snapshot,
 .payroll-expediente-panel {
   max-width: 44rem;
@@ -1138,23 +1095,23 @@
 }
 
 .payroll-state-chip--success {
-  background: #ecfdf5;
-  color: #065f46;
+  background: var(--erp-ok-soft, #f0fdf4);
+  color: var(--erp-ok, #166534);
 }
 
 .payroll-state-chip--info {
-  background: #eff6ff;
-  color: #1e40af;
+  background: var(--erp-primary-soft, #eff6ff);
+  color: var(--erp-primary-hover, #1d4ed8);
 }
 
 .payroll-state-chip--warning {
-  background: #fffbeb;
-  color: #92400e;
+  background: var(--erp-review-soft, #fffbeb);
+  color: var(--erp-review, #a16207);
 }
 
 .payroll-state-chip--danger {
-  background: #fef2f2;
-  color: #991b1b;
+  background: var(--erp-danger-soft, #fef2f2);
+  color: var(--erp-danger, #b91c1c);
 }
 
 .payroll-official-snapshot dl {
@@ -1179,29 +1136,6 @@
 .payroll-official-snapshot dd {
   margin: 0;
   font-size: 0.8125rem;
-  font-weight: 650;
-}
-
-.payroll-history {
-  display: grid;
-  gap: 10px;
-  margin-top: 22px;
-}
-
-.payroll-history p {
-  display: flex;
-  gap: 12px;
-  margin: 0;
-  font-size: 0.8125rem;
-}
-
-.payroll-history span {
-  width: 42px;
-  flex: 0 0 auto;
-  color: #64748b;
-}
-
-.payroll-history__item--strong {
   font-weight: 650;
 }
 

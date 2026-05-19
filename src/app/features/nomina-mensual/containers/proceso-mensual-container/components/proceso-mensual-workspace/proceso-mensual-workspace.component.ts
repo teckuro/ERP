@@ -15,6 +15,7 @@ import {
 } from '../../../../rules/proceso-mensual-detalle-modal.rules';
 import type { DetalleRevisionTabSeveridad } from '../../../../rules/proceso-mensual-detalle-modal.rules';
 import {
+  resolveBitacoraRailIcon,
   resolveFocusPresentacion,
   resolveFranjaItemTono,
 } from '../../../../rules/proceso-mensual-workspace-presentacion.rules';
@@ -26,12 +27,13 @@ import { ProcesoMensualPresentacionFacade } from '../../facade/proceso-mensual-p
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CommonModule, RouterLink, LucideAngularModule, DataGridComponent],
   templateUrl: './proceso-mensual-workspace.component.html',
-  styleUrl: '../../proceso-mensual-container.css',
+  styleUrls: ['../../proceso-mensual-container.css', './proceso-mensual-workspace.component.css'],
 })
 export class ProcesoMensualWorkspaceComponent {
   readonly facade = inject(ProcesoMensualPresentacionFacade);
 
   readonly focusPresentacion = computed(() => resolveFocusPresentacion(this.facade.nominaFrame().frame));
+  readonly resolveBitacoraRailIcon = resolveBitacoraRailIcon;
 
   readonly workerDetailColumns = PAYROLL_WORKER_DETAIL_COLUMNS;
   readonly workerDetailFilters = PAYROLL_WORKER_DETAIL_FILTERS;

@@ -1,0 +1,172 @@
+/* NOM-WORKSPACE-POLISH-03 — extensión local del workspace (budget segmentado) */
+
+.payroll-console:has(.payroll-workspace-layout) .payroll-focus__areas {
+  display: none;
+}
+
+.payroll-console .payroll-rail-link,
+.payroll-console .payroll-follow-row a,
+.payroll-console .payroll-follow-row button:not(.payroll-modal-secondary) {
+  border: 0;
+  background: transparent;
+  padding: 0;
+  color: var(--erp-muted);
+  font: inherit;
+  font-size: 0.8125rem;
+  font-weight: 650;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+}
+
+.payroll-console .payroll-rail-link:hover,
+.payroll-console .payroll-follow-row a:hover,
+.payroll-console .payroll-follow-row button:not(.payroll-modal-secondary):hover {
+  color: var(--erp-ink);
+}
+
+.payroll-console .payroll-follow-section > header h3 {
+  color: var(--erp-ink);
+}
+
+.payroll-console .payroll-follow-section > header p,
+.payroll-console .payroll-empty-line {
+  color: var(--erp-muted);
+}
+
+.payroll-console .payroll-revision-lista .payroll-follow-row {
+  border: 0;
+  border-radius: 0;
+  border-bottom: 1px solid var(--erp-border);
+  background: transparent;
+  padding: 10px 0;
+}
+
+.payroll-console .payroll-revision-lista .payroll-follow-row:last-child {
+  border-bottom: 0;
+}
+
+.payroll-console .payroll-revision-lista .payroll-follow-row--bloqueo,
+.payroll-console .payroll-revision-lista .payroll-follow-row--atencion {
+  margin-bottom: 6px;
+  border: 1px solid var(--erp-border);
+  border-radius: 6px;
+  padding: 10px 12px;
+}
+
+.payroll-console .payroll-revision-lista .payroll-follow-row--bloqueo {
+  border-color: var(--erp-danger-border);
+}
+
+.payroll-console .payroll-revision-lista .payroll-follow-row--atencion {
+  border-color: var(--erp-review-border);
+}
+
+.payroll-tab-summary--neutral {
+  border-color: var(--erp-border);
+  background: var(--erp-surface-soft);
+}
+
+.payroll-console .payroll-sidebar-card .payroll-tab-summary__metrics {
+  justify-content: flex-start;
+}
+
+.payroll-rail-step--active .payroll-rail-step__label {
+  font-weight: 700;
+}
+
+.payroll-rail-step__state {
+  min-width: 4.5rem;
+  text-align: right;
+}
+
+.payroll-rail-step--active::after {
+  content: '';
+  position: absolute;
+  left: -11px;
+  top: 50%;
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: var(--erp-primary);
+  box-shadow: 0 0 0 2px var(--erp-surface);
+  transform: translateY(-50%);
+  z-index: 1;
+}
+
+.payroll-rail-step__mark lucide-icon {
+  width: 14px;
+  height: 14px;
+}
+
+.payroll-period-actions--workspace {
+  margin: 0;
+  border: 0;
+  border-bottom: 1px solid var(--erp-border);
+  border-radius: 0;
+  background: transparent;
+  padding: 10px 14px;
+}
+
+.payroll-period-actions--workspace .payroll-period-actions__header h3 {
+  margin: 0 0 2px;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: var(--erp-ink);
+}
+
+.payroll-period-actions--workspace .payroll-period-actions__header p {
+  margin: 0 0 8px;
+  font-size: 0.75rem;
+  color: var(--erp-muted);
+}
+
+.payroll-period-actions--workspace .payroll-period-actions__item {
+  border-top: 1px solid var(--erp-border);
+  padding: 8px 0;
+}
+
+.payroll-period-actions--workspace .payroll-period-actions__item:first-child {
+  border-top: 0;
+  padding-top: 0;
+}
+
+.payroll-period-actions--workspace .payroll-period-actions__admin {
+  margin-top: 8px;
+  border-top: 1px dashed var(--erp-border);
+  padding-top: 8px;
+}
+
+.payroll-period-actions--workspace .payroll-period-actions__admin summary {
+  cursor: pointer;
+  font-size: 0.75rem;
+  font-weight: 650;
+  color: var(--erp-muted);
+}
+
+.payroll-period-actions--workspace .payroll-period-actions__blocked {
+  color: var(--erp-review);
+}
+
+.payroll-history {
+  display: grid;
+  gap: 10px;
+  margin-top: 22px;
+}
+
+.payroll-history p {
+  display: flex;
+  gap: 12px;
+  margin: 0;
+  font-size: 0.8125rem;
+}
+
+.payroll-history span {
+  width: 42px;
+  flex: 0 0 auto;
+  color: var(--erp-muted);
+}
+
+.payroll-history__item--strong {
+  font-weight: 650;
+}

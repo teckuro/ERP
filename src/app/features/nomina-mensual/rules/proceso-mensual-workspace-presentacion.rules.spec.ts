@@ -10,6 +10,7 @@ import {
   buildNominaWorkspaceTabSummaries,
   buildNominaWorkspaceTabsMeta,
   claseNominaWorkspaceTab,
+  resolveBitacoraRailIcon,
   resolveFocusPresentacion,
   resolveFranjaItemTono,
 } from './proceso-mensual-workspace-presentacion.rules';
@@ -29,6 +30,13 @@ describe('proceso-mensual-workspace-presentacion.rules', () => {
       layout: 'compact',
       showAreas: false,
     });
+  });
+
+  it('resolveBitacoraRailIcon mapea marcas del rail', () => {
+    expect(resolveBitacoraRailIcon('hecho')).toBe('check');
+    expect(resolveBitacoraRailIcon('actual')).toBe('circle-dot');
+    expect(resolveBitacoraRailIcon('bloqueado')).toBe('minus');
+    expect(resolveBitacoraRailIcon('pendiente')).toBe('circle');
   });
 
   it('resolveFranjaItemTono clasifica estados operativos', () => {
