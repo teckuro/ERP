@@ -28,12 +28,87 @@ import {
   textoIncluye,
 } from '../../proceso-mensual-container.spec.helpers';
 
+const PERIODO_TEST = '2026-05';
 const rehidratarPeriodo = vi.fn().mockResolvedValue(null);
+const obtenerSnapshotActivo = vi.fn().mockResolvedValue(null);
+const obtenerSnapshotCompletoActivo = vi.fn().mockResolvedValue(null);
+
+function snapshotGuardado() {
+  return {
+    idCalculoPeriodo: 1,
+    periodo: PERIODO_TEST,
+    estado: 'preliminar_guardado',
+    fechaGeneracion: '2026-05-05T10:00:00.000Z',
+    usuarioGenerador: 'RRHH',
+    versionMotor: 'v1',
+    hashSnapshot: 'abc',
+    totalTrabajadores: 1,
+    totalBloqueados: 0,
+    totalAdvertencias: 0,
+    totalHaberes: 800000,
+    totalDescuentos: 150000,
+    totalLiquido: 650000,
+    aprobacionOperativa: null,
+    cierreOperativo: null,
+  };
+}
+
+function snapshotCompletoGuardado() {
+  const cabecera = snapshotGuardado();
+  const trabajador = {
+    idCalculoTrabajador: 10,
+    idCalculoPeriodo: 1,
+    idPersona: 1,
+    rut: '11.111.111-1',
+    nombreCompletoSnapshot: 'Ana Perez',
+    estado: 'calculado_preliminar',
+    sueldoBase: 800000,
+    baseImponiblePrevisional: 800000,
+    baseTributable: 800000,
+    totalHaberesImponibles: 800000,
+    totalHaberesNoImponibles: 0,
+    totalDescuentosLegales: 150000,
+    totalDescuentosVoluntarios: 0,
+    impuestoUnico: 0,
+    liquidoPreliminar: 650000,
+    cotizacionAfp: 0,
+    cotizacionSalud: 0,
+    cotizacionAfc: 0,
+    cotizacionSis: 0,
+    cotizacionSanna: 0,
+    cotizacionLey16744Empleador: 0,
+    conceptos: [],
+    issues: [],
+    trazabilidad: [],
+  };
+  return {
+    cabecera,
+    trabajadores: [trabajador],
+    conceptos: [],
+    observaciones: [],
+    trazabilidad: [],
+    aprobacionOperativa: null,
+    resumen: {
+      totalConceptos: 0,
+      totalObservaciones: 0,
+      totalTrazas: 0,
+      totalTrabajadoresSinDetalle: 0,
+      esActivoVigente: true,
+      fueReemplazado: false,
+    },
+  };
+}
 
 describe('ProcesoMensualDetalleModalComponent', () => {
   beforeEach(async () => {
     vi.clearAllMocks();
-    rehidratarPeriodo.mockResolvedValue(null);
+    rehidratarPeriodo.mockImplementation(async (periodo: string) => {
+      const snapshot = await obtenerSnapshotActivo(periodo);
+      if (!snapshot) return null;
+      return { snapshot, completo: await obtenerSnapshotCompletoActivo(periodo) };
+    });
+    obtenerSnapshotActivo.mockResolvedValue(null);
+    obtenerSnapshotCompletoActivo.mockResolvedValue(null);
 
     await TestBed.configureTestingModule({
       imports: [ProcesoMensualContainer],
@@ -51,8 +126,8 @@ describe('ProcesoMensualDetalleModalComponent', () => {
             aprobarResultadoPreliminarOperativamente: vi.fn(),
             cerrarNominaOperativamente: vi.fn(),
             obtenerResultadoCalculoPeriodo: vi.fn().mockReturnValue(null),
-            obtenerSnapshotActivo: vi.fn().mockResolvedValue(null),
-            obtenerSnapshotCompletoActivo: vi.fn().mockResolvedValue(null),
+            obtenerSnapshotActivo,
+            obtenerSnapshotCompletoActivo,
             obtenerSnapshotCompletoPorId: vi.fn().mockResolvedValue(null),
             rehidratarPeriodo,
           },
@@ -111,6 +186,22 @@ describe('ProcesoMensualDetalleModalComponent', () => {
     fixture.componentInstance.abrirOverlayRevision('trabajadores');
     fixture.detectChanges();
     expectTexto(textoModal(fixture), 'Volver a la consola');
+  });
+
+  it('con snapshot completo muestra trabajador en tab trabajadores', async () => {
+    obtenerSnapshotActivo.mockResolvedValue(snapshotGuardado());
+    obtenerSnapshotCompletoActivo.mockResolvedValue(snapshotCompletoGuardado());
+    const fixture = await montarContainer();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    fixture.componentInstance.abrirOverlayRevision('trabajadores');
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    expectTexto(textoModal(fixture), 'Ana Perez');
+    expectTexto(textoModal(fixture), 'Version guardada para revision');
   });
 
   it('no expone disclosure tecnico ni versionCalculo', async () => {

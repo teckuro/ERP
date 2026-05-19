@@ -1,3 +1,25 @@
+## NOM-MENSUAL-FACADE-SLIM-01 - Adelgazamiento facade presentación
+
+| Campo | Estado |
+|---|---|
+| Estado | Implementada |
+| Tipo | Refactor interno (rules + utils; sin UI/copy) |
+| Alcance | Extracción `resultadoPreliminar`, `revisionAprobacion`, payroll/seguimiento y labels; eliminación `snapshotCompletoDetalle` y VMs muertos; facade ~1462 líneas (desde 2295). |
+| Restricciones | Sin store/servicios/SQL/motor/estilos globales/HTML/CSS/copy. |
+| Documento | [`../modulos/nomina-mensual/nom-mensual-facade-slim-01.md`](../modulos/nomina-mensual/nom-mensual-facade-slim-01.md) |
+| Siguiente | E2E modales o fases de producto pendientes en README módulo. |
+
+## NOM-MENSUAL-INTEGRIDAD-REGISTRO-01 - Expediente desde BD
+
+| Campo | Estado |
+|---|---|
+| Estado | Implementada |
+| Tipo | View model + cableado UI + carga snapshot completo |
+| Alcance | `buildExpedienteNominaPeriodo`, modal/tab Detalle con loading/error/vacío/datos, `asegurarSnapshotCompletoCargado`, fallbacks `payrollWorkerDetailRows` y `resultadoPreliminar`. |
+| Restricciones | Sin motor, borradores nuevos, estilos globales, SQL (auditoría estática OK). |
+| Documento | [`../modulos/nomina-mensual/nom-mensual-integridad-registro-01.md`](../modulos/nomina-mensual/nom-mensual-integridad-registro-01.md) |
+| Siguiente | E2E modales o fases producto README. |
+
 ## NOM-MODALES-PERIODO-DETALLE-POLISH-01 - Pulido modal revisión
 
 | Campo | Estado |

@@ -4,10 +4,6 @@ import type {
   BaseNominaParametrosEstado,
   BaseNominaTrabajadorEstado,
   MotorCalculoPeriodoResultado,
-  MotorCalculoIssue,
-  MotorCalculoEstadoTrabajador,
-  MotorCalculoSeveridad,
-  NominaCalculoConceptoSnapshot,
   NominaCalculoPeriodoSnapshot,
   NominaSnapshotCompletoView,
   ProcesoMensualArea,
@@ -37,6 +33,28 @@ import {
   buildDetalleRevisionModalLead,
   DETALLE_REVISION_MODAL_TITULO,
 } from '../../../rules/proceso-mensual-detalle-modal.rules';
+import {
+  buildExpedienteNominaPeriodo,
+} from '../../../rules/proceso-mensual-expediente-periodo.rules';
+import { buildResultadoPreliminarView } from '../../../rules/proceso-mensual-resultado-preliminar.rules';
+import { buildRevisionAprobacionView } from '../../../rules/proceso-mensual-revision-aprobacion.rules';
+import {
+  buildPayrollMovementDetailRows,
+  buildPayrollMovimientoRecurrenteSeguimientoItems,
+  buildPayrollObservationDetailRows,
+  buildPayrollParametroSeguimientoItems,
+  buildPayrollRecurrentDetailRows,
+  buildPayrollResultadoSeguimientoItems,
+  buildPayrollResultDetailRows,
+  buildPayrollWorkerDetailRows,
+} from '../../../rules/proceso-mensual-payroll-seguimiento.rules';
+import {
+  claseChipRevision as payrollClaseChipRevision,
+  clasePendienteVisual as payrollClasePendienteVisual,
+  etiquetaEstadoBaseTrabajador as payrollEtiquetaEstadoBaseTrabajador,
+  etiquetaPendienteVisual as payrollEtiquetaPendienteVisual,
+  humanizarCopyOperativo as payrollHumanizarCopyOperativo,
+} from '../utils/proceso-mensual-presentacion.labels';
 import {
   buildInformacionPeriodoView,
   mapDestinoToDetalleTab,
@@ -95,14 +113,10 @@ import type {
   ResultadoObservacionView,
   ResultadoPreliminarEstado,
   ResultadoPreliminarView,
-  RevisionAprobacionChecklistItemView,
   RevisionAprobacionEstado,
   RevisionAprobacionView,
   RevisionChecklistEstado,
   ValidacionCalculoEstado,
-  SnapshotCompletoDetalleView,
-  SnapshotCompletoObservacionView,
-  SnapshotCompletoTrabajadorView,
   TrabajadorResultadoPreliminarView,
   ValidacionAccionLocal,
   ValidacionCalculoPreliminarView,
@@ -171,6 +185,16 @@ export class ProcesoMensualPresentacionFacade {
   readonly detalleRevisionFooterAccion = computed(() =>
     buildDetalleRevisionFooterAccion(this.detalleOperativoTabActivo()),
   );
+  readonly expedienteNominaPeriodo = computed(() =>
+    buildExpedienteNominaPeriodo({
+      snapshotActivo: this.store.snapshotActivo(),
+      snapshotCompleto: this.store.snapshotCompleto(),
+      consultandoSnapshotCompleto: this.consultandoSnapshotCompleto(),
+      errorSnapshotCompleto: this.store.errorSnapshotCompleto(),
+      nominaCerrada: this.nominaEstaCerradaOperativamente(),
+      liquidacionesDisponibles: this.estadoOperativo().estadoClave === 'liquidaciones_disponibles',
+    }),
+  );
   readonly nominaWorkspaceTab = signal<NominaWorkspaceTab>('guia');
   readonly actaOperativaPreparada = signal(false);
 
@@ -183,27 +207,15 @@ export class ProcesoMensualPresentacionFacade {
   }
 
   claseChipRevision(estado: string): string {
-    const normalizado = estado.toLowerCase();
-    if (normalizado.includes('bloque') || normalizado.includes('omitido')) {
-      return 'payroll-state-chip payroll-state-chip--danger';
-    }
-    if (normalizado.includes('observ') || normalizado.includes('advert') || normalizado.includes('cambio')) {
-      return 'payroll-state-chip payroll-state-chip--warning';
-    }
-    if (normalizado.includes('revis')) return 'payroll-state-chip payroll-state-chip--info';
-    return 'payroll-state-chip payroll-state-chip--success';
+    return payrollClaseChipRevision(estado);
   }
 
   clasePendienteVisual(severidad: ProcesoMensualEstadoSeveridad): string {
-    if (severidad === 'danger') return 'payroll-state-chip payroll-state-chip--danger';
-    if (severidad === 'warning') return 'payroll-state-chip payroll-state-chip--warning';
-    return 'payroll-state-chip payroll-state-chip--info';
+    return payrollClasePendienteVisual(severidad);
   }
 
   etiquetaPendienteVisual(severidad: ProcesoMensualEstadoSeveridad): string {
-    if (severidad === 'danger') return 'Bloqueado';
-    if (severidad === 'warning') return 'Pendiente de revisión';
-    return 'Revisar';
+    return payrollEtiquetaPendienteVisual(severidad);
   }
 
   readonly detalleOperativoTabs = DETALLE_OPERATIVO_TABS;
@@ -259,296 +271,6 @@ export class ProcesoMensualPresentacionFacade {
     };
   });
 
-  readonly snapshotCompletoDetalle = computed<SnapshotCompletoDetalleView | null>(() => {
-    const completo = this.store.snapshotCompleto();
-    if (!completo) return null;
-    const trabajadorPorId = new Map(
-      completo.trabajadores.map((t) => [
-        t.idCalculoTrabajador,
-        `${t.nombreCompletoSnapshot?.trim() || 'Trabajador sin ficha visible'} · ${t.rut?.trim() || 'RUT no disponible'}`,
-      ]),
-    );
-    const trabajadores = completo.trabajadores.slice(0, 8).map<SnapshotCompletoTrabajadorView>((trabajador) => ({
-      id: trabajador.idCalculoTrabajador ?? trabajador.idPersona,
-      trabajadorLabel: `${trabajador.nombreCompletoSnapshot?.trim() || 'Trabajador sin ficha visible'} · ${trabajador.rut?.trim() || 'RUT no disponible'}`,
-      estadoLabel: this.etiquetaEstadoSnapshotTrabajador(trabajador.estado),
-      haberesLabel: this.formatoMonto(trabajador.totalHaberesImponibles + trabajador.totalHaberesNoImponibles),
-      descuentosLabel: this.formatoMonto(trabajador.totalDescuentosLegales + trabajador.totalDescuentosVoluntarios),
-      liquidoLabel: this.formatoMonto(trabajador.liquidoPreliminar),
-      conceptos: trabajador.conceptos.slice(0, 4).map((concepto) => this.etiquetaConceptoSnapshot(concepto)),
-      observaciones: trabajador.issues.slice(0, 3).map((issue) => issue.mensaje),
-    }));
-    const observaciones = completo.observaciones.slice(0, 8).map<SnapshotCompletoObservacionView>((obs) => ({
-      codigo: String(obs.idIssue ?? obs.codigo),
-      nivelLabel: this.etiquetaNivelObservacion(obs.severidad),
-      mensaje: obs.mensaje,
-      trabajadorLabel: obs.idCalculoTrabajador == null
-        ? 'Resultado completo'
-        : trabajadorPorId.get(obs.idCalculoTrabajador) ?? 'Trabajador sin ficha visible',
-    }));
-    return {
-      estadoLabel: completo.resumen.esActivoVigente
-        ? 'Resultado guardado vigente'
-        : 'Resultado reemplazado',
-      descripcion: completo.aprobacionOperativa
-        ? 'Resultado guardado aprobado operativamente.'
-        : 'Resultado guardado pendiente de aprobacion operativa.',
-      resumen: {
-        periodo: completo.cabecera.periodo,
-        fechaGeneracionLabel: this.formatoFechaHora(completo.cabecera.fechaGeneracion),
-        versionCalculoLabel: completo.cabecera.versionMotor || 'Version no disponible',
-        identificadorTecnicoLabel: completo.cabecera.hashSnapshot || 'Referencia interna no disponible',
-        trabajadores: completo.trabajadores.length,
-        totalHaberesLabel: this.formatoMonto(completo.cabecera.totalHaberes),
-        totalDescuentosLabel: this.formatoMonto(completo.cabecera.totalDescuentos),
-        totalLiquidoLabel: this.formatoMonto(completo.cabecera.totalLiquido),
-        totalConceptos: completo.resumen.totalConceptos,
-        totalObservaciones: completo.resumen.totalObservaciones,
-        totalTrazas: completo.resumen.totalTrazas,
-        aprobacionLabel: completo.aprobacionOperativa ? 'Aprobado operativamente' : 'Pendiente de aprobación',
-      },
-      trabajadores,
-      observaciones,
-      trazabilidad: completo.trazabilidad.slice(0, 5).map((traza) =>
-        `${traza.codigo}: ${traza.observacion || traza.formula || traza.origen}`,
-      ),
-      advertenciaDetalleFaltante: completo.trabajadores.length === 0
-        ? 'El resultado guardado tiene cabecera, pero no se encontraron detalles asociados.'
-        : null,
-      reemplazoLabel: completo.resumen.fueReemplazado
-        ? 'Este resultado fue reemplazado por un resultado posterior.'
-        : null,
-    };
-  });
-
-  readonly resultadoPreliminar = computed<ResultadoPreliminarView>(() => {
-    const calculo = this.store.calculo();
-    const base = this.baseNominaTrazabilidad();
-    const snapshot = this.store.snapshotActivo();
-
-    if (!calculo) {
-      const guardado = snapshot != null;
-      const estado: ResultadoPreliminarEstado = this.store.errorGuardadoResultado()
-        ? 'error_guardado'
-        : guardado
-          ? 'guardado'
-          : 'sin_resultado';
-      return {
-        estado,
-        estadoLabel: this.etiquetaResultadoPreliminar(estado),
-        descripcionEstado: this.descripcionEstadoGuardado(estado),
-        resumen: {
-          trabajadoresCalculados: snapshot?.totalTrabajadores ?? 0,
-          trabajadoresConObservaciones: snapshot?.totalAdvertencias ?? 0,
-          trabajadoresOmitidos: snapshot?.totalBloqueados ?? 0,
-          totalHaberes: snapshot?.totalHaberes ?? null,
-          totalDescuentos: snapshot?.totalDescuentos ?? null,
-          totalLiquido: snapshot?.totalLiquido ?? null,
-          totalCostoEmpresa: null,
-        },
-        trabajadores: [],
-        bloqueos: [],
-        advertencias: [],
-        informaciones: guardado
-          ? [{
-              codigo: 'RESULTADO_GUARDADO',
-              titulo: 'Resultado preliminar guardado',
-              descripcion: 'Existe un resultado preliminar activo para revisar.',
-            }]
-          : [],
-        detalleTecnico: {
-          versionCalculo: snapshot?.versionMotor ?? 'Version no disponible',
-          identificadorTecnico: snapshot?.hashSnapshot ?? 'Referencia interna no disponible',
-          generadoEn: snapshot?.fechaGeneracion ?? 'Fecha no disponible',
-        },
-        ultimoGuardado: snapshot ? this.ultimoGuardadoDesdeSnapshot(snapshot) : undefined,
-        acciones: {
-          puedeRecalcular: this.validacionCalculo().puedeCalcular,
-          puedeGuardarPreliminar: false,
-          razonNoPuedeGuardar: guardado
-            ? 'No hay cambios para guardar. El resultado preliminar actual ya esta guardado.'
-            : 'Primero calcula preliminarmente la nómina.',
-          helperGuardar: 'Guarda una versión revisable del cálculo. No emite liquidaciones ni cierra el período.',
-          modoGuardadoLabel: 'Al guardar, se reemplazara el resultado preliminar activo del periodo.',
-        },
-      };
-    }
-
-    const bloqueos = this.observacionesResultado(calculo, 'BLOQUEO');
-    const advertencias = this.observacionesResultado(calculo, 'ADVERTENCIA');
-    const trabajadoresCalculadosIds = new Set(calculo.liquidaciones.map((liq) => liq.idPersona));
-    const omitidosBase = (base?.trabajadores ?? [])
-      .filter((trabajador) => !trabajadoresCalculadosIds.has(trabajador.idPersona) || trabajador.estado === 'bloqueado' || trabajador.estado === 'excluido')
-      .map<TrabajadorResultadoPreliminarView>((trabajador) => ({
-        idPersona: `omitido-${trabajador.idPersona}`,
-        trabajadorLabel: trabajador.trabajadorLabel || 'Trabajador sin ficha visible',
-        rutLabel: trabajador.rutLabel || 'RUT no disponible',
-        estadoLabel: 'Omitido',
-        haberesLabel: 'Monto no disponible',
-        descuentosLabel: 'Monto no disponible',
-        liquidoLabel: 'Monto no disponible',
-        observacionLabel: trabajador.observacion || 'No calculado en el resultado preliminar.',
-        accionLabel: 'Revisar trabajadores',
-      }));
-    const trabajadores = [
-      ...calculo.liquidaciones.map<TrabajadorResultadoPreliminarView>((liq) => {
-        const estadoLabel = this.estadoResultadoTrabajador(liq.estado);
-        return {
-          idPersona: liq.idPersona,
-          trabajadorLabel: liq.nombreCompleto?.trim() || 'Trabajador sin ficha visible',
-          rutLabel: liq.rut?.trim() || 'RUT no disponible',
-          estadoLabel,
-          haberesLabel: this.formatoMonto(liq.totalHaberes),
-          descuentosLabel: this.formatoMonto(liq.totalDescuentos),
-          liquidoLabel: this.formatoMonto(liq.liquidoAPago),
-          observacionLabel: liq.issues.length ? liq.issues.map((issue) => issue.mensaje).join('; ') : 'Sin observaciones',
-          ...this.accionResultadoDesdeIssues(liq.issues),
-        };
-      }),
-      ...omitidosBase,
-    ];
-    for (const omitido of omitidosBase) {
-      bloqueos.push({
-        codigo: String(omitido.idPersona),
-        titulo: 'Trabajador omitido del calculo',
-        descripcion: omitido.observacionLabel,
-        accionLabel: 'Revisar trabajadores',
-      });
-    }
-
-    const trabajadoresConObservaciones = trabajadores.filter((t) => t.estadoLabel === 'Con observaciones').length;
-    const trabajadoresOmitidos = trabajadores.filter((t) => t.estadoLabel === 'Omitido' || t.estadoLabel === 'No calculado').length;
-    const estado: ResultadoPreliminarEstado = this.resolverEstadoGuardadoResultado(calculo, bloqueos);
-    const puedeGuardarPreliminar = this.puedeGuardarSnapshot();
-
-    return {
-      estado,
-      estadoLabel: this.etiquetaResultadoPreliminar(estado),
-      descripcionEstado: this.descripcionEstadoGuardado(estado),
-      resumen: {
-        trabajadoresCalculados: calculo.resumen.totalTrabajadoresCalculados,
-        trabajadoresConObservaciones,
-        trabajadoresOmitidos,
-        totalHaberes: calculo.resumen.totalHaberes,
-        totalDescuentos: calculo.resumen.totalDescuentos,
-        totalLiquido: calculo.resumen.totalLiquidoPreliminar,
-        totalCostoEmpresa: null,
-      },
-      trabajadores,
-      bloqueos,
-      advertencias,
-      informaciones: [{
-        codigo: 'RESULTADO_GENERADO',
-        titulo: 'Resultado preliminar generado',
-        descripcion: 'Revisa trabajadores, observaciones y totales antes de guardar.',
-      }],
-      detalleTecnico: {
-        versionCalculo: snapshot?.versionMotor ?? 'Version no disponible',
-        identificadorTecnico: snapshot?.hashSnapshot ?? 'Referencia interna no disponible',
-        generadoEn: calculo.generadoEn,
-      },
-      ultimoGuardado: snapshot ? this.ultimoGuardadoDesdeSnapshot(snapshot) : undefined,
-      acciones: {
-        puedeRecalcular: this.validacionCalculo().puedeCalcular,
-        puedeGuardarPreliminar,
-        razonNoPuedeGuardar: puedeGuardarPreliminar
-          ? undefined
-          : this.razonNoPuedeGuardarResultado(bloqueos),
-        helperGuardar: 'Guarda una versión revisable del cálculo. No emite liquidaciones ni cierra el período.',
-        modoGuardadoLabel: 'Al guardar, se reemplazara el resultado preliminar activo del periodo.',
-      },
-    };
-  });
-
-  readonly revisionAprobacion = computed<RevisionAprobacionView>(() => {
-    const resultado = this.resultadoPreliminar();
-    const validacion = this.validacionCalculo();
-    const guardado = resultado.ultimoGuardado;
-    const hayResultadoActual = this.store.calculo() != null;
-    const hayGuardado = guardado != null;
-    const actualizadoSinGuardar = resultado.estado === 'actualizado_sin_guardar';
-    const bloqueos = [
-      ...resultado.bloqueos,
-      ...validacion.bloqueos.map((item) => this.observacionDesdeValidacion(item)),
-    ];
-    const advertencias = [
-      ...resultado.advertencias,
-      ...validacion.advertencias.map((item) => this.observacionDesdeValidacion(item)),
-    ];
-    const informaciones: ResultadoObservacionView[] = [
-      ...resultado.informaciones,
-      ...validacion.informaciones.map((item) => this.observacionDesdeValidacion(item)),
-    ];
-
-    let estado: RevisionAprobacionEstado;
-    if ((hayResultadoActual || hayGuardado) && (bloqueos.length > 0 || (guardado?.trabajadoresOmitidos ?? 0) > 0)) {
-      estado = 'no_apto';
-    } else if (!hayGuardado) {
-      estado = hayResultadoActual ? 'pendiente_guardado' : 'sin_resultado_guardado';
-    } else if (actualizadoSinGuardar) {
-      estado = 'actualizado_sin_guardar';
-    } else if (advertencias.length > 0 || (guardado?.trabajadoresConObservaciones ?? 0) > 0) {
-      estado = 'pendiente_revision';
-    } else {
-      estado = 'listo';
-    }
-
-    const aprobacion = this.store.aprobacionOperativa();
-    const aprobacionVigente =
-      !!aprobacion &&
-      hayGuardado &&
-      !actualizadoSinGuardar &&
-      aprobacion.identificadorResultado === (this.store.snapshotActivo()?.hashSnapshot ?? null);
-    if (aprobacion) {
-      estado = aprobacionVigente ? 'aprobado' : 'aprobado_desactualizado';
-    }
-
-    const puedeAprobar =
-      hayGuardado &&
-      !actualizadoSinGuardar &&
-      bloqueos.length === 0 &&
-      (guardado?.trabajadoresOmitidos ?? 0) === 0 &&
-      validarPeriodoEntradaMensual(this.store.periodoSeleccionado()) &&
-      !this.store.guardandoSnapshot() &&
-      !this.store.aprobandoResultado() &&
-      !this.nominaEstaCerradaOperativamente();
-
-    return {
-      estado,
-      estadoLabel: this.etiquetaRevisionAprobacion(estado),
-      descripcion: this.descripcionRevisionAprobacion(estado),
-      checklist: this.checklistRevisionAprobacion({
-        hayGuardado,
-        guardado,
-        actualizadoSinGuardar,
-        hayResultadoActual,
-        bloqueos,
-        advertencias,
-      }),
-      bloqueos,
-      advertencias,
-      informaciones,
-      accionPrincipalLabel: actualizadoSinGuardar || estado === 'pendiente_guardado'
-        ? 'Guardar resultado actualizado'
-        : hayGuardado
-          ? 'Revisar resultado guardado'
-          : 'Calcular preliminar',
-      puedeGuardarActualizado: resultado.acciones.puedeGuardarPreliminar,
-      puedeRecalcular: resultado.acciones.puedeRecalcular,
-      puedeAprobar: puedeAprobar && !aprobacionVigente,
-      razonNoPuedeAprobar: this.razonNoPuedeAprobar({
-        hayResultadoActual,
-        hayGuardado,
-        actualizadoSinGuardar,
-        bloqueos,
-        omitidos: guardado?.trabajadoresOmitidos ?? 0,
-        aprobacionVigente,
-      }),
-      aprobacion,
-      notaAprobacion: 'Esta aprobación es interna y no reemplaza el cierre del período ni la emisión de liquidaciones oficiales.',
-    };
-  });
-
   readonly contextoOperativoPeriodo = computed(() =>
     inferirContextoOperativoPeriodo({
       resultado: this.store.resultado(),
@@ -567,6 +289,37 @@ export class ProcesoMensualPresentacionFacade {
       errorEjecucion: this.store.errorEjecucion(),
       nominaCerradaOperativamente: this.nominaEstaCerradaOperativamente(),
       tieneSnapshotPersistido: this.store.snapshotActivo() != null,
+    }),
+  );
+
+  readonly resultadoPreliminar = computed<ResultadoPreliminarView>(() =>
+    buildResultadoPreliminarView({
+      calculo: this.store.calculo(),
+      base: this.baseNominaTrazabilidad(),
+      snapshotActivo: this.store.snapshotActivo(),
+      snapshotCompleto: this.store.snapshotCompleto(),
+      errorGuardadoResultado: this.store.errorGuardadoResultado(),
+      identificadorResultadoGuardadoActual: this.store.identificadorResultadoGuardadoActual(),
+      puedeCalcular: this.validacionCalculo().puedeCalcular,
+      puedeGuardarPreliminar: this.puedeGuardarSnapshot(),
+      periodoValido: validarPeriodoEntradaMensual(this.store.periodoSeleccionado()),
+      nominaCerradaOperativamente: this.nominaEstaCerradaOperativamente(),
+      errorEjecucion: this.store.errorEjecucion(),
+      guardandoSnapshot: this.store.guardandoSnapshot(),
+    }),
+  );
+
+  readonly revisionAprobacion = computed<RevisionAprobacionView>(() =>
+    buildRevisionAprobacionView({
+      resultadoPreliminar: this.resultadoPreliminar(),
+      validacionCalculo: this.validacionCalculo(),
+      hayResultadoActual: this.store.calculo() != null,
+      snapshotHash: this.store.snapshotActivo()?.hashSnapshot ?? null,
+      aprobacionOperativa: this.store.aprobacionOperativa(),
+      guardandoSnapshot: this.store.guardandoSnapshot(),
+      aprobandoResultado: this.store.aprobandoResultado(),
+      nominaCerradaOperativamente: this.nominaEstaCerradaOperativamente(),
+      periodoValido: validarPeriodoEntradaMensual(this.store.periodoSeleccionado()),
     }),
   );
 
@@ -797,8 +550,8 @@ export class ProcesoMensualPresentacionFacade {
     this.estadoOperativo()
       .queFaltaAhora.slice(0, 6)
       .map((item) => ({
-        titulo: this.humanizarCopyOperativo(item.titulo),
-        detalle: this.humanizarCopyOperativo(item.descripcion),
+        titulo: payrollHumanizarCopyOperativo(item.titulo),
+        detalle: payrollHumanizarCopyOperativo(item.descripcion),
       }))
       .filter((item) => item.titulo.length > 0),
   );
@@ -841,189 +594,68 @@ export class ProcesoMensualPresentacionFacade {
     });
   });
 
-  readonly payrollWorkerDetailRows = computed<PayrollWorkerDetailRow[]>(() => {
-    const base = this.baseNominaTrazabilidad();
-    if (base?.trabajadores.length) {
-      return base.trabajadores.map((trabajador) => ({
-        trabajador: trabajador.trabajadorLabel || 'Trabajador sin ficha visible',
-        rut: trabajador.rutLabel || 'RUT no disponible',
-        estado: this.etiquetaEstadoBaseTrabajador(trabajador.estado),
-        observacion: trabajador.observacion || 'Sin observaciones',
-        accion: trabajador.estado === 'bloqueado' || trabajador.estado === 'excluido'
-          ? 'Revisar ficha del trabajador'
-          : trabajador.estado === 'con_observaciones'
-            ? 'Revisar antes de confirmar'
-            : 'Sin acción pendiente',
-      }));
-    }
+  readonly payrollWorkerDetailRows = computed<PayrollWorkerDetailRow[]>(() =>
+    buildPayrollWorkerDetailRows({
+      base: this.baseNominaTrazabilidad(),
+      expediente: this.expedienteNominaPeriodo(),
+      resultadoTrabajadores: this.resultadoPreliminar().trabajadores,
+    }),
+  );
 
-    return this.resultadoPreliminar().trabajadores.map((trabajador) => ({
-      trabajador: trabajador.trabajadorLabel,
-      rut: trabajador.rutLabel,
-      estado: trabajador.estadoLabel,
-      observacion: trabajador.observacionLabel,
-      accion: trabajador.accionLabel ?? 'Sin acción pendiente',
-    }));
-  });
+  readonly payrollMovementDetailRows = computed<PayrollMovementDetailRow[]>(() =>
+    buildPayrollMovementDetailRows({
+      entradasMensuales: this.store.resultado()?.entradasMensuales,
+      base: this.baseNominaTrazabilidad(),
+      resultadoTrabajadores: this.resultadoPreliminar().trabajadores,
+    }),
+  );
 
-  readonly payrollMovementDetailRows = computed<PayrollMovementDetailRow[]>(() => {
-    const trabajadorPorId = this.trabajadorLabelPorId();
-    return (this.store.resultado()?.entradasMensuales ?? [])
-      .filter((entrada) => entrada.origen !== 'recurrente')
-      .map((entrada) => ({
-        trabajador: trabajadorPorId.get(entrada.idPersona) ?? 'Trabajador por revisar',
-        concepto: this.etiquetaConceptoEntrada(entrada.idConcepto, entrada.tipoMovimiento, entrada.categoria),
-        tipo: this.etiquetaTipoEntrada(entrada.tipoEntrada),
-        monto: this.formatoMonto(entrada.monto),
-        estado: this.etiquetaEstadoEntrada(entrada.estado),
-        accion: entrada.bloqueaProceso || entrada.requiereRevision ? 'Revisar movimiento del mes' : 'Sin acción pendiente',
-      }));
-  });
-
-  readonly payrollRecurrentDetailRows = computed<PayrollRecurrentDetailRow[]>(() => {
-    const trabajadorPorId = this.trabajadorLabelPorId();
-    const recurrentesDesdeEntradas = (this.store.resultado()?.entradasMensuales ?? [])
-      .filter((entrada) => entrada.origen === 'recurrente')
-      .map<PayrollRecurrentDetailRow>((entrada) => ({
-        trabajador: trabajadorPorId.get(entrada.idPersona) ?? 'Trabajador por revisar',
-        concepto: this.etiquetaConceptoEntrada(entrada.idConcepto, entrada.tipoMovimiento, entrada.categoria),
-        periodicidad: 'Mensual',
-        monto: this.formatoMonto(entrada.monto),
-        estado: this.etiquetaEstadoEntrada(entrada.estado),
-        accion: entrada.bloqueaProceso || entrada.requiereRevision ? 'Revisar asignación recurrente' : 'Sin acción pendiente',
-      }));
-
-    if (recurrentesDesdeEntradas.length) {
-      return recurrentesDesdeEntradas;
-    }
-
-    return (this.baseNominaTrazabilidad()?.trabajadores ?? [])
-      .filter((trabajador) => trabajador.asignacionesRecurrentes > 0)
-      .map((trabajador) => ({
-        trabajador: trabajador.trabajadorLabel || 'Trabajador sin ficha visible',
-        concepto: `${trabajador.asignacionesRecurrentes} asignación(es) recurrente(s)`,
-        periodicidad: 'Mensual',
-        monto: 'Ver detalle en recurrentes',
-        estado: trabajador.estado === 'bloqueado' ? 'Por revisar' : 'Considerada',
-        accion: 'Ir a asignaciones recurrentes',
-      }));
-  });
+  readonly payrollRecurrentDetailRows = computed<PayrollRecurrentDetailRow[]>(() =>
+    buildPayrollRecurrentDetailRows({
+      entradasMensuales: this.store.resultado()?.entradasMensuales,
+      base: this.baseNominaTrazabilidad(),
+      resultadoTrabajadores: this.resultadoPreliminar().trabajadores,
+    }),
+  );
 
   readonly payrollObservationDetailRows = computed<PayrollObservationDetailRow[]>(() => {
     const estado = this.estadoOperativo();
-    const rows: PayrollObservationDetailRow[] = [
-      ...estado.bloqueos.map((item) => this.observacionGridDesdePendiente(item, 'Bloqueo')),
-      ...estado.advertencias.map((item) => this.observacionGridDesdePendiente(item, 'Advertencia')),
-      ...estado.informaciones.map((item) => this.observacionGridDesdePendiente(item, 'Información')),
-    ];
-
-    for (const item of this.resultadoPreliminar().bloqueos) {
-      rows.push(this.observacionGridDesdeResultado(item, 'Bloqueo'));
-    }
-    for (const item of this.resultadoPreliminar().advertencias) {
-      rows.push(this.observacionGridDesdeResultado(item, 'Advertencia'));
-    }
-    return rows;
+    return buildPayrollObservationDetailRows({
+      bloqueosOperativos: estado.bloqueos,
+      advertenciasOperativas: estado.advertencias,
+      informacionesOperativas: estado.informaciones,
+      resultadoBloqueos: this.resultadoPreliminar().bloqueos,
+      resultadoAdvertencias: this.resultadoPreliminar().advertencias,
+    });
   });
 
   readonly payrollParametroSeguimientoItems = computed<PayrollSeguimientoItem[]>(() => {
     const estado = this.estadoOperativo();
-    const items = [...estado.bloqueos, ...estado.advertencias, ...estado.informaciones]
-      .filter((item) => item.ruta === '/parametros' || this.ambitoDesdeCodigo(item.codigo) === 'Parámetros')
-      .map((item) => ({
-        titulo: item.titulo,
-        descripcion: item.descripcion,
-        estado: this.etiquetaPendienteVisual(item.severidad),
-        estadoClase: this.clasePendienteVisual(item.severidad),
-        accion: item.accionLabel ?? 'Revisar parámetros',
-        ruta: item.ruta ?? '/parametros',
-      }));
-
-    if (items.length) return items;
-
-    const parametrosListos = this.dashboardResumen().parametrosListos;
-    return [{
-      titulo: parametrosListos ? 'Parámetros revisados' : 'Parámetros del período',
-      descripcion: parametrosListos == null
-        ? 'Genera la nómina mensual para evaluar parámetros del período.'
-        : parametrosListos
-          ? 'Los parámetros mínimos del período están disponibles para la nómina.'
-          : 'Hay parámetros del período que requieren revisión antes de confirmar.',
-      estado: parametrosListos ? 'Revisados' : parametrosListos == null ? 'Sin evaluar' : 'Revisar',
-      estadoClase: parametrosListos ? 'payroll-state-chip payroll-state-chip--success' : 'payroll-state-chip payroll-state-chip--warning',
-      accion: 'Abrir parámetros',
-      ruta: '/parametros',
-    }];
+    return buildPayrollParametroSeguimientoItems({
+      bloqueos: estado.bloqueos,
+      advertencias: estado.advertencias,
+      informaciones: estado.informaciones,
+      parametrosListos: this.dashboardResumen().parametrosListos,
+    });
   });
 
-  readonly payrollMovimientoRecurrenteSeguimientoItems = computed<PayrollSeguimientoItem[]>(() => {
-    const movimientos = this.payrollMovementDetailRows().map((row) => ({
-      titulo: row.concepto,
-      descripcion: `${row.trabajador} · ${row.tipo} · ${row.monto}`,
-      estado: row.estado,
-      estadoClase: this.claseChipRevision(row.estado),
-      accion: row.accion === 'Sin acción pendiente' ? 'Ver movimientos' : row.accion,
-      ruta: '/remuneraciones/novedades-mensuales',
-    }));
-    const recurrentes = this.payrollRecurrentDetailRows().map((row) => ({
-      titulo: row.concepto,
-      descripcion: `${row.trabajador} · ${row.periodicidad} · ${row.monto}`,
-      estado: row.estado,
-      estadoClase: this.claseChipRevision(row.estado),
-      accion: row.accion === 'Sin acción pendiente' ? 'Ver recurrentes' : row.accion,
-      ruta: '/remuneraciones/haberes-descuentos',
-    }));
-    const items = [...movimientos, ...recurrentes].slice(0, 12);
-    if (items.length) return items;
+  readonly payrollMovimientoRecurrenteSeguimientoItems = computed<PayrollSeguimientoItem[]>(() =>
+    buildPayrollMovimientoRecurrenteSeguimientoItems(
+      this.payrollMovementDetailRows(),
+      this.payrollRecurrentDetailRows(),
+    ),
+  );
 
-    return [{
-      titulo: 'Movimientos y recurrentes',
-      descripcion: 'No hay movimientos del mes ni asignaciones recurrentes aplicables visibles para este período.',
-      estado: 'Sin movimientos',
-      estadoClase: 'payroll-state-chip payroll-state-chip--info',
-      accion: 'Abrir movimientos',
-      ruta: '/remuneraciones/novedades-mensuales',
-    }];
-  });
+  readonly payrollResultadoSeguimientoItems = computed<PayrollSeguimientoItem[]>(() =>
+    buildPayrollResultadoSeguimientoItems({
+      resultado: this.resultadoPreliminar(),
+      snapshot: this.store.snapshotActivo(),
+    }),
+  );
 
-  readonly payrollResultadoSeguimientoItems = computed<PayrollSeguimientoItem[]>(() => {
-    const resultado = this.resultadoPreliminar();
-    const snapshot = this.store.snapshotActivo();
-    return [
-      {
-        titulo: 'Trabajadores calculados',
-        descripcion: `${resultado.resumen.trabajadoresCalculados} trabajadores calculados, ${resultado.resumen.trabajadoresConObservaciones} con observaciones y ${resultado.resumen.trabajadoresOmitidos} omitidos.`,
-        estado: resultado.estadoLabel,
-        estadoClase: this.claseChipRevision(resultado.estadoLabel),
-        accion: 'Revisar trabajadores',
-      },
-      {
-        titulo: 'Totales preliminares',
-        descripcion: `Haberes ${this.formatoMonto(resultado.resumen.totalHaberes)} · Descuentos ${this.formatoMonto(resultado.resumen.totalDescuentos)} · Líquido ${this.formatoMonto(resultado.resumen.totalLiquido)}.`,
-        estado: resultado.resumen.totalLiquido == null ? 'Sin resultado' : 'Calculado',
-        estadoClase: resultado.resumen.totalLiquido == null ? 'payroll-state-chip payroll-state-chip--info' : 'payroll-state-chip payroll-state-chip--success',
-        accion: 'Ver resumen',
-      },
-      {
-        titulo: 'Versión revisable',
-        descripcion: snapshot ? `Guardada el ${this.formatoFechaHora(snapshot.fechaGeneracion)}.` : 'Aún no existe una versión revisable guardada para confirmar.',
-        estado: snapshot ? 'Guardada' : 'Pendiente',
-        estadoClase: snapshot ? 'payroll-state-chip payroll-state-chip--success' : 'payroll-state-chip payroll-state-chip--warning',
-        accion: snapshot ? 'Ver detalle' : 'Generar nómina',
-      },
-    ];
-  });
-
-  readonly payrollResultDetailRows = computed<PayrollResultDetailRow[]>(() => {
-    return this.resultadoPreliminar().trabajadores.map((trabajador) => ({
-      trabajador: trabajador.trabajadorLabel,
-      haberes: trabajador.haberesLabel,
-      descuentos: trabajador.descuentosLabel,
-      liquido: trabajador.liquidoLabel,
-      estado: trabajador.estadoLabel,
-      observacion: trabajador.observacionLabel,
-    }));
-  });
+  readonly payrollResultDetailRows = computed<PayrollResultDetailRow[]>(() =>
+    buildPayrollResultDetailRows(this.resultadoPreliminar()),
+  );
 
   mostrarDetalleOperativo(etapa: EtapaOperativaActiva): boolean {
     const estado = this.estadoOperativo().estadoClave;
@@ -1088,6 +720,9 @@ export class ProcesoMensualPresentacionFacade {
   }
 
   abrirOverlayRevision(tab: DetalleOperativoTab): void {
+    if (this.store.snapshotActivo()) {
+      this.store.asegurarSnapshotCompletoCargado();
+    }
     this.overlay.set({ kind: 'revision', tab });
   }
 
@@ -1673,18 +1308,7 @@ export class ProcesoMensualPresentacionFacade {
   }
 
   etiquetaEstadoBaseTrabajador(estado: BaseNominaTrabajadorEstado): string {
-    switch (estado) {
-      case 'listo':
-        return 'Listo para calculo';
-      case 'con_observaciones':
-        return 'Con observaciones';
-      case 'bloqueado':
-        return 'Bloqueado';
-      case 'excluido':
-        return 'Excluido';
-      default:
-        return estado;
-    }
+    return payrollEtiquetaEstadoBaseTrabajador(estado);
   }
 
   badgeVariantEstadoBaseTrabajador(
@@ -1772,125 +1396,6 @@ export class ProcesoMensualPresentacionFacade {
     }
   }
 
-  private etiquetaRevisionAprobacion(estado: RevisionAprobacionEstado): string {
-    switch (estado) {
-      case 'aprobado':
-        return 'Aprobado operativamente';
-      case 'aprobado_desactualizado':
-        return 'Aprobacion desactualizada';
-      case 'pendiente_guardado':
-        return 'Pendiente de guardado';
-      case 'pendiente_revision':
-        return 'Lista para confirmar con advertencias';
-      case 'actualizado_sin_guardar':
-        return 'Resultado actualizado sin guardar';
-      case 'no_apto':
-        return 'No apto para aprobacion';
-      case 'listo':
-        return 'Lista para confirmar';
-      case 'sin_resultado_guardado':
-      default:
-        return 'Sin resultado guardado';
-    }
-  }
-
-  private descripcionRevisionAprobacion(estado: RevisionAprobacionEstado): string {
-    switch (estado) {
-      case 'aprobado':
-        return 'Revision de nomina confirmada.';
-      case 'aprobado_desactualizado':
-        return 'La aprobacion operativa anterior quedo desactualizada porque existe un resultado posterior. Guarda y aprueba nuevamente el resultado actualizado.';
-      case 'pendiente_guardado':
-        return 'El resultado calculado debe guardarse antes de revisarlo para aprobacion.';
-      case 'pendiente_revision':
-        return 'La version revisable esta lista para confirmacion de RRHH, con advertencias visibles.';
-      case 'actualizado_sin_guardar':
-        return 'Hay un calculo preliminar mas reciente que el ultimo guardado. Guarda la version actual antes de revisarla.';
-      case 'no_apto':
-        return 'Existen bloqueos que impiden aprobar operativamente este resultado.';
-      case 'listo':
-        return 'La version revisable esta lista para confirmacion de RRHH.';
-      case 'sin_resultado_guardado':
-      default:
-        return 'Guarda una version revisable antes de confirmar la nomina.';
-    }
-  }
-
-  private checklistRevisionAprobacion(input: {
-    hayGuardado: boolean;
-    guardado: ResultadoPreliminarView['ultimoGuardado'];
-    actualizadoSinGuardar: boolean;
-    hayResultadoActual: boolean;
-    bloqueos: ResultadoObservacionView[];
-    advertencias: ResultadoObservacionView[];
-  }): RevisionAprobacionChecklistItemView[] {
-    const totalCalculados = input.guardado?.trabajadoresCalculados ?? 0;
-    const omitidos = input.guardado?.trabajadoresOmitidos ?? 0;
-    return [
-      {
-        titulo: 'Resultado preliminar guardado',
-        descripcion: input.hayGuardado
-          ? 'Existe una version preliminar activa para este periodo.'
-          : input.hayResultadoActual
-            ? 'Guarda el calculo preliminar para que quede disponible para revision.'
-            : 'Primero calcula y guarda un resultado preliminar.',
-        estado: input.hayGuardado ? 'Completo' : 'Pendiente',
-      },
-      {
-        titulo: 'Resultado guardado vigente',
-        descripcion: input.actualizadoSinGuardar
-          ? 'El calculo actual es mas reciente que la version guardada.'
-          : input.hayGuardado
-            ? 'La version guardada coincide con el ultimo resultado disponible.'
-            : 'Se evaluara despues del guardado.',
-        estado: !input.hayGuardado ? 'Pendiente' : input.actualizadoSinGuardar ? 'Requiere atencion' : 'Completo',
-      },
-      {
-        titulo: 'Trabajadores calculados revisables',
-        descripcion: input.hayGuardado
-          ? `${totalCalculados} trabajador(es) calculado(s) en el resultado guardado.`
-          : 'Aun no hay trabajadores guardados para revisar.',
-        estado: !input.hayGuardado ? 'Pendiente' : totalCalculados > 0 ? 'Completo' : 'Requiere atencion',
-      },
-      {
-        titulo: 'Sin bloqueos operativos',
-        descripcion: input.bloqueos.length
-          ? 'Hay bloqueos que requieren correccion antes de avanzar.'
-          : 'No hay bloqueos visibles en la revision operativa.',
-        estado: input.bloqueos.length || omitidos > 0 ? 'Requiere atencion' : input.hayGuardado ? 'Completo' : 'Pendiente',
-      },
-      {
-        titulo: 'Advertencias visibles para decision RRHH',
-        descripcion: input.advertencias.length
-          ? 'Las advertencias quedan visibles para decidir si se corrigen o se aceptan operativamente.'
-          : 'No hay advertencias pendientes en la version revisada.',
-        estado: !input.hayGuardado ? 'Pendiente' : input.advertencias.length ? 'Requiere atencion' : 'Completo',
-      },
-      {
-        titulo: 'Resultado aprobado operativamente',
-        descripcion: this.store.aprobacionOperativa()
-          ? 'RRHH registro una aprobacion operativa interna para el resultado preliminar.'
-          : 'Pendiente de aprobacion operativa interna por RRHH.',
-        estado: this.store.aprobacionOperativa() ? 'Completo' : input.hayGuardado ? 'Pendiente' : 'No aplica',
-      },
-      {
-        titulo: 'Acciones legales pendientes para fase posterior',
-        descripcion: 'Liquidaciones oficiales, cierre, Previred, LRE y bancos no se ejecutan en esta revision.',
-        estado: 'No aplica',
-      },
-    ];
-  }
-
-  private observacionDesdeValidacion(item: ValidacionOperativaItemView): ResultadoObservacionView {
-    return {
-      codigo: item.codigo,
-      titulo: item.titulo,
-      descripcion: item.descripcion,
-      accionLabel: item.accionLabel,
-      ruta: item.ruta,
-    };
-  }
-
   private pendienteDesdeValidacion(
     item: ValidacionOperativaItemView,
     severidad: ProcesoMensualEstadoSeveridad = item.severidad === 'bloqueo' ? 'danger' : item.severidad === 'advertencia' ? 'warning' : 'info',
@@ -1918,284 +1423,6 @@ export class ProcesoMensualPresentacionFacade {
       ruta: item.ruta,
       accionLabel: item.accionLabel,
     };
-  }
-
-  private etiquetaResultadoPreliminar(estado: ResultadoPreliminarEstado): string {
-    switch (estado) {
-      case 'no_guardado':
-        return 'Resultado no guardado';
-      case 'guardado':
-        return 'Resultado guardado';
-      case 'actualizado_sin_guardar':
-        return 'Resultado actualizado sin guardar';
-      case 'error_guardado':
-        return 'No se pudo guardar';
-      case 'con_bloqueos':
-        return 'Resultado con bloqueos';
-      case 'sin_resultado':
-      default:
-        return 'Sin resultado';
-    }
-  }
-
-  private descripcionEstadoGuardado(estado: ResultadoPreliminarEstado): string {
-    switch (estado) {
-      case 'no_guardado':
-        return 'Revisa el calculo preliminar y guardalo como version revisable si corresponde.';
-      case 'guardado':
-        return 'Este resultado preliminar quedo guardado como version revisable. No emite liquidaciones ni cierra el periodo.';
-      case 'actualizado_sin_guardar':
-        return 'Volviste a calcular despues del ultimo guardado. Guarda esta nueva version si quieres conservarla.';
-      case 'error_guardado':
-        return 'No se pudo guardar el resultado preliminar. Intenta nuevamente o revisa las observaciones del resultado.';
-      case 'con_bloqueos':
-        return 'No puedes guardar este resultado preliminar. Hay bloqueos del resultado que deben resolverse.';
-      case 'sin_resultado':
-      default:
-        return 'Primero calcula preliminarmente la nomina para revisar montos y observaciones antes de guardar.';
-    }
-  }
-
-  private resolverEstadoGuardadoResultado(
-    calculo: MotorCalculoPeriodoResultado,
-    bloqueos: ResultadoObservacionView[],
-  ): ResultadoPreliminarEstado {
-    if (this.store.errorGuardadoResultado()) return 'error_guardado';
-    if (calculo.estado === 'con_bloqueos' || bloqueos.length > 0) return 'con_bloqueos';
-    const snapshot = this.store.snapshotActivo();
-    if (!snapshot) return 'no_guardado';
-    return this.store.identificadorResultadoGuardadoActual() === snapshot.hashSnapshot
-      ? 'guardado'
-      : 'actualizado_sin_guardar';
-  }
-
-  private razonNoPuedeGuardarResultado(bloqueos: ResultadoObservacionView[]): string {
-    if (!validarPeriodoEntradaMensual(this.store.periodoSeleccionado())) return 'El periodo seleccionado no es valido.';
-    if (this.nominaEstaCerradaOperativamente()) return 'La nómina del período está cerrada. Para modificarla, será necesario reabrir el período en una fase posterior.';
-    if (!this.store.calculo()) return 'Primero calcula preliminarmente la nómina.';
-    if (this.store.errorEjecucion()) return 'Hay un error tecnico activo que debes resolver antes de guardar.';
-    if (bloqueos.length > 0) return 'El resultado tiene bloqueos que deben revisarse.';
-    const snapshot = this.store.snapshotActivo();
-    if (snapshot && this.store.identificadorResultadoGuardadoActual() === snapshot.hashSnapshot) {
-      return 'No hay cambios para guardar. El resultado preliminar actual ya esta guardado.';
-    }
-    if (this.store.guardandoSnapshot()) return 'El guardado del resultado preliminar esta en curso.';
-    return 'Genera un resultado preliminar sin bloqueos antes de guardar.';
-  }
-
-  private ultimoGuardadoDesdeSnapshot(snapshot: NominaCalculoPeriodoSnapshot): ResultadoPreliminarView['ultimoGuardado'] {
-    const advertencias = snapshot.totalAdvertencias ?? 0;
-    return {
-      versionLabel: snapshot.idCalculoPeriodo
-        ? `Disponible como referencia interna ${snapshot.idCalculoPeriodo}`
-        : 'Version numerica no disponible en esta etapa.',
-      fechaGuardadoLabel: this.formatoFechaHora(snapshot.fechaGeneracion),
-      versionCalculoLabel: snapshot.versionMotor || 'Version no disponible',
-      identificadorTecnicoLabel: snapshot.hashSnapshot || 'Referencia interna no disponible',
-      estadoLabel: this.etiquetaEstadoSnapshot(snapshot.estado),
-      trabajadoresCalculados: snapshot.totalTrabajadores,
-      trabajadoresConObservaciones: advertencias,
-      trabajadoresOmitidos: snapshot.totalBloqueados,
-      totalLiquidoLabel: this.formatoMonto(snapshot.totalLiquido),
-      advertenciasLabel: advertencias > 0
-        ? `Este resultado se guardo con ${advertencias} advertencia(s) no bloqueante(s).`
-        : 'Resultado guardado sin advertencias.',
-    };
-  }
-
-  private etiquetaEstadoSnapshotTrabajador(estado: MotorCalculoEstadoTrabajador): string {
-    switch (estado) {
-      case 'calculado_preliminar':
-        return 'Calculado';
-      case 'con_advertencias':
-        return 'Con observaciones';
-      case 'con_bloqueos':
-        return 'Con bloqueos';
-      default:
-        return 'No calculado';
-    }
-  }
-
-  private etiquetaConceptoSnapshot(concepto: NominaCalculoConceptoSnapshot): string {
-    const nombre = concepto.nombreConceptoSnapshot?.trim() || 'Concepto no disponible';
-    const codigo = concepto.codigoLreSnapshot?.trim();
-    return `${nombre}${codigo ? ` (${codigo})` : ''}: ${this.formatoMonto(concepto.monto)}`;
-  }
-
-  private etiquetaNivelObservacion(severidad: MotorCalculoSeveridad): SnapshotCompletoObservacionView['nivelLabel'] {
-    switch (severidad) {
-      case 'BLOQUEO':
-        return 'Bloqueo';
-      case 'ADVERTENCIA':
-        return 'Advertencia';
-      case 'INFO':
-      default:
-        return 'Informacion';
-    }
-  }
-
-  private etiquetaEstadoSnapshot(estado: NominaCalculoPeriodoSnapshot['estado']): string {
-    switch (estado) {
-      case 'preliminar':
-        return 'Preliminar';
-      case 'recalculado':
-        return 'Recalculado';
-      case 'observado':
-        return 'Observado';
-      case 'listo_para_revision':
-        return 'Listo para revision';
-      case 'aprobado_para_liquidacion':
-        return 'Aprobado para fase posterior';
-      case 'anulado':
-        return 'Anulado';
-      case 'borrador':
-      default:
-        return 'Borrador';
-    }
-  }
-
-  private razonNoPuedeAprobar(input: {
-    hayResultadoActual: boolean;
-    hayGuardado: boolean;
-    actualizadoSinGuardar: boolean;
-    bloqueos: ResultadoObservacionView[];
-    omitidos: number;
-    aprobacionVigente: boolean;
-  }): string | undefined {
-    if (input.aprobacionVigente) return 'El resultado preliminar guardado ya esta aprobado operativamente.';
-    if (this.nominaEstaCerradaOperativamente()) return 'La nómina del período está cerrada. Para modificarla, será necesario reabrir el período en una fase posterior.';
-    if (!validarPeriodoEntradaMensual(this.store.periodoSeleccionado())) return 'El periodo no es valido para aprobacion operativa.';
-    if (!input.hayResultadoActual && !input.hayGuardado) return 'Primero calcula el resultado preliminar.';
-    if (!input.hayGuardado) return 'Primero guarda el resultado preliminar.';
-    if (input.actualizadoSinGuardar) return 'Hay un resultado actualizado sin guardar.';
-    if (input.bloqueos.length > 0 || input.omitidos > 0) return 'Existen bloqueos operativos pendientes.';
-    return undefined;
-  }
-
-  private estadoResultadoTrabajador(estado: string): TrabajadorResultadoPreliminarView['estadoLabel'] {
-    switch (estado) {
-      case 'calculado_preliminar':
-        return 'Calculado';
-      case 'con_advertencias':
-        return 'Con observaciones';
-      case 'con_bloqueos':
-        return 'Omitido';
-      default:
-        return 'No calculado';
-    }
-  }
-
-  private observacionesResultado(
-    calculo: MotorCalculoPeriodoResultado,
-    severidad: MotorCalculoIssue['severidad'],
-  ): ResultadoObservacionView[] {
-    return [
-      ...calculo.issues,
-      ...calculo.liquidaciones.flatMap((liq) => liq.issues),
-    ]
-      .filter((issue) => issue.severidad === severidad)
-      .map((issue) => ({
-        codigo: issue.codigo,
-        titulo: severidad === 'BLOQUEO' ? 'Bloqueo del resultado' : 'Advertencia del resultado',
-        descripcion: issue.mensaje,
-        ...this.accionResultadoDesdeIssues([issue]),
-      }));
-  }
-
-  private accionResultadoDesdeIssues(
-    issues: readonly MotorCalculoIssue[],
-  ): Pick<ResultadoObservacionView, 'accionLabel' | 'ruta'> {
-    const origen = issues.map((issue) => `${issue.origen} ${issue.codigo}`.toLowerCase()).join(' ');
-    if (origen.includes('entrada') || origen.includes('movimiento')) {
-      return { accionLabel: 'Revisar movimientos', ruta: '/remuneraciones/novedades-mensuales' };
-    }
-    if (origen.includes('recurrente') || origen.includes('haber')) {
-      return { accionLabel: 'Revisar recurrentes', ruta: '/remuneraciones/haberes-descuentos' };
-    }
-    return { accionLabel: 'Revisar trabajadores' };
-  }
-
-  private trabajadorLabelPorId(): Map<number, string> {
-    const trabajadores = new Map<number, string>();
-    for (const trabajador of this.baseNominaTrazabilidad()?.trabajadores ?? []) {
-      trabajadores.set(trabajador.idPersona, trabajador.trabajadorLabel || 'Trabajador sin ficha visible');
-    }
-    for (const trabajador of this.resultadoPreliminar().trabajadores) {
-      if (typeof trabajador.idPersona === 'number') {
-        trabajadores.set(trabajador.idPersona, trabajador.trabajadorLabel);
-      }
-    }
-    return trabajadores;
-  }
-
-  private observacionGridDesdePendiente(
-    item: ProcesoMensualPendienteVm,
-    severidad: PayrollObservationDetailRow['severidad'],
-  ): PayrollObservationDetailRow {
-    return {
-      severidad,
-      ambito: this.ambitoDesdeCodigo(item.codigo),
-      mensaje: item.descripcion || item.titulo,
-      accion: item.accionLabel ?? (item.ruta ? 'Revisar origen' : 'Revisar en el período'),
-    };
-  }
-
-  private observacionGridDesdeResultado(
-    item: ResultadoObservacionView,
-    severidad: PayrollObservationDetailRow['severidad'],
-  ): PayrollObservationDetailRow {
-    return {
-      severidad,
-      ambito: this.ambitoDesdeCodigo(item.codigo),
-      mensaje: item.descripcion || item.titulo,
-      accion: item.accionLabel ?? 'Revisar resultado preliminar',
-    };
-  }
-
-  private ambitoDesdeCodigo(codigo: string): string {
-    const normalizado = codigo.toLowerCase();
-    if (normalizado.includes('param')) return 'Parámetros';
-    if (normalizado.includes('mov') || normalizado.includes('entrada')) return 'Movimientos';
-    if (normalizado.includes('recurrente') || normalizado.includes('haber')) return 'Recurrentes';
-    if (normalizado.includes('trab') || normalizado.includes('persona')) return 'Trabajadores';
-    if (normalizado.includes('cierre')) return 'Confirmación de nómina';
-    return 'Período';
-  }
-
-  private etiquetaConceptoEntrada(idConcepto: number, tipoMovimiento: string | null, categoria: string | null): string {
-    const partes = [tipoMovimiento, categoria].filter((item): item is string => Boolean(item?.trim()));
-    return partes.length ? partes.join(' · ') : `Concepto ${idConcepto}`;
-  }
-
-  private etiquetaTipoEntrada(tipo: string): string {
-    const labels: Record<string, string> = {
-      haber: 'Haber',
-      descuento: 'Descuento',
-      ausencia: 'Ausencia',
-      licencia: 'Licencia',
-      anticipo: 'Anticipo',
-      ajuste: 'Ajuste',
-      retroactivo: 'Retroactivo',
-      reintegro: 'Reintegro',
-      otro: 'Otro',
-    };
-    return labels[tipo] ?? tipo;
-  }
-
-  private etiquetaEstadoEntrada(estado: string): string {
-    const labels: Record<string, string> = {
-      borrador: 'Borrador',
-      pendiente_revision: 'Pendiente de revisión',
-      observada: 'Observada',
-      aprobada: 'Aprobada',
-      rechazada: 'Rechazada',
-      incorporada_a_pre_nomina: 'Incorporada a base',
-      calculada: 'Calculada',
-      anulada: 'Anulada',
-      legacy_validado: 'Validada',
-      legacy_bloqueado: 'Bloqueada',
-    };
-    return labels[estado] ?? estado;
   }
 
   formatoMonto(valor: number | null | undefined): string {
@@ -2232,14 +1459,4 @@ export class ProcesoMensualPresentacionFacade {
     return buildResumenRevisionTrabajadores({ listos: 0, porRevisar: 0, bloqueados: 0, tieneDatos: false });
   }
 
-  private humanizarCopyOperativo(texto: string): string {
-    const limpio = texto
-      .replace(/\bFALTANTE\b/gi, '')
-      .replace(/\bis_null\b/gi, '')
-      .replace(/sis_fila_mensual/gi, '')
-      .replace(/\b(rpc_|tbl_|sis_)[a-z0-9_]+\b/gi, '')
-      .replace(/\s{2,}/g, ' ')
-      .trim();
-    return limpio || 'Revisar antes de continuar.';
-  }
 }

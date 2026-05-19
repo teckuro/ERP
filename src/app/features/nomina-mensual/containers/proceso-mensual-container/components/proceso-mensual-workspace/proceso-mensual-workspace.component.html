@@ -223,8 +223,69 @@
             }
           }
           @case ('detalle') {
+            @let expediente = f.expedienteNominaPeriodo();
             @let detalle = f.nominaDetallePanel();
-            @if (detalle.oficial) {
+            @if (expediente.visible) {
+              @if (expediente.estado === 'cargando' || expediente.estado === 'error_carga' || expediente.estado === 'detalle_no_disponible') {
+                <div class="payroll-expediente-panel payroll-expediente-panel--estado">
+                  <h3>{{ expediente.titulo }}</h3>
+                  <p>{{ expediente.mensajeEstado }}</p>
+                  @if (expediente.totales) {
+                    <dl class="payroll-expediente-panel__resumen">
+                      <div><dt>Trabajadores en cabecera</dt><dd>{{ expediente.totales.trabajadores }}</dd></div>
+                      <div><dt>Líquido registrado</dt><dd>{{ f.formatoMonto(expediente.totales.liquido) }}</dd></div>
+                    </dl>
+                  }
+                  @if (expediente.estado === 'error_carga') {
+                    <button type="button" class="payroll-focus__primary" (click)="f.consultarDetalleResultadoGuardado()">
+                      Reintentar consulta
+                    </button>
+                  }
+                </div>
+              } @else {
+                <div class="payroll-expediente-panel">
+                  <header class="payroll-expediente-panel__header">
+                    <h3>{{ expediente.titulo }}</h3>
+                    <p>{{ expediente.bajada }}</p>
+                  </header>
+                  @if (expediente.snapshot && expediente.totales) {
+                    <dl class="payroll-expediente-panel__resumen">
+                      <div><dt>Versión</dt><dd>{{ expediente.snapshot.versionEtiqueta }}</dd></div>
+                      <div><dt>Generada</dt><dd>{{ expediente.snapshot.fechaGeneracion }}</dd></div>
+                      <div><dt>Trabajadores</dt><dd>{{ expediente.totales.trabajadores }}</dd></div>
+                      <div><dt>Líquido</dt><dd>{{ f.formatoMonto(expediente.totales.liquido) }}</dd></div>
+                    </dl>
+                  }
+                  @if (expediente.trabajadores.length) {
+                    <section class="payroll-expediente-panel__lista" aria-label="Trabajadores del período">
+                      <h4>Trabajadores en la versión</h4>
+                      <ul>
+                        @for (t of expediente.trabajadores.slice(0, 5); track t.idPersona + t.rut) {
+                          <li>
+                            <strong>{{ t.nombre }}</strong>
+                            <span>{{ t.rut }}</span>
+                            <span>{{ f.formatoMonto(t.totalLiquido) }}</span>
+                          </li>
+                        }
+                      </ul>
+                    </section>
+                  }
+                  @if (expediente.problemas.length) {
+                    <section class="payroll-expediente-panel__lista" aria-label="Observaciones del período">
+                      <h4>Observaciones</h4>
+                      <ul>
+                        @for (p of expediente.problemas.slice(0, 3); track p.titulo + p.detalle) {
+                          <li>{{ p.detalle }}</li>
+                        }
+                      </ul>
+                    </section>
+                  }
+                  <button type="button" class="payroll-rail-link" (click)="f.abrirDetalleOperativo('trabajadores')">
+                    Ver revisión completa
+                  </button>
+                </div>
+              }
+            } @else if (detalle.oficial) {
               <div class="payroll-official-snapshot">
                 <h3>{{ detalle.titulo }}</h3>
                 <dl>

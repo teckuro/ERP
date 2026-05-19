@@ -761,8 +761,22 @@ describe('ProcesoMensualContainer', () => {
 
       const text = localFixture.nativeElement.textContent as string;
       const c = localFixture.componentInstance;
-      expectTexto(text, 'Version oficial del periodo');
+      expectTexto(text, 'Nomina confirmada');
+      expectTexto(text, 'Ana Perez');
       expect(c.snapshotCompleto()?.trabajadores[0]?.nombreCompletoSnapshot).toBe('Ana Perez');
+    });
+
+    it('abrir revision tras rehidratar muestra trabajador en modal', async () => {
+      obtenerSnapshotActivo.mockResolvedValue(snapshotGuardado());
+      obtenerSnapshotCompletoActivo.mockResolvedValue(snapshotCompletoGuardado());
+      const localFixture = await montarContainer();
+      await esperarSnapshotActivo(localFixture);
+
+      localFixture.componentInstance.abrirOverlayRevision('trabajadores');
+      localFixture.detectChanges();
+
+      expect(obtenerSnapshotCompletoActivo).toHaveBeenCalled();
+      expectTexto(localFixture.nativeElement.textContent as string, 'Ana Perez');
     });
 
     it('aprobacion persistida deshabilita aprobar de nuevo', async () => {

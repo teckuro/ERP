@@ -1,5 +1,19 @@
 # CHANGELOG
 
+## 2026-05-19 - NOM-MENSUAL-FACADE-SLIM-01
+
+- **Refactor:** lógica pura de `resultadoPreliminar`, `revisionAprobacion` y filas payroll/seguimiento movida a `rules/`; etiquetas a `utils/proceso-mensual-presentacion.labels.ts`.
+- **Eliminado:** `snapshotCompletoDetalle` y VMs `SnapshotCompleto*` del contenedor.
+- **Facade:** ~1462 líneas (desde 2295); API pública sin cambios para templates.
+- **Tests:** +7 en rules nuevos; container y expediente siguen verdes; `ng build` OK.
+
+## 2026-05-18 - NOM-MENSUAL-INTEGRIDAD-REGISTRO-01
+
+- **UI:** modal y tab Detalle nunca vacíos; expediente desde `snapshotCompleto` (loading / error / sin detalle / datos).
+- **Rules:** `proceso-mensual-expediente-periodo.rules.ts` + spec (9).
+- **Store/facade:** `asegurarSnapshotCompletoCargado`, `expedienteNominaPeriodo`, fallbacks filas trabajadores.
+- **Infra:** sin cambio SQL (auditoría código OK).
+
 ## 2026-05-18 - NOM-MODALES-PERIODO-DETALLE-POLISH-01
 
 - **UI:** pulido modal revisión — footer contextual, sin disclosure técnico, CSS local, sombra suavizada.

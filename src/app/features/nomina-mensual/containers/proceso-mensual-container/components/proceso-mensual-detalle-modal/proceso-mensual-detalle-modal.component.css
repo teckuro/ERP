@@ -121,6 +121,113 @@
   color: #0f172a;
 }
 
+.payroll-expediente-estado {
+  display: grid;
+  gap: 10px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  background: #f8fafc;
+  padding: 16px;
+}
+
+.payroll-expediente-estado__titulo {
+  margin: 0;
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.payroll-expediente-estado p {
+  margin: 0;
+  color: #475569;
+  font-size: 0.8125rem;
+  line-height: 1.45;
+}
+
+.payroll-expediente-estado__resumen {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 8px;
+  margin: 0;
+}
+
+.payroll-expediente-estado__resumen div {
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  background: #ffffff;
+  padding: 8px 10px;
+}
+
+.payroll-expediente-estado__resumen dt {
+  margin: 0 0 2px;
+  color: #64748b;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.payroll-expediente-estado__resumen dd {
+  margin: 0;
+  color: #0f172a;
+  font-size: 0.8125rem;
+  font-weight: 700;
+}
+
+.payroll-expediente-franja {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 14px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  background: #f8fafc;
+  padding: 12px;
+}
+
+.payroll-expediente-franja h3 {
+  margin: 0;
+  font-size: 0.875rem;
+}
+
+.payroll-expediente-franja p {
+  margin: 0;
+  color: #64748b;
+  font-size: 0.8125rem;
+}
+
+.payroll-expediente-franja dl {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 8px;
+  margin: 0;
+}
+
+.payroll-expediente-franja dl div {
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  background: #ffffff;
+  padding: 8px 10px;
+}
+
+.payroll-expediente-franja dt {
+  margin: 0 0 2px;
+  color: #64748b;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.payroll-expediente-franja dd {
+  margin: 0;
+  font-size: 0.8125rem;
+  font-weight: 700;
+}
+
+.payroll-expediente-lista {
+  margin: 0;
+  padding-left: 18px;
+  color: #334155;
+  font-size: 0.8125rem;
+  line-height: 1.45;
+}
+
 .payroll-operational-summary {
   display: grid;
   gap: 10px;

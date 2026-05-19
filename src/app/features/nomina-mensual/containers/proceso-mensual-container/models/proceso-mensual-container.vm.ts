@@ -260,48 +260,6 @@ export interface CierreOperativoView {
   } | null;
 }
 
-export interface SnapshotCompletoTrabajadorView {
-  id: number | string;
-  trabajadorLabel: string;
-  estadoLabel: string;
-  haberesLabel: string;
-  descuentosLabel: string;
-  liquidoLabel: string;
-  conceptos: string[];
-  observaciones: string[];
-}
-
-export interface SnapshotCompletoObservacionView {
-  codigo: string;
-  nivelLabel: 'Bloqueo' | 'Advertencia' | 'Informacion';
-  mensaje: string;
-  trabajadorLabel: string;
-}
-
-export interface SnapshotCompletoDetalleView {
-  estadoLabel: string;
-  descripcion: string;
-  resumen: {
-    periodo: string;
-    fechaGeneracionLabel: string;
-    versionCalculoLabel: string;
-    identificadorTecnicoLabel: string;
-    trabajadores: number;
-    totalHaberesLabel: string;
-    totalDescuentosLabel: string;
-    totalLiquidoLabel: string;
-    totalConceptos: number;
-    totalObservaciones: number;
-    totalTrazas: number;
-    aprobacionLabel: string;
-  };
-  trabajadores: SnapshotCompletoTrabajadorView[];
-  observaciones: SnapshotCompletoObservacionView[];
-  trazabilidad: string[];
-  advertenciaDetalleFaltante: string | null;
-  reemplazoLabel: string | null;
-}
-
 export interface PasoPeriodoView {
   numero: string;
   titulo: string;

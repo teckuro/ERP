@@ -2,6 +2,14 @@
 
 ## Estado
 
+## NOM-MENSUAL-FACADE-SLIM-01 aplicado
+
+Refactor interno del facade de presentación: view models pesados en `rules/` (`resultado-preliminar`, `revision-aprobacion`, `payroll-seguimiento`) y labels en `utils/proceso-mensual-presentacion.labels.ts`. Sin cambio de copy, HTML, CSS ni contratos de store/servicios. Documento: [`nom-mensual-facade-slim-01.md`](./nom-mensual-facade-slim-01.md).
+
+## NOM-MENSUAL-INTEGRIDAD-REGISTRO-01 aplicado
+
+Expediente del período consultable desde BD: view model `expedienteNominaPeriodo`, carga al abrir revisión, modal y tab Detalle con estados explícitos (cargando / error / sin detalle / versión guardada o confirmada). Sin cambio SQL en esta fase. Documento: [`nom-mensual-integridad-registro-01.md`](./nom-mensual-integridad-registro-01.md).
+
 ## NOM-MODALES-PERIODO-DETALLE-POLISH-01 aplicado
 
 Modal de revisión (`app-proceso-mensual-detalle-modal`): footer sin duplicar CTA del workspace, copy operativo, CSS local y sin bloque técnico visible. Documento: [`nom-modales-periodo-detalle-polish-01.md`](./nom-modales-periodo-detalle-polish-01.md).

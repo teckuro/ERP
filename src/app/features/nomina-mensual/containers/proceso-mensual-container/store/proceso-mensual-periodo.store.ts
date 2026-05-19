@@ -228,6 +228,22 @@ export class ProcesoMensualPeriodoStore {
     void this.cargarSnapshotCompletoActivo(this.periodoSeleccionado());
   }
 
+  asegurarSnapshotCompletoCargado(): void {
+    const snapshot = this.snapshotActivo();
+    if (!snapshot?.idCalculoPeriodo) {
+      return;
+    }
+    const completo = this.snapshotCompleto();
+    if (
+      completo?.cabecera.idCalculoPeriodo === snapshot.idCalculoPeriodo &&
+      !this.errorSnapshotCompleto() &&
+      !this.consultandoSnapshotCompleto()
+    ) {
+      return;
+    }
+    void this.cargarSnapshotCompletoActivo(this.periodoSeleccionado());
+  }
+
   resetearEstadoPeriodo(): void {
     this.limpiarSenalesVolatiles();
   }

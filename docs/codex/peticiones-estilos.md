@@ -1,3 +1,9 @@
+## 2026-05-18 - NOM-MENSUAL-INTEGRIDAD-REGISTRO-01
+
+- **Módulo:** Nómina mensual / modal revisión + tab Detalle workspace.
+- **Cambio visual:** bloques compactos `payroll-expediente-estado`, `payroll-expediente-franja`, panel `payroll-expediente-panel` en tab; mensajes RRHH para carga/error/sin detalle; enlace «Ver revisión completa».
+- **Restricciones:** CSS local modal + contenedor; sin estilos globales ni cards decorativas.
+
 ## 2026-05-18 - NOM-MODALES-PERIODO-DETALLE-POLISH-01
 
 - **Módulo:** Nómina mensual / modal revisión (`app-proceso-mensual-detalle-modal`).

@@ -426,8 +426,96 @@
 }
 
 .payroll-guide,
-.payroll-official-snapshot {
+.payroll-official-snapshot,
+.payroll-expediente-panel {
   max-width: 44rem;
+}
+
+.payroll-expediente-panel {
+  display: grid;
+  gap: 12px;
+}
+
+.payroll-expediente-panel--estado {
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  background: #f8fafc;
+  padding: 14px;
+}
+
+.payroll-expediente-panel--estado h3,
+.payroll-expediente-panel__header h3 {
+  margin: 0 0 6px;
+  font-size: 0.875rem;
+  font-weight: 700;
+}
+
+.payroll-expediente-panel--estado p,
+.payroll-expediente-panel__header p {
+  margin: 0;
+  color: #475569;
+  font-size: 0.8125rem;
+  line-height: 1.45;
+}
+
+.payroll-expediente-panel__resumen {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 8px;
+  margin: 0;
+}
+
+.payroll-expediente-panel__resumen div {
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  background: #ffffff;
+  padding: 8px 10px;
+}
+
+.payroll-expediente-panel__resumen dt {
+  margin: 0 0 2px;
+  color: #64748b;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.payroll-expediente-panel__resumen dd {
+  margin: 0;
+  font-size: 0.8125rem;
+  font-weight: 700;
+}
+
+.payroll-expediente-panel__lista h4 {
+  margin: 0 0 6px;
+  font-size: 0.8125rem;
+  font-weight: 700;
+}
+
+.payroll-expediente-panel__lista ul {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.payroll-expediente-panel__lista li {
+  display: grid;
+  gap: 2px;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  padding: 8px 10px;
+  font-size: 0.8125rem;
+  color: #334155;
+}
+
+.payroll-expediente-panel__lista li strong {
+  color: #0f172a;
+}
+
+.payroll-expediente-panel__lista li span {
+  color: #64748b;
+  font-size: 0.75rem;
 }
 
 .payroll-guide h3,
