@@ -7,15 +7,18 @@ import { ProcesoMensualPeriodoStore } from './proceso-mensual-periodo.store';
 
 describe('ProcesoMensualPeriodoStore rehidratacion', () => {
   const rehidratarPeriodo = vi.fn();
+  const obtenerSnapshotCompletoActivo = vi.fn();
 
   beforeEach(() => {
     rehidratarPeriodo.mockReset();
+    obtenerSnapshotCompletoActivo.mockReset();
     rehidratarPeriodo.mockResolvedValue({
       snapshot: null,
       completo: null,
       liquidacionesGeneradas: 0,
       prevalidacionDiagnostico: null,
     });
+    obtenerSnapshotCompletoActivo.mockResolvedValue(null);
 
     TestBed.configureTestingModule({
       providers: [
@@ -23,7 +26,7 @@ describe('ProcesoMensualPeriodoStore rehidratacion', () => {
         PeriodoActivoService,
         {
           provide: ProcesoMensualService,
-          useValue: { rehidratarPeriodo },
+          useValue: { rehidratarPeriodo, obtenerSnapshotCompletoActivo },
         },
       ],
     });
@@ -94,11 +97,83 @@ describe('ProcesoMensualPeriodoStore rehidratacion', () => {
     expect(store.resultado()).toBeNull();
   });
 
+  it('borrador rehidrata prevalidacion desde metadata y mantiene snapshot', async () => {
+    const store = await storeTrasHidratacionInicial();
+    const prevalidacion = {
+      periodo: '2026-05',
+      estado: 'CON_ADVERTENCIAS' as const,
+      resumen: {
+        periodo: '2026-05',
+        hayBloqueos: false,
+        hayAdvertencias: true,
+        conteoMovimientosPorEstado: {},
+        trabajadoresActivosAptos: 2,
+        trabajadoresActivosNoAptos: 0,
+        parametrosOperativos: true,
+        parametrosGrupos: [],
+        recurrentesAplicablesAlPeriodo: 0,
+        recurrentesInvalidas: 0,
+        recurrentesCerradas: 0,
+        recurrentesFueraDelMes: 0,
+      },
+      bloqueos: [],
+      advertencias: [],
+      informaciones: [],
+      items: [],
+      entradasMensuales: [],
+    };
+    const snapshot = {
+      idCalculoPeriodo: 12,
+      periodo: '2026-05',
+      idEmpresa: null,
+      estado: 'borrador' as const,
+      fechaGeneracion: '2026-05-18T10:00:00.000Z',
+      usuarioGenerador: null,
+      totalTrabajadores: 2,
+      totalHaberes: 0,
+      totalDescuentos: 0,
+      totalLiquido: 0,
+      totalBloqueados: 0,
+      totalAdvertencias: 1,
+      versionMotor: 'BASE-NOMINA-01',
+      hashSnapshot: null,
+      origen: 'preliminar' as const,
+      activo: true,
+      reemplazadoPor: null,
+      aprobacionOperativa: null,
+      cierreOperativo: null,
+      trabajadores: [],
+      issues: [],
+      trazabilidad: [],
+    };
+
+    rehidratarPeriodo.mockImplementation(async (periodo: string) =>
+      periodo === '2026-05'
+        ? {
+            snapshot,
+            completo: null,
+            liquidacionesGeneradas: 0,
+            prevalidacionDiagnostico: prevalidacion,
+          }
+        : {
+            snapshot: null,
+            completo: null,
+            liquidacionesGeneradas: 0,
+            prevalidacionDiagnostico: null,
+          },
+    );
+    store.rehidratarPeriodoActivo('2026-05');
+    await vi.waitFor(() => expect(store.snapshotActivo()?.estado).toBe('borrador'));
+
+    expect(store.resultado()?.estado).toBe('CON_ADVERTENCIAS');
+    expect(store.preNomina()).toBeNull();
+  });
+
   it('sin snapshot rehidrata prevalidacion persistida', async () => {
     const store = await storeTrasHidratacionInicial();
     const prevalidacion = {
       periodo: '2026-05',
-      estado: 'LISTO',
+      estado: 'LISTO_PARA_CALCULO',
       resumen: {
         periodo: '2026-05',
         hayBloqueos: false,

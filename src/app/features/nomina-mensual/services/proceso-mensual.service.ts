@@ -53,6 +53,10 @@ import {
   contarRecurrentesParaPrevalidacionMensual,
   type ProcesoMensualHechosPrevalidacion,
 } from '../rules/proceso-mensual-prevalidacion.rules';
+import {
+  buildBorradorSnapshotFromPreNomina,
+  buildPrevalidacionLecturaDesdeBorrador,
+} from '../rules/proceso-mensual-borrador-snapshot.rules';
 
 @Injectable({ providedIn: 'root' })
 export class ProcesoMensualService {
@@ -142,13 +146,14 @@ export class ProcesoMensualService {
       })));
     }
 
-    const snapshot = buildBaseNominaBorradorSnapshot(
-      periodo.trim(),
+    const { snapshot, borradorPersist } = buildBorradorSnapshotFromPreNomina({
+      periodo: periodo.trim(),
       preNomina,
-      new Date().toISOString(),
-      opciones.permitirAdvertencias ? advertencias.length : 0,
-    );
-    const guardado = await this.snapshots.guardarBaseNominaBorrador(snapshot);
+      prevalidacion: prevalidacion ?? null,
+      fechaGeneracion: new Date().toISOString(),
+      totalAdvertencias: opciones.permitirAdvertencias ? advertencias.length : 0,
+    });
+    const guardado = await this.snapshots.guardarBaseNominaBorrador(snapshot, borradorPersist);
     return {
       ok: true,
       snapshot: guardado.snapshot,
@@ -239,7 +244,11 @@ export class ProcesoMensualService {
       return { snapshot: null, completo: null, liquidacionesGeneradas, prevalidacionDiagnostico };
     }
     const completo = await this.obtenerSnapshotCompletoActivo(p);
-    return { snapshot, completo, liquidacionesGeneradas, prevalidacionDiagnostico: null };
+    let prevalidacionDiagnostico: ProcesoMensualPrevalidacion | null = null;
+    if (snapshot.estado === 'borrador' && snapshot.borradorPersist) {
+      prevalidacionDiagnostico = buildPrevalidacionLecturaDesdeBorrador(p, snapshot.borradorPersist);
+    }
+    return { snapshot, completo, liquidacionesGeneradas, prevalidacionDiagnostico };
   }
 
   async guardarDiagnosticoPeriodo(
@@ -695,33 +704,3 @@ function buildCierreOperativoMetadata(snapshot: NominaCalculoPeriodoSnapshot): R
   };
 }
 
-function buildBaseNominaBorradorSnapshot(
-  periodo: string,
-  preNomina: ProcesoMensualPreNominaPeriodo,
-  fechaGeneracion: string,
-  totalAdvertencias: number,
-): NominaCalculoPeriodoSnapshot {
-  return {
-    periodo,
-    idEmpresa: null,
-    estado: 'borrador',
-    fechaGeneracion,
-    usuarioGenerador: null,
-    totalTrabajadores: preNomina.trabajadoresIncluidos,
-    totalHaberes: 0,
-    totalDescuentos: 0,
-    totalLiquido: 0,
-    totalBloqueados: 0,
-    totalAdvertencias,
-    versionMotor: 'BASE-NOMINA-01',
-    hashSnapshot: null,
-    origen: 'preliminar',
-    activo: true,
-    reemplazadoPor: null,
-    aprobacionOperativa: null,
-    cierreOperativo: null,
-    trabajadores: [],
-    issues: [],
-    trazabilidad: [],
-  };
-}

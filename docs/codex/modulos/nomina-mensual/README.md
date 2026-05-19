@@ -2,6 +2,10 @@
 
 ## Estado
 
+## NOM-MENSUAL-PERSISTENCIA-ESTADO-01 aplicado
+
+Borrador al generar nómina persiste trabajadores, issues y metadata de verificación; rehidratación al recargar alimenta workspace y revisión completa. Documento: [`nom-mensual-persistencia-estado-01.md`](./nom-mensual-persistencia-estado-01.md).
+
 ## NOM-FLOW-REVISION-01 aplicado
 
 Flujo RRHH: «Verificar período» antes de «Generar nómina»; bitácora en sidebar; guardado técnico del borrador en acciones `<details>`; diagnóstico persistido en BD. Documentos: [`nom-workspace-loc-maquetacion-01.md`](./nom-workspace-loc-maquetacion-01.md), [`nom-periodo-diagnostico-persist-01.md`](./nom-periodo-diagnostico-persist-01.md).

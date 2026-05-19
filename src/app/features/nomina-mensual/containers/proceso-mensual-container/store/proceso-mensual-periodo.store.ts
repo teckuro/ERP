@@ -123,15 +123,17 @@ export class ProcesoMensualPeriodoStore {
         this.aprobacionOperativa.set(null);
         this.snapshotCompleto.set(null);
         this.errorSnapshotCompleto.set(null);
-        try {
-          await this.procesoMensual.cerrarDiagnosticoPeriodo(p, 'borrador_generado');
-        } catch {
-          // El borrador en memoria no depende del cierre del diagnóstico.
-        }
-        if (r.estado === 'GENERADA' && r.codigosBloqueo.length === 0 && r.codigosAdvertencia.length === 0) {
-          void this.persistirBaseNominaBorrador(p, r, false).catch((e: unknown) => {
+        if (r.estado !== 'NO_GENERABLE') {
+          try {
+            await this.persistirBaseNominaBorrador(p, r, true, this.resultado());
+            try {
+              await this.procesoMensual.cerrarDiagnosticoPeriodo(p, 'borrador_generado');
+            } catch {
+              // El borrador persistido no depende del cierre del diagnóstico.
+            }
+          } catch (e: unknown) {
             this.errorGuardadoResultado.set(e instanceof Error ? e.message : String(e));
-          });
+          }
         }
         return undefined;
       })
@@ -151,7 +153,7 @@ export class ProcesoMensualPeriodoStore {
     this.guardandoSnapshot.set(true);
     this.errorGuardadoResultado.set(null);
     this.exitoGuardadoResultado.set(null);
-    void this.persistirBaseNominaBorrador(p, preNomina, true)
+    void this.persistirBaseNominaBorrador(p, preNomina, true, this.resultado())
       .catch((e: unknown) => {
         this.errorGuardadoResultado.set(e instanceof Error ? e.message : String(e));
       })
@@ -233,12 +235,23 @@ export class ProcesoMensualPeriodoStore {
         }
         this.liquidacionesGeneradasCount.set(liquidacionesGeneradas);
         if (snapshot) {
-          this.resultado.set(null);
+          if (snapshot.estado === 'borrador' && prevalidacionDiagnostico) {
+            this.resultado.set(prevalidacionDiagnostico);
+          } else {
+            this.resultado.set(null);
+          }
           this.preNomina.set(null);
           this.calculo.set(null);
           this.identificadorResultadoGuardadoActual.set(snapshot.hashSnapshot ?? null);
           this.aplicarSnapshotActivo(snapshot);
           this.snapshotCompleto.set(completo);
+          if (
+            snapshot.estado === 'borrador' &&
+            (!completo || completo.trabajadores.length === 0) &&
+            snapshot.idCalculoPeriodo
+          ) {
+            void this.cargarSnapshotCompletoActivo(periodo);
+          }
         } else {
           this.limpiarSenalesVolatiles();
           if (prevalidacionDiagnostico) {
@@ -310,13 +323,14 @@ export class ProcesoMensualPeriodoStore {
     periodo: string,
     preNomina: ProcesoMensualPreNominaPeriodo,
     permitirAdvertencias: boolean,
+    prevalidacion?: ProcesoMensualPrevalidacion | null,
   ): Promise<void> {
     this.guardandoSnapshot.set(true);
     try {
       const r = await this.procesoMensual.guardarBaseNominaBorrador(
         periodo,
         preNomina,
-        undefined,
+        prevalidacion ?? undefined,
         { permitirAdvertencias },
       );
       if (!r.ok || !r.snapshot) {
@@ -324,9 +338,9 @@ export class ProcesoMensualPeriodoStore {
         throw new Error(msg);
       }
       this.aplicarSnapshotActivo(r.snapshot);
-      this.identificadorResultadoGuardadoActual.set(null);
-      this.snapshotCompleto.set(null);
+      this.identificadorResultadoGuardadoActual.set(r.snapshot.hashSnapshot ?? null);
       this.errorSnapshotCompleto.set(null);
+      void this.cargarSnapshotCompletoActivo(periodo);
       this.exitoGuardadoResultado.set('Base generada guardada. Al volver al periodo podras continuar la revision.');
     } finally {
       this.guardandoSnapshot.set(false);

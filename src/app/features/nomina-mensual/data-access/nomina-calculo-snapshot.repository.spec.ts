@@ -217,7 +217,7 @@ function snapshotParaGuardar(overrides: Record<string, unknown> = {}) {
 }
 
 describe('NominaCalculoSnapshotRepository', () => {
-  it('guarda cabecera borrador para base generada', async () => {
+  it('guarda borrador con trabajadores, issues y metadata', async () => {
     const insertQuery = query({
       ...baseRow,
       id_calculo_periodo: 9,
@@ -228,9 +228,15 @@ describe('NominaCalculoSnapshotRepository', () => {
       hash_snapshot: null,
       version_motor: 'BASE-NOMINA-01',
     });
+    const trabajadoresInsertQuery = query([{ ...trabajadorRow, id_calculo_periodo: 9 }]);
+    const issuesInsertQuery = query(null);
+    const metadataUpdateQuery = query(null);
     const from = vi.fn()
       .mockReturnValueOnce(query(null))
-      .mockReturnValueOnce(insertQuery);
+      .mockReturnValueOnce(insertQuery)
+      .mockReturnValueOnce(trabajadoresInsertQuery)
+      .mockReturnValueOnce(issuesInsertQuery)
+      .mockReturnValueOnce(metadataUpdateQuery);
 
     TestBed.configureTestingModule({
       providers: [
@@ -247,27 +253,68 @@ describe('NominaCalculoSnapshotRepository', () => {
     });
 
     const repo = TestBed.inject(NominaCalculoSnapshotRepository);
-    const guardado = await repo.guardarBaseNominaBorrador(snapshotParaGuardar({
-      estado: 'borrador',
-      totalHaberes: 0,
-      totalDescuentos: 0,
-      totalLiquido: 0,
-      hashSnapshot: null,
-      versionMotor: 'BASE-NOMINA-01',
-      trabajadores: [],
-      issues: [],
-      trazabilidad: [],
-    }));
+    const guardado = await repo.guardarBaseNominaBorrador(
+      snapshotParaGuardar({
+        estado: 'borrador',
+        totalHaberes: 0,
+        totalDescuentos: 0,
+        totalLiquido: 0,
+        hashSnapshot: null,
+        versionMotor: 'BASE-NOMINA-01',
+        trabajadores: [
+          {
+            idPersona: 1,
+            rut: '11.111.111-1',
+            nombreCompletoSnapshot: 'Ana Perez',
+            estado: 'calculado_preliminar',
+            sueldoBase: 0,
+            baseImponiblePrevisional: 0,
+            baseTributable: 0,
+            totalHaberesImponibles: 0,
+            totalHaberesNoImponibles: 0,
+            totalDescuentosLegales: 0,
+            totalDescuentosVoluntarios: 0,
+            impuestoUnico: 0,
+            liquidoPreliminar: 0,
+            cotizacionAfp: 0,
+            cotizacionSalud: 0,
+            cotizacionAfc: 0,
+            cotizacionSis: 0,
+            cotizacionSanna: 0,
+            cotizacionLey16744Empleador: 0,
+            conceptos: [],
+            issues: [],
+            trazabilidad: [],
+          },
+        ],
+        issues: [
+          {
+            codigo: 'ADV_TEST',
+            severidad: 'ADVERTENCIA',
+            origen: 'pre_nomina',
+            mensaje: 'Advertencia de prueba',
+            campo: null,
+            entidadId: null,
+          },
+        ],
+        trazabilidad: [],
+      }),
+      {
+        entradasMensuales: [],
+        resumenPrevalidacion: null,
+        prevalidacionEstado: 'LISTO_PARA_CALCULO',
+      },
+    );
 
     expect(insertQuery.insert).toHaveBeenCalledWith(expect.objectContaining({
       periodo: '2026-05',
       estado: 'borrador',
-      total_haberes: 0,
-      total_descuentos: 0,
-      total_liquido: 0,
       activo: true,
     }));
-    expect(guardado.snapshot.estado).toBe('borrador');
+    expect(trabajadoresInsertQuery.insert).toHaveBeenCalled();
+    expect(issuesInsertQuery.insert).toHaveBeenCalled();
+    expect(metadataUpdateQuery.update).toHaveBeenCalled();
+    expect(guardado.snapshot.trabajadores).toHaveLength(1);
     expect(guardado.reemplazoSnapshotAnterior).toBe(false);
   });
 

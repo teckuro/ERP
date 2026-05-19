@@ -53,6 +53,7 @@ import {
   mostrarAccionesPeriodoNomina,
   type AccionNominaPeriodoId,
 } from '../../../rules/proceso-mensual-acciones-periodo.rules';
+import { mapSnapshotCompletoToBaseTrazabilidad } from '../../../rules/proceso-mensual-borrador-snapshot.rules';
 import { buildIncidenciasPeriodo } from '../../../rules/proceso-mensual-incidencias-periodo.rules';
 import {
   buildDetalleMasivoTrabajador,
@@ -248,12 +249,15 @@ export class ProcesoMensualPresentacionFacade {
       // Ya incluidos en estado.bloqueos / advertencias vía bloqueosCalculo y advertenciasCalculo.
       resultadoBloqueos: [],
       resultadoAdvertencias: [],
-      expedienteProblemas: expediente.problemas.map((problema) => ({
-        severidad: problema.severidad,
-        titulo: problema.titulo,
-        detalle: problema.detalle,
-        trabajador: problema.trabajador,
-      })),
+      expedienteProblemas: [
+        ...expediente.problemas.map((problema) => ({
+          severidad: problema.severidad,
+          titulo: problema.titulo,
+          detalle: problema.detalle,
+          trabajador: problema.trabajador,
+        })),
+        ...this.snapshotIssuesParaIncidencias(),
+      ],
     });
   });
 
@@ -530,7 +534,11 @@ export class ProcesoMensualPresentacionFacade {
     { id: 'accion', header: 'Accion', align: 'center', sortable: false, filterable: false, hideable: false },
   ];
 
-  readonly baseNominaTrazabilidad = computed(() => this.store.preNomina()?.trazabilidad ?? null);
+  readonly baseNominaTrazabilidad = computed(
+    () =>
+      this.store.preNomina()?.trazabilidad
+      ?? mapSnapshotCompletoToBaseTrazabilidad(this.store.snapshotCompleto()),
+  );
 
   readonly cierreOperativo = computed<CierreOperativoView>(() => {
     const snapshot = this.store.snapshotActivo();
@@ -2101,6 +2109,27 @@ export class ProcesoMensualPresentacionFacade {
 
   formatoMonto(valor: number | null | undefined): string {
     return formatoMontoNomina(valor);
+  }
+
+  private snapshotIssuesParaIncidencias(): Array<{
+    severidad: 'bloqueo' | 'advertencia' | 'info';
+    titulo: string;
+    detalle: string;
+  }> {
+    if (this.store.calculo() || this.store.preNomina()) {
+      return [];
+    }
+    const observaciones = this.store.snapshotCompleto()?.observaciones ?? [];
+    return observaciones.map((issue) => ({
+      severidad:
+        issue.severidad === 'BLOQUEO'
+          ? 'bloqueo'
+          : issue.severidad === 'ADVERTENCIA'
+            ? 'advertencia'
+            : 'info',
+      titulo: issue.codigo,
+      detalle: issue.mensaje,
+    }));
   }
 
   private formatoFechaHora(valor: string | null | undefined): string {

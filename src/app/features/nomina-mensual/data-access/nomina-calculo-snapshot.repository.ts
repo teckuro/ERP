@@ -5,6 +5,7 @@ import { injectSupabase } from '../../../core/services/supabase.service';
 import type {
   AprobacionOperativaPersistida,
   AprobarResultadoPreliminarOperativamenteParams,
+  BorradorPersistContext,
   CerrarNominaOperativamenteParams,
   ReabrirNominaOperativamenteParams,
   NominaCalculoConceptoSnapshot,
@@ -18,6 +19,10 @@ import type {
   NominaCalculoTrazabilidadSnapshot,
   MotorCalculoEstadoTrabajador,
 } from '../models/proceso-mensual.model';
+import {
+  buildBorradorPersistMetadataPayload,
+  extractBorradorPersistContext,
+} from '../rules/proceso-mensual-borrador-snapshot.rules';
 
 type Tables = Database['public']['Tables'];
 type NominaCalculoPeriodoRow = Tables['nomina_calculo_periodo']['Row'];
@@ -41,7 +46,10 @@ interface GuardarSnapshotRpcPayload {
 export class NominaCalculoSnapshotRepository {
   private readonly supabase = injectSupabase();
 
-  async guardarBaseNominaBorrador(snapshot: NominaCalculoPeriodoSnapshot): Promise<{
+  async guardarBaseNominaBorrador(
+    snapshot: NominaCalculoPeriodoSnapshot,
+    borradorPersist?: BorradorPersistContext,
+  ): Promise<{
     snapshot: NominaCalculoPeriodoSnapshot;
     reemplazoSnapshotAnterior: boolean;
   }> {
@@ -53,11 +61,36 @@ export class NominaCalculoSnapshotRepository {
       await this.marcarInactivo(anterior.idCalculoPeriodo, 'anulado', 'Reemplazo de base generada borrador.');
     }
     const guardado = await this.insertarCabecera({ ...snapshot, estado: 'borrador', activo: true });
+    if (!guardado.idCalculoPeriodo) {
+      throw new Error('No fue posible obtener el identificador del borrador guardado.');
+    }
+    const trabajadoresInsertados = await this.insertarTrabajadores(
+      guardado.idCalculoPeriodo,
+      snapshot.trabajadores,
+    );
+    const idTrabajadorPorPersona = new Map(
+      trabajadoresInsertados.map((t) => [t.idPersona, t.idCalculoTrabajador!]),
+    );
+    await this.insertarIssues(
+      guardado.idCalculoPeriodo,
+      snapshot.issues,
+      trabajadoresInsertados,
+      idTrabajadorPorPersona,
+    );
+    const persist = borradorPersist ?? snapshot.borradorPersist ?? null;
+    if (persist) {
+      await this.guardarBorradorMetadata(guardado.idCalculoPeriodo, persist);
+    }
     if (anterior?.idCalculoPeriodo && guardado.idCalculoPeriodo) {
       await this.actualizarReemplazo(anterior.idCalculoPeriodo, guardado.idCalculoPeriodo);
     }
     return {
-      snapshot: guardado,
+      snapshot: {
+        ...guardado,
+        trabajadores: trabajadoresInsertados,
+        issues: snapshot.issues,
+        borradorPersist: persist,
+      },
       reemplazoSnapshotAnterior: !!anterior,
     };
   }
@@ -266,6 +299,21 @@ export class NominaCalculoSnapshotRepository {
       throw new Error('No se pudo cerrar operativamente la nomina. No se realizaron cambios parciales.');
     }
     return mapPeriodoRow(data as NominaCalculoPeriodoRow);
+  }
+
+  private async guardarBorradorMetadata(
+    idCalculoPeriodo: number,
+    context: BorradorPersistContext,
+  ): Promise<void> {
+    const { error } = await this.supabase
+      .from('nomina_calculo_periodo')
+      .update({
+        cierre_operativo_metadata: buildBorradorPersistMetadataPayload(context) as Json,
+      })
+      .eq('id_calculo_periodo', idCalculoPeriodo);
+    if (error) {
+      throw new Error(`No fue posible guardar metadata del borrador: ${error.message}`);
+    }
   }
 
   private async insertarCabecera(snapshot: NominaCalculoPeriodoSnapshot): Promise<NominaCalculoPeriodoSnapshot> {
@@ -667,6 +715,7 @@ function mapPeriodoRow(row: NominaCalculoPeriodoRow): NominaCalculoPeriodoSnapsh
     reemplazadoPor: row.reemplazado_por ?? null,
     aprobacionOperativa: mapAprobacionOperativa(row),
     cierreOperativo: mapCierreOperativo(row),
+    borradorPersist: extractBorradorPersistContext(parseRecord(row.cierre_operativo_metadata)),
     trabajadores: [],
     issues: [],
     trazabilidad: [],

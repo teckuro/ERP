@@ -329,11 +329,19 @@ describe('ProcesoMensualService', () => {
     expect(r.snapshot?.estado).toBe('borrador');
     expect(r.snapshot?.totalTrabajadores).toBe(preNomina.trabajadoresIncluidos);
     expect(r.snapshot?.totalLiquido).toBe(0);
-    expect(snapshots.guardarBaseNominaBorrador).toHaveBeenCalledWith(expect.objectContaining({
-      periodo: '2026-05',
-      estado: 'borrador',
-      origen: 'preliminar',
-    }));
+    expect(snapshots.guardarBaseNominaBorrador).toHaveBeenCalledWith(
+      expect.objectContaining({
+        periodo: '2026-05',
+        estado: 'borrador',
+        origen: 'preliminar',
+        trabajadores: expect.arrayContaining([
+          expect.objectContaining({ idPersona: expect.any(Number) }),
+        ]),
+      }),
+      expect.objectContaining({
+        entradasMensuales: expect.any(Array),
+      }),
+    );
     expect(snapshots.guardarSnapshotPreliminar).not.toHaveBeenCalled();
   });
 

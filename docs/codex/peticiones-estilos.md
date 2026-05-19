@@ -1,3 +1,10 @@
+## 2026-05-19 - NOM-MENSUAL-PERSISTENCIA-ESTADO-01
+
+- **Módulo:** Nómina mensual / persistencia borrador.
+- **Cambio:** sin cambio visual de copy; comportamiento tras F5: tabs Trabajadores/Movimientos y revisión completa con datos del borrador guardado.
+- **Archivos:** `proceso-mensual-borrador-snapshot.rules.ts`, repository snapshot, store, service, facade; docs `nom-mensual-persistencia-estado-01.md`, `nom-periodo-diagnostico-persist-01.md`.
+- **No tocado:** motor, estilos globales, `angular.json`, SQL nuevo.
+
 ## 2026-05-19 - NOM-FLOW-REVISION-01 (plan revisión flujo)
 
 - **Módulo:** Nómina mensual / flujo RRHH.

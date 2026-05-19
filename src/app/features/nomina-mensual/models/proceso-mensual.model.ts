@@ -424,6 +424,12 @@ export interface NominaCalculoTrabajadorSnapshot {
   trazabilidad: NominaCalculoTrazabilidadSnapshot[];
 }
 
+export interface BorradorPersistContext {
+  entradasMensuales: EntradaMensualPeriodo[];
+  resumenPrevalidacion: ProcesoMensualResumen | null;
+  prevalidacionEstado: ProcesoMensualPrevalidacion['estado'] | null;
+}
+
 export interface NominaCalculoPeriodoSnapshot {
   idCalculoPeriodo?: number;
   periodo: string;
@@ -447,6 +453,8 @@ export interface NominaCalculoPeriodoSnapshot {
   trabajadores: NominaCalculoTrabajadorSnapshot[];
   issues: NominaCalculoIssueSnapshot[];
   trazabilidad: NominaCalculoTrazabilidadSnapshot[];
+  /** Contexto rehidratable guardado en metadata del período (borrador). */
+  borradorPersist?: BorradorPersistContext | null;
 }
 
 export interface GuardarSnapshotPreliminarResult {

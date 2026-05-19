@@ -963,7 +963,7 @@ describe('ProcesoMensualContainer', () => {
       expect(localFixture.componentInstance.estadoOperativo().accionPrincipal.label).not.toBe('Generar nómina');
     });
 
-    it('generarPreNomina con advertencias no persiste automaticamente y ofrece guardar base revisada', async () => {
+    it('generarPreNomina con advertencias persiste borrador y permite guardar base revisada', async () => {
       ejecutarPrevalidaciones.mockResolvedValueOnce(prevalidacionLista({
         estado: 'CON_ADVERTENCIAS',
         resumen: {
@@ -985,8 +985,9 @@ describe('ProcesoMensualContainer', () => {
       const localFixture = await montarContainer();
       await avanzarFlujo(localFixture, 'base');
 
-      expect(guardarBaseNominaBorrador).not.toHaveBeenCalled();
-      expect(localFixture.componentInstance.puedeGuardarBaseNominaRevisada()).toBe(true);
+      await vi.waitFor(() => expect(guardarBaseNominaBorrador).toHaveBeenCalled());
+      expect(localFixture.componentInstance.snapshotActivo()?.estado).toBe('borrador');
+      expect(localFixture.componentInstance.puedeGuardarBaseNominaRevisada()).toBe(false);
     });
 
     it('calcularPreliminar llama servicio tras base', async () => {
