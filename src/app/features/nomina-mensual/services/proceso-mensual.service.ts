@@ -95,6 +95,67 @@ export class ProcesoMensualService {
     };
   }
 
+  async guardarBaseNominaBorrador(
+    periodo: string,
+    preNomina: ProcesoMensualPreNominaPeriodo,
+    prevalidacion?: ProcesoMensualPrevalidacion,
+    opciones: { permitirAdvertencias?: boolean } = {},
+  ): Promise<GuardarSnapshotPreliminarResult> {
+    const bloqueos = [
+      ...(prevalidacion?.bloqueos ?? []).map((mensaje) => ({
+        codigo: mensaje.codigo,
+        severidad: 'BLOQUEO' as const,
+        mensaje: mensaje.texto,
+        origen: mensaje.area,
+      })),
+      ...preNomina.codigosBloqueo.map((codigo) => ({
+        codigo,
+        severidad: 'BLOQUEO' as const,
+        mensaje: codigo,
+        origen: 'pre_nomina',
+      })),
+    ];
+    const advertencias = [
+      ...(prevalidacion?.advertencias ?? []).map((mensaje) => ({
+        codigo: mensaje.codigo,
+        severidad: 'ADVERTENCIA' as const,
+        mensaje: mensaje.texto,
+        origen: mensaje.area,
+      })),
+      ...preNomina.codigosAdvertencia.map((codigo) => ({
+        codigo,
+        severidad: 'ADVERTENCIA' as const,
+        mensaje: codigo,
+        origen: 'pre_nomina',
+      })),
+    ];
+    const issues = [...bloqueos, ...advertencias];
+    const issuesBloqueantes = opciones.permitirAdvertencias ? bloqueos : issues;
+    if (issuesBloqueantes.length > 0 || preNomina.estado === 'NO_GENERABLE') {
+      return buildGuardarSnapshotRechazado(issues.map((issue) => ({
+        codigo: issue.codigo,
+        severidad: issue.severidad,
+        mensaje: issue.mensaje,
+        origen: issue.origen,
+      })));
+    }
+
+    const snapshot = buildBaseNominaBorradorSnapshot(
+      periodo.trim(),
+      preNomina,
+      new Date().toISOString(),
+      opciones.permitirAdvertencias ? advertencias.length : 0,
+    );
+    const guardado = await this.snapshots.guardarBaseNominaBorrador(snapshot);
+    return {
+      ok: true,
+      snapshot: guardado.snapshot,
+      reemplazoSnapshotAnterior: guardado.reemplazoSnapshotAnterior,
+      hashSnapshot: guardado.snapshot.hashSnapshot,
+      issues: [],
+    };
+  }
+
   async generarCalculoPeriodo(periodo: string): Promise<MotorCalculoPeriodoResultado> {
     const p = periodo.trim();
     const input = await this.construirInputMotorPeriodo(p);
@@ -597,5 +658,36 @@ function buildCierreOperativoMetadata(snapshot: NominaCalculoPeriodoSnapshot): R
     totalLiquido: snapshot.totalLiquido,
     advertenciasVisibles: aprobacion?.advertencias ?? [],
     notaAlcance: 'Cierre operativo. No emite liquidaciones ni genera archivos legales.',
+  };
+}
+
+function buildBaseNominaBorradorSnapshot(
+  periodo: string,
+  preNomina: ProcesoMensualPreNominaPeriodo,
+  fechaGeneracion: string,
+  totalAdvertencias: number,
+): NominaCalculoPeriodoSnapshot {
+  return {
+    periodo,
+    idEmpresa: null,
+    estado: 'borrador',
+    fechaGeneracion,
+    usuarioGenerador: null,
+    totalTrabajadores: preNomina.trabajadoresIncluidos,
+    totalHaberes: 0,
+    totalDescuentos: 0,
+    totalLiquido: 0,
+    totalBloqueados: 0,
+    totalAdvertencias,
+    versionMotor: 'BASE-NOMINA-01',
+    hashSnapshot: null,
+    origen: 'preliminar',
+    activo: true,
+    reemplazadoPor: null,
+    aprobacionOperativa: null,
+    cierreOperativo: null,
+    trabajadores: [],
+    issues: [],
+    trazabilidad: [],
   };
 }

@@ -2,6 +2,10 @@
 
 ## Estado
 
+## NOM-WORKSPACE-LOC-MAQUETACION-01 aplicado
+
+Consola LOC: orden único de áreas (Parámetros → Trabajadores → Movimientos → Recurrentes), franja derivada de config, exception strip sin duplicar Resumen, panel índice reordenado, paridad lista/DataGrid en trabajadores. Documento: [`nom-workspace-loc-maquetacion-01.md`](./nom-workspace-loc-maquetacion-01.md).
+
 ## NOM-PREVALIDACION-PARAMETROS-CTA-01 aplicado
 
 Fix rules: CTA «Revisar parámetros» solo si `!parametrosOperativos`; prioridad a trabajadores cuando el período ya está operativo. Sin BD ni localStorage.

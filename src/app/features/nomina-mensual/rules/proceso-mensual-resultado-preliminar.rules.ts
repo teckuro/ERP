@@ -120,7 +120,7 @@ function resolverEstadoGuardadoResultado(
   if (input.errorGuardadoResultado) return 'error_guardado';
   if (calculo.estado === 'con_bloqueos' || bloqueos.length > 0) return 'con_bloqueos';
   const snapshot = input.snapshotActivo;
-  if (!snapshot) return 'no_guardado';
+  if (!snapshot || snapshot.estado === 'borrador') return 'no_guardado';
   return input.identificadorResultadoGuardadoActual === snapshot.hashSnapshot
     ? 'guardado'
     : 'actualizado_sin_guardar';
@@ -138,7 +138,7 @@ function razonNoPuedeGuardarResultado(
   if (input.errorEjecucion) return 'Hay un error tecnico activo que debes resolver antes de guardar.';
   if (bloqueos.length > 0) return 'El resultado tiene bloqueos que deben revisarse.';
   const snapshot = input.snapshotActivo;
-  if (snapshot && input.identificadorResultadoGuardadoActual === snapshot.hashSnapshot) {
+  if (snapshot && snapshot.estado !== 'borrador' && input.identificadorResultadoGuardadoActual === snapshot.hashSnapshot) {
     return 'No hay cambios para guardar. El resultado preliminar actual ya esta guardado.';
   }
   if (input.guardandoSnapshot) return 'El guardado del resultado preliminar esta en curso.';
@@ -200,7 +200,7 @@ export function buildResultadoPreliminarView(input: BuildResultadoPreliminarInpu
   const { calculo, base, snapshotActivo: snapshot } = input;
 
   if (!calculo) {
-    const guardado = snapshot != null;
+    const guardado = snapshot != null && snapshot.estado !== 'borrador';
     const estado: ResultadoPreliminarEstado = input.errorGuardadoResultado
       ? 'error_guardado'
       : guardado
@@ -234,7 +234,7 @@ export function buildResultadoPreliminarView(input: BuildResultadoPreliminarInpu
         identificadorTecnico: snapshot?.hashSnapshot ?? 'Referencia interna no disponible',
         generadoEn: snapshot?.fechaGeneracion ?? 'Fecha no disponible',
       },
-      ultimoGuardado: snapshot ? ultimoGuardadoDesdeSnapshot(snapshot) : undefined,
+      ultimoGuardado: guardado && snapshot ? ultimoGuardadoDesdeSnapshot(snapshot) : undefined,
       acciones: {
         puedeRecalcular: input.puedeCalcular,
         puedeGuardarPreliminar: false,

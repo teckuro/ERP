@@ -1,6 +1,7 @@
 import {
   inferirContextoOperativoPeriodo,
 } from './proceso-mensual-rehidratacion.rules';
+import { describe, expect, it } from 'vitest';
 import {
   resolverEstadoOperativoProcesoMensual,
   type ProcesoMensualEstadoOperativoInput,
@@ -122,6 +123,47 @@ describe('proceso-mensual-rehidratacion.rules', () => {
     );
 
     expect(vm.estadoClave).toBe('nomina_cerrada');
+  });
+
+  it('snapshot borrador rehidrata base generada sin resultado guardado', () => {
+    const ctx = inferirContextoOperativoPeriodo({
+      resultado: null,
+      preNomina: null,
+      calculo: null,
+      snapshot: {
+        ...snapshotMinimo,
+        estado: 'borrador',
+      },
+    });
+
+    expect(ctx.tienePrevalidacion).toBe(true);
+    expect(ctx.baseGenerada).toBe(true);
+    expect(ctx.calculoGenerado).toBe(false);
+    expect(ctx.resultadoGuardado).toBe(false);
+  });
+
+  it('snapshot borrador resuelve base_lista al reingresar', () => {
+    const ctx = inferirContextoOperativoPeriodo({
+      resultado: null,
+      preNomina: null,
+      calculo: null,
+      snapshot: {
+        ...snapshotMinimo,
+        estado: 'borrador',
+      },
+    });
+    const vm = resolverEstadoOperativoProcesoMensual(
+      inputEstado({
+        tienePrevalidacion: ctx.tienePrevalidacion,
+        baseGenerada: ctx.baseGenerada,
+        calculoGenerado: ctx.calculoGenerado,
+        resultadoGuardado: ctx.resultadoGuardado,
+        puedeCalcular: true,
+      }),
+    );
+
+    expect(vm.estadoClave).toBe('base_lista');
+    expect(vm.accionPrincipal.label).toBe('Revisar trabajadores');
   });
 
   it('sin snapshot mantiene pendiente_validacion', () => {

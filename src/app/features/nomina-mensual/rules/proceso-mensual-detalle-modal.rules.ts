@@ -13,7 +13,13 @@ import {
   etiquetaAmbitoIncidencia,
 } from './proceso-mensual-incidencias-periodo.rules';
 
-const LISTA_EDITORIAL_MAX_FILAS = 8;
+export const REVISION_LISTA_MAX_FILAS = 8;
+
+const LISTA_EDITORIAL_MAX_FILAS = REVISION_LISTA_MAX_FILAS;
+
+export function debeUsarDataGridRevision(cantidadFilas: number): boolean {
+  return cantidadFilas > REVISION_LISTA_MAX_FILAS;
+}
 const LISTA_RESUMEN_MAX_INCIDENCIAS = 16;
 
 export const DETALLE_REVISION_MODAL_TITULO = 'Revisión de nómina mensual';

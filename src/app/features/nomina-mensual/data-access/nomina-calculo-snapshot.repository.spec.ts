@@ -1,5 +1,5 @@
 import { TestBed } from '@angular/core/testing';
-import { vi } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import { SUPABASE_CLIENT } from '../../../core/services/supabase.service';
 import { NominaCalculoSnapshotRepository } from './nomina-calculo-snapshot.repository';
@@ -217,6 +217,84 @@ function snapshotParaGuardar(overrides: Record<string, unknown> = {}) {
 }
 
 describe('NominaCalculoSnapshotRepository', () => {
+  it('guarda cabecera borrador para base generada', async () => {
+    const insertQuery = query({
+      ...baseRow,
+      id_calculo_periodo: 9,
+      estado: 'borrador',
+      total_haberes: 0,
+      total_descuentos: 0,
+      total_liquido: 0,
+      hash_snapshot: null,
+      version_motor: 'BASE-NOMINA-01',
+    });
+    const from = vi.fn()
+      .mockReturnValueOnce(query(null))
+      .mockReturnValueOnce(insertQuery);
+
+    TestBed.configureTestingModule({
+      providers: [
+        NominaCalculoSnapshotRepository,
+        {
+          provide: SUPABASE_CLIENT,
+          useValue: {
+            from,
+            rpc: vi.fn(),
+            auth: { getUser: vi.fn() },
+          },
+        },
+      ],
+    });
+
+    const repo = TestBed.inject(NominaCalculoSnapshotRepository);
+    const guardado = await repo.guardarBaseNominaBorrador(snapshotParaGuardar({
+      estado: 'borrador',
+      totalHaberes: 0,
+      totalDescuentos: 0,
+      totalLiquido: 0,
+      hashSnapshot: null,
+      versionMotor: 'BASE-NOMINA-01',
+      trabajadores: [],
+      issues: [],
+      trazabilidad: [],
+    }));
+
+    expect(insertQuery.insert).toHaveBeenCalledWith(expect.objectContaining({
+      periodo: '2026-05',
+      estado: 'borrador',
+      total_haberes: 0,
+      total_descuentos: 0,
+      total_liquido: 0,
+      activo: true,
+    }));
+    expect(guardado.snapshot.estado).toBe('borrador');
+    expect(guardado.reemplazoSnapshotAnterior).toBe(false);
+  });
+
+  it('no reemplaza snapshot preliminar activo al guardar base borrador', async () => {
+    const from = vi.fn(() => query(baseRow));
+
+    TestBed.configureTestingModule({
+      providers: [
+        NominaCalculoSnapshotRepository,
+        {
+          provide: SUPABASE_CLIENT,
+          useValue: {
+            from,
+            rpc: vi.fn(),
+            auth: { getUser: vi.fn() },
+          },
+        },
+      ],
+    });
+
+    const repo = TestBed.inject(NominaCalculoSnapshotRepository);
+    await expect(repo.guardarBaseNominaBorrador(snapshotParaGuardar({ estado: 'borrador' }))).rejects.toThrow(
+      'Ya existe una nomina generada para el periodo.',
+    );
+    expect(from).toHaveBeenCalledTimes(1);
+  });
+
   it('guarda resultado preliminar mediante RPC atomica con payload completo', async () => {
     const nuevoRow = {
       ...baseRow,

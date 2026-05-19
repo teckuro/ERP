@@ -10,8 +10,8 @@ import type {
 
 export const DETALLE_OPERATIVO_TABS: Array<{ id: DetalleOperativoTab; label: string }> = [
   { id: 'resumen', label: 'Resumen operativo' },
-  { id: 'trabajadores', label: 'Trabajadores' },
   { id: 'parametros', label: 'Parámetros' },
+  { id: 'trabajadores', label: 'Trabajadores' },
   { id: 'movimientos_recurrentes', label: 'Movimientos y recurrentes' },
   { id: 'resultado', label: 'Nómina generada' },
 ];

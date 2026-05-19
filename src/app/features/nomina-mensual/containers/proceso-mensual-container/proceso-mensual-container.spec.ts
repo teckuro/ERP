@@ -23,7 +23,7 @@ import {
   Upload,
   Users,
 } from 'lucide-angular/src/icons';
-import { vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { PeriodoActivoService } from '../../../../core/services/periodo-activo.service';
 import type { ProcesoMensualPrevalidacion } from '../../models/proceso-mensual.model';
@@ -295,6 +295,7 @@ describe('ProcesoMensualContainer', () => {
   const ejecutarPrevalidaciones = vi.fn();
   const generarPreNominaPeriodo = vi.fn();
   const generarCalculoPeriodo = vi.fn();
+  const guardarBaseNominaBorrador = vi.fn();
   const guardarSnapshotPreliminar = vi.fn();
   const reemplazarSnapshotPreliminar = vi.fn();
   const aprobarResultadoPreliminarOperativamente = vi.fn();
@@ -310,6 +311,7 @@ describe('ProcesoMensualContainer', () => {
     ejecutarPrevalidaciones.mockReset();
     generarPreNominaPeriodo.mockReset();
     generarCalculoPeriodo.mockReset();
+    guardarBaseNominaBorrador.mockReset();
     guardarSnapshotPreliminar.mockReset();
     reemplazarSnapshotPreliminar.mockReset();
     aprobarResultadoPreliminarOperativamente.mockReset();
@@ -457,6 +459,20 @@ describe('ProcesoMensualContainer', () => {
       issues: [],
     });
     const snapshotMock = snapshotGuardado();
+    guardarBaseNominaBorrador.mockResolvedValue({
+      ok: true,
+      snapshot: snapshotGuardado({
+        idCalculoPeriodo: 77,
+        estado: 'borrador',
+        totalHaberes: 0,
+        totalDescuentos: 0,
+        totalLiquido: 0,
+        hashSnapshot: null,
+      }),
+      reemplazoSnapshotAnterior: false,
+      hashSnapshot: null,
+      issues: [],
+    });
     guardarSnapshotPreliminar.mockResolvedValue({
       ok: true,
       snapshot: snapshotMock,
@@ -521,6 +537,7 @@ describe('ProcesoMensualContainer', () => {
             ejecutarPrevalidaciones,
             generarPreNominaPeriodo,
             generarCalculoPeriodo,
+            guardarBaseNominaBorrador,
             guardarSnapshotPreliminar,
             reemplazarSnapshotPreliminar,
             aprobarResultadoPreliminarOperativamente,
@@ -848,13 +865,13 @@ describe('ProcesoMensualContainer', () => {
       expect(input).toBeNull();
     });
 
-    it('renderiza workspace una columna con franja y siete tabs', () => {
+    it('renderiza workspace con sidebar operativo y seis tabs', () => {
       const el = fixture.nativeElement;
       expect(el.querySelector('.payroll-console')).toBeTruthy();
       expect(el.querySelector('.payroll-franja-operativa')).toBeTruthy();
-      expect(el.querySelector('.payroll-rail')).toBeNull();
-      expect(el.querySelectorAll('.payroll-operational-tabs button').length).toBe(7);
-      expectTexto(el.textContent as string, 'Resumen');
+      expect(el.querySelector('.payroll-workspace-sidebar')).toBeTruthy();
+      expect(el.querySelectorAll('.payroll-operational-tabs button').length).toBe(6);
+      expectTexto(el.textContent as string, 'Parámetros');
       expectTexto(el.textContent as string, 'Historial');
     });
 
@@ -913,6 +930,62 @@ describe('ProcesoMensualContainer', () => {
       await avanzarFlujo(localFixture, 'base');
       expect(generarPreNominaPeriodo).toHaveBeenCalledWith(PERIODO_TEST);
       expect(localFixture.componentInstance.preNomina()).not.toBeNull();
+    });
+
+    it('generarPreNomina sin advertencias persiste base borrador', async () => {
+      ejecutarPrevalidaciones.mockResolvedValueOnce(prevalidacionLista());
+      generarPreNominaPeriodo.mockResolvedValueOnce(baseNominaLista());
+      const localFixture = await montarContainer();
+      await avanzarFlujo(localFixture, 'base');
+      await vi.waitFor(() => expect(guardarBaseNominaBorrador).toHaveBeenCalled());
+
+      expect(localFixture.componentInstance.snapshotActivo()?.estado).toBe('borrador');
+      expect(localFixture.componentInstance.contextoOperativoPeriodo().baseGenerada).toBe(true);
+      expect(localFixture.componentInstance.contextoOperativoPeriodo().resultadoGuardado).toBe(false);
+    });
+
+    it('rehidrata borrador como base_lista y no vuelve a pedir generar nomina', async () => {
+      obtenerSnapshotActivo.mockResolvedValue(snapshotGuardado({
+        idCalculoPeriodo: 77,
+        estado: 'borrador',
+        totalHaberes: 0,
+        totalDescuentos: 0,
+        totalLiquido: 0,
+        hashSnapshot: null,
+      }));
+      obtenerSnapshotCompletoActivo.mockResolvedValue(null);
+      const localFixture = await montarContainer();
+      await esperarSnapshotActivo(localFixture);
+
+      expect(localFixture.componentInstance.estadoOperativo().estadoClave).toBe('base_lista');
+      expect(localFixture.componentInstance.estadoOperativo().accionPrincipal.label).toBe('Revisar trabajadores');
+      expect(localFixture.componentInstance.estadoOperativo().accionPrincipal.label).not.toBe('Generar nómina');
+    });
+
+    it('generarPreNomina con advertencias no persiste automaticamente y ofrece guardar base revisada', async () => {
+      ejecutarPrevalidaciones.mockResolvedValueOnce(prevalidacionLista({
+        estado: 'CON_ADVERTENCIAS',
+        resumen: {
+          ...prevalidacionLista().resumen,
+          hayAdvertencias: true,
+        },
+        advertencias: [{
+          codigo: 'ADV_MOV',
+          area: 'ENTRADAS_MENSUALES',
+          severidad: 'ADVERTENCIA',
+          texto: 'Hay movimientos por revisar.',
+        }],
+      }));
+      generarPreNominaPeriodo.mockResolvedValueOnce({
+        ...baseNominaLista(),
+        estado: 'GENERADA_CON_ADVERTENCIAS',
+        codigosAdvertencia: ['ADV_MOV'],
+      });
+      const localFixture = await montarContainer();
+      await avanzarFlujo(localFixture, 'base');
+
+      expect(guardarBaseNominaBorrador).not.toHaveBeenCalled();
+      expect(localFixture.componentInstance.puedeGuardarBaseNominaRevisada()).toBe(true);
     });
 
     it('calcularPreliminar llama servicio tras base', async () => {

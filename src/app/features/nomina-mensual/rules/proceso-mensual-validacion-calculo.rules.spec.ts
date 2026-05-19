@@ -1,3 +1,5 @@
+import { describe, expect, it } from 'vitest';
+
 import type { ProcesoMensualPrevalidacion } from '../models/proceso-mensual.model';
 import { buildValidacionCalculoPreliminarView } from './proceso-mensual-validacion-calculo.rules';
 
@@ -47,6 +49,23 @@ describe('proceso-mensual-validacion-calculo.rules', () => {
     expect(vm.estado).toBe('pendiente');
     expect(vm.siguienteAccion.accionLocal).toBe('validarPeriodo');
     expect(vm.bloqueos).toHaveLength(0);
+  });
+
+  it('base persistida permite continuar sin volver a generar nomina', () => {
+    const vm = buildValidacionCalculoPreliminarView({
+      periodo: '2026-05',
+      resultado: null,
+      preNomina: null,
+      base: null,
+      errorEjecucion: null,
+      nominaCerradaOperativamente: false,
+      tieneSnapshotPersistido: true,
+      tieneBasePersistida: true,
+    });
+
+    expect(vm.estado).toBe('listo');
+    expect(vm.puedeCalcular).toBe(true);
+    expect(vm.siguienteAccion.accionLocal).toBe('calcularPreliminar');
   });
 
   it('bloquea cuando hay error de ejecucion', () => {

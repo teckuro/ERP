@@ -81,8 +81,8 @@ const AMBITOS_ORDEN: IncidenciaPeriodoAmbito[] = [
 
 const DETALLE_TABS: DetalleOperativoTab[] = [
   'resumen',
-  'trabajadores',
   'parametros',
+  'trabajadores',
   'movimientos_recurrentes',
   'resultado',
 ];

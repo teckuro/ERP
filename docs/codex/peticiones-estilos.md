@@ -1,3 +1,10 @@
+## 2026-05-19 - NOM-WORKSPACE-LOC-MAQUETACION-01
+
+- **Módulo:** Nómina mensual / consola LOC.
+- **Cambio:** orden único Param→Trab→Mov→Rec (`proceso-mensual-area-orden.config.ts`); franja `@for`; exception strip oculto en Resumen; panel Resumen reordenado; trabajadores lista/DataGrid; liquidaciones editorial; Figma §6–7 sin rail.
+- **Doc:** [`nom-workspace-loc-maquetacion-01.md`](modulos/nomina-mensual/nom-workspace-loc-maquetacion-01.md)
+- **No tocado:** store, SQL, motor, estilos globales.
+
 ## 2026-05-19 - NOM-PERIODO-VERIFICAR-MODAL-02
 
 - **Módulo:** Nómina mensual / verificación período.

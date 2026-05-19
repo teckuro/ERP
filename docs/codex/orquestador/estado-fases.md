@@ -1,4 +1,13 @@
-﻿## NOM-PERIODO-VERIFICAR-MODAL-02 - Modal tras verificar período
+﻿## NOM-WORKSPACE-LOC-MAQUETACION-01 - Maquetación consola LOC
+
+| Campo | Estado |
+|---|---|
+| Estado | Implementada |
+| Tipo | UI local (HTML/CSS/rules) |
+| Alcance | Orden áreas, capas LOC, tab Resumen, paridad paneles/modal, Figma §6–7 |
+| Documento | [`../modulos/nomina-mensual/nom-workspace-loc-maquetacion-01.md`](../modulos/nomina-mensual/nom-workspace-loc-maquetacion-01.md) |
+
+## NOM-PERIODO-VERIFICAR-MODAL-02 - Modal tras verificar período
 
 | Campo | Estado |
 |---|---|

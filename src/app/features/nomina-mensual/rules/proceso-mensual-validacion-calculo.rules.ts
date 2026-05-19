@@ -22,12 +22,13 @@ export interface ValidacionCalculoPreliminarInput {
   errorEjecucion: string | null;
   nominaCerradaOperativamente: boolean;
   tieneSnapshotPersistido?: boolean;
+  tieneBasePersistida?: boolean;
 }
 
 export function buildValidacionCalculoPreliminarView(
   input: ValidacionCalculoPreliminarInput,
 ): ValidacionCalculoPreliminarView {
-  const { periodo, resultado, preNomina, base, errorEjecucion, nominaCerradaOperativamente, tieneSnapshotPersistido } =
+  const { periodo, resultado, preNomina, base, errorEjecucion, nominaCerradaOperativamente, tieneSnapshotPersistido, tieneBasePersistida } =
     input;
   const bloqueos: ValidacionOperativaItemView[] = [];
   const advertencias: ValidacionOperativaItemView[] = [];
@@ -63,6 +64,16 @@ export function buildValidacionCalculoPreliminarView(
       accionLabel: 'Generar nómina',
       accionLocal: 'validarPeriodo',
     });
+  }
+
+  if (!resultado && tieneBasePersistida) {
+    informaciones.push({
+      codigo: 'INFO-BASE-PERSISTIDA',
+      titulo: 'Base de nomina generada',
+      descripcion: 'La base del periodo esta guardada. Puedes continuar con la revision de trabajadores.',
+      severidad: 'info',
+    });
+    return assembleValidacionCalculo({ bloqueos, advertencias, informaciones });
   }
 
   if (!resultado) {

@@ -47,8 +47,8 @@ export function suggestNominaWorkspaceTab(frame: NominaVisualFrame): NominaWorks
   if (frame === 'con_pendientes') return 'trabajadores';
   if (frame === 'liquidaciones_generadas') return 'liquidaciones';
   if (frame === 'confirmada') return 'historial';
-  if (frame === 'en_revision' || frame === 'lista_para_confirmar') return 'resumen';
-  return 'resumen';
+  if (frame === 'en_revision' || frame === 'lista_para_confirmar') return 'trabajadores';
+  return 'parametros';
 }
 
 export interface NominaResumenSuperiorInput {

@@ -1,3 +1,5 @@
+import { describe, expect, it } from 'vitest';
+
 import type { ProcesoMensualAccionPrincipalVm } from './proceso-mensual-estado-operativo.rules';
 import {
   buildAlertasPeriodoResumen,
@@ -7,6 +9,7 @@ import {
   buildNominaGuiaPanelCopy,
   buildResumenRevisionTrabajadores,
   resolveNominaVisualFrame,
+  suggestNominaWorkspaceTab,
 } from './proceso-mensual-workspace.rules';
 import type { ProcesoMensualEstadoOperativoVm } from './proceso-mensual-estado-operativo.rules';
 
@@ -152,5 +155,11 @@ describe('proceso-mensual-workspace.rules', () => {
         estadoClave: 'base_lista',
       }),
     ).toBe('en_revision');
+  });
+
+  it('suggestNominaWorkspaceTab evita resumen como tab inicial visible', () => {
+    expect(suggestNominaWorkspaceTab('sin_generar')).toBe('parametros');
+    expect(suggestNominaWorkspaceTab('en_revision')).toBe('trabajadores');
+    expect(suggestNominaWorkspaceTab('lista_para_confirmar')).toBe('trabajadores');
   });
 });

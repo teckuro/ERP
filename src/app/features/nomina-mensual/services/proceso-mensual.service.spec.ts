@@ -1,5 +1,5 @@
 import { TestBed } from '@angular/core/testing';
-import { vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { EmpleadosService } from '../../empleados/services/empleados.service';
 import { HaberesDescuentosService } from '../../haberes-descuentos/services/haberes-descuentos.service';
@@ -128,6 +128,7 @@ describe('ProcesoMensualService', () => {
   let movimientos: { listarPorPeriodo: ReturnType<typeof vi.fn> };
   let entradasMensuales: { listarEntradasPeriodo: ReturnType<typeof vi.fn> };
   let snapshots: {
+    guardarBaseNominaBorrador: ReturnType<typeof vi.fn>;
     guardarSnapshotPreliminar: ReturnType<typeof vi.fn>;
     obtenerSnapshotActivo: ReturnType<typeof vi.fn>;
     obtenerSnapshotCompletoActivo: ReturnType<typeof vi.fn>;
@@ -190,6 +191,10 @@ describe('ProcesoMensualService', () => {
       listarEntradasPeriodo: vi.fn().mockResolvedValue([]),
     };
     snapshots = {
+      guardarBaseNominaBorrador: vi.fn().mockImplementation((snapshot) => Promise.resolve({
+        snapshot: { ...snapshot, idCalculoPeriodo: 77 },
+        reemplazoSnapshotAnterior: false,
+      })),
       guardarSnapshotPreliminar: vi.fn().mockImplementation((snapshot) => Promise.resolve({
         snapshot: { ...snapshot, idCalculoPeriodo: 1 },
         reemplazoSnapshotAnterior: false,
@@ -313,6 +318,93 @@ describe('ProcesoMensualService', () => {
     expect(r.movimientosVariablesValidados).toBe(1);
     expect(r.entradasMensualesAptas).toBe(1);
     expect(r.generadoEn).toMatch(/T/);
+  });
+
+  it('guarda base nomina borrador sin calcular ni cerrar periodo', async () => {
+    const svc = TestBed.inject(ProcesoMensualService);
+    const preNomina = await svc.generarPreNominaPeriodo('2026-05');
+    const r = await svc.guardarBaseNominaBorrador('2026-05', preNomina);
+
+    expect(r.ok).toBe(true);
+    expect(r.snapshot?.estado).toBe('borrador');
+    expect(r.snapshot?.totalTrabajadores).toBe(preNomina.trabajadoresIncluidos);
+    expect(r.snapshot?.totalLiquido).toBe(0);
+    expect(snapshots.guardarBaseNominaBorrador).toHaveBeenCalledWith(expect.objectContaining({
+      periodo: '2026-05',
+      estado: 'borrador',
+      origen: 'preliminar',
+    }));
+    expect(snapshots.guardarSnapshotPreliminar).not.toHaveBeenCalled();
+  });
+
+  it('no guarda base borrador automaticamente si hay advertencias', async () => {
+    entradasMensuales.listarEntradasPeriodo.mockResolvedValueOnce([{
+      idEntrada: 'novedad:warn',
+      origen: 'novedad_mensual',
+      origenId: 1,
+      idPersona: 1,
+      idContrato: null,
+      idConcepto: 1,
+      periodo: '2026-05',
+      tipoEntrada: 'haber',
+      categoria: 'haber_variable',
+      tipoMovimiento: 'haber',
+      cantidad: null,
+      unidad: null,
+      monto: 1000,
+      moneda: 'CLP',
+      estado: 'pendiente_revision',
+      fechaEvento: null,
+      observacion: null,
+      referenciaExterna: null,
+      requiereRevision: true,
+      bloqueaProceso: false,
+      warnings: [],
+      metadata: {},
+    }]);
+    const svc = TestBed.inject(ProcesoMensualService);
+    const preNomina = await svc.generarPreNominaPeriodo('2026-05');
+    const r = await svc.guardarBaseNominaBorrador('2026-05', preNomina);
+
+    expect(r.ok).toBe(false);
+    expect(r.issues.some((issue) => issue.severidad === 'ADVERTENCIA')).toBe(true);
+    expect(snapshots.guardarBaseNominaBorrador).not.toHaveBeenCalled();
+  });
+
+  it('guarda base revisada si se permiten advertencias', async () => {
+    entradasMensuales.listarEntradasPeriodo.mockResolvedValueOnce([{
+      idEntrada: 'novedad:warn',
+      origen: 'novedad_mensual',
+      origenId: 1,
+      idPersona: 1,
+      idContrato: null,
+      idConcepto: 1,
+      periodo: '2026-05',
+      tipoEntrada: 'haber',
+      categoria: 'haber_variable',
+      tipoMovimiento: 'haber',
+      cantidad: null,
+      unidad: null,
+      monto: 1000,
+      moneda: 'CLP',
+      estado: 'pendiente_revision',
+      fechaEvento: null,
+      observacion: null,
+      referenciaExterna: null,
+      requiereRevision: true,
+      bloqueaProceso: false,
+      warnings: [],
+      metadata: {},
+    }]);
+    const svc = TestBed.inject(ProcesoMensualService);
+    const preNomina = await svc.generarPreNominaPeriodo('2026-05');
+    const r = await svc.guardarBaseNominaBorrador('2026-05', preNomina, undefined, {
+      permitirAdvertencias: true,
+    });
+
+    expect(r.ok).toBe(true);
+    expect(r.snapshot?.estado).toBe('borrador');
+    expect(snapshots.guardarBaseNominaBorrador).toHaveBeenCalled();
   });
 
   it('genera calculo preliminar y lo deja consultable en memoria', async () => {

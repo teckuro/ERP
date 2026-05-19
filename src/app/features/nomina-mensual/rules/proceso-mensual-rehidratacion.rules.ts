@@ -22,11 +22,12 @@ export interface ContextoOperativoPeriodo {
 
 export function inferirContextoOperativoPeriodo(input: ContextoOperativoPeriodoInput): ContextoOperativoPeriodo {
   const conSnapshot = input.snapshot != null;
+  const snapshotBorrador = input.snapshot?.estado === 'borrador';
   return {
     tienePrevalidacion: input.resultado != null || conSnapshot,
     baseGenerada: input.preNomina != null || conSnapshot,
-    calculoGenerado: input.calculo != null || conSnapshot,
-    resultadoGuardado: conSnapshot,
+    calculoGenerado: input.calculo != null || (conSnapshot && !snapshotBorrador),
+    resultadoGuardado: conSnapshot && !snapshotBorrador,
     trabajadoresAptos: input.resultado?.resumen.trabajadoresActivosAptos ?? input.snapshot?.totalTrabajadores ?? null,
   };
 }

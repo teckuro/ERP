@@ -118,6 +118,12 @@ export class ProcesoMensualPeriodoStore {
         this.aprobacionOperativa.set(null);
         this.snapshotCompleto.set(null);
         this.errorSnapshotCompleto.set(null);
+        if (r.estado === 'GENERADA' && r.codigosBloqueo.length === 0 && r.codigosAdvertencia.length === 0) {
+          void this.persistirBaseNominaBorrador(p, r, false).catch((e: unknown) => {
+            this.errorGuardadoResultado.set(e instanceof Error ? e.message : String(e));
+          });
+        }
+        return undefined;
       })
       .catch((e: unknown) => {
         this.preNomina.set(null);
@@ -125,6 +131,22 @@ export class ProcesoMensualPeriodoStore {
       })
       .finally(() => {
         this.generandoPreNomina.set(false);
+      });
+  }
+
+  guardarBaseNominaRevisada(): void {
+    const preNomina = this.preNomina();
+    if (!preNomina) return;
+    const p = this.periodoSeleccionado();
+    this.guardandoSnapshot.set(true);
+    this.errorGuardadoResultado.set(null);
+    this.exitoGuardadoResultado.set(null);
+    void this.persistirBaseNominaBorrador(p, preNomina, true)
+      .catch((e: unknown) => {
+        this.errorGuardadoResultado.set(e instanceof Error ? e.message : String(e));
+      })
+      .finally(() => {
+        this.guardandoSnapshot.set(false);
       });
   }
 
@@ -269,6 +291,33 @@ export class ProcesoMensualPeriodoStore {
     this.identificadorResultadoGuardadoActual.set(null);
     this.aprobacionOperativa.set(null);
     this.liquidacionesGeneradasCount.set(0);
+  }
+
+  private async persistirBaseNominaBorrador(
+    periodo: string,
+    preNomina: ProcesoMensualPreNominaPeriodo,
+    permitirAdvertencias: boolean,
+  ): Promise<void> {
+    this.guardandoSnapshot.set(true);
+    try {
+      const r = await this.procesoMensual.guardarBaseNominaBorrador(
+        periodo,
+        preNomina,
+        undefined,
+        { permitirAdvertencias },
+      );
+      if (!r.ok || !r.snapshot) {
+        const msg = r.issues.map((i) => i.mensaje).join(' ') || 'No se pudo guardar la base generada.';
+        throw new Error(msg);
+      }
+      this.aplicarSnapshotActivo(r.snapshot);
+      this.identificadorResultadoGuardadoActual.set(null);
+      this.snapshotCompleto.set(null);
+      this.errorSnapshotCompleto.set(null);
+      this.exitoGuardadoResultado.set('Base generada guardada. Al volver al periodo podras continuar la revision.');
+    } finally {
+      this.guardandoSnapshot.set(false);
+    }
   }
 
   recalcularYReemplazarSnapshot(): void {

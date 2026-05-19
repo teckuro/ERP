@@ -1,4 +1,5 @@
 import type { ProcesoMensualAccionLocal } from '../../../rules/proceso-mensual-estado-operativo.rules';
+import { buildNominaWorkspaceTabs } from './proceso-mensual-area-orden.config';
 
 export type ValidacionCalculoEstado = 'pendiente' | 'listo' | 'advertencias' | 'bloqueado';
 export type ValidacionOperativaSeveridad = 'bloqueo' | 'advertencia' | 'info';
@@ -48,15 +49,7 @@ export type NominaWorkspaceTab =
   | 'liquidaciones'
   | 'historial';
 
-export const NOMINA_WORKSPACE_TABS: ReadonlyArray<{ id: NominaWorkspaceTab; label: string }> = [
-  { id: 'resumen', label: 'Resumen' },
-  { id: 'trabajadores', label: 'Trabajadores' },
-  { id: 'parametros', label: 'Parámetros' },
-  { id: 'movimientos', label: 'Movimientos' },
-  { id: 'recurrentes', label: 'Recurrentes' },
-  { id: 'liquidaciones', label: 'Liquidaciones' },
-  { id: 'historial', label: 'Historial' },
-];
+export const NOMINA_WORKSPACE_TABS = buildNominaWorkspaceTabs();
 export type NominaVisualFrame =
   | 'sin_generar'
   | 'generando'
@@ -133,6 +126,35 @@ export interface NominaResumenSuperiorVm {
   recurrentes: string;
   cambios: number;
   bloqueos: number;
+}
+
+export interface NominaWorkspaceTabSummaryVm {
+  id: NominaWorkspaceTab;
+  label: string;
+  titulo: string;
+  descripcion: string;
+  severidad: 'neutral' | 'atencion' | 'bloqueo' | 'listo';
+  indicador: string | null;
+  metricas: Array<{ label: string; value: string | number }>;
+  detalleTab: DetalleOperativoTab | null;
+  ctaLabel: string | null;
+}
+
+export type NominaWorkspaceDetailSeverity = 'bloqueo' | 'atencion' | 'listo' | 'neutral';
+
+export interface NominaWorkspaceDetailItemVm {
+  id: string;
+  icon: string;
+  titulo: string;
+  descripcion: string;
+  estado: string;
+  estadoClase: string;
+  contexto?: string;
+  accion?: string;
+  ruta?: string;
+  detalleTab?: DetalleOperativoTab;
+  accionLocal?: ValidacionAccionLocal;
+  severity: NominaWorkspaceDetailSeverity;
 }
 
 export interface ValidacionOperativaItemView {

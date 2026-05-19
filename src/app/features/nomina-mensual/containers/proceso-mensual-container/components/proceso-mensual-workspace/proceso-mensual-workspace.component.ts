@@ -3,8 +3,16 @@ import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { LucideAngularModule } from 'lucide-angular';
 
+import { DataGridComponent } from '../../../../../../shared/components/ui/data-grid.component';
+import {
+  PAYROLL_WORKER_DETAIL_COLUMNS,
+  PAYROLL_WORKER_DETAIL_FILTERS,
+} from '../../models/proceso-mensual-grid.config';
 import type { NominaWorkspaceTab } from '../../models/proceso-mensual-container.vm';
-import { claseDetalleRevisionTab } from '../../../../rules/proceso-mensual-detalle-modal.rules';
+import {
+  claseDetalleRevisionTab,
+  debeUsarDataGridRevision,
+} from '../../../../rules/proceso-mensual-detalle-modal.rules';
 import type { DetalleRevisionTabSeveridad } from '../../../../rules/proceso-mensual-detalle-modal.rules';
 import {
   resolveFocusPresentacion,
@@ -16,21 +24,18 @@ import { ProcesoMensualPresentacionFacade } from '../../facade/proceso-mensual-p
   selector: 'app-proceso-mensual-workspace',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, RouterLink, LucideAngularModule],
+  imports: [CommonModule, RouterLink, LucideAngularModule, DataGridComponent],
   templateUrl: './proceso-mensual-workspace.component.html',
   styleUrl: '../../proceso-mensual-container.css',
 })
 export class ProcesoMensualWorkspaceComponent {
   readonly facade = inject(ProcesoMensualPresentacionFacade);
 
-  readonly franjaIcono = {
-    trabajadores: 'users',
-    parametros: 'sliders',
-    movimientos: 'list-checks',
-    recurrentes: 'repeat',
-  } as const;
-
   readonly focusPresentacion = computed(() => resolveFocusPresentacion(this.facade.nominaFrame().frame));
+
+  readonly workerDetailColumns = PAYROLL_WORKER_DETAIL_COLUMNS;
+  readonly workerDetailFilters = PAYROLL_WORKER_DETAIL_FILTERS;
+  readonly debeUsarDataGridRevision = debeUsarDataGridRevision;
 
   claseWorkspaceTab(severidad: DetalleRevisionTabSeveridad, activo: boolean): string {
     return claseDetalleRevisionTab(severidad, activo);

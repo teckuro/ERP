@@ -12,8 +12,10 @@ import {
   buildDetalleRevisionTabsMeta,
   buildExpedienteRevisionCta,
   buildExpedienteRevisionCtaForTab,
+  debeUsarDataGridRevision,
   humanizarDetalleRevisionTexto,
   mapParametroItemsParaRevision,
+  REVISION_LISTA_MAX_FILAS,
 } from './proceso-mensual-detalle-modal.rules';
 import {
   buildIncidenciasPeriodo,
@@ -492,5 +494,21 @@ describe('proceso-mensual-detalle-modal.rules', () => {
     expect(panel.usarGridMovimientos).toBe(false);
     expect(panel.listaMovimientos).toHaveLength(1);
     expect(panel.listaMovimientos[0].titulo).toBe('Bono');
+  });
+
+  it('DETALLE_OPERATIVO_TABS ordena parametros antes que trabajadores', () => {
+    expect(DETALLE_OPERATIVO_TABS.map((t) => t.id)).toEqual([
+      'resumen',
+      'parametros',
+      'trabajadores',
+      'movimientos_recurrentes',
+      'resultado',
+    ]);
+  });
+
+  it('debeUsarDataGridRevision respeta umbral editorial', () => {
+    expect(REVISION_LISTA_MAX_FILAS).toBe(8);
+    expect(debeUsarDataGridRevision(8)).toBe(false);
+    expect(debeUsarDataGridRevision(9)).toBe(true);
   });
 });

@@ -102,7 +102,10 @@ import {
 } from '../../../rules/proceso-mensual-workspace.rules';
 import {
   buildNominaExceptionStrip,
+  buildNominaWorkspaceDetailItems,
+  buildNominaWorkspaceTabSummaries,
   buildNominaWorkspaceTabsMeta,
+  type NominaWorkspaceDetailSourceItem,
 } from '../../../rules/proceso-mensual-workspace-presentacion.rules';
 import {
   DETALLE_OPERATIVO_TABS,
@@ -132,7 +135,9 @@ import type {
   NominaResumenSuperiorVm,
   NominaVisualFrame,
   NominaVisualFrameView,
+  NominaWorkspaceDetailItemVm,
   NominaWorkspaceTab,
+  NominaWorkspaceTabSummaryVm,
   ParaContinuarItemVm,
   PasoPeriodoEstado,
   PasoPeriodoView,
@@ -154,6 +159,11 @@ import type {
   ValidacionCalculoPreliminarView,
   ValidacionOperativaItemView,
 } from '../models/proceso-mensual-container.vm';
+import {
+  NOMINA_AREA_ORDEN,
+  valorFranjaArea,
+  type NominaAreaOperativa,
+} from '../models/proceso-mensual-area-orden.config';
 import { NOMINA_WORKSPACE_TABS } from '../models/proceso-mensual-container.vm';
 
 @Injectable()
@@ -165,6 +175,7 @@ export class ProcesoMensualPresentacionFacade {
   private readonly shellContext = inject(ShellPageContextService);
 
   readonly nominaWorkspaceTabs = NOMINA_WORKSPACE_TABS;
+  readonly nominaFranjaAreas = NOMINA_AREA_ORDEN;
 
   readonly breadcrumbItems: readonly RecordBreadcrumbItem[] = [
     { label: 'Remuneraciones', link: '/remuneraciones/proceso-mensual' },
@@ -248,7 +259,7 @@ export class ProcesoMensualPresentacionFacade {
   });
 
   private readonly accionesNominaPeriodoInput = computed(() => ({
-    tieneNominaGenerada: this.store.snapshotActivo() != null,
+    tieneNominaGenerada: this.store.snapshotActivo() != null && this.store.snapshotActivo()?.estado !== 'borrador',
     tieneNominaConfirmada: this.nominaEstaCerradaOperativamente(),
     liquidacionesGeneradas: this.store.liquidacionesGeneradasCount(),
     esAdmin: this.nominaCapabilities.esAdmin(),
@@ -324,7 +335,7 @@ export class ProcesoMensualPresentacionFacade {
       liquidacionesDisponibles: this.store.liquidacionesGeneradasCount() > 0,
     }),
   );
-  readonly nominaWorkspaceTab = signal<NominaWorkspaceTab>('resumen');
+  readonly nominaWorkspaceTab = signal<NominaWorkspaceTab>('parametros');
 
   constructor() {
     const destroyRef = inject(DestroyRef);
@@ -579,6 +590,7 @@ export class ProcesoMensualPresentacionFacade {
       errorEjecucion: this.store.errorEjecucion(),
       nominaCerradaOperativamente: this.nominaEstaCerradaOperativamente(),
       tieneSnapshotPersistido: this.store.snapshotActivo() != null,
+      tieneBasePersistida: this.store.snapshotActivo()?.estado === 'borrador',
     }),
   );
 
@@ -838,7 +850,13 @@ export class ProcesoMensualPresentacionFacade {
     });
   });
 
-  readonly nominaExceptionStrip = computed(() => buildNominaExceptionStrip(this.alertasPeriodoResumen()));
+  readonly nominaExceptionStrip = computed(() =>
+    buildNominaExceptionStrip(this.alertasPeriodoResumen(), this.nominaWorkspaceTab()),
+  );
+
+  valorFranjaArea(area: NominaAreaOperativa): string {
+    return valorFranjaArea(area, this.nominaResumenSuperior());
+  }
 
   readonly nominaWorkspaceTabsMeta = computed(() =>
     buildNominaWorkspaceTabsMeta({
@@ -853,6 +871,168 @@ export class ProcesoMensualPresentacionFacade {
       nominaCerrada: this.nominaEstaCerradaOperativamente(),
     }),
   );
+
+  readonly nominaWorkspaceTabSummaries = computed<NominaWorkspaceTabSummaryVm[]>(() => {
+    const resumen = this.dashboardResumen();
+    return buildNominaWorkspaceTabSummaries({
+      tabsMeta: this.nominaWorkspaceTabsMeta(),
+      resumenSuperior: this.nominaResumenSuperior(),
+      trabajadoresAptos: resumen.trabajadoresAptos,
+      trabajadoresPorRevisar: resumen.trabajadoresPorRevisar,
+      movimientosAprobados: resumen.movimientosAprobados,
+      movimientosPendientes: resumen.movimientosPendientes,
+      asignacionesAplicables: resumen.asignacionesAplicables,
+      asignacionesPorRevisar: resumen.asignacionesPorRevisar,
+      liquidacionesGeneradas: this.store.liquidacionesGeneradasCount(),
+      nominaCerrada: this.nominaEstaCerradaOperativamente(),
+      resultadoPreliminar: resumen.resultadoPreliminar,
+      totalLiquidoLabel: this.formatoMonto(this.resultadoPreliminar().resumen.totalLiquido),
+    });
+  });
+
+  readonly nominaWorkspaceTabSummary = computed<NominaWorkspaceTabSummaryVm | null>(() => {
+    const active = this.nominaWorkspaceTab();
+    return this.nominaWorkspaceTabSummaries().find((summary) => summary.id === active) ?? null;
+  });
+
+  readonly nominaWorkspaceDetailItems = computed<NominaWorkspaceDetailItemVm[]>(() => {
+    const tab = this.nominaWorkspaceTab();
+    const panel = this.nominaWorkspacePanelInline();
+    const items: NominaWorkspaceDetailSourceItem[] = [];
+
+    if (tab === 'trabajadores') {
+      if (this.nominaVisualFrame() === 'con_pendientes') {
+        items.push(...this.nominaPendientesVisuales().map((item) => ({
+          id: item.codigo,
+          titulo: item.titulo,
+          descripcion: item.descripcion,
+          estado: this.etiquetaPendienteVisual(item.severidad),
+          estadoClase: this.clasePendienteVisual(item.severidad),
+          contexto: 'Trabajadores',
+          accion: item.accionLabel ?? 'Revisar',
+          ruta: item.ruta,
+          accionLocal: item.accionLocal,
+          detalleTab: item.ruta || item.accionLocal ? undefined : ('trabajadores' as DetalleOperativoTab),
+        })));
+      } else {
+        items.push(...this.payrollWorkerDetailRows().map((row) => ({
+          id: `${row.rut}-${row.trabajador}`,
+          titulo: row.trabajador,
+          descripcion: `${row.rut} · ${row.observacion}`,
+          estado: row.estado,
+          estadoClase: this.claseChipRevision(row.estado),
+          contexto: 'Trabajador',
+          accion: row.accion,
+          detalleTab: 'trabajadores' as DetalleOperativoTab,
+        })));
+      }
+    } else if (tab === 'parametros' && panel) {
+      items.push(...panel.listaParametros.map((item) => ({
+        id: `${item.titulo}-${item.descripcion}`,
+        titulo: item.titulo,
+        descripcion: item.descripcion,
+        estado: item.estado,
+        estadoClase: item.estadoClase,
+        contexto: 'Parámetros',
+        accion: item.accion,
+        ruta: item.ruta,
+        detalleTab: item.accionTab,
+      })));
+    } else if (tab === 'movimientos' && panel) {
+      items.push(...panel.listaMovimientos.map((item) => ({
+        id: `${item.titulo}-${item.descripcion}`,
+        titulo: item.titulo,
+        descripcion: item.descripcion,
+        estado: item.estado,
+        estadoClase: item.estadoClase,
+        contexto: item.contexto ?? 'Movimiento',
+        accion: item.accion,
+        ruta: item.ruta,
+        detalleTab: item.accionTab,
+      })));
+    } else if (tab === 'recurrentes' && panel) {
+      items.push(...panel.listaRecurrentes.map((item) => ({
+        id: `${item.titulo}-${item.descripcion}`,
+        titulo: item.titulo,
+        descripcion: item.descripcion,
+        estado: item.estado,
+        estadoClase: item.estadoClase,
+        contexto: item.contexto ?? 'Recurrente',
+        accion: item.accion,
+        ruta: item.ruta,
+        detalleTab: item.accionTab,
+      })));
+    } else if (tab === 'liquidaciones') {
+      const generadas = this.liquidacionesGeneradasCount();
+      items.push({
+        id: 'liquidaciones-estado',
+        titulo: generadas > 0 ? 'Liquidaciones generadas' : 'Liquidaciones pendientes',
+        descripcion: generadas > 0
+          ? `${generadas} liquidación${generadas === 1 ? '' : 'es'} generada${generadas === 1 ? '' : 's'} para este período.`
+          : this.nominaEstaCerradaOperativamente()
+            ? `Nómina confirmada para ${this.periodoActivo.etiqueta()}.`
+            : 'Confirme la nómina mensual para habilitar liquidaciones.',
+        estado: generadas > 0 ? 'Generadas' : 'Pendiente',
+        estadoClase: generadas > 0
+          ? 'payroll-state-chip payroll-state-chip--success'
+          : 'payroll-state-chip payroll-state-chip--warning',
+        contexto: 'Liquidaciones',
+        accion: generadas > 0 || this.nominaEstaCerradaOperativamente() ? 'Ir a liquidaciones' : undefined,
+        ruta: generadas > 0 || this.nominaEstaCerradaOperativamente() ? '/remuneraciones/liquidaciones' : undefined,
+      });
+    } else if (tab === 'historial') {
+      const expediente = this.expedienteNominaPeriodo();
+      if (expediente.visible && expediente.snapshot && expediente.totales) {
+        items.push(
+          {
+            id: 'historial-version',
+            titulo: expediente.snapshot.versionEtiqueta,
+            descripcion: `Generada ${expediente.snapshot.fechaGeneracion}`,
+            estado: 'Version',
+            estadoClase: 'payroll-state-chip payroll-state-chip--info',
+            contexto: 'Versión',
+            accion: 'Ver revisión completa',
+            detalleTab: 'resultado',
+          },
+          {
+            id: 'historial-liquido',
+            titulo: 'Líquido registrado',
+            descripcion: this.formatoMonto(expediente.totales.liquido),
+            estado: 'Registrado',
+            estadoClase: 'payroll-state-chip payroll-state-chip--success',
+            contexto: 'Resultado',
+          },
+        );
+      } else {
+        items.push(...this.nominaHistorialVisual().map((item) => ({
+          id: `${item.hora}-${item.texto}`,
+          titulo: item.texto,
+          descripcion: item.hora,
+          estado: item.destacado ? 'Confirmado' : 'Evento',
+          estadoClase: item.destacado
+            ? 'payroll-state-chip payroll-state-chip--success'
+            : 'payroll-state-chip payroll-state-chip--info',
+          contexto: 'Historial',
+          detalleTab: item.destacado ? ('resultado' as DetalleOperativoTab) : undefined,
+        })));
+      }
+      if (panel?.listaResultadoSeguimiento.length) {
+        items.push(...panel.listaResultadoSeguimiento.map((item) => ({
+          id: `${item.titulo}-${item.descripcion}`,
+          titulo: item.titulo,
+          descripcion: item.descripcion,
+          estado: item.estado,
+          estadoClase: item.estadoClase,
+          contexto: 'Resultado',
+          accion: item.accion,
+          ruta: item.ruta,
+          detalleTab: item.accionTab,
+        })));
+      }
+    }
+
+    return buildNominaWorkspaceDetailItems({ tab, items });
+  });
 
   readonly paraContinuarLista = computed<ParaContinuarItemVm[]>(() =>
     this.estadoOperativo()
@@ -1052,6 +1232,30 @@ export class ProcesoMensualPresentacionFacade {
   generarPreNomina(): void {
     this.informacionPeriodoSuprimida = false;
     this.store.generarPreNomina();
+  }
+
+  guardarBaseNominaRevisada(): void {
+    this.informacionPeriodoSuprimida = true;
+    this.store.guardarBaseNominaRevisada();
+  }
+
+  exitoGuardadoBaseNomina(): string | null {
+    return this.store.exitoGuardadoResultado();
+  }
+
+  errorGuardadoBaseNomina(): string | null {
+    return this.store.errorGuardadoResultado();
+  }
+
+  puedeGuardarBaseNominaRevisada(): boolean {
+    const preNomina = this.store.preNomina();
+    return !!preNomina
+      && this.store.snapshotActivo() == null
+      && preNomina.estado !== 'NO_GENERABLE'
+      && preNomina.codigosBloqueo.length === 0
+      && preNomina.codigosAdvertencia.length > 0
+      && !this.store.guardandoSnapshot()
+      && !this.nominaEstaCerradaOperativamente();
   }
 
   calcularPreliminar(): void {
@@ -1465,6 +1669,7 @@ export class ProcesoMensualPresentacionFacade {
     if (this.store.guardandoSnapshot()) return false;
     if (calc.estado === 'con_bloqueos' || calc.issues.some((i) => i.severidad === 'BLOQUEO')) return false;
     const snapshot = this.store.snapshotActivo();
+    if (snapshot?.estado === 'borrador') return true;
     return !snapshot || this.store.identificadorResultadoGuardadoActual() !== snapshot.hashSnapshot;
   }
 

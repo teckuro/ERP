@@ -41,6 +41,27 @@ interface GuardarSnapshotRpcPayload {
 export class NominaCalculoSnapshotRepository {
   private readonly supabase = injectSupabase();
 
+  async guardarBaseNominaBorrador(snapshot: NominaCalculoPeriodoSnapshot): Promise<{
+    snapshot: NominaCalculoPeriodoSnapshot;
+    reemplazoSnapshotAnterior: boolean;
+  }> {
+    const anterior = await this.obtenerSnapshotActivo(snapshot.periodo, snapshot.idEmpresa);
+    if (anterior?.estado && anterior.estado !== 'borrador') {
+      throw new Error('Ya existe una nomina generada para el periodo. No se reemplazo la version vigente.');
+    }
+    if (anterior?.idCalculoPeriodo) {
+      await this.marcarInactivo(anterior.idCalculoPeriodo, 'anulado', 'Reemplazo de base generada borrador.');
+    }
+    const guardado = await this.insertarCabecera({ ...snapshot, estado: 'borrador', activo: true });
+    if (anterior?.idCalculoPeriodo && guardado.idCalculoPeriodo) {
+      await this.actualizarReemplazo(anterior.idCalculoPeriodo, guardado.idCalculoPeriodo);
+    }
+    return {
+      snapshot: guardado,
+      reemplazoSnapshotAnterior: !!anterior,
+    };
+  }
+
   async guardarSnapshotPreliminar(snapshot: NominaCalculoPeriodoSnapshot): Promise<{
     snapshot: NominaCalculoPeriodoSnapshot;
     reemplazoSnapshotAnterior: boolean;
