@@ -8,8 +8,11 @@ import {
   Check,
   CheckCircle,
   ChevronRight,
-  Home,
+  Circle,
   CircleAlert,
+  CircleDot,
+  Home,
+  Minus,
   FileCheck2,
   FileSpreadsheet,
   FileText,
@@ -557,8 +560,11 @@ describe('ProcesoMensualContainer', () => {
             Check,
             CheckCircle,
             ChevronRight,
+            Circle,
             CircleAlert,
+            CircleDot,
             Home,
+            Minus,
             FileCheck2,
             FileSpreadsheet,
             FileText,
@@ -808,12 +814,11 @@ describe('ProcesoMensualContainer', () => {
 
       expect(obtenerSnapshotCompletoActivo).toHaveBeenCalledWith(PERIODO_TEST);
       expect(generarCalculoPeriodo).not.toHaveBeenCalled();
-      localFixture.componentInstance.seleccionarNominaWorkspaceTab('historial');
+      localFixture.componentInstance.seleccionarNominaWorkspaceTab('trabajadores');
       localFixture.detectChanges();
 
       const text = localFixture.nativeElement.textContent as string;
       const c = localFixture.componentInstance;
-      expectTexto(text, 'Nomina confirmada');
       expectTexto(text, 'Ana Perez');
       expect(c.snapshotCompleto()?.trabajadores[0]?.nombreCompletoSnapshot).toBe('Ana Perez');
     });
@@ -866,13 +871,13 @@ describe('ProcesoMensualContainer', () => {
       expect(input).toBeNull();
     });
 
-    it('renderiza workspace con sidebar operativo y seis tabs', () => {
+    it('renderiza workspace con sidebar operativo y tabbar visible', () => {
       const el = fixture.nativeElement;
       expect(el.querySelector('.payroll-console')).toBeTruthy();
       expect(el.querySelector('.payroll-franja-operativa')).toBeTruthy();
       expect(el.querySelector('.payroll-workspace-sidebar')).toBeTruthy();
-      expect(el.querySelectorAll('.payroll-operational-tabs button').length).toBe(6);
-      expectTexto(el.textContent as string, 'Parámetros');
+      expect(el.querySelectorAll('.payroll-operational-tabs button').length).toBe(2);
+      expectTexto(el.textContent as string, 'Detalle mensual');
       expectTexto(el.textContent as string, 'Historial');
     });
 
@@ -886,10 +891,10 @@ describe('ProcesoMensualContainer', () => {
       expectTexto(text, 'Generar liquidaciones');
     });
 
-    it('estado inicial muestra focus sin_generar y CTA generar', () => {
+    it('estado inicial muestra focus sin_generar y CTA verificar periodo', () => {
       const c = fixture.componentInstance;
       expect(c.nominaVisualFrame()).toBe('sin_generar');
-      expectTexto(c.estadoOperativo().accionPrincipal.label, 'Generar nomina');
+      expectTexto(c.estadoOperativo().accionPrincipal.label, 'Verificar período');
     });
 
     it('no muestra labels tecnicos en copy visible del shell', () => {

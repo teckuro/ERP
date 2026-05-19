@@ -1,14 +1,18 @@
 import { describe, expect, it } from 'vitest';
 
-import { DETALLE_OPERATIVO_TABS } from '../containers/proceso-mensual-container/models/proceso-mensual-grid.config';
-import { buildNominaWorkspaceTabs } from '../containers/proceso-mensual-container/models/proceso-mensual-area-orden.config';
-import { NOMINA_WORKSPACE_TABS } from '../containers/proceso-mensual-container/models/proceso-mensual-container.vm';
+import {
+  buildNominaWorkspaceTabs,
+  buildNominaWorkspaceTabsVisible,
+} from '../containers/proceso-mensual-container/models/proceso-mensual-area-orden.config';
+import {
+  NOMINA_WORKSPACE_TABS,
+  NOMINA_WORKSPACE_TABS_VISIBLE,
+} from '../containers/proceso-mensual-container/models/proceso-mensual-container.vm';
 import { buildDetalleRevisionTabsMeta } from './proceso-mensual-detalle-modal.rules';
 import { buildIncidenciasPeriodo } from './proceso-mensual-incidencias-periodo.rules';
 import {
-  buildNominaWorkspaceDetailItems,
-  buildNominaWorkspaceTabSummaries,
-  buildNominaWorkspaceTabsMeta,
+  buildNominaWorkspaceTabVisibleSummaries,
+  buildNominaWorkspaceTabsVisibleMeta,
   claseNominaWorkspaceTab,
   resolveBitacoraRailIcon,
   resolveFocusPresentacion,
@@ -47,7 +51,7 @@ describe('proceso-mensual-workspace-presentacion.rules', () => {
     expect(resolveFranjaItemTono('1 incluido')).toBe('ok');
   });
 
-  it('NOMINA_WORKSPACE_TABS ordena areas Param Trab Mov Rec sin resumen visible', () => {
+  it('NOMINA_WORKSPACE_TABS legacy conserva tabs internos', () => {
     const ids = buildNominaWorkspaceTabs().map((t) => t.id);
     expect(ids).toEqual([
       'parametros',
@@ -60,65 +64,49 @@ describe('proceso-mensual-workspace-presentacion.rules', () => {
     expect(NOMINA_WORKSPACE_TABS.map((t) => t.id)).toEqual(ids);
   });
 
-  it('buildNominaWorkspaceTabsMeta separa movimientos y recurrentes por ambito', () => {
+  it('NOMINA_WORKSPACE_TABS_VISIBLE expone Detalle mensual e Historial', () => {
+    const ids = buildNominaWorkspaceTabsVisible().map((t) => t.id);
+    expect(ids).toEqual(['detalle_mensual', 'historial']);
+    expect(NOMINA_WORKSPACE_TABS_VISIBLE.map((t) => t.id)).toEqual(ids);
+  });
+
+  it('buildNominaWorkspaceTabsVisibleMeta agrega severidad en detalle mensual', () => {
     const incidencias = buildIncidenciasPeriodo({
       bloqueosOperativos: [
         {
-          severidad: 'danger',
+          codigo: 'MV_PEND',
           titulo: 'Movimiento pendiente',
           descripcion: 'Falta aprobar',
-          codigo: 'MV_PEND',
+          severidad: 'danger',
         },
       ],
-      advertenciasOperativas: [
-        {
-          severidad: 'warning',
-          titulo: 'Recurrente por revisar',
-          descripcion: 'Vigencia',
-          codigo: 'RECURRENTE_X',
-        },
-      ],
+      advertenciasOperativas: [],
       resultadoBloqueos: [],
       resultadoAdvertencias: [],
     });
-
-    const detalleTabs = buildDetalleRevisionTabsMeta({
-      tabs: DETALLE_OPERATIVO_TABS,
-      incidencias,
-      workerRowCount: 1,
-      movementRowCount: 1,
-      recurrentRowCount: 1,
-      resultRowCount: 0,
-      parametrosListos: true,
-      tieneActividadPeriodo: true,
-    });
-
-    const meta = buildNominaWorkspaceTabsMeta({
-      tabs: NOMINA_WORKSPACE_TABS,
-      detalleTabs,
+    const meta = buildNominaWorkspaceTabsVisibleMeta({
+      tabs: NOMINA_WORKSPACE_TABS_VISIBLE,
+      detalleTabs: buildDetalleRevisionTabsMeta({
+        tabs: [],
+        incidencias,
+        workerRowCount: 0,
+        movementRowCount: 0,
+        recurrentRowCount: 0,
+        resultRowCount: 0,
+        parametrosListos: false,
+        tieneActividadPeriodo: true,
+      }),
       incidencias,
       tieneActividadPeriodo: true,
       liquidacionesGeneradas: false,
-      nominaCerrada: true,
+      nominaCerrada: false,
+      bloqueosCount: 1,
     });
-
-    expect(meta.find((t) => t.id === 'movimientos')?.indicador).toContain('bloqueo');
-    expect(meta.find((t) => t.id === 'recurrentes')?.indicador).toContain('pendiente');
-    expect(meta.find((t) => t.id === 'liquidaciones')?.indicador).toBe('Pendiente');
+    expect(meta.find((tab) => tab.id === 'detalle_mensual')?.indicador).toContain('bloqueo');
   });
 
-  it('buildNominaWorkspaceTabSummaries resume areas y acciones de detalle', () => {
-    const meta = [
-      { id: 'parametros', label: 'Parametros', severidad: 'listo', indicador: null },
-      { id: 'trabajadores', label: 'Trabajadores', severidad: 'atencion', indicador: '1 pendiente' },
-      { id: 'movimientos', label: 'Movimientos', severidad: 'bloqueo', indicador: '1 bloqueo' },
-      { id: 'recurrentes', label: 'Recurrentes', severidad: 'neutral', indicador: null },
-      { id: 'liquidaciones', label: 'Liquidaciones', severidad: 'atencion', indicador: 'Pendiente' },
-      { id: 'historial', label: 'Historial', severidad: 'listo', indicador: null },
-    ] as const;
-
-    const summaries = buildNominaWorkspaceTabSummaries({
-      tabsMeta: [...meta],
+  it('buildNominaWorkspaceTabVisibleSummaries resume detalle e historial', () => {
+    const summaries = buildNominaWorkspaceTabVisibleSummaries({
       resumenSuperior: {
         trabajadores: '2 incluidos',
         parametros: 'Revisados',
@@ -127,72 +115,15 @@ describe('proceso-mensual-workspace-presentacion.rules', () => {
         cambios: 1,
         bloqueos: 0,
       },
-      trabajadoresAptos: 2,
-      trabajadoresPorRevisar: 1,
-      movimientosAprobados: 3,
-      movimientosPendientes: 1,
-      asignacionesAplicables: 4,
-      asignacionesPorRevisar: 0,
+      bloqueosCount: 1,
+      pendientesCount: 2,
       liquidacionesGeneradas: 0,
       nominaCerrada: true,
-      resultadoPreliminar: 'Guardado para revision',
-      totalLiquidoLabel: '$1.000',
     });
 
-    expect(summaries.find((s) => s.id === 'trabajadores')?.metricas[0]).toEqual({ label: 'Incluidos', value: 2 });
-    expect(summaries.find((s) => s.id === 'parametros')?.detalleTab).toBe('parametros');
-    expect(summaries.find((s) => s.id === 'movimientos')?.detalleTab).toBe('movimientos_recurrentes');
-    expect(summaries.find((s) => s.id === 'liquidaciones')?.descripcion).toContain('pendiente generar');
-    expect(summaries.find((s) => s.id === 'historial')?.metricas[1]).toEqual({ label: 'Liquido', value: '$1.000' });
-  });
-
-  it('buildNominaWorkspaceDetailItems ordena severidades y asigna iconos por dominio', () => {
-    const items = buildNominaWorkspaceDetailItems({
-      tab: 'trabajadores',
-      items: [
-        {
-          titulo: 'Ana Lista',
-          descripcion: 'Sin observaciones',
-          estado: 'Listo',
-          estadoClase: 'payroll-state-chip payroll-state-chip--success',
-          accion: 'Revisar',
-          detalleTab: 'trabajadores',
-        },
-        {
-          titulo: 'Luis Bloqueado',
-          descripcion: 'Ficha incompleta',
-          estado: 'Bloqueado',
-          estadoClase: 'payroll-state-chip payroll-state-chip--danger',
-          accion: 'Resolver',
-          ruta: '/empleados',
-        },
-      ],
-    });
-
-    expect(items.map((item) => item.titulo)).toEqual(['Luis Bloqueado', 'Ana Lista']);
-    expect(items[0]).toMatchObject({ icon: 'user-x', severity: 'bloqueo', ruta: '/empleados' });
-    expect(items[1]).toMatchObject({ icon: 'user-check', severity: 'listo', detalleTab: 'trabajadores' });
-  });
-
-  it('buildNominaWorkspaceDetailItems conserva acciones e iconos para tabs no trabajadores', () => {
-    expect(
-      buildNominaWorkspaceDetailItems({
-        tab: 'parametros',
-        items: [{ titulo: 'UF del periodo', descripcion: 'Valor disponible', estado: 'Listo' }],
-      })[0].icon,
-    ).toBe('shield-check');
-    expect(
-      buildNominaWorkspaceDetailItems({
-        tab: 'movimientos',
-        items: [{ titulo: 'Bono', descripcion: 'Trabajador · haber · $10.000', estado: 'Pendiente' }],
-      })[0].icon,
-    ).toBe('circle-alert');
-    expect(
-      buildNominaWorkspaceDetailItems({
-        tab: 'liquidaciones',
-        items: [{ titulo: 'Liquidaciones generadas', descripcion: 'Emitidas', estado: 'Generadas' }],
-      })[0].icon,
-    ).toBe('file-check');
+    expect(summaries.map((s) => s.id)).toEqual(['detalle_mensual', 'historial']);
+    expect(summaries[0]?.severidad).toBe('bloqueo');
+    expect(summaries[1]?.metricas[0]).toEqual({ label: 'Liquidaciones', value: 'Pendiente' });
   });
 
   it('claseNominaWorkspaceTab marca activo', () => {

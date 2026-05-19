@@ -1,5 +1,11 @@
 # CHANGELOG
 
+## 2026-05-19 - NOM-MENSUAL-DETALLE-MENSUAL-UNIFICADO-01
+
+- **Workspace:** tabbar visible `Detalle mensual | Historial`; franja lateral con parámetros como requisito; movimientos y recurrentes unificados (`Origen / duración`); filtros internos y DataGrid por vista.
+- **Rules:** `proceso-mensual-detalle-mensual.rules.ts`, navegación `suggestNominaWorkspaceNavigation`, meta visible en presentación.
+- **Tests:** specs workspace + detalle-mensual (26 tests).
+
 ## 2026-05-18 - ERP-SHELL-CONTEXT-ROLLOUT-02
 
 - **Shell:** `bindShellPageContext`, `shell-route-context.config`, fallback en `layout-shell`.

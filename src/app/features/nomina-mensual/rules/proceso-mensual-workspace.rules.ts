@@ -12,7 +12,9 @@ import type {
   NominaResumenSuperiorVm,
   NominaVisualFrame,
   NominaVisualFrameView,
+  NominaDetalleMensualVista,
   NominaWorkspaceTab,
+  NominaWorkspaceTabVisible,
 } from '../containers/proceso-mensual-container/models/proceso-mensual-container.vm';
 
 export interface NominaVisualFrameInput {
@@ -49,6 +51,28 @@ export function suggestNominaWorkspaceTab(frame: NominaVisualFrame): NominaWorks
   if (frame === 'confirmada') return 'historial';
   if (frame === 'en_revision' || frame === 'lista_para_confirmar') return 'trabajadores';
   return 'parametros';
+}
+
+export interface NominaWorkspaceNavigationSugerida {
+  tabVisible: NominaWorkspaceTabVisible;
+  detalleVista: NominaDetalleMensualVista;
+  legacyTab: NominaWorkspaceTab;
+}
+
+export function suggestNominaWorkspaceNavigation(frame: NominaVisualFrame): NominaWorkspaceNavigationSugerida {
+  if (frame === 'con_pendientes') {
+    return { tabVisible: 'detalle_mensual', detalleVista: 'pendientes', legacyTab: 'trabajadores' };
+  }
+  if (frame === 'liquidaciones_generadas') {
+    return { tabVisible: 'detalle_mensual', detalleVista: 'liquidaciones', legacyTab: 'liquidaciones' };
+  }
+  if (frame === 'confirmada') {
+    return { tabVisible: 'historial', detalleVista: 'todos', legacyTab: 'historial' };
+  }
+  if (frame === 'en_revision' || frame === 'lista_para_confirmar') {
+    return { tabVisible: 'detalle_mensual', detalleVista: 'trabajadores', legacyTab: 'trabajadores' };
+  }
+  return { tabVisible: 'detalle_mensual', detalleVista: 'todos', legacyTab: 'parametros' };
 }
 
 export interface NominaResumenSuperiorInput {

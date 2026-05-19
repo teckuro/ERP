@@ -1,3 +1,17 @@
+## 2026-05-19 - NOM-MENSUAL-CLEANUP-AUDIT-01
+
+- **Módulo:** Nómina mensual / workspace y container CSS local.
+- **Cambio:** eliminados bloques CSS huérfanos (`.payroll-history`, `.payroll-official-snapshot`, `.payroll-expediente-panel*`, duplicado `.payroll-follow-row` en container); workspace solo estilos `.payroll-rail-link` activos.
+- **Archivos:** `proceso-mensual-container.css`, `proceso-mensual-workspace.component.css`; doc `nom-mensual-cleanup-audit-01.md`.
+- **No tocado:** modal conserva CSS propio; estilos globales, `angular.json`.
+
+## 2026-05-19 - NOM-MENSUAL-DETALLE-MENSUAL-UNIFICADO-01
+
+- **Módulo:** Nómina mensual / workspace.
+- **Cambio:** tabbar `Detalle mensual | Historial`; franja Parámetros/Trabajadores/Movimientos/Liquidaciones; filtros `payroll-detalle-filtros`; tablas DataGrid por vista; historial solo trazabilidad.
+- **Archivos:** `proceso-mensual-workspace.*`, `proceso-mensual-presentacion.facade.ts`, `proceso-mensual-area-orden.config.ts`, `proceso-mensual-detalle-mensual.rules.ts`, `proceso-mensual-grid.config.ts`.
+- **No tocado:** motor, SQL, estilos globales, `angular.json`.
+
 ## 2026-05-18 - NOM-WORKSPACE-POLISH-03 (corrección)
 
 - **Corrección:** eliminado `border-left` coloreado en franja KPI activa (antipatrón NOIA); activo solo con borde completo + `box-shadow` ya definido en sidebar.

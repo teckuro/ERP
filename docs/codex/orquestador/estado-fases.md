@@ -1,4 +1,22 @@
-﻿## NOM-FLOW-REVISION-01 - Revisión flujo RRHH (sidebar + verificar/generar)
+﻿## NOM-MENSUAL-CLEANUP-AUDIT-01 - Limpieza código muerto nómina mensual
+
+| Campo | Estado |
+|---|---|
+| Estado | Implementada |
+| Tipo | Refactor presentación (sin motor/SQL) |
+| Alcance | Facade/workspace CSS/rules legacy; componente acta huérfano; tests alineados a tabbar visible. |
+| Documento | [`../modulos/nomina-mensual/nom-mensual-cleanup-audit-01.md`](../modulos/nomina-mensual/nom-mensual-cleanup-audit-01.md) |
+
+## NOM-MENSUAL-DETALLE-MENSUAL-UNIFICADO-01 - Detalle mensual unificado
+
+| Campo | Estado |
+|---|---|
+| Estado | Implementada |
+| Tipo | UI presentación (rules/facade/workspace) |
+| Alcance | Tabbar `Detalle mensual \| Historial`; franja parámetros; movimientos+recurrentes unificados; filtros internos; historial tabla. |
+| Documento | [`../modulos/nomina-mensual/nom-mensual-detalle-mensual-unificado-01.md`](../modulos/nomina-mensual/nom-mensual-detalle-mensual-unificado-01.md) |
+
+## NOM-FLOW-REVISION-01 - Revisión flujo RRHH (sidebar + verificar/generar)
 
 | Campo | Estado |
 |---|---|

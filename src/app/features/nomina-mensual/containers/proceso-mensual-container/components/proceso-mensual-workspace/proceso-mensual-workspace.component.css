@@ -4,9 +4,7 @@
   display: none;
 }
 
-.payroll-console .payroll-rail-link,
-.payroll-console .payroll-follow-row a,
-.payroll-console .payroll-follow-row button:not(.payroll-modal-secondary) {
+.payroll-console .payroll-rail-link {
   border: 0;
   background: transparent;
   padding: 0;
@@ -19,47 +17,8 @@
   cursor: pointer;
 }
 
-.payroll-console .payroll-rail-link:hover,
-.payroll-console .payroll-follow-row a:hover,
-.payroll-console .payroll-follow-row button:not(.payroll-modal-secondary):hover {
+.payroll-console .payroll-rail-link:hover {
   color: var(--erp-ink);
-}
-
-.payroll-console .payroll-follow-section > header h3 {
-  color: var(--erp-ink);
-}
-
-.payroll-console .payroll-follow-section > header p,
-.payroll-console .payroll-empty-line {
-  color: var(--erp-muted);
-}
-
-.payroll-console .payroll-revision-lista .payroll-follow-row {
-  border: 0;
-  border-radius: 0;
-  border-bottom: 1px solid var(--erp-border);
-  background: transparent;
-  padding: 10px 0;
-}
-
-.payroll-console .payroll-revision-lista .payroll-follow-row:last-child {
-  border-bottom: 0;
-}
-
-.payroll-console .payroll-revision-lista .payroll-follow-row--bloqueo,
-.payroll-console .payroll-revision-lista .payroll-follow-row--atencion {
-  margin-bottom: 6px;
-  border: 1px solid var(--erp-border);
-  border-radius: 6px;
-  padding: 10px 12px;
-}
-
-.payroll-console .payroll-revision-lista .payroll-follow-row--bloqueo {
-  border-color: var(--erp-danger-border);
-}
-
-.payroll-console .payroll-revision-lista .payroll-follow-row--atencion {
-  border-color: var(--erp-review-border);
 }
 
 .payroll-tab-summary--neutral {
@@ -148,25 +107,44 @@
   color: var(--erp-review);
 }
 
-.payroll-history {
-  display: grid;
-  gap: 10px;
-  margin-top: 22px;
-}
-
-.payroll-history p {
+.payroll-detalle-filtros {
   display: flex;
-  gap: 12px;
-  margin: 0;
-  font-size: 0.8125rem;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0 0 12px;
+  padding: 0 14px;
 }
 
-.payroll-history span {
-  width: 42px;
-  flex: 0 0 auto;
+.payroll-detalle-filtros__item {
+  border: 1px solid var(--erp-border);
+  border-radius: 6px;
+  background: var(--erp-surface);
+  padding: 4px 10px;
   color: var(--erp-muted);
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
 }
 
-.payroll-history__item--strong {
+.payroll-detalle-filtros__item--active {
+  border-color: var(--erp-primary-border);
+  background: var(--erp-primary-soft);
+  color: var(--erp-primary);
+}
+
+.payroll-liquidaciones-aviso {
+  margin: 0 14px 12px;
+  padding: 10px 12px;
+  border: 1px solid var(--erp-review-border);
+  border-radius: 6px;
+  background: var(--erp-review-soft);
+  color: var(--erp-ink);
+  font-size: 0.8125rem;
+  line-height: 1.45;
+}
+
+.payroll-liquidaciones-aviso strong {
+  display: block;
+  margin-bottom: 4px;
   font-weight: 650;
 }

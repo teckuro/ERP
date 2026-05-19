@@ -2,6 +2,10 @@
 
 ## Estado
 
+## NOM-MENSUAL-DETALLE-MENSUAL-UNIFICADO-01 aplicado
+
+Workspace con tabbar **Detalle mensual | Historial**, parámetros en franja lateral, movimientos y recurrentes en una tabla con **Origen / duración**, filtros internos compactos e historial como trazabilidad. Cubre parcialmente la intención documental de `NOM-MOVIMIENTOS-UNIFICADOS-UX-01` en consola de período. Documento: [`nom-mensual-detalle-mensual-unificado-01.md`](./nom-mensual-detalle-mensual-unificado-01.md).
+
 ## NOM-MENSUAL-PERSISTENCIA-ESTADO-01 aplicado
 
 Borrador al generar nómina persiste trabajadores, issues y metadata de verificación; rehidratación al recargar alimenta workspace y revisión completa. Documento: [`nom-mensual-persistencia-estado-01.md`](./nom-mensual-persistencia-estado-01.md).

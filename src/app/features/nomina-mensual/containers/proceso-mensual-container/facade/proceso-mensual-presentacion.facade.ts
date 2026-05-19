@@ -99,13 +99,20 @@ import {
   buildResumenRevisionTrabajadores,
   mapBitacoraRailEtapas,
   resolveNominaVisualFrame,
-  suggestNominaWorkspaceTab,
+  suggestNominaWorkspaceNavigation,
 } from '../../../rules/proceso-mensual-workspace.rules';
 import {
-  buildNominaWorkspaceDetailItems,
-  buildNominaWorkspaceTabSummaries,
-  buildNominaWorkspaceTabsMeta,
-  type NominaWorkspaceDetailSourceItem,
+  buildNominaDetalleMensualMovimientosRows,
+  buildNominaDetalleMensualPendientesRows,
+  buildNominaDetalleMensualTodosRows,
+  buildNominaDetalleMensualTrabajadorRows,
+  buildNominaHistorialTablaRows,
+} from '../../../rules/proceso-mensual-detalle-mensual.rules';
+import {
+  buildNominaWorkspaceTabsVisibleMeta,
+  buildNominaWorkspaceTabVisibleSummaries,
+  resolveFranjaItemTono,
+  type NominaWorkspaceTabVisibleSummaryVm,
 } from '../../../rules/proceso-mensual-workspace-presentacion.rules';
 import {
   DETALLE_OPERATIVO_TABS,
@@ -117,8 +124,13 @@ import {
   PAYROLL_RECURRENT_DETAIL_FILTERS,
   PAYROLL_RESULT_DETAIL_COLUMNS,
   PAYROLL_RESULT_DETAIL_FILTERS,
-  PAYROLL_WORKER_DETAIL_COLUMNS,
-  PAYROLL_WORKER_DETAIL_FILTERS,
+  DETALLE_MENSUAL_EXPEDIENTE_COLUMNS,
+  DETALLE_MENSUAL_MOVIMIENTO_COLUMNS,
+  DETALLE_MENSUAL_MOVIMIENTO_FILTERS,
+  DETALLE_MENSUAL_PENDIENTE_COLUMNS,
+  DETALLE_MENSUAL_TRABAJADOR_COLUMNS,
+  DETALLE_MENSUAL_TRABAJADOR_FILTERS,
+  NOMINA_HISTORIAL_TABLA_COLUMNS,
 } from '../models/proceso-mensual-grid.config';
 import type {
   AlertasPeriodoResumenVm,
@@ -135,9 +147,9 @@ import type {
   NominaResumenSuperiorVm,
   NominaVisualFrame,
   NominaVisualFrameView,
-  NominaWorkspaceDetailItemVm,
+  NominaDetalleMensualVista,
   NominaWorkspaceTab,
-  NominaWorkspaceTabSummaryVm,
+  NominaWorkspaceTabVisible,
   ParaContinuarItemVm,
   PasoPeriodoEstado,
   PasoPeriodoView,
@@ -160,11 +172,11 @@ import type {
   ValidacionOperativaItemView,
 } from '../models/proceso-mensual-container.vm';
 import {
-  NOMINA_AREA_ORDEN,
+  NOMINA_FRANJA_AREAS,
   valorFranjaArea,
   type NominaAreaOperativa,
 } from '../models/proceso-mensual-area-orden.config';
-import { NOMINA_WORKSPACE_TABS } from '../models/proceso-mensual-container.vm';
+import { NOMINA_WORKSPACE_TABS_VISIBLE } from '../models/proceso-mensual-container.vm';
 
 @Injectable()
 export class ProcesoMensualPresentacionFacade {
@@ -174,8 +186,8 @@ export class ProcesoMensualPresentacionFacade {
   private readonly nominaCapabilities = inject(NominaMensualCapabilitiesService);
   private readonly shellContext = inject(ShellPageContextService);
 
-  readonly nominaWorkspaceTabs = NOMINA_WORKSPACE_TABS;
-  readonly nominaFranjaAreas = NOMINA_AREA_ORDEN;
+  readonly nominaWorkspaceTabsVisible = NOMINA_WORKSPACE_TABS_VISIBLE;
+  readonly nominaFranjaAreas = NOMINA_FRANJA_AREAS;
 
   readonly breadcrumbItems: readonly RecordBreadcrumbItem[] = [
     { label: 'Remuneraciones', link: '/remuneraciones/proceso-mensual' },
@@ -339,6 +351,8 @@ export class ProcesoMensualPresentacionFacade {
     }),
   );
   readonly nominaWorkspaceTab = signal<NominaWorkspaceTab>('parametros');
+  readonly nominaWorkspaceTabVisible = signal<NominaWorkspaceTabVisible>('detalle_mensual');
+  readonly nominaDetalleMensualVista = signal<NominaDetalleMensualVista>('todos');
 
   constructor() {
     const destroyRef = inject(DestroyRef);
@@ -386,38 +400,68 @@ export class ProcesoMensualPresentacionFacade {
   }
 
   seleccionarNominaWorkspaceTab(tab: NominaWorkspaceTab): void {
-    this.nominaWorkspaceTab.set(tab);
+    const mapped = mapLegacyWorkspaceTabANavegacion(tab);
+    this.nominaWorkspaceTab.set(mapped.legacyTab);
+    this.nominaWorkspaceTabVisible.set(mapped.tabVisible);
+    this.nominaDetalleMensualVista.set(mapped.detalleVista);
   }
 
-  readonly nominaWorkspacePanelInline = computed(() => {
-    const tab = this.nominaWorkspaceTab();
-    const detalleTab = detalleTabDesdeWorkspaceTab(tab);
-    if (!detalleTab) {
-      return null;
+  seleccionarNominaWorkspaceTabVisible(tab: NominaWorkspaceTabVisible): void {
+    this.nominaWorkspaceTabVisible.set(tab);
+    if (tab === 'historial') {
+      this.nominaWorkspaceTab.set('historial');
     }
-    const tabMeta = this.detalleRevisionTabs().find((item) => item.id === detalleTab);
-    return buildDetalleRevisionTabPanel({
-      tab: detalleTab,
-      tabSeveridad: tabMeta?.severidad ?? 'neutral',
-      periodoEtiqueta: this.periodoActivo.etiqueta(),
-      estadoTitulo: this.estadoOperativo().titulo,
-      incidencias: this.incidenciasPeriodo(),
-      workerRowCount: this.payrollWorkerDetailRows().length,
-      movementRowCount: this.payrollMovementDetailRows().length,
-      recurrentRowCount: this.payrollRecurrentDetailRows().length,
-      resultRowCount: this.payrollResultDetailRows().length,
-      parametroItems: this.payrollParametroSeguimientoItems(),
-      resultadoSeguimientoItems: this.payrollResultadoSeguimientoItems(),
-      movementRows: this.payrollMovementDetailRows(),
-      recurrentRows: this.payrollRecurrentDetailRows(),
-    });
-  });
+  }
 
-  abrirRevisionDesdeWorkspace(tab: NominaWorkspaceTab): void {
-    const detalleTab = detalleTabDesdeWorkspaceTab(tab);
-    if (detalleTab) {
-      this.abrirOverlayRevision(detalleTab);
+  seleccionarNominaDetalleMensualVista(vista: NominaDetalleMensualVista): void {
+    this.nominaWorkspaceTabVisible.set('detalle_mensual');
+    this.nominaDetalleMensualVista.set(vista);
+    const legacy = mapDetalleVistaALegacyTab(vista);
+    if (legacy) {
+      this.nominaWorkspaceTab.set(legacy);
     }
+  }
+
+  seleccionarFranjaArea(area: NominaAreaOperativa): void {
+    if (area === 'parametros') {
+      const resumen = this.dashboardResumen();
+      const incidenciasParam = this.incidenciasPeriodo().porAmbito.parametros ?? [];
+      const requiereModal =
+        resumen.parametrosListos === false
+        || incidenciasParam.some((item) => item.severidad === 'bloqueo' || item.severidad === 'advertencia');
+      if (requiereModal) {
+        this.abrirInformacionParametrosPeriodo();
+        return;
+      }
+      return;
+    }
+
+    const franja = NOMINA_FRANJA_AREAS.find((item) => item.id === area);
+    if (franja?.detalleVista) {
+      this.seleccionarNominaDetalleMensualVista(franja.detalleVista);
+    }
+  }
+
+  private abrirInformacionParametrosPeriodo(): void {
+    const incidencias = (this.incidenciasPeriodo().porAmbito.parametros ?? []).filter(
+      (item) => item.severidad !== 'info',
+    );
+    const faltantes = incidencias.map((item) => item.titulo);
+    this.overlay.set({
+      kind: 'informacion',
+      view: {
+        tone: incidencias.some((item) => item.severidad === 'bloqueo') ? 'danger' : 'warning',
+        titulo: 'Parámetros incompletos',
+        bajada: 'No se puede continuar porque faltan datos requeridos del período.',
+        secciones: faltantes.length
+          ? [{ titulo: 'Qué revisar', items: faltantes }]
+          : undefined,
+        puntos: faltantes.length
+          ? undefined
+          : ['Complete los parámetros mensuales antes de continuar.'],
+        accionPrincipal: { label: 'Abrir parámetros', destino: 'parametros' },
+      },
+    });
   }
 
   private ejecutarShellPrimaryAction(): void {
@@ -512,8 +556,6 @@ export class ProcesoMensualPresentacionFacade {
         break;
     }
   }
-  readonly payrollWorkerDetailColumns = PAYROLL_WORKER_DETAIL_COLUMNS;
-  readonly payrollWorkerDetailFilters = PAYROLL_WORKER_DETAIL_FILTERS;
   readonly payrollMovementDetailColumns = PAYROLL_MOVEMENT_DETAIL_COLUMNS;
   readonly payrollMovementDetailFilters = PAYROLL_MOVEMENT_DETAIL_FILTERS;
   readonly payrollRecurrentDetailColumns = PAYROLL_RECURRENT_DETAIL_COLUMNS;
@@ -522,6 +564,13 @@ export class ProcesoMensualPresentacionFacade {
   readonly payrollObservationDetailFilters = PAYROLL_OBSERVATION_DETAIL_FILTERS;
   readonly payrollResultDetailColumns = PAYROLL_RESULT_DETAIL_COLUMNS;
   readonly payrollResultDetailFilters = PAYROLL_RESULT_DETAIL_FILTERS;
+  readonly detalleMensualTrabajadorColumns = DETALLE_MENSUAL_TRABAJADOR_COLUMNS;
+  readonly detalleMensualTrabajadorFilters = DETALLE_MENSUAL_TRABAJADOR_FILTERS;
+  readonly detalleMensualMovimientoColumns = DETALLE_MENSUAL_MOVIMIENTO_COLUMNS;
+  readonly detalleMensualMovimientoFilters = DETALLE_MENSUAL_MOVIMIENTO_FILTERS;
+  readonly detalleMensualExpedienteColumns = DETALLE_MENSUAL_EXPEDIENTE_COLUMNS;
+  readonly detalleMensualPendienteColumns = DETALLE_MENSUAL_PENDIENTE_COLUMNS;
+  readonly nominaHistorialTablaColumns = NOMINA_HISTORIAL_TABLA_COLUMNS;
   readonly nominaMasivaPageSizeOptions = [25, 50, 100];
   readonly nominaMasivaTrabajadoresColumns: DataGridColumn<NominaMasivaFila>[] = [
     { id: 'trabajador', header: 'Trabajador', field: 'trabajador', sortable: true, priorityResponsive: 'primary', minWidth: '170px' },
@@ -730,13 +779,17 @@ export class ProcesoMensualPresentacionFacade {
     }),
   );
 
-  readonly nominaWorkspaceTabSugerida = computed<NominaWorkspaceTab>(() =>
-    suggestNominaWorkspaceTab(this.nominaVisualFrame()),
+  readonly nominaWorkspaceNavigationSugerida = computed(() =>
+    suggestNominaWorkspaceNavigation(this.nominaVisualFrame()),
   );
 
   private readonly syncNominaWorkspaceTab = effect(() => {
-    const tab = this.nominaWorkspaceTabSugerida();
-    untracked(() => this.nominaWorkspaceTab.set(tab));
+    const nav = this.nominaWorkspaceNavigationSugerida();
+    untracked(() => {
+      this.nominaWorkspaceTab.set(nav.legacyTab);
+      this.nominaWorkspaceTabVisible.set(nav.tabVisible);
+      this.nominaDetalleMensualVista.set(nav.detalleVista);
+    });
   });
 
   private readonly syncInformacionPeriodoEffect = effect(() => {
@@ -858,12 +911,32 @@ export class ProcesoMensualPresentacionFacade {
   });
 
   valorFranjaArea(area: NominaAreaOperativa): string {
-    return valorFranjaArea(area, this.nominaResumenSuperior());
+    return valorFranjaArea(area, this.nominaResumenSuperior(), {
+      liquidacionesGeneradas: this.liquidacionesGeneradasCount(),
+      nominaCerrada: this.nominaEstaCerradaOperativamente(),
+    });
+  }
+
+  franjaItemClase(area: NominaAreaOperativa): string {
+    const valor = this.valorFranjaArea(area);
+    const tono = resolveFranjaItemTono(valor);
+    const activo =
+      area === 'parametros'
+        ? false
+        : this.nominaWorkspaceTabVisible() === 'detalle_mensual'
+          && this.nominaDetalleMensualVista() === NOMINA_FRANJA_AREAS.find((a) => a.id === area)?.detalleVista;
+    return [
+      'payroll-franja-operativa__item',
+      `payroll-franja-operativa__item--${tono}`,
+      activo ? 'payroll-franja-operativa__item--active' : '',
+    ]
+      .filter(Boolean)
+      .join(' ');
   }
 
   readonly nominaWorkspaceTabsMeta = computed(() =>
-    buildNominaWorkspaceTabsMeta({
-      tabs: NOMINA_WORKSPACE_TABS,
+    buildNominaWorkspaceTabsVisibleMeta({
+      tabs: NOMINA_WORKSPACE_TABS_VISIBLE,
       detalleTabs: this.detalleRevisionTabs(),
       incidencias: this.incidenciasPeriodo(),
       tieneActividadPeriodo:
@@ -872,168 +945,23 @@ export class ProcesoMensualPresentacionFacade {
         || this.store.snapshotActivo() != null,
       liquidacionesGeneradas: this.store.liquidacionesGeneradasCount() > 0,
       nominaCerrada: this.nominaEstaCerradaOperativamente(),
+      bloqueosCount: this.estadoOperativo().bloqueos.length,
     }),
   );
 
-  readonly nominaWorkspaceTabSummaries = computed<NominaWorkspaceTabSummaryVm[]>(() => {
-    const resumen = this.dashboardResumen();
-    return buildNominaWorkspaceTabSummaries({
-      tabsMeta: this.nominaWorkspaceTabsMeta(),
+  readonly nominaWorkspaceTabVisibleSummaries = computed<NominaWorkspaceTabVisibleSummaryVm[]>(() =>
+    buildNominaWorkspaceTabVisibleSummaries({
       resumenSuperior: this.nominaResumenSuperior(),
-      trabajadoresAptos: resumen.trabajadoresAptos,
-      trabajadoresPorRevisar: resumen.trabajadoresPorRevisar,
-      movimientosAprobados: resumen.movimientosAprobados,
-      movimientosPendientes: resumen.movimientosPendientes,
-      asignacionesAplicables: resumen.asignacionesAplicables,
-      asignacionesPorRevisar: resumen.asignacionesPorRevisar,
-      liquidacionesGeneradas: this.store.liquidacionesGeneradasCount(),
+      bloqueosCount: this.estadoOperativo().bloqueos.length,
+      pendientesCount: this.incidenciasPeriodo().resumen.bloqueos + this.incidenciasPeriodo().resumen.advertencias,
+      liquidacionesGeneradas: this.liquidacionesGeneradasCount(),
       nominaCerrada: this.nominaEstaCerradaOperativamente(),
-      resultadoPreliminar: resumen.resultadoPreliminar,
-      totalLiquidoLabel: this.formatoMonto(this.resultadoPreliminar().resumen.totalLiquido),
-    });
-  });
+    }),
+  );
 
-  readonly nominaWorkspaceTabSummary = computed<NominaWorkspaceTabSummaryVm | null>(() => {
-    const active = this.nominaWorkspaceTab();
-    return this.nominaWorkspaceTabSummaries().find((summary) => summary.id === active) ?? null;
-  });
-
-  readonly nominaWorkspaceDetailItems = computed<NominaWorkspaceDetailItemVm[]>(() => {
-    const tab = this.nominaWorkspaceTab();
-    const panel = this.nominaWorkspacePanelInline();
-    const items: NominaWorkspaceDetailSourceItem[] = [];
-
-    if (tab === 'trabajadores') {
-      if (this.nominaVisualFrame() === 'con_pendientes') {
-        items.push(...this.nominaPendientesVisuales().map((item) => ({
-          id: item.codigo,
-          titulo: item.titulo,
-          descripcion: item.descripcion,
-          estado: this.etiquetaPendienteVisual(item.severidad),
-          estadoClase: this.clasePendienteVisual(item.severidad),
-          contexto: 'Trabajadores',
-          accion: item.accionLabel ?? 'Revisar',
-          ruta: item.ruta,
-          accionLocal: item.accionLocal,
-          detalleTab: item.ruta || item.accionLocal ? undefined : ('trabajadores' as DetalleOperativoTab),
-        })));
-      } else {
-        items.push(...this.payrollWorkerDetailRows().map((row) => ({
-          id: `${row.rut}-${row.trabajador}`,
-          titulo: row.trabajador,
-          descripcion: `${row.rut} · ${row.observacion}`,
-          estado: row.estado,
-          estadoClase: this.claseChipRevision(row.estado),
-          contexto: 'Trabajador',
-          accion: row.accion,
-          detalleTab: 'trabajadores' as DetalleOperativoTab,
-        })));
-      }
-    } else if (tab === 'parametros' && panel) {
-      items.push(...panel.listaParametros.map((item) => ({
-        id: `${item.titulo}-${item.descripcion}`,
-        titulo: item.titulo,
-        descripcion: item.descripcion,
-        estado: item.estado,
-        estadoClase: item.estadoClase,
-        contexto: 'Parámetros',
-        accion: item.accion,
-        ruta: item.ruta,
-        detalleTab: item.accionTab,
-      })));
-    } else if (tab === 'movimientos' && panel) {
-      items.push(...panel.listaMovimientos.map((item) => ({
-        id: `${item.titulo}-${item.descripcion}`,
-        titulo: item.titulo,
-        descripcion: item.descripcion,
-        estado: item.estado,
-        estadoClase: item.estadoClase,
-        contexto: item.contexto ?? 'Movimiento',
-        accion: item.accion,
-        ruta: item.ruta,
-        detalleTab: item.accionTab,
-      })));
-    } else if (tab === 'recurrentes' && panel) {
-      items.push(...panel.listaRecurrentes.map((item) => ({
-        id: `${item.titulo}-${item.descripcion}`,
-        titulo: item.titulo,
-        descripcion: item.descripcion,
-        estado: item.estado,
-        estadoClase: item.estadoClase,
-        contexto: item.contexto ?? 'Recurrente',
-        accion: item.accion,
-        ruta: item.ruta,
-        detalleTab: item.accionTab,
-      })));
-    } else if (tab === 'liquidaciones') {
-      const generadas = this.liquidacionesGeneradasCount();
-      items.push({
-        id: 'liquidaciones-estado',
-        titulo: generadas > 0 ? 'Liquidaciones generadas' : 'Liquidaciones pendientes',
-        descripcion: generadas > 0
-          ? `${generadas} liquidación${generadas === 1 ? '' : 'es'} generada${generadas === 1 ? '' : 's'} para este período.`
-          : this.nominaEstaCerradaOperativamente()
-            ? `Nómina confirmada para ${this.periodoActivo.etiqueta()}.`
-            : 'Confirme la nómina mensual para habilitar liquidaciones.',
-        estado: generadas > 0 ? 'Generadas' : 'Pendiente',
-        estadoClase: generadas > 0
-          ? 'payroll-state-chip payroll-state-chip--success'
-          : 'payroll-state-chip payroll-state-chip--warning',
-        contexto: 'Liquidaciones',
-        accion: generadas > 0 || this.nominaEstaCerradaOperativamente() ? 'Ir a liquidaciones' : undefined,
-        ruta: generadas > 0 || this.nominaEstaCerradaOperativamente() ? '/remuneraciones/liquidaciones' : undefined,
-      });
-    } else if (tab === 'historial') {
-      const expediente = this.expedienteNominaPeriodo();
-      if (expediente.visible && expediente.snapshot && expediente.totales) {
-        items.push(
-          {
-            id: 'historial-version',
-            titulo: expediente.snapshot.versionEtiqueta,
-            descripcion: `Generada ${expediente.snapshot.fechaGeneracion}`,
-            estado: 'Version',
-            estadoClase: 'payroll-state-chip payroll-state-chip--info',
-            contexto: 'Versión',
-            detalleTab: 'resultado',
-          },
-          {
-            id: 'historial-liquido',
-            titulo: 'Líquido registrado',
-            descripcion: this.formatoMonto(expediente.totales.liquido),
-            estado: 'Registrado',
-            estadoClase: 'payroll-state-chip payroll-state-chip--success',
-            contexto: 'Resultado',
-          },
-        );
-      } else {
-        items.push(...this.nominaHistorialVisual().map((item) => ({
-          id: `${item.hora}-${item.texto}`,
-          titulo: item.texto,
-          descripcion: item.hora,
-          estado: item.destacado ? 'Confirmado' : 'Evento',
-          estadoClase: item.destacado
-            ? 'payroll-state-chip payroll-state-chip--success'
-            : 'payroll-state-chip payroll-state-chip--info',
-          contexto: 'Historial',
-          detalleTab: item.destacado ? ('resultado' as DetalleOperativoTab) : undefined,
-        })));
-      }
-      if (panel?.listaResultadoSeguimiento.length) {
-        items.push(...panel.listaResultadoSeguimiento.map((item) => ({
-          id: `${item.titulo}-${item.descripcion}`,
-          titulo: item.titulo,
-          descripcion: item.descripcion,
-          estado: item.estado,
-          estadoClase: item.estadoClase,
-          contexto: 'Resultado',
-          accion: item.accion,
-          ruta: item.ruta,
-          detalleTab: item.accionTab,
-        })));
-      }
-    }
-
-    return buildNominaWorkspaceDetailItems({ tab, items });
+  readonly nominaWorkspaceTabVisibleSummary = computed(() => {
+    const active = this.nominaWorkspaceTabVisible();
+    return this.nominaWorkspaceTabVisibleSummaries().find((summary) => summary.id === active) ?? null;
   });
 
   readonly paraContinuarLista = computed<ParaContinuarItemVm[]>(() =>
@@ -1136,6 +1064,80 @@ export class ProcesoMensualPresentacionFacade {
   readonly payrollResultDetailRows = computed<PayrollResultDetailRow[]>(() =>
     buildPayrollResultDetailRows(this.resultadoPreliminar()),
   );
+
+  readonly nominaDetalleMensualTrabajadorRows = computed(() =>
+    buildNominaDetalleMensualTrabajadorRows({
+      workers: this.payrollWorkerDetailRows(),
+      resultados: this.payrollResultDetailRows(),
+    }),
+  );
+
+  readonly nominaDetalleMensualMovimientoRows = computed(() =>
+    buildNominaDetalleMensualMovimientosRows({
+      movimientos: this.payrollMovementDetailRows(),
+      recurrentes: this.payrollRecurrentDetailRows(),
+      periodoEtiqueta: this.periodoActivo.etiqueta() || this.store.periodoSeleccionado(),
+    }),
+  );
+
+  readonly nominaDetalleMensualPendienteRows = computed(() =>
+    buildNominaDetalleMensualPendientesRows(this.incidenciasPeriodo()),
+  );
+
+  readonly nominaDetalleMensualLiquidacionRows = computed(() => {
+    const generadas = this.liquidacionesGeneradasCount();
+    const cerrada = this.nominaEstaCerradaOperativamente();
+    if (!cerrada && generadas === 0) {
+      return [];
+    }
+    return [
+      {
+        estado: generadas > 0 ? 'Generado' : 'Pendiente',
+        ambito: 'Liquidación' as const,
+        trabajador: 'Período',
+        conceptoSituacion: generadas > 0
+          ? `${generadas} liquidación${generadas === 1 ? '' : 'es'} del período`
+          : 'Nómina confirmada; puede generar liquidaciones',
+        origenDuracion: '—',
+        vigencia: this.periodoActivo.etiqueta(),
+        monto: '—',
+        accion: generadas > 0 || cerrada ? 'Ir a liquidaciones' : 'Confirmar nómina',
+        severity: generadas > 0 ? 'listo' as const : 'atencion' as const,
+        ruta: generadas > 0 || cerrada ? '/remuneraciones/liquidaciones' : undefined,
+      },
+    ];
+  });
+
+  readonly nominaDetalleMensualTodosRows = computed(() =>
+    buildNominaDetalleMensualTodosRows({
+      pendientes: this.nominaDetalleMensualPendienteRows(),
+      movimientos: this.nominaDetalleMensualMovimientoRows(),
+      trabajadores: this.nominaDetalleMensualTrabajadorRows(),
+      liquidaciones: this.nominaDetalleMensualLiquidacionRows(),
+    }),
+  );
+
+  readonly nominaHistorialTablaRows = computed(() =>
+    buildNominaHistorialTablaRows(this.nominaHistorialVisual()),
+  );
+
+  readonly liquidacionesPendientesCopy = computed(() => {
+    if (this.nominaEstaCerradaOperativamente() || this.liquidacionesGeneradasCount() > 0) {
+      return null;
+    }
+    return {
+      titulo: 'Liquidaciones pendientes',
+      descripcion: 'Primero confirma la nómina del período. Luego podrás generar liquidaciones oficiales.',
+    };
+  });
+
+  readonly nominaDetalleMensualFiltros: ReadonlyArray<{ id: NominaDetalleMensualVista; label: string }> = [
+    { id: 'todos', label: 'Todos' },
+    { id: 'trabajadores', label: 'Trabajadores' },
+    { id: 'movimientos', label: 'Movimientos' },
+    { id: 'liquidaciones', label: 'Liquidaciones' },
+    { id: 'pendientes', label: 'Pendientes' },
+  ];
 
   private readonly nominaMasivaInput = computed(() => ({
     resultadoTrabajadores: this.resultadoPreliminar().trabajadores,
@@ -2178,17 +2180,38 @@ function toneDesdeNominaFrame(frame: NominaVisualFrame): ShellStatusChipTone {
   }
 }
 
-function detalleTabDesdeWorkspaceTab(tab: NominaWorkspaceTab): DetalleOperativoTab | null {
+function mapLegacyWorkspaceTabANavegacion(tab: NominaWorkspaceTab): {
+  tabVisible: NominaWorkspaceTabVisible;
+  detalleVista: NominaDetalleMensualVista;
+  legacyTab: NominaWorkspaceTab;
+} {
   switch (tab) {
-    case 'parametros':
-      return 'parametros';
+    case 'historial':
+      return { tabVisible: 'historial', detalleVista: 'todos', legacyTab: 'historial' };
+    case 'liquidaciones':
+      return { tabVisible: 'detalle_mensual', detalleVista: 'liquidaciones', legacyTab: 'liquidaciones' };
     case 'movimientos':
     case 'recurrentes':
-      return 'movimientos_recurrentes';
+      return { tabVisible: 'detalle_mensual', detalleVista: 'movimientos', legacyTab: tab };
+    case 'trabajadores':
+      return { tabVisible: 'detalle_mensual', detalleVista: 'trabajadores', legacyTab: 'trabajadores' };
+    case 'parametros':
+      return { tabVisible: 'detalle_mensual', detalleVista: 'pendientes', legacyTab: 'parametros' };
+    default:
+      return { tabVisible: 'detalle_mensual', detalleVista: 'todos', legacyTab: tab };
+  }
+}
+
+function mapDetalleVistaALegacyTab(vista: NominaDetalleMensualVista): NominaWorkspaceTab | null {
+  switch (vista) {
     case 'trabajadores':
       return 'trabajadores';
-    case 'historial':
-      return 'resultado';
+    case 'movimientos':
+      return 'movimientos';
+    case 'liquidaciones':
+      return 'liquidaciones';
+    case 'pendientes':
+      return 'parametros';
     default:
       return null;
   }

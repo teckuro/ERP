@@ -1,5 +1,5 @@
 import type { ProcesoMensualAccionLocal } from '../../../rules/proceso-mensual-estado-operativo.rules';
-import { buildNominaWorkspaceTabs } from './proceso-mensual-area-orden.config';
+import { buildNominaWorkspaceTabs, buildNominaWorkspaceTabsVisible } from './proceso-mensual-area-orden.config';
 
 export type ValidacionCalculoEstado = 'pendiente' | 'listo' | 'advertencias' | 'bloqueado';
 export type ValidacionOperativaSeveridad = 'bloqueo' | 'advertencia' | 'info';
@@ -49,7 +49,17 @@ export type NominaWorkspaceTab =
   | 'liquidaciones'
   | 'historial';
 
+export type NominaWorkspaceTabVisible = 'detalle_mensual' | 'historial';
+
+export type NominaDetalleMensualVista =
+  | 'todos'
+  | 'trabajadores'
+  | 'movimientos'
+  | 'liquidaciones'
+  | 'pendientes';
+
 export const NOMINA_WORKSPACE_TABS = buildNominaWorkspaceTabs();
+export const NOMINA_WORKSPACE_TABS_VISIBLE = buildNominaWorkspaceTabsVisible();
 export type NominaVisualFrame =
   | 'sin_generar'
   | 'generando'
@@ -128,34 +138,7 @@ export interface NominaResumenSuperiorVm {
   bloqueos: number;
 }
 
-export interface NominaWorkspaceTabSummaryVm {
-  id: NominaWorkspaceTab;
-  label: string;
-  titulo: string;
-  descripcion: string;
-  severidad: 'neutral' | 'atencion' | 'bloqueo' | 'listo';
-  indicador: string | null;
-  metricas: Array<{ label: string; value: string | number }>;
-  detalleTab: DetalleOperativoTab | null;
-  ctaLabel: string | null;
-}
-
 export type NominaWorkspaceDetailSeverity = 'bloqueo' | 'atencion' | 'listo' | 'neutral';
-
-export interface NominaWorkspaceDetailItemVm {
-  id: string;
-  icon: string;
-  titulo: string;
-  descripcion: string;
-  estado: string;
-  estadoClase: string;
-  contexto?: string;
-  accion?: string;
-  ruta?: string;
-  detalleTab?: DetalleOperativoTab;
-  accionLocal?: ValidacionAccionLocal;
-  severity: NominaWorkspaceDetailSeverity;
-}
 
 export interface ValidacionOperativaItemView {
   codigo: string;
@@ -390,6 +373,70 @@ export interface PayrollResultDetailRow {
   liquido: string;
   estado: string;
   observacion: string;
+}
+
+export interface NominaDetalleMensualTrabajadorRow {
+  estado: string;
+  trabajador: string;
+  situacion: string;
+  haberes: string;
+  descuentos: string;
+  liquidoEstimado: string;
+  accion: string;
+}
+
+export interface NominaDetalleMensualMovimientoRow {
+  estado: string;
+  tipo: string;
+  trabajador: string;
+  concepto: string;
+  origenDuracion: string;
+  vigencia: string;
+  monto: string;
+  accion: string;
+}
+
+export type NominaDetalleMensualAmbito =
+  | 'Trabajador'
+  | 'Movimiento'
+  | 'Liquidación'
+  | 'Parámetro'
+  | 'Observación';
+
+export interface NominaDetalleMensualExpedienteRow {
+  estado: string;
+  ambito: NominaDetalleMensualAmbito;
+  trabajador: string;
+  conceptoSituacion: string;
+  origenDuracion: string;
+  vigencia: string;
+  monto: string;
+  accion: string;
+  accionRecomendada?: string;
+  severity: NominaWorkspaceDetailSeverity;
+  detalleTab?: DetalleOperativoTab;
+  ruta?: string;
+  accionLocal?: ValidacionAccionLocal;
+}
+
+export interface NominaDetalleMensualPendienteRow {
+  estado: string;
+  ambito: NominaDetalleMensualAmbito;
+  trabajador: string;
+  situacion: string;
+  accionRecomendada: string;
+  accion: string;
+  severity: NominaWorkspaceDetailSeverity;
+  detalleTab?: DetalleOperativoTab;
+  ruta?: string;
+}
+
+export interface NominaHistorialTablaRow {
+  fecha: string;
+  etapa: string;
+  usuario: string;
+  resultado: string;
+  detalle: string;
 }
 
 export interface PayrollSeguimientoItem {
