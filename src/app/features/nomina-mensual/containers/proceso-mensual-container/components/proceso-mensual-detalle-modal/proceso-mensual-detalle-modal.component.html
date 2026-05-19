@@ -25,8 +25,13 @@
           }
         </p>
       </div>
-      <button type="button" class="payroll-modal-secondary" (click)="f.cerrarDetalleOperativo()" aria-label="Cerrar revisión">
-        Cerrar
+      <button
+        type="button"
+        class="payroll-modal-close"
+        (click)="f.cerrarDetalleOperativo()"
+        aria-label="Cerrar revisión"
+      >
+        <lucide-icon [img]="closeIcon" aria-hidden="true"></lucide-icon>
       </button>
     </header>
 
@@ -187,8 +192,10 @@
                           }
                         </div>
                         <span [class]="item.estadoClase">{{ item.estado }}</span>
-                        @if (item.accion) {
-                          <button type="button" (click)="f.cerrarDetalleOperativo()">{{ item.accion }}</button>
+                        @if (item.accionTab && item.accion) {
+                          <button type="button" (click)="f.seleccionarDetalleOperativoTab(item.accionTab)">{{ item.accion }}</button>
+                        } @else if (item.ruta && item.accion) {
+                          <a [routerLink]="item.ruta">{{ item.accion }}</a>
                         }
                       </article>
                     }
@@ -577,8 +584,7 @@
       </div>
     }
 
-    <footer class="payroll-operational-detail-modal__footer">
-      <button type="button" class="payroll-modal-secondary" (click)="f.cerrarDetalleOperativo()">Cerrar</button>
+    <footer class="payroll-operational-detail-modal__footer payroll-operational-detail-modal__footer--solo-accion">
       <div class="payroll-modal-footer-actions">
         @switch (footer.kind) {
           @case ('cerrar') {

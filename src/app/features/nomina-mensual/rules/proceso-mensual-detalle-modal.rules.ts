@@ -151,6 +151,8 @@ function listaItemDesdeIncidencia(inc: IncidenciaPeriodo): DetalleRevisionListaI
   } else if (inc.accion?.tipo === 'tab' && inc.accion.destino) {
     item.accion = humanizarDetalleRevisionTexto(inc.accion.label);
     item.accionTab = inc.accion.destino as DetalleOperativoTab;
+  } else if (inc.accion?.tipo === 'cerrar') {
+    // Cierre del modal: solo el control X del encabezado.
   } else if (inc.accion?.label) {
     item.accion = humanizarDetalleRevisionTexto(inc.accion.label);
   }

@@ -232,7 +232,7 @@ export function buildNominaWorkspaceTabSummaries(input: {
             { label: 'Por revisar', value: input.trabajadoresPorRevisar ?? 0 },
             { label: 'Resumen', value: input.resumenSuperior.trabajadores },
           ],
-          ctaLabel: 'Ver revision completa',
+          ctaLabel: null,
         };
       case 'parametros':
         return {
@@ -244,7 +244,7 @@ export function buildNominaWorkspaceTabSummaries(input: {
             { label: 'Bloqueos', value: input.resumenSuperior.bloqueos },
             { label: 'Cambios', value: input.resumenSuperior.cambios },
           ],
-          ctaLabel: 'Ver revision completa',
+          ctaLabel: null,
         };
       case 'movimientos':
         return {
@@ -256,7 +256,7 @@ export function buildNominaWorkspaceTabSummaries(input: {
             { label: 'Pendientes', value: input.movimientosPendientes },
             { label: 'Resumen', value: input.resumenSuperior.movimientos },
           ],
-          ctaLabel: 'Ver revision completa',
+          ctaLabel: null,
         };
       case 'recurrentes':
         return {
@@ -268,7 +268,7 @@ export function buildNominaWorkspaceTabSummaries(input: {
             { label: 'Por revisar', value: input.asignacionesPorRevisar ?? 0 },
             { label: 'Resumen', value: input.resumenSuperior.recurrentes },
           ],
-          ctaLabel: 'Ver revision completa',
+          ctaLabel: null,
         };
       case 'liquidaciones':
         return {
@@ -294,7 +294,7 @@ export function buildNominaWorkspaceTabSummaries(input: {
             { label: 'Resultado', value: input.resultadoPreliminar },
             { label: 'Liquido', value: input.totalLiquidoLabel },
           ],
-          ctaLabel: 'Ver revision completa',
+          ctaLabel: null,
         };
       case 'resumen':
       default:
@@ -306,7 +306,7 @@ export function buildNominaWorkspaceTabSummaries(input: {
             { label: 'Bloqueos', value: input.resumenSuperior.bloqueos },
             { label: 'Cambios', value: input.resumenSuperior.cambios },
           ],
-          ctaLabel: 'Ver revision completa',
+          ctaLabel: null,
         };
     }
   });

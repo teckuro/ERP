@@ -35,6 +35,36 @@
   padding: 16px 22px;
 }
 
+.payroll-operational-detail-modal__footer--solo-accion {
+  justify-content: flex-end;
+}
+
+.payroll-modal-close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  flex: 0 0 auto;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  background: #ffffff;
+  color: #334155;
+  cursor: pointer;
+  line-height: 0;
+}
+
+.payroll-modal-close:hover {
+  border-color: #cbd5e1;
+  background: #f8fafc;
+}
+
+.payroll-modal-close lucide-icon {
+  display: inline-flex;
+  width: 16px;
+  height: 16px;
+}
+
 .payroll-operational-detail-modal__header {
   border-bottom: 1px solid #e2e8f0;
 }

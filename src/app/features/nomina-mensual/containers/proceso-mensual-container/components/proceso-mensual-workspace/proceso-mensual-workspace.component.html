@@ -290,11 +290,6 @@
                 </div>
               }
             </dl>
-            @if (tabSummary.ctaLabel && tabSummary.detalleTab) {
-              <button type="button" class="payroll-rail-link" (click)="f.abrirRevisionDesdeWorkspace(tabSummary.id)">
-                {{ tabSummary.ctaLabel }}
-              </button>
-            }
           </header>
         }
         @switch (f.nominaWorkspaceTab()) {
@@ -330,11 +325,6 @@
                   </article>
                 }
               </div>
-              <p class="payroll-tab-panel__enlace">
-                <button type="button" class="payroll-rail-link" (click)="f.abrirRevisionDesdeWorkspace('trabajadores')">
-                  Abrir revisión masiva de trabajadores
-                </button>
-              </p>
             } @else if (f.payrollWorkerDetailRows().length) {
               @let workers = f.payrollWorkerDetailRows();
               <section class="payroll-follow-section" aria-label="Trabajadores del período">
@@ -381,11 +371,6 @@
                   </div>
                 }
               </section>
-              <p class="payroll-tab-panel__enlace">
-                <button type="button" class="payroll-rail-link" (click)="f.abrirRevisionDesdeWorkspace('trabajadores')">
-                  Ver todos en revisión completa
-                </button>
-              </p>
             } @else {
               <p class="payroll-empty-line">Genera la nómina mensual para ver trabajadores que requieren revisión.</p>
             }
@@ -430,11 +415,6 @@
                 } @else {
                   <p class="payroll-revision-empty">{{ panel.emptyTitulo }}. {{ panel.emptyDescripcion }}</p>
                 }
-                <p class="payroll-tab-panel__enlace">
-                  <button type="button" class="payroll-rail-link" (click)="f.abrirRevisionDesdeWorkspace('parametros')">
-                    Ver revisión completa
-                  </button>
-                </p>
               </section>
             }
           }
@@ -478,11 +458,6 @@
                 } @else {
                   <p class="payroll-revision-empty">{{ panel.emptyTitulo }}. {{ panel.emptyDescripcion }}</p>
                 }
-                <p class="payroll-tab-panel__enlace">
-                  <button type="button" class="payroll-rail-link" (click)="f.abrirRevisionDesdeWorkspace('movimientos')">
-                    Ver revisión completa
-                  </button>
-                </p>
               </section>
             }
           }
@@ -526,11 +501,6 @@
                 } @else {
                   <p class="payroll-revision-empty">Sin recurrentes visibles en este período.</p>
                 }
-                <p class="payroll-tab-panel__enlace">
-                  <button type="button" class="payroll-rail-link" (click)="f.abrirRevisionDesdeWorkspace('recurrentes')">
-                    Ver revisión completa
-                  </button>
-                </p>
               </section>
             }
           }
@@ -655,9 +625,6 @@
                       </ul>
                     </section>
                   }
-                  <button type="button" class="payroll-rail-link" (click)="f.abrirDetalleOperativoContextual()">
-                    Ver revisión completa
-                  </button>
                 </div>
               }
             } @else if (detalle.oficial) {

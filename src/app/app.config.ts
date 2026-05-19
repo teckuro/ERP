@@ -76,6 +76,7 @@ import {
   UserCheck,
   Users,
   UserX,
+  X,
 } from 'lucide-angular/src/icons';
 
 import { routes } from './app.routes';
@@ -158,6 +159,7 @@ export const appConfig: ApplicationConfig = {
         UserCheck,
         Users,
         UserX,
+        X,
       }),
     ),
   ],

@@ -1,3 +1,10 @@
+## 2026-05-19 - NOM-REVISION-UX-CONSOLIDAR-01
+
+- **Módulo:** Nómina mensual / workspace y modal revisión.
+- **Cambio:** «Ver revisión completa» solo en card Revisión del sidebar; eliminados enlaces duplicados por tab. Modal revisión: cierre con X (sin «Cerrar» duplicado en pie); modal verificación período sin botón «Cerrar» redundante (solo X del MessageBox).
+- **Archivos:** `proceso-mensual-workspace.component.html`, `proceso-mensual-workspace-presentacion.rules.ts`, `proceso-mensual-detalle-modal.*`, `proceso-mensual-informacion-modal.component.ts`, `proceso-mensual-detalle-modal.rules.ts`.
+- **No tocado:** motor, estilos globales, SQL.
+
 ## 2026-05-19 - NOM-MENSUAL-PERSISTENCIA-ESTADO-01
 
 - **Módulo:** Nómina mensual / persistencia borrador.

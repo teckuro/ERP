@@ -32,6 +32,7 @@ import {
   UserCheck,
   Users,
   UserX,
+  X,
 } from 'lucide-angular/src/icons';
 import { vi } from 'vitest';
 
@@ -276,6 +277,7 @@ describe('ProcesoMensualDetalleModalComponent', () => {
             UserCheck,
             Users,
             UserX,
+            X,
           }),
         ),
       ],
@@ -312,7 +314,8 @@ describe('ProcesoMensualDetalleModalComponent', () => {
     if (ctaFocus.trim()) {
       expect(textoIncluye(footerText, ctaFocus.trim())).toBe(false);
     }
-    expectTexto(footerText, 'Cerrar');
+    expect(fixture.nativeElement.querySelector('.payroll-modal-close')).toBeTruthy();
+    expect(textoIncluye(footerText, 'Cerrar')).toBe(false);
     expectTexto(footerText, 'Ver trabajadores');
   });
 

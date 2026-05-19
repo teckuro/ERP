@@ -44,6 +44,9 @@ export class ProcesoMensualInformacionModalComponent {
   }
 
   secondaryLabel(info: InformacionPeriodoView): string {
+    if (info.accionSecundaria?.destino === 'cerrar') {
+      return '';
+    }
     return info.accionSecundaria?.label ?? '';
   }
 }

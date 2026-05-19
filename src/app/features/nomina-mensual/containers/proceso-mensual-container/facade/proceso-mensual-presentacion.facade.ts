@@ -994,7 +994,6 @@ export class ProcesoMensualPresentacionFacade {
             estado: 'Version',
             estadoClase: 'payroll-state-chip payroll-state-chip--info',
             contexto: 'Versión',
-            accion: 'Ver revisión completa',
             detalleTab: 'resultado',
           },
           {
