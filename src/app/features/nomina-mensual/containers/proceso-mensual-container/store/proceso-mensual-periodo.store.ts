@@ -40,6 +40,10 @@ export class ProcesoMensualPeriodoStore {
   readonly cerrandoNomina = signal(false);
   readonly snapshotCompleto = signal<NominaSnapshotCompletoView | null>(null);
   readonly rehidratandoPeriodo = signal(false);
+  readonly liquidacionesGeneradasCount = signal(0);
+  readonly gestionandoAccionPeriodo = signal(false);
+  readonly errorAccionPeriodo = signal<string | null>(null);
+  readonly exitoAccionPeriodo = signal<string | null>(null);
 
   constructor() {
     effect(() => {
@@ -58,6 +62,7 @@ export class ProcesoMensualPeriodoStore {
       this.guardandoSnapshot() ||
       this.aprobandoResultado() ||
       this.cerrandoNomina()
+      || this.gestionandoAccionPeriodo()
     );
   }
 
@@ -190,10 +195,11 @@ export class ProcesoMensualPeriodoStore {
 
     void this.procesoMensual
       .rehidratarPeriodo(periodo)
-      .then(({ snapshot, completo }) => {
+      .then(({ snapshot, completo, liquidacionesGeneradas }) => {
         if (this.periodoSeleccionado() !== periodo) {
           return;
         }
+        this.liquidacionesGeneradasCount.set(liquidacionesGeneradas);
         if (snapshot) {
           this.resultado.set(null);
           this.preNomina.set(null);
@@ -262,6 +268,7 @@ export class ProcesoMensualPeriodoStore {
     this.exitoGuardadoResultado.set(null);
     this.identificadorResultadoGuardadoActual.set(null);
     this.aprobacionOperativa.set(null);
+    this.liquidacionesGeneradasCount.set(0);
   }
 
   recalcularYReemplazarSnapshot(): void {
@@ -315,6 +322,56 @@ export class ProcesoMensualPeriodoStore {
       })
       .finally(() => {
         this.aprobandoResultado.set(false);
+      });
+  }
+
+  ejecutarAbrirNomina(input: { observacion?: string; forzar?: boolean } = {}): void {
+    const snapshot = this.snapshotActivo();
+    if (!snapshot?.idCalculoPeriodo) return;
+    const periodo = this.periodoSeleccionado();
+    this.gestionandoAccionPeriodo.set(true);
+    this.errorAccionPeriodo.set(null);
+    this.exitoAccionPeriodo.set(null);
+    void this.procesoMensual
+      .reabrirNominaOperativamente({
+        idCalculoPeriodo: snapshot.idCalculoPeriodo,
+        periodo,
+        observacion: input.observacion,
+        forzar: input.forzar,
+      })
+      .then((persistido) => {
+        this.aplicarSnapshotActivo(persistido);
+        void this.cargarSnapshotCompletoActivo(periodo);
+        this.exitoAccionPeriodo.set('La nómina volvió a revisión. Puede corregir datos antes de confirmarla nuevamente.');
+      })
+      .catch((e: unknown) => {
+        this.errorAccionPeriodo.set(
+          e instanceof Error ? e.message : 'No se pudo abrir la nómina del período.',
+        );
+      })
+      .finally(() => {
+        this.gestionandoAccionPeriodo.set(false);
+      });
+  }
+
+  ejecutarDescartarNomina(motivo: string): void {
+    const periodo = this.periodoSeleccionado();
+    this.gestionandoAccionPeriodo.set(true);
+    this.errorAccionPeriodo.set(null);
+    this.exitoAccionPeriodo.set(null);
+    void this.procesoMensual
+      .anularSnapshotActivo(periodo, motivo)
+      .then(() => {
+        this.rehidratarPeriodoActivo(periodo);
+        this.exitoAccionPeriodo.set('Se descartó la versión generada del período.');
+      })
+      .catch((e: unknown) => {
+        this.errorAccionPeriodo.set(
+          e instanceof Error ? e.message : 'No se pudo descartar la nómina generada.',
+        );
+      })
+      .finally(() => {
+        this.gestionandoAccionPeriodo.set(false);
       });
   }
 

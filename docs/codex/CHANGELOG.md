@@ -1,5 +1,56 @@
 # CHANGELOG
 
+## 2026-05-19 - NOM-MENSUAL-MASIVO-LAYOUT-01
+
+- **Modal trabajadores:** tab `Trabajadores` pasa a revision masiva con resumen agregado, filtros compactos, busqueda, DataGrid paginado y detalle bajo demanda.
+- **Rules:** `proceso-mensual-masivo-layout.rules.ts` proyecta filas/resumen/detalle desde resultado, expediente, base e `incidenciasPeriodo()`.
+- **Incidencias:** detalle individual solo consume incidencias con `idPersona`; las globales quedan en Resumen.
+- **Tests:** specs de rule masiva y modal cubren filtros, busqueda, detalle unico y empty editorial.
+
+## 2026-05-19 - NOM-MENSUAL-REAPERTURA-ELIMINACION-01
+
+- **Workspace:** acciones Abrir nómina y Descartar nómina generada con guardia por liquidaciones; admin forzado en sección separada.
+- **Persistencia:** RPC `reabrir_nomina_operativa`; descarte vía `anularSnapshotActivo`; consulta liquidaciones en rehidratación.
+- **Rules/tests:** `buildAccionesNominaPeriodo`, `NominaMensualCapabilitiesService`, specs rules y container.
+
+## 2026-05-19 - NOM-MODALES-PERIODO-COPY-LIMPIO-05
+
+- **Copy modal:** `limpiarCopyTecnicoNomina` centraliza diccionario, limpieza de `;` y humanización de snake_case.
+- **Rules:** delegación en modal, grids payroll, resultado preliminar, expediente, información y rail; `limpiarYUnirMensajes` sustituye `join('; ')`.
+- **Tests:** spec dedicado + ampliación DOM modal (sin tokens técnicos ni `;` en listas).
+
+## 2026-05-19 - NOM-MODALES-PERIODO-INCIDENCIAS-QA-05
+
+- **QA:** tests candado en rules y componente del modal (dedupe por código, indicadores = `porDetalleTab`, parámetros sin repetir resumen, expediente sin sección observaciones, proyección seguimiento sin arrays paralelos, orden severidad, copy sin claves técnicas).
+- **Doc:** checklist manual RRHH y matriz criterio → test en `nom-modales-periodo-revision-incidencias-qa-05.md`.
+
+## 2026-05-19 - NOM-MODALES-PERIODO-INCIDENCIAS-04
+
+- **Incidencias:** `buildIncidenciasPeriodo` unifica bloqueos, advertencias y problemas de expediente con dedupe, orden y `porAmbito` / `porDetalleTab`.
+- **Modal:** Resumen «Pendientes del periodo»; tabs de area con enlace al resumen; sin seccion duplicada en expediente.
+- **Rules/facade:** conteos de tabs y observaciones derivados del registro unico; parametros solo muestra contexto de catalogo.
+
+## 2026-05-19 - NOM-MODALES-PERIODO-REVISION-COPY-03
+
+- **Copy modal:** humanizacion de claves tecnicas visibles en revision mensual.
+- **Rules:** `humanizarDetalleRevisionTexto`, resumen coherente con bloqueos globales y accion agrupada de parametros.
+- **UI:** parametros sin accion repetida por fila; resumen con lectura operativa de movimientos/recurrentes.
+- **Tests:** specs del modal amplian cobertura de DOM sin claves tecnicas.
+
+## 2026-05-19 - NOM-MODALES-PERIODO-REVISION-IA-02
+
+- **IA modal:** expediente oficial y CTA quedan solo en `Resumen`; tabs de area muestran lead local, lista, grid o empty segun datos.
+- **Rules:** panel por tab, observaciones deduplicadas, mapper local de parametros bloqueados y umbrales lista/DataGrid.
+- **UI:** sin DataGrid para observaciones; movimientos/recurrentes vacios renderizan empty editorial sin filtros.
+- **Tests:** modal rules/component y container actualizados.
+
+## 2026-05-19 - NOM-MODALES-PERIODO-REVISION-UX-01
+
+- **UI:** modal revisión con tabs por severidad, grillas por área, CTA expediente en franja y empty states.
+- **Rules:** `buildDetalleRevisionTabsMeta`, `buildExpedienteRevisionCta`.
+- **Workspace:** «Ver revisión completa» abre tab contextual.
+- **Tests:** +4 rules, +1 componente; 44 tests modal/container/rules.
+
 ## 2026-05-19 - NOM-MENSUAL-FACADE-SLIM-01
 
 - **Refactor:** lógica pura de `resultadoPreliminar`, `revisionAprobacion` y filas payroll/seguimiento movida a `rules/`; etiquetas a `utils/proceso-mensual-presentacion.labels.ts`.

@@ -33,7 +33,11 @@ export type ConfirmacionProcesoMensualTipo =
   | 'guardar_preliminar'
   | 'aprobar_preliminar'
   | 'cerrar_nomina'
-  | 'preparar_acta';
+  | 'preparar_acta'
+  | 'abrir_nomina'
+  | 'descartar_nomina'
+  | 'forzar_apertura'
+  | 'forzar_eliminacion';
 export type DetalleOperativoTab = 'resumen' | 'trabajadores' | 'parametros' | 'movimientos_recurrentes' | 'resultado';
 export type NominaWorkspaceTab = 'guia' | 'trabajadores' | 'detalle';
 export type NominaVisualFrame =

@@ -1,6 +1,7 @@
 import type {
   MotorCalculoEstadoTrabajador,
   MotorCalculoSeveridad,
+  NominaCalculoIssueSnapshot,
   NominaCalculoPeriodoSnapshot,
   NominaCalculoTrabajadorSnapshot,
   NominaSnapshotCompletoView,
@@ -9,6 +10,8 @@ import {
   formatoFechaHoraNomina,
   formatoMontoNomina,
 } from '../containers/proceso-mensual-container/utils/proceso-mensual-presentacion.formato';
+import { limpiarCopyTecnicoNomina } from './proceso-mensual-copy-limpio.rules';
+import { incidenciaEsAlcancePeriodo } from './proceso-mensual-incidencias-periodo.rules';
 
 export type ExpedienteNominaEstado =
   | 'sin_expediente'
@@ -104,6 +107,22 @@ function severidadIssue(severidad: MotorCalculoSeveridad): 'bloqueo' | 'adverten
   if (severidad === 'BLOQUEO') return 'bloqueo';
   if (severidad === 'ADVERTENCIA') return 'advertencia';
   return 'info';
+}
+
+/** Evita repetir la misma observación de período por cada trabajador en el snapshot. */
+export function deduplicarObservacionesExpediente(
+  observaciones: NominaCalculoIssueSnapshot[],
+): NominaCalculoIssueSnapshot[] {
+  const visto = new Map<string, NominaCalculoIssueSnapshot>();
+  for (const obs of observaciones) {
+    const clave = incidenciaEsAlcancePeriodo(obs.codigo)
+      ? obs.codigo
+      : `${obs.codigo}|${obs.idCalculoTrabajador ?? 'periodo'}`;
+    if (!visto.has(clave)) {
+      visto.set(clave, obs);
+    }
+  }
+  return [...visto.values()];
 }
 
 function mapTrabajadorExpediente(trabajador: NominaCalculoTrabajadorSnapshot) {
@@ -233,7 +252,7 @@ export function buildExpedienteNominaPeriodo(input: BuildExpedienteNominaPeriodo
       .map((t) => [t.idCalculoTrabajador, `${t.nombreCompletoSnapshot} · ${t.rut}`]),
   );
 
-  const observaciones = input.snapshotCompleto?.observaciones ?? [];
+  const observaciones = deduplicarObservacionesExpediente(input.snapshotCompleto?.observaciones ?? []);
   const problemas = observaciones.slice(0, 12).map((obs) => ({
     severidad: severidadIssue(obs.severidad),
     trabajador:
@@ -241,7 +260,7 @@ export function buildExpedienteNominaPeriodo(input: BuildExpedienteNominaPeriodo
         ? null
         : trabajadorPorId.get(obs.idCalculoTrabajador) ?? 'Trabajador del período',
     titulo: obs.codigo,
-    detalle: obs.mensaje,
+    detalle: limpiarCopyTecnicoNomina(obs.mensaje),
     origen: obs.origen,
   }));
 
@@ -259,13 +278,6 @@ export function buildExpedienteNominaPeriodo(input: BuildExpedienteNominaPeriodo
       ],
     },
   ];
-
-  if (problemas.length) {
-    secciones.push({
-      titulo: 'Observaciones del período',
-      items: problemas.slice(0, 4).map((p) => p.detalle),
-    });
-  }
 
   if (confirmada && cierre) {
     secciones.push({
@@ -341,7 +353,7 @@ export function mapExpedienteTrabajadoresARows(
           : t.estado === 'bloqueado'
             ? 'Bloqueado'
             : 'Omitido',
-    observacion: t.observaciones[0] ?? 'Sin observaciones',
+    observacion: limpiarCopyTecnicoNomina(t.observaciones[0]) || 'Sin observaciones',
     accion:
       t.estado === 'bloqueado' || t.estado === 'omitido'
         ? 'Revisar ficha del trabajador'

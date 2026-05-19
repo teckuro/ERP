@@ -2,6 +2,42 @@
 
 ## Estado
 
+## NOM-MENSUAL-MASIVO-LAYOUT-01 aplicado
+
+Tab `Trabajadores` del modal de revision preparado para nomina masiva: resumen agregado, filtros compactos, busqueda, DataGrid paginado y detalle unico bajo demanda. Mantiene `incidenciasPeriodo()` como fuente unica; las incidencias globales permanecen en Resumen y no se duplican por trabajador. Documento: [`nom-mensual-masivo-layout-01.md`](./nom-mensual-masivo-layout-01.md).
+
+## Handoff Figma — maquetación nómina mensual
+
+Documento para recrear la consola en Figma (tokens, medidas, estados, modal): [`nomina-mensual-figma-maquetacion.md`](./nomina-mensual-figma-maquetacion.md).
+
+## NOM-MENSUAL-REAPERTURA-ELIMINACION-01 aplicado
+
+Acciones controladas para abrir o descartar la nómina generada cuando no hay liquidaciones; bloqueo RRHH con copy claro si hay liquidaciones; forzar apertura/eliminación solo admin en ambiente no productivo. Documento: [`nom-mensual-reapertura-eliminacion-01.md`](./nom-mensual-reapertura-eliminacion-01.md).
+
+## NOM-MODALES-PERIODO-REVISION-COPY-03 aplicado
+
+Modal de revision con copy RRHH: claves tecnicas humanizadas antes del DOM visible, resumen coherente con bloqueos globales, parametros con accion agrupada y lectura operativa de movimientos/recurrentes. Documento: [`nom-modales-periodo-revision-copy-03.md`](./nom-modales-periodo-revision-copy-03.md).
+
+## NOM-MODALES-PERIODO-COPY-LIMPIO-05 aplicado
+
+Modal de revisión con copy normalizado en rules (`limpiarCopyTecnicoNomina`): sin claves técnicas, snake_case ni `;` accidentales en listas visibles; `humanizarDetalleRevisionTexto` delega al helper único. Documento: [`nom-modales-periodo-copy-limpio-05.md`](./nom-modales-periodo-copy-limpio-05.md).
+
+## NOM-MODALES-PERIODO-INCIDENCIAS-QA-05 aplicado
+
+Candado QA post-INCIDENCIAS-04: tests de regresión en rules/component (dedupe, indicadores, expediente, seguimiento, orden severidad, copy) y checklist manual del modal en doc de fase. Documento: [`nom-modales-periodo-revision-incidencias-qa-05.md`](./nom-modales-periodo-revision-incidencias-qa-05.md).
+
+## NOM-MODALES-PERIODO-INCIDENCIAS-04 aplicado
+
+Modal de revision con registro unico de incidencias: `buildIncidenciasPeriodo`, Resumen «Pendientes del periodo», tabs con enlace «Ver en resumen (N)» sin repetir listas paralelas; conteos desde fuente deduplicada. Documento: [`nom-modales-periodo-revision-incidencias-04.md`](./nom-modales-periodo-revision-incidencias-04.md).
+
+## NOM-MODALES-PERIODO-REVISION-IA-02 aplicado
+
+Modal de revision reordenado por arquitectura de informacion: expediente oficial y CTA solo en Resumen; observaciones unificadas sin DataGrid; tabs de trabajadores, parametros, movimientos/recurrentes y resultado con lead local, lista, grid o empty segun datos. Documento: [`nom-modales-periodo-revision-ia-02.md`](./nom-modales-periodo-revision-ia-02.md).
+
+## NOM-MODALES-PERIODO-REVISION-UX-01 aplicado
+
+Modal de revisión con pestañas que señalan pendientes, grillas por área (movimientos, recurrentes, resultado, observaciones), CTA del expediente en franja interna y enlace «Ver revisión completa» contextual. Documento: [`nom-modales-periodo-revision-ux-01.md`](./nom-modales-periodo-revision-ux-01.md).
+
 ## NOM-MENSUAL-FACADE-SLIM-01 aplicado
 
 Refactor interno del facade de presentación: view models pesados en `rules/` (`resultado-preliminar`, `revision-aprobacion`, `payroll-seguimiento`) y labels en `utils/proceso-mensual-presentacion.labels.ts`. Sin cambio de copy, HTML, CSS ni contratos de store/servicios. Documento: [`nom-mensual-facade-slim-01.md`](./nom-mensual-facade-slim-01.md).
@@ -85,6 +121,8 @@ Matriz NOIA de overlays y modales para la pantalla modular (`proceso-mensual-wor
 
 | Archivo | Rol |
 |---------|-----|
+| [`nom-modales-periodo-revision-incidencias-04.md`](./nom-modales-periodo-revision-incidencias-04.md) | Registro único incidencias, dedupe y Resumen índice (planeada) |
+| [`nom-modales-periodo-revision-copy-03.md`](./nom-modales-periodo-revision-copy-03.md) | Copy RRHH modal revisión; límite explícito vs INCIDENCIAS-04 |
 | [`modales-periodo-01.md`](./modales-periodo-01.md) | Matriz overlays/modales NOIA, inventario, contrato propuesto, entradas y prioridades (NOM-MODALES-PERIODO-01) |
 | [`nom-mensual-container-modular-01.md`](./nom-mensual-container-modular-01.md) | Refactor contenedor modular fases 1-5 (store, facade, hijos) |
 | [`contrato-general.md`](./contrato-general.md) | Objetivo, alcance, relaciones con Parametros, empleados, conceptos, MV, motor futuro |

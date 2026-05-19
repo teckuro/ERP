@@ -4673,6 +4673,55 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      reabrir_nomina_operativa: {
+        Args: {
+          p_forzar?: boolean
+          p_id_calculo_periodo: number
+          p_metadata?: Json
+          p_observacion?: string
+          p_periodo: string
+        }
+        Returns: {
+          activo: boolean
+          aprobacion_operativa_advertencias: Json
+          aprobacion_operativa_estado: string | null
+          aprobacion_operativa_fecha: string | null
+          aprobacion_operativa_metadata: Json
+          aprobacion_operativa_usuario_id: string | null
+          aprobacion_operativa_usuario_label: string | null
+          cierre_operativo_estado: string | null
+          cierre_operativo_fecha: string | null
+          cierre_operativo_metadata: Json
+          cierre_operativo_observacion: string | null
+          cierre_operativo_usuario_id: string | null
+          cierre_operativo_usuario_label: string | null
+          created_at: string
+          estado: string
+          fecha_generacion: string
+          hash_snapshot: string | null
+          id_calculo_periodo: number
+          id_empresa: number | null
+          observacion_anulacion: string | null
+          origen: string
+          periodo: string
+          reemplazado_por: number | null
+          total_advertencias: number
+          total_bloqueados: number
+          total_descuentos: number
+          total_haberes: number
+          total_liquido: number
+          total_trabajadores: number
+          updated_at: string
+          usuario_generador: string | null
+          version_motor: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "nomina_calculo_periodo"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       dblink_dteconfiguracion: { Args: never; Returns: string }
       empleado_historial_changed_fields: {
         Args: { p_new: Json; p_old: Json }

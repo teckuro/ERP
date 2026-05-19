@@ -220,6 +220,21 @@ describe('proceso-mensual-expediente-periodo.rules', () => {
     expect(vm.accionPrincipal?.accion).toBe('generar_liquidaciones');
   });
 
+  it('no agrega seccion Observaciones del periodo aunque haya problemas', () => {
+    const vm = buildExpedienteNominaPeriodo({
+      snapshotActivo: cabeceraBase(),
+      snapshotCompleto: completoConTrabajadores(),
+      consultandoSnapshotCompleto: false,
+      errorSnapshotCompleto: null,
+      nominaCerrada: false,
+      liquidacionesDisponibles: false,
+    });
+
+    expect(vm.problemas.length).toBeGreaterThan(0);
+    expect(vm.secciones.some((seccion) => seccion.titulo === 'Observaciones del período')).toBe(false);
+    expect(vm.secciones.some((seccion) => seccion.titulo === 'Observaciones del periodo')).toBe(false);
+  });
+
   it('con liquidaciones reales sugiere revisar liquidaciones', () => {
     const vm = buildExpedienteNominaPeriodo({
       snapshotActivo: cabeceraBase({

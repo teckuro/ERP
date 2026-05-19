@@ -8,6 +8,7 @@ import type { ParametroGeneral } from '../../parametros-generales/models/paramet
 import { ParametrosGeneralesService } from '../../parametros-generales/services/parametros-generales.service';
 
 import { EntradasMensualesPeriodoService } from '../entradas/services/entradas-mensuales-periodo.service';
+import { LiquidacionesOficialesRepository } from '../../liquidaciones-oficiales/data-access/liquidaciones-oficiales.repository';
 import { NominaCalculoSnapshotRepository } from '../data-access/nomina-calculo-snapshot.repository';
 import { ProcesoMensualService } from './proceso-mensual.service';
 
@@ -233,6 +234,10 @@ describe('ProcesoMensualService', () => {
         { provide: EntradasMensualesPeriodoService, useValue: entradasMensuales },
         { provide: MovimientosVariablesService, useValue: movimientos },
         { provide: NominaCalculoSnapshotRepository, useValue: snapshots },
+        {
+          provide: LiquidacionesOficialesRepository,
+          useValue: { obtenerLiquidacionPeriodo: vi.fn().mockResolvedValue(null) },
+        },
       ],
     });
   });

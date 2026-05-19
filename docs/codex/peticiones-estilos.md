@@ -1,3 +1,33 @@
+## 2026-05-19 - NOM-MENSUAL-REAPERTURA-ELIMINACION-01
+
+- **Módulo:** Nómina mensual / workspace operativo.
+- **Cambio:** bloque secundario `payroll-period-actions` (Abrir / Descartar nómina generada; admin en `<details>`); sin mezclar con CTA principal.
+- **Restricciones:** CSS local contenedor; sin estilos globales.
+
+## 2026-05-19 - NOM-MODALES-PERIODO-INCIDENCIAS-DEDUPE-06
+
+- **Módulo:** Nómina mensual / modal revisión (resumen «Pendientes del período»).
+- **Cambio:** deduplicación de incidencias entre prevalidación, cálculo y snapshot; clave por código sin ámbito para avisos de período; huella por mensaje sin ámbito; observaciones de snapshot sin repetir por trabajador (SANNA, Ley 16.744); copy `parametros_generales.sanna` humanizado.
+- **Restricciones:** solo rules + facade presentación; sin store/motor/estilos globales.
+
+## 2026-05-19 - NOM-MODALES-PERIODO-COPY-LIMPIO-05
+
+- **Módulo:** Nómina mensual / modal revisión.
+- **Cambio:** copy visible normalizado en rules (no CSS para ocultar texto); contexto de lista con `text-transform: none`.
+- **Restricciones:** sin store/motor/estilos globales.
+
+## 2026-05-19 - NOM-MODALES-PERIODO-INCIDENCIAS-04
+
+- **Módulo:** Nómina mensual / modal revisión.
+- **Cambio visual:** sección única «Pendientes del período» con metadato de ámbito; tabs de área con botón «Ver en resumen (N)»; sin duplicar observaciones en franja expediente.
+- **Restricciones:** CSS local modal; sin store/motor/estilos globales.
+
+## 2026-05-19 - NOM-MODALES-PERIODO-REVISION-UX-01
+
+- **Módulo:** Nómina mensual / modal revisión (`app-proceso-mensual-detalle-modal`).
+- **Cambio visual:** tabs con indicador de severidad (fondos alineados a chips warning/danger/success del módulo); franja expediente con CTA secundario; bloques movimientos/recurrentes; empty states por tab.
+- **Restricciones:** CSS local del modal; sin estilos globales ni store/servicios.
+
 ## 2026-05-18 - NOM-MENSUAL-INTEGRIDAD-REGISTRO-01
 
 - **Módulo:** Nómina mensual / modal revisión + tab Detalle workspace.
@@ -1271,3 +1301,22 @@ Creación avanzada incorpora una identidad de producto local para dejar de senti
 - **UX futura:** nuevas fases deben priorizar `Generar nómina`, `Revisar trabajadores`, `Confirmar nómina` y `Generar liquidaciones` antes que diagnósticos técnicos del proceso.
 - **Copy:** para RRHH, preferir `nómina mensual confirmada` y estados por trabajador (`Listo`, `Revisar`, `Bloqueado`, `Cambio detectado`, `Omitido`) sobre términos como snapshot, payload, RPC o flags internos.
 - **Restricciones:** fase documental; sin cambio visual aplicado, sin Angular, sin estilos globales, sin SQL/RPC/RLS, sin motor, sin servicios ni persistencia.
+## 2026-05-19 - NOM-MODALES-PERIODO-REVISION-IA-02
+
+- **Modulo:** Nomina mensual / modal revision (`app-proceso-mensual-detalle-modal`).
+- **Cambio visual:** expediente oficial y CTA quedan solo en Resumen; parametros, movimientos, recurrentes y resultado usan listas densas o empty editorial cuando no corresponde grilla.
+- **DataGrid:** solo se muestra con filas tabulares; filtros desactivados en conjuntos pequenos y sin grid para observaciones del resumen.
+- **Restricciones:** CSS local del modal; sin estilos globales, store, servicios, SQL ni cambios al DataGrid compartido.
+## 2026-05-19 - NOM-MODALES-PERIODO-REVISION-COPY-03
+
+- **Modulo:** Nomina mensual / modal revision (`app-proceso-mensual-detalle-modal`).
+- **Cambio visual:** copy RRHH sin claves tecnicas visibles; parametros agrupa accion repetida; listas de revision quedan mas densas.
+- **Estados:** Resumen refleja bloqueos globales como `Requiere revision` y advertencias como `Con observaciones`.
+- **Restricciones:** CSS local del modal; sin estilos globales, store, servicios, SQL, motor ni cambios a `app-data-grid`.
+
+## 2026-05-19 - NOM-MENSUAL-MASIVO-LAYOUT-01
+
+- **Modulo:** Nomina mensual / modal revision, tab `Trabajadores`.
+- **Cambio visual:** resumen agregado, filtros compactos, busqueda, grilla paginada y detalle bajo demanda de un solo trabajador.
+- **Densidad:** se abandona la vista tipo lista chica para trabajadores; no usar cards por trabajador ni detalles abiertos masivos.
+- **Restricciones:** CSS local del modal; sin redisenar workspace, sin estilos globales, SQL, motor, servicios, store ni cambios a `app-data-grid`.

@@ -346,6 +346,14 @@ export interface CerrarNominaOperativamenteParams {
   observacion?: string | null;
 }
 
+export interface ReabrirNominaOperativamenteParams {
+  idCalculoPeriodo: number;
+  periodo: string;
+  observacion?: string | null;
+  forzar?: boolean;
+  metadata?: Record<string, unknown>;
+}
+
 export interface NominaCalculoConceptoSnapshot {
   idCalculoConcepto?: number;
   idCalculoTrabajador?: number;

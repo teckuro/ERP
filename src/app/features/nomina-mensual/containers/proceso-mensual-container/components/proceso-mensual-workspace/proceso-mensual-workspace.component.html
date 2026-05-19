@@ -130,6 +130,77 @@
         </div>
       </section>
 
+      @if (f.mostrarAccionesPeriodoNomina()) {
+        <section class="payroll-period-actions" aria-label="Acciones del período">
+          <header class="payroll-period-actions__header">
+            <h3>Acciones del período</h3>
+            <p>Operaciones sobre la versión generada. No reemplazan el flujo principal de arriba.</p>
+          </header>
+          @if (f.exitoAccionPeriodo()) {
+            <p class="payroll-period-actions__feedback payroll-period-actions__feedback--success" role="status">
+              {{ f.exitoAccionPeriodo() }}
+            </p>
+          }
+          @if (f.errorAccionPeriodo()) {
+            <p class="payroll-period-actions__feedback payroll-period-actions__feedback--error" role="alert">
+              {{ f.errorAccionPeriodo() }}
+            </p>
+          }
+          <ul class="payroll-period-actions__list">
+            @for (accion of f.accionesNominaPeriodoNormales(); track accion.id) {
+              <li class="payroll-period-actions__item">
+                <div class="payroll-period-actions__copy">
+                  <h4>{{ accion.label }}</h4>
+                  <p>{{ accion.descripcion }}</p>
+                  @if (accion.bloqueada && accion.motivoBloqueo) {
+                    <p class="payroll-period-actions__blocked">{{ accion.motivoBloqueo }}</p>
+                  }
+                </div>
+                @if (accion.disponible) {
+                  <button
+                    type="button"
+                    class="payroll-modal-secondary"
+                    [class.payroll-period-actions__btn--danger]="accion.variante === 'danger'"
+                    [disabled]="f.gestionandoAccionPeriodo()"
+                    (click)="f.ejecutarAccionNominaPeriodo(accion.id)"
+                  >
+                    {{ accion.label }}
+                  </button>
+                } @else {
+                  <span class="payroll-period-actions__chip">No disponible</span>
+                }
+              </li>
+            }
+          </ul>
+          @if (f.accionesNominaPeriodoAdmin().length) {
+            <details class="payroll-period-actions payroll-period-actions--admin">
+              <summary>Acciones administrativas</summary>
+              <p class="payroll-period-actions__admin-note">
+                Acción de prueba para ambiente no productivo. No es el flujo operativo final de RRHH.
+              </p>
+              <ul class="payroll-period-actions__list">
+                @for (accion of f.accionesNominaPeriodoAdmin(); track accion.id) {
+                  <li class="payroll-period-actions__item">
+                    <div class="payroll-period-actions__copy">
+                      <h4>{{ accion.label }}</h4>
+                      <p>{{ accion.descripcion }}</p>
+                    </div>
+                    <button
+                      type="button"
+                      class="payroll-modal-secondary payroll-period-actions__btn--admin"
+                      [disabled]="f.gestionandoAccionPeriodo()"
+                      (click)="f.ejecutarAccionNominaPeriodo(accion.id)"
+                    >
+                      {{ accion.label }}
+                    </button>
+                  </li>
+                }
+              </ul>
+            </details>
+          }
+        </section>
+      }
+
       <nav class="payroll-workspace-tabs" aria-label="Nómina mensual">
         <button type="button" [class.payroll-workspace-tab--active]="f.nominaWorkspaceTab() === 'guia'" (click)="f.seleccionarNominaWorkspaceTab('guia')">Guía de revisión</button>
         <button type="button" [class.payroll-workspace-tab--active]="f.nominaWorkspaceTab() === 'trabajadores'" (click)="f.seleccionarNominaWorkspaceTab('trabajadores')">Trabajadores y revisión</button>
@@ -280,7 +351,7 @@
                       </ul>
                     </section>
                   }
-                  <button type="button" class="payroll-rail-link" (click)="f.abrirDetalleOperativo('trabajadores')">
+                  <button type="button" class="payroll-rail-link" (click)="f.abrirDetalleOperativoContextual()">
                     Ver revisión completa
                   </button>
                 </div>

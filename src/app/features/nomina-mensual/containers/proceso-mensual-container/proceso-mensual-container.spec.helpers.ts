@@ -2,8 +2,21 @@ import { TestBed, type ComponentFixture } from '@angular/core/testing';
 import { vi } from 'vitest';
 
 import { PeriodoActivoService } from '../../../../core/services/periodo-activo.service';
+import { NominaMensualCapabilitiesService } from '../../services/nomina-mensual-capabilities.service';
 import { ProcesoMensualContainer } from './proceso-mensual-container';
 import { ProcesoMensualPeriodoStore } from './store/proceso-mensual-periodo.store';
+
+/** Evita cadena AuthService → Supabase en specs del contenedor. */
+export function provideNominaMensualCapabilitiesMock() {
+  return {
+    provide: NominaMensualCapabilitiesService,
+    useValue: {
+      esAdmin: () => false,
+      modoPruebas: () => true,
+      puedeAccionesAdminNomina: () => false,
+    },
+  };
+}
 
 export function storeDe(fixture: ComponentFixture<ProcesoMensualContainer>): ProcesoMensualPeriodoStore {
   return (fixture.componentInstance as unknown as { store: ProcesoMensualPeriodoStore }).store;

@@ -16,6 +16,7 @@ import type {
   ResultadoPreliminarView,
   TrabajadorResultadoPreliminarView,
 } from '../containers/proceso-mensual-container/models/proceso-mensual-container.vm';
+import { limpiarCopyTecnicoNomina, limpiarYUnirMensajes } from './proceso-mensual-copy-limpio.rules';
 
 export interface BuildResultadoPreliminarInput {
   calculo: MotorCalculoPeriodoResultado | null;
@@ -183,7 +184,7 @@ function trabajadoresDesdeSnapshotGuardado(
       descuentosLabel: formatoMontoNomina(trabajador.totalDescuentosLegales + trabajador.totalDescuentosVoluntarios),
       liquidoLabel: formatoMontoNomina(trabajador.liquidoPreliminar),
       observacionLabel: trabajador.issues.length
-        ? trabajador.issues.map((issue) => issue.mensaje).join('; ')
+        ? limpiarYUnirMensajes(trabajador.issues.map((issue) => issue.mensaje))
         : 'Sin observaciones',
       accionLabel:
         estadoLabel === 'Omitido' || estadoLabel === 'No calculado'
@@ -259,7 +260,7 @@ export function buildResultadoPreliminarView(input: BuildResultadoPreliminarInpu
       haberesLabel: 'Monto no disponible',
       descuentosLabel: 'Monto no disponible',
       liquidoLabel: 'Monto no disponible',
-      observacionLabel: trabajador.observacion || 'No calculado en el resultado preliminar.',
+      observacionLabel: limpiarCopyTecnicoNomina(trabajador.observacion) || 'No calculado en el resultado preliminar.',
       accionLabel: 'Revisar trabajadores',
     }));
   const trabajadores = [
@@ -273,7 +274,9 @@ export function buildResultadoPreliminarView(input: BuildResultadoPreliminarInpu
         haberesLabel: formatoMontoNomina(liq.totalHaberes),
         descuentosLabel: formatoMontoNomina(liq.totalDescuentos),
         liquidoLabel: formatoMontoNomina(liq.liquidoAPago),
-        observacionLabel: liq.issues.length ? liq.issues.map((issue) => issue.mensaje).join('; ') : 'Sin observaciones',
+        observacionLabel: liq.issues.length
+          ? limpiarYUnirMensajes(liq.issues.map((issue) => issue.mensaje))
+          : 'Sin observaciones',
         ...accionResultadoDesdeIssues(liq.issues),
       };
     }),

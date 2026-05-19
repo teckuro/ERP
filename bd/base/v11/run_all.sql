@@ -20,6 +20,7 @@
 \ir partes/19_novedades_mensuales_rls.sql
 \ir partes/20_nomina_calculo_snapshot_rpc.sql
 \ir partes/21_nomina_cierre_operativo_rpc.sql
+\ir partes/21b_nomina_reapertura_operativa_rpc.sql
 \ir partes/22_liquidaciones_oficiales.sql
 \ir partes/23_liquidaciones_oficiales_rpc.sql
 \ir partes/24_lre_catalogo_oficial.sql

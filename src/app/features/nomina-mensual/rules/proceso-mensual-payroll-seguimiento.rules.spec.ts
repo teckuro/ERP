@@ -1,7 +1,12 @@
 import { describe, expect, it } from 'vitest';
 
 import { buildExpedienteNominaPeriodo } from './proceso-mensual-expediente-periodo.rules';
-import { buildPayrollWorkerDetailRows } from './proceso-mensual-payroll-seguimiento.rules';
+import { buildIncidenciasPeriodo } from './proceso-mensual-incidencias-periodo.rules';
+import {
+  buildPayrollObservationDetailRows,
+  buildPayrollParametroSeguimientoItems,
+  buildPayrollWorkerDetailRows,
+} from './proceso-mensual-payroll-seguimiento.rules';
 
 describe('proceso-mensual-payroll-seguimiento.rules', () => {
   it('prioriza filas de base de nómina cuando existe trazabilidad', () => {
@@ -157,5 +162,42 @@ describe('proceso-mensual-payroll-seguimiento.rules', () => {
 
     expect(rows).toHaveLength(1);
     expect(rows[0].trabajador).toBe('Luis Gómez');
+  });
+
+  it('proyecta observaciones sin segunda fuente paralela', () => {
+    const incidencias = buildIncidenciasPeriodo({
+      bloqueosOperativos: [{
+        codigo: 'PARAM_UF',
+        titulo: 'UF pendiente',
+        descripcion: 'Falta UF',
+        severidad: 'danger',
+        ruta: '/parametros',
+      }],
+      advertenciasOperativas: [{
+        codigo: 'MV_BORRADOR',
+        titulo: 'Movimiento en borrador',
+        descripcion: 'Revisar',
+        severidad: 'warning',
+      }],
+      resultadoBloqueos: [],
+      resultadoAdvertencias: [],
+    });
+
+    const filas = buildPayrollObservationDetailRows({ incidencias: incidencias.todas });
+    expect(filas).toHaveLength(2);
+    expect(filas.map((fila) => fila.mensaje)).toEqual(
+      expect.arrayContaining(['Falta UF', 'Revisar']),
+    );
+  });
+
+  it('parametros con incidencias expone un solo item sintetico orientado al resumen', () => {
+    const items = buildPayrollParametroSeguimientoItems({
+      parametrosListos: false,
+      tieneIncidenciasParametros: true,
+    });
+
+    expect(items).toHaveLength(1);
+    expect(items[0].descripcion).toContain('resumen');
+    expect(items[0].titulo).not.toMatch(/PARAM_|bloqueo/i);
   });
 });

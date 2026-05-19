@@ -822,3 +822,117 @@
     gap: 12px;
   }
 }
+
+.payroll-period-actions {
+  margin-top: 12px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  background: #f8fafc;
+  padding: 12px 14px;
+}
+
+.payroll-period-actions__header h3 {
+  margin: 0 0 4px;
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.payroll-period-actions__header p {
+  margin: 0 0 10px;
+  font-size: 0.75rem;
+  color: #64748b;
+}
+
+.payroll-period-actions__feedback {
+  margin: 0 0 10px;
+  font-size: 0.75rem;
+}
+
+.payroll-period-actions__feedback--success {
+  color: #166534;
+}
+
+.payroll-period-actions__feedback--error {
+  color: #b91c1c;
+}
+
+.payroll-period-actions__list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.payroll-period-actions__item {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 10px 12px;
+  align-items: start;
+  border-top: 1px solid #e2e8f0;
+  padding: 10px 0;
+}
+
+.payroll-period-actions__item:first-child {
+  border-top: 0;
+  padding-top: 0;
+}
+
+.payroll-period-actions__copy h4 {
+  margin: 0 0 4px;
+  font-size: 0.8125rem;
+  font-weight: 650;
+  color: #0f172a;
+}
+
+.payroll-period-actions__copy p {
+  margin: 0;
+  font-size: 0.75rem;
+  color: #475569;
+}
+
+.payroll-period-actions__blocked {
+  margin: 6px 0 0;
+  font-size: 0.75rem;
+  color: #b45309;
+}
+
+.payroll-period-actions__chip {
+  display: inline-flex;
+  align-items: center;
+  min-height: 32px;
+  padding: 0 10px;
+  border-radius: 999px;
+  background: #f1f5f9;
+  color: #64748b;
+  font-size: 0.6875rem;
+  font-weight: 650;
+}
+
+.payroll-period-actions__btn--danger {
+  border-color: #b91c1c;
+  color: #b91c1c;
+}
+
+.payroll-period-actions--admin {
+  margin-top: 10px;
+  border-top: 1px dashed #cbd5e1;
+  padding-top: 8px;
+}
+
+.payroll-period-actions--admin summary {
+  cursor: pointer;
+  font-size: 0.75rem;
+  font-weight: 650;
+  color: #475569;
+}
+
+.payroll-period-actions__admin-note {
+  margin: 8px 0 4px;
+  font-size: 0.6875rem;
+  color: #64748b;
+}
+
+.payroll-period-actions__btn--admin {
+  border-color: #94a3b8;
+  color: #334155;
+}

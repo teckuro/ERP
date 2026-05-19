@@ -7,18 +7,17 @@ import {
   formatoMontoNomina,
 } from '../containers/proceso-mensual-container/utils/proceso-mensual-presentacion.formato';
 import {
-  ambitoDesdeCodigo,
   claseChipRevision,
-  clasePendienteVisual,
   etiquetaConceptoEntrada,
   etiquetaEstadoBaseTrabajador,
   etiquetaEstadoEntrada,
-  etiquetaPendienteVisual,
   etiquetaTipoEntrada,
 } from '../containers/proceso-mensual-container/utils/proceso-mensual-presentacion.labels';
 import type { ExpedienteNominaPeriodoView } from './proceso-mensual-expediente-periodo.rules';
 import { mapExpedienteTrabajadoresARows } from './proceso-mensual-expediente-periodo.rules';
-import type { ProcesoMensualPendienteVm } from './proceso-mensual-estado-operativo.rules';
+import { limpiarCopyTecnicoNomina } from './proceso-mensual-copy-limpio.rules';
+import type { IncidenciaPeriodo } from './proceso-mensual-incidencias-periodo.rules';
+import { incidenciasToPayrollObservationRows } from './proceso-mensual-incidencias-periodo.rules';
 import type {
   PayrollMovementDetailRow,
   PayrollObservationDetailRow,
@@ -26,7 +25,6 @@ import type {
   PayrollResultDetailRow,
   PayrollSeguimientoItem,
   PayrollWorkerDetailRow,
-  ResultadoObservacionView,
   ResultadoPreliminarView,
   TrabajadorResultadoPreliminarView,
 } from '../containers/proceso-mensual-container/models/proceso-mensual-container.vm';
@@ -45,7 +43,7 @@ export function buildPayrollWorkerDetailRows(input: BuildPayrollWorkerDetailRows
       trabajador: trabajador.trabajadorLabel || 'Trabajador sin ficha visible',
       rut: trabajador.rutLabel || 'RUT no disponible',
       estado: etiquetaEstadoBaseTrabajador(trabajador.estado),
-      observacion: trabajador.observacion || 'Sin observaciones',
+      observacion: limpiarCopyTecnicoNomina(trabajador.observacion) || 'Sin observaciones',
       accion: trabajador.estado === 'bloqueado' || trabajador.estado === 'excluido'
         ? 'Revisar ficha del trabajador'
         : trabajador.estado === 'con_observaciones'
@@ -62,8 +60,8 @@ export function buildPayrollWorkerDetailRows(input: BuildPayrollWorkerDetailRows
     trabajador: trabajador.trabajadorLabel,
     rut: trabajador.rutLabel,
     estado: trabajador.estadoLabel,
-    observacion: trabajador.observacionLabel,
-    accion: trabajador.accionLabel ?? 'Sin acción pendiente',
+    observacion: limpiarCopyTecnicoNomina(trabajador.observacionLabel),
+    accion: limpiarCopyTecnicoNomina(trabajador.accionLabel ?? 'Sin acción pendiente'),
   }));
 }
 
@@ -132,85 +130,35 @@ export function buildPayrollRecurrentDetailRows(input: BuildPayrollMovementDetai
     }));
 }
 
-function observacionGridDesdePendiente(
-  item: ProcesoMensualPendienteVm,
-  severidad: PayrollObservationDetailRow['severidad'],
-): PayrollObservationDetailRow {
-  return {
-    severidad,
-    ambito: ambitoDesdeCodigo(item.codigo),
-    mensaje: item.descripcion || item.titulo,
-    accion: item.accionLabel ?? (item.ruta ? 'Revisar origen' : 'Revisar en el período'),
-  };
-}
-
-function observacionGridDesdeResultado(
-  item: ResultadoObservacionView,
-  severidad: PayrollObservationDetailRow['severidad'],
-): PayrollObservationDetailRow {
-  return {
-    severidad,
-    ambito: ambitoDesdeCodigo(item.codigo),
-    mensaje: item.descripcion || item.titulo,
-    accion: item.accionLabel ?? 'Revisar resultado preliminar',
-  };
-}
-
 export interface BuildPayrollObservationDetailRowsInput {
-  bloqueosOperativos: ProcesoMensualPendienteVm[];
-  advertenciasOperativas: ProcesoMensualPendienteVm[];
-  informacionesOperativas: ProcesoMensualPendienteVm[];
-  resultadoBloqueos: ResultadoObservacionView[];
-  resultadoAdvertencias: ResultadoObservacionView[];
+  incidencias: IncidenciaPeriodo[];
 }
 
 export function buildPayrollObservationDetailRows(input: BuildPayrollObservationDetailRowsInput): PayrollObservationDetailRow[] {
-  const rows: PayrollObservationDetailRow[] = [
-    ...input.bloqueosOperativos.map((item) => observacionGridDesdePendiente(item, 'Bloqueo')),
-    ...input.advertenciasOperativas.map((item) => observacionGridDesdePendiente(item, 'Advertencia')),
-    ...input.informacionesOperativas.map((item) => observacionGridDesdePendiente(item, 'Información')),
-  ];
-
-  for (const item of input.resultadoBloqueos) {
-    rows.push(observacionGridDesdeResultado(item, 'Bloqueo'));
-  }
-  for (const item of input.resultadoAdvertencias) {
-    rows.push(observacionGridDesdeResultado(item, 'Advertencia'));
-  }
-  return rows;
+  return incidenciasToPayrollObservationRows(input.incidencias);
 }
 
 export interface BuildPayrollParametroSeguimientoInput {
-  bloqueos: ProcesoMensualPendienteVm[];
-  advertencias: ProcesoMensualPendienteVm[];
-  informaciones: ProcesoMensualPendienteVm[];
   parametrosListos: boolean | null;
+  tieneIncidenciasParametros: boolean;
 }
 
 export function buildPayrollParametroSeguimientoItems(input: BuildPayrollParametroSeguimientoInput): PayrollSeguimientoItem[] {
-  const items = [...input.bloqueos, ...input.advertencias, ...input.informaciones]
-    .filter((item) => item.ruta === '/parametros' || ambitoDesdeCodigo(item.codigo) === 'Parámetros')
-    .map((item) => ({
-      titulo: item.titulo,
-      descripcion: item.descripcion,
-      estado: etiquetaPendienteVisual(item.severidad),
-      estadoClase: clasePendienteVisual(item.severidad),
-      accion: item.accionLabel ?? 'Revisar parámetros',
-      ruta: item.ruta ?? '/parametros',
-    }));
-
-  if (items.length) return items;
-
   const parametrosListos = input.parametrosListos;
+  const requiereRevision = input.tieneIncidenciasParametros || parametrosListos === false;
   return [{
-    titulo: parametrosListos ? 'Parámetros revisados' : 'Parámetros del período',
+    titulo: requiereRevision ? 'Parámetros del período' : 'Parámetros revisados',
     descripcion: parametrosListos == null
       ? 'Genera la nómina mensual para evaluar parámetros del período.'
-      : parametrosListos
-        ? 'Los parámetros mínimos del período están disponibles para la nómina.'
-        : 'Hay parámetros del período que requieren revisión antes de confirmar.',
-    estado: parametrosListos ? 'Revisados' : parametrosListos == null ? 'Sin evaluar' : 'Revisar',
-    estadoClase: parametrosListos ? 'payroll-state-chip payroll-state-chip--success' : 'payroll-state-chip payroll-state-chip--warning',
+      : requiereRevision
+        ? 'Revise catálogos y valores del período en el resumen de pendientes.'
+        : 'Los parámetros mínimos del período están disponibles para la nómina.',
+    estado: parametrosListos == null ? 'Sin evaluar' : requiereRevision ? 'Revisar' : 'Revisados',
+    estadoClase: parametrosListos == null
+      ? 'payroll-state-chip payroll-state-chip--warning'
+      : requiereRevision
+        ? 'payroll-state-chip payroll-state-chip--warning'
+        : 'payroll-state-chip payroll-state-chip--success',
     accion: 'Abrir parámetros',
     ruta: '/parametros',
   }];
@@ -290,6 +238,6 @@ export function buildPayrollResultDetailRows(resultado: ResultadoPreliminarView)
     descuentos: trabajador.descuentosLabel,
     liquido: trabajador.liquidoLabel,
     estado: trabajador.estadoLabel,
-    observacion: trabajador.observacionLabel,
+    observacion: limpiarCopyTecnicoNomina(trabajador.observacionLabel),
   }));
 }

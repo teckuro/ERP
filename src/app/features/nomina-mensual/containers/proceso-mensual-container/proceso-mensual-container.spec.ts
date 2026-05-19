@@ -32,6 +32,7 @@ import {
   expectTextoNo,
   fijarPeriodoActivo,
   montarContainer,
+  provideNominaMensualCapabilitiesMock,
   storeDe,
   textoIncluye,
 } from './proceso-mensual-container.spec.helpers';
@@ -313,9 +314,13 @@ describe('ProcesoMensualContainer', () => {
     rehidratarPeriodo.mockImplementation(async (periodo: string) => {
       const snapshot = await obtenerSnapshotActivo(periodo);
       if (!snapshot) {
-        return { snapshot: null, completo: null };
+        return { snapshot: null, completo: null, liquidacionesGeneradas: 0 };
       }
-      return { snapshot, completo: await obtenerSnapshotCompletoActivo(periodo) };
+      return {
+        snapshot,
+        completo: await obtenerSnapshotCompletoActivo(periodo),
+        liquidacionesGeneradas: 0,
+      };
     });
     ejecutarPrevalidaciones.mockResolvedValue({
       periodo: '2026-05',
@@ -501,6 +506,7 @@ describe('ProcesoMensualContainer', () => {
       providers: [
         provideRouter([]),
         PeriodoActivoService,
+        provideNominaMensualCapabilitiesMock(),
         {
           provide: ProcesoMensualService,
           useValue: {
@@ -909,6 +915,19 @@ describe('ProcesoMensualContainer', () => {
       const localFixture = await montarContainer();
       await avanzarFlujo(localFixture, 'aprobado');
       expect(aprobarResultadoPreliminarOperativamente).toHaveBeenCalled();
+    });
+
+    it('muestra acciones del periodo cuando hay snapshot sin liquidaciones', async () => {
+      obtenerSnapshotActivo.mockResolvedValue(snapshotGuardado());
+      obtenerSnapshotCompletoActivo.mockResolvedValue(snapshotCompletoGuardado());
+      const localFixture = await montarContainer();
+      await esperarSnapshotActivo(localFixture);
+
+      localFixture.detectChanges();
+      const texto = localFixture.nativeElement.textContent as string;
+      expect(texto).toContain('Acciones del período');
+      expect(texto).toContain('Descartar nómina generada');
+      expect(texto).not.toContain('Forzar eliminación');
     });
 
     it('falla aprobacion muestra error sin marcar aprobado en copy', async () => {

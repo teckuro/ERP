@@ -7,6 +7,7 @@ import type {
   ValidacionAccionLocal,
   ValidacionCalculoPreliminarView,
 } from '../containers/proceso-mensual-container/models/proceso-mensual-container.vm';
+import { limpiarCopyTecnicoNomina } from './proceso-mensual-copy-limpio.rules';
 
 export interface BuildInformacionPeriodoInput {
   errorEjecucion: string | null;
@@ -28,13 +29,7 @@ export interface ResolveDetalleTabInput {
 }
 
 export function humanizarErrorEjecucion(texto: string): string {
-  const limpio = texto
-    .replace(/\bFALTANTE\b/gi, '')
-    .replace(/\bis_null\b/gi, '')
-    .replace(/sis_fila_mensual/gi, '')
-    .replace(/\b(rpc_|tbl_|sis_)[a-z0-9_]+\b/gi, '')
-    .replace(/\s{2,}/g, ' ')
-    .trim();
+  const limpio = limpiarCopyTecnicoNomina(texto);
   return limpio || 'Revisar antes de continuar.';
 }
 

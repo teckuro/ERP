@@ -13,6 +13,7 @@ import type { ParametroGeneral, ParametrosGeneralesCatalogos } from '../../param
 import { ParametrosGeneralesService } from '../../parametros-generales/services/parametros-generales.service';
 
 import type { EntradaMensualPeriodo } from '../entradas/models/entrada-mensual-periodo.model';
+import { LiquidacionesOficialesRepository } from '../../liquidaciones-oficiales/data-access/liquidaciones-oficiales.repository';
 import { EntradasMensualesPeriodoService } from '../entradas/services/entradas-mensuales-periodo.service';
 import { validarPeriodoEntradaMensual } from '../entradas/rules/entradas-mensuales-periodo.rules';
 import {
@@ -31,6 +32,7 @@ import type {
   NominaSnapshotCompletoView,
   AprobarResultadoPreliminarOperativamenteParams,
   CerrarNominaOperativamenteParams,
+  ReabrirNominaOperativamenteParams,
   ProcesoMensualPreNominaPeriodo,
   ProcesoMensualPrevalidacion,
 } from '../models/proceso-mensual.model';
@@ -58,6 +60,7 @@ export class ProcesoMensualService {
   private readonly haberesDescuentos = inject(HaberesDescuentosService);
   private readonly entradasMensuales = inject(EntradasMensualesPeriodoService);
   private readonly snapshots = inject(NominaCalculoSnapshotRepository);
+  private readonly liquidaciones = inject(LiquidacionesOficialesRepository);
   private readonly calculosPorPeriodo = new Map<string, MotorCalculoPeriodoResultado>();
 
   /**
@@ -155,14 +158,23 @@ export class ProcesoMensualService {
   async rehidratarPeriodo(periodo: string): Promise<{
     snapshot: NominaCalculoPeriodoSnapshot | null;
     completo: NominaSnapshotCompletoView | null;
+    liquidacionesGeneradas: number;
   }> {
     const p = periodo.trim();
-    const snapshot = await this.obtenerSnapshotActivo(p);
+    const [snapshot, liquidacionesGeneradas] = await Promise.all([
+      this.obtenerSnapshotActivo(p),
+      this.contarLiquidacionesGeneradas(p),
+    ]);
     if (!snapshot) {
-      return { snapshot: null, completo: null };
+      return { snapshot: null, completo: null, liquidacionesGeneradas };
     }
     const completo = await this.obtenerSnapshotCompletoActivo(p);
-    return { snapshot, completo };
+    return { snapshot, completo, liquidacionesGeneradas };
+  }
+
+  async contarLiquidacionesGeneradas(periodo: string): Promise<number> {
+    const liquidacion = await this.liquidaciones.obtenerLiquidacionPeriodo(periodo.trim());
+    return liquidacion ? 1 : 0;
   }
 
   obtenerSnapshotCompletoActivo(periodo: string): Promise<NominaSnapshotCompletoView | null> {
@@ -179,6 +191,28 @@ export class ProcesoMensualService {
 
   anularSnapshotActivo(periodo: string, motivo?: string): Promise<void> {
     return this.snapshots.anularSnapshotActivo(periodo.trim(), motivo);
+  }
+
+  async reabrirNominaOperativamente(
+    params: ReabrirNominaOperativamenteParams,
+  ): Promise<NominaCalculoPeriodoSnapshot> {
+    const snapshot = await this.snapshots.obtenerSnapshotActivo(params.periodo.trim());
+    if (!snapshot?.idCalculoPeriodo || snapshot.idCalculoPeriodo !== params.idCalculoPeriodo) {
+      throw new Error('No existe una nómina guardada vigente para abrir.');
+    }
+    if (snapshot.cierreOperativo?.estado !== 'cerrado_operativamente') {
+      throw new Error('La nómina no está confirmada operativamente.');
+    }
+
+    return this.snapshots.reabrirNominaOperativa({
+      ...params,
+      periodo: params.periodo.trim(),
+      metadata: {
+        accion: 'reapertura_operativa',
+        forzado: params.forzar ?? false,
+        ...(params.metadata ?? {}),
+      },
+    });
   }
 
   aprobarResultadoPreliminarOperativamente(

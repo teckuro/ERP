@@ -1,4 +1,5 @@
 import { HostListener, Injectable, computed, effect, inject, signal, untracked } from '@angular/core';
+import { Router } from '@angular/router';
 import { PeriodoActivoService } from '../../../../../core/services/periodo-activo.service';
 import type {
   BaseNominaParametrosEstado,
@@ -15,6 +16,7 @@ import type {
   ProcesoMensualPrevalidacion,
 } from '../../../models/proceso-mensual.model';
 import { type RecordBreadcrumbItem } from '../../../../../shared/components/ui/record-breadcrumb.component';
+import type { DataGridColumn } from '../../../../../shared/components/ui/data-grid.component';
 import type { ActaOperativaPeriodoViewModel } from '../../../models/acta-operativa-periodo.model';
 import { ProcesoMensualPeriodoStore } from '../store/proceso-mensual-periodo.store';
 import { formatoFechaHoraNomina, formatoMontoNomina, horaCortaNomina } from '../utils/proceso-mensual-presentacion.formato';
@@ -31,11 +33,32 @@ import { buildValidacionCalculoPreliminarView } from '../../../rules/proceso-men
 import {
   buildDetalleRevisionFooterAccion,
   buildDetalleRevisionModalLead,
+  buildDetalleRevisionTabPanel,
+  buildDetalleRevisionTabsMeta,
+  buildExpedienteRevisionCtaForTab,
+  claseDetalleRevisionTab,
   DETALLE_REVISION_MODAL_TITULO,
+  type DetalleRevisionTabMeta,
 } from '../../../rules/proceso-mensual-detalle-modal.rules';
 import {
   buildExpedienteNominaPeriodo,
 } from '../../../rules/proceso-mensual-expediente-periodo.rules';
+import {
+  buildAccionesNominaPeriodo,
+  mostrarAccionesPeriodoNomina,
+  type AccionNominaPeriodoId,
+} from '../../../rules/proceso-mensual-acciones-periodo.rules';
+import { buildIncidenciasPeriodo } from '../../../rules/proceso-mensual-incidencias-periodo.rules';
+import {
+  buildDetalleMasivoTrabajador,
+  buildFilasMasivasTrabajadores,
+  buildResumenMasivoNomina,
+  filtrarFilasMasivasTrabajadores,
+  type NominaMasivaEstado,
+  type NominaMasivaFila,
+  type NominaMasivaFiltro,
+} from '../../../rules/proceso-mensual-masivo-layout.rules';
+import { NominaMensualCapabilitiesService } from '../../../services/nomina-mensual-capabilities.service';
 import { buildResultadoPreliminarView } from '../../../rules/proceso-mensual-resultado-preliminar.rules';
 import { buildRevisionAprobacionView } from '../../../rules/proceso-mensual-revision-aprobacion.rules';
 import {
@@ -127,6 +150,8 @@ import type {
 export class ProcesoMensualPresentacionFacade {
   readonly store = inject(ProcesoMensualPeriodoStore);
   readonly periodoActivo = inject(PeriodoActivoService);
+  private readonly router = inject(Router);
+  private readonly nominaCapabilities = inject(NominaMensualCapabilitiesService);
 
   readonly breadcrumbItems: readonly RecordBreadcrumbItem[] = [
     { label: 'Remuneraciones', link: '/remuneraciones' },
@@ -156,6 +181,10 @@ export class ProcesoMensualPresentacionFacade {
   readonly aprobandoResultado = this.store.aprobandoResultado;
   readonly cerrandoNomina = this.store.cerrandoNomina;
   readonly snapshotCompleto = this.store.snapshotCompleto;
+  readonly liquidacionesGeneradasCount = this.store.liquidacionesGeneradasCount;
+  readonly gestionandoAccionPeriodo = this.store.gestionandoAccionPeriodo;
+  readonly errorAccionPeriodo = this.store.errorAccionPeriodo;
+  readonly exitoAccionPeriodo = this.store.exitoAccionPeriodo;
   readonly overlay = signal<ProcesoMensualOverlay>({ kind: 'cerrado' });
   private informacionPeriodoSuprimida = false;
 
@@ -185,6 +214,93 @@ export class ProcesoMensualPresentacionFacade {
   readonly detalleRevisionFooterAccion = computed(() =>
     buildDetalleRevisionFooterAccion(this.detalleOperativoTabActivo()),
   );
+  readonly incidenciasPeriodo = computed(() => {
+    const estado = this.estadoOperativo();
+    const resultado = this.resultadoPreliminar();
+    const expediente = this.expedienteNominaPeriodo();
+    return buildIncidenciasPeriodo({
+      bloqueosOperativos: estado.bloqueos,
+      advertenciasOperativas: estado.advertencias,
+      informacionesOperativas: estado.informaciones,
+      // Ya incluidos en estado.bloqueos / advertencias vía bloqueosCalculo y advertenciasCalculo.
+      resultadoBloqueos: [],
+      resultadoAdvertencias: [],
+      expedienteProblemas: expediente.problemas.map((problema) => ({
+        severidad: problema.severidad,
+        titulo: problema.titulo,
+        detalle: problema.detalle,
+        trabajador: problema.trabajador,
+      })),
+    });
+  });
+
+  private readonly accionesNominaPeriodoInput = computed(() => ({
+    tieneNominaGenerada: this.store.snapshotActivo() != null,
+    tieneNominaConfirmada: this.nominaEstaCerradaOperativamente(),
+    liquidacionesGeneradas: this.store.liquidacionesGeneradasCount(),
+    esAdmin: this.nominaCapabilities.esAdmin(),
+    modoPruebas: this.nominaCapabilities.modoPruebas(),
+  }));
+
+  readonly mostrarAccionesPeriodoNomina = computed(() =>
+    mostrarAccionesPeriodoNomina(this.accionesNominaPeriodoInput()),
+  );
+
+  readonly accionesNominaPeriodoNormales = computed(
+    () => buildAccionesNominaPeriodo(this.accionesNominaPeriodoInput()).normales,
+  );
+
+  readonly accionesNominaPeriodoAdmin = computed(
+    () => buildAccionesNominaPeriodo(this.accionesNominaPeriodoInput()).admin,
+  );
+
+  readonly detalleRevisionTabs = computed<DetalleRevisionTabMeta[]>(() => {
+    const workers = this.payrollWorkerDetailRows();
+    return buildDetalleRevisionTabsMeta({
+      tabs: DETALLE_OPERATIVO_TABS,
+      incidencias: this.incidenciasPeriodo(),
+      workerRowCount: workers.length,
+      movementRowCount: this.payrollMovementDetailRows().length,
+      recurrentRowCount: this.payrollRecurrentDetailRows().length,
+      resultRowCount: this.payrollResultDetailRows().length,
+      parametrosListos: this.dashboardResumen().parametrosListos,
+      tieneActividadPeriodo:
+        this.store.preNomina() != null
+        || this.store.calculo() != null
+        || this.store.snapshotActivo() != null,
+    });
+  });
+  readonly detalleRevisionTabActivoPanel = computed(() => {
+    const tab = this.detalleOperativoTabActivo();
+    const tabMeta = this.detalleRevisionTabs().find((item) => item.id === tab);
+    return buildDetalleRevisionTabPanel({
+      tab,
+      tabSeveridad: tabMeta?.severidad ?? 'neutral',
+      periodoEtiqueta: this.periodoActivo.etiqueta(),
+      estadoTitulo: this.estadoOperativo().titulo,
+      incidencias: this.incidenciasPeriodo(),
+      workerRowCount: this.payrollWorkerDetailRows().length,
+      movementRowCount: this.payrollMovementDetailRows().length,
+      recurrentRowCount: this.payrollRecurrentDetailRows().length,
+      resultRowCount: this.payrollResultDetailRows().length,
+      parametroItems: this.payrollParametroSeguimientoItems(),
+      resultadoSeguimientoItems: this.payrollResultadoSeguimientoItems(),
+      movementRows: this.payrollMovementDetailRows(),
+      recurrentRows: this.payrollRecurrentDetailRows(),
+    });
+  });
+  readonly expedienteRevisionCta = computed(() => {
+    const expediente = this.expedienteNominaPeriodo();
+    const principal = expediente.accionPrincipal;
+    return buildExpedienteRevisionCtaForTab(this.detalleOperativoTabActivo(), {
+      accion: principal?.accion,
+      label: principal?.label,
+      puedeConfirmarNomina: this.puedeCerrarNominaOperativa(),
+      motivoNoPuedeConfirmar: this.motivoNoPuedeCerrarNomina(),
+      liquidacionesDisponibles: this.store.liquidacionesGeneradasCount() > 0,
+      nominaConfirmada: this.nominaEstaCerradaOperativamente(),
+    });
+  });
   readonly expedienteNominaPeriodo = computed(() =>
     buildExpedienteNominaPeriodo({
       snapshotActivo: this.store.snapshotActivo(),
@@ -192,10 +308,13 @@ export class ProcesoMensualPresentacionFacade {
       consultandoSnapshotCompleto: this.consultandoSnapshotCompleto(),
       errorSnapshotCompleto: this.store.errorSnapshotCompleto(),
       nominaCerrada: this.nominaEstaCerradaOperativamente(),
-      liquidacionesDisponibles: this.estadoOperativo().estadoClave === 'liquidaciones_disponibles',
+      liquidacionesDisponibles: this.store.liquidacionesGeneradasCount() > 0,
     }),
   );
   readonly nominaWorkspaceTab = signal<NominaWorkspaceTab>('guia');
+  readonly nominaMasivaFiltro = signal<NominaMasivaFiltro>('todos');
+  readonly nominaMasivaBusqueda = signal('');
+  readonly nominaMasivaTrabajadorSeleccionadoId = signal<number | string | null>(null);
   readonly actaOperativaPreparada = signal(false);
 
   accionPeriodoEnCurso(): boolean {
@@ -218,7 +337,75 @@ export class ProcesoMensualPresentacionFacade {
     return payrollEtiquetaPendienteVisual(severidad);
   }
 
+  /** @deprecated Usar detalleRevisionTabs en el modal de revisión. */
   readonly detalleOperativoTabs = DETALLE_OPERATIVO_TABS;
+
+  claseDetalleRevisionTab(tab: DetalleRevisionTabMeta): string {
+    return claseDetalleRevisionTab(tab.severidad, this.detalleOperativoTabActivo() === tab.id);
+  }
+
+  claseFiltroNominaMasiva(filtro: NominaMasivaFiltro): string {
+    const base = 'payroll-mass-filter';
+    return this.nominaMasivaFiltro() === filtro ? `${base} payroll-mass-filter--active` : base;
+  }
+
+  etiquetaEstadoNominaMasiva(estado: NominaMasivaEstado): string {
+    switch (estado) {
+      case 'bloqueado':
+        return 'Bloqueado';
+      case 'observacion':
+        return 'Con observaciones';
+      case 'no_calculado':
+        return 'No calculado';
+      case 'listo':
+      default:
+        return 'Listo';
+    }
+  }
+
+  claseEstadoNominaMasiva(estado: NominaMasivaEstado): string {
+    switch (estado) {
+      case 'bloqueado':
+        return 'payroll-state-chip payroll-state-chip--danger';
+      case 'observacion':
+        return 'payroll-state-chip payroll-state-chip--warning';
+      case 'no_calculado':
+        return 'payroll-state-chip payroll-state-chip--info';
+      case 'listo':
+      default:
+        return 'payroll-state-chip payroll-state-chip--success';
+    }
+  }
+
+  etiquetaMontoNominaMasiva(valor: number | null): string {
+    return valor == null ? 'Monto no disponible' : this.formatoMonto(valor);
+  }
+
+  etiquetaPendientesNominaMasiva(cantidad: number): string {
+    if (cantidad <= 0) return 'Sin pendientes';
+    if (cantidad === 1) return '1 pendiente';
+    return `${cantidad} pendientes`;
+  }
+
+  ejecutarExpedienteAccionPrincipal(): void {
+    const cta = this.expedienteRevisionCta();
+    switch (cta.kind) {
+      case 'tab':
+        this.seleccionarDetalleOperativoTab(cta.tab);
+        break;
+      case 'confirmar_nomina':
+        if (cta.disabled) return;
+        this.cerrarNominaOperativa();
+        break;
+      case 'navegar':
+        if (cta.disabled) return;
+        this.cerrarOverlay();
+        void this.router.navigateByUrl(cta.ruta);
+        break;
+      case 'none':
+        break;
+    }
+  }
   readonly payrollWorkerDetailColumns = PAYROLL_WORKER_DETAIL_COLUMNS;
   readonly payrollWorkerDetailFilters = PAYROLL_WORKER_DETAIL_FILTERS;
   readonly payrollMovementDetailColumns = PAYROLL_MOVEMENT_DETAIL_COLUMNS;
@@ -229,6 +416,17 @@ export class ProcesoMensualPresentacionFacade {
   readonly payrollObservationDetailFilters = PAYROLL_OBSERVATION_DETAIL_FILTERS;
   readonly payrollResultDetailColumns = PAYROLL_RESULT_DETAIL_COLUMNS;
   readonly payrollResultDetailFilters = PAYROLL_RESULT_DETAIL_FILTERS;
+  readonly nominaMasivaPageSizeOptions = [25, 50, 100];
+  readonly nominaMasivaTrabajadoresColumns: DataGridColumn<NominaMasivaFila>[] = [
+    { id: 'trabajador', header: 'Trabajador', field: 'trabajador', sortable: true, priorityResponsive: 'primary', minWidth: '170px' },
+    { id: 'rut', header: 'RUT', field: 'rut', sortable: true, priorityResponsive: 'secondary', minWidth: '110px' },
+    { id: 'estado', header: 'Estado', field: 'estado', sortable: true, format: (_value, row) => this.etiquetaEstadoNominaMasiva(row.estado) },
+    { id: 'haberes', header: 'Haberes', field: 'haberes', align: 'right', format: (_value, row) => this.etiquetaMontoNominaMasiva(row.haberes) },
+    { id: 'descuentos', header: 'Descuentos', field: 'descuentos', align: 'right', format: (_value, row) => this.etiquetaMontoNominaMasiva(row.descuentos) },
+    { id: 'liquidoEstimado', header: 'Liquido estimado', field: 'liquidoEstimado', align: 'right', format: (_value, row) => this.etiquetaMontoNominaMasiva(row.liquidoEstimado) },
+    { id: 'pendientes', header: 'Pendientes', field: 'pendientes', align: 'center', format: (_value, row) => this.etiquetaPendientesNominaMasiva(row.pendientes) },
+    { id: 'accion', header: 'Accion', align: 'center', sortable: false, filterable: false, hideable: false },
+  ];
 
   readonly baseNominaTrazabilidad = computed(() => this.store.preNomina()?.trazabilidad ?? null);
 
@@ -380,7 +578,7 @@ export class ProcesoMensualPresentacionFacade {
       resultadoGuardado: contexto.resultadoGuardado,
       aprobadoOperativamente: this.store.aprobacionOperativa() != null,
       cerradoOperativamente: this.nominaEstaCerradaOperativamente(),
-      liquidacionesDisponibles: false,
+      liquidacionesDisponibles: this.store.liquidacionesGeneradasCount() > 0,
       puedeGenerarBase: this.puedeGenerarPreNomina(),
       puedeCalcular: this.puedeCalcularPreliminar(),
       puedeGuardarResultado: resultado.acciones.puedeGuardarPreliminar,
@@ -618,26 +816,16 @@ export class ProcesoMensualPresentacionFacade {
     }),
   );
 
-  readonly payrollObservationDetailRows = computed<PayrollObservationDetailRow[]>(() => {
-    const estado = this.estadoOperativo();
-    return buildPayrollObservationDetailRows({
-      bloqueosOperativos: estado.bloqueos,
-      advertenciasOperativas: estado.advertencias,
-      informacionesOperativas: estado.informaciones,
-      resultadoBloqueos: this.resultadoPreliminar().bloqueos,
-      resultadoAdvertencias: this.resultadoPreliminar().advertencias,
-    });
-  });
+  readonly payrollObservationDetailRows = computed<PayrollObservationDetailRow[]>(() =>
+    buildPayrollObservationDetailRows({ incidencias: this.incidenciasPeriodo().todas }),
+  );
 
-  readonly payrollParametroSeguimientoItems = computed<PayrollSeguimientoItem[]>(() => {
-    const estado = this.estadoOperativo();
-    return buildPayrollParametroSeguimientoItems({
-      bloqueos: estado.bloqueos,
-      advertencias: estado.advertencias,
-      informaciones: estado.informaciones,
+  readonly payrollParametroSeguimientoItems = computed<PayrollSeguimientoItem[]>(() =>
+    buildPayrollParametroSeguimientoItems({
       parametrosListos: this.dashboardResumen().parametrosListos,
-    });
-  });
+      tieneIncidenciasParametros: this.incidenciasPeriodo().porAmbito.parametros.length > 0,
+    }),
+  );
 
   readonly payrollMovimientoRecurrenteSeguimientoItems = computed<PayrollSeguimientoItem[]>(() =>
     buildPayrollMovimientoRecurrenteSeguimientoItems(
@@ -656,6 +844,49 @@ export class ProcesoMensualPresentacionFacade {
   readonly payrollResultDetailRows = computed<PayrollResultDetailRow[]>(() =>
     buildPayrollResultDetailRows(this.resultadoPreliminar()),
   );
+
+  private readonly nominaMasivaInput = computed(() => ({
+    resultadoTrabajadores: this.resultadoPreliminar().trabajadores,
+    expedienteTrabajadores: this.expedienteNominaPeriodo().trabajadores,
+    baseTrabajadores: this.baseNominaTrazabilidad()?.trabajadores ?? [],
+    movementRows: this.payrollMovementDetailRows(),
+    recurrentRows: this.payrollRecurrentDetailRows(),
+    incidencias: this.incidenciasPeriodo().todas,
+  }));
+
+  readonly nominaMasivaResumen = computed(() =>
+    buildResumenMasivoNomina(this.nominaMasivaInput()),
+  );
+
+  readonly nominaMasivaFilas = computed<NominaMasivaFila[]>(() =>
+    buildFilasMasivasTrabajadores(this.nominaMasivaInput()),
+  );
+
+  readonly nominaMasivaFilasFiltradas = computed<NominaMasivaFila[]>(() =>
+    filtrarFilasMasivasTrabajadores(
+      this.nominaMasivaFilas(),
+      this.nominaMasivaFiltro(),
+      this.nominaMasivaBusqueda(),
+    ),
+  );
+
+  readonly nominaMasivaDetalleSeleccionado = computed(() =>
+    buildDetalleMasivoTrabajador({
+      ...this.nominaMasivaInput(),
+      idPersona: this.nominaMasivaTrabajadorSeleccionadoId(),
+    }),
+  );
+
+  private readonly syncNominaMasivaSeleccion = effect(() => {
+    const seleccionado = this.nominaMasivaTrabajadorSeleccionadoId();
+    if (seleccionado == null) return;
+    const visible = this.nominaMasivaFilasFiltradas().some(
+      (fila) => String(fila.idPersona) === String(seleccionado),
+    );
+    if (!visible) {
+      untracked(() => this.nominaMasivaTrabajadorSeleccionadoId.set(null));
+    }
+  });
 
   mostrarDetalleOperativo(etapa: EtapaOperativaActiva): boolean {
     const estado = this.estadoOperativo().estadoClave;
@@ -818,6 +1049,86 @@ export class ProcesoMensualPresentacionFacade {
     const tab = mapDestinoToDetalleTab(destino);
     if (tab) {
       this.abrirDetalleOperativo(tab);
+    }
+  }
+
+  solicitarAbrirNomina(): void {
+    this.abrirOverlayDecision({
+      tipo: 'abrir_nomina',
+      titulo: 'Abrir nómina del período',
+      mensaje: 'La nómina volverá a revisión. Podrá corregir datos antes de volver a confirmarla.',
+      detalle: 'Esta acción no elimina liquidaciones ni modifica movimientos ya registrados.',
+      puntos: [
+        'La confirmación operativa quedará revertida para este período.',
+        'Podrá revisar trabajadores, parámetros y resultado antes de confirmar de nuevo.',
+      ],
+      primaryLabel: 'Abrir nómina',
+      secondaryLabel: 'Mantener confirmada',
+    });
+  }
+
+  solicitarDescartarNomina(): void {
+    this.abrirOverlayDecision({
+      tipo: 'descartar_nomina',
+      titulo: 'Descartar nómina generada',
+      mensaje:
+        'Se eliminará la versión generada del período. Esta acción solo está permitida porque no existen liquidaciones generadas.',
+      detalle: 'El período volverá al estado previo a guardar la versión revisable.',
+      puntos: [
+        'No se generan liquidaciones ni archivos legales con esta acción.',
+        'Si necesita conservar evidencia, exporte o revise el detalle antes de continuar.',
+      ],
+      primaryLabel: 'Descartar nómina',
+      secondaryLabel: 'Conservar nómina',
+    });
+  }
+
+  solicitarForzarApertura(): void {
+    this.abrirOverlayDecision({
+      tipo: 'forzar_apertura',
+      titulo: 'Forzar apertura de nómina',
+      mensaje:
+        'Esta es una acción administrativa para pruebas. Puede dejar la nómina en revisión aunque existan liquidaciones generadas.',
+      detalle: 'No sustituye el flujo productivo de reversa de liquidaciones.',
+      puntos: [
+        'Queda registrada en la trazabilidad del período.',
+        'Use solo en ambiente de pruebas con rol administrador.',
+      ],
+      primaryLabel: 'Forzar apertura',
+      secondaryLabel: 'Cancelar',
+    });
+  }
+
+  solicitarForzarEliminacion(): void {
+    this.abrirOverlayDecision({
+      tipo: 'forzar_eliminacion',
+      titulo: 'Forzar eliminación de nómina',
+      mensaje:
+        'Esta es una acción administrativa para pruebas. Puede dejar el período sin nómina generada aunque existan datos relacionados.',
+      detalle: 'No sustituye el flujo productivo de anulación de liquidaciones.',
+      puntos: [
+        'La versión activa del período quedará anulada.',
+        'Use solo en ambiente de pruebas con rol administrador.',
+      ],
+      primaryLabel: 'Forzar eliminación',
+      secondaryLabel: 'Cancelar',
+    });
+  }
+
+  ejecutarAccionNominaPeriodo(id: AccionNominaPeriodoId): void {
+    switch (id) {
+      case 'abrir_nomina':
+        this.solicitarAbrirNomina();
+        break;
+      case 'descartar_nomina':
+        this.solicitarDescartarNomina();
+        break;
+      case 'forzar_apertura':
+        this.solicitarForzarApertura();
+        break;
+      case 'forzar_eliminacion':
+        this.solicitarForzarEliminacion();
+        break;
     }
   }
 
@@ -991,6 +1302,34 @@ export class ProcesoMensualPresentacionFacade {
     }
   }
 
+  seleccionarFiltroNominaMasiva(filtro: NominaMasivaFiltro): void {
+    this.nominaMasivaFiltro.set(filtro);
+    const seleccionado = this.nominaMasivaTrabajadorSeleccionadoId();
+    if (
+      seleccionado != null
+      && !filtrarFilasMasivasTrabajadores(this.nominaMasivaFilas(), filtro, this.nominaMasivaBusqueda())
+        .some((fila) => String(fila.idPersona) === String(seleccionado))
+    ) {
+      this.nominaMasivaTrabajadorSeleccionadoId.set(null);
+    }
+  }
+
+  actualizarBusquedaNominaMasiva(valor: string): void {
+    this.nominaMasivaBusqueda.set(valor);
+    const seleccionado = this.nominaMasivaTrabajadorSeleccionadoId();
+    if (
+      seleccionado != null
+      && !filtrarFilasMasivasTrabajadores(this.nominaMasivaFilas(), this.nominaMasivaFiltro(), valor)
+        .some((fila) => String(fila.idPersona) === String(seleccionado))
+    ) {
+      this.nominaMasivaTrabajadorSeleccionadoId.set(null);
+    }
+  }
+
+  seleccionarTrabajadorNominaMasiva(idPersona: number | string): void {
+    this.nominaMasivaTrabajadorSeleccionadoId.set(idPersona);
+  }
+
   @HostListener('document:keydown.escape')
   cerrarModalesConEscape(): void {
     if (this.overlay().kind !== 'cerrado') {
@@ -1152,6 +1491,25 @@ export class ProcesoMensualPresentacionFacade {
         break;
       case 'preparar_acta':
         this.actaOperativaPreparada.set(true);
+        break;
+      case 'abrir_nomina':
+        this.store.ejecutarAbrirNomina({
+          observacion: 'Apertura solicitada desde el workspace del período.',
+        });
+        break;
+      case 'descartar_nomina':
+        this.store.ejecutarDescartarNomina('Descartada por usuario desde el workspace del período.');
+        break;
+      case 'forzar_apertura':
+        this.store.ejecutarAbrirNomina({
+          observacion: 'Forzar apertura administrativa de prueba.',
+          forzar: true,
+        });
+        break;
+      case 'forzar_eliminacion':
+        this.store.ejecutarDescartarNomina(
+          'Forzar eliminación administrativa de prueba desde el workspace del período.',
+        );
         break;
     }
   }

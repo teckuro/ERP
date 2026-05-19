@@ -2,6 +2,7 @@ import type {
   BaseNominaTrabajadorEstado,
   NominaCalculoPeriodoSnapshot,
 } from '../../../models/proceso-mensual.model';
+import { limpiarCopyTecnicoNomina } from '../../../rules/proceso-mensual-copy-limpio.rules';
 import type { ProcesoMensualEstadoSeveridad } from '../../../rules/proceso-mensual-estado-operativo.rules';
 
 export function claseChipRevision(estado: string): string {
@@ -114,12 +115,6 @@ export function etiquetaEstadoSnapshot(estado: NominaCalculoPeriodoSnapshot['est
 }
 
 export function humanizarCopyOperativo(texto: string): string {
-  const limpio = texto
-    .replace(/\bFALTANTE\b/gi, '')
-    .replace(/\bis_null\b/gi, '')
-    .replace(/sis_fila_mensual/gi, '')
-    .replace(/\b(rpc_|tbl_|sis_)[a-z0-9_]+\b/gi, '')
-    .replace(/\s{2,}/g, ' ')
-    .trim();
+  const limpio = limpiarCopyTecnicoNomina(texto);
   return limpio || 'Revisar antes de continuar.';
 }

@@ -6,6 +6,7 @@ import type {
   AprobacionOperativaPersistida,
   AprobarResultadoPreliminarOperativamenteParams,
   CerrarNominaOperativamenteParams,
+  ReabrirNominaOperativamenteParams,
   NominaCalculoConceptoSnapshot,
   NominaCalculoIssueSnapshot,
   NominaCalculoPeriodoSnapshot,
@@ -210,6 +211,24 @@ export class NominaCalculoSnapshotRepository {
       .single();
     if (error) throw new Error(`No se pudo registrar la aprobacion operativa: ${error.message}`);
     return mapPeriodoRow(data);
+  }
+
+  async reabrirNominaOperativa(
+    params: ReabrirNominaOperativamenteParams & {
+      metadata?: Record<string, unknown>;
+    },
+  ): Promise<NominaCalculoPeriodoSnapshot> {
+    const { data, error } = await this.supabase.rpc('reabrir_nomina_operativa', {
+      p_id_calculo_periodo: params.idCalculoPeriodo,
+      p_periodo: params.periodo,
+      p_observacion: params.observacion ?? undefined,
+      p_metadata: (params.metadata ?? {}) as Json,
+      p_forzar: params.forzar ?? false,
+    });
+    if (error || !data) {
+      throw new Error('No se pudo reabrir operativamente la nomina. No se realizaron cambios parciales.');
+    }
+    return mapPeriodoRow(data as NominaCalculoPeriodoRow);
   }
 
   async cerrarNominaOperativa(params: CerrarNominaOperativamenteParams & {
