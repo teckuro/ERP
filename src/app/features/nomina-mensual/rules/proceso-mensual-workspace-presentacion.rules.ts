@@ -110,33 +110,6 @@ export interface NominaWorkspaceTabMeta {
   indicador: string | null;
 }
 
-export interface NominaExceptionStripVm {
-  visible: boolean;
-  criticas: number;
-  advertencias: number;
-}
-
-export function resolveExceptionStripVisible(
-  alertas: AlertasPeriodoResumenVm,
-  workspaceTab: NominaWorkspaceTab,
-): boolean {
-  if (workspaceTab === 'resumen') {
-    return false;
-  }
-  return alertas.modo === 'alertas' && alertas.mostrarDetalle;
-}
-
-export function buildNominaExceptionStrip(
-  alertas: AlertasPeriodoResumenVm,
-  workspaceTab: NominaWorkspaceTab,
-): NominaExceptionStripVm {
-  return {
-    visible: resolveExceptionStripVisible(alertas, workspaceTab),
-    criticas: alertas.criticas,
-    advertencias: alertas.advertencias,
-  };
-}
-
 /** Alias del patrón operativo compartido con el modal de revisión. */
 export function claseNominaWorkspaceTab(severidad: DetalleRevisionTabSeveridad, activo: boolean): string {
   return claseDetalleRevisionTab(severidad, activo);

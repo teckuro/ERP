@@ -1,10 +1,19 @@
-﻿## NOM-WORKSPACE-LOC-MAQUETACION-01 - Maquetación consola LOC
+﻿## NOM-FLOW-REVISION-01 - Revisión flujo RRHH (sidebar + verificar/generar)
+
+| Campo | Estado |
+|---|---|
+| Estado | Implementada |
+| Tipo | Rules + store + BD diagnóstico + docs |
+| Alcance | CTAs Verificar/Generar; bitácora RRHH; persistencia prevalidación; sidebar + 6 tabs documentados; cleanup exception strip. |
+| Documento | [`../modulos/nomina-mensual/nom-workspace-loc-maquetacion-01.md`](../modulos/nomina-mensual/nom-workspace-loc-maquetacion-01.md), [`../modulos/nomina-mensual/nom-periodo-diagnostico-persist-01.md`](../modulos/nomina-mensual/nom-periodo-diagnostico-persist-01.md) |
+
+## NOM-WORKSPACE-LOC-MAQUETACION-01 - Maquetación consola (sidebar + 6 tabs)
 
 | Campo | Estado |
 |---|---|
 | Estado | Implementada |
 | Tipo | UI local (HTML/CSS/rules) |
-| Alcance | Orden áreas, capas LOC, tab Resumen, paridad paneles/modal, Figma §6–7 |
+| Alcance | Sidebar operativo + 6 tabs panel; orden áreas; paridad paneles/modal; Figma §0 |
 | Documento | [`../modulos/nomina-mensual/nom-workspace-loc-maquetacion-01.md`](../modulos/nomina-mensual/nom-workspace-loc-maquetacion-01.md) |
 
 ## NOM-PERIODO-VERIFICAR-MODAL-02 - Modal tras verificar período
@@ -22,11 +31,10 @@
 
 | Campo | Estado |
 |---|---|
-| Estado | Documentada (implementación BD pendiente) |
-| Tipo | Producto + persistencia + UX modal paso 1 |
-| Alcance | Tabla/RPC `nomina_periodo_diagnostico`, rehidratación sin localStorage, modal tras verificar. |
-| Precede | NOM-PREVALIDACION-PARAMETROS-CTA-01 (implementada) |
-| Siguiente | Autorización `bd/` → SQL + repository + store |
+| Estado | Implementada |
+| Tipo | Producto + persistencia + store |
+| Alcance | `27_nomina_periodo_diagnostico.sql`, repository, rehidratación en `rehidratarPeriodoActivo`, guardar tras `validarPeriodo`. |
+| Precede | NOM-PERIODO-VERIFICAR-MODAL-02 |
 | Documento | [`../modulos/nomina-mensual/nom-periodo-diagnostico-persist-01.md`](../modulos/nomina-mensual/nom-periodo-diagnostico-persist-01.md) |
 
 ## NOM-PREVALIDACION-PARAMETROS-CTA-01 - CTA parámetros alineada a prevalidación

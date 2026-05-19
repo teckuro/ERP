@@ -152,7 +152,7 @@ export function buildNominaGuiaPanelCopy(frame: NominaVisualFrame, periodoEtique
     variant: 'antes_generar',
     titulo: 'Antes de generar',
     parrafo:
-      'Primero genera la nómina mensual del período. Después podrás revisar trabajador por trabajador antes de confirmar.',
+      'Primero verifica el período y luego genera la nómina mensual. Después podrás revisar trabajador por trabajador antes de confirmar.',
     items: [
       'Trabajadores habilitados para el período.',
       'Parámetros mensuales.',
@@ -264,7 +264,7 @@ export function buildNominaFrameView(input: BuildNominaFrameViewInput): NominaVi
       return base({
         chip: 'Sin generar',
         titulo: `Todavía no existe una nómina mensual para ${periodoEtiqueta}.`,
-        texto: 'Genera la nómina del período para revisar trabajadores, parámetros, movimientos y recurrentes antes de confirmar.',
+        texto: 'Verifica el período y genera la nómina para revisar trabajadores, parámetros, movimientos y recurrentes antes de confirmar.',
         info:
           advertenciasCount > 0
             ? `El período tiene ${advertenciasCount} advertencia${advertenciasCount === 1 ? '' : 's'} revisable${advertenciasCount === 1 ? '' : 's'} antes de generar.`
@@ -292,7 +292,7 @@ export function buildAlertasPeriodoResumen(input: {
   if (!input.tieneResultado) {
     return {
       modo: 'sin-evaluar',
-      mensaje: 'Genera la nómina mensual para ver trabajadores que requieren revisión.',
+      mensaje: 'Verifica el período o genera la nómina para ver trabajadores que requieren revisión.',
       criticas: 0,
       advertencias: 0,
       mostrarDetalle: false,
@@ -346,20 +346,20 @@ export function buildBitacoraEtapas(input: BitacoraEtapasInput): BitacoraEtapaVm
   const calculoBloqueada = estado.estadoClave === 'resultado_con_bloqueos';
 
   const resumenValidar = (): string => {
-    if (validado && etapaActiva !== 'validar') return 'Período revisado';
-    if (etapaActiva === 'validar') return validado ? 'Período revisado' : 'Generación de nómina en curso';
-    return 'Sin generar';
+    if (validado && etapaActiva !== 'validar') return 'Período verificado';
+    if (etapaActiva === 'validar') return validado ? 'Período verificado' : 'Verificación en curso';
+    return 'Sin verificar';
   };
 
   const resumenBase = (): string => {
     if (baseLista) return 'Borrador generado';
     if (etapaActiva === 'base') return 'Generar nómina mensual';
-    return validado ? 'Pendiente de nómina' : 'Requiere revisión previa';
+    return validado ? 'Pendiente de generar' : 'Requiere verificación previa';
   };
 
   const resumenCalculo = (): string => {
     if (calculoBloqueada) return bloqueos === 1 ? '1 bloqueo por resolver' : `${bloqueos} bloqueos por resolver`;
-    if (guardado && !etapaCalculoActiva) return 'Versión guardada para revisión';
+    if (guardado && !etapaCalculoActiva) return 'Lista para confirmar';
     if (advertencias && (calculoListo || etapaCalculoActiva)) {
       return advertencias === 1 ? '1 advertencia revisable' : `${advertencias} advertencias revisables`;
     }
@@ -373,7 +373,7 @@ export function buildBitacoraEtapas(input: BitacoraEtapasInput): BitacoraEtapaVm
     if (aprobado) return 'Lista para confirmar';
     if (guardado) return 'Pendiente de confirmación';
     if (etapaActiva === 'aprobar_cerrar') return 'Confirmación en curso';
-    return 'Pendiente de versión guardada';
+    return 'Pendiente de revisión completa';
   };
 
   const resumenLiquidaciones = (): string => {
@@ -386,17 +386,15 @@ export function buildBitacoraEtapas(input: BitacoraEtapasInput): BitacoraEtapaVm
   const subpasosValidar = (): BitacoraSubpasoVm[] => {
     if (etapaActiva !== 'validar') return [];
     return [
-      { marca: marca(validado, !validado), etiqueta: 'Generar nómina' },
-      { marca: 'pendiente', etiqueta: 'Revisar trabajadores' },
-      { marca: 'pendiente', etiqueta: 'Revisar parámetros' },
-      { marca: 'pendiente', etiqueta: 'Movimientos y recurrentes' },
+      { marca: marca(validado, !validado), etiqueta: 'Verificar período' },
+      { marca: marca(false, validado && !baseLista), etiqueta: 'Generar nómina' },
     ];
   };
 
   const subpasosBase = (): BitacoraSubpasoVm[] => {
     if (etapaActiva !== 'base') return [];
     return [
-      { marca: marca(baseLista, !baseLista), etiqueta: 'Armar borrador' },
+      { marca: marca(baseLista, !baseLista), etiqueta: 'Generar borrador' },
       { marca: marca(false, baseLista), etiqueta: 'Revisar trabajadores' },
     ];
   };
@@ -405,12 +403,11 @@ export function buildBitacoraEtapas(input: BitacoraEtapasInput): BitacoraEtapaVm
     if (!etapaCalculoActiva) return [];
     return [
       { marca: marca(calculoListo, !calculoListo), etiqueta: 'Revisar trabajadores' },
-      { marca: marca(guardado, calculoListo && !guardado), etiqueta: 'Revisar totales' },
       {
         marca: !advertencias ? 'hecho' : calculoListo ? 'actual' : 'pendiente',
         etiqueta: 'Resolver advertencias',
       },
-      { marca: marca(guardado, calculoListo && !guardado && !advertencias), etiqueta: 'Guardar versión para revisión' },
+      { marca: marca(guardado, calculoListo && !guardado), etiqueta: 'Confirmar nómina' },
     ];
   };
 
@@ -433,7 +430,7 @@ export function buildBitacoraEtapas(input: BitacoraEtapasInput): BitacoraEtapaVm
   return [
     {
       clave: 'validar',
-      etiqueta: 'Generar nómina',
+      etiqueta: 'Verificar período',
       resumen: resumenValidar(),
       activa: etapaActiva === 'validar',
       completada: validado && etapaActiva !== 'validar',
@@ -442,7 +439,7 @@ export function buildBitacoraEtapas(input: BitacoraEtapasInput): BitacoraEtapaVm
     },
     {
       clave: 'base',
-      etiqueta: 'Revisar trabajadores',
+      etiqueta: 'Generar nómina',
       resumen: resumenBase(),
       activa: etapaActiva === 'base',
       completada: baseLista && etapaActiva !== 'validar' && etapaActiva !== 'base',
@@ -451,7 +448,7 @@ export function buildBitacoraEtapas(input: BitacoraEtapasInput): BitacoraEtapaVm
     },
     {
       clave: 'calculo',
-      etiqueta: 'Resolver pendientes',
+      etiqueta: 'Revisar trabajadores',
       resumen: resumenCalculo(),
       activa: etapaCalculoActiva,
       completada: guardado && !etapaCalculoActiva,

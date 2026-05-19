@@ -10,7 +10,12 @@ describe('ProcesoMensualPeriodoStore rehidratacion', () => {
 
   beforeEach(() => {
     rehidratarPeriodo.mockReset();
-    rehidratarPeriodo.mockResolvedValue({ snapshot: null, completo: null, liquidacionesGeneradas: 0 });
+    rehidratarPeriodo.mockResolvedValue({
+      snapshot: null,
+      completo: null,
+      liquidacionesGeneradas: 0,
+      prevalidacionDiagnostico: null,
+    });
 
     TestBed.configureTestingModule({
       providers: [
@@ -62,8 +67,8 @@ describe('ProcesoMensualPeriodoStore rehidratacion', () => {
 
     rehidratarPeriodo.mockImplementation(async (periodo: string) =>
       periodo === '2026-05'
-        ? { snapshot, completo: null, liquidacionesGeneradas: 0 }
-        : { snapshot: null, completo: null, liquidacionesGeneradas: 0 },
+        ? { snapshot, completo: null, liquidacionesGeneradas: 0, prevalidacionDiagnostico: null }
+        : { snapshot: null, completo: null, liquidacionesGeneradas: 0, prevalidacionDiagnostico: null },
     );
     store.rehidratarPeriodoActivo('2026-05');
     await vi.waitFor(() => expect(store.snapshotActivo()?.hashSnapshot).toBe('hash-9'));
@@ -76,12 +81,56 @@ describe('ProcesoMensualPeriodoStore rehidratacion', () => {
     TestBed.inject(PeriodoActivoService).setPeriodoYm('2026-06');
     const store = await storeTrasHidratacionInicial();
 
-    rehidratarPeriodo.mockResolvedValueOnce({ snapshot: null, completo: null, liquidacionesGeneradas: 0 });
+    rehidratarPeriodo.mockResolvedValueOnce({
+      snapshot: null,
+      completo: null,
+      liquidacionesGeneradas: 0,
+      prevalidacionDiagnostico: null,
+    });
     store.rehidratarPeriodoActivo('2026-06');
     await vi.waitFor(() => expect(store.rehidratandoPeriodo()).toBe(false));
 
     expect(store.snapshotActivo()).toBeNull();
     expect(store.resultado()).toBeNull();
+  });
+
+  it('sin snapshot rehidrata prevalidacion persistida', async () => {
+    const store = await storeTrasHidratacionInicial();
+    const prevalidacion = {
+      periodo: '2026-05',
+      estado: 'LISTO',
+      resumen: {
+        periodo: '2026-05',
+        hayBloqueos: false,
+        hayAdvertencias: false,
+        conteoMovimientosPorEstado: {},
+        trabajadoresActivosAptos: 1,
+        trabajadoresActivosNoAptos: 0,
+        parametrosOperativos: true,
+        parametrosGrupos: [],
+        recurrentesAplicablesAlPeriodo: 0,
+        recurrentesInvalidas: 0,
+        recurrentesCerradas: 0,
+        recurrentesFueraDelMes: 0,
+      },
+      bloqueos: [],
+      advertencias: [],
+      informaciones: [],
+      items: [],
+    };
+
+    rehidratarPeriodo.mockReset();
+    rehidratarPeriodo.mockImplementation(async (periodo: string) => ({
+      snapshot: null,
+      completo: null,
+      liquidacionesGeneradas: 0,
+      prevalidacionDiagnostico: periodo === '2026-05' ? prevalidacion : null,
+    }));
+    store.rehidratarPeriodoActivo('2026-05');
+    await vi.waitFor(() => expect(store.resultado()?.periodo).toBe('2026-05'));
+
+    expect(store.snapshotActivo()).toBeNull();
+    expect(store.preNomina()).toBeNull();
   });
 
   it('respuesta de período distinto no aplica snapshot', async () => {
@@ -95,7 +144,12 @@ describe('ProcesoMensualPeriodoStore rehidratacion', () => {
           resolveLate = resolve;
         });
       }
-      return Promise.resolve({ snapshot: null, completo: null, liquidacionesGeneradas: 0 });
+      return Promise.resolve({
+        snapshot: null,
+        completo: null,
+        liquidacionesGeneradas: 0,
+        prevalidacionDiagnostico: null,
+      });
     });
 
     store.rehidratarPeriodoActivo('2026-05');

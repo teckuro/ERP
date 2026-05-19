@@ -4,16 +4,34 @@ import { provideRouter } from '@angular/router';
 import { LucideAngularModule } from 'lucide-angular';
 import {
   AlertCircle,
+  ArrowDownUp,
+  BadgeDollarSign,
   Calculator,
+  Calendar,
+  CalendarCheck,
   Check,
   CheckCircle,
   ChevronRight,
-  Home,
+  CircleAlert,
+  FileCheck,
+  FileCheck2,
+  FileClock,
   FileSpreadsheet,
   FileText,
+  History,
+  Home,
   Info,
+  ListChecks,
   Lock,
+  Receipt,
+  Repeat,
+  RefreshCw,
+  ShieldCheck,
+  Sliders,
   Upload,
+  UserCheck,
+  Users,
+  UserX,
 } from 'lucide-angular/src/icons';
 import { vi } from 'vitest';
 
@@ -191,12 +209,13 @@ describe('ProcesoMensualDetalleModalComponent', () => {
     rehidratarPeriodo.mockImplementation(async (periodo: string) => {
       const snapshot = await obtenerSnapshotActivo(periodo);
       if (!snapshot) {
-        return { snapshot: null, completo: null, liquidacionesGeneradas: 0 };
+        return { snapshot: null, completo: null, liquidacionesGeneradas: 0, prevalidacionDiagnostico: null };
       }
       return {
         snapshot,
         completo: await obtenerSnapshotCompletoActivo(periodo),
         liquidacionesGeneradas: 0,
+        prevalidacionDiagnostico: null,
       };
     });
     obtenerSnapshotActivo.mockResolvedValue(null);
@@ -229,16 +248,34 @@ describe('ProcesoMensualDetalleModalComponent', () => {
         importProvidersFrom(
           LucideAngularModule.pick({
             AlertCircle,
+            ArrowDownUp,
+            BadgeDollarSign,
             Calculator,
+            Calendar,
+            CalendarCheck,
             Check,
             CheckCircle,
             ChevronRight,
-            Home,
+            CircleAlert,
+            FileCheck,
+            FileCheck2,
+            FileClock,
             FileSpreadsheet,
             FileText,
+            History,
+            Home,
             Info,
+            ListChecks,
             Lock,
+            Receipt,
+            Repeat,
+            RefreshCw,
+            ShieldCheck,
+            Sliders,
             Upload,
+            UserCheck,
+            Users,
+            UserX,
           }),
         ),
       ],

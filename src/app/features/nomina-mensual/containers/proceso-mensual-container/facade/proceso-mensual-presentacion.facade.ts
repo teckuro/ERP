@@ -101,7 +101,6 @@ import {
   suggestNominaWorkspaceTab,
 } from '../../../rules/proceso-mensual-workspace.rules';
 import {
-  buildNominaExceptionStrip,
   buildNominaWorkspaceDetailItems,
   buildNominaWorkspaceTabSummaries,
   buildNominaWorkspaceTabsMeta,
@@ -849,10 +848,6 @@ export class ProcesoMensualPresentacionFacade {
       advertenciasCount: estado.advertencias.length,
     });
   });
-
-  readonly nominaExceptionStrip = computed(() =>
-    buildNominaExceptionStrip(this.alertasPeriodoResumen(), this.nominaWorkspaceTab()),
-  );
 
   valorFranjaArea(area: NominaAreaOperativa): string {
     return valorFranjaArea(area, this.nominaResumenSuperior());

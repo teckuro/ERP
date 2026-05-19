@@ -38,6 +38,7 @@ import type {
 } from '../models/proceso-mensual.model';
 import { trabajadorSnapshotDesdeFicha } from '../models/proceso-mensual.model';
 import { NominaCalculoSnapshotRepository } from '../data-access/nomina-calculo-snapshot.repository';
+import { NominaPeriodoDiagnosticoRepository } from '../data-access/nomina-periodo-diagnostico.repository';
 import { generarCalculoPreliminarPeriodo } from '../rules/proceso-mensual-motor.rules';
 import {
   buildGuardarSnapshotRechazado,
@@ -60,6 +61,7 @@ export class ProcesoMensualService {
   private readonly haberesDescuentos = inject(HaberesDescuentosService);
   private readonly entradasMensuales = inject(EntradasMensualesPeriodoService);
   private readonly snapshots = inject(NominaCalculoSnapshotRepository);
+  private readonly diagnosticoPeriodo = inject(NominaPeriodoDiagnosticoRepository);
   private readonly liquidaciones = inject(LiquidacionesOficialesRepository);
   private readonly calculosPorPeriodo = new Map<string, MotorCalculoPeriodoResultado>();
 
@@ -220,6 +222,7 @@ export class ProcesoMensualService {
     snapshot: NominaCalculoPeriodoSnapshot | null;
     completo: NominaSnapshotCompletoView | null;
     liquidacionesGeneradas: number;
+    prevalidacionDiagnostico: ProcesoMensualPrevalidacion | null;
   }> {
     const p = periodo.trim();
     const [snapshot, liquidacionesGeneradas] = await Promise.all([
@@ -227,10 +230,41 @@ export class ProcesoMensualService {
       this.contarLiquidacionesGeneradas(p),
     ]);
     if (!snapshot) {
-      return { snapshot: null, completo: null, liquidacionesGeneradas };
+      let prevalidacionDiagnostico: ProcesoMensualPrevalidacion | null = null;
+      try {
+        prevalidacionDiagnostico = await this.diagnosticoPeriodo.obtenerActivo(p);
+      } catch {
+        prevalidacionDiagnostico = null;
+      }
+      return { snapshot: null, completo: null, liquidacionesGeneradas, prevalidacionDiagnostico };
     }
     const completo = await this.obtenerSnapshotCompletoActivo(p);
-    return { snapshot, completo, liquidacionesGeneradas };
+    return { snapshot, completo, liquidacionesGeneradas, prevalidacionDiagnostico: null };
+  }
+
+  async guardarDiagnosticoPeriodo(
+    periodo: string,
+    prevalidacion: ProcesoMensualPrevalidacion,
+  ): Promise<void> {
+    const fingerprint = this.fingerprintPrevalidacion(prevalidacion);
+    await this.diagnosticoPeriodo.guardar(periodo, prevalidacion, fingerprint);
+  }
+
+  async cerrarDiagnosticoPeriodo(periodo: string, motivo: string): Promise<void> {
+    await this.diagnosticoPeriodo.cerrar(periodo, motivo);
+  }
+
+  private fingerprintPrevalidacion(prevalidacion: ProcesoMensualPrevalidacion): string {
+    const resumen = prevalidacion.resumen;
+    return [
+      prevalidacion.periodo,
+      prevalidacion.estado,
+      resumen.trabajadoresActivosAptos,
+      resumen.trabajadoresActivosNoAptos,
+      resumen.parametrosOperativos ? '1' : '0',
+      prevalidacion.bloqueos.length,
+      prevalidacion.advertencias.length,
+    ].join('|');
   }
 
   async contarLiquidacionesGeneradas(periodo: string): Promise<number> {

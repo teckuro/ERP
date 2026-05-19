@@ -204,7 +204,7 @@ export function resolverEstadoOperativoProcesoMensual(
         : 'La nómina mensual puede quedar como versión guardada para revisión antes de confirmarse.',
       severidad: conAdvertencias ? 'warning' : 'success',
       accionPrincipal: local(
-        conAdvertencias ? 'Revisar trabajadores' : 'Guardar versión para revisión',
+        conAdvertencias ? 'Revisar trabajadores' : 'Preparar confirmación',
         conAdvertencias
           ? 'Revisa advertencias por trabajador antes de confirmar.'
           : 'Deja esta versión guardada para revisión antes de confirmar la nómina.',
@@ -236,13 +236,13 @@ export function resolverEstadoOperativoProcesoMensual(
   if (!input.periodoValido || !input.tienePrevalidacion) {
     return buildEstado(input, {
       estadoClave: 'pendiente_validacion',
-      titulo: 'Sin generar',
-      descripcion: 'Todavía no existe una nómina mensual generada para el período activo.',
+      titulo: 'Sin verificar',
+      descripcion: 'Verifica trabajadores, parámetros, movimientos y recurrentes del período antes de generar la nómina.',
       severidad: 'neutral',
-      accionPrincipal: local('Generar nómina', 'Revisa trabajadores, parámetros, movimientos y recurrentes para generar la nómina mensual.', 'validarPeriodo', !input.periodoValido),
+      accionPrincipal: local('Verificar período', 'El sistema revisará el período y mostrará un resumen antes de generar la nómina.', 'validarPeriodo', !input.periodoValido),
       etapaActiva: 'validar',
       disclosureActivo: 'base',
-      queFaltaAhora: [info('GENERAR_NOMINA', 'Generar nómina', 'Genera la nómina mensual del período activo.')],
+      queFaltaAhora: [info('VERIFICAR_PERIODO', 'Verificar período', 'Revisa el período activo antes de generar la nómina mensual.')],
     });
   }
 
@@ -262,8 +262,8 @@ export function resolverEstadoOperativoProcesoMensual(
 
   return buildEstado(input, {
     estadoClave: 'listo_para_generar_base',
-    titulo: 'Sin generar',
-    descripcion: 'El período está revisado. Falta generar la nómina mensual.',
+    titulo: 'Período verificado',
+    descripcion: 'El período está verificado. Puedes generar la nómina mensual del período.',
     severidad: input.advertenciasPrevalidacion.length ? 'warning' : 'success',
     accionPrincipal: local('Generar nómina', 'Arma la nómina mensual con trabajadores, movimientos y asignaciones del período.', 'generarBase', !input.puedeGenerarBase),
     etapaActiva: 'base',
@@ -305,13 +305,13 @@ function construirTimeline(
   return [
     {
       numero: '1',
-      titulo: 'Generar nómina',
+      titulo: input.tienePrevalidacion && !input.baseGenerada ? 'Generar nómina' : 'Verificar período',
       estado: preparacionCompleta ? 'Completo' : preparacionActual ? 'Actual' : 'Pendiente',
       descripcion: preparacionCompleta
-        ? 'Nomina generada'
+        ? 'Nómina generada'
         : input.tienePrevalidacion && !input.baseGenerada
-          ? 'Lista para generar'
-          : 'Sin generar',
+          ? 'Período verificado'
+          : 'Sin verificar',
     },
     {
       numero: '2',

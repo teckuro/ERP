@@ -76,7 +76,7 @@ export class ProcesoMensualPeriodoStore {
     this.errorEjecucion.set(null);
     void this.procesoMensual
       .ejecutarPrevalidaciones(p)
-      .then((r) => {
+      .then(async (r) => {
         this.resultado.set(r);
         this.preNomina.set(null);
         this.calculo.set(null);
@@ -89,6 +89,11 @@ export class ProcesoMensualPeriodoStore {
         this.aprobacionOperativa.set(null);
         this.snapshotCompleto.set(null);
         this.errorSnapshotCompleto.set(null);
+        try {
+          await this.procesoMensual.guardarDiagnosticoPeriodo(p, r);
+        } catch {
+          // La verificación en memoria sigue disponible aunque falle la persistencia.
+        }
         return this.cargarSnapshotActivo(p);
       })
       .catch((e: unknown) => {
@@ -106,7 +111,7 @@ export class ProcesoMensualPeriodoStore {
     this.errorEjecucion.set(null);
     void this.procesoMensual
       .generarPreNominaPeriodo(p)
-      .then((r) => {
+      .then(async (r) => {
         this.preNomina.set(r);
         this.calculo.set(null);
         this.snapshotActivo.set(null);
@@ -118,6 +123,11 @@ export class ProcesoMensualPeriodoStore {
         this.aprobacionOperativa.set(null);
         this.snapshotCompleto.set(null);
         this.errorSnapshotCompleto.set(null);
+        try {
+          await this.procesoMensual.cerrarDiagnosticoPeriodo(p, 'borrador_generado');
+        } catch {
+          // El borrador en memoria no depende del cierre del diagnóstico.
+        }
         if (r.estado === 'GENERADA' && r.codigosBloqueo.length === 0 && r.codigosAdvertencia.length === 0) {
           void this.persistirBaseNominaBorrador(p, r, false).catch((e: unknown) => {
             this.errorGuardadoResultado.set(e instanceof Error ? e.message : String(e));
@@ -217,7 +227,7 @@ export class ProcesoMensualPeriodoStore {
 
     void this.procesoMensual
       .rehidratarPeriodo(periodo)
-      .then(({ snapshot, completo, liquidacionesGeneradas }) => {
+      .then(({ snapshot, completo, liquidacionesGeneradas, prevalidacionDiagnostico }) => {
         if (this.periodoSeleccionado() !== periodo) {
           return;
         }
@@ -231,6 +241,9 @@ export class ProcesoMensualPeriodoStore {
           this.snapshotCompleto.set(completo);
         } else {
           this.limpiarSenalesVolatiles();
+          if (prevalidacionDiagnostico) {
+            this.resultado.set(prevalidacionDiagnostico);
+          }
         }
       })
       .catch((e: unknown) => {

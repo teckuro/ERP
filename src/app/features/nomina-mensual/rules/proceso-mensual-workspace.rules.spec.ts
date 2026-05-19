@@ -113,7 +113,7 @@ describe('proceso-mensual-workspace.rules', () => {
       nominaCerrada: false,
     });
     const validar = etapas.find((e) => e.clave === 'validar');
-    expect(validar?.resumen).toContain('Generación de nómina');
+    expect(validar?.resumen).toContain('Verificación en curso');
   });
 
   it('buildNominaGuiaPanelCopy confirmar expone aside', () => {

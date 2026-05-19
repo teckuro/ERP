@@ -5,14 +5,11 @@ import { buildNominaWorkspaceTabs } from '../containers/proceso-mensual-containe
 import { NOMINA_WORKSPACE_TABS } from '../containers/proceso-mensual-container/models/proceso-mensual-container.vm';
 import { buildDetalleRevisionTabsMeta } from './proceso-mensual-detalle-modal.rules';
 import { buildIncidenciasPeriodo } from './proceso-mensual-incidencias-periodo.rules';
-import { buildAlertasPeriodoResumen } from './proceso-mensual-workspace.rules';
 import {
-  buildNominaExceptionStrip,
   buildNominaWorkspaceDetailItems,
   buildNominaWorkspaceTabSummaries,
   buildNominaWorkspaceTabsMeta,
   claseNominaWorkspaceTab,
-  resolveExceptionStripVisible,
   resolveFocusPresentacion,
   resolveFranjaItemTono,
 } from './proceso-mensual-workspace-presentacion.rules';
@@ -53,33 +50,6 @@ describe('proceso-mensual-workspace-presentacion.rules', () => {
       'historial',
     ]);
     expect(NOMINA_WORKSPACE_TABS.map((t) => t.id)).toEqual(ids);
-  });
-
-  it('buildNominaExceptionStrip oculta en tab resumen', () => {
-    const alertas = buildAlertasPeriodoResumen({
-      validando: false,
-      tieneResultado: true,
-      bloqueosCount: 2,
-      advertenciasCount: 1,
-    });
-    expect(buildNominaExceptionStrip(alertas, 'trabajadores')).toEqual({
-      visible: true,
-      criticas: 2,
-      advertencias: 1,
-    });
-    expect(buildNominaExceptionStrip(alertas, 'resumen').visible).toBe(false);
-    expect(resolveExceptionStripVisible(alertas, 'resumen')).toBe(false);
-    expect(
-      buildNominaExceptionStrip(
-        buildAlertasPeriodoResumen({
-          validando: false,
-          tieneResultado: false,
-          bloqueosCount: 0,
-          advertenciasCount: 0,
-        }),
-        'trabajadores',
-      ).visible,
-    ).toBe(false);
   });
 
   it('buildNominaWorkspaceTabsMeta separa movimientos y recurrentes por ambito', () => {

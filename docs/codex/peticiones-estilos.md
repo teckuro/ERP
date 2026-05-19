@@ -1,3 +1,10 @@
+## 2026-05-19 - NOM-FLOW-REVISION-01 (plan revisión flujo)
+
+- **Módulo:** Nómina mensual / flujo RRHH.
+- **Cambio:** CTAs «Verificar período» vs «Generar nómina»; bitácora RRHH en sidebar; «Guardar borrador» en `<details>` técnicos; persistencia diagnóstico BD; eliminado exception strip muerto; docs sidebar + 6 tabs.
+- **Archivos:** rules estado-operativo/validación/workspace, workspace HTML, store, service, `nomina-periodo-diagnostico.repository.ts`, `27_nomina_periodo_diagnostico.sql`, docs módulo.
+- **No tocado:** motor, estilos globales, `angular.json`.
+
 ## 2026-05-19 - NOM-WORKSPACE-LOC-MAQUETACION-01
 
 - **Módulo:** Nómina mensual / consola LOC.

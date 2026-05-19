@@ -324,12 +324,13 @@ describe('ProcesoMensualContainer', () => {
     rehidratarPeriodo.mockImplementation(async (periodo: string) => {
       const snapshot = await obtenerSnapshotActivo(periodo);
       if (!snapshot) {
-        return { snapshot: null, completo: null, liquidacionesGeneradas: 0 };
+        return { snapshot: null, completo: null, liquidacionesGeneradas: 0, prevalidacionDiagnostico: null };
       }
       return {
         snapshot,
         completo: await obtenerSnapshotCompletoActivo(periodo),
         liquidacionesGeneradas: 0,
+        prevalidacionDiagnostico: null,
       };
     });
     ejecutarPrevalidaciones.mockResolvedValue({

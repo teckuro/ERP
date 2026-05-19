@@ -50,28 +50,10 @@
           @if (f.estadoOperativo().accionPrincipal.disabledReason) {
             <p class="payroll-focus__note">{{ f.estadoOperativo().accionPrincipal.disabledReason }}</p>
           }
-          @if (f.puedeGuardarBaseNominaRevisada()) {
-            <div class="payroll-focus__actions">
-              <button
-                type="button"
-                class="payroll-modal-secondary"
-                [disabled]="f.guardandoSnapshot()"
-                (click)="f.guardarBaseNominaRevisada()"
-              >
-                Guardar base revisada
-              </button>
-            </div>
-          }
-          @if (f.exitoGuardadoBaseNomina()) {
-            <p class="payroll-focus__note">{{ f.exitoGuardadoBaseNomina() }}</p>
-          }
-          @if (f.errorGuardadoBaseNomina()) {
-            <p class="payroll-focus__note">{{ f.errorGuardadoBaseNomina() }}</p>
-          }
         </div>
       </section>
 
-      @if (f.mostrarAccionesPeriodoNomina()) {
+      @if (f.mostrarAccionesPeriodoNomina() || f.puedeGuardarBaseNominaRevisada()) {
         <section class="payroll-period-actions" aria-label="Acciones del período">
           <header class="payroll-period-actions__header">
             <h3>Acciones del período</h3>
@@ -113,6 +95,40 @@
               </li>
             }
           </ul>
+          @if (f.puedeGuardarBaseNominaRevisada()) {
+            <details class="payroll-period-actions payroll-period-actions--admin">
+              <summary>Acciones técnicas del borrador</summary>
+              <p class="payroll-period-actions__admin-note">
+                Guardado intermedio del borrador. No sustituye la confirmación oficial de la nómina.
+              </p>
+              @if (f.exitoGuardadoBaseNomina()) {
+                <p class="payroll-period-actions__feedback payroll-period-actions__feedback--success" role="status">
+                  {{ f.exitoGuardadoBaseNomina() }}
+                </p>
+              }
+              @if (f.errorGuardadoBaseNomina()) {
+                <p class="payroll-period-actions__feedback payroll-period-actions__feedback--error" role="alert">
+                  {{ f.errorGuardadoBaseNomina() }}
+                </p>
+              }
+              <ul class="payroll-period-actions__list">
+                <li class="payroll-period-actions__item">
+                  <div class="payroll-period-actions__copy">
+                    <h4>Guardar borrador revisado</h4>
+                    <p>Conserva el borrador actual antes de continuar con la revisión por trabajador.</p>
+                  </div>
+                  <button
+                    type="button"
+                    class="payroll-modal-secondary"
+                    [disabled]="f.guardandoSnapshot()"
+                    (click)="f.guardarBaseNominaRevisada()"
+                  >
+                    Guardar borrador
+                  </button>
+                </li>
+              </ul>
+            </details>
+          }
           @if (f.accionesNominaPeriodoAdmin().length) {
             <details class="payroll-period-actions payroll-period-actions--admin">
               <summary>Acciones administrativas</summary>

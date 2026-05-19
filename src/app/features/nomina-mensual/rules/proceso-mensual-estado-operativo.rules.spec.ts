@@ -41,11 +41,11 @@ function inputBase(overrides: Partial<ProcesoMensualEstadoOperativoInput> = {}):
 }
 
 describe('proceso-mensual-estado-operativo.rules', () => {
-  it('sin prevalidacion pide generar nomina', () => {
+  it('sin prevalidacion pide verificar periodo', () => {
     const vm = resolverEstadoOperativoProcesoMensual(inputBase());
 
     expect(vm.estadoClave).toBe('pendiente_validacion');
-    expect(vm.accionPrincipal.label).toBe('Generar nómina');
+    expect(vm.accionPrincipal.label).toBe('Verificar período');
     expect(vm.etapaActiva).toBe('validar');
     expect(vm.disclosureActivo).toBe('base');
   });
@@ -109,6 +109,7 @@ describe('proceso-mensual-estado-operativo.rules', () => {
     }));
 
     expect(vm.estadoClave).toBe('listo_para_generar_base');
+    expect(vm.titulo).toBe('Período verificado');
     expect(vm.accionPrincipal.label).toBe('Generar nómina');
     expect(vm.etapaActiva).toBe('base');
     expect(vm.timeline.map((paso) => paso.titulo)).toEqual([

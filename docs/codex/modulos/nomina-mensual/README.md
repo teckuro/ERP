@@ -2,9 +2,13 @@
 
 ## Estado
 
+## NOM-FLOW-REVISION-01 aplicado
+
+Flujo RRHH: «Verificar período» antes de «Generar nómina»; bitácora en sidebar; guardado técnico del borrador en acciones `<details>`; diagnóstico persistido en BD. Documentos: [`nom-workspace-loc-maquetacion-01.md`](./nom-workspace-loc-maquetacion-01.md), [`nom-periodo-diagnostico-persist-01.md`](./nom-periodo-diagnostico-persist-01.md).
+
 ## NOM-WORKSPACE-LOC-MAQUETACION-01 aplicado
 
-Consola LOC: orden único de áreas (Parámetros → Trabajadores → Movimientos → Recurrentes), franja derivada de config, exception strip sin duplicar Resumen, panel índice reordenado, paridad lista/DataGrid en trabajadores. Documento: [`nom-workspace-loc-maquetacion-01.md`](./nom-workspace-loc-maquetacion-01.md).
+Consola con **sidebar operativo** (franja KPI, bitácora, revisión, guía) y **6 tabs** en panel derecho (sin tab Resumen). Orden único Param → Trab → Mov → Rec. Documento: [`nom-workspace-loc-maquetacion-01.md`](./nom-workspace-loc-maquetacion-01.md).
 
 ## NOM-PREVALIDACION-PARAMETROS-CTA-01 aplicado
 
@@ -14,9 +18,9 @@ Fix rules: CTA «Revisar parámetros» solo si `!parametrosOperativos`; priorida
 
 Modal automático tras verificar el período (MessageBox): críticos, advertencias o período listo con CTA «Generar nómina». Documento: [`nom-periodo-diagnostico-persist-01.md`](./nom-periodo-diagnostico-persist-01.md).
 
-## NOM-PERIODO-DIAGNOSTICO-PERSIST-01 (documentada)
+## NOM-PERIODO-DIAGNOSTICO-PERSIST-01 aplicado
 
-Verificación del período con diagnóstico **persistente en servidor** (paso 1 + modal); diseño tabla/RPC y rehidratación. Implementación SQL pendiente de autorización. Documento: [`nom-periodo-diagnostico-persist-01.md`](./nom-periodo-diagnostico-persist-01.md).
+Verificación del período con diagnóstico **persistente en servidor** (`nomina_periodo_diagnostico` + RPC); rehidratación al volver sin snapshot. Documento: [`nom-periodo-diagnostico-persist-01.md`](./nom-periodo-diagnostico-persist-01.md).
 
 ## NOM-MENSUAL-MASIVO-LAYOUT-01 aplicado
 

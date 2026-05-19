@@ -84,17 +84,17 @@ export function buildValidacionCalculoPreliminarView(
       estadoForzado: bloqueos.length ? 'bloqueado' : 'pendiente',
       razonDeshabilitado: bloqueos.length
         ? bloqueos[0].descripcion
-        : 'Genera la nómina mensual para revisar trabajadores.',
+        : 'Verifica el período para revisar trabajadores y datos del mes.',
       siguienteAccion: bloqueos.length
         ? {
-            label: bloqueos[0].accionLabel ?? 'Generar nómina',
+            label: bloqueos[0].accionLabel ?? 'Verificar período',
             descripcion: bloqueos[0].descripcion,
             accionLocal: bloqueos[0].accionLocal,
           }
         : {
-            label: 'Generar nómina',
+            label: 'Verificar período',
             descripcion:
-              'Revisa trabajadores, parámetros, movimientos y recurrentes para generar la nómina mensual.',
+              'Revisa trabajadores, parámetros, movimientos y recurrentes del período activo.',
             accionLocal: 'validarPeriodo',
           },
     });
