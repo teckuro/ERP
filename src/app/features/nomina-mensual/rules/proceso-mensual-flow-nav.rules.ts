@@ -6,7 +6,10 @@ import type {
   NominaWorkspaceTabVisible,
 } from '../containers/proceso-mensual-container/models/proceso-mensual-container.vm';
 import type { NominaMasivaFiltro } from './proceso-mensual-masivo-layout.rules';
-import type { ProcesoMensualAccionLocal } from './proceso-mensual-estado-operativo.rules';
+import type {
+  ProcesoMensualAccionLocal,
+  ProcesoMensualPendienteVm,
+} from './proceso-mensual-estado-operativo.rules';
 import { suggestNominaWorkspaceNavigation } from './proceso-mensual-workspace.rules';
 
 export interface NominaWorkspaceFlowTarget {
@@ -160,4 +163,74 @@ export function debeRehidratarDesdeFlowQuery(
     return false;
   }
   return returnTo === NOMINA_FLOW_RETURN_PATH || returnTo.endsWith(NOMINA_FLOW_RETURN_PATH);
+}
+
+/** CTA único del bloque Revisión en sidebar (evita enlaces duplicados). */
+export interface RevisionRailCtaVm {
+  label: string;
+  usarPanel: boolean;
+  tabModal?: DetalleOperativoTab;
+}
+
+const ETIQUETAS_REVISION_RAIL_DUPLICADAS = new Set([
+  'revisar trabajadores',
+  'revisar en detalle',
+  'ver revisión ampliada',
+  'ver resumen del período',
+  'ver resultado del período',
+]);
+
+export function labelRevisionRailDesdeDestino(destino: NominaWorkspaceFlowTarget): string {
+  if (destino.detalleVista === 'pendientes') {
+    return destino.legacyTab === 'parametros' ? 'Revisar parámetros' : 'Revisar pendientes';
+  }
+  if (destino.detalleVista === 'trabajadores') {
+    if (destino.filtroMasivo === 'con_movimientos') return 'Revisar movimientos';
+    if (destino.filtroMasivo === 'con_recurrentes') return 'Revisar recurrentes';
+    return 'Revisar trabajadores';
+  }
+  return 'Revisar en detalle';
+}
+
+export function buildRevisionRailCta(
+  tab: DetalleOperativoTab,
+  destino: NominaWorkspaceFlowTarget | null,
+): RevisionRailCtaVm {
+  if (destino) {
+    return { label: labelRevisionRailDesdeDestino(destino), usarPanel: true };
+  }
+  return {
+    label: tab === 'resultado' ? 'Ver resultado del período' : 'Ver resumen del período',
+    usarPanel: false,
+    tabModal: tab,
+  };
+}
+
+/** Solo pendientes con acción distinta al CTA principal (máx. 2). */
+export function filtrarPendientesRailSecundarios(
+  pendientes: readonly ProcesoMensualPendienteVm[],
+  labelPrincipal: string,
+  maxItems = 2,
+): ProcesoMensualPendienteVm[] {
+  const principalNorm = labelPrincipal.trim().toLowerCase();
+  const seen = new Set<string>();
+  const out: ProcesoMensualPendienteVm[] = [];
+  for (const p of pendientes) {
+    const label = (p.accionLabel ?? p.titulo).trim();
+    const norm = label.toLowerCase();
+    if (!label || ETIQUETAS_REVISION_RAIL_DUPLICADAS.has(norm)) continue;
+    if (norm === principalNorm) continue;
+    if (seen.has(norm)) continue;
+    seen.add(norm);
+    out.push(p);
+    if (out.length >= maxItems) break;
+  }
+  return out;
+}
+
+export function mostrarResumenAmpliadoEnRail(input: {
+  tieneSnapshot: boolean;
+  usarPanelPrincipal: boolean;
+}): boolean {
+  return input.tieneSnapshot && input.usarPanelPrincipal;
 }

@@ -228,6 +228,39 @@
   background: var(--erp-ok-soft, #f1f7ed);
 }
 
+.payroll-revision-trabajadores__accion--primary {
+  margin-top: 8px;
+  min-height: 30px;
+  width: 100%;
+  border: 1px solid var(--erp-primary-border, #cfc6b4);
+  border-radius: 5px;
+  background: var(--erp-primary-soft, #efebe1);
+  padding: 0 12px;
+  color: var(--erp-ink, #201f1b);
+  font-size: 0.8125rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.payroll-revision-trabajadores__accion--primary:hover {
+  border-color: var(--erp-border-strong, #c8bda9);
+  background: var(--erp-surface, #fffdf8);
+}
+
+.payroll-revision-trabajadores__incidencias {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.payroll-revision-trabajadores__incidencias li {
+  display: grid;
+  gap: 4px;
+  padding: 0;
+}
+
 .payroll-revision-trabajadores__empty {
   margin: 0;
   border: 1px dashed var(--erp-border-strong, #c8bda9);

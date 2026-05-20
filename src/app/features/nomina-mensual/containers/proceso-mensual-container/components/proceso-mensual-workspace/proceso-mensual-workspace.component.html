@@ -138,23 +138,40 @@
                 }
               </div>
               @if (alertas.mostrarDetalle) {
-                <button type="button" class="payroll-rail-link" (click)="f.abrirRevisionEnWorkspaceContextual()">
-                  Revisar en detalle
+                <button
+                  type="button"
+                  class="payroll-rail-link payroll-rail-link--primary"
+                  (click)="f.ejecutarRevisionRailPrincipal()"
+                >
+                  {{ f.revisionRailCta().label }}
                 </button>
-                <button type="button" class="payroll-rail-link payroll-rail-link--secondary" (click)="f.abrirDetalleOperativo('resumen')">
-                  Ver revisión ampliada
-                </button>
-              }
-              @if (f.nominaPendientesVisuales().length) {
-                <ul class="payroll-rail-pendientes">
-                  @for (pendiente of f.nominaPendientesVisuales(); track pendiente.codigo) {
-                    <li>
-                      <button type="button" class="payroll-rail-link" (click)="f.navegarPendienteExterno(pendiente)">
-                        {{ pendiente.accionLabel ?? pendiente.titulo }}
-                      </button>
-                    </li>
-                  }
-                </ul>
+                @if (f.nominaPendientesRailSecundarios().length) {
+                  <ul class="payroll-rail-pendientes">
+                    @for (pendiente of f.nominaPendientesRailSecundarios(); track pendiente.codigo) {
+                      <li>
+                        <button
+                          type="button"
+                          class="payroll-rail-link payroll-rail-link--secondary"
+                          (click)="f.navegarPendienteExterno(pendiente)"
+                        >
+                          {{ pendiente.accionLabel ?? pendiente.titulo }}
+                        </button>
+                      </li>
+                    }
+                  </ul>
+                }
+                @if (f.mostrarResumenAmpliadoEnRail()) {
+                  <details class="payroll-rail-mas-opciones">
+                    <summary>Más opciones</summary>
+                    <button
+                      type="button"
+                      class="payroll-rail-link payroll-rail-link--secondary"
+                      (click)="f.abrirDetalleOperativo('resumen')"
+                    >
+                      Resumen ampliado del período
+                    </button>
+                  </details>
+                }
               }
             }
           </section>

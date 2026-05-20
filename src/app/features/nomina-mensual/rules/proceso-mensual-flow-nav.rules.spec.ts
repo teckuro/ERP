@@ -2,8 +2,10 @@ import { describe, expect, it } from 'vitest';
 
 import {
   appendNominaFlowQuery,
+  buildRevisionRailCta,
   debeRehidratarDesdeFlowQuery,
   detalleTabUsaModal,
+  filtrarPendientesRailSecundarios,
   NOMINA_FLOW_RETURN_PATH,
   periodoYmDesdeFlowQuery,
   resolveFlowDestinoPorFrame,
@@ -53,5 +55,36 @@ describe('proceso-mensual-flow-nav.rules', () => {
   it('debeRehidratarDesdeFlowQuery exige returnTo de nomina mensual', () => {
     expect(debeRehidratarDesdeFlowQuery({ periodo: '2026-05', returnTo: NOMINA_FLOW_RETURN_PATH })).toBe(true);
     expect(debeRehidratarDesdeFlowQuery({ periodo: '2026-05' })).toBe(false);
+  });
+
+  it('buildRevisionRailCta prioriza panel para trabajadores', () => {
+    const destino = resolveWorkspaceTargetFromDetalleTab('trabajadores');
+    const cta = buildRevisionRailCta('trabajadores', destino);
+    expect(cta.usarPanel).toBe(true);
+    expect(cta.label).toBe('Revisar trabajadores');
+  });
+
+  it('filtrarPendientesRailSecundarios omite duplicados de revisar trabajadores', () => {
+    const filtrados = filtrarPendientesRailSecundarios(
+      [
+        {
+          codigo: 'A',
+          titulo: 'Advertencia A',
+          descripcion: 'Detalle',
+          severidad: 'warning',
+          accionLabel: 'Revisar trabajadores',
+        },
+        {
+          codigo: 'B',
+          titulo: 'Parámetros',
+          descripcion: 'Falta UF',
+          severidad: 'danger',
+          accionLabel: 'Revisar parámetros',
+        },
+      ],
+      'Revisar trabajadores',
+    );
+    expect(filtrados).toHaveLength(1);
+    expect(filtrados[0]?.accionLabel).toBe('Revisar parámetros');
   });
 });

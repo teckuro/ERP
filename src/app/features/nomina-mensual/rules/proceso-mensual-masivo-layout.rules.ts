@@ -8,6 +8,11 @@ import type {
   ResultadoPreliminarView,
 } from '../containers/proceso-mensual-container/models/proceso-mensual-container.vm';
 import { buildNominaDetalleMensualMovimientosRows } from './proceso-mensual-detalle-mensual.rules';
+import {
+  resolveAccionCorreccionDesdeIncidencia,
+  resolveAccionCorreccionFilaMasiva,
+  type AccionCorreccionVm,
+} from './proceso-mensual-correccion.rules';
 
 export type NominaMasivaFiltro =
   | 'todos'
@@ -49,6 +54,7 @@ export interface NominaMasivaAccionRecomendada {
   titulo: string;
   descripcion: string;
   tono: 'listo' | 'atencion' | 'bloqueo' | 'neutral';
+  accion?: AccionCorreccionVm;
 }
 
 export interface NominaMasivaDetalle {
@@ -343,21 +349,26 @@ export function buildMovimientosPanelPorTrabajador(
 export function buildAccionRecomendadaTrabajador(
   incidencias: IncidenciaPeriodo[],
   estado: NominaMasivaEstado,
+  fila?: NominaMasivaFila,
 ): NominaMasivaAccionRecomendada {
   const bloqueo = incidencias.find((item) => item.severidad === 'bloqueo');
   if (bloqueo) {
+    const accion = resolveAccionCorreccionDesdeIncidencia(bloqueo);
     return {
       titulo: 'Revisar bloqueo',
       descripcion: `${bloqueo.titulo}. ${bloqueo.detalle}`,
       tono: 'bloqueo',
+      accion: accion ?? undefined,
     };
   }
   const advertencia = incidencias.find((item) => item.severidad === 'advertencia');
   if (advertencia) {
+    const accion = resolveAccionCorreccionDesdeIncidencia(advertencia);
     return {
       titulo: 'Pendiente de revisión',
       descripcion: `${advertencia.titulo}. ${advertencia.detalle}`,
       tono: 'atencion',
+      accion: accion ?? undefined,
     };
   }
   if (estado === 'bloqueado') {
@@ -365,6 +376,7 @@ export function buildAccionRecomendadaTrabajador(
       titulo: 'Trabajador bloqueado',
       descripcion: 'Resuelva el bloqueo antes de continuar con la confirmación del período.',
       tono: 'bloqueo',
+      accion: fila ? resolveAccionCorreccionFilaMasiva(fila, incidencias) : undefined,
     };
   }
   if (estado === 'observacion') {
@@ -372,6 +384,7 @@ export function buildAccionRecomendadaTrabajador(
       titulo: 'Revisar observaciones',
       descripcion: 'Revise los datos del trabajador antes de confirmar la nómina.',
       tono: 'atencion',
+      accion: fila ? resolveAccionCorreccionFilaMasiva(fila, incidencias) : undefined,
     };
   }
   if (estado === 'no_calculado') {
@@ -379,12 +392,15 @@ export function buildAccionRecomendadaTrabajador(
       titulo: 'Completar cálculo',
       descripcion: 'Este trabajador aún no tiene una nómina mensual revisada disponible.',
       tono: 'neutral',
+      accion: fila ? resolveAccionCorreccionFilaMasiva(fila, incidencias) : undefined,
     };
   }
+  const accionListo = fila ? resolveAccionCorreccionFilaMasiva(fila, incidencias) : undefined;
   return {
     titulo: 'Listo para continuar',
     descripcion: 'No hay pendientes visibles para este trabajador en el período.',
     tono: 'listo',
+    accion: accionListo,
   };
 }
 

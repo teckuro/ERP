@@ -5,8 +5,10 @@ import {
   buildNominaDetalleMensualTodosRows,
   buildNominaDetalleMensualTrabajadorRows,
   buildNominaHistorialTablaRows,
+  movimientoRowsAExpediente,
   trabajadorRowsAExpediente,
 } from './proceso-mensual-detalle-mensual.rules';
+import { resolveAccionCorreccionDesdeExpedienteRow } from './proceso-mensual-correccion.rules';
 import { buildIncidenciasPeriodo } from './proceso-mensual-incidencias-periodo.rules';
 
 describe('proceso-mensual-detalle-mensual.rules', () => {
@@ -75,28 +77,64 @@ describe('proceso-mensual-detalle-mensual.rules', () => {
     expect(rows[0]?.severity).toBe('bloqueo');
   });
 
-  it('buildNominaDetalleMensualTodosRows no incluye filas planas de movimientos', () => {
+  it('buildNominaDetalleMensualTodosRows incluye movimientos con idPersona y acción unificada', () => {
+    const idMap = new Map<string, number | string>([['juan pérez', 7]]);
+    const movimientos = buildNominaDetalleMensualMovimientosRows({
+      movimientos: [
+        {
+          trabajador: 'Juan Pérez',
+          concepto: 'Bono',
+          tipo: 'Haber',
+          monto: '$1',
+          estado: 'Revisar',
+          accion: 'Revisar movimiento',
+        },
+      ],
+      recurrentes: [],
+      periodoEtiqueta: 'Mayo 2026',
+    });
     const rows = buildNominaDetalleMensualTodosRows({
       pendientes: [],
-      movimientos: buildNominaDetalleMensualMovimientosRows({
-        movimientos: [
-          {
-            trabajador: 'Juan',
-            concepto: 'Bono',
-            tipo: 'Haber',
-            monto: '$1',
-            estado: 'Listo',
-            accion: 'Ver',
-          },
-        ],
-        recurrentes: [],
-        periodoEtiqueta: 'Mayo 2026',
-      }),
+      movimientos,
       trabajadores: [],
       liquidaciones: [],
+      idPersonaPorNombre: idMap,
     });
 
-    expect(rows.every((row) => row.ambito !== 'Movimiento')).toBe(true);
+    const mov = rows.find((row) => row.ambito === 'Movimiento');
+    expect(mov).toMatchObject({
+      ambito: 'Movimiento',
+      trabajador: 'Juan Pérez',
+      idPersona: 7,
+      detalleTab: 'movimientos_recurrentes',
+    });
+    const accion = resolveAccionCorreccionDesdeExpedienteRow(mov!);
+    expect(accion).toMatchObject({
+      kind: 'panel_trabajador',
+      idPersona: 7,
+      filtroMasivo: 'con_movimientos',
+      label: 'Revisar movimiento',
+    });
+  });
+
+  it('movimientoRowsAExpediente propaga idPersona por nombre', () => {
+    const idMap = new Map<string, number | string>([['ana soto', 3]]);
+    const [row] = movimientoRowsAExpediente(
+      [
+        {
+          estado: 'Listo',
+          tipo: 'Haber',
+          trabajador: 'Ana Soto',
+          concepto: 'Colación',
+          origenDuracion: 'Recurrente',
+          vigencia: 'Mayo 2026',
+          monto: '$1',
+          accion: 'Ver',
+        },
+      ],
+      idMap,
+    );
+    expect(row?.idPersona).toBe(3);
   });
 
   it('buildNominaDetalleMensualTrabajadorRows propaga idPersona al expediente', () => {

@@ -119,9 +119,22 @@ import {
 } from '../../../rules/proceso-mensual-workspace-presentacion.rules';
 import { claseSegmentNavActivo } from '../../../rules/proceso-mensual-segment-nav.rules';
 import {
+  filtroInicialRevisionTrabajadores,
+  incidenciasPorPersonaMap,
+  resolveAccionCorreccionDesdeIncidencia,
+  resolveAccionCorreccionDesdeExpedienteRow,
+  resolveAccionCorreccionDesdePendienteRow,
+  resolveAccionCorreccionFilaMasiva,
+  type AccionCorreccionVm,
+} from '../../../rules/proceso-mensual-correccion.rules';
+import type { IncidenciaPeriodo } from '../../../rules/proceso-mensual-incidencias-periodo.rules';
+import {
   appendNominaFlowQuery,
+  buildRevisionRailCta,
   debeRehidratarDesdeFlowQuery,
   detalleTabUsaModal,
+  filtrarPendientesRailSecundarios,
+  mostrarResumenAmpliadoEnRail,
   periodoYmDesdeFlowQuery,
   resolveFlowDestinoPorFrame,
   resolveNominaEstadoRrhh,
@@ -527,6 +540,88 @@ export class ProcesoMensualPresentacionFacade {
     this.abrirOverlayRevision(tab);
   }
 
+  ejecutarRevisionRailPrincipal(): void {
+    const cta = this.revisionRailCta();
+    if (cta.usarPanel) {
+      this.abrirRevisionEnWorkspaceContextual();
+      const estado = this.estadoOperativo();
+      const filtro = filtroInicialRevisionTrabajadores({
+        bloqueosCount: estado.bloqueos.length,
+        advertenciasCount: estado.advertencias.length,
+      });
+      if (this.nominaDetalleMensualVista() === 'trabajadores') {
+        this.seleccionarFiltroNominaMasiva(filtro);
+      }
+      return;
+    }
+    this.abrirDetalleOperativo(cta.tabModal ?? 'resumen');
+  }
+
+  private readonly incidenciasMasivaPorPersona = computed(() =>
+    incidenciasPorPersonaMap(this.incidenciasPeriodo().todas),
+  );
+
+  accionCorreccionFilaMasiva(row: NominaMasivaFila): AccionCorreccionVm {
+    const clave = String(row.idPersona).trim();
+    const incidencias = this.incidenciasMasivaPorPersona().get(clave) ?? [];
+    return resolveAccionCorreccionFilaMasiva(row, incidencias);
+  }
+
+  ejecutarAccionCorreccion(accion: AccionCorreccionVm): void {
+    switch (accion.kind) {
+      case 'panel_trabajador':
+        if (accion.idPersona != null) {
+          this.abrirTrabajadorEnDetalle(accion.idPersona, accion.filtroMasivo);
+        }
+        return;
+      case 'panel_filtro': {
+        const filtro = accion.filtroMasivo ?? 'todos';
+        this.aplicarDestinoWorkspace({
+          tabVisible: 'detalle_mensual',
+          detalleVista: 'trabajadores',
+          legacyTab: filtro === 'con_movimientos' ? 'movimientos' : 'trabajadores',
+          filtroMasivo: filtro,
+        });
+        if (accion.idPersona != null) {
+          this.seleccionarTrabajadorNominaMasiva(accion.idPersona);
+        }
+        return;
+      }
+      case 'ruta':
+        this.cerrarDetalleOperativo();
+        if (accion.ruta) {
+          void this.router.navigateByUrl(
+            appendNominaFlowQuery(accion.ruta, this.periodoSeleccionado()),
+          );
+        }
+        return;
+      case 'overlay_parametros':
+        this.abrirInformacionParametrosPeriodo();
+        return;
+      case 'modal_tab':
+        if (accion.tabModal) {
+          this.abrirDetalleOperativo(accion.tabModal);
+        }
+        return;
+      default:
+        return;
+    }
+  }
+
+  ejecutarAccionCorreccionDesdeIncidencia(incidencia: IncidenciaPeriodo): void {
+    const accion = resolveAccionCorreccionDesdeIncidencia(incidencia);
+    if (accion) {
+      this.ejecutarAccionCorreccion(accion);
+    }
+  }
+
+  ejecutarAccionCorreccionFilaMasiva(row: NominaMasivaFila, event?: Event): void {
+    event?.preventDefault();
+    event?.stopPropagation();
+    this.seleccionarTrabajadorNominaMasiva(row.idPersona);
+    this.ejecutarAccionCorreccion(this.accionCorreccionFilaMasiva(row));
+  }
+
   seleccionarFranjaArea(area: NominaAreaOperativa): void {
     if (area === 'parametros') {
       const resumen = this.dashboardResumen();
@@ -713,6 +808,7 @@ export class ProcesoMensualPresentacionFacade {
       minWidth: '120px',
       format: (_value, row) => this.etiquetaMontoNominaMasiva(row.liquidoEstimado),
     },
+    { id: 'accion', header: 'Acción', field: 'idPersona', minWidth: '128px' },
   ];
 
   readonly nominaMasivaMovimientosPanelColumns = DETALLE_MENSUAL_MOVIMIENTO_COLUMNS.filter(
@@ -980,24 +1076,29 @@ export class ProcesoMensualPresentacionFacade {
 
   readonly nominaDetallePanel = computed(() => buildNominaDetallePanelCopy(this.nominaVisualFrame()));
 
-  readonly nominaPendientesVisuales = computed<ProcesoMensualPendienteVm[]>(() => {
-    const pendientes = [
-      ...this.estadoOperativo().bloqueos,
-      ...this.estadoOperativo().advertencias,
-    ];
-    if (pendientes.length) return pendientes.slice(0, 5);
-
-    return this.payrollWorkerDetailRows()
-      .filter((row) => row.estado !== 'Listo' && row.estado !== 'Calculado')
-      .slice(0, 5)
-      .map((row) => ({
-        codigo: row.trabajador,
-        titulo: row.trabajador,
-        descripcion: row.observacion,
-        severidad: row.estado === 'Bloqueado' || row.estado === 'Omitido' ? 'danger' : 'warning',
-        accionLabel: row.accion,
-      }));
+  readonly revisionRailCta = computed(() => {
+    const tab = resolveDetalleTabForRevision({
+      errorEjecucion: this.store.errorEjecucion(),
+      validacionCalculo: this.validacionCalculo(),
+      bloqueosOperativos: this.estadoOperativo().bloqueos,
+      advertenciasOperativas: this.estadoOperativo().advertencias,
+    });
+    return buildRevisionRailCta(tab, resolveWorkspaceTargetFromDetalleTab(tab));
   });
+
+  readonly nominaPendientesRailSecundarios = computed<ProcesoMensualPendienteVm[]>(() =>
+    filtrarPendientesRailSecundarios(
+      [...this.estadoOperativo().bloqueos, ...this.estadoOperativo().advertencias],
+      this.revisionRailCta().label,
+    ),
+  );
+
+  readonly mostrarResumenAmpliadoEnRail = computed(() =>
+    mostrarResumenAmpliadoEnRail({
+      tieneSnapshot: this.store.snapshotActivo() != null,
+      usarPanelPrincipal: this.revisionRailCta().usarPanel,
+    }),
+  );
 
   readonly nominaHistorialVisual = computed(() => {
     const snapshot = this.store.snapshotActivo();
@@ -1271,6 +1372,7 @@ export class ProcesoMensualPresentacionFacade {
       movimientos: this.nominaDetalleMensualMovimientoRows(),
       trabajadores: this.nominaDetalleMensualTrabajadorRows(),
       liquidaciones: this.nominaDetalleMensualLiquidacionRows(),
+      idPersonaPorNombre: this.idPersonaPorNombreTrabajador(),
     }),
   );
 
@@ -1339,7 +1441,10 @@ export class ProcesoMensualPresentacionFacade {
   readonly nominaMasivaAccionRecomendadaPanel = computed(() => {
     const detalle = this.nominaMasivaDetalleSeleccionado();
     if (!detalle) return null;
-    return buildAccionRecomendadaTrabajador(detalle.incidencias, detalle.estado);
+    const fila = this.nominaMasivaFilas().find(
+      (item) => String(item.idPersona) === String(detalle.idPersona),
+    );
+    return buildAccionRecomendadaTrabajador(detalle.incidencias, detalle.estado, fila);
   });
 
   readonly nominaMasivaTituloContexto = computed(() => {
@@ -1580,27 +1685,11 @@ export class ProcesoMensualPresentacionFacade {
   }
 
   abrirDetalleExpedienteRow(row: NominaDetalleMensualExpedienteRow): void {
-    if (row.ruta) {
-      this.abrirDetalleExpedienteFila(undefined, row.ruta);
-      return;
-    }
-    if (row.ambito === 'Trabajador' && row.idPersona != null) {
-      this.abrirTrabajadorEnDetalle(row.idPersona);
-      return;
-    }
-    if (row.detalleTab) {
-      this.abrirDetalleExpedienteFila(row.detalleTab);
-    }
+    this.ejecutarAccionCorreccion(resolveAccionCorreccionDesdeExpedienteRow(row));
   }
 
   abrirDetallePendienteRow(row: NominaDetalleMensualPendienteRow): void {
-    if (row.ruta) {
-      this.abrirDetalleExpedienteFila(undefined, row.ruta);
-      return;
-    }
-    if (row.detalleTab) {
-      this.abrirDetalleExpedienteFila(row.detalleTab);
-    }
+    this.ejecutarAccionCorreccion(resolveAccionCorreccionDesdePendienteRow(row));
   }
 
   navegarDesdeModal(ruta: string): void {

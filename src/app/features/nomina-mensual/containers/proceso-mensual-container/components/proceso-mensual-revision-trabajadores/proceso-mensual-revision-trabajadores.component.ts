@@ -43,6 +43,10 @@ export class ProcesoMensualRevisionTrabajadoresComponent {
     this.activarFila(row, event);
   }
 
+  ejecutarAccionFila(row: NominaMasivaFila, event?: Event): void {
+    this.facade.ejecutarAccionCorreccionFilaMasiva(row, event);
+  }
+
   abrirModalMovimientos(row?: NominaMasivaFila, event?: Event): void {
     event?.preventDefault();
     event?.stopPropagation();

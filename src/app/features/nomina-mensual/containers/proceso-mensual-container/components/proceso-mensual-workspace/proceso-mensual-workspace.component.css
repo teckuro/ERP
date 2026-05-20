@@ -66,11 +66,38 @@
   color: var(--erp-ink);
 }
 
+.payroll-console .payroll-rail-link--primary {
+  display: block;
+  margin-top: 6px;
+  color: var(--erp-ink);
+  font-weight: 700;
+}
+
 .payroll-console .payroll-rail-link--secondary {
   display: block;
   margin-top: 4px;
   font-size: 0.75rem;
   font-weight: 600;
+}
+
+.payroll-console .payroll-rail-mas-opciones {
+  margin-top: 6px;
+}
+
+.payroll-console .payroll-rail-mas-opciones summary {
+  color: var(--erp-muted);
+  font-size: 0.72rem;
+  font-weight: 650;
+  cursor: pointer;
+  list-style: none;
+}
+
+.payroll-console .payroll-rail-mas-opciones summary::-webkit-details-marker {
+  display: none;
+}
+
+.payroll-console .payroll-rail-mas-opciones[open] summary {
+  margin-bottom: 4px;
 }
 
 .payroll-sidebar-estado {

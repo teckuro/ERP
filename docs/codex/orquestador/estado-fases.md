@@ -8,6 +8,19 @@
 | Restricciones | Sin SQL/RPC/RLS, sin motor nuevo, sin renombrar `/remuneraciones/proceso-mensual`, sin cambiar contrato interno `cerrado_operativamente`. |
 | Validación | Vitest focalizado y build Angular según cierre de implementación. |
 
+## NOM-MENSUAL-FLOW-UNIFICADO-03 - Flujo unificado (dispatcher + fases 2-5)
+
+| Campo | Estado |
+|---|---|
+| Estado | En curso — **Fase 1 aprobada** (código pendiente); Fases 2–5 documentadas |
+| Tipo | UI presentación (rules/facade); fases posteriores Novedades query, panel, modal, audit/E2E |
+| Documento índice | [`../modulos/nomina-mensual/nom-mensual-flow-unificado-03.md`](../modulos/nomina-mensual/nom-mensual-flow-unificado-03.md) |
+| Fase 2 | [`nom-mensual-flow-unificado-03-fase-02-deep-links.md`](../modulos/nomina-mensual/nom-mensual-flow-unificado-03-fase-02-deep-links.md) |
+| Fase 3 | [`nom-mensual-flow-unificado-03-fase-03-panel-modales.md`](../modulos/nomina-mensual/nom-mensual-flow-unificado-03-fase-03-panel-modales.md) |
+| Fase 4 | [`nom-mensual-flow-unificado-03-fase-04-modal-global.md`](../modulos/nomina-mensual/nom-mensual-flow-unificado-03-fase-04-modal-global.md) |
+| Fase 5 | [`nom-mensual-flow-unificado-03-fase-05-calidad-productivo.md`](../modulos/nomina-mensual/nom-mensual-flow-unificado-03-fase-05-calidad-productivo.md) |
+| Precede | NOM-MENSUAL-FLOW-NAV-02 (panel corrección, Todos decisión B) |
+
 ## NOM-MENSUAL-FLOW-NAV-02 - Cierre flujo Nómina mensual (cableado + modal reducido)
 
 | Campo | Estado |

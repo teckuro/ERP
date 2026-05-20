@@ -1,3 +1,21 @@
+## 2026-05-20 - Nómina mensual: Todos incluye movimientos (decisión B)
+
+- **Cambio:** grilla «Todos» lista movimientos/recurrentes con Acción alineada al panel; `idPersona` en filas movimiento vía mapa de nombres.
+- **Archivos:** `proceso-mensual-detalle-mensual.rules.ts`, `proceso-mensual-correccion.rules.ts`, facade.
+
+## 2026-05-20 - Nómina mensual: panel corrección trabajadores (acciones en grilla)
+
+- **Módulo:** Revisión masiva / Detalle mensual Trabajadores.
+- **Cambio:** columna Acción en grilla; incidencias y acción recomendada con botón; `ejecutarAccionCorreccion` centraliza panel vs deep links; Todos/Pendientes alineados.
+- **Archivos:** `proceso-mensual-correccion.rules.ts`, facade, `proceso-mensual-revision-trabajadores.*`, `proceso-mensual-masivo-layout.rules.ts`.
+- **No tocado:** motor, SQL, estilos globales.
+
+## 2026-05-20 - Nómina mensual: un solo CTA en bloque Revisión (sidebar)
+
+- **Módulo:** Nómina mensual / workspace sidebar.
+- **Cambio:** un botón principal según contexto (`revisionRailCta`); sin duplicar «Revisar trabajadores»; resumen ampliado solo bajo «Más opciones» con snapshot.
+- **Archivos:** `proceso-mensual-flow-nav.rules.ts`, facade, workspace HTML/CSS.
+
 ## 2026-05-20 - Nómina mensual: copy circuito + modal al panel (post FLOW-NAV-02)
 
 - **Módulo:** Remuneraciones (entradas) + modal revisión nómina.

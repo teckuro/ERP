@@ -178,6 +178,15 @@
               {{ f.etiquetaMontoNominaMasiva(row.liquidoEstimado) }}
             </button>
           </ng-template>
+          <ng-template appDataGridCell="accion" let-row="row">
+            <button
+              type="button"
+              class="payroll-revision-trabajadores__link"
+              (click)="ejecutarAccionFila(row, $event)"
+            >
+              {{ f.accionCorreccionFilaMasiva(row).label }}
+            </button>
+          </ng-template>
         </app-data-grid>
       </div>
 
@@ -213,9 +222,20 @@
           <section class="payroll-revision-trabajadores__section" aria-labelledby="payroll-revision-inc-title">
             <h4 id="payroll-revision-inc-title">Incidencias</h4>
             @if (detalleMasivo.incidencias.length) {
-              <ul>
+              <ul class="payroll-revision-trabajadores__incidencias">
                 @for (incidencia of detalleMasivo.incidencias; track incidencia.id + incidencia.detalle) {
-                  <li>{{ incidencia.titulo }} · {{ incidencia.detalle }}</li>
+                  <li>
+                    <span>{{ incidencia.titulo }} · {{ incidencia.detalle }}</span>
+                    @if (incidencia.accion; as accionIncidencia) {
+                      <button
+                        type="button"
+                        class="payroll-revision-trabajadores__link"
+                        (click)="f.ejecutarAccionCorreccionDesdeIncidencia(incidencia)"
+                      >
+                        {{ accionIncidencia.label }}
+                      </button>
+                    }
+                  </li>
                 }
               </ul>
             } @else {
@@ -230,6 +250,15 @@
             >
               <h4 id="payroll-revision-accion-title">Acción recomendada</h4>
               <p><strong>{{ accionRecomendada.titulo }}</strong> {{ accionRecomendada.descripcion }}</p>
+              @if (accionRecomendada.accion) {
+                <button
+                  type="button"
+                  class="payroll-revision-trabajadores__accion payroll-revision-trabajadores__accion--primary"
+                  (click)="f.ejecutarAccionCorreccion(accionRecomendada.accion)"
+                >
+                  {{ accionRecomendada.accion.label }}
+                </button>
+              }
             </section>
           }
         } @else {

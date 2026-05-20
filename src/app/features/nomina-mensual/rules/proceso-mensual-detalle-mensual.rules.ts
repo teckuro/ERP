@@ -175,6 +175,7 @@ function detalleTabDesdeAmbitoIncidencia(ambito: string): DetalleOperativoTab {
 
 export function movimientoRowsAExpediente(
   rows: NominaDetalleMensualMovimientoRow[],
+  idPersonaPorNombre?: ReadonlyMap<string, number | string>,
 ): NominaDetalleMensualExpedienteRow[] {
   return rows.map((row) => ({
     estado: row.estado,
@@ -184,9 +185,10 @@ export function movimientoRowsAExpediente(
     origenDuracion: row.origenDuracion,
     vigencia: row.vigencia,
     monto: row.monto,
-    accion: row.accion,
+    accion: row.accion === 'Sin acción pendiente' ? 'Ver' : row.accion,
     severity: severityDesdeEstado(row.estado),
     detalleTab: 'movimientos_recurrentes' as DetalleOperativoTab,
+    idPersona: resolverIdPersonaPorNombre(row.trabajador, idPersonaPorNombre),
   }));
 }
 
@@ -232,15 +234,17 @@ export function buildNominaDetalleMensualTodosRows(input: {
   movimientos: NominaDetalleMensualMovimientoRow[];
   trabajadores: NominaDetalleMensualTrabajadorRow[];
   liquidaciones: NominaDetalleMensualExpedienteRow[];
+  idPersonaPorNombre?: ReadonlyMap<string, number | string>;
 }): NominaDetalleMensualExpedienteRow[] {
   const bloqueos = pendientesRowsAExpediente(input.pendientes.filter((p) => p.severity === 'bloqueo'));
   const revision = pendientesRowsAExpediente(input.pendientes.filter((p) => p.severity !== 'bloqueo'));
+  const movs = movimientoRowsAExpediente(input.movimientos, input.idPersonaPorNombre);
   const trabListos = trabajadorRowsAExpediente(
     input.trabajadores.filter((t) => severityDesdeEstado(t.estado) === 'listo'),
   );
   const liqs = input.liquidaciones;
 
-  return [...bloqueos, ...revision, ...trabListos, ...liqs].sort(
+  return [...bloqueos, ...revision, ...movs, ...trabListos, ...liqs].sort(
     (a, b) => SEVERITY_ORDER[a.severity] - SEVERITY_ORDER[b.severity],
   );
 }

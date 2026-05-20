@@ -2,6 +2,18 @@
 
 ## Estado
 
+## NOM-MENSUAL-FLOW-UNIFICADO-03 — En curso (Fase 1 aprobada)
+
+Epic flujo unificado: dispatcher al 100% (siguiente código); fases 2–5 en documentos separados para revisión posterior.
+
+| Doc | Contenido |
+|-----|-----------|
+| [`nom-mensual-flow-unificado-03.md`](./nom-mensual-flow-unificado-03.md) | Índice, hecho, Fase 1 aprobada |
+| [`nom-mensual-flow-unificado-03-fase-02-deep-links.md`](./nom-mensual-flow-unificado-03-fase-02-deep-links.md) | `idPersona` en query + Novedades |
+| [`nom-mensual-flow-unificado-03-fase-03-panel-modales.md`](./nom-mensual-flow-unificado-03-fase-03-panel-modales.md) | Modal movimientos local, incidencias, filtros |
+| [`nom-mensual-flow-unificado-03-fase-04-modal-global.md`](./nom-mensual-flow-unificado-03-fase-04-modal-global.md) | Modal global excepcional |
+| [`nom-mensual-flow-unificado-03-fase-05-calidad-productivo.md`](./nom-mensual-flow-unificado-03-fase-05-calidad-productivo.md) | TS audit, E2E, confirmación BD (gate) |
+
 ## NOM-MENSUAL-FLOW-NAV-02 aplicado
 
 Cierre del flujo RRHH: acciones en grillas Detalle mensual, preselección de trabajador, rehidratación al volver con `returnTo`, matriz única de destino workspace y modal reducido (resumen/resultado). Documento: [`nom-mensual-flow-nav-02.md`](./nom-mensual-flow-nav-02.md). Precede: [`nom-mensual-flow-nav-01.md`](./nom-mensual-flow-nav-01.md).
