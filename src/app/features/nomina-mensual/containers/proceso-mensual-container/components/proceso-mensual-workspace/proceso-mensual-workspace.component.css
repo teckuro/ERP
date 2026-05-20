@@ -1,7 +1,52 @@
 /* NOM-WORKSPACE-POLISH-03 — extensión local del workspace (budget segmentado) */
 
+:host {
+  display: flex;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
 .payroll-console:has(.payroll-workspace-layout) .payroll-focus__areas {
   display: none;
+}
+
+.payroll-workspace-loading {
+  position: absolute;
+  inset: 0;
+  z-index: 8;
+  display: grid;
+  place-items: center;
+  background: rgb(255 255 255 / 0.86);
+  backdrop-filter: blur(2px);
+}
+
+.payroll-workspace-loading__panel {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid var(--erp-border);
+  border-radius: 7px;
+  background: var(--erp-surface);
+  padding: 10px 14px;
+  color: var(--erp-ink);
+  font-size: 0.8125rem;
+  font-weight: 700;
+  box-shadow: 0 14px 36px rgba(20, 32, 51, 0.12);
+}
+
+.payroll-workspace-loading__spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid var(--erp-border);
+  border-top-color: var(--erp-primary);
+  border-radius: 999px;
+  animation: payroll-loading-spin 0.75s linear infinite;
+}
+
+@keyframes payroll-loading-spin {
+  to {
+    transform: rotate(1turn);
+  }
 }
 
 .payroll-console .payroll-rail-link {
@@ -48,7 +93,7 @@
   height: 7px;
   border-radius: 999px;
   background: var(--erp-primary);
-  box-shadow: 0 0 0 2px var(--erp-surface);
+  box-shadow: 0 0 0 2px var(--erp-bg);
   transform: translateY(-50%);
   z-index: 1;
 }
@@ -63,8 +108,13 @@
   border: 0;
   border-bottom: 1px solid var(--erp-border);
   border-radius: 0;
-  background: transparent;
-  padding: 10px 14px;
+  background:
+    linear-gradient(180deg, var(--erp-surface-soft), var(--erp-surface));
+  padding: 12px 14px;
+}
+
+.payroll-period-actions--workspace .payroll-period-actions__header {
+  padding-left: 0;
 }
 
 .payroll-period-actions--workspace .payroll-period-actions__header h3 {
@@ -82,7 +132,7 @@
 
 .payroll-period-actions--workspace .payroll-period-actions__item {
   border-top: 1px solid var(--erp-border);
-  padding: 8px 0;
+  padding: 9px 0;
 }
 
 .payroll-period-actions--workspace .payroll-period-actions__item:first-child {
@@ -107,11 +157,22 @@
   color: var(--erp-review);
 }
 
+.payroll-period-actions--workspace .payroll-modal-secondary {
+  border-color: var(--erp-border-strong);
+  background: var(--erp-surface);
+  color: var(--erp-primary-hover);
+}
+
+.payroll-period-actions--workspace .payroll-modal-secondary:hover {
+  border-color: var(--erp-primary-border);
+  background: var(--erp-primary-soft);
+}
+
 .payroll-liquidaciones-aviso {
   margin: 0 14px 12px;
   padding: 10px 12px;
   border: 1px solid var(--erp-review-border);
-  border-radius: 6px;
+  border-radius: 5px;
   background: var(--erp-review-soft);
   color: var(--erp-ink);
   font-size: 0.8125rem;

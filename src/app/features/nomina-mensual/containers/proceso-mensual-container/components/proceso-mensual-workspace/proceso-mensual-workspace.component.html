@@ -3,7 +3,18 @@
 @let resumen = f.nominaResumenSuperior();
 @let pres = focusPresentacion();
 <section class="payroll-view-panel" aria-label="Consola del período">
-  <div class="payroll-console">
+  <div
+    class="payroll-console"
+    [attr.aria-busy]="f.rehidratandoPeriodo() || f.consultandoSnapshot() || f.consultandoSnapshotCompleto()"
+  >
+    @if (f.rehidratandoPeriodo() || f.consultandoSnapshot() || f.consultandoSnapshotCompleto()) {
+      <div class="payroll-workspace-loading" role="status" aria-live="polite">
+        <div class="payroll-workspace-loading__panel">
+          <span class="payroll-workspace-loading__spinner" aria-hidden="true"></span>
+          <span>Cargando bitácora del período</span>
+        </div>
+      </div>
+    }
     <main class="payroll-main" aria-labelledby="payroll-focus-title">
       <section
         class="payroll-focus payroll-focus--operativo"
