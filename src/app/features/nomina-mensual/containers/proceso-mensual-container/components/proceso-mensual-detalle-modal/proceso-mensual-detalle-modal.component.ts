@@ -18,6 +18,7 @@ import { ProcesoMensualPresentacionFacade } from '../../facade/proceso-mensual-p
   templateUrl: './proceso-mensual-detalle-modal.component.html',
   styleUrls: [
     '../../payroll-operational-tabs.css',
+    '../../payroll-segment-nav.css',
     './proceso-mensual-detalle-modal.component.css',
   ],
 })

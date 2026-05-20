@@ -1,5 +1,6 @@
 import { DestroyRef, HostListener, Injectable, computed, effect, inject, signal, untracked } from '@angular/core';
-import { Router } from '@angular/router';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { ActivatedRoute, Router } from '@angular/router';
 import { PeriodoActivoService } from '../../../../../core/services/periodo-activo.service';
 import { bindShellPageContext } from '../../../../../layout/shell-page-context.binding';
 import {
@@ -90,6 +91,7 @@ import {
   buildInformacionPeriodoView,
   mapDestinoToDetalleTab,
   resolveDetalleTabForRevision,
+  resolveDetalleTabFromPendiente,
 } from '../../../rules/proceso-mensual-informacion-periodo.rules';
 import {
   buildAlertasPeriodoResumen,
@@ -117,6 +119,14 @@ import {
   type NominaWorkspaceTabVisibleSummaryVm,
 } from '../../../rules/proceso-mensual-workspace-presentacion.rules';
 import { claseSegmentNavActivo } from '../../../rules/proceso-mensual-segment-nav.rules';
+import {
+  appendNominaFlowQuery,
+  periodoYmDesdeFlowQuery,
+  resolveNominaEstadoRrhh,
+  resolveWorkspaceTargetFromAccionLocal,
+  resolveWorkspaceTargetFromDetalleTab,
+  type NominaWorkspaceFlowTarget,
+} from '../../../rules/proceso-mensual-flow-nav.rules';
 import {
   DETALLE_OPERATIVO_TABS,
   PAYROLL_MOVEMENT_DETAIL_COLUMNS,
@@ -186,6 +196,8 @@ export class ProcesoMensualPresentacionFacade {
   readonly store = inject(ProcesoMensualPeriodoStore);
   readonly periodoActivo = inject(PeriodoActivoService);
   private readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
+  private readonly flowQueryParams = toSignal(this.route.queryParams, { initialValue: {} });
   private readonly nominaCapabilities = inject(NominaMensualCapabilitiesService);
   private readonly shellContext = inject(ShellPageContextService);
 
@@ -392,6 +404,16 @@ export class ProcesoMensualPresentacionFacade {
       },
       { onPrimaryAction: () => this.ejecutarShellPrimaryAction() },
     );
+
+    effect(() => {
+      const periodo = periodoYmDesdeFlowQuery(this.flowQueryParams());
+      if (!periodo) return;
+      untracked(() => {
+        if (this.periodoActivo.periodoYm() !== periodo) {
+          this.periodoActivo.setPeriodoYm(periodo);
+        }
+      });
+    });
   }
   readonly nominaMasivaFiltro = signal<NominaMasivaFiltro>('todos');
   readonly nominaMasivaBusqueda = signal('');
@@ -434,6 +456,61 @@ export class ProcesoMensualPresentacionFacade {
     if (legacy) {
       this.nominaWorkspaceTab.set(legacy);
     }
+  }
+
+  aplicarDestinoWorkspace(destino: NominaWorkspaceFlowTarget): void {
+    if (this.overlay().kind === 'revision') {
+      this.overlay.set({ kind: 'cerrado' });
+    }
+    this.nominaWorkspaceTabVisible.set(destino.tabVisible);
+    this.nominaDetalleMensualVista.set(destino.detalleVista);
+    this.nominaWorkspaceTab.set(destino.legacyTab);
+    if (destino.filtroMasivo) {
+      this.nominaMasivaFiltro.set(destino.filtroMasivo);
+    }
+  }
+
+  navegarPendienteExterno(pendiente: ProcesoMensualPendienteVm): void {
+    if (pendiente.accionLocal) {
+      const destinoLocal = resolveWorkspaceTargetFromAccionLocal(pendiente.accionLocal);
+      if (destinoLocal) {
+        this.aplicarDestinoWorkspace(destinoLocal);
+        return;
+      }
+      this.ejecutarAccionValidacion(pendiente.accionLocal);
+      return;
+    }
+
+    const tab = resolveDetalleTabFromPendiente(pendiente);
+    const destinoWorkspace = resolveWorkspaceTargetFromDetalleTab(tab);
+    if (destinoWorkspace && !pendiente.ruta) {
+      this.aplicarDestinoWorkspace(destinoWorkspace);
+      return;
+    }
+
+    if (pendiente.ruta) {
+      void this.router.navigateByUrl(
+        appendNominaFlowQuery(pendiente.ruta, this.periodoSeleccionado()),
+      );
+      return;
+    }
+
+    this.abrirDetalleOperativo(tab);
+  }
+
+  abrirRevisionEnWorkspaceContextual(): void {
+    const tab = resolveDetalleTabForRevision({
+      errorEjecucion: this.store.errorEjecucion(),
+      validacionCalculo: this.validacionCalculo(),
+      bloqueosOperativos: this.estadoOperativo().bloqueos,
+      advertenciasOperativas: this.estadoOperativo().advertencias,
+    });
+    const destino = resolveWorkspaceTargetFromDetalleTab(tab);
+    if (destino) {
+      this.aplicarDestinoWorkspace(destino);
+      return;
+    }
+    this.abrirOverlayRevision(tab);
   }
 
   seleccionarFranjaArea(area: NominaAreaOperativa): void {
@@ -487,11 +564,18 @@ export class ProcesoMensualPresentacionFacade {
   private ejecutarShellPrimaryAction(): void {
     const frame = this.nominaFrame();
     if (frame.ctaTipo === 'local' && frame.ctaAccion) {
+      const destino = resolveWorkspaceTargetFromAccionLocal(frame.ctaAccion);
+      if (destino) {
+        this.aplicarDestinoWorkspace(destino);
+        return;
+      }
       this.ejecutarAccionValidacion(frame.ctaAccion);
       return;
     }
     if (frame.ctaTipo === 'ruta' && frame.ctaRuta) {
-      void this.router.navigateByUrl(frame.ctaRuta);
+      void this.router.navigateByUrl(
+        appendNominaFlowQuery(frame.ctaRuta, this.periodoSeleccionado()),
+      );
     }
   }
 
@@ -577,7 +661,9 @@ export class ProcesoMensualPresentacionFacade {
       case 'navegar':
         if (cta.disabled) return;
         this.cerrarOverlay();
-        void this.router.navigateByUrl(cta.ruta);
+        void this.router.navigateByUrl(
+          appendNominaFlowQuery(cta.ruta, this.periodoSeleccionado()),
+        );
         break;
       case 'none':
         break;
@@ -804,6 +890,8 @@ export class ProcesoMensualPresentacionFacade {
       snapshotTotalBloqueados: snapshot?.totalBloqueados ?? 0,
     });
   });
+
+  readonly nominaEstadoRrhh = computed(() => resolveNominaEstadoRrhh(this.nominaVisualFrame()));
 
   readonly nominaVisualFrame = computed<NominaVisualFrame>(() =>
     resolveNominaVisualFrame({
@@ -1445,6 +1533,14 @@ export class ProcesoMensualPresentacionFacade {
     }
   }
 
+  abrirDetalleExpedienteFila(detalleTab: DetalleOperativoTab, ruta?: string): void {
+    if (ruta) {
+      void this.router.navigateByUrl(appendNominaFlowQuery(ruta, this.periodoSeleccionado()));
+      return;
+    }
+    this.abrirDetalleOperativo(detalleTab);
+  }
+
   solicitarAbrirNomina(): void {
     this.abrirOverlayDecision({
       tipo: 'abrir_nomina',
@@ -1666,20 +1762,24 @@ export class ProcesoMensualPresentacionFacade {
   }
 
   abrirRevisionGuiada(): void {
+    const destino = resolveWorkspaceTargetFromAccionLocal('revisarBloqueos');
+    if (destino) {
+      this.aplicarDestinoWorkspace(destino);
+      return;
+    }
     this.abrirDetalleOperativo('trabajadores');
   }
 
   abrirDetalleOperativoContextual(): void {
-    const tab = resolveDetalleTabForRevision({
-      errorEjecucion: this.store.errorEjecucion(),
-      validacionCalculo: this.validacionCalculo(),
-      bloqueosOperativos: this.estadoOperativo().bloqueos,
-      advertenciasOperativas: this.estadoOperativo().advertencias,
-    });
-    this.abrirDetalleOperativo(tab);
+    this.abrirRevisionEnWorkspaceContextual();
   }
 
   abrirDetalleOperativo(tab: DetalleOperativoTab = 'trabajadores'): void {
+    const destino = resolveWorkspaceTargetFromDetalleTab(tab);
+    if (destino) {
+      this.aplicarDestinoWorkspace(destino);
+      return;
+    }
     this.abrirOverlayRevision(tab);
   }
 

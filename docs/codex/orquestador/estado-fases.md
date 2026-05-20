@@ -1,3 +1,13 @@
+## NOM-MENSUAL-FLOW-NAV-01 - Coherencia flujo RRHH (panel + deep links)
+
+| Campo | Estado |
+|---|---|
+| Estado | Implementada |
+| Tipo | UI presentación (rules/facade/workspace/modal) |
+| Alcance | Detalle mensual canónico; estado RRHH sidebar; deep links período; segment nav en modal; CTAs revisar trabajadores → panel. |
+| Documento | [`../modulos/nomina-mensual/nom-mensual-flow-nav-01.md`](../modulos/nomina-mensual/nom-mensual-flow-nav-01.md) |
+| Precede | Segment nav unificado, revisión masiva workspace |
+
 ## NOM-MENSUAL-REVISION-TRABAJADORES-MASIVA-01 - Revisión masiva workspace
 
 | Campo | Estado |

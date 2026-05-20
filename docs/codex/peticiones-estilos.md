@@ -1,3 +1,10 @@
+## 2026-05-20 - Nómina mensual: flujo navegación coherente (NOM-FLOW-NAV-01)
+
+- **Módulo:** Nómina mensual / consola período.
+- **Cambio:** revisión en panel Detalle mensual; estado RRHH en sidebar; deep links con período; modal segment nav; enlaces «Revisar en detalle» vs modal ampliado.
+- **Archivos:** `proceso-mensual-flow-nav.rules.ts`, facade, workspace, detalle-modal, `nom-mensual-flow-nav-01.md`.
+- **No tocado:** motor, SQL, estilos globales.
+
 ## 2026-05-19 - Nómina mensual: segment nav unificado
 
 - **Módulo:** Nómina mensual / workspace Detalle mensual y revisión trabajadores.

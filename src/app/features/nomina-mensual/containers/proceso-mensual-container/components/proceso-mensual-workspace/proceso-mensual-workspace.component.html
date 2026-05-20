@@ -66,6 +66,13 @@
 
       <div class="payroll-workspace-layout">
         <aside class="payroll-workspace-sidebar" aria-label="Resumen operativo del período">
+          @let estadoRrhh = f.nominaEstadoRrhh();
+          <section class="payroll-sidebar-estado" aria-label="Estado de la nómina mensual">
+            <p class="payroll-sidebar-estado__label">Estado del período</p>
+            <p class="payroll-sidebar-estado__valor">{{ estadoRrhh.etiqueta }}</p>
+            <p class="payroll-sidebar-estado__detalle">{{ estadoRrhh.descripcion }}</p>
+          </section>
+
           <section class="payroll-franja-operativa" aria-label="Indicadores del período">
             <ul class="payroll-franja-operativa__list">
               @for (area of f.nominaFranjaAreas; track area.id) {
@@ -131,8 +138,11 @@
                 }
               </div>
               @if (alertas.mostrarDetalle) {
-                <button type="button" class="payroll-rail-link" (click)="f.abrirDetalleOperativoContextual()">
-                  Ver revisión completa
+                <button type="button" class="payroll-rail-link" (click)="f.abrirRevisionEnWorkspaceContextual()">
+                  Revisar en detalle
+                </button>
+                <button type="button" class="payroll-rail-link payroll-rail-link--secondary" (click)="f.abrirDetalleOperativo('resumen')">
+                  Ver revisión ampliada
                 </button>
               }
             }

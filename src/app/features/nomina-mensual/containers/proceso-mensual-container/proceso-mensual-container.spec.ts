@@ -707,8 +707,9 @@ describe('ProcesoMensualContainer', () => {
       c.cerrarOverlay();
       c.abrirDetalleOperativoContextual();
       fixture.detectChanges();
-      expect(c.overlay().kind).toBe('revision');
-      expect(c.detalleOperativoTabActivo()).toBe('parametros');
+      expect(c.overlay().kind).toBe('cerrado');
+      expect(c.nominaWorkspaceTabVisible()).toBe('detalle_mensual');
+      expect(c.nominaDetalleMensualVista()).toBe('pendientes');
     });
 
     it('decision reemplaza informacion al guardar snapshot', async () => {

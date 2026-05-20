@@ -219,35 +219,35 @@
                 </p>
               }
 
-              <div class="payroll-mass-summary" aria-label="Resumen agregado de trabajadores">
-                <button type="button" (click)="f.seleccionarFiltroNominaMasiva('todos')">
-                  <span>Total</span>
-                  <strong>{{ resumenMasivo.totalTrabajadores }}</strong>
+              <nav class="payroll-segment-nav payroll-segment-nav--stat" aria-label="Resumen agregado de trabajadores">
+                <button type="button" [class]="f.claseFiltroMasivoStat('todos')" (click)="f.seleccionarFiltroNominaMasiva('todos')">
+                  <span class="payroll-segment-nav__label">Total</span>
+                  <strong class="payroll-segment-nav__value">{{ resumenMasivo.totalTrabajadores }}</strong>
                 </button>
-                <button type="button" (click)="f.seleccionarFiltroNominaMasiva('listos')">
-                  <span>Listos</span>
-                  <strong>{{ resumenMasivo.listos }}</strong>
+                <button type="button" [class]="f.claseFiltroMasivoStat('listos')" (click)="f.seleccionarFiltroNominaMasiva('listos')">
+                  <span class="payroll-segment-nav__label">Listos</span>
+                  <strong class="payroll-segment-nav__value">{{ resumenMasivo.listos }}</strong>
                 </button>
-                <button type="button" (click)="f.seleccionarFiltroNominaMasiva('observaciones')">
-                  <span>Con observaciones</span>
-                  <strong>{{ resumenMasivo.conObservaciones }}</strong>
+                <button type="button" [class]="f.claseFiltroMasivoStat('observaciones')" (click)="f.seleccionarFiltroNominaMasiva('observaciones')">
+                  <span class="payroll-segment-nav__label">Con observaciones</span>
+                  <strong class="payroll-segment-nav__value">{{ resumenMasivo.conObservaciones }}</strong>
                 </button>
-                <button type="button" (click)="f.seleccionarFiltroNominaMasiva('bloqueados')">
-                  <span>Bloqueados</span>
-                  <strong>{{ resumenMasivo.bloqueados }}</strong>
+                <button type="button" [class]="f.claseFiltroMasivoStat('bloqueados')" (click)="f.seleccionarFiltroNominaMasiva('bloqueados')">
+                  <span class="payroll-segment-nav__label">Bloqueados</span>
+                  <strong class="payroll-segment-nav__value">{{ resumenMasivo.bloqueados }}</strong>
                 </button>
-                <button type="button" (click)="f.seleccionarFiltroNominaMasiva('con_movimientos')">
-                  <span>Con movimientos</span>
-                  <strong>{{ resumenMasivo.conMovimientos }}</strong>
+                <button type="button" [class]="f.claseFiltroMasivoStat('con_movimientos')" (click)="f.seleccionarFiltroNominaMasiva('con_movimientos')">
+                  <span class="payroll-segment-nav__label">Con movimientos</span>
+                  <strong class="payroll-segment-nav__value">{{ resumenMasivo.conMovimientos }}</strong>
                 </button>
-                <button type="button" (click)="f.seleccionarFiltroNominaMasiva('con_recurrentes')">
-                  <span>Con recurrentes</span>
-                  <strong>{{ resumenMasivo.conRecurrentes }}</strong>
+                <button type="button" [class]="f.claseFiltroMasivoStat('con_recurrentes')" (click)="f.seleccionarFiltroNominaMasiva('con_recurrentes')">
+                  <span class="payroll-segment-nav__label">Con recurrentes</span>
+                  <strong class="payroll-segment-nav__value">{{ resumenMasivo.conRecurrentes }}</strong>
                 </button>
-              </div>
+              </nav>
 
-              <div class="payroll-mass-filters" aria-label="Filtros de revisiÃ³n">
-                <div class="payroll-mass-filter-list">
+              <div class="payroll-segment-nav payroll-segment-nav--toolbar" aria-label="Filtros de revisión">
+                <div class="payroll-segment-nav__list">
                   <button type="button" [class]="f.claseFiltroNominaMasiva('todos')" (click)="f.seleccionarFiltroNominaMasiva('todos')">Todos</button>
                   <button type="button" [class]="f.claseFiltroNominaMasiva('bloqueados')" (click)="f.seleccionarFiltroNominaMasiva('bloqueados')">Bloqueados</button>
                   <button type="button" [class]="f.claseFiltroNominaMasiva('observaciones')" (click)="f.seleccionarFiltroNominaMasiva('observaciones')">Con observaciones</button>
