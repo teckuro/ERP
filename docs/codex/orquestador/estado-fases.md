@@ -1,4 +1,15 @@
-﻿## NOM-MENSUAL-CLEANUP-AUDIT-01 - Limpieza código muerto nómina mensual
+## NOM-MENSUAL-REVISION-TRABAJADORES-MASIVA-01 - Revisión masiva workspace
+
+| Campo | Estado |
+|---|---|
+| Estado | Implementada |
+| Tipo | UI presentación (rules/facade/componente workspace) |
+| Alcance | Master-detail Trabajadores; panel movimientos por persona; franja Movimientos → filtro con_movimientos; sin tab Movimientos global. |
+| Documento | [`../modulos/nomina-mensual/nom-mensual-revision-trabajadores-masiva-01.md`](../modulos/nomina-mensual/nom-mensual-revision-trabajadores-masiva-01.md) |
+| Precede | NOM-MENSUAL-DETALLE-MENSUAL-UNIFICADO-01 |
+| Deuda | Unificar modal; NOM-MENSUAL-TS-AUDIT-00 |
+
+## NOM-MENSUAL-CLEANUP-AUDIT-01 - Limpieza código muerto nómina mensual
 
 | Campo | Estado |
 |---|---|

@@ -5,8 +5,10 @@ import type { ExpedienteNominaPeriodoView } from './proceso-mensual-expediente-p
 import type { IncidenciaPeriodo } from './proceso-mensual-incidencias-periodo.rules';
 import type { ResultadoPreliminarView } from '../containers/proceso-mensual-container/models/proceso-mensual-container.vm';
 import {
+  buildAccionRecomendadaTrabajador,
   buildDetalleMasivoTrabajador,
   buildFilasMasivasTrabajadores,
+  buildMovimientosPanelPorTrabajador,
   buildResumenMasivoNomina,
   filtrarFilasMasivasTrabajadores,
   type BuildNominaMasivaInput,
@@ -153,6 +155,17 @@ describe('proceso-mensual-masivo-layout.rules', () => {
     expect(carla?.haberes).toBeNull();
     expect(carla).not.toHaveProperty('incidencias');
     expect(carla).not.toHaveProperty('movimientos');
+    expect(carla?.movimientosCount).toBe(0);
+    expect(carla?.incidenciasCount).toBe(1);
+  });
+
+  it('expone conteos de movimientos e incidencias por trabajador', () => {
+    const ana = buildFilasMasivasTrabajadores(input()).find((fila) => fila.trabajador === 'Ana Perez');
+    const bruno = buildFilasMasivasTrabajadores(input()).find((fila) => fila.trabajador === 'Bruno Soto');
+
+    expect(ana?.movimientosCount).toBe(1);
+    expect(bruno?.movimientosCount).toBe(1);
+    expect(bruno?.incidenciasCount).toBe(1);
   });
 
   it('filtra por todos los estados operativos', () => {
@@ -188,5 +201,20 @@ describe('proceso-mensual-masivo-layout.rules', () => {
     expect(detalle?.incidencias).toHaveLength(1);
     expect(detalle?.incidencias[0].id).toBe('TRAB-2');
     expect(detalle?.incidencias.some((incidencia) => incidencia.id === 'PARAM-UF')).toBe(false);
+  });
+
+  it('buildMovimientosPanelPorTrabajador unifica movimientos del detalle', () => {
+    const detalle = buildDetalleMasivoTrabajador({ ...input(), idPersona: 2 });
+    expect(detalle).not.toBeNull();
+    const rows = buildMovimientosPanelPorTrabajador(detalle!, 'Mayo 2026');
+    expect(rows.some((row) => row.origenDuracion === 'Recurrente')).toBe(true);
+  });
+
+  it('buildAccionRecomendadaTrabajador prioriza bloqueos', () => {
+    const detalle = buildDetalleMasivoTrabajador({ ...input(), idPersona: 2 });
+    expect(detalle).not.toBeNull();
+    const accion = buildAccionRecomendadaTrabajador(detalle!.incidencias, detalle!.estado);
+    expect(accion.tono).toBe('atencion');
+    expect(accion.titulo).toBe('Pendiente de revisión');
   });
 });

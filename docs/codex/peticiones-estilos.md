@@ -1,3 +1,32 @@
+## 2026-05-19 - Nómina mensual: segment nav unificado
+
+- **Módulo:** Nómina mensual / workspace Detalle mensual y revisión trabajadores.
+- **Cambio:** `payroll-segment-nav.css` compartido (pills + KPI stat + toolbar); pestañas detalle, filtros masivos y tarjetas KPI con activo `--erp-primary-soft`; eliminados pills negros y `.payroll-detalle-filtros*` locales.
+- **Archivos:** `payroll-segment-nav.css`, `proceso-mensual-container.css`, `proceso-mensual-workspace.*`, `proceso-mensual-revision-trabajadores.*`, `proceso-mensual-segment-nav.rules.ts`, `proceso-mensual-presentacion.facade.ts`.
+- **Deuda:** modal `proceso-mensual-detalle-modal` conserva `payroll-mass-*` hasta fase posterior.
+- **No tocado:** tabs Detalle mensual | Historial (underline), motor, SQL, estilos globales.
+
+## 2026-05-19 - Header: selector de período visible
+
+- **Módulo:** Shell / barra superior global.
+- **Cambio:** chip calendario + mes abre panel año/mes; copy de rehidratación; visible en mobile; cierra al elegir período.
+- **Archivos:** `header.component.ts`, `header.component.spec.ts`.
+- **Efecto:** Nómina mensual y demás módulos de remuneraciones recargan período vía `PeriodoActivoService` + `rehidratarPeriodoActivo` del store.
+
+## 2026-05-19 - Revisión trabajadores: modal movimientos
+
+- **Módulo:** Nómina mensual / `proceso-mensual-revision-trabajadores`.
+- **Cambio:** panel derecho sin sub-grid comprimido; enlace «Ver N movimientos» (tabla y resumen) abre modal local con DataGrid amplio; Escape y overlay cierran.
+- **Archivos:** `proceso-mensual-revision-trabajadores.component.*`.
+- **No tocado:** facade overlay global, estilos globales.
+
+## 2026-05-19 - NOM-MENSUAL-REVISION-TRABAJADORES-MASIVA-01
+
+- **Módulo:** Nómina mensual / workspace Detalle mensual.
+- **Cambio:** componente `proceso-mensual-revision-trabajadores` (split tabla + panel acoplado); columnas compactas; selección accesible; CSS local `payroll-revision-trabajadores*`; sin vista global Movimientos.
+- **Archivos:** `proceso-mensual-revision-trabajadores/*`, `proceso-mensual-workspace.*`, `proceso-mensual-presentacion.facade.ts`, `proceso-mensual-masivo-layout.rules.ts`, `proceso-mensual-area-orden.config.ts`.
+- **No tocado:** modal revisión, motor, SQL, store, `app-data-grid` API, estilos globales.
+
 ## 2026-05-19 - NOM-MENSUAL-CLEANUP-AUDIT-01
 
 - **Módulo:** Nómina mensual / workspace y container CSS local.

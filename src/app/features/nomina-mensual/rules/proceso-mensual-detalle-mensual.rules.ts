@@ -221,13 +221,12 @@ export function buildNominaDetalleMensualTodosRows(input: {
 }): NominaDetalleMensualExpedienteRow[] {
   const bloqueos = pendientesRowsAExpediente(input.pendientes.filter((p) => p.severity === 'bloqueo'));
   const revision = pendientesRowsAExpediente(input.pendientes.filter((p) => p.severity !== 'bloqueo'));
-  const movs = movimientoRowsAExpediente(input.movimientos);
   const trabListos = trabajadorRowsAExpediente(
     input.trabajadores.filter((t) => severityDesdeEstado(t.estado) === 'listo'),
   );
   const liqs = input.liquidaciones;
 
-  return [...bloqueos, ...revision, ...movs, ...trabListos, ...liqs].sort(
+  return [...bloqueos, ...revision, ...trabListos, ...liqs].sort(
     (a, b) => SEVERITY_ORDER[a.severity] - SEVERITY_ORDER[b.severity],
   );
 }

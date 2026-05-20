@@ -1,0 +1,110 @@
+/* Segmentos compartidos: pestañas detalle, filtros masivos y KPI (nómina mensual workspace) */
+
+.payroll-segment-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.payroll-segment-nav--detalle {
+  margin: 0 0 12px;
+  padding: 0;
+}
+
+.payroll-segment-nav__btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 30px;
+  border: 1px solid var(--erp-border, #dadfd7);
+  border-radius: 6px;
+  background: var(--erp-surface, #ffffff);
+  padding: 4px 10px;
+  color: var(--erp-muted, #647084);
+  font: inherit;
+  font-size: 0.75rem;
+  font-weight: 600;
+  line-height: 1.2;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.payroll-segment-nav__btn:hover {
+  border-color: var(--erp-primary-border, #bfdbfe);
+  color: var(--erp-ink, #172033);
+}
+
+.payroll-segment-nav__btn:focus-visible {
+  outline: 2px solid var(--erp-primary, #2563eb);
+  outline-offset: 1px;
+}
+
+.payroll-segment-nav__btn--active {
+  border-color: var(--erp-primary-border, #bfdbfe);
+  background: var(--erp-primary-soft, #eff6ff);
+  color: var(--erp-primary, #2563eb);
+}
+
+.payroll-segment-nav--stat {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.payroll-segment-nav--stat .payroll-segment-nav__btn {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+  justify-content: stretch;
+  padding: 8px 10px;
+  text-align: left;
+}
+
+.payroll-segment-nav--stat .payroll-segment-nav__label {
+  overflow: hidden;
+  color: var(--erp-muted, #647084);
+  font-size: 0.72rem;
+  font-weight: 650;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.payroll-segment-nav--stat .payroll-segment-nav__value {
+  color: var(--erp-ink, #172033);
+  font-size: 1rem;
+  font-weight: 750;
+  line-height: 1.15;
+}
+
+.payroll-segment-nav--stat .payroll-segment-nav__btn--active .payroll-segment-nav__label,
+.payroll-segment-nav--stat .payroll-segment-nav__btn--active .payroll-segment-nav__value {
+  color: var(--erp-primary, #2563eb);
+}
+
+.payroll-segment-nav--toolbar {
+  align-items: end;
+  justify-content: space-between;
+  gap: 10px;
+  border: 1px solid var(--erp-border, #dadfd7);
+  border-radius: 8px;
+  background: var(--erp-surface, #ffffff);
+  padding: 8px;
+}
+
+.payroll-segment-nav--toolbar .payroll-segment-nav__list {
+  display: flex;
+  flex: 1 1 auto;
+  flex-wrap: wrap;
+  gap: 6px;
+  min-width: 0;
+}
+
+@media (max-width: 768px) {
+  .payroll-segment-nav--stat {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .payroll-segment-nav--toolbar {
+    display: grid;
+  }
+}

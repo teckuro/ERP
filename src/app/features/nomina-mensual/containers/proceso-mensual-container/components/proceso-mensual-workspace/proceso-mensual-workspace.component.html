@@ -295,7 +295,7 @@
         }
         @switch (f.nominaWorkspaceTabVisible()) {
           @case ('detalle_mensual') {
-            <nav class="payroll-detalle-filtros" aria-label="Filtros del detalle mensual">
+            <nav class="payroll-segment-nav payroll-segment-nav--detalle" aria-label="Filtros del detalle mensual">
               @for (filtro of f.nominaDetalleMensualFiltros; track filtro.id) {
                 <button
                   type="button"
@@ -318,26 +318,7 @@
                 />
               }
               @case ('trabajadores') {
-                <app-data-grid
-                  title="Trabajadores del período"
-                  [columns]="f.detalleMensualTrabajadorColumns"
-                  [filters]="f.detalleMensualTrabajadorFilters"
-                  [rows]="f.nominaDetalleMensualTrabajadorRows()"
-                  headerCountNoun="trabajadores"
-                  emptyTitle="Sin trabajadores visibles"
-                  emptyDescription="Genere la nómina mensual para ver trabajadores considerados."
-                />
-              }
-              @case ('movimientos') {
-                <app-data-grid
-                  title="Movimientos del período"
-                  [columns]="f.detalleMensualMovimientoColumns"
-                  [filters]="f.detalleMensualMovimientoFilters"
-                  [rows]="f.nominaDetalleMensualMovimientoRows()"
-                  headerCountNoun="movimientos"
-                  emptyTitle="Sin movimientos visibles"
-                  emptyDescription="No hay movimientos del mes ni recurrentes en este período."
-                />
+                <app-proceso-mensual-revision-trabajadores />
               }
               @case ('liquidaciones') {
                 @if (f.liquidacionesPendientesCopy(); as pendiente) {

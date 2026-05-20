@@ -1,7 +1,8 @@
+import { vi } from 'vitest';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { LucideAngularModule } from 'lucide-angular';
-import { Calendar, Clock, Home, Play } from 'lucide-angular/src/icons';
+import { Calendar, ChevronDown, Clock, Home, Play } from 'lucide-angular/src/icons';
 import { signal } from '@angular/core';
 
 import { AuthService } from '../core/auth/auth.service';
@@ -15,7 +16,7 @@ describe('HeaderComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [HeaderComponent, LucideAngularModule.pick({ Calendar, Clock, Home, Play })],
+      imports: [HeaderComponent, LucideAngularModule.pick({ Calendar, ChevronDown, Clock, Home, Play })],
       providers: [
         provideRouter([]),
         ShellPageContextService,
@@ -47,6 +48,16 @@ describe('HeaderComponent', () => {
     expect(text).toContain('Mayo 2026');
     const header = fixture.nativeElement.querySelector('.erp-shell-header') as HTMLElement;
     expect(header.style.height).toBe('52px');
+    expect(fixture.nativeElement.querySelector('.erp-shell-header__period-trigger')).toBeTruthy();
+  });
+
+  it('cambia periodo activo al seleccionar mes', () => {
+    const periodo = TestBed.inject(PeriodoActivoService) as {
+      setPeriodoYm: (ym: string) => void;
+    };
+    const setSpy = vi.spyOn(periodo, 'setPeriodoYm');
+    fixture.componentInstance.onMesChange('04');
+    expect(setSpy).toHaveBeenCalledWith('2026-04');
   });
 
   it('muestra chip de estado y CTA cuando el contexto los registra', () => {

@@ -5,11 +5,14 @@ import {
   computed,
   inject,
   signal,
+  viewChild,
 } from '@angular/core';
+import type { ElementRef } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import {
   CalendarIcon,
+  ChevronDownIcon,
   ClockIcon,
   HomeIcon,
   LucideAngularModule,
@@ -53,15 +56,28 @@ const HEADER_HEIGHT_PX = 52;
             </span>
           }
 
-          <div class="erp-shell-header__period">
-            <span class="erp-shell-header__chip erp-shell-header__chip--period">
-              <lucide-icon [img]="calendarIcon" aria-hidden="true"></lucide-icon>
-              <span>{{ periodoActivo.etiqueta() }}</span>
-            </span>
-            <details class="erp-shell-header__period-edit">
-              <summary class="sr-only">Cambiar período activo</summary>
+          <details #periodPicker class="erp-shell-header__period-edit">
+            <summary
+              class="erp-shell-header__period-trigger"
+              title="Cambiar período activo"
+              [attr.aria-label]="'Cambiar período activo. Actual: ' + periodoActivo.etiqueta()"
+            >
+              <span class="erp-shell-header__chip erp-shell-header__chip--period">
+                <lucide-icon [img]="calendarIcon" aria-hidden="true"></lucide-icon>
+                <span>{{ periodoActivo.etiqueta() }}</span>
+                <lucide-icon
+                  [img]="chevronDownIcon"
+                  class="erp-shell-header__period-chevron"
+                  aria-hidden="true"
+                ></lucide-icon>
+              </span>
+            </summary>
+            <div class="erp-shell-header__period-panel">
+              <p class="erp-shell-header__period-hint">
+                Elija mes y año para revisar otro período. Si ya existe nómina guardada, se cargará automáticamente.
+              </p>
               <div class="erp-shell-header__period-controls">
-                <label class="sr-only" for="header-periodo-anio">Año</label>
+                <label class="erp-shell-header__period-label" for="header-periodo-anio">Año</label>
                 <select
                   id="header-periodo-anio"
                   class="periodo-header-select periodo-header-year"
@@ -72,7 +88,7 @@ const HEADER_HEIGHT_PX = 52;
                     <option [value]="stringYear(y)">{{ y }}</option>
                   }
                 </select>
-                <label class="sr-only" for="header-periodo-mes">Mes</label>
+                <label class="erp-shell-header__period-label" for="header-periodo-mes">Mes</label>
                 <select
                   id="header-periodo-mes"
                   class="periodo-header-select periodo-header-month"
@@ -84,8 +100,8 @@ const HEADER_HEIGHT_PX = 52;
                   }
                 </select>
               </div>
-            </details>
-          </div>
+            </div>
+          </details>
 
           @if (primaryAction(); as action) {
             <button
@@ -228,37 +244,69 @@ const HEADER_HEIGHT_PX = 52;
         color: #64748b;
       }
 
-      .erp-shell-header__period {
-        display: flex;
-        align-items: center;
-        gap: 4px;
-      }
-
       .erp-shell-header__period-edit {
         position: relative;
       }
 
-      .erp-shell-header__period-edit summary {
+      .erp-shell-header__period-trigger {
         list-style: none;
         cursor: pointer;
       }
 
-      .erp-shell-header__period-edit summary::-webkit-details-marker {
+      .erp-shell-header__period-trigger::-webkit-details-marker {
         display: none;
       }
 
-      .erp-shell-header__period-controls {
+      .erp-shell-header__period-trigger:hover .erp-shell-header__chip--period {
+        border-color: #cbd5e1;
+        background: #ffffff;
+        color: #0f172a;
+      }
+
+      .erp-shell-header__period-chevron {
+        width: 12px;
+        height: 12px;
+        opacity: 0.7;
+        transition: transform 120ms ease;
+      }
+
+      .erp-shell-header__period-edit[open] .erp-shell-header__period-chevron {
+        transform: rotate(180deg);
+      }
+
+      .erp-shell-header__period-panel {
         position: absolute;
         top: calc(100% + 6px);
         right: 0;
         z-index: 20;
-        display: flex;
-        gap: 6px;
+        display: grid;
+        gap: 8px;
+        width: min(18rem, calc(100vw - 24px));
         border: 1px solid #e2e8f0;
         border-radius: 8px;
         background: #ffffff;
-        padding: 8px;
+        padding: 10px;
         box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
+      }
+
+      .erp-shell-header__period-hint {
+        margin: 0;
+        color: #64748b;
+        font-size: 0.72rem;
+        line-height: 1.4;
+      }
+
+      .erp-shell-header__period-controls {
+        display: grid;
+        grid-template-columns: auto 1fr;
+        gap: 6px 8px;
+        align-items: center;
+      }
+
+      .erp-shell-header__period-label {
+        color: #64748b;
+        font-size: 0.72rem;
+        font-weight: 650;
       }
 
       .periodo-header-select {
@@ -356,9 +404,13 @@ const HEADER_HEIGHT_PX = 52;
       }
 
       @media (max-width: 760px) {
-        .erp-shell-header__period-edit,
         .erp-shell-header__logout {
           display: none;
+        }
+
+        .erp-shell-header__period-panel {
+          right: auto;
+          left: 0;
         }
       }
     `,
@@ -368,7 +420,10 @@ export class HeaderComponent {
   readonly homeIcon = HomeIcon;
   readonly clockIcon = ClockIcon;
   readonly calendarIcon = CalendarIcon;
+  readonly chevronDownIcon = ChevronDownIcon;
   readonly playIcon = PlayIcon;
+
+  private readonly periodPicker = viewChild<ElementRef<HTMLDetailsElement>>('periodPicker');
   readonly navWidth = SHELL_NAV_WIDTH_PX;
   readonly headerHeight = HEADER_HEIGHT_PX;
 
@@ -438,12 +493,24 @@ export class HeaderComponent {
 
   onAnioChange(raw: string): void {
     const mes = this.periodoActivo.periodoYm().slice(5, 7);
-    this.periodoActivo.setPeriodoYm(`${raw}-${mes}`);
+    this.aplicarPeriodoYm(`${raw}-${mes}`);
   }
 
   onMesChange(raw: string): void {
     const anio = this.periodoActivo.periodoYm().slice(0, 4);
-    this.periodoActivo.setPeriodoYm(`${anio}-${raw}`);
+    this.aplicarPeriodoYm(`${anio}-${raw}`);
+  }
+
+  private aplicarPeriodoYm(ym: string): void {
+    this.periodoActivo.setPeriodoYm(ym);
+    this.cerrarSelectorPeriodo();
+  }
+
+  private cerrarSelectorPeriodo(): void {
+    const el = this.periodPicker()?.nativeElement;
+    if (el) {
+      el.open = false;
+    }
   }
 
   onPrimaryAction(): void {

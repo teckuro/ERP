@@ -73,6 +73,30 @@ describe('proceso-mensual-detalle-mensual.rules', () => {
     expect(rows[0]?.severity).toBe('bloqueo');
   });
 
+  it('buildNominaDetalleMensualTodosRows no incluye filas planas de movimientos', () => {
+    const rows = buildNominaDetalleMensualTodosRows({
+      pendientes: [],
+      movimientos: buildNominaDetalleMensualMovimientosRows({
+        movimientos: [
+          {
+            trabajador: 'Juan',
+            concepto: 'Bono',
+            tipo: 'Haber',
+            monto: '$1',
+            estado: 'Listo',
+            accion: 'Ver',
+          },
+        ],
+        recurrentes: [],
+        periodoEtiqueta: 'Mayo 2026',
+      }),
+      trabajadores: [],
+      liquidaciones: [],
+    });
+
+    expect(rows.every((row) => row.ambito !== 'Movimiento')).toBe(true);
+  });
+
   it('buildNominaHistorialTablaRows mapea eventos visuales', () => {
     const rows = buildNominaHistorialTablaRows([
       { hora: '10:30', texto: 'Se confirmó la nómina mensual.', destacado: true },

@@ -1,4 +1,5 @@
 @import './payroll-operational-tabs.css';
+@import './payroll-segment-nav.css';
 
 :host {
   display: block;

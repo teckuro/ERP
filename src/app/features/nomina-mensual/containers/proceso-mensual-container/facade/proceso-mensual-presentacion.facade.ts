@@ -56,8 +56,10 @@ import {
 import { mapSnapshotCompletoToBaseTrazabilidad } from '../../../rules/proceso-mensual-borrador-snapshot.rules';
 import { buildIncidenciasPeriodo } from '../../../rules/proceso-mensual-incidencias-periodo.rules';
 import {
+  buildAccionRecomendadaTrabajador,
   buildDetalleMasivoTrabajador,
   buildFilasMasivasTrabajadores,
+  buildMovimientosPanelPorTrabajador,
   buildResumenMasivoNomina,
   filtrarFilasMasivasTrabajadores,
   type NominaMasivaEstado,
@@ -114,6 +116,7 @@ import {
   resolveFranjaItemTono,
   type NominaWorkspaceTabVisibleSummaryVm,
 } from '../../../rules/proceso-mensual-workspace-presentacion.rules';
+import { claseSegmentNavActivo } from '../../../rules/proceso-mensual-segment-nav.rules';
 import {
   DETALLE_OPERATIVO_TABS,
   PAYROLL_MOVEMENT_DETAIL_COLUMNS,
@@ -352,7 +355,7 @@ export class ProcesoMensualPresentacionFacade {
   );
   readonly nominaWorkspaceTab = signal<NominaWorkspaceTab>('parametros');
   readonly nominaWorkspaceTabVisible = signal<NominaWorkspaceTabVisible>('detalle_mensual');
-  readonly nominaDetalleMensualVista = signal<NominaDetalleMensualVista>('todos');
+  readonly nominaDetalleMensualVista = signal<NominaDetalleMensualVista>('trabajadores');
 
   constructor() {
     const destroyRef = inject(DestroyRef);
@@ -404,6 +407,11 @@ export class ProcesoMensualPresentacionFacade {
     this.nominaWorkspaceTab.set(mapped.legacyTab);
     this.nominaWorkspaceTabVisible.set(mapped.tabVisible);
     this.nominaDetalleMensualVista.set(mapped.detalleVista);
+    if (tab === 'movimientos') {
+      this.nominaMasivaFiltro.set('con_movimientos');
+    } else if (tab === 'recurrentes') {
+      this.nominaMasivaFiltro.set('con_recurrentes');
+    }
   }
 
   seleccionarNominaWorkspaceTabVisible(tab: NominaWorkspaceTabVisible): void {
@@ -415,6 +423,12 @@ export class ProcesoMensualPresentacionFacade {
 
   seleccionarNominaDetalleMensualVista(vista: NominaDetalleMensualVista): void {
     this.nominaWorkspaceTabVisible.set('detalle_mensual');
+    if (vista === 'movimientos') {
+      this.nominaMasivaFiltro.set('con_movimientos');
+      this.nominaDetalleMensualVista.set('trabajadores');
+      this.nominaWorkspaceTab.set('movimientos');
+      return;
+    }
     this.nominaDetalleMensualVista.set(vista);
     const legacy = mapDetalleVistaALegacyTab(vista);
     if (legacy) {
@@ -433,6 +447,12 @@ export class ProcesoMensualPresentacionFacade {
         this.abrirInformacionParametrosPeriodo();
         return;
       }
+      return;
+    }
+
+    if (area === 'movimientos') {
+      this.seleccionarNominaDetalleMensualVista('trabajadores');
+      this.seleccionarFiltroNominaMasiva('con_movimientos');
       return;
     }
 
@@ -494,9 +514,16 @@ export class ProcesoMensualPresentacionFacade {
     return claseDetalleRevisionTab(tab.severidad, this.detalleOperativoTabActivo() === tab.id);
   }
 
+  esFiltroMasivoActivo(filtro: NominaMasivaFiltro): boolean {
+    return this.nominaMasivaFiltro() === filtro;
+  }
+
   claseFiltroNominaMasiva(filtro: NominaMasivaFiltro): string {
-    const base = 'payroll-mass-filter';
-    return this.nominaMasivaFiltro() === filtro ? `${base} payroll-mass-filter--active` : base;
+    return claseSegmentNavActivo(this.esFiltroMasivoActivo(filtro));
+  }
+
+  claseFiltroMasivoStat(filtro: NominaMasivaFiltro): string {
+    return claseSegmentNavActivo(this.esFiltroMasivoActivo(filtro), 'stat');
   }
 
   etiquetaEstadoNominaMasiva(estado: NominaMasivaEstado): string {
@@ -573,15 +600,24 @@ export class ProcesoMensualPresentacionFacade {
   readonly nominaHistorialTablaColumns = NOMINA_HISTORIAL_TABLA_COLUMNS;
   readonly nominaMasivaPageSizeOptions = [25, 50, 100];
   readonly nominaMasivaTrabajadoresColumns: DataGridColumn<NominaMasivaFila>[] = [
+    { id: 'estado', header: 'Estado', field: 'estado', sortable: true, minWidth: '120px' },
     { id: 'trabajador', header: 'Trabajador', field: 'trabajador', sortable: true, priorityResponsive: 'primary', minWidth: '170px' },
-    { id: 'rut', header: 'RUT', field: 'rut', sortable: true, priorityResponsive: 'secondary', minWidth: '110px' },
-    { id: 'estado', header: 'Estado', field: 'estado', sortable: true, format: (_value, row) => this.etiquetaEstadoNominaMasiva(row.estado) },
-    { id: 'haberes', header: 'Haberes', field: 'haberes', align: 'right', format: (_value, row) => this.etiquetaMontoNominaMasiva(row.haberes) },
-    { id: 'descuentos', header: 'Descuentos', field: 'descuentos', align: 'right', format: (_value, row) => this.etiquetaMontoNominaMasiva(row.descuentos) },
-    { id: 'liquidoEstimado', header: 'Liquido estimado', field: 'liquidoEstimado', align: 'right', format: (_value, row) => this.etiquetaMontoNominaMasiva(row.liquidoEstimado) },
-    { id: 'pendientes', header: 'Pendientes', field: 'pendientes', align: 'center', format: (_value, row) => this.etiquetaPendientesNominaMasiva(row.pendientes) },
-    { id: 'accion', header: 'Accion', align: 'center', sortable: false, filterable: false, hideable: false },
+    { id: 'movimientosCount', header: 'Movimientos', field: 'movimientosCount', align: 'center', sortable: true, minWidth: '96px' },
+    { id: 'incidenciasCount', header: 'Incidencias', field: 'incidenciasCount', align: 'center', sortable: true, minWidth: '96px' },
+    {
+      id: 'liquidoEstimado',
+      header: 'Líquido estimado',
+      field: 'liquidoEstimado',
+      align: 'right',
+      sortable: true,
+      minWidth: '120px',
+      format: (_value, row) => this.etiquetaMontoNominaMasiva(row.liquidoEstimado),
+    },
   ];
+
+  readonly nominaMasivaMovimientosPanelColumns = DETALLE_MENSUAL_MOVIMIENTO_COLUMNS.filter(
+    (column) => column.id !== 'trabajador',
+  );
 
   readonly baseNominaTrazabilidad = computed(
     () =>
@@ -917,14 +953,21 @@ export class ProcesoMensualPresentacionFacade {
     });
   }
 
+  /** Franja lateral activa: Movimientos abre Trabajadores filtrado, no comparte estado --active. */
+  franjaOperativaActiva(area: NominaAreaOperativa): boolean {
+    if (area === 'parametros') return false;
+    if (this.nominaWorkspaceTabVisible() !== 'detalle_mensual') return false;
+    const vista = this.nominaDetalleMensualVista();
+    if (area === 'movimientos') return false;
+    if (area === 'trabajadores') return vista === 'trabajadores';
+    const franja = NOMINA_FRANJA_AREAS.find((item) => item.id === area);
+    return franja?.detalleVista != null && vista === franja.detalleVista;
+  }
+
   franjaItemClase(area: NominaAreaOperativa): string {
     const valor = this.valorFranjaArea(area);
     const tono = resolveFranjaItemTono(valor);
-    const activo =
-      area === 'parametros'
-        ? false
-        : this.nominaWorkspaceTabVisible() === 'detalle_mensual'
-          && this.nominaDetalleMensualVista() === NOMINA_FRANJA_AREAS.find((a) => a.id === area)?.detalleVista;
+    const activo = this.franjaOperativaActiva(area);
     return [
       'payroll-franja-operativa__item',
       `payroll-franja-operativa__item--${tono}`,
@@ -1134,7 +1177,6 @@ export class ProcesoMensualPresentacionFacade {
   readonly nominaDetalleMensualFiltros: ReadonlyArray<{ id: NominaDetalleMensualVista; label: string }> = [
     { id: 'todos', label: 'Todos' },
     { id: 'trabajadores', label: 'Trabajadores' },
-    { id: 'movimientos', label: 'Movimientos' },
     { id: 'liquidaciones', label: 'Liquidaciones' },
     { id: 'pendientes', label: 'Pendientes' },
   ];
@@ -1171,15 +1213,42 @@ export class ProcesoMensualPresentacionFacade {
     }),
   );
 
-  private readonly syncNominaMasivaSeleccion = effect(() => {
-    const seleccionado = this.nominaMasivaTrabajadorSeleccionadoId();
-    if (seleccionado == null) return;
-    const visible = this.nominaMasivaFilasFiltradas().some(
-      (fila) => String(fila.idPersona) === String(seleccionado),
+  readonly nominaMasivaMovimientosPanelRows = computed(() => {
+    const detalle = this.nominaMasivaDetalleSeleccionado();
+    if (!detalle) return [];
+    return buildMovimientosPanelPorTrabajador(
+      detalle,
+      this.periodoActivo.etiqueta() || this.store.periodoSeleccionado(),
     );
-    if (!visible) {
-      untracked(() => this.nominaMasivaTrabajadorSeleccionadoId.set(null));
+  });
+
+  readonly nominaMasivaAccionRecomendadaPanel = computed(() => {
+    const detalle = this.nominaMasivaDetalleSeleccionado();
+    if (!detalle) return null;
+    return buildAccionRecomendadaTrabajador(detalle.incidencias, detalle.estado);
+  });
+
+  readonly nominaMasivaTituloContexto = computed(() => {
+    if (this.nominaDetalleMensualVista() !== 'trabajadores') return null;
+    if (this.nominaMasivaFiltro() === 'con_movimientos') {
+      return 'Trabajadores con movimientos';
     }
+    return null;
+  });
+
+  private readonly syncNominaMasivaSeleccion = effect(() => {
+    const filas = this.nominaMasivaFilasFiltradas();
+    const seleccionado = this.nominaMasivaTrabajadorSeleccionadoId();
+    if (filas.length === 0) {
+      if (seleccionado != null) {
+        untracked(() => this.nominaMasivaTrabajadorSeleccionadoId.set(null));
+      }
+      return;
+    }
+    if (seleccionado == null) return;
+    const visible = filas.some((fila) => String(fila.idPersona) === String(seleccionado));
+    if (visible) return;
+    untracked(() => this.nominaMasivaTrabajadorSeleccionadoId.set(filas[0].idPersona));
   });
 
   mostrarDetalleOperativo(etapa: EtapaOperativaActiva): boolean {
@@ -1628,30 +1697,38 @@ export class ProcesoMensualPresentacionFacade {
 
   seleccionarFiltroNominaMasiva(filtro: NominaMasivaFiltro): void {
     this.nominaMasivaFiltro.set(filtro);
-    const seleccionado = this.nominaMasivaTrabajadorSeleccionadoId();
-    if (
-      seleccionado != null
-      && !filtrarFilasMasivasTrabajadores(this.nominaMasivaFilas(), filtro, this.nominaMasivaBusqueda())
-        .some((fila) => String(fila.idPersona) === String(seleccionado))
-    ) {
-      this.nominaMasivaTrabajadorSeleccionadoId.set(null);
-    }
   }
 
   actualizarBusquedaNominaMasiva(valor: string): void {
     this.nominaMasivaBusqueda.set(valor);
-    const seleccionado = this.nominaMasivaTrabajadorSeleccionadoId();
-    if (
-      seleccionado != null
-      && !filtrarFilasMasivasTrabajadores(this.nominaMasivaFilas(), this.nominaMasivaFiltro(), valor)
-        .some((fila) => String(fila.idPersona) === String(seleccionado))
-    ) {
-      this.nominaMasivaTrabajadorSeleccionadoId.set(null);
-    }
   }
 
   seleccionarTrabajadorNominaMasiva(idPersona: number | string): void {
     this.nominaMasivaTrabajadorSeleccionadoId.set(idPersona);
+  }
+
+  esFilaMasivaSeleccionada(idPersona: number | string): boolean {
+    const seleccionado = this.nominaMasivaTrabajadorSeleccionadoId();
+    return seleccionado != null && String(seleccionado) === String(idPersona);
+  }
+
+  claseAccionRecomendadaMasiva(tono: 'listo' | 'atencion' | 'bloqueo' | 'neutral'): string {
+    switch (tono) {
+      case 'bloqueo':
+        return 'payroll-revision-trabajadores__accion payroll-revision-trabajadores__accion--bloqueo';
+      case 'atencion':
+        return 'payroll-revision-trabajadores__accion payroll-revision-trabajadores__accion--atencion';
+      case 'listo':
+        return 'payroll-revision-trabajadores__accion payroll-revision-trabajadores__accion--listo';
+      default:
+        return 'payroll-revision-trabajadores__accion';
+    }
+  }
+
+  etiquetaConteoMasivo(cantidad: number, singular: string, plural: string): string {
+    if (cantidad <= 0) return `Sin ${plural}`;
+    if (cantidad === 1) return `1 ${singular}`;
+    return `${cantidad} ${plural}`;
   }
 
   @HostListener('document:keydown.escape')
@@ -2192,7 +2269,7 @@ function mapLegacyWorkspaceTabANavegacion(tab: NominaWorkspaceTab): {
       return { tabVisible: 'detalle_mensual', detalleVista: 'liquidaciones', legacyTab: 'liquidaciones' };
     case 'movimientos':
     case 'recurrentes':
-      return { tabVisible: 'detalle_mensual', detalleVista: 'movimientos', legacyTab: tab };
+      return { tabVisible: 'detalle_mensual', detalleVista: 'trabajadores', legacyTab: tab };
     case 'trabajadores':
       return { tabVisible: 'detalle_mensual', detalleVista: 'trabajadores', legacyTab: 'trabajadores' };
     case 'parametros':

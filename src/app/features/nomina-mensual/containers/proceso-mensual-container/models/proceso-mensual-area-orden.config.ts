@@ -34,9 +34,9 @@ export const NOMINA_FRANJA_AREAS: ReadonlyArray<{
   {
     id: 'movimientos',
     label: 'Movimientos',
-    detalleVista: 'movimientos',
+    detalleVista: 'trabajadores',
     icon: 'list-checks',
-    ariaLabel: 'Ver movimientos del período',
+    ariaLabel: 'Ver trabajadores con movimientos',
     focusAreaLabel: 'Movimientos y recurrentes',
   },
   {

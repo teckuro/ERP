@@ -2,10 +2,12 @@ import type { BaseNominaTrazabilidad } from '../models/proceso-mensual.model';
 import type { ExpedienteNominaPeriodoView } from './proceso-mensual-expediente-periodo.rules';
 import type { IncidenciaPeriodo } from './proceso-mensual-incidencias-periodo.rules';
 import type {
+  NominaDetalleMensualMovimientoRow,
   PayrollMovementDetailRow,
   PayrollRecurrentDetailRow,
   ResultadoPreliminarView,
 } from '../containers/proceso-mensual-container/models/proceso-mensual-container.vm';
+import { buildNominaDetalleMensualMovimientosRows } from './proceso-mensual-detalle-mensual.rules';
 
 export type NominaMasivaFiltro =
   | 'todos'
@@ -36,8 +38,17 @@ export interface NominaMasivaFila {
   descuentos: number | null;
   liquidoEstimado: number | null;
   pendientes: number;
+  /** Alias visible en columna Incidencias. */
+  incidenciasCount: number;
+  movimientosCount: number;
   tieneMovimientos: boolean;
   tieneRecurrentes: boolean;
+}
+
+export interface NominaMasivaAccionRecomendada {
+  titulo: string;
+  descripcion: string;
+  tono: 'listo' | 'atencion' | 'bloqueo' | 'neutral';
 }
 
 export interface NominaMasivaDetalle {
@@ -257,12 +268,17 @@ export function buildFilasMasivasTrabajadores(input: BuildNominaMasivaInput): No
         : tieneAdvertencia && fila.estado === 'listo'
           ? 'observacion'
           : fila.estado;
+      const movimientosMes = rowsPorTrabajador(input.movementRows, fila.trabajador);
+      const recurrentes = rowsPorTrabajador(input.recurrentRows, fila.trabajador);
+      const incidenciasCount = incidencias.filter((incidencia) => incidencia.severidad !== 'info').length;
       return {
         ...fila,
         estado,
-        pendientes: incidencias.filter((incidencia) => incidencia.severidad !== 'info').length,
-        tieneMovimientos: tieneRowsPorTrabajador(input.movementRows, fila.trabajador),
-        tieneRecurrentes: tieneRowsPorTrabajador(input.recurrentRows, fila.trabajador),
+        pendientes: incidenciasCount,
+        incidenciasCount,
+        movimientosCount: movimientosMes.length + recurrentes.length,
+        tieneMovimientos: movimientosMes.length > 0,
+        tieneRecurrentes: recurrentes.length > 0,
       };
     })
     .sort((a, b) => a.trabajador.localeCompare(b.trabajador, 'es'));
@@ -311,6 +327,65 @@ export function filtrarFilasMasivasTrabajadores(
     if (!texto && !rut) return true;
     return normalizarBusqueda(fila.trabajador).includes(texto) || (rut.length > 0 && normalizarRut(fila.rut).includes(rut));
   });
+}
+
+export function buildMovimientosPanelPorTrabajador(
+  detalle: NominaMasivaDetalle,
+  periodoEtiqueta: string,
+): NominaDetalleMensualMovimientoRow[] {
+  return buildNominaDetalleMensualMovimientosRows({
+    movimientos: detalle.movimientos,
+    recurrentes: detalle.recurrentes,
+    periodoEtiqueta,
+  });
+}
+
+export function buildAccionRecomendadaTrabajador(
+  incidencias: IncidenciaPeriodo[],
+  estado: NominaMasivaEstado,
+): NominaMasivaAccionRecomendada {
+  const bloqueo = incidencias.find((item) => item.severidad === 'bloqueo');
+  if (bloqueo) {
+    return {
+      titulo: 'Revisar bloqueo',
+      descripcion: `${bloqueo.titulo}. ${bloqueo.detalle}`,
+      tono: 'bloqueo',
+    };
+  }
+  const advertencia = incidencias.find((item) => item.severidad === 'advertencia');
+  if (advertencia) {
+    return {
+      titulo: 'Pendiente de revisión',
+      descripcion: `${advertencia.titulo}. ${advertencia.detalle}`,
+      tono: 'atencion',
+    };
+  }
+  if (estado === 'bloqueado') {
+    return {
+      titulo: 'Trabajador bloqueado',
+      descripcion: 'Resuelva el bloqueo antes de continuar con la confirmación del período.',
+      tono: 'bloqueo',
+    };
+  }
+  if (estado === 'observacion') {
+    return {
+      titulo: 'Revisar observaciones',
+      descripcion: 'Revise los datos del trabajador antes de confirmar la nómina.',
+      tono: 'atencion',
+    };
+  }
+  if (estado === 'no_calculado') {
+    return {
+      titulo: 'Completar cálculo',
+      descripcion: 'Este trabajador aún no tiene un resultado preliminar disponible.',
+      tono: 'neutral',
+    };
+  }
+  return {
+    titulo: 'Listo para continuar',
+    descripcion: 'No hay pendientes visibles para este trabajador en el período.',
+    tono: 'listo',
+  };
 }
 
 export function buildDetalleMasivoTrabajador(
