@@ -64,9 +64,20 @@ export function buildNominaDetalleMensualMovimientosRows(input: {
   );
 }
 
+function resolverIdPersonaPorNombre(
+  trabajador: string,
+  idPersonaPorNombre?: ReadonlyMap<string, number | string>,
+): number | string | undefined {
+  if (!idPersonaPorNombre?.size) {
+    return undefined;
+  }
+  return idPersonaPorNombre.get(trabajador.trim().toLowerCase());
+}
+
 export function buildNominaDetalleMensualTrabajadorRows(input: {
   workers: PayrollWorkerDetailRow[];
   resultados: PayrollResultDetailRow[];
+  idPersonaPorNombre?: ReadonlyMap<string, number | string>;
 }): NominaDetalleMensualTrabajadorRow[] {
   if (input.resultados.length) {
     return input.resultados.map((row) => ({
@@ -77,6 +88,7 @@ export function buildNominaDetalleMensualTrabajadorRows(input: {
       descuentos: row.descuentos,
       liquidoEstimado: row.liquido,
       accion: row.estado === 'Listo' || row.estado === 'Calculado' ? 'Ver' : 'Revisar',
+      idPersona: resolverIdPersonaPorNombre(row.trabajador, input.idPersonaPorNombre),
     }));
   }
 
@@ -88,6 +100,7 @@ export function buildNominaDetalleMensualTrabajadorRows(input: {
     descuentos: '—',
     liquidoEstimado: '—',
     accion: row.accion === 'Sin acción pendiente' ? 'Ver' : row.accion,
+    idPersona: resolverIdPersonaPorNombre(row.trabajador, input.idPersonaPorNombre),
   }));
 }
 
@@ -191,6 +204,7 @@ export function trabajadorRowsAExpediente(
     accion: row.accion,
     severity: severityDesdeEstado(row.estado),
     detalleTab: 'trabajadores' as DetalleOperativoTab,
+    idPersona: row.idPersona,
   }));
 }
 

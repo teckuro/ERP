@@ -103,7 +103,6 @@ import {
   buildResumenRevisionTrabajadores,
   mapBitacoraRailEtapas,
   resolveNominaVisualFrame,
-  suggestNominaWorkspaceNavigation,
 } from '../../../rules/proceso-mensual-workspace.rules';
 import {
   buildNominaDetalleMensualMovimientosRows,
@@ -121,7 +120,10 @@ import {
 import { claseSegmentNavActivo } from '../../../rules/proceso-mensual-segment-nav.rules';
 import {
   appendNominaFlowQuery,
+  debeRehidratarDesdeFlowQuery,
+  detalleTabUsaModal,
   periodoYmDesdeFlowQuery,
+  resolveFlowDestinoPorFrame,
   resolveNominaEstadoRrhh,
   resolveWorkspaceTargetFromAccionLocal,
   resolveWorkspaceTargetFromDetalleTab,
@@ -160,6 +162,8 @@ import type {
   NominaResumenSuperiorVm,
   NominaVisualFrame,
   NominaVisualFrameView,
+  NominaDetalleMensualExpedienteRow,
+  NominaDetalleMensualPendienteRow,
   NominaDetalleMensualVista,
   NominaWorkspaceTab,
   NominaWorkspaceTabVisible,
@@ -406,11 +410,21 @@ export class ProcesoMensualPresentacionFacade {
     );
 
     effect(() => {
-      const periodo = periodoYmDesdeFlowQuery(this.flowQueryParams());
+      const params = this.flowQueryParams();
+      const periodo = periodoYmDesdeFlowQuery(params);
       if (!periodo) return;
+      const rehidratar = debeRehidratarDesdeFlowQuery(params);
       untracked(() => {
         if (this.periodoActivo.periodoYm() !== periodo) {
           this.periodoActivo.setPeriodoYm(periodo);
+        }
+        if (rehidratar) {
+          this.store.rehidratarPeriodoActivo(periodo);
+          void this.router.navigate([], {
+            queryParams: { periodo: null, returnTo: null },
+            queryParamsHandling: 'merge',
+            replaceUrl: true,
+          });
         }
       });
     });
@@ -904,8 +918,19 @@ export class ProcesoMensualPresentacionFacade {
   );
 
   readonly nominaWorkspaceNavigationSugerida = computed(() =>
-    suggestNominaWorkspaceNavigation(this.nominaVisualFrame()),
+    resolveFlowDestinoPorFrame(this.nominaVisualFrame()),
   );
+
+  private readonly idPersonaPorNombreTrabajador = computed(() => {
+    const map = new Map<string, number | string>();
+    for (const fila of this.nominaMasivaFilas()) {
+      const clave = fila.trabajador.trim().toLowerCase();
+      if (clave && !map.has(clave)) {
+        map.set(clave, fila.idPersona);
+      }
+    }
+    return map;
+  });
 
   private readonly syncNominaWorkspaceTab = effect(() => {
     const nav = this.nominaWorkspaceNavigationSugerida();
@@ -1200,6 +1225,7 @@ export class ProcesoMensualPresentacionFacade {
     buildNominaDetalleMensualTrabajadorRows({
       workers: this.payrollWorkerDetailRows(),
       resultados: this.payrollResultDetailRows(),
+      idPersonaPorNombre: this.idPersonaPorNombreTrabajador(),
     }),
   );
 
@@ -1229,9 +1255,9 @@ export class ProcesoMensualPresentacionFacade {
         conceptoSituacion: generadas > 0
           ? `${generadas} liquidación${generadas === 1 ? '' : 'es'} del período`
           : 'Nómina confirmada; puede generar liquidaciones',
-        origenDuracion: '—',
+        origenDuracion: 'â€”',
         vigencia: this.periodoActivo.etiqueta(),
-        monto: '—',
+        monto: 'â€”',
         accion: generadas > 0 || cerrada ? 'Ir a liquidaciones' : 'Confirmar nómina',
         severity: generadas > 0 ? 'listo' as const : 'atencion' as const,
         ruta: generadas > 0 || cerrada ? '/remuneraciones/liquidaciones' : undefined,
@@ -1380,9 +1406,9 @@ export class ProcesoMensualPresentacionFacade {
       return `${accion.label}: ${accion.descripcion}`;
     }
     if (!snapshot) {
-      return 'Guarda el resultado preliminar para revision.';
+      return 'Confirma la revision para dejar la nomina lista.';
     }
-    return 'Resultado preliminar disponible para revision.';
+    return 'Nomina mensual disponible para revision.';
   });
 
   validarPeriodo(): void {
@@ -1533,12 +1559,58 @@ export class ProcesoMensualPresentacionFacade {
     }
   }
 
-  abrirDetalleExpedienteFila(detalleTab: DetalleOperativoTab, ruta?: string): void {
+  abrirTrabajadorEnDetalle(idPersona: number | string, filtroMasivo?: NominaMasivaFiltro): void {
+    this.aplicarDestinoWorkspace({
+      tabVisible: 'detalle_mensual',
+      detalleVista: 'trabajadores',
+      legacyTab: 'trabajadores',
+      filtroMasivo,
+    });
+    this.seleccionarTrabajadorNominaMasiva(idPersona);
+  }
+
+  abrirDetalleExpedienteFila(detalleTab?: DetalleOperativoTab, ruta?: string): void {
     if (ruta) {
       void this.router.navigateByUrl(appendNominaFlowQuery(ruta, this.periodoSeleccionado()));
       return;
     }
-    this.abrirDetalleOperativo(detalleTab);
+    if (detalleTab) {
+      this.abrirDetalleOperativo(detalleTab);
+    }
+  }
+
+  abrirDetalleExpedienteRow(row: NominaDetalleMensualExpedienteRow): void {
+    if (row.ruta) {
+      this.abrirDetalleExpedienteFila(undefined, row.ruta);
+      return;
+    }
+    if (row.ambito === 'Trabajador' && row.idPersona != null) {
+      this.abrirTrabajadorEnDetalle(row.idPersona);
+      return;
+    }
+    if (row.detalleTab) {
+      this.abrirDetalleExpedienteFila(row.detalleTab);
+    }
+  }
+
+  abrirDetallePendienteRow(row: NominaDetalleMensualPendienteRow): void {
+    if (row.ruta) {
+      this.abrirDetalleExpedienteFila(undefined, row.ruta);
+      return;
+    }
+    if (row.detalleTab) {
+      this.abrirDetalleExpedienteFila(row.detalleTab);
+    }
+  }
+
+  navegarDesdeModal(ruta: string): void {
+    this.cerrarDetalleOperativo();
+    void this.router.navigateByUrl(appendNominaFlowQuery(ruta, this.periodoSeleccionado()));
+  }
+
+  irAlDetalleDelPeriodoDesdeModal(tab: DetalleOperativoTab = 'trabajadores'): void {
+    this.cerrarDetalleOperativo();
+    this.abrirDetalleOperativo(tab);
   }
 
   solicitarAbrirNomina(): void {
@@ -1624,14 +1696,14 @@ export class ProcesoMensualPresentacionFacade {
   guardarSnapshotPreliminar(): void {
     this.abrirOverlayDecision({
       tipo: 'guardar_preliminar',
-      titulo: 'Guardar versión revisable',
-      mensaje: 'Se guardara una version revisable de la nomina mensual para este periodo.',
+      titulo: 'Confirmar revisión',
+      mensaje: 'Se preparara la nomina mensual revisada para este periodo.',
       detalle: 'No emite liquidaciones, no confirma la nomina y no genera archivos legales.',
       puntos: [
-        'Quedara disponible para revision y confirmacion operativa.',
-        'Si cambias datos del periodo, deberas calcular y guardar una nueva version.',
+        'Quedara disponible para la confirmacion final.',
+        'Si cambias datos del periodo, deberas revisar y preparar una nueva version.',
       ],
-      primaryLabel: 'Guardar version',
+      primaryLabel: 'Confirmar revision',
       secondaryLabel: 'Cancelar',
     });
   }
@@ -1793,6 +1865,15 @@ export class ProcesoMensualPresentacionFacade {
     if (this.overlay().kind === 'revision') {
       this.overlay.set({ kind: 'revision', tab });
     }
+  }
+
+  /** Desde el modal: resumen/resultado quedan en overlay; el resto abre el panel del período. */
+  seleccionarRevisionDesdeModal(tab: DetalleOperativoTab): void {
+    if (detalleTabUsaModal(tab)) {
+      this.seleccionarDetalleOperativoTab(tab);
+      return;
+    }
+    this.irAlDetalleDelPeriodoDesdeModal(tab);
   }
 
   seleccionarFiltroNominaMasiva(filtro: NominaMasivaFiltro): void {

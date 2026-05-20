@@ -145,6 +145,17 @@
                   Ver revisión ampliada
                 </button>
               }
+              @if (f.nominaPendientesVisuales().length) {
+                <ul class="payroll-rail-pendientes">
+                  @for (pendiente of f.nominaPendientesVisuales(); track pendiente.codigo) {
+                    <li>
+                      <button type="button" class="payroll-rail-link" (click)="f.navegarPendienteExterno(pendiente)">
+                        {{ pendiente.accionLabel ?? pendiente.titulo }}
+                      </button>
+                    </li>
+                  }
+                </ul>
+              }
             }
           </section>
 
@@ -336,7 +347,19 @@
                   headerCountNoun="registros"
                   emptyTitle="Sin registros visibles"
                   emptyDescription="Genere o revise la nómina mensual para ver el detalle consolidado."
-                />
+                >
+                  <ng-template appDataGridCell="accion" let-row="row">
+                    @if (row.accion) {
+                      <button
+                        type="button"
+                        class="payroll-revision-trabajadores__link"
+                        (click)="f.abrirDetalleExpedienteRow(row)"
+                      >
+                        {{ row.accion }}
+                      </button>
+                    }
+                  </ng-template>
+                </app-data-grid>
               }
               @case ('trabajadores') {
                 <app-proceso-mensual-revision-trabajadores />
@@ -366,7 +389,19 @@
                   headerCountNoun="pendientes"
                   emptyTitle="Sin pendientes visibles"
                   emptyDescription="No hay bloqueos ni revisiones pendientes en este período."
-                />
+                >
+                  <ng-template appDataGridCell="accion" let-row="row">
+                    @if (row.accion) {
+                      <button
+                        type="button"
+                        class="payroll-revision-trabajadores__link"
+                        (click)="f.abrirDetallePendienteRow(row)"
+                      >
+                        {{ row.accion }}
+                      </button>
+                    }
+                  </ng-template>
+                </app-data-grid>
               }
             }
           }

@@ -2,7 +2,7 @@
 
 ## Proposito
 
-Permitir generar y revisar liquidaciones oficiales internas desde una nomina cerrada operativamente.
+Permitir generar y revisar liquidaciones oficiales internas desde una nomina mensual confirmada.
 
 ## Estado actual
 
@@ -11,7 +11,7 @@ Permitir generar y revisar liquidaciones oficiales internas desde una nomina cer
 ## Flujo
 
 ```txt
-Preparar nomina
+Nómina mensual
 -> Resultado preliminar
 -> Aprobacion operativa
 -> Cierre operativo
@@ -22,7 +22,7 @@ Preparar nomina
 
 ```txt
 Liquidaciones oficiales no recalcula.
-Materializa el snapshot cerrado.
+Materializa la nomina mensual confirmada.
 ```
 
 ## NOM-MENSUAL-CONFIRMACION-FLOW-00
@@ -33,16 +33,16 @@ Liquidaciones oficiales queda alineado a la nueva regla rectora de Nómina mensu
 Nómina mensual confirmada = fuente oficial para generar liquidaciones.
 ```
 
-La regla actual se mantiene: Liquidaciones no recalcula. En lenguaje visible futuro, preferir `nómina mensual confirmada` sobre `snapshot cerrado` cuando se explique la condicion de entrada a RRHH.
+La regla actual se mantiene: Liquidaciones no recalcula. En lenguaje visible futuro, preferir `nómina mensual confirmada` sobre `nomina mensual confirmada` cuando se explique la condicion de entrada a RRHH.
 
 
 ## NOM-LIQ-ACTA-GUIADA-DESIGN-00
 
-Liquidaciones oficiales queda documentado como acta de salida interna del flujo `Preparar nomina -> Liquidaciones oficiales`.
+Liquidaciones oficiales queda documentado como acta de salida interna del flujo `Nómina mensual -> Liquidaciones oficiales`.
 
 La pantalla debe explicar la condicion de entrada, confirmar que no recalcula y mostrar evidencia despues de generar o revisar liquidaciones. Ver [`../../diseno/nom-liq-acta-guiada-design-00.md`](../../diseno/nom-liq-acta-guiada-design-00.md).
 
-La fase `NOM-PREPARAR-NOMINA-ACTA-ACCION-UX-01` deja preparada en `Preparar nomina` una evidencia visual local previa a este modulo. Liquidaciones no recibe datos nuevos ni recalcula por esa accion; la persistencia formal queda para `NOM-LIQ-ACTA-GENERACION-UX-01`.
+La fase `NOM-PREPARAR-NOMINA-ACTA-ACCION-UX-01` deja preparada en `Nómina mensual` una evidencia visual local previa a este modulo. Liquidaciones no recibe datos nuevos ni recalcula por esa accion; la persistencia formal queda para `NOM-LIQ-ACTA-GENERACION-UX-01`.
 
 ## Incluye v1
 
@@ -103,7 +103,7 @@ La confirmacion fue reemplazada por modal/MsgBox estandar durante UX-COMERCIAL-0
 
 ## UX-COMERCIAL-01 V4 aplicado
 
-- La pantalla explica que la salida nace desde nomina cerrada operativamente.
+- La pantalla explica que la salida nace desde nomina mensual confirmada.
 - Resumen, siguiente accion, bloqueos/advertencias e informacion quedan por sobre la trazabilidad tecnica.
 - El detalle vacio ya no queda sin salida: ofrece volver a Liquidaciones oficiales o preparar la nomina.
 - Acciones futuras siguen fuera de alcance: sin PDF, firma, envio, Previred, LRE, banco ni contabilidad.
@@ -131,4 +131,4 @@ Liquidaciones oficiales queda alineado a [`NOIA / Bitacora Operativa`](../../dis
 
 ## NOM-MOVIMIENTOS-SIMPLE-01
 
-Liquidaciones no cambia. La relacion con movimientos sigue entrando por el resultado cerrado de Preparar nomina; no se recalculan cuotas, recurrentes ni movimientos desde Liquidaciones.
+Liquidaciones no cambia. La relacion con movimientos sigue entrando por el nomina mensual confirmada; no se recalculan cuotas, recurrentes ni movimientos desde Liquidaciones.

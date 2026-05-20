@@ -113,13 +113,13 @@ async function countConceptos(supabase: SupabaseClient, idCalculoPeriodo: number
 }
 
 function cierreOperativoVisible(page: Page) {
-  return page.getByRole('heading', { name: 'Nomina cerrada operativamente' });
+  return page.getByRole('heading', { name: 'Nómina mensual confirmada' });
 }
 
 describeNominaReal('nomina mensual - E2E real authenticated', () => {
   test.describe.configure({ mode: 'serial', timeout: 300_000 });
 
-  test('Preparar nomina: calcula, guarda por RPC, consulta BD, aprueba y recupera al recargar', async ({ page }, testInfo) => {
+  test('Nómina mensual: verifica, genera, revisa, confirma y recupera al recargar', async ({ page }, testInfo) => {
     const periodo = process.env['E2E_NOMINA_PERIODO'] ?? '';
     const consoleErrors: string[] = [];
     const rpcResponses: string[] = [];
@@ -148,9 +148,9 @@ describeNominaReal('nomina mensual - E2E real authenticated', () => {
 
       page.on('dialog', (dialog) => dialog.accept());
 
-      await expect(page.getByRole('heading', { name: 'Preparar nomina' })).toBeVisible();
+      await expect(page.getByRole('heading', { name: 'Nómina mensual' })).toBeVisible();
       await page.locator('#pm-periodo').fill(periodo);
-      await clickAndWaitIdle(page, /Validar periodo/);
+      await clickAndWaitIdle(page, /Verificar período/);
       await expect(page.getByText('Estado para calculo preliminar')).toBeVisible({ timeout: 60_000 });
 
       if (runNominaCierreReal) {
@@ -165,37 +165,37 @@ describeNominaReal('nomina mensual - E2E real authenticated', () => {
         const existingClosed = (existingRows ?? [])[0]?.cierre_operativo_estado === 'cerrado_operativamente';
         if (existingClosed) {
           await expect(cierreOperativoVisible(page)).toBeVisible({ timeout: 60_000 });
-          await expect(page.getByRole('button', { name: /Calcular preliminar/ }).first()).toBeDisabled();
-          await expect(page.getByRole('button', { name: /Guardar resultado preliminar/ }).first()).toBeDisabled();
-          await expect(page.getByRole('button', { name: /Aprobar resultado preliminar/ }).first()).toBeDisabled();
+          await expect(page.getByRole('button', { name: /Revisar trabajadores/ }).first()).toBeDisabled();
+          await expect(page.getByRole('button', { name: /Confirmar revisión/ }).first()).toBeDisabled();
+          await expect(page.getByRole('button', { name: /Confirmar nómina/ }).first()).toBeDisabled();
           await page.reload();
           await page.locator('#pm-periodo').fill(periodo);
-          await clickAndWaitIdle(page, /Validar periodo/);
+          await clickAndWaitIdle(page, /Verificar período/);
           await expect(cierreOperativoVisible(page)).toBeVisible({ timeout: 60_000 });
           return;
         }
       }
 
-      await expect(page.getByRole('button', { name: /Generar base de nomina/ }).first()).toBeEnabled({
+      await expect(page.getByRole('button', { name: /Generar nómina/ }).first()).toBeEnabled({
         timeout: 60_000,
       });
-      await clickAndWaitIdle(page, /Generar base de nomina/);
+      await clickAndWaitIdle(page, /Generar nómina/);
       await expect(page.getByRole('heading', { name: 'Base de nomina' })).toBeVisible({ timeout: 60_000 });
 
-      await expect(page.getByRole('button', { name: /Calcular preliminar/ }).first()).toBeEnabled({ timeout: 60_000 });
-      await clickAndWaitIdle(page, /Calcular preliminar/);
-      await expect(page.getByText('Resultado preliminar generado', { exact: true })).toBeVisible({ timeout: 60_000 });
+      await expect(page.getByRole('button', { name: /Revisar trabajadores/ }).first()).toBeEnabled({ timeout: 60_000 });
+      await clickAndWaitIdle(page, /Revisar trabajadores/);
+      await expect(page.getByText('Nómina en revisión', { exact: true })).toBeVisible({ timeout: 60_000 });
 
-      await expect(page.getByRole('button', { name: /Guardar resultado preliminar/ }).first()).toBeEnabled({
+      await expect(page.getByRole('button', { name: /Confirmar revisión/ }).first()).toBeEnabled({
         timeout: 60_000,
       });
-      await page.getByRole('button', { name: /Guardar resultado preliminar/ }).first().click();
+      await page.getByRole('button', { name: /Confirmar revisión/ }).first().click();
       await expect(
         page.getByText(
-          'Resultado preliminar guardado correctamente. Revisa y aprueba operativamente este nuevo resultado si corresponde.',
+          'Nómina mensual disponible para revisión.',
         ),
       ).toBeVisible({ timeout: 90_000 });
-      await expect(page.getByText('Resultado guardado desde BD')).toBeVisible({ timeout: 90_000 });
+      await expect(page.getByText('Nómina mensual disponible desde BD')).toBeVisible({ timeout: 90_000 });
 
       const { data: rows, error: snapshotError } = await supabase
         .from('nomina_calculo_periodo')
@@ -215,12 +215,12 @@ describeNominaReal('nomina mensual - E2E real authenticated', () => {
       await expect.poll(() => countConceptos(supabase, activeId)).toBeGreaterThan(0);
       await expect.poll(() => countRows(supabase, 'nomina_calculo_trazabilidad', activeId)).toBeGreaterThan(0);
 
-      await expect(page.getByRole('button', { name: /Aprobar resultado preliminar/ }).first()).toBeEnabled({
+      await expect(page.getByRole('button', { name: /Confirmar nómina/ }).first()).toBeEnabled({
         timeout: 60_000,
       });
-      await page.getByRole('button', { name: /Aprobar resultado preliminar/ }).click();
+      await page.getByRole('button', { name: /Confirmar nómina/ }).click();
       await expect(page.getByRole('heading', { name: 'Aprobacion operativa' })).toBeVisible({ timeout: 60_000 });
-      await expect(page.getByText('Resultado preliminar aprobado operativamente.', { exact: true })).toBeVisible({
+      await expect(page.getByText('Nómina mensual confirmada.', { exact: true })).toBeVisible({
         timeout: 60_000,
       });
 
@@ -243,10 +243,10 @@ describeNominaReal('nomina mensual - E2E real authenticated', () => {
         expect(cierrePrevioError).toBeNull();
 
         if (cierrePrevio?.cierre_operativo_estado !== 'cerrado_operativamente') {
-          await expect(page.getByRole('button', { name: /Cerrar nomina del periodo/ }).first()).toBeEnabled({
+          await expect(page.getByRole('button', { name: /Confirmar nómina/ }).first()).toBeEnabled({
             timeout: 60_000,
           });
-          await page.getByRole('button', { name: /Cerrar nomina del periodo/ }).click();
+          await page.getByRole('button', { name: /Confirmar nómina/ }).click();
           await expect(cierreOperativoVisible(page)).toBeVisible({ timeout: 60_000 });
         } else {
           await expect(cierreOperativoVisible(page)).toBeVisible({ timeout: 60_000 });
@@ -260,9 +260,9 @@ describeNominaReal('nomina mensual - E2E real authenticated', () => {
         expect(cerradoError).toBeNull();
         expect(cerrado?.cierre_operativo_estado).toBe('cerrado_operativamente');
         expect(cerrado?.cierre_operativo_fecha).toBeTruthy();
-        await expect(page.getByRole('button', { name: /Calcular preliminar/ }).first()).toBeDisabled();
-        await expect(page.getByRole('button', { name: /Guardar resultado preliminar/ }).first()).toBeDisabled();
-        await expect(page.getByRole('button', { name: /Aprobar resultado preliminar/ }).first()).toBeDisabled();
+        await expect(page.getByRole('button', { name: /Revisar trabajadores/ }).first()).toBeDisabled();
+        await expect(page.getByRole('button', { name: /Confirmar revisión/ }).first()).toBeDisabled();
+        await expect(page.getByRole('button', { name: /Confirmar nómina/ }).first()).toBeDisabled();
       } else {
         await testInfo.attach('nomina-cierre-real.md', {
           body: 'E2E cierre real omitido por seguridad: falta E2E_NOMINA_CIERRE_REAL=1.',
@@ -272,9 +272,9 @@ describeNominaReal('nomina mensual - E2E real authenticated', () => {
 
       await page.reload();
       await page.locator('#pm-periodo').fill(periodo);
-      await clickAndWaitIdle(page, /Validar periodo/);
-      await expect(page.getByText('Resultado guardado desde BD')).toBeVisible({ timeout: 90_000 });
-      await expect(page.getByText('Resultado preliminar aprobado operativamente.', { exact: true })).toBeVisible({
+      await clickAndWaitIdle(page, /Verificar período/);
+      await expect(page.getByText('Nómina mensual disponible desde BD')).toBeVisible({ timeout: 90_000 });
+      await expect(page.getByText('Nómina mensual confirmada.', { exact: true })).toBeVisible({
         timeout: 60_000,
       });
       if (runNominaCierreReal) {

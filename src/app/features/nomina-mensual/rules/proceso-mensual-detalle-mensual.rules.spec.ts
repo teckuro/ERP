@@ -3,7 +3,9 @@ import { describe, expect, it } from 'vitest';
 import {
   buildNominaDetalleMensualMovimientosRows,
   buildNominaDetalleMensualTodosRows,
+  buildNominaDetalleMensualTrabajadorRows,
   buildNominaHistorialTablaRows,
+  trabajadorRowsAExpediente,
 } from './proceso-mensual-detalle-mensual.rules';
 import { buildIncidenciasPeriodo } from './proceso-mensual-incidencias-periodo.rules';
 
@@ -95,6 +97,27 @@ describe('proceso-mensual-detalle-mensual.rules', () => {
     });
 
     expect(rows.every((row) => row.ambito !== 'Movimiento')).toBe(true);
+  });
+
+  it('buildNominaDetalleMensualTrabajadorRows propaga idPersona al expediente', () => {
+    const idMap = new Map<string, number | string>([['ana soto', 42]]);
+    const trabajadores = buildNominaDetalleMensualTrabajadorRows({
+      workers: [
+        {
+          trabajador: 'Ana Soto',
+          rut: '11.111.111-1',
+          estado: 'Revisar',
+          observacion: 'Falta dato',
+          accion: 'Revisar',
+        },
+      ],
+      resultados: [],
+      idPersonaPorNombre: idMap,
+    });
+    const expediente = trabajadorRowsAExpediente(trabajadores);
+    expect(trabajadores[0]?.idPersona).toBe(42);
+    expect(expediente[0]?.idPersona).toBe(42);
+    expect(expediente[0]?.ambito).toBe('Trabajador');
   });
 
   it('buildNominaHistorialTablaRows mapea eventos visuales', () => {

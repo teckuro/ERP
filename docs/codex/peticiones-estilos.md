@@ -1,3 +1,16 @@
+## 2026-05-20 - Nómina mensual: copy circuito + modal al panel (post FLOW-NAV-02)
+
+- **Módulo:** Remuneraciones (entradas) + modal revisión nómina.
+- **Cambio:** «Preparar nómina» → «Nómina mensual» en dashboard/reportes/liquidación/haberes; acciones del modal que iban a panel usan `seleccionarRevisionDesdeModal` y `navegarDesdeModal` con período; enlace explícito al detalle del período desde modal Trabajadores.
+- **No tocado:** motor, SQL, estilos globales, layout dashboard (cards existentes).
+
+## 2026-05-20 - Nómina mensual: cierre flujo navegación (NOM-FLOW-NAV-02)
+
+- **Módulo:** Nómina mensual / consola período.
+- **Cambio:** acciones en grillas Detalle mensual; preselección trabajador; mini lista pendientes en sidebar; rehidratación al volver con `returnTo`; footer modal al panel; eliminados estilos legacy `.payroll-mass-filter*` / `.payroll-mass-summary*` del modal.
+- **Archivos:** `proceso-mensual-flow-nav.rules.ts`, facade, workspace, detalle-modal CSS/HTML, `nom-mensual-flow-nav-02.md`.
+- **No tocado:** motor, SQL, estilos globales, API DataGrid.
+
 ## 2026-05-20 - Nómina mensual: flujo navegación coherente (NOM-FLOW-NAV-01)
 
 - **Módulo:** Nómina mensual / consola período.

@@ -2,12 +2,12 @@
 
 ## Definicion
 
-La liquidacion oficial interna v1 es el comprobante persistido por trabajador generado desde una nomina cerrada operativamente.
+La liquidacion oficial interna v1 es el comprobante persistido por trabajador generado desde una nomina mensual confirmada.
 
 ## Fuente de verdad
 
 ```txt
-snapshot cerrado de nomina
+nomina mensual confirmada de nomina
 ```
 
 ## NOM-MENSUAL-CONFIRMACION-FLOW-00 - Entrada oficial
@@ -18,7 +18,7 @@ Para usuario final, la fuente de entrada debe comunicarse como:
 nómina mensual confirmada
 ```
 
-La nocion tecnica de `snapshot cerrado de nomina` sigue siendo valida internamente, pero no debe dominar el copy visible. Liquidaciones oficiales materializa la nómina mensual confirmada y no recalcula parametros, movimientos, recurrentes ni datos vivos.
+La nocion tecnica de `nomina mensual confirmada de nomina` sigue siendo valida internamente, pero no debe dominar el copy visible. Liquidaciones oficiales materializa la nómina mensual confirmada y no recalcula parametros, movimientos, recurrentes ni datos vivos.
 
 
 No usa parametros vivos para recalcular.
@@ -53,7 +53,7 @@ sin service_role desde frontend
 ```txt
 snapshot activo
 snapshot aprobado operativamente
-snapshot cerrado operativamente
+nomina mensual confirmada operativamente
 snapshot no reemplazado
 trabajadores existentes
 sin duplicado activo por id_calculo_periodo
@@ -74,7 +74,7 @@ detalle conceptos por trabajador
 
 ## Regla UX de periodo
 
-La pantalla consume el periodo activo global del header/padre. No debe mostrar un segundo selector editable local salvo una futura vista historica explicitamente documentada. El periodo se presenta como contexto compacto y la accion principal depende del estado: volver a Preparar nomina, generar liquidaciones oficiales o revisar liquidaciones existentes.
+La pantalla consume el periodo activo global del header/padre. No debe mostrar un segundo selector editable local salvo una futura vista historica explicitamente documentada. El periodo se presenta como contexto compacto y la accion principal depende del estado: volver a Nómina mensual, generar liquidaciones oficiales o revisar liquidaciones existentes.
 
 ## Fuera de alcance
 
@@ -97,7 +97,7 @@ reliquidacion
 La RPC y la UI deben conservar esta regla:
 
 ```txt
-Liquidaciones oficiales no recalcula; persiste totales desde el snapshot cerrado.
+Liquidaciones oficiales no recalcula; persiste totales desde el nomina mensual confirmada.
 ```
 
 ## REM-PERIOD-GLOBAL-01 / REM-NAV-IA-01 - Ruta visible y periodo global

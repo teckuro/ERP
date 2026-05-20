@@ -48,7 +48,7 @@ export class LiquidacionesOficialesService {
   async generarLiquidaciones(periodo: string): Promise<LiquidacionesEstadoPeriodo> {
     const estado = await this.consultarEstadoPeriodo(periodo);
     if (!estado.snapshot?.idCalculoPeriodo) {
-      throw new Error('No se pudo consultar el estado de la nomina cerrada.');
+      throw new Error('No se pudo consultar una nómina mensual confirmada para este período.');
     }
     if (estado.motivoNoPuedeGenerar) {
       throw new Error(estado.motivoNoPuedeGenerar);
@@ -90,6 +90,6 @@ function buildMetadataGeneracion(estado: LiquidacionesEstadoPeriodo): Record<str
     totalTrabajadoresSnapshot: estado.snapshot?.totalTrabajadores ?? 0,
     versionMotor: estado.snapshot?.versionMotor ?? null,
     hashSnapshot: estado.snapshot?.hashSnapshot ?? null,
-    notaAlcance: 'Generacion interna desde nomina cerrada; sin recalculo ni salidas legales.',
+    notaAlcance: 'Generacion interna desde nomina mensual confirmada; sin recalculo ni salidas legales.',
   };
 }

@@ -7,6 +7,7 @@ import type {
 } from '../containers/proceso-mensual-container/models/proceso-mensual-container.vm';
 import type { NominaMasivaFiltro } from './proceso-mensual-masivo-layout.rules';
 import type { ProcesoMensualAccionLocal } from './proceso-mensual-estado-operativo.rules';
+import { suggestNominaWorkspaceNavigation } from './proceso-mensual-workspace.rules';
 
 export interface NominaWorkspaceFlowTarget {
   tabVisible: NominaWorkspaceTabVisible;
@@ -61,6 +62,10 @@ export function resolveWorkspaceTargetFromDetalleTab(
   }
 }
 
+export function resolveFlowDestinoPorFrame(frame: NominaVisualFrame): NominaWorkspaceFlowTarget {
+  return suggestNominaWorkspaceNavigation(frame);
+}
+
 export function resolveWorkspaceTargetFromAccionLocal(
   accion: ProcesoMensualAccionLocal,
 ): NominaWorkspaceFlowTarget | null {
@@ -73,6 +78,9 @@ export function resolveWorkspaceTargetFromAccionLocal(
   }
   return null;
 }
+
+/** Alias de matriz única frame/acción → destino workspace (NOM-MENSUAL-FLOW-NAV-02). */
+export const resolveFlowDestinoPorAccion = resolveWorkspaceTargetFromAccionLocal;
 
 export function resolveNominaEstadoRrhh(frame: NominaVisualFrame): NominaEstadoRrhhVm {
   switch (frame) {
@@ -142,4 +150,14 @@ export function periodoYmDesdeFlowQuery(
     return null;
   }
   return raw;
+}
+
+export function debeRehidratarDesdeFlowQuery(
+  params: Record<string, string | undefined> | null | undefined,
+): boolean {
+  const returnTo = params?.['returnTo']?.trim();
+  if (!returnTo) {
+    return false;
+  }
+  return returnTo === NOMINA_FLOW_RETURN_PATH || returnTo.endsWith(NOMINA_FLOW_RETURN_PATH);
 }

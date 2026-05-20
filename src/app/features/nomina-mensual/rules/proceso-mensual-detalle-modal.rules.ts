@@ -380,8 +380,8 @@ export function buildDetalleRevisionTabPanel(input: BuildDetalleRevisionTabPanel
       descripcion: 'Apruebe movimientos del período o revise asignaciones recurrentes antes de continuar.',
     },
     resultado: {
-      titulo: 'Sin resultado preliminar visible',
-      descripcion: 'Calcule o guarde el resultado preliminar para revisar montos por trabajador.',
+      titulo: 'Sin nómina mensual revisada visible',
+      descripcion: 'Revisa y guarda la nómina mensual para ver montos por trabajador.',
     },
   };
 

@@ -1,3 +1,5 @@
+import { describe, expect, it } from 'vitest';
+
 import {
   resolverEstadoOperativoProcesoMensual,
   type ProcesoMensualEstadoOperativoInput,
@@ -149,6 +151,20 @@ describe('proceso-mensual-estado-operativo.rules', () => {
     expect(vm.estadoClave).toBe('resultado_con_bloqueos');
     expect(vm.accionPrincipal.label).toBe('Revisar trabajadores');
     expect(vm.accionPrincipal.label).not.toBe('Guardar resultado preliminar');
+  });
+
+  it('calculo sin bloqueos prepara confirmacion sin copy tecnico visible', () => {
+    const vm = resolverEstadoOperativoProcesoMensual(inputBase({
+      tienePrevalidacion: true,
+      baseGenerada: true,
+      calculoGenerado: true,
+      puedeGuardarResultado: true,
+    }));
+
+    expect(vm.estadoClave).toBe('resultado_listo_para_guardar');
+    expect(vm.accionPrincipal.label).toBe('Confirmar revisión');
+    expect(vm.accionPrincipal.descripcion).not.toContain('resultado preliminar');
+    expect(vm.queFaltaAhora.map((item) => item.titulo).join(' ')).not.toContain('Guardar');
   });
 
   it('resultado guardado pide confirmar nomina', () => {

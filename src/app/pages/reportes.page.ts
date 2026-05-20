@@ -72,7 +72,7 @@ import { CardComponent, CardContentComponent, CardHeaderComponent } from '../sha
           </app-card-header>
           <app-card-content className="space-y-3 p-4">
             <a routerLink="/remuneraciones/proceso-mensual" class="report-tile">
-              <strong>Preparar nomina</strong>
+              <strong>Nómina mensual</strong>
               <span>Estado del periodo, bloqueos, advertencias y trazabilidad operativa.</span>
             </a>
             <a routerLink="/remuneraciones/liquidaciones" class="report-tile">
@@ -136,7 +136,7 @@ import { CardComponent, CardContentComponent, CardHeaderComponent } from '../sha
               <h2 class="text-sm font-semibold text-gray-900">Acciones deshabilitadas</h2>
               <p class="mt-1 text-sm text-gray-600">
                 Esta pantalla no descarga paquetes, no agenda envios y no crea archivos externos. Primero se conserva el
-                circuito validado: preparar nomina, cerrar operativamente y consultar liquidaciones internas.
+                circuito validado: nómina mensual, cierre operativo y consulta de liquidaciones internas.
               </p>
             </div>
           </div>

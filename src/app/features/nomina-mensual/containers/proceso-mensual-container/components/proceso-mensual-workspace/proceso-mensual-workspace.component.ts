@@ -2,7 +2,14 @@ import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/c
 import { CommonModule } from '@angular/common';
 import { LucideAngularModule } from 'lucide-angular';
 
-import { DataGridComponent } from '../../../../../../shared/components/ui/data-grid.component';
+import {
+  DataGridCellDirective,
+  DataGridComponent,
+} from '../../../../../../shared/components/ui/data-grid.component';
+import type {
+  NominaDetalleMensualExpedienteRow,
+  NominaDetalleMensualPendienteRow,
+} from '../../models/proceso-mensual-container.vm';
 import { ProcesoMensualRevisionTrabajadoresComponent } from '../proceso-mensual-revision-trabajadores/proceso-mensual-revision-trabajadores.component';
 import { claseDetalleRevisionTab } from '../../../../rules/proceso-mensual-detalle-modal.rules';
 import type { DetalleRevisionTabSeveridad } from '../../../../rules/proceso-mensual-detalle-modal.rules';
@@ -22,6 +29,7 @@ import { ProcesoMensualPresentacionFacade } from '../../facade/proceso-mensual-p
     CommonModule,
     LucideAngularModule,
     DataGridComponent,
+    DataGridCellDirective,
     ProcesoMensualRevisionTrabajadoresComponent,
   ],
   templateUrl: './proceso-mensual-workspace.component.html',

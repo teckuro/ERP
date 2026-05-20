@@ -1,12 +1,12 @@
 <div class="liq-page">
   <p class="liq-lead text-sm text-gray-600">
-    Comprobantes generados desde la nómina cerrada del período. No recalculan montos ni generan salidas legales.
+    Comprobantes generados desde la nómina mensual confirmada. No recalculan montos ni generan salidas legales.
   </p>
 
   <div class="liq-actions">
-    <app-button variant="outline" routerLink="/remuneraciones/proceso-mensual">
+    <app-button variant="outline" routerLink="/remuneraciones/proceso-mensual" [queryParams]="volverNominaQuery()">
       <lucide-icon icon name="arrow-left" class="h-4 w-4"></lucide-icon>
-      Preparar nomina
+      Volver a Nómina mensual
     </app-button>
     <app-button variant="outline" [disabled]="cargando() || generando()" (click)="consultar()">
       <lucide-icon icon name="refresh-cw" class="h-4 w-4"></lucide-icon>
@@ -17,10 +17,10 @@
   @if (!estadoPeriodo()?.liquidacion && !estadoPeriodo()?.snapshot) {
     <section class="liq-status-strip">
       <div>
-        <strong>No hay nomina cerrada disponible.</strong>
-        <span>Para generar liquidaciones, primero cierra operativamente la nomina.</span>
+        <strong>No hay nómina mensual confirmada disponible.</strong>
+        <span>Para generar liquidaciones, primero confirma la nómina mensual del período.</span>
       </div>
-      <a routerLink="/remuneraciones/proceso-mensual">Preparar nomina</a>
+      <a routerLink="/remuneraciones/proceso-mensual" [queryParams]="volverNominaQuery()">Volver a Nómina mensual</a>
     </section>
   }
 
@@ -56,7 +56,7 @@
           </dl>
         } @else {
           <p class="rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-gray-700">
-            {{ cargando() ? 'Consultando periodo...' : 'No hay nomina cerrada disponible para liquidaciones oficiales.' }}
+            {{ cargando() ? 'Consultando periodo...' : 'No hay nómina mensual confirmada disponible para liquidaciones oficiales.' }}
           </p>
         }
       </app-card-content>
@@ -77,8 +77,8 @@
               Actualizar consulta
             </app-button>
           } @else {
-            <a routerLink="/remuneraciones/proceso-mensual" class="text-sm font-medium text-blue-700 underline">
-              Preparar nomina
+            <a routerLink="/remuneraciones/proceso-mensual" [queryParams]="volverNominaQuery()" class="text-sm font-medium text-blue-700 underline">
+              Volver a Nómina mensual
             </a>
           }
         </div>
@@ -103,7 +103,7 @@
               </p>
             } @else {
               <p class="mt-2 text-sm text-gray-700">
-                La nomina esta cerrada y lista para generar liquidaciones oficiales.
+                La nómina mensual está confirmada y lista para generar liquidaciones oficiales.
               </p>
             }
 
@@ -180,7 +180,7 @@
   <details class="rounded-md border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-gray-700">
     <summary class="cursor-pointer font-medium text-gray-900">Informacion interna y alcance</summary>
     <p class="mt-2">
-      Esta salida interna usa la nomina cerrada del periodo y no recalcula montos. Salidas legales, firma, envio,
+      Esta salida interna usa la nómina mensual confirmada y no recalcula montos. Salidas legales, firma, envio,
       portal trabajador, archivo banco, contabilidad, reapertura, anulacion, rectificacion y reliquidacion quedan fuera de esta fase.
     </p>
     @if (estadoPeriodo()?.snapshot; as snapshot) {
@@ -198,7 +198,7 @@
       variant="warning"
       mode="modal"
       title="Generar liquidaciones oficiales"
-      [message]="'Se usara la nomina cerrada del periodo ' + periodoSeleccionado() + '. No se recalcularan montos.'"
+      [message]="'Se usara la nomina mensual confirmada del periodo ' + periodoSeleccionado() + '. No se recalcularan montos.'"
       secondaryLabel="Cancelar"
       primaryLabel="Generar liquidaciones"
       [modalHeadlineSplit]="true"

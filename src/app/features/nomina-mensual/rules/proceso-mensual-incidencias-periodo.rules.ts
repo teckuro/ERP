@@ -236,7 +236,7 @@ function accionDesdePendiente(pendiente: ProcesoMensualPendienteVm): IncidenciaP
 }
 
 function accionDesdeResultado(item: ResultadoObservacionView): IncidenciaPeriodoAccion | undefined {
-  const label = item.accionLabel?.trim() ?? 'Revisar resultado preliminar';
+  const label = item.accionLabel?.trim() ?? 'Revisar nómina mensual revisada';
   if (item.ruta) {
     return { tipo: 'ruta', label, destino: item.ruta };
   }

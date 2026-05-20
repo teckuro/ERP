@@ -1,3 +1,5 @@
+import { describe, expect, it } from 'vitest';
+
 import {
   clasificarAdvertenciasLiquidacion,
   determinarEstadoLiquidaciones,
@@ -13,14 +15,14 @@ describe('liquidaciones-oficiales.rules', () => {
     cerradoOperativamente: true,
   };
 
-  it('queda no disponible sin snapshot cerrado', () => {
+  it('queda no disponible sin nomina mensual confirmada', () => {
     expect(determinarEstadoLiquidaciones({ snapshot: null, liquidacion: null })).toBe('no_disponible');
-    expect(obtenerMotivoNoPuedeGenerar(null, null)).toBe('No se pudo consultar el estado de la nomina cerrada.');
+    expect(obtenerMotivoNoPuedeGenerar(null, null)).toBe('No se pudo consultar una nómina mensual confirmada para este período.');
   });
 
-  it('bloquea si la nomina aun no esta cerrada operativamente', () => {
+  it('bloquea si la nomina mensual aun no esta confirmada', () => {
     const motivo = obtenerMotivoNoPuedeGenerar({ ...snapshot, cerradoOperativamente: false }, null);
-    expect(motivo).toBe('Primero debes cerrar operativamente la nomina del periodo.');
+    expect(motivo).toBe('Primero confirma la nómina mensual del período.');
   });
 
   it('habilita generacion con snapshot aprobado, cerrado y sin liquidaciones', () => {
@@ -54,7 +56,7 @@ describe('liquidaciones-oficiales.rules', () => {
       trabajadoresSinConceptos: 1,
       conceptosSinCodigoLre: 1,
     })).toEqual([
-      'El snapshot cerrado tenia advertencias operativas visibles al aprobar.',
+      'La nómina mensual confirmada tenía advertencias visibles al aprobar.',
       'Hay trabajadores sin conceptos materializados en la liquidacion.',
       'Existen conceptos sin codigo LRE; LRE operativo queda para una fase posterior.',
     ]);

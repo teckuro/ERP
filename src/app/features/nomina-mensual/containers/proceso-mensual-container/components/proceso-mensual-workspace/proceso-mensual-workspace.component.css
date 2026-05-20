@@ -104,6 +104,18 @@
   line-height: 1.35;
 }
 
+.payroll-rail-pendientes {
+  display: grid;
+  gap: 4px;
+  margin: 8px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.payroll-rail-pendientes li {
+  margin: 0;
+}
+
 .payroll-tab-summary--neutral {
   border-color: var(--erp-border);
   background: var(--erp-surface-soft);

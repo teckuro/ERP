@@ -2,6 +2,14 @@
 
 ## Estado
 
+## NOM-MENSUAL-FLOW-NAV-02 aplicado
+
+Cierre del flujo RRHH: acciones en grillas Detalle mensual, preselección de trabajador, rehidratación al volver con `returnTo`, matriz única de destino workspace y modal reducido (resumen/resultado). Documento: [`nom-mensual-flow-nav-02.md`](./nom-mensual-flow-nav-02.md). Precede: [`nom-mensual-flow-nav-01.md`](./nom-mensual-flow-nav-01.md).
+
+## NOM-MENSUAL-FLOW-NAV-01 aplicado
+
+Panel Detalle mensual canónico, estado RRHH en sidebar, deep links con período y segment nav en modal. Documento: [`nom-mensual-flow-nav-01.md`](./nom-mensual-flow-nav-01.md).
+
 ## NOM-MENSUAL-DETALLE-MENSUAL-UNIFICADO-01 aplicado
 
 Workspace con tabbar **Detalle mensual | Historial**, parámetros en franja lateral, movimientos y recurrentes en una tabla con **Origen / duración**, filtros internos compactos e historial como trazabilidad. Cubre parcialmente la intención documental de `NOM-MOVIMIENTOS-UNIFICADOS-UX-01` en consola de período. Documento: [`nom-mensual-detalle-mensual-unificado-01.md`](./nom-mensual-detalle-mensual-unificado-01.md).

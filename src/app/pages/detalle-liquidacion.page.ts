@@ -43,11 +43,11 @@ import { PeriodoActivoService } from '../core/services/periodo-activo.service';
                 </app-button>
                 <app-button variant="outline" routerLink="/remuneraciones/proceso-mensual">
                   <lucide-icon icon class="h-4 w-4" name="calculator"></lucide-icon>
-                  Preparar nomina
+                  Nómina mensual
                 </app-button>
               </div>
               <div class="rounded-md border border-gray-200 bg-gray-50 px-3 py-2 text-xs leading-5 text-gray-600">
-                La trazabilidad tecnica se consulta en el flujo de Preparar nomina y en el detalle interno cuando existe
+                La trazabilidad del período se consulta en Nómina mensual y en el detalle interno cuando existe
                 una liquidacion real del periodo.
               </div>
             </div>

@@ -2,8 +2,11 @@ import { describe, expect, it } from 'vitest';
 
 import {
   appendNominaFlowQuery,
+  debeRehidratarDesdeFlowQuery,
   detalleTabUsaModal,
+  NOMINA_FLOW_RETURN_PATH,
   periodoYmDesdeFlowQuery,
+  resolveFlowDestinoPorFrame,
   resolveNominaEstadoRrhh,
   resolveWorkspaceTargetFromAccionLocal,
   resolveWorkspaceTargetFromDetalleTab,
@@ -41,5 +44,14 @@ describe('proceso-mensual-flow-nav.rules', () => {
   it('periodoYmDesdeFlowQuery valida formato', () => {
     expect(periodoYmDesdeFlowQuery({ periodo: '2026-05' })).toBe('2026-05');
     expect(periodoYmDesdeFlowQuery({ periodo: 'invalid' })).toBeNull();
+  });
+
+  it('resolveFlowDestinoPorFrame alinea en_revision a trabajadores', () => {
+    expect(resolveFlowDestinoPorFrame('en_revision').detalleVista).toBe('trabajadores');
+  });
+
+  it('debeRehidratarDesdeFlowQuery exige returnTo de nomina mensual', () => {
+    expect(debeRehidratarDesdeFlowQuery({ periodo: '2026-05', returnTo: NOMINA_FLOW_RETURN_PATH })).toBe(true);
+    expect(debeRehidratarDesdeFlowQuery({ periodo: '2026-05' })).toBe(false);
   });
 });

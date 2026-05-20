@@ -9,7 +9,8 @@ import {
   untracked,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterLink } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { LucideAngularModule } from 'lucide-angular';
 
 import { PeriodoActivoService } from '../../../../core/services/periodo-activo.service';
@@ -52,8 +53,11 @@ import type { ShellStatusChipTone } from '../../../../layout/shell-page-context.
 export class LiquidacionesOficialesContainer {
   readonly periodoActivo = inject(PeriodoActivoService);
   private readonly service = inject(LiquidacionesOficialesService);
+  private readonly route = inject(ActivatedRoute);
+  private readonly queryParams = toSignal(this.route.queryParams, { initialValue: {} });
 
   readonly periodoSeleccionado = computed(() => this.periodoActivo.getPeriodo());
+  readonly volverNominaQuery = computed(() => ({ periodo: this.periodoSeleccionado() }));
   readonly estadoPeriodo = signal<LiquidacionesEstadoPeriodo | null>(null);
   readonly cargando = signal(false);
   readonly generando = signal(false);
@@ -95,7 +99,7 @@ export class LiquidacionesOficialesContainer {
     if (this.generando()) {
       return {
         titulo: 'Generando liquidaciones oficiales',
-        descripcion: 'Se esta materializando la salida interna desde la nomina cerrada del periodo.',
+        descripcion: 'Se esta materializando la salida interna desde la nomina mensual confirmada.',
       };
     }
     if (estado?.liquidacion) {
@@ -107,12 +111,12 @@ export class LiquidacionesOficialesContainer {
     if (estado?.estado === 'lista_para_generar') {
       return {
         titulo: 'Generar liquidaciones oficiales',
-        descripcion: 'La nomina esta cerrada operativamente. Puedes generar la salida interna del periodo.',
+        descripcion: 'La nomina mensual esta confirmada. Puedes generar la salida interna del periodo.',
       };
     }
     return {
-      titulo: 'Volver a preparar nomina',
-      descripcion: estado?.motivoNoPuedeGenerar ?? 'Primero debe existir una nomina aprobada y cerrada operativamente.',
+      titulo: 'Volver a Nómina mensual',
+      descripcion: estado?.motivoNoPuedeGenerar ?? 'Primero debe existir una nomina mensual confirmada.',
     };
   });
 
@@ -128,6 +132,13 @@ export class LiquidacionesOficialesContainer {
         tone: this.tonoEstadoLiquidaciones(),
       },
     }));
+
+    effect(() => {
+      const params = this.queryParams() as Record<string, unknown>;
+      const periodo = params['periodo'];
+      if (typeof periodo !== 'string' || !/^\d{4}-\d{2}$/.test(periodo)) return;
+      untracked(() => this.periodoActivo.setPeriodoYm(periodo));
+    });
 
     effect(() => {
       this.periodoSeleccionado();

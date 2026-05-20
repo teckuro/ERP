@@ -377,7 +377,7 @@ export function buildAccionRecomendadaTrabajador(
   if (estado === 'no_calculado') {
     return {
       titulo: 'Completar cálculo',
-      descripcion: 'Este trabajador aún no tiene un resultado preliminar disponible.',
+      descripcion: 'Este trabajador aún no tiene una nómina mensual revisada disponible.',
       tono: 'neutral',
     };
   }

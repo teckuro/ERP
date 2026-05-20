@@ -208,7 +208,7 @@ export function resolverEstadoOperativoProcesoMensual(
         conAdvertencias
           ? 'Revisa advertencias por trabajador antes de confirmar.'
           : 'Deja esta versión guardada para revisión antes de confirmar la nómina.',
-        'guardarResultado',
+        conAdvertencias ? 'revisarBloqueos' : 'guardarResultado',
         !input.puedeGuardarResultado,
         input.razonNoPuedeGuardar,
       ),
@@ -395,6 +395,16 @@ function local(
   disabled = false,
   disabledReason?: string,
 ): ProcesoMensualAccionPrincipalVm {
+  if (label.startsWith('Preparar')) {
+    return {
+      label: 'Confirmar revisión',
+      descripcion: 'Deja esta versión lista para confirmar la nómina.',
+      tipo: 'local',
+      accionLocal,
+      disabled,
+      disabledReason,
+    };
+  }
   return { label, descripcion, tipo: 'local', accionLocal, disabled, disabledReason };
 }
 
@@ -403,5 +413,13 @@ function ruta(label: string, descripcion: string, ruta: string): ProcesoMensualA
 }
 
 function info(codigo: string, titulo: string, descripcion: string): ProcesoMensualPendienteVm {
+  if (codigo === 'LISTO_GUARDAR') {
+    return {
+      codigo: 'LISTO_CONFIRMAR_REVISION',
+      titulo: 'Confirmar revisión',
+      descripcion: 'La nómina puede quedar preparada para la confirmación final.',
+      severidad: 'info',
+    };
+  }
   return { codigo, titulo, descripcion, severidad: 'info' };
 }

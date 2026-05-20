@@ -712,6 +712,43 @@ describe('ProcesoMensualContainer', () => {
       expect(c.nominaDetalleMensualVista()).toBe('pendientes');
     });
 
+    it('abrirDetalleOperativo trabajadores abre panel sin modal revision', () => {
+      const c = fixture.componentInstance;
+      c.abrirDetalleOperativo('trabajadores');
+      expect(c.detalleOperativoAbierto()).toBe(false);
+      expect(c.nominaWorkspaceTabVisible()).toBe('detalle_mensual');
+      expect(c.nominaDetalleMensualVista()).toBe('trabajadores');
+    });
+
+    it('seleccionarRevisionDesdeModal trabajadores cierra modal y abre panel', () => {
+      const c = fixture.componentInstance;
+      c.abrirDetalleOperativo('resumen');
+      expect(c.detalleOperativoAbierto()).toBe(true);
+      c.seleccionarRevisionDesdeModal('trabajadores');
+      expect(c.detalleOperativoAbierto()).toBe(false);
+      expect(c.nominaDetalleMensualVista()).toBe('trabajadores');
+    });
+
+    it('abrirDetalleExpedienteRow con idPersona preselecciona en revision masiva', () => {
+      const c = fixture.componentInstance;
+      c.abrirDetalleExpedienteRow({
+        estado: 'Revisar',
+        ambito: 'Trabajador',
+        trabajador: 'Ana Soto',
+        conceptoSituacion: 'Observación',
+        origenDuracion: '—',
+        vigencia: 'Período activo',
+        monto: '—',
+        accion: 'Revisar',
+        severity: 'atencion',
+        detalleTab: 'trabajadores',
+        idPersona: 99,
+      });
+      expect(c.nominaMasivaTrabajadorSeleccionadoId()).toBe(99);
+      expect(c.nominaDetalleMensualVista()).toBe('trabajadores');
+      expect(c.detalleOperativoAbierto()).toBe(false);
+    });
+
     it('decision reemplaza informacion al guardar snapshot', async () => {
       ejecutarPrevalidaciones.mockRejectedValueOnce(new Error('error previo'));
       const c = fixture.componentInstance;

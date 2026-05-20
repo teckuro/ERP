@@ -193,9 +193,9 @@
                         </div>
                         <span [class]="item.estadoClase">{{ item.estado }}</span>
                         @if (item.accionTab && item.accion) {
-                          <button type="button" (click)="f.seleccionarDetalleOperativoTab(item.accionTab)">{{ item.accion }}</button>
+                          <button type="button" (click)="f.seleccionarRevisionDesdeModal(item.accionTab)">{{ item.accion }}</button>
                         } @else if (item.ruta && item.accion) {
-                          <a [routerLink]="item.ruta">{{ item.accion }}</a>
+                          <button type="button" class="payroll-rail-link" (click)="f.navegarDesdeModal(item.ruta)">{{ item.accion }}</button>
                         }
                       </article>
                     }
@@ -210,7 +210,7 @@
           @case ('trabajadores') {
             @let resumenMasivo = f.nominaMasivaResumen();
             @let detalleMasivo = f.nominaMasivaDetalleSeleccionado();
-            <section class="payroll-mass-review" aria-label="RevisiÃ³n masiva de trabajadores">
+            <section class="payroll-mass-review" aria-label="Revisión masiva de trabajadores">
               @if (panel.enlaceResumenIncidencias) {
                 <p class="payroll-revision-enlace-resumen">
                   <button type="button" class="payroll-modal-secondary" (click)="f.seleccionarDetalleOperativoTab('resumen')">
@@ -218,6 +218,11 @@
                   </button>
                 </p>
               }
+              <p class="payroll-revision-enlace-resumen">
+                <button type="button" class="payroll-modal-secondary" (click)="f.irAlDetalleDelPeriodoDesdeModal('trabajadores')">
+                  Ir al detalle del período
+                </button>
+              </p>
 
               <nav class="payroll-segment-nav payroll-segment-nav--stat" aria-label="Resumen agregado de trabajadores">
                 <button type="button" [class]="f.claseFiltroMasivoStat('todos')" (click)="f.seleccionarFiltroNominaMasiva('todos')">
@@ -399,7 +404,7 @@
                       </div>
                       <span [class]="item.estadoClase">{{ item.estado }}</span>
                       @if (item.ruta) {
-                        <a [routerLink]="item.ruta">{{ item.accion }}</a>
+                        <button type="button" class="payroll-rail-link" (click)="f.navegarDesdeModal(item.ruta)">{{ item.accion }}</button>
                       } @else if (item.accion) {
                         <button type="button" (click)="f.seleccionarDetalleOperativoTab('resumen')">{{ item.accion }}</button>
                       }
@@ -409,11 +414,11 @@
                 @if (panel.accionParametros) {
                   <div class="payroll-revision-lista__accion">
                     @if (panel.accionParametros.ruta) {
-                      <a [routerLink]="panel.accionParametros.ruta" class="payroll-modal-secondary">
+                      <button type="button" class="payroll-modal-secondary" (click)="f.navegarDesdeModal(panel.accionParametros.ruta)">
                         {{ panel.accionParametros.label }}
-                      </a>
+                      </button>
                     } @else if (panel.accionParametros.accionTab) {
-                      <button type="button" class="payroll-modal-secondary" (click)="f.seleccionarDetalleOperativoTab(panel.accionParametros.accionTab)">
+                      <button type="button" class="payroll-modal-secondary" (click)="f.seleccionarRevisionDesdeModal(panel.accionParametros.accionTab)">
                         {{ panel.accionParametros.label }}
                       </button>
                     }
@@ -465,7 +470,7 @@
                         </div>
                         <span [class]="item.estadoClase">{{ item.estado }}</span>
                         @if (item.ruta && item.accion) {
-                          <a [routerLink]="item.ruta">{{ item.accion }}</a>
+                          <button type="button" class="payroll-rail-link" (click)="f.navegarDesdeModal(item.ruta)">{{ item.accion }}</button>
                         }
                       </article>
                     }
@@ -506,7 +511,7 @@
                         </div>
                         <span [class]="item.estadoClase">{{ item.estado }}</span>
                         @if (item.ruta && item.accion) {
-                          <a [routerLink]="item.ruta">{{ item.accion }}</a>
+                          <button type="button" class="payroll-rail-link" (click)="f.navegarDesdeModal(item.ruta)">{{ item.accion }}</button>
                         }
                       </article>
                     }
@@ -543,7 +548,7 @@
                         <span [class]="item.estadoClase">{{ item.estado }}</span>
                         @if (item.accion) {
                           @if (item.accionTab) {
-                            <button type="button" (click)="f.seleccionarDetalleOperativoTab(item.accionTab)">{{ item.accion }}</button>
+                            <button type="button" (click)="f.seleccionarRevisionDesdeModal(item.accionTab)">{{ item.accion }}</button>
                           } @else {
                             <button type="button" (click)="f.seleccionarDetalleOperativoTab('resumen')">{{ item.accion }}</button>
                           }
@@ -593,12 +598,14 @@
             </button>
           }
           @case ('tab') {
-            <button type="button" class="payroll-modal-primary" (click)="f.seleccionarDetalleOperativoTab(footer.tab)">
+            <button type="button" class="payroll-modal-primary" (click)="f.irAlDetalleDelPeriodoDesdeModal(footer.tab)">
               {{ footer.label }}
             </button>
           }
           @case ('ruta') {
-            <a [routerLink]="footer.ruta" class="payroll-modal-primary">{{ footer.label }}</a>
+            <button type="button" class="payroll-modal-primary" (click)="f.navegarDesdeModal(footer.ruta)">
+              {{ footer.label }}
+            </button>
           }
         }
       </div>

@@ -54,18 +54,18 @@ function etiquetaResultadoPreliminar(estado: ResultadoPreliminarEstado): string 
 function descripcionEstadoGuardado(estado: ResultadoPreliminarEstado): string {
   switch (estado) {
     case 'no_guardado':
-      return 'Revisa el calculo preliminar y guardalo como version revisable si corresponde.';
+      return 'Revisa la nómina mensual y prepárala como versión revisable si corresponde.';
     case 'guardado':
-      return 'Este resultado preliminar quedo guardado como version revisable. No emite liquidaciones ni cierra el periodo.';
+      return 'La nómina mensual revisada quedó guardada como versión revisable. No emite liquidaciones ni confirma el período.';
     case 'actualizado_sin_guardar':
       return 'Volviste a calcular despues del ultimo guardado. Guarda esta nueva version si quieres conservarla.';
     case 'error_guardado':
-      return 'No se pudo guardar el resultado preliminar. Intenta nuevamente o revisa las observaciones del resultado.';
+      return 'No se pudo guardar la nómina mensual revisada. Intenta nuevamente o revisa las observaciones.';
     case 'con_bloqueos':
-      return 'No puedes guardar este resultado preliminar. Hay bloqueos del resultado que deben resolverse.';
+      return 'No puedes preparar esta nómina mensual. Hay bloqueos que deben resolverse.';
     case 'sin_resultado':
     default:
-      return 'Primero calcula preliminarmente la nomina para revisar montos y observaciones antes de guardar.';
+      return 'Primero revisa trabajadores, montos y observaciones antes de confirmar.';
   }
 }
 
@@ -132,17 +132,17 @@ function razonNoPuedeGuardarResultado(
 ): string {
   if (!input.periodoValido) return 'El periodo seleccionado no es valido.';
   if (input.nominaCerradaOperativamente) {
-    return 'La nómina del período está cerrada. Para modificarla, será necesario reabrir el período en una fase posterior.';
+    return 'La nómina del período está confirmada. Para modificarla, será necesario reabrir el período en una fase posterior.';
   }
-  if (!input.calculo) return 'Primero calcula preliminarmente la nómina.';
+  if (!input.calculo) return 'Primero revisa la nómina.';
   if (input.errorEjecucion) return 'Hay un error tecnico activo que debes resolver antes de guardar.';
   if (bloqueos.length > 0) return 'El resultado tiene bloqueos que deben revisarse.';
   const snapshot = input.snapshotActivo;
   if (snapshot && snapshot.estado !== 'borrador' && input.identificadorResultadoGuardadoActual === snapshot.hashSnapshot) {
-    return 'No hay cambios para guardar. El resultado preliminar actual ya esta guardado.';
+    return 'No hay cambios para guardar. La nómina mensual revisada actual ya está guardada.';
   }
-  if (input.guardandoSnapshot) return 'El guardado del resultado preliminar esta en curso.';
-  return 'Genera un resultado preliminar sin bloqueos antes de guardar.';
+  if (input.guardandoSnapshot) return 'El guardado de la nómina mensual revisada está en curso.';
+  return 'Genera una nómina mensual revisada sin bloqueos antes de guardar.';
 }
 
 function ultimoGuardadoDesdeSnapshot(
@@ -225,8 +225,8 @@ export function buildResultadoPreliminarView(input: BuildResultadoPreliminarInpu
       informaciones: guardado
         ? [{
             codigo: 'RESULTADO_GUARDADO',
-            titulo: 'Resultado preliminar guardado',
-            descripcion: 'Existe un resultado preliminar activo para revisar.',
+            titulo: 'Nómina mensual revisada guardada',
+            descripcion: 'Existe una nómina mensual revisada activa para revisar.',
           }]
         : [],
       detalleTecnico: {
@@ -239,10 +239,10 @@ export function buildResultadoPreliminarView(input: BuildResultadoPreliminarInpu
         puedeRecalcular: input.puedeCalcular,
         puedeGuardarPreliminar: false,
         razonNoPuedeGuardar: guardado
-          ? 'No hay cambios para guardar. El resultado preliminar actual ya esta guardado.'
-          : 'Primero calcula preliminarmente la nómina.',
-        helperGuardar: 'Guarda una versión revisable del cálculo. No emite liquidaciones ni cierra el período.',
-        modoGuardadoLabel: 'Al guardar, se reemplazara el resultado preliminar activo del periodo.',
+          ? 'No hay cambios para guardar. La nómina mensual revisada actual ya está guardada.'
+          : 'Primero revisa la nómina.',
+        helperGuardar: 'Guarda una versión revisable del cálculo. No emite liquidaciones ni confirma el período.',
+        modoGuardadoLabel: 'Al guardar, se reemplazará la nómina mensual revisada activa del período.',
       },
     };
   }
@@ -260,7 +260,7 @@ export function buildResultadoPreliminarView(input: BuildResultadoPreliminarInpu
       haberesLabel: 'Monto no disponible',
       descuentosLabel: 'Monto no disponible',
       liquidoLabel: 'Monto no disponible',
-      observacionLabel: limpiarCopyTecnicoNomina(trabajador.observacion) || 'No calculado en el resultado preliminar.',
+      observacionLabel: limpiarCopyTecnicoNomina(trabajador.observacion) || 'No calculado en la nómina mensual revisada.',
       accionLabel: 'Revisar trabajadores',
     }));
   const trabajadores = [
@@ -314,8 +314,8 @@ export function buildResultadoPreliminarView(input: BuildResultadoPreliminarInpu
     advertencias,
     informaciones: [{
       codigo: 'RESULTADO_GENERADO',
-      titulo: 'Resultado preliminar generado',
-      descripcion: 'Revisa trabajadores, observaciones y totales antes de guardar.',
+      titulo: 'Nómina mensual revisada generada',
+      descripcion: 'Revisa trabajadores, observaciones y totales antes de confirmar.',
     }],
     detalleTecnico: {
       versionCalculo: snapshot?.versionMotor ?? 'Version no disponible',
@@ -329,8 +329,8 @@ export function buildResultadoPreliminarView(input: BuildResultadoPreliminarInpu
       razonNoPuedeGuardar: puedeGuardarPreliminar
         ? undefined
         : razonNoPuedeGuardarResultado(input, bloqueos),
-      helperGuardar: 'Guarda una versión revisable del cálculo. No emite liquidaciones ni cierra el período.',
-      modoGuardadoLabel: 'Al guardar, se reemplazara el resultado preliminar activo del periodo.',
+      helperGuardar: 'Guarda una versión revisable del cálculo. No emite liquidaciones ni confirma el período.',
+      modoGuardadoLabel: 'Al guardar, se reemplazará la nómina mensual revisada activa del período.',
     },
   };
 }

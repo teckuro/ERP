@@ -1,3 +1,24 @@
+## NOM-MENSUAL-FLUJO-SECUENCIAL-01 - Flujo RRHH secuencial Nómina -> Liquidaciones
+
+| Campo | Estado |
+|---|---|
+| Estado | Implementada |
+| Tipo | UX/copy + navegación + tests |
+| Alcance | CTA secuencial `Verificar período -> Generar nómina -> Revisar trabajadores -> Confirmar nómina -> Generar liquidaciones`; Liquidaciones habla de `nómina mensual confirmada`; deep links conservan `periodo` y retorno a Nómina mensual; specs Vitest focalizados con imports explícitos. |
+| Restricciones | Sin SQL/RPC/RLS, sin motor nuevo, sin renombrar `/remuneraciones/proceso-mensual`, sin cambiar contrato interno `cerrado_operativamente`. |
+| Validación | Vitest focalizado y build Angular según cierre de implementación. |
+
+## NOM-MENSUAL-FLOW-NAV-02 - Cierre flujo Nómina mensual (cableado + modal reducido)
+
+| Campo | Estado |
+|---|---|
+| Estado | Implementada |
+| Tipo | UI presentación (rules/facade/workspace/modal) |
+| Alcance | Acciones en grillas Todos/Pendientes; `idPersona` y preselección trabajador; lista pendientes sidebar; rehidratación `returnTo`; matriz `resolveFlowDestinoPorFrame/Accion`; footer modal al panel; limpieza CSS mass-filter legacy. |
+| Documento | [`../modulos/nomina-mensual/nom-mensual-flow-nav-02.md`](../modulos/nomina-mensual/nom-mensual-flow-nav-02.md) |
+| Precede | NOM-MENSUAL-FLOW-NAV-01 |
+| Deuda | NOM-MENSUAL-TS-AUDIT-00; confirmación productiva BD; E2E; panel resumen unificado (ver doc fase 3) |
+
 ## NOM-MENSUAL-FLOW-NAV-01 - Coherencia flujo RRHH (panel + deep links)
 
 | Campo | Estado |
@@ -121,7 +142,7 @@
 | Precede | E2E modal masivo o ajuste de fuentes con `idPersona` en movimientos/recurrentes. |
 | Siguiente | Validacion visual con dataset grande. |
 
-## NOM-MENSUAL-REAPERTURA-ELIMINACION-01 - Abrir / descartar nÃ³mina
+## NOM-MENSUAL-REAPERTURA-ELIMINACION-01 - Abrir / descartar nómina
 
 | Campo | Estado |
 |---|---|
@@ -133,17 +154,17 @@
 | Precede | INCIDENCIAS-DEDUPE-06 / persistencia estado |
 | Siguiente | Reversa liquidaciones (fase futura) o E2E workspace. |
 
-## NOM-MODALES-PERIODO-COPY-LIMPIO-05 - Copy visible modal revisiÃ³n
+## NOM-MODALES-PERIODO-COPY-LIMPIO-05 - Copy visible modal revisión
 
 | Campo | Estado |
 |---|---|
 | Estado | Implementada |
 | Tipo | Rules + tests (copy RRHH) |
-| Alcance | `limpiarCopyTecnicoNomina` (diccionario, `;`, snake_case); delegaciÃ³n desde `humanizarDetalleRevisionTexto`; proyecciÃ³n payroll observaciones; tests DOM. |
+| Alcance | `limpiarCopyTecnicoNomina` (diccionario, `;`, snake_case); delegación desde `humanizarDetalleRevisionTexto`; proyección payroll observaciones; tests DOM. |
 | Restricciones | Sin store, servicios, SQL, motor, estilos globales, workspace/acta; sin mutar dedupe de incidencias. |
 | Documento | [`../modulos/nomina-mensual/nom-modales-periodo-copy-limpio-05.md`](../modulos/nomina-mensual/nom-modales-periodo-copy-limpio-05.md) |
 | Precede | [`nom-modales-periodo-revision-incidencias-qa-05.md`](../modulos/nomina-mensual/nom-modales-periodo-revision-incidencias-qa-05.md) |
-| Siguiente | Fase visual resumen bitÃ¡cora (`INCIDENCIAS-UI-06`) o E2E modales. |
+| Siguiente | Fase visual resumen bitácora (`INCIDENCIAS-UI-06`) o E2E modales. |
 
 ## NOM-MODALES-PERIODO-INCIDENCIAS-QA-05 - Candado QA incidencias modal
 
@@ -151,56 +172,56 @@
 |---|---|
 | Estado | Implementada |
 | Tipo | Tests + checklist manual |
-| Alcance | Tests candado (dedupe DOM, indicadores tabs, expediente sin secciÃ³n observaciones, builders sin arrays paralelos, orden severidad, copy sin claves tÃ©cnicas); checklist manual RRHH en doc de fase. |
-| Restricciones | Sin nueva lÃ³gica, store, SQL, motor ni rediseÃ±o visual; workspace fuera de checklist. |
+| Alcance | Tests candado (dedupe DOM, indicadores tabs, expediente sin sección observaciones, builders sin arrays paralelos, orden severidad, copy sin claves técnicas); checklist manual RRHH en doc de fase. |
+| Restricciones | Sin nueva lógica, store, SQL, motor ni rediseño visual; workspace fuera de checklist. |
 | Documento | [`../modulos/nomina-mensual/nom-modales-periodo-revision-incidencias-qa-05.md`](../modulos/nomina-mensual/nom-modales-periodo-revision-incidencias-qa-05.md) |
 | Precede | [`nom-modales-periodo-revision-incidencias-04.md`](../modulos/nomina-mensual/nom-modales-periodo-revision-incidencias-04.md) |
-| Siguiente | Fase visual opcional resumen bitÃ¡cora compacta (`INCIDENCIAS-UI-06`) o E2E modales. |
+| Siguiente | Fase visual opcional resumen bitácora compacta (`INCIDENCIAS-UI-06`) o E2E modales. |
 
-## NOM-MODALES-PERIODO-INCIDENCIAS-04 - Registro Ãºnico incidencias modal
+## NOM-MODALES-PERIODO-INCIDENCIAS-04 - Registro único incidencias modal
 
 | Campo | Estado |
 |---|---|
 | Estado | Implementada |
-| Tipo | Rules + presentaciÃ³n (modal revisiÃ³n) |
-| Alcance | `buildIncidenciasPeriodo`, dedupe/orden, Resumen Ã­ndice (OpciÃ³n A), conteos desde fuente Ãºnica, tabs con enlace Â«Ver en resumen (N)Â»; sin repetir builders paralelos en UI. |
+| Tipo | Rules + presentación (modal revisión) |
+| Alcance | `buildIncidenciasPeriodo`, dedupe/orden, Resumen índice (Opción A), conteos desde fuente única, tabs con enlace Â«Ver en resumen (N)Â»; sin repetir builders paralelos en UI. |
 | Restricciones | Sin store, servicios, SQL, motor, `app-message-box`, `app-data-grid`, estilos globales; workspace/acta/consola fuera salvo acuerdo. |
 | Documento | [`../modulos/nomina-mensual/nom-modales-periodo-revision-incidencias-04.md`](../modulos/nomina-mensual/nom-modales-periodo-revision-incidencias-04.md) |
 | Precede | Cerrar [`nom-modales-periodo-revision-copy-03.md`](../modulos/nomina-mensual/nom-modales-periodo-revision-copy-03.md) |
-| Siguiente | E2E modales o extensiÃ³n del builder a workspace/acta si se acuerda. |
+| Siguiente | E2E modales o extensión del builder a workspace/acta si se acuerda. |
 
-## NOM-MODALES-PERIODO-REVISION-COPY-03 - Copy modal revisiÃ³n
+## NOM-MODALES-PERIODO-REVISION-COPY-03 - Copy modal revisión
 
 | Campo | Estado |
 |---|---|
 | Estado | Implementada |
-| Tipo | Copy / UX local (modal revisiÃ³n) |
-| Alcance | Humanizar claves tÃ©cnicas; tab Resumen coherente con bloqueos globales; acciÃ³n agrupada parÃ¡metros; densidad lista; sin registro Ãºnico de incidencias. |
+| Tipo | Copy / UX local (modal revisión) |
+| Alcance | Humanizar claves técnicas; tab Resumen coherente con bloqueos globales; acción agrupada parámetros; densidad lista; sin registro único de incidencias. |
 | Restricciones | Sin store, servicios, SQL, motor, refactor de builders paralelos ni INCIDENCIAS-04. |
 | Documento | [`../modulos/nomina-mensual/nom-modales-periodo-revision-copy-03.md`](../modulos/nomina-mensual/nom-modales-periodo-revision-copy-03.md) |
 | Siguiente | E2E modales o fases producto README. |
 
-## NOM-MODALES-PERIODO-REVISION-UX-01 - UX modal revisiÃ³n
+## NOM-MODALES-PERIODO-REVISION-UX-01 - UX modal revisión
 
 | Campo | Estado |
 |---|---|
 | Estado | Implementada |
-| Tipo | UX/UI local (modal revisiÃ³n) |
-| Alcance | Tabs con severidad e indicador; grillas movimientos/recurrentes/resultado/observaciones; CTA expediente en franja; empty states; Â«Ver revisiÃ³n completaÂ» contextual. |
+| Tipo | UX/UI local (modal revisión) |
+| Alcance | Tabs con severidad e indicador; grillas movimientos/recurrentes/resultado/observaciones; CTA expediente en franja; empty states; Â«Ver revisión completaÂ» contextual. |
 | Restricciones | Sin store, servicios, SQL, motor, `app-message-box`, estilos globales. |
 | Documento | [`../modulos/nomina-mensual/nom-modales-periodo-revision-ux-01.md`](../modulos/nomina-mensual/nom-modales-periodo-revision-ux-01.md) |
 | Siguiente | E2E modales o fases producto README. |
 
-## NOM-MENSUAL-FACADE-SLIM-01 - Adelgazamiento facade presentaciÃ³n
+## NOM-MENSUAL-FACADE-SLIM-01 - Adelgazamiento facade presentación
 
 | Campo | Estado |
 |---|---|
 | Estado | Implementada |
 | Tipo | Refactor interno (rules + utils; sin UI/copy) |
-| Alcance | ExtracciÃ³n `resultadoPreliminar`, `revisionAprobacion`, payroll/seguimiento y labels; eliminaciÃ³n `snapshotCompletoDetalle` y VMs muertos; facade ~1462 lÃ­neas (desde 2295). |
+| Alcance | Extracción `resultadoPreliminar`, `revisionAprobacion`, payroll/seguimiento y labels; eliminación `snapshotCompletoDetalle` y VMs muertos; facade ~1462 líneas (desde 2295). |
 | Restricciones | Sin store/servicios/SQL/motor/estilos globales/HTML/CSS/copy. |
 | Documento | [`../modulos/nomina-mensual/nom-mensual-facade-slim-01.md`](../modulos/nomina-mensual/nom-mensual-facade-slim-01.md) |
-| Siguiente | E2E modales o fases de producto pendientes en README mÃ³dulo. |
+| Siguiente | E2E modales o fases de producto pendientes en README módulo. |
 
 ## NOM-MENSUAL-INTEGRIDAD-REGISTRO-01 - Expediente desde BD
 
@@ -208,40 +229,40 @@
 |---|---|
 | Estado | Implementada |
 | Tipo | View model + cableado UI + carga snapshot completo |
-| Alcance | `buildExpedienteNominaPeriodo`, modal/tab Detalle con loading/error/vacÃ­o/datos, `asegurarSnapshotCompletoCargado`, fallbacks `payrollWorkerDetailRows` y `resultadoPreliminar`. |
-| Restricciones | Sin motor, borradores nuevos, estilos globales, SQL (auditorÃ­a estÃ¡tica OK). |
+| Alcance | `buildExpedienteNominaPeriodo`, modal/tab Detalle con loading/error/vacío/datos, `asegurarSnapshotCompletoCargado`, fallbacks `payrollWorkerDetailRows` y `resultadoPreliminar`. |
+| Restricciones | Sin motor, borradores nuevos, estilos globales, SQL (auditoría estática OK). |
 | Documento | [`../modulos/nomina-mensual/nom-mensual-integridad-registro-01.md`](../modulos/nomina-mensual/nom-mensual-integridad-registro-01.md) |
 | Siguiente | E2E modales o fases producto README. |
 
-## NOM-MODALES-PERIODO-DETALLE-POLISH-01 - Pulido modal revisiÃ³n
+## NOM-MODALES-PERIODO-DETALLE-POLISH-01 - Pulido modal revisión
 
 | Campo | Estado |
 |---|---|
 | Estado | Implementada |
 | Tipo | UX/UI local (modal detalle) |
-| Alcance | Copy header/footer contextual; sin disclosure tÃ©cnico; CSS local del modal; sombra NOIA; rules + specs. |
+| Alcance | Copy header/footer contextual; sin disclosure técnico; CSS local del modal; sombra NOIA; rules + specs. |
 | Restricciones | Sin facade slim, store, servicios, SQL, motor, `app-message-box`. |
 | Documento | [`../modulos/nomina-mensual/nom-modales-periodo-detalle-polish-01.md`](../modulos/nomina-mensual/nom-modales-periodo-detalle-polish-01.md) |
 | Siguiente | `NOM-MENSUAL-FACADE-SLIM-01` o E2E modales. |
 
-## NOM-CONTAINER-SPEC-REPARO - ReparaciÃ³n specs contenedor
+## NOM-CONTAINER-SPEC-REPARO - Reparación specs contenedor
 
 | Campo | Estado |
 |---|---|
 | Estado | Implementada |
-| Tipo | Tests + documentaciÃ³n |
-| Alcance | Eliminado `describe.skip` (43 legacy); helpers `proceso-mensual-container.spec.helpers.ts`; sub-describes shell/workspace, flujo integraciÃ³n, overlay y rehidrataciÃ³n (~31 tests container). Matriz MIGRAR/ADAPTAR/RETIRAR en doc mÃ³dulo. |
-| Restricciones | Sin producciÃ³n salvo `rehidratandoPeriodo` en facade (lectura tests); sin SQL/motor/estilos globales. |
+| Tipo | Tests + documentación |
+| Alcance | Eliminado `describe.skip` (43 legacy); helpers `proceso-mensual-container.spec.helpers.ts`; sub-describes shell/workspace, flujo integración, overlay y rehidratación (~31 tests container). Matriz MIGRAR/ADAPTAR/RETIRAR en doc módulo. |
+| Restricciones | Sin producción salvo `rehidratandoPeriodo` en facade (lectura tests); sin SQL/motor/estilos globales. |
 | Documento | [`../modulos/nomina-mensual/nom-mensual-container-spec-reparo-01.md`](../modulos/nomina-mensual/nom-mensual-container-spec-reparo-01.md) |
 | Siguiente | Cerrada; pulido modal en DETALLE-POLISH-01. |
 
-## NOM-MENSUAL-PERSISTENCIA-ESTADO-01 - RehidrataciÃ³n estado perÃ­odo
+## NOM-MENSUAL-PERSISTENCIA-ESTADO-01 - Rehidratación estado período
 
 | Campo | Estado |
 |---|---|
 | Estado | Implementada |
 | Tipo | Store / facade / rules (sin SQL nuevo) |
-| Alcance | `rehidratarPeriodoActivo`, inferencia de contexto desde snapshot, tests rehidrataciÃ³n. |
+| Alcance | `rehidratarPeriodoActivo`, inferencia de contexto desde snapshot, tests rehidratación. |
 | Restricciones | Sin guardar borrador en BD; sin `liquidacionesDisponibles` desde BD. |
 | Documento | [`../modulos/nomina-mensual/nom-mensual-persistencia-estado-01.md`](../modulos/nomina-mensual/nom-mensual-persistencia-estado-01.md) |
 | Siguiente | Cerrada; specs en NOM-CONTAINER-SPEC-REPARO. |
@@ -263,7 +284,7 @@
 |---|---|
 | Estado | Implementada |
 | Tipo | UX/UI local (CSS + micro-HTML) |
-| Alcance | Franja, rail, focus operativo, tabs, paneles guÃ­a/trabajadores, responsive en `proceso-mensual-container.css`. |
+| Alcance | Franja, rail, focus operativo, tabs, paneles guía/trabajadores, responsive en `proceso-mensual-container.css`. |
 | Restricciones | Sin facade/store/rules/overlays; sin estilos globales; sin contenido nuevo (disclosure/acta/paraContinuar). |
 | Documento | [`../modulos/nomina-mensual/nom-mensual-workspace-layout-polish-01.md`](../modulos/nomina-mensual/nom-mensual-workspace-layout-polish-01.md) |
 | Siguiente | `NOM-MENSUAL-WORKSPACE-COPY-POLISH-01` (cerrada). |
@@ -273,17 +294,17 @@
 | Campo | Estado |
 |---|---|
 | Estado | Implementada |
-| Tipo | Refactor presentaciÃ³n / orquestaciÃ³n UI |
+| Tipo | Refactor presentación / orquestación UI |
 | Alcance | `ProcesoMensualOverlay`, signal `overlay`, host `app-proceso-mensual-overlays`, `cerrarOverlay`, computeds compatibles, 8 tests overlay. |
 | Restricciones | Sin `app-message-box` compartido, store, servicios, SQL, motor, estilos globales. |
 | Documento | [`../modulos/nomina-mensual/modales-periodo-state-03.md`](../modulos/nomina-mensual/modales-periodo-state-03.md) |
 | Siguiente | Cerrada; specs reparados en NOM-CONTAINER-SPEC-REPARO. |
 
-## NOM-MODALES-PERIODO-INFO-02 - InformaciÃ³n guiada post-generaciÃ³n
+## NOM-MODALES-PERIODO-INFO-02 - Información guiada post-generación
 
 | Campo | Estado |
 |---|---|
-| Estado | Implementada (alcance mÃ­nimo) |
+| Estado | Implementada (alcance mínimo) |
 | Tipo | UX/UI local + rules |
 | Alcance | `InformacionPeriodoView`, rules, modal MessageBox informativo, banner condicionado, rail contextual. |
 | Documento | [`../modulos/nomina-mensual/modales-periodo-info-02.md`](../modulos/nomina-mensual/modales-periodo-info-02.md) |
@@ -294,11 +315,11 @@
 | Campo | Estado |
 |---|---|
 | Estado | Implementada (documental) |
-| Tipo | Criterio NOIA / diseÃ±o tÃ©cnico-operativo |
-| Alcance | Matriz cuÃ¡ndo usar revisiÃ³n tabulada, MessageBox decisiÃ³n/informaciÃ³n, inline y rail; contrato propuesto `ProcesoMensualOverlay`; prioridad post-generaciÃ³n. |
+| Tipo | Criterio NOIA / diseño técnico-operativo |
+| Alcance | Matriz cuándo usar revisión tabulada, MessageBox decisión/información, inline y rail; contrato propuesto `ProcesoMensualOverlay`; prioridad post-generación. |
 | Restricciones | Sin HTML/CSS/TS productivo, shared components, facade/store productivo, SQL, motor, estilos globales. |
 | Documento | [`../modulos/nomina-mensual/modales-periodo-01.md`](../modulos/nomina-mensual/modales-periodo-01.md) |
-| Siguiente | Cerrada; implementaciÃ³n en INFO-02. |
+| Siguiente | Cerrada; implementación en INFO-02. |
 
 ## NOM-MENSUAL-CONTAINER-MODULAR-01 - Contenedor modular (fases 1-5)
 
@@ -326,7 +347,7 @@
 | Campo | Estado |
 |---|---|
 | Estado | Implementada (documental) |
-| Tipo | DiseÃ±o / gobernanza UI |
+| Tipo | Diseño / gobernanza UI |
 | Alcance | Centralizar reglas visuales obligatorias para Cursor/Codex: guardrails, tokens, layout, componentes, checklist; regla `.cursor/rules/erp-ui-visual-guardrails.mdc`. |
 | Restricciones | Sin Angular funcional, SQL, motor, servicios, persistencia ni estilos globales. |
 | Documentos | [`../diseno/noia-bases-sistema-referencia.md`](../diseno/noia-bases-sistema-referencia.md), [`../diseno/noia-ui-guardrails.md`](../diseno/noia-ui-guardrails.md), [`../diseno/noia-antipatrones-ia.md`](../diseno/noia-antipatrones-ia.md), [`../diseno/noia-prompt-cursor.md`](../diseno/noia-prompt-cursor.md), [`../diseno/noia-visual-tokens.md`](../diseno/noia-visual-tokens.md), [`../diseno/noia-layout-rules.md`](../diseno/noia-layout-rules.md), [`../diseno/noia-component-rules.md`](../diseno/noia-component-rules.md), [`../diseno/noia-ui-review-checklist.md`](../diseno/noia-ui-review-checklist.md) |
@@ -338,7 +359,7 @@
 | Estado | Implementada |
 | Tipo | UX/UI local |
 | Alcance | Estados visuales por etapa, anti-redundancia, acta compacta, bandeja por contexto, evidencia neutra. |
-| Restricciones | PresentaciÃ³n en contenedor + acta; sin motor/SQL/servicios/estilos globales. |
+| Restricciones | Presentación en contenedor + acta; sin motor/SQL/servicios/estilos globales. |
 | Documento | [`../modulos/nomina-mensual/nom-preparar-nomina-estados-visuales-premium-ux-01.md`](../modulos/nomina-mensual/nom-preparar-nomina-estados-visuales-premium-ux-01.md) |
 
 ## NOM-PREPARAR-NOMINA-ACTA-DISENO-ESTRUCTURADO-UX-01 - Diseno estructurado del acta operativa
@@ -371,34 +392,34 @@
 | Restricciones | Sin Angular, servicios, rutas, motor, SQL/RPC/RLS, estilos globales ni DataGrid compartido. |
 | Documento | [`../diseno/nom-liq-acta-guiada-design-00.md`](../diseno/nom-liq-acta-guiada-design-00.md) |
 
-## NOM-PREPARAR-NOMINA-ADMIN-WORKSPACE-DESIGN-00 - Maqueta administrativa de Preparar nÃ³mina
+## NOM-PREPARAR-NOMINA-ADMIN-WORKSPACE-DESIGN-00 - Maqueta administrativa de Preparar nómina
 
 | Campo | Estado |
 |---|---|
 | Estado | Documentada |
-| Tipo | DiseÃ±o operativo/documental |
-| Alcance | Define maqueta final: pantalla principal para decidir, revisiÃ³n guiada para entender, modal grande para revisar, DataGrid para listar, panel de apoyo para corregir. |
+| Tipo | Diseño operativo/documental |
+| Alcance | Define maqueta final: pantalla principal para decidir, revisión guiada para entender, modal grande para revisar, DataGrid para listar, panel de apoyo para corregir. |
 | Restricciones | Sin Angular, servicios, rutas, motor, SQL/RPC/RLS, estilos globales ni DataGrid compartido. |
 | Documento | [`../diseno/nom-preparar-nomina-admin-workspace-design-00.md`](../diseno/nom-preparar-nomina-admin-workspace-design-00.md) |
 
-## NOM-PREPARAR-NOMINA-ADMIN-WORKSPACE-UX-01 - Mesa administrativa de Preparar nÃ³mina
+## NOM-PREPARAR-NOMINA-ADMIN-WORKSPACE-UX-01 - Mesa administrativa de Preparar nómina
 
 | Campo | Estado |
 |---|---|
 | Estado | Implementada |
 | Tipo | UX/UI local |
-| Alcance | Pantalla principal como mesa administrativa; modal grande de revisiÃ³n con GuÃ­a + tabs; panel de apoyo separado por revisar/corregir/interno. |
-| Restricciones | Contenedor local + documentaciÃ³n; sin DataGrid compartido, motor, SQL, servicios, rutas ni estilos globales. |
+| Alcance | Pantalla principal como mesa administrativa; modal grande de revisión con Guía + tabs; panel de apoyo separado por revisar/corregir/interno. |
+| Restricciones | Contenedor local + documentación; sin DataGrid compartido, motor, SQL, servicios, rutas ni estilos globales. |
 | Documento | [`../diseno/nom-preparar-nomina-admin-workspace-ux-01.md`](../diseno/nom-preparar-nomina-admin-workspace-ux-01.md) |
 
-## NOM-PREPARAR-NOMINA-BITACORA-V3-CLIENT-SAFE-DATAGRID-UX-01 - RevisiÃ³n segura y detalle con DataGrid
+## NOM-PREPARAR-NOMINA-BITACORA-V3-CLIENT-SAFE-DATAGRID-UX-01 - Revisión segura y detalle con DataGrid
 
 | Campo | Estado |
 |---|---|
 | Estado | Implementada |
 | Tipo | UX/UI local |
-| Alcance | RevisiÃ³n guiada cliente-segura; detalle operativo en modal ancho con tabs y `app-data-grid`; informaciÃ³n interna cerrada. |
-| Restricciones | Contenedor local + documentaciÃ³n; sin DataGrid compartido, motor, SQL, servicios, rutas ni estilos globales. |
+| Alcance | Revisión guiada cliente-segura; detalle operativo en modal ancho con tabs y `app-data-grid`; información interna cerrada. |
+| Restricciones | Contenedor local + documentación; sin DataGrid compartido, motor, SQL, servicios, rutas ni estilos globales. |
 | Documento | [`../diseno/nom-preparar-nomina-bitacora-v3-client-safe-datagrid-ux-01.md`](../diseno/nom-preparar-nomina-bitacora-v3-client-safe-datagrid-ux-01.md) |
 
 ## NOM-PREPARAR-NOMINA-BITACORA-V3-NONLINEAR-FLOW-UX-01 - Mesa operativa no lineal
@@ -407,71 +428,71 @@
 |---|---|
 | Estado | Implementada |
 | Tipo | UX/UI local |
-| Alcance | RevisiÃ³n guiada en modal; acta y panel livianos; registro en una lÃ­nea; sin rehacer V3. |
-| Restricciones | HTML/CSS + seÃ±al local en contenedor; sin motor/SQL/servicios/rutas. |
+| Alcance | Revisión guiada en modal; acta y panel livianos; registro en una línea; sin rehacer V3. |
+| Restricciones | HTML/CSS + señal local en contenedor; sin motor/SQL/servicios/rutas. |
 | Documento | [`../diseno/nom-preparar-nomina-bitacora-v3-nonlinear-flow-ux-01.md`](../diseno/nom-preparar-nomina-bitacora-v3-nonlinear-flow-ux-01.md) |
 
-## NOM-PREPARAR-NOMINA-BITACORA-V3-STEPS-FOCUS-UX-01 - BitÃ¡cora de etapas enfocada
+## NOM-PREPARAR-NOMINA-BITACORA-V3-STEPS-FOCUS-UX-01 - Bitácora de etapas enfocada
 
 | Campo | Estado |
 |---|---|
 | Estado | Implementada |
 | Tipo | UX/UI local |
 | Alcance | Resumen por etapa, subpasos progresivos solo activos, detalle bajo demanda. |
-| Restricciones | HTML/CSS + VM presentaciÃ³n en contenedor; sin motor/SQL/servicios. |
+| Restricciones | HTML/CSS + VM presentación en contenedor; sin motor/SQL/servicios. |
 | Documento | [`../diseno/nom-preparar-nomina-bitacora-v3-steps-focus-ux-01.md`](../diseno/nom-preparar-nomina-bitacora-v3-steps-focus-ux-01.md) |
 
-## NOM-PREPARAR-NOMINA-BITACORA-V3-COPY-DENSITY-FIX-01 - Copy y densidad bitÃ¡cora V3
+## NOM-PREPARAR-NOMINA-BITACORA-V3-COPY-DENSITY-FIX-01 - Copy y densidad bitácora V3
 
 | Campo | Estado |
 |---|---|
 | Estado | Implementada |
 | Tipo | UX/UI local + copy |
-| Alcance | Acentos, copy RRHH, densidad shell/acta/panel, revisiÃ³n guiada cerrada al inicio, registro compacto. |
-| Restricciones | Contenedor + reglas de estado operativo (copy); sin lÃ³gica, motor, SQL ni estilos globales. |
+| Alcance | Acentos, copy RRHH, densidad shell/acta/panel, revisión guiada cerrada al inicio, registro compacto. |
+| Restricciones | Contenedor + reglas de estado operativo (copy); sin lógica, motor, SQL ni estilos globales. |
 | Documento | [`../diseno/nom-preparar-nomina-bitacora-v3-copy-density-fix-01.md`](../diseno/nom-preparar-nomina-bitacora-v3-copy-density-fix-01.md) |
 
-## NOM-PREPARAR-NOMINA-BITACORA-V3-POLISH-UX-01 - Pulido bitÃ¡cora V3 Preparar nÃ³mina
+## NOM-PREPARAR-NOMINA-BITACORA-V3-POLISH-UX-01 - Pulido bitácora V3 Preparar nómina
 
 | Campo | Estado |
 |---|---|
 | Estado | Implementada |
 | Tipo | UX/UI local |
-| Alcance | Timeline de etapas, acta del perÃ­odo, panel de apoyo, resumen en grilla, copy con acentos; menos sensaciÃ³n wireframe. |
-| Restricciones | Solo `proceso-mensual-container.html/css`; sin lÃ³gica, motor, servicios, SQL ni estilos globales. |
+| Alcance | Timeline de etapas, acta del período, panel de apoyo, resumen en grilla, copy con acentos; menos sensación wireframe. |
+| Restricciones | Solo `proceso-mensual-container.html/css`; sin lógica, motor, servicios, SQL ni estilos globales. |
 | Documento | [`../diseno/nom-preparar-nomina-bitacora-v3-polish-ux-01.md`](../diseno/nom-preparar-nomina-bitacora-v3-polish-ux-01.md), [`../peticiones-estilos.md`](../peticiones-estilos.md) |
 
-## NOM-PREPARAR-NOMINA-BITACORA-V3-UX-01 - BitÃ¡cora operativa V3 Preparar nÃ³mina
+## NOM-PREPARAR-NOMINA-BITACORA-V3-UX-01 - Bitácora operativa V3 Preparar nómina
 
 | Campo | Estado |
 |---|---|
 | Estado | Implementada |
 | Tipo | UX/UI local |
-| Alcance | Contenedor padre Ãºnico; 5 etapas + subpasos; acta activa; detalle progresivo; revisiÃ³n guiada en acordeÃ³n; registro compacto. |
-| Restricciones | Solo `proceso-mensual-container.html/css`; sin lÃ³gica, motor, servicios, SQL ni estilos globales. |
+| Alcance | Contenedor padre único; 5 etapas + subpasos; acta activa; detalle progresivo; revisión guiada en acordeón; registro compacto. |
+| Restricciones | Solo `proceso-mensual-container.html/css`; sin lógica, motor, servicios, SQL ni estilos globales. |
 | Documento | [`../modulos/nomina-mensual/preparar-nomina/05-bitacora-v3-ux.md`](../modulos/nomina-mensual/preparar-nomina/05-bitacora-v3-ux.md), [`../peticiones-estilos.md`](../peticiones-estilos.md) |
 
-## ERP-MSGBOX-NOIA-UX-01-FIX-02 - MessageBox decisiÃ³n operativa NOIA
+## ERP-MSGBOX-NOIA-UX-01-FIX-02 - MessageBox decisión operativa NOIA
 
 | Campo | Estado |
 |---|---|
 | Estado | Implementada |
 | Tipo | UX/UI local |
-| Alcance | `app-message-box` modal v3.1 neutro (sin bordes de color por variante); secciones compactas; footer izq/der; borrador invÃ¡lido en CreaciÃ³n avanzada. |
+| Alcance | `app-message-box` modal v3.1 neutro (sin bordes de color por variante); secciones compactas; footer izq/der; borrador inválido en Creación avanzada. |
 | Restricciones | Sin estilos globales, SQL, motor, payloads ni servicios. |
 | Documento | [`../diseno/erp-msgbox-noia-ux-01.md`](../diseno/erp-msgbox-noia-ux-01.md), [`../peticiones-estilos.md`](../peticiones-estilos.md) |
 
-## NOM-MOVIMIENTOS-MODAL-UX-02 - Modales contexto, calendario y retorno a gestiÃ³n
+## NOM-MOVIMIENTOS-MODAL-UX-02 - Modales contexto, calendario y retorno a gestión
 
 | Campo | Estado |
 |---|---|
 | Estado | Implementada |
 | Tipo | UX/UI local |
-| Alcance | Modales movimiento del mes y recurrente: franja contexto, `app-calendar-input`, pie con Volver a gestiÃ³n, toolbar en Gestionar sin pie duplicado. |
+| Alcance | Modales movimiento del mes y recurrente: franja contexto, `app-calendar-input`, pie con Volver a gestión, toolbar en Gestionar sin pie duplicado. |
 | Restricciones | Sin SQL/RPC/RLS, motor, payloads, estilos globales ni servicios de negocio. |
 | Documento | [`../orquestador/resumen-trabajo-movimientos-remuneracion.md`](../orquestador/resumen-trabajo-movimientos-remuneracion.md), [`../peticiones-estilos.md`](../peticiones-estilos.md) |
 
-## NOM-MOVIMIENTOS-GESTION-TABLA-UNICA-01 - Grilla Ãºnica en Gestionar
+## NOM-MOVIMIENTOS-GESTION-TABLA-UNICA-01 - Grilla única en Gestionar
 
 | Campo | Estado |
 |---|---|
@@ -486,21 +507,21 @@
 | Campo | Estado |
 |---|---|
 | Estado | Ejecutada |
-| Tipo | DocumentaciÃ³n / poda |
-| Objetivo | Reducir peso y ruido de `docs/codex` eliminando respaldos, assets antiguos y duplicados raÃ­z, manteniendo documentos vivos y trazabilidad mÃ­nima. |
-| Entrega | Duplicados raÃ­z eliminados; tests y prevalidaciones solo en `modulos/`; Ã­ndices y flujos actualizados; entrada `movimientos-de-remuneracion.md`. |
+| Tipo | Documentación / poda |
+| Objetivo | Reducir peso y ruido de `docs/codex` eliminando respaldos, assets antiguos y duplicados raíz, manteniendo documentos vivos y trazabilidad mínima. |
+| Entrega | Duplicados raíz eliminados; tests y prevalidaciones solo en `modulos/`; índices y flujos actualizados; entrada `movimientos-de-remuneracion.md`. |
 | Restricciones | Sin cambios en `src/`, `bd/`, Angular, SQL, motor, servicios, mappers, payloads ni estilos globales. |
 | Documento | [`../CHANGELOG.md`](../CHANGELOG.md) (entrada DOCS-CODEX-MERGE-PRUNE-QUALITY-01) |
 
-## NOM-MOVIMIENTOS-GESTION-INTEGRAL-01 - GestiÃ³n integral por trabajador
+## NOM-MOVIMIENTOS-GESTION-INTEGRAL-01 - Gestión integral por trabajador
 
 | Campo | Estado |
 |---|---|
 | Estado | Implementada |
-| Tipo | UX/UI local + documentaciÃ³n |
-| Alcance | `Movimientos de remuneraciÃ³n` opera como menÃº Ãºnico para movimientos del mes y recurrentes por trabajador, con modal de gestiÃ³n y formularios separados. |
-| Entrega | Grilla por trabajador, detalle contextual de movimientos/recurrentes/revisiÃ³n, alta mensual puntual, alta/ediciÃ³n/finalizaciÃ³n recurrente dentro de la misma pantalla. |
-| Restricciones | Sin SQL/RPC/RLS, sin motor, sin liquidaciones productivas, sin persistencia crÃ­tica, sin payloads nuevos, sin estilos globales y sin tests nuevos. |
+| Tipo | UX/UI local + documentación |
+| Alcance | `Movimientos de remuneración` opera como menú único para movimientos del mes y recurrentes por trabajador, con modal de gestión y formularios separados. |
+| Entrega | Grilla por trabajador, detalle contextual de movimientos/recurrentes/revisión, alta mensual puntual, alta/edición/finalización recurrente dentro de la misma pantalla. |
+| Restricciones | Sin SQL/RPC/RLS, sin motor, sin liquidaciones productivas, sin persistencia crítica, sin payloads nuevos, sin estilos globales y sin tests nuevos. |
 | Documento | [../modulos/remuneraciones/movimientos-remuneracion-simple.md](../modulos/remuneraciones/movimientos-remuneracion-simple.md) |
 
 ## NOM-MOVIMIENTOS-MODAL-MENSUAL-UX-01 - Modal mensual compacto
@@ -550,11 +571,11 @@
 | Campo | Estado |
 |---|---|
 | Estado | Implementada en ZIP |
-| Tipo | LÃ³gica local + UX de validaciones visibles |
-| Alcance | CreaciÃ³n avanzada; capa visible que consume aplicabilidad, coherencia y pendientes reales del formulario. |
-| Entrega | `empleado-alta-validaciones.rules.ts`, spec unitario, bloques inline por paso y secciÃ³n `RevisiÃ³n del alta` en Resumen final. |
-| Pruebas | `tsc app`, vitest de la regla nueva; validaciÃ³n completa de fase documentada en entrega. |
-| Fuera de alcance | SQL/RPC/RLS, motor, nÃ³mina, liquidaciones, LRE/Previred, ficha empleado, creaciÃ³n bÃ¡sica funcional, persistencia final de honorarios y estilos globales. |
+| Tipo | Lógica local + UX de validaciones visibles |
+| Alcance | Creación avanzada; capa visible que consume aplicabilidad, coherencia y pendientes reales del formulario. |
+| Entrega | `empleado-alta-validaciones.rules.ts`, spec unitario, bloques inline por paso y sección `Revisión del alta` en Resumen final. |
+| Pruebas | `tsc app`, vitest de la regla nueva; validación completa de fase documentada en entrega. |
+| Fuera de alcance | SQL/RPC/RLS, motor, nómina, liquidaciones, LRE/Previred, ficha empleado, creación básica funcional, persistencia final de honorarios y estilos globales. |
 | Siguiente fase sugerida | Trazabilidad formal de revisiones administrativas mantenidas, si el producto lo requiere. |
 
 ## EMP-ALTA-MSGBOX-ERROR-UX-01 - Mensajes de error estructurados
@@ -563,48 +584,48 @@
 |---|---|
 | Estado | Implementada en ZIP |
 | Tipo | UX local + copy administrativo |
-| Alcance | Modal de error de guardado en CreaciÃ³n de empleado; estructura visual basada en el mensaje de Ã©xito. |
-| Entrega | Error con `QuÃ© revisar`, `AcciÃ³n recomendada` y `Paso sugerido`; caso `Sin previsiÃ³n` orienta a `PrevisiÃ³n y salud`. |
+| Alcance | Modal de error de guardado en Creación de empleado; estructura visual basada en el mensaje de éxito. |
+| Entrega | Error con `Qué revisar`, `Acción recomendada` y `Paso sugerido`; caso `Sin previsión` orienta a `Previsión y salud`. |
 | Pruebas | `tsc app/spec`, build development y vitest de reglas de empleados. |
-| Fuera de alcance | SQL/RPC/RLS, motor, nÃ³mina, liquidaciones, ficha empleado, creaciÃ³n bÃ¡sica funcional, reglas de aptitud y estilos globales. |
-| Siguiente fase sugerida | `EMP-CONDICIONES-ESPECIALES-REVIEW-01` o pulido del resumen final como pantalla de decisiÃ³n. |
+| Fuera de alcance | SQL/RPC/RLS, motor, nómina, liquidaciones, ficha empleado, creación básica funcional, reglas de aptitud y estilos globales. |
+| Siguiente fase sugerida | `EMP-CONDICIONES-ESPECIALES-REVIEW-01` o pulido del resumen final como pantalla de decisión. |
 
-## EMP-ALTA-DIAGNOSTICO-CONTRACTUAL-UX-01 - DiagnÃ³stico contractual en Resumen final
+## EMP-ALTA-DIAGNOSTICO-CONTRACTUAL-UX-01 - Diagnóstico contractual en Resumen final
 
 | Campo | Estado |
 |---|---|
 | Estado | Implementada en ZIP |
 | Tipo | UX local + copy de Resumen final |
-| Alcance | CreaciÃ³n avanzada; reemplaza la lectura visible de `Matriz de aplicabilidad` por `DiagnÃ³stico contractual` sin eliminar la regla interna. |
+| Alcance | Creación avanzada; reemplaza la lectura visible de `Matriz de aplicabilidad` por `Diagnóstico contractual` sin eliminar la regla interna. |
 | Entrega | Resumen final con `Caso detectado`, copy operativo y estilos locales sin `border-left` decorativo. |
 | Pruebas | `tsc app/spec`, build development y vitest de reglas de aplicabilidad/tipo trabajador/coherencia. |
-| Fuera de alcance | SQL/RPC/RLS, motor, nÃ³mina, liquidaciones, LRE/Previred, ficha empleado, creaciÃ³n bÃ¡sica, honorarios final y estilos globales. |
+| Fuera de alcance | SQL/RPC/RLS, motor, nómina, liquidaciones, LRE/Previred, ficha empleado, creación básica, honorarios final y estilos globales. |
 | Siguiente fase sugerida | `EMP-CONDICIONES-ESPECIALES-REVIEW-01` o pulido de MsgBox por caso contractual. |
 
-## EMP-ALTA-COHERENCIA-GLOBAL-01 - Matriz Ãºnica de aplicabilidad y coherencia
+## EMP-ALTA-COHERENCIA-GLOBAL-01 - Matriz única de aplicabilidad y coherencia
 
 | Campo | Estado |
 |---|---|
 | Estado | Implementada en ZIP |
-| Tipo | LÃ³gica local + UX de resumen |
-| Alcance | CreaciÃ³n avanzada; matriz central para campos obligatorios, opcionales, derivados, no aplicables, en revisiÃ³n, advertencia o bloqueados por fase. |
+| Tipo | Lógica local + UX de resumen |
+| Alcance | Creación avanzada; matriz central para campos obligatorios, opcionales, derivados, no aplicables, en revisión, advertencia o bloqueados por fase. |
 | Entrega | `empleado-alta-aplicabilidad.rules.ts`, spec unitario, consumo en wizard y bloque `Matriz de aplicabilidad` en Resumen final. |
 | Pruebas | `tsc app/spec`, build development y vitest de reglas de aplicabilidad/tipo trabajador/coherencia. |
-| Fuera de alcance | SQL/RPC/RLS, motor, nÃ³mina, liquidaciones, LRE/Previred, ficha empleado, creaciÃ³n bÃ¡sica, persistencia final de honorarios y estilos globales. |
+| Fuera de alcance | SQL/RPC/RLS, motor, nómina, liquidaciones, LRE/Previred, ficha empleado, creación básica, persistencia final de honorarios y estilos globales. |
 | Siguiente fase sugerida | `EMP-CONDICIONES-ESPECIALES-REVIEW-01` para separar detectada/manual/pendiente/confirmada/descartada. |
 
 ## Actualizacion 2026-05-12 - EMP-PERFIL-LABORAL-SQL-01
 
-## EMP-ALTA-COHERENCIA-GLOBAL-00 - AuditorÃ­a de coherencia del alta avanzada
+## EMP-ALTA-COHERENCIA-GLOBAL-00 - Auditoría de coherencia del alta avanzada
 
 | Campo | Estado |
 |---|---|
 | Estado | Documentada |
-| Tipo | DocumentaciÃ³n tÃ©cnica / matriz de decisiÃ³n |
-| Alcance | CreaciÃ³n avanzada de empleados; relaciÃ³n laboral, tipo trabajador, contrato, jornada, Seguro de CesantÃ­a, previsiÃ³n/salud, banco, condiciones especiales y resumen final |
+| Tipo | Documentación técnica / matriz de decisión |
+| Alcance | Creación avanzada de empleados; relación laboral, tipo trabajador, contrato, jornada, Seguro de Cesantía, previsión/salud, banco, condiciones especiales y resumen final |
 | Entrega | `docs/codex/modulos/empleados/alta-coherencia-global-00.md` |
-| DecisiÃ³n | PrÃ³xima fase recomendada: `EMP-ALTA-COHERENCIA-GLOBAL-01`, matriz Ãºnica de aplicabilidad y coherencia |
-| Fuera de alcance | Sin cambios Angular funcionales, SQL/RPC/RLS, motor, nÃ³mina, liquidaciones, LRE/Previred, ficha empleado, creaciÃ³n bÃ¡sica ni estilos globales |
+| Decisión | Próxima fase recomendada: `EMP-ALTA-COHERENCIA-GLOBAL-01`, matriz única de aplicabilidad y coherencia |
+| Fuera de alcance | Sin cambios Angular funcionales, SQL/RPC/RLS, motor, nómina, liquidaciones, LRE/Previred, ficha empleado, creación básica ni estilos globales |
 
 
 | Fase | Estado | Resumen | Pruebas |
@@ -625,9 +646,9 @@
 
 # Estado de fases del proyecto
 
-## 1. PropÃ³sito
+## 1. Propósito
 
-Tablero **vivo** (a actualizar al cerrar fases) con: quÃ© estÃ¡ **cerrado**, quÃ© **sigue**, quÃ© mÃ³dulos estÃ¡n **congelados** o **pendientes**, y enlaces a documentos y pruebas relevantes. Complementa [`contexto-proyecto.md`](./contexto-proyecto.md).
+Tablero **vivo** (a actualizar al cerrar fases) con: qué está **cerrado**, qué **sigue**, qué módulos están **congelados** o **pendientes**, y enlaces a documentos y pruebas relevantes. Complementa [`contexto-proyecto.md`](./contexto-proyecto.md).
 
 ## 2. Tabla de fases
 
@@ -642,39 +663,39 @@ Tabla historica:
 | Fase                                                         | Estado                                  | Resumen                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         | Documentos                                                                                                                                                                                                                                                                                                                                       | Pruebas (referencia)                                                                                                                                                         |
 | ------------------------------------------------------------ | --------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | REM-UX-FLOWS-01 V3 - Visibilidad cliente vs aplicacion       | **Cerrada**                             | Remuneraciones separa estado/accion visible para usuario final de trazabilidad tecnica: `Preparar nomina` usa etapas de negocio y `Liquidaciones oficiales` baja la trazabilidad al detalle secundario. Sin cambios de motor, SQL ni salidas externas.                                                                                                                                                                                                                                             | [`../modulos/nomina-mensual/README.md`](../modulos/nomina-mensual/README.md), [`../modulos/liquidaciones-oficiales/README.md`](../modulos/liquidaciones-oficiales/README.md), [`../peticiones-estilos.md`](../peticiones-estilos.md)                                                                                                                                                                           | `npx ng test --watch=false`; `npm run build`                                                                                                                                 |
-| 0 â€” Contrato Codex / `docs/codex`                            | **Cerrada**                             | `AGENTS.md`, README, manual base, guÃ­as UI/form/tablas/estilos, **`modulos/`** + `temas/`. Regla: leer orquestador + mÃ³dulo antes de implementar.                                                                                                                                                                                                                                                                                                                                               | [`AGENTS.md`](../AGENTS.md), [`README.md`](../README.md), [`manual-base-proyecto.md`](../manual-base-proyecto.md), [`ui-form-guidelines.md`](../ui-form-guidelines.md), [`ui-tables.md`](../ui-tables.md), [`estilos/README.md`](../estilos/README.md), [`mapa-documentacion.md`](./mapa-documentacion.md)                                       | â€”                                                                                                                                                                            |
-| 1 â€” ParÃ¡metros / perÃ­odo / vigencia / catÃ¡logo               | **Cerrada**                             | PerÃ­odo activo; mensual vs vigencia vs catÃ¡logo global; estado oficial del perÃ­odo; UI estabilizada; reforma/gradualidad; DataGrid y empty states; tabs/subtabs.                                                                                                                                                                                                                                                                                                                                | [`periodo-vigencia-catalogo.md`](../modulos/parametros/periodo-vigencia-catalogo.md), [`ui-parametros.md`](../modulos/parametros/ui-parametros.md), [`reforma-gradualidad.md`](../modulos/parametros/reforma-gradualidad.md), [`campos-y-listas.md`](../modulos/parametros/campos-y-listas.md)                                                   | E2E/UI segÃºn mÃ³dulo ParÃ¡metros en repo                                                                                                                                       |
-| 2 â€” Python / BD v11 / carga mensual                          | **Cerrada** (pendientes no bloqueantes) | Python v6.11; gradualidad 8,5 %; tablas alineadas a `(cÃ³digo, perÃ­odo)`; modo preparar sin datos oficiales falsos; carga mensual oficial separada.                                                                                                                                                                                                                                                                                                                                              | [`python-carga-mensual.md`](../modulos/parametros/python-carga-mensual.md), [`../../../bd/base/v11/README.md`](../../../bd/base/v11/README.md)                                                                                                                                                                                                   | Validaciones SQL v11 cuando haya BD local; scripts Python segÃºn doc                                                                                                          |
-| 3 â€” Empleados: estados y aptitud                             | **Cerrada**                             | BORRADOR = wizard avanzado; EN_PROCESO = ficha; ACTIVO + apto = remuneraciones; `paso_alta_avanzada` manda â€œContinuar altaâ€; sin activar con defaults tÃ©cnicos.                                                                                                                                                                                                                                                                                                                                 | [`contrato-general.md`](../modulos/empleados/contrato-general.md)                                                                                                                                                                                                                                                                                | Unit + E2E empleados segÃºn [`borrador-continuar-alta.md`](../modulos/empleados/borrador-continuar-alta.md) y [`tests-empleados.md`](../modulos/empleados/tests-empleados.md) |
-| 4 â€” Helper completitud / aptitud                             | **Cerrada**                             | `evaluarCompletitudYAptitudEmpleado` en `empleado-completitud.rules.ts`; bloqueos y defaults tÃ©cnicos explÃ­citos.                                                                                                                                                                                                                                                                                                                                                                               | [`contrato-general.md`](../modulos/empleados/contrato-general.md) (secciÃ³n helper)                                                                                                                                                                                                                                                               | `empleado-completitud.rules` (unit)                                                                                                                                          |
-| 5 â€” Listado y Ficha con helper                               | **Cerrada**                             | CTAs por estado en listado; ficha con panel compacto (estado, aptitud, pendientes, acciÃ³n); adapter al helper.                                                                                                                                                                                                                                                                                                                                                                                  | [`listado.md`](../modulos/empleados/listado.md), [`ficha-empleado.md`](../modulos/empleados/ficha-empleado.md), [`contrato-general.md`](../modulos/empleados/contrato-general.md)                                                                                                                                                                | `ficha-empleado-container`, listado (unit); Playwright empleados UI                                                                                                          |
-| 6 â€” Selects vacÃ­os / sin autoselecciÃ³n                       | **Cerrada**                             | OpciÃ³n vacÃ­a; sin primer catÃ¡logo como elecciÃ³n; defaults no cuentan como selecciÃ³n real.                                                                                                                                                                                                                                                                                                                                                                                                       | MÃ³dulo Empleados + formularios; [`ui-form-guidelines.md`](../ui-form-guidelines.md)                                                                                                                                                                                                                                                              | Unit form/orchestrator segÃºn repo                                                                                                                                            |
-| 7 â€” RehidrataciÃ³n borrador avanzado                          | **Cerrada**                             | DRAFTâ€‘\*, Sin cargo, sueldo 0, APVI incompleto no como reales; paso 9 con pendientes reales.                                                                                                                                                                                                                                                                                                                                                                                                    | [`borrador-continuar-alta.md`](../modulos/empleados/borrador-continuar-alta.md), [`contrato-general.md`](../modulos/empleados/contrato-general.md)                                                                                                                                                                                               | `empleado-borrador-hidratacion` (unit); E2E opcionales con `E2E_EMPLEADOS_BORRADOR`                                                                                          |
-| 8 â€” Validar para remuneraciones (Ficha)                      | **Cerrada**                             | OpciÃ³n B: ficha completa **no** apta sola; CTA **Validar para remuneraciones**; confirmaciÃ³n; `EmpleadosRepository.validarFichaParaRemuneraciones` reevalÃºa helper y persiste solo `persona` (`VALIDO`, `apto_para_remuneraciones`, `ACTIVO` si aplica, `fecha_activacion`, `paso_alta_avanzada` null). Condiciones UI y exclusiones: [`validar-remuneraciones.md`](../modulos/empleados/validar-remuneraciones.md) y Â§21 de [`contrato-general.md`](../modulos/empleados/contrato-general.md). | [`validar-remuneraciones.md`](../modulos/empleados/validar-remuneraciones.md)                                                                                                                                                                                                                                                                    | Unit: `ficha-empleado-container.spec.ts`, `empleados.service.spec.ts`; E2E ficha opcional segÃºn entorno                                                                      |
-| 9 â€” Conceptos: diagnÃ³stico, contrato y decisiones operativas | **Cerrada** (documental)                | Inventario de ruta `/remuneraciones/conceptos`, contenedor, servicio/repositorio, tablas `concepto` / `catalogo_lre` / `regla_concepto_calculo`, RLS y seeds Python; **contrato funcional** y **decisiones operativas** (permisos, asignables, LRE, vigencias, baja). Brechas de implementaciÃ³n: JWT/roles, RLS productivo, UI de reglas, E2E ruta (Fase 9.2).                                                                                                                                  | [`diagnostico-fase-9.md`](../modulos/conceptos-remuneracion/diagnostico-fase-9.md), [`decisiones-operativas.md`](../modulos/conceptos-remuneracion/decisiones-operativas.md), [`contrato-funcional.md`](../modulos/conceptos-remuneracion/contrato-funcional.md), [`contrato-general.md`](../modulos/conceptos-remuneracion/contrato-general.md) | Ver [`contrato-funcional.md`](../modulos/conceptos-remuneracion/contrato-funcional.md) Â§8; snapshot `/remuneraciones/conceptos` pendiente en `tests/dashboard.spec.ts`       |
+| 0 â€” Contrato Codex / `docs/codex`                            | **Cerrada**                             | `AGENTS.md`, README, manual base, guías UI/form/tablas/estilos, **`modulos/`** + `temas/`. Regla: leer orquestador + módulo antes de implementar.                                                                                                                                                                                                                                                                                                                                               | [`AGENTS.md`](../AGENTS.md), [`README.md`](../README.md), [`manual-base-proyecto.md`](../manual-base-proyecto.md), [`ui-form-guidelines.md`](../ui-form-guidelines.md), [`ui-tables.md`](../ui-tables.md), [`estilos/README.md`](../estilos/README.md), [`mapa-documentacion.md`](./mapa-documentacion.md)                                       | â€”                                                                                                                                                                            |
+| 1 â€” Parámetros / período / vigencia / catálogo               | **Cerrada**                             | Período activo; mensual vs vigencia vs catálogo global; estado oficial del período; UI estabilizada; reforma/gradualidad; DataGrid y empty states; tabs/subtabs.                                                                                                                                                                                                                                                                                                                                | [`periodo-vigencia-catalogo.md`](../modulos/parametros/periodo-vigencia-catalogo.md), [`ui-parametros.md`](../modulos/parametros/ui-parametros.md), [`reforma-gradualidad.md`](../modulos/parametros/reforma-gradualidad.md), [`campos-y-listas.md`](../modulos/parametros/campos-y-listas.md)                                                   | E2E/UI según módulo Parámetros en repo                                                                                                                                       |
+| 2 â€” Python / BD v11 / carga mensual                          | **Cerrada** (pendientes no bloqueantes) | Python v6.11; gradualidad 8,5 %; tablas alineadas a `(código, período)`; modo preparar sin datos oficiales falsos; carga mensual oficial separada.                                                                                                                                                                                                                                                                                                                                              | [`python-carga-mensual.md`](../modulos/parametros/python-carga-mensual.md), [`../../../bd/base/v11/README.md`](../../../bd/base/v11/README.md)                                                                                                                                                                                                   | Validaciones SQL v11 cuando haya BD local; scripts Python según doc                                                                                                          |
+| 3 â€” Empleados: estados y aptitud                             | **Cerrada**                             | BORRADOR = wizard avanzado; EN_PROCESO = ficha; ACTIVO + apto = remuneraciones; `paso_alta_avanzada` manda â€œContinuar altaâ€; sin activar con defaults técnicos.                                                                                                                                                                                                                                                                                                                                 | [`contrato-general.md`](../modulos/empleados/contrato-general.md)                                                                                                                                                                                                                                                                                | Unit + E2E empleados según [`borrador-continuar-alta.md`](../modulos/empleados/borrador-continuar-alta.md) y [`tests-empleados.md`](../modulos/empleados/tests-empleados.md) |
+| 4 â€” Helper completitud / aptitud                             | **Cerrada**                             | `evaluarCompletitudYAptitudEmpleado` en `empleado-completitud.rules.ts`; bloqueos y defaults técnicos explícitos.                                                                                                                                                                                                                                                                                                                                                                               | [`contrato-general.md`](../modulos/empleados/contrato-general.md) (sección helper)                                                                                                                                                                                                                                                               | `empleado-completitud.rules` (unit)                                                                                                                                          |
+| 5 â€” Listado y Ficha con helper                               | **Cerrada**                             | CTAs por estado en listado; ficha con panel compacto (estado, aptitud, pendientes, acción); adapter al helper.                                                                                                                                                                                                                                                                                                                                                                                  | [`listado.md`](../modulos/empleados/listado.md), [`ficha-empleado.md`](../modulos/empleados/ficha-empleado.md), [`contrato-general.md`](../modulos/empleados/contrato-general.md)                                                                                                                                                                | `ficha-empleado-container`, listado (unit); Playwright empleados UI                                                                                                          |
+| 6 â€” Selects vacíos / sin autoselección                       | **Cerrada**                             | Opción vacía; sin primer catálogo como elección; defaults no cuentan como selección real.                                                                                                                                                                                                                                                                                                                                                                                                       | Módulo Empleados + formularios; [`ui-form-guidelines.md`](../ui-form-guidelines.md)                                                                                                                                                                                                                                                              | Unit form/orchestrator según repo                                                                                                                                            |
+| 7 â€” Rehidratación borrador avanzado                          | **Cerrada**                             | DRAFTâ€‘\*, Sin cargo, sueldo 0, APVI incompleto no como reales; paso 9 con pendientes reales.                                                                                                                                                                                                                                                                                                                                                                                                    | [`borrador-continuar-alta.md`](../modulos/empleados/borrador-continuar-alta.md), [`contrato-general.md`](../modulos/empleados/contrato-general.md)                                                                                                                                                                                               | `empleado-borrador-hidratacion` (unit); E2E opcionales con `E2E_EMPLEADOS_BORRADOR`                                                                                          |
+| 8 â€” Validar para remuneraciones (Ficha)                      | **Cerrada**                             | Opción B: ficha completa **no** apta sola; CTA **Validar para remuneraciones**; confirmación; `EmpleadosRepository.validarFichaParaRemuneraciones` reevalúa helper y persiste solo `persona` (`VALIDO`, `apto_para_remuneraciones`, `ACTIVO` si aplica, `fecha_activacion`, `paso_alta_avanzada` null). Condiciones UI y exclusiones: [`validar-remuneraciones.md`](../modulos/empleados/validar-remuneraciones.md) y §21 de [`contrato-general.md`](../modulos/empleados/contrato-general.md). | [`validar-remuneraciones.md`](../modulos/empleados/validar-remuneraciones.md)                                                                                                                                                                                                                                                                    | Unit: `ficha-empleado-container.spec.ts`, `empleados.service.spec.ts`; E2E ficha opcional según entorno                                                                      |
+| 9 â€” Conceptos: diagnóstico, contrato y decisiones operativas | **Cerrada** (documental)                | Inventario de ruta `/remuneraciones/conceptos`, contenedor, servicio/repositorio, tablas `concepto` / `catalogo_lre` / `regla_concepto_calculo`, RLS y seeds Python; **contrato funcional** y **decisiones operativas** (permisos, asignables, LRE, vigencias, baja). Brechas de implementación: JWT/roles, RLS productivo, UI de reglas, E2E ruta (Fase 9.2).                                                                                                                                  | [`diagnostico-fase-9.md`](../modulos/conceptos-remuneracion/diagnostico-fase-9.md), [`decisiones-operativas.md`](../modulos/conceptos-remuneracion/decisiones-operativas.md), [`contrato-funcional.md`](../modulos/conceptos-remuneracion/contrato-funcional.md), [`contrato-general.md`](../modulos/conceptos-remuneracion/contrato-general.md) | Ver [`contrato-funcional.md`](../modulos/conceptos-remuneracion/contrato-funcional.md) §8; snapshot `/remuneraciones/conceptos` pendiente en `tests/dashboard.spec.ts`       |
 
 ## 3. Fases cerradas (lista corta)
 
-0â€“8 segÃºn tabla; **9** cerrada en alcance **documental** (diagnÃ³stico + contrato funcional + **decisiones operativas**). El frente **Conceptos** sigue abierto en implementaciÃ³n/pruebas hasta cerrar brechas de Fase **9.2** (JWT/RLS, alineaciÃ³n listados, E2E, etc.).
+0â€“8 según tabla; **9** cerrada en alcance **documental** (diagnóstico + contrato funcional + **decisiones operativas**). El frente **Conceptos** sigue abierto en implementación/pruebas hasta cerrar brechas de Fase **9.2** (JWT/RLS, alineación listados, E2E, etc.).
 
 ## 4. Fase actual / siguiente
 
-**Fase fuerte Conceptos (implementaciÃ³n â€” 9.2):** **9.2A** cerrÃ³ listado base (grilla, filtros, `esConceptoAsignable`, smoke E2E `tests/conceptos-remuneracion-listado.spec.ts`). **9.2B** cerrÃ³ **detalle por Revisar** (modal, `concepto-acciones.rules.ts`, blindaje en grilla). **9.2C** alineÃ³ **Haberes y descuentos** al catÃ¡logo: `listarConceptos` y validaciÃ³n de alta/ediciÃ³n usan la **misma regla central** que Conceptos; tests unit en `haberes-descuentos.service.spec.ts`. **Siguiente** en 9.2: roles/JWT, `APORTE` solo Admin, RLS, reglas de cÃ¡lculo en UI, E2E visual ampliado. Brechas: [`diagnostico-fase-9.md`](../modulos/conceptos-remuneracion/diagnostico-fase-9.md) Â§8, [`decisiones-operativas.md`](../modulos/conceptos-remuneracion/decisiones-operativas.md) Â§10â€“Â§11, [`contrato-funcional.md`](../modulos/conceptos-remuneracion/contrato-funcional.md) Â§4â€“Â§11. Punto de entrada: [`../modulos/conceptos-remuneracion/README.md`](../modulos/conceptos-remuneracion/README.md). Marco UX: [`diseno-operativo-erp.md`](./diseno-operativo-erp.md) Â§6. Contexto: [`contexto-proyecto.md`](./contexto-proyecto.md) Â§10 y Â§12.
+**Fase fuerte Conceptos (implementación â€” 9.2):** **9.2A** cerró listado base (grilla, filtros, `esConceptoAsignable`, smoke E2E `tests/conceptos-remuneracion-listado.spec.ts`). **9.2B** cerró **detalle por Revisar** (modal, `concepto-acciones.rules.ts`, blindaje en grilla). **9.2C** alineó **Haberes y descuentos** al catálogo: `listarConceptos` y validación de alta/edición usan la **misma regla central** que Conceptos; tests unit en `haberes-descuentos.service.spec.ts`. **Siguiente** en 9.2: roles/JWT, `APORTE` solo Admin, RLS, reglas de cálculo en UI, E2E visual ampliado. Brechas: [`diagnostico-fase-9.md`](../modulos/conceptos-remuneracion/diagnostico-fase-9.md) §8, [`decisiones-operativas.md`](../modulos/conceptos-remuneracion/decisiones-operativas.md) §10â€“§11, [`contrato-funcional.md`](../modulos/conceptos-remuneracion/contrato-funcional.md) §4â€“§11. Punto de entrada: [`../modulos/conceptos-remuneracion/README.md`](../modulos/conceptos-remuneracion/README.md). Marco UX: [`diseno-operativo-erp.md`](./diseno-operativo-erp.md) §6. Contexto: [`contexto-proyecto.md`](./contexto-proyecto.md) §10 y §12.
 
-**Haberes y descuentos 9.3A-9.3C:** cerradas. Quedan implementadas vigencias/duplicados recurrentes, cierre/desactivacion controlada y vista historica con filtro de estado derivado. **Fase 9.3B.1** normalizo rutas y menu del dominio Remuneraciones bajo `/remuneraciones/*` (ver seccion dedicada abajo). **Fase 9.4A** cerro el **contrato documental** de **Movimientos variables mensuales** (separacion de recurrentes y de Conceptos; sin SQL ni UI productiva). **Fase 9.4B** agrego **modelo TypeScript y reglas puras** con tests unitarios (sin CRUD productivo ni SQL). **Fase 9.4C** agrego **DDL no destructivo** (`movimiento_variable_mensual`), script incremental `14_*.sql`, **repositorio y mappers** con validacion alineada a 9.4B (sin UI productiva, sin RLS, sin motor). **Fase 9.4D** agrego **`MovimientosVariablesService`** (capa fina sobre el repository, listado base como filas, tests con mock). **Fase 9.4E** agrego **UI de carga manual controlada** bajo `/remuneraciones/movimientos-variables` (listado por periodo, alta manual, anulacion con confirmacion; sin repository en UI). **CHILE-FIX-01** endurecio **crear/actualizar**: concepto desde catalogo (`HaberesDescuentosService`) y aptitud/contrato en periodo (`EmpleadosService`); ver [`../modulos/movimientos-variables/hardening-chile-fix-01.md`](../modulos/movimientos-variables/hardening-chile-fix-01.md) y seguimiento en [`../auditorias/qa-chile-01-remuneraciones.md`](../auditorias/qa-chile-01-remuneraciones.md). **PARAM-CHILE-01** limpio la UI de **Proceso mensual** frente a datos normativos demo (**ALTO-004**); informe [`../auditorias/param-chile-01-parametros-y-demo-proceso.md`](../auditorias/param-chile-01-parametros-y-demo-proceso.md). **Fase 9.5A** agrego **prevalidaciones** de proceso mensual (`ProcesoMensualService`, reglas puras, UI minima con lectura real vÃ­a servicios existentes; sin motor ni liquidaciones); ver [`../modulos/nomina-mensual/prevalidaciones-9-5A.md`](../modulos/nomina-mensual/prevalidaciones-9-5A.md). **Fase 9.5B** agrego **haberes recurrentes** filtrados al `YYYY-MM`, **grupos minimos de parametros** (`listarCatalogos` + `revisarGruposParametrosMinimos`) y resumen en contenedor; ver [`../modulos/nomina-mensual/prevalidaciones-9-5B.md`](../modulos/nomina-mensual/prevalidaciones-9-5B.md). Punto de entrada movimientos variables: [`../modulos/movimientos-variables/README.md`](../modulos/movimientos-variables/README.md). Punto de entrada proceso mensual: [`../modulos/nomina-mensual/README.md`](../modulos/nomina-mensual/README.md). Siguiente segun roadmap: `SEG-01 -> CONC-02 -> MOTOR-00 -> MOTOR-01 -> LIQ-01`. Auditoria/roles/RLS, edicion/importacion masiva de MV y motor quedan subordinados a ese orden.
+**Haberes y descuentos 9.3A-9.3C:** cerradas. Quedan implementadas vigencias/duplicados recurrentes, cierre/desactivacion controlada y vista historica con filtro de estado derivado. **Fase 9.3B.1** normalizo rutas y menu del dominio Remuneraciones bajo `/remuneraciones/*` (ver seccion dedicada abajo). **Fase 9.4A** cerro el **contrato documental** de **Movimientos variables mensuales** (separacion de recurrentes y de Conceptos; sin SQL ni UI productiva). **Fase 9.4B** agrego **modelo TypeScript y reglas puras** con tests unitarios (sin CRUD productivo ni SQL). **Fase 9.4C** agrego **DDL no destructivo** (`movimiento_variable_mensual`), script incremental `14_*.sql`, **repositorio y mappers** con validacion alineada a 9.4B (sin UI productiva, sin RLS, sin motor). **Fase 9.4D** agrego **`MovimientosVariablesService`** (capa fina sobre el repository, listado base como filas, tests con mock). **Fase 9.4E** agrego **UI de carga manual controlada** bajo `/remuneraciones/movimientos-variables` (listado por periodo, alta manual, anulacion con confirmacion; sin repository en UI). **CHILE-FIX-01** endurecio **crear/actualizar**: concepto desde catalogo (`HaberesDescuentosService`) y aptitud/contrato en periodo (`EmpleadosService`); ver [`../modulos/movimientos-variables/hardening-chile-fix-01.md`](../modulos/movimientos-variables/hardening-chile-fix-01.md) y seguimiento en [`../auditorias/qa-chile-01-remuneraciones.md`](../auditorias/qa-chile-01-remuneraciones.md). **PARAM-CHILE-01** limpio la UI de **Proceso mensual** frente a datos normativos demo (**ALTO-004**); informe [`../auditorias/param-chile-01-parametros-y-demo-proceso.md`](../auditorias/param-chile-01-parametros-y-demo-proceso.md). **Fase 9.5A** agrego **prevalidaciones** de proceso mensual (`ProcesoMensualService`, reglas puras, UI minima con lectura real vía servicios existentes; sin motor ni liquidaciones); ver [`../modulos/nomina-mensual/prevalidaciones-9-5A.md`](../modulos/nomina-mensual/prevalidaciones-9-5A.md). **Fase 9.5B** agrego **haberes recurrentes** filtrados al `YYYY-MM`, **grupos minimos de parametros** (`listarCatalogos` + `revisarGruposParametrosMinimos`) y resumen en contenedor; ver [`../modulos/nomina-mensual/prevalidaciones-9-5B.md`](../modulos/nomina-mensual/prevalidaciones-9-5B.md). Punto de entrada movimientos variables: [`../modulos/movimientos-variables/README.md`](../modulos/movimientos-variables/README.md). Punto de entrada proceso mensual: [`../modulos/nomina-mensual/README.md`](../modulos/nomina-mensual/README.md). Siguiente segun roadmap: `SEG-01 -> CONC-02 -> MOTOR-00 -> MOTOR-01 -> LIQ-01`. Auditoria/roles/RLS, edicion/importacion masiva de MV y motor quedan subordinados a ese orden.
 
-## 5. Pendientes tÃ©cnicos no bloqueantes
+## 5. Pendientes técnicos no bloqueantes
 
-- Versionar carpeta Python explÃ­citamente en doc/repo si aplica.
+- Versionar carpeta Python explícitamente en doc/repo si aplica.
 - Ejecutar validaciones SQL **v11** cuando haya PostgreSQL local / `psql`.
-- No regenerar monolito legacy sin decisiÃ³n explÃ­cita.
-- RevisiÃ³n futura AFP vs `AFP_VIGENCIA` para convergencia UI/fuente.
+- No regenerar monolito legacy sin decisión explícita.
+- Revisión futura AFP vs `AFP_VIGENCIA` para convergencia UI/fuente.
 
 ## 6. Pendientes visuales
 
-Registrar en [`peticiones-estilos.md`](../peticiones-estilos.md) cuando haya cambio visual acordado; no usar el orquestador como bitÃ¡cora visual.
+Registrar en [`peticiones-estilos.md`](../peticiones-estilos.md) cuando haya cambio visual acordado; no usar el orquestador como bitácora visual.
 
-## 7. MÃ³dulos futuros (post fases 0â€“8 cerradas)
+## 7. Módulos futuros (post fases 0â€“8 cerradas)
 
 - **Conceptos de remuneracion** â€” frente funcional importante, pero queda ordenado despues de **SEG-01**. Fase **9 documental** cerrada (diagnostico + contrato + decisiones operativas). La siguiente fase de conceptos es **CONC-02 - Conceptos gobernados para motor**, no antes de cerrar roles/permisos base. README y contratos: [`../modulos/conceptos-remuneracion/README.md`](../modulos/conceptos-remuneracion/README.md).
 - **Haberes y descuentos** (refuerzo de reglas y UI).
@@ -748,7 +769,7 @@ Estado: **Cerrada**.
 
 Objetivo: materializar tipos de dominio y helpers de validacion alineados al contrato 9.4A y a [`../modulos/movimientos-variables/decisiones-operativas.md`](../modulos/movimientos-variables/decisiones-operativas.md), antes de UI productiva y sin acoplarse a `concepto-asignabilidad.rules.ts` (validacion opcional por snapshot de concepto).
 
-Resultado: carpeta `src/app/features/movimientos-variables/` con `models/movimiento-variable.model.ts`, `rules/movimiento-variable-validacion.rules.ts` y spec asociado; anexo tÃ©cnico [`../modulos/movimientos-variables/modelo-tecnico-9-4B.md`](../modulos/movimientos-variables/modelo-tecnico-9-4B.md).
+Resultado: carpeta `src/app/features/movimientos-variables/` con `models/movimiento-variable.model.ts`, `rules/movimiento-variable-validacion.rules.ts` y spec asociado; anexo técnico [`../modulos/movimientos-variables/modelo-tecnico-9-4B.md`](../modulos/movimientos-variables/modelo-tecnico-9-4B.md).
 
 No incluido: SQL, migraciones, Supabase remoto, pantalla productiva, motor, liquidaciones, proceso mensual productivo, JWT/RLS, importadores masivos.
 
@@ -760,7 +781,7 @@ Estado: **Cerrada**.
 
 Objetivo: preparar persistencia local no destructiva y repositorio base para movimientos variables mensuales antes de implementar UI productiva.
 
-Resultado: queda definido SQL no destructivo para `movimiento_variable_mensual` en `bd/base/v11/partes/02_tablas.sql` (y monolito integrado), script incremental idempotente `bd/base/v11/partes/14_movimiento_variable_mensual.sql`, `MovimientosVariablesRepository`, mappers, tipos manuales en `database.types.ts`, y documento de persistencia [`../modulos/movimientos-variables/persistencia-9-4C.md`](../modulos/movimientos-variables/persistencia-9-4C.md). La UI productiva, servicio con snapshot de catÃ¡logo, RLS, Supabase remoto, motor y liquidaciones quedan fuera de alcance.
+Resultado: queda definido SQL no destructivo para `movimiento_variable_mensual` en `bd/base/v11/partes/02_tablas.sql` (y monolito integrado), script incremental idempotente `bd/base/v11/partes/14_movimiento_variable_mensual.sql`, `MovimientosVariablesRepository`, mappers, tipos manuales en `database.types.ts`, y documento de persistencia [`../modulos/movimientos-variables/persistencia-9-4C.md`](../modulos/movimientos-variables/persistencia-9-4C.md). La UI productiva, servicio con snapshot de catálogo, RLS, Supabase remoto, motor y liquidaciones quedan fuera de alcance.
 
 No incluido: pantalla productiva, CRUD visual, motor, liquidaciones, proceso mensual productivo, Supabase remoto, RLS/JWT, SQL destructivo ni rediseno visual.
 
@@ -852,15 +873,15 @@ Pruebas: no ejecutadas en esta fase (auditoria por lectura).
 
 ## 8. Criterios para avanzar de fase
 
-- Contrato en **`docs/codex/modulos/<mÃ³dulo>/`** (y stubs o temas transversales) actualizado si cambia la regla de negocio o de UI.
+- Contrato en **`docs/codex/modulos/<módulo>/`** (y stubs o temas transversales) actualizado si cambia la regla de negocio o de UI.
 - Criterios de â€œlistoâ€ del usuario o de `AGENTS.md` cumplidos.
 - Pruebas acordadas para el alcance (unit / E2E) en verde cuando apliquen.
-- Sin mezclar alcances (p. ej. no meter liquidaciÃ³n en ficha empleados).
+- Sin mezclar alcances (p. ej. no meter liquidación en ficha empleados).
 
-## 9. Orden recomendado de prÃ³ximas fases
+## 9. Orden recomendado de próximas fases
 
-1. **Conceptos** â€” cerrar brechas de implementaciÃ³n y pruebas del contrato funcional (tras Fase 9 documental); maestro, vigencias, LRE; no mezclar con asignaciÃ³n por trabajador.
-2. **Haberes recurrentes** (vigencia, duplicados, separaciÃ³n de conceptos) â€” fases 9.3Aâ€“9.3C y 9.3B.1 cerradas en documento y codigo segun tablero.
+1. **Conceptos** â€” cerrar brechas de implementación y pruebas del contrato funcional (tras Fase 9 documental); maestro, vigencias, LRE; no mezclar con asignación por trabajador.
+2. **Haberes recurrentes** (vigencia, duplicados, separación de conceptos) â€” fases 9.3Aâ€“9.3C y 9.3B.1 cerradas en documento y codigo segun tablero.
 3. **Movimientos variables** â€” **9.4A** a **9.4E** cerradas en alcance acordado (incluye UI carga manual); siguiente: RLS/roles, edicion/importacion, integracion proceso mensual segun prioridad.
 4. **Proceso mensual** â€” **9.5A** y **9.5B** cerraron **prevalidaciones** (incluye recurrentes por mes y grupos minimos de parametros) sin motor. La referencia historica a motor/liquidaciones queda subordinada al orden oficial `SEG-01 -> CONC-02 -> MOTOR-00 -> MOTOR-01 -> LIQ-01`.
 
@@ -1044,18 +1065,18 @@ Validaciones realizadas:
 | Fuera de alcance | SQL/RPC/RLS, motor, nomina, liquidaciones, ficha empleado, creacion basica, fuentes canonicas futuras para pensionado/invalidez/extranjero/discapacidad. |
 | Validacion | `tsc app/spec`, build development y specs de reglas. |
 
-## EMP-ADV-BITACORA-LABORAL-UX-01 - BitÃ¡cora Laboral
+## EMP-ADV-BITACORA-LABORAL-UX-01 - Bitácora Laboral
 
 | Campo | Estado |
 |---|---|
 | Estado | Implementada |
-| Tipo | UI/copy local + documentaciÃ³n |
-| Alcance | CreaciÃ³n avanzada de empleados: mapa lateral, header de paso, estados visibles, APVI no requerido/opcional y acta de revisiÃ³n |
+| Tipo | UI/copy local + documentación |
+| Alcance | Creación avanzada de empleados: mapa lateral, header de paso, estados visibles, APVI no requerido/opcional y acta de revisión |
 | Entrega | `form-empleado.ts/html/css` + docs Codex |
-| Fuera de alcance | SQL/RPC/RLS, motor, nÃ³mina, liquidaciones, persistencia crÃ­tica, mappers, creaciÃ³n bÃ¡sica, ficha empleado, estilos globales protegidos |
-| Validaciones | `npm ci --ignore-scripts`; `tsc app`; `tsc spec`; `build development`; vitest reglas empleados 18 tests OK. `npm test -- --watch=false` quedÃ³ en timeout durante suite completa |
+| Fuera de alcance | SQL/RPC/RLS, motor, nómina, liquidaciones, persistencia crítica, mappers, creación básica, ficha empleado, estilos globales protegidos |
+| Validaciones | `npm ci --ignore-scripts`; `tsc app`; `tsc spec`; `build development`; vitest reglas empleados 18 tests OK. `npm test -- --watch=false` quedó en timeout durante suite completa |
 
-Resumen: la alta avanzada deja de comunicarse como wizard genÃ©rico y adopta `BitÃ¡cora laboral`: registros agrupados por sentido, estados humanos y cierre como acta administrativa.
+Resumen: la alta avanzada deja de comunicarse como wizard genérico y adopta `Bitácora laboral`: registros agrupados por sentido, estados humanos y cierre como acta administrativa.
 ## ERP-NOIA-BITACORA-OPERATIVA-00 - Identidad global NOIA / Bitacora Operativa
 
 | Campo | Estado |
@@ -1088,12 +1109,12 @@ Fecha: 2026-05-15
 | Campo | Estado |
 |---|---|
 | Estado | Implementada |
-| Tipo | DocumentaciÃ³n tÃ©cnica + reglas Cursor + script auxiliar |
-| Alcance | Contexto rÃ¡pido oficial, reglas persistentes NOIA/protegidos, `.cursorignore` y generador de context packs pequeÃ±os. |
+| Tipo | Documentación técnica + reglas Cursor + script auxiliar |
+| Alcance | Contexto rápido oficial, reglas persistentes NOIA/protegidos, `.cursorignore` y generador de context packs pequeños. |
 | Entrega | `docs/codex/contexto-rapido.md`, `docs/codex/diseno/erp-context-optimization-01.md`, `.cursor/rules/erp-ui-noia.mdc`, `.cursor/rules/erp-protected-files.mdc`, `.cursorignore`, `scripts/build-context-pack.ps1`. |
-| ValidaciÃ³n | Existencia de archivos, revisiÃ³n de referencias y verificaciÃ³n documental. No requiere build Angular porque no toca `src/` funcional ni estilos de pantalla. |
-| Restricciones | Sin Angular funcional, sin HTML/CSS visual, sin estilos globales protegidos, sin SQL/RPC/RLS, sin motor, nÃ³mina, liquidaciones, servicios, mappers, payloads ni persistencia crÃ­tica. |
-| Uso | Para fases futuras, partir por `docs/codex/contexto-rapido.md` y generar context pack cuando el anÃ¡lisis no requiera el ZIP completo. |
+| Validación | Existencia de archivos, revisión de referencias y verificación documental. No requiere build Angular porque no toca `src/` funcional ni estilos de pantalla. |
+| Restricciones | Sin Angular funcional, sin HTML/CSS visual, sin estilos globales protegidos, sin SQL/RPC/RLS, sin motor, nómina, liquidaciones, servicios, mappers, payloads ni persistencia crítica. |
+| Uso | Para fases futuras, partir por `docs/codex/contexto-rapido.md` y generar context pack cuando el análisis no requiera el ZIP completo. |
 | Documento | [`../diseno/erp-context-optimization-01.md`](../diseno/erp-context-optimization-01.md) |
 
 ## PARAM-NOIA-CIERRE-UX-01
@@ -1210,22 +1231,22 @@ Restricciones:
 | Restricciones | Sin SQL/RPC/RLS, motor, liquidaciones, persistencia critica, servicios/mappers/payloads productivos nuevos, rutas nuevas ni estilos globales. |
 | Documento | [../diseno/nom-movimientos-por-trabajador-01.md](../diseno/nom-movimientos-por-trabajador-01.md) |
 
-## NOM-MENSUAL-CONFIRMACION-FLOW-00 - NÃ³mina mensual confirmada
+## NOM-MENSUAL-CONFIRMACION-FLOW-00 - Nómina mensual confirmada
 
 Fecha: 2026-05-18
 
 | Campo | Estado |
 |---|---|
 | Estado | Documentada |
-| Tipo | DefiniciÃ³n documental de producto, UX y arquitectura funcional |
-| Alcance | Redefinir NÃ³mina mensual como workspace del perÃ­odo: generar, revisar trabajadores, confirmar y generar liquidaciones desde la versiÃ³n confirmada. |
-| DecisiÃ³n | `NÃ³mina mensual confirmada = fuente oficial para generar liquidaciones`. |
-| Entrega | `docs/codex/modulos/nomina-mensual/nomina-mensual-confirmacion-flow.md` y referencias en README/contratos de NÃ³mina mensual y Liquidaciones oficiales. |
-| ValidaciÃ³n | Existencia de documento rector y referencias; sin build Angular por no tocar `src/`. |
+| Tipo | Definición documental de producto, UX y arquitectura funcional |
+| Alcance | Redefinir Nómina mensual como workspace del período: generar, revisar trabajadores, confirmar y generar liquidaciones desde la versión confirmada. |
+| Decisión | `Nómina mensual confirmada = fuente oficial para generar liquidaciones`. |
+| Entrega | `docs/codex/modulos/nomina-mensual/nomina-mensual-confirmacion-flow.md` y referencias en README/contratos de Nómina mensual y Liquidaciones oficiales. |
+| Validación | Existencia de documento rector y referencias; sin build Angular por no tocar `src/`. |
 | Fuera de alcance | Angular, HTML/CSS, rutas, SQL/RPC/RLS, motor, servicios, mappers, payloads, persistencia, liquidaciones productivas y estilos globales. |
 | Fases futuras | `NOM-MENSUAL-WORKSPACE-01`, `NOM-MENSUAL-TRABAJADORES-02`, `NOM-MENSUAL-CONFIRMAR-03`, `NOM-LIQ-DESDE-NOMINA-CONFIRMADA-04`. |
 
-Resumen: se deja de orientar nuevas fases desde un tablero tecnico de `Preparar nÃ³mina` y se adopta el ciclo real de RRHH: nÃ³mina mensual generada, revisada por trabajador, confirmada y usada como fuente oficial para liquidaciones.
+Resumen: se deja de orientar nuevas fases desde un tablero tecnico de `Preparar nómina` y se adopta el ciclo real de RRHH: nómina mensual generada, revisada por trabajador, confirmada y usada como fuente oficial para liquidaciones.
 ## NOM-MODALES-PERIODO-REVISION-IA-02 - Arquitectura informacion modal revision
 
 | Campo | Estado |
@@ -1246,4 +1267,3 @@ Resumen: se deja de orientar nuevas fases desde un tablero tecnico de `Preparar 
 | Restricciones | Sin store, servicios, SQL/RPC/RLS, motor, rutas, `app-message-box`, `app-data-grid`, workspace, overlay host ni `proceso-mensual-payroll-seguimiento.rules.ts`. |
 | Documento | [`../modulos/nomina-mensual/nom-modales-periodo-revision-copy-03.md`](../modulos/nomina-mensual/nom-modales-periodo-revision-copy-03.md) |
 | Siguiente | E2E visual del modal con datos tecnicos de parametros. |
-

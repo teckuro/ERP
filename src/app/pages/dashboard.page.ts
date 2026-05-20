@@ -23,9 +23,9 @@ import { CardComponent, CardContentComponent, CardHeaderComponent } from '../sha
       <section class="dashboard-status-strip" aria-label="Estado operativo del periodo">
         <div>
           <strong>Periodo {{ periodoActivo.etiqueta() }}</strong>
-          <span>Siguiente accion: validar y preparar nomina</span>
+          <span>Siguiente acción: verificar el período y generar la nómina mensual</span>
         </div>
-        <a routerLink="/remuneraciones/proceso-mensual">Ir a preparar nomina</a>
+        <a routerLink="/remuneraciones/proceso-mensual">Ir a nómina mensual</a>
       </section>
 
       <section>
@@ -42,8 +42,8 @@ import { CardComponent, CardContentComponent, CardHeaderComponent } from '../sha
             <div class="dashboard-quick-links">
               <a routerLink="/remuneraciones/proceso-mensual" class="dashboard-tile">
                 <span>
-                  <strong>Preparar nomina</strong>
-                  <small>Valida trabajadores, parametros y movimientos de remuneracion del periodo.</small>
+                  <strong>Nómina mensual</strong>
+                  <small>Verifique trabajadores, parámetros y movimientos del período antes de confirmar.</small>
                 </span>
                 <lucide-icon class="h-4 w-4 shrink-0 text-gray-400" name="arrow-up-right"></lucide-icon>
               </a>
@@ -64,7 +64,7 @@ import { CardComponent, CardContentComponent, CardHeaderComponent } from '../sha
               <a routerLink="/empleados" class="dashboard-tile">
                 <span>
                   <strong>Empleados</strong>
-                  <small>Completa fichas y datos necesarios antes de preparar el periodo.</small>
+                  <small>Complete fichas y datos necesarios antes de cerrar el período en nómina mensual.</small>
                 </span>
                 <lucide-icon class="h-4 w-4 shrink-0 text-gray-400" name="arrow-up-right"></lucide-icon>
               </a>
@@ -128,7 +128,7 @@ import { CardComponent, CardContentComponent, CardHeaderComponent } from '../sha
             <div>
               <h2 class="text-sm font-semibold text-gray-900">Actividad del dashboard</h2>
               <p class="mt-1 text-sm text-gray-600">
-                Esta vista no inventa montos, vencimientos ni eventos. La trazabilidad detallada queda en Preparar nomina
+                Esta vista no inventa montos, vencimientos ni eventos. La trazabilidad detallada queda en Nómina mensual
                 y Liquidaciones oficiales.
               </p>
             </div>

@@ -57,7 +57,7 @@ import type { LiquidacionConcepto, LiquidacionTrabajador } from '../../models/li
 
         <div class="mt-4 rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-gray-700">
           <p class="font-medium text-gray-900">Trazabilidad tecnica secundaria</p>
-          <p class="mt-1">Origen: nomina cerrada del periodo. No hay recalculo ni edicion manual de montos.</p>
+          <p class="mt-1">Origen: nomina mensual confirmada. No hay recalculo ni edicion manual de montos.</p>
         </div>
       } @else {
         <p class="text-sm text-gray-600">Selecciona un trabajador para revisar su detalle.</p>

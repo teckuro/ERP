@@ -383,6 +383,7 @@ export interface NominaDetalleMensualTrabajadorRow {
   descuentos: string;
   liquidoEstimado: string;
   accion: string;
+  idPersona?: number | string;
 }
 
 export interface NominaDetalleMensualMovimientoRow {
@@ -417,6 +418,7 @@ export interface NominaDetalleMensualExpedienteRow {
   detalleTab?: DetalleOperativoTab;
   ruta?: string;
   accionLocal?: ValidacionAccionLocal;
+  idPersona?: number | string;
 }
 
 export interface NominaDetalleMensualPendienteRow {

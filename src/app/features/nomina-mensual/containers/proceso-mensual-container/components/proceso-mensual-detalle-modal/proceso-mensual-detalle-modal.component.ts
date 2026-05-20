@@ -1,6 +1,5 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterLink } from '@angular/router';
 import { LucideAngularModule } from 'lucide-angular';
 import { X as XIcon } from 'lucide-angular/src/icons';
 
@@ -14,7 +13,7 @@ import { ProcesoMensualPresentacionFacade } from '../../facade/proceso-mensual-p
   selector: 'app-proceso-mensual-detalle-modal',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, RouterLink, LucideAngularModule, DataGridComponent, DataGridCellDirective],
+  imports: [CommonModule, LucideAngularModule, DataGridComponent, DataGridCellDirective],
   templateUrl: './proceso-mensual-detalle-modal.component.html',
   styleUrls: [
     '../../payroll-operational-tabs.css',
