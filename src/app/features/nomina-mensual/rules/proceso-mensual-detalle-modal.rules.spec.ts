@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+﻿import { describe, expect, it } from 'vitest';
 
 import { DETALLE_OPERATIVO_TABS } from '../containers/proceso-mensual-container/models/proceso-mensual-grid.config';
 
@@ -90,10 +90,10 @@ describe('proceso-mensual-detalle-modal.rules', () => {
           accionLabel: 'Revisar',
         }],
       }),
-      workerRowCount: 0,
-      movementRowCount: 0,
-      recurrentRowCount: 0,
-      resultRowCount: 0,
+      cantidadFilasTrabajadores: 0,
+      cantidadFilasMovimientos: 0,
+      cantidadFilasRecurrentes: 0,
+      cantidadFilasResultado: 0,
       parametrosListos: false,
       tieneActividadPeriodo: true,
     });
@@ -226,11 +226,11 @@ describe('proceso-mensual-detalle-modal.rules', () => {
       periodoEtiqueta: 'Mayo 2026',
       estadoTitulo: 'Con pendientes',
       incidencias: SIN_INCIDENCIAS,
-      workerRowCount: 0,
-      movementRowCount: 0,
-      recurrentRowCount: 0,
-      resultRowCount: 0,
-      parametroItems: [
+      cantidadFilasTrabajadores: 0,
+      cantidadFilasMovimientos: 0,
+      cantidadFilasRecurrentes: 0,
+      cantidadFilasResultado: 0,
+      itemsParametros: [
         {
           titulo: 'parametros_generales',
           descripcion: 'FALTANTE sis_fila_mensual sis_null',
@@ -248,9 +248,9 @@ describe('proceso-mensual-detalle-modal.rules', () => {
           ruta: '/parametros',
         },
       ],
-      resultadoSeguimientoItems: [],
-      movementRows: [],
-      recurrentRows: [],
+      itemsSeguimientoResultado: [],
+      filasMovimientos: [],
+      filasRecurrentes: [],
     });
 
     const visible = panel.listaParametros.map((item) => `${item.titulo} ${item.descripcion}`).join(' ');
@@ -274,10 +274,10 @@ describe('proceso-mensual-detalle-modal.rules', () => {
           ruta: '/parametros',
         }],
       }),
-      workerRowCount: 0,
-      movementRowCount: 0,
-      recurrentRowCount: 0,
-      resultRowCount: 0,
+      cantidadFilasTrabajadores: 0,
+      cantidadFilasMovimientos: 0,
+      cantidadFilasRecurrentes: 0,
+      cantidadFilasResultado: 0,
       parametrosListos: false,
       tieneActividadPeriodo: true,
     });
@@ -299,10 +299,10 @@ describe('proceso-mensual-detalle-modal.rules', () => {
           ruta: '/parametros',
         }],
       }),
-      workerRowCount: 0,
-      movementRowCount: 0,
-      recurrentRowCount: 0,
-      resultRowCount: 0,
+      cantidadFilasTrabajadores: 0,
+      cantidadFilasMovimientos: 0,
+      cantidadFilasRecurrentes: 0,
+      cantidadFilasResultado: 0,
       parametrosListos: false,
       tieneActividadPeriodo: true,
     });
@@ -346,10 +346,10 @@ describe('proceso-mensual-detalle-modal.rules', () => {
     const tabs = buildDetalleRevisionTabsMeta({
       tabs: DETALLE_OPERATIVO_TABS,
       incidencias,
-      workerRowCount: 1,
-      movementRowCount: 0,
-      recurrentRowCount: 0,
-      resultRowCount: 1,
+      cantidadFilasTrabajadores: 1,
+      cantidadFilasMovimientos: 0,
+      cantidadFilasRecurrentes: 0,
+      cantidadFilasResultado: 1,
       parametrosListos: false,
       tieneActividadPeriodo: true,
     });
@@ -385,11 +385,11 @@ describe('proceso-mensual-detalle-modal.rules', () => {
       periodoEtiqueta: 'Mayo 2026',
       estadoTitulo: 'Con pendientes',
       incidencias,
-      workerRowCount: 0,
-      movementRowCount: 0,
-      recurrentRowCount: 0,
-      resultRowCount: 0,
-      parametroItems: [
+      cantidadFilasTrabajadores: 0,
+      cantidadFilasMovimientos: 0,
+      cantidadFilasRecurrentes: 0,
+      cantidadFilasResultado: 0,
+      itemsParametros: [
         {
           titulo: 'Falta UF del período',
           descripcion: 'Duplicado que no debe listarse',
@@ -407,9 +407,9 @@ describe('proceso-mensual-detalle-modal.rules', () => {
           ruta: '/parametros',
         },
       ],
-      resultadoSeguimientoItems: [],
-      movementRows: [],
-      recurrentRows: [],
+      itemsSeguimientoResultado: [],
+      filasMovimientos: [],
+      filasRecurrentes: [],
     });
 
     expect(panel.enlaceResumenIncidencias?.count).toBe(incidencias.porAmbito.parametros.length);
@@ -432,14 +432,14 @@ describe('proceso-mensual-detalle-modal.rules', () => {
           ruta: '/parametros',
         }],
       }),
-      workerRowCount: 0,
-      movementRowCount: 0,
-      recurrentRowCount: 0,
-      resultRowCount: 0,
-      parametroItems: [],
-      resultadoSeguimientoItems: [],
-      movementRows: [],
-      recurrentRows: [],
+      cantidadFilasTrabajadores: 0,
+      cantidadFilasMovimientos: 0,
+      cantidadFilasRecurrentes: 0,
+      cantidadFilasResultado: 0,
+      itemsParametros: [],
+      itemsSeguimientoResultado: [],
+      filasMovimientos: [],
+      filasRecurrentes: [],
     });
 
     expect(panel.enlaceResumenIncidencias?.label).toBe('Ver en resumen (1)');
@@ -452,14 +452,14 @@ describe('proceso-mensual-detalle-modal.rules', () => {
       periodoEtiqueta: 'Mayo 2026',
       estadoTitulo: 'Sin generar',
       incidencias: SIN_INCIDENCIAS,
-      workerRowCount: 0,
-      movementRowCount: 0,
-      recurrentRowCount: 0,
-      resultRowCount: 0,
-      parametroItems: [],
-      resultadoSeguimientoItems: [],
-      movementRows: [],
-      recurrentRows: [],
+      cantidadFilasTrabajadores: 0,
+      cantidadFilasMovimientos: 0,
+      cantidadFilasRecurrentes: 0,
+      cantidadFilasResultado: 0,
+      itemsParametros: [],
+      itemsSeguimientoResultado: [],
+      filasMovimientos: [],
+      filasRecurrentes: [],
     });
 
     expect(panel.usarGridMovimientos).toBe(false);
@@ -475,13 +475,13 @@ describe('proceso-mensual-detalle-modal.rules', () => {
       periodoEtiqueta: 'Mayo 2026',
       estadoTitulo: 'Con pendientes',
       incidencias: SIN_INCIDENCIAS,
-      workerRowCount: 0,
-      movementRowCount: 1,
-      recurrentRowCount: 0,
-      resultRowCount: 0,
-      parametroItems: [],
-      resultadoSeguimientoItems: [],
-      movementRows: [{
+      cantidadFilasTrabajadores: 0,
+      cantidadFilasMovimientos: 1,
+      cantidadFilasRecurrentes: 0,
+      cantidadFilasResultado: 0,
+      itemsParametros: [],
+      itemsSeguimientoResultado: [],
+      filasMovimientos: [{
         trabajador: 'Ana Perez',
         concepto: 'Bono',
         tipo: 'Haber',
@@ -489,7 +489,7 @@ describe('proceso-mensual-detalle-modal.rules', () => {
         estado: 'Por revisar',
         accion: 'Revisar',
       }],
-      recurrentRows: [],
+      filasRecurrentes: [],
     });
 
     expect(panel.usarGridMovimientos).toBe(false);

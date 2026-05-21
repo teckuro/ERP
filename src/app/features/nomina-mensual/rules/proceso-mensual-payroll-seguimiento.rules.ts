@@ -1,4 +1,4 @@
-import type {
+﻿import type {
   ProcesoMensualPreNominaPeriodo,
   ProcesoMensualPrevalidacion,
 } from '../models/proceso-mensual.model';
@@ -17,26 +17,26 @@ import type { ExpedienteNominaPeriodoView } from './proceso-mensual-expediente-p
 import { mapExpedienteTrabajadoresARows } from './proceso-mensual-expediente-periodo.rules';
 import { limpiarCopyTecnicoNomina } from './proceso-mensual-copy-limpio.rules';
 import type { IncidenciaPeriodo } from './proceso-mensual-incidencias-periodo.rules';
-import { incidenciasToPayrollObservationRows } from './proceso-mensual-incidencias-periodo.rules';
+import { incidenciasAFilasObservacionNomina } from './proceso-mensual-incidencias-periodo.rules';
 import type {
-  PayrollMovementDetailRow,
-  PayrollObservationDetailRow,
-  PayrollRecurrentDetailRow,
-  PayrollResultDetailRow,
-  PayrollSeguimientoItem,
-  PayrollWorkerDetailRow,
+  FilaDetalleMovimientoNomina,
+  FilaDetalleObservacionNomina,
+  FilaDetalleRecurrenteNomina,
+  FilaDetalleResultadoNomina,
+  ItemSeguimientoNomina,
+  FilaDetalleTrabajadorNomina,
   ResultadoPreliminarView,
   TrabajadorResultadoPreliminarView,
 } from '../containers/proceso-mensual-container/models/proceso-mensual-container.vm';
 import type { NominaCalculoPeriodoSnapshot } from '../models/proceso-mensual.model';
 
-export interface BuildPayrollWorkerDetailRowsInput {
+export interface EntradaFilasDetalleTrabajadorNomina {
   base: ProcesoMensualPreNominaPeriodo['trazabilidad'] | null;
   expediente: ExpedienteNominaPeriodoView;
   resultadoTrabajadores: TrabajadorResultadoPreliminarView[];
 }
 
-export function buildPayrollWorkerDetailRows(input: BuildPayrollWorkerDetailRowsInput): PayrollWorkerDetailRow[] {
+export function construirFilasDetalleTrabajadorNomina(input: EntradaFilasDetalleTrabajadorNomina): FilaDetalleTrabajadorNomina[] {
   const base = input.base;
   if (base?.trabajadores.length) {
     return base.trabajadores.map((trabajador) => ({
@@ -81,13 +81,13 @@ function buildTrabajadorLabelPorId(
   return trabajadores;
 }
 
-export interface BuildPayrollMovementDetailRowsInput {
+export interface EntradaFilasDetalleMovimientoNomina {
   entradasMensuales: ProcesoMensualPrevalidacion['entradasMensuales'] | null | undefined;
   base: ProcesoMensualPreNominaPeriodo['trazabilidad'] | null;
   resultadoTrabajadores: TrabajadorResultadoPreliminarView[];
 }
 
-export function buildPayrollMovementDetailRows(input: BuildPayrollMovementDetailRowsInput): PayrollMovementDetailRow[] {
+export function construirFilasDetalleMovimientoNomina(input: EntradaFilasDetalleMovimientoNomina): FilaDetalleMovimientoNomina[] {
   const trabajadorPorId = buildTrabajadorLabelPorId(input.base, input.resultadoTrabajadores);
   return (input.entradasMensuales ?? [])
     .filter((entrada) => entrada.origen !== 'recurrente')
@@ -101,11 +101,11 @@ export function buildPayrollMovementDetailRows(input: BuildPayrollMovementDetail
     }));
 }
 
-export function buildPayrollRecurrentDetailRows(input: BuildPayrollMovementDetailRowsInput): PayrollRecurrentDetailRow[] {
+export function construirFilasDetalleRecurrenteNomina(input: EntradaFilasDetalleMovimientoNomina): FilaDetalleRecurrenteNomina[] {
   const trabajadorPorId = buildTrabajadorLabelPorId(input.base, input.resultadoTrabajadores);
   const recurrentesDesdeEntradas = (input.entradasMensuales ?? [])
     .filter((entrada) => entrada.origen === 'recurrente')
-    .map<PayrollRecurrentDetailRow>((entrada) => ({
+    .map<FilaDetalleRecurrenteNomina>((entrada) => ({
       trabajador: trabajadorPorId.get(entrada.idPersona) ?? 'Trabajador por revisar',
       concepto: etiquetaConceptoEntrada(entrada.idConcepto, entrada.tipoMovimiento, entrada.categoria),
       periodicidad: 'Mensual',
@@ -130,20 +130,20 @@ export function buildPayrollRecurrentDetailRows(input: BuildPayrollMovementDetai
     }));
 }
 
-export interface BuildPayrollObservationDetailRowsInput {
+export interface EntradaFilasDetalleObservacionNomina {
   incidencias: IncidenciaPeriodo[];
 }
 
-export function buildPayrollObservationDetailRows(input: BuildPayrollObservationDetailRowsInput): PayrollObservationDetailRow[] {
-  return incidenciasToPayrollObservationRows(input.incidencias);
+export function construirFilasDetalleObservacionNomina(input: EntradaFilasDetalleObservacionNomina): FilaDetalleObservacionNomina[] {
+  return incidenciasAFilasObservacionNomina(input.incidencias);
 }
 
-export interface BuildPayrollParametroSeguimientoInput {
+export interface EntradaSeguimientoParametrosNomina {
   parametrosListos: boolean | null;
   tieneIncidenciasParametros: boolean;
 }
 
-export function buildPayrollParametroSeguimientoItems(input: BuildPayrollParametroSeguimientoInput): PayrollSeguimientoItem[] {
+export function construirItemsSeguimientoParametrosNomina(input: EntradaSeguimientoParametrosNomina): ItemSeguimientoNomina[] {
   const parametrosListos = input.parametrosListos;
   const requiereRevision = input.tieneIncidenciasParametros || parametrosListos === false;
   return [{
@@ -164,10 +164,10 @@ export function buildPayrollParametroSeguimientoItems(input: BuildPayrollParamet
   }];
 }
 
-export function buildPayrollMovimientoRecurrenteSeguimientoItems(
-  movimientos: PayrollMovementDetailRow[],
-  recurrentes: PayrollRecurrentDetailRow[],
-): PayrollSeguimientoItem[] {
+export function construirItemsSeguimientoMovimientoRecurrenteNomina(
+  movimientos: FilaDetalleMovimientoNomina[],
+  recurrentes: FilaDetalleRecurrenteNomina[],
+): ItemSeguimientoNomina[] {
   const items = [
     ...movimientos.map((row) => ({
       titulo: row.concepto,
@@ -199,12 +199,12 @@ export function buildPayrollMovimientoRecurrenteSeguimientoItems(
   }];
 }
 
-export interface BuildPayrollResultadoSeguimientoInput {
+export interface EntradaSeguimientoResultadoNomina {
   resultado: ResultadoPreliminarView;
   snapshot: NominaCalculoPeriodoSnapshot | null;
 }
 
-export function buildPayrollResultadoSeguimientoItems(input: BuildPayrollResultadoSeguimientoInput): PayrollSeguimientoItem[] {
+export function construirItemsSeguimientoResultadoNomina(input: EntradaSeguimientoResultadoNomina): ItemSeguimientoNomina[] {
   const { resultado, snapshot } = input;
   return [
     {
@@ -231,7 +231,7 @@ export function buildPayrollResultadoSeguimientoItems(input: BuildPayrollResulta
   ];
 }
 
-export function buildPayrollResultDetailRows(resultado: ResultadoPreliminarView): PayrollResultDetailRow[] {
+export function construirFilasDetalleResultadoNomina(resultado: ResultadoPreliminarView): FilaDetalleResultadoNomina[] {
   return resultado.trabajadores.map((trabajador) => ({
     trabajador: trabajador.trabajadorLabel,
     haberes: trabajador.haberesLabel,

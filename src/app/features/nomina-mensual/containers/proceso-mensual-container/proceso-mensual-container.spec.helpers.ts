@@ -1,4 +1,4 @@
-import { TestBed, type ComponentFixture } from '@angular/core/testing';
+﻿import { TestBed, type ComponentFixture } from '@angular/core/testing';
 import { vi } from 'vitest';
 
 import { ShellPageContextService } from '../../../../layout/shell-page-context.service';

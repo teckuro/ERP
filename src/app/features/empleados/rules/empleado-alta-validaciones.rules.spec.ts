@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+﻿import { describe, expect, it } from 'vitest';
 
 import { evaluarAltaAplicabilidad } from './empleado-alta-aplicabilidad.rules';
 import { evaluarAltaCoherencia } from './empleado-alta-coherencia.rules';
@@ -40,10 +40,10 @@ const coherenciaBase = {
 
 describe('evaluarAltaValidacionesVisibles', () => {
   it('traduce pendientes obligatorios a mensajes visibles sin exponer estados tecnicos', () => {
-    const state = evaluarAltaAplicabilidad(aplicabilidadBase);
+    const estado = evaluarAltaAplicabilidad(aplicabilidadBase);
     const result = evaluarAltaValidacionesVisibles({
-      aplicabilidadItems: Object.values(state.items),
-      coherenciaIssues: [],
+      elementosAplicabilidad: Object.values(estado.campos),
+      inconsistenciasCoherencia: [],
       pendientes: [
         {
           id: 'contract.start-date',
@@ -64,10 +64,10 @@ describe('evaluarAltaValidacionesVisibles', () => {
   });
 
   it('marca tipo trabajador como definido por sistema', () => {
-    const state = evaluarAltaAplicabilidad(aplicabilidadBase);
+    const estado = evaluarAltaAplicabilidad(aplicabilidadBase);
     const result = evaluarAltaValidacionesVisibles({
-      aplicabilidadItems: Object.values(state.items),
-      coherenciaIssues: [],
+      elementosAplicabilidad: Object.values(estado.campos),
+      inconsistenciasCoherencia: [],
       pendientes: [],
     });
 
@@ -81,14 +81,14 @@ describe('evaluarAltaValidacionesVisibles', () => {
   });
 
   it('orienta regimen Ninguna con copy administrativo y paso sugerido', () => {
-    const state = evaluarAltaAplicabilidad({
+    const estado = evaluarAltaAplicabilidad({
       ...aplicabilidadBase,
       tipoRegimenPrevisional: 'NINGUNA',
       tieneCondicionesEspeciales: true,
     });
     const result = evaluarAltaValidacionesVisibles({
-      aplicabilidadItems: Object.values(state.items),
-      coherenciaIssues: [],
+      elementosAplicabilidad: Object.values(estado.campos),
+      inconsistenciasCoherencia: [],
       pendientes: [],
     });
 
@@ -103,15 +103,15 @@ describe('evaluarAltaValidacionesVisibles', () => {
   });
 
   it('para honorarios separa no aplica y bloqueo de finalizacion', () => {
-    const state = evaluarAltaAplicabilidad({
+    const estado = evaluarAltaAplicabilidad({
       ...aplicabilidadBase,
       relacionLaboral: 'HONORARIOS',
       tipoContrato: null,
       tipoRegimenPrevisional: null,
     });
     const result = evaluarAltaValidacionesVisibles({
-      aplicabilidadItems: Object.values(state.items),
-      coherenciaIssues: [],
+      elementosAplicabilidad: Object.values(estado.campos),
+      inconsistenciasCoherencia: [],
       pendientes: [],
     });
 
@@ -127,8 +127,8 @@ describe('evaluarAltaValidacionesVisibles', () => {
     const app = evaluarAltaAplicabilidad(aplicabilidadBase);
     const coh = evaluarAltaCoherencia({ ...coherenciaBase, seguroCesantia: false });
     const result = evaluarAltaValidacionesVisibles({
-      aplicabilidadItems: Object.values(app.items),
-      coherenciaIssues: coh.issues,
+      elementosAplicabilidad: Object.values(app.campos),
+      inconsistenciasCoherencia: coh.inconsistencias,
       pendientes: [],
     });
 

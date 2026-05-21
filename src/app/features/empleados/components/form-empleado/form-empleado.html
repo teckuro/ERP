@@ -296,7 +296,7 @@
                           <div class="advanced-wizard-map__progress-row">
                             <span
                               >Registro {{
-                              wizardStepNumberLabel(activeWizardStep()) }} de {{
+                              wizardStepNumberLabel(pasoWizardActivo()) }} de {{
                               totalSteps }}</span
                             >
                             <strong
@@ -393,16 +393,16 @@
                             class="advanced-step-heading advanced-step-context"
                           >
                             <p class="advanced-step-kicker">
-                              {{ wizardStepStageLabel(activeWizardStep()) }} ·
+                              {{ wizardStepStageLabel(pasoWizardActivo()) }} ·
                               Registro {{
-                              wizardStepNumberLabel(activeWizardStep()) }} de {{
+                              wizardStepNumberLabel(pasoWizardActivo()) }} de {{
                               totalSteps }}
                             </p>
                             <h3 class="advanced-step-title">
-                              {{ wizardStepFullLabel(activeWizardStep()) }}
+                              {{ wizardStepFullLabel(pasoWizardActivo()) }}
                             </h3>
                             <p class="advanced-step-copy">
-                              {{ wizardStepDescription(activeWizardStep()) }}
+                              {{ wizardStepDescription(pasoWizardActivo()) }}
                             </p>
                           </div>
                           <div class="advanced-step-actions">
@@ -414,7 +414,7 @@
                             >
                               Anterior
                             </button>
-                            @if (activeWizardStep() !==
+                            @if (pasoWizardActivo() !==
                             summaryWizardStepIndex()) {
                             <button
                               type="button"
@@ -449,10 +449,10 @@
                         </div>
                         <p class="advanced-step-hint" aria-live="polite">
                           @if (
-                          getWizardStepValidationSummary(activeWizardStep()).blockingPending
-                          > 0 && attemptedWizardSteps().has(activeWizardStep())
+                          getWizardStepValidationSummary(pasoWizardActivo()).blockingPending
+                          > 0 && attemptedWizardSteps().has(pasoWizardActivo())
                           ) { Hay datos obligatorios pendientes en este registro
-                          de la bitácora. } @else if (activeWizardStep() ===
+                          de la bitácora. } @else if (pasoWizardActivo() ===
                           summaryWizardStepIndex()) { @if (isHonorariosMode()) {
                           Puedes guardar el avance como borrador. La
                           finalización de honorarios queda pendiente de
@@ -516,7 +516,7 @@
                             ></div>
                             <span>Preparando campos</span>
                           </div>
-                          } @if (activeWizardStep() === 0) {
+                          } @if (pasoWizardActivo() === 0) {
                           <div class="step-panel">
                             <app-empleado-datos-personales
                               [formGroup]="form.controls.datosPersonales"
@@ -528,7 +528,7 @@
                               [advancedGridLayout]="true"
                             ></app-empleado-datos-personales>
                           </div>
-                          } @else if (activeWizardStep() === 1) {
+                          } @else if (pasoWizardActivo() === 1) {
                           <div class="step-panel step-panel--domicilio">
                             <app-empleado-contacto
                               [formGroup]="form.controls.contacto"
@@ -538,7 +538,7 @@
                               [advancedGridLayout]="true"
                             ></app-empleado-contacto>
                           </div>
-                          } @else if (activeWizardStep() === 2) {
+                          } @else if (pasoWizardActivo() === 2) {
                           <div class="step-panel step-panel--contrato">
                             <app-empleado-contrato
                               [formGroup]="form.controls.contrato"
@@ -555,7 +555,7 @@
                               [advancedGridLayout]="true"
                             ></app-empleado-contrato>
                           </div>
-                          } @else if (activeWizardStep() === 3) {
+                          } @else if (pasoWizardActivo() === 3) {
                           <div class="step-panel step-panel--jornada">
                             <app-empleado-contrato
                               [formGroup]="form.controls.contrato"
@@ -572,7 +572,7 @@
                               [advancedGridLayout]="true"
                             ></app-empleado-contrato>
                           </div>
-                          } @else if (activeWizardStep() === 4) {
+                          } @else if (pasoWizardActivo() === 4) {
                           <div class="step-panel step-panel--asignaciones">
                             @if (isHonorariosMode()) {
                             <div
@@ -605,7 +605,7 @@
                             ></app-empleado-contrato>
                             }
                           </div>
-                          } @else if (activeWizardStep() === 5) {
+                          } @else if (pasoWizardActivo() === 5) {
                           <div class="step-panel step-panel--prevision">
                             @if (isHonorariosMode()) {
                             <div
@@ -639,7 +639,7 @@
                             ></app-empleado-prevision-salud>
                             }
                           </div>
-                          } @else if (activeWizardStep() === 6) {
+                          } @else if (pasoWizardActivo() === 6) {
                           <div class="step-panel">
                             @if (isHonorariosMode()) {
                             <div
@@ -724,7 +724,7 @@
                             ></app-empleado-prevision-salud>
                             }
                           </div>
-                          } @else if (activeWizardStep() === 7) {
+                          } @else if (pasoWizardActivo() === 7) {
                           <div class="step-panel step-panel--final">
                             @if (isHonorariosMode()) {
                             <div class="honorarios-payment-note" role="note">
@@ -744,7 +744,7 @@
                               [advancedGridLayout]="true"
                             ></app-empleado-bancario>
                           </div>
-                          } @else if (activeWizardStep() ===
+                          } @else if (pasoWizardActivo() ===
                           perfilLaboralWizardStepIndex()) {
                           <div class="step-panel step-panel--perfil-laboral">
                             @if (isHonorariosMode()) {
@@ -972,7 +972,7 @@
                                   </li>
                                   }
                                 </ul>
-                                @if (activeWizardStep() ===
+                                @if (pasoWizardActivo() ===
                                 summaryWizardStepIndex() && attemptedSave() &&
                                 resumenPendientesNegocio().length > 0) {
                                 <div

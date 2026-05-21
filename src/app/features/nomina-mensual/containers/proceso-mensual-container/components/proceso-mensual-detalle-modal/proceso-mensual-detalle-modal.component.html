@@ -1,4 +1,4 @@
-@let f = facade;
+﻿@let f = facade;
 @let footer = f.detalleRevisionFooterAccion();
 @let expediente = f.expedienteNominaPeriodo();
 @let panel = f.detalleRevisionTabActivoPanel();
@@ -19,7 +19,7 @@
           @if (expediente.estado === 'cargando' || expediente.estado === 'error_carga' || expediente.estado === 'detalle_no_disponible') {
             {{ expediente.visible ? expediente.bajada : f.detalleRevisionModalLead() }}
           } @else if (tabActivo === 'resumen') {
-            {{ f.periodoActivo.etiqueta() }} · Revise la versión del período y las observaciones antes de confirmar.
+            {{ f.periodoActivo.etiqueta() }} &middot; Revise la versi&oacute;n del per&iacute;odo y las observaciones antes de confirmar.
           } @else {
             {{ panel.lead }}
           }
@@ -29,7 +29,7 @@
         type="button"
         class="payroll-modal-close"
         (click)="f.cerrarDetalleOperativo()"
-        aria-label="Cerrar revisión"
+        aria-label="Cerrar revisi&oacute;n"
       >
         <lucide-icon [img]="closeIcon" aria-hidden="true"></lucide-icon>
       </button>
@@ -38,7 +38,7 @@
     @if (expediente.estado === 'cargando' || expediente.estado === 'error_carga' || expediente.estado === 'detalle_no_disponible') {
       <div class="payroll-operational-detail-modal__body payroll-expediente-estado">
         @if (expediente.estado === 'cargando') {
-          <p class="payroll-expediente-estado__titulo">Cargando detalle de la nómina</p>
+          <p class="payroll-expediente-estado__titulo">Cargando detalle de la n&oacute;mina</p>
           <p>{{ expediente.mensajeEstado }}</p>
         } @else {
           <p class="payroll-expediente-estado__titulo">{{ expediente.titulo }}</p>
@@ -46,7 +46,7 @@
           @if (expediente.totales) {
             <dl class="payroll-expediente-estado__resumen">
               <div><dt>Trabajadores en cabecera</dt><dd>{{ expediente.totales.trabajadores }}</dd></div>
-              <div><dt>Líquido registrado</dt><dd>{{ f.formatoMonto(expediente.totales.liquido) }}</dd></div>
+              <div><dt>L&iacute;quido registrado</dt><dd>{{ f.formatoMonto(expediente.totales.liquido) }}</dd></div>
             </dl>
           }
           @if (expediente.estado === 'error_carga') {
@@ -57,7 +57,7 @@
         }
       </div>
     } @else {
-      <nav class="payroll-operational-tabs" aria-label="Detalle de nómina mensual">
+      <nav class="payroll-operational-tabs" aria-label="Detalle de n&oacute;mina mensual">
         @for (tab of f.detalleRevisionTabs(); track tab.id) {
           <button
             type="button"
@@ -77,16 +77,16 @@
           @case ('resumen') {
             <section class="payroll-operational-summary">
               @if (expediente.visible && expediente.snapshot) {
-                <section class="payroll-expediente-franja" aria-label="Versión del período">
+                <section class="payroll-expediente-franja" aria-label="Versi&oacute;n del per&iacute;odo">
                   <div class="payroll-expediente-franja__copy">
                     <h3>{{ expediente.titulo }}</h3>
-                    <p>{{ expediente.snapshot.versionEtiqueta }} · {{ expediente.snapshot.periodo }} · {{ expediente.snapshot.fechaGeneracion }}</p>
+                    <p>{{ expediente.snapshot.versionEtiqueta }} &middot; {{ expediente.snapshot.periodo }} &middot; {{ expediente.snapshot.fechaGeneracion }}</p>
                     @if (expediente.totales) {
                       <dl>
                         <div><dt>Trabajadores</dt><dd>{{ expediente.totales.trabajadores }}</dd></div>
                         <div><dt>Haberes</dt><dd>{{ f.formatoMonto(expediente.totales.haberes) }}</dd></div>
                         <div><dt>Descuentos</dt><dd>{{ f.formatoMonto(expediente.totales.descuentos) }}</dd></div>
-                        <div><dt>Líquido</dt><dd>{{ f.formatoMonto(expediente.totales.liquido) }}</dd></div>
+                        <div><dt>L&iacute;quido</dt><dd>{{ f.formatoMonto(expediente.totales.liquido) }}</dd></div>
                       </dl>
                     }
                   </div>
@@ -178,8 +178,8 @@
               @if (panel.listaObservaciones.length) {
                 <div class="payroll-follow-block">
                   <header>
-                    <h3>Pendientes del período</h3>
-                    <p>Revise cada punto antes de confirmar la nómina mensual.</p>
+                    <h3>Pendientes del per&iacute;odo</h3>
+                    <p>Revise cada punto antes de confirmar la n&oacute;mina mensual.</p>
                   </header>
                   <div class="payroll-revision-lista">
                     @for (item of panel.listaObservaciones; track item.titulo + item.descripcion) {
@@ -215,7 +215,7 @@
 
           @case ('trabajadores') {
             @let resumenMasivo = f.nominaMasivaResumen();
-            <section class="payroll-mass-review payroll-mass-review--consola" aria-label="Trabajadores del período">
+            <section class="payroll-mass-review payroll-mass-review--consola" aria-label="Trabajadores del per&iacute;odo">
               @if (panel.enlaceResumenIncidencias) {
                 <p class="payroll-revision-enlace-resumen">
                   <button type="button" class="payroll-modal-secondary" (click)="f.seleccionarDetalleOperativoTab('resumen')">
@@ -239,14 +239,14 @@
               }
               <p class="payroll-revision-enlace-resumen">
                 <button type="button" class="payroll-modal-primary" (click)="f.irAlDetalleDelPeriodoDesdeModal('trabajadores')">
-                  Ir al detalle del período
+                  Ir al detalle del per&iacute;odo
                 </button>
               </p>
             </section>
           }
 
           @case ('parametros') {
-            <section class="payroll-follow-section" aria-label="Seguimiento de parámetros">
+            <section class="payroll-follow-section" aria-label="Seguimiento de par&aacute;metros">
               <header>
                 <h3>{{ panel.tituloParametros }}</h3>
                 <p>{{ panel.lead }}</p>
@@ -309,7 +309,7 @@
           }
 
           @case ('movimientos_recurrentes') {
-            <section class="payroll-follow-section payroll-follow-section--stacked" aria-label="Movimientos y recurrentes del período">
+            <section class="payroll-follow-section payroll-follow-section--stacked" aria-label="Movimientos y recurrentes del per&iacute;odo">
               @if (panel.enlaceResumenIncidencias) {
                 <p class="payroll-revision-enlace-resumen">
                   <button type="button" class="payroll-modal-secondary" (click)="f.seleccionarDetalleOperativoTab('resumen')">
@@ -320,14 +320,14 @@
               <div class="payroll-follow-block">
                 <header>
                   <h3>Movimientos del mes</h3>
-                  <p>Bonos, descuentos y hechos puntuales aprobados para el período activo.</p>
+                  <p>Bonos, descuentos y hechos puntuales aprobados para el per&iacute;odo activo.</p>
                 </header>
                 @if (panel.usarGridMovimientos) {
                   <app-data-grid
                     title=""
-                    [rows]="f.payrollMovementDetailRows()"
-                    [columns]="f.payrollMovementDetailColumns"
-                    [filters]="f.payrollMovementDetailFilters"
+                    [rows]="f.filasDetalleMovimientoNomina()"
+                    [columns]="f.columnasDetalleMovimientoNomina"
+                    [filters]="f.filtrosDetalleMovimientoNomina"
                     [filtersEnabled]="panel.gridConFiltros"
                     [filterChipsDisplay]="'never'"
                     [headerCountDisplay]="'text'"
@@ -360,21 +360,21 @@
                     }
                   </div>
                 } @else {
-                  <p class="payroll-revision-empty">Sin movimientos del mes visibles. Apruebe movimientos del período o genere la nómina para ver el detalle considerado.</p>
+                  <p class="payroll-revision-empty">Sin movimientos del mes visibles. Apruebe movimientos del per&iacute;odo o genere la n&oacute;mina para ver el detalle considerado.</p>
                 }
               </div>
 
               <div class="payroll-follow-block">
                 <header>
                   <h3>Recurrentes</h3>
-                  <p>Asignaciones vigentes consideradas en la nómina mensual.</p>
+                  <p>Asignaciones vigentes consideradas en la n&oacute;mina mensual.</p>
                 </header>
                 @if (panel.usarGridRecurrentes) {
                   <app-data-grid
                     title=""
-                    [rows]="f.payrollRecurrentDetailRows()"
-                    [columns]="f.payrollRecurrentDetailColumns"
-                    [filters]="f.payrollRecurrentDetailFilters"
+                    [rows]="f.filasDetalleRecurrenteNomina()"
+                    [columns]="f.columnasDetalleRecurrenteNomina"
+                    [filters]="f.filtrosDetalleRecurrenteNomina"
                     [filtersEnabled]="panel.gridConFiltros"
                     [filterChipsDisplay]="'never'"
                     [headerCountDisplay]="'text'"
@@ -382,8 +382,8 @@
                     [showExportAction]="false"
                     [selectable]="false"
                     [maxItems]="10"
-                    emptyTitle="Sin recurrentes visibles en este período"
-                    emptyDescription="Revise asignaciones en Haberes y descuentos o genere la nómina para ver las consideradas."
+                    emptyTitle="Sin recurrentes visibles en este per&iacute;odo"
+                    emptyDescription="Revise asignaciones en Haberes y descuentos o genere la n&oacute;mina para ver las consideradas."
                   ></app-data-grid>
                 } @else if (panel.listaRecurrentes.length) {
                   <div class="payroll-revision-lista">
@@ -407,14 +407,14 @@
                     }
                   </div>
                 } @else {
-                  <p class="payroll-revision-empty">Sin recurrentes visibles en este período. Revise asignaciones en Haberes y descuentos o genere la nómina para ver las consideradas.</p>
+                  <p class="payroll-revision-empty">Sin recurrentes visibles en este per&iacute;odo. Revise asignaciones en Haberes y descuentos o genere la n&oacute;mina para ver las consideradas.</p>
                 }
               </div>
             </section>
           }
 
           @case ('resultado') {
-            <section class="payroll-follow-section payroll-follow-section--stacked" aria-label="Nómina generada">
+            <section class="payroll-follow-section payroll-follow-section--stacked" aria-label="N&oacute;mina generada">
               @if (panel.enlaceResumenIncidencias) {
                 <p class="payroll-revision-enlace-resumen">
                   <button type="button" class="payroll-modal-secondary" (click)="f.seleccionarDetalleOperativoTab('resumen')">
@@ -425,7 +425,7 @@
               @if (panel.listaResultadoSeguimiento.length) {
                 <div class="payroll-follow-block">
                   <header>
-                    <h3>Estado de la versión</h3>
+                    <h3>Estado de la versi&oacute;n</h3>
                     <p>Resumen operativo antes del detalle por trabajador.</p>
                   </header>
                   <div class="payroll-revision-lista">
@@ -451,14 +451,14 @@
               <div class="payroll-follow-block">
                 <header>
                   <h3>Detalle por trabajador</h3>
-                  <p>Totales preliminares de la versión en revisión. No reemplaza liquidaciones oficiales.</p>
+                  <p>Totales preliminares de la versi&oacute;n en revisi&oacute;n. No reemplaza liquidaciones oficiales.</p>
                 </header>
                 @if (panel.usarGridResultado) {
                   <app-data-grid
                     title=""
-                    [rows]="f.payrollResultDetailRows()"
-                    [columns]="f.payrollResultDetailColumns"
-                    [filters]="f.payrollResultDetailFilters"
+                    [rows]="f.filasDetalleResultadoNomina()"
+                    [columns]="f.columnasDetalleResultadoNomina"
+                    [filters]="f.filtrosDetalleResultadoNomina"
                     [filtersEnabled]="panel.gridConFiltros"
                     [filterChipsDisplay]="'never'"
                     [headerCountDisplay]="'text'"

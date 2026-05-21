@@ -1,4 +1,4 @@
-import { DestroyRef, HostListener, Injectable, computed, effect, inject, signal, untracked } from '@angular/core';
+﻿import { DestroyRef, HostListener, Injectable, computed, effect, inject, signal, untracked } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router } from '@angular/router';
 import { PeriodoActivoService } from '../../../../../core/services/periodo-activo.service';
@@ -72,21 +72,21 @@ import { NominaMensualCapabilitiesService } from '../../../services/nomina-mensu
 import { buildResultadoPreliminarView } from '../../../rules/proceso-mensual-resultado-preliminar.rules';
 import { buildRevisionAprobacionView } from '../../../rules/proceso-mensual-revision-aprobacion.rules';
 import {
-  buildPayrollMovementDetailRows,
-  buildPayrollMovimientoRecurrenteSeguimientoItems,
-  buildPayrollObservationDetailRows,
-  buildPayrollParametroSeguimientoItems,
-  buildPayrollRecurrentDetailRows,
-  buildPayrollResultadoSeguimientoItems,
-  buildPayrollResultDetailRows,
-  buildPayrollWorkerDetailRows,
+  construirFilasDetalleMovimientoNomina,
+  construirItemsSeguimientoMovimientoRecurrenteNomina,
+  construirFilasDetalleObservacionNomina,
+  construirItemsSeguimientoParametrosNomina,
+  construirFilasDetalleRecurrenteNomina,
+  construirItemsSeguimientoResultadoNomina,
+  construirFilasDetalleResultadoNomina,
+  construirFilasDetalleTrabajadorNomina,
 } from '../../../rules/proceso-mensual-payroll-seguimiento.rules';
 import {
-  claseChipRevision as payrollClaseChipRevision,
-  clasePendienteVisual as payrollClasePendienteVisual,
-  etiquetaEstadoBaseTrabajador as payrollEtiquetaEstadoBaseTrabajador,
-  etiquetaPendienteVisual as payrollEtiquetaPendienteVisual,
-  humanizarCopyOperativo as payrollHumanizarCopyOperativo,
+  claseChipRevision as claseChipRevisionNomina,
+  clasePendienteVisual as clasePendienteVisualNomina,
+  etiquetaEstadoBaseTrabajador as etiquetaEstadoBaseTrabajadorNomina,
+  etiquetaPendienteVisual as etiquetaPendienteVisualNomina,
+  humanizarCopyOperativo as humanizarCopyOperativoNomina,
 } from '../utils/proceso-mensual-presentacion.labels';
 import {
   buildInformacionPeriodoView,
@@ -161,14 +161,14 @@ import {
 } from './proceso-mensual-navegacion';
 import {
   DETALLE_OPERATIVO_TABS,
-  PAYROLL_MOVEMENT_DETAIL_COLUMNS,
-  PAYROLL_MOVEMENT_DETAIL_FILTERS,
-  PAYROLL_OBSERVATION_DETAIL_COLUMNS,
-  PAYROLL_OBSERVATION_DETAIL_FILTERS,
-  PAYROLL_RECURRENT_DETAIL_COLUMNS,
-  PAYROLL_RECURRENT_DETAIL_FILTERS,
-  PAYROLL_RESULT_DETAIL_COLUMNS,
-  PAYROLL_RESULT_DETAIL_FILTERS,
+  NOMINA_DETALLE_MOVIMIENTO_COLUMNS,
+  NOMINA_DETALLE_MOVIMIENTO_FILTERS,
+  NOMINA_DETALLE_OBSERVACION_COLUMNS,
+  NOMINA_DETALLE_OBSERVACION_FILTERS,
+  NOMINA_DETALLE_RECURRENTE_COLUMNS,
+  NOMINA_DETALLE_RECURRENTE_FILTERS,
+  NOMINA_DETALLE_RESULTADO_COLUMNS,
+  NOMINA_DETALLE_RESULTADO_FILTERS,
   DETALLE_MENSUAL_EXPEDIENTE_COLUMNS,
   DETALLE_MENSUAL_MOVIMIENTO_COLUMNS,
   DETALLE_MENSUAL_MOVIMIENTO_FILTERS,
@@ -201,12 +201,12 @@ import type {
   ParaContinuarItemVm,
   PasoPeriodoEstado,
   PasoPeriodoView,
-  PayrollMovementDetailRow,
-  PayrollObservationDetailRow,
-  PayrollRecurrentDetailRow,
-  PayrollResultDetailRow,
-  PayrollSeguimientoItem,
-  PayrollWorkerDetailRow,
+  FilaDetalleMovimientoNomina,
+  FilaDetalleObservacionNomina,
+  FilaDetalleRecurrenteNomina,
+  FilaDetalleResultadoNomina,
+  ItemSeguimientoNomina,
+  FilaDetalleTrabajadorNomina,
   ResultadoObservacionView,
   ResultadoPreliminarEstado,
   ResultadoPreliminarView,
@@ -343,14 +343,14 @@ export class ProcesoMensualPresentacionFacade {
   );
 
   readonly detalleRevisionTabs = computed<DetalleRevisionTabMeta[]>(() => {
-    const workers = this.payrollWorkerDetailRows();
+    const workers = this.filasDetalleTrabajadorNomina();
     return buildDetalleRevisionTabsMeta({
       tabs: DETALLE_OPERATIVO_TABS,
       incidencias: this.incidenciasPeriodo(),
-      workerRowCount: workers.length,
-      movementRowCount: this.payrollMovementDetailRows().length,
-      recurrentRowCount: this.payrollRecurrentDetailRows().length,
-      resultRowCount: this.payrollResultDetailRows().length,
+      cantidadFilasTrabajadores: workers.length,
+      cantidadFilasMovimientos: this.filasDetalleMovimientoNomina().length,
+      cantidadFilasRecurrentes: this.filasDetalleRecurrenteNomina().length,
+      cantidadFilasResultado: this.filasDetalleResultadoNomina().length,
       parametrosListos: this.dashboardResumen().parametrosListos,
       tieneActividadPeriodo:
         this.store.preNomina() != null
@@ -367,14 +367,14 @@ export class ProcesoMensualPresentacionFacade {
       periodoEtiqueta: this.periodoActivo.etiqueta(),
       estadoTitulo: this.estadoOperativo().titulo,
       incidencias: this.incidenciasPeriodo(),
-      workerRowCount: this.payrollWorkerDetailRows().length,
-      movementRowCount: this.payrollMovementDetailRows().length,
-      recurrentRowCount: this.payrollRecurrentDetailRows().length,
-      resultRowCount: this.payrollResultDetailRows().length,
-      parametroItems: this.payrollParametroSeguimientoItems(),
-      resultadoSeguimientoItems: this.payrollResultadoSeguimientoItems(),
-      movementRows: this.payrollMovementDetailRows(),
-      recurrentRows: this.payrollRecurrentDetailRows(),
+      cantidadFilasTrabajadores: this.filasDetalleTrabajadorNomina().length,
+      cantidadFilasMovimientos: this.filasDetalleMovimientoNomina().length,
+      cantidadFilasRecurrentes: this.filasDetalleRecurrenteNomina().length,
+      cantidadFilasResultado: this.filasDetalleResultadoNomina().length,
+      itemsParametros: this.itemsSeguimientoParametrosNomina(),
+      itemsSeguimientoResultado: this.itemsSeguimientoResultadoNomina(),
+      filasMovimientos: this.filasDetalleMovimientoNomina(),
+      filasRecurrentes: this.filasDetalleRecurrenteNomina(),
     });
   });
   readonly expedienteRevisionCta = computed(() => {
@@ -658,15 +658,15 @@ export class ProcesoMensualPresentacionFacade {
   }
 
   claseChipRevision(estado: string): string {
-    return payrollClaseChipRevision(estado);
+    return claseChipRevisionNomina(estado);
   }
 
   clasePendienteVisual(severidad: ProcesoMensualEstadoSeveridad): string {
-    return payrollClasePendienteVisual(severidad);
+    return clasePendienteVisualNomina(severidad);
   }
 
   etiquetaPendienteVisual(severidad: ProcesoMensualEstadoSeveridad): string {
-    return payrollEtiquetaPendienteVisual(severidad);
+    return etiquetaPendienteVisualNomina(severidad);
   }
 
   /** @deprecated Usar detalleRevisionTabs en el modal de revisión. */
@@ -747,14 +747,14 @@ export class ProcesoMensualPresentacionFacade {
         break;
     }
   }
-  readonly payrollMovementDetailColumns = PAYROLL_MOVEMENT_DETAIL_COLUMNS;
-  readonly payrollMovementDetailFilters = PAYROLL_MOVEMENT_DETAIL_FILTERS;
-  readonly payrollRecurrentDetailColumns = PAYROLL_RECURRENT_DETAIL_COLUMNS;
-  readonly payrollRecurrentDetailFilters = PAYROLL_RECURRENT_DETAIL_FILTERS;
-  readonly payrollObservationDetailColumns = PAYROLL_OBSERVATION_DETAIL_COLUMNS;
-  readonly payrollObservationDetailFilters = PAYROLL_OBSERVATION_DETAIL_FILTERS;
-  readonly payrollResultDetailColumns = PAYROLL_RESULT_DETAIL_COLUMNS;
-  readonly payrollResultDetailFilters = PAYROLL_RESULT_DETAIL_FILTERS;
+  readonly columnasDetalleMovimientoNomina = NOMINA_DETALLE_MOVIMIENTO_COLUMNS;
+  readonly filtrosDetalleMovimientoNomina = NOMINA_DETALLE_MOVIMIENTO_FILTERS;
+  readonly columnasDetalleRecurrenteNomina = NOMINA_DETALLE_RECURRENTE_COLUMNS;
+  readonly filtrosDetalleRecurrenteNomina = NOMINA_DETALLE_RECURRENTE_FILTERS;
+  readonly columnasDetalleObservacionNomina = NOMINA_DETALLE_OBSERVACION_COLUMNS;
+  readonly filtrosDetalleObservacionNomina = NOMINA_DETALLE_OBSERVACION_FILTERS;
+  readonly columnasDetalleResultadoNomina = NOMINA_DETALLE_RESULTADO_COLUMNS;
+  readonly filtrosDetalleResultadoNomina = NOMINA_DETALLE_RESULTADO_FILTERS;
   readonly detalleMensualTrabajadorColumns = DETALLE_MENSUAL_TRABAJADOR_COLUMNS;
   readonly detalleMensualTrabajadorFilters = DETALLE_MENSUAL_TRABAJADOR_FILTERS;
   readonly detalleMensualMovimientoColumns = DETALLE_MENSUAL_MOVIMIENTO_COLUMNS;
@@ -1253,8 +1253,8 @@ export class ProcesoMensualPresentacionFacade {
     this.estadoOperativo()
       .queFaltaAhora.slice(0, 6)
       .map((item) => ({
-        titulo: payrollHumanizarCopyOperativo(item.titulo),
-        detalle: payrollHumanizarCopyOperativo(item.descripcion),
+        titulo: humanizarCopyOperativoNomina(item.titulo),
+        detalle: humanizarCopyOperativoNomina(item.descripcion),
       }))
       .filter((item) => item.titulo.length > 0),
   );
@@ -1297,71 +1297,71 @@ export class ProcesoMensualPresentacionFacade {
     });
   });
 
-  readonly payrollWorkerDetailRows = computed<PayrollWorkerDetailRow[]>(() =>
-    buildPayrollWorkerDetailRows({
+  readonly filasDetalleTrabajadorNomina = computed<FilaDetalleTrabajadorNomina[]>(() =>
+    construirFilasDetalleTrabajadorNomina({
       base: this.baseNominaTrazabilidad(),
       expediente: this.expedienteNominaPeriodo(),
       resultadoTrabajadores: this.resultadoPreliminar().trabajadores,
     }),
   );
 
-  readonly payrollMovementDetailRows = computed<PayrollMovementDetailRow[]>(() =>
-    buildPayrollMovementDetailRows({
+  readonly filasDetalleMovimientoNomina = computed<FilaDetalleMovimientoNomina[]>(() =>
+    construirFilasDetalleMovimientoNomina({
       entradasMensuales: this.store.resultado()?.entradasMensuales,
       base: this.baseNominaTrazabilidad(),
       resultadoTrabajadores: this.resultadoPreliminar().trabajadores,
     }),
   );
 
-  readonly payrollRecurrentDetailRows = computed<PayrollRecurrentDetailRow[]>(() =>
-    buildPayrollRecurrentDetailRows({
+  readonly filasDetalleRecurrenteNomina = computed<FilaDetalleRecurrenteNomina[]>(() =>
+    construirFilasDetalleRecurrenteNomina({
       entradasMensuales: this.store.resultado()?.entradasMensuales,
       base: this.baseNominaTrazabilidad(),
       resultadoTrabajadores: this.resultadoPreliminar().trabajadores,
     }),
   );
 
-  readonly payrollObservationDetailRows = computed<PayrollObservationDetailRow[]>(() =>
-    buildPayrollObservationDetailRows({ incidencias: this.incidenciasPeriodo().todas }),
+  readonly filasDetalleObservacionNomina = computed<FilaDetalleObservacionNomina[]>(() =>
+    construirFilasDetalleObservacionNomina({ incidencias: this.incidenciasPeriodo().todas }),
   );
 
-  readonly payrollParametroSeguimientoItems = computed<PayrollSeguimientoItem[]>(() =>
-    buildPayrollParametroSeguimientoItems({
+  readonly itemsSeguimientoParametrosNomina = computed<ItemSeguimientoNomina[]>(() =>
+    construirItemsSeguimientoParametrosNomina({
       parametrosListos: this.dashboardResumen().parametrosListos,
       tieneIncidenciasParametros: this.incidenciasPeriodo().porAmbito.parametros.length > 0,
     }),
   );
 
-  readonly payrollMovimientoRecurrenteSeguimientoItems = computed<PayrollSeguimientoItem[]>(() =>
-    buildPayrollMovimientoRecurrenteSeguimientoItems(
-      this.payrollMovementDetailRows(),
-      this.payrollRecurrentDetailRows(),
+  readonly itemsSeguimientoMovimientoRecurrenteNomina = computed<ItemSeguimientoNomina[]>(() =>
+    construirItemsSeguimientoMovimientoRecurrenteNomina(
+      this.filasDetalleMovimientoNomina(),
+      this.filasDetalleRecurrenteNomina(),
     ),
   );
 
-  readonly payrollResultadoSeguimientoItems = computed<PayrollSeguimientoItem[]>(() =>
-    buildPayrollResultadoSeguimientoItems({
+  readonly itemsSeguimientoResultadoNomina = computed<ItemSeguimientoNomina[]>(() =>
+    construirItemsSeguimientoResultadoNomina({
       resultado: this.resultadoPreliminar(),
       snapshot: this.store.snapshotActivo(),
     }),
   );
 
-  readonly payrollResultDetailRows = computed<PayrollResultDetailRow[]>(() =>
-    buildPayrollResultDetailRows(this.resultadoPreliminar()),
+  readonly filasDetalleResultadoNomina = computed<FilaDetalleResultadoNomina[]>(() =>
+    construirFilasDetalleResultadoNomina(this.resultadoPreliminar()),
   );
 
   readonly nominaDetalleMensualTrabajadorRows = computed(() =>
     buildNominaDetalleMensualTrabajadorRows({
-      workers: this.payrollWorkerDetailRows(),
-      resultados: this.payrollResultDetailRows(),
+      workers: this.filasDetalleTrabajadorNomina(),
+      resultados: this.filasDetalleResultadoNomina(),
       idPersonaPorNombre: this.idPersonaPorNombreTrabajador(),
     }),
   );
 
   readonly nominaDetalleMensualMovimientoRows = computed(() =>
     buildNominaDetalleMensualMovimientosRows({
-      movimientos: this.payrollMovementDetailRows(),
-      recurrentes: this.payrollRecurrentDetailRows(),
+      movimientos: this.filasDetalleMovimientoNomina(),
+      recurrentes: this.filasDetalleRecurrenteNomina(),
       periodoEtiqueta: this.periodoActivo.etiqueta() || this.store.periodoSeleccionado(),
     }),
   );
@@ -1384,9 +1384,9 @@ export class ProcesoMensualPresentacionFacade {
         conceptoSituacion: generadas > 0
           ? `${generadas} liquidación${generadas === 1 ? '' : 'es'} del período`
           : 'Nómina confirmada; puede generar liquidaciones',
-        origenDuracion: 'â€”',
+        origenDuracion: '—',
         vigencia: this.periodoActivo.etiqueta(),
-        monto: 'â€”',
+        monto: '—',
         accion: generadas > 0 || cerrada ? 'Ir a liquidaciones' : 'Confirmar nómina',
         severity: generadas > 0 ? 'listo' as const : 'atencion' as const,
         ruta: generadas > 0 || cerrada ? '/remuneraciones/liquidaciones' : undefined,
@@ -1429,8 +1429,8 @@ export class ProcesoMensualPresentacionFacade {
     resultadoTrabajadores: this.resultadoPreliminar().trabajadores,
     expedienteTrabajadores: this.expedienteNominaPeriodo().trabajadores,
     baseTrabajadores: this.baseNominaTrazabilidad()?.trabajadores ?? [],
-    movementRows: this.payrollMovementDetailRows(),
-    recurrentRows: this.payrollRecurrentDetailRows(),
+    filasMovimientos: this.filasDetalleMovimientoNomina(),
+    filasRecurrentes: this.filasDetalleRecurrenteNomina(),
     incidencias: this.incidenciasRevisionTrabajadores(),
   }));
 
@@ -2479,7 +2479,7 @@ export class ProcesoMensualPresentacionFacade {
   }
 
   etiquetaEstadoBaseTrabajador(estado: BaseNominaTrabajadorEstado): string {
-    return payrollEtiquetaEstadoBaseTrabajador(estado);
+    return etiquetaEstadoBaseTrabajadorNomina(estado);
   }
 
   badgeVariantEstadoBaseTrabajador(

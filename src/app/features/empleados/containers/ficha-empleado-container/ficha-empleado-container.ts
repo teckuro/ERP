@@ -43,12 +43,11 @@ import {
 import {
   buildExpedienteNavItems,
   buildFichaEstadoPanelVm,
-  navStatusLabel,
+  etiquetaEstadoNavegacion,
   resolveAccionPrincipalTab,
-  type EmployeeFichaIssue,
-  type EmployeeFichaNavItem,
-  type EmployeeFichaNavStatus,
-  type EmployeeFichaTabKey,
+  type FaltanteFichaEmpleado,
+  type ItemNavegacionFichaEmpleado,
+  type EstadoNavegacionFichaEmpleado,
   type FichaEstadoPanelVm,
 } from '../../rules/ficha-empleado-presentacion.rules';
 import {
@@ -61,7 +60,7 @@ import {
 } from '../../../../shared/components/ui/message-box.component';
 import { bindShellPageContext } from '../../../../layout/shell-page-context.binding';
 
-type EmployeeFileTab =
+type TabFichaEmpleado =
   | 'general'
   | 'laboral'
   | 'remuneracion'
@@ -70,26 +69,26 @@ type EmployeeFileTab =
   | 'documentos'
   | 'historial';
 
-type EmployeeFileTabStatus = 'complete' | 'pending' | 'warning' | 'blocking';
+type EstadoTabFichaEmpleado = 'complete' | 'pending' | 'warning' | 'blocking';
 
-interface EmployeeFileTabItem {
-  id: EmployeeFileTab;
+interface ItemTabFichaEmpleado {
+  id: TabFichaEmpleado;
   label: string;
 }
 
-interface EmployeeDetailItem {
+interface DetalleFichaEmpleadoItem {
   label: string;
   value: string;
   kind?: 'section';
 }
 
-interface EmployeeDetailBlock {
+interface BloqueDetalleFichaEmpleado {
   id: string;
   title: string;
-  items: EmployeeDetailItem[];
+  items: DetalleFichaEmpleadoItem[];
 }
 
-interface EmployeeHistoryRow {
+interface FilaHistorialFichaEmpleado {
   id: string;
   fecha: string;
   evento: string;
@@ -131,17 +130,17 @@ export class FichaEmpleadoContainer implements OnInit {
   readonly isLoadingCatalogs = signal(true);
   readonly isSavingSection = signal(false);
   readonly isValidatingPayroll = signal(false);
-  readonly errorMessage = signal<string | null>(null);
-  readonly sectionErrorMessage = signal<string | null>(null);
-  readonly sectionSuccessTitle = signal<string | null>(null);
-  readonly sectionSuccessMessage = signal<string | null>(null);
-  readonly validationSuccessMessage = signal<string | null>(null);
-  readonly validationErrorMessage = signal<string | null>(null);
+  readonly mensajeError = signal<string | null>(null);
+  readonly mensajeErrorSeccion = signal<string | null>(null);
+  readonly tituloExitoSeccion = signal<string | null>(null);
+  readonly mensajeExitoSeccion = signal<string | null>(null);
+  readonly mensajeExitoValidacion = signal<string | null>(null);
+  readonly mensajeErrorValidacion = signal<string | null>(null);
   readonly validationBlockingItems = signal<string[]>([]);
   readonly validationPendingCount = signal(0);
   readonly confirmPayrollValidation = signal(false);
-  readonly activeTab = signal<EmployeeFileTab>('general');
-  readonly editingTab = signal<EmployeeFileTab | null>(null);
+  readonly tabActivo = signal<TabFichaEmpleado>('general');
+  readonly editingTab = signal<TabFichaEmpleado | null>(null);
   readonly editingBlock = signal<string | null>(null);
   readonly catalogos = signal<EmpleadoFormCatalogos>(EMPTY_EMPLEADO_FORM_CATALOGOS);
   readonly form: EmpleadoFormGroup = this.empleadosFormService.createForm();
@@ -156,7 +155,7 @@ export class FichaEmpleadoContainer implements OnInit {
   readonly saveIcon = Save;
   readonly cancelIcon = X;
 
-  readonly tabs: EmployeeFileTabItem[] = [
+  readonly tabs: ItemTabFichaEmpleado[] = [
     { id: 'general', label: 'General' },
     { id: 'laboral', label: 'Laboral' },
     { id: 'remuneracion', label: 'Remuneración' },
@@ -166,7 +165,7 @@ export class FichaEmpleadoContainer implements OnInit {
     { id: 'historial', label: 'Historial' },
   ];
 
-  readonly historyColumns: DataGridColumn<EmployeeHistoryRow>[] = [
+  readonly historyColumns: DataGridColumn<FilaHistorialFichaEmpleado>[] = [
     {
       id: 'fecha',
       header: 'Fecha',
@@ -210,7 +209,7 @@ export class FichaEmpleadoContainer implements OnInit {
     },
   ];
 
-  readonly trackHistoryRow = (_index: number, row: EmployeeHistoryRow): string => row.id;
+  readonly trackHistoryRow = (_index: number, row: FilaHistorialFichaEmpleado): string => row.id;
 
   constructor() {
     bindShellPageContext(
@@ -245,7 +244,7 @@ export class FichaEmpleadoContainer implements OnInit {
 
   async ngOnInit(): Promise<void> {
     if (!Number.isInteger(this.empleadoId) || this.empleadoId <= 0) {
-      this.errorMessage.set('Identificador de empleado invalido.');
+      this.mensajeError.set('Identificador de empleado invalido.');
       this.isLoading.set(false);
       return;
     }
@@ -265,37 +264,38 @@ export class FichaEmpleadoContainer implements OnInit {
       this.empleado.set(employee);
 
       if (!this.empleado()) {
-        this.errorMessage.set('No se encontro la ficha solicitada.');
+        this.mensajeError.set('No se encontro la ficha solicitada.');
       } else {
         this.patchFormFromEmployee(this.empleado()!);
       }
     } catch {
-      this.errorMessage.set('No fue posible cargar la ficha del empleado.');
+      this.mensajeError.set('No fue posible cargar la ficha del empleado.');
     } finally {
       this.isLoadingCatalogs.set(false);
       this.isLoading.set(false);
     }
   }
 
-  selectTab(tabId: EmployeeFileTab): void {
+  selectTab(idTab: TabFichaEmpleado): boolean {
     if (this.hasCurrentSectionChanges()) {
       const shouldDiscard = window.confirm(
         'Hay cambios sin guardar en la seccion actual. Deseas descartarlos?',
       );
 
       if (!shouldDiscard) {
-        return;
+        return false;
       }
 
       this.restoreForm();
     }
 
-    this.activeTab.set(tabId);
+    this.tabActivo.set(idTab);
     this.editingTab.set(null);
     this.editingBlock.set(null);
-    this.sectionErrorMessage.set(null);
-    this.sectionSuccessTitle.set(null);
-    this.sectionSuccessMessage.set(null);
+    this.mensajeErrorSeccion.set(null);
+    this.tituloExitoSeccion.set(null);
+    this.mensajeExitoSeccion.set(null);
+    return true;
   }
 
   startEditing(blockId: string | null = null): void {
@@ -303,10 +303,10 @@ export class FichaEmpleadoContainer implements OnInit {
       return;
     }
 
-    this.sectionErrorMessage.set(null);
-    this.sectionSuccessTitle.set(null);
-    this.sectionSuccessMessage.set(null);
-    this.editingTab.set(this.activeTab());
+    this.mensajeErrorSeccion.set(null);
+    this.tituloExitoSeccion.set(null);
+    this.mensajeExitoSeccion.set(null);
+    this.editingTab.set(this.tabActivo());
     this.editingBlock.set(blockId ?? this.detailBlocks(this.empleado()!).at(0)?.id ?? null);
   }
 
@@ -314,13 +314,13 @@ export class FichaEmpleadoContainer implements OnInit {
     this.restoreForm();
     this.editingTab.set(null);
     this.editingBlock.set(null);
-    this.sectionErrorMessage.set(null);
-    this.sectionSuccessTitle.set(null);
-    this.sectionSuccessMessage.set(null);
+    this.mensajeErrorSeccion.set(null);
+    this.tituloExitoSeccion.set(null);
+    this.mensajeExitoSeccion.set(null);
   }
 
   async handlePrimaryFichaAction(empleado: EmpleadoFichaDetalle): Promise<void> {
-    if (this.canValidateForPayroll(empleado)) {
+    if (this.puedeValidarRemuneraciones(empleado)) {
       this.openPayrollValidationConfirm();
       return;
     }
@@ -341,7 +341,7 @@ export class FichaEmpleadoContainer implements OnInit {
   }
 
   openPayrollValidationConfirm(): void {
-    this.validationErrorMessage.set(null);
+    this.mensajeErrorValidacion.set(null);
     this.validationBlockingItems.set([]);
     this.validationPendingCount.set(0);
     this.confirmPayrollValidation.set(true);
@@ -364,15 +364,15 @@ export class FichaEmpleadoContainer implements OnInit {
 
     const evaluacion = this.evaluacionEmpleado(employee);
 
-    if (!this.canValidateForPayroll(employee)) {
+    if (!this.puedeValidarRemuneraciones(employee)) {
       this.setPayrollValidationError(evaluacion);
       this.confirmPayrollValidation.set(false);
       return;
     }
 
     this.isValidatingPayroll.set(true);
-    this.validationErrorMessage.set(null);
-    this.validationSuccessMessage.set(null);
+    this.mensajeErrorValidacion.set(null);
+    this.mensajeExitoValidacion.set(null);
     this.validationBlockingItems.set([]);
     this.validationPendingCount.set(0);
 
@@ -387,7 +387,7 @@ export class FichaEmpleadoContainer implements OnInit {
         this.patchFormFromEmployee(updated);
       }
 
-      this.validationSuccessMessage.set('Ficha validada para remuneraciones.');
+      this.mensajeExitoValidacion.set('Ficha validada para remuneraciones.');
       this.confirmPayrollValidation.set(false);
     } catch (error) {
       const evaluacionError =
@@ -398,7 +398,7 @@ export class FichaEmpleadoContainer implements OnInit {
       if (evaluacionError) {
         this.setPayrollValidationError(evaluacionError);
       } else {
-        this.validationErrorMessage.set(
+        this.mensajeErrorValidacion.set(
           error instanceof Error
             ? error.message
             : 'No se pudo validar la ficha para remuneraciones.',
@@ -416,7 +416,7 @@ export class FichaEmpleadoContainer implements OnInit {
       return;
     }
 
-    const saveTarget = this.saveTargetForTab(this.activeTab());
+    const saveTarget = this.saveTargetForTab(this.tabActivo());
     const blockTitle = this.activeEditingBlockTitle();
 
     if (!saveTarget) {
@@ -429,14 +429,14 @@ export class FichaEmpleadoContainer implements OnInit {
     controls.forEach((control) => control.updateValueAndValidity({ emitEvent: false }));
 
     if (controls.some((control) => control.invalid)) {
-      this.sectionErrorMessage.set('Revisa los campos marcados antes de guardar esta sección.');
+      this.mensajeErrorSeccion.set('Revisa los campos marcados antes de guardar esta sección.');
       return;
     }
 
     this.isSavingSection.set(true);
-    this.sectionErrorMessage.set(null);
-    this.sectionSuccessTitle.set(null);
-    this.sectionSuccessMessage.set(null);
+    this.mensajeErrorSeccion.set(null);
+    this.tituloExitoSeccion.set(null);
+    this.mensajeExitoSeccion.set(null);
 
     try {
       const updated = await this.empleadosService.guardarSeccionFicha(
@@ -452,12 +452,12 @@ export class FichaEmpleadoContainer implements OnInit {
 
       this.editingTab.set(null);
       this.editingBlock.set(null);
-      this.sectionSuccessTitle.set(blockTitle);
-      this.sectionSuccessMessage.set(
+      this.tituloExitoSeccion.set(blockTitle);
+      this.mensajeExitoSeccion.set(
         `Se guardó ${blockTitle}. Las demás secciones de la ficha no se modificaron.`,
       );
     } catch (error) {
-      this.sectionErrorMessage.set(
+      this.mensajeErrorSeccion.set(
         error instanceof Error
           ? error.message
           : 'No fue posible guardar la sección. Intenta nuevamente.',
@@ -468,12 +468,12 @@ export class FichaEmpleadoContainer implements OnInit {
   }
 
   dismissSectionError(): void {
-    this.sectionErrorMessage.set(null);
+    this.mensajeErrorSeccion.set(null);
   }
 
   dismissSectionSuccess(): void {
-    this.sectionSuccessTitle.set(null);
-    this.sectionSuccessMessage.set(null);
+    this.tituloExitoSeccion.set(null);
+    this.mensajeExitoSeccion.set(null);
   }
 
   activeEditingBlockTitle(): string {
@@ -496,7 +496,7 @@ export class FichaEmpleadoContainer implements OnInit {
   }
 
   isEditingCurrentTab(): boolean {
-    return this.editingTab() === this.activeTab();
+    return this.editingTab() === this.tabActivo();
   }
 
   isEditingBlock(blockId: string): boolean {
@@ -561,33 +561,33 @@ export class FichaEmpleadoContainer implements OnInit {
       estadoFicha: empleado.estadoFicha,
       estadoLaboral: empleado.estado,
       aptoParaRemuneracionesRegistro: empleado.aptoParaRemuneraciones,
-      tabStatus: (tabId) => this.tabStatus(tabId, empleado),
+      estadoTab: (idTab) => this.estadoTab(idTab, empleado),
       humanizeBloqueo: (bloqueo) => this.humanPendingText(bloqueo),
     });
   }
 
   progressStyle(empleado: EmpleadoListado): Record<string, string> {
-    return { width: `${this.fichaEstadoPanel(empleado).progressPercent}%` };
+    return { width: `${this.fichaEstadoPanel(empleado).porcentajeAvance}%` };
   }
 
-  tabStatus(tabId: EmployeeFileTab, empleado: EmpleadoListado): EmployeeFileTabStatus {
+  estadoTab(idTab: TabFichaEmpleado, empleado: EmpleadoListado): EstadoTabFichaEmpleado {
     const evaluacion = this.evaluacionEmpleado(empleado);
 
     if (evaluacion.aptoParaRemuneraciones) {
       return 'complete';
     }
 
-    if (evaluacion.seccionesPendientes.some((section) => this.tabFromSection(section) === tabId)) {
-      return tabId === 'pago' || tabId === 'remuneracion' || tabId === 'prevision'
+    if (evaluacion.seccionesPendientes.some((section) => this.tabFromSection(section) === idTab)) {
+      return idTab === 'pago' || idTab === 'remuneracion' || idTab === 'prevision'
         ? 'blocking'
         : 'warning';
     }
 
-    return tabId === 'documentos' || tabId === 'historial' ? 'pending' : 'complete';
+    return idTab === 'documentos' || idTab === 'historial' ? 'pending' : 'complete';
   }
 
-  tabStatusLabel(tabId: EmployeeFileTab, empleado: EmpleadoListado): string {
-    switch (this.tabStatus(tabId, empleado)) {
+  estadoTabLabel(idTab: TabFichaEmpleado, empleado: EmpleadoListado): string {
+    switch (this.estadoTab(idTab, empleado)) {
       case 'complete':
         return 'Completo';
       case 'warning':
@@ -599,20 +599,20 @@ export class FichaEmpleadoContainer implements OnInit {
     }
   }
 
-  tabStatusClass(tabId: EmployeeFileTab, empleado: EmpleadoListado): string {
-    return `is-${this.tabStatus(tabId, empleado)}`;
+  estadoTabClass(idTab: TabFichaEmpleado, empleado: EmpleadoListado): string {
+    return `is-${this.estadoTab(idTab, empleado)}`;
   }
 
   selectRecommendedTab(empleado: EmpleadoListado): void {
-    const firstPending = this.evaluacionEmpleado(empleado).seccionesPendientes[0];
-    this.selectTab(firstPending ? this.tabFromSection(firstPending) : 'general');
+    const primerPendiente = this.evaluacionEmpleado(empleado).seccionesPendientes[0];
+    this.selectTab(primerPendiente ? this.tabFromSection(primerPendiente) : 'general');
   }
 
-  expedienteNavItems(empleado: EmpleadoListado): EmployeeFichaNavItem[] {
+  expedienteNavItems(empleado: EmpleadoListado): ItemNavegacionFichaEmpleado[] {
     return buildExpedienteNavItems({
       tabs: this.tabs,
-      activeTab: this.activeTab(),
-      tabStatus: (tabId) => this.tabStatus(tabId, empleado),
+      tabActivo: this.tabActivo(),
+      estadoTab: (idTab) => this.estadoTab(idTab, empleado),
     });
   }
 
@@ -624,15 +624,18 @@ export class FichaEmpleadoContainer implements OnInit {
 
     const estado = this.fichaEstadoPanel(empleado);
 
-    if (estado.canValidateForPayroll) {
+    if (estado.puedeValidarRemuneraciones) {
       this.openPayrollValidationConfirm();
       return;
     }
 
-    const tab = resolveAccionPrincipalTab(estado.issues, this.evaluacionEmpleado(empleado));
+    const tab = resolveAccionPrincipalTab(estado.faltantes, this.evaluacionEmpleado(empleado));
 
-    if (estado.issues.some((issue) => issue.blockKey === 'pago') || tab === 'pago') {
-      this.selectTab('pago');
+    if (estado.faltantes.some((issue) => issue.claveBloque === 'pago') || tab === 'pago') {
+      const cambioTabAceptado = this.selectTab('pago');
+      if (!cambioTabAceptado) {
+        return;
+      }
       this.startEditing(this.detailBlocks(empleado).at(0)?.id);
       return;
     }
@@ -640,20 +643,20 @@ export class FichaEmpleadoContainer implements OnInit {
     await this.handlePrimaryFichaAction(empleado);
   }
 
-  navegarFaltante(issue: EmployeeFichaIssue): void {
-    this.selectTab(issue.blockKey);
+  navegarFaltante(issue: FaltanteFichaEmpleado): void {
+    this.selectTab(issue.claveBloque);
   }
 
-  navStatusClass(status: EmployeeFichaNavStatus): string {
-    return `employee-record-rail__status employee-record-rail__status--${status}`;
+  claseEstadoNavegacion(estado: EstadoNavegacionFichaEmpleado): string {
+    return `employee-record-rail__status employee-record-rail__status--${estado}`;
   }
 
-  railNavStatusLabel(status: EmployeeFichaNavStatus): string {
-    return navStatusLabel(status);
+  etiquetaEstadoRail(estado: EstadoNavegacionFichaEmpleado): string {
+    return etiquetaEstadoNavegacion(estado);
   }
 
-  activeTabDescription(): string {
-    const descriptions: Record<EmployeeFileTab, string> = {
+  tabActivoDescription(): string {
+    const descriptions: Record<TabFichaEmpleado, string> = {
       general: 'Información base del trabajador y datos de contacto.',
       laboral: 'Contrato, cargo y relación laboral del período.',
       remuneracion: 'Jornada, sueldo y asignaciones del trabajador.',
@@ -662,7 +665,7 @@ export class FichaEmpleadoContainer implements OnInit {
       documentos: 'Respaldo documental del trabajador.',
       historial: 'Eventos y cambios registrados en la ficha.',
     };
-    return descriptions[this.activeTab()] ?? '';
+    return descriptions[this.tabActivo()] ?? '';
   }
 
   evaluacionEmpleado(empleado: EmpleadoListado): EvaluacionCompletitudEmpleado {
@@ -692,19 +695,19 @@ export class FichaEmpleadoContainer implements OnInit {
     return total > 5 ? `${total} pendientes por completar.` : 'Pendiente:';
   }
 
-  primaryActionEvaluadaLabel(empleado: EmpleadoListado): string {
-    return this.fichaEstadoPanel(empleado).primaryActionEvaluadaLabel;
+  etiquetaAccionPrincipalEvaluada(empleado: EmpleadoListado): string {
+    return this.fichaEstadoPanel(empleado).etiquetaAccionPrincipalEvaluada;
   }
 
-  canValidateForPayroll(empleado: EmpleadoListado): boolean {
-    return this.fichaEstadoPanel(empleado).canValidateForPayroll;
+  puedeValidarRemuneraciones(empleado: EmpleadoListado): boolean {
+    return this.fichaEstadoPanel(empleado).puedeValidarRemuneraciones;
   }
 
-  activeTabLabel(): string {
-    return this.tabs.find((tab) => tab.id === this.activeTab())?.label ?? 'General';
+  tabActivoLabel(): string {
+    return this.tabs.find((tab) => tab.id === this.tabActivo())?.label ?? 'General';
   }
 
-  detailItems(empleado: EmpleadoListado): EmployeeDetailItem[] {
+  detailItems(empleado: EmpleadoListado): DetalleFichaEmpleadoItem[] {
     const raw = this.form.getRawValue();
     const personal = raw.datosPersonales;
     const contacto = raw.contacto;
@@ -712,7 +715,7 @@ export class FichaEmpleadoContainer implements OnInit {
     const prevision = raw.previsionSalud;
     const bancario = raw.bancario;
 
-    switch (this.activeTab()) {
+    switch (this.tabActivo()) {
       case 'general':
         return [
           this.detailSection('Identificación legal'),
@@ -855,8 +858,8 @@ export class FichaEmpleadoContainer implements OnInit {
 
   private previsionDetailItems(
     prevision: ReturnType<EmpleadoFormGroup['getRawValue']>['previsionSalud'],
-  ): EmployeeDetailItem[] {
-    const items: EmployeeDetailItem[] = [
+  ): DetalleFichaEmpleadoItem[] {
+    const items: DetalleFichaEmpleadoItem[] = [
       this.detailSection('Régimen previsional'),
       {
         label: 'Régimen previsional',
@@ -935,8 +938,8 @@ export class FichaEmpleadoContainer implements OnInit {
     return items;
   }
 
-  detailBlocks(empleado: EmpleadoListado): EmployeeDetailBlock[] {
-    const blocks: EmployeeDetailBlock[] = [];
+  detailBlocks(empleado: EmpleadoListado): BloqueDetalleFichaEmpleado[] {
+    const blocks: BloqueDetalleFichaEmpleado[] = [];
 
     for (const item of this.detailItems(empleado)) {
       if (item.kind === 'section') {
@@ -950,8 +953,8 @@ export class FichaEmpleadoContainer implements OnInit {
 
       if (blocks.length === 0) {
         blocks.push({
-          id: this.blockIdForTitle(this.activeTabLabel()),
-          title: this.activeTabLabel(),
+          id: this.blockIdForTitle(this.tabActivoLabel()),
+          title: this.tabActivoLabel(),
           items: [],
         });
       }
@@ -962,11 +965,11 @@ export class FichaEmpleadoContainer implements OnInit {
     return blocks;
   }
 
-  historyRows(empleado: EmpleadoFichaDetalle): EmployeeHistoryRow[] {
+  historyRows(empleado: EmpleadoFichaDetalle): FilaHistorialFichaEmpleado[] {
     return empleado.historial.map((item) => this.historyRow(item));
   }
 
-  private historyRow(item: EmpleadoHistorialCambio): EmployeeHistoryRow {
+  private historyRow(item: EmpleadoHistorialCambio): FilaHistorialFichaEmpleado {
     return {
       id: String(item.id),
       fecha: item.fecha,
@@ -1000,7 +1003,7 @@ export class FichaEmpleadoContainer implements OnInit {
       .join(' ');
   }
 
-  private detailSection(label: string): EmployeeDetailItem {
+  private detailSection(label: string): DetalleFichaEmpleadoItem {
     return { label, value: '', kind: 'section' };
   }
 
@@ -1152,7 +1155,7 @@ export class FichaEmpleadoContainer implements OnInit {
   }
 
   canEditCurrentTab(): boolean {
-    return !['documentos', 'historial'].includes(this.activeTab());
+    return !['documentos', 'historial'].includes(this.tabActivo());
   }
 
   canEditBlock(blockId: string): boolean {
@@ -1266,7 +1269,7 @@ export class FichaEmpleadoContainer implements OnInit {
   private setPayrollValidationError(evaluacion: EvaluacionCompletitudEmpleado): void {
     const items = evaluacion.bloqueos.map((bloqueo) => this.humanPendingText(bloqueo));
 
-    this.validationErrorMessage.set(
+    this.mensajeErrorValidacion.set(
       'Corrige los pendientes antes de habilitar al trabajador para remuneraciones.',
     );
     this.validationBlockingItems.set(items.slice(0, 5));
@@ -1324,7 +1327,7 @@ export class FichaEmpleadoContainer implements OnInit {
     return bloqueo;
   }
 
-  private tabFromSection(section: string): EmployeeFileTab {
+  private tabFromSection(section: string): TabFichaEmpleado {
     const normalized = this.normalizeText(section);
 
     if (normalized.includes('identidad') || normalized.includes('alta basica')) {
@@ -1583,9 +1586,9 @@ export class FichaEmpleadoContainer implements OnInit {
   }
 
   private saveTargetForTab(
-    tabId: EmployeeFileTab,
+    idTab: TabFichaEmpleado,
   ): 'general' | 'laboral' | 'remuneracion' | 'prevision' | 'pago' | null {
-    switch (tabId) {
+    switch (idTab) {
       case 'general':
         return 'general';
       case 'laboral':

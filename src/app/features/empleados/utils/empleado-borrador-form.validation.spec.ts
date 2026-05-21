@@ -79,7 +79,7 @@ describe('validateBorradorAvanzadoFormMinimo', () => {
       sexo: 'F',
       estadoCivil: 'SOLTERO',
     });
-    expect(validateBorradorAvanzadoFormMinimo(form)).toContain('pais');
+    expect(validateBorradorAvanzadoFormMinimo(form)).toContain('país');
   });
 
   it('rechaza sin sexo', () => {

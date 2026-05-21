@@ -2,7 +2,7 @@ import {
   AltaAplicabilidadEstado,
   AltaAplicabilidadItem,
 } from './empleado-alta-aplicabilidad.rules';
-import { AltaCoherenciaIssue } from './empleado-alta-coherencia.rules';
+import { InconsistenciaCoherenciaAlta } from './empleado-alta-coherencia.rules';
 
 export type AltaValidacionTipo =
   | 'missing_required'
@@ -36,8 +36,8 @@ export interface AltaValidacionPendienteInput {
 }
 
 export interface AltaValidacionesInput {
-  aplicabilidadItems: readonly AltaAplicabilidadItem[];
-  coherenciaIssues: readonly AltaCoherenciaIssue[];
+  elementosAplicabilidad: readonly AltaAplicabilidadItem[];
+  inconsistenciasCoherencia: readonly InconsistenciaCoherenciaAlta[];
   pendientes: readonly AltaValidacionPendienteInput[];
 }
 
@@ -66,10 +66,10 @@ export function evaluarAltaValidacionesVisibles(
   input: AltaValidacionesInput,
 ): readonly AltaValidacionVisible[] {
   const pendientes = input.pendientes.map(mapPendiente);
-  const aplicabilidad = input.aplicabilidadItems
+  const aplicabilidad = input.elementosAplicabilidad
     .map(mapAplicabilidad)
     .filter((item): item is AltaValidacionVisible => item !== null);
-  const coherencia = input.coherenciaIssues.map(mapCoherencia);
+  const coherencia = input.inconsistenciasCoherencia.map(mapCoherencia);
 
   return [...dedupeValidaciones([...pendientes, ...coherencia, ...aplicabilidad])].sort(
     (a, b) => a.paso - b.paso || sortTipo(a.tipo) - sortTipo(b.tipo) || a.titulo.localeCompare(b.titulo),
@@ -128,7 +128,7 @@ function mapAplicabilidad(item: AltaAplicabilidadItem): AltaValidacionVisible | 
   };
 }
 
-function mapCoherencia(issue: AltaCoherenciaIssue): AltaValidacionVisible {
+function mapCoherencia(issue: InconsistenciaCoherenciaAlta): AltaValidacionVisible {
   return {
     id: `coherencia.${issue.id}`,
     paso: issue.stepIndex,

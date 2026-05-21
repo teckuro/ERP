@@ -1,8 +1,8 @@
-import { describe, expect, it } from 'vitest';
+﻿import { describe, expect, it } from 'vitest';
 
-import { evaluarAltaCoherencia, AltaCoherenciaInput } from './empleado-alta-coherencia.rules';
+import { evaluarAltaCoherencia, EntradaCoherenciaAlta } from './empleado-alta-coherencia.rules';
 
-const base: AltaCoherenciaInput = {
+const base: EntradaCoherenciaAlta = {
   relacionLaboral: 'CONTRATO',
   tipoContrato: 'INDEFINIDO',
   tipoJornadaLabel: 'Ordinaria',
@@ -26,21 +26,21 @@ const base: AltaCoherenciaInput = {
 
 describe('evaluarAltaCoherencia', () => {
   it('detecta seguro cesantia desactivado en contrato indefinido', () => {
-    const state = evaluarAltaCoherencia({ ...base, seguroCesantia: false });
+    const estado = evaluarAltaCoherencia({ ...base, seguroCesantia: false });
 
-    expect(state.issues.some((issue) => issue.id === 'coh.seguro.indefinido-inactivo')).toBe(true);
-    expect(state.seguroCesantia.tone).toBe('warning');
+    expect(estado.inconsistencias.some((issue) => issue.id === 'coh.seguro.indefinido-inactivo')).toBe(true);
+    expect(estado.seguroCesantia.tone).toBe('warning');
   });
 
   it('detecta jornada ordinaria sobre 42 horas', () => {
-    const state = evaluarAltaCoherencia({ ...base, horasSemanales: 45 });
+    const estado = evaluarAltaCoherencia({ ...base, horasSemanales: 45 });
 
-    expect(state.issues.some((issue) => issue.id === 'coh.jornada.ordinaria-sobre-42')).toBe(true);
-    expect(state.jornada.tone).toBe('warning');
+    expect(estado.inconsistencias.some((issue) => issue.id === 'coh.jornada.ordinaria-sobre-42')).toBe(true);
+    expect(estado.jornada.tone).toBe('warning');
   });
 
   it('detecta menor de edad con seguro activo y sin condicion confirmada', () => {
-    const state = evaluarAltaCoherencia({
+    const estado = evaluarAltaCoherencia({
       ...base,
       fechaNacimiento: '2010-01-01',
       fechaIngreso: '2026-05-01',
@@ -48,20 +48,20 @@ describe('evaluarAltaCoherencia', () => {
       seguroCesantia: true,
     });
 
-    expect(state.issues.some((issue) => issue.id === 'coh.seguro.menor-activo')).toBe(true);
-    expect(state.issues.some((issue) => issue.id === 'coh.jornada.menor-sobre-30')).toBe(true);
-    expect(state.issues.some((issue) => issue.id === 'coh.condiciones.menor-sin-condicion')).toBe(true);
+    expect(estado.inconsistencias.some((issue) => issue.id === 'coh.seguro.menor-activo')).toBe(true);
+    expect(estado.inconsistencias.some((issue) => issue.id === 'coh.jornada.menor-sobre-30')).toBe(true);
+    expect(estado.inconsistencias.some((issue) => issue.id === 'coh.condiciones.menor-sin-condicion')).toBe(true);
   });
 
   it('detecta regimen ninguna sin condicion especial', () => {
-    const state = evaluarAltaCoherencia({ ...base, tipoRegimenPrevisional: 'NINGUNA' });
+    const estado = evaluarAltaCoherencia({ ...base, tipoRegimenPrevisional: 'NINGUNA' });
 
-    expect(state.issues.some((issue) => issue.id === 'coh.prevision.ninguna-sin-condicion')).toBe(true);
-    expect(state.prevision.tone).toBe('warning');
+    expect(estado.inconsistencias.some((issue) => issue.id === 'coh.prevision.ninguna-sin-condicion')).toBe(true);
+    expect(estado.prevision.tone).toBe('warning');
   });
 
   it('no genera incoherencias dependientes para honorarios limpio', () => {
-    const state = evaluarAltaCoherencia({
+    const estado = evaluarAltaCoherencia({
       ...base,
       relacionLaboral: 'HONORARIOS',
       tipoContrato: null,
@@ -70,7 +70,7 @@ describe('evaluarAltaCoherencia', () => {
       tipoRegimenPrevisional: null,
     });
 
-    expect(state.issues).toEqual([]);
-    expect(state.seguroCesantia.label).toBe('No aplica');
+    expect(estado.inconsistencias).toEqual([]);
+    expect(estado.seguroCesantia.label).toBe('No aplica');
   });
 });

@@ -1,4 +1,4 @@
-import { RelacionLaboral, TipoContrato, TipoRegimenPrevisional } from '../models/empleado.model';
+﻿import { RelacionLaboral, TipoContrato, TipoRegimenPrevisional } from '../models/empleado.model';
 
 export type AltaAplicabilidadEstado =
   | 'required'
@@ -80,13 +80,13 @@ export interface AltaAplicabilidadStepSummary {
   estado: AltaAplicabilidadPasoEstado;
   label: string;
   motivo: string;
-  items: readonly AltaAplicabilidadItem[];
+  elementos: readonly AltaAplicabilidadItem[];
 }
 
-export interface AltaAplicabilidadState {
+export interface EstadoAplicabilidadAlta {
   relacionLaboral: RelacionLaboral;
-  items: Record<AltaAplicabilidadCampo, AltaAplicabilidadItem>;
-  steps: readonly AltaAplicabilidadStepSummary[];
+  campos: Record<AltaAplicabilidadCampo, AltaAplicabilidadItem>;
+  pasos: readonly AltaAplicabilidadStepSummary[];
   resumen: {
     required: number;
     optional: number;
@@ -130,7 +130,7 @@ const STEP_MOTIVO_BASE: Record<AltaAplicabilidadPasoEstado, string> = {
   not_applicable: 'No corresponde al flujo seleccionado.',
 };
 
-export function evaluarAltaAplicabilidad(input: AltaAplicabilidadInput): AltaAplicabilidadState {
+export function evaluarAltaAplicabilidad(input: AltaAplicabilidadInput): EstadoAplicabilidadAlta {
   const esHonorarios = input.relacionLaboral === 'HONORARIOS';
   const contratoNoIndefinido =
     input.tipoContrato !== null && input.tipoContrato !== 'INDEFINIDO';
@@ -145,9 +145,9 @@ export function evaluarAltaAplicabilidad(input: AltaAplicabilidadInput): AltaApl
     !esHonorarios &&
     (input.esMenorEdad || input.esMayor65 || input.tieneCondicionesEspeciales || regimenNinguna);
 
-  const items = toItems([
-    item('relacionLaboral', 'relacionLaboral', 2, 'required', 'Relación laboral', 'Define si la ficha sigue flujo de contrato dependiente o boleta de honorarios.'),
-    item(
+  const campos = construirCamposAplicabilidad([
+    construirElementoAplicabilidad('relacionLaboral', 'relacionLaboral', 2, 'required', 'Relación laboral', 'Define si la ficha sigue flujo de contrato dependiente o boleta de honorarios.'),
+    construirElementoAplicabilidad(
       'tipoTrabajador',
       'relacionLaboral',
       2,
@@ -157,7 +157,7 @@ export function evaluarAltaAplicabilidad(input: AltaAplicabilidadInput): AltaApl
         ? 'Se deriva como INDEPENDIENTE desde boleta de honorarios.'
         : 'Se deriva como DEPENDIENTE desde contrato laboral.',
     ),
-    item(
+    construirElementoAplicabilidad(
       'cargoServicio',
       'contrato',
       2,
@@ -167,7 +167,7 @@ export function evaluarAltaAplicabilidad(input: AltaAplicabilidadInput): AltaApl
         ? 'Identifica el servicio pactado para el prestador.'
         : 'Identifica el cargo laboral del trabajador.',
     ),
-    item(
+    construirElementoAplicabilidad(
       'tipoContrato',
       'contrato',
       2,
@@ -177,7 +177,7 @@ export function evaluarAltaAplicabilidad(input: AltaAplicabilidadInput): AltaApl
         ? 'No corresponde contrato laboral dependiente en boleta de honorarios.'
         : 'Define indefinido, plazo fijo, obra/servicio u otro tratamiento laboral.',
     ),
-    item(
+    construirElementoAplicabilidad(
       'fechaContrato',
       'contrato',
       2,
@@ -187,7 +187,7 @@ export function evaluarAltaAplicabilidad(input: AltaAplicabilidadInput): AltaApl
         ? 'No se exige fecha de contrato laboral para honorarios.'
         : 'Fecha del instrumento laboral dependiente.',
     ),
-    item(
+    construirElementoAplicabilidad(
       'fechaIngreso',
       'contrato',
       2,
@@ -197,7 +197,7 @@ export function evaluarAltaAplicabilidad(input: AltaAplicabilidadInput): AltaApl
         ? 'Fecha de inicio administrativo del servicio.'
         : 'Fecha base para antigüedad, condiciones y validaciones.',
     ),
-    item(
+    construirElementoAplicabilidad(
       'fechaTermino',
       'contrato',
       2,
@@ -209,7 +209,7 @@ export function evaluarAltaAplicabilidad(input: AltaAplicabilidadInput): AltaApl
           ? 'Requerida para contratos no indefinidos.'
           : 'No aplica cuando el contrato es indefinido.',
     ),
-    item(
+    construirElementoAplicabilidad(
       'centroCosto',
       'contrato',
       2,
@@ -219,7 +219,7 @@ export function evaluarAltaAplicabilidad(input: AltaAplicabilidadInput): AltaApl
         ? 'Puede usarse para imputación administrativa del servicio.'
         : 'Ubica al trabajador dentro de la organización.',
     ),
-    item(
+    construirElementoAplicabilidad(
       'jornadaLaboral',
       'jornada',
       3,
@@ -231,7 +231,7 @@ export function evaluarAltaAplicabilidad(input: AltaAplicabilidadInput): AltaApl
           ? 'Menor de edad requiere revisión de jornada y autorización.'
           : 'Dato requerido para el contrato dependiente.',
     ),
-    item(
+    construirElementoAplicabilidad(
       'horasSemanales',
       'jornada',
       3,
@@ -243,7 +243,7 @@ export function evaluarAltaAplicabilidad(input: AltaAplicabilidadInput): AltaApl
           ? 'Revisar máximo administrativo de 30 horas.'
           : 'Revisar máximo administrativo vigente según jornada.',
     ),
-    item(
+    construirElementoAplicabilidad(
       'diasSemanales',
       'jornada',
       3,
@@ -251,7 +251,7 @@ export function evaluarAltaAplicabilidad(input: AltaAplicabilidadInput): AltaApl
       'Días semanales',
       esHonorarios ? 'No aplica para boleta de honorarios.' : 'Dato requerido para jornada dependiente.',
     ),
-    item(
+    construirElementoAplicabilidad(
       'sueldoBase',
       'remuneracion',
       3,
@@ -259,7 +259,7 @@ export function evaluarAltaAplicabilidad(input: AltaAplicabilidadInput): AltaApl
       'Sueldo base',
       esHonorarios ? 'Se reemplaza visualmente por monto de honorarios.' : 'Base de remuneración dependiente.',
     ),
-    item(
+    construirElementoAplicabilidad(
       'montoHonorarios',
       'remuneracion',
       3,
@@ -267,8 +267,8 @@ export function evaluarAltaAplicabilidad(input: AltaAplicabilidadInput): AltaApl
       'Monto de honorarios',
       esHonorarios ? 'Monto bruto pactado para la boleta.' : 'No aplica en contrato laboral dependiente.',
     ),
-    item('monedaRemuneracion', 'remuneracion', 3, 'required', 'Moneda', 'Moneda del sueldo base o monto de honorarios.'),
-    item(
+    construirElementoAplicabilidad('monedaRemuneracion', 'remuneracion', 3, 'required', 'Moneda', 'Moneda del sueldo base o monto de honorarios.'),
+    construirElementoAplicabilidad(
       'gratificacion',
       'remuneracion',
       3,
@@ -276,7 +276,7 @@ export function evaluarAltaAplicabilidad(input: AltaAplicabilidadInput): AltaApl
       'Gratificación',
       esHonorarios ? 'No aplica en boleta de honorarios.' : 'Dato requerido para contrato dependiente.',
     ),
-    item(
+    construirElementoAplicabilidad(
       'seguroCesantia',
       'jornada',
       3,
@@ -288,7 +288,7 @@ export function evaluarAltaAplicabilidad(input: AltaAplicabilidadInput): AltaApl
           ? 'Menor de edad requiere decisión RRHH.'
           : 'Se explica desde tipo de contrato y condiciones administrativas.',
     ),
-    item(
+    construirElementoAplicabilidad(
       'cargasFamiliares',
       'asignaciones',
       4,
@@ -296,7 +296,7 @@ export function evaluarAltaAplicabilidad(input: AltaAplicabilidadInput): AltaApl
       'Cargas familiares',
       esHonorarios ? 'No aplica en honorarios.' : 'Se declara solo si corresponde.',
     ),
-    item(
+    construirElementoAplicabilidad(
       'zonaExtrema',
       'asignaciones',
       4,
@@ -304,7 +304,7 @@ export function evaluarAltaAplicabilidad(input: AltaAplicabilidadInput): AltaApl
       'Zona extrema',
       esHonorarios ? 'No aplica en honorarios.' : 'Se declara solo si corresponde al territorio.',
     ),
-    item(
+    construirElementoAplicabilidad(
       'semanaCorrida',
       'asignaciones',
       4,
@@ -312,7 +312,7 @@ export function evaluarAltaAplicabilidad(input: AltaAplicabilidadInput): AltaApl
       'Semana corrida',
       esHonorarios ? 'No aplica en honorarios.' : 'Se activa solo si corresponde a la remuneración pactada.',
     ),
-    item(
+    construirElementoAplicabilidad(
       'regimenPrevisional',
       'prevision',
       5,
@@ -324,7 +324,7 @@ export function evaluarAltaAplicabilidad(input: AltaAplicabilidadInput): AltaApl
           ? 'Debe tener motivo administrativo y respaldo.'
           : 'Dato requerido para trabajador dependiente.',
     ),
-    item(
+    construirElementoAplicabilidad(
       'saludDependiente',
       'prevision',
       5,
@@ -338,7 +338,7 @@ export function evaluarAltaAplicabilidad(input: AltaAplicabilidadInput): AltaApl
             ? 'Revisar que la ausencia de AFP/IPS no oculte una obligación de salud.'
             : 'Queda pendiente hasta seleccionar régimen.',
     ),
-    item(
+    construirElementoAplicabilidad(
       'apvi',
       'prevision',
       6,
@@ -352,7 +352,7 @@ export function evaluarAltaAplicabilidad(input: AltaAplicabilidadInput): AltaApl
             ? 'Disponible si RRHH activa APVI.'
             : 'Solo aplica cuando el régimen previsional es AFP.',
     ),
-    item(
+    construirElementoAplicabilidad(
       'banco',
       'banco',
       7,
@@ -362,7 +362,7 @@ export function evaluarAltaAplicabilidad(input: AltaAplicabilidadInput): AltaApl
         ? 'Recomendado para transferencia, pero la fase mantiene honorarios como borrador.'
         : 'Dato requerido para pago de remuneraciones.',
     ),
-    item(
+    construirElementoAplicabilidad(
       'condicionesEspeciales',
       'condicionesEspeciales',
       8,
@@ -374,7 +374,7 @@ export function evaluarAltaAplicabilidad(input: AltaAplicabilidadInput): AltaApl
           ? 'Revisión administrativa según edad, previsión o condiciones declaradas.'
           : 'Solo se declara si aplica.',
     ),
-    item(
+    construirElementoAplicabilidad(
       'resumenFinal',
       'resumen',
       9,
@@ -388,49 +388,49 @@ export function evaluarAltaAplicabilidad(input: AltaAplicabilidadInput): AltaApl
 
   return {
     relacionLaboral: input.relacionLaboral,
-    items,
-    steps: buildStepSummaries(items),
-    resumen: buildResumen(items),
+    campos,
+    pasos: construirResumenesPaso(campos),
+    resumen: construirResumen(campos),
   };
 }
 
 export function altaAplicabilidadItem(
-  state: AltaAplicabilidadState,
+  estado: EstadoAplicabilidadAlta,
   campo: AltaAplicabilidadCampo,
 ): AltaAplicabilidadItem {
-  return state.items[campo];
+  return estado.campos[campo];
 }
 
 export function altaAplicabilidadStep(
-  state: AltaAplicabilidadState,
+  estado: EstadoAplicabilidadAlta,
   stepIndex: number,
 ): AltaAplicabilidadStepSummary {
   return (
-    state.steps.find((step) => step.stepIndex === stepIndex) ?? {
+    estado.pasos.find((step) => step.stepIndex === stepIndex) ?? {
       stepIndex,
       estado: 'required',
       label: STEP_LABELS[stepIndex] ?? `Paso ${stepIndex + 1}`,
       motivo: STEP_MOTIVO_BASE.required,
-      items: [],
+      elementos: [],
     }
   );
 }
 
 export function altaAplicabilidadEsNoAplicable(
-  state: AltaAplicabilidadState,
+  estado: EstadoAplicabilidadAlta,
   campo: AltaAplicabilidadCampo,
 ): boolean {
-  return altaAplicabilidadItem(state, campo).estado === 'not_applicable';
+  return altaAplicabilidadItem(estado, campo).estado === 'not_applicable';
 }
 
 export function altaAplicabilidadEsRequerido(
-  state: AltaAplicabilidadState,
+  estado: EstadoAplicabilidadAlta,
   campo: AltaAplicabilidadCampo,
 ): boolean {
-  return altaAplicabilidadItem(state, campo).estado === 'required';
+  return altaAplicabilidadItem(estado, campo).estado === 'required';
 }
 
-function item(
+function construirElementoAplicabilidad(
   campo: AltaAplicabilidadCampo,
   dominio: AltaAplicabilidadDominio,
   stepIndex: number,
@@ -441,63 +441,63 @@ function item(
   return { campo, dominio, stepIndex, estado, label, motivo };
 }
 
-function toItems(items: readonly AltaAplicabilidadItem[]): Record<AltaAplicabilidadCampo, AltaAplicabilidadItem> {
+function construirCamposAplicabilidad(items: readonly AltaAplicabilidadItem[]): Record<AltaAplicabilidadCampo, AltaAplicabilidadItem> {
   return items.reduce((acc, current) => {
     acc[current.campo] = current;
     return acc;
   }, {} as Record<AltaAplicabilidadCampo, AltaAplicabilidadItem>);
 }
 
-function buildStepSummaries(
-  itemsByKey: Record<AltaAplicabilidadCampo, AltaAplicabilidadItem>,
+function construirResumenesPaso(
+  camposPorClave: Record<AltaAplicabilidadCampo, AltaAplicabilidadItem>,
 ): readonly AltaAplicabilidadStepSummary[] {
-  const byStep = new Map<number, AltaAplicabilidadItem[]>();
+  const porPaso = new Map<number, AltaAplicabilidadItem[]>();
 
-  Object.values(itemsByKey).forEach((item) => {
-    const current = byStep.get(item.stepIndex) ?? [];
-    current.push(item);
-    byStep.set(item.stepIndex, current);
+  Object.values(camposPorClave).forEach((elemento) => {
+    const actuales = porPaso.get(elemento.stepIndex) ?? [];
+    actuales.push(elemento);
+    porPaso.set(elemento.stepIndex, actuales);
   });
 
   return Array.from({ length: 10 }, (_, stepIndex) => {
-    const items = byStep.get(stepIndex) ?? [];
-    const estado = resolveStepEstado(items);
+    const elementos = porPaso.get(stepIndex) ?? [];
+    const estado = resolveStepEstado(elementos);
     return {
       stepIndex,
       estado,
       label: STEP_LABELS[stepIndex] ?? `Paso ${stepIndex + 1}`,
-      motivo: resolveStepMotivo(estado, items),
-      items,
+      motivo: resolveStepMotivo(estado, elementos),
+      elementos,
     };
   });
 }
 
-function resolveStepEstado(items: readonly AltaAplicabilidadItem[]): AltaAplicabilidadPasoEstado {
-  if (items.length === 0) {
+function resolveStepEstado(elementos: readonly AltaAplicabilidadItem[]): AltaAplicabilidadPasoEstado {
+  if (elementos.length === 0) {
     return 'required';
   }
 
-  if (items.every((item) => item.estado === 'not_applicable')) {
+  if (elementos.every((item) => item.estado === 'not_applicable')) {
     return 'not_applicable';
   }
 
-  if (items.some((item) => item.estado === 'blocked')) {
+  if (elementos.some((item) => item.estado === 'blocked')) {
     return 'blocked';
   }
 
-  if (items.some((item) => item.estado === 'warning')) {
+  if (elementos.some((item) => item.estado === 'warning')) {
     return 'warning';
   }
 
-  if (items.some((item) => item.estado === 'review')) {
+  if (elementos.some((item) => item.estado === 'review')) {
     return 'review';
   }
 
-  if (items.some((item) => item.estado === 'required')) {
+  if (elementos.some((item) => item.estado === 'required')) {
     return 'required';
   }
 
-  if (items.some((item) => item.estado === 'derived')) {
+  if (elementos.some((item) => item.estado === 'derived')) {
     return 'required';
   }
 
@@ -506,17 +506,17 @@ function resolveStepEstado(items: readonly AltaAplicabilidadItem[]): AltaAplicab
 
 function resolveStepMotivo(
   estado: AltaAplicabilidadPasoEstado,
-  items: readonly AltaAplicabilidadItem[],
+  elementos: readonly AltaAplicabilidadItem[],
 ): string {
   if (estado === 'not_applicable') {
     return STEP_MOTIVO_BASE.not_applicable;
   }
 
-  const strongest = [...items].sort((a, b) => FIELD_WEIGHT[b.estado] - FIELD_WEIGHT[a.estado])[0];
-  return strongest?.motivo ?? STEP_MOTIVO_BASE[estado];
+  const mayorPrioridad = [...elementos].sort((a, b) => FIELD_WEIGHT[b.estado] - FIELD_WEIGHT[a.estado])[0];
+  return mayorPrioridad?.motivo ?? STEP_MOTIVO_BASE[estado];
 }
 
-function buildResumen(itemsByKey: Record<AltaAplicabilidadCampo, AltaAplicabilidadItem>): AltaAplicabilidadState['resumen'] {
+function construirResumen(camposPorClave: Record<AltaAplicabilidadCampo, AltaAplicabilidadItem>): EstadoAplicabilidadAlta['resumen'] {
   const base = {
     required: 0,
     optional: 0,
@@ -527,8 +527,8 @@ function buildResumen(itemsByKey: Record<AltaAplicabilidadCampo, AltaAplicabilid
     blocked: 0,
   };
 
-  return Object.values(itemsByKey).reduce((acc, item) => {
-    switch (item.estado) {
+  return Object.values(camposPorClave).reduce((acc, elemento) => {
+    switch (elemento.estado) {
       case 'required':
         acc.required += 1;
         break;

@@ -1,4 +1,4 @@
-import type {
+﻿import type {
   BaseNominaTrabajadorEstado,
   NominaCalculoPeriodoSnapshot,
 } from '../../../models/proceso-mensual.model';

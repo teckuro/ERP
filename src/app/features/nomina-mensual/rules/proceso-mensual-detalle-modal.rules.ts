@@ -1,8 +1,8 @@
-import type {
+﻿import type {
   DetalleOperativoTab,
-  PayrollMovementDetailRow,
-  PayrollRecurrentDetailRow,
-  PayrollSeguimientoItem,
+  FilaDetalleMovimientoNomina,
+  FilaDetalleRecurrenteNomina,
+  ItemSeguimientoNomina,
 } from '../containers/proceso-mensual-container/models/proceso-mensual-container.vm';
 import type {
   IncidenciaPeriodo,
@@ -186,7 +186,7 @@ function textoPareceRevisado(texto: string): boolean {
 }
 
 export function mapParametroItemsParaRevision(
-  items: PayrollSeguimientoItem[],
+  items: ItemSeguimientoNomina[],
   tabSeveridad: DetalleRevisionTabSeveridad,
 ): DetalleRevisionListaItem[] {
   const requiereCorreccion = tabSeveridad === 'bloqueo' || tabSeveridad === 'atencion';
@@ -223,7 +223,7 @@ export function mapParametroItemsParaRevision(
   });
 }
 
-function mapMovementRowALista(row: PayrollMovementDetailRow): DetalleRevisionListaItem {
+function mapMovementRowALista(row: FilaDetalleMovimientoNomina): DetalleRevisionListaItem {
   return {
     titulo: humanizarDetalleRevisionTexto(row.concepto),
     descripcion: humanizarDetalleRevisionTexto(`${row.trabajador} · ${row.tipo} · ${row.monto}`),
@@ -236,11 +236,11 @@ function mapMovementRowALista(row: PayrollMovementDetailRow): DetalleRevisionLis
   };
 }
 
-export function mapMovimientoRowsALista(rows: PayrollMovementDetailRow[]): DetalleRevisionListaItem[] {
+export function mapMovimientoRowsALista(rows: FilaDetalleMovimientoNomina[]): DetalleRevisionListaItem[] {
   return rows.map(mapMovementRowALista);
 }
 
-function mapRecurrentRowALista(row: PayrollRecurrentDetailRow): DetalleRevisionListaItem {
+function mapRecurrentRowALista(row: FilaDetalleRecurrenteNomina): DetalleRevisionListaItem {
   return {
     titulo: humanizarDetalleRevisionTexto(row.concepto),
     descripcion: humanizarDetalleRevisionTexto(`${row.trabajador} · ${row.periodicidad} · ${row.monto}`),
@@ -253,11 +253,11 @@ function mapRecurrentRowALista(row: PayrollRecurrentDetailRow): DetalleRevisionL
   };
 }
 
-export function mapRecurrentRowsALista(rows: PayrollRecurrentDetailRow[]): DetalleRevisionListaItem[] {
+export function mapRecurrentRowsALista(rows: FilaDetalleRecurrenteNomina[]): DetalleRevisionListaItem[] {
   return rows.map(mapRecurrentRowALista);
 }
 
-function mapSeguimientoALista(item: PayrollSeguimientoItem): DetalleRevisionListaItem {
+function mapSeguimientoALista(item: ItemSeguimientoNomina): DetalleRevisionListaItem {
   return {
     titulo: humanizarDetalleRevisionTexto(item.titulo),
     descripcion: humanizarDetalleRevisionTexto(item.descripcion),
@@ -296,14 +296,14 @@ export interface BuildDetalleRevisionTabPanelInput {
   periodoEtiqueta: string;
   estadoTitulo: string;
   incidencias: IncidenciasPeriodoView;
-  workerRowCount: number;
-  movementRowCount: number;
-  recurrentRowCount: number;
-  resultRowCount: number;
-  parametroItems: PayrollSeguimientoItem[];
-  resultadoSeguimientoItems: PayrollSeguimientoItem[];
-  movementRows: PayrollMovementDetailRow[];
-  recurrentRows: PayrollRecurrentDetailRow[];
+  cantidadFilasTrabajadores: number;
+  cantidadFilasMovimientos: number;
+  cantidadFilasRecurrentes: number;
+  cantidadFilasResultado: number;
+  itemsParametros: ItemSeguimientoNomina[];
+  itemsSeguimientoResultado: ItemSeguimientoNomina[];
+  filasMovimientos: FilaDetalleMovimientoNomina[];
+  filasRecurrentes: FilaDetalleRecurrenteNomina[];
 }
 
 export function buildDetalleRevisionTabPanel(input: BuildDetalleRevisionTabPanelInput): DetalleRevisionTabPanel {
@@ -323,10 +323,10 @@ export function buildDetalleRevisionTabPanel(input: BuildDetalleRevisionTabPanel
 
   const parametrosConIncidenciasEnResumen = input.incidencias.porAmbito.parametros.length > 0;
   const listaParametros = input.tab === 'parametros' && !parametrosConIncidenciasEnResumen
-    ? mapParametroItemsParaRevision(input.parametroItems, input.tabSeveridad)
+    ? mapParametroItemsParaRevision(input.itemsParametros, input.tabSeveridad)
     : input.tab === 'parametros' && parametrosConIncidenciasEnResumen
       ? mapParametroItemsParaRevision(
-        input.parametroItems.filter((item) => !item.estadoClase.includes('danger') && !item.estadoClase.includes('warning')),
+        input.itemsParametros.filter((item) => !item.estadoClase.includes('danger') && !item.estadoClase.includes('warning')),
         input.tabSeveridad,
       )
     : [];
@@ -337,26 +337,26 @@ export function buildDetalleRevisionTabPanel(input: BuildDetalleRevisionTabPanel
     ? listaParametros.map((item) => ({ ...item, accion: undefined, ruta: undefined, accionTab: undefined }))
     : listaParametros;
 
-  const listaMovimientos = mapMovimientoRowsALista(input.movementRows);
-  const listaRecurrentes = mapRecurrentRowsALista(input.recurrentRows);
-  const listaResultadoSeguimiento = input.resultadoSeguimientoItems.map(mapSeguimientoALista);
+  const listaMovimientos = mapMovimientoRowsALista(input.filasMovimientos);
+  const listaRecurrentes = mapRecurrentRowsALista(input.filasRecurrentes);
+  const listaResultadoSeguimiento = input.itemsSeguimientoResultado.map(mapSeguimientoALista);
 
   const usarGridTrabajadores = false;
   const usarGridMovimientos =
     input.tab === 'movimientos_recurrentes'
-    && input.movementRowCount > 0
-    && input.movementRowCount > LISTA_EDITORIAL_MAX_FILAS;
+    && input.cantidadFilasMovimientos > 0
+    && input.cantidadFilasMovimientos > LISTA_EDITORIAL_MAX_FILAS;
   const usarGridRecurrentes =
     input.tab === 'movimientos_recurrentes'
-    && input.recurrentRowCount > 0
-    && input.recurrentRowCount > LISTA_EDITORIAL_MAX_FILAS;
-  const usarGridResultado = input.tab === 'resultado' && input.resultRowCount > 0;
+    && input.cantidadFilasRecurrentes > 0
+    && input.cantidadFilasRecurrentes > LISTA_EDITORIAL_MAX_FILAS;
+  const usarGridResultado = input.tab === 'resultado' && input.cantidadFilasResultado > 0;
 
   const gridConFiltros =
-    (usarGridTrabajadores && input.workerRowCount > LISTA_EDITORIAL_MAX_FILAS)
-    || (usarGridMovimientos && input.movementRowCount > LISTA_EDITORIAL_MAX_FILAS)
-    || (usarGridRecurrentes && input.recurrentRowCount > LISTA_EDITORIAL_MAX_FILAS)
-    || (usarGridResultado && input.resultRowCount > LISTA_EDITORIAL_MAX_FILAS);
+    (usarGridTrabajadores && input.cantidadFilasTrabajadores > LISTA_EDITORIAL_MAX_FILAS)
+    || (usarGridMovimientos && input.cantidadFilasMovimientos > LISTA_EDITORIAL_MAX_FILAS)
+    || (usarGridRecurrentes && input.cantidadFilasRecurrentes > LISTA_EDITORIAL_MAX_FILAS)
+    || (usarGridResultado && input.cantidadFilasResultado > LISTA_EDITORIAL_MAX_FILAS);
 
   const enlaceResumenIncidencias = input.tab !== 'resumen'
     ? buildEnlaceResumenIncidencias(incidenciasTabSinResumen.length)
@@ -528,10 +528,10 @@ function indicadorResumenDesdeSeveridad(severidad: DetalleRevisionTabSeveridad):
 export interface BuildDetalleRevisionTabsMetaInput {
   tabs: Array<{ id: DetalleOperativoTab; label: string }>;
   incidencias: IncidenciasPeriodoView;
-  workerRowCount: number;
-  movementRowCount: number;
-  recurrentRowCount: number;
-  resultRowCount: number;
+  cantidadFilasTrabajadores: number;
+  cantidadFilasMovimientos: number;
+  cantidadFilasRecurrentes: number;
+  cantidadFilasResultado: number;
   parametrosListos: boolean | null;
   tieneActividadPeriodo: boolean;
 }
@@ -548,13 +548,13 @@ export function buildDetalleRevisionTabsMeta(input: BuildDetalleRevisionTabsMeta
         case 'resumen':
           return incidencias.todas.length > 0;
         case 'trabajadores':
-          return input.workerRowCount > 0;
+          return input.cantidadFilasTrabajadores > 0;
         case 'parametros':
           return input.tieneActividadPeriodo && input.parametrosListos === true;
         case 'movimientos_recurrentes':
-          return input.movementRowCount > 0 || input.recurrentRowCount > 0;
+          return input.cantidadFilasMovimientos > 0 || input.cantidadFilasRecurrentes > 0;
         case 'resultado':
-          return input.resultRowCount > 0;
+          return input.cantidadFilasResultado > 0;
         default:
           return false;
       }

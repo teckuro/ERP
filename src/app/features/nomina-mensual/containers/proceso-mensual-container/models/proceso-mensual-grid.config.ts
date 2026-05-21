@@ -1,4 +1,4 @@
-import type { DataGridColumn, DataGridFilter } from '../../../../../shared/components/ui/data-grid.component';
+﻿import type { DataGridColumn, DataGridFilter } from '../../../../../shared/components/ui/data-grid.component';
 import type {
   DetalleOperativoTab,
   NominaDetalleMensualExpedienteRow,
@@ -6,10 +6,10 @@ import type {
   NominaDetalleMensualPendienteRow,
   NominaDetalleMensualTrabajadorRow,
   NominaHistorialTablaRow,
-  PayrollMovementDetailRow,
-  PayrollObservationDetailRow,
-  PayrollRecurrentDetailRow,
-  PayrollResultDetailRow,
+  FilaDetalleMovimientoNomina,
+  FilaDetalleObservacionNomina,
+  FilaDetalleRecurrenteNomina,
+  FilaDetalleResultadoNomina,
 } from './proceso-mensual-container.vm';
 
 export const DETALLE_OPERATIVO_TABS: Array<{ id: DetalleOperativoTab; label: string }> = [
@@ -20,7 +20,7 @@ export const DETALLE_OPERATIVO_TABS: Array<{ id: DetalleOperativoTab; label: str
   { id: 'resultado', label: 'Nómina generada' },
 ];
 
-export const PAYROLL_MOVEMENT_DETAIL_COLUMNS: DataGridColumn<PayrollMovementDetailRow>[] = [
+export const NOMINA_DETALLE_MOVIMIENTO_COLUMNS: DataGridColumn<FilaDetalleMovimientoNomina>[] = [
   { id: 'trabajador', header: 'Trabajador', field: 'trabajador', sortable: true, priorityResponsive: 'primary' },
   { id: 'concepto', header: 'Concepto', field: 'concepto', sortable: true },
   { id: 'tipo', header: 'Tipo', field: 'tipo', sortable: true },
@@ -29,13 +29,13 @@ export const PAYROLL_MOVEMENT_DETAIL_COLUMNS: DataGridColumn<PayrollMovementDeta
   { id: 'accion', header: 'Acción', field: 'accion' },
 ];
 
-export const PAYROLL_MOVEMENT_DETAIL_FILTERS: DataGridFilter<PayrollMovementDetailRow>[] = [
+export const NOMINA_DETALLE_MOVIMIENTO_FILTERS: DataGridFilter<FilaDetalleMovimientoNomina>[] = [
   { id: 'estado', label: 'Estado', field: 'estado', type: 'select', emptyLabel: 'Todos los estados' },
   { id: 'tipo', label: 'Tipo', field: 'tipo', type: 'select', emptyLabel: 'Todos los tipos' },
   { id: 'trabajador', label: 'Buscar trabajador/concepto', field: 'trabajador', type: 'text', matchMode: 'tokens' },
 ];
 
-export const PAYROLL_RECURRENT_DETAIL_COLUMNS: DataGridColumn<PayrollRecurrentDetailRow>[] = [
+export const NOMINA_DETALLE_RECURRENTE_COLUMNS: DataGridColumn<FilaDetalleRecurrenteNomina>[] = [
   { id: 'trabajador', header: 'Trabajador', field: 'trabajador', sortable: true, priorityResponsive: 'primary' },
   { id: 'concepto', header: 'Concepto', field: 'concepto', sortable: true },
   { id: 'periodicidad', header: 'Periodicidad', field: 'periodicidad' },
@@ -44,24 +44,24 @@ export const PAYROLL_RECURRENT_DETAIL_COLUMNS: DataGridColumn<PayrollRecurrentDe
   { id: 'accion', header: 'Acción', field: 'accion' },
 ];
 
-export const PAYROLL_RECURRENT_DETAIL_FILTERS: DataGridFilter<PayrollRecurrentDetailRow>[] = [
+export const NOMINA_DETALLE_RECURRENTE_FILTERS: DataGridFilter<FilaDetalleRecurrenteNomina>[] = [
   { id: 'estado', label: 'Estado', field: 'estado', type: 'select', emptyLabel: 'Todos los estados' },
   { id: 'trabajador', label: 'Buscar trabajador/concepto', field: 'trabajador', type: 'text', matchMode: 'tokens' },
 ];
 
-export const PAYROLL_OBSERVATION_DETAIL_COLUMNS: DataGridColumn<PayrollObservationDetailRow>[] = [
+export const NOMINA_DETALLE_OBSERVACION_COLUMNS: DataGridColumn<FilaDetalleObservacionNomina>[] = [
   { id: 'severidad', header: 'Severidad', field: 'severidad', sortable: true, priorityResponsive: 'primary' },
   { id: 'ambito', header: 'Ámbito', field: 'ambito', sortable: true },
   { id: 'mensaje', header: 'Mensaje', field: 'mensaje' },
   { id: 'accion', header: 'Acción sugerida', field: 'accion' },
 ];
 
-export const PAYROLL_OBSERVATION_DETAIL_FILTERS: DataGridFilter<PayrollObservationDetailRow>[] = [
+export const NOMINA_DETALLE_OBSERVACION_FILTERS: DataGridFilter<FilaDetalleObservacionNomina>[] = [
   { id: 'severidad', label: 'Severidad', field: 'severidad', type: 'select', emptyLabel: 'Todas' },
   { id: 'ambito', label: 'Ámbito', field: 'ambito', type: 'select', emptyLabel: 'Todos los ámbitos' },
 ];
 
-export const PAYROLL_RESULT_DETAIL_COLUMNS: DataGridColumn<PayrollResultDetailRow>[] = [
+export const NOMINA_DETALLE_RESULTADO_COLUMNS: DataGridColumn<FilaDetalleResultadoNomina>[] = [
   { id: 'trabajador', header: 'Trabajador', field: 'trabajador', sortable: true, priorityResponsive: 'primary' },
   { id: 'haberes', header: 'Haberes', field: 'haberes', align: 'right' },
   { id: 'descuentos', header: 'Descuentos', field: 'descuentos', align: 'right' },
@@ -70,7 +70,7 @@ export const PAYROLL_RESULT_DETAIL_COLUMNS: DataGridColumn<PayrollResultDetailRo
   { id: 'observacion', header: 'Observación', field: 'observacion' },
 ];
 
-export const PAYROLL_RESULT_DETAIL_FILTERS: DataGridFilter<PayrollResultDetailRow>[] = [
+export const NOMINA_DETALLE_RESULTADO_FILTERS: DataGridFilter<FilaDetalleResultadoNomina>[] = [
   { id: 'estado', label: 'Estado', field: 'estado', type: 'select', emptyLabel: 'Todos los estados' },
   { id: 'trabajador', label: 'Buscar trabajador', field: 'trabajador', type: 'text', matchMode: 'tokens' },
 ];

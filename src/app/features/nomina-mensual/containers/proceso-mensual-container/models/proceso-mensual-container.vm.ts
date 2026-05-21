@@ -1,4 +1,4 @@
-import type { ProcesoMensualAccionLocal } from '../../../rules/proceso-mensual-estado-operativo.rules';
+﻿import type { ProcesoMensualAccionLocal } from '../../../rules/proceso-mensual-estado-operativo.rules';
 import { buildNominaWorkspaceTabs, buildNominaWorkspaceTabsVisible } from './proceso-mensual-area-orden.config';
 
 export type ValidacionCalculoEstado = 'pendiente' | 'listo' | 'advertencias' | 'bloqueado';
@@ -334,7 +334,7 @@ export interface ParaContinuarItemVm {
   detalle: string;
 }
 
-export interface PayrollWorkerDetailRow {
+export interface FilaDetalleTrabajadorNomina {
   trabajador: string;
   rut: string;
   estado: string;
@@ -342,7 +342,7 @@ export interface PayrollWorkerDetailRow {
   accion: string;
 }
 
-export interface PayrollMovementDetailRow {
+export interface FilaDetalleMovimientoNomina {
   trabajador: string;
   concepto: string;
   tipo: string;
@@ -351,7 +351,7 @@ export interface PayrollMovementDetailRow {
   accion: string;
 }
 
-export interface PayrollRecurrentDetailRow {
+export interface FilaDetalleRecurrenteNomina {
   trabajador: string;
   concepto: string;
   periodicidad: string;
@@ -360,14 +360,14 @@ export interface PayrollRecurrentDetailRow {
   accion: string;
 }
 
-export interface PayrollObservationDetailRow {
+export interface FilaDetalleObservacionNomina {
   severidad: 'Bloqueo' | 'Advertencia' | 'Información';
   ambito: string;
   mensaje: string;
   accion: string;
 }
 
-export interface PayrollResultDetailRow {
+export interface FilaDetalleResultadoNomina {
   trabajador: string;
   haberes: string;
   descuentos: string;
@@ -442,7 +442,7 @@ export interface NominaHistorialTablaRow {
   detalle: string;
 }
 
-export interface PayrollSeguimientoItem {
+export interface ItemSeguimientoNomina {
   titulo: string;
   descripcion: string;
   estado: string;

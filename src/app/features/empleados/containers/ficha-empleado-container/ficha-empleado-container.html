@@ -1,6 +1,6 @@
 ﻿<section class="employee-file-page" aria-label="Ficha de empleado">
 
-  @if (isLoading() || errorMessage()) {
+  @if (isLoading() || mensajeError()) {
 
     <div class="file-toolbar file-toolbar--minimal" aria-label="Acciones">
 
@@ -24,7 +24,7 @@
 
 
 
-  <div class="file-content-card" [class.file-content-card--loaded]="empleado() && !isLoading() && !errorMessage()">
+  <div class="file-content-card" [class.file-content-card--loaded]="empleado() && !isLoading() && !mensajeError()">
 
     @if (isLoading()) {
 
@@ -36,23 +36,23 @@
 
       </section>
 
-    } @else if (errorMessage(); as message) {
+    } @else if (mensajeError(); as mensaje) {
 
       <section class="file-state file-state--error">
 
         <lucide-icon class="file-state-card-icon" [img]="alertIcon"></lucide-icon>
 
-        <p>{{ message }}</p>
+        <p>{{ mensaje }}</p>
 
       </section>
 
     } @else if (empleado(); as employee) {
 
-      @if (validationSuccessMessage(); as successMessage) {
+      @if (mensajeExitoValidacion(); as mensajeExito) {
 
         <div class="file-validation-feedback file-validation-feedback--success" role="status">
 
-          {{ successMessage }}
+          {{ mensajeExito }}
 
         </div>
 
@@ -60,13 +60,13 @@
 
 
 
-      @if (validationErrorMessage(); as validationMessage) {
+      @if (mensajeErrorValidacion(); as mensajeValidacion) {
 
         <div class="file-validation-feedback file-validation-feedback--error" role="alert">
 
           <strong>No se puede validar la ficha</strong>
 
-          <span>{{ validationMessage }}</span>
+          <span>{{ mensajeValidacion }}</span>
 
           @if (validationBlockingItems().length > 0) {
 
@@ -167,13 +167,13 @@
 
       }
 
-      @if (sectionErrorMessage(); as sectionMessage) {
+      @if (mensajeErrorSeccion(); as mensajeSeccion) {
 
         <app-message-box
           mode="modal"
           variant="error"
           title="No se pudo guardar"
-          [message]="sectionMessage"
+          [message]="mensajeSeccion"
           [sections]="sectionValidationSections()"
           primaryLabel="Aceptar"
           (action)="dismissSectionError()"
@@ -182,12 +182,12 @@
 
       }
 
-      @if (sectionSuccessMessage(); as sectionSuccess) {
+      @if (mensajeExitoSeccion(); as sectionSuccess) {
 
         <app-message-box
           mode="modal"
           variant="success"
-          [title]="sectionSuccessTitle() ?? 'Sección guardada'"
+          [title]="tituloExitoSeccion() ?? 'Sección guardada'"
           [message]="sectionSuccess"
           primaryLabel="Aceptar"
           (action)="dismissSectionSuccess()"
@@ -258,23 +258,23 @@
 
                     <p class="employee-record-status__completion">
 
-                      {{ estado.completedOperativeBlocks }} de {{ estado.totalOperativeBlocks }} bloques operativos
+                      {{ estado.bloquesOperativosCompletos }} de {{ estado.totalBloquesOperativos }} bloques operativos
 
                     </p>
 
                   </div>
 
-                  <p class="employee-record-status__pct">{{ estado.progressPercent }}%</p>
+                  <p class="employee-record-status__pct">{{ estado.porcentajeAvance }}%</p>
 
                 </div>
 
                 <div
                   class="progress-track employee-record-status__progress"
                   role="progressbar"
-                  [attr.aria-valuenow]="estado.progressPercent"
+                  [attr.aria-valuenow]="estado.porcentajeAvance"
                   aria-valuemin="0"
                   aria-valuemax="100"
-                  [attr.aria-label]="'Avance de la ficha: ' + estado.progressPercent + ' por ciento'"
+                  [attr.aria-label]="'Avance de la ficha: ' + estado.porcentajeAvance + ' por ciento'"
                 >
 
                   <span [ngStyle]="progressStyle(employee)"></span>
@@ -305,15 +305,15 @@
 
 
 
-              @if (estado.issues.length) {
+              @if (estado.faltantes.length) {
 
                 <div class="employee-record-status__section">
 
                   <p class="employee-record-status__label">Faltantes críticos</p>
 
-                  <ul class="employee-record-status__issues">
+                  <ul class="employee-record-status__faltantes">
 
-                    @for (issue of estado.issues; track issue.blockKey + issue.message) {
+                    @for (issue of estado.faltantes; track issue.claveBloque + issue.mensaje) {
 
                       <li>
 
@@ -329,8 +329,8 @@
 
                           <span class="employee-record-status__issue-dot" aria-hidden="true"></span>
 
-                          <span class="employee-record-status__issue-block">{{ issue.blockLabel }}</span>
-                          <span class="employee-record-status__issue-msg">{{ issue.message }}</span>
+                          <span class="employee-record-status__issue-block">{{ issue.etiquetaBloque }}</span>
+                          <span class="employee-record-status__issue-msg">{{ issue.mensaje }}</span>
 
                           <lucide-icon class="employee-record-status__issue-chevron" [img]="chevronRightIcon" aria-hidden="true" />
                         </button>
@@ -367,13 +367,13 @@
 
 
 
-              @if (estado.showAction) {
+              @if (estado.mostrarAccion) {
 
                 <div class="employee-record-status__section employee-record-status__section--action">
 
                   <p class="employee-record-status__label">Acción recomendada</p>
 
-                  <p class="employee-record-status__action-hint">{{ estado.actionHint }}</p>
+                  <p class="employee-record-status__action-hint">{{ estado.ayudaAccion }}</p>
 
                   <button
 
@@ -393,7 +393,7 @@
 
                     } @else {
 
-                      {{ estado.actionLabel }}
+                      {{ estado.etiquetaAccion }}
 
                     }
 
@@ -421,7 +421,7 @@
 
             <ul class="employee-record-rail__list">
 
-              @for (item of expedienteNavItems(employee); track item.key) {
+              @for (item of expedienteNavItems(employee); track item.clave) {
 
                 <li>
 
@@ -431,29 +431,29 @@
 
                     class="employee-record-rail__item"
 
-                    [class.employee-record-rail__item--active]="item.isActive"
+                    [class.employee-record-rail__item--active]="item.estaActivo"
 
-                    [attr.aria-current]="item.isActive ? 'page' : null"
+                    [attr.aria-current]="item.estaActivo ? 'page' : null"
 
-                    (click)="selectTab(item.key)"
+                    (click)="selectTab(item.clave)"
 
                   >
 
                     <span class="employee-record-rail__item-label">
 
-                      <span [class]="'employee-record-rail__dot employee-record-rail__dot--' + item.status" aria-hidden="true"></span>
+                      <span [class]="'employee-record-rail__dot employee-record-rail__dot--' + item.estado" aria-hidden="true"></span>
 
-                      <span>{{ item.label }}</span>
+                      <span>{{ item.etiqueta }}</span>
 
                     </span>
                     <span class="employee-record-rail__item-trail">
 
-                      @if (!item.isActive) {
+                      @if (!item.estaActivo) {
 
-                        <span [class]="navStatusClass(item.status)">{{ railNavStatusLabel(item.status) }}</span>
+                        <span [class]="claseEstadoNavegacion(item.estado)">{{ etiquetaEstadoRail(item.estado) }}</span>
 
                       }
-                      @if (item.isActive) {
+                      @if (item.estaActivo) {
 
                         <lucide-icon class="employee-record-rail__chevron" [img]="chevronRightIcon" aria-hidden="true" />
 
@@ -483,16 +483,16 @@
                   [class.employee-record-block__intro--editing]="isEditingCurrentTab()"
                 >
                   @if (!isEditingCurrentTab()) {
-                    <h2 class="employee-record-block__title">{{ activeTabLabel() }}</h2>
+                    <h2 class="employee-record-block__title">{{ tabActivoLabel() }}</h2>
                   }
 
-                  <p class="employee-record-block__desc">{{ activeTabDescription() }}</p>
+                  <p class="employee-record-block__desc">{{ tabActivoDescription() }}</p>
 
                 </header>
 
 
 
-                @if (activeTab() === 'remuneracion' && employee.aptoParaRemuneraciones) {
+                @if (tabActivo() === 'remuneracion' && employee.aptoParaRemuneraciones) {
 
                   <div class="section-hd-actions">
 
@@ -516,7 +516,7 @@
 
 
 
-                @if (activeTab() === 'historial') {
+                @if (tabActivo() === 'historial') {
 
                   <app-data-grid
 

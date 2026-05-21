@@ -1,23 +1,23 @@
 import { RelacionLaboral, TipoContrato, TipoRegimenPrevisional } from '../models/empleado.model';
 
-export type AltaCoherenciaArea =
+export type AreaCoherenciaAlta =
   | 'seguroCesantia'
   | 'jornada'
   | 'prevision'
   | 'condicionesEspeciales';
 
-export type AltaCoherenciaSeverity = 'info' | 'warning';
+export type SeveridadCoherenciaAlta = 'info' | 'warning';
 
-export type AltaCoherenciaAction =
+export type AccionCoherenciaAlta =
   | 'activarSeguroCesantia'
   | 'desactivarSeguroCesantia'
   | 'ajustarHorasSemanales'
   | 'marcarTrabajadorAdolescenteProtegido'
   | 'marcarExentoCotizacionPension';
 
-export type AltaCoherenciaTone = 'ok' | 'info' | 'warning' | 'review';
+export type TonoCoherenciaAlta = 'ok' | 'info' | 'warning' | 'review';
 
-export interface AltaCoherenciaCondicionesInput {
+export interface EntradaCondicionesCoherenciaAlta {
   pensionado: boolean;
   pensionadoInvalidezParcial: boolean;
   pensionadoInvalidezTotal: boolean;
@@ -29,7 +29,7 @@ export interface AltaCoherenciaCondicionesInput {
   respaldoRegistrado: boolean;
 }
 
-export interface AltaCoherenciaInput {
+export interface EntradaCoherenciaAlta {
   relacionLaboral: RelacionLaboral;
   tipoContrato: TipoContrato | null;
   tipoJornadaLabel: string;
@@ -38,40 +38,40 @@ export interface AltaCoherenciaInput {
   horasSemanales: number | null;
   seguroCesantia: boolean;
   tipoRegimenPrevisional: TipoRegimenPrevisional | null;
-  condiciones: AltaCoherenciaCondicionesInput;
+  condiciones: EntradaCondicionesCoherenciaAlta;
 }
 
-export interface AltaCoherenciaIssue {
+export interface InconsistenciaCoherenciaAlta {
   id: string;
-  area: AltaCoherenciaArea;
+  area: AreaCoherenciaAlta;
   stepIndex: number;
-  severity: AltaCoherenciaSeverity;
+  severity: SeveridadCoherenciaAlta;
   title: string;
   detail: string;
   summary: string;
   recommendedActionLabel?: string;
-  action?: AltaCoherenciaAction;
+  action?: AccionCoherenciaAlta;
   actionValue?: boolean | number;
 }
 
-export interface AltaCoherenciaDerivedStatus {
+export interface EstadoDerivadoCoherenciaAlta {
   label: string;
   detail: string;
-  tone: AltaCoherenciaTone;
+  tone: TonoCoherenciaAlta;
 }
 
-export interface AltaCoherenciaState {
-  issues: AltaCoherenciaIssue[];
-  seguroCesantia: AltaCoherenciaDerivedStatus;
-  jornada: AltaCoherenciaDerivedStatus;
-  prevision: AltaCoherenciaDerivedStatus;
+export interface EstadoCoherenciaAlta {
+  inconsistencias: InconsistenciaCoherenciaAlta[];
+  seguroCesantia: EstadoDerivadoCoherenciaAlta;
+  jornada: EstadoDerivadoCoherenciaAlta;
+  prevision: EstadoDerivadoCoherenciaAlta;
 }
 
 const JORNADA_ORDINARIA_MAX_2026 = 42;
 const JORNADA_ESPECIAL_MAX_30 = 30;
 
-export function evaluarAltaCoherencia(input: AltaCoherenciaInput): AltaCoherenciaState {
-  const issues: AltaCoherenciaIssue[] = [];
+export function evaluarAltaCoherencia(input: EntradaCoherenciaAlta): EstadoCoherenciaAlta {
+  const inconsistencias: InconsistenciaCoherenciaAlta[] = [];
   const edad = calcularEdad(input.fechaNacimiento, input.fechaIngreso);
   const esHonorarios = input.relacionLaboral === 'HONORARIOS';
   const esMenor = edad !== null && edad < 18;
@@ -80,17 +80,17 @@ export function evaluarAltaCoherencia(input: AltaCoherenciaInput): AltaCoherenci
   const esPensionado = condiciones.pensionado || condiciones.pensionadoInvalidezTotal;
   const esPensionadoParcial = condiciones.pensionadoInvalidezParcial;
 
-  let seguro: AltaCoherenciaDerivedStatus = {
+  let seguro: EstadoDerivadoCoherenciaAlta = {
     label: 'Pendiente',
     detail: 'Selecciona tipo de contrato para evaluar Seguro de Cesantía.',
     tone: 'review',
   };
-  let jornada: AltaCoherenciaDerivedStatus = {
+  let jornada: EstadoDerivadoCoherenciaAlta = {
     label: 'Pendiente',
     detail: 'Completa jornada y fecha de ingreso para evaluar coherencia laboral.',
     tone: 'review',
   };
-  let prevision: AltaCoherenciaDerivedStatus = {
+  let prevision: EstadoDerivadoCoherenciaAlta = {
     label: 'Pendiente',
     detail: 'Selecciona régimen previsional para revisar coherencia administrativa.',
     tone: 'review',
@@ -114,7 +114,7 @@ export function evaluarAltaCoherencia(input: AltaCoherenciaInput): AltaCoherenci
     };
 
     if (input.seguroCesantia) {
-      issues.push({
+      inconsistencias.push({
         id: 'coh.seguro.honorarios-activo',
         area: 'seguroCesantia',
         stepIndex: 3,
@@ -128,7 +128,7 @@ export function evaluarAltaCoherencia(input: AltaCoherenciaInput): AltaCoherenci
       });
     }
 
-    return { issues, seguroCesantia: seguro, jornada, prevision };
+    return { inconsistencias, seguroCesantia: seguro, jornada, prevision };
   }
 
   if (esMenor) {
@@ -138,7 +138,7 @@ export function evaluarAltaCoherencia(input: AltaCoherenciaInput): AltaCoherenci
       tone: 'warning',
     };
     if (input.seguroCesantia) {
-      issues.push({
+      inconsistencias.push({
         id: 'coh.seguro.menor-activo',
         area: 'seguroCesantia',
         stepIndex: 3,
@@ -158,7 +158,7 @@ export function evaluarAltaCoherencia(input: AltaCoherenciaInput): AltaCoherenci
       tone: 'warning',
     };
     if (input.seguroCesantia) {
-      issues.push({
+      inconsistencias.push({
         id: 'coh.seguro.pensionado-activo',
         area: 'seguroCesantia',
         stepIndex: 3,
@@ -178,7 +178,7 @@ export function evaluarAltaCoherencia(input: AltaCoherenciaInput): AltaCoherenci
       tone: input.seguroCesantia ? 'ok' : 'warning',
     };
     if (!input.seguroCesantia) {
-      issues.push({
+      inconsistencias.push({
         id: 'coh.seguro.indefinido-inactivo',
         area: 'seguroCesantia',
         stepIndex: 3,
@@ -198,7 +198,7 @@ export function evaluarAltaCoherencia(input: AltaCoherenciaInput): AltaCoherenci
       tone: input.seguroCesantia ? 'ok' : 'warning',
     };
     if (!input.seguroCesantia) {
-      issues.push({
+      inconsistencias.push({
         id: 'coh.seguro.plazo-obra-inactivo',
         area: 'seguroCesantia',
         stepIndex: 3,
@@ -220,7 +220,7 @@ export function evaluarAltaCoherencia(input: AltaCoherenciaInput): AltaCoherenci
   }
 
   if (condiciones.tecnicoExtranjeroExento && !input.seguroCesantia && !esMenor && !esPensionado) {
-    issues.push({
+    inconsistencias.push({
       id: 'coh.seguro.tecnico-extranjero-inactivo',
       area: 'seguroCesantia',
       stepIndex: 3,
@@ -247,7 +247,7 @@ export function evaluarAltaCoherencia(input: AltaCoherenciaInput): AltaCoherenci
   };
 
   if (input.horasSemanales !== null && input.horasSemanales > maxHoras) {
-    issues.push({
+    inconsistencias.push({
       id: esMenor ? 'coh.jornada.menor-sobre-30' : esJornadaParcial ? 'coh.jornada.parcial-sobre-30' : 'coh.jornada.ordinaria-sobre-42',
       area: 'jornada',
       stepIndex: 3,
@@ -262,7 +262,7 @@ export function evaluarAltaCoherencia(input: AltaCoherenciaInput): AltaCoherenci
   }
 
   if (esMenor && !condiciones.trabajadorAdolescenteProtegido && !condiciones.autorizacionMenorRegistrada) {
-    issues.push({
+    inconsistencias.push({
       id: 'coh.condiciones.menor-sin-condicion',
       area: 'condicionesEspeciales',
       stepIndex: 8,
@@ -290,7 +290,7 @@ export function evaluarAltaCoherencia(input: AltaCoherenciaInput): AltaCoherenci
       tone: 'warning',
     };
     if (!tieneCondicionPrevisionalEspecial) {
-      issues.push({
+      inconsistencias.push({
         id: 'coh.prevision.ninguna-sin-condicion',
         area: 'prevision',
         stepIndex: 5,
@@ -311,7 +311,7 @@ export function evaluarAltaCoherencia(input: AltaCoherenciaInput): AltaCoherenci
     };
   }
 
-  return { issues, seguroCesantia: seguro, jornada, prevision };
+  return { inconsistencias, seguroCesantia: seguro, jornada, prevision };
 }
 
 function calcularEdad(fechaNacimiento: string, fechaReferencia: string): number | null {

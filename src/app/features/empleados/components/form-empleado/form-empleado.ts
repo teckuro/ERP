@@ -1,4 +1,4 @@
-import { CommonModule } from "@angular/common";
+﻿import { CommonModule } from "@angular/common";
 import {
   Component,
   DestroyRef,
@@ -53,14 +53,14 @@ import {
 import {
   AltaAplicabilidadCampo,
   AltaAplicabilidadItem,
-  AltaAplicabilidadState,
+  EstadoAplicabilidadAlta,
   altaAplicabilidadStep,
   evaluarAltaAplicabilidad,
 } from "../../rules/empleado-alta-aplicabilidad.rules";
 import {
-  AltaCoherenciaAction,
-  AltaCoherenciaIssue,
-  AltaCoherenciaState,
+  AccionCoherenciaAlta,
+  InconsistenciaCoherenciaAlta,
+  EstadoCoherenciaAlta,
   evaluarAltaCoherencia,
 } from "../../rules/empleado-alta-coherencia.rules";
 import { EmpleadosFormOrchestratorService } from "../../services/empleados-form-orchestrator.service";
@@ -290,7 +290,7 @@ export class FormEmpleadoComponent implements OnInit {
 
   readonly modo = signal<FormEmpleadoModo>("avanzado");
   /** Creacion avanzada: indice de etapa 0..9 (10 pasos). */
-  readonly activeWizardStep = signal(0);
+  readonly pasoWizardActivo = signal(0);
   readonly isSaving = signal(false);
   readonly attemptedSave = signal(false);
   readonly errorMessage = signal<string | null>(null);
@@ -315,11 +315,11 @@ export class FormEmpleadoComponent implements OnInit {
   readonly perfilLaboralAutoDetections = signal<
     readonly PerfilLaboralAutoDetection[]
   >([]);
-  readonly pendingCoherenceDecision = signal<{
-    issue: AltaCoherenciaIssue;
+  readonly decisionCoherenciaPendiente = signal<{
+    issue: InconsistenciaCoherenciaAlta;
     context: "next" | "finish";
   } | null>(null);
-  readonly acknowledgedCoherenceIssueIds = signal<ReadonlySet<string>>(
+  readonly idsInconsistenciasCoherenciaReconocidas = signal<ReadonlySet<string>>(
     new Set(),
   );
   readonly isLoadingCatalogs = signal(true);
@@ -487,7 +487,7 @@ export class FormEmpleadoComponent implements OnInit {
       const resumen = await this.empleadosService.guardarBorradorAvanzado(
         prevId,
         payload,
-        this.activeWizardStep(),
+        this.pasoWizardActivo(),
       );
       this.borradorPersonaId.set(resumen.id);
       this.borradorFeedback.set(
@@ -524,7 +524,7 @@ export class FormEmpleadoComponent implements OnInit {
     }
 
     this.syncCompletedTabsFromValidity();
-    this.activeWizardStep.set(index);
+    this.pasoWizardActivo.set(index);
     this.markWizardStepVisited(index);
     this.scrollToCurrentStepStart({ focusFirstField: true });
   }
@@ -600,7 +600,7 @@ export class FormEmpleadoComponent implements OnInit {
   }
 
   wizardProgressPercent(): number {
-    return Math.round(((this.activeWizardStep() + 1) / this.totalSteps) * 100);
+    return Math.round(((this.pasoWizardActivo() + 1) / this.totalSteps) * 100);
   }
 
   async loadCatalogos(): Promise<void> {
@@ -628,7 +628,7 @@ export class FormEmpleadoComponent implements OnInit {
     event.stopPropagation();
     if (
       this.isAdvancedMode() &&
-      this.activeWizardStep() !== this.summaryWizardStepIndex()
+      this.pasoWizardActivo() !== this.summaryWizardStepIndex()
     ) {
       return;
     }
@@ -636,7 +636,7 @@ export class FormEmpleadoComponent implements OnInit {
   }
 
   isWizardStepActive(index: number): boolean {
-    return this.activeWizardStep() === index;
+    return this.pasoWizardActivo() === index;
   }
 
   /** Secuencia de indices al usar Siguiente / Anterior (omite APVI si no aplica). */
@@ -720,7 +720,7 @@ export class FormEmpleadoComponent implements OnInit {
       return;
     }
 
-    const coherenceIssue = this.firstUnacknowledgedCoherenceDecision();
+    const coherenceIssue = this.primeraDecisionCoherenciaSinReconocer();
     if (coherenceIssue) {
       this.syncCompletedTabsFromValidity();
       this.openCoherenceDecisionModal(coherenceIssue, "finish");
@@ -894,7 +894,7 @@ export class FormEmpleadoComponent implements OnInit {
   }
 
   dismissAdvancedActionModal(): void {
-    this.pendingCoherenceDecision.set(null);
+    this.decisionCoherenciaPendiente.set(null);
     this.advancedActionModal.set(null);
   }
 
@@ -916,8 +916,8 @@ export class FormEmpleadoComponent implements OnInit {
         break;
       case "focus-current-step":
         this.advancedActionModal.set(null);
-        this.markWizardStepTouched(this.activeWizardStep());
-        this.focusFirstPendingControl(this.activeWizardStep());
+        this.markWizardStepTouched(this.pasoWizardActivo());
+        this.focusFirstPendingControl(this.pasoWizardActivo());
         break;
       case "focus-draft-minimum":
         this.advancedActionModal.set(null);
@@ -1014,15 +1014,15 @@ export class FormEmpleadoComponent implements OnInit {
 
   goToPreviousTab(): void {
     const seq = this.linearWizardSequence();
-    let idx = seq.indexOf(this.activeWizardStep());
+    let idx = seq.indexOf(this.pasoWizardActivo());
     if (idx === -1) {
-      const cur = this.activeWizardStep();
+      const cur = this.pasoWizardActivo();
       const candidates = seq.filter((s) => s < cur);
       const prev = candidates.length
         ? candidates[candidates.length - 1]!
         : seq[0]!;
       this.syncCompletedTabsFromValidity();
-      this.activeWizardStep.set(prev);
+      this.pasoWizardActivo.set(prev);
       this.markWizardStepVisited(prev);
       this.scrollToCurrentStepStart({ focusFirstField: true });
       return;
@@ -1030,7 +1030,7 @@ export class FormEmpleadoComponent implements OnInit {
     if (idx > 0) {
       this.syncCompletedTabsFromValidity();
       const previous = seq[idx - 1]!;
-      this.activeWizardStep.set(previous);
+      this.pasoWizardActivo.set(previous);
       this.markWizardStepVisited(previous);
       this.scrollToCurrentStepStart({ focusFirstField: true });
     }
@@ -1042,12 +1042,12 @@ export class FormEmpleadoComponent implements OnInit {
       return;
     }
 
-    const currentStep = this.activeWizardStep();
+    const currentStep = this.pasoWizardActivo();
     this.markWizardStepAttempted(currentStep);
     this.markWizardStepTouched(currentStep);
     this.syncCompletedTabsFromValidity();
 
-    const coherenceIssue = this.firstCoherenceDecisionForStep(currentStep);
+    const coherenceIssue = this.primeraDecisionCoherenciaPorPaso(currentStep);
     if (coherenceIssue) {
       this.openCoherenceDecisionModal(coherenceIssue, "next");
       return;
@@ -1064,13 +1064,13 @@ export class FormEmpleadoComponent implements OnInit {
 
   private advanceToNextWizardStep(): void {
     const seq = this.linearWizardSequence();
-    let idx = seq.indexOf(this.activeWizardStep());
+    let idx = seq.indexOf(this.pasoWizardActivo());
     if (idx === -1) {
-      const cur = this.activeWizardStep();
+      const cur = this.pasoWizardActivo();
       const next = seq.find((s) => s > cur);
       if (next !== undefined) {
         this.syncCompletedTabsFromValidity();
-        this.activeWizardStep.set(next);
+        this.pasoWizardActivo.set(next);
         this.markWizardStepVisited(next);
         this.scrollToCurrentStepStart({ focusFirstField: true });
       }
@@ -1079,7 +1079,7 @@ export class FormEmpleadoComponent implements OnInit {
     if (idx < seq.length - 1) {
       this.syncCompletedTabsFromValidity();
       const next = seq[idx + 1]!;
-      this.activeWizardStep.set(next);
+      this.pasoWizardActivo.set(next);
       this.markWizardStepVisited(next);
       this.scrollToCurrentStepStart({ focusFirstField: true });
     }
@@ -1087,16 +1087,16 @@ export class FormEmpleadoComponent implements OnInit {
 
   isFirstTab(): boolean {
     const seq = this.linearWizardSequence();
-    const idx = seq.indexOf(this.activeWizardStep());
+    const idx = seq.indexOf(this.pasoWizardActivo());
     if (idx === -1) {
-      return this.activeWizardStep() <= seq[0]!;
+      return this.pasoWizardActivo() <= seq[0]!;
     }
     return idx === 0;
   }
 
   isLastTab(): boolean {
     const seq = this.linearWizardSequence();
-    return this.activeWizardStep() === seq[seq.length - 1]!;
+    return this.pasoWizardActivo() === seq[seq.length - 1]!;
   }
 
   isNextDisabled(): boolean {
@@ -1104,7 +1104,7 @@ export class FormEmpleadoComponent implements OnInit {
   }
 
   activeStepNumber(): number {
-    return this.activeWizardStep() + 1;
+    return this.pasoWizardActivo() + 1;
   }
 
   summaryWizardStepIndex(): number {
@@ -1131,7 +1131,7 @@ export class FormEmpleadoComponent implements OnInit {
 
   validationPanelItems(): EvaluatedValidationRule[] {
     return this.evaluateValidationRules().filter(
-      (item) => item.visible && item.wizardStep === this.activeWizardStep(),
+      (item) => item.visible && item.wizardStep === this.pasoWizardActivo(),
     );
   }
 
@@ -1404,7 +1404,7 @@ export class FormEmpleadoComponent implements OnInit {
   resumenPendientesNegocio(): string[] {
     if (
       !this.isAdvancedMode() ||
-      this.activeWizardStep() !== this.summaryWizardStepIndex() ||
+      this.pasoWizardActivo() !== this.summaryWizardStepIndex() ||
       !this.attemptedSave()
     ) {
       return [];
@@ -1667,7 +1667,7 @@ export class FormEmpleadoComponent implements OnInit {
       return true;
     }
     const seq = this.linearWizardSequence();
-    const active = this.activeWizardStep();
+    const active = this.pasoWizardActivo();
     const iAct = seq.indexOf(active);
     const iStep = seq.indexOf(stepIndex);
 
@@ -1731,7 +1731,7 @@ export class FormEmpleadoComponent implements OnInit {
   }
 
   private showInvalidWizardStep(step: number): void {
-    this.activeWizardStep.set(step);
+    this.pasoWizardActivo.set(step);
     this.attemptedWizardSteps.update((prev) => new Set([...prev, step]));
     this.attemptAllTabs();
     this.markWizardStepTouched(step);
@@ -1809,7 +1809,7 @@ export class FormEmpleadoComponent implements OnInit {
       );
       this.borradorPersonaId.set(id);
       this.form.patchValue(formValue as never);
-      this.activeWizardStep.set(paso);
+      this.pasoWizardActivo.set(paso);
       this.visitedWizardSteps.update((prev) => new Set([...prev, paso]));
       this.form.markAsPristine();
     } catch {
@@ -2654,7 +2654,7 @@ export class FormEmpleadoComponent implements OnInit {
     });
   }
 
-  altaCoherenciaState(): AltaCoherenciaState {
+  altaCoherenciaState(): EstadoCoherenciaAlta {
     const contrato = this.form.controls.contrato.controls;
     const personal = this.form.controls.datosPersonales.controls;
     const prevision = this.form.controls.previsionSalud.controls;
@@ -2684,7 +2684,7 @@ export class FormEmpleadoComponent implements OnInit {
     });
   }
 
-  altaAplicabilidadState(): AltaAplicabilidadState {
+  altaAplicabilidadState(): EstadoAplicabilidadAlta {
     const contrato = this.form.controls.contrato.controls;
     const prevision = this.form.controls.previsionSalud.controls;
     const perfil = this.form.controls.perfilLaboral.controls;
@@ -2704,7 +2704,7 @@ export class FormEmpleadoComponent implements OnInit {
   }
 
   aplicabilidadItem(campo: AltaAplicabilidadCampo): AltaAplicabilidadItem {
-    return this.altaAplicabilidadState().items[campo];
+    return this.altaAplicabilidadState().campos[campo];
   }
 
   aplicabilidadStepMotivo(stepIndex: number): string {
@@ -2718,7 +2718,7 @@ export class FormEmpleadoComponent implements OnInit {
     motivo: string;
     tone: string;
   }[] {
-    const state = this.altaAplicabilidadState();
+    const estado = this.altaAplicabilidadState();
     const campos: readonly AltaAplicabilidadCampo[] = this.isHonorariosMode()
       ? ["tipoTrabajador", "montoHonorarios", "banco", "resumenFinal"]
       : [
@@ -2730,7 +2730,7 @@ export class FormEmpleadoComponent implements OnInit {
         ];
 
     return campos.map((campo) => {
-      const item = state.items[campo];
+      const item = estado.campos[campo];
       return {
         label: item.label,
         estado: this.diagnosticoEstadoLabel(item.estado),
@@ -2742,7 +2742,7 @@ export class FormEmpleadoComponent implements OnInit {
 
   diagnosticoContractualBadge(): string {
     const bloqueos = this.altaAplicabilidadState().resumen.blocked;
-    const revisiones = this.coherenciaIssues().length;
+    const revisiones = this.inconsistenciasCoherencia().length;
 
     if (bloqueos > 0) {
       return `${bloqueos} bloqueo(s) de fase`;
@@ -2761,7 +2761,7 @@ export class FormEmpleadoComponent implements OnInit {
 
   diagnosticoContractualDescripcion(): string {
     const bloqueos = this.altaAplicabilidadState().resumen.blocked;
-    const revisiones = this.coherenciaIssues().length;
+    const revisiones = this.inconsistenciasCoherencia().length;
 
     if (this.isHonorariosMode()) {
       return "El sistema identificó un alta a honorarios y separó los datos de pago de los campos laborales dependientes.";
@@ -2824,43 +2824,43 @@ export class FormEmpleadoComponent implements OnInit {
     }
   }
 
-  coherenciaIssues(): readonly AltaCoherenciaIssue[] {
-    return this.altaCoherenciaState().issues;
+  inconsistenciasCoherencia(): readonly InconsistenciaCoherenciaAlta[] {
+    return this.altaCoherenciaState().inconsistencias;
   }
 
-  coherenciaIssuesForActiveStep(): readonly AltaCoherenciaIssue[] {
-    return this.coherenciaIssuesForStep(this.activeWizardStep());
+  inconsistenciasCoherenciaPasoActivo(): readonly InconsistenciaCoherenciaAlta[] {
+    return this.inconsistenciasCoherenciaPorPaso(this.pasoWizardActivo());
   }
 
-  coherenciaIssuesForStep(stepIndex: number): readonly AltaCoherenciaIssue[] {
-    return this.coherenciaIssues().filter(
+  inconsistenciasCoherenciaPorPaso(stepIndex: number): readonly InconsistenciaCoherenciaAlta[] {
+    return this.inconsistenciasCoherencia().filter(
       (issue) => issue.stepIndex === stepIndex,
     );
   }
 
   coherenciaResumenItems(): readonly string[] {
-    return this.coherenciaIssues()
+    return this.inconsistenciasCoherencia()
       .map((issue) => issue.summary)
       .slice(0, 6);
   }
 
   coherenciaResumenBadge(): string {
-    const issues = this.coherenciaIssues();
+    const inconsistencias = this.inconsistenciasCoherencia();
 
-    if (issues.length === 0) {
+    if (inconsistencias.length === 0) {
       return "Sin revisiones";
     }
 
-    const porDecidir = issues.filter(
+    const porDecidir = inconsistencias.filter(
       (issue) =>
-        issue.action && !this.acknowledgedCoherenceIssueIds().has(issue.id),
+        issue.action && !this.idsInconsistenciasCoherenciaReconocidas().has(issue.id),
     ).length;
 
     if (porDecidir > 0) {
       return `${porDecidir} por decidir`;
     }
 
-    return `${issues.length} mantenida(s) bajo revisiÃ³n`;
+    return `${inconsistencias.length} mantenida(s) bajo revisión`;
   }
 
   coherenciaStatusRows(): readonly {
@@ -2868,42 +2868,42 @@ export class FormEmpleadoComponent implements OnInit {
     detail: string;
     tone: string;
   }[] {
-    const state = this.altaCoherenciaState();
+    const estado = this.altaCoherenciaState();
     return [
       {
-        label: `Seguro de Cesantía: ${state.seguroCesantia.label}`,
-        detail: state.seguroCesantia.detail,
-        tone: state.seguroCesantia.tone,
+        label: `Seguro de Cesantía: ${estado.seguroCesantia.label}`,
+        detail: estado.seguroCesantia.detail,
+        tone: estado.seguroCesantia.tone,
       },
       {
-        label: `Jornada: ${state.jornada.label}`,
-        detail: state.jornada.detail,
-        tone: state.jornada.tone,
+        label: `Jornada: ${estado.jornada.label}`,
+        detail: estado.jornada.detail,
+        tone: estado.jornada.tone,
       },
       {
-        label: `Previsión: ${state.prevision.label}`,
-        detail: state.prevision.detail,
-        tone: state.prevision.tone,
+        label: `Previsión: ${estado.prevision.label}`,
+        detail: estado.prevision.detail,
+        tone: estado.prevision.tone,
       },
     ];
   }
 
-  private firstCoherenceDecisionForStep(
+  private primeraDecisionCoherenciaPorPaso(
     stepIndex: number,
-  ): AltaCoherenciaIssue | null {
+  ): InconsistenciaCoherenciaAlta | null {
     return (
-      this.coherenciaIssuesForStep(stepIndex).find(
+      this.inconsistenciasCoherenciaPorPaso(stepIndex).find(
         (issue) =>
-          issue.action && !this.acknowledgedCoherenceIssueIds().has(issue.id),
+          issue.action && !this.idsInconsistenciasCoherenciaReconocidas().has(issue.id),
       ) ?? null
     );
   }
 
-  private firstUnacknowledgedCoherenceDecision(): AltaCoherenciaIssue | null {
+  private primeraDecisionCoherenciaSinReconocer(): InconsistenciaCoherenciaAlta | null {
     return (
-      this.coherenciaIssues().find(
+      this.inconsistenciasCoherencia().find(
         (issue) =>
-          issue.action && !this.acknowledgedCoherenceIssueIds().has(issue.id),
+          issue.action && !this.idsInconsistenciasCoherenciaReconocidas().has(issue.id),
       ) ?? null
     );
   }
@@ -2940,10 +2940,10 @@ export class FormEmpleadoComponent implements OnInit {
   }
 
   private openCoherenceDecisionModal(
-    issue: AltaCoherenciaIssue,
+    issue: InconsistenciaCoherenciaAlta,
     context: "next" | "finish",
   ): void {
-    this.pendingCoherenceDecision.set({ issue, context });
+    this.decisionCoherenciaPendiente.set({ issue, context });
     this.openAdvancedActionModal({
       kind: "coherence-decision",
       variant: "warning",
@@ -2976,16 +2976,16 @@ export class FormEmpleadoComponent implements OnInit {
   }
 
   private applyPendingCoherenceSuggestion(): void {
-    const pending = this.pendingCoherenceDecision();
+    const pending = this.decisionCoherenciaPendiente();
     if (!pending) {
       this.advancedActionModal.set(null);
       return;
     }
 
     this.applyCoherenceAction(pending.issue.action, pending.issue.actionValue);
-    this.pendingCoherenceDecision.set(null);
+    this.decisionCoherenciaPendiente.set(null);
     this.advancedActionModal.set(null);
-    this.acknowledgedCoherenceIssueIds.update((prev) => {
+    this.idsInconsistenciasCoherenciaReconocidas.update((prev) => {
       const next = new Set(prev);
       next.delete(pending.issue.id);
       return next;
@@ -2995,16 +2995,16 @@ export class FormEmpleadoComponent implements OnInit {
   }
 
   private keepPendingCoherenceReview(): void {
-    const pending = this.pendingCoherenceDecision();
+    const pending = this.decisionCoherenciaPendiente();
     if (!pending) {
       this.advancedActionModal.set(null);
       return;
     }
 
-    this.acknowledgedCoherenceIssueIds.update(
+    this.idsInconsistenciasCoherenciaReconocidas.update(
       (prev) => new Set([...prev, pending.issue.id]),
     );
-    this.pendingCoherenceDecision.set(null);
+    this.decisionCoherenciaPendiente.set(null);
     this.advancedActionModal.set(null);
     this.syncCompletedTabsFromValidity();
 
@@ -3018,7 +3018,7 @@ export class FormEmpleadoComponent implements OnInit {
   }
 
   private applyCoherenceAction(
-    action: AltaCoherenciaAction | undefined,
+    action: AccionCoherenciaAlta | undefined,
     value: boolean | number | undefined,
   ): void {
     const contrato = this.form.controls.contrato.controls;
@@ -3497,8 +3497,8 @@ export class FormEmpleadoComponent implements OnInit {
   }
 
   private moveHonorariosFlowToApplicableStep(): void {
-    if ([4, 5, 6].includes(this.activeWizardStep())) {
-      this.activeWizardStep.set(7);
+    if ([4, 5, 6].includes(this.pasoWizardActivo())) {
+      this.pasoWizardActivo.set(7);
       this.markWizardStepVisited(7);
       this.scrollToCurrentStepStart({ focusFirstField: true });
     }
@@ -3800,7 +3800,7 @@ export class FormEmpleadoComponent implements OnInit {
   }
 
   private focusFirstPendingControl(
-    wizardStep: number = this.activeWizardStep(),
+    wizardStep: number = this.pasoWizardActivo(),
   ): void {
     window.setTimeout(() => {
       const sorted = [...this.evaluateValidationRules()].sort(
@@ -3824,7 +3824,7 @@ export class FormEmpleadoComponent implements OnInit {
   }
 
   private focusFirstInvalidControl(
-    wizardStep: number = this.activeWizardStep(),
+    wizardStep: number = this.pasoWizardActivo(),
   ): void {
     window.setTimeout(() => {
       const sorted = [...this.evaluateValidationRules()].sort(

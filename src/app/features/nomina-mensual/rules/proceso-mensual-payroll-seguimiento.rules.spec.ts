@@ -1,16 +1,16 @@
-import { describe, expect, it } from 'vitest';
+﻿import { describe, expect, it } from 'vitest';
 
 import { buildExpedienteNominaPeriodo } from './proceso-mensual-expediente-periodo.rules';
 import { buildIncidenciasPeriodo } from './proceso-mensual-incidencias-periodo.rules';
 import {
-  buildPayrollObservationDetailRows,
-  buildPayrollParametroSeguimientoItems,
-  buildPayrollWorkerDetailRows,
+  construirFilasDetalleObservacionNomina,
+  construirItemsSeguimientoParametrosNomina,
+  construirFilasDetalleTrabajadorNomina,
 } from './proceso-mensual-payroll-seguimiento.rules';
 
 describe('proceso-mensual-payroll-seguimiento.rules', () => {
   it('prioriza filas de base de nómina cuando existe trazabilidad', () => {
-    const rows = buildPayrollWorkerDetailRows({
+    const rows = construirFilasDetalleTrabajadorNomina({
       base: {
         trabajadores: [{
           idPersona: 1,
@@ -154,7 +154,7 @@ describe('proceso-mensual-payroll-seguimiento.rules', () => {
       liquidacionesDisponibles: true,
     });
 
-    const rows = buildPayrollWorkerDetailRows({
+    const rows = construirFilasDetalleTrabajadorNomina({
       base: null,
       expediente,
       resultadoTrabajadores: [],
@@ -183,7 +183,7 @@ describe('proceso-mensual-payroll-seguimiento.rules', () => {
       resultadoAdvertencias: [],
     });
 
-    const filas = buildPayrollObservationDetailRows({ incidencias: incidencias.todas });
+    const filas = construirFilasDetalleObservacionNomina({ incidencias: incidencias.todas });
     expect(filas).toHaveLength(2);
     expect(filas.map((fila) => fila.mensaje)).toEqual(
       expect.arrayContaining(['Falta UF', 'Revisar']),
@@ -191,7 +191,7 @@ describe('proceso-mensual-payroll-seguimiento.rules', () => {
   });
 
   it('parametros con incidencias expone un solo item sintetico orientado al resumen', () => {
-    const items = buildPayrollParametroSeguimientoItems({
+    const items = construirItemsSeguimientoParametrosNomina({
       parametrosListos: false,
       tieneIncidenciasParametros: true,
     });

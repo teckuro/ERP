@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+﻿import { describe, expect, it } from 'vitest';
 
 import type { EvaluacionCompletitudEmpleado } from '../utils/empleado-completitud.rules';
 import {
@@ -8,12 +8,12 @@ import {
   buildFichaOperativeProgress,
   buildMotivoPrincipal,
   buildVisorEstadoFicha,
-  FICHA_TOTAL_OPERATIVE_BLOCKS,
-  mapTabStatusToNavStatus,
+  TOTAL_BLOQUES_OPERATIVOS_FICHA,
+  mapearEstadoTabAEstadoNavegacion,
   resolveAccionPrincipalTab,
-  tabFromSectionKey,
-  type EmployeeFileTabStatus,
-  type EmployeeFichaTabKey,
+  tabDesdeSeccion,
+  type EstadoTabFichaEmpleado,
+  type ClaveTabFichaEmpleado,
 } from './ficha-empleado-presentacion.rules';
 
 function evaluacionMock(
@@ -32,9 +32,9 @@ function evaluacionMock(
 
 describe('ficha-empleado-presentacion.rules', () => {
   it('mapea tab activo a en-curso en el rail', () => {
-    expect(mapTabStatusToNavStatus('warning', true)).toBe('en-curso');
-    expect(mapTabStatusToNavStatus('complete', false)).toBe('listo');
-    expect(mapTabStatusToNavStatus('blocking', false)).toBe('critico');
+    expect(mapearEstadoTabAEstadoNavegacion('warning', true)).toBe('en-curso');
+    expect(mapearEstadoTabAEstadoNavegacion('complete', false)).toBe('listo');
+    expect(mapearEstadoTabAEstadoNavegacion('blocking', false)).toBe('critico');
   });
 
   it('deduplica faltantes por bloque y mensaje', () => {
@@ -47,17 +47,17 @@ describe('ficha-empleado-presentacion.rules', () => {
       seccionesPendientes: ['pago', 'remuneracion', 'pago'],
     });
 
-    const issues = buildFaltantesCriticosDedup({
+    const faltantes = buildFaltantesCriticosDedup({
       evaluacion,
       humanizeBloqueo: (b) => b,
     });
 
-    expect(issues.length).toBe(2);
-    expect(issues.some((i) => i.blockKey === 'pago')).toBe(true);
+    expect(faltantes.length).toBe(2);
+    expect(faltantes.some((i) => i.claveBloque === 'pago')).toBe(true);
   });
 
   it('prioriza motivo de pago cuando hay bloqueo bancario', () => {
-    const issues = buildFaltantesCriticosDedup({
+    const faltantes = buildFaltantesCriticosDedup({
       evaluacion: evaluacionMock({
         bloqueos: ['Reemplaza la cuenta bancaria temporal.'],
         seccionesPendientes: ['pago'],
@@ -68,7 +68,7 @@ describe('ficha-empleado-presentacion.rules', () => {
     expect(
       buildMotivoPrincipal({
         evaluacion: evaluacionMock(),
-        issues,
+        faltantes,
         aptoParaRemuneraciones: false,
         estadoFichaValido: false,
       }),
@@ -80,13 +80,13 @@ describe('ficha-empleado-presentacion.rules', () => {
       seccionesPendientes: ['pago'],
       bloqueos: ['Cuenta bancaria real.'],
     });
-    const issues = buildFaltantesCriticosDedup({
+    const faltantes = buildFaltantesCriticosDedup({
       evaluacion,
       humanizeBloqueo: (b) => b,
     });
 
-    expect(resolveAccionPrincipalTab(issues, evaluacion)).toBe('pago');
-    expect(tabFromSectionKey('remuneracion')).toBe('remuneracion');
+    expect(resolveAccionPrincipalTab(faltantes, evaluacion)).toBe('pago');
+    expect(tabDesdeSeccion('remuneracion')).toBe('remuneracion');
   });
 
   it('construye items de navegacion del expediente', () => {
@@ -95,16 +95,16 @@ describe('ficha-empleado-presentacion.rules', () => {
         { id: 'general', label: 'General' },
         { id: 'pago', label: 'Pago' },
       ],
-      activeTab: 'general',
-      tabStatus: (id) => (id === 'general' ? 'warning' : 'blocking'),
+      tabActivo: 'general',
+      estadoTab: (id) => (id === 'general' ? 'warning' : 'blocking'),
     });
 
-    expect(items[0].status).toBe('en-curso');
-    expect(items[1].status).toBe('critico');
+    expect(items[0].estado).toBe('en-curso');
+    expect(items[1].estado).toBe('critico');
   });
 
   it('alinea porcentaje y bloques operativos con 3 de 5 completos', () => {
-    const tabStatus = (id: EmployeeFichaTabKey): EmployeeFileTabStatus => {
+    const estadoTab = (id: ClaveTabFichaEmpleado): EstadoTabFichaEmpleado => {
       if (id === 'pago' || id === 'remuneracion') {
         return 'blocking';
       }
@@ -121,26 +121,26 @@ describe('ficha-empleado-presentacion.rules', () => {
       }),
       pasoAltaAvanzada: null,
       estadoFicha: 'INCOMPLETO',
-      tabStatus,
+      estadoTab,
     });
 
-    expect(progress.completedOperativeBlocks).toBe(3);
-    expect(progress.totalOperativeBlocks).toBe(FICHA_TOTAL_OPERATIVE_BLOCKS);
-    expect(progress.progressPercent).toBe(60);
+    expect(progress.bloquesOperativosCompletos).toBe(3);
+    expect(progress.totalBloquesOperativos).toBe(TOTAL_BLOQUES_OPERATIVOS_FICHA);
+    expect(progress.porcentajeAvance).toBe(60);
   });
 
   it('borrador mantiene piso de avance coherente con bloques', () => {
-    const tabStatus = (): EmployeeFileTabStatus => 'warning';
+    const estadoTab = (): EstadoTabFichaEmpleado => 'warning';
 
     const progress = buildFichaOperativeProgress({
       evaluacion: evaluacionMock(),
       pasoAltaAvanzada: 2,
       estadoFicha: 'BORRADOR',
-      tabStatus,
+      estadoTab,
     });
 
-    expect(progress.completedOperativeBlocks).toBe(0);
-    expect(progress.progressPercent).toBe(20);
+    expect(progress.bloquesOperativosCompletos).toBe(0);
+    expect(progress.porcentajeAvance).toBe(20);
   });
 
   it('ficha apta reporta 100% y 5 de 5', () => {
@@ -150,13 +150,13 @@ describe('ficha-empleado-presentacion.rules', () => {
       estadoFicha: 'VALIDO',
       estadoLaboral: 'activo',
       aptoParaRemuneracionesRegistro: true,
-      tabStatus: () => 'complete',
+      estadoTab: () => 'complete',
       humanizeBloqueo: (b) => b,
     });
 
-    expect(vm.progressPercent).toBe(100);
-    expect(vm.completedOperativeBlocks).toBe(5);
-    expect(vm.totalOperativeBlocks).toBe(5);
+    expect(vm.porcentajeAvance).toBe(100);
+    expect(vm.bloquesOperativosCompletos).toBe(5);
+    expect(vm.totalBloquesOperativos).toBe(5);
     expect(vm.visorLabel).toBe('Listo');
     expect(vm.shellTone).toBe('success');
     expect(vm.remuneracionesLabel).toBe('Apta para remuneraciones');
@@ -184,11 +184,11 @@ describe('ficha-empleado-presentacion.rules', () => {
       estadoFicha: 'INCOMPLETO',
       estadoLaboral: 'activo',
       aptoParaRemuneracionesRegistro: false,
-      tabStatus: (id) => (id === 'pago' ? 'blocking' : 'complete'),
+      estadoTab: (id) => (id === 'pago' ? 'blocking' : 'complete'),
       humanizeBloqueo: (b) => b,
     });
 
-    expect(vm.actionLabel).toBe('Completar datos de pago');
-    expect(vm.actionHint).toContain('datos de pago');
+    expect(vm.etiquetaAccion).toBe('Completar datos de pago');
+    expect(vm.ayudaAccion).toContain('datos de pago');
   });
 });

@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+﻿import { describe, expect, it } from 'vitest';
 
 import type { BaseNominaTrazabilidad } from '../models/proceso-mensual.model';
 import type { ExpedienteNominaPeriodoView } from './proceso-mensual-expediente-periodo.rules';
@@ -110,7 +110,7 @@ function input(overrides: Partial<BuildNominaMasivaInput> = {}): BuildNominaMasi
     resultadoTrabajadores,
     expedienteTrabajadores,
     baseTrabajadores,
-    movementRows: [
+    filasMovimientos: [
       {
         trabajador: 'Ana Perez',
         concepto: 'Bono',
@@ -120,7 +120,7 @@ function input(overrides: Partial<BuildNominaMasivaInput> = {}): BuildNominaMasi
         accion: 'Sin accion pendiente',
       },
     ],
-    recurrentRows: [
+    filasRecurrentes: [
       {
         trabajador: 'Bruno Soto',
         concepto: 'Asignacion',

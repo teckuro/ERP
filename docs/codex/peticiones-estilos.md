@@ -1,3 +1,11 @@
+## 2026-05-21 - NOMENCLATURA-ES-CAMELCASE-01
+
+- **Cambio:** normalizacion de nombres internos en ficha empleado (faltantes, claveBloque, porcentajeAvance, puedeValidarRemuneraciones, tipos *FichaEmpleado) sin tocar contratos SQL/Supabase, rutas, selectores ni clases CSS.
+- **Flujo:** la accion del panel no abre edicion si RRHH cancela descartar cambios sin guardar al cambiar a Pago.
+- **Higiene:** .angular-dev-server*.log queda fuera del control de version.
+- **Documento:** docs/codex/diseno/nomenclatura-es-camelcase-01.md.
+- **Nota:** las menciones previas de estilos globales pertenecen a la fase UI anterior; esta fase no modifica CSS.
+
 ## 2026-05-21 - Ficha empleado: panel estado integrado (VM único)
 
 - **Cambio:** `buildFichaEstadoPanelVm` alimenta panel y chip shell; avance en 5 bloques operativos alineado con %; CTA único en panel; sin duplicar aptitud/bloques en cabecera ni rail review oculto.

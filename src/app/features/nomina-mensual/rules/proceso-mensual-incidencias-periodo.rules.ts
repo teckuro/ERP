@@ -1,4 +1,4 @@
-import type { DetalleOperativoTab } from '../containers/proceso-mensual-container/models/proceso-mensual-container.vm';
+﻿import type { DetalleOperativoTab } from '../containers/proceso-mensual-container/models/proceso-mensual-container.vm';
 import { limpiarCopyTecnicoNomina } from './proceso-mensual-copy-limpio.rules';
 import type { ResultadoObservacionView } from '../containers/proceso-mensual-container/models/proceso-mensual-container.vm';
 import type { ProcesoMensualPendienteVm } from './proceso-mensual-estado-operativo.rules';
@@ -582,7 +582,7 @@ export function buildIncidenciasPeriodo(input: BuildIncidenciasPeriodoInput): In
 }
 
 /** Proyección a fila de observación legacy (facade / grids). */
-export function incidenciasToPayrollObservationRows(
+export function incidenciasAFilasObservacionNomina(
   incidencias: IncidenciaPeriodo[],
 ): Array<{
   severidad: 'Bloqueo' | 'Advertencia' | 'Información';

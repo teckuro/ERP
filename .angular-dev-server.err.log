@@ -2504,3 +2504,2458 @@
           ╵                                   [32m~~~~~~~~~~~~[0m
 
 [39m[22m
+[1m[31m[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS1490: File appears to be binary.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/containers/ficha-empleado-container/ficha-empleado-container.ts:0:0:
+[37m      0 │ [32m[37m
+        ╵ [32m^[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2307: Cannot find module '../../../../shared/components/ui/mensaje-box.component' or its corresponding type declarations.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/containers/ficha-empleado-container/ficha-empleado-container.ts:61:7:
+[37m      61 │ } from [32m'../../../../shared/components/ui/mensaje-box.component'[37m;
+         ╵        [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mNG1010: 'imports' must be an array of components, directives, pipes, or NgModules.
+  Value could not be determined statically.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/containers/ficha-empleado-container/ficha-empleado-container.ts:115:4:
+[37m      115 │     [32mmensajeBoxComponent[37m,
+          ╵     [32m~~~~~~~~~~~~~~~~~~~[0m
+
+  Unknown reference.
+
+    src/app/features/empleados/containers/ficha-empleado-container/ficha-empleado-container.ts:115:4:
+[37m      115 │     [32mmensajeBoxComponent[37m,
+          ╵     [32m~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'mensaje' does not exist on type 'Error'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/containers/ficha-empleado-container/ficha-empleado-container.ts:403:20:
+[37m      403 │             ? error.[32mmensaje[37m
+          ╵                     [32m~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'buildPayloadForSave' does not exist on type 'FichaEmpleadoContainer'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/containers/ficha-empleado-container/ficha-empleado-container.ts:445:13:
+[37m      445 │         this.[32mbuildPayloadForSave[37m(),
+          ╵              [32m~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'mensaje' does not exist on type 'Error'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/containers/ficha-empleado-container/ficha-empleado-container.ts:462:18:
+[37m      462 │           ? error.[32mmensaje[37m
+          ╵                   [32m~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'componentBlockId' does not exist on type 'FichaEmpleadoContainer'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/containers/ficha-empleado-container/ficha-empleado-container.ts:1181:17:
+[37m      1181 │     return [this.[32mcomponentBlockId[37m(blockId)];
+           ╵                  [32m~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'collectInvalidControlNames' does not exist on type 'FichaEmpleadoContainer'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/containers/ficha-empleado-container/ficha-empleado-container.ts:1229:26:
+[37m      1229 │       const nested = this.[32mcollectInvalidControlNames[37m(control)
+           ╵                           [32m~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS7006: Parameter 'item' implicitly has an 'any' type.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/containers/ficha-empleado-container/ficha-empleado-container.ts:1230:14:
+[37m      1230 │         .map(([32mitem[37m) => item.trim())
+           ╵               [32m~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'buildPayloadForSave' does not exist on type 'FichaEmpleadoContainer'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/containers/ficha-empleado-container/ficha-empleado-container.ts:1260:14:
+[37m      1260 │       ...this.[32mbuildPayloadForSave[37m(),
+           ╵               [32m~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2355: A function whose declared type is neither 'undefined', 'void', nor 'any' must return a value.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/containers/ficha-empleado-container/ficha-empleado-container.ts:1605:42:
+[37m      1605 │   private blockIdForTitle(title: string): [32mstring[37m {
+           ╵                                           [32m~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS18004: No value exists in scope for the shorthand property 'Remuneraci'. Either declare one or provide an initializer.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/containers/ficha-empleado-container/ficha-empleado-container.ts:1614:6:
+[37m      1614 │       [32mRemuneraci[37m�n: 'remuneracion',
+           ╵       [32m~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS1005: ',' expected.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/containers/ficha-empleado-container/ficha-empleado-container.ts:1614:16:
+[37m      1614 │       Remuneraci[32m�n: 'remuneracion',[37m
+           ╵                 [32m~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS1005: '}' expected.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/containers/ficha-empleado-container/ficha-empleado-container.ts:1777:0:
+[37m      1777 │ [32m[37m
+           ╵ [32m^[0m
+
+  The parser expected to find a '}' to match the '{' token here.
+
+    src/app/features/empleados/containers/ficha-empleado-container/ficha-empleado-container.ts:1606:40:
+[37m      1606 │     const ids: Record<string, string> = [32m{[37m
+           ╵                                         [32m^[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mCould not resolve "../../../../shared/components/ui/mensaje-box.component"[0m
+
+    src/app/features/empleados/containers/ficha-empleado-container/ficha-empleado-container.ts:20:37:
+[37m      20 │ ...t, } from [32m'../../../../shared/components/ui/mensaje-box.compone[37m...
+         ╵              [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+[39m[22m
+[1m[31m[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS1490: File appears to be binary.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/containers/ficha-empleado-container/ficha-empleado-container.ts:0:0:
+[37m      0 │ [32m[37m
+        ╵ [32m^[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2305: Module '"../../rules/ficha-empleado-presentacion.rules"' has no exported member 'navStatusLabel'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/containers/ficha-empleado-container/ficha-empleado-container.ts:46:2:
+[37m      46 │   [32mnavStatusLabel[37m,
+         ╵   [32m~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2307: Cannot find module '../../../../shared/components/ui/mensaje-box.component' or its corresponding type declarations.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/containers/ficha-empleado-container/ficha-empleado-container.ts:61:7:
+[37m      61 │ } from [32m'../../../../shared/components/ui/mensaje-box.component'[37m;
+         ╵        [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mNG1010: 'imports' must be an array of components, directives, pipes, or NgModules.
+  Value could not be determined statically.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/containers/ficha-empleado-container/ficha-empleado-container.ts:115:4:
+[37m      115 │     [32mmensajeBoxComponent[37m,
+          ╵     [32m~~~~~~~~~~~~~~~~~~~[0m
+
+  Unknown reference.
+
+    src/app/features/empleados/containers/ficha-empleado-container/ficha-empleado-container.ts:115:4:
+[37m      115 │     [32mmensajeBoxComponent[37m,
+          ╵     [32m~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'mensaje' does not exist on type 'Error'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/containers/ficha-empleado-container/ficha-empleado-container.ts:403:20:
+[37m      403 │             ? error.[32mmensaje[37m
+          ╵                     [32m~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'buildPayloadForSave' does not exist on type 'FichaEmpleadoContainer'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/containers/ficha-empleado-container/ficha-empleado-container.ts:445:13:
+[37m      445 │         this.[32mbuildPayloadForSave[37m(),
+          ╵              [32m~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'mensaje' does not exist on type 'Error'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/containers/ficha-empleado-container/ficha-empleado-container.ts:462:18:
+[37m      462 │           ? error.[32mmensaje[37m
+          ╵                   [32m~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'componentBlockId' does not exist on type 'FichaEmpleadoContainer'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/containers/ficha-empleado-container/ficha-empleado-container.ts:1181:17:
+[37m      1181 │     return [this.[32mcomponentBlockId[37m(blockId)];
+           ╵                  [32m~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'collectInvalidControlNames' does not exist on type 'FichaEmpleadoContainer'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/containers/ficha-empleado-container/ficha-empleado-container.ts:1229:26:
+[37m      1229 │       const nested = this.[32mcollectInvalidControlNames[37m(control)
+           ╵                           [32m~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS7006: Parameter 'item' implicitly has an 'any' type.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/containers/ficha-empleado-container/ficha-empleado-container.ts:1230:14:
+[37m      1230 │         .map(([32mitem[37m) => item.trim())
+           ╵               [32m~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'buildPayloadForSave' does not exist on type 'FichaEmpleadoContainer'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/containers/ficha-empleado-container/ficha-empleado-container.ts:1260:14:
+[37m      1260 │       ...this.[32mbuildPayloadForSave[37m(),
+           ╵               [32m~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2355: A function whose declared type is neither 'undefined', 'void', nor 'any' must return a value.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/containers/ficha-empleado-container/ficha-empleado-container.ts:1605:42:
+[37m      1605 │   private blockIdForTitle(title: string): [32mstring[37m {
+           ╵                                           [32m~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS18004: No value exists in scope for the shorthand property 'Remuneraci'. Either declare one or provide an initializer.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/containers/ficha-empleado-container/ficha-empleado-container.ts:1614:6:
+[37m      1614 │       [32mRemuneraci[37m�n: 'remuneracion',
+           ╵       [32m~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS1005: ',' expected.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/containers/ficha-empleado-container/ficha-empleado-container.ts:1614:16:
+[37m      1614 │       Remuneraci[32m�n: 'remuneracion',[37m
+           ╵                 [32m~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS1005: '}' expected.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/containers/ficha-empleado-container/ficha-empleado-container.ts:1777:0:
+[37m      1777 │ [32m[37m
+           ╵ [32m^[0m
+
+  The parser expected to find a '}' to match the '{' token here.
+
+    src/app/features/empleados/containers/ficha-empleado-container/ficha-empleado-container.ts:1606:40:
+[37m      1606 │     const ids: Record<string, string> = [32m{[37m
+           ╵                                         [32m^[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mCould not resolve "../../../../shared/components/ui/mensaje-box.component"[0m
+
+    src/app/features/empleados/containers/ficha-empleado-container/ficha-empleado-container.ts:20:37:
+[37m      20 │ ...t, } from [32m'../../../../shared/components/ui/mensaje-box.compone[37m...
+         ╵              [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+[39m[22m
+[1m[31m[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS1490: File appears to be binary.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/containers/ficha-empleado-container/ficha-empleado-container.ts:0:0:
+[37m      0 │ [32m[37m
+        ╵ [32m^[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2305: Module '"../../rules/ficha-empleado-presentacion.rules"' has no exported member 'navStatusLabel'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/containers/ficha-empleado-container/ficha-empleado-container.ts:46:2:
+[37m      46 │   [32mnavStatusLabel[37m,
+         ╵   [32m~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2307: Cannot find module '../../../../shared/components/ui/mensaje-box.component' or its corresponding type declarations.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/containers/ficha-empleado-container/ficha-empleado-container.ts:61:7:
+[37m      61 │ } from [32m'../../../../shared/components/ui/mensaje-box.component'[37m;
+         ╵        [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mNG1010: 'imports' must be an array of components, directives, pipes, or NgModules.
+  Value could not be determined statically.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/containers/ficha-empleado-container/ficha-empleado-container.ts:115:4:
+[37m      115 │     [32mmensajeBoxComponent[37m,
+          ╵     [32m~~~~~~~~~~~~~~~~~~~[0m
+
+  Unknown reference.
+
+    src/app/features/empleados/containers/ficha-empleado-container/ficha-empleado-container.ts:115:4:
+[37m      115 │     [32mmensajeBoxComponent[37m,
+          ╵     [32m~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'mensaje' does not exist on type 'Error'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/containers/ficha-empleado-container/ficha-empleado-container.ts:403:20:
+[37m      403 │             ? error.[32mmensaje[37m
+          ╵                     [32m~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'buildPayloadForSave' does not exist on type 'FichaEmpleadoContainer'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/containers/ficha-empleado-container/ficha-empleado-container.ts:445:13:
+[37m      445 │         this.[32mbuildPayloadForSave[37m(),
+          ╵              [32m~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'mensaje' does not exist on type 'Error'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/containers/ficha-empleado-container/ficha-empleado-container.ts:462:18:
+[37m      462 │           ? error.[32mmensaje[37m
+          ╵                   [32m~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'componentBlockId' does not exist on type 'FichaEmpleadoContainer'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/containers/ficha-empleado-container/ficha-empleado-container.ts:1181:17:
+[37m      1181 │     return [this.[32mcomponentBlockId[37m(blockId)];
+           ╵                  [32m~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'collectInvalidControlNames' does not exist on type 'FichaEmpleadoContainer'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/containers/ficha-empleado-container/ficha-empleado-container.ts:1229:26:
+[37m      1229 │       const nested = this.[32mcollectInvalidControlNames[37m(control)
+           ╵                           [32m~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS7006: Parameter 'item' implicitly has an 'any' type.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/containers/ficha-empleado-container/ficha-empleado-container.ts:1230:14:
+[37m      1230 │         .map(([32mitem[37m) => item.trim())
+           ╵               [32m~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'buildPayloadForSave' does not exist on type 'FichaEmpleadoContainer'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/containers/ficha-empleado-container/ficha-empleado-container.ts:1260:14:
+[37m      1260 │       ...this.[32mbuildPayloadForSave[37m(),
+           ╵               [32m~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2355: A function whose declared type is neither 'undefined', 'void', nor 'any' must return a value.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/containers/ficha-empleado-container/ficha-empleado-container.ts:1605:42:
+[37m      1605 │   private blockIdForTitle(title: string): [32mstring[37m {
+           ╵                                           [32m~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS18004: No value exists in scope for the shorthand property 'Remuneraci'. Either declare one or provide an initializer.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/containers/ficha-empleado-container/ficha-empleado-container.ts:1614:6:
+[37m      1614 │       [32mRemuneraci[37m�n: 'remuneracion',
+           ╵       [32m~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS1005: ',' expected.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/containers/ficha-empleado-container/ficha-empleado-container.ts:1614:16:
+[37m      1614 │       Remuneraci[32m�n: 'remuneracion',[37m
+           ╵                 [32m~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS1005: '}' expected.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/containers/ficha-empleado-container/ficha-empleado-container.ts:1777:0:
+[37m      1777 │ [32m[37m
+           ╵ [32m^[0m
+
+  The parser expected to find a '}' to match the '{' token here.
+
+    src/app/features/empleados/containers/ficha-empleado-container/ficha-empleado-container.ts:1606:40:
+[37m      1606 │     const ids: Record<string, string> = [32m{[37m
+           ╵                                         [32m^[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mCould not resolve "../../../../shared/components/ui/mensaje-box.component"[0m
+
+    src/app/features/empleados/containers/ficha-empleado-container/ficha-empleado-container.ts:20:37:
+[37m      20 │ ...t, } from [32m'../../../../shared/components/ui/mensaje-box.compone[37m...
+         ╵              [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+[39m[22m
+[1m[31m[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2305: Module '"../../rules/ficha-empleado-presentacion.rules"' has no exported member 'navStatusLabel'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/containers/ficha-empleado-container/ficha-empleado-container.ts:46:2:
+[37m      46 │   [32mnavStatusLabel[37m,
+         ╵   [32m~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2307: Cannot find module '../../../../shared/components/ui/mensaje-box.component' or its corresponding type declarations.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/containers/ficha-empleado-container/ficha-empleado-container.ts:61:7:
+[37m      61 │ } from [32m'../../../../shared/components/ui/mensaje-box.component'[37m;
+         ╵        [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mNG1010: 'imports' must be an array of components, directives, pipes, or NgModules.
+  Value could not be determined statically.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/containers/ficha-empleado-container/ficha-empleado-container.ts:115:4:
+[37m      115 │     [32mmensajeBoxComponent[37m,
+          ╵     [32m~~~~~~~~~~~~~~~~~~~[0m
+
+  Unknown reference.
+
+    src/app/features/empleados/containers/ficha-empleado-container/ficha-empleado-container.ts:115:4:
+[37m      115 │     [32mmensajeBoxComponent[37m,
+          ╵     [32m~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'mensaje' does not exist on type 'Error'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/containers/ficha-empleado-container/ficha-empleado-container.ts:403:20:
+[37m      403 │             ? error.[32mmensaje[37m
+          ╵                     [32m~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'mensaje' does not exist on type 'Error'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/containers/ficha-empleado-container/ficha-empleado-container.ts:462:18:
+[37m      462 │           ? error.[32mmensaje[37m
+          ╵                   [32m~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mCould not resolve "../../../../shared/components/ui/mensaje-box.component"[0m
+
+    src/app/features/empleados/containers/ficha-empleado-container/ficha-empleado-container.ts:20:37:
+[37m      20 │ ...t, } from [32m'../../../../shared/components/ui/mensaje-box.compone[37m...
+         ╵              [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+[39m[22m
+[1m[31m[31mX [41;31m[[41;97mERROR[41;31m][0m [1mNG8002: Can't bind to 'maximoElementos' since it isn't a known property of 'app-data-grid'.
+1. If 'app-data-grid' is an Angular component and it has 'maximoElementos' input, then verify that it is included in the '@Component.imports' of this component.
+2. If 'app-data-grid' is a Web Component then add 'CUSTOM_ELEMENTS_SCHEMA' to the '@Component.schemas' of this component to suppress this message.
+3. To allow any property add 'NO_ERRORS_SCHEMA' to the '@Component.schemas' of this component.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/containers/ficha-empleado-container/ficha-empleado-container.html:537:20:
+[37m      537 │                     [32m[maximoElementos]="10"[37m
+          ╵                     [32m~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component FichaEmpleadoContainer.
+
+    src/app/features/empleados/containers/ficha-empleado-container/ficha-empleado-container.ts:117:15:
+[37m      117 │   templateUrl: [32m'./ficha-empleado-container.html'[37m,
+          ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'etiqueta' does not exist on type 'DetalleFichaEmpleadoItem'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/containers/ficha-empleado-container/ficha-empleado-container.html:740:66:
+[37m      740 │ ...                @for (item of block.items; track item.[32metiqueta[37m) {
+          ╵                                                          [32m~~~~~~~~[0m
+
+  Error occurs in the template of component FichaEmpleadoContainer.
+
+    src/app/features/empleados/containers/ficha-empleado-container/ficha-empleado-container.ts:117:15:
+[37m      117 │   templateUrl: [32m'./ficha-empleado-container.html'[37m,
+          ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'etiqueta' does not exist on type 'DetalleFichaEmpleadoItem'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/containers/ficha-empleado-container/ficha-empleado-container.html:744:44:
+[37m      744 │                                 <dt>{{ item.[32metiqueta[37m }}</dt>
+          ╵                                             [32m~~~~~~~~[0m
+
+  Error occurs in the template of component FichaEmpleadoContainer.
+
+    src/app/features/empleados/containers/ficha-empleado-container/ficha-empleado-container.ts:117:15:
+[37m      117 │   templateUrl: [32m'./ficha-empleado-container.html'[37m,
+          ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'etiqueta' does not exist on type 'DetalleFichaEmpleadoItem'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/containers/ficha-empleado-container/ficha-empleado-container.ts:944:40:
+[37m      944 │           id: this.blockIdForTitle(item.[32metiqueta[37m),
+          ╵                                         [32m~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'etiqueta' does not exist on type 'DetalleFichaEmpleadoItem'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/containers/ficha-empleado-container/ficha-empleado-container.ts:945:22:
+[37m      945 │           title: item.[32metiqueta[37m,
+          ╵                       [32m~~~~~~~~[0m
+
+[39m[22m
+[1m[31m[31mX [41;31m[[41;97mERROR[41;31m][0m [1mNG8002: Can't bind to 'maximoElementos' since it isn't a known property of 'app-data-grid'.
+1. If 'app-data-grid' is an Angular component and it has 'maximoElementos' input, then verify that it is included in the '@Component.imports' of this component.
+2. If 'app-data-grid' is a Web Component then add 'CUSTOM_ELEMENTS_SCHEMA' to the '@Component.schemas' of this component to suppress this message.
+3. To allow any property add 'NO_ERRORS_SCHEMA' to the '@Component.schemas' of this component.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/containers/ficha-empleado-container/ficha-empleado-container.html:537:20:
+[37m      537 │                     [32m[maximoElementos]="10"[37m
+          ╵                     [32m~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component FichaEmpleadoContainer.
+
+    src/app/features/empleados/containers/ficha-empleado-container/ficha-empleado-container.ts:117:15:
+[37m      117 │   templateUrl: [32m'./ficha-empleado-container.html'[37m,
+          ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'etiqueta' does not exist on type 'DetalleFichaEmpleadoItem'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/containers/ficha-empleado-container/ficha-empleado-container.html:740:66:
+[37m      740 │ ...                @for (item of block.items; track item.[32metiqueta[37m) {
+          ╵                                                          [32m~~~~~~~~[0m
+
+  Error occurs in the template of component FichaEmpleadoContainer.
+
+    src/app/features/empleados/containers/ficha-empleado-container/ficha-empleado-container.ts:117:15:
+[37m      117 │   templateUrl: [32m'./ficha-empleado-container.html'[37m,
+          ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'etiqueta' does not exist on type 'DetalleFichaEmpleadoItem'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/containers/ficha-empleado-container/ficha-empleado-container.html:744:44:
+[37m      744 │                                 <dt>{{ item.[32metiqueta[37m }}</dt>
+          ╵                                             [32m~~~~~~~~[0m
+
+  Error occurs in the template of component FichaEmpleadoContainer.
+
+    src/app/features/empleados/containers/ficha-empleado-container/ficha-empleado-container.ts:117:15:
+[37m      117 │   templateUrl: [32m'./ficha-empleado-container.html'[37m,
+          ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'etiqueta' does not exist on type 'DetalleFichaEmpleadoItem'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/containers/ficha-empleado-container/ficha-empleado-container.ts:944:40:
+[37m      944 │           id: this.blockIdForTitle(item.[32metiqueta[37m),
+          ╵                                         [32m~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'etiqueta' does not exist on type 'DetalleFichaEmpleadoItem'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/containers/ficha-empleado-container/ficha-empleado-container.ts:945:22:
+[37m      945 │           title: item.[32metiqueta[37m,
+          ╵                       [32m~~~~~~~~[0m
+
+[39m[22m
+[1m[31m[31mX [41;31m[[41;97mERROR[41;31m][0m [1mNG8002: Can't bind to 'maximoElementos' since it isn't a known property of 'app-data-grid'.
+1. If 'app-data-grid' is an Angular component and it has 'maximoElementos' input, then verify that it is included in the '@Component.imports' of this component.
+2. If 'app-data-grid' is a Web Component then add 'CUSTOM_ELEMENTS_SCHEMA' to the '@Component.schemas' of this component to suppress this message.
+3. To allow any property add 'NO_ERRORS_SCHEMA' to the '@Component.schemas' of this component.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/containers/ficha-empleado-container/ficha-empleado-container.html:537:20:
+[37m      537 │                     [32m[maximoElementos]="10"[37m
+          ╵                     [32m~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component FichaEmpleadoContainer.
+
+    src/app/features/empleados/containers/ficha-empleado-container/ficha-empleado-container.ts:116:15:
+[37m      116 │   templateUrl: [32m'./ficha-empleado-container.html'[37m,
+          ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'etiqueta' does not exist on type 'DetalleFichaEmpleadoItem'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/containers/ficha-empleado-container/ficha-empleado-container.html:740:66:
+[37m      740 │ ...                @for (item of block.items; track item.[32metiqueta[37m) {
+          ╵                                                          [32m~~~~~~~~[0m
+
+  Error occurs in the template of component FichaEmpleadoContainer.
+
+    src/app/features/empleados/containers/ficha-empleado-container/ficha-empleado-container.ts:116:15:
+[37m      116 │   templateUrl: [32m'./ficha-empleado-container.html'[37m,
+          ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'etiqueta' does not exist on type 'DetalleFichaEmpleadoItem'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/containers/ficha-empleado-container/ficha-empleado-container.html:744:44:
+[37m      744 │                                 <dt>{{ item.[32metiqueta[37m }}</dt>
+          ╵                                             [32m~~~~~~~~[0m
+
+  Error occurs in the template of component FichaEmpleadoContainer.
+
+    src/app/features/empleados/containers/ficha-empleado-container/ficha-empleado-container.ts:116:15:
+[37m      116 │   templateUrl: [32m'./ficha-empleado-container.html'[37m,
+          ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'etiqueta' does not exist on type 'DetalleFichaEmpleadoItem'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/containers/ficha-empleado-container/ficha-empleado-container.ts:947:40:
+[37m      947 │           id: this.blockIdForTitle(item.[32metiqueta[37m),
+          ╵                                         [32m~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'etiqueta' does not exist on type 'DetalleFichaEmpleadoItem'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/containers/ficha-empleado-container/ficha-empleado-container.ts:948:22:
+[37m      948 │           title: item.[32metiqueta[37m,
+          ╵                       [32m~~~~~~~~[0m
+
+[39m[22m
+[1m[31m[31mX [41;31m[[41;97mERROR[41;31m][0m [1mNG8002: Can't bind to 'maximoElementos' since it isn't a known property of 'app-data-grid'.
+1. If 'app-data-grid' is an Angular component and it has 'maximoElementos' input, then verify that it is included in the '@Component.imports' of this component.
+2. If 'app-data-grid' is a Web Component then add 'CUSTOM_ELEMENTS_SCHEMA' to the '@Component.schemas' of this component to suppress this message.
+3. To allow any property add 'NO_ERRORS_SCHEMA' to the '@Component.schemas' of this component.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/containers/ficha-empleado-container/ficha-empleado-container.html:537:20:
+[37m      537 │                     [32m[maximoElementos]="10"[37m
+          ╵                     [32m~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component FichaEmpleadoContainer.
+
+    src/app/features/empleados/containers/ficha-empleado-container/ficha-empleado-container.ts:116:15:
+[37m      116 │   templateUrl: [32m'./ficha-empleado-container.html'[37m,
+          ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'etiqueta' does not exist on type 'DetalleFichaEmpleadoItem'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/containers/ficha-empleado-container/ficha-empleado-container.html:740:66:
+[37m      740 │ ...                @for (item of block.items; track item.[32metiqueta[37m) {
+          ╵                                                          [32m~~~~~~~~[0m
+
+  Error occurs in the template of component FichaEmpleadoContainer.
+
+    src/app/features/empleados/containers/ficha-empleado-container/ficha-empleado-container.ts:116:15:
+[37m      116 │   templateUrl: [32m'./ficha-empleado-container.html'[37m,
+          ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'etiqueta' does not exist on type 'DetalleFichaEmpleadoItem'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/containers/ficha-empleado-container/ficha-empleado-container.html:744:44:
+[37m      744 │                                 <dt>{{ item.[32metiqueta[37m }}</dt>
+          ╵                                             [32m~~~~~~~~[0m
+
+  Error occurs in the template of component FichaEmpleadoContainer.
+
+    src/app/features/empleados/containers/ficha-empleado-container/ficha-empleado-container.ts:116:15:
+[37m      116 │   templateUrl: [32m'./ficha-empleado-container.html'[37m,
+          ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'etiqueta' does not exist on type 'DetalleFichaEmpleadoItem'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/containers/ficha-empleado-container/ficha-empleado-container.ts:947:40:
+[37m      947 │           id: this.blockIdForTitle(item.[32metiqueta[37m),
+          ╵                                         [32m~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'etiqueta' does not exist on type 'DetalleFichaEmpleadoItem'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/containers/ficha-empleado-container/ficha-empleado-container.ts:948:22:
+[37m      948 │           title: item.[32metiqueta[37m,
+          ╵                       [32m~~~~~~~~[0m
+
+[39m[22m
+[1m[31m[31mX [41;31m[[41;97mERROR[41;31m][0m [1mNG8002: Can't bind to 'maximoElementos' since it isn't a known property of 'app-data-grid'.
+1. If 'app-data-grid' is an Angular component and it has 'maximoElementos' input, then verify that it is included in the '@Component.imports' of this component.
+2. If 'app-data-grid' is a Web Component then add 'CUSTOM_ELEMENTS_SCHEMA' to the '@Component.schemas' of this component to suppress this message.
+3. To allow any property add 'NO_ERRORS_SCHEMA' to the '@Component.schemas' of this component.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/containers/ficha-empleado-container/ficha-empleado-container.html:537:20:
+[37m      537 │                     [32m[maximoElementos]="10"[37m
+          ╵                     [32m~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component FichaEmpleadoContainer.
+
+    src/app/features/empleados/containers/ficha-empleado-container/ficha-empleado-container.ts:116:15:
+[37m      116 │   templateUrl: [32m'./ficha-empleado-container.html'[37m,
+          ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'etiqueta' does not exist on type 'DetalleFichaEmpleadoItem'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/containers/ficha-empleado-container/ficha-empleado-container.html:740:66:
+[37m      740 │ ...                @for (item of block.items; track item.[32metiqueta[37m) {
+          ╵                                                          [32m~~~~~~~~[0m
+
+  Error occurs in the template of component FichaEmpleadoContainer.
+
+    src/app/features/empleados/containers/ficha-empleado-container/ficha-empleado-container.ts:116:15:
+[37m      116 │   templateUrl: [32m'./ficha-empleado-container.html'[37m,
+          ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'etiqueta' does not exist on type 'DetalleFichaEmpleadoItem'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/containers/ficha-empleado-container/ficha-empleado-container.html:744:44:
+[37m      744 │                                 <dt>{{ item.[32metiqueta[37m }}</dt>
+          ╵                                             [32m~~~~~~~~[0m
+
+  Error occurs in the template of component FichaEmpleadoContainer.
+
+    src/app/features/empleados/containers/ficha-empleado-container/ficha-empleado-container.ts:116:15:
+[37m      116 │   templateUrl: [32m'./ficha-empleado-container.html'[37m,
+          ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'etiqueta' does not exist on type 'DetalleFichaEmpleadoItem'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/containers/ficha-empleado-container/ficha-empleado-container.ts:947:40:
+[37m      947 │           id: this.blockIdForTitle(item.[32metiqueta[37m),
+          ╵                                         [32m~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'etiqueta' does not exist on type 'DetalleFichaEmpleadoItem'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/containers/ficha-empleado-container/ficha-empleado-container.ts:948:22:
+[37m      948 │           title: item.[32metiqueta[37m,
+          ╵                       [32m~~~~~~~~[0m
+
+[39m[22m
+[1m[31m[31mX [41;31m[[41;97mERROR[41;31m][0m [1mNG8002: Can't bind to 'maximoElementos' since it isn't a known property of 'app-data-grid'.
+1. If 'app-data-grid' is an Angular component and it has 'maximoElementos' input, then verify that it is included in the '@Component.imports' of this component.
+2. If 'app-data-grid' is a Web Component then add 'CUSTOM_ELEMENTS_SCHEMA' to the '@Component.schemas' of this component to suppress this message.
+3. To allow any property add 'NO_ERRORS_SCHEMA' to the '@Component.schemas' of this component.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/containers/ficha-empleado-container/ficha-empleado-container.html:537:20:
+[37m      537 │                     [32m[maximoElementos]="10"[37m
+          ╵                     [32m~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component FichaEmpleadoContainer.
+
+    src/app/features/empleados/containers/ficha-empleado-container/ficha-empleado-container.ts:116:15:
+[37m      116 │   templateUrl: [32m'./ficha-empleado-container.html'[37m,
+          ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'etiqueta' does not exist on type 'DetalleFichaEmpleadoItem'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/containers/ficha-empleado-container/ficha-empleado-container.html:740:66:
+[37m      740 │ ...                @for (item of block.items; track item.[32metiqueta[37m) {
+          ╵                                                          [32m~~~~~~~~[0m
+
+  Error occurs in the template of component FichaEmpleadoContainer.
+
+    src/app/features/empleados/containers/ficha-empleado-container/ficha-empleado-container.ts:116:15:
+[37m      116 │   templateUrl: [32m'./ficha-empleado-container.html'[37m,
+          ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'etiqueta' does not exist on type 'DetalleFichaEmpleadoItem'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/containers/ficha-empleado-container/ficha-empleado-container.html:744:44:
+[37m      744 │                                 <dt>{{ item.[32metiqueta[37m }}</dt>
+          ╵                                             [32m~~~~~~~~[0m
+
+  Error occurs in the template of component FichaEmpleadoContainer.
+
+    src/app/features/empleados/containers/ficha-empleado-container/ficha-empleado-container.ts:116:15:
+[37m      116 │   templateUrl: [32m'./ficha-empleado-container.html'[37m,
+          ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+[39m[22m
+[1m[31m[31mX [41;31m[[41;97mERROR[41;31m][0m [1mNG8002: Can't bind to 'maximoElementos' since it isn't a known property of 'app-data-grid'.
+1. If 'app-data-grid' is an Angular component and it has 'maximoElementos' input, then verify that it is included in the '@Component.imports' of this component.
+2. If 'app-data-grid' is a Web Component then add 'CUSTOM_ELEMENTS_SCHEMA' to the '@Component.schemas' of this component to suppress this message.
+3. To allow any property add 'NO_ERRORS_SCHEMA' to the '@Component.schemas' of this component.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/containers/ficha-empleado-container/ficha-empleado-container.html:537:20:
+[37m      537 │                     [32m[maximoElementos]="10"[37m
+          ╵                     [32m~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component FichaEmpleadoContainer.
+
+    src/app/features/empleados/containers/ficha-empleado-container/ficha-empleado-container.ts:116:15:
+[37m      116 │   templateUrl: [32m'./ficha-empleado-container.html'[37m,
+          ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'etiqueta' does not exist on type 'DetalleFichaEmpleadoItem'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/containers/ficha-empleado-container/ficha-empleado-container.html:740:66:
+[37m      740 │ ...                @for (item of block.items; track item.[32metiqueta[37m) {
+          ╵                                                          [32m~~~~~~~~[0m
+
+  Error occurs in the template of component FichaEmpleadoContainer.
+
+    src/app/features/empleados/containers/ficha-empleado-container/ficha-empleado-container.ts:116:15:
+[37m      116 │   templateUrl: [32m'./ficha-empleado-container.html'[37m,
+          ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'etiqueta' does not exist on type 'DetalleFichaEmpleadoItem'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/containers/ficha-empleado-container/ficha-empleado-container.html:744:44:
+[37m      744 │                                 <dt>{{ item.[32metiqueta[37m }}</dt>
+          ╵                                             [32m~~~~~~~~[0m
+
+  Error occurs in the template of component FichaEmpleadoContainer.
+
+    src/app/features/empleados/containers/ficha-empleado-container/ficha-empleado-container.ts:116:15:
+[37m      116 │   templateUrl: [32m'./ficha-empleado-container.html'[37m,
+          ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+[39m[22m
+[1m[31m[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'campos' does not exist on type 'EstadoAplicabilidadAlta'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:2733:26:
+[37m      2733 │       const item = estado.[32mcampos[37m[campo];
+           ╵                           [32m~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2304: Cannot find name 'estado'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/rules/empleado-alta-aplicabilidad.rules.ts:401:9:
+[37m      401 │   return [32mestado[37m.campos[campo];
+          ╵          [32m~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2304: Cannot find name 'estado'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/rules/empleado-alta-aplicabilidad.rules.ts:409:4:
+[37m      409 │     [32mestado[37m.pasos.find((step) => step.stepIndex === stepIndex) ?? {
+          ╵     [32m~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS7006: Parameter 'step' implicitly has an 'any' type.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/rules/empleado-alta-aplicabilidad.rules.ts:409:23:
+[37m      409 │     estado.pasos.find(([32mstep[37m) => step.stepIndex === stepIndex) ?? {
+          ╵                        [32m~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2304: Cannot find name 'estado'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/rules/empleado-alta-aplicabilidad.rules.ts:423:31:
+[37m      423 │   return altaAplicabilidadItem([32mestado[37m, campo).estado === 'not_app...
+          ╵                                [32m~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2304: Cannot find name 'estado'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/rules/empleado-alta-aplicabilidad.rules.ts:430:31:
+[37m      430 │   return altaAplicabilidadItem([32mestado[37m, campo).estado === 'required';
+          ╵                                [32m~~~~~~[0m
+
+[39m[22m
+[1m[31m[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2304: Cannot find name 'campos'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:3519:35:
+[37m      3519 │         items: items?.length ? [...[32mcampos[37m] : undefined,
+           ╵                                    [32m~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2304: Cannot find name 'elementos'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:3542:23:
+[37m      3542 │     for (const item of [32melementos[37m) {
+           ╵                        [32m~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2304: Cannot find name 'elementos'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:3554:34:
+[37m      3554 │     const remaining = Math.max(0, [32melementos[37m.length - out.length);
+           ╵                                   [32m~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2304: Cannot find name 'estado'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/rules/empleado-alta-aplicabilidad.rules.ts:401:9:
+[37m      401 │   return [32mestado[37m.campos[campo];
+          ╵          [32m~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2304: Cannot find name 'estado'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/rules/empleado-alta-aplicabilidad.rules.ts:409:4:
+[37m      409 │     [32mestado[37m.pasos.find((step) => step.stepIndex === stepIndex) ?? {
+          ╵     [32m~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS7006: Parameter 'step' implicitly has an 'any' type.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/rules/empleado-alta-aplicabilidad.rules.ts:409:23:
+[37m      409 │     estado.pasos.find(([32mstep[37m) => step.stepIndex === stepIndex) ?? {
+          ╵                        [32m~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2304: Cannot find name 'estado'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/rules/empleado-alta-aplicabilidad.rules.ts:423:31:
+[37m      423 │   return altaAplicabilidadItem([32mestado[37m, campo).estado === 'not_app...
+          ╵                                [32m~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2304: Cannot find name 'estado'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/rules/empleado-alta-aplicabilidad.rules.ts:430:31:
+[37m      430 │   return altaAplicabilidadItem([32mestado[37m, campo).estado === 'required';
+          ╵                                [32m~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2322: Type '{ stepIndex: number; estado: AltaAplicabilidadPasoEstado; label: string; motivo: string; campos: any; }[]' is not assignable to type 'readonly AltaAplicabilidadStepSummary[]'.
+  Property 'elementos' is missing in type '{ stepIndex: number; estado: AltaAplicabilidadPasoEstado; label: string; motivo: string; campos: any; }' but required in type 'AltaAplicabilidadStepSummary'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/rules/empleado-alta-aplicabilidad.rules.ts:462:2:
+[37m      462 │   [32mreturn[37m Array.from({ length: 10 }, (_, stepIndex) => {
+          ╵   [32m~~~~~~[0m
+
+  'elementos' is declared here.
+
+    src/app/features/empleados/rules/empleado-alta-aplicabilidad.rules.ts:83:2:
+[37m      83 │   [32melementos[37m: readonly AltaAplicabilidadItem[];
+         ╵   [32m~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2552: Cannot find name 'elementos'. Did you mean 'Element'?[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/rules/empleado-alta-aplicabilidad.rules.ts:469:40:
+[37m      469 │       motivo: resolveStepMotivo(estado, [32melementos[37m),
+          ╵                                         [32m~~~~~~~~~[0m
+
+  'Element' is declared here.
+
+    node_modules/typescript/lib/lib.dom.d.ts:11110:12:
+[37m      11110 │ declare var [32mElement[37m: {
+            ╵             [32m~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS18004: No value exists in scope for the shorthand property 'campos'. Either declare one or provide an initializer.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/rules/empleado-alta-aplicabilidad.rules.ts:470:6:
+[37m      470 │       [32mcampos[37m,
+          ╵       [32m~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2552: Cannot find name 'elementos'. Did you mean 'Element'?[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/rules/empleado-alta-aplicabilidad.rules.ts:476:6:
+[37m      476 │   if ([32melementos[37m.length === 0) {
+          ╵       [32m~~~~~~~~~[0m
+
+  'Element' is declared here.
+
+    node_modules/typescript/lib/lib.dom.d.ts:11110:12:
+[37m      11110 │ declare var [32mElement[37m: {
+            ╵             [32m~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2552: Cannot find name 'elementos'. Did you mean 'Element'?[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/rules/empleado-alta-aplicabilidad.rules.ts:480:6:
+[37m      480 │   if ([32melementos[37m.every((item) => item.estado === 'not_applicable')) {
+          ╵       [32m~~~~~~~~~[0m
+
+  'Element' is declared here.
+
+    node_modules/typescript/lib/lib.dom.d.ts:11110:12:
+[37m      11110 │ declare var [32mElement[37m: {
+            ╵             [32m~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS7006: Parameter 'item' implicitly has an 'any' type.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/rules/empleado-alta-aplicabilidad.rules.ts:480:23:
+[37m      480 │   if (elementos.every(([32mitem[37m) => item.estado === 'not_applicable')) {
+          ╵                        [32m~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2552: Cannot find name 'elementos'. Did you mean 'Element'?[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/rules/empleado-alta-aplicabilidad.rules.ts:484:6:
+[37m      484 │   if ([32melementos[37m.some((item) => item.estado === 'blocked')) {
+          ╵       [32m~~~~~~~~~[0m
+
+  'Element' is declared here.
+
+    node_modules/typescript/lib/lib.dom.d.ts:11110:12:
+[37m      11110 │ declare var [32mElement[37m: {
+            ╵             [32m~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS7006: Parameter 'item' implicitly has an 'any' type.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/rules/empleado-alta-aplicabilidad.rules.ts:484:22:
+[37m      484 │   if (elementos.some(([32mitem[37m) => item.estado === 'blocked')) {
+          ╵                       [32m~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2552: Cannot find name 'elementos'. Did you mean 'Element'?[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/rules/empleado-alta-aplicabilidad.rules.ts:488:6:
+[37m      488 │   if ([32melementos[37m.some((item) => item.estado === 'warning')) {
+          ╵       [32m~~~~~~~~~[0m
+
+  'Element' is declared here.
+
+    node_modules/typescript/lib/lib.dom.d.ts:11110:12:
+[37m      11110 │ declare var [32mElement[37m: {
+            ╵             [32m~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS7006: Parameter 'item' implicitly has an 'any' type.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/rules/empleado-alta-aplicabilidad.rules.ts:488:22:
+[37m      488 │   if (elementos.some(([32mitem[37m) => item.estado === 'warning')) {
+          ╵                       [32m~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2304: Cannot find name 'elementos'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/rules/empleado-alta-aplicabilidad.rules.ts:492:6:
+[37m      492 │   if ([32melementos[37m.some((item) => item.estado === 'review')) {
+          ╵       [32m~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS7006: Parameter 'item' implicitly has an 'any' type.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/rules/empleado-alta-aplicabilidad.rules.ts:492:22:
+[37m      492 │   if (elementos.some(([32mitem[37m) => item.estado === 'review')) {
+          ╵                       [32m~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2304: Cannot find name 'elementos'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/rules/empleado-alta-aplicabilidad.rules.ts:496:6:
+[37m      496 │   if ([32melementos[37m.some((item) => item.estado === 'required')) {
+          ╵       [32m~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS7006: Parameter 'item' implicitly has an 'any' type.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/rules/empleado-alta-aplicabilidad.rules.ts:496:22:
+[37m      496 │   if (elementos.some(([32mitem[37m) => item.estado === 'required')) {
+          ╵                       [32m~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2304: Cannot find name 'elementos'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/rules/empleado-alta-aplicabilidad.rules.ts:500:6:
+[37m      500 │   if ([32melementos[37m.some((item) => item.estado === 'derived')) {
+          ╵       [32m~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS7006: Parameter 'item' implicitly has an 'any' type.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/rules/empleado-alta-aplicabilidad.rules.ts:500:22:
+[37m      500 │   if (elementos.some(([32mitem[37m) => item.estado === 'derived')) {
+          ╵                       [32m~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2304: Cannot find name 'campos'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/rules/empleado-alta-aplicabilidad.rules.ts:515:24:
+[37m      515 │   const strongest = [...[32mcampos[37m].sort((a, b) => FIELD_WEIGHT[b.est...
+          ╵                         [32m~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS7053: Element implicitly has an 'any' type because expression of type 'any' can't be used to index type 'Record<AltaAplicabilidadEstado, number>'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/rules/empleado-alta-aplicabilidad.rules.ts:515:47:
+[37m      515 │ ...pos].sort((a, b) => [32mFIELD_WEIGHT[b.estado][37m - FIELD_WEIGHT[a.es...
+          ╵                        [32m~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS7053: Element implicitly has an 'any' type because expression of type 'any' can't be used to index type 'Record<AltaAplicabilidadEstado, number>'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/rules/empleado-alta-aplicabilidad.rules.ts:515:72:
+[37m      515 │ ...rt((a, b) => FIELD_WEIGHT[b.estado] - [32mFIELD_WEIGHT[a.estado][37m)[0];
+          ╵                                          [32m~~~~~~~~~~~~~~~~~~~~~~[0m
+
+[39m[22m
+[1m[31m[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2304: Cannot find name 'campos'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:3519:35:
+[37m      3519 │         items: items?.length ? [...[32mcampos[37m] : undefined,
+           ╵                                    [32m~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2552: Cannot find name 'elementos'. Did you mean 'Element'?[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:3542:23:
+[37m      3542 │     for (const item of [32melementos[37m) {
+           ╵                        [32m~~~~~~~~~[0m
+
+  'Element' is declared here.
+
+    node_modules/typescript/lib/lib.dom.d.ts:11110:12:
+[37m      11110 │ declare var [32mElement[37m: {
+            ╵             [32m~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2552: Cannot find name 'elementos'. Did you mean 'Element'?[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:3554:34:
+[37m      3554 │     const remaining = Math.max(0, [32melementos[37m.length - out.length);
+           ╵                                   [32m~~~~~~~~~[0m
+
+  'Element' is declared here.
+
+    node_modules/typescript/lib/lib.dom.d.ts:11110:12:
+[37m      11110 │ declare var [32mElement[37m: {
+            ╵             [32m~~~~~~~[0m
+
+[39m[22m
+[1m[31m[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2367: This comparison appears to be unintentional because the types 'NominaDetalleMensualAmbito' and '"Parámetro"' have no overlap.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/nomina-mensual/rules/proceso-mensual-correccion.rules.ts:215:6:
+[37m      215 │   if ([32mrow.ambito === 'Parámetro[37m') {
+          ╵       [32m~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+[39m[22m
+[1m[31m[31mX [41;31m[[41;97mERROR[41;31m][0m [1mNG5002: Parser Error: Conditional expression ctaExpediente.disabledReason ? null requires all 3 expressions at the end of the expression [ctaExpediente.disabledReason ? null] in C:\Users\PC\Desktop\ERP\angular-erp\src\app\features\nomina-mensual\containers\proceso-mensual-container\components\proceso-mensual-detalle-modal\proceso-mensual-detalle-modal.component.html@105:42[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/components/proceso-mensual-detalle-modal/proceso-mensual-detalle-modal.component.html:106:42:
+[37m      106 │ ...               [attr.title]="[32mctaExpediente.disabledReason ? null[37m"
+          ╵                                 [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component ProcesoMensualDetalleModalComponent.
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/components/proceso-mensual-detalle-modal/proceso-mensual-detalle-modal.component.ts:14:15:
+[37m      14 │   templateUrl: [32m'./proceso-mensual-detalle-modal.component.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mNG5002: Parser Error: Conditional expression ctaExpediente.disabledReason ? null requires all 3 expressions at the end of the expression [ctaExpediente.disabledReason ? null] in C:\Users\PC\Desktop\ERP\angular-erp\src\app\features\nomina-mensual\containers\proceso-mensual-container\components\proceso-mensual-detalle-modal\proceso-mensual-detalle-modal.component.html@119:42[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/components/proceso-mensual-detalle-modal/proceso-mensual-detalle-modal.component.html:120:42:
+[37m      120 │ ...               [attr.title]="[32mctaExpediente.disabledReason ? null[37m"
+          ╵                                 [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component ProcesoMensualDetalleModalComponent.
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/components/proceso-mensual-detalle-modal/proceso-mensual-detalle-modal.component.ts:14:15:
+[37m      14 │   templateUrl: [32m'./proceso-mensual-detalle-modal.component.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mNG5002: Parser Error: Conditional expression baseNominaTrazabilidad()?.trabajadoresConsiderados ? f.dashboardResumen().trabajadoresAptos ? expediente.totales?.trabajadores ? 0  requires all 3 expressions at the end of the expression [ f.baseNominaTrazabilidad()?.trabajadoresConsiderados ? f.dashboardResumen().trabajadoresAptos ? expediente.totales?.trabajadores ? 0 ] in C:\Users\PC\Desktop\ERP\angular-erp\src\app\features\nomina-mensual\containers\proceso-mensual-container\components\proceso-mensual-detalle-modal\proceso-mensual-detalle-modal.component.html@152:63[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/components/proceso-mensual-detalle-modal/proceso-mensual-detalle-modal.component.html:153:63:
+[37m      153 │ ...s</dt><dd>[32m{{ f.baseNominaTrazabilidad()?.trabajadoresConsidera[37m...
+          ╵              [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component ProcesoMensualDetalleModalComponent.
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/components/proceso-mensual-detalle-modal/proceso-mensual-detalle-modal.component.ts:14:15:
+[37m      14 │   templateUrl: [32m'./proceso-mensual-detalle-modal.component.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mNG5002: Parser Error: Conditional expression dashboardResumen().trabajadoresAptos ? expediente.totales?.trabajadores ? 0  requires all 3 expressions at the end of the expression [ f.baseNominaTrazabilidad()?.trabajadoresConsiderados ? f.dashboardResumen().trabajadoresAptos ? expediente.totales?.trabajadores ? 0 ] in C:\Users\PC\Desktop\ERP\angular-erp\src\app\features\nomina-mensual\containers\proceso-mensual-container\components\proceso-mensual-detalle-modal\proceso-mensual-detalle-modal.component.html@152:63[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/components/proceso-mensual-detalle-modal/proceso-mensual-detalle-modal.component.html:153:63:
+[37m      153 │ ...s</dt><dd>[32m{{ f.baseNominaTrazabilidad()?.trabajadoresConsidera[37m...
+          ╵              [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component ProcesoMensualDetalleModalComponent.
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/components/proceso-mensual-detalle-modal/proceso-mensual-detalle-modal.component.ts:14:15:
+[37m      14 │   templateUrl: [32m'./proceso-mensual-detalle-modal.component.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mNG5002: Parser Error: Conditional expression pediente.totales?.trabajadores ? 0  requires all 3 expressions at the end of the expression [ f.baseNominaTrazabilidad()?.trabajadoresConsiderados ? f.dashboardResumen().trabajadoresAptos ? expediente.totales?.trabajadores ? 0 ] in C:\Users\PC\Desktop\ERP\angular-erp\src\app\features\nomina-mensual\containers\proceso-mensual-container\components\proceso-mensual-detalle-modal\proceso-mensual-detalle-modal.component.html@152:63[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/components/proceso-mensual-detalle-modal/proceso-mensual-detalle-modal.component.html:153:63:
+[37m      153 │ ...s</dt><dd>[32m{{ f.baseNominaTrazabilidad()?.trabajadoresConsidera[37m...
+          ╵              [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component ProcesoMensualDetalleModalComponent.
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/components/proceso-mensual-detalle-modal/proceso-mensual-detalle-modal.component.ts:14:15:
+[37m      14 │   templateUrl: [32m'./proceso-mensual-detalle-modal.component.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mNG5002: Parser Error: Conditional expression f.baseNominaTrazabilidad()?.movimientosDelMesIncluidos ? f.dashboardResumen().movimientosAprobados requires all 3 expressions at column 100 in [(f.baseNominaTrazabilidad()?.movimientosDelMesIncluidos ? f.dashboardResumen().movimientosAprobados) > 0] in C:\Users\PC\Desktop\ERP\angular-erp\src\app\features\nomina-mensual\containers\proceso-mensual-container\components\proceso-mensual-detalle-modal\proceso-mensual-detalle-modal.component.html@156:29[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/components/proceso-mensual-detalle-modal/proceso-mensual-detalle-modal.component.html:157:29:
+[37m      157 │ ...     @if ([32m(f.baseNominaTrazabilidad()?.movimientosDelMesInclui[37m...
+          ╵              [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component ProcesoMensualDetalleModalComponent.
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/components/proceso-mensual-detalle-modal/proceso-mensual-detalle-modal.component.ts:14:15:
+[37m      14 │   templateUrl: [32m'./proceso-mensual-detalle-modal.component.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2532: Object is possibly 'undefined'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/components/proceso-mensual-detalle-modal/proceso-mensual-detalle-modal.component.html:157:29:
+[37m      157 │ ...     @if ([32m(f.baseNominaTrazabilidad()?.movimientosDelMesInclui[37m...
+          ╵              [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component ProcesoMensualDetalleModalComponent.
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/components/proceso-mensual-detalle-modal/proceso-mensual-detalle-modal.component.ts:14:15:
+[37m      14 │   templateUrl: [32m'./proceso-mensual-detalle-modal.component.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mNG5002: Parser Error: Conditional expression aseNominaTrazabilidad()?.movimientosDelMesIncluidos ? f.dashboardResumen().movimientosAprobados  requires all 3 expressions at the end of the expression [ f.baseNominaTrazabilidad()?.movimientosDelMesIncluidos ? f.dashboardResumen().movimientosAprobados ] in C:\Users\PC\Desktop\ERP\angular-erp\src\app\features\nomina-mensual\containers\proceso-mensual-container\components\proceso-mensual-detalle-modal\proceso-mensual-detalle-modal.component.html@157:26[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/components/proceso-mensual-detalle-modal/proceso-mensual-detalle-modal.component.html:158:26:
+[37m      158 │ ...          [32m{{ f.baseNominaTrazabilidad()?.movimientosDelMesIncl[37m...
+          ╵              [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component ProcesoMensualDetalleModalComponent.
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/components/proceso-mensual-detalle-modal/proceso-mensual-detalle-modal.component.ts:14:15:
+[37m      14 │   templateUrl: [32m'./proceso-mensual-detalle-modal.component.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mNG5002: Parser Error: Conditional expression f.baseNominaTrazabilidad()?.asignacionesRecurrentesIncluidas ? f.dashboardResumen().asignacionesAplicables ? 0 requires all 3 expressions at column 112 in [(f.baseNominaTrazabilidad()?.asignacionesRecurrentesIncluidas ? f.dashboardResumen().asignacionesAplicables ? 0) > 0] in C:\Users\PC\Desktop\ERP\angular-erp\src\app\features\nomina-mensual\containers\proceso-mensual-container\components\proceso-mensual-detalle-modal\proceso-mensual-detalle-modal.component.html@166:29[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/components/proceso-mensual-detalle-modal/proceso-mensual-detalle-modal.component.html:167:29:
+[37m      167 │ ...     @if ([32m(f.baseNominaTrazabilidad()?.asignacionesRecurrentes[37m...
+          ╵              [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component ProcesoMensualDetalleModalComponent.
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/components/proceso-mensual-detalle-modal/proceso-mensual-detalle-modal.component.ts:14:15:
+[37m      14 │   templateUrl: [32m'./proceso-mensual-detalle-modal.component.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mNG5002: Parser Error: Conditional expression f.dashboardResumen().asignacionesAplicables ? 0 requires all 3 expressions at column 112 in [(f.baseNominaTrazabilidad()?.asignacionesRecurrentesIncluidas ? f.dashboardResumen().asignacionesAplicables ? 0) > 0] in C:\Users\PC\Desktop\ERP\angular-erp\src\app\features\nomina-mensual\containers\proceso-mensual-container\components\proceso-mensual-detalle-modal\proceso-mensual-detalle-modal.component.html@166:29[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/components/proceso-mensual-detalle-modal/proceso-mensual-detalle-modal.component.html:167:29:
+[37m      167 │ ...     @if ([32m(f.baseNominaTrazabilidad()?.asignacionesRecurrentes[37m...
+          ╵              [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component ProcesoMensualDetalleModalComponent.
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/components/proceso-mensual-detalle-modal/proceso-mensual-detalle-modal.component.ts:14:15:
+[37m      14 │   templateUrl: [32m'./proceso-mensual-detalle-modal.component.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2532: Object is possibly 'undefined'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/components/proceso-mensual-detalle-modal/proceso-mensual-detalle-modal.component.html:167:29:
+[37m      167 │ ...     @if ([32m(f.baseNominaTrazabilidad()?.asignacionesRecurrentes[37m...
+          ╵              [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component ProcesoMensualDetalleModalComponent.
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/components/proceso-mensual-detalle-modal/proceso-mensual-detalle-modal.component.ts:14:15:
+[37m      14 │   templateUrl: [32m'./proceso-mensual-detalle-modal.component.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mNG5002: Parser Error: Conditional expression aseNominaTrazabilidad()?.asignacionesRecurrentesIncluidas ? f.dashboardResumen().asignacionesAplicables ? 0  requires all 3 expressions at the end of the expression [ f.baseNominaTrazabilidad()?.asignacionesRecurrentesIncluidas ? f.dashboardResumen().asignacionesAplicables ? 0 ] in C:\Users\PC\Desktop\ERP\angular-erp\src\app\features\nomina-mensual\containers\proceso-mensual-container\components\proceso-mensual-detalle-modal\proceso-mensual-detalle-modal.component.html@167:26[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/components/proceso-mensual-detalle-modal/proceso-mensual-detalle-modal.component.html:168:26:
+[37m      168 │ ...          [32m{{ f.baseNominaTrazabilidad()?.asignacionesRecurrent[37m...
+          ╵              [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component ProcesoMensualDetalleModalComponent.
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/components/proceso-mensual-detalle-modal/proceso-mensual-detalle-modal.component.ts:14:15:
+[37m      14 │   templateUrl: [32m'./proceso-mensual-detalle-modal.component.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mNG5002: Parser Error: Conditional expression ashboardResumen().asignacionesAplicables ? 0  requires all 3 expressions at the end of the expression [ f.baseNominaTrazabilidad()?.asignacionesRecurrentesIncluidas ? f.dashboardResumen().asignacionesAplicables ? 0 ] in C:\Users\PC\Desktop\ERP\angular-erp\src\app\features\nomina-mensual\containers\proceso-mensual-container\components\proceso-mensual-detalle-modal\proceso-mensual-detalle-modal.component.html@167:26[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/components/proceso-mensual-detalle-modal/proceso-mensual-detalle-modal.component.html:168:26:
+[37m      168 │ ...          [32m{{ f.baseNominaTrazabilidad()?.asignacionesRecurrent[37m...
+          ╵              [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component ProcesoMensualDetalleModalComponent.
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/components/proceso-mensual-detalle-modal/proceso-mensual-detalle-modal.component.ts:14:15:
+[37m      14 │   templateUrl: [32m'./proceso-mensual-detalle-modal.component.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS1005: ':' expected.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/nomina-mensual/rules/proceso-mensual-detalle-modal.rules.ts:626:59:
+[37m      626 │         disabledReason: input.motivoNoPuedeConfirmar ? null[32m,[37m
+          ╵                                                            [32m^[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mUnexpected ","[0m
+
+    src/app/features/nomina-mensual/rules/proceso-mensual-detalle-modal.rules.ts:447:70:
+[37m      447 │ ...          disabledReason: input.motivoNoPuedeConfirmar ? null : [32m,[37m
+          ╵                                                                    [32m^[0m
+
+[39m[22m
+[1m[31m[31mX [41;31m[[41;97mERROR[41;31m][0m [1mNG5002: Parser Error: Conditional expression ctaExpediente.disabledReason ? null requires all 3 expressions at the end of the expression [ctaExpediente.disabledReason ? null] in C:\Users\PC\Desktop\ERP\angular-erp\src\app\features\nomina-mensual\containers\proceso-mensual-container\components\proceso-mensual-detalle-modal\proceso-mensual-detalle-modal.component.html@105:42[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/components/proceso-mensual-detalle-modal/proceso-mensual-detalle-modal.component.html:106:42:
+[37m      106 │ ...               [attr.title]="[32mctaExpediente.disabledReason ? null[37m"
+          ╵                                 [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component ProcesoMensualDetalleModalComponent.
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/components/proceso-mensual-detalle-modal/proceso-mensual-detalle-modal.component.ts:14:15:
+[37m      14 │   templateUrl: [32m'./proceso-mensual-detalle-modal.component.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mNG5002: Parser Error: Conditional expression ctaExpediente.disabledReason ? null requires all 3 expressions at the end of the expression [ctaExpediente.disabledReason ? null] in C:\Users\PC\Desktop\ERP\angular-erp\src\app\features\nomina-mensual\containers\proceso-mensual-container\components\proceso-mensual-detalle-modal\proceso-mensual-detalle-modal.component.html@119:42[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/components/proceso-mensual-detalle-modal/proceso-mensual-detalle-modal.component.html:120:42:
+[37m      120 │ ...               [attr.title]="[32mctaExpediente.disabledReason ? null[37m"
+          ╵                                 [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component ProcesoMensualDetalleModalComponent.
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/components/proceso-mensual-detalle-modal/proceso-mensual-detalle-modal.component.ts:14:15:
+[37m      14 │   templateUrl: [32m'./proceso-mensual-detalle-modal.component.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mNG5002: Parser Error: Conditional expression baseNominaTrazabilidad()?.trabajadoresConsiderados ? f.dashboardResumen().trabajadoresAptos ? expediente.totales?.trabajadores ? 0  requires all 3 expressions at the end of the expression [ f.baseNominaTrazabilidad()?.trabajadoresConsiderados ? f.dashboardResumen().trabajadoresAptos ? expediente.totales?.trabajadores ? 0 ] in C:\Users\PC\Desktop\ERP\angular-erp\src\app\features\nomina-mensual\containers\proceso-mensual-container\components\proceso-mensual-detalle-modal\proceso-mensual-detalle-modal.component.html@152:63[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/components/proceso-mensual-detalle-modal/proceso-mensual-detalle-modal.component.html:153:63:
+[37m      153 │ ...s</dt><dd>[32m{{ f.baseNominaTrazabilidad()?.trabajadoresConsidera[37m...
+          ╵              [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component ProcesoMensualDetalleModalComponent.
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/components/proceso-mensual-detalle-modal/proceso-mensual-detalle-modal.component.ts:14:15:
+[37m      14 │   templateUrl: [32m'./proceso-mensual-detalle-modal.component.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mNG5002: Parser Error: Conditional expression dashboardResumen().trabajadoresAptos ? expediente.totales?.trabajadores ? 0  requires all 3 expressions at the end of the expression [ f.baseNominaTrazabilidad()?.trabajadoresConsiderados ? f.dashboardResumen().trabajadoresAptos ? expediente.totales?.trabajadores ? 0 ] in C:\Users\PC\Desktop\ERP\angular-erp\src\app\features\nomina-mensual\containers\proceso-mensual-container\components\proceso-mensual-detalle-modal\proceso-mensual-detalle-modal.component.html@152:63[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/components/proceso-mensual-detalle-modal/proceso-mensual-detalle-modal.component.html:153:63:
+[37m      153 │ ...s</dt><dd>[32m{{ f.baseNominaTrazabilidad()?.trabajadoresConsidera[37m...
+          ╵              [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component ProcesoMensualDetalleModalComponent.
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/components/proceso-mensual-detalle-modal/proceso-mensual-detalle-modal.component.ts:14:15:
+[37m      14 │   templateUrl: [32m'./proceso-mensual-detalle-modal.component.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mNG5002: Parser Error: Conditional expression pediente.totales?.trabajadores ? 0  requires all 3 expressions at the end of the expression [ f.baseNominaTrazabilidad()?.trabajadoresConsiderados ? f.dashboardResumen().trabajadoresAptos ? expediente.totales?.trabajadores ? 0 ] in C:\Users\PC\Desktop\ERP\angular-erp\src\app\features\nomina-mensual\containers\proceso-mensual-container\components\proceso-mensual-detalle-modal\proceso-mensual-detalle-modal.component.html@152:63[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/components/proceso-mensual-detalle-modal/proceso-mensual-detalle-modal.component.html:153:63:
+[37m      153 │ ...s</dt><dd>[32m{{ f.baseNominaTrazabilidad()?.trabajadoresConsidera[37m...
+          ╵              [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component ProcesoMensualDetalleModalComponent.
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/components/proceso-mensual-detalle-modal/proceso-mensual-detalle-modal.component.ts:14:15:
+[37m      14 │   templateUrl: [32m'./proceso-mensual-detalle-modal.component.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mNG5002: Parser Error: Conditional expression f.baseNominaTrazabilidad()?.movimientosDelMesIncluidos ? f.dashboardResumen().movimientosAprobados requires all 3 expressions at column 100 in [(f.baseNominaTrazabilidad()?.movimientosDelMesIncluidos ? f.dashboardResumen().movimientosAprobados) > 0] in C:\Users\PC\Desktop\ERP\angular-erp\src\app\features\nomina-mensual\containers\proceso-mensual-container\components\proceso-mensual-detalle-modal\proceso-mensual-detalle-modal.component.html@156:29[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/components/proceso-mensual-detalle-modal/proceso-mensual-detalle-modal.component.html:157:29:
+[37m      157 │ ...     @if ([32m(f.baseNominaTrazabilidad()?.movimientosDelMesInclui[37m...
+          ╵              [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component ProcesoMensualDetalleModalComponent.
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/components/proceso-mensual-detalle-modal/proceso-mensual-detalle-modal.component.ts:14:15:
+[37m      14 │   templateUrl: [32m'./proceso-mensual-detalle-modal.component.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2532: Object is possibly 'undefined'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/components/proceso-mensual-detalle-modal/proceso-mensual-detalle-modal.component.html:157:29:
+[37m      157 │ ...     @if ([32m(f.baseNominaTrazabilidad()?.movimientosDelMesInclui[37m...
+          ╵              [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component ProcesoMensualDetalleModalComponent.
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/components/proceso-mensual-detalle-modal/proceso-mensual-detalle-modal.component.ts:14:15:
+[37m      14 │   templateUrl: [32m'./proceso-mensual-detalle-modal.component.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mNG5002: Parser Error: Conditional expression aseNominaTrazabilidad()?.movimientosDelMesIncluidos ? f.dashboardResumen().movimientosAprobados  requires all 3 expressions at the end of the expression [ f.baseNominaTrazabilidad()?.movimientosDelMesIncluidos ? f.dashboardResumen().movimientosAprobados ] in C:\Users\PC\Desktop\ERP\angular-erp\src\app\features\nomina-mensual\containers\proceso-mensual-container\components\proceso-mensual-detalle-modal\proceso-mensual-detalle-modal.component.html@157:26[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/components/proceso-mensual-detalle-modal/proceso-mensual-detalle-modal.component.html:158:26:
+[37m      158 │ ...          [32m{{ f.baseNominaTrazabilidad()?.movimientosDelMesIncl[37m...
+          ╵              [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component ProcesoMensualDetalleModalComponent.
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/components/proceso-mensual-detalle-modal/proceso-mensual-detalle-modal.component.ts:14:15:
+[37m      14 │   templateUrl: [32m'./proceso-mensual-detalle-modal.component.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mNG5002: Parser Error: Conditional expression f.baseNominaTrazabilidad()?.asignacionesRecurrentesIncluidas ? f.dashboardResumen().asignacionesAplicables ? 0 requires all 3 expressions at column 112 in [(f.baseNominaTrazabilidad()?.asignacionesRecurrentesIncluidas ? f.dashboardResumen().asignacionesAplicables ? 0) > 0] in C:\Users\PC\Desktop\ERP\angular-erp\src\app\features\nomina-mensual\containers\proceso-mensual-container\components\proceso-mensual-detalle-modal\proceso-mensual-detalle-modal.component.html@166:29[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/components/proceso-mensual-detalle-modal/proceso-mensual-detalle-modal.component.html:167:29:
+[37m      167 │ ...     @if ([32m(f.baseNominaTrazabilidad()?.asignacionesRecurrentes[37m...
+          ╵              [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component ProcesoMensualDetalleModalComponent.
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/components/proceso-mensual-detalle-modal/proceso-mensual-detalle-modal.component.ts:14:15:
+[37m      14 │   templateUrl: [32m'./proceso-mensual-detalle-modal.component.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mNG5002: Parser Error: Conditional expression f.dashboardResumen().asignacionesAplicables ? 0 requires all 3 expressions at column 112 in [(f.baseNominaTrazabilidad()?.asignacionesRecurrentesIncluidas ? f.dashboardResumen().asignacionesAplicables ? 0) > 0] in C:\Users\PC\Desktop\ERP\angular-erp\src\app\features\nomina-mensual\containers\proceso-mensual-container\components\proceso-mensual-detalle-modal\proceso-mensual-detalle-modal.component.html@166:29[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/components/proceso-mensual-detalle-modal/proceso-mensual-detalle-modal.component.html:167:29:
+[37m      167 │ ...     @if ([32m(f.baseNominaTrazabilidad()?.asignacionesRecurrentes[37m...
+          ╵              [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component ProcesoMensualDetalleModalComponent.
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/components/proceso-mensual-detalle-modal/proceso-mensual-detalle-modal.component.ts:14:15:
+[37m      14 │   templateUrl: [32m'./proceso-mensual-detalle-modal.component.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2532: Object is possibly 'undefined'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/components/proceso-mensual-detalle-modal/proceso-mensual-detalle-modal.component.html:167:29:
+[37m      167 │ ...     @if ([32m(f.baseNominaTrazabilidad()?.asignacionesRecurrentes[37m...
+          ╵              [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component ProcesoMensualDetalleModalComponent.
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/components/proceso-mensual-detalle-modal/proceso-mensual-detalle-modal.component.ts:14:15:
+[37m      14 │   templateUrl: [32m'./proceso-mensual-detalle-modal.component.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mNG5002: Parser Error: Conditional expression aseNominaTrazabilidad()?.asignacionesRecurrentesIncluidas ? f.dashboardResumen().asignacionesAplicables ? 0  requires all 3 expressions at the end of the expression [ f.baseNominaTrazabilidad()?.asignacionesRecurrentesIncluidas ? f.dashboardResumen().asignacionesAplicables ? 0 ] in C:\Users\PC\Desktop\ERP\angular-erp\src\app\features\nomina-mensual\containers\proceso-mensual-container\components\proceso-mensual-detalle-modal\proceso-mensual-detalle-modal.component.html@167:26[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/components/proceso-mensual-detalle-modal/proceso-mensual-detalle-modal.component.html:168:26:
+[37m      168 │ ...          [32m{{ f.baseNominaTrazabilidad()?.asignacionesRecurrent[37m...
+          ╵              [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component ProcesoMensualDetalleModalComponent.
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/components/proceso-mensual-detalle-modal/proceso-mensual-detalle-modal.component.ts:14:15:
+[37m      14 │   templateUrl: [32m'./proceso-mensual-detalle-modal.component.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mNG5002: Parser Error: Conditional expression ashboardResumen().asignacionesAplicables ? 0  requires all 3 expressions at the end of the expression [ f.baseNominaTrazabilidad()?.asignacionesRecurrentesIncluidas ? f.dashboardResumen().asignacionesAplicables ? 0 ] in C:\Users\PC\Desktop\ERP\angular-erp\src\app\features\nomina-mensual\containers\proceso-mensual-container\components\proceso-mensual-detalle-modal\proceso-mensual-detalle-modal.component.html@167:26[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/components/proceso-mensual-detalle-modal/proceso-mensual-detalle-modal.component.html:168:26:
+[37m      168 │ ...          [32m{{ f.baseNominaTrazabilidad()?.asignacionesRecurrent[37m...
+          ╵              [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component ProcesoMensualDetalleModalComponent.
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/components/proceso-mensual-detalle-modal/proceso-mensual-detalle-modal.component.ts:14:15:
+[37m      14 │   templateUrl: [32m'./proceso-mensual-detalle-modal.component.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+[39m[22m
+[1m[31m[31mX [41;31m[[41;97mERROR[41;31m][0m [1mNG5002: Parser Error: Conditional expression ctaExpediente.disabledReason ? null requires all 3 expressions at the end of the expression [ctaExpediente.disabledReason ? null] in C:\Users\PC\Desktop\ERP\angular-erp\src\app\features\nomina-mensual\containers\proceso-mensual-container\components\proceso-mensual-detalle-modal\proceso-mensual-detalle-modal.component.html@105:42[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/components/proceso-mensual-detalle-modal/proceso-mensual-detalle-modal.component.html:106:42:
+[37m      106 │ ...               [attr.title]="[32mctaExpediente.disabledReason ? null[37m"
+          ╵                                 [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component ProcesoMensualDetalleModalComponent.
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/components/proceso-mensual-detalle-modal/proceso-mensual-detalle-modal.component.ts:14:15:
+[37m      14 │   templateUrl: [32m'./proceso-mensual-detalle-modal.component.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mNG5002: Parser Error: Conditional expression ctaExpediente.disabledReason ? null requires all 3 expressions at the end of the expression [ctaExpediente.disabledReason ? null] in C:\Users\PC\Desktop\ERP\angular-erp\src\app\features\nomina-mensual\containers\proceso-mensual-container\components\proceso-mensual-detalle-modal\proceso-mensual-detalle-modal.component.html@119:42[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/components/proceso-mensual-detalle-modal/proceso-mensual-detalle-modal.component.html:120:42:
+[37m      120 │ ...               [attr.title]="[32mctaExpediente.disabledReason ? null[37m"
+          ╵                                 [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component ProcesoMensualDetalleModalComponent.
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/components/proceso-mensual-detalle-modal/proceso-mensual-detalle-modal.component.ts:14:15:
+[37m      14 │   templateUrl: [32m'./proceso-mensual-detalle-modal.component.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mNG5002: Parser Error: Conditional expression baseNominaTrazabilidad()?.trabajadoresConsiderados ? f.dashboardResumen().trabajadoresAptos ? expediente.totales?.trabajadores ? 0  requires all 3 expressions at the end of the expression [ f.baseNominaTrazabilidad()?.trabajadoresConsiderados ? f.dashboardResumen().trabajadoresAptos ? expediente.totales?.trabajadores ? 0 ] in C:\Users\PC\Desktop\ERP\angular-erp\src\app\features\nomina-mensual\containers\proceso-mensual-container\components\proceso-mensual-detalle-modal\proceso-mensual-detalle-modal.component.html@152:63[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/components/proceso-mensual-detalle-modal/proceso-mensual-detalle-modal.component.html:153:63:
+[37m      153 │ ...s</dt><dd>[32m{{ f.baseNominaTrazabilidad()?.trabajadoresConsidera[37m...
+          ╵              [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component ProcesoMensualDetalleModalComponent.
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/components/proceso-mensual-detalle-modal/proceso-mensual-detalle-modal.component.ts:14:15:
+[37m      14 │   templateUrl: [32m'./proceso-mensual-detalle-modal.component.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mNG5002: Parser Error: Conditional expression dashboardResumen().trabajadoresAptos ? expediente.totales?.trabajadores ? 0  requires all 3 expressions at the end of the expression [ f.baseNominaTrazabilidad()?.trabajadoresConsiderados ? f.dashboardResumen().trabajadoresAptos ? expediente.totales?.trabajadores ? 0 ] in C:\Users\PC\Desktop\ERP\angular-erp\src\app\features\nomina-mensual\containers\proceso-mensual-container\components\proceso-mensual-detalle-modal\proceso-mensual-detalle-modal.component.html@152:63[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/components/proceso-mensual-detalle-modal/proceso-mensual-detalle-modal.component.html:153:63:
+[37m      153 │ ...s</dt><dd>[32m{{ f.baseNominaTrazabilidad()?.trabajadoresConsidera[37m...
+          ╵              [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component ProcesoMensualDetalleModalComponent.
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/components/proceso-mensual-detalle-modal/proceso-mensual-detalle-modal.component.ts:14:15:
+[37m      14 │   templateUrl: [32m'./proceso-mensual-detalle-modal.component.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mNG5002: Parser Error: Conditional expression pediente.totales?.trabajadores ? 0  requires all 3 expressions at the end of the expression [ f.baseNominaTrazabilidad()?.trabajadoresConsiderados ? f.dashboardResumen().trabajadoresAptos ? expediente.totales?.trabajadores ? 0 ] in C:\Users\PC\Desktop\ERP\angular-erp\src\app\features\nomina-mensual\containers\proceso-mensual-container\components\proceso-mensual-detalle-modal\proceso-mensual-detalle-modal.component.html@152:63[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/components/proceso-mensual-detalle-modal/proceso-mensual-detalle-modal.component.html:153:63:
+[37m      153 │ ...s</dt><dd>[32m{{ f.baseNominaTrazabilidad()?.trabajadoresConsidera[37m...
+          ╵              [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component ProcesoMensualDetalleModalComponent.
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/components/proceso-mensual-detalle-modal/proceso-mensual-detalle-modal.component.ts:14:15:
+[37m      14 │   templateUrl: [32m'./proceso-mensual-detalle-modal.component.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mNG5002: Parser Error: Conditional expression f.baseNominaTrazabilidad()?.movimientosDelMesIncluidos ? f.dashboardResumen().movimientosAprobados requires all 3 expressions at column 100 in [(f.baseNominaTrazabilidad()?.movimientosDelMesIncluidos ? f.dashboardResumen().movimientosAprobados) > 0] in C:\Users\PC\Desktop\ERP\angular-erp\src\app\features\nomina-mensual\containers\proceso-mensual-container\components\proceso-mensual-detalle-modal\proceso-mensual-detalle-modal.component.html@156:29[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/components/proceso-mensual-detalle-modal/proceso-mensual-detalle-modal.component.html:157:29:
+[37m      157 │ ...     @if ([32m(f.baseNominaTrazabilidad()?.movimientosDelMesInclui[37m...
+          ╵              [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component ProcesoMensualDetalleModalComponent.
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/components/proceso-mensual-detalle-modal/proceso-mensual-detalle-modal.component.ts:14:15:
+[37m      14 │   templateUrl: [32m'./proceso-mensual-detalle-modal.component.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2532: Object is possibly 'undefined'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/components/proceso-mensual-detalle-modal/proceso-mensual-detalle-modal.component.html:157:29:
+[37m      157 │ ...     @if ([32m(f.baseNominaTrazabilidad()?.movimientosDelMesInclui[37m...
+          ╵              [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component ProcesoMensualDetalleModalComponent.
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/components/proceso-mensual-detalle-modal/proceso-mensual-detalle-modal.component.ts:14:15:
+[37m      14 │   templateUrl: [32m'./proceso-mensual-detalle-modal.component.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mNG5002: Parser Error: Conditional expression aseNominaTrazabilidad()?.movimientosDelMesIncluidos ? f.dashboardResumen().movimientosAprobados  requires all 3 expressions at the end of the expression [ f.baseNominaTrazabilidad()?.movimientosDelMesIncluidos ? f.dashboardResumen().movimientosAprobados ] in C:\Users\PC\Desktop\ERP\angular-erp\src\app\features\nomina-mensual\containers\proceso-mensual-container\components\proceso-mensual-detalle-modal\proceso-mensual-detalle-modal.component.html@157:26[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/components/proceso-mensual-detalle-modal/proceso-mensual-detalle-modal.component.html:158:26:
+[37m      158 │ ...          [32m{{ f.baseNominaTrazabilidad()?.movimientosDelMesIncl[37m...
+          ╵              [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component ProcesoMensualDetalleModalComponent.
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/components/proceso-mensual-detalle-modal/proceso-mensual-detalle-modal.component.ts:14:15:
+[37m      14 │   templateUrl: [32m'./proceso-mensual-detalle-modal.component.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mNG5002: Parser Error: Conditional expression f.baseNominaTrazabilidad()?.asignacionesRecurrentesIncluidas ? f.dashboardResumen().asignacionesAplicables ? 0 requires all 3 expressions at column 112 in [(f.baseNominaTrazabilidad()?.asignacionesRecurrentesIncluidas ? f.dashboardResumen().asignacionesAplicables ? 0) > 0] in C:\Users\PC\Desktop\ERP\angular-erp\src\app\features\nomina-mensual\containers\proceso-mensual-container\components\proceso-mensual-detalle-modal\proceso-mensual-detalle-modal.component.html@166:29[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/components/proceso-mensual-detalle-modal/proceso-mensual-detalle-modal.component.html:167:29:
+[37m      167 │ ...     @if ([32m(f.baseNominaTrazabilidad()?.asignacionesRecurrentes[37m...
+          ╵              [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component ProcesoMensualDetalleModalComponent.
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/components/proceso-mensual-detalle-modal/proceso-mensual-detalle-modal.component.ts:14:15:
+[37m      14 │   templateUrl: [32m'./proceso-mensual-detalle-modal.component.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mNG5002: Parser Error: Conditional expression f.dashboardResumen().asignacionesAplicables ? 0 requires all 3 expressions at column 112 in [(f.baseNominaTrazabilidad()?.asignacionesRecurrentesIncluidas ? f.dashboardResumen().asignacionesAplicables ? 0) > 0] in C:\Users\PC\Desktop\ERP\angular-erp\src\app\features\nomina-mensual\containers\proceso-mensual-container\components\proceso-mensual-detalle-modal\proceso-mensual-detalle-modal.component.html@166:29[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/components/proceso-mensual-detalle-modal/proceso-mensual-detalle-modal.component.html:167:29:
+[37m      167 │ ...     @if ([32m(f.baseNominaTrazabilidad()?.asignacionesRecurrentes[37m...
+          ╵              [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component ProcesoMensualDetalleModalComponent.
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/components/proceso-mensual-detalle-modal/proceso-mensual-detalle-modal.component.ts:14:15:
+[37m      14 │   templateUrl: [32m'./proceso-mensual-detalle-modal.component.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2532: Object is possibly 'undefined'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/components/proceso-mensual-detalle-modal/proceso-mensual-detalle-modal.component.html:167:29:
+[37m      167 │ ...     @if ([32m(f.baseNominaTrazabilidad()?.asignacionesRecurrentes[37m...
+          ╵              [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component ProcesoMensualDetalleModalComponent.
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/components/proceso-mensual-detalle-modal/proceso-mensual-detalle-modal.component.ts:14:15:
+[37m      14 │   templateUrl: [32m'./proceso-mensual-detalle-modal.component.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mNG5002: Parser Error: Conditional expression aseNominaTrazabilidad()?.asignacionesRecurrentesIncluidas ? f.dashboardResumen().asignacionesAplicables ? 0  requires all 3 expressions at the end of the expression [ f.baseNominaTrazabilidad()?.asignacionesRecurrentesIncluidas ? f.dashboardResumen().asignacionesAplicables ? 0 ] in C:\Users\PC\Desktop\ERP\angular-erp\src\app\features\nomina-mensual\containers\proceso-mensual-container\components\proceso-mensual-detalle-modal\proceso-mensual-detalle-modal.component.html@167:26[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/components/proceso-mensual-detalle-modal/proceso-mensual-detalle-modal.component.html:168:26:
+[37m      168 │ ...          [32m{{ f.baseNominaTrazabilidad()?.asignacionesRecurrent[37m...
+          ╵              [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component ProcesoMensualDetalleModalComponent.
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/components/proceso-mensual-detalle-modal/proceso-mensual-detalle-modal.component.ts:14:15:
+[37m      14 │   templateUrl: [32m'./proceso-mensual-detalle-modal.component.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mNG5002: Parser Error: Conditional expression ashboardResumen().asignacionesAplicables ? 0  requires all 3 expressions at the end of the expression [ f.baseNominaTrazabilidad()?.asignacionesRecurrentesIncluidas ? f.dashboardResumen().asignacionesAplicables ? 0 ] in C:\Users\PC\Desktop\ERP\angular-erp\src\app\features\nomina-mensual\containers\proceso-mensual-container\components\proceso-mensual-detalle-modal\proceso-mensual-detalle-modal.component.html@167:26[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/components/proceso-mensual-detalle-modal/proceso-mensual-detalle-modal.component.html:168:26:
+[37m      168 │ ...          [32m{{ f.baseNominaTrazabilidad()?.asignacionesRecurrent[37m...
+          ╵              [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component ProcesoMensualDetalleModalComponent.
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/components/proceso-mensual-detalle-modal/proceso-mensual-detalle-modal.component.ts:14:15:
+[37m      14 │   templateUrl: [32m'./proceso-mensual-detalle-modal.component.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+[39m[22m
+[1m[31m[31mX [41;31m[[41;97mERROR[41;31m][0m [1mNG5002: Parser Error: Conditional expression ctaExpediente.disabledReason ? null requires all 3 expressions at the end of the expression [ctaExpediente.disabledReason ? null] in C:\Users\PC\Desktop\ERP\angular-erp\src\app\features\nomina-mensual\containers\proceso-mensual-container\components\proceso-mensual-detalle-modal\proceso-mensual-detalle-modal.component.html@105:42[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/components/proceso-mensual-detalle-modal/proceso-mensual-detalle-modal.component.html:106:42:
+[37m      106 │ ...               [attr.title]="[32mctaExpediente.disabledReason ? null[37m"
+          ╵                                 [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component ProcesoMensualDetalleModalComponent.
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/components/proceso-mensual-detalle-modal/proceso-mensual-detalle-modal.component.ts:14:15:
+[37m      14 │   templateUrl: [32m'./proceso-mensual-detalle-modal.component.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mNG5002: Parser Error: Conditional expression ctaExpediente.disabledReason ? null requires all 3 expressions at the end of the expression [ctaExpediente.disabledReason ? null] in C:\Users\PC\Desktop\ERP\angular-erp\src\app\features\nomina-mensual\containers\proceso-mensual-container\components\proceso-mensual-detalle-modal\proceso-mensual-detalle-modal.component.html@119:42[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/components/proceso-mensual-detalle-modal/proceso-mensual-detalle-modal.component.html:120:42:
+[37m      120 │ ...               [attr.title]="[32mctaExpediente.disabledReason ? null[37m"
+          ╵                                 [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component ProcesoMensualDetalleModalComponent.
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/components/proceso-mensual-detalle-modal/proceso-mensual-detalle-modal.component.ts:14:15:
+[37m      14 │   templateUrl: [32m'./proceso-mensual-detalle-modal.component.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mNG5002: Parser Error: Conditional expression baseNominaTrazabilidad()?.trabajadoresConsiderados ? f.dashboardResumen().trabajadoresAptos ? expediente.totales?.trabajadores ? 0  requires all 3 expressions at the end of the expression [ f.baseNominaTrazabilidad()?.trabajadoresConsiderados ? f.dashboardResumen().trabajadoresAptos ? expediente.totales?.trabajadores ? 0 ] in C:\Users\PC\Desktop\ERP\angular-erp\src\app\features\nomina-mensual\containers\proceso-mensual-container\components\proceso-mensual-detalle-modal\proceso-mensual-detalle-modal.component.html@152:63[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/components/proceso-mensual-detalle-modal/proceso-mensual-detalle-modal.component.html:153:63:
+[37m      153 │ ...s</dt><dd>[32m{{ f.baseNominaTrazabilidad()?.trabajadoresConsidera[37m...
+          ╵              [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component ProcesoMensualDetalleModalComponent.
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/components/proceso-mensual-detalle-modal/proceso-mensual-detalle-modal.component.ts:14:15:
+[37m      14 │   templateUrl: [32m'./proceso-mensual-detalle-modal.component.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mNG5002: Parser Error: Conditional expression dashboardResumen().trabajadoresAptos ? expediente.totales?.trabajadores ? 0  requires all 3 expressions at the end of the expression [ f.baseNominaTrazabilidad()?.trabajadoresConsiderados ? f.dashboardResumen().trabajadoresAptos ? expediente.totales?.trabajadores ? 0 ] in C:\Users\PC\Desktop\ERP\angular-erp\src\app\features\nomina-mensual\containers\proceso-mensual-container\components\proceso-mensual-detalle-modal\proceso-mensual-detalle-modal.component.html@152:63[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/components/proceso-mensual-detalle-modal/proceso-mensual-detalle-modal.component.html:153:63:
+[37m      153 │ ...s</dt><dd>[32m{{ f.baseNominaTrazabilidad()?.trabajadoresConsidera[37m...
+          ╵              [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component ProcesoMensualDetalleModalComponent.
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/components/proceso-mensual-detalle-modal/proceso-mensual-detalle-modal.component.ts:14:15:
+[37m      14 │   templateUrl: [32m'./proceso-mensual-detalle-modal.component.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mNG5002: Parser Error: Conditional expression pediente.totales?.trabajadores ? 0  requires all 3 expressions at the end of the expression [ f.baseNominaTrazabilidad()?.trabajadoresConsiderados ? f.dashboardResumen().trabajadoresAptos ? expediente.totales?.trabajadores ? 0 ] in C:\Users\PC\Desktop\ERP\angular-erp\src\app\features\nomina-mensual\containers\proceso-mensual-container\components\proceso-mensual-detalle-modal\proceso-mensual-detalle-modal.component.html@152:63[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/components/proceso-mensual-detalle-modal/proceso-mensual-detalle-modal.component.html:153:63:
+[37m      153 │ ...s</dt><dd>[32m{{ f.baseNominaTrazabilidad()?.trabajadoresConsidera[37m...
+          ╵              [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component ProcesoMensualDetalleModalComponent.
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/components/proceso-mensual-detalle-modal/proceso-mensual-detalle-modal.component.ts:14:15:
+[37m      14 │   templateUrl: [32m'./proceso-mensual-detalle-modal.component.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mNG5002: Parser Error: Conditional expression f.baseNominaTrazabilidad()?.movimientosDelMesIncluidos ? f.dashboardResumen().movimientosAprobados requires all 3 expressions at column 100 in [(f.baseNominaTrazabilidad()?.movimientosDelMesIncluidos ? f.dashboardResumen().movimientosAprobados) > 0] in C:\Users\PC\Desktop\ERP\angular-erp\src\app\features\nomina-mensual\containers\proceso-mensual-container\components\proceso-mensual-detalle-modal\proceso-mensual-detalle-modal.component.html@156:29[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/components/proceso-mensual-detalle-modal/proceso-mensual-detalle-modal.component.html:157:29:
+[37m      157 │ ...     @if ([32m(f.baseNominaTrazabilidad()?.movimientosDelMesInclui[37m...
+          ╵              [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component ProcesoMensualDetalleModalComponent.
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/components/proceso-mensual-detalle-modal/proceso-mensual-detalle-modal.component.ts:14:15:
+[37m      14 │   templateUrl: [32m'./proceso-mensual-detalle-modal.component.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2532: Object is possibly 'undefined'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/components/proceso-mensual-detalle-modal/proceso-mensual-detalle-modal.component.html:157:29:
+[37m      157 │ ...     @if ([32m(f.baseNominaTrazabilidad()?.movimientosDelMesInclui[37m...
+          ╵              [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component ProcesoMensualDetalleModalComponent.
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/components/proceso-mensual-detalle-modal/proceso-mensual-detalle-modal.component.ts:14:15:
+[37m      14 │   templateUrl: [32m'./proceso-mensual-detalle-modal.component.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mNG5002: Parser Error: Conditional expression aseNominaTrazabilidad()?.movimientosDelMesIncluidos ? f.dashboardResumen().movimientosAprobados  requires all 3 expressions at the end of the expression [ f.baseNominaTrazabilidad()?.movimientosDelMesIncluidos ? f.dashboardResumen().movimientosAprobados ] in C:\Users\PC\Desktop\ERP\angular-erp\src\app\features\nomina-mensual\containers\proceso-mensual-container\components\proceso-mensual-detalle-modal\proceso-mensual-detalle-modal.component.html@157:26[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/components/proceso-mensual-detalle-modal/proceso-mensual-detalle-modal.component.html:158:26:
+[37m      158 │ ...          [32m{{ f.baseNominaTrazabilidad()?.movimientosDelMesIncl[37m...
+          ╵              [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component ProcesoMensualDetalleModalComponent.
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/components/proceso-mensual-detalle-modal/proceso-mensual-detalle-modal.component.ts:14:15:
+[37m      14 │   templateUrl: [32m'./proceso-mensual-detalle-modal.component.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mNG5002: Parser Error: Conditional expression f.baseNominaTrazabilidad()?.asignacionesRecurrentesIncluidas ? f.dashboardResumen().asignacionesAplicables ? 0 requires all 3 expressions at column 112 in [(f.baseNominaTrazabilidad()?.asignacionesRecurrentesIncluidas ? f.dashboardResumen().asignacionesAplicables ? 0) > 0] in C:\Users\PC\Desktop\ERP\angular-erp\src\app\features\nomina-mensual\containers\proceso-mensual-container\components\proceso-mensual-detalle-modal\proceso-mensual-detalle-modal.component.html@166:29[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/components/proceso-mensual-detalle-modal/proceso-mensual-detalle-modal.component.html:167:29:
+[37m      167 │ ...     @if ([32m(f.baseNominaTrazabilidad()?.asignacionesRecurrentes[37m...
+          ╵              [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component ProcesoMensualDetalleModalComponent.
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/components/proceso-mensual-detalle-modal/proceso-mensual-detalle-modal.component.ts:14:15:
+[37m      14 │   templateUrl: [32m'./proceso-mensual-detalle-modal.component.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mNG5002: Parser Error: Conditional expression f.dashboardResumen().asignacionesAplicables ? 0 requires all 3 expressions at column 112 in [(f.baseNominaTrazabilidad()?.asignacionesRecurrentesIncluidas ? f.dashboardResumen().asignacionesAplicables ? 0) > 0] in C:\Users\PC\Desktop\ERP\angular-erp\src\app\features\nomina-mensual\containers\proceso-mensual-container\components\proceso-mensual-detalle-modal\proceso-mensual-detalle-modal.component.html@166:29[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/components/proceso-mensual-detalle-modal/proceso-mensual-detalle-modal.component.html:167:29:
+[37m      167 │ ...     @if ([32m(f.baseNominaTrazabilidad()?.asignacionesRecurrentes[37m...
+          ╵              [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component ProcesoMensualDetalleModalComponent.
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/components/proceso-mensual-detalle-modal/proceso-mensual-detalle-modal.component.ts:14:15:
+[37m      14 │   templateUrl: [32m'./proceso-mensual-detalle-modal.component.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2532: Object is possibly 'undefined'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/components/proceso-mensual-detalle-modal/proceso-mensual-detalle-modal.component.html:167:29:
+[37m      167 │ ...     @if ([32m(f.baseNominaTrazabilidad()?.asignacionesRecurrentes[37m...
+          ╵              [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component ProcesoMensualDetalleModalComponent.
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/components/proceso-mensual-detalle-modal/proceso-mensual-detalle-modal.component.ts:14:15:
+[37m      14 │   templateUrl: [32m'./proceso-mensual-detalle-modal.component.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mNG5002: Parser Error: Conditional expression aseNominaTrazabilidad()?.asignacionesRecurrentesIncluidas ? f.dashboardResumen().asignacionesAplicables ? 0  requires all 3 expressions at the end of the expression [ f.baseNominaTrazabilidad()?.asignacionesRecurrentesIncluidas ? f.dashboardResumen().asignacionesAplicables ? 0 ] in C:\Users\PC\Desktop\ERP\angular-erp\src\app\features\nomina-mensual\containers\proceso-mensual-container\components\proceso-mensual-detalle-modal\proceso-mensual-detalle-modal.component.html@167:26[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/components/proceso-mensual-detalle-modal/proceso-mensual-detalle-modal.component.html:168:26:
+[37m      168 │ ...          [32m{{ f.baseNominaTrazabilidad()?.asignacionesRecurrent[37m...
+          ╵              [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component ProcesoMensualDetalleModalComponent.
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/components/proceso-mensual-detalle-modal/proceso-mensual-detalle-modal.component.ts:14:15:
+[37m      14 │   templateUrl: [32m'./proceso-mensual-detalle-modal.component.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mNG5002: Parser Error: Conditional expression ashboardResumen().asignacionesAplicables ? 0  requires all 3 expressions at the end of the expression [ f.baseNominaTrazabilidad()?.asignacionesRecurrentesIncluidas ? f.dashboardResumen().asignacionesAplicables ? 0 ] in C:\Users\PC\Desktop\ERP\angular-erp\src\app\features\nomina-mensual\containers\proceso-mensual-container\components\proceso-mensual-detalle-modal\proceso-mensual-detalle-modal.component.html@167:26[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/components/proceso-mensual-detalle-modal/proceso-mensual-detalle-modal.component.html:168:26:
+[37m      168 │ ...          [32m{{ f.baseNominaTrazabilidad()?.asignacionesRecurrent[37m...
+          ╵              [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component ProcesoMensualDetalleModalComponent.
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/components/proceso-mensual-detalle-modal/proceso-mensual-detalle-modal.component.ts:14:15:
+[37m      14 │   templateUrl: [32m'./proceso-mensual-detalle-modal.component.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+[39m[22m
+[1m[31m[31mX [41;31m[[41;97mERROR[41;31m][0m [1mNG5002: Parser Error: Conditional expression ctaExpediente.disabledReason ? null requires all 3 expressions at the end of the expression [ctaExpediente.disabledReason ? null] in C:\Users\PC\Desktop\ERP\angular-erp\src\app\features\nomina-mensual\containers\proceso-mensual-container\components\proceso-mensual-detalle-modal\proceso-mensual-detalle-modal.component.html@105:42[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/components/proceso-mensual-detalle-modal/proceso-mensual-detalle-modal.component.html:106:42:
+[37m      106 │ ...               [attr.title]="[32mctaExpediente.disabledReason ? null[37m"
+          ╵                                 [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component ProcesoMensualDetalleModalComponent.
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/components/proceso-mensual-detalle-modal/proceso-mensual-detalle-modal.component.ts:14:15:
+[37m      14 │   templateUrl: [32m'./proceso-mensual-detalle-modal.component.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mNG5002: Parser Error: Conditional expression ctaExpediente.disabledReason ? null requires all 3 expressions at the end of the expression [ctaExpediente.disabledReason ? null] in C:\Users\PC\Desktop\ERP\angular-erp\src\app\features\nomina-mensual\containers\proceso-mensual-container\components\proceso-mensual-detalle-modal\proceso-mensual-detalle-modal.component.html@119:42[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/components/proceso-mensual-detalle-modal/proceso-mensual-detalle-modal.component.html:120:42:
+[37m      120 │ ...               [attr.title]="[32mctaExpediente.disabledReason ? null[37m"
+          ╵                                 [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component ProcesoMensualDetalleModalComponent.
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/components/proceso-mensual-detalle-modal/proceso-mensual-detalle-modal.component.ts:14:15:
+[37m      14 │   templateUrl: [32m'./proceso-mensual-detalle-modal.component.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mNG5002: Parser Error: Conditional expression baseNominaTrazabilidad()?.trabajadoresConsiderados ? f.dashboardResumen().trabajadoresAptos ? expediente.totales?.trabajadores ? 0  requires all 3 expressions at the end of the expression [ f.baseNominaTrazabilidad()?.trabajadoresConsiderados ? f.dashboardResumen().trabajadoresAptos ? expediente.totales?.trabajadores ? 0 ] in C:\Users\PC\Desktop\ERP\angular-erp\src\app\features\nomina-mensual\containers\proceso-mensual-container\components\proceso-mensual-detalle-modal\proceso-mensual-detalle-modal.component.html@152:63[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/components/proceso-mensual-detalle-modal/proceso-mensual-detalle-modal.component.html:153:63:
+[37m      153 │ ...s</dt><dd>[32m{{ f.baseNominaTrazabilidad()?.trabajadoresConsidera[37m...
+          ╵              [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component ProcesoMensualDetalleModalComponent.
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/components/proceso-mensual-detalle-modal/proceso-mensual-detalle-modal.component.ts:14:15:
+[37m      14 │   templateUrl: [32m'./proceso-mensual-detalle-modal.component.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mNG5002: Parser Error: Conditional expression dashboardResumen().trabajadoresAptos ? expediente.totales?.trabajadores ? 0  requires all 3 expressions at the end of the expression [ f.baseNominaTrazabilidad()?.trabajadoresConsiderados ? f.dashboardResumen().trabajadoresAptos ? expediente.totales?.trabajadores ? 0 ] in C:\Users\PC\Desktop\ERP\angular-erp\src\app\features\nomina-mensual\containers\proceso-mensual-container\components\proceso-mensual-detalle-modal\proceso-mensual-detalle-modal.component.html@152:63[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/components/proceso-mensual-detalle-modal/proceso-mensual-detalle-modal.component.html:153:63:
+[37m      153 │ ...s</dt><dd>[32m{{ f.baseNominaTrazabilidad()?.trabajadoresConsidera[37m...
+          ╵              [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component ProcesoMensualDetalleModalComponent.
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/components/proceso-mensual-detalle-modal/proceso-mensual-detalle-modal.component.ts:14:15:
+[37m      14 │   templateUrl: [32m'./proceso-mensual-detalle-modal.component.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mNG5002: Parser Error: Conditional expression pediente.totales?.trabajadores ? 0  requires all 3 expressions at the end of the expression [ f.baseNominaTrazabilidad()?.trabajadoresConsiderados ? f.dashboardResumen().trabajadoresAptos ? expediente.totales?.trabajadores ? 0 ] in C:\Users\PC\Desktop\ERP\angular-erp\src\app\features\nomina-mensual\containers\proceso-mensual-container\components\proceso-mensual-detalle-modal\proceso-mensual-detalle-modal.component.html@152:63[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/components/proceso-mensual-detalle-modal/proceso-mensual-detalle-modal.component.html:153:63:
+[37m      153 │ ...s</dt><dd>[32m{{ f.baseNominaTrazabilidad()?.trabajadoresConsidera[37m...
+          ╵              [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component ProcesoMensualDetalleModalComponent.
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/components/proceso-mensual-detalle-modal/proceso-mensual-detalle-modal.component.ts:14:15:
+[37m      14 │   templateUrl: [32m'./proceso-mensual-detalle-modal.component.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mNG5002: Parser Error: Conditional expression f.baseNominaTrazabilidad()?.movimientosDelMesIncluidos ? f.dashboardResumen().movimientosAprobados requires all 3 expressions at column 100 in [(f.baseNominaTrazabilidad()?.movimientosDelMesIncluidos ? f.dashboardResumen().movimientosAprobados) > 0] in C:\Users\PC\Desktop\ERP\angular-erp\src\app\features\nomina-mensual\containers\proceso-mensual-container\components\proceso-mensual-detalle-modal\proceso-mensual-detalle-modal.component.html@156:29[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/components/proceso-mensual-detalle-modal/proceso-mensual-detalle-modal.component.html:157:29:
+[37m      157 │ ...     @if ([32m(f.baseNominaTrazabilidad()?.movimientosDelMesInclui[37m...
+          ╵              [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component ProcesoMensualDetalleModalComponent.
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/components/proceso-mensual-detalle-modal/proceso-mensual-detalle-modal.component.ts:14:15:
+[37m      14 │   templateUrl: [32m'./proceso-mensual-detalle-modal.component.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2532: Object is possibly 'undefined'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/components/proceso-mensual-detalle-modal/proceso-mensual-detalle-modal.component.html:157:29:
+[37m      157 │ ...     @if ([32m(f.baseNominaTrazabilidad()?.movimientosDelMesInclui[37m...
+          ╵              [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component ProcesoMensualDetalleModalComponent.
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/components/proceso-mensual-detalle-modal/proceso-mensual-detalle-modal.component.ts:14:15:
+[37m      14 │   templateUrl: [32m'./proceso-mensual-detalle-modal.component.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mNG5002: Parser Error: Conditional expression aseNominaTrazabilidad()?.movimientosDelMesIncluidos ? f.dashboardResumen().movimientosAprobados  requires all 3 expressions at the end of the expression [ f.baseNominaTrazabilidad()?.movimientosDelMesIncluidos ? f.dashboardResumen().movimientosAprobados ] in C:\Users\PC\Desktop\ERP\angular-erp\src\app\features\nomina-mensual\containers\proceso-mensual-container\components\proceso-mensual-detalle-modal\proceso-mensual-detalle-modal.component.html@157:26[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/components/proceso-mensual-detalle-modal/proceso-mensual-detalle-modal.component.html:158:26:
+[37m      158 │ ...          [32m{{ f.baseNominaTrazabilidad()?.movimientosDelMesIncl[37m...
+          ╵              [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component ProcesoMensualDetalleModalComponent.
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/components/proceso-mensual-detalle-modal/proceso-mensual-detalle-modal.component.ts:14:15:
+[37m      14 │   templateUrl: [32m'./proceso-mensual-detalle-modal.component.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mNG5002: Parser Error: Conditional expression f.baseNominaTrazabilidad()?.asignacionesRecurrentesIncluidas ? f.dashboardResumen().asignacionesAplicables ? 0 requires all 3 expressions at column 112 in [(f.baseNominaTrazabilidad()?.asignacionesRecurrentesIncluidas ? f.dashboardResumen().asignacionesAplicables ? 0) > 0] in C:\Users\PC\Desktop\ERP\angular-erp\src\app\features\nomina-mensual\containers\proceso-mensual-container\components\proceso-mensual-detalle-modal\proceso-mensual-detalle-modal.component.html@166:29[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/components/proceso-mensual-detalle-modal/proceso-mensual-detalle-modal.component.html:167:29:
+[37m      167 │ ...     @if ([32m(f.baseNominaTrazabilidad()?.asignacionesRecurrentes[37m...
+          ╵              [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component ProcesoMensualDetalleModalComponent.
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/components/proceso-mensual-detalle-modal/proceso-mensual-detalle-modal.component.ts:14:15:
+[37m      14 │   templateUrl: [32m'./proceso-mensual-detalle-modal.component.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mNG5002: Parser Error: Conditional expression f.dashboardResumen().asignacionesAplicables ? 0 requires all 3 expressions at column 112 in [(f.baseNominaTrazabilidad()?.asignacionesRecurrentesIncluidas ? f.dashboardResumen().asignacionesAplicables ? 0) > 0] in C:\Users\PC\Desktop\ERP\angular-erp\src\app\features\nomina-mensual\containers\proceso-mensual-container\components\proceso-mensual-detalle-modal\proceso-mensual-detalle-modal.component.html@166:29[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/components/proceso-mensual-detalle-modal/proceso-mensual-detalle-modal.component.html:167:29:
+[37m      167 │ ...     @if ([32m(f.baseNominaTrazabilidad()?.asignacionesRecurrentes[37m...
+          ╵              [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component ProcesoMensualDetalleModalComponent.
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/components/proceso-mensual-detalle-modal/proceso-mensual-detalle-modal.component.ts:14:15:
+[37m      14 │   templateUrl: [32m'./proceso-mensual-detalle-modal.component.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2532: Object is possibly 'undefined'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/components/proceso-mensual-detalle-modal/proceso-mensual-detalle-modal.component.html:167:29:
+[37m      167 │ ...     @if ([32m(f.baseNominaTrazabilidad()?.asignacionesRecurrentes[37m...
+          ╵              [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component ProcesoMensualDetalleModalComponent.
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/components/proceso-mensual-detalle-modal/proceso-mensual-detalle-modal.component.ts:14:15:
+[37m      14 │   templateUrl: [32m'./proceso-mensual-detalle-modal.component.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mNG5002: Parser Error: Conditional expression aseNominaTrazabilidad()?.asignacionesRecurrentesIncluidas ? f.dashboardResumen().asignacionesAplicables ? 0  requires all 3 expressions at the end of the expression [ f.baseNominaTrazabilidad()?.asignacionesRecurrentesIncluidas ? f.dashboardResumen().asignacionesAplicables ? 0 ] in C:\Users\PC\Desktop\ERP\angular-erp\src\app\features\nomina-mensual\containers\proceso-mensual-container\components\proceso-mensual-detalle-modal\proceso-mensual-detalle-modal.component.html@167:26[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/components/proceso-mensual-detalle-modal/proceso-mensual-detalle-modal.component.html:168:26:
+[37m      168 │ ...          [32m{{ f.baseNominaTrazabilidad()?.asignacionesRecurrent[37m...
+          ╵              [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component ProcesoMensualDetalleModalComponent.
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/components/proceso-mensual-detalle-modal/proceso-mensual-detalle-modal.component.ts:14:15:
+[37m      14 │   templateUrl: [32m'./proceso-mensual-detalle-modal.component.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mNG5002: Parser Error: Conditional expression ashboardResumen().asignacionesAplicables ? 0  requires all 3 expressions at the end of the expression [ f.baseNominaTrazabilidad()?.asignacionesRecurrentesIncluidas ? f.dashboardResumen().asignacionesAplicables ? 0 ] in C:\Users\PC\Desktop\ERP\angular-erp\src\app\features\nomina-mensual\containers\proceso-mensual-container\components\proceso-mensual-detalle-modal\proceso-mensual-detalle-modal.component.html@167:26[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/components/proceso-mensual-detalle-modal/proceso-mensual-detalle-modal.component.html:168:26:
+[37m      168 │ ...          [32m{{ f.baseNominaTrazabilidad()?.asignacionesRecurrent[37m...
+          ╵              [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component ProcesoMensualDetalleModalComponent.
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/components/proceso-mensual-detalle-modal/proceso-mensual-detalle-modal.component.ts:14:15:
+[37m      14 │   templateUrl: [32m'./proceso-mensual-detalle-modal.component.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+[39m[22m
+[1m[31m[31mX [41;31m[[41;97mERROR[41;31m][0m [1mNG5002: Parser Error: Conditional expression ctaExpediente.disabledReason ? null requires all 3 expressions at the end of the expression [ctaExpediente.disabledReason ? null] in C:\Users\PC\Desktop\ERP\angular-erp\src\app\features\nomina-mensual\containers\proceso-mensual-container\components\proceso-mensual-detalle-modal\proceso-mensual-detalle-modal.component.html@105:42[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/components/proceso-mensual-detalle-modal/proceso-mensual-detalle-modal.component.html:106:42:
+[37m      106 │ ...               [attr.title]="[32mctaExpediente.disabledReason ? null[37m"
+          ╵                                 [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component ProcesoMensualDetalleModalComponent.
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/components/proceso-mensual-detalle-modal/proceso-mensual-detalle-modal.component.ts:14:15:
+[37m      14 │   templateUrl: [32m'./proceso-mensual-detalle-modal.component.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mNG5002: Parser Error: Conditional expression ctaExpediente.disabledReason ? null requires all 3 expressions at the end of the expression [ctaExpediente.disabledReason ? null] in C:\Users\PC\Desktop\ERP\angular-erp\src\app\features\nomina-mensual\containers\proceso-mensual-container\components\proceso-mensual-detalle-modal\proceso-mensual-detalle-modal.component.html@119:42[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/components/proceso-mensual-detalle-modal/proceso-mensual-detalle-modal.component.html:120:42:
+[37m      120 │ ...               [attr.title]="[32mctaExpediente.disabledReason ? null[37m"
+          ╵                                 [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component ProcesoMensualDetalleModalComponent.
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/components/proceso-mensual-detalle-modal/proceso-mensual-detalle-modal.component.ts:14:15:
+[37m      14 │   templateUrl: [32m'./proceso-mensual-detalle-modal.component.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mNG5002: Parser Error: Conditional expression baseNominaTrazabilidad()?.trabajadoresConsiderados ? f.dashboardResumen().trabajadoresAptos ? expediente.totales?.trabajadores ? 0  requires all 3 expressions at the end of the expression [ f.baseNominaTrazabilidad()?.trabajadoresConsiderados ? f.dashboardResumen().trabajadoresAptos ? expediente.totales?.trabajadores ? 0 ] in C:\Users\PC\Desktop\ERP\angular-erp\src\app\features\nomina-mensual\containers\proceso-mensual-container\components\proceso-mensual-detalle-modal\proceso-mensual-detalle-modal.component.html@152:63[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/components/proceso-mensual-detalle-modal/proceso-mensual-detalle-modal.component.html:153:63:
+[37m      153 │ ...s</dt><dd>[32m{{ f.baseNominaTrazabilidad()?.trabajadoresConsidera[37m...
+          ╵              [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component ProcesoMensualDetalleModalComponent.
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/components/proceso-mensual-detalle-modal/proceso-mensual-detalle-modal.component.ts:14:15:
+[37m      14 │   templateUrl: [32m'./proceso-mensual-detalle-modal.component.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mNG5002: Parser Error: Conditional expression dashboardResumen().trabajadoresAptos ? expediente.totales?.trabajadores ? 0  requires all 3 expressions at the end of the expression [ f.baseNominaTrazabilidad()?.trabajadoresConsiderados ? f.dashboardResumen().trabajadoresAptos ? expediente.totales?.trabajadores ? 0 ] in C:\Users\PC\Desktop\ERP\angular-erp\src\app\features\nomina-mensual\containers\proceso-mensual-container\components\proceso-mensual-detalle-modal\proceso-mensual-detalle-modal.component.html@152:63[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/components/proceso-mensual-detalle-modal/proceso-mensual-detalle-modal.component.html:153:63:
+[37m      153 │ ...s</dt><dd>[32m{{ f.baseNominaTrazabilidad()?.trabajadoresConsidera[37m...
+          ╵              [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component ProcesoMensualDetalleModalComponent.
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/components/proceso-mensual-detalle-modal/proceso-mensual-detalle-modal.component.ts:14:15:
+[37m      14 │   templateUrl: [32m'./proceso-mensual-detalle-modal.component.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mNG5002: Parser Error: Conditional expression pediente.totales?.trabajadores ? 0  requires all 3 expressions at the end of the expression [ f.baseNominaTrazabilidad()?.trabajadoresConsiderados ? f.dashboardResumen().trabajadoresAptos ? expediente.totales?.trabajadores ? 0 ] in C:\Users\PC\Desktop\ERP\angular-erp\src\app\features\nomina-mensual\containers\proceso-mensual-container\components\proceso-mensual-detalle-modal\proceso-mensual-detalle-modal.component.html@152:63[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/components/proceso-mensual-detalle-modal/proceso-mensual-detalle-modal.component.html:153:63:
+[37m      153 │ ...s</dt><dd>[32m{{ f.baseNominaTrazabilidad()?.trabajadoresConsidera[37m...
+          ╵              [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component ProcesoMensualDetalleModalComponent.
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/components/proceso-mensual-detalle-modal/proceso-mensual-detalle-modal.component.ts:14:15:
+[37m      14 │   templateUrl: [32m'./proceso-mensual-detalle-modal.component.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mNG5002: Parser Error: Conditional expression f.baseNominaTrazabilidad()?.movimientosDelMesIncluidos ? f.dashboardResumen().movimientosAprobados requires all 3 expressions at column 100 in [(f.baseNominaTrazabilidad()?.movimientosDelMesIncluidos ? f.dashboardResumen().movimientosAprobados) > 0] in C:\Users\PC\Desktop\ERP\angular-erp\src\app\features\nomina-mensual\containers\proceso-mensual-container\components\proceso-mensual-detalle-modal\proceso-mensual-detalle-modal.component.html@156:29[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/components/proceso-mensual-detalle-modal/proceso-mensual-detalle-modal.component.html:157:29:
+[37m      157 │ ...     @if ([32m(f.baseNominaTrazabilidad()?.movimientosDelMesInclui[37m...
+          ╵              [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component ProcesoMensualDetalleModalComponent.
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/components/proceso-mensual-detalle-modal/proceso-mensual-detalle-modal.component.ts:14:15:
+[37m      14 │   templateUrl: [32m'./proceso-mensual-detalle-modal.component.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2532: Object is possibly 'undefined'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/components/proceso-mensual-detalle-modal/proceso-mensual-detalle-modal.component.html:157:29:
+[37m      157 │ ...     @if ([32m(f.baseNominaTrazabilidad()?.movimientosDelMesInclui[37m...
+          ╵              [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component ProcesoMensualDetalleModalComponent.
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/components/proceso-mensual-detalle-modal/proceso-mensual-detalle-modal.component.ts:14:15:
+[37m      14 │   templateUrl: [32m'./proceso-mensual-detalle-modal.component.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mNG5002: Parser Error: Conditional expression aseNominaTrazabilidad()?.movimientosDelMesIncluidos ? f.dashboardResumen().movimientosAprobados  requires all 3 expressions at the end of the expression [ f.baseNominaTrazabilidad()?.movimientosDelMesIncluidos ? f.dashboardResumen().movimientosAprobados ] in C:\Users\PC\Desktop\ERP\angular-erp\src\app\features\nomina-mensual\containers\proceso-mensual-container\components\proceso-mensual-detalle-modal\proceso-mensual-detalle-modal.component.html@157:26[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/components/proceso-mensual-detalle-modal/proceso-mensual-detalle-modal.component.html:158:26:
+[37m      158 │ ...          [32m{{ f.baseNominaTrazabilidad()?.movimientosDelMesIncl[37m...
+          ╵              [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component ProcesoMensualDetalleModalComponent.
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/components/proceso-mensual-detalle-modal/proceso-mensual-detalle-modal.component.ts:14:15:
+[37m      14 │   templateUrl: [32m'./proceso-mensual-detalle-modal.component.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mNG5002: Parser Error: Conditional expression f.baseNominaTrazabilidad()?.asignacionesRecurrentesIncluidas ? f.dashboardResumen().asignacionesAplicables ? 0 requires all 3 expressions at column 112 in [(f.baseNominaTrazabilidad()?.asignacionesRecurrentesIncluidas ? f.dashboardResumen().asignacionesAplicables ? 0) > 0] in C:\Users\PC\Desktop\ERP\angular-erp\src\app\features\nomina-mensual\containers\proceso-mensual-container\components\proceso-mensual-detalle-modal\proceso-mensual-detalle-modal.component.html@166:29[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/components/proceso-mensual-detalle-modal/proceso-mensual-detalle-modal.component.html:167:29:
+[37m      167 │ ...     @if ([32m(f.baseNominaTrazabilidad()?.asignacionesRecurrentes[37m...
+          ╵              [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component ProcesoMensualDetalleModalComponent.
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/components/proceso-mensual-detalle-modal/proceso-mensual-detalle-modal.component.ts:14:15:
+[37m      14 │   templateUrl: [32m'./proceso-mensual-detalle-modal.component.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mNG5002: Parser Error: Conditional expression f.dashboardResumen().asignacionesAplicables ? 0 requires all 3 expressions at column 112 in [(f.baseNominaTrazabilidad()?.asignacionesRecurrentesIncluidas ? f.dashboardResumen().asignacionesAplicables ? 0) > 0] in C:\Users\PC\Desktop\ERP\angular-erp\src\app\features\nomina-mensual\containers\proceso-mensual-container\components\proceso-mensual-detalle-modal\proceso-mensual-detalle-modal.component.html@166:29[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/components/proceso-mensual-detalle-modal/proceso-mensual-detalle-modal.component.html:167:29:
+[37m      167 │ ...     @if ([32m(f.baseNominaTrazabilidad()?.asignacionesRecurrentes[37m...
+          ╵              [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component ProcesoMensualDetalleModalComponent.
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/components/proceso-mensual-detalle-modal/proceso-mensual-detalle-modal.component.ts:14:15:
+[37m      14 │   templateUrl: [32m'./proceso-mensual-detalle-modal.component.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2532: Object is possibly 'undefined'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/components/proceso-mensual-detalle-modal/proceso-mensual-detalle-modal.component.html:167:29:
+[37m      167 │ ...     @if ([32m(f.baseNominaTrazabilidad()?.asignacionesRecurrentes[37m...
+          ╵              [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component ProcesoMensualDetalleModalComponent.
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/components/proceso-mensual-detalle-modal/proceso-mensual-detalle-modal.component.ts:14:15:
+[37m      14 │   templateUrl: [32m'./proceso-mensual-detalle-modal.component.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mNG5002: Parser Error: Conditional expression aseNominaTrazabilidad()?.asignacionesRecurrentesIncluidas ? f.dashboardResumen().asignacionesAplicables ? 0  requires all 3 expressions at the end of the expression [ f.baseNominaTrazabilidad()?.asignacionesRecurrentesIncluidas ? f.dashboardResumen().asignacionesAplicables ? 0 ] in C:\Users\PC\Desktop\ERP\angular-erp\src\app\features\nomina-mensual\containers\proceso-mensual-container\components\proceso-mensual-detalle-modal\proceso-mensual-detalle-modal.component.html@167:26[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/components/proceso-mensual-detalle-modal/proceso-mensual-detalle-modal.component.html:168:26:
+[37m      168 │ ...          [32m{{ f.baseNominaTrazabilidad()?.asignacionesRecurrent[37m...
+          ╵              [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component ProcesoMensualDetalleModalComponent.
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/components/proceso-mensual-detalle-modal/proceso-mensual-detalle-modal.component.ts:14:15:
+[37m      14 │   templateUrl: [32m'./proceso-mensual-detalle-modal.component.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mNG5002: Parser Error: Conditional expression ashboardResumen().asignacionesAplicables ? 0  requires all 3 expressions at the end of the expression [ f.baseNominaTrazabilidad()?.asignacionesRecurrentesIncluidas ? f.dashboardResumen().asignacionesAplicables ? 0 ] in C:\Users\PC\Desktop\ERP\angular-erp\src\app\features\nomina-mensual\containers\proceso-mensual-container\components\proceso-mensual-detalle-modal\proceso-mensual-detalle-modal.component.html@167:26[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/components/proceso-mensual-detalle-modal/proceso-mensual-detalle-modal.component.html:168:26:
+[37m      168 │ ...          [32m{{ f.baseNominaTrazabilidad()?.asignacionesRecurrent[37m...
+          ╵              [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component ProcesoMensualDetalleModalComponent.
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/components/proceso-mensual-detalle-modal/proceso-mensual-detalle-modal.component.ts:14:15:
+[37m      14 │   templateUrl: [32m'./proceso-mensual-detalle-modal.component.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+[39m[22m
+[1m[31m[31mX [41;31m[[41;97mERROR[41;31m][0m [1mNG5002: Parser Error: Conditional expression ctaExpediente.disabledReason ? null requires all 3 expressions at the end of the expression [ctaExpediente.disabledReason ? null] in C:\Users\PC\Desktop\ERP\angular-erp\src\app\features\nomina-mensual\containers\proceso-mensual-container\components\proceso-mensual-detalle-modal\proceso-mensual-detalle-modal.component.html@105:42[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/components/proceso-mensual-detalle-modal/proceso-mensual-detalle-modal.component.html:106:42:
+[37m      106 │ ...               [attr.title]="[32mctaExpediente.disabledReason ? null[37m"
+          ╵                                 [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component ProcesoMensualDetalleModalComponent.
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/components/proceso-mensual-detalle-modal/proceso-mensual-detalle-modal.component.ts:14:15:
+[37m      14 │   templateUrl: [32m'./proceso-mensual-detalle-modal.component.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mNG5002: Parser Error: Conditional expression ctaExpediente.disabledReason ? null requires all 3 expressions at the end of the expression [ctaExpediente.disabledReason ? null] in C:\Users\PC\Desktop\ERP\angular-erp\src\app\features\nomina-mensual\containers\proceso-mensual-container\components\proceso-mensual-detalle-modal\proceso-mensual-detalle-modal.component.html@119:42[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/components/proceso-mensual-detalle-modal/proceso-mensual-detalle-modal.component.html:120:42:
+[37m      120 │ ...               [attr.title]="[32mctaExpediente.disabledReason ? null[37m"
+          ╵                                 [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component ProcesoMensualDetalleModalComponent.
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/components/proceso-mensual-detalle-modal/proceso-mensual-detalle-modal.component.ts:14:15:
+[37m      14 │   templateUrl: [32m'./proceso-mensual-detalle-modal.component.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mNG5002: Parser Error: Conditional expression baseNominaTrazabilidad()?.trabajadoresConsiderados ? f.dashboardResumen().trabajadoresAptos ? expediente.totales?.trabajadores ? 0  requires all 3 expressions at the end of the expression [ f.baseNominaTrazabilidad()?.trabajadoresConsiderados ? f.dashboardResumen().trabajadoresAptos ? expediente.totales?.trabajadores ? 0 ] in C:\Users\PC\Desktop\ERP\angular-erp\src\app\features\nomina-mensual\containers\proceso-mensual-container\components\proceso-mensual-detalle-modal\proceso-mensual-detalle-modal.component.html@152:63[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/components/proceso-mensual-detalle-modal/proceso-mensual-detalle-modal.component.html:153:63:
+[37m      153 │ ...s</dt><dd>[32m{{ f.baseNominaTrazabilidad()?.trabajadoresConsidera[37m...
+          ╵              [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component ProcesoMensualDetalleModalComponent.
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/components/proceso-mensual-detalle-modal/proceso-mensual-detalle-modal.component.ts:14:15:
+[37m      14 │   templateUrl: [32m'./proceso-mensual-detalle-modal.component.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mNG5002: Parser Error: Conditional expression dashboardResumen().trabajadoresAptos ? expediente.totales?.trabajadores ? 0  requires all 3 expressions at the end of the expression [ f.baseNominaTrazabilidad()?.trabajadoresConsiderados ? f.dashboardResumen().trabajadoresAptos ? expediente.totales?.trabajadores ? 0 ] in C:\Users\PC\Desktop\ERP\angular-erp\src\app\features\nomina-mensual\containers\proceso-mensual-container\components\proceso-mensual-detalle-modal\proceso-mensual-detalle-modal.component.html@152:63[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/components/proceso-mensual-detalle-modal/proceso-mensual-detalle-modal.component.html:153:63:
+[37m      153 │ ...s</dt><dd>[32m{{ f.baseNominaTrazabilidad()?.trabajadoresConsidera[37m...
+          ╵              [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component ProcesoMensualDetalleModalComponent.
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/components/proceso-mensual-detalle-modal/proceso-mensual-detalle-modal.component.ts:14:15:
+[37m      14 │   templateUrl: [32m'./proceso-mensual-detalle-modal.component.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mNG5002: Parser Error: Conditional expression pediente.totales?.trabajadores ? 0  requires all 3 expressions at the end of the expression [ f.baseNominaTrazabilidad()?.trabajadoresConsiderados ? f.dashboardResumen().trabajadoresAptos ? expediente.totales?.trabajadores ? 0 ] in C:\Users\PC\Desktop\ERP\angular-erp\src\app\features\nomina-mensual\containers\proceso-mensual-container\components\proceso-mensual-detalle-modal\proceso-mensual-detalle-modal.component.html@152:63[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/components/proceso-mensual-detalle-modal/proceso-mensual-detalle-modal.component.html:153:63:
+[37m      153 │ ...s</dt><dd>[32m{{ f.baseNominaTrazabilidad()?.trabajadoresConsidera[37m...
+          ╵              [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component ProcesoMensualDetalleModalComponent.
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/components/proceso-mensual-detalle-modal/proceso-mensual-detalle-modal.component.ts:14:15:
+[37m      14 │   templateUrl: [32m'./proceso-mensual-detalle-modal.component.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mNG5002: Parser Error: Conditional expression f.baseNominaTrazabilidad()?.movimientosDelMesIncluidos ? f.dashboardResumen().movimientosAprobados requires all 3 expressions at column 100 in [(f.baseNominaTrazabilidad()?.movimientosDelMesIncluidos ? f.dashboardResumen().movimientosAprobados) > 0] in C:\Users\PC\Desktop\ERP\angular-erp\src\app\features\nomina-mensual\containers\proceso-mensual-container\components\proceso-mensual-detalle-modal\proceso-mensual-detalle-modal.component.html@156:29[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/components/proceso-mensual-detalle-modal/proceso-mensual-detalle-modal.component.html:157:29:
+[37m      157 │ ...     @if ([32m(f.baseNominaTrazabilidad()?.movimientosDelMesInclui[37m...
+          ╵              [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component ProcesoMensualDetalleModalComponent.
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/components/proceso-mensual-detalle-modal/proceso-mensual-detalle-modal.component.ts:14:15:
+[37m      14 │   templateUrl: [32m'./proceso-mensual-detalle-modal.component.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2532: Object is possibly 'undefined'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/components/proceso-mensual-detalle-modal/proceso-mensual-detalle-modal.component.html:157:29:
+[37m      157 │ ...     @if ([32m(f.baseNominaTrazabilidad()?.movimientosDelMesInclui[37m...
+          ╵              [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component ProcesoMensualDetalleModalComponent.
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/components/proceso-mensual-detalle-modal/proceso-mensual-detalle-modal.component.ts:14:15:
+[37m      14 │   templateUrl: [32m'./proceso-mensual-detalle-modal.component.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mNG5002: Parser Error: Conditional expression aseNominaTrazabilidad()?.movimientosDelMesIncluidos ? f.dashboardResumen().movimientosAprobados  requires all 3 expressions at the end of the expression [ f.baseNominaTrazabilidad()?.movimientosDelMesIncluidos ? f.dashboardResumen().movimientosAprobados ] in C:\Users\PC\Desktop\ERP\angular-erp\src\app\features\nomina-mensual\containers\proceso-mensual-container\components\proceso-mensual-detalle-modal\proceso-mensual-detalle-modal.component.html@157:26[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/components/proceso-mensual-detalle-modal/proceso-mensual-detalle-modal.component.html:158:26:
+[37m      158 │ ...          [32m{{ f.baseNominaTrazabilidad()?.movimientosDelMesIncl[37m...
+          ╵              [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component ProcesoMensualDetalleModalComponent.
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/components/proceso-mensual-detalle-modal/proceso-mensual-detalle-modal.component.ts:14:15:
+[37m      14 │   templateUrl: [32m'./proceso-mensual-detalle-modal.component.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mNG5002: Parser Error: Conditional expression f.baseNominaTrazabilidad()?.asignacionesRecurrentesIncluidas ? f.dashboardResumen().asignacionesAplicables ? 0 requires all 3 expressions at column 112 in [(f.baseNominaTrazabilidad()?.asignacionesRecurrentesIncluidas ? f.dashboardResumen().asignacionesAplicables ? 0) > 0] in C:\Users\PC\Desktop\ERP\angular-erp\src\app\features\nomina-mensual\containers\proceso-mensual-container\components\proceso-mensual-detalle-modal\proceso-mensual-detalle-modal.component.html@166:29[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/components/proceso-mensual-detalle-modal/proceso-mensual-detalle-modal.component.html:167:29:
+[37m      167 │ ...     @if ([32m(f.baseNominaTrazabilidad()?.asignacionesRecurrentes[37m...
+          ╵              [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component ProcesoMensualDetalleModalComponent.
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/components/proceso-mensual-detalle-modal/proceso-mensual-detalle-modal.component.ts:14:15:
+[37m      14 │   templateUrl: [32m'./proceso-mensual-detalle-modal.component.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mNG5002: Parser Error: Conditional expression f.dashboardResumen().asignacionesAplicables ? 0 requires all 3 expressions at column 112 in [(f.baseNominaTrazabilidad()?.asignacionesRecurrentesIncluidas ? f.dashboardResumen().asignacionesAplicables ? 0) > 0] in C:\Users\PC\Desktop\ERP\angular-erp\src\app\features\nomina-mensual\containers\proceso-mensual-container\components\proceso-mensual-detalle-modal\proceso-mensual-detalle-modal.component.html@166:29[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/components/proceso-mensual-detalle-modal/proceso-mensual-detalle-modal.component.html:167:29:
+[37m      167 │ ...     @if ([32m(f.baseNominaTrazabilidad()?.asignacionesRecurrentes[37m...
+          ╵              [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component ProcesoMensualDetalleModalComponent.
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/components/proceso-mensual-detalle-modal/proceso-mensual-detalle-modal.component.ts:14:15:
+[37m      14 │   templateUrl: [32m'./proceso-mensual-detalle-modal.component.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2532: Object is possibly 'undefined'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/components/proceso-mensual-detalle-modal/proceso-mensual-detalle-modal.component.html:167:29:
+[37m      167 │ ...     @if ([32m(f.baseNominaTrazabilidad()?.asignacionesRecurrentes[37m...
+          ╵              [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component ProcesoMensualDetalleModalComponent.
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/components/proceso-mensual-detalle-modal/proceso-mensual-detalle-modal.component.ts:14:15:
+[37m      14 │   templateUrl: [32m'./proceso-mensual-detalle-modal.component.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mNG5002: Parser Error: Conditional expression aseNominaTrazabilidad()?.asignacionesRecurrentesIncluidas ? f.dashboardResumen().asignacionesAplicables ? 0  requires all 3 expressions at the end of the expression [ f.baseNominaTrazabilidad()?.asignacionesRecurrentesIncluidas ? f.dashboardResumen().asignacionesAplicables ? 0 ] in C:\Users\PC\Desktop\ERP\angular-erp\src\app\features\nomina-mensual\containers\proceso-mensual-container\components\proceso-mensual-detalle-modal\proceso-mensual-detalle-modal.component.html@167:26[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/components/proceso-mensual-detalle-modal/proceso-mensual-detalle-modal.component.html:168:26:
+[37m      168 │ ...          [32m{{ f.baseNominaTrazabilidad()?.asignacionesRecurrent[37m...
+          ╵              [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component ProcesoMensualDetalleModalComponent.
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/components/proceso-mensual-detalle-modal/proceso-mensual-detalle-modal.component.ts:14:15:
+[37m      14 │   templateUrl: [32m'./proceso-mensual-detalle-modal.component.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mNG5002: Parser Error: Conditional expression ashboardResumen().asignacionesAplicables ? 0  requires all 3 expressions at the end of the expression [ f.baseNominaTrazabilidad()?.asignacionesRecurrentesIncluidas ? f.dashboardResumen().asignacionesAplicables ? 0 ] in C:\Users\PC\Desktop\ERP\angular-erp\src\app\features\nomina-mensual\containers\proceso-mensual-container\components\proceso-mensual-detalle-modal\proceso-mensual-detalle-modal.component.html@167:26[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/components/proceso-mensual-detalle-modal/proceso-mensual-detalle-modal.component.html:168:26:
+[37m      168 │ ...          [32m{{ f.baseNominaTrazabilidad()?.asignacionesRecurrent[37m...
+          ╵              [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component ProcesoMensualDetalleModalComponent.
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/components/proceso-mensual-detalle-modal/proceso-mensual-detalle-modal.component.ts:14:15:
+[37m      14 │   templateUrl: [32m'./proceso-mensual-detalle-modal.component.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+[39m[22m
+[1m[31m[31mX [41;31m[[41;97mERROR[41;31m][0m [1mNG5002: Parser Error: Conditional expression ctaExpediente.disabledReason ? null requires all 3 expressions at the end of the expression [ctaExpediente.disabledReason ? null] in C:\Users\PC\Desktop\ERP\angular-erp\src\app\features\nomina-mensual\containers\proceso-mensual-container\components\proceso-mensual-detalle-modal\proceso-mensual-detalle-modal.component.html@105:42[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/components/proceso-mensual-detalle-modal/proceso-mensual-detalle-modal.component.html:106:42:
+[37m      106 │ ...               [attr.title]="[32mctaExpediente.disabledReason ? null[37m"
+          ╵                                 [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component ProcesoMensualDetalleModalComponent.
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/components/proceso-mensual-detalle-modal/proceso-mensual-detalle-modal.component.ts:14:15:
+[37m      14 │   templateUrl: [32m'./proceso-mensual-detalle-modal.component.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mNG5002: Parser Error: Conditional expression ctaExpediente.disabledReason ? null requires all 3 expressions at the end of the expression [ctaExpediente.disabledReason ? null] in C:\Users\PC\Desktop\ERP\angular-erp\src\app\features\nomina-mensual\containers\proceso-mensual-container\components\proceso-mensual-detalle-modal\proceso-mensual-detalle-modal.component.html@119:42[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/components/proceso-mensual-detalle-modal/proceso-mensual-detalle-modal.component.html:120:42:
+[37m      120 │ ...               [attr.title]="[32mctaExpediente.disabledReason ? null[37m"
+          ╵                                 [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component ProcesoMensualDetalleModalComponent.
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/components/proceso-mensual-detalle-modal/proceso-mensual-detalle-modal.component.ts:14:15:
+[37m      14 │   templateUrl: [32m'./proceso-mensual-detalle-modal.component.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mNG5002: Parser Error: Conditional expression baseNominaTrazabilidad()?.trabajadoresConsiderados ? f.dashboardResumen().trabajadoresAptos ? expediente.totales?.trabajadores ? 0  requires all 3 expressions at the end of the expression [ f.baseNominaTrazabilidad()?.trabajadoresConsiderados ? f.dashboardResumen().trabajadoresAptos ? expediente.totales?.trabajadores ? 0 ] in C:\Users\PC\Desktop\ERP\angular-erp\src\app\features\nomina-mensual\containers\proceso-mensual-container\components\proceso-mensual-detalle-modal\proceso-mensual-detalle-modal.component.html@152:63[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/components/proceso-mensual-detalle-modal/proceso-mensual-detalle-modal.component.html:153:63:
+[37m      153 │ ...s</dt><dd>[32m{{ f.baseNominaTrazabilidad()?.trabajadoresConsidera[37m...
+          ╵              [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component ProcesoMensualDetalleModalComponent.
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/components/proceso-mensual-detalle-modal/proceso-mensual-detalle-modal.component.ts:14:15:
+[37m      14 │   templateUrl: [32m'./proceso-mensual-detalle-modal.component.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mNG5002: Parser Error: Conditional expression dashboardResumen().trabajadoresAptos ? expediente.totales?.trabajadores ? 0  requires all 3 expressions at the end of the expression [ f.baseNominaTrazabilidad()?.trabajadoresConsiderados ? f.dashboardResumen().trabajadoresAptos ? expediente.totales?.trabajadores ? 0 ] in C:\Users\PC\Desktop\ERP\angular-erp\src\app\features\nomina-mensual\containers\proceso-mensual-container\components\proceso-mensual-detalle-modal\proceso-mensual-detalle-modal.component.html@152:63[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/components/proceso-mensual-detalle-modal/proceso-mensual-detalle-modal.component.html:153:63:
+[37m      153 │ ...s</dt><dd>[32m{{ f.baseNominaTrazabilidad()?.trabajadoresConsidera[37m...
+          ╵              [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component ProcesoMensualDetalleModalComponent.
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/components/proceso-mensual-detalle-modal/proceso-mensual-detalle-modal.component.ts:14:15:
+[37m      14 │   templateUrl: [32m'./proceso-mensual-detalle-modal.component.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mNG5002: Parser Error: Conditional expression pediente.totales?.trabajadores ? 0  requires all 3 expressions at the end of the expression [ f.baseNominaTrazabilidad()?.trabajadoresConsiderados ? f.dashboardResumen().trabajadoresAptos ? expediente.totales?.trabajadores ? 0 ] in C:\Users\PC\Desktop\ERP\angular-erp\src\app\features\nomina-mensual\containers\proceso-mensual-container\components\proceso-mensual-detalle-modal\proceso-mensual-detalle-modal.component.html@152:63[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/components/proceso-mensual-detalle-modal/proceso-mensual-detalle-modal.component.html:153:63:
+[37m      153 │ ...s</dt><dd>[32m{{ f.baseNominaTrazabilidad()?.trabajadoresConsidera[37m...
+          ╵              [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component ProcesoMensualDetalleModalComponent.
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/components/proceso-mensual-detalle-modal/proceso-mensual-detalle-modal.component.ts:14:15:
+[37m      14 │   templateUrl: [32m'./proceso-mensual-detalle-modal.component.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mNG5002: Parser Error: Conditional expression f.baseNominaTrazabilidad()?.movimientosDelMesIncluidos ? f.dashboardResumen().movimientosAprobados requires all 3 expressions at column 100 in [(f.baseNominaTrazabilidad()?.movimientosDelMesIncluidos ? f.dashboardResumen().movimientosAprobados) > 0] in C:\Users\PC\Desktop\ERP\angular-erp\src\app\features\nomina-mensual\containers\proceso-mensual-container\components\proceso-mensual-detalle-modal\proceso-mensual-detalle-modal.component.html@156:29[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/components/proceso-mensual-detalle-modal/proceso-mensual-detalle-modal.component.html:157:29:
+[37m      157 │ ...     @if ([32m(f.baseNominaTrazabilidad()?.movimientosDelMesInclui[37m...
+          ╵              [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component ProcesoMensualDetalleModalComponent.
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/components/proceso-mensual-detalle-modal/proceso-mensual-detalle-modal.component.ts:14:15:
+[37m      14 │   templateUrl: [32m'./proceso-mensual-detalle-modal.component.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2532: Object is possibly 'undefined'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/components/proceso-mensual-detalle-modal/proceso-mensual-detalle-modal.component.html:157:29:
+[37m      157 │ ...     @if ([32m(f.baseNominaTrazabilidad()?.movimientosDelMesInclui[37m...
+          ╵              [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component ProcesoMensualDetalleModalComponent.
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/components/proceso-mensual-detalle-modal/proceso-mensual-detalle-modal.component.ts:14:15:
+[37m      14 │   templateUrl: [32m'./proceso-mensual-detalle-modal.component.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mNG5002: Parser Error: Conditional expression aseNominaTrazabilidad()?.movimientosDelMesIncluidos ? f.dashboardResumen().movimientosAprobados  requires all 3 expressions at the end of the expression [ f.baseNominaTrazabilidad()?.movimientosDelMesIncluidos ? f.dashboardResumen().movimientosAprobados ] in C:\Users\PC\Desktop\ERP\angular-erp\src\app\features\nomina-mensual\containers\proceso-mensual-container\components\proceso-mensual-detalle-modal\proceso-mensual-detalle-modal.component.html@157:26[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/components/proceso-mensual-detalle-modal/proceso-mensual-detalle-modal.component.html:158:26:
+[37m      158 │ ...          [32m{{ f.baseNominaTrazabilidad()?.movimientosDelMesIncl[37m...
+          ╵              [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component ProcesoMensualDetalleModalComponent.
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/components/proceso-mensual-detalle-modal/proceso-mensual-detalle-modal.component.ts:14:15:
+[37m      14 │   templateUrl: [32m'./proceso-mensual-detalle-modal.component.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mNG5002: Parser Error: Conditional expression f.baseNominaTrazabilidad()?.asignacionesRecurrentesIncluidas ? f.dashboardResumen().asignacionesAplicables ? 0 requires all 3 expressions at column 112 in [(f.baseNominaTrazabilidad()?.asignacionesRecurrentesIncluidas ? f.dashboardResumen().asignacionesAplicables ? 0) > 0] in C:\Users\PC\Desktop\ERP\angular-erp\src\app\features\nomina-mensual\containers\proceso-mensual-container\components\proceso-mensual-detalle-modal\proceso-mensual-detalle-modal.component.html@166:29[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/components/proceso-mensual-detalle-modal/proceso-mensual-detalle-modal.component.html:167:29:
+[37m      167 │ ...     @if ([32m(f.baseNominaTrazabilidad()?.asignacionesRecurrentes[37m...
+          ╵              [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component ProcesoMensualDetalleModalComponent.
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/components/proceso-mensual-detalle-modal/proceso-mensual-detalle-modal.component.ts:14:15:
+[37m      14 │   templateUrl: [32m'./proceso-mensual-detalle-modal.component.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mNG5002: Parser Error: Conditional expression f.dashboardResumen().asignacionesAplicables ? 0 requires all 3 expressions at column 112 in [(f.baseNominaTrazabilidad()?.asignacionesRecurrentesIncluidas ? f.dashboardResumen().asignacionesAplicables ? 0) > 0] in C:\Users\PC\Desktop\ERP\angular-erp\src\app\features\nomina-mensual\containers\proceso-mensual-container\components\proceso-mensual-detalle-modal\proceso-mensual-detalle-modal.component.html@166:29[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/components/proceso-mensual-detalle-modal/proceso-mensual-detalle-modal.component.html:167:29:
+[37m      167 │ ...     @if ([32m(f.baseNominaTrazabilidad()?.asignacionesRecurrentes[37m...
+          ╵              [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component ProcesoMensualDetalleModalComponent.
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/components/proceso-mensual-detalle-modal/proceso-mensual-detalle-modal.component.ts:14:15:
+[37m      14 │   templateUrl: [32m'./proceso-mensual-detalle-modal.component.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2532: Object is possibly 'undefined'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/components/proceso-mensual-detalle-modal/proceso-mensual-detalle-modal.component.html:167:29:
+[37m      167 │ ...     @if ([32m(f.baseNominaTrazabilidad()?.asignacionesRecurrentes[37m...
+          ╵              [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component ProcesoMensualDetalleModalComponent.
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/components/proceso-mensual-detalle-modal/proceso-mensual-detalle-modal.component.ts:14:15:
+[37m      14 │   templateUrl: [32m'./proceso-mensual-detalle-modal.component.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mNG5002: Parser Error: Conditional expression aseNominaTrazabilidad()?.asignacionesRecurrentesIncluidas ? f.dashboardResumen().asignacionesAplicables ? 0  requires all 3 expressions at the end of the expression [ f.baseNominaTrazabilidad()?.asignacionesRecurrentesIncluidas ? f.dashboardResumen().asignacionesAplicables ? 0 ] in C:\Users\PC\Desktop\ERP\angular-erp\src\app\features\nomina-mensual\containers\proceso-mensual-container\components\proceso-mensual-detalle-modal\proceso-mensual-detalle-modal.component.html@167:26[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/components/proceso-mensual-detalle-modal/proceso-mensual-detalle-modal.component.html:168:26:
+[37m      168 │ ...          [32m{{ f.baseNominaTrazabilidad()?.asignacionesRecurrent[37m...
+          ╵              [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component ProcesoMensualDetalleModalComponent.
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/components/proceso-mensual-detalle-modal/proceso-mensual-detalle-modal.component.ts:14:15:
+[37m      14 │   templateUrl: [32m'./proceso-mensual-detalle-modal.component.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mNG5002: Parser Error: Conditional expression ashboardResumen().asignacionesAplicables ? 0  requires all 3 expressions at the end of the expression [ f.baseNominaTrazabilidad()?.asignacionesRecurrentesIncluidas ? f.dashboardResumen().asignacionesAplicables ? 0 ] in C:\Users\PC\Desktop\ERP\angular-erp\src\app\features\nomina-mensual\containers\proceso-mensual-container\components\proceso-mensual-detalle-modal\proceso-mensual-detalle-modal.component.html@167:26[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/components/proceso-mensual-detalle-modal/proceso-mensual-detalle-modal.component.html:168:26:
+[37m      168 │ ...          [32m{{ f.baseNominaTrazabilidad()?.asignacionesRecurrent[37m...
+          ╵              [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component ProcesoMensualDetalleModalComponent.
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/components/proceso-mensual-detalle-modal/proceso-mensual-detalle-modal.component.ts:14:15:
+[37m      14 │   templateUrl: [32m'./proceso-mensual-detalle-modal.component.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+[39m[22m

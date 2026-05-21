@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+﻿import { describe, expect, it } from 'vitest';
 
 import {
   buildNominaWorkspaceTabs,
@@ -89,10 +89,10 @@ describe('proceso-mensual-workspace-presentacion.rules', () => {
       detalleTabs: buildDetalleRevisionTabsMeta({
         tabs: [],
         incidencias,
-        workerRowCount: 0,
-        movementRowCount: 0,
-        recurrentRowCount: 0,
-        resultRowCount: 0,
+        cantidadFilasTrabajadores: 0,
+        cantidadFilasMovimientos: 0,
+        cantidadFilasRecurrentes: 0,
+        cantidadFilasResultado: 0,
         parametrosListos: false,
         tieneActividadPeriodo: true,
       }),

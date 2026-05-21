@@ -1,4 +1,4 @@
-﻿import { describe, expect, it, vi } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { TestBed } from '@angular/core/testing';
 import { ActivatedRoute, Router } from '@angular/router';
 
@@ -119,7 +119,7 @@ describe('FormEmpleadoComponent - completitud de borrador avanzado', () => {
 
     component.goToNextTab();
 
-    expect(component.activeWizardStep()).toBe(0);
+    expect(component.pasoWizardActivo()).toBe(0);
     const modal = component.advancedActionModal();
     expect(modal?.kind).toBe('next-step-review');
     expect(modal?.primaryLabel).toBe('Continuar');
@@ -128,7 +128,7 @@ describe('FormEmpleadoComponent - completitud de borrador avanzado', () => {
     component.handleAdvancedActionModalPrimary();
 
     expect(component.advancedActionModal()).toBeNull();
-    expect(component.activeWizardStep()).toBe(1);
+    expect(component.pasoWizardActivo()).toBe(1);
   });
 
   it('Guardar borrador usa MsgBox cuando falta validacion minima', async () => {
@@ -149,13 +149,13 @@ describe('FormEmpleadoComponent - completitud de borrador avanzado', () => {
 
     await component.onSubmit();
 
-    expect(component.activeWizardStep()).toBe(8);
+    expect(component.pasoWizardActivo()).toBe(8);
     expect(component.advancedActionModal()?.kind).toBe('finish-invalid');
 
     component.handleAdvancedActionModalPrimary();
 
     expect(component.advancedActionModal()).toBeNull();
-    expect(component.activeWizardStep()).toBe(0);
+    expect(component.pasoWizardActivo()).toBe(0);
   });
 
 
@@ -164,7 +164,7 @@ describe('FormEmpleadoComponent - completitud de borrador avanzado', () => {
 
     component.form.controls.contrato.controls.relacionLaboral.setValue('HONORARIOS');
 
-    expect(component.linearWizardSequence()).toEqual([0, 1, 2, 3, 7, 8]);
+    expect(component.linearWizardSequence()).toEqual([0, 1, 2, 3, 7, 9]);
     expect(component.wizardStepUiKind(4)).toBe('no-aplica');
     expect(component.wizardStepUiKind(5)).toBe('no-aplica');
     expect(component.wizardStepUiKind(6)).toBe('no-aplica');
@@ -205,11 +205,11 @@ describe('FormEmpleadoComponent - completitud de borrador avanzado', () => {
 
     component.handleAdvancedActionModalPrimary();
 
-    expect(component.activeWizardStep()).toBe(7);
+    expect(component.pasoWizardActivo()).toBe(7);
   });
 
 
-  it('Siguiente muestra MsgBox de coherencia y permite activar seguro de cesantia', async () => {
+  it('Siguiente muestra MsgBox de coherencia y permite activar seguro de cesantía', async () => {
     const component = await setup();
     component.selectWizardStep(3);
     component.form.patchValue({
@@ -227,12 +227,12 @@ describe('FormEmpleadoComponent - completitud de borrador avanzado', () => {
     component.goToNextTab();
 
     expect(component.advancedActionModal()?.kind).toBe('coherence-decision');
-    expect(component.advancedActionModal()?.primaryLabel).toBe('Activar seguro de cesanta');
+    expect(component.advancedActionModal()?.primaryLabel).toBe('Activar seguro de cesantía');
 
     component.handleAdvancedActionModalPrimary();
 
     expect(component.form.controls.contrato.controls.seguroCesantia.value).toBe(true);
-    expect(component.activeWizardStep()).toBe(3);
+    expect(component.pasoWizardActivo()).toBe(3);
   });
 
   it('Mantener revision de coherencia permite continuar sin cambiar el dato', async () => {
@@ -254,8 +254,8 @@ describe('FormEmpleadoComponent - completitud de borrador avanzado', () => {
     component.handleAdvancedActionModalSecondary();
 
     expect(component.form.controls.contrato.controls.seguroCesantia.value).toBe(false);
-    expect(component.activeWizardStep()).toBe(4);
-    expect(component.coherenciaResumenItems()).toContain('Seguro de Cesanta desactivado en contrato indefinido.');
+    expect(component.pasoWizardActivo()).toBe(4);
+    expect(component.coherenciaResumenItems()).toContain('Seguro de Cesantía desactivado en contrato indefinido.');
   });
 
   it('sincroniza tipo trabajador base desde relacion laboral', async () => {

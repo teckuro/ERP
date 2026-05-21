@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, effect, HostListener, inject, signal, untracked } from '@angular/core';
+﻿import { ChangeDetectionStrategy, Component, effect, HostListener, inject, signal, untracked } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
 import {

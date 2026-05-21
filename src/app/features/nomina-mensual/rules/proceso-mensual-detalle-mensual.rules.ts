@@ -1,4 +1,4 @@
-import type {
+﻿import type {
   NominaDetalleMensualAmbito,
   NominaDetalleMensualExpedienteRow,
   NominaDetalleMensualMovimientoRow,
@@ -6,10 +6,10 @@ import type {
   NominaDetalleMensualTrabajadorRow,
   NominaHistorialTablaRow,
   NominaWorkspaceDetailSeverity,
-  PayrollMovementDetailRow,
-  PayrollRecurrentDetailRow,
-  PayrollResultDetailRow,
-  PayrollWorkerDetailRow,
+  FilaDetalleMovimientoNomina,
+  FilaDetalleRecurrenteNomina,
+  FilaDetalleResultadoNomina,
+  FilaDetalleTrabajadorNomina,
   DetalleOperativoTab,
 } from '../containers/proceso-mensual-container/models/proceso-mensual-container.vm';
 import type { IncidenciasPeriodoView } from './proceso-mensual-incidencias-periodo.rules';
@@ -32,8 +32,8 @@ function severityDesdeEstado(estado: string): NominaWorkspaceDetailSeverity {
 }
 
 export function buildNominaDetalleMensualMovimientosRows(input: {
-  movimientos: PayrollMovementDetailRow[];
-  recurrentes: PayrollRecurrentDetailRow[];
+  movimientos: FilaDetalleMovimientoNomina[];
+  recurrentes: FilaDetalleRecurrenteNomina[];
   periodoEtiqueta: string;
 }): NominaDetalleMensualMovimientoRow[] {
   const mensual = input.movimientos.map((row) => ({
@@ -75,8 +75,8 @@ function resolverIdPersonaPorNombre(
 }
 
 export function buildNominaDetalleMensualTrabajadorRows(input: {
-  workers: PayrollWorkerDetailRow[];
-  resultados: PayrollResultDetailRow[];
+  workers: FilaDetalleTrabajadorNomina[];
+  resultados: FilaDetalleResultadoNomina[];
   idPersonaPorNombre?: ReadonlyMap<string, number | string>;
 }): NominaDetalleMensualTrabajadorRow[] {
   if (input.resultados.length) {

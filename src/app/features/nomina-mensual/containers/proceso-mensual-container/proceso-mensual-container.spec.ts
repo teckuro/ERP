@@ -655,7 +655,7 @@ describe('ProcesoMensualContainer', () => {
       const c = fixture.componentInstance;
       c.abrirOverlayDecision({
         tipo: 'guardar_preliminar',
-        titulo: 'Guardar versiÃ³n revisable',
+        titulo: 'Guardar versión revisable',
         mensaje: 'Mensaje de prueba',
         detalle: 'Detalle de prueba',
         puntos: ['Punto uno'],
@@ -1224,7 +1224,7 @@ describe('ProcesoMensualContainer', () => {
       for (const [filtro, etiqueta, cantidad] of casos) {
         c.seleccionarFiltroNominaMasiva(filtro);
         localFixture.detectChanges();
-        expectTexto(c.nominaMasivaTituloContexto() ?? '', `${etiqueta} · ${cantidad}`);
+        expectTexto(c.nominaMasivaTituloContexto() ?? '', `${etiqueta} · ${c.etiquetaCantidadTrabajadores(cantidad)}`);
       }
     });
 

@@ -1,5 +1,14 @@
 # CHANGELOG
 
+## 2026-05-21 - NOMENCLATURA-ES-CAMELCASE-01
+
+- **Empleados:** normalizacion interna en espanol/camelCase para rules y contenedor de ficha; VM de estado expone faltantes, porcentajeAvance, puedeValidarRemuneraciones, etiquetaAccion y ayudaAccion.
+- **Alta avanzada:** aplicabilidad/coherencia usan EstadoAplicabilidadAlta, InconsistenciaCoherenciaAlta, campos/pasos e inconsistencias; form avanzado usa pasoWizardActivo.
+- **Nomina mensual:** capa de presentacion renombra tipos y builders Payroll* a FilaDetalle*Nomina, ItemSeguimientoNomina y construir*Nomina; CSS payroll-* se conserva como contrato visual.
+- **Flujo:** la accion principal del panel respeta la cancelacion por cambios sin guardar antes de abrir edicion en Pago.
+- **Higiene:** logs .angular-dev-server*.log salen del control de version y quedan ignorados.
+- **Validacion:** tsc app/spec y specs completos de empleados/nomina mensual OK; build bloqueado solo por budget CSS preexistente en ficha empleado.
+
 ## 2026-05-21 - EMP-FICHA-EXPEDIENTE-NOIA-01
 
 - **Ficha empleado:** layout expediente 3 columnas (rail índice | bloque activo | diagnóstico); header compacto; panel con motivo principal y CTA único; sin tabs horizontales ni CTA duplicado en shell.

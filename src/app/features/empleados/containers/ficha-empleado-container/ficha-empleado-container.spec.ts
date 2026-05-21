@@ -1,4 +1,4 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+﻿import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ActivatedRoute } from '@angular/router';
 import { provideRouter } from '@angular/router';
 
@@ -217,8 +217,8 @@ describe('FichaEmpleadoContainer', () => {
     const employee = empleado({ estado: 'en_proceso', estadoFicha: 'INCOMPLETO' });
     component['patchFormFromEmployee'](employee);
 
-    expect(component.canValidateForPayroll(employee)).toBe(true);
-    expect(component.primaryActionEvaluadaLabel(employee)).toBe('Validar para remuneraciones');
+    expect(component.puedeValidarRemuneraciones(employee)).toBe(true);
+    expect(component.etiquetaAccionPrincipalEvaluada(employee)).toBe('Validar para remuneraciones');
     expect(component.fichaEstadoPanel(employee).remuneracionesLabel).toBe('Pendiente de validación');
   });
 
@@ -227,8 +227,8 @@ describe('FichaEmpleadoContainer', () => {
     employee.formValue.bancario['numeroCuenta'] = 'DRAFT-XYZ';
     component['patchFormFromEmployee'](employee);
 
-    expect(component.canValidateForPayroll(employee)).toBe(false);
-    expect(component.primaryActionEvaluadaLabel(employee)).toBe('Revisar pendientes');
+    expect(component.puedeValidarRemuneraciones(employee)).toBe(false);
+    expect(component.etiquetaAccionPrincipalEvaluada(employee)).toBe('Revisar pendientes');
     expect(component.pendingItemsEvaluados(employee)).toContain('Reemplaza la cuenta bancaria temporal.');
   });
 
@@ -240,8 +240,8 @@ describe('FichaEmpleadoContainer', () => {
     });
     component['patchFormFromEmployee'](employee);
 
-    expect(component.canValidateForPayroll(employee)).toBe(false);
-    expect(component.primaryActionEvaluadaLabel(employee)).toBe('Continuar alta');
+    expect(component.puedeValidarRemuneraciones(employee)).toBe(false);
+    expect(component.etiquetaAccionPrincipalEvaluada(employee)).toBe('Continuar alta');
   });
 
   it('validar ficha exitosa actualiza la ficha recargada desde servicio', async () => {
@@ -320,11 +320,11 @@ describe('FichaEmpleadoContainer', () => {
       seccionesPendientes: ['prevision y salud'],
     });
 
-    expect(component.canValidateForPayroll(employee)).toBe(false);
+    expect(component.puedeValidarRemuneraciones(employee)).toBe(false);
     expect(component.pendingItemsEvaluados(employee).length).toBeGreaterThan(0);
-    expect(component.primaryActionEvaluadaLabel(employee)).toBe('Revisar pendientes');
+    expect(component.etiquetaAccionPrincipalEvaluada(employee)).toBe('Revisar pendientes');
     component.selectRecommendedTab(employee);
-    expect(component.activeTab()).not.toBeNull();
+    expect(component.tabActivo()).not.toBeNull();
   });
 
   it('borrador basico sin paso no muestra validar', () => {
@@ -335,8 +335,8 @@ describe('FichaEmpleadoContainer', () => {
     });
     component['patchFormFromEmployee'](employee);
 
-    expect(component.canValidateForPayroll(employee)).toBe(false);
-    expect(component.primaryActionEvaluadaLabel(employee)).toBe('Completar ficha');
+    expect(component.puedeValidarRemuneraciones(employee)).toBe(false);
+    expect(component.etiquetaAccionPrincipalEvaluada(employee)).toBe('Completar ficha');
   });
 
   it('ya apta no muestra validar', () => {
@@ -346,8 +346,8 @@ describe('FichaEmpleadoContainer', () => {
     });
     component['patchFormFromEmployee'](employee);
 
-    expect(component.canValidateForPayroll(employee)).toBe(false);
-    expect(component.primaryActionEvaluadaLabel(employee)).toContain('Ver datos');
+    expect(component.puedeValidarRemuneraciones(employee)).toBe(false);
+    expect(component.etiquetaAccionPrincipalEvaluada(employee)).toContain('Ver datos');
   });
 
   it('publica breadcrumbs y chip de estado en el shell sin CTA duplicado', () => {
@@ -428,7 +428,7 @@ describe('FichaEmpleadoContainer', () => {
     pago?.click();
     fixture.detectChanges();
 
-    expect(component.activeTab()).toBe('pago');
+    expect(component.tabActivo()).toBe('pago');
     expect(
       fixture.nativeElement.querySelector('.employee-record-block__title')?.textContent?.trim(),
     ).toBe('Pago');
@@ -468,11 +468,11 @@ describe('FichaEmpleadoContainer', () => {
       'de 5 bloques operativos',
     );
     expect(host.querySelector('.employee-record-status__pct')?.textContent?.trim()).toBe(
-      `${estado.progressPercent}%`,
+      `${estado.porcentajeAvance}%`,
     );
-    expect(progress.getAttribute('aria-valuenow')).toBe(String(estado.progressPercent));
-    expect(estado.progressPercent).toBe(
-      Math.round((estado.completedOperativeBlocks / estado.totalOperativeBlocks) * 100),
+    expect(progress.getAttribute('aria-valuenow')).toBe(String(estado.porcentajeAvance));
+    expect(estado.porcentajeAvance).toBe(
+      Math.round((estado.bloquesOperativosCompletos / estado.totalBloquesOperativos) * 100),
     );
   });
 
@@ -512,8 +512,8 @@ describe('FichaEmpleadoContainer', () => {
     const employee = empleado();
     employee.formValue.bancario['numeroCuenta'] = 'DRAFT-XYZ';
     component['patchFormFromEmployee'](employee);
-    const issues = component.fichaEstadoPanel(employee).issues;
-    const keys = issues.map((i) => `${i.blockKey}:${i.message}`);
+    const faltantes = component.fichaEstadoPanel(employee).faltantes;
+    const keys = faltantes.map((i) => `${i.claveBloque}:${i.mensaje}`);
 
     expect(new Set(keys).size).toBe(keys.length);
   });
@@ -558,8 +558,8 @@ describe('FichaEmpleadoContainer', () => {
     await component.saveSection();
     fixture.detectChanges();
 
-    expect(component.sectionSuccessTitle()).toBe('Identificación legal');
-    expect(component.sectionSuccessMessage()).toContain(
+    expect(component.tituloExitoSeccion()).toBe('Identificación legal');
+    expect(component.mensajeExitoSeccion()).toContain(
       'Las demás secciones de la ficha no se modificaron.',
     );
   });

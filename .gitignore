@@ -10,6 +10,8 @@
 /node_modules
 npm-debug.log
 yarn-error.log
+.angular-dev-server.log
+.angular-dev-server.err.log
 
 # IDEs and editors
 .idea/
@@ -52,6 +54,7 @@ yarn-error.log
 !/docs/codex/diseno/noia-ui-guardrails.md
 !/docs/codex/diseno/noia-ui-manual.md
 !/docs/codex/diseno/noia-ui-review-checklist.md
+!/docs/codex/diseno/nomenclatura-es-camelcase-01.md
 !/docs/codex/diseno/nom-mensual-workspace-ui-01.md
 !/docs/codex/estilos/
 /docs/codex/estilos/*

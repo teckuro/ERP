@@ -1,10 +1,10 @@
-import type { BaseNominaTrazabilidad } from '../models/proceso-mensual.model';
+﻿import type { BaseNominaTrazabilidad } from '../models/proceso-mensual.model';
 import type { ExpedienteNominaPeriodoView } from './proceso-mensual-expediente-periodo.rules';
 import type { IncidenciaPeriodo } from './proceso-mensual-incidencias-periodo.rules';
 import type {
   NominaDetalleMensualMovimientoRow,
-  PayrollMovementDetailRow,
-  PayrollRecurrentDetailRow,
+  FilaDetalleMovimientoNomina,
+  FilaDetalleRecurrenteNomina,
   ResultadoPreliminarView,
 } from '../containers/proceso-mensual-container/models/proceso-mensual-container.vm';
 import { buildNominaDetalleMensualMovimientosRows } from './proceso-mensual-detalle-mensual.rules';
@@ -66,8 +66,8 @@ export interface NominaMasivaDetalle {
   haberes: number | null;
   descuentos: number | null;
   liquidoEstimado: number | null;
-  movimientos: PayrollMovementDetailRow[];
-  recurrentes: PayrollRecurrentDetailRow[];
+  movimientos: FilaDetalleMovimientoNomina[];
+  recurrentes: FilaDetalleRecurrenteNomina[];
   incidencias: IncidenciaPeriodo[];
 }
 
@@ -75,8 +75,8 @@ export interface BuildNominaMasivaInput {
   resultadoTrabajadores: ResultadoPreliminarView['trabajadores'];
   expedienteTrabajadores: ExpedienteNominaPeriodoView['trabajadores'];
   baseTrabajadores: BaseNominaTrazabilidad['trabajadores'];
-  movementRows: PayrollMovementDetailRow[];
-  recurrentRows: PayrollRecurrentDetailRow[];
+  filasMovimientos: FilaDetalleMovimientoNomina[];
+  filasRecurrentes: FilaDetalleRecurrenteNomina[];
   incidencias: IncidenciaPeriodo[];
 }
 
@@ -182,14 +182,14 @@ function incidenciasPorPersona(incidencias: IncidenciaPeriodo[], idPersona: numb
 }
 
 function tieneRowsPorTrabajador(
-  rows: Array<PayrollMovementDetailRow | PayrollRecurrentDetailRow>,
+  rows: Array<FilaDetalleMovimientoNomina | FilaDetalleRecurrenteNomina>,
   trabajador: string,
 ): boolean {
   const nombre = normalizarNombre(trabajador);
   return rows.some((row) => normalizarNombre(row.trabajador) === nombre);
 }
 
-function rowsPorTrabajador<T extends PayrollMovementDetailRow | PayrollRecurrentDetailRow>(
+function rowsPorTrabajador<T extends FilaDetalleMovimientoNomina | FilaDetalleRecurrenteNomina>(
   rows: T[],
   trabajador: string,
 ): T[] {
@@ -275,8 +275,8 @@ export function buildFilasMasivasTrabajadores(input: BuildNominaMasivaInput): No
         : tieneAdvertencia && fila.estado === 'listo'
           ? 'observacion'
           : fila.estado;
-      const movimientosMes = rowsPorTrabajador(input.movementRows, fila.trabajador);
-      const recurrentes = rowsPorTrabajador(input.recurrentRows, fila.trabajador);
+      const movimientosMes = rowsPorTrabajador(input.filasMovimientos, fila.trabajador);
+      const recurrentes = rowsPorTrabajador(input.filasRecurrentes, fila.trabajador);
       const incidenciasCount = incidencias.filter((incidencia) => incidencia.severidad !== 'info').length;
       return {
         ...fila,
@@ -421,8 +421,8 @@ export function buildDetalleMasivoTrabajador(
     haberes: fila.haberes,
     descuentos: fila.descuentos,
     liquidoEstimado: fila.liquidoEstimado,
-    movimientos: rowsPorTrabajador(input.movementRows, fila.trabajador),
-    recurrentes: rowsPorTrabajador(input.recurrentRows, fila.trabajador),
+    movimientos: rowsPorTrabajador(input.filasMovimientos, fila.trabajador),
+    recurrentes: rowsPorTrabajador(input.filasRecurrentes, fila.trabajador),
     incidencias: incidenciasPorPersona(input.incidencias, fila.idPersona),
   };
 }
