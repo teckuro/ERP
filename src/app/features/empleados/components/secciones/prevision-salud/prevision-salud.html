@@ -337,6 +337,7 @@
               searchPlaceholder="Buscar moneda"
               [options]="monedaPlanSelectOptions"
               [invalid]="hasError('idMonedaPlan')"
+              [disabled]="esFonasaSalud"
             ></app-search-select>
             @if (hasError('idMonedaPlan', 'required')) {
               <p class="field-message">La moneda del plan de salud es obligatoria.</p>
@@ -345,31 +346,42 @@
             }
           </div>
 
-          <div class="form-field prevision-field--amount">
-            <div class="field-label-row">
-              <label for="empleado-valor-plan"
-                >Valor plan</label
-              >
-              @if (isRequired('valorPlan')) {
-                <span class="field-required" aria-hidden="true">*</span>
+          @if (esFonasaSalud) {
+            <div class="form-field prevision-field--amount">
+              <div class="field-label-row">
+                <label>Valor plan</label>
+              </div>
+              <p class="prevision-state-note is-neutral">
+                FONASA se calcula por cotizaciÃ³n legal; no requiere valor de plan.
+              </p>
+            </div>
+          } @else {
+            <div class="form-field prevision-field--amount">
+              <div class="field-label-row">
+                <label for="empleado-valor-plan"
+                  >Valor plan</label
+                >
+                @if (isRequired('valorPlan')) {
+                  <span class="field-required" aria-hidden="true">*</span>
+                }
+              </div>
+              <input
+                id="empleado-valor-plan"
+                type="number"
+                min="0"
+                step="1000"
+                formControlName="valorPlan"
+                [class]="controlClass('valorPlan')"
+              />
+              @if (hasError('valorPlan', 'required')) {
+                <p class="field-message">El valor del plan es obligatorio.</p>
+              } @else if (hasError('valorPlan', 'min')) {
+                <p class="field-message">El valor del plan no puede ser negativo.</p>
+              } @else {
+                <p class="field-message"></p>
               }
             </div>
-            <input
-              id="empleado-valor-plan"
-              type="number"
-              min="0"
-              step="1000"
-              formControlName="valorPlan"
-              [class]="controlClass('valorPlan')"
-            />
-            @if (hasError('valorPlan', 'required')) {
-              <p class="field-message">El valor del plan es obligatorio.</p>
-            } @else if (hasError('valorPlan', 'min')) {
-              <p class="field-message">El valor del plan no puede ser negativo.</p>
-            } @else {
-              <p class="field-message"></p>
-            }
-          </div>
+          }
 
           <div class="form-field prevision-field--amount">
             <div class="field-label-row">

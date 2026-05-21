@@ -6,6 +6,7 @@ import { LucideAngularModule } from 'lucide-angular';
 import {
   AlertCircle,
   ArrowLeft,
+  ChevronRight,
   Edit3,
   Info,
   LoaderCircle,
@@ -40,11 +41,25 @@ import {
   evaluarCompletitudYAptitudEmpleado,
 } from '../../utils/empleado-completitud.rules';
 import {
+  buildExpedienteNavItems,
+  buildFichaEstadoPanelVm,
+  navStatusLabel,
+  resolveAccionPrincipalTab,
+  type EmployeeFichaIssue,
+  type EmployeeFichaNavItem,
+  type EmployeeFichaNavStatus,
+  type EmployeeFichaTabKey,
+  type FichaEstadoPanelVm,
+} from '../../rules/ficha-empleado-presentacion.rules';
+import {
   DataGridColumn,
   DataGridComponent,
 } from '../../../../shared/components/ui/data-grid.component';
+import {
+  MessageBoxComponent,
+  type MessageBoxSection,
+} from '../../../../shared/components/ui/message-box.component';
 import { bindShellPageContext } from '../../../../layout/shell-page-context.binding';
-import type { ShellStatusChipTone } from '../../../../layout/shell-page-context.service';
 
 type EmployeeFileTab =
   | 'general'
@@ -97,6 +112,7 @@ interface EmployeeHistoryRow {
     PrevisionSaludComponent,
     BancarioComponent,
     DataGridComponent,
+    MessageBoxComponent,
   ],
   templateUrl: './ficha-empleado-container.html',
   styleUrl: './ficha-empleado-container.css',
@@ -117,6 +133,8 @@ export class FichaEmpleadoContainer implements OnInit {
   readonly isValidatingPayroll = signal(false);
   readonly errorMessage = signal<string | null>(null);
   readonly sectionErrorMessage = signal<string | null>(null);
+  readonly sectionSuccessTitle = signal<string | null>(null);
+  readonly sectionSuccessMessage = signal<string | null>(null);
   readonly validationSuccessMessage = signal<string | null>(null);
   readonly validationErrorMessage = signal<string | null>(null);
   readonly validationBlockingItems = signal<string[]>([]);
@@ -129,6 +147,7 @@ export class FichaEmpleadoContainer implements OnInit {
   readonly form: EmpleadoFormGroup = this.empleadosFormService.createForm();
 
   readonly arrowLeftIcon = ArrowLeft;
+  readonly chevronRightIcon = ChevronRight;
   readonly alertIcon = AlertCircle;
   /** Vacío esperado - ícono informativo pequeño, no error. */
   readonly emptyFieldIcon = Info;
@@ -210,31 +229,17 @@ export class FichaEmpleadoContainer implements OnInit {
           return context;
         }
 
+        const estado = this.fichaEstadoPanel(emp);
+
         return {
           ...context,
           statusChip: {
-            label: this.estadoFichaVisualLabel(emp),
-            tone: this.shellStatusTone(emp),
-          },
-          primaryAction: {
-            actionId: 'ficha-empleado-primary',
-            label: this.primaryActionEvaluadaLabel(emp),
-            disabled: this.isValidatingPayroll(),
-            loading: this.isValidatingPayroll(),
+            label: estado.visorLabel,
+            tone: estado.shellTone,
           },
         };
       },
-      {
-        onPrimaryAction: () => {
-          const emp = this.empleado();
-
-          if (!emp || this.isValidatingPayroll()) {
-            return;
-          }
-
-          void this.handlePrimaryFichaAction(emp);
-        },
-      },
+      {},
     );
   }
 
@@ -289,6 +294,8 @@ export class FichaEmpleadoContainer implements OnInit {
     this.editingTab.set(null);
     this.editingBlock.set(null);
     this.sectionErrorMessage.set(null);
+    this.sectionSuccessTitle.set(null);
+    this.sectionSuccessMessage.set(null);
   }
 
   startEditing(blockId: string | null = null): void {
@@ -297,6 +304,8 @@ export class FichaEmpleadoContainer implements OnInit {
     }
 
     this.sectionErrorMessage.set(null);
+    this.sectionSuccessTitle.set(null);
+    this.sectionSuccessMessage.set(null);
     this.editingTab.set(this.activeTab());
     this.editingBlock.set(blockId ?? this.detailBlocks(this.empleado()!).at(0)?.id ?? null);
   }
@@ -306,6 +315,8 @@ export class FichaEmpleadoContainer implements OnInit {
     this.editingTab.set(null);
     this.editingBlock.set(null);
     this.sectionErrorMessage.set(null);
+    this.sectionSuccessTitle.set(null);
+    this.sectionSuccessMessage.set(null);
   }
 
   async handlePrimaryFichaAction(empleado: EmpleadoFichaDetalle): Promise<void> {
@@ -406,6 +417,7 @@ export class FichaEmpleadoContainer implements OnInit {
     }
 
     const saveTarget = this.saveTargetForTab(this.activeTab());
+    const blockTitle = this.activeEditingBlockTitle();
 
     if (!saveTarget) {
       this.editingTab.set(null);
@@ -423,6 +435,8 @@ export class FichaEmpleadoContainer implements OnInit {
 
     this.isSavingSection.set(true);
     this.sectionErrorMessage.set(null);
+    this.sectionSuccessTitle.set(null);
+    this.sectionSuccessMessage.set(null);
 
     try {
       const updated = await this.empleadosService.guardarSeccionFicha(
@@ -438,6 +452,10 @@ export class FichaEmpleadoContainer implements OnInit {
 
       this.editingTab.set(null);
       this.editingBlock.set(null);
+      this.sectionSuccessTitle.set(blockTitle);
+      this.sectionSuccessMessage.set(
+        `Se guardó ${blockTitle}. Las demás secciones de la ficha no se modificaron.`,
+      );
     } catch (error) {
       this.sectionErrorMessage.set(
         error instanceof Error
@@ -447,6 +465,34 @@ export class FichaEmpleadoContainer implements OnInit {
     } finally {
       this.isSavingSection.set(false);
     }
+  }
+
+  dismissSectionError(): void {
+    this.sectionErrorMessage.set(null);
+  }
+
+  dismissSectionSuccess(): void {
+    this.sectionSuccessTitle.set(null);
+    this.sectionSuccessMessage.set(null);
+  }
+
+  activeEditingBlockTitle(): string {
+    const empleado = this.empleado();
+    const blockId = this.editingBlock();
+
+    if (!empleado || !blockId) {
+      return 'este bloque';
+    }
+
+    return this.detailBlocks(empleado).find((block) => block.id === blockId)?.title ?? 'este bloque';
+  }
+
+  saveBlockButtonLabel(): string {
+    return this.isSavingSection() ? 'Guardando...' : 'Guardar';
+  }
+
+  saveBlockHint(blockTitle: string): string {
+    return `Se guardará solo ${blockTitle}. El resto de la ficha queda sin cambios.`;
   }
 
   isEditingCurrentTab(): boolean {
@@ -508,96 +554,20 @@ export class FichaEmpleadoContainer implements OnInit {
       .join('');
   }
 
-  fichaStatusClass(empleado: EmpleadoListado): string {
-    if (empleado.estadoFicha === 'VALIDO' && empleado.aptoParaRemuneraciones) {
-      return 'is-complete';
-    }
-
-    if (this.canValidateForPayroll(empleado)) {
-      return 'is-progress';
-    }
-
-    if (this.evaluacionEmpleado(empleado).bloqueos.length > 0) {
-      return 'is-warning';
-    }
-
-    return 'is-neutral';
-  }
-
-  shellStatusTone(empleado: EmpleadoListado): ShellStatusChipTone {
-    if (empleado.estadoFicha === 'VALIDO' && empleado.aptoParaRemuneraciones) {
-      return 'success';
-    }
-
-    if (this.evaluacionEmpleado(empleado).bloqueos.length > 0) {
-      return 'warning';
-    }
-
-    if (empleado.estado === 'bloqueado' || empleado.estado === 'desvinculado') {
-      return 'danger';
-    }
-
-    return 'neutral';
-  }
-
-  completionValue(empleado: EmpleadoListado): number {
-    const evaluacion = this.evaluacionEmpleado(empleado);
-
-    if (empleado.pasoAltaAvanzada !== null || empleado.estadoFicha === 'BORRADOR') {
-      return 24;
-    }
-
-    if (evaluacion.aptoParaRemuneraciones) {
-      return 100;
-    }
-
-    const bloquesBase = 5;
-    const pendientes = new Set(evaluacion.seccionesPendientes.map((item) => this.tabFromSection(item)));
-    return Math.max(20, Math.round(((bloquesBase - pendientes.size) / bloquesBase) * 100));
-  }
-
-  pendingItems(empleado: EmpleadoListado): string[] {
-    if (empleado.estadoFicha === 'VALIDO') {
-      return ['Ficha válida', 'Remuneraciones habilitadas'];
-    }
-
-    return ['Completar contrato', 'Validar remuneración', 'Registrar datos de pago'];
-  }
-
-  primaryActionLabel(empleado: EmpleadoListado): string {
-    if (!empleado.aptoParaRemuneraciones) {
-      return 'Registrar datos de pago';
-    }
-
-    return 'Editar sección';
-  }
-
-  payrollReadinessLabel(empleado: EmpleadoListado): string {
-    return empleado.aptoParaRemuneraciones ? 'Habilitado' : 'Pendiente';
-  }
-
-  operationalStatusLabel(empleado: EmpleadoListado): string {
-    return empleado.estado === 'activo' ? 'Listo para operar' : 'Pendiente de completar';
-  }
-
-  /** Paso sugerido en el panel lateral (acciones rápidas). */
-  nextStepLabel(empleado: EmpleadoListado): string {
-    if (!empleado.aptoParaRemuneraciones) {
-      return 'Registrar datos de pago';
-    }
-    return empleado.estado === 'activo' ? 'Revisar secciones' : 'Registrar datos de pago';
-  }
-
-  completedBlocks(empleado: EmpleadoListado): number {
-    return this.tabs.filter((tab) => this.tabStatus(tab.id, empleado) === 'complete').length;
-  }
-
-  pendingBlocks(empleado: EmpleadoListado): number {
-    return this.tabs.filter((tab) => this.tabStatus(tab.id, empleado) !== 'complete').length;
+  fichaEstadoPanel(empleado: EmpleadoListado): FichaEstadoPanelVm {
+    return buildFichaEstadoPanelVm({
+      evaluacion: this.evaluacionEmpleado(empleado),
+      pasoAltaAvanzada: empleado.pasoAltaAvanzada,
+      estadoFicha: empleado.estadoFicha,
+      estadoLaboral: empleado.estado,
+      aptoParaRemuneracionesRegistro: empleado.aptoParaRemuneraciones,
+      tabStatus: (tabId) => this.tabStatus(tabId, empleado),
+      humanizeBloqueo: (bloqueo) => this.humanPendingText(bloqueo),
+    });
   }
 
   progressStyle(empleado: EmpleadoListado): Record<string, string> {
-    return { width: `${this.completionValue(empleado)}%` };
+    return { width: `${this.fichaEstadoPanel(empleado).progressPercent}%` };
   }
 
   tabStatus(tabId: EmployeeFileTab, empleado: EmpleadoListado): EmployeeFileTabStatus {
@@ -638,16 +608,61 @@ export class FichaEmpleadoContainer implements OnInit {
     this.selectTab(firstPending ? this.tabFromSection(firstPending) : 'general');
   }
 
-  impactMessage(empleado: EmpleadoListado): string {
-    const evaluacion = this.evaluacionEmpleado(empleado);
+  expedienteNavItems(empleado: EmpleadoListado): EmployeeFichaNavItem[] {
+    return buildExpedienteNavItems({
+      tabs: this.tabs,
+      activeTab: this.activeTab(),
+      tabStatus: (tabId) => this.tabStatus(tabId, empleado),
+    });
+  }
 
-    if (evaluacion.aptoParaRemuneraciones) {
-      return empleado.estadoFicha === 'VALIDO' && empleado.aptoParaRemuneraciones
-        ? 'Ficha apta para procesos de remuneraciones.'
-        : 'La ficha no tiene pendientes bloqueantes. Valídala para incluirla en procesos de remuneración.';
+  async ejecutarAccionPrincipalPanel(): Promise<void> {
+    const empleado = this.empleado();
+    if (!empleado || this.isValidatingPayroll()) {
+      return;
     }
 
-    return `No apta para remuneraciones: ${evaluacion.bloqueos.length} pendiente(s) por completar.`;
+    const estado = this.fichaEstadoPanel(empleado);
+
+    if (estado.canValidateForPayroll) {
+      this.openPayrollValidationConfirm();
+      return;
+    }
+
+    const tab = resolveAccionPrincipalTab(estado.issues, this.evaluacionEmpleado(empleado));
+
+    if (estado.issues.some((issue) => issue.blockKey === 'pago') || tab === 'pago') {
+      this.selectTab('pago');
+      this.startEditing(this.detailBlocks(empleado).at(0)?.id);
+      return;
+    }
+
+    await this.handlePrimaryFichaAction(empleado);
+  }
+
+  navegarFaltante(issue: EmployeeFichaIssue): void {
+    this.selectTab(issue.blockKey);
+  }
+
+  navStatusClass(status: EmployeeFichaNavStatus): string {
+    return `employee-record-rail__status employee-record-rail__status--${status}`;
+  }
+
+  railNavStatusLabel(status: EmployeeFichaNavStatus): string {
+    return navStatusLabel(status);
+  }
+
+  activeTabDescription(): string {
+    const descriptions: Record<EmployeeFileTab, string> = {
+      general: 'Información base del trabajador y datos de contacto.',
+      laboral: 'Contrato, cargo y relación laboral del período.',
+      remuneracion: 'Jornada, sueldo y asignaciones del trabajador.',
+      prevision: 'Régimen previsional, salud y APV cuando aplica.',
+      pago: 'Cuenta de abono y datos para transferencia.',
+      documentos: 'Respaldo documental del trabajador.',
+      historial: 'Eventos y cambios registrados en la ficha.',
+    };
+    return descriptions[this.activeTab()] ?? '';
   }
 
   evaluacionEmpleado(empleado: EmpleadoListado): EvaluacionCompletitudEmpleado {
@@ -655,40 +670,6 @@ export class FichaEmpleadoContainer implements OnInit {
       payload: this.mapFichaEmpleadoToEvaluacionInput(empleado),
       pasoAltaAvanzada: empleado.pasoAltaAvanzada,
     });
-  }
-
-  estadoFichaVisualLabel(empleado: EmpleadoListado): string {
-    const evaluacion = this.evaluacionEmpleado(empleado);
-
-    if (empleado.pasoAltaAvanzada !== null || empleado.estadoFicha === 'BORRADOR') {
-      return 'Borrador';
-    }
-
-    if (empleado.estadoFicha === 'VALIDO' && empleado.aptoParaRemuneraciones) {
-      return 'Ficha válida';
-    }
-
-    if (evaluacion.aptoParaRemuneraciones) {
-      return 'Ficha completa';
-    }
-
-    if (empleado.estado === 'activo') {
-      return 'Con pendientes';
-    }
-
-    return 'En proceso';
-  }
-
-  payrollReadinessEvaluadoLabel(empleado: EmpleadoListado): string {
-    if (empleado.estadoFicha === 'VALIDO' && empleado.aptoParaRemuneraciones) {
-      return 'Apta para remuneraciones';
-    }
-
-    if (this.canValidateForPayroll(empleado)) {
-      return 'Pendiente de validación';
-    }
-
-    return 'No apta para remuneraciones';
   }
 
   pendingItemsEvaluados(empleado: EmpleadoListado): string[] {
@@ -712,34 +693,11 @@ export class FichaEmpleadoContainer implements OnInit {
   }
 
   primaryActionEvaluadaLabel(empleado: EmpleadoListado): string {
-    if (empleado.pasoAltaAvanzada !== null) {
-      return 'Continuar alta';
-    }
-
-    if (this.canValidateForPayroll(empleado)) {
-      return 'Validar para remuneraciones';
-    }
-
-    if (empleado.estadoFicha === 'VALIDO' && empleado.aptoParaRemuneraciones) {
-      return 'Ver datos / Editar ficha';
-    }
-
-    return empleado.estado === 'activo' ? 'Revisar pendientes' : 'Completar ficha';
+    return this.fichaEstadoPanel(empleado).primaryActionEvaluadaLabel;
   }
 
   canValidateForPayroll(empleado: EmpleadoListado): boolean {
-    const evaluacion = this.evaluacionEmpleado(empleado);
-
-    return (
-      empleado.pasoAltaAvanzada === null &&
-      empleado.estado !== 'borrador' &&
-      empleado.estadoFicha !== 'BORRADOR' &&
-      (empleado.estadoFicha !== 'VALIDO' || !empleado.aptoParaRemuneraciones) &&
-      (empleado.estado === 'en_proceso' || empleado.estado === 'activo') &&
-      evaluacion.bloqueos.length === 0 &&
-      evaluacion.defaultsTecnicosDetectados.length === 0 &&
-      evaluacion.seccionesPendientes.length === 0
-    );
+    return this.fichaEstadoPanel(empleado).canValidateForPayroll;
   }
 
   activeTabLabel(): string {
@@ -880,7 +838,10 @@ export class FichaEmpleadoContainer implements OnInit {
           { label: 'Contrato', value: empleado.estado === 'activo' ? 'Disponible' : 'Pendiente' },
           { label: 'Anexos', value: 'Sin anexos registrados' },
           { label: 'Certificados', value: 'Sin documentos asociados' },
-          { label: 'Pendientes', value: `${this.pendingItems(empleado).length}` },
+          {
+            label: 'Pendientes',
+            value: `${this.evaluacionEmpleado(empleado).bloqueos.length}`,
+          },
         ];
       case 'historial':
         return [
@@ -1257,9 +1218,36 @@ export class FichaEmpleadoContainer implements OnInit {
   }
 
   activeSectionInvalidItems(): string[] {
-    return this.controlsForActiveBlock().flatMap((control) =>
-      this.collectInvalidControlNames(control),
-    );
+    const controls = this.controlsForActiveBlock();
+    const labels = this.controlLabelsForActiveBlock();
+
+    return controls.flatMap((control, index) => {
+      if (!control.invalid) {
+        return [];
+      }
+
+      const nested = this.collectInvalidControlNames(control)
+        .map((item) => item.trim())
+        .filter(Boolean);
+
+      return nested.length > 0 ? nested : [labels[index] ?? 'Campo requerido'];
+    });
+  }
+
+  sectionValidationSections(): MessageBoxSection[] {
+    const items = this.activeSectionInvalidItems().slice(0, 5);
+
+    if (items.length === 0) {
+      return [];
+    }
+
+    return [
+      {
+        title: 'Campos por corregir',
+        items,
+        tone: 'attention',
+      },
+    ];
   }
 
   isMissingValue(value: string): boolean {
@@ -1475,6 +1463,89 @@ export class FichaEmpleadoContainer implements OnInit {
     }
   }
 
+  private controlLabelsForActiveBlock(): string[] {
+    switch (this.editingBlock()) {
+      case 'identificacion':
+        return ['RUT', 'Pasaporte', 'Fecha nacimiento', 'Sexo'];
+      case 'nombre':
+        return ['Nombres', 'Apellido paterno', 'Apellido materno'];
+      case 'base':
+        return ['Pais', 'Estado civil', 'Email', 'Telefono'];
+      case 'ubicacion':
+        return ['Direccion', 'Numero', 'Departamento', 'Comuna', 'Observaciones'];
+      case 'relacion':
+        return ['Relacion laboral'];
+      case 'contrato':
+        return [
+          'Tipo trabajador',
+          'Tipo jornada',
+          'Fecha ingreso',
+          'Fecha contrato',
+          'Fecha termino',
+          'Departamento',
+          'Sucursal',
+          'Tipo contrato',
+          'Seguro cesantia',
+        ];
+      case 'centro-costo':
+        return ['Centro de costo', 'Cargo', 'Estado'];
+      case 'remuneracion':
+        return [
+          'Horas semanales',
+          'Dias semanales',
+          'Sueldo base',
+          'Moneda',
+          'Gratificacion',
+          'Sueldo variable',
+          'Distribucion jornada',
+          'Tiempo colacion',
+          'Gratificacion proporcional',
+        ];
+      case 'cargas':
+        return ['Cargas', 'Tramo de cargas'];
+      case 'zona-extrema':
+        return ['Zona extrema activa', 'Territorio', 'Porcentaje'];
+      case 'semana-corrida':
+        return ['Semana corrida activa', 'Dias laborables'];
+      case 'regimen':
+        return [
+          'Regimen previsional',
+          'AFP',
+          'Moneda Cuenta 2',
+          'Valor Cuenta 2',
+          'Salud',
+          'Moneda plan',
+          'Valor plan',
+          'Adicional AUGE/GES',
+          'Tiene APV',
+          'Institucion APV',
+          'Moneda APV',
+          'Monto APV',
+          'Forma pago APV',
+          'Deposito convenido APVI',
+        ];
+      case 'afp':
+        return ['AFP', 'Moneda Cuenta 2', 'Valor Cuenta 2'];
+      case 'ips':
+        return ['Nombre Ex-Caja', 'Regimen Ex-Caja', 'Tasa Ex-Caja'];
+      case 'salud':
+        return ['Salud', 'Moneda plan', 'Valor plan', 'Adicional AUGE/GES'];
+      case 'apvi':
+        return [
+          'Tiene APV',
+          'Institucion APV',
+          'Moneda APV',
+          'Monto APV',
+          'Forma pago APV',
+          'Deposito convenido APVI',
+        ];
+      case 'cuenta':
+        return ['Banco', 'Tipo de cuenta', 'Numero de cuenta'];
+      default:
+        return [];
+    }
+  }
+
   private previsionFlowControls(): AbstractControl[] {
     const prevision = this.form.controls.previsionSalud.controls;
     const controls: AbstractControl[] = [prevision.tipoRegimenPrevisional];
@@ -1568,10 +1639,14 @@ export class FichaEmpleadoContainer implements OnInit {
   private buildPayloadForSave(): CrearEmpleadoPayload {
     const raw = this.form.getRawValue();
     const tipoPrevision = raw.previsionSalud.tipoRegimenPrevisional ?? 'NINGUNA';
+    const requiereSalud = tipoPrevision !== 'NINGUNA';
+    const tipoSalud = requiereSalud
+      ? this.resolveTipoSalud(raw.previsionSalud.idSalud)
+      : null;
+    const esFonasa = tipoSalud === 'FONASA';
     const tieneCuenta2 =
       tipoPrevision === 'AFP' &&
       (raw.previsionSalud.idMonedaCuenta2 !== null || raw.previsionSalud.valorCuenta2 !== null);
-    const requiereSalud = tipoPrevision !== 'NINGUNA';
     const tieneApvi = tipoPrevision === 'AFP' && raw.previsionSalud.tieneApv;
 
     return {
@@ -1640,9 +1715,14 @@ export class FichaEmpleadoContainer implements OnInit {
       regimenExCaja: tipoPrevision === 'IPS' ? raw.previsionSalud.regimenExCaja : null,
       tasaExCaja: tipoPrevision === 'IPS' ? raw.previsionSalud.tasaExCaja : null,
       idSalud: requiereSalud ? raw.previsionSalud.idSalud : null,
+      tipoSalud,
       idMonedaPlan: requiereSalud ? raw.previsionSalud.idMonedaPlan : null,
-      valorPlan: requiereSalud ? raw.previsionSalud.valorPlan : null,
-      adicionalAugeGes: requiereSalud ? raw.previsionSalud.adicionalAugeGes : null,
+      valorPlan: requiereSalud ? (esFonasa ? 0 : raw.previsionSalud.valorPlan) : null,
+      adicionalAugeGes: requiereSalud
+        ? esFonasa
+          ? 0
+          : raw.previsionSalud.adicionalAugeGes
+        : null,
       tieneApv: tieneApvi,
       idInstitucionApv: tieneApvi ? raw.previsionSalud.idInstitucionApv : null,
       idMonedaApv: tieneApvi ? raw.previsionSalud.idMonedaApv : null,
@@ -1664,6 +1744,21 @@ export class FichaEmpleadoContainer implements OnInit {
       this.catalogos().regimenesPrevisionales.find((option) => option.label.toUpperCase() === tipo)
         ?.value ?? null
     );
+  }
+
+  private resolveTipoSalud(idSalud: number | null): 'FONASA' | 'ISAPRE' | string | null {
+    const option = this.catalogos().entidadesSalud.find((item) => item.value === idSalud);
+    const normalized = this.normalizeText(`${option?.tipo ?? ''} ${option?.label ?? ''}`);
+
+    if (normalized.includes('fonasa')) {
+      return 'FONASA';
+    }
+
+    if (normalized.includes('isapre')) {
+      return 'ISAPRE';
+    }
+
+    return option?.tipo ?? null;
   }
 
   private collectInvalidControlNames(control: AbstractControl, path = ''): string[] {

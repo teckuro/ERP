@@ -1,3 +1,51 @@
+## 2026-05-21 - Ficha empleado: panel estado integrado (VM único)
+
+- **Cambio:** `buildFichaEstadoPanelVm` alimenta panel y chip shell; avance en 5 bloques operativos alineado con %; CTA único en panel; sin duplicar aptitud/bloques en cabecera ni rail review oculto.
+- **Archivos:** `ficha-empleado-presentacion.rules.ts`, `ficha-empleado-container.*`, `ficha-empleado-estado-panel.md`.
+- **No tocado:** SQL, motor, estilos globales, `header.component`.
+
+## 2026-05-21 - Ficha empleado: apilamiento y overflow en expediente
+
+- **Cambio:** `z-index` en columnas layout (status/rail/main); `overflow: visible` en cards y listas editoriales; scroll en `employee-record-main`; bloque en edición y selects abiertos por encima de vecinos; panel estado primero en DOM.
+- **Archivos:** `ficha-empleado-container.html`, `ficha-empleado-container.css`.
+- **No tocado:** estilos globales, shell, componentes shared.
+
+## 2026-05-21 - Ficha empleado: bloque avance «Estado de la ficha»
+
+- **Cambio:** columna izquierda con título + bloques completos; porcentaje alineado al centro de ese bloque; barra a ancho completo debajo; `role="progressbar"` accesible.
+- **Archivos:** `ficha-empleado-container.html`, `ficha-empleado-container.css`.
+- **No tocado:** estilos globales, shell, persistencia.
+
+## 2026-05-21 - Ficha empleado: visor de estado solo en topbar shell
+
+- **Cambio:** chip «En proceso» / estado operativo único en la topbar del shell; eliminados badge del encabezado de ficha y chip del panel «Estado de la ficha».
+- **Archivos:** `ficha-empleado-container.html`, `ficha-empleado-container.ts`, `ficha-empleado-container.spec.ts`.
+- **No tocado:** `header.component`, estilos globales, persistencia.
+
+## 2026-05-21 - Ficha empleado: ancho completo como listado
+
+- **Cambio:** el expediente de ficha deja el tope `1480px` centrado y usa `width: 100%` en `:host`, página y `employee-record-shell`, alineado al listado de empleados.
+- **Archivos:** `ficha-empleado-container.css`.
+- **No tocado:** lógica, HTML, estilos globales.
+
+## 2026-05-21 - Ficha empleado: edición sin títulos duplicados
+
+- **Cambio:** en edición, barra Guardar/Cancelar sin `h3` del bloque; intro del tab sin `h2`; cabeceras internas del seccional ocultas cuando `editVisibleBlocks` tiene una sola subsección.
+- **Archivos:** `ficha-empleado-container.html`, `ficha-empleado-container.css`, `styles.css`.
+- **No tocado:** lógica de guardado, templates de alta.
+
+## 2026-05-21 - Ficha empleado: edición integrada en card
+
+- **Cambio:** lectura y edición comparten el mismo `detail-block--editorial` (card con header gris); Guardar/Cancelar en el header del bloque; `app-card` internos como subsecciones sin doble borde; sin anillo azul al editar.
+- **Archivos:** `ficha-empleado-container.html`, `ficha-empleado-container.css`, `styles.css` (solo `app-ficha-empleado-container` / `inline-edit-shell--*`).
+- **No tocado:** lógica de guardado, servicios, alta básica/avanzada.
+
+## 2026-05-21 - Ficha empleado: expediente NOIA tres columnas
+
+- **Cambio:** sustitución de tabs horizontales por rail «Expediente»; centro editorial; panel diagnóstico con motivo principal y una acción; shell sin CTA duplicado.
+- **Archivos:** `ficha-empleado-container.*`, `ficha-empleado-presentacion.rules.ts`.
+- **No tocado:** estilos globales, persistencia, motor, SQL.
+
 ## 2026-05-20 - Nómina mensual: verificar período solo bloquea parámetros
 
 - **Cambio:** tras verificar, solo faltas de parámetros impiden generar nómina; fichas, entradas y recurrentes quedan como advertencias para revisar al guardar/confirmar.

@@ -64,6 +64,7 @@ function basePayload(over: Partial<CrearEmpleadoPayload> = {}): CrearEmpleadoPay
     regimenExCaja: null,
     tasaExCaja: null,
     idSalud: null,
+    tipoSalud: null,
     idMonedaPlan: null,
     valorPlan: null,
     adicionalAugeGes: null,

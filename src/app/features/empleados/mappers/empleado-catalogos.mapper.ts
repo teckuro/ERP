@@ -2,6 +2,8 @@ import { Tables } from '../../../core/models/database.types';
 import {
   EmpleadoCatalogOption,
   EmpleadoDepartamentoOption,
+  EmpleadoMonedaCatalogOption,
+  EmpleadoSaludCatalogOption,
   EmpleadoStringCatalogOption,
   RegimenExCajaCatalogOption,
   TramoCargaCatalogOption,
@@ -49,6 +51,8 @@ export type FormaPagoApvCatalogRow = Pick<Tables<'forma_pago_apv'>, 'id_forma_pa
 
 export type TipoContratoCatalogRow = Pick<Tables<'afc_parametro'>, 'codigo_tipo_contrato'>;
 
+export type MonedaCatalogRow = Pick<Tables<'moneda'>, 'id_moneda' | 'nombre' | 'codigo'>;
+
 export type TramoCargaCatalogRow = Pick<
   Tables<'tramo_carga'>,
   'id_tramo' | 'periodo' | 'desde' | 'hasta' | 'valor' | 'tramo'
@@ -75,11 +79,22 @@ export function mapDepartamentosCatalog(
 
 export function mapSaludCatalog<
   T extends { id_salud: number; nombre: string; tipo: string | null },
->(rows: T[]): EmpleadoCatalogOption[] {
+>(rows: T[]): EmpleadoSaludCatalogOption[] {
   return rows.map((row) => ({
     value: row.id_salud,
     label: row.tipo ? `${row.nombre} (${row.tipo})` : row.nombre,
+    tipo: row.tipo,
   }));
+}
+
+export function mapMonedaCatalog(rows: MonedaCatalogRow[]): EmpleadoMonedaCatalogOption[] {
+  return rows
+    .map((row) => ({
+      value: row.id_moneda,
+      label: row.nombre,
+      codigo: row.codigo,
+    }))
+    .filter((row) => Number.isFinite(row.value));
 }
 
 export function mapRegimenExCajaCatalog(

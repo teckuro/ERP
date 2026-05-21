@@ -1,3 +1,14 @@
+## EMP-FICHA-EXPEDIENTE-NOIA-01 - Ficha empleado layout expediente
+
+| Campo | Estado |
+|---|---|
+| Estado | Implementada |
+| Tipo | UI presentación (contenedor + rules) |
+| Alcance | Rail expediente 7 bloques; centro editorial; panel diagnóstico (motivo principal, faltantes dedup, CTA único); shell sin `primaryAction` duplicado; tokens `--employee-exp-*` locales. |
+| Restricciones | Sin SQL/RPC, sin servicios/persistencia, sin estilos globales, sin integrar `nuevo-modulo/` React. |
+| Documento | [`../modulos/empleados/emp-ficha-expediente-noia-01.md`](../modulos/empleados/emp-ficha-expediente-noia-01.md) |
+| Validación | `ficha-empleado*.spec.ts` (27), `empleado-completitud*.spec.ts` (13), `tsc`, `ng build` development. |
+
 ## NOM-MENSUAL-FLUJO-SECUENCIAL-01 - Flujo RRHH secuencial Nómina -> Liquidaciones
 
 | Campo | Estado |

@@ -15,6 +15,14 @@
   --erp-primary-hover: #1d4ed8;
   --erp-primary-soft: #eff6ff;
   --erp-primary-ring: rgba(30, 58, 138, 0.18);
+  --bitacora-bg: #f6f7f4;
+  --bitacora-surface: #ffffff;
+  --bitacora-surface-soft: #fafaf7;
+  --bitacora-border: #dadfd7;
+  --bitacora-text: #172033;
+  --bitacora-muted: #647084;
+  --bitacora-primary: #2563eb;
+  --bitacora-primary-soft: #eff6ff;
 
   /* ERP form controls (fuente de verdad: docs/codex/ui-form-guidelines.md) */
   --erp-control-height: 22px;
@@ -979,12 +987,34 @@ app-form-empleado .form-button-spinner {
   height: 16px;
 }
 
+.employee-form-panel,
 app-form-empleado .step-panel {
   min-height: 30rem;
   padding: 16px;
   border-radius: inherit;
   background: #ffffff;
   animation: form-panel-enter 170ms ease-out both;
+}
+
+.employee-form-panel {
+  min-height: 0;
+  border: 1px solid var(--bitacora-border, #dadfd7);
+  border-radius: 8px;
+  box-sizing: border-box;
+}
+
+.employee-form-panel--inline {
+  padding: 14px;
+  background: var(--bitacora-surface, #ffffff);
+}
+
+.employee-form-panel--inline-record {
+  min-height: 0;
+  border: 0;
+  border-radius: 0;
+  padding: 16px;
+  background: #ffffff;
+  animation: none;
 }
 
 app-form-empleado .content-shell--basic {
@@ -1421,13 +1451,18 @@ app-ficha-empleado-container .section-validation-list {
   color: #92400e;
 }
 
-app-ficha-empleado-container .inline-edit-actions {
+app-ficha-empleado-container .inline-edit-actions:not(.inline-edit-actions--head) {
   display: flex;
   flex-wrap: wrap;
   justify-content: flex-end;
   gap: 0.5rem;
   border-top: 1px solid #e5e7eb;
   padding-top: 0.9rem;
+}
+
+app-ficha-empleado-container .detail-block-head--editorial .inline-edit-actions--head {
+  border-top: 0;
+  padding-top: 0;
 }
 
 app-ficha-empleado-container .inline-action {
@@ -1459,113 +1494,53 @@ app-ficha-empleado-container .inline-action--secondary {
   color: #374151;
 }
 
-app-ficha-empleado-container .detail-block-list {
-  display: grid;
-  gap: 0.75rem;
-}
-
-app-ficha-empleado-container .detail-block {
-  overflow: hidden;
-  border: 1px solid #e5e7eb;
-  border-radius: 8px;
-  background: #ffffff;
-  box-shadow: none;
-}
-
-app-ficha-empleado-container .detail-block.is-editing {
-  border-color: #bfdbfe;
-  box-shadow: 0 0 0 3px #eff6ff;
-}
-
-app-ficha-empleado-container .detail-block-head {
-  display: flex;
-  min-height: 2.75rem;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.75rem;
-  border-bottom: 1px solid #f1f5f9;
-  background: #ffffff;
-  padding: 0.58rem 0.78rem;
-}
-
-app-ficha-empleado-container .detail-block-head h3 {
-  margin: 0;
-  color: #1f2937;
-  font-size: 0.84rem;
-  font-weight: 600;
-  letter-spacing: 0;
-}
-
-app-ficha-empleado-container .detail-block .inline-edit-shell {
-  padding: 0.85rem;
-}
-
 /*
- * Edición en ficha (mismos seccionales que el alta): compactar rejillas sin tocar alta básica/avanzada ni app-form-empleado.
- * Requiere .detail-block.is-editing (solo existe en ficha).
+ * Edición en ficha: compactar seccionales internos (alta avanzada) sin tocar app-form-empleado.
  */
-app-ficha-empleado-container .detail-block.is-editing .inline-edit-shell {
-  gap: 0.75rem;
-  padding-inline: 0.65rem;
-  padding-bottom: 0.75rem;
-}
-
-app-ficha-empleado-container .detail-block.is-editing app-empleado-datos-personales .employee-section-shell,
-app-ficha-empleado-container .detail-block.is-editing app-empleado-contacto .employee-section-shell,
-app-ficha-empleado-container .detail-block.is-editing app-empleado-contrato .employee-section-shell,
-app-ficha-empleado-container .detail-block.is-editing app-empleado-prevision-salud .employee-section-shell,
-app-ficha-empleado-container .detail-block.is-editing app-empleado-bancario .employee-section-shell {
+app-ficha-empleado-container .detail-block--editorial.is-editing app-empleado-datos-personales .employee-section-shell,
+app-ficha-empleado-container .detail-block--editorial.is-editing app-empleado-contacto .employee-section-shell,
+app-ficha-empleado-container .detail-block--editorial.is-editing app-empleado-contrato .employee-section-shell,
+app-ficha-empleado-container .detail-block--editorial.is-editing app-empleado-prevision-salud .employee-section-shell,
+app-ficha-empleado-container .detail-block--editorial.is-editing app-empleado-bancario .employee-section-shell {
   gap: 12px;
 }
 
-app-ficha-empleado-container .detail-block.is-editing app-empleado-datos-personales .employee-block,
-app-ficha-empleado-container .detail-block.is-editing app-empleado-contacto .employee-block,
-app-ficha-empleado-container .detail-block.is-editing app-empleado-contrato .employee-block,
-app-ficha-empleado-container .detail-block.is-editing app-empleado-prevision-salud .employee-block,
-app-ficha-empleado-container .detail-block.is-editing app-empleado-bancario .employee-block {
+app-ficha-empleado-container .detail-block--editorial.is-editing app-empleado-datos-personales .employee-block,
+app-ficha-empleado-container .detail-block--editorial.is-editing app-empleado-contacto .employee-block,
+app-ficha-empleado-container .detail-block--editorial.is-editing app-empleado-contrato .employee-block,
+app-ficha-empleado-container .detail-block--editorial.is-editing app-empleado-prevision-salud .employee-block,
+app-ficha-empleado-container .detail-block--editorial.is-editing app-empleado-bancario .employee-block {
   border-color: #ebeff5;
 }
 
-app-ficha-empleado-container .detail-block.is-editing app-empleado-datos-personales .employee-block-head,
-app-ficha-empleado-container .detail-block.is-editing app-empleado-contacto .employee-block-head,
-app-ficha-empleado-container .detail-block.is-editing app-empleado-contrato .employee-block-head,
-app-ficha-empleado-container .detail-block.is-editing app-empleado-prevision-salud .employee-block-head,
-app-ficha-empleado-container .detail-block.is-editing app-empleado-bancario .employee-block-head {
+app-ficha-empleado-container
+  .detail-block--editorial.is-editing
+  .inline-edit-shell:not(.inline-edit-shell--single-sub)
+  :is(app-empleado-datos-personales, app-empleado-contacto, app-empleado-contrato, app-empleado-prevision-salud, app-empleado-bancario)
+  .employee-block-head {
   gap: 2px;
   padding: 10px 12px 8px;
 }
 
-app-ficha-empleado-container .detail-block.is-editing app-empleado-datos-personales .employee-block > .employee-grid,
-app-ficha-empleado-container .detail-block.is-editing app-empleado-contacto .employee-block > .employee-grid,
-app-ficha-empleado-container .detail-block.is-editing app-empleado-contrato .employee-block > .employee-grid,
-app-ficha-empleado-container .detail-block.is-editing app-empleado-prevision-salud .employee-block > .employee-grid,
-app-ficha-empleado-container .detail-block.is-editing app-empleado-bancario .employee-block > .employee-grid {
+app-ficha-empleado-container .detail-block--editorial.is-editing app-empleado-datos-personales .employee-block > .employee-grid,
+app-ficha-empleado-container .detail-block--editorial.is-editing app-empleado-contacto .employee-block > .employee-grid,
+app-ficha-empleado-container .detail-block--editorial.is-editing app-empleado-contrato .employee-block > .employee-grid,
+app-ficha-empleado-container .detail-block--editorial.is-editing app-empleado-prevision-salud .employee-block > .employee-grid,
+app-ficha-empleado-container .detail-block--editorial.is-editing app-empleado-bancario .employee-block > .employee-grid {
   gap: 10px 12px;
   padding: 10px 12px 12px;
 }
 
-/* Cabeceras de subtema alineadas con el bloque de la ficha (sin segundo título sobredimensionado) */
-app-ficha-empleado-container .detail-block.is-editing app-empleado-datos-personales .employee-block-head h4,
-app-ficha-empleado-container .detail-block.is-editing app-empleado-contacto .employee-block-head h4,
-app-ficha-empleado-container .detail-block.is-editing app-empleado-contrato .employee-block-head h4,
-app-ficha-empleado-container .detail-block.is-editing app-empleado-prevision-salud .employee-block-head h4,
-app-ficha-empleado-container .detail-block.is-editing app-empleado-bancario .employee-block-head h4 {
+app-ficha-empleado-container
+  .detail-block--editorial.is-editing
+  .inline-edit-shell:not(.inline-edit-shell--single-sub)
+  :is(app-empleado-datos-personales, app-empleado-contacto, app-empleado-contrato, app-empleado-prevision-salud, app-empleado-bancario)
+  .employee-block-head
+  h4 {
   font-size: 0.838rem;
 }
 
-app-ficha-empleado-container .detail-block.is-editing .inline-edit-actions {
-  margin-top: 0.35rem;
-  padding-top: 0.72rem;
-  gap: 0.45rem;
-}
-
-/* Titular del bloque de ficha: más compacto mientras hay formulario abierto debajo */
-app-ficha-empleado-container .detail-block.is-editing > .detail-block-head {
-  min-height: 0;
-  padding: 0.55rem 0.72rem;
-}
-
-app-ficha-empleado-container .detail-block .section-edit-button {
+app-ficha-empleado-container .detail-block--editorial .section-edit-button {
   min-height: 2rem;
   border-color: #e5e7eb;
   padding: 0 0.65rem;
@@ -1574,17 +1549,17 @@ app-ficha-empleado-container .detail-block .section-edit-button {
   font-size: 0.76rem;
 }
 
-app-ficha-empleado-container .detail-grid {
+app-ficha-empleado-container .detail-grid:not(.detail-grid--editorial) {
   gap: 0;
   background: #ffffff;
 }
 
-app-ficha-empleado-container .detail-grid div {
+app-ficha-empleado-container .detail-grid:not(.detail-grid--editorial) div {
   border-top: 1px solid #f8fafc;
   padding: 0.68rem 0.78rem;
 }
 
-app-ficha-empleado-container .detail-grid div:nth-child(-n + 4) {
+app-ficha-empleado-container .detail-grid:not(.detail-grid--editorial) div:nth-child(-n + 4) {
   border-top: 0;
 }
 
@@ -1855,4 +1830,177 @@ app-message-box .message-detail:not(.erp-md) code {
   background: oklch(0.269 0 0);
   border-color: oklch(0.369 0 0);
   color: oklch(0.92 0 0);
+}
+
+.inline-edit-shell--employee-fields {
+  display: grid;
+  gap: 16px;
+  width: 100%;
+  max-width: 100%;
+  --erp-control-height: 22px;
+  --form-border: #e5e7eb;
+  --form-primary: #2563eb;
+  --form-primary-soft: #eff6ff;
+  --form-bg: #f8fafc;
+  --form-surface: #ffffff;
+  --form-text: #111827;
+  --form-muted: #64748b;
+}
+
+.inline-edit-shell--inline-record {
+  gap: 10px;
+  --form-bg: #ffffff;
+  --form-border: #e5e7eb;
+  --form-muted: var(--employee-exp-muted, #647084);
+  --form-text: var(--employee-exp-text, #172033);
+}
+
+.inline-edit-shell--employee-fields :is(.employee-section-shell, .labor-shell, .prevision-shell) {
+  gap: 16px;
+}
+
+.inline-edit-shell--inline-record :is(.employee-section-shell, .labor-shell, .prevision-shell) {
+  gap: 0;
+}
+
+.inline-edit-shell--in-card :is(app-card.employee-block, app-card.labor-block, app-card.prevision-card) {
+  border-width: 1px 0 0;
+  border-radius: 0;
+}
+
+.inline-edit-shell--in-card :is(app-card.employee-block, app-card.labor-block, app-card.prevision-card):first-of-type {
+  border-top: 0;
+}
+
+.inline-edit-shell--inline-record :is(app-card.employee-block, app-card.labor-block, app-card.prevision-card) {
+  border: 0;
+  border-radius: 0;
+  background: #ffffff;
+  box-shadow: none;
+}
+
+.inline-edit-shell--inline-record :is(.employee-block-head, .labor-block-head, .prevision-card-header) {
+  display: none;
+}
+
+.inline-edit-shell--inline-record :is(.employee-block > .employee-grid, .labor-block > .labor-grid, .labor-block > .relation-grid, .prevision-card-content) {
+  padding: 0;
+}
+
+.inline-edit-shell--inline-record :is(.employee-grid, .labor-grid, .prevision-grid, .prevision-grid-adv) {
+  gap: 10px 14px;
+}
+
+.inline-edit-shell--inline-record .field-label-row {
+  min-height: 14px;
+}
+
+.inline-edit-shell--inline-record .field-label-row label {
+  color: var(--employee-exp-muted, #647084);
+  font-size: 0.625rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  line-height: 1.25;
+  text-transform: uppercase;
+}
+
+.inline-edit-shell--inline-record .employee-control,
+.inline-edit-shell--inline-record .readonly-field,
+.inline-edit-shell--inline-record .relation-option,
+.inline-edit-shell--inline-record .employee-checkbox-row {
+  background: #ffffff;
+  border-color: #dfe5ec;
+  color: var(--employee-exp-text, #172033);
+  font-size: 0.78rem;
+  font-weight: 550;
+}
+
+.inline-edit-shell--inline-record .field-message {
+  min-height: 14px;
+  font-size: 0.64rem;
+}
+
+.inline-edit-shell--employee-fields :is(.section-error-summary, .section-validation-list) {
+  margin: 0;
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+  background: #fff7f7;
+  color: #991b1b;
+  font-size: 0.72rem;
+}
+
+.inline-edit-shell--employee-fields .section-error-summary {
+  display: grid;
+  gap: 2px;
+  padding: 8px 10px;
+}
+
+.inline-edit-shell--employee-fields .section-validation-list {
+  display: grid;
+  gap: 2px;
+  padding: 8px 10px 8px 24px;
+}
+
+.inline-edit-shell--employee-fields .detail-block-head--editorial .inline-action,
+.detail-block-head--editorial .inline-edit-actions--head .inline-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 28px;
+  border: 1px solid #dbe3ee;
+  border-radius: 6px;
+  padding: 0 10px;
+  background: #ffffff;
+  color: #374151;
+  font: inherit;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.inline-edit-shell--employee-fields .inline-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 34px;
+  border: 1px solid #dbe3ee;
+  border-radius: 6px;
+  padding: 0 14px;
+  background: #ffffff;
+  color: var(--employee-exp-blue, #0c447c);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 650;
+  cursor: pointer;
+}
+
+.inline-edit-shell--employee-fields .inline-action:hover:not(:disabled) {
+  border-color: #c9d7e6;
+  background: #f8fafc;
+}
+
+.inline-edit-shell--employee-fields .inline-action--primary {
+  border-color: #2563eb;
+  background: #2563eb;
+  color: #ffffff;
+}
+
+.inline-edit-shell--employee-fields .inline-action--primary:hover:not(:disabled) {
+  border-color: #1d4ed8;
+  background: #1d4ed8;
+}
+
+.inline-edit-shell--employee-fields .inline-action:disabled {
+  cursor: not-allowed;
+  opacity: 0.62;
+}
+
+@media (max-width: 720px) {
+  .inline-edit-shell--employee-fields .inline-edit-actions {
+    justify-content: stretch;
+  }
+
+  .inline-edit-shell--employee-fields .inline-action {
+    flex: 1 1 auto;
+  }
 }

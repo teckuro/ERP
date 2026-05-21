@@ -1,3 +1,5 @@
+import { DestroyRef, inject } from '@angular/core';
+import { Validators } from '@angular/forms';
 import { TestBed } from '@angular/core/testing';
 
 import { EmpleadoFormCatalogos } from '../models/empleado-catalogos.model';
@@ -22,8 +24,14 @@ function catalogosConListas(): EmpleadoFormCatalogos {
     exCajasPrevisionales: [{ value: 40, label: 'Ex caja' }],
     regimenesExCaja: [{ value: 50, label: 'Régimen', idExCajaPrevisional: 40, tasaCotizacionReferencia: 1 }],
     afps: [{ value: 60, label: 'AFP X' }],
-    entidadesSalud: [{ value: 70, label: 'Isapre' }],
-    monedas: [{ value: 80, label: 'CLP' }],
+    entidadesSalud: [
+      { value: 70, label: 'Isapre Test', tipo: 'ISAPRE' },
+      { value: 71, label: 'Fonasa', tipo: 'FONASA' },
+    ],
+    monedas: [
+      { value: 80, label: 'Pesos', codigo: 'CLP' },
+      { value: 81, label: 'Unidad de Fomento', codigo: 'UF' },
+    ],
     tramosCarga: [],
     institucionesApv: [{ value: 90, label: 'APV' }],
     formasPagoApv: [{ value: 91, label: 'Depósito' }],
@@ -59,5 +67,40 @@ describe('EmpleadosFormOrchestratorService — selects sin autodefault', () => {
     expect(form.controls.datosPersonales.controls.estadoCivil.value).toBeNull();
     expect(form.controls.contrato.controls.tipoContrato.value).toBeNull();
     expect(form.controls.contrato.controls.tipoGratificacion.value).toBeNull();
+  });
+
+  it('FONASA asigna pesos y valor plan cero sin exigir valor manual', () => {
+    const form = orchestrator.createForm();
+    const cat = catalogosConListas();
+
+    TestBed.runInInjectionContext(() => {
+      orchestrator.configureFormBehavior(form, inject(DestroyRef), () => cat);
+    });
+
+    const controls = form.controls.previsionSalud.controls;
+    controls.tipoRegimenPrevisional.setValue('AFP');
+    controls.idSalud.setValue(71);
+
+    expect(controls.idMonedaPlan.value).toBe(80);
+    expect(controls.valorPlan.value).toBe(0);
+    expect(controls.adicionalAugeGes.value).toBe(0);
+    expect(controls.valorPlan.hasValidator(Validators.required)).toBe(false);
+  });
+
+  it('ISAPRE mantiene valor plan requerido', () => {
+    const form = orchestrator.createForm();
+    const cat = catalogosConListas();
+
+    TestBed.runInInjectionContext(() => {
+      orchestrator.configureFormBehavior(form, inject(DestroyRef), () => cat);
+    });
+
+    const controls = form.controls.previsionSalud.controls;
+    controls.tipoRegimenPrevisional.setValue('AFP');
+    controls.idSalud.setValue(70);
+    controls.valorPlan.setValue(null);
+
+    expect(controls.valorPlan.hasValidator(Validators.required)).toBe(true);
+    expect(controls.valorPlan.valid).toBe(false);
   });
 });

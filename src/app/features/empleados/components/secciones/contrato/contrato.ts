@@ -63,10 +63,17 @@ export class ContratoComponent {
   @Input() visibleBlocks: string[] | null = null;
   /** Grilla 8 columnas y spans laborales (solo alta avanzada). */
   @Input() advancedGridLayout = false;
+  /** Edicion inline desde ficha: la card exterior ya aporta el titulo del bloque. */
+  @Input() inlineRecordLayout = false;
 
   @HostBinding('class.labor-layout-advanced')
   protected get laborLayoutAdvanced(): boolean {
     return this.advancedGridLayout;
+  }
+
+  @HostBinding('class.labor-layout-inline-record')
+  protected get laborLayoutInlineRecord(): boolean {
+    return this.inlineRecordLayout;
   }
 
   readonly employeeStates: SelectOption<EmpleadoEstado>[] = [

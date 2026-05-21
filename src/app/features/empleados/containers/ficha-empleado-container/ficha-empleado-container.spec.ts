@@ -102,6 +102,7 @@ function empleado(over: Partial<EmpleadoFichaDetalle> = {}): EmpleadoFichaDetall
         regimenExCaja: '',
         tasaExCaja: null,
         idSalud: 1,
+        tipoSalud: 'ISAPRE',
         idMonedaPlan: 1,
         valorPlan: 4.2,
         adicionalAugeGes: 0,
@@ -196,7 +197,7 @@ describe('FichaEmpleadoContainer', () => {
 
     expect(component.pendingItemsEvaluados(employee)).toContain('Ingresa sueldo base válido.');
     expect(component.pendingItemsEvaluados(employee)).toContain('Reemplaza la cuenta bancaria temporal.');
-    expect(component.payrollReadinessEvaluadoLabel(employee)).toBe('No apta para remuneraciones');
+    expect(component.fichaEstadoPanel(employee).remuneracionesLabel).toBe('No apta para remuneraciones');
   });
 
   it('cuenta DRAFT se muestra como pendiente visual en ficha', () => {
@@ -218,7 +219,7 @@ describe('FichaEmpleadoContainer', () => {
 
     expect(component.canValidateForPayroll(employee)).toBe(true);
     expect(component.primaryActionEvaluadaLabel(employee)).toBe('Validar para remuneraciones');
-    expect(component.payrollReadinessEvaluadoLabel(employee)).toBe('Pendiente de validación');
+    expect(component.fichaEstadoPanel(employee).remuneracionesLabel).toBe('Pendiente de validación');
   });
 
   it('ficha con bloqueos no muestra validar y mantiene pendientes', () => {
@@ -349,7 +350,7 @@ describe('FichaEmpleadoContainer', () => {
     expect(component.primaryActionEvaluadaLabel(employee)).toContain('Ver datos');
   });
 
-  it('publica breadcrumbs, estado y accion primaria en el top bar', () => {
+  it('publica breadcrumbs y chip de estado en el shell sin CTA duplicado', () => {
     const employee = empleado({ estado: 'en_proceso', estadoFicha: 'INCOMPLETO' });
     component.empleado.set(employee);
     component['patchFormFromEmployee'](employee);
@@ -360,42 +361,28 @@ describe('FichaEmpleadoContainer', () => {
       { label: 'Ana Perez' },
     ]);
     expect(shellContext.statusChip()).toEqual({
-      label: 'Ficha completa',
-      tone: 'neutral',
+      label: 'En proceso',
+      tone: 'warning',
     });
-    expect(shellContext.primaryAction()).toEqual({
-      actionId: 'ficha-empleado-primary',
-      label: 'Validar para remuneraciones',
-      disabled: false,
-      loading: false,
-    });
+    expect(shellContext.primaryAction()).toBeUndefined();
   });
 
-  it('ejecuta la accion primaria desde el top bar', () => {
-    const employee = empleado();
-    const actionSpy = vi.spyOn(component, 'handlePrimaryFichaAction').mockResolvedValue(undefined);
-    component.empleado.set(employee);
-    component['patchFormFromEmployee'](employee);
-    fixture.detectChanges();
-
-    shellContext.invokePrimaryAction();
-
-    expect(actionSpy).toHaveBeenCalledWith(employee);
-  });
-
-  it('deshabilita la accion del top bar durante validacion', () => {
+  it('ejecuta la accion principal desde el panel de diagnostico', async () => {
     const employee = empleado({ estado: 'en_proceso', estadoFicha: 'INCOMPLETO' });
+    const openSpy = vi.spyOn(component, 'openPayrollValidationConfirm');
     component.empleado.set(employee);
     component['patchFormFromEmployee'](employee);
-    component.isValidatingPayroll.set(true);
+    component.isLoading.set(false);
     fixture.detectChanges();
 
-    expect(shellContext.primaryAction()).toEqual(
-      expect.objectContaining({
-        disabled: true,
-        loading: true,
-      }),
-    );
+    const cta = fixture.nativeElement.querySelector(
+      '.employee-record-status__cta',
+    ) as HTMLButtonElement;
+    expect(cta?.textContent?.trim()).toBe('Validar para remuneraciones');
+    cta?.click();
+    await fixture.whenStable();
+
+    expect(openSpy).toHaveBeenCalled();
   });
 
   it('renderiza avatar con iniciales del colaborador', () => {
@@ -405,25 +392,46 @@ describe('FichaEmpleadoContainer', () => {
     component.isLoading.set(false);
     fixture.detectChanges();
 
-    const avatar = fixture.nativeElement.querySelector('.file-hero-avatar') as HTMLElement;
+    const avatar = fixture.nativeElement.querySelector(
+      '.employee-record-header__avatar',
+    ) as HTMLElement;
 
     expect(component.employeeInitials(employee)).toBe('AM');
     expect(avatar?.textContent?.trim()).toBe('AM');
   });
 
-  it('mantiene estado accesible en tabs sin depender del texto visible', () => {
+  it('marca el bloque activo en el rail del expediente', () => {
     const employee = empleado();
     component.empleado.set(employee);
     component['patchFormFromEmployee'](employee);
     component.isLoading.set(false);
     fixture.detectChanges();
 
-    const tab = fixture.nativeElement.querySelector('.file-tab-chip') as HTMLButtonElement;
-    const stateLabel = tab.querySelector('.tab-state-label') as HTMLElement;
+    const active = fixture.nativeElement.querySelector(
+      '.employee-record-rail__item--active',
+    ) as HTMLButtonElement;
 
-    expect(tab.getAttribute('aria-label')).toContain('General:');
-    expect(tab.getAttribute('title')).toContain('General:');
-    expect(stateLabel.textContent?.trim()).toBe(component.tabStatusLabel('general', employee));
+    expect(active?.textContent).toContain('General');
+    expect(active?.getAttribute('aria-current')).toBe('page');
+  });
+
+  it('cambia el bloque central al pulsar un item del rail', () => {
+    const employee = empleado();
+    component.empleado.set(employee);
+    component['patchFormFromEmployee'](employee);
+    component.isLoading.set(false);
+    fixture.detectChanges();
+
+    const pago = [...fixture.nativeElement.querySelectorAll('.employee-record-rail__item')].find(
+      (el: Element) => el.textContent?.includes('Pago'),
+    ) as HTMLButtonElement;
+    pago?.click();
+    fixture.detectChanges();
+
+    expect(component.activeTab()).toBe('pago');
+    expect(
+      fixture.nativeElement.querySelector('.employee-record-block__title')?.textContent?.trim(),
+    ).toBe('Pago');
   });
 
   it('no renderiza acciones primarias duplicadas en la cabecera local', () => {
@@ -440,7 +448,7 @@ describe('FichaEmpleadoContainer', () => {
     expect(host.querySelector('.file-toolbar-button--primary')).toBeNull();
   });
 
-  it('mantiene estado de ficha y completitud en el sidebar', () => {
+  it('mantiene estado de ficha y completitud coherente en el panel de diagnostico', () => {
     const employee = empleado();
     component.empleado.set(employee);
     component['patchFormFromEmployee'](employee);
@@ -448,16 +456,27 @@ describe('FichaEmpleadoContainer', () => {
     fixture.detectChanges();
 
     const host = fixture.nativeElement as HTMLElement;
+    const estado = component.fichaEstadoPanel(employee);
+    const progress = host.querySelector(
+      '.employee-record-status__progress',
+    ) as HTMLElement;
 
-    expect(host.querySelector('.file-status-card__title')?.textContent?.trim()).toBe(
+    expect(host.querySelector('.employee-record-status__title')?.textContent?.trim()).toBe(
       'Estado de la ficha',
     );
-    expect(host.querySelector('.file-status-card__completion-pct')?.textContent?.trim()).toContain(
-      '%',
+    expect(host.querySelector('.employee-record-status__completion')?.textContent).toContain(
+      'de 5 bloques operativos',
+    );
+    expect(host.querySelector('.employee-record-status__pct')?.textContent?.trim()).toBe(
+      `${estado.progressPercent}%`,
+    );
+    expect(progress.getAttribute('aria-valuenow')).toBe(String(estado.progressPercent));
+    expect(estado.progressPercent).toBe(
+      Math.round((estado.completedOperativeBlocks / estado.totalOperativeBlocks) * 100),
     );
   });
 
-  it('deja el sidebar como unico informador de estado de ficha', () => {
+  it('no muestra impacto operativo y si motivo principal en el panel', () => {
     const employee = empleado();
     component.empleado.set(employee);
     component['patchFormFromEmployee'](employee);
@@ -466,12 +485,13 @@ describe('FichaEmpleadoContainer', () => {
 
     const host = fixture.nativeElement as HTMLElement;
 
-    expect(host.querySelector('.file-state-overview')).toBeNull();
-    expect(host.querySelector('.file-general-overview')).toBeNull();
-    expect(host.querySelector('.file-status-card')).toBeTruthy();
+    expect(host.textContent).not.toContain('Impacto operativo');
+    expect(host.textContent).not.toContain('Editar bloque actual');
+    expect(host.querySelector('.employee-record-status__motivo')).toBeTruthy();
+    expect(host.textContent).toContain('Motivo principal');
   });
 
-  it('integra el contexto de seccion en el tabbar', () => {
+  it('muestra el rail expediente sin tabbar horizontal', () => {
     const employee = empleado();
     component.empleado.set(employee);
     component['patchFormFromEmployee'](employee);
@@ -480,9 +500,67 @@ describe('FichaEmpleadoContainer', () => {
 
     const host = fixture.nativeElement as HTMLElement;
 
-    expect(host.querySelector('.file-tabs-context__main strong')?.textContent?.trim()).toBe(
-      'General',
+    expect(host.querySelector('.employee-record-rail__title')?.textContent?.trim()).toBe(
+      'Expediente',
     );
-    expect(host.querySelector('.file-tabs-context__meta')?.textContent).toContain('bloques');
+    expect(host.querySelector('.employee-record-rail__sub')?.textContent).toContain('bloques');
+    expect(host.querySelector('.file-tabs-wrap')).toBeNull();
+    expect(host.querySelector('.file-tabs-context')).toBeNull();
+  });
+
+  it('deduplica faltantes criticos en el panel', () => {
+    const employee = empleado();
+    employee.formValue.bancario['numeroCuenta'] = 'DRAFT-XYZ';
+    component['patchFormFromEmployee'](employee);
+    const issues = component.fichaEstadoPanel(employee).issues;
+    const keys = issues.map((i) => `${i.blockKey}:${i.message}`);
+
+    expect(new Set(keys).size).toBe(keys.length);
+  });
+
+  it('mantiene el titulo de bloque y una sola barra de acciones al editar', () => {
+    const employee = empleado();
+    component.empleado.set(employee);
+    component['patchFormFromEmployee'](employee);
+    component.isLoading.set(false);
+    const firstBlockId = component.detailBlocks(employee)[0]?.id;
+    component.startEditing(firstBlockId ?? null);
+    fixture.detectChanges();
+
+    const editingBlock = fixture.nativeElement.querySelector(
+      '.detail-block--editorial.is-editing',
+    ) as HTMLElement;
+    const host = fixture.nativeElement as HTMLElement;
+
+    expect(editingBlock?.querySelector('.detail-block-head--editing')).toBeTruthy();
+    expect(editingBlock?.querySelector('.detail-block-head__title')?.textContent?.trim()).toBe(
+      'Identificación legal',
+    );
+    expect(editingBlock?.querySelector('.detail-block-head__hint')?.textContent).toContain(
+      'Se guardará solo',
+    );
+    expect(editingBlock?.querySelector('.inline-edit-actions--head')?.textContent).toContain(
+      'Guardar',
+    );
+    expect(editingBlock?.querySelectorAll('.inline-edit-actions').length).toBe(1);
+    expect(host.querySelector('.employee-record-block__intro--editing')).toBeTruthy();
+    expect(host.querySelector('.employee-record-block__intro--editing .employee-record-block__title')).toBeNull();
+  });
+
+  it('usa el titulo del bloque en el msgbox de guardado parcial', async () => {
+    const employee = empleado();
+    component.empleado.set(employee);
+    component['patchFormFromEmployee'](employee);
+    component.isLoading.set(false);
+    component.startEditing('identificacion');
+    fixture.detectChanges();
+
+    await component.saveSection();
+    fixture.detectChanges();
+
+    expect(component.sectionSuccessTitle()).toBe('Identificación legal');
+    expect(component.sectionSuccessMessage()).toContain(
+      'Las demás secciones de la ficha no se modificaron.',
+    );
   });
 });

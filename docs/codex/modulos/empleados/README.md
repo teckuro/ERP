@@ -1,3 +1,7 @@
+## EMP-FICHA-EXPEDIENTE-NOIA-01
+
+Ficha `/empleados/:id` con layout expediente tres columnas (rail | bloque activo | diagnóstico). Presentación en `ficha-empleado-presentacion.rules.ts`; negocio intacto en `evaluarCompletitudYAptitudEmpleado`. Documento: [`emp-ficha-expediente-noia-01.md`](./emp-ficha-expediente-noia-01.md).
+
 ## EMP-PERFIL-LABORAL-SQL-01
 
 Empleados incorpora base SQL para condiciones especiales del trabajador, sin cambios visuales todavia:
@@ -48,7 +52,8 @@ Contratos y guías del ciclo de vida del trabajador en Angular: listado, altas (
 | [`alta-diagnostico-contractual-ux-01.md`](./alta-diagnostico-contractual-ux-01.md) | Pulido UX del Resumen final: diagnóstico contractual visible, caso detectado y regla visual sin barras laterales fuertes |
 | [`alta-validaciones-asistidas-01.md`](./alta-validaciones-asistidas-01.md) | Capa visible de validaciones guiadas: faltantes, no aplica, definido por sistema, revisión administrativa y MsgBox solo para decisiones |
 | [`borrador-continuar-alta.md`](./borrador-continuar-alta.md) | Guardar borrador, `paso_alta_avanzada`, rehidratación, E2E opt-in |
-| [`ficha-empleado.md`](./ficha-empleado.md) | Pestañas, bloques, panel superior, guardado, carga técnica, Playwright |
+| [`ficha-empleado.md`](./ficha-empleado.md) | Expediente (rail), bloques, panel diagnóstico, guardado, carga técnica, Playwright |
+| [`emp-ficha-expediente-noia-01.md`](./emp-ficha-expediente-noia-01.md) | Fase NOIA: layout 3 columnas, rail, motivo principal, CTA único |
 | [`validar-remuneraciones.md`](./validar-remuneraciones.md) | Opción B, condiciones del botón, persistencia, exclusiones |
 | [`tests-empleados.md`](./tests-empleados.md) | Unitarios, Playwright, brechas |
 

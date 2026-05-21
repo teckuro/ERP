@@ -339,7 +339,7 @@ export class EmpleadosFormOrchestratorService {
 
     controls.relacionLaboral.valueChanges.pipe(takeUntilDestroyed(destroyRef)).subscribe(() => {
       this.updateContratoValidators(form);
-      this.updatePrevisionSaludValidators(form);
+      this.updatePrevisionSaludValidators(form, getCatalogos());
       this.updateBancarioValidators(form);
     });
 
@@ -476,7 +476,7 @@ export class EmpleadosFormOrchestratorService {
         this.handleTipoRegimenChange(form, previousTipo, tipo);
         previousTipo = tipo;
         this.ensurePrevisionDefaults(form, getCatalogos());
-        this.updatePrevisionSaludValidators(form);
+        this.updatePrevisionSaludValidators(form, getCatalogos());
       });
 
     controls.tieneApv.valueChanges.pipe(takeUntilDestroyed(destroyRef)).subscribe((enabled) => {
@@ -485,16 +485,21 @@ export class EmpleadosFormOrchestratorService {
       }
 
       this.ensurePrevisionDefaults(form, getCatalogos());
-      this.updatePrevisionSaludValidators(form);
+      this.updatePrevisionSaludValidators(form, getCatalogos());
     });
 
     controls.idMonedaCuenta2.valueChanges
       .pipe(takeUntilDestroyed(destroyRef))
-      .subscribe(() => this.updatePrevisionSaludValidators(form));
+      .subscribe(() => this.updatePrevisionSaludValidators(form, getCatalogos()));
 
     controls.valorCuenta2.valueChanges
       .pipe(takeUntilDestroyed(destroyRef))
-      .subscribe(() => this.updatePrevisionSaludValidators(form));
+      .subscribe(() => this.updatePrevisionSaludValidators(form, getCatalogos()));
+
+    controls.idSalud.valueChanges.pipe(takeUntilDestroyed(destroyRef)).subscribe(() => {
+      this.syncSaludPlanFields(form, getCatalogos());
+      this.updatePrevisionSaludValidators(form, getCatalogos());
+    });
 
     controls.idExCajaPrevisional.valueChanges
       .pipe(takeUntilDestroyed(destroyRef))
@@ -504,7 +509,8 @@ export class EmpleadosFormOrchestratorService {
       .pipe(takeUntilDestroyed(destroyRef))
       .subscribe(() => this.syncRegimenExCajaFields(form, getCatalogos()));
 
-    this.updatePrevisionSaludValidators(form);
+    this.syncSaludPlanFields(form, getCatalogos());
+    this.updatePrevisionSaludValidators(form, getCatalogos());
   }
 
   private handleTipoRegimenChange(
@@ -529,11 +535,17 @@ export class EmpleadosFormOrchestratorService {
     }
   }
 
-  private updatePrevisionSaludValidators(form: EmpleadoFormGroup): void {
+  private updatePrevisionSaludValidators(
+    form: EmpleadoFormGroup,
+    catalogos: EmpleadoFormCatalogos,
+  ): void {
     const controls = form.controls.previsionSalud.controls;
     const esHonorarios = form.controls.contrato.controls.relacionLaboral.value === 'HONORARIOS';
     const tipo = controls.tipoRegimenPrevisional.value;
     const requiereSalud = tipo !== null && tipo !== 'NINGUNA';
+    const tipoSalud = this.resolveSaludTipo(controls.idSalud.value, catalogos);
+    const esFonasa = requiereSalud && tipoSalud === 'FONASA';
+    const esIsapre = requiereSalud && tipoSalud === 'ISAPRE';
     const tieneCuenta2 =
       tipo === 'AFP' &&
       (controls.idMonedaCuenta2.value !== null || controls.valorCuenta2.value !== null);
@@ -601,11 +613,15 @@ export class EmpleadosFormOrchestratorService {
     this.setControlValidators(controls.idMonedaPlan, requiereSalud ? [Validators.required] : []);
     this.setControlValidators(
       controls.valorPlan,
-      requiereSalud ? [Validators.required, Validators.min(0)] : [Validators.min(0)],
+      esIsapre ? [Validators.required, Validators.min(0)] : [Validators.min(0)],
     );
     this.setControlValidators(
       controls.adicionalAugeGes,
-      requiereSalud ? [Validators.required, Validators.min(0)] : [Validators.min(0)],
+      esFonasa
+        ? [Validators.min(0)]
+        : requiereSalud
+          ? [Validators.required, Validators.min(0)]
+          : [Validators.min(0)],
     );
     this.setControlValidators(controls.idInstitucionApv, requiereApvi ? [Validators.required] : []);
     this.setControlValidators(controls.idMonedaApv, requiereApvi ? [Validators.required] : []);
@@ -626,6 +642,65 @@ export class EmpleadosFormOrchestratorService {
     if (controls.tipoRegimenPrevisional.value === 'IPS') {
       this.ensureRegimenExCajaDefault(form, catalogos);
     }
+
+    this.syncSaludPlanFields(form, catalogos);
+  }
+
+  private syncSaludPlanFields(form: EmpleadoFormGroup, catalogos: EmpleadoFormCatalogos): void {
+    const controls = form.controls.previsionSalud.controls;
+
+    if (this.resolveSaludTipo(controls.idSalud.value, catalogos) !== 'FONASA') {
+      return;
+    }
+
+    const monedaPesos = this.resolvePesoMonedaId(catalogos);
+
+    if (monedaPesos !== null && controls.idMonedaPlan.value !== monedaPesos) {
+      controls.idMonedaPlan.setValue(monedaPesos, { emitEvent: false });
+    }
+
+    if (controls.valorPlan.value !== 0) {
+      controls.valorPlan.setValue(0, { emitEvent: false });
+    }
+
+    if (controls.adicionalAugeGes.value !== 0) {
+      controls.adicionalAugeGes.setValue(0, { emitEvent: false });
+    }
+  }
+
+  private resolveSaludTipo(
+    idSalud: number | null,
+    catalogos: EmpleadoFormCatalogos,
+  ): 'FONASA' | 'ISAPRE' | null {
+    const option = catalogos.entidadesSalud.find((item) => item.value === idSalud);
+    const normalized = this.normalizeCatalogText(`${option?.tipo ?? ''} ${option?.label ?? ''}`);
+
+    if (normalized.includes('FONASA')) {
+      return 'FONASA';
+    }
+
+    if (normalized.includes('ISAPRE')) {
+      return 'ISAPRE';
+    }
+
+    return null;
+  }
+
+  private resolvePesoMonedaId(catalogos: EmpleadoFormCatalogos): number | null {
+    return (
+      catalogos.monedas.find((moneda) => {
+        const normalized = this.normalizeCatalogText(`${moneda.codigo ?? ''} ${moneda.label}`);
+        return normalized.includes('CLP') || normalized.includes('PESO');
+      })?.value ?? null
+    );
+  }
+
+  private normalizeCatalogText(value: string): string {
+    return value
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toUpperCase()
+      .trim();
   }
 
   private ensureDepartamentoDefault(

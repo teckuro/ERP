@@ -21,6 +21,7 @@ import {
   InstitucionApvCatalogRow,
   mapCatalog,
   mapDepartamentosCatalog,
+  mapMonedaCatalog,
   mapRegimenExCajaCatalog,
   mapSaludCatalog,
   mapTipoContratoCatalog,
@@ -187,7 +188,7 @@ export class EmpleadosRepository {
         .from('salud')
         .select('id_salud,nombre,tipo')
         .order('nombre', { ascending: true }),
-      this.supabase.from('moneda').select('id_moneda,nombre').order('nombre', { ascending: true }),
+      this.supabase.from('moneda').select('id_moneda,nombre,codigo').order('nombre', { ascending: true }),
       this.supabase
         .from('tramo_carga')
         .select('id_tramo,periodo,desde,hasta,valor,tramo')
@@ -371,7 +372,7 @@ export class EmpleadosRepository {
       ),
       afps: mapCatalog(afpsResult.data ?? [], 'id_afp'),
       entidadesSalud: mapSaludCatalog(saludResult.data ?? []),
-      monedas: mapCatalog(monedasResult.data ?? [], 'id_moneda'),
+      monedas: mapMonedaCatalog(monedasResult.data ?? []),
       tramosCarga: pickLatestTramosCarga(tramosCargaResult.data ?? []),
       institucionesApv: mapCatalog(
         (institucionesApvResult.data ?? []) as InstitucionApvCatalogRow[],

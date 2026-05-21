@@ -1,6 +1,7 @@
 <section class="employee-section-shell">
   @if (isBlockVisible('identificacion')) {
     <app-card className="employee-block employee-block--wide" [formGroup]="formGroup">
+      @if (!inlineRecordLayout) {
       <div class="employee-block-head">
         <h4>
           Identificación legal
@@ -10,6 +11,7 @@
           <p class="employee-block-lead">RUT o pasaporte (uno obligatorio).</p>
         }
       </div>
+      }
 
       <div
         class="employee-grid"
@@ -111,12 +113,14 @@
 
   @if (isBlockVisible('nombre')) {
     <app-card className="employee-block employee-block--wide" [formGroup]="formGroup">
+      @if (!inlineRecordLayout) {
       <div class="employee-block-head">
         <h4>Nombre del empleado</h4>
         @if (basicSectionLeads) {
           <p class="employee-block-lead">Nombre visible en listados y comunicaciones.</p>
         }
       </div>
+      }
 
       <div
         class="employee-grid"
@@ -202,10 +206,12 @@
     @if (basicSectionLeads) {
       <div class="employee-basic-bottom-grid" aria-label="Datos personales y contacto">
         <app-card className="employee-block employee-block--narrow">
+          @if (!inlineRecordLayout) {
           <div class="employee-block-head">
             <h4>Datos personales</h4>
             <p class="employee-block-lead">Nacionalidad y estado civil.</p>
           </div>
+          }
 
           <div
             class="employee-grid employee-grid-basic--base"
@@ -263,10 +269,12 @@
 
         @if (isBlockVisible('contacto')) {
           <app-card className="employee-block employee-block--narrow">
+            @if (!inlineRecordLayout) {
             <div class="employee-block-head">
               <h4>Contacto</h4>
               <p class="employee-block-lead">Email y teléfono opcionales.</p>
             </div>
+            }
 
             <div class="employee-grid employee-grid-basic--contact" [formGroup]="contactoFormGroup">
               <div class="form-field form-field--wide">
@@ -314,9 +322,11 @@
       </div>
     } @else {
       <app-card className="employee-block employee-block--narrow">
+        @if (!inlineRecordLayout) {
         <div class="employee-block-head">
           <h4>Datos personales</h4>
         </div>
+        }
         <div
           class="employee-grid employee-grid--four"
           [formGroup]="formGroup"
@@ -371,10 +381,12 @@
 
       @if (isBlockVisible('contacto')) {
         <app-card className="employee-block employee-block--narrow" [formGroup]="contactoFormGroup">
+          @if (!inlineRecordLayout) {
           <div class="employee-block-head">
             <h4>Contacto</h4>
             <p class="employee-block-lead">Email y teléfono son opcionales para coordinación interna.</p>
           </div>
+          }
 
           <div
             class="employee-grid employee-grid--two"

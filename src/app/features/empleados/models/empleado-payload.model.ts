@@ -67,6 +67,7 @@ export interface CrearEmpleadoPayload {
   regimenExCaja: string | null;
   tasaExCaja: number | null;
   idSalud: number | null;
+  tipoSalud: 'FONASA' | 'ISAPRE' | string | null;
   idMonedaPlan: number | null;
   valorPlan: number | null;
   adicionalAugeGes: number | null;

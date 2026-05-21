@@ -11,6 +11,14 @@ export interface EmpleadoCatalogOption {
   label: string;
 }
 
+export interface EmpleadoMonedaCatalogOption extends EmpleadoCatalogOption {
+  codigo: string | null;
+}
+
+export interface EmpleadoSaludCatalogOption extends EmpleadoCatalogOption {
+  tipo: 'FONASA' | 'ISAPRE' | string | null;
+}
+
 export interface EmpleadoStringCatalogOption<TValue extends string = string> {
   value: TValue;
   label: string;
@@ -54,8 +62,8 @@ export interface EmpleadoFormCatalogos {
   exCajasPrevisionales: EmpleadoCatalogOption[];
   regimenesExCaja: RegimenExCajaCatalogOption[];
   afps: EmpleadoCatalogOption[];
-  entidadesSalud: EmpleadoCatalogOption[];
-  monedas: EmpleadoCatalogOption[];
+  entidadesSalud: EmpleadoSaludCatalogOption[];
+  monedas: EmpleadoMonedaCatalogOption[];
   tramosCarga: TramoCargaCatalogOption[];
   institucionesApv: EmpleadoCatalogOption[];
   formasPagoApv: EmpleadoCatalogOption[];

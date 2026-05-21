@@ -245,14 +245,18 @@ function validarSalud(
     bloquear('prevision y salud', 'Selecciona la moneda del plan de salud antes de activar la ficha.');
   }
 
-  if (payload.valorPlan === null || Number.isNaN(payload.valorPlan) || payload.valorPlan < 0) {
+  const tipoSalud = normalize(payload.tipoSalud ?? '');
+  const esFonasa = tipoSalud.includes('fonasa');
+
+  if (!esFonasa && (payload.valorPlan === null || Number.isNaN(payload.valorPlan) || payload.valorPlan < 0)) {
     bloquear('prevision y salud', 'Ingresa un valor de plan de salud valido antes de activar la ficha.');
   }
 
   if (
-    payload.adicionalAugeGes === null ||
-    Number.isNaN(payload.adicionalAugeGes) ||
-    payload.adicionalAugeGes < 0
+    !esFonasa &&
+    (payload.adicionalAugeGes === null ||
+      Number.isNaN(payload.adicionalAugeGes) ||
+      payload.adicionalAugeGes < 0)
   ) {
     bloquear('prevision y salud', 'Ingresa el adicional Auge/GES antes de activar la ficha.');
   }

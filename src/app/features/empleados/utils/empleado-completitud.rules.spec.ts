@@ -61,6 +61,7 @@ function payloadCompleto(overrides: Partial<CrearEmpleadoPayload> = {}): CrearEm
     regimenExCaja: null,
     tasaExCaja: null,
     idSalud: 1,
+    tipoSalud: 'ISAPRE',
     idMonedaPlan: 1,
     valorPlan: 4.2,
     adicionalAugeGes: 0,
@@ -92,6 +93,7 @@ describe('evaluarCompletitudYAptitudEmpleado', () => {
         idRegimenPrevisional: null,
         idAfp: null,
         idSalud: null,
+        tipoSalud: null,
         idMonedaPlan: null,
         valorPlan: null,
         adicionalAugeGes: null,
@@ -187,6 +189,7 @@ describe('evaluarCompletitudYAptitudEmpleado', () => {
         idRegimenPrevisional: null,
         idAfp: null,
         idSalud: null,
+        tipoSalud: null,
         idMonedaPlan: null,
         valorPlan: null,
         adicionalAugeGes: null,
@@ -211,6 +214,7 @@ describe('evaluarCompletitudYAptitudEmpleado', () => {
         idRegimenPrevisional: 1,
         idAfp: 1,
         idSalud: 1,
+        tipoSalud: 'ISAPRE',
         idMonedaPlan: 1,
         valorPlan: 4.2,
         adicionalAugeGes: 0,
@@ -220,6 +224,35 @@ describe('evaluarCompletitudYAptitudEmpleado', () => {
 
     expect(evaluacion.aptoParaRemuneraciones).toBe(true);
     expect(evaluacion.estadoFicha).toBe('VALIDO');
+  });
+
+  it('FONASA queda apta sin valor de plan manual', () => {
+    const evaluacion = evaluarCompletitudYAptitudEmpleado({
+      payload: payloadCompleto({
+        tipoSalud: 'FONASA',
+        idSalud: 1,
+        idMonedaPlan: 1,
+        valorPlan: 0,
+        adicionalAugeGes: 0,
+      }),
+    });
+
+    expect(evaluacion.aptoParaRemuneraciones).toBe(true);
+    expect(evaluacion.bloqueos).toEqual([]);
+  });
+
+  it('ISAPRE bloquea si falta valor de plan', () => {
+    const evaluacion = evaluarCompletitudYAptitudEmpleado({
+      payload: payloadCompleto({
+        tipoSalud: 'ISAPRE',
+        idSalud: 1,
+        idMonedaPlan: 1,
+        valorPlan: null,
+      }),
+    });
+
+    expect(evaluacion.aptoParaRemuneraciones).toBe(false);
+    expect(evaluacion.seccionesPendientes).toContain('prevision y salud');
   });
 
   it('IPS con salud completa queda apta y no exige APVI', () => {
@@ -246,6 +279,7 @@ describe('evaluarCompletitudYAptitudEmpleado', () => {
         idRegimenPrevisional: null,
         idAfp: null,
         idSalud: null,
+        tipoSalud: null,
         idMonedaPlan: null,
         valorPlan: null,
         adicionalAugeGes: null,

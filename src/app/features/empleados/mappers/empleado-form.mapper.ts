@@ -27,6 +27,10 @@ export function mapEmpleadoFormToPayload(
     (rawValue.previsionSalud.idMonedaCuenta2 !== null ||
       rawValue.previsionSalud.valorCuenta2 !== null);
   const requiereSalud = tipoPrevision !== 'NINGUNA';
+  const tipoSalud = requiereSalud
+    ? resolveTipoSalud(rawValue.previsionSalud.idSalud, catalogos)
+    : null;
+  const esFonasa = tipoSalud === 'FONASA';
   const tieneApvi = tipoPrevision === 'AFP' && rawValue.previsionSalud.tieneApv;
 
   return {
@@ -128,15 +132,20 @@ export function mapEmpleadoFormToPayload(
     idSalud: requiereSalud
       ? requireSelection(rawValue.previsionSalud.idSalud, 'la institucion de salud')
       : null,
+    tipoSalud,
     idMonedaPlan: requiereSalud
       ? requireSelection(rawValue.previsionSalud.idMonedaPlan, 'la moneda del plan de salud')
       : null,
     valorPlan: requiereSalud
-      ? requireNumber(rawValue.previsionSalud.valorPlan, 'el valor del plan de salud')
+      ? esFonasa
+        ? 0
+        : requireNumber(rawValue.previsionSalud.valorPlan, 'el valor del plan de salud')
       : null,
-    adicionalAugeGes: requiereSalud
+    adicionalAugeGes: requiereSalud && !esFonasa
       ? requireNumber(rawValue.previsionSalud.adicionalAugeGes, 'el adicional plan Auge')
-      : null,
+      : requiereSalud
+        ? 0
+        : null,
     tieneApv: tieneApvi,
     idInstitucionApv: tieneApvi
       ? requireSelection(rawValue.previsionSalud.idInstitucionApv, 'la institucion APVI')
@@ -223,6 +232,7 @@ export function mapEmpleadoFormToPayloadBasico(form: EmpleadoFormGroup): CrearEm
     regimenExCaja: null,
     tasaExCaja: null,
     idSalud: null,
+    tipoSalud: null,
     idMonedaPlan: null,
     valorPlan: null,
     adicionalAugeGes: null,
@@ -290,6 +300,10 @@ export function mapEmpleadoFormToPayloadBorrador(
     (rawValue.previsionSalud.idMonedaCuenta2 !== null ||
       rawValue.previsionSalud.valorCuenta2 !== null);
   const requiereSalud = tipoPrevision !== 'NINGUNA';
+  const tipoSalud = requiereSalud
+    ? resolveTipoSalud(rawValue.previsionSalud.idSalud, catalogos)
+    : null;
+  const esFonasa = tipoSalud === 'FONASA';
   const tieneApvi = tipoPrevision === 'AFP' && rawValue.previsionSalud.tieneApv === true;
 
   const idBanco =
@@ -377,9 +391,10 @@ export function mapEmpleadoFormToPayloadBorrador(
     regimenExCaja: tipoPrevision === 'IPS' ? rawValue.previsionSalud.regimenExCaja || null : null,
     tasaExCaja: tipoPrevision === 'IPS' ? rawValue.previsionSalud.tasaExCaja : null,
     idSalud: requiereSalud ? rawValue.previsionSalud.idSalud : null,
+    tipoSalud,
     idMonedaPlan: requiereSalud ? rawValue.previsionSalud.idMonedaPlan : null,
-    valorPlan: requiereSalud ? rawValue.previsionSalud.valorPlan : null,
-    adicionalAugeGes: requiereSalud ? rawValue.previsionSalud.adicionalAugeGes : null,
+    valorPlan: requiereSalud ? (esFonasa ? 0 : rawValue.previsionSalud.valorPlan) : null,
+    adicionalAugeGes: requiereSalud ? (esFonasa ? 0 : rawValue.previsionSalud.adicionalAugeGes) : null,
     tieneApv: tieneApvi,
     idInstitucionApv: tieneApvi ? rawValue.previsionSalud.idInstitucionApv : null,
     idMonedaApv: tieneApvi ? rawValue.previsionSalud.idMonedaApv : null,
@@ -427,6 +442,25 @@ function resolveRegimenPrevisionalId(
   }
 
   return regimen.value;
+}
+
+function resolveTipoSalud(
+  idSalud: number | null,
+  catalogos: EmpleadoFormCatalogos,
+): 'FONASA' | 'ISAPRE' | string | null {
+  const option = catalogos.entidadesSalud.find((item) => item.value === idSalud);
+  const raw = `${option?.tipo ?? ''} ${option?.label ?? ''}`;
+  const normalized = normalizeText(raw);
+
+  if (normalized.includes('fonasa')) {
+    return 'FONASA';
+  }
+
+  if (normalized.includes('isapre')) {
+    return 'ISAPRE';
+  }
+
+  return option?.tipo ?? null;
 }
 
 function requireSexo(value: EmpleadoSexo | null): EmpleadoSexo {

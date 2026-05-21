@@ -1,5 +1,11 @@
 # CHANGELOG
 
+## 2026-05-21 - EMP-FICHA-EXPEDIENTE-NOIA-01
+
+- **Ficha empleado:** layout expediente 3 columnas (rail índice | bloque activo | diagnóstico); header compacto; panel con motivo principal y CTA único; sin tabs horizontales ni CTA duplicado en shell.
+- **Rules:** `ficha-empleado-presentacion.rules.ts` (dedupe faltantes, motivo principal, nav expediente).
+- **Tests:** specs contenedor + presentación (27 tests ficha-empleado*).
+
 ## 2026-05-19 - NOM-MENSUAL-DETALLE-MENSUAL-UNIFICADO-01
 
 - **Workspace:** tabbar visible `Detalle mensual | Historial`; franja lateral con parámetros como requisito; movimientos y recurrentes unificados (`Origen / duración`); filtros internos y DataGrid por vista.

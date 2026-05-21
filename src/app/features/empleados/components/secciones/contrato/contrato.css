@@ -1,5 +1,14 @@
 @import '../../form-empleado-shared.css';
 
+:host.labor-layout-inline-record .labor-block-head {
+  display: none;
+}
+
+:host.labor-layout-inline-record .labor-block > .labor-grid,
+:host.labor-layout-inline-record .labor-block > .relation-grid {
+  padding: 0;
+}
+
 :host {
   display: block;
   font-family: var(--erp-font-sans, system-ui, sans-serif);
