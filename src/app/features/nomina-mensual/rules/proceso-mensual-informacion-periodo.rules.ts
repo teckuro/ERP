@@ -7,7 +7,9 @@ import type {
   ValidacionAccionLocal,
   ValidacionCalculoPreliminarView,
 } from '../containers/proceso-mensual-container/models/proceso-mensual-container.vm';
+import type { TrabajadorPendienteRevisionPeriodo } from '../models/proceso-mensual.model';
 import { limpiarCopyTecnicoNomina } from './proceso-mensual-copy-limpio.rules';
+import { buildItemsTrabajadoresPendientesModal } from './proceso-mensual-trabajadores-prevalidacion.rules';
 
 export interface BuildInformacionPeriodoInput {
   errorEjecucion: string | null;
@@ -21,6 +23,8 @@ export interface BuildInformacionPeriodoInput {
   tienePreNomina: boolean;
   tieneCalculo: boolean;
   tieneResultado: boolean;
+  trabajadoresPendientesRevision: TrabajadorPendienteRevisionPeriodo[];
+  prevalidacionEstado?: string | null;
 }
 
 export interface ResolveDetalleTabInput {
@@ -40,6 +44,7 @@ export function mapDestinoToDetalleTab(destino: InformacionPeriodoDestino): Deta
     case 'parametros':
       return 'parametros';
     case 'trabajadores':
+    case 'trabajadores_fichas':
       return 'trabajadores';
     case 'movimientos':
     case 'asignaciones':
@@ -189,6 +194,8 @@ export function buildInformacionPeriodoView(input: BuildInformacionPeriodoInput)
     puedeGenerarNomina,
     hayActividad,
     validacionCalculo,
+    trabajadoresPendientesRevision: input.trabajadoresPendientesRevision,
+    prevalidacionEstado: input.prevalidacionEstado,
   });
   if (verificacion) {
     return verificacion;
@@ -202,6 +209,8 @@ interface BuildVerificacionPeriodoInput {
   puedeGenerarNomina: boolean;
   hayActividad: boolean;
   validacionCalculo: ValidacionCalculoPreliminarView;
+  trabajadoresPendientesRevision: TrabajadorPendienteRevisionPeriodo[];
+  prevalidacionEstado?: string | null;
 }
 
 function buildVerificacionPeriodoInformacionView(
@@ -259,6 +268,26 @@ function buildVerificacionPeriodoInformacionView(
     };
   }
 
+  const pendientes = input.trabajadoresPendientesRevision;
+  if (pendientes.length > 0) {
+    const seccionesConTrabajadores = mergeSeccionTrabajadoresPendientes(secciones, pendientes);
+    const puedeGenerarConAdvertencias =
+      input.puedeGenerarNomina
+      && (input.prevalidacionEstado === 'CON_ADVERTENCIAS'
+        || input.validacionCalculo.estado === 'advertencias');
+    return {
+      tone: 'info',
+      titulo: 'Revisión del período antes de generar',
+      bajada:
+        'Parámetros listos. Puede generar la nómina y corregir fichas durante la revisión por trabajador.',
+      secciones: seccionesConTrabajadores,
+      accionPrincipal: { label: 'Revisar fichas', destino: 'trabajadores_fichas' },
+      accionSecundaria: puedeGenerarConAdvertencias
+        ? { label: 'Generar nómina de todos modos', destino: 'generar_nomina' }
+        : { label: 'Cerrar por ahora', destino: 'cerrar' },
+    };
+  }
+
   const destinoAdvertencia = mapDetalleTabToDestino(
     resolveDetalleTabFromCodigo(advertencias[0].codigo, advertencias[0].accionLocal),
   );
@@ -277,6 +306,18 @@ function buildVerificacionPeriodoInformacionView(
         },
     accionSecundaria: { label: 'Cerrar por ahora', destino: 'cerrar' },
   };
+}
+
+function mergeSeccionTrabajadoresPendientes(
+  secciones: Array<{ titulo: string; items: string[] }>,
+  trabajadores: readonly TrabajadorPendienteRevisionPeriodo[],
+): Array<{ titulo: string; items: string[] }> {
+  const otras = secciones.filter((s) => s.titulo !== 'Trabajadores a corregir');
+  const seccionTrabajadores = {
+    titulo: `Trabajadores a corregir (${trabajadores.length})`,
+    items: buildItemsTrabajadoresPendientesModal(trabajadores),
+  };
+  return [seccionTrabajadores, ...otras];
 }
 
 function mapDetalleTabToDestino(tab: DetalleOperativoTab): InformacionPeriodoDestino {
@@ -301,6 +342,8 @@ function labelDestinoRevision(destino: InformacionPeriodoDestino): string {
       return 'Revisar parámetros';
     case 'trabajadores':
       return 'Revisar trabajadores';
+    case 'trabajadores_fichas':
+      return 'Revisar fichas';
     case 'movimientos':
       return 'Revisar movimientos';
     case 'asignaciones':

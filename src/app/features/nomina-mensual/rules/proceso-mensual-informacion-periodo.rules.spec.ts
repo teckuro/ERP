@@ -32,6 +32,8 @@ describe('proceso-mensual-informacion-periodo.rules', () => {
       tienePreNomina: false,
       tieneCalculo: false,
       tieneResultado: false,
+      trabajadoresPendientesRevision: [],
+      prevalidacionEstado: null,
     });
     expect(vm).toBeNull();
   });
@@ -49,6 +51,8 @@ describe('proceso-mensual-informacion-periodo.rules', () => {
       tienePreNomina: false,
       tieneCalculo: false,
       tieneResultado: false,
+      trabajadoresPendientesRevision: [],
+      prevalidacionEstado: 'LISTO_PARA_CALCULO',
     });
 
     expect(vm?.tone).toBe('success');
@@ -74,6 +78,8 @@ describe('proceso-mensual-informacion-periodo.rules', () => {
       tienePreNomina: false,
       tieneCalculo: false,
       tieneResultado: false,
+      trabajadoresPendientesRevision: [],
+      prevalidacionEstado: null,
     });
 
     expect(vm?.titulo).toBe('Revisión del período antes de generar');
@@ -98,6 +104,8 @@ describe('proceso-mensual-informacion-periodo.rules', () => {
       tienePreNomina: false,
       tieneCalculo: false,
       tieneResultado: false,
+      trabajadoresPendientesRevision: [],
+      prevalidacionEstado: null,
     });
 
     expect(vm?.tone).toBe('danger');
@@ -121,10 +129,54 @@ describe('proceso-mensual-informacion-periodo.rules', () => {
       tienePreNomina: true,
       tieneCalculo: false,
       tieneResultado: true,
+      trabajadoresPendientesRevision: [],
+      prevalidacionEstado: null,
     });
 
     expect(vm?.tone).toBe('warning');
     expect(vm?.accionPrincipal?.destino).toBe('parametros');
+  });
+
+  it('con trabajadores no aptos prioriza revisar fichas y lista nominal', () => {
+    const vm = buildInformacionPeriodoView({
+      errorEjecucion: null,
+      validacionCalculo: validacionBase({
+        estado: 'advertencias',
+        advertencias: [
+          {
+            codigo: 'EMPLEADOS_ACTIVOS_NO_APTOS',
+            titulo: 'Trabajadores por revisar',
+            descripcion: 'Existen trabajadores activos no aptos.',
+            severidad: 'advertencia',
+          },
+        ],
+      }),
+      paraContinuar: [],
+      bloqueosOperativos: [],
+      advertenciasOperativas: [],
+      nominaFrame: 'sin_generar',
+      tienePrevalidacion: true,
+      puedeGenerarNomina: true,
+      tienePreNomina: false,
+      tieneCalculo: false,
+      tieneResultado: false,
+      prevalidacionEstado: 'CON_ADVERTENCIAS',
+      trabajadoresPendientesRevision: [
+        {
+          idPersona: 7,
+          nombre: 'María López',
+          rut: '12.345.678-9',
+          motivo: 'Ficha incompleta',
+          estadoFicha: 'INCOMPLETO',
+          aptoParaRemuneraciones: true,
+        },
+      ],
+    });
+
+    expect(vm?.accionPrincipal).toEqual({ label: 'Revisar fichas', destino: 'trabajadores_fichas' });
+    expect(vm?.accionSecundaria?.destino).toBe('generar_nomina');
+    expect(vm?.secciones?.[0].titulo).toBe('Trabajadores a corregir (1)');
+    expect(vm?.secciones?.[0].items[0]).toContain('María López');
   });
 
   it('resuelve tab contextual desde codigo PARAMETROS', () => {

@@ -128,21 +128,65 @@ export function resolveNominaEstadoRrhh(frame: NominaVisualFrame): NominaEstadoR
 
 export const NOMINA_FLOW_RETURN_PATH = '/remuneraciones/proceso-mensual';
 
-export function buildNominaFlowReturnQuery(periodoYm: string): Record<string, string> {
-  return {
+export const NOMINA_FLOW_QUERY_ID_PERSONA = 'idPersona';
+
+export function buildNominaFlowQueryParams(
+  periodoYm: string,
+  idPersona?: number | string | null,
+): Record<string, string> {
+  const query: Record<string, string> = {
     returnTo: NOMINA_FLOW_RETURN_PATH,
     periodo: periodoYm,
   };
+  if (idPersona != null && String(idPersona).trim() !== '') {
+    query[NOMINA_FLOW_QUERY_ID_PERSONA] = String(idPersona).trim();
+  }
+  return query;
 }
 
-export function appendNominaFlowQuery(ruta: string, periodoYm: string): string {
+/** @deprecated Preferir `buildNominaFlowQueryParams`. */
+export function buildNominaFlowReturnQuery(
+  periodoYm: string,
+  idPersona?: number | string | null,
+): Record<string, string> {
+  return buildNominaFlowQueryParams(periodoYm, idPersona);
+}
+
+export function buildNominaFlowReturnUrl(
+  periodoYm: string,
+  idPersona?: number | string | null,
+): string {
+  const params = new URLSearchParams(buildNominaFlowQueryParams(periodoYm, idPersona));
+  return `${NOMINA_FLOW_RETURN_PATH}?${params.toString()}`;
+}
+
+export function appendNominaFlowQuery(
+  ruta: string,
+  periodoYm: string,
+  idPersona?: number | string | null,
+): string {
   const base = ruta.split('?')[0] ?? ruta;
-  const params = new URLSearchParams(buildNominaFlowQueryParams(periodoYm));
+  const params = new URLSearchParams(buildNominaFlowQueryParams(periodoYm, idPersona));
   return `${base}?${params.toString()}`;
 }
 
-export function buildNominaFlowQueryParams(periodoYm: string): Record<string, string> {
-  return buildNominaFlowReturnQuery(periodoYm);
+export function idPersonaDesdeFlowQuery(
+  params: Record<string, string | undefined> | null | undefined,
+): number | null {
+  const raw = params?.[NOMINA_FLOW_QUERY_ID_PERSONA]?.trim();
+  if (!raw || !/^\d+$/.test(raw)) {
+    return null;
+  }
+  const n = Number(raw);
+  return Number.isFinite(n) && n > 0 ? n : null;
+}
+
+export function nominaFlowQueryParamsALimpiar(): Record<string, null> {
+  return {
+    periodo: null,
+    returnTo: null,
+    [NOMINA_FLOW_QUERY_ID_PERSONA]: null,
+  };
 }
 
 export function periodoYmDesdeFlowQuery(
@@ -170,9 +214,21 @@ export interface RevisionRailCtaVm {
   label: string;
   usarPanel: boolean;
   tabModal?: DetalleOperativoTab;
+  accionLocal?: ProcesoMensualAccionLocal;
+}
+
+export interface RevisionRailContext {
+  baseGenerada: boolean;
+  puedeGenerarNomina: boolean;
+  puedeCalcular: boolean;
+  hayPendientesRevisionTrabajadores: boolean;
+  revisionTrabajadoresCompleta?: boolean;
 }
 
 const ETIQUETAS_REVISION_RAIL_DUPLICADAS = new Set([
+  'generar nómina',
+  'preparar confirmación',
+  'confirmar revisión',
   'revisar trabajadores',
   'revisar en detalle',
   'ver revisión ampliada',
@@ -195,7 +251,21 @@ export function labelRevisionRailDesdeDestino(destino: NominaWorkspaceFlowTarget
 export function buildRevisionRailCta(
   tab: DetalleOperativoTab,
   destino: NominaWorkspaceFlowTarget | null,
+  ctx?: RevisionRailContext,
 ): RevisionRailCtaVm {
+  if (ctx) {
+    const revisionAlDia =
+      !ctx.hayPendientesRevisionTrabajadores
+      && (ctx.revisionTrabajadoresCompleta ?? !ctx.hayPendientesRevisionTrabajadores);
+    if (revisionAlDia) {
+      if (!ctx.baseGenerada && ctx.puedeGenerarNomina) {
+        return { label: 'Generar nómina', usarPanel: false, accionLocal: 'generarBase' };
+      }
+      if (ctx.baseGenerada && ctx.puedeCalcular) {
+        return { label: 'Preparar confirmación', usarPanel: false, accionLocal: 'calcularPreliminar' };
+      }
+    }
+  }
   if (destino) {
     return { label: labelRevisionRailDesdeDestino(destino), usarPanel: true };
   }

@@ -383,14 +383,16 @@ export class FormEmpleadoComponent implements OnInit {
   /** Inventario de bloques por paso (manifest); referencia unica frente a templates de seccion. */
   readonly stepBlockIds = EMPLEADO_FORM_STEP_BLOCK_IDS;
 
-  async ngOnInit(): Promise<void> {
+  constructor() {
     bindShellPageContext(this.destroyRef, () => ({
       breadcrumbs: [
         { label: "Empleados", path: "/empleados" },
         { label: this.pageTitle() },
       ],
     }));
+  }
 
+  async ngOnInit(): Promise<void> {
     const modo = this.resolveModo();
     this.modo.set(modo);
     if (modo === "avanzado") {

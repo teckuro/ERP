@@ -79,6 +79,10 @@ const AMBITOS_ORDEN: IncidenciaPeriodoAmbito[] = [
   'periodo',
 ];
 
+const RUTA_PARAMETROS = '/parametros';
+const RUTA_NOVEDADES = '/remuneraciones/novedades-mensuales';
+const RUTA_HABERES = '/haberes-descuentos';
+
 const DETALLE_TABS: DetalleOperativoTab[] = [
   'resumen',
   'parametros',
@@ -223,16 +227,66 @@ function detalleTabDesdeAmbito(ambito: IncidenciaPeriodoAmbito): DetalleOperativ
   }
 }
 
+function etiquetaAccionSugeridaPorAmbito(ambito: IncidenciaPeriodoAmbito): string {
+  switch (ambito) {
+    case 'parametros':
+      return 'Abrir parámetros';
+    case 'movimientos':
+      return 'Revisar movimiento';
+    case 'recurrentes':
+      return 'Revisar recurrentes';
+    case 'trabajadores':
+      return 'Revisar trabajador';
+    case 'calculo':
+      return 'Revisar cálculo';
+    case 'resultado':
+      return 'Ver resultado';
+    case 'periodo':
+    default:
+      return 'Revisar en el período';
+  }
+}
+
+function accionDesdeExpedienteProblema(
+  problema: ExpedienteProblemaIncidenciaInput,
+  ambito: IncidenciaPeriodoAmbito,
+): IncidenciaPeriodoAccion | undefined {
+  if (problema.severidad === 'info') {
+    return undefined;
+  }
+  const codigo = (problema.titulo ?? '').trim();
+  const ambitoCodigo = ambitoDesdeCodigoIncidencia(codigo);
+  const ambitoEfectivo =
+    ambitoRank(ambitoCodigo) < ambitoRank(ambito) ? ambitoCodigo : ambito;
+
+  switch (ambitoEfectivo) {
+    case 'parametros':
+      return { tipo: 'ruta', label: 'Abrir parámetros', destino: RUTA_PARAMETROS };
+    case 'movimientos':
+      return { tipo: 'ruta', label: 'Revisar movimiento', destino: RUTA_NOVEDADES };
+    case 'recurrentes':
+      return { tipo: 'ruta', label: 'Revisar recurrentes', destino: RUTA_HABERES };
+    case 'trabajadores':
+      return { tipo: 'tab', label: 'Revisar trabajador', destino: 'trabajadores' };
+    case 'resultado':
+      return { tipo: 'tab', label: 'Ver resultado', destino: 'resultado' };
+    default:
+      return {
+        tipo: 'tab',
+        label: etiquetaAccionSugeridaPorAmbito(ambitoEfectivo),
+        destino: detalleTabDesdeAmbito(ambitoEfectivo),
+      };
+  }
+}
+
 function accionDesdePendiente(pendiente: ProcesoMensualPendienteVm): IncidenciaPeriodoAccion | undefined {
-  const label = pendiente.accionLabel?.trim();
-  if (pendiente.ruta && label) {
+  const ambito = ambitoDesdeCodigoIncidencia(pendiente.codigo, pendiente.ruta);
+  const label = pendiente.accionLabel?.trim() ?? etiquetaAccionSugeridaPorAmbito(ambito);
+  if (pendiente.ruta) {
     return { tipo: 'ruta', label, destino: pendiente.ruta };
   }
-  if (label) {
-    const tab = resolveDetalleTabFromPendiente(pendiente);
-    return { tipo: 'tab', label, destino: tab };
-  }
-  return undefined;
+  const tab = resolveDetalleTabFromPendiente(pendiente);
+  return { tipo: 'tab', label, destino: tab };
 }
 
 function accionDesdeResultado(item: ResultadoObservacionView): IncidenciaPeriodoAccion | undefined {
@@ -303,6 +357,7 @@ function mapExpedienteProblemaToIncidencia(problema: ExpedienteProblemaIncidenci
     titulo: problema.titulo || detalle,
     detalle,
     origen: 'expediente',
+    accion: accionDesdeExpedienteProblema(problema, ambito),
     prioridad: prioridadDesdeCodigo(codigo),
     idPersona: alcancePeriodo ? undefined : problema.idPersona,
   };
@@ -381,11 +436,20 @@ function preferirDetalleEnMerge(actual: string, candidata: string): string {
   return a.length >= b.length ? a : b;
 }
 
+function prioridadAccionMerge(accion?: IncidenciaPeriodoAccion): number {
+  if (!accion) return 3;
+  if (accion.tipo === 'ruta') return 0;
+  if (accion.tipo === 'tab') return 1;
+  return 2;
+}
+
 function mergeAccion(
   actual?: IncidenciaPeriodoAccion,
   candidata?: IncidenciaPeriodoAccion,
 ): IncidenciaPeriodoAccion | undefined {
-  return actual ?? candidata;
+  if (!actual) return candidata;
+  if (!candidata) return actual;
+  return prioridadAccionMerge(actual) <= prioridadAccionMerge(candidata) ? actual : candidata;
 }
 
 function mergeIncidencias(actual: IncidenciaPeriodo, candidata: IncidenciaPeriodo): IncidenciaPeriodo {

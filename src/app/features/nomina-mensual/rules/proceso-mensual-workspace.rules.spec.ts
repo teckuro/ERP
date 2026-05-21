@@ -35,6 +35,7 @@ const estadoBase = (overrides: Partial<ProcesoMensualEstadoOperativoVm> = {}): P
     bloqueos: [],
     advertencias: [],
     informaciones: [],
+    trabajadoresPendientesRevision: [],
     ...overrides,
   }) as ProcesoMensualEstadoOperativoVm;
 

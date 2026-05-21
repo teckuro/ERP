@@ -30,6 +30,7 @@ function prevalidacionBase(
     bloqueos: [],
     advertencias: [],
     informaciones: [],
+    trabajadoresPendientesRevision: [],
     items: [],
     ...rest,
   };

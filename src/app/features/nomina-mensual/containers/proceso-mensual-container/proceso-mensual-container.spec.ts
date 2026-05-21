@@ -30,6 +30,8 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { PeriodoActivoService } from '../../../../core/services/periodo-activo.service';
 import type { ProcesoMensualPrevalidacion } from '../../models/proceso-mensual.model';
+import type { EntradaMensualPeriodo } from '../../entradas/models/entrada-mensual-periodo.model';
+import type { NominaMasivaFiltro } from '../../rules/proceso-mensual-masivo-layout.rules';
 import { ProcesoMensualService } from '../../services/proceso-mensual.service';
 import { ProcesoMensualContainer } from './proceso-mensual-container';
 import {
@@ -42,11 +44,13 @@ import {
   expectTexto,
   expectTextoNo,
   fijarPeriodoActivo,
+  invocarCtaShell,
   montarContainer,
   provideNominaMensualCapabilitiesMock,
   storeDe,
   textoIncluye,
 } from './proceso-mensual-container.spec.helpers';
+import { ShellPageContextService } from '../../../../layout/shell-page-context.service';
 
 function prevalidacionLista(overrides: Partial<ProcesoMensualPrevalidacion> = {}): ProcesoMensualPrevalidacion {
   return {
@@ -90,6 +94,7 @@ function prevalidacionLista(overrides: Partial<ProcesoMensualPrevalidacion> = {}
     advertencias: [],
     informaciones: [],
     items: [],
+    trabajadoresPendientesRevision: [],
     ...overrides,
   } as ProcesoMensualPrevalidacion;
 }
@@ -130,6 +135,34 @@ function baseNominaLista() {
       parametrosEstado: 'listos',
       observacionParametros: 'Parametros del periodo disponibles para preparar la base.',
     },
+  };
+}
+
+function entradaMensualAprobada(overrides: Partial<EntradaMensualPeriodo> = {}): EntradaMensualPeriodo {
+  return {
+    idEntrada: 'novedad:1',
+    origen: 'novedad_mensual',
+    origenId: 1,
+    periodo: '2026-05',
+    idPersona: 1,
+    idContrato: 10,
+    idConcepto: 1,
+    tipoEntrada: 'haber',
+    categoria: 'haber_variable',
+    tipoMovimiento: 'haber',
+    cantidad: null,
+    unidad: null,
+    monto: 1000,
+    moneda: 'CLP',
+    estado: 'aprobada',
+    fechaEvento: null,
+    observacion: null,
+    referenciaExterna: null,
+    requiereRevision: false,
+    bloqueaProceso: false,
+    warnings: [],
+    metadata: {},
+    ...overrides,
   };
 }
 
@@ -364,6 +397,7 @@ describe('ProcesoMensualContainer', () => {
       advertencias: [],
       informaciones: [],
       items: [{ area: 'PARAMETROS', etiqueta: 'Parametros', estado: 'CON_PROBLEMAS' }],
+      trabajadoresPendientesRevision: [],
     } as ProcesoMensualPrevalidacion);
     generarPreNominaPeriodo.mockResolvedValue({
       periodo: '2026-05',
@@ -1090,6 +1124,224 @@ describe('ProcesoMensualContainer', () => {
       expect(localFixture.componentInstance.errorAprobacionOperativa()).toContain(
         'No se pudo registrar la aprobacion operativa',
       );
+    });
+  });
+
+  describe('flujo completo RRHH (integración)', () => {
+    it('cadena feliz: verificar → generar → calcular → guardar → aprobar invoca servicios en orden', async () => {
+      ejecutarPrevalidaciones.mockResolvedValue(prevalidacionLista());
+      generarPreNominaPeriodo.mockResolvedValue(baseNominaLista());
+      generarCalculoPeriodo.mockResolvedValue(calculoConObservacionesYOmitidos());
+      const localFixture = await montarContainer();
+      const c = localFixture.componentInstance;
+
+      expect(c.estadoOperativo().accionPrincipal.label).toMatch(/Verificar período/i);
+
+      await avanzarFlujo(localFixture, 'prevalidado');
+      expectTexto(c.estadoOperativo().accionPrincipal.label, 'Generar nómina');
+
+      await avanzarFlujo(localFixture, 'base');
+      expect(generarPreNominaPeriodo).toHaveBeenCalled();
+      expect(c.contextoOperativoPeriodo().baseGenerada).toBe(true);
+
+      await avanzarFlujo(localFixture, 'calculo');
+      expect(generarCalculoPeriodo).toHaveBeenCalled();
+
+      await avanzarFlujo(localFixture, 'guardado');
+      expect(guardarSnapshotPreliminar).toHaveBeenCalled();
+
+      await avanzarFlujo(localFixture, 'aprobado');
+      expect(aprobarResultadoPreliminarOperativamente).toHaveBeenCalled();
+    });
+
+    it('tras borrador con trabajadores listos CTA shell no es Generar nomina', async () => {
+      ejecutarPrevalidaciones.mockResolvedValueOnce(prevalidacionLista());
+      generarPreNominaPeriodo.mockResolvedValueOnce(baseNominaLista());
+      const localFixture = await montarContainer();
+      await avanzarFlujo(localFixture, 'base');
+
+      const c = localFixture.componentInstance;
+      const resumen = c.nominaMasivaResumen();
+      expect(resumen.totalTrabajadores).toBeGreaterThan(0);
+      expect(resumen.bloqueados).toBe(0);
+      expect(resumen.conObservaciones).toBe(0);
+
+      expectTexto(c.estadoOperativo().accionPrincipal.label, 'Confirmar revisión');
+      expectTextoNo(c.estadoOperativo().accionPrincipal.label, 'Generar nómina');
+
+      const shell = TestBed.inject(ShellPageContextService);
+      expect(shell.primaryAction()?.label).toMatch(/Confirmar revisión/i);
+    });
+
+    it('shell revisar trabajadores abre vista trabajadores y preselecciona fila', async () => {
+      ejecutarPrevalidaciones.mockResolvedValueOnce(
+        prevalidacionLista({
+          advertencias: [{
+            codigo: 'ADV-003',
+            area: 'TRABAJADORES',
+            severidad: 'ADVERTENCIA',
+            texto: 'Trabajador con observacion.',
+          }],
+        }),
+      );
+      generarPreNominaPeriodo.mockResolvedValueOnce(baseNominaLista());
+      const localFixture = await montarContainer();
+      await avanzarFlujo(localFixture, 'prevalidado');
+      await avanzarFlujo(localFixture, 'base');
+
+      const c = localFixture.componentInstance;
+      c.revisarBloqueosOperativos();
+      localFixture.detectChanges();
+
+      expect(c.nominaWorkspaceTabVisible()).toBe('detalle_mensual');
+      expect(c.nominaDetalleMensualVista()).toBe('trabajadores');
+      expect(c.nominaMasivaTrabajadorSeleccionadoId()).not.toBeNull();
+      expect(localFixture.nativeElement.querySelector('.payroll-revision-trabajadores')).toBeTruthy();
+    });
+
+    it('revision masiva muestra titulo contextual para cada filtro', async () => {
+      ejecutarPrevalidaciones.mockResolvedValueOnce(prevalidacionLista({
+        entradasMensuales: [entradaMensualAprobada()],
+      }));
+      generarPreNominaPeriodo.mockResolvedValueOnce(baseNominaLista());
+      const localFixture = await montarContainer();
+      await avanzarFlujo(localFixture, 'base');
+
+      const c = localFixture.componentInstance;
+      c.seleccionarNominaDetalleMensualVista('trabajadores');
+
+      const resumen = c.nominaMasivaResumen();
+      const casos: Array<[NominaMasivaFiltro, string, number]> = [
+        ['todos', 'Total', resumen.totalTrabajadores],
+        ['listos', 'Listos', resumen.listos],
+        ['observaciones', 'Con observaciones', resumen.conObservaciones],
+        ['bloqueados', 'Bloqueados', resumen.bloqueados],
+        ['con_movimientos', 'Con movimientos', resumen.conMovimientos],
+        ['con_recurrentes', 'Con recurrentes', resumen.conRecurrentes],
+        ['sin_movimientos', 'Sin movimientos', resumen.sinMovimientos],
+      ];
+
+      for (const [filtro, etiqueta, cantidad] of casos) {
+        c.seleccionarFiltroNominaMasiva(filtro);
+        localFixture.detectChanges();
+        expectTexto(c.nominaMasivaTituloContexto() ?? '', `${etiqueta} · ${cantidad}`);
+      }
+    });
+
+    it('revision masiva sincroniza seleccion al cambiar filtros y busqueda', async () => {
+      ejecutarPrevalidaciones.mockResolvedValueOnce(prevalidacionLista({
+        entradasMensuales: [entradaMensualAprobada()],
+      }));
+      generarPreNominaPeriodo.mockResolvedValueOnce(baseNominaLista());
+      const localFixture = await montarContainer();
+      await avanzarFlujo(localFixture, 'base');
+
+      const c = localFixture.componentInstance;
+      c.seleccionarNominaDetalleMensualVista('trabajadores');
+      c.seleccionarFiltroNominaMasiva('todos');
+      localFixture.detectChanges();
+
+      c.seleccionarTrabajadorNominaMasiva(3);
+      c.seleccionarFiltroNominaMasiva('con_movimientos');
+      localFixture.detectChanges();
+      expect(c.nominaMasivaFilasFiltradas().length).toBeGreaterThan(0);
+      expect(c.nominaMasivaTrabajadorSeleccionadoId()).toBe(c.nominaMasivaFilasFiltradas()[0].idPersona);
+
+      const seleccionVisible = c.nominaMasivaTrabajadorSeleccionadoId();
+      c.seleccionarFiltroNominaMasiva('todos');
+      localFixture.detectChanges();
+      expect(c.nominaMasivaTrabajadorSeleccionadoId()).toBe(seleccionVisible);
+
+      c.nominaMasivaTrabajadorSeleccionadoId.set(null);
+      c.seleccionarFiltroNominaMasiva('listos');
+      localFixture.detectChanges();
+      expect(c.nominaMasivaTrabajadorSeleccionadoId()).toBe(c.nominaMasivaFilasFiltradas()[0].idPersona);
+
+      c.actualizarBusquedaNominaMasiva('sin coincidencias visibles');
+      localFixture.detectChanges();
+      expect(c.nominaMasivaFilasFiltradas()).toHaveLength(0);
+      expect(c.nominaMasivaTrabajadorSeleccionadoId()).toBeNull();
+    });
+
+    it('invocar CTA shell con confirmar revision ejecuta calculo preliminar', async () => {
+      ejecutarPrevalidaciones.mockResolvedValueOnce(prevalidacionLista());
+      generarPreNominaPeriodo.mockResolvedValueOnce(baseNominaLista());
+      const localFixture = await montarContainer();
+      await avanzarFlujo(localFixture, 'base');
+
+      const c = localFixture.componentInstance;
+      expectTexto(c.estadoOperativo().accionPrincipal.label, 'Confirmar revisión');
+
+      await invocarCtaShell(localFixture);
+      await vi.waitFor(() => expect(c.calculandoPreliminar()).toBe(false), { timeout: 3000, interval: 20 });
+      expect(generarCalculoPeriodo).toHaveBeenCalled();
+    });
+
+    it('rail preparar confirmacion dispara calculo preliminar', async () => {
+      ejecutarPrevalidaciones.mockResolvedValueOnce(prevalidacionLista());
+      generarPreNominaPeriodo.mockResolvedValueOnce(baseNominaLista());
+      const localFixture = await montarContainer();
+      await avanzarFlujo(localFixture, 'base');
+
+      const c = localFixture.componentInstance;
+      expectTexto(c.revisionRailCta().label, 'Preparar confirmación');
+
+      c.ejecutarRevisionRailPrincipal();
+      await vi.waitFor(() => expect(c.calculandoPreliminar()).toBe(false), { timeout: 3000, interval: 20 });
+      expect(generarCalculoPeriodo).toHaveBeenCalled();
+    });
+
+    it('tras calculo sin bloqueos CTA apunta a guardar resultado', async () => {
+      ejecutarPrevalidaciones.mockResolvedValueOnce(prevalidacionLista());
+      generarPreNominaPeriodo.mockResolvedValueOnce(baseNominaLista());
+      generarCalculoPeriodo.mockResolvedValueOnce({
+        periodo: PERIODO_TEST,
+        estado: 'calculado_preliminar',
+        generadoEn: '2026-05-05T10:00:00.000Z',
+        resumen: {
+          totalTrabajadoresCalculados: 2,
+          totalBloqueados: 0,
+          totalConAdvertencias: 0,
+          totalHaberes: 900000,
+          totalDescuentos: 180000,
+          totalLiquidoPreliminar: 720000,
+        },
+        liquidaciones: [{
+          periodo: PERIODO_TEST,
+          idPersona: 1,
+          rut: '11.111.111-1',
+          nombreCompleto: 'Ana Perez',
+          haberesImponibles: [],
+          haberesNoImponibles: [],
+          descuentosLegales: [],
+          descuentosVoluntarios: [],
+          baseImponiblePrevisional: 900000,
+          baseTributable: 900000,
+          gratificacionLegal: 0,
+          asignacionFamiliar: 0,
+          cotizacionAfp: 0,
+          cotizacionSalud: 0,
+          cotizacionAfc: 0,
+          cotizacionSis: 0,
+          cotizacionSanna: 0,
+          cotizacionLey16744: 0,
+          impuestoUnico: 0,
+          totalHaberes: 900000,
+          totalDescuentos: 180000,
+          liquidoAPago: 720000,
+          issues: [],
+          trazabilidad: [],
+          estado: 'calculado_preliminar',
+        }],
+        issues: [],
+      });
+      const localFixture = await montarContainer();
+      await avanzarFlujo(localFixture, 'calculo');
+
+      const c = localFixture.componentInstance;
+      expect(c.estadoOperativo().estadoClave).toBe('resultado_listo_para_guardar');
+      expectTexto(c.estadoOperativo().accionPrincipal.label, 'Confirmar revisión');
+      expect(c.estadoOperativo().accionPrincipal.accionLocal).toBe('guardarResultado');
     });
   });
 });

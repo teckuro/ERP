@@ -21,6 +21,7 @@ import type {
   ProcesoMensualPrevalidacion,
   ProcesoMensualRecurrentesConteo,
   ProcesoMensualResumen,
+  TrabajadorPendienteRevisionPeriodo,
 } from '../models/proceso-mensual.model';
 
 type ItemEstado = ProcesoMensualItem['estado'];
@@ -63,6 +64,7 @@ export interface ProcesoMensualHechosPrevalidacion {
   parametrosGrupos: ProcesoMensualGrupoParametro[];
   empleadosActivosAptos: number;
   empleadosActivosNoAptos: number;
+  trabajadoresPendientesRevision: TrabajadorPendienteRevisionPeriodo[];
   lecturaEmpleados: 'ok' | 'error';
   errorEmpleados?: string;
   totalConceptosMantenimiento: number;
@@ -113,6 +115,38 @@ function pushMsg(
   texto: string,
 ): void {
   dest.push({ codigo, area, severidad, texto });
+}
+
+/** Solo parámetros del período impiden generar la nómina tras verificar. */
+const CODIGOS_BLOQUEO_GENERACION_NOMINA = new Set([
+  'PERIODO_FORMATO_INVALIDO',
+  'PARAMETROS_LECTURA_ERROR',
+  'PARAMETROS_SIN_FILA',
+  'PARAMETROS_CALENDARIO_LECTURA',
+  'PARAMETROS_ESTADO_PERIODO_INOPERATIVO',
+]);
+
+export function mensajeBloqueaGeneracionNomina(mensaje: ProcesoMensualMensaje): boolean {
+  return mensaje.severidad === 'BLOQUEO' && CODIGOS_BLOQUEO_GENERACION_NOMINA.has(mensaje.codigo);
+}
+
+function separarBloqueosGeneracionNomina(bloqueos: ProcesoMensualMensaje[]): {
+  bloqueosGeneracion: ProcesoMensualMensaje[];
+  advertenciasDesdeBloqueo: ProcesoMensualMensaje[];
+} {
+  const bloqueosGeneracion: ProcesoMensualMensaje[] = [];
+  const advertenciasDesdeBloqueo: ProcesoMensualMensaje[] = [];
+  for (const bloqueo of bloqueos) {
+    if (mensajeBloqueaGeneracionNomina(bloqueo)) {
+      bloqueosGeneracion.push(bloqueo);
+      continue;
+    }
+    advertenciasDesdeBloqueo.push({
+      ...bloqueo,
+      severidad: 'ADVERTENCIA',
+    });
+  }
+  return { bloqueosGeneracion, advertenciasDesdeBloqueo };
 }
 
 function mergeEstadoFinal(bloqueos: ProcesoMensualMensaje[], advertencias: ProcesoMensualMensaje[]): ProcesoMensualEstado {
@@ -172,6 +206,7 @@ export function construirPrevalidacionMensual(hechos: ProcesoMensualHechosPreval
       informaciones,
       items: completarItemsVacios(items),
       entradasMensuales: [],
+      trabajadoresPendientesRevision: hechos.trabajadoresPendientesRevision,
     };
   }
 
@@ -508,12 +543,14 @@ export function construirPrevalidacionMensual(hechos: ProcesoMensualHechosPreval
     detalle: 'Snapshot e inmutabilidad: fase futura (p. ej. LIQ-CHILE-01)',
   });
 
-  const estado = mergeEstadoFinal(bloqueos, advertencias);
+  const { bloqueosGeneracion, advertenciasDesdeBloqueo } = separarBloqueosGeneracionNomina(bloqueos);
+  const advertenciasFinales = [...advertencias, ...advertenciasDesdeBloqueo];
+  const estado = mergeEstadoFinal(bloqueosGeneracion, advertenciasFinales);
 
   const resumen: ProcesoMensualResumen = {
     periodo,
-    hayBloqueos: bloqueos.length > 0,
-    hayAdvertencias: advertencias.length > 0,
+    hayBloqueos: bloqueosGeneracion.length > 0,
+    hayAdvertencias: advertenciasFinales.length > 0,
     totalEntradasMensuales: resumenEntradas.total,
     resumenEntradasMensuales: resumenEntradas,
     conteoEntradasPorEstado: conteosEntradas,
@@ -532,11 +569,12 @@ export function construirPrevalidacionMensual(hechos: ProcesoMensualHechosPreval
     periodo,
     estado,
     resumen,
-    bloqueos,
-    advertencias,
+    bloqueos: bloqueosGeneracion,
+    advertencias: advertenciasFinales,
     informaciones,
     items,
     entradasMensuales: entradas,
+    trabajadoresPendientesRevision: hechos.trabajadoresPendientesRevision,
   };
 }
 

@@ -1,6 +1,10 @@
 import type { MovimientoVariableEstado } from '../../movimientos-variables/models/movimiento-variable.model';
 import type { HaberDescuentoAsignacionPrevalidacionMensualFila } from '../../haberes-descuentos/models/haber-descuento-asignacion.model';
-import type { EmpleadoFichaDetalle, EmpleadoListado } from '../../empleados/models/empleado-listado.model';
+import type {
+  EmpleadoEstadoFicha,
+  EmpleadoFichaDetalle,
+  EmpleadoListado,
+} from '../../empleados/models/empleado-listado.model';
 import type {
   EntradaMensualEstado,
   EntradaMensualOrigen,
@@ -97,6 +101,15 @@ export interface ProcesoMensualResumen {
   recurrentesFueraDelMes: number;
 }
 
+export interface TrabajadorPendienteRevisionPeriodo {
+  idPersona: number;
+  nombre: string;
+  rut: string;
+  motivo: string;
+  estadoFicha: EmpleadoEstadoFicha;
+  aptoParaRemuneraciones: boolean;
+}
+
 export interface ProcesoMensualPrevalidacion {
   periodo: string;
   estado: ProcesoMensualEstado;
@@ -107,6 +120,7 @@ export interface ProcesoMensualPrevalidacion {
   informaciones: ProcesoMensualMensaje[];
   items: ProcesoMensualItem[];
   entradasMensuales?: EntradaMensualPeriodo[];
+  trabajadoresPendientesRevision: TrabajadorPendienteRevisionPeriodo[];
 }
 
 export type ProcesoMensualPreNominaEstado =

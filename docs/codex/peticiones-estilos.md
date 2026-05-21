@@ -1,3 +1,68 @@
+## 2026-05-20 - Nómina mensual: verificar período solo bloquea parámetros
+
+- **Cambio:** tras verificar, solo faltas de parámetros impiden generar nómina; fichas, entradas y recurrentes quedan como advertencias para revisar al guardar/confirmar.
+- **Archivos:** `proceso-mensual-prevalidacion.rules.ts`, `proceso-mensual-estado-operativo.rules.ts`, `proceso-mensual-presentacion.facade.ts`, `proceso-mensual-informacion-periodo.rules.ts`.
+- **No tocado:** motor, SQL, estilos globales.
+
+## 2026-05-20 - Nómina mensual: resumen ampliado en barra detalle mensual
+
+- **Cambio:** «Resumen ampliado» sale del rail «Más opciones» y pasa a botón con icono a la derecha de los filtros Todos / Trabajadores / Liquidaciones / Pendientes.
+- **Archivos:** `proceso-mensual-workspace.*`.
+- **No tocado:** estilos globales, motor, SQL.
+
+## 2026-05-19 - Nómina mensual: panel lateral trabajadores sin duplicar identidad
+
+- **Cambio:** panel lateral sin cabecera nombre/RUT; pre-borrador solo pestaña «Qué corregir»; con borrador «Atención» + «Resumen»; bloque único estado + incidencias + CTA (sin Incidencias ni Pasos duplicados).
+- **Archivos:** `proceso-mensual-revision-trabajadores.*`.
+- **No tocado:** estilos globales, motor, SQL.
+
+## 2026-05-20 - Nómina mensual: unificar revisión fichas con Ver detalle
+
+- **Cambio:** sin borrador, pestaña Trabajadores usa el mismo layout grilla + panel lateral; pendientes de prevalidación alimentan filas/incidencias masivas; se elimina panel duplicado «Abrir ficha».
+- **Archivos:** `proceso-mensual-trabajadores-prevalidacion.rules.ts`, `proceso-mensual-presentacion.facade.ts`, `proceso-mensual-revision-trabajadores.*`, `proceso-mensual-correccion.rules.ts`.
+
+## 2026-05-19 - Nómina mensual: verificación período con fichas no aptas accionables
+
+- **Cambio:** tras verificar período, modal lista hasta 8 trabajadores (nombre, RUT, motivo); CTA principal «Revisar fichas»; secundario «Generar nómina de todos modos» solo con advertencias; pestaña Trabajadores muestra grilla pre-borrador con «Abrir ficha» y retorno al período.
+- **Archivos:** `proceso-mensual-trabajadores-prevalidacion.rules.ts`, `proceso-mensual.model.ts`, `proceso-mensual.service.ts`, `proceso-mensual-informacion-periodo.rules.ts`, `proceso-mensual-revision-trabajadores.*`, `proceso-mensual-presentacion.facade.ts`, `proceso-mensual-container.vm.ts`.
+- **No tocado:** SQL, motor, estilos globales.
+
+## 2026-05-20 - Nómina mensual: CTA confirmación con revisión trabajadores al día
+
+- **Cambio:** con borrador y panel trabajadores sin bloqueos/observaciones, shell y rail muestran «Preparar confirmación» / «Confirmar revisión» en lugar de «Generar nómina».
+- **Archivos:** `proceso-mensual-estado-operativo.rules.ts`, `proceso-mensual-flow-nav.rules.ts`, `proceso-mensual-validacion-calculo.rules.ts`.
+
+## 2026-05-20 - Nómina mensual: sub-pestañas detalle trabajador + CTAs revisión
+
+- **Módulo:** Proceso mensual / Detalle mensual / Trabajadores.
+- **Cambio:** panel lateral con sub-pestañas Resumen | Incidencias | Qué hacer; shell y rail abren revisión guiada con filtro y preselección; columna Acción abre panel sin doble navegación.
+- **Archivos:** `proceso-mensual-revision-trabajadores.*`, `proceso-mensual-presentacion.facade.ts`, `proceso-mensual-correccion.rules.ts`.
+- **No tocado:** estilos globales, motor, SQL.
+
+## 2026-05-20 - NOM-MENSUAL-FLOW-UNIFICADO-03 Fase 4 (modal global)
+
+- **Cambio:** modal de revisión ampliada sin grilla masiva duplicada en tab Trabajadores; correcciones vía `ejecutarAccionCorreccionDesdeModal`; eliminado `navegarDesdeModal`.
+- **Archivos:** `proceso-mensual-detalle-modal.*`, facade, `proceso-mensual-detalle-modal.rules.ts`.
+- **Docs:** `nom-mensual-flow-unificado-03-fase-04-modal-global.md` (cerrada).
+
+## 2026-05-20 - NOM-MENSUAL-FLOW-UNIFICADO-03 Fase 3 (panel + modal movimientos)
+
+- **Cambio:** modal local de movimientos con columna Acción vía dispatcher; incidencias de expediente/pendiente con `accion` resoluble; filtros unificados (stat + búsqueda, sin toolbar duplicado).
+- **Archivos:** `proceso-mensual-revision-trabajadores.*`, `proceso-mensual-incidencias-periodo.rules.ts`, `proceso-mensual-masivo-layout.rules.ts`, facade.
+- **Docs:** `nom-mensual-flow-unificado-03-fase-03-panel-modales.md` (cerrada).
+
+## 2026-05-20 - NOM-MENSUAL-FLOW-UNIFICADO-03 Fase 2 (deep link idPersona)
+
+- **Cambio:** rutas de corrección a Novedades llevan `idPersona` en query; Novedades preselecciona trabajador al entrar; breadcrumb Remuneraciones devuelve a Nómina mensual con contexto; al volver con `returnTo` se rehidrata período y trabajador en panel.
+- **Archivos:** `proceso-mensual-flow-nav.rules.ts`, facade, `novedades-mensuales-container.ts`.
+- **Docs:** `nom-mensual-flow-unificado-03-fase-02-deep-links.md` (cerrada).
+
+## 2026-05-20 - NOM-MENSUAL-FLOW-UNIFICADO-03 Fase 1 (dispatcher 100%)
+
+- **Cambio:** pendientes sidebar, franja, CTA frame y modal de revisión delegan en `ejecutarAccionCorreccion`; eliminado `abrirDetalleExpedienteFila`.
+- **Archivos:** `proceso-mensual-correccion.rules.ts`, facade, `proceso-mensual-detalle-modal.component.html`.
+- **Docs:** `nom-mensual-flow-unificado-03.md` (Fase 1 cerrada).
+
 ## 2026-05-20 - Nómina mensual: Todos incluye movimientos (decisión B)
 
 - **Cambio:** grilla «Todos» lista movimientos/recurrentes con Acción alineada al panel; `idPersona` en filas movimiento vía mapa de nombres.

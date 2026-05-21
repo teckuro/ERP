@@ -84,6 +84,7 @@ export interface ConfirmacionProcesoMensualView {
 export type InformacionPeriodoDestino =
   | 'parametros'
   | 'trabajadores'
+  | 'trabajadores_fichas'
   | 'movimientos'
   | 'asignaciones'
   | 'resultado'
@@ -103,7 +104,7 @@ export interface InformacionPeriodoView {
   };
   accionSecundaria?: {
     label: string;
-    destino: 'cerrar';
+    destino: 'cerrar' | 'generar_nomina';
   };
   reintentarAccion?: ValidacionAccionLocal;
 }

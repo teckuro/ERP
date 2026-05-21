@@ -48,6 +48,8 @@ Validaciones realizadas:
 
 La parte 15 queda despues de tablas base, indices, triggers y ampliaciones v11. No duplica `14_movimiento_variable_mensual.sql`, que sigue siendo incremental para bases antiguas cuando el bloque ya vive en `02_tablas.sql`.
 
+**Parte 27 obligatoria (NOM-PERIODO-DIAGNOSTICO-PERSIST-01):** `bd/base/v11/partes/27_nomina_periodo_diagnostico.sql` define `nomina_periodo_diagnostico` y RPC `guardar_nomina_periodo_diagnostico`, `obtener_nomina_periodo_diagnostico_activo`, `cerrar_nomina_periodo_diagnostico`. Sin esta parte, «Verificar período» no persiste al recargar (la app silencia el error). Inventario: `bd/scripts/validar-esquema-nomina-mensual.sql`.
+
 ## Aplicacion controlada
 
 No aplicada local:

@@ -333,9 +333,9 @@ const HEADER_HEIGHT_PX = 52;
         min-height: 34px;
         align-items: center;
         gap: 6px;
-        border: 0;
+        border: 0.5px solid #2c2c2a;
         border-radius: 8px;
-        background: #0c447c;
+        background: #2c2c2a;
         padding: 8px 16px;
         color: #ffffff;
         font-size: 13px;
@@ -345,7 +345,7 @@ const HEADER_HEIGHT_PX = 52;
       }
 
       .erp-shell-header__cta:hover:not(:disabled) {
-        background: #185fa5;
+        background: #1f1f1d;
       }
 
       .erp-shell-header__cta:active:not(:disabled) {

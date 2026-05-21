@@ -53,6 +53,7 @@ import {
   contarRecurrentesParaPrevalidacionMensual,
   type ProcesoMensualHechosPrevalidacion,
 } from '../rules/proceso-mensual-prevalidacion.rules';
+import { buildTrabajadoresPendientesRevision } from '../rules/proceso-mensual-trabajadores-prevalidacion.rules';
 import {
   buildBorradorSnapshotFromPreNomina,
   buildPrevalidacionLecturaDesdeBorrador,
@@ -359,6 +360,7 @@ export class ProcesoMensualService {
       parametrosGrupos: [],
       empleadosActivosAptos: 0,
       empleadosActivosNoAptos: 0,
+      trabajadoresPendientesRevision: [],
       lecturaEmpleados: 'ok',
       totalConceptosMantenimiento: 0,
       lecturaConceptos: 'ok',
@@ -399,10 +401,12 @@ export class ProcesoMensualService {
 
     let empleadosActivosAptos = 0;
     let empleadosActivosNoAptos = 0;
+    let trabajadoresPendientesRevision: ProcesoMensualHechosPrevalidacion['trabajadoresPendientesRevision'] = [];
     let lecturaEmpleados: ProcesoMensualHechosPrevalidacion['lecturaEmpleados'] = 'ok';
     let errorEmpleados: string | undefined;
     if (rEmp.status === 'fulfilled') {
       const listado = rEmp.value as Awaited<ReturnType<EmpleadosService['listar']>>;
+      trabajadoresPendientesRevision = buildTrabajadoresPendientesRevision(listado);
       for (const e of listado) {
         if (e.estado === 'activo') {
           if (e.aptoParaRemuneraciones) {
@@ -497,6 +501,7 @@ export class ProcesoMensualService {
       parametrosGrupos,
       empleadosActivosAptos,
       empleadosActivosNoAptos,
+      trabajadoresPendientesRevision,
       lecturaEmpleados,
       errorEmpleados,
       totalConceptosMantenimiento,

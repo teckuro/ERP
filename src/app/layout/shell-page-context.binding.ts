@@ -38,7 +38,7 @@ export function bindShellPageContext(
     shellContext.setBindingActive(false);
     shellContext.registerPrimaryActionHandler(null);
     shellContext.clearContext();
-    shellContext.applyRouteFallback(router.url);
+    shellContext.applyRouteFallback(router.url ?? '/');
   });
 }
 

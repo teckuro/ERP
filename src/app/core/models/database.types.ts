@@ -2519,6 +2519,51 @@ export type Database = {
           },
         ]
       }
+      nomina_periodo_diagnostico: {
+        Row: {
+          activo: boolean
+          cerrado_en: string | null
+          cerrado_motivo: string | null
+          created_at: string
+          estado: string
+          fingerprint: string | null
+          id_diagnostico: number
+          payload: Json
+          periodo: string
+          updated_at: string
+          verificado_en: string
+          verificado_por: string
+        }
+        Insert: {
+          activo?: boolean
+          cerrado_en?: string | null
+          cerrado_motivo?: string | null
+          created_at?: string
+          estado?: string
+          fingerprint?: string | null
+          id_diagnostico?: number
+          payload: Json
+          periodo: string
+          updated_at?: string
+          verificado_en?: string
+          verificado_por: string
+        }
+        Update: {
+          activo?: boolean
+          cerrado_en?: string | null
+          cerrado_motivo?: string | null
+          created_at?: string
+          estado?: string
+          fingerprint?: string | null
+          id_diagnostico?: number
+          payload?: Json
+          periodo?: string
+          updated_at?: string
+          verificado_en?: string
+          verificado_por?: string
+        }
+        Relationships: []
+      }
       novedad_remuneracion_periodo: {
         Row: {
           aprobado_por: string | null
@@ -4673,51 +4718,25 @@ export type Database = {
           isSetofReturn: false
         }
       }
-      reabrir_nomina_operativa: {
-        Args: {
-          p_forzar?: boolean
-          p_id_calculo_periodo: number
-          p_metadata?: Json
-          p_observacion?: string
-          p_periodo: string
-        }
+      cerrar_nomina_periodo_diagnostico: {
+        Args: { p_motivo?: string; p_periodo: string }
         Returns: {
           activo: boolean
-          aprobacion_operativa_advertencias: Json
-          aprobacion_operativa_estado: string | null
-          aprobacion_operativa_fecha: string | null
-          aprobacion_operativa_metadata: Json
-          aprobacion_operativa_usuario_id: string | null
-          aprobacion_operativa_usuario_label: string | null
-          cierre_operativo_estado: string | null
-          cierre_operativo_fecha: string | null
-          cierre_operativo_metadata: Json
-          cierre_operativo_observacion: string | null
-          cierre_operativo_usuario_id: string | null
-          cierre_operativo_usuario_label: string | null
+          cerrado_en: string | null
+          cerrado_motivo: string | null
           created_at: string
           estado: string
-          fecha_generacion: string
-          hash_snapshot: string | null
-          id_calculo_periodo: number
-          id_empresa: number | null
-          observacion_anulacion: string | null
-          origen: string
+          fingerprint: string | null
+          id_diagnostico: number
+          payload: Json
           periodo: string
-          reemplazado_por: number | null
-          total_advertencias: number
-          total_bloqueados: number
-          total_descuentos: number
-          total_haberes: number
-          total_liquido: number
-          total_trabajadores: number
           updated_at: string
-          usuario_generador: string | null
-          version_motor: string
+          verificado_en: string
+          verificado_por: string
         }
         SetofOptions: {
           from: "*"
-          to: "nomina_calculo_periodo"
+          to: "nomina_periodo_diagnostico"
           isOneToOne: true
           isSetofReturn: false
         }
@@ -4888,6 +4907,101 @@ export type Database = {
           p_trazabilidad?: Json
         }
         Returns: number
+      }
+      guardar_nomina_periodo_diagnostico: {
+        Args: { p_fingerprint?: string; p_payload: Json; p_periodo: string }
+        Returns: {
+          activo: boolean
+          cerrado_en: string | null
+          cerrado_motivo: string | null
+          created_at: string
+          estado: string
+          fingerprint: string | null
+          id_diagnostico: number
+          payload: Json
+          periodo: string
+          updated_at: string
+          verificado_en: string
+          verificado_por: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "nomina_periodo_diagnostico"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      obtener_nomina_periodo_diagnostico_activo: {
+        Args: { p_periodo: string }
+        Returns: {
+          activo: boolean
+          cerrado_en: string | null
+          cerrado_motivo: string | null
+          created_at: string
+          estado: string
+          fingerprint: string | null
+          id_diagnostico: number
+          payload: Json
+          periodo: string
+          updated_at: string
+          verificado_en: string
+          verificado_por: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "nomina_periodo_diagnostico"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      reabrir_nomina_operativa: {
+        Args: {
+          p_forzar?: boolean
+          p_id_calculo_periodo: number
+          p_metadata?: Json
+          p_observacion?: string
+          p_periodo: string
+        }
+        Returns: {
+          activo: boolean
+          aprobacion_operativa_advertencias: Json
+          aprobacion_operativa_estado: string | null
+          aprobacion_operativa_fecha: string | null
+          aprobacion_operativa_metadata: Json
+          aprobacion_operativa_usuario_id: string | null
+          aprobacion_operativa_usuario_label: string | null
+          cierre_operativo_estado: string | null
+          cierre_operativo_fecha: string | null
+          cierre_operativo_metadata: Json
+          cierre_operativo_observacion: string | null
+          cierre_operativo_usuario_id: string | null
+          cierre_operativo_usuario_label: string | null
+          created_at: string
+          estado: string
+          fecha_generacion: string
+          hash_snapshot: string | null
+          id_calculo_periodo: number
+          id_empresa: number | null
+          observacion_anulacion: string | null
+          origen: string
+          periodo: string
+          reemplazado_por: number | null
+          total_advertencias: number
+          total_bloqueados: number
+          total_descuentos: number
+          total_haberes: number
+          total_liquido: number
+          total_trabajadores: number
+          updated_at: string
+          usuario_generador: string | null
+          version_motor: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "nomina_calculo_periodo"
+          isOneToOne: true
+          isSetofReturn: false
+        }
       }
       unaccent: { Args: { "": string }; Returns: string }
     }

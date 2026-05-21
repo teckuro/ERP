@@ -1,6 +1,7 @@
 import { TestBed, type ComponentFixture } from '@angular/core/testing';
 import { vi } from 'vitest';
 
+import { ShellPageContextService } from '../../../../layout/shell-page-context.service';
 import { PeriodoActivoService } from '../../../../core/services/periodo-activo.service';
 import { NominaMensualCapabilitiesService } from '../../services/nomina-mensual-capabilities.service';
 import { ProcesoMensualContainer } from './proceso-mensual-container';
@@ -90,6 +91,15 @@ export function clickCtaPrincipal(fixture: ComponentFixture<ProcesoMensualContai
   const btn = fixture.nativeElement.querySelector('.payroll-focus__primary') as HTMLButtonElement | null;
   expect(btn).toBeTruthy();
   btn!.click();
+  fixture.detectChanges();
+}
+
+/** CTA de la barra superior vía ShellPageContextService (mismo cable que producción). */
+export async function invocarCtaShell(
+  fixture: ComponentFixture<ProcesoMensualContainer>,
+): Promise<void> {
+  TestBed.inject(ShellPageContextService).invokePrimaryAction();
+  await fixture.whenStable();
   fixture.detectChanges();
 }
 

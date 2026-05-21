@@ -3,7 +3,12 @@ import { describe, expect, it } from 'vitest';
 import type { NominaMasivaFila } from './proceso-mensual-masivo-layout.rules';
 import {
   filtroInicialRevisionTrabajadores,
+  idPersonaPreseleccionRevision,
+  resolveAccionCorreccionDesdeFranjaArea,
+  resolveAccionCorreccionDesdeFrameCta,
   resolveAccionCorreccionDesdeIncidencia,
+  resolveAccionCorreccionDesdeModalItem,
+  resolveAccionCorreccionDesdePendienteVm,
   resolveAccionCorreccionFilaMasiva,
 } from './proceso-mensual-correccion.rules';
 import type { IncidenciaPeriodo } from './proceso-mensual-incidencias-periodo.rules';
@@ -63,5 +68,85 @@ describe('proceso-mensual-correccion.rules', () => {
   it('filtroInicialRevisionTrabajadores prioriza bloqueados', () => {
     expect(filtroInicialRevisionTrabajadores({ bloqueosCount: 1, advertenciasCount: 2 })).toBe('bloqueados');
     expect(filtroInicialRevisionTrabajadores({ bloqueosCount: 0, advertenciasCount: 2 })).toBe('observaciones');
+  });
+
+  it('idPersonaPreseleccionRevision prioriza bloqueado u observacion', () => {
+    const filas = [
+      filaBase({ idPersona: 1, estado: 'listo' }),
+      filaBase({ idPersona: 2, estado: 'observacion', trabajador: 'Bruno' }),
+      filaBase({ idPersona: 3, estado: 'bloqueado', trabajador: 'Carla' }),
+    ];
+    expect(idPersonaPreseleccionRevision(filas)).toBe(3);
+    expect(idPersonaPreseleccionRevision([filaBase({ idPersona: 9, estado: 'listo' })])).toBe(9);
+    expect(idPersonaPreseleccionRevision([])).toBeNull();
+  });
+
+  it('frame revisarBloqueos resuelve panel pero CTA local debe ir por validacion', () => {
+    const accion = resolveAccionCorreccionDesdeFrameCta({
+      ctaTipo: 'local',
+      ctaLabel: 'Revisar trabajadores',
+      ctaAccion: 'revisarBloqueos',
+    });
+    expect(accion?.kind).toBe('panel_filtro');
+    expect(accion?.detalleVista).toBe('trabajadores');
+  });
+
+  it('resolveAccionCorreccionDesdePendienteVm con ruta a parametros usa overlay', () => {
+    const accion = resolveAccionCorreccionDesdePendienteVm({
+      codigo: 'PARAM_X',
+      titulo: 'Parámetros',
+      descripcion: 'Falta dato',
+      severidad: 'danger',
+      ruta: '/parametros',
+      accionLabel: 'Abrir parámetros',
+    });
+    expect(accion?.kind).toBe('overlay_parametros');
+  });
+
+  it('resolveAccionCorreccionDesdePendienteVm revisarBloqueos abre panel trabajadores', () => {
+    const accion = resolveAccionCorreccionDesdePendienteVm({
+      codigo: 'BLOQ',
+      titulo: 'Bloqueos',
+      descripcion: 'Revise',
+      severidad: 'danger',
+      accionLocal: 'revisarBloqueos',
+      accionLabel: 'Revisar trabajadores',
+    });
+    expect(accion?.kind).toBe('panel_filtro');
+    expect(accion?.detalleVista).toBe('trabajadores');
+  });
+
+  it('resolveAccionCorreccionDesdeFranjaArea movimientos filtra con_movimientos', () => {
+    const accion = resolveAccionCorreccionDesdeFranjaArea('movimientos', {
+      parametrosListos: true,
+      parametrosConIncidenciaRevision: false,
+    });
+    expect(accion?.filtroMasivo).toBe('con_movimientos');
+  });
+
+  it('resolveAccionCorreccionDesdeFranjaArea parametros incompletos usa overlay', () => {
+    const accion = resolveAccionCorreccionDesdeFranjaArea('parametros', {
+      parametrosListos: false,
+      parametrosConIncidenciaRevision: false,
+    });
+    expect(accion?.kind).toBe('overlay_parametros');
+  });
+
+  it('resolveAccionCorreccionDesdeModalItem ruta novedades', () => {
+    const accion = resolveAccionCorreccionDesdeModalItem({
+      ruta: '/remuneraciones/novedades-mensuales',
+      label: 'Revisar',
+    });
+    expect(accion?.kind).toBe('ruta');
+  });
+
+  it('resolveAccionCorreccionDesdeFrameCta local generarBase no es correccion', () => {
+    expect(
+      resolveAccionCorreccionDesdeFrameCta({
+        ctaTipo: 'local',
+        ctaLabel: 'Generar nómina',
+        ctaAccion: 'generarBase',
+      }),
+    ).toBeNull();
   });
 });

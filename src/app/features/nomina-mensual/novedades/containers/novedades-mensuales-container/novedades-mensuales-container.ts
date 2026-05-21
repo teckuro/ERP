@@ -12,6 +12,8 @@ import {
   untracked,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { ActivatedRoute } from '@angular/router';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { LucideAngularModule } from 'lucide-angular';
 import { ChevronRight, Plus, RefreshCw, X } from 'lucide-angular/src/icons';
 
@@ -35,6 +37,12 @@ import type { MessageBoxSection } from '../../../../../shared/components/ui/mess
 import { CalendarInputComponent } from '../../../../../shared/components/ui/calendar-input.component';
 import { FieldHelpTipComponent } from '../../../../../shared/components/ui/field-help-tip.component';
 import { bindShellPageContext } from '../../../../../layout/shell-page-context.binding';
+import {
+  buildNominaFlowReturnUrl,
+  debeRehidratarDesdeFlowQuery,
+  idPersonaDesdeFlowQuery,
+  periodoYmDesdeFlowQuery,
+} from '../../../rules/proceso-mensual-flow-nav.rules';
 import {
   SearchSelectComponent,
   type SearchSelectOption,
@@ -234,8 +242,11 @@ export class NovedadesMensualesContainer implements OnInit, OnDestroy {
   private readonly empleadosService = inject(EmpleadosService);
   private readonly haberesDescuentosService = inject(HaberesDescuentosService);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly route = inject(ActivatedRoute);
   readonly periodoActivo = inject(PeriodoActivoService);
+  private readonly flowQueryParams = toSignal(this.route.queryParams, { initialValue: {} });
   private pantallaInicializada = false;
+  private flowPersonaAplicada = false;
   private bodyOverflowAnterior: string | null = null;
 
   readonly plusIcon = Plus;
@@ -814,18 +825,40 @@ export class NovedadesMensualesContainer implements OnInit, OnDestroy {
   constructor() {
     bindShellPageContext(
       this.destroyRef,
-      () => ({
+      () => {
+        const params = this.flowQueryParams() as Record<string, string | undefined>;
+        const periodoFlow = periodoYmDesdeFlowQuery(params);
+        const periodo = periodoFlow ?? this.periodoActual();
+        const idPersona = idPersonaDesdeFlowQuery(params);
+        const returnPath = debeRehidratarDesdeFlowQuery(params)
+          ? buildNominaFlowReturnUrl(periodo, idPersona ?? undefined)
+          : '/remuneraciones/proceso-mensual';
+        return {
         breadcrumbs: [
-          { label: 'Remuneraciones', path: '/remuneraciones/proceso-mensual' },
+          { label: 'Remuneraciones', path: returnPath },
           { label: 'Movimientos' },
         ],
         primaryAction: {
           label: 'Registrar movimiento del mes',
           actionId: 'registrar-movimiento',
         },
-      }),
+      };
+      },
       { onPrimaryAction: () => this.abrirNuevo() },
     );
+
+    effect(() => {
+      const params = this.flowQueryParams() as Record<string, string | undefined>;
+      const periodoFlow = periodoYmDesdeFlowQuery(params);
+      if (!periodoFlow) {
+        return;
+      }
+      untracked(() => {
+        if (this.periodoActivo.periodoYm() !== periodoFlow) {
+          this.periodoActivo.setPeriodoYm(periodoFlow);
+        }
+      });
+    });
 
     effect(() => {
       const periodo = this.periodoActual();
@@ -1797,6 +1830,41 @@ export class NovedadesMensualesContainer implements OnInit, OnDestroy {
     await this.cargarDatosSoporte();
     await this.cargarNovedades();
     this.pantallaInicializada = true;
+    const idPersona = idPersonaDesdeFlowQuery(
+      this.flowQueryParams() as Record<string, string | undefined>,
+    );
+    if (idPersona != null && !this.flowPersonaAplicada) {
+      this.flowPersonaAplicada = true;
+      await this.aplicarTrabajadorDesdeFlujoNomina(idPersona);
+    }
+  }
+
+  private async aplicarTrabajadorDesdeFlujoNomina(idPersona: number): Promise<void> {
+    const row = this.trabajadoresMovimientos().find((item) => item.idPersona === idPersona);
+    if (row) {
+      this.abrirDetalleTrabajador(row, 'todos');
+      return;
+    }
+    const empleado = this.empleadosListado().find((item) => item.id === idPersona);
+    if (!empleado) {
+      return;
+    }
+    const incompleto = !empleado.aptoParaRemuneraciones || empleado.estadoFicha !== 'VALIDO';
+    this.abrirDetalleTrabajador(
+      {
+        idPersona: empleado.id,
+        trabajador: empleado.nombre,
+        rut: empleado.rut,
+        cargo: empleado.cargo || 'Sin cargo',
+        contrato: empleado.idContrato ? `Contrato ${empleado.idContrato}` : 'Sin contrato visible',
+        movimientosMes: 0,
+        recurrentes: 0,
+        revisar: 0,
+        estado: incompleto ? 'Incompleto' : 'Sin movimientos',
+        busqueda: `${empleado.nombre} ${empleado.rut}`.toLowerCase(),
+      },
+      'todos',
+    );
   }
 
   private async cargarDatosSoporte(): Promise<void> {

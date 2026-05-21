@@ -123,6 +123,57 @@ describe('proceso-mensual-incidencias-periodo.rules', () => {
     expect(view.resumen.infos).toBe(1);
   });
 
+  it('expediente con trabajador expone accion revisar trabajador', () => {
+    const view = buildIncidenciasPeriodo({
+      bloqueosOperativos: [],
+      advertenciasOperativas: [],
+      resultadoBloqueos: [],
+      resultadoAdvertencias: [],
+      expedienteProblemas: [{
+        severidad: 'bloqueo',
+        titulo: 'FICHA_INCOMPLETA',
+        detalle: 'Falta validar ficha',
+        idPersona: 5,
+      }],
+    });
+
+    expect(view.todas[0]?.accion?.label).toBe('Revisar trabajador');
+    expect(view.todas[0]?.accion?.tipo).toBe('tab');
+  });
+
+  it('expediente de parametros expone ruta a parametros', () => {
+    const view = buildIncidenciasPeriodo({
+      bloqueosOperativos: [],
+      advertenciasOperativas: [],
+      resultadoBloqueos: [],
+      resultadoAdvertencias: [],
+      expedienteProblemas: [{
+        severidad: 'bloqueo',
+        titulo: 'PARAM_UF',
+        detalle: 'Falta UF del período',
+      }],
+    });
+
+    expect(view.todas[0]?.accion?.tipo).toBe('ruta');
+    expect(view.todas[0]?.accion?.destino).toBe('/parametros');
+  });
+
+  it('pendiente sin accionLabel sugiere etiqueta por ambito', () => {
+    const view = buildIncidenciasPeriodo({
+      bloqueosOperativos: [{
+        codigo: 'MV_BORRADOR',
+        titulo: 'Movimiento pendiente',
+        descripcion: 'Revisar borrador',
+        severidad: 'danger',
+      }],
+      advertenciasOperativas: [],
+      resultadoBloqueos: [],
+      resultadoAdvertencias: [],
+    });
+
+    expect(view.todas[0]?.accion?.label).toBe('Revisar movimiento');
+  });
+
   it('porAmbito parametros coincide con filtro manual', () => {
     const view = buildIncidenciasPeriodo({
       bloqueosOperativos: [{

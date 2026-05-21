@@ -9,6 +9,8 @@
     <p class="payroll-revision-trabajadores__contexto" role="status">{{ tituloContexto }}</p>
   }
 
+  @if (resumenMasivo.totalTrabajadores > 0) {
+  @if (!f.revisionSoloFichasPrevalidacion()) {
   <nav class="payroll-segment-nav payroll-segment-nav--stat" aria-label="Resumen agregado de trabajadores">
     <button
       type="button"
@@ -58,18 +60,18 @@
       <span class="payroll-segment-nav__label">Con recurrentes</span>
       <strong class="payroll-segment-nav__value">{{ resumenMasivo.conRecurrentes }}</strong>
     </button>
+    <button
+      type="button"
+      [class]="f.claseFiltroMasivoStat('sin_movimientos')"
+      (click)="f.seleccionarFiltroNominaMasiva('sin_movimientos')"
+    >
+      <span class="payroll-segment-nav__label">Sin movimientos</span>
+      <strong class="payroll-segment-nav__value">{{ resumenMasivo.sinMovimientos }}</strong>
+    </button>
   </nav>
+  }
 
-  <div class="payroll-segment-nav payroll-segment-nav--toolbar" aria-label="Filtros de revisión">
-    <div class="payroll-segment-nav__list">
-      <button type="button" [class]="f.claseFiltroNominaMasiva('todos')" (click)="f.seleccionarFiltroNominaMasiva('todos')">Todos</button>
-      <button type="button" [class]="f.claseFiltroNominaMasiva('bloqueados')" (click)="f.seleccionarFiltroNominaMasiva('bloqueados')">Bloqueados</button>
-      <button type="button" [class]="f.claseFiltroNominaMasiva('observaciones')" (click)="f.seleccionarFiltroNominaMasiva('observaciones')">Con observaciones</button>
-      <button type="button" [class]="f.claseFiltroNominaMasiva('listos')" (click)="f.seleccionarFiltroNominaMasiva('listos')">Listos</button>
-      <button type="button" [class]="f.claseFiltroNominaMasiva('con_movimientos')" (click)="f.seleccionarFiltroNominaMasiva('con_movimientos')">Con movimientos</button>
-      <button type="button" [class]="f.claseFiltroNominaMasiva('sin_movimientos')" (click)="f.seleccionarFiltroNominaMasiva('sin_movimientos')">Sin movimientos</button>
-      <button type="button" [class]="f.claseFiltroNominaMasiva('con_recurrentes')" (click)="f.seleccionarFiltroNominaMasiva('con_recurrentes')">Con recurrentes</button>
-    </div>
+  <div class="payroll-revision-trabajadores__filters" aria-label="Búsqueda de trabajadores">
     <label class="payroll-revision-trabajadores__search">
       <span>Buscar trabajador</span>
       <input
@@ -81,7 +83,6 @@
     </label>
   </div>
 
-  @if (resumenMasivo.totalTrabajadores > 0) {
     <div class="payroll-revision-trabajadores__layout">
       <div class="payroll-revision-trabajadores__grid">
         <app-data-grid
@@ -96,7 +97,7 @@
           [selectable]="false"
           [maxItems]="25"
           [pageSizeOptions]="f.nominaMasivaPageSizeOptions"
-          gridHeight="430px"
+          gridHeight="100%"
           cardClassName="payroll-revision-trabajadores__grid-card"
           emptyTitle="No hay trabajadores para los filtros seleccionados"
           emptyDescription="Ajuste filtros o búsqueda para volver al listado."
@@ -190,92 +191,161 @@
         </app-data-grid>
       </div>
 
-      <aside class="payroll-revision-trabajadores__detail" aria-label="Detalle del trabajador seleccionado">
+      <aside class="payroll-revision-trabajadores__detail" aria-label="Qué corregir del trabajador en la grilla">
         @if (detalleMasivo) {
-          <header>
-            <p>Resumen del trabajador</p>
-            <h3>{{ detalleMasivo.trabajador }}</h3>
-            <span>{{ detalleMasivo.rut }}</span>
-          </header>
-          <dl class="payroll-revision-trabajadores__totals">
-            <div><dt>Estado</dt><dd>{{ f.etiquetaEstadoNominaMasiva(detalleMasivo.estado) }}</dd></div>
-            <div><dt>Haberes</dt><dd>{{ f.etiquetaMontoNominaMasiva(detalleMasivo.haberes) }}</dd></div>
-            <div><dt>Descuentos</dt><dd>{{ f.etiquetaMontoNominaMasiva(detalleMasivo.descuentos) }}</dd></div>
-            <div><dt>Líquido estimado</dt><dd>{{ f.etiquetaMontoNominaMasiva(detalleMasivo.liquidoEstimado) }}</dd></div>
-          </dl>
-
-          <section class="payroll-revision-trabajadores__section" aria-labelledby="payroll-revision-movs-title">
-            <h4 id="payroll-revision-movs-title">Movimientos del período</h4>
-            @if (f.nominaMasivaMovimientosPanelRows().length) {
-              <button
-                type="button"
-                class="payroll-revision-trabajadores__link"
-                (click)="abrirModalMovimientos()"
-              >
-                Ver {{ f.etiquetaConteoMasivo(f.nominaMasivaMovimientosPanelRows().length, 'movimiento', 'movimientos') }}
-              </button>
-            } @else {
-              <p>Sin movimientos ni recurrentes considerados en el período.</p>
-            }
-          </section>
-
-          <section class="payroll-revision-trabajadores__section" aria-labelledby="payroll-revision-inc-title">
-            <h4 id="payroll-revision-inc-title">Incidencias</h4>
-            @if (detalleMasivo.incidencias.length) {
-              <ul class="payroll-revision-trabajadores__incidencias">
-                @for (incidencia of detalleMasivo.incidencias; track incidencia.id + incidencia.detalle) {
-                  <li>
-                    <span>{{ incidencia.titulo }} · {{ incidencia.detalle }}</span>
-                    @if (incidencia.accion; as accionIncidencia) {
-                      <button
-                        type="button"
-                        class="payroll-revision-trabajadores__link"
-                        (click)="f.ejecutarAccionCorreccionDesdeIncidencia(incidencia)"
-                      >
-                        {{ accionIncidencia.label }}
-                      </button>
-                    }
-                  </li>
-                }
-              </ul>
-            } @else {
-              <p>Sin incidencias visibles para este trabajador.</p>
-            }
-          </section>
-
-          @if (accionRecomendada) {
-            <section
-              [class]="f.claseAccionRecomendadaMasiva(accionRecomendada.tono)"
-              aria-labelledby="payroll-revision-accion-title"
+          @if (detalleTrabajadorTabsVisibles().length > 1) {
+            <nav
+              class="payroll-segment-nav payroll-segment-nav--detalle payroll-revision-trabajadores__detail-tabs"
+              aria-label="Secciones del detalle del trabajador"
             >
-              <h4 id="payroll-revision-accion-title">Acción recomendada</h4>
-              <p><strong>{{ accionRecomendada.titulo }}</strong> {{ accionRecomendada.descripcion }}</p>
-              @if (accionRecomendada.accion) {
+              @for (tab of detalleTrabajadorTabsVisibles(); track tab.id) {
                 <button
                   type="button"
-                  class="payroll-revision-trabajadores__accion payroll-revision-trabajadores__accion--primary"
-                  (click)="f.ejecutarAccionCorreccion(accionRecomendada.accion)"
+                  [class]="claseDetalleTrabajadorTab(tab.id)"
+                  (click)="seleccionarDetalleTrabajadorTab(tab.id)"
                 >
-                  {{ accionRecomendada.accion.label }}
+                  {{ tab.label }}
                 </button>
               }
-            </section>
+            </nav>
+          }
+
+          @switch (detalleTrabajadorTab()) {
+            @case ('resumen') {
+              <dl class="payroll-revision-trabajadores__totals">
+                <div><dt>Estado</dt><dd>{{ f.etiquetaEstadoNominaMasiva(detalleMasivo.estado) }}</dd></div>
+                <div><dt>Haberes</dt><dd>{{ f.etiquetaMontoRevisionTrabajador(detalleMasivo.haberes) }}</dd></div>
+                <div><dt>Descuentos</dt><dd>{{ f.etiquetaMontoRevisionTrabajador(detalleMasivo.descuentos) }}</dd></div>
+                <div><dt>Líquido estimado</dt><dd>{{ f.etiquetaMontoRevisionTrabajador(detalleMasivo.liquidoEstimado) }}</dd></div>
+              </dl>
+
+              <section class="payroll-revision-trabajadores__section" aria-labelledby="payroll-revision-movs-title">
+                <h4 id="payroll-revision-movs-title">Movimientos del período</h4>
+                @if (f.nominaMasivaMovimientosPanelRows().length) {
+                  <button
+                    type="button"
+                    class="payroll-revision-trabajadores__link"
+                    (click)="abrirModalMovimientos()"
+                  >
+                    Ver {{ f.etiquetaConteoMasivo(f.nominaMasivaMovimientosPanelRows().length, 'movimiento', 'movimientos') }}
+                  </button>
+                } @else {
+                  <p>Sin movimientos ni recurrentes considerados en el período.</p>
+                }
+              </section>
+            }
+
+            @case ('que_hacer') {
+              <section class="payroll-revision-trabajadores__atencion" aria-label="Qué corregir">
+                <div class="payroll-revision-trabajadores__atencion-estado">
+                  <span class="payroll-revision-trabajadores__atencion-estado-k">Estado en el período</span>
+                  <span [class]="f.claseEstadoNominaMasiva(detalleMasivo.estado)">
+                    {{ f.etiquetaEstadoNominaMasiva(detalleMasivo.estado) }}
+                  </span>
+                </div>
+
+                @if (mostrarBloqueAccionRecomendadaSeparada() && accionRecomendada) {
+                  <div [class]="f.claseAccionRecomendadaMasiva(accionRecomendada.tono)">
+                    <p>
+                      <strong>{{ accionRecomendada.titulo }}</strong>
+                      {{ accionRecomendada.descripcion }}
+                    </p>
+                    @if (accionRecomendada.accion) {
+                      <button
+                        type="button"
+                        class="payroll-revision-trabajadores__accion payroll-revision-trabajadores__accion--primary"
+                        (click)="f.ejecutarAccionCorreccion(accionRecomendada.accion)"
+                      >
+                        {{ accionRecomendada.accion.label }}
+                      </button>
+                    }
+                  </div>
+                }
+
+                @if (detalleMasivo.incidencias.length) {
+                  <ul class="payroll-revision-trabajadores__atencion-lista">
+                    @for (incidencia of detalleMasivo.incidencias; track incidencia.id + incidencia.detalle) {
+                      <li class="payroll-revision-trabajadores__atencion-item">
+                        <div class="payroll-revision-trabajadores__atencion-item-head">
+                          <span [class]="claseSeveridadIncidencia(incidencia.severidad)">
+                            {{ etiquetaSeveridadIncidencia(incidencia.severidad) }}
+                          </span>
+                          <p>
+                            <strong>{{ incidencia.titulo }}</strong>
+                            {{ incidencia.detalle }}
+                          </p>
+                        </div>
+                        @if (incidencia.accion; as accionIncidencia) {
+                          <button
+                            type="button"
+                            class="payroll-revision-trabajadores__accion payroll-revision-trabajadores__accion--primary"
+                            (click)="f.ejecutarAccionCorreccionDesdeIncidencia(incidencia)"
+                          >
+                            {{ accionIncidencia.label }}
+                          </button>
+                        }
+                      </li>
+                    }
+                  </ul>
+                } @else if (!mostrarBloqueAccionRecomendadaSeparada()) {
+                  <p class="payroll-revision-trabajadores__empty payroll-revision-trabajadores__empty--inline">
+                    Listo para continuar en el período.
+                  </p>
+                }
+              </section>
+            }
           }
         } @else {
-          <p class="payroll-revision-trabajadores__empty">
+          <div class="payroll-revision-trabajadores__empty payroll-revision-trabajadores__empty--selection">
             @if (f.nominaMasivaFilasFiltradas().length) {
-              Seleccione un trabajador de la lista para revisar su detalle.
+              <span class="payroll-revision-trabajadores__empty-kicker">Sin selección</span>
+              <strong>Seleccione un trabajador</strong>
+              <span>Use la grilla o «Ver detalle» para ver qué corregir.</span>
             } @else {
-              Ajuste filtros o búsqueda para ver trabajadores del período.
+              <span class="payroll-revision-trabajadores__empty-kicker">Filtro sin resultados</span>
+              <strong>No hay trabajadores para la búsqueda actual</strong>
+              <span>Ajuste filtros o búsqueda para volver al listado del período.</span>
             }
-          </p>
+          </div>
         }
       </aside>
     </div>
   } @else {
-    <p class="payroll-revision-trabajadores__empty payroll-revision-trabajadores__empty--periodo">
-      No hay trabajadores considerados para este período.
-    </p>
+    <section class="payroll-revision-trabajadores__empty-state" aria-label="Nómina mensual sin datos">
+      <div class="payroll-revision-trabajadores__empty-visual" aria-hidden="true">
+        <span></span>
+      </div>
+      <div class="payroll-revision-trabajadores__empty-copy">
+        <span class="payroll-revision-trabajadores__empty-kicker">Sin datos del período</span>
+        <h3>No hay trabajadores considerados para esta nómina mensual</h3>
+        <p>
+          Genere o actualice la base del período para poblar el listado de revisión. Mientras tanto,
+          puede validar parámetros y revisar movimientos aprobados.
+        </p>
+      </div>
+      <dl class="payroll-revision-trabajadores__empty-metrics" aria-label="Resumen disponible">
+        <div>
+          <dt>Trabajadores aptos</dt>
+          <dd>{{ f.dashboardResumen().trabajadoresAptos ?? 0 }}</dd>
+        </div>
+        <div>
+          <dt>Movimientos aprobados</dt>
+          <dd>{{ f.dashboardResumen().movimientosAprobados }}</dd>
+        </div>
+        <div>
+          <dt>Recurrentes aplicables</dt>
+          <dd>{{ f.dashboardResumen().asignacionesAplicables ?? 0 }}</dd>
+        </div>
+      </dl>
+      <div class="payroll-revision-trabajadores__empty-actions">
+        <button type="button" class="payroll-revision-trabajadores__empty-action" (click)="f.ejecutarAccionValidacion('validarPeriodo')">
+          Validar período
+        </button>
+        <button type="button" class="payroll-revision-trabajadores__empty-link" (click)="f.abrirDetalleOperativo('resumen')">
+          Ver resumen del período
+        </button>
+      </div>
+    </section>
   }
 </section>
 
@@ -322,7 +392,17 @@
           cardClassName="payroll-revision-trabajadores__modal-grid-card"
           emptyTitle="Sin movimientos"
           emptyDescription="No hay movimientos visibles para este trabajador."
-        />
+        >
+          <ng-template appDataGridCell="accion" let-row="row">
+            <button
+              type="button"
+              class="payroll-revision-trabajadores__link"
+              (click)="ejecutarAccionMovimientoPanel(row, $event)"
+            >
+              {{ row.accion === 'Ver' ? 'Revisar movimiento' : row.accion }}
+            </button>
+          </ng-template>
+        </app-data-grid>
       </div>
     </div>
   </div>

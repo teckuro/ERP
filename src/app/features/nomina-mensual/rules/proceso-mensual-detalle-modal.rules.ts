@@ -101,7 +101,7 @@ export function buildDetalleRevisionHeaderLead(input: {
   }
   switch (input.tab) {
     case 'trabajadores':
-      return 'Revise quiénes entran al cálculo y qué acción requiere cada ficha.';
+      return 'La corrección por trabajador se hace en el panel del período. Aquí solo consulta el resumen agregado.';
     case 'parametros':
       return 'Revise catálogos y valores del período que condicionan la nómina mensual.';
     case 'movimientos_recurrentes':
@@ -341,7 +341,7 @@ export function buildDetalleRevisionTabPanel(input: BuildDetalleRevisionTabPanel
   const listaRecurrentes = mapRecurrentRowsALista(input.recurrentRows);
   const listaResultadoSeguimiento = input.resultadoSeguimientoItems.map(mapSeguimientoALista);
 
-  const usarGridTrabajadores = input.tab === 'trabajadores' && input.workerRowCount > 0;
+  const usarGridTrabajadores = false;
   const usarGridMovimientos =
     input.tab === 'movimientos_recurrentes'
     && input.movementRowCount > 0
@@ -424,7 +424,7 @@ export function buildDetalleRevisionFooterAccion(tab: DetalleOperativoTab): Deta
     case 'resumen':
       return { kind: 'tab', label: 'Ver trabajadores', tab: 'trabajadores' };
     case 'trabajadores':
-      return { kind: 'cerrar', label: 'Volver a la consola' };
+      return { kind: 'tab', label: 'Ir al detalle del período', tab: 'trabajadores' };
     case 'parametros':
       return { kind: 'ruta', label: 'Revisar parámetros', ruta: '/parametros' };
     case 'movimientos_recurrentes':

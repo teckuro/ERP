@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common';
+﻿import { CommonModule } from '@angular/common';
 import { Component, DestroyRef, OnInit, inject, signal } from '@angular/core';
 import { AbstractControl, ReactiveFormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
@@ -44,6 +44,7 @@ import {
   DataGridComponent,
 } from '../../../../shared/components/ui/data-grid.component';
 import { bindShellPageContext } from '../../../../layout/shell-page-context.binding';
+import type { ShellStatusChipTone } from '../../../../layout/shell-page-context.service';
 
 type EmployeeFileTab =
   | 'general'
@@ -129,7 +130,7 @@ export class FichaEmpleadoContainer implements OnInit {
 
   readonly arrowLeftIcon = ArrowLeft;
   readonly alertIcon = AlertCircle;
-  /** Vacío esperado — ícono informativo pequeño, no error. */
+  /** Vacío esperado - ícono informativo pequeño, no error. */
   readonly emptyFieldIcon = Info;
   readonly editIcon = Edit3;
   readonly loaderIcon = LoaderCircle;
@@ -193,16 +194,48 @@ export class FichaEmpleadoContainer implements OnInit {
   readonly trackHistoryRow = (_index: number, row: EmployeeHistoryRow): string => row.id;
 
   constructor() {
-    bindShellPageContext(this.destroyRef, () => {
-      const emp = this.empleado();
-      const etiqueta = emp?.nombre?.trim() || 'Ficha empleado';
-      return {
-        breadcrumbs: [
-          { label: 'Empleados', path: '/empleados' },
-          { label: etiqueta },
-        ],
-      };
-    });
+    bindShellPageContext(
+      this.destroyRef,
+      () => {
+        const emp = this.empleado();
+        const etiqueta = emp?.nombre?.trim() || 'Ficha empleado';
+        const context = {
+          breadcrumbs: [
+            { label: 'Empleados', path: '/empleados' },
+            { label: etiqueta },
+          ],
+        };
+
+        if (!emp) {
+          return context;
+        }
+
+        return {
+          ...context,
+          statusChip: {
+            label: this.estadoFichaVisualLabel(emp),
+            tone: this.shellStatusTone(emp),
+          },
+          primaryAction: {
+            actionId: 'ficha-empleado-primary',
+            label: this.primaryActionEvaluadaLabel(emp),
+            disabled: this.isValidatingPayroll(),
+            loading: this.isValidatingPayroll(),
+          },
+        };
+      },
+      {
+        onPrimaryAction: () => {
+          const emp = this.empleado();
+
+          if (!emp || this.isValidatingPayroll()) {
+            return;
+          }
+
+          void this.handlePrimaryFichaAction(emp);
+        },
+      },
+    );
   }
 
   async ngOnInit(): Promise<void> {
@@ -457,6 +490,54 @@ export class FichaEmpleadoContainer implements OnInit {
       default:
         return 'is-neutral';
     }
+  }
+
+  employeeInitials(empleado: EmpleadoListado): string {
+    const parts = empleado.nombre
+      .trim()
+      .split(/\s+/)
+      .filter(Boolean);
+
+    if (parts.length === 0) {
+      return 'FC';
+    }
+
+    return parts
+      .slice(0, 2)
+      .map((part) => part.charAt(0).toUpperCase())
+      .join('');
+  }
+
+  fichaStatusClass(empleado: EmpleadoListado): string {
+    if (empleado.estadoFicha === 'VALIDO' && empleado.aptoParaRemuneraciones) {
+      return 'is-complete';
+    }
+
+    if (this.canValidateForPayroll(empleado)) {
+      return 'is-progress';
+    }
+
+    if (this.evaluacionEmpleado(empleado).bloqueos.length > 0) {
+      return 'is-warning';
+    }
+
+    return 'is-neutral';
+  }
+
+  shellStatusTone(empleado: EmpleadoListado): ShellStatusChipTone {
+    if (empleado.estadoFicha === 'VALIDO' && empleado.aptoParaRemuneraciones) {
+      return 'success';
+    }
+
+    if (this.evaluacionEmpleado(empleado).bloqueos.length > 0) {
+      return 'warning';
+    }
+
+    if (empleado.estado === 'bloqueado' || empleado.estado === 'desvinculado') {
+      return 'danger';
+    }
+
+    return 'neutral';
   }
 
   completionValue(empleado: EmpleadoListado): number {
@@ -1596,3 +1677,5 @@ export class FichaEmpleadoContainer implements OnInit {
     );
   }
 }
+
+

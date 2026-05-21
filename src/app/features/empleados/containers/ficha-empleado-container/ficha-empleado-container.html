@@ -1,4 +1,4 @@
-<section class="employee-file-page" aria-label="Ficha de empleado">
+﻿<section class="employee-file-page" aria-label="Ficha de empleado">
   @if (isLoading() || errorMessage()) {
     <div class="file-toolbar file-toolbar--minimal" aria-label="Acciones">
       <a
@@ -23,74 +23,6 @@
         <p>{{ message }}</p>
       </section>
     } @else if (empleado(); as employee) {
-      <div class="file-sheet-head">
-        <section class="file-hero" aria-label="Resumen del colaborador">
-          <div class="file-hero-compact">
-            <h2 class="file-hero-name">{{ employee.nombre }}</h2>
-            <dl class="file-hero-meta">
-              <div>
-                <dt>RUT</dt>
-                <dd>{{ employee.rut }}</dd>
-              </div>
-              <div>
-                <dt>Cargo</dt>
-                <dd>{{ employee.cargo }}</dd>
-              </div>
-              <div>
-                <dt>Centro de costo</dt>
-                <dd>{{ employee.departamento }}</dd>
-              </div>
-            </dl>
-          </div>
-        </section>
-        <div class="file-sheet-actions" aria-label="Acciones de ficha">
-          <a
-            routerLink="/empleados"
-            class="file-toolbar-button file-toolbar-button--secondary erp-toolbar-button file-sheet-action"
-          >
-            <lucide-icon class="file-toolbar-icon" [img]="arrowLeftIcon"></lucide-icon>
-            Volver
-          </a>
-          @if (canEditCurrentTab()) {
-            <button
-              type="button"
-              class="file-toolbar-button file-toolbar-button--primary erp-toolbar-button file-sheet-action file-sheet-action--primary"
-              [disabled]="isValidatingPayroll()"
-              (click)="handlePrimaryFichaAction(employee)"
-            >
-              <lucide-icon class="file-toolbar-icon" [img]="editIcon"></lucide-icon>
-              {{ primaryActionEvaluadaLabel(employee) }}
-            </button>
-          }
-        </div>
-      </div>
-
-      <section class="file-state-overview" aria-label="Estado operativo de la ficha">
-        <div class="file-state-overview__main">
-          <p class="file-state-overview__title">{{ estadoFichaVisualLabel(employee) }}</p>
-          <p class="file-state-overview__readiness">{{ payrollReadinessEvaluadoLabel(employee) }}</p>
-        </div>
-        <div class="file-state-overview__pending">
-          <span>{{ pendingSummary(employee) }}</span>
-          @if (evaluacionEmpleado(employee).bloqueos.length > 0) {
-            <ul>
-              @for (pending of pendingItemsEvaluados(employee).slice(0, 3); track pending) {
-                <li>{{ pending }}</li>
-              }
-            </ul>
-          }
-        </div>
-        <button
-          type="button"
-          class="erp-btn-outline file-state-overview__action"
-          [class.erp-btn-emphasis]="canValidateForPayroll(employee)"
-          [disabled]="isValidatingPayroll()"
-          (click)="handlePrimaryFichaAction(employee)"
-        >
-          {{ primaryActionEvaluadaLabel(employee) }}
-        </button>
-      </section>
-
       @if (validationSuccessMessage(); as successMessage) {
         <div class="file-validation-feedback file-validation-feedback--success" role="status">
           {{ successMessage }}
@@ -154,7 +86,53 @@
 
       <div class="file-body">
         <div class="file-body-main">
+          <div class="file-sheet-head">
+            <section class="file-hero" aria-label="Resumen del colaborador">
+              <div class="file-hero-compact">
+                <div class="file-hero-title">
+                  <span class="file-hero-avatar" aria-hidden="true">{{ employeeInitials(employee) }}</span>
+                  <div class="file-hero-identity">
+                    <h2 class="file-hero-name">{{ employee.nombre }}</h2>
+                    <p class="file-hero-role">{{ employee.cargo }}</p>
+                  </div>
+                  <div class="file-hero-status" aria-label="Estados principales">
+                    <span class="file-chip file-chip--compact" [ngClass]="statusClass(employee.estado)">
+                      {{ statusLabel(employee.estado) }}
+                    </span>
+                    <span class="file-chip file-chip--compact" [ngClass]="fichaStatusClass(employee)">
+                      {{ estadoFichaVisualLabel(employee) }}
+                    </span>
+                  </div>
+                </div>
+                <dl class="file-hero-meta">
+                  <div>
+                    <dt>RUT</dt>
+                    <dd>{{ employee.rut }}</dd>
+                  </div>
+                  <div>
+                    <dt>Cargo</dt>
+                    <dd>{{ employee.cargo }}</dd>
+                  </div>
+                  <div>
+                    <dt>Centro de costo</dt>
+                    <dd>{{ employee.departamento }}</dd>
+                  </div>
+                </dl>
+              </div>
+            </section>
+          </div>
+
           <div class="file-tabs-wrap">
+            <div class="file-tabs-context" aria-label="Contexto de sección">
+              <div class="file-tabs-context__main">
+                <span>Sección activa</span>
+                <strong>{{ activeTabLabel() }}</strong>
+              </div>
+              <div class="file-tabs-context__meta">
+                <span>{{ tabStatusLabel(activeTab(), employee) }}</span>
+                <span>{{ completedBlocks(employee) }} / {{ tabs.length }} bloques</span>
+              </div>
+            </div>
             <section class="file-tabs file-tabs--erp" aria-label="Secciones de la ficha">
               @for (tab of tabs; track tab.id) {
               <button
@@ -162,6 +140,8 @@
                 class="file-tab-chip"
                 [class.is-active]="tab.id === activeTab()"
                 [ngClass]="tabStatusClass(tab.id, employee)"
+                [attr.aria-label]="tab.label + ': ' + tabStatusLabel(tab.id, employee)"
+                [title]="tab.label + ': ' + tabStatusLabel(tab.id, employee)"
                 (click)="selectTab(tab.id)"
               >
                 <span class="tab-state-dot" aria-hidden="true"></span>
@@ -176,7 +156,7 @@
             <section class="section-summary">
               <div class="section-head">
                 <div class="section-head__text">
-                  <p class="section-kicker">Revisión por bloque</p>
+                  <p class="section-kicker">{{ activeTab() === 'general' ? 'Visión general' : 'Revisión por bloque' }}</p>
                   <h2 class="section-title">{{ activeTabLabel() }}</h2>
                 </div>
               </div>
@@ -353,8 +333,8 @@
           <div class="file-status-card erp-surface-muted">
             <div class="file-status-card__header">
               <h3 class="file-status-card__title">Estado de la ficha</h3>
-              <span class="file-chip file-chip--compact" [ngClass]="statusClass(employee.estado)">
-                {{ statusLabel(employee.estado) }}
+              <span class="file-chip file-chip--compact" [ngClass]="fichaStatusClass(employee)">
+                {{ estadoFichaVisualLabel(employee) }}
               </span>
             </div>
 
@@ -362,7 +342,6 @@
               <p class="file-status-card__label">Completitud</p>
               <p class="file-status-card__completion-line">
                 <span class="file-status-card__completion-pct">{{ completionValue(employee) }}%</span>
-                <span aria-hidden="true" class="file-status-card__completion-sep">·</span>
                 <span
                   >{{ completedBlocks(employee) }} de {{ tabs.length }} bloques completos</span
                 >
@@ -410,17 +389,8 @@
             <div class="file-status-card__section file-status-card__section--actions">
               <p class="file-status-card__label">Acciones rápidas</p>
               <div class="file-status-card__actions">
-                <button
-                  type="button"
-                  class="erp-btn-outline file-status-quick"
-                  [class.erp-btn-emphasis]="canValidateForPayroll(employee)"
-                  [disabled]="isValidatingPayroll()"
-                  (click)="handlePrimaryFichaAction(employee)"
-                >
-                  {{ primaryActionEvaluadaLabel(employee) }}
-                </button>
                 <button type="button" class="erp-btn-outline file-status-quick" (click)="startEditing()">
-                  Editar sección actual
+                  Editar bloque actual
                 </button>
               </div>
             </div>
@@ -430,3 +400,5 @@
     }
   </div>
 </section>
+
+

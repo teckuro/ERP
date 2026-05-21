@@ -2,10 +2,12 @@ import { describe, expect, it } from 'vitest';
 
 import {
   appendNominaFlowQuery,
+  buildNominaFlowReturnUrl,
   buildRevisionRailCta,
   debeRehidratarDesdeFlowQuery,
   detalleTabUsaModal,
   filtrarPendientesRailSecundarios,
+  idPersonaDesdeFlowQuery,
   NOMINA_FLOW_RETURN_PATH,
   periodoYmDesdeFlowQuery,
   resolveFlowDestinoPorFrame,
@@ -38,6 +40,24 @@ describe('proceso-mensual-flow-nav.rules', () => {
     expect(url).toContain('returnTo=%2Fremuneraciones%2Fproceso-mensual');
   });
 
+  it('appendNominaFlowQuery incluye idPersona cuando aplica', () => {
+    const url = appendNominaFlowQuery('/remuneraciones/novedades-mensuales', '2026-05', 42);
+    expect(url).toContain('idPersona=42');
+  });
+
+  it('idPersonaDesdeFlowQuery valida entero positivo', () => {
+    expect(idPersonaDesdeFlowQuery({ idPersona: '10' })).toBe(10);
+    expect(idPersonaDesdeFlowQuery({ idPersona: '0' })).toBeNull();
+    expect(idPersonaDesdeFlowQuery({ idPersona: 'x' })).toBeNull();
+  });
+
+  it('buildNominaFlowReturnUrl conserva contexto de retorno', () => {
+    const url = buildNominaFlowReturnUrl('2026-05', 7);
+    expect(url).toContain(NOMINA_FLOW_RETURN_PATH);
+    expect(url).toContain('periodo=2026-05');
+    expect(url).toContain('idPersona=7');
+  });
+
   it('resolveNominaEstadoRrhh mapea frames visibles', () => {
     expect(resolveNominaEstadoRrhh('lista_para_confirmar').etiqueta).toBe('Lista para confirmar');
     expect(resolveNominaEstadoRrhh('sin_generar').etiqueta).toBe('Sin generar');
@@ -62,6 +82,32 @@ describe('proceso-mensual-flow-nav.rules', () => {
     const cta = buildRevisionRailCta('trabajadores', destino);
     expect(cta.usarPanel).toBe(true);
     expect(cta.label).toBe('Revisar trabajadores');
+  });
+
+  it('buildRevisionRailCta sin pendientes y sin base ofrece generar nomina', () => {
+    const cta = buildRevisionRailCta('trabajadores', resolveWorkspaceTargetFromDetalleTab('trabajadores'), {
+      baseGenerada: false,
+      puedeGenerarNomina: true,
+      puedeCalcular: false,
+      hayPendientesRevisionTrabajadores: false,
+      revisionTrabajadoresCompleta: true,
+    });
+    expect(cta.label).toBe('Generar nómina');
+    expect(cta.accionLocal).toBe('generarBase');
+    expect(cta.usarPanel).toBe(false);
+  });
+
+  it('buildRevisionRailCta con borrador y revision al dia prepara confirmacion', () => {
+    const cta = buildRevisionRailCta('trabajadores', resolveWorkspaceTargetFromDetalleTab('trabajadores'), {
+      baseGenerada: true,
+      puedeGenerarNomina: false,
+      puedeCalcular: true,
+      hayPendientesRevisionTrabajadores: false,
+      revisionTrabajadoresCompleta: true,
+    });
+    expect(cta.label).toBe('Preparar confirmación');
+    expect(cta.accionLocal).toBe('calcularPreliminar');
+    expect(cta.usarPanel).toBe(false);
   });
 
   it('filtrarPendientesRailSecundarios omite duplicados de revisar trabajadores', () => {

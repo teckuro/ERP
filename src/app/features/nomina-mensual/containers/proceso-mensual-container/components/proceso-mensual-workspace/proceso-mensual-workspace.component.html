@@ -160,18 +160,6 @@
                     }
                   </ul>
                 }
-                @if (f.mostrarResumenAmpliadoEnRail()) {
-                  <details class="payroll-rail-mas-opciones">
-                    <summary>Más opciones</summary>
-                    <button
-                      type="button"
-                      class="payroll-rail-link payroll-rail-link--secondary"
-                      (click)="f.abrirDetalleOperativo('resumen')"
-                    >
-                      Resumen ampliado del período
-                    </button>
-                  </details>
-                }
               }
             }
           </section>
@@ -344,17 +332,33 @@
         }
         @switch (f.nominaWorkspaceTabVisible()) {
           @case ('detalle_mensual') {
-            <nav class="payroll-segment-nav payroll-segment-nav--detalle" aria-label="Filtros del detalle mensual">
-              @for (filtro of f.nominaDetalleMensualFiltros; track filtro.id) {
+            <div class="payroll-detalle-mensual-toolbar">
+              <nav
+                class="payroll-segment-nav payroll-segment-nav--detalle payroll-detalle-mensual-toolbar__filtros"
+                aria-label="Filtros del detalle mensual"
+              >
+                @for (filtro of f.nominaDetalleMensualFiltros; track filtro.id) {
+                  <button
+                    type="button"
+                    [class]="claseDetalleFiltro(filtro.id)"
+                    (click)="f.seleccionarNominaDetalleMensualVista(filtro.id)"
+                  >
+                    {{ filtro.label }}
+                  </button>
+                }
+              </nav>
+              @if (f.mostrarResumenAmpliadoEnRail()) {
                 <button
                   type="button"
-                  [class]="claseDetalleFiltro(filtro.id)"
-                  (click)="f.seleccionarNominaDetalleMensualVista(filtro.id)"
+                  class="payroll-detalle-mensual-toolbar__resumen"
+                  aria-label="Resumen ampliado del período"
+                  (click)="f.abrirDetalleOperativo('resumen')"
                 >
-                  {{ filtro.label }}
+                  <lucide-icon name="file-text" aria-hidden="true" />
+                  <span>Resumen ampliado</span>
                 </button>
               }
-            </nav>
+            </div>
             @switch (f.nominaDetalleMensualVista()) {
               @case ('todos') {
                 <app-data-grid

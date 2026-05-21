@@ -98,6 +98,7 @@ Thumbs.db
 src/app/supabase
 /tests/*
 !/tests/nomina-mensual.e2e.spec.ts
+!/tests/empleados-nomina-error-fixtures.spec.ts
 /test-results
 /bd/*
 !/bd/README.md

@@ -97,6 +97,7 @@ function prevalidacion(over: Partial<ProcesoMensualPrevalidacion> = {}): Proceso
     advertencias: [],
     informaciones: [],
     items: [],
+    trabajadoresPendientesRevision: [],
     ...over,
   };
 }

@@ -70,8 +70,9 @@ describe('proceso-mensual-detalle-modal.rules', () => {
       tab: 'trabajadores',
     });
     expect(buildDetalleRevisionFooterAccion('trabajadores')).toEqual({
-      kind: 'cerrar',
-      label: 'Volver a la consola',
+      kind: 'tab',
+      label: 'Ir al detalle del período',
+      tab: 'trabajadores',
     });
     expect(buildDetalleRevisionFooterAccion('parametros').kind).toBe('ruta');
   });

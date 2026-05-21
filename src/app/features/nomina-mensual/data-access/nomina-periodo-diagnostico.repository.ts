@@ -73,6 +73,12 @@ export class NominaPeriodoDiagnosticoRepository {
     if (typeof record['periodo'] !== 'string' || typeof record['estado'] !== 'string') {
       return null;
     }
-    return payload as unknown as ProcesoMensualPrevalidacion;
+    const prevalidacion = payload as unknown as ProcesoMensualPrevalidacion;
+    return {
+      ...prevalidacion,
+      trabajadoresPendientesRevision: Array.isArray(record['trabajadoresPendientesRevision'])
+        ? (record['trabajadoresPendientesRevision'] as ProcesoMensualPrevalidacion['trabajadoresPendientesRevision'])
+        : [],
+    };
   }
 }

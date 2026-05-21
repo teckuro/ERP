@@ -66,19 +66,20 @@ describe('proceso-mensual-estado-operativo.rules', () => {
     expect(vm.timeline[0].estado).toBe('Actual');
   });
 
-  it('con BLOQ-004 pero parametros operativos prioriza trabajadores', () => {
+  it('con BLOQ-004 cumplido en resumen no bloquea generacion de nomina', () => {
     const vm = resolverEstadoOperativoProcesoMensual(inputBase({
       tienePrevalidacion: true,
       parametrosOperativos: true,
       bloqueosPrevalidacion: [bloqueoParametros],
+      puedeGenerarBase: true,
     }));
 
-    expect(vm.estadoClave).toBe('periodo_con_pendientes');
-    expect(vm.accionPrincipal.label).toBe('Revisar trabajadores');
-    expect(vm.accionPrincipal.accionLocal).toBe('revisarBloqueos');
+    expect(vm.estadoClave).toBe('listo_para_generar_base');
+    expect(vm.accionPrincipal.label).toBe('Generar nómina');
+    expect(vm.accionPrincipal.accionLocal).toBe('generarBase');
   });
 
-  it('con bloqueo de trabajadores y BLOQ-004 prioriza trabajadores', () => {
+  it('con BLOQ-006 y parametros pendientes prioriza parametros antes de generar', () => {
     const vm = resolverEstadoOperativoProcesoMensual(inputBase({
       tienePrevalidacion: true,
       parametrosOperativos: false,
@@ -93,8 +94,9 @@ describe('proceso-mensual-estado-operativo.rules', () => {
       ],
     }));
 
-    expect(vm.accionPrincipal.label).toBe('Revisar trabajadores');
-    expect(vm.accionPrincipal.accionLocal).toBe('revisarBloqueos');
+    expect(vm.estadoClave).toBe('periodo_con_pendientes');
+    expect(vm.accionPrincipal.label).toBe('Revisar parámetros');
+    expect(vm.accionPrincipal.ruta).toBe('/parametros');
   });
 
   it('validado sin bloqueos queda listo para generar base aunque exista bloqueo sintetico de base pendiente', () => {
@@ -122,16 +124,30 @@ describe('proceso-mensual-estado-operativo.rules', () => {
     ]);
   });
 
-  it('borrador generado pide revisar trabajadores', () => {
+  it('borrador generado pide revisar trabajadores si hay pendientes en panel', () => {
     const vm = resolverEstadoOperativoProcesoMensual(inputBase({
       tienePrevalidacion: true,
       baseGenerada: true,
       puedeCalcular: true,
+      revisionTrabajadoresCompleta: false,
     }));
 
     expect(vm.estadoClave).toBe('base_lista');
     expect(vm.accionPrincipal.label).toBe('Revisar trabajadores');
     expect(vm.disclosureActivo).toBe('calculo');
+  });
+
+  it('borrador generado sin pendientes de trabajador avanza a confirmacion', () => {
+    const vm = resolverEstadoOperativoProcesoMensual(inputBase({
+      tienePrevalidacion: true,
+      baseGenerada: true,
+      puedeCalcular: true,
+      revisionTrabajadoresCompleta: true,
+    }));
+
+    expect(vm.estadoClave).toBe('base_lista');
+    expect(vm.accionPrincipal.label).toBe('Confirmar revisión');
+    expect(vm.accionPrincipal.accionLocal).toBe('calcularPreliminar');
   });
 
   it('calculo con bloqueos no invita a guardar', () => {

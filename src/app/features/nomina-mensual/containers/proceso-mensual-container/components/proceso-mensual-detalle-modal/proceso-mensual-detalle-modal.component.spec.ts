@@ -325,14 +325,15 @@ describe('ProcesoMensualDetalleModalComponent', () => {
     expectTexto(footerText, 'Ver trabajadores');
   });
 
-  it('accion contextual en tab trabajadores vuelve a consola', async () => {
+  it('accion contextual en tab trabajadores lleva al panel del periodo', async () => {
     const fixture = await montarContainer();
     fixture.componentInstance.abrirOverlayRevision('trabajadores');
     fixture.detectChanges();
-    expectTexto(textoModal(fixture), 'Volver a la consola');
+    expectTexto(textoModal(fixture), 'Ir al detalle del período');
+    expectTexto(textoModal(fixture), 'La corrección por trabajador se hace en el panel del período');
   });
 
-  it('con snapshot completo muestra trabajador en tab trabajadores', async () => {
+  it('con snapshot completo muestra resumen agregado sin grilla masiva en tab trabajadores', async () => {
     obtenerSnapshotActivo.mockResolvedValue(snapshotGuardado());
     obtenerSnapshotCompletoActivo.mockResolvedValue(snapshotCompletoGuardado());
     const fixture = await montarContainer();
@@ -344,12 +345,16 @@ describe('ProcesoMensualDetalleModalComponent', () => {
     await fixture.whenStable();
     fixture.detectChanges();
 
-    expectTexto(textoModal(fixture), 'Ana Perez');
-    expectTextoNo(textoModal(fixture), 'Version guardada para revision');
+    const body = fixture.nativeElement.querySelector('.payroll-operational-detail-modal__body');
+    expectTexto(body?.textContent ?? '', 'Total');
+    expectTexto(body?.textContent ?? '', 'Ir al detalle del período');
+    expectTextoNo(body?.textContent ?? '', 'Listado de trabajadores');
+    expect(body?.querySelector('.payroll-mass-review__resumen')).toBeTruthy();
+    expect(body?.querySelector('input[placeholder="Buscar por nombre o RUT"]')).toBeNull();
     expect(fixture.nativeElement.querySelector('.payroll-expediente-franja')).toBeNull();
   });
 
-  it('con mas de 5 trabajadores muestra resumen, filtros y grilla compacta sin cards por trabajador', async () => {
+  it('con mas de 5 trabajadores muestra resumen agregado sin grilla operativa duplicada', async () => {
     obtenerSnapshotActivo.mockResolvedValue({ ...snapshotGuardado(), totalTrabajadores: 8 });
     obtenerSnapshotCompletoActivo.mockResolvedValue(snapshotCompletoConTrabajadores(8));
     const fixture = await montarContainer();
@@ -364,88 +369,33 @@ describe('ProcesoMensualDetalleModalComponent', () => {
     expectTexto(body?.textContent ?? '', 'Total');
     expectTexto(body?.textContent ?? '', 'Bloqueados');
     expectTexto(body?.textContent ?? '', 'Con observaciones');
-    expect(body?.querySelector('input[placeholder="Buscar por nombre o RUT"]')).toBeTruthy();
-    expectTexto(body?.textContent ?? '', 'Listado de trabajadores');
-    expectTexto(body?.textContent ?? '', 'Ver detalle');
-    expect(body?.querySelector('app-data-grid')).toBeTruthy();
+    expectTexto(body?.textContent ?? '', 'Sin movimientos');
+    expectTextoNo(body?.textContent ?? '', 'Listado de trabajadores');
+    expectTextoNo(body?.textContent ?? '', 'Ver detalle');
+    expect(body?.querySelector('input[placeholder="Buscar por nombre o RUT"]')).toBeNull();
+    expect(body?.querySelector('.payroll-mass-layout')).toBeNull();
     expect(body?.querySelectorAll('.payroll-follow-row').length).toBe(0);
   });
 
-  it('sin seleccion muestra mensaje de detalle bajo demanda', async () => {
+  it('footer tab trabajadores abre panel en consola', async () => {
     obtenerSnapshotActivo.mockResolvedValue({ ...snapshotGuardado(), totalTrabajadores: 6 });
     obtenerSnapshotCompletoActivo.mockResolvedValue(snapshotCompletoConTrabajadores(6));
     const fixture = await montarContainer();
     await fixture.whenStable();
 
-    fixture.componentInstance.abrirOverlayRevision('trabajadores');
-    fixture.detectChanges();
-    await fixture.whenStable();
-    fixture.detectChanges();
-
-    expectTexto(textoBodyModal(fixture), 'Selecciona un trabajador para revisar su detalle.');
-  });
-
-  it('al seleccionar trabajador muestra un solo detalle y no expande todos', async () => {
-    obtenerSnapshotActivo.mockResolvedValue({ ...snapshotGuardado(), totalTrabajadores: 7 });
-    obtenerSnapshotCompletoActivo.mockResolvedValue(snapshotCompletoConTrabajadores(7));
-    const fixture = await montarContainer();
-    await fixture.whenStable();
-
-    fixture.componentInstance.abrirOverlayRevision('trabajadores');
-    fixture.detectChanges();
-    await fixture.whenStable();
+    const c = fixture.componentInstance;
+    c.abrirOverlayRevision('trabajadores');
     fixture.detectChanges();
 
-    const action = fixture.nativeElement.querySelector('.payroll-mass-row-action') as HTMLButtonElement;
-    action.click();
-    fixture.detectChanges();
-    await fixture.whenStable();
-    fixture.detectChanges();
-
-    const detalles = fixture.nativeElement.querySelectorAll('.payroll-mass-detail header h3');
-    expect(detalles.length).toBe(1);
-    expectTexto(textoBodyModal(fixture), 'Detalle del trabajador');
-    expectTexto(textoBodyModal(fixture), 'Sin pendientes para este trabajador.');
-  });
-
-  it('filtro sin resultados muestra empty editorial', async () => {
-    obtenerSnapshotActivo.mockResolvedValue({ ...snapshotGuardado(), totalTrabajadores: 6 });
-    obtenerSnapshotCompletoActivo.mockResolvedValue(snapshotCompletoConTrabajadores(6));
-    const fixture = await montarContainer();
-    await fixture.whenStable();
-
-    fixture.componentInstance.abrirOverlayRevision('trabajadores');
-    fixture.detectChanges();
-    await fixture.whenStable();
+    const footerBtn = (fixture.nativeElement as HTMLElement).querySelector(
+      '.payroll-operational-detail-modal__footer .payroll-modal-primary',
+    ) as HTMLButtonElement | null;
+    expect(footerBtn?.textContent).toContain('Ir al detalle del período');
+    footerBtn?.click();
     fixture.detectChanges();
 
-    fixture.componentInstance.actualizarBusquedaNominaMasiva('rut-inexistente');
-    fixture.detectChanges();
-    await fixture.whenStable();
-    fixture.detectChanges();
-
-    expectTexto(textoBodyModal(fixture), 'No hay pendientes para los filtros seleccionados.');
-  });
-
-  it('busqueda por RUT filtra la grilla', async () => {
-    obtenerSnapshotActivo.mockResolvedValue({ ...snapshotGuardado(), totalTrabajadores: 6 });
-    obtenerSnapshotCompletoActivo.mockResolvedValue(snapshotCompletoConTrabajadores(6));
-    const fixture = await montarContainer();
-    await fixture.whenStable();
-
-    fixture.componentInstance.abrirOverlayRevision('trabajadores');
-    fixture.detectChanges();
-    await fixture.whenStable();
-    fixture.detectChanges();
-
-    fixture.componentInstance.actualizarBusquedaNominaMasiva('2222222');
-    fixture.detectChanges();
-    await fixture.whenStable();
-    fixture.detectChanges();
-
-    const body = textoBodyModal(fixture);
-    expectTexto(body, 'Trabajador Masivo 2');
-    expectTextoNo(body, 'Trabajador Masivo 1');
+    expect(c.detalleOperativoAbierto()).toBe(false);
+    expect(c.nominaDetalleMensualVista()).toBe('trabajadores');
   });
 
   it('no muestra CTA de liquidaciones fuera de resumen', async () => {

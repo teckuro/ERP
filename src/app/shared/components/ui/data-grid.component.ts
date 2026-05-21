@@ -192,11 +192,15 @@ export class DataGridPrimaryActionMenuDirective {
     <app-card [className]="gridCardClass" [ngStyle]="gridCardStyle">
       @if (filtersEnabled && showFilters) {
         <div class="data-grid-filter-panel border-b border-neutral-200 bg-white px-4 py-3">
-          <div class="flex flex-col gap-3 xl:flex-row xl:items-start xl:justify-between">
+          <div class="data-grid-filter-shell flex flex-col gap-3 xl:flex-row xl:items-start xl:justify-between">
             <div class="min-w-0 flex-1">
               <div class="data-grid-filter-grid" [ngStyle]="filterGridStyle">
                 @for (filter of visibleFilters; track filter.id) {
-                  <label class="data-grid-filter-field" [class.data-grid-filter-field--wide]="isDateRangeFilter(filter)">
+                  <label
+                    class="data-grid-filter-field"
+                    [class.data-grid-filter-field--wide]="isDateRangeFilter(filter)"
+                    [attr.data-grid-filter-id]="filter.id"
+                  >
                     <span class="data-grid-filter-label">
                       {{ filter.label }}
                     </span>
@@ -1080,6 +1084,22 @@ export class DataGridPrimaryActionMenuDirective {
         border-color: var(--data-grid-border) !important;
       }
 
+      .data-grid-filter-shell {
+        display: grid !important;
+        grid-template-columns: minmax(0, 1fr) auto;
+        align-items: flex-end;
+      }
+
+      .data-grid-filter-shell > .min-w-0 {
+        width: 100%;
+        min-width: 0;
+      }
+
+      .data-grid-filter-actions {
+        flex-wrap: wrap;
+        align-self: flex-end;
+      }
+
       .data-grid-filter-control {
         box-sizing: border-box;
         width: 100%;
@@ -1644,6 +1664,15 @@ export class DataGridPrimaryActionMenuDirective {
       }
 
       @media (max-width: 767px) {
+        .data-grid-filter-shell {
+          grid-template-columns: minmax(0, 1fr);
+        }
+
+        .data-grid-filter-actions {
+          justify-content: flex-start;
+          justify-self: stretch;
+        }
+
         .data-grid-filter-panel {
           padding: 0.75rem;
         }
@@ -2044,7 +2073,7 @@ export class DataGridComponent<T = unknown> implements OnChanges, OnDestroy {
 
   get filterGridStyle(): Record<string, string> {
     return {
-      'grid-template-columns': 'repeat(auto-fit, minmax(10.75rem, 1fr))',
+      'grid-template-columns': 'repeat(auto-fit, minmax(min(100%, 11.5rem), 1fr))',
     };
   }
 

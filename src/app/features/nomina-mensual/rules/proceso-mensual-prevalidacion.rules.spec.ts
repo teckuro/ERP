@@ -2,10 +2,12 @@ import type { ParametroGeneral, PeriodoRemuneracionEstadoInfo } from '../../para
 import type { MovimientoVariableListadoFila } from '../../movimientos-variables/models/movimiento-variable.model';
 import type { EntradaMensualPeriodo } from '../entradas/models/entrada-mensual-periodo.model';
 
+import type { EmpleadoListado } from '../../empleados/models/empleado-listado.model';
 import {
   construirPrevalidacionMensual,
   type ProcesoMensualHechosPrevalidacion,
 } from './proceso-mensual-prevalidacion.rules';
+import { buildTrabajadoresPendientesRevision } from './proceso-mensual-trabajadores-prevalidacion.rules';
 
 function filaPgBase(): ParametroGeneral {
   return {
@@ -35,6 +37,7 @@ function baseHechos(over: Partial<ProcesoMensualHechosPrevalidacion> = {}): Proc
     parametrosGrupos: [],
     empleadosActivosAptos: 2,
     empleadosActivosNoAptos: 0,
+    trabajadoresPendientesRevision: [],
     lecturaEmpleados: 'ok',
     totalConceptosMantenimiento: 3,
     lecturaConceptos: 'ok',
@@ -156,7 +159,7 @@ describe('proceso-mensual-prevalidacion.rules', () => {
     expect(r.advertencias.filter((a) => a.area === 'ENTRADAS_MENSUALES').length).toBe(0);
   });
 
-  it('combinacion de bloqueos -> BLOQUEADO', () => {
+  it('sin parametros y entradas bloqueantes -> BLOQUEADO solo por parametros', () => {
     const r = construirPrevalidacionMensual(
       baseHechos({
         ultimoPg: null,
@@ -165,7 +168,8 @@ describe('proceso-mensual-prevalidacion.rules', () => {
       }),
     );
     expect(r.estado).toBe('BLOQUEADO');
-    expect(r.bloqueos.length).toBeGreaterThan(1);
+    expect(r.bloqueos.some((b) => b.codigo === 'PARAMETROS_SIN_FILA')).toBe(true);
+    expect(r.advertencias.some((a) => a.codigo === 'ENTRADAS_BLOQUEANTES')).toBe(true);
   });
 
   it('solo advertencias reales -> CON_ADVERTENCIAS (INFO no cuenta)', () => {
@@ -210,17 +214,19 @@ describe('proceso-mensual-prevalidacion.rules', () => {
     expect(r.resumen.resumenEntradasMensuales?.pendientesRevision).toBe(1);
     expect(r.resumen.resumenEntradasMensuales?.legacyMovimientos).toBe(1);
     expect(r.resumen.resumenEntradasMensuales?.bloqueantes).toBe(1);
-    expect(r.bloqueos.some((b) => b.codigo === 'ENTRADAS_BLOQUEANTES')).toBe(true);
+    expect(r.bloqueos.some((b) => b.codigo === 'ENTRADAS_BLOQUEANTES')).toBe(false);
+    expect(r.advertencias.some((a) => a.codigo === 'ENTRADAS_BLOQUEANTES')).toBe(true);
   });
 
-  it('recurrentes invalidas -> BLOQUEADO', () => {
+  it('recurrentes invalidas -> CON_ADVERTENCIAS (no bloquea generar nómina)', () => {
     const r = construirPrevalidacionMensual(
       baseHechos({
         recurrentesConteo: { lectura: 'ok', aplicables: 0, invalidas: 2, cerradas: 0, fueraDelMes: 0 },
       }),
     );
-    expect(r.estado).toBe('BLOQUEADO');
-    expect(r.bloqueos.some((b) => b.codigo === 'RECURRENTES_INVALIDAS')).toBe(true);
+    expect(r.estado).toBe('CON_ADVERTENCIAS');
+    expect(r.bloqueos.some((b) => b.codigo === 'RECURRENTES_INVALIDAS')).toBe(false);
+    expect(r.advertencias.some((a) => a.codigo === 'RECURRENTES_INVALIDAS')).toBe(true);
   });
 
   it('recurrentes aplicables sin invalidas -> no bloquea por recurrentes', () => {
@@ -230,5 +236,27 @@ describe('proceso-mensual-prevalidacion.rules', () => {
       }),
     );
     expect(r.bloqueos.some((b) => b.codigo === 'RECURRENTES_INVALIDAS')).toBe(false);
+  });
+
+  it('expone trabajadoresPendientesRevision en la prevalidación', () => {
+    const listado = [
+      {
+        id: 1,
+        estado: 'activo',
+        nombre: 'Ana',
+        rut: '1-9',
+        aptoParaRemuneraciones: false,
+        estadoFicha: 'VALIDO',
+      },
+    ] as EmpleadoListado[];
+    const pendientes = buildTrabajadoresPendientesRevision(listado);
+    const r = construirPrevalidacionMensual(
+      baseHechos({
+        empleadosActivosNoAptos: 1,
+        trabajadoresPendientesRevision: pendientes,
+      }),
+    );
+    expect(r.trabajadoresPendientesRevision).toHaveLength(1);
+    expect(r.trabajadoresPendientesRevision[0].nombre).toBe('Ana');
   });
 });

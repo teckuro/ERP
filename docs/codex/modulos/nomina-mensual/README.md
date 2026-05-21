@@ -2,13 +2,13 @@
 
 ## Estado
 
-## NOM-MENSUAL-FLOW-UNIFICADO-03 — En curso (Fase 1 aprobada)
+## NOM-MENSUAL-FLOW-UNIFICADO-03 — Epic UI cerrado (5.C BD con gate)
 
 Epic flujo unificado: dispatcher al 100% (siguiente código); fases 2–5 en documentos separados para revisión posterior.
 
 | Doc | Contenido |
 |-----|-----------|
-| [`nom-mensual-flow-unificado-03.md`](./nom-mensual-flow-unificado-03.md) | Índice, hecho, Fase 1 aprobada |
+| [`nom-mensual-flow-unificado-03.md`](./nom-mensual-flow-unificado-03.md) | Índice, hecho, **Fase 1 implementada** |
 | [`nom-mensual-flow-unificado-03-fase-02-deep-links.md`](./nom-mensual-flow-unificado-03-fase-02-deep-links.md) | `idPersona` en query + Novedades |
 | [`nom-mensual-flow-unificado-03-fase-03-panel-modales.md`](./nom-mensual-flow-unificado-03-fase-03-panel-modales.md) | Modal movimientos local, incidencias, filtros |
 | [`nom-mensual-flow-unificado-03-fase-04-modal-global.md`](./nom-mensual-flow-unificado-03-fase-04-modal-global.md) | Modal global excepcional |
@@ -45,6 +45,10 @@ Fix rules: CTA «Revisar parámetros» solo si `!parametrosOperativos`; priorida
 ## NOM-PERIODO-VERIFICAR-MODAL-02 aplicado
 
 Modal automático tras verificar el período (MessageBox): críticos, advertencias o período listo con CTA «Generar nómina». Documento: [`nom-periodo-diagnostico-persist-01.md`](./nom-periodo-diagnostico-persist-01.md).
+
+## NOM-PERIODO-TRABAJADORES-NO-APTOS-01 aplicado
+
+Tras verificar, el payload persistido incluye `trabajadoresPendientesRevision` (nombre, RUT, motivo RRHH). Modal prioriza «Revisar fichas»; pestaña Trabajadores muestra grilla pre-borrador con «Abrir ficha» (`/empleados/:id` + retorno al período). Sin segundo listado de empleados en servicio.
 
 ## NOM-PERIODO-DIAGNOSTICO-PERSIST-01 aplicado
 

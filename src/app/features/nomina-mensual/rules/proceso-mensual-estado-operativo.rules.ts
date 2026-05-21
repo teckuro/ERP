@@ -95,6 +95,8 @@ export interface ProcesoMensualEstadoOperativoInput {
   razonNoPuedeGuardar?: string;
   razonNoPuedeAprobar?: string;
   razonNoPuedeCerrar?: string;
+  /** Sin bloqueados ni observaciones en el panel masivo (cuando hay filas). */
+  revisionTrabajadoresCompleta?: boolean;
 }
 
 const ACCESOS_RAPIDOS: ProcesoMensualPendienteVm[] = [
@@ -124,10 +126,54 @@ const ACCESOS_RAPIDOS: ProcesoMensualPendienteVm[] = [
   },
 ];
 
+const CODIGOS_PENDIENTE_CRITICO_PRE_GENERACION = new Set([
+  'PERIODO_FORMATO_INVALIDO',
+  'PARAMETROS_LECTURA_ERROR',
+  'PARAMETROS_SIN_FILA',
+  'PARAMETROS_CALENDARIO_LECTURA',
+  'PARAMETROS_ESTADO_PERIODO_INOPERATIVO',
+  'BLOQ-001',
+  'BLOQ-004',
+]);
+
+function pendienteCriticoAntesDeGenerarNomina(codigo: string): boolean {
+  if (CODIGOS_PENDIENTE_CRITICO_PRE_GENERACION.has(codigo)) {
+    return true;
+  }
+  return codigo.startsWith('PARAMETROS_') && !codigo.startsWith('PARAM_MIN_');
+}
+
+export function filtrarBloqueosCriticosPrevalidacion(
+  input: Pick<ProcesoMensualEstadoOperativoInput, 'bloqueosPrevalidacion' | 'parametrosOperativos'>,
+): ProcesoMensualPendienteVm[] {
+  return input.bloqueosPrevalidacion.filter((bloqueo) => {
+    if (bloqueo.codigo === 'BLOQ-005') {
+      return false;
+    }
+    if (bloqueo.codigo === 'BLOQ-004' && input.parametrosOperativos) {
+      return false;
+    }
+    return pendienteCriticoAntesDeGenerarNomina(bloqueo.codigo);
+  });
+}
+
+export function hayPendientesRevisionTrabajadores(
+  pendientes: readonly ProcesoMensualPendienteVm[],
+): boolean {
+  return pendientes.some(
+    (pendiente) => bloqueoDestinoTrabajadores(pendiente) || pendienteRequiereRevisionTrabajador(pendiente),
+  );
+}
+
+function pendienteRequiereRevisionTrabajador(pendiente: ProcesoMensualPendienteVm): boolean {
+  const codigo = pendiente.codigo.toUpperCase();
+  return codigo === 'ADV-003' || codigo === 'BLOQ-003';
+}
+
 export function resolverEstadoOperativoProcesoMensual(
   input: ProcesoMensualEstadoOperativoInput,
 ): ProcesoMensualEstadoOperativoVm {
-  const bloqueosCriticosPrevalidacion = input.bloqueosPrevalidacion.filter((b) => b.codigo !== 'BLOQ-005');
+  const bloqueosCriticosPrevalidacion = filtrarBloqueosCriticosPrevalidacion(input);
 
   if (input.liquidacionesDisponibles) {
     return buildEstado(input, {
@@ -221,15 +267,22 @@ export function resolverEstadoOperativoProcesoMensual(
   }
 
   if (input.baseGenerada) {
+    const accionBorrador = accionPrincipalBorradorGenerado(input);
     return buildEstado(input, {
       estadoClave: 'base_lista',
       titulo: 'Borrador generado',
-      descripcion: 'El borrador de nómina mensual está generado. Revisa trabajadores incluidos, movimientos y recurrentes.',
+      descripcion: accionBorrador.label === 'Preparar confirmación'
+        ? 'La revisión por trabajador está al día. Continúe hacia la confirmación de la nómina mensual.'
+        : 'El borrador de nómina mensual está generado. Revisa trabajadores incluidos, movimientos y recurrentes.',
       severidad: 'info',
-      accionPrincipal: local('Revisar trabajadores', 'Revisa el borrador y continúa con la revisión por trabajador.', 'calcularPreliminar', !input.puedeCalcular),
+      accionPrincipal: accionBorrador,
       etapaActiva: 'calculo',
       disclosureActivo: 'calculo',
-      queFaltaAhora: [info('FALTA_CALCULO', 'Revisar trabajadores', 'Revisa trabajadores incluidos y continúa la revisión del período.')],
+      queFaltaAhora: [
+        accionBorrador.label === 'Preparar confirmación'
+          ? info('LISTO_CONFIRMACION', 'Confirmar nómina', 'Continúe el flujo hasta dejar la versión lista para confirmar.')
+          : info('FALTA_CALCULO', 'Revisar trabajadores', 'Revisa trabajadores incluidos y continúa la revisión del período.'),
+      ],
     });
   }
 
@@ -366,6 +419,35 @@ function bloqueoDestinoTrabajadores(bloqueo: ProcesoMensualPendienteVm): boolean
   );
 }
 
+function accionPrincipalBorradorGenerado(
+  input: ProcesoMensualEstadoOperativoInput,
+): ProcesoMensualAccionPrincipalVm {
+  const pendientes = [
+    ...input.bloqueosPrevalidacion,
+    ...input.advertenciasPrevalidacion,
+    ...input.bloqueosCalculo,
+    ...input.advertenciasCalculo,
+  ];
+  const revisionAlDia =
+    !hayPendientesRevisionTrabajadores(pendientes)
+    && (input.revisionTrabajadoresCompleta ?? false);
+
+  if (revisionAlDia) {
+    return local(
+      'Preparar confirmación',
+      'La revisión por trabajador está al día. Continúa hacia la confirmación de la nómina mensual.',
+      'calcularPreliminar',
+      !input.puedeCalcular,
+    );
+  }
+  return local(
+    'Revisar trabajadores',
+    'Revisa el borrador y continúa con la revisión por trabajador.',
+    'calcularPreliminar',
+    !input.puedeCalcular,
+  );
+}
+
 function resolverAccionPrincipalPeriodoConPendientes(
   input: ProcesoMensualEstadoOperativoInput,
   bloqueosCriticos: readonly ProcesoMensualPendienteVm[],
@@ -380,6 +462,22 @@ function resolverAccionPrincipalPeriodoConPendientes(
   }
   if (!input.parametrosOperativos && bloqueosCriticos.some(bloqueoDestinoParametros)) {
     return ruta('Revisar parámetros', 'Corrige los parámetros bloqueantes antes de avanzar.', '/parametros');
+  }
+  const bloqueoConRuta = bloqueosCriticos.find((bloqueo) => bloqueo.ruta?.trim());
+  if (bloqueoConRuta?.ruta) {
+    return ruta(
+      bloqueoConRuta.accionLabel ?? bloqueoConRuta.titulo,
+      bloqueoConRuta.descripcion,
+      bloqueoConRuta.ruta,
+    );
+  }
+  if (!input.baseGenerada && input.puedeGenerarBase) {
+    return local(
+      'Generar nómina',
+      'Arma la nómina mensual con trabajadores, movimientos y asignaciones del período.',
+      'generarBase',
+      false,
+    );
   }
   return local(
     'Revisar trabajadores',

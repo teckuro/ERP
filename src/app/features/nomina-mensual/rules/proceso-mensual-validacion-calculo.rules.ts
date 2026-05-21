@@ -300,17 +300,23 @@ function resolverSiguienteAccion(
       accionLocal: bloqueo.accionLocal,
     };
   }
-  if (advertencias.length > 0) {
+  const advRequiereRevisionTrabajador = advertencias.some(
+    (adv) => adv.codigo === 'ADV-003' || (adv.accionLabel ?? '').toLowerCase().includes('trabajador'),
+  );
+  if (advRequiereRevisionTrabajador) {
     return {
       label: 'Revisar trabajadores',
-      descripcion: `La nomina mensual puede revisarse con ${advertencias.length} advertencia(s) no bloqueante(s).`,
+      descripcion: `La nómina mensual puede revisarse con ${advertencias.length} advertencia(s) no bloqueante(s).`,
       accionLocal: 'calcularPreliminar',
     };
   }
+  const baseGenerada = !bloqueos.some((item) => item.codigo === 'BLOQ-005');
   return {
-    label: 'Revisar trabajadores',
-    descripcion: 'La nómina mensual está lista para revisar trabajadores.',
-    accionLocal: 'calcularPreliminar',
+    label: baseGenerada ? 'Preparar confirmación' : 'Generar nómina',
+    descripcion: baseGenerada
+      ? 'La revisión del período está al día. Continúa hacia la confirmación de la nómina mensual.'
+      : 'El período está listo para armar la nómina mensual del período.',
+    accionLocal: baseGenerada ? 'calcularPreliminar' : 'generarBase',
   };
 }
 
@@ -351,6 +357,8 @@ function accionArea(area: ProcesoMensualArea): { label: string; route: string } 
     case 'ENTRADAS_MENSUALES':
     case 'MOVIMIENTOS_VARIABLES':
       return { label: 'Revisar movimientos', route: '/remuneraciones/novedades-mensuales' };
+    case 'TRABAJADORES':
+      return { label: 'Revisar fichas', route: '/empleados' };
     default:
       return null;
   }

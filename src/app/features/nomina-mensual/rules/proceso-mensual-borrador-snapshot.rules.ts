@@ -128,6 +128,7 @@ export function buildPrevalidacionLecturaDesdeBorrador(
     informaciones: [],
     items: [],
     entradasMensuales: context.entradasMensuales,
+    trabajadoresPendientesRevision: [],
   };
 }
 

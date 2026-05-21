@@ -143,6 +143,7 @@ describe('proceso-mensual-masivo-layout.rules', () => {
       conObservaciones: 1,
       bloqueados: 1,
       conMovimientos: 1,
+      sinMovimientos: 4,
       conRecurrentes: 1,
     });
   });

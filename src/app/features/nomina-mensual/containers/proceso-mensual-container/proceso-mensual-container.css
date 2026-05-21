@@ -129,7 +129,7 @@
 }
 
 .payroll-view-panel {
-  flex: 1 1 auto;
+  flex: 1;
 }
 
 .payroll-console {
@@ -819,9 +819,11 @@
 }
 
 .payroll-tab-panel {
+  display: flex;
+  flex-direction: column;
   flex: 1 1 auto;
   min-height: 0;
-  padding: 12px 14px 16px;
+  padding:12px 14px;
 }
 
 .payroll-tab-summary {

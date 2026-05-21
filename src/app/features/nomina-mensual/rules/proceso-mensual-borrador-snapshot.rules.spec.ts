@@ -87,6 +87,7 @@ const prevalidacionBase: ProcesoMensualPrevalidacion = {
     },
   ],
   informaciones: [],
+  trabajadoresPendientesRevision: [],
   items: [],
   entradasMensuales: [],
 };

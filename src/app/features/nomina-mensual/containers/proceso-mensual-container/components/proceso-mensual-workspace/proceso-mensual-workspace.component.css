@@ -80,24 +80,59 @@
   font-weight: 600;
 }
 
-.payroll-console .payroll-rail-mas-opciones {
-  margin-top: 6px;
+.payroll-detalle-mensual-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin: 0 0 12px;
+  border-bottom: 1px solid var(--erp-border);
+  padding: 0 0 8px;
 }
 
-.payroll-console .payroll-rail-mas-opciones summary {
-  color: var(--erp-muted);
-  font-size: 0.72rem;
-  font-weight: 650;
+.payroll-detalle-mensual-toolbar__filtros {
+  margin: 0;
+  border: 0;
+  padding: 0;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.payroll-detalle-mensual-toolbar__resumen {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex: 0 0 auto;
+  min-height: 31px;
+  border: 1px solid var(--erp-border);
+  border-radius: 5px;
+  background: var(--erp-surface);
+  padding: 4px 10px;
+  color: var(--erp-ink);
+  font: inherit;
+  font-size: 0.745rem;
+  font-weight: 700;
+  line-height: 1.2;
+  white-space: nowrap;
   cursor: pointer;
-  list-style: none;
 }
 
-.payroll-console .payroll-rail-mas-opciones summary::-webkit-details-marker {
-  display: none;
+.payroll-detalle-mensual-toolbar__resumen:hover {
+  border-color: var(--erp-border-strong);
+  background: var(--erp-surface-soft);
 }
 
-.payroll-console .payroll-rail-mas-opciones[open] summary {
-  margin-bottom: 4px;
+.payroll-detalle-mensual-toolbar__resumen:focus-visible {
+  outline: 2px solid var(--erp-primary);
+  outline-offset: 1px;
+}
+
+.payroll-detalle-mensual-toolbar__resumen lucide-icon {
+  width: 14px;
+  height: 14px;
+  color: var(--erp-muted);
+  flex-shrink: 0;
 }
 
 .payroll-sidebar-estado {

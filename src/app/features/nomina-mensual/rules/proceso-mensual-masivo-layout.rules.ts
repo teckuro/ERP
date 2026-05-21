@@ -31,6 +31,7 @@ export interface NominaMasivaResumen {
   conObservaciones: number;
   bloqueados: number;
   conMovimientos: number;
+  sinMovimientos: number;
   conRecurrentes: number;
 }
 
@@ -298,6 +299,7 @@ export function buildResumenMasivoNomina(input: BuildNominaMasivaInput): NominaM
     conObservaciones: filas.filter((fila) => fila.estado === 'observacion').length,
     bloqueados: filas.filter((fila) => fila.estado === 'bloqueado').length,
     conMovimientos: filas.filter((fila) => fila.tieneMovimientos).length,
+    sinMovimientos: filas.filter((fila) => !fila.tieneMovimientos).length,
     conRecurrentes: filas.filter((fila) => fila.tieneRecurrentes).length,
   };
 }

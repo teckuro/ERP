@@ -1,6 +1,8 @@
 import { importProvidersFrom } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { provideRouter, Router } from '@angular/router';
+import { ActivatedRoute, provideRouter, Router } from '@angular/router';
+import { of } from 'rxjs';
+import { buildNominaFlowQueryParams } from '../../../rules/proceso-mensual-flow-nav.rules';
 import { LucideAngularModule } from 'lucide-angular';
 import {
   AlertCircle,
@@ -180,6 +182,65 @@ describe('NovedadesMensualesContainer', () => {
     periodoActivo.setPeriodoYm('2026-05');
     fixture = TestBed.createComponent(NovedadesMensualesContainer);
     component = fixture.componentInstance;
+  });
+
+  describe('deep link desde nomina mensual', () => {
+    beforeEach(async () => {
+      TestBed.resetTestingModule();
+      await TestBed.configureTestingModule({
+        imports: [NovedadesMensualesContainer],
+        providers: [
+          provideRouter([]),
+          importProvidersFrom(
+            LucideAngularModule.pick({
+              AlertCircle,
+              ArrowDown,
+              ArrowLeft,
+              ArrowUp,
+              ArrowUpDown,
+              Calendar,
+              CheckCircle,
+              CheckCircle2,
+              ChevronDown,
+              ChevronLeft,
+              ChevronRight,
+              Download,
+              Filter,
+              Home,
+              Info,
+              LoaderCircle,
+              Plus,
+              RefreshCw,
+              Search,
+              Settings,
+              TriangleAlert,
+              X,
+            }),
+          ),
+          PeriodoActivoService,
+          { provide: NovedadesMensualesService, useValue: service },
+          { provide: EmpleadosService, useValue: empleadosService },
+          { provide: HaberesDescuentosService, useValue: haberesDescuentosService },
+          {
+            provide: ActivatedRoute,
+            useValue: {
+              queryParams: of(buildNominaFlowQueryParams('2026-05', 10)),
+            },
+          },
+        ],
+      }).compileComponents();
+      periodoActivo = TestBed.inject(PeriodoActivoService);
+      periodoActivo.setPeriodoYm('2026-05');
+    });
+
+    it('con idPersona en query abre detalle del trabajador al iniciar', async () => {
+      const localFixture = TestBed.createComponent(NovedadesMensualesContainer);
+      localFixture.detectChanges();
+      await esperarCargaInicial(localFixture);
+
+      expect(localFixture.componentInstance.trabajadorDetalle()?.row.idPersona).toBe(10);
+      expect(localFixture.componentInstance.trabajadorDetalle()?.row.trabajador).toContain('Ana Perez');
+    });
   });
 
   it('carga datos de apoyo y movimientos por periodo al iniciar', async () => {

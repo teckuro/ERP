@@ -10,6 +10,7 @@ import { ParametrosGeneralesService } from '../../parametros-generales/services/
 import { EntradasMensualesPeriodoService } from '../entradas/services/entradas-mensuales-periodo.service';
 import { LiquidacionesOficialesRepository } from '../../liquidaciones-oficiales/data-access/liquidaciones-oficiales.repository';
 import { NominaCalculoSnapshotRepository } from '../data-access/nomina-calculo-snapshot.repository';
+import { NominaPeriodoDiagnosticoRepository } from '../data-access/nomina-periodo-diagnostico.repository';
 import { ProcesoMensualService } from './proceso-mensual.service';
 
 const filaPgMock = {
@@ -138,6 +139,11 @@ describe('ProcesoMensualService', () => {
     aprobarResultadoPreliminarOperativamente: ReturnType<typeof vi.fn>;
     cerrarNominaOperativa: ReturnType<typeof vi.fn>;
   };
+  let diagnosticoPeriodo: {
+    guardar: ReturnType<typeof vi.fn>;
+    obtenerActivo: ReturnType<typeof vi.fn>;
+    cerrar: ReturnType<typeof vi.fn>;
+  };
 
   beforeEach(() => {
     parametros = {
@@ -229,6 +235,11 @@ describe('ProcesoMensualService', () => {
         },
       })),
     };
+    diagnosticoPeriodo = {
+      guardar: vi.fn().mockResolvedValue(undefined),
+      obtenerActivo: vi.fn().mockResolvedValue(null),
+      cerrar: vi.fn().mockResolvedValue(undefined),
+    };
 
     TestBed.configureTestingModule({
       providers: [
@@ -239,6 +250,7 @@ describe('ProcesoMensualService', () => {
         { provide: EntradasMensualesPeriodoService, useValue: entradasMensuales },
         { provide: MovimientosVariablesService, useValue: movimientos },
         { provide: NominaCalculoSnapshotRepository, useValue: snapshots },
+        { provide: NominaPeriodoDiagnosticoRepository, useValue: diagnosticoPeriodo },
         {
           provide: LiquidacionesOficialesRepository,
           useValue: { obtenerLiquidacionPeriodo: vi.fn().mockResolvedValue(null) },
@@ -274,12 +286,12 @@ describe('ProcesoMensualService', () => {
     expect(parametros.obtenerUltimoHastaPeriodo).toHaveBeenCalled();
   });
 
-  it('propaga fallo de lectura de entradas como bloqueo en resultado', async () => {
+  it('propaga fallo de lectura de entradas como advertencia (no bloquea generar nómina)', async () => {
     entradasMensuales.listarEntradasPeriodo.mockRejectedValue(new Error('red'));
     const svc = TestBed.inject(ProcesoMensualService);
     const r = await svc.ejecutarPrevalidaciones('2026-05');
-    expect(r.bloqueos.some((b) => b.codigo === 'ENTRADAS_LECTURA_ERROR')).toBe(true);
-    expect(r.estado).toBe('BLOQUEADO');
+    expect(r.advertencias.some((a) => a.codigo === 'ENTRADAS_LECTURA_ERROR')).toBe(true);
+    expect(r.estado).toBe('CON_ADVERTENCIAS');
   });
 
   it('genera pre-nomina funcional desde la prevalidacion del periodo', async () => {
@@ -619,5 +631,55 @@ describe('ProcesoMensualService', () => {
       }),
     }));
     expect(r.cierreOperativo?.estado).toBe('cerrado_operativamente');
+  });
+
+  it('rehidratarPeriodo sin snapshot restaura prevalidacion desde diagnostico persistido (NOM-PERIODO-DIAGNOSTICO)', async () => {
+    const prevalidacion = {
+      periodo: '2026-05',
+      estado: 'LISTO_PARA_CALCULO' as const,
+      resumen: {
+        periodo: '2026-05',
+        hayBloqueos: false,
+        hayAdvertencias: false,
+        conteoMovimientosPorEstado: {},
+        trabajadoresActivosAptos: 2,
+        trabajadoresActivosNoAptos: 0,
+        parametrosOperativos: true,
+        parametrosGrupos: [],
+        recurrentesAplicablesAlPeriodo: 0,
+        recurrentesInvalidas: 0,
+        recurrentesCerradas: 0,
+        recurrentesFueraDelMes: 0,
+      },
+      bloqueos: [],
+      advertencias: [],
+      informaciones: [],
+      items: [],
+      entradasMensuales: [],
+    };
+    snapshots.obtenerSnapshotActivo.mockResolvedValue(null);
+    diagnosticoPeriodo.obtenerActivo.mockResolvedValue(prevalidacion);
+
+    const svc = TestBed.inject(ProcesoMensualService);
+    const r = await svc.rehidratarPeriodo('2026-05');
+
+    expect(diagnosticoPeriodo.obtenerActivo).toHaveBeenCalledWith('2026-05');
+    expect(r.snapshot).toBeNull();
+    expect(r.prevalidacionDiagnostico?.estado).toBe('LISTO_PARA_CALCULO');
+  });
+
+  it('guardarDiagnosticoPeriodo delega al repositorio de diagnostico', async () => {
+    const svc = TestBed.inject(ProcesoMensualService);
+    const prevalidacion = (await svc.ejecutarPrevalidaciones('2026-05')) as {
+      periodo: string;
+      estado: string;
+    };
+    await svc.guardarDiagnosticoPeriodo('2026-05', prevalidacion as never);
+
+    expect(diagnosticoPeriodo.guardar).toHaveBeenCalledWith(
+      '2026-05',
+      prevalidacion,
+      expect.any(String),
+    );
   });
 });

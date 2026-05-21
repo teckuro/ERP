@@ -1,6 +1,15 @@
+:host {
+  display: flex;
+  flex: 1 1 auto;
+  width: 100%;
+  min-height: 0;
+}
+
 .payroll-revision-trabajadores {
-  display: grid;
+  display: flex;
+  flex-direction: column;
   gap: 12px;
+  height: 100%;
   min-height: 0;
 }
 
@@ -13,10 +22,23 @@
   font-weight: 650;
 }
 
+.payroll-revision-trabajadores .payroll-segment-nav--stat {
+  grid-template-columns: repeat(auto-fit, minmax(104px, 1fr));
+}
+
+.payroll-revision-trabajadores__filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 8px;
+}
+
 .payroll-revision-trabajadores__search {
   display: grid;
   gap: 4px;
-  flex: 0 0 260px;
+  flex: 1 1 220px;
+  max-width: 420px;
+  min-width: min(100%, 220px);
 }
 
 .payroll-revision-trabajadores__search span {
@@ -44,13 +66,26 @@
 
 .payroll-revision-trabajadores__layout {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(280px, 340px);
+  grid-template-columns: minmax(0, 1fr) minmax(320px, clamp(340px, 30vw, 420px));
   gap: 12px;
+  flex: 1 1 auto;
+  align-items: stretch;
+  height: 100%;
   min-height: 0;
 }
 
 .payroll-revision-trabajadores__grid {
+  display: flex;
+  flex-direction: column;
   min-width: 0;
+  min-height: 0;
+}
+
+:host ::ng-deep .payroll-revision-trabajadores__grid app-data-grid,
+:host ::ng-deep app-data-grid.payroll-revision-trabajadores__grid-card,
+:host ::ng-deep .payroll-revision-trabajadores__grid-card {
+  height: 100%;
+  min-height: 0;
 }
 
 .payroll-revision-trabajadores__cell-hit {
@@ -108,40 +143,85 @@
 
 .payroll-revision-trabajadores__detail {
   display: grid;
+  grid-auto-rows: max-content;
   align-content: start;
   gap: 12px;
-  max-height: 430px;
+  height: 100%;
+  min-height: 0;
+  max-height: none;
+  min-width: 0;
   overflow: auto;
   border: 1px solid var(--erp-border, #d8d3c7);
   border-radius: 6px;
   background: var(--erp-surface, #fffdf8);
   padding: 12px;
+  overflow-wrap: anywhere;
 }
 
-.payroll-revision-trabajadores__detail header {
+.payroll-revision-trabajadores__detail-tabs {
+  margin: 0;
+  grid-template-columns: repeat(auto-fit, minmax(92px, 1fr));
+}
+
+.payroll-revision-trabajadores__atencion {
   display: grid;
-  gap: 2px;
-  border-bottom: 1px solid var(--erp-border, #d8d3c7);
-  padding-bottom: 10px;
+  gap: 8px;
+  min-width: 0;
 }
 
-.payroll-revision-trabajadores__detail header p,
-.payroll-revision-trabajadores__detail header span {
+.payroll-revision-trabajadores__atencion-estado {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+
+.payroll-revision-trabajadores__atencion-estado-k {
   margin: 0;
   color: var(--erp-muted, #6f6a5f);
-  font-size: 0.75rem;
-  font-weight: 650;
+  font-size: 0.7rem;
+  font-weight: 700;
 }
 
-.payroll-revision-trabajadores__detail h3 {
+.payroll-revision-trabajadores__atencion-lista {
+  display: grid;
+  gap: 8px;
   margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.payroll-revision-trabajadores__atencion-item {
+  display: grid;
+  gap: 6px;
+  border: 1px solid var(--erp-border, #d8d3c7);
+  border-radius: 5px;
+  background: var(--erp-surface-soft, #f8f5ec);
+  padding: 8px;
+  min-width: 0;
+}
+
+.payroll-revision-trabajadores__atencion-item-head {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
+.payroll-revision-trabajadores__atencion-item-head p {
+  margin: 0;
+  color: var(--erp-muted, #6f6a5f);
+  font-size: 0.78rem;
+  line-height: 1.35;
+}
+
+.payroll-revision-trabajadores__atencion-item-head strong {
   color: var(--erp-ink, #201f1b);
-  font-size: 0.9375rem;
+  font-weight: 750;
 }
 
 .payroll-revision-trabajadores__totals {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(128px, 1fr));
   gap: 6px;
   margin: 0;
 }
@@ -170,6 +250,7 @@
 .payroll-revision-trabajadores__section {
   display: grid;
   gap: 6px;
+  min-width: 0;
 }
 
 .payroll-revision-trabajadores__section h4 {
@@ -198,6 +279,7 @@
   border-radius: 5px;
   background: var(--erp-surface-soft, #f8f5ec);
   padding: 10px;
+  min-width: 0;
 }
 
 .payroll-revision-trabajadores__accion h4 {
@@ -255,10 +337,66 @@
   list-style: none;
 }
 
-.payroll-revision-trabajadores__incidencias li {
+.payroll-revision-trabajadores__incidencia {
   display: grid;
   gap: 4px;
+  min-width: 0;
+  border: 1px solid var(--erp-border, #d8d3c7);
+  border-radius: 5px;
+  background: var(--erp-surface-soft, #f8f5ec);
+  padding: 8px;
+}
+
+.payroll-revision-trabajadores__incidencia-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  min-width: 0;
+  gap: 6px;
+}
+
+.payroll-revision-trabajadores__incidencia-head strong {
+  color: var(--erp-ink, #201f1b);
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.payroll-revision-trabajadores__incidencia p {
+  margin: 0;
+  color: var(--erp-muted, #6f6a5f);
+  font-size: 0.78rem;
+  line-height: 1.4;
+}
+
+.payroll-revision-trabajadores__pasos {
+  display: grid;
+  gap: 8px;
+  margin: 0;
   padding: 0;
+  list-style: none;
+  counter-reset: paso-revision;
+}
+
+.payroll-revision-trabajadores__pasos li {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+  counter-increment: paso-revision;
+  border: 1px solid var(--erp-border, #d8d3c7);
+  border-radius: 5px;
+  background: var(--erp-surface-soft, #f8f5ec);
+  padding: 8px;
+}
+
+.payroll-revision-trabajadores__pasos li::before {
+  content: counter(paso-revision) '.';
+  color: var(--erp-muted, #6f6a5f);
+  font-size: 0.72rem;
+  font-weight: 800;
+}
+
+.payroll-revision-trabajadores__empty--inline {
+  border-style: dashed;
 }
 
 .payroll-revision-trabajadores__empty {
@@ -270,6 +408,136 @@
   color: var(--erp-muted, #6f6a5f);
   font-size: 0.8125rem;
   line-height: 1.45;
+}
+
+.payroll-revision-trabajadores__empty--selection {
+  display: grid;
+  gap: 4px;
+  align-content: start;
+  min-height: 150px;
+}
+
+.payroll-revision-trabajadores__empty--selection strong {
+  color: var(--erp-ink, #201f1b);
+  font-size: 0.9375rem;
+  line-height: 1.25;
+}
+
+.payroll-revision-trabajadores__empty-state {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 16px 18px;
+  align-items: start;
+  border: 1px solid var(--erp-border, #d8d3c7);
+  border-radius: 7px;
+  background: var(--erp-surface, #fffdf8);
+  padding: 18px;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.45);
+}
+
+.payroll-revision-trabajadores__empty-visual {
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  border: 1px solid var(--erp-border, #d8d3c7);
+  border-radius: 7px;
+  background: var(--erp-surface-soft, #f8f5ec);
+}
+
+.payroll-revision-trabajadores__empty-visual span {
+  width: 24px;
+  height: 18px;
+  border: 2px solid var(--erp-primary-hover, #3f3b37);
+  border-top-width: 6px;
+  border-radius: 3px;
+  opacity: 0.72;
+}
+
+.payroll-revision-trabajadores__empty-copy {
+  display: grid;
+  gap: 5px;
+  min-width: 0;
+}
+
+.payroll-revision-trabajadores__empty-kicker {
+  color: var(--erp-muted, #6f6a5f);
+  font-size: 0.72rem;
+  font-weight: 750;
+  text-transform: uppercase;
+}
+
+.payroll-revision-trabajadores__empty-copy h3 {
+  margin: 0;
+  color: var(--erp-ink, #201f1b);
+  font-size: 1rem;
+  line-height: 1.25;
+}
+
+.payroll-revision-trabajadores__empty-copy p {
+  max-width: 58rem;
+  margin: 0;
+  color: var(--erp-muted, #6f6a5f);
+  font-size: 0.8125rem;
+  line-height: 1.45;
+}
+
+.payroll-revision-trabajadores__empty-metrics {
+  display: grid;
+  grid-column: 1 / -1;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin: 0;
+}
+
+.payroll-revision-trabajadores__empty-metrics div {
+  border: 1px solid var(--erp-border, #d8d3c7);
+  border-radius: 5px;
+  background: var(--erp-surface-soft, #f8f5ec);
+  padding: 9px 10px;
+}
+
+.payroll-revision-trabajadores__empty-metrics dt {
+  margin: 0 0 3px;
+  color: var(--erp-muted, #6f6a5f);
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+.payroll-revision-trabajadores__empty-metrics dd {
+  margin: 0;
+  color: var(--erp-ink, #201f1b);
+  font-size: 1rem;
+  font-weight: 750;
+}
+
+.payroll-revision-trabajadores__empty-actions {
+  display: flex;
+  grid-column: 1 / -1;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.payroll-revision-trabajadores__empty-action,
+.payroll-revision-trabajadores__empty-link {
+  min-height: 34px;
+  border-radius: 5px;
+  padding: 0 12px;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.payroll-revision-trabajadores__empty-action {
+  border: 1px solid var(--erp-primary-hover, #3f3b37);
+  background: var(--erp-primary-hover, #3f3b37);
+  color: #fff;
+}
+
+.payroll-revision-trabajadores__empty-link {
+  border: 1px solid var(--erp-border-strong, #c8bda9);
+  background: var(--erp-surface, #fffdf8);
+  color: var(--erp-primary-hover, #3f3b37);
 }
 
 .payroll-revision-trabajadores__empty--periodo {
@@ -379,9 +647,45 @@
   overflow: auto;
 }
 
+@media (max-width: 1180px) {
+  .payroll-revision-trabajadores {
+    height: auto;
+  }
+
+  .payroll-revision-trabajadores__layout {
+    grid-template-columns: minmax(0, 1fr);
+    height: auto;
+  }
+
+  .payroll-revision-trabajadores__detail {
+    height: auto;
+    min-height: 0;
+    max-height: none;
+    order: 2;
+  }
+
+  .payroll-revision-trabajadores__grid {
+    order: 1;
+    min-height: 430px;
+  }
+}
+
 @media (max-width: 768px) {
   .payroll-revision-trabajadores__layout {
     grid-template-columns: 1fr;
+  }
+
+  .payroll-revision-trabajadores__empty-state {
+    grid-template-columns: 1fr;
+  }
+
+  .payroll-revision-trabajadores__empty-metrics {
+    grid-template-columns: 1fr;
+  }
+
+  .payroll-revision-trabajadores__empty-action,
+  .payroll-revision-trabajadores__empty-link {
+    width: 100%;
   }
 
   .payroll-revision-trabajadores__search {
@@ -389,7 +693,6 @@
   }
 
   .payroll-revision-trabajadores__detail {
-    max-height: none;
     order: 2;
   }
 

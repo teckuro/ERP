@@ -12,8 +12,8 @@
 
 | Campo | Estado |
 |---|---|
-| Estado | En curso — **Fase 1 aprobada** (código pendiente); Fases 2–5 documentadas |
-| Tipo | UI presentación (rules/facade); fases posteriores Novedades query, panel, modal, audit/E2E |
+| Estado | **Epic UI cerrado (2026-05-19)** — Fases 1–5 implementadas; confirmación BD productiva (**5.C**) pendiente de gate |
+| Tipo | UI presentación (rules/facade/Novedades); fases posteriores panel, modal, audit/E2E |
 | Documento índice | [`../modulos/nomina-mensual/nom-mensual-flow-unificado-03.md`](../modulos/nomina-mensual/nom-mensual-flow-unificado-03.md) |
 | Fase 2 | [`nom-mensual-flow-unificado-03-fase-02-deep-links.md`](../modulos/nomina-mensual/nom-mensual-flow-unificado-03-fase-02-deep-links.md) |
 | Fase 3 | [`nom-mensual-flow-unificado-03-fase-03-panel-modales.md`](../modulos/nomina-mensual/nom-mensual-flow-unificado-03-fase-03-panel-modales.md) |
