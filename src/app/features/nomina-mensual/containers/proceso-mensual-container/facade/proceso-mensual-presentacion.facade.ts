@@ -124,6 +124,7 @@ import {
   buildFilasMasivasDesdePendientesRevision,
   buildIncidenciasFichaPendiente,
   mergeFilasMasivasConPendientesRevision,
+  rutaFichaEmpleadoPendiente,
 } from '../../../rules/proceso-mensual-trabajadores-prevalidacion.rules';
 import {
   filtroInicialRevisionTrabajadores,
@@ -375,6 +376,9 @@ export class ProcesoMensualPresentacionFacade {
       itemsSeguimientoResultado: this.itemsSeguimientoResultadoNomina(),
       filasMovimientos: this.filasDetalleMovimientoNomina(),
       filasRecurrentes: this.filasDetalleRecurrenteNomina(),
+      nominaGenerada: this.contextoOperativoPeriodo().baseGenerada,
+      preNomina: this.store.preNomina(),
+      baseTrazabilidad: this.store.preNomina()?.trazabilidad ?? null,
     });
   });
   readonly expedienteRevisionCta = computed(() => {
@@ -551,6 +555,10 @@ export class ProcesoMensualPresentacionFacade {
     }
     if (cta.accionLocal === 'calcularPreliminar') {
       this.calcularPreliminar();
+      return;
+    }
+    if (cta.revisarFichasGuiada) {
+      this.abrirRevisionFichasPrevalidacionGuiada();
       return;
     }
     if (cta.usarPanel) {
@@ -1109,6 +1117,7 @@ export class ProcesoMensualPresentacionFacade {
         ...estado.bloqueos,
         ...estado.advertencias,
       ]),
+      hayFichasPendientesPrevalidacion: this.trabajadoresPendientesRevision().length > 0,
       revisionTrabajadoresCompleta: this.revisionTrabajadoresCompleta(),
     };
     return buildRevisionRailCta(tab, resolveWorkspaceTargetFromDetalleTab(tab), ctx);
@@ -1123,8 +1132,8 @@ export class ProcesoMensualPresentacionFacade {
 
   readonly mostrarResumenAmpliadoEnRail = computed(() =>
     mostrarResumenAmpliadoEnRail({
-      tieneSnapshot: this.store.snapshotActivo() != null,
-      usarPanelPrincipal: this.revisionRailCta().usarPanel,
+      nominaGenerada: this.contextoOperativoPeriodo().baseGenerada,
+      vistaTrabajadores: this.nominaDetalleMensualVista() === 'trabajadores',
     }),
   );
 
@@ -1687,14 +1696,25 @@ export class ProcesoMensualPresentacionFacade {
   }
 
   cancelarInformacionPeriodo(): void {
-    const current = this.overlay();
-    if (current.kind === 'informacion' && current.view.accionSecundaria?.destino === 'generar_nomina') {
-      this.overlay.set({ kind: 'cerrado' });
+    if (this.overlay().kind === 'informacion') {
       this.informacionPeriodoSuprimida = true;
-      this.ejecutarAccionValidacion('generarBase');
-      return;
+      this.overlay.set({ kind: 'cerrado' });
     }
+  }
+
+  ejecutarAccionSecundariaInformacionPeriodo(): void {
+    const current = this.overlay();
+    if (current.kind !== 'informacion') return;
+    const destino = current.view.accionSecundaria?.destino;
+    if (!destino || destino === 'cerrar') return;
+    this.overlay.set({ kind: 'cerrado' });
+    this.informacionPeriodoSuprimida = true;
+    this.ejecutarDestinoInformacionPeriodo(destino);
+  }
+
+  irACorregirFichaDesdeVerificacion(idPersona: number): void {
     this.cerrarInformacionPeriodo();
+    void this.router.navigateByUrl(rutaFichaEmpleadoPendiente(idPersona));
   }
 
   private ejecutarDestinoInformacionPeriodo(

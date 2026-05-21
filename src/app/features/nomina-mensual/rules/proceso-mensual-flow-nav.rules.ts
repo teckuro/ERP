@@ -215,6 +215,8 @@ export interface RevisionRailCtaVm {
   usarPanel: boolean;
   tabModal?: DetalleOperativoTab;
   accionLocal?: ProcesoMensualAccionLocal;
+  /** Abre revisión masiva de fichas pendientes (prevalidación). */
+  revisarFichasGuiada?: boolean;
 }
 
 export interface RevisionRailContext {
@@ -222,6 +224,7 @@ export interface RevisionRailContext {
   puedeGenerarNomina: boolean;
   puedeCalcular: boolean;
   hayPendientesRevisionTrabajadores: boolean;
+  hayFichasPendientesPrevalidacion?: boolean;
   revisionTrabajadoresCompleta?: boolean;
 }
 
@@ -269,8 +272,17 @@ export function buildRevisionRailCta(
   if (destino) {
     return { label: labelRevisionRailDesdeDestino(destino), usarPanel: true };
   }
+  if (!ctx?.baseGenerada) {
+    if (ctx?.hayFichasPendientesPrevalidacion) {
+      return { label: 'Revisar fichas', usarPanel: false, revisarFichasGuiada: true };
+    }
+    if (ctx?.puedeGenerarNomina) {
+      return { label: 'Generar nómina', usarPanel: false, accionLocal: 'generarBase' };
+    }
+    return { label: 'Revisar trabajadores', usarPanel: true };
+  }
   return {
-    label: tab === 'resultado' ? 'Ver resultado del período' : 'Ver resumen del período',
+    label: tab === 'resultado' ? 'Ver resultado del período' : 'Resumen ampliado',
     usarPanel: false,
     tabModal: tab,
   };
@@ -299,8 +311,8 @@ export function filtrarPendientesRailSecundarios(
 }
 
 export function mostrarResumenAmpliadoEnRail(input: {
-  tieneSnapshot: boolean;
-  usarPanelPrincipal: boolean;
+  nominaGenerada: boolean;
+  vistaTrabajadores: boolean;
 }): boolean {
-  return input.tieneSnapshot && input.usarPanelPrincipal;
+  return input.nominaGenerada && input.vistaTrabajadores;
 }

@@ -92,19 +92,36 @@ export type InformacionPeriodoDestino =
   | 'reintentar'
   | 'cerrar';
 
+export interface TrabajadorPendienteInformacionPeriodoView {
+  idPersona: number;
+  nombre: string;
+  rut: string;
+  motivo: string;
+  detalleCorreccion?: string;
+}
+
+/** Conteos visibles tras verificar período (escala nómina grande). */
+export interface InformacionPeriodoResumenVerificacion {
+  trabajadoresPendientes: number;
+  criticos: number;
+  advertencias: number;
+}
+
 export interface InformacionPeriodoView {
   tone: 'info' | 'warning' | 'danger' | 'success';
   titulo: string;
   bajada?: string;
   puntos?: string[];
   secciones?: Array<{ titulo: string; items: string[] }>;
+  resumenVerificacion?: InformacionPeriodoResumenVerificacion;
+  trabajadoresPendientes?: TrabajadorPendienteInformacionPeriodoView[];
   accionPrincipal?: {
     label: string;
     destino: InformacionPeriodoDestino;
   };
   accionSecundaria?: {
     label: string;
-    destino: 'cerrar' | 'generar_nomina';
+    destino: InformacionPeriodoDestino;
   };
   reintentarAccion?: ValidacionAccionLocal;
 }

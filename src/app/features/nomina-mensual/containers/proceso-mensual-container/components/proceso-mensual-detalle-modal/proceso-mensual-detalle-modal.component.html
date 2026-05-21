@@ -175,6 +175,21 @@
                 </div>
               }
 
+              @if (panel.seccionesResumenAmpliado?.length) {
+                @for (seccion of panel.seccionesResumenAmpliado; track seccion.titulo) {
+                  <div class="payroll-follow-block">
+                    <header>
+                      <h3>{{ seccion.titulo }}</h3>
+                    </header>
+                    <ul class="payroll-expediente-lista">
+                      @for (item of seccion.items; track item) {
+                        <li>{{ item }}</li>
+                      }
+                    </ul>
+                  </div>
+                }
+              }
+
               @if (panel.listaObservaciones.length) {
                 <div class="payroll-follow-block">
                   <header>

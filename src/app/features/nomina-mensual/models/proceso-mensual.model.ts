@@ -106,6 +106,8 @@ export interface TrabajadorPendienteRevisionPeriodo {
   nombre: string;
   rut: string;
   motivo: string;
+  /** Detalle RRHH (1–2 frases) para modal y revisión por trabajador. */
+  detalleCorreccion?: string;
   estadoFicha: EmpleadoEstadoFicha;
   aptoParaRemuneraciones: boolean;
 }

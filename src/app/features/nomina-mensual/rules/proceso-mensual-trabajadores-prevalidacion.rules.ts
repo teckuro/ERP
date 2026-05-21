@@ -1,4 +1,9 @@
 import type { EmpleadoEstado, EmpleadoListado } from '../../empleados/models/empleado-listado.model';
+import type { CrearEmpleadoPayload } from '../../empleados/models/empleado-payload.model';
+import {
+  evaluarCompletitudYAptitudEmpleado,
+  type EvaluacionCompletitudEmpleado,
+} from '../../empleados/utils/empleado-completitud.rules';
 import type { TrabajadorPendienteRevisionPeriodo } from '../models/proceso-mensual.model';
 import type { IncidenciaPeriodo } from './proceso-mensual-incidencias-periodo.rules';
 import type { NominaMasivaFila } from './proceso-mensual-masivo-layout.rules';
@@ -40,6 +45,119 @@ export function motivoTrabajadorPendienteRevision(empleado: EmpleadoListado): st
   return partes.length ? partes.join(' · ') : 'Revisar ficha';
 }
 
+function normalizarTextoBloqueo(texto: string): string {
+  return texto
+    .normalize('NFD')
+    .replace(/\p{M}/gu, '')
+    .toLowerCase();
+}
+
+/** Humaniza el primer bloqueo de completitud para copy RRHH (sin tecnicismos). */
+export function humanizarBloqueoCompletitudFicha(bloqueo: string): string {
+  const normalized = normalizarTextoBloqueo(bloqueo);
+
+  if (normalized.includes('alta avanzada')) {
+    return 'Continuar alta avanzada.';
+  }
+  if (normalized.includes('alta basica') || normalized.includes('alta básica')) {
+    return 'Completar la ficha por secciones.';
+  }
+  if (normalized.includes('rut')) {
+    return 'Registrar un RUT válido.';
+  }
+  if (normalized.includes('nombres') || normalized.includes('apellido') || normalized.includes('pais')) {
+    return 'Completar datos personales.';
+  }
+  if (normalized.includes('contrato') || normalized.includes('fecha de ingreso')) {
+    return 'Completar contrato activo.';
+  }
+  if (normalized.includes('apvi') || normalized.includes('tiene apvi')) {
+    return 'Completar APVI o desactivar la opción.';
+  }
+  if (normalized.includes('cargo') || normalized.includes('sin cargo')) {
+    return 'Definir un cargo real.';
+  }
+  if (normalized.includes('jornada') || normalized.includes('trabajador')) {
+    return 'Completar jornada laboral.';
+  }
+  if (normalized.includes('remuneracion') || normalized.includes('sueldo')) {
+    return 'Ingresar sueldo base válido.';
+  }
+  if (
+    normalized.includes('previsional')
+    || normalized.includes('prevision')
+    || normalized.includes('afp')
+    || normalized.includes('salud')
+    || normalized.includes('regimen')
+    || normalized.includes('institucion de salud')
+  ) {
+    return 'Completar previsión y salud.';
+  }
+  if (
+    normalized.includes('draft')
+    || normalized.includes('temporal')
+    || normalized.includes('reemplaza la cuenta')
+  ) {
+    return 'Reemplazar la cuenta bancaria temporal.';
+  }
+  if (normalized.includes('banco') || normalized.includes('cuenta bancaria') || normalized.includes('cuenta real')) {
+    return 'Registrar cuenta bancaria real.';
+  }
+
+  const limpio = bloqueo.trim();
+  if (!limpio) {
+    return 'Revisar la ficha del trabajador.';
+  }
+  return limpio.endsWith('.') ? limpio : `${limpio}.`;
+}
+
+function evaluarCompletitudDesdeListado(
+  empleado: EmpleadoListado,
+): EvaluacionCompletitudEmpleado | undefined {
+  if (empleado.pasoAltaAvanzada === null) {
+    return undefined;
+  }
+  const payloadMinimo = {
+    estado: 'activo',
+    origenCreacion: 'avanzado',
+  } as CrearEmpleadoPayload;
+  return evaluarCompletitudYAptitudEmpleado({
+    payload: payloadMinimo,
+    pasoAltaAvanzada: empleado.pasoAltaAvanzada,
+  });
+}
+
+export function buildDetalleCorreccionFicha(
+  empleado: EmpleadoListado,
+  evaluacion?: EvaluacionCompletitudEmpleado | null,
+): string {
+  const evaluacionEfectiva = evaluacion ?? evaluarCompletitudDesdeListado(empleado);
+  if (evaluacionEfectiva?.bloqueos.length) {
+    return humanizarBloqueoCompletitudFicha(evaluacionEfectiva.bloqueos[0]);
+  }
+  if (empleado.pasoAltaAvanzada !== null) {
+    return 'Continuar alta avanzada.';
+  }
+  if (empleado.estadoFicha === 'BORRADOR') {
+    return 'Completar la ficha en borrador.';
+  }
+  if (empleado.estadoFicha === 'INCOMPLETO') {
+    return 'Revisar datos personales, contrato, remuneración, previsión y pago.';
+  }
+  if (!empleado.aptoParaRemuneraciones) {
+    return 'Completar la ficha para habilitar remuneraciones.';
+  }
+  return 'Revisar la ficha del trabajador.';
+}
+
+export function detalleIncidenciaFichaPendiente(trabajador: TrabajadorPendienteRevisionPeriodo): string {
+  const detalle = trabajador.detalleCorreccion?.trim();
+  if (detalle && detalle !== trabajador.motivo) {
+    return `${trabajador.motivo}. ${detalle}`;
+  }
+  return detalle || trabajador.motivo;
+}
+
 export function buildTrabajadoresPendientesRevision(
   listado: readonly EmpleadoListado[],
 ): TrabajadorPendienteRevisionPeriodo[] {
@@ -50,6 +168,7 @@ export function buildTrabajadoresPendientesRevision(
       nombre: empleado.nombre?.trim() || 'Sin nombre',
       rut: empleado.rut?.trim() || '—',
       motivo: motivoTrabajadorPendienteRevision(empleado),
+      detalleCorreccion: buildDetalleCorreccionFicha(empleado),
       estadoFicha: empleado.estadoFicha,
       aptoParaRemuneraciones: empleado.aptoParaRemuneraciones,
     }))
@@ -108,7 +227,7 @@ export function buildIncidenciasFichaPendiente(
     severidad: 'advertencia',
     ambito: 'trabajadores',
     titulo: 'Ficha por corregir',
-    detalle: t.motivo,
+    detalle: detalleIncidenciaFichaPendiente(t),
     origen: 'prevalidacion',
     prioridad: 2,
     idPersona: t.idPersona,

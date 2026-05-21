@@ -175,8 +175,49 @@ describe('proceso-mensual-informacion-periodo.rules', () => {
 
     expect(vm?.accionPrincipal).toEqual({ label: 'Revisar fichas', destino: 'trabajadores_fichas' });
     expect(vm?.accionSecundaria?.destino).toBe('generar_nomina');
-    expect(vm?.secciones?.[0].titulo).toBe('Trabajadores a corregir (1)');
-    expect(vm?.secciones?.[0].items[0]).toContain('María López');
+    expect(vm?.bajada).toContain('1 trabajador');
+    expect(vm?.resumenVerificacion?.trabajadoresPendientes).toBe(1);
+    expect(vm?.trabajadoresPendientes?.[0].nombre).toBe('María López');
+    expect(vm?.secciones?.some((s) => s.titulo.startsWith('Trabajadores a corregir'))).toBeFalsy();
+  });
+
+  it('con bloqueos críticos y trabajadores pendientes fusiona secciones y lista accionable', () => {
+    const vm = buildInformacionPeriodoView({
+      errorEjecucion: null,
+      validacionCalculo: validacionBase({
+        bloqueos: [{ codigo: 'PARAM_MIN_topes', titulo: 'Parámetros', descripcion: 'Falta tope', severidad: 'bloqueo' }],
+      }),
+      paraContinuar: [],
+      bloqueosOperativos: [],
+      advertenciasOperativas: [],
+      nominaFrame: 'sin_generar',
+      tienePrevalidacion: true,
+      puedeGenerarNomina: false,
+      tienePreNomina: false,
+      tieneCalculo: false,
+      tieneResultado: false,
+      trabajadoresPendientesRevision: [
+        {
+          idPersona: 3,
+          nombre: 'Pedro Díaz',
+          rut: '9.876.543-2',
+          motivo: 'Ficha incompleta',
+          detalleCorreccion: 'Completar previsión y salud.',
+          estadoFicha: 'INCOMPLETO',
+          aptoParaRemuneraciones: false,
+        },
+      ],
+      prevalidacionEstado: null,
+    });
+
+    expect(vm?.tone).toBe('warning');
+    expect(vm?.accionPrincipal?.destino).toBe('parametros');
+    expect(vm?.accionSecundaria).toEqual({ label: 'Revisar fichas', destino: 'trabajadores_fichas' });
+    expect(vm?.bajada).toContain('1 trabajador');
+    expect(vm?.trabajadoresPendientes).toHaveLength(1);
+    expect(vm?.resumenVerificacion?.trabajadoresPendientes).toBe(1);
+    expect(vm?.secciones?.some((s) => s.titulo === 'Críticos')).toBe(true);
+    expect(vm?.secciones?.some((s) => s.titulo.startsWith('Trabajadores a corregir'))).toBeFalsy();
   });
 
   it('resuelve tab contextual desde codigo PARAMETROS', () => {

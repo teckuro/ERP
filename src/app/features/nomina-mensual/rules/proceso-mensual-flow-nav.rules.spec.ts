@@ -4,6 +4,7 @@ import {
   appendNominaFlowQuery,
   buildNominaFlowReturnUrl,
   buildRevisionRailCta,
+  mostrarResumenAmpliadoEnRail,
   debeRehidratarDesdeFlowQuery,
   detalleTabUsaModal,
   filtrarPendientesRailSecundarios,
@@ -108,6 +109,38 @@ describe('proceso-mensual-flow-nav.rules', () => {
     expect(cta.label).toBe('Preparar confirmación');
     expect(cta.accionLocal).toBe('calcularPreliminar');
     expect(cta.usarPanel).toBe(false);
+  });
+
+  it('buildRevisionRailCta sin nomina generada no ofrece ver resumen del periodo', () => {
+    const cta = buildRevisionRailCta('resumen', null, {
+      baseGenerada: false,
+      puedeGenerarNomina: false,
+      puedeCalcular: false,
+      hayPendientesRevisionTrabajadores: false,
+      hayFichasPendientesPrevalidacion: false,
+      revisionTrabajadoresCompleta: true,
+    });
+    expect(cta.label).not.toBe('Ver resumen del período');
+    expect(cta.tabModal).toBeUndefined();
+  });
+
+  it('buildRevisionRailCta sin base y con fichas pendientes abre revision guiada', () => {
+    const cta = buildRevisionRailCta('resumen', null, {
+      baseGenerada: false,
+      puedeGenerarNomina: false,
+      puedeCalcular: false,
+      hayPendientesRevisionTrabajadores: false,
+      hayFichasPendientesPrevalidacion: true,
+      revisionTrabajadoresCompleta: true,
+    });
+    expect(cta.label).toBe('Revisar fichas');
+    expect(cta.revisarFichasGuiada).toBe(true);
+  });
+
+  it('mostrarResumenAmpliadoEnRail exige nomina generada y vista trabajadores', () => {
+    expect(mostrarResumenAmpliadoEnRail({ nominaGenerada: true, vistaTrabajadores: true })).toBe(true);
+    expect(mostrarResumenAmpliadoEnRail({ nominaGenerada: false, vistaTrabajadores: true })).toBe(false);
+    expect(mostrarResumenAmpliadoEnRail({ nominaGenerada: true, vistaTrabajadores: false })).toBe(false);
   });
 
   it('filtrarPendientesRailSecundarios omite duplicados de revisar trabajadores', () => {

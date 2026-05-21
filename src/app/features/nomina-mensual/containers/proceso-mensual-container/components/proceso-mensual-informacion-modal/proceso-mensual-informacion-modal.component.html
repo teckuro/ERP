@@ -1,15 +1,149 @@
 @let f = facade;
 @let info = f.informacionPeriodo()!;
-<app-message-box
-  [variant]="variant(info)"
-  mode="modal"
-  [title]="info.titulo"
-  [message]="info.bajada ?? ''"
-  [sections]="sections(info)"
-  [primaryLabel]="primaryLabel(info)"
-  [secondaryLabel]="secondaryLabel(info)"
-  [dismissible]="true"
-  (action)="f.confirmarInformacionPeriodo()"
-  (secondary)="f.cancelarInformacionPeriodo()"
-  (dismiss)="f.cancelarInformacionPeriodo()"
-/>
+@let resumen = info.resumenVerificacion;
+<div
+  class="payroll-operational-detail-overlay"
+  role="dialog"
+  aria-modal="true"
+  aria-labelledby="payroll-verificacion-periodo-title"
+  (click)="f.cerrarInformacionPeriodo()"
+>
+  <div
+    class="payroll-operational-detail-modal payroll-verificacion-periodo-modal"
+    [class.payroll-verificacion-periodo-modal--con-resumen]="!!resumen"
+    [class.payroll-verificacion-periodo-modal--danger]="info.tone === 'danger'"
+    [class.payroll-verificacion-periodo-modal--warning]="info.tone === 'warning'"
+    [class.payroll-verificacion-periodo-modal--success]="info.tone === 'success'"
+    (click)="$event.stopPropagation()"
+  >
+    <header class="payroll-operational-detail-modal__header">
+      <div>
+        <h2 id="payroll-verificacion-periodo-title">{{ info.titulo }}</h2>
+        @if (info.bajada) {
+          <p>{{ info.bajada }}</p>
+        }
+        @if (!f.contextoOperativoPeriodo().baseGenerada) {
+          <p class="payroll-verificacion-periodo-modal__nota-resumen">
+            Genere la nómina para ver el resumen consolidado con montos y versión.
+          </p>
+        }
+      </div>
+      <button
+        type="button"
+        class="payroll-modal-close"
+        (click)="f.cerrarInformacionPeriodo()"
+        aria-label="Cerrar revisión del período"
+      >
+        <lucide-icon [img]="closeIcon" aria-hidden="true"></lucide-icon>
+      </button>
+    </header>
+
+    @if (resumen) {
+      <div class="payroll-verificacion-periodo-modal__resumen" aria-label="Resumen de la verificación">
+        <div class="payroll-verificacion-periodo-modal__metrica">
+          <span class="payroll-verificacion-periodo-modal__metrica-k">Críticos</span>
+          <strong class="payroll-verificacion-periodo-modal__metrica-v">{{ resumen.criticos }}</strong>
+        </div>
+        <div class="payroll-verificacion-periodo-modal__metrica">
+          <span class="payroll-verificacion-periodo-modal__metrica-k">Advertencias</span>
+          <strong class="payroll-verificacion-periodo-modal__metrica-v">{{ resumen.advertencias }}</strong>
+        </div>
+        <div class="payroll-verificacion-periodo-modal__metrica payroll-verificacion-periodo-modal__metrica--destacada">
+          <span class="payroll-verificacion-periodo-modal__metrica-k">Fichas por corregir</span>
+          <strong class="payroll-verificacion-periodo-modal__metrica-v">{{ resumen.trabajadoresPendientes }}</strong>
+        </div>
+      </div>
+    }
+
+    <div class="payroll-operational-detail-modal__body payroll-verificacion-periodo-modal__body">
+      @if (info.puntos?.length) {
+        <section class="payroll-verificacion-periodo-modal__bloque">
+          <h3 class="payroll-verificacion-periodo-modal__bloque-titulo">Qué revisar</h3>
+          <ul class="payroll-verificacion-periodo-modal__lista">
+            @for (punto of info.puntos; track punto) {
+              <li>{{ punto }}</li>
+            }
+          </ul>
+        </section>
+      }
+
+      @for (seccion of info.secciones ?? []; track seccion.titulo) {
+        <section class="payroll-verificacion-periodo-modal__bloque">
+          <h3 class="payroll-verificacion-periodo-modal__bloque-titulo">{{ seccion.titulo }}</h3>
+          <ul class="payroll-verificacion-periodo-modal__lista">
+            @for (item of seccion.items; track item) {
+              <li>{{ item }}</li>
+            }
+          </ul>
+        </section>
+      }
+
+      @if (info.trabajadoresPendientes?.length) {
+        <section
+          class="payroll-verificacion-periodo-modal__trabajadores"
+          aria-labelledby="payroll-verificacion-trabajadores-titulo"
+        >
+          <div class="payroll-verificacion-periodo-modal__trabajadores-head">
+            <h3 id="payroll-verificacion-trabajadores-titulo" class="payroll-verificacion-periodo-modal__bloque-titulo">
+              Trabajadores a corregir ({{ info.trabajadoresPendientes!.length }})
+            </h3>
+            <p>Revise cada ficha o use la revisión masiva del período.</p>
+          </div>
+          <div class="payroll-verificacion-periodo-modal__tabla-wrap">
+            <table class="payroll-verificacion-periodo-modal__tabla">
+              <thead>
+                <tr>
+                  <th scope="col">Trabajador</th>
+                  <th scope="col">RUT</th>
+                  <th scope="col">Pendiente</th>
+                  <th scope="col"><span class="sr-only">Acción</span></th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (trabajador of info.trabajadoresPendientes!; track trabajador.idPersona) {
+                  <tr>
+                    <td>
+                      <span class="payroll-verificacion-periodo-modal__nombre">{{ trabajador.nombre }}</span>
+                    </td>
+                    <td>{{ trabajador.rut }}</td>
+                    <td>
+                      <span class="payroll-verificacion-periodo-modal__motivo">{{ trabajador.motivo }}</span>
+                      @if (trabajador.detalleCorreccion) {
+                        <span class="payroll-verificacion-periodo-modal__detalle">{{ trabajador.detalleCorreccion }}</span>
+                      }
+                    </td>
+                    <td class="payroll-verificacion-periodo-modal__accion-celda">
+                      <button
+                        type="button"
+                        class="payroll-verificacion-periodo-modal__accion-fila"
+                        (click)="f.irACorregirFichaDesdeVerificacion(trabajador.idPersona)"
+                      >
+                        Ir a corregir
+                      </button>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </section>
+      }
+    </div>
+
+    <footer class="payroll-operational-detail-modal__footer">
+      <div class="payroll-modal-footer-actions">
+        <button type="button" class="payroll-modal-secondary" (click)="f.cancelarInformacionPeriodo()">
+          Cerrar
+        </button>
+        @if (secondaryLabel(info)) {
+          <button type="button" class="payroll-modal-secondary" (click)="f.ejecutarAccionSecundariaInformacionPeriodo()">
+            {{ secondaryLabel(info) }}
+          </button>
+        }
+        <button type="button" class="payroll-modal-primary" (click)="f.confirmarInformacionPeriodo()">
+          {{ primaryLabel(info) }}
+        </button>
+      </div>
+    </footer>
+  </div>
+</div>

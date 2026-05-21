@@ -4,11 +4,13 @@ import type {
   InformacionPeriodoDestino,
   InformacionPeriodoView,
   NominaVisualFrame,
+  TrabajadorPendienteInformacionPeriodoView,
   ValidacionAccionLocal,
   ValidacionCalculoPreliminarView,
 } from '../containers/proceso-mensual-container/models/proceso-mensual-container.vm';
 import type { TrabajadorPendienteRevisionPeriodo } from '../models/proceso-mensual.model';
 import { limpiarCopyTecnicoNomina } from './proceso-mensual-copy-limpio.rules';
+import type { InformacionPeriodoResumenVerificacion } from '../containers/proceso-mensual-container/models/proceso-mensual-container.vm';
 import { buildItemsTrabajadoresPendientesModal } from './proceso-mensual-trabajadores-prevalidacion.rules';
 
 export interface BuildInformacionPeriodoInput {
@@ -213,6 +215,47 @@ interface BuildVerificacionPeriodoInput {
   prevalidacionEstado?: string | null;
 }
 
+export function mapTrabajadoresPendientesInformacionView(
+  trabajadores: readonly TrabajadorPendienteRevisionPeriodo[],
+): TrabajadorPendienteInformacionPeriodoView[] {
+  return trabajadores.map((t) => ({
+    idPersona: t.idPersona,
+    nombre: t.nombre,
+    rut: t.rut,
+    motivo: t.motivo,
+    detalleCorreccion: t.detalleCorreccion,
+  }));
+}
+
+function buildResumenVerificacionPeriodo(
+  criticos: number,
+  advertencias: number,
+  trabajadoresPendientes: number,
+): InformacionPeriodoResumenVerificacion {
+  return {
+    criticos,
+    advertencias,
+    trabajadoresPendientes,
+  };
+}
+
+function seccionesSinListaNominalTrabajadores(
+  secciones: Array<{ titulo: string; items: string[] }>,
+): Array<{ titulo: string; items: string[] }> {
+  return secciones.filter((s) => !s.titulo.startsWith('Trabajadores a corregir'));
+}
+
+function bajadaConConteoTrabajadoresPendientes(cantidad: number, parametrosListos = true): string {
+  const conteo =
+    cantidad === 1
+      ? 'Hay 1 trabajador con ficha pendiente.'
+      : `Hay ${cantidad} trabajadores con ficha pendiente.`;
+  if (parametrosListos) {
+    return `${conteo} Parámetros del período están listos para generar.`;
+  }
+  return conteo;
+}
+
 function buildVerificacionPeriodoInformacionView(
   input: BuildVerificacionPeriodoInput,
 ): InformacionPeriodoView | null {
@@ -222,12 +265,38 @@ function buildVerificacionPeriodoInformacionView(
 
   const bloqueos = input.validacionCalculo.bloqueos.filter((item) => item.codigo !== 'BLOQ-005');
   const advertencias = input.validacionCalculo.advertencias;
+  const pendientes = input.trabajadoresPendientesRevision;
+  const trabajadoresVm =
+    pendientes.length > 0 ? mapTrabajadoresPendientesInformacionView(pendientes) : undefined;
+  const resumen = buildResumenVerificacionPeriodo(
+    bloqueos.length,
+    advertencias.length,
+    pendientes.length,
+  );
 
   if (bloqueos.length === 0 && advertencias.length === 0) {
+    if (pendientes.length > 0) {
+      const puedeGenerarConAdvertencias =
+        input.puedeGenerarNomina
+        && (input.prevalidacionEstado === 'CON_ADVERTENCIAS'
+          || input.validacionCalculo.estado === 'advertencias');
+      return {
+        tone: 'info',
+        titulo: 'Revisión del período antes de generar',
+        bajada: bajadaConConteoTrabajadoresPendientes(pendientes.length),
+        resumenVerificacion: resumen,
+        trabajadoresPendientes: trabajadoresVm,
+        accionPrincipal: { label: 'Revisar fichas', destino: 'trabajadores_fichas' },
+        accionSecundaria: puedeGenerarConAdvertencias
+          ? { label: 'Generar nómina de todos modos', destino: 'generar_nomina' }
+          : { label: 'Cerrar por ahora', destino: 'cerrar' },
+      };
+    }
     return {
       tone: 'success',
       titulo: 'Período listo para generar',
       bajada: 'No hay bloqueos críticos. Puedes generar la nómina mensual del período.',
+      resumenVerificacion: resumen,
       accionPrincipal: input.puedeGenerarNomina
         ? { label: 'Generar nómina', destino: 'generar_nomina' }
         : undefined,
@@ -255,22 +324,28 @@ function buildVerificacionPeriodoInformacionView(
       bloqueos[0].accionLocal,
     );
     const destinoRevision = mapDetalleTabToDestino(tabDestino);
+    const bajadaCriticos = 'Corrige los puntos críticos antes de generar la nómina mensual.';
     return {
       tone: 'warning',
       titulo: 'Revisión del período antes de generar',
-      bajada: 'Corrige los puntos críticos antes de generar la nómina mensual.',
-      secciones,
+      bajada:
+        pendientes.length > 0
+          ? `${bajadaConConteoTrabajadoresPendientes(pendientes.length, false)} ${bajadaCriticos}`
+          : bajadaCriticos,
+      secciones: seccionesSinListaNominalTrabajadores(secciones),
+      resumenVerificacion: resumen,
+      trabajadoresPendientes: trabajadoresVm,
       accionPrincipal: {
         label: 'Corregir pendientes',
         destino: destinoRevision,
       },
-      accionSecundaria: { label: 'Cerrar por ahora', destino: 'cerrar' },
+      accionSecundaria: pendientes.length > 0
+        ? { label: 'Revisar fichas', destino: 'trabajadores_fichas' }
+        : { label: 'Cerrar por ahora', destino: 'cerrar' },
     };
   }
 
-  const pendientes = input.trabajadoresPendientesRevision;
   if (pendientes.length > 0) {
-    const seccionesConTrabajadores = mergeSeccionTrabajadoresPendientes(secciones, pendientes);
     const puedeGenerarConAdvertencias =
       input.puedeGenerarNomina
       && (input.prevalidacionEstado === 'CON_ADVERTENCIAS'
@@ -278,9 +353,10 @@ function buildVerificacionPeriodoInformacionView(
     return {
       tone: 'info',
       titulo: 'Revisión del período antes de generar',
-      bajada:
-        'Parámetros listos. Puede generar la nómina y corregir fichas durante la revisión por trabajador.',
-      secciones: seccionesConTrabajadores,
+      bajada: bajadaConConteoTrabajadoresPendientes(pendientes.length),
+      secciones: seccionesSinListaNominalTrabajadores(secciones),
+      resumenVerificacion: resumen,
+      trabajadoresPendientes: trabajadoresVm,
       accionPrincipal: { label: 'Revisar fichas', destino: 'trabajadores_fichas' },
       accionSecundaria: puedeGenerarConAdvertencias
         ? { label: 'Generar nómina de todos modos', destino: 'generar_nomina' }

@@ -1,6 +1,6 @@
 ﻿import { importProvidersFrom } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { provideRouter } from '@angular/router';
+import { provideRouter, Router } from '@angular/router';
 import { LucideAngularModule } from 'lucide-angular';
 import {
   AlertCircle,
@@ -695,7 +695,89 @@ describe('ProcesoMensualContainer', () => {
 
       expect(c.overlay().kind).toBe('informacion');
       expect(c.informacionPeriodo()?.titulo).toBe('Período listo para generar');
-      expect(fixture.nativeElement.querySelector('app-message-box')).toBeTruthy();
+      expect(fixture.nativeElement.querySelector('.payroll-verificacion-periodo-modal')).toBeTruthy();
+    });
+
+    it('tras verificar con trabajadores pendientes lista nominal y navega a ficha', async () => {
+      ejecutarPrevalidaciones.mockResolvedValueOnce(
+        prevalidacionLista({
+          estado: 'CON_ADVERTENCIAS',
+          resumen: {
+            periodo: '2026-05',
+            hayBloqueos: false,
+            hayAdvertencias: true,
+            conteoMovimientosPorEstado: { VALIDADO: 1 },
+            totalEntradasMensuales: 1,
+            resumenEntradasMensuales: {
+              total: 1,
+              recurrentes: 0,
+              novedadesMensuales: 1,
+              legacyMovimientos: 0,
+              aprobadas: 1,
+              pendientesRevision: 0,
+              observadas: 0,
+              rechazadas: 0,
+              anuladas: 0,
+              bloqueantes: 0,
+              conWarnings: 0,
+              aptasPreNomina: 1,
+            },
+            conteoEntradasPorEstado: { aprobada: 1 },
+            trabajadoresActivosAptos: 1,
+            trabajadoresActivosNoAptos: 1,
+            parametrosOperativos: true,
+            parametrosGrupos: [
+              { id: 'mensuales_uf_utm_sueldo', clasificacion: 'OK' },
+              { id: 'topes_base', clasificacion: 'OK' },
+              { id: 'catalogos_afp_impuesto', clasificacion: 'OK' },
+            ],
+            recurrentesAplicablesAlPeriodo: 1,
+            recurrentesInvalidas: 0,
+            recurrentesCerradas: 0,
+            recurrentesFueraDelMes: 0,
+          },
+          advertencias: [
+            {
+              codigo: 'EMPLEADOS_ACTIVOS_NO_APTOS',
+              area: 'TRABAJADORES',
+              severidad: 'ADVERTENCIA',
+              texto: 'Hay trabajadores activos con ficha pendiente.',
+            },
+          ],
+          trabajadoresPendientesRevision: [
+            {
+              idPersona: 7,
+              nombre: 'María López',
+              rut: '12.345.678-9',
+              motivo: 'Ficha incompleta',
+              detalleCorreccion: 'Revisar datos personales, contrato, remuneración, previsión y pago.',
+              estadoFicha: 'INCOMPLETO',
+              aptoParaRemuneraciones: false,
+            },
+          ],
+        }),
+      );
+      const c = fixture.componentInstance;
+      const router = TestBed.inject(Router);
+      const navigateSpy = vi.spyOn(router, 'navigateByUrl').mockResolvedValue(true);
+
+      c.validarPeriodo();
+      await fixture.whenStable();
+      fixture.detectChanges();
+
+      expect(c.overlay().kind).toBe('informacion');
+      expect(c.informacionPeriodo()?.trabajadoresPendientes?.[0]?.nombre).toBe('María López');
+      expect(c.informacionPeriodo()?.bajada).toContain('1 trabajador');
+      expect(c.informacionPeriodo()?.resumenVerificacion?.trabajadoresPendientes).toBe(1);
+      expect(fixture.nativeElement.textContent).toContain('Fichas por corregir');
+      expect(fixture.nativeElement.textContent).toContain('Trabajadores a corregir');
+      const irCorregir = fixture.nativeElement.querySelector(
+        '.payroll-verificacion-periodo-modal__accion-fila',
+      ) as HTMLButtonElement | null;
+      expect(irCorregir?.textContent?.trim()).toBe('Ir a corregir');
+      irCorregir?.click();
+      fixture.detectChanges();
+      expect(navigateSpy).toHaveBeenCalledWith('/empleados/7');
     });
 
     it('tras error de validacion abre informacion y oculta banner crudo', async () => {
@@ -708,7 +790,7 @@ describe('ProcesoMensualContainer', () => {
       expect(c.overlay().kind).toBe('informacion');
       expect(c.informacionPeriodo()?.titulo).toBeTruthy();
       expect(fixture.nativeElement.querySelector('.payroll-ledger-error')).toBeNull();
-      expect(fixture.nativeElement.querySelector('app-message-box')).toBeTruthy();
+      expect(fixture.nativeElement.querySelector('.payroll-verificacion-periodo-modal')).toBeTruthy();
     });
 
     it('cerrarOverlay con informacion activa suprime resincronizacion', async () => {
@@ -752,6 +834,22 @@ describe('ProcesoMensualContainer', () => {
       expect(c.detalleOperativoAbierto()).toBe(false);
       expect(c.nominaWorkspaceTabVisible()).toBe('detalle_mensual');
       expect(c.nominaDetalleMensualVista()).toBe('trabajadores');
+    });
+
+    it('mostrarResumenAmpliadoEnRail solo con base generada y vista trabajadores', async () => {
+      const c = fixture.componentInstance;
+      c.seleccionarNominaDetalleMensualVista('trabajadores');
+      expect(c.mostrarResumenAmpliadoEnRail()).toBe(false);
+
+      generarPreNominaPeriodo.mockResolvedValueOnce(baseNominaLista());
+      c.generarPreNomina();
+      await fixture.whenStable();
+      fixture.detectChanges();
+      expect(c.contextoOperativoPeriodo().baseGenerada).toBe(true);
+      expect(c.mostrarResumenAmpliadoEnRail()).toBe(true);
+
+      c.seleccionarNominaDetalleMensualVista('pendientes');
+      expect(c.mostrarResumenAmpliadoEnRail()).toBe(false);
     });
 
     it('seleccionarRevisionDesdeModal trabajadores cierra modal y abre panel', () => {

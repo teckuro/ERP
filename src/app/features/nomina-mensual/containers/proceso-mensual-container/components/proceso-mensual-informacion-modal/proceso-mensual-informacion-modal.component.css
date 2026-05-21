@@ -1,0 +1,202 @@
+:host {
+  display: contents;
+}
+
+.payroll-verificacion-periodo-modal.payroll-operational-detail-modal {
+  width: min(1320px, calc(100vw - 64px));
+  height: min(860px, calc(100vh - 64px));
+  grid-template-rows: auto minmax(0, 1fr) auto;
+}
+
+.payroll-verificacion-periodo-modal--con-resumen.payroll-operational-detail-modal {
+  grid-template-rows: auto auto minmax(0, 1fr) auto;
+}
+
+.payroll-verificacion-periodo-modal__resumen {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  padding: 12px 22px;
+  border-bottom: 1px solid var(--erp-border, #d8d3c7);
+  background: var(--erp-surface-soft, #f8f5ec);
+}
+
+.payroll-verificacion-periodo-modal__metrica {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 8px 10px;
+  border: 1px solid var(--erp-border, #d8d3c7);
+  border-radius: 5px;
+  background: var(--erp-surface, #fffdf8);
+}
+
+.payroll-verificacion-periodo-modal__metrica--destacada {
+  border-color: var(--erp-border-strong, #c8bda9);
+  background: #fff9ef;
+}
+
+.payroll-verificacion-periodo-modal__nota-resumen {
+  margin: 0;
+  font-size: 0.8125rem;
+  color: var(--erp-text-muted, #5c574d);
+}
+
+.payroll-verificacion-periodo-modal__metrica-k {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: var(--erp-muted, #6f6a5f);
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.payroll-verificacion-periodo-modal__metrica-v {
+  font-size: 1.25rem;
+  font-weight: 700;
+  line-height: 1.1;
+  color: var(--erp-ink, #201f1b);
+}
+
+.payroll-verificacion-periodo-modal__body {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.payroll-verificacion-periodo-modal__bloque-titulo {
+  margin: 0 0 6px;
+  font-size: 0.8125rem;
+  font-weight: 650;
+  color: var(--erp-ink, #201f1b);
+}
+
+.payroll-verificacion-periodo-modal__lista {
+  margin: 0;
+  padding-left: 1.1rem;
+  font-size: 0.8125rem;
+  line-height: 1.45;
+  color: var(--erp-muted, #6f6a5f);
+}
+
+.payroll-verificacion-periodo-modal__lista li + li {
+  margin-top: 4px;
+}
+
+.payroll-verificacion-periodo-modal__trabajadores {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  flex: 1 1 auto;
+}
+
+.payroll-verificacion-periodo-modal__trabajadores-head p {
+  margin: 0 0 8px;
+  font-size: 0.75rem;
+  color: var(--erp-muted, #6f6a5f);
+}
+
+.payroll-verificacion-periodo-modal__tabla-wrap {
+  min-height: 120px;
+  max-height: min(52vh, 480px);
+  overflow: auto;
+  border: 1px solid var(--erp-border, #d8d3c7);
+  border-radius: 5px;
+  background: var(--erp-surface, #fffdf8);
+}
+
+.payroll-verificacion-periodo-modal__tabla {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.75rem;
+}
+
+.payroll-verificacion-periodo-modal__tabla thead th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--erp-border, #d8d3c7);
+  background: var(--erp-surface-soft, #f8f5ec);
+  text-align: left;
+  font-weight: 650;
+  color: var(--erp-muted, #6f6a5f);
+}
+
+.payroll-verificacion-periodo-modal__tabla tbody td {
+  padding: 8px 10px;
+  border-bottom: 1px solid #ece7dc;
+  vertical-align: top;
+}
+
+.payroll-verificacion-periodo-modal__tabla tbody tr:hover {
+  background: #faf8f2;
+}
+
+.payroll-verificacion-periodo-modal__nombre {
+  display: block;
+  font-weight: 650;
+  color: var(--erp-ink, #201f1b);
+}
+
+.payroll-verificacion-periodo-modal__motivo {
+  display: block;
+  color: var(--erp-ink, #201f1b);
+}
+
+.payroll-verificacion-periodo-modal__detalle {
+  display: block;
+  margin-top: 2px;
+  color: var(--erp-muted, #6f6a5f);
+}
+
+.payroll-verificacion-periodo-modal__accion-celda {
+  width: 7.5rem;
+  white-space: nowrap;
+}
+
+.payroll-verificacion-periodo-modal__accion-fila {
+  border: 0;
+  background: none;
+  padding: 0;
+  font: inherit;
+  font-size: 0.75rem;
+  font-weight: 650;
+  color: #1d4ed8;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+}
+
+.payroll-verificacion-periodo-modal__accion-fila:hover {
+  color: #1e40af;
+}
+
+.payroll-verificacion-periodo-modal--danger .payroll-verificacion-periodo-modal__metrica--destacada {
+  background: #fff5f5;
+}
+
+.payroll-verificacion-periodo-modal--warning .payroll-verificacion-periodo-modal__metrica--destacada {
+  background: #fff9ef;
+}
+
+.payroll-verificacion-periodo-modal--success .payroll-verificacion-periodo-modal__metrica-v {
+  color: #166534;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+@media (max-width: 900px) {
+  .payroll-verificacion-periodo-modal__resumen {
+    grid-template-columns: 1fr;
+  }
+}

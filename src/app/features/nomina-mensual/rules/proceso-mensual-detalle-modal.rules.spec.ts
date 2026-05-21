@@ -9,6 +9,7 @@ import {
   buildDetalleRevisionFooterAccion,
   buildDetalleRevisionModalLead,
   buildDetalleRevisionTabPanel,
+  buildSeccionesResumenAmpliado,
   buildDetalleRevisionTabsMeta,
   buildExpedienteRevisionCta,
   buildExpedienteRevisionCtaForTab,
@@ -410,6 +411,7 @@ describe('proceso-mensual-detalle-modal.rules', () => {
       itemsSeguimientoResultado: [],
       filasMovimientos: [],
       filasRecurrentes: [],
+      nominaGenerada: true,
     });
 
     expect(panel.enlaceResumenIncidencias?.count).toBe(incidencias.porAmbito.parametros.length);
@@ -417,21 +419,22 @@ describe('proceso-mensual-detalle-modal.rules', () => {
     expect(panel.listaParametros.some((item) => item.titulo === 'Catálogo base')).toBe(true);
   });
 
-  it('expone enlace al resumen en tab de area con incidencias', () => {
-    const panel = buildDetalleRevisionTabPanel({
-      tab: 'parametros',
-      tabSeveridad: 'bloqueo',
+  it('expone enlace al resumen en tab de area con incidencias solo si nomina generada', () => {
+    const incidencias = incidenciasMock({
+      bloqueosOperativos: [{
+        codigo: 'PARAM_X',
+        titulo: 'Falta UF',
+        descripcion: 'Revisar',
+        severidad: 'danger',
+        ruta: '/parametros',
+      }],
+    });
+    const baseInput = {
+      tab: 'parametros' as const,
+      tabSeveridad: 'bloqueo' as const,
       periodoEtiqueta: 'Mayo 2026',
       estadoTitulo: 'Con pendientes',
-      incidencias: incidenciasMock({
-        bloqueosOperativos: [{
-          codigo: 'PARAM_X',
-          titulo: 'Falta UF',
-          descripcion: 'Revisar',
-          severidad: 'danger',
-          ruta: '/parametros',
-        }],
-      }),
+      incidencias,
       cantidadFilasTrabajadores: 0,
       cantidadFilasMovimientos: 0,
       cantidadFilasRecurrentes: 0,
@@ -440,9 +443,53 @@ describe('proceso-mensual-detalle-modal.rules', () => {
       itemsSeguimientoResultado: [],
       filasMovimientos: [],
       filasRecurrentes: [],
-    });
+    };
 
-    expect(panel.enlaceResumenIncidencias?.label).toBe('Ver en resumen (1)');
+    expect(buildDetalleRevisionTabPanel({ ...baseInput, nominaGenerada: false }).enlaceResumenIncidencias).toBeUndefined();
+    expect(buildDetalleRevisionTabPanel({ ...baseInput, nominaGenerada: true }).enlaceResumenIncidencias?.label).toBe('Ver en resumen (1)');
+  });
+
+  it('buildSeccionesResumenAmpliado incluye codigos de borrador y trabajadores', () => {
+    const baseTrazabilidad = {
+      trabajadores: [{
+        idPersona: 1,
+        trabajadorLabel: 'Ana Perez',
+        rutLabel: '11.111.111-1',
+        contratoLabel: 'Contrato',
+        estado: 'listo' as const,
+        asignacionesRecurrentes: 0,
+        movimientosDelMes: 0,
+        observacion: 'Sin observaciones',
+      }],
+      trabajadoresConsiderados: 1,
+      listosParaCalculo: 1,
+      conObservaciones: 0,
+      bloqueados: 0,
+      excluidos: 0,
+      asignacionesRecurrentesIncluidas: 0,
+      movimientosDelMesIncluidos: 0,
+      parametrosEstado: 'listos' as const,
+      observacionParametros: 'OK',
+    };
+    const secciones = buildSeccionesResumenAmpliado({
+      preNomina: {
+        periodo: '2026-05',
+        estado: 'GENERADA',
+        generadoEn: '2026-05-05',
+        trabajadoresIncluidos: 1,
+        recurrentesIncluidos: 0,
+        movimientosVariablesValidados: 0,
+        movimientosVariablesBorrador: 0,
+        parametrosOperativos: true,
+        codigosBloqueo: ['PARAM_X'],
+        codigosAdvertencia: ['MV_BORRADOR'],
+        origenPrevalidacion: 'LISTO_PARA_CALCULO',
+        trazabilidad: baseTrazabilidad,
+      },
+      baseTrazabilidad,
+    });
+    expect(secciones.some((s) => s.titulo === 'Bloqueos del borrador')).toBe(true);
+    expect(secciones.some((s) => s.titulo === 'Trabajadores en la base generada')).toBe(true);
   });
 
   it('no usa grid para movimientos sin filas', () => {

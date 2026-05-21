@@ -1,11 +1,13 @@
 import type { EmpleadoListado } from '../../empleados/models/empleado-listado.model';
 import {
+  buildDetalleCorreccionFicha,
   buildFilasMasivasDesdePendientesRevision,
   buildIncidenciasFichaPendiente,
   buildItemsTrabajadoresPendientesModal,
   buildTrabajadoresPendientesRevision,
   CODIGO_INCIDENCIA_FICHA_PENDIENTE,
   formatTrabajadorPendienteRevisionLinea,
+  humanizarBloqueoCompletitudFicha,
   mergeFilasMasivasConPendientesRevision,
   motivoTrabajadorPendienteRevision,
 } from './proceso-mensual-trabajadores-prevalidacion.rules';
@@ -39,7 +41,20 @@ describe('proceso-mensual-trabajadores-prevalidacion.rules', () => {
     ]);
     expect(lista).toHaveLength(1);
     expect(lista[0].motivo).toBe('No apto para remuneraciones');
+    expect(lista[0].detalleCorreccion).toBe('Completar la ficha para habilitar remuneraciones.');
     expect(formatTrabajadorPendienteRevisionLinea(lista[0])).toContain('Luis Gómez');
+  });
+
+  it('humaniza bloqueo de alta avanzada y arma detalle en pendiente', () => {
+    expect(
+      humanizarBloqueoCompletitudFicha(
+        'Continua el alta avanzada antes de validar la ficha para remuneraciones.',
+      ),
+    ).toBe('Continuar alta avanzada.');
+    const detalle = buildDetalleCorreccionFicha(
+      empleado({ pasoAltaAvanzada: 2 }),
+    );
+    expect(detalle).toBe('Continuar alta avanzada.');
   });
 
   it('ordena no aptos antes que ficha incompleta y luego por nombre', () => {
@@ -86,6 +101,8 @@ describe('proceso-mensual-trabajadores-prevalidacion.rules', () => {
     ]);
     const inc = buildIncidenciasFichaPendiente(pendientes)[0];
     expect(inc.id).toBe(CODIGO_INCIDENCIA_FICHA_PENDIENTE);
+    expect(inc.detalle).toContain('Ficha incompleta');
+    expect(inc.detalle).toContain('Revisar datos personales');
     expect(inc.accion?.label).toBe('Completar ficha');
     expect(inc.accion?.destino).toBe('/empleados/9');
   });

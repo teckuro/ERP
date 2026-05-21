@@ -1,3 +1,22 @@
+## 2026-05-19 - Nómina mensual: CTAs vivos y resumen solo post-generación
+
+- **Cambio:** «Ver en resumen» y «Resumen ampliado» solo con `baseGenerada`; rail/empty sin modal resumen vacío; overlay verificación con Cerrar + secundaria separada; pestaña resumen con incidencias completas y secciones borrador/trazabilidad.
+- **Archivos:** `proceso-mensual-flow-nav.rules.ts`, `proceso-mensual-detalle-modal.rules.ts`, `proceso-mensual-presentacion.facade.ts`, `proceso-mensual-informacion-modal.*`, `proceso-mensual-revision-trabajadores.component.html`, `proceso-mensual-workspace.component.html`.
+- **No tocado:** SQL, motor, estilos globales.
+
+## 2026-05-19 - Nómina mensual: verificar período — overlay grande
+
+- **Cambio:** tras «Verificar período» se usa overlay operativo ~1320px con franja de conteos (críticos / advertencias / fichas) y tabla scrollable con **todos** los trabajadores pendientes; sin MessageBox ni tope de 8 nombres.
+- **Archivos:** `proceso-mensual-informacion-modal.*`, `proceso-mensual-informacion-periodo.rules.ts`, `proceso-mensual-container.vm.ts`.
+- **No tocado:** estilos globales, SQL, motor.
+
+## 2026-05-19 - Nómina mensual: verificar período — trabajadores accionables
+
+- **Cambio:** detalle RRHH por trabajador, «Ir a corregir», merge con bloqueos críticos; revisión por trabajador con mismo detalle en incidencias.
+- **Archivos:** `proceso-mensual-trabajadores-prevalidacion.rules.ts`, `proceso-mensual-presentacion.facade.ts`.
+- **Doc:** `docs/codex/modulos/nomina-mensual/verificar-periodo-trabajadores-pendientes.md`.
+- **No tocado:** SQL, motor de cálculo productivo, estilos globales.
+
 ## 2026-05-21 - NOMENCLATURA-ES-CAMELCASE-01
 
 - **Cambio:** normalizacion de nombres internos en ficha empleado (faltantes, claveBloque, porcentajeAvance, puedeValidarRemuneraciones, tipos *FichaEmpleado) sin tocar contratos SQL/Supabase, rutas, selectores ni clases CSS.

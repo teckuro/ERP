@@ -341,9 +341,11 @@
         <button type="button" class="payroll-revision-trabajadores__empty-action" (click)="f.ejecutarAccionValidacion('validarPeriodo')">
           Validar período
         </button>
-        <button type="button" class="payroll-revision-trabajadores__empty-link" (click)="f.abrirDetalleOperativo('resumen')">
-          Ver resumen del período
-        </button>
+        @if (f.puedeGenerarPreNomina()) {
+          <button type="button" class="payroll-revision-trabajadores__empty-link" (click)="f.generarPreNomina()">
+            Generar nómina
+          </button>
+        }
       </div>
     </section>
   }

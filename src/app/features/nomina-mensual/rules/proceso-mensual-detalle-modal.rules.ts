@@ -4,6 +4,8 @@
   FilaDetalleRecurrenteNomina,
   ItemSeguimientoNomina,
 } from '../containers/proceso-mensual-container/models/proceso-mensual-container.vm';
+import type { ProcesoMensualPreNominaPeriodo } from '../models/proceso-mensual.model';
+import { etiquetaEstadoBaseTrabajador } from '../containers/proceso-mensual-container/utils/proceso-mensual-presentacion.labels';
 import type {
   IncidenciaPeriodo,
   IncidenciasPeriodoView,
@@ -85,6 +87,7 @@ export interface DetalleRevisionTabPanel {
   listaRecurrentes: DetalleRevisionListaItem[];
   listaResultadoSeguimiento: DetalleRevisionListaItem[];
   enlaceResumenIncidencias?: { label: string; count: number };
+  seccionesResumenAmpliado?: Array<{ titulo: string; items: string[] }>;
 }
 
 export function humanizarDetalleRevisionTexto(texto: string | null | undefined): string {
@@ -178,6 +181,44 @@ export function buildEnlaceResumenIncidencias(count: number): { label: string; c
     label: count === 1 ? 'Ver en resumen (1)' : `Ver en resumen (${count})`,
     count,
   };
+}
+
+const TRAZABILIDAD_RESUMEN_TOP = 8;
+
+export function buildSeccionesResumenAmpliado(input: {
+  preNomina: ProcesoMensualPreNominaPeriodo | null;
+  baseTrazabilidad: ProcesoMensualPreNominaPeriodo['trazabilidad'] | null;
+}): Array<{ titulo: string; items: string[] }> {
+  const secciones: Array<{ titulo: string; items: string[] }> = [];
+  const preNomina = input.preNomina;
+  if (preNomina) {
+    const bloqueos = preNomina.codigosBloqueo
+      .map((codigo) => humanizarDetalleRevisionTexto(codigo))
+      .filter((texto) => texto.length > 0);
+    const advertencias = preNomina.codigosAdvertencia
+      .map((codigo) => humanizarDetalleRevisionTexto(codigo))
+      .filter((texto) => texto.length > 0);
+    if (bloqueos.length) {
+      secciones.push({ titulo: 'Bloqueos del borrador', items: bloqueos });
+    }
+    if (advertencias.length) {
+      secciones.push({ titulo: 'Advertencias del borrador', items: advertencias });
+    }
+  }
+  const trabajadores = input.baseTrazabilidad?.trabajadores ?? [];
+  if (trabajadores.length) {
+    const visibles = trabajadores.slice(0, TRAZABILIDAD_RESUMEN_TOP).map((trabajador) => {
+      const observacion = humanizarDetalleRevisionTexto(trabajador.observacion) || 'Sin observaciones';
+      return `${trabajador.trabajadorLabel || 'Trabajador'} · ${etiquetaEstadoBaseTrabajador(trabajador.estado)} — ${observacion}`;
+    });
+    if (trabajadores.length > TRAZABILIDAD_RESUMEN_TOP) {
+      visibles.push(
+        `… y ${trabajadores.length - TRAZABILIDAD_RESUMEN_TOP} más en el panel Trabajadores.`,
+      );
+    }
+    secciones.push({ titulo: 'Trabajadores en la base generada', items: visibles });
+  }
+  return secciones;
 }
 
 function textoPareceRevisado(texto: string): boolean {
@@ -304,6 +345,9 @@ export interface BuildDetalleRevisionTabPanelInput {
   itemsSeguimientoResultado: ItemSeguimientoNomina[];
   filasMovimientos: FilaDetalleMovimientoNomina[];
   filasRecurrentes: FilaDetalleRecurrenteNomina[];
+  nominaGenerada?: boolean;
+  preNomina?: ProcesoMensualPreNominaPeriodo | null;
+  baseTrazabilidad?: ProcesoMensualPreNominaPeriodo['trazabilidad'] | null;
 }
 
 export function buildDetalleRevisionTabPanel(input: BuildDetalleRevisionTabPanelInput): DetalleRevisionTabPanel {
@@ -318,7 +362,7 @@ export function buildDetalleRevisionTabPanel(input: BuildDetalleRevisionTabPanel
     : input.incidencias.porDetalleTab[input.tab];
 
   const listaObservaciones = input.tab === 'resumen'
-    ? buildDetalleRevisionObservacionesLista({ incidencias: input.incidencias })
+    ? incidenciasToDetalleRevisionLista(input.incidencias.todas, input.incidencias.todas.length)
     : [];
 
   const parametrosConIncidenciasEnResumen = input.incidencias.porAmbito.parametros.length > 0;
@@ -358,9 +402,18 @@ export function buildDetalleRevisionTabPanel(input: BuildDetalleRevisionTabPanel
     || (usarGridRecurrentes && input.cantidadFilasRecurrentes > LISTA_EDITORIAL_MAX_FILAS)
     || (usarGridResultado && input.cantidadFilasResultado > LISTA_EDITORIAL_MAX_FILAS);
 
-  const enlaceResumenIncidencias = input.tab !== 'resumen'
-    ? buildEnlaceResumenIncidencias(incidenciasTabSinResumen.length)
-    : undefined;
+  const enlaceResumenIncidencias =
+    input.tab !== 'resumen' && input.nominaGenerada
+      ? buildEnlaceResumenIncidencias(incidenciasTabSinResumen.length)
+      : undefined;
+
+  const seccionesResumenAmpliado =
+    input.tab === 'resumen' && input.nominaGenerada
+      ? buildSeccionesResumenAmpliado({
+        preNomina: input.preNomina ?? null,
+        baseTrazabilidad: input.baseTrazabilidad ?? null,
+      })
+      : undefined;
 
   const emptyPorTab: Record<DetalleOperativoTab, { titulo: string; descripcion: string }> = {
     resumen: {
@@ -406,6 +459,7 @@ export function buildDetalleRevisionTabPanel(input: BuildDetalleRevisionTabPanel
     listaRecurrentes: usarGridRecurrentes ? [] : listaRecurrentes,
     listaResultadoSeguimiento,
     enlaceResumenIncidencias,
+    seccionesResumenAmpliado,
   };
 }
 
