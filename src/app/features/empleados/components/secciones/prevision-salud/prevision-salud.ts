@@ -21,6 +21,7 @@ import {
 } from '../../../../../shared/components/ui/search-select.component';
 import { withEmptyNumberCatalog, withEmptyStringCatalog } from '../../../utils/empleado-select-options';
 import { LucideAngularModule } from 'lucide-angular';
+import { EmpleadoFieldRequiredComponent } from '../../empleado-field-required/empleado-field-required.component';
 
 type PrevisionSaludControlName = keyof PrevisionSaludFormGroup['controls'];
 @Component({
@@ -32,6 +33,7 @@ type PrevisionSaludControlName = keyof PrevisionSaludFormGroup['controls'];
     CardContentComponent,
     CardHeaderComponent,
     SearchSelectComponent,
+    EmpleadoFieldRequiredComponent,
   ],
   templateUrl: './prevision-salud.html',
   styleUrl: './prevision-salud.css',

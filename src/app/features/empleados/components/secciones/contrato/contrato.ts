@@ -23,6 +23,7 @@ import {
   descripcionTipoTrabajadorBase,
   tipoTrabajadorBaseParaRelacion,
 } from '../../../rules/empleado-tipo-trabajador-flow.rules';
+import { EmpleadoFieldRequiredComponent } from '../../empleado-field-required/empleado-field-required.component';
 import { EmpleadoFieldTipComponent } from '../../empleado-field-tip/empleado-field-tip.component';
 import { buildTodayValue } from '../../../utils/empleado-form-defaults';
 
@@ -46,6 +47,7 @@ interface WeekdayOption {
     CardComponent,
     SearchSelectComponent,
     EmpleadoFieldTipComponent,
+    EmpleadoFieldRequiredComponent,
   ],
   templateUrl: './contrato.html',
   styleUrl: './contrato.css',

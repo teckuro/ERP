@@ -9,12 +9,13 @@ import {
   type SearchSelectOption,
 } from '../../../../../shared/components/ui/search-select.component';
 import { withEmptyNumberCatalog } from '../../../utils/empleado-select-options';
+import { EmpleadoFieldRequiredComponent } from '../../empleado-field-required/empleado-field-required.component';
 
 type BancarioControlName = keyof BancarioFormGroup['controls'];
 
 @Component({
   selector: 'app-empleado-bancario',
-  imports: [ReactiveFormsModule, CardComponent, SearchSelectComponent],
+  imports: [ReactiveFormsModule, CardComponent, SearchSelectComponent, EmpleadoFieldRequiredComponent],
   templateUrl: './bancario.html',
   styleUrl: './bancario.css',
 })

@@ -18,7 +18,7 @@
       <div class="field-label-row">
         <label for="empleado-banco">Banco</label>
         @if (isRequired('idBanco')) {
-          <span class="field-required" aria-hidden="true">*</span>
+          <app-empleado-field-required />
         }
       </div>
       <app-search-select
@@ -40,7 +40,7 @@
       <div class="field-label-row">
         <label for="empleado-tipo-cuenta">Tipo de cuenta</label>
         @if (isRequired('idTipoCuentaBancaria')) {
-          <span class="field-required" aria-hidden="true">*</span>
+          <app-empleado-field-required />
         }
       </div>
       <app-search-select
@@ -62,7 +62,7 @@
       <div class="field-label-row">
         <label for="empleado-numero-cuenta">Número de cuenta</label>
         @if (isRequired('numeroCuenta')) {
-          <span class="field-required" aria-hidden="true">*</span>
+          <app-empleado-field-required />
         }
       </div>
       <input

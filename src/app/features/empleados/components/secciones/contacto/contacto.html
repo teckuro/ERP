@@ -72,7 +72,7 @@
           <div class="field-label-row">
             <label for="empleado-direccion">Calle o avenida</label>
             @if (isRequired('direccion')) {
-              <span class="field-required" aria-hidden="true">*</span>
+              <app-empleado-field-required />
             }
           </div>
           <input
@@ -133,7 +133,7 @@
           <div class="field-label-row">
             <label for="empleado-comuna">Comuna</label>
             @if (isRequired('idComuna')) {
-              <span class="field-required" aria-hidden="true">*</span>
+              <app-empleado-field-required />
             }
           </div>
           <app-search-select

@@ -5,7 +5,7 @@
       <div class="employee-block-head">
         <h4>
           Identificación legal
-          <span class="field-required" aria-hidden="true">*</span>
+          <app-empleado-field-required />
         </h4>
         @if (basicSectionLeads) {
           <p class="employee-block-lead">RUT o pasaporte (uno obligatorio).</p>
@@ -64,7 +64,7 @@
           <div class="field-label-row">
             <label for="empleado-fecha-nacimiento">Fecha nacimiento</label>
             @if (isRequired('fechaNacimiento')) {
-              <span class="field-required" aria-hidden="true">*</span>
+              <app-empleado-field-required />
             }
           </div>
           <app-calendar-input
@@ -89,7 +89,7 @@
           <div class="field-label-row">
             <label for="empleado-sexo">Sexo</label>
             @if (isRequired('sexo')) {
-              <span class="field-required" aria-hidden="true">*</span>
+              <app-empleado-field-required />
             }
           </div>
           <app-search-select
@@ -133,7 +133,7 @@
           <div class="field-label-row">
             <label for="empleado-nombres">Nombres</label>
             @if (isRequired('nombres')) {
-              <span class="field-required" aria-hidden="true">*</span>
+              <app-empleado-field-required />
             }
           </div>
           <input
@@ -158,7 +158,7 @@
           <div class="field-label-row">
             <label for="empleado-apellido-paterno">Apellido paterno</label>
             @if (isRequired('apellidoPaterno')) {
-              <span class="field-required" aria-hidden="true">*</span>
+              <app-empleado-field-required />
             }
           </div>
           <input
@@ -221,7 +221,7 @@
               <div class="field-label-row">
                 <label for="empleado-idPais">Nacionalidad</label>
                 @if (isRequired('idPais')) {
-                  <span class="field-required" aria-hidden="true">*</span>
+                  <app-empleado-field-required />
                 }
               </div>
               <app-search-select
@@ -247,7 +247,7 @@
               <div class="field-label-row">
                 <label for="empleado-estadoCivil">Estado civil</label>
                 @if (isRequired('estadoCivil')) {
-                  <span class="field-required" aria-hidden="true">*</span>
+                  <app-empleado-field-required />
                 }
               </div>
               <app-search-select
@@ -337,7 +337,7 @@
             <div class="field-label-row">
               <label for="empleado-idPais">Nacionalidad</label>
               @if (isRequired('idPais')) {
-                <span class="field-required" aria-hidden="true">*</span>
+                <app-empleado-field-required />
               }
             </div>
             <app-search-select
@@ -359,7 +359,7 @@
             <div class="field-label-row">
               <label for="empleado-estadoCivil">Estado civil</label>
               @if (isRequired('estadoCivil')) {
-                <span class="field-required" aria-hidden="true">*</span>
+                <app-empleado-field-required />
               }
             </div>
             <app-search-select

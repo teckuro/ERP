@@ -69,7 +69,7 @@
               >Tipo de contrato</label
             >
             @if (isRequired('tipoContrato')) {
-              <span class="field-required" aria-hidden="true">*</span>
+              <app-empleado-field-required />
             }
           </div>
           <app-search-select
@@ -118,7 +118,7 @@
             >{{ isHonorariosMode ? 'Fecha inicio del servicio' : 'Fecha ingreso' }}</label
           >
           @if (isRequired('fechaIngreso')) {
-            <span class="field-required" aria-hidden="true">*</span>
+            <app-empleado-field-required />
           }
         </div>
         <app-calendar-input
@@ -142,7 +142,7 @@
               >Fecha contrato</label
             >
             @if (isRequired('fechaContrato')) {
-              <span class="field-required" aria-hidden="true">*</span>
+              <app-empleado-field-required />
             }
           </div>
           <app-calendar-input
@@ -165,7 +165,7 @@
               >Fecha término</label
             >
             @if (isRequired('fechaTermino')) {
-              <span class="field-required" aria-hidden="true">*</span>
+              <app-empleado-field-required />
             }
           </div>
           <app-calendar-input
@@ -222,7 +222,7 @@
         <div class="field-label-row">
           <label for="empleado-sucursal">{{ isHonorariosMode ? 'Sucursal / imputación interna' : 'Sucursal' }}</label>
           @if (!isHonorariosMode) {
-            <span class="field-required" aria-hidden="true">*</span>
+            <app-empleado-field-required />
           }
         </div>
         <app-search-select
@@ -251,7 +251,7 @@
           <div class="field-label-row">
             <label for="empleado-sueldo-base">{{ baseAmountLabel() }}</label>
             @if (isRequired('sueldoBase')) {
-              <span class="field-required" aria-hidden="true">*</span>
+              <app-empleado-field-required />
             }
             @if (advancedGridLayout) {
               <app-empleado-field-tip
@@ -302,7 +302,7 @@
             >Tipo jornada</label
           >
           @if (isRequired('idTipoJornada')) {
-            <span class="field-required" aria-hidden="true">*</span>
+            <app-empleado-field-required />
           }
         </div>
         <app-search-select
@@ -326,7 +326,7 @@
             >Hrs. semanales</label
           >
           @if (isRequired('horasSemanales')) {
-            <span class="field-required" aria-hidden="true">*</span>
+            <app-empleado-field-required />
           }
         </div>
         <input
@@ -348,7 +348,7 @@
             >Días semanales</label
           >
           @if (isRequired('diasSemanales')) {
-            <span class="field-required" aria-hidden="true">*</span>
+            <app-empleado-field-required />
           }
         </div>
         <input
@@ -419,7 +419,7 @@
             >{{ baseAmountLabel() }}</label
           >
           @if (isRequired('sueldoBase')) {
-            <span class="field-required" aria-hidden="true">*</span>
+            <app-empleado-field-required />
           }
         </div>
         <input
@@ -456,7 +456,7 @@
             >Gratificación</label
           >
           @if (isRequired('tipoGratificacion')) {
-            <span class="field-required" aria-hidden="true">*</span>
+            <app-empleado-field-required />
           }
         </div>
         <app-search-select
@@ -606,7 +606,7 @@
               >Territorio</label
             >
             @if (isRequired('zonaExtremaTerritorio')) {
-              <span class="field-required" aria-hidden="true">*</span>
+              <app-empleado-field-required />
             }
           </div>
           <input
@@ -629,7 +629,7 @@
               >Asignación (%)</label
             >
             @if (isRequired('zonaExtremaPorcentaje')) {
-              <span class="field-required" aria-hidden="true">*</span>
+              <app-empleado-field-required />
             }
           </div>
           <input
@@ -684,7 +684,7 @@
           <div class="field-label-row">
             <label>Indicar días laborables</label>
             @if (isRequired('semanaCorridaDiasLaborables')) {
-              <span class="field-required" aria-hidden="true">*</span>
+              <app-empleado-field-required />
             }
           </div>
           <div class="weekday-grid">
@@ -745,7 +745,7 @@
         <div class="field-label-row">
           <label for="empleado-cargo">{{ serviceOrPositionLabel() }}</label>
           @if (isRequired('cargo')) {
-            <span class="field-required" aria-hidden="true">*</span>
+            <app-empleado-field-required />
           }
         </div>
         <input
@@ -768,7 +768,7 @@
             >Estado de ficha inicial</label
           >
           @if (isRequired('estado')) {
-            <span class="field-required" aria-hidden="true">*</span>
+            <app-empleado-field-required />
           }
         </div>
         <app-search-select

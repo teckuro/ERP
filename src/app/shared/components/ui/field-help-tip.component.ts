@@ -10,7 +10,7 @@ import {
   inject,
 } from '@angular/core';
 import { LucideAngularModule } from 'lucide-angular';
-import { CircleHelp } from 'lucide-angular/src/icons';
+import { Asterisk, CircleHelp } from 'lucide-angular/src/icons';
 import {
   arrow,
   autoUpdate,
@@ -37,6 +37,7 @@ const ARROW_EDGE_PADDING = 8;
       #trigger
       type="button"
       class="erp-field-help-tip__trigger"
+      [class.erp-field-help-tip__trigger--required]="mode === 'required'"
       [attr.aria-label]="ariaLabel"
       [attr.aria-describedby]="open && positioned ? tipId : null"
       (mouseenter)="show()"
@@ -44,7 +45,15 @@ const ARROW_EDGE_PADDING = 8;
       (focus)="show()"
       (blur)="scheduleHide()"
     >
-      <lucide-icon [img]="helpIcon" [size]="iconPx" class="erp-field-help-tip__icon"></lucide-icon>
+      @if (mode === 'required') {
+        <lucide-icon
+          [img]="requiredIcon"
+          [size]="iconPx"
+          class="erp-field-help-tip__icon erp-field-help-tip__icon--required"
+        ></lucide-icon>
+      } @else {
+        <lucide-icon [img]="helpIcon" [size]="iconPx" class="erp-field-help-tip__icon"></lucide-icon>
+      }
     </button>
 
     @if (open) {
@@ -94,6 +103,20 @@ const ARROW_EDGE_PADDING = 8;
         outline: none;
         box-shadow: 0 0 0 2px var(--erp-field-help-tip-focus-ring, #eff6ff);
         color: var(--erp-field-help-tip-focus, #2563eb);
+      }
+
+      .erp-field-help-tip__trigger--required {
+        color: var(--form-error, #dc2626);
+        cursor: default;
+      }
+
+      .erp-field-help-tip__trigger--required:focus-visible {
+        box-shadow: 0 0 0 2px color-mix(in srgb, var(--form-error, #dc2626) 18%, transparent);
+        color: var(--form-error, #dc2626);
+      }
+
+      .erp-field-help-tip__icon--required svg {
+        stroke-width: 2.75;
       }
 
       .erp-field-help-tip__icon {
@@ -209,8 +232,10 @@ export class FieldHelpTipComponent implements OnDestroy {
   @Input({ required: true }) text!: string;
   @Input() ariaLabel = 'Ayuda del campo';
   @Input() preferredPlacement: 'auto' | 'top' | 'bottom' = 'auto';
+  @Input() mode: 'help' | 'required' = 'help';
 
   readonly helpIcon = CircleHelp;
+  readonly requiredIcon = Asterisk;
   readonly iconPx = 11;
   readonly tipId = `erp-field-help-tip-${FieldHelpTipComponent.nextId++}`;
 

@@ -1,3 +1,10 @@
+## 2026-05-19 - Ficha empleado: edición bloque base y obligatorios
+
+- **Cambio:** al editar «Información personal y contacto» se muestran email y teléfono (`visibleBlocks` incluye `contacto`); asterisco sustituido por `app-empleado-field-required` (icono rojo + tooltip, patrón `field-help-tip` con `mode="required"`).
+- **Archivos:** `ficha-empleado-container.ts`, `empleado-field-required.*`, `field-help-tip.component.ts`, secciones `datos-personales`, `contacto`, `contrato`, `prevision-salud`, `perfil-laboral`, `bancario`, `form-empleado-shared.css`.
+- **Doc:** `docs/codex/modulos/empleados/ficha-empleado-inline-edicion.md`.
+- **No tocado:** SQL, motor, estilos globales, `angular.json`.
+
 ## 2026-05-22 - Creación avanzada: selector de año del calendario
 
 - **Cambio:** `app-calendar-input` sin `max` ya no ofrece `añoActual + 20` (2046) ni lista años descendentes; fechas de contrato y perfil laboral pasan `[max]="today"` (y `min` en término/vigencia fin). Pegado ISO `YYYY-MM-DD` en el input no corrompe la máscara.

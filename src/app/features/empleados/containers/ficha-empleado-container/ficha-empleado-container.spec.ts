@@ -557,6 +557,40 @@ describe('FichaEmpleadoContainer', () => {
     expect(host.querySelector('.employee-record-block__intro--editing .employee-record-block__title')).toBeNull();
   });
 
+  it('expone contacto al editar el bloque base en visibleBlocks', () => {
+    expect(component.editVisibleBlocks('base')).toEqual(['base', 'contacto']);
+  });
+
+  it('muestra email y telefono al editar Informacion personal y contacto', () => {
+    const employee = empleado();
+    component.empleado.set(employee);
+    component['patchFormFromEmployee'](employee);
+    component.isLoading.set(false);
+    component.startEditing('base');
+    fixture.detectChanges();
+
+    const host = fixture.nativeElement as HTMLElement;
+
+    expect(host.querySelector('#empleado-email')).toBeTruthy();
+    expect(host.querySelector('#empleado-telefono')).toBeTruthy();
+  });
+
+  it('muestra marcador accesible de campo obligatorio al editar identificacion', () => {
+    const employee = empleado();
+    component.empleado.set(employee);
+    component['patchFormFromEmployee'](employee);
+    component.isLoading.set(false);
+    component.startEditing('identificacion');
+    fixture.detectChanges();
+
+    const triggers = [
+      ...fixture.nativeElement.querySelectorAll('.erp-field-help-tip__trigger--required'),
+    ] as HTMLButtonElement[];
+
+    expect(triggers.length).toBeGreaterThan(0);
+    expect(triggers.some((el) => el.getAttribute('aria-label') === 'Campo obligatorio')).toBe(true);
+  });
+
   it('usa el titulo del bloque en el msgbox de guardado parcial', async () => {
     const employee = empleado();
     component.empleado.set(employee);

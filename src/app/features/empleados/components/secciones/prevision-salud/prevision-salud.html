@@ -35,7 +35,7 @@
                 Tipo de previsión
               </label>
               @if (isRequired('tipoRegimenPrevisional')) {
-                <span class="field-required" aria-hidden="true">*</span>
+                <app-empleado-field-required />
               }
             </div>
             <app-search-select
@@ -97,7 +97,7 @@
             <div class="field-label-row">
               <label for="empleado-afp">Nombre AFP</label>
               @if (isRequired('idAfp')) {
-                <span class="field-required" aria-hidden="true">*</span>
+                <app-empleado-field-required />
               }
             </div>
             <app-search-select
@@ -121,7 +121,7 @@
                 Moneda Cuenta 2
               </label>
               @if (isRequired('idMonedaCuenta2')) {
-                <span class="field-required" aria-hidden="true">*</span>
+                <app-empleado-field-required />
               }
             </div>
             <app-search-select
@@ -145,7 +145,7 @@
                 Valor Cuenta 2
               </label>
               @if (isRequired('valorCuenta2')) {
-                <span class="field-required" aria-hidden="true">*</span>
+                <app-empleado-field-required />
               }
             </div>
             <input
@@ -187,7 +187,7 @@
                 Entidad IPS
               </label>
               @if (isRequired('idEntidadPrevisionalIps')) {
-                <span class="field-required" aria-hidden="true">*</span>
+                <app-empleado-field-required />
               }
             </div>
             <app-search-select
@@ -211,7 +211,7 @@
                 Ex-Caja
               </label>
               @if (isRequired('idExCajaPrevisional')) {
-                <span class="field-required" aria-hidden="true">*</span>
+                <app-empleado-field-required />
               }
             </div>
             <app-search-select
@@ -235,7 +235,7 @@
                 Régimen Ex-Caja
               </label>
               @if (isRequired('idRegimenExCaja')) {
-                <span class="field-required" aria-hidden="true">*</span>
+                <app-empleado-field-required />
               }
             </div>
             <app-search-select
@@ -263,7 +263,7 @@
                 Tasa Ex-Caja (%)
               </label>
               @if (isRequired('tasaExCaja')) {
-                <span class="field-required" aria-hidden="true">*</span>
+                <app-empleado-field-required />
               }
             </div>
             <input
@@ -303,7 +303,7 @@
                 >Institución de salud</label
               >
               @if (isRequired('idSalud')) {
-                <span class="field-required" aria-hidden="true">*</span>
+                <app-empleado-field-required />
               }
             </div>
             <app-search-select
@@ -327,7 +327,7 @@
                 >Moneda plan salud</label
               >
               @if (isRequired('idMonedaPlan')) {
-                <span class="field-required" aria-hidden="true">*</span>
+                <app-empleado-field-required />
               }
             </div>
             <app-search-select
@@ -362,7 +362,7 @@
                   >Valor plan</label
                 >
                 @if (isRequired('valorPlan')) {
-                  <span class="field-required" aria-hidden="true">*</span>
+                  <app-empleado-field-required />
                 }
               </div>
               <input
@@ -389,7 +389,7 @@
                 Adicional GES (UF)
               </label>
               @if (isRequired('adicionalAugeGes')) {
-                <span class="field-required" aria-hidden="true">*</span>
+                <app-empleado-field-required />
               }
             </div>
             <input
@@ -453,7 +453,7 @@
                   Institución APVI
                 </label>
                 @if (isRequired('idInstitucionApv')) {
-                  <span class="field-required" aria-hidden="true">*</span>
+                  <app-empleado-field-required />
                 }
               </div>
               <app-search-select
@@ -477,7 +477,7 @@
                   Moneda APVI
                 </label>
                 @if (isRequired('idMonedaApv')) {
-                  <span class="field-required" aria-hidden="true">*</span>
+                  <app-empleado-field-required />
                 }
               </div>
               <app-search-select
@@ -501,7 +501,7 @@
                   Valor APVI
                 </label>
                 @if (isRequired('montoApv')) {
-                  <span class="field-required" aria-hidden="true">*</span>
+                  <app-empleado-field-required />
                 }
               </div>
               <input
@@ -527,7 +527,7 @@
                   Forma de Pago APVI
                 </label>
                 @if (isRequired('idFormaPagoApv')) {
-                  <span class="field-required" aria-hidden="true">*</span>
+                  <app-empleado-field-required />
                 }
               </div>
               <app-search-select
@@ -553,7 +553,7 @@
                   Deposito Convenido APVI
                 </label>
                 @if (isRequired('depositoConvenidoApvi')) {
-                  <span class="field-required" aria-hidden="true">*</span>
+                  <app-empleado-field-required />
                 }
               </div>
               <input

@@ -1185,6 +1185,10 @@ export class FichaEmpleadoContainer implements OnInit {
       return ['regimen', 'afp', 'ips', 'salud', 'apvi'];
     }
 
+    if (blockId === 'base') {
+      return ['base', 'contacto'];
+    }
+
     return [this.componentBlockId(blockId)];
   }
 

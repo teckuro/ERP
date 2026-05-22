@@ -230,7 +230,8 @@
   margin-left: 2px;
 }
 
-.form-field:has(app-field-help-tip) {
+.form-field:has(app-field-help-tip),
+.form-field:has(app-empleado-field-required) {
   overflow: visible;
 }
 

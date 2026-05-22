@@ -14,6 +14,7 @@ import {
   type SearchSelectOption,
 } from '../../../../../shared/components/ui/search-select.component';
 import { withEmptyNumberCatalog, withEmptyStringCatalog } from '../../../utils/empleado-select-options';
+import { EmpleadoFieldRequiredComponent } from '../../empleado-field-required/empleado-field-required.component';
 
 type DatosPersonalesControlName = keyof DatosPersonalesFormGroup['controls'];
 type ContactoControlName = keyof ContactoFormGroup['controls'];
@@ -21,7 +22,13 @@ type ContactoControlName = keyof ContactoFormGroup['controls'];
 @Component({
   selector: 'app-empleado-datos-personales',
   standalone: true,
-  imports: [ReactiveFormsModule, CalendarInputComponent, CardComponent, SearchSelectComponent],
+  imports: [
+    ReactiveFormsModule,
+    CalendarInputComponent,
+    CardComponent,
+    SearchSelectComponent,
+    EmpleadoFieldRequiredComponent,
+  ],
   templateUrl: './datos-personales.html',
   styleUrl: './datos-personales.css',
 })

@@ -9,12 +9,13 @@ import {
   type SearchSelectOption,
 } from '../../../../../shared/components/ui/search-select.component';
 import { withEmptyNumberCatalog } from '../../../utils/empleado-select-options';
+import { EmpleadoFieldRequiredComponent } from '../../empleado-field-required/empleado-field-required.component';
 
 type ContactoControlName = keyof ContactoFormGroup['controls'];
 
 @Component({
   selector: 'app-empleado-contacto',
-  imports: [ReactiveFormsModule, CardComponent, SearchSelectComponent],
+  imports: [ReactiveFormsModule, CardComponent, SearchSelectComponent, EmpleadoFieldRequiredComponent],
   templateUrl: './contacto.html',
   styleUrl: './contacto.css',
 })
