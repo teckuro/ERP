@@ -53,7 +53,10 @@ import {
   contarRecurrentesParaPrevalidacionMensual,
   type ProcesoMensualHechosPrevalidacion,
 } from '../rules/proceso-mensual-prevalidacion.rules';
-import { buildTrabajadoresPendientesRevision } from '../rules/proceso-mensual-trabajadores-prevalidacion.rules';
+import {
+  buildTrabajadoresPendientesRevision,
+  evaluarAptitudOperativaNominaTrabajador,
+} from '../rules/proceso-mensual-trabajadores-prevalidacion.rules';
 import {
   buildBorradorSnapshotFromPreNomina,
   buildPrevalidacionLecturaDesdeBorrador,
@@ -404,18 +407,9 @@ export class ProcesoMensualService {
     let trabajadoresPendientesRevision: ProcesoMensualHechosPrevalidacion['trabajadoresPendientesRevision'] = [];
     let lecturaEmpleados: ProcesoMensualHechosPrevalidacion['lecturaEmpleados'] = 'ok';
     let errorEmpleados: string | undefined;
+    let listadoEmpleados: Awaited<ReturnType<EmpleadosService['listar']>> = [];
     if (rEmp.status === 'fulfilled') {
-      const listado = rEmp.value as Awaited<ReturnType<EmpleadosService['listar']>>;
-      trabajadoresPendientesRevision = buildTrabajadoresPendientesRevision(listado);
-      for (const e of listado) {
-        if (e.estado === 'activo') {
-          if (e.aptoParaRemuneraciones) {
-            empleadosActivosAptos += 1;
-          } else {
-            empleadosActivosNoAptos += 1;
-          }
-        }
-      }
+      listadoEmpleados = rEmp.value as Awaited<ReturnType<EmpleadosService['listar']>>;
     } else {
       lecturaEmpleados = 'error';
       errorEmpleados = rEmp.reason instanceof Error ? rEmp.reason.message : String(rEmp.reason);
@@ -453,6 +447,26 @@ export class ProcesoMensualService {
     if (lecturaEntradasMensuales === 'error') {
       lecturaMovimientos = 'error';
       errorMovimientos = errorEntradasMensuales;
+    }
+
+    if (lecturaEmpleados === 'ok') {
+      trabajadoresPendientesRevision = buildTrabajadoresPendientesRevision(listadoEmpleados, entradasMensuales);
+      const entradasPorPersona = new Map<number, EntradaMensualPeriodo[]>();
+      for (const entrada of entradasMensuales) {
+        const personaEntradas = entradasPorPersona.get(entrada.idPersona) ?? [];
+        personaEntradas.push(entrada);
+        entradasPorPersona.set(entrada.idPersona, personaEntradas);
+      }
+      for (const e of listadoEmpleados) {
+        if (e.estado === 'activo') {
+          const aptitud = evaluarAptitudOperativaNominaTrabajador(e, entradasPorPersona.get(e.id) ?? []);
+          if (aptitud.listoParaNomina) {
+            empleadosActivosAptos += 1;
+          } else {
+            empleadosActivosNoAptos += 1;
+          }
+        }
+      }
     }
 
     let recurrentesConteo: ProcesoMensualHechosPrevalidacion['recurrentesConteo'];
@@ -585,7 +599,8 @@ export class ProcesoMensualService {
       const tieneObservaciones =
         personaEntradas.some((entrada) => entradaRequiereRevision(entrada) || entrada.warnings.length > 0) ||
         empleado.idContrato == null;
-      const estado = this.estadoTrabajadorBaseNomina(empleado, tieneBloqueos, tieneObservaciones);
+      const aptitud = evaluarAptitudOperativaNominaTrabajador(empleado, personaEntradas);
+      const estado = this.estadoTrabajadorBaseNomina(aptitud.bloqueadoParaNomina, tieneBloqueos, tieneObservaciones);
 
       return {
         idPersona: empleado.id,
@@ -593,9 +608,13 @@ export class ProcesoMensualService {
         rutLabel: empleado.rut?.trim() || 'RUT no disponible',
         contratoLabel: empleado.idContrato == null ? 'Contrato no disponible' : 'Contrato vigente',
         estado,
+        aptoFicha: aptitud.aptoFicha,
+        listoParaNomina: aptitud.listoParaNomina,
+        bloqueadoParaNomina: aptitud.bloqueadoParaNomina,
+        motivoBloqueoNomina: aptitud.motivo || undefined,
         asignacionesRecurrentes,
         movimientosDelMes,
-        observacion: this.observacionTrabajadorBaseNomina(empleado, estado, personaEntradas),
+        observacion: this.observacionTrabajadorBaseNomina(empleado, estado, personaEntradas, aptitud.motivo),
       };
     });
 
@@ -616,11 +635,11 @@ export class ProcesoMensualService {
   }
 
   private estadoTrabajadorBaseNomina(
-    empleado: EmpleadoListado,
+    bloqueadoParaNomina: boolean,
     tieneBloqueos: boolean,
     tieneObservaciones: boolean,
   ): BaseNominaTrabajadorEstado {
-    if (!empleado.aptoParaRemuneraciones) return 'excluido';
+    if (bloqueadoParaNomina) return 'bloqueado';
     if (tieneBloqueos) return 'bloqueado';
     if (tieneObservaciones) return 'con_observaciones';
     return 'listo';
@@ -630,7 +649,9 @@ export class ProcesoMensualService {
     empleado: EmpleadoListado,
     estado: BaseNominaTrabajadorEstado,
     entradas: readonly EntradaMensualPeriodo[],
+    motivoBloqueoNomina?: string,
   ): string {
+    if (estado === 'bloqueado' && motivoBloqueoNomina?.trim()) return motivoBloqueoNomina;
     if (estado === 'excluido') return 'Ficha no apta para remuneraciones.';
     const bloqueantes = entradas.filter(entradaBloqueaProceso).length;
     if (bloqueantes > 0) return `${bloqueantes} entrada(s) bloqueante(s).`;
@@ -675,7 +696,15 @@ export class ProcesoMensualService {
       this.haberesDescuentos.listarAsignacionesParaPrevalidacionMensual(periodo),
     ]);
     const preNomina = construirPreNominaPeriodo(prevalidacion, new Date().toISOString());
-    const aptos = empleadosListado.filter((e) => e.estado === 'activo' && e.aptoParaRemuneraciones);
+    const entradasPorPersona = new Map<number, EntradaMensualPeriodo[]>();
+    for (const entrada of prevalidacion.entradasMensuales ?? []) {
+      const personaEntradas = entradasPorPersona.get(entrada.idPersona) ?? [];
+      personaEntradas.push(entrada);
+      entradasPorPersona.set(entrada.idPersona, personaEntradas);
+    }
+    const aptos = empleadosListado.filter(
+      (e) => evaluarAptitudOperativaNominaTrabajador(e, entradasPorPersona.get(e.id) ?? []).listoParaNomina,
+    );
     const fichas = await Promise.all(aptos.map((e) => this.empleados.obtenerPorId(e.id)));
     const trabajadores = fichas.filter((f): f is NonNullable<typeof f> => f != null).map(trabajadorSnapshotDesdeFicha);
 

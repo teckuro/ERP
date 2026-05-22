@@ -1,3 +1,4 @@
+import { describe, expect, it } from 'vitest';
 import type { ParametroGeneral, PeriodoRemuneracionEstadoInfo } from '../../parametros-generales/models/parametro-general.model';
 import type { MovimientoVariableListadoFila } from '../../movimientos-variables/models/movimiento-variable.model';
 import type { EntradaMensualPeriodo } from '../entradas/models/entrada-mensual-periodo.model';
@@ -159,7 +160,7 @@ describe('proceso-mensual-prevalidacion.rules', () => {
     expect(r.advertencias.filter((a) => a.area === 'ENTRADAS_MENSUALES').length).toBe(0);
   });
 
-  it('sin parametros y entradas bloqueantes -> BLOQUEADO solo por parametros', () => {
+  it('sin parametros y entradas bloqueantes -> BLOQUEADO por parametros y entradas', () => {
     const r = construirPrevalidacionMensual(
       baseHechos({
         ultimoPg: null,
@@ -169,10 +170,10 @@ describe('proceso-mensual-prevalidacion.rules', () => {
     );
     expect(r.estado).toBe('BLOQUEADO');
     expect(r.bloqueos.some((b) => b.codigo === 'PARAMETROS_SIN_FILA')).toBe(true);
-    expect(r.advertencias.some((a) => a.codigo === 'ENTRADAS_BLOQUEANTES')).toBe(true);
+    expect(r.bloqueos.some((a) => a.codigo === 'ENTRADAS_BLOQUEANTES')).toBe(true);
   });
 
-  it('solo advertencias reales -> CON_ADVERTENCIAS (INFO no cuenta)', () => {
+  it('trabajadores bloqueados para nomina -> BLOQUEADO', () => {
     const r = construirPrevalidacionMensual(
       baseHechos({
         empleadosActivosNoAptos: 1,
@@ -180,7 +181,8 @@ describe('proceso-mensual-prevalidacion.rules', () => {
         movimientos: [mv('VALIDADO')],
       }),
     );
-    expect(r.estado).toBe('CON_ADVERTENCIAS');
+    expect(r.estado).toBe('BLOQUEADO');
+    expect(r.bloqueos.some((b) => b.codigo === 'TRABAJADORES_BLOQUEADOS_NOMINA')).toBe(true);
     expect(r.informaciones.length).toBeGreaterThan(0);
   });
 
@@ -214,8 +216,8 @@ describe('proceso-mensual-prevalidacion.rules', () => {
     expect(r.resumen.resumenEntradasMensuales?.pendientesRevision).toBe(1);
     expect(r.resumen.resumenEntradasMensuales?.legacyMovimientos).toBe(1);
     expect(r.resumen.resumenEntradasMensuales?.bloqueantes).toBe(1);
-    expect(r.bloqueos.some((b) => b.codigo === 'ENTRADAS_BLOQUEANTES')).toBe(false);
-    expect(r.advertencias.some((a) => a.codigo === 'ENTRADAS_BLOQUEANTES')).toBe(true);
+    expect(r.bloqueos.some((b) => b.codigo === 'ENTRADAS_BLOQUEANTES')).toBe(true);
+    expect(r.advertencias.some((a) => a.codigo === 'ENTRADAS_BLOQUEANTES')).toBe(false);
   });
 
   it('recurrentes invalidas -> CON_ADVERTENCIAS (no bloquea generar nómina)', () => {

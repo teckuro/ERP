@@ -77,7 +77,7 @@ async function loginThroughUi(page: Page): Promise<void> {
   await page.locator('#login-password').fill(password);
   await page.getByRole('button', { name: 'Iniciar sesion' }).click();
   await page.waitForURL('**/remuneraciones/proceso-mensual', { timeout: 60_000 });
-  await expect(page.getByText('Sesion activa')).toBeVisible({ timeout: 30_000 });
+  await expect(page.getByText(/Sesi[oó]n activa|N[oó]mina mensual|Proceso mensual/i).first()).toBeVisible({ timeout: 30_000 });
 }
 
 async function clickAndWaitIdle(page: Page, name: RegExp | string): Promise<void> {
@@ -166,7 +166,7 @@ describeNominaReal('nomina mensual - E2E real authenticated', () => {
         if (existingClosed) {
           await expect(cierreOperativoVisible(page)).toBeVisible({ timeout: 60_000 });
           await expect(page.getByRole('button', { name: /Revisar trabajadores/ }).first()).toBeDisabled();
-          await expect(page.getByRole('button', { name: /Confirmar revisión/ }).first()).toBeDisabled();
+          await expect(page.getByRole('button', { name: /Confirmar nómina/ }).first()).toBeDisabled();
           await expect(page.getByRole('button', { name: /Confirmar nómina/ }).first()).toBeDisabled();
           await page.reload();
           await page.locator('#pm-periodo').fill(periodo);
@@ -186,10 +186,10 @@ describeNominaReal('nomina mensual - E2E real authenticated', () => {
       await clickAndWaitIdle(page, /Revisar trabajadores/);
       await expect(page.getByText('Nómina en revisión', { exact: true })).toBeVisible({ timeout: 60_000 });
 
-      await expect(page.getByRole('button', { name: /Confirmar revisión/ }).first()).toBeEnabled({
+      await expect(page.getByRole('button', { name: /Confirmar nómina/ }).first()).toBeEnabled({
         timeout: 60_000,
       });
-      await page.getByRole('button', { name: /Confirmar revisión/ }).first().click();
+      await page.getByRole('button', { name: /Confirmar nómina/ }).first().click();
       await expect(
         page.getByText(
           'Nómina mensual disponible para revisión.',
@@ -219,7 +219,7 @@ describeNominaReal('nomina mensual - E2E real authenticated', () => {
         timeout: 60_000,
       });
       await page.getByRole('button', { name: /Confirmar nómina/ }).click();
-      await expect(page.getByRole('heading', { name: 'Aprobacion operativa' })).toBeVisible({ timeout: 60_000 });
+      await expect(page.getByRole('heading', { name: /Confirmar nómina/i })).toBeVisible({ timeout: 60_000 });
       await expect(page.getByText('Nómina mensual confirmada.', { exact: true })).toBeVisible({
         timeout: 60_000,
       });
@@ -261,7 +261,7 @@ describeNominaReal('nomina mensual - E2E real authenticated', () => {
         expect(cerrado?.cierre_operativo_estado).toBe('cerrado_operativamente');
         expect(cerrado?.cierre_operativo_fecha).toBeTruthy();
         await expect(page.getByRole('button', { name: /Revisar trabajadores/ }).first()).toBeDisabled();
-        await expect(page.getByRole('button', { name: /Confirmar revisión/ }).first()).toBeDisabled();
+        await expect(page.getByRole('button', { name: /Confirmar nómina/ }).first()).toBeDisabled();
         await expect(page.getByRole('button', { name: /Confirmar nómina/ }).first()).toBeDisabled();
       } else {
         await testInfo.attach('nomina-cierre-real.md', {

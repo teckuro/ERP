@@ -79,7 +79,7 @@ describe('proceso-mensual-estado-operativo.rules', () => {
     expect(vm.accionPrincipal.accionLocal).toBe('generarBase');
   });
 
-  it('con BLOQ-006 y parametros pendientes prioriza parametros antes de generar', () => {
+  it('con BLOQ-006 y parametros pendientes prioriza trabajadores bloqueados', () => {
     const vm = resolverEstadoOperativoProcesoMensual(inputBase({
       tienePrevalidacion: true,
       parametrosOperativos: false,
@@ -95,8 +95,8 @@ describe('proceso-mensual-estado-operativo.rules', () => {
     }));
 
     expect(vm.estadoClave).toBe('periodo_con_pendientes');
-    expect(vm.accionPrincipal.label).toBe('Revisar parámetros');
-    expect(vm.accionPrincipal.ruta).toBe('/parametros');
+    expect(vm.accionPrincipal.label).toBe('Revisar trabajadores');
+    expect(vm.accionPrincipal.accionLocal).toBe('revisarBloqueos');
   });
 
   it('validado sin bloqueos queda listo para generar base aunque exista bloqueo sintetico de base pendiente', () => {
@@ -146,8 +146,8 @@ describe('proceso-mensual-estado-operativo.rules', () => {
     }));
 
     expect(vm.estadoClave).toBe('base_lista');
-    expect(vm.accionPrincipal.label).toBe('Confirmar revisión');
-    expect(vm.accionPrincipal.accionLocal).toBe('calcularPreliminar');
+    expect(vm.accionPrincipal.label).toBe('Confirmar nómina');
+    expect(vm.accionPrincipal.accionLocal).toBe('confirmarNomina');
   });
 
   it('calculo con bloqueos no invita a guardar', () => {
@@ -178,9 +178,10 @@ describe('proceso-mensual-estado-operativo.rules', () => {
     }));
 
     expect(vm.estadoClave).toBe('resultado_listo_para_guardar');
-    expect(vm.accionPrincipal.label).toBe('Confirmar revisión');
+    expect(vm.accionPrincipal.label).toBe('Confirmar nómina');
     expect(vm.accionPrincipal.descripcion).not.toContain('resultado preliminar');
     expect(vm.queFaltaAhora.map((item) => item.titulo).join(' ')).not.toContain('Guardar');
+    expect(vm.accionPrincipal.accionLocal).toBe('confirmarNomina');
   });
 
   it('resultado guardado pide confirmar nomina', () => {
@@ -194,7 +195,33 @@ describe('proceso-mensual-estado-operativo.rules', () => {
 
     expect(vm.estadoClave).toBe('resultado_guardado');
     expect(vm.accionPrincipal.label).toBe('Confirmar nómina');
+    expect(vm.accionPrincipal.accionLocal).toBe('confirmarNomina');
     expect(vm.etapaActiva).toBe('aprobar_cerrar');
+  });
+
+  it('trata trabajadores bloqueados y entradas bloqueantes como criticos antes de generar', () => {
+    const vm = resolverEstadoOperativoProcesoMensual(inputBase({
+      tienePrevalidacion: true,
+      parametrosOperativos: true,
+      puedeGenerarBase: true,
+      bloqueosPrevalidacion: [
+        {
+          codigo: 'TRABAJADORES_BLOQUEADOS_NOMINA',
+          titulo: 'Trabajadores bloqueados',
+          descripcion: 'Revisa trabajadores.',
+          severidad: 'danger',
+        },
+        {
+          codigo: 'ENTRADAS_BLOQUEANTES',
+          titulo: 'Entradas bloqueantes',
+          descripcion: 'Revisa movimientos.',
+          severidad: 'danger',
+        },
+      ],
+    }));
+
+    expect(vm.estadoClave).toBe('periodo_con_pendientes');
+    expect(vm.accionPrincipal.label).toBe('Revisar trabajadores');
   });
 
   it('nomina cerrada dirige a liquidaciones oficiales', () => {

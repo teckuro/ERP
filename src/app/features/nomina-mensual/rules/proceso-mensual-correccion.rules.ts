@@ -10,7 +10,10 @@ import type {
 import type {
   IncidenciaPeriodo,
   IncidenciaPeriodoAccion,
+  IncidenciasPeriodoView,
 } from './proceso-mensual-incidencias-periodo.rules';
+import { limpiarCopyTecnicoNomina } from './proceso-mensual-copy-limpio.rules';
+import { resolveIncidenciaMovimientoCriticaPeriodo } from './proceso-mensual-incidencias-periodo.rules';
 import { CODIGO_INCIDENCIA_FICHA_PENDIENTE } from './proceso-mensual-trabajadores-prevalidacion.rules';
 import type { NominaMasivaEstado, NominaMasivaFila, NominaMasivaFiltro } from './proceso-mensual-masivo-layout.rules';
 import type { ProcesoMensualAccionLocal, ProcesoMensualPendienteVm } from './proceso-mensual-estado-operativo.rules';
@@ -20,6 +23,7 @@ import {
   resolveWorkspaceTargetFromAccionLocal,
   resolveWorkspaceTargetFromDetalleTab,
   type NominaWorkspaceFlowTarget,
+  type RevisionRailCtaVm,
 } from './proceso-mensual-flow-nav.rules';
 
 export type AccionCorreccionKind =
@@ -318,6 +322,67 @@ export function resolveAccionCorreccionDesdePendienteVm(
     return accionDesdeWorkspaceTarget(destino, pendiente.accionLabel ?? pendiente.titulo);
   }
   return accionDesdeDetalleTab(tab, pendiente.accionLabel ?? pendiente.titulo);
+}
+
+export interface RevisionRailCtaEnriquecida extends RevisionRailCtaVm {
+  title?: string;
+  destaqueDetalle?: string;
+  accionCorreccion?: AccionCorreccionVm;
+}
+
+function esCtaRevisionParametros(
+  cta: RevisionRailCtaVm,
+  destino: NominaWorkspaceFlowTarget | null,
+): boolean {
+  const norm = cta.label.trim().toLowerCase();
+  if (norm.includes('parámetro') || norm.includes('parametro')) {
+    return true;
+  }
+  return destino?.legacyTab === 'parametros';
+}
+
+/** Si parámetros están listos, sustituye CTA de parámetros por el movimiento más crítico del período. */
+export function refineRevisionRailCta(
+  cta: RevisionRailCtaVm,
+  destino: NominaWorkspaceFlowTarget | null,
+  input: {
+    parametrosListos: boolean;
+    parametrosConIncidenciaRevision: boolean;
+    incidencias: IncidenciasPeriodoView;
+  },
+): RevisionRailCtaEnriquecida {
+  if (!input.parametrosListos || input.parametrosConIncidenciaRevision) {
+    return { ...cta };
+  }
+  if (!esCtaRevisionParametros(cta, destino)) {
+    return { ...cta };
+  }
+
+  const inc = resolveIncidenciaMovimientoCriticaPeriodo(input.incidencias);
+  if (inc) {
+    const accion = resolveAccionCorreccionDesdeIncidencia(inc);
+    if (accion) {
+      return {
+        label: accion.label,
+        title: limpiarCopyTecnicoNomina(inc.titulo),
+        destaqueDetalle: limpiarCopyTecnicoNomina(inc.detalle || inc.titulo),
+        usarPanel: false,
+        accionCorreccion: accion,
+      };
+    }
+  }
+
+  return {
+    label: 'Revisar movimientos',
+    title: 'Revisar el movimiento más crítico del período',
+    usarPanel: false,
+    accionCorreccion: {
+      label: 'Revisar movimientos',
+      kind: 'panel_filtro',
+      filtroMasivo: 'con_movimientos',
+      detalleVista: 'trabajadores',
+    },
+  };
 }
 
 export function resolveAccionCorreccionDesdeFranjaArea(

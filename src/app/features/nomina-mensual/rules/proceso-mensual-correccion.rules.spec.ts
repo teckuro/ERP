@@ -1,9 +1,12 @@
 import { describe, expect, it } from 'vitest';
 
 import type { NominaMasivaFila } from './proceso-mensual-masivo-layout.rules';
+import { buildRevisionRailCta, resolveWorkspaceTargetFromDetalleTab } from './proceso-mensual-flow-nav.rules';
+import { buildIncidenciasPeriodo } from './proceso-mensual-incidencias-periodo.rules';
 import {
   filtroInicialRevisionTrabajadores,
   idPersonaPreseleccionRevision,
+  refineRevisionRailCta,
   resolveAccionCorreccionDesdeFranjaArea,
   resolveAccionCorreccionDesdeFrameCta,
   resolveAccionCorreccionDesdeIncidencia,
@@ -122,6 +125,33 @@ describe('proceso-mensual-correccion.rules', () => {
       parametrosConIncidenciaRevision: false,
     });
     expect(accion?.filtroMasivo).toBe('con_movimientos');
+  });
+
+  it('refineRevisionRailCta sustituye parametros por movimiento critico si listos', () => {
+    const incidencias = buildIncidenciasPeriodo({
+      bloqueosOperativos: [],
+      advertenciasOperativas: [
+        {
+          codigo: 'MOVIMIENTO_PENDIENTE',
+          titulo: 'Bono sin aprobar',
+          descripcion: 'Movimiento pendiente de aprobación',
+          severidad: 'warning',
+          accionLabel: 'Revisar movimiento',
+        },
+      ],
+      resultadoBloqueos: [],
+      resultadoAdvertencias: [],
+    });
+    const destino = resolveWorkspaceTargetFromDetalleTab('parametros');
+    const base = buildRevisionRailCta('parametros', destino);
+    const refinado = refineRevisionRailCta(base, destino, {
+      parametrosListos: true,
+      parametrosConIncidenciaRevision: false,
+      incidencias,
+    });
+    expect(refinado.label).not.toMatch(/parámetro/i);
+    expect(refinado.destaqueDetalle).toMatch(/movimiento|bono/i);
+    expect(refinado.accionCorreccion?.kind).toBeDefined();
   });
 
   it('resolveAccionCorreccionDesdeFranjaArea parametros incompletos usa overlay', () => {

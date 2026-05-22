@@ -34,6 +34,18 @@ export interface ResolveDetalleTabInput {
   validacionCalculo: ValidacionCalculoPreliminarView;
   bloqueosOperativos: ProcesoMensualPendienteVm[];
   advertenciasOperativas: ProcesoMensualPendienteVm[];
+  /** Parámetros en estado listo/revisados: no priorizar tab parámetros por pendientes leves. */
+  parametrosListos?: boolean;
+}
+
+function primerPendienteRevision(input: ResolveDetalleTabInput): ProcesoMensualPendienteVm | undefined {
+  for (const pendiente of [...input.bloqueosOperativos, ...input.advertenciasOperativas]) {
+    if (input.parametrosListos && resolveDetalleTabFromPendiente(pendiente) === 'parametros') {
+      continue;
+    }
+    return pendiente;
+  }
+  return undefined;
 }
 
 export function humanizarErrorEjecucion(texto: string): string {
@@ -62,7 +74,7 @@ export function mapDestinoToDetalleTab(destino: InformacionPeriodoDestino): Deta
 }
 
 export function resolveDetalleTabForRevision(input: ResolveDetalleTabInput): DetalleOperativoTab {
-  const pendiente = input.bloqueosOperativos[0] ?? input.advertenciasOperativas[0];
+  const pendiente = primerPendienteRevision(input);
   if (pendiente) {
     return resolveDetalleTabFromPendiente(pendiente);
   }
@@ -94,7 +106,7 @@ function resolveDetalleTabFromCodigo(codigo: string, accionLocal?: ValidacionAcc
     return 'resultado';
   }
   if (accionLocal === 'revisarBloqueos') return 'trabajadores';
-  if (accionLocal === 'calcularPreliminar' || accionLocal === 'guardarResultado') return 'resultado';
+  if (accionLocal === 'calcularPreliminar' || accionLocal === 'guardarResultado' || accionLocal === 'confirmarNomina') return 'resultado';
   return 'parametros';
 }
 

@@ -1,3 +1,8 @@
+## 2026-05-22 - Nómina mensual: rail Revisión sin parámetros listos
+
+- **Cambio:** si parámetros están listos/revisados, el CTA principal del rail deja de ser «Revisar parámetros» y muestra el movimiento más crítico del período (etiqueta + bajada); pendientes secundarios omiten enlaces a parámetros.
+- **Archivos:** `proceso-mensual-correccion.rules.ts`, `proceso-mensual-flow-nav.rules.ts`, `proceso-mensual-informacion-periodo.rules.ts`, `proceso-mensual-incidencias-periodo.rules.ts`, `proceso-mensual-presentacion.facade.ts`, `proceso-mensual-workspace.component.html`, `proceso-mensual-container.css`.
+
 ## 2026-05-22 - Nómina mensual: botones de acción en detalle
 
 - **Cambio:** columna Acción con botón compacto (icono Lucide + etiqueta + `title`); regla `resolveDetalleMensualAccionUi`.

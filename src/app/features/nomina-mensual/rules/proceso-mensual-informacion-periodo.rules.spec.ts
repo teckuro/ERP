@@ -1,3 +1,4 @@
+import { describe, expect, it } from 'vitest';
 import { buildInformacionPeriodoView, resolveDetalleTabForRevision } from './proceso-mensual-informacion-periodo.rules';
 import type { ValidacionCalculoPreliminarView } from '../containers/proceso-mensual-container/models/proceso-mensual-container.vm';
 
@@ -144,7 +145,7 @@ describe('proceso-mensual-informacion-periodo.rules', () => {
         estado: 'advertencias',
         advertencias: [
           {
-            codigo: 'EMPLEADOS_ACTIVOS_NO_APTOS',
+            codigo: 'TRABAJADORES_BLOQUEADOS_NOMINA',
             titulo: 'Trabajadores por revisar',
             descripcion: 'Existen trabajadores activos no aptos.',
             severidad: 'advertencia',
@@ -235,5 +236,29 @@ describe('proceso-mensual-informacion-periodo.rules', () => {
       advertenciasOperativas: [],
     });
     expect(tab).toBe('parametros');
+  });
+
+  it('con parametros listos omite pendiente PARAM y prioriza otro ambito', () => {
+    const tab = resolveDetalleTabForRevision({
+      errorEjecucion: null,
+      validacionCalculo: validacionBase(),
+      bloqueosOperativos: [],
+      advertenciasOperativas: [
+        {
+          codigo: 'PARAM_MIN_X',
+          titulo: 'Parámetro opcional',
+          descripcion: 'Opcional',
+          severidad: 'warning',
+        },
+        {
+          codigo: 'ADV-003',
+          titulo: 'Ficha pendiente',
+          descripcion: 'Revise ficha',
+          severidad: 'warning',
+        },
+      ],
+      parametrosListos: true,
+    });
+    expect(tab).toBe('trabajadores');
   });
 });

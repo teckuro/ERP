@@ -563,6 +563,18 @@ function crearResumen(todas: IncidenciaPeriodo[]): IncidenciasPeriodoResumen {
   };
 }
 
+/** Movimiento o recurrente más urgente del período (bloqueo o advertencia). */
+export function resolveIncidenciaMovimientoCriticaPeriodo(
+  incidencias: IncidenciasPeriodoView,
+): IncidenciaPeriodo | null {
+  const candidatas = [
+    ...(incidencias.porAmbito.movimientos ?? []),
+    ...(incidencias.porAmbito.recurrentes ?? []),
+  ].filter((inc) => inc.severidad === 'bloqueo' || inc.severidad === 'advertencia');
+  const ordenadas = ordenarIncidencias(candidatas);
+  return ordenadas[0] ?? null;
+}
+
 export function buildIncidenciasPeriodo(input: BuildIncidenciasPeriodoInput): IncidenciasPeriodoView {
   const crudas: IncidenciaPeriodo[] = [
     ...input.bloqueosOperativos.map((item) => mapPendienteToIncidencia(item, 'bloqueo')),

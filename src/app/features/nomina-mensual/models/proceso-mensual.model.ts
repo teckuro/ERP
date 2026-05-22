@@ -110,6 +110,10 @@ export interface TrabajadorPendienteRevisionPeriodo {
   detalleCorreccion?: string;
   estadoFicha: EmpleadoEstadoFicha;
   aptoParaRemuneraciones: boolean;
+  aptoFicha?: boolean;
+  listoParaNomina?: boolean;
+  bloqueanteParaNomina?: boolean;
+  motivoBloqueoNomina?: string;
 }
 
 export interface ProcesoMensualPrevalidacion {
@@ -140,6 +144,10 @@ export interface BaseNominaTrabajadorResumen {
   rutLabel: string;
   contratoLabel: string;
   estado: BaseNominaTrabajadorEstado;
+  aptoFicha?: boolean;
+  listoParaNomina?: boolean;
+  bloqueadoParaNomina?: boolean;
+  motivoBloqueoNomina?: string;
   asignacionesRecurrentes: number;
   movimientosDelMes: number;
   observacion: string;

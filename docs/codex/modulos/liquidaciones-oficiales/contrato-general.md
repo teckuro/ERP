@@ -52,7 +52,7 @@ sin service_role desde frontend
 
 ```txt
 snapshot activo
-snapshot aprobado operativamente
+snapshot con revision interna vigente
 nomina mensual confirmada operativamente
 snapshot no reemplazado
 trabajadores existentes

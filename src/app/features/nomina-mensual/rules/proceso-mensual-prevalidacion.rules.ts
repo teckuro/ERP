@@ -124,6 +124,9 @@ const CODIGOS_BLOQUEO_GENERACION_NOMINA = new Set([
   'PARAMETROS_SIN_FILA',
   'PARAMETROS_CALENDARIO_LECTURA',
   'PARAMETROS_ESTADO_PERIODO_INOPERATIVO',
+  'TRABAJADORES_BLOQUEADOS_NOMINA',
+  'EMPLEADOS_SIN_ACTIVOS_APTOS',
+  'ENTRADAS_BLOQUEANTES',
 ]);
 
 export function mensajeBloqueaGeneracionNomina(mensaje: ProcesoMensualMensaje): boolean {
@@ -349,27 +352,27 @@ export function construirPrevalidacionMensual(hechos: ProcesoMensualHechosPreval
   } else {
     if (hechos.empleadosActivosAptos === 0) {
       pushMsg(
-        advertencias,
+        bloqueos,
         'EMPLEADOS_SIN_ACTIVOS_APTOS',
         'TRABAJADORES',
-        'ADVERTENCIA',
-        'No hay trabajadores activos aptos para remuneraciones.',
+        'BLOQUEO',
+        'No hay trabajadores listos para nomina en el periodo.',
       );
       itemTrab = 'CON_PROBLEMAS';
-      detalleTrab = 'Sin activos aptos';
+      detalleTrab = 'Sin trabajadores listos';
     }
     if (hechos.empleadosActivosNoAptos > 0) {
       pushMsg(
-        advertencias,
-        'EMPLEADOS_ACTIVOS_NO_APTOS',
+        bloqueos,
+        'TRABAJADORES_BLOQUEADOS_NOMINA',
         'TRABAJADORES',
-        'ADVERTENCIA',
-        'Existen trabajadores activos no aptos para remuneraciones; revisar fichas.',
+        'BLOQUEO',
+        'Existen trabajadores activos con datos criticos pendientes para la nomina mensual.',
       );
       if (itemTrab === 'LISTO') {
         itemTrab = 'CON_PROBLEMAS';
       }
-      detalleTrab = `${hechos.empleadosActivosNoAptos} activo(s) no apto(s)`;
+      detalleTrab = `${hechos.empleadosActivosNoAptos} trabajador(es) bloqueado(s)`;
     }
   }
   items.push({

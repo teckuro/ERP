@@ -765,7 +765,7 @@ function buildAprobacionOperativaMetadata(snapshot: NominaCalculoPeriodoSnapshot
     totalBloqueados: snapshot.totalBloqueados,
     totalAdvertencias: snapshot.totalAdvertencias,
     origen: snapshot.origen,
-    notaAlcance: 'Aprobacion operativa interna; no cierra periodo ni emite liquidaciones.',
+    notaAlcance: 'Revision interna de nomina; no cierra periodo ni emite liquidaciones.',
   };
 }
 

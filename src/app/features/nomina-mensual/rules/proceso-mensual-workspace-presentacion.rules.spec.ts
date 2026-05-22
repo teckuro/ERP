@@ -48,7 +48,7 @@ describe('proceso-mensual-workspace-presentacion.rules', () => {
     expect(resolveFranjaItemTono('Por revisar')).toBe('review');
     expect(resolveFranjaItemTono('2 aprobados · 1 pendientes')).toBe('review');
     expect(resolveFranjaItemTono('Revisados')).toBe('ok');
-    expect(resolveFranjaItemTono('1 incluido')).toBe('ok');
+    expect(resolveFranjaItemTono('1 listo')).toBe('ok');
   });
 
   it('NOMINA_WORKSPACE_TABS legacy conserva tabs internos', () => {
@@ -108,7 +108,7 @@ describe('proceso-mensual-workspace-presentacion.rules', () => {
   it('buildNominaWorkspaceTabVisibleSummaries resume detalle e historial', () => {
     const summaries = buildNominaWorkspaceTabVisibleSummaries({
       resumenSuperior: {
-        trabajadores: '2 incluidos',
+        trabajadores: '2 listos',
         parametros: 'Revisados',
         movimientos: '3 aprobados · 1 pendientes',
         recurrentes: '4 vigentes',

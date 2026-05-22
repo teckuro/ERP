@@ -8,23 +8,24 @@ Para nuevas fases de producto y UX, el modulo se entiende como `Nómina mensual`
 Nómina mensual confirmada = fuente oficial para generar liquidaciones.
 ```
 
-La experiencia visible debe evolucionar hacia:
+La experiencia visible vigente es:
 
 ```txt
-Generar nómina
+Verificar período
+-> Generar nómina
 -> Revisar trabajadores
 -> Confirmar nómina
 -> Generar liquidaciones
 ```
 
-Los pasos tecnicos de validacion, base, calculo, snapshot, aprobacion y cierre pueden seguir existiendo internamente, pero no deben dominar el copy principal para RRHH. La revision debe bajar a nivel trabajador: listo, revisar, bloqueado, cambio detectado u omitido.
+Los pasos tecnicos de validacion, base, calculo, snapshot, aprobacion y cierre pueden seguir existiendo internamente, pero no deben dominar el copy principal para RRHH. La revision debe bajar a nivel trabajador: listo para nomina, revisar, bloqueado, cambio detectado u omitido. No debe existir una confirmacion de revision como segundo camino visible: el CTA principal de salida es `Confirmar nomina`.
 
 Esta decision no cambia por si sola rutas, servicios, SQL, motor ni persistencia. Orienta las fases futuras para que `Preparar nómina` deje de ser tablero tecnico y pase a ser workspace de nómina mensual confirmable.
 
 
 ## 1. Objetivo del modulo
 
-Guiar el **proceso mensual** por periodo `YYYY-MM`: revisar prerequisitos (parametros, trabajadores, conceptos, recurrentes, movimientos variables) antes de una **futura** fase de calculo y liquidaciones. En la version actual **no calcula** remuneraciones ni genera liquidaciones.
+Guiar el **proceso mensual** por periodo `YYYY-MM`: verificar prerequisitos, generar la nomina mensual, revisar trabajadores, confirmar la version oficial y habilitar liquidaciones desde esa version confirmada.
 
 > REM-MOV-UNIFY-01: en UI visible, los hechos puntuales del periodo se nombran como **Movimientos del mes**. `novedades mensuales`, `entradas mensuales` y `movimientos variables` quedan como nombres tecnicos o legacy cuando el contexto de arquitectura lo requiera.
 
@@ -33,12 +34,12 @@ Guiar el **proceso mensual** por periodo `YYYY-MM`: revisar prerequisitos (param
 - Pantalla **Proceso mensual** bajo `/remuneraciones/proceso-mensual`.
 - **Prevalidaciones** orquestadas por `ProcesoMensualService` con reglas puras en `proceso-mensual-prevalidacion.rules.ts`, grupos minimos en `proceso-mensual-parametros-minimos.rules.ts` y conteos de recurrentes en `proceso-mensual-recurrentes.rules.ts`.
 - UI en `features/nomina-mensual/containers/proceso-mensual-container/`; pagina de ruta solo wrapper (`frontend-interfaces`).
-- Periodo activo global como fuente de verdad; la pantalla hija no duplica selector editable. La accion **Validar periodo** queda como CTA principal guiado por estado, no como boton repetido en el header. Muestra estado global, bloqueos, advertencias, informaciones y filas por area; resumen con conteos de recurrentes y linea compacta `parametrosGrupos` (ids y clasificacion, sin cifras normativas).
+- Periodo activo global como fuente de verdad; la pantalla hija no duplica selector editable. La accion **Verificar periodo** queda como primer CTA principal guiado por estado, no como boton repetido en el header. Muestra estado global, bloqueos, advertencias, informaciones y filas por area; resumen con conteos de recurrentes y linea compacta `parametrosGrupos` (ids y clasificacion, sin cifras normativas).
 
 ## 3. Fuera de alcance (explicito)
 
-- Motor de calculo, totales de nomina, impuesto unico, cotizaciones.
-- Liquidaciones productivas, snapshots, cierre contable.
+- Calculo legal completo de impuesto unico y cotizaciones fuera del motor interno existente.
+- Cierre contable.
 - Generacion Previred, LRE, archivos bancarios.
 - Bloqueo duro de periodo en BD, aprobaciones, roles/JWT/RLS.
 - Rediseno visual integral (fase UX-FINAL aparte).
@@ -49,7 +50,7 @@ Lectura via `ParametrosGeneralesService`: `obtenerUltimoHastaPeriodo(periodo)`, 
 
 ## 5. Relacion con empleados
 
-Conteo de trabajadores **activos** con `aptoParaRemuneraciones` via `EmpleadosService.listar()` (sin conteos demo inventados).
+Conteo de trabajadores **activos listos para nomina** via `EmpleadosService.listar()` y reglas puras de nomina mensual. Un trabajador solo cuenta como listo si esta activo, tiene ficha valida, `aptoParaRemuneraciones === true`, contrato visible y no tiene entradas bloqueantes del periodo. `apto de ficha` es solo dato base; no equivale a listo para nomina.
 
 ## 6. Relacion con conceptos
 
@@ -61,7 +62,7 @@ Lectura del mantenimiento de conceptos via `HaberesDescuentosService.listarConce
 
 ## 8. Relacion con movimientos variables
 
-`MovimientosVariablesService.listarPorPeriodo(periodo)` alimenta conteos por estado. Reglas: `VALIDADO` no bloquea; `BORRADOR` -> advertencia; `OBSERVADO`, `BLOQUEADO`, `INCLUIDO_EN_PROCESO` -> bloqueo; `ANULADO` ignorado para esas reglas.
+`EntradasMensualesPeriodoService` es la fuente canonica de movimientos del periodo; `MovimientosVariablesService.listarPorPeriodo(periodo)` queda como compatibilidad legacy cuando aplique. Las entradas bloqueantes impiden generar o confirmar nomina.
 
 Para el usuario final, este flujo se comunica como `Movimientos del mes`: bonos puntuales, descuentos unicos, anticipos, ausencias, ajustes, retroactivos o reintegros del periodo. Solo los aprobados/validados deben considerarse al preparar nomina.
 
@@ -73,9 +74,9 @@ Estados globales: `SIN_EVALUAR` (antes de ejecutar), `LISTO_PARA_CALCULO`, `CON_
 
 Los mensajes llevan `codigo`, `area`, `severidad` y `texto`. Severidades: `BLOQUEO`, `ADVERTENCIA`, `INFO`. Los `INFO` de integracion futura van en `informaciones` y no cambian el estado a `CON_ADVERTENCIAS`.
 
-## 11. Motor y liquidaciones (futuro)
+## 11. Motor, confirmacion y liquidaciones
 
-El motor consumira los mismos prerequisitos validados aqui. Las liquidaciones seran **snapshot** inmutable (no formulario libre). Previred y LRE seran salidas posteriores, no pasos CRUD en esta pantalla.
+El motor consume los mismos prerequisitos validados aqui y guarda versiones revisables. La nomina confirmada es la fuente oficial de liquidaciones; Liquidaciones oficiales no recalcula parametros, movimientos, recurrentes ni datos vivos. Previred y LRE son salidas posteriores, no pasos CRUD en esta pantalla.
 
 ## 12. Referencias
 
@@ -120,7 +121,7 @@ Periodo activo global
 
 No se deben promover como flujo principal terminos de aplicacion como snapshot, metadata, persistencia, payload, RPC, version tecnica, hash o identificadores internos. Si son necesarios para soporte o auditoria, deben quedar en disclosures secundarios y con copy de negocio (`Referencia interna`, `Version interna`, `Detalle del resultado guardado`).
 
-En flujos operativos de Remuneraciones, `PeriodoActivoService` es la fuente visual y funcional del periodo activo. `Preparar nomina` debe mostrarlo como contexto compacto y validar/generar/calcular/guardar/aprobar/cerrar sobre ese periodo.
+En flujos operativos de Remuneraciones, `PeriodoActivoService` es la fuente visual y funcional del periodo activo. `Preparar nomina` debe mostrarlo como contexto compacto y ejecutar internamente validar/generar/calcular/guardar/aprobar/cerrar sobre ese periodo, con un unico CTA visible de confirmacion cuando corresponda.
 
 No debe existir un segundo `input type="month"` local en `Preparar nomina` mientras el header/padre ya tenga selector global. La accion principal visible se resuelve en la matriz de estado operativo; el header conserva estado y contexto, no un CTA duplicado.
 

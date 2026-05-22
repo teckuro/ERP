@@ -34,9 +34,9 @@ function observacionDesdeValidacion(item: ValidacionOperativaItemView): Resultad
 function etiquetaRevisionAprobacion(estado: RevisionAprobacionEstado): string {
   switch (estado) {
     case 'aprobado':
-      return 'Aprobado operativamente';
+      return 'Nómina revisada';
     case 'aprobado_desactualizado':
-      return 'Aprobacion desactualizada';
+      return 'Confirmación desactualizada';
     case 'pendiente_guardado':
       return 'Pendiente de guardado';
     case 'pendiente_revision':
@@ -44,7 +44,7 @@ function etiquetaRevisionAprobacion(estado: RevisionAprobacionEstado): string {
     case 'actualizado_sin_guardar':
       return 'Resultado actualizado sin guardar';
     case 'no_apto':
-      return 'No apto para aprobacion';
+      return 'Bloqueada para nómina';
     case 'listo':
       return 'Lista para confirmar';
     case 'sin_resultado_guardado':
@@ -56,17 +56,17 @@ function etiquetaRevisionAprobacion(estado: RevisionAprobacionEstado): string {
 function descripcionRevisionAprobacion(estado: RevisionAprobacionEstado): string {
   switch (estado) {
     case 'aprobado':
-      return 'Revision de nomina confirmada.';
+      return 'La revisión de nómina está lista para la confirmación oficial.';
     case 'aprobado_desactualizado':
-      return 'La aprobacion operativa anterior quedo desactualizada porque existe un resultado posterior. Guarda y aprueba nuevamente el resultado actualizado.';
+      return 'La confirmación anterior quedó desactualizada porque existe un resultado posterior. Guarda y confirma nuevamente el resultado actualizado.';
     case 'pendiente_guardado':
-      return 'El resultado calculado debe guardarse antes de revisarlo para aprobacion.';
+      return 'El resultado calculado debe guardarse antes de confirmar la nómina.';
     case 'pendiente_revision':
       return 'La version revisable esta lista para confirmacion de RRHH, con advertencias visibles.';
     case 'actualizado_sin_guardar':
       return 'Hay una revisión de nómina más reciente que la última guardada. Guarda la versión actual antes de confirmarla.';
     case 'no_apto':
-      return 'Existen bloqueos que impiden aprobar operativamente este resultado.';
+      return 'Existen bloqueos que impiden confirmar este resultado.';
     case 'listo':
       return 'La version revisable esta lista para confirmacion de RRHH.';
     case 'sin_resultado_guardado':
@@ -127,10 +127,10 @@ function checklistRevisionAprobacion(input: {
       estado: !input.hayGuardado ? 'Pendiente' : input.advertencias.length ? 'Requiere atencion' : 'Completo',
     },
     {
-      titulo: 'Resultado aprobado operativamente',
+      titulo: 'Nómina revisada por RRHH',
       descripcion: input.tieneAprobacionOperativa
-        ? 'RRHH registró una aprobación operativa interna para la nómina mensual revisada.'
-        : 'Pendiente de aprobacion operativa interna por RRHH.',
+        ? 'RRHH registró la revisión interna para la nómina mensual.'
+        : 'Pendiente de revisión interna por RRHH.',
       estado: input.tieneAprobacionOperativa ? 'Completo' : input.hayGuardado ? 'Pendiente' : 'No aplica',
     },
     {
@@ -151,11 +151,11 @@ function razonNoPuedeAprobar(input: {
   nominaCerradaOperativamente: boolean;
   periodoValido: boolean;
 }): string | undefined {
-  if (input.aprobacionVigente) return 'La nómina mensual revisada ya está aprobada operativamente.';
+  if (input.aprobacionVigente) return 'La nómina mensual revisada ya está lista para confirmarse.';
   if (input.nominaCerradaOperativamente) {
     return 'La nómina del período está confirmada. Para modificarla, será necesario reabrir el período en una fase posterior.';
   }
-  if (!input.periodoValido) return 'El periodo no es valido para aprobacion operativa.';
+  if (!input.periodoValido) return 'El periodo no es valido para confirmar la nómina.';
   if (!input.hayResultadoActual && !input.hayGuardado) return 'Primero revisa la nómina mensual.';
   if (!input.hayGuardado) return 'Primero guarda la nómina mensual revisada.';
   if (input.actualizadoSinGuardar) return 'Hay un resultado actualizado sin guardar.';
@@ -233,9 +233,9 @@ export function buildRevisionAprobacionView(input: BuildRevisionAprobacionInput)
     advertencias,
     informaciones,
     accionPrincipalLabel: actualizadoSinGuardar || estado === 'pendiente_guardado'
-      ? 'Confirmar revision actualizada'
+      ? 'Confirmar nómina actualizada'
       : hayGuardado
-        ? 'Revisar resultado guardado'
+        ? 'Confirmar nómina'
         : 'Revisar trabajadores',
     puedeGuardarActualizado: resultado.acciones.puedeGuardarPreliminar,
     puedeRecalcular: resultado.acciones.puedeRecalcular,
@@ -251,6 +251,6 @@ export function buildRevisionAprobacionView(input: BuildRevisionAprobacionInput)
       periodoValido: input.periodoValido,
     }),
     aprobacion,
-    notaAprobacion: 'Esta aprobación es interna y no reemplaza el cierre del período ni la emisión de liquidaciones oficiales.',
+    notaAprobacion: 'Esta revisión interna queda como respaldo antes de confirmar la nómina y generar liquidaciones oficiales.',
   };
 }

@@ -9,7 +9,7 @@ const baseInput = (overrides: Partial<BuildActaOperativaPeriodoInput> = {}): Bui
   actaPreparadaEnSesion: false,
   estadoPeriodoLabel: 'Periodo validado',
   parametrosLabel: 'Listos',
-  trabajadoresLabel: '2 aptos / 0 por revisar',
+  trabajadoresLabel: '2 listos para nomina / 0 bloqueados',
   movimientosLabel: '1 aprobados / 0 pendientes',
   asignacionesLabel: '1 aplicables / 0 por revisar',
   resultadoPreliminarLabel: 'Guardado para revision',

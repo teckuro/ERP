@@ -131,6 +131,7 @@ import {
   filtroInicialRevisionTrabajadores,
   idPersonaPreseleccionRevision,
   incidenciasPorPersonaMap,
+  refineRevisionRailCta,
   resolveAccionCorreccionDesdeFranjaArea,
   resolveAccionCorreccionDesdeFrameCta,
   resolveAccionCorreccionDesdeIncidencia,
@@ -539,6 +540,7 @@ export class ProcesoMensualPresentacionFacade {
       validacionCalculo: this.validacionCalculo(),
       bloqueosOperativos: this.estadoOperativo().bloqueos,
       advertenciasOperativas: this.estadoOperativo().advertencias,
+      parametrosListos: this.dashboardResumen().parametrosListos === true,
     });
     const destino = resolveWorkspaceTargetFromDetalleTab(tab);
     if (destino) {
@@ -550,12 +552,20 @@ export class ProcesoMensualPresentacionFacade {
 
   ejecutarRevisionRailPrincipal(): void {
     const cta = this.revisionRailCta();
+    if (cta.accionCorreccion) {
+      this.ejecutarAccionCorreccion(cta.accionCorreccion);
+      return;
+    }
     if (cta.accionLocal === 'generarBase') {
       this.generarPreNomina();
       return;
     }
     if (cta.accionLocal === 'calcularPreliminar') {
       this.calcularPreliminar();
+      return;
+    }
+    if (cta.accionLocal === 'confirmarNomina') {
+      this.confirmarNominaMensual();
       return;
     }
     if (cta.revisarFichasGuiada) {
@@ -1104,12 +1114,16 @@ export class ProcesoMensualPresentacionFacade {
 
   readonly revisionRailCta = computed(() => {
     const estado = this.estadoOperativo();
+    const parametrosListos = this.dashboardResumen().parametrosListos === true;
+    const incidenciasParam = this.incidenciasPeriodo().porAmbito.parametros ?? [];
     const tab = resolveDetalleTabForRevision({
       errorEjecucion: this.store.errorEjecucion(),
       validacionCalculo: this.validacionCalculo(),
       bloqueosOperativos: estado.bloqueos,
       advertenciasOperativas: estado.advertencias,
+      parametrosListos,
     });
+    const destino = resolveWorkspaceTargetFromDetalleTab(tab);
     const ctx: RevisionRailContext = {
       baseGenerada: this.contextoOperativoPeriodo().baseGenerada,
       puedeGenerarNomina: this.puedeGenerarPreNomina(),
@@ -1121,13 +1135,22 @@ export class ProcesoMensualPresentacionFacade {
       hayFichasPendientesPrevalidacion: this.trabajadoresPendientesRevision().length > 0,
       revisionTrabajadoresCompleta: this.revisionTrabajadoresCompleta(),
     };
-    return buildRevisionRailCta(tab, resolveWorkspaceTargetFromDetalleTab(tab), ctx);
+    const cta = buildRevisionRailCta(tab, destino, ctx);
+    return refineRevisionRailCta(cta, destino, {
+      parametrosListos,
+      parametrosConIncidenciaRevision: incidenciasParam.some(
+        (item) => item.severidad === 'bloqueo' || item.severidad === 'advertencia',
+      ),
+      incidencias: this.incidenciasPeriodo(),
+    });
   });
 
   readonly nominaPendientesRailSecundarios = computed<ProcesoMensualPendienteVm[]>(() =>
     filtrarPendientesRailSecundarios(
       [...this.estadoOperativo().bloqueos, ...this.estadoOperativo().advertencias],
       this.revisionRailCta().label,
+      2,
+      { omitirParametrosSiListos: this.dashboardResumen().parametrosListos === true },
     ),
   );
 
@@ -1294,7 +1317,7 @@ export class ProcesoMensualPresentacionFacade {
       parametrosLabel: resumen.parametrosListos == null ? 'Pendiente de validacion' : resumen.parametrosListos ? 'Listos' : 'Por revisar',
       trabajadoresLabel: resumen.trabajadoresAptos == null
         ? 'Pendiente de validacion'
-        : `${resumen.trabajadoresAptos} apto${resumen.trabajadoresAptos === 1 ? '' : 's'} / ${resumen.trabajadoresPorRevisar} por revisar`,
+        : `${resumen.trabajadoresAptos} listo${resumen.trabajadoresAptos === 1 ? '' : 's'} para nomina / ${resumen.trabajadoresPorRevisar} bloqueado${resumen.trabajadoresPorRevisar === 1 ? '' : 's'}`,
       movimientosLabel: `${resumen.movimientosAprobados} aprobados / ${resumen.movimientosPendientes} pendientes`,
       asignacionesLabel: resumen.asignacionesAplicables == null
         ? 'Pendiente de validacion'
@@ -1862,14 +1885,14 @@ export class ProcesoMensualPresentacionFacade {
   guardarSnapshotPreliminar(): void {
     this.abrirOverlayDecision({
       tipo: 'guardar_preliminar',
-      titulo: 'Confirmar revisión',
-      mensaje: 'Se preparara la nomina mensual revisada para este periodo.',
-      detalle: 'No emite liquidaciones, no confirma la nomina y no genera archivos legales.',
+      titulo: 'Confirmar nómina',
+      mensaje: 'Se guardará la nómina mensual revisada para este periodo.',
+      detalle: 'No emite liquidaciones ni genera archivos legales; deja la versión lista para la confirmación oficial.',
       puntos: [
-        'Quedara disponible para la confirmacion final.',
-        'Si cambias datos del periodo, deberas revisar y preparar una nueva version.',
+        'Quedará disponible para la confirmación final.',
+        'Si cambias datos del periodo, deberás revisar y guardar una nueva versión.',
       ],
-      primaryLabel: 'Confirmar revision',
+      primaryLabel: 'Confirmar nómina',
       secondaryLabel: 'Cancelar',
     });
   }
@@ -1900,7 +1923,7 @@ export class ProcesoMensualPresentacionFacade {
   etiquetaEstadoGlobal(estado: ProcesoMensualEstado | null): string {
     switch (estado) {
       case 'LISTO_PARA_CALCULO':
-        return 'Listo para calcular';
+        return 'Listo para revisar nómina';
       case 'CON_ADVERTENCIAS':
         return 'Con advertencias';
       case 'BLOQUEADO':
@@ -1976,22 +1999,43 @@ export class ProcesoMensualPresentacionFacade {
     }
     this.abrirOverlayDecision({
       tipo: 'aprobar_preliminar',
-      titulo: 'Confirmar revisión de nómina',
-      mensaje: 'Marca la version revisable como confirmada por RRHH antes de confirmar la nomina oficial.',
-      detalle: 'No emite liquidaciones, no confirma la nomina oficial y no genera archivos legales.',
+      titulo: 'Confirmar nómina',
+      mensaje: 'Marca la versión revisada por RRHH antes de cerrar la nómina oficial.',
+      detalle: 'No emite liquidaciones ni genera archivos legales.',
       puntos: advertenciasAprobacion.length > 0
         ? [
-            'Existen advertencias visibles que quedaran registradas como observaciones de revision.',
+            'Existen advertencias visibles que quedarán registradas como observaciones de revisión.',
             'RRHH puede continuar si las advertencias no bloquean el proceso.',
           ]
         : [
-            'La version revisable pasara a la etapa de confirmacion de nomina.',
-            'Esta revision no reemplaza la confirmacion oficial del periodo.',
+            'La versión revisable pasará a la confirmación oficial de nómina.',
+            'Esta revisión queda como respaldo interno del periodo.',
           ],
-      primaryLabel: 'Confirmar revision',
+      primaryLabel: 'Confirmar nómina',
       secondaryLabel: 'Cancelar',
       advertenciasAprobacion,
     });
+  }
+
+  confirmarNominaMensual(): void {
+    const estado = this.estadoOperativo().estadoClave;
+    if (estado === 'base_lista') {
+      this.calcularPreliminar();
+      return;
+    }
+    if (estado === 'resultado_listo_para_guardar') {
+      this.guardarSnapshotPreliminar();
+      return;
+    }
+    if (estado === 'resultado_guardado') {
+      this.aprobarResultadoPreliminar();
+      return;
+    }
+    if (estado === 'aprobado_operativamente') {
+      this.cerrarNominaOperativa();
+      return;
+    }
+    this.revisarBloqueosOperativos();
   }
 
   private ejecutarAprobacionOperativa(advertenciasAprobacion: string[]): void {
@@ -2279,7 +2323,7 @@ export class ProcesoMensualPresentacionFacade {
             `Estado actual: ${this.estadoOperativo().titulo}.`,
             this.dashboardResumen().trabajadoresAptos == null
               ? 'Resumen de trabajadores pendiente de validacion.'
-              : `Resumen de trabajadores: ${this.dashboardResumen().trabajadoresAptos} aptos y ${this.dashboardResumen().trabajadoresPorRevisar} por revisar.`,
+              : `Resumen de trabajadores: ${this.dashboardResumen().trabajadoresAptos} listos para nomina y ${this.dashboardResumen().trabajadoresPorRevisar} bloqueados.`,
             `Movimientos y asignaciones: ${this.dashboardResumen().movimientosAprobados} movimientos aprobados y ${this.dashboardResumen().asignacionesAplicables ?? 0} recurrentes aplicables.`,
             tieneObservaciones ? 'Observaciones visibles para revision.' : 'Sin observaciones bloqueantes visibles.',
           ],
@@ -2581,6 +2625,9 @@ export class ProcesoMensualPresentacionFacade {
         break;
       case 'cerrarNomina':
         this.cerrarNominaOperativa();
+        break;
+      case 'confirmarNomina':
+        this.confirmarNominaMensual();
         break;
       case 'revisarBloqueos':
         this.revisarBloqueosOperativos();

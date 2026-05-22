@@ -261,7 +261,7 @@ export function resolveFranjaItemTono(valor: string): 'neutral' | 'review' | 'ok
   if (v.includes('pendiente') && !v.startsWith('0 aprobados')) {
     return 'review';
   }
-  if (v.includes('revisados') || v.includes('incluido') || v.includes('vigente')) {
+  if (v.includes('revisados') || v.includes('incluido') || v.includes('listo') || v.includes('vigente')) {
     return 'ok';
   }
   return 'neutral';

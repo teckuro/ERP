@@ -138,13 +138,19 @@
                 }
               </div>
               @if (alertas.mostrarDetalle) {
+                @let railCta = f.revisionRailCta();
                 <button
                   type="button"
                   class="payroll-rail-link payroll-rail-link--primary"
+                  [attr.title]="railCta.title ?? railCta.label"
+                  [attr.aria-label]="railCta.title ?? railCta.label"
                   (click)="f.ejecutarRevisionRailPrincipal()"
                 >
-                  {{ f.revisionRailCta().label }}
+                  {{ railCta.label }}
                 </button>
+                @if (railCta.destaqueDetalle) {
+                  <p class="payroll-rail-alertas__destaque">{{ railCta.destaqueDetalle }}</p>
+                }
                 @if (f.nominaPendientesRailSecundarios().length) {
                   <ul class="payroll-rail-pendientes">
                     @for (pendiente of f.nominaPendientesRailSecundarios(); track pendiente.codigo) {

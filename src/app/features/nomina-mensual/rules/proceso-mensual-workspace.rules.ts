@@ -92,7 +92,7 @@ export function buildNominaResumenSuperior(input: NominaResumenSuperiorInput): N
     trabajadores:
       input.trabajadoresAptos == null
         ? 'Sin evaluar'
-        : `${input.trabajadoresAptos} incluido${input.trabajadoresAptos === 1 ? '' : 's'}`,
+        : `${input.trabajadoresAptos} listo${input.trabajadoresAptos === 1 ? '' : 's'}`,
     parametros:
       input.parametrosListos == null ? 'Sin evaluar' : input.parametrosListos ? 'Revisados' : 'Por revisar',
     movimientos: `${input.movimientosAprobados} aprobados · ${input.movimientosPendientes} pendientes`,
@@ -247,9 +247,9 @@ export function buildNominaFrameView(input: BuildNominaFrameViewInput): NominaVi
         chip: esBorrador ? 'Borrador generado' : 'En revisión',
         titulo: esBorrador ? 'Borrador de nómina mensual generado.' : 'Nómina en revisión.',
         texto: esBorrador
-          ? 'Revisa trabajadores incluidos, movimientos y recurrentes antes de continuar.'
+          ? 'Revisa trabajadores listos para nomina, movimientos y recurrentes antes de continuar.'
           : 'Revisa trabajadores con cambios, advertencias o bloqueos antes de confirmar la nómina mensual.',
-        info: `Hay ${trabajadoresCount} trabajadores incluidos: ${resumenRevisionTrabajadores}.`,
+        info: `Hay ${trabajadoresCount} trabajadores en revision: ${resumenRevisionTrabajadores}.`,
       });
     }
     case 'con_pendientes':
@@ -438,8 +438,7 @@ export function buildBitacoraEtapas(input: BitacoraEtapasInput): BitacoraEtapaVm
   const subpasosAprobar = (): BitacoraSubpasoVm[] => {
     if (etapaActiva !== 'aprobar_cerrar') return [];
     return [
-      { marca: marca(aprobado, !aprobado), etiqueta: 'Confirmar revisión' },
-      { marca: marca(cerrada, aprobado && !cerrada), etiqueta: 'Confirmar nómina' },
+      { marca: marca(cerrada, !cerrada), etiqueta: 'Confirmar nómina' },
     ];
   };
 

@@ -103,8 +103,8 @@ export const FLUJO_COMPLETO_ETAPAS: readonly FlujoCompletoEtapaEsperada[] = [
       revisionTrabajadoresCompleta: true,
     }),
     estadoClave: 'base_lista',
-    ctaLabel: 'Confirmar revisión',
-    ctaAccionLocal: 'calcularPreliminar',
+    ctaLabel: 'Confirmar nómina',
+    ctaAccionLocal: 'confirmarNomina',
     shellUsaValidacionLocal: true,
   },
   {
@@ -135,8 +135,8 @@ export const FLUJO_COMPLETO_ETAPAS: readonly FlujoCompletoEtapaEsperada[] = [
       puedeGuardarResultado: true,
     }),
     estadoClave: 'resultado_listo_para_guardar',
-    ctaLabel: 'Confirmar revisión',
-    ctaAccionLocal: 'guardarResultado',
+    ctaLabel: 'Confirmar nómina',
+    ctaAccionLocal: 'confirmarNomina',
     shellUsaValidacionLocal: true,
   },
   {
@@ -150,7 +150,7 @@ export const FLUJO_COMPLETO_ETAPAS: readonly FlujoCompletoEtapaEsperada[] = [
     }),
     estadoClave: 'resultado_guardado',
     ctaLabel: 'Confirmar nómina',
-    ctaAccionLocal: 'aprobarResultado',
+    ctaAccionLocal: 'confirmarNomina',
     shellUsaValidacionLocal: true,
   },
   {
@@ -165,7 +165,7 @@ export const FLUJO_COMPLETO_ETAPAS: readonly FlujoCompletoEtapaEsperada[] = [
     }),
     estadoClave: 'aprobado_operativamente',
     ctaLabel: 'Confirmar nómina',
-    ctaAccionLocal: 'cerrarNomina',
+    ctaAccionLocal: 'confirmarNomina',
     shellUsaValidacionLocal: true,
   },
 ];

@@ -31,10 +31,19 @@ describe('proceso-mensual-flujo-completo.rules', () => {
     },
   );
 
+  it('usa una unica accion local para el CTA visible Confirmar nomina', () => {
+    const acciones = FLUJO_COMPLETO_ETAPAS
+      .map((etapa) => evaluarEtapaFlujoCompleto(etapa.id).resuelta.accionPrincipal)
+      .filter((accion) => accion.label === 'Confirmar nómina')
+      .map((accion) => accion.accionLocal);
+
+    expect(new Set(acciones)).toEqual(new Set(['confirmarNomina']));
+  });
+
   it('borrador con revision al dia no pide Generar nomina en CTA principal', () => {
     const { resuelta } = evaluarEtapaFlujoCompleto('borrador_revision_al_dia');
     expect(resuelta.accionPrincipal.label).not.toBe('Generar nómina');
-    expect(resuelta.accionPrincipal.label).toBe('Confirmar revisión');
+    expect(resuelta.accionPrincipal.label).toBe('Confirmar nómina');
   });
 
   it('revisarBloqueos abre detalle trabajadores en workspace', () => {
@@ -46,7 +55,7 @@ describe('proceso-mensual-flujo-completo.rules', () => {
     expect(shellDebePriorizarValidacionLocal('generarBase')).toBe(false);
   });
 
-  it('rail con borrador y revision al dia prepara confirmacion', () => {
+  it('rail con borrador y revision al dia confirma nomina', () => {
     const cta = revisionRailConBorradorAlDia({
       baseGenerada: true,
       puedeGenerarNomina: false,
@@ -54,8 +63,8 @@ describe('proceso-mensual-flujo-completo.rules', () => {
       hayPendientesRevisionTrabajadores: false,
       revisionTrabajadoresCompleta: true,
     });
-    expect(cta.label).toBe('Preparar confirmación');
-    expect(cta.accionLocal).toBe('calcularPreliminar');
+    expect(cta.label).toBe('Confirmar nómina');
+    expect(cta.accionLocal).toBe('confirmarNomina');
     expect(cta.usarPanel).toBe(false);
   });
 

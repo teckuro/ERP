@@ -232,11 +232,14 @@ const ETIQUETAS_REVISION_RAIL_DUPLICADAS = new Set([
   'generar nómina',
   'preparar confirmación',
   'confirmar revisión',
+  'confirmar nómina',
   'revisar trabajadores',
   'revisar en detalle',
   'ver revisión ampliada',
   'ver resumen del período',
   'ver resultado del período',
+  'revisar parámetros',
+  'abrir parámetros',
 ]);
 
 export function labelRevisionRailDesdeDestino(destino: NominaWorkspaceFlowTarget): string {
@@ -265,7 +268,7 @@ export function buildRevisionRailCta(
         return { label: 'Generar nómina', usarPanel: false, accionLocal: 'generarBase' };
       }
       if (ctx.baseGenerada && ctx.puedeCalcular) {
-        return { label: 'Preparar confirmación', usarPanel: false, accionLocal: 'calcularPreliminar' };
+        return { label: 'Confirmar nómina', usarPanel: false, accionLocal: 'confirmarNomina' };
       }
     }
   }
@@ -288,11 +291,26 @@ export function buildRevisionRailCta(
   };
 }
 
+export interface FiltrarPendientesRailOpciones {
+  /** No listar enlaces a parámetros cuando el período ya está listo para revisar. */
+  omitirParametrosSiListos?: boolean;
+}
+
+function esPendienteRailParametros(p: ProcesoMensualPendienteVm): boolean {
+  const label = (p.accionLabel ?? p.titulo).trim().toLowerCase();
+  if (label.includes('parámetro') || label.includes('parametro')) {
+    return true;
+  }
+  const codigo = p.codigo.toUpperCase();
+  return codigo.includes('PARAM') && !codigo.startsWith('PARAM_MIN_');
+}
+
 /** Solo pendientes con acción distinta al CTA principal (máx. 2). */
 export function filtrarPendientesRailSecundarios(
   pendientes: readonly ProcesoMensualPendienteVm[],
   labelPrincipal: string,
   maxItems = 2,
+  opciones?: FiltrarPendientesRailOpciones,
 ): ProcesoMensualPendienteVm[] {
   const principalNorm = labelPrincipal.trim().toLowerCase();
   const seen = new Set<string>();
@@ -301,6 +319,7 @@ export function filtrarPendientesRailSecundarios(
     const label = (p.accionLabel ?? p.titulo).trim();
     const norm = label.toLowerCase();
     if (!label || ETIQUETAS_REVISION_RAIL_DUPLICADAS.has(norm)) continue;
+    if (opciones?.omitirParametrosSiListos && esPendienteRailParametros(p)) continue;
     if (norm === principalNorm) continue;
     if (seen.has(norm)) continue;
     seen.add(norm);

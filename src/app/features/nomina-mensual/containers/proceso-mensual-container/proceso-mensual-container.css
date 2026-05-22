@@ -489,6 +489,13 @@
   color: var(--erp-ok);
 }
 
+.payroll-rail-alertas__destaque {
+  margin: 0.35rem 0 0;
+  color: var(--erp-muted);
+  font-size: 0.75rem;
+  line-height: 1.4;
+}
+
 .payroll-rail-alertas__pills {
   display: flex;
   flex-wrap: wrap;

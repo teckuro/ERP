@@ -98,7 +98,7 @@ describe('proceso-mensual-flow-nav.rules', () => {
     expect(cta.usarPanel).toBe(false);
   });
 
-  it('buildRevisionRailCta con borrador y revision al dia prepara confirmacion', () => {
+  it('buildRevisionRailCta con borrador y revision al dia confirma nomina', () => {
     const cta = buildRevisionRailCta('trabajadores', resolveWorkspaceTargetFromDetalleTab('trabajadores'), {
       baseGenerada: true,
       puedeGenerarNomina: false,
@@ -106,8 +106,8 @@ describe('proceso-mensual-flow-nav.rules', () => {
       hayPendientesRevisionTrabajadores: false,
       revisionTrabajadoresCompleta: true,
     });
-    expect(cta.label).toBe('Preparar confirmación');
-    expect(cta.accionLocal).toBe('calcularPreliminar');
+    expect(cta.label).toBe('Confirmar nómina');
+    expect(cta.accionLocal).toBe('confirmarNomina');
     expect(cta.usarPanel).toBe(false);
   });
 
@@ -143,7 +143,7 @@ describe('proceso-mensual-flow-nav.rules', () => {
     expect(mostrarResumenAmpliadoEnRail({ nominaGenerada: true, vistaTrabajadores: false })).toBe(false);
   });
 
-  it('filtrarPendientesRailSecundarios omite duplicados de revisar trabajadores', () => {
+  it('filtrarPendientesRailSecundarios omite duplicados de revisar trabajadores y parametros', () => {
     const filtrados = filtrarPendientesRailSecundarios(
       [
         {
@@ -160,10 +160,43 @@ describe('proceso-mensual-flow-nav.rules', () => {
           severidad: 'danger',
           accionLabel: 'Revisar parámetros',
         },
+        {
+          codigo: 'C',
+          titulo: 'Fichas',
+          descripcion: 'Revise',
+          severidad: 'warning',
+          accionLabel: 'Revisar fichas',
+        },
       ],
       'Revisar trabajadores',
     );
     expect(filtrados).toHaveLength(1);
-    expect(filtrados[0]?.accionLabel).toBe('Revisar parámetros');
+    expect(filtrados[0]?.accionLabel).toBe('Revisar fichas');
+  });
+
+  it('filtrarPendientesRailSecundarios omite parametros si listos', () => {
+    const filtrados = filtrarPendientesRailSecundarios(
+      [
+        {
+          codigo: 'PARAM_X',
+          titulo: 'Parámetros',
+          descripcion: 'Opcional',
+          severidad: 'warning',
+          accionLabel: 'Revisar parámetros',
+        },
+        {
+          codigo: 'ADV-003',
+          titulo: 'Fichas',
+          descripcion: 'Revise',
+          severidad: 'warning',
+          accionLabel: 'Revisar fichas',
+        },
+      ],
+      'Revisar movimientos',
+      2,
+      { omitirParametrosSiListos: true },
+    );
+    expect(filtrados).toHaveLength(1);
+    expect(filtrados[0]?.accionLabel).toBe('Revisar fichas');
   });
 });

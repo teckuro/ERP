@@ -115,13 +115,14 @@ Al entrar o cambiar de periodo, si existe version revisable activa en BD, el sto
 La pantalla principal se orienta como **Nomina mensual** y workspace operativo de RRHH. El flujo visible prioriza:
 
 ```txt
-Generar nomina
+Verificar periodo
+-> Generar nomina
 -> Revisar trabajadores
 -> Confirmar nomina
 -> Generar liquidaciones
 ```
 
-La UI refuerza que la nomina mensual confirmada es la base oficial para liquidaciones. Esta fase solo ajusta UI/copy/maquetacion local y documentacion; no implementa persistencia nueva, motor, SQL/RPC/RLS, servicios ni liquidaciones productivas. Documento: [`../../diseno/nom-mensual-workspace-ui-01.md`](../../diseno/nom-mensual-workspace-ui-01.md).
+La UI refuerza que la nomina mensual confirmada es la base oficial para liquidaciones. El CTA visible de salida es unico: `Confirmar nomina`; guardado, revision interna y cierre quedan como pasos tecnicos de soporte. Documento: [`../../diseno/nom-mensual-workspace-ui-01.md`](../../diseno/nom-mensual-workspace-ui-01.md).
 
 ## NOM-MENSUAL-CONFIRMACION-FLOW-00 aplicado
 
@@ -133,7 +134,7 @@ Nómina mensual confirmada = fuente oficial para generar liquidaciones.
 
 La experiencia futura debe entenderse como `Nómina mensual`: generar nómina, revisar trabajadores, confirmar la versión oficial y generar liquidaciones desde esa versión. `Preparar nómina` puede seguir existiendo como ruta/componente por compatibilidad, pero deja de ser el concepto principal de producto para nuevas fases. Documento rector: [`nomina-mensual-confirmacion-flow.md`](./nomina-mensual-confirmacion-flow.md).
 
-**Prevalidaciones 9.5A + 9.5B** implementadas (sin motor ni liquidaciones): recurrentes por mes, grupos minimos de parametros + catalogos, resumen en UI. Proceso productivo end-to-end sigue **pendiente**. Vision de producto: [`vision-futura.md`](./vision-futura.md); orquestador: [`../../orquestador/estado-fases.md`](../../orquestador/estado-fases.md).
+**Prevalidaciones 9.5A + 9.5B** implementadas y conectadas al flujo de nomina mensual: recurrentes por mes, grupos minimos de parametros + catalogos, resumen en UI, reglas estrictas de trabajadores listos para nomina y bloqueos criticos antes de confirmar. Vision de producto: [`vision-futura.md`](./vision-futura.md); orquestador: [`../../orquestador/estado-fases.md`](../../orquestador/estado-fases.md).
 
 ## REM-MOV-UNIFY-01 aplicado
 
@@ -202,9 +203,8 @@ El flujo de nomina queda validado hasta liquidaciones internas:
 
 ```txt
 Preparar nomina
--> Resultado preliminar
--> Aprobacion operativa
--> Cierre operativo
+-> Revisar trabajadores
+-> Confirmar nomina
 -> Liquidaciones oficiales internas
 ```
 
@@ -349,7 +349,7 @@ La confirmacion muestra motivo, alcance y puntos de revision RRHH. Cancelar no e
 
 Nomina mensual queda alineada a [`NOIA / Bitacora Operativa`](../../diseno/bitacora-operativa-noia.md) como `Bitacora del periodo`.
 
-- Preparar nomina debe comunicar periodo, trabajadores incluidos/excluidos, incidencias, decisiones RRHH y cierre operativo.
+- Preparar nomina debe comunicar periodo, trabajadores listos/bloqueados, incidencias, decisiones RRHH y cierre operativo.
 - Los resultados preliminares y cierres deben sentirse como registros del periodo, no como pantallas sueltas de calculo.
 - Fase futura recomendada: `NOM-MOVIMIENTOS-UNIFICADOS-UX-01` para ordenar `Movimientos de remuneracion`.
 - Esta referencia es documental; no cambia motor, SQL, liquidaciones, servicios ni estilos globales.

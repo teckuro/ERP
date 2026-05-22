@@ -273,7 +273,7 @@ function assembleValidacionCalculo(input: {
 function etiquetaValidacionCalculo(estado: ValidacionCalculoEstado): string {
   switch (estado) {
     case 'listo':
-      return 'Listo para calcular';
+      return 'Listo para revisar nómina';
     case 'advertencias':
       return 'Con advertencias';
     case 'bloqueado':
@@ -312,11 +312,11 @@ function resolverSiguienteAccion(
   }
   const baseGenerada = !bloqueos.some((item) => item.codigo === 'BLOQ-005');
   return {
-    label: baseGenerada ? 'Preparar confirmación' : 'Generar nómina',
+    label: baseGenerada ? 'Confirmar nómina' : 'Generar nómina',
     descripcion: baseGenerada
       ? 'La revisión del período está al día. Continúa hacia la confirmación de la nómina mensual.'
       : 'El período está listo para armar la nómina mensual del período.',
-    accionLocal: baseGenerada ? 'calcularPreliminar' : 'generarBase',
+    accionLocal: baseGenerada ? 'confirmarNomina' : 'generarBase',
   };
 }
 

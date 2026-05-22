@@ -12,9 +12,8 @@ Permitir generar y revisar liquidaciones oficiales internas desde una nomina men
 
 ```txt
 Nómina mensual
--> Resultado preliminar
--> Aprobacion operativa
--> Cierre operativo
+-> Revisar trabajadores
+-> Confirmar nomina
 -> Liquidaciones oficiales internas
 ```
 
@@ -125,7 +124,7 @@ La confirmacion fue reemplazada por modal/MsgBox estandar durante UX-COMERCIAL-0
 
 Liquidaciones oficiales queda alineado a [`NOIA / Bitacora Operativa`](../../diseno/bitacora-operativa-noia.md) como `Acta de salida interna` del periodo.
 
-- La pantalla debe comunicar origen del cierre, trabajadores incluidos, estado de emision y trazabilidad antes que decoracion visual.
+- La pantalla debe comunicar origen del cierre, trabajadores listos para nomina, estado de emision y trazabilidad antes que decoracion visual.
 - El documento liquidacion se entiende como salida oficial del periodo ya cerrado.
 - Esta referencia es documental; no cambia calculo, motor, PDF, SQL, rutas ni estilos globales.
 
