@@ -126,6 +126,16 @@
               <p class="payroll-rail-alertas__msg">{{ alertas.mensaje }}</p>
             } @else if (alertas.modo === 'sin-evaluar') {
               <p class="payroll-rail-alertas__msg">{{ alertas.mensaje }}</p>
+              @let railCta = f.revisionRailCta();
+              <button
+                type="button"
+                class="payroll-rail-link payroll-rail-link--primary"
+                [attr.title]="railCta.title ?? railCta.label"
+                [attr.aria-label]="railCta.title ?? railCta.label"
+                (click)="f.ejecutarRevisionRailPrincipal()"
+              >
+                {{ railCta.label }}
+              </button>
             } @else if (alertas.modo === 'ok') {
               <p class="payroll-rail-alertas__msg payroll-rail-alertas__msg--ok">{{ alertas.mensaje }}</p>
             } @else {

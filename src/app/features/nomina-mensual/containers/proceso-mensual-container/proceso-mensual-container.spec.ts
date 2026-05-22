@@ -4,6 +4,7 @@ import { provideRouter, Router } from '@angular/router';
 import { LucideAngularModule } from 'lucide-angular';
 import {
   AlertCircle,
+  ArrowLeftRight,
   Calculator,
   Check,
   CheckCircle,
@@ -23,6 +24,7 @@ import {
   Repeat,
   RefreshCw,
   Sliders,
+  SlidersHorizontal,
   Upload,
   Users,
 } from 'lucide-angular/src/icons';
@@ -590,6 +592,7 @@ describe('ProcesoMensualContainer', () => {
         importProvidersFrom(
           LucideAngularModule.pick({
             AlertCircle,
+            ArrowLeftRight,
             Calculator,
             Check,
             CheckCircle,
@@ -609,6 +612,7 @@ describe('ProcesoMensualContainer', () => {
             Repeat,
             RefreshCw,
             Sliders,
+            SlidersHorizontal,
             Upload,
             Users,
           }),

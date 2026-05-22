@@ -63,6 +63,10 @@ import {
   EstadoCoherenciaAlta,
   evaluarAltaCoherencia,
 } from "../../rules/empleado-alta-coherencia.rules";
+import {
+  evaluarDiagnosticoFichaEmpleado,
+  type EmpleadoFichaValidacionSnapshot,
+} from "../../rules/empleado-ficha-validacion.rules";
 import { EmpleadosFormOrchestratorService } from "../../services/empleados-form-orchestrator.service";
 import { EmpleadosCatalogosService } from "../../services/empleados-catalogos.service";
 import {
@@ -2636,22 +2640,101 @@ export class FormEmpleadoComponent implements OnInit {
   }
 
   private evaluateValidationRules(): EvaluatedValidationRule[] {
-    return this.getAllValidationRules().map((rule) => {
-      const applicable = rule.isApplicable();
+    return evaluarDiagnosticoFichaEmpleado(this.buildFichaValidacionSnapshot())
+      .items
+      .map((item) => ({
+        id: item.id,
+        stepId: item.formTab,
+        wizardStep: item.wizardStep,
+        label: item.label,
+        severity: item.severity,
+        blocking: item.blocking,
+        complete: item.complete,
+        visible: item.visible,
+        sourcePath: item.controlPath,
+        category: item.category,
+      }));
+  }
 
-      return {
-        id: rule.id,
-        stepId: rule.stepId,
-        wizardStep: this.resolveWizardStep(rule),
-        label: rule.label,
-        severity: rule.severity,
-        blocking: rule.blocking,
-        complete: applicable ? rule.isComplete() : true,
-        visible: applicable && (rule.isVisible?.() ?? true),
-        sourcePath: rule.sourcePath,
-        category: rule.category,
-      };
-    });
+  private buildFichaValidacionSnapshot(): EmpleadoFichaValidacionSnapshot {
+    const raw = this.form.getRawValue();
+    const salud = this.catalogos().entidadesSalud.find(
+      (item) => item.value === raw.previsionSalud.idSalud,
+    );
+    const edadResumen = this.perfilLaboralEdadResumen();
+    const tieneCondicionesEspeciales = this.hasPerfilLaboralCondicionesSeleccionadas();
+
+    return {
+      origenCreacion: this.isBasicMode() ? "basico" : "avanzado",
+      pasoAltaAvanzada: null,
+      relacionLaboral: raw.contrato.relacionLaboral,
+      estado: raw.contrato.estado,
+      rut: raw.datosPersonales.rut,
+      pasaporte: raw.datosPersonales.pasaporte,
+      nombres: raw.datosPersonales.nombres,
+      apellidoPaterno: raw.datosPersonales.apellidoPaterno,
+      fechaNacimiento: raw.datosPersonales.fechaNacimiento,
+      sexo: raw.datosPersonales.sexo,
+      idPais: raw.datosPersonales.idPais,
+      estadoCivil: raw.datosPersonales.estadoCivil,
+      email: raw.contacto.email,
+      telefono: raw.contacto.telefono,
+      idComuna: raw.contacto.idComuna,
+      idSucursal: raw.contrato.idSucursal,
+      idCentroCosto: raw.contrato.idCentroCosto,
+      cargo: raw.contrato.cargo,
+      fechaContrato: raw.contrato.fechaContrato,
+      tipoContrato: raw.contrato.tipoContrato,
+      idTipoTrabajador: raw.contrato.idTipoTrabajador,
+      idTipoJornada: raw.contrato.idTipoJornada,
+      seguroCesantia: raw.contrato.seguroCesantia,
+      fechaIngreso: raw.contrato.fechaIngreso,
+      fechaTermino: raw.contrato.fechaTermino,
+      sueldoBase: raw.contrato.sueldoBase,
+      idMoneda: raw.contrato.idMoneda,
+      horasSemanales: raw.contrato.horasSemanales,
+      diasSemanales: raw.contrato.diasSemanales,
+      semanaCorridaActiva: raw.contrato.semanaCorridaActiva,
+      semanaCorridaDiasLaborables: raw.contrato.semanaCorridaDiasLaborables,
+      zonaExtremaActiva: raw.contrato.zonaExtremaActiva,
+      zonaExtremaTerritorio: raw.contrato.zonaExtremaTerritorio,
+      zonaExtremaPorcentaje: raw.contrato.zonaExtremaPorcentaje,
+      cargas: raw.contrato.cargas,
+      idTramoCarga: raw.contrato.idTramoCarga,
+      perfilLaboralMenorEdad: edadResumen.kind === "menor",
+      trabajadorAdolescenteProtegido: raw.perfilLaboral.trabajadorAdolescenteProtegido,
+      autorizacionMenorRegistrada: raw.perfilLaboral.autorizacionMenorRegistrada,
+      tieneCondicionesEspeciales,
+      respaldoRegistrado: raw.perfilLaboral.respaldoRegistrado,
+      vigenciaInicioCondiciones: raw.perfilLaboral.vigenciaInicio,
+      observacionCondiciones: raw.perfilLaboral.observacion,
+      observacionCondicionesValida: this.form.controls.perfilLaboral.controls.observacion.valid,
+      tipoPrevision: raw.previsionSalud.tipoRegimenPrevisional,
+      idRegimenPrevisional: null,
+      idAfp: raw.previsionSalud.idAfp,
+      idEntidadPrevisionalIps: raw.previsionSalud.idEntidadPrevisionalIps,
+      idExCajaPrevisional: raw.previsionSalud.idExCajaPrevisional,
+      idRegimenExCaja: raw.previsionSalud.idRegimenExCaja,
+      nombreExCaja: raw.previsionSalud.nombreExCaja,
+      regimenExCaja: raw.previsionSalud.regimenExCaja,
+      tasaExCaja: raw.previsionSalud.tasaExCaja,
+      idSalud: raw.previsionSalud.idSalud,
+      tipoSalud: salud?.tipo ?? null,
+      idMonedaPlan: raw.previsionSalud.idMonedaPlan,
+      valorPlan: raw.previsionSalud.valorPlan,
+      adicionalAugeGes: raw.previsionSalud.adicionalAugeGes,
+      idMonedaCuenta2: raw.previsionSalud.idMonedaCuenta2,
+      valorCuenta2: raw.previsionSalud.valorCuenta2,
+      tieneApv: raw.previsionSalud.tieneApv,
+      idInstitucionApv: raw.previsionSalud.idInstitucionApv,
+      idMonedaApv: raw.previsionSalud.idMonedaApv,
+      montoApv: raw.previsionSalud.montoApv,
+      idFormaPagoApv: raw.previsionSalud.idFormaPagoApv,
+      depositoConvenidoApvi: raw.previsionSalud.depositoConvenidoApvi,
+      idBanco: raw.bancario.idBanco,
+      idTipoCuentaBancaria: raw.bancario.idTipoCuentaBancaria,
+      numeroCuenta: raw.bancario.numeroCuenta,
+    };
   }
 
   altaCoherenciaState(): EstadoCoherenciaAlta {

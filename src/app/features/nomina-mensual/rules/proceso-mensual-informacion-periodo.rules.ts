@@ -298,7 +298,7 @@ function buildVerificacionPeriodoInformacionView(
         bajada: bajadaConConteoTrabajadoresPendientes(pendientes.length),
         resumenVerificacion: resumen,
         trabajadoresPendientes: trabajadoresVm,
-        accionPrincipal: { label: 'Revisar fichas', destino: 'trabajadores_fichas' },
+        accionPrincipal: { label: 'Revisar trabajadores', destino: 'trabajadores_fichas' },
         accionSecundaria: puedeGenerarConAdvertencias
           ? { label: 'Generar nómina de todos modos', destino: 'generar_nomina' }
           : { label: 'Cerrar por ahora', destino: 'cerrar' },
@@ -352,7 +352,7 @@ function buildVerificacionPeriodoInformacionView(
         destino: destinoRevision,
       },
       accionSecundaria: pendientes.length > 0
-        ? { label: 'Revisar fichas', destino: 'trabajadores_fichas' }
+        ? { label: 'Revisar trabajadores', destino: 'trabajadores_fichas' }
         : { label: 'Cerrar por ahora', destino: 'cerrar' },
     };
   }
@@ -369,7 +369,7 @@ function buildVerificacionPeriodoInformacionView(
       secciones: seccionesSinListaNominalTrabajadores(secciones),
       resumenVerificacion: resumen,
       trabajadoresPendientes: trabajadoresVm,
-      accionPrincipal: { label: 'Revisar fichas', destino: 'trabajadores_fichas' },
+      accionPrincipal: { label: 'Revisar trabajadores', destino: 'trabajadores_fichas' },
       accionSecundaria: puedeGenerarConAdvertencias
         ? { label: 'Generar nómina de todos modos', destino: 'generar_nomina' }
         : { label: 'Cerrar por ahora', destino: 'cerrar' },
@@ -431,7 +431,7 @@ function labelDestinoRevision(destino: InformacionPeriodoDestino): string {
     case 'trabajadores':
       return 'Revisar trabajadores';
     case 'trabajadores_fichas':
-      return 'Revisar fichas';
+      return 'Revisar trabajadores';
     case 'movimientos':
       return 'Revisar movimientos';
     case 'asignaciones':

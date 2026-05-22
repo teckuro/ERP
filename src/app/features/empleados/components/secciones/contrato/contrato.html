@@ -126,6 +126,7 @@
           formControlName="fechaIngreso"
           placeholder="dd/mm/aaaa"
           [invalid]="hasError('fechaIngreso')"
+          [max]="today"
         ></app-calendar-input>
         @if (hasError('fechaIngreso', 'required')) {
           <p class="field-message">{{ isHonorariosMode ? 'La fecha de inicio del servicio es obligatoria.' : 'La fecha de ingreso es obligatoria.' }}</p>
@@ -149,6 +150,7 @@
             formControlName="fechaContrato"
             placeholder="dd/mm/aaaa"
             [invalid]="hasError('fechaContrato')"
+            [max]="today"
           ></app-calendar-input>
           @if (hasError('fechaContrato', 'required')) {
             <p class="field-message">La fecha de contrato es obligatoria.</p>
@@ -171,6 +173,8 @@
             formControlName="fechaTermino"
             placeholder="dd/mm/aaaa"
             [invalid]="hasError('fechaTermino')"
+            [min]="minFechaTermino"
+            [max]="today"
           ></app-calendar-input>
           @if (hasError('fechaTermino', 'required')) {
             <p class="field-message">

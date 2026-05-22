@@ -358,7 +358,7 @@ function accionArea(area: ProcesoMensualArea): { label: string; route: string } 
     case 'MOVIMIENTOS_VARIABLES':
       return { label: 'Revisar movimientos', route: '/remuneraciones/novedades-mensuales' };
     case 'TRABAJADORES':
-      return { label: 'Revisar fichas', route: '/empleados' };
+      return { label: 'Revisar trabajadores', route: '/empleados' };
     default:
       return null;
   }

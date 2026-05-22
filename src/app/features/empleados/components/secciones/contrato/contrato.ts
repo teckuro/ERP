@@ -24,6 +24,7 @@ import {
   tipoTrabajadorBaseParaRelacion,
 } from '../../../rules/empleado-tipo-trabajador-flow.rules';
 import { EmpleadoFieldTipComponent } from '../../empleado-field-tip/empleado-field-tip.component';
+import { buildTodayValue } from '../../../utils/empleado-form-defaults';
 
 type ContratoControlName = keyof ContratoFormGroup['controls'];
 
@@ -74,6 +75,13 @@ export class ContratoComponent {
   @HostBinding('class.labor-layout-inline-record')
   protected get laborLayoutInlineRecord(): boolean {
     return this.inlineRecordLayout;
+  }
+
+  readonly today = buildTodayValue();
+
+  get minFechaTermino(): string {
+    const ingreso = this.formGroup.controls.fechaIngreso.value?.trim();
+    return ingreso || '';
   }
 
   readonly employeeStates: SelectOption<EmpleadoEstado>[] = [

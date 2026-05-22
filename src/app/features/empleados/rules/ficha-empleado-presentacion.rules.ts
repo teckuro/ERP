@@ -197,10 +197,6 @@ export interface BuildFaltantesDedupInput {
 export function buildFaltantesCriticosDedup(input: BuildFaltantesDedupInput): FaltanteFichaEmpleado[] {
   const { evaluacion, humanizeBloqueo, maximoElementos = 5 } = input;
 
-  if (evaluacion.bloqueos.length === 0) {
-    return [];
-  }
-
   const seen = new Set<string>();
   const faltantes: FaltanteFichaEmpleado[] = [];
 
@@ -248,6 +244,25 @@ export function buildFaltantesCriticosDedup(input: BuildFaltantesDedupInput): Fa
       if (faltantes.length >= maximoElementos) {
         break;
       }
+    }
+  }
+
+  for (const advertencia of evaluacion.advertencias) {
+    const mensaje = humanizeBloqueo(advertencia);
+    const claveBloque = inferirTabDesdeBloqueo(advertencia);
+    const dedupeKey = `${claveBloque}|${normalizarMensajeFicha(mensaje)}`;
+    if (seen.has(dedupeKey)) {
+      continue;
+    }
+    seen.add(dedupeKey);
+    faltantes.push({
+      claveBloque,
+      etiquetaBloque: ETIQUETAS_TAB_FICHA_EMPLEADO[claveBloque],
+      mensaje,
+      severidad: 'revision',
+    });
+    if (faltantes.length >= maximoElementos) {
+      break;
     }
   }
 

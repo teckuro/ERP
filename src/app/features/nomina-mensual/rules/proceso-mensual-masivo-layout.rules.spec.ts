@@ -9,6 +9,7 @@ import {
   buildDetalleMasivoTrabajador,
   buildFilasMasivasTrabajadores,
   buildMovimientosPanelPorTrabajador,
+  buildResumenMasivoDesdeFilas,
   buildResumenMasivoNomina,
   filtrarFilasMasivasTrabajadores,
   type BuildNominaMasivaInput,
@@ -209,6 +210,27 @@ describe('proceso-mensual-masivo-layout.rules', () => {
     expect(detalle).not.toBeNull();
     const rows = buildMovimientosPanelPorTrabajador(detalle!, 'Mayo 2026');
     expect(rows.some((row) => row.origenDuracion === 'Recurrente')).toBe(true);
+  });
+
+  it('buildResumenMasivoDesdeFilas cuenta filas mergeadas (regresión pre-borrador)', () => {
+    const resumen = buildResumenMasivoDesdeFilas([
+      {
+        idPersona: 99,
+        trabajador: 'Pendiente Ficha',
+        rut: '9.999.999-9',
+        estado: 'bloqueado',
+        haberes: null,
+        descuentos: null,
+        liquidoEstimado: null,
+        pendientes: 1,
+        incidenciasCount: 1,
+        movimientosCount: 0,
+        tieneMovimientos: false,
+        tieneRecurrentes: false,
+      },
+    ]);
+    expect(resumen.totalTrabajadores).toBe(1);
+    expect(resumen.bloqueados).toBe(1);
   });
 
   it('buildAccionRecomendadaTrabajador prioriza bloqueos', () => {

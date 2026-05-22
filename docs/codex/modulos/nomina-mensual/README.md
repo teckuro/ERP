@@ -50,6 +50,10 @@ Modal automático tras verificar el período (MessageBox): críticos, advertenci
 
 Tras verificar, el payload persistido incluye `trabajadoresPendientesRevision` (nombre, RUT, motivo RRHH). Modal prioriza «Revisar fichas»; pestaña Trabajadores muestra grilla pre-borrador con «Abrir ficha» (`/empleados/:id` + retorno al período). Sin segundo listado de empleados en servicio.
 
+## NOM-PERIODO-PREVIEW-PERSIST-01 aplicado
+
+Preview persistente «Qué falta ahora» en sidebar y tab Trabajadores antes de generar nómina; resumen masivo desde filas mergeadas. Documento: [`nom-periodo-preview-persist-01.md`](./nom-periodo-preview-persist-01.md).
+
 ## NOM-PERIODO-DIAGNOSTICO-PERSIST-01 aplicado
 
 Verificación del período con diagnóstico **persistente en servidor** (`nomina_periodo_diagnostico` + RPC); rehidratación al volver sin snapshot. Documento: [`nom-periodo-diagnostico-persist-01.md`](./nom-periodo-diagnostico-persist-01.md).

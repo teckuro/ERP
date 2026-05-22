@@ -9,7 +9,7 @@
     <p class="payroll-revision-trabajadores__contexto" role="status">{{ tituloContexto }}</p>
   }
 
-  @if (resumenMasivo.totalTrabajadores > 0) {
+  @if (f.nominaMasivaFilas().length > 0) {
   @if (!f.revisionSoloFichasPrevalidacion()) {
   <nav class="payroll-segment-nav payroll-segment-nav--stat" aria-label="Resumen agregado de trabajadores">
     <button
@@ -325,7 +325,7 @@
       </div>
       <dl class="payroll-revision-trabajadores__empty-metrics" aria-label="Resumen disponible">
         <div>
-          <dt>Listos para nÃ³mina</dt>
+          <dt>Listos para nómina</dt>
           <dd>{{ f.dashboardResumen().trabajadoresAptos ?? 0 }}</dd>
         </div>
         <div>
@@ -339,7 +339,7 @@
       </dl>
       <div class="payroll-revision-trabajadores__empty-actions">
         <button type="button" class="payroll-revision-trabajadores__empty-action" (click)="f.ejecutarAccionValidacion('validarPeriodo')">
-          Validar período
+          Verificar período
         </button>
         @if (f.puedeGenerarPreNomina()) {
           <button type="button" class="payroll-revision-trabajadores__empty-link" (click)="f.generarPreNomina()">

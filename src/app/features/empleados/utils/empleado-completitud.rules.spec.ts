@@ -1,4 +1,6 @@
+import { describe, expect, it } from 'vitest';
 import { CrearEmpleadoPayload } from '../models/empleado-payload.model';
+import { evaluarDiagnosticoFichaEmpleado, snapshotValidacionDesdePayload } from '../rules/empleado-ficha-validacion.rules';
 import { evaluarCompletitudYAptitudEmpleado } from './empleado-completitud.rules';
 
 function payloadCompleto(overrides: Partial<CrearEmpleadoPayload> = {}): CrearEmpleadoPayload {
@@ -301,5 +303,58 @@ describe('evaluarCompletitudYAptitudEmpleado', () => {
 
     expect(evaluacion.estadoFicha).toBe('INCOMPLETO');
     expect(evaluacion.aptoParaRemuneraciones).toBe(false);
+  });
+
+  it('diagnostico compartido expone sueldo base con id estable para ambas vistas', () => {
+    const diagnostico = evaluarDiagnosticoFichaEmpleado(
+      snapshotValidacionDesdePayload(payloadCompleto({ sueldoBase: 0 })),
+    );
+
+    const item = diagnostico.bloqueos.find((bloqueo) => bloqueo.id === 'contract.salary');
+
+    expect(item?.tabFicha).toBe('remuneracion');
+    expect(item?.formTab).toBe('contrato');
+    expect(item?.wizardStep).toBe(3);
+    expect(item?.label).toContain('sueldo');
+  });
+
+  it('diagnostico compartido expone Sin prevision como bloqueo de prevision', () => {
+    const diagnostico = evaluarDiagnosticoFichaEmpleado(
+      snapshotValidacionDesdePayload(
+        payloadCompleto({
+          tipoPrevision: 'NINGUNA',
+          idRegimenPrevisional: null,
+          idAfp: null,
+          idSalud: null,
+          tipoSalud: null,
+          idMonedaPlan: null,
+          valorPlan: null,
+          adicionalAugeGes: null,
+        }),
+      ),
+    );
+
+    const item = diagnostico.bloqueos.find((bloqueo) => bloqueo.id === 'prevision.regime');
+
+    expect(item?.tabFicha).toBe('prevision');
+    expect(item?.detalle).toContain('Sin prevision');
+  });
+
+  it('diagnostico compartido mantiene honorarios sin exigir campos dependientes', () => {
+    const diagnostico = evaluarDiagnosticoFichaEmpleado({
+      ...snapshotValidacionDesdePayload(payloadCompleto()),
+      relacionLaboral: 'HONORARIOS',
+      idTipoTrabajador: null,
+      idTipoJornada: null,
+      tipoContrato: null,
+      tipoPrevision: null,
+      idBanco: null,
+      idTipoCuentaBancaria: null,
+      numeroCuenta: '',
+    });
+
+    expect(diagnostico.bloqueos.map((item) => item.id)).not.toContain('contract.worker-type');
+    expect(diagnostico.bloqueos.map((item) => item.id)).not.toContain('prevision.regime');
+    expect(diagnostico.bloqueos.map((item) => item.id)).not.toContain('bank.bank');
   });
 });

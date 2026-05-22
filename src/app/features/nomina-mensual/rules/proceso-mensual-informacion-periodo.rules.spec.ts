@@ -174,7 +174,7 @@ describe('proceso-mensual-informacion-periodo.rules', () => {
       ],
     });
 
-    expect(vm?.accionPrincipal).toEqual({ label: 'Revisar fichas', destino: 'trabajadores_fichas' });
+    expect(vm?.accionPrincipal).toEqual({ label: 'Revisar trabajadores', destino: 'trabajadores_fichas' });
     expect(vm?.accionSecundaria?.destino).toBe('generar_nomina');
     expect(vm?.bajada).toContain('1 trabajador');
     expect(vm?.resumenVerificacion?.trabajadoresPendientes).toBe(1);
@@ -213,7 +213,7 @@ describe('proceso-mensual-informacion-periodo.rules', () => {
 
     expect(vm?.tone).toBe('warning');
     expect(vm?.accionPrincipal?.destino).toBe('parametros');
-    expect(vm?.accionSecundaria).toEqual({ label: 'Revisar fichas', destino: 'trabajadores_fichas' });
+    expect(vm?.accionSecundaria).toEqual({ label: 'Revisar trabajadores', destino: 'trabajadores_fichas' });
     expect(vm?.bajada).toContain('1 trabajador');
     expect(vm?.trabajadoresPendientes).toHaveLength(1);
     expect(vm?.resumenVerificacion?.trabajadoresPendientes).toBe(1);

@@ -10,6 +10,7 @@ import { RelacionLaboral } from '../../../models/empleado.model';
 import { CalendarInputComponent } from '../../../../../shared/components/ui/calendar-input.component';
 import { CardComponent } from '../../../../../shared/components/ui/card.component';
 import { EmpleadoFieldTipComponent } from '../../empleado-field-tip/empleado-field-tip.component';
+import { buildTodayValue } from '../../../utils/empleado-form-defaults';
 
 interface EdadLaboralInfo {
   label: string;
@@ -38,6 +39,11 @@ export class PerfilLaboralComponent {
   @Input() autoDetectedConditions: readonly PerfilLaboralAutoDetection[] = [];
 
   readonly condiciones = CONDICIONES_TRABAJADOR_UI;
+  readonly todayIso = buildTodayValue();
+
+  get minVigenciaFin(): string {
+    return this.formGroup.controls.vigenciaInicio.value?.trim() || '';
+  }
 
   get hasAutoDetectedConditions(): boolean {
     return this.autoDetectedConditions.length > 0;
@@ -68,7 +74,7 @@ export class PerfilLaboralComponent {
   }
 
   get edadLaboralInfo(): EdadLaboralInfo {
-    const edad = this.calcularEdad(this.fechaNacimiento, this.fechaIngreso || this.today());
+    const edad = this.calcularEdad(this.fechaNacimiento, this.fechaIngreso || this.todayIso);
 
     if (edad === null) {
       return {
@@ -243,9 +249,5 @@ export class PerfilLaboralComponent {
     const parsed = new Date(year, month - 1, day);
 
     return Number.isNaN(parsed.getTime()) ? null : parsed;
-  }
-
-  private today(): string {
-    return new Date().toISOString().slice(0, 10);
   }
 }

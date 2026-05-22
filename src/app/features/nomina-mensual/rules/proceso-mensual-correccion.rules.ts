@@ -171,6 +171,22 @@ export function resolveAccionCorreccionFilaMasiva(
     if (inc.id === CODIGO_INCIDENCIA_FICHA_PENDIENTE) {
       continue;
     }
+    if (inc.idPersona != null && inc.ambito === 'movimientos') {
+      return {
+        label: 'Revisar trabajador',
+        kind: 'panel_trabajador',
+        idPersona: inc.idPersona,
+        filtroMasivo: 'con_movimientos',
+      };
+    }
+    if (inc.idPersona != null && inc.ambito === 'recurrentes') {
+      return {
+        label: 'Revisar trabajador',
+        kind: 'panel_trabajador',
+        idPersona: inc.idPersona,
+        filtroMasivo: 'con_recurrentes',
+      };
+    }
     const accion = resolveAccionCorreccionDesdeIncidencia(inc);
     if (accion) return accion;
   }
@@ -196,7 +212,7 @@ export function resolveAccionCorreccionFilaMasiva(
   }
   if (fila.tieneMovimientos && fila.incidenciasCount > 0) {
     return {
-      label: 'Revisar movimientos',
+      label: 'Revisar trabajador',
       kind: 'panel_trabajador',
       idPersona: fila.idPersona,
       filtroMasivo: 'con_movimientos',

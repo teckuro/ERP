@@ -233,6 +233,8 @@ const ETIQUETAS_REVISION_RAIL_DUPLICADAS = new Set([
   'preparar confirmación',
   'confirmar revisión',
   'confirmar nómina',
+  'revisar fichas',
+  'revisar movimientos',
   'revisar trabajadores',
   'revisar en detalle',
   'ver revisión ampliada',
@@ -247,7 +249,6 @@ export function labelRevisionRailDesdeDestino(destino: NominaWorkspaceFlowTarget
     return destino.legacyTab === 'parametros' ? 'Revisar parámetros' : 'Revisar pendientes';
   }
   if (destino.detalleVista === 'trabajadores') {
-    if (destino.filtroMasivo === 'con_movimientos') return 'Revisar movimientos';
     if (destino.filtroMasivo === 'con_recurrentes') return 'Revisar recurrentes';
     return 'Revisar trabajadores';
   }
@@ -277,7 +278,7 @@ export function buildRevisionRailCta(
   }
   if (!ctx?.baseGenerada) {
     if (ctx?.hayFichasPendientesPrevalidacion) {
-      return { label: 'Revisar fichas', usarPanel: false, revisarFichasGuiada: true };
+      return { label: 'Revisar trabajadores', usarPanel: false, revisarFichasGuiada: true };
     }
     if (ctx?.puedeGenerarNomina) {
       return { label: 'Generar nómina', usarPanel: false, accionLocal: 'generarBase' };

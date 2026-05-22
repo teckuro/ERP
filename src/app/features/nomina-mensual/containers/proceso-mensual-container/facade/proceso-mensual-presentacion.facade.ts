@@ -62,6 +62,7 @@ import {
   buildDetalleMasivoTrabajador,
   buildFilasMasivasTrabajadores,
   buildMovimientosPanelPorTrabajador,
+  buildResumenMasivoDesdeFilas,
   buildResumenMasivoNomina,
   filtrarFilasMasivasTrabajadores,
   type NominaMasivaEstado,
@@ -141,6 +142,10 @@ import {
   resolveAccionCorreccionFilaMasiva,
   type AccionCorreccionVm,
 } from '../../../rules/proceso-mensual-correccion.rules';
+import {
+  buildRevisionPeriodoPreview,
+  type RevisionPeriodoPreviewAccion,
+} from '../../../rules/proceso-mensual-revision-periodo-preview.rules';
 import type { IncidenciaPeriodo } from '../../../rules/proceso-mensual-incidencias-periodo.rules';
 import {
   appendNominaFlowQuery,
@@ -583,12 +588,46 @@ export class ProcesoMensualPresentacionFacade {
     });
   }
 
+  ejecutarRevisionPeriodoPreviewAccion(accion: RevisionPeriodoPreviewAccion | null): void {
+    if (!accion) return;
+    switch (accion.tipo) {
+      case 'validar_periodo':
+        this.validarPeriodo();
+        return;
+      case 'revisar_fichas':
+        this.abrirRevisionFichasPrevalidacionGuiada();
+        return;
+      case 'generar_nomina':
+        this.generarPreNomina();
+        return;
+      case 'pendiente': {
+        const codigo = accion.codigoPendiente?.trim();
+        if (!codigo) {
+          this.ejecutarRevisionRailPrincipal();
+          return;
+        }
+        const pendiente =
+          this.estadoOperativo().queFaltaAhora.find((p) => p.codigo === codigo)
+          ?? this.estadoOperativo().bloqueos.find((p) => p.codigo === codigo)
+          ?? this.estadoOperativo().advertencias.find((p) => p.codigo === codigo);
+        if (pendiente) {
+          this.navegarPendienteExterno(pendiente);
+        } else {
+          this.ejecutarRevisionRailPrincipal();
+        }
+        return;
+      }
+      default:
+        return;
+    }
+  }
+
   private readonly incidenciasMasivaPorPersona = computed(() =>
     incidenciasPorPersonaMap(this.incidenciasRevisionTrabajadores()),
   );
 
   accionCorreccionFilaMasiva(row: NominaMasivaFila): AccionCorreccionVm {
-    const clave = String(row.idPersona).trim();
+    const clave = this.clavePersonaNominaMasiva(row.idPersona);
     const incidencias = this.incidenciasMasivaPorPersona().get(clave) ?? [];
     return resolveAccionCorreccionFilaMasiva(row, incidencias);
   }
@@ -618,11 +657,10 @@ export class ProcesoMensualPresentacionFacade {
 
   seleccionarFranjaArea(area: NominaAreaOperativa): void {
     const incidenciasParam = this.incidenciasPeriodo().porAmbito.parametros ?? [];
+    const parametrosListos = this.dashboardResumen().parametrosListos === true;
     const accion = resolveAccionCorreccionDesdeFranjaArea(area, {
-      parametrosListos: this.dashboardResumen().parametrosListos === true,
-      parametrosConIncidenciaRevision: incidenciasParam.some(
-        (item) => item.severidad === 'bloqueo' || item.severidad === 'advertencia',
-      ),
+      parametrosListos,
+      parametrosConIncidenciaRevision: this.parametrosConIncidenciaRevision(parametrosListos, incidenciasParam),
     });
     if (accion) {
       this.ejecutarAccionCorreccion(accion);
@@ -630,9 +668,32 @@ export class ProcesoMensualPresentacionFacade {
   }
 
   private abrirInformacionParametrosPeriodo(): void {
+    const parametrosListos = this.dashboardResumen().parametrosListos === true;
     const incidencias = (this.incidenciasPeriodo().porAmbito.parametros ?? []).filter(
       (item) => item.severidad !== 'info',
     );
+    const incidenciasRevision = incidencias.filter(
+      (item) => item.severidad === 'bloqueo' || (!parametrosListos && item.severidad === 'advertencia'),
+    );
+    if (parametrosListos && incidenciasRevision.length === 0) {
+      this.overlay.set({
+        kind: 'informacion',
+        view: {
+          tone: incidencias.length ? 'warning' : 'success',
+          titulo: 'Parámetros listos',
+          bajada: 'Los parámetros mínimos del período están disponibles para generar y revisar la nómina mensual.',
+          secciones: incidencias.length
+            ? [{ titulo: 'Observaciones opcionales', items: incidencias.map((item) => item.titulo) }]
+            : undefined,
+          puntos: incidencias.length
+            ? undefined
+            : ['Continúe con la revisión de trabajadores o genere la nómina mensual.'],
+          accionPrincipal: { label: 'Ver revisión', destino: 'trabajadores' },
+          accionSecundaria: { label: 'Abrir parámetros', destino: 'parametros' },
+        },
+      });
+      return;
+    }
     const faltantes = incidencias.map((item) => item.titulo);
     this.overlay.set({
       kind: 'informacion',
@@ -649,6 +710,12 @@ export class ProcesoMensualPresentacionFacade {
         accionPrincipal: { label: 'Abrir parámetros', destino: 'parametros' },
       },
     });
+  }
+
+  private parametrosConIncidenciaRevision(parametrosListos: boolean, incidencias: IncidenciaPeriodo[]): boolean {
+    return incidencias.some(
+      (item) => item.severidad === 'bloqueo' || (!parametrosListos && item.severidad === 'advertencia'),
+    );
   }
 
   private ejecutarShellPrimaryAction(): void {
@@ -1138,9 +1205,7 @@ export class ProcesoMensualPresentacionFacade {
     const cta = buildRevisionRailCta(tab, destino, ctx);
     return refineRevisionRailCta(cta, destino, {
       parametrosListos,
-      parametrosConIncidenciaRevision: incidenciasParam.some(
-        (item) => item.severidad === 'bloqueo' || item.severidad === 'advertencia',
-      ),
+      parametrosConIncidenciaRevision: this.parametrosConIncidenciaRevision(parametrosListos, incidenciasParam),
       incidencias: this.incidenciasPeriodo(),
     });
   });
@@ -1215,9 +1280,32 @@ export class ProcesoMensualPresentacionFacade {
     const estado = this.estadoOperativo();
     return buildAlertasPeriodoResumen({
       validando: this.store.validando(),
-      tieneResultado: this.store.resultado() != null,
+      tieneResultado: this.contextoOperativoPeriodo().tienePrevalidacion,
       bloqueosCount: estado.bloqueos.length,
       advertenciasCount: estado.advertencias.length,
+    });
+  });
+
+  readonly revisionPeriodoPreview = computed(() => {
+    const dash = this.dashboardResumen();
+    return buildRevisionPeriodoPreview({
+      baseGenerada: this.contextoOperativoPeriodo().baseGenerada,
+      tienePrevalidacion: this.contextoOperativoPeriodo().tienePrevalidacion,
+      puedeGenerarNomina: this.puedeGenerarPreNomina(),
+      prevalidacionEstado: this.store.resultado()?.estado ?? null,
+      queFaltaAhora: this.estadoOperativo().queFaltaAhora,
+      validacionCalculo: this.validacionCalculo(),
+      dashboard: {
+        parametrosListos: dash.parametrosListos,
+        trabajadoresAptos: dash.trabajadoresAptos,
+        trabajadoresPorRevisar: dash.trabajadoresPorRevisar,
+        movimientosAprobados: dash.movimientosAprobados,
+        movimientosPendientes: dash.movimientosPendientes,
+        asignacionesAplicables: dash.asignacionesAplicables,
+        asignacionesPorRevisar: dash.asignacionesPorRevisar,
+      },
+      fichasPendientesCount: this.trabajadoresPendientesRevision().length,
+      incidencias: this.incidenciasPeriodo(),
     });
   });
 
@@ -1361,7 +1449,10 @@ export class ProcesoMensualPresentacionFacade {
   readonly itemsSeguimientoParametrosNomina = computed<ItemSeguimientoNomina[]>(() =>
     construirItemsSeguimientoParametrosNomina({
       parametrosListos: this.dashboardResumen().parametrosListos,
-      tieneIncidenciasParametros: this.incidenciasPeriodo().porAmbito.parametros.length > 0,
+      tieneIncidenciasParametros: this.parametrosConIncidenciaRevision(
+        this.dashboardResumen().parametrosListos === true,
+        this.incidenciasPeriodo().porAmbito.parametros,
+      ),
     }),
   );
 
@@ -1468,7 +1559,7 @@ export class ProcesoMensualPresentacionFacade {
   }));
 
   readonly nominaMasivaResumen = computed(() =>
-    buildResumenMasivoNomina(this.nominaMasivaInput()),
+    buildResumenMasivoDesdeFilas(this.nominaMasivaFilas()),
   );
 
   readonly nominaMasivaFilas = computed<NominaMasivaFila[]>(() => {
@@ -1493,7 +1584,7 @@ export class ProcesoMensualPresentacionFacade {
     buildDetalleMasivoTrabajador({
       ...this.nominaMasivaInput(),
       idPersona: this.nominaMasivaTrabajadorSeleccionadoId(),
-    }),
+    }) ?? this.nominaMasivaDetalleSeleccionadoDesdeFilaVisible(),
   );
 
   readonly nominaMasivaMovimientosPanelRows = computed(() => {
@@ -1505,11 +1596,35 @@ export class ProcesoMensualPresentacionFacade {
     );
   });
 
+  private nominaMasivaDetalleSeleccionadoDesdeFilaVisible() {
+    const seleccionado = this.nominaMasivaTrabajadorSeleccionadoId();
+    if (seleccionado == null) return null;
+    const fila = this.nominaMasivaFilas().find(
+      (item) => this.mismaPersonaNominaMasiva(item.idPersona, seleccionado),
+    );
+    if (!fila) return null;
+    const incidencias =
+      this.incidenciasMasivaPorPersona().get(this.clavePersonaNominaMasiva(fila.idPersona))
+      ?? [];
+    return {
+      idPersona: fila.idPersona,
+      trabajador: fila.trabajador,
+      rut: fila.rut,
+      estado: fila.estado,
+      haberes: fila.haberes,
+      descuentos: fila.descuentos,
+      liquidoEstimado: fila.liquidoEstimado,
+      movimientos: [],
+      recurrentes: [],
+      incidencias,
+    };
+  }
+
   readonly nominaMasivaAccionRecomendadaPanel = computed(() => {
     const detalle = this.nominaMasivaDetalleSeleccionado();
     if (!detalle) return null;
     const fila = this.nominaMasivaFilas().find(
-      (item) => String(item.idPersona) === String(detalle.idPersona),
+      (item) => this.mismaPersonaNominaMasiva(item.idPersona, detalle.idPersona),
     );
     return buildAccionRecomendadaTrabajador(detalle.incidencias, detalle.estado, fila);
   });
@@ -1543,7 +1658,7 @@ export class ProcesoMensualPresentacionFacade {
       untracked(() => this.nominaMasivaTrabajadorSeleccionadoId.set(filas[0].idPersona));
       return;
     }
-    const visible = filas.some((fila) => String(fila.idPersona) === String(seleccionado));
+    const visible = filas.some((fila) => this.mismaPersonaNominaMasiva(fila.idPersona, seleccionado));
     if (visible) return;
     untracked(() => this.nominaMasivaTrabajadorSeleccionadoId.set(filas[0].idPersona));
   });
@@ -2185,7 +2300,19 @@ export class ProcesoMensualPresentacionFacade {
 
   esFilaMasivaSeleccionada(idPersona: number | string): boolean {
     const seleccionado = this.nominaMasivaTrabajadorSeleccionadoId();
-    return seleccionado != null && String(seleccionado) === String(idPersona);
+    return seleccionado != null && this.mismaPersonaNominaMasiva(seleccionado, idPersona);
+  }
+
+  private clavePersonaNominaMasiva(idPersona: number | string | null | undefined): string {
+    if (idPersona == null) return '';
+    const raw = String(idPersona).trim();
+    return raw.startsWith('omitido-') ? raw.slice('omitido-'.length) : raw;
+  }
+
+  private mismaPersonaNominaMasiva(a: number | string | null | undefined, b: number | string | null | undefined): boolean {
+    const claveA = this.clavePersonaNominaMasiva(a);
+    const claveB = this.clavePersonaNominaMasiva(b);
+    return !!claveA && claveA === claveB;
   }
 
   claseAccionRecomendadaMasiva(tono: 'listo' | 'atencion' | 'bloqueo' | 'neutral'): string {

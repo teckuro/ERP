@@ -573,14 +573,18 @@ export class FichaEmpleadoContainer implements OnInit {
   estadoTab(idTab: TabFichaEmpleado, empleado: EmpleadoListado): EstadoTabFichaEmpleado {
     const evaluacion = this.evaluacionEmpleado(empleado);
 
-    if (evaluacion.aptoParaRemuneraciones) {
-      return 'complete';
-    }
-
     if (evaluacion.seccionesPendientes.some((section) => this.tabFromSection(section) === idTab)) {
       return idTab === 'pago' || idTab === 'remuneracion' || idTab === 'prevision'
         ? 'blocking'
         : 'warning';
+    }
+
+    if (evaluacion.advertencias.some((advertencia) => this.pendingMessageMatchesTab(advertencia, idTab))) {
+      return 'warning';
+    }
+
+    if (evaluacion.aptoParaRemuneraciones) {
+      return 'complete';
     }
 
     return idTab === 'documentos' || idTab === 'historial' ? 'pending' : 'complete';
@@ -1347,6 +1351,56 @@ export class FichaEmpleadoContainer implements OnInit {
     }
 
     return 'general';
+  }
+
+  private pendingMessageMatchesTab(message: string, idTab: TabFichaEmpleado): boolean {
+    const normalized = this.normalizeText(message);
+    switch (idTab) {
+      case 'general':
+        return (
+          normalized.includes('rut')
+          || normalized.includes('nombre')
+          || normalized.includes('apellido')
+          || normalized.includes('pais')
+          || normalized.includes('correo')
+          || normalized.includes('telefono')
+          || normalized.includes('contacto')
+          || normalized.includes('comuna')
+        );
+      case 'laboral':
+        return (
+          normalized.includes('contrato')
+          || normalized.includes('cargo')
+          || normalized.includes('jornada')
+          || normalized.includes('sucursal')
+          || normalized.includes('organizacion')
+          || normalized.includes('condiciones especiales')
+        );
+      case 'remuneracion':
+        return (
+          normalized.includes('remuneracion')
+          || normalized.includes('sueldo')
+          || normalized.includes('moneda')
+          || normalized.includes('cargas')
+          || normalized.includes('asignacion')
+          || normalized.includes('zona extrema')
+          || normalized.includes('semana corrida')
+        );
+      case 'prevision':
+        return (
+          normalized.includes('prevision')
+          || normalized.includes('salud')
+          || normalized.includes('afp')
+          || normalized.includes('ips')
+          || normalized.includes('apvi')
+          || normalized.includes('auge')
+          || normalized.includes('ges')
+        );
+      case 'pago':
+        return normalized.includes('banco') || normalized.includes('cuenta') || normalized.includes('transferencia');
+      default:
+        return false;
+    }
   }
 
   private normalizeText(value: string): string {

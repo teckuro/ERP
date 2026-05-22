@@ -85,6 +85,17 @@ describe('proceso-mensual-flow-nav.rules', () => {
     expect(cta.label).toBe('Revisar trabajadores');
   });
 
+  it('buildRevisionRailCta etiqueta movimientos como revision de trabajadores', () => {
+    const cta = buildRevisionRailCta('trabajadores', {
+      tabVisible: 'detalle_mensual',
+      detalleVista: 'trabajadores',
+      legacyTab: 'trabajadores',
+      filtroMasivo: 'con_movimientos',
+    });
+    expect(cta.usarPanel).toBe(true);
+    expect(cta.label).toBe('Revisar trabajadores');
+  });
+
   it('buildRevisionRailCta sin pendientes y sin base ofrece generar nomina', () => {
     const cta = buildRevisionRailCta('trabajadores', resolveWorkspaceTargetFromDetalleTab('trabajadores'), {
       baseGenerada: false,
@@ -133,7 +144,7 @@ describe('proceso-mensual-flow-nav.rules', () => {
       hayFichasPendientesPrevalidacion: true,
       revisionTrabajadoresCompleta: true,
     });
-    expect(cta.label).toBe('Revisar fichas');
+    expect(cta.label).toBe('Revisar trabajadores');
     expect(cta.revisarFichasGuiada).toBe(true);
   });
 
@@ -143,7 +154,7 @@ describe('proceso-mensual-flow-nav.rules', () => {
     expect(mostrarResumenAmpliadoEnRail({ nominaGenerada: true, vistaTrabajadores: false })).toBe(false);
   });
 
-  it('filtrarPendientesRailSecundarios omite duplicados de revisar trabajadores y parametros', () => {
+  it('filtrarPendientesRailSecundarios omite acciones que ya viven en trabajadores', () => {
     const filtrados = filtrarPendientesRailSecundarios(
       [
         {
@@ -152,6 +163,13 @@ describe('proceso-mensual-flow-nav.rules', () => {
           descripcion: 'Detalle',
           severidad: 'warning',
           accionLabel: 'Revisar trabajadores',
+        },
+        {
+          codigo: 'M',
+          titulo: 'Movimientos',
+          descripcion: 'Revise movimientos por trabajador',
+          severidad: 'warning',
+          accionLabel: 'Revisar movimientos',
         },
         {
           codigo: 'B',
@@ -170,8 +188,7 @@ describe('proceso-mensual-flow-nav.rules', () => {
       ],
       'Revisar trabajadores',
     );
-    expect(filtrados).toHaveLength(1);
-    expect(filtrados[0]?.accionLabel).toBe('Revisar fichas');
+    expect(filtrados).toHaveLength(0);
   });
 
   it('filtrarPendientesRailSecundarios omite parametros si listos', () => {
@@ -196,7 +213,6 @@ describe('proceso-mensual-flow-nav.rules', () => {
       2,
       { omitirParametrosSiListos: true },
     );
-    expect(filtrados).toHaveLength(1);
-    expect(filtrados[0]?.accionLabel).toBe('Revisar fichas');
+    expect(filtrados).toHaveLength(0);
   });
 });

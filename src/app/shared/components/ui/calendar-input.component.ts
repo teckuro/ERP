@@ -12,6 +12,10 @@ import {
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { LucideAngularModule } from 'lucide-angular';
 import { ChevronLeft, ChevronRight, X } from 'lucide-angular/src/icons';
+import {
+  buildCalendarYearOptions,
+  resolveCalendarYearBounds,
+} from './calendar-input-years.util';
 
 interface CalendarDay {
   date: Date;
@@ -108,11 +112,11 @@ interface CalendarDay {
               <select
                 class="calendar-period-select calendar-period-select--year"
                 aria-label="Seleccionar ano"
-                [value]="visibleDate.getFullYear()"
+                [value]="visibleYear"
                 (change)="selectVisibleYear($event)"
               >
                 @for (year of yearOptions; track year) {
-                  <option [value]="year">{{ year }}</option>
+                  <option [value]="year" [selected]="year === visibleYear">{{ year }}</option>
                 }
               </select>
             </div>
@@ -537,6 +541,10 @@ export class CalendarInputComponent implements ControlValueAccessor {
   visibleMonthLabel = '';
   yearOptions: number[] = [];
 
+  get visibleYear(): number {
+    return this.visibleDate.getFullYear();
+  }
+
   private onChange: (value: string) => void = () => undefined;
   private onTouched: () => void = () => undefined;
 
@@ -600,6 +608,16 @@ export class CalendarInputComponent implements ControlValueAccessor {
 
   handleInput(event: Event): void {
     const input = event.target as HTMLInputElement;
+    const raw = input.value.trim();
+    const isoDirect = /^\d{4}-\d{2}-\d{2}$/.test(raw) ? this.normalizeDateValue(raw) : '';
+
+    if (isoDirect) {
+      input.value = this.formatDisplayValue(isoDirect);
+      this.displayValue = input.value;
+      this.updateValue(isoDirect);
+      return;
+    }
+
     const maskedValue = this.maskDisplayValue(input.value);
     input.value = maskedValue;
     this.displayValue = maskedValue;
@@ -846,16 +864,7 @@ export class CalendarInputComponent implements ControlValueAccessor {
   }
 
   private buildYearOptions(): number[] {
-    const currentYear = new Date().getFullYear();
-    const minYear = this.min ? this.parseIsoDate(this.min).getFullYear() : currentYear - 100;
-    const maxYear = this.max ? this.parseIsoDate(this.max).getFullYear() : currentYear + 20;
-    const years: number[] = [];
-
-    for (let year = maxYear; year >= minYear; year -= 1) {
-      years.push(year);
-    }
-
-    return years;
+    return buildCalendarYearOptions(resolveCalendarYearBounds(this.min, this.max));
   }
 
   private clampVisibleDate(date: Date): Date {

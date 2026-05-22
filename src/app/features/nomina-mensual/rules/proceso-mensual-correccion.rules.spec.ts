@@ -49,7 +49,7 @@ describe('proceso-mensual-correccion.rules', () => {
     expect(accion?.label).toBe('Abrir parámetros');
   });
 
-  it('resolveAccionCorreccionFilaMasiva prioriza incidencia con ruta', () => {
+  it('resolveAccionCorreccionFilaMasiva mantiene movimientos dentro del trabajador', () => {
     const incidencias: IncidenciaPeriodo[] = [
       {
         id: 'M1',
@@ -64,8 +64,10 @@ describe('proceso-mensual-correccion.rules', () => {
       },
     ];
     const accion = resolveAccionCorreccionFilaMasiva(filaBase(), incidencias);
-    expect(accion.kind).toBe('ruta');
-    expect(accion.label).toBe('Revisar movimiento');
+    expect(accion.kind).toBe('panel_trabajador');
+    expect(accion.label).toBe('Revisar trabajador');
+    expect(accion.idPersona).toBe(42);
+    expect(accion.filtroMasivo).toBe('con_movimientos');
   });
 
   it('filtroInicialRevisionTrabajadores prioriza bloqueados', () => {

@@ -1,3 +1,16 @@
+## 2026-05-22 - Creación avanzada: selector de año del calendario
+
+- **Cambio:** `app-calendar-input` sin `max` ya no ofrece `añoActual + 20` (2046) ni lista años descendentes; fechas de contrato y perfil laboral pasan `[max]="today"` (y `min` en término/vigencia fin). Pegado ISO `YYYY-MM-DD` en el input no corrompe la máscara.
+- **Archivos:** `calendar-input.component.ts`, `calendar-input-years.util.ts`, `contrato.*`, `perfil-laboral.*`.
+- **No tocado:** SQL, estilos globales, `buildTodayValue` del formulario.
+
+## 2026-05-19 - Nómina mensual: preview persistente «Qué falta ahora»
+
+- **Cambio:** checklist de revisión del período visible en sidebar y tab Trabajadores antes de generar nómina (métricas, ejes contrato, pendientes, CTAs); regresión grilla pre-borrador alineada a `nominaMasivaFilas`.
+- **Archivos:** `proceso-mensual-revision-periodo-preview.*`, `proceso-mensual-revision-periodo-preview.rules.ts`, `proceso-mensual-masivo-layout.rules.ts`, `proceso-mensual-presentacion.facade.ts`, `proceso-mensual-workspace.component.*`, `proceso-mensual-revision-trabajadores.component.*`.
+- **Doc:** `docs/codex/modulos/nomina-mensual/nom-periodo-preview-persist-01.md`.
+- **No tocado:** SQL, motor, estilos globales, `angular.json`.
+
 ## 2026-05-22 - Nómina mensual: rail Revisión sin parámetros listos
 
 - **Cambio:** si parámetros están listos/revisados, el CTA principal del rail deja de ser «Revisar parámetros» y muestra el movimiento más crítico del período (etiqueta + bajada); pendientes secundarios omiten enlaces a parámetros.

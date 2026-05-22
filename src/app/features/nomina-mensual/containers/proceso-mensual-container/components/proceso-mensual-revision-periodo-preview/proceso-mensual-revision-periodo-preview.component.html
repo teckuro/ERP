@@ -1,0 +1,89 @@
+@let p = preview();
+@if (p.visible) {
+  <section
+    class="payroll-revision-preview"
+    [class.payroll-revision-preview--sidebar]="variant() === 'sidebar'"
+    [class.payroll-revision-preview--panel]="variant() === 'panel'"
+    [attr.aria-label]="p.tituloSeccion"
+  >
+    <header class="payroll-revision-preview__head">
+      <h3 class="payroll-revision-preview__title">{{ p.tituloSeccion }}</h3>
+      <p class="payroll-revision-preview__subtitle">{{ p.tituloModal }}</p>
+      @if (p.bajada) {
+        <p class="payroll-revision-preview__bajada">{{ p.bajada }}</p>
+      }
+    </header>
+
+    @if (p.metricas) {
+      <div class="payroll-revision-preview__metricas" aria-label="Resumen del período">
+        <div class="payroll-revision-preview__metrica">
+          <span class="payroll-revision-preview__metrica-k">Críticos</span>
+          <strong class="payroll-revision-preview__metrica-v">{{ p.metricas.criticos }}</strong>
+        </div>
+        <div class="payroll-revision-preview__metrica">
+          <span class="payroll-revision-preview__metrica-k">Advertencias</span>
+          <strong class="payroll-revision-preview__metrica-v">{{ p.metricas.advertencias }}</strong>
+        </div>
+        <div class="payroll-revision-preview__metrica payroll-revision-preview__metrica--destacada">
+          <span class="payroll-revision-preview__metrica-k">Fichas por corregir</span>
+          <strong class="payroll-revision-preview__metrica-v">{{ p.metricas.trabajadoresPendientes }}</strong>
+        </div>
+      </div>
+    }
+
+    @if (p.ejes.length) {
+      <ul class="payroll-revision-preview__ejes" aria-label="Estado por área">
+        @for (eje of p.ejes; track eje.id) {
+          <li [class]="claseEje(eje.estado)">
+            <span class="payroll-revision-preview__eje-label">{{ eje.label }}</span>
+            <span class="payroll-revision-preview__eje-detalle">{{ eje.detalle }}</span>
+          </li>
+        }
+      </ul>
+    }
+
+    @if (p.pendientes.length) {
+      <section class="payroll-revision-preview__bloque" aria-label="Pendientes">
+        <h4 class="payroll-revision-preview__bloque-title">Pendientes</h4>
+        <ul class="payroll-revision-preview__lista">
+          @for (item of p.pendientes; track item.codigo) {
+            <li>
+              <button
+                type="button"
+                class="payroll-revision-preview__pendiente-btn"
+                [attr.title]="item.detalle"
+                (click)="facade.ejecutarRevisionPeriodoPreviewAccion({ label: item.titulo, tipo: 'pendiente', codigoPendiente: item.codigo })"
+              >
+                <strong>{{ item.titulo }}</strong>
+                <span>{{ item.detalle }}</span>
+              </button>
+            </li>
+          }
+        </ul>
+      </section>
+    }
+
+    @if (p.accionPrincipal || p.accionSecundaria) {
+      <div class="payroll-revision-preview__acciones">
+        @if (p.accionPrincipal) {
+          <button
+            type="button"
+            class="payroll-modal-primary payroll-revision-preview__accion payroll-revision-preview__accion--primary"
+            (click)="facade.ejecutarRevisionPeriodoPreviewAccion(p.accionPrincipal)"
+          >
+            {{ p.accionPrincipal.label }}
+          </button>
+        }
+        @if (p.accionSecundaria) {
+          <button
+            type="button"
+            class="payroll-modal-secondary payroll-revision-preview__accion payroll-revision-preview__accion--secondary"
+            (click)="facade.ejecutarRevisionPeriodoPreviewAccion(p.accionSecundaria)"
+          >
+            {{ p.accionSecundaria.label }}
+          </button>
+        }
+      </div>
+    }
+  </section>
+}

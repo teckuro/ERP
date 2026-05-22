@@ -291,8 +291,7 @@ export function buildFilasMasivasTrabajadores(input: BuildNominaMasivaInput): No
     .sort((a, b) => a.trabajador.localeCompare(b.trabajador, 'es'));
 }
 
-export function buildResumenMasivoNomina(input: BuildNominaMasivaInput): NominaMasivaResumen {
-  const filas = buildFilasMasivasTrabajadores(input);
+export function buildResumenMasivoDesdeFilas(filas: readonly NominaMasivaFila[]): NominaMasivaResumen {
   return {
     totalTrabajadores: filas.length,
     listos: filas.filter((fila) => fila.estado === 'listo').length,
@@ -302,6 +301,10 @@ export function buildResumenMasivoNomina(input: BuildNominaMasivaInput): NominaM
     sinMovimientos: filas.filter((fila) => !fila.tieneMovimientos).length,
     conRecurrentes: filas.filter((fila) => fila.tieneRecurrentes).length,
   };
+}
+
+export function buildResumenMasivoNomina(input: BuildNominaMasivaInput): NominaMasivaResumen {
+  return buildResumenMasivoDesdeFilas(buildFilasMasivasTrabajadores(input));
 }
 
 export function filtrarFilasMasivasTrabajadores(

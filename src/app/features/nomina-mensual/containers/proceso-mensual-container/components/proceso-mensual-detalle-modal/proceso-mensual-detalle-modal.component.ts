@@ -5,12 +5,13 @@ import { X as XIcon } from 'lucide-angular/src/icons';
 
 import { DataGridComponent } from '../../../../../../shared/components/ui/data-grid.component';
 import { ProcesoMensualPresentacionFacade } from '../../facade/proceso-mensual-presentacion.facade';
+import { ProcesoMensualRevisionPeriodoPreviewComponent } from '../proceso-mensual-revision-periodo-preview/proceso-mensual-revision-periodo-preview.component';
 
 @Component({
   selector: 'app-proceso-mensual-detalle-modal',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, LucideAngularModule, DataGridComponent],
+  imports: [CommonModule, LucideAngularModule, DataGridComponent, ProcesoMensualRevisionPeriodoPreviewComponent],
   templateUrl: './proceso-mensual-detalle-modal.component.html',
   styleUrls: [
     '../../payroll-operational-tabs.css',

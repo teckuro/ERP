@@ -76,6 +76,14 @@
         @switch (tabActivo) {
           @case ('resumen') {
             <section class="payroll-operational-summary">
+              @let previewPeriodo = f.revisionPeriodoPreview();
+              @if (previewPeriodo.visible) {
+                <app-proceso-mensual-revision-periodo-preview
+                  [preview]="previewPeriodo"
+                  variant="panel"
+                />
+              }
+
               @if (expediente.visible && expediente.snapshot) {
                 <section class="payroll-expediente-franja" aria-label="Versi&oacute;n del per&iacute;odo">
                   <div class="payroll-expediente-franja__copy">

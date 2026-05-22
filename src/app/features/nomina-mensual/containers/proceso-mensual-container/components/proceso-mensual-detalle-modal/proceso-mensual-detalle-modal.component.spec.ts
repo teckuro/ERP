@@ -5,6 +5,7 @@ import { LucideAngularModule } from 'lucide-angular';
 import {
   AlertCircle,
   ArrowDownUp,
+  ArrowLeftRight,
   BadgeDollarSign,
   Calculator,
   Calendar,
@@ -31,13 +32,14 @@ import {
   RefreshCw,
   ShieldCheck,
   Sliders,
+  SlidersHorizontal,
   Upload,
   UserCheck,
   Users,
   UserX,
   X,
 } from 'lucide-angular/src/icons';
-import { vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { PeriodoActivoService } from '../../../../../../core/services/periodo-activo.service';
 import { DETALLE_REVISION_MODAL_TITULO } from '../../../../rules/proceso-mensual-detalle-modal.rules';
@@ -253,6 +255,7 @@ describe('ProcesoMensualDetalleModalComponent', () => {
           LucideAngularModule.pick({
             AlertCircle,
             ArrowDownUp,
+            ArrowLeftRight,
             BadgeDollarSign,
             Calculator,
             Calendar,
@@ -279,6 +282,7 @@ describe('ProcesoMensualDetalleModalComponent', () => {
             RefreshCw,
             ShieldCheck,
             Sliders,
+            SlidersHorizontal,
             Upload,
             UserCheck,
             Users,
@@ -307,6 +311,54 @@ describe('ProcesoMensualDetalleModalComponent', () => {
     expect(dialog).toBeTruthy();
     expectTexto(textoModal(fixture), DETALLE_REVISION_MODAL_TITULO);
     expectTexto(textoModal(fixture), 'Revise la');
+  });
+
+  it('muestra preview de que falta ahora en resumen antes de generar base', async () => {
+    ejecutarPrevalidaciones.mockResolvedValue(prevalidacionConBloqueoParametros('PARAM_UF', 'Falta valor UF del período'));
+    const fixture = await montarContainer();
+    fixture.componentInstance.validarPeriodo();
+    await esperarPrevalidacion(fixture);
+
+    fixture.componentInstance.abrirOverlayRevision('resumen');
+    fixture.detectChanges();
+
+    const modal = fixture.nativeElement.querySelector('app-proceso-mensual-detalle-modal') as HTMLElement | null;
+    const preview = modal?.querySelector('app-proceso-mensual-revision-periodo-preview') as HTMLElement | null;
+    expect(preview).toBeTruthy();
+    expectTexto(preview?.textContent ?? '', 'Qué falta ahora');
+    expectTexto(preview?.textContent ?? '', 'Revisión del período antes de generar');
+    expectTexto(preview?.textContent ?? '', 'Críticos');
+    expectTexto(preview?.textContent ?? '', 'Parámetros');
+    expectTexto(preview?.textContent ?? '', 'Pendientes');
+  });
+
+  it('accion principal del preview ejecuta la verificacion del periodo', async () => {
+    const fixture = await montarContainer();
+    fixture.componentInstance.abrirOverlayRevision('resumen');
+    fixture.detectChanges();
+
+    const preview = fixture.nativeElement.querySelector('app-proceso-mensual-revision-periodo-preview') as HTMLElement | null;
+    const accion = preview?.querySelector('.payroll-revision-preview__accion--primary') as HTMLButtonElement | null;
+    expect(accion).toBeTruthy();
+    accion?.click();
+    fixture.detectChanges();
+    await esperarPrevalidacion(fixture);
+
+    expect(ejecutarPrevalidaciones).toHaveBeenCalledWith(PERIODO_TEST);
+  });
+
+  it('no muestra preview en modal cuando ya existe base generada', async () => {
+    obtenerSnapshotActivo.mockResolvedValue(snapshotGuardado());
+    obtenerSnapshotCompletoActivo.mockResolvedValue(snapshotCompletoGuardado());
+    const fixture = await montarContainer();
+    await fixture.whenStable();
+
+    fixture.componentInstance.abrirOverlayRevision('resumen');
+    fixture.detectChanges();
+
+    const modal = fixture.nativeElement.querySelector('app-proceso-mensual-detalle-modal') as HTMLElement | null;
+    expect(modal?.querySelector('app-proceso-mensual-revision-periodo-preview')).toBeNull();
+    expectTextoNo(textoModal(fixture), 'Qué falta ahora');
   });
 
   it('footer no repite CTA global del workspace', async () => {
