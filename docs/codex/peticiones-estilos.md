@@ -1,3 +1,10 @@
+## 2026-05-22 - Ficha empleado: CSS budget (split styleUrls)
+
+- **Cambio:** `ficha-empleado-container.css` partido en `container`, `expediente`, `detalle`, `responsive` para cumplir `anyComponentStyle` 24 kB por hoja; diseño expediente NOIA sin cambios.
+- **Archivos:** `ficha-empleado-container.ts`, `ficha-empleado-*.css` (4 hojas).
+- **Doc:** `emp-ficha-expediente-css-budget-01.md`.
+- **No tocado:** `angular.json`, estilos globales, HTML, reglas, servicios.
+
 ## 2026-05-19 - Ficha empleado: edición bloque base y obligatorios
 
 - **Cambio:** al editar «Información personal y contacto» se muestran email y teléfono (`visibleBlocks` incluye `contacto`); asterisco sustituido por `app-empleado-field-required` (icono rojo + tooltip, patrón `field-help-tip` con `mode="required"`).

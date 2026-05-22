@@ -7,7 +7,18 @@
 | Alcance | Ficha empleado, alta avanzada de empleados y capa de presentacion de nomina mensual; VM de estado y faltantes en espanol/camelCase; higiene de logs dev-server. |
 | Restricciones | Sin SQL/RPC/RLS, sin contratos Supabase, sin rutas publicas, sin selectores Angular, sin clases CSS ni cambio visual. |
 | Documento | [../diseno/nomenclatura-es-camelcase-01.md](../diseno/nomenclatura-es-camelcase-01.md) |
-| Validacion | tsc app/spec OK; specs completos de empleados y nomina mensual OK; build compila bundles pero queda bloqueado por budget CSS preexistente de ficha (`24.15 kB` vs `24.00 kB`). |
+| Validacion | tsc app/spec OK; specs completos de empleados y nomina mensual OK; budget CSS ficha resuelto en EMP-FICHA-EXPEDIENTE-CSS-BUDGET-01. |
+
+## EMP-FICHA-EXPEDIENTE-CSS-BUDGET-01 - Ficha empleado CSS budget
+
+| Campo | Estado |
+|---|---|
+| Estado | Implementada |
+| Tipo | Deuda técnica CSS local |
+| Alcance | Split `styleUrls` en 4 hojas (`container`, `expediente`, `detalle`, `responsive`); sin rediseño NOIA. |
+| Restricciones | Sin `angular.json`, estilos globales, HTML, reglas, servicios, SQL. |
+| Documento | [`../modulos/empleados/emp-ficha-expediente-css-budget-01.md`](../modulos/empleados/emp-ficha-expediente-css-budget-01.md) |
+| Validación | `ficha-empleado*.spec.ts` (38), `empleado-completitud*.spec.ts` (18), `tsc`; sin error `anyComponentStyle` en hojas de ficha. |
 
 ## EMP-FICHA-EXPEDIENTE-NOIA-01 - Ficha empleado layout expediente
 

@@ -1,5 +1,11 @@
 # CHANGELOG
 
+## 2026-05-22 - EMP-FICHA-EXPEDIENTE-CSS-BUDGET-01
+
+- **Ficha empleado:** CSS local dividido en cuatro `styleUrls` (`container`, `expediente`, `detalle`, `responsive`); build sin error `anyComponentStyle` en este componente.
+- **Doc:** `emp-ficha-expediente-css-budget-01.md`.
+- **Sin cambio visual ni lógica;** sin `angular.json` ni estilos globales.
+
 ## 2026-05-21 - NOMENCLATURA-ES-CAMELCASE-01
 
 - **Empleados:** normalizacion interna en espanol/camelCase para rules y contenedor de ficha; VM de estado expone faltantes, porcentajeAvance, puedeValidarRemuneraciones, etiquetaAccion y ayudaAccion.

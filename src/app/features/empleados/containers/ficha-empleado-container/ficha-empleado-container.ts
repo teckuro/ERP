@@ -114,7 +114,12 @@ interface FilaHistorialFichaEmpleado {
     MessageBoxComponent,
   ],
   templateUrl: './ficha-empleado-container.html',
-  styleUrl: './ficha-empleado-container.css',
+  styleUrls: [
+    './ficha-empleado-container.css',
+    './ficha-empleado-expediente.css',
+    './ficha-empleado-detalle.css',
+    './ficha-empleado-responsive.css',
+  ],
 })
 export class FichaEmpleadoContainer implements OnInit {
   private readonly route = inject(ActivatedRoute);
