@@ -9,6 +9,17 @@
 | Documento | [../diseno/nomenclatura-es-camelcase-01.md](../diseno/nomenclatura-es-camelcase-01.md) |
 | Validacion | tsc app/spec OK; specs completos de empleados y nomina mensual OK; budget CSS ficha resuelto en EMP-FICHA-EXPEDIENTE-CSS-BUDGET-01. |
 
+## EMP-FICHA-EXPEDIENTE-FULLWORKSPACE-UX-02 - Ficha empleado full workspace
+
+| Campo | Estado |
+|---|---|
+| Estado | Implementada |
+| Tipo | UI presentación (CSS local) |
+| Alcance | Shell plano, header franja, rail/status integrados, bloques editoriales sin mini-card; sin tocar lógica. |
+| Restricciones | Sin globales, angular.json, HTML/TS negocio, servicios; 4 styleUrls bajo budget. |
+| Documento | [`../modulos/empleados/emp-ficha-expediente-fullworkspace-ux-02.md`](../modulos/empleados/emp-ficha-expediente-fullworkspace-ux-02.md) |
+| Validación | `ficha-empleado*.spec.ts`, `empleado-completitud*.spec.ts`, `tsc`, build sin error CSS ficha. |
+
 ## EMP-FICHA-EXPEDIENTE-CSS-BUDGET-01 - Ficha empleado CSS budget
 
 | Campo | Estado |

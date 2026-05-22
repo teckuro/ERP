@@ -8,6 +8,7 @@ import { signal } from '@angular/core';
 import { AuthService } from '../core/auth/auth.service';
 import { PeriodoActivoService } from '../core/services/periodo-activo.service';
 import { HeaderComponent } from './header.component';
+import { SHELL_HEADER_HEIGHT_PX } from './shell-navigation.config';
 import { ShellPageContextService } from './shell-page-context.service';
 
 describe('HeaderComponent', () => {
@@ -47,7 +48,7 @@ describe('HeaderComponent', () => {
     const text = fixture.nativeElement.textContent as string;
     expect(text).toContain('Mayo 2026');
     const header = fixture.nativeElement.querySelector('.erp-shell-header') as HTMLElement;
-    expect(header.style.height).toBe('52px');
+    expect(header.style.height).toBe(`${SHELL_HEADER_HEIGHT_PX}px`);
     expect(fixture.nativeElement.querySelector('.erp-shell-header__period-trigger')).toBeTruthy();
   });
 

@@ -1,5 +1,11 @@
 # CHANGELOG
 
+## 2026-05-22 - EMP-FICHA-EXPEDIENTE-FULLWORKSPACE-UX-02
+
+- **Ficha empleado:** expediente integrado al workspace (shell sin card exterior; bloques tipo sección; header franja).
+- **Solo CSS local** en los 4 `styleUrls` del contenedor; sin cambios HTML/TS de negocio.
+- **Doc:** `emp-ficha-expediente-fullworkspace-ux-02.md`.
+
 ## 2026-05-22 - EMP-FICHA-EXPEDIENTE-CSS-BUDGET-01
 
 - **Ficha empleado:** CSS local dividido en cuatro `styleUrls` (`container`, `expediente`, `detalle`, `responsive`); build sin error `anyComponentStyle` en este componente.

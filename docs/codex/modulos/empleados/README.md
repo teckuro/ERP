@@ -55,6 +55,7 @@ Contratos y guías del ciclo de vida del trabajador en Angular: listado, altas (
 | [`ficha-empleado.md`](./ficha-empleado.md) | Expediente (rail), bloques, panel diagnóstico, guardado, carga técnica, Playwright |
 | [`emp-ficha-expediente-noia-01.md`](./emp-ficha-expediente-noia-01.md) | Fase NOIA: layout 3 columnas, rail, motivo principal, CTA único |
 | [`emp-ficha-expediente-css-budget-01.md`](./emp-ficha-expediente-css-budget-01.md) | Split `styleUrls` CSS ficha (budget 24 kB por hoja, sin rediseño) |
+| [`emp-ficha-expediente-fullworkspace-ux-02.md`](./emp-ficha-expediente-fullworkspace-ux-02.md) | Expediente integrado al workspace (sin card exterior dominante) |
 | [`validar-remuneraciones.md`](./validar-remuneraciones.md) | Opción B, condiciones del botón, persistencia, exclusiones |
 | [`tests-empleados.md`](./tests-empleados.md) | Unitarios, Playwright, brechas |
 

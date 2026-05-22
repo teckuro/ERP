@@ -4,6 +4,7 @@ import { filter } from 'rxjs/operators';
 import { SidebarComponent } from './sidebar.component';
 import { HeaderComponent } from './header.component';
 import { ShellPageContextService } from './shell-page-context.service';
+import { SHELL_HEADER_HEIGHT_PX, SHELL_NAV_WIDTH_PX } from './shell-navigation.config';
 
 @Component({
   selector: 'app-layout-shell',
@@ -31,26 +32,38 @@ import { ShellPageContextService } from './shell-page-context.service';
       }
 
       .erp-shell-main {
-        margin-left: 220px;
+        margin-left: ${SHELL_NAV_WIDTH_PX}px;
         height: 100vh;
         overflow: hidden;
-        padding-top: 52px;
+        padding-top: ${SHELL_HEADER_HEIGHT_PX}px;
       }
 
       .erp-shell-scroll {
+        display: flex;
+        flex-direction: column;
         height: 100%;
         min-height: 0;
         overflow-y: auto;
         overflow-x: hidden;
-        padding: 1.25rem 1.5rem 1.5rem;
+        /* padding: 1.25rem 1.5rem 1.5rem; */
         scrollbar-color: #c7d0c4 #eef1ec;
         scrollbar-width: thin;
+      }
+
+      .erp-shell-scroll > :not(router-outlet) {
+        display: flex;
+        flex-direction: column;
+        flex: 1 1 auto;
+        width: 100%;
+        min-width: 0;
+        min-height: 0;
+        align-self: stretch;
       }
 
       @media (max-width: 1024px) {
         .erp-shell-main {
           margin-left: 0;
-          padding-top: 52px;
+          padding-top: ${SHELL_HEADER_HEIGHT_PX}px;
         }
 
         .erp-shell-scroll {

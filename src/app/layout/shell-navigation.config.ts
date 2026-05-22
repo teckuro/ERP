@@ -11,7 +11,14 @@ export type ShellNavSection = {
   items: ShellNavItem[];
 };
 
+/** Ancho fijo del sidebar; el header y el main usan el mismo valor para alinear. */
 export const SHELL_NAV_WIDTH_PX = 220;
+
+/** Altura de la franja superior (marca sidebar + header). */
+export const SHELL_HEADER_HEIGHT_PX = 52;
+
+/** Padding horizontal compartido en marca sidebar y barra del header. */
+export const SHELL_STRIP_PADDING_X_PX = 16;
 
 export const SHELL_NAV_SECTIONS: ShellNavSection[] = [
   {

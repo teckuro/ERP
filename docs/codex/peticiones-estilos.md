@@ -1,3 +1,53 @@
+## 2026-05-22 - Listado empleados: columna Acción solo menú ⋮
+
+- **Cambio:** celda con icono de tres puntos; popover con «Ver ficha» o «Continuar alta» (misma ruta que antes) y «Desactivar»; columna más estrecha.
+- **Archivos:** `tabla-empleados.ts`, `tabla-empleados.html`, `tabla-empleados.css`, `tabla-empleados.spec.ts`.
+
+## 2026-05-22 - Listado empleados: columna Acción mismo estilo que el resto
+
+- **Cambio:** CTA y menú ⋮ sin caja/borde; tipografía 0.78rem como el cuerpo de la grilla; alineación izquierda; celda sticky sin sombra lateral.
+- **Archivos:** `tabla-empleados.ts`, `tabla-empleados.css`.
+
+## 2026-05-22 - Listado empleados: menú Acciones (popover)
+
+- **Cambio:** menú contextual con `position: fixed` y `z-index: 120` (fuera del scroll de la grilla); botón ⋮ alineado al estilo del CTA de fila; cierre al desplazar la tabla.
+- **Archivos:** `tabla-empleados.ts`, `tabla-empleados.html`, `tabla-empleados.css`.
+
+## 2026-05-22 - Listado empleados: columna Acciones visible
+
+- **Cambio:** se revierten overrides que aplastaban la tabla (`table-layout: fixed` + `min-width: 100%`); columna Acciones con ancho real, scroll horizontal y celda fija a la derecha.
+- **Archivos:** `tabla-empleados.css`.
+
+## 2026-05-22 - Listado empleados: tabla a ancho y alto completo
+
+- **Cambio:** la grilla ocupa el 100% del área del shell (flex en outlet, contenedor y `data-grid`); scroll interno en el cuerpo de la tabla.
+- **Archivos:** `layout-shell.component.ts`, `listado-empleados-container.css`, `tabla-empleados.css`.
+- **No tocado:** estilos globales, lógica de datos.
+
+## 2026-05-22 - Shell ERP: alineación sidebar y header
+
+- **Cambio:** franja superior unificada a 52px (marca sidebar = altura header); ancho y offset del main desde `shell-navigation.config`; padding horizontal 16px compartido.
+- **Archivos:** `shell-navigation.config.ts`, `sidebar.component.ts`, `header.component.ts`, `layout-shell.component.ts`.
+- **No tocado:** estilos globales, `angular.json`.
+
+## 2026-05-22 - Ficha empleado: menos padding en expediente
+
+- **Cambio:** reducción ligera de padding/gap en rail del expediente, ítems de navegación y panel principal (sin cambiar estructura ni estilo tab).
+- **Archivos:** `ficha-empleado-responsive.css`, `ficha-empleado-expediente.css`, `ficha-empleado-detalle.css`.
+- **No tocado:** HTML, TS, globales, angular.json.
+
+## 2026-05-22 - Componente `app-workspace-loading`
+
+- **Cambio:** overlay de carga reutilizable (fondo blanco sólido, panel y spinner algo mayores); ficha usa `<app-workspace-loading message="Cargando ficha..." [fill]="true" />`.
+- **Archivos:** `workspace-loading.component.ts`, `ficha-empleado-container.html`.
+
+## 2026-05-22 - Ficha empleado: full workspace UX
+
+- **Cambio:** expediente sin card exterior (`employee-record-shell` plano); bloques editoriales con separador inferior; header franja; rail con borde derecho.
+- **Archivos:** `ficha-empleado-container.css`, `ficha-empleado-expediente.css`, `ficha-empleado-detalle.css`, `ficha-empleado-responsive.css`.
+- **Doc:** `emp-ficha-expediente-fullworkspace-ux-02.md`.
+- **No tocado:** HTML, TS lógica, globales, angular.json.
+
 ## 2026-05-22 - Ficha empleado: CSS budget (split styleUrls)
 
 - **Cambio:** `ficha-empleado-container.css` partido en `container`, `expediente`, `detalle`, `responsive` para cumplir `anyComponentStyle` 24 kB por hoja; diseño expediente NOIA sin cambios.

@@ -8,7 +8,9 @@ import { mesCortoDesdeYm, PeriodoActivoService } from '../core/services/periodo-
 import {
   SHELL_NAV_FOOTER_CONFIG,
   SHELL_NAV_SECTIONS,
+  SHELL_HEADER_HEIGHT_PX,
   SHELL_NAV_WIDTH_PX,
+  SHELL_STRIP_PADDING_X_PX,
   type ShellNavItem,
   type ShellNavSection,
 } from './shell-navigation.config';
@@ -97,11 +99,13 @@ import {
 
       .erp-sidebar__brand {
         display: flex;
-        height: 60px;
+        height: ${SHELL_HEADER_HEIGHT_PX}px;
+        flex: 0 0 ${SHELL_HEADER_HEIGHT_PX}px;
         align-items: center;
         gap: 10px;
         border-bottom: 1px solid #e2e8f0;
-        padding: 0 18px;
+        padding: 0 ${SHELL_STRIP_PADDING_X_PX}px;
+        box-sizing: border-box;
       }
 
       .erp-sidebar__brand-mark {

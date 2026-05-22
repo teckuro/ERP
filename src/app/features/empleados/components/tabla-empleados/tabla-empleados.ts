@@ -1,13 +1,19 @@
 import { CommonModule } from '@angular/common';
-import { Component, EventEmitter, HostListener, Input, Output, ViewChild, inject } from '@angular/core';
+import {
+  Component,
+  EventEmitter,
+  HostListener,
+  Input,
+  OnDestroy,
+  Output,
+  ViewChild,
+  inject,
+} from '@angular/core';
 import { Router, NavigationStart, RouterLink } from '@angular/router';
 import { LucideAngularModule } from 'lucide-angular';
 import {
   ArrowRight,
-  ClipboardCheck,
-  Edit,
   Eye,
-  History,
   LoaderCircle,
   MoreVertical,
   Plus,
@@ -41,7 +47,7 @@ import {
   templateUrl: './tabla-empleados.html',
   styleUrl: './tabla-empleados.css',
 })
-export class TablaEmpleadosComponent {
+export class TablaEmpleadosComponent implements OnDestroy {
   private readonly router = inject(Router);
 
   @Input() empleados: EmpleadoListado[] = [];
@@ -56,17 +62,18 @@ export class TablaEmpleadosComponent {
   @Output() readonly createBasico = new EventEmitter<void>();
   @Output() readonly createAvanzado = new EventEmitter<void>();
 
-  readonly editIcon = Edit;
   readonly eyeIcon = Eye;
-  readonly historyIcon = History;
   readonly loaderIcon = LoaderCircle;
   readonly moreIcon = MoreVertical;
   readonly plusIcon = Plus;
   readonly powerOffIcon = PowerOff;
   readonly rowActionIcon = ArrowRight;
-  readonly completionIcon = ClipboardCheck;
   openActionMenuId: number | null = null;
+  actionMenuPosition: { top: number; left: number } | null = null;
   crearMenuAbierto = false;
+
+  private gridScrollListenerTarget: HTMLElement | null = null;
+  private readonly onGridScrollClose = (): void => this.closeActionMenu();
 
   @ViewChild(DataGridComponent)
   private readonly dataGrid?: DataGridComponent<EmpleadoListado>;
@@ -219,11 +226,12 @@ export class TablaEmpleadosComponent {
       id: 'acciones',
       header: 'Accion',
       align: 'center',
-      width: '9.5rem',
-      minWidth: '8.75rem',
+      width: '3.25rem',
+      minWidth: '3.25rem',
       sortable: false,
       hideable: false,
       filterable: false,
+      cellClass: 'text-neutral-900',
     },
   ];
 
@@ -298,7 +306,7 @@ export class TablaEmpleadosComponent {
       return;
     }
 
-    this.openActionMenuId = null;
+    this.closeActionMenu();
   }
 
   @HostListener('document:click', ['$event'])
@@ -315,16 +323,27 @@ export class TablaEmpleadosComponent {
   @HostListener('document:keydown.escape')
   closeMenusOnEscape(): void {
     this.crearMenuAbierto = false;
-    this.openActionMenuId = null;
+    this.closeActionMenu();
+  }
+
+  @HostListener('window:resize')
+  closeActionMenuOnResize(): void {
+    if (this.openActionMenuId !== null) {
+      this.closeActionMenu();
+    }
   }
 
   constructor() {
     this.router.events.subscribe((event) => {
       if (event instanceof NavigationStart) {
         this.crearMenuAbierto = false;
-        this.openActionMenuId = null;
+        this.closeActionMenu();
       }
     });
+  }
+
+  ngOnDestroy(): void {
+    this.unbindGridScrollCloseListener();
   }
 
   trackByEmpleadoId(_index: number, empleado: EmpleadoListado): number {
@@ -388,13 +407,67 @@ export class TablaEmpleadosComponent {
     URL.revokeObjectURL(url);
   }
 
+  openActionMenuEmpleado(): EmpleadoListado | null {
+    if (this.openActionMenuId === null) {
+      return null;
+    }
+
+    return this.empleados.find((empleado) => empleado.id === this.openActionMenuId) ?? null;
+  }
+
   toggleActionMenu(empleadoId: number, event: MouseEvent): void {
     event.stopPropagation();
-    this.openActionMenuId = this.openActionMenuId === empleadoId ? null : empleadoId;
+
+    if (this.openActionMenuId === empleadoId) {
+      this.closeActionMenu();
+      return;
+    }
+
+    const trigger = event.currentTarget;
+
+    if (!(trigger instanceof HTMLElement)) {
+      return;
+    }
+
+    const rect = trigger.getBoundingClientRect();
+    const menuWidthPx = 224;
+    const viewportPaddingPx = 8;
+    const gapPx = 4;
+    let left = rect.right - menuWidthPx;
+
+    left = Math.max(
+      viewportPaddingPx,
+      Math.min(left, window.innerWidth - menuWidthPx - viewportPaddingPx),
+    );
+
+    this.actionMenuPosition = {
+      top: rect.bottom + gapPx,
+      left,
+    };
+    this.openActionMenuId = empleadoId;
+    this.bindGridScrollCloseListener();
   }
 
   closeActionMenu(): void {
     this.openActionMenuId = null;
+    this.actionMenuPosition = null;
+    this.unbindGridScrollCloseListener();
+  }
+
+  private bindGridScrollCloseListener(): void {
+    this.unbindGridScrollCloseListener();
+    this.gridScrollListenerTarget = document.querySelector(
+      'app-tabla-empleados app-data-grid.empleados-grid-shell .data-grid-scroll',
+    );
+
+    this.gridScrollListenerTarget?.addEventListener('scroll', this.onGridScrollClose, {
+      passive: true,
+    });
+  }
+
+  private unbindGridScrollCloseListener(): void {
+    this.gridScrollListenerTarget?.removeEventListener('scroll', this.onGridScrollClose);
+    this.gridScrollListenerTarget = null;
   }
 
   formatEmployeeMeta(empleado: EmpleadoListado): string {
@@ -477,6 +550,15 @@ export class TablaEmpleadosComponent {
     }
 
     return 'Ver ficha';
+  }
+
+  /** Etiqueta del popover de acciones (solo Ver ficha o Continuar alta). */
+  menuPrimaryActionLabel(empleado: EmpleadoListado): string {
+    return empleado.pasoAltaAvanzada !== null ? 'Continuar alta' : 'Ver ficha';
+  }
+
+  menuPrimaryActionIcon(empleado: EmpleadoListado) {
+    return empleado.pasoAltaAvanzada !== null ? this.rowActionIcon : this.eyeIcon;
   }
 
   completionValue(empleado: EmpleadoListado): number {

@@ -123,10 +123,10 @@
   color: var(--employee-exp-border);
 }
 
-.employee-record-rail {
-  gap: 14px;
-  padding: 18px 14px;
-}
+/* .employee-record-rail {
+  gap: 10px;
+  padding: 12px 12px;
+} */
 
 .employee-record-rail__head {
   padding: 0;
@@ -147,9 +147,9 @@
 }
 
 .employee-record-rail__item {
-  min-height: 40px;
+  min-height: 36px;
   border-radius: 7px;
-  padding: 0 10px 0 11px;
+  padding: 0 8px 0 9px;
 }
 
 .employee-record-rail__item--active {
@@ -374,7 +374,7 @@
   display: flex;
   flex-wrap: wrap;
   gap: 0;
-  margin-top: 10px;
+  margin-top: 6px;
   margin-bottom: -1px;
   overflow-x: auto;
   scrollbar-width: none;
@@ -382,12 +382,12 @@
 
 .employee-record-rail__item {
   width: auto;
-  min-height: 38px;
+  min-height: 34px;
   gap: 8px;
   border-color: var(--employee-exp-border);
   border-radius: 8px 8px 0 0;
   background: #fff;
-  padding: 0 12px;
+  padding: 0 10px;
   color: var(--employee-exp-muted);
 }
 

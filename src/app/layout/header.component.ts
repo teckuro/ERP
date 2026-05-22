@@ -21,10 +21,12 @@ import {
 
 import { AuthService } from '../core/auth/auth.service';
 import { PeriodoActivoService } from '../core/services/periodo-activo.service';
-import { SHELL_NAV_WIDTH_PX } from './shell-navigation.config';
+import {
+  SHELL_HEADER_HEIGHT_PX,
+  SHELL_NAV_WIDTH_PX,
+  SHELL_STRIP_PADDING_X_PX,
+} from './shell-navigation.config';
 import { ShellPageContextService, type ShellStatusChipTone } from './shell-page-context.service';
-
-const HEADER_HEIGHT_PX = 52;
 
 @Component({
   selector: 'app-header',
@@ -137,6 +139,7 @@ const HEADER_HEIGHT_PX = 52;
         top: 0;
         right: 0;
         z-index: 10;
+        box-sizing: border-box;
         border-bottom: 1px solid #e2e8f0;
         background: #ffffff;
       }
@@ -147,7 +150,7 @@ const HEADER_HEIGHT_PX = 52;
         align-items: center;
         justify-content: space-between;
         gap: 12px;
-        padding: 0 20px;
+        padding: 0 ${SHELL_STRIP_PADDING_X_PX}px;
       }
 
       .erp-shell-header__breadcrumb {
@@ -425,7 +428,7 @@ export class HeaderComponent {
 
   private readonly periodPicker = viewChild<ElementRef<HTMLDetailsElement>>('periodPicker');
   readonly navWidth = SHELL_NAV_WIDTH_PX;
-  readonly headerHeight = HEADER_HEIGHT_PX;
+  readonly headerHeight = SHELL_HEADER_HEIGHT_PX;
 
   readonly periodoActivo = inject(PeriodoActivoService);
   readonly shellContext = inject(ShellPageContextService);

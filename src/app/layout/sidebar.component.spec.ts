@@ -18,7 +18,7 @@ import { signal } from '@angular/core';
 import { AuthService } from '../core/auth/auth.service';
 import { PeriodoActivoService } from '../core/services/periodo-activo.service';
 import { SidebarComponent } from './sidebar.component';
-import { SHELL_NAV_WIDTH_PX } from './shell-navigation.config';
+import { SHELL_HEADER_HEIGHT_PX, SHELL_NAV_WIDTH_PX } from './shell-navigation.config';
 
 describe('SidebarComponent', () => {
   let fixture: ComponentFixture<SidebarComponent>;
@@ -71,6 +71,8 @@ describe('SidebarComponent', () => {
   it('usa ancho 220px y grupos Principal y Gestión', () => {
     const aside = fixture.nativeElement.querySelector('.erp-sidebar') as HTMLElement;
     expect(aside.style.width).toBe(`${SHELL_NAV_WIDTH_PX}px`);
+    const brand = fixture.nativeElement.querySelector('.erp-sidebar__brand') as HTMLElement;
+    expect(getComputedStyle(brand).height).toBe(`${SHELL_HEADER_HEIGHT_PX}px`);
     const text = fixture.nativeElement.textContent as string;
     expect(text).toContain('Principal');
     expect(text).toContain('Gestión');

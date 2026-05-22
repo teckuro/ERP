@@ -9,7 +9,6 @@ import {
   ChevronRight,
   Edit3,
   Info,
-  LoaderCircle,
   Save,
   X,
 } from 'lucide-angular/src/icons';
@@ -58,6 +57,7 @@ import {
   MessageBoxComponent,
   type MessageBoxSection,
 } from '../../../../shared/components/ui/message-box.component';
+import { WorkspaceLoadingComponent } from '../../../../shared/components/ui/workspace-loading.component';
 import { bindShellPageContext } from '../../../../layout/shell-page-context.binding';
 
 type TabFichaEmpleado =
@@ -112,6 +112,7 @@ interface FilaHistorialFichaEmpleado {
     BancarioComponent,
     DataGridComponent,
     MessageBoxComponent,
+    WorkspaceLoadingComponent,
   ],
   templateUrl: './ficha-empleado-container.html',
   styleUrls: [
@@ -156,7 +157,6 @@ export class FichaEmpleadoContainer implements OnInit {
   /** Vacío esperado - ícono informativo pequeño, no error. */
   readonly emptyFieldIcon = Info;
   readonly editIcon = Edit3;
-  readonly loaderIcon = LoaderCircle;
   readonly saveIcon = Save;
   readonly cancelIcon = X;
 

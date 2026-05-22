@@ -86,6 +86,14 @@ describe('TablaEmpleadosComponent', () => {
     expect(component.rowPrimaryActionLabel(e)).toBe('Ver ficha');
   });
 
+  it('popover: Continuar alta o Ver ficha segun paso avanzado', () => {
+    expect(component.menuPrimaryActionLabel(fila({ pasoAltaAvanzada: 2 }))).toBe('Continuar alta');
+    expect(component.menuPrimaryActionLabel(fila({ estadoFicha: 'INCOMPLETO' }))).toBe('Ver ficha');
+    expect(component.menuPrimaryActionLabel(fila({ estado: 'activo', estadoFicha: 'VALIDO' }))).toBe(
+      'Ver ficha',
+    );
+  });
+
   it('Activo no apto muestra Revisar pendientes', () => {
     const e = fila({
       estado: 'activo',
