@@ -229,22 +229,76 @@ export function pendientesRowsAExpediente(
   }));
 }
 
+export type DetalleMensualAccionIcon =
+  | 'file-spreadsheet'
+  | 'users'
+  | 'sliders-horizontal'
+  | 'arrow-left-right'
+  | 'eye'
+  | 'external-link';
+
+export interface DetalleMensualAccionUi {
+  label: string;
+  title: string;
+  icon: DetalleMensualAccionIcon;
+}
+
+export function resolveDetalleMensualAccionUi(label: string | undefined | null): DetalleMensualAccionUi | null {
+  const limpio = label?.trim();
+  if (!limpio) {
+    return null;
+  }
+  const normalizado = limpio.toLowerCase();
+  let icon: DetalleMensualAccionIcon = 'external-link';
+  if (normalizado.includes('generar')) {
+    icon = 'file-spreadsheet';
+  } else if (normalizado.includes('parámetro') || normalizado.includes('parametro')) {
+    icon = 'sliders-horizontal';
+  } else if (normalizado.includes('movimiento') || normalizado.includes('recurrente')) {
+    icon = 'arrow-left-right';
+  } else if (normalizado.includes('ficha') || normalizado.includes('trabajador')) {
+    icon = 'users';
+  } else if (normalizado.includes('revisar') || normalizado.includes('ver ')) {
+    icon = 'eye';
+  } else if (normalizado.includes('abrir')) {
+    icon = 'external-link';
+  }
+  return {
+    label: limpio,
+    title: limpio,
+    icon,
+  };
+}
+
+export interface NominaDetalleMensualSituacionVm {
+  bloqueos: NominaDetalleMensualPendienteRow[];
+  porRevisar: NominaDetalleMensualPendienteRow[];
+  totalAlertas: number;
+}
+
+export function buildNominaDetalleMensualSituacion(
+  pendientes: NominaDetalleMensualPendienteRow[],
+): NominaDetalleMensualSituacionVm {
+  const bloqueos = pendientes.filter((p) => p.severity === 'bloqueo');
+  const porRevisar = pendientes.filter((p) => p.severity !== 'bloqueo');
+  return {
+    bloqueos,
+    porRevisar,
+    totalAlertas: bloqueos.length + porRevisar.length,
+  };
+}
+
+/** Solo alertas del período (vista Situación / compat expediente). Sin movimientos ni trabajadores. */
 export function buildNominaDetalleMensualTodosRows(input: {
   pendientes: NominaDetalleMensualPendienteRow[];
-  movimientos: NominaDetalleMensualMovimientoRow[];
-  trabajadores: NominaDetalleMensualTrabajadorRow[];
-  liquidaciones: NominaDetalleMensualExpedienteRow[];
+  movimientos?: NominaDetalleMensualMovimientoRow[];
+  trabajadores?: NominaDetalleMensualTrabajadorRow[];
+  liquidaciones?: NominaDetalleMensualExpedienteRow[];
   idPersonaPorNombre?: ReadonlyMap<string, number | string>;
 }): NominaDetalleMensualExpedienteRow[] {
   const bloqueos = pendientesRowsAExpediente(input.pendientes.filter((p) => p.severity === 'bloqueo'));
   const revision = pendientesRowsAExpediente(input.pendientes.filter((p) => p.severity !== 'bloqueo'));
-  const movs = movimientoRowsAExpediente(input.movimientos, input.idPersonaPorNombre);
-  const trabListos = trabajadorRowsAExpediente(
-    input.trabajadores.filter((t) => severityDesdeEstado(t.estado) === 'listo'),
-  );
-  const liqs = input.liquidaciones;
-
-  return [...bloqueos, ...revision, ...movs, ...trabListos, ...liqs].sort(
+  return [...bloqueos, ...revision].sort(
     (a, b) => SEVERITY_ORDER[a.severity] - SEVERITY_ORDER[b.severity],
   );
 }

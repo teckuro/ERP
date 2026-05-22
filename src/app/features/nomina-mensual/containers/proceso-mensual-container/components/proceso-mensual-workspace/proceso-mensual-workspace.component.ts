@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { LucideAngularModule } from 'lucide-angular';
+import { ChevronRight } from 'lucide-angular/src/icons';
 
 import {
   DataGridCellDirective,
@@ -19,6 +20,7 @@ import {
 } from '../../../../rules/proceso-mensual-workspace-presentacion.rules';
 import type { NominaDetalleMensualVista } from '../../models/proceso-mensual-container.vm';
 import { claseSegmentNavActivo } from '../../../../rules/proceso-mensual-segment-nav.rules';
+import { resolveDetalleMensualAccionUi } from '../../../../rules/proceso-mensual-detalle-mensual.rules';
 import { ProcesoMensualPresentacionFacade } from '../../facade/proceso-mensual-presentacion.facade';
 
 @Component({
@@ -37,6 +39,7 @@ import { ProcesoMensualPresentacionFacade } from '../../facade/proceso-mensual-p
 })
 export class ProcesoMensualWorkspaceComponent {
   readonly facade = inject(ProcesoMensualPresentacionFacade);
+  readonly chevronRightIcon = ChevronRight;
 
   readonly focusPresentacion = computed(() => resolveFocusPresentacion(this.facade.nominaFrame().frame));
   readonly resolveBitacoraRailIcon = resolveBitacoraRailIcon;
@@ -47,5 +50,9 @@ export class ProcesoMensualWorkspaceComponent {
 
   claseDetalleFiltro(vista: NominaDetalleMensualVista): string {
     return claseSegmentNavActivo(this.facade.nominaDetalleMensualVista() === vista);
+  }
+
+  accionPendienteUi(label: string | undefined | null) {
+    return resolveDetalleMensualAccionUi(label);
   }
 }

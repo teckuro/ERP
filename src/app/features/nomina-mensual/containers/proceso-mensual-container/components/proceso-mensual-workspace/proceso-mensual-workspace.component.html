@@ -361,26 +361,133 @@
             </div>
             @switch (f.nominaDetalleMensualVista()) {
               @case ('todos') {
-                <app-data-grid
-                  title="Detalle del período"
-                  [columns]="f.detalleMensualExpedienteColumns"
-                  [rows]="f.nominaDetalleMensualTodosRows()"
-                  headerCountNoun="registros"
-                  emptyTitle="Sin registros visibles"
-                  emptyDescription="Genere o revise la nómina mensual para ver el detalle consolidado."
-                >
-                  <ng-template appDataGridCell="accion" let-row="row">
-                    @if (row.accion) {
+                @let situacion = f.nominaDetalleMensualSituacion();
+                <section class="payroll-detalle-situacion" aria-label="Situación del período">
+                  <p class="payroll-detalle-situacion__lead" role="note">
+                    Los movimientos del período se revisan por trabajador en la pestaña Trabajadores.
+                  </p>
+                  @if (situacion.totalAlertas > 0) {
+                    <p class="payroll-detalle-situacion__lista-completa">
                       <button
                         type="button"
-                        class="payroll-revision-trabajadores__link"
-                        (click)="f.abrirDetalleExpedienteRow(row)"
+                        class="payroll-rail-link"
+                        (click)="f.seleccionarNominaDetalleMensualVista('pendientes')"
                       >
-                        {{ row.accion }}
+                        Ver lista completa
                       </button>
+                    </p>
+                    @if (situacion.bloqueos.length) {
+                      <details class="payroll-detalle-situacion__section payroll-detalle-situacion__section--bloqueo" open>
+                        <summary>
+                          <span class="payroll-detalle-situacion__summary-inner">
+                            <span class="payroll-detalle-situacion__chevron-wrap" aria-hidden="true">
+                              <lucide-icon class="payroll-detalle-situacion__chevron" [img]="chevronRightIcon" />
+                            </span>
+                            <span class="payroll-detalle-situacion__summary-label">Críticos y bloqueos</span>
+                            <span class="payroll-detalle-situacion__count">{{ situacion.bloqueos.length }}</span>
+                          </span>
+                        </summary>
+                        <div class="payroll-detalle-situacion__panel">
+                          <p class="payroll-detalle-situacion__help">
+                            Corrija estos puntos antes de generar o confirmar la nómina del período.
+                          </p>
+                          <app-data-grid
+                            className="payroll-detalle-situacion__grid"
+                            cardClassName="payroll-detalle-situacion__grid-card"
+                            title=""
+                            [columns]="f.detalleMensualPendienteColumns"
+                            [rows]="situacion.bloqueos"
+                            [filtersEnabled]="false"
+                            [filterChipsDisplay]="'never'"
+                            [showExportAction]="false"
+                            [selectable]="false"
+                            [headerCountDisplay]="'text'"
+                            headerCountNoun="bloqueos"
+                            emptyTitle="Sin bloqueos"
+                            emptyDescription=""
+                          >
+                            <ng-template appDataGridCell="accion" let-row="row">
+                              @if (accionPendienteUi(row.accion); as ui) {
+                                <button
+                                  type="button"
+                                  class="payroll-detalle-accion-btn"
+                                  [attr.title]="ui.title"
+                                  [attr.aria-label]="ui.title"
+                                  (click)="f.abrirDetallePendienteRow(row)"
+                                >
+                                  <lucide-icon [name]="ui.icon" aria-hidden="true" />
+                                  <span>{{ ui.label }}</span>
+                                </button>
+                              }
+                            </ng-template>
+                          </app-data-grid>
+                        </div>
+                      </details>
                     }
-                  </ng-template>
-                </app-data-grid>
+                    @if (situacion.porRevisar.length) {
+                      <details class="payroll-detalle-situacion__section payroll-detalle-situacion__section--revision">
+                        <summary>
+                          <span class="payroll-detalle-situacion__summary-inner">
+                            <span class="payroll-detalle-situacion__chevron-wrap" aria-hidden="true">
+                              <lucide-icon class="payroll-detalle-situacion__chevron" [img]="chevronRightIcon" />
+                            </span>
+                            <span class="payroll-detalle-situacion__summary-label">Por revisar</span>
+                            <span class="payroll-detalle-situacion__count">{{ situacion.porRevisar.length }}</span>
+                          </span>
+                        </summary>
+                        <div class="payroll-detalle-situacion__panel">
+                          <p class="payroll-detalle-situacion__help">
+                            Advertencias del período que conviene revisar antes de continuar.
+                          </p>
+                          <app-data-grid
+                            className="payroll-detalle-situacion__grid"
+                            cardClassName="payroll-detalle-situacion__grid-card"
+                            title=""
+                            [columns]="f.detalleMensualPendienteColumns"
+                            [rows]="situacion.porRevisar"
+                            [filtersEnabled]="false"
+                            [filterChipsDisplay]="'never'"
+                            [showExportAction]="false"
+                            [selectable]="false"
+                            [headerCountDisplay]="'text'"
+                            headerCountNoun="advertencias"
+                            emptyTitle="Sin revisiones pendientes"
+                            emptyDescription=""
+                          >
+                            <ng-template appDataGridCell="accion" let-row="row">
+                              @if (accionPendienteUi(row.accion); as ui) {
+                                <button
+                                  type="button"
+                                  class="payroll-detalle-accion-btn"
+                                  [attr.title]="ui.title"
+                                  [attr.aria-label]="ui.title"
+                                  (click)="f.abrirDetallePendienteRow(row)"
+                                >
+                                  <lucide-icon [name]="ui.icon" aria-hidden="true" />
+                                  <span>{{ ui.label }}</span>
+                                </button>
+                              }
+                            </ng-template>
+                          </app-data-grid>
+                        </div>
+                      </details>
+                    }
+                  } @else {
+                    <div class="payroll-detalle-situacion__empty">
+                      <p class="payroll-detalle-situacion__empty-titulo">Sin alertas del período</p>
+                      <p class="payroll-detalle-situacion__empty-desc">
+                        No hay bloqueos ni advertencias visibles. Revise trabajadores y movimientos en sus pestañas.
+                      </p>
+                      <button
+                        type="button"
+                        class="payroll-modal-secondary"
+                        (click)="f.seleccionarNominaDetalleMensualVista('trabajadores')"
+                      >
+                        Ir a trabajadores
+                      </button>
+                    </div>
+                  }
+                </section>
               }
               @case ('trabajadores') {
                 <app-proceso-mensual-revision-trabajadores />
@@ -412,13 +519,16 @@
                   emptyDescription="No hay bloqueos ni revisiones pendientes en este período."
                 >
                   <ng-template appDataGridCell="accion" let-row="row">
-                    @if (row.accion) {
+                    @if (accionPendienteUi(row.accion); as ui) {
                       <button
                         type="button"
-                        class="payroll-revision-trabajadores__link"
+                        class="payroll-detalle-accion-btn"
+                        [attr.title]="ui.title"
+                        [attr.aria-label]="ui.title"
                         (click)="f.abrirDetallePendienteRow(row)"
                       >
-                        {{ row.accion }}
+                        <lucide-icon [name]="ui.icon" aria-hidden="true" />
+                        <span>{{ ui.label }}</span>
                       </button>
                     }
                   </ng-template>

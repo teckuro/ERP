@@ -108,6 +108,7 @@ import {
 import {
   buildNominaDetalleMensualMovimientosRows,
   buildNominaDetalleMensualPendientesRows,
+  buildNominaDetalleMensualSituacion,
   buildNominaDetalleMensualTodosRows,
   buildNominaDetalleMensualTrabajadorRows,
   buildNominaHistorialTablaRows,
@@ -1403,13 +1404,13 @@ export class ProcesoMensualPresentacionFacade {
     ];
   });
 
+  readonly nominaDetalleMensualSituacion = computed(() =>
+    buildNominaDetalleMensualSituacion(this.nominaDetalleMensualPendienteRows()),
+  );
+
   readonly nominaDetalleMensualTodosRows = computed(() =>
     buildNominaDetalleMensualTodosRows({
       pendientes: this.nominaDetalleMensualPendienteRows(),
-      movimientos: this.nominaDetalleMensualMovimientoRows(),
-      trabajadores: this.nominaDetalleMensualTrabajadorRows(),
-      liquidaciones: this.nominaDetalleMensualLiquidacionRows(),
-      idPersonaPorNombre: this.idPersonaPorNombreTrabajador(),
     }),
   );
 
@@ -1428,7 +1429,7 @@ export class ProcesoMensualPresentacionFacade {
   });
 
   readonly nominaDetalleMensualFiltros: ReadonlyArray<{ id: NominaDetalleMensualVista; label: string }> = [
-    { id: 'todos', label: 'Todos' },
+    { id: 'todos', label: 'Situación' },
     { id: 'trabajadores', label: 'Trabajadores' },
     { id: 'liquidaciones', label: 'Liquidaciones' },
     { id: 'pendientes', label: 'Pendientes' },

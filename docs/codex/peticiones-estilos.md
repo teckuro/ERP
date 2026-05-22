@@ -1,3 +1,19 @@
+## 2026-05-22 - Nómina mensual: botones de acción en detalle
+
+- **Cambio:** columna Acción con botón compacto (icono Lucide + etiqueta + `title`); regla `resolveDetalleMensualAccionUi`.
+- **Archivos:** `proceso-mensual-detalle-mensual.rules.ts`, `proceso-mensual-workspace.component.*`.
+
+## 2026-05-22 - Nómina mensual: colapsables Situación (patrón bitácora)
+
+- **Cambio:** secciones con chevron y bajada; **Críticos** abierto por defecto; **Por revisar** colapsado; DataGrid integrado al panel (sin caja anidada).
+- **Archivos:** `proceso-mensual-workspace.component.html`, `proceso-mensual-workspace.component.css`.
+
+## 2026-05-21 - Nómina mensual: detalle Situación con secciones colapsables
+
+- **Cambio:** pestaña «Todos» renombrada a **Situación**; incidencias en `<details>` (Críticos / Por revisar); sin movimientos en esa vista (solo en Trabajadores).
+- **Archivos:** `proceso-mensual-workspace.component.*`, `proceso-mensual-detalle-mensual.rules.ts`, `proceso-mensual-presentacion.facade.ts`.
+- **No tocado:** SQL, motor, estilos globales.
+
 ## 2026-05-19 - Nómina mensual: CTAs vivos y resumen solo post-generación
 
 - **Cambio:** «Ver en resumen» y «Resumen ampliado» solo con `baseGenerada`; rail/empty sin modal resumen vacío; overlay verificación con Cerrar + secundaria separada; pestaña resumen con incidencias completas y secciones borrador/trazabilidad.

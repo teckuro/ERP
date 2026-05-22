@@ -2,13 +2,14 @@ import { describe, expect, it } from 'vitest';
 
 import {
   buildNominaDetalleMensualMovimientosRows,
+  buildNominaDetalleMensualSituacion,
   buildNominaDetalleMensualTodosRows,
+  resolveDetalleMensualAccionUi,
   buildNominaDetalleMensualTrabajadorRows,
   buildNominaHistorialTablaRows,
   movimientoRowsAExpediente,
   trabajadorRowsAExpediente,
 } from './proceso-mensual-detalle-mensual.rules';
-import { resolveAccionCorreccionDesdeExpedienteRow } from './proceso-mensual-correccion.rules';
 import { buildIncidenciasPeriodo } from './proceso-mensual-incidencias-periodo.rules';
 
 describe('proceso-mensual-detalle-mensual.rules', () => {
@@ -77,7 +78,7 @@ describe('proceso-mensual-detalle-mensual.rules', () => {
     expect(rows[0]?.severity).toBe('bloqueo');
   });
 
-  it('buildNominaDetalleMensualTodosRows incluye movimientos con idPersona y acción unificada', () => {
+  it('buildNominaDetalleMensualTodosRows no incluye movimientos ni trabajadores', () => {
     const idMap = new Map<string, number | string>([['juan pérez', 7]]);
     const movimientos = buildNominaDetalleMensualMovimientosRows({
       movimientos: [
@@ -93,28 +94,80 @@ describe('proceso-mensual-detalle-mensual.rules', () => {
       recurrentes: [],
       periodoEtiqueta: 'Mayo 2026',
     });
+    const trabajadores = buildNominaDetalleMensualTrabajadorRows({
+      workers: [
+        {
+          trabajador: 'Ana Soto',
+          rut: '1-1',
+          estado: 'Listo',
+          observacion: 'OK',
+          accion: 'Ver',
+        },
+      ],
+      resultados: [],
+      idPersonaPorNombre: idMap,
+    });
     const rows = buildNominaDetalleMensualTodosRows({
       pendientes: [],
       movimientos,
-      trabajadores: [],
-      liquidaciones: [],
-      idPersonaPorNombre: idMap,
+      trabajadores,
+      liquidaciones: [
+        {
+          estado: 'Generada',
+          ambito: 'Liquidación',
+          trabajador: 'Período',
+          conceptoSituacion: 'Liq',
+          origenDuracion: '—',
+          vigencia: '—',
+          monto: '—',
+          accion: 'Ver',
+          severity: 'listo',
+          detalleTab: 'resultado',
+        },
+      ],
     });
 
-    const mov = rows.find((row) => row.ambito === 'Movimiento');
-    expect(mov).toMatchObject({
-      ambito: 'Movimiento',
-      trabajador: 'Juan Pérez',
-      idPersona: 7,
-      detalleTab: 'movimientos_recurrentes',
+    expect(rows.every((row) => row.ambito !== 'Movimiento')).toBe(true);
+    expect(rows.every((row) => row.ambito !== 'Trabajador')).toBe(true);
+    expect(rows.every((row) => row.ambito !== 'Liquidación')).toBe(true);
+  });
+
+  it('resolveDetalleMensualAccionUi asigna icono y title por tipo de accion', () => {
+    expect(resolveDetalleMensualAccionUi('Generar nómina')).toMatchObject({
+      label: 'Generar nómina',
+      title: 'Generar nómina',
+      icon: 'file-spreadsheet',
     });
-    const accion = resolveAccionCorreccionDesdeExpedienteRow(mov!);
-    expect(accion).toMatchObject({
-      kind: 'panel_trabajador',
-      idPersona: 7,
-      filtroMasivo: 'con_movimientos',
-      label: 'Revisar movimiento',
-    });
+    expect(resolveDetalleMensualAccionUi('Abrir parámetros')?.icon).toBe('sliders-horizontal');
+    expect(resolveDetalleMensualAccionUi('Revisar fichas')?.icon).toBe('users');
+    expect(resolveDetalleMensualAccionUi(null)).toBeNull();
+  });
+
+  it('buildNominaDetalleMensualSituacion separa bloqueos y por revisar', () => {
+    const situacion = buildNominaDetalleMensualSituacion([
+      {
+        estado: 'Bloqueado',
+        ambito: 'Parámetro',
+        trabajador: 'Período',
+        situacion: 'Falta UF',
+        accionRecomendada: 'Abrir parámetros',
+        accion: 'Abrir parámetros',
+        severity: 'bloqueo',
+      },
+      {
+        estado: 'Revisar',
+        ambito: 'Trabajador',
+        trabajador: 'Período',
+        situacion: 'Fichas pendientes',
+        accionRecomendada: 'Revisar fichas',
+        accion: 'Revisar fichas',
+        severity: 'atencion',
+      },
+    ]);
+
+    expect(situacion.bloqueos).toHaveLength(1);
+    expect(situacion.porRevisar).toHaveLength(1);
+    expect(situacion.totalAlertas).toBe(2);
   });
 
   it('movimientoRowsAExpediente propaga idPersona por nombre', () => {
