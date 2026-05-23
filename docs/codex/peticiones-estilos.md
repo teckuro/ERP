@@ -1,3 +1,21 @@
+## 2026-05-23 - Nómina mensual: estado sin duplicidad (shell + focus)
+
+- **Cambio:** se elimina el bloque lateral «Estado del período»; el chip de estado queda solo en el topbar del shell; `payroll-focus__copy` muestra título y lead (sin chip duplicado).
+- **Archivos:** `proceso-mensual-workspace.component.html`, `proceso-mensual-workspace.component.css`, `proceso-mensual-presentacion.facade.ts`.
+- **No tocado:** estilos globales, `header.component`, motor, SQL.
+
+## 2026-05-23 - Modal revisión nómina: sin tab Movimientos y recurrentes
+
+- **Cambio:** el tabbar del modal pasa a 4 pestañas; movimientos/recurrentes se revisan en trabajadores / resumen ampliado; sin pill «Listo» cuando no hay conteo (solo punto de severidad).
+- **Archivos:** `proceso-mensual-grid.config.ts`, `proceso-mensual-detalle-modal.component.html`, `proceso-mensual-detalle-modal.rules.ts`, `payroll-operational-tabs.css`, reglas de incidencias/navegación y facade.
+- **No tocado:** estilos globales, motor, SQL.
+
+## 2026-05-23 - Nómina mensual: detalle situación sin enlace «Ver lista completa»
+
+- **Cambio:** se quita el enlace suelto bajo el lead en vista «Todos»; el filtro «Pendientes» del segment nav cubre el mismo acceso.
+- **Archivos:** `proceso-mensual-workspace.component.html`, `proceso-mensual-workspace.component.css`.
+- **No tocado:** estilos globales, lógica de situación/alertas.
+
 ## 2026-05-19 - Preguntor operativo (asistente NVIDIA vía Edge Function)
 
 - **Cambio:** pantalla `/preguntor` con textarea, botón Preguntar y bloque de respuesta; CSS local compacto; sin chat ni reasoning visible.

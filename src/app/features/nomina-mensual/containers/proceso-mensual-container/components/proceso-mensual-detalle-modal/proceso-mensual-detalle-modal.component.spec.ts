@@ -575,16 +575,6 @@ describe('ProcesoMensualDetalleModalComponent', () => {
     expectTextoNo(bodyParametros, 'Parámetros del período por revisar');
   });
 
-  it('estado sin movimientos muestra texto editorial y no tabla', async () => {
-    const fixture = await montarContainer();
-    fixture.componentInstance.abrirOverlayRevision('movimientos_recurrentes');
-    fixture.detectChanges();
-
-    const body = fixture.nativeElement.querySelector('.payroll-operational-detail-modal__body');
-    expectTexto(body?.textContent ?? '', 'Sin movimientos del mes visibles');
-    expect(body?.querySelector('app-data-grid')).toBeNull();
-  });
-
   it('muestra indicador en tabs de revision', async () => {
     obtenerSnapshotActivo.mockResolvedValue(snapshotGuardado());
     obtenerSnapshotCompletoActivo.mockResolvedValue(snapshotCompletoGuardado());

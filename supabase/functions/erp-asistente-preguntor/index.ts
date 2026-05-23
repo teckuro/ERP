@@ -11,7 +11,7 @@ Responde solo en español de Chile, de forma breve y clara.
 Si no sabes algo, dilo sin inventar datos legales ni montos.
 No ejecutes acciones en el sistema; solo orienta.`;
 
-const DEFAULT_MODEL = "openai/gpt-oss-120b";
+const DEFAULT_MODEL = "qwen/qwen3.5-122b-a10b";
 const NIM_URL = "https://integrate.api.nvidia.com/v1/chat/completions";
 
 interface ReqPayload {
@@ -90,14 +90,16 @@ async function completarConNimStream(
     method: "POST",
     headers: {
       Authorization: `Bearer ${apiKey}`,
+      Accept: "text/event-stream",
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
       model,
       stream: true,
-      temperature: 1,
-      top_p: 1,
-      max_tokens: 4096,
+      temperature: 0.6,
+      top_p: 0.95,
+      max_tokens: 16384,
+      chat_template_kwargs: { enable_thinking: true },
       messages: [
         { role: "system", content: SYSTEM_PROMPT },
         { role: "user", content: pregunta },
@@ -127,18 +129,25 @@ async function completarConNimStream(
     const lines = buffer.split("\n");
     buffer = lines.pop() ?? "";
 
-    for (const line of lines) {
-      if (!line.startsWith("data: ")) continue;
-      const payload = line.slice(6).trim();
+    for (const rawLine of lines) {
+      const line = rawLine.trim();
+      if (!line.startsWith("data:")) continue;
+
+      const payload = line.startsWith("data: ")
+        ? line.slice(6).trim()
+        : line.slice(5).trim();
       if (!payload || payload === "[DONE]") continue;
 
       try {
         const json = JSON.parse(payload);
         const delta = json.choices?.[0]?.delta;
         if (!delta) continue;
+
+        // Thinking / reasoning: solo logs, no al usuario RRHH
         if (delta.reasoning_content) {
-          console.info("[nim-reasoning]");
+          console.info("[nim-thinking]");
         }
+
         if (delta.content) {
           respuesta += delta.content;
         }

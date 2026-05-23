@@ -26,7 +26,7 @@ Get-Content $envPath | ForEach-Object {
 }
 
 if (-not $vars["NVIDIA_API_KEY"]) { Write-Error "Falta NVIDIA_API_KEY en $envPath" }
-if (-not $vars["NVIDIA_MODEL"]) { $vars["NVIDIA_MODEL"] = "openai/gpt-oss-120b" }
+if (-not $vars["NVIDIA_MODEL"]) { $vars["NVIDIA_MODEL"] = "qwen/qwen3.5-122b-a10b" }
 
 @(
   "NVIDIA_API_KEY=$($vars['NVIDIA_API_KEY'])",

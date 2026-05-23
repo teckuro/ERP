@@ -217,7 +217,7 @@ function detalleTabDesdeAmbito(ambito: IncidenciaPeriodoAmbito): DetalleOperativ
       return 'trabajadores';
     case 'movimientos':
     case 'recurrentes':
-      return 'movimientos_recurrentes';
+      return 'trabajadores';
     case 'calculo':
     case 'resultado':
       return 'resultado';

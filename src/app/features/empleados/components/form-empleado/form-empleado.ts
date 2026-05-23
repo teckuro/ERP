@@ -83,6 +83,7 @@ import {
   MessageBoxSection,
   MessageBoxVariant,
 } from "../../../../shared/components/ui/message-box.component";
+import { WorkspaceLoadingComponent } from "../../../../shared/components/ui/workspace-loading.component";
 import { bindShellPageContext } from "../../../../layout/shell-page-context.binding";
 
 type TabId = EmpleadoFormTabId;
@@ -276,6 +277,7 @@ const MENSAJES_FINALIZAR_ALTA: Partial<Record<string, string>> = {
     CardComponent,
     CardContentComponent,
     MessageBoxComponent,
+    WorkspaceLoadingComponent,
     DatosPersonalesComponent,
     ContactoComponent,
     ContratoComponent,

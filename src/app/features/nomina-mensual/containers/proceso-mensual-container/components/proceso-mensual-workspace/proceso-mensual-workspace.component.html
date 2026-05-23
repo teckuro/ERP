@@ -34,7 +34,6 @@
               <lucide-icon [name]="pres.icon"></lucide-icon>
             </div>
             <div class="payroll-focus__copy">
-              <span class="payroll-focus__chip">{{ frame.chip }}</span>
               <h2 id="payroll-focus-title" class="payroll-focus__title">{{ frame.titulo }}</h2>
               <p class="payroll-focus__lead">{{ frame.texto }}</p>
             </div>
@@ -66,13 +65,6 @@
 
       <div class="payroll-workspace-layout">
         <aside class="payroll-workspace-sidebar" aria-label="Resumen operativo del período">
-          @let estadoRrhh = f.nominaEstadoRrhh();
-          <section class="payroll-sidebar-estado" aria-label="Estado de la nómina mensual">
-            <p class="payroll-sidebar-estado__label">Estado del período</p>
-            <p class="payroll-sidebar-estado__valor">{{ estadoRrhh.etiqueta }}</p>
-            <p class="payroll-sidebar-estado__detalle">{{ estadoRrhh.descripcion }}</p>
-          </section>
-
           <section class="payroll-franja-operativa" aria-label="Indicadores del período">
             <ul class="payroll-franja-operativa__list">
               @for (area of f.nominaFranjaAreas; track area.id) {
@@ -383,15 +375,6 @@
                     Los movimientos del período se revisan por trabajador en la pestaña Trabajadores.
                   </p>
                   @if (situacion.totalAlertas > 0) {
-                    <p class="payroll-detalle-situacion__lista-completa">
-                      <button
-                        type="button"
-                        class="payroll-rail-link"
-                        (click)="f.seleccionarNominaDetalleMensualVista('pendientes')"
-                      >
-                        Ver lista completa
-                      </button>
-                    </p>
                     @if (situacion.bloqueos.length) {
                       <details class="payroll-detalle-situacion__section payroll-detalle-situacion__section--bloqueo" open>
                         <summary>

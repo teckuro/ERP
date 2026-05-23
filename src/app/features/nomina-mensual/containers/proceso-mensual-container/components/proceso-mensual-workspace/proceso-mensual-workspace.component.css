@@ -135,37 +135,6 @@
   flex-shrink: 0;
 }
 
-.payroll-sidebar-estado {
-  display: grid;
-  gap: 4px;
-  margin: 0 0 10px;
-  padding: 10px 12px;
-  border: 1px solid var(--erp-border);
-  border-radius: 6px;
-  background: var(--erp-surface-soft);
-}
-
-.payroll-sidebar-estado__label {
-  margin: 0;
-  color: var(--erp-muted);
-  font-size: 0.72rem;
-  font-weight: 700;
-}
-
-.payroll-sidebar-estado__valor {
-  margin: 0;
-  color: var(--erp-ink);
-  font-size: 0.8125rem;
-  font-weight: 750;
-}
-
-.payroll-sidebar-estado__detalle {
-  margin: 0;
-  color: var(--erp-muted);
-  font-size: 0.75rem;
-  line-height: 1.35;
-}
-
 .payroll-rail-pendientes {
   display: grid;
   gap: 4px;
@@ -292,10 +261,6 @@
   font-size: 0.8125rem;
   line-height: 1.45;
   color: var(--erp-muted);
-}
-
-.payroll-detalle-situacion__lista-completa {
-  margin: 0;
 }
 
 .payroll-detalle-situacion__section {

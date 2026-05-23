@@ -16,7 +16,6 @@ export const DETALLE_OPERATIVO_TABS: Array<{ id: DetalleOperativoTab; label: str
   { id: 'resumen', label: 'Resumen operativo' },
   { id: 'parametros', label: 'Parámetros' },
   { id: 'trabajadores', label: 'Trabajadores' },
-  { id: 'movimientos_recurrentes', label: 'Movimientos y recurrentes' },
   { id: 'resultado', label: 'Nómina generada' },
 ];
 

@@ -51,7 +51,7 @@ export function resolveWorkspaceTargetFromDetalleTab(
       return {
         tabVisible: 'detalle_mensual',
         detalleVista: 'trabajadores',
-        legacyTab: 'movimientos',
+        legacyTab: 'trabajadores',
         filtroMasivo: 'con_movimientos',
       };
     case 'parametros':

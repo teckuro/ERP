@@ -16,6 +16,7 @@ import {
   debeUsarDataGridRevision,
   humanizarDetalleRevisionTexto,
   mapParametroItemsParaRevision,
+  normalizeDetalleOperativoTab,
   REVISION_LISTA_MAX_FILAS,
 } from './proceso-mensual-detalle-modal.rules';
 import {
@@ -492,66 +493,37 @@ describe('proceso-mensual-detalle-modal.rules', () => {
     expect(secciones.some((s) => s.titulo === 'Trabajadores en la base generada')).toBe(true);
   });
 
-  it('no usa grid para movimientos sin filas', () => {
-    const panel = buildDetalleRevisionTabPanel({
-      tab: 'movimientos_recurrentes',
-      tabSeveridad: 'neutral',
-      periodoEtiqueta: 'Mayo 2026',
-      estadoTitulo: 'Sin generar',
-      incidencias: SIN_INCIDENCIAS,
-      cantidadFilasTrabajadores: 0,
-      cantidadFilasMovimientos: 0,
-      cantidadFilasRecurrentes: 0,
-      cantidadFilasResultado: 0,
-      itemsParametros: [],
-      itemsSeguimientoResultado: [],
-      filasMovimientos: [],
-      filasRecurrentes: [],
-    });
-
-    expect(panel.usarGridMovimientos).toBe(false);
-    expect(panel.usarGridRecurrentes).toBe(false);
-    expect(panel.listaMovimientos).toEqual([]);
-    expect(panel.listaRecurrentes).toEqual([]);
-  });
-
-  it('usa lista editorial para movimientos cuando el bloque es pequeno', () => {
-    const panel = buildDetalleRevisionTabPanel({
-      tab: 'movimientos_recurrentes',
-      tabSeveridad: 'atencion',
-      periodoEtiqueta: 'Mayo 2026',
-      estadoTitulo: 'Con pendientes',
-      incidencias: SIN_INCIDENCIAS,
-      cantidadFilasTrabajadores: 0,
-      cantidadFilasMovimientos: 1,
-      cantidadFilasRecurrentes: 0,
-      cantidadFilasResultado: 0,
-      itemsParametros: [],
-      itemsSeguimientoResultado: [],
-      filasMovimientos: [{
-        trabajador: 'Ana Perez',
-        concepto: 'Bono',
-        tipo: 'Haber',
-        monto: '$10.000',
-        estado: 'Por revisar',
-        accion: 'Revisar',
-      }],
-      filasRecurrentes: [],
-    });
-
-    expect(panel.usarGridMovimientos).toBe(false);
-    expect(panel.listaMovimientos).toHaveLength(1);
-    expect(panel.listaMovimientos[0].titulo).toBe('Bono');
-  });
-
-  it('DETALLE_OPERATIVO_TABS ordena parametros antes que trabajadores', () => {
+  it('DETALLE_OPERATIVO_TABS no incluye movimientos recurrentes', () => {
     expect(DETALLE_OPERATIVO_TABS.map((t) => t.id)).toEqual([
       'resumen',
       'parametros',
       'trabajadores',
-      'movimientos_recurrentes',
       'resultado',
     ]);
+  });
+
+  it('normalizeDetalleOperativoTab redirige movimientos a trabajadores', () => {
+    expect(normalizeDetalleOperativoTab('movimientos_recurrentes')).toBe('trabajadores');
+    expect(normalizeDetalleOperativoTab('parametros')).toBe('parametros');
+  });
+
+  it('tabs en estado listo no muestran pill Listo', () => {
+    const tabs = buildDetalleRevisionTabsMeta({
+      tabs: DETALLE_OPERATIVO_TABS,
+      incidencias: SIN_INCIDENCIAS,
+      cantidadFilasTrabajadores: 2,
+      cantidadFilasMovimientos: 0,
+      cantidadFilasRecurrentes: 0,
+      cantidadFilasResultado: 2,
+      parametrosListos: true,
+      tieneActividadPeriodo: true,
+    });
+
+    for (const tab of tabs) {
+      if (tab.severidad === 'listo') {
+        expect(tab.indicador).toBeNull();
+      }
+    }
   });
 
   it('debeUsarDataGridRevision respeta umbral editorial', () => {

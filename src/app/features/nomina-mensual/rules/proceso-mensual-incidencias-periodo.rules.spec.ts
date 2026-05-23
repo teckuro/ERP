@@ -420,18 +420,22 @@ describe('proceso-mensual-incidencias-periodo.rules', () => {
       }],
     });
 
-    const tabs = ['parametros', 'trabajadores', 'movimientos_recurrentes', 'resultado'] as const;
+    const tabs = ['parametros', 'trabajadores', 'resultado'] as const;
     for (const tab of tabs) {
       const manual = view.todas.filter((inc) => {
         if (tab === 'parametros') return inc.ambito === 'parametros';
-        if (tab === 'trabajadores') return inc.ambito === 'trabajadores';
-        if (tab === 'movimientos_recurrentes') {
-          return inc.ambito === 'movimientos' || inc.ambito === 'recurrentes';
+        if (tab === 'trabajadores') {
+          return (
+            inc.ambito === 'trabajadores'
+            || inc.ambito === 'movimientos'
+            || inc.ambito === 'recurrentes'
+          );
         }
         return inc.ambito === 'resultado' || inc.ambito === 'calculo';
       });
       expect(view.porDetalleTab[tab]).toEqual(manual);
     }
+    expect(view.porDetalleTab.movimientos_recurrentes).toEqual([]);
   });
 
   it('conserva accion si alguna duplicada la define', () => {

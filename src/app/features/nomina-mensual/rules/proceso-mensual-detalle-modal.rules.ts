@@ -94,6 +94,11 @@ export function humanizarDetalleRevisionTexto(texto: string | null | undefined):
   return limpiarCopyTecnicoNomina(texto);
 }
 
+/** El tab de movimientos/recurrentes ya no se muestra; vive en trabajadores / resumen ampliado. */
+export function normalizeDetalleOperativoTab(tab: DetalleOperativoTab): DetalleOperativoTab {
+  return tab === 'movimientos_recurrentes' ? 'trabajadores' : tab;
+}
+
 export function buildDetalleRevisionHeaderLead(input: {
   tab: DetalleOperativoTab;
   periodoEtiqueta: string;
@@ -153,7 +158,7 @@ function listaItemDesdeIncidencia(inc: IncidenciaPeriodo): DetalleRevisionListaI
     item.ruta = inc.accion.destino;
   } else if (inc.accion?.tipo === 'tab' && inc.accion.destino) {
     item.accion = humanizarDetalleRevisionTexto(inc.accion.label);
-    item.accionTab = inc.accion.destino as DetalleOperativoTab;
+    item.accionTab = normalizeDetalleOperativoTab(inc.accion.destino as DetalleOperativoTab);
   } else if (inc.accion?.tipo === 'cerrar') {
     // Cierre del modal: solo el control X del encabezado.
   } else if (inc.accion?.label) {
@@ -561,7 +566,7 @@ function indicadorDesdeConteos(
     const n = advertencias || total;
     return n === 1 ? '1 pendiente' : `${n} pendientes`;
   }
-  if (severidad === 'listo') return 'Listo';
+  if (severidad === 'listo') return null;
   return null;
 }
 
@@ -572,7 +577,7 @@ function indicadorResumenDesdeSeveridad(severidad: DetalleRevisionTabSeveridad):
     case 'atencion':
       return 'Con observaciones';
     case 'listo':
-      return 'Listo';
+      return null;
     case 'neutral':
     default:
       return null;
@@ -602,11 +607,13 @@ export function buildDetalleRevisionTabsMeta(input: BuildDetalleRevisionTabsMeta
         case 'resumen':
           return incidencias.todas.length > 0;
         case 'trabajadores':
-          return input.cantidadFilasTrabajadores > 0;
+          return (
+            input.cantidadFilasTrabajadores > 0
+            || input.cantidadFilasMovimientos > 0
+            || input.cantidadFilasRecurrentes > 0
+          );
         case 'parametros':
           return input.tieneActividadPeriodo && input.parametrosListos === true;
-        case 'movimientos_recurrentes':
-          return input.cantidadFilasMovimientos > 0 || input.cantidadFilasRecurrentes > 0;
         case 'resultado':
           return input.cantidadFilasResultado > 0;
         default:

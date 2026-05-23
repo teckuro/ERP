@@ -45,6 +45,7 @@ import {
   buildExpedienteRevisionCtaForTab,
   claseDetalleRevisionTab,
   DETALLE_REVISION_MODAL_TITULO,
+  normalizeDetalleOperativoTab,
   type DetalleRevisionTabMeta,
 } from '../../../rules/proceso-mensual-detalle-modal.rules';
 import {
@@ -155,7 +156,6 @@ import {
   filtrarPendientesRailSecundarios,
   mostrarResumenAmpliadoEnRail,
   resolveFlowDestinoPorFrame,
-  resolveNominaEstadoRrhh,
   resolveWorkspaceTargetFromAccionLocal,
   resolveWorkspaceTargetFromDetalleTab,
   type NominaWorkspaceFlowTarget,
@@ -296,7 +296,9 @@ export class ProcesoMensualPresentacionFacade {
 
   readonly detalleOperativoTabActivo = computed(() => {
     const current = this.overlay();
-    return current.kind === 'revision' ? current.tab : 'trabajadores';
+    return current.kind === 'revision'
+      ? normalizeDetalleOperativoTab(current.tab)
+      : 'trabajadores';
   });
   readonly detalleRevisionModalTitulo = DETALLE_REVISION_MODAL_TITULO;
   readonly detalleRevisionModalLead = computed(() =>
@@ -1104,8 +1106,6 @@ export class ProcesoMensualPresentacionFacade {
     });
   });
 
-  readonly nominaEstadoRrhh = computed(() => resolveNominaEstadoRrhh(this.nominaVisualFrame()));
-
   readonly nominaVisualFrame = computed<NominaVisualFrame>(() =>
     resolveNominaVisualFrame({
       validando: this.store.validando(),
@@ -1753,7 +1753,7 @@ export class ProcesoMensualPresentacionFacade {
     if (this.store.snapshotActivo()) {
       this.store.asegurarSnapshotCompletoCargado();
     }
-    this.overlay.set({ kind: 'revision', tab });
+    this.overlay.set({ kind: 'revision', tab: normalizeDetalleOperativoTab(tab) });
   }
 
   abrirOverlayDecision(view: ConfirmacionProcesoMensualView): void {
@@ -2231,12 +2231,13 @@ export class ProcesoMensualPresentacionFacade {
   }
 
   abrirDetalleOperativo(tab: DetalleOperativoTab = 'trabajadores'): void {
-    const destino = resolveWorkspaceTargetFromDetalleTab(tab);
+    const tabNormalizado = normalizeDetalleOperativoTab(tab);
+    const destino = resolveWorkspaceTargetFromDetalleTab(tabNormalizado);
     if (destino) {
       this.aplicarDestinoWorkspace(destino);
       return;
     }
-    this.abrirOverlayRevision(tab);
+    this.abrirOverlayRevision(tabNormalizado);
   }
 
   cerrarDetalleOperativo(): void {
@@ -2247,7 +2248,7 @@ export class ProcesoMensualPresentacionFacade {
 
   seleccionarDetalleOperativoTab(tab: DetalleOperativoTab): void {
     if (this.overlay().kind === 'revision') {
-      this.overlay.set({ kind: 'revision', tab });
+      this.overlay.set({ kind: 'revision', tab: normalizeDetalleOperativoTab(tab) });
     }
   }
 

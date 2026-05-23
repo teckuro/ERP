@@ -292,6 +292,12 @@
                 class="advanced-create-shell"
                 aria-label="Wizard de creación avanzada"
               >
+                @if (isLoadingCatalogs()) {
+                <app-workspace-loading
+                  message="Preparando campos..."
+                  [fill]="true"
+                />
+                }
                 <div class="advanced-create-inner">
                   <header class="summary-identity advanced-create-header">
                     <div
@@ -514,19 +520,7 @@
                       </div>
                       <div class="advanced-wizard-step">
                         <div class="content-body">
-                          @if (isLoadingCatalogs()) {
-                          <div
-                            class="form-loading-overlay"
-                            role="status"
-                            aria-live="polite"
-                          >
-                            <div
-                              class="form-loading-indicator"
-                              aria-hidden="true"
-                            ></div>
-                            <span>Preparando campos</span>
-                          </div>
-                          } @if (pasoWizardActivo() === 0) {
+                          @if (pasoWizardActivo() === 0) {
                           <div class="step-panel">
                             <app-empleado-datos-personales
                               [formGroup]="form.controls.datosPersonales"
@@ -1017,6 +1011,12 @@
                 aria-label="Creación básica de empleado"
               >
                 <div class="basic-create-shell">
+                  @if (isLoadingCatalogs()) {
+                  <app-workspace-loading
+                    message="Preparando campos..."
+                    [fill]="true"
+                  />
+                  }
                   <div class="basic-create-inner">
                     <header
                       class="summary-identity summary-identity--basic basic-create-shell-header"
@@ -1038,20 +1038,6 @@
                     </header>
 
                     <div class="content-body content-body--basic">
-                      @if (isLoadingCatalogs()) {
-                      <div
-                        class="form-loading-overlay"
-                        role="status"
-                        aria-live="polite"
-                      >
-                        <div
-                          class="form-loading-indicator"
-                          aria-hidden="true"
-                        ></div>
-                        <span>Preparando campos</span>
-                      </div>
-                      }
-
                       <div class="basic-create-stack">
                         <section
                           class="basic-create-summary-card"

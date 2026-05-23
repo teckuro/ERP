@@ -165,7 +165,7 @@ function detalleTabDesdeAmbitoIncidencia(ambito: string): DetalleOperativoTab {
       return 'trabajadores';
     case 'movimientos':
     case 'recurrentes':
-      return 'movimientos_recurrentes';
+      return 'trabajadores';
     case 'resultado':
       return 'resultado';
     default:
@@ -187,7 +187,7 @@ export function movimientoRowsAExpediente(
     monto: row.monto,
     accion: row.accion === 'Sin acción pendiente' ? 'Ver' : row.accion,
     severity: severityDesdeEstado(row.estado),
-    detalleTab: 'movimientos_recurrentes' as DetalleOperativoTab,
+    detalleTab: 'trabajadores' as DetalleOperativoTab,
     idPersona: resolverIdPersonaPorNombre(row.trabajador, idPersonaPorNombre),
   }));
 }

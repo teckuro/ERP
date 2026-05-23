@@ -62,7 +62,7 @@ export function mapDestinoToDetalleTab(destino: InformacionPeriodoDestino): Deta
       return 'trabajadores';
     case 'movimientos':
     case 'asignaciones':
-      return 'movimientos_recurrentes';
+      return 'trabajadores';
     case 'resultado':
       return 'resultado';
     case 'reintentar':
@@ -100,7 +100,7 @@ function resolveDetalleTabFromCodigo(codigo: string, accionLocal?: ValidacionAcc
   if (normalizado.includes('PARAM')) return 'parametros';
   if (normalizado.includes('TRABAJ')) return 'trabajadores';
   if (normalizado.includes('MOVIMIENTO') || normalizado.includes('RECURREN') || normalizado.includes('ENTRADA')) {
-    return 'movimientos_recurrentes';
+    return 'trabajadores';
   }
   if (normalizado.includes('RESULT') || normalizado.includes('CALCUL') || normalizado.includes('GUARD')) {
     return 'resultado';
