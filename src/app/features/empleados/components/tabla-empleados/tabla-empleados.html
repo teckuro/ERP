@@ -30,7 +30,7 @@
     persistenceKey="empleados.data-grid.preferences"
     [pageSizeOptions]="pageSizeOptions"
     className="empleados-grid-shell"
-    cardClassName="empleados-grid-card"
+    cardClassName="empleados-grid-card erp-fullscreen-grid-card"
     (export)="exportEmpleados($event)"
     (bulkAction)="bulkAction.emit($event)"
     (retry)="refresh.emit()"

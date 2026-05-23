@@ -19,8 +19,13 @@ import { bindShellPageContext } from '../layout/shell-page-context.binding';
     ButtonComponent,
   ],
   template: `
-    <div class="space-y-6">
-      <p class="text-sm text-gray-600">{{ licencias().length }} licencias registradas</p>
+    <section class="erp-fullscreen-page licencias-page" aria-label="Licencias médicas">
+      <div class="erp-fullscreen-frame licencias-frame">
+      <header class="erp-fullscreen-header licencias-head">
+        <p class="text-sm text-gray-600">{{ licencias().length }} licencias registradas</p>
+      </header>
+
+      <div class="erp-fullscreen-scroll licencias-content">
 
       <!-- Stats -->
       <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
@@ -264,8 +269,20 @@ import { bindShellPageContext } from '../layout/shell-page-context.binding';
           </div>
         </div>
       }
-    </div>
+      </div>
+      </div>
+    </section>
   `,
+  styles: [
+    `
+      .licencias-content {
+        display: grid;
+        gap: 1rem;
+        padding: 12px;
+        align-content: start;
+      }
+    `,
+  ],
 })
 export class LicenciasMedicasPage {
   constructor() {

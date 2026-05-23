@@ -38,12 +38,13 @@ const ARROW_EDGE_PADDING = 8;
       type="button"
       class="erp-field-help-tip__trigger"
       [class.erp-field-help-tip__trigger--required]="mode === 'required'"
+      [attr.tabindex]="mode === 'required' ? -1 : 0"
       [attr.aria-label]="ariaLabel"
       [attr.aria-describedby]="open && positioned ? tipId : null"
       (mouseenter)="show()"
       (mouseleave)="scheduleHide()"
-      (focus)="show()"
-      (blur)="scheduleHide()"
+      (focus)="showFromFocus()"
+      (blur)="scheduleHideFromFocus()"
     >
       @if (mode === 'required') {
         <lucide-icon
@@ -284,6 +285,20 @@ export class FieldHelpTipComponent implements OnDestroy {
     this.hideTimer = setTimeout(() => {
       this.hide();
     }, 80);
+  }
+
+  showFromFocus(): void {
+    if (this.mode === 'required') {
+      return;
+    }
+    this.show();
+  }
+
+  scheduleHideFromFocus(): void {
+    if (this.mode === 'required') {
+      return;
+    }
+    this.scheduleHide();
   }
 
   private hide(): void {

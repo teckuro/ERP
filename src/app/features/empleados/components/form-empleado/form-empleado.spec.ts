@@ -1,14 +1,20 @@
-import { describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { TestBed } from '@angular/core/testing';
 import { ActivatedRoute, Router } from '@angular/router';
 
 import { EMPTY_EMPLEADO_FORM_CATALOGOS } from '../../models/empleado-catalogos.model';
 import { EmpleadosCatalogosService } from '../../services/empleados-catalogos.service';
 import { EmpleadosService } from '../../services/empleados.service';
+import { ShellPageContextService } from '../../../../layout/shell-page-context.service';
 import { FormEmpleadoComponent } from './form-empleado';
 
 describe('FormEmpleadoComponent - completitud de borrador avanzado', () => {
+  beforeEach(() => {
+    HTMLElement.prototype.scrollIntoView = vi.fn();
+  });
+
   async function setup(catalogos = EMPTY_EMPLEADO_FORM_CATALOGOS) {
+    const queryParamMapGet = vi.fn().mockReturnValue(null);
     await TestBed.configureTestingModule({
       imports: [FormEmpleadoComponent],
       providers: [
@@ -33,7 +39,7 @@ describe('FormEmpleadoComponent - completitud de borrador avanzado', () => {
           useValue: {
             snapshot: {
               queryParamMap: {
-                get: vi.fn().mockReturnValue(null),
+                get: queryParamMapGet,
               },
             },
           },
@@ -51,6 +57,55 @@ describe('FormEmpleadoComponent - completitud de borrador avanzado', () => {
     const component = fixture.componentInstance;
     component.isLoadingCatalogs.set(false);
     return component;
+  }
+
+  async function setupFixture(options: { modo?: 'basico' | 'avanzado' } = {}) {
+    const queryParamMapGet = vi.fn((key: string) => {
+      if (key === 'modo' && options.modo === 'basico') return 'basico';
+      return null;
+    });
+    await TestBed.configureTestingModule({
+      imports: [FormEmpleadoComponent],
+      providers: [
+        {
+          provide: EmpleadosService,
+          useValue: {
+            obtenerPorId: vi.fn(),
+            guardarBorradorAvanzado: vi.fn(),
+            finalizarAltaAvanzadaExistente: vi.fn(),
+            crear: vi.fn(),
+            crearBasico: vi.fn(),
+          },
+        },
+        {
+          provide: EmpleadosCatalogosService,
+          useValue: {
+            obtenerFormulario: vi.fn().mockResolvedValue(EMPTY_EMPLEADO_FORM_CATALOGOS),
+          },
+        },
+        {
+          provide: ActivatedRoute,
+          useValue: {
+            snapshot: {
+              queryParamMap: { get: queryParamMapGet },
+            },
+          },
+        },
+        {
+          provide: Router,
+          useValue: {
+            navigate: vi.fn(),
+            url: '/empleados/nuevo',
+          },
+        },
+      ],
+    }).compileComponents();
+
+    const fixture = TestBed.createComponent(FormEmpleadoComponent);
+    const component = fixture.componentInstance;
+    component.isLoadingCatalogs.set(false);
+    fixture.detectChanges();
+    return { fixture, component, shell: TestBed.inject(ShellPageContextService) };
   }
 
   it('cargo Sin cargo no completa el paso Contrato y organizacion', async () => {
@@ -114,6 +169,65 @@ describe('FormEmpleadoComponent - completitud de borrador avanzado', () => {
     expect(component.wizardStepUiKind(7)).toBe('pendiente');
   });
 
+  it('publica Guardar borrador en el shell durante la bitacora avanzada', async () => {
+    const { shell } = await setupFixture();
+
+    expect(shell.primaryAction()?.label).toBe('Guardar borrador');
+    expect(shell.primaryAction()?.actionId).toBe('empleado-alta-avanzada-guardar');
+  });
+
+  it('el CTA del shell guarda borrador fuera del resumen', async () => {
+    const { component, shell } = await setupFixture();
+    const guardarSpy = vi.spyOn(component, 'onGuardarBorrador').mockResolvedValue();
+
+    shell.invokePrimaryAction();
+
+    expect(guardarSpy).toHaveBeenCalled();
+  });
+
+  it('en resumen dependiente el CTA del shell finaliza alta', async () => {
+    const { component, fixture, shell } = await setupFixture();
+    const submitSpy = vi.spyOn(component, 'onSubmit').mockResolvedValue();
+
+    component.selectWizardStep(component.summaryWizardStepIndex());
+    fixture.detectChanges();
+    shell.invokePrimaryAction();
+
+    expect(shell.primaryAction()?.label).toBe('Finalizar alta');
+    expect(submitSpy).toHaveBeenCalled();
+  });
+
+  it('en resumen de honorarios el CTA del shell guarda borrador', async () => {
+    const { component, fixture, shell } = await setupFixture();
+    const guardarSpy = vi.spyOn(component, 'onGuardarBorrador').mockResolvedValue();
+
+    component.form.controls.contrato.controls.relacionLaboral.setValue('HONORARIOS');
+    component.selectWizardStep(component.summaryWizardStepIndex());
+    fixture.detectChanges();
+    shell.invokePrimaryAction();
+
+    expect(shell.primaryAction()?.label).toBe('Guardar borrador');
+    expect(guardarSpy).toHaveBeenCalled();
+  });
+
+  it('no publica CTA del shell en creacion basica', async () => {
+    const { shell } = await setupFixture({ modo: 'basico' });
+
+    expect(shell.primaryAction()).toBeUndefined();
+  });
+
+  it('no renderiza acciones locales duplicadas en la cabecera avanzada ni en resumen', async () => {
+    const { component, fixture } = await setupFixture();
+    const host = fixture.nativeElement as HTMLElement;
+
+    expect(host.querySelector('[data-testid="guardar-borrador-avanzado"]')).toBeNull();
+
+    component.selectWizardStep(component.summaryWizardStepIndex());
+    fixture.detectChanges();
+
+    expect(host.querySelector('[data-testid="finalizar-alta"]')).toBeNull();
+  });
+
   it('Siguiente muestra MsgBox de revision cuando el paso tiene pendientes y permite continuar', async () => {
     const component = await setup();
 
@@ -129,6 +243,42 @@ describe('FormEmpleadoComponent - completitud de borrador avanzado', () => {
 
     expect(component.advancedActionModal()).toBeNull();
     expect(component.pasoWizardActivo()).toBe(1);
+  });
+
+  it('Siguiente muestra pendientes obligatorios por campo dentro del modal', async () => {
+    const { component, fixture } = await setupFixture();
+
+    component.goToNextTab();
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    const modal = component.advancedActionModal();
+    expect(modal?.kind).toBe('next-step-review');
+    expect(modal?.fieldItems?.length).toBeGreaterThan(1);
+    expect(modal?.fieldItems?.[0]).toMatchObject({
+      sectionTitle: 'Identificacion legal',
+      actionLabel: 'Completar campo',
+      controlPath: 'datosPersonales.rut',
+    });
+    expect(modal?.fieldItems?.[0]?.detail).toBe('Ingresa un RUT valido antes de activar la ficha.');
+  });
+
+  it('accion de pendiente del modal navega al paso y cierra el modal', async () => {
+    const { component } = await setupFixture();
+    component.selectWizardStep(component.summaryWizardStepIndex());
+
+    await component.onSubmit();
+
+    const bankItem = component
+      .advancedActionModal()
+      ?.fieldItems?.find((item) => item.controlPath === 'bancario.idBanco');
+    expect(bankItem).toBeTruthy();
+
+    component.handleAdvancedModalFieldItem(bankItem!);
+
+    expect(component.advancedActionModal()).toBeNull();
+    expect(component.pasoWizardActivo()).toBe(7);
   });
 
   it('Guardar borrador usa MsgBox cuando falta validacion minima', async () => {
@@ -156,6 +306,25 @@ describe('FormEmpleadoComponent - completitud de borrador avanzado', () => {
 
     expect(component.advancedActionModal()).toBeNull();
     expect(component.pasoWizardActivo()).toBe(0);
+  });
+
+  it('Finalizar alta lista bloqueos de distintas secciones como campos accionables', async () => {
+    const { component, fixture } = await setupFixture();
+    component.selectWizardStep(component.summaryWizardStepIndex());
+
+    await component.onSubmit();
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    const modal = component.advancedActionModal();
+    const sectionTitles = new Set(
+      modal?.fieldItems?.map((item) => item.sectionTitle) ?? [],
+    );
+    expect(modal?.kind).toBe('finish-invalid');
+    expect(modal?.fieldItems?.length).toBeGreaterThan(5);
+    expect(sectionTitles.size).toBeGreaterThan(1);
+    expect(modal?.sections?.[0]?.items ?? []).not.toContain('Además hay');
   });
 
 

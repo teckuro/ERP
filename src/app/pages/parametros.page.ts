@@ -143,7 +143,7 @@ interface ParametrosDialogState {
   ],
   template: `
     <section class="parametros-page" aria-label="Mantenedor de parámetros">
-      <app-card className="parametros-shell">
+      <app-card className="parametros-shell erp-fullscreen-frame">
         <app-card-content className="parametros-frame">
           <div class="parametros-viewhead">
         <div class="period-row parametros-period-band" aria-label="Periodo">

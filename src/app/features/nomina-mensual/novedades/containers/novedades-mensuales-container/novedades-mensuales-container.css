@@ -1,7 +1,10 @@
 :host {
-  display: block;
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
   width: 100%;
   min-width: 0;
+  min-height: 100%;
   --nm-control-height: var(--erp-control-height, 22px);
   --nm-text-xs: var(--erp-text-xs, 0.665rem);
   --nm-text-sm: var(--erp-text-sm, 0.72rem);

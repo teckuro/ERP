@@ -14,14 +14,16 @@ import { CardComponent, CardContentComponent, CardHeaderComponent } from '../sha
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CommonModule, RouterLink, LucideAngularModule, CardComponent, CardContentComponent, CardHeaderComponent, BadgeComponent],
   template: `
-    <div class="space-y-4">
-      <header class="report-page-lead">
+    <section class="erp-fullscreen-page report-page" aria-label="Reportes">
+      <div class="erp-fullscreen-frame report-frame">
+      <header class="erp-fullscreen-header report-page-lead">
         <p class="mt-1 text-sm text-gray-600">
           Consulta operativa del periodo {{ periodoActivo.etiqueta() }}. Las salidas formales quedan deshabilitadas
           hasta una fase dedicada.
         </p>
       </header>
 
+      <div class="erp-fullscreen-scroll report-content">
       <app-card>
         <app-card-content>
           <div class="flex items-start gap-3">
@@ -142,10 +144,19 @@ import { CardComponent, CardContentComponent, CardHeaderComponent } from '../sha
           </div>
         </app-card-content>
       </app-card>
-    </div>
+      </div>
+      </div>
+    </section>
   `,
   styles: [
     `
+      .report-content {
+        display: grid;
+        gap: 1rem;
+        padding: 12px;
+        align-content: start;
+      }
+
       .report-link,
       .report-tile {
         text-decoration: none;

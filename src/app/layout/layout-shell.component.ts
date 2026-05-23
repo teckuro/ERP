@@ -38,16 +38,15 @@ import { SHELL_HEADER_HEIGHT_PX, SHELL_NAV_WIDTH_PX } from './shell-navigation.c
         padding-top: ${SHELL_HEADER_HEIGHT_PX}px;
       }
 
-      .erp-shell-scroll {
-        display: flex;
-        flex-direction: column;
+        .erp-shell-scroll {
+          display: flex;
+          flex-direction: column;
         height: 100%;
         min-height: 0;
-        overflow-y: auto;
-        overflow-x: hidden;
-        /* padding: 1.25rem 1.5rem 1.5rem; */
-        scrollbar-color: #c7d0c4 #eef1ec;
-        scrollbar-width: thin;
+          overflow-y: auto;
+          overflow-x: hidden;
+          scrollbar-color: #c7d0c4 #eef1ec;
+          scrollbar-width: thin;
       }
 
       .erp-shell-scroll > :not(router-outlet) {
@@ -60,16 +59,16 @@ import { SHELL_HEADER_HEIGHT_PX, SHELL_NAV_WIDTH_PX } from './shell-navigation.c
         align-self: stretch;
       }
 
-      @media (max-width: 1024px) {
-        .erp-shell-main {
-          margin-left: 0;
-          padding-top: ${SHELL_HEADER_HEIGHT_PX}px;
-        }
+        @media (max-width: 1024px) {
+          .erp-shell-main {
+            margin-left: 0;
+            padding-top: ${SHELL_HEADER_HEIGHT_PX}px;
+          }
 
-        .erp-shell-scroll {
-          padding: 1rem;
+          .erp-shell-scroll {
+            padding: 0;
+          }
         }
-      }
     `,
   ],
 })

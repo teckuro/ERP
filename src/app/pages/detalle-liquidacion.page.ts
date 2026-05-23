@@ -12,8 +12,9 @@ import { PeriodoActivoService } from '../core/services/periodo-activo.service';
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CommonModule, RouterLink, LucideAngularModule, CardComponent, CardContentComponent, ButtonComponent],
   template: `
-    <div class="space-y-4">
-      <div class="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+    <section class="erp-fullscreen-page detalle-liquidacion-page" aria-label="Detalle de liquidación">
+      <div class="erp-fullscreen-frame detalle-liquidacion-frame">
+      <header class="erp-fullscreen-header flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
         <div>
           <h1 class="text-xl font-semibold text-gray-900">Detalle de liquidacion oficial</h1>
           <p class="mt-1 text-sm text-gray-600">Periodo {{ periodoActivo.etiqueta() }}</p>
@@ -22,8 +23,9 @@ import { PeriodoActivoService } from '../core/services/periodo-activo.service';
           <lucide-icon icon class="h-4 w-4" name="arrow-left"></lucide-icon>
           Volver
         </app-button>
-      </div>
+      </header>
 
+      <div class="erp-fullscreen-scroll detalle-liquidacion-content">
       <app-card>
         <app-card-content className="p-4">
           <div class="flex flex-col gap-3 md:flex-row md:items-start">
@@ -54,8 +56,20 @@ import { PeriodoActivoService } from '../core/services/periodo-activo.service';
           </div>
         </app-card-content>
       </app-card>
-    </div>
+      </div>
+      </div>
+    </section>
   `,
+  styles: [
+    `
+      .detalle-liquidacion-content {
+        display: grid;
+        gap: 1rem;
+        padding: 12px;
+        align-content: start;
+      }
+    `,
+  ],
 })
 export class DetalleLiquidacionPage {
   readonly periodoActivo = inject(PeriodoActivoService);

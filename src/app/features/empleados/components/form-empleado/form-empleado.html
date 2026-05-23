@@ -4,8 +4,12 @@
   (submit)="handleFormSubmit($event)"
 >
   <div class="form-stack w-full">
-    <app-card className="editor-shell">
-      <app-card-content className="editor-frame">
+    <app-card
+      [className]="isAdvancedMode() ? 'editor-shell editor-shell--advanced' : 'editor-shell'"
+    >
+      <app-card-content
+        [className]="isAdvancedMode() ? 'editor-frame editor-frame--advanced' : 'editor-frame'"
+      >
         <div class="status-stack">
           @if (catalogosError(); as message) {
           <app-message-box
@@ -42,6 +46,41 @@
           (action)="handleAdvancedActionModalPrimary()"
           (secondary)="handleAdvancedActionModalSecondary()"
         >
+          @if (modal.fieldItems; as fieldItems) {
+          @if (fieldItems.length > 0) {
+          <div
+            class="advanced-action-fields"
+            role="region"
+            aria-label="Campos obligatorios pendientes"
+          >
+            @for (item of fieldItems; track item.id) {
+            <article
+              class="advanced-action-field"
+              [class.advanced-action-field--warning]="item.severity === 'warning'"
+            >
+              <div class="advanced-action-field__copy">
+                <p class="advanced-action-field__section">
+                  {{ item.sectionTitle }}
+                </p>
+                <h3 class="advanced-action-field__title">
+                  {{ item.fieldLabel }}
+                </h3>
+                <p class="advanced-action-field__detail">
+                  {{ item.detail }}
+                </p>
+              </div>
+              <button
+                type="button"
+                class="advanced-action-field__button"
+                (click)="handleAdvancedModalFieldItem(item)"
+              >
+                {{ item.actionLabel }}
+              </button>
+            </article>
+            }
+          </div>
+          }
+          }
           @if (!modal.sections?.length) {
           <div
             class="advanced-action-modal"
@@ -233,11 +272,19 @@
         </app-message-box>
         }
 
-        <section class="workspace-grid" aria-label="Workspace de nueva ficha">
-          <div class="workspace-main">
+        <section
+          class="workspace-grid"
+          [class.workspace-grid--advanced]="isAdvancedMode()"
+          aria-label="Workspace de nueva ficha"
+        >
+          <div
+            class="workspace-main"
+            [class.workspace-main--advanced]="isAdvancedMode()"
+          >
             <section
               class="content-shell"
               [class.content-shell--basic]="isBasicMode()"
+              [class.content-shell--advanced]="isAdvancedMode()"
               aria-label="Ficha del empleado"
             >
               @if (isAdvancedMode()) {
@@ -262,23 +309,6 @@
                       </p>
                     </div>
 
-                    <div class="summary-actions summary-actions--advanced">
-                      <button
-                        type="button"
-                        data-testid="guardar-borrador-avanzado"
-                        class="advanced-draft-button"
-                        [disabled]="isSavingBorrador() || isSaving() || isLoadingCatalogs()"
-                        (click)="onGuardarBorrador()"
-                      >
-                        @if (isSavingBorrador()) { Guardando... } @else {
-                        Guardar borrador }
-                      </button>
-                      <app-page-actions
-                        [visibleActions]="headerVisibleActions()"
-                        backLabel="Volver"
-                        backLink="/empleados"
-                      ></app-page-actions>
-                    </div>
                   </header>
                   <div class="advanced-wizard-layout">
                     <aside
@@ -423,26 +453,6 @@
                               (click)="goToNextTab()"
                             >
                               Siguiente
-                            </button>
-                            } @else {
-                            <button
-                              type="button"
-                              data-testid="finalizar-alta"
-                              class="form-action-button form-action-button--primary advanced-step-nav-btn advanced-step-nav-btn--primary"
-                              [disabled]="isSaving() || isLoadingCatalogs()"
-                              (click)="onSubmit()"
-                            >
-                              @if (isSaving()) {
-                              <span
-                                class="form-button-spinner"
-                                aria-hidden="true"
-                              ></span>
-                              } @else {
-                              <lucide-icon
-                                class="h-4 w-4"
-                                name="save"
-                              ></lucide-icon>
-                              } {{ finalWizardActionLabel() }}
                             </button>
                             }
                           </div>

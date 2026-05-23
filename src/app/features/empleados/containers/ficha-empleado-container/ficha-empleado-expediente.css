@@ -6,10 +6,11 @@
   min-width: 0;
   max-width: 100%;
   min-height: 0;
-  border: 0;
-  border-radius: 0;
-  background: transparent;
+  border: 1px solid var(--employee-exp-border);
+  border-radius: 8px;
+  background: var(--employee-exp-panel);
   box-shadow: none;
+  overflow: hidden;
 }
 
 .employee-record-header {

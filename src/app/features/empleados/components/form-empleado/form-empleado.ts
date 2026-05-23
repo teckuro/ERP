@@ -138,9 +138,21 @@ interface AdvancedActionModal {
   blockingItems: readonly string[];
   warningItems: readonly string[];
   infoItems: readonly string[];
+  fieldItems?: readonly AdvancedActionModalFieldItem[];
   targetStep?: number;
   primaryAction: AdvancedActionModalAction;
   secondaryAction?: AdvancedActionModalAction;
+}
+
+interface AdvancedActionModalFieldItem {
+  id: string;
+  sectionTitle: string;
+  fieldLabel: string;
+  detail: string;
+  actionLabel: string;
+  wizardStep: number;
+  controlPath: string;
+  severity: ValidationSeverity;
 }
 
 interface ValidationRule {
@@ -165,7 +177,10 @@ interface EvaluatedValidationRule {
   id: string;
   stepId: ValidationStepId;
   wizardStep: number;
+  sectionTitle: string;
   label: string;
+  detail: string;
+  actionLabel?: string;
   severity: ValidationSeverity;
   blocking: boolean;
   complete: boolean;
@@ -292,7 +307,7 @@ export class FormEmpleadoComponent implements OnInit {
   private suppressRelacionLaboralModal = false;
   private previousRelacionLaboral: RelacionLaboral = "CONTRATO";
 
-  readonly modo = signal<FormEmpleadoModo>("avanzado");
+  readonly modo = signal<FormEmpleadoModo>(this.resolveModo());
   /** Creacion avanzada: indice de etapa 0..9 (10 pasos). */
   readonly pasoWizardActivo = signal(0);
   readonly isSaving = signal(false);
@@ -388,12 +403,26 @@ export class FormEmpleadoComponent implements OnInit {
   readonly stepBlockIds = EMPLEADO_FORM_STEP_BLOCK_IDS;
 
   constructor() {
-    bindShellPageContext(this.destroyRef, () => ({
-      breadcrumbs: [
-        { label: "Empleados", path: "/empleados" },
-        { label: this.pageTitle() },
-      ],
-    }));
+    bindShellPageContext(
+      this.destroyRef,
+      () => ({
+        breadcrumbs: [
+          { label: "Empleados", path: "/empleados" },
+          { label: this.pageTitle() },
+        ],
+        primaryAction: this.isAdvancedMode()
+          ? {
+              label: this.shellPrimaryActionLabel(),
+              disabled: this.shellPrimaryActionDisabled(),
+              loading: this.shellPrimaryActionLoading(),
+              actionId: "empleado-alta-avanzada-guardar",
+            }
+          : undefined,
+      }),
+      {
+        onPrimaryAction: () => this.ejecutarShellPrimaryAction(),
+      },
+    );
   }
 
   async ngOnInit(): Promise<void> {
@@ -897,6 +926,13 @@ export class FormEmpleadoComponent implements OnInit {
     );
   }
 
+  handleAdvancedModalFieldItem(item: AdvancedActionModalFieldItem): void {
+    this.advancedActionModal.set(null);
+    this.markWizardStepTouched(item.wizardStep);
+    this.selectWizardStep(item.wizardStep);
+    this.focusControlPath(item.controlPath);
+  }
+
   dismissAdvancedActionModal(): void {
     this.decisionCoherenciaPendiente.set(null);
     this.advancedActionModal.set(null);
@@ -995,6 +1031,35 @@ export class FormEmpleadoComponent implements OnInit {
     }
 
     return this.isHonorariosMode() ? "Guardar borrador" : "Finalizar alta";
+  }
+
+  shellPrimaryActionLabel(): string {
+    if (!this.isAdvancedMode()) {
+      return this.saveActionLabel();
+    }
+    if (this.pasoWizardActivo() === this.summaryWizardStepIndex()) {
+      return this.finalWizardActionLabel();
+    }
+    return this.isSavingBorrador() ? "Guardando borrador..." : "Guardar borrador";
+  }
+
+  shellPrimaryActionLoading(): boolean {
+    return this.isSaving() || this.isSavingBorrador();
+  }
+
+  shellPrimaryActionDisabled(): boolean {
+    return this.isLoadingCatalogs() || this.isSaving() || this.isSavingBorrador();
+  }
+
+  ejecutarShellPrimaryAction(): void {
+    if (!this.isAdvancedMode() || this.shellPrimaryActionDisabled()) {
+      return;
+    }
+    if (this.pasoWizardActivo() === this.summaryWizardStepIndex() && !this.isHonorariosMode()) {
+      void this.onSubmit();
+      return;
+    }
+    void this.onGuardarBorrador();
   }
 
   /** Avanzada: guardado en el pie. Básica: Volver + Guardar en cabecera (modo-basico / sin duplicar pie). */
@@ -1543,27 +1608,19 @@ export class FormEmpleadoComponent implements OnInit {
     const parts: string[] = [];
 
     if (errors > 0) {
-      parts.push(
-        `${errors} ${errors === 1 ? "registro por revisar" : "registros por revisar"}`,
-      );
+      parts.push(`Revisión: ${errors}`);
     }
 
     if (pending > 0) {
-      parts.push(
-        `${pending} ${pending === 1 ? "registro pendiente" : "registros pendientes"}`,
-      );
+      parts.push(`Pendientes: ${pending}`);
     }
 
     if (optional > 0) {
-      parts.push(
-        `${optional} ${optional === 1 ? "registro condicional" : "registros condicionales"}`,
-      );
+      parts.push(`Condicionales: ${optional}`);
     }
 
     if (errors === 0 && notApplicable > 0) {
-      parts.push(
-        `${notApplicable} ${notApplicable === 1 ? "registro no requerido" : "registros no requeridos"}`,
-      );
+      parts.push(`No requeridos: ${notApplicable}`);
     }
 
     return parts.length
@@ -2646,7 +2703,10 @@ export class FormEmpleadoComponent implements OnInit {
         id: item.id,
         stepId: item.formTab,
         wizardStep: item.wizardStep,
+        sectionTitle: item.category ?? item.seccion,
         label: item.label,
+        detail: item.detalle,
+        actionLabel: item.accion,
         severity: item.severity,
         blocking: item.blocking,
         complete: item.complete,
@@ -3147,10 +3207,12 @@ export class FormEmpleadoComponent implements OnInit {
     const warnings = pending.filter((item) => item.severity === "warning");
     const label = this.wizardStepShortLabel(step);
     const hasBlocking = blocking.length > 0;
-    const detailItems = this.validationModalLabels(
-      hasBlocking ? blocking : warnings,
-      6,
-    );
+    const fieldItems = hasBlocking
+      ? this.validationModalFieldItems(blocking)
+      : [];
+    const detailItems = hasBlocking
+      ? []
+      : this.validationModalLabels(warnings, 6);
 
     this.openAdvancedActionModal({
       kind: "next-step-review",
@@ -3164,7 +3226,7 @@ export class FormEmpleadoComponent implements OnInit {
         : `El registro «${label}» tiene revisiones que no bloquean el avance, pero conviene dejarlas claras.`,
       sections: this.buildBitacoraMsgboxSections({
         pendientePrincipal: hasBlocking
-          ? `Completar los datos obligatorios del registro «${label}» antes de cerrar el alta.`
+          ? `Completar ${fieldItems.length || blocking.length} dato${(fieldItems.length || blocking.length) === 1 ? "" : "s"} obligatorio${(fieldItems.length || blocking.length) === 1 ? "" : "s"} del registro «${label}».`
           : `Revisar las advertencias administrativas del registro «${label}».`,
         detailItems,
         porQueImporta:
@@ -3179,6 +3241,7 @@ export class FormEmpleadoComponent implements OnInit {
       blockingItems: [],
       warningItems: [],
       infoItems: [],
+      fieldItems,
       targetStep: step,
       primaryAction: "continue-next",
       secondaryAction: "focus-current-step",
@@ -3252,6 +3315,7 @@ export class FormEmpleadoComponent implements OnInit {
     const blocking = pending.filter(
       (item) => item.blocking && item.severity === "error",
     );
+    const fieldItems = this.validationModalFieldItems(blocking);
 
     this.openAdvancedActionModal({
       kind: "finish-invalid",
@@ -3262,8 +3326,7 @@ export class FormEmpleadoComponent implements OnInit {
         "Aún hay registros de la bitácora con datos obligatorios pendientes. Ciérralos antes de finalizar el alta.",
       sections: this.buildBitacoraMsgboxSections({
         pendientePrincipal:
-          "Completar los datos administrativos mínimos en los registros pendientes de la bitácora laboral.",
-        detailItems: this.validationModalLabels(blocking, 8),
+          `Completar ${fieldItems.length || blocking.length} dato${(fieldItems.length || blocking.length) === 1 ? "" : "s"} obligatorio${(fieldItems.length || blocking.length) === 1 ? "" : "s"} en los registros pendientes de la bitácora laboral.`,
         porQueImporta:
           "Sin esos datos la ficha no puede quedar lista para remuneraciones ni cerrarse en la bitácora.",
         accionRecomendada:
@@ -3274,6 +3337,7 @@ export class FormEmpleadoComponent implements OnInit {
       blockingItems: [],
       warningItems: [],
       infoItems: [],
+      fieldItems,
       targetStep: firstBadStep,
       primaryAction: "focus-first-blocking",
       secondaryAction: "dismiss",
@@ -3644,6 +3708,32 @@ export class FormEmpleadoComponent implements OnInit {
     return out;
   }
 
+  private validationModalFieldItems(
+    items: readonly EvaluatedValidationRule[],
+  ): readonly AdvancedActionModalFieldItem[] {
+    const seen = new Set<string>();
+    const out: AdvancedActionModalFieldItem[] = [];
+
+    for (const item of items) {
+      if (seen.has(item.id)) {
+        continue;
+      }
+      seen.add(item.id);
+      out.push({
+        id: item.id,
+        sectionTitle: item.sectionTitle || this.wizardStepShortLabel(item.wizardStep),
+        fieldLabel: item.label,
+        detail: this.ensureSentence(item.detail || this.validationModalLabel(item)),
+        actionLabel: item.actionLabel || "Completar campo",
+        wizardStep: item.wizardStep,
+        controlPath: item.sourcePath,
+        severity: item.severity,
+      });
+    }
+
+    return out;
+  }
+
   private validationModalLabel(item: EvaluatedValidationRule): string {
     const negocio = MENSAJES_FINALIZAR_ALTA[item.id];
     if (negocio) {
@@ -3939,7 +4029,28 @@ export class FormEmpleadoComponent implements OnInit {
   private findControlForRule(
     rule: EvaluatedValidationRule | undefined,
   ): HTMLElement | null {
-    const controlName = rule?.sourcePath.split(".").at(-1);
+    if (!rule) {
+      return null;
+    }
+
+    return this.findControlForPath(rule.sourcePath);
+  }
+
+  private focusControlPath(controlPath: string): void {
+    window.setTimeout(() => {
+      const control = this.findControlForPath(controlPath);
+      if (!control) {
+        this.scrollToCurrentStepStart({ focusFirstField: true });
+        return;
+      }
+
+      control.scrollIntoView({ behavior: "smooth", block: "center" });
+      control.focus({ preventScroll: true });
+    });
+  }
+
+  private findControlForPath(controlPath: string | undefined): HTMLElement | null {
+    const controlName = controlPath?.split(".").at(-1);
     if (!controlName) {
       return null;
     }
@@ -4024,7 +4135,7 @@ export class FormEmpleadoComponent implements OnInit {
       // En mobile/tablet evitamos enfocar para no abrir el teclado automáticamente.
       if (
         !options.focusFirstField ||
-        window.matchMedia("(max-width: 1024px)").matches
+        window.matchMedia?.("(max-width: 1024px)").matches
       ) {
         return;
       }

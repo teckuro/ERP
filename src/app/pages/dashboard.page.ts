@@ -13,13 +13,15 @@ import { CardComponent, CardContentComponent, CardHeaderComponent } from '../sha
   standalone: true,
   imports: [CommonModule, RouterLink, LucideAngularModule, CardComponent, CardHeaderComponent, CardContentComponent, BadgeComponent],
   template: `
-    <div class="space-y-4">
-      <header class="dashboard-page-lead">
+    <section class="erp-fullscreen-page dashboard-page" aria-label="Resumen operativo">
+      <div class="erp-fullscreen-frame dashboard-frame">
+      <header class="erp-fullscreen-header dashboard-page-lead">
         <p class="text-sm text-gray-600">
           Vista de entrada para operar el periodo {{ periodoActivo.etiqueta() }} sin mezclar salidas futuras.
         </p>
       </header>
 
+      <div class="erp-fullscreen-scroll dashboard-content">
       <section class="dashboard-status-strip" aria-label="Estado operativo del periodo">
         <div>
           <strong>Periodo {{ periodoActivo.etiqueta() }}</strong>
@@ -135,10 +137,19 @@ import { CardComponent, CardContentComponent, CardHeaderComponent } from '../sha
           </div>
         </app-card-content>
       </app-card>
-    </div>
+      </div>
+      </div>
+    </section>
   `,
   styles: [
     `
+      .dashboard-content {
+        display: grid;
+        gap: 1rem;
+        padding: 12px;
+        align-content: start;
+      }
+
       .dashboard-tile {
         display: flex;
         min-height: 4rem;
