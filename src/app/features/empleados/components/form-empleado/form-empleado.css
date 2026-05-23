@@ -1,4 +1,4 @@
-:host {
+﻿:host {
   display: block;
   min-height: 100%;
 }
@@ -41,7 +41,7 @@
   margin: 0 auto;
 }
 
-/* Marco del modo bÃ¡sico: ocupa el ancho del workspace; el eje comÃºn vive en .basic-create-inner */
+/* Marco del modo bÃƒÂ¡sico: ocupa el ancho del workspace; el eje comÃƒÂºn vive en .basic-create-inner */
 .basic-create-page {
   display: flex;
   flex-direction: column;
@@ -65,7 +65,7 @@
   background: #ffffff;
 }
 
-/* Header + resumen + formulario comparten el mismo max-width (menos aire lateral vacÃ­o) */
+/* Header + resumen + formulario comparten el mismo max-width (menos aire lateral vacÃƒÂ­o) */
 .basic-create-inner {
   width: 100%;
   max-width: none;
@@ -87,7 +87,7 @@
   min-width: 0;
 }
 
-/* Misma columna que el header: quita margen lateral global del content-body en modo bÃ¡sico */
+/* Misma columna que el header: quita margen lateral global del content-body en modo bÃƒÂ¡sico */
 .basic-create-inner .content-body.content-body--basic {
   margin-inline: 0;
   width: 100%;
@@ -108,7 +108,7 @@
   min-width: 0;
 }
 
-/* Panel blanco del formulario bÃ¡sico: menos aire que el paso avanzado (16px global en styles.css). */
+/* Panel blanco del formulario bÃƒÂ¡sico: menos aire que el paso avanzado (16px global en styles.css). */
 .basic-create-form .step-panel.step-panel--basic.basic-wizard {
   padding: 14px 16px 18px;
   border: 0;
@@ -122,7 +122,7 @@
   }
 }
 
-/* Card Ãºnica de resumen: mismo ancho que el formulario (columna .basic-create-inner) */
+/* Card ÃƒÂºnica de resumen: mismo ancho que el formulario (columna .basic-create-inner) */
 .basic-create-summary-card {
   margin: 0;
   padding: 10px 16px;
@@ -198,7 +198,7 @@
   line-height: 1.35;
 }
 
-/* Cabecera bÃ¡sica: tÃ­tulo + subtÃ­tulo a la izquierda, acciones alineadas arriba a la derecha */
+/* Cabecera bÃƒÂ¡sica: tÃƒÂ­tulo + subtÃƒÂ­tulo a la izquierda, acciones alineadas arriba a la derecha */
 .summary-identity--basic {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
@@ -238,7 +238,7 @@
   grid-row: 1 / -1;
 }
 
-/* Anula mayÃºsculas/herencia de `.summary-person p` global para el subtÃ­tulo */
+/* Anula mayÃƒÂºsculas/herencia de `.summary-person p` global para el subtÃƒÂ­tulo */
 .summary-identity--basic .summary-subtitle {
   margin: 0;
   max-width: 46rem;
@@ -278,7 +278,7 @@
 
 }
 
-/* Modo bÃ¡sico: alinear header con el ancho del bloque principal */
+/* Modo bÃƒÂ¡sico: alinear header con el ancho del bloque principal */
 .content-shell--basic .summary-identity {
   width: 100%;
   margin-left: auto;
@@ -708,7 +708,7 @@
   flex: 1 1 auto;
 }
 
-/* Nota de alcance removida: evita duplicar el subtÃ­tulo del paso.
+/* Nota de alcance removida: evita duplicar el subtÃƒÂ­tulo del paso.
    Reservar cajas solo para warnings/errores reales dentro de cada paso. */
 
 /* Contenedor del flujo basico: aire tras el encabezado guia */
@@ -718,7 +718,7 @@
   gap: 0;
 }
 
-/* Modal de Ã©xito â€” creaciÃ³n bÃ¡sica: bloques neutros, jerarquÃ­a por tipo y espacio */
+/* Modal de ÃƒÂ©xito Ã¢â‚¬â€ creaciÃƒÂ³n bÃƒÂ¡sica: bloques neutros, jerarquÃƒÂ­a por tipo y espacio */
 .basic-success-followup {
   display: grid;
   gap: 12px;
@@ -791,7 +791,7 @@
   letter-spacing: 0.01em;
 }
 
-/* Modal de error â€” mismo patrÃ³n de lectura que el Ã©xito: paneles neutros, detalle y acciÃ³n. */
+/* Modal de error Ã¢â‚¬â€ mismo patrÃƒÂ³n de lectura que el ÃƒÂ©xito: paneles neutros, detalle y acciÃƒÂ³n. */
 .error-followup {
   margin-top: 0;
 }
@@ -816,13 +816,13 @@
   border-color: #fed7aa;
 }
 
-/* Resumen alta — pendientes alineados a ficha (fase 3) */
+/* Resumen alta â€” pendientes alineados a ficha (fase 3) */
 .alta-resumen-diagnostico-panel {
   margin-block: 0.75rem 1rem;
   padding: 0.65rem 0.75rem;
-  border: 1px solid var(--erp-border-subtle, #e5e7eb);
-  border-radius: 0.375rem;
-  background: var(--erp-surface-muted, #f9fafb);
+  border: 1px solid var(--emp-border);
+  border-radius: var(--emp-radius-sm);
+  background: var(--emp-soft);
 }
 .alta-resumen-diagnostico-panel__head h4 {
   margin: 0 0 0.25rem;
@@ -832,7 +832,7 @@
 .alta-resumen-diagnostico-panel__head p {
   margin: 0 0 0.5rem;
   font-size: 0.8125rem;
-  color: var(--erp-text-secondary, #4b5563);
+  color: var(--emp-muted);
 }
 .alta-resumen-diagnostico-panel__list {
   margin: 0;
@@ -848,13 +848,13 @@
   margin-block: 0.25rem;
   padding: 0.35rem 0.4rem;
   border: 0;
-  border-radius: 0.25rem;
+  border-radius: var(--emp-radius-sm);
   background: transparent;
   text-align: left;
   cursor: pointer;
 }
 .alta-resumen-diagnostico-panel__issue:hover {
-  background: var(--erp-surface-hover, #f3f4f6);
+  background: var(--emp-accent-soft);
 }
 .alta-resumen-diagnostico-panel__block {
   font-size: 0.75rem;
@@ -863,3 +863,4 @@
 .alta-resumen-diagnostico-panel__msg {
   font-size: 0.8125rem;
 }
+

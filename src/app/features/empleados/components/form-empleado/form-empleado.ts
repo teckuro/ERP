@@ -291,6 +291,7 @@ const MENSAJES_FINALIZAR_ALTA: Partial<Record<string, string>> = {
   ],
   templateUrl: "./form-empleado.html",
   styleUrls: [
+    "../../styles/empleado-expediente-tokens.css",
     "./form-empleado.css",
     "./form-empleado.wizard.css",
     "./form-empleado.feedback.css",
@@ -3666,3 +3667,4 @@ export class FormEmpleadoComponent implements OnInit {
       .toLowerCase();
   }
 }
+

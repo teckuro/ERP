@@ -1,4 +1,13 @@
-﻿## EMP-ALTA-FICHA-PARITY-01 - Alta avanzada paridad diagnostico ficha
+﻿
+## EMP-FICHA-UI-BASE-01 - Tokens y shell expediente empleado
+
+| Campo | Estado |
+|---|---|
+| Estado | Implementada |
+| Alcance | empleado-expediente-tokens.css, ficha-expediente.layout.css; shell chip unico; panel Diagnostico operativo |
+| Documento | [../modulos/empleados/emp-ficha-ui-base-01.md](../modulos/empleados/emp-ficha-ui-base-01.md) |
+| Validacion | tsc app OK |
+## EMP-ALTA-FICHA-PARITY-01 - Alta avanzada paridad diagnostico ficha
 
 | Campo      | Estado                                                                                                               |
 | ---------- | -------------------------------------------------------------------------------------------------------------------- |
@@ -11,7 +20,7 @@
 
 | Campo         | Estado                                                                                                                                    |
 | ------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
-| Estado        | Parcial (fases 4-5 pendientes; fases 0-3 cerradas)                                                                                        |
+| Estado        | Parcial (fase 5 perfil laboral pendiente; fases 0-4 cerradas)                                                                                        |
 | Tipo          | Refactor estructural feature empleados                                                                                                    |
 | Alcance       | Kernel empleado-diagnostico, facade presentación, contenedor delgado, ficha-empleado-tabs.config; sin workspace/overlays ni paridad alta. |
 | Restricciones | Sin SQL, estilos globales, cambio visual ni motor.                                                                                        |
@@ -1353,3 +1362,4 @@ Resumen: se deja de orientar nuevas fases desde un tablero tecnico de `Preparar 
 | Restricciones | Sin store, servicios, SQL/RPC/RLS, motor, rutas, `app-message-box`, `app-data-grid`, workspace, overlay host ni `proceso-mensual-payroll-seguimiento.rules.ts`. |
 | Documento     | [`../modulos/nomina-mensual/nom-modales-periodo-revision-copy-03.md`](../modulos/nomina-mensual/nom-modales-periodo-revision-copy-03.md)                        |
 | Siguiente     | E2E visual del modal con datos tecnicos de parametros.                                                                                                          |
+

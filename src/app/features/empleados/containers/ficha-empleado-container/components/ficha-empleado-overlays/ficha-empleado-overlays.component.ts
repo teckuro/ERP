@@ -9,8 +9,13 @@ import { FichaEmpleadoPresentacionFacade } from '../../facade/ficha-empleado-pre
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CommonModule, MessageBoxComponent],
   templateUrl: './ficha-empleado-overlays.component.html',
-  styleUrls: ['../../ficha-empleado-container.css'],
+  styleUrls: [
+    '../../../../styles/empleado-expediente-tokens.css',
+    '../../ficha-empleado-container.css',
+  ],
 })
 export class FichaEmpleadoOverlaysComponent {
   readonly facade = inject(FichaEmpleadoPresentacionFacade);
 }
+
+

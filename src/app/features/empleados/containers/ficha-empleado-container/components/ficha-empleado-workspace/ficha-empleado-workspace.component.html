@@ -1,4 +1,4 @@
-@let f = facade;
+﻿@let f = facade;
 <section class="employee-file-page" aria-label="Ficha de empleado">
   @if (f.isLoading() || f.mensajeError()) {
     <!-- 
@@ -88,7 +88,7 @@
                     [trackBy]="f.trackHistoryRow"
                     cardClassName="history-grid-card"
                     emptyTitle="Sin eventos de historial"
-                    emptyDescription="La ficha aún no registra eventos de auditoría."
+                    emptyDescription="La ficha aÃºn no registra eventos de auditorÃ­a."
                   ></app-data-grid>
                 } @else {
                   <div class="detail-block-list detail-block-list--editorial">
@@ -159,8 +159,8 @@
                           >
                             @if (f.editComponentForBlock(block.id) === 'datos') {
                               <app-empleado-datos-personales
-                                [formGroup]="form.controls.datosPersonales"
-                                [contactoFormGroup]="form.controls.contacto"
+                                [formGroup]="f.form.controls.datosPersonales"
+                                [contactoFormGroup]="f.form.controls.contacto"
                                 [sexos]="f.catalogos().sexos"
                                 [estadosCivil]="f.catalogos().estadosCivil"
                                 [paises]="f.catalogos().paises"
@@ -170,7 +170,7 @@
                               ></app-empleado-datos-personales>
                             } @else if (f.editComponentForBlock(block.id) === 'contacto') {
                               <app-empleado-contacto
-                                [formGroup]="form.controls.contacto"
+                                [formGroup]="f.form.controls.contacto"
                                 [comunas]="f.catalogos().comunas"
                                 [visibleBlocks]="f.editVisibleBlocks(block.id)"
                                 [domicilioAvanzado]="true"
@@ -179,7 +179,7 @@
                               ></app-empleado-contacto>
                             } @else if (f.editComponentForBlock(block.id) === 'contrato') {
                               <app-empleado-contrato
-                                [formGroup]="form.controls.contrato"
+                                [formGroup]="f.form.controls.contrato"
                                 [centrosCosto]="f.catalogos().centrosCosto"
                                 [sucursales]="f.catalogos().sucursales"
                                 [departamentos]="f.catalogos().departamentos"
@@ -195,7 +195,7 @@
                               ></app-empleado-contrato>
                             } @else if (f.editComponentForBlock(block.id) === 'prevision') {
                               <app-empleado-prevision-salud
-                                [formGroup]="form.controls.previsionSalud"
+                                [formGroup]="f.form.controls.previsionSalud"
                                 [tiposRegimenPrevisional]="f.catalogos().tiposRegimenPrevisional"
                                 [regimenesPrevisionales]="f.catalogos().regimenesPrevisionales"
                                 [entidadesPrevisionalesIps]="f.catalogos().entidadesPrevisionalesIps"
@@ -212,7 +212,7 @@
                               ></app-empleado-prevision-salud>
                             } @else if (f.editComponentForBlock(block.id) === 'bancario') {
                               <app-empleado-bancario
-                                [formGroup]="form.controls.bancario"
+                                [formGroup]="f.form.controls.bancario"
                                 [bancos]="f.catalogos().bancos"
                                 [tiposCuentaBancaria]="f.catalogos().tiposCuentaBancaria"
                                 [visibleBlocks]="f.editVisibleBlocks(block.id)"

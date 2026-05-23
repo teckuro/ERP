@@ -1771,3 +1771,6 @@ Creación avanzada incorpora una identidad de producto local para dejar de senti
 - **Restricciones:** CSS local del modal; sin redisenar workspace, sin estilos globales, SQL, motor, servicios, store ni cambios a `app-data-grid`.
 
 - **2026-05-23** — Alta avanzada resumen: panel .alta-resumen-diagnostico-panel (CSS local form-empleado.css), pendientes alineados a ficha EMP-ALTA-FICHA-PARITY-01.
+
+- **2026-05-23** — EMP-FICHA-UI-BASE-01: tokens --emp-* en empleado-expediente-tokens.css; layout en icha-expediente.layout.css; panel diagnostico «Diagnostico operativo»; resumen alta con tokens. Sin globales.
+

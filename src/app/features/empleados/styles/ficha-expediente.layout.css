@@ -1,0 +1,9 @@
+﻿.employee-record-layout {
+  grid-template-columns: minmax(var(--emp-diag-width-min), 304px) minmax(0, 1fr);
+}
+
+@media (min-width: 1280px) {
+  .employee-record-layout {
+    grid-template-columns: minmax(var(--emp-diag-width-min), var(--emp-diag-width-max)) minmax(0, 1fr);
+  }
+}

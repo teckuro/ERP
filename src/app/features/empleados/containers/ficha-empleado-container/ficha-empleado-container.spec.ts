@@ -476,7 +476,7 @@ describe('FichaEmpleadoContainer', () => {
     ) as HTMLElement;
 
     expect(host.querySelector('.employee-record-status__title')?.textContent?.trim()).toBe(
-      'Estado de la ficha',
+      'Diagnóstico operativo',
     );
     expect(host.querySelector('.employee-record-status__completion')?.textContent).toContain(
       'de 5 bloques operativos',
@@ -614,3 +614,4 @@ describe('FichaEmpleadoContainer', () => {
     );
   });
 });
+

@@ -38,6 +38,8 @@ import { FichaEmpleadoPresentacionFacade } from '../../facade/ficha-empleado-pre
   ],
   templateUrl: './ficha-empleado-workspace.component.html',
   styleUrls: [
+    '../../../../styles/empleado-expediente-tokens.css',
+    '../../../../styles/ficha-expediente.layout.css',
     '../../ficha-empleado-container.css',
     '../../ficha-empleado-expediente.css',
     '../../ficha-empleado-detalle.css',
@@ -47,3 +49,5 @@ import { FichaEmpleadoPresentacionFacade } from '../../facade/ficha-empleado-pre
 export class FichaEmpleadoWorkspaceComponent {
   readonly facade = inject(FichaEmpleadoPresentacionFacade);
 }
+
+

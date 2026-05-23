@@ -6,23 +6,6 @@
   height: 100%;
   min-height: 100%;
   box-sizing: border-box;
-  color: var(--employee-exp-text, #172033);
-  font-size: var(--erp-text-md, 0.8rem);
-  line-height: 1.45;
-  --employee-exp-bg: var(--bitacora-bg);
-  --employee-exp-panel: var(--bitacora-surface);
-  --employee-exp-soft: var(--bitacora-surface-soft);
-  --employee-exp-border: var(--bitacora-border);
-  --employee-exp-text: var(--bitacora-text);
-  --employee-exp-muted: var(--bitacora-muted);
-  --employee-exp-blue: var(--bitacora-primary);
-  --employee-exp-blue-soft: var(--bitacora-primary-soft);
-  --employee-exp-green-soft: #eaf7ee;
-  --employee-exp-yellow-soft: #fff7e6;
-  --employee-exp-red-soft: #fdecec;
-  --employee-floating-ui-z: 40;
-  --erp-select-panel-z: var(--employee-floating-ui-z);
-  background-color: var(--employee-exp-bg);
 }
 
 .erp-surface-muted {
@@ -129,3 +112,4 @@
   height: 1.25rem;
   flex: 0 0 1.25rem;
 }
+

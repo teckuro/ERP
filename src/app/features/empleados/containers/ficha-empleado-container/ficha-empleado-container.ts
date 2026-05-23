@@ -12,6 +12,8 @@ import { FichaEmpleadoWorkspaceComponent } from './components/ficha-empleado-wor
   imports: [FichaEmpleadoWorkspaceComponent, FichaEmpleadoOverlaysComponent],
   templateUrl: './ficha-empleado-container.html',
   styleUrls: [
+    '../../styles/empleado-expediente-tokens.css',
+    '../../styles/ficha-expediente.layout.css',
     './ficha-empleado-container.css',
     './ficha-empleado-expediente.css',
     './ficha-empleado-detalle.css',

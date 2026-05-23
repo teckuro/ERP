@@ -1,6 +1,6 @@
-## EMP-FICHA-EXPEDIENTE-NOIA-01
+﻿## EMP-FICHA-EXPEDIENTE-NOIA-01
 
-Ficha `/empleados/:id` con layout expediente tres columnas (rail | bloque activo | diagnóstico). Presentación en `ficha-empleado-presentacion.rules.ts`; negocio intacto en `evaluarCompletitudYAptitudEmpleado`. Documento: [`emp-ficha-expediente-noia-01.md`](./emp-ficha-expediente-noia-01.md).
+Ficha `/empleados/:id` con layout expediente tres columnas (rail | bloque activo | diagnÃ³stico). PresentaciÃ³n en `ficha-empleado-presentacion.rules.ts`; negocio intacto en `evaluarCompletitudYAptitudEmpleado`. Documento: [`emp-ficha-expediente-noia-01.md`](./emp-ficha-expediente-noia-01.md).
 
 ## EMP-PERFIL-LABORAL-SQL-01
 
@@ -35,48 +35,48 @@ Creacion avanzada incorpora modo visual para `Boleta de honorarios`:
 - `Banco` queda como datos para pago recomendados.
 - `Finalizar alta` se bloquea para evitar guardar honorarios como trabajador dependiente; se permite guardar borrador.
 
-# Módulo Empleados — punto de entrada
+# MÃ³dulo Empleados â€” punto de entrada
 
-## Qué documenta esta carpeta
+## QuÃ© documenta esta carpeta
 
-Contratos y guías del ciclo de vida del trabajador en Angular: listado, altas (básica y avanzada), borrador, ficha, validación explícita para remuneraciones y pruebas.
+Contratos y guÃ­as del ciclo de vida del trabajador en Angular: listado, altas (bÃ¡sica y avanzada), borrador, ficha, validaciÃ³n explÃ­cita para remuneraciones y pruebas.
 
 | Documento | Contenido |
 |-----------|-----------|
-| [`contrato-general.md`](./contrato-general.md) | Estados BD, completitud, helper, defaults técnicos, matriz listado, regla de oro nómina futura |
+| [`contrato-general.md`](./contrato-general.md) | Estados BD, completitud, helper, defaults tÃ©cnicos, matriz listado, regla de oro nÃ³mina futura |
 | [`listado.md`](./listado.md) | Listado, estados visibles, CTAs |
-| [`creacion-basica.md`](./creacion-basica.md) | Ruta modo básico, campos mínimos, `EN_PROCESO`, qué no persiste |
+| [`creacion-basica.md`](./creacion-basica.md) | Ruta modo bÃ¡sico, campos mÃ­nimos, `EN_PROCESO`, quÃ© no persiste |
 | [`creacion-avanzada.md`](./creacion-avanzada.md) | Wizard, pasos, tabs, APVI condicional, paso 9, finalizar |
 | [`perfil-laboral-previsional.md`](./perfil-laboral-previsional.md) | Modelo SQL para categoria base, condiciones especiales persistidas y perfil laboral/previsional derivado |
-| [`alta-coherencia-global-00.md`](./alta-coherencia-global-00.md) | Auditoría de aplicabilidad, validaciones asistidas, campos que aplican/no aplican y matriz para la fase global de coherencia |
-| [`alta-diagnostico-contractual-ux-01.md`](./alta-diagnostico-contractual-ux-01.md) | Pulido UX del Resumen final: diagnóstico contractual visible, caso detectado y regla visual sin barras laterales fuertes |
-| [`alta-validaciones-asistidas-01.md`](./alta-validaciones-asistidas-01.md) | Capa visible de validaciones guiadas: faltantes, no aplica, definido por sistema, revisión administrativa y MsgBox solo para decisiones |
-| [`borrador-continuar-alta.md`](./borrador-continuar-alta.md) | Guardar borrador, `paso_alta_avanzada`, rehidratación, E2E opt-in |
-| [`ficha-empleado.md`](./ficha-empleado.md) | Expediente (rail), bloques, panel diagnóstico, guardado, carga técnica, Playwright |
-| [`emp-ficha-expediente-noia-01.md`](./emp-ficha-expediente-noia-01.md) | Fase NOIA: layout 3 columnas, rail, motivo principal, CTA único |
-| [`emp-ficha-expediente-css-budget-01.md`](./emp-ficha-expediente-css-budget-01.md) | Split `styleUrls` CSS ficha (budget 24 kB por hoja, sin rediseño) |
+| [`alta-coherencia-global-00.md`](./alta-coherencia-global-00.md) | AuditorÃ­a de aplicabilidad, validaciones asistidas, campos que aplican/no aplican y matriz para la fase global de coherencia |
+| [`alta-diagnostico-contractual-ux-01.md`](./alta-diagnostico-contractual-ux-01.md) | Pulido UX del Resumen final: diagnÃ³stico contractual visible, caso detectado y regla visual sin barras laterales fuertes |
+| [`alta-validaciones-asistidas-01.md`](./alta-validaciones-asistidas-01.md) | Capa visible de validaciones guiadas: faltantes, no aplica, definido por sistema, revisiÃ³n administrativa y MsgBox solo para decisiones |
+| [`borrador-continuar-alta.md`](./borrador-continuar-alta.md) | Guardar borrador, `paso_alta_avanzada`, rehidrataciÃ³n, E2E opt-in |
+| [`ficha-empleado.md`](./ficha-empleado.md) | Expediente (rail), bloques, panel diagnÃ³stico, guardado, carga tÃ©cnica, Playwright |
+| [`emp-ficha-expediente-noia-01.md`](./emp-ficha-expediente-noia-01.md) | Fase NOIA: layout 3 columnas, rail, motivo principal, CTA Ãºnico |
+| [`emp-ficha-expediente-css-budget-01.md`](./emp-ficha-expediente-css-budget-01.md) | Split `styleUrls` CSS ficha (budget 24 kB por hoja, sin rediseÃ±o) |
 | [`emp-ficha-expediente-fullworkspace-ux-02.md`](./emp-ficha-expediente-fullworkspace-ux-02.md) | Expediente integrado al workspace (sin card exterior dominante) |
 | [emp-ficha-sustentable-00.md](./emp-ficha-sustentable-00.md) | Arquitectura modular ficha: facade, kernel diagnostico, tabs config |
-| [`validar-remuneraciones.md`](./validar-remuneraciones.md) | Opción B, condiciones del botón, persistencia, exclusiones |
+| [`validar-remuneraciones.md`](./validar-remuneraciones.md) | OpciÃ³n B, condiciones del botÃ³n, persistencia, exclusiones |
 | [`tests-empleados.md`](./tests-empleados.md) | Unitarios, Playwright, brechas |
 
-**Transversal (sigue en `temas/`):** arquitectura por carpetas del feature — [`../../temas/base-angular-empleados.md`](../../temas/base-angular-empleados.md).
+**Transversal (sigue en `temas/`):** arquitectura por carpetas del feature â€” [`../../temas/base-angular-empleados.md`](../../temas/base-angular-empleados.md).
 **Rutas y recorrido unificado:** [`../../temas/flujos/empleados.md`](../../temas/flujos/empleados.md).
 
 ## Orden de lectura recomendado
 
-1. [`contrato-general.md`](./contrato-general.md) — marco de negocio y datos.
-2. Según la pantalla: `listado` → `creacion-basica` / `creacion-avanzada` / `borrador-continuar-alta` → `ficha-empleado` → `validar-remuneraciones`.
+1. [`contrato-general.md`](./contrato-general.md) â€” marco de negocio y datos.
+2. SegÃºn la pantalla: `listado` â†’ `creacion-basica` / `creacion-avanzada` / `borrador-continuar-alta` â†’ `ficha-empleado` â†’ `validar-remuneraciones`.
 3. [`tests-empleados.md`](./tests-empleados.md) antes de tocar CI o E2E.
 
-## Estado del módulo (resumen)
+## Estado del mÃ³dulo (resumen)
 
-- **Fases 3–8 cerradas** (estados, helper, listado/ficha, selects, rehidratación borrador, validar remuneraciones). Detalle: [`../../orquestador/estado-fases.md`](../../orquestador/estado-fases.md).
-- **Fase cerrada (documentación):** contratos vigentes bajo `modulos/empleados/`; los `.md` homónimos en `docs/codex/temas/` son **stubs** que apuntan aquí.
+- **Fases 3â€“8 cerradas** (estados, helper, listado/ficha, selects, rehidrataciÃ³n borrador, validar remuneraciones). Detalle: [`../../orquestador/estado-fases.md`](../../orquestador/estado-fases.md).
+- **Fase cerrada (documentaciÃ³n):** contratos vigentes bajo `modulos/empleados/`; los `.md` homÃ³nimos en `docs/codex/temas/` son **stubs** que apuntan aquÃ­.
 
 ## Fase siguiente (producto)
 
-**Conceptos de remuneración** (catálogo maestro); no mezclar con asignaciones por trabajador. Ver [`../../orquestador/contexto-proyecto.md`](../../orquestador/contexto-proyecto.md) §10 y §12.
+**Conceptos de remuneraciÃ³n** (catÃ¡logo maestro); no mezclar con asignaciones por trabajador. Ver [`../../orquestador/contexto-proyecto.md`](../../orquestador/contexto-proyecto.md) Â§10 y Â§12.
 
 ## Actualizacion 2026-05-11 - Creacion avanzada: validaciones por accion
 
@@ -103,7 +103,7 @@ Creacion avanzada incorpora un paso propio de perfil laboral/previsional despues
 
 ## EMP-PERFIL-LABORAL-UI-01-POLISH
 
-El perfil laboral deja de estar mezclado con asignaciones laborales y queda como paso independiente antes del resumen. La UI usa el mismo patrón visual local del wizard avanzado y muestra vigencia/respaldo solo cuando hay condiciones seleccionadas.
+El perfil laboral deja de estar mezclado con asignaciones laborales y queda como paso independiente antes del resumen. La UI usa el mismo patrÃ³n visual local del wizard avanzado y muestra vigencia/respaldo solo cuando hay condiciones seleccionadas.
 
 ## EMP-CONDICIONES-ESPECIALES-UX-01
 
@@ -117,22 +117,22 @@ Creacion avanzada ajusta el paso posterior a Banco para que el usuario lo entien
 - El resumen final mantiene lectura compacta como revision, sin duplicar el formulario.
 ## EMP-ALTA-COHERENCIA-GLOBAL-00
 
-Se documenta la matriz global de coherencia del alta avanzada para unir relación laboral, `tipo_trabajador`, contrato, jornada, Seguro de Cesantía, previsión/salud, banco, condiciones especiales y resumen final.
+Se documenta la matriz global de coherencia del alta avanzada para unir relaciÃ³n laboral, `tipo_trabajador`, contrato, jornada, Seguro de CesantÃ­a, previsiÃ³n/salud, banco, condiciones especiales y resumen final.
 
-La fase no cambia código funcional: deja definido qué aplica, qué no aplica, qué se deriva, qué debe validar el formulario, qué debe abrir `app-message-box` y qué queda como revisión administrativa para una futura `EMP-ALTA-COHERENCIA-GLOBAL-01`.
+La fase no cambia cÃ³digo funcional: deja definido quÃ© aplica, quÃ© no aplica, quÃ© se deriva, quÃ© debe validar el formulario, quÃ© debe abrir `app-message-box` y quÃ© queda como revisiÃ³n administrativa para una futura `EMP-ALTA-COHERENCIA-GLOBAL-01`.
 
 
 ## EMP-ALTA-COHERENCIA-GLOBAL-01
 
-Se implementa la matriz única de aplicabilidad definida en `EMP-ALTA-COHERENCIA-GLOBAL-00`.
+Se implementa la matriz Ãºnica de aplicabilidad definida en `EMP-ALTA-COHERENCIA-GLOBAL-00`.
 
-La regla pura `empleado-alta-aplicabilidad.rules.ts` centraliza estados de campos y pasos para Creación avanzada:
+La regla pura `empleado-alta-aplicabilidad.rules.ts` centraliza estados de campos y pasos para CreaciÃ³n avanzada:
 
 - `required`: obligatorio;
 - `optional`: opcional;
 - `derived`: derivado por el sistema;
 - `not_applicable`: no aplica al flujo;
-- `review`: requiere confirmación RRHH;
+- `review`: requiere confirmaciÃ³n RRHH;
 - `warning`: advertencia administrativa;
 - `blocked`: bloqueado por fase.
 
@@ -140,7 +140,7 @@ La UI usa la matriz para el estado del wizard y agrega `Matriz de aplicabilidad`
 
 ## EMP-ALTA-DIAGNOSTICO-CONTRACTUAL-UX-01
 
-El Resumen final deja de presentar la matriz como concepto técnico visible y muestra `Diagnóstico contractual`.
+El Resumen final deja de presentar la matriz como concepto tÃ©cnico visible y muestra `DiagnÃ³stico contractual`.
 
 La matriz de aplicabilidad sigue como fuente interna, pero RRHH ve:
 
@@ -150,36 +150,36 @@ La matriz de aplicabilidad sigue como fuente interna, pero RRHH ve:
 - revisiones pendientes;
 - coherencia administrativa separada.
 
-Regla visual: no usar `border-left` decorativo fuerte en estos bloques; mantener fondos suaves de información/advertencia y bordes completos locales.
+Regla visual: no usar `border-left` decorativo fuerte en estos bloques; mantener fondos suaves de informaciÃ³n/advertencia y bordes completos locales.
 
 
 ## EMP-ALTA-MSGBOX-ERROR-UX-01
 
-El error de guardado de la ficha ya no se presenta como texto plano. Usa el mismo patrón visual del éxito:
+El error de guardado de la ficha ya no se presenta como texto plano. Usa el mismo patrÃ³n visual del Ã©xito:
 
-- título claro;
+- tÃ­tulo claro;
 - mensaje principal breve;
-- panel `Qué revisar`;
-- panel `Acción recomendada`;
+- panel `QuÃ© revisar`;
+- panel `AcciÃ³n recomendada`;
 - `Paso sugerido` cuando se pueda inferir.
 
-Caso relevante: `Sin previsión` recomienda revisar el paso `Previsión y salud` y seleccionar AFP o IPS si el trabajador quedará habilitado para remuneraciones.
+Caso relevante: `Sin previsiÃ³n` recomienda revisar el paso `PrevisiÃ³n y salud` y seleccionar AFP o IPS si el trabajador quedarÃ¡ habilitado para remuneraciones.
 
-Restricciones mantenidas: sin SQL/RPC/RLS, sin motor, sin nómina, sin ficha empleado, sin creación básica funcional ni estilos globales.
+Restricciones mantenidas: sin SQL/RPC/RLS, sin motor, sin nÃ³mina, sin ficha empleado, sin creaciÃ³n bÃ¡sica funcional ni estilos globales.
 
 ## EMP-ALTA-VALIDACIONES-ASISTIDAS-01
 
-Creación avanzada agrega una capa visible de validaciones guiadas en `empleado-alta-validaciones.rules.ts`.
+CreaciÃ³n avanzada agrega una capa visible de validaciones guiadas en `empleado-alta-validaciones.rules.ts`.
 
 La regla consume aplicabilidad, coherencia administrativa y pendientes reales del formulario para mostrar datos necesarios pendientes, revisiones asistidas, campos no aplicables, datos definidos por sistema, avisos administrativos y bloqueos por fase.
 
-`Siguiente` vuelve a mostrar `app-message-box` cuando faltan datos o hay revisiones del paso. El modal usa descripciones más amplias y acciones claras para continuar o corregir ahora.
+`Siguiente` vuelve a mostrar `app-message-box` cuando faltan datos o hay revisiones del paso. El modal usa descripciones mÃ¡s amplias y acciones claras para continuar o corregir ahora.
 
-Restricciones mantenidas: sin SQL/RPC/RLS, sin motor, sin nómina, sin liquidaciones, sin ficha empleado, sin creación básica funcional y sin estilos globales.
+Restricciones mantenidas: sin SQL/RPC/RLS, sin motor, sin nÃ³mina, sin liquidaciones, sin ficha empleado, sin creaciÃ³n bÃ¡sica funcional y sin estilos globales.
 
 ## EMP-ADV-BITACORA-LABORAL-UX-01
 
-La Creación avanzada incorpora una identidad local de `Bitácora laboral`: el alta del trabajador se presenta como una ficha en construcción, con registros agrupados, estados humanos, decisiones visibles y cierre como acta de revisión. El cambio es visual/copy local y no modifica flujo, lógica, persistencia, SQL/RPC/RLS, motor ni estilos globales.
+La CreaciÃ³n avanzada incorpora una identidad local de `BitÃ¡cora laboral`: el alta del trabajador se presenta como una ficha en construcciÃ³n, con registros agrupados, estados humanos, decisiones visibles y cierre como acta de revisiÃ³n. El cambio es visual/copy local y no modifica flujo, lÃ³gica, persistencia, SQL/RPC/RLS, motor ni estilos globales.
 
 Detalle: [`bitacora-laboral-ux-01.md`](./bitacora-laboral-ux-01.md).
 ## ERP-NOIA-BITACORA-OPERATIVA-00 - Lectura de modulo
@@ -196,3 +196,4 @@ Creacion avanzada mantiene el patron `Bitacora laboral`, pero su CSS local queda
 Resultado: el build productivo deja de fallar por `form-empleado.css` (inicial 36.37 kB sobre 24.00 kB). Las hojas fuente finales quedan en `form-empleado.css` 19,060 bytes, `form-empleado.wizard.css` 9,442 bytes y `form-empleado.feedback.css` 10,517 bytes.
 
 Detalle: [`emp-adv-css-budget-reduce-01.md`](./emp-adv-css-budget-reduce-01.md).
+
