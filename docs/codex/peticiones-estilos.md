@@ -1,3 +1,8 @@
+## 2026-05-23 - Ficha empleado: expediente en tabbar
+
+- **Cambio:** navegación del expediente como tabbar horizontal (`role="tablist"`) sobre el contenido; panel diagnóstico a la izquierda; sin columna rail vertical.
+- **Archivos:** `ficha-empleado-container.html`, `ficha-empleado-expediente.css`, `ficha-empleado-responsive.css`, `ficha-empleado-container.spec.ts`.
+
 ## 2026-05-22 - Listado empleados: columna Acción solo menú ⋮
 
 - **Cambio:** celda con icono de tres puntos; popover con «Ver ficha» o «Continuar alta» (misma ruta que antes) y «Desactivar»; columna más estrecha.

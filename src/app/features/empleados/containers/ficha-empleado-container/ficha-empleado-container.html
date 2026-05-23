@@ -270,56 +270,48 @@
             </div>
           </aside>
 
-          <aside class="employee-record-rail" aria-label="Expediente del trabajador">
-            <div class="employee-record-rail__head">
-              <h3 class="employee-record-rail__title">Expediente</h3>
-
-              <p class="employee-record-rail__sub">
-                {{ tabs.length }} bloques de información laboral
+          <div class="employee-record-workspace">
+            <nav class="employee-record-tabbar" role="tablist" aria-label="Expediente del trabajador">
+              <p class="employee-record-tabbar__meta">
+                <span class="employee-record-tabbar__title">Expediente</span>
+                <span class="employee-record-tabbar__count"
+                  >{{ tabs.length }} bloques de información laboral</span
+                >
               </p>
-            </div>
 
-            <ul class="employee-record-rail__list">
-              @for (item of expedienteNavItems(employee); track item.clave) {
-                <li>
-                  <button
-                    type="button"
-                    class="employee-record-rail__item"
-                    [class.employee-record-rail__item--active]="item.estaActivo"
-                    [attr.aria-current]="item.estaActivo ? 'page' : null"
-                    (click)="selectTab(item.clave)"
-                  >
-                    <span class="employee-record-rail__item-label">
-                      <span
-                        [class]="
-                          'employee-record-rail__dot employee-record-rail__dot--' + item.estado
-                        "
-                        aria-hidden="true"
-                      ></span>
-
-                      <span>{{ item.etiqueta }}</span>
-                    </span>
-                    <span class="employee-record-rail__item-trail">
-                      @if (!item.estaActivo) {
-                        <span [class]="claseEstadoNavegacion(item.estado)">{{
-                          etiquetaEstadoRail(item.estado)
-                        }}</span>
-                      }
-                      @if (item.estaActivo) {
-                        <lucide-icon
-                          class="employee-record-rail__chevron"
-                          [img]="chevronRightIcon"
+              <ul class="employee-record-tabbar__list" role="presentation">
+                @for (item of expedienteNavItems(employee); track item.clave) {
+                  <li role="presentation">
+                    <button
+                      type="button"
+                      class="employee-record-tabbar__tab"
+                      role="tab"
+                      [class.employee-record-tabbar__tab--active]="item.estaActivo"
+                      [attr.aria-selected]="item.estaActivo"
+                      [attr.tabindex]="item.estaActivo ? 0 : -1"
+                      [attr.id]="'employee-tab-' + item.clave"
+                      (click)="selectTab(item.clave)"
+                    >
+                      <span class="employee-record-tabbar__tab-label">
+                        <span
+                          [class]="
+                            'employee-record-tabbar__dot employee-record-tabbar__dot--' + item.estado
+                          "
                           aria-hidden="true"
-                        />
-                      }
-                    </span>
-                  </button>
-                </li>
-              }
-            </ul>
-          </aside>
+                        ></span>
+                        <span>{{ item.etiqueta }}</span>
+                      </span>
+                    </button>
+                  </li>
+                }
+              </ul>
+            </nav>
 
-          <div class="employee-record-main">
+            <div
+              class="employee-record-main"
+              role="tabpanel"
+              [attr.aria-labelledby]="'employee-tab-' + tabActivo()"
+            >
             <main class="file-main">
               <section class="section-summary employee-record-block">
                 <header
@@ -518,6 +510,7 @@
                 }
               </section>
             </main>
+            </div>
           </div>
         </div>
       </div>

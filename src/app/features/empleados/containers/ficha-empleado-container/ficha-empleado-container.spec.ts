@@ -410,29 +410,33 @@ describe('FichaEmpleadoContainer', () => {
     expect(avatar?.textContent?.trim()).toBe('AM');
   });
 
-  it('marca el bloque activo en el rail del expediente', () => {
+  it('marca el bloque activo en el tabbar del expediente', () => {
     const employee = empleado();
     component.empleado.set(employee);
     component['patchFormFromEmployee'](employee);
     component.isLoading.set(false);
     fixture.detectChanges();
 
+    const tablist = fixture.nativeElement.querySelector(
+      '[role="tablist"]',
+    ) as HTMLElement;
     const active = fixture.nativeElement.querySelector(
-      '.employee-record-rail__item--active',
+      '.employee-record-tabbar__tab--active',
     ) as HTMLButtonElement;
 
+    expect(tablist?.getAttribute('aria-label')).toContain('Expediente');
     expect(active?.textContent).toContain('General');
-    expect(active?.getAttribute('aria-current')).toBe('page');
+    expect(active?.getAttribute('aria-selected')).toBe('true');
   });
 
-  it('cambia el bloque central al pulsar un item del rail', () => {
+  it('cambia el bloque central al pulsar una pestaña del expediente', () => {
     const employee = empleado();
     component.empleado.set(employee);
     component['patchFormFromEmployee'](employee);
     component.isLoading.set(false);
     fixture.detectChanges();
 
-    const pago = [...fixture.nativeElement.querySelectorAll('.employee-record-rail__item')].find(
+    const pago = [...fixture.nativeElement.querySelectorAll('.employee-record-tabbar__tab')].find(
       (el: Element) => el.textContent?.includes('Pago'),
     ) as HTMLButtonElement;
     pago?.click();
@@ -501,7 +505,7 @@ describe('FichaEmpleadoContainer', () => {
     expect(host.textContent).toContain('Motivo principal');
   });
 
-  it('muestra el rail expediente sin tabbar horizontal', () => {
+  it('muestra tabbar horizontal del expediente', () => {
     const employee = empleado();
     component.empleado.set(employee);
     component['patchFormFromEmployee'](employee);
@@ -509,13 +513,15 @@ describe('FichaEmpleadoContainer', () => {
     fixture.detectChanges();
 
     const host = fixture.nativeElement as HTMLElement;
+    const tablist = host.querySelector('.employee-record-tabbar__list') as HTMLElement;
 
-    expect(host.querySelector('.employee-record-rail__title')?.textContent?.trim()).toBe(
+    expect(host.querySelector('.employee-record-tabbar__title')?.textContent?.trim()).toBe(
       'Expediente',
     );
-    expect(host.querySelector('.employee-record-rail__sub')?.textContent).toContain('bloques');
-    expect(host.querySelector('.file-tabs-wrap')).toBeNull();
-    expect(host.querySelector('.file-tabs-context')).toBeNull();
+    expect(host.querySelector('.employee-record-tabbar__count')?.textContent).toContain('bloques');
+    expect(host.querySelector('[role="tablist"]')).toBeTruthy();
+    expect(getComputedStyle(tablist).display).toBe('flex');
+    expect(host.querySelector('.employee-record-rail')).toBeNull();
   });
 
   it('deduplica faltantes criticos en el panel', () => {
