@@ -43,6 +43,14 @@ Select-String -Path <archivos> -Pattern "Ã","Â","�","â€"
 
 Si hay coincidencias, revisar si son texto corrupto. En pantallas visibles, corregir a español normal: `remuneración`, `período`, `revisión`, `observación`, `categoría`, `nómina`, `código`, `válida`.
 
+Guardia automática:
+
+```powershell
+npm run lint:texto
+```
+
+El comando bloquea mojibake y caracteres invisibles. Para palabras comunes sin tilde usa `scripts/text-hygiene-baseline.json`: la deuda histórica queda registrada y cualquier hallazgo nuevo falla.
+
 Escritura segura desde scripts:
 
 ```powershell

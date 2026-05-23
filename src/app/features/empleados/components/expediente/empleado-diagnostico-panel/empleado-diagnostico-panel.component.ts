@@ -10,6 +10,12 @@ import type { FaltanteFichaEmpleado, FichaEstadoPanelVm } from '../../../models/
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CommonModule, LucideAngularModule],
   templateUrl: './empleado-diagnostico-panel.component.html',
+  styleUrls: [
+    '../../../styles/empleado-expediente-tokens.css',
+    '../../../containers/ficha-empleado-container/ficha-empleado-detalle.css',
+    '../../../containers/ficha-empleado-container/ficha-empleado-responsive.css',
+    './empleado-diagnostico-panel.component.css',
+  ],
 })
 export class EmpleadoDiagnosticoPanelComponent {
   @Input({ required: true }) estado!: FichaEstadoPanelVm;

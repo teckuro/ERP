@@ -5,6 +5,7 @@ import { RouterLink } from '@angular/router';
 import { LucideAngularModule } from 'lucide-angular';
 
 import { BancarioComponent } from '../../../../components/secciones/bancario/bancario';
+import { PerfilLaboralComponent } from '../../../../components/secciones/perfil-laboral/perfil-laboral';
 import { ContratoComponent } from '../../../../components/secciones/contrato/contrato';
 import { ContactoComponent } from '../../../../components/secciones/contacto/contacto';
 import { DatosPersonalesComponent } from '../../../../components/secciones/datos-personales/datos-personales';
@@ -30,6 +31,7 @@ import { FichaEmpleadoPresentacionFacade } from '../../facade/ficha-empleado-pre
     ContratoComponent,
     PrevisionSaludComponent,
     BancarioComponent,
+    PerfilLaboralComponent,
     DataGridComponent,
     WorkspaceLoadingComponent,
     EmpleadoRecordHeaderComponent,

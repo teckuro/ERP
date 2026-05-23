@@ -8,6 +8,12 @@ import type { EmpleadoFichaDetalle } from '../../../models/empleado-listado.mode
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CommonModule],
   templateUrl: './empleado-record-header.component.html',
+  styleUrls: [
+    '../../../styles/empleado-expediente-tokens.css',
+    '../../../containers/ficha-empleado-container/ficha-empleado-expediente.css',
+    '../../../containers/ficha-empleado-container/ficha-empleado-responsive.css',
+    './empleado-record-header.component.css',
+  ],
 })
 export class EmpleadoRecordHeaderComponent {
   @Input({ required: true }) employee!: EmpleadoFichaDetalle;

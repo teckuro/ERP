@@ -9,6 +9,12 @@ import type { ClaveTabFichaEmpleado } from '../../../models/ficha-empleado-tabs.
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CommonModule],
   templateUrl: './empleado-expediente-rail.component.html',
+  styleUrls: [
+    '../../../styles/empleado-expediente-tokens.css',
+    '../../../containers/ficha-empleado-container/ficha-empleado-expediente.css',
+    '../../../containers/ficha-empleado-container/ficha-empleado-responsive.css',
+    './empleado-expediente-rail.component.css',
+  ],
 })
 export class EmpleadoExpedienteRailComponent {
   @Input({ required: true }) items!: ItemNavegacionFichaEmpleado[];

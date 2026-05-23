@@ -266,6 +266,29 @@
   border-bottom: 1px solid var(--employee-exp-border);
 }
 
+.employee-record-block__intro--with-action {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.employee-record-block__intro-copy {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.employee-record-block__intro-actions {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: flex-end;
+  margin-left: auto;
+}
+
 .employee-record-block__title {
   margin: 0;
   color: var(--employee-exp-text);

@@ -38,6 +38,7 @@ export const FICHA_DETALLE_BLOCK_IDS: Readonly<Record<string, string>> = {
   'Información personal y contacto': 'base',
   'Domicilio particular': 'ubicacion',
   'Relación laboral': 'relacion',
+  'Condiciones especiales': 'condiciones-especiales',
   Contrato: 'contrato',
   'Centro de costo y estado': 'centro-costo',
   Remuneración: 'remuneracion',

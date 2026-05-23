@@ -14,6 +14,11 @@ import {
   EmpleadoListado,
 } from '../models/empleado-listado.model';
 import { CrearEmpleadoPayload } from '../models/empleado-payload.model';
+import type { PerfilLaboralPersona } from '../models/empleado-perfil-laboral-rpc.model';
+import {
+  mapPerfilLaboralRpcRow,
+  type PerfilLaboralRpcRow,
+} from '../rules/empleado-perfil-laboral.rules';
 import {
   EntidadPrevisionalIpsCatalogRow,
   ExCajaPrevisionalCatalogRow,
@@ -442,6 +447,26 @@ export class EmpleadosRepository {
     );
 
     return this.obtenerFichaDetalle(resumen);
+  }
+
+  async obtenerPerfilLaboralPersona(
+    idPersona: number,
+    periodoYm: string,
+  ): Promise<PerfilLaboralPersona | null> {
+    const { data, error } = await this.supabase.rpc('fn_obtener_perfil_laboral_persona', {
+      p_id_persona: idPersona,
+      p_periodo: periodoYm,
+    });
+
+    if (error) {
+      throw buildRepositoryError(
+        'No fue posible cargar el perfil laboral del trabajador.',
+        error.message,
+      );
+    }
+
+    const row = (data as PerfilLaboralRpcRow[] | null)?.[0];
+    return row ? mapPerfilLaboralRpcRow(row) : null;
   }
 
   async guardarSeccionFicha(

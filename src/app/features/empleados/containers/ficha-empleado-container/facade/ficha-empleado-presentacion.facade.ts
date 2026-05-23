@@ -1,4 +1,4 @@
-import { DestroyRef, Injectable, OnInit, inject, signal } from '@angular/core';
+import { DestroyRef, Injectable, OnInit, effect, inject, signal } from '@angular/core';
 import { AbstractControl } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import {
@@ -52,6 +52,14 @@ import {
 import { DataGridColumn } from '../../../../../shared/components/ui/data-grid.component';
 import { type MessageBoxSection } from '../../../../../shared/components/ui/message-box.component';
 import { bindShellPageContext } from '../../../../../layout/shell-page-context.binding';
+import { PeriodoActivoService } from '../../../../../core/services/periodo-activo.service';
+import { mapCondicionesTrabajadorFromFormValue } from '../../../mappers/empleado-form.mapper';
+import type { PerfilLaboralPersona } from '../../../models/empleado-perfil-laboral-rpc.model';
+import type { CondicionTrabajadorControlName } from '../../../models/empleado-perfil-laboral.model';
+import {
+  buildCondicionesEspecialesDetalleItems,
+  etiquetaTramoEdadLaboral,
+} from '../../../rules/empleado-perfil-laboral.rules';
 
 type TabFichaEmpleado = ClaveTabFichaEmpleado;
 
@@ -79,6 +87,11 @@ interface FilaHistorialFichaEmpleado {
   estado: string;
 }
 
+interface PerfilLaboralAutoDetection {
+  controlName: CondicionTrabajadorControlName;
+  reason: string;
+}
+
 @Injectable()
 export class FichaEmpleadoPresentacionFacade implements OnInit {
   private readonly route = inject(ActivatedRoute);
@@ -86,6 +99,7 @@ export class FichaEmpleadoPresentacionFacade implements OnInit {
   private readonly empleadosService = inject(EmpleadosService);
   private readonly empleadosCatalogosService = inject(EmpleadosCatalogosService);
   private readonly empleadosFormService = inject(EmpleadosFormOrchestratorService);
+  private readonly periodoActivo = inject(PeriodoActivoService);
   private readonly destroyRef = inject(DestroyRef);
 
   readonly empleadoId = Number(this.route.snapshot.paramMap.get('id'));
@@ -108,6 +122,9 @@ export class FichaEmpleadoPresentacionFacade implements OnInit {
   readonly editingBlock = signal<string | null>(null);
   readonly catalogos = signal<EmpleadoFormCatalogos>(EMPTY_EMPLEADO_FORM_CATALOGOS);
   readonly form: EmpleadoFormGroup = this.empleadosFormService.createForm();
+  readonly perfilLaboralRpc = signal<PerfilLaboralPersona | null>(null);
+  readonly perfilLaboralCargando = signal(false);
+  readonly perfilLaboralError = signal<string | null>(null);
 
   readonly arrowLeftIcon = ArrowLeft;
   readonly chevronRightIcon = ChevronRight;
@@ -149,13 +166,6 @@ export class FichaEmpleadoPresentacionFacade implements OnInit {
       widthClass: 'min-w-[18rem]',
     },
     {
-      id: 'usuario',
-      header: 'Usuario',
-      field: 'usuario',
-      sortable: true,
-      widthClass: 'min-w-[8rem]',
-    },
-    {
       id: 'estado',
       header: 'Estado',
       field: 'estado',
@@ -195,6 +205,15 @@ export class FichaEmpleadoPresentacionFacade implements OnInit {
       },
       {},
     );
+
+    effect(() => {
+      const empleado = this.empleado();
+      const periodoYm = this.periodoActivo.periodoYm();
+
+      if (empleado?.id && periodoYm) {
+        void this.cargarPerfilLaboral(empleado.id, periodoYm);
+      }
+    });
   }
 
   async ngOnInit(): Promise<void> {
@@ -403,6 +422,10 @@ export class FichaEmpleadoPresentacionFacade implements OnInit {
       if (updated) {
         this.empleado.set(updated);
         this.patchFormFromEmployee(updated);
+
+        if (saveTarget === 'laboral' || saveTarget === 'remuneracion') {
+          void this.cargarPerfilLaboral(updated.id, this.periodoActivo.periodoYm());
+        }
       }
 
       this.editingTab.set(null);
@@ -631,7 +654,60 @@ export class FichaEmpleadoPresentacionFacade implements OnInit {
     return evaluarCompletitudYAptitudEmpleado({
       payload: this.mapFichaEmpleadoToEvaluacionInput(empleado),
       pasoAltaAvanzada: empleado.pasoAltaAvanzada,
+      perfilLaboralRpc: this.perfilLaboralRpc(),
     });
+  }
+
+  perfilLaboralTipoTrabajadorLabel(): string {
+    const id = this.form.controls.contrato.controls.idTipoTrabajador.value;
+    return id ? this.catalogText(id, 'tiposTrabajador') : 'Tipo trabajador pendiente';
+  }
+
+  perfilLaboralEdadDetectadaLabel(): string {
+    const perfil = this.perfilLaboralRpc();
+
+    if (perfil) {
+      return etiquetaTramoEdadLaboral(perfil.tramoEdadLaboral, perfil.edadPeriodo);
+    }
+
+    return '';
+  }
+
+  perfilLaboralEdadDetectadaDescripcion(): string {
+    const perfil = this.perfilLaboralRpc();
+
+    if (!perfil) {
+      return '';
+    }
+
+    if (perfil.requiereRevisionRrhh) {
+      return 'Revisión sugerida según edad o condiciones del período activo.';
+    }
+
+    return 'Perfil estándar para el período activo. Declara condiciones solo con respaldo.';
+  }
+
+  perfilLaboralAutoDetections(): readonly PerfilLaboralAutoDetection[] {
+    const perfil = this.perfilLaboralRpc();
+    const controls = this.form.controls.perfilLaboral.controls;
+    const detections: PerfilLaboralAutoDetection[] = [];
+
+    if (perfil?.esMenor18 && !controls.trabajadorAdolescenteProtegido.value) {
+      detections.push({
+        controlName: 'trabajadorAdolescenteProtegido',
+        reason: 'Edad laboral detectada menor de 18 en el período activo.',
+      });
+    }
+
+    const tipoPrevision = this.form.controls.previsionSalud.controls.tipoRegimenPrevisional.value;
+    if (tipoPrevision === 'NINGUNA' && !controls.exentoCotizacionPension.value) {
+      detections.push({
+        controlName: 'exentoCotizacionPension',
+        reason: 'Régimen previsional sin cotización obligatoria declarado.',
+      });
+    }
+
+    return detections;
   }
 
   pendingItemsEvaluados(empleado: EmpleadoListado): string[] {
@@ -664,6 +740,15 @@ export class FichaEmpleadoPresentacionFacade implements OnInit {
 
   tabActivoLabel(): string {
     return this.tabs.find((tab) => tab.id === this.tabActivo())?.label ?? 'General';
+  }
+
+  /** Título del bloque principal del tab (puede diferir de la etiqueta del rail). */
+  tabActivoIntroTitle(): string {
+    if (this.tabActivo() === 'remuneracion') {
+      return 'Jornada y remuneración';
+    }
+
+    return this.tabActivoLabel();
   }
 
   detailItems(empleado: EmpleadoListado): DetalleFichaEmpleadoItem[] {
@@ -702,8 +787,8 @@ export class FichaEmpleadoPresentacionFacade implements OnInit {
           { label: 'Comuna', value: this.catalogText(contacto.idComuna, 'comunas') },
           { label: 'Observaciones', value: this.emptyText(contacto.observacionesDireccion) },
         ];
-      case 'laboral':
-        return [
+      case 'laboral': {
+        const laboralBase: DetalleFichaEmpleadoItem[] = [
           this.detailSection('Relación laboral'),
           { label: 'Relación laboral', value: this.relacionLaboralText(contrato.relacionLaboral) },
           this.detailSection('Contrato'),
@@ -737,6 +822,24 @@ export class FichaEmpleadoPresentacionFacade implements OnInit {
           { label: 'Cargo', value: this.cargoText(contrato.cargo) },
           { label: 'Estado de ficha inicial', value: this.statusLabel(contrato.estado) },
         ];
+
+        if (contrato.relacionLaboral === 'HONORARIOS') {
+          return laboralBase;
+        }
+
+        const condicionesDetalle = buildCondicionesEspecialesDetalleItems({
+          perfil: this.perfilLaboralRpc(),
+          formPerfil: raw.perfilLaboral,
+          periodoEtiqueta: this.periodoActivo.etiqueta(),
+          categoriaBaseLabel: 'Dependiente / contrato',
+        });
+
+        return [
+          ...laboralBase,
+          this.detailSection('Condiciones especiales'),
+          ...condicionesDetalle.map((item) => ({ label: item.label, value: item.value })),
+        ];
+      }
       case 'remuneracion':
         return [
           this.detailSection('Remuneración'),
@@ -1132,6 +1235,10 @@ export class FichaEmpleadoPresentacionFacade implements OnInit {
       return tipoPrevision !== null && tipoPrevision !== 'NINGUNA';
     }
 
+    if (blockId === 'condiciones-especiales') {
+      return this.form.controls.contrato.controls.relacionLaboral.value !== 'HONORARIOS';
+    }
+
     return this.editComponentForBlock(blockId) !== null;
   }
 
@@ -1149,7 +1256,7 @@ export class FichaEmpleadoPresentacionFacade implements OnInit {
 
   editComponentForBlock(
     blockId: string,
-  ): 'datos' | 'contacto' | 'contrato' | 'prevision' | 'bancario' | null {
+  ): 'datos' | 'contacto' | 'contrato' | 'prevision' | 'bancario' | 'perfil-laboral' | null {
     if (['identificacion', 'nombre', 'base'].includes(blockId)) {
       return 'datos';
     }
@@ -1178,6 +1285,10 @@ export class FichaEmpleadoPresentacionFacade implements OnInit {
 
     if (blockId === 'cuenta') {
       return 'bancario';
+    }
+
+    if (blockId === 'condiciones-especiales') {
+      return 'perfil-laboral';
     }
 
     return null;
@@ -1474,6 +1585,8 @@ export class FichaEmpleadoPresentacionFacade implements OnInit {
         ];
       case 'cuenta':
         return [bancario.idBanco, bancario.idTipoCuentaBancaria, bancario.numeroCuenta];
+      case 'condiciones-especiales':
+        return Object.values(this.form.controls.perfilLaboral.controls);
       default:
         return [];
     }
@@ -1557,8 +1670,32 @@ export class FichaEmpleadoPresentacionFacade implements OnInit {
         ];
       case 'cuenta':
         return ['Banco', 'Tipo de cuenta', 'Numero de cuenta'];
+      case 'condiciones-especiales':
+        return ['Condiciones especiales'];
       default:
         return [];
+    }
+  }
+
+  private async cargarPerfilLaboral(idPersona: number, periodoYm: string): Promise<void> {
+    if (!/^\d{4}-\d{2}$/.test(periodoYm)) {
+      this.perfilLaboralRpc.set(null);
+      return;
+    }
+
+    this.perfilLaboralCargando.set(true);
+    this.perfilLaboralError.set(null);
+
+    try {
+      const perfil = await this.empleadosService.obtenerPerfilLaboralPersona(idPersona, periodoYm);
+      this.perfilLaboralRpc.set(perfil);
+    } catch {
+      this.perfilLaboralError.set(
+        'No fue posible cargar el perfil laboral del período activo.',
+      );
+      this.perfilLaboralRpc.set(null);
+    } finally {
+      this.perfilLaboralCargando.set(false);
     }
   }
 
@@ -1698,7 +1835,7 @@ export class FichaEmpleadoPresentacionFacade implements OnInit {
         : null,
       estado: raw.contrato.estado,
       idTramoCarga: raw.contrato.idTramoCarga,
-      condicionesTrabajador: [],
+      condicionesTrabajador: mapCondicionesTrabajadorFromFormValue(raw),
       tipoPrevision,
       idRegimenPrevisional: this.resolveRegimenPrevisionalId(tipoPrevision),
       idAfp: tipoPrevision === 'AFP' ? raw.previsionSalud.idAfp : null,

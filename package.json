@@ -14,6 +14,8 @@
     "test:e2e:empleados-borrador": "playwright test tests/empleados-borrador-persistencia.spec.ts --workers=1",
     "test:e2e:nomina-flow": "playwright test tests/nomina-mensual-flow-unificado.spec.ts --workers=1",
     "test:e2e:nomina-flujo-completo": "playwright test tests/nomina-mensual-flujo-completo.spec.ts --workers=1",
+    "lint:texto": "node scripts/check-text-hygiene.mjs",
+    "lint:texto:update-baseline": "node scripts/check-text-hygiene.mjs --update-baseline",
     "limpiar:nominas-bd": "powershell -ExecutionPolicy Bypass -File scripts/limpiar-nominas-bd.ps1 -TodosLosPeriodos",
     "limpiar:nominas-bd:force": "powershell -ExecutionPolicy Bypass -File scripts/limpiar-nominas-bd.ps1 -TodosLosPeriodos -Force",
     "validar:esquema-nomina-bd": "powershell -ExecutionPolicy Bypass -File scripts/validar-esquema-nomina-bd.ps1",

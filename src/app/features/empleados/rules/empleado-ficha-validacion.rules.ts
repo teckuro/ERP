@@ -1,5 +1,7 @@
 import type { EmpleadoEstado } from '../models/empleado-listado.model';
 import type { CrearEmpleadoPayload } from '../models/empleado-payload.model';
+import type { PerfilLaboralPersona } from '../models/empleado-perfil-laboral-rpc.model';
+import { enriquecerSnapshotConPerfilRpc } from './empleado-perfil-laboral.rules';
 import type {
   CasaParticularModalidad,
   CasaParticularRegistroDtEstado,
@@ -145,6 +147,7 @@ interface ItemDef {
 export function snapshotValidacionDesdePayload(
   payload: CrearEmpleadoPayload,
   pasoAltaAvanzada: number | null = null,
+  perfilRpc: PerfilLaboralPersona | null = null,
 ): EmpleadoFichaValidacionSnapshot {
   const codigosCondiciones = new Set(
     (payload.condicionesTrabajador ?? []).map((item) => item.codigo),
@@ -154,7 +157,7 @@ export function snapshotValidacionDesdePayload(
     payload.condicionesTrabajador.length === 0 ||
     payload.condicionesTrabajador.every((item) => item.respaldoRegistrado);
 
-  return {
+  const snapshot: EmpleadoFichaValidacionSnapshot = {
     ...payload,
     relacionLaboral: 'CONTRATO',
     pasoAltaAvanzada,
@@ -167,6 +170,8 @@ export function snapshotValidacionDesdePayload(
     vigenciaInicioCondiciones: payload.fechaIngreso,
     observacionCondicionesValida: true,
   };
+
+  return enriquecerSnapshotConPerfilRpc(snapshot, perfilRpc);
 }
 
 export function evaluarDiagnosticoFichaEmpleado(

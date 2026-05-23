@@ -709,7 +709,8 @@
   justify-items: stretch;
 }
 
-.detail-grid {
+/* Legacy grid (no expediente editorial): no aplicar a .detail-grid--editorial */
+.detail-grid:not(.detail-grid--editorial) {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
   gap: 0;
@@ -720,8 +721,34 @@
   background: #ffffff;
 }
 
-.detail-grid div {
+.detail-grid:not(.detail-grid--editorial) div {
   border-right: 0;
   background: transparent;
   padding: 0.5rem 0.65rem 0.62rem 0;
+}
+
+.detail-block--editorial .inline-edit-shell--inline-record .employee-record-perfil-inline {
+  display: block;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.detail-block--editorial .inline-edit-shell--inline-record .employee-record-perfil-inline app-empleado-perfil-laboral {
+  display: block;
+  min-width: 0;
+}
+
+.employee-record-perfil-hint {
+  margin: 0 0 0.5rem;
+  font-size: 0.8125rem;
+  line-height: 1.35;
+  color: var(--emp-text-secondary, #6b7280);
+}
+
+.employee-record-perfil-hint--warning {
+  color: var(--emp-warning-text, #92400e);
+  background: var(--emp-warning-bg, #fffbeb);
+  border: 1px solid var(--emp-warning-border, #fde68a);
+  border-radius: 5px;
+  padding: 0.45rem 0.6rem;
 }

@@ -1772,5 +1772,33 @@ Creación avanzada incorpora una identidad de producto local para dejar de senti
 
 - **2026-05-23** — Alta avanzada resumen: panel .alta-resumen-diagnostico-panel (CSS local form-empleado.css), pendientes alineados a ficha EMP-ALTA-FICHA-PARITY-01.
 
-- **2026-05-23** — EMP-FICHA-UI-BASE-01: tokens --emp-* en empleado-expediente-tokens.css; layout en icha-expediente.layout.css; panel diagnostico «Diagnostico operativo»; resumen alta con tokens. Sin globales.
+- **2026-05-23** — EMP-FICHA-UI-BASE-01: tokens --emp-* en empleado-expediente-tokens.css; layout en ficha-expediente.layout.css; panel diagnostico «Diagnostico operativo»; resumen alta con tokens. Sin globales.
+
+## 2026-05-23 — EMP-PERFIL-LABORAL-FICHA-05
+
+- **Modulo:** Empleados / ficha `/empleados/:id`, tab Laboral.
+- **Cambio visual:** bloque «Condiciones especiales» con perfil detectado por periodo activo; edicion con `app-empleado-perfil-laboral` reutilizado; hint local `.employee-record-perfil-hint` en `ficha-empleado-detalle.css`.
+- **Restricciones:** sin cards nuevas, sin estilos globales, sin textos RPC/BD visibles; tokens `--emp-*`.
+
+## 2026-05-23 — EMP-PERFIL-LABORAL-FICHA-05-PARIDAD-INLINE
+
+- **Correccion:** `app-empleado-perfil-laboral` con `inlineRecordLayout` y clase `perfil-layout-inline-record` para no heredar layout de wizard (cards/cabeceras) dentro del bloque editorial de ficha.
+- **Archivos:** `perfil-laboral.css`, `perfil-laboral.ts`, `ficha-empleado-workspace.component.html`, `ficha-empleado-detalle.css`.
+
+## 2026-05-23 — Ficha expediente correcciones visuales
+
+- **Header:** `display: flex` en `.employee-record-header__identity` (responsive) para que iniciales no queden sobre el nombre.
+- **Historial:** sin columna Usuario ni texto técnico `postgres`; intro duplicada oculta en tab Historial.
+- **Grid editorial:** media queries no pisan `.detail-grid--editorial`.
+
+## 2026-05-23 — Ficha tab Remuneración intro con CTA
+
+- **Intro:** título «Jornada y remuneración» en cabecera del tab; botón «Revisar movimientos» alineado a la derecha en `.employee-record-block__intro--with-action` (sin franja `section-hd-actions` aparte).
+- **Archivos:** `ficha-empleado-workspace.component.html`, `ficha-empleado-presentacion.facade.ts`, `ficha-empleado-expediente.css`, `ficha-empleado-responsive.css`.
+
+## 2026-05-23 — Ficha expediente encapsulación CSS (chrome hijos)
+
+- **Causa:** header, rail y panel diagnóstico son componentes hijos; los `styleUrls` del workspace/container no aplicaban a su plantilla (encapsulación Angular).
+- **Corrección:** mismos CSS de ficha en `app-empleado-record-header`, `app-empleado-expediente-rail`, `app-empleado-diagnostico-panel`; `:host { display: contents }` en diagnóstico y rail para el grid `status | workspace`.
+- **Container:** solo `ficha-empleado-container.css` (sin duplicar expediente/detalle/responsive).
 

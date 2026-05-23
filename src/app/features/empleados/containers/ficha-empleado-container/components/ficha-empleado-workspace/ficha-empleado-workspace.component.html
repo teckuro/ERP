@@ -52,43 +52,56 @@
             >
             <main class="file-main">
               <section class="section-summary employee-record-block">
-                <header
-                  class="employee-record-block__intro"
-                  [class.employee-record-block__intro--editing]="f.isEditingCurrentTab()"
-                >
-                  @if (!f.isEditingCurrentTab()) {
-                    <h2 class="employee-record-block__title">{{ f.tabActivoLabel() }}</h2>
-                  }
+                @if (f.tabActivo() !== 'historial') {
+                  <header
+                    class="employee-record-block__intro"
+                    [class.employee-record-block__intro--editing]="f.isEditingCurrentTab()"
+                    [class.employee-record-block__intro--with-action]="
+                      f.tabActivo() === 'remuneracion' &&
+                      employee.aptoParaRemuneraciones &&
+                      !f.isEditingCurrentTab()
+                    "
+                  >
+                    <div class="employee-record-block__intro-copy">
+                      @if (!f.isEditingCurrentTab()) {
+                        <h2 class="employee-record-block__title">{{ f.tabActivoIntroTitle() }}</h2>
+                      }
 
-                  <p class="employee-record-block__desc">{{ f.tabActivoDescription() }}</p>
-                </header>
+                      <p class="employee-record-block__desc">{{ f.tabActivoDescription() }}</p>
+                    </div>
 
-                @if (f.tabActivo() === 'remuneracion' && employee.aptoParaRemuneraciones) {
-                  <div class="section-hd-actions">
-                    <a
-                      routerLink="/remuneraciones/haberes-descuentos"
-                      [queryParams]="{ persona: employee.id, accion: null }"
-                      class="file-toolbar-button file-toolbar-button--secondary erp-toolbar-button"
-                    >
-                      Revisar movimientos recurrentes
-                    </a>
-                  </div>
+                    @if (
+                      f.tabActivo() === 'remuneracion' &&
+                      employee.aptoParaRemuneraciones &&
+                      !f.isEditingCurrentTab()
+                    ) {
+                      <div class="employee-record-block__intro-actions">
+                        <a
+                          routerLink="/remuneraciones/haberes-descuentos"
+                          [queryParams]="{ persona: employee.id, accion: null }"
+                          class="file-toolbar-button file-toolbar-button--secondary erp-toolbar-button"
+                        >
+                          Revisar movimientos
+                        </a>
+                      </div>
+                    }
+                  </header>
                 }
 
                 @if (f.tabActivo() === 'historial') {
                   <app-data-grid
-                    title="Historial de ficha"
+                    title="Historial"
                     [columns]="f.historyColumns"
                     [rows]="f.historyRows(employee)"
                     [filtersEnabled]="false"
                     [showExportAction]="false"
                     [selectable]="false"
-                    [showHeader]="false"
+                    [showHeader]="true"
                     [maxItems]="10"
                     [trackBy]="f.trackHistoryRow"
                     cardClassName="history-grid-card"
                     emptyTitle="Sin eventos de historial"
-                    emptyDescription="La ficha aÃºn no registra eventos de auditorÃ­a."
+                    emptyDescription="La ficha aún no registra eventos de auditoría."
                   ></app-data-grid>
                 } @else {
                   <div class="detail-block-list detail-block-list--editorial">
@@ -219,6 +232,26 @@
                                 [advancedGridLayout]="true"
                                 [inlineRecordLayout]="true"
                               ></app-empleado-bancario>
+                            } @else if (f.editComponentForBlock(block.id) === 'perfil-laboral') {
+                              <div class="employee-record-perfil-inline">
+                                @if (f.perfilLaboralError(); as perfilError) {
+                                  <p class="employee-record-perfil-hint employee-record-perfil-hint--warning">
+                                    {{ perfilError }}
+                                  </p>
+                                }
+
+                                <app-empleado-perfil-laboral
+                                  [formGroup]="f.form.controls.perfilLaboral"
+                                  [fechaNacimiento]="f.form.controls.datosPersonales.controls.fechaNacimiento.value"
+                                  [fechaIngreso]="f.form.controls.contrato.controls.fechaIngreso.value"
+                                  [relacionLaboral]="f.form.controls.contrato.controls.relacionLaboral.value"
+                                  [tipoTrabajadorLabel]="f.perfilLaboralTipoTrabajadorLabel()"
+                                  [autoDetectedConditions]="f.perfilLaboralAutoDetections()"
+                                  [inlineRecordLayout]="true"
+                                  [edadDetectadaLabel]="f.perfilLaboralEdadDetectadaLabel()"
+                                  [edadDetectadaDescripcion]="f.perfilLaboralEdadDetectadaDescripcion()"
+                                ></app-empleado-perfil-laboral>
+                              </div>
                             }
                           </form>
                         } @else {

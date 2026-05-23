@@ -20,12 +20,12 @@
 
 | Campo         | Estado                                                                                                                                    |
 | ------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
-| Estado        | Parcial (fase 5 perfil laboral pendiente; fases 0-4 cerradas)                                                                                        |
-| Tipo          | Refactor estructural feature empleados                                                                                                    |
-| Alcance       | Kernel empleado-diagnostico, facade presentación, contenedor delgado, ficha-empleado-tabs.config; sin workspace/overlays ni paridad alta. |
-| Restricciones | Sin SQL, estilos globales, cambio visual ni motor.                                                                                        |
-| Documento     | [../modulos/empleados/emp-ficha-sustentable-00.md](../modulos/empleados/emp-ficha-sustentable-00.md)                                      |
-| Validación    | tsc app OK; vitest empleado-diagnostico, empleado-completitud OK.                                                                         |
+| Estado        | **Cerrada** (fases 0-5)                                                                                                                  |
+| Tipo          | Refactor estructural feature empleados + perfil laboral ficha                                                                             |
+| Alcance       | Facade, workspace, RPC perfil laboral por periodo, condiciones especiales en tab Laboral, diagnostico enriquecido.                         |
+| Restricciones | Sin SQL nuevo, estilos globales ni motor.                                                                                                 |
+| Documento     | [../modulos/empleados/emp-ficha-sustentable-00.md](../modulos/empleados/emp-ficha-sustentable-00.md), [../modulos/empleados/emp-perfil-laboral-ficha-05.md](../modulos/empleados/emp-perfil-laboral-ficha-05.md) |
+| Validación    | tsc app OK; vitest empleado-perfil-laboral, empleado-diagnostico, empleado-completitud OK.                                                |
 
 ## NOMENCLATURA-ES-CAMELCASE-01 - Normalizacion interna espanol/camelCase
 

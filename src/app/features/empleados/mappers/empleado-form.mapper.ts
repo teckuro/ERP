@@ -120,7 +120,7 @@ export function mapEmpleadoFormToPayload(
       : null,
     estado: 'activo',
     idTramoCarga: rawValue.contrato.idTramoCarga,
-    condicionesTrabajador: mapCondicionesTrabajador(rawValue),
+    condicionesTrabajador: mapCondicionesTrabajadorFromFormValue(rawValue),
     tipoPrevision,
     idRegimenPrevisional: resolveRegimenPrevisionalId(
       tipoPrevision,
@@ -450,7 +450,7 @@ export function mapEmpleadoFormToPayloadBorrador(
       : null,
     estado: 'borrador',
     idTramoCarga: rawValue.contrato.idTramoCarga,
-    condicionesTrabajador: mapCondicionesTrabajador(rawValue),
+    condicionesTrabajador: mapCondicionesTrabajadorFromFormValue(rawValue),
     cargas: rawValue.contrato.cargas ?? 0,
     tipoPrevision,
     idRegimenPrevisional,
@@ -482,7 +482,9 @@ export function mapEmpleadoFormToPayloadBorrador(
 }
 
 
-function mapCondicionesTrabajador(rawValue: ReturnType<EmpleadoFormGroup['getRawValue']>): CondicionTrabajadorPayload[] {
+export function mapCondicionesTrabajadorFromFormValue(
+  rawValue: ReturnType<EmpleadoFormGroup['getRawValue']>,
+): CondicionTrabajadorPayload[] {
   const perfil = rawValue.perfilLaboral;
   const vigenciaInicio = perfil.vigenciaInicio || rawValue.contrato.fechaIngreso || new Date().toISOString().slice(0, 10);
   const vigenciaFin = perfil.vigenciaFin.trim() || null;

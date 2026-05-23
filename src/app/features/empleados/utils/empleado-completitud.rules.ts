@@ -1,5 +1,6 @@
 ﻿import { EmpleadoEstadoFicha } from '../models/empleado-listado.model';
 import { CrearEmpleadoPayload } from '../models/empleado-payload.model';
+import type { PerfilLaboralPersona } from '../models/empleado-perfil-laboral-rpc.model';
 import {
   evaluarDiagnosticoFichaEmpleado,
   snapshotValidacionDesdePayload,
@@ -17,6 +18,7 @@ export interface EvaluacionCompletitudEmpleado {
 export interface EvaluarCompletitudEmpleadoInput {
   payload: CrearEmpleadoPayload;
   pasoAltaAvanzada?: number | null;
+  perfilLaboralRpc?: PerfilLaboralPersona | null;
 }
 
 export class EmpleadoAptitudInvalidaError extends Error {
@@ -29,9 +31,9 @@ export class EmpleadoAptitudInvalidaError extends Error {
 export function evaluarCompletitudYAptitudEmpleado(
   input: EvaluarCompletitudEmpleadoInput,
 ): EvaluacionCompletitudEmpleado {
-  const { payload, pasoAltaAvanzada = null } = input;
+  const { payload, pasoAltaAvanzada = null, perfilLaboralRpc = null } = input;
   const diagnostico = evaluarDiagnosticoFichaEmpleado(
-    snapshotValidacionDesdePayload(payload, pasoAltaAvanzada),
+    snapshotValidacionDesdePayload(payload, pasoAltaAvanzada, perfilLaboralRpc),
   );
   const aptoParaRemuneraciones = diagnostico.aptoParaRemuneraciones;
 

@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, HostBinding, Input } from '@angular/core';
 import { ReactiveFormsModule } from '@angular/forms';
 
 import {
@@ -44,6 +44,16 @@ export class PerfilLaboralComponent {
   @Input() relacionLaboral: RelacionLaboral = 'CONTRATO';
   @Input() tipoTrabajadorLabel = 'Tipo trabajador pendiente';
   @Input() autoDetectedConditions: readonly PerfilLaboralAutoDetection[] = [];
+  /** Edicion inline desde ficha: sin cabeceras de card ni layout de wizard. */
+  @Input() inlineRecordLayout = false;
+  /** Etiqueta de edad/tramo desde RPC (periodo activo) en ficha. */
+  @Input() edadDetectadaLabel = '';
+  @Input() edadDetectadaDescripcion = '';
+
+  @HostBinding('class.perfil-layout-inline-record')
+  protected get perfilLayoutInlineRecord(): boolean {
+    return this.inlineRecordLayout;
+  }
 
   readonly condiciones = CONDICIONES_TRABAJADOR_UI;
   readonly todayIso = buildTodayValue();
@@ -81,6 +91,17 @@ export class PerfilLaboralComponent {
   }
 
   get edadLaboralInfo(): EdadLaboralInfo {
+    if (this.inlineRecordLayout && this.edadDetectadaLabel.trim()) {
+      return {
+        label: this.edadDetectadaLabel.trim(),
+        description:
+          this.edadDetectadaDescripcion.trim() ||
+          'Perfil detectado según el período activo del sistema.',
+        tone: this.edadDetectadaTone(),
+        edad: null,
+      };
+    }
+
     const edad = this.calcularEdad(this.fechaNacimiento, this.fechaIngreso || this.todayIso);
 
     if (edad === null) {
@@ -245,6 +266,20 @@ export class PerfilLaboralComponent {
     }
 
     return edad;
+  }
+
+  private edadDetectadaTone(): EdadLaboralInfo['tone'] {
+    const label = this.edadDetectadaLabel.toLowerCase();
+
+    if (label.includes('menor')) {
+      return 'warning';
+    }
+
+    if (label.includes('mayor')) {
+      return 'review';
+    }
+
+    return 'neutral';
   }
 
   private parseDate(value: string): Date | null {
