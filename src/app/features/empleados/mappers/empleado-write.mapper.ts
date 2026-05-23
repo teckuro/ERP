@@ -106,6 +106,32 @@ export function buildContratoInsert(
     codigo_tipo_contrato: payload.tipoContrato,
     cargo: payload.cargo.trim(),
     seguro_cesantia: payload.seguroCesantia,
+    excluido_limite_jornada: payload.excluidoLimiteJornada,
+    causal_exclusion_jornada: payload.excluidoLimiteJornada
+      ? payload.causalExclusionJornada
+      : null,
+    justificacion_exclusion_jornada: payload.excluidoLimiteJornada
+      ? payload.justificacionExclusionJornada
+      : null,
+    casa_particular_modalidad: payload.tipoContrato === 'CASA_PARTICULAR'
+      ? payload.casaParticularModalidad
+      : null,
+    casa_particular_labores: payload.tipoContrato === 'CASA_PARTICULAR'
+      ? payload.casaParticularLabores
+      : null,
+    casa_particular_domicilio_especifico: payload.tipoContrato === 'CASA_PARTICULAR'
+      ? payload.casaParticularDomicilioEspecifico
+      : null,
+    casa_particular_asistencia_cuidado: payload.tipoContrato === 'CASA_PARTICULAR'
+      ? payload.casaParticularAsistenciaCuidado
+      : false,
+    casa_particular_registro_dt_estado: payload.tipoContrato === 'CASA_PARTICULAR'
+      ? payload.casaParticularRegistroDtEstado
+      : null,
+    casa_particular_registro_dt_fecha:
+      payload.tipoContrato === 'CASA_PARTICULAR' ? payload.casaParticularRegistroDtFecha : null,
+    casa_particular_registro_dt_folio:
+      payload.tipoContrato === 'CASA_PARTICULAR' ? payload.casaParticularRegistroDtFolio : null,
     fecha_inicio: payload.fechaIngreso,
     fecha_contrato: payload.fechaContrato,
     fecha_termino: payload.fechaTermino,

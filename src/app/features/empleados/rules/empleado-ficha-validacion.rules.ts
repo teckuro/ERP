@@ -1,6 +1,13 @@
 import type { EmpleadoEstado } from '../models/empleado-listado.model';
 import type { CrearEmpleadoPayload } from '../models/empleado-payload.model';
-import type { RelacionLaboral, TipoContrato, TipoRegimenPrevisional } from '../models/empleado.model';
+import type {
+  CasaParticularModalidad,
+  CasaParticularRegistroDtEstado,
+  CausalExclusionJornada,
+  RelacionLaboral,
+  TipoContrato,
+  TipoRegimenPrevisional,
+} from '../models/empleado.model';
 import { parseRut } from '../utils/empleado-rut';
 
 export type EmpleadoFichaValidacionSeverity = 'error' | 'warning' | 'info';
@@ -48,6 +55,7 @@ export interface EmpleadoFichaValidacionSnapshot {
   estadoCivil?: string | null;
   email?: string | null;
   telefono?: string | null;
+  direccion?: string | null;
   idComuna?: number | null;
   idSucursal?: number | null;
   idCentroCosto?: number | null;
@@ -57,12 +65,23 @@ export interface EmpleadoFichaValidacionSnapshot {
   idTipoTrabajador?: number | null;
   idTipoJornada?: number | null;
   seguroCesantia?: boolean | null;
+  excluidoLimiteJornada?: boolean | null;
+  causalExclusionJornada?: CausalExclusionJornada | null;
+  justificacionExclusionJornada?: string | null;
+  casaParticularModalidad?: CasaParticularModalidad | null;
+  casaParticularLabores?: string | null;
+  casaParticularDomicilioEspecifico?: string | null;
+  casaParticularAsistenciaCuidado?: boolean | null;
+  casaParticularRegistroDtEstado?: CasaParticularRegistroDtEstado | null;
+  casaParticularRegistroDtFecha?: string | null;
+  casaParticularRegistroDtFolio?: string | null;
   fechaIngreso?: string | null;
   fechaTermino?: string | null;
   sueldoBase?: number | null;
   idMoneda?: number | null;
   horasSemanales?: number | null;
   diasSemanales?: number | null;
+  distribucionJornada?: string | null;
   semanaCorridaActiva?: boolean | null;
   semanaCorridaDiasLaborables?: number[] | null;
   zonaExtremaActiva?: boolean | null;
@@ -127,16 +146,24 @@ export function snapshotValidacionDesdePayload(
   payload: CrearEmpleadoPayload,
   pasoAltaAvanzada: number | null = null,
 ): EmpleadoFichaValidacionSnapshot {
+  const codigosCondiciones = new Set(
+    (payload.condicionesTrabajador ?? []).map((item) => item.codigo),
+  );
+  const menorEdad = calcularEdad(payload.fechaNacimiento, payload.fechaIngreso) < 18;
+  const respaldoCondiciones =
+    payload.condicionesTrabajador.length === 0 ||
+    payload.condicionesTrabajador.every((item) => item.respaldoRegistrado);
+
   return {
     ...payload,
     relacionLaboral: 'CONTRATO',
     pasoAltaAvanzada,
     pasaporte: payload.pasaporte,
-    perfilLaboralMenorEdad: false,
-    trabajadorAdolescenteProtegido: true,
-    autorizacionMenorRegistrada: true,
+    perfilLaboralMenorEdad: menorEdad,
+    trabajadorAdolescenteProtegido: codigosCondiciones.has('TRABAJADOR_ADOLESCENTE_PROTEGIDO'),
+    autorizacionMenorRegistrada: codigosCondiciones.has('AUTORIZACION_MENOR_REGISTRADA'),
     tieneCondicionesEspeciales: (payload.condicionesTrabajador ?? []).length > 0,
-    respaldoRegistrado: true,
+    respaldoRegistrado: respaldoCondiciones,
     vigenciaInicioCondiciones: payload.fechaIngreso,
     observacionCondicionesValida: true,
   };
@@ -173,6 +200,10 @@ function buildItems(s: EmpleadoFichaValidacionSnapshot): EmpleadoFichaValidacion
     s.perfilLaboralMenorEdad === true
     && s.trabajadorAdolescenteProtegido !== true
     && s.autorizacionMenorRegistrada !== true;
+  const esCasaParticular = esContratoDependiente && s.tipoContrato === 'CASA_PARTICULAR';
+  const casaPuertasAdentro = esCasaParticular && s.casaParticularModalidad === 'PUERTAS_ADENTRO';
+  const jornadaExcluida = esContratoDependiente && s.excluidoLimiteJornada === true;
+  const aplicaLimiteHoras = esContratoDependiente && !jornadaExcluida && !casaPuertasAdentro;
 
   const out: EmpleadoFichaValidacionItem[] = [];
   const add = (item: ItemDef): void => {
@@ -495,6 +526,94 @@ function buildItems(s: EmpleadoFichaValidacionSnapshot): EmpleadoFichaValidacion
     complete: hasText(s.fechaContrato),
   });
   add({
+    id: 'contract.household.modality',
+    seccion: 'contrato casa particular',
+    tabFicha: 'laboral',
+    formTab: 'contrato',
+    wizardStep: 2,
+    severity: 'error',
+    blocking: true,
+    label: 'Selecciona modalidad de casa particular',
+    detalle: 'Indica si el contrato de casa particular es puertas afuera o puertas adentro.',
+    controlPath: 'contrato.casaParticularModalidad',
+    category: 'Casa particular',
+    visible: esCasaParticular,
+    complete: s.casaParticularModalidad === 'PUERTAS_AFUERA' || s.casaParticularModalidad === 'PUERTAS_ADENTRO',
+  });
+  add({
+    id: 'contract.household.duties',
+    seccion: 'contrato casa particular',
+    tabFicha: 'laboral',
+    formTab: 'contrato',
+    wizardStep: 2,
+    severity: 'error',
+    blocking: true,
+    label: 'Describe las labores especificas de casa particular',
+    controlPath: 'contrato.casaParticularLabores',
+    category: 'Casa particular',
+    visible: esCasaParticular,
+    complete: hasText(s.casaParticularLabores),
+  });
+  add({
+    id: 'contract.household.work-address',
+    seccion: 'contrato casa particular',
+    tabFicha: 'laboral',
+    formTab: 'contrato',
+    wizardStep: 2,
+    severity: 'error',
+    blocking: true,
+    label: 'Ingresa el domicilio especifico donde se prestaran labores',
+    controlPath: 'contrato.casaParticularDomicilioEspecifico',
+    category: 'Casa particular',
+    visible: esCasaParticular,
+    complete: hasText(s.casaParticularDomicilioEspecifico),
+  });
+  add({
+    id: 'contract.household.dt-status',
+    seccion: 'contrato casa particular',
+    tabFicha: 'laboral',
+    formTab: 'contrato',
+    wizardStep: 2,
+    severity: 'error',
+    blocking: true,
+    label: 'Selecciona el estado del registro DT del contrato',
+    controlPath: 'contrato.casaParticularRegistroDtEstado',
+    category: 'Casa particular',
+    visible: esCasaParticular,
+    complete:
+      s.casaParticularRegistroDtEstado === 'PENDIENTE' ||
+      s.casaParticularRegistroDtEstado === 'REGISTRADO' ||
+      s.casaParticularRegistroDtEstado === 'NO_APLICA',
+  });
+  add({
+    id: 'contract.household.dt-date',
+    seccion: 'contrato casa particular',
+    tabFicha: 'laboral',
+    formTab: 'contrato',
+    wizardStep: 2,
+    severity: 'error',
+    blocking: true,
+    label: 'Ingresa la fecha de registro DT',
+    controlPath: 'contrato.casaParticularRegistroDtFecha',
+    category: 'Casa particular',
+    visible: esCasaParticular && s.casaParticularRegistroDtEstado === 'REGISTRADO',
+    complete: hasText(s.casaParticularRegistroDtFecha),
+  });
+  add({
+    id: 'contract.household.dt-folio',
+    seccion: 'contrato casa particular',
+    tabFicha: 'laboral',
+    formTab: 'contrato',
+    wizardStep: 2,
+    severity: 'error',
+    blocking: true,
+    label: 'Ingresa folio o comprobante del registro DT',
+    controlPath: 'contrato.casaParticularRegistroDtFolio',
+    category: 'Casa particular',
+    visible: esCasaParticular && s.casaParticularRegistroDtEstado === 'REGISTRADO',
+    complete: hasText(s.casaParticularRegistroDtFolio),
+  });
+  add({
     id: 'contract.end-date',
     seccion: 'contrato',
     tabFicha: 'laboral',
@@ -505,8 +624,61 @@ function buildItems(s: EmpleadoFichaValidacionSnapshot): EmpleadoFichaValidacion
     label: 'Ingresa la fecha de termino del contrato',
     controlPath: 'contrato.fechaTermino',
     category: 'Fechas',
-    visible: esContratoDependiente && hasText(s.tipoContrato) && s.tipoContrato !== 'INDEFINIDO',
+    visible:
+      esContratoDependiente &&
+      hasText(s.tipoContrato) &&
+      s.tipoContrato !== 'INDEFINIDO' &&
+      s.tipoContrato !== 'CASA_PARTICULAR',
     complete: hasText(s.fechaTermino),
+  });
+  add({
+    id: 'contract.end-date-after-start',
+    seccion: 'contrato',
+    tabFicha: 'laboral',
+    formTab: 'contrato',
+    wizardStep: 2,
+    severity: 'error',
+    blocking: true,
+    label: 'La fecha de termino debe ser posterior o igual a la fecha de ingreso',
+    controlPath: 'contrato.fechaTermino',
+    category: 'Fechas',
+    visible:
+      esContratoDependiente &&
+      hasText(s.tipoContrato) &&
+      s.tipoContrato !== 'INDEFINIDO' &&
+      s.tipoContrato !== 'CASA_PARTICULAR' &&
+      hasText(s.fechaTermino),
+    complete: fechaNoAnterior(s.fechaTermino, s.fechaIngreso),
+  });
+  add({
+    id: 'contract.fixed-term-max-two-years',
+    seccion: 'contrato',
+    tabFicha: 'laboral',
+    formTab: 'contrato',
+    wizardStep: 2,
+    severity: 'error',
+    blocking: true,
+    label: 'El contrato a plazo fijo no puede superar dos anos',
+    detalle: 'La excepcion maxima para gerentes o personas con titulo profesional o tecnico es de dos anos; sobre ese limite no debe finalizarse el alta.',
+    controlPath: 'contrato.fechaTermino',
+    category: 'Plazo fijo',
+    visible: esContratoDependiente && s.tipoContrato === 'PLAZO_FIJO' && hasText(s.fechaTermino) && hasText(s.fechaIngreso),
+    complete: fechaDentroDeAnos(s.fechaTermino, s.fechaIngreso, 2),
+  });
+  add({
+    id: 'contract.fixed-term-over-one-year-review',
+    seccion: 'contrato',
+    tabFicha: 'laboral',
+    formTab: 'contrato',
+    wizardStep: 2,
+    severity: 'warning',
+    blocking: false,
+    label: 'Plazo fijo sobre un ano requiere excepcion documentada',
+    detalle: 'El plazo fijo general no debe exceder un ano; solo puede llegar hasta dos anos en casos excepcionales como gerentes o personas con titulo profesional o tecnico.',
+    controlPath: 'contrato.fechaTermino',
+    category: 'Plazo fijo',
+    visible: esContratoDependiente && s.tipoContrato === 'PLAZO_FIJO' && hasText(s.fechaTermino) && hasText(s.fechaIngreso),
+    complete: fechaDentroDeAnos(s.fechaTermino, s.fechaIngreso, 1),
   });
   add({
     id: esHonorarios ? 'honorarios.amount' : 'contract.salary',
@@ -552,6 +724,82 @@ function buildItems(s: EmpleadoFichaValidacionSnapshot): EmpleadoFichaValidacion
     complete: isPositiveNumber(s.horasSemanales),
   });
   add({
+    id: 'contract.weekly-hours-current-limit',
+    seccion: 'jornada',
+    tabFicha: 'laboral',
+    formTab: 'contrato',
+    wizardStep: 3,
+    severity: 'error',
+    blocking: true,
+    label: 'La jornada ordinaria no puede superar 42 horas semanales',
+    detalle: 'Desde el 26 de abril de 2026 el maximo ordinario vigente es 42 horas semanales. Si corresponde una excepcion, debe modelarse antes de cerrar el alta.',
+    controlPath: 'contrato.horasSemanales',
+    category: 'Jornada',
+    visible: aplicaLimiteHoras && isPositiveNumber(s.horasSemanales),
+    complete: Number(s.horasSemanales) <= 42,
+  });
+  add({
+    id: 'contract.weekly-hours-exclusion-warning',
+    seccion: 'jornada',
+    tabFicha: 'laboral',
+    formTab: 'contrato',
+    wizardStep: 3,
+    severity: 'warning',
+    blocking: false,
+    label: 'La jornada informada supera 42 horas y queda respaldada por excepcion declarada',
+    detalle: 'Mantener respaldo contractual y documental de la exclusion de limite de jornada.',
+    controlPath: 'contrato.excluidoLimiteJornada',
+    category: 'Jornada',
+    visible: jornadaExcluida && isPositiveNumber(s.horasSemanales) && Number(s.horasSemanales) > 42,
+    complete: false,
+  });
+  add({
+    id: 'contract.schedule-exclusion-causal',
+    seccion: 'jornada',
+    tabFicha: 'laboral',
+    formTab: 'contrato',
+    wizardStep: 3,
+    severity: 'error',
+    blocking: true,
+    label: 'Selecciona la causal de exclusion de limite de jornada',
+    controlPath: 'contrato.causalExclusionJornada',
+    category: 'Jornada',
+    visible: jornadaExcluida,
+    complete:
+      s.causalExclusionJornada === 'ALTA_RESPONSABILIDAD' ||
+      s.causalExclusionJornada === 'SIN_FISCALIZACION_SUPERIOR_INMEDIATA',
+  });
+  add({
+    id: 'contract.schedule-exclusion-justification',
+    seccion: 'jornada',
+    tabFicha: 'laboral',
+    formTab: 'contrato',
+    wizardStep: 3,
+    severity: 'error',
+    blocking: true,
+    label: 'Justifica la exclusion de limite de jornada',
+    detalle: 'Describe por que el cargo queda fuera de limite de jornada y donde se respalda contractualmente.',
+    controlPath: 'contrato.justificacionExclusionJornada',
+    category: 'Jornada',
+    visible: jornadaExcluida,
+    complete: hasText(s.justificacionExclusionJornada),
+  });
+  add({
+    id: 'contract.household.live-in-distribution',
+    seccion: 'jornada',
+    tabFicha: 'laboral',
+    formTab: 'contrato',
+    wizardStep: 3,
+    severity: 'error',
+    blocking: true,
+    label: 'Describe distribucion y descansos de puertas adentro',
+    detalle: 'Para casa particular puertas adentro registra distribucion de jornada y descansos pactados.',
+    controlPath: 'contrato.distribucionJornada',
+    category: 'Casa particular',
+    visible: casaPuertasAdentro,
+    complete: hasText(s.distribucionJornada),
+  });
+  add({
     id: 'contract.weekly-days',
     seccion: 'jornada',
     tabFicha: 'laboral',
@@ -565,6 +813,20 @@ function buildItems(s: EmpleadoFichaValidacionSnapshot): EmpleadoFichaValidacion
     category: 'Jornada',
     visible: esContratoDependiente,
     complete: isPositiveNumber(s.diasSemanales),
+  });
+  add({
+    id: 'contract.weekly-days-limit',
+    seccion: 'jornada',
+    tabFicha: 'laboral',
+    formTab: 'contrato',
+    wizardStep: 3,
+    severity: 'error',
+    blocking: true,
+    label: 'La distribucion semanal no debe superar 6 dias',
+    controlPath: 'contrato.diasSemanales',
+    category: 'Jornada',
+    visible: aplicaLimiteHoras && isPositiveNumber(s.diasSemanales),
+    complete: Number(s.diasSemanales) <= 6,
   });
   add({
     id: 'contract.week-run',
@@ -628,9 +890,9 @@ function buildItems(s: EmpleadoFichaValidacionSnapshot): EmpleadoFichaValidacion
     tabFicha: 'laboral',
     formTab: 'contrato',
     wizardStep: 8,
-    severity: 'warning',
-    blocking: false,
-    label: 'Menor de 18 detectado: revisa si corresponde trabajador adolescente protegido o autorizacion de menor',
+    severity: 'error',
+    blocking: true,
+    label: 'Menor de 18 detectado: registra trabajador adolescente protegido o autorizacion de menor',
     controlPath: 'perfilLaboral.trabajadorAdolescenteProtegido',
     category: 'Condiciones especiales',
     visible: esContratoDependiente && s.perfilLaboralMenorEdad === true,
@@ -1004,6 +1266,61 @@ function isNonNegativeNumber(value: number | null | undefined): boolean {
 
 function isDraftAccount(value: string | null | undefined): boolean {
   return typeof value === 'string' && value.trim().toUpperCase().startsWith('DRAFT-');
+}
+
+function fechaNoAnterior(
+  fecha: string | null | undefined,
+  referencia: string | null | undefined,
+): boolean {
+  const actual = parseYmd(fecha);
+  const base = parseYmd(referencia);
+  if (!actual || !base) {
+    return true;
+  }
+  return actual.getTime() >= base.getTime();
+}
+
+function fechaDentroDeAnos(
+  fecha: string | null | undefined,
+  referencia: string | null | undefined,
+  anos: number,
+): boolean {
+  const actual = parseYmd(fecha);
+  const base = parseYmd(referencia);
+  if (!actual || !base) {
+    return true;
+  }
+  const limite = new Date(base);
+  limite.setFullYear(limite.getFullYear() + anos);
+  return actual.getTime() <= limite.getTime();
+}
+
+function calcularEdad(
+  fechaNacimiento: string | null | undefined,
+  fechaReferencia: string | null | undefined,
+): number {
+  const nacimiento = parseYmd(fechaNacimiento);
+  const referencia = parseYmd(fechaReferencia) ?? new Date();
+  if (!nacimiento || nacimiento > referencia) {
+    return Number.POSITIVE_INFINITY;
+  }
+
+  let edad = referencia.getFullYear() - nacimiento.getFullYear();
+  const monthDelta = referencia.getMonth() - nacimiento.getMonth();
+  const dayDelta = referencia.getDate() - nacimiento.getDate();
+  if (monthDelta < 0 || (monthDelta === 0 && dayDelta < 0)) {
+    edad -= 1;
+  }
+  return edad;
+}
+
+function parseYmd(value: string | null | undefined): Date | null {
+  if (typeof value !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(value)) {
+    return null;
+  }
+  const [year, month, day] = value.split('-').map(Number);
+  const parsed = new Date(year, month - 1, day);
+  return Number.isNaN(parsed.getTime()) ? null : parsed;
 }
 
 function normalize(value: string): string {

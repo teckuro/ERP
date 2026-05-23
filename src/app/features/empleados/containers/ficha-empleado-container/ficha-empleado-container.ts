@@ -1742,6 +1742,38 @@ export class FichaEmpleadoContainer implements OnInit {
       idTipoTrabajador: raw.contrato.idTipoTrabajador ?? 0,
       idTipoJornada: raw.contrato.idTipoJornada ?? 0,
       seguroCesantia: raw.contrato.seguroCesantia,
+      excluidoLimiteJornada: raw.contrato.excluidoLimiteJornada,
+      causalExclusionJornada: raw.contrato.excluidoLimiteJornada
+        ? raw.contrato.causalExclusionJornada
+        : null,
+      justificacionExclusionJornada: raw.contrato.excluidoLimiteJornada
+        ? raw.contrato.justificacionExclusionJornada.trim() || null
+        : null,
+      casaParticularModalidad: raw.contrato.tipoContrato === 'CASA_PARTICULAR'
+        ? raw.contrato.casaParticularModalidad
+        : null,
+      casaParticularLabores: raw.contrato.tipoContrato === 'CASA_PARTICULAR'
+        ? raw.contrato.casaParticularLabores.trim() || null
+        : null,
+      casaParticularDomicilioEspecifico: raw.contrato.tipoContrato === 'CASA_PARTICULAR'
+        ? raw.contrato.casaParticularDomicilioEspecifico.trim() || null
+        : null,
+      casaParticularAsistenciaCuidado: raw.contrato.tipoContrato === 'CASA_PARTICULAR'
+        ? raw.contrato.casaParticularAsistenciaCuidado
+        : false,
+      casaParticularRegistroDtEstado: raw.contrato.tipoContrato === 'CASA_PARTICULAR'
+        ? raw.contrato.casaParticularRegistroDtEstado
+        : null,
+      casaParticularRegistroDtFecha:
+        raw.contrato.tipoContrato === 'CASA_PARTICULAR' &&
+        raw.contrato.casaParticularRegistroDtEstado === 'REGISTRADO'
+          ? raw.contrato.casaParticularRegistroDtFecha || null
+          : null,
+      casaParticularRegistroDtFolio:
+        raw.contrato.tipoContrato === 'CASA_PARTICULAR' &&
+        raw.contrato.casaParticularRegistroDtEstado === 'REGISTRADO'
+          ? raw.contrato.casaParticularRegistroDtFolio.trim() || null
+          : null,
       fechaIngreso: raw.contrato.fechaIngreso || new Date().toISOString().slice(0, 10),
       fechaTermino: raw.contrato.fechaTermino || null,
       sueldoBase: raw.contrato.sueldoBase ?? 0,

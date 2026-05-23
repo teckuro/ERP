@@ -1,4 +1,9 @@
-import { RelacionLaboral, TipoContrato, TipoRegimenPrevisional } from '../models/empleado.model';
+import {
+  CasaParticularModalidad,
+  RelacionLaboral,
+  TipoContrato,
+  TipoRegimenPrevisional,
+} from '../models/empleado.model';
 
 export type AreaCoherenciaAlta =
   | 'seguroCesantia'
@@ -36,6 +41,8 @@ export interface EntradaCoherenciaAlta {
   fechaNacimiento: string;
   fechaIngreso: string;
   horasSemanales: number | null;
+  excluidoLimiteJornada?: boolean | null;
+  casaParticularModalidad?: CasaParticularModalidad | null;
   seguroCesantia: boolean;
   tipoRegimenPrevisional: TipoRegimenPrevisional | null;
   condiciones: EntradaCondicionesCoherenciaAlta;
@@ -76,6 +83,9 @@ export function evaluarAltaCoherencia(input: EntradaCoherenciaAlta): EstadoCoher
   const esHonorarios = input.relacionLaboral === 'HONORARIOS';
   const esMenor = edad !== null && edad < 18;
   const esJornadaParcial = normalizarTexto(input.tipoJornadaLabel).includes('parcial');
+  const jornadaExcluida = input.excluidoLimiteJornada === true;
+  const casaPuertasAdentro =
+    input.tipoContrato === 'CASA_PARTICULAR' && input.casaParticularModalidad === 'PUERTAS_ADENTRO';
   const condiciones = input.condiciones;
   const esPensionado = condiciones.pensionado || condiciones.pensionadoInvalidezTotal;
   const esPensionadoParcial = condiciones.pensionadoInvalidezParcial;
@@ -235,18 +245,23 @@ export function evaluarAltaCoherencia(input: EntradaCoherenciaAlta): EstadoCoher
   }
 
   const maxHoras = esMenor || esJornadaParcial ? JORNADA_ESPECIAL_MAX_30 : JORNADA_ORDINARIA_MAX_2026;
-  const motivoJornada = esMenor
-    ? 'Menor de 18 años. Jornada máxima administrativa: 30 horas semanales.'
-    : esJornadaParcial
-      ? 'Jornada parcial detectada. Máximo administrativo: 30 horas semanales.'
-      : 'Jornada ordinaria vigente. Máximo administrativo: 42 horas semanales.';
+  const aplicaLimiteHoras = !jornadaExcluida && !casaPuertasAdentro;
+  const motivoJornada = jornadaExcluida
+    ? 'Jornada excluida de limite ordinario. Mantener respaldo contractual y causal documentada.'
+    : casaPuertasAdentro
+      ? 'Casa particular puertas adentro. Revisar distribucion y descansos pactados.'
+      : esMenor
+        ? 'Menor de 18 años. Jornada máxima administrativa: 30 horas semanales.'
+        : esJornadaParcial
+          ? 'Jornada parcial detectada. Máximo administrativo: 30 horas semanales.'
+          : 'Jornada ordinaria vigente. Máximo administrativo: 42 horas semanales.';
   jornada = {
-    label: input.horasSemanales === null ? 'Pendiente' : input.horasSemanales <= maxHoras ? 'OK' : 'Revisión requerida',
+    label: input.horasSemanales === null ? 'Pendiente' : !aplicaLimiteHoras ? 'Revision documentada' : input.horasSemanales <= maxHoras ? 'OK' : 'Revision requerida',
     detail: motivoJornada,
-    tone: input.horasSemanales === null ? 'review' : input.horasSemanales <= maxHoras ? 'ok' : 'warning',
+    tone: input.horasSemanales === null ? 'review' : !aplicaLimiteHoras ? 'review' : input.horasSemanales <= maxHoras ? 'ok' : 'warning',
   };
 
-  if (input.horasSemanales !== null && input.horasSemanales > maxHoras) {
+  if (aplicaLimiteHoras && input.horasSemanales !== null && input.horasSemanales > maxHoras) {
     inconsistencias.push({
       id: esMenor ? 'coh.jornada.menor-sobre-30' : esJornadaParcial ? 'coh.jornada.parcial-sobre-30' : 'coh.jornada.ordinaria-sobre-42',
       area: 'jornada',

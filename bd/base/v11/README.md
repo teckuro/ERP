@@ -42,6 +42,8 @@ Estados validos:
 
 13. Para habilitar condiciones especiales del trabajador y perfil laboral/previsional derivado, ejecutar `partes/26_empleados_condiciones_trabajador.sql` despues de `25_lre_concept_rules.sql`. Crea `tipo_condicion_trabajador`, `persona_condicion_trabajador`, seeds minimos, RLS/permisos locales y `fn_obtener_perfil_laboral_persona`; no modifica HTML, motor ni liquidaciones.
 
+14. Para habilitar campos normativos de contrato en Empleados, ejecutar `partes/28_empleados_contrato_normativo.sql` despues de `27_nomina_periodo_diagnostico.sql`. Agrega exclusion de limite de jornada/art. 22 y datos de casa particular sobre `contrato` con `CHECK` de textos permitidos; no modifica liquidaciones ni catalogos.
+
 `12_migracion_lre_datos_incremental.sql` requiere que existan `persona`/`contrato` con IDs coherentes si se dejan los datos demo.
 
 ### Orden de ejecucion fresh local (`partes/`)
@@ -71,6 +73,8 @@ Estados validos:
 23. `24_lre_catalogo_oficial.sql`: catalogo LRE oficial y mapeo base de conceptos directos.
 24. `25_lre_concept_rules.sql`: estrategia LRE para conceptos no directos o ambiguos.
 25. `26_empleados_condiciones_trabajador.sql`: condiciones especiales del trabajador y perfil laboral/previsional derivado.
+26. `27_nomina_periodo_diagnostico.sql`: diagnostico operativo de periodos de nomina.
+27. `28_empleados_contrato_normativo.sql`: campos normativos de contrato para casa particular y exclusion de limite de jornada.
 
 ### Ejecucion fresh local
 

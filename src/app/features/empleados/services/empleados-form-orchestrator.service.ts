@@ -6,6 +6,9 @@ import { EmpleadoEstado } from '../models/empleado-listado.model';
 import { EmpleadoFormCatalogos, TramoCargaCatalogOption } from '../models/empleado-catalogos.model';
 import { EmpleadoFormGroup } from '../models/empleado-form.model';
 import {
+  CasaParticularModalidad,
+  CasaParticularRegistroDtEstado,
+  CausalExclusionJornada,
   EmpleadoSexo,
   RelacionLaboral,
   TipoContrato,
@@ -130,6 +133,34 @@ export class EmpleadosFormOrchestratorService {
         }),
         seguroCesantia: new FormControl(true, {
           nonNullable: true,
+        }),
+        excluidoLimiteJornada: new FormControl(false, {
+          nonNullable: true,
+        }),
+        causalExclusionJornada: new FormControl<CausalExclusionJornada | null>(null),
+        justificacionExclusionJornada: new FormControl('', {
+          nonNullable: true,
+          validators: [Validators.maxLength(500)],
+        }),
+        casaParticularModalidad: new FormControl<CasaParticularModalidad | null>(null),
+        casaParticularLabores: new FormControl('', {
+          nonNullable: true,
+          validators: [Validators.maxLength(500)],
+        }),
+        casaParticularDomicilioEspecifico: new FormControl('', {
+          nonNullable: true,
+          validators: [Validators.maxLength(250)],
+        }),
+        casaParticularAsistenciaCuidado: new FormControl(false, {
+          nonNullable: true,
+        }),
+        casaParticularRegistroDtEstado: new FormControl<CasaParticularRegistroDtEstado | null>(null),
+        casaParticularRegistroDtFecha: new FormControl('', {
+          nonNullable: true,
+        }),
+        casaParticularRegistroDtFolio: new FormControl('', {
+          nonNullable: true,
+          validators: [Validators.maxLength(100)],
         }),
         fechaIngreso: new FormControl(buildTodayValue(), {
           nonNullable: true,
@@ -348,8 +379,40 @@ export class EmpleadosFormOrchestratorService {
         controls.fechaTermino.setValue('', { emitEvent: false });
       }
 
+      if (tipo !== 'CASA_PARTICULAR') {
+        controls.casaParticularModalidad.setValue(null, { emitEvent: false });
+        controls.casaParticularLabores.setValue('', { emitEvent: false });
+        controls.casaParticularDomicilioEspecifico.setValue('', { emitEvent: false });
+        controls.casaParticularAsistenciaCuidado.setValue(false, { emitEvent: false });
+        controls.casaParticularRegistroDtEstado.setValue(null, { emitEvent: false });
+        controls.casaParticularRegistroDtFecha.setValue('', { emitEvent: false });
+        controls.casaParticularRegistroDtFolio.setValue('', { emitEvent: false });
+      }
+
       this.updateContratoValidators(form);
     });
+
+    controls.excluidoLimiteJornada.valueChanges
+      .pipe(takeUntilDestroyed(destroyRef))
+      .subscribe((enabled) => {
+        if (!enabled) {
+          controls.causalExclusionJornada.setValue(null, { emitEvent: false });
+          controls.justificacionExclusionJornada.setValue('', { emitEvent: false });
+        }
+
+        this.updateContratoValidators(form);
+      });
+
+    controls.casaParticularRegistroDtEstado.valueChanges
+      .pipe(takeUntilDestroyed(destroyRef))
+      .subscribe((estado) => {
+        if (estado !== 'REGISTRADO') {
+          controls.casaParticularRegistroDtFecha.setValue('', { emitEvent: false });
+          controls.casaParticularRegistroDtFolio.setValue('', { emitEvent: false });
+        }
+
+        this.updateContratoValidators(form);
+      });
 
     controls.idSucursal.valueChanges
       .pipe(takeUntilDestroyed(destroyRef))
@@ -413,9 +476,15 @@ export class EmpleadosFormOrchestratorService {
     const controls = form.controls.contrato.controls;
     const esHonorarios = controls.relacionLaboral.value === 'HONORARIOS';
     const requiereTermino =
-      !esHonorarios && controls.tipoContrato.value !== null && controls.tipoContrato.value !== 'INDEFINIDO';
+      !esHonorarios &&
+      controls.tipoContrato.value !== null &&
+      controls.tipoContrato.value !== 'INDEFINIDO' &&
+      controls.tipoContrato.value !== 'CASA_PARTICULAR';
     const semanaCorridaActiva = !esHonorarios && controls.semanaCorridaActiva.value;
     const zonaExtremaActiva = !esHonorarios && controls.zonaExtremaActiva.value;
+    const casaParticularActiva = !esHonorarios && controls.tipoContrato.value === 'CASA_PARTICULAR';
+    const registroDtActivo = casaParticularActiva && controls.casaParticularRegistroDtEstado.value === 'REGISTRADO';
+    const exclusionJornadaActiva = !esHonorarios && controls.excluidoLimiteJornada.value === true;
 
     this.setControlValidators(
       controls.tipoContrato,
@@ -434,6 +503,46 @@ export class EmpleadosFormOrchestratorService {
       esHonorarios ? [] : [Validators.required],
     );
     this.setControlValidators(controls.fechaTermino, requiereTermino ? [Validators.required] : []);
+    this.setControlValidators(
+      controls.causalExclusionJornada,
+      exclusionJornadaActiva ? [Validators.required] : [],
+    );
+    this.setControlValidators(
+      controls.justificacionExclusionJornada,
+      exclusionJornadaActiva
+        ? [Validators.required, Validators.maxLength(500)]
+        : [Validators.maxLength(500)],
+    );
+    this.setControlValidators(
+      controls.casaParticularModalidad,
+      casaParticularActiva ? [Validators.required] : [],
+    );
+    this.setControlValidators(
+      controls.casaParticularLabores,
+      casaParticularActiva
+        ? [Validators.required, Validators.maxLength(500)]
+        : [Validators.maxLength(500)],
+    );
+    this.setControlValidators(
+      controls.casaParticularDomicilioEspecifico,
+      casaParticularActiva
+        ? [Validators.required, Validators.maxLength(250)]
+        : [Validators.maxLength(250)],
+    );
+    this.setControlValidators(
+      controls.casaParticularRegistroDtEstado,
+      casaParticularActiva ? [Validators.required] : [],
+    );
+    this.setControlValidators(
+      controls.casaParticularRegistroDtFecha,
+      registroDtActivo ? [Validators.required] : [],
+    );
+    this.setControlValidators(
+      controls.casaParticularRegistroDtFolio,
+      registroDtActivo
+        ? [Validators.required, Validators.maxLength(100)]
+        : [Validators.maxLength(100)],
+    );
     this.setControlValidators(
       controls.horasSemanales,
       esHonorarios ? [] : [Validators.required, Validators.min(1), Validators.max(168)],

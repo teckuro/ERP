@@ -61,14 +61,15 @@
   min-width: 0;
   width: 100%;
   min-height: min(36rem, calc(100dvh - var(--app-layout-main-chrome-y, 7rem)));
+  background: #ffffff;
 }
 
 /* Header + resumen + formulario comparten el mismo max-width (menos aire lateral vacÃ­o) */
 .basic-create-inner {
   width: 100%;
-  max-width: min(68rem, 100%);
-  margin-inline: auto;
-  padding-inline: 12px;
+  max-width: none;
+  margin-inline: 0;
+  padding-inline: 0;
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
@@ -94,7 +95,7 @@
 .basic-create-stack {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 0;
   flex: 1 1 auto;
   min-height: 0;
   min-width: 0;
@@ -108,21 +109,25 @@
 
 /* Panel blanco del formulario bÃ¡sico: menos aire que el paso avanzado (16px global en styles.css). */
 .basic-create-form .step-panel.step-panel--basic.basic-wizard {
-  padding: 12px;
+  padding: 14px 16px 18px;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
 }
 
 @media (max-width: 720px) {
   .basic-create-inner {
-    padding-inline: 10px;
+    padding-inline: 0;
   }
 }
 
 /* Card Ãºnica de resumen: mismo ancho que el formulario (columna .basic-create-inner) */
 .basic-create-summary-card {
   margin: 0;
-  padding: 12px 16px;
-  border: 1px solid #e5e7eb;
-  border-radius: 8px;
+  padding: 10px 16px;
+  border: 0;
+  border-bottom: 1px solid #d7dde5;
+  border-radius: 0;
   background: #f8fafc;
   min-width: 0;
 }
@@ -140,20 +145,6 @@
   margin: 0;
   color: #0f172a;
   font-size: var(--erp-text-sm, 0.72rem);
-  font-weight: 600;
-  line-height: 1.3;
-}
-
-.basic-create-status-chip {
-  display: inline-flex;
-  align-items: center;
-  flex-shrink: 0;
-  padding: 2px 10px;
-  border-radius: 999px;
-  border: 1px solid #bfdbfe;
-  background: #eff6ff;
-  color: #1d4ed8;
-  font-size: var(--erp-text-xs, 0.665rem);
   font-weight: 600;
   line-height: 1.3;
 }
@@ -215,8 +206,25 @@
   column-gap: 16px;
   row-gap: 0;
   width: 100%;
-  padding: 12px 0 10px;
-  border-bottom: 1px solid #e5e7eb;
+  padding: 12px 16px 10px;
+  border-bottom: 1px solid #d7dde5;
+  background: #ffffff;
+}
+
+.basic-create-shell-header {
+  position: relative;
+  z-index: 5;
+  align-items: center;
+  min-height: 64px;
+}
+
+.basic-create-shell-header .summary-title-row {
+  align-items: center;
+  gap: 8px;
+}
+
+.basic-create-shell-header .summary-mode-badge {
+  order: 2;
 }
 
 .summary-identity--basic .summary-person--basic {
@@ -227,13 +235,6 @@
   min-width: 0;
   grid-column: 1;
   grid-row: 1 / -1;
-}
-
-.summary-identity--basic .summary-actions {
-  grid-column: 2;
-  grid-row: 1;
-  justify-self: end;
-  align-self: start;
 }
 
 /* Anula mayÃºsculas/herencia de `.summary-person p` global para el subtÃ­tulo */
@@ -274,17 +275,6 @@
     grid-row: 1;
   }
 
-  .summary-identity--basic .summary-actions {
-    grid-column: 1;
-    grid-row: 2;
-    justify-self: stretch;
-    width: 100%;
-  }
-
-  .summary-identity--basic .summary-actions .page-actions-toolbar {
-    justify-content: flex-end;
-    flex-wrap: wrap;
-  }
 }
 
 /* Modo bÃ¡sico: alinear header con el ancho del bloque principal */

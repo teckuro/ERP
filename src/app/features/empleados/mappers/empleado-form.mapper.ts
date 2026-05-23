@@ -60,6 +60,38 @@ export function mapEmpleadoFormToPayload(
     idTipoTrabajador: requireSelection(rawValue.contrato.idTipoTrabajador, 'el tipo de trabajador'),
     idTipoJornada: requireSelection(rawValue.contrato.idTipoJornada, 'el tipo de jornada'),
     seguroCesantia: rawValue.contrato.seguroCesantia,
+    excluidoLimiteJornada: rawValue.contrato.excluidoLimiteJornada,
+    causalExclusionJornada: rawValue.contrato.excluidoLimiteJornada
+      ? rawValue.contrato.causalExclusionJornada
+      : null,
+    justificacionExclusionJornada: rawValue.contrato.excluidoLimiteJornada
+      ? rawValue.contrato.justificacionExclusionJornada.trim() || null
+      : null,
+    casaParticularModalidad: rawValue.contrato.tipoContrato === 'CASA_PARTICULAR'
+      ? rawValue.contrato.casaParticularModalidad
+      : null,
+    casaParticularLabores: rawValue.contrato.tipoContrato === 'CASA_PARTICULAR'
+      ? rawValue.contrato.casaParticularLabores.trim() || null
+      : null,
+    casaParticularDomicilioEspecifico: rawValue.contrato.tipoContrato === 'CASA_PARTICULAR'
+      ? rawValue.contrato.casaParticularDomicilioEspecifico.trim() || null
+      : null,
+    casaParticularAsistenciaCuidado: rawValue.contrato.tipoContrato === 'CASA_PARTICULAR'
+      ? rawValue.contrato.casaParticularAsistenciaCuidado
+      : false,
+    casaParticularRegistroDtEstado: rawValue.contrato.tipoContrato === 'CASA_PARTICULAR'
+      ? rawValue.contrato.casaParticularRegistroDtEstado
+      : null,
+    casaParticularRegistroDtFecha:
+      rawValue.contrato.tipoContrato === 'CASA_PARTICULAR' &&
+      rawValue.contrato.casaParticularRegistroDtEstado === 'REGISTRADO'
+        ? rawValue.contrato.casaParticularRegistroDtFecha || null
+        : null,
+    casaParticularRegistroDtFolio:
+      rawValue.contrato.tipoContrato === 'CASA_PARTICULAR' &&
+      rawValue.contrato.casaParticularRegistroDtEstado === 'REGISTRADO'
+        ? rawValue.contrato.casaParticularRegistroDtFolio.trim() || null
+        : null,
     fechaIngreso: rawValue.contrato.fechaIngreso,
     fechaTermino: rawValue.contrato.fechaTermino || null,
     sueldoBase: rawValue.contrato.sueldoBase ?? 0,
@@ -201,6 +233,16 @@ export function mapEmpleadoFormToPayloadBasico(form: EmpleadoFormGroup): CrearEm
     idTipoTrabajador: 0,
     idTipoJornada: 0,
     seguroCesantia: false,
+    excluidoLimiteJornada: false,
+    causalExclusionJornada: null,
+    justificacionExclusionJornada: null,
+    casaParticularModalidad: null,
+    casaParticularLabores: null,
+    casaParticularDomicilioEspecifico: null,
+    casaParticularAsistenciaCuidado: false,
+    casaParticularRegistroDtEstado: null,
+    casaParticularRegistroDtFecha: null,
+    casaParticularRegistroDtFolio: null,
     fechaIngreso: today,
     fechaTermino: null,
     sueldoBase: 0,
@@ -352,6 +394,38 @@ export function mapEmpleadoFormToPayloadBorrador(
     idTipoTrabajador,
     idTipoJornada,
     seguroCesantia: rawValue.contrato.seguroCesantia,
+    excluidoLimiteJornada: rawValue.contrato.excluidoLimiteJornada,
+    causalExclusionJornada: rawValue.contrato.excluidoLimiteJornada
+      ? rawValue.contrato.causalExclusionJornada
+      : null,
+    justificacionExclusionJornada: rawValue.contrato.excluidoLimiteJornada
+      ? rawValue.contrato.justificacionExclusionJornada.trim() || null
+      : null,
+    casaParticularModalidad: rawValue.contrato.tipoContrato === 'CASA_PARTICULAR'
+      ? rawValue.contrato.casaParticularModalidad
+      : null,
+    casaParticularLabores: rawValue.contrato.tipoContrato === 'CASA_PARTICULAR'
+      ? rawValue.contrato.casaParticularLabores.trim() || null
+      : null,
+    casaParticularDomicilioEspecifico: rawValue.contrato.tipoContrato === 'CASA_PARTICULAR'
+      ? rawValue.contrato.casaParticularDomicilioEspecifico.trim() || null
+      : null,
+    casaParticularAsistenciaCuidado: rawValue.contrato.tipoContrato === 'CASA_PARTICULAR'
+      ? rawValue.contrato.casaParticularAsistenciaCuidado
+      : false,
+    casaParticularRegistroDtEstado: rawValue.contrato.tipoContrato === 'CASA_PARTICULAR'
+      ? rawValue.contrato.casaParticularRegistroDtEstado
+      : null,
+    casaParticularRegistroDtFecha:
+      rawValue.contrato.tipoContrato === 'CASA_PARTICULAR' &&
+      rawValue.contrato.casaParticularRegistroDtEstado === 'REGISTRADO'
+        ? rawValue.contrato.casaParticularRegistroDtFecha || null
+        : null,
+    casaParticularRegistroDtFolio:
+      rawValue.contrato.tipoContrato === 'CASA_PARTICULAR' &&
+      rawValue.contrato.casaParticularRegistroDtEstado === 'REGISTRADO'
+        ? rawValue.contrato.casaParticularRegistroDtFolio.trim() || null
+        : null,
     fechaIngreso,
     fechaTermino: rawValue.contrato.fechaTermino || null,
     sueldoBase: rawValue.contrato.sueldoBase ?? 0,

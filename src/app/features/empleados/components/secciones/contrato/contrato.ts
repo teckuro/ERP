@@ -9,7 +9,14 @@ import {
   TramoCargaCatalogOption,
 } from '../../../models/empleado-catalogos.model';
 import { ContratoFormGroup } from '../../../models/empleado-form.model';
-import { RelacionLaboral, TipoContrato, TipoGratificacion } from '../../../models/empleado.model';
+import {
+  CasaParticularModalidad,
+  CasaParticularRegistroDtEstado,
+  CausalExclusionJornada,
+  RelacionLaboral,
+  TipoContrato,
+  TipoGratificacion,
+} from '../../../models/empleado.model';
 import { EmpleadoEstado } from '../../../models/empleado-listado.model';
 import { CalendarInputComponent } from '../../../../../shared/components/ui/calendar-input.component';
 import { CardComponent } from '../../../../../shared/components/ui/card.component';
@@ -64,6 +71,7 @@ export class ContratoComponent {
   @Input() monedas: EmpleadoCatalogOption[] = [];
   @Input() tramosCarga: TramoCargaCatalogOption[] = [];
   @Input() visibleBlocks: string[] | null = null;
+  @Input() domicilioReferencia: string | null = null;
   /** Grilla 8 columnas y spans laborales (solo alta avanzada). */
   @Input() advancedGridLayout = false;
   /** Edicion inline desde ficha: la card exterior ya aporta el titulo del bloque. */
@@ -95,9 +103,39 @@ export class ContratoComponent {
     { value: 'HONORARIOS', label: 'Boleta de honorarios' },
   ];
 
+  readonly casaParticularModalidadOptions: SelectOption<CasaParticularModalidad>[] = [
+    { value: 'PUERTAS_AFUERA', label: 'Puertas afuera' },
+    { value: 'PUERTAS_ADENTRO', label: 'Puertas adentro' },
+  ];
+
+  readonly casaParticularRegistroDtOptions: SelectOption<CasaParticularRegistroDtEstado>[] = [
+    { value: 'PENDIENTE', label: 'Pendiente' },
+    { value: 'REGISTRADO', label: 'Registrado' },
+    { value: 'NO_APLICA', label: 'No aplica' },
+  ];
+
+  readonly causalExclusionJornadaOptions: SelectOption<CausalExclusionJornada>[] = [
+    { value: 'ALTA_RESPONSABILIDAD', label: 'Alta responsabilidad / confianza' },
+    {
+      value: 'SIN_FISCALIZACION_SUPERIOR_INMEDIATA',
+      label: 'Sin fiscalizacion superior inmediata',
+    },
+  ];
 
   get isHonorariosMode(): boolean {
     return this.formGroup.controls.relacionLaboral.value === 'HONORARIOS';
+  }
+
+  get isCasaParticular(): boolean {
+    return !this.isHonorariosMode && this.formGroup.controls.tipoContrato.value === 'CASA_PARTICULAR';
+  }
+
+  get isRegistroDtRegistrado(): boolean {
+    return this.formGroup.controls.casaParticularRegistroDtEstado.value === 'REGISTRADO';
+  }
+
+  get isExcluidoLimiteJornada(): boolean {
+    return this.formGroup.controls.excluidoLimiteJornada.value === true;
   }
 
   get tipoTrabajadorBaseEsperado(): 'DEPENDIENTE' | 'INDEPENDIENTE' {

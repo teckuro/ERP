@@ -489,7 +489,7 @@ interface ParametrosDialogState {
         --param-content-max-width: 1060px;
         display: flex;
         flex-direction: column;
-        gap: 12px;
+        gap: 0;
         width: 100%;
         min-width: 0;
         min-height: 0;
@@ -561,6 +561,9 @@ interface ParametrosDialogState {
         flex-direction: column;
         min-height: 0;
         width: 100%;
+        border: 0;
+        border-radius: 0;
+        box-shadow: none;
       }
 
       .parametros-page app-card.parametros-shell app-card-content.parametros-frame {
@@ -569,6 +572,8 @@ interface ParametrosDialogState {
         flex-direction: column;
         min-height: 0;
         overflow: hidden;
+        border: 0;
+        border-radius: 0;
       }
 
       .parametros-page .parametros-tab-body {

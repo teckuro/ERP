@@ -189,6 +189,111 @@
     </div>
   </app-card>
 
+  @if (isCasaParticular) {
+  <app-card className="labor-block labor-block--household">
+    <div class="labor-block-head">
+      <h4>Casa particular</h4>
+      <p>Registra las condiciones propias del contrato y su estado administrativo ante la DT.</p>
+    </div>
+    @if (domicilioReferencia) {
+      <div class="honorarios-note" role="status">
+        <strong>Domicilio de contacto</strong>
+        <span>{{ domicilioReferencia }}</span>
+      </div>
+    }
+    <div class="labor-grid labor-grid--contract">
+      <div class="form-field">
+        <div class="field-label-row">
+          <label for="empleado-casa-modalidad">Modalidad</label>
+          @if (isRequired('casaParticularModalidad')) {
+            <app-empleado-field-required />
+          }
+        </div>
+        <select id="empleado-casa-modalidad" formControlName="casaParticularModalidad" [class]="controlClass('casaParticularModalidad')">
+          <option [ngValue]="null">Seleccione modalidad</option>
+          @for (option of casaParticularModalidadOptions; track option.value) {
+            <option [ngValue]="option.value">{{ option.label }}</option>
+          }
+        </select>
+        <p class="field-message"></p>
+      </div>
+
+      <div class="form-field form-field--wide">
+        <div class="field-label-row">
+          <label for="empleado-casa-labores">Labores especificas</label>
+          @if (isRequired('casaParticularLabores')) {
+            <app-empleado-field-required />
+          }
+        </div>
+        <input id="empleado-casa-labores" type="text" formControlName="casaParticularLabores" placeholder="Ej: aseo, cocina, cuidado de adulto mayor" [class]="controlClass('casaParticularLabores')" />
+        <p class="field-message"></p>
+      </div>
+
+      <div class="form-field form-field--wide">
+        <div class="field-label-row">
+          <label for="empleado-casa-domicilio">Domicilio especifico de labores</label>
+          @if (isRequired('casaParticularDomicilioEspecifico')) {
+            <app-empleado-field-required />
+          }
+        </div>
+        <input id="empleado-casa-domicilio" type="text" formControlName="casaParticularDomicilioEspecifico" placeholder="Direccion donde se prestan las labores" [class]="controlClass('casaParticularDomicilioEspecifico')" />
+        <p class="field-message"></p>
+      </div>
+
+      <div class="form-field form-field--checkbox labor-toggle-field">
+        <div class="field-label-row">
+          <label for="empleado-casa-cuidado">Asistencia o cuidado</label>
+        </div>
+        <label class="employee-checkbox-row">
+          <input id="empleado-casa-cuidado" type="checkbox" formControlName="casaParticularAsistenciaCuidado" />
+          <span>Incluye asistencia o cuidado de personas</span>
+        </label>
+        <p class="field-message"></p>
+      </div>
+
+      <div class="form-field">
+        <div class="field-label-row">
+          <label for="empleado-casa-registro-dt">Registro DT</label>
+          @if (isRequired('casaParticularRegistroDtEstado')) {
+            <app-empleado-field-required />
+          }
+        </div>
+        <select id="empleado-casa-registro-dt" formControlName="casaParticularRegistroDtEstado" [class]="controlClass('casaParticularRegistroDtEstado')">
+          <option [ngValue]="null">Seleccione estado</option>
+          @for (option of casaParticularRegistroDtOptions; track option.value) {
+            <option [ngValue]="option.value">{{ option.label }}</option>
+          }
+        </select>
+        <p class="field-message"></p>
+      </div>
+
+      @if (isRegistroDtRegistrado) {
+        <div class="form-field">
+          <div class="field-label-row">
+            <label for="empleado-casa-registro-fecha">Fecha registro DT</label>
+            @if (isRequired('casaParticularRegistroDtFecha')) {
+              <app-empleado-field-required />
+            }
+          </div>
+          <app-calendar-input id="empleado-casa-registro-fecha" formControlName="casaParticularRegistroDtFecha" placeholder="dd/mm/aaaa" [invalid]="hasError('casaParticularRegistroDtFecha')" [max]="today"></app-calendar-input>
+          <p class="field-message"></p>
+        </div>
+
+        <div class="form-field">
+          <div class="field-label-row">
+            <label for="empleado-casa-registro-folio">Folio o comprobante</label>
+            @if (isRequired('casaParticularRegistroDtFolio')) {
+              <app-empleado-field-required />
+            }
+          </div>
+          <input id="empleado-casa-registro-folio" type="text" formControlName="casaParticularRegistroDtFolio" [class]="controlClass('casaParticularRegistroDtFolio')" />
+          <p class="field-message"></p>
+        </div>
+      }
+    </div>
+  </app-card>
+  }
+
   <app-card className="labor-block">
     <div class="labor-block-head">
       <h4>Organización</h4>
@@ -363,6 +468,50 @@
           <p class="field-message"></p>
         }
       </div>
+
+      <div class="form-field form-field--wide form-field--checkbox labor-toggle-field">
+        <div class="field-label-row">
+          <label for="empleado-excluido-jornada">Excluido de limite de jornada</label>
+        </div>
+        <label class="employee-checkbox-row">
+          <input id="empleado-excluido-jornada" type="checkbox" formControlName="excluidoLimiteJornada" />
+          <span>Aplicar excepcion art. 22</span>
+        </label>
+        @if (isExcluidoLimiteJornada) {
+          <p class="field-message field-message--warning">Las horas sobre 42 quedan como advertencia y deben respaldarse contractualmente.</p>
+        } @else {
+          <p class="field-message"></p>
+        }
+      </div>
+
+      @if (isExcluidoLimiteJornada) {
+        <div class="form-field">
+          <div class="field-label-row">
+            <label for="empleado-causal-exclusion">Causal art. 22</label>
+            @if (isRequired('causalExclusionJornada')) {
+              <app-empleado-field-required />
+            }
+          </div>
+          <select id="empleado-causal-exclusion" formControlName="causalExclusionJornada" [class]="controlClass('causalExclusionJornada')">
+            <option [ngValue]="null">Seleccione causal</option>
+            @for (option of causalExclusionJornadaOptions; track option.value) {
+              <option [ngValue]="option.value">{{ option.label }}</option>
+            }
+          </select>
+          <p class="field-message"></p>
+        </div>
+
+        <div class="form-field form-field--wide">
+          <div class="field-label-row">
+            <label for="empleado-justificacion-exclusion">Justificacion</label>
+            @if (isRequired('justificacionExclusionJornada')) {
+              <app-empleado-field-required />
+            }
+          </div>
+          <input id="empleado-justificacion-exclusion" type="text" formControlName="justificacionExclusionJornada" placeholder="Describe respaldo contractual y razon de exclusion" [class]="controlClass('justificacionExclusionJornada')" />
+          <p class="field-message"></p>
+        </div>
+      }
     </div>
   </app-card>
 

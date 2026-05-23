@@ -602,10 +602,19 @@ export type Database = {
       contrato: {
         Row: {
           cargo: string | null
+          casa_particular_asistencia_cuidado: boolean
+          casa_particular_domicilio_especifico: string | null
+          casa_particular_labores: string | null
+          casa_particular_modalidad: string | null
+          casa_particular_registro_dt_estado: string | null
+          casa_particular_registro_dt_fecha: string | null
+          casa_particular_registro_dt_folio: string | null
+          causal_exclusion_jornada: string | null
           codigo_tipo_contrato:
             | Database["public"]["Enums"]["tipo_contrato_enum"]
             | null
           estado: string | null
+          excluido_limite_jornada: boolean
           fecha_contrato: string | null
           fecha_inicio: string
           fecha_termino: string | null
@@ -616,14 +625,24 @@ export type Database = {
           id_sucursal: number | null
           id_tipo_jornada: number | null
           id_tipo_trabajador: number | null
+          justificacion_exclusion_jornada: string | null
           seguro_cesantia: boolean
         }
         Insert: {
           cargo?: string | null
+          casa_particular_asistencia_cuidado?: boolean
+          casa_particular_domicilio_especifico?: string | null
+          casa_particular_labores?: string | null
+          casa_particular_modalidad?: string | null
+          casa_particular_registro_dt_estado?: string | null
+          casa_particular_registro_dt_fecha?: string | null
+          casa_particular_registro_dt_folio?: string | null
+          causal_exclusion_jornada?: string | null
           codigo_tipo_contrato?:
             | Database["public"]["Enums"]["tipo_contrato_enum"]
             | null
           estado?: string | null
+          excluido_limite_jornada?: boolean
           fecha_contrato?: string | null
           fecha_inicio: string
           fecha_termino?: string | null
@@ -634,14 +653,24 @@ export type Database = {
           id_sucursal?: number | null
           id_tipo_jornada?: number | null
           id_tipo_trabajador?: number | null
+          justificacion_exclusion_jornada?: string | null
           seguro_cesantia?: boolean
         }
         Update: {
           cargo?: string | null
+          casa_particular_asistencia_cuidado?: boolean
+          casa_particular_domicilio_especifico?: string | null
+          casa_particular_labores?: string | null
+          casa_particular_modalidad?: string | null
+          casa_particular_registro_dt_estado?: string | null
+          casa_particular_registro_dt_fecha?: string | null
+          casa_particular_registro_dt_folio?: string | null
+          causal_exclusion_jornada?: string | null
           codigo_tipo_contrato?:
             | Database["public"]["Enums"]["tipo_contrato_enum"]
             | null
           estado?: string | null
+          excluido_limite_jornada?: boolean
           fecha_contrato?: string | null
           fecha_inicio?: string
           fecha_termino?: string | null
@@ -652,6 +681,7 @@ export type Database = {
           id_sucursal?: number | null
           id_tipo_jornada?: number | null
           id_tipo_trabajador?: number | null
+          justificacion_exclusion_jornada?: string | null
           seguro_cesantia?: boolean
         }
         Relationships: [

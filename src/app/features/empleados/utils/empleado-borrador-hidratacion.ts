@@ -55,6 +55,11 @@ export function normalizarBorradorAvanzadoParaFormulario(
   /** Tipo de contrato pertenece al paso 2; no limpiar con la misma regla que jornada (paso 3). */
   if (paso < 2 || contratoPareceTecnico) {
     contrato['tipoContrato'] = null;
+    limpiarCasaParticular(contrato);
+  }
+
+  if (contrato['tipoContrato'] !== 'CASA_PARTICULAR') {
+    limpiarCasaParticular(contrato);
   }
 
   /** Campos del panel «Jornada y remuneración» (paso 3). */
@@ -68,6 +73,9 @@ export function normalizarBorradorAvanzadoParaFormulario(
     contrato['diasSemanales'] = null;
     contrato['distribucionJornada'] = '';
     contrato['tiempoColacionMinutos'] = null;
+    limpiarExclusionJornada(contrato);
+  } else if (contrato['excluidoLimiteJornada'] !== true) {
+    limpiarExclusionJornada(contrato);
   }
 
   if (paso < 4) {
@@ -161,6 +169,22 @@ function limpiarPerfilLaboral(perfilLaboral: Record<string, unknown>): void {
   perfilLaboral['vigenciaFin'] = '';
   perfilLaboral['respaldoRegistrado'] = false;
   perfilLaboral['observacion'] = '';
+}
+
+function limpiarCasaParticular(contrato: Record<string, unknown>): void {
+  contrato['casaParticularModalidad'] = null;
+  contrato['casaParticularLabores'] = '';
+  contrato['casaParticularDomicilioEspecifico'] = '';
+  contrato['casaParticularAsistenciaCuidado'] = false;
+  contrato['casaParticularRegistroDtEstado'] = null;
+  contrato['casaParticularRegistroDtFecha'] = '';
+  contrato['casaParticularRegistroDtFolio'] = '';
+}
+
+function limpiarExclusionJornada(contrato: Record<string, unknown>): void {
+  contrato['excluidoLimiteJornada'] = false;
+  contrato['causalExclusionJornada'] = null;
+  contrato['justificacionExclusionJornada'] = '';
 }
 
 function limpiarCamposApvi(previsionSalud: Record<string, unknown>): void {

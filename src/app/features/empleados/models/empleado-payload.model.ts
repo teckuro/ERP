@@ -1,6 +1,9 @@
 import { EmpleadoEstado } from './empleado-listado.model';
 import { CondicionTrabajadorPayload } from './empleado-perfil-laboral.model';
 import {
+  CasaParticularModalidad,
+  CasaParticularRegistroDtEstado,
+  CausalExclusionJornada,
   EmpleadoSexo,
   TipoContrato,
   TipoEstadoCivil,
@@ -36,6 +39,16 @@ export interface CrearEmpleadoPayload {
   idTipoTrabajador: number;
   idTipoJornada: number;
   seguroCesantia: boolean;
+  excluidoLimiteJornada: boolean;
+  causalExclusionJornada: CausalExclusionJornada | null;
+  justificacionExclusionJornada: string | null;
+  casaParticularModalidad: CasaParticularModalidad | null;
+  casaParticularLabores: string | null;
+  casaParticularDomicilioEspecifico: string | null;
+  casaParticularAsistenciaCuidado: boolean;
+  casaParticularRegistroDtEstado: CasaParticularRegistroDtEstado | null;
+  casaParticularRegistroDtFecha: string | null;
+  casaParticularRegistroDtFolio: string | null;
   fechaIngreso: string;
   fechaTermino: string | null;
   sueldoBase: number;

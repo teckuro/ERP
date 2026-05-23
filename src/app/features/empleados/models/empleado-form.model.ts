@@ -2,6 +2,9 @@ import { FormControl, FormGroup } from '@angular/forms';
 
 import { EmpleadoEstado } from './empleado-listado.model';
 import {
+  CasaParticularModalidad,
+  CasaParticularRegistroDtEstado,
+  CausalExclusionJornada,
   EmpleadoSexo,
   RelacionLaboral,
   TipoContrato,
@@ -43,6 +46,16 @@ export type ContratoFormGroup = FormGroup<{
   idTipoTrabajador: FormControl<number | null>;
   idTipoJornada: FormControl<number | null>;
   seguroCesantia: FormControl<boolean>;
+  excluidoLimiteJornada: FormControl<boolean>;
+  causalExclusionJornada: FormControl<CausalExclusionJornada | null>;
+  justificacionExclusionJornada: FormControl<string>;
+  casaParticularModalidad: FormControl<CasaParticularModalidad | null>;
+  casaParticularLabores: FormControl<string>;
+  casaParticularDomicilioEspecifico: FormControl<string>;
+  casaParticularAsistenciaCuidado: FormControl<boolean>;
+  casaParticularRegistroDtEstado: FormControl<CasaParticularRegistroDtEstado | null>;
+  casaParticularRegistroDtFecha: FormControl<string>;
+  casaParticularRegistroDtFolio: FormControl<string>;
   fechaIngreso: FormControl<string>;
   fechaTermino: FormControl<string>;
   sueldoBase: FormControl<number | null>;

@@ -32,12 +32,22 @@ function payloadCompleto(overrides: Partial<CrearEmpleadoPayload> = {}): CrearEm
     idTipoTrabajador: 1,
     idTipoJornada: 1,
     seguroCesantia: true,
+    excluidoLimiteJornada: false,
+    causalExclusionJornada: null,
+    justificacionExclusionJornada: null,
+    casaParticularModalidad: null,
+    casaParticularLabores: null,
+    casaParticularDomicilioEspecifico: null,
+    casaParticularAsistenciaCuidado: false,
+    casaParticularRegistroDtEstado: null,
+    casaParticularRegistroDtFecha: null,
+    casaParticularRegistroDtFolio: null,
     fechaIngreso: '2024-01-01',
     fechaTermino: null,
     sueldoBase: 750000,
     idMoneda: 1,
     sueldoVariable: false,
-    horasSemanales: 44,
+    horasSemanales: 42,
     diasSemanales: 5,
     distribucionJornada: 'Lunes a viernes',
     tiempoColacionMinutos: 60,
@@ -226,6 +236,132 @@ describe('evaluarCompletitudYAptitudEmpleado', () => {
 
     expect(evaluacion.aptoParaRemuneraciones).toBe(true);
     expect(evaluacion.estadoFicha).toBe('VALIDO');
+  });
+
+  it('jornada sobre 42 horas bloquea aptitud final', () => {
+    const evaluacion = evaluarCompletitudYAptitudEmpleado({
+      payload: payloadCompleto({ horasSemanales: 44 }),
+    });
+
+    expect(evaluacion.aptoParaRemuneraciones).toBe(false);
+    expect(evaluacion.bloqueos).toContain(
+      'Desde el 26 de abril de 2026 el maximo ordinario vigente es 42 horas semanales. Si corresponde una excepcion, debe modelarse antes de cerrar el alta.',
+    );
+  });
+
+  it('casa particular sin labores, domicilio ni registro DT bloquea aptitud', () => {
+    const evaluacion = evaluarCompletitudYAptitudEmpleado({
+      payload: payloadCompleto({
+        tipoContrato: 'CASA_PARTICULAR',
+        casaParticularModalidad: 'PUERTAS_AFUERA',
+        casaParticularLabores: null,
+        casaParticularDomicilioEspecifico: null,
+        casaParticularRegistroDtEstado: null,
+      }),
+    });
+
+    expect(evaluacion.aptoParaRemuneraciones).toBe(false);
+    expect(evaluacion.seccionesPendientes).toContain('contrato casa particular');
+  });
+
+  it('casa particular completa permite finalizar si lo demas esta completo', () => {
+    const evaluacion = evaluarCompletitudYAptitudEmpleado({
+      payload: payloadCompleto({
+        tipoContrato: 'CASA_PARTICULAR',
+        casaParticularModalidad: 'PUERTAS_AFUERA',
+        casaParticularLabores: 'Aseo y cocina',
+        casaParticularDomicilioEspecifico: 'Av. Principal 123, Santiago',
+        casaParticularRegistroDtEstado: 'PENDIENTE',
+      }),
+    });
+
+    expect(evaluacion.aptoParaRemuneraciones).toBe(true);
+  });
+
+  it('articulo 22 sin causal ni justificacion bloquea aptitud', () => {
+    const evaluacion = evaluarCompletitudYAptitudEmpleado({
+      payload: payloadCompleto({
+        excluidoLimiteJornada: true,
+        causalExclusionJornada: null,
+        justificacionExclusionJornada: null,
+      }),
+    });
+
+    expect(evaluacion.aptoParaRemuneraciones).toBe(false);
+    expect(evaluacion.seccionesPendientes).toContain('jornada');
+  });
+
+  it('articulo 22 completo permite horas sobre 42 sin bloqueo y mantiene advertencia', () => {
+    const diagnostico = evaluarDiagnosticoFichaEmpleado(
+      snapshotValidacionDesdePayload(
+        payloadCompleto({
+          horasSemanales: 45,
+          excluidoLimiteJornada: true,
+          causalExclusionJornada: 'ALTA_RESPONSABILIDAD',
+          justificacionExclusionJornada: 'Cargo de administracion superior sin fiscalizacion inmediata.',
+        }),
+      ),
+    );
+
+    expect(diagnostico.aptoParaRemuneraciones).toBe(true);
+    expect(diagnostico.bloqueos.map((item) => item.id)).not.toContain('contract.weekly-hours-current-limit');
+    expect(diagnostico.advertencias.map((item) => item.id)).toContain('contract.weekly-hours-exclusion-warning');
+  });
+
+  it('puertas adentro no bloquea por horas pero exige distribucion y descansos descritos', () => {
+    const sinDistribucion = evaluarCompletitudYAptitudEmpleado({
+      payload: payloadCompleto({
+        tipoContrato: 'CASA_PARTICULAR',
+        casaParticularModalidad: 'PUERTAS_ADENTRO',
+        casaParticularLabores: 'Cuidado de adulto mayor',
+        casaParticularDomicilioEspecifico: 'Av. Principal 123, Santiago',
+        casaParticularRegistroDtEstado: 'PENDIENTE',
+        horasSemanales: 60,
+        distribucionJornada: null,
+      }),
+    });
+    const conDistribucion = evaluarCompletitudYAptitudEmpleado({
+      payload: payloadCompleto({
+        tipoContrato: 'CASA_PARTICULAR',
+        casaParticularModalidad: 'PUERTAS_ADENTRO',
+        casaParticularLabores: 'Cuidado de adulto mayor',
+        casaParticularDomicilioEspecifico: 'Av. Principal 123, Santiago',
+        casaParticularRegistroDtEstado: 'PENDIENTE',
+        horasSemanales: 60,
+        distribucionJornada: 'Puertas adentro con descansos pactados en contrato',
+      }),
+    });
+
+    expect(sinDistribucion.aptoParaRemuneraciones).toBe(false);
+    expect(conDistribucion.aptoParaRemuneraciones).toBe(true);
+  });
+
+  it('plazo fijo sobre dos anos bloquea aptitud final', () => {
+    const evaluacion = evaluarCompletitudYAptitudEmpleado({
+      payload: payloadCompleto({
+        tipoContrato: 'PLAZO_FIJO',
+        fechaIngreso: '2026-01-01',
+        fechaContrato: '2026-01-01',
+        fechaTermino: '2028-01-02',
+      }),
+    });
+
+    expect(evaluacion.aptoParaRemuneraciones).toBe(false);
+    expect(evaluacion.bloqueos).toContain(
+      'La excepcion maxima para gerentes o personas con titulo profesional o tecnico es de dos anos; sobre ese limite no debe finalizarse el alta.',
+    );
+  });
+
+  it('menor de edad sin condicion especial bloquea aptitud final', () => {
+    const evaluacion = evaluarCompletitudYAptitudEmpleado({
+      payload: payloadCompleto({
+        fechaNacimiento: '2010-01-01',
+        fechaIngreso: '2026-01-01',
+      }),
+    });
+
+    expect(evaluacion.aptoParaRemuneraciones).toBe(false);
+    expect(evaluacion.seccionesPendientes).toContain('contrato');
   });
 
   it('FONASA queda apta sin valor de plan manual', () => {

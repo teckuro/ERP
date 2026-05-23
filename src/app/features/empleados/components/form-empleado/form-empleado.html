@@ -562,6 +562,7 @@
                               [monedas]="catalogos().monedas"
                               [tramosCarga]="catalogos().tramosCarga"
                               [visibleBlocks]="['relacion', 'contratoBase', 'centroCosto']"
+                              [domicilioReferencia]="domicilioReferenciaCasaParticular()"
                               [advancedGridLayout]="true"
                             ></app-empleado-contrato>
                           </div>
@@ -1017,7 +1018,9 @@
               >
                 <div class="basic-create-shell">
                   <div class="basic-create-inner">
-                    <header class="summary-identity summary-identity--basic">
+                    <header
+                      class="summary-identity summary-identity--basic basic-create-shell-header"
+                    >
                       <div class="summary-person summary-person--basic">
                         <div class="summary-title-row">
                           <h2>Creación básica</h2>
@@ -1028,20 +1031,9 @@
                           >
                         </div>
                         <p class="summary-subtitle">
-                          Registra la información mínima para abrir una ficha de
-                          empleado.
+                          Registra los datos iniciales para continuar el alta en
+                          modo avanzado.
                         </p>
-                      </div>
-
-                      <div class="summary-actions">
-                        <app-page-actions
-                          [visibleActions]="headerVisibleActions()"
-                          backLabel="Volver"
-                          [saveLabel]="saveActionLabel()"
-                          backLink="/empleados"
-                          [saveDisabled]="isSaving() || isLoadingCatalogs()"
-                          (saveClick)="onSubmit()"
-                        ></app-page-actions>
                       </div>
                     </header>
 
@@ -1069,18 +1061,15 @@
                             <h3 class="basic-create-summary-card__title">
                               Alta rápida de empleado
                             </h3>
-                            <span class="basic-create-status-chip" role="status"
-                              >Ficha en proceso</span
-                            >
                           </div>
                           <p class="basic-create-summary-card__lead">
-                            Solo se guardan los datos mínimos para abrir la
-                            ficha.
+                            Registra los datos iniciales y continúa el alta en
+                            modo avanzado.
                           </p>
                           <div class="basic-create-summary-card__pending">
                             <span
                               class="basic-create-summary-card__pending-label"
-                              >Pendiente desde la ficha:</span
+                              >Se completa en alta avanzada:</span
                             >
                             <div
                               class="basic-create-summary-card__chips"

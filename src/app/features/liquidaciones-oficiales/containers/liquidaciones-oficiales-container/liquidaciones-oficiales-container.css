@@ -11,9 +11,10 @@
   display: flex;
   flex: 1 1 auto;
   flex-direction: column;
-  gap: 16px;
+  gap: 0;
   min-height: 100%;
   overflow: hidden;
+  background: #ffffff;
 }
 
 .liq-header {
@@ -28,6 +29,9 @@
   flex-wrap: wrap;
   justify-content: flex-end;
   gap: 8px;
+  border-bottom: 1px solid #d7dde5;
+  background: #ffffff;
+  padding: 10px 14px;
 }
 
 .liq-status-strip {

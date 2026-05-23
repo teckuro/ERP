@@ -397,10 +397,10 @@
   min-height: 0;
   max-height: 100%;
   overflow: hidden;
-  border: 1px solid #d5e0ec;
-  border-radius: 8px;
+  border: 0;
+  border-radius: 0;
   background: #ffffff;
-  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+  box-shadow: none;
   box-sizing: border-box;
 }
 

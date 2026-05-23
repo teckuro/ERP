@@ -1624,6 +1624,16 @@ export class EmpleadosRepository {
         idTipoTrabajador: contrato?.id_tipo_trabajador ?? null,
         idTipoJornada: contrato?.id_tipo_jornada ?? null,
         seguroCesantia: contrato?.seguro_cesantia ?? true,
+        excluidoLimiteJornada: contrato?.excluido_limite_jornada ?? false,
+        causalExclusionJornada: contrato?.causal_exclusion_jornada ?? null,
+        justificacionExclusionJornada: contrato?.justificacion_exclusion_jornada ?? '',
+        casaParticularModalidad: contrato?.casa_particular_modalidad ?? null,
+        casaParticularLabores: contrato?.casa_particular_labores ?? '',
+        casaParticularDomicilioEspecifico: contrato?.casa_particular_domicilio_especifico ?? '',
+        casaParticularAsistenciaCuidado: contrato?.casa_particular_asistencia_cuidado ?? false,
+        casaParticularRegistroDtEstado: contrato?.casa_particular_registro_dt_estado ?? null,
+        casaParticularRegistroDtFecha: contrato?.casa_particular_registro_dt_fecha ?? '',
+        casaParticularRegistroDtFolio: contrato?.casa_particular_registro_dt_folio ?? '',
         fechaIngreso: contrato?.fecha_inicio ?? '',
         fechaTermino: contrato?.fecha_termino ?? '',
         sueldoBase: remuneracion?.sueldo_base ?? null,
@@ -1753,6 +1763,34 @@ export class EmpleadosRepository {
         codigo_tipo_contrato: payload.tipoContrato,
         cargo: payload.cargo.trim(),
         seguro_cesantia: payload.seguroCesantia,
+        excluido_limite_jornada: payload.excluidoLimiteJornada,
+        causal_exclusion_jornada: payload.excluidoLimiteJornada
+          ? payload.causalExclusionJornada
+          : null,
+        justificacion_exclusion_jornada: payload.excluidoLimiteJornada
+          ? payload.justificacionExclusionJornada
+          : null,
+        casa_particular_modalidad: payload.tipoContrato === 'CASA_PARTICULAR'
+          ? payload.casaParticularModalidad
+          : null,
+        casa_particular_labores: payload.tipoContrato === 'CASA_PARTICULAR'
+          ? payload.casaParticularLabores
+          : null,
+        casa_particular_domicilio_especifico: payload.tipoContrato === 'CASA_PARTICULAR'
+          ? payload.casaParticularDomicilioEspecifico
+          : null,
+        casa_particular_asistencia_cuidado: payload.tipoContrato === 'CASA_PARTICULAR'
+          ? payload.casaParticularAsistenciaCuidado
+          : false,
+        casa_particular_registro_dt_estado: payload.tipoContrato === 'CASA_PARTICULAR'
+          ? payload.casaParticularRegistroDtEstado
+          : null,
+        casa_particular_registro_dt_fecha: payload.tipoContrato === 'CASA_PARTICULAR'
+          ? payload.casaParticularRegistroDtFecha
+          : null,
+        casa_particular_registro_dt_folio: payload.tipoContrato === 'CASA_PARTICULAR'
+          ? payload.casaParticularRegistroDtFolio
+          : null,
         fecha_inicio: payload.fechaIngreso,
         fecha_contrato: payload.fechaContrato,
         fecha_termino: payload.fechaTermino,

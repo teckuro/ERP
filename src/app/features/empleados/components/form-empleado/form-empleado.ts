@@ -83,7 +83,6 @@ import {
   MessageBoxSection,
   MessageBoxVariant,
 } from "../../../../shared/components/ui/message-box.component";
-import { PageActionsComponent } from "../../../../shared/components/ui/page-actions.component";
 import { bindShellPageContext } from "../../../../layout/shell-page-context.binding";
 
 type TabId = EmpleadoFormTabId;
@@ -276,7 +275,6 @@ const MENSAJES_FINALIZAR_ALTA: Partial<Record<string, string>> = {
     LucideAngularModule,
     CardComponent,
     CardContentComponent,
-    PageActionsComponent,
     MessageBoxComponent,
     DatosPersonalesComponent,
     ContactoComponent,
@@ -410,14 +408,17 @@ export class FormEmpleadoComponent implements OnInit {
           { label: "Empleados", path: "/empleados" },
           { label: this.pageTitle() },
         ],
-        primaryAction: this.isAdvancedMode()
-          ? {
-              label: this.shellPrimaryActionLabel(),
-              disabled: this.shellPrimaryActionDisabled(),
-              loading: this.shellPrimaryActionLoading(),
-              actionId: "empleado-alta-avanzada-guardar",
-            }
+        statusChip: this.isBasicMode()
+          ? { label: "Ficha en proceso", tone: "neutral" }
           : undefined,
+        primaryAction: {
+          label: this.shellPrimaryActionLabel(),
+          disabled: this.shellPrimaryActionDisabled(),
+          loading: this.shellPrimaryActionLoading(),
+          actionId: this.isBasicMode()
+            ? "empleado-alta-basica-guardar-borrador"
+            : "empleado-alta-avanzada-guardar",
+        },
       }),
       {
         onPrimaryAction: () => this.ejecutarShellPrimaryAction(),
@@ -1023,6 +1024,10 @@ export class FormEmpleadoComponent implements OnInit {
       : "Crear empleado activo";
   }
 
+  basicShellPrimaryActionLabel(): string {
+    return "Guardar borrador";
+  }
+
   finalWizardActionLabel(): string {
     if (this.isSaving()) {
       return this.isHonorariosMode()
@@ -1034,8 +1039,8 @@ export class FormEmpleadoComponent implements OnInit {
   }
 
   shellPrimaryActionLabel(): string {
-    if (!this.isAdvancedMode()) {
-      return this.saveActionLabel();
+    if (this.isBasicMode()) {
+      return this.basicShellPrimaryActionLabel();
     }
     if (this.pasoWizardActivo() === this.summaryWizardStepIndex()) {
       return this.finalWizardActionLabel();
@@ -1052,7 +1057,11 @@ export class FormEmpleadoComponent implements OnInit {
   }
 
   ejecutarShellPrimaryAction(): void {
-    if (!this.isAdvancedMode() || this.shellPrimaryActionDisabled()) {
+    if (this.shellPrimaryActionDisabled()) {
+      return;
+    }
+    if (this.isBasicMode()) {
+      void this.onSubmit();
       return;
     }
     if (this.pasoWizardActivo() === this.summaryWizardStepIndex() && !this.isHonorariosMode()) {
@@ -1060,13 +1069,6 @@ export class FormEmpleadoComponent implements OnInit {
       return;
     }
     void this.onGuardarBorrador();
-  }
-
-  /** Avanzada: guardado en el pie. Básica: Volver + Guardar en cabecera (modo-basico / sin duplicar pie). */
-  headerVisibleActions(): readonly ("back" | "save")[] {
-    return this.isBasicMode()
-      ? (["back", "save"] as const)
-      : (["back"] as const);
   }
 
   /** Modal de exito: titulo (solo copia distinta en creacion basica). */
@@ -2748,12 +2750,23 @@ export class FormEmpleadoComponent implements OnInit {
       idTipoTrabajador: raw.contrato.idTipoTrabajador,
       idTipoJornada: raw.contrato.idTipoJornada,
       seguroCesantia: raw.contrato.seguroCesantia,
+      excluidoLimiteJornada: raw.contrato.excluidoLimiteJornada,
+      causalExclusionJornada: raw.contrato.causalExclusionJornada,
+      justificacionExclusionJornada: raw.contrato.justificacionExclusionJornada,
+      casaParticularModalidad: raw.contrato.casaParticularModalidad,
+      casaParticularLabores: raw.contrato.casaParticularLabores,
+      casaParticularDomicilioEspecifico: raw.contrato.casaParticularDomicilioEspecifico,
+      casaParticularAsistenciaCuidado: raw.contrato.casaParticularAsistenciaCuidado,
+      casaParticularRegistroDtEstado: raw.contrato.casaParticularRegistroDtEstado,
+      casaParticularRegistroDtFecha: raw.contrato.casaParticularRegistroDtFecha,
+      casaParticularRegistroDtFolio: raw.contrato.casaParticularRegistroDtFolio,
       fechaIngreso: raw.contrato.fechaIngreso,
       fechaTermino: raw.contrato.fechaTermino,
       sueldoBase: raw.contrato.sueldoBase,
       idMoneda: raw.contrato.idMoneda,
       horasSemanales: raw.contrato.horasSemanales,
       diasSemanales: raw.contrato.diasSemanales,
+      distribucionJornada: raw.contrato.distribucionJornada,
       semanaCorridaActiva: raw.contrato.semanaCorridaActiva,
       semanaCorridaDiasLaborables: raw.contrato.semanaCorridaDiasLaborables,
       zonaExtremaActiva: raw.contrato.zonaExtremaActiva,
@@ -2810,6 +2823,8 @@ export class FormEmpleadoComponent implements OnInit {
       fechaNacimiento: personal.fechaNacimiento.value,
       fechaIngreso: contrato.fechaIngreso.value,
       horasSemanales: contrato.horasSemanales.value,
+      excluidoLimiteJornada: contrato.excluidoLimiteJornada.value,
+      casaParticularModalidad: contrato.casaParticularModalidad.value,
       seguroCesantia: contrato.seguroCesantia.value,
       tipoRegimenPrevisional: prevision.tipoRegimenPrevisional.value,
       condiciones: {
@@ -3630,6 +3645,16 @@ export class FormEmpleadoComponent implements OnInit {
     contrato.tiempoColacionMinutos.setValue(null, { emitEvent: false });
     contrato.tipoGratificacion.setValue(null, { emitEvent: false });
     contrato.seguroCesantia.setValue(false, { emitEvent: false });
+    contrato.excluidoLimiteJornada.setValue(false, { emitEvent: false });
+    contrato.causalExclusionJornada.setValue(null, { emitEvent: false });
+    contrato.justificacionExclusionJornada.setValue("", { emitEvent: false });
+    contrato.casaParticularModalidad.setValue(null, { emitEvent: false });
+    contrato.casaParticularLabores.setValue("", { emitEvent: false });
+    contrato.casaParticularDomicilioEspecifico.setValue("", { emitEvent: false });
+    contrato.casaParticularAsistenciaCuidado.setValue(false, { emitEvent: false });
+    contrato.casaParticularRegistroDtEstado.setValue(null, { emitEvent: false });
+    contrato.casaParticularRegistroDtFecha.setValue("", { emitEvent: false });
+    contrato.casaParticularRegistroDtFolio.setValue("", { emitEvent: false });
     contrato.sueldoVariable.setValue(false, { emitEvent: false });
     contrato.semanaCorridaActiva.setValue(false, { emitEvent: false });
     contrato.semanaCorridaDiasLaborables.setValue([], { emitEvent: false });
@@ -4047,6 +4072,19 @@ export class FormEmpleadoComponent implements OnInit {
       control.scrollIntoView({ behavior: "smooth", block: "center" });
       control.focus({ preventScroll: true });
     });
+  }
+
+  domicilioReferenciaCasaParticular(): string | null {
+    const contacto = this.form.controls.contacto.controls;
+    const partes = [
+      contacto.direccion.value,
+      contacto.numeroDireccion.value,
+      this.catalogos().comunas.find((item) => item.value === contacto.idComuna.value)?.label ?? '',
+    ]
+      .map((value) => value?.trim())
+      .filter(Boolean);
+
+    return partes.length ? partes.join(', ') : null;
   }
 
   private findControlForPath(controlPath: string | undefined): HTMLElement | null {
