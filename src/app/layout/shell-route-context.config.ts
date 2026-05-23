@@ -56,6 +56,7 @@ export const SHELL_ROUTE_CONTEXT_ENTRIES: readonly ShellRouteContextEntry[] = [
   { match: '/parametros', breadcrumbs: [{ label: 'Parámetros' }] },
   { match: '/licencias-medicas', breadcrumbs: [{ label: 'Licencias médicas' }] },
   { match: '/reportes', breadcrumbs: [{ label: 'Reportes' }] },
+  { match: '/preguntor', breadcrumbs: [{ label: 'Preguntor' }] },
 ];
 
 export function resolveShellRouteBreadcrumbs(url: string): ShellBreadcrumbItem[] {

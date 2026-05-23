@@ -1,3 +1,9 @@
+## 2026-05-19 - Preguntor operativo (asistente NVIDIA vía Edge Function)
+
+- **Cambio:** pantalla `/preguntor` con textarea, botón Preguntar y bloque de respuesta; CSS local compacto; sin chat ni reasoning visible.
+- **Archivos:** `features/asistente-preguntor/`, `pages/preguntor.page.ts`, `core/services/asistente-preguntor.service.ts`, `app.routes.ts`, `shell-navigation.config.ts`, `supabase/functions/erp-asistente-preguntor/`.
+- **No tocado:** estilos globales, `angular.json`, motor, SQL productivo.
+
 ## 2026-05-23 - Ficha empleado: expediente en tabbar
 
 - **Cambio:** navegación del expediente como tabbar horizontal (`role="tablist"`) sobre el contenido; panel diagnóstico a la izquierda; sin columna rail vertical.
