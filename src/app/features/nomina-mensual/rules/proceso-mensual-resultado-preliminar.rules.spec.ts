@@ -127,4 +127,57 @@ describe('proceso-mensual-resultado-preliminar.rules', () => {
     expect(vm.bloqueos.length).toBeGreaterThan(0);
     expect(vm.acciones.puedeGuardarPreliminar).toBe(false);
   });
+
+  it('tolera snapshot completo parcial con listas ausentes', () => {
+    const vm = buildResultadoPreliminarView({
+      ...inputBase,
+      snapshotActivo: {
+        idCalculoPeriodo: 1,
+        periodo: '2026-05',
+        idEmpresa: null,
+        estado: 'preliminar',
+        fechaGeneracion: '2026-05-10T10:00:00.000Z',
+        usuarioGenerador: 'RRHH',
+        totalTrabajadores: 1,
+        totalHaberes: 900000,
+        totalDescuentos: 180000,
+        totalLiquido: 720000,
+        totalBloqueados: 0,
+        totalAdvertencias: 0,
+        versionMotor: 'v1',
+        hashSnapshot: 'hash-abc',
+        origen: 'preliminar',
+        activo: true,
+        reemplazadoPor: null,
+        aprobacionOperativa: null,
+        cierreOperativo: null,
+        trabajadores: [],
+        issues: [],
+        trazabilidad: [],
+      },
+      snapshotCompleto: {
+        cabecera: {} as any,
+        trabajadores: [{
+          idPersona: 1,
+          rut: '11.111.111-1',
+          nombreCompletoSnapshot: 'Ana Pérez',
+          estado: 'calculado_preliminar',
+          totalHaberesImponibles: 900000,
+          totalHaberesNoImponibles: 0,
+          totalDescuentosLegales: 180000,
+          totalDescuentosVoluntarios: 0,
+          liquidoPreliminar: 720000,
+          issues: undefined,
+        } as any],
+        conceptos: undefined,
+        observaciones: undefined,
+        trazabilidad: undefined,
+        resumen: {} as any,
+      } as any,
+    });
+
+    expect(vm.estado).toBe('guardado');
+    expect(vm.trabajadores).toHaveLength(1);
+    expect(vm.trabajadores[0].observacionLabel).toBe('Sin observaciones');
+  });
 });

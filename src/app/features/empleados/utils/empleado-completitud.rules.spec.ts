@@ -1,6 +1,6 @@
-import { describe, expect, it } from 'vitest';
+﻿import { describe, expect, it } from 'vitest';
 import { CrearEmpleadoPayload } from '../models/empleado-payload.model';
-import { evaluarDiagnosticoFichaEmpleado, snapshotValidacionDesdePayload } from '../rules/empleado-ficha-validacion.rules';
+import { evaluarDiagnosticoFichaEmpleado, snapshotValidacionDesdePayload } from '../rules/empleado-diagnostico.rules';
 import { evaluarCompletitudYAptitudEmpleado } from './empleado-completitud.rules';
 
 function payloadCompleto(overrides: Partial<CrearEmpleadoPayload> = {}): CrearEmpleadoPayload {
@@ -494,3 +494,4 @@ describe('evaluarCompletitudYAptitudEmpleado', () => {
     expect(diagnostico.bloqueos.map((item) => item.id)).not.toContain('bank.bank');
   });
 });
+

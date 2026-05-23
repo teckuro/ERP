@@ -120,4 +120,25 @@ describe('proceso-mensual-validacion-calculo.rules', () => {
     expect(vm.bloqueos.some((b) => b.codigo === 'BLOQ-004')).toBe(true);
     expect(vm.bloqueos.find((b) => b.codigo === 'BLOQ-004')?.ruta).toBe('/parametros');
   });
+
+  it('tolera listas ausentes en resultado de verificar periodo', () => {
+    const vm = buildValidacionCalculoPreliminarView({
+      periodo: '2026-05',
+      resultado: prevalidacionBase({
+        bloqueos: undefined as any,
+        advertencias: undefined as any,
+        resumen: {
+          parametrosOperativos: true,
+          parametrosGrupos: undefined as any,
+        },
+      }),
+      preNomina: null,
+      base: null,
+      errorEjecucion: null,
+      nominaCerradaOperativamente: false,
+    });
+
+    expect(vm.bloqueos.some((b) => b.codigo === 'BLOQ-004')).toBe(false);
+    expect(vm.siguienteAccion.accionLocal).toBe('generarBase');
+  });
 });

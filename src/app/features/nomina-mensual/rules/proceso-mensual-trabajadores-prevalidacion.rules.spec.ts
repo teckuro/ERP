@@ -192,4 +192,12 @@ describe('proceso-mensual-trabajadores-prevalidacion.rules', () => {
     expect(lista[0].bloqueanteParaNomina).toBe(true);
     expect(lista[0].motivo).toContain('entrada(s) bloqueante(s)');
   });
+
+  it('tolera entradas y listados ausentes en runtime', () => {
+    expect(buildTrabajadoresPendientesRevision(undefined as any, undefined as any)).toEqual([]);
+    expect(buildItemsTrabajadoresPendientesModal(undefined as any)).toEqual([]);
+    expect(buildFilasMasivasDesdePendientesRevision(undefined as any)).toEqual([]);
+    expect(buildIncidenciasFichaPendiente(undefined as any)).toEqual([]);
+    expect(mergeFilasMasivasConPendientesRevision(undefined as any, undefined as any)).toEqual([]);
+  });
 });

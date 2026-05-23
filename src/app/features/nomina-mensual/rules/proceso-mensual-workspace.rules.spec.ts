@@ -164,6 +164,21 @@ describe('proceso-mensual-workspace.rules', () => {
     expect(texto.toLowerCase()).not.toContain('calculad');
   });
 
+  it('buildBitacoraEtapas tolera estado sin listas de mensajes', () => {
+    const etapas = buildBitacoraEtapas({
+      estado: estadoBase({ advertencias: undefined as any, bloqueos: undefined as any }),
+      tieneResultado: true,
+      tienePreNomina: false,
+      tieneCalculo: false,
+      tieneSnapshot: false,
+      tieneAprobacion: false,
+      nominaCerrada: false,
+    });
+
+    expect(etapas.find((e) => e.clave === 'validar')).toBeTruthy();
+    expect(etapas.map((e) => e.clave)).toContain('base');
+  });
+
   it('resolveNominaVisualFrame mapea base_lista a en_revision', () => {
     expect(
       resolveNominaVisualFrame({

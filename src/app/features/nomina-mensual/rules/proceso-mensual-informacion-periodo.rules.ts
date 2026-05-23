@@ -38,8 +38,12 @@ export interface ResolveDetalleTabInput {
   parametrosListos?: boolean;
 }
 
+function asArray<T>(value: readonly T[] | null | undefined): T[] {
+  return Array.isArray(value) ? [...value] : [];
+}
+
 function primerPendienteRevision(input: ResolveDetalleTabInput): ProcesoMensualPendienteVm | undefined {
-  for (const pendiente of [...input.bloqueosOperativos, ...input.advertenciasOperativas]) {
+  for (const pendiente of [...asArray(input.bloqueosOperativos), ...asArray(input.advertenciasOperativas)]) {
     if (input.parametrosListos && resolveDetalleTabFromPendiente(pendiente) === 'parametros') {
       continue;
     }
@@ -79,7 +83,7 @@ export function resolveDetalleTabForRevision(input: ResolveDetalleTabInput): Det
     return resolveDetalleTabFromPendiente(pendiente);
   }
 
-  const bloqueoValidacion = input.validacionCalculo.bloqueos[0];
+  const bloqueoValidacion = asArray(input.validacionCalculo.bloqueos)[0];
   if (bloqueoValidacion) {
     return resolveDetalleTabFromCodigo(bloqueoValidacion.codigo, bloqueoValidacion.accionLocal);
   }
@@ -131,8 +135,8 @@ export function buildInformacionPeriodoView(input: BuildInformacionPeriodoInput)
       tone: 'danger',
       titulo: 'No fue posible completar la operación',
       bajada: humanizarErrorEjecucion(errorEjecucion),
-      puntos: paraContinuar.length
-        ? paraContinuar.map((item) => `${item.titulo}: ${item.detalle}`)
+      puntos: asArray(paraContinuar).length
+        ? asArray(paraContinuar).map((item) => `${item.titulo}: ${item.detalle}`)
         : ['Revisa el período y vuelve a intentar la acción recomendada.'],
       accionPrincipal: {
         label: validacionCalculo.siguienteAccion.label || 'Reintentar',
@@ -145,8 +149,8 @@ export function buildInformacionPeriodoView(input: BuildInformacionPeriodoInput)
 
   const hayActividad = tienePreNomina || tieneCalculo || tieneResultado;
   const bloqueos = [
-    ...validacionCalculo.bloqueos,
-    ...bloqueosOperativos.map((item) => ({
+    ...asArray(validacionCalculo.bloqueos),
+    ...asArray(bloqueosOperativos).map((item) => ({
       codigo: item.codigo,
       titulo: item.titulo,
       descripcion: item.descripcion,
@@ -171,8 +175,8 @@ export function buildInformacionPeriodoView(input: BuildInformacionPeriodoInput)
           titulo: 'Qué revisar',
           items: bloqueos.slice(0, 5).map((item) => `${item.titulo}: ${humanizarErrorEjecucion(item.descripcion)}`),
         },
-        ...(paraContinuar.length
-          ? [{ titulo: 'Para continuar', items: paraContinuar.map((item) => item.titulo) }]
+        ...(asArray(paraContinuar).length
+          ? [{ titulo: 'Para continuar', items: asArray(paraContinuar).map((item) => item.titulo) }]
           : []),
       ],
       accionPrincipal: {
@@ -183,8 +187,9 @@ export function buildInformacionPeriodoView(input: BuildInformacionPeriodoInput)
     };
   }
 
-  if (hayActividad && advertenciasOperativas.length > 0 && nominaFrame === 'con_pendientes') {
-    const destino = mapDetalleTabToDestino(resolveDetalleTabFromPendiente(advertenciasOperativas[0]));
+  const advertenciasOperativasLista = asArray(advertenciasOperativas);
+  if (hayActividad && advertenciasOperativasLista.length > 0 && nominaFrame === 'con_pendientes') {
+    const destino = mapDetalleTabToDestino(resolveDetalleTabFromPendiente(advertenciasOperativasLista[0]));
     return {
       tone: 'info',
       titulo: 'Nómina generada con advertencias',
@@ -192,7 +197,7 @@ export function buildInformacionPeriodoView(input: BuildInformacionPeriodoInput)
       secciones: [
         {
           titulo: 'Advertencias visibles',
-          items: advertenciasOperativas.slice(0, 4).map((item) => item.titulo),
+          items: advertenciasOperativasLista.slice(0, 4).map((item) => item.titulo),
         },
       ],
       accionPrincipal: {
@@ -230,7 +235,7 @@ interface BuildVerificacionPeriodoInput {
 export function mapTrabajadoresPendientesInformacionView(
   trabajadores: readonly TrabajadorPendienteRevisionPeriodo[],
 ): TrabajadorPendienteInformacionPeriodoView[] {
-  return trabajadores.map((t) => ({
+  return asArray(trabajadores).map((t) => ({
     idPersona: t.idPersona,
     nombre: t.nombre,
     rut: t.rut,
@@ -275,9 +280,9 @@ function buildVerificacionPeriodoInformacionView(
     return null;
   }
 
-  const bloqueos = input.validacionCalculo.bloqueos.filter((item) => item.codigo !== 'BLOQ-005');
-  const advertencias = input.validacionCalculo.advertencias;
-  const pendientes = input.trabajadoresPendientesRevision;
+  const bloqueos = asArray(input.validacionCalculo.bloqueos).filter((item) => item.codigo !== 'BLOQ-005');
+  const advertencias = asArray(input.validacionCalculo.advertencias);
+  const pendientes = asArray(input.trabajadoresPendientesRevision);
   const trabajadoresVm =
     pendientes.length > 0 ? mapTrabajadoresPendientesInformacionView(pendientes) : undefined;
   const resumen = buildResumenVerificacionPeriodo(

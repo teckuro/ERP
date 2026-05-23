@@ -1,0 +1,30 @@
+﻿<nav class="employee-record-tabbar" role="tablist" aria-label="Expediente del trabajador">
+  <p class="employee-record-tabbar__meta">
+    <span class="employee-record-tabbar__title">Expediente</span>
+    <span class="employee-record-tabbar__count">{{ totalBloques }} bloques de información laboral</span>
+  </p>
+  <ul class="employee-record-tabbar__list" role="presentation">
+    @for (item of items; track item.clave) {
+      <li role="presentation">
+        <button
+          type="button"
+          class="employee-record-tabbar__tab"
+          role="tab"
+          [class.employee-record-tabbar__tab--active]="item.estaActivo"
+          [attr.aria-selected]="item.estaActivo"
+          [attr.tabindex]="item.estaActivo ? 0 : -1"
+          [attr.id]="'employee-tab-' + item.clave"
+          (click)="seleccionarTab.emit(item.clave)"
+        >
+          <span class="employee-record-tabbar__tab-label">
+            <span
+              [class]="'employee-record-tabbar__dot employee-record-tabbar__dot--' + item.estado"
+              aria-hidden="true"
+            ></span>
+            <span>{{ item.etiqueta }}</span>
+          </span>
+        </button>
+      </li>
+    }
+  </ul>
+</nav>

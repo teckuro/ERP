@@ -13,6 +13,10 @@ import type { NominaMasivaFila } from './proceso-mensual-masivo-layout.rules';
 export const LIMITE_MODAL_TRABAJADORES_PENDIENTES = 8;
 export const CODIGO_INCIDENCIA_FICHA_PENDIENTE = 'FICHA_PENDIENTE_REVISION';
 
+function asArray<T>(value: readonly T[] | null | undefined): T[] {
+  return Array.isArray(value) ? [...value] : [];
+}
+
 export interface AptitudOperativaNominaTrabajador {
   aptoFicha: boolean;
   listoParaNomina: boolean;
@@ -117,7 +121,86 @@ function evaluarCompletitudDesdeListado(
   const payloadMinimo = {
     estado: 'activo',
     origenCreacion: 'avanzado',
-  } as CrearEmpleadoPayload;
+    rut: empleado.rut ?? '',
+    nombres: empleado.nombre ?? '',
+    apellidoPaterno: '',
+    apellidoMaterno: '',
+    fechaNacimiento: '',
+    sexo: 'no_informa',
+    estadoCivil: 'soltero',
+    pasaporte: null,
+    cargas: 0,
+    email: '',
+    telefono: '',
+    direccion: '',
+    numeroDireccion: null,
+    departamentoDireccion: null,
+    observacionesDireccion: null,
+    idComuna: null,
+    idPais: 0,
+    idSucursal: null,
+    idDepartamentoEmpresa: null,
+    idCentroCosto: null,
+    cargo: empleado.cargo ?? '',
+    fechaContrato: empleado.fechaIngreso ?? '',
+    tipoContrato: 'indefinido',
+    idTipoTrabajador: 0,
+    idTipoJornada: 0,
+    seguroCesantia: false,
+    excluidoLimiteJornada: false,
+    causalExclusionJornada: null,
+    justificacionExclusionJornada: null,
+    casaParticularModalidad: null,
+    casaParticularLabores: null,
+    casaParticularDomicilioEspecifico: null,
+    casaParticularAsistenciaCuidado: false,
+    casaParticularRegistroDtEstado: null,
+    casaParticularRegistroDtFecha: null,
+    casaParticularRegistroDtFolio: null,
+    fechaIngreso: empleado.fechaIngreso ?? '',
+    fechaTermino: null,
+    sueldoBase: empleado.sueldoBase ?? 0,
+    idMoneda: null,
+    sueldoVariable: false,
+    horasSemanales: 0,
+    diasSemanales: 0,
+    distribucionJornada: null,
+    tiempoColacionMinutos: null,
+    tipoGratificacion: 'legal',
+    gratificacionProporcional: false,
+    semanaCorridaActiva: false,
+    semanaCorridaDiasLaborables: [],
+    zonaExtremaActiva: false,
+    zonaExtremaTerritorio: null,
+    zonaExtremaPorcentaje: null,
+    idTramoCarga: null,
+    condicionesTrabajador: [],
+    tipoPrevision: 'afp',
+    idRegimenPrevisional: null,
+    idAfp: null,
+    idMonedaCuenta2: null,
+    valorCuenta2: null,
+    idEntidadPrevisionalIps: null,
+    idExCajaPrevisional: null,
+    idRegimenExCaja: null,
+    nombreExCaja: null,
+    regimenExCaja: null,
+    tasaExCaja: null,
+    idSalud: null,
+    tipoSalud: null,
+    idMonedaPlan: null,
+    valorPlan: null,
+    adicionalAugeGes: null,
+    tieneApv: false,
+    idInstitucionApv: null,
+    idMonedaApv: null,
+    montoApv: null,
+    idFormaPagoApv: null,
+    depositoConvenidoApvi: null,
+    idBanco: 0,
+    idTipoCuentaBancaria: 0,
+    numeroCuenta: '',
+  } as unknown as CrearEmpleadoPayload;
   return evaluarCompletitudYAptitudEmpleado({
     payload: payloadMinimo,
     pasoAltaAvanzada: empleado.pasoAltaAvanzada,
@@ -129,8 +212,9 @@ export function buildDetalleCorreccionFicha(
   evaluacion?: EvaluacionCompletitudEmpleado | null,
 ): string {
   const evaluacionEfectiva = evaluacion ?? evaluarCompletitudDesdeListado(empleado);
-  if (evaluacionEfectiva?.bloqueos.length) {
-    return humanizarBloqueoCompletitudFicha(evaluacionEfectiva.bloqueos[0]);
+  const bloqueos = asArray(evaluacionEfectiva?.bloqueos);
+  if (bloqueos.length) {
+    return humanizarBloqueoCompletitudFicha(bloqueos[0]);
   }
   if (empleado.pasoAltaAvanzada !== null) return 'Continuar alta avanzada.';
   if (empleado.estadoFicha === 'BORRADOR') return 'Completar la ficha en borrador.';
@@ -145,7 +229,8 @@ export function evaluarAptitudOperativaNominaTrabajador(
   empleado: EmpleadoListado,
   entradasPeriodo: readonly EntradaMensualPeriodo[] = [],
 ): AptitudOperativaNominaTrabajador {
-  const entradasBloqueantes = entradasPeriodo.filter(entradaBloqueaProceso).length;
+  const entradas = asArray(entradasPeriodo);
+  const entradasBloqueantes = entradas.filter(entradaBloqueaProceso).length;
   const aptoFicha = empleado.aptoParaRemuneraciones && empleado.estadoFicha === 'VALIDO';
   const motivos: string[] = [];
   const detalles: string[] = [];
@@ -196,13 +281,13 @@ export function buildTrabajadoresPendientesRevision(
   entradasPeriodo: readonly EntradaMensualPeriodo[] = [],
 ): TrabajadorPendienteRevisionPeriodo[] {
   const entradasPorPersona = new Map<number, EntradaMensualPeriodo[]>();
-  for (const entrada of entradasPeriodo) {
+  for (const entrada of asArray(entradasPeriodo)) {
     const personaEntradas = entradasPorPersona.get(entrada.idPersona) ?? [];
     personaEntradas.push(entrada);
     entradasPorPersona.set(entrada.idPersona, personaEntradas);
   }
 
-  return listado
+  return asArray(listado)
     .filter((empleado) => empleado.estado === 'activo')
     .map((empleado) => ({
       empleado,
@@ -238,8 +323,9 @@ export function buildItemsTrabajadoresPendientesModal(
   trabajadores: readonly TrabajadorPendienteRevisionPeriodo[],
   limite = LIMITE_MODAL_TRABAJADORES_PENDIENTES,
 ): string[] {
-  const visibles = trabajadores.slice(0, limite).map(formatTrabajadorPendienteRevisionLinea);
-  const restantes = trabajadores.length - limite;
+  const trabajadoresLista = asArray(trabajadores);
+  const visibles = trabajadoresLista.slice(0, limite).map(formatTrabajadorPendienteRevisionLinea);
+  const restantes = trabajadoresLista.length - limite;
   if (restantes > 0) {
     visibles.push(`... y ${restantes} mas en la pestaña Trabajadores`);
   }
@@ -253,7 +339,7 @@ export function rutaFichaEmpleadoPendiente(idPersona: number | string): string {
 export function buildFilasMasivasDesdePendientesRevision(
   pendientes: readonly TrabajadorPendienteRevisionPeriodo[],
 ): NominaMasivaFila[] {
-  return pendientes.map((t) => ({
+  return asArray(pendientes).map((t) => ({
     idPersona: t.idPersona,
     trabajador: t.nombre,
     rut: t.rut,
@@ -272,7 +358,7 @@ export function buildFilasMasivasDesdePendientesRevision(
 export function buildIncidenciasFichaPendiente(
   pendientes: readonly TrabajadorPendienteRevisionPeriodo[],
 ): IncidenciaPeriodo[] {
-  return pendientes.map((t) => ({
+  return asArray(pendientes).map((t) => ({
     id: CODIGO_INCIDENCIA_FICHA_PENDIENTE,
     severidad: t.bloqueanteParaNomina === false ? 'advertencia' : 'bloqueo',
     ambito: 'trabajadores',
@@ -294,10 +380,10 @@ export function mergeFilasMasivasConPendientesRevision(
   pendientes: readonly NominaMasivaFila[],
 ): NominaMasivaFila[] {
   const map = new Map<string, NominaMasivaFila>();
-  for (const fila of base) {
+  for (const fila of asArray(base)) {
     map.set(String(fila.idPersona), fila);
   }
-  for (const fila of pendientes) {
+  for (const fila of asArray(pendientes)) {
     map.set(String(fila.idPersona), fila);
   }
   return [...map.values()].sort((a, b) => a.trabajador.localeCompare(b.trabajador, 'es', { sensitivity: 'base' }));

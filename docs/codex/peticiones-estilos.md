@@ -1769,3 +1769,5 @@ Creación avanzada incorpora una identidad de producto local para dejar de senti
 - **Cambio visual:** resumen agregado, filtros compactos, busqueda, grilla paginada y detalle bajo demanda de un solo trabajador.
 - **Densidad:** se abandona la vista tipo lista chica para trabajadores; no usar cards por trabajador ni detalles abiertos masivos.
 - **Restricciones:** CSS local del modal; sin redisenar workspace, sin estilos globales, SQL, motor, servicios, store ni cambios a `app-data-grid`.
+
+- **2026-05-23** — Alta avanzada resumen: panel .alta-resumen-diagnostico-panel (CSS local form-empleado.css), pendientes alineados a ficha EMP-ALTA-FICHA-PARITY-01.

@@ -934,6 +934,33 @@
                                 </section>
                                 }
 
+
+                                @if (!isHonorariosMode() && altaResumenFaltantes().length > 0) {
+                                <section
+                                  class="alta-resumen-diagnostico-panel"
+                                  aria-label="Pendientes para remuneraciones"
+                                >
+                                  <div class="alta-resumen-diagnostico-panel__head">
+                                    <h4>Pendientes del expediente</h4>
+                                    <p>{{ altaResumenEstadoPanel().motivoPrincipal }}</p>
+                                  </div>
+                                  <ul class="alta-resumen-diagnostico-panel__list">
+                                    @for (issue of altaResumenFaltantes(); track issue.claveBloque + issue.mensaje) {
+                                      <li>
+                                        <button
+                                          type="button"
+                                          class="alta-resumen-diagnostico-panel__issue"
+                                          (click)="irAlFaltanteResumenAlta(issue)"
+                                        >
+                                          <span class="alta-resumen-diagnostico-panel__block">{{ issue.etiquetaBloque }}</span>
+                                          <span class="alta-resumen-diagnostico-panel__msg">{{ issue.mensaje }}</span>
+                                        </button>
+                                      </li>
+                                    }
+                                  </ul>
+                                </section>
+                                }
+
                                 <h4 class="resumen-checklist-title">
                                   Registros de la bitácora
                                 </h4>

@@ -1,0 +1,18 @@
+﻿<header class="employee-record-header" aria-label="Resumen del trabajador">
+  <div class="employee-record-header__identity">
+    <span class="employee-record-header__avatar" aria-hidden="true">{{ initials }}</span>
+    <div class="employee-record-header__title">
+      <div class="employee-record-header__name-row">
+        <h2 class="employee-record-header__name">{{ employee.nombre }}</h2>
+      </div>
+      <p class="employee-record-header__role">{{ employee.cargo }}</p>
+    </div>
+  </div>
+  <p class="employee-record-header__meta">
+    <span><strong>RUT</strong> {{ employee.rut }}</span>
+    <span aria-hidden="true">·</span>
+    <span><strong>Cargo</strong> {{ employee.cargo }}</span>
+    <span aria-hidden="true">·</span>
+    <span><strong>Centro de costo</strong> {{ employee.departamento }}</span>
+  </p>
+</header>

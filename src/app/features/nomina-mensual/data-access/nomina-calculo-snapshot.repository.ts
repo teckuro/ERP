@@ -42,6 +42,10 @@ interface GuardarSnapshotRpcPayload {
   trazabilidad: Array<Record<string, Json>>;
 }
 
+function asArray<T>(value: readonly T[] | null | undefined): T[] {
+  return Array.isArray(value) ? [...value] : [];
+}
+
 @Injectable({ providedIn: 'root' })
 export class NominaCalculoSnapshotRepository {
   private readonly supabase = injectSupabase();
@@ -253,7 +257,7 @@ export class NominaCalculoSnapshotRepository {
         aprobacion_operativa_fecha: fecha,
         aprobacion_operativa_usuario_id: user?.id ?? null,
         aprobacion_operativa_usuario_label: usuarioLabel,
-        aprobacion_operativa_advertencias: params.advertencias,
+        aprobacion_operativa_advertencias: params.advertencias ?? [],
         aprobacion_operativa_metadata: metadata as Json,
         updated_at: fecha,
       })
@@ -346,7 +350,8 @@ export class NominaCalculoSnapshotRepository {
     idCalculoPeriodo: number,
     trabajadores: NominaCalculoTrabajadorSnapshot[],
   ): Promise<NominaCalculoTrabajadorSnapshot[]> {
-    const rows = trabajadores.map((t) => ({
+    const trabajadoresSnapshot = asArray(trabajadores);
+    const rows = trabajadoresSnapshot.map((t) => ({
       id_calculo_periodo: idCalculoPeriodo,
       id_persona: t.idPersona,
       rut: t.rut,
@@ -368,22 +373,23 @@ export class NominaCalculoSnapshotRepository {
       cotizacion_sanna: t.cotizacionSanna,
       cotizacion_ley_16744_empleador: t.cotizacionLey16744Empleador,
     }));
+    if (rows.length === 0) return [];
     const { data, error } = await this.supabase
       .from('nomina_calculo_trabajador')
       .insert(rows)
       .select('*');
     if (error) throw new Error(`No fue posible guardar trabajadores del snapshot: ${error.message}`);
-    return (data ?? []).map((row) => mapTrabajadorRow(row, trabajadores));
+    return (data ?? []).map((row) => mapTrabajadorRow(row, trabajadoresSnapshot));
   }
 
   private async insertarConceptos(
     trabajadores: NominaCalculoTrabajadorSnapshot[],
     idTrabajadorPorPersona: Map<number, number>,
   ): Promise<void> {
-    const rows: NominaCalculoConceptoInsert[] = trabajadores.flatMap((t) => {
+    const rows: NominaCalculoConceptoInsert[] = asArray(trabajadores).flatMap((t) => {
       const idCalculoTrabajador = idTrabajadorPorPersona.get(t.idPersona);
       if (idCalculoTrabajador == null) return [];
-      return t.conceptos.map((c): NominaCalculoConceptoInsert => ({
+      return asArray(t.conceptos).map((c): NominaCalculoConceptoInsert => ({
         id_calculo_trabajador: idCalculoTrabajador,
         id_concepto: c.idConcepto,
         tipo: c.tipo,
@@ -409,9 +415,9 @@ export class NominaCalculoSnapshotRepository {
     idTrabajadorPorPersona: Map<number, number>,
   ): Promise<void> {
     const rows = [
-      ...issuesPeriodo.map((i) => mapIssueRow(i, idCalculoPeriodo, null)),
-      ...trabajadores.flatMap((t) =>
-        t.issues.map((i) => mapIssueRow(i, idCalculoPeriodo, idTrabajadorPorPersona.get(t.idPersona) ?? null)),
+      ...asArray(issuesPeriodo).map((i) => mapIssueRow(i, idCalculoPeriodo, null)),
+      ...asArray(trabajadores).flatMap((t) =>
+        asArray(t.issues).map((i) => mapIssueRow(i, idCalculoPeriodo, idTrabajadorPorPersona.get(t.idPersona) ?? null)),
       ),
     ];
     if (rows.length === 0) return;
@@ -424,8 +430,8 @@ export class NominaCalculoSnapshotRepository {
     trabajadores: NominaCalculoTrabajadorSnapshot[],
     idTrabajadorPorPersona: Map<number, number>,
   ): Promise<void> {
-    const rows = trabajadores.flatMap((t) =>
-      t.trazabilidad.map((tr) => mapTrazabilidadRow(tr, idCalculoPeriodo, idTrabajadorPorPersona.get(t.idPersona) ?? null)),
+    const rows = asArray(trabajadores).flatMap((t) =>
+      asArray(t.trazabilidad).map((tr) => mapTrazabilidadRow(tr, idCalculoPeriodo, idTrabajadorPorPersona.get(t.idPersona) ?? null)),
     );
     if (rows.length === 0) return;
     const { error } = await this.supabase.from('nomina_calculo_trazabilidad').insert(rows);
@@ -583,7 +589,8 @@ function countInvalidNumbers(value: unknown): number {
 }
 
 function buildGuardarSnapshotRpcPayload(snapshot: NominaCalculoPeriodoSnapshot): GuardarSnapshotRpcPayload {
-  const trabajadores = snapshot.trabajadores.map((trabajador, trabajadorIndex) => ({
+  const trabajadoresSnapshot = asArray(snapshot.trabajadores);
+  const trabajadores = trabajadoresSnapshot.map((trabajador, trabajadorIndex) => ({
     trabajador_index: trabajadorIndex,
     id_persona: trabajador.idPersona,
     rut: trabajador.rut,
@@ -606,8 +613,8 @@ function buildGuardarSnapshotRpcPayload(snapshot: NominaCalculoPeriodoSnapshot):
     cotizacion_ley_16744_empleador: trabajador.cotizacionLey16744Empleador,
   })) satisfies Array<Record<string, Json>>;
 
-  const conceptos = snapshot.trabajadores.flatMap((trabajador, trabajadorIndex) =>
-    trabajador.conceptos.map((concepto) => ({
+  const conceptos = trabajadoresSnapshot.flatMap((trabajador, trabajadorIndex) =>
+    asArray(trabajador.conceptos).map((concepto) => ({
       trabajador_index: trabajadorIndex,
       id_concepto: concepto.idConcepto,
       tipo: concepto.tipo,
@@ -623,16 +630,16 @@ function buildGuardarSnapshotRpcPayload(snapshot: NominaCalculoPeriodoSnapshot):
   ) satisfies Array<Record<string, Json>>;
 
   const observaciones = [
-    ...snapshot.issues.map((issue) => buildIssueRpcPayload(issue, null)),
-    ...snapshot.trabajadores.flatMap((trabajador, trabajadorIndex) =>
-      trabajador.issues.map((issue) => buildIssueRpcPayload(issue, trabajadorIndex)),
+    ...asArray(snapshot.issues).map((issue) => buildIssueRpcPayload(issue, null)),
+    ...trabajadoresSnapshot.flatMap((trabajador, trabajadorIndex) =>
+      asArray(trabajador.issues).map((issue) => buildIssueRpcPayload(issue, trabajadorIndex)),
     ),
   ];
 
   const trazabilidad = [
-    ...snapshot.trazabilidad.map((traza) => buildTrazabilidadRpcPayload(traza, null)),
-    ...snapshot.trabajadores.flatMap((trabajador, trabajadorIndex) =>
-      trabajador.trazabilidad.map((traza) => buildTrazabilidadRpcPayload(traza, trabajadorIndex)),
+    ...asArray(snapshot.trazabilidad).map((traza) => buildTrazabilidadRpcPayload(traza, null)),
+    ...trabajadoresSnapshot.flatMap((trabajador, trabajadorIndex) =>
+      asArray(trabajador.trazabilidad).map((traza) => buildTrazabilidadRpcPayload(traza, trabajadorIndex)),
     ),
   ];
 

@@ -1,9 +1,9 @@
-import { EmpleadoEstadoFicha } from '../models/empleado-listado.model';
+﻿import { EmpleadoEstadoFicha } from '../models/empleado-listado.model';
 import { CrearEmpleadoPayload } from '../models/empleado-payload.model';
 import {
   evaluarDiagnosticoFichaEmpleado,
   snapshotValidacionDesdePayload,
-} from '../rules/empleado-ficha-validacion.rules';
+} from '../rules/empleado-diagnostico.rules';
 
 export interface EvaluacionCompletitudEmpleado {
   estadoFicha: EmpleadoEstadoFicha;
@@ -73,3 +73,4 @@ function buildAptitudErrorMessage(evaluacion: EvaluacionCompletitudEmpleado): st
 function unique(values: string[]): string[] {
   return [...new Set(values)];
 }
+

@@ -25,18 +25,18 @@
         <section class="nom-acta-modal__summary">
           <p>Qué debe revisar RRHH</p>
           <ul>
-            @for (punto of confirmacion.puntos; track punto) {
+            @for (punto of (confirmacion.puntos ?? []); track punto) {
               <li>{{ punto }}</li>
             }
           </ul>
         </section>
-        @if (confirmacion.secciones?.length) {
+        @if ((confirmacion.secciones ?? []).length) {
           <div class="nom-acta-modal__grid">
-            @for (seccion of confirmacion.secciones; track seccion.titulo) {
+            @for (seccion of (confirmacion.secciones ?? []); track seccion.titulo) {
               <section class="nom-acta-modal__block">
                 <p class="nom-acta-modal__title">{{ seccion.titulo }}</p>
                 <ul class="nom-acta-modal__list">
-                  @for (item of seccion.items; track item) {
+                  @for (item of (seccion.items ?? []); track item) {
                     <li>{{ item }}</li>
                   }
                 </ul>

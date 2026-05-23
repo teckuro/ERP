@@ -74,11 +74,11 @@ export interface ConfirmacionProcesoMensualView {
   titulo: string;
   mensaje: string;
   detalle: string;
-  puntos: string[];
+  puntos?: string[];
   primaryLabel: string;
   secondaryLabel: string;
   advertenciasAprobacion?: string[];
-  secciones?: Array<{ titulo: string; items: string[] }>;
+  secciones?: Array<{ titulo: string; items?: string[] }>;
 }
 
 export type InformacionPeriodoDestino =

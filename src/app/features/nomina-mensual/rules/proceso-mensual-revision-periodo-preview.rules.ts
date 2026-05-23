@@ -67,11 +67,15 @@ export interface BuildRevisionPeriodoPreviewInput {
 const TITULO_SECCION = 'Qué falta ahora';
 const TITULO_MODAL = 'Revisión del período antes de generar';
 
+function asArray<T>(value: readonly T[] | null | undefined): T[] {
+  return Array.isArray(value) ? [...value] : [];
+}
+
 function metricasPreview(input: BuildRevisionPeriodoPreviewInput): InformacionPeriodoResumenVerificacion {
-  const bloqueosValidacion = input.validacionCalculo.bloqueos.filter((b) => b.codigo !== 'BLOQ-005').length;
-  const bloqueosOperativos = input.queFaltaAhora.filter((p) => p.severidad === 'danger').length;
-  const advertenciasValidacion = input.validacionCalculo.advertencias.length;
-  const advertenciasOperativos = input.queFaltaAhora.filter((p) => p.severidad === 'warning').length;
+  const bloqueosValidacion = asArray(input.validacionCalculo.bloqueos).filter((b) => b.codigo !== 'BLOQ-005').length;
+  const bloqueosOperativos = asArray(input.queFaltaAhora).filter((p) => p.severidad === 'danger').length;
+  const advertenciasValidacion = asArray(input.validacionCalculo.advertencias).length;
+  const advertenciasOperativos = asArray(input.queFaltaAhora).filter((p) => p.severidad === 'warning').length;
   return {
     criticos: Math.max(bloqueosValidacion, bloqueosOperativos, input.incidencias.resumen.bloqueos),
     advertencias: Math.max(advertenciasValidacion, advertenciasOperativos, input.incidencias.resumen.advertencias),
@@ -155,7 +159,7 @@ function pendienteDesdeVm(p: ProcesoMensualPendienteVm): RevisionPeriodoPreviewP
 function buildPendientesLista(input: BuildRevisionPeriodoPreviewInput, max = 5): RevisionPeriodoPreviewPendiente[] {
   const seen = new Set<string>();
   const out: RevisionPeriodoPreviewPendiente[] = [];
-  for (const p of input.queFaltaAhora) {
+  for (const p of asArray(input.queFaltaAhora)) {
     const norm = p.codigo.trim();
     if (!norm || seen.has(norm)) continue;
     seen.add(norm);
@@ -163,7 +167,7 @@ function buildPendientesLista(input: BuildRevisionPeriodoPreviewInput, max = 5):
     if (out.length >= max) break;
   }
   if (out.length < max && input.tienePrevalidacion) {
-    for (const b of input.validacionCalculo.bloqueos) {
+    for (const b of asArray(input.validacionCalculo.bloqueos)) {
       if (b.codigo === 'BLOQ-005' || seen.has(b.codigo)) continue;
       seen.add(b.codigo);
       out.push({
@@ -175,7 +179,7 @@ function buildPendientesLista(input: BuildRevisionPeriodoPreviewInput, max = 5):
     }
   }
   if (out.length < max && input.tienePrevalidacion) {
-    for (const a of input.validacionCalculo.advertencias) {
+    for (const a of asArray(input.validacionCalculo.advertencias)) {
       if (seen.has(a.codigo)) continue;
       seen.add(a.codigo);
       out.push({
@@ -211,8 +215,8 @@ function resolveAcciones(input: BuildRevisionPeriodoPreviewInput): {
       || input.validacionCalculo.estado === 'advertencias');
 
   if (bloqueos) {
-    const primeroPendiente = input.queFaltaAhora.find((p) => p.severidad === 'danger');
-    const primeroValidacion = input.validacionCalculo.bloqueos.find((b) => b.codigo !== 'BLOQ-005');
+    const primeroPendiente = asArray(input.queFaltaAhora).find((p) => p.severidad === 'danger');
+    const primeroValidacion = asArray(input.validacionCalculo.bloqueos).find((b) => b.codigo !== 'BLOQ-005');
     return {
       principal: primeroPendiente
         ? {
@@ -251,7 +255,7 @@ function resolveAcciones(input: BuildRevisionPeriodoPreviewInput): {
     return {
       principal: input.puedeGenerarNomina
         ? { label: 'Generar nómina', tipo: 'generar_nomina' }
-        : { label: 'Revisar advertencias', tipo: 'pendiente', codigoPendiente: input.validacionCalculo.advertencias[0]?.codigo },
+        : { label: 'Revisar advertencias', tipo: 'pendiente', codigoPendiente: asArray(input.validacionCalculo.advertencias)[0]?.codigo },
       secundaria: { label: 'Ver detalle del período', tipo: 'pendiente' },
       bajada: input.puedeGenerarNomina
         ? 'Hay advertencias que puede revisar o continuar para generar la nómina.'

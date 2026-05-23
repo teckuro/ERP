@@ -41,7 +41,7 @@ Fuera de alcance:
 
 # Creacion avanzada: bloques del formulario (inventario)
 
-**Referencia visual NOIA del sistema:** [`../../diseno/noia-bases-sistema-referencia.md`](../../diseno/noia-bases-sistema-referencia.md) — tokens `--bitacora-*`, layout `268px | 1fr`, clases `advanced-*` y `employee-*`. Copiar este módulo antes de inventar otro wizard.
+**Referencia visual NOIA del sistema:** [`../../diseno/noia-bases-sistema-referencia.md`](../../diseno/noia-bases-sistema-referencia.md)  tokens `--bitacora-*`, layout `268px | 1fr`, clases `advanced-*` y `employee-*`. Copiar este mÃ³dulo antes de inventar otro wizard.
 
 ---
 
@@ -62,7 +62,7 @@ La creacion avanzada no debe mostrar una tarjeta fija de validaciones por paso. 
 
 - El **Mapa de ficha** resume estado, progreso, pendientes y pasos opcionales/no aplica.
 - El contenido del paso muestra solo los campos y ayudas propias del paso.
-- Las validaciones chilenas se evalúan internamente y se muestran mediante `app-message-box` cuando el usuario actua.
+- Las validaciones chilenas se evalÃºan internamente y se muestran mediante `app-message-box` cuando el usuario actua.
 
 Comportamiento:
 
@@ -70,17 +70,17 @@ Comportamiento:
 |---|---|
 | Guardar borrador | Validacion minima. Si falta identificacion base, MsgBox con pendientes. Si guarda, MsgBox de exito. |
 | Siguiente | Flexible. Si hay pendientes/advertencias, MsgBox con `Corregir ahora` o `Continuar`. |
-| Finalizar alta | Estricto. MsgBox con datos obligatorios pendientes y advertencias de revisión. `Ir al primer pendiente` navega y enfoca el campo pendiente. |
+| Finalizar alta | Estricto. MsgBox con datos obligatorios pendientes y advertencias de revisiÃ³n. `Ir al primer pendiente` navega y enfoca el campo pendiente. |
 
 Regla UX: no duplicar la informacion del mapa con tarjetas permanentes dentro del paso.
 
 ### Copy administrativo de MsgBox
 
 - Los mensajes deben sonar administrativos y orientados a RRHH.
-- Evitar lenguaje técnico como `bloqueo` en botones o títulos visibles.
-- Usar `datos obligatorios pendientes`, `advertencias de revisión` e `información útil`.
+- Evitar lenguaje tÃ©cnico como `bloqueo` en botones o tÃ­tulos visibles.
+- Usar `datos obligatorios pendientes`, `advertencias de revisiÃ³n` e `informaciÃ³n Ãºtil`.
 - No usar punto y coma en textos visibles. Separar ideas en frases cortas.
-- Los listados del MsgBox deben usar guion visual o viñeta y cerrar cada idea con punto final.
+- Los listados del MsgBox deben usar guion visual o viÃ±eta y cerrar cada idea con punto final.
 
 
 ## EMP-PERFIL-LABORAL-UI-01 - Perfil laboral en paso propio
@@ -158,92 +158,92 @@ Patron de uso:
 5. Resumen final conserva la revision pendiente.
 ## EMP-ALTA-COHERENCIA-GLOBAL-00 - Matriz de aplicabilidad y coherencia
 
-La auditoría [`alta-coherencia-global-00.md`](./alta-coherencia-global-00.md) queda como contrato previo para las próximas mejoras de Creación avanzada.
+La auditorÃ­a [`alta-coherencia-global-00.md`](./alta-coherencia-global-00.md) queda como contrato previo para las prÃ³ximas mejoras de CreaciÃ³n avanzada.
 
 Principios vigentes:
 
-- `relacionLaboral` ordena el flujo completo: `CONTRATO` usa trabajador dependiente; `HONORARIOS` usa prestador independiente y finalización bloqueada.
-- `tipo_trabajador` no es una condición especial: se deriva como `DEPENDIENTE` o `INDEPENDIENTE`.
-- Las condiciones como pensionado, invalidez, técnico extranjero, discapacidad, exento de cotización y menor protegido se declaran en `Condiciones especiales`.
-- Validación obligatoria, aplicabilidad y coherencia administrativa no son lo mismo.
-- Las incoherencias relevantes deben avisar con `app-message-box` y permitir que RRHH aplique la corrección sugerida o mantenga bajo revisión.
-- La siguiente implementación debe crear una matriz única que alimente templates, validaciones, mapa lateral, resumen final y limpieza de honorarios.
+- `relacionLaboral` ordena el flujo completo: `CONTRATO` usa trabajador dependiente; `HONORARIOS` usa prestador independiente y finalizaciÃ³n bloqueada.
+- `tipo_trabajador` no es una condiciÃ³n especial: se deriva como `DEPENDIENTE` o `INDEPENDIENTE`.
+- Las condiciones como pensionado, invalidez, tÃ©cnico extranjero, discapacidad, exento de cotizaciÃ³n y menor protegido se declaran en `Condiciones especiales`.
+- ValidaciÃ³n obligatoria, aplicabilidad y coherencia administrativa no son lo mismo.
+- Las incoherencias relevantes deben avisar con `app-message-box` y permitir que RRHH aplique la correcciÃ³n sugerida o mantenga bajo revisiÃ³n.
+- La siguiente implementaciÃ³n debe crear una matriz Ãºnica que alimente templates, validaciones, mapa lateral, resumen final y limpieza de honorarios.
 
 
-## EMP-ALTA-COHERENCIA-GLOBAL-01 - Implementación de matriz única
+## EMP-ALTA-COHERENCIA-GLOBAL-01 - ImplementaciÃ³n de matriz Ãºnica
 
-Creación avanzada ahora cuenta con una regla pura de aplicabilidad:
+CreaciÃ³n avanzada ahora cuenta con una regla pura de aplicabilidad:
 
 ```txt
 src/app/features/empleados/rules/empleado-alta-aplicabilidad.rules.ts
 ```
 
-La regla no reemplaza las validaciones ni la coherencia administrativa. Ordena qué corresponde exigir, mostrar como derivado, tratar como opcional, marcar como no aplicable o mantener bajo revisión según `CONTRATO` / `HONORARIOS`, régimen previsional, APVI, condiciones especiales y edad laboral.
+La regla no reemplaza las validaciones ni la coherencia administrativa. Ordena quÃ© corresponde exigir, mostrar como derivado, tratar como opcional, marcar como no aplicable o mantener bajo revisiÃ³n segÃºn `CONTRATO` / `HONORARIOS`, rÃ©gimen previsional, APVI, condiciones especiales y edad laboral.
 
 Uso visible:
 
 - el wizard consume la matriz para estados `No aplica` y `Opcional`;
 - el resumen final muestra `Matriz de aplicabilidad`;
-- `Coherencia administrativa` queda como bloque separado para combinaciones que requieren decisión RRHH.
+- `Coherencia administrativa` queda como bloque separado para combinaciones que requieren decisiÃ³n RRHH.
 
-Restricciones mantenidas: sin SQL/RPC/RLS, sin motor, sin nómina, sin creación básica, sin ficha empleado y sin persistencia final de honorarios.
+Restricciones mantenidas: sin SQL/RPC/RLS, sin motor, sin nÃ³mina, sin creaciÃ³n bÃ¡sica, sin ficha empleado y sin persistencia final de honorarios.
 
 
-## EMP-ALTA-DIAGNOSTICO-CONTRACTUAL-UX-01 - Diagnóstico contractual visible
+## EMP-ALTA-DIAGNOSTICO-CONTRACTUAL-UX-01 - DiagnÃ³stico contractual visible
 
-La matriz única de aplicabilidad no debe exponerse como una matriz técnica en el Resumen final.
+La matriz Ãºnica de aplicabilidad no debe exponerse como una matriz tÃ©cnica en el Resumen final.
 
-Patrón vigente:
+PatrÃ³n vigente:
 
 - la regla `empleado-alta-aplicabilidad.rules.ts` sigue definiendo estados internos;
-- el usuario ve `Diagnóstico contractual`;
+- el usuario ve `DiagnÃ³stico contractual`;
 - el bloque muestra `Caso detectado` y tarjetas operativas;
 - `Coherencia administrativa` queda separada para revisiones y decisiones RRHH;
 - los bloques informativos/advertencia usan fondos suaves y bordes completos, sin `border-left` fuerte ni barras laterales de color.
 
-Restricciones mantenidas: sin SQL/RPC/RLS, sin motor, sin nómina, sin creación básica, sin ficha empleado y sin persistencia final de honorarios.
+Restricciones mantenidas: sin SQL/RPC/RLS, sin motor, sin nÃ³mina, sin creaciÃ³n bÃ¡sica, sin ficha empleado y sin persistencia final de honorarios.
 
 
 ## EMP-ALTA-MSGBOX-ERROR-UX-01 - Error de guardado estructurado
 
-Los errores de guardado en alta avanzada deben usar el mismo lenguaje visual del éxito: modal con encabezado, panel de detalle y acción recomendada.
+Los errores de guardado en alta avanzada deben usar el mismo lenguaje visual del Ã©xito: modal con encabezado, panel de detalle y acciÃ³n recomendada.
 
-Patrón vigente:
+PatrÃ³n vigente:
 
-- evitar mensajes planos debajo del título;
-- separar `Qué revisar` de `Acción recomendada`;
-- sugerir el paso de corrección cuando sea posible;
+- evitar mensajes planos debajo del tÃ­tulo;
+- separar `QuÃ© revisar` de `AcciÃ³n recomendada`;
+- sugerir el paso de correcciÃ³n cuando sea posible;
 - mantener copy administrativo para RRHH;
-- no mostrar stack técnico ni transformar reglas de aptitud en textos crudos.
+- no mostrar stack tÃ©cnico ni transformar reglas de aptitud en textos crudos.
 
-Ejemplo: si el error indica `Sin previsión`, el modal debe orientar al paso `Previsión y salud` y explicar que AFP o IPS son necesarios para validar remuneraciones, salvo excepción respaldada.
+Ejemplo: si el error indica `Sin previsiÃ³n`, el modal debe orientar al paso `PrevisiÃ³n y salud` y explicar que AFP o IPS son necesarios para validar remuneraciones, salvo excepciÃ³n respaldada.
 
 ## EMP-ALTA-VALIDACIONES-ASISTIDAS-01 - Validaciones visibles guiadas
 
-La alta avanzada centraliza la salida visible en `empleado-alta-validaciones.rules.ts`. Esta capa no decide por sí sola qué aplica ni qué combinación es incoherente: traduce lo que ya entregan aplicabilidad, coherencia y validadores del formulario.
+La alta avanzada centraliza la salida visible en `empleado-alta-validaciones.rules.ts`. Esta capa no decide por sÃ­ sola quÃ© aplica ni quÃ© combinaciÃ³n es incoherente: traduce lo que ya entregan aplicabilidad, coherencia y validadores del formulario.
 
 Reglas de UX:
 
 - Los datos obligatorios pendientes se muestran mediante `app-message-box` al presionar `Siguiente` o `Finalizar`.
 - Los campos fuera de flujo se muestran como `Campos no aplicables`, no como error.
 - `tipo_trabajador` se muestra como `Definido por sistema`.
-- Régimen `NINGUNA` se muestra como revisión administrativa en `Previsión y salud`, con copy explícito sobre `Sin previsión`.
-- `app-message-box` se reserva para decisiones: aplicar corrección sugerida, mantener bajo revisión, volver al formulario o finalizar.
-- Honorarios no muestra errores de contrato laboral, jornada, previsión dependiente, asignaciones ni APVI; permite borrador y mantiene finalización bloqueada por fase.
+- RÃ©gimen `NINGUNA` se muestra como revisiÃ³n administrativa en `PrevisiÃ³n y salud`, con copy explÃ­cito sobre `Sin previsiÃ³n`.
+- `app-message-box` se reserva para decisiones: aplicar correcciÃ³n sugerida, mantener bajo revisiÃ³n, volver al formulario o finalizar.
+- Honorarios no muestra errores de contrato laboral, jornada, previsiÃ³n dependiente, asignaciones ni APVI; permite borrador y mantiene finalizaciÃ³n bloqueada por fase.
 
-El Resumen final mantiene `Estado por etapa` como lectura consolidada. Los mensajes de paso se mantienen en MsgBox para no recargar ni duplicar información en el formulario.
+El Resumen final mantiene `Estado por etapa` como lectura consolidada. Los mensajes de paso se mantienen en MsgBox para no recargar ni duplicar informaciÃ³n en el formulario.
 
-## EMP-ADV-BITACORA-LABORAL-UX-01 - Patrón Bitácora Laboral
+## EMP-ADV-BITACORA-LABORAL-UX-01 - PatrÃ³n BitÃ¡cora Laboral
 
-Creación avanzada adopta el patrón `Bitácora laboral` como identidad local del flujo:
+CreaciÃ³n avanzada adopta el patrÃ³n `BitÃ¡cora laboral` como identidad local del flujo:
 
-- El alta se presenta como ficha en construcción con registros, decisiones y pendientes.
+- El alta se presenta como ficha en construcciÃ³n con registros, decisiones y pendientes.
 - El mapa lateral se agrupa por bloques funcionales, sin cambiar orden ni cantidad de pasos.
 - Los estados visibles se traducen a lenguaje operativo RRHH.
-- Los pasos cortos y estados no requeridos deben explicar decisión y siguiente acción, no quedar como alertas vacías.
-- El resumen se presenta como `Acta de revisión de la ficha`, con datos principales, diagnóstico del expediente, revisión guiada y registros de bitácora.
+- Los pasos cortos y estados no requeridos deben explicar decisiÃ³n y siguiente acciÃ³n, no quedar como alertas vacÃ­as.
+- El resumen se presenta como `Acta de revisiÃ³n de la ficha`, con datos principales, diagnÃ³stico del expediente, revisiÃ³n guiada y registros de bitÃ¡cora.
 
-Restricciones mantenidas: sin SQL/RPC/RLS, sin motor, sin nómina, sin creación básica, sin ficha empleado, sin persistencia final de honorarios y sin estilos globales protegidos.
+Restricciones mantenidas: sin SQL/RPC/RLS, sin motor, sin nÃ³mina, sin creaciÃ³n bÃ¡sica, sin ficha empleado, sin persistencia final de honorarios y sin estilos globales protegidos.
 
 Documento de fase: [`bitacora-laboral-ux-01.md`](./bitacora-laboral-ux-01.md).
 

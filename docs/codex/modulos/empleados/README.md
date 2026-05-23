@@ -56,10 +56,11 @@ Contratos y guías del ciclo de vida del trabajador en Angular: listado, altas (
 | [`emp-ficha-expediente-noia-01.md`](./emp-ficha-expediente-noia-01.md) | Fase NOIA: layout 3 columnas, rail, motivo principal, CTA único |
 | [`emp-ficha-expediente-css-budget-01.md`](./emp-ficha-expediente-css-budget-01.md) | Split `styleUrls` CSS ficha (budget 24 kB por hoja, sin rediseño) |
 | [`emp-ficha-expediente-fullworkspace-ux-02.md`](./emp-ficha-expediente-fullworkspace-ux-02.md) | Expediente integrado al workspace (sin card exterior dominante) |
+| [emp-ficha-sustentable-00.md](./emp-ficha-sustentable-00.md) | Arquitectura modular ficha: facade, kernel diagnostico, tabs config |
 | [`validar-remuneraciones.md`](./validar-remuneraciones.md) | Opción B, condiciones del botón, persistencia, exclusiones |
 | [`tests-empleados.md`](./tests-empleados.md) | Unitarios, Playwright, brechas |
 
-**Transversal (sigue en `temas/`):** arquitectura por carpetas del feature — [`../../temas/base-angular-empleados.md`](../../temas/base-angular-empleados.md).  
+**Transversal (sigue en `temas/`):** arquitectura por carpetas del feature — [`../../temas/base-angular-empleados.md`](../../temas/base-angular-empleados.md).
 **Rutas y recorrido unificado:** [`../../temas/flujos/empleados.md`](../../temas/flujos/empleados.md).
 
 ## Orden de lectura recomendado

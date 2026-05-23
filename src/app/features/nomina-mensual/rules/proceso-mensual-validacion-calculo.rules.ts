@@ -25,6 +25,10 @@ export interface ValidacionCalculoPreliminarInput {
   tieneBasePersistida?: boolean;
 }
 
+function asArray<T>(value: readonly T[] | null | undefined): T[] {
+  return Array.isArray(value) ? [...value] : [];
+}
+
 export function buildValidacionCalculoPreliminarView(
   input: ValidacionCalculoPreliminarInput,
 ): ValidacionCalculoPreliminarView {
@@ -100,11 +104,15 @@ export function buildValidacionCalculoPreliminarView(
     });
   }
 
-  for (const bloqueo of resultado.bloqueos) {
+  const bloqueosResultado = asArray(resultado.bloqueos);
+  const advertenciasResultado = asArray(resultado.advertencias);
+  const parametrosGrupos = asArray(resultado.resumen?.parametrosGrupos);
+
+  for (const bloqueo of bloqueosResultado) {
     bloqueos.push(itemDesdeMensaje(bloqueo, 'bloqueo'));
   }
 
-  const faltantesMinimos = resultado.resumen.parametrosGrupos.filter((g) =>
+  const faltantesMinimos = parametrosGrupos.filter((g) =>
     parametroMinimoBloqueante(g.id, g.clasificacion),
   );
   if (
@@ -152,7 +160,7 @@ export function buildValidacionCalculoPreliminarView(
     });
   }
 
-  for (const advertencia of resultado.advertencias) {
+  for (const advertencia of advertenciasResultado) {
     if (!parametroMinimoBloqueanteDesdeCodigo(advertencia.codigo)) {
       advertencias.push(itemDesdeMensaje(advertencia, 'advertencia'));
     }
@@ -193,7 +201,7 @@ export function buildValidacionCalculoPreliminarView(
     });
   }
 
-  const parametrosOpcionales = resultado.resumen.parametrosGrupos.filter((g) =>
+  const parametrosOpcionales = parametrosGrupos.filter((g) =>
     parametroOpcionalAdvertencia(g.id, g.clasificacion),
   );
   if (parametrosOpcionales.length > 0) {

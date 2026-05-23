@@ -597,7 +597,7 @@ La fase `ERP-CONTEXT-OPTIMIZATION-01` agrega soporte para trabajar con menos tok
 
 - `docs/codex/contexto-rapido.md` resume fuente de verdad, restricciones y decisiones recientes.
 - `.cursor/rules/erp-ui-noia.mdc` vuelve persistente el criterio NOIA para tareas UI.
-- `.cursor/rules/erp-protected-files.mdc` protege estilos globales, configuraci�n, SQL, motor y persistencia cr�tica.
-- `scripts/build-context-pack.ps1` permite generar paquetes peque�os de documentaci�n y archivos puntuales por fase.
+- `.cursor/rules/erp-protected-files.mdc` protege estilos globales, configuración, SQL, motor y persistencia crítica.
+- `scripts/build-context-pack.ps1` permite generar paquetes pequeños de documentación y archivos puntuales por fase.
 
-Estas herramientas no reemplazan este documento rector; lo hacen m�s f�cil de aplicar en fases cortas.
+Estas herramientas no reemplazan este documento rector; lo hacen más fácil de aplicar en fases cortas.

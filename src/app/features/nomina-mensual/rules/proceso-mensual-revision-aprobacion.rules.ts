@@ -31,6 +31,10 @@ function observacionDesdeValidacion(item: ValidacionOperativaItemView): Resultad
   };
 }
 
+function asArray<T>(value: readonly T[] | null | undefined): T[] {
+  return Array.isArray(value) ? [...value] : [];
+}
+
 function etiquetaRevisionAprobacion(estado: RevisionAprobacionEstado): string {
   switch (estado) {
     case 'aprobado':
@@ -170,17 +174,23 @@ export function buildRevisionAprobacionView(input: BuildRevisionAprobacionInput)
   const hayResultadoActual = input.hayResultadoActual;
   const hayGuardado = guardado != null;
   const actualizadoSinGuardar = resultado.estado === 'actualizado_sin_guardar';
+  const resultadoBloqueos = asArray(resultado.bloqueos);
+  const resultadoAdvertencias = asArray(resultado.advertencias);
+  const resultadoInformaciones = asArray(resultado.informaciones);
+  const validacionBloqueos = asArray(validacion.bloqueos);
+  const validacionAdvertencias = asArray(validacion.advertencias);
+  const validacionInformaciones = asArray(validacion.informaciones);
   const bloqueos = [
-    ...resultado.bloqueos,
-    ...validacion.bloqueos.map((item) => observacionDesdeValidacion(item)),
+    ...resultadoBloqueos,
+    ...validacionBloqueos.map((item) => observacionDesdeValidacion(item)),
   ];
   const advertencias = [
-    ...resultado.advertencias,
-    ...validacion.advertencias.map((item) => observacionDesdeValidacion(item)),
+    ...resultadoAdvertencias,
+    ...validacionAdvertencias.map((item) => observacionDesdeValidacion(item)),
   ];
   const informaciones: ResultadoObservacionView[] = [
-    ...resultado.informaciones,
-    ...validacion.informaciones.map((item) => observacionDesdeValidacion(item)),
+    ...resultadoInformaciones,
+    ...validacionInformaciones.map((item) => observacionDesdeValidacion(item)),
   ];
 
   let estado: RevisionAprobacionEstado;

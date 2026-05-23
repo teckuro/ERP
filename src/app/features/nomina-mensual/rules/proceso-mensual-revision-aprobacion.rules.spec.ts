@@ -109,4 +109,41 @@ describe('proceso-mensual-revision-aprobacion.rules', () => {
     expect(vm.puedeAprobar).toBe(true);
     expect(vm.estado).toBe('listo');
   });
+
+  it('tolera listas ausentes al confirmar una nomina guardada', () => {
+    const resultadoPreliminar = {
+      estado: 'guardado',
+      ultimoGuardado: {
+        trabajadoresCalculados: 1,
+        trabajadoresOmitidos: 0,
+        trabajadoresConObservaciones: 0,
+      },
+      acciones: {
+        puedeGuardarPreliminar: false,
+        puedeRecalcular: true,
+      },
+    } as any;
+    const validacionCalculo = {
+      bloqueos: undefined,
+      advertencias: undefined,
+      informaciones: undefined,
+    } as any;
+
+    const vm = buildRevisionAprobacionView({
+      resultadoPreliminar,
+      validacionCalculo,
+      hayResultadoActual: false,
+      snapshotHash: 'hash-abc',
+      aprobacionOperativa: null,
+      guardandoSnapshot: false,
+      aprobandoResultado: false,
+      nominaCerradaOperativamente: false,
+      periodoValido: true,
+    });
+
+    expect(vm.bloqueos).toEqual([]);
+    expect(vm.advertencias).toEqual([]);
+    expect(vm.informaciones).toEqual([]);
+    expect(vm.puedeAprobar).toBe(true);
+  });
 });

@@ -234,6 +234,10 @@ import {
 } from '../models/proceso-mensual-area-orden.config';
 import { NOMINA_WORKSPACE_TABS_VISIBLE } from '../models/proceso-mensual-container.vm';
 
+function asArray<T>(value: readonly T[] | null | undefined): T[] {
+  return Array.isArray(value) ? [...value] : [];
+}
+
 @Injectable()
 export class ProcesoMensualPresentacionFacade {
   readonly store = inject(ProcesoMensualPeriodoStore);
@@ -1048,6 +1052,8 @@ export class ProcesoMensualPresentacionFacade {
   readonly estadoOperativo = computed(() => {
     const validacion = this.validacionCalculo();
     const resultado = this.resultadoPreliminar();
+    const resultadoBloqueos = asArray(resultado.bloqueos);
+    const resultadoAdvertencias = asArray(resultado.advertencias);
     const revision = this.revisionAprobacion();
     const contexto = this.contextoOperativoPeriodo();
     const resultadoPrevalidacion = this.store.resultado();
@@ -1060,10 +1066,10 @@ export class ProcesoMensualPresentacionFacade {
       informacionesPrevalidacion: validacion.informaciones.map((item) => this.pendienteDesdeValidacion(item, 'info')),
       baseGenerada: contexto.baseGenerada,
       calculoGenerado: contexto.calculoGenerado,
-      calculoConBloqueos: resultado.bloqueos.length > 0 || this.store.calculo()?.estado === 'con_bloqueos',
-      calculoConAdvertencias: resultado.advertencias.length > 0,
-      bloqueosCalculo: resultado.bloqueos.map((item) => this.pendienteDesdeResultado(item, 'danger')),
-      advertenciasCalculo: resultado.advertencias.map((item) => this.pendienteDesdeResultado(item, 'warning')),
+      calculoConBloqueos: resultadoBloqueos.length > 0 || this.store.calculo()?.estado === 'con_bloqueos',
+      calculoConAdvertencias: resultadoAdvertencias.length > 0,
+      bloqueosCalculo: resultadoBloqueos.map((item) => this.pendienteDesdeResultado(item, 'danger')),
+      advertenciasCalculo: resultadoAdvertencias.map((item) => this.pendienteDesdeResultado(item, 'warning')),
       resultadoGuardado: contexto.resultadoGuardado,
       aprobadoOperativamente: this.store.aprobacionOperativa() != null,
       cerradoOperativamente: this.nominaEstaCerradaOperativamente(),
@@ -1093,14 +1099,16 @@ export class ProcesoMensualPresentacionFacade {
     const resumen = this.dashboardResumen();
     const snapshot = this.store.snapshotActivo();
     const estado = this.estadoOperativo();
+    const advertencias = asArray(estado.advertencias);
+    const bloqueos = asArray(estado.bloqueos);
     return buildNominaResumenSuperior({
       trabajadoresAptos: resumen.trabajadoresAptos,
       parametrosListos: resumen.parametrosListos,
       movimientosAprobados: resumen.movimientosAprobados,
       movimientosPendientes: resumen.movimientosPendientes,
       asignacionesAplicables: resumen.asignacionesAplicables,
-      advertenciasCount: estado.advertencias.length,
-      bloqueosCount: estado.bloqueos.length,
+      advertenciasCount: advertencias.length,
+      bloqueosCount: bloqueos.length,
       snapshotTotalAdvertencias: snapshot?.totalAdvertencias ?? 0,
       snapshotTotalBloqueados: snapshot?.totalBloqueados ?? 0,
     });
@@ -1160,13 +1168,15 @@ export class ProcesoMensualPresentacionFacade {
 
   readonly nominaFrame = computed<NominaVisualFrameView>(() => {
     const estado = this.estadoOperativo();
+    const bloqueos = asArray(estado.bloqueos);
+    const advertencias = asArray(estado.advertencias);
     return buildNominaFrameView({
       frame: this.nominaVisualFrame(),
       estadoClave: estado.estadoClave,
       accion: estado.accionPrincipal,
       periodoEtiqueta: this.periodoActivo.etiqueta(),
-      bloqueosCount: estado.bloqueos.length,
-      advertenciasCount: estado.advertencias.length,
+      bloqueosCount: bloqueos.length,
+      advertenciasCount: advertencias.length,
       trabajadoresCount: this.dashboardResumen().trabajadoresAptos ?? this.store.snapshotActivo()?.totalTrabajadores ?? 0,
       resumenRevisionTrabajadores: this.resumenRevisionTrabajadores(),
       accionPeriodoEnCurso: this.accionPeriodoEnCurso(),
@@ -1278,11 +1288,13 @@ export class ProcesoMensualPresentacionFacade {
 
   readonly alertasPeriodoResumen = computed<AlertasPeriodoResumenVm>(() => {
     const estado = this.estadoOperativo();
+    const bloqueos = asArray(estado.bloqueos);
+    const advertencias = asArray(estado.advertencias);
     return buildAlertasPeriodoResumen({
       validando: this.store.validando(),
       tieneResultado: this.contextoOperativoPeriodo().tienePrevalidacion,
-      bloqueosCount: estado.bloqueos.length,
-      advertenciasCount: estado.advertencias.length,
+      bloqueosCount: bloqueos.length,
+      advertenciasCount: advertencias.length,
     });
   });
 
@@ -1351,14 +1363,14 @@ export class ProcesoMensualPresentacionFacade {
         || this.store.snapshotActivo() != null,
       liquidacionesGeneradas: this.store.liquidacionesGeneradasCount() > 0,
       nominaCerrada: this.nominaEstaCerradaOperativamente(),
-      bloqueosCount: this.estadoOperativo().bloqueos.length,
+      bloqueosCount: asArray(this.estadoOperativo().bloqueos).length,
     }),
   );
 
   readonly nominaWorkspaceTabVisibleSummaries = computed<NominaWorkspaceTabVisibleSummaryVm[]>(() =>
     buildNominaWorkspaceTabVisibleSummaries({
       resumenSuperior: this.nominaResumenSuperior(),
-      bloqueosCount: this.estadoOperativo().bloqueos.length,
+      bloqueosCount: asArray(this.estadoOperativo().bloqueos).length,
       pendientesCount: this.incidenciasPeriodo().resumen.bloqueos + this.incidenciasPeriodo().resumen.advertencias,
       liquidacionesGeneradas: this.liquidacionesGeneradasCount(),
       nominaCerrada: this.nominaEstaCerradaOperativamente(),
@@ -2108,8 +2120,8 @@ export class ProcesoMensualPresentacionFacade {
     const revision = this.revisionAprobacion();
     const snapshot = this.store.snapshotActivo();
     if (!revision.puedeAprobar || !snapshot) return;
-    const advertenciasAprobacion = revision.advertencias.map((advertencia) => advertencia.descripcion);
-    if (advertenciasAprobacion.length === 0 && snapshot.totalAdvertencias > 0) {
+    const advertenciasAprobacion = (revision.advertencias ?? []).map((advertencia) => advertencia.descripcion);
+    if (advertenciasAprobacion.length === 0 && (snapshot.totalAdvertencias ?? 0) > 0) {
       advertenciasAprobacion.push(`Resultado guardado con ${snapshot.totalAdvertencias} advertencia(s) no bloqueante(s).`);
     }
     this.abrirOverlayDecision({
@@ -2153,7 +2165,7 @@ export class ProcesoMensualPresentacionFacade {
     this.revisarBloqueosOperativos();
   }
 
-  private ejecutarAprobacionOperativa(advertenciasAprobacion: string[]): void {
+  private ejecutarAprobacionOperativa(advertenciasAprobacion: string[] = []): void {
     this.store.ejecutarAprobacionOperativa(advertenciasAprobacion);
   }
 
@@ -2203,8 +2215,8 @@ export class ProcesoMensualPresentacionFacade {
     }
     const estado = this.estadoOperativo();
     const filtro = filtroInicialRevisionTrabajadores({
-      bloqueosCount: estado.bloqueos.length,
-      advertenciasCount: estado.advertencias.length,
+      bloqueosCount: asArray(estado.bloqueos).length,
+      advertenciasCount: asArray(estado.advertencias).length,
     });
     this.seleccionarFiltroNominaMasiva(filtro);
     let filas = filtrarFilasMasivasTrabajadores(

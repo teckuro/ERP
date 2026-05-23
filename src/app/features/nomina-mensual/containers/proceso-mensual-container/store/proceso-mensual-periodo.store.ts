@@ -12,6 +12,17 @@ import { ProcesoMensualService } from '../../../services/proceso-mensual.service
 import type { AprobacionOperativaRegistroView } from '../models/proceso-mensual-container.vm';
 import { formatoFechaHoraNomina, formatoMontoNomina } from '../utils/proceso-mensual-presentacion.formato';
 
+function errorMessage(error: unknown, fallback: string): string {
+  if (error instanceof Error && error.message.trim()) return error.message;
+  if (typeof error === 'string' && error.trim()) return error;
+  return fallback;
+}
+
+function errorConContexto(prefix: string, error: unknown, fallback: string): string {
+  const detalle = errorMessage(error, fallback);
+  return detalle.includes(prefix) ? detalle : `${prefix}: ${detalle}`;
+}
+
 @Injectable()
 export class ProcesoMensualPeriodoStore {
   readonly periodoActivo = inject(PeriodoActivoService);
@@ -377,7 +388,7 @@ export class ProcesoMensualPeriodoStore {
       });
   }
 
-  ejecutarAprobacionOperativa(advertenciasAprobacion: string[]): void {
+  ejecutarAprobacionOperativa(advertenciasAprobacion: string[] = []): void {
     const snapshot = this.snapshotActivo();
     if (!snapshot?.idCalculoPeriodo) return;
     this.aprobandoResultado.set(true);
@@ -386,14 +397,18 @@ export class ProcesoMensualPeriodoStore {
       .aprobarResultadoPreliminarOperativamente({
         idCalculoPeriodo: snapshot.idCalculoPeriodo,
         periodo: this.periodoSeleccionado(),
-        advertencias: advertenciasAprobacion,
+        advertencias: advertenciasAprobacion ?? [],
       })
       .then((persistido) => {
         this.aplicarSnapshotActivo(persistido);
       })
-      .catch(() => {
+      .catch((e: unknown) => {
         this.errorAprobacionOperativa.set(
-          'No se pudo registrar la aprobacion operativa. Intenta nuevamente o revisa la conexion.',
+          errorConContexto(
+            'No se pudo registrar la aprobacion operativa',
+            e,
+            'Intenta nuevamente o revisa la conexion.',
+          ),
         );
       })
       .finally(() => {
@@ -465,8 +480,14 @@ export class ProcesoMensualPeriodoStore {
         this.aplicarSnapshotActivo(persistido);
         void this.cargarSnapshotCompletoActivo(this.periodoSeleccionado());
       })
-      .catch(() => {
-        this.errorCierreOperativo.set('No se pudo cerrar operativamente la nomina. No se realizaron cambios parciales.');
+      .catch((e: unknown) => {
+        this.errorCierreOperativo.set(
+          errorConContexto(
+            'No se pudo cerrar operativamente la nomina',
+            e,
+            'No se realizaron cambios parciales.',
+          ),
+        );
       })
       .finally(() => {
         this.cerrandoNomina.set(false);

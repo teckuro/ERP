@@ -62,6 +62,10 @@ import {
   buildPrevalidacionLecturaDesdeBorrador,
 } from '../rules/proceso-mensual-borrador-snapshot.rules';
 
+function asArray<T>(value: readonly T[] | null | undefined): T[] {
+  return Array.isArray(value) ? [...value] : [];
+}
+
 @Injectable({ providedIn: 'root' })
 export class ProcesoMensualService {
   private readonly parametrosGenerales = inject(ParametrosGeneralesService);
@@ -275,8 +279,8 @@ export class ProcesoMensualService {
       resumen.trabajadoresActivosAptos,
       resumen.trabajadoresActivosNoAptos,
       resumen.parametrosOperativos ? '1' : '0',
-      prevalidacion.bloqueos.length,
-      prevalidacion.advertencias.length,
+      asArray(prevalidacion.bloqueos).length,
+      asArray(prevalidacion.advertencias).length,
     ].join('|');
   }
 
@@ -420,7 +424,7 @@ export class ProcesoMensualService {
     let errorConceptos: string | undefined;
     let alertaConceptosMotorFuturo = false;
     if (rConc.status === 'fulfilled') {
-      const rows = rConc.value as Awaited<ReturnType<HaberesDescuentosService['listarConceptosMantenimiento']>>;
+      const rows = asArray(rConc.value as Awaited<ReturnType<HaberesDescuentosService['listarConceptosMantenimiento']>>);
       totalConceptosMantenimiento = rows.length;
       alertaConceptosMotorFuturo = rows.some(
         (c) => c.vigente && !c.esSistema && (!c.tipo?.trim() || !c.naturaleza?.trim()),
@@ -434,7 +438,7 @@ export class ProcesoMensualService {
     let lecturaEntradasMensuales: ProcesoMensualHechosPrevalidacion['lecturaEntradasMensuales'] = 'ok';
     let errorEntradasMensuales: string | undefined;
     if (rEntradas.status === 'fulfilled') {
-      entradasMensuales = rEntradas.value as ProcesoMensualHechosPrevalidacion['entradasMensuales'];
+      entradasMensuales = asArray(rEntradas.value as ProcesoMensualHechosPrevalidacion['entradasMensuales']);
     } else {
       lecturaEntradasMensuales = 'error';
       errorEntradasMensuales = rEntradas.reason instanceof Error ? rEntradas.reason.message : String(rEntradas.reason);
@@ -471,7 +475,7 @@ export class ProcesoMensualService {
 
     let recurrentesConteo: ProcesoMensualHechosPrevalidacion['recurrentesConteo'];
     if (rRec.status === 'fulfilled') {
-      const filas = rRec.value as HaberDescuentoAsignacionPrevalidacionMensualFila[];
+      const filas = asArray(rRec.value as HaberDescuentoAsignacionPrevalidacionMensualFila[]);
       recurrentesConteo = { lectura: 'ok', ...contarRecurrentesParaPrevalidacionMensual(filas) };
     } else {
       recurrentesConteo = {
@@ -581,8 +585,8 @@ export class ProcesoMensualService {
     preNomina: ProcesoMensualPreNominaPeriodo,
     empleados: readonly EmpleadoListado[],
   ): BaseNominaTrazabilidad {
-    const activos = empleados.filter((e) => e.estado === 'activo');
-    const entradas = prevalidacion.entradasMensuales ?? [];
+    const activos = asArray(empleados).filter((e) => e.estado === 'activo');
+    const entradas = asArray(prevalidacion.entradasMensuales);
     const entradasPorPersona = new Map<number, EntradaMensualPeriodo[]>();
     for (const entrada of entradas) {
       const personaEntradas = entradasPorPersona.get(entrada.idPersona) ?? [];
@@ -597,7 +601,7 @@ export class ProcesoMensualService {
       const movimientosDelMes = aptas.filter((entrada) => entrada.origen !== 'recurrente').length;
       const tieneBloqueos = personaEntradas.some(entradaBloqueaProceso);
       const tieneObservaciones =
-        personaEntradas.some((entrada) => entradaRequiereRevision(entrada) || entrada.warnings.length > 0) ||
+        personaEntradas.some((entrada) => entradaRequiereRevision(entrada) || asArray(entrada.warnings).length > 0) ||
         empleado.idContrato == null;
       const aptitud = evaluarAptitudOperativaNominaTrabajador(empleado, personaEntradas);
       const estado = this.estadoTrabajadorBaseNomina(aptitud.bloqueadoParaNomina, tieneBloqueos, tieneObservaciones);
@@ -655,7 +659,7 @@ export class ProcesoMensualService {
     if (estado === 'excluido') return 'Ficha no apta para remuneraciones.';
     const bloqueantes = entradas.filter(entradaBloqueaProceso).length;
     if (bloqueantes > 0) return `${bloqueantes} entrada(s) bloqueante(s).`;
-    const porRevisar = entradas.filter((entrada) => entradaRequiereRevision(entrada) || entrada.warnings.length > 0).length;
+    const porRevisar = entradas.filter((entrada) => entradaRequiereRevision(entrada) || asArray(entrada.warnings).length > 0).length;
     if (porRevisar > 0) return `${porRevisar} entrada(s) requieren revision.`;
     if (empleado.idContrato == null) return 'Contrato no disponible.';
     return 'Sin observaciones';
@@ -697,7 +701,7 @@ export class ProcesoMensualService {
     ]);
     const preNomina = construirPreNominaPeriodo(prevalidacion, new Date().toISOString());
     const entradasPorPersona = new Map<number, EntradaMensualPeriodo[]>();
-    for (const entrada of prevalidacion.entradasMensuales ?? []) {
+    for (const entrada of asArray(prevalidacion.entradasMensuales)) {
       const personaEntradas = entradasPorPersona.get(entrada.idPersona) ?? [];
       personaEntradas.push(entrada);
       entradasPorPersona.set(entrada.idPersona, personaEntradas);
@@ -716,7 +720,7 @@ export class ProcesoMensualService {
       catalogos,
       trabajadores,
       recurrentes,
-      entradasMensuales: construirEntradasMensualesMotor(prevalidacion.entradasMensuales ?? []),
+      entradasMensuales: construirEntradasMensualesMotor(asArray(prevalidacion.entradasMensuales)),
       empresaLey16744: null,
     };
   }

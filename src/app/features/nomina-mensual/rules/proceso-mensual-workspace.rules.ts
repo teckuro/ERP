@@ -25,6 +25,10 @@ export interface NominaVisualFrameInput {
   estadoClave: ProcesoMensualEstadoClave;
 }
 
+function asArray<T>(value: readonly T[] | null | undefined): T[] {
+  return Array.isArray(value) ? [...value] : [];
+}
+
 export function resolveNominaVisualFrame(input: NominaVisualFrameInput): NominaVisualFrame {
   if (input.validando || input.generandoPreNomina || input.calculandoPreliminar || input.rehidratandoPeriodo) {
     return 'generando';
@@ -360,8 +364,8 @@ export function buildBitacoraEtapas(input: BitacoraEtapasInput): BitacoraEtapaVm
   const guardado = input.tieneSnapshot;
   const aprobado = input.tieneAprobacion;
   const cerrada = input.nominaCerrada;
-  const advertencias = estado.advertencias.length;
-  const bloqueos = estado.bloqueos.length;
+  const advertencias = asArray(estado.advertencias).length;
+  const bloqueos = asArray(estado.bloqueos).length;
 
   const marca = (hecho: boolean, actual: boolean): BitacoraSubpasoMarca =>
     hecho ? 'hecho' : actual ? 'actual' : 'pendiente';

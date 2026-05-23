@@ -23,20 +23,24 @@ export function construirPreNominaPeriodo(
     movimientosVariablesValidados: movimientosValidados,
     movimientosVariablesBorrador: movimientosBorrador,
     parametrosOperativos: prevalidacion.resumen.parametrosOperativos,
-    codigosBloqueo: prevalidacion.bloqueos.map((b) => b.codigo),
-    codigosAdvertencia: prevalidacion.advertencias.map((a) => a.codigo),
+    codigosBloqueo: asArray(prevalidacion.bloqueos).map((b) => b.codigo),
+    codigosAdvertencia: asArray(prevalidacion.advertencias).map((a) => a.codigo),
     origenPrevalidacion: prevalidacion.estado,
   };
+}
+
+function asArray<T>(value: readonly T[] | null | undefined): T[] {
+  return Array.isArray(value) ? [...value] : [];
 }
 
 function resolverEstadoPreNomina(
   prevalidacion: ProcesoMensualPrevalidacion,
 ): ProcesoMensualPreNominaPeriodo['estado'] {
-  if (prevalidacion.estado === 'BLOQUEADO' || prevalidacion.bloqueos.length > 0) {
+  if (prevalidacion.estado === 'BLOQUEADO' || asArray(prevalidacion.bloqueos).length > 0) {
     return 'NO_GENERABLE';
   }
 
-  if (prevalidacion.estado === 'CON_ADVERTENCIAS' || prevalidacion.advertencias.length > 0) {
+  if (prevalidacion.estado === 'CON_ADVERTENCIAS' || asArray(prevalidacion.advertencias).length > 0) {
     return 'GENERADA_CON_ADVERTENCIAS';
   }
 

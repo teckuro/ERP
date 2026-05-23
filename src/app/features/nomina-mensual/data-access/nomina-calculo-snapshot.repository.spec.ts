@@ -395,6 +395,59 @@ describe('NominaCalculoSnapshotRepository', () => {
     expect(guardado.reemplazoSnapshotAnterior).toBe(true);
   });
 
+  it('guarda resultado preliminar aunque falten listas opcionales en runtime', async () => {
+    const nuevoRow = {
+      ...baseRow,
+      id_calculo_periodo: 2,
+      estado: 'recalculado',
+      origen: 'recalculo',
+      hash_snapshot: 'fnv1a32:nuevo',
+    };
+    const from = vi.fn()
+      .mockReturnValueOnce(query(baseRow))
+      .mockReturnValueOnce(query(nuevoRow))
+      .mockReturnValueOnce(query([{ ...trabajadorRow, id_calculo_periodo: 2 }]))
+      .mockReturnValueOnce(query([]))
+      .mockReturnValueOnce(query([]))
+      .mockReturnValueOnce(query([]));
+    const rpc = vi.fn().mockResolvedValue({ data: 2, error: null });
+
+    TestBed.configureTestingModule({
+      providers: [
+        NominaCalculoSnapshotRepository,
+        {
+          provide: SUPABASE_CLIENT,
+          useValue: {
+            from,
+            rpc,
+            auth: { getUser: vi.fn() },
+          },
+        },
+      ],
+    });
+
+    const repo = TestBed.inject(NominaCalculoSnapshotRepository);
+    const snapshot = snapshotParaGuardar({
+      trabajadores: [{
+        ...snapshotParaGuardar().trabajadores[0],
+        conceptos: undefined,
+        issues: undefined,
+        trazabilidad: undefined,
+      }],
+      issues: undefined,
+      trazabilidad: undefined,
+    });
+
+    const guardado = await repo.guardarSnapshotPreliminar(snapshot);
+    const rpcPayload = rpc.mock.calls[0][1];
+
+    expect(rpcPayload.p_trabajadores).toHaveLength(1);
+    expect(rpcPayload.p_conceptos).toEqual([]);
+    expect(rpcPayload.p_observaciones).toEqual([]);
+    expect(rpcPayload.p_trazabilidad).toEqual([]);
+    expect(guardado.snapshot.idCalculoPeriodo).toBe(2);
+  });
+
   it('propaga error controlado si falla la RPC atomica', async () => {
     const from = vi.fn(() => query(baseRow));
     const rpc = vi.fn().mockResolvedValue({ data: null, error: { message: 'violacion fk' } });

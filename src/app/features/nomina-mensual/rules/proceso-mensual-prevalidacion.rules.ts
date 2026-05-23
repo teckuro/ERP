@@ -26,6 +26,10 @@ import type {
 
 type ItemEstado = ProcesoMensualItem['estado'];
 
+function asArray<T>(value: readonly T[] | null | undefined): T[] {
+  return Array.isArray(value) ? [...value] : [];
+}
+
 export function contarRecurrentesParaPrevalidacionMensual(
   filas: readonly HaberDescuentoAsignacionPrevalidacionMensualFila[],
 ): Pick<ProcesoMensualRecurrentesConteo, 'aplicables' | 'invalidas' | 'cerradas' | 'fueraDelMes'> {
@@ -33,7 +37,7 @@ export function contarRecurrentesParaPrevalidacionMensual(
   let invalidas = 0;
   let cerradas = 0;
   let fueraDelMes = 0;
-  for (const f of filas) {
+  for (const f of asArray(filas)) {
     const cerrada = f.asignacion.estado === false;
     if (cerrada) {
       cerradas += 1;
@@ -169,6 +173,10 @@ function mergeEstadoFinal(bloqueos: ProcesoMensualMensaje[], advertencias: Proce
 export function construirPrevalidacionMensual(hechos: ProcesoMensualHechosPrevalidacion): ProcesoMensualPrevalidacion {
   const periodo = hechos.periodo.trim();
   const periodoFormatoValido = validarPeriodoEntradaMensual(periodo);
+  const parametrosGrupos = asArray(hechos.parametrosGrupos);
+  const trabajadoresPendientesRevision = asArray(hechos.trabajadoresPendientesRevision);
+  const entradasMensuales = asArray(hechos.entradasMensuales);
+  const movimientos = asArray(hechos.movimientos);
 
   const bloqueos: ProcesoMensualMensaje[] = [];
   const advertencias: ProcesoMensualMensaje[] = [];
@@ -209,7 +217,7 @@ export function construirPrevalidacionMensual(hechos: ProcesoMensualHechosPreval
       informaciones,
       items: completarItemsVacios(items),
       entradasMensuales: [],
-      trabajadoresPendientesRevision: hechos.trabajadoresPendientesRevision,
+      trabajadoresPendientesRevision,
     };
   }
 
@@ -306,7 +314,7 @@ export function construirPrevalidacionMensual(hechos: ProcesoMensualHechosPreval
     parametrosOperativos = true;
   }
 
-  for (const g of hechos.parametrosGrupos) {
+  for (const g of parametrosGrupos) {
     if (g.clasificacion === 'FALTANTE' || g.clasificacion === 'PARCIAL') {
       pushMsg(
         advertencias,
@@ -462,10 +470,10 @@ export function construirPrevalidacionMensual(hechos: ProcesoMensualHechosPreval
   });
 
   /* --- Entradas mensuales canonicas --- */
-  const entradas = hechos.entradasMensuales;
+  const entradas = entradasMensuales;
   const resumenEntradas = construirResumenEntradas(entradas);
   const conteosEntradas = conteosPorEstadoEntrada(entradas);
-  const conteos = conteosPorEstadoMv(hechos.movimientos);
+  const conteos = conteosPorEstadoMv(movimientos);
   let itemEntradas: ItemEstado = 'LISTO';
   let detalleEntradas: string | undefined;
 
@@ -561,7 +569,7 @@ export function construirPrevalidacionMensual(hechos: ProcesoMensualHechosPreval
     trabajadoresActivosAptos: hechos.empleadosActivosAptos,
     trabajadoresActivosNoAptos: hechos.empleadosActivosNoAptos,
     parametrosOperativos,
-    parametrosGrupos: hechos.parametrosGrupos,
+    parametrosGrupos,
     recurrentesAplicablesAlPeriodo: hechos.recurrentesConteo.aplicables,
     recurrentesInvalidas: hechos.recurrentesConteo.invalidas,
     recurrentesCerradas: hechos.recurrentesConteo.cerradas,
@@ -577,7 +585,7 @@ export function construirPrevalidacionMensual(hechos: ProcesoMensualHechosPreval
     informaciones,
     items,
     entradasMensuales: entradas,
-    trabajadoresPendientesRevision: hechos.trabajadoresPendientesRevision,
+    trabajadoresPendientesRevision,
   };
 }
 

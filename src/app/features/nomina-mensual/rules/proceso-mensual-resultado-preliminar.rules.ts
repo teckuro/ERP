@@ -51,6 +51,10 @@ function etiquetaResultadoPreliminar(estado: ResultadoPreliminarEstado): string 
   }
 }
 
+function asArray<T>(value: readonly T[] | null | undefined): T[] {
+  return Array.isArray(value) ? [...value] : [];
+}
+
 function descripcionEstadoGuardado(estado: ResultadoPreliminarEstado): string {
   switch (estado) {
     case 'no_guardado':
@@ -100,8 +104,8 @@ function observacionesResultado(
   severidad: MotorCalculoIssue['severidad'],
 ): ResultadoObservacionView[] {
   return [
-    ...calculo.issues,
-    ...calculo.liquidaciones.flatMap((liq) => liq.issues),
+    ...asArray(calculo.issues),
+    ...asArray(calculo.liquidaciones).flatMap((liq) => asArray(liq.issues)),
   ]
     .filter((issue) => issue.severidad === severidad)
     .map((issue) => ({
@@ -170,11 +174,13 @@ function ultimoGuardadoDesdeSnapshot(
 function trabajadoresDesdeSnapshotGuardado(
   snapshotCompleto: NominaSnapshotCompletoView | null,
 ): TrabajadorResultadoPreliminarView[] {
-  if (!snapshotCompleto?.trabajadores.length) {
+  const trabajadoresSnapshot = asArray(snapshotCompleto?.trabajadores);
+  if (!trabajadoresSnapshot.length) {
     return [];
   }
-  return snapshotCompleto.trabajadores.map((trabajador) => {
+  return trabajadoresSnapshot.map((trabajador) => {
     const estadoLabel = estadoResultadoTrabajador(trabajador.estado);
+    const issues = asArray(trabajador.issues);
     return {
       idPersona: trabajador.idPersona,
       trabajadorLabel: trabajador.nombreCompletoSnapshot?.trim() || 'Trabajador sin ficha visible',
@@ -183,8 +189,8 @@ function trabajadoresDesdeSnapshotGuardado(
       haberesLabel: formatoMontoNomina(trabajador.totalHaberesImponibles + trabajador.totalHaberesNoImponibles),
       descuentosLabel: formatoMontoNomina(trabajador.totalDescuentosLegales + trabajador.totalDescuentosVoluntarios),
       liquidoLabel: formatoMontoNomina(trabajador.liquidoPreliminar),
-      observacionLabel: trabajador.issues.length
-        ? limpiarYUnirMensajes(trabajador.issues.map((issue) => issue.mensaje))
+      observacionLabel: issues.length
+        ? limpiarYUnirMensajes(issues.map((issue) => issue.mensaje))
         : 'Sin observaciones',
       accionLabel:
         estadoLabel === 'Omitido' || estadoLabel === 'No calculado'
@@ -249,8 +255,9 @@ export function buildResultadoPreliminarView(input: BuildResultadoPreliminarInpu
 
   const bloqueos = observacionesResultado(calculo, 'BLOQUEO');
   const advertencias = observacionesResultado(calculo, 'ADVERTENCIA');
-  const trabajadoresCalculadosIds = new Set(calculo.liquidaciones.map((liq) => liq.idPersona));
-  const omitidosBase = (base?.trabajadores ?? [])
+  const liquidaciones = asArray(calculo.liquidaciones);
+  const trabajadoresCalculadosIds = new Set(liquidaciones.map((liq) => liq.idPersona));
+  const omitidosBase = asArray(base?.trabajadores)
     .filter((trabajador) => !trabajadoresCalculadosIds.has(trabajador.idPersona) || trabajador.estado === 'bloqueado' || trabajador.estado === 'excluido')
     .map<TrabajadorResultadoPreliminarView>((trabajador) => ({
       idPersona: `omitido-${trabajador.idPersona}`,
@@ -264,8 +271,9 @@ export function buildResultadoPreliminarView(input: BuildResultadoPreliminarInpu
       accionLabel: 'Revisar trabajadores',
     }));
   const trabajadores = [
-    ...calculo.liquidaciones.map<TrabajadorResultadoPreliminarView>((liq) => {
+    ...liquidaciones.map<TrabajadorResultadoPreliminarView>((liq) => {
       const estadoLabel = estadoResultadoTrabajador(liq.estado);
+      const issues = asArray(liq.issues);
       return {
         idPersona: liq.idPersona,
         trabajadorLabel: liq.nombreCompleto?.trim() || 'Trabajador sin ficha visible',
@@ -274,10 +282,10 @@ export function buildResultadoPreliminarView(input: BuildResultadoPreliminarInpu
         haberesLabel: formatoMontoNomina(liq.totalHaberes),
         descuentosLabel: formatoMontoNomina(liq.totalDescuentos),
         liquidoLabel: formatoMontoNomina(liq.liquidoAPago),
-        observacionLabel: liq.issues.length
-          ? limpiarYUnirMensajes(liq.issues.map((issue) => issue.mensaje))
+        observacionLabel: issues.length
+          ? limpiarYUnirMensajes(issues.map((issue) => issue.mensaje))
           : 'Sin observaciones',
-        ...accionResultadoDesdeIssues(liq.issues),
+        ...accionResultadoDesdeIssues(issues),
       };
     }),
     ...omitidosBase,

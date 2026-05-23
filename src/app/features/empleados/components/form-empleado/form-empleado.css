@@ -815,3 +815,51 @@
   background: #fff7ed;
   border-color: #fed7aa;
 }
+
+/* Resumen alta — pendientes alineados a ficha (fase 3) */
+.alta-resumen-diagnostico-panel {
+  margin-block: 0.75rem 1rem;
+  padding: 0.65rem 0.75rem;
+  border: 1px solid var(--erp-border-subtle, #e5e7eb);
+  border-radius: 0.375rem;
+  background: var(--erp-surface-muted, #f9fafb);
+}
+.alta-resumen-diagnostico-panel__head h4 {
+  margin: 0 0 0.25rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+.alta-resumen-diagnostico-panel__head p {
+  margin: 0 0 0.5rem;
+  font-size: 0.8125rem;
+  color: var(--erp-text-secondary, #4b5563);
+}
+.alta-resumen-diagnostico-panel__list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.alta-resumen-diagnostico-panel__issue {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.125rem;
+  width: 100%;
+  margin-block: 0.25rem;
+  padding: 0.35rem 0.4rem;
+  border: 0;
+  border-radius: 0.25rem;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+}
+.alta-resumen-diagnostico-panel__issue:hover {
+  background: var(--erp-surface-hover, #f3f4f6);
+}
+.alta-resumen-diagnostico-panel__block {
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+.alta-resumen-diagnostico-panel__msg {
+  font-size: 0.8125rem;
+}

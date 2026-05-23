@@ -1,0 +1,69 @@
+﻿<aside class="employee-record-status" aria-label="Diagnóstico operativo de la ficha">
+  <div class="employee-record-status__card">
+    <section class="employee-record-status__progress-panel" aria-labelledby="employee-record-status-title">
+      <div class="employee-record-status__progress-head">
+        <div class="employee-record-status__progress-copy">
+          <h3 id="employee-record-status-title" class="employee-record-status__title">Estado de la ficha</h3>
+          <p class="employee-record-status__completion">
+            {{ estado.bloquesOperativosCompletos }} de {{ estado.totalBloquesOperativos }} bloques operativos
+          </p>
+        </div>
+        <p class="employee-record-status__pct">{{ estado.porcentajeAvance }}%</p>
+      </div>
+      <div
+        class="progress-track employee-record-status__progress"
+        role="progressbar"
+        [attr.aria-valuenow]="estado.porcentajeAvance"
+        aria-valuemin="0"
+        aria-valuemax="100"
+        [attr.aria-label]="'Avance de la ficha: ' + estado.porcentajeAvance + ' por ciento'"
+      >
+        <span [ngStyle]="progressStyle"></span>
+      </div>
+    </section>
+    <div class="employee-record-status__section">
+      <p class="employee-record-status__label">Resultado operativo</p>
+      <dl class="employee-record-status__kv">
+        <div>
+          <dt>Remuneraciones</dt>
+          <dd>{{ estado.remuneracionesLabel }}</dd>
+        </div>
+      </dl>
+    </div>
+    @if (estado.faltantes.length) {
+      <div class="employee-record-status__section">
+        <p class="employee-record-status__label">Pendientes y avisos</p>
+        <ul class="employee-record-status__faltantes">
+          @for (issue of estado.faltantes; track issue.claveBloque + issue.mensaje) {
+            <li>
+              <button type="button" class="employee-record-status__issue" (click)="navegarFaltante.emit(issue)">
+                <span class="employee-record-status__issue-dot" aria-hidden="true"></span>
+                <span class="employee-record-status__issue-block">{{ issue.etiquetaBloque }}</span>
+                <span class="employee-record-status__issue-msg">{{ issue.mensaje }}</span>
+                <lucide-icon class="employee-record-status__issue-chevron" [img]="chevronRightIcon" aria-hidden="true" />
+              </button>
+            </li>
+          }
+        </ul>
+      </div>
+    } @else {
+      <div class="employee-record-status__section">
+        <p class="employee-record-status__label">Pendientes y avisos</p>
+        <p class="employee-record-status__empty">Sin pendientes bloqueantes.</p>
+      </div>
+    }
+    <div class="employee-record-status__section">
+      <p class="employee-record-status__label">Motivo principal</p>
+      <p class="employee-record-status__motivo">{{ estado.motivoPrincipal }}</p>
+    </div>
+    @if (estado.mostrarAccion) {
+      <div class="employee-record-status__section employee-record-status__section--action">
+        <p class="employee-record-status__label">Acción recomendada</p>
+        <p class="employee-record-status__action-hint">{{ estado.ayudaAccion }}</p>
+        <button type="button" class="employee-record-status__cta" [disabled]="validando" (click)="accionPrincipal.emit()">
+          @if (validando) { Procesando... } @else { {{ estado.etiquetaAccion }} }
+        </button>
+      </div>
+    }
+  </div>
+</aside>

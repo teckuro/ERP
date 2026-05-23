@@ -1071,6 +1071,20 @@ describe('ProcesoMensualContainer', () => {
       expectTexto(c.estadoOperativo().accionPrincipal.label, 'Verificar período');
     });
 
+    it('CTA primario del shell ejecuta verificar periodo', async () => {
+      const localFixture = await montarContainer();
+      const shell = TestBed.inject(ShellPageContextService);
+
+      expect(shell.primaryAction()?.label).toMatch(/Verificar período/i);
+      await invocarCtaShell(localFixture);
+
+      await vi.waitFor(() => expect(ejecutarPrevalidaciones).toHaveBeenCalledWith(PERIODO_TEST), {
+        timeout: 3000,
+        interval: 20,
+      });
+      expect(localFixture.componentInstance.resultado()).not.toBeNull();
+    });
+
     it('no muestra labels tecnicos en copy visible del shell', () => {
       const text = fixture.nativeElement.textContent as string;
       const lowerText = text.toLowerCase();

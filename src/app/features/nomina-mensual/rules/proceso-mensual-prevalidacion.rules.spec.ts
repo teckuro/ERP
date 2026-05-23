@@ -261,4 +261,30 @@ describe('proceso-mensual-prevalidacion.rules', () => {
     expect(r.trabajadoresPendientesRevision).toHaveLength(1);
     expect(r.trabajadoresPendientesRevision[0].nombre).toBe('Ana');
   });
+
+  it('tolera colecciones ausentes durante verificar periodo', () => {
+    const r = construirPrevalidacionMensual(
+      baseHechos({
+        parametrosGrupos: undefined as any,
+        trabajadoresPendientesRevision: undefined as any,
+        entradasMensuales: undefined as any,
+        movimientos: undefined as any,
+      }),
+    );
+
+    expect(r.estado).toBe('LISTO_PARA_CALCULO');
+    expect(r.resumen.totalEntradasMensuales).toBe(0);
+    expect(r.trabajadoresPendientesRevision).toEqual([]);
+  });
+
+  it('tolera entrada sin warnings durante verificar periodo', () => {
+    const r = construirPrevalidacionMensual(
+      baseHechos({
+        entradasMensuales: [entrada({ warnings: undefined as any })],
+      }),
+    );
+
+    expect(r.resumen.resumenEntradasMensuales?.conWarnings).toBe(0);
+    expect(r.bloqueos).toEqual([]);
+  });
 });
