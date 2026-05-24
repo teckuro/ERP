@@ -722,6 +722,71 @@ app-form-empleado .editor-shell {
   min-height: 100%;
 }
 
+.page-shell.erp-fullscreen-page {
+  gap: 0;
+  flex: 1 1 auto;
+  min-height: 100%;
+}
+
+/* Alta avanzada (crear): cadena flex hasta el fondo del outlet scroll */
+.page-shell.erp-fullscreen-page:has(.advanced-create-shell) {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 100%;
+  height: 100%;
+}
+
+.page-shell.erp-fullscreen-page:has(.advanced-create-shell) app-form-empleado {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+  height: 100%;
+}
+
+.page-shell.erp-fullscreen-page:has(.advanced-create-shell) app-form-empleado form.form-shell,
+.page-shell.erp-fullscreen-page:has(.advanced-create-shell) app-form-empleado .form-stack,
+.page-shell.erp-fullscreen-page:has(.advanced-create-shell) app-form-empleado app-card.editor-shell--advanced,
+.page-shell.erp-fullscreen-page:has(.advanced-create-shell)
+  app-form-empleado
+  app-card.editor-shell--advanced
+  app-card-content.editor-frame--advanced {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+  height: 100%;
+}
+
+.page-shell.erp-fullscreen-page:has(.advanced-create-shell)
+  app-form-empleado
+  .workspace-grid.workspace-grid--advanced {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0 !important;
+}
+
+.page-shell.erp-fullscreen-page:has(.advanced-create-shell)
+  app-form-empleado
+  .workspace-main.workspace-main--advanced,
+.page-shell.erp-fullscreen-page:has(.advanced-create-shell)
+  app-form-empleado
+  .content-shell.content-shell--advanced,
+.page-shell.erp-fullscreen-page:has(.advanced-create-shell)
+  app-form-empleado
+  .advanced-create-shell,
+.page-shell.erp-fullscreen-page:has(.advanced-create-shell)
+  app-form-empleado
+  .advanced-create-inner,
+.page-shell.erp-fullscreen-page:has(.advanced-create-shell)
+  app-form-empleado
+  app-card-content.editor-frame--advanced {
+  flex: 1 1 auto;
+  min-height: 0 !important;
+}
+
 .page-shell app-form-empleado {
   flex: 1 1 auto;
   display: flex;
@@ -793,7 +858,7 @@ app-form-empleado .editor-shell {
   max-width: 100%;
 }
 
-.page-shell app-form-empleado .content-shell {
+.page-shell app-form-empleado .content-shell:not(.content-shell--advanced) {
   flex: 1 1 auto;
   display: flex;
   flex-direction: column;
@@ -803,6 +868,19 @@ app-form-empleado .editor-shell {
   width: 100%;
   max-width: 100%;
   /* Un solo marco exterior: ya lo aporta .editor-frame; evita doble borde */
+  border: 0;
+  box-shadow: none;
+}
+
+.page-shell app-form-empleado .content-shell.content-shell--advanced {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  min-height: 0 !important;
+  max-height: none !important;
+  height: 100% !important;
+  width: 100%;
+  max-width: 100%;
   border: 0;
   box-shadow: none;
 }
@@ -921,6 +999,27 @@ app-form-empleado .editor-frame--advanced {
   border-radius: 0;
   background: transparent;
   box-shadow: none;
+}
+
+app-form-empleado .editor-frame--advanced,
+app-form-empleado .editor-frame:has(.advanced-create-shell) {
+  display: flex;
+  flex-direction: column;
+  grid-template-rows: unset;
+  min-height: calc(100dvh - var(--app-layout-main-chrome-y, 7rem));
+  padding: 0;
+}
+
+app-form-empleado .editor-frame--advanced > .status-stack {
+  flex: 0 0 auto;
+}
+
+app-form-empleado .editor-frame--advanced > .workspace-grid,
+app-form-empleado .editor-frame:has(.advanced-create-shell) > section.workspace-grid {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
 }
 
 .page-shell app-form-empleado app-card.editor-shell.editor-shell--advanced,
@@ -1115,14 +1214,17 @@ app-form-empleado .workspace-main.workspace-main--advanced {
   align-content: stretch;
   display: flex;
   flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
 }
 
-.page-shell app-form-empleado .content-shell.content-shell--advanced,
 app-form-empleado .content-shell.content-shell--advanced {
   display: flex;
   flex-direction: column;
-  height: auto !important;
-  max-height: none !important;
+  flex: 1 1 auto;
+  min-height: 0;
+  height: 100%;
+  max-height: none;
 }
 
 .page-shell app-form-empleado .workspace-main:has(.advanced-create-shell),

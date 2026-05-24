@@ -39,6 +39,8 @@ import { SHELL_HEADER_HEIGHT_PX, SHELL_NAV_WIDTH_PX } from './shell-navigation.c
       }
 
         .erp-shell-scroll {
+          display: flex;
+          flex-direction: column;
           height: 100%;
           width: 100%;
           min-height: 0;

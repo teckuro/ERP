@@ -310,7 +310,8 @@
 
 .advanced-create-shell {
   width: 100%;
-  min-height: 100%;
+  min-height: 0;
+  height: 100%;
   flex: 1 1 auto;
   position: relative;
 }
@@ -338,7 +339,8 @@
   max-width: none;
   margin: 0 auto;
   flex: 1 1 auto;
-  min-height: max(44rem, calc(100dvh - var(--app-layout-main-chrome-y, 7rem)));
+  min-height: 0;
+  height: 100%;
   display: flex;
   flex-direction: column;
   gap: 0;
@@ -365,6 +367,7 @@
 }
 
 .advanced-create-header {
+  flex: 0 0 auto;
   align-items: start;
   padding: 10px 12px;
   border-bottom: 1px solid #d7dde5;
@@ -401,9 +404,11 @@
   --erp-floating-ui-z: var(--employee-floating-ui-z);
   --erp-select-panel-z: var(--employee-floating-ui-z);
   --erp-select-host-z-open: var(--employee-floating-ui-z);
+  position: relative;
   flex: 1 1 auto;
   min-height: 0;
   align-items: stretch;
+  grid-template-rows: minmax(0, 1fr);
   overflow: hidden;
   padding: 0;
   border: 0;
@@ -415,8 +420,8 @@
   position: relative;
   top: auto;
   align-self: stretch;
-  overflow: auto;
   min-height: 0;
+  overflow: auto;
   border: 0;
   border-right: 1px solid #d7dde5;
   border-radius: 0;
@@ -620,6 +625,8 @@
 .advanced-wizard-map__item.is-na .advanced-wizard-map__state { border-color: #e3e7df; background: var(--bitacora-surface-soft); color: var(--bitacora-subtle); }
 
 .advanced-wizard-content {
+  position: relative;
+  align-self: stretch;
   display: grid;
   grid-template-rows: auto auto minmax(0, 1fr);
   grid-column: 2;
@@ -630,6 +637,10 @@
   border: 0;
   border-radius: 0;
   background: var(--bitacora-surface);
+}
+
+.advanced-wizard-content .advanced-wizard-step {
+  padding-bottom: 2.25rem;
 }
 
 .advanced-step-header {
@@ -665,7 +676,7 @@
 
 @media (max-width: 1024px) {
   .advanced-create-header { grid-template-columns: minmax(0, 1fr); row-gap: 8px; }
-  .advanced-wizard-layout { grid-template-columns: minmax(0, 1fr); grid-template-rows: minmax(0, 1fr) auto; min-height: 0; padding: 0; border: 0; background: transparent; }
+  .advanced-wizard-layout { grid-template-columns: minmax(0, 1fr); grid-template-rows: minmax(0, 1fr); min-height: 0; padding: 0; border: 0; background: transparent; }
   .advanced-wizard-map { display: none; }
   .advanced-wizard-content { grid-column: 1; border: 1px solid #d7dde5; border-radius: 7px; }
 }
@@ -815,52 +826,3 @@
   background: #fff7ed;
   border-color: #fed7aa;
 }
-
-/* Resumen alta â€” pendientes alineados a ficha (fase 3) */
-.alta-resumen-diagnostico-panel {
-  margin-block: 0.75rem 1rem;
-  padding: 0.65rem 0.75rem;
-  border: 1px solid var(--emp-border);
-  border-radius: var(--emp-radius-sm);
-  background: var(--emp-soft);
-}
-.alta-resumen-diagnostico-panel__head h4 {
-  margin: 0 0 0.25rem;
-  font-size: 0.875rem;
-  font-weight: 600;
-}
-.alta-resumen-diagnostico-panel__head p {
-  margin: 0 0 0.5rem;
-  font-size: 0.8125rem;
-  color: var(--emp-muted);
-}
-.alta-resumen-diagnostico-panel__list {
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-.alta-resumen-diagnostico-panel__issue {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 0.125rem;
-  width: 100%;
-  margin-block: 0.25rem;
-  padding: 0.35rem 0.4rem;
-  border: 0;
-  border-radius: var(--emp-radius-sm);
-  background: transparent;
-  text-align: left;
-  cursor: pointer;
-}
-.alta-resumen-diagnostico-panel__issue:hover {
-  background: var(--emp-accent-soft);
-}
-.alta-resumen-diagnostico-panel__block {
-  font-size: 0.75rem;
-  font-weight: 600;
-}
-.alta-resumen-diagnostico-panel__msg {
-  font-size: 0.8125rem;
-}
-

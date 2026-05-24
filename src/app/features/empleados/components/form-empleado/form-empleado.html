@@ -935,99 +935,18 @@
                                 }
 
 
-                                @if (!isHonorariosMode() && altaResumenFaltantes().length > 0) {
-                                <section
-                                  class="alta-resumen-diagnostico-panel"
-                                  aria-label="Pendientes para remuneraciones"
-                                >
-                                  <div class="alta-resumen-diagnostico-panel__head">
-                                    <h4>Pendientes del expediente</h4>
-                                    <p>{{ altaResumenEstadoPanel().motivoPrincipal }}</p>
-                                  </div>
-                                  <ul class="alta-resumen-diagnostico-panel__list">
-                                    @for (issue of altaResumenFaltantes(); track issue.claveBloque + issue.mensaje) {
-                                      <li>
-                                        <button
-                                          type="button"
-                                          class="alta-resumen-diagnostico-panel__issue"
-                                          (click)="irAlFaltanteResumenAlta(issue)"
-                                        >
-                                          <span class="alta-resumen-diagnostico-panel__block">{{ issue.etiquetaBloque }}</span>
-                                          <span class="alta-resumen-diagnostico-panel__msg">{{ issue.mensaje }}</span>
-                                        </button>
-                                      </li>
-                                    }
-                                  </ul>
-                                </section>
-                                }
-
-                                <h4 class="resumen-checklist-title">
-                                  Registros de la bitácora
-                                </h4>
-                                <ul class="resumen-checklist">
-                                  @for (row of advancedReviewRows(); track
-                                  row.stepIndex) {
-                                  <li
-                                    class="resumen-checklist-item"
-                                    [ngClass]="checklistStatusClass(row.kind)"
-                                  >
-                                    <div class="resumen-checklist-main">
-                                      <span
-                                        class="resumen-checklist-num"
-                                        aria-hidden="true"
-                                      >
-                                        {{ row.stepIndex + 1 }}
-                                      </span>
-                                      <span class="resumen-checklist-text">
-                                        <span class="resumen-checklist-step"
-                                          >{{ row.label }}</span
-                                        >
-                                        <!-- Detalle removido: evita duplicar copy (se resuelve en el estado del paso). -->
-                                      </span>
-                                    </div>
-                                    <div class="resumen-checklist-actions">
-                                      <span class="resumen-checklist-state"
-                                        >{{ wizardStepUiLabel(row.kind) }}</span
-                                      >
-                                      @if ( row.stepIndex <
-                                      summaryWizardStepIndex() && row.kind !==
-                                      'completo' && row.kind !== 'no-aplica' ) {
-                                      <button
-                                        type="button"
-                                        class="resumen-review-button"
-                                        (click)="selectWizardStep(row.stepIndex)"
-                                      >
-                                        Revisar
-                                      </button>
-                                      }
-                                    </div>
-                                  </li>
-                                  }
-                                </ul>
-                                @if (pasoWizardActivo() ===
-                                summaryWizardStepIndex() && attemptedSave() &&
-                                resumenPendientesNegocio().length > 0) {
-                                <div
-                                  class="resumen-pendientes-negocio"
-                                  role="alert"
-                                >
-                                  <p class="resumen-pendientes-title">
-                                    Pendientes para cierre
-                                  </p>
-                                  <ul class="resumen-pendientes-list">
-                                    @for (msg of resumenPendientesNegocio();
-                                    track msg) {
-                                    <li>{{ msg }}</li>
-                                    }
-                                  </ul>
-                                </div>
-                                }
                               </app-card-content>
                             </app-card>
                           </div>
                           }
                         </div>
                       </div>
+
+                      <app-alta-bitacora-console
+                        [vm]="altaBitacoraConsoleVm()"
+                        (navegarFaltante)="irAlFaltanteResumenAlta($event)"
+                        (revisarPaso)="selectWizardStep($event)"
+                      />
                     </div>
                   </div>
                 </div>

@@ -1,6 +1,7 @@
 import type { MessageBoxSection, MessageBoxVariant } from '../../../shared/components/ui/message-box.component';
 import type { EmpleadoFormTabId } from './empleado-form.manifest';
 import type { CondicionTrabajadorControlName } from './empleado-perfil-laboral.model';
+import type { FaltanteFichaEmpleado } from './ficha-empleado.vm';
 
 export type TabId = EmpleadoFormTabId;
 
@@ -124,4 +125,23 @@ export interface WizardMapGroup {
   title: string;
   description: string;
   stepIndexes: readonly number[];
+}
+
+export interface AltaBitacoraRegistroPendienteRow {
+  stepIndex: number;
+  label: string;
+  kind: WizardStepUiKind;
+  stateLabel: string;
+}
+
+/** Vista de la consola flotante de pendientes (alta avanzada). */
+export interface AltaBitacoraConsoleVm {
+  visible: boolean;
+  expandedByDefault: boolean;
+  collapsedLabel: string;
+  motivoPrincipal: string;
+  faltantes: readonly FaltanteFichaEmpleado[];
+  registrosPendientes: readonly AltaBitacoraRegistroPendienteRow[];
+  pendientesCierre: readonly string[];
+  totalVisible: number;
 }

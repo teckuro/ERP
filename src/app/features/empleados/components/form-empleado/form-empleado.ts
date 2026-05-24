@@ -21,6 +21,7 @@ import { DatosPersonalesComponent } from "../secciones/datos-personales/datos-pe
 import { ContactoComponent } from "../secciones/contacto/contacto";
 import { PrevisionSaludComponent } from "../secciones/prevision-salud/prevision-salud";
 import { PerfilLaboralComponent } from "../secciones/perfil-laboral/perfil-laboral";
+import { AltaBitacoraConsoleComponent } from "../creacion-avanzada/alta-bitacora-console/alta-bitacora-console.component";
 import {
   mapEmpleadoFormToPayload,
   mapEmpleadoFormToPayloadBasico,
@@ -53,6 +54,7 @@ import type {
   ValidationRule,
   ValidationSeverity,
   ValidationStepId,
+  AltaBitacoraConsoleVm,
   WizardMapGroup,
   WizardStepUiKind,
 } from "../../models/empleado-alta-avanzada.vm";
@@ -180,6 +182,7 @@ const MENSAJES_FINALIZAR_ALTA: Partial<Record<string, string>> = {
     PerfilLaboralComponent,
     PrevisionSaludComponent,
     BancarioComponent,
+    AltaBitacoraConsoleComponent,
   ],
   templateUrl: "./form-empleado.html",
   styleUrls: [
@@ -1061,6 +1064,35 @@ export class FormEmpleadoComponent implements OnInit {
   irAlFaltanteResumenAlta(issue: FaltanteFichaEmpleado): void {
     const diagnostico = evaluarDiagnosticoFichaEmpleado(this.buildFichaValidacionSnapshot());
     this.selectWizardStep(wizardStepDesdeFaltanteAlta(issue, diagnostico.items));
+  }
+
+  altaBitacoraConsoleVm(): AltaBitacoraConsoleVm {
+    const panel = this.altaResumenEstadoPanel();
+    const faltantes = panel.faltantes;
+    const registrosPendientes = this.advancedReviewRows()
+      .filter((row) => row.kind === 'pendiente' || row.kind === 'errores')
+      .map((row) => ({
+        stepIndex: row.stepIndex,
+        label: row.label,
+        kind: row.kind,
+        stateLabel: this.wizardStepUiLabel(row.kind),
+      }));
+    const pendientesCierre = this.resumenPendientesNegocio();
+    const totalVisible =
+      faltantes.length + registrosPendientes.length + pendientesCierre.length;
+    const onSummary = this.pasoWizardActivo() === this.summaryWizardStepIndex();
+
+    return {
+      visible: this.isAdvancedMode() && totalVisible > 0,
+      expandedByDefault: onSummary && totalVisible > 0,
+      collapsedLabel:
+        totalVisible === 1 ? '1 pendiente · Bitácora' : `${totalVisible} pendientes · Bitácora`,
+      motivoPrincipal: panel.motivoPrincipal,
+      faltantes,
+      registrosPendientes,
+      pendientesCierre,
+      totalVisible,
+    };
   }
 
   perfilLaboralWizardStepIndex(): number {

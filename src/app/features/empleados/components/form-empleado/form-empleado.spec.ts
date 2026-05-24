@@ -498,3 +498,87 @@ describe('FormEmpleadoComponent - completitud de borrador avanzado', () => {
     expect(component.form.controls.contrato.controls.idTipoTrabajador.value).toBe(1);
   });
 });
+
+describe('FormEmpleadoComponent - consola bitácora pendientes', () => {
+  beforeEach(() => {
+    HTMLElement.prototype.scrollIntoView = vi.fn();
+  });
+
+  async function setupAvanzado() {
+    const queryParamMapGet = vi.fn().mockReturnValue(null);
+    await TestBed.configureTestingModule({
+      imports: [FormEmpleadoComponent],
+      providers: [
+        {
+          provide: EmpleadosService,
+          useValue: {
+            obtenerPorId: vi.fn(),
+            guardarBorradorAvanzado: vi.fn(),
+            finalizarAltaAvanzadaExistente: vi.fn(),
+            crear: vi.fn(),
+            crearBasico: vi.fn(),
+          },
+        },
+        {
+          provide: EmpleadosCatalogosService,
+          useValue: {
+            obtenerFormulario: vi.fn().mockResolvedValue(EMPTY_EMPLEADO_FORM_CATALOGOS),
+          },
+        },
+        {
+          provide: ActivatedRoute,
+          useValue: {
+            snapshot: { queryParamMap: { get: queryParamMapGet } },
+          },
+        },
+        {
+          provide: Router,
+          useValue: { navigate: vi.fn(), url: '/empleados/nuevo' },
+        },
+      ],
+    }).compileComponents();
+
+    const fixture = TestBed.createComponent(FormEmpleadoComponent);
+    const component = fixture.componentInstance;
+    component.isLoadingCatalogs.set(false);
+    return { fixture, component };
+  }
+
+  it('altaBitacoraConsoleVm une faltantes de expediente y registros pendientes', async () => {
+    const { component } = await setupAvanzado();
+    component.form.patchValue({
+      contrato: {
+        cargo: 'Sin cargo',
+        sueldoBase: 0,
+        horasSemanales: 45,
+        diasSemanales: 5,
+        idMoneda: 1,
+      },
+    } as never);
+
+    const vm = component.altaBitacoraConsoleVm();
+
+    expect(vm.visible).toBe(true);
+    expect(vm.totalVisible).toBeGreaterThan(0);
+    expect(vm.faltantes.length).toBeGreaterThan(0);
+    expect(vm.registrosPendientes.length).toBeGreaterThan(0);
+  });
+
+  it('altaBitacoraConsoleVm expande por defecto en paso resumen con pendientes', async () => {
+    const { component } = await setupAvanzado();
+    component.form.patchValue({
+      contrato: {
+        cargo: 'Sin cargo',
+        sueldoBase: 0,
+        horasSemanales: 45,
+        diasSemanales: 5,
+        idMoneda: 1,
+      },
+    } as never);
+
+    component.selectWizardStep(component.summaryWizardStepIndex());
+    const vm = component.altaBitacoraConsoleVm();
+
+    expect(vm.expandedByDefault).toBe(true);
+  });
+});

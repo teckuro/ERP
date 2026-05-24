@@ -1,3 +1,39 @@
+## 2026-05-24 - Alta avanzada: consola pendientes — toggle estable
+
+- **Cambio:** `ngOnChanges` solo abre/cierra al **cambiar** `expandedByDefault` (entrar/salir de Resumen), no en cada actualización del VM; el usuario puede colapsar en Resumen sin que se reabra sola.
+- **Archivos:** `alta-bitacora-console.component.ts`, spec.
+- **No tocado:** layout, reglas.
+
+## 2026-05-24 - Alta avanzada: cadena flex hasta outlet scroll
+
+- **Cambio:** `erp-shell-scroll` como flex column; `crear-empleado-container` y `page-shell.erp-fullscreen-page:has(.advanced-create-shell)` con `height: 100%` en toda la cadena; corregido `content-shell` genérico que imponía `min-height: auto !important` sobre `--advanced`; `min-height: calc(100dvh)` sustituido por reparto flex en crear.
+- **Archivos:** `layout-shell.component.ts`, `crear-empleado-container.css`, `src/styles.css`, `form-empleado.css`.
+- **No tocado:** consola, lógica, tema.
+
+## 2026-05-23 - Alta avanzada: eliminar hueco blanco bajo wizard
+
+- **Cambio:** cadena de altura en flex column — `editor-frame--advanced` deja de ser grid con filas `auto` y reparte alto a `workspace-grid`; `content-shell--advanced` estira con `height: 100%`; `advanced-create-inner` sin `min-height` viewport duplicado; `page-shell.erp-fullscreen-page` sin gap 1.5rem.
+- **Archivos:** `src/styles.css` (bloque `app-form-empleado`), `form-empleado.css`.
+- **No tocado:** consola, lógica, tema global, SQL.
+
+## 2026-05-24 - Alta avanzada: consola — fix layout grid y simplificación CSS
+
+- **Cambio:** consola movida dentro de `.advanced-wizard-content` (evita 3.er hijo del grid y fila `auto` fantasma); posición en `:host`; estilos solo en `alta-bitacora-console.component.css`; eliminados `:has()` en `form-empleado.css` y CSS muerto `alta-resumen-diagnostico-panel`.
+- **Archivos:** `form-empleado.html`, `form-empleado.css`, `alta-bitacora-console/*`.
+- **No tocado:** reglas, estilos globales.
+
+## 2026-05-24 - Alta avanzada: consola compacta y dock al fondo
+
+- **Cambio:** colapsada = chip estrecho (auto width, padding 4px 8px); expandida = tamaño anterior (360px / 40vh); dock `bottom/right: 0`; wizard con `grid-template-rows: minmax(0, 1fr)` para llenar alto; `padding-bottom` del contenido según estado consola.
+- **Archivos:** `alta-bitacora-console.component.css`, `form-empleado.css`.
+- **No tocado:** reglas, estilos globales.
+
+## 2026-05-24 - Alta avanzada: consola unificada de pendientes
+
+- **Cambio:** «Pendientes del expediente», registros de bitácora con pendiente y «Pendientes para cierre» salen del card Resumen y pasan a `app-alta-bitacora-console` (dock inferior derecha, colapsable) en todo el wizard avanzado.
+- **Archivos:** `alta-bitacora-console/*`, `form-empleado.html/ts/css`, `empleado-alta-avanzada.vm.ts`.
+- **No tocado:** reglas de diagnóstico, mapa lateral bitácora, estilos globales, SQL.
+
 ## 2026-05-24 - Calendario: popover con Floating UI (modal y ficha)
 
 - **Cambio:** `app-calendar-input` posiciona el popover con `position: fixed` + `@floating-ui/dom` (flip/shift), igual que search-select; evita recorte en modal con scroll.
