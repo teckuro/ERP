@@ -7,6 +7,7 @@
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
+    "seed:empleados-prueba-errores": "node scripts/seed-empleados-prueba-errores.mjs --confirm",
     "test:supabase": "node scripts/test-supabase-api.mjs",
     "list:supabase:endpoints": "node scripts/list-supabase-endpoints.mjs",
     "test:visual": "playwright test",

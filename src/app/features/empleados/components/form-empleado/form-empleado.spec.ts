@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { TestBed } from '@angular/core/testing';
 import { ActivatedRoute, Router } from '@angular/router';
 
-import { EMPTY_EMPLEADO_FORM_CATALOGOS } from '../../models/empleado-catalogos.model';
+import { EMPTY_EMPLEADO_FORM_CATALOGOS, type EmpleadoFormCatalogos } from '../../models/empleado-catalogos.model';
 import { EmpleadosCatalogosService } from '../../services/empleados-catalogos.service';
 import { EmpleadosService } from '../../services/empleados.service';
 import { ShellPageContextService } from '../../../../layout/shell-page-context.service';
@@ -12,6 +12,19 @@ describe('FormEmpleadoComponent - completitud de borrador avanzado', () => {
   beforeEach(() => {
     HTMLElement.prototype.scrollIntoView = vi.fn();
   });
+
+  function catalogoMinimoBorrador(): EmpleadoFormCatalogos {
+    return {
+      ...EMPTY_EMPLEADO_FORM_CATALOGOS,
+      tiposTrabajador: [{ value: 10, label: 'Dependiente' }],
+      tiposJornada: [{ value: 20, label: 'Completa' }],
+      paises: [{ value: 1, label: 'Chile' }],
+      comunas: [{ value: 100, label: 'Santiago' }],
+      bancos: [{ value: 5, label: 'Banco Test' }],
+      tiposCuentaBancaria: [{ value: 6, label: 'Corriente' }],
+      regimenesPrevisionales: [{ value: 202, label: 'NINGUNA' }],
+    };
+  }
 
   async function setup(catalogos = EMPTY_EMPLEADO_FORM_CATALOGOS) {
     const queryParamMapGet = vi.fn().mockReturnValue(null);
@@ -291,6 +304,40 @@ describe('FormEmpleadoComponent - completitud de borrador avanzado', () => {
     expect(modal?.title).toBe('No se puede guardar el borrador');
     expect(modal?.sections?.length).toBe(3);
     expect(component.errorMessage()).toBeNull();
+  });
+
+  it('Guardar borrador persiste el mayor paso visitado aunque el activo sea el primero', async () => {
+    const component = await setup(catalogoMinimoBorrador());
+    component.modo.set('avanzado');
+    component.catalogos.set(catalogoMinimoBorrador());
+    const empleadosService = TestBed.inject(EmpleadosService) as unknown as {
+      guardarBorradorAvanzado: ReturnType<typeof vi.fn>;
+    };
+    empleadosService.guardarBorradorAvanzado.mockResolvedValue({
+      id: 123,
+      pasoAltaAvanzada: 7,
+    });
+    component.form.patchValue({
+      datosPersonales: {
+        rut: '12.345.678-5',
+        nombres: 'Test',
+        apellidoPaterno: 'Borrador',
+        fechaNacimiento: '1990-01-01',
+        sexo: 'F',
+        estadoCivil: 'SOLTERO',
+        idPais: 1,
+      },
+    } as never);
+
+    component.selectWizardStep(7);
+    component.selectWizardStep(0);
+    await component.onGuardarBorrador();
+
+    expect(empleadosService.guardarBorradorAvanzado).toHaveBeenCalledWith(
+      null,
+      expect.objectContaining({ rut: '12.345.678-5', estado: 'borrador' }),
+      7,
+    );
   });
 
   it('Finalizar alta usa MsgBox y no cambia de paso hasta elegir ir al bloqueo', async () => {

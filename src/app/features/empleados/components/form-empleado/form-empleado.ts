@@ -410,10 +410,11 @@ export class FormEmpleadoComponent implements OnInit {
         this.form,
         this.catalogos(),
       );
+      const pasoBorrador = this.resolvePasoBorradorParaPersistir();
       const resumen = await this.empleadosService.guardarBorradorAvanzado(
         prevId,
         payload,
-        this.pasoWizardActivo(),
+        pasoBorrador,
       );
       this.borradorPersonaId.set(resumen.id);
       this.borradorFeedback.set(
@@ -1758,6 +1759,16 @@ export class FormEmpleadoComponent implements OnInit {
         "No fue posible cargar el borrador para continuar el alta.",
       );
     }
+  }
+
+  private resolvePasoBorradorParaPersistir(): number {
+    const visitedSteps = [...this.visitedWizardSteps()].filter((step) =>
+      isAltaWizardStepInRange(step, this.totalSteps),
+    );
+    const maxVisited =
+      visitedSteps.length > 0 ? Math.max(...visitedSteps) : this.pasoWizardActivo();
+
+    return Math.max(this.pasoWizardActivo(), maxVisited);
   }
 
   private markSubmitControlsAsTouched(): void {
