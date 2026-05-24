@@ -1,11 +1,14 @@
 import {
   CasaParticularModalidad,
+  CasaParticularRegistroDtEstado,
+  CausalExclusionJornada,
   RelacionLaboral,
   TipoContrato,
   TipoRegimenPrevisional,
 } from '../models/empleado.model';
 
 export type AreaCoherenciaAlta =
+  | 'contrato'
   | 'seguroCesantia'
   | 'jornada'
   | 'prevision'
@@ -38,11 +41,16 @@ export interface EntradaCoherenciaAlta {
   relacionLaboral: RelacionLaboral;
   tipoContrato: TipoContrato | null;
   tipoJornadaLabel: string;
+  /** Señal explícita de jornada parcial (catálogo o etiqueta). */
+  jornadaParcial?: boolean;
   fechaNacimiento: string;
   fechaIngreso: string;
+  fechaTermino?: string | null;
   horasSemanales: number | null;
   excluidoLimiteJornada?: boolean | null;
+  causalExclusionJornada?: CausalExclusionJornada | null;
   casaParticularModalidad?: CasaParticularModalidad | null;
+  casaParticularRegistroDtEstado?: CasaParticularRegistroDtEstado | null;
   seguroCesantia: boolean;
   tipoRegimenPrevisional: TipoRegimenPrevisional | null;
   condiciones: EntradaCondicionesCoherenciaAlta;
@@ -82,7 +90,9 @@ export function evaluarAltaCoherencia(input: EntradaCoherenciaAlta): EstadoCoher
   const edad = calcularEdad(input.fechaNacimiento, input.fechaIngreso);
   const esHonorarios = input.relacionLaboral === 'HONORARIOS';
   const esMenor = edad !== null && edad < 18;
-  const esJornadaParcial = normalizarTexto(input.tipoJornadaLabel).includes('parcial');
+  const esJornadaParcial =
+    input.jornadaParcial === true ||
+    normalizarTexto(input.tipoJornadaLabel).includes('parcial');
   const jornadaExcluida = input.excluidoLimiteJornada === true;
   const casaPuertasAdentro =
     input.tipoContrato === 'CASA_PARTICULAR' && input.casaParticularModalidad === 'PUERTAS_ADENTRO';
@@ -139,6 +149,81 @@ export function evaluarAltaCoherencia(input: EntradaCoherenciaAlta): EstadoCoher
     }
 
     return { inconsistencias, seguroCesantia: seguro, jornada, prevision };
+  }
+
+  if (input.tipoContrato === 'PLAZO_FIJO' || input.tipoContrato === 'OBRA_SERVICIO') {
+    if (!hasText(input.fechaTermino)) {
+      inconsistencias.push({
+        id: 'coh.contrato.plazo-sin-termino',
+        area: 'contrato',
+        stepIndex: 2,
+        severity: 'warning',
+        title: 'Contrato a plazo sin fecha de término',
+        detail:
+          'Los contratos a plazo fijo u obra o servicio requieren fecha de término para cerrar el expediente con coherencia administrativa.',
+        summary: 'Falta fecha de término en contrato a plazo u obra.',
+        recommendedActionLabel: 'Revisar fechas del contrato',
+      });
+    } else if (hasText(input.fechaIngreso) && !fechaDentroDeAnos(input.fechaTermino, input.fechaIngreso, 2)) {
+      inconsistencias.push({
+        id: 'coh.contrato.plazo-supera-dos-anos',
+        area: 'contrato',
+        stepIndex: 2,
+        severity: 'warning',
+        title: 'Plazo del contrato supera dos años',
+        detail:
+          'El plazo entre ingreso y término supera dos años. Revisa si corresponde otro tipo de contrato o respaldo excepcional.',
+        summary: 'Plazo contractual mayor a dos años.',
+        recommendedActionLabel: 'Revisar fechas del contrato',
+      });
+    } else if (
+      hasText(input.fechaIngreso) &&
+      hasText(input.fechaTermino) &&
+      !fechaDentroDeAnos(input.fechaTermino, input.fechaIngreso, 1)
+    ) {
+      inconsistencias.push({
+        id: 'coh.contrato.plazo-supera-un-ano',
+        area: 'contrato',
+        stepIndex: 2,
+        severity: 'info',
+        title: 'Plazo fijo superior a un año',
+        detail:
+          'El plazo supera un año. Solo en casos excepcionales puede extenderse hasta dos años con respaldo administrativo.',
+        summary: 'Plazo fijo entre uno y dos años: revisión RRHH.',
+        recommendedActionLabel: 'Mantener bajo revisión administrativa',
+      });
+    }
+  }
+
+  if (input.tipoContrato === 'CASA_PARTICULAR') {
+    const dt = input.casaParticularRegistroDtEstado;
+    if (!dt || dt === 'PENDIENTE') {
+      inconsistencias.push({
+        id: 'coh.contrato.casa-dt-pendiente',
+        area: 'contrato',
+        stepIndex: 2,
+        severity: 'warning',
+        title: 'Registro en Dirección del Trabajo pendiente',
+        detail:
+          'Trabajo de casa particular requiere estado del registro DT (pendiente, registrado o no aplica) antes de finalizar.',
+        summary: 'Registro DT de casa particular incompleto.',
+        recommendedActionLabel: 'Revisar registro DT',
+      });
+    }
+  }
+
+  if (input.excluidoLimiteJornada === true && !input.causalExclusionJornada) {
+    inconsistencias.push({
+      id: 'coh.jornada.exclusion-sin-causal',
+      area: 'jornada',
+      stepIndex: 3,
+      severity: 'warning',
+      title: 'Exclusión de límite de jornada sin causal',
+      detail:
+        'Si el trabajador queda excluido del límite ordinario de jornada, registra la causal y el respaldo contractual.',
+      summary: 'Exclusión de jornada sin causal documentada.',
+      recommendedActionLabel: 'Revisar jornada y causal',
+    });
   }
 
   if (esMenor) {
@@ -276,6 +361,29 @@ export function evaluarAltaCoherencia(input: EntradaCoherenciaAlta): EstadoCoher
     });
   }
 
+  const requiereRespaldoCondiciones =
+    condiciones.pensionado ||
+    condiciones.pensionadoInvalidezParcial ||
+    condiciones.pensionadoInvalidezTotal ||
+    condiciones.exentoCotizacionPension ||
+    condiciones.tecnicoExtranjeroExento ||
+    condiciones.discapacidad ||
+    condiciones.trabajadorAdolescenteProtegido;
+
+  if (requiereRespaldoCondiciones && !condiciones.respaldoRegistrado) {
+    inconsistencias.push({
+      id: 'coh.perfil.respaldo-pendiente',
+      area: 'condicionesEspeciales',
+      stepIndex: 8,
+      severity: 'warning',
+      title: 'Condiciones especiales sin respaldo administrativo',
+      detail:
+        'Hay condiciones declaradas que requieren marcar respaldo administrativo registrado antes de finalizar.',
+      summary: 'Respaldo administrativo de condiciones pendiente.',
+      recommendedActionLabel: 'Revisar condiciones especiales',
+    });
+  }
+
   if (esMenor && !condiciones.trabajadorAdolescenteProtegido && !condiciones.autorizacionMenorRegistrada) {
     inconsistencias.push({
       id: 'coh.condiciones.menor-sin-condicion',
@@ -365,4 +473,23 @@ function normalizarTexto(value: string): string {
     .replace(/[\u0300-\u036f]/g, '')
     .toLowerCase()
     .trim();
+}
+
+function hasText(value: string | null | undefined): boolean {
+  return typeof value === 'string' && value.trim().length > 0;
+}
+
+function fechaDentroDeAnos(
+  fecha: string | null | undefined,
+  referencia: string | null | undefined,
+  anos: number,
+): boolean {
+  const actual = parseIsoDate(fecha ?? '');
+  const base = parseIsoDate(referencia ?? '');
+  if (!actual || !base) {
+    return true;
+  }
+  const limite = new Date(base);
+  limite.setFullYear(limite.getFullYear() + anos);
+  return actual.getTime() <= limite.getTime();
 }

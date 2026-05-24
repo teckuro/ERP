@@ -42,7 +42,7 @@ export class FichaEmpleadoEditModalComponent {
     this.facade.requestCerrarEdicion();
   }
 
-  onSubmit(): void {
+  enviarFormulario(): void {
     void this.facade.saveSection();
   }
 }

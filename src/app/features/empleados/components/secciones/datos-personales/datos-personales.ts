@@ -38,22 +38,22 @@ export class DatosPersonalesComponent {
   @Input() sexos: EmpleadoStringCatalogOption<EmpleadoSexo>[] = [];
   @Input() estadosCivil: EmpleadoStringCatalogOption<TipoEstadoCivil>[] = [];
   @Input() paises: EmpleadoCatalogOption[] = [];
-  @Input() visibleBlocks: string[] | null = null;
+  @Input() bloquesVisibles: string[] | null = null;
   /** Textos de ayuda bajo cada titulo de bloque (solo creacion basica). */
   @Input() basicSectionLeads = false;
   /** Grilla 8 columnas y spans proporcionales (solo alta avanzada). */
-  @Input() advancedGridLayout = false;
+  @Input() grillaAvanzada = false;
   /** Edicion inline desde ficha: la card exterior ya aporta el titulo del bloque. */
-  @Input() inlineRecordLayout = false;
+  @Input() disposicionInlineFicha = false;
 
   @HostBinding('class.employee-layout-advanced')
   protected get employeeLayoutAdvanced(): boolean {
-    return this.advancedGridLayout;
+    return this.grillaAvanzada;
   }
 
   @HostBinding('class.employee-layout-inline-record')
   protected get employeeLayoutInlineRecord(): boolean {
-    return this.inlineRecordLayout;
+    return this.disposicionInlineFicha;
   }
 
   readonly today = this.toIsoDate(new Date());
@@ -118,8 +118,8 @@ export class DatosPersonalesComponent {
     return control.touched && !String(control.value ?? '').trim();
   }
 
-  isBlockVisible(blockId: string): boolean {
-    return this.visibleBlocks === null || this.visibleBlocks.includes(blockId);
+  esBloqueVisible(blockId: string): boolean {
+    return this.bloquesVisibles === null || this.bloquesVisibles.includes(blockId);
   }
 
   get sexoSelectOptions(): SearchSelectOption[] {

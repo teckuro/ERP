@@ -7,7 +7,7 @@ import { FormGroup, ReactiveFormsModule } from '@angular/forms';
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule],
   template: `
-    <form class="tab-panel parametros-tab-panel parametros-form" [formGroup]="form" (ngSubmit)="onSubmit?.()">
+    <form class="tab-panel parametros-tab-panel parametros-form" [formGroup]="form" (ngSubmit)="enviarFormulario?.()">
       <section class="param-group parametros-section-card" aria-labelledby="rentas-title">
         <h2 id="rentas-title">Remuneraciones</h2>
         <p class="param-section-lead">Rentas mínimas imponibles y montos base.</p>
@@ -341,6 +341,6 @@ export class ParametrosRemuneracionesTabComponent {
   @Input() periodoLabel = 'este periodo';
   @Input() referenciaPeriodoLabel: string | null = null;
   @Input() fechaActualizacionLabel: string | null = null;
-  @Input() onSubmit: (() => void) | null = null;
+  @Input() enviarFormulario: (() => void) | null = null;
   @Input() verReferenciaPeriodoAnterior: (() => void) | null = null;
 }

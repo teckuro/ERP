@@ -13,7 +13,7 @@ import { ParametroGeneral } from '../../models/parametro-general.model';
 export class TablaParametrosGeneralesComponent {
   @Input() rows: ParametroGeneral[] = [];
   @Input() loading = false;
-  @Input() errorMessage = '';
+  @Input() mensajeError = '';
 
   readonly filters: DataGridFilter<ParametroGeneral>[] = [
     {

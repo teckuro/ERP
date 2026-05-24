@@ -1,3 +1,9 @@
+## 2026-05-23 - Alta avanzada: guía normativa CL (consola + motor único)
+
+- **Cambio:** `buildAltaValidacionInput` / `evaluarAltaValidacionesVisibles` alimentan consola; bloque «Revisiones normativas» (Revisar / Aplicar / Mantener); panel pasivo «Revisión guiada» eliminado en Resumen; franja `advanced-step-normativa-hint` en pasos 2,3,4,5,6,8; coherencia ampliada (plazo, DT, exclusión jornada, respaldo); sin `max(168)` en horas.
+- **Archivos:** `empleado-alta-validacion-input.ts`, `empleado-alta-coherencia.rules.ts`, `alta-bitacora-console/*`, `form-empleado.*`, `empleados-form-orchestrator.service.ts`, `contrato.html`, specs, `empleado-alta-normativa-cl.md`.
+- **No tocado:** estilos globales, SQL, motor nómina, `angular.json`.
+
 ## 2026-05-24 - Alta avanzada: consola pendientes — toggle estable
 
 - **Cambio:** `ngOnChanges` solo abre/cierra al **cambiar** `expandedByDefault` (entrar/salir de Resumen), no en cada actualización del VM; el usuario puede colapsar en Resumen sin que se reabra sola.

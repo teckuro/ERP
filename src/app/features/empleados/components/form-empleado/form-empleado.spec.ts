@@ -68,7 +68,8 @@ describe('FormEmpleadoComponent - completitud de borrador avanzado', () => {
 
     const fixture = TestBed.createComponent(FormEmpleadoComponent);
     const component = fixture.componentInstance;
-    component.isLoadingCatalogs.set(false);
+    component.cargandoCatalogos.set(false);
+    component.modo.set('avanzado');
     return component;
   }
 
@@ -116,7 +117,8 @@ describe('FormEmpleadoComponent - completitud de borrador avanzado', () => {
 
     const fixture = TestBed.createComponent(FormEmpleadoComponent);
     const component = fixture.componentInstance;
-    component.isLoadingCatalogs.set(false);
+    component.cargandoCatalogos.set(false);
+    component.modo.set(options.modo === 'basico' ? 'basico' : 'avanzado');
     fixture.detectChanges();
     return { fixture, component, shell: TestBed.inject(ShellPageContextService) };
   }
@@ -133,10 +135,10 @@ describe('FormEmpleadoComponent - completitud de borrador avanzado', () => {
       },
     } as never);
 
-    const summary = component.getWizardStepValidationSummary(2);
+    const summary = component.obtenerResumenValidacionPasoAsistente(2);
 
     expect(summary.blockingPending).toBeGreaterThan(0);
-    expect(component.wizardStepUiKind(2)).toBe('pendiente');
+    expect(component.tipoUiPasoAsistente(2)).toBe('pendiente');
     expect(component.cargoVisible()).toBe('Sin informacion');
   });
 
@@ -153,17 +155,17 @@ describe('FormEmpleadoComponent - completitud de borrador avanzado', () => {
       },
     } as never);
 
-    const summary = component.getWizardStepValidationSummary(3);
+    const summary = component.obtenerResumenValidacionPasoAsistente(3);
 
     expect(summary.blockingPending).toBeGreaterThan(0);
-    expect(component.wizardStepUiKind(3)).toBe('pendiente');
+    expect(component.tipoUiPasoAsistente(3)).toBe('pendiente');
   });
 
   it('jornada semanal parte pendiente y no usa 45 como default tecnico', async () => {
     const component = await setup();
 
     expect(component.form.controls.contrato.controls.horasSemanales.value).toBeNull();
-    expect(component.getWizardStepValidationSummary(3).blockingPending).toBeGreaterThan(0);
+    expect(component.obtenerResumenValidacionPasoAsistente(3).blockingPending).toBeGreaterThan(0);
   });
 
   it('cuenta DRAFT no completa el paso Bancario', async () => {
@@ -176,10 +178,10 @@ describe('FormEmpleadoComponent - completitud de borrador avanzado', () => {
       },
     } as never);
 
-    const summary = component.getWizardStepValidationSummary(7);
+    const summary = component.obtenerResumenValidacionPasoAsistente(7);
 
     expect(summary.blockingPending).toBeGreaterThan(0);
-    expect(component.wizardStepUiKind(7)).toBe('pendiente');
+    expect(component.tipoUiPasoAsistente(7)).toBe('pendiente');
   });
 
   it('publica Guardar borrador en el shell durante la bitacora avanzada', async () => {
@@ -200,9 +202,9 @@ describe('FormEmpleadoComponent - completitud de borrador avanzado', () => {
 
   it('en resumen dependiente el CTA del shell finaliza alta', async () => {
     const { component, fixture, shell } = await setupFixture();
-    const submitSpy = vi.spyOn(component, 'onSubmit').mockResolvedValue();
+    const submitSpy = vi.spyOn(component, 'enviarFormulario').mockResolvedValue();
 
-    component.selectWizardStep(component.summaryWizardStepIndex());
+    component.seleccionarPasoAsistente(component.indicePasoResumenAsistente());
     fixture.detectChanges();
     shell.invokePrimaryAction();
 
@@ -215,7 +217,7 @@ describe('FormEmpleadoComponent - completitud de borrador avanzado', () => {
     const guardarSpy = vi.spyOn(component, 'onGuardarBorrador').mockResolvedValue();
 
     component.form.controls.contrato.controls.relacionLaboral.setValue('HONORARIOS');
-    component.selectWizardStep(component.summaryWizardStepIndex());
+    component.seleccionarPasoAsistente(component.indicePasoResumenAsistente());
     fixture.detectChanges();
     shell.invokePrimaryAction();
 
@@ -223,10 +225,15 @@ describe('FormEmpleadoComponent - completitud de borrador avanzado', () => {
     expect(guardarSpy).toHaveBeenCalled();
   });
 
-  it('no publica CTA del shell en creacion basica', async () => {
+  it('publica CTA de borrador en creacion basica', async () => {
     const { shell } = await setupFixture({ modo: 'basico' });
 
-    expect(shell.primaryAction()).toBeUndefined();
+    expect(shell.primaryAction()).toMatchObject({
+      label: 'Guardar borrador',
+      disabled: true,
+      loading: false,
+      actionId: 'empleado-alta-basica-guardar-borrador',
+    });
   });
 
   it('no renderiza acciones locales duplicadas en la cabecera avanzada ni en resumen', async () => {
@@ -235,7 +242,7 @@ describe('FormEmpleadoComponent - completitud de borrador avanzado', () => {
 
     expect(host.querySelector('[data-testid="guardar-borrador-avanzado"]')).toBeNull();
 
-    component.selectWizardStep(component.summaryWizardStepIndex());
+    component.seleccionarPasoAsistente(component.indicePasoResumenAsistente());
     fixture.detectChanges();
 
     expect(host.querySelector('[data-testid="finalizar-alta"]')).toBeNull();
@@ -244,29 +251,29 @@ describe('FormEmpleadoComponent - completitud de borrador avanzado', () => {
   it('Siguiente muestra MsgBox de revision cuando el paso tiene pendientes y permite continuar', async () => {
     const component = await setup();
 
-    component.goToNextTab();
+    component.irAPestanaSiguiente();
 
     expect(component.pasoWizardActivo()).toBe(0);
-    const modal = component.advancedActionModal();
+    const modal = component.modalAccionAvanzada();
     expect(modal?.kind).toBe('next-step-review');
     expect(modal?.primaryLabel).toBe('Continuar');
     expect(modal?.sections?.length).toBe(3);
 
-    component.handleAdvancedActionModalPrimary();
+    component.manejarPrimariaModalAccionAvanzada();
 
-    expect(component.advancedActionModal()).toBeNull();
+    expect(component.modalAccionAvanzada()).toBeNull();
     expect(component.pasoWizardActivo()).toBe(1);
   });
 
   it('Siguiente muestra pendientes obligatorios por campo dentro del modal', async () => {
     const { component, fixture } = await setupFixture();
 
-    component.goToNextTab();
+    component.irAPestanaSiguiente();
     fixture.detectChanges();
     await fixture.whenStable();
     fixture.detectChanges();
 
-    const modal = component.advancedActionModal();
+    const modal = component.modalAccionAvanzada();
     expect(modal?.kind).toBe('next-step-review');
     expect(modal?.fieldItems?.length).toBeGreaterThan(1);
     expect(modal?.fieldItems?.[0]).toMatchObject({
@@ -279,18 +286,18 @@ describe('FormEmpleadoComponent - completitud de borrador avanzado', () => {
 
   it('accion de pendiente del modal navega al paso y cierra el modal', async () => {
     const { component } = await setupFixture();
-    component.selectWizardStep(component.summaryWizardStepIndex());
+    component.seleccionarPasoAsistente(component.indicePasoResumenAsistente());
 
-    await component.onSubmit();
+    await component.enviarFormulario();
 
     const bankItem = component
-      .advancedActionModal()
+      .modalAccionAvanzada()
       ?.fieldItems?.find((item) => item.controlPath === 'bancario.idBanco');
     expect(bankItem).toBeTruthy();
 
-    component.handleAdvancedModalFieldItem(bankItem!);
+    component.manejarItemCampoModalAvanzada(bankItem!);
 
-    expect(component.advancedActionModal()).toBeNull();
+    expect(component.modalAccionAvanzada()).toBeNull();
     expect(component.pasoWizardActivo()).toBe(7);
   });
 
@@ -299,11 +306,11 @@ describe('FormEmpleadoComponent - completitud de borrador avanzado', () => {
 
     await component.onGuardarBorrador();
 
-    const modal = component.advancedActionModal();
+    const modal = component.modalAccionAvanzada();
     expect(modal?.kind).toBe('draft-invalid');
     expect(modal?.title).toBe('No se puede guardar el borrador');
     expect(modal?.sections?.length).toBe(3);
-    expect(component.errorMessage()).toBeNull();
+    expect(component.mensajeError()).toBeNull();
   });
 
   it('Guardar borrador persiste el mayor paso visitado aunque el activo sea el primero', async () => {
@@ -329,8 +336,8 @@ describe('FormEmpleadoComponent - completitud de borrador avanzado', () => {
       },
     } as never);
 
-    component.selectWizardStep(7);
-    component.selectWizardStep(0);
+    component.seleccionarPasoAsistente(7);
+    component.seleccionarPasoAsistente(0);
     await component.onGuardarBorrador();
 
     expect(empleadosService.guardarBorradorAvanzado).toHaveBeenCalledWith(
@@ -342,29 +349,29 @@ describe('FormEmpleadoComponent - completitud de borrador avanzado', () => {
 
   it('Finalizar alta usa MsgBox y no cambia de paso hasta elegir ir al bloqueo', async () => {
     const component = await setup();
-    component.selectWizardStep(8);
+    component.seleccionarPasoAsistente(8);
 
-    await component.onSubmit();
+    await component.enviarFormulario();
 
     expect(component.pasoWizardActivo()).toBe(8);
-    expect(component.advancedActionModal()?.kind).toBe('finish-invalid');
+    expect(component.modalAccionAvanzada()?.kind).toBe('finish-invalid');
 
-    component.handleAdvancedActionModalPrimary();
+    component.manejarPrimariaModalAccionAvanzada();
 
-    expect(component.advancedActionModal()).toBeNull();
+    expect(component.modalAccionAvanzada()).toBeNull();
     expect(component.pasoWizardActivo()).toBe(0);
   });
 
   it('Finalizar alta lista bloqueos de distintas secciones como campos accionables', async () => {
     const { component, fixture } = await setupFixture();
-    component.selectWizardStep(component.summaryWizardStepIndex());
+    component.seleccionarPasoAsistente(component.indicePasoResumenAsistente());
 
-    await component.onSubmit();
+    await component.enviarFormulario();
     fixture.detectChanges();
     await fixture.whenStable();
     fixture.detectChanges();
 
-    const modal = component.advancedActionModal();
+    const modal = component.modalAccionAvanzada();
     const sectionTitles = new Set(
       modal?.fieldItems?.map((item) => item.sectionTitle) ?? [],
     );
@@ -380,46 +387,46 @@ describe('FormEmpleadoComponent - completitud de borrador avanzado', () => {
 
     component.form.controls.contrato.controls.relacionLaboral.setValue('HONORARIOS');
 
-    expect(component.linearWizardSequence()).toEqual([0, 1, 2, 3, 7, 9]);
-    expect(component.wizardStepUiKind(4)).toBe('no-aplica');
-    expect(component.wizardStepUiKind(5)).toBe('no-aplica');
-    expect(component.wizardStepUiKind(6)).toBe('no-aplica');
+    expect(component.secuenciaLinealAsistente()).toEqual([0, 1, 2, 3, 7, 9]);
+    expect(component.tipoUiPasoAsistente(4)).toBe('no-aplica');
+    expect(component.tipoUiPasoAsistente(5)).toBe('no-aplica');
+    expect(component.tipoUiPasoAsistente(6)).toBe('no-aplica');
   });
 
   it('Boleta de honorarios bloquea finalizar alta activa y ofrece guardar borrador', async () => {
     const component = await setup();
 
     component.form.controls.contrato.controls.relacionLaboral.setValue('HONORARIOS');
-    component.selectWizardStep(8);
+    component.seleccionarPasoAsistente(8);
 
-    await component.onSubmit();
+    await component.enviarFormulario();
 
-    expect(component.advancedActionModal()?.kind).toBe('honorarios-finish-blocked');
-    expect(component.advancedActionModal()?.title).toBe('Guardar borrador de honorarios');
-    expect(component.advancedActionModal()?.primaryLabel).toBe('Guardar como borrador');
-    expect(component.advancedActionModal()?.secondaryLabel).toBe('Cerrar');
+    expect(component.modalAccionAvanzada()?.kind).toBe('honorarios-finish-blocked');
+    expect(component.modalAccionAvanzada()?.title).toBe('Guardar borrador de honorarios');
+    expect(component.modalAccionAvanzada()?.primaryLabel).toBe('Guardar como borrador');
+    expect(component.modalAccionAvanzada()?.secondaryLabel).toBe('Cerrar');
   });
 
   it('Boleta de honorarios usa accion final de borrador en el resumen', async () => {
     const component = await setup();
 
-    expect(component.finalWizardActionLabel()).toBe('Finalizar alta');
+    expect(component.etiquetaAccionFinalAsistente()).toBe('Finalizar alta');
 
     component.form.controls.contrato.controls.relacionLaboral.setValue('HONORARIOS');
 
-    expect(component.finalWizardActionLabel()).toBe('Guardar borrador');
+    expect(component.etiquetaAccionFinalAsistente()).toBe('Guardar borrador');
   });
 
   it('Confirmar honorarios mueve una etapa no aplicable al siguiente paso util', async () => {
     const component = await setup();
     await component.ngOnInit();
 
-    component.selectWizardStep(5);
+    component.seleccionarPasoAsistente(5);
     component.form.controls.contrato.controls.relacionLaboral.setValue('HONORARIOS');
 
-    expect(component.advancedActionModal()?.kind).toBe('honorarios-confirm');
+    expect(component.modalAccionAvanzada()?.kind).toBe('honorarios-confirm');
 
-    component.handleAdvancedActionModalPrimary();
+    component.manejarPrimariaModalAccionAvanzada();
 
     expect(component.pasoWizardActivo()).toBe(7);
   });
@@ -427,7 +434,7 @@ describe('FormEmpleadoComponent - completitud de borrador avanzado', () => {
 
   it('Siguiente muestra MsgBox de coherencia y permite activar seguro de cesantía', async () => {
     const component = await setup();
-    component.selectWizardStep(3);
+    component.seleccionarPasoAsistente(3);
     component.form.patchValue({
       contrato: {
         tipoContrato: 'INDEFINIDO',
@@ -440,12 +447,12 @@ describe('FormEmpleadoComponent - completitud de borrador avanzado', () => {
       },
     } as never);
 
-    component.goToNextTab();
+    component.irAPestanaSiguiente();
 
-    expect(component.advancedActionModal()?.kind).toBe('coherence-decision');
-    expect(component.advancedActionModal()?.primaryLabel).toBe('Activar seguro de cesantía');
+    expect(component.modalAccionAvanzada()?.kind).toBe('coherence-decision');
+    expect(component.modalAccionAvanzada()?.primaryLabel).toBe('Activar seguro de cesantía');
 
-    component.handleAdvancedActionModalPrimary();
+    component.manejarPrimariaModalAccionAvanzada();
 
     expect(component.form.controls.contrato.controls.seguroCesantia.value).toBe(true);
     expect(component.pasoWizardActivo()).toBe(3);
@@ -453,7 +460,7 @@ describe('FormEmpleadoComponent - completitud de borrador avanzado', () => {
 
   it('Mantener revision de coherencia permite continuar sin cambiar el dato', async () => {
     const component = await setup();
-    component.selectWizardStep(3);
+    component.seleccionarPasoAsistente(3);
     component.form.patchValue({
       contrato: {
         tipoContrato: 'INDEFINIDO',
@@ -466,8 +473,8 @@ describe('FormEmpleadoComponent - completitud de borrador avanzado', () => {
       },
     } as never);
 
-    component.goToNextTab();
-    component.handleAdvancedActionModalSecondary();
+    component.irAPestanaSiguiente();
+    component.manejarSecundariaModalAccionAvanzada();
 
     expect(component.form.controls.contrato.controls.seguroCesantia.value).toBe(false);
     expect(component.pasoWizardActivo()).toBe(4);
@@ -490,9 +497,9 @@ describe('FormEmpleadoComponent - completitud de borrador avanzado', () => {
     component.form.controls.contrato.controls.relacionLaboral.setValue('HONORARIOS');
 
     expect(component.form.controls.contrato.controls.idTipoTrabajador.value).toBe(2);
-    expect(component.advancedActionModal()?.kind).toBe('honorarios-confirm');
+    expect(component.modalAccionAvanzada()?.kind).toBe('honorarios-confirm');
 
-    component.handleAdvancedActionModalSecondary();
+    component.manejarSecundariaModalAccionAvanzada();
 
     expect(component.form.controls.contrato.controls.relacionLaboral.value).toBe('CONTRATO');
     expect(component.form.controls.contrato.controls.idTipoTrabajador.value).toBe(1);
@@ -540,7 +547,8 @@ describe('FormEmpleadoComponent - consola bitácora pendientes', () => {
 
     const fixture = TestBed.createComponent(FormEmpleadoComponent);
     const component = fixture.componentInstance;
-    component.isLoadingCatalogs.set(false);
+    component.cargandoCatalogos.set(false);
+    component.modo.set('avanzado');
     return { fixture, component };
   }
 
@@ -562,6 +570,7 @@ describe('FormEmpleadoComponent - consola bitácora pendientes', () => {
     expect(vm.totalVisible).toBeGreaterThan(0);
     expect(vm.faltantes.length).toBeGreaterThan(0);
     expect(vm.registrosPendientes.length).toBeGreaterThan(0);
+    expect(vm.revisionesNormativas.length).toBeGreaterThan(0);
   });
 
   it('altaBitacoraConsoleVm expande por defecto en paso resumen con pendientes', async () => {
@@ -576,7 +585,7 @@ describe('FormEmpleadoComponent - consola bitácora pendientes', () => {
       },
     } as never);
 
-    component.selectWizardStep(component.summaryWizardStepIndex());
+    component.seleccionarPasoAsistente(component.indicePasoResumenAsistente());
     const vm = component.altaBitacoraConsoleVm();
 
     expect(vm.expandedByDefault).toBe(true);

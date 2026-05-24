@@ -74,6 +74,27 @@ Comportamiento:
 
 Regla UX: no duplicar la informacion del mapa con tarjetas permanentes dentro del paso.
 
+### EMP-ALTA-NORMATIVA-CL-01 — Matriz normativa y motor único
+
+Contrato detallado: [`empleado-alta-normativa-cl.md`](./empleado-alta-normativa-cl.md).
+
+- Las tres capas (obligatorio, aplicabilidad, coherencia) se unifican en UI mediante `evaluarAltaValidacionesVisibles` alimentado por `buildAltaValidacionInput` (`empleado-alta-validacion-input.ts`).
+- La consola flotante es la **guía normativa** operativa; no se usa un panel pasivo «Revisión guiada» en Resumen.
+- El formulario de horas semanales no debe contradecir el tope administrativo de 42 h (sin validador `max(168)` en dependiente).
+
+### EMP-ALTA-REVISION-GUIADA-CONSOLA-01 — Consola accionable
+
+Orden de bloques en `app-alta-bitacora-console`:
+
+1. Pendientes del expediente (diagnóstico).
+2. **Revisiones normativas** (coherencia + aplicabilidad en revisión): Revisar paso · Aplicar sugerencia · Mantener revisión.
+3. Registros de la bitácora (wizard pendiente/error).
+4. Pendientes para cierre.
+
+Franja bajo el encabezado del paso (pasos 2, 3, 4, 5, 6, 8): una línea + «Abrir guía normativa» (expande la consola). Sin cards.
+
+En Resumen final: mantener **Diagnóstico contractual**; lead que remite a la consola para revisiones normativas.
+
 ### Copy administrativo de MsgBox
 
 - Los mensajes deben sonar administrativos y orientados a RRHH.
@@ -155,7 +176,8 @@ Patron de uso:
 2. MsgBox al avanzar o finalizar cuando hay una decision corregible.
 3. Boton primario aplica la recomendacion.
 4. Boton secundario mantiene bajo revision y permite continuar.
-5. Resumen final conserva la revision pendiente.
+5. Resumen final y consola conservan la revision pendiente (consola como canal principal desde EMP-ALTA-REVISION-GUIADA-CONSOLA-01).
+
 ## EMP-ALTA-COHERENCIA-GLOBAL-00 - Matriz de aplicabilidad y coherencia
 
 La auditoría [`alta-coherencia-global-00.md`](./alta-coherencia-global-00.md) queda como contrato previo para las próximas mejoras de Creación avanzada.

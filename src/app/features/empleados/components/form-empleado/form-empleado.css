@@ -661,6 +661,33 @@
   min-width: 0;
 }
 
+.advanced-step-normativa-hint {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 6px 8px;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  background: #fffbeb;
+}
+
+.advanced-step-normativa-hint__text {
+  flex: 1 1 12rem;
+  margin: 0;
+  font-size: 0.75rem;
+  line-height: 1.35;
+  color: #78350f;
+}
+
+.advanced-step-normativa-hint__btn {
+  flex: 0 0 auto;
+  min-height: 28px;
+  padding: 0 10px;
+  font-size: 0.6875rem;
+}
+
 .advanced-step-heading { gap: 3px; min-width: 0; }
 .advanced-step-actions { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 8px; flex-shrink: 0; }
 .advanced-step-nav-btn--primary { min-width: 11.5rem; }

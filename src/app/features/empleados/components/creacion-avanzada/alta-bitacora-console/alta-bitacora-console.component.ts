@@ -11,7 +11,10 @@ import {
 import { CommonModule } from '@angular/common';
 import { LucideAngularModule } from 'lucide-angular';
 import { ChevronDown, ChevronUp } from 'lucide-angular/src/icons';
-import type { AltaBitacoraConsoleVm } from '../../../models/empleado-alta-avanzada.vm';
+import type {
+  VmConsolaBitacoraAlta,
+  RevisionNormativaBitacoraAlta,
+} from '../../../models/empleado-alta-avanzada.vm';
 import type { FaltanteFichaEmpleado } from '../../../models/ficha-empleado.vm';
 
 @Component({
@@ -26,10 +29,15 @@ import type { FaltanteFichaEmpleado } from '../../../models/ficha-empleado.vm';
   },
 })
 export class AltaBitacoraConsoleComponent implements OnChanges {
-  @Input({ required: true }) vm!: AltaBitacoraConsoleVm;
+  @Input({ required: true }) vm!: VmConsolaBitacoraAlta;
+
+  /** Incrementar para expandir la consola desde la franja del paso. */
+  @Input() expandRequest = 0;
 
   readonly navegarFaltante = output<FaltanteFichaEmpleado>();
   readonly revisarPaso = output<number>();
+  readonly aplicarRevisionNormativa = output<RevisionNormativaBitacoraAlta>();
+  readonly mantenerRevisionNormativa = output<RevisionNormativaBitacoraAlta>();
 
   readonly chevronDownIcon = ChevronDown;
   readonly chevronUpIcon = ChevronUp;
@@ -47,7 +55,13 @@ export class AltaBitacoraConsoleComponent implements OnChanges {
   }
 
   ngOnChanges(changes: SimpleChanges): void {
-    const prevVm = changes['vm']?.previousValue as AltaBitacoraConsoleVm | undefined;
+    if (changes['expandRequest'] && !changes['expandRequest'].firstChange) {
+      if (this.vm.visible) {
+        this.expanded.set(true);
+      }
+    }
+
+    const prevVm = changes['vm']?.previousValue as VmConsolaBitacoraAlta | undefined;
     const vm = this.vm;
 
     if (!vm.visible) {

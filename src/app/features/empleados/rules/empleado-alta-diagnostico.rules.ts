@@ -21,7 +21,7 @@ export { evaluarDiagnosticoFichaEmpleado, snapshotValidacionDesdePayload } from 
 
 export type AltaValidationStepId = EmpleadoFichaValidacionFormTab;
 
-export interface EvaluatedAltaValidationRule {
+export interface ReglaValidacionAltaEvaluada {
   id: string;
   stepId: AltaValidationStepId;
   wizardStep: number;
@@ -39,7 +39,7 @@ export interface EvaluatedAltaValidationRule {
 
 export function mapDiagnosticoItemsToEvaluatedRules(
   diagnostico: EmpleadoFichaDiagnostico,
-): EvaluatedAltaValidationRule[] {
+): ReglaValidacionAltaEvaluada[] {
   return diagnostico.items.map((item) => ({
     id: item.id,
     stepId: item.formTab,

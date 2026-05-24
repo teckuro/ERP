@@ -3,16 +3,16 @@ import type { EmpleadoFormTabId } from './empleado-form.manifest';
 import type { CondicionTrabajadorControlName } from './empleado-perfil-laboral.model';
 import type { FaltanteFichaEmpleado } from './ficha-empleado.vm';
 
-export type TabId = EmpleadoFormTabId;
+export type IdPestana = EmpleadoFormTabId;
 
-export type WizardStepUiKind = 'actual' | 'completo' | 'pendiente' | 'errores' | 'opcional' | 'no-aplica';
+export type TipoUiPasoAsistente = 'actual' | 'completo' | 'pendiente' | 'errores' | 'opcional' | 'no-aplica';
 
-export type ValidationStepId = TabId;
-export type ValidationSeverity = 'error' | 'warning' | 'info';
-export type StepValidationStatus = 'pending' | 'in-progress' | 'invalid' | 'complete';
+export type IdPasoValidacion = IdPestana;
+export type SeveridadValidacion = 'error' | 'warning' | 'info';
+export type EstadoValidacionPaso = 'pending' | 'in-progress' | 'invalid' | 'complete';
 export type FormEmpleadoModo = 'basico' | 'avanzado';
 
-export type AdvancedActionModalKind =
+export type TipoModalAccionAvanzada =
   | 'next-step-review'
   | 'coherence-decision'
   | 'draft-invalid'
@@ -26,7 +26,7 @@ export type AdvancedActionModalKind =
   | 'basic-duplicate-rut'
   | 'basic-catalog-wait';
 
-export type AdvancedActionModalAction =
+export type AccionModalAccionAvanzada =
   | 'dismiss'
   | 'go-to-list'
   | 'apply-coherence-suggestion'
@@ -40,8 +40,8 @@ export type AdvancedActionModalAction =
   | 'cancel-honorarios'
   | 'save-honorarios-draft';
 
-export interface AdvancedActionModal {
-  kind: AdvancedActionModalKind;
+export interface ModalAccionAvanzada {
+  kind: TipoModalAccionAvanzada;
   variant: MessageBoxVariant;
   eyebrow?: string;
   title: string;
@@ -52,13 +52,13 @@ export interface AdvancedActionModal {
   blockingItems: readonly string[];
   warningItems: readonly string[];
   infoItems: readonly string[];
-  fieldItems?: readonly AdvancedActionModalFieldItem[];
+  fieldItems?: readonly ItemCampoModalAccionAvanzada[];
   targetStep?: number;
-  primaryAction: AdvancedActionModalAction;
-  secondaryAction?: AdvancedActionModalAction;
+  primaryAction: AccionModalAccionAvanzada;
+  secondaryAction?: AccionModalAccionAvanzada;
 }
 
-export interface AdvancedActionModalFieldItem {
+export interface ItemCampoModalAccionAvanzada {
   id: string;
   sectionTitle: string;
   fieldLabel: string;
@@ -66,14 +66,14 @@ export interface AdvancedActionModalFieldItem {
   actionLabel: string;
   wizardStep: number;
   controlPath: string;
-  severity: ValidationSeverity;
+  severity: SeveridadValidacion;
 }
 
-export interface ValidationRule {
+export interface ReglaValidacion {
   id: string;
-  stepId: ValidationStepId;
+  stepId: IdPasoValidacion;
   label: string;
-  severity: ValidationSeverity;
+  severity: SeveridadValidacion;
   blocking: boolean;
   sourcePath: string;
   category?: string;
@@ -82,20 +82,20 @@ export interface ValidationRule {
   isVisible?: () => boolean;
 }
 
-export interface PerfilLaboralAutoDetection {
+export interface DeteccionAutomaticaPerfilLaboral {
   controlName: CondicionTrabajadorControlName;
   reason: string;
 }
 
-export interface EvaluatedValidationRule {
+export interface ReglaValidacionEvaluada {
   id: string;
-  stepId: ValidationStepId;
+  stepId: IdPasoValidacion;
   wizardStep: number;
   sectionTitle: string;
   label: string;
   detail: string;
   actionLabel?: string;
-  severity: ValidationSeverity;
+  severity: SeveridadValidacion;
   blocking: boolean;
   complete: boolean;
   visible: boolean;
@@ -103,17 +103,17 @@ export interface EvaluatedValidationRule {
   category?: string;
 }
 
-export interface StepValidationSummary {
-  stepId: ValidationStepId;
+export interface ResumenValidacionPaso {
+  stepId: IdPasoValidacion;
   pending: number;
   blockingPending: number;
   warningsPending: number;
   complete: number;
   applicable: number;
-  status: StepValidationStatus;
+  status: EstadoValidacionPaso;
 }
 
-export interface GlobalValidationSummary {
+export interface ResumenValidacionGlobal {
   blockingPending: number;
   warningsPending: number;
   completeSteps: number;
@@ -121,27 +121,41 @@ export interface GlobalValidationSummary {
   pendingTotal: number;
 }
 
-export interface WizardMapGroup {
+export interface GrupoMapaAsistente {
   title: string;
   description: string;
   stepIndexes: readonly number[];
 }
 
-export interface AltaBitacoraRegistroPendienteRow {
+export interface FilaRegistroPendienteBitacoraAlta {
   stepIndex: number;
   label: string;
-  kind: WizardStepUiKind;
+  kind: TipoUiPasoAsistente;
   stateLabel: string;
 }
 
+/** Revisión normativa visible en consola (coherencia o aplicabilidad). */
+export interface RevisionNormativaBitacoraAlta {
+  id: string;
+  origen: 'coherencia' | 'aplicabilidad';
+  stepIndex: number;
+  titulo: string;
+  detalle: string;
+  accionRecomendada?: string;
+  puedeAplicarCorreccion: boolean;
+  bajoRevision: boolean;
+  coherenciaIssueId?: string;
+}
+
 /** Vista de la consola flotante de pendientes (alta avanzada). */
-export interface AltaBitacoraConsoleVm {
+export interface VmConsolaBitacoraAlta {
   visible: boolean;
   expandedByDefault: boolean;
   collapsedLabel: string;
   motivoPrincipal: string;
   faltantes: readonly FaltanteFichaEmpleado[];
-  registrosPendientes: readonly AltaBitacoraRegistroPendienteRow[];
+  revisionesNormativas: readonly RevisionNormativaBitacoraAlta[];
+  registrosPendientes: readonly FilaRegistroPendienteBitacoraAlta[];
   pendientesCierre: readonly string[];
   totalVisible: number;
 }

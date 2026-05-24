@@ -7,7 +7,7 @@ import { FormGroup, ReactiveFormsModule } from '@angular/forms';
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule],
   template: `
-    <form class="tab-panel parametros-tab-panel parametros-form" [formGroup]="form" (ngSubmit)="onSubmit?.()">
+    <form class="tab-panel parametros-tab-panel parametros-form" [formGroup]="form" (ngSubmit)="enviarFormulario?.()">
       <section class="param-group parametros-section-card" aria-labelledby="indicadores-title">
         <h2 id="indicadores-title">Indicadores mensuales</h2>
         <p class="param-section-lead">UF, UTM y UTA del periodo.</p>
@@ -49,6 +49,6 @@ export class ParametrosValoresTabComponent {
   @Input() periodoLabel = 'este periodo';
   @Input() referenciaPeriodoLabel: string | null = null;
   @Input() fechaActualizacionLabel: string | null = null;
-  @Input() onSubmit: (() => void) | null = null;
+  @Input() enviarFormulario: (() => void) | null = null;
   @Input() verReferenciaPeriodoAnterior: (() => void) | null = null;
 }

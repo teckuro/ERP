@@ -1,25 +1,31 @@
 import { TestBed } from '@angular/core/testing';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { SUPABASE_CLIENT } from './supabase.service';
+import { loadRuntimeConfig } from '../../config/runtime-config';
 import {
   AsistentePreguntorError,
   AsistentePreguntorService,
 } from './asistente-preguntor.service';
-
-vi.mock('../../config/runtime-config', () => ({
-  getAppConfig: () => ({
-    supabaseUrl: 'https://test.supabase.co',
-    supabaseAnonKey: 'anon-key',
-    asistentePreguntorFunction: 'super-service',
-  }),
-}));
+import { SUPABASE_CLIENT } from './supabase.service';
 
 describe('AsistentePreguntorService', () => {
   let service: AsistentePreguntorService;
   let invoke: ReturnType<typeof vi.fn>;
 
-  beforeEach(() => {
+  beforeEach(async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue({
+        ok: true,
+        json: async () => ({
+          supabaseUrl: 'https://test.supabase.co',
+          supabaseAnonKey: 'anon-key',
+          asistentePreguntorFunction: 'super-service',
+        }),
+      }),
+    );
+    await loadRuntimeConfig();
+
     invoke = vi.fn().mockResolvedValue({
       data: { respuesta: 'Respuesta de prueba' },
       error: null,

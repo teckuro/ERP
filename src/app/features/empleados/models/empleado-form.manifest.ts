@@ -1,19 +1,19 @@
 /**
  * Inventario del flujo de alta (orden de pestañas, etiquetas UX y bloques HTML por paso).
- * Mantener alineado con `@if (isBlockVisible(..))` en cada seccion.
+ * Mantener alineado con `@if (esBloqueVisible(..))` en cada seccion.
  */
 
-export const EMPLEADO_FORM_TAB_ORDER = [
+export const ordenPestanasFormularioEmpleado = [
   'datosPersonales',
   'contrato',
   'previsionSalud',
   'bancario',
 ] as const;
 
-export type EmpleadoFormTabId = (typeof EMPLEADO_FORM_TAB_ORDER)[number];
+export type EmpleadoFormTabId = (typeof ordenPestanasFormularioEmpleado)[number];
 
 /** Pasos del asistente en creacion avanzada (10 etapas). */
-export const EMPLEADO_ADVANCED_WIZARD_LABELS = [
+export const etiquetasAsistenteAvanzadoEmpleado = [
   'Datos personales',
   'Domicilio particular',
   'Contrato y organización',
@@ -26,10 +26,10 @@ export const EMPLEADO_ADVANCED_WIZARD_LABELS = [
   'Resumen final',
 ] as const;
 
-export const EMPLEADO_ADVANCED_WIZARD_STEP_COUNT = EMPLEADO_ADVANCED_WIZARD_LABELS.length;
+export const cantidadPasosAsistenteAvanzadoEmpleado = etiquetasAsistenteAvanzadoEmpleado.length;
 
 /** Bloques visibles por pestaña (ids usados en templates de sección). */
-export const EMPLEADO_FORM_STEP_BLOCK_IDS: Record<EmpleadoFormTabId, readonly string[]> = {
+export const idsBloquesPasoFormularioEmpleado: Record<EmpleadoFormTabId, readonly string[]> = {
   datosPersonales: ['identificacion', 'nombre', 'base', 'contacto'],
   contrato: [
     'relacion',
@@ -46,4 +46,4 @@ export const EMPLEADO_FORM_STEP_BLOCK_IDS: Record<EmpleadoFormTabId, readonly st
 } as const;
 
 export type EmpleadoFormBlockId =
-  (typeof EMPLEADO_FORM_STEP_BLOCK_IDS)[EmpleadoFormTabId][number];
+  (typeof idsBloquesPasoFormularioEmpleado)[EmpleadoFormTabId][number];

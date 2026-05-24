@@ -2,9 +2,9 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { AltaBitacoraConsoleComponent } from './alta-bitacora-console.component';
-import type { AltaBitacoraConsoleVm } from '../../../models/empleado-alta-avanzada.vm';
+import type { VmConsolaBitacoraAlta } from '../../../models/empleado-alta-avanzada.vm';
 
-function vmBase(overrides: Partial<AltaBitacoraConsoleVm> = {}): AltaBitacoraConsoleVm {
+function vmBase(overrides: Partial<VmConsolaBitacoraAlta> = {}): VmConsolaBitacoraAlta {
   return {
     visible: true,
     expandedByDefault: false,
@@ -26,6 +26,7 @@ function vmBase(overrides: Partial<AltaBitacoraConsoleVm> = {}): AltaBitacoraCon
         stateLabel: 'Pendiente de datos',
       },
     ],
+    revisionesNormativas: [],
     pendientesCierre: [],
     totalVisible: 2,
     ...overrides,
@@ -123,6 +124,49 @@ describe('AltaBitacoraConsoleComponent', () => {
     fixture.detectChanges();
 
     expect(fixture.nativeElement.querySelector('.alta-bitacora-console__body')).toBeNull();
+  });
+
+  it('expande cuando cambia expandRequest', () => {
+    fixture.componentRef.setInput('vm', vmBase({ expandedByDefault: false }));
+    fixture.componentRef.setInput('expandRequest', 0);
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('.alta-bitacora-console__body')).toBeNull();
+
+    fixture.componentRef.setInput('expandRequest', 1);
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('.alta-bitacora-console__body')).not.toBeNull();
+  });
+
+  it('muestra revisiones normativas y emite aplicar', () => {
+    const rev = {
+      id: 'coherencia.coh.seguro.indefinido-inactivo',
+      origen: 'coherencia' as const,
+      stepIndex: 3,
+      titulo: 'Seguro de Cesantía desactivado',
+      detalle: 'Revisar contrato indefinido.',
+      puedeAplicarCorreccion: true,
+      bajoRevision: false,
+      coherenciaIssueId: 'coh.seguro.indefinido-inactivo',
+    };
+    fixture.componentRef.setInput(
+      'vm',
+      vmBase({
+        expandedByDefault: true,
+        revisionesNormativas: [rev],
+        totalVisible: 3,
+      }),
+    );
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.textContent).toContain('Revisiones normativas');
+
+    const aplicarSpy = vi.fn();
+    fixture.componentInstance.aplicarRevisionNormativa.subscribe(aplicarSpy);
+    const applyBtn = fixture.nativeElement.querySelector(
+      '.alta-bitacora-console__apply',
+    ) as HTMLButtonElement;
+    applyBtn.click();
+    expect(aplicarSpy).toHaveBeenCalledWith(rev);
   });
 
   it('emite revisarPaso al pulsar Revisar en bitácora', () => {

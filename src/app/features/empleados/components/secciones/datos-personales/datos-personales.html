@@ -1,7 +1,7 @@
 <section class="employee-section-shell">
-  @if (isBlockVisible('identificacion')) {
+  @if (esBloqueVisible('identificacion')) {
     <app-card className="employee-block employee-block--wide" [formGroup]="formGroup">
-      @if (!inlineRecordLayout) {
+      @if (!disposicionInlineFicha) {
       <div class="employee-block-head">
         <h4>
           Identificación legal
@@ -17,8 +17,8 @@
         class="employee-grid"
         [class.employee-grid-basic--ident]="basicSectionLeads"
         [class.employee-grid--two]="!basicSectionLeads"
-        [class.employee-grid-adv]="advancedGridLayout"
-        [class.employee-grid-adv--ident]="advancedGridLayout"
+        [class.employee-grid-adv]="grillaAvanzada"
+        [class.employee-grid-adv--ident]="grillaAvanzada"
       >
         <div class="form-field form-field--rut">
           <div class="field-label-row">
@@ -111,9 +111,9 @@
     </app-card>
   }
 
-  @if (isBlockVisible('nombre')) {
+  @if (esBloqueVisible('nombre')) {
     <app-card className="employee-block employee-block--wide" [formGroup]="formGroup">
-      @if (!inlineRecordLayout) {
+      @if (!disposicionInlineFicha) {
       <div class="employee-block-head">
         <h4>Nombre del empleado</h4>
         @if (basicSectionLeads) {
@@ -126,8 +126,8 @@
         class="employee-grid"
         [class.employee-grid-basic--nombre]="basicSectionLeads"
         [class.employee-grid--three]="!basicSectionLeads"
-        [class.employee-grid-adv]="advancedGridLayout"
-        [class.employee-grid-adv--nombre]="advancedGridLayout"
+        [class.employee-grid-adv]="grillaAvanzada"
+        [class.employee-grid-adv--nombre]="grillaAvanzada"
       >
         <div class="form-field form-field--wide">
           <div class="field-label-row">
@@ -202,11 +202,11 @@
     </app-card>
   }
 
-  @if (isBlockVisible('base')) {
+  @if (esBloqueVisible('base')) {
     @if (basicSectionLeads) {
       <div class="employee-basic-bottom-grid" aria-label="Datos personales y contacto">
         <app-card className="employee-block employee-block--narrow">
-          @if (!inlineRecordLayout) {
+          @if (!disposicionInlineFicha) {
           <div class="employee-block-head">
             <h4>Datos personales</h4>
             <p class="employee-block-lead">Nacionalidad y estado civil.</p>
@@ -267,9 +267,9 @@
           </div>
         </app-card>
 
-        @if (isBlockVisible('contacto')) {
+        @if (esBloqueVisible('contacto')) {
           <app-card className="employee-block employee-block--narrow">
-            @if (!inlineRecordLayout) {
+            @if (!disposicionInlineFicha) {
             <div class="employee-block-head">
               <h4>Contacto</h4>
               <p class="employee-block-lead">Email y teléfono opcionales.</p>
@@ -322,7 +322,7 @@
       </div>
     } @else {
       <app-card className="employee-block employee-block--narrow">
-        @if (!inlineRecordLayout) {
+        @if (!disposicionInlineFicha) {
         <div class="employee-block-head">
           <h4>Datos personales</h4>
         </div>
@@ -330,8 +330,8 @@
         <div
           class="employee-grid employee-grid--four"
           [formGroup]="formGroup"
-          [class.employee-grid-adv]="advancedGridLayout"
-          [class.employee-grid-adv--base]="advancedGridLayout"
+          [class.employee-grid-adv]="grillaAvanzada"
+          [class.employee-grid-adv--base]="grillaAvanzada"
         >
           <div class="form-field">
             <div class="field-label-row">
@@ -379,9 +379,9 @@
         </div>
       </app-card>
 
-      @if (isBlockVisible('contacto')) {
+      @if (esBloqueVisible('contacto')) {
         <app-card className="employee-block employee-block--narrow" [formGroup]="contactoFormGroup">
-          @if (!inlineRecordLayout) {
+          @if (!disposicionInlineFicha) {
           <div class="employee-block-head">
             <h4>Contacto</h4>
             <p class="employee-block-lead">Email y teléfono son opcionales para coordinación interna.</p>
@@ -390,8 +390,8 @@
 
           <div
             class="employee-grid employee-grid--two"
-            [class.employee-grid-adv]="advancedGridLayout"
-            [class.employee-grid-adv--contact]="advancedGridLayout"
+            [class.employee-grid-adv]="grillaAvanzada"
+            [class.employee-grid-adv--contact]="grillaAvanzada"
           >
             <div class="form-field form-field--wide">
               <div class="field-label-row">

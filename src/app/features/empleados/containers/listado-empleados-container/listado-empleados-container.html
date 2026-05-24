@@ -4,15 +4,15 @@
       #tabla
       class="block w-full min-w-0"
       [empleados]="empleados()"
-      [loading]="isLoading()"
-      [errorMessage]="errorMessage() ?? ''"
-      [bulkActionLoading]="bulkActionLoading()"
-      [bulkActionResult]="bulkActionResult()"
-      [createNavigationTarget]="createNavigationTarget()"
+      [loading]="cargando()"
+      [mensajeError]="mensajeError() ?? ''"
+      [bulkActionLoading]="cargandoAccionMasiva()"
+      [bulkActionResult]="resultadoAccionMasiva()"
+      [destinoNavegacionCreacion]="destinoNavegacionCreacion()"
       (createBasico)="crearBasico()"
       (createAvanzado)="crearAvanzado()"
-      (bulkAction)="handleBulkAction($event)"
-      (refresh)="loadEmpleados()"
+      (bulkAction)="manejarAccionMasiva($event)"
+      (refresh)="cargarEmpleados()"
     ></app-tabla-empleados>
   </div>
 </section>

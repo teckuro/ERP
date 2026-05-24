@@ -1,4 +1,4 @@
-﻿import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ActivatedRoute } from '@angular/router';
 import { provideRouter } from '@angular/router';
 
@@ -56,12 +56,22 @@ function empleado(over: Partial<EmpleadoFichaDetalle> = {}): EmpleadoFichaDetall
         idTipoTrabajador: 1,
         idTipoJornada: 1,
         seguroCesantia: true,
+        excluidoLimiteJornada: false,
+        causalExclusionJornada: null,
+        justificacionExclusionJornada: '',
+        casaParticularModalidad: null,
+        casaParticularLabores: '',
+        casaParticularDomicilioEspecifico: '',
+        casaParticularAsistenciaCuidado: false,
+        casaParticularRegistroDtEstado: null,
+        casaParticularRegistroDtFecha: '',
+        casaParticularRegistroDtFolio: '',
         fechaIngreso: '2026-01-01',
         fechaTermino: '',
         sueldoBase: 900000,
         idMoneda: 1,
         sueldoVariable: false,
-        horasSemanales: 44,
+        horasSemanales: 42,
         diasSemanales: 5,
         distribucionJornada: '',
         tiempoColacionMinutos: null,
@@ -560,7 +570,7 @@ describe('FichaEmpleadoContainer', () => {
     expect(host.querySelector('.ficha-registro-tab')).toBeTruthy();
   });
 
-  it('expone contacto al editar el bloque base en visibleBlocks', () => {
+  it('expone contacto al editar el bloque base en bloquesVisibles', () => {
     expect(component.editVisibleBlocks('base')).toEqual(['base', 'contacto']);
   });
 

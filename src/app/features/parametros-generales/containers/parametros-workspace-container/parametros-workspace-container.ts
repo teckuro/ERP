@@ -175,7 +175,7 @@ export class ParametrosWorkspaceContainer implements OnInit {
   readonly isLoading = this.presentacion.isLoading;
   /** Consulta al backend solo para plantilla del último período (crear parámetros); no es guardado. */
   readonly isLoadingPlantilla = this.presentacion.isLoadingPlantilla;
-  readonly isSaving = this.presentacion.isSaving;
+  readonly guardando = this.presentacion.guardando;
   readonly generalesEditando = this.presentacion.generalesEditando;
   /** Formulario hidratado para el periodo actual y sin error de carga pendiente. */
   readonly datosFormularioListos = this.presentacion.datosFormularioListos;
@@ -197,7 +197,7 @@ export class ParametrosWorkspaceContainer implements OnInit {
     () =>
       this.isLoading() ||
       this.isLoadingPlantilla() ||
-      this.isSaving() ||
+      this.guardando() ||
       this.isPreparandoDialogoCrear(),
   );
 
@@ -205,7 +205,7 @@ export class ParametrosWorkspaceContainer implements OnInit {
     () =>
       this.isLoading() ||
       this.isLoadingPlantilla() ||
-      this.isSaving() ||
+      this.guardando() ||
       this.isPreparingEdit() ||
       !this.datosFormularioListos() ||
       this.cargaBloqueadaPorError(),
@@ -215,7 +215,7 @@ export class ParametrosWorkspaceContainer implements OnInit {
     () =>
       this.isLoading() ||
       this.isLoadingPlantilla() ||
-      this.isSaving() ||
+      this.guardando() ||
       this.isPreparingEdit() ||
       this.isPreparandoDialogoCrear() ||
       !this.isConfigurableTab() ||
@@ -234,7 +234,7 @@ export class ParametrosWorkspaceContainer implements OnInit {
   });
 
   readonly saveLabel = computed(() => {
-    if (this.isSaving()) {
+    if (this.guardando()) {
       return 'Guardando...';
     }
     return 'Guardar';
@@ -1370,7 +1370,7 @@ export class ParametrosWorkspaceContainer implements OnInit {
       return;
     }
 
-    this.isSaving.set(true);
+    this.guardando.set(true);
     try {
       const saved = await this.service.guardarClienteConfig(
         {
@@ -1389,7 +1389,7 @@ export class ParametrosWorkspaceContainer implements OnInit {
     } catch (err) {
       this.mostrarErrorClienteConfig(this.extractErrorDetail(err) || 'No fue posible actualizar la configuracion con oficiales.');
     } finally {
-      this.isSaving.set(false);
+      this.guardando.set(false);
       this.cdr.markForCheck();
     }
   }
@@ -1424,7 +1424,7 @@ export class ParametrosWorkspaceContainer implements OnInit {
       return;
     }
 
-    this.isSaving.set(true);
+    this.guardando.set(true);
     try {
       const saved = await this.service.registrarReconciliacionOficialCliente({
         periodo,
@@ -1437,7 +1437,7 @@ export class ParametrosWorkspaceContainer implements OnInit {
     } catch (err) {
       this.mostrarErrorClienteConfig(this.extractErrorDetail(err) || 'No fue posible registrar la decision de reconciliacion.');
     } finally {
-      this.isSaving.set(false);
+      this.guardando.set(false);
       this.cdr.markForCheck();
     }
   }
@@ -1683,8 +1683,8 @@ export class ParametrosWorkspaceContainer implements OnInit {
   async guardar(): Promise<void> {
     this.form.markAllAsTouched();
 
-    if (this.form.invalid || this.isSaving() || !this.datosFormularioListos()) {
-      if (this.form.invalid && !this.isSaving() && this.datosFormularioListos()) {
+    if (this.form.invalid || this.guardando() || !this.datosFormularioListos()) {
+      if (this.form.invalid && !this.guardando() && this.datosFormularioListos()) {
         this.mostrarFormularioInvalido();
       }
       return;
@@ -1694,12 +1694,12 @@ export class ParametrosWorkspaceContainer implements OnInit {
   }
 
   private async ejecutarGuardarClienteConfig(): Promise<void> {
-    if (this.isSaving() || !this.datosFormularioListos()) {
+    if (this.guardando() || !this.datosFormularioListos()) {
       return;
     }
 
     const periodo = this.selectedPeriodo();
-    this.isSaving.set(true);
+    this.guardando.set(true);
     this.cerrarDialogo();
 
     try {
@@ -1715,7 +1715,7 @@ export class ParametrosWorkspaceContainer implements OnInit {
       }
       this.mostrarErrorClienteConfig(this.extractErrorDetail(err) || 'No fue posible guardar la configuracion cliente.');
     } finally {
-      this.isSaving.set(false);
+      this.guardando.set(false);
     }
   }
 

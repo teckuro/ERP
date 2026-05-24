@@ -77,8 +77,8 @@ import { AuthService } from '../core/auth/auth.service';
 
             <div class="login-card__divider" aria-hidden="true"></div>
 
-            @if (errorMessage()) {
-              <p class="login-error" role="alert">{{ errorMessage() }}</p>
+            @if (mensajeError()) {
+              <p class="login-error" role="alert">{{ mensajeError() }}</p>
             }
 
             <form class="login-form" [formGroup]="form" (ngSubmit)="submit()" novalidate>
@@ -798,7 +798,7 @@ export class LoginPage implements OnInit {
 
   readonly isSubmitting = signal(false);
   readonly submitted = signal(false);
-  readonly errorMessage = signal<string | null>(null);
+  readonly mensajeError = signal<string | null>(null);
   readonly rememberMe = signal(false);
   readonly showPassword = signal(false);
 
@@ -834,11 +834,11 @@ export class LoginPage implements OnInit {
 
   async submit(): Promise<void> {
     this.submitted.set(true);
-    this.errorMessage.set(null);
+    this.mensajeError.set(null);
 
     if (this.form.invalid) {
       this.form.markAllAsTouched();
-      this.errorMessage.set('Ingresa correo y contrasena para iniciar sesion.');
+      this.mensajeError.set('Ingresa correo y contrasena para iniciar sesion.');
       return;
     }
 
@@ -848,7 +848,7 @@ export class LoginPage implements OnInit {
       await this.auth.login(email, password);
       await this.router.navigateByUrl(this.safeReturnUrl());
     } catch {
-      this.errorMessage.set('No se pudo iniciar sesion. Revisa el correo y la contrasena.');
+      this.mensajeError.set('No se pudo iniciar sesion. Revisa el correo y la contrasena.');
     } finally {
       this.isSubmitting.set(false);
     }

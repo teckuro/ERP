@@ -4,26 +4,26 @@
     <h3 class="labor-title">Datos laborales</h3>
   </div>
 
-  @if (isBlockVisible('relacion')) {
+  @if (esBloqueVisible('relacion')) {
   <app-card className="labor-block">
     <div class="labor-block-head">
       <h4>Relación laboral</h4>
       <p>Selecciona la modalidad de relación laboral del colaborador.</p>
     </div>
     <div class="relation-grid">
-      @for (option of relationOptions; track option.value) {
+      @for (option of opcionesRelacionLaboral; track option.value) {
         <label class="relation-option">
           <input
             type="radio"
             name="relacionLaboral"
             [checked]="formGroup.controls.relacionLaboral.value === option.value"
-            (change)="onRelacionLaboralChange(option.value)"
+            (change)="manejarCambioRelacionLaboral(option.value)"
           />
           <span>{{ option.label }}</span>
         </label>
       }
     </div>
-    @if (isHonorariosMode) {
+    @if (esModoHonorarios) {
       <div class="honorarios-note" role="status">
         <strong>Boleta de honorarios</strong>
         <span>Este registro se tratará como prestador de servicios. No corresponde jornada laboral, gratificación, previsión dependiente ni asignaciones laborales.</span>
@@ -32,11 +32,11 @@
   </app-card>
   }
 
-  @if (isBlockVisible('contratoBase')) {
+  @if (esBloqueVisible('contratoBase')) {
   <app-card className="labor-block">
     <div class="labor-block-head">
-      <h4>{{ isHonorariosMode ? 'Datos del servicio' : 'Contrato' }}</h4>
-      @if (isHonorariosMode) {
+      <h4>{{ esModoHonorarios ? 'Datos del servicio' : 'Contrato' }}</h4>
+      @if (esModoHonorarios) {
         <p>Registra los datos administrativos del servicio a honorarios. No se genera contrato laboral dependiente.</p>
       }
     </div>
@@ -45,7 +45,7 @@
         <div class="field-label-row">
           <label>Tipo trabajador</label>
           <span class="field-badge">Derivado</span>
-          @if (advancedGridLayout && !tipoTrabajadorBaseWarning) {
+          @if (grillaAvanzada && !tipoTrabajadorBaseWarning) {
             <app-empleado-field-tip
               [text]="tipoTrabajadorBaseDescription"
               ariaLabel="Ayuda: tipo trabajador"
@@ -62,13 +62,13 @@
         }
       </div>
 
-      @if (!isHonorariosMode) {
+      @if (!esModoHonorarios) {
         <div class="form-field">
           <div class="field-label-row">
             <label for="empleado-tipo-contrato"
               >Tipo de contrato</label
             >
-            @if (isRequired('tipoContrato')) {
+            @if (esRequerido('tipoContrato')) {
               <app-empleado-field-required />
             }
           </div>
@@ -78,7 +78,7 @@
             placeholder="Tipo de contrato"
             searchPlaceholder="Buscar tipo de contrato"
             [options]="tipoContratoSelectOptions"
-            [invalid]="hasError('tipoContrato')"
+            [invalid]="tieneError('tipoContrato')"
           ></app-search-select>
           <p class="field-message"></p>
         </div>
@@ -88,7 +88,7 @@
             <label for="empleado-indefinido"
               >Indefinido</label
             >
-            @if (advancedGridLayout) {
+            @if (grillaAvanzada) {
               <app-empleado-field-tip
                 text="Si el contrato es indefinido, no se exige fecha de término."
                 ariaLabel="Ayuda: contrato indefinido"
@@ -100,7 +100,7 @@
               id="empleado-indefinido"
               type="checkbox"
               [checked]="isIndefinido"
-              (change)="onIndefinidoToggle($any($event.target).checked)"
+              (change)="manejarToggleIndefinido($any($event.target).checked)"
             />
             <span>Contrato indefinido</span>
           </label>
@@ -109,15 +109,15 @@
       }
 
       <div class="labor-field-section labor-field-section--span">
-        <p class="labor-field-section-title">{{ isHonorariosMode ? 'Fechas del servicio' : 'Fechas del contrato' }}</p>
+        <p class="labor-field-section-title">{{ esModoHonorarios ? 'Fechas del servicio' : 'Fechas del contrato' }}</p>
       </div>
 
       <div class="form-field">
         <div class="field-label-row">
           <label for="empleado-fecha-ingreso"
-            >{{ isHonorariosMode ? 'Fecha inicio del servicio' : 'Fecha ingreso' }}</label
+            >{{ esModoHonorarios ? 'Fecha inicio del servicio' : 'Fecha ingreso' }}</label
           >
-          @if (isRequired('fechaIngreso')) {
+          @if (esRequerido('fechaIngreso')) {
             <app-empleado-field-required />
           }
         </div>
@@ -125,23 +125,23 @@
           id="empleado-fecha-ingreso"
           formControlName="fechaIngreso"
           placeholder="dd/mm/aaaa"
-          [invalid]="hasError('fechaIngreso')"
-          [max]="today"
+          [invalid]="tieneError('fechaIngreso')"
+          [max]="hoy"
         ></app-calendar-input>
-        @if (hasError('fechaIngreso', 'required')) {
-          <p class="field-message">{{ isHonorariosMode ? 'La fecha de inicio del servicio es obligatoria.' : 'La fecha de ingreso es obligatoria.' }}</p>
+        @if (tieneError('fechaIngreso', 'required')) {
+          <p class="field-message">{{ esModoHonorarios ? 'La fecha de inicio del servicio es obligatoria.' : 'La fecha de ingreso es obligatoria.' }}</p>
         } @else {
           <p class="field-message"></p>
         }
       </div>
 
-      @if (!isHonorariosMode) {
+      @if (!esModoHonorarios) {
         <div class="form-field">
           <div class="field-label-row">
             <label for="empleado-fecha-contrato"
               >Fecha contrato</label
             >
-            @if (isRequired('fechaContrato')) {
+            @if (esRequerido('fechaContrato')) {
               <app-empleado-field-required />
             }
           </div>
@@ -149,10 +149,10 @@
             id="empleado-fecha-contrato"
             formControlName="fechaContrato"
             placeholder="dd/mm/aaaa"
-            [invalid]="hasError('fechaContrato')"
-            [max]="today"
+            [invalid]="tieneError('fechaContrato')"
+            [max]="hoy"
           ></app-calendar-input>
-          @if (hasError('fechaContrato', 'required')) {
+          @if (tieneError('fechaContrato', 'required')) {
             <p class="field-message">La fecha de contrato es obligatoria.</p>
           } @else {
             <p class="field-message"></p>
@@ -164,7 +164,7 @@
             <label for="empleado-fecha-termino"
               >Fecha término</label
             >
-            @if (isRequired('fechaTermino')) {
+            @if (esRequerido('fechaTermino')) {
               <app-empleado-field-required />
             }
           </div>
@@ -172,11 +172,11 @@
             id="empleado-fecha-termino"
             formControlName="fechaTermino"
             placeholder="dd/mm/aaaa"
-            [invalid]="hasError('fechaTermino')"
+            [invalid]="tieneError('fechaTermino')"
             [min]="minFechaTermino"
-            [max]="today"
+            [max]="hoy"
           ></app-calendar-input>
-          @if (hasError('fechaTermino', 'required')) {
+          @if (tieneError('fechaTermino', 'required')) {
             <p class="field-message">
               La fecha de término es obligatoria para contratos no indefinidos.
             </p>
@@ -189,7 +189,7 @@
     </div>
   </app-card>
 
-  @if (isCasaParticular) {
+  @if (esCasaParticular) {
   <app-card className="labor-block labor-block--household">
     <div class="labor-block-head">
       <h4>Casa particular</h4>
@@ -205,13 +205,13 @@
       <div class="form-field">
         <div class="field-label-row">
           <label for="empleado-casa-modalidad">Modalidad</label>
-          @if (isRequired('casaParticularModalidad')) {
+          @if (esRequerido('casaParticularModalidad')) {
             <app-empleado-field-required />
           }
         </div>
-        <select id="empleado-casa-modalidad" formControlName="casaParticularModalidad" [class]="controlClass('casaParticularModalidad')">
+          <select id="empleado-casa-modalidad" formControlName="casaParticularModalidad" [class]="claseControl('casaParticularModalidad')">
           <option [ngValue]="null">Seleccione modalidad</option>
-          @for (option of casaParticularModalidadOptions; track option.value) {
+          @for (option of opcionesModalidadCasaParticular; track option.value) {
             <option [ngValue]="option.value">{{ option.label }}</option>
           }
         </select>
@@ -221,22 +221,22 @@
       <div class="form-field form-field--wide">
         <div class="field-label-row">
           <label for="empleado-casa-labores">Labores especificas</label>
-          @if (isRequired('casaParticularLabores')) {
+          @if (esRequerido('casaParticularLabores')) {
             <app-empleado-field-required />
           }
         </div>
-        <input id="empleado-casa-labores" type="text" formControlName="casaParticularLabores" placeholder="Ej: aseo, cocina, cuidado de adulto mayor" [class]="controlClass('casaParticularLabores')" />
+        <input id="empleado-casa-labores" type="text" formControlName="casaParticularLabores" placeholder="Ej: aseo, cocina, cuidado de adulto mayor" [class]="claseControl('casaParticularLabores')" />
         <p class="field-message"></p>
       </div>
 
       <div class="form-field form-field--wide">
         <div class="field-label-row">
           <label for="empleado-casa-domicilio">Domicilio especifico de labores</label>
-          @if (isRequired('casaParticularDomicilioEspecifico')) {
+          @if (esRequerido('casaParticularDomicilioEspecifico')) {
             <app-empleado-field-required />
           }
         </div>
-        <input id="empleado-casa-domicilio" type="text" formControlName="casaParticularDomicilioEspecifico" placeholder="Direccion donde se prestan las labores" [class]="controlClass('casaParticularDomicilioEspecifico')" />
+        <input id="empleado-casa-domicilio" type="text" formControlName="casaParticularDomicilioEspecifico" placeholder="Direccion donde se prestan las labores" [class]="claseControl('casaParticularDomicilioEspecifico')" />
         <p class="field-message"></p>
       </div>
 
@@ -254,39 +254,39 @@
       <div class="form-field">
         <div class="field-label-row">
           <label for="empleado-casa-registro-dt">Registro DT</label>
-          @if (isRequired('casaParticularRegistroDtEstado')) {
+          @if (esRequerido('casaParticularRegistroDtEstado')) {
             <app-empleado-field-required />
           }
         </div>
-        <select id="empleado-casa-registro-dt" formControlName="casaParticularRegistroDtEstado" [class]="controlClass('casaParticularRegistroDtEstado')">
+        <select id="empleado-casa-registro-dt" formControlName="casaParticularRegistroDtEstado" [class]="claseControl('casaParticularRegistroDtEstado')">
           <option [ngValue]="null">Seleccione estado</option>
-          @for (option of casaParticularRegistroDtOptions; track option.value) {
+          @for (option of opcionesRegistroDtCasaParticular; track option.value) {
             <option [ngValue]="option.value">{{ option.label }}</option>
           }
         </select>
         <p class="field-message"></p>
       </div>
 
-      @if (isRegistroDtRegistrado) {
+      @if (esRegistroDtRegistrado) {
         <div class="form-field">
           <div class="field-label-row">
             <label for="empleado-casa-registro-fecha">Fecha registro DT</label>
-            @if (isRequired('casaParticularRegistroDtFecha')) {
+            @if (esRequerido('casaParticularRegistroDtFecha')) {
               <app-empleado-field-required />
             }
           </div>
-          <app-calendar-input id="empleado-casa-registro-fecha" formControlName="casaParticularRegistroDtFecha" placeholder="dd/mm/aaaa" [invalid]="hasError('casaParticularRegistroDtFecha')" [max]="today"></app-calendar-input>
+          <app-calendar-input id="empleado-casa-registro-fecha" formControlName="casaParticularRegistroDtFecha" placeholder="dd/mm/aaaa" [invalid]="tieneError('casaParticularRegistroDtFecha')" [max]="hoy"></app-calendar-input>
           <p class="field-message"></p>
         </div>
 
         <div class="form-field">
           <div class="field-label-row">
             <label for="empleado-casa-registro-folio">Folio o comprobante</label>
-            @if (isRequired('casaParticularRegistroDtFolio')) {
+            @if (esRequerido('casaParticularRegistroDtFolio')) {
               <app-empleado-field-required />
             }
           </div>
-          <input id="empleado-casa-registro-folio" type="text" formControlName="casaParticularRegistroDtFolio" [class]="controlClass('casaParticularRegistroDtFolio')" />
+          <input id="empleado-casa-registro-folio" type="text" formControlName="casaParticularRegistroDtFolio" [class]="claseControl('casaParticularRegistroDtFolio')" />
           <p class="field-message"></p>
         </div>
       }
@@ -312,7 +312,7 @@
           placeholder="Selecciona un departamento"
           searchPlaceholder="Buscar departamento"
           [options]="departamentosSelectOptions"
-          [invalid]="hasError('idDepartamentoEmpresa')"
+          [invalid]="tieneError('idDepartamentoEmpresa')"
         ></app-search-select>
         @if (!departamentosFiltrados.length) {
           <p class="field-message field-message--warning">
@@ -325,8 +325,8 @@
 
       <div class="form-field">
         <div class="field-label-row">
-          <label for="empleado-sucursal">{{ isHonorariosMode ? 'Sucursal / imputación interna' : 'Sucursal' }}</label>
-          @if (!isHonorariosMode) {
+          <label for="empleado-sucursal">{{ esModoHonorarios ? 'Sucursal / imputación interna' : 'Sucursal' }}</label>
+          @if (!esModoHonorarios) {
             <app-empleado-field-required />
           }
         </div>
@@ -336,7 +336,7 @@
           placeholder="Selecciona una sucursal"
           searchPlaceholder="Buscar sucursal"
           [options]="sucursalesSelectOptions"
-          [invalid]="hasError('idSucursal')"
+          [invalid]="tieneError('idSucursal')"
         ></app-search-select>
         <p class="field-message"></p>
       </div>
@@ -344,8 +344,8 @@
   </app-card>
   }
 
-  @if (isBlockVisible('remuneracion')) {
-  @if (isHonorariosMode) {
+  @if (esBloqueVisible('remuneracion')) {
+  @if (esModoHonorarios) {
     <app-card className="labor-block labor-block--honorarios">
       <div class="labor-block-head">
         <h4>Monto de honorarios</h4>
@@ -354,13 +354,13 @@
       <div class="labor-grid labor-grid--base-pay">
         <div class="form-field">
           <div class="field-label-row">
-            <label for="empleado-sueldo-base">{{ baseAmountLabel() }}</label>
-            @if (isRequired('sueldoBase')) {
+            <label for="empleado-sueldo-base">{{ etiquetaMontoBase() }}</label>
+            @if (esRequerido('sueldoBase')) {
               <app-empleado-field-required />
             }
-            @if (advancedGridLayout) {
+            @if (grillaAvanzada) {
               <app-empleado-field-tip
-                [text]="baseAmountFieldHint()"
+                [text]="pistaCampoMontoBase()"
                 ariaLabel="Ayuda: monto"
               ></app-empleado-field-tip>
             }
@@ -369,9 +369,9 @@
             id="empleado-sueldo-base"
             type="number"
             formControlName="sueldoBase"
-            [class]="controlClass('sueldoBase')"
+            [class]="claseControl('sueldoBase')"
           />
-          @if (hasError('sueldoBase')) {
+          @if (tieneError('sueldoBase')) {
             <p class="field-message">El monto bruto debe ser mayor a cero.</p>
           } @else {
             <p class="field-message"></p>
@@ -388,7 +388,7 @@
             placeholder="Selecciona una moneda"
             searchPlaceholder="Buscar moneda"
             [options]="monedasSelectOptions"
-            [invalid]="hasError('idMoneda')"
+            [invalid]="tieneError('idMoneda')"
           ></app-search-select>
           <p class="field-message"></p>
         </div>
@@ -406,7 +406,7 @@
           <label for="empleado-tipo-jornada"
             >Tipo jornada</label
           >
-          @if (isRequired('idTipoJornada')) {
+          @if (esRequerido('idTipoJornada')) {
             <app-empleado-field-required />
           }
         </div>
@@ -416,9 +416,9 @@
           placeholder="Selecciona una jornada"
           searchPlaceholder="Buscar jornada"
           [options]="tiposJornadaSelectOptions"
-          [invalid]="hasError('idTipoJornada')"
+          [invalid]="tieneError('idTipoJornada')"
         ></app-search-select>
-        @if (hasError('idTipoJornada', 'required')) {
+        @if (tieneError('idTipoJornada', 'required')) {
           <p class="field-message">El tipo de jornada es obligatorio.</p>
         } @else {
           <p class="field-message"></p>
@@ -430,7 +430,7 @@
           <label for="empleado-horas-semanales"
             >Hrs. semanales</label
           >
-          @if (isRequired('horasSemanales')) {
+          @if (esRequerido('horasSemanales')) {
             <app-empleado-field-required />
           }
         </div>
@@ -438,12 +438,14 @@
           id="empleado-horas-semanales"
           type="number"
           formControlName="horasSemanales"
-          [class]="controlClass('horasSemanales')"
+          [class]="claseControl('horasSemanales')"
         />
-        @if (hasError('horasSemanales')) {
-          <p class="field-message">Ingresa una cantidad válida entre 1 y 168.</p>
+        @if (tieneError('horasSemanales')) {
+          <p class="field-message">Ingresa horas semanales válidas (mínimo 1).</p>
         } @else {
-          <p class="field-message"></p>
+          <p class="field-message">
+            Jornada ordinaria: máximo administrativo 42 horas semanales (vigencia 26-abr-2026). Parcial o menor: 30 horas. Si aplica exclusión, documenta causal y respaldo.
+          </p>
         }
       </div>
 
@@ -452,7 +454,7 @@
           <label for="empleado-dias-semanales"
             >Días semanales</label
           >
-          @if (isRequired('diasSemanales')) {
+          @if (esRequerido('diasSemanales')) {
             <app-empleado-field-required />
           }
         </div>
@@ -460,9 +462,9 @@
           id="empleado-dias-semanales"
           type="number"
           formControlName="diasSemanales"
-          [class]="controlClass('diasSemanales')"
+          [class]="claseControl('diasSemanales')"
         />
-        @if (hasError('diasSemanales')) {
+        @if (tieneError('diasSemanales')) {
           <p class="field-message">Ingresa una cantidad válida entre 1 y 7.</p>
         } @else {
           <p class="field-message"></p>
@@ -477,24 +479,24 @@
           <input id="empleado-excluido-jornada" type="checkbox" formControlName="excluidoLimiteJornada" />
           <span>Aplicar excepcion art. 22</span>
         </label>
-        @if (isExcluidoLimiteJornada) {
+        @if (estaExcluidoLimiteJornada) {
           <p class="field-message field-message--warning">Las horas sobre 42 quedan como advertencia y deben respaldarse contractualmente.</p>
         } @else {
           <p class="field-message"></p>
         }
       </div>
 
-      @if (isExcluidoLimiteJornada) {
+      @if (estaExcluidoLimiteJornada) {
         <div class="form-field">
           <div class="field-label-row">
             <label for="empleado-causal-exclusion">Causal art. 22</label>
-            @if (isRequired('causalExclusionJornada')) {
+            @if (esRequerido('causalExclusionJornada')) {
               <app-empleado-field-required />
             }
           </div>
-          <select id="empleado-causal-exclusion" formControlName="causalExclusionJornada" [class]="controlClass('causalExclusionJornada')">
+          <select id="empleado-causal-exclusion" formControlName="causalExclusionJornada" [class]="claseControl('causalExclusionJornada')">
             <option [ngValue]="null">Seleccione causal</option>
-            @for (option of causalExclusionJornadaOptions; track option.value) {
+            @for (option of opcionesCausalExclusionJornada; track option.value) {
               <option [ngValue]="option.value">{{ option.label }}</option>
             }
           </select>
@@ -504,11 +506,11 @@
         <div class="form-field form-field--wide">
           <div class="field-label-row">
             <label for="empleado-justificacion-exclusion">Justificacion</label>
-            @if (isRequired('justificacionExclusionJornada')) {
+            @if (esRequerido('justificacionExclusionJornada')) {
               <app-empleado-field-required />
             }
           </div>
-          <input id="empleado-justificacion-exclusion" type="text" formControlName="justificacionExclusionJornada" placeholder="Describe respaldo contractual y razon de exclusion" [class]="controlClass('justificacionExclusionJornada')" />
+          <input id="empleado-justificacion-exclusion" type="text" formControlName="justificacionExclusionJornada" placeholder="Describe respaldo contractual y razon de exclusion" [class]="claseControl('justificacionExclusionJornada')" />
           <p class="field-message"></p>
         </div>
       }
@@ -532,7 +534,7 @@
           type="text"
           formControlName="distribucionJornada"
           placeholder="Ej: Lunes a viernes de 8:30 a 18:30"
-          [class]="controlClass('distribucionJornada')"
+          [class]="claseControl('distribucionJornada')"
         />
         <p class="field-message"></p>
       </div>
@@ -545,9 +547,9 @@
           id="empleado-tiempo-colacion"
           type="number"
           formControlName="tiempoColacionMinutos"
-          [class]="controlClass('tiempoColacionMinutos')"
+          [class]="claseControl('tiempoColacionMinutos')"
         />
-        @if (hasError('tiempoColacionMinutos')) {
+        @if (tieneError('tiempoColacionMinutos')) {
           <p class="field-message">El tiempo de colación debe estar entre 0 y 600 minutos.</p>
         } @else {
           <p class="field-message"></p>
@@ -565,9 +567,9 @@
       <div class="form-field">
         <div class="field-label-row">
           <label for="empleado-sueldo-base"
-            >{{ baseAmountLabel() }}</label
+            >{{ etiquetaMontoBase() }}</label
           >
-          @if (isRequired('sueldoBase')) {
+          @if (esRequerido('sueldoBase')) {
             <app-empleado-field-required />
           }
         </div>
@@ -575,10 +577,10 @@
           id="empleado-sueldo-base"
           type="number"
           formControlName="sueldoBase"
-          [class]="controlClass('sueldoBase')"
+          [class]="claseControl('sueldoBase')"
         />
-        @if (hasError('sueldoBase')) {
-          <p class="field-message">{{ baseAmountHelpText() }}</p>
+        @if (tieneError('sueldoBase')) {
+          <p class="field-message">{{ ayudaMontoBase() }}</p>
         } @else {
           <p class="field-message"></p>
         }
@@ -594,7 +596,7 @@
           placeholder="Selecciona una moneda"
           searchPlaceholder="Buscar moneda"
           [options]="monedasSelectOptions"
-          [invalid]="hasError('idMoneda')"
+          [invalid]="tieneError('idMoneda')"
         ></app-search-select>
         <p class="field-message"></p>
       </div>
@@ -604,7 +606,7 @@
           <label for="empleado-tipo-gratificacion"
             >Gratificación</label
           >
-          @if (isRequired('tipoGratificacion')) {
+          @if (esRequerido('tipoGratificacion')) {
             <app-empleado-field-required />
           }
         </div>
@@ -614,7 +616,7 @@
           placeholder="Gratificación"
           searchPlaceholder="Buscar gratificación"
           [options]="gratificacionSelectOptions"
-          [invalid]="hasError('tipoGratificacion')"
+          [invalid]="tieneError('tipoGratificacion')"
         ></app-search-select>
         <p class="field-message"></p>
       </div>
@@ -631,7 +633,7 @@
           <label for="empleado-seguro-cesantia"
             >Seguro de cesantía</label
           >
-          @if (advancedGridLayout) {
+          @if (grillaAvanzada) {
             <app-empleado-field-tip
               text="Aplica seguro de cesantía cuando corresponda según el tipo de contrato."
               ariaLabel="Ayuda: seguro de cesantía"
@@ -650,7 +652,7 @@
           <label for="empleado-sueldo-variable"
             >Sueldo variable</label
           >
-          @if (advancedGridLayout) {
+          @if (grillaAvanzada) {
             <app-empleado-field-tip
               text="Marca si el colaborador puede recibir remuneraciones variables."
               ariaLabel="Ayuda: sueldo variable"
@@ -668,7 +670,7 @@
   }
   }
 
-  @if (isBlockVisible('cargas')) {
+  @if (esBloqueVisible('cargas')) {
   <app-card className="labor-block labor-block--loads">
     <div class="labor-block-head">
       <h4>Asignación familiar</h4>
@@ -685,9 +687,9 @@
           id="empleado-cargas"
           type="number"
           formControlName="cargas"
-          [class]="controlClass('cargas')"
+          [class]="claseControl('cargas')"
         />
-        @if (hasError('cargas')) {
+        @if (tieneError('cargas')) {
           <p class="field-message">El número de cargas no puede ser negativo.</p>
         } @else {
           <p class="field-message"></p>
@@ -703,8 +705,8 @@
           formControlName="idTramoCarga"
           placeholder="Selecciona un tramo"
           searchPlaceholder="Buscar tramo"
-          [options]="tramosCargaOptions"
-          [invalid]="hasError('idTramoCarga')"
+          [options]="tramosCargaSelectOptions"
+          [invalid]="tieneError('idTramoCarga')"
         ></app-search-select>
         @if (periodoTramoVigente; as periodo) {
           <p class="field-message">
@@ -728,7 +730,7 @@
   </app-card>
   }
 
-  @if (isBlockVisible('zonaExtrema')) {
+  @if (esBloqueVisible('zonaExtrema')) {
   <app-card className="labor-block labor-block--zone">
     <div class="labor-block-head">
       <h4>Zona extrema</h4>
@@ -754,7 +756,7 @@
             <label for="empleado-zona-territorio"
               >Territorio</label
             >
-            @if (isRequired('zonaExtremaTerritorio')) {
+            @if (esRequerido('zonaExtremaTerritorio')) {
               <app-empleado-field-required />
             }
           </div>
@@ -763,9 +765,9 @@
             type="text"
             formControlName="zonaExtremaTerritorio"
             placeholder="Ej.: Magallanes"
-            [class]="controlClass('zonaExtremaTerritorio')"
+            [class]="claseControl('zonaExtremaTerritorio')"
           />
-          @if (hasError('zonaExtremaTerritorio')) {
+          @if (tieneError('zonaExtremaTerritorio')) {
             <p class="field-message">Ingresa territorio.</p>
           } @else {
             <p class="field-message"></p>
@@ -777,7 +779,7 @@
             <label for="empleado-zona-porcentaje"
               >Asignación (%)</label
             >
-            @if (isRequired('zonaExtremaPorcentaje')) {
+            @if (esRequerido('zonaExtremaPorcentaje')) {
               <app-empleado-field-required />
             }
           </div>
@@ -785,9 +787,9 @@
             id="empleado-zona-porcentaje"
             type="number"
             formControlName="zonaExtremaPorcentaje"
-            [class]="controlClass('zonaExtremaPorcentaje')"
+            [class]="claseControl('zonaExtremaPorcentaje')"
           />
-          @if (hasError('zonaExtremaPorcentaje')) {
+          @if (tieneError('zonaExtremaPorcentaje')) {
             <p class="field-message">Ingresa porcentaje.</p>
           } @else {
             <p class="field-message"></p>
@@ -804,7 +806,7 @@
   </app-card>
   }
 
-  @if (isBlockVisible('semanaCorrida')) {
+  @if (esBloqueVisible('semanaCorrida')) {
   <app-card className="labor-block labor-block--week">
     <div class="labor-block-head">
       <h4>Semana corrida</h4>
@@ -832,23 +834,23 @@
         <div class="form-field labor-span-3 labor-detail-field labor-detail-field--days">
           <div class="field-label-row">
             <label>Indicar días laborables</label>
-            @if (isRequired('semanaCorridaDiasLaborables')) {
+            @if (esRequerido('semanaCorridaDiasLaborables')) {
               <app-empleado-field-required />
             }
           </div>
           <div class="weekday-grid">
-            @for (day of weekdayOptions; track day.value) {
+            @for (day of opcionesDiasSemana; track day.value) {
               <button
                 type="button"
-                [class]="checkboxClass(day.value)"
-                (click)="toggleWeekday(day.value)"
+                [class]="claseCheckboxDia(day.value)"
+                (click)="alternarDiaSemana(day.value)"
               >
                 <span class="weekday-box"></span>
                 <span>{{ day.label }}</span>
               </button>
             }
           </div>
-          @if (hasError('semanaCorridaDiasLaborables')) {
+          @if (tieneError('semanaCorridaDiasLaborables')) {
             <p class="field-message">
               Selecciona al menos un día laborable cuando semana corrida esté activa.
             </p>
@@ -867,7 +869,7 @@
   </app-card>
   }
 
-  @if (isBlockVisible('centroCosto')) {
+  @if (esBloqueVisible('centroCosto')) {
   <app-card className="labor-block">
     <div class="labor-block-head">
       <h4>Centro de costo y estado inicial</h4>
@@ -885,15 +887,15 @@
           placeholder="Sin centro de costo"
           searchPlaceholder="Buscar centro de costo"
           [options]="centrosCostoSelectOptions"
-          [invalid]="hasError('idCentroCosto')"
+          [invalid]="tieneError('idCentroCosto')"
         ></app-search-select>
         <p class="field-message"></p>
       </div>
 
       <div class="form-field">
         <div class="field-label-row">
-          <label for="empleado-cargo">{{ serviceOrPositionLabel() }}</label>
-          @if (isRequired('cargo')) {
+          <label for="empleado-cargo">{{ etiquetaServicioOCargo() }}</label>
+          @if (esRequerido('cargo')) {
             <app-empleado-field-required />
           }
         </div>
@@ -901,11 +903,11 @@
           id="empleado-cargo"
           type="text"
           formControlName="cargo"
-          [placeholder]="serviceOrPositionPlaceholder()"
-          [class]="controlClass('cargo')"
+          [placeholder]="placeholderServicioOCargo()"
+          [class]="claseControl('cargo')"
         />
-        @if (hasError('cargo', 'required')) {
-          <p class="field-message">{{ isHonorariosMode ? 'El servicio o función es obligatorio.' : 'El cargo es obligatorio.' }}</p>
+        @if (tieneError('cargo', 'required')) {
+          <p class="field-message">{{ esModoHonorarios ? 'El servicio o función es obligatorio.' : 'El cargo es obligatorio.' }}</p>
         } @else {
           <p class="field-message"></p>
         }
@@ -916,7 +918,7 @@
           <label for="empleado-estado"
             >Estado de ficha inicial</label
           >
-          @if (isRequired('estado')) {
+          @if (esRequerido('estado')) {
             <app-empleado-field-required />
           }
         </div>
@@ -925,8 +927,8 @@
           formControlName="estado"
           placeholder="Estado inicial"
           searchPlaceholder="Buscar estado"
-          [options]="employeeStates"
-          [invalid]="hasError('estado')"
+          [options]="estadosEmpleado"
+          [invalid]="tieneError('estado')"
         ></app-search-select>
         <p class="field-message"></p>
       </div>

@@ -10,18 +10,18 @@
     [sexos]="f.catalogos().sexos"
     [estadosCivil]="f.catalogos().estadosCivil"
     [paises]="f.catalogos().paises"
-    [visibleBlocks]="visibles"
-    [advancedGridLayout]="true"
-    [inlineRecordLayout]="true"
+    [bloquesVisibles]="visibles"
+    [grillaAvanzada]="true"
+    [disposicionInlineFicha]="true"
   ></app-empleado-datos-personales>
 } @else if (componente === 'contacto') {
   <app-empleado-contacto
     [formGroup]="f.form.controls.contacto"
     [comunas]="f.catalogos().comunas"
-    [visibleBlocks]="visibles"
+    [bloquesVisibles]="visibles"
     [domicilioAvanzado]="true"
-    [advancedGridLayout]="true"
-    [inlineRecordLayout]="true"
+    [grillaAvanzada]="true"
+    [disposicionInlineFicha]="true"
   ></app-empleado-contacto>
 } @else if (componente === 'contrato') {
   <app-empleado-contrato
@@ -35,9 +35,9 @@
     [tiposGratificacion]="f.catalogos().tiposGratificacion"
     [monedas]="f.catalogos().monedas"
     [tramosCarga]="f.catalogos().tramosCarga"
-    [visibleBlocks]="visibles"
-    [advancedGridLayout]="true"
-    [inlineRecordLayout]="true"
+    [bloquesVisibles]="visibles"
+    [grillaAvanzada]="true"
+    [disposicionInlineFicha]="true"
   ></app-empleado-contrato>
 } @else if (componente === 'prevision') {
   <app-empleado-prevision-salud
@@ -52,18 +52,18 @@
     [monedas]="f.catalogos().monedas"
     [institucionesApv]="f.catalogos().institucionesApv"
     [formasPagoApv]="f.catalogos().formasPagoApv"
-    [visibleBlocks]="visibles"
-    [advancedGridLayout]="true"
-    [inlineRecordLayout]="true"
+    [bloquesVisibles]="visibles"
+    [grillaAvanzada]="true"
+    [disposicionInlineFicha]="true"
   ></app-empleado-prevision-salud>
 } @else if (componente === 'bancario') {
   <app-empleado-bancario
     [formGroup]="f.form.controls.bancario"
     [bancos]="f.catalogos().bancos"
     [tiposCuentaBancaria]="f.catalogos().tiposCuentaBancaria"
-    [visibleBlocks]="visibles"
-    [advancedGridLayout]="true"
-    [inlineRecordLayout]="true"
+    [bloquesVisibles]="visibles"
+    [grillaAvanzada]="true"
+    [disposicionInlineFicha]="true"
   ></app-empleado-bancario>
 } @else if (componente === 'perfil-laboral') {
   @if (f.perfilLaboralError(); as perfilError) {
@@ -78,10 +78,10 @@
     [fechaIngreso]="f.form.controls.contrato.controls.fechaIngreso.value"
     [relacionLaboral]="f.form.controls.contrato.controls.relacionLaboral.value"
     [tipoTrabajadorLabel]="f.perfilLaboralTipoTrabajadorLabel()"
-    [autoDetectedConditions]="f.perfilLaboralAutoDetections()"
+    [autoDetectedConditions]="f.deteccionesAutomaticasPerfilLaboral()"
     [edadDetectadaLabel]="f.perfilLaboralEdadDetectadaLabel()"
     [edadDetectadaDescripcion]="f.perfilLaboralEdadDetectadaDescripcion()"
-    [inlineRecordLayout]="true"
+    [disposicionInlineFicha]="true"
   ></app-empleado-perfil-laboral>
 }
 </div>

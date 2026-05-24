@@ -19,7 +19,7 @@
     [maxItems]="maxItems"
     [loading]="loading"
     loadingLabel="Cargando listado de empleados..."
-    [errorMessage]="errorMessage"
+    [mensajeError]="mensajeError"
     [bulkActionLoading]="bulkActionLoading"
     [bulkActionResult]="bulkActionResult"
     [bulkActions]="bulkStateActions"
@@ -50,14 +50,14 @@
             type="button"
             class="empleados-create-menu__option"
             role="menuitem"
-            [disabled]="createNavigationTarget !== null"
+            [disabled]="destinoNavegacionCreacion !== null"
             (click)="onCrearBasico()"
           >
             <span class="empleados-create-menu__option-copy">
               <strong>Creación básica</strong>
               <small>Alta rápida con datos esenciales</small>
             </span>
-            @if (createNavigationTarget === 'basico') {
+            @if (destinoNavegacionCreacion === 'basico') {
               <span class="empleados-create-menu-icon-wrap" aria-hidden="true">
                 <lucide-icon class="empleados-create-menu-icon empleados-create-menu-icon--spin" [img]="loaderIcon"></lucide-icon>
               </span>
@@ -72,14 +72,14 @@
             type="button"
             class="empleados-create-menu__option"
             role="menuitem"
-            [disabled]="createNavigationTarget !== null"
+            [disabled]="destinoNavegacionCreacion !== null"
             (click)="onCrearAvanzado()"
           >
             <span class="empleados-create-menu__option-copy">
               <strong>Creación avanzada</strong>
               <small>Ficha completa y configuración</small>
             </span>
-            @if (createNavigationTarget === 'avanzado') {
+            @if (destinoNavegacionCreacion === 'avanzado') {
               <span class="empleados-create-menu-icon-wrap" aria-hidden="true">
                 <lucide-icon class="empleados-create-menu-icon empleados-create-menu-icon--spin" [img]="loaderIcon"></lucide-icon>
               </span>

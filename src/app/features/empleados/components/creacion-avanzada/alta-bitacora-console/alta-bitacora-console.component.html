@@ -48,6 +48,62 @@
           </section>
         }
 
+        @if (vm.revisionesNormativas.length > 0) {
+          <section
+            class="alta-bitacora-console__section alta-bitacora-console__section--normativa"
+            aria-labelledby="alta-console-normativa-title"
+          >
+            <header class="alta-bitacora-console__section-head">
+              <h3 id="alta-console-normativa-title" class="alta-bitacora-console__section-title">
+                Revisiones normativas
+              </h3>
+              <p class="alta-bitacora-console__section-lead">
+                Criterio administrativo chileno: revisa, aplica la sugerencia o mantén bajo revisión RRHH.
+              </p>
+            </header>
+            <ul class="alta-bitacora-console__list alta-bitacora-console__list--normativa">
+              @for (rev of vm.revisionesNormativas; track rev.id) {
+                <li class="alta-bitacora-console__normativa-item">
+                  <div class="alta-bitacora-console__normativa-copy">
+                    <strong class="alta-bitacora-console__normativa-title">{{ rev.titulo }}</strong>
+                    <p class="alta-bitacora-console__normativa-detail">{{ rev.detalle }}</p>
+                    @if (rev.bajoRevision) {
+                      <span class="alta-bitacora-console__normativa-badge">Bajo revisión RRHH</span>
+                    }
+                  </div>
+                  <div class="alta-bitacora-console__normativa-actions">
+                    <button
+                      type="button"
+                      class="alta-bitacora-console__review"
+                      (click)="revisarPaso.emit(rev.stepIndex)"
+                    >
+                      Revisar
+                    </button>
+                    @if (rev.puedeAplicarCorreccion) {
+                      <button
+                        type="button"
+                        class="alta-bitacora-console__apply"
+                        (click)="aplicarRevisionNormativa.emit(rev)"
+                      >
+                        Aplicar sugerencia
+                      </button>
+                    }
+                    @if (rev.origen === 'coherencia' && !rev.bajoRevision) {
+                      <button
+                        type="button"
+                        class="alta-bitacora-console__keep"
+                        (click)="mantenerRevisionNormativa.emit(rev)"
+                      >
+                        Mantener revisión
+                      </button>
+                    }
+                  </div>
+                </li>
+              }
+            </ul>
+          </section>
+        }
+
         @if (vm.registrosPendientes.length > 0) {
           <section class="alta-bitacora-console__section" aria-labelledby="alta-console-bitacora-title">
             <header class="alta-bitacora-console__section-head">

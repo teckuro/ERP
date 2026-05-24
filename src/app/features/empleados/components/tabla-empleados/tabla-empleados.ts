@@ -53,10 +53,10 @@ export class TablaEmpleadosComponent implements OnDestroy {
   @Input() empleados: EmpleadoListado[] = [];
   @Input() maxItems = 10;
   @Input() loading = false;
-  @Input() errorMessage = '';
+  @Input() mensajeError = '';
   @Input() bulkActionLoading = false;
   @Input() bulkActionResult: DataGridBulkActionResult<EmpleadoListado> | null = null;
-  @Input() createNavigationTarget: 'basico' | 'avanzado' | null = null;
+  @Input() destinoNavegacionCreacion: 'basico' | 'avanzado' | null = null;
   @Output() readonly refresh = new EventEmitter<void>();
   @Output() readonly bulkAction = new EventEmitter<DataGridBulkActionEvent<EmpleadoListado>>();
   @Output() readonly createBasico = new EventEmitter<void>();
@@ -351,14 +351,14 @@ export class TablaEmpleadosComponent implements OnDestroy {
   }
 
   toggleCrearMenu(): void {
-    if (this.createNavigationTarget) {
+    if (this.destinoNavegacionCreacion) {
       return;
     }
     this.crearMenuAbierto = !this.crearMenuAbierto;
   }
 
   onCrearBasico(): void {
-    if (this.createNavigationTarget) {
+    if (this.destinoNavegacionCreacion) {
       return;
     }
     this.crearMenuAbierto = false;
@@ -366,7 +366,7 @@ export class TablaEmpleadosComponent implements OnDestroy {
   }
 
   onCrearAvanzado(): void {
-    if (this.createNavigationTarget) {
+    if (this.destinoNavegacionCreacion) {
       return;
     }
     this.crearMenuAbierto = false;

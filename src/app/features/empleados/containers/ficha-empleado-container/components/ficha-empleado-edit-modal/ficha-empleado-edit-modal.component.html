@@ -27,7 +27,7 @@
           type="submit"
           class="ficha-edit-modal__action ficha-edit-modal__action--primary"
           form="ficha-edit-modal-form"
-          [disabled]="f.isSavingSection() || f.isLoadingCatalogs()"
+          [disabled]="f.isSavingSection() || f.cargandoCatalogos()"
         >
           {{ f.saveBlockButtonLabel() }}
         </button>
@@ -38,7 +38,7 @@
       id="ficha-edit-modal-form"
       class="ficha-edit-modal__body"
       [formGroup]="f.form"
-      (ngSubmit)="onSubmit()"
+      (ngSubmit)="enviarFormulario()"
     >
       <app-ficha-empleado-edit-form [blockId]="blockId()" />
     </form>

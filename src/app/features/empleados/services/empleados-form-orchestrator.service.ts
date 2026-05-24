@@ -180,7 +180,7 @@ export class EmpleadosFormOrchestratorService {
           validators: [Validators.min(0)],
         }),
         horasSemanales: new FormControl<number | null>(null, {
-          validators: [Validators.required, Validators.min(1), Validators.max(168)],
+          validators: [Validators.required, Validators.min(1)],
         }),
         diasSemanales: new FormControl<number | null>(5, {
           validators: [Validators.required, Validators.min(1), Validators.max(7)],
@@ -545,7 +545,7 @@ export class EmpleadosFormOrchestratorService {
     );
     this.setControlValidators(
       controls.horasSemanales,
-      esHonorarios ? [] : [Validators.required, Validators.min(1), Validators.max(168)],
+      esHonorarios ? [] : [Validators.required, Validators.min(1)],
     );
     this.setControlValidators(
       controls.diasSemanales,

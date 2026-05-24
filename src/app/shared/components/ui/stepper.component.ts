@@ -19,7 +19,7 @@ export interface StepperItem {
       @if (showMeta) {
         <div class="stepper-meta">
           <p class="stepper-caption">{{ caption }}</p>
-          <p class="stepper-progress">Paso {{ activeStepNumber() }} de {{ steps.length }}</p>
+          <p class="stepper-progress">Paso {{ numeroPasoActivo() }} de {{ steps.length }}</p>
         </div>
       }
 
@@ -275,7 +275,7 @@ export class StepperComponent {
   @Input() showMeta = true;
   @Output() readonly activeIdChange = new EventEmitter<string>();
 
-  activeStepNumber(): number {
+  numeroPasoActivo(): number {
     const index = this.steps.findIndex((step) => step.id === this.activeId);
     return index >= 0 ? index + 1 : 1;
   }

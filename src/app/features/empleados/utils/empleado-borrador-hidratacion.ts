@@ -123,7 +123,7 @@ export function normalizarBorradorAvanzadoParaFormulario(
     limpiarCamposApvi(previsionSalud);
   }
 
-  if (isDraftAccount(bancario['numeroCuenta']) || paso < 7) {
+  if (esCuentaBorrador(bancario['numeroCuenta']) || paso < 7) {
     bancario['idBanco'] = null;
     bancario['idTipoCuentaBancaria'] = null;
     bancario['numeroCuenta'] = '';
@@ -243,7 +243,7 @@ function isSinCargo(value: unknown): boolean {
   return normalize(value) === normalize('Sin cargo');
 }
 
-function isDraftAccount(value: unknown): boolean {
+function esCuentaBorrador(value: unknown): boolean {
   return typeof value === 'string' && value.trim().toUpperCase().startsWith('DRAFT-');
 }
 

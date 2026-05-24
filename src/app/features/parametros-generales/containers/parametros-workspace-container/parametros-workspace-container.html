@@ -82,7 +82,7 @@
                 [visibleActions]="['back', 'save']"
                 backLabel="Cancelar"
                 [saveLabel]="saveLabel()"
-                [saveDisabled]="isSaving() || isLoading() || isLoadingPlantilla() || form.invalid"
+                [saveDisabled]="guardando() || isLoading() || isLoadingPlantilla() || form.invalid"
                 (saveClick)="guardar()"
                 (backClick)="volverParametrosAction()"
               ></app-page-actions>
@@ -178,7 +178,7 @@
               [setDescuentosBaseFn]="setDescuentosBase.bind(this)"
               [seleccionarCcaf]="seleccionarCcaf.bind(this)"
               [seleccionarMutual]="seleccionarMutual.bind(this)"
-              [onSubmit]="guardar.bind(this)"
+              [enviarFormulario]="guardar.bind(this)"
             ></app-parametros-config-cliente-tab>
           }
 
@@ -193,7 +193,7 @@
               [periodoLabel]="periodoSeleccionadoLabel()"
               [referenciaPeriodoLabel]="referenciaParametrosGeneralesLabel()"
               [fechaActualizacionLabel]="fechaActualizacionLabel()"
-              [onSubmit]="guardar.bind(this)"
+              [enviarFormulario]="guardar.bind(this)"
               [verReferenciaPeriodoAnterior]="verReferenciaPeriodoAnterior.bind(this)"
             ></app-parametros-valores-tab>
           }
@@ -207,7 +207,7 @@
               [periodoLabel]="periodoSeleccionadoLabel()"
               [referenciaPeriodoLabel]="referenciaParametrosGeneralesLabel()"
               [fechaActualizacionLabel]="fechaActualizacionLabel()"
-              [onSubmit]="guardar.bind(this)"
+              [enviarFormulario]="guardar.bind(this)"
               [verReferenciaPeriodoAnterior]="verReferenciaPeriodoAnterior.bind(this)"
             >
             </app-parametros-remuneraciones-tab>

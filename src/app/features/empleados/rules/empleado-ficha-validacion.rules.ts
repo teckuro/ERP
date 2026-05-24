@@ -1218,14 +1218,14 @@ function addPrevisionItems(
     severity: 'error',
     blocking: true,
     label: 'Ingresa una cuenta bancaria real',
-    detalle: isDraftAccount(s.numeroCuenta)
+    detalle: esCuentaBorrador(s.numeroCuenta)
       ? 'Reemplaza la cuenta bancaria temporal antes de finalizar.'
       : 'Ingresa una cuenta bancaria real antes de activar la ficha.',
     controlPath: 'bancario.numeroCuenta',
     category: 'Bancario',
-    defaultCode: isDraftAccount(s.numeroCuenta) ? 'cuenta-bancaria:draft' : undefined,
+    defaultCode: esCuentaBorrador(s.numeroCuenta) ? 'cuenta-bancaria:draft' : undefined,
     visible: esContratoDependiente,
-    complete: hasText(s.numeroCuenta) && !isDraftAccount(s.numeroCuenta),
+    complete: hasText(s.numeroCuenta) && !esCuentaBorrador(s.numeroCuenta),
   });
   add({
     id: 'honorarios.bank-data',
@@ -1239,7 +1239,7 @@ function addPrevisionItems(
     controlPath: 'bancario.idBanco',
     category: 'Honorarios',
     visible: !esContratoDependiente,
-    complete: isPositiveId(s.idBanco) && isPositiveId(s.idTipoCuentaBancaria) && hasText(s.numeroCuenta) && !isDraftAccount(s.numeroCuenta),
+    complete: isPositiveId(s.idBanco) && isPositiveId(s.idTipoCuentaBancaria) && hasText(s.numeroCuenta) && !esCuentaBorrador(s.numeroCuenta),
   });
 }
 
@@ -1269,7 +1269,7 @@ function isNonNegativeNumber(value: number | null | undefined): boolean {
   return typeof value === 'number' && Number.isFinite(value) && value >= 0;
 }
 
-function isDraftAccount(value: string | null | undefined): boolean {
+function esCuentaBorrador(value: string | null | undefined): boolean {
   return typeof value === 'string' && value.trim().toUpperCase().startsWith('DRAFT-');
 }
 

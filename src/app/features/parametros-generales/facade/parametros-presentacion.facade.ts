@@ -19,7 +19,7 @@ export class ParametrosPresentacionFacade {
   readonly selectedMutualId = signal<number | null>(null);
   readonly isLoading = signal(true);
   readonly isLoadingPlantilla = signal(false);
-  readonly isSaving = signal(false);
+  readonly guardando = signal(false);
   readonly generalesEditando = signal(false);
   readonly datosFormularioListos = signal(false);
   readonly isPreparingEdit = signal(false);

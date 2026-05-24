@@ -4,7 +4,7 @@
     <h3 class="employee-section-title">Bloque bancario</h3>
   </div>
 
-  @if (isBlockVisible('cuenta')) {
+  @if (esBloqueVisible('cuenta')) {
   <app-card className="employee-block">
     <div class="employee-block-head">
       <h4>Cuenta de abono</h4>
@@ -12,7 +12,7 @@
 
     <div
       class="employee-grid employee-grid--four"
-      [class.employee-grid-adv-bancario]="advancedGridLayout"
+      [class.employee-grid-adv-bancario]="grillaAvanzada"
     >
     <div class="form-field">
       <div class="field-label-row">

@@ -88,7 +88,7 @@ interface FilaHistorialFichaEmpleado {
   estado: string;
 }
 
-interface PerfilLaboralAutoDetection {
+interface DeteccionAutomaticaPerfilLaboral {
   controlName: CondicionTrabajadorControlName;
   reason: string;
 }
@@ -107,7 +107,7 @@ export class FichaEmpleadoPresentacionFacade implements OnInit {
   readonly empleadoId = Number(this.route.snapshot.paramMap.get('id'));
   readonly empleado = signal<EmpleadoFichaDetalle | null>(null);
   readonly isLoading = signal(true);
-  readonly isLoadingCatalogs = signal(true);
+  readonly cargandoCatalogos = signal(true);
   readonly isSavingSection = signal(false);
   readonly isValidatingPayroll = signal(false);
   readonly mensajeError = signal<string | null>(null);
@@ -247,7 +247,7 @@ export class FichaEmpleadoPresentacionFacade implements OnInit {
     } catch {
       this.mensajeError.set('No fue posible cargar la ficha del empleado.');
     } finally {
-      this.isLoadingCatalogs.set(false);
+      this.cargandoCatalogos.set(false);
       this.isLoading.set(false);
     }
   }
@@ -734,10 +734,10 @@ export class FichaEmpleadoPresentacionFacade implements OnInit {
     return 'Perfil estándar para el período activo. Declara condiciones solo con respaldo.';
   }
 
-  perfilLaboralAutoDetections(): readonly PerfilLaboralAutoDetection[] {
+  deteccionesAutomaticasPerfilLaboral(): readonly DeteccionAutomaticaPerfilLaboral[] {
     const perfil = this.perfilLaboralRpc();
     const controls = this.form.controls.perfilLaboral.controls;
-    const detections: PerfilLaboralAutoDetection[] = [];
+    const detections: DeteccionAutomaticaPerfilLaboral[] = [];
 
     if (perfil?.esMenor18 && !controls.trabajadorAdolescenteProtegido.value) {
       detections.push({

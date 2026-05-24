@@ -631,14 +631,14 @@ export class DataGridPrimaryActionMenuDirective {
       }
 
       <div class="data-grid-scroll w-full min-w-0 flex-1 overflow-auto bg-white" [ngStyle]="gridBodyStyle">
-        @if (errorMessage && !loading) {
+        @if (mensajeError && !loading) {
           <div class="data-grid-state data-grid-state--error">
             <div
               class="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full border border-red-100 bg-red-50"
             >
               <span class="text-lg font-semibold text-red-600">!</span>
             </div>
-            <h3 class="mb-1 text-lg font-medium text-neutral-900">{{ errorMessage }}</h3>
+            <h3 class="mb-1 text-lg font-medium text-neutral-900">{{ mensajeError }}</h3>
             <p class="text-sm text-neutral-600">Intenta nuevamente para actualizar la informacion.</p>
             <button
               type="button"
@@ -1835,7 +1835,7 @@ export class DataGridComponent<T = unknown> implements OnChanges, OnDestroy {
   @Input() emptyIcon = Search;
   @Input() loading = false;
   @Input() loadingLabel = 'Cargando resultados...';
-  @Input() errorMessage = '';
+  @Input() mensajeError = '';
   @Input() hoverRows = true;
   @Input() bulkActionLoading = false;
   @Input() bulkActionResult: DataGridBulkActionResult<T> | null = null;

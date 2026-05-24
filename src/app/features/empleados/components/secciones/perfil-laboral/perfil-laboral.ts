@@ -20,7 +20,7 @@ interface EdadLaboralInfo {
   edad: number | null;
 }
 
-interface PerfilLaboralAutoDetection {
+interface DeteccionAutomaticaPerfilLaboral {
   controlName: CondicionTrabajadorControlName;
   reason: string;
 }
@@ -43,16 +43,16 @@ export class PerfilLaboralComponent {
   @Input() fechaIngreso = '';
   @Input() relacionLaboral: RelacionLaboral = 'CONTRATO';
   @Input() tipoTrabajadorLabel = 'Tipo trabajador pendiente';
-  @Input() autoDetectedConditions: readonly PerfilLaboralAutoDetection[] = [];
+  @Input() autoDetectedConditions: readonly DeteccionAutomaticaPerfilLaboral[] = [];
   /** Edicion inline desde ficha: sin cabeceras de card ni layout de wizard. */
-  @Input() inlineRecordLayout = false;
+  @Input() disposicionInlineFicha = false;
   /** Etiqueta de edad/tramo desde RPC (periodo activo) en ficha. */
   @Input() edadDetectadaLabel = '';
   @Input() edadDetectadaDescripcion = '';
 
   @HostBinding('class.perfil-layout-inline-record')
   protected get perfilLayoutInlineRecord(): boolean {
-    return this.inlineRecordLayout;
+    return this.disposicionInlineFicha;
   }
 
   readonly condiciones = CONDICIONES_TRABAJADOR_UI;
@@ -91,7 +91,7 @@ export class PerfilLaboralComponent {
   }
 
   get edadLaboralInfo(): EdadLaboralInfo {
-    if (this.inlineRecordLayout && this.edadDetectadaLabel.trim()) {
+    if (this.disposicionInlineFicha && this.edadDetectadaLabel.trim()) {
       return {
         label: this.edadDetectadaLabel.trim(),
         description:

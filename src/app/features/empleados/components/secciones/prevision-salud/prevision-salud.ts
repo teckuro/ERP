@@ -50,20 +50,20 @@ export class PrevisionSaludComponent {
   @Input() monedas: EmpleadoMonedaCatalogOption[] = [];
   @Input() institucionesApv: EmpleadoCatalogOption[] = [];
   @Input() formasPagoApv: EmpleadoCatalogOption[] = [];
-  @Input() visibleBlocks: string[] | null = null;
+  @Input() bloquesVisibles: string[] | null = null;
   /** Grilla 8 columnas y spans (solo alta avanzada). */
-  @Input() advancedGridLayout = false;
+  @Input() grillaAvanzada = false;
   /** Edicion inline desde ficha: la card exterior ya aporta el titulo del bloque. */
-  @Input() inlineRecordLayout = false;
+  @Input() disposicionInlineFicha = false;
 
   @HostBinding('class.employee-layout-advanced')
   protected get employeeLayoutAdvanced(): boolean {
-    return this.advancedGridLayout;
+    return this.grillaAvanzada;
   }
 
   @HostBinding('class.employee-layout-inline-record')
   protected get employeeLayoutInlineRecord(): boolean {
-    return this.inlineRecordLayout;
+    return this.disposicionInlineFicha;
   }
 
   controlClass(controlName: PrevisionSaludControlName): string {
@@ -97,10 +97,10 @@ export class PrevisionSaludComponent {
       return 'Cotiza en AFP';
     }
     if (this.esIps) {
-      return 'Régimen IPS';
+      return 'RÃ©gimen IPS';
     }
     if (this.sinPrevision) {
-      return 'Sin régimen previsional';
+      return 'Sin rÃ©gimen previsional';
     }
     return 'Pendiente';
   }
@@ -132,7 +132,7 @@ export class PrevisionSaludComponent {
   }
 
   get tiposRegimenSelectOptions(): SearchSelectOption[] {
-    return withEmptyStringCatalog(this.tiposRegimenPrevisional, 'Seleccione régimen previsional');
+    return withEmptyStringCatalog(this.tiposRegimenPrevisional, 'Seleccione rÃ©gimen previsional');
   }
 
   get afpSelectOptions(): SearchSelectOption[] {
@@ -152,11 +152,11 @@ export class PrevisionSaludComponent {
   }
 
   get regimenExCajaSelectOptions(): SearchSelectOption[] {
-    return withEmptyNumberCatalog(this.regimenesExCajaFiltrados, 'Seleccione régimen ex caja');
+    return withEmptyNumberCatalog(this.regimenesExCajaFiltrados, 'Seleccione rÃ©gimen ex caja');
   }
 
   get saludSelectOptions(): SearchSelectOption[] {
-    return withEmptyNumberCatalog(this.entidadesSalud, 'Seleccione institución de salud');
+    return withEmptyNumberCatalog(this.entidadesSalud, 'Seleccione instituciÃ³n de salud');
   }
 
   get monedaPlanSelectOptions(): SearchSelectOption[] {
@@ -201,7 +201,7 @@ export class PrevisionSaludComponent {
   }
 
   get institucionApvSelectOptions(): SearchSelectOption[] {
-    return withEmptyNumberCatalog(this.institucionesApv, 'Seleccione institución APV');
+    return withEmptyNumberCatalog(this.institucionesApv, 'Seleccione instituciÃ³n APV');
   }
 
   get monedaApvSelectOptions(): SearchSelectOption[] {
@@ -226,8 +226,8 @@ export class PrevisionSaludComponent {
     return this.formGroup.controls[controlName].hasValidator(Validators.required);
   }
 
-  isBlockVisible(blockId: string): boolean {
-    return this.visibleBlocks === null || this.visibleBlocks.includes(blockId);
+  esBloqueVisible(blockId: string): boolean {
+    return this.bloquesVisibles === null || this.bloquesVisibles.includes(blockId);
   }
 
   private isPesoMoneda(moneda: EmpleadoMonedaCatalogOption): boolean {

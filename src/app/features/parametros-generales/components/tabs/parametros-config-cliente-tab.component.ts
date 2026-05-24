@@ -15,7 +15,7 @@ import { ParametrosGeneralesCatalogos } from '../../models/parametro-general.mod
   standalone: true,
   imports: [CommonModule, FormsModule, ReactiveFormsModule, SearchSelectComponent],
   template: `
-    <form class="tab-panel parametros-tab-panel parametros-form" [formGroup]="form" (ngSubmit)="onSubmit?.()">
+    <form class="tab-panel parametros-tab-panel parametros-form" [formGroup]="form" (ngSubmit)="enviarFormulario?.()">
       <section class="param-group parametros-section-card" aria-labelledby="gratificacion-title">
         <h2 id="gratificacion-title">Gratificacion</h2>
         <div class="field-grid parametros-form-grid field-grid--gratificacion">
@@ -151,7 +151,7 @@ export class ParametrosConfigClienteTabComponent {
   @Input() selectedMutualId: number | null = null;
   @Input() percentLabel = '-';
   @Input() fechaActualizacionLabel: string | null = null;
-  @Input() onSubmit: (() => void) | null = null;
+  @Input() enviarFormulario: (() => void) | null = null;
   @Input() bloquearSiLectura: ((event: Event) => void) | null = null;
   @Input() setDescuentosBaseFn: ((value: boolean) => void) | null = null;
   @Input() seleccionarCcaf: ((value: SearchSelectValue) => void) | null = null;

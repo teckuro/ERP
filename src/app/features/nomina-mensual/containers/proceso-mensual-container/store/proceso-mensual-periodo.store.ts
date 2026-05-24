@@ -12,14 +12,14 @@ import { ProcesoMensualService } from '../../../services/proceso-mensual.service
 import type { AprobacionOperativaRegistroView } from '../models/proceso-mensual-container.vm';
 import { formatoFechaHoraNomina, formatoMontoNomina } from '../utils/proceso-mensual-presentacion.formato';
 
-function errorMessage(error: unknown, fallback: string): string {
+function mensajeError(error: unknown, fallback: string): string {
   if (error instanceof Error && error.message.trim()) return error.message;
   if (typeof error === 'string' && error.trim()) return error;
   return fallback;
 }
 
 function errorConContexto(prefix: string, error: unknown, fallback: string): string {
-  const detalle = errorMessage(error, fallback);
+  const detalle = mensajeError(error, fallback);
   return detalle.includes(prefix) ? detalle : `${prefix}: ${detalle}`;
 }
 

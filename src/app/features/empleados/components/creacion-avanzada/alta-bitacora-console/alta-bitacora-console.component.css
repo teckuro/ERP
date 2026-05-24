@@ -164,7 +164,9 @@
   font-weight: 600;
 }
 
-.alta-bitacora-console__review {
+.alta-bitacora-console__review,
+.alta-bitacora-console__apply,
+.alta-bitacora-console__keep {
   padding: 3px 8px;
   border: 1px solid #d7dde5;
   border-radius: 4px;
@@ -172,6 +174,63 @@
   font-size: 0.6875rem;
   font-weight: 600;
   cursor: pointer;
+}
+
+.alta-bitacora-console__apply {
+  border-color: #c7d2e0;
+  background: #f8fafc;
+}
+
+.alta-bitacora-console__keep {
+  color: #64748b;
+}
+
+.alta-bitacora-console__section--normativa {
+  background: #f8fafc;
+}
+
+.alta-bitacora-console__list--normativa {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.alta-bitacora-console__normativa-item {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 6px;
+  border: 1px solid #e2e8f0;
+  border-radius: 4px;
+  background: #fff;
+}
+
+.alta-bitacora-console__normativa-title {
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.alta-bitacora-console__normativa-detail {
+  margin: 2px 0 0;
+  font-size: 0.6875rem;
+  line-height: 1.35;
+  color: #475569;
+}
+
+.alta-bitacora-console__normativa-badge {
+  display: inline-block;
+  margin-top: 4px;
+  font-size: 0.625rem;
+  font-weight: 600;
+  color: #64748b;
+}
+
+.alta-bitacora-console__normativa-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
 }
 
 .alta-bitacora-console__list--plain {

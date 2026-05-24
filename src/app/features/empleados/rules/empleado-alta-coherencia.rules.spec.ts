@@ -60,6 +60,51 @@ describe('evaluarAltaCoherencia', () => {
     expect(estado.prevision.tone).toBe('warning');
   });
 
+  it('detecta plazo fijo sin fecha de término', () => {
+    const estado = evaluarAltaCoherencia({
+      ...base,
+      tipoContrato: 'PLAZO_FIJO',
+      fechaTermino: '',
+      seguroCesantia: false,
+    });
+
+    expect(estado.inconsistencias.some((i) => i.id === 'coh.contrato.plazo-sin-termino')).toBe(true);
+  });
+
+  it('detecta honorarios con seguro activo', () => {
+    const estado = evaluarAltaCoherencia({
+      ...base,
+      relacionLaboral: 'HONORARIOS',
+      tipoContrato: null,
+      horasSemanales: null,
+      seguroCesantia: true,
+      tipoRegimenPrevisional: null,
+    });
+
+    expect(estado.inconsistencias.some((i) => i.id === 'coh.seguro.honorarios-activo')).toBe(true);
+  });
+
+  it('detecta parcial con 35 horas sobre 30', () => {
+    const estado = evaluarAltaCoherencia({
+      ...base,
+      tipoJornadaLabel: 'Jornada parcial',
+      jornadaParcial: true,
+      horasSemanales: 35,
+    });
+
+    expect(estado.inconsistencias.some((i) => i.id === 'coh.jornada.parcial-sobre-30')).toBe(true);
+  });
+
+  it('detecta técnico extranjero con cesantía off', () => {
+    const estado = evaluarAltaCoherencia({
+      ...base,
+      seguroCesantia: false,
+      condiciones: { ...base.condiciones, tecnicoExtranjeroExento: true },
+    });
+
+    expect(estado.inconsistencias.some((i) => i.id === 'coh.seguro.tecnico-extranjero-inactivo')).toBe(true);
+  });
+
   it('no genera incoherencias dependientes para honorarios limpio', () => {
     const estado = evaluarAltaCoherencia({
       ...base,

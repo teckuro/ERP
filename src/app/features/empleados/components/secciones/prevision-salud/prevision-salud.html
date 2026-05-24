@@ -1,15 +1,15 @@
 <div class="prevision-shell" [formGroup]="formGroup">
   <div class="employee-section-head is-hidden">
-    <p class="employee-section-kicker">Previsión y beneficios</p>
-    <h3 class="employee-section-title">Previsión y salud</h3>
+    <p class="employee-section-kicker">PrevisiÃ³n y beneficios</p>
+    <h3 class="employee-section-title">PrevisiÃ³n y salud</h3>
   </div>
 
-  @if (isBlockVisible('regimen')) {
+  @if (esBloqueVisible('regimen')) {
     <app-card className="prevision-card">
       <app-card-header className="prevision-card-header">
         <div class="prevision-card-title-row">
           <div>
-            <h4>Régimen previsional</h4>
+            <h4>RÃ©gimen previsional</h4>
           </div>
           <span
             class="prevision-status-chip"
@@ -25,14 +25,14 @@
       <app-card-content className="prevision-card-content">
         <div
           class="prevision-grid prevision-grid--two"
-          [class.prevision-grid-adv]="advancedGridLayout"
+          [class.prevision-grid-adv]="grillaAvanzada"
         >
           <div class="form-field prevision-field--regimen">
             <div class="field-label-row">
               <label
                 for="empleado-tipo-regimen-previsional"
               >
-                Tipo de previsión
+                Tipo de previsiÃ³n
               </label>
               @if (isRequired('tipoRegimenPrevisional')) {
                 <app-empleado-field-required />
@@ -41,13 +41,13 @@
             <app-search-select
               id="empleado-tipo-regimen-previsional"
               formControlName="tipoRegimenPrevisional"
-              placeholder="Selecciona una opción"
-              searchPlaceholder="Buscar tipo de previsión"
+              placeholder="Selecciona una opciÃ³n"
+              searchPlaceholder="Buscar tipo de previsiÃ³n"
               [options]="tiposRegimenSelectOptions"
               [invalid]="hasError('tipoRegimenPrevisional')"
             ></app-search-select>
             @if (hasError('tipoRegimenPrevisional', 'required')) {
-              <p class="field-message">Debes seleccionar el tipo de previsión.</p>
+              <p class="field-message">Debes seleccionar el tipo de previsiÃ³n.</p>
             } @else {
               <p class="field-message"></p>
             }
@@ -76,14 +76,14 @@
     </app-card>
   }
 
-  @if (sinPrevision && isBlockVisible('regimen')) {
+  @if (sinPrevision && esBloqueVisible('regimen')) {
     <div class="prevision-state-note is-none" role="status">
-      <span class="prevision-state-note__label">Sin previsión</span>
-      <p>No se solicitarán datos de AFP, IPS ni APVI para este trabajador.</p>
+      <span class="prevision-state-note__label">Sin previsiÃ³n</span>
+      <p>No se solicitarÃ¡n datos de AFP, IPS ni APVI para este trabajador.</p>
     </div>
   }
 
-  @if (esAfp && isBlockVisible('afp')) {
+  @if (esAfp && esBloqueVisible('afp')) {
     <app-card className="prevision-card">
       <app-card-header className="prevision-card-header">
         <h4>Datos AFP</h4>
@@ -91,7 +91,7 @@
       <app-card-content className="prevision-card-content">
         <div
           class="prevision-grid prevision-grid--three"
-          [class.prevision-grid-adv]="advancedGridLayout"
+          [class.prevision-grid-adv]="grillaAvanzada"
         >
           <div class="form-field prevision-field--afp">
             <div class="field-label-row">
@@ -169,7 +169,7 @@
     </app-card>
   }
 
-  @if (esIps && isBlockVisible('ips')) {
+  @if (esIps && esBloqueVisible('ips')) {
     <app-card className="prevision-card">
       <app-card-header className="prevision-card-header">
         <h4>Datos IPS</h4>
@@ -177,7 +177,7 @@
       <app-card-content className="prevision-card-content">
         <div
           class="prevision-grid prevision-grid--four prevision-grid--ips"
-          [class.prevision-grid-adv]="advancedGridLayout"
+          [class.prevision-grid-adv]="grillaAvanzada"
         >
           <div class="form-field prevision-field--ips">
             <div class="field-label-row">
@@ -232,7 +232,7 @@
           <div class="form-field prevision-field--regimen-excaja">
             <div class="field-label-row">
               <label for="empleado-regimen-ex-caja">
-                Régimen Ex-Caja
+                RÃ©gimen Ex-Caja
               </label>
               @if (isRequired('idRegimenExCaja')) {
                 <app-empleado-field-required />
@@ -241,16 +241,16 @@
             <app-search-select
               id="empleado-regimen-ex-caja"
               formControlName="idRegimenExCaja"
-              placeholder="Selecciona un régimen"
-              searchPlaceholder="Buscar régimen Ex-Caja"
+              placeholder="Selecciona un rÃ©gimen"
+              searchPlaceholder="Buscar rÃ©gimen Ex-Caja"
               [options]="regimenExCajaSelectOptions"
               [invalid]="hasError('idRegimenExCaja')"
             ></app-search-select>
             @if (hasError('idRegimenExCaja', 'required')) {
-              <p class="field-message">El régimen Ex-Caja es obligatorio.</p>
+              <p class="field-message">El rÃ©gimen Ex-Caja es obligatorio.</p>
             } @else if (!regimenesExCajaFiltrados.length) {
               <p class="field-message field-message--warning">
-                No hay regímenes para la Ex-Caja seleccionada.
+                No hay regÃ­menes para la Ex-Caja seleccionada.
               </p>
             } @else {
               <p class="field-message"></p>
@@ -287,7 +287,7 @@
     </app-card>
   }
 
-  @if (mostrarSalud && isBlockVisible('salud')) {
+  @if (mostrarSalud && esBloqueVisible('salud')) {
     <app-card className="prevision-card">
       <app-card-header className="prevision-card-header">
         <h4>Salud</h4>
@@ -295,12 +295,12 @@
       <app-card-content className="prevision-card-content">
         <div
           class="prevision-grid prevision-grid--four prevision-grid--salud"
-          [class.prevision-grid-adv]="advancedGridLayout"
+          [class.prevision-grid-adv]="grillaAvanzada"
         >
           <div class="form-field prevision-field--salud">
             <div class="field-label-row">
               <label for="empleado-salud"
-                >Institución de salud</label
+                >InstituciÃ³n de salud</label
               >
               @if (isRequired('idSalud')) {
                 <app-empleado-field-required />
@@ -309,13 +309,13 @@
             <app-search-select
               id="empleado-salud"
               formControlName="idSalud"
-              placeholder="Selecciona una institución"
-              searchPlaceholder="Buscar institución de salud"
+              placeholder="Selecciona una instituciÃ³n"
+              searchPlaceholder="Buscar instituciÃ³n de salud"
               [options]="saludSelectOptions"
               [invalid]="hasError('idSalud')"
             ></app-search-select>
             @if (hasError('idSalud', 'required')) {
-              <p class="field-message">La institución de salud es obligatoria.</p>
+              <p class="field-message">La instituciÃ³n de salud es obligatoria.</p>
             } @else {
               <p class="field-message"></p>
             }
@@ -352,7 +352,7 @@
                 <label>Valor plan</label>
               </div>
               <p class="prevision-state-note is-neutral">
-                FONASA se calcula por cotización legal; no requiere valor de plan.
+                FONASA se calcula por cotizaciÃ³n legal; no requiere valor de plan.
               </p>
             </div>
           } @else {
@@ -411,14 +411,14 @@
         </div>
       </app-card-content>
     </app-card>
-  } @else if (isBlockVisible('salud') && tipoPrevision !== null) {
+  } @else if (esBloqueVisible('salud') && tipoPrevision !== null) {
     <div class="prevision-state-note is-neutral" role="status">
       <span class="prevision-state-note__label">Salud sin datos requeridos</span>
-      <p>La selección actual no solicita datos de salud en este paso.</p>
+      <p>La selecciÃ³n actual no solicita datos de salud en este paso.</p>
     </div>
   }
 
-  @if (advancedGridLayout && isBlockVisible('regimen')) {
+  @if (grillaAvanzada && esBloqueVisible('regimen')) {
     <div
       class="prevision-impact"
       [class.is-enabled]="esAfp && formGroup.controls.tieneApv.value"
@@ -433,7 +433,7 @@
     </div>
   }
 
-  @if (esAfp && isBlockVisible('apvi') && mostrarApvi) {
+  @if (esAfp && esBloqueVisible('apvi') && mostrarApvi) {
       <app-card className="prevision-card">
         <app-card-header className="prevision-card-header">
           <h4>APVI - Ahorro Previsional Voluntario Individual</h4>
@@ -445,12 +445,12 @@
           </p>
           <div
             class="prevision-grid prevision-grid--three prevision-grid--apvi"
-            [class.prevision-grid-adv]="advancedGridLayout"
+            [class.prevision-grid-adv]="grillaAvanzada"
           >
             <div class="form-field">
               <div class="field-label-row">
                 <label for="empleado-institucion-apv">
-                  Institución APVI
+                  InstituciÃ³n APVI
                 </label>
                 @if (isRequired('idInstitucionApv')) {
                   <app-empleado-field-required />
@@ -459,13 +459,13 @@
               <app-search-select
                 id="empleado-institucion-apv"
                 formControlName="idInstitucionApv"
-                placeholder="Selecciona una institución"
-                searchPlaceholder="Buscar institución APVI"
+                placeholder="Selecciona una instituciÃ³n"
+                searchPlaceholder="Buscar instituciÃ³n APVI"
                 [options]="institucionApvSelectOptions"
                 [invalid]="hasError('idInstitucionApv')"
               ></app-search-select>
               @if (hasError('idInstitucionApv', 'required')) {
-                <p class="field-message">La institución APVI es obligatoria.</p>
+                <p class="field-message">La instituciÃ³n APVI es obligatoria.</p>
               } @else {
                 <p class="field-message"></p>
               }
