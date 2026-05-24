@@ -39,82 +39,61 @@ import {
   TramoCargaParametro,
   TramoImpuestoParametro,
 } from '../../models/parametro-general.model';
+import { ParametrosPresentacionFacade } from '../../facade/parametros-presentacion.facade';
+import type {
+  ConfigClienteDraftSource,
+  MonthOption,
+  ParametrosDialogAction,
+  ParametrosTab,
+  PeriodoCargaEstado,
+} from '../../models/parametros-workspace.vm';
 import { ParametrosGeneralesService } from '../../services/parametros-generales.service';
 import {
   ParametrosConfigClienteBaseOpcion,
-  ParametrosEstadoVisual,
   crearClienteConfigDesdeOficiales,
   evaluarCompletitudParametrosMensual,
   resolverEstadoVisualParametros,
   resolverOpcionesBaseConfigCliente,
 } from '../../rules/parametros-completitud.rules';
+import {
+  buildParametrosConfirmacionModificacionDialog,
+  buildParametrosDecisionConfigClienteDialog,
+  buildParametrosErrorActualizacionDialog,
+  buildParametrosErrorCargaDialog,
+  buildParametrosErrorClienteConfigDialog,
+  buildParametrosErrorGuardadoDialog,
+  buildParametrosErrorSincronizacionSinDatosDialog,
+  buildParametrosExitoActualizacionDialog,
+  buildParametrosExitoClienteConfigDialog,
+  buildParametrosExitoGuardadoDialog,
+  buildParametrosExitoSincronizacionDialog,
+  buildParametrosFormularioInvalidoDialog,
+  buildParametrosPeriodoCerradoSoloLecturaDialog,
+  buildParametrosPeriodoDuplicadoDialog,
+  buildParametrosPeriodoInexistenteConfigDialog,
+  buildParametrosPeriodoNoCoincideDialog,
+  buildParametrosReconciliacionDiferenciasDialog,
+  buildParametrosRegistroDecisionReconciliacionDialog,
+  buildParametrosSinConfigClienteAnteriorDialog,
+  buildParametrosSoloConfigClienteEditableDialog,
+} from '../../rules/parametros-dialog.rules';
 import { ButtonComponent } from '../../../../shared/components/ui/button.component';
 import { SearchSelectValue } from '../../../../shared/components/ui/search-select.component';
 import { DataGridColumn } from '../../../../shared/components/ui/data-grid.component';
 import { CardComponent, CardContentComponent } from '../../../../shared/components/ui/card.component';
-import {
-  MessageBoxComponent,
-  MessageBoxVariant,
-} from '../../../../shared/components/ui/message-box.component';
+import { MessageBoxComponent } from '../../../../shared/components/ui/message-box.component';
 import { PageActionsComponent } from '../../../../shared/components/ui/page-actions.component';
 import { ParametrosRemuneracionesTabComponent } from '../../components/tabs/parametros-remuneraciones-tab.component';
 import { ParametrosValoresTabComponent } from '../../components/tabs/parametros-valores-tab.component';
 import { ParametrosConfigClienteTabComponent } from '../../components/tabs/parametros-config-cliente-tab.component';
 import { ParametrosAfpTabComponent } from '../../components/tabs/parametros-afp-tab.component';
-import {
-  CcafMutualSubId,
-  ParametrosCcafMutualesTabComponent,
-} from '../../components/tabs/parametros-ccaf-mutuales-tab.component';
+import { ParametrosCcafMutualesTabComponent } from '../../components/tabs/parametros-ccaf-mutuales-tab.component';
 import { ParametrosSaludTabComponent } from '../../components/tabs/parametros-salud-tab.component';
 import { ParametrosReformaTabComponent } from '../../components/tabs/parametros-reforma-tab.component';
 import { ParametrosTramosCargaTabComponent } from '../../components/tabs/parametros-tramos-carga-tab.component';
 import { ParametrosTramosRentaTabComponent } from '../../components/tabs/parametros-tramos-renta-tab.component';
 import { PeriodoActivoService } from '../../../../core/services/periodo-activo.service';
 import { bindShellPageContext } from '../../../../layout/shell-page-context.binding';
-
-interface ParametrosTab {
-  id: ParametrosTabId;
-  label: string;
-}
-
-interface MonthOption {
-  value: string;
-  label: string;
-}
-
-type ParametrosDialogKind =
-  | 'alerta'
-  | 'confirmar-guardado'
-  | 'confirmar-crear-parametros'
-  | 'confirmar-config-cliente'
-  | 'confirmar-config-cliente-extendido'
-  | 'config-cliente-sin-base'
-  | 'reconciliacion-diferencias';
-type PeriodoCargaEstado = ParametrosEstadoVisual;
-type ConfigClienteDraftSource = 'cero' | 'ultima' | 'referencia' | 'oficiales' | 'existente';
-type ParametrosDialogAction =
-  | 'usar-ultima-config'
-  | 'usar-referencia'
-  | 'usar-oficiales'
-  | 'actualizar-con-oficiales'
-  | 'cancelar'
-  | 'mantener-config'
-  | 'revisar-despues';
-
-interface ParametrosDialogState {
-  kind: ParametrosDialogKind;
-  variant: MessageBoxVariant;
-  title: string;
-  message: string;
-  detail?: string;
-  primaryLabel?: string;
-  secondaryLabel?: string;
-  tertiaryLabel?: string;
-  fourthLabel?: string;
-  secondaryAction?: ParametrosDialogAction;
-  tertiaryAction?: ParametrosDialogAction;
-  fourthAction?: ParametrosDialogAction;
-}
 
 @Component({
   selector: 'app-parametros-workspace-container',
@@ -149,6 +128,7 @@ export class ParametrosWorkspaceContainer implements OnInit {
   private readonly fb = inject(FormBuilder);
   private readonly cdr = inject(ChangeDetectorRef);
   private readonly hostElement = inject<ElementRef<HTMLElement>>(ElementRef);
+  private readonly presentacion = inject(ParametrosPresentacionFacade);
   readonly periodoGlobal = inject(PeriodoActivoService);
 
   readonly tabs: readonly ParametrosTab[] = [
@@ -178,10 +158,10 @@ export class ParametrosWorkspaceContainer implements OnInit {
     { value: '12', label: 'DICIEMBRE' },
   ];
 
-  readonly activeTab = signal<ParametrosTabId>('configCliente');
-  readonly ccafMutualSubTab = signal<CcafMutualSubId>('listaCcaf');
+  readonly activeTab = this.presentacion.activeTab;
+  readonly ccafMutualSubTab = this.presentacion.ccafMutualSubTab;
   readonly rows = signal<ParametroGeneral[]>([]);
-  readonly selectedPeriodo = signal(this.periodoGlobal.periodoYm());
+  readonly selectedPeriodo = this.presentacion.selectedPeriodo;
   readonly catalogosOficiales = signal<ParametrosGeneralesCatalogos>(this.emptyCatalogos());
   readonly catalogos = signal<ParametrosGeneralesCatalogos>(this.emptyCatalogos());
   readonly parametroReferenciaAnterior = signal<ParametroGeneral | null>(null);
@@ -190,24 +170,24 @@ export class ParametrosWorkspaceContainer implements OnInit {
   readonly periodosGeneralesCatalogo = signal<string[]>([]);
   readonly periodosMensualesCatalogo = signal<string[]>([]);
   readonly periodoRemuneracion = signal<PeriodoRemuneracionEstadoInfo | null>(null);
-  readonly selectedCcafId = signal<number | null>(null);
-  readonly selectedMutualId = signal<number | null>(null);
-  readonly isLoading = signal(true);
+  readonly selectedCcafId = this.presentacion.selectedCcafId;
+  readonly selectedMutualId = this.presentacion.selectedMutualId;
+  readonly isLoading = this.presentacion.isLoading;
   /** Consulta al backend solo para plantilla del último período (crear parámetros); no es guardado. */
-  readonly isLoadingPlantilla = signal(false);
-  readonly isSaving = signal(false);
-  readonly generalesEditando = signal(false);
+  readonly isLoadingPlantilla = this.presentacion.isLoadingPlantilla;
+  readonly isSaving = this.presentacion.isSaving;
+  readonly generalesEditando = this.presentacion.generalesEditando;
   /** Formulario hidratado para el periodo actual y sin error de carga pendiente. */
-  readonly datosFormularioListos = signal(false);
+  readonly datosFormularioListos = this.presentacion.datosFormularioListos;
   /** Evita doble clic mientras se prepara el modo edición (carga + copia de periodo). */
-  readonly isPreparingEdit = signal(false);
+  readonly isPreparingEdit = this.presentacion.isPreparingEdit;
   /** Refresco silencioso de flujos de edicion. */
-  readonly isPreparandoDialogoCrear = signal(false);
+  readonly isPreparandoDialogoCrear = this.presentacion.isPreparandoDialogoCrear;
   /** Bloquea "Modificar" tras error de carga hasta una carga exitosa. */
-  readonly cargaBloqueadaPorError = signal(false);
-  readonly dialogState = signal<ParametrosDialogState | null>(null);
-  readonly configDraftSource = signal<ConfigClienteDraftSource>('existente');
-  readonly configDraftSourcePeriodo = signal<string | null>(null);
+  readonly cargaBloqueadaPorError = this.presentacion.cargaBloqueadaPorError;
+  readonly dialogState = this.presentacion.dialogState;
+  readonly configDraftSource = this.presentacion.configDraftSource;
+  readonly configDraftSourcePeriodo = this.presentacion.configDraftSourcePeriodo;
 
   private cargarDepth = 0;
   private readonly reconciliacionAvisadaPeriodos = new Set<string>();
@@ -979,7 +959,7 @@ export class ParametrosWorkspaceContainer implements OnInit {
       // Si falla, seguimos con período global.
     }
 
-    this.selectedPeriodo.set(periodoInicial);
+    this.presentacion.seleccionarPeriodo(periodoInicial);
     this.form.controls.periodo.setValue(periodoInicial);
     // Periodo fijo en formulario: edición solo vía selector de período / cabecera.
     this.form.controls.periodo.disable({ emitEvent: false });
@@ -1228,47 +1208,19 @@ export class ParametrosWorkspaceContainer implements OnInit {
   }
 
   private mostrarFormularioInvalido(): void {
-    this.dialogState.set({
-      kind: 'alerta',
-      variant: 'warning',
-      title: 'Faltan datos por completar',
-      message: 'Revisa los campos marcados antes de guardar los parámetros.',
-      detail: 'Hay campos obligatorios o con formato inválido.',
-      primaryLabel: 'Aceptar',
-    });
+    this.dialogState.set(buildParametrosFormularioInvalidoDialog());
   }
 
   private mostrarPeriodoDuplicado(periodo: string): void {
-    this.dialogState.set({
-      kind: 'alerta',
-      variant: 'warning',
-      title: 'Periodo ya registrado',
-      message: `Ya existen parámetros registrados para el periodo ${periodo}.`,
-      detail: 'Puedes modificar el registro existente en lugar de crear uno nuevo.',
-      primaryLabel: 'Aceptar',
-    });
+    this.dialogState.set(buildParametrosPeriodoDuplicadoDialog(periodo));
   }
 
   private mostrarExitoGuardado(periodo: string): void {
-    this.dialogState.set({
-      kind: 'alerta',
-      variant: 'success',
-      title: 'Parámetros guardados',
-      message: 'Los parámetros del periodo fueron guardados correctamente.',
-      detail: `Periodo: ${periodo}`,
-      primaryLabel: 'Aceptar',
-    });
+    this.dialogState.set(buildParametrosExitoGuardadoDialog(periodo));
   }
 
   private mostrarExitoActualizacion(periodo: string): void {
-    this.dialogState.set({
-      kind: 'alerta',
-      variant: 'success',
-      title: 'Parámetros actualizados',
-      message: 'Los parámetros del periodo fueron actualizados correctamente.',
-      detail: `Periodo: ${periodo}`,
-      primaryLabel: 'Aceptar',
-    });
+    this.dialogState.set(buildParametrosExitoActualizacionDialog(periodo));
   }
 
   private mostrarExitoClienteConfig(
@@ -1276,136 +1228,47 @@ export class ParametrosWorkspaceContainer implements OnInit {
     source: ConfigClienteDraftSource = 'existente',
     sourcePeriodo: string | null = null,
   ): void {
-    const detail =
-      source === 'referencia' && sourcePeriodo
-        ? `Configuracion creada desde referencia ${sourcePeriodo}.`
-        : source === 'oficiales'
-          ? 'Configuracion actualizada con valores oficiales.'
-          : source === 'ultima' && sourcePeriodo
-            ? `Configuracion creada desde ultima configuracion disponible (${sourcePeriodo}).`
-            : `Periodo: ${periodo}`;
-
-    this.dialogState.set({
-      kind: 'alerta',
-      variant: 'success',
-      title: 'Configuracion guardada',
-      message: `Configuracion de ${periodo} guardada.`,
-      detail,
-      primaryLabel: 'Aceptar',
-    });
+    this.dialogState.set(buildParametrosExitoClienteConfigDialog(periodo, source, sourcePeriodo));
   }
 
   private mostrarErrorGuardado(mensajeError: string): void {
-    this.dialogState.set({
-      kind: 'alerta',
-      variant: 'error',
-      title: 'No se pudieron guardar los parámetros',
-      message: 'Ocurrió un problema al intentar guardar los parámetros del periodo.',
-      detail: mensajeError || 'Error desconocido.',
-      primaryLabel: 'Aceptar',
-    });
+    this.dialogState.set(buildParametrosErrorGuardadoDialog(mensajeError));
   }
 
   private mostrarErrorActualizacion(mensajeError: string): void {
-    this.dialogState.set({
-      kind: 'alerta',
-      variant: 'error',
-      title: 'No se pudieron actualizar los parámetros',
-      message: 'Ocurrió un problema al intentar actualizar los parámetros del periodo.',
-      detail: mensajeError || 'Error desconocido.',
-      primaryLabel: 'Aceptar',
-    });
+    this.dialogState.set(buildParametrosErrorActualizacionDialog(mensajeError));
   }
 
   private mostrarErrorClienteConfig(mensajeError: string): void {
-    this.dialogState.set({
-      kind: 'alerta',
-      variant: 'error',
-      title: 'No se pudo guardar la configuracion',
-      message: 'Ocurrio un problema al guardar la configuracion del cliente.',
-      detail: mensajeError || 'Error desconocido.',
-      primaryLabel: 'Aceptar',
-    });
+    this.dialogState.set(buildParametrosErrorClienteConfigDialog(mensajeError));
   }
 
   private mostrarSoloConfigClienteEditable(): void {
-    this.dialogState.set({
-      kind: 'alerta',
-      variant: 'info',
-      title: 'Solo lectura',
-      message: 'Los datos oficiales mensuales se cargan por el flujo oficial.',
-      detail: 'Desde Parametros solo se puede modificar la configuracion cliente del periodo.',
-      primaryLabel: 'Aceptar',
-    });
+    this.dialogState.set(buildParametrosSoloConfigClienteEditableDialog());
   }
 
   private mostrarPeriodoInexistenteConfig(): void {
-    this.dialogState.set({
-      kind: 'alerta',
-      variant: 'warning',
-      title: 'Periodo no habilitado',
-      message: 'No se puede guardar configuracion cliente para un periodo inexistente.',
-      detail: `Primero debe existir el periodo ${this.selectedPeriodo()} en remuneraciones.`,
-      primaryLabel: 'Aceptar',
-    });
+    this.dialogState.set(buildParametrosPeriodoInexistenteConfigDialog(this.selectedPeriodo()));
   }
 
   private mostrarPeriodoCerradoSoloLectura(): void {
-    this.dialogState.set({
-      kind: 'alerta',
-      variant: 'warning',
-      title: 'Periodo cerrado',
-      message: 'El periodo esta cerrado y queda en modo solo lectura.',
-      detail: 'Cualquier cambio debe pasar por reapertura o un flujo de correccion auditado.',
-      primaryLabel: 'Aceptar',
-    });
+    this.dialogState.set(buildParametrosPeriodoCerradoSoloLecturaDialog());
   }
 
   private mostrarErrorCargaParametros(detalleTecnico: string): void {
-    this.dialogState.set({
-      kind: 'alerta',
-      variant: 'error',
-      title: 'No fue posible completar la operación',
-      message: 'No fue posible cargar los parámetros del sistema.',
-      detail: detalleTecnico
-        ? `${detalleTecnico}\n\nPeriodo seleccionado: ${this.selectedPeriodo()}`
-        : `Periodo seleccionado: ${this.selectedPeriodo()}`,
-      primaryLabel: 'Aceptar',
-    });
+    this.dialogState.set(buildParametrosErrorCargaDialog(detalleTecnico, this.selectedPeriodo()));
   }
 
   private mostrarExitoSincronizacion(refresco: boolean): void {
-    this.dialogState.set({
-      kind: 'alerta',
-      variant: 'success',
-      title: refresco ? 'Datos refrescados' : 'Datos sincronizados',
-      message: refresco
-        ? 'Los parámetros se actualizaron desde la base de datos.'
-        : 'Los parámetros se sincronizaron correctamente desde la base de datos.',
-      primaryLabel: 'Aceptar',
-    });
+    this.dialogState.set(buildParametrosExitoSincronizacionDialog(refresco));
   }
 
   private mostrarErrorSincronizacionSinDatos(): void {
-    this.dialogState.set({
-      kind: 'alerta',
-      variant: 'warning',
-      title: 'Sin datos para sincronizar',
-      message: 'No hay parámetros disponibles en la base de datos para sincronizar.',
-      primaryLabel: 'Aceptar',
-    });
+    this.dialogState.set(buildParametrosErrorSincronizacionSinDatosDialog());
   }
 
   private mostrarConfirmacionModificacion(): void {
-    this.dialogState.set({
-      kind: 'confirmar-guardado',
-      variant: 'warning',
-      title: 'Confirmar modificación',
-      message: `Se actualizarán los parámetros del periodo ${this.selectedPeriodo()}.`,
-      detail: 'Esta modificación puede afectar cálculos de remuneraciones asociados a este periodo.',
-      primaryLabel: 'Confirmar modificación',
-      secondaryLabel: 'Cancelar',
-    });
+    this.dialogState.set(buildParametrosConfirmacionModificacionDialog(this.selectedPeriodo()));
   }
 
   private mostrarConfirmacionCrearParametros(): void {
@@ -1443,18 +1306,7 @@ export class ParametrosWorkspaceContainer implements OnInit {
         action: this.configClienteBaseAction(opcion),
       }));
 
-    this.dialogState.set({
-      kind: 'confirmar-config-cliente-extendido',
-      variant: 'confirm',
-      title: 'Configurar periodo',
-      message: 'No existe configuracion cliente para este periodo.',
-      detail: `Periodo: ${periodo}\nSelecciona una base para continuar. Se creara solo al guardar.`,
-      primaryLabel: 'Crear desde cero',
-      secondaryLabel: actions[0]?.label,
-      secondaryAction: actions[0]?.action,
-      tertiaryLabel: actions[1]?.label,
-      tertiaryAction: actions[1]?.action,
-    });
+    this.dialogState.set(buildParametrosDecisionConfigClienteDialog(periodo, actions));
     this.cdr.markForCheck();
   }
 
@@ -1492,15 +1344,7 @@ export class ParametrosWorkspaceContainer implements OnInit {
   }
 
   private mostrarSinConfigClienteAnterior(): void {
-    this.dialogState.set({
-      kind: 'config-cliente-sin-base',
-      variant: 'info',
-      title: 'Sin configuracion anterior',
-      message: 'No hay una configuracion cliente anterior disponible para usar como base.',
-      detail: `Periodo: ${this.selectedPeriodo()}`,
-      primaryLabel: 'Crear desde cero',
-      secondaryLabel: 'Cancelar',
-    });
+    this.dialogState.set(buildParametrosSinConfigClienteAnteriorDialog(this.selectedPeriodo()));
     this.cdr.markForCheck();
   }
 
@@ -1515,18 +1359,7 @@ export class ParametrosWorkspaceContainer implements OnInit {
   }
 
   private mostrarReconciliacionDiferencias(): void {
-    this.dialogState.set({
-      kind: 'reconciliacion-diferencias',
-      variant: 'warning',
-      title: 'Hay diferencias con los valores oficiales del periodo',
-      message: 'Este periodo ya tiene una configuracion guardada por el cliente, pero la carga oficial contiene valores distintos. Nada se actualizara automaticamente.',
-      detail: 'Se encontro configuracion cliente guardada, datos oficiales cargados y diferencias entre ambos registros. Puedes mantener tu configuracion, actualizarla con oficiales o revisar las diferencias mas tarde.',
-      primaryLabel: 'Mantener mi configuracion',
-      secondaryLabel: 'Actualizar con oficiales',
-      secondaryAction: 'actualizar-con-oficiales',
-      tertiaryLabel: 'Revisar despues',
-      tertiaryAction: 'revisar-despues',
-    });
+    this.dialogState.set(buildParametrosReconciliacionDiferenciasDialog());
     this.cdr.markForCheck();
   }
 
@@ -1600,14 +1433,7 @@ export class ParametrosWorkspaceContainer implements OnInit {
         observacion: message,
       });
       this.clienteConfig.set(saved);
-      this.dialogState.set({
-        kind: 'alerta',
-        variant: estado === 'cliente_confirmado' ? 'info' : 'warning',
-        title: estado === 'cliente_confirmado' ? 'Configuracion mantenida' : 'Revision postergada',
-        message,
-        detail,
-        primaryLabel: 'Aceptar',
-      });
+      this.dialogState.set(buildParametrosRegistroDecisionReconciliacionDialog(estado, message, detail));
     } catch (err) {
       this.mostrarErrorClienteConfig(this.extractErrorDetail(err) || 'No fue posible registrar la decision de reconciliacion.');
     } finally {
@@ -1632,7 +1458,7 @@ export class ParametrosWorkspaceContainer implements OnInit {
   }
 
   seleccionarTab(tabId: ParametrosTabId): void {
-    this.activeTab.set(tabId);
+    this.presentacion.seleccionarTab(tabId);
     window.requestAnimationFrame(() => {
       const root = this.hostElement.nativeElement;
       const active = root.querySelector<HTMLElement>('nav.folder-tabs button.folder-tab--active');
@@ -2096,7 +1922,7 @@ export class ParametrosWorkspaceContainer implements OnInit {
       return;
     }
 
-    this.selectedPeriodo.set(periodo);
+    this.presentacion.seleccionarPeriodo(periodo);
     this.form.controls.periodo.setValue(periodo, { emitEvent: false });
     this.generalesEditando.set(false);
     this.cerrarDialogo();
@@ -2180,14 +2006,7 @@ export class ParametrosWorkspaceContainer implements OnInit {
   private patchForm(row: ParametroGeneral, expectedPeriodo?: string): void {
     const selected = expectedPeriodo ?? this.selectedPeriodo();
     if (row.periodo !== selected) {
-      this.dialogState.set({
-        kind: 'alerta',
-        variant: 'error',
-        title: 'No se pudieron actualizar los parámetros',
-        message: 'Los datos recibidos no coinciden con el periodo seleccionado.',
-        detail: `Periodo en datos: ${row.periodo}. Periodo seleccionado: ${selected}.`,
-        primaryLabel: 'Aceptar',
-      });
+      this.dialogState.set(buildParametrosPeriodoNoCoincideDialog(row.periodo, selected));
       this.datosFormularioListos.set(false);
       return;
     }
