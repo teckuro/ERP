@@ -1802,3 +1802,20 @@ Creación avanzada incorpora una identidad de producto local para dejar de senti
 - **Corrección:** mismos CSS de ficha en `app-empleado-record-header`, `app-empleado-expediente-rail`, `app-empleado-diagnostico-panel`; `:host { display: contents }` en diagnóstico y rail para el grid `status | workspace`.
 - **Container:** solo `ficha-empleado-container.css` (sin duplicar expediente/detalle/responsive).
 
+## 2026-05-24 — Modal edición ficha sin doble título
+
+- **Modal:** `ficha-edit-modal__body` sin padding; cabecera modal con `form-bg`; secciones con `inlineRecordLayout` y CSS local sin bordes de `app-card`.
+- **Archivos:** `ficha-empleado-edit-form.component.html`, `ficha-empleado-edit-modal.component.css/ts`.
+
+## 2026-05-24 — Ficha registro tab integrado (form-bg)
+
+- **Lectura:** cabeceras de bloque e intro del tab con `background: var(--form-bg)` a ancho completo; sin borde en `ficha-registro-tab__cuerpo`; `employee-record-main` sin padding lateral cuando hay registro tab.
+- **Archivos:** `empleado-expediente-tokens.css`, `ficha-empleado-expediente.css`, `ficha-empleado-responsive.css`.
+
+## 2026-05-24 — EMP-FICHA-UX-REPLANTEO-01
+
+- **Consulta:** `.ficha-registro-tab` + `__cuerpo` agrupa bloques editoriales por tab; Historial sin panel.
+- **Edición:** modal `ficha-edit-modal` vía `FichaEmpleadoOverlaysPort`; formulario en `ficha-empleado-edit-form` (layout alta, sin inline en workspace).
+- **CSS:** estilos modal en componente propio; poda `inline-edit-shell` en `ficha-empleado-detalle.css`.
+- **Archivos:** workspace, overlays, facade, edit-form, edit-modal, expediente/responsive/detalle CSS.
+

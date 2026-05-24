@@ -1,24 +1,7 @@
 ﻿@let f = facade;
 <section class="employee-file-page" aria-label="Ficha de empleado">
   @if (f.isLoading() || f.mensajeError()) {
-    <!-- 
-    <div class="file-toolbar file-toolbar--minimal" aria-label="Acciones">
-
-      <a
-
-        routerLink="/empleados"
-
-        class="file-toolbar-button file-toolbar-button--secondary erp-toolbar-button"
-
-      >
-
-        <lucide-icon class="file-toolbar-icon" [img]="arrowLeftIcon"></lucide-icon>
-
-        Volver
-
-      </a>
-
-    </div> -->
+    <!-- toolbar minimal comentado -->
   }
 
   <div
@@ -40,247 +23,119 @@
         <div class="employee-record-layout">
           @let estado = f.fichaEstadoPanel(employee);
 
-          <app-empleado-diagnostico-panel [estado]="estado" [progressStyle]="f.progressStyle(employee)" [validando]="f.isValidatingPayroll()" (navegarFaltante)="f.navegarFaltante($event)" (accionPrincipal)="f.ejecutarAccionPrincipalPanel()" />
+          <app-empleado-diagnostico-panel
+            [estado]="estado"
+            [progressStyle]="f.progressStyle(employee)"
+            [validando]="f.isValidatingPayroll()"
+            (navegarFaltante)="f.navegarFaltante($event)"
+            (accionPrincipal)="f.ejecutarAccionPrincipalPanel()"
+          />
 
           <div class="employee-record-workspace">
-            <app-empleado-expediente-rail [items]="f.expedienteNavItems(employee)" [totalBloques]="f.tabs.length" (seleccionarTab)="f.selectTab($event)" />
+            <app-empleado-expediente-rail
+              [items]="f.expedienteNavItems(employee)"
+              [totalBloques]="f.tabs.length"
+              (seleccionarTab)="f.selectTab($event)"
+            />
 
             <div
               class="employee-record-main"
               role="tabpanel"
               [attr.aria-labelledby]="'employee-tab-' + f.tabActivo()"
             >
-            <main class="file-main">
-              <section class="section-summary employee-record-block">
-                @if (f.tabActivo() !== 'historial') {
-                  <header
-                    class="employee-record-block__intro"
-                    [class.employee-record-block__intro--editing]="f.isEditingCurrentTab()"
-                    [class.employee-record-block__intro--with-action]="
-                      f.tabActivo() === 'remuneracion' &&
-                      employee.aptoParaRemuneraciones &&
-                      !f.isEditingCurrentTab()
-                    "
-                  >
-                    <div class="employee-record-block__intro-copy">
-                      @if (!f.isEditingCurrentTab()) {
-                        <h2 class="employee-record-block__title">{{ f.tabActivoIntroTitle() }}</h2>
-                      }
-
-                      <p class="employee-record-block__desc">{{ f.tabActivoDescription() }}</p>
-                    </div>
-
-                    @if (
-                      f.tabActivo() === 'remuneracion' &&
-                      employee.aptoParaRemuneraciones &&
-                      !f.isEditingCurrentTab()
-                    ) {
-                      <div class="employee-record-block__intro-actions">
-                        <a
-                          routerLink="/remuneraciones/haberes-descuentos"
-                          [queryParams]="{ persona: employee.id, accion: null }"
-                          class="file-toolbar-button file-toolbar-button--secondary erp-toolbar-button"
-                        >
-                          Revisar movimientos
-                        </a>
-                      </div>
-                    }
-                  </header>
-                }
-
-                @if (f.tabActivo() === 'historial') {
-                  <app-data-grid
-                    title="Historial"
-                    [columns]="f.historyColumns"
-                    [rows]="f.historyRows(employee)"
-                    [filtersEnabled]="false"
-                    [showExportAction]="false"
-                    [selectable]="false"
-                    [showHeader]="true"
-                    [maxItems]="10"
-                    [trackBy]="f.trackHistoryRow"
-                    cardClassName="history-grid-card"
-                    emptyTitle="Sin eventos de historial"
-                    emptyDescription="La ficha aún no registra eventos de auditoría."
-                  ></app-data-grid>
-                } @else {
-                  <div class="detail-block-list detail-block-list--editorial">
-                    @for (block of f.detailBlocks(employee); track block.id) {
-                      <section
-                        class="detail-block detail-block--editorial"
-                        [class.is-editing]="f.isEditingBlock(block.id)"
+              <main class="file-main">
+                <section class="section-summary employee-record-block">
+                  @if (f.tabActivo() === 'historial') {
+                    <app-data-grid
+                      title="Historial"
+                      [columns]="f.historyColumns"
+                      [rows]="f.historyRows(employee)"
+                      [filtersEnabled]="false"
+                      [showExportAction]="false"
+                      [selectable]="false"
+                      [showHeader]="true"
+                      [maxItems]="10"
+                      [trackBy]="f.trackHistoryRow"
+                      cardClassName="history-grid-card"
+                      emptyTitle="Sin eventos de historial"
+                      emptyDescription="La ficha aún no registra eventos de auditoría."
+                    ></app-data-grid>
+                  } @else {
+                    <div class="ficha-registro-tab">
+                      <header
+                        class="employee-record-block__intro"
+                        [class.employee-record-block__intro--with-action]="
+                          f.tabActivo() === 'remuneracion' && employee.aptoParaRemuneraciones
+                        "
                       >
-                        @if (f.isEditingBlock(block.id)) {
-                          <header
-                            class="detail-block-head detail-block-head--editorial detail-block-head--editing"
-                            [attr.aria-label]="'Acciones de ' + block.title"
-                          >
-                            <div class="detail-block-head__copy">
-                              <h3 class="detail-block-head__title">{{ block.title }}</h3>
-                              <p class="detail-block-head__hint">
-                                {{ f.saveBlockHint(block.title) }}
-                              </p>
-                            </div>
-                            <div class="inline-edit-actions inline-edit-actions--head">
-                              <button
-                                type="button"
-                                class="inline-action inline-action--primary"
-                                [disabled]="f.isSavingSection() || f.isLoadingCatalogs()"
-                                (click)="f.saveSection()"
-                              >
-                                {{ f.saveBlockButtonLabel() }}
-                              </button>
-                              <button
-                                type="button"
-                                class="inline-action inline-action--secondary"
-                                [disabled]="f.isSavingSection()"
-                                (click)="f.cancelEditing()"
-                              >
-                                Cancelar
-                              </button>
-                            </div>
-                          </header>
-                        } @else {
-                          <header class="detail-block-head detail-block-head--editorial">
-                            <h3 class="detail-block-head__title">{{ block.title }}</h3>
+                        <div class="employee-record-block__intro-copy">
+                          <h2 class="employee-record-block__title">{{ f.tabActivoIntroTitle() }}</h2>
+                          <p class="employee-record-block__desc">{{ f.tabActivoDescription() }}</p>
+                        </div>
 
-                            @if (!f.isEditingCurrentTab() && f.canEditBlock(block.id)) {
-                              <button
-                                type="button"
-                                class="section-edit-button erp-btn-ghost"
-                                (click)="f.startEditing(block.id)"
-                              >
-                                <lucide-icon
-                                  class="section-edit-button__icon"
-                                  [img]="f.editIcon"
-                                  aria-hidden="true"
-                                />
-                                Editar
-                              </button>
-                            }
-                          </header>
+                        @if (f.tabActivo() === 'remuneracion' && employee.aptoParaRemuneraciones) {
+                          <div class="employee-record-block__intro-actions">
+                            <a
+                              routerLink="/remuneraciones/haberes-descuentos"
+                              [queryParams]="{ persona: employee.id, accion: null }"
+                              class="file-toolbar-button file-toolbar-button--secondary erp-toolbar-button"
+                            >
+                              Revisar movimientos
+                            </a>
+                          </div>
                         }
+                      </header>
 
-                        @if (f.isEditingBlock(block.id)) {
-                          <form
-                            class="employee-form-panel employee-form-panel--inline-record inline-edit-shell inline-edit-shell--employee-fields inline-edit-shell--inline-record"
-                            [class.inline-edit-shell--single-sub]="
-                              f.editVisibleBlocks(block.id).length === 1
-                            "
-                            [formGroup]="f.form"
-                            (ngSubmit)="f.saveSection()"
-                          >
-                            @if (f.editComponentForBlock(block.id) === 'datos') {
-                              <app-empleado-datos-personales
-                                [formGroup]="f.form.controls.datosPersonales"
-                                [contactoFormGroup]="f.form.controls.contacto"
-                                [sexos]="f.catalogos().sexos"
-                                [estadosCivil]="f.catalogos().estadosCivil"
-                                [paises]="f.catalogos().paises"
-                                [visibleBlocks]="f.editVisibleBlocks(block.id)"
-                                [advancedGridLayout]="true"
-                                [inlineRecordLayout]="true"
-                              ></app-empleado-datos-personales>
-                            } @else if (f.editComponentForBlock(block.id) === 'contacto') {
-                              <app-empleado-contacto
-                                [formGroup]="f.form.controls.contacto"
-                                [comunas]="f.catalogos().comunas"
-                                [visibleBlocks]="f.editVisibleBlocks(block.id)"
-                                [domicilioAvanzado]="true"
-                                [advancedGridLayout]="true"
-                                [inlineRecordLayout]="true"
-                              ></app-empleado-contacto>
-                            } @else if (f.editComponentForBlock(block.id) === 'contrato') {
-                              <app-empleado-contrato
-                                [formGroup]="f.form.controls.contrato"
-                                [centrosCosto]="f.catalogos().centrosCosto"
-                                [sucursales]="f.catalogos().sucursales"
-                                [departamentos]="f.catalogos().departamentos"
-                                [tiposTrabajador]="f.catalogos().tiposTrabajador"
-                                [tiposJornada]="f.catalogos().tiposJornada"
-                                [tiposContrato]="f.catalogos().tiposContrato"
-                                [tiposGratificacion]="f.catalogos().tiposGratificacion"
-                                [monedas]="f.catalogos().monedas"
-                                [tramosCarga]="f.catalogos().tramosCarga"
-                                [visibleBlocks]="f.editVisibleBlocks(block.id)"
-                                [advancedGridLayout]="true"
-                                [inlineRecordLayout]="true"
-                              ></app-empleado-contrato>
-                            } @else if (f.editComponentForBlock(block.id) === 'prevision') {
-                              <app-empleado-prevision-salud
-                                [formGroup]="f.form.controls.previsionSalud"
-                                [tiposRegimenPrevisional]="f.catalogos().tiposRegimenPrevisional"
-                                [regimenesPrevisionales]="f.catalogos().regimenesPrevisionales"
-                                [entidadesPrevisionalesIps]="f.catalogos().entidadesPrevisionalesIps"
-                                [exCajasPrevisionales]="f.catalogos().exCajasPrevisionales"
-                                [regimenesExCaja]="f.catalogos().regimenesExCaja"
-                                [afps]="f.catalogos().afps"
-                                [entidadesSalud]="f.catalogos().entidadesSalud"
-                                [monedas]="f.catalogos().monedas"
-                                [institucionesApv]="f.catalogos().institucionesApv"
-                                [formasPagoApv]="f.catalogos().formasPagoApv"
-                                [visibleBlocks]="f.editVisibleBlocks(block.id)"
-                                [advancedGridLayout]="true"
-                                [inlineRecordLayout]="true"
-                              ></app-empleado-prevision-salud>
-                            } @else if (f.editComponentForBlock(block.id) === 'bancario') {
-                              <app-empleado-bancario
-                                [formGroup]="f.form.controls.bancario"
-                                [bancos]="f.catalogos().bancos"
-                                [tiposCuentaBancaria]="f.catalogos().tiposCuentaBancaria"
-                                [visibleBlocks]="f.editVisibleBlocks(block.id)"
-                                [advancedGridLayout]="true"
-                                [inlineRecordLayout]="true"
-                              ></app-empleado-bancario>
-                            } @else if (f.editComponentForBlock(block.id) === 'perfil-laboral') {
-                              <div class="employee-record-perfil-inline">
-                                @if (f.perfilLaboralError(); as perfilError) {
-                                  <p class="employee-record-perfil-hint employee-record-perfil-hint--warning">
-                                    {{ perfilError }}
-                                  </p>
-                                }
+                      <div class="ficha-registro-tab__cuerpo">
+                        <div class="detail-block-list detail-block-list--editorial">
+                          @for (block of f.detailBlocks(employee); track block.id) {
+                            <section class="detail-block detail-block--editorial">
+                              <header class="detail-block-head detail-block-head--editorial">
+                                <h3 class="detail-block-head__title">{{ block.title }}</h3>
 
-                                <app-empleado-perfil-laboral
-                                  [formGroup]="f.form.controls.perfilLaboral"
-                                  [fechaNacimiento]="f.form.controls.datosPersonales.controls.fechaNacimiento.value"
-                                  [fechaIngreso]="f.form.controls.contrato.controls.fechaIngreso.value"
-                                  [relacionLaboral]="f.form.controls.contrato.controls.relacionLaboral.value"
-                                  [tipoTrabajadorLabel]="f.perfilLaboralTipoTrabajadorLabel()"
-                                  [autoDetectedConditions]="f.perfilLaboralAutoDetections()"
-                                  [inlineRecordLayout]="true"
-                                  [edadDetectadaLabel]="f.perfilLaboralEdadDetectadaLabel()"
-                                  [edadDetectadaDescripcion]="f.perfilLaboralEdadDetectadaDescripcion()"
-                                ></app-empleado-perfil-laboral>
-                              </div>
-                            }
-                          </form>
-                        } @else {
-                          <dl class="detail-grid detail-grid--editorial">
-                            @for (item of block.items; track item.label) {
-                              <div [class.detail-row--muted]="f.isMissingValue(item.value)">
-                                <dt>{{ item.label }}</dt>
-
-                                <dd [class.detail-dd--missing]="f.isMissingValue(item.value)">
-                                  @if (f.isMissingValue(item.value)) {
+                                @if (f.canEditBlock(block.id)) {
+                                  <button
+                                    type="button"
+                                    class="section-edit-button erp-btn-ghost"
+                                    (click)="f.startEditing(block.id)"
+                                  >
                                     <lucide-icon
-                                      class="detail-missing-icon"
-                                      [img]="f.emptyFieldIcon"
+                                      class="section-edit-button__icon"
+                                      [img]="f.editIcon"
                                       aria-hidden="true"
-                                    ></lucide-icon>
-                                  }
+                                    />
+                                    Editar
+                                  </button>
+                                }
+                              </header>
 
-                                  <span>{{ item.value }}</span>
-                                </dd>
-                              </div>
-                            }
-                          </dl>
-                        }
-                      </section>
-                    }
-                  </div>
-                }
-              </section>
-            </main>
+                              <dl class="detail-grid detail-grid--editorial">
+                                @for (item of block.items; track item.label) {
+                                  <div [class.detail-row--muted]="f.isMissingValue(item.value)">
+                                    <dt>{{ item.label }}</dt>
+
+                                    <dd [class.detail-dd--missing]="f.isMissingValue(item.value)">
+                                      @if (f.isMissingValue(item.value)) {
+                                        <lucide-icon
+                                          class="detail-missing-icon"
+                                          [img]="f.emptyFieldIcon"
+                                          aria-hidden="true"
+                                        />
+                                      }
+
+                                      <span>{{ item.value }}</span>
+                                    </dd>
+                                  </div>
+                                }
+                              </dl>
+                            </section>
+                          }
+                        </div>
+                      </div>
+                    </div>
+                  }
+                </section>
+              </main>
             </div>
           </div>
         </div>

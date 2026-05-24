@@ -1,5 +1,6 @@
 ﻿import { Component } from '@angular/core';
 import { FichaEmpleadoPresentacionFacade } from './facade/ficha-empleado-presentacion.facade';
+import { FichaEmpleadoOverlaysPort } from './facade/ficha-empleado-overlays.port';
 import { FichaEmpleadoOverlaysComponent } from './components/ficha-empleado-overlays/ficha-empleado-overlays.component';
 import { FichaEmpleadoWorkspaceComponent } from './components/ficha-empleado-workspace/ficha-empleado-workspace.component';
 
@@ -7,6 +8,7 @@ import { FichaEmpleadoWorkspaceComponent } from './components/ficha-empleado-wor
   selector: 'app-ficha-empleado-container',
   standalone: true,
   providers: [
+    FichaEmpleadoOverlaysPort,
     { provide: FichaEmpleadoPresentacionFacade, useExisting: FichaEmpleadoContainer },
   ],
   imports: [FichaEmpleadoWorkspaceComponent, FichaEmpleadoOverlaysComponent],

@@ -534,7 +534,7 @@ describe('FichaEmpleadoContainer', () => {
     expect(new Set(keys).size).toBe(keys.length);
   });
 
-  it('mantiene el titulo de bloque y una sola barra de acciones al editar', () => {
+  it('abre modal de edicion con titulo y acciones al editar un bloque', () => {
     const employee = empleado();
     component.empleado.set(employee);
     component['patchFormFromEmployee'](employee);
@@ -543,24 +543,19 @@ describe('FichaEmpleadoContainer', () => {
     component.startEditing(firstBlockId ?? null);
     fixture.detectChanges();
 
-    const editingBlock = fixture.nativeElement.querySelector(
-      '.detail-block--editorial.is-editing',
-    ) as HTMLElement;
     const host = fixture.nativeElement as HTMLElement;
+    const modal = host.querySelector('.ficha-edit-modal') as HTMLElement;
 
-    expect(editingBlock?.querySelector('.detail-block-head--editing')).toBeTruthy();
-    expect(editingBlock?.querySelector('.detail-block-head__title')?.textContent?.trim()).toBe(
+    expect(modal).toBeTruthy();
+    expect(modal.querySelector('#ficha-edit-modal-title')?.textContent?.trim()).toBe(
       'Identificación legal',
     );
-    expect(editingBlock?.querySelector('.detail-block-head__hint')?.textContent).toContain(
+    expect(modal.querySelector('.ficha-edit-modal__hint')?.textContent).toContain(
       'Se guardará solo',
     );
-    expect(editingBlock?.querySelector('.inline-edit-actions--head')?.textContent).toContain(
-      'Guardar',
-    );
-    expect(editingBlock?.querySelectorAll('.inline-edit-actions').length).toBe(1);
-    expect(host.querySelector('.employee-record-block__intro--editing')).toBeTruthy();
-    expect(host.querySelector('.employee-record-block__intro--editing .employee-record-block__title')).toBeNull();
+    expect(modal.querySelector('.ficha-edit-modal__foot')?.textContent).toContain('Guardar');
+    expect(host.querySelector('.detail-block--editorial.is-editing')).toBeNull();
+    expect(host.querySelector('.ficha-registro-tab')).toBeTruthy();
   });
 
   it('expone contacto al editar el bloque base en visibleBlocks', () => {
@@ -577,8 +572,8 @@ describe('FichaEmpleadoContainer', () => {
 
     const host = fixture.nativeElement as HTMLElement;
 
-    expect(host.querySelector('#empleado-email')).toBeTruthy();
-    expect(host.querySelector('#empleado-telefono')).toBeTruthy();
+    expect(host.querySelector('.ficha-edit-modal #empleado-email')).toBeTruthy();
+    expect(host.querySelector('.ficha-edit-modal #empleado-telefono')).toBeTruthy();
   });
 
   it('muestra marcador accesible de campo obligatorio al editar identificacion', () => {
@@ -590,7 +585,9 @@ describe('FichaEmpleadoContainer', () => {
     fixture.detectChanges();
 
     const triggers = [
-      ...fixture.nativeElement.querySelectorAll('.erp-field-help-tip__trigger--required'),
+      ...fixture.nativeElement.querySelectorAll(
+        '.ficha-edit-modal .erp-field-help-tip__trigger--required',
+      ),
     ] as HTMLButtonElement[];
 
     expect(triggers.length).toBeGreaterThan(0);

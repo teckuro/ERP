@@ -1,4 +1,15 @@
 ﻿
+## EMP-FICHA-UX-REPLANTEO-01 - Ficha consulta + modal edición
+
+| Campo | Estado |
+| ----- | ------ |
+| Estado | Implementada |
+| Tipo | UI presentación (workspace + overlays) |
+| Alcance | Panel lectura `ficha-registro-tab`; edición por bloque en modal; `FichaEmpleadoOverlaysPort`; `requestCerrarEdicion` con confirmación si hay cambios. |
+| Restricciones | Sin SQL, payloads, estilos globales, `angular.json`. |
+| Documento | [../modulos/empleados/emp-ficha-ux-replanteo-01.md](../modulos/empleados/emp-ficha-ux-replanteo-01.md) |
+| Validación | `tsc` app OK; `ng build` development OK; spec ficha actualizado para modal. |
+
 ## EMP-FICHA-UI-BASE-01 - Tokens y shell expediente empleado
 
 | Campo | Estado |

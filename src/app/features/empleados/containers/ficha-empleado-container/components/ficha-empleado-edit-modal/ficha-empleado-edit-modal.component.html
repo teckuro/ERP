@@ -1,0 +1,45 @@
+@let f = facade;
+
+<div class="ficha-edit-modal-backdrop" role="presentation" (click)="onBackdropClick($event)">
+  <section
+    class="ficha-edit-modal"
+    role="dialog"
+    aria-modal="true"
+    [attr.aria-labelledby]="'ficha-edit-modal-title'"
+    (click)="$event.stopPropagation()"
+  >
+    <header class="ficha-edit-modal__head">
+      <div class="ficha-edit-modal__head-copy">
+        <h3 id="ficha-edit-modal-title" class="ficha-edit-modal__title">{{ tituloBloque() }}</h3>
+        <p class="ficha-edit-modal__hint">{{ f.saveBlockHint(tituloBloque()) }}</p>
+      </div>
+    </header>
+
+    <form
+      class="ficha-edit-modal__body"
+      [formGroup]="f.form"
+      (ngSubmit)="onSubmit()"
+    >
+      <app-ficha-empleado-edit-form [blockId]="blockId()" />
+    </form>
+
+    <footer class="ficha-edit-modal__foot">
+      <button
+        type="button"
+        class="inline-action inline-action--secondary"
+        [disabled]="f.isSavingSection()"
+        (click)="f.requestCerrarEdicion()"
+      >
+        Cancelar
+      </button>
+      <button
+        type="button"
+        class="inline-action inline-action--primary"
+        [disabled]="f.isSavingSection() || f.isLoadingCatalogs()"
+        (click)="onSubmit()"
+      >
+        {{ f.saveBlockButtonLabel() }}
+      </button>
+    </footer>
+  </section>
+</div>

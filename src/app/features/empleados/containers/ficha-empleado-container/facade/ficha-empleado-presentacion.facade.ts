@@ -60,6 +60,7 @@ import {
   buildCondicionesEspecialesDetalleItems,
   etiquetaTramoEdadLaboral,
 } from '../../../rules/empleado-perfil-laboral.rules';
+import { FichaEmpleadoOverlaysPort } from './ficha-empleado-overlays.port';
 
 type TabFichaEmpleado = ClaveTabFichaEmpleado;
 
@@ -101,6 +102,7 @@ export class FichaEmpleadoPresentacionFacade implements OnInit {
   private readonly empleadosFormService = inject(EmpleadosFormOrchestratorService);
   private readonly periodoActivo = inject(PeriodoActivoService);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly overlaysPort = inject(FichaEmpleadoOverlaysPort);
 
   readonly empleadoId = Number(this.route.snapshot.paramMap.get('id'));
   readonly empleado = signal<EmpleadoFichaDetalle | null>(null);
@@ -251,7 +253,11 @@ export class FichaEmpleadoPresentacionFacade implements OnInit {
   }
 
   selectTab(idTab: TabFichaEmpleado): boolean {
-    if (this.hasCurrentSectionChanges()) {
+    if (this.editingBlock()) {
+      if (!this.requestCerrarEdicion()) {
+        return false;
+      }
+    } else if (this.hasCurrentSectionChanges()) {
       const shouldDiscard = window.confirm(
         'Hay cambios sin guardar en la seccion actual. Deseas descartarlos?',
       );
@@ -266,6 +272,7 @@ export class FichaEmpleadoPresentacionFacade implements OnInit {
     this.tabActivo.set(idTab);
     this.editingTab.set(null);
     this.editingBlock.set(null);
+    this.overlaysPort.cerrar();
     this.mensajeErrorSeccion.set(null);
     this.tituloExitoSeccion.set(null);
     this.mensajeExitoSeccion.set(null);
@@ -277,17 +284,54 @@ export class FichaEmpleadoPresentacionFacade implements OnInit {
       return;
     }
 
+    const employee = this.empleado();
+
+    if (!employee) {
+      return;
+    }
+
+    const resolvedBlockId = blockId ?? this.detailBlocks(employee).at(0)?.id ?? null;
+
+    if (!resolvedBlockId) {
+      return;
+    }
+
+    const tituloBloque =
+      this.detailBlocks(employee).find((block) => block.id === resolvedBlockId)?.title ??
+      'Registro';
+
     this.mensajeErrorSeccion.set(null);
     this.tituloExitoSeccion.set(null);
     this.mensajeExitoSeccion.set(null);
     this.editingTab.set(this.tabActivo());
-    this.editingBlock.set(blockId ?? this.detailBlocks(this.empleado()!).at(0)?.id ?? null);
+    this.editingBlock.set(resolvedBlockId);
+    this.overlaysPort.abrirEdicionBloque(resolvedBlockId, tituloBloque);
+  }
+
+  requestCerrarEdicion(): boolean {
+    if (!this.editingBlock()) {
+      return true;
+    }
+
+    if (this.hasCurrentSectionChanges()) {
+      const shouldDiscard = window.confirm(
+        'Hay cambios sin guardar en este registro. ¿Desea descartarlos?',
+      );
+
+      if (!shouldDiscard) {
+        return false;
+      }
+    }
+
+    this.cancelEditing();
+    return true;
   }
 
   cancelEditing(): void {
     this.restoreForm();
     this.editingTab.set(null);
     this.editingBlock.set(null);
+    this.overlaysPort.cerrar();
     this.mensajeErrorSeccion.set(null);
     this.tituloExitoSeccion.set(null);
     this.mensajeExitoSeccion.set(null);
@@ -395,6 +439,8 @@ export class FichaEmpleadoPresentacionFacade implements OnInit {
 
     if (!saveTarget) {
       this.editingTab.set(null);
+      this.editingBlock.set(null);
+      this.overlaysPort.cerrar();
       return;
     }
 
@@ -430,6 +476,7 @@ export class FichaEmpleadoPresentacionFacade implements OnInit {
 
       this.editingTab.set(null);
       this.editingBlock.set(null);
+      this.overlaysPort.cerrar();
       this.tituloExitoSeccion.set(blockTitle);
       this.mensajeExitoSeccion.set(
         `Se guardó ${blockTitle}. Las demás secciones de la ficha no se modificaron.`,

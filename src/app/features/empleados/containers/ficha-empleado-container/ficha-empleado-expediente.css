@@ -164,6 +164,7 @@
   margin: 0;
   padding: 0;
   overflow-x: auto;
+  overflow-y: hidden;
   list-style: none;
   scrollbar-width: thin;
 }
@@ -258,6 +259,11 @@
   background: var(--employee-exp-panel);
 }
 
+.employee-record-main:has(.ficha-registro-tab) {
+  padding: 0;
+  overflow: hidden;
+}
+
 .employee-record-block__intro {
   display: grid;
   gap: 4px;
@@ -302,4 +308,80 @@
   font-size: 0.74rem;
   font-weight: 500;
   line-height: 1.4;
+}
+
+.ficha-registro-tab {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-height: 0;
+  min-width: 0;
+  width: 100%;
+  background: var(--employee-exp-panel);
+}
+
+.ficha-registro-tab .employee-record-block__intro {
+  flex-shrink: 0;
+  margin: 0;
+  padding: 12px 16px 10px;
+  border: 0;
+  background: var(--form-bg, #f8fafc);
+}
+
+.ficha-registro-tab .employee-record-block__intro--with-action {
+  align-items: center;
+}
+
+.ficha-registro-tab__cuerpo {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-height: 0;
+  margin: 0;
+  border: 0;
+  border-radius: 0;
+  background: var(--employee-exp-panel);
+  overflow: hidden;
+}
+
+.ficha-registro-tab__cuerpo .detail-block-list--editorial {
+  flex: 1 1 auto;
+  min-height: 0;
+  gap: 0;
+  padding: 0;
+  overflow: auto;
+}
+
+.ficha-registro-tab__cuerpo .detail-block--editorial {
+  border: 0;
+  background: var(--form-surface, var(--employee-exp-panel));
+}
+
+.ficha-registro-tab__cuerpo .detail-block-head--editorial {
+  margin: 0;
+  padding: 10px 16px;
+  border: 0;
+  border-radius: 0;
+  background: var(--form-bg, #f8fafc);
+}
+
+.ficha-registro-tab__cuerpo .detail-block-head--editorial .detail-block-head__title {
+  color: var(--form-text, var(--employee-exp-text));
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.ficha-registro-tab__cuerpo .detail-grid--editorial {
+  padding: 12px 16px 14px;
+  background: var(--form-surface, var(--employee-exp-panel));
+}
+
+.ficha-registro-tab .file-main {
+  padding-top: 0;
+}
+
+.ficha-registro-tab .section-summary {
+  flex: 1 1 auto;
+  gap: 0;
+  min-height: 0;
 }

@@ -677,3 +677,732 @@
           ╵            [32m~~~~~~~~~~~~~~~~~~[0m
 
 [39m[22m
+[1m[31m[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'requestCerrarEdicion' does not exist on type 'FichaEmpleadoPresentacionFacade'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/containers/ficha-empleado-container/components/ficha-empleado-edit-modal/ficha-empleado-edit-modal.component.html:31:19:
+[37m      31 │         (click)="f.[32mrequestCerrarEdicion[37m()"
+         ╵                    [32m~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component FichaEmpleadoEditModalComponent.
+
+    src/app/features/empleados/containers/ficha-empleado-container/components/ficha-empleado-edit-modal/ficha-empleado-edit-modal.component.ts:18:15:
+[37m      18 │   templateUrl: [32m'./ficha-empleado-edit-modal.component.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'requestCerrarEdicion' does not exist on type 'FichaEmpleadoPresentacionFacade'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/containers/ficha-empleado-container/components/ficha-empleado-edit-modal/ficha-empleado-edit-modal.component.ts:34:18:
+[37m      34 │       this.facade.[32mrequestCerrarEdicion[37m();
+         ╵                   [32m~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'requestCerrarEdicion' does not exist on type 'FichaEmpleadoPresentacionFacade'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/containers/ficha-empleado-container/components/ficha-empleado-edit-modal/ficha-empleado-edit-modal.component.ts:40:16:
+[37m      40 │     this.facade.[32mrequestCerrarEdicion[37m();
+         ╵                 [32m~~~~~~~~~~~~~~~~~~~~[0m
+
+[39m[22m
+[1m[31m[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'requestCerrarEdicion' does not exist on type 'FichaEmpleadoPresentacionFacade'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/containers/ficha-empleado-container/components/ficha-empleado-edit-modal/ficha-empleado-edit-modal.component.html:31:19:
+[37m      31 │         (click)="f.[32mrequestCerrarEdicion[37m()"
+         ╵                    [32m~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component FichaEmpleadoEditModalComponent.
+
+    src/app/features/empleados/containers/ficha-empleado-container/components/ficha-empleado-edit-modal/ficha-empleado-edit-modal.component.ts:18:15:
+[37m      18 │   templateUrl: [32m'./ficha-empleado-edit-modal.component.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'requestCerrarEdicion' does not exist on type 'FichaEmpleadoPresentacionFacade'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/containers/ficha-empleado-container/components/ficha-empleado-edit-modal/ficha-empleado-edit-modal.component.ts:34:18:
+[37m      34 │       this.facade.[32mrequestCerrarEdicion[37m();
+         ╵                   [32m~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'requestCerrarEdicion' does not exist on type 'FichaEmpleadoPresentacionFacade'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/containers/ficha-empleado-container/components/ficha-empleado-edit-modal/ficha-empleado-edit-modal.component.ts:40:16:
+[37m      40 │     this.facade.[32mrequestCerrarEdicion[37m();
+         ╵                 [32m~~~~~~~~~~~~~~~~~~~~[0m
+
+[39m[22m
+[1m[31m[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'requestCerrarEdicion' does not exist on type 'FichaEmpleadoPresentacionFacade'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/containers/ficha-empleado-container/components/ficha-empleado-edit-modal/ficha-empleado-edit-modal.component.html:31:19:
+[37m      31 │         (click)="f.[32mrequestCerrarEdicion[37m()"
+         ╵                    [32m~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component FichaEmpleadoEditModalComponent.
+
+    src/app/features/empleados/containers/ficha-empleado-container/components/ficha-empleado-edit-modal/ficha-empleado-edit-modal.component.ts:18:15:
+[37m      18 │   templateUrl: [32m'./ficha-empleado-edit-modal.component.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'requestCerrarEdicion' does not exist on type 'FichaEmpleadoPresentacionFacade'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/containers/ficha-empleado-container/components/ficha-empleado-edit-modal/ficha-empleado-edit-modal.component.ts:34:18:
+[37m      34 │       this.facade.[32mrequestCerrarEdicion[37m();
+         ╵                   [32m~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'requestCerrarEdicion' does not exist on type 'FichaEmpleadoPresentacionFacade'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/containers/ficha-empleado-container/components/ficha-empleado-edit-modal/ficha-empleado-edit-modal.component.ts:40:16:
+[37m      40 │     this.facade.[32mrequestCerrarEdicion[37m();
+         ╵                 [32m~~~~~~~~~~~~~~~~~~~~[0m
+
+[39m[22m
+[1m[31m[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'requestCerrarEdicion' does not exist on type 'FichaEmpleadoPresentacionFacade'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/containers/ficha-empleado-container/components/ficha-empleado-edit-modal/ficha-empleado-edit-modal.component.html:31:19:
+[37m      31 │         (click)="f.[32mrequestCerrarEdicion[37m()"
+         ╵                    [32m~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component FichaEmpleadoEditModalComponent.
+
+    src/app/features/empleados/containers/ficha-empleado-container/components/ficha-empleado-edit-modal/ficha-empleado-edit-modal.component.ts:18:15:
+[37m      18 │   templateUrl: [32m'./ficha-empleado-edit-modal.component.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+[39m[22m
+[1m[31m[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'requestCerrarEdicion' does not exist on type 'FichaEmpleadoPresentacionFacade'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/containers/ficha-empleado-container/components/ficha-empleado-edit-modal/ficha-empleado-edit-modal.component.html:31:19:
+[37m      31 │         (click)="f.[32mrequestCerrarEdicion[37m()"
+         ╵                    [32m~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component FichaEmpleadoEditModalComponent.
+
+    src/app/features/empleados/containers/ficha-empleado-container/components/ficha-empleado-edit-modal/ficha-empleado-edit-modal.component.ts:18:15:
+[37m      18 │   templateUrl: [32m'./ficha-empleado-edit-modal.component.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+[39m[22m
+[1m[33m[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mNG8113: DatosPersonalesComponent is not used within the template of FichaEmpleadoWorkspaceComponent[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/containers/ficha-empleado-container/components/ficha-empleado-workspace/ficha-empleado-workspace.component.ts:29:4:
+[37m      29 │     [32mDatosPersonalesComponent[37m,
+         ╵     [32m~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mNG8113: ContactoComponent is not used within the template of FichaEmpleadoWorkspaceComponent[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/containers/ficha-empleado-container/components/ficha-empleado-workspace/ficha-empleado-workspace.component.ts:30:4:
+[37m      30 │     [32mContactoComponent[37m,
+         ╵     [32m~~~~~~~~~~~~~~~~~[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mNG8113: ContratoComponent is not used within the template of FichaEmpleadoWorkspaceComponent[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/containers/ficha-empleado-container/components/ficha-empleado-workspace/ficha-empleado-workspace.component.ts:31:4:
+[37m      31 │     [32mContratoComponent[37m,
+         ╵     [32m~~~~~~~~~~~~~~~~~[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mNG8113: PrevisionSaludComponent is not used within the template of FichaEmpleadoWorkspaceComponent[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/containers/ficha-empleado-container/components/ficha-empleado-workspace/ficha-empleado-workspace.component.ts:32:4:
+[37m      32 │     [32mPrevisionSaludComponent[37m,
+         ╵     [32m~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mNG8113: BancarioComponent is not used within the template of FichaEmpleadoWorkspaceComponent[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/containers/ficha-empleado-container/components/ficha-empleado-workspace/ficha-empleado-workspace.component.ts:33:4:
+[37m      33 │     [32mBancarioComponent[37m,
+         ╵     [32m~~~~~~~~~~~~~~~~~[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mNG8113: PerfilLaboralComponent is not used within the template of FichaEmpleadoWorkspaceComponent[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/containers/ficha-empleado-container/components/ficha-empleado-workspace/ficha-empleado-workspace.component.ts:34:4:
+[37m      34 │     [32mPerfilLaboralComponent[37m,
+         ╵     [32m~~~~~~~~~~~~~~~~~~~~~~[0m
+
+[39m[22m
+[1m[31m[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'requestCerrarEdicion' does not exist on type 'FichaEmpleadoPresentacionFacade'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/containers/ficha-empleado-container/components/ficha-empleado-edit-modal/ficha-empleado-edit-modal.component.html:31:19:
+[37m      31 │         (click)="f.[32mrequestCerrarEdicion[37m()"
+         ╵                    [32m~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component FichaEmpleadoEditModalComponent.
+
+    src/app/features/empleados/containers/ficha-empleado-container/components/ficha-empleado-edit-modal/ficha-empleado-edit-modal.component.ts:18:15:
+[37m      18 │   templateUrl: [32m'./ficha-empleado-edit-modal.component.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+[39m[22m
+[1m[33m[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mNG8113: FichaEmpleadoEditModalComponent is not used within the template of FichaEmpleadoOverlaysComponent[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/containers/ficha-empleado-container/components/ficha-empleado-overlays/ficha-empleado-overlays.component.ts:12:47:
+[37m      12 │ ...mmonModule, MessageBoxComponent, [32mFichaEmpleadoEditModalComponent[37m],
+         ╵                                     [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mNG8113: DatosPersonalesComponent is not used within the template of FichaEmpleadoWorkspaceComponent[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/containers/ficha-empleado-container/components/ficha-empleado-workspace/ficha-empleado-workspace.component.ts:29:4:
+[37m      29 │     [32mDatosPersonalesComponent[37m,
+         ╵     [32m~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mNG8113: ContactoComponent is not used within the template of FichaEmpleadoWorkspaceComponent[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/containers/ficha-empleado-container/components/ficha-empleado-workspace/ficha-empleado-workspace.component.ts:30:4:
+[37m      30 │     [32mContactoComponent[37m,
+         ╵     [32m~~~~~~~~~~~~~~~~~[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mNG8113: ContratoComponent is not used within the template of FichaEmpleadoWorkspaceComponent[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/containers/ficha-empleado-container/components/ficha-empleado-workspace/ficha-empleado-workspace.component.ts:31:4:
+[37m      31 │     [32mContratoComponent[37m,
+         ╵     [32m~~~~~~~~~~~~~~~~~[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mNG8113: PrevisionSaludComponent is not used within the template of FichaEmpleadoWorkspaceComponent[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/containers/ficha-empleado-container/components/ficha-empleado-workspace/ficha-empleado-workspace.component.ts:32:4:
+[37m      32 │     [32mPrevisionSaludComponent[37m,
+         ╵     [32m~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mNG8113: BancarioComponent is not used within the template of FichaEmpleadoWorkspaceComponent[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/containers/ficha-empleado-container/components/ficha-empleado-workspace/ficha-empleado-workspace.component.ts:33:4:
+[37m      33 │     [32mBancarioComponent[37m,
+         ╵     [32m~~~~~~~~~~~~~~~~~[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mNG8113: PerfilLaboralComponent is not used within the template of FichaEmpleadoWorkspaceComponent[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/containers/ficha-empleado-container/components/ficha-empleado-workspace/ficha-empleado-workspace.component.ts:34:4:
+[37m      34 │     [32mPerfilLaboralComponent[37m,
+         ╵     [32m~~~~~~~~~~~~~~~~~~~~~~[0m
+
+[39m[22m
+[1m[31m[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'requestCerrarEdicion' does not exist on type 'FichaEmpleadoPresentacionFacade'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/containers/ficha-empleado-container/components/ficha-empleado-edit-modal/ficha-empleado-edit-modal.component.html:31:19:
+[37m      31 │         (click)="f.[32mrequestCerrarEdicion[37m()"
+         ╵                    [32m~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component FichaEmpleadoEditModalComponent.
+
+    src/app/features/empleados/containers/ficha-empleado-container/components/ficha-empleado-edit-modal/ficha-empleado-edit-modal.component.ts:18:15:
+[37m      18 │   templateUrl: [32m'./ficha-empleado-edit-modal.component.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+[39m[22m
+[1m[33m[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mNG8113: DatosPersonalesComponent is not used within the template of FichaEmpleadoWorkspaceComponent[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/containers/ficha-empleado-container/components/ficha-empleado-workspace/ficha-empleado-workspace.component.ts:29:4:
+[37m      29 │     [32mDatosPersonalesComponent[37m,
+         ╵     [32m~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mNG8113: ContactoComponent is not used within the template of FichaEmpleadoWorkspaceComponent[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/containers/ficha-empleado-container/components/ficha-empleado-workspace/ficha-empleado-workspace.component.ts:30:4:
+[37m      30 │     [32mContactoComponent[37m,
+         ╵     [32m~~~~~~~~~~~~~~~~~[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mNG8113: ContratoComponent is not used within the template of FichaEmpleadoWorkspaceComponent[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/containers/ficha-empleado-container/components/ficha-empleado-workspace/ficha-empleado-workspace.component.ts:31:4:
+[37m      31 │     [32mContratoComponent[37m,
+         ╵     [32m~~~~~~~~~~~~~~~~~[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mNG8113: PrevisionSaludComponent is not used within the template of FichaEmpleadoWorkspaceComponent[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/containers/ficha-empleado-container/components/ficha-empleado-workspace/ficha-empleado-workspace.component.ts:32:4:
+[37m      32 │     [32mPrevisionSaludComponent[37m,
+         ╵     [32m~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mNG8113: BancarioComponent is not used within the template of FichaEmpleadoWorkspaceComponent[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/containers/ficha-empleado-container/components/ficha-empleado-workspace/ficha-empleado-workspace.component.ts:33:4:
+[37m      33 │     [32mBancarioComponent[37m,
+         ╵     [32m~~~~~~~~~~~~~~~~~[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mNG8113: PerfilLaboralComponent is not used within the template of FichaEmpleadoWorkspaceComponent[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/containers/ficha-empleado-container/components/ficha-empleado-workspace/ficha-empleado-workspace.component.ts:34:4:
+[37m      34 │     [32mPerfilLaboralComponent[37m,
+         ╵     [32m~~~~~~~~~~~~~~~~~~~~~~[0m
+
+[39m[22m
+[1m[31m[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'requestCerrarEdicion' does not exist on type 'FichaEmpleadoPresentacionFacade'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/containers/ficha-empleado-container/components/ficha-empleado-edit-modal/ficha-empleado-edit-modal.component.html:31:19:
+[37m      31 │         (click)="f.[32mrequestCerrarEdicion[37m()"
+         ╵                    [32m~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component FichaEmpleadoEditModalComponent.
+
+    src/app/features/empleados/containers/ficha-empleado-container/components/ficha-empleado-edit-modal/ficha-empleado-edit-modal.component.ts:18:15:
+[37m      18 │   templateUrl: [32m'./ficha-empleado-edit-modal.component.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+[39m[22m
+[1m[33m[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mNG8113: DatosPersonalesComponent is not used within the template of FichaEmpleadoWorkspaceComponent[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/containers/ficha-empleado-container/components/ficha-empleado-workspace/ficha-empleado-workspace.component.ts:29:4:
+[37m      29 │     [32mDatosPersonalesComponent[37m,
+         ╵     [32m~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mNG8113: ContactoComponent is not used within the template of FichaEmpleadoWorkspaceComponent[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/containers/ficha-empleado-container/components/ficha-empleado-workspace/ficha-empleado-workspace.component.ts:30:4:
+[37m      30 │     [32mContactoComponent[37m,
+         ╵     [32m~~~~~~~~~~~~~~~~~[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mNG8113: ContratoComponent is not used within the template of FichaEmpleadoWorkspaceComponent[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/containers/ficha-empleado-container/components/ficha-empleado-workspace/ficha-empleado-workspace.component.ts:31:4:
+[37m      31 │     [32mContratoComponent[37m,
+         ╵     [32m~~~~~~~~~~~~~~~~~[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mNG8113: PrevisionSaludComponent is not used within the template of FichaEmpleadoWorkspaceComponent[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/containers/ficha-empleado-container/components/ficha-empleado-workspace/ficha-empleado-workspace.component.ts:32:4:
+[37m      32 │     [32mPrevisionSaludComponent[37m,
+         ╵     [32m~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mNG8113: BancarioComponent is not used within the template of FichaEmpleadoWorkspaceComponent[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/containers/ficha-empleado-container/components/ficha-empleado-workspace/ficha-empleado-workspace.component.ts:33:4:
+[37m      33 │     [32mBancarioComponent[37m,
+         ╵     [32m~~~~~~~~~~~~~~~~~[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mNG8113: PerfilLaboralComponent is not used within the template of FichaEmpleadoWorkspaceComponent[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/containers/ficha-empleado-container/components/ficha-empleado-workspace/ficha-empleado-workspace.component.ts:34:4:
+[37m      34 │     [32mPerfilLaboralComponent[37m,
+         ╵     [32m~~~~~~~~~~~~~~~~~~~~~~[0m
+
+[39m[22m
+[1m[31m[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'requestCerrarEdicion' does not exist on type 'FichaEmpleadoPresentacionFacade'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/containers/ficha-empleado-container/components/ficha-empleado-edit-modal/ficha-empleado-edit-modal.component.html:31:19:
+[37m      31 │         (click)="f.[32mrequestCerrarEdicion[37m()"
+         ╵                    [32m~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component FichaEmpleadoEditModalComponent.
+
+    src/app/features/empleados/containers/ficha-empleado-container/components/ficha-empleado-edit-modal/ficha-empleado-edit-modal.component.ts:18:15:
+[37m      18 │   templateUrl: [32m'./ficha-empleado-edit-modal.component.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+[39m[22m
+[1m[33m[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mNG8113: DatosPersonalesComponent is not used within the template of FichaEmpleadoWorkspaceComponent[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/containers/ficha-empleado-container/components/ficha-empleado-workspace/ficha-empleado-workspace.component.ts:29:4:
+[37m      29 │     [32mDatosPersonalesComponent[37m,
+         ╵     [32m~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mNG8113: ContactoComponent is not used within the template of FichaEmpleadoWorkspaceComponent[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/containers/ficha-empleado-container/components/ficha-empleado-workspace/ficha-empleado-workspace.component.ts:30:4:
+[37m      30 │     [32mContactoComponent[37m,
+         ╵     [32m~~~~~~~~~~~~~~~~~[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mNG8113: ContratoComponent is not used within the template of FichaEmpleadoWorkspaceComponent[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/containers/ficha-empleado-container/components/ficha-empleado-workspace/ficha-empleado-workspace.component.ts:31:4:
+[37m      31 │     [32mContratoComponent[37m,
+         ╵     [32m~~~~~~~~~~~~~~~~~[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mNG8113: PrevisionSaludComponent is not used within the template of FichaEmpleadoWorkspaceComponent[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/containers/ficha-empleado-container/components/ficha-empleado-workspace/ficha-empleado-workspace.component.ts:32:4:
+[37m      32 │     [32mPrevisionSaludComponent[37m,
+         ╵     [32m~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mNG8113: BancarioComponent is not used within the template of FichaEmpleadoWorkspaceComponent[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/containers/ficha-empleado-container/components/ficha-empleado-workspace/ficha-empleado-workspace.component.ts:33:4:
+[37m      33 │     [32mBancarioComponent[37m,
+         ╵     [32m~~~~~~~~~~~~~~~~~[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mNG8113: PerfilLaboralComponent is not used within the template of FichaEmpleadoWorkspaceComponent[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/containers/ficha-empleado-container/components/ficha-empleado-workspace/ficha-empleado-workspace.component.ts:34:4:
+[37m      34 │     [32mPerfilLaboralComponent[37m,
+         ╵     [32m~~~~~~~~~~~~~~~~~~~~~~[0m
+
+[39m[22m
+[1m[31m[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'requestCerrarEdicion' does not exist on type 'FichaEmpleadoPresentacionFacade'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/containers/ficha-empleado-container/components/ficha-empleado-edit-modal/ficha-empleado-edit-modal.component.html:31:19:
+[37m      31 │         (click)="f.[32mrequestCerrarEdicion[37m()"
+         ╵                    [32m~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component FichaEmpleadoEditModalComponent.
+
+    src/app/features/empleados/containers/ficha-empleado-container/components/ficha-empleado-edit-modal/ficha-empleado-edit-modal.component.ts:18:15:
+[37m      18 │   templateUrl: [32m'./ficha-empleado-edit-modal.component.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+[39m[22m
+[1m[33m[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mNG8113: DatosPersonalesComponent is not used within the template of FichaEmpleadoWorkspaceComponent[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/containers/ficha-empleado-container/components/ficha-empleado-workspace/ficha-empleado-workspace.component.ts:29:4:
+[37m      29 │     [32mDatosPersonalesComponent[37m,
+         ╵     [32m~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mNG8113: ContactoComponent is not used within the template of FichaEmpleadoWorkspaceComponent[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/containers/ficha-empleado-container/components/ficha-empleado-workspace/ficha-empleado-workspace.component.ts:30:4:
+[37m      30 │     [32mContactoComponent[37m,
+         ╵     [32m~~~~~~~~~~~~~~~~~[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mNG8113: ContratoComponent is not used within the template of FichaEmpleadoWorkspaceComponent[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/containers/ficha-empleado-container/components/ficha-empleado-workspace/ficha-empleado-workspace.component.ts:31:4:
+[37m      31 │     [32mContratoComponent[37m,
+         ╵     [32m~~~~~~~~~~~~~~~~~[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mNG8113: PrevisionSaludComponent is not used within the template of FichaEmpleadoWorkspaceComponent[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/containers/ficha-empleado-container/components/ficha-empleado-workspace/ficha-empleado-workspace.component.ts:32:4:
+[37m      32 │     [32mPrevisionSaludComponent[37m,
+         ╵     [32m~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mNG8113: BancarioComponent is not used within the template of FichaEmpleadoWorkspaceComponent[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/containers/ficha-empleado-container/components/ficha-empleado-workspace/ficha-empleado-workspace.component.ts:33:4:
+[37m      33 │     [32mBancarioComponent[37m,
+         ╵     [32m~~~~~~~~~~~~~~~~~[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mNG8113: PerfilLaboralComponent is not used within the template of FichaEmpleadoWorkspaceComponent[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/containers/ficha-empleado-container/components/ficha-empleado-workspace/ficha-empleado-workspace.component.ts:34:4:
+[37m      34 │     [32mPerfilLaboralComponent[37m,
+         ╵     [32m~~~~~~~~~~~~~~~~~~~~~~[0m
+
+[39m[22m
+[1m[31m[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'requestCerrarEdicion' does not exist on type 'FichaEmpleadoPresentacionFacade'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/containers/ficha-empleado-container/components/ficha-empleado-edit-modal/ficha-empleado-edit-modal.component.html:31:19:
+[37m      31 │         (click)="f.[32mrequestCerrarEdicion[37m()"
+         ╵                    [32m~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component FichaEmpleadoEditModalComponent.
+
+    src/app/features/empleados/containers/ficha-empleado-container/components/ficha-empleado-edit-modal/ficha-empleado-edit-modal.component.ts:18:15:
+[37m      18 │   templateUrl: [32m'./ficha-empleado-edit-modal.component.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+[39m[22m
+[1m[33m[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mNG8113: DatosPersonalesComponent is not used within the template of FichaEmpleadoWorkspaceComponent[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/containers/ficha-empleado-container/components/ficha-empleado-workspace/ficha-empleado-workspace.component.ts:29:4:
+[37m      29 │     [32mDatosPersonalesComponent[37m,
+         ╵     [32m~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mNG8113: ContactoComponent is not used within the template of FichaEmpleadoWorkspaceComponent[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/containers/ficha-empleado-container/components/ficha-empleado-workspace/ficha-empleado-workspace.component.ts:30:4:
+[37m      30 │     [32mContactoComponent[37m,
+         ╵     [32m~~~~~~~~~~~~~~~~~[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mNG8113: ContratoComponent is not used within the template of FichaEmpleadoWorkspaceComponent[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/containers/ficha-empleado-container/components/ficha-empleado-workspace/ficha-empleado-workspace.component.ts:31:4:
+[37m      31 │     [32mContratoComponent[37m,
+         ╵     [32m~~~~~~~~~~~~~~~~~[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mNG8113: PrevisionSaludComponent is not used within the template of FichaEmpleadoWorkspaceComponent[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/containers/ficha-empleado-container/components/ficha-empleado-workspace/ficha-empleado-workspace.component.ts:32:4:
+[37m      32 │     [32mPrevisionSaludComponent[37m,
+         ╵     [32m~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mNG8113: BancarioComponent is not used within the template of FichaEmpleadoWorkspaceComponent[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/containers/ficha-empleado-container/components/ficha-empleado-workspace/ficha-empleado-workspace.component.ts:33:4:
+[37m      33 │     [32mBancarioComponent[37m,
+         ╵     [32m~~~~~~~~~~~~~~~~~[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mNG8113: PerfilLaboralComponent is not used within the template of FichaEmpleadoWorkspaceComponent[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/containers/ficha-empleado-container/components/ficha-empleado-workspace/ficha-empleado-workspace.component.ts:34:4:
+[37m      34 │     [32mPerfilLaboralComponent[37m,
+         ╵     [32m~~~~~~~~~~~~~~~~~~~~~~[0m
+
+[39m[22m
+[1m[31m[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'requestCerrarEdicion' does not exist on type 'FichaEmpleadoPresentacionFacade'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/containers/ficha-empleado-container/components/ficha-empleado-edit-modal/ficha-empleado-edit-modal.component.html:31:19:
+[37m      31 │         (click)="f.[32mrequestCerrarEdicion[37m()"
+         ╵                    [32m~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component FichaEmpleadoEditModalComponent.
+
+    src/app/features/empleados/containers/ficha-empleado-container/components/ficha-empleado-edit-modal/ficha-empleado-edit-modal.component.ts:18:15:
+[37m      18 │   templateUrl: [32m'./ficha-empleado-edit-modal.component.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+[39m[22m
+[1m[33m[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mNG8113: DatosPersonalesComponent is not used within the template of FichaEmpleadoWorkspaceComponent[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/containers/ficha-empleado-container/components/ficha-empleado-workspace/ficha-empleado-workspace.component.ts:29:4:
+[37m      29 │     [32mDatosPersonalesComponent[37m,
+         ╵     [32m~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mNG8113: ContactoComponent is not used within the template of FichaEmpleadoWorkspaceComponent[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/containers/ficha-empleado-container/components/ficha-empleado-workspace/ficha-empleado-workspace.component.ts:30:4:
+[37m      30 │     [32mContactoComponent[37m,
+         ╵     [32m~~~~~~~~~~~~~~~~~[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mNG8113: ContratoComponent is not used within the template of FichaEmpleadoWorkspaceComponent[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/containers/ficha-empleado-container/components/ficha-empleado-workspace/ficha-empleado-workspace.component.ts:31:4:
+[37m      31 │     [32mContratoComponent[37m,
+         ╵     [32m~~~~~~~~~~~~~~~~~[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mNG8113: PrevisionSaludComponent is not used within the template of FichaEmpleadoWorkspaceComponent[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/containers/ficha-empleado-container/components/ficha-empleado-workspace/ficha-empleado-workspace.component.ts:32:4:
+[37m      32 │     [32mPrevisionSaludComponent[37m,
+         ╵     [32m~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mNG8113: BancarioComponent is not used within the template of FichaEmpleadoWorkspaceComponent[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/containers/ficha-empleado-container/components/ficha-empleado-workspace/ficha-empleado-workspace.component.ts:33:4:
+[37m      33 │     [32mBancarioComponent[37m,
+         ╵     [32m~~~~~~~~~~~~~~~~~[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mNG8113: PerfilLaboralComponent is not used within the template of FichaEmpleadoWorkspaceComponent[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/containers/ficha-empleado-container/components/ficha-empleado-workspace/ficha-empleado-workspace.component.ts:34:4:
+[37m      34 │     [32mPerfilLaboralComponent[37m,
+         ╵     [32m~~~~~~~~~~~~~~~~~~~~~~[0m
+
+[39m[22m
+[1m[31m[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'requestCerrarEdicion' does not exist on type 'FichaEmpleadoPresentacionFacade'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/containers/ficha-empleado-container/components/ficha-empleado-edit-modal/ficha-empleado-edit-modal.component.html:31:19:
+[37m      31 │         (click)="f.[32mrequestCerrarEdicion[37m()"
+         ╵                    [32m~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component FichaEmpleadoEditModalComponent.
+
+    src/app/features/empleados/containers/ficha-empleado-container/components/ficha-empleado-edit-modal/ficha-empleado-edit-modal.component.ts:18:15:
+[37m      18 │   templateUrl: [32m'./ficha-empleado-edit-modal.component.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+[39m[22m
+[1m[33m[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mNG8113: DatosPersonalesComponent is not used within the template of FichaEmpleadoWorkspaceComponent[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/containers/ficha-empleado-container/components/ficha-empleado-workspace/ficha-empleado-workspace.component.ts:29:4:
+[37m      29 │     [32mDatosPersonalesComponent[37m,
+         ╵     [32m~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mNG8113: ContactoComponent is not used within the template of FichaEmpleadoWorkspaceComponent[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/containers/ficha-empleado-container/components/ficha-empleado-workspace/ficha-empleado-workspace.component.ts:30:4:
+[37m      30 │     [32mContactoComponent[37m,
+         ╵     [32m~~~~~~~~~~~~~~~~~[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mNG8113: ContratoComponent is not used within the template of FichaEmpleadoWorkspaceComponent[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/containers/ficha-empleado-container/components/ficha-empleado-workspace/ficha-empleado-workspace.component.ts:31:4:
+[37m      31 │     [32mContratoComponent[37m,
+         ╵     [32m~~~~~~~~~~~~~~~~~[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mNG8113: PrevisionSaludComponent is not used within the template of FichaEmpleadoWorkspaceComponent[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/containers/ficha-empleado-container/components/ficha-empleado-workspace/ficha-empleado-workspace.component.ts:32:4:
+[37m      32 │     [32mPrevisionSaludComponent[37m,
+         ╵     [32m~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mNG8113: BancarioComponent is not used within the template of FichaEmpleadoWorkspaceComponent[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/containers/ficha-empleado-container/components/ficha-empleado-workspace/ficha-empleado-workspace.component.ts:33:4:
+[37m      33 │     [32mBancarioComponent[37m,
+         ╵     [32m~~~~~~~~~~~~~~~~~[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mNG8113: PerfilLaboralComponent is not used within the template of FichaEmpleadoWorkspaceComponent[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/containers/ficha-empleado-container/components/ficha-empleado-workspace/ficha-empleado-workspace.component.ts:34:4:
+[37m      34 │     [32mPerfilLaboralComponent[37m,
+         ╵     [32m~~~~~~~~~~~~~~~~~~~~~~[0m
+
+[39m[22m
+[1m[31m[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'requestCerrarEdicion' does not exist on type 'FichaEmpleadoPresentacionFacade'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/containers/ficha-empleado-container/components/ficha-empleado-edit-modal/ficha-empleado-edit-modal.component.html:31:19:
+[37m      31 │         (click)="f.[32mrequestCerrarEdicion[37m()"
+         ╵                    [32m~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component FichaEmpleadoEditModalComponent.
+
+    src/app/features/empleados/containers/ficha-empleado-container/components/ficha-empleado-edit-modal/ficha-empleado-edit-modal.component.ts:18:15:
+[37m      18 │   templateUrl: [32m'./ficha-empleado-edit-modal.component.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+[39m[22m
+[1m[33m[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mNG8113: DatosPersonalesComponent is not used within the template of FichaEmpleadoWorkspaceComponent[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/containers/ficha-empleado-container/components/ficha-empleado-workspace/ficha-empleado-workspace.component.ts:29:4:
+[37m      29 │     [32mDatosPersonalesComponent[37m,
+         ╵     [32m~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mNG8113: ContactoComponent is not used within the template of FichaEmpleadoWorkspaceComponent[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/containers/ficha-empleado-container/components/ficha-empleado-workspace/ficha-empleado-workspace.component.ts:30:4:
+[37m      30 │     [32mContactoComponent[37m,
+         ╵     [32m~~~~~~~~~~~~~~~~~[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mNG8113: ContratoComponent is not used within the template of FichaEmpleadoWorkspaceComponent[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/containers/ficha-empleado-container/components/ficha-empleado-workspace/ficha-empleado-workspace.component.ts:31:4:
+[37m      31 │     [32mContratoComponent[37m,
+         ╵     [32m~~~~~~~~~~~~~~~~~[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mNG8113: PrevisionSaludComponent is not used within the template of FichaEmpleadoWorkspaceComponent[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/containers/ficha-empleado-container/components/ficha-empleado-workspace/ficha-empleado-workspace.component.ts:32:4:
+[37m      32 │     [32mPrevisionSaludComponent[37m,
+         ╵     [32m~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mNG8113: BancarioComponent is not used within the template of FichaEmpleadoWorkspaceComponent[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/containers/ficha-empleado-container/components/ficha-empleado-workspace/ficha-empleado-workspace.component.ts:33:4:
+[37m      33 │     [32mBancarioComponent[37m,
+         ╵     [32m~~~~~~~~~~~~~~~~~[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mNG8113: PerfilLaboralComponent is not used within the template of FichaEmpleadoWorkspaceComponent[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/containers/ficha-empleado-container/components/ficha-empleado-workspace/ficha-empleado-workspace.component.ts:34:4:
+[37m      34 │     [32mPerfilLaboralComponent[37m,
+         ╵     [32m~~~~~~~~~~~~~~~~~~~~~~[0m
+
+[39m[22m
+[1m[31m[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'requestCerrarEdicion' does not exist on type 'FichaEmpleadoPresentacionFacade'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/containers/ficha-empleado-container/components/ficha-empleado-edit-modal/ficha-empleado-edit-modal.component.html:31:19:
+[37m      31 │         (click)="f.[32mrequestCerrarEdicion[37m()"
+         ╵                    [32m~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component FichaEmpleadoEditModalComponent.
+
+    src/app/features/empleados/containers/ficha-empleado-container/components/ficha-empleado-edit-modal/ficha-empleado-edit-modal.component.ts:18:15:
+[37m      18 │   templateUrl: [32m'./ficha-empleado-edit-modal.component.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+[39m[22m
+[1m[31m[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'requestCerrarEdicion' does not exist on type 'FichaEmpleadoPresentacionFacade'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/containers/ficha-empleado-container/components/ficha-empleado-edit-modal/ficha-empleado-edit-modal.component.html:31:19:
+[37m      31 │         (click)="f.[32mrequestCerrarEdicion[37m()"
+         ╵                    [32m~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component FichaEmpleadoEditModalComponent.
+
+    src/app/features/empleados/containers/ficha-empleado-container/components/ficha-empleado-edit-modal/ficha-empleado-edit-modal.component.ts:18:15:
+[37m      18 │   templateUrl: [32m'./ficha-empleado-edit-modal.component.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+[39m[22m
+[1m[31m[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'requestCerrarEdicion' does not exist on type 'FichaEmpleadoPresentacionFacade'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/containers/ficha-empleado-container/components/ficha-empleado-edit-modal/ficha-empleado-edit-modal.component.html:31:19:
+[37m      31 │         (click)="f.[32mrequestCerrarEdicion[37m()"
+         ╵                    [32m~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component FichaEmpleadoEditModalComponent.
+
+    src/app/features/empleados/containers/ficha-empleado-container/components/ficha-empleado-edit-modal/ficha-empleado-edit-modal.component.ts:18:15:
+[37m      18 │   templateUrl: [32m'./ficha-empleado-edit-modal.component.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+[39m[22m
+[1m[31m[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'requestCerrarEdicion' does not exist on type 'FichaEmpleadoPresentacionFacade'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/containers/ficha-empleado-container/components/ficha-empleado-edit-modal/ficha-empleado-edit-modal.component.html:31:19:
+[37m      31 │         (click)="f.[32mrequestCerrarEdicion[37m()"
+         ╵                    [32m~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component FichaEmpleadoEditModalComponent.
+
+    src/app/features/empleados/containers/ficha-empleado-container/components/ficha-empleado-edit-modal/ficha-empleado-edit-modal.component.ts:18:15:
+[37m      18 │   templateUrl: [32m'./ficha-empleado-edit-modal.component.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+[39m[22m
+[1m[31m[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'requestCerrarEdicion' does not exist on type 'FichaEmpleadoPresentacionFacade'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/containers/ficha-empleado-container/components/ficha-empleado-edit-modal/ficha-empleado-edit-modal.component.html:31:19:
+[37m      31 │         (click)="f.[32mrequestCerrarEdicion[37m()"
+         ╵                    [32m~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component FichaEmpleadoEditModalComponent.
+
+    src/app/features/empleados/containers/ficha-empleado-container/components/ficha-empleado-edit-modal/ficha-empleado-edit-modal.component.ts:18:15:
+[37m      18 │   templateUrl: [32m'./ficha-empleado-edit-modal.component.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+[39m[22m
+[1m[31m[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'requestCerrarEdicion' does not exist on type 'FichaEmpleadoPresentacionFacade'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/containers/ficha-empleado-container/components/ficha-empleado-edit-modal/ficha-empleado-edit-modal.component.html:31:19:
+[37m      31 │         (click)="f.[32mrequestCerrarEdicion[37m()"
+         ╵                    [32m~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component FichaEmpleadoEditModalComponent.
+
+    src/app/features/empleados/containers/ficha-empleado-container/components/ficha-empleado-edit-modal/ficha-empleado-edit-modal.component.ts:18:15:
+[37m      18 │   templateUrl: [32m'./ficha-empleado-edit-modal.component.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+[39m[22m

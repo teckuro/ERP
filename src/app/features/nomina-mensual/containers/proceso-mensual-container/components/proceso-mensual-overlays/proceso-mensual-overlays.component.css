@@ -1,0 +1,4 @@
+/* Mismo criterio que ficha: el host no reserva hueco en el shell. */
+:host {
+  display: contents;
+}

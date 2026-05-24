@@ -38,6 +38,12 @@
   --employee-floating-ui-z: var(--emp-floating-z);
   --erp-select-panel-z: var(--emp-floating-z);
 
+  --form-bg: #f8fafc;
+  --form-surface: var(--emp-panel);
+  --form-border: var(--emp-border);
+  --form-text: var(--emp-text);
+  --form-muted: var(--emp-muted);
+
   color: var(--emp-text);
   font-size: var(--erp-text-md, 0.8rem);
   line-height: 1.45;

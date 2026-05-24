@@ -17,7 +17,7 @@ import { ProcesoMensualPresentacionFacade } from '../../facade/proceso-mensual-p
     ProcesoMensualInformacionModalComponent,
   ],
   templateUrl: './proceso-mensual-overlays.component.html',
-  styleUrl: '../../proceso-mensual-container.css',
+  styleUrls: ['./proceso-mensual-overlays.component.css', '../../proceso-mensual-container.css'],
 })
 export class ProcesoMensualOverlaysComponent {
   readonly facade = inject(ProcesoMensualPresentacionFacade);
