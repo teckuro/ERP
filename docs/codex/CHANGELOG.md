@@ -1,5 +1,17 @@
 # CHANGELOG
 
+## 2026-05-24 - EMP-FICHA-EXPEDIENTE-EDICION-SECCION-UX-04
+
+- **Ficha empleado:** modal de edición por bloque integrado al expediente (acciones en cabecera, sin footer gris, grilla compacta).
+- **Solo presentación** en `ficha-empleado-edit-modal` + copy `saveBlockHint`; sin cambios de guardado ni SQL.
+- **Doc:** `emp-ficha-expediente-edicion-seccion-ux-04.md`.
+
+## 2026-05-24 - EMP-FICHA-EXPEDIENTE-SECCIONES-LECTURA-UX-03
+
+- **Ficha empleado:** jerarquía lectura en bloques editoriales (título, labels secundarios, valores legibles, vacíos suaves); sin mini-cards por sección.
+- **Solo CSS local** + `isMissingValue` de presentación; sin cambios de guardado, servicios ni SQL.
+- **Doc:** `emp-ficha-expediente-secciones-lectura-ux-03.md`.
+
 ## 2026-05-22 - EMP-FICHA-EXPEDIENTE-FULLWORKSPACE-UX-02
 
 - **Ficha empleado:** expediente integrado al workspace (shell sin card exterior; bloques tipo sección; header franja).

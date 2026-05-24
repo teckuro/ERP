@@ -1,3 +1,30 @@
+## 2026-05-24 - Calendario: popover con Floating UI (modal y ficha)
+
+- **Cambio:** `app-calendar-input` posiciona el popover con `position: fixed` + `@floating-ui/dom` (flip/shift), igual que search-select; evita recorte en modal con scroll.
+- **Archivo:** `calendar-input.component.ts`.
+
+## 2026-05-24 - Ficha empleado: popovers sobre modal edición
+
+- **Cambio:** backdrop `z-index: 11050`; tokens flotantes `11070`; scroll en `.ficha-edit-form`; `overflow: visible` en shell para que select/calendario/tips no queden recortados.
+- **Archivo:** `ficha-empleado-edit-modal.component.css`.
+
+## 2026-05-24 - Ficha empleado: modal edición — altura controles 22px
+
+- **Cambio:** inputs/select en modal vuelven a `var(--erp-control-height, 22px)` (se quitó override 34px de UX-04).
+- **Archivo:** `ficha-empleado-edit-modal.component.css`.
+
+## 2026-05-24 - Ficha empleado: modal edición expediente (UX-04)
+
+- **Cambio:** `ficha-empleado-edit-modal` con acciones en cabecera, sin footer gris; shell menos card; labels/inputs compactos en grilla 4→2→1; hint «Los cambios se aplicarán solo a esta sección».
+- **Archivos:** `ficha-empleado-edit-modal.component.html/css`, `ficha-empleado-presentacion.facade.ts` (`saveBlockHint`).
+- **No tocado:** guardado, formularios hijos, estilos globales, SQL.
+
+## 2026-05-24 - Ficha empleado: lectura secciones expediente (UX-03)
+
+- **Cambio:** bloques editoriales con cabecera título + Editar + línea fina; labels uppercase secundarios; valores más legibles; vacíos/pendientes en tono suave; sin bandas `form-bg` por sección en tab lectura.
+- **Archivos:** `ficha-empleado-detalle.css`, `ficha-empleado-expediente.css`, `ficha-empleado-responsive.css`, `ficha-empleado-presentacion.facade.ts` (`isMissingValue`).
+- **No tocado:** estilos globales, guardado, servicios, SQL, modal edición.
+
 ## 2026-05-23 - Nómina mensual: estado sin duplicidad (shell + focus)
 
 - **Cambio:** se elimina el bloque lateral «Estado del período»; el chip de estado queda solo en el topbar del shell; `payroll-focus__copy` muestra título y lead (sin chip duplicado).

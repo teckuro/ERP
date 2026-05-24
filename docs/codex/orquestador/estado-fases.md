@@ -1,4 +1,24 @@
 ﻿
+## EMP-FICHA-EXPEDIENTE-EDICION-SECCION-UX-04 - Modal edición expediente
+
+| Campo | Estado |
+| ----- | ------ |
+| Estado | Implementada |
+| Tipo | UI presentación (modal edición) |
+| Alcance | Cabecera con Cancelar/Guardar; sin footer card; grilla y campos compactos; copy ayuda neutro. |
+| Restricciones | Sin SQL, payloads, formularios hijos, estilos globales. |
+| Documento | [../modulos/empleados/emp-ficha-expediente-edicion-seccion-ux-04.md](../modulos/empleados/emp-ficha-expediente-edicion-seccion-ux-04.md) |
+
+## EMP-FICHA-EXPEDIENTE-SECCIONES-LECTURA-UX-03 - Lectura secciones expediente
+
+| Campo | Estado |
+| ----- | ------ |
+| Estado | Implementada |
+| Tipo | UI presentación (CSS local + `isMissingValue`) |
+| Alcance | Jerarquía título/label/valor/vacío en `.detail-block--editorial`; sin cards; tab lectura plano. |
+| Restricciones | Sin SQL, payloads, estilos globales, `angular.json`. |
+| Documento | [../modulos/empleados/emp-ficha-expediente-secciones-lectura-ux-03.md](../modulos/empleados/emp-ficha-expediente-secciones-lectura-ux-03.md) |
+
 ## EMP-FICHA-UX-REPLANTEO-01 - Ficha consulta + modal edición
 
 | Campo | Estado |

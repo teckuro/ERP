@@ -516,8 +516,8 @@ export class FichaEmpleadoPresentacionFacade implements OnInit {
     return this.isSavingSection() ? 'Guardando...' : 'Guardar';
   }
 
-  saveBlockHint(blockTitle: string): string {
-    return `Se guardará solo ${blockTitle}. El resto de la ficha queda sin cambios.`;
+  saveBlockHint(_blockTitle: string): string {
+    return 'Los cambios se aplicarán solo a esta sección.';
   }
 
   isEditingCurrentTab(): boolean {
@@ -1376,7 +1376,17 @@ export class FichaEmpleadoPresentacionFacade implements OnInit {
 
   isMissingValue(value: string): boolean {
     const normalized = value.trim().toLowerCase();
-    return normalized === 'sin información' || normalized === 'sin informacion';
+    if (!normalized) {
+      return true;
+    }
+    if (normalized === 'sin información' || normalized === 'sin informacion' || normalized === 'no informado') {
+      return true;
+    }
+    return (
+      normalized.endsWith(' pendiente') ||
+      normalized.endsWith(' pendientes') ||
+      normalized.includes('pendiente de')
+    );
   }
 
   private mapFichaEmpleadoToEvaluacionInput(empleado: EmpleadoListado): CrearEmpleadoPayload {

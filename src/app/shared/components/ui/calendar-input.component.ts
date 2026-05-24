@@ -4,14 +4,19 @@ import {
   ElementRef,
   EventEmitter,
   HostListener,
+  Injector,
   Input,
+  OnDestroy,
   Output,
+  ViewChild,
+  afterNextRender,
   forwardRef,
   inject,
 } from '@angular/core';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { LucideAngularModule } from 'lucide-angular';
 import { ChevronLeft, ChevronRight, X } from 'lucide-angular/src/icons';
+import { autoUpdate, computePosition, flip, offset, shift } from '@floating-ui/dom';
 import {
   buildCalendarYearOptions,
   resolveCalendarYearBounds,
@@ -41,6 +46,7 @@ interface CalendarDay {
   template: `
     <div class="calendar-root" [class.is-disabled]="disabled">
       <div
+        #calendarField
         class="calendar-field"
         [class.is-invalid]="invalid"
         [class.has-inset-label]="insetLabel"
@@ -85,7 +91,13 @@ interface CalendarDay {
       </div>
 
       @if (open) {
-        <div class="calendar-popover" role="dialog" aria-label="Seleccionar fecha">
+        <div
+          #calendarPopover
+          class="calendar-popover"
+          [class.calendar-popover--ready]="floatingLayoutDone"
+          role="dialog"
+          aria-label="Seleccionar fecha"
+        >
           <div class="calendar-head">
             <button
               type="button"
@@ -170,6 +182,7 @@ interface CalendarDay {
       :host {
         display: block;
         width: 100%;
+        --erp-floating-ui-z: 11060;
       }
 
       .calendar-root {
@@ -342,17 +355,22 @@ interface CalendarDay {
       }
 
       .calendar-popover {
-        position: absolute;
-        top: calc(100% + 6px);
+        position: fixed;
+        top: 0;
         left: 0;
-        z-index: 80;
+        z-index: var(--erp-floating-ui-z, 11060);
         width: min(18rem, calc(100vw - 2rem));
+        visibility: hidden;
         border: 1px solid #e5e7eb;
         border-radius: 6px;
         background: #ffffff;
         padding: 10px;
         box-sizing: border-box;
         box-shadow: 0 12px 28px rgba(17, 24, 39, 0.12);
+      }
+
+      .calendar-popover--ready {
+        visibility: visible;
       }
 
       .calendar-head {
@@ -509,8 +527,18 @@ interface CalendarDay {
     `,
   ],
 })
-export class CalendarInputComponent implements ControlValueAccessor {
+export class CalendarInputComponent implements ControlValueAccessor, OnDestroy {
   private readonly host = inject(ElementRef<HTMLElement>);
+  private readonly injector = inject(Injector);
+
+  @ViewChild('calendarField')
+  private calendarFieldRef?: ElementRef<HTMLElement>;
+
+  @ViewChild('calendarPopover')
+  private calendarPopoverRef?: ElementRef<HTMLElement>;
+
+  private floatingDispose?: () => void;
+  floatingLayoutDone = false;
 
   @Input() id = '';
   @Input() placeholder = 'dd/mm/aaaa';
@@ -552,6 +580,10 @@ export class CalendarInputComponent implements ControlValueAccessor {
     this.refreshCalendar();
   }
 
+  ngOnDestroy(): void {
+    this.detachFloating();
+  }
+
   @HostListener('document:click', ['$event'])
   closeOnOutsideClick(event: MouseEvent): void {
     const target = event.target;
@@ -587,8 +619,12 @@ export class CalendarInputComponent implements ControlValueAccessor {
       return;
     }
 
-    this.open = !this.open;
-    this.refreshCalendar();
+    if (this.open) {
+      this.closeCalendar();
+      return;
+    }
+
+    this.openCalendar();
   }
 
   openCalendar(event?: Event): void {
@@ -599,11 +635,61 @@ export class CalendarInputComponent implements ControlValueAccessor {
     }
 
     this.open = true;
+    this.floatingLayoutDone = false;
     this.refreshCalendar();
+    afterNextRender(() => this.attachFloating(), { injector: this.injector });
   }
 
   closeCalendar(): void {
     this.open = false;
+    this.floatingLayoutDone = false;
+    this.detachFloating();
+  }
+
+  private attachFloating(): void {
+    this.detachFloating();
+
+    const reference = this.calendarFieldRef?.nativeElement;
+    const floating = this.calendarPopoverRef?.nativeElement;
+
+    if (!reference || !floating || !this.open) {
+      return;
+    }
+
+    this.floatingDispose = autoUpdate(reference, floating, () => {
+      void this.updateFloatingPosition();
+    });
+  }
+
+  private detachFloating(): void {
+    this.floatingDispose?.();
+    this.floatingDispose = undefined;
+  }
+
+  private async updateFloatingPosition(): Promise<void> {
+    const reference = this.calendarFieldRef?.nativeElement;
+    const floating = this.calendarPopoverRef?.nativeElement;
+
+    if (!reference || !floating || !this.open) {
+      return;
+    }
+
+    const result = await computePosition(reference, floating, {
+      placement: 'bottom-start',
+      strategy: 'fixed',
+      middleware: [offset(6), flip({ padding: 8 }), shift({ padding: 8 })],
+    });
+
+    floating.style.position = result.strategy;
+    floating.style.transform = 'none';
+    floating.style.left = `${Math.round(result.x)}px`;
+    floating.style.top = `${Math.round(result.y)}px`;
+    floating.style.right = 'auto';
+    floating.style.bottom = 'auto';
+
+    if (!this.floatingLayoutDone) {
+      this.floatingLayoutDone = true;
+    }
   }
 
   handleInput(event: Event): void {

@@ -356,7 +356,7 @@
 }
 
 .detail-block-list--editorial {
-  gap: 10px;
+  gap: 0;
 }
 
 @media (max-width: 1100px) {
@@ -402,9 +402,12 @@
     padding-left: 12px;
   }
 
-  .ficha-registro-tab .employee-record-block__intro,
-  .ficha-registro-tab__cuerpo .detail-block-head--editorial,
-  .ficha-registro-tab__cuerpo .detail-grid--editorial {
+  .ficha-registro-tab .employee-record-block__intro {
+    padding-right: 12px;
+    padding-left: 12px;
+  }
+
+  .ficha-registro-tab__cuerpo .detail-block--editorial {
     padding-right: 12px;
     padding-left: 12px;
   }

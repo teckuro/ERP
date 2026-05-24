@@ -353,27 +353,27 @@
 }
 
 .ficha-registro-tab__cuerpo .detail-block--editorial {
-  border: 0;
-  background: var(--form-surface, var(--employee-exp-panel));
+  border-bottom-color: var(--employee-exp-border, #e5e7eb);
+  background: transparent;
 }
 
 .ficha-registro-tab__cuerpo .detail-block-head--editorial {
   margin: 0;
-  padding: 10px 16px;
-  border: 0;
+  padding: 0 0 10px;
+  border-bottom: 1px solid var(--employee-exp-border, #e5e7eb);
   border-radius: 0;
-  background: var(--form-bg, #f8fafc);
+  background: transparent;
 }
 
 .ficha-registro-tab__cuerpo .detail-block-head--editorial .detail-block-head__title {
-  color: var(--form-text, var(--employee-exp-text));
+  color: #0f172a;
   font-size: 0.875rem;
-  font-weight: 600;
+  font-weight: 700;
 }
 
 .ficha-registro-tab__cuerpo .detail-grid--editorial {
-  padding: 12px 16px 14px;
-  background: var(--form-surface, var(--employee-exp-panel));
+  padding: 12px 0 0;
+  background: transparent;
 }
 
 .ficha-registro-tab .file-main {

@@ -13,33 +13,34 @@
         <h3 id="ficha-edit-modal-title" class="ficha-edit-modal__title">{{ tituloBloque() }}</h3>
         <p class="ficha-edit-modal__hint">{{ f.saveBlockHint(tituloBloque()) }}</p>
       </div>
+
+      <div class="ficha-edit-modal__actions">
+        <button
+          type="button"
+          class="ficha-edit-modal__action ficha-edit-modal__action--secondary"
+          [disabled]="f.isSavingSection()"
+          (click)="f.requestCerrarEdicion()"
+        >
+          Cancelar
+        </button>
+        <button
+          type="submit"
+          class="ficha-edit-modal__action ficha-edit-modal__action--primary"
+          form="ficha-edit-modal-form"
+          [disabled]="f.isSavingSection() || f.isLoadingCatalogs()"
+        >
+          {{ f.saveBlockButtonLabel() }}
+        </button>
+      </div>
     </header>
 
     <form
+      id="ficha-edit-modal-form"
       class="ficha-edit-modal__body"
       [formGroup]="f.form"
       (ngSubmit)="onSubmit()"
     >
       <app-ficha-empleado-edit-form [blockId]="blockId()" />
     </form>
-
-    <footer class="ficha-edit-modal__foot">
-      <button
-        type="button"
-        class="inline-action inline-action--secondary"
-        [disabled]="f.isSavingSection()"
-        (click)="f.requestCerrarEdicion()"
-      >
-        Cancelar
-      </button>
-      <button
-        type="button"
-        class="inline-action inline-action--primary"
-        [disabled]="f.isSavingSection() || f.isLoadingCatalogs()"
-        (click)="onSubmit()"
-      >
-        {{ f.saveBlockButtonLabel() }}
-      </button>
-    </footer>
   </section>
 </div>

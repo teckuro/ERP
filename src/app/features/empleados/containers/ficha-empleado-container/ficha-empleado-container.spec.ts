@@ -551,9 +551,11 @@ describe('FichaEmpleadoContainer', () => {
       'Identificación legal',
     );
     expect(modal.querySelector('.ficha-edit-modal__hint')?.textContent).toContain(
-      'Se guardará solo',
+      'Los cambios se aplicarán',
     );
-    expect(modal.querySelector('.ficha-edit-modal__foot')?.textContent).toContain('Guardar');
+    expect(modal.querySelector('.ficha-edit-modal__actions')?.textContent).toContain('Guardar');
+    expect(modal.querySelector('.ficha-edit-modal__actions')?.textContent).toContain('Cancelar');
+    expect(modal.querySelector('.ficha-edit-modal__foot')).toBeNull();
     expect(host.querySelector('.detail-block--editorial.is-editing')).toBeNull();
     expect(host.querySelector('.ficha-registro-tab')).toBeTruthy();
   });
