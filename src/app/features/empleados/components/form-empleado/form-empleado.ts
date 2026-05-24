@@ -5,7 +5,6 @@ import {
   ElementRef,
   OnInit,
   inject,
-  signal,
 } from "@angular/core";
 import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
 import {
@@ -30,26 +29,47 @@ import {
 import { validateBorradorAvanzadoFormMinimo } from "../../utils/empleado-borrador-form.validation";
 import { normalizarBorradorAvanzadoParaFormulario } from "../../utils/empleado-borrador-hidratacion";
 import {
-  EMPTY_EMPLEADO_FORM_CATALOGOS,
-  EmpleadoFormCatalogos,
-} from "../../models/empleado-catalogos.model";
-import {
   EMPLEADO_ADVANCED_WIZARD_LABELS,
   EMPLEADO_ADVANCED_WIZARD_STEP_COUNT,
   EMPLEADO_FORM_STEP_BLOCK_IDS,
   EMPLEADO_FORM_TAB_ORDER,
-  EmpleadoFormTabId,
 } from "../../models/empleado-form.manifest";
 import { EmpleadoFormGroup } from "../../models/empleado-form.model";
 import {
   CONDICIONES_TRABAJADOR_UI,
   CondicionTrabajadorControlName,
 } from "../../models/empleado-perfil-laboral.model";
+import type {
+  AdvancedActionModal,
+  AdvancedActionModalAction,
+  AdvancedActionModalFieldItem,
+  EvaluatedValidationRule,
+  FormEmpleadoModo,
+  GlobalValidationSummary,
+  PerfilLaboralAutoDetection,
+  StepValidationStatus,
+  StepValidationSummary,
+  TabId,
+  ValidationRule,
+  ValidationSeverity,
+  ValidationStepId,
+  WizardMapGroup,
+  WizardStepUiKind,
+} from "../../models/empleado-alta-avanzada.vm";
 import { RelacionLaboral } from "../../models/empleado.model";
+import { EmpleadoAltaAvanzadaPresentacionFacade } from "../../facade/empleado-alta-avanzada-presentacion.facade";
 import {
   buscarTipoTrabajadorBase,
   tipoTrabajadorBaseParaRelacion,
 } from "../../rules/empleado-tipo-trabajador-flow.rules";
+import {
+  calculateAltaWizardProgressPercent,
+  isAltaWizardFirstStep,
+  isAltaWizardLastStep,
+  isAltaWizardStepInRange,
+  resolveAltaWizardNextStep,
+  resolveAltaWizardPreviousStep,
+} from "../../rules/empleado-alta-wizard.rules";
 import {
   AltaAplicabilidadCampo,
   AltaAplicabilidadItem,
@@ -85,137 +105,9 @@ import {
 import {
   MessageBoxComponent,
   MessageBoxSection,
-  MessageBoxVariant,
 } from "../../../../shared/components/ui/message-box.component";
 import { WorkspaceLoadingComponent } from "../../../../shared/components/ui/workspace-loading.component";
 import { bindShellPageContext } from "../../../../layout/shell-page-context.binding";
-
-type TabId = EmpleadoFormTabId;
-type WizardStepUiKind =
-  | "actual"
-  | "completo"
-  | "pendiente"
-  | "errores"
-  | "opcional"
-  | "no-aplica";
-type ValidationStepId = TabId;
-type ValidationSeverity = "error" | "warning" | "info";
-type StepValidationStatus = "pending" | "in-progress" | "invalid" | "complete";
-type FormEmpleadoModo = "basico" | "avanzado";
-
-type AdvancedActionModalKind =
-  | "next-step-review"
-  | "coherence-decision"
-  | "draft-invalid"
-  | "draft-success"
-  | "finish-invalid"
-  | "finish-confirm"
-  | "honorarios-confirm"
-  | "honorarios-finish-blocked"
-  | "basic-success"
-  | "basic-error"
-  | "basic-duplicate-rut"
-  | "basic-catalog-wait";
-type AdvancedActionModalAction =
-  | "dismiss"
-  | "go-to-list"
-  | "apply-coherence-suggestion"
-  | "keep-coherence-review"
-  | "continue-next"
-  | "focus-current-step"
-  | "focus-draft-minimum"
-  | "focus-first-blocking"
-  | "execute-finish"
-  | "confirm-honorarios"
-  | "cancel-honorarios"
-  | "save-honorarios-draft";
-
-interface AdvancedActionModal {
-  kind: AdvancedActionModalKind;
-  variant: MessageBoxVariant;
-  eyebrow?: string;
-  title: string;
-  message: string;
-  sections?: readonly MessageBoxSection[];
-  primaryLabel: string;
-  secondaryLabel?: string;
-  blockingItems: readonly string[];
-  warningItems: readonly string[];
-  infoItems: readonly string[];
-  fieldItems?: readonly AdvancedActionModalFieldItem[];
-  targetStep?: number;
-  primaryAction: AdvancedActionModalAction;
-  secondaryAction?: AdvancedActionModalAction;
-}
-
-interface AdvancedActionModalFieldItem {
-  id: string;
-  sectionTitle: string;
-  fieldLabel: string;
-  detail: string;
-  actionLabel: string;
-  wizardStep: number;
-  controlPath: string;
-  severity: ValidationSeverity;
-}
-
-interface ValidationRule {
-  id: string;
-  stepId: ValidationStepId;
-  label: string;
-  severity: ValidationSeverity;
-  blocking: boolean;
-  sourcePath: string;
-  category?: string;
-  isApplicable: () => boolean;
-  isComplete: () => boolean;
-  isVisible?: () => boolean;
-}
-
-interface PerfilLaboralAutoDetection {
-  controlName: CondicionTrabajadorControlName;
-  reason: string;
-}
-
-interface EvaluatedValidationRule {
-  id: string;
-  stepId: ValidationStepId;
-  wizardStep: number;
-  sectionTitle: string;
-  label: string;
-  detail: string;
-  actionLabel?: string;
-  severity: ValidationSeverity;
-  blocking: boolean;
-  complete: boolean;
-  visible: boolean;
-  sourcePath: string;
-  category?: string;
-}
-
-interface StepValidationSummary {
-  stepId: ValidationStepId;
-  pending: number;
-  blockingPending: number;
-  warningsPending: number;
-  complete: number;
-  applicable: number;
-  status: StepValidationStatus;
-}
-
-interface GlobalValidationSummary {
-  blockingPending: number;
-  warningsPending: number;
-  completeSteps: number;
-  invalidSteps: number;
-  pendingTotal: number;
-}
-
-interface WizardMapGroup {
-  title: string;
-  description: string;
-  stepIndexes: readonly number[];
-}
 
 const TAB_ORDER: readonly TabId[] = [...EMPLEADO_FORM_TAB_ORDER];
 
@@ -296,6 +188,7 @@ const MENSAJES_FINALIZAR_ALTA: Partial<Record<string, string>> = {
     "./form-empleado.wizard.css",
     "./form-empleado.feedback.css",
   ],
+  providers: [EmpleadoAltaAvanzadaPresentacionFacade],
 })
 export class FormEmpleadoComponent implements OnInit {
   private readonly empleadosService = inject(EmpleadosService);
@@ -309,49 +202,41 @@ export class FormEmpleadoComponent implements OnInit {
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
   private readonly hostElement = inject<ElementRef<HTMLElement>>(ElementRef);
+  private readonly presentacion = inject(EmpleadoAltaAvanzadaPresentacionFacade);
   private suppressRelacionLaboralModal = false;
   private previousRelacionLaboral: RelacionLaboral = "CONTRATO";
 
-  readonly modo = signal<FormEmpleadoModo>(this.resolveModo());
+  readonly modo = this.presentacion.modo;
   /** Creacion avanzada: indice de etapa 0..9 (10 pasos). */
-  readonly pasoWizardActivo = signal(0);
-  readonly isSaving = signal(false);
-  readonly attemptedSave = signal(false);
-  readonly errorMessage = signal<string | null>(null);
+  readonly pasoWizardActivo = this.presentacion.pasoWizardActivo;
+  readonly isSaving = this.presentacion.isSaving;
+  readonly attemptedSave = this.presentacion.attemptedSave;
+  readonly errorMessage = this.presentacion.errorMessage;
   /** RUT duplicado: modal estructurado (mismo layout que éxito básico, variante error). */
-  readonly duplicateRutModalRut = signal<string | null>(null);
+  readonly duplicateRutModalRut = this.presentacion.duplicateRutModalRut;
 
   advancedStatusBadgeLabel(): string {
     return "Bitácora laboral";
   }
-  readonly successMessage = signal<string | null>(null);
+  readonly successMessage = this.presentacion.successMessage;
   /** Flujo que originó el último guardado exitoso (para el modal, sin depender solo de la ruta). */
-  readonly successFlow = signal<FormEmpleadoModo | null>(null);
-  readonly createdEmployeeId = signal<number | null>(null);
+  readonly successFlow = this.presentacion.successFlow;
+  readonly createdEmployeeId = this.presentacion.createdEmployeeId;
   /** Creación avanzada: id persona al actualizar borrador o null si es alta nueva. */
-  readonly borradorPersonaId = signal<number | null>(null);
-  readonly isSavingBorrador = signal(false);
-  readonly borradorFeedback = signal<string | null>(null);
-  readonly advancedActionModal = signal<AdvancedActionModal | null>(null);
-  readonly catalogos = signal<EmpleadoFormCatalogos>(
-    EMPTY_EMPLEADO_FORM_CATALOGOS,
-  );
-  readonly perfilLaboralAutoDetections = signal<
-    readonly PerfilLaboralAutoDetection[]
-  >([]);
-  readonly decisionCoherenciaPendiente = signal<{
-    issue: InconsistenciaCoherenciaAlta;
-    context: "next" | "finish";
-  } | null>(null);
-  readonly idsInconsistenciasCoherenciaReconocidas = signal<ReadonlySet<string>>(
-    new Set(),
-  );
-  readonly isLoadingCatalogs = signal(true);
-  readonly catalogosError = signal<string | null>(null);
-  readonly completedTabs = signal<ReadonlySet<TabId>>(new Set());
-  readonly attemptedTabs = signal<ReadonlySet<TabId>>(new Set());
-  readonly visitedWizardSteps = signal<ReadonlySet<number>>(new Set([0]));
-  readonly attemptedWizardSteps = signal<ReadonlySet<number>>(new Set());
+  readonly borradorPersonaId = this.presentacion.borradorPersonaId;
+  readonly isSavingBorrador = this.presentacion.isSavingBorrador;
+  readonly borradorFeedback = this.presentacion.borradorFeedback;
+  readonly advancedActionModal = this.presentacion.advancedActionModal;
+  readonly catalogos = this.presentacion.catalogos;
+  readonly perfilLaboralAutoDetections = this.presentacion.perfilLaboralAutoDetections;
+  readonly decisionCoherenciaPendiente = this.presentacion.decisionCoherenciaPendiente;
+  readonly idsInconsistenciasCoherenciaReconocidas = this.presentacion.idsInconsistenciasCoherenciaReconocidas;
+  readonly isLoadingCatalogs = this.presentacion.isLoadingCatalogs;
+  readonly catalogosError = this.presentacion.catalogosError;
+  readonly completedTabs = this.presentacion.completedTabs;
+  readonly attemptedTabs = this.presentacion.attemptedTabs;
+  readonly visitedWizardSteps = this.presentacion.visitedWizardSteps;
+  readonly attemptedWizardSteps = this.presentacion.attemptedWizardSteps;
   readonly form: EmpleadoFormGroup = this.empleadosFormService.createForm();
   readonly totalSteps = EMPLEADO_ADVANCED_WIZARD_STEP_COUNT;
   readonly advancedWizardLabels = [...EMPLEADO_ADVANCED_WIZARD_LABELS];
@@ -560,13 +445,12 @@ export class FormEmpleadoComponent implements OnInit {
   }
 
   selectWizardStep(index: number): void {
-    if (index < 0 || index >= EMPLEADO_ADVANCED_WIZARD_STEP_COUNT) {
+    if (!isAltaWizardStepInRange(index, EMPLEADO_ADVANCED_WIZARD_STEP_COUNT)) {
       return;
     }
 
     this.syncCompletedTabsFromValidity();
-    this.pasoWizardActivo.set(index);
-    this.markWizardStepVisited(index);
+    this.presentacion.selectWizardStep(index);
     this.scrollToCurrentStepStart({ focusFirstField: true });
   }
 
@@ -641,7 +525,7 @@ export class FormEmpleadoComponent implements OnInit {
   }
 
   wizardProgressPercent(): number {
-    return Math.round(((this.pasoWizardActivo() + 1) / this.totalSteps) * 100);
+    return calculateAltaWizardProgressPercent(this.pasoWizardActivo(), this.totalSteps);
   }
 
   async loadCatalogos(): Promise<void> {
@@ -1092,24 +976,10 @@ export class FormEmpleadoComponent implements OnInit {
 
   goToPreviousTab(): void {
     const seq = this.linearWizardSequence();
-    let idx = seq.indexOf(this.pasoWizardActivo());
-    if (idx === -1) {
-      const cur = this.pasoWizardActivo();
-      const candidates = seq.filter((s) => s < cur);
-      const prev = candidates.length
-        ? candidates[candidates.length - 1]!
-        : seq[0]!;
+    const previous = resolveAltaWizardPreviousStep(seq, this.pasoWizardActivo());
+    if (previous !== null) {
       this.syncCompletedTabsFromValidity();
-      this.pasoWizardActivo.set(prev);
-      this.markWizardStepVisited(prev);
-      this.scrollToCurrentStepStart({ focusFirstField: true });
-      return;
-    }
-    if (idx > 0) {
-      this.syncCompletedTabsFromValidity();
-      const previous = seq[idx - 1]!;
-      this.pasoWizardActivo.set(previous);
-      this.markWizardStepVisited(previous);
+      this.presentacion.selectWizardStep(previous);
       this.scrollToCurrentStepStart({ focusFirstField: true });
     }
   }
@@ -1142,39 +1012,20 @@ export class FormEmpleadoComponent implements OnInit {
 
   private advanceToNextWizardStep(): void {
     const seq = this.linearWizardSequence();
-    let idx = seq.indexOf(this.pasoWizardActivo());
-    if (idx === -1) {
-      const cur = this.pasoWizardActivo();
-      const next = seq.find((s) => s > cur);
-      if (next !== undefined) {
-        this.syncCompletedTabsFromValidity();
-        this.pasoWizardActivo.set(next);
-        this.markWizardStepVisited(next);
-        this.scrollToCurrentStepStart({ focusFirstField: true });
-      }
-      return;
-    }
-    if (idx < seq.length - 1) {
+    const next = resolveAltaWizardNextStep(seq, this.pasoWizardActivo());
+    if (next !== null) {
       this.syncCompletedTabsFromValidity();
-      const next = seq[idx + 1]!;
-      this.pasoWizardActivo.set(next);
-      this.markWizardStepVisited(next);
+      this.presentacion.selectWizardStep(next);
       this.scrollToCurrentStepStart({ focusFirstField: true });
     }
   }
 
   isFirstTab(): boolean {
-    const seq = this.linearWizardSequence();
-    const idx = seq.indexOf(this.pasoWizardActivo());
-    if (idx === -1) {
-      return this.pasoWizardActivo() <= seq[0]!;
-    }
-    return idx === 0;
+    return isAltaWizardFirstStep(this.linearWizardSequence(), this.pasoWizardActivo());
   }
 
   isLastTab(): boolean {
-    const seq = this.linearWizardSequence();
-    return this.pasoWizardActivo() === seq[seq.length - 1]!;
+    return isAltaWizardLastStep(this.linearWizardSequence(), this.pasoWizardActivo());
   }
 
   isNextDisabled(): boolean {
@@ -1735,12 +1586,11 @@ export class FormEmpleadoComponent implements OnInit {
   }
 
   private markWizardStepVisited(step: number): void {
-    this.visitedWizardSteps.update((prev) => new Set([...prev, step]));
+    this.presentacion.markWizardStepVisited(step);
   }
 
   private markWizardStepAttempted(step: number): void {
-    this.markWizardStepVisited(step);
-    this.attemptedWizardSteps.update((prev) => new Set([...prev, step]));
+    this.presentacion.markWizardStepAttempted(step);
   }
 
   private wizardStepWasAttempted(stepIndex: number): boolean {
@@ -1823,8 +1673,8 @@ export class FormEmpleadoComponent implements OnInit {
   }
 
   private showInvalidWizardStep(step: number): void {
+    this.presentacion.markWizardStepAttempted(step);
     this.pasoWizardActivo.set(step);
-    this.attemptedWizardSteps.update((prev) => new Set([...prev, step]));
     this.attemptAllTabs();
     this.markWizardStepTouched(step);
     this.focusFirstInvalidControl(step);
@@ -1901,8 +1751,7 @@ export class FormEmpleadoComponent implements OnInit {
       );
       this.borradorPersonaId.set(id);
       this.form.patchValue(formValue as never);
-      this.pasoWizardActivo.set(paso);
-      this.visitedWizardSteps.update((prev) => new Set([...prev, paso]));
+      this.presentacion.selectWizardStep(paso);
       this.form.markAsPristine();
     } catch {
       this.catalogosError.set(
@@ -3012,8 +2861,7 @@ export class FormEmpleadoComponent implements OnInit {
 
   private moveHonorariosFlowToApplicableStep(): void {
     if ([4, 5, 6].includes(this.pasoWizardActivo())) {
-      this.pasoWizardActivo.set(7);
-      this.markWizardStepVisited(7);
+      this.presentacion.selectWizardStep(7);
       this.scrollToCurrentStepStart({ focusFirstField: true });
     }
   }

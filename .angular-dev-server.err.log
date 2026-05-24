@@ -1,0 +1,679 @@
+[1m[31m[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2440: Import declaration conflicts with local declaration of 'AdvancedActionModal'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:46:2:
+[37m      46 │   [32mAdvancedActionModal[37m,
+         ╵   [32m~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2440: Import declaration conflicts with local declaration of 'AdvancedActionModalFieldItem'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:47:2:
+[37m      47 │   [32mAdvancedActionModalFieldItem[37m,
+         ╵   [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2440: Import declaration conflicts with local declaration of 'EvaluatedValidationRule'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:48:2:
+[37m      48 │   [32mEvaluatedValidationRule[37m,
+         ╵   [32m~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2440: Import declaration conflicts with local declaration of 'FormEmpleadoModo'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:49:2:
+[37m      49 │   [32mFormEmpleadoModo[37m,
+         ╵   [32m~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2440: Import declaration conflicts with local declaration of 'GlobalValidationSummary'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:50:2:
+[37m      50 │   [32mGlobalValidationSummary[37m,
+         ╵   [32m~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2440: Import declaration conflicts with local declaration of 'PerfilLaboralAutoDetection'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:51:2:
+[37m      51 │   [32mPerfilLaboralAutoDetection[37m,
+         ╵   [32m~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2440: Import declaration conflicts with local declaration of 'StepValidationStatus'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:52:2:
+[37m      52 │   [32mStepValidationStatus[37m,
+         ╵   [32m~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2440: Import declaration conflicts with local declaration of 'StepValidationSummary'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:53:2:
+[37m      53 │   [32mStepValidationSummary[37m,
+         ╵   [32m~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2440: Import declaration conflicts with local declaration of 'TabId'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:54:2:
+[37m      54 │   [32mTabId[37m,
+         ╵   [32m~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2440: Import declaration conflicts with local declaration of 'ValidationRule'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:55:2:
+[37m      55 │   [32mValidationRule[37m,
+         ╵   [32m~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2440: Import declaration conflicts with local declaration of 'ValidationSeverity'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:56:2:
+[37m      56 │   [32mValidationSeverity[37m,
+         ╵   [32m~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2440: Import declaration conflicts with local declaration of 'ValidationStepId'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:57:2:
+[37m      57 │   [32mValidationStepId[37m,
+         ╵   [32m~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2440: Import declaration conflicts with local declaration of 'WizardMapGroup'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:58:2:
+[37m      58 │   [32mWizardMapGroup[37m,
+         ╵   [32m~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2440: Import declaration conflicts with local declaration of 'WizardStepUiKind'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:59:2:
+[37m      59 │   [32mWizardStepUiKind[37m,
+         ╵   [32m~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2304: Cannot find name 'EmpleadoFormTabId'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:114:13:
+[37m      114 │ type TabId = [32mEmpleadoFormTabId[37m;
+          ╵              [32m~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2304: Cannot find name 'MessageBoxVariant'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:156:11:
+[37m      156 │   variant: [32mMessageBoxVariant[37m;
+          ╵            [32m~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2304: Cannot find name 'EmpleadoFormCatalogos'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:357:30:
+[37m      357 │   readonly catalogos = signal<[32mEmpleadoFormCatalogos[37m>(
+          ╵                               [32m~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2304: Cannot find name 'EMPTY_EMPLEADO_FORM_CATALOGOS'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:358:4:
+[37m      358 │     [32mEMPTY_EMPLEADO_FORM_CATALOGOS[37m,
+          ╵     [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2366: Function lacks ending return statement and return type does not include 'undefined'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:1721:43:
+[37m      1721 │   private wizardStepsForTab(tabId: TabId): [32mnumber[][37m {
+           ╵                                            [32m~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS7006: Parameter 'item' implicitly has an 'any' type.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:2087:7:
+[37m      2087 │       ([32mitem[37m) => item.value === raw.previsionSalud.idSalud,
+           ╵        [32m~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS7006: Parameter 'item' implicitly has an 'any' type.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:2846:7:
+[37m      2846 │       ([32mitem[37m) => item.value === selectedId,
+           ╵        [32m~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS7006: Parameter 'item' implicitly has an 'any' type.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:2855:7:
+[37m      2855 │       ([32mitem[37m) => item.value === selectedId,
+           ╵        [32m~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS7006: Parameter 'option' implicitly has an 'any' type.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:3251:7:
+[37m      3251 │       ([32moption[37m) => option.value === selectedId,
+           ╵        [32m~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS7006: Parameter 'item' implicitly has an 'any' type.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:3445:37:
+[37m      3445 │ ...is.catalogos().comunas.find(([32mitem[37m) => item.value === contacto...
+           ╵                                 [32m~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS7030: Not all code paths return a value.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:3623:10:
+[37m      3623 │   private [32mgetSection[37m(tabId: TabId) {
+           ╵           [32m~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2532: Object is possibly 'undefined'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:3639:8:
+[37m      3639 │       : [32mthis.getSection(tabId)[37m.invalid;
+           ╵         [32m~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS18048: 'section' is possibly 'undefined'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:3657:11:
+[37m      3657 │     return [32msection[37m.dirty || section.touched;
+           ╵            [32m~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS18048: 'section' is possibly 'undefined'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:3657:28:
+[37m      3657 │     return section.dirty || [32msection[37m.touched;
+           ╵                             [32m~~~~~~~[0m
+
+[39m[22m
+[1m[31m[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2304: Cannot find name 'EmpleadoFormCatalogos'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:228:30:
+[37m      228 │   readonly catalogos = signal<[32mEmpleadoFormCatalogos[37m>(
+          ╵                               [32m~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2304: Cannot find name 'EMPTY_EMPLEADO_FORM_CATALOGOS'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:229:4:
+[37m      229 │     [32mEMPTY_EMPLEADO_FORM_CATALOGOS[37m,
+          ╵     [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2552: Cannot find name 'AdvancedActionModalAction'. Did you mean 'AdvancedActionModal'?[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:842:12:
+[37m      842 │     action: [32mAdvancedActionModalAction[37m,
+          ╵             [32m~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS7006: Parameter 'item' implicitly has an 'any' type.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:1958:7:
+[37m      1958 │       ([32mitem[37m) => item.value === raw.previsionSalud.idSalud,
+           ╵        [32m~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS7006: Parameter 'item' implicitly has an 'any' type.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:2717:7:
+[37m      2717 │       ([32mitem[37m) => item.value === selectedId,
+           ╵        [32m~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS7006: Parameter 'item' implicitly has an 'any' type.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:2726:7:
+[37m      2726 │       ([32mitem[37m) => item.value === selectedId,
+           ╵        [32m~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS7006: Parameter 'option' implicitly has an 'any' type.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:3122:7:
+[37m      3122 │       ([32moption[37m) => option.value === selectedId,
+           ╵        [32m~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS7006: Parameter 'item' implicitly has an 'any' type.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:3316:37:
+[37m      3316 │ ...is.catalogos().comunas.find(([32mitem[37m) => item.value === contacto...
+           ╵                                 [32m~~~~[0m
+
+[39m[22m
+[1m[31m[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2552: Cannot find name 'AdvancedActionModalAction'. Did you mean 'AdvancedActionModal'?[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:835:12:
+[37m      835 │     action: [32mAdvancedActionModalAction[37m,
+          ╵             [32m~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+[39m[22m
+[1m[31m[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2552: Cannot find name 'signal'. Did you mean 'toSignal'?[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/facade/proceso-mensual-presentacion.facade.ts:289:21:
+[37m      289 │   readonly overlay = [32msignal[37m<ProcesoMensualOverlay>({ kind: 'cerra...
+          ╵                      [32m~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2552: Cannot find name 'signal'. Did you mean 'toSignal'?[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/facade/proceso-mensual-presentacion.facade.ts:422:32:
+[37m      422 │ ...adonly nominaWorkspaceTab = [32msignal[37m<NominaWorkspaceTab>('parame...
+          ╵                                [32m~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2552: Cannot find name 'signal'. Did you mean 'toSignal'?[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/facade/proceso-mensual-presentacion.facade.ts:423:39:
+[37m      423 │ ...nominaWorkspaceTabVisible = [32msignal[37m<NominaWorkspaceTabVisible>(...
+          ╵                                [32m~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2552: Cannot find name 'signal'. Did you mean 'toSignal'?[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/facade/proceso-mensual-presentacion.facade.ts:424:39:
+[37m      424 │ ...nominaDetalleMensualVista = [32msignal[37m<NominaDetalleMensualVista>(...
+          ╵                                [32m~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2552: Cannot find name 'signal'. Did you mean 'toSignal'?[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/facade/proceso-mensual-presentacion.facade.ts:485:32:
+[37m      485 │   readonly nominaMasivaFiltro = [32msignal[37m<NominaMasivaFiltro>('todos');
+          ╵                                 [32m~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2552: Cannot find name 'signal'. Did you mean 'toSignal'?[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/facade/proceso-mensual-presentacion.facade.ts:486:34:
+[37m      486 │   readonly nominaMasivaBusqueda = [32msignal[37m('');
+          ╵                                   [32m~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2552: Cannot find name 'signal'. Did you mean 'toSignal'?[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/facade/proceso-mensual-presentacion.facade.ts:487:50:
+[37m      487 │ ...aTrabajadorSeleccionadoId = [32msignal[37m<number | string | null>(null);
+          ╵                                [32m~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2552: Cannot find name 'signal'. Did you mean 'toSignal'?[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/facade/proceso-mensual-presentacion.facade.ts:488:36:
+[37m      488 │   readonly actaOperativaPreparada = [32msignal[37m(false);
+          ╵                                     [32m~~~~~~[0m
+
+[39m[22m
+[1m[31m[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2551: Property 'informacionPeriodoSuprimida' does not exist on type 'ProcesoMensualPresentacionFacade'. Did you mean 'informacionPeriodo'?[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/facade/proceso-mensual-presentacion.facade.ts:1730:9:
+[37m      1730 │     this.[32minformacionPeriodoSuprimida[37m = false;
+           ╵          [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  'informacionPeriodo' is declared here.
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/facade/proceso-mensual-presentacion.facade.ts:299:11:
+[37m      299 │   readonly [32minformacionPeriodo[37m = computed(() => {
+          ╵            [32m~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2551: Property 'informacionPeriodoSuprimida' does not exist on type 'ProcesoMensualPresentacionFacade'. Did you mean 'informacionPeriodo'?[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/facade/proceso-mensual-presentacion.facade.ts:1735:9:
+[37m      1735 │     this.[32minformacionPeriodoSuprimida[37m = false;
+           ╵          [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  'informacionPeriodo' is declared here.
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/facade/proceso-mensual-presentacion.facade.ts:299:11:
+[37m      299 │   readonly [32minformacionPeriodo[37m = computed(() => {
+          ╵            [32m~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2551: Property 'informacionPeriodoSuprimida' does not exist on type 'ProcesoMensualPresentacionFacade'. Did you mean 'informacionPeriodo'?[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/facade/proceso-mensual-presentacion.facade.ts:1740:9:
+[37m      1740 │     this.[32minformacionPeriodoSuprimida[37m = true;
+           ╵          [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  'informacionPeriodo' is declared here.
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/facade/proceso-mensual-presentacion.facade.ts:299:11:
+[37m      299 │   readonly [32minformacionPeriodo[37m = computed(() => {
+          ╵            [32m~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2551: Property 'informacionPeriodoSuprimida' does not exist on type 'ProcesoMensualPresentacionFacade'. Did you mean 'informacionPeriodo'?[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/facade/proceso-mensual-presentacion.facade.ts:1765:9:
+[37m      1765 │     this.[32minformacionPeriodoSuprimida[37m = false;
+           ╵          [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  'informacionPeriodo' is declared here.
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/facade/proceso-mensual-presentacion.facade.ts:299:11:
+[37m      299 │   readonly [32minformacionPeriodo[37m = computed(() => {
+          ╵            [32m~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2551: Property 'informacionPeriodoSuprimida' does not exist on type 'ProcesoMensualPresentacionFacade'. Did you mean 'informacionPeriodo'?[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/facade/proceso-mensual-presentacion.facade.ts:1794:13:
+[37m      1794 │         this.[32minformacionPeriodoSuprimida[37m = true;
+           ╵              [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  'informacionPeriodo' is declared here.
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/facade/proceso-mensual-presentacion.facade.ts:299:11:
+[37m      299 │   readonly [32minformacionPeriodo[37m = computed(() => {
+          ╵            [32m~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2551: Property 'informacionPeriodoSuprimida' does not exist on type 'ProcesoMensualPresentacionFacade'. Did you mean 'informacionPeriodo'?[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/facade/proceso-mensual-presentacion.facade.ts:1809:13:
+[37m      1809 │     if (this.[32minformacionPeriodoSuprimida[37m) return;
+           ╵              [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  'informacionPeriodo' is declared here.
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/facade/proceso-mensual-presentacion.facade.ts:299:11:
+[37m      299 │   readonly [32minformacionPeriodo[37m = computed(() => {
+          ╵            [32m~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2551: Property 'informacionPeriodoSuprimida' does not exist on type 'ProcesoMensualPresentacionFacade'. Did you mean 'informacionPeriodo'?[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/facade/proceso-mensual-presentacion.facade.ts:1833:11:
+[37m      1833 │       this.[32minformacionPeriodoSuprimida[37m = true;
+           ╵            [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  'informacionPeriodo' is declared here.
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/facade/proceso-mensual-presentacion.facade.ts:299:11:
+[37m      299 │   readonly [32minformacionPeriodo[37m = computed(() => {
+          ╵            [32m~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2551: Property 'informacionPeriodoSuprimida' does not exist on type 'ProcesoMensualPresentacionFacade'. Did you mean 'informacionPeriodo'?[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/facade/proceso-mensual-presentacion.facade.ts:1846:11:
+[37m      1846 │       this.[32minformacionPeriodoSuprimida[37m = false;
+           ╵            [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  'informacionPeriodo' is declared here.
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/facade/proceso-mensual-presentacion.facade.ts:299:11:
+[37m      299 │   readonly [32minformacionPeriodo[37m = computed(() => {
+          ╵            [32m~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2551: Property 'informacionPeriodoSuprimida' does not exist on type 'ProcesoMensualPresentacionFacade'. Did you mean 'informacionPeriodo'?[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/facade/proceso-mensual-presentacion.facade.ts:1848:11:
+[37m      1848 │       this.[32minformacionPeriodoSuprimida[37m = true;
+           ╵            [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  'informacionPeriodo' is declared here.
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/facade/proceso-mensual-presentacion.facade.ts:299:11:
+[37m      299 │   readonly [32minformacionPeriodo[37m = computed(() => {
+          ╵            [32m~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2551: Property 'informacionPeriodoSuprimida' does not exist on type 'ProcesoMensualPresentacionFacade'. Did you mean 'informacionPeriodo'?[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/facade/proceso-mensual-presentacion.facade.ts:1856:11:
+[37m      1856 │       this.[32minformacionPeriodoSuprimida[37m = true;
+           ╵            [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  'informacionPeriodo' is declared here.
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/facade/proceso-mensual-presentacion.facade.ts:299:11:
+[37m      299 │   readonly [32minformacionPeriodo[37m = computed(() => {
+          ╵            [32m~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2551: Property 'informacionPeriodoSuprimida' does not exist on type 'ProcesoMensualPresentacionFacade'. Did you mean 'informacionPeriodo'?[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/facade/proceso-mensual-presentacion.facade.ts:1867:9:
+[37m      1867 │     this.[32minformacionPeriodoSuprimida[37m = true;
+           ╵          [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  'informacionPeriodo' is declared here.
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/facade/proceso-mensual-presentacion.facade.ts:299:11:
+[37m      299 │   readonly [32minformacionPeriodo[37m = computed(() => {
+          ╵            [32m~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2551: Property 'informacionPeriodoSuprimida' does not exist on type 'ProcesoMensualPresentacionFacade'. Did you mean 'informacionPeriodo'?[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/facade/proceso-mensual-presentacion.facade.ts:2047:9:
+[37m      2047 │     this.[32minformacionPeriodoSuprimida[37m = false;
+           ╵          [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  'informacionPeriodo' is declared here.
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/facade/proceso-mensual-presentacion.facade.ts:299:11:
+[37m      299 │   readonly [32minformacionPeriodo[37m = computed(() => {
+          ╵            [32m~~~~~~~~~~~~~~~~~~[0m
+
+[39m[22m
+[1m[31m[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2551: Property 'informacionPeriodoSuprimida' does not exist on type 'ProcesoMensualPresentacionFacade'. Did you mean 'informacionPeriodo'?[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/facade/proceso-mensual-presentacion.facade.ts:1712:9:
+[37m      1712 │     this.[32minformacionPeriodoSuprimida[37m = false;
+           ╵          [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  'informacionPeriodo' is declared here.
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/facade/proceso-mensual-presentacion.facade.ts:299:11:
+[37m      299 │   readonly [32minformacionPeriodo[37m = computed(() => {
+          ╵            [32m~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2551: Property 'informacionPeriodoSuprimida' does not exist on type 'ProcesoMensualPresentacionFacade'. Did you mean 'informacionPeriodo'?[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/facade/proceso-mensual-presentacion.facade.ts:1717:9:
+[37m      1717 │     this.[32minformacionPeriodoSuprimida[37m = false;
+           ╵          [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  'informacionPeriodo' is declared here.
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/facade/proceso-mensual-presentacion.facade.ts:299:11:
+[37m      299 │   readonly [32minformacionPeriodo[37m = computed(() => {
+          ╵            [32m~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2551: Property 'informacionPeriodoSuprimida' does not exist on type 'ProcesoMensualPresentacionFacade'. Did you mean 'informacionPeriodo'?[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/facade/proceso-mensual-presentacion.facade.ts:1722:9:
+[37m      1722 │     this.[32minformacionPeriodoSuprimida[37m = true;
+           ╵          [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  'informacionPeriodo' is declared here.
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/facade/proceso-mensual-presentacion.facade.ts:299:11:
+[37m      299 │   readonly [32minformacionPeriodo[37m = computed(() => {
+          ╵            [32m~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2551: Property 'informacionPeriodoSuprimida' does not exist on type 'ProcesoMensualPresentacionFacade'. Did you mean 'informacionPeriodo'?[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/facade/proceso-mensual-presentacion.facade.ts:1747:9:
+[37m      1747 │     this.[32minformacionPeriodoSuprimida[37m = false;
+           ╵          [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  'informacionPeriodo' is declared here.
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/facade/proceso-mensual-presentacion.facade.ts:299:11:
+[37m      299 │   readonly [32minformacionPeriodo[37m = computed(() => {
+          ╵            [32m~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2551: Property 'informacionPeriodoSuprimida' does not exist on type 'ProcesoMensualPresentacionFacade'. Did you mean 'informacionPeriodo'?[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/facade/proceso-mensual-presentacion.facade.ts:1776:13:
+[37m      1776 │         this.[32minformacionPeriodoSuprimida[37m = true;
+           ╵              [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  'informacionPeriodo' is declared here.
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/facade/proceso-mensual-presentacion.facade.ts:299:11:
+[37m      299 │   readonly [32minformacionPeriodo[37m = computed(() => {
+          ╵            [32m~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2551: Property 'informacionPeriodoSuprimida' does not exist on type 'ProcesoMensualPresentacionFacade'. Did you mean 'informacionPeriodo'?[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/facade/proceso-mensual-presentacion.facade.ts:1791:13:
+[37m      1791 │     if (this.[32minformacionPeriodoSuprimida[37m) return;
+           ╵              [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  'informacionPeriodo' is declared here.
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/facade/proceso-mensual-presentacion.facade.ts:299:11:
+[37m      299 │   readonly [32minformacionPeriodo[37m = computed(() => {
+          ╵            [32m~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2551: Property 'informacionPeriodoSuprimida' does not exist on type 'ProcesoMensualPresentacionFacade'. Did you mean 'informacionPeriodo'?[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/facade/proceso-mensual-presentacion.facade.ts:1815:11:
+[37m      1815 │       this.[32minformacionPeriodoSuprimida[37m = true;
+           ╵            [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  'informacionPeriodo' is declared here.
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/facade/proceso-mensual-presentacion.facade.ts:299:11:
+[37m      299 │   readonly [32minformacionPeriodo[37m = computed(() => {
+          ╵            [32m~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2551: Property 'informacionPeriodoSuprimida' does not exist on type 'ProcesoMensualPresentacionFacade'. Did you mean 'informacionPeriodo'?[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/facade/proceso-mensual-presentacion.facade.ts:1828:11:
+[37m      1828 │       this.[32minformacionPeriodoSuprimida[37m = false;
+           ╵            [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  'informacionPeriodo' is declared here.
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/facade/proceso-mensual-presentacion.facade.ts:299:11:
+[37m      299 │   readonly [32minformacionPeriodo[37m = computed(() => {
+          ╵            [32m~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2551: Property 'informacionPeriodoSuprimida' does not exist on type 'ProcesoMensualPresentacionFacade'. Did you mean 'informacionPeriodo'?[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/facade/proceso-mensual-presentacion.facade.ts:1830:11:
+[37m      1830 │       this.[32minformacionPeriodoSuprimida[37m = true;
+           ╵            [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  'informacionPeriodo' is declared here.
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/facade/proceso-mensual-presentacion.facade.ts:299:11:
+[37m      299 │   readonly [32minformacionPeriodo[37m = computed(() => {
+          ╵            [32m~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2551: Property 'informacionPeriodoSuprimida' does not exist on type 'ProcesoMensualPresentacionFacade'. Did you mean 'informacionPeriodo'?[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/facade/proceso-mensual-presentacion.facade.ts:1838:11:
+[37m      1838 │       this.[32minformacionPeriodoSuprimida[37m = true;
+           ╵            [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  'informacionPeriodo' is declared here.
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/facade/proceso-mensual-presentacion.facade.ts:299:11:
+[37m      299 │   readonly [32minformacionPeriodo[37m = computed(() => {
+          ╵            [32m~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2551: Property 'informacionPeriodoSuprimida' does not exist on type 'ProcesoMensualPresentacionFacade'. Did you mean 'informacionPeriodo'?[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/facade/proceso-mensual-presentacion.facade.ts:1849:9:
+[37m      1849 │     this.[32minformacionPeriodoSuprimida[37m = true;
+           ╵          [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  'informacionPeriodo' is declared here.
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/facade/proceso-mensual-presentacion.facade.ts:299:11:
+[37m      299 │   readonly [32minformacionPeriodo[37m = computed(() => {
+          ╵            [32m~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2551: Property 'informacionPeriodoSuprimida' does not exist on type 'ProcesoMensualPresentacionFacade'. Did you mean 'informacionPeriodo'?[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/facade/proceso-mensual-presentacion.facade.ts:2029:9:
+[37m      2029 │     this.[32minformacionPeriodoSuprimida[37m = false;
+           ╵          [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  'informacionPeriodo' is declared here.
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/facade/proceso-mensual-presentacion.facade.ts:299:11:
+[37m      299 │   readonly [32minformacionPeriodo[37m = computed(() => {
+          ╵            [32m~~~~~~~~~~~~~~~~~~[0m
+
+[39m[22m
+[1m[31m[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2551: Property 'informacionPeriodoSuprimida' does not exist on type 'ProcesoMensualPresentacionFacade'. Did you mean 'informacionPeriodo'?[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/facade/proceso-mensual-presentacion.facade.ts:1712:9:
+[37m      1712 │     this.[32minformacionPeriodoSuprimida[37m = false;
+           ╵          [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  'informacionPeriodo' is declared here.
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/facade/proceso-mensual-presentacion.facade.ts:299:11:
+[37m      299 │   readonly [32minformacionPeriodo[37m = computed(() => {
+          ╵            [32m~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2551: Property 'informacionPeriodoSuprimida' does not exist on type 'ProcesoMensualPresentacionFacade'. Did you mean 'informacionPeriodo'?[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/facade/proceso-mensual-presentacion.facade.ts:1717:9:
+[37m      1717 │     this.[32minformacionPeriodoSuprimida[37m = false;
+           ╵          [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  'informacionPeriodo' is declared here.
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/facade/proceso-mensual-presentacion.facade.ts:299:11:
+[37m      299 │   readonly [32minformacionPeriodo[37m = computed(() => {
+          ╵            [32m~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2551: Property 'informacionPeriodoSuprimida' does not exist on type 'ProcesoMensualPresentacionFacade'. Did you mean 'informacionPeriodo'?[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/facade/proceso-mensual-presentacion.facade.ts:1722:9:
+[37m      1722 │     this.[32minformacionPeriodoSuprimida[37m = true;
+           ╵          [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  'informacionPeriodo' is declared here.
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/facade/proceso-mensual-presentacion.facade.ts:299:11:
+[37m      299 │   readonly [32minformacionPeriodo[37m = computed(() => {
+          ╵            [32m~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2551: Property 'informacionPeriodoSuprimida' does not exist on type 'ProcesoMensualPresentacionFacade'. Did you mean 'informacionPeriodo'?[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/facade/proceso-mensual-presentacion.facade.ts:2026:9:
+[37m      2026 │     this.[32minformacionPeriodoSuprimida[37m = false;
+           ╵          [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  'informacionPeriodo' is declared here.
+
+    src/app/features/nomina-mensual/containers/proceso-mensual-container/facade/proceso-mensual-presentacion.facade.ts:299:11:
+[37m      299 │   readonly [32minformacionPeriodo[37m = computed(() => {
+          ╵            [32m~~~~~~~~~~~~~~~~~~[0m
+
+[39m[22m

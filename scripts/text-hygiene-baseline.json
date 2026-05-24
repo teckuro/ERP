@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-05-24T00:13:33.715Z",
+  "generatedAt": "2026-05-24T01:08:44.996Z",
   "note": "Deuda historica de acentos. El check falla solo si aparecen hallazgos nuevos no presentes aqui.",
   "findings": [
     {
@@ -44292,13 +44292,6 @@
       "excerpt": "\"Esta ficha no tiene un borrador de creacion avanzada guardado. Usa la ficha del empleado para completar por secciones.\","
     },
     {
-      "key": "accent|src/app/features/empleados/components/form-empleado/form-empleado.ts|decision|| \"coherence-decision\"",
-      "file": "src/app/features/empleados/components/form-empleado/form-empleado.ts",
-      "token": "decision",
-      "suggestion": "decisión",
-      "excerpt": "| \"coherence-decision\""
-    },
-    {
       "key": "accent|src/app/features/empleados/components/form-empleado/form-empleado.ts|decision|kind: \"coherence-decision\",",
       "file": "src/app/features/empleados/components/form-empleado/form-empleado.ts",
       "token": "decision",
@@ -45494,6 +45487,13 @@
       "token": "remuneracion",
       "suggestion": "remuneración",
       "excerpt": "export type RemuneracionInsert = TablesInsert<'remuneracion'>;"
+    },
+    {
+      "key": "accent|src/app/features/empleados/models/empleado-alta-avanzada.vm.ts|decision|| 'coherence-decision'",
+      "file": "src/app/features/empleados/models/empleado-alta-avanzada.vm.ts",
+      "token": "decision",
+      "suggestion": "decisión",
+      "excerpt": "| 'coherence-decision'"
     },
     {
       "key": "accent|src/app/features/empleados/models/empleado-form.manifest.ts|relacion|'relacion',",
@@ -49535,6 +49535,27 @@
       "excerpt": "return 'parametros';"
     },
     {
+      "key": "accent|src/app/features/nomina-mensual/containers/proceso-mensual-container/facade/proceso-mensual-overlays.port.ts|decision|this.overlay.set({ kind: 'decision', view });",
+      "file": "src/app/features/nomina-mensual/containers/proceso-mensual-container/facade/proceso-mensual-overlays.port.ts",
+      "token": "decision",
+      "suggestion": "decisión",
+      "excerpt": "this.overlay.set({ kind: 'decision', view });"
+    },
+    {
+      "key": "accent|src/app/features/nomina-mensual/containers/proceso-mensual-container/facade/proceso-mensual-overlays.port.ts|informacion|this.overlay.set({ kind: 'informacion', view });",
+      "file": "src/app/features/nomina-mensual/containers/proceso-mensual-container/facade/proceso-mensual-overlays.port.ts",
+      "token": "informacion",
+      "suggestion": "información",
+      "excerpt": "this.overlay.set({ kind: 'informacion', view });"
+    },
+    {
+      "key": "accent|src/app/features/nomina-mensual/containers/proceso-mensual-container/facade/proceso-mensual-overlays.port.ts|revision|this.overlay.set({ kind: 'revision', tab: normalizeDetalleOperativoTab(tab) });",
+      "file": "src/app/features/nomina-mensual/containers/proceso-mensual-container/facade/proceso-mensual-overlays.port.ts",
+      "token": "revision",
+      "suggestion": "revisión",
+      "excerpt": "this.overlay.set({ kind: 'revision', tab: normalizeDetalleOperativoTab(tab) });"
+    },
+    {
       "key": "accent|src/app/features/nomina-mensual/containers/proceso-mensual-container/facade/proceso-mensual-presentacion.facade.ts|accion|'Proxima accion: revisar Liquidaciones oficiales con este contexto como respaldo.',",
       "file": "src/app/features/nomina-mensual/containers/proceso-mensual-container/facade/proceso-mensual-presentacion.facade.ts",
       "token": "accion",
@@ -49626,13 +49647,6 @@
       "excerpt": "return current.kind === 'decision' ? current.view : null;"
     },
     {
-      "key": "accent|src/app/features/nomina-mensual/containers/proceso-mensual-container/facade/proceso-mensual-presentacion.facade.ts|decision|this.overlay.set({ kind: 'decision', view });",
-      "file": "src/app/features/nomina-mensual/containers/proceso-mensual-container/facade/proceso-mensual-presentacion.facade.ts",
-      "token": "decision",
-      "suggestion": "decisión",
-      "excerpt": "this.overlay.set({ kind: 'decision', view });"
-    },
-    {
       "key": "accent|src/app/features/nomina-mensual/containers/proceso-mensual-container/facade/proceso-mensual-presentacion.facade.ts|descripcion|return `${accion.label}: ${accion.descripcion}`;",
       "file": "src/app/features/nomina-mensual/containers/proceso-mensual-container/facade/proceso-mensual-presentacion.facade.ts",
       "token": "descripcion",
@@ -49668,25 +49682,11 @@
       "excerpt": "if (this.overlay().kind === 'informacion') {"
     },
     {
-      "key": "accent|src/app/features/nomina-mensual/containers/proceso-mensual-container/facade/proceso-mensual-presentacion.facade.ts|informacion|kind: 'informacion',",
-      "file": "src/app/features/nomina-mensual/containers/proceso-mensual-container/facade/proceso-mensual-presentacion.facade.ts",
-      "token": "informacion",
-      "suggestion": "información",
-      "excerpt": "kind: 'informacion',"
-    },
-    {
       "key": "accent|src/app/features/nomina-mensual/containers/proceso-mensual-container/facade/proceso-mensual-presentacion.facade.ts|informacion|return current.kind === 'informacion' ? current.view : null;",
       "file": "src/app/features/nomina-mensual/containers/proceso-mensual-container/facade/proceso-mensual-presentacion.facade.ts",
       "token": "informacion",
       "suggestion": "información",
       "excerpt": "return current.kind === 'informacion' ? current.view : null;"
-    },
-    {
-      "key": "accent|src/app/features/nomina-mensual/containers/proceso-mensual-container/facade/proceso-mensual-presentacion.facade.ts|informacion|this.overlay.set({ kind: 'informacion', view });",
-      "file": "src/app/features/nomina-mensual/containers/proceso-mensual-container/facade/proceso-mensual-presentacion.facade.ts",
-      "token": "informacion",
-      "suggestion": "información",
-      "excerpt": "this.overlay.set({ kind: 'informacion', view });"
     },
     {
       "key": "accent|src/app/features/nomina-mensual/containers/proceso-mensual-container/facade/proceso-mensual-presentacion.facade.ts|integracion|return 'Pendiente de integracion';",
@@ -49836,13 +49836,6 @@
       "excerpt": "accionSecundaria: { label: 'Abrir parámetros', destino: 'parametros' },"
     },
     {
-      "key": "accent|src/app/features/nomina-mensual/containers/proceso-mensual-container/facade/proceso-mensual-presentacion.facade.ts|parametros|case 'parametros':",
-      "file": "src/app/features/nomina-mensual/containers/proceso-mensual-container/facade/proceso-mensual-presentacion.facade.ts",
-      "token": "parametros",
-      "suggestion": "parámetros",
-      "excerpt": "case 'parametros':"
-    },
-    {
       "key": "accent|src/app/features/nomina-mensual/containers/proceso-mensual-container/facade/proceso-mensual-presentacion.facade.ts|parametros|case 'PARAMETROS':",
       "file": "src/app/features/nomina-mensual/containers/proceso-mensual-container/facade/proceso-mensual-presentacion.facade.ts",
       "token": "parametros",
@@ -49857,13 +49850,6 @@
       "excerpt": "if (area === 'parametros') return false;"
     },
     {
-      "key": "accent|src/app/features/nomina-mensual/containers/proceso-mensual-container/facade/proceso-mensual-presentacion.facade.ts|parametros|readonly nominaWorkspaceTab = signal<NominaWorkspaceTab>('parametros');",
-      "file": "src/app/features/nomina-mensual/containers/proceso-mensual-container/facade/proceso-mensual-presentacion.facade.ts",
-      "token": "parametros",
-      "suggestion": "parámetros",
-      "excerpt": "readonly nominaWorkspaceTab = signal<NominaWorkspaceTab>('parametros');"
-    },
-    {
       "key": "accent|src/app/features/nomina-mensual/containers/proceso-mensual-container/facade/proceso-mensual-presentacion.facade.ts|parametros|return 'Parametros';",
       "file": "src/app/features/nomina-mensual/containers/proceso-mensual-container/facade/proceso-mensual-presentacion.facade.ts",
       "token": "parametros",
@@ -49876,13 +49862,6 @@
       "token": "parametros",
       "suggestion": "parámetros",
       "excerpt": "return { label: 'Revisar parámetros', route: '/parametros' };"
-    },
-    {
-      "key": "accent|src/app/features/nomina-mensual/containers/proceso-mensual-container/facade/proceso-mensual-presentacion.facade.ts|parametros|return { tabVisible: 'detalle_mensual', detalleVista: 'pendientes', legacyTab: 'parametros' };",
-      "file": "src/app/features/nomina-mensual/containers/proceso-mensual-container/facade/proceso-mensual-presentacion.facade.ts",
-      "token": "parametros",
-      "suggestion": "parámetros",
-      "excerpt": "return { tabVisible: 'detalle_mensual', detalleVista: 'pendientes', legacyTab: 'parametros' };"
     },
     {
       "key": "accent|src/app/features/nomina-mensual/containers/proceso-mensual-container/facade/proceso-mensual-presentacion.facade.ts|periodo|'Bloquea nuevos calculos o reemplazos para el periodo.',",
@@ -50109,6 +50088,13 @@
       "excerpt": "import { buildRevisionAprobacionView } from '../../../rules/proceso-mensual-revision-aprobacion.rules';"
     },
     {
+      "key": "accent|src/app/features/nomina-mensual/containers/proceso-mensual-container/facade/proceso-mensual-presentacion.facade.ts|revision|import { ProcesoMensualRevisionTrabajadoresPort } from './proceso-mensual-revision-trabajadores.port';",
+      "file": "src/app/features/nomina-mensual/containers/proceso-mensual-container/facade/proceso-mensual-presentacion.facade.ts",
+      "token": "revision",
+      "suggestion": "revisión",
+      "excerpt": "import { ProcesoMensualRevisionTrabajadoresPort } from './proceso-mensual-revision-trabajadores.port';"
+    },
+    {
       "key": "accent|src/app/features/nomina-mensual/containers/proceso-mensual-container/facade/proceso-mensual-presentacion.facade.ts|revision|readonly detalleOperativoAbierto = computed(() => this.overlay().kind === 'revision');",
       "file": "src/app/features/nomina-mensual/containers/proceso-mensual-container/facade/proceso-mensual-presentacion.facade.ts",
       "token": "revision",
@@ -50163,13 +50149,6 @@
       "token": "revision",
       "suggestion": "revisión",
       "excerpt": "return current.kind === 'revision'"
-    },
-    {
-      "key": "accent|src/app/features/nomina-mensual/containers/proceso-mensual-container/facade/proceso-mensual-presentacion.facade.ts|revision|this.overlay.set({ kind: 'revision', tab: normalizeDetalleOperativoTab(tab) });",
-      "file": "src/app/features/nomina-mensual/containers/proceso-mensual-container/facade/proceso-mensual-presentacion.facade.ts",
-      "token": "revision",
-      "suggestion": "revisión",
-      "excerpt": "this.overlay.set({ kind: 'revision', tab: normalizeDetalleOperativoTab(tab) });"
     },
     {
       "key": "accent|src/app/features/nomina-mensual/containers/proceso-mensual-container/facade/proceso-mensual-presentacion.facade.ts|revision|this.store.calculo() ? 'trabajadores revisados' : 'revision pendiente',",
@@ -50275,6 +50254,34 @@
       "token": "version",
       "suggestion": "versión",
       "excerpt": "versionCalculoLabel: snapshot.versionMotor || 'Version no disponible',"
+    },
+    {
+      "key": "accent|src/app/features/nomina-mensual/containers/proceso-mensual-container/facade/proceso-mensual-revision-trabajadores.port.spec.ts|revision|import { ProcesoMensualRevisionTrabajadoresPort } from './proceso-mensual-revision-trabajadores.port';",
+      "file": "src/app/features/nomina-mensual/containers/proceso-mensual-container/facade/proceso-mensual-revision-trabajadores.port.spec.ts",
+      "token": "revision",
+      "suggestion": "revisión",
+      "excerpt": "import { ProcesoMensualRevisionTrabajadoresPort } from './proceso-mensual-revision-trabajadores.port';"
+    },
+    {
+      "key": "accent|src/app/features/nomina-mensual/containers/proceso-mensual-container/facade/proceso-mensual-workspace.port.ts|parametros|case 'parametros':",
+      "file": "src/app/features/nomina-mensual/containers/proceso-mensual-container/facade/proceso-mensual-workspace.port.ts",
+      "token": "parametros",
+      "suggestion": "parámetros",
+      "excerpt": "case 'parametros':"
+    },
+    {
+      "key": "accent|src/app/features/nomina-mensual/containers/proceso-mensual-container/facade/proceso-mensual-workspace.port.ts|parametros|readonly nominaWorkspaceTab = signal<NominaWorkspaceTab>('parametros');",
+      "file": "src/app/features/nomina-mensual/containers/proceso-mensual-container/facade/proceso-mensual-workspace.port.ts",
+      "token": "parametros",
+      "suggestion": "parámetros",
+      "excerpt": "readonly nominaWorkspaceTab = signal<NominaWorkspaceTab>('parametros');"
+    },
+    {
+      "key": "accent|src/app/features/nomina-mensual/containers/proceso-mensual-container/facade/proceso-mensual-workspace.port.ts|parametros|return { tabVisible: 'detalle_mensual', detalleVista: 'pendientes', legacyTab: 'parametros' };",
+      "file": "src/app/features/nomina-mensual/containers/proceso-mensual-container/facade/proceso-mensual-workspace.port.ts",
+      "token": "parametros",
+      "suggestion": "parámetros",
+      "excerpt": "return { tabVisible: 'detalle_mensual', detalleVista: 'pendientes', legacyTab: 'parametros' };"
     },
     {
       "key": "accent|src/app/features/nomina-mensual/containers/proceso-mensual-container/models/proceso-mensual-area-orden.config.ts|parametros|{ id: 'parametros', label: 'Parámetros', workspaceTab: 'parametros' },",
@@ -50968,6 +50975,13 @@
       "token": "periodo",
       "suggestion": "período",
       "excerpt": "import { ProcesoMensualPeriodoStore } from './store/proceso-mensual-periodo.store';"
+    },
+    {
+      "key": "accent|src/app/features/nomina-mensual/containers/proceso-mensual-container/proceso-mensual-container.ts|revision|import { ProcesoMensualRevisionTrabajadoresPort } from './facade/proceso-mensual-revision-trabajadores.port';",
+      "file": "src/app/features/nomina-mensual/containers/proceso-mensual-container/proceso-mensual-container.ts",
+      "token": "revision",
+      "suggestion": "revisión",
+      "excerpt": "import { ProcesoMensualRevisionTrabajadoresPort } from './facade/proceso-mensual-revision-trabajadores.port';"
     },
     {
       "key": "accent|src/app/features/nomina-mensual/containers/proceso-mensual-container/store/proceso-mensual-periodo.store.spec.ts|nomina|versionMotor: 'BASE-NOMINA-01',",

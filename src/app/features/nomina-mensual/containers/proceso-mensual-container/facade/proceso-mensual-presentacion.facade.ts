@@ -1,4 +1,4 @@
-﻿import { DestroyRef, HostListener, Injectable, computed, effect, inject, signal, untracked } from '@angular/core';
+﻿import { DestroyRef, HostListener, Injectable, computed, effect, inject, untracked } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router } from '@angular/router';
 import { PeriodoActivoService } from '../../../../../core/services/periodo-activo.service';
@@ -165,8 +165,10 @@ import {
   crearCorreccionNavegacionPort,
   ejecutarAccionCorreccionDesdeModalEnPort,
   ejecutarAccionCorreccionEnPort,
-  mapDetalleVistaALegacyTab,
 } from './proceso-mensual-navegacion';
+import { ProcesoMensualOverlaysPort } from './proceso-mensual-overlays.port';
+import { ProcesoMensualRevisionTrabajadoresPort } from './proceso-mensual-revision-trabajadores.port';
+import { ProcesoMensualWorkspacePort } from './proceso-mensual-workspace.port';
 import {
   DETALLE_OPERATIVO_TABS,
   NOMINA_DETALLE_MOVIMIENTO_COLUMNS,
@@ -194,7 +196,6 @@ import type {
   ConfirmacionProcesoMensualView,
   InformacionPeriodoDestino,
   InformacionPeriodoView,
-  ProcesoMensualOverlay,
   DetalleOperativoTab,
   EtapaOperativaActiva,
   NominaResumenSuperiorVm,
@@ -247,6 +248,9 @@ export class ProcesoMensualPresentacionFacade {
   private readonly flowQueryParams = toSignal(this.route.queryParams, { initialValue: {} });
   private readonly nominaCapabilities = inject(NominaMensualCapabilitiesService);
   private readonly shellContext = inject(ShellPageContextService);
+  private readonly overlaysPort = inject(ProcesoMensualOverlaysPort);
+  private readonly workspacePort = inject(ProcesoMensualWorkspacePort);
+  private readonly revisionTrabajadoresPort = inject(ProcesoMensualRevisionTrabajadoresPort);
 
   readonly nominaWorkspaceTabsVisible = NOMINA_WORKSPACE_TABS_VISIBLE;
   readonly nominaFranjaAreas = NOMINA_FRANJA_AREAS;
@@ -283,8 +287,7 @@ export class ProcesoMensualPresentacionFacade {
   readonly gestionandoAccionPeriodo = this.store.gestionandoAccionPeriodo;
   readonly errorAccionPeriodo = this.store.errorAccionPeriodo;
   readonly exitoAccionPeriodo = this.store.exitoAccionPeriodo;
-  readonly overlay = signal<ProcesoMensualOverlay>({ kind: 'cerrado' });
-  private informacionPeriodoSuprimida = false;
+  readonly overlay = this.overlaysPort.overlay;
 
   readonly confirmacionProceso = computed(() => {
     const current = this.overlay();
@@ -416,9 +419,9 @@ export class ProcesoMensualPresentacionFacade {
       liquidacionesDisponibles: this.store.liquidacionesGeneradasCount() > 0,
     }),
   );
-  readonly nominaWorkspaceTab = signal<NominaWorkspaceTab>('parametros');
-  readonly nominaWorkspaceTabVisible = signal<NominaWorkspaceTabVisible>('detalle_mensual');
-  readonly nominaDetalleMensualVista = signal<NominaDetalleMensualVista>('trabajadores');
+  readonly nominaWorkspaceTab = this.workspacePort.nominaWorkspaceTab;
+  readonly nominaWorkspaceTabVisible = this.workspacePort.nominaWorkspaceTabVisible;
+  readonly nominaDetalleMensualVista = this.workspacePort.nominaDetalleMensualVista;
 
   constructor() {
     const destroyRef = inject(DestroyRef);
@@ -479,58 +482,40 @@ export class ProcesoMensualPresentacionFacade {
       abrirDetalleOperativo: (tab) => this.abrirDetalleOperativo(tab),
     });
   }
-  readonly nominaMasivaFiltro = signal<NominaMasivaFiltro>('todos');
-  readonly nominaMasivaBusqueda = signal('');
-  readonly nominaMasivaTrabajadorSeleccionadoId = signal<number | string | null>(null);
-  readonly actaOperativaPreparada = signal(false);
+  readonly nominaMasivaFiltro = this.revisionTrabajadoresPort.nominaMasivaFiltro;
+  readonly nominaMasivaBusqueda = this.revisionTrabajadoresPort.nominaMasivaBusqueda;
+  readonly nominaMasivaTrabajadorSeleccionadoId = this.revisionTrabajadoresPort.nominaMasivaTrabajadorSeleccionadoId;
+  readonly actaOperativaPreparada = this.workspacePort.actaOperativaPreparada;
 
   accionPeriodoEnCurso(): boolean {
     return this.store.accionPeriodoEnCurso();
   }
 
   seleccionarNominaWorkspaceTab(tab: NominaWorkspaceTab): void {
-    const mapped = mapLegacyWorkspaceTabANavegacion(tab);
-    this.nominaWorkspaceTab.set(mapped.legacyTab);
-    this.nominaWorkspaceTabVisible.set(mapped.tabVisible);
-    this.nominaDetalleMensualVista.set(mapped.detalleVista);
-    if (tab === 'movimientos') {
-      this.nominaMasivaFiltro.set('con_movimientos');
-    } else if (tab === 'recurrentes') {
-      this.nominaMasivaFiltro.set('con_recurrentes');
+    const filtro = this.workspacePort.seleccionarLegacyTab(tab);
+    if (filtro) {
+      this.revisionTrabajadoresPort.seleccionarFiltro(filtro);
     }
   }
 
   seleccionarNominaWorkspaceTabVisible(tab: NominaWorkspaceTabVisible): void {
-    this.nominaWorkspaceTabVisible.set(tab);
-    if (tab === 'historial') {
-      this.nominaWorkspaceTab.set('historial');
-    }
+    this.workspacePort.seleccionarTabVisible(tab);
   }
 
   seleccionarNominaDetalleMensualVista(vista: NominaDetalleMensualVista): void {
-    this.nominaWorkspaceTabVisible.set('detalle_mensual');
-    if (vista === 'movimientos') {
-      this.nominaMasivaFiltro.set('con_movimientos');
-      this.nominaDetalleMensualVista.set('trabajadores');
-      this.nominaWorkspaceTab.set('movimientos');
-      return;
-    }
-    this.nominaDetalleMensualVista.set(vista);
-    const legacy = mapDetalleVistaALegacyTab(vista);
-    if (legacy) {
-      this.nominaWorkspaceTab.set(legacy);
+    const filtro = this.workspacePort.seleccionarDetalleMensualVista(vista);
+    if (filtro) {
+      this.revisionTrabajadoresPort.seleccionarFiltro(filtro);
     }
   }
 
   aplicarDestinoWorkspace(destino: NominaWorkspaceFlowTarget): void {
     if (this.overlay().kind === 'revision') {
-      this.overlay.set({ kind: 'cerrado' });
+      this.overlaysPort.cerrar();
     }
-    this.nominaWorkspaceTabVisible.set(destino.tabVisible);
-    this.nominaDetalleMensualVista.set(destino.detalleVista);
-    this.nominaWorkspaceTab.set(destino.legacyTab);
+    this.workspacePort.aplicarDestino(destino);
     if (destino.filtroMasivo) {
-      this.nominaMasivaFiltro.set(destino.filtroMasivo);
+      this.revisionTrabajadoresPort.seleccionarFiltro(destino.filtroMasivo);
     }
   }
 
@@ -682,39 +667,33 @@ export class ProcesoMensualPresentacionFacade {
       (item) => item.severidad === 'bloqueo' || (!parametrosListos && item.severidad === 'advertencia'),
     );
     if (parametrosListos && incidenciasRevision.length === 0) {
-      this.overlay.set({
-        kind: 'informacion',
-        view: {
-          tone: incidencias.length ? 'warning' : 'success',
-          titulo: 'Parámetros listos',
-          bajada: 'Los parámetros mínimos del período están disponibles para generar y revisar la nómina mensual.',
-          secciones: incidencias.length
-            ? [{ titulo: 'Observaciones opcionales', items: incidencias.map((item) => item.titulo) }]
-            : undefined,
-          puntos: incidencias.length
-            ? undefined
-            : ['Continúe con la revisión de trabajadores o genere la nómina mensual.'],
-          accionPrincipal: { label: 'Ver revisión', destino: 'trabajadores' },
-          accionSecundaria: { label: 'Abrir parámetros', destino: 'parametros' },
-        },
+      this.overlaysPort.abrirInformacion({
+        tone: incidencias.length ? 'warning' : 'success',
+        titulo: 'Parámetros listos',
+        bajada: 'Los parámetros mínimos del período están disponibles para generar y revisar la nómina mensual.',
+        secciones: incidencias.length
+          ? [{ titulo: 'Observaciones opcionales', items: incidencias.map((item) => item.titulo) }]
+          : undefined,
+        puntos: incidencias.length
+          ? undefined
+          : ['Continúe con la revisión de trabajadores o genere la nómina mensual.'],
+        accionPrincipal: { label: 'Ver revisión', destino: 'trabajadores' },
+        accionSecundaria: { label: 'Abrir parámetros', destino: 'parametros' },
       });
       return;
     }
     const faltantes = incidencias.map((item) => item.titulo);
-    this.overlay.set({
-      kind: 'informacion',
-      view: {
-        tone: incidencias.some((item) => item.severidad === 'bloqueo') ? 'danger' : 'warning',
-        titulo: 'Parámetros incompletos',
-        bajada: 'No se puede continuar porque faltan datos requeridos del período.',
-        secciones: faltantes.length
-          ? [{ titulo: 'Qué revisar', items: faltantes }]
-          : undefined,
-        puntos: faltantes.length
-          ? undefined
-          : ['Complete los parámetros mensuales antes de continuar.'],
-        accionPrincipal: { label: 'Abrir parámetros', destino: 'parametros' },
-      },
+    this.overlaysPort.abrirInformacion({
+      tone: incidencias.some((item) => item.severidad === 'bloqueo') ? 'danger' : 'warning',
+      titulo: 'Parámetros incompletos',
+      bajada: 'No se puede continuar porque faltan datos requeridos del período.',
+      secciones: faltantes.length
+        ? [{ titulo: 'Qué revisar', items: faltantes }]
+        : undefined,
+      puntos: faltantes.length
+        ? undefined
+        : ['Complete los parámetros mensuales antes de continuar.'],
+      accionPrincipal: { label: 'Abrir parámetros', destino: 'parametros' },
     });
   }
 
@@ -1142,9 +1121,7 @@ export class ProcesoMensualPresentacionFacade {
   private readonly syncNominaWorkspaceTab = effect(() => {
     const nav = this.nominaWorkspaceNavigationSugerida();
     untracked(() => {
-      this.nominaWorkspaceTab.set(nav.legacyTab);
-      this.nominaWorkspaceTabVisible.set(nav.tabVisible);
-      this.nominaDetalleMensualVista.set(nav.detalleVista);
+      this.workspacePort.aplicarDestino(nav);
     });
   });
 
@@ -1662,17 +1639,17 @@ export class ProcesoMensualPresentacionFacade {
     const seleccionado = this.nominaMasivaTrabajadorSeleccionadoId();
     if (filas.length === 0) {
       if (seleccionado != null) {
-        untracked(() => this.nominaMasivaTrabajadorSeleccionadoId.set(null));
+        untracked(() => this.revisionTrabajadoresPort.limpiarTrabajadorSeleccionado());
       }
       return;
     }
     if (seleccionado == null) {
-      untracked(() => this.nominaMasivaTrabajadorSeleccionadoId.set(filas[0].idPersona));
+      untracked(() => this.revisionTrabajadoresPort.seleccionarTrabajador(filas[0].idPersona));
       return;
     }
     const visible = filas.some((fila) => this.mismaPersonaNominaMasiva(fila.idPersona, seleccionado));
     if (visible) return;
-    untracked(() => this.nominaMasivaTrabajadorSeleccionadoId.set(filas[0].idPersona));
+    untracked(() => this.revisionTrabajadoresPort.seleccionarTrabajador(filas[0].idPersona));
   });
 
   mostrarDetalleOperativo(etapa: EtapaOperativaActiva): boolean {
@@ -1722,17 +1699,17 @@ export class ProcesoMensualPresentacionFacade {
   });
 
   validarPeriodo(): void {
-    this.informacionPeriodoSuprimida = false;
+    this.overlaysPort.habilitarInformacionPeriodo();
     this.store.validarPeriodo();
   }
 
   generarPreNomina(): void {
-    this.informacionPeriodoSuprimida = false;
+    this.overlaysPort.habilitarInformacionPeriodo();
     this.store.generarPreNomina();
   }
 
   guardarBaseNominaRevisada(): void {
-    this.informacionPeriodoSuprimida = true;
+    this.overlaysPort.suprimirInformacionPeriodo();
     this.store.guardarBaseNominaRevisada();
   }
 
@@ -1757,7 +1734,7 @@ export class ProcesoMensualPresentacionFacade {
 
   calcularPreliminar(): void {
     if (!this.puedeCalcularPreliminar()) return;
-    this.informacionPeriodoSuprimida = false;
+    this.overlaysPort.habilitarInformacionPeriodo();
     this.store.calcularPreliminar();
   }
 
@@ -1765,32 +1742,31 @@ export class ProcesoMensualPresentacionFacade {
     if (this.store.snapshotActivo()) {
       this.store.asegurarSnapshotCompletoCargado();
     }
-    this.overlay.set({ kind: 'revision', tab: normalizeDetalleOperativoTab(tab) });
+    this.overlaysPort.abrirRevision(tab);
   }
 
   abrirOverlayDecision(view: ConfirmacionProcesoMensualView): void {
-    this.overlay.set({ kind: 'decision', view });
+    this.overlaysPort.abrirDecision(view);
   }
 
   abrirOverlayInformacion(view: InformacionPeriodoView | null): void {
     if (!view) {
       if (this.overlay().kind === 'informacion') {
-        this.overlay.set({ kind: 'cerrado' });
+        this.overlaysPort.cerrar();
       }
       return;
     }
-    this.overlay.set({ kind: 'informacion', view });
+    this.overlaysPort.abrirInformacion(view);
   }
 
   cerrarOverlay(): void {
     const current = this.overlay();
     switch (current.kind) {
       case 'informacion':
-        this.informacionPeriodoSuprimida = true;
-        this.overlay.set({ kind: 'cerrado' });
+        this.overlaysPort.cerrarInformacionSuprimida();
         break;
       case 'revision':
-        this.overlay.set({ kind: 'cerrado' });
+        this.overlaysPort.cerrar();
         break;
       case 'decision':
         this.cancelarAccionProceso();
@@ -1801,7 +1777,7 @@ export class ProcesoMensualPresentacionFacade {
   }
 
   sincronizarInformacionPeriodo(): void {
-    if (this.informacionPeriodoSuprimida) return;
+    if (this.overlaysPort.informacionPeriodoSuprimida()) return;
     const current = this.overlay();
     if (current.kind === 'decision' || current.kind === 'revision') return;
 
@@ -1825,8 +1801,7 @@ export class ProcesoMensualPresentacionFacade {
 
   cerrarInformacionPeriodo(): void {
     if (this.overlay().kind === 'informacion') {
-      this.informacionPeriodoSuprimida = true;
-      this.overlay.set({ kind: 'cerrado' });
+      this.overlaysPort.cerrarInformacionSuprimida();
     }
   }
 
@@ -1836,11 +1811,11 @@ export class ProcesoMensualPresentacionFacade {
     const info = current.view;
     const destino = info.accionPrincipal?.destino;
     const reintentarAccion = info.reintentarAccion;
-    this.overlay.set({ kind: 'cerrado' });
+    this.overlaysPort.cerrar();
     if (destino === 'reintentar') {
-      this.informacionPeriodoSuprimida = false;
+      this.overlaysPort.habilitarInformacionPeriodo();
     } else {
-      this.informacionPeriodoSuprimida = true;
+      this.overlaysPort.suprimirInformacionPeriodo();
     }
     if (!destino) return;
     this.ejecutarDestinoInformacionPeriodo(destino, reintentarAccion);
@@ -1848,8 +1823,7 @@ export class ProcesoMensualPresentacionFacade {
 
   cancelarInformacionPeriodo(): void {
     if (this.overlay().kind === 'informacion') {
-      this.informacionPeriodoSuprimida = true;
-      this.overlay.set({ kind: 'cerrado' });
+      this.overlaysPort.cerrarInformacionSuprimida();
     }
   }
 
@@ -1858,8 +1832,8 @@ export class ProcesoMensualPresentacionFacade {
     if (current.kind !== 'informacion') return;
     const destino = current.view.accionSecundaria?.destino;
     if (!destino || destino === 'cerrar') return;
-    this.overlay.set({ kind: 'cerrado' });
-    this.informacionPeriodoSuprimida = true;
+    this.overlaysPort.cerrar();
+    this.overlaysPort.suprimirInformacionPeriodo();
     this.ejecutarDestinoInformacionPeriodo(destino);
   }
 
@@ -2038,8 +2012,8 @@ export class ProcesoMensualPresentacionFacade {
 
   private resetearEstadoPeriodo(): void {
     this.store.resetearEstadoPeriodo();
-    this.overlay.set({ kind: 'cerrado' });
-    this.informacionPeriodoSuprimida = false;
+    this.overlaysPort.cerrar();
+    this.overlaysPort.habilitarInformacionPeriodo();
     this.actaOperativaPreparada.set(false);
   }
 
@@ -2254,13 +2228,13 @@ export class ProcesoMensualPresentacionFacade {
 
   cerrarDetalleOperativo(): void {
     if (this.overlay().kind === 'revision') {
-      this.overlay.set({ kind: 'cerrado' });
+      this.overlaysPort.cerrar();
     }
   }
 
   seleccionarDetalleOperativoTab(tab: DetalleOperativoTab): void {
     if (this.overlay().kind === 'revision') {
-      this.overlay.set({ kind: 'revision', tab: normalizeDetalleOperativoTab(tab) });
+      this.overlaysPort.abrirRevision(tab);
     }
   }
 
@@ -2275,7 +2249,7 @@ export class ProcesoMensualPresentacionFacade {
   }
 
   seleccionarFiltroNominaMasiva(filtro: NominaMasivaFiltro): void {
-    this.nominaMasivaFiltro.set(filtro);
+    this.revisionTrabajadoresPort.seleccionarFiltro(filtro);
   }
 
   etiquetaFiltroNominaMasiva(filtro: NominaMasivaFiltro): string {
@@ -2304,11 +2278,11 @@ export class ProcesoMensualPresentacionFacade {
   }
 
   actualizarBusquedaNominaMasiva(valor: string): void {
-    this.nominaMasivaBusqueda.set(valor);
+    this.revisionTrabajadoresPort.actualizarBusqueda(valor);
   }
 
   seleccionarTrabajadorNominaMasiva(idPersona: number | string): void {
-    this.nominaMasivaTrabajadorSeleccionadoId.set(idPersona);
+    this.revisionTrabajadoresPort.seleccionarTrabajador(idPersona);
   }
 
   esFilaMasivaSeleccionada(idPersona: number | string): boolean {
@@ -2317,15 +2291,11 @@ export class ProcesoMensualPresentacionFacade {
   }
 
   private clavePersonaNominaMasiva(idPersona: number | string | null | undefined): string {
-    if (idPersona == null) return '';
-    const raw = String(idPersona).trim();
-    return raw.startsWith('omitido-') ? raw.slice('omitido-'.length) : raw;
+    return this.revisionTrabajadoresPort.clavePersona(idPersona);
   }
 
   private mismaPersonaNominaMasiva(a: number | string | null | undefined, b: number | string | null | undefined): boolean {
-    const claveA = this.clavePersonaNominaMasiva(a);
-    const claveB = this.clavePersonaNominaMasiva(b);
-    return !!claveA && claveA === claveB;
+    return this.revisionTrabajadoresPort.mismaPersona(a, b);
   }
 
   claseAccionRecomendadaMasiva(tono: 'listo' | 'atencion' | 'bloqueo' | 'neutral'): string {
@@ -2496,7 +2466,7 @@ export class ProcesoMensualPresentacionFacade {
     const current = this.overlay();
     if (current.kind !== 'decision') return;
     const confirmacion = current.view;
-    this.overlay.set({ kind: 'cerrado' });
+    this.overlaysPort.cerrar();
     switch (confirmacion.tipo) {
       case 'guardar_preliminar':
         this.ejecutarGuardarSnapshotPreliminar();
@@ -2534,7 +2504,7 @@ export class ProcesoMensualPresentacionFacade {
 
   cancelarAccionProceso(): void {
     if (this.overlay().kind === 'decision') {
-      this.overlay.set({ kind: 'cerrado' });
+      this.overlaysPort.cerrar();
     }
   }
 
@@ -2875,26 +2845,3 @@ function toneDesdeNominaFrame(frame: NominaVisualFrame): ShellStatusChipTone {
       return 'neutral';
   }
 }
-
-function mapLegacyWorkspaceTabANavegacion(tab: NominaWorkspaceTab): {
-  tabVisible: NominaWorkspaceTabVisible;
-  detalleVista: NominaDetalleMensualVista;
-  legacyTab: NominaWorkspaceTab;
-} {
-  switch (tab) {
-    case 'historial':
-      return { tabVisible: 'historial', detalleVista: 'todos', legacyTab: 'historial' };
-    case 'liquidaciones':
-      return { tabVisible: 'detalle_mensual', detalleVista: 'liquidaciones', legacyTab: 'liquidaciones' };
-    case 'movimientos':
-    case 'recurrentes':
-      return { tabVisible: 'detalle_mensual', detalleVista: 'trabajadores', legacyTab: tab };
-    case 'trabajadores':
-      return { tabVisible: 'detalle_mensual', detalleVista: 'trabajadores', legacyTab: 'trabajadores' };
-    case 'parametros':
-      return { tabVisible: 'detalle_mensual', detalleVista: 'pendientes', legacyTab: 'parametros' };
-    default:
-      return { tabVisible: 'detalle_mensual', detalleVista: 'todos', legacyTab: tab };
-  }
-}
-

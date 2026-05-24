@@ -1,4 +1,5 @@
-import { TestBed } from '@angular/core/testing';
+import '@angular/compiler';
+import { beforeEach, describe, expect, it } from 'vitest';
 
 import { EmpleadosFormOrchestratorService } from '../services/empleados-form-orchestrator.service';
 import { validateBorradorAvanzadoFormMinimo } from './empleado-borrador-form.validation';
@@ -7,8 +8,7 @@ describe('validateBorradorAvanzadoFormMinimo', () => {
   let orchestrator: EmpleadosFormOrchestratorService;
 
   beforeEach(() => {
-    TestBed.configureTestingModule({});
-    orchestrator = TestBed.inject(EmpleadosFormOrchestratorService);
+    orchestrator = new EmpleadosFormOrchestratorService();
   });
 
   it('rechaza RUT invalido (el validador de RUT no marca vacio como error)', () => {
