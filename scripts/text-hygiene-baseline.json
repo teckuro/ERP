@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-05-23T23:31:21.635Z",
+  "generatedAt": "2026-05-24T00:02:58.721Z",
   "note": "Deuda historica de acentos. El check falla solo si aparecen hallazgos nuevos no presentes aqui.",
   "findings": [
     {
@@ -10755,13 +10755,6 @@
       "excerpt": "## Implementacion UI - EMP-PERFIL-LABORAL-UI-01"
     },
     {
-      "key": "accent|docs/codex/modulos/empleados/perfil-laboral-previsional.md|nomina|`fn_obtener_perfil_laboral_persona` sigue reservada como lectura canonica por persona y periodo para ficha, prevalidaciones y nomina futura. La UI de alta usa una derivacion prelim",
-      "file": "docs/codex/modulos/empleados/perfil-laboral-previsional.md",
-      "token": "nomina",
-      "suggestion": "nómina",
-      "excerpt": "`fn_obtener_perfil_laboral_persona` sigue reservada como lectura canonica por persona y periodo para ficha, prevalidaciones y nomina futura. La UI de alta usa una derivacion prelim"
-    },
-    {
       "key": "accent|docs/codex/modulos/empleados/perfil-laboral-previsional.md|periodo|- `periodo`",
       "file": "docs/codex/modulos/empleados/perfil-laboral-previsional.md",
       "token": "periodo",
@@ -10783,11 +10776,11 @@
       "excerpt": "- ultimo dia del mes como fallback si el periodo aun no esta cargado"
     },
     {
-      "key": "accent|docs/codex/modulos/empleados/perfil-laboral-previsional.md|periodo|`fn_obtener_perfil_laboral_persona` sigue reservada como lectura canonica por persona y periodo para ficha, prevalidaciones y nomina futura. La UI de alta usa una derivacion prelim",
+      "key": "accent|docs/codex/modulos/empleados/perfil-laboral-previsional.md|periodo|`fn_obtener_perfil_laboral_persona` es la lectura canonica por persona y periodo. La ficha empleado (`EMP-PERFIL-LABORAL-FICHA-05`) la consume con el periodo activo del header. La ",
       "file": "docs/codex/modulos/empleados/perfil-laboral-previsional.md",
       "token": "periodo",
       "suggestion": "período",
-      "excerpt": "`fn_obtener_perfil_laboral_persona` sigue reservada como lectura canonica por persona y periodo para ficha, prevalidaciones y nomina futura. La UI de alta usa una derivacion prelim"
+      "excerpt": "`fn_obtener_perfil_laboral_persona` es la lectura canonica por persona y periodo. La ficha empleado (`EMP-PERFIL-LABORAL-FICHA-05`) la consume con el periodo activo del header. La "
     },
     {
       "key": "accent|docs/codex/modulos/empleados/perfil-laboral-previsional.md|periodo|> `tipo_trabajador` es solo categoria base. Las condiciones especiales se modelan aparte y el perfil final se deriva por periodo.",
@@ -32833,18 +32826,18 @@
       "excerpt": "| Alcance | empleado-expediente-tokens.css, ficha-expediente.layout.css; shell chip unico; panel Diagnostico operativo |"
     },
     {
+      "key": "accent|docs/codex/orquestador/estado-fases.md|diagnostico|| Alcance | Facade, workspace, RPC perfil laboral por periodo, condiciones especiales en tab Laboral, diagnostico enriquecido. |",
+      "file": "docs/codex/orquestador/estado-fases.md",
+      "token": "diagnostico",
+      "suggestion": "diagnóstico",
+      "excerpt": "| Alcance | Facade, workspace, RPC perfil laboral por periodo, condiciones especiales en tab Laboral, diagnostico enriquecido. |"
+    },
+    {
       "key": "accent|docs/codex/orquestador/estado-fases.md|diagnostico|| Alcance | form-empleado usa empleado-alta-diagnostico + kernel; resumen paso 9 con faltantes de ficha; wizardStepDesdeClaveTab |",
       "file": "docs/codex/orquestador/estado-fases.md",
       "token": "diagnostico",
       "suggestion": "diagnóstico",
       "excerpt": "| Alcance | form-empleado usa empleado-alta-diagnostico + kernel; resumen paso 9 con faltantes de ficha; wizardStepDesdeClaveTab |"
-    },
-    {
-      "key": "accent|docs/codex/orquestador/estado-fases.md|diagnostico|| Alcance | Kernel empleado-diagnostico, facade presentación, contenedor delgado, ficha-empleado-tabs.config; sin workspace/overlays ni paridad alta. |",
-      "file": "docs/codex/orquestador/estado-fases.md",
-      "token": "diagnostico",
-      "suggestion": "diagnóstico",
-      "excerpt": "| Alcance | Kernel empleado-diagnostico, facade presentación, contenedor delgado, ficha-empleado-tabs.config; sin workspace/overlays ni paridad alta. |"
     },
     {
       "key": "accent|docs/codex/orquestador/estado-fases.md|diagnostico|| Documento | [`../modulos/nomina-mensual/nom-periodo-diagnostico-persist-01.md`](../modulos/nomina-mensual/nom-periodo-diagnostico-persist-01.md) § Fase A |",
@@ -32875,11 +32868,11 @@
       "excerpt": "| Siguiente | NOM-PERIODO-DIAGNOSTICO-PERSIST-01 (BD) |"
     },
     {
-      "key": "accent|docs/codex/orquestador/estado-fases.md|diagnostico|| Validación | tsc app OK; vitest empleado-diagnostico, empleado-completitud OK. |",
+      "key": "accent|docs/codex/orquestador/estado-fases.md|diagnostico|| Validación | tsc app OK; vitest empleado-perfil-laboral, empleado-diagnostico, empleado-completitud OK. |",
       "file": "docs/codex/orquestador/estado-fases.md",
       "token": "diagnostico",
       "suggestion": "diagnóstico",
-      "excerpt": "| Validación | tsc app OK; vitest empleado-diagnostico, empleado-completitud OK. |"
+      "excerpt": "| Validación | tsc app OK; vitest empleado-perfil-laboral, empleado-diagnostico, empleado-completitud OK. |"
     },
     {
       "key": "accent|docs/codex/orquestador/estado-fases.md|diagnostico|| Validacion | vitest empleado-alta-diagnostico, empleado-completitud; tsc app OK |",
@@ -33307,6 +33300,13 @@
       "token": "modulos",
       "suggestion": "módulos",
       "excerpt": "| Documento | [../modulos/empleados/emp-ficha-sustentable-00.md](../modulos/empleados/emp-ficha-sustentable-00.md) |"
+    },
+    {
+      "key": "accent|docs/codex/orquestador/estado-fases.md|modulos|| Documento | [../modulos/empleados/emp-ficha-sustentable-00.md](../modulos/empleados/emp-ficha-sustentable-00.md), [../modulos/empleados/emp-perfil-laboral-ficha-05.md](../modulos",
+      "file": "docs/codex/orquestador/estado-fases.md",
+      "token": "modulos",
+      "suggestion": "módulos",
+      "excerpt": "| Documento | [../modulos/empleados/emp-ficha-sustentable-00.md](../modulos/empleados/emp-ficha-sustentable-00.md), [../modulos/empleados/emp-perfil-laboral-ficha-05.md](../modulos"
     },
     {
       "key": "accent|docs/codex/orquestador/estado-fases.md|modulos|| Documento | [../modulos/empleados/emp-ficha-ui-base-01.md](../modulos/empleados/emp-ficha-ui-base-01.md) |",
@@ -34686,6 +34686,13 @@
       "token": "periodo",
       "suggestion": "período",
       "excerpt": "| Alcance | CTA secuencial `Verificar período -> Generar nómina -> Revisar trabajadores -> Confirmar nómina -> Generar liquidaciones`; Liquidaciones habla de `nómina mensual confir"
+    },
+    {
+      "key": "accent|docs/codex/orquestador/estado-fases.md|periodo|| Alcance | Facade, workspace, RPC perfil laboral por periodo, condiciones especiales en tab Laboral, diagnostico enriquecido. |",
+      "file": "docs/codex/orquestador/estado-fases.md",
+      "token": "periodo",
+      "suggestion": "período",
+      "excerpt": "| Alcance | Facade, workspace, RPC perfil laboral por periodo, condiciones especiales en tab Laboral, diagnostico enriquecido. |"
     },
     {
       "key": "accent|docs/codex/orquestador/estado-fases.md|periodo|| Alcance | Identidad global del ERP como bitacora operativa del periodo; reglas visuales, narrativa administrativa y gramatica por modulo. |",
@@ -39763,6 +39770,13 @@
       "excerpt": "- **Archivos:** rules estado-operativo/validación/workspace, workspace HTML, store, service, `nomina-periodo-diagnostico.repository.ts`, `27_nomina_periodo_diagnostico.sql`, docs m"
     },
     {
+      "key": "accent|docs/codex/peticiones-estilos.md|diagnostico|- **Corrección:** mismos CSS de ficha en `app-empleado-record-header`, `app-empleado-expediente-rail`, `app-empleado-diagnostico-panel`; `:host { display: contents }` en diagnóstic",
+      "file": "docs/codex/peticiones-estilos.md",
+      "token": "diagnostico",
+      "suggestion": "diagnóstico",
+      "excerpt": "- **Corrección:** mismos CSS de ficha en `app-empleado-record-header`, `app-empleado-expediente-rail`, `app-empleado-diagnostico-panel`; `:host { display: contents }` en diagnóstic"
+    },
+    {
       "key": "accent|docs/codex/peticiones-estilos.md|diagnostico|## 2026-05-14 - EMP-ALTA-DIAGNOSTICO-CONTRACTUAL-UX-01",
       "file": "docs/codex/peticiones-estilos.md",
       "token": "diagnostico",
@@ -39775,6 +39789,13 @@
       "token": "documentacion",
       "suggestion": "documentación",
       "excerpt": "- **Archivos tocados:** componente local `acta-operativa-periodo`, regla/modelo local, `proceso-mensual-container.ts/html/spec.ts` y documentacion Codex."
+    },
+    {
+      "key": "accent|docs/codex/peticiones-estilos.md|edicion|- **Cambio visual:** bloque «Condiciones especiales» con perfil detectado por periodo activo; edicion con `app-empleado-perfil-laboral` reutilizado; hint local `.employee-record-pe",
+      "file": "docs/codex/peticiones-estilos.md",
+      "token": "edicion",
+      "suggestion": "edición",
+      "excerpt": "- **Cambio visual:** bloque «Condiciones especiales» con perfil detectado por periodo activo; edicion con `app-empleado-perfil-laboral` reutilizado; hint local `.employee-record-pe"
     },
     {
       "key": "accent|docs/codex/peticiones-estilos.md|edicion|- **Componentes base:** `app-stepper`, `app-tabbar` y `app-tabs` dejan de depender de subrayados o estados genericos; el stepper usa lenguaje visible `En edicion`, `Listo`, `Requie",
@@ -40062,6 +40083,13 @@
       "token": "modulo",
       "suggestion": "módulo",
       "excerpt": "- **Modulo:** Empleados / base SQL."
+    },
+    {
+      "key": "accent|docs/codex/peticiones-estilos.md|modulo|- **Modulo:** Empleados / ficha `/empleados/:id`, tab Laboral.",
+      "file": "docs/codex/peticiones-estilos.md",
+      "token": "modulo",
+      "suggestion": "módulo",
+      "excerpt": "- **Modulo:** Empleados / ficha `/empleados/:id`, tab Laboral."
     },
     {
       "key": "accent|docs/codex/peticiones-estilos.md|modulo|- **Modulo:** Nomina mensual / modal revision (`app-proceso-mensual-detalle-modal`).",
@@ -41021,6 +41049,13 @@
       "token": "periodo",
       "suggestion": "período",
       "excerpt": "- **Banda superior como fuente de estado**: el periodo ahora comunica pendiente, parcial, completo, editando o error con un chip unico y una descripcion corta; los catalogos/vigenc"
+    },
+    {
+      "key": "accent|docs/codex/peticiones-estilos.md|periodo|- **Cambio visual:** bloque «Condiciones especiales» con perfil detectado por periodo activo; edicion con `app-empleado-perfil-laboral` reutilizado; hint local `.employee-record-pe",
+      "file": "docs/codex/peticiones-estilos.md",
+      "token": "periodo",
+      "suggestion": "período",
+      "excerpt": "- **Cambio visual:** bloque «Condiciones especiales» con perfil detectado por periodo activo; edicion con `app-empleado-perfil-laboral` reutilizado; hint local `.employee-record-pe"
     },
     {
       "key": "accent|docs/codex/peticiones-estilos.md|periodo|- **Cambio visual:** se agrega `Acta operativa del periodo` como componente local dentro del acta principal, con contexto revisado, decision operativa, evidencia para liquidaciones",
@@ -43998,6 +44033,13 @@
       "excerpt": "label: 'Sin prevision',"
     },
     {
+      "key": "accent|src/app/features/empleados/components/expediente/empleado-diagnostico-panel/empleado-diagnostico-panel.component.ts|diagnostico|'./empleado-diagnostico-panel.component.css',",
+      "file": "src/app/features/empleados/components/expediente/empleado-diagnostico-panel/empleado-diagnostico-panel.component.ts",
+      "token": "diagnostico",
+      "suggestion": "diagnóstico",
+      "excerpt": "'./empleado-diagnostico-panel.component.css',"
+    },
+    {
       "key": "accent|src/app/features/empleados/components/expediente/empleado-diagnostico-panel/empleado-diagnostico-panel.component.ts|diagnostico|selector: 'app-empleado-diagnostico-panel',",
       "file": "src/app/features/empleados/components/expediente/empleado-diagnostico-panel/empleado-diagnostico-panel.component.ts",
       "token": "diagnostico",
@@ -44796,11 +44838,11 @@
       "excerpt": "></app-empleado-prevision-salud>"
     },
     {
-      "key": "accent|src/app/features/empleados/containers/ficha-empleado-container/components/ficha-empleado-workspace/ficha-empleado-workspace.component.html|remuneracion|@if (f.tabActivo() === 'remuneracion' && employee.aptoParaRemuneraciones) {",
+      "key": "accent|src/app/features/empleados/containers/ficha-empleado-container/components/ficha-empleado-workspace/ficha-empleado-workspace.component.html|remuneracion|f.tabActivo() === 'remuneracion' &&",
       "file": "src/app/features/empleados/containers/ficha-empleado-container/components/ficha-empleado-workspace/ficha-empleado-workspace.component.html",
       "token": "remuneracion",
       "suggestion": "remuneración",
-      "excerpt": "@if (f.tabActivo() === 'remuneracion' && employee.aptoParaRemuneraciones) {"
+      "excerpt": "f.tabActivo() === 'remuneracion' &&"
     },
     {
       "key": "accent|src/app/features/empleados/containers/ficha-empleado-container/components/ficha-empleado-workspace/ficha-empleado-workspace.component.ts|diagnostico|import { EmpleadoDiagnosticoPanelComponent } from '../../../../components/expediente/empleado-diagnostico-panel/empleado-diagnostico-panel.component';",
@@ -44859,11 +44901,18 @@
       "excerpt": "id: 'modulo',"
     },
     {
-      "key": "accent|src/app/features/empleados/containers/ficha-empleado-container/facade/ficha-empleado-presentacion.facade.ts|prevision|): 'datos' | 'contacto' | 'contrato' | 'prevision' | 'bancario' | null {",
+      "key": "accent|src/app/features/empleados/containers/ficha-empleado-container/facade/ficha-empleado-presentacion.facade.ts|periodo|import { PeriodoActivoService } from '../../../../../core/services/periodo-activo.service';",
+      "file": "src/app/features/empleados/containers/ficha-empleado-container/facade/ficha-empleado-presentacion.facade.ts",
+      "token": "periodo",
+      "suggestion": "período",
+      "excerpt": "import { PeriodoActivoService } from '../../../../../core/services/periodo-activo.service';"
+    },
+    {
+      "key": "accent|src/app/features/empleados/containers/ficha-empleado-container/facade/ficha-empleado-presentacion.facade.ts|prevision|): 'datos' | 'contacto' | 'contrato' | 'prevision' | 'bancario' | 'perfil-laboral' | null {",
       "file": "src/app/features/empleados/containers/ficha-empleado-container/facade/ficha-empleado-presentacion.facade.ts",
       "token": "prevision",
       "suggestion": "previsión",
-      "excerpt": "): 'datos' | 'contacto' | 'contrato' | 'prevision' | 'bancario' | null {"
+      "excerpt": "): 'datos' | 'contacto' | 'contrato' | 'prevision' | 'bancario' | 'perfil-laboral' | null {"
     },
     {
       "key": "accent|src/app/features/empleados/containers/ficha-empleado-container/facade/ficha-empleado-presentacion.facade.ts|prevision|case 'prevision':",
@@ -44955,6 +45004,20 @@
       "token": "remuneracion",
       "suggestion": "remuneración",
       "excerpt": "if (normalized.includes('remuneracion')) {"
+    },
+    {
+      "key": "accent|src/app/features/empleados/containers/ficha-empleado-container/facade/ficha-empleado-presentacion.facade.ts|remuneracion|if (saveTarget === 'laboral' || saveTarget === 'remuneracion') {",
+      "file": "src/app/features/empleados/containers/ficha-empleado-container/facade/ficha-empleado-presentacion.facade.ts",
+      "token": "remuneracion",
+      "suggestion": "remuneración",
+      "excerpt": "if (saveTarget === 'laboral' || saveTarget === 'remuneracion') {"
+    },
+    {
+      "key": "accent|src/app/features/empleados/containers/ficha-empleado-container/facade/ficha-empleado-presentacion.facade.ts|remuneracion|if (this.tabActivo() === 'remuneracion') {",
+      "file": "src/app/features/empleados/containers/ficha-empleado-container/facade/ficha-empleado-presentacion.facade.ts",
+      "token": "remuneracion",
+      "suggestion": "remuneración",
+      "excerpt": "if (this.tabActivo() === 'remuneracion') {"
     },
     {
       "key": "accent|src/app/features/empleados/containers/ficha-empleado-container/facade/ficha-empleado-presentacion.facade.ts|remuneracion|normalized.includes('remuneracion')",
@@ -45991,6 +46054,34 @@
       "token": "titulo",
       "suggestion": "título",
       "excerpt": "detalle: 'La excepcion maxima para gerentes o personas con titulo profesional o tecnico es de dos anos; sobre ese limite no debe finalizarse el alta.',"
+    },
+    {
+      "key": "accent|src/app/features/empleados/rules/empleado-perfil-laboral.rules.spec.ts|codigos|it('etiquetaTramoEdadLaboral no expone codigos tecnicos', () => {",
+      "file": "src/app/features/empleados/rules/empleado-perfil-laboral.rules.spec.ts",
+      "token": "codigos",
+      "suggestion": "códigos",
+      "excerpt": "it('etiquetaTramoEdadLaboral no expone codigos tecnicos', () => {"
+    },
+    {
+      "key": "accent|src/app/features/empleados/rules/empleado-perfil-laboral.rules.spec.ts|periodo|it('enriquecerSnapshotConPerfilRpc usa edad del periodo', () => {",
+      "file": "src/app/features/empleados/rules/empleado-perfil-laboral.rules.spec.ts",
+      "token": "periodo",
+      "suggestion": "período",
+      "excerpt": "it('enriquecerSnapshotConPerfilRpc usa edad del periodo', () => {"
+    },
+    {
+      "key": "accent|src/app/features/empleados/rules/empleado-perfil-laboral.rules.spec.ts|validacion|import type { EmpleadoFichaValidacionSnapshot } from './empleado-ficha-validacion.rules';",
+      "file": "src/app/features/empleados/rules/empleado-perfil-laboral.rules.spec.ts",
+      "token": "validacion",
+      "suggestion": "validación",
+      "excerpt": "import type { EmpleadoFichaValidacionSnapshot } from './empleado-ficha-validacion.rules';"
+    },
+    {
+      "key": "accent|src/app/features/empleados/rules/empleado-perfil-laboral.rules.ts|validacion|import type { EmpleadoFichaValidacionSnapshot } from './empleado-ficha-validacion.rules';",
+      "file": "src/app/features/empleados/rules/empleado-perfil-laboral.rules.ts",
+      "token": "validacion",
+      "suggestion": "validación",
+      "excerpt": "import type { EmpleadoFichaValidacionSnapshot } from './empleado-ficha-validacion.rules';"
     },
     {
       "key": "accent|src/app/features/empleados/rules/empleado-tipo-trabajador-flow.rules.spec.ts|catalogo|it('encuentra el id real del catalogo por categoria base', () => {",
@@ -56871,6 +56962,1273 @@
       "excerpt": "templateUrl: './listado-parametros-generales-container.html',"
     },
     {
+      "key": "accent|src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.html|parametros|[class.parametros-tab-active]=\"activeTab() === tab.id\"",
+      "file": "src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.html",
+      "token": "parametros",
+      "suggestion": "parámetros",
+      "excerpt": "[class.parametros-tab-active]=\"activeTab() === tab.id\""
+    },
+    {
+      "key": "accent|src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.html|parametros|[gridPersistenceKey]=\"gridPersistenceKey('parametros.afp.dg')\"",
+      "file": "src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.html",
+      "token": "parametros",
+      "suggestion": "parámetros",
+      "excerpt": "[gridPersistenceKey]=\"gridPersistenceKey('parametros.afp.dg')\""
+    },
+    {
+      "key": "accent|src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.html|parametros|[gridPersistenceKey]=\"gridPersistenceKey('parametros.tramos-carga.dg')\"",
+      "file": "src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.html",
+      "token": "parametros",
+      "suggestion": "parámetros",
+      "excerpt": "[gridPersistenceKey]=\"gridPersistenceKey('parametros.tramos-carga.dg')\""
+    },
+    {
+      "key": "accent|src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.html|parametros|[gridPersistenceKeyApvInst]=\"gridPersistenceKey('parametros.apv-instituciones.dg')\"",
+      "file": "src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.html",
+      "token": "parametros",
+      "suggestion": "parámetros",
+      "excerpt": "[gridPersistenceKeyApvInst]=\"gridPersistenceKey('parametros.apv-instituciones.dg')\""
+    },
+    {
+      "key": "accent|src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.html|parametros|[gridPersistenceKeyApvPago]=\"gridPersistenceKey('parametros.apv-formas-pago.dg')\"",
+      "file": "src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.html",
+      "token": "parametros",
+      "suggestion": "parámetros",
+      "excerpt": "[gridPersistenceKeyApvPago]=\"gridPersistenceKey('parametros.apv-formas-pago.dg')\""
+    },
+    {
+      "key": "accent|src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.html|parametros|[gridPersistenceKeyCcaf]=\"gridPersistenceKey('parametros.ccaf.dg')\"",
+      "file": "src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.html",
+      "token": "parametros",
+      "suggestion": "parámetros",
+      "excerpt": "[gridPersistenceKeyCcaf]=\"gridPersistenceKey('parametros.ccaf.dg')\""
+    },
+    {
+      "key": "accent|src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.html|parametros|[gridPersistenceKeyInstituciones]=\"gridPersistenceKey('parametros.salud-instituciones.dg')\"",
+      "file": "src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.html",
+      "token": "parametros",
+      "suggestion": "parámetros",
+      "excerpt": "[gridPersistenceKeyInstituciones]=\"gridPersistenceKey('parametros.salud-instituciones.dg')\""
+    },
+    {
+      "key": "accent|src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.html|parametros|[gridPersistenceKeyIsapre]=\"gridPersistenceKey('parametros.isapre.dg')\"",
+      "file": "src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.html",
+      "token": "parametros",
+      "suggestion": "parámetros",
+      "excerpt": "[gridPersistenceKeyIsapre]=\"gridPersistenceKey('parametros.isapre.dg')\""
+    },
+    {
+      "key": "accent|src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.html|parametros|[gridPersistenceKeyLegal]=\"gridPersistenceKey('parametros.reforma-legal.dg')\"",
+      "file": "src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.html",
+      "token": "parametros",
+      "suggestion": "parámetros",
+      "excerpt": "[gridPersistenceKeyLegal]=\"gridPersistenceKey('parametros.reforma-legal.dg')\""
+    },
+    {
+      "key": "accent|src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.html|parametros|[gridPersistenceKeyLey16744]=\"gridPersistenceKey('parametros.ley16744.dg')\"",
+      "file": "src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.html",
+      "token": "parametros",
+      "suggestion": "parámetros",
+      "excerpt": "[gridPersistenceKeyLey16744]=\"gridPersistenceKey('parametros.ley16744.dg')\""
+    },
+    {
+      "key": "accent|src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.html|parametros|[gridPersistenceKeyMutuales]=\"gridPersistenceKey('parametros.mutuales.dg')\"",
+      "file": "src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.html",
+      "token": "parametros",
+      "suggestion": "parámetros",
+      "excerpt": "[gridPersistenceKeyMutuales]=\"gridPersistenceKey('parametros.mutuales.dg')\""
+    },
+    {
+      "key": "accent|src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.html|parametros|[gridPersistenceKeyPrevisional]=\"gridPersistenceKey('parametros.reforma-previsional.dg')\"",
+      "file": "src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.html",
+      "token": "parametros",
+      "suggestion": "parámetros",
+      "excerpt": "[gridPersistenceKeyPrevisional]=\"gridPersistenceKey('parametros.reforma-previsional.dg')\""
+    },
+    {
+      "key": "accent|src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.html|parametros|[gridPersistenceKeyTabla]=\"gridPersistenceKey('parametros.tabla-impuesto.dg')\"",
+      "file": "src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.html",
+      "token": "parametros",
+      "suggestion": "parámetros",
+      "excerpt": "[gridPersistenceKeyTabla]=\"gridPersistenceKey('parametros.tabla-impuesto.dg')\""
+    },
+    {
+      "key": "accent|src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.html|parametros|[gridPersistenceKeyTrabPesados]=\"gridPersistenceKey('parametros.trabajos-pesados.dg')\"",
+      "file": "src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.html",
+      "token": "parametros",
+      "suggestion": "parámetros",
+      "excerpt": "[gridPersistenceKeyTrabPesados]=\"gridPersistenceKey('parametros.trabajos-pesados.dg')\""
+    },
+    {
+      "key": "accent|src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.html|parametros|[gridPersistenceKeyTramos]=\"gridPersistenceKey('parametros.tramos-impuesto.dg')\"",
+      "file": "src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.html",
+      "token": "parametros",
+      "suggestion": "parámetros",
+      "excerpt": "[gridPersistenceKeyTramos]=\"gridPersistenceKey('parametros.tramos-impuesto.dg')\""
+    },
+    {
+      "key": "accent|src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.html|parametros|</app-parametros-remuneraciones-tab>",
+      "file": "src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.html",
+      "token": "parametros",
+      "suggestion": "parámetros",
+      "excerpt": "</app-parametros-remuneraciones-tab>"
+    },
+    {
+      "key": "accent|src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.html|parametros|<app-card className=\"parametros-shell erp-fullscreen-frame\">",
+      "file": "src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.html",
+      "token": "parametros",
+      "suggestion": "parámetros",
+      "excerpt": "<app-card className=\"parametros-shell erp-fullscreen-frame\">"
+    },
+    {
+      "key": "accent|src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.html|parametros|<app-card-content className=\"parametros-frame\">",
+      "file": "src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.html",
+      "token": "parametros",
+      "suggestion": "parámetros",
+      "excerpt": "<app-card-content className=\"parametros-frame\">"
+    },
+    {
+      "key": "accent|src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.html|parametros|<app-parametros-afp-tab",
+      "file": "src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.html",
+      "token": "parametros",
+      "suggestion": "parámetros",
+      "excerpt": "<app-parametros-afp-tab"
+    },
+    {
+      "key": "accent|src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.html|parametros|<app-parametros-ccaf-mutuales-tab",
+      "file": "src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.html",
+      "token": "parametros",
+      "suggestion": "parámetros",
+      "excerpt": "<app-parametros-ccaf-mutuales-tab"
+    },
+    {
+      "key": "accent|src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.html|parametros|<app-parametros-config-cliente-tab",
+      "file": "src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.html",
+      "token": "parametros",
+      "suggestion": "parámetros",
+      "excerpt": "<app-parametros-config-cliente-tab"
+    },
+    {
+      "key": "accent|src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.html|parametros|<app-parametros-reforma-tab",
+      "file": "src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.html",
+      "token": "parametros",
+      "suggestion": "parámetros",
+      "excerpt": "<app-parametros-reforma-tab"
+    },
+    {
+      "key": "accent|src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.html|parametros|<app-parametros-remuneraciones-tab",
+      "file": "src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.html",
+      "token": "parametros",
+      "suggestion": "parámetros",
+      "excerpt": "<app-parametros-remuneraciones-tab"
+    },
+    {
+      "key": "accent|src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.html|parametros|<app-parametros-salud-tab",
+      "file": "src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.html",
+      "token": "parametros",
+      "suggestion": "parámetros",
+      "excerpt": "<app-parametros-salud-tab"
+    },
+    {
+      "key": "accent|src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.html|parametros|<app-parametros-tramos-carga-tab",
+      "file": "src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.html",
+      "token": "parametros",
+      "suggestion": "parámetros",
+      "excerpt": "<app-parametros-tramos-carga-tab"
+    },
+    {
+      "key": "accent|src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.html|parametros|<app-parametros-tramos-renta-tab",
+      "file": "src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.html",
+      "token": "parametros",
+      "suggestion": "parámetros",
+      "excerpt": "<app-parametros-tramos-renta-tab"
+    },
+    {
+      "key": "accent|src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.html|parametros|<app-parametros-valores-tab",
+      "file": "src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.html",
+      "token": "parametros",
+      "suggestion": "parámetros",
+      "excerpt": "<app-parametros-valores-tab"
+    },
+    {
+      "key": "accent|src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.html|parametros|<div class=\"parametros-content parametros-panel\">",
+      "file": "src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.html",
+      "token": "parametros",
+      "suggestion": "parámetros",
+      "excerpt": "<div class=\"parametros-content parametros-panel\">"
+    },
+    {
+      "key": "accent|src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.html|parametros|<div class=\"parametros-period-actions\" aria-label=\"Acciones del periodo\">",
+      "file": "src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.html",
+      "token": "parametros",
+      "suggestion": "parámetros",
+      "excerpt": "<div class=\"parametros-period-actions\" aria-label=\"Acciones del periodo\">"
+    },
+    {
+      "key": "accent|src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.html|parametros|<div class=\"parametros-tab-body\" role=\"region\" aria-label=\"Contenido de la sección\">",
+      "file": "src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.html",
+      "token": "parametros",
+      "suggestion": "parámetros",
+      "excerpt": "<div class=\"parametros-tab-body\" role=\"region\" aria-label=\"Contenido de la sección\">"
+    },
+    {
+      "key": "accent|src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.html|parametros|<div class=\"parametros-viewhead\">",
+      "file": "src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.html",
+      "token": "parametros",
+      "suggestion": "parámetros",
+      "excerpt": "<div class=\"parametros-viewhead\">"
+    },
+    {
+      "key": "accent|src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.html|parametros|<div class=\"period-controls parametros-period-controls\">",
+      "file": "src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.html",
+      "token": "parametros",
+      "suggestion": "parámetros",
+      "excerpt": "<div class=\"period-controls parametros-period-controls\">"
+    },
+    {
+      "key": "accent|src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.html|parametros|<div class=\"period-row parametros-period-band\" aria-label=\"Periodo\">",
+      "file": "src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.html",
+      "token": "parametros",
+      "suggestion": "parámetros",
+      "excerpt": "<div class=\"period-row parametros-period-band\" aria-label=\"Periodo\">"
+    },
+    {
+      "key": "accent|src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.html|parametros|<div class=\"period-row__left parametros-period-left\">",
+      "file": "src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.html",
+      "token": "parametros",
+      "suggestion": "parámetros",
+      "excerpt": "<div class=\"period-row__left parametros-period-left\">"
+    },
+    {
+      "key": "accent|src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.html|parametros|<div class=\"period-row__right parametros-period-status\" role=\"region\" aria-label=\"Estado mensual\">",
+      "file": "src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.html",
+      "token": "parametros",
+      "suggestion": "parámetros",
+      "excerpt": "<div class=\"period-row__right parametros-period-status\" role=\"region\" aria-label=\"Estado mensual\">"
+    },
+    {
+      "key": "accent|src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.html|parametros|<nav class=\"folder-tabs parametros-tabs\" aria-label=\"Secciones de parámetros\">",
+      "file": "src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.html",
+      "token": "parametros",
+      "suggestion": "parámetros",
+      "excerpt": "<nav class=\"folder-tabs parametros-tabs\" aria-label=\"Secciones de parámetros\">"
+    },
+    {
+      "key": "accent|src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.html|parametros|<p class=\"period-mensual__detail parametros-period-status-detail\">{{ periodoEstadoDetalle() }}</p>",
+      "file": "src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.html",
+      "token": "parametros",
+      "suggestion": "parámetros",
+      "excerpt": "<p class=\"period-mensual__detail parametros-period-status-detail\">{{ periodoEstadoDetalle() }}</p>"
+    },
+    {
+      "key": "accent|src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.html|parametros|<p class=\"period-sync-hint parametros-period-sync\">{{ periodoContextoHint() }}</p>",
+      "file": "src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.html",
+      "token": "parametros",
+      "suggestion": "parámetros",
+      "excerpt": "<p class=\"period-sync-hint parametros-period-sync\">{{ periodoContextoHint() }}</p>"
+    },
+    {
+      "key": "accent|src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.html|parametros|<section class=\"parametros-page\" aria-label=\"Mantenedor de parámetros\">",
+      "file": "src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.html",
+      "token": "parametros",
+      "suggestion": "parámetros",
+      "excerpt": "<section class=\"parametros-page\" aria-label=\"Mantenedor de parámetros\">"
+    },
+    {
+      "key": "accent|src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.html|parametros|<span class=\"period-mensual__title parametros-period-status-title\">{{ periodoEstadoTitulo() }}</span>",
+      "file": "src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.html",
+      "token": "parametros",
+      "suggestion": "parámetros",
+      "excerpt": "<span class=\"period-mensual__title parametros-period-status-title\">{{ periodoEstadoTitulo() }}</span>"
+    },
+    {
+      "key": "accent|src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.html|parametros|></app-parametros-afp-tab>",
+      "file": "src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.html",
+      "token": "parametros",
+      "suggestion": "parámetros",
+      "excerpt": "></app-parametros-afp-tab>"
+    },
+    {
+      "key": "accent|src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.html|parametros|></app-parametros-ccaf-mutuales-tab>",
+      "file": "src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.html",
+      "token": "parametros",
+      "suggestion": "parámetros",
+      "excerpt": "></app-parametros-ccaf-mutuales-tab>"
+    },
+    {
+      "key": "accent|src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.html|parametros|></app-parametros-config-cliente-tab>",
+      "file": "src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.html",
+      "token": "parametros",
+      "suggestion": "parámetros",
+      "excerpt": "></app-parametros-config-cliente-tab>"
+    },
+    {
+      "key": "accent|src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.html|parametros|></app-parametros-reforma-tab>",
+      "file": "src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.html",
+      "token": "parametros",
+      "suggestion": "parámetros",
+      "excerpt": "></app-parametros-reforma-tab>"
+    },
+    {
+      "key": "accent|src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.html|parametros|></app-parametros-salud-tab>",
+      "file": "src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.html",
+      "token": "parametros",
+      "suggestion": "parámetros",
+      "excerpt": "></app-parametros-salud-tab>"
+    },
+    {
+      "key": "accent|src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.html|parametros|></app-parametros-tramos-carga-tab>",
+      "file": "src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.html",
+      "token": "parametros",
+      "suggestion": "parámetros",
+      "excerpt": "></app-parametros-tramos-carga-tab>"
+    },
+    {
+      "key": "accent|src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.html|parametros|></app-parametros-tramos-renta-tab>",
+      "file": "src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.html",
+      "token": "parametros",
+      "suggestion": "parámetros",
+      "excerpt": "></app-parametros-tramos-renta-tab>"
+    },
+    {
+      "key": "accent|src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.html|parametros|></app-parametros-valores-tab>",
+      "file": "src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.html",
+      "token": "parametros",
+      "suggestion": "parámetros",
+      "excerpt": "></app-parametros-valores-tab>"
+    },
+    {
+      "key": "accent|src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.html|parametros|class=\"folder-tab parametros-tab-button\"",
+      "file": "src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.html",
+      "token": "parametros",
+      "suggestion": "parámetros",
+      "excerpt": "class=\"folder-tab parametros-tab-button\""
+    },
+    {
+      "key": "accent|src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.html|parametros|id=\"parametros-periodo-anio\"",
+      "file": "src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.html",
+      "token": "parametros",
+      "suggestion": "parámetros",
+      "excerpt": "id=\"parametros-periodo-anio\""
+    },
+    {
+      "key": "accent|src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.html|parametros|id=\"parametros-periodo-mes\"",
+      "file": "src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.html",
+      "token": "parametros",
+      "suggestion": "parámetros",
+      "excerpt": "id=\"parametros-periodo-mes\""
+    },
+    {
+      "key": "accent|src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.html|periodo|<div class=\"parametros-period-actions\" aria-label=\"Acciones del periodo\">",
+      "file": "src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.html",
+      "token": "periodo",
+      "suggestion": "período",
+      "excerpt": "<div class=\"parametros-period-actions\" aria-label=\"Acciones del periodo\">"
+    },
+    {
+      "key": "accent|src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.html|periodo|<div class=\"period-row parametros-period-band\" aria-label=\"Periodo\">",
+      "file": "src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.html",
+      "token": "periodo",
+      "suggestion": "período",
+      "excerpt": "<div class=\"period-row parametros-period-band\" aria-label=\"Periodo\">"
+    },
+    {
+      "key": "accent|src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.html|periodo|aria-label=\"Periodo anterior\"",
+      "file": "src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.html",
+      "token": "periodo",
+      "suggestion": "período",
+      "excerpt": "aria-label=\"Periodo anterior\""
+    },
+    {
+      "key": "accent|src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.html|periodo|aria-label=\"Periodo siguiente\"",
+      "file": "src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.html",
+      "token": "periodo",
+      "suggestion": "período",
+      "excerpt": "aria-label=\"Periodo siguiente\""
+    },
+    {
+      "key": "accent|src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.html|periodo|id=\"parametros-periodo-anio\"",
+      "file": "src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.html",
+      "token": "periodo",
+      "suggestion": "período",
+      "excerpt": "id=\"parametros-periodo-anio\""
+    },
+    {
+      "key": "accent|src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.html|periodo|id=\"parametros-periodo-mes\"",
+      "file": "src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.html",
+      "token": "periodo",
+      "suggestion": "período",
+      "excerpt": "id=\"parametros-periodo-mes\""
+    },
+    {
+      "key": "accent|src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.html|prevision|@case ('prevision') {",
+      "file": "src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.html",
+      "token": "prevision",
+      "suggestion": "previsión",
+      "excerpt": "@case ('prevision') {"
+    },
+    {
+      "key": "accent|src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts|basica|header: 'Cotizacion basica',",
+      "file": "src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts",
+      "token": "basica",
+      "suggestion": "básica",
+      "excerpt": "header: 'Cotizacion basica',"
+    },
+    {
+      "key": "accent|src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts|catalogo|console.error(`[Parametros] Catalogo corrupto: \"${key}\" no es un arreglo`, value);",
+      "file": "src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts",
+      "token": "catalogo",
+      "suggestion": "catálogo",
+      "excerpt": "console.error(`[Parametros] Catalogo corrupto: \"${key}\" no es un arreglo`, value);"
+    },
+    {
+      "key": "accent|src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts|codigo|{ id: 'codigo', header: 'Codigo', field: 'codigo', sortable: true },",
+      "file": "src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts",
+      "token": "codigo",
+      "suggestion": "código",
+      "excerpt": "{ id: 'codigo', header: 'Codigo', field: 'codigo', sortable: true },"
+    },
+    {
+      "key": "accent|src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts|comision|{ id: 'comision', header: 'Comision', field: 'comision', type: 'number', sortable: true, align: 'right', format: this.formatPercentGrid },",
+      "file": "src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts",
+      "token": "comision",
+      "suggestion": "comisión",
+      "excerpt": "{ id: 'comision', header: 'Comision', field: 'comision', type: 'number', sortable: true, align: 'right', format: this.formatPercentGrid },"
+    },
+    {
+      "key": "accent|src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts|configuracion|? 'Configuracion actualizada con valores oficiales.'",
+      "file": "src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts",
+      "token": "configuracion",
+      "suggestion": "configuración",
+      "excerpt": "? 'Configuracion actualizada con valores oficiales.'"
+    },
+    {
+      "key": "accent|src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts|configuracion|? `Configuracion creada desde referencia ${sourcePeriodo}.`",
+      "file": "src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts",
+      "token": "configuracion",
+      "suggestion": "configuración",
+      "excerpt": "? `Configuracion creada desde referencia ${sourcePeriodo}.`"
+    },
+    {
+      "key": "accent|src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts|configuracion|? `Configuracion creada desde ultima configuracion disponible (${sourcePeriodo}).`",
+      "file": "src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts",
+      "token": "configuracion",
+      "suggestion": "configuración",
+      "excerpt": "? `Configuracion creada desde ultima configuracion disponible (${sourcePeriodo}).`"
+    },
+    {
+      "key": "accent|src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts|configuracion|? `Configuracion vigente para ${this.periodoSeleccionadoLabel()}.`",
+      "file": "src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts",
+      "token": "configuracion",
+      "suggestion": "configuración",
+      "excerpt": "? `Configuracion vigente para ${this.periodoSeleccionadoLabel()}.`"
+    },
+    {
+      "key": "accent|src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts|configuracion|'Nada se actualizo automaticamente. Puedes volver a revisar la configuracion cliente cuando corresponda.',",
+      "file": "src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts",
+      "token": "configuracion",
+      "suggestion": "configuración",
+      "excerpt": "'Nada se actualizo automaticamente. Puedes volver a revisar la configuracion cliente cuando corresponda.',"
+    },
+    {
+      "key": "accent|src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts|configuracion|'No se sobrescribio tu configuracion cliente.',",
+      "file": "src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts",
+      "token": "configuracion",
+      "suggestion": "configuración",
+      "excerpt": "'No se sobrescribio tu configuracion cliente.',"
+    },
+    {
+      "key": "accent|src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts|configuracion|detail: 'Desde Parametros solo se puede modificar la configuracion cliente del periodo.',",
+      "file": "src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts",
+      "token": "configuracion",
+      "suggestion": "configuración",
+      "excerpt": "detail: 'Desde Parametros solo se puede modificar la configuracion cliente del periodo.',"
+    },
+    {
+      "key": "accent|src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts|configuracion|detail: 'Se encontro configuracion cliente guardada, datos oficiales cargados y diferencias entre ambos registros. Puedes mantener tu configuracion, actualizarla con oficiales o re",
+      "file": "src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts",
+      "token": "configuracion",
+      "suggestion": "configuración",
+      "excerpt": "detail: 'Se encontro configuracion cliente guardada, datos oficiales cargados y diferencias entre ambos registros. Puedes mantener tu configuracion, actualizarla con oficiales o re"
+    },
+    {
+      "key": "accent|src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts|configuracion|message: 'Este periodo ya tiene una configuracion guardada por el cliente, pero la carga oficial contiene valores distintos. Nada se actualizara automaticamente.',",
+      "file": "src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts",
+      "token": "configuracion",
+      "suggestion": "configuración",
+      "excerpt": "message: 'Este periodo ya tiene una configuracion guardada por el cliente, pero la carga oficial contiene valores distintos. Nada se actualizara automaticamente.',"
+    },
+    {
+      "key": "accent|src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts|configuracion|message: 'No existe configuracion cliente para este periodo.',",
+      "file": "src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts",
+      "token": "configuracion",
+      "suggestion": "configuración",
+      "excerpt": "message: 'No existe configuracion cliente para este periodo.',"
+    },
+    {
+      "key": "accent|src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts|configuracion|message: 'No hay una configuracion cliente anterior disponible para usar como base.',",
+      "file": "src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts",
+      "token": "configuracion",
+      "suggestion": "configuración",
+      "excerpt": "message: 'No hay una configuracion cliente anterior disponible para usar como base.',"
+    },
+    {
+      "key": "accent|src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts|configuracion|message: 'No se puede guardar configuracion cliente para un periodo inexistente.',",
+      "file": "src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts",
+      "token": "configuracion",
+      "suggestion": "configuración",
+      "excerpt": "message: 'No se puede guardar configuracion cliente para un periodo inexistente.',"
+    },
+    {
+      "key": "accent|src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts|configuracion|message: 'Ocurrio un problema al guardar la configuracion del cliente.',",
+      "file": "src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts",
+      "token": "configuracion",
+      "suggestion": "configuración",
+      "excerpt": "message: 'Ocurrio un problema al guardar la configuracion del cliente.',"
+    },
+    {
+      "key": "accent|src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts|configuracion|message: `Configuracion de ${periodo} guardada.`,",
+      "file": "src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts",
+      "token": "configuracion",
+      "suggestion": "configuración",
+      "excerpt": "message: `Configuracion de ${periodo} guardada.`,"
+    },
+    {
+      "key": "accent|src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts|configuracion|primaryLabel: 'Mantener mi configuracion',",
+      "file": "src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts",
+      "token": "configuracion",
+      "suggestion": "configuración",
+      "excerpt": "primaryLabel: 'Mantener mi configuracion',"
+    },
+    {
+      "key": "accent|src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts|configuracion|return 'Configuracion cliente del periodo seleccionado.';",
+      "file": "src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts",
+      "token": "configuracion",
+      "suggestion": "configuración",
+      "excerpt": "return 'Configuracion cliente del periodo seleccionado.';"
+    },
+    {
+      "key": "accent|src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts|configuracion|return 'Configuracion cliente del periodo';",
+      "file": "src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts",
+      "token": "configuracion",
+      "suggestion": "configuración",
+      "excerpt": "return 'Configuracion cliente del periodo';"
+    },
+    {
+      "key": "accent|src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts|configuracion|return 'Configuracion cliente';",
+      "file": "src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts",
+      "token": "configuracion",
+      "suggestion": "configuración",
+      "excerpt": "return 'Configuracion cliente';"
+    },
+    {
+      "key": "accent|src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts|configuracion|return 'Configuracion guardada. Carga oficial pendiente.';",
+      "file": "src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts",
+      "token": "configuracion",
+      "suggestion": "configuración",
+      "excerpt": "return 'Configuracion guardada. Carga oficial pendiente.';"
+    },
+    {
+      "key": "accent|src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts|configuracion|return 'Configuracion parcial';",
+      "file": "src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts",
+      "token": "configuracion",
+      "suggestion": "configuración",
+      "excerpt": "return 'Configuracion parcial';"
+    },
+    {
+      "key": "accent|src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts|configuracion|return 'Datos oficiales cargados. Falta configuracion cliente.';",
+      "file": "src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts",
+      "token": "configuracion",
+      "suggestion": "configuración",
+      "excerpt": "return 'Datos oficiales cargados. Falta configuracion cliente.';"
+    },
+    {
+      "key": "accent|src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts|configuracion|return 'Modificar guarda configuracion cliente; los datos oficiales solo se usan para comparar.';",
+      "file": "src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts",
+      "token": "configuracion",
+      "suggestion": "configuración",
+      "excerpt": "return 'Modificar guarda configuracion cliente; los datos oficiales solo se usan para comparar.';"
+    },
+    {
+      "key": "accent|src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts|configuracion|return 'Usar ultima configuracion';",
+      "file": "src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts",
+      "token": "configuracion",
+      "suggestion": "configuración",
+      "excerpt": "return 'Usar ultima configuracion';"
+    },
+    {
+      "key": "accent|src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts|configuracion|this.mostrarErrorClienteConfig('No hay configuracion cliente para registrar la decision de reconciliacion.');",
+      "file": "src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts",
+      "token": "configuracion",
+      "suggestion": "configuración",
+      "excerpt": "this.mostrarErrorClienteConfig('No hay configuracion cliente para registrar la decision de reconciliacion.');"
+    },
+    {
+      "key": "accent|src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts|configuracion|this.mostrarErrorClienteConfig('No hay valores oficiales actuales para actualizar la configuracion cliente.');",
+      "file": "src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts",
+      "token": "configuracion",
+      "suggestion": "configuración",
+      "excerpt": "this.mostrarErrorClienteConfig('No hay valores oficiales actuales para actualizar la configuracion cliente.');"
+    },
+    {
+      "key": "accent|src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts|configuracion|this.mostrarErrorClienteConfig(this.extractErrorDetail(err) || 'No fue posible actualizar la configuracion con oficiales.');",
+      "file": "src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts",
+      "token": "configuracion",
+      "suggestion": "configuración",
+      "excerpt": "this.mostrarErrorClienteConfig(this.extractErrorDetail(err) || 'No fue posible actualizar la configuracion con oficiales.');"
+    },
+    {
+      "key": "accent|src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts|configuracion|this.mostrarErrorClienteConfig(this.extractErrorDetail(err) || 'No fue posible cargar la ultima configuracion cliente.');",
+      "file": "src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts",
+      "token": "configuracion",
+      "suggestion": "configuración",
+      "excerpt": "this.mostrarErrorClienteConfig(this.extractErrorDetail(err) || 'No fue posible cargar la ultima configuracion cliente.');"
+    },
+    {
+      "key": "accent|src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts|configuracion|this.mostrarErrorClienteConfig(this.extractErrorDetail(err) || 'No fue posible guardar la configuracion cliente.');",
+      "file": "src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts",
+      "token": "configuracion",
+      "suggestion": "configuración",
+      "excerpt": "this.mostrarErrorClienteConfig(this.extractErrorDetail(err) || 'No fue posible guardar la configuracion cliente.');"
+    },
+    {
+      "key": "accent|src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts|configuracion|title: 'Configuracion guardada',",
+      "file": "src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts",
+      "token": "configuracion",
+      "suggestion": "configuración",
+      "excerpt": "title: 'Configuracion guardada',"
+    },
+    {
+      "key": "accent|src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts|configuracion|title: 'No se pudo guardar la configuracion',",
+      "file": "src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts",
+      "token": "configuracion",
+      "suggestion": "configuración",
+      "excerpt": "title: 'No se pudo guardar la configuracion',"
+    },
+    {
+      "key": "accent|src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts|configuracion|title: 'Sin configuracion anterior',",
+      "file": "src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts",
+      "token": "configuracion",
+      "suggestion": "configuración",
+      "excerpt": "title: 'Sin configuracion anterior',"
+    },
+    {
+      "key": "accent|src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts|configuracion|title: estado === 'cliente_confirmado' ? 'Configuracion mantenida' : 'Revision postergada',",
+      "file": "src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts",
+      "token": "configuracion",
+      "suggestion": "configuración",
+      "excerpt": "title: estado === 'cliente_confirmado' ? 'Configuracion mantenida' : 'Revision postergada',"
+    },
+    {
+      "key": "accent|src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts|decision|'La decision quedo registrada para este periodo.',",
+      "file": "src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts",
+      "token": "decision",
+      "suggestion": "decisión",
+      "excerpt": "'La decision quedo registrada para este periodo.',"
+    },
+    {
+      "key": "accent|src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts|decision|this.mostrarErrorClienteConfig('No hay configuracion cliente para registrar la decision de reconciliacion.');",
+      "file": "src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts",
+      "token": "decision",
+      "suggestion": "decisión",
+      "excerpt": "this.mostrarErrorClienteConfig('No hay configuracion cliente para registrar la decision de reconciliacion.');"
+    },
+    {
+      "key": "accent|src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts|decision|this.mostrarErrorClienteConfig(this.extractErrorDetail(err) || 'No fue posible registrar la decision de reconciliacion.');",
+      "file": "src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts",
+      "token": "decision",
+      "suggestion": "decisión",
+      "excerpt": "this.mostrarErrorClienteConfig(this.extractErrorDetail(err) || 'No fue posible registrar la decision de reconciliacion.');"
+    },
+    {
+      "key": "accent|src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts|historico|return 'Historico';",
+      "file": "src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts",
+      "token": "historico",
+      "suggestion": "histórico",
+      "excerpt": "return 'Historico';"
+    },
+    {
+      "key": "accent|src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts|parametro|{ id: 'nombre', header: 'Parametro', field: 'nombre', sortable: true, format: (value) => this.labelParametro(String(value ?? '')) },",
+      "file": "src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts",
+      "token": "parametro",
+      "suggestion": "parámetro",
+      "excerpt": "{ id: 'nombre', header: 'Parametro', field: 'nombre', sortable: true, format: (value) => this.labelParametro(String(value ?? '')) },"
+    },
+    {
+      "key": "accent|src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts|parametro|} from '../../models/parametro-general.model';",
+      "file": "src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts",
+      "token": "parametro",
+      "suggestion": "parámetro",
+      "excerpt": "} from '../../models/parametro-general.model';"
+    },
+    {
+      "key": "accent|src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts|parametros|} from '../../components/tabs/parametros-ccaf-mutuales-tab.component';",
+      "file": "src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts",
+      "token": "parametros",
+      "suggestion": "parámetros",
+      "excerpt": "} from '../../components/tabs/parametros-ccaf-mutuales-tab.component';"
+    },
+    {
+      "key": "accent|src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts|parametros|} from '../../rules/parametros-completitud.rules';",
+      "file": "src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts",
+      "token": "parametros",
+      "suggestion": "parámetros",
+      "excerpt": "} from '../../rules/parametros-completitud.rules';"
+    },
+    {
+      "key": "accent|src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts|parametros|| 'confirmar-crear-parametros'",
+      "file": "src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts",
+      "token": "parametros",
+      "suggestion": "parámetros",
+      "excerpt": "| 'confirmar-crear-parametros'"
+    },
+    {
+      "key": "accent|src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts|parametros|console.error('[Parametros] guardarClienteConfig', err);",
+      "file": "src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts",
+      "token": "parametros",
+      "suggestion": "parámetros",
+      "excerpt": "console.error('[Parametros] guardarClienteConfig', err);"
+    },
+    {
+      "key": "accent|src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts|parametros|console.error(`[Parametros] Catalogo corrupto: \"${key}\" no es un arreglo`, value);",
+      "file": "src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts",
+      "token": "parametros",
+      "suggestion": "parámetros",
+      "excerpt": "console.error(`[Parametros] Catalogo corrupto: \"${key}\" no es un arreglo`, value);"
+    },
+    {
+      "key": "accent|src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts|parametros|detail: 'Desde Parametros solo se puede modificar la configuracion cliente del periodo.',",
+      "file": "src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts",
+      "token": "parametros",
+      "suggestion": "parámetros",
+      "excerpt": "detail: 'Desde Parametros solo se puede modificar la configuracion cliente del periodo.',"
+    },
+    {
+      "key": "accent|src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts|parametros|if (dlg?.kind === 'confirmar-crear-parametros') {",
+      "file": "src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts",
+      "token": "parametros",
+      "suggestion": "parámetros",
+      "excerpt": "if (dlg?.kind === 'confirmar-crear-parametros') {"
+    },
+    {
+      "key": "accent|src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts|parametros|if (dlg.kind === 'confirmar-crear-parametros') {",
+      "file": "src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts",
+      "token": "parametros",
+      "suggestion": "parámetros",
+      "excerpt": "if (dlg.kind === 'confirmar-crear-parametros') {"
+    },
+    {
+      "key": "accent|src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts|parametros|import { ParametrosAfpTabComponent } from '../../components/tabs/parametros-afp-tab.component';",
+      "file": "src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts",
+      "token": "parametros",
+      "suggestion": "parámetros",
+      "excerpt": "import { ParametrosAfpTabComponent } from '../../components/tabs/parametros-afp-tab.component';"
+    },
+    {
+      "key": "accent|src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts|parametros|import { ParametrosConfigClienteTabComponent } from '../../components/tabs/parametros-config-cliente-tab.component';",
+      "file": "src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts",
+      "token": "parametros",
+      "suggestion": "parámetros",
+      "excerpt": "import { ParametrosConfigClienteTabComponent } from '../../components/tabs/parametros-config-cliente-tab.component';"
+    },
+    {
+      "key": "accent|src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts|parametros|import { ParametrosGeneralesService } from '../../services/parametros-generales.service';",
+      "file": "src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts",
+      "token": "parametros",
+      "suggestion": "parámetros",
+      "excerpt": "import { ParametrosGeneralesService } from '../../services/parametros-generales.service';"
+    },
+    {
+      "key": "accent|src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts|parametros|import { ParametrosReformaTabComponent } from '../../components/tabs/parametros-reforma-tab.component';",
+      "file": "src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts",
+      "token": "parametros",
+      "suggestion": "parámetros",
+      "excerpt": "import { ParametrosReformaTabComponent } from '../../components/tabs/parametros-reforma-tab.component';"
+    },
+    {
+      "key": "accent|src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts|parametros|import { ParametrosRemuneracionesTabComponent } from '../../components/tabs/parametros-remuneraciones-tab.component';",
+      "file": "src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts",
+      "token": "parametros",
+      "suggestion": "parámetros",
+      "excerpt": "import { ParametrosRemuneracionesTabComponent } from '../../components/tabs/parametros-remuneraciones-tab.component';"
+    },
+    {
+      "key": "accent|src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts|parametros|import { ParametrosSaludTabComponent } from '../../components/tabs/parametros-salud-tab.component';",
+      "file": "src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts",
+      "token": "parametros",
+      "suggestion": "parámetros",
+      "excerpt": "import { ParametrosSaludTabComponent } from '../../components/tabs/parametros-salud-tab.component';"
+    },
+    {
+      "key": "accent|src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts|parametros|import { ParametrosTramosCargaTabComponent } from '../../components/tabs/parametros-tramos-carga-tab.component';",
+      "file": "src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts",
+      "token": "parametros",
+      "suggestion": "parámetros",
+      "excerpt": "import { ParametrosTramosCargaTabComponent } from '../../components/tabs/parametros-tramos-carga-tab.component';"
+    },
+    {
+      "key": "accent|src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts|parametros|import { ParametrosTramosRentaTabComponent } from '../../components/tabs/parametros-tramos-renta-tab.component';",
+      "file": "src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts",
+      "token": "parametros",
+      "suggestion": "parámetros",
+      "excerpt": "import { ParametrosTramosRentaTabComponent } from '../../components/tabs/parametros-tramos-renta-tab.component';"
+    },
+    {
+      "key": "accent|src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts|parametros|import { ParametrosValoresTabComponent } from '../../components/tabs/parametros-valores-tab.component';",
+      "file": "src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts",
+      "token": "parametros",
+      "suggestion": "parámetros",
+      "excerpt": "import { ParametrosValoresTabComponent } from '../../components/tabs/parametros-valores-tab.component';"
+    },
+    {
+      "key": "accent|src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts|parametros|observacionReconciliacion: 'Cliente actualizado con parametros oficiales desde reconciliacion.',",
+      "file": "src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts",
+      "token": "parametros",
+      "suggestion": "parámetros",
+      "excerpt": "observacionReconciliacion: 'Cliente actualizado con parametros oficiales desde reconciliacion.',"
+    },
+    {
+      "key": "accent|src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts|parametros|return 'Estado mensual: Parametros cargados';",
+      "file": "src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts",
+      "token": "parametros",
+      "suggestion": "parámetros",
+      "excerpt": "return 'Estado mensual: Parametros cargados';"
+    },
+    {
+      "key": "accent|src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts|parametros|return 'Parametros remuneracionales';",
+      "file": "src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts",
+      "token": "parametros",
+      "suggestion": "parámetros",
+      "excerpt": "return 'Parametros remuneracionales';"
+    },
+    {
+      "key": "accent|src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts|parametros|selector: 'app-parametros-workspace-container',",
+      "file": "src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts",
+      "token": "parametros",
+      "suggestion": "parámetros",
+      "excerpt": "selector: 'app-parametros-workspace-container',"
+    },
+    {
+      "key": "accent|src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts|parametros|styleUrls: ['./parametros-workspace-container.css', './parametros-workspace-container.responsive.css'],",
+      "file": "src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts",
+      "token": "parametros",
+      "suggestion": "parámetros",
+      "excerpt": "styleUrls: ['./parametros-workspace-container.css', './parametros-workspace-container.responsive.css'],"
+    },
+    {
+      "key": "accent|src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts|parametros|templateUrl: './parametros-workspace-container.html',",
+      "file": "src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts",
+      "token": "parametros",
+      "suggestion": "parámetros",
+      "excerpt": "templateUrl: './parametros-workspace-container.html',"
+    },
+    {
+      "key": "accent|src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts|periodo|: `Periodo seleccionado: ${this.selectedPeriodo()}`,",
+      "file": "src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts",
+      "token": "periodo",
+      "suggestion": "período",
+      "excerpt": ": `Periodo seleccionado: ${this.selectedPeriodo()}`,"
+    },
+    {
+      "key": "accent|src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts|periodo|: `Periodo: ${periodo}`;",
+      "file": "src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts",
+      "token": "periodo",
+      "suggestion": "período",
+      "excerpt": ": `Periodo: ${periodo}`;"
+    },
+    {
+      "key": "accent|src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts|periodo|? 'Montos y topes del periodo.'",
+      "file": "src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts",
+      "token": "periodo",
+      "suggestion": "período",
+      "excerpt": "? 'Montos y topes del periodo.'"
+    },
+    {
+      "key": "accent|src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts|periodo|? 'UF, UTM y UTA del periodo.'",
+      "file": "src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts",
+      "token": "periodo",
+      "suggestion": "período",
+      "excerpt": "? 'UF, UTM y UTA del periodo.'"
+    },
+    {
+      "key": "accent|src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts|periodo|'Hay cambios sin guardar. Si continúa, se descartarán. ¿Cambiar de periodo?',",
+      "file": "src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts",
+      "token": "periodo",
+      "suggestion": "período",
+      "excerpt": "'Hay cambios sin guardar. Si continúa, se descartarán. ¿Cambiar de periodo?',"
+    },
+    {
+      "key": "accent|src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts|periodo|'La decision quedo registrada para este periodo.',",
+      "file": "src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts",
+      "token": "periodo",
+      "suggestion": "período",
+      "excerpt": "'La decision quedo registrada para este periodo.',"
+    },
+    {
+      "key": "accent|src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts|periodo|{ id: 'periodo', header: 'Periodo', field: 'periodo', sortable: true },",
+      "file": "src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts",
+      "token": "periodo",
+      "suggestion": "período",
+      "excerpt": "{ id: 'periodo', header: 'Periodo', field: 'periodo', sortable: true },"
+    },
+    {
+      "key": "accent|src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts|periodo|detail: 'Desde Parametros solo se puede modificar la configuracion cliente del periodo.',",
+      "file": "src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts",
+      "token": "periodo",
+      "suggestion": "período",
+      "excerpt": "detail: 'Desde Parametros solo se puede modificar la configuracion cliente del periodo.',"
+    },
+    {
+      "key": "accent|src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts|periodo|detail: 'Esta modificación puede afectar cálculos de remuneraciones asociados a este periodo.',",
+      "file": "src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts",
+      "token": "periodo",
+      "suggestion": "período",
+      "excerpt": "detail: 'Esta modificación puede afectar cálculos de remuneraciones asociados a este periodo.',"
+    },
+    {
+      "key": "accent|src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts|periodo|detail: `Periodo en datos: ${row.periodo}. Periodo seleccionado: ${selected}.`,",
+      "file": "src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts",
+      "token": "periodo",
+      "suggestion": "período",
+      "excerpt": "detail: `Periodo en datos: ${row.periodo}. Periodo seleccionado: ${selected}.`,"
+    },
+    {
+      "key": "accent|src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts|periodo|detail: `Periodo: ${periodo}\\nSelecciona una base para continuar. Se creara solo al guardar.`,",
+      "file": "src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts",
+      "token": "periodo",
+      "suggestion": "período",
+      "excerpt": "detail: `Periodo: ${periodo}\\nSelecciona una base para continuar. Se creara solo al guardar.`,"
+    },
+    {
+      "key": "accent|src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts|periodo|detail: `Periodo: ${periodo}`,",
+      "file": "src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts",
+      "token": "periodo",
+      "suggestion": "período",
+      "excerpt": "detail: `Periodo: ${periodo}`,"
+    },
+    {
+      "key": "accent|src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts|periodo|detail: `Periodo: ${this.selectedPeriodo()}`,",
+      "file": "src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts",
+      "token": "periodo",
+      "suggestion": "período",
+      "excerpt": "detail: `Periodo: ${this.selectedPeriodo()}`,"
+    },
+    {
+      "key": "accent|src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts|periodo|detail: `Primero debe existir el periodo ${this.selectedPeriodo()} en remuneraciones.`,",
+      "file": "src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts",
+      "token": "periodo",
+      "suggestion": "período",
+      "excerpt": "detail: `Primero debe existir el periodo ${this.selectedPeriodo()} en remuneraciones.`,"
+    },
+    {
+      "key": "accent|src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts|periodo|import { PeriodoActivoService } from '../../../../core/services/periodo-activo.service';",
+      "file": "src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts",
+      "token": "periodo",
+      "suggestion": "período",
+      "excerpt": "import { PeriodoActivoService } from '../../../../core/services/periodo-activo.service';"
+    },
+    {
+      "key": "accent|src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts|periodo|message: 'El periodo esta cerrado y queda en modo solo lectura.',",
+      "file": "src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts",
+      "token": "periodo",
+      "suggestion": "período",
+      "excerpt": "message: 'El periodo esta cerrado y queda en modo solo lectura.',"
+    },
+    {
+      "key": "accent|src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts|periodo|message: 'Este periodo ya tiene una configuracion guardada por el cliente, pero la carga oficial contiene valores distintos. Nada se actualizara automaticamente.',",
+      "file": "src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts",
+      "token": "periodo",
+      "suggestion": "período",
+      "excerpt": "message: 'Este periodo ya tiene una configuracion guardada por el cliente, pero la carga oficial contiene valores distintos. Nada se actualizara automaticamente.',"
+    },
+    {
+      "key": "accent|src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts|periodo|message: 'Los datos recibidos no coinciden con el periodo seleccionado.',",
+      "file": "src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts",
+      "token": "periodo",
+      "suggestion": "período",
+      "excerpt": "message: 'Los datos recibidos no coinciden con el periodo seleccionado.',"
+    },
+    {
+      "key": "accent|src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts|periodo|message: 'Los parámetros del periodo fueron actualizados correctamente.',",
+      "file": "src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts",
+      "token": "periodo",
+      "suggestion": "período",
+      "excerpt": "message: 'Los parámetros del periodo fueron actualizados correctamente.',"
+    },
+    {
+      "key": "accent|src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts|periodo|message: 'Los parámetros del periodo fueron guardados correctamente.',",
+      "file": "src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts",
+      "token": "periodo",
+      "suggestion": "período",
+      "excerpt": "message: 'Los parámetros del periodo fueron guardados correctamente.',"
+    },
+    {
+      "key": "accent|src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts|periodo|message: 'No existe configuracion cliente para este periodo.',",
+      "file": "src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts",
+      "token": "periodo",
+      "suggestion": "período",
+      "excerpt": "message: 'No existe configuracion cliente para este periodo.',"
+    },
+    {
+      "key": "accent|src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts|periodo|message: 'No se puede guardar configuracion cliente para un periodo inexistente.',",
+      "file": "src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts",
+      "token": "periodo",
+      "suggestion": "período",
+      "excerpt": "message: 'No se puede guardar configuracion cliente para un periodo inexistente.',"
+    },
+    {
+      "key": "accent|src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts|periodo|message: 'Ocurrió un problema al intentar actualizar los parámetros del periodo.',",
+      "file": "src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts",
+      "token": "periodo",
+      "suggestion": "período",
+      "excerpt": "message: 'Ocurrió un problema al intentar actualizar los parámetros del periodo.',"
+    },
+    {
+      "key": "accent|src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts|periodo|message: 'Ocurrió un problema al intentar guardar los parámetros del periodo.',",
+      "file": "src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts",
+      "token": "periodo",
+      "suggestion": "período",
+      "excerpt": "message: 'Ocurrió un problema al intentar guardar los parámetros del periodo.',"
+    },
+    {
+      "key": "accent|src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts|periodo|message: `Configuracion de ${periodo} guardada.`,",
+      "file": "src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts",
+      "token": "periodo",
+      "suggestion": "período",
+      "excerpt": "message: `Configuracion de ${periodo} guardada.`,"
+    },
+    {
+      "key": "accent|src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts|periodo|message: `Se actualizarán los parámetros del periodo ${this.selectedPeriodo()}.`,",
+      "file": "src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts",
+      "token": "periodo",
+      "suggestion": "período",
+      "excerpt": "message: `Se actualizarán los parámetros del periodo ${this.selectedPeriodo()}.`,"
+    },
+    {
+      "key": "accent|src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts|periodo|message: `Ya existen parámetros registrados para el periodo ${periodo}.`,",
+      "file": "src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts",
+      "token": "periodo",
+      "suggestion": "período",
+      "excerpt": "message: `Ya existen parámetros registrados para el periodo ${periodo}.`,"
+    },
+    {
+      "key": "accent|src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts|periodo|return 'Configuracion cliente del periodo seleccionado.';",
+      "file": "src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts",
+      "token": "periodo",
+      "suggestion": "período",
+      "excerpt": "return 'Configuracion cliente del periodo seleccionado.';"
+    },
+    {
+      "key": "accent|src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts|periodo|return 'Configuracion cliente del periodo';",
+      "file": "src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts",
+      "token": "periodo",
+      "suggestion": "período",
+      "excerpt": "return 'Configuracion cliente del periodo';"
+    },
+    {
+      "key": "accent|src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts|periodo|return 'Datos oficiales del periodo seleccionado.';",
+      "file": "src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts",
+      "token": "periodo",
+      "suggestion": "período",
+      "excerpt": "return 'Datos oficiales del periodo seleccionado.';"
+    },
+    {
+      "key": "accent|src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts|periodo|return 'Periodo listo para revisar.';",
+      "file": "src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts",
+      "token": "periodo",
+      "suggestion": "período",
+      "excerpt": "return 'Periodo listo para revisar.';"
+    },
+    {
+      "key": "accent|src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts|periodo|return 'Sin base mensual para el periodo.';",
+      "file": "src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts",
+      "token": "periodo",
+      "suggestion": "período",
+      "excerpt": "return 'Sin base mensual para el periodo.';"
+    },
+    {
+      "key": "accent|src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts|periodo|return 'Valores oficiales del periodo';",
+      "file": "src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts",
+      "token": "periodo",
+      "suggestion": "período",
+      "excerpt": "return 'Valores oficiales del periodo';"
+    },
+    {
+      "key": "accent|src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts|periodo|return 'Vigente al periodo';",
+      "file": "src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts",
+      "token": "periodo",
+      "suggestion": "período",
+      "excerpt": "return 'Vigente al periodo';"
+    },
+    {
+      "key": "accent|src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts|periodo|return `Periodo seleccionado: ${this.selectedPeriodo()}.`;",
+      "file": "src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts",
+      "token": "periodo",
+      "suggestion": "período",
+      "excerpt": "return `Periodo seleccionado: ${this.selectedPeriodo()}.`;"
+    },
+    {
+      "key": "accent|src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts|periodo|return this.completitudDetalle('Periodo parcial.');",
+      "file": "src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts",
+      "token": "periodo",
+      "suggestion": "período",
+      "excerpt": "return this.completitudDetalle('Periodo parcial.');"
+    },
+    {
+      "key": "accent|src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts|periodo|this.mostrarErrorClienteConfig('No hay valores oficiales disponibles para este periodo.');",
+      "file": "src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts",
+      "token": "periodo",
+      "suggestion": "período",
+      "excerpt": "this.mostrarErrorClienteConfig('No hay valores oficiales disponibles para este periodo.');"
+    },
+    {
+      "key": "accent|src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts|periodo|title: 'Configurar periodo',",
+      "file": "src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts",
+      "token": "periodo",
+      "suggestion": "período",
+      "excerpt": "title: 'Configurar periodo',"
+    },
+    {
+      "key": "accent|src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts|periodo|title: 'Hay diferencias con los valores oficiales del periodo',",
+      "file": "src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts",
+      "token": "periodo",
+      "suggestion": "período",
+      "excerpt": "title: 'Hay diferencias con los valores oficiales del periodo',"
+    },
+    {
+      "key": "accent|src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts|periodo|title: 'Periodo cerrado',",
+      "file": "src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts",
+      "token": "periodo",
+      "suggestion": "período",
+      "excerpt": "title: 'Periodo cerrado',"
+    },
+    {
+      "key": "accent|src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts|periodo|title: 'Periodo no habilitado',",
+      "file": "src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts",
+      "token": "periodo",
+      "suggestion": "período",
+      "excerpt": "title: 'Periodo no habilitado',"
+    },
+    {
+      "key": "accent|src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts|periodo|title: 'Periodo ya registrado',",
+      "file": "src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts",
+      "token": "periodo",
+      "suggestion": "período",
+      "excerpt": "title: 'Periodo ya registrado',"
+    },
+    {
+      "key": "accent|src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts|prevision|{ id: 'prevision', label: 'Previsión' },",
+      "file": "src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts",
+      "token": "prevision",
+      "suggestion": "previsión",
+      "excerpt": "{ id: 'prevision', label: 'Previsión' },"
+    },
+    {
+      "key": "accent|src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts|prevision|case 'prevision':",
+      "file": "src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts",
+      "token": "prevision",
+      "suggestion": "previsión",
+      "excerpt": "case 'prevision':"
+    },
+    {
+      "key": "accent|src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts|prevision|return 'Prevision y AFP';",
+      "file": "src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts",
+      "token": "prevision",
+      "suggestion": "previsión",
+      "excerpt": "return 'Prevision y AFP';"
+    },
+    {
+      "key": "accent|src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts|prevision|return 'Prevision';",
+      "file": "src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts",
+      "token": "prevision",
+      "suggestion": "previsión",
+      "excerpt": "return 'Prevision';"
+    },
+    {
+      "key": "accent|src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts|revision|'La revision de diferencias quedo postergada.',",
+      "file": "src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts",
+      "token": "revision",
+      "suggestion": "revisión",
+      "excerpt": "'La revision de diferencias quedo postergada.',"
+    },
+    {
+      "key": "accent|src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts|revision|title: estado === 'cliente_confirmado' ? 'Configuracion mantenida' : 'Revision postergada',",
+      "file": "src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts",
+      "token": "revision",
+      "suggestion": "revisión",
+      "excerpt": "title: estado === 'cliente_confirmado' ? 'Configuracion mantenida' : 'Revision postergada',"
+    },
+    {
+      "key": "accent|src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts|ultima|: source === 'ultima' && sourcePeriodo",
+      "file": "src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts",
+      "token": "ultima",
+      "suggestion": "última",
+      "excerpt": ": source === 'ultima' && sourcePeriodo"
+    },
+    {
+      "key": "accent|src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts|ultima|? `Configuracion creada desde ultima configuracion disponible (${sourcePeriodo}).`",
+      "file": "src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts",
+      "token": "ultima",
+      "suggestion": "última",
+      "excerpt": "? `Configuracion creada desde ultima configuracion disponible (${sourcePeriodo}).`"
+    },
+    {
+      "key": "accent|src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts|ultima|| 'usar-ultima-config'",
+      "file": "src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts",
+      "token": "ultima",
+      "suggestion": "última",
+      "excerpt": "| 'usar-ultima-config'"
+    },
+    {
+      "key": "accent|src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts|ultima|case 'ultima':",
+      "file": "src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts",
+      "token": "ultima",
+      "suggestion": "última",
+      "excerpt": "case 'ultima':"
+    },
+    {
+      "key": "accent|src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts|ultima|case 'usar-ultima-config':",
+      "file": "src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts",
+      "token": "ultima",
+      "suggestion": "última",
+      "excerpt": "case 'usar-ultima-config':"
+    },
+    {
+      "key": "accent|src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts|ultima|return 'Usar ultima configuracion';",
+      "file": "src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts",
+      "token": "ultima",
+      "suggestion": "última",
+      "excerpt": "return 'Usar ultima configuracion';"
+    },
+    {
+      "key": "accent|src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts|ultima|return 'usar-ultima-config';",
+      "file": "src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts",
+      "token": "ultima",
+      "suggestion": "última",
+      "excerpt": "return 'usar-ultima-config';"
+    },
+    {
+      "key": "accent|src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts|ultima|this.configDraftSource.set('ultima');",
+      "file": "src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts",
+      "token": "ultima",
+      "suggestion": "última",
+      "excerpt": "this.configDraftSource.set('ultima');"
+    },
+    {
+      "key": "accent|src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts|ultima|this.mostrarErrorClienteConfig(this.extractErrorDetail(err) || 'No fue posible cargar la ultima configuracion cliente.');",
+      "file": "src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts",
+      "token": "ultima",
+      "suggestion": "última",
+      "excerpt": "this.mostrarErrorClienteConfig(this.extractErrorDetail(err) || 'No fue posible cargar la ultima configuracion cliente.');"
+    },
+    {
+      "key": "accent|src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts|ultima|type ConfigClienteDraftSource = 'cero' | 'ultima' | 'referencia' | 'oficiales' | 'existente';",
+      "file": "src/app/features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container.ts",
+      "token": "ultima",
+      "suggestion": "última",
+      "excerpt": "type ConfigClienteDraftSource = 'cero' | 'ultima' | 'referencia' | 'oficiales' | 'existente';"
+    },
+    {
       "key": "accent|src/app/features/parametros-generales/data-access/parametros-generales.repository.ts|codigo|.eq('codigo', periodo)",
       "file": "src/app/features/parametros-generales/data-access/parametros-generales.repository.ts",
       "token": "codigo",
@@ -57732,669 +59090,11 @@
       "excerpt": "import { NovedadesMensualesContainer } from '../features/nomina-mensual/novedades/containers/novedades-mensuales-container/novedades-mensuales-container';"
     },
     {
-      "key": "accent|src/app/pages/parametros.page.ts|basica|header: 'Cotizacion basica',",
-      "file": "src/app/pages/parametros.page.ts",
-      "token": "basica",
-      "suggestion": "básica",
-      "excerpt": "header: 'Cotizacion basica',"
-    },
-    {
-      "key": "accent|src/app/pages/parametros.page.ts|catalogo|console.error(`[Parametros] Catalogo corrupto: \"${key}\" no es un arreglo`, value);",
-      "file": "src/app/pages/parametros.page.ts",
-      "token": "catalogo",
-      "suggestion": "catálogo",
-      "excerpt": "console.error(`[Parametros] Catalogo corrupto: \"${key}\" no es un arreglo`, value);"
-    },
-    {
-      "key": "accent|src/app/pages/parametros.page.ts|codigo|{ id: 'codigo', header: 'Codigo', field: 'codigo', sortable: true },",
-      "file": "src/app/pages/parametros.page.ts",
-      "token": "codigo",
-      "suggestion": "código",
-      "excerpt": "{ id: 'codigo', header: 'Codigo', field: 'codigo', sortable: true },"
-    },
-    {
-      "key": "accent|src/app/pages/parametros.page.ts|comision|{ id: 'comision', header: 'Comision', field: 'comision', type: 'number', sortable: true, align: 'right', format: this.formatPercentGrid },",
-      "file": "src/app/pages/parametros.page.ts",
-      "token": "comision",
-      "suggestion": "comisión",
-      "excerpt": "{ id: 'comision', header: 'Comision', field: 'comision', type: 'number', sortable: true, align: 'right', format: this.formatPercentGrid },"
-    },
-    {
-      "key": "accent|src/app/pages/parametros.page.ts|configuracion|? 'Configuracion actualizada con valores oficiales.'",
-      "file": "src/app/pages/parametros.page.ts",
-      "token": "configuracion",
-      "suggestion": "configuración",
-      "excerpt": "? 'Configuracion actualizada con valores oficiales.'"
-    },
-    {
-      "key": "accent|src/app/pages/parametros.page.ts|configuracion|? `Configuracion creada desde referencia ${sourcePeriodo}.`",
-      "file": "src/app/pages/parametros.page.ts",
-      "token": "configuracion",
-      "suggestion": "configuración",
-      "excerpt": "? `Configuracion creada desde referencia ${sourcePeriodo}.`"
-    },
-    {
-      "key": "accent|src/app/pages/parametros.page.ts|configuracion|? `Configuracion creada desde ultima configuracion disponible (${sourcePeriodo}).`",
-      "file": "src/app/pages/parametros.page.ts",
-      "token": "configuracion",
-      "suggestion": "configuración",
-      "excerpt": "? `Configuracion creada desde ultima configuracion disponible (${sourcePeriodo}).`"
-    },
-    {
-      "key": "accent|src/app/pages/parametros.page.ts|configuracion|? `Configuracion vigente para ${this.periodoSeleccionadoLabel()}.`",
-      "file": "src/app/pages/parametros.page.ts",
-      "token": "configuracion",
-      "suggestion": "configuración",
-      "excerpt": "? `Configuracion vigente para ${this.periodoSeleccionadoLabel()}.`"
-    },
-    {
-      "key": "accent|src/app/pages/parametros.page.ts|configuracion|'Nada se actualizo automaticamente. Puedes volver a revisar la configuracion cliente cuando corresponda.',",
-      "file": "src/app/pages/parametros.page.ts",
-      "token": "configuracion",
-      "suggestion": "configuración",
-      "excerpt": "'Nada se actualizo automaticamente. Puedes volver a revisar la configuracion cliente cuando corresponda.',"
-    },
-    {
-      "key": "accent|src/app/pages/parametros.page.ts|configuracion|'No se sobrescribio tu configuracion cliente.',",
-      "file": "src/app/pages/parametros.page.ts",
-      "token": "configuracion",
-      "suggestion": "configuración",
-      "excerpt": "'No se sobrescribio tu configuracion cliente.',"
-    },
-    {
-      "key": "accent|src/app/pages/parametros.page.ts|configuracion|detail: 'Desde Parametros solo se puede modificar la configuracion cliente del periodo.',",
-      "file": "src/app/pages/parametros.page.ts",
-      "token": "configuracion",
-      "suggestion": "configuración",
-      "excerpt": "detail: 'Desde Parametros solo se puede modificar la configuracion cliente del periodo.',"
-    },
-    {
-      "key": "accent|src/app/pages/parametros.page.ts|configuracion|detail: 'Se encontro configuracion cliente guardada, datos oficiales cargados y diferencias entre ambos registros. Puedes mantener tu configuracion, actualizarla con oficiales o re",
-      "file": "src/app/pages/parametros.page.ts",
-      "token": "configuracion",
-      "suggestion": "configuración",
-      "excerpt": "detail: 'Se encontro configuracion cliente guardada, datos oficiales cargados y diferencias entre ambos registros. Puedes mantener tu configuracion, actualizarla con oficiales o re"
-    },
-    {
-      "key": "accent|src/app/pages/parametros.page.ts|configuracion|message: 'Este periodo ya tiene una configuracion guardada por el cliente, pero la carga oficial contiene valores distintos. Nada se actualizara automaticamente.',",
-      "file": "src/app/pages/parametros.page.ts",
-      "token": "configuracion",
-      "suggestion": "configuración",
-      "excerpt": "message: 'Este periodo ya tiene una configuracion guardada por el cliente, pero la carga oficial contiene valores distintos. Nada se actualizara automaticamente.',"
-    },
-    {
-      "key": "accent|src/app/pages/parametros.page.ts|configuracion|message: 'No existe configuracion cliente para este periodo.',",
-      "file": "src/app/pages/parametros.page.ts",
-      "token": "configuracion",
-      "suggestion": "configuración",
-      "excerpt": "message: 'No existe configuracion cliente para este periodo.',"
-    },
-    {
-      "key": "accent|src/app/pages/parametros.page.ts|configuracion|message: 'No hay una configuracion cliente anterior disponible para usar como base.',",
-      "file": "src/app/pages/parametros.page.ts",
-      "token": "configuracion",
-      "suggestion": "configuración",
-      "excerpt": "message: 'No hay una configuracion cliente anterior disponible para usar como base.',"
-    },
-    {
-      "key": "accent|src/app/pages/parametros.page.ts|configuracion|message: 'No se puede guardar configuracion cliente para un periodo inexistente.',",
-      "file": "src/app/pages/parametros.page.ts",
-      "token": "configuracion",
-      "suggestion": "configuración",
-      "excerpt": "message: 'No se puede guardar configuracion cliente para un periodo inexistente.',"
-    },
-    {
-      "key": "accent|src/app/pages/parametros.page.ts|configuracion|message: 'Ocurrio un problema al guardar la configuracion del cliente.',",
-      "file": "src/app/pages/parametros.page.ts",
-      "token": "configuracion",
-      "suggestion": "configuración",
-      "excerpt": "message: 'Ocurrio un problema al guardar la configuracion del cliente.',"
-    },
-    {
-      "key": "accent|src/app/pages/parametros.page.ts|configuracion|message: `Configuracion de ${periodo} guardada.`,",
-      "file": "src/app/pages/parametros.page.ts",
-      "token": "configuracion",
-      "suggestion": "configuración",
-      "excerpt": "message: `Configuracion de ${periodo} guardada.`,"
-    },
-    {
-      "key": "accent|src/app/pages/parametros.page.ts|configuracion|primaryLabel: 'Mantener mi configuracion',",
-      "file": "src/app/pages/parametros.page.ts",
-      "token": "configuracion",
-      "suggestion": "configuración",
-      "excerpt": "primaryLabel: 'Mantener mi configuracion',"
-    },
-    {
-      "key": "accent|src/app/pages/parametros.page.ts|configuracion|return 'Configuracion cliente del periodo seleccionado.';",
-      "file": "src/app/pages/parametros.page.ts",
-      "token": "configuracion",
-      "suggestion": "configuración",
-      "excerpt": "return 'Configuracion cliente del periodo seleccionado.';"
-    },
-    {
-      "key": "accent|src/app/pages/parametros.page.ts|configuracion|return 'Configuracion cliente del periodo';",
-      "file": "src/app/pages/parametros.page.ts",
-      "token": "configuracion",
-      "suggestion": "configuración",
-      "excerpt": "return 'Configuracion cliente del periodo';"
-    },
-    {
-      "key": "accent|src/app/pages/parametros.page.ts|configuracion|return 'Configuracion cliente';",
-      "file": "src/app/pages/parametros.page.ts",
-      "token": "configuracion",
-      "suggestion": "configuración",
-      "excerpt": "return 'Configuracion cliente';"
-    },
-    {
-      "key": "accent|src/app/pages/parametros.page.ts|configuracion|return 'Configuracion guardada. Carga oficial pendiente.';",
-      "file": "src/app/pages/parametros.page.ts",
-      "token": "configuracion",
-      "suggestion": "configuración",
-      "excerpt": "return 'Configuracion guardada. Carga oficial pendiente.';"
-    },
-    {
-      "key": "accent|src/app/pages/parametros.page.ts|configuracion|return 'Configuracion parcial';",
-      "file": "src/app/pages/parametros.page.ts",
-      "token": "configuracion",
-      "suggestion": "configuración",
-      "excerpt": "return 'Configuracion parcial';"
-    },
-    {
-      "key": "accent|src/app/pages/parametros.page.ts|configuracion|return 'Datos oficiales cargados. Falta configuracion cliente.';",
-      "file": "src/app/pages/parametros.page.ts",
-      "token": "configuracion",
-      "suggestion": "configuración",
-      "excerpt": "return 'Datos oficiales cargados. Falta configuracion cliente.';"
-    },
-    {
-      "key": "accent|src/app/pages/parametros.page.ts|configuracion|return 'Modificar guarda configuracion cliente; los datos oficiales solo se usan para comparar.';",
-      "file": "src/app/pages/parametros.page.ts",
-      "token": "configuracion",
-      "suggestion": "configuración",
-      "excerpt": "return 'Modificar guarda configuracion cliente; los datos oficiales solo se usan para comparar.';"
-    },
-    {
-      "key": "accent|src/app/pages/parametros.page.ts|configuracion|return 'Usar ultima configuracion';",
-      "file": "src/app/pages/parametros.page.ts",
-      "token": "configuracion",
-      "suggestion": "configuración",
-      "excerpt": "return 'Usar ultima configuracion';"
-    },
-    {
-      "key": "accent|src/app/pages/parametros.page.ts|configuracion|this.mostrarErrorClienteConfig('No hay configuracion cliente para registrar la decision de reconciliacion.');",
-      "file": "src/app/pages/parametros.page.ts",
-      "token": "configuracion",
-      "suggestion": "configuración",
-      "excerpt": "this.mostrarErrorClienteConfig('No hay configuracion cliente para registrar la decision de reconciliacion.');"
-    },
-    {
-      "key": "accent|src/app/pages/parametros.page.ts|configuracion|this.mostrarErrorClienteConfig('No hay valores oficiales actuales para actualizar la configuracion cliente.');",
-      "file": "src/app/pages/parametros.page.ts",
-      "token": "configuracion",
-      "suggestion": "configuración",
-      "excerpt": "this.mostrarErrorClienteConfig('No hay valores oficiales actuales para actualizar la configuracion cliente.');"
-    },
-    {
-      "key": "accent|src/app/pages/parametros.page.ts|configuracion|this.mostrarErrorClienteConfig(this.extractErrorDetail(err) || 'No fue posible actualizar la configuracion con oficiales.');",
-      "file": "src/app/pages/parametros.page.ts",
-      "token": "configuracion",
-      "suggestion": "configuración",
-      "excerpt": "this.mostrarErrorClienteConfig(this.extractErrorDetail(err) || 'No fue posible actualizar la configuracion con oficiales.');"
-    },
-    {
-      "key": "accent|src/app/pages/parametros.page.ts|configuracion|this.mostrarErrorClienteConfig(this.extractErrorDetail(err) || 'No fue posible cargar la ultima configuracion cliente.');",
-      "file": "src/app/pages/parametros.page.ts",
-      "token": "configuracion",
-      "suggestion": "configuración",
-      "excerpt": "this.mostrarErrorClienteConfig(this.extractErrorDetail(err) || 'No fue posible cargar la ultima configuracion cliente.');"
-    },
-    {
-      "key": "accent|src/app/pages/parametros.page.ts|configuracion|this.mostrarErrorClienteConfig(this.extractErrorDetail(err) || 'No fue posible guardar la configuracion cliente.');",
-      "file": "src/app/pages/parametros.page.ts",
-      "token": "configuracion",
-      "suggestion": "configuración",
-      "excerpt": "this.mostrarErrorClienteConfig(this.extractErrorDetail(err) || 'No fue posible guardar la configuracion cliente.');"
-    },
-    {
-      "key": "accent|src/app/pages/parametros.page.ts|configuracion|title: 'Configuracion guardada',",
-      "file": "src/app/pages/parametros.page.ts",
-      "token": "configuracion",
-      "suggestion": "configuración",
-      "excerpt": "title: 'Configuracion guardada',"
-    },
-    {
-      "key": "accent|src/app/pages/parametros.page.ts|configuracion|title: 'No se pudo guardar la configuracion',",
-      "file": "src/app/pages/parametros.page.ts",
-      "token": "configuracion",
-      "suggestion": "configuración",
-      "excerpt": "title: 'No se pudo guardar la configuracion',"
-    },
-    {
-      "key": "accent|src/app/pages/parametros.page.ts|configuracion|title: 'Sin configuracion anterior',",
-      "file": "src/app/pages/parametros.page.ts",
-      "token": "configuracion",
-      "suggestion": "configuración",
-      "excerpt": "title: 'Sin configuracion anterior',"
-    },
-    {
-      "key": "accent|src/app/pages/parametros.page.ts|configuracion|title: estado === 'cliente_confirmado' ? 'Configuracion mantenida' : 'Revision postergada',",
-      "file": "src/app/pages/parametros.page.ts",
-      "token": "configuracion",
-      "suggestion": "configuración",
-      "excerpt": "title: estado === 'cliente_confirmado' ? 'Configuracion mantenida' : 'Revision postergada',"
-    },
-    {
-      "key": "accent|src/app/pages/parametros.page.ts|decision|'La decision quedo registrada para este periodo.',",
-      "file": "src/app/pages/parametros.page.ts",
-      "token": "decision",
-      "suggestion": "decisión",
-      "excerpt": "'La decision quedo registrada para este periodo.',"
-    },
-    {
-      "key": "accent|src/app/pages/parametros.page.ts|decision|this.mostrarErrorClienteConfig('No hay configuracion cliente para registrar la decision de reconciliacion.');",
-      "file": "src/app/pages/parametros.page.ts",
-      "token": "decision",
-      "suggestion": "decisión",
-      "excerpt": "this.mostrarErrorClienteConfig('No hay configuracion cliente para registrar la decision de reconciliacion.');"
-    },
-    {
-      "key": "accent|src/app/pages/parametros.page.ts|decision|this.mostrarErrorClienteConfig(this.extractErrorDetail(err) || 'No fue posible registrar la decision de reconciliacion.');",
-      "file": "src/app/pages/parametros.page.ts",
-      "token": "decision",
-      "suggestion": "decisión",
-      "excerpt": "this.mostrarErrorClienteConfig(this.extractErrorDetail(err) || 'No fue posible registrar la decision de reconciliacion.');"
-    },
-    {
-      "key": "accent|src/app/pages/parametros.page.ts|historico|return 'Historico';",
-      "file": "src/app/pages/parametros.page.ts",
-      "token": "historico",
-      "suggestion": "histórico",
-      "excerpt": "return 'Historico';"
-    },
-    {
-      "key": "accent|src/app/pages/parametros.page.ts|parametro|{ id: 'nombre', header: 'Parametro', field: 'nombre', sortable: true, format: (value) => this.labelParametro(String(value ?? '')) },",
-      "file": "src/app/pages/parametros.page.ts",
-      "token": "parametro",
-      "suggestion": "parámetro",
-      "excerpt": "{ id: 'nombre', header: 'Parametro', field: 'nombre', sortable: true, format: (value) => this.labelParametro(String(value ?? '')) },"
-    },
-    {
-      "key": "accent|src/app/pages/parametros.page.ts|parametro|} from '../features/parametros-generales/models/parametro-general.model';",
-      "file": "src/app/pages/parametros.page.ts",
-      "token": "parametro",
-      "suggestion": "parámetro",
-      "excerpt": "} from '../features/parametros-generales/models/parametro-general.model';"
-    },
-    {
-      "key": "accent|src/app/pages/parametros.page.ts|parametros|[gridPersistenceKey]=\"gridPersistenceKey('parametros.afp.dg')\"",
+      "key": "accent|src/app/pages/parametros.page.ts|parametros|import { ParametrosWorkspaceContainer } from '../features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container';",
       "file": "src/app/pages/parametros.page.ts",
       "token": "parametros",
       "suggestion": "parámetros",
-      "excerpt": "[gridPersistenceKey]=\"gridPersistenceKey('parametros.afp.dg')\""
-    },
-    {
-      "key": "accent|src/app/pages/parametros.page.ts|parametros|[gridPersistenceKey]=\"gridPersistenceKey('parametros.tramos-carga.dg')\"",
-      "file": "src/app/pages/parametros.page.ts",
-      "token": "parametros",
-      "suggestion": "parámetros",
-      "excerpt": "[gridPersistenceKey]=\"gridPersistenceKey('parametros.tramos-carga.dg')\""
-    },
-    {
-      "key": "accent|src/app/pages/parametros.page.ts|parametros|[gridPersistenceKeyApvInst]=\"gridPersistenceKey('parametros.apv-instituciones.dg')\"",
-      "file": "src/app/pages/parametros.page.ts",
-      "token": "parametros",
-      "suggestion": "parámetros",
-      "excerpt": "[gridPersistenceKeyApvInst]=\"gridPersistenceKey('parametros.apv-instituciones.dg')\""
-    },
-    {
-      "key": "accent|src/app/pages/parametros.page.ts|parametros|[gridPersistenceKeyApvPago]=\"gridPersistenceKey('parametros.apv-formas-pago.dg')\"",
-      "file": "src/app/pages/parametros.page.ts",
-      "token": "parametros",
-      "suggestion": "parámetros",
-      "excerpt": "[gridPersistenceKeyApvPago]=\"gridPersistenceKey('parametros.apv-formas-pago.dg')\""
-    },
-    {
-      "key": "accent|src/app/pages/parametros.page.ts|parametros|[gridPersistenceKeyCcaf]=\"gridPersistenceKey('parametros.ccaf.dg')\"",
-      "file": "src/app/pages/parametros.page.ts",
-      "token": "parametros",
-      "suggestion": "parámetros",
-      "excerpt": "[gridPersistenceKeyCcaf]=\"gridPersistenceKey('parametros.ccaf.dg')\""
-    },
-    {
-      "key": "accent|src/app/pages/parametros.page.ts|parametros|[gridPersistenceKeyInstituciones]=\"gridPersistenceKey('parametros.salud-instituciones.dg')\"",
-      "file": "src/app/pages/parametros.page.ts",
-      "token": "parametros",
-      "suggestion": "parámetros",
-      "excerpt": "[gridPersistenceKeyInstituciones]=\"gridPersistenceKey('parametros.salud-instituciones.dg')\""
-    },
-    {
-      "key": "accent|src/app/pages/parametros.page.ts|parametros|[gridPersistenceKeyIsapre]=\"gridPersistenceKey('parametros.isapre.dg')\"",
-      "file": "src/app/pages/parametros.page.ts",
-      "token": "parametros",
-      "suggestion": "parámetros",
-      "excerpt": "[gridPersistenceKeyIsapre]=\"gridPersistenceKey('parametros.isapre.dg')\""
-    },
-    {
-      "key": "accent|src/app/pages/parametros.page.ts|parametros|[gridPersistenceKeyLegal]=\"gridPersistenceKey('parametros.reforma-legal.dg')\"",
-      "file": "src/app/pages/parametros.page.ts",
-      "token": "parametros",
-      "suggestion": "parámetros",
-      "excerpt": "[gridPersistenceKeyLegal]=\"gridPersistenceKey('parametros.reforma-legal.dg')\""
-    },
-    {
-      "key": "accent|src/app/pages/parametros.page.ts|parametros|[gridPersistenceKeyLey16744]=\"gridPersistenceKey('parametros.ley16744.dg')\"",
-      "file": "src/app/pages/parametros.page.ts",
-      "token": "parametros",
-      "suggestion": "parámetros",
-      "excerpt": "[gridPersistenceKeyLey16744]=\"gridPersistenceKey('parametros.ley16744.dg')\""
-    },
-    {
-      "key": "accent|src/app/pages/parametros.page.ts|parametros|[gridPersistenceKeyMutuales]=\"gridPersistenceKey('parametros.mutuales.dg')\"",
-      "file": "src/app/pages/parametros.page.ts",
-      "token": "parametros",
-      "suggestion": "parámetros",
-      "excerpt": "[gridPersistenceKeyMutuales]=\"gridPersistenceKey('parametros.mutuales.dg')\""
-    },
-    {
-      "key": "accent|src/app/pages/parametros.page.ts|parametros|[gridPersistenceKeyPrevisional]=\"gridPersistenceKey('parametros.reforma-previsional.dg')\"",
-      "file": "src/app/pages/parametros.page.ts",
-      "token": "parametros",
-      "suggestion": "parámetros",
-      "excerpt": "[gridPersistenceKeyPrevisional]=\"gridPersistenceKey('parametros.reforma-previsional.dg')\""
-    },
-    {
-      "key": "accent|src/app/pages/parametros.page.ts|parametros|[gridPersistenceKeyTabla]=\"gridPersistenceKey('parametros.tabla-impuesto.dg')\"",
-      "file": "src/app/pages/parametros.page.ts",
-      "token": "parametros",
-      "suggestion": "parámetros",
-      "excerpt": "[gridPersistenceKeyTabla]=\"gridPersistenceKey('parametros.tabla-impuesto.dg')\""
-    },
-    {
-      "key": "accent|src/app/pages/parametros.page.ts|parametros|[gridPersistenceKeyTrabPesados]=\"gridPersistenceKey('parametros.trabajos-pesados.dg')\"",
-      "file": "src/app/pages/parametros.page.ts",
-      "token": "parametros",
-      "suggestion": "parámetros",
-      "excerpt": "[gridPersistenceKeyTrabPesados]=\"gridPersistenceKey('parametros.trabajos-pesados.dg')\""
-    },
-    {
-      "key": "accent|src/app/pages/parametros.page.ts|parametros|[gridPersistenceKeyTramos]=\"gridPersistenceKey('parametros.tramos-impuesto.dg')\"",
-      "file": "src/app/pages/parametros.page.ts",
-      "token": "parametros",
-      "suggestion": "parámetros",
-      "excerpt": "[gridPersistenceKeyTramos]=\"gridPersistenceKey('parametros.tramos-impuesto.dg')\""
-    },
-    {
-      "key": "accent|src/app/pages/parametros.page.ts|parametros|} from '../features/parametros-generales/components/tabs/parametros-ccaf-mutuales-tab.component';",
-      "file": "src/app/pages/parametros.page.ts",
-      "token": "parametros",
-      "suggestion": "parámetros",
-      "excerpt": "} from '../features/parametros-generales/components/tabs/parametros-ccaf-mutuales-tab.component';"
-    },
-    {
-      "key": "accent|src/app/pages/parametros.page.ts|parametros|} from '../features/parametros-generales/models/parametro-general.model';",
-      "file": "src/app/pages/parametros.page.ts",
-      "token": "parametros",
-      "suggestion": "parámetros",
-      "excerpt": "} from '../features/parametros-generales/models/parametro-general.model';"
-    },
-    {
-      "key": "accent|src/app/pages/parametros.page.ts|parametros|} from '../features/parametros-generales/rules/parametros-completitud.rules';",
-      "file": "src/app/pages/parametros.page.ts",
-      "token": "parametros",
-      "suggestion": "parámetros",
-      "excerpt": "} from '../features/parametros-generales/rules/parametros-completitud.rules';"
-    },
-    {
-      "key": "accent|src/app/pages/parametros.page.ts|parametros|<app-card className=\"parametros-shell erp-fullscreen-frame\">",
-      "file": "src/app/pages/parametros.page.ts",
-      "token": "parametros",
-      "suggestion": "parámetros",
-      "excerpt": "<app-card className=\"parametros-shell erp-fullscreen-frame\">"
-    },
-    {
-      "key": "accent|src/app/pages/parametros.page.ts|parametros|<app-card-content className=\"parametros-frame\">",
-      "file": "src/app/pages/parametros.page.ts",
-      "token": "parametros",
-      "suggestion": "parámetros",
-      "excerpt": "<app-card-content className=\"parametros-frame\">"
-    },
-    {
-      "key": "accent|src/app/pages/parametros.page.ts|parametros|<div class=\"parametros-content parametros-panel\">",
-      "file": "src/app/pages/parametros.page.ts",
-      "token": "parametros",
-      "suggestion": "parámetros",
-      "excerpt": "<div class=\"parametros-content parametros-panel\">"
-    },
-    {
-      "key": "accent|src/app/pages/parametros.page.ts|parametros|<div class=\"parametros-period-actions\" aria-label=\"Acciones del periodo\">",
-      "file": "src/app/pages/parametros.page.ts",
-      "token": "parametros",
-      "suggestion": "parámetros",
-      "excerpt": "<div class=\"parametros-period-actions\" aria-label=\"Acciones del periodo\">"
-    },
-    {
-      "key": "accent|src/app/pages/parametros.page.ts|parametros|<div class=\"parametros-tab-body\" role=\"region\" aria-label=\"Contenido de la sección\">",
-      "file": "src/app/pages/parametros.page.ts",
-      "token": "parametros",
-      "suggestion": "parámetros",
-      "excerpt": "<div class=\"parametros-tab-body\" role=\"region\" aria-label=\"Contenido de la sección\">"
-    },
-    {
-      "key": "accent|src/app/pages/parametros.page.ts|parametros|<div class=\"parametros-viewhead\">",
-      "file": "src/app/pages/parametros.page.ts",
-      "token": "parametros",
-      "suggestion": "parámetros",
-      "excerpt": "<div class=\"parametros-viewhead\">"
-    },
-    {
-      "key": "accent|src/app/pages/parametros.page.ts|parametros|<div class=\"period-controls parametros-period-controls\">",
-      "file": "src/app/pages/parametros.page.ts",
-      "token": "parametros",
-      "suggestion": "parámetros",
-      "excerpt": "<div class=\"period-controls parametros-period-controls\">"
-    },
-    {
-      "key": "accent|src/app/pages/parametros.page.ts|parametros|<div class=\"period-row parametros-period-band\" aria-label=\"Periodo\">",
-      "file": "src/app/pages/parametros.page.ts",
-      "token": "parametros",
-      "suggestion": "parámetros",
-      "excerpt": "<div class=\"period-row parametros-period-band\" aria-label=\"Periodo\">"
-    },
-    {
-      "key": "accent|src/app/pages/parametros.page.ts|parametros|<div class=\"period-row__left parametros-period-left\">",
-      "file": "src/app/pages/parametros.page.ts",
-      "token": "parametros",
-      "suggestion": "parámetros",
-      "excerpt": "<div class=\"period-row__left parametros-period-left\">"
-    },
-    {
-      "key": "accent|src/app/pages/parametros.page.ts|parametros|<div class=\"period-row__right parametros-period-status\" role=\"region\" aria-label=\"Estado mensual\">",
-      "file": "src/app/pages/parametros.page.ts",
-      "token": "parametros",
-      "suggestion": "parámetros",
-      "excerpt": "<div class=\"period-row__right parametros-period-status\" role=\"region\" aria-label=\"Estado mensual\">"
-    },
-    {
-      "key": "accent|src/app/pages/parametros.page.ts|parametros|<nav class=\"folder-tabs parametros-tabs\" aria-label=\"Secciones de parámetros\">",
-      "file": "src/app/pages/parametros.page.ts",
-      "token": "parametros",
-      "suggestion": "parámetros",
-      "excerpt": "<nav class=\"folder-tabs parametros-tabs\" aria-label=\"Secciones de parámetros\">"
-    },
-    {
-      "key": "accent|src/app/pages/parametros.page.ts|parametros|<p class=\"period-mensual__detail parametros-period-status-detail\">{{ periodoEstadoDetalle() }}</p>",
-      "file": "src/app/pages/parametros.page.ts",
-      "token": "parametros",
-      "suggestion": "parámetros",
-      "excerpt": "<p class=\"period-mensual__detail parametros-period-status-detail\">{{ periodoEstadoDetalle() }}</p>"
-    },
-    {
-      "key": "accent|src/app/pages/parametros.page.ts|parametros|<p class=\"period-sync-hint parametros-period-sync\">{{ periodoContextoHint() }}</p>",
-      "file": "src/app/pages/parametros.page.ts",
-      "token": "parametros",
-      "suggestion": "parámetros",
-      "excerpt": "<p class=\"period-sync-hint parametros-period-sync\">{{ periodoContextoHint() }}</p>"
-    },
-    {
-      "key": "accent|src/app/pages/parametros.page.ts|parametros|<section class=\"parametros-page\" aria-label=\"Mantenedor de parámetros\">",
-      "file": "src/app/pages/parametros.page.ts",
-      "token": "parametros",
-      "suggestion": "parámetros",
-      "excerpt": "<section class=\"parametros-page\" aria-label=\"Mantenedor de parámetros\">"
-    },
-    {
-      "key": "accent|src/app/pages/parametros.page.ts|parametros|<span class=\"period-mensual__title parametros-period-status-title\">{{ periodoEstadoTitulo() }}</span>",
-      "file": "src/app/pages/parametros.page.ts",
-      "token": "parametros",
-      "suggestion": "parámetros",
-      "excerpt": "<span class=\"period-mensual__title parametros-period-status-title\">{{ periodoEstadoTitulo() }}</span>"
-    },
-    {
-      "key": "accent|src/app/pages/parametros.page.ts|parametros|| 'confirmar-crear-parametros'",
-      "file": "src/app/pages/parametros.page.ts",
-      "token": "parametros",
-      "suggestion": "parámetros",
-      "excerpt": "| 'confirmar-crear-parametros'"
-    },
-    {
-      "key": "accent|src/app/pages/parametros.page.ts|parametros|class=\"folder-tab parametros-tab-button\"",
-      "file": "src/app/pages/parametros.page.ts",
-      "token": "parametros",
-      "suggestion": "parámetros",
-      "excerpt": "class=\"folder-tab parametros-tab-button\""
-    },
-    {
-      "key": "accent|src/app/pages/parametros.page.ts|parametros|console.error('[Parametros] guardarClienteConfig', err);",
-      "file": "src/app/pages/parametros.page.ts",
-      "token": "parametros",
-      "suggestion": "parámetros",
-      "excerpt": "console.error('[Parametros] guardarClienteConfig', err);"
-    },
-    {
-      "key": "accent|src/app/pages/parametros.page.ts|parametros|console.error(`[Parametros] Catalogo corrupto: \"${key}\" no es un arreglo`, value);",
-      "file": "src/app/pages/parametros.page.ts",
-      "token": "parametros",
-      "suggestion": "parámetros",
-      "excerpt": "console.error(`[Parametros] Catalogo corrupto: \"${key}\" no es un arreglo`, value);"
-    },
-    {
-      "key": "accent|src/app/pages/parametros.page.ts|parametros|detail: 'Desde Parametros solo se puede modificar la configuracion cliente del periodo.',",
-      "file": "src/app/pages/parametros.page.ts",
-      "token": "parametros",
-      "suggestion": "parámetros",
-      "excerpt": "detail: 'Desde Parametros solo se puede modificar la configuracion cliente del periodo.',"
-    },
-    {
-      "key": "accent|src/app/pages/parametros.page.ts|parametros|id=\"parametros-periodo-anio\"",
-      "file": "src/app/pages/parametros.page.ts",
-      "token": "parametros",
-      "suggestion": "parámetros",
-      "excerpt": "id=\"parametros-periodo-anio\""
-    },
-    {
-      "key": "accent|src/app/pages/parametros.page.ts|parametros|id=\"parametros-periodo-mes\"",
-      "file": "src/app/pages/parametros.page.ts",
-      "token": "parametros",
-      "suggestion": "parámetros",
-      "excerpt": "id=\"parametros-periodo-mes\""
-    },
-    {
-      "key": "accent|src/app/pages/parametros.page.ts|parametros|if (dlg?.kind === 'confirmar-crear-parametros') {",
-      "file": "src/app/pages/parametros.page.ts",
-      "token": "parametros",
-      "suggestion": "parámetros",
-      "excerpt": "if (dlg?.kind === 'confirmar-crear-parametros') {"
-    },
-    {
-      "key": "accent|src/app/pages/parametros.page.ts|parametros|if (dlg.kind === 'confirmar-crear-parametros') {",
-      "file": "src/app/pages/parametros.page.ts",
-      "token": "parametros",
-      "suggestion": "parámetros",
-      "excerpt": "if (dlg.kind === 'confirmar-crear-parametros') {"
-    },
-    {
-      "key": "accent|src/app/pages/parametros.page.ts|parametros|import { ParametrosAfpTabComponent } from '../features/parametros-generales/components/tabs/parametros-afp-tab.component';",
-      "file": "src/app/pages/parametros.page.ts",
-      "token": "parametros",
-      "suggestion": "parámetros",
-      "excerpt": "import { ParametrosAfpTabComponent } from '../features/parametros-generales/components/tabs/parametros-afp-tab.component';"
-    },
-    {
-      "key": "accent|src/app/pages/parametros.page.ts|parametros|import { ParametrosConfigClienteTabComponent } from '../features/parametros-generales/components/tabs/parametros-config-cliente-tab.component';",
-      "file": "src/app/pages/parametros.page.ts",
-      "token": "parametros",
-      "suggestion": "parámetros",
-      "excerpt": "import { ParametrosConfigClienteTabComponent } from '../features/parametros-generales/components/tabs/parametros-config-cliente-tab.component';"
-    },
-    {
-      "key": "accent|src/app/pages/parametros.page.ts|parametros|import { ParametrosGeneralesService } from '../features/parametros-generales/services/parametros-generales.service';",
-      "file": "src/app/pages/parametros.page.ts",
-      "token": "parametros",
-      "suggestion": "parámetros",
-      "excerpt": "import { ParametrosGeneralesService } from '../features/parametros-generales/services/parametros-generales.service';"
-    },
-    {
-      "key": "accent|src/app/pages/parametros.page.ts|parametros|import { ParametrosReformaTabComponent } from '../features/parametros-generales/components/tabs/parametros-reforma-tab.component';",
-      "file": "src/app/pages/parametros.page.ts",
-      "token": "parametros",
-      "suggestion": "parámetros",
-      "excerpt": "import { ParametrosReformaTabComponent } from '../features/parametros-generales/components/tabs/parametros-reforma-tab.component';"
-    },
-    {
-      "key": "accent|src/app/pages/parametros.page.ts|parametros|import { ParametrosRemuneracionesTabComponent } from '../features/parametros-generales/components/tabs/parametros-remuneraciones-tab.component';",
-      "file": "src/app/pages/parametros.page.ts",
-      "token": "parametros",
-      "suggestion": "parámetros",
-      "excerpt": "import { ParametrosRemuneracionesTabComponent } from '../features/parametros-generales/components/tabs/parametros-remuneraciones-tab.component';"
-    },
-    {
-      "key": "accent|src/app/pages/parametros.page.ts|parametros|import { ParametrosSaludTabComponent } from '../features/parametros-generales/components/tabs/parametros-salud-tab.component';",
-      "file": "src/app/pages/parametros.page.ts",
-      "token": "parametros",
-      "suggestion": "parámetros",
-      "excerpt": "import { ParametrosSaludTabComponent } from '../features/parametros-generales/components/tabs/parametros-salud-tab.component';"
-    },
-    {
-      "key": "accent|src/app/pages/parametros.page.ts|parametros|import { ParametrosTramosCargaTabComponent } from '../features/parametros-generales/components/tabs/parametros-tramos-carga-tab.component';",
-      "file": "src/app/pages/parametros.page.ts",
-      "token": "parametros",
-      "suggestion": "parámetros",
-      "excerpt": "import { ParametrosTramosCargaTabComponent } from '../features/parametros-generales/components/tabs/parametros-tramos-carga-tab.component';"
-    },
-    {
-      "key": "accent|src/app/pages/parametros.page.ts|parametros|import { ParametrosTramosRentaTabComponent } from '../features/parametros-generales/components/tabs/parametros-tramos-renta-tab.component';",
-      "file": "src/app/pages/parametros.page.ts",
-      "token": "parametros",
-      "suggestion": "parámetros",
-      "excerpt": "import { ParametrosTramosRentaTabComponent } from '../features/parametros-generales/components/tabs/parametros-tramos-renta-tab.component';"
-    },
-    {
-      "key": "accent|src/app/pages/parametros.page.ts|parametros|import { ParametrosValoresTabComponent } from '../features/parametros-generales/components/tabs/parametros-valores-tab.component';",
-      "file": "src/app/pages/parametros.page.ts",
-      "token": "parametros",
-      "suggestion": "parámetros",
-      "excerpt": "import { ParametrosValoresTabComponent } from '../features/parametros-generales/components/tabs/parametros-valores-tab.component';"
-    },
-    {
-      "key": "accent|src/app/pages/parametros.page.ts|parametros|observacionReconciliacion: 'Cliente actualizado con parametros oficiales desde reconciliacion.',",
-      "file": "src/app/pages/parametros.page.ts",
-      "token": "parametros",
-      "suggestion": "parámetros",
-      "excerpt": "observacionReconciliacion: 'Cliente actualizado con parametros oficiales desde reconciliacion.',"
-    },
-    {
-      "key": "accent|src/app/pages/parametros.page.ts|parametros|return 'Estado mensual: Parametros cargados';",
-      "file": "src/app/pages/parametros.page.ts",
-      "token": "parametros",
-      "suggestion": "parámetros",
-      "excerpt": "return 'Estado mensual: Parametros cargados';"
-    },
-    {
-      "key": "accent|src/app/pages/parametros.page.ts|parametros|return 'Parametros remuneracionales';",
-      "file": "src/app/pages/parametros.page.ts",
-      "token": "parametros",
-      "suggestion": "parámetros",
-      "excerpt": "return 'Parametros remuneracionales';"
+      "excerpt": "import { ParametrosWorkspaceContainer } from '../features/parametros-generales/containers/parametros-workspace-container/parametros-workspace-container';"
     },
     {
       "key": "accent|src/app/pages/parametros.page.ts|parametros|selector: 'app-parametros-page',",
@@ -58404,459 +59104,11 @@
       "excerpt": "selector: 'app-parametros-page',"
     },
     {
-      "key": "accent|src/app/pages/parametros.page.ts|periodo|: `Periodo seleccionado: ${this.selectedPeriodo()}`,",
-      "file": "src/app/pages/parametros.page.ts",
-      "token": "periodo",
-      "suggestion": "período",
-      "excerpt": ": `Periodo seleccionado: ${this.selectedPeriodo()}`,"
-    },
-    {
-      "key": "accent|src/app/pages/parametros.page.ts|periodo|: `Periodo: ${periodo}`;",
-      "file": "src/app/pages/parametros.page.ts",
-      "token": "periodo",
-      "suggestion": "período",
-      "excerpt": ": `Periodo: ${periodo}`;"
-    },
-    {
-      "key": "accent|src/app/pages/parametros.page.ts|periodo|? 'Montos y topes del periodo.'",
-      "file": "src/app/pages/parametros.page.ts",
-      "token": "periodo",
-      "suggestion": "período",
-      "excerpt": "? 'Montos y topes del periodo.'"
-    },
-    {
-      "key": "accent|src/app/pages/parametros.page.ts|periodo|? 'UF, UTM y UTA del periodo.'",
-      "file": "src/app/pages/parametros.page.ts",
-      "token": "periodo",
-      "suggestion": "período",
-      "excerpt": "? 'UF, UTM y UTA del periodo.'"
-    },
-    {
-      "key": "accent|src/app/pages/parametros.page.ts|periodo|'Hay cambios sin guardar. Si continúa, se descartarán. ¿Cambiar de periodo?',",
-      "file": "src/app/pages/parametros.page.ts",
-      "token": "periodo",
-      "suggestion": "período",
-      "excerpt": "'Hay cambios sin guardar. Si continúa, se descartarán. ¿Cambiar de periodo?',"
-    },
-    {
-      "key": "accent|src/app/pages/parametros.page.ts|periodo|'La decision quedo registrada para este periodo.',",
-      "file": "src/app/pages/parametros.page.ts",
-      "token": "periodo",
-      "suggestion": "período",
-      "excerpt": "'La decision quedo registrada para este periodo.',"
-    },
-    {
-      "key": "accent|src/app/pages/parametros.page.ts|periodo|{ id: 'periodo', header: 'Periodo', field: 'periodo', sortable: true },",
-      "file": "src/app/pages/parametros.page.ts",
-      "token": "periodo",
-      "suggestion": "período",
-      "excerpt": "{ id: 'periodo', header: 'Periodo', field: 'periodo', sortable: true },"
-    },
-    {
-      "key": "accent|src/app/pages/parametros.page.ts|periodo|<div class=\"parametros-period-actions\" aria-label=\"Acciones del periodo\">",
-      "file": "src/app/pages/parametros.page.ts",
-      "token": "periodo",
-      "suggestion": "período",
-      "excerpt": "<div class=\"parametros-period-actions\" aria-label=\"Acciones del periodo\">"
-    },
-    {
-      "key": "accent|src/app/pages/parametros.page.ts|periodo|<div class=\"period-row parametros-period-band\" aria-label=\"Periodo\">",
-      "file": "src/app/pages/parametros.page.ts",
-      "token": "periodo",
-      "suggestion": "período",
-      "excerpt": "<div class=\"period-row parametros-period-band\" aria-label=\"Periodo\">"
-    },
-    {
-      "key": "accent|src/app/pages/parametros.page.ts|periodo|aria-label=\"Periodo anterior\"",
-      "file": "src/app/pages/parametros.page.ts",
-      "token": "periodo",
-      "suggestion": "período",
-      "excerpt": "aria-label=\"Periodo anterior\""
-    },
-    {
-      "key": "accent|src/app/pages/parametros.page.ts|periodo|aria-label=\"Periodo siguiente\"",
-      "file": "src/app/pages/parametros.page.ts",
-      "token": "periodo",
-      "suggestion": "período",
-      "excerpt": "aria-label=\"Periodo siguiente\""
-    },
-    {
-      "key": "accent|src/app/pages/parametros.page.ts|periodo|detail: 'Desde Parametros solo se puede modificar la configuracion cliente del periodo.',",
-      "file": "src/app/pages/parametros.page.ts",
-      "token": "periodo",
-      "suggestion": "período",
-      "excerpt": "detail: 'Desde Parametros solo se puede modificar la configuracion cliente del periodo.',"
-    },
-    {
-      "key": "accent|src/app/pages/parametros.page.ts|periodo|detail: 'Esta modificación puede afectar cálculos de remuneraciones asociados a este periodo.',",
-      "file": "src/app/pages/parametros.page.ts",
-      "token": "periodo",
-      "suggestion": "período",
-      "excerpt": "detail: 'Esta modificación puede afectar cálculos de remuneraciones asociados a este periodo.',"
-    },
-    {
-      "key": "accent|src/app/pages/parametros.page.ts|periodo|detail: `Periodo en datos: ${row.periodo}. Periodo seleccionado: ${selected}.`,",
-      "file": "src/app/pages/parametros.page.ts",
-      "token": "periodo",
-      "suggestion": "período",
-      "excerpt": "detail: `Periodo en datos: ${row.periodo}. Periodo seleccionado: ${selected}.`,"
-    },
-    {
-      "key": "accent|src/app/pages/parametros.page.ts|periodo|detail: `Periodo: ${periodo}\\nSelecciona una base para continuar. Se creara solo al guardar.`,",
-      "file": "src/app/pages/parametros.page.ts",
-      "token": "periodo",
-      "suggestion": "período",
-      "excerpt": "detail: `Periodo: ${periodo}\\nSelecciona una base para continuar. Se creara solo al guardar.`,"
-    },
-    {
-      "key": "accent|src/app/pages/parametros.page.ts|periodo|detail: `Periodo: ${periodo}`,",
-      "file": "src/app/pages/parametros.page.ts",
-      "token": "periodo",
-      "suggestion": "período",
-      "excerpt": "detail: `Periodo: ${periodo}`,"
-    },
-    {
-      "key": "accent|src/app/pages/parametros.page.ts|periodo|detail: `Periodo: ${this.selectedPeriodo()}`,",
-      "file": "src/app/pages/parametros.page.ts",
-      "token": "periodo",
-      "suggestion": "período",
-      "excerpt": "detail: `Periodo: ${this.selectedPeriodo()}`,"
-    },
-    {
-      "key": "accent|src/app/pages/parametros.page.ts|periodo|detail: `Primero debe existir el periodo ${this.selectedPeriodo()} en remuneraciones.`,",
-      "file": "src/app/pages/parametros.page.ts",
-      "token": "periodo",
-      "suggestion": "período",
-      "excerpt": "detail: `Primero debe existir el periodo ${this.selectedPeriodo()} en remuneraciones.`,"
-    },
-    {
-      "key": "accent|src/app/pages/parametros.page.ts|periodo|id=\"parametros-periodo-anio\"",
-      "file": "src/app/pages/parametros.page.ts",
-      "token": "periodo",
-      "suggestion": "período",
-      "excerpt": "id=\"parametros-periodo-anio\""
-    },
-    {
-      "key": "accent|src/app/pages/parametros.page.ts|periodo|id=\"parametros-periodo-mes\"",
-      "file": "src/app/pages/parametros.page.ts",
-      "token": "periodo",
-      "suggestion": "período",
-      "excerpt": "id=\"parametros-periodo-mes\""
-    },
-    {
-      "key": "accent|src/app/pages/parametros.page.ts|periodo|import { PeriodoActivoService } from '../core/services/periodo-activo.service';",
-      "file": "src/app/pages/parametros.page.ts",
-      "token": "periodo",
-      "suggestion": "período",
-      "excerpt": "import { PeriodoActivoService } from '../core/services/periodo-activo.service';"
-    },
-    {
-      "key": "accent|src/app/pages/parametros.page.ts|periodo|message: 'El periodo esta cerrado y queda en modo solo lectura.',",
-      "file": "src/app/pages/parametros.page.ts",
-      "token": "periodo",
-      "suggestion": "período",
-      "excerpt": "message: 'El periodo esta cerrado y queda en modo solo lectura.',"
-    },
-    {
-      "key": "accent|src/app/pages/parametros.page.ts|periodo|message: 'Este periodo ya tiene una configuracion guardada por el cliente, pero la carga oficial contiene valores distintos. Nada se actualizara automaticamente.',",
-      "file": "src/app/pages/parametros.page.ts",
-      "token": "periodo",
-      "suggestion": "período",
-      "excerpt": "message: 'Este periodo ya tiene una configuracion guardada por el cliente, pero la carga oficial contiene valores distintos. Nada se actualizara automaticamente.',"
-    },
-    {
-      "key": "accent|src/app/pages/parametros.page.ts|periodo|message: 'Los datos recibidos no coinciden con el periodo seleccionado.',",
-      "file": "src/app/pages/parametros.page.ts",
-      "token": "periodo",
-      "suggestion": "período",
-      "excerpt": "message: 'Los datos recibidos no coinciden con el periodo seleccionado.',"
-    },
-    {
-      "key": "accent|src/app/pages/parametros.page.ts|periodo|message: 'Los parámetros del periodo fueron actualizados correctamente.',",
-      "file": "src/app/pages/parametros.page.ts",
-      "token": "periodo",
-      "suggestion": "período",
-      "excerpt": "message: 'Los parámetros del periodo fueron actualizados correctamente.',"
-    },
-    {
-      "key": "accent|src/app/pages/parametros.page.ts|periodo|message: 'Los parámetros del periodo fueron guardados correctamente.',",
-      "file": "src/app/pages/parametros.page.ts",
-      "token": "periodo",
-      "suggestion": "período",
-      "excerpt": "message: 'Los parámetros del periodo fueron guardados correctamente.',"
-    },
-    {
-      "key": "accent|src/app/pages/parametros.page.ts|periodo|message: 'No existe configuracion cliente para este periodo.',",
-      "file": "src/app/pages/parametros.page.ts",
-      "token": "periodo",
-      "suggestion": "período",
-      "excerpt": "message: 'No existe configuracion cliente para este periodo.',"
-    },
-    {
-      "key": "accent|src/app/pages/parametros.page.ts|periodo|message: 'No se puede guardar configuracion cliente para un periodo inexistente.',",
-      "file": "src/app/pages/parametros.page.ts",
-      "token": "periodo",
-      "suggestion": "período",
-      "excerpt": "message: 'No se puede guardar configuracion cliente para un periodo inexistente.',"
-    },
-    {
-      "key": "accent|src/app/pages/parametros.page.ts|periodo|message: 'Ocurrió un problema al intentar actualizar los parámetros del periodo.',",
-      "file": "src/app/pages/parametros.page.ts",
-      "token": "periodo",
-      "suggestion": "período",
-      "excerpt": "message: 'Ocurrió un problema al intentar actualizar los parámetros del periodo.',"
-    },
-    {
-      "key": "accent|src/app/pages/parametros.page.ts|periodo|message: 'Ocurrió un problema al intentar guardar los parámetros del periodo.',",
-      "file": "src/app/pages/parametros.page.ts",
-      "token": "periodo",
-      "suggestion": "período",
-      "excerpt": "message: 'Ocurrió un problema al intentar guardar los parámetros del periodo.',"
-    },
-    {
-      "key": "accent|src/app/pages/parametros.page.ts|periodo|message: `Configuracion de ${periodo} guardada.`,",
-      "file": "src/app/pages/parametros.page.ts",
-      "token": "periodo",
-      "suggestion": "período",
-      "excerpt": "message: `Configuracion de ${periodo} guardada.`,"
-    },
-    {
-      "key": "accent|src/app/pages/parametros.page.ts|periodo|message: `Se actualizarán los parámetros del periodo ${this.selectedPeriodo()}.`,",
-      "file": "src/app/pages/parametros.page.ts",
-      "token": "periodo",
-      "suggestion": "período",
-      "excerpt": "message: `Se actualizarán los parámetros del periodo ${this.selectedPeriodo()}.`,"
-    },
-    {
-      "key": "accent|src/app/pages/parametros.page.ts|periodo|message: `Ya existen parámetros registrados para el periodo ${periodo}.`,",
-      "file": "src/app/pages/parametros.page.ts",
-      "token": "periodo",
-      "suggestion": "período",
-      "excerpt": "message: `Ya existen parámetros registrados para el periodo ${periodo}.`,"
-    },
-    {
-      "key": "accent|src/app/pages/parametros.page.ts|periodo|return 'Configuracion cliente del periodo seleccionado.';",
-      "file": "src/app/pages/parametros.page.ts",
-      "token": "periodo",
-      "suggestion": "período",
-      "excerpt": "return 'Configuracion cliente del periodo seleccionado.';"
-    },
-    {
-      "key": "accent|src/app/pages/parametros.page.ts|periodo|return 'Configuracion cliente del periodo';",
-      "file": "src/app/pages/parametros.page.ts",
-      "token": "periodo",
-      "suggestion": "período",
-      "excerpt": "return 'Configuracion cliente del periodo';"
-    },
-    {
-      "key": "accent|src/app/pages/parametros.page.ts|periodo|return 'Datos oficiales del periodo seleccionado.';",
-      "file": "src/app/pages/parametros.page.ts",
-      "token": "periodo",
-      "suggestion": "período",
-      "excerpt": "return 'Datos oficiales del periodo seleccionado.';"
-    },
-    {
-      "key": "accent|src/app/pages/parametros.page.ts|periodo|return 'Periodo listo para revisar.';",
-      "file": "src/app/pages/parametros.page.ts",
-      "token": "periodo",
-      "suggestion": "período",
-      "excerpt": "return 'Periodo listo para revisar.';"
-    },
-    {
-      "key": "accent|src/app/pages/parametros.page.ts|periodo|return 'Sin base mensual para el periodo.';",
-      "file": "src/app/pages/parametros.page.ts",
-      "token": "periodo",
-      "suggestion": "período",
-      "excerpt": "return 'Sin base mensual para el periodo.';"
-    },
-    {
-      "key": "accent|src/app/pages/parametros.page.ts|periodo|return 'Valores oficiales del periodo';",
-      "file": "src/app/pages/parametros.page.ts",
-      "token": "periodo",
-      "suggestion": "período",
-      "excerpt": "return 'Valores oficiales del periodo';"
-    },
-    {
-      "key": "accent|src/app/pages/parametros.page.ts|periodo|return 'Vigente al periodo';",
-      "file": "src/app/pages/parametros.page.ts",
-      "token": "periodo",
-      "suggestion": "período",
-      "excerpt": "return 'Vigente al periodo';"
-    },
-    {
-      "key": "accent|src/app/pages/parametros.page.ts|periodo|return `Periodo seleccionado: ${this.selectedPeriodo()}.`;",
-      "file": "src/app/pages/parametros.page.ts",
-      "token": "periodo",
-      "suggestion": "período",
-      "excerpt": "return `Periodo seleccionado: ${this.selectedPeriodo()}.`;"
-    },
-    {
-      "key": "accent|src/app/pages/parametros.page.ts|periodo|return this.completitudDetalle('Periodo parcial.');",
-      "file": "src/app/pages/parametros.page.ts",
-      "token": "periodo",
-      "suggestion": "período",
-      "excerpt": "return this.completitudDetalle('Periodo parcial.');"
-    },
-    {
-      "key": "accent|src/app/pages/parametros.page.ts|periodo|this.mostrarErrorClienteConfig('No hay valores oficiales disponibles para este periodo.');",
-      "file": "src/app/pages/parametros.page.ts",
-      "token": "periodo",
-      "suggestion": "período",
-      "excerpt": "this.mostrarErrorClienteConfig('No hay valores oficiales disponibles para este periodo.');"
-    },
-    {
-      "key": "accent|src/app/pages/parametros.page.ts|periodo|title: 'Configurar periodo',",
-      "file": "src/app/pages/parametros.page.ts",
-      "token": "periodo",
-      "suggestion": "período",
-      "excerpt": "title: 'Configurar periodo',"
-    },
-    {
-      "key": "accent|src/app/pages/parametros.page.ts|periodo|title: 'Hay diferencias con los valores oficiales del periodo',",
-      "file": "src/app/pages/parametros.page.ts",
-      "token": "periodo",
-      "suggestion": "período",
-      "excerpt": "title: 'Hay diferencias con los valores oficiales del periodo',"
-    },
-    {
-      "key": "accent|src/app/pages/parametros.page.ts|periodo|title: 'Periodo cerrado',",
-      "file": "src/app/pages/parametros.page.ts",
-      "token": "periodo",
-      "suggestion": "período",
-      "excerpt": "title: 'Periodo cerrado',"
-    },
-    {
-      "key": "accent|src/app/pages/parametros.page.ts|periodo|title: 'Periodo no habilitado',",
-      "file": "src/app/pages/parametros.page.ts",
-      "token": "periodo",
-      "suggestion": "período",
-      "excerpt": "title: 'Periodo no habilitado',"
-    },
-    {
-      "key": "accent|src/app/pages/parametros.page.ts|periodo|title: 'Periodo ya registrado',",
-      "file": "src/app/pages/parametros.page.ts",
-      "token": "periodo",
-      "suggestion": "período",
-      "excerpt": "title: 'Periodo ya registrado',"
-    },
-    {
-      "key": "accent|src/app/pages/parametros.page.ts|prevision|{ id: 'prevision', label: 'Previsión' },",
-      "file": "src/app/pages/parametros.page.ts",
-      "token": "prevision",
-      "suggestion": "previsión",
-      "excerpt": "{ id: 'prevision', label: 'Previsión' },"
-    },
-    {
-      "key": "accent|src/app/pages/parametros.page.ts|prevision|@case ('prevision') {",
-      "file": "src/app/pages/parametros.page.ts",
-      "token": "prevision",
-      "suggestion": "previsión",
-      "excerpt": "@case ('prevision') {"
-    },
-    {
-      "key": "accent|src/app/pages/parametros.page.ts|prevision|case 'prevision':",
-      "file": "src/app/pages/parametros.page.ts",
-      "token": "prevision",
-      "suggestion": "previsión",
-      "excerpt": "case 'prevision':"
-    },
-    {
-      "key": "accent|src/app/pages/parametros.page.ts|prevision|return 'Prevision y AFP';",
-      "file": "src/app/pages/parametros.page.ts",
-      "token": "prevision",
-      "suggestion": "previsión",
-      "excerpt": "return 'Prevision y AFP';"
-    },
-    {
-      "key": "accent|src/app/pages/parametros.page.ts|prevision|return 'Prevision';",
-      "file": "src/app/pages/parametros.page.ts",
-      "token": "prevision",
-      "suggestion": "previsión",
-      "excerpt": "return 'Prevision';"
-    },
-    {
-      "key": "accent|src/app/pages/parametros.page.ts|revision|'La revision de diferencias quedo postergada.',",
-      "file": "src/app/pages/parametros.page.ts",
-      "token": "revision",
-      "suggestion": "revisión",
-      "excerpt": "'La revision de diferencias quedo postergada.',"
-    },
-    {
-      "key": "accent|src/app/pages/parametros.page.ts|revision|title: estado === 'cliente_confirmado' ? 'Configuracion mantenida' : 'Revision postergada',",
-      "file": "src/app/pages/parametros.page.ts",
-      "token": "revision",
-      "suggestion": "revisión",
-      "excerpt": "title: estado === 'cliente_confirmado' ? 'Configuracion mantenida' : 'Revision postergada',"
-    },
-    {
-      "key": "accent|src/app/pages/parametros.page.ts|ultima|: source === 'ultima' && sourcePeriodo",
-      "file": "src/app/pages/parametros.page.ts",
-      "token": "ultima",
-      "suggestion": "última",
-      "excerpt": ": source === 'ultima' && sourcePeriodo"
-    },
-    {
-      "key": "accent|src/app/pages/parametros.page.ts|ultima|? `Configuracion creada desde ultima configuracion disponible (${sourcePeriodo}).`",
-      "file": "src/app/pages/parametros.page.ts",
-      "token": "ultima",
-      "suggestion": "última",
-      "excerpt": "? `Configuracion creada desde ultima configuracion disponible (${sourcePeriodo}).`"
-    },
-    {
-      "key": "accent|src/app/pages/parametros.page.ts|ultima|| 'usar-ultima-config'",
-      "file": "src/app/pages/parametros.page.ts",
-      "token": "ultima",
-      "suggestion": "última",
-      "excerpt": "| 'usar-ultima-config'"
-    },
-    {
-      "key": "accent|src/app/pages/parametros.page.ts|ultima|case 'ultima':",
-      "file": "src/app/pages/parametros.page.ts",
-      "token": "ultima",
-      "suggestion": "última",
-      "excerpt": "case 'ultima':"
-    },
-    {
-      "key": "accent|src/app/pages/parametros.page.ts|ultima|case 'usar-ultima-config':",
-      "file": "src/app/pages/parametros.page.ts",
-      "token": "ultima",
-      "suggestion": "última",
-      "excerpt": "case 'usar-ultima-config':"
-    },
-    {
-      "key": "accent|src/app/pages/parametros.page.ts|ultima|return 'Usar ultima configuracion';",
-      "file": "src/app/pages/parametros.page.ts",
-      "token": "ultima",
-      "suggestion": "última",
-      "excerpt": "return 'Usar ultima configuracion';"
-    },
-    {
-      "key": "accent|src/app/pages/parametros.page.ts|ultima|return 'usar-ultima-config';",
-      "file": "src/app/pages/parametros.page.ts",
-      "token": "ultima",
-      "suggestion": "última",
-      "excerpt": "return 'usar-ultima-config';"
-    },
-    {
-      "key": "accent|src/app/pages/parametros.page.ts|ultima|this.configDraftSource.set('ultima');",
-      "file": "src/app/pages/parametros.page.ts",
-      "token": "ultima",
-      "suggestion": "última",
-      "excerpt": "this.configDraftSource.set('ultima');"
-    },
-    {
-      "key": "accent|src/app/pages/parametros.page.ts|ultima|this.mostrarErrorClienteConfig(this.extractErrorDetail(err) || 'No fue posible cargar la ultima configuracion cliente.');",
-      "file": "src/app/pages/parametros.page.ts",
-      "token": "ultima",
-      "suggestion": "última",
-      "excerpt": "this.mostrarErrorClienteConfig(this.extractErrorDetail(err) || 'No fue posible cargar la ultima configuracion cliente.');"
-    },
-    {
-      "key": "accent|src/app/pages/parametros.page.ts|ultima|type ConfigClienteDraftSource = 'cero' | 'ultima' | 'referencia' | 'oficiales' | 'existente';",
-      "file": "src/app/pages/parametros.page.ts",
-      "token": "ultima",
-      "suggestion": "última",
-      "excerpt": "type ConfigClienteDraftSource = 'cero' | 'ultima' | 'referencia' | 'oficiales' | 'existente';"
+      "key": "accent|src/app/pages/parametros.page.ts|parametros|template: '<app-parametros-workspace-container />',",
+      "file": "src/app/pages/parametros.page.ts",
+      "token": "parametros",
+      "suggestion": "parámetros",
+      "excerpt": "template: '<app-parametros-workspace-container />',"
     },
     {
       "key": "accent|src/app/pages/proceso-remuneraciones.page.ts|nomina|import { ProcesoMensualContainer } from '../features/nomina-mensual/containers/proceso-mensual-container/proceso-mensual-container';",
