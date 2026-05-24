@@ -102,7 +102,7 @@ describe('evaluarAltaValidacionesVisibles', () => {
     );
   });
 
-  it('para honorarios separa no aplica y bloqueo de finalizacion', () => {
+  it('para honorarios separa no aplica y permite finalizacion administrativa', () => {
     const estado = evaluarAltaAplicabilidad({
       ...aplicabilidadBase,
       relacionLaboral: 'HONORARIOS',
@@ -118,7 +118,7 @@ describe('evaluarAltaValidacionesVisibles', () => {
     expect(result).toContainEqual(
       expect.objectContaining({ id: 'aplicabilidad.jornadaLaboral', tipo: 'not_applicable' }),
     );
-    expect(result).toContainEqual(
+    expect(result).not.toContainEqual(
       expect.objectContaining({ id: 'aplicabilidad.resumenFinal', tipo: 'blocked' }),
     );
   });

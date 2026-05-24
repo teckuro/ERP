@@ -212,17 +212,17 @@ describe('FormEmpleadoComponent - completitud de borrador avanzado', () => {
     expect(submitSpy).toHaveBeenCalled();
   });
 
-  it('en resumen de honorarios el CTA del shell guarda borrador', async () => {
+  it('en resumen de honorarios el CTA del shell finaliza honorarios', async () => {
     const { component, fixture, shell } = await setupFixture();
-    const guardarSpy = vi.spyOn(component, 'onGuardarBorrador').mockResolvedValue();
+    const submitSpy = vi.spyOn(component, 'enviarFormulario').mockResolvedValue();
 
     component.form.controls.contrato.controls.relacionLaboral.setValue('HONORARIOS');
     component.seleccionarPasoAsistente(component.indicePasoResumenAsistente());
     fixture.detectChanges();
     shell.invokePrimaryAction();
 
-    expect(shell.primaryAction()?.label).toBe('Guardar borrador');
-    expect(guardarSpy).toHaveBeenCalled();
+    expect(shell.primaryAction()?.label).toBe('Finalizar honorarios');
+    expect(submitSpy).toHaveBeenCalled();
   });
 
   it('publica CTA de borrador en creacion basica', async () => {
@@ -393,7 +393,7 @@ describe('FormEmpleadoComponent - completitud de borrador avanzado', () => {
     expect(component.tipoUiPasoAsistente(6)).toBe('no-aplica');
   });
 
-  it('Boleta de honorarios bloquea finalizar alta activa y ofrece guardar borrador', async () => {
+  it('Boleta de honorarios incompleta bloquea finalizacion sin modal de borrador', async () => {
     const component = await setup();
 
     component.form.controls.contrato.controls.relacionLaboral.setValue('HONORARIOS');
@@ -401,20 +401,18 @@ describe('FormEmpleadoComponent - completitud de borrador avanzado', () => {
 
     await component.enviarFormulario();
 
-    expect(component.modalAccionAvanzada()?.kind).toBe('honorarios-finish-blocked');
-    expect(component.modalAccionAvanzada()?.title).toBe('Guardar borrador de honorarios');
-    expect(component.modalAccionAvanzada()?.primaryLabel).toBe('Guardar como borrador');
-    expect(component.modalAccionAvanzada()?.secondaryLabel).toBe('Cerrar');
+    expect(component.modalAccionAvanzada()?.kind).toBe('finish-invalid');
+    expect(component.modalAccionAvanzada()?.primaryAction).toBe('focus-first-blocking');
   });
 
-  it('Boleta de honorarios usa accion final de borrador en el resumen', async () => {
+  it('Boleta de honorarios usa accion final propia en el resumen', async () => {
     const component = await setup();
 
     expect(component.etiquetaAccionFinalAsistente()).toBe('Finalizar alta');
 
     component.form.controls.contrato.controls.relacionLaboral.setValue('HONORARIOS');
 
-    expect(component.etiquetaAccionFinalAsistente()).toBe('Guardar borrador');
+    expect(component.etiquetaAccionFinalAsistente()).toBe('Finalizar honorarios');
   });
 
   it('Confirmar honorarios mueve una etapa no aplicable al siguiente paso util', async () => {

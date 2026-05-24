@@ -1,5 +1,6 @@
 import { TablesInsert, TablesUpdate } from '../../../core/models/database.types';
 import { EmpleadoListado } from '../models/empleado-listado.model';
+import type { RelacionLaboral } from '../models/empleado.model';
 import { CrearEmpleadoPayload } from '../models/empleado-payload.model';
 import { formatDate } from './empleado-listado.mapper';
 import { RutParts, formatRutParts } from '../utils/empleado-rut';
@@ -12,6 +13,9 @@ import {
 export type PersonaInsert = TablesInsert<'persona'>;
 export type PersonaUpdate = TablesUpdate<'persona'>;
 export type ContratoInsert = TablesInsert<'contrato'>;
+export type ContratoInsertConRelacionLaboral = ContratoInsert & {
+  relacion_laboral: RelacionLaboral;
+};
 export type RemuneracionInsert = TablesInsert<'remuneracion'>;
 export type PrevisionInsert = TablesInsert<'prevision'>;
 export type SaludTrabajadorInsert = TablesInsert<'salud_trabajador'>;
@@ -83,10 +87,12 @@ export function buildPersonaActivacionUpdate(
   payload: CrearEmpleadoPayload,
   fechaActivacion: string,
 ): PersonaUpdate {
+  const esHonorarios = payload.relacionLaboral === 'HONORARIOS';
+
   return {
     estado: mapEmpleadoEstadoToPersonaEstado(payload.estado),
     estado_ficha: mapEmpleadoEstadoToEstadoFicha(payload.estado),
-    apto_para_remuneraciones: payload.origenCreacion === 'avanzado',
+    apto_para_remuneraciones: payload.origenCreacion === 'avanzado' && !esHonorarios,
     fecha_activacion: payload.origenCreacion === 'avanzado' ? fechaActivacion : null,
   };
 }
@@ -95,10 +101,11 @@ export function buildContratoInsert(
   payload: CrearEmpleadoPayload,
   personaId: number,
   empresaId: number,
-): ContratoInsert {
+): ContratoInsertConRelacionLaboral {
   return {
     id_persona: personaId,
     id_empresa: empresaId,
+    relacion_laboral: payload.relacionLaboral,
     id_sucursal: payload.idSucursal,
     id_departamento_empresa: payload.idDepartamentoEmpresa,
     id_tipo_trabajador: payload.idTipoTrabajador,
@@ -328,7 +335,7 @@ export function mapCreatedEmpleado(
     sueldoBase: payload.sueldoBase,
     estado: payload.estado,
     estadoFicha: mapEmpleadoEstadoToEstadoFicha(payload.estado),
-    aptoParaRemuneraciones: payload.estado === 'activo',
+    aptoParaRemuneraciones: payload.estado === 'activo' && payload.relacionLaboral !== 'HONORARIOS',
     pasoAltaAvanzada: null,
   };
 }

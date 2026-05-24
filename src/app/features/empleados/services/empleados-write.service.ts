@@ -6,6 +6,7 @@ import { EmpleadoListado } from '../models/empleado-listado.model';
 import { CrearEmpleadoPayload } from '../models/empleado-payload.model';
 import {
   assertEmpleadoAptoParaRemuneraciones,
+  EmpleadoAptitudInvalidaError,
   evaluarCompletitudYAptitudEmpleado,
 } from '../utils/empleado-completitud.rules';
 import { parseRut } from '../utils/empleado-rut';
@@ -17,10 +18,11 @@ export class EmpleadosWriteService {
   private readonly empleadosRepository = inject(EmpleadosRepository);
 
   async crear(payload: CrearEmpleadoPayload): Promise<EmpleadoListado> {
-    this.validarAptitudFinal(payload);
+    this.validarFinalizacion(payload);
 
     const rut = parseRut(payload.rut);
     const empresaId = await this.empleadosRepository.obtenerEmpresaIdParaContrato();
+    const esHonorarios = payload.relacionLaboral === 'HONORARIOS';
 
     let personaId: number | null = null;
     let contratoId: number | null = null;
@@ -30,13 +32,15 @@ export class EmpleadosWriteService {
       contratoId = await this.empleadosRepository.insertarContrato(payload, personaId, empresaId);
 
       await this.empleadosRepository.insertarRemuneracion(payload, contratoId);
-      await this.empleadosRepository.insertarPrevision(payload, contratoId);
-      await this.empleadosRepository.insertarSaludTrabajador(payload, contratoId);
-      await this.empleadosRepository.insertarCuenta2Afp(payload, contratoId);
-      await this.empleadosRepository.insertarSemanaCorrida(payload, contratoId);
-      await this.empleadosRepository.insertarZonaExtrema(payload, contratoId);
-      await this.empleadosRepository.reemplazarCondicionesTrabajador(personaId, contratoId, payload);
-      await this.empleadosRepository.insertarApv(payload, contratoId);
+      if (!esHonorarios) {
+        await this.empleadosRepository.insertarPrevision(payload, contratoId);
+        await this.empleadosRepository.insertarSaludTrabajador(payload, contratoId);
+        await this.empleadosRepository.insertarCuenta2Afp(payload, contratoId);
+        await this.empleadosRepository.insertarSemanaCorrida(payload, contratoId);
+        await this.empleadosRepository.insertarZonaExtrema(payload, contratoId);
+        await this.empleadosRepository.reemplazarCondicionesTrabajador(personaId, contratoId, payload);
+        await this.empleadosRepository.insertarApv(payload, contratoId);
+      }
       await this.empleadosRepository.insertarCuentaBancaria(payload, personaId);
       await this.empleadosRepository.insertarContratoCentroCosto(payload, contratoId);
       await this.empleadosRepository.activarPersonaCreada(payload, personaId);
@@ -71,8 +75,31 @@ export class EmpleadosWriteService {
     personaId: number,
     payload: CrearEmpleadoPayload,
   ): Promise<void> {
-    this.validarAptitudFinal(payload);
+    this.validarFinalizacion(payload);
     return this.empleadosRepository.finalizarAltaAvanzadaExistente(personaId, payload);
+  }
+
+  private validarFinalizacion(payload: CrearEmpleadoPayload): void {
+    if (payload.relacionLaboral === 'HONORARIOS') {
+      this.validarHonorariosFinalizable(payload);
+      return;
+    }
+
+    this.validarAptitudFinal(payload);
+  }
+
+  private validarHonorariosFinalizable(payload: CrearEmpleadoPayload): void {
+    const evaluacion = evaluarCompletitudYAptitudEmpleado({
+      payload,
+      pasoAltaAvanzada: null,
+    });
+
+    if (!evaluacion.aptoParaRemuneraciones) {
+      throw new EmpleadoAptitudInvalidaError({
+        ...evaluacion,
+        aptoParaRemuneraciones: false,
+      });
+    }
   }
 
   private validarAptitudFinal(payload: CrearEmpleadoPayload): void {

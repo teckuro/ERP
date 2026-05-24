@@ -488,9 +488,8 @@
                           ) { Hay datos obligatorios pendientes en este registro
                           de la bitácora. } @else if (pasoWizardActivo() ===
                           indicePasoResumenAsistente()) { @if (esModoHonorarios()) {
-                          Puedes guardar el avance como borrador. La
-                          finalización de honorarios queda pendiente de
-                          habilitación. } @else if (cantidadPendientesMapaAsistente() +
+                          Revisa los datos y finaliza el registro de
+                          honorarios. } @else if (cantidadPendientesMapaAsistente() +
                           cantidadErroresMapaAsistente() > 0) { Cierra los registros
                           pendientes antes de finalizar la ficha. } @else { La
                           bitácora está lista para cerrar el alta. } } @else {
@@ -599,16 +598,14 @@
                           <div class="step-panel step-panel--asignaciones">
                             @if (esModoHonorarios()) {
                             <div
-                              class="wizard-na-panel wizard-na-panel--honorarios"
+                              class="bitacora-decision-card bitacora-decision-card--neutral"
                               role="status"
                             >
                               <h3 class="wizard-na-title">
-                                Registro no requerido para honorarios
+                                Modalidad: honorarios
                               </h3>
                               <p class="wizard-na-text">
-                                Cargas familiares, zona extrema y semana corrida
-                                corresponden a remuneraciones dependientes. Este
-                                registro queda fuera de esos cálculos.
+                                Este registro no participa en nómina dependiente.
                               </p>
                             </div>
                             } @else {
@@ -632,16 +629,14 @@
                           <div class="step-panel step-panel--prevision">
                             @if (esModoHonorarios()) {
                             <div
-                              class="wizard-na-panel wizard-na-panel--honorarios"
+                              class="bitacora-decision-card bitacora-decision-card--neutral"
                               role="status"
                             >
                               <h3 class="wizard-na-title">
-                                Registro fuera de nómina dependiente
+                                Modalidad: honorarios
                               </h3>
                               <p class="wizard-na-text">
-                                Previsión y salud de trabajadores independientes
-                                no se capturan como descuentos de trabajador
-                                dependiente en esta alta.
+                                Previsión y salud dependiente no aplican.
                               </p>
                             </div>
                             } @else {
@@ -666,15 +661,14 @@
                           <div class="step-panel">
                             @if (esModoHonorarios()) {
                             <div
-                              class="wizard-na-panel wizard-na-panel--honorarios"
+                              class="bitacora-decision-card bitacora-decision-card--neutral"
                               role="status"
                             >
                               <h3 class="wizard-na-title">
-                                Registro no requerido para honorarios
+                                Modalidad: honorarios
                               </h3>
                               <p class="wizard-na-text">
-                                APVI no forma parte de la alta de prestador a
-                                honorarios en este flujo.
+                                APVI no aplica.
                               </p>
                             </div>
                             } @else if
@@ -750,13 +744,10 @@
                           } @else if (pasoWizardActivo() === 7) {
                           <div class="step-panel step-panel--final">
                             @if (esModoHonorarios()) {
-                            <div class="honorarios-payment-note" role="note">
-                              <h3>Datos para pago del prestador</h3>
+                            <div class="bitacora-decision-card bitacora-decision-card--neutral" role="note">
+                              <h3 class="wizard-na-title">Pago</h3>
                               <p>
-                                Estos datos son administrativos y recomendados
-                                si el pago se realizará por transferencia. No se
-                                tratan como cuenta de remuneraciones
-                                dependientes.
+                                Completa los datos administrativos para transferencia.
                               </p>
                             </div>
                             }
@@ -772,16 +763,14 @@
                           <div class="step-panel step-panel--perfil-laboral">
                             @if (esModoHonorarios()) {
                             <div
-                              class="wizard-na-panel wizard-na-panel--honorarios"
+                              class="bitacora-decision-card bitacora-decision-card--neutral"
                               role="status"
                             >
                               <h3 class="wizard-na-title">
-                                Registro no requerido para honorarios
+                                Modalidad: honorarios
                               </h3>
                               <p class="wizard-na-text">
-                                Las condiciones especiales de trabajadores
-                                dependientes no se declaran para boleta de
-                                honorarios en esta fase.
+                                Condiciones laborales dependientes no aplican.
                               </p>
                             </div>
                             } @else {
@@ -811,27 +800,14 @@
                                 </p>
                                 @if (esModoHonorarios()) {
                                 <div
-                                  class="honorarios-summary-panel"
+                                  class="bitacora-decision-card bitacora-decision-card--neutral"
                                   role="status"
                                 >
-                                  <h4>Ficha de prestador a honorarios</h4>
+                                  <h4 class="wizard-na-title">Modalidad: honorarios</h4>
                                   <p>
-                                    Este registro no ingresa al cálculo de
-                                    nómina dependiente ni debe finalizarse como
-                                    trabajador activo en esta fase.
+                                    Completa servicio, fecha, monto y datos de pago.
                                   </p>
-                                  <ul>
-                                    <li>
-                                      No requiere jornada laboral, previsión
-                                      dependiente, APVI ni asignaciones
-                                      laborales.
-                                    </li>
-                                    <li>
-                                      Puedes guardar el avance como borrador
-                                      hasta habilitar la persistencia completa
-                                      de honorarios.
-                                    </li>
-                                  </ul>
+                                  <p>Este registro no participa en nómina dependiente.</p>
                                 </div>
                                 }
                                 <h4 class="resumen-section-title">

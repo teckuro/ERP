@@ -1829,6 +1829,7 @@ export class FichaEmpleadoPresentacionFacade implements OnInit {
       idSucursal: raw.contrato.idSucursal,
       idDepartamentoEmpresa: raw.contrato.idDepartamentoEmpresa,
       idCentroCosto: raw.contrato.idCentroCosto,
+      relacionLaboral: raw.contrato.relacionLaboral,
       cargo: raw.contrato.cargo,
       fechaContrato: raw.contrato.fechaContrato || raw.contrato.fechaIngreso,
       tipoContrato: raw.contrato.tipoContrato ?? 'INDEFINIDO',

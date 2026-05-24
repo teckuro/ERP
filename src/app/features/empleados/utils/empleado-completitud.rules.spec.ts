@@ -87,6 +87,7 @@ function payloadCompleto(overrides: Partial<CrearEmpleadoPayload> = {}): CrearEm
     idTipoCuentaBancaria: 1,
     numeroCuenta: '123456789',
     ...overrides,
+    relacionLaboral: overrides.relacionLaboral ?? 'CONTRATO',
   };
 }
 

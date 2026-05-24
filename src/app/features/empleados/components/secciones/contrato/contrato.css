@@ -777,27 +777,27 @@
 
 }
 
-:host .honorarios-note {
+:host .labor-inline-note {
   display: grid;
   gap: 3px;
   margin-top: 10px;
   padding: 10px 12px;
-  border: 1px solid #bfdbfe;
+  border: 1px solid #e5e7eb;
   border-radius: 8px;
-  background: #eff6ff;
-  color: #1e3a8a;
+  background: #f9fafb;
+  color: #374151;
   font-size: var(--erp-text-xs, 0.72rem);
   line-height: 1.45;
 }
 
-:host .honorarios-note strong {
-  color: #1d4ed8;
+:host .labor-inline-note strong {
+  color: #111827;
   font-size: var(--erp-text-sm, 0.78rem);
   font-weight: 700;
 }
 
 :host .labor-block--honorarios {
-  border-color: #bfdbfe;
+  border-color: #e5e7eb;
 }
 
 .field-badge {

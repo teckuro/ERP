@@ -9,6 +9,7 @@ import {
   TipoEstadoCivil,
   TipoGratificacion,
   TipoRegimenPrevisional,
+  RelacionLaboral,
 } from './empleado.model';
 
 export interface CrearEmpleadoPayload {
@@ -33,6 +34,7 @@ export interface CrearEmpleadoPayload {
   idSucursal: number | null;
   idDepartamentoEmpresa: number | null;
   idCentroCosto: number | null;
+  relacionLaboral: RelacionLaboral;
   cargo: string;
   fechaContrato: string;
   tipoContrato: TipoContrato;

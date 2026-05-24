@@ -226,7 +226,7 @@ export function evaluarAltaAplicabilidad(input: AltaAplicabilidadInput): EstadoA
       esHonorarios ? 'not_applicable' : input.esMenorEdad ? 'review' : 'required',
       'Jornada laboral',
       esHonorarios
-        ? 'Honorarios no usa jornada laboral dependiente en esta fase.'
+        ? 'Honorarios no usa jornada laboral dependiente.'
         : input.esMenorEdad
           ? 'Menor de edad requiere revisión de jornada y autorización.'
           : 'Dato requerido para el contrato dependiente.',
@@ -359,7 +359,7 @@ export function evaluarAltaAplicabilidad(input: AltaAplicabilidadInput): EstadoA
       esHonorarios ? 'optional' : 'required',
       esHonorarios ? 'Datos para pago' : 'Cuenta bancaria',
       esHonorarios
-        ? 'Recomendado para transferencia, pero la fase mantiene honorarios como borrador.'
+        ? 'Requerido para transferencia administrativa.'
         : 'Dato requerido para pago de remuneraciones.',
     ),
     construirElementoAplicabilidad(
@@ -369,7 +369,7 @@ export function evaluarAltaAplicabilidad(input: AltaAplicabilidadInput): EstadoA
       esHonorarios ? 'not_applicable' : condicionesEnRevision ? input.tieneCondicionesEspeciales && input.tieneRespaldoCondiciones ? 'review' : 'warning' : 'optional',
       'Condiciones especiales',
       esHonorarios
-        ? 'No se declaran condiciones dependientes en honorarios en esta fase.'
+        ? 'No se declaran condiciones dependientes en honorarios.'
         : condicionesEnRevision
           ? 'Revisión administrativa según edad, previsión o condiciones declaradas.'
           : 'Solo se declara si aplica.',
@@ -378,10 +378,10 @@ export function evaluarAltaAplicabilidad(input: AltaAplicabilidadInput): EstadoA
       'resumenFinal',
       'resumen',
       9,
-      esHonorarios ? 'blocked' : 'required',
+      'required',
       'Resumen final',
       esHonorarios
-        ? 'Honorarios solo permite guardar borrador hasta definir persistencia final.'
+        ? 'Finaliza la ficha administrativa de honorarios.'
         : 'Revisión final antes de crear ficha activa o en proceso.',
     ),
   ]);

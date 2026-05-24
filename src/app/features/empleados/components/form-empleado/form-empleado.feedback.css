@@ -218,44 +218,28 @@
   }
 }
 
-.wizard-na-panel--honorarios,
-.honorarios-payment-note,
-.honorarios-summary-panel {
-  border: 1px solid #bfdbfe;
-  border-radius: 10px;
-  background: #eff6ff;
-  color: #1e3a8a;
-}
-
-.honorarios-payment-note,
-.honorarios-summary-panel {
+.bitacora-decision-card--neutral {
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  background: #f9fafb;
+  color: #111827;
   display: grid;
   gap: 6px;
   padding: 12px 14px;
   margin-bottom: 12px;
 }
 
-.honorarios-payment-note h3,
-.honorarios-summary-panel h4 {
+.bitacora-decision-card--neutral h3,
+.bitacora-decision-card--neutral h4 {
   margin: 0;
-  color: #1d4ed8;
+  color: #111827;
   font-size: 0.86rem;
   font-weight: 700;
   line-height: 1.25;
 }
 
-.honorarios-payment-note p,
-.honorarios-summary-panel p {
+.bitacora-decision-card--neutral p {
   margin: 0;
-  color: #1e40af;
-  font-size: var(--erp-text-sm, 0.78rem);
-  line-height: 1.45;
-}
-
-.honorarios-summary-panel ul {
-  margin: 2px 0 0;
-  padding-left: 1.1rem;
-  color: #1e40af;
   font-size: var(--erp-text-sm, 0.78rem);
   line-height: 1.45;
 }

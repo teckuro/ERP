@@ -159,7 +159,7 @@ export function snapshotValidacionDesdePayload(
 
   const snapshot: EmpleadoFichaValidacionSnapshot = {
     ...payload,
-    relacionLaboral: 'CONTRATO',
+    relacionLaboral: payload.relacionLaboral ?? 'CONTRATO',
     pasoAltaAvanzada,
     pasaporte: payload.pasaporte,
     perfilLaboralMenorEdad: menorEdad,

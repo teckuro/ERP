@@ -88,6 +88,7 @@ function basePayload(over: Partial<CrearEmpleadoPayload> = {}): CrearEmpleadoPay
     idTipoCuentaBancaria: 1,
     numeroCuenta: '1',
     ...over,
+    relacionLaboral: over.relacionLaboral ?? 'CONTRATO',
   };
 }
 

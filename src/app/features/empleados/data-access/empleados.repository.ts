@@ -13,6 +13,7 @@ import {
   EmpleadoHistorialCambio,
   EmpleadoListado,
 } from '../models/empleado-listado.model';
+import type { RelacionLaboral } from '../models/empleado.model';
 import { CrearEmpleadoPayload } from '../models/empleado-payload.model';
 import type { PerfilLaboralPersona } from '../models/empleado-perfil-laboral-rpc.model';
 import {
@@ -80,6 +81,9 @@ import {
 type PersonaFactorRow = Tables<'vw_persona_factores'>;
 type PersonaRow = Tables<'persona'>;
 type ContratoRow = Tables<'contrato'>;
+type ContratoRowConRelacionLaboral = ContratoRow & {
+  relacion_laboral?: RelacionLaboral | null;
+};
 type RemuneracionRow = Tables<'remuneracion'>;
 type PrevisionRow = Tables<'prevision'>;
 type SaludTrabajadorRow = Tables<'salud_trabajador'>;
@@ -490,12 +494,16 @@ export class EmpleadosRepository {
 
     if (seccion === 'laboral' || seccion === 'remuneracion') {
       await this.upsertRemuneracionDesdePayload(contratoId!, payload);
-      await this.upsertSemanaCorridaDesdePayload(contratoId!, payload);
-      await this.upsertZonaExtremaDesdePayload(contratoId!, payload);
-      await this.reemplazarCondicionesTrabajador(personaId, contratoId!, payload);
+      if (payload.relacionLaboral === 'HONORARIOS') {
+        await this.limpiarBloquesDependientesHonorarios(personaId, contratoId!);
+      } else {
+        await this.upsertSemanaCorridaDesdePayload(contratoId!, payload);
+        await this.upsertZonaExtremaDesdePayload(contratoId!, payload);
+        await this.reemplazarCondicionesTrabajador(personaId, contratoId!, payload);
+      }
     }
 
-    if (seccion === 'prevision') {
+    if (seccion === 'prevision' && payload.relacionLaboral !== 'HONORARIOS') {
       await this.upsertPrevisionDesdePayload(contratoId!, payload);
       await this.upsertSaludDesdePayload(contratoId!, payload);
       await this.upsertCuenta2DesdePayload(contratoId!, payload);
@@ -514,6 +522,13 @@ export class EmpleadosRepository {
     personaId: number,
     payload: CrearEmpleadoPayload,
   ): Promise<EmpleadoFichaDetalle | null> {
+    if (payload.relacionLaboral === 'HONORARIOS') {
+      throw buildRepositoryError(
+        'Honorarios no participa en nomina dependiente.',
+        'La modalidad HONORARIOS no puede habilitar aptitud para remuneraciones dependientes.',
+      );
+    }
+
     const persona = await this.fetchPersonaEstadoValidacion(personaId);
 
     if (!persona) {
@@ -741,18 +756,24 @@ export class EmpleadosRepository {
     personaId: number,
     payload: CrearEmpleadoPayload,
   ): Promise<void> {
+    const esHonorarios = payload.relacionLaboral === 'HONORARIOS';
+
     await this.actualizarPersonaDesdePayload(personaId, payload);
     const contratoId = await this.ensureContratoId(personaId, payload);
     await this.actualizarContratoDesdePayload(contratoId, payload);
     await this.upsertContratoCentroCostoDesdePayload(contratoId, payload);
     await this.upsertRemuneracionDesdePayload(contratoId, payload);
-    await this.upsertSemanaCorridaDesdePayload(contratoId, payload);
-    await this.upsertZonaExtremaDesdePayload(contratoId, payload);
-    await this.reemplazarCondicionesTrabajador(personaId, contratoId, payload);
-    await this.upsertPrevisionDesdePayload(contratoId, payload);
-    await this.upsertSaludDesdePayload(contratoId, payload);
-    await this.upsertCuenta2DesdePayload(contratoId, payload);
-    await this.upsertApvDesdePayload(contratoId, payload);
+    if (esHonorarios) {
+      await this.limpiarBloquesDependientesHonorarios(personaId, contratoId);
+    } else {
+      await this.upsertSemanaCorridaDesdePayload(contratoId, payload);
+      await this.upsertZonaExtremaDesdePayload(contratoId, payload);
+      await this.reemplazarCondicionesTrabajador(personaId, contratoId, payload);
+      await this.upsertPrevisionDesdePayload(contratoId, payload);
+      await this.upsertSaludDesdePayload(contratoId, payload);
+      await this.upsertCuenta2DesdePayload(contratoId, payload);
+      await this.upsertApvDesdePayload(contratoId, payload);
+    }
     await this.upsertCuentaBancariaDesdePayload(personaId, payload);
     await this.activarPersonaCreada(payload, personaId);
 
@@ -807,10 +828,14 @@ export class EmpleadosRepository {
     await this.actualizarContratoDesdePayload(contratoId, payload);
     await this.upsertContratoCentroCostoDesdePayload(contratoId, payload);
     await this.upsertRemuneracionDesdePayload(contratoId, payload);
-    await this.upsertSemanaCorridaDesdePayload(contratoId, payload);
-    await this.upsertZonaExtremaDesdePayload(contratoId, payload);
-    await this.reemplazarCondicionesTrabajador(personaId, contratoId, payload);
-    if (puedePersistirPrevisionBorrador(payload)) {
+    if (payload.relacionLaboral === 'HONORARIOS') {
+      await this.limpiarBloquesDependientesHonorarios(personaId, contratoId);
+    } else {
+      await this.upsertSemanaCorridaDesdePayload(contratoId, payload);
+      await this.upsertZonaExtremaDesdePayload(contratoId, payload);
+      await this.reemplazarCondicionesTrabajador(personaId, contratoId, payload);
+    }
+    if (payload.relacionLaboral !== 'HONORARIOS' && puedePersistirPrevisionBorrador(payload)) {
       await this.upsertPrevisionDesdePayload(contratoId, payload);
       await this.upsertSaludDesdePayload(contratoId, payload);
       await this.upsertCuenta2DesdePayload(contratoId, payload);
@@ -881,7 +906,8 @@ export class EmpleadosRepository {
     personaId: number,
     empresaId: number,
   ): Promise<number> {
-    const { data, error } = await this.supabase
+    const supabase = this.supabase as any;
+    const { data, error } = await supabase
       .from('contrato')
       .insert(buildContratoInsert(payload, personaId, empresaId))
       .select('id_contrato')
@@ -1257,7 +1283,7 @@ export class EmpleadosRepository {
       );
     }
 
-    const contrato = contratoResult.data;
+    const contrato = contratoResult.data as ContratoRowConRelacionLaboral | null;
     const contratoId = contrato?.id_contrato ?? null;
     const [
       remuneracion,
@@ -1378,6 +1404,35 @@ export class EmpleadosRepository {
       throw buildRepositoryError(
         'No fue posible registrar las condiciones laborales del trabajador.',
         insertResult.error.message,
+      );
+    }
+  }
+
+  private async limpiarBloquesDependientesHonorarios(
+    personaId: number,
+    contratoId: number,
+  ): Promise<void> {
+    const supabase = this.supabase as any;
+    const operaciones = [
+      supabase.from('prevision').delete().eq('id_contrato', contratoId),
+      supabase.from('salud_trabajador').delete().eq('id_contrato', contratoId),
+      supabase.from('cuenta2_afp').delete().eq('id_contrato', contratoId),
+      supabase.from('apv').delete().eq('id_contrato', contratoId),
+      supabase.from('semana_corrida').delete().eq('id_contrato', contratoId),
+      supabase.from('zona_extrema').delete().eq('id_contrato', contratoId),
+      supabase
+        .from('persona_condicion_trabajador')
+        .delete()
+        .eq('id_persona', personaId)
+        .eq('id_contrato', contratoId),
+    ];
+    const resultados = await Promise.all(operaciones);
+    const error = resultados.find((result) => result.error)?.error;
+
+    if (error) {
+      throw buildRepositoryError(
+        'No fue posible limpiar datos dependientes para honorarios.',
+        error.message,
       );
     }
   }
@@ -1600,7 +1655,7 @@ export class EmpleadosRepository {
 
   private mapFichaFormValue(
     persona: PersonaRow,
-    contrato: ContratoRow | null,
+    contrato: ContratoRowConRelacionLaboral | null,
     remuneracion: RemuneracionRow | null,
     prevision: PrevisionRow | null,
     salud: SaludTrabajadorRow | null,
@@ -1637,7 +1692,7 @@ export class EmpleadosRepository {
         idComuna: persona.id_comuna,
       },
       contrato: {
-        relacionLaboral: 'CONTRATO',
+        relacionLaboral: contrato?.relacion_laboral ?? 'CONTRATO',
         idSucursal: contrato?.id_sucursal ?? null,
         idDepartamentoEmpresa: contrato?.id_departamento_empresa ?? null,
         idCentroCosto: centroCosto?.id_centro_costo ?? null,
@@ -1778,48 +1833,52 @@ export class EmpleadosRepository {
     contratoId: number,
     payload: CrearEmpleadoPayload,
   ): Promise<void> {
-    const { error } = await this.supabase
+    const data = {
+      relacion_laboral: payload.relacionLaboral,
+      id_sucursal: payload.idSucursal,
+      id_departamento_empresa: payload.idDepartamentoEmpresa,
+      id_tipo_trabajador: payload.idTipoTrabajador,
+      id_tipo_jornada: payload.idTipoJornada,
+      codigo_tipo_contrato: payload.tipoContrato,
+      cargo: payload.cargo.trim(),
+      seguro_cesantia: payload.seguroCesantia,
+      excluido_limite_jornada: payload.excluidoLimiteJornada,
+      causal_exclusion_jornada: payload.excluidoLimiteJornada
+        ? payload.causalExclusionJornada
+        : null,
+      justificacion_exclusion_jornada: payload.excluidoLimiteJornada
+        ? payload.justificacionExclusionJornada
+        : null,
+      casa_particular_modalidad: payload.tipoContrato === 'CASA_PARTICULAR'
+        ? payload.casaParticularModalidad
+        : null,
+      casa_particular_labores: payload.tipoContrato === 'CASA_PARTICULAR'
+        ? payload.casaParticularLabores
+        : null,
+      casa_particular_domicilio_especifico: payload.tipoContrato === 'CASA_PARTICULAR'
+        ? payload.casaParticularDomicilioEspecifico
+        : null,
+      casa_particular_asistencia_cuidado: payload.tipoContrato === 'CASA_PARTICULAR'
+        ? payload.casaParticularAsistenciaCuidado
+        : false,
+      casa_particular_registro_dt_estado: payload.tipoContrato === 'CASA_PARTICULAR'
+        ? payload.casaParticularRegistroDtEstado
+        : null,
+      casa_particular_registro_dt_fecha: payload.tipoContrato === 'CASA_PARTICULAR'
+        ? payload.casaParticularRegistroDtFecha
+        : null,
+      casa_particular_registro_dt_folio: payload.tipoContrato === 'CASA_PARTICULAR'
+        ? payload.casaParticularRegistroDtFolio
+        : null,
+      fecha_inicio: payload.fechaIngreso,
+      fecha_contrato: payload.fechaContrato,
+      fecha_termino: payload.fechaTermino,
+    };
+
+    const supabase = this.supabase as any;
+    const { error } = await supabase
       .from('contrato')
-      .update({
-        id_sucursal: payload.idSucursal,
-        id_departamento_empresa: payload.idDepartamentoEmpresa,
-        id_tipo_trabajador: payload.idTipoTrabajador,
-        id_tipo_jornada: payload.idTipoJornada,
-        codigo_tipo_contrato: payload.tipoContrato,
-        cargo: payload.cargo.trim(),
-        seguro_cesantia: payload.seguroCesantia,
-        excluido_limite_jornada: payload.excluidoLimiteJornada,
-        causal_exclusion_jornada: payload.excluidoLimiteJornada
-          ? payload.causalExclusionJornada
-          : null,
-        justificacion_exclusion_jornada: payload.excluidoLimiteJornada
-          ? payload.justificacionExclusionJornada
-          : null,
-        casa_particular_modalidad: payload.tipoContrato === 'CASA_PARTICULAR'
-          ? payload.casaParticularModalidad
-          : null,
-        casa_particular_labores: payload.tipoContrato === 'CASA_PARTICULAR'
-          ? payload.casaParticularLabores
-          : null,
-        casa_particular_domicilio_especifico: payload.tipoContrato === 'CASA_PARTICULAR'
-          ? payload.casaParticularDomicilioEspecifico
-          : null,
-        casa_particular_asistencia_cuidado: payload.tipoContrato === 'CASA_PARTICULAR'
-          ? payload.casaParticularAsistenciaCuidado
-          : false,
-        casa_particular_registro_dt_estado: payload.tipoContrato === 'CASA_PARTICULAR'
-          ? payload.casaParticularRegistroDtEstado
-          : null,
-        casa_particular_registro_dt_fecha: payload.tipoContrato === 'CASA_PARTICULAR'
-          ? payload.casaParticularRegistroDtFecha
-          : null,
-        casa_particular_registro_dt_folio: payload.tipoContrato === 'CASA_PARTICULAR'
-          ? payload.casaParticularRegistroDtFolio
-          : null,
-        fecha_inicio: payload.fechaIngreso,
-        fecha_contrato: payload.fechaContrato,
-        fecha_termino: payload.fechaTermino,
-      })
+      .update(data)
       .eq('id_contrato', contratoId);
 
     if (error) {
@@ -2079,6 +2138,21 @@ export class EmpleadosRepository {
       payload,
       pasoAltaAvanzada: pasos.get(personaId) ?? null,
     });
+
+    if (payload.relacionLaboral === 'HONORARIOS') {
+      const { error } = await this.supabase
+        .from('persona')
+        .update({
+          estado_ficha: evaluacion.estadoFicha,
+          apto_para_remuneraciones: false,
+        })
+        .eq('id_persona', personaId);
+
+      if (error) {
+        throw buildRepositoryError('No fue posible recalcular el estado de ficha.', error.message);
+      }
+      return;
+    }
 
     if (evaluacion.aptoParaRemuneraciones) {
       return;

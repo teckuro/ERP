@@ -27,7 +27,7 @@ describe('evaluarAltaAplicabilidad', () => {
     expect(estado.campos.tipoContrato.estado).toBe('not_applicable');
     expect(estado.campos.jornadaLaboral.estado).toBe('not_applicable');
     expect(estado.campos.regimenPrevisional.estado).toBe('not_applicable');
-    expect(estado.campos.resumenFinal.estado).toBe('blocked');
+    expect(estado.campos.resumenFinal.estado).toBe('required');
     expect(altaAplicabilidadStep(estado, 4).estado).toBe('not_applicable');
   });
 

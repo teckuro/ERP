@@ -24,9 +24,9 @@
       }
     </div>
     @if (esModoHonorarios) {
-      <div class="honorarios-note" role="status">
-        <strong>Boleta de honorarios</strong>
-        <span>Este registro se tratará como prestador de servicios. No corresponde jornada laboral, gratificación, previsión dependiente ni asignaciones laborales.</span>
+      <div class="labor-inline-note" role="status">
+        <strong>Modalidad: honorarios</strong>
+        <span>Completa servicio, fecha, monto y datos de pago.</span>
       </div>
     }
   </app-card>
@@ -37,7 +37,7 @@
     <div class="labor-block-head">
       <h4>{{ esModoHonorarios ? 'Datos del servicio' : 'Contrato' }}</h4>
       @if (esModoHonorarios) {
-        <p>Registra los datos administrativos del servicio a honorarios. No se genera contrato laboral dependiente.</p>
+        <p>Completa servicio, fecha y ubicación administrativa.</p>
       }
     </div>
     <div class="labor-grid labor-grid--contract">
@@ -196,7 +196,7 @@
       <p>Registra las condiciones propias del contrato y su estado administrativo ante la DT.</p>
     </div>
     @if (domicilioReferencia) {
-      <div class="honorarios-note" role="status">
+      <div class="labor-inline-note" role="status">
         <strong>Domicilio de contacto</strong>
         <span>{{ domicilioReferencia }}</span>
       </div>
@@ -348,8 +348,8 @@
   @if (esModoHonorarios) {
     <app-card className="labor-block labor-block--honorarios">
       <div class="labor-block-head">
-        <h4>Monto de honorarios</h4>
-        <p>Informa el monto bruto pactado. Este dato no genera jornada laboral ni remuneración dependiente.</p>
+        <h4>Monto</h4>
+        <p>Monto bruto pactado para el servicio.</p>
       </div>
       <div class="labor-grid labor-grid--base-pay">
         <div class="form-field">

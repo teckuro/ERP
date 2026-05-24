@@ -29,6 +29,7 @@ describe('empleado-diagnostico.rules', () => {
         idSucursal: 1,
         idDepartamentoEmpresa: null,
         idCentroCosto: 1,
+        relacionLaboral: 'CONTRATO',
         cargo: 'Analista',
         fechaContrato: '2024-01-01',
         tipoContrato: 'INDEFINIDO',

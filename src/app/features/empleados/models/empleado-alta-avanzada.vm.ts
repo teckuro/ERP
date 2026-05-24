@@ -20,7 +20,6 @@ export type TipoModalAccionAvanzada =
   | 'finish-invalid'
   | 'finish-confirm'
   | 'honorarios-confirm'
-  | 'honorarios-finish-blocked'
   | 'basic-success'
   | 'basic-error'
   | 'basic-duplicate-rut'
@@ -37,8 +36,7 @@ export type AccionModalAccionAvanzada =
   | 'focus-first-blocking'
   | 'execute-finish'
   | 'confirm-honorarios'
-  | 'cancel-honorarios'
-  | 'save-honorarios-draft';
+  | 'cancel-honorarios';
 
 export interface ModalAccionAvanzada {
   kind: TipoModalAccionAvanzada;

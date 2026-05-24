@@ -469,10 +469,10 @@ export class FormEmpleadoComponent implements OnInit {
     if (this.esModoHonorarios()) {
       const honorariosLabels: Record<number, string> = {
         2: "Servicio",
-        3: "Honorarios",
-        7: "Datos para pago",
+        3: "Monto",
+        7: "Pago",
         8: "Condiciones",
-        9: "Resumen honorarios",
+        9: "Resumen",
       };
       if ([4, 5, 6, this.perfilLaboralWizardStepIndex()].includes(stepIndex)) {
         return this.etiquetasCortasAsistenteAvanzado[stepIndex] ?? "";
@@ -494,14 +494,14 @@ export class FormEmpleadoComponent implements OnInit {
   etiquetaCompletaPasoAsistente(stepIndex: number): string {
     if (this.esModoHonorarios()) {
       const honorariosLabels: Record<number, string> = {
-        2: "Datos del servicio",
-        3: "Monto de honorarios",
+        2: "Servicio",
+        3: "Monto",
         4: "Asignaciones laborales",
         5: "Previsión y salud",
         6: "APVI",
-        7: "Datos para pago",
+        7: "Pago",
         8: "Condiciones",
-        9: "Resumen de honorarios",
+        9: "Resumen",
       };
       return (
         honorariosLabels[stepIndex] ??
@@ -516,14 +516,14 @@ export class FormEmpleadoComponent implements OnInit {
   descripcionPasoAsistente(stepIndex: number): string {
     if (this.esModoHonorarios()) {
       const honorariosDescriptions: Record<number, string> = {
-        2: "Registra el servicio, fecha de inicio y ubicación administrativa del prestador a honorarios.",
-        3: "Informa el monto bruto pactado para la boleta. No corresponde jornada laboral dependiente.",
-        4: "Las asignaciones laborales no aplican para boleta de honorarios en esta alta.",
-        5: "Previsión y salud no se capturan como trabajador dependiente en este flujo.",
-        6: "APVI no aplica dentro de la alta de prestador a honorarios.",
-        7: "Registra datos de pago del prestador si se usará transferencia.",
-        8: "Las condiciones especiales de trabajadores dependientes no se declaran para honorarios en esta fase.",
-        9: "Revisa que este registro queda como borrador de honorarios y no como trabajador dependiente.",
+        2: "Completa servicio, fecha y ubicación administrativa.",
+        3: "Informa monto y moneda.",
+        4: "No requerido para honorarios.",
+        5: "No requerido para honorarios.",
+        6: "No requerido para honorarios.",
+        7: "Completa datos de pago.",
+        8: "No requerido para honorarios.",
+        9: "Revisa y finaliza el registro.",
       };
       return (
         honorariosDescriptions[stepIndex] ??
@@ -639,12 +639,6 @@ export class FormEmpleadoComponent implements OnInit {
       }
 
       await this.enviarModoBasico();
-      return;
-    }
-
-    if (this.esModoHonorarios()) {
-      this.sincronizarPestanasCompletadasDesdeValidez();
-      this.openHonorariosFinishBlockedModal();
       return;
     }
 
@@ -886,10 +880,6 @@ export class FormEmpleadoComponent implements OnInit {
         this.modalAccionAvanzada.set(null);
         this.cancelarCambioModoHonorarios();
         break;
-      case "save-honorarios-draft":
-        this.modalAccionAvanzada.set(null);
-        void this.onGuardarBorrador();
-        break;
       case "go-to-list":
         this.modalAccionAvanzada.set(null);
         this.irAListadoEmpleados();
@@ -933,11 +923,11 @@ export class FormEmpleadoComponent implements OnInit {
   etiquetaAccionFinalAsistente(): string {
     if (this.guardando()) {
       return this.esModoHonorarios()
-        ? "Guardando borrador..."
+        ? "Finalizando honorarios..."
         : "Guardando ficha...";
     }
 
-    return this.esModoHonorarios() ? "Guardar borrador" : "Finalizar alta";
+    return this.esModoHonorarios() ? "Finalizar honorarios" : "Finalizar alta";
   }
 
   etiquetaAccionPrimariaShell(): string {
@@ -966,7 +956,7 @@ export class FormEmpleadoComponent implements OnInit {
       void this.enviarFormulario();
       return;
     }
-    if (this.pasoWizardActivo() === this.indicePasoResumenAsistente() && !this.esModoHonorarios()) {
+    if (this.pasoWizardActivo() === this.indicePasoResumenAsistente()) {
       void this.enviarFormulario();
       return;
     }
@@ -1420,9 +1410,9 @@ export class FormEmpleadoComponent implements OnInit {
     if (this.esModoHonorarios()) {
       const honorariosStages: Record<number, string> = {
         2: "Registro del servicio",
-        3: "Registro de honorarios",
-        7: "Registro de pago",
-        9: "Acta de honorarios",
+        3: "Monto",
+        7: "Pago",
+        9: "Resumen",
       };
       return honorariosStages[stepIndex] ?? "Registro administrativo";
     }
@@ -2240,7 +2230,7 @@ export class FormEmpleadoComponent implements OnInit {
     }
 
     if (this.esModoHonorarios()) {
-      return "Borrador disponible";
+      return "Finalizable";
     }
 
     return "Alta coherente";
@@ -2251,7 +2241,7 @@ export class FormEmpleadoComponent implements OnInit {
     const revisiones = this.inconsistenciasCoherencia().length;
 
     if (this.esModoHonorarios()) {
-      return "El sistema identificó un alta a honorarios y separó los datos de pago de los campos laborales dependientes.";
+      return "Modalidad honorarios: completa servicio, monto y pago.";
     }
 
     if (bloqueos > 0) {
@@ -2753,7 +2743,7 @@ export class FormEmpleadoComponent implements OnInit {
           "Confirmar el cambio a boleta de honorarios y ocultar datos de relación laboral dependiente.",
         detailItems: [
           "Jornada, gratificación, previsión, salud, APVI y asignaciones laborales: no aplicables.",
-          "La ficha podrá guardarse como borrador; no se finaliza como trabajador dependiente.",
+          "Este registro no participa en nómina dependiente.",
         ],
         porQueImporta:
           "La bitácora debe reflejar la modalidad correcta para no solicitar datos que no corresponden al prestador.",
@@ -2767,37 +2757,6 @@ export class FormEmpleadoComponent implements OnInit {
       infoItems: [],
       primaryAction: "confirm-honorarios",
       secondaryAction: "cancel-honorarios",
-    });
-  }
-
-  private openHonorariosFinishBlockedModal(): void {
-    this.abrirModalAccionAvanzada({
-      kind: "honorarios-finish-blocked",
-      variant: "warning",
-      eyebrow: "Revisión administrativa",
-      title: "Guardar borrador de honorarios",
-      message:
-        "La ficha está en modalidad honorarios. Puedes guardar borrador; la finalización como dependiente no está disponible.",
-      sections: this.construirSeccionesMsgboxBitacora({
-        pendientePrincipal:
-          "Conservar el avance como borrador de prestador a honorarios.",
-        detailItems: [
-          "La persistencia final de honorarios aún no está habilitada.",
-          "No se generará contrato laboral dependiente ni liquidación de sueldo.",
-        ],
-        porQueImporta:
-          "La bitácora debe cerrarse solo con flujos habilitados; el alta dependiente queda pendiente de otra fase.",
-        accionRecomendada:
-          "Guardar como borrador y completar retención, datos tributarios y pago cuando el flujo esté disponible.",
-      }),
-      primaryLabel: "Guardar como borrador",
-      secondaryLabel: "Cerrar",
-      blockingItems: [],
-      warningItems: [],
-      infoItems: [],
-      targetStep: 8,
-      primaryAction: "save-honorarios-draft",
-      secondaryAction: "dismiss",
     });
   }
 
