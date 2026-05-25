@@ -123,4 +123,48 @@ describe('validateBorradorAvanzadoFormMinimo', () => {
     });
     expect(validateBorradorAvanzadoFormMinimo(form)).toBeNull();
   });
+
+  it('rechaza nombres con dígitos antes de guardar borrador', () => {
+    const form = orchestrator.createForm();
+    form.controls.datosPersonales.patchValue({
+      rut: '12.345.678-5',
+      nombres: 'Test123',
+      apellidoPaterno: 'Automatizado',
+      fechaNacimiento: '1990-01-01',
+      idPais: 1,
+      sexo: 'F',
+      estadoCivil: 'SOLTERO',
+    });
+    expect(validateBorradorAvanzadoFormMinimo(form)).toContain('nombres');
+  });
+
+  it('rechaza número de dirección con letras', () => {
+    const form = orchestrator.createForm();
+    form.controls.datosPersonales.patchValue({
+      rut: '12.345.678-5',
+      nombres: 'Camila',
+      apellidoPaterno: 'Soto',
+      fechaNacimiento: '1990-01-01',
+      idPais: 1,
+      sexo: 'F',
+      estadoCivil: 'SOLTERO',
+    });
+    form.controls.contacto.patchValue({ numeroDireccion: '12B' });
+    expect(validateBorradorAvanzadoFormMinimo(form)).toContain('dirección');
+  });
+
+  it('acepta apóstrofe y guión en apellidos válidos', () => {
+    const form = orchestrator.createForm();
+    form.controls.datosPersonales.patchValue({
+      rut: '12.345.678-5',
+      nombres: 'María José',
+      apellidoPaterno: "O'Connor",
+      apellidoMaterno: 'Del-Río',
+      fechaNacimiento: '1990-01-01',
+      idPais: 1,
+      sexo: 'F',
+      estadoCivil: 'SOLTERO',
+    });
+    expect(validateBorradorAvanzadoFormMinimo(form)).toBeNull();
+  });
 });
