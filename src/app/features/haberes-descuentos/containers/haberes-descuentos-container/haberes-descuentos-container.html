@@ -179,242 +179,40 @@
   </section>
 
   @if (dialogAbierto()) {
-    <div class="hd-modal-root" role="presentation">
-      <div class="hd-modal-backdrop" (click)="cerrarDialogo()"></div>
-      <div class="hd-modal" role="dialog" aria-modal="true" aria-labelledby="hd-modal-title">
-        <h2 id="hd-modal-title" class="hd-modal-title">{{ tituloModal() }}</h2>
-
-        @if (personaIdSeleccionada(); as pid) {
-          <p class="hd-modal-worker">
-            <span class="hd-modal-worker-label">Trabajador</span>
-            @if (empleadoActual(); as emp) {
-              <span>{{ emp.nombre }} · {{ emp.rut }}</span>
-            } @else {
-              <span>ID {{ pid }}</span>
-            }
-          </p>
-        }
-
-        <div class="hd-modal-body">
-          <div class="hd-modal-stack">
-            <div class="hd-modal-group">
-              <div class="hd-modal-span2">
-                <label class="hd-field-label" for="hd-concepto">Concepto</label>
-                <app-search-select
-                  id="hd-concepto"
-                  [options]="conceptoOpciones()"
-                  [ngModel]="formConceptoId()"
-                  (ngModelChange)="onConceptoAsignacionChange($event)"
-                  placeholder="Selecciona concepto"
-                  searchPlaceholder="Buscar concepto"
-                  [disabled]="dialogEditId() !== null"
-                ></app-search-select>
-              </div>
-              @if (tieneMultiplesContratos()) {
-                <div class="hd-modal-span2">
-                  <label class="hd-field-label" for="hd-contrato">Contrato</label>
-                  <select
-                    id="hd-contrato"
-                    class="hd-input"
-                    [ngModel]="formIdContrato()"
-                    (ngModelChange)="formIdContrato.set($event)"
-                  >
-                    <option [ngValue]="null">Sin contrato específico</option>
-                    @for (c of contratoOpcionesNativo(); track c.idContrato) {
-                      <option [ngValue]="c.idContrato">{{ c.etiqueta }}</option>
-                    }
-                  </select>
-                </div>
-              }
-            </div>
-
-            <div class="hd-modal-group">
-              <div>
-                <label class="hd-field-label" for="hd-codigo-interno">Código interno</label>
-                <input
-                  id="hd-codigo-interno"
-                  type="text"
-                  class="hd-input"
-                  readonly
-                  [value]="conceptoVistaModal().codigo"
-                />
-              </div>
-              <div>
-                <label class="hd-field-label" for="hd-codigo-lre">Código LRE</label>
-                <input
-                  id="hd-codigo-lre"
-                  type="text"
-                  class="hd-input"
-                  readonly
-                  [value]="conceptoVistaModal().codigoLre ?? '—'"
-                />
-              </div>
-              <div>
-                <label class="hd-field-label" for="hd-tipo-concepto">Tipo</label>
-                <input
-                  id="hd-tipo-concepto"
-                  type="text"
-                  class="hd-input"
-                  readonly
-                  [value]="etiquetaTipo(conceptoVistaModal().tipo)"
-                />
-              </div>
-              <div class="hd-modal-span2">
-                <label class="hd-field-label" for="hd-naturaleza">Naturaleza</label>
-                <input
-                  id="hd-naturaleza"
-                  type="text"
-                  class="hd-input"
-                  readonly
-                  [value]="etiquetaNaturaleza(conceptoVistaModal().naturaleza)"
-                />
-              </div>
-            </div>
-
-            <div class="hd-modal-group">
-              <div>
-                <label class="hd-field-label" for="hd-modalidad">Modalidad</label>
-                <select
-                  id="hd-modalidad"
-                  class="hd-input"
-                  [ngModel]="formTipoValor()"
-                  (ngModelChange)="onTipoValorChange($event)"
-                >
-                  <option value="FIJO">Monto fijo</option>
-                  <option value="PORCENTAJE">Porcentaje</option>
-                </select>
-              </div>
-
-              <div>
-                <label class="hd-field-label" for="hd-periodicidad">Periodicidad</label>
-                <select
-                  id="hd-periodicidad"
-                  class="hd-input"
-                  [ngModel]="formPeriodicidad()"
-                  (ngModelChange)="formPeriodicidad.set($event)"
-                >
-                  @for (p of periodicidadesHd; track p) {
-                    <option [ngValue]="p">{{ p }}</option>
-                  }
-                </select>
-              </div>
-
-              @if (formTipoValor() === 'FIJO') {
-                <div class="hd-modal-span2">
-                  <label class="hd-field-label" for="hd-monto">Monto</label>
-                  <input
-                    id="hd-monto"
-                    type="number"
-                    min="0"
-                    step="1"
-                    class="hd-input"
-                    [ngModel]="formMonto()"
-                    (ngModelChange)="formMonto.set($event)"
-                  />
-                </div>
-              } @else {
-                <div class="hd-modal-span2">
-                  <label class="hd-field-label" for="hd-pct">Porcentaje</label>
-                  <input
-                    id="hd-pct"
-                    type="number"
-                    min="0"
-                    max="100"
-                    step="0.01"
-                    class="hd-input"
-                    [ngModel]="formPorcentaje()"
-                    (ngModelChange)="formPorcentaje.set($event)"
-                  />
-                </div>
-              }
-            </div>
-
-            <div class="hd-modal-group">
-              <div>
-                <label class="hd-field-label" for="hd-vig-ini">Vigencia inicio</label>
-                <input
-                  id="hd-vig-ini"
-                  type="date"
-                  class="hd-input"
-                  [ngModel]="formVigenciaInicio()"
-                  (ngModelChange)="formVigenciaInicio.set($event)"
-                />
-              </div>
-              <div>
-                <label class="hd-field-label" for="hd-vig-fin">Vigencia fin</label>
-                <input
-                  id="hd-vig-fin"
-                  type="date"
-                  class="hd-input"
-                  [ngModel]="formVigenciaFin()"
-                  (ngModelChange)="formVigenciaFin.set($event)"
-                />
-              </div>
-
-              <div>
-                <label class="hd-field-label" for="hd-estado-check">Estado</label>
-                <div class="hd-estado-row">
-                  <label class="hd-check">
-                    <input type="checkbox" [ngModel]="formEstado()" (ngModelChange)="formEstado.set($event)" />
-                    Activo
-                  </label>
-                </div>
-              </div>
-            </div>
-
-            <div class="hd-modal-group">
-              <div class="hd-modal-span2">
-                <label class="hd-field-label" for="hd-obs">Observación</label>
-                <textarea
-                  id="hd-obs"
-                  class="hd-input hd-textarea"
-                  rows="4"
-                  [ngModel]="formObservacion()"
-                  (ngModelChange)="formObservacion.set($event)"
-                  placeholder="Opcional"
-                ></textarea>
-              </div>
-            </div>
-
-            @if (mostrarCuotasRecurrente()) {
-              <section class="hd-modal-cuotas" aria-label="Cuotas preparadas">
-                <h3 class="hd-modal-cuotas-title">Cuotas</h3>
-                <p class="hd-modal-cuotas-help">
-                  Usa cuotas para préstamos, anticipos, reintegros o descuentos pactados en varios meses.
-                </p>
-                <label class="hd-check hd-modal-cuotas-check">
-                  <input type="checkbox" disabled />
-                  <span>¿Tiene cuotas?</span>
-                </label>
-                <div class="hd-modal-cuotas-grid" aria-disabled="true">
-                  <label class="hd-modal-cuotas-field">
-                    <span class="hd-field-label">Cantidad de cuotas</span>
-                    <input type="number" class="hd-input" disabled />
-                  </label>
-                  <label class="hd-modal-cuotas-field">
-                    <span class="hd-field-label">Monto por cuota</span>
-                    <input type="number" class="hd-input" disabled />
-                  </label>
-                  <label class="hd-modal-cuotas-field">
-                    <span class="hd-field-label">Cuota inicial</span>
-                    <input type="month" class="hd-input" disabled />
-                  </label>
-                  <label class="hd-modal-cuotas-field">
-                    <span class="hd-field-label">Saldo referencial</span>
-                    <input type="number" class="hd-input" disabled />
-                  </label>
-                </div>
-              </section>
-            }
-          </div>
-        </div>
-
-        <div class="hd-modal-actions">
-          <button type="button" class="hd-btn hd-btn--ghost" (click)="cerrarDialogo()">Cancelar</button>
-          <button type="button" class="hd-btn hd-btn--primary" (click)="guardarDialogo()">Guardar</button>
-        </div>
-      </div>
-    </div>
+    <app-haber-descuento-asignacion-editor-dialog
+      [titulo]="tituloModal()"
+      [personaId]="personaIdSeleccionada()"
+      [trabajador]="trabajadorResumenModal()"
+      [conceptoVista]="conceptoVistaModal()"
+      [conceptoOpciones]="conceptoOpciones()"
+      [contratoOpciones]="contratosPersona()"
+      [tieneMultiplesContratos]="tieneMultiplesContratos()"
+      [periodicidades]="periodicidadesHd"
+      [idAsignacionEdicion]="dialogEditId()"
+      [idConcepto]="formConceptoId()"
+      [idContrato]="formIdContrato()"
+      [tipoValor]="formTipoValor()"
+      [monto]="formMonto()"
+      [porcentaje]="formPorcentaje()"
+      [periodicidad]="formPeriodicidad()"
+      [vigenciaInicio]="formVigenciaInicio()"
+      [vigenciaFin]="formVigenciaFin()"
+      [observacion]="formObservacion()"
+      [estado]="formEstado()"
+      [mostrarCuotas]="mostrarCuotasRecurrente()"
+      (cerrar)="cerrarDialogo()"
+      (guardar)="guardarDialogo()"
+      (idConceptoChange)="onConceptoAsignacionChange($event)"
+      (idContratoChange)="formIdContrato.set($event)"
+      (tipoValorChange)="onTipoValorChange($event)"
+      (montoChange)="formMonto.set($event)"
+      (porcentajeChange)="formPorcentaje.set($event)"
+      (periodicidadChange)="formPeriodicidad.set($event)"
+      (vigenciaInicioChange)="formVigenciaInicio.set($event)"
+      (vigenciaFinChange)="formVigenciaFin.set($event)"
+      (observacionChange)="formObservacion.set($event)"
+      (estadoChange)="formEstado.set($event)"
+    />
   }
 
   @if (modalMsg(); as msg) {

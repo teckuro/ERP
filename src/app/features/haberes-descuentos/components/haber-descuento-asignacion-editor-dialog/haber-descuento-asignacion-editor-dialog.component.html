@@ -1,0 +1,230 @@
+<div class="hd-modal-root" role="presentation">
+  <div class="hd-modal-backdrop" (click)="cerrar.emit()"></div>
+  <div class="hd-modal" role="dialog" aria-modal="true" aria-labelledby="hd-modal-title">
+    <h2 id="hd-modal-title" class="hd-modal-title">{{ titulo() }}</h2>
+
+    @if (personaId(); as pid) {
+      <p class="hd-modal-worker">
+        <span class="hd-modal-worker-label">Trabajador</span>
+        @if (trabajador(); as emp) {
+          <span>{{ emp.nombre }} · {{ emp.rut }}</span>
+        } @else {
+          <span>ID {{ pid }}</span>
+        }
+      </p>
+    }
+
+    <div class="hd-modal-body">
+      <div class="hd-modal-stack">
+        <div class="hd-modal-group">
+          <div class="hd-modal-span2">
+            <label class="hd-field-label" for="hd-concepto">Concepto</label>
+            <app-search-select
+              id="hd-concepto"
+              [options]="conceptoOpciones()"
+              [ngModel]="idConcepto()"
+              (ngModelChange)="idConceptoChange.emit($event)"
+              placeholder="Selecciona concepto"
+              searchPlaceholder="Buscar concepto"
+              [disabled]="idAsignacionEdicion() !== null"
+            ></app-search-select>
+          </div>
+          @if (tieneMultiplesContratos()) {
+            <div class="hd-modal-span2">
+              <label class="hd-field-label" for="hd-contrato">Contrato</label>
+              <select
+                id="hd-contrato"
+                class="hd-input"
+                [ngModel]="idContrato()"
+                (ngModelChange)="idContratoChange.emit($event)"
+              >
+                <option [ngValue]="null">Sin contrato específico</option>
+                @for (c of contratoOpciones(); track c.idContrato) {
+                  <option [ngValue]="c.idContrato">{{ c.etiqueta }}</option>
+                }
+              </select>
+            </div>
+          }
+        </div>
+
+        <div class="hd-modal-group">
+          <div>
+            <label class="hd-field-label" for="hd-codigo-interno">Código interno</label>
+            <input id="hd-codigo-interno" type="text" class="hd-input" readonly [value]="conceptoVista().codigo" />
+          </div>
+          <div>
+            <label class="hd-field-label" for="hd-codigo-lre">Código LRE</label>
+            <input
+              id="hd-codigo-lre"
+              type="text"
+              class="hd-input"
+              readonly
+              [value]="conceptoVista().codigoLre ?? '—'"
+            />
+          </div>
+          <div>
+            <label class="hd-field-label" for="hd-tipo-concepto">Tipo</label>
+            <input
+              id="hd-tipo-concepto"
+              type="text"
+              class="hd-input"
+              readonly
+              [value]="etiquetaTipo(conceptoVista().tipo)"
+            />
+          </div>
+          <div class="hd-modal-span2">
+            <label class="hd-field-label" for="hd-naturaleza">Naturaleza</label>
+            <input
+              id="hd-naturaleza"
+              type="text"
+              class="hd-input"
+              readonly
+              [value]="etiquetaNaturaleza(conceptoVista().naturaleza)"
+            />
+          </div>
+        </div>
+
+        <div class="hd-modal-group">
+          <div>
+            <label class="hd-field-label" for="hd-modalidad">Modalidad</label>
+            <select
+              id="hd-modalidad"
+              class="hd-input"
+              [ngModel]="tipoValor()"
+              (ngModelChange)="tipoValorChange.emit($event)"
+            >
+              <option value="FIJO">Monto fijo</option>
+              <option value="PORCENTAJE">Porcentaje</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="hd-field-label" for="hd-periodicidad">Periodicidad</label>
+            <select
+              id="hd-periodicidad"
+              class="hd-input"
+              [ngModel]="periodicidad()"
+              (ngModelChange)="periodicidadChange.emit($event)"
+            >
+              @for (p of periodicidades(); track p) {
+                <option [ngValue]="p">{{ p }}</option>
+              }
+            </select>
+          </div>
+
+          @if (tipoValor() === 'FIJO') {
+            <div class="hd-modal-span2">
+              <label class="hd-field-label" for="hd-monto">Monto</label>
+              <input
+                id="hd-monto"
+                type="number"
+                min="0"
+                step="1"
+                class="hd-input"
+                [ngModel]="monto()"
+                (ngModelChange)="montoChange.emit($event)"
+              />
+            </div>
+          } @else {
+            <div class="hd-modal-span2">
+              <label class="hd-field-label" for="hd-pct">Porcentaje</label>
+              <input
+                id="hd-pct"
+                type="number"
+                min="0"
+                max="100"
+                step="0.01"
+                class="hd-input"
+                [ngModel]="porcentaje()"
+                (ngModelChange)="porcentajeChange.emit($event)"
+              />
+            </div>
+          }
+        </div>
+
+        <div class="hd-modal-group">
+          <div>
+            <label class="hd-field-label" for="hd-vig-ini">Vigencia inicio</label>
+            <input
+              id="hd-vig-ini"
+              type="date"
+              class="hd-input"
+              [ngModel]="vigenciaInicio()"
+              (ngModelChange)="vigenciaInicioChange.emit($event)"
+            />
+          </div>
+          <div>
+            <label class="hd-field-label" for="hd-vig-fin">Vigencia fin</label>
+            <input
+              id="hd-vig-fin"
+              type="date"
+              class="hd-input"
+              [ngModel]="vigenciaFin()"
+              (ngModelChange)="vigenciaFinChange.emit($event)"
+            />
+          </div>
+
+          <div>
+            <label class="hd-field-label" for="hd-estado-check">Estado</label>
+            <div class="hd-estado-row">
+              <label class="hd-check">
+                <input type="checkbox" [ngModel]="estado()" (ngModelChange)="estadoChange.emit($event)" />
+                Activo
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <div class="hd-modal-group">
+          <div class="hd-modal-span2">
+            <label class="hd-field-label" for="hd-obs">Observación</label>
+            <textarea
+              id="hd-obs"
+              class="hd-input hd-textarea"
+              rows="4"
+              [ngModel]="observacion()"
+              (ngModelChange)="observacionChange.emit($event)"
+              placeholder="Opcional"
+            ></textarea>
+          </div>
+        </div>
+
+        @if (mostrarCuotas()) {
+          <section class="hd-modal-cuotas" aria-label="Cuotas preparadas">
+            <h3 class="hd-modal-cuotas-title">Cuotas</h3>
+            <p class="hd-modal-cuotas-help">
+              Usa cuotas para préstamos, anticipos, reintegros o descuentos pactados en varios meses.
+            </p>
+            <label class="hd-check hd-modal-cuotas-check">
+              <input type="checkbox" disabled />
+              <span>¿Tiene cuotas?</span>
+            </label>
+            <div class="hd-modal-cuotas-grid" aria-disabled="true">
+              <label class="hd-modal-cuotas-field">
+                <span class="hd-field-label">Cantidad de cuotas</span>
+                <input type="number" class="hd-input" disabled />
+              </label>
+              <label class="hd-modal-cuotas-field">
+                <span class="hd-field-label">Monto por cuota</span>
+                <input type="number" class="hd-input" disabled />
+              </label>
+              <label class="hd-modal-cuotas-field">
+                <span class="hd-field-label">Cuota inicial</span>
+                <input type="month" class="hd-input" disabled />
+              </label>
+              <label class="hd-modal-cuotas-field">
+                <span class="hd-field-label">Saldo referencial</span>
+                <input type="number" class="hd-input" disabled />
+              </label>
+            </div>
+          </section>
+        }
+      </div>
+    </div>
+
+    <div class="hd-modal-actions">
+      <button type="button" class="hd-btn hd-btn--ghost" (click)="cerrar.emit()">Cancelar</button>
+      <button type="button" class="hd-btn hd-btn--primary" (click)="guardar.emit()">Guardar</button>
+    </div>
+  </div>
+</div>

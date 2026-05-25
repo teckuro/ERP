@@ -24,9 +24,7 @@ import {
 } from '../../../../shared/components/ui/card.component';
 import {
   DataGridCellDirective,
-  DataGridColumn,
   DataGridComponent,
-  DataGridFilter,
 } from '../../../../shared/components/ui/data-grid.component';
 import { ButtonComponent } from '../../../../shared/components/ui/button.component';
 import {
@@ -42,56 +40,20 @@ import { PeriodoActivoService, primerDiaSqlDesdeYm } from '../../../../core/serv
 import { HaberesDescuentosService } from '../../services/haberes-descuentos.service';
 import {
   ConceptoListado,
-  HaberDescuentoAsignacionListado,
   HaberDescuentoAsignacionPayload,
   HaberDescuentoTipoValor,
   PERIODICIDADES_HD,
 } from '../../models/haber-descuento-asignacion.model';
-import { type EstadoVigenciaAsignacion } from '../../rules/haber-descuento-vigencia.rules';
-
-type HdGridRow = HaberDescuentoAsignacionListado & {
-  estadoVigencia: EstadoVigenciaAsignacion;
-  estadoVigenciaEtiqueta: string;
-  valorAsignacion: string;
-  /** Texto agregado para filtro “Buscar” (nombre, código concepto, LRE). */
-  busquedaAsignacion: string;
-};
-
-function etiquetaEstadoFicha(empleado: EmpleadoListado): string {
-  switch (empleado.estadoFicha) {
-    case 'VALIDO':
-      return 'Válido';
-    case 'INCOMPLETO':
-      return 'En proceso';
-    case 'BORRADOR':
-      return 'Borrador';
-    default:
-      return empleado.estadoFicha;
-  }
-}
-
-function etiquetaTipoConcepto(tipo: string | null): string {
-  if (tipo === 'HABER') {
-    return 'Haber';
-  }
-  if (tipo === 'DESCUENTO') {
-    return 'Descuento';
-  }
-  if (tipo === 'APORTE_EMPLEADOR') {
-    return 'Aporte empleador';
-  }
-  return tipo?.trim() ? tipo : '—';
-}
-
-function etiquetaNaturalezaFn(n: string | null): string {
-  if (n === 'IMPONIBLE') {
-    return 'Imponible';
-  }
-  if (n === 'NO_IMPONIBLE') {
-    return 'No imponible';
-  }
-  return n?.trim() ? n : '—';
-}
+import type { FilaGridHaberDescuento } from '../../models/haber-descuento-asignacion-listado.vm';
+import { HaberDescuentoAsignacionEditorDialogComponent } from '../../components/haber-descuento-asignacion-editor-dialog/haber-descuento-asignacion-editor-dialog.component';
+import {
+  aFilasGridHaberDescuento,
+  crearColumnasGridHaberDescuento,
+  crearFiltrosGridHaberDescuento,
+  debeMostrarCuotasRecurrente,
+  etiquetaEstadoFichaEmpleado,
+  etiquetaTipoConceptoHd,
+} from '../../utils/haber-descuento-asignacion-listado.presenter';
 
 @Component({
   selector: 'app-haberes-descuentos-container',
@@ -109,6 +71,7 @@ function etiquetaNaturalezaFn(n: string | null): string {
     CardComponent,
     CardHeaderComponent,
     CardContentComponent,
+    HaberDescuentoAsignacionEditorDialogComponent,
   ],
   templateUrl: './haberes-descuentos-container.html',
   styleUrl: './haberes-descuentos-container.css',
@@ -143,7 +106,7 @@ export class HaberesDescuentosContainer implements OnInit {
 
   readonly personaIdSeleccionada = signal<number | null>(null);
 
-  readonly filas = signal<HdGridRow[]>([]);
+  readonly filas = signal<FilaGridHaberDescuento[]>([]);
 
   readonly dialogAbierto = signal(false);
   readonly dialogEditId = signal<number | null>(null);
@@ -180,6 +143,14 @@ export class HaberesDescuentosContainer implements OnInit {
       return null;
     }
     return this.empleadosListado().find((e) => e.id === id) ?? null;
+  });
+
+  readonly trabajadorResumenModal = computed(() => {
+    const emp = this.empleadoActual();
+    if (!emp) {
+      return null;
+    }
+    return { nombre: emp.nombre, rut: emp.rut };
   });
 
   readonly conceptoFormulario = computed(() => {
@@ -221,16 +192,7 @@ export class HaberesDescuentosContainer implements OnInit {
     this.dialogEditId() == null ? 'Registrar recurrente' : 'Editar movimiento recurrente',
   );
 
-  readonly mostrarCuotasRecurrente = computed(() => {
-    const concepto = this.conceptoFormulario();
-    if (!concepto) {
-      return false;
-    }
-    const texto = this.normalizarTexto(
-      [concepto.codigo, concepto.nombre, concepto.tipo, concepto.naturaleza].filter(Boolean).join(' '),
-    );
-    return ['prestamo', 'anticipo', 'reintegro', 'cuota', 'pactado'].some((token) => texto.includes(token));
-  });
+  readonly mostrarCuotasRecurrente = computed(() => debeMostrarCuotasRecurrente(this.conceptoFormulario()));
 
   readonly conceptoOpciones = computed<SearchSelectOption<number>[]>(() => {
     const base = this.conceptos().map((c) => ({
@@ -254,169 +216,15 @@ export class HaberesDescuentosContainer implements OnInit {
     return base;
   });
 
-  readonly contratoOpcionesNativo = computed(() => this.contratosPersona());
-
   readonly tieneMultiplesContratos = computed(() => this.contratosPersona().length > 1);
 
-  readonly columns: DataGridColumn<HdGridRow>[] = [
-    {
-      id: 'nombreConcepto',
-      header: 'Concepto',
-      field: 'nombreConcepto',
-      type: 'text',
-      sortable: true,
-      priorityResponsive: 'primary',
-      filterable: false,
-    },
-    {
-      id: 'codigoLre',
-      header: 'Código LRE',
-      field: 'codigoLre',
-      type: 'text',
-      sortable: true,
-      format: (v) => (v == null || v === '' ? '—' : String(v)),
-      filterable: false,
-    },
-    {
-      id: 'tipoConcepto',
-      header: 'Tipo',
-      field: 'tipoConcepto',
-      type: 'text',
-      sortable: true,
-      filterable: false,
-    },
-    {
-      id: 'naturalezaConcepto',
-      header: 'Naturaleza',
-      field: 'naturalezaConcepto',
-      type: 'text',
-      sortable: true,
-      format: (_v, row) => etiquetaNaturalezaFn(row.naturalezaConcepto),
-      visible: false,
-      filterable: false,
-    },
-    {
-      id: 'valorAsignacion',
-      header: 'Valor',
-      field: 'valorAsignacion',
-      type: 'text',
-      align: 'right',
-      sortable: false,
-      filterable: false,
-    },
-    {
-      id: 'monto',
-      header: 'Monto',
-      field: 'monto',
-      type: 'text',
-      align: 'right',
-      sortable: true,
-      format: (_v, row) =>
-        row.tipoValor === 'PORCENTAJE' || row.monto == null
-          ? '—'
-          : `$ ${Number(row.monto).toLocaleString('es-CL')}`,
-      visible: false,
-      filterable: false,
-    },
-    {
-      id: 'porcentaje',
-      header: 'Porcentaje',
-      field: 'porcentaje',
-      type: 'text',
-      align: 'right',
-      sortable: true,
-      format: (_v, row) =>
-        row.tipoValor === 'FIJO' || row.porcentaje == null ? '—' : `${this.formatPercent(row.porcentaje)} %`,
-      visible: false,
-      filterable: false,
-    },
-    {
-      id: 'periodicidad',
-      header: 'Periodicidad',
-      field: 'periodicidad',
-      type: 'text',
-      sortable: true,
-      format: (v) => (v == null || v === '' ? '—' : String(v)),
-      visible: false,
-      filterable: false,
-    },
-    {
-      id: 'vigenciaInicio',
-      header: 'Vigencia inicio',
-      field: 'vigenciaInicio',
-      type: 'text',
-      sortable: true,
-      format: (v) => this.formatDate(v),
-      filterable: false,
-    },
-    {
-      id: 'vigenciaFin',
-      header: 'Vigencia fin',
-      field: 'vigenciaFin',
-      type: 'text',
-      sortable: true,
-      format: (v) => this.formatDate(v),
-      filterable: false,
-    },
-    {
-      id: 'estadoVigenciaEtiqueta',
-      header: 'Estado vigencia',
-      field: 'estadoVigenciaEtiqueta',
-      type: 'text',
-      sortable: true,
-      filterable: false,
-    },
-    {
-      id: 'acciones',
-      header: 'Acciones',
-      align: 'center',
-      sortable: false,
-      hideable: false,
-    },
-  ];
+  readonly columns = crearColumnasGridHaberDescuento();
+  readonly filters = crearFiltrosGridHaberDescuento();
 
-  readonly trackHdRow = (_index: number, row: HdGridRow): number => row.idAsignacion;
+  readonly trackHdRow = (_index: number, row: FilaGridHaberDescuento): number => row.idAsignacion;
 
-  readonly filters: DataGridFilter<HdGridRow>[] = [
-    {
-      id: 'busquedaAsignacion',
-      label: 'Buscar concepto',
-      field: 'busquedaAsignacion',
-      type: 'text',
-      operator: 'contains',
-      placeholder: 'Nombre, código o LRE',
-    },
-    {
-      id: 'estadoVigencia',
-      label: 'Estado de vigencia',
-      field: 'estadoVigencia',
-      type: 'select',
-      operator: 'equals',
-      emptyLabel: 'Todas',
-      initialValue: 'OPERATIVAS',
-      options: [
-        { label: 'Operativas', value: 'OPERATIVAS' },
-        { label: 'Activas', value: 'ACTIVA' },
-        { label: 'Futuras', value: 'FUTURA' },
-        { label: 'Vencidas', value: 'VENCIDA' },
-        { label: 'Cerradas', value: 'CERRADA' },
-        { label: 'Invalidas', value: 'INVALIDA' },
-      ],
-      predicate: (row, value) => {
-        if (typeof value !== 'string' || value === '') {
-          return true;
-        }
-        if (value === 'OPERATIVAS') {
-          return row.estadoVigencia === 'ACTIVA' || row.estadoVigencia === 'FUTURA';
-        }
-        return row.estadoVigencia === value;
-      },
-    },
-  ];
-
-  etiquetaTipo = etiquetaTipoConcepto;
-  etiquetaNaturaleza = etiquetaNaturalezaFn;
-  etiquetaFicha = etiquetaEstadoFicha;
+  etiquetaTipo = etiquetaTipoConceptoHd;
+  etiquetaFicha = etiquetaEstadoFichaEmpleado;
 
   constructor() {
     bindShellPageContext(
@@ -508,21 +316,6 @@ export class HaberesDescuentosContainer implements OnInit {
     }
   }
 
-  private mapFilasAsignacion(rows: HaberDescuentoAsignacionListado[]): HdGridRow[] {
-    return rows.map((r) => {
-      const estadoVigencia = r.estadoVigencia ?? 'INVALIDA';
-      return {
-        ...r,
-        estadoVigencia,
-        estadoVigenciaEtiqueta: r.estadoVigenciaEtiqueta ?? 'Invalida',
-        valorAsignacion: this.valorAsignacionLabel(r),
-        busquedaAsignacion: [r.nombreConcepto, r.codigoConcepto, r.codigoLre ?? '']
-          .join(' ')
-          .toLowerCase(),
-      };
-    });
-  }
-
   async cargarEmpleados(): Promise<void> {
     this.empleadosLoading.set(true);
     try {
@@ -558,7 +351,7 @@ export class HaberesDescuentosContainer implements OnInit {
     this.gridLoading.set(true);
     try {
       const rows = await this.haberesDescuentosService.listarPorPersona(idPersona, this.fechaReferenciaPeriodo());
-      this.filas.set(this.mapFilasAsignacion(rows));
+      this.filas.set(aFilasGridHaberDescuento(rows));
     } finally {
       this.gridLoading.set(false);
     }
@@ -620,7 +413,7 @@ export class HaberesDescuentosContainer implements OnInit {
     this.dialogAbierto.set(true);
   }
 
-  editar(row: HdGridRow): void {
+  editar(row: FilaGridHaberDescuento): void {
     if (!this.puedeEditar(row)) {
       return;
     }
@@ -748,7 +541,7 @@ export class HaberesDescuentosContainer implements OnInit {
     }
   }
 
-  pedirDesactivar(row: HdGridRow): void {
+  pedirDesactivar(row: FilaGridHaberDescuento): void {
     if (!this.puedeCerrar(row)) {
       return;
     }
@@ -805,59 +598,19 @@ export class HaberesDescuentosContainer implements OnInit {
     });
   }
 
-  puedeEditar(row: HdGridRow): boolean {
+  puedeEditar(row: FilaGridHaberDescuento): boolean {
     return row.estadoVigencia === 'ACTIVA' || row.estadoVigencia === 'FUTURA';
   }
 
-  puedeCerrar(row: HdGridRow): boolean {
+  puedeCerrar(row: FilaGridHaberDescuento): boolean {
     return row.estadoVigencia === 'ACTIVA' || row.estadoVigencia === 'FUTURA';
   }
 
-  tituloEditar(row: HdGridRow): string {
+  tituloEditar(row: FilaGridHaberDescuento): string {
     return this.puedeEditar(row) ? 'Editar' : 'No editable en historial';
   }
 
-  tituloCerrar(row: HdGridRow): string {
+  tituloCerrar(row: FilaGridHaberDescuento): string {
     return this.puedeCerrar(row) ? 'Cerrar' : 'No se puede cerrar este estado';
   }
-
-  private valorAsignacionLabel(row: HaberDescuentoAsignacionListado): string {
-    if (row.tipoValor === 'PORCENTAJE') {
-      return row.porcentaje == null ? '—' : `${this.formatPercent(row.porcentaje)} %`;
-    }
-    return row.monto == null ? '—' : `$ ${Number(row.monto).toLocaleString('es-CL')}`;
-  }
-
-  private formatPercent(value: number): string {
-    return new Intl.NumberFormat('es-CL', {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    }).format(value);
-  }
-
-  private formatDate(value: unknown): string {
-    if (value == null || value === '') {
-      return '—';
-    }
-    const date = new Date(`${String(value).slice(0, 10)}T00:00:00`);
-    if (!Number.isFinite(date.getTime())) {
-      return String(value);
-    }
-    return new Intl.DateTimeFormat('es-CL', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-    })
-      .format(date)
-      .replaceAll('/', '-');
-  }
-
-  private normalizarTexto(valor: string): string {
-    return valor
-      .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '')
-      .toLowerCase();
-  }
 }
-
-
