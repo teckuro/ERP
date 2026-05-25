@@ -1,0 +1,169 @@
+<nav class="folder-tabs parametros-tabs" aria-label="Secciones de parámetros">
+  @for (tab of ws.tabs; track tab.id) {
+    <button
+      type="button"
+      class="folder-tab parametros-tab-button"
+      [class.folder-tab--active]="ws.activeTab() === tab.id"
+      [class.parametros-tab-active]="ws.activeTab() === tab.id"
+      [attr.aria-current]="ws.activeTab() === tab.id ? 'page' : null"
+      (click)="ws.seleccionarTab(tab.id)"
+    >
+      <span>{{ etiquetaTab(tab.id) }}</span>
+    </button>
+  }
+</nav>
+
+<div class="parametros-tab-body" role="region" aria-label="Contenido de la sección">
+  <header class="param-record-header" aria-label="Contexto de la seccion activa">
+    <div>
+      <span class="param-eyebrow">{{ ws.activeRecordKind() }}</span>
+      <h2>{{ ws.activeRecordTitle() }}</h2>
+      <p>{{ ws.activeRecordDetail() }}</p>
+    </div>
+  </header>
+
+  @switch (ws.activeTab()) {
+    @case ('configCliente') {
+      <app-parametros-config-cliente-tab
+        [form]="ws.form"
+        [catalogos]="ws.catalogos()"
+        [editable]="ws.generalesEditando()"
+        [hasClienteConfig]="ws.clienteConfig() !== null"
+        [periodoLabel]="ws.periodoSeleccionadoLabel()"
+        [selectedCcafId]="ws.selectedCcafId()"
+        [selectedMutualId]="ws.selectedMutualId()"
+        [percentLabel]="ws.decimal(ws.selectedLey16744Rate(), 2)"
+        [fechaActualizacionLabel]="ws.fechaActualizacionLabel()"
+        [bloquearSiLectura]="ws.bloquearSiLectura.bind(ws)"
+        [setDescuentosBaseFn]="ws.setDescuentosBase.bind(ws)"
+        [seleccionarCcaf]="ws.seleccionarCcaf.bind(ws)"
+        [seleccionarMutual]="ws.seleccionarMutual.bind(ws)"
+        [enviarFormulario]="ws.guardar.bind(ws)"
+      ></app-parametros-config-cliente-tab>
+    }
+
+    @case ('valores') {
+      <app-parametros-valores-tab
+        [form]="ws.form"
+        [editable]="ws.generalesEditando()"
+        [officialEditable]="ws.generalesEditando()"
+        [configEditable]="ws.generalesEditando()"
+        [hasPeriodoData]="ws.hasSelectedInRows()"
+        [hasClienteConfig]="ws.clienteConfig() !== null"
+        [periodoLabel]="ws.periodoSeleccionadoLabel()"
+        [referenciaPeriodoLabel]="ws.referenciaParametrosGeneralesLabel()"
+        [fechaActualizacionLabel]="ws.fechaActualizacionLabel()"
+        [enviarFormulario]="ws.guardar.bind(ws)"
+        [verReferenciaPeriodoAnterior]="ws.verReferenciaPeriodoAnterior.bind(ws)"
+      ></app-parametros-valores-tab>
+    }
+
+    @case ('remuneraciones') {
+      <app-parametros-remuneraciones-tab
+        [form]="ws.form"
+        [editable]="ws.generalesEditando()"
+        [hasPeriodoData]="ws.hasSelectedInRows()"
+        [hasClienteConfig]="ws.clienteConfig() !== null"
+        [periodoLabel]="ws.periodoSeleccionadoLabel()"
+        [referenciaPeriodoLabel]="ws.referenciaParametrosGeneralesLabel()"
+        [fechaActualizacionLabel]="ws.fechaActualizacionLabel()"
+        [enviarFormulario]="ws.guardar.bind(ws)"
+        [verReferenciaPeriodoAnterior]="ws.verReferenciaPeriodoAnterior.bind(ws)"
+      >
+      </app-parametros-remuneraciones-tab>
+    }
+
+    @case ('ccafMutual') {
+      <app-parametros-ccaf-mutuales-tab
+        [activeSub]="ws.ccafMutualSubTab()"
+        (activeSubChange)="ws.ccafMutualSubTab.set($event)"
+        [catalogos]="ws.catalogos()"
+        [ccafColumns]="ws.ccafColumns"
+        [organismosLeyColumns]="ws.organismosLeyColumns"
+        [ley16744Columns]="ws.ley16744Columns"
+        [loading]="ws.isLoading()"
+        [periodoLabel]="ws.periodoSeleccionadoLabel()"
+        [referenciaPeriodoLabel]="ws.referenciaLey16744Label()"
+        [gridPersistenceKeyCcaf]="ws.gridPersistenceKey('parametros.ccaf.dg')"
+        [gridPersistenceKeyMutuales]="ws.gridPersistenceKey('parametros.mutuales.dg')"
+        [gridPersistenceKeyLey16744]="ws.gridPersistenceKey('parametros.ley16744.dg')"
+        [verReferenciaPeriodoAnterior]="ws.verReferenciaPeriodoAnterior.bind(ws)"
+        [refresh]="ws.cargar.bind(ws)"
+      ></app-parametros-ccaf-mutuales-tab>
+    }
+
+    @case ('tramosCarga') {
+      <app-parametros-tramos-carga-tab
+        [rows]="ws.tramosCargaPorPeriodo()"
+        [columns]="ws.tramosCargaColumns"
+        [loading]="ws.isLoading()"
+        [gridPersistenceKey]="ws.gridPersistenceKey('parametros.tramos-carga.dg')"
+        [periodoLabel]="ws.periodoSeleccionadoLabel()"
+        [referenciaPeriodoLabel]="ws.referenciaTramosCargaLabel()"
+        [verReferenciaPeriodoAnterior]="ws.verReferenciaPeriodoAnterior.bind(ws)"
+        [refresh]="ws.cargar.bind(ws)"
+      ></app-parametros-tramos-carga-tab>
+    }
+
+    @case ('impuestoUnico') {
+      <app-parametros-tramos-renta-tab
+        [tablaRows]="ws.tablaImpuestoPorPeriodo()"
+        [tablaColumns]="ws.tablaImpuestoColumns"
+        [tramosRows]="ws.tramosImpuestoPorPeriodo()"
+        [tramosColumns]="ws.tramosImpuestoColumns"
+        [loading]="ws.isLoading()"
+        [gridPersistenceKeyTabla]="ws.gridPersistenceKey('parametros.tabla-impuesto.dg')"
+        [gridPersistenceKeyTramos]="ws.gridPersistenceKey('parametros.tramos-impuesto.dg')"
+        [periodoLabel]="ws.periodoSeleccionadoLabel()"
+        [referenciaTramosPeriodoLabel]="ws.referenciaTramosImpuestoLabel()"
+        [referenciaTablaPeriodoLabel]="ws.referenciaTablaImpuestoUnicoLabel()"
+        [verReferenciaPeriodoAnterior]="ws.verReferenciaPeriodoAnterior.bind(ws)"
+        [refresh]="ws.cargar.bind(ws)"
+      ></app-parametros-tramos-renta-tab>
+    }
+
+    @case ('salud') {
+      <app-parametros-salud-tab
+        [isapreRows]="ws.isapresPorPeriodo()"
+        [institucionesRows]="ws.saludOtrasInstitucionesPorPeriodo()"
+        [columns]="ws.isapreColumns"
+        [loading]="ws.isLoading()"
+        [gridPersistenceKeyIsapre]="ws.gridPersistenceKey('parametros.isapre.dg')"
+        [gridPersistenceKeyInstituciones]="ws.gridPersistenceKey('parametros.salud-instituciones.dg')"
+        [refresh]="ws.cargar.bind(ws)"
+      ></app-parametros-salud-tab>
+    }
+
+    @case ('prevision') {
+      <app-parametros-afp-tab
+        [rows]="ws.afpPorPeriodo()"
+        [columns]="ws.afpColumns"
+        [loading]="ws.isLoading()"
+        [gridPersistenceKey]="ws.gridPersistenceKey('parametros.afp.dg')"
+        [refresh]="ws.cargar.bind(ws)"
+      ></app-parametros-afp-tab>
+    }
+
+    @case ('reforma') {
+      <app-parametros-reforma-tab
+        [reformaPensiones]="ws.reformaPensionesPorPeriodo()"
+        [reformaPrevisional]="ws.reformaPrevisionalPorPeriodo()"
+        [trabajosPesados]="ws.trabajosPesadosPorPeriodo()"
+        [apvInstituciones]="ws.catalogos().apvInstituciones"
+        [apvFormasPago]="ws.catalogos().apvFormasPago"
+        [parametrosLegalesColumns]="ws.parametrosLegalesColumns"
+        [reformaPrevisionalColumns]="ws.reformaPrevisionalColumns"
+        [trabajosPesadosColumns]="ws.trabajosPesadosColumns"
+        [apvInstitucionesColumns]="ws.apvInstitucionesColumns"
+        [apvFormasPagoColumns]="ws.apvFormasPagoColumns"
+        [loading]="ws.isLoading()"
+        [gridPersistenceKeyLegal]="ws.gridPersistenceKey('parametros.reforma-legal.dg')"
+        [gridPersistenceKeyPrevisional]="ws.gridPersistenceKey('parametros.reforma-previsional.dg')"
+        [gridPersistenceKeyTrabPesados]="ws.gridPersistenceKey('parametros.trabajos-pesados.dg')"
+        [gridPersistenceKeyApvInst]="ws.gridPersistenceKey('parametros.apv-instituciones.dg')"
+        [gridPersistenceKeyApvPago]="ws.gridPersistenceKey('parametros.apv-formas-pago.dg')"
+        [refresh]="ws.cargar.bind(ws)"
+      ></app-parametros-reforma-tab>
+    }
+  }
+</div>

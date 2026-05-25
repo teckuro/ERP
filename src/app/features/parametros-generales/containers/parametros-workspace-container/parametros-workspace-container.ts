@@ -15,36 +15,19 @@ import {
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { LucideAngularModule } from 'lucide-angular';
-
 import {
-  AfpParametro,
-  ApvApvcFormaPago,
-  ApvApvcInstitucion,
-  CcafEntidad,
-  IsapreParametro,
-  Ley16744Parametro,
-  OrganismoLey16744,
   ParametroGeneral,
-  ParametroLegal,
   ParametrosGeneralesClienteConfig,
   PARAMETROS_CATALOGO_ARRAY_KEYS,
   ParametrosGeneralesCatalogos,
   ParametrosReferenciaMensualInfo,
   ParametrosTabId,
   PeriodoRemuneracionEstadoInfo,
-  ReformaPrevisionalParametro,
-  TablaImpuestoUnicoParametro,
-  TrabajoPesadoParametro,
-  TramoCargaParametro,
-  TramoImpuestoParametro,
 } from '../../models/parametro-general.model';
 import { ParametrosPresentacionFacade } from '../../facade/parametros-presentacion.facade';
 import type {
   ConfigClienteDraftSource,
-  MonthOption,
   ParametrosDialogAction,
-  ParametrosTab,
   PeriodoCargaEstado,
 } from '../../models/parametros-workspace.vm';
 import { ParametrosGeneralesService } from '../../services/parametros-generales.service';
@@ -77,23 +60,27 @@ import {
   buildParametrosSinConfigClienteAnteriorDialog,
   buildParametrosSoloConfigClienteEditableDialog,
 } from '../../rules/parametros-dialog.rules';
-import { ButtonComponent } from '../../../../shared/components/ui/button.component';
 import { SearchSelectValue } from '../../../../shared/components/ui/search-select.component';
-import { DataGridColumn } from '../../../../shared/components/ui/data-grid.component';
 import { CardComponent, CardContentComponent } from '../../../../shared/components/ui/card.component';
 import { MessageBoxComponent } from '../../../../shared/components/ui/message-box.component';
-import { PageActionsComponent } from '../../../../shared/components/ui/page-actions.component';
-import { ParametrosRemuneracionesTabComponent } from '../../components/tabs/parametros-remuneraciones-tab.component';
-import { ParametrosValoresTabComponent } from '../../components/tabs/parametros-valores-tab.component';
-import { ParametrosConfigClienteTabComponent } from '../../components/tabs/parametros-config-cliente-tab.component';
-import { ParametrosAfpTabComponent } from '../../components/tabs/parametros-afp-tab.component';
-import { ParametrosCcafMutualesTabComponent } from '../../components/tabs/parametros-ccaf-mutuales-tab.component';
-import { ParametrosSaludTabComponent } from '../../components/tabs/parametros-salud-tab.component';
-import { ParametrosReformaTabComponent } from '../../components/tabs/parametros-reforma-tab.component';
-import { ParametrosTramosCargaTabComponent } from '../../components/tabs/parametros-tramos-carga-tab.component';
-import { ParametrosTramosRentaTabComponent } from '../../components/tabs/parametros-tramos-renta-tab.component';
+import { ParametrosWorkspacePeriodoBandaComponent } from '../../components/parametros-workspace-periodo-banda/parametros-workspace-periodo-banda.component';
 import { PeriodoActivoService } from '../../../../core/services/periodo-activo.service';
 import { bindShellPageContext } from '../../../../layout/shell-page-context.binding';
+import { ParametrosWorkspaceTabsPanelComponent } from '../parametros-workspace-tabs-panel/parametros-workspace-tabs-panel.component';
+import {
+  crearGridsParametrosWorkspace,
+  formatoDecimalGridParametros,
+  formatoFechaGridParametros,
+  formatoMontoGridParametros,
+} from '../../utils/parametros-workspace-grids.presenter';
+import {
+  MESES_PARAMETROS_WORKSPACE,
+  TABS_PARAMETROS_WORKSPACE,
+  detalleRegistroTabActivo,
+  formatearPeriodoMesAnio,
+  tipoRegistroTabActivo,
+  tituloRegistroTabActivo,
+} from '../../utils/parametros-workspace-tabs.presenter';
 
 @Component({
   selector: 'app-parametros-workspace-container',
@@ -104,21 +91,11 @@ import { bindShellPageContext } from '../../../../layout/shell-page-context.bind
     CommonModule,
     FormsModule,
     ReactiveFormsModule,
-    LucideAngularModule,
-    ButtonComponent,
-    PageActionsComponent,
     MessageBoxComponent,
     CardComponent,
     CardContentComponent,
-    ParametrosValoresTabComponent,
-    ParametrosConfigClienteTabComponent,
-    ParametrosRemuneracionesTabComponent,
-    ParametrosCcafMutualesTabComponent,
-    ParametrosTramosCargaTabComponent,
-    ParametrosTramosRentaTabComponent,
-    ParametrosSaludTabComponent,
-    ParametrosAfpTabComponent,
-    ParametrosReformaTabComponent,
+    ParametrosWorkspacePeriodoBandaComponent,
+    ParametrosWorkspaceTabsPanelComponent,
   ],
   templateUrl: './parametros-workspace-container.html',
   styleUrls: ['./parametros-workspace-container.css', './parametros-workspace-container.responsive.css'],
@@ -131,32 +108,24 @@ export class ParametrosWorkspaceContainer implements OnInit {
   private readonly presentacion = inject(ParametrosPresentacionFacade);
   readonly periodoGlobal = inject(PeriodoActivoService);
 
-  readonly tabs: readonly ParametrosTab[] = [
-    { id: 'configCliente', label: 'Cliente' },
-    { id: 'valores', label: 'Información de Valores' },
-    { id: 'remuneraciones', label: 'Información de Remuneraciones' },
-    { id: 'ccafMutual', label: 'CCAF y Mutual' },
-    { id: 'tramosCarga', label: 'Tramos Cargas Familiares' },
-    { id: 'impuestoUnico', label: 'Impuesto único' },
-    { id: 'salud', label: 'Salud' },
-    { id: 'prevision', label: 'Previsión' },
-    { id: 'reforma', label: 'Reforma de Pensiones' },
-  ];
+  readonly tabs = TABS_PARAMETROS_WORKSPACE;
+  readonly monthOptions = MESES_PARAMETROS_WORKSPACE;
 
-  readonly monthOptions: readonly MonthOption[] = [
-    { value: '01', label: 'ENERO' },
-    { value: '02', label: 'FEBRERO' },
-    { value: '03', label: 'MARZO' },
-    { value: '04', label: 'ABRIL' },
-    { value: '05', label: 'MAYO' },
-    { value: '06', label: 'JUNIO' },
-    { value: '07', label: 'JULIO' },
-    { value: '08', label: 'AGOSTO' },
-    { value: '09', label: 'SEPTIEMBRE' },
-    { value: '10', label: 'OCTUBRE' },
-    { value: '11', label: 'NOVIEMBRE' },
-    { value: '12', label: 'DICIEMBRE' },
-  ];
+  private readonly gridsConfig = crearGridsParametrosWorkspace(() => this.selectedPeriodo());
+
+  readonly tramosCargaColumns = this.gridsConfig.tramosCargaColumns;
+  readonly tablaImpuestoColumns = this.gridsConfig.tablaImpuestoColumns;
+  readonly tramosImpuestoColumns = this.gridsConfig.tramosImpuestoColumns;
+  readonly isapreColumns = this.gridsConfig.isapreColumns;
+  readonly afpColumns = this.gridsConfig.afpColumns;
+  readonly ccafColumns = this.gridsConfig.ccafColumns;
+  readonly organismosLeyColumns = this.gridsConfig.organismosLeyColumns;
+  readonly ley16744Columns = this.gridsConfig.ley16744Columns;
+  readonly parametrosLegalesColumns = this.gridsConfig.parametrosLegalesColumns;
+  readonly reformaPrevisionalColumns = this.gridsConfig.reformaPrevisionalColumns;
+  readonly trabajosPesadosColumns = this.gridsConfig.trabajosPesadosColumns;
+  readonly apvInstitucionesColumns = this.gridsConfig.apvInstitucionesColumns;
+  readonly apvFormasPagoColumns = this.gridsConfig.apvFormasPagoColumns;
 
   readonly activeTab = this.presentacion.activeTab;
   readonly ccafMutualSubTab = this.presentacion.ccafMutualSubTab;
@@ -249,29 +218,6 @@ export class ParametrosWorkspaceContainer implements OnInit {
 
   volverParametrosAction(): void {
     this.volverParametros();
-  }
-
-  tabLabel(tabId: ParametrosTabId): string {
-    switch (tabId) {
-      case 'configCliente':
-        return 'Cliente';
-      case 'valores':
-        return 'Valores';
-      case 'remuneraciones':
-        return 'Remuneraciones';
-      case 'ccafMutual':
-        return 'CCAF / Mutual';
-      case 'tramosCarga':
-        return 'Cargas';
-      case 'impuestoUnico':
-        return 'Impuesto';
-      case 'salud':
-        return 'Salud';
-      case 'prevision':
-        return 'Prevision';
-      case 'reforma':
-        return 'Reforma';
-    }
   }
 
   /** Aísla filtros/paginación del DataGrid por periodo al cambiar el selector. */
@@ -449,68 +395,29 @@ export class ParametrosWorkspaceContainer implements OnInit {
     }
   });
 
-  readonly activeRecordKind = computed(() => {
-    switch (this.activeTab()) {
-      case 'configCliente':
-        return 'Configuracion cliente';
-      case 'valores':
-      case 'remuneraciones':
-        return 'Datos oficiales';
-      default:
-        return 'Cierre normativo';
-    }
-  });
+  readonly activeRecordKind = computed(() => tipoRegistroTabActivo(this.activeTab()));
 
-  readonly activeRecordTitle = computed(() => {
-    switch (this.activeTab()) {
-      case 'configCliente':
-        return 'Configuracion cliente del periodo';
-      case 'valores':
-        return 'Valores oficiales del periodo';
-      case 'remuneraciones':
-        return 'Parametros remuneracionales';
-      case 'ccafMutual':
-        return 'CCAF, mutuales y Ley 16.744';
-      case 'tramosCarga':
-        return 'Tramos de cargas familiares';
-      case 'impuestoUnico':
-        return 'Impuesto unico de segunda categoria';
-      case 'salud':
-        return 'Instituciones de salud';
-      case 'prevision':
-        return 'Prevision y AFP';
-      case 'reforma':
-        return 'Reforma previsional y registros asociados';
-    }
-  });
+  readonly activeRecordTitle = computed(() => tituloRegistroTabActivo(this.activeTab()));
 
   readonly activeRecordDetail = computed(() => {
-    switch (this.activeTab()) {
-      case 'configCliente':
-        return this.clienteConfig()
-          ? `Configuracion vigente para ${this.periodoSeleccionadoLabel()}.`
-          : `Pendiente para ${this.periodoSeleccionadoLabel()}.`;
-      case 'valores':
-        return this.hasSelectedInRows()
-          ? 'UF, UTM y UTA del periodo.'
-          : 'Carga oficial pendiente.';
-      case 'remuneraciones':
-        return this.hasSelectedInRows()
-          ? 'Montos y topes del periodo.'
-          : 'Carga mensual pendiente.';
-      case 'ccafMutual':
-        return `${this.catalogos().ccafEntidades.length + this.catalogos().organismosLey16744.length + this.catalogos().ley16744Parametros.length} registros.`;
-      case 'tramosCarga':
-        return `${this.tramosCargaPorPeriodo().length} registros.`;
-      case 'impuestoUnico':
-        return `${this.tramosImpuestoPorPeriodo().length + this.tablaImpuestoPorPeriodo().length} registros.`;
-      case 'salud':
-        return `${this.isapresPorPeriodo().length + this.saludOtrasInstitucionesPorPeriodo().length} instituciones.`;
-      case 'prevision':
-        return `${this.afpPorPeriodo().length} registros.`;
-      case 'reforma':
-        return `${this.reformaPensionesPorPeriodo().length + this.reformaPrevisionalPorPeriodo().length + this.trabajosPesadosPorPeriodo().length} registros.`;
-    }
+    const catalogos = this.catalogos();
+    return detalleRegistroTabActivo(this.activeTab(), {
+      periodoLabel: this.periodoSeleccionadoLabel(),
+      tieneConfigCliente: this.clienteConfig() !== null,
+      tieneDatosOficiales: this.hasSelectedInRows(),
+      conteoCcafMutual:
+        catalogos.ccafEntidades.length +
+        catalogos.organismosLey16744.length +
+        catalogos.ley16744Parametros.length,
+      conteoTramosCarga: this.tramosCargaPorPeriodo().length,
+      conteoImpuesto: this.tramosImpuestoPorPeriodo().length + this.tablaImpuestoPorPeriodo().length,
+      conteoSalud: this.isapresPorPeriodo().length + this.saludOtrasInstitucionesPorPeriodo().length,
+      conteoPrevision: this.afpPorPeriodo().length,
+      conteoReforma:
+        this.reformaPensionesPorPeriodo().length +
+        this.reformaPrevisionalPorPeriodo().length +
+        this.trabajosPesadosPorPeriodo().length,
+    });
   });
 
   private completitudDetalle(base: string): string {
@@ -554,11 +461,13 @@ export class ParametrosWorkspaceContainer implements OnInit {
       .sort((left, right) => right.localeCompare(left))[0] ?? null;
   });
 
-  readonly periodoSeleccionadoLabel = computed(() => this.formatPeriodoMesAnio(this.selectedPeriodo()));
+  readonly periodoSeleccionadoLabel = computed(() =>
+    formatearPeriodoMesAnio(this.selectedPeriodo(), this.monthOptions),
+  );
 
   readonly periodoReferenciaAnteriorLabel = computed(() => {
     const periodo = this.periodoReferenciaAnterior();
-    return periodo ? this.formatPeriodoMesAnio(periodo) : null;
+    return periodo ? formatearPeriodoMesAnio(periodo, this.monthOptions) : null;
   });
 
   readonly periodoContextoHint = computed(() => {
@@ -696,253 +605,6 @@ export class ParametrosWorkspaceContainer implements OnInit {
     control.setValidators(gratificacion ? [Validators.required, Validators.min(0)] : [Validators.min(0)]);
     control.updateValueAndValidity({ emitEvent: false });
   }
-
-  private formatMoneyGrid = (value: unknown): string => this.money(this.numberFromUnknown(value));
-
-  private formatDecimal2Grid = (value: unknown): string => this.decimal(this.numberFromUnknown(value), 2);
-
-  private formatDecimal4Grid = (value: unknown): string => this.decimal(this.numberFromUnknown(value), 4);
-
-  private formatIntegerGrid = (value: unknown): string => {
-    const numberValue = this.numberFromUnknown(value);
-    return numberValue === null ? '—' : new Intl.NumberFormat('es-CL', { maximumFractionDigits: 0 }).format(numberValue);
-  };
-
-  private formatPercentGrid = (value: unknown): string => {
-    const numberValue = this.numberFromUnknown(value);
-    return numberValue === null
-      ? '—'
-      : `${new Intl.NumberFormat('es-CL', {
-          minimumFractionDigits: 2,
-          maximumFractionDigits: 4,
-        }).format(numberValue)} %`;
-  };
-
-  private formatDateGrid = (value: unknown): string => this.date(typeof value === 'string' ? value : null);
-
-  private formatBooleanGrid = (value: unknown): string => (value ? 'Sí' : 'No');
-
-  private formatVigenteGrid = (value: unknown): string => (value ? 'Vigente' : 'Inactivo');
-
-  private estadoVigenciaPeriodo(row: { vigenciaInicio: string | null; vigenciaFin: string | null }): string {
-    const fechaPeriodo = `${this.selectedPeriodo()}-01`;
-    const inicio = row.vigenciaInicio ?? '';
-    const fin = row.vigenciaFin ?? null;
-
-    if (inicio && inicio > fechaPeriodo) {
-      return 'Futuro';
-    }
-
-    if (fin && fin < fechaPeriodo) {
-      return 'Historico';
-    }
-
-    return 'Vigente al periodo';
-  }
-
-  readonly tramosCargaColumns: DataGridColumn<TramoCargaParametro>[] = [
-    { id: 'periodo', header: 'Periodo', field: 'periodo', sortable: true },
-    { id: 'tramo', header: 'Tramo', field: 'tramo', sortable: true },
-    { id: 'desde', header: 'Desde', field: 'desde', type: 'number', sortable: true, align: 'right', format: this.formatMoneyGrid },
-    { id: 'hasta', header: 'Hasta', field: 'hasta', type: 'number', sortable: true, align: 'right', format: this.formatMoneyGrid },
-    { id: 'valor', header: 'Valor', field: 'valor', type: 'number', sortable: true, align: 'right', format: this.formatMoneyGrid },
-  ];
-
-  readonly tablaImpuestoColumns: DataGridColumn<TablaImpuestoUnicoParametro>[] = [
-    { id: 'vigenciaInicio', header: 'Vigencia', field: 'vigenciaInicio', type: 'date', sortable: true, format: this.formatDateGrid },
-    { id: 'tramo', header: 'Tramo', field: 'tramo', type: 'number', sortable: true, align: 'right' },
-    { id: 'desde', header: 'Desde UTM', field: 'desde', type: 'number', sortable: true, align: 'right', format: this.formatDecimal2Grid },
-    { id: 'hasta', header: 'Hasta UTM', field: 'hasta', type: 'number', sortable: true, align: 'right', format: this.formatDecimal2Grid },
-    { id: 'factor', header: 'Factor', field: 'factor', type: 'number', sortable: true, align: 'right', format: this.formatPercentGrid },
-    { id: 'rebaja', header: 'Rebaja UTM', field: 'rebaja', type: 'number', sortable: true, align: 'right', format: this.formatDecimal4Grid },
-  ];
-
-  readonly tramosImpuestoColumns: DataGridColumn<TramoImpuestoParametro>[] = [
-    { id: 'periodo', header: 'Periodo', field: 'periodo', sortable: true },
-    { id: 'desde', header: 'Desde', field: 'desde', type: 'number', sortable: true, align: 'right', format: this.formatMoneyGrid },
-    { id: 'hasta', header: 'Hasta', field: 'hasta', type: 'number', sortable: true, align: 'right', format: this.formatMoneyGrid },
-    { id: 'factor', header: 'Factor', field: 'factor', type: 'number', sortable: true, align: 'right', format: this.formatPercentGrid },
-    { id: 'rebaja', header: 'Rebaja', field: 'rebaja', type: 'number', sortable: true, align: 'right', format: this.formatMoneyGrid },
-  ];
-
-  readonly isapreColumns: DataGridColumn<IsapreParametro>[] = [
-    { id: 'codigo', header: 'Codigo', field: 'codigo', sortable: true },
-    { id: 'nombre', header: 'Nombre', field: 'nombre', sortable: true },
-    { id: 'tipo', header: 'Tipo', field: 'tipo', sortable: true },
-    {
-      id: 'porcentajeCotizacion',
-      header: 'Cotizacion',
-      field: 'porcentajeCotizacion',
-      type: 'number',
-      sortable: true,
-      align: 'right',
-      format: this.formatPercentGrid,
-    },
-    { id: 'vigenciaInicio', header: 'Inicio', field: 'vigenciaInicio', type: 'date', sortable: true, format: this.formatDateGrid },
-    { id: 'vigenciaFin', header: 'Fin', field: 'vigenciaFin', type: 'date', sortable: true, format: this.formatDateGrid },
-    { id: 'vigente', header: 'Estado', field: 'vigente', sortable: true, format: this.formatVigenteGrid },
-  ];
-
-  readonly afpColumns: DataGridColumn<AfpParametro>[] = [
-    { id: 'codigo', header: 'Codigo', field: 'codigo', sortable: true },
-    { id: 'nombre', header: 'Nombre', field: 'nombre', sortable: true },
-    {
-      id: 'tasaObligatoria',
-      header: 'Obligatoria',
-      field: 'tasaObligatoria',
-      type: 'number',
-      sortable: true,
-      align: 'right',
-      format: this.formatPercentGrid,
-    },
-    { id: 'comision', header: 'Comision', field: 'comision', type: 'number', sortable: true, align: 'right', format: this.formatPercentGrid },
-    { id: 'sis', header: 'SIS', field: 'sis', type: 'number', sortable: true, align: 'right', format: this.formatPercentGrid },
-    {
-      id: 'tasaEmpleador',
-      header: 'Empleador',
-      field: 'tasaEmpleador',
-      type: 'number',
-      sortable: true,
-      align: 'right',
-      format: this.formatPercentGrid,
-    },
-    { id: 'vigenciaInicio', header: 'Inicio', field: 'vigenciaInicio', type: 'date', sortable: true, format: this.formatDateGrid },
-    { id: 'vigenciaFin', header: 'Fin', field: 'vigenciaFin', type: 'date', sortable: true, format: this.formatDateGrid },
-    { id: 'vigente', header: 'Estado', field: 'vigente', sortable: true, format: this.formatVigenteGrid },
-  ];
-
-  readonly ccafColumns: DataGridColumn<CcafEntidad>[] = [
-    { id: 'codigo', header: 'Codigo', field: 'codigo', sortable: true },
-    { id: 'nombre', header: 'Nombre', field: 'nombre', sortable: true },
-    { id: 'vigente', header: 'Estado', field: 'vigente', sortable: true, format: this.formatVigenteGrid },
-    { id: 'fuente', header: 'Fuente', field: 'fuente', sortable: true },
-  ];
-
-  readonly organismosLeyColumns: DataGridColumn<OrganismoLey16744>[] = [
-    { id: 'codigo', header: 'Codigo', field: 'codigo', sortable: true },
-    { id: 'nombre', header: 'Nombre', field: 'nombre', sortable: true },
-    { id: 'tipo', header: 'Tipo', field: 'tipo', sortable: true },
-    { id: 'vigente', header: 'Estado', field: 'vigente', sortable: true, format: this.formatVigenteGrid },
-  ];
-
-  readonly ley16744Columns: DataGridColumn<Ley16744Parametro>[] = [
-    { id: 'codigo', header: 'Codigo', field: 'codigo', sortable: true },
-    {
-      id: 'cotizacionBasicaEmpleador',
-      header: 'Cotizacion basica',
-      field: 'cotizacionBasicaEmpleador',
-      type: 'number',
-      sortable: true,
-      align: 'right',
-      format: this.formatPercentGrid,
-    },
-    { id: 'descripcionTasaAdicional', header: 'Adicional diferenciada', field: 'descripcionTasaAdicional', sortable: true },
-    { id: 'vigenciaInicio', header: 'Inicio', field: 'vigenciaInicio', type: 'date', sortable: true, format: this.formatDateGrid },
-    { id: 'vigenciaFin', header: 'Fin', field: 'vigenciaFin', type: 'date', sortable: true, format: this.formatDateGrid },
-    { id: 'vigente', header: 'Estado', field: 'vigente', sortable: true, format: this.formatVigenteGrid },
-  ];
-
-  readonly parametrosLegalesColumns: DataGridColumn<ParametroLegal>[] = [
-    { id: 'nombre', header: 'Parametro', field: 'nombre', sortable: true, format: (value) => this.labelParametro(String(value ?? '')) },
-    {
-      id: 'valorDecimal',
-      header: 'Valor decimal',
-      field: 'valorDecimal',
-      type: 'number',
-      sortable: true,
-      align: 'right',
-      format: this.formatDecimal4Grid,
-    },
-    { id: 'valorEntero', header: 'Valor entero', field: 'valorEntero', type: 'number', sortable: true, align: 'right', format: this.formatIntegerGrid },
-    { id: 'vigenciaInicio', header: 'Inicio', field: 'vigenciaInicio', type: 'date', sortable: true, format: this.formatDateGrid },
-    { id: 'vigenciaFin', header: 'Fin', field: 'vigenciaFin', type: 'date', sortable: true, format: this.formatDateGrid },
-  ];
-
-  readonly reformaPrevisionalColumns: DataGridColumn<ReformaPrevisionalParametro>[] = [
-    { id: 'vigenciaInicio', header: 'Inicio', field: 'vigenciaInicio', type: 'date', sortable: true, format: this.formatDateGrid },
-    { id: 'vigenciaFin', header: 'Fin', field: 'vigenciaFin', type: 'date', sortable: true, format: this.formatDateGrid },
-    {
-      id: 'cuentaCapitalizacionIndividual',
-      header: 'Cuenta individual',
-      field: 'cuentaCapitalizacionIndividual',
-      type: 'number',
-      sortable: true,
-      align: 'right',
-      format: this.formatPercentGrid,
-    },
-    {
-      id: 'cotizacionRentabilidadProtegida',
-      header: 'CRP',
-      field: 'cotizacionRentabilidadProtegida',
-      type: 'number',
-      sortable: true,
-      align: 'right',
-      format: this.formatPercentGrid,
-    },
-    {
-      id: 'seguroSocialSisCev',
-      header: 'Seguro Social / SIS / CEV',
-      field: 'seguroSocialSisCev',
-      type: 'number',
-      sortable: true,
-      align: 'right',
-      format: this.formatPercentGrid,
-    },
-    {
-      id: 'aporteEmpleadorTotal',
-      header: 'Total empleador',
-      field: 'aporteEmpleadorTotal',
-      type: 'number',
-      sortable: true,
-      align: 'right',
-      format: this.formatPercentGrid,
-    },
-    {
-      id: 'estadoPeriodo',
-      header: 'Estado',
-      sortable: false,
-      format: (_value, row) => this.estadoVigenciaPeriodo(row),
-    },
-    { id: 'fuente', header: 'Fuente', field: 'fuente', sortable: true },
-  ];
-
-  readonly trabajosPesadosColumns: DataGridColumn<TrabajoPesadoParametro>[] = [
-    { id: 'codigo', header: 'Codigo', field: 'codigo', sortable: true },
-    { id: 'nombre', header: 'Nombre', field: 'nombre', sortable: true },
-    {
-      id: 'tasaTrabajador',
-      header: 'Trabajador',
-      field: 'tasaTrabajador',
-      type: 'number',
-      sortable: true,
-      align: 'right',
-      format: this.formatPercentGrid,
-    },
-    {
-      id: 'tasaEmpleador',
-      header: 'Empleador',
-      field: 'tasaEmpleador',
-      type: 'number',
-      sortable: true,
-      align: 'right',
-      format: this.formatPercentGrid,
-    },
-    { id: 'tasaTotal', header: 'Total', field: 'tasaTotal', type: 'number', sortable: true, align: 'right', format: this.formatPercentGrid },
-    { id: 'requiereDictamenCen', header: 'Dictamen CEN', field: 'requiereDictamenCen', sortable: true, format: this.formatBooleanGrid },
-    { id: 'vigente', header: 'Estado', field: 'vigente', sortable: true, format: this.formatVigenteGrid },
-  ];
-
-  readonly apvInstitucionesColumns: DataGridColumn<ApvApvcInstitucion>[] = [
-    { id: 'codigo', header: 'Codigo', field: 'codigo', sortable: true },
-    { id: 'nombre', header: 'Institucion', field: 'nombre', sortable: true },
-    { id: 'vigente', header: 'Estado', field: 'vigente', sortable: true, format: this.formatVigenteGrid },
-  ];
-
-  readonly apvFormasPagoColumns: DataGridColumn<ApvApvcFormaPago>[] = [
-    { id: 'codigo', header: 'Codigo', field: 'codigo', sortable: true },
-    { id: 'nombre', header: 'Forma', field: 'nombre', sortable: true },
-    { id: 'vigente', header: 'Estado', field: 'vigente', sortable: true, format: this.formatVigenteGrid },
-  ];
 
   async ngOnInit(): Promise<void> {
     // Carga inicial: período = contexto global (cabecera). Sin sustituir por último de BD para mantener una sola fuente de verdad.
@@ -1848,54 +1510,19 @@ export class ParametrosWorkspaceContainer implements OnInit {
   }
 
   money(value: number | null): string {
-    return value === null ? '—' : `$ ${new Intl.NumberFormat('es-CL', { maximumFractionDigits: 0 }).format(value)}`;
+    return value === null ? '—' : formatoMontoGridParametros(value);
   }
 
   decimal(value: number | null, digits = 2): string {
-    return value === null
-      ? '—'
-      : new Intl.NumberFormat('es-CL', {
-          minimumFractionDigits: digits,
-          maximumFractionDigits: digits,
-        }).format(value);
+    return value === null ? '—' : formatoDecimalGridParametros(value, digits);
   }
 
   date(value: string | null): string {
-    if (!value) {
-      return '—';
-    }
-
-    const date = new Date(`${value}T00:00:00`);
-
-    if (!Number.isFinite(date.getTime())) {
-      return value;
-    }
-
-    return new Intl.DateTimeFormat('es-CL', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-    })
-      .format(date)
-      .replaceAll('/', '-');
-  }
-
-  private formatPeriodoMesAnio(periodo: string): string {
-    const [year, month] = periodo.split('-');
-    const monthName = this.monthOptions.find((item) => item.value === month)?.label ?? month;
-    return `${monthName} ${year}`;
+    return value ? formatoFechaGridParametros(value) : '—';
   }
 
   private formatReferenciaMensualLabel(periodo: string | null): string | null {
-    return periodo ? this.formatPeriodoMesAnio(periodo) : null;
-  }
-
-  labelParametro(value: string): string {
-    return value
-      .toLowerCase()
-      .split('_')
-      .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-      .join(' ');
+    return periodo ? formatearPeriodoMesAnio(periodo, this.monthOptions) : null;
   }
 
   private puedeAbandonarEdicionAlCambiarPeriodo(): boolean {
