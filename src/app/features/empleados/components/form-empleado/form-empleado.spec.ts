@@ -278,7 +278,7 @@ describe('FormEmpleadoComponent - completitud de borrador avanzado', () => {
     expect(modal?.fieldItems?.length).toBeGreaterThan(1);
     expect(modal?.fieldItems?.[0]).toMatchObject({
       sectionTitle: 'Identificacion legal',
-      actionLabel: 'Completar campo',
+      actionLabel: 'Ir al campo',
       controlPath: 'datosPersonales.rut',
     });
     expect(modal?.fieldItems?.[0]?.detail).toBe('Ingresa un RUT valido antes de activar la ficha.');
@@ -333,6 +333,10 @@ describe('FormEmpleadoComponent - completitud de borrador avanzado', () => {
         sexo: 'F',
         estadoCivil: 'SOLTERO',
         idPais: 1,
+      },
+      contacto: {
+        email: 'borrador@test.cl',
+        telefono: '56912345678',
       },
     } as never);
 

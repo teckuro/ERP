@@ -88,6 +88,7 @@ describe('empleado-write.mapper persistencia', () => {
 
     expect(prevision.id_afp).toBe(1);
     expect(salud?.id_salud).toBe(1);
+    expect(salud?.plan_salud).toBe('ISAPRE');
     expect(salud?.valor_plan).toBe(4.2);
     expect(cuenta.numero_cuenta).toBe('123456789012');
   });

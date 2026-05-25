@@ -72,5 +72,23 @@ export function validateBorradorAvanzadoFormMinimo(form: EmpleadoFormGroup): str
   if (dp.estadoCivil.value === null) {
     return 'Selecciona el estado civil antes de guardar el borrador.';
   }
+
+  const contacto = form.controls.contacto.controls;
+  contacto.email.updateValueAndValidity({ onlySelf: true });
+  if (!String(contacto.email.value || '').trim()) {
+    return 'Ingresa el correo de contacto antes de guardar el borrador.';
+  }
+  if (contacto.email.hasError('email')) {
+    return 'Ingresa un correo de contacto válido antes de guardar el borrador.';
+  }
+
+  contacto.telefono.updateValueAndValidity({ onlySelf: true });
+  if (!String(contacto.telefono.value || '').trim()) {
+    return 'Ingresa el teléfono de contacto antes de guardar el borrador.';
+  }
+  if (contacto.telefono.hasError('phoneFormat')) {
+    return 'Ingresa un teléfono de contacto válido antes de guardar el borrador.';
+  }
+
   return null;
 }

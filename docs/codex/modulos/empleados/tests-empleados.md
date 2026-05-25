@@ -19,14 +19,24 @@ npx ng test --watch=false
 | Spec | Qué cubre |
 |------|-----------|
 | `tests/empleados-basic-create.spec.ts` | Alta básica UI + snapshot `.basic-create-page` |
-| `tests/empleados-borrador.spec.ts` | Borrador avanzado UI sin persistencia |
+| `tests/empleados-borrador.spec.ts` | Borrador avanzado UI sin persistencia (testid `empleado-alta-avanzada-guardar`) |
+| `tests/empleados-creacion-avanzada-validaciones.spec.ts` | Negativos UI: correo/teléfono, nombres dígitos, MsgBox finalizar/siguiente |
 | `tests/empleados-wizard-stability.spec.ts` | Wizard avanzado (scroll / pasos) |
 | `tests/dashboard.spec.ts` | Snapshots por ruta incl. `/empleados`; flujo «nueva ficha» wizard con 4 capturas |
-| `tests/empleados-borrador-persistencia.spec.ts` | **Opt-in** (`E2E_EMPLEADOS_BORRADOR` + env); no activar en CI sin datos |
+| `tests/empleados-borrador-persistencia.spec.ts` | **Opt-in** serial F3/F6/F11 — proyecto `empleados-db` |
+| `tests/empleados-creacion-avanzada-flujos.spec.ts` | F5 feliz / sin previsión — proyecto `empleados-db` |
+| `tests/empleados-creacion-avanzada-honorarios.spec.ts` | F10 honorarios — proyecto `empleados-db` |
+| `tests/empleados-creacion-avanzada-inferencia.spec.ts` | U2/U3/ERR listado — proyecto `empleados-db` |
+
+Matriz F1–F13: [`matriz-pruebas-creacion-avanzada.md`](matriz-pruebas-creacion-avanzada.md).
 
 ```bash
-npx playwright test tests/empleados-basic-create.spec.ts tests/empleados-borrador.spec.ts tests/empleados-wizard-stability.spec.ts --workers=1
+npm run test:e2e:empleados:ui
+E2E_EMPLEADOS_BORRADOR=1 npm run test:e2e:empleados:db
+E2E_EMPLEADOS_BORRADOR=1 npm run verify:empleados-qa
 ```
+
+`globalSetup` (solo proyecto `empleados-db` con flag): limpieza BD → U1–U8 → ERR append. Ver matriz.
 
 ## Brechas
 

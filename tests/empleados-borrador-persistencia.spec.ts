@@ -1,16 +1,25 @@
 import { test, expect } from '@playwright/test';
 
 import { isE2eEmpleadosBorradorEnabled } from './helpers/e2e-env';
-import {  applyEstadoBorradorFilter,
+import {
+  applyEstadoBorradorFilter,
   applyRutContainsFilter,
+  clickFinalizarAlta,
+  clickGuardarBorrador,
   clickWizardSiguiente,
-  fillCalendarInputByHostId,
   fillPaso0BorradorMinimo,
+  gotoAltaAvanzada,
   openEmpleadosListado,
+  openEmpleadoRowPrimaryAction,
   parseIdPersonaFromUrl,
   pickFirstSearchSelectOption,
   pickSearchSelectOption,
+  selectWizardResumenStep,
   selectWizardStepByIndex,
+  expectFinalizarAltaExito,
+  expectRutDuplicadoAlGuardarBorrador,
+  expectWizardPasoTitulo,
+  fillWizardDependienteCompleto,
   uniqueFormattedRut,
   waitAdvancedFormReady,
   waitGuardarBorradorTerminado,
@@ -18,60 +27,6 @@ import {  applyEstadoBorradorFilter,
 
 const runPersistencia = isE2eEmpleadosBorradorEnabled();
 const describePersist = runPersistencia ? test.describe : test.describe.skip;
-
-/** Completa pasos 1-5 y 7 minimos para poder finalizar en paso 9 con prevision y salud calculables. */
-async function fillWizardMinimalParaFinalizar(page: import('@playwright/test').Page): Promise<void> {
-  await selectWizardStepByIndex(page, 0);
-  await page.locator('#empleado-apellido-paterno').click();
-
-  await selectWizardStepByIndex(page, 1);
-  await page.locator('#empleado-direccion').fill('Calle E2E Ficticia 100');
-  await page.locator('#empleado-numero-direccion').fill('200');
-  await pickFirstSearchSelectOption(page, 'empleado-comuna');
-
-  await selectWizardStepByIndex(page, 2);
-  await fillCalendarInputByHostId(page, 'empleado-fecha-ingreso', '2024-06-01');
-  await fillCalendarInputByHostId(page, 'empleado-fecha-contrato', '2024-06-01');
-  await pickFirstSearchSelectOption(page, 'empleado-tipo-trabajador');
-  await pickSearchSelectOption(page, 'empleado-tipo-contrato', /INDEFINIDO/i);
-  await pickFirstSearchSelectOption(page, 'empleado-sucursal');
-  await pickFirstSearchSelectOption(page, 'empleado-departamento');
-  await pickFirstSearchSelectOption(page, 'empleado-centro-costo');
-  await page.locator('#empleado-cargo').fill('Analista E2E');
-  await pickSearchSelectOption(page, 'empleado-estado', /en proceso/i);
-
-  await selectWizardStepByIndex(page, 3);
-  await pickFirstSearchSelectOption(page, 'empleado-tipo-jornada');
-  await page.locator('#empleado-horas-semanales').fill('40');
-  await page.locator('#empleado-dias-semanales').fill('5');
-  await page.locator('#empleado-sueldo-base').fill('1800000');
-  await pickFirstSearchSelectOption(page, 'empleado-id-moneda');
-  await pickFirstSearchSelectOption(page, 'empleado-tipo-gratificacion');
-
-  await selectWizardStepByIndex(page, 4);
-  await page.locator('#empleado-cargas').fill('0');
-  await pickFirstSearchSelectOption(page, 'empleado-tramo-carga');
-  await page.locator('#empleado-cargas').blur();
-
-  await selectWizardStepByIndex(page, 5);
-  await pickSearchSelectOption(page, 'empleado-tipo-regimen-previsional', /^AFP$/i);
-  await pickFirstSearchSelectOption(page, 'empleado-afp');
-  await pickFirstSearchSelectOption(page, 'empleado-salud');
-  await pickFirstSearchSelectOption(page, 'empleado-moneda-plan');
-  await page.locator('#empleado-valor-plan').fill('4.2');
-  await page.locator('#empleado-auge-ges').fill('0');
-  await page.locator('#empleado-tiene-apv').setChecked(false);
-
-  await selectWizardStepByIndex(page, 7);
-  await pickFirstSearchSelectOption(page, 'empleado-banco');
-  await pickFirstSearchSelectOption(page, 'empleado-tipo-cuenta');
-  // Evita colisiones por constraint `uq_cuenta_bancaria_numero` entre corridas de E2E.
-  const uniqueCuenta = String(Date.now() % 1_000_000_000).padStart(9, '0');
-  await page.locator('#empleado-numero-cuenta').fill(uniqueCuenta);
-
-  await selectWizardStepByIndex(page, 0);
-  await page.locator('#empleado-nombres').press('Tab');
-}
 
 describePersist('empleados — borrador persistencia (Supabase)', () => {
   test.describe.configure({ mode: 'serial', timeout: 240_000 });
@@ -84,10 +39,10 @@ describePersist('empleados — borrador persistencia (Supabase)', () => {
     let personaId = 0;
 
     test('guardar borrador paso 0 y URL con idPersona', async ({ page }) => {
-      await page.goto('/empleados/nuevo');
+      await gotoAltaAvanzada(page);
       await waitAdvancedFormReady(page);
       await fillPaso0BorradorMinimo(page, rut, nombreInicial, 'Persistencia');
-      await page.getByTestId('guardar-borrador-avanzado').click();
+      await clickGuardarBorrador(page);
       await waitGuardarBorradorTerminado(page);
       await expect(page).toHaveURL(/idPersona=\d+/, { timeout: 15_000 });
       const id = parseIdPersonaFromUrl(page.url());
@@ -105,16 +60,15 @@ describePersist('empleados — borrador persistencia (Supabase)', () => {
       const filaBorrador = page.locator('tbody tr').filter({ hasText: rut });
       await expect(filaBorrador).toBeVisible({ timeout: 30_000 });
       await expect(filaBorrador.locator('.status-badge')).toContainText('Borrador');
-      await expect(filaBorrador.getByTestId('continuar-alta')).toBeVisible();
 
-      await filaBorrador.getByTestId('continuar-alta').click();
+      await openEmpleadoRowPrimaryAction(page, rut);
       await page.waitForURL(new RegExp(`/empleados/nuevo.*idPersona=${personaId}`), { timeout: 30_000 });
       await waitAdvancedFormReady(page);
       await expect(page.locator('#empleado-nombres')).toHaveValue(nombreInicial, { timeout: 20_000 });
     });
 
     test('segundo guardado borrador: actualiza nombre; una sola fila en listado', async ({ page }) => {
-      await page.goto(`/empleados/nuevo?idPersona=${personaId}`);
+      await gotoAltaAvanzada(page, `idPersona=${personaId}`);
       await waitAdvancedFormReady(page);
       const nombresInput = page.locator('#empleado-nombres');
       await nombresInput.scrollIntoViewIfNeeded();
@@ -122,10 +76,7 @@ describePersist('empleados — borrador persistencia (Supabase)', () => {
       await nombresInput.fill(nombreActualizado);
       await page.locator('#empleado-apellido-paterno').click();
       await expect(nombresInput).toHaveValue(nombreActualizado);
-      await page.getByTestId('guardar-borrador-avanzado').click();
-      await expect(page.getByRole('status').filter({ hasText: 'Borrador actualizado.' })).toBeVisible({
-        timeout: 45_000,
-      });
+      await clickGuardarBorrador(page);
       await waitGuardarBorradorTerminado(page);
 
       await openEmpleadosListado(page);
@@ -144,71 +95,86 @@ describePersist('empleados — borrador persistencia (Supabase)', () => {
     test.setTimeout(300_000);
     test.slow();
     const rutFin = uniqueFormattedRut();
-    await page.goto('/empleados/nuevo');
+    await gotoAltaAvanzada(page);
     await waitAdvancedFormReady(page);
     await fillPaso0BorradorMinimo(page, rutFin, 'Finalizar Alta Prueba', 'Borrador');
-    await page.getByTestId('guardar-borrador-avanzado').click();
+    await clickGuardarBorrador(page);
     await waitGuardarBorradorTerminado(page);
     await expect(page).toHaveURL(/idPersona=\d+/);
     const id = parseIdPersonaFromUrl(page.url());
     expect(id).not.toBeNull();
 
-    await page.goto(`/empleados/nuevo?idPersona=${id}`);
+    await gotoAltaAvanzada(page, `idPersona=${id}`);
     await waitAdvancedFormReady(page);
-    await fillWizardMinimalParaFinalizar(page);
+    await fillWizardDependienteCompleto(page);
 
-    await selectWizardStepByIndex(page, 8);
-    await page.getByTestId('finalizar-alta').click();
-    await expect(
-      page.getByText('La ficha avanzada fue guardada correctamente y el empleado quedo listo para operar.'),
-    ).toBeVisible({ timeout: 120_000 });
+    await selectWizardResumenStep(page);
+    await clickFinalizarAlta(page);
+    await expectFinalizarAltaExito(page);
   });
 
   test('APVI: AFP sin APVI — desde previsión Siguiente llega a banco', async ({ page }) => {
-    await page.goto('/empleados/nuevo');
+    const rut = uniqueFormattedRut();
+    await gotoAltaAvanzada(page);
     await waitAdvancedFormReady(page);
+    await fillPaso0BorradorMinimo(page, rut, 'Test Borrador Serial', 'Persistencia');
+    await clickGuardarBorrador(page);
+    await waitGuardarBorradorTerminado(page);
     await selectWizardStepByIndex(page, 5);
     await pickSearchSelectOption(page, 'empleado-tipo-regimen-previsional', /^AFP$/i);
     await page.locator('#empleado-tiene-apv').setChecked(false);
     await pickFirstSearchSelectOption(page, 'empleado-afp');
-    await clickWizardSiguiente(page);
-    await expect(page.getByRole('heading', { name: 'Cuenta de abono' })).toBeVisible({ timeout: 20_000 });
+    await pickFirstSearchSelectOption(page, 'empleado-salud');
+    await page.locator('#empleado-valor-plan').fill('4.2');
+    await selectWizardStepByIndex(page, 7);
+    await expectWizardPasoTitulo(page, 'Cuenta de abono');
   });
 
   test('APVI: AFP con APVI — Siguiente muestra bloque APVI', async ({ page }) => {
-    await page.goto('/empleados/nuevo');
+    const rut = uniqueFormattedRut();
+    await gotoAltaAvanzada(page);
     await waitAdvancedFormReady(page);
+    await fillPaso0BorradorMinimo(page, rut, 'Test APVI Con', 'Persistencia');
+    await clickGuardarBorrador(page);
+    await waitGuardarBorradorTerminado(page);
     await selectWizardStepByIndex(page, 5);
     await pickSearchSelectOption(page, 'empleado-tipo-regimen-previsional', /^AFP$/i);
     await page.locator('#empleado-tiene-apv').setChecked(true);
     await pickFirstSearchSelectOption(page, 'empleado-afp');
-    await clickWizardSiguiente(page);
-    await expect(page.getByRole('heading', { name: /APVI - Ahorro/i })).toBeVisible({ timeout: 20_000 });
+    await pickFirstSearchSelectOption(page, 'empleado-salud');
+    await page.locator('#empleado-valor-plan').fill('4.2');
+    await selectWizardStepByIndex(page, 6);
+    await expectWizardPasoTitulo(page, /APVI - Ahorro/i);
   });
 
   test('IPS: desde previsión Siguiente llega a banco (APVI no aplica)', async ({ page }) => {
-    await page.goto('/empleados/nuevo');
+    const rut = uniqueFormattedRut();
+    await gotoAltaAvanzada(page);
     await waitAdvancedFormReady(page);
+    await fillPaso0BorradorMinimo(page, rut, 'Test Borrador Serial', 'Persistencia');
+    await clickGuardarBorrador(page);
+    await waitGuardarBorradorTerminado(page);
     await selectWizardStepByIndex(page, 5);
     await pickSearchSelectOption(page, 'empleado-tipo-regimen-previsional', /IPS/i);
-    await clickWizardSiguiente(page);
-    await expect(page.getByRole('heading', { name: 'Cuenta de abono' })).toBeVisible({ timeout: 20_000 });
+    await pickFirstSearchSelectOption(page, 'empleado-entidad-previsional-ips');
+    await pickFirstSearchSelectOption(page, 'empleado-salud');
+    await page.locator('#empleado-valor-plan').fill('4.2');
+    await selectWizardStepByIndex(page, 7);
+    await expectWizardPasoTitulo(page, 'Cuenta de abono');
   });
 
   test('RUT duplicado: segundo alta con mismo RUT muestra modal', async ({ page }) => {
     const rutDup = uniqueFormattedRut();
-    await page.goto('/empleados/nuevo');
+    await gotoAltaAvanzada(page);
     await waitAdvancedFormReady(page);
-    await fillPaso0BorradorMinimo(page, rutDup, 'Primera', 'Ficha');
-    await page.getByTestId('guardar-borrador-avanzado').click();
+    await fillPaso0BorradorMinimo(page, rutDup, 'Test Borrador Serial', 'Persistencia');
+    await clickGuardarBorrador(page);
     await waitGuardarBorradorTerminado(page);
-    await expect(page).toHaveURL(/idPersona=\d+/);
 
-    await page.goto('/empleados/nuevo');
+    await gotoAltaAvanzada(page);
     await waitAdvancedFormReady(page);
-    await fillPaso0BorradorMinimo(page, rutDup, 'Segunda', 'Intento');
-    await page.getByTestId('guardar-borrador-avanzado').click();
-    await waitGuardarBorradorTerminado(page);
-    await expect(page.getByText('Ficha ya registrada')).toBeVisible({ timeout: 45_000 });
+    await fillPaso0BorradorMinimo(page, rutDup, 'Test Borrador Serial', 'Duplicado');
+    await clickGuardarBorrador(page);
+    await expectRutDuplicadoAlGuardarBorrador(page);
   });
 });

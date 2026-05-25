@@ -2,8 +2,8 @@
   <app-card className="perfil-block perfil-block--review">
     <div class="perfil-block-head">
       <div>
-        <h4>RevisiÃ³n administrativa</h4>
-        <p>El sistema muestra la situaciÃ³n detectada. La categorÃ­a base viene desde la relaciÃ³n laboral; las condiciones especiales se declaran aparte si aplican.</p>
+        <h4>Revisión administrativa</h4>
+        <p>El sistema muestra la situación detectada. La categoría base viene desde la relación laboral; las condiciones especiales se declaran aparte si aplican.</p>
       </div>
       <span class="perfil-count-chip" role="status">
         {{ selectedConditionsBadgeLabel }}
@@ -11,19 +11,19 @@
     </div>
 
     <div class="perfil-review-grid">
-      <article [class]="statusClass()" aria-label="SituaciÃ³n detectada por edad laboral">
-        <span class="perfil-status-label">SituaciÃ³n detectada</span>
+      <article [class]="statusClass()" aria-label="Situación detectada por edad laboral">
+        <span class="perfil-status-label">Situación detectada</span>
         <strong>{{ edadLaboralInfo.label }}</strong>
         <p>{{ edadLaboralInfo.description }}</p>
       </article>
 
-      <dl class="perfil-facts" aria-label="Datos administrativos usados para la revisiÃ³n">
+      <dl class="perfil-facts" aria-label="Datos administrativos usados para la revisión">
         <div>
-          <dt>RelaciÃ³n laboral</dt>
+          <dt>Relación laboral</dt>
           <dd>{{ categoriaBaseLabel }}</dd>
         </div>
         <div>
-          <dt>CategorÃ­a base</dt>
+          <dt>Categoría base</dt>
           <dd>{{ tipoTrabajadorLabel }}</dd>
         </div>
         <div>
@@ -49,7 +49,7 @@
     <div class="perfil-block-head">
       <div>
         <h4>Condiciones especiales</h4>
-        <p>Marca solo si aplica. Para un trabajador estÃ¡ndar, deja todo sin seleccionar y continÃºa al resumen.</p>
+        <p>Marca solo si aplica. Para un trabajador estándar, deja todo sin seleccionar y continúa al resumen.</p>
       </div>
       <span class="perfil-secondary-chip">Solo si aplica</span>
     </div>
@@ -88,7 +88,7 @@
       <div class="perfil-block-head">
         <div>
           <h4>Vigencia y respaldo</h4>
-          <p>Aplica a las condiciones seleccionadas. En esta fase se registra la revisiÃ³n, no se adjuntan archivos.</p>
+          <p>Aplica a las condiciones seleccionadas. En esta fase se registra la revisión, no se adjuntan archivos.</p>
         </div>
       </div>
 
@@ -115,7 +115,7 @@
           <div class="field-label-row">
             <label for="perfil-vigencia-fin">Vigencia fin</label>
             <app-empleado-field-tip
-              text="Completa solo si tiene tÃ©rmino conocido."
+              text="Completa solo si tiene término conocido."
               ariaLabel="Ayuda: vigencia fin"
             ></app-empleado-field-tip>
           </div>
@@ -134,7 +134,7 @@
           <div class="field-label-row">
             <label for="perfil-respaldo">Respaldo</label>
             <app-empleado-field-tip
-              text="Certificado, autorizaciÃ³n o antecedente revisado por RRHH."
+              text="Certificado, autorización o antecedente revisado por RRHH."
               ariaLabel="Ayuda: respaldo"
             ></app-empleado-field-tip>
           </div>
@@ -148,10 +148,10 @@
 
       <div class="form-field perfil-observacion-field">
         <div class="field-label-row">
-          <label for="perfil-observacion">ObservaciÃ³n interna</label>
+          <label for="perfil-observacion">Observación interna</label>
           <app-empleado-field-tip
             text="Trazabilidad operativa. No reemplaza respaldo formal."
-            ariaLabel="Ayuda: observaciÃ³n interna"
+            ariaLabel="Ayuda: observación interna"
           ></app-empleado-field-tip>
         </div>
         <textarea
@@ -160,7 +160,7 @@
           formControlName="observacion"
           rows="3"
           maxlength="250"
-          placeholder="Ej.: respaldo revisado por RRHH, caso pendiente de validaciÃ³n, comentario operativo."
+          placeholder="Ej.: respaldo revisado por RRHH, caso pendiente de validación, comentario operativo."
         ></textarea>
         <p class="field-message"></p>
       </div>
@@ -175,7 +175,7 @@
   @if (requiereRevisionMenorEdad || requiereRespaldoPendiente) {
     <div class="perfil-alerts" role="alert">
       @if (requiereRevisionMenorEdad) {
-        <p>Menor de 18 detectado: revisa trabajador adolescente protegido y/o autorizaciÃ³n de menor.</p>
+        <p>Menor de 18 detectado: revisa trabajador adolescente protegido y/o autorización de menor.</p>
       }
       @if (requiereRespaldoPendiente) {
         <p>Hay condiciones especiales seleccionadas sin respaldo administrativo marcado.</p>

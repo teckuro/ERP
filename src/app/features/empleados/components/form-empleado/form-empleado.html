@@ -33,7 +33,8 @@
                 : 'Estamos guardando la ficha completa del empleado.'
             "
         ></app-message-box>
-        } @else if (modalAccionAvanzada(); as modal) {
+        } @else {
+        <ng-container *ngIf="modalAccionAvanzada() as modal; else otrosModalesAvanzados">
         <app-message-box
           mode="modal"
           [variant]="modal.variant"
@@ -41,46 +42,61 @@
           [title]="modal.title"
           [message]="modal.message"
           [sections]="modal.sections ?? []"
+          [width]="modal.fieldItems?.length ? 'lg' : 'md'"
           [primaryLabel]="modal.primaryLabel"
           [secondaryLabel]="modal.secondaryLabel || ''"
           (action)="manejarPrimariaModalAccionAvanzada()"
           (secondary)="manejarSecundariaModalAccionAvanzada()"
         >
-          @if (modal.fieldItems; as fieldItems) {
-          @if (fieldItems.length > 0) {
-          <div
-            class="advanced-action-fields"
-            role="region"
-            aria-label="Campos obligatorios pendientes"
-          >
-            @for (item of fieldItems; track item.id) {
-            <article
-              class="advanced-action-field"
-              [class.advanced-action-field--warning]="item.severity === 'warning'"
+          <ng-container *ngIf="modal.fieldItems as fieldItems">
+            <div
+              *ngIf="fieldItems.length > 0"
+              class="advanced-action-fields"
+              role="region"
+              aria-label="Campos obligatorios pendientes"
             >
-              <div class="advanced-action-field__copy">
-                <p class="advanced-action-field__section">
-                  {{ item.sectionTitle }}
-                </p>
-                <h3 class="advanced-action-field__title">
-                  {{ item.fieldLabel }}
-                </h3>
-                <p class="advanced-action-field__detail">
-                  {{ item.detail }}
-                </p>
+              <div class="advanced-action-fields__summary">
+                <span>{{ fieldItems.length }} campo{{ fieldItems.length === 1 ? '' : 's' }} pendiente{{ fieldItems.length === 1 ? '' : 's' }}</span>
+                <strong>Primer registro: {{ primerPasoCamposModalAvanzada(fieldItems) }}</strong>
               </div>
-              <button
-                type="button"
-                class="advanced-action-field__button"
-                (click)="manejarItemCampoModalAvanzada(item)"
+              <section
+                *ngFor="let group of gruposCampoModalAvanzada(fieldItems); trackBy: trackGrupoCampoModalAvanzada"
+                class="advanced-action-field-group"
+                [attr.aria-label]="group.stepLabel"
               >
-                {{ item.actionLabel }}
-              </button>
-            </article>
-            }
-          </div>
-          }
-          }
+                <header class="advanced-action-field-group__head">
+                  <h3>{{ group.stepLabel }}</h3>
+                  <span>{{ group.items.length }} pendiente{{ group.items.length === 1 ? '' : 's' }}</span>
+                </header>
+                <div class="advanced-action-field-group__items">
+                  <article
+                    *ngFor="let item of group.items; trackBy: trackItemCampoModalAvanzada"
+                    class="advanced-action-field"
+                    [class.advanced-action-field--warning]="item.severity === 'warning'"
+                  >
+                    <div class="advanced-action-field__copy">
+                      <p class="advanced-action-field__section">
+                        {{ item.sectionTitle }}
+                      </p>
+                      <h4 class="advanced-action-field__title">
+                        {{ item.fieldLabel }}
+                      </h4>
+                      <p class="advanced-action-field__detail">
+                        {{ item.detail }}
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      class="advanced-action-field__button"
+                      (click)="manejarItemCampoModalAvanzada(item)"
+                    >
+                      {{ item.actionLabel }}
+                    </button>
+                  </article>
+                </div>
+              </section>
+            </div>
+          </ng-container>
           @if (!modal.sections?.length) {
           <div
             class="advanced-action-modal"
@@ -124,7 +140,9 @@
           </div>
           }
         </app-message-box>
-        } @else if (!esModoBasico() && rutModalRutDuplicado(); as rutDup) {
+        </ng-container>
+        <ng-template #otrosModalesAvanzados>
+        @if (!esModoBasico() && rutModalRutDuplicado(); as rutDup) {
         <app-message-box
           mode="modal"
           variant="error"
@@ -270,6 +288,8 @@
           </div>
           }
         </app-message-box>
+        }
+        </ng-template>
         }
 
         <section

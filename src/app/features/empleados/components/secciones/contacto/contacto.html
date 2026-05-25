@@ -3,13 +3,16 @@
     <app-card className="employee-block">
       <div class="employee-block-head">
         <h4>Contacto</h4>
-        <p class="employee-block-lead">Email y telÃ©fono para notificaciones o coordinaciÃ³n interna.</p>
+        <p class="employee-block-lead">Correo y teléfono para notificaciones o coordinación interna.</p>
       </div>
 
       <div class="employee-grid employee-grid--two">
         <div class="form-field">
           <div class="field-label-row">
-            <label for="empleado-email">Email (opcional)</label>
+            <label for="empleado-email">Correo</label>
+            @if (isRequired('email')) {
+              <app-empleado-field-required />
+            }
           </div>
           <input
             id="empleado-email"
@@ -19,10 +22,12 @@
             placeholder="Ej: nombre@empresa.cl"
             [class]="controlClass('email')"
           />
-          @if (hasError('email', 'email')) {
-            <p class="field-message">Ingresa un email vÃ¡lido.</p>
+          @if (hasError('email', 'required')) {
+            <p class="field-message">El correo es obligatorio.</p>
+          } @else if (hasError('email', 'email')) {
+            <p class="field-message">Ingresa un correo válido.</p>
           } @else if (hasError('email', 'maxlength')) {
-            <p class="field-message">El email supera el largo permitido.</p>
+            <p class="field-message">El correo supera el largo permitido.</p>
           } @else {
             <p class="field-message"></p>
           }
@@ -30,7 +35,10 @@
 
         <div class="form-field">
           <div class="field-label-row">
-            <label for="empleado-telefono">TelÃ©fono (opcional)</label>
+            <label for="empleado-telefono">Teléfono</label>
+            @if (isRequired('telefono')) {
+              <app-empleado-field-required />
+            }
           </div>
           <input
             id="empleado-telefono"
@@ -41,10 +49,12 @@
             placeholder="Ej: +56 9 1234 5678"
             [class]="controlClass('telefono')"
           />
-          @if (hasError('telefono', 'phone')) {
-            <p class="field-message">Ingresa un telÃ©fono vÃ¡lido.</p>
+          @if (hasError('telefono', 'required')) {
+            <p class="field-message">El teléfono es obligatorio.</p>
+          } @else if (hasError('telefono', 'phoneFormat')) {
+            <p class="field-message">Ingresa un teléfono válido.</p>
           } @else if (hasError('telefono', 'maxlength')) {
-            <p class="field-message">El telÃ©fono supera el largo permitido.</p>
+            <p class="field-message">El teléfono supera el largo permitido.</p>
           } @else {
             <p class="field-message"></p>
           }
@@ -59,7 +69,7 @@
         <h4>Domicilio particular</h4>
         @if (domicilioAvanzado) {
           <p class="employee-block-lead">
-            La comuna es obligatoria para asociar correctamente la ubicaciÃ³n del colaborador.
+            La comuna es obligatoria para asociar correctamente la ubicación del colaborador.
           </p>
         }
       </div>
@@ -83,7 +93,7 @@
             [class]="controlClass('direccion')"
           />
           @if (hasError('direccion', 'required')) {
-            <p class="field-message">La direcciÃ³n es obligatoria.</p>
+            <p class="field-message">La dirección es obligatoria.</p>
           } @else {
             <p class="field-message"></p>
           }
@@ -103,9 +113,9 @@
             [class]="controlClass('numeroDireccion')"
           />
           @if (hasError('numeroDireccion', 'digitsOnly')) {
-            <p class="field-message">Ingresa solo nÃºmeros.</p>
+            <p class="field-message">Ingresa solo números.</p>
           } @else if (hasError('numeroDireccion', 'maxlength')) {
-            <p class="field-message">El nÃºmero supera el largo permitido.</p>
+            <p class="field-message">El número supera el largo permitido.</p>
           } @else {
             <p class="field-message"></p>
           }
@@ -163,7 +173,7 @@
             id="empleado-observaciones-direccion"
             rows="3"
             formControlName="observacionesDireccion"
-            placeholder="Ej: referencia de domicilio, torre, block, sector u otra indicaciÃ³n."
+            placeholder="Ej: referencia de domicilio, torre, block, sector u otra indicación."
             [class]="controlClass('observacionesDireccion') + ' employee-control--textarea'"
           ></textarea>
           @if (hasError('observacionesDireccion', 'maxlength')) {

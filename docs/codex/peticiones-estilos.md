@@ -1,3 +1,21 @@
+## 2026-05-25 - Creación avanzada: fixes E2E + validación finalizar (sin UI global)
+
+- **Cambio:** Exclusión reglas meta al finalizar alta avanzada; matching catálogo tipo trabajador compuesto; helpers E2E (MsgBox confirmar, dismiss borrador, RUT duplicado). F10 honorarios E2E en skip documentado.
+- **Archivos:** `form-empleado.ts`, `empleado-tipo-trabajador-flow.rules.ts`, `tests/helpers/empleados-borrador-e2e.ts`, specs persistencia/flujos.
+- **No tocado:** estilos globales, SQL, motor nómina.
+
+## 2026-05-23 - Creación avanzada: pirámide pruebas E2E (sin cambio visual productivo)
+
+- **Cambio:** Specs Playwright validaciones/flujos/honorarios/inferencia; helpers MsgBox; testid unificado `empleado-alta-avanzada-guardar` en `empleados-borrador.spec.ts`; matriz F1–F13 en codex.
+- **Archivos:** `tests/**`, `playwright.config.ts`, `package.json` scripts, `docs/codex/modulos/empleados/matriz-pruebas-creacion-avanzada.md`.
+- **No tocado:** estilos globales, UI Angular de producción (salvo ya documentado testid header).
+
+## 2026-05-25 - Shell header: data-testid en CTA primaria (E2E)
+
+- **Cambio:** `[attr.data-testid]="action.actionId"` en el botón de `primaryAction` del header (`empleado-alta-avanzada-guardar` para guardar borrador / finalizar en alta avanzada). Sin CSS nuevo.
+- **Archivos:** `src/app/layout/header.component.ts`.
+- **No tocado:** estilos globales, tema, formulario.
+
 ## 2026-05-23 - Alta avanzada: guía normativa CL (consola + motor único)
 
 - **Cambio:** `buildAltaValidacionInput` / `evaluarAltaValidacionesVisibles` alimentan consola; bloque «Revisiones normativas» (Revisar / Aplicar / Mantener); panel pasivo «Revisión guiada» eliminado en Resumen; franja `advanced-step-normativa-hint` en pasos 2,3,4,5,6,8; coherencia ampliada (plazo, DT, exclusión jornada, respaldo); sin `max(168)` en horas.
@@ -1887,4 +1905,17 @@ Creación avanzada incorpora una identidad de producto local para dejar de senti
 - **Edición:** modal `ficha-edit-modal` vía `FichaEmpleadoOverlaysPort`; formulario en `ficha-empleado-edit-form` (layout alta, sin inline en workspace).
 - **CSS:** estilos modal en componente propio; poda `inline-edit-shell` en `ficha-empleado-detalle.css`.
 - **Archivos:** workspace, overlays, facade, edit-form, edit-modal, expediente/responsive/detalle CSS.
+
+## 2026-05-23 — Contacto obligatorio (correo y teléfono)
+
+- **Formulario:** `Validators.required` en `contacto.email` y `contacto.telefono`; asterisco y mensajes en `contacto.html` y bloques contacto de `datos-personales.html`.
+- **Borrador / ficha / persistencia:** `validateBorradorAvanzadoFormMinimo`, reglas `personal.email-empty` y `personal.phone-empty` (error bloqueante), `assertPayloadIdentificacionValida`.
+- **E2E:** `fillPaso0BorradorMinimo` rellena correo y teléfono.
+
+## 2026-05-23 — Alta avanzada: estado interno y limpieza BD
+
+- **UI:** en paso contrato con `grillaAvanzada`, se oculta el select «Estado de ficha inicial»; el bloque pasa a «Centro de costo y cargo». El motor sigue usando `en_proceso` / `borrador` en mappers (no editable por RRHH).
+- **Scripts:** `scripts/limpiar-empleados-bd.mjs` (`--dry-run` / `--confirm`); lógica compartida en `scripts/lib/empleados-cleanup.mjs`; seed con `--purge-only`.
+- **Fixtures:** nombres QA sin dígitos en `auditoria-empleados-fixtures.mjs`, `seed-empleados-prueba-errores.mjs`, `empleados-nomina-error-fixtures.spec.ts`.
+- **Archivos:** `contrato.html`; no estilos globales ni SQL.
 

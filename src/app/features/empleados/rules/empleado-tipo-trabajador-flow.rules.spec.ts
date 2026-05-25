@@ -28,4 +28,14 @@ describe('empleado-tipo-trabajador-flow.rules', () => {
     expect(buscarTipoTrabajadorBase(options, 'DEPENDIENTE')?.value).toBe(4);
     expect(buscarTipoTrabajadorBase(options, 'INDEPENDIENTE')?.value).toBe(9);
   });
+
+  it('resuelve etiquetas compuestas del catálogo (p. ej. Trabajador dependiente)', () => {
+    const options = [
+      { value: 2, label: 'Trabajador independiente' },
+      { value: 1, label: 'Trabajador dependiente' },
+    ];
+
+    expect(buscarTipoTrabajadorBase(options, 'DEPENDIENTE')?.value).toBe(1);
+    expect(buscarTipoTrabajadorBase(options, 'INDEPENDIENTE')?.value).toBe(2);
+  });
 });

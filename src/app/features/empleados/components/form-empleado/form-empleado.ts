@@ -119,6 +119,19 @@ import { bindShellPageContext } from "../../../../layout/shell-page-context.bind
 
 const ordenPestanas: readonly IdPestana[] = [...ordenPestanasFormularioEmpleado];
 
+interface GrupoCamposModalAccionAvanzada {
+  wizardStep: number;
+  stepLabel: string;
+  items: readonly ItemCampoModalAccionAvanzada[];
+}
+
+/** Reglas de ficha ya cumplidas al cerrar el alta avanzada (estado activo y paso borrador). */
+const REGLAS_VALIDACION_EXCLUIDAS_AL_FINALIZAR_ALTA_AVANZADA = new Set([
+  "alta.basica",
+  "alta.avanzada",
+  "employee.status",
+]);
+
 /** Mensajes de negocio al intentar finalizar con bloqueos (paso 9); no exponer detalle técnico de BD. */
 const MENSAJES_FINALIZAR_ALTA: Partial<Record<string, string>> = {
   "personal.identity":
@@ -724,6 +737,10 @@ export class FormEmpleadoComponent implements OnInit {
   }
 
   mensajeModalError(): string {
+    const detalle = this.mensajeError()?.trim();
+    if (detalle) {
+      return this.mensajeErrorNormalizado(detalle);
+    }
     return this.esModoBasico()
       ? "El registro no se completó. Revisa el detalle y vuelve a intentarlo."
       : "La ficha avanzada no se guardó porque hay una condición que debe revisarse antes de finalizar.";
@@ -828,6 +845,44 @@ export class FormEmpleadoComponent implements OnInit {
     this.marcarPasoAsistenteTocado(item.wizardStep);
     this.seleccionarPasoAsistente(item.wizardStep);
     this.enfocarRutaControl(item.controlPath);
+  }
+
+  gruposCampoModalAvanzada(
+    items: readonly ItemCampoModalAccionAvanzada[] | null | undefined,
+  ): readonly GrupoCamposModalAccionAvanzada[] {
+    const grupos = new Map<number, ItemCampoModalAccionAvanzada[]>();
+    for (const item of items ?? []) {
+      const actuales = grupos.get(item.wizardStep) ?? [];
+      actuales.push(item);
+      grupos.set(item.wizardStep, actuales);
+    }
+
+    return Array.from(grupos.entries()).map(([wizardStep, groupedItems]) => ({
+      wizardStep,
+      stepLabel: this.etiquetaCompletaPasoAsistente(wizardStep),
+      items: groupedItems,
+    }));
+  }
+
+  primerPasoCamposModalAvanzada(
+    items: readonly ItemCampoModalAccionAvanzada[] | null | undefined,
+  ): string {
+    const first = items?.[0];
+    return first ? this.etiquetaCompletaPasoAsistente(first.wizardStep) : "Sin pendientes";
+  }
+
+  trackGrupoCampoModalAvanzada(
+    _index: number,
+    group: GrupoCamposModalAccionAvanzada,
+  ): number {
+    return group.wizardStep;
+  }
+
+  trackItemCampoModalAvanzada(
+    _index: number,
+    item: ItemCampoModalAccionAvanzada,
+  ): string {
+    return item.id;
   }
 
   cerrarModalAccionAvanzada(): void {
@@ -995,6 +1050,13 @@ export class FormEmpleadoComponent implements OnInit {
     this.marcarPasoAsistenteIntentado(currentStep);
     this.marcarPasoAsistenteTocado(currentStep);
     this.sincronizarPestanasCompletadasDesdeValidez();
+
+    const seq = this.secuenciaLinealAsistente();
+    const nextStep = resolverPasoSiguienteAsistenteAlta(seq, currentStep);
+    if (nextStep === this.indicePasoResumenAsistente()) {
+      this.avanzarPasoSiguienteAsistente();
+      return;
+    }
 
     const coherenceIssue = this.primeraDecisionCoherenciaPorPaso(currentStep);
     if (coherenceIssue) {
@@ -1736,11 +1798,24 @@ export class FormEmpleadoComponent implements OnInit {
     return iStep <= iAct;
   }
 
+  private reglaValidacionCuentaEnFlujoAltaAvanzada(
+    item: ReglaValidacionEvaluada,
+  ): boolean {
+    if (!this.esModoAvanzado()) {
+      return true;
+    }
+
+    return !REGLAS_VALIDACION_EXCLUIDAS_AL_FINALIZAR_ALTA_AVANZADA.has(item.id);
+  }
+
   private calcularNucleoValidacionPasoAsistente(
     wizardStepIndex: number,
   ): ResumenValidacionPaso {
     const evaluated = this.evaluateValidationRules().filter(
-      (item) => item.wizardStep === wizardStepIndex && item.visible,
+      (item) =>
+        item.wizardStep === wizardStepIndex &&
+        item.visible &&
+        this.reglaValidacionCuentaEnFlujoAltaAvanzada(item),
     );
     const pending = evaluated.filter((item) => !item.complete);
     const blockingPending = pending.filter((item) => item.blocking).length;
@@ -2400,7 +2475,12 @@ export class FormEmpleadoComponent implements OnInit {
 
   private pendingValidationItemsForFinalization(): ReglaValidacionEvaluada[] {
     return this.evaluateValidationRules()
-      .filter((item) => item.visible && !item.complete)
+      .filter(
+        (item) =>
+          item.visible &&
+          !item.complete &&
+          this.reglaValidacionCuentaEnFlujoAltaAvanzada(item),
+      )
       .sort((a, b) => {
         const byStep = a.wizardStep - b.wizardStep;
         return byStep !== 0
@@ -3060,22 +3140,26 @@ export class FormEmpleadoComponent implements OnInit {
     const seen = new Set<string>();
     const out: ItemCampoModalAccionAvanzada[] = [];
 
-    for (const item of items) {
-      if (seen.has(item.id)) {
-        continue;
+    items.forEach((item, index) => {
+      const key =
+        item.id ||
+        item.sourcePath ||
+        `${item.wizardStep}-${item.sectionTitle}-${item.label}-${index}`;
+      if (seen.has(key)) {
+        return;
       }
-      seen.add(item.id);
+      seen.add(key);
       out.push({
-        id: item.id,
+        id: key,
         sectionTitle: item.sectionTitle || this.etiquetaCortaPasoAsistente(item.wizardStep),
         fieldLabel: item.label,
         detail: this.asegurarOracion(item.detail || this.etiquetaModalValidacion(item)),
-        actionLabel: item.actionLabel || "Completar campo",
+        actionLabel: item.actionLabel || "Ir al campo",
         wizardStep: item.wizardStep,
         controlPath: item.sourcePath,
         severity: item.severity,
       });
-    }
+    });
 
     return out;
   }

@@ -19,11 +19,21 @@ export function esTipoTrabajadorBase(label: string, base: TipoTrabajadorBase): b
   return normalizarTipoTrabajadorLabel(label) === base;
 }
 
+function labelIncluyeTipoTrabajadorBase(label: string, base: TipoTrabajadorBase): boolean {
+  const words = normalizarTipoTrabajadorLabel(label).split(/\s+/).filter(Boolean);
+  return words.includes(base);
+}
+
 export function buscarTipoTrabajadorBase(
   options: readonly EmpleadoCatalogOption[],
   base: TipoTrabajadorBase,
 ): EmpleadoCatalogOption | null {
-  return options.find((option) => esTipoTrabajadorBase(option.label, base)) ?? null;
+  const exact = options.find((option) => esTipoTrabajadorBase(option.label, base));
+  if (exact) {
+    return exact;
+  }
+
+  return options.find((option) => labelIncluyeTipoTrabajadorBase(option.label, base)) ?? null;
 }
 
 export function descripcionTipoTrabajadorBase(base: TipoTrabajadorBase): string {

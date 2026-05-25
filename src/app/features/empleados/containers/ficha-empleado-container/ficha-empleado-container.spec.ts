@@ -242,14 +242,16 @@ describe('FichaEmpleadoContainer', () => {
     expect(component.pendingItemsEvaluados(employee)).toContain('Reemplaza la cuenta bancaria temporal.');
   });
 
-  it('ficha muestra avisos compartidos como revision sin bloquear validacion', () => {
+  it('ficha sin correo bloquea validacion de remuneraciones', () => {
     const employee = empleado({ estado: 'en_proceso', estadoFicha: 'INCOMPLETO' });
     employee.formValue.contacto['email'] = '';
     component['patchFormFromEmployee'](employee);
 
-    expect(component.puedeValidarRemuneraciones(employee)).toBe(true);
+    expect(component.puedeValidarRemuneraciones(employee)).toBe(false);
     expect(component.estadoTab('general', employee)).toBe('warning');
-    expect(component.fichaEstadoPanel(employee).faltantes.some((item) => item.severidad === 'revision')).toBe(true);
+    expect(
+      component.pendingItemsEvaluados(employee).some((item) => item.toLowerCase().includes('correo')),
+    ).toBe(true);
   });
 
   it('borrador con paso_alta_avanzada no muestra validar y mantiene Continuar alta', () => {

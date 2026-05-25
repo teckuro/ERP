@@ -62,10 +62,6 @@
             }
           </article>
         }
-
-        <div class="noia-msgbox__slot">
-          <ng-content></ng-content>
-        </div>
       </div>
     }
 
@@ -99,36 +95,36 @@
       </footer>
     }
   } @else {
-    <div class="noia-msgbox__inline">
-      <div class="noia-msgbox__inline-head">
-        @if (resolvedEyebrow()) {
-          <p class="noia-msgbox__eyebrow">{{ resolvedEyebrow() }}</p>
-        }
-        @if (title) {
-          <p class="noia-msgbox__title noia-msgbox__title--inline" [id]="titleId">{{ title }}</p>
-        }
-      </div>
-      @if (message || detail) {
-        <p class="noia-msgbox__message noia-msgbox__message--inline" [id]="messageId">
-          {{ message || detail }}
-        </p>
+    <div class="noia-msgbox__inline-head">
+      @if (resolvedEyebrow()) {
+        <p class="noia-msgbox__eyebrow">{{ resolvedEyebrow() }}</p>
       }
-      <div class="noia-msgbox__slot">
-        <ng-content></ng-content>
-      </div>
-      @if (hasActions()) {
-        <div class="noia-msgbox__inline-actions">
-          @for (action of allActions(); track actionTrack(action, $index)) {
-            <button
-              type="button"
-              class="noia-msgbox__action"
-              [ngClass]="actionClass(action)"
-              (click)="onConfigAction(action, $index)"
-            >
-              {{ action.label }}
-            </button>
-          }
-        </div>
+      @if (title) {
+        <p class="noia-msgbox__title noia-msgbox__title--inline" [id]="titleId">{{ title }}</p>
+      }
+    </div>
+    @if (message || detail) {
+      <p class="noia-msgbox__message noia-msgbox__message--inline" [id]="messageId">
+        {{ message || detail }}
+      </p>
+    }
+  }
+
+  <div class="noia-msgbox__slot" [class.noia-msgbox__slot--modal]="mode === 'modal'">
+    <ng-content></ng-content>
+  </div>
+
+  @if (mode === 'inline' && hasActions()) {
+    <div class="noia-msgbox__inline-actions">
+      @for (action of allActions(); track actionTrack(action, $index)) {
+        <button
+          type="button"
+          class="noia-msgbox__action"
+          [ngClass]="actionClass(action)"
+          (click)="onConfigAction(action, $index)"
+        >
+          {{ action.label }}
+        </button>
       }
     </div>
   }

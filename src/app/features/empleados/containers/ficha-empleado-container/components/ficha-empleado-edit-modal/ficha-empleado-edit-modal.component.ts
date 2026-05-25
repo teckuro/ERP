@@ -33,12 +33,16 @@ export class FichaEmpleadoEditModalComponent {
 
   onBackdropClick(event: MouseEvent): void {
     if (event.target === event.currentTarget) {
-      this.facade.requestCerrarEdicion();
+      this.cerrarEdicion();
     }
   }
 
   @HostListener('document:keydown.escape')
   onEscape(): void {
+    this.cerrarEdicion();
+  }
+
+  cerrarEdicion(): void {
     this.facade.requestCerrarEdicion();
   }
 

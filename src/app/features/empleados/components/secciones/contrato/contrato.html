@@ -40,7 +40,10 @@
         <p>Completa servicio, fecha y ubicación administrativa.</p>
       }
     </div>
-    <div class="labor-grid labor-grid--contract">
+    <div
+      class="labor-grid labor-grid--contract"
+      [class.labor-grid--service]="esModoHonorarios"
+    >
       <div class="form-field form-field--derived">
         <div class="field-label-row">
           <label>Tipo trabajador</label>
@@ -108,9 +111,11 @@
         </div>
       }
 
-      <div class="labor-field-section labor-field-section--span">
-        <p class="labor-field-section-title">{{ esModoHonorarios ? 'Fechas del servicio' : 'Fechas del contrato' }}</p>
-      </div>
+      @if (!esModoHonorarios) {
+        <div class="labor-field-section labor-field-section--span">
+          <p class="labor-field-section-title">Fechas del contrato</p>
+        </div>
+      }
 
       <div class="form-field">
         <div class="field-label-row">
@@ -872,7 +877,7 @@
   @if (esBloqueVisible('centroCosto')) {
   <app-card className="labor-block">
     <div class="labor-block-head">
-      <h4>Centro de costo y estado inicial</h4>
+      <h4>{{ grillaAvanzada ? 'Centro de costo y cargo' : 'Centro de costo y estado inicial' }}</h4>
     </div>
     <div class="labor-grid labor-grid--footer">
       <div class="form-field">
@@ -913,6 +918,7 @@
         }
       </div>
 
+      @if (!grillaAvanzada) {
       <div class="form-field">
         <div class="field-label-row">
           <label for="empleado-estado"
@@ -932,6 +938,7 @@
         ></app-search-select>
         <p class="field-message"></p>
       </div>
+      }
     </div>
   </app-card>
   }

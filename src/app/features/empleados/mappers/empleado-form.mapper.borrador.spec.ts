@@ -59,9 +59,9 @@ describe('mapEmpleadoFormToPayloadBorrador', () => {
     expect(payload.idPais).toBe(1);
   });
 
-  it('Caso B: aplica fechaIngreso hoy y cuenta DRAFT si faltan', () => {
+  it('Caso B: aplica fechaIngreso hoy y cuenta numerica temporal si faltan', () => {
     const today = new Date().toISOString().slice(0, 10);
-    vi.spyOn(Math, 'random').mockReturnValue(0.42);
+    const nowSpy = vi.spyOn(Date, 'now').mockReturnValue(1_700_000_000_123);
 
     const form = orchestrator.createForm();
     form.patchValue({
@@ -86,7 +86,9 @@ describe('mapEmpleadoFormToPayloadBorrador', () => {
 
     const payload = mapEmpleadoFormToPayloadBorrador(form, catalog);
     expect(payload.fechaIngreso).toBe(today);
-    expect(payload.numeroCuenta.startsWith('DRAFT-')).toBe(true);
+    expect(payload.numeroCuenta).toMatch(/^\d{12}$/);
+    expect(payload.numeroCuenta).toBe('700000000123');
+    nowSpy.mockRestore();
     expect(payload.idTipoTrabajador).toBe(10);
     expect(payload.idTipoJornada).toBe(20);
     expect(payload.idBanco).toBe(5);

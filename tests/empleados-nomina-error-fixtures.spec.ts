@@ -1,14 +1,7 @@
 import { expect, test } from '@playwright/test';
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
-import { readFileSync } from 'node:fs';
-import { resolve } from 'node:path';
-
 import { isE2eEmpleadosNominaFixturesEnabled } from './helpers/e2e-env';
-
-type AppConfig = {
-  supabaseUrl: string;
-  supabaseAnonKey: string;
-};
+import { loadSupabaseE2eConfig } from './helpers/supabase-e2e-config';
 
 type CatalogosEmpleadosFixture = {
   idEmpresa: number;
@@ -52,7 +45,7 @@ const FIXTURES: EmpleadoFixture[] = [
   {
     rut: '24050001',
     dv: '9',
-    nombres: 'NOMERR2405 Valido',
+    nombres: 'Nomina Valido',
     apellidoPaterno: 'Calculo',
     sexo: 'M',
     fechaNacimiento: '1990-05-10',
@@ -64,7 +57,7 @@ const FIXTURES: EmpleadoFixture[] = [
   {
     rut: '24050002',
     dv: '7',
-    nombres: 'NOMERR2405 No Apto',
+    nombres: 'Nomina No Apto',
     apellidoPaterno: 'Ficha',
     sexo: 'F',
     fechaNacimiento: '1988-02-12',
@@ -76,7 +69,7 @@ const FIXTURES: EmpleadoFixture[] = [
   {
     rut: '24050003',
     dv: '5',
-    nombres: 'NOMERR2405 Sueldo Bajo',
+    nombres: 'Nomina Sueldo Bajo',
     apellidoPaterno: 'IMM',
     sexo: 'M',
     fechaNacimiento: '1992-08-03',
@@ -88,7 +81,7 @@ const FIXTURES: EmpleadoFixture[] = [
   {
     rut: '24050004',
     dv: '3',
-    nombres: 'NOMERR2405 Jornada Alta',
+    nombres: 'Nomina Jornada Alta',
     apellidoPaterno: 'Legal',
     sexo: 'F',
     fechaNacimiento: '1991-11-21',
@@ -100,7 +93,7 @@ const FIXTURES: EmpleadoFixture[] = [
   {
     rut: '24050005',
     dv: '1',
-    nombres: 'NOMERR2405 Sin Prevision',
+    nombres: 'Nomina Sin Prevision',
     apellidoPaterno: 'Salud',
     sexo: 'M',
     fechaNacimiento: '1985-04-18',
@@ -113,17 +106,8 @@ const FIXTURES: EmpleadoFixture[] = [
   },
 ];
 
-function loadAppConfig(): AppConfig {
-  const rawConfig = readFileSync(resolve(process.cwd(), 'public', 'app-config.json'), 'utf8').replace(/^\uFEFF/, '');
-  const raw = JSON.parse(rawConfig) as Partial<AppConfig>;
-  return {
-    supabaseUrl: (process.env['E2E_SUPABASE_URL'] ?? raw.supabaseUrl ?? '').replace(/\/$/, ''),
-    supabaseAnonKey: process.env['E2E_SUPABASE_ANON_KEY'] ?? raw.supabaseAnonKey ?? '',
-  };
-}
-
 async function createAuthenticatedClient(): Promise<SupabaseClient> {
-  const config = loadAppConfig();
+  const config = loadSupabaseE2eConfig();
   const supabase = createClient(config.supabaseUrl, config.supabaseAnonKey, {
     auth: {
       persistSession: false,

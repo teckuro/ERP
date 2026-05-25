@@ -4,12 +4,10 @@ import {
   ElementRef,
   EventEmitter,
   HostListener,
-  Injector,
   Input,
   OnDestroy,
   Output,
   ViewChild,
-  afterNextRender,
   forwardRef,
   inject,
 } from '@angular/core';
@@ -529,7 +527,6 @@ interface CalendarDay {
 })
 export class CalendarInputComponent implements ControlValueAccessor, OnDestroy {
   private readonly host = inject(ElementRef<HTMLElement>);
-  private readonly injector = inject(Injector);
 
   @ViewChild('calendarField')
   private calendarFieldRef?: ElementRef<HTMLElement>;
@@ -538,6 +535,7 @@ export class CalendarInputComponent implements ControlValueAccessor, OnDestroy {
   private calendarPopoverRef?: ElementRef<HTMLElement>;
 
   private floatingDispose?: () => void;
+  private floatingAttachTimer?: ReturnType<typeof setTimeout>;
   floatingLayoutDone = false;
 
   @Input() id = '';
@@ -581,7 +579,7 @@ export class CalendarInputComponent implements ControlValueAccessor, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    this.detachFloating();
+    this.disposeFloatingPositioning();
   }
 
   @HostListener('document:click', ['$event'])
@@ -637,17 +635,17 @@ export class CalendarInputComponent implements ControlValueAccessor, OnDestroy {
     this.open = true;
     this.floatingLayoutDone = false;
     this.refreshCalendar();
-    afterNextRender(() => this.attachFloating(), { injector: this.injector });
+    this.queueFloatingAttachment();
   }
 
   closeCalendar(): void {
     this.open = false;
     this.floatingLayoutDone = false;
-    this.detachFloating();
+    this.disposeFloatingPositioning();
   }
 
   private attachFloating(): void {
-    this.detachFloating();
+    this.disposeFloatingPositioning();
 
     const reference = this.calendarFieldRef?.nativeElement;
     const floating = this.calendarPopoverRef?.nativeElement;
@@ -661,9 +659,27 @@ export class CalendarInputComponent implements ControlValueAccessor, OnDestroy {
     });
   }
 
-  private detachFloating(): void {
+  private queueFloatingAttachment(): void {
+    this.clearFloatingAttachTimer();
+    this.floatingAttachTimer = setTimeout(() => {
+      this.floatingAttachTimer = undefined;
+      this.attachFloating();
+    });
+  }
+
+  private disposeFloatingPositioning(): void {
+    this.clearFloatingAttachTimer();
     this.floatingDispose?.();
     this.floatingDispose = undefined;
+  }
+
+  private clearFloatingAttachTimer(): void {
+    if (this.floatingAttachTimer === undefined) {
+      return;
+    }
+
+    clearTimeout(this.floatingAttachTimer);
+    this.floatingAttachTimer = undefined;
   }
 
   private async updateFloatingPosition(): Promise<void> {
@@ -689,6 +705,7 @@ export class CalendarInputComponent implements ControlValueAccessor, OnDestroy {
 
     if (!this.floatingLayoutDone) {
       this.floatingLayoutDone = true;
+      floating.classList.add('calendar-popover--ready');
     }
   }
 

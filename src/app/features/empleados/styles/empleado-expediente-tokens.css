@@ -36,7 +36,7 @@
   --employee-exp-yellow-soft: var(--emp-warning-soft);
   --employee-exp-red-soft: var(--emp-danger-soft);
   --employee-floating-ui-z: var(--emp-floating-z);
-  --erp-select-panel-z: var(--emp-floating-z);
+  --erp-select-panel-z: 11060;
 
   --form-bg: #f8fafc;
   --form-surface: var(--emp-panel);

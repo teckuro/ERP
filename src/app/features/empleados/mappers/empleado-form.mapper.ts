@@ -362,7 +362,7 @@ export function mapEmpleadoFormToPayloadBorrador(
   const numeroCuenta =
     numeroCuentaRaw.length > 0
       ? numeroCuentaRaw
-      : `DRAFT-${Math.random().toString(36).slice(2, 11).toUpperCase()}`;
+      : String(Date.now() % 1_000_000_000_000).padStart(12, '0');
 
   const fechaIngreso = rawValue.contrato.fechaIngreso?.trim() ? rawValue.contrato.fechaIngreso : today;
   const fechaContrato = rawValue.contrato.fechaContrato?.trim()

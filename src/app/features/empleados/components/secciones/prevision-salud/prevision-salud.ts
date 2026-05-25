@@ -97,10 +97,10 @@ export class PrevisionSaludComponent {
       return 'Cotiza en AFP';
     }
     if (this.esIps) {
-      return 'RÃ©gimen IPS';
+      return 'Régimen IPS';
     }
     if (this.sinPrevision) {
-      return 'Sin rÃ©gimen previsional';
+      return 'Sin régimen previsional';
     }
     return 'Pendiente';
   }
@@ -132,7 +132,7 @@ export class PrevisionSaludComponent {
   }
 
   get tiposRegimenSelectOptions(): SearchSelectOption[] {
-    return withEmptyStringCatalog(this.tiposRegimenPrevisional, 'Seleccione rÃ©gimen previsional');
+    return withEmptyStringCatalog(this.tiposRegimenPrevisional, 'Seleccione régimen previsional');
   }
 
   get afpSelectOptions(): SearchSelectOption[] {
@@ -152,11 +152,11 @@ export class PrevisionSaludComponent {
   }
 
   get regimenExCajaSelectOptions(): SearchSelectOption[] {
-    return withEmptyNumberCatalog(this.regimenesExCajaFiltrados, 'Seleccione rÃ©gimen ex caja');
+    return withEmptyNumberCatalog(this.regimenesExCajaFiltrados, 'Seleccione régimen ex caja');
   }
 
   get saludSelectOptions(): SearchSelectOption[] {
-    return withEmptyNumberCatalog(this.entidadesSalud, 'Seleccione instituciÃ³n de salud');
+    return withEmptyNumberCatalog(this.entidadesSalud, 'Seleccione institución de salud');
   }
 
   get monedaPlanSelectOptions(): SearchSelectOption[] {
@@ -201,7 +201,7 @@ export class PrevisionSaludComponent {
   }
 
   get institucionApvSelectOptions(): SearchSelectOption[] {
-    return withEmptyNumberCatalog(this.institucionesApv, 'Seleccione instituciÃ³n APV');
+    return withEmptyNumberCatalog(this.institucionesApv, 'Seleccione institución APV');
   }
 
   get monedaApvSelectOptions(): SearchSelectOption[] {

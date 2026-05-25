@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-05-24T01:08:44.996Z",
+  "generatedAt": "2026-05-25T15:09:05.428Z",
   "note": "Deuda historica de acentos. El check falla solo si aparecen hallazgos nuevos no presentes aqui.",
   "findings": [
     {
@@ -2649,11 +2649,25 @@
       "excerpt": "- Se actualizan `run_all.sql`, monolito integrado, validaciones v11, diccionario canonico y documentacion de Empleados."
     },
     {
+      "key": "accent|docs/codex/CHANGELOG.md|edicion|- **Doc:** `emp-ficha-expediente-edicion-seccion-ux-04.md`.",
+      "file": "docs/codex/CHANGELOG.md",
+      "token": "edicion",
+      "suggestion": "edición",
+      "excerpt": "- **Doc:** `emp-ficha-expediente-edicion-seccion-ux-04.md`."
+    },
+    {
       "key": "accent|docs/codex/CHANGELOG.md|edicion|- **Flujo:** la accion principal del panel respeta la cancelacion por cambios sin guardar antes de abrir edicion en Pago.",
       "file": "docs/codex/CHANGELOG.md",
       "token": "edicion",
       "suggestion": "edición",
       "excerpt": "- **Flujo:** la accion principal del panel respeta la cancelacion por cambios sin guardar antes de abrir edicion en Pago."
+    },
+    {
+      "key": "accent|docs/codex/CHANGELOG.md|edicion|## 2026-05-24 - EMP-FICHA-EXPEDIENTE-EDICION-SECCION-UX-04",
+      "file": "docs/codex/CHANGELOG.md",
+      "token": "edicion",
+      "suggestion": "edición",
+      "excerpt": "## 2026-05-24 - EMP-FICHA-EXPEDIENTE-EDICION-SECCION-UX-04"
     },
     {
       "key": "accent|docs/codex/CHANGELOG.md|eliminacion|## 2026-05-19 - NOM-MENSUAL-REAPERTURA-ELIMINACION-01",
@@ -9418,6 +9432,62 @@
       "excerpt": "- Se corrige un texto mojibake de la palabra `revision` para que la UI muestre la tilde correcta."
     },
     {
+      "key": "accent|docs/codex/modulos/empleados/auditoria-flujos-empleados-2026-05-25.md|creacion|*Auditoría contrastada con [`creacion-avanzada.md`](creacion-avanzada.md), rutas en [`empleados.routes.ts`](../../../src/app/features/empleados/empleados.routes.ts) y contrato de p",
+      "file": "docs/codex/modulos/empleados/auditoria-flujos-empleados-2026-05-25.md",
+      "token": "creacion",
+      "suggestion": "creación",
+      "excerpt": "*Auditoría contrastada con [`creacion-avanzada.md`](creacion-avanzada.md), rutas en [`empleados.routes.ts`](../../../src/app/features/empleados/empleados.routes.ts) y contrato de p"
+    },
+    {
+      "key": "accent|docs/codex/modulos/empleados/auditoria-flujos-empleados-2026-05-25.md|creacion|| `npm run screenshots:empleados-avanzada` | **GAP-02** — `tests/empleados-creacion-avanzada.screenshots.spec.ts` **inexistente** |",
+      "file": "docs/codex/modulos/empleados/auditoria-flujos-empleados-2026-05-25.md",
+      "token": "creacion",
+      "suggestion": "creación",
+      "excerpt": "| `npm run screenshots:empleados-avanzada` | **GAP-02** — `tests/empleados-creacion-avanzada.screenshots.spec.ts` **inexistente** |"
+    },
+    {
+      "key": "accent|docs/codex/modulos/empleados/auditoria-flujos-empleados-2026-05-25.md|creacion|| EMP-AUD-002 | Mayor | F10 Honorarios | Doc [`creacion-avanzada.md`](creacion-avanzada.md) indica “Finalizar alta bloqueado para honorarios” | Coherencia doc↔producto | Código exp",
+      "file": "docs/codex/modulos/empleados/auditoria-flujos-empleados-2026-05-25.md",
+      "token": "creacion",
+      "suggestion": "creación",
+      "excerpt": "| EMP-AUD-002 | Mayor | F10 Honorarios | Doc [`creacion-avanzada.md`](creacion-avanzada.md) indica “Finalizar alta bloqueado para honorarios” | Coherencia doc↔producto | Código exp"
+    },
+    {
+      "key": "accent|docs/codex/modulos/empleados/auditoria-flujos-empleados-2026-05-25.md|creacion|| EMP-AUD-002 Doc honorarios | `creacion-avanzada.md` — Finalizar honorarios habilitado; `apto=false` |",
+      "file": "docs/codex/modulos/empleados/auditoria-flujos-empleados-2026-05-25.md",
+      "token": "creacion",
+      "suggestion": "creación",
+      "excerpt": "| EMP-AUD-002 Doc honorarios | `creacion-avanzada.md` — Finalizar honorarios habilitado; `apto=false` |"
+    },
+    {
+      "key": "accent|docs/codex/modulos/empleados/auditoria-flujos-empleados-2026-05-25.md|creacion|| EMP-AUD-005 Screenshots | `empleados-creacion-avanzada.screenshots.spec.ts` con `?modo=avanzado` |",
+      "file": "docs/codex/modulos/empleados/auditoria-flujos-empleados-2026-05-25.md",
+      "token": "creacion",
+      "suggestion": "creación",
+      "excerpt": "| EMP-AUD-005 Screenshots | `empleados-creacion-avanzada.screenshots.spec.ts` con `?modo=avanzado` |"
+    },
+    {
+      "key": "accent|docs/codex/modulos/empleados/auditoria-flujos-empleados-2026-05-25.md|modulos|| Creado | `docs/codex/modulos/empleados/auditoria-flujos-empleados-2026-05-25.md` |",
+      "file": "docs/codex/modulos/empleados/auditoria-flujos-empleados-2026-05-25.md",
+      "token": "modulos",
+      "suggestion": "módulos",
+      "excerpt": "| Creado | `docs/codex/modulos/empleados/auditoria-flujos-empleados-2026-05-25.md` |"
+    },
+    {
+      "key": "accent|docs/codex/modulos/empleados/auditoria-flujos-empleados-2026-05-25.md|nomina|| `playwright tests/empleados-nomina-error-fixtures.spec.ts` (sin URL .co) | **Falla** auth `ENOTFOUND *.supabase.com` (EMP-AUD-001) |",
+      "file": "docs/codex/modulos/empleados/auditoria-flujos-empleados-2026-05-25.md",
+      "token": "nomina",
+      "suggestion": "nómina",
+      "excerpt": "| `playwright tests/empleados-nomina-error-fixtures.spec.ts` (sin URL .co) | **Falla** auth `ENOTFOUND *.supabase.com` (EMP-AUD-001) |"
+    },
+    {
+      "key": "accent|docs/codex/modulos/empleados/auditoria-flujos-empleados-2026-05-25.md|nomina|Fallos **solo** en `nomina-mensual` (`proceso-mensual.service.spec.ts`, `proceso-mensual-container`, `proceso-mensual-detalle-modal`). **Ningún fallo en `features/empleados`.**",
+      "file": "docs/codex/modulos/empleados/auditoria-flujos-empleados-2026-05-25.md",
+      "token": "nomina",
+      "suggestion": "nómina",
+      "excerpt": "Fallos **solo** en `nomina-mensual` (`proceso-mensual.service.spec.ts`, `proceso-mensual-container`, `proceso-mensual-detalle-modal`). **Ningún fallo en `features/empleados`.**"
+    },
+    {
       "key": "accent|docs/codex/modulos/empleados/bitacora-laboral-ux-01.md|bitacora|- `docs/codex/modulos/empleados/bitacora-laboral-ux-01.md`",
       "file": "docs/codex/modulos/empleados/bitacora-laboral-ux-01.md",
       "token": "bitacora",
@@ -10097,6 +10167,13 @@
       "excerpt": "La Creacion avanzada es el primer caso local de la identidad global [`NOIA / Bitacora Operativa`](../../diseno/bitacora-operativa-noia.md)."
     },
     {
+      "key": "accent|docs/codex/modulos/empleados/creacion-avanzada.md|bitacora|Orden de bloques en `app-alta-bitacora-console`:",
+      "file": "docs/codex/modulos/empleados/creacion-avanzada.md",
+      "token": "bitacora",
+      "suggestion": "bitácora",
+      "excerpt": "Orden de bloques en `app-alta-bitacora-console`:"
+    },
+    {
       "key": "accent|docs/codex/modulos/empleados/creacion-avanzada.md|confirmacion|- Al cambiar desde `Contrato` a `Boleta de honorarios`, se pide confirmacion con `app-message-box`.",
       "file": "docs/codex/modulos/empleados/creacion-avanzada.md",
       "token": "confirmacion",
@@ -10116,6 +10193,13 @@
       "token": "creacion",
       "suggestion": "creación",
       "excerpt": "# Creacion avanzada: bloques del formulario (inventario)"
+    },
+    {
+      "key": "accent|docs/codex/modulos/empleados/creacion-avanzada.md|creacion|En creacion avanzada y edicion inline con `grillaAvanzada`, **no** se muestra el campo «Estado de ficha inicial» en el paso contrato (`contrato.html`). El `FormControl` `estado` co",
+      "file": "docs/codex/modulos/empleados/creacion-avanzada.md",
+      "token": "creacion",
+      "suggestion": "creación",
+      "excerpt": "En creacion avanzada y edicion inline con `grillaAvanzada`, **no** se muestra el campo «Estado de ficha inicial» en el paso contrato (`contrato.html`). El `FormControl` `estado` co"
     },
     {
       "key": "accent|docs/codex/modulos/empleados/creacion-avanzada.md|creacion|La Creacion avanzada es el primer caso local de la identidad global [`NOIA / Bitacora Operativa`](../../diseno/bitacora-operativa-noia.md).",
@@ -10193,6 +10277,13 @@
       "token": "diagnostico",
       "suggestion": "diagnóstico",
       "excerpt": "## EMP-ALTA-DIAGNOSTICO-CONTRACTUAL-UX-01 - Diagnóstico contractual visible"
+    },
+    {
+      "key": "accent|docs/codex/modulos/empleados/creacion-avanzada.md|edicion|En creacion avanzada y edicion inline con `grillaAvanzada`, **no** se muestra el campo «Estado de ficha inicial» en el paso contrato (`contrato.html`). El `FormControl` `estado` co",
+      "file": "docs/codex/modulos/empleados/creacion-avanzada.md",
+      "token": "edicion",
+      "suggestion": "edición",
+      "excerpt": "En creacion avanzada y edicion inline con `grillaAvanzada`, **no** se muestra el campo «Estado de ficha inicial» en el paso contrato (`contrato.html`). El `FormControl` `estado` co"
     },
     {
       "key": "accent|docs/codex/modulos/empleados/creacion-avanzada.md|estandar|- Para un trabajador adulto sin casos especiales, el estado debe indicar `Trabajador estandar` y permitir continuar sin seleccionar nada.",
@@ -10363,6 +10454,13 @@
       "excerpt": "- RRHH puede aplicar la correccion sugerida o mantener la situacion bajo revision administrativa."
     },
     {
+      "key": "accent|docs/codex/modulos/empleados/creacion-avanzada.md|revision|### EMP-ALTA-REVISION-GUIADA-CONSOLA-01 — Consola accionable",
+      "file": "docs/codex/modulos/empleados/creacion-avanzada.md",
+      "token": "revision",
+      "suggestion": "revisión",
+      "excerpt": "### EMP-ALTA-REVISION-GUIADA-CONSOLA-01 — Consola accionable"
+    },
+    {
       "key": "accent|docs/codex/modulos/empleados/creacion-avanzada.md|revision|4. Boton secundario mantiene bajo revision y permite continuar.",
       "file": "docs/codex/modulos/empleados/creacion-avanzada.md",
       "token": "revision",
@@ -10370,11 +10468,11 @@
       "excerpt": "4. Boton secundario mantiene bajo revision y permite continuar."
     },
     {
-      "key": "accent|docs/codex/modulos/empleados/creacion-avanzada.md|revision|5. Resumen final conserva la revision pendiente.",
+      "key": "accent|docs/codex/modulos/empleados/creacion-avanzada.md|revision|5. Resumen final y consola conservan la revision pendiente (consola como canal principal desde EMP-ALTA-REVISION-GUIADA-CONSOLA-01).",
       "file": "docs/codex/modulos/empleados/creacion-avanzada.md",
       "token": "revision",
       "suggestion": "revisión",
-      "excerpt": "5. Resumen final conserva la revision pendiente."
+      "excerpt": "5. Resumen final y consola conservan la revision pendiente (consola como canal principal desde EMP-ALTA-REVISION-GUIADA-CONSOLA-01)."
     },
     {
       "key": "accent|docs/codex/modulos/empleados/creacion-avanzada.md|segun|| Informacion laboral | `contrato` | Contrato/beneficios/remuneraciones segun el template del tab |",
@@ -10412,6 +10510,13 @@
       "excerpt": "- `Guardar borrador` sigue disponible con validacion minima."
     },
     {
+      "key": "accent|docs/codex/modulos/empleados/creacion-avanzada.md|validacion|- Las tres capas (obligatorio, aplicabilidad, coherencia) se unifican en UI mediante `evaluarAltaValidacionesVisibles` alimentado por `buildAltaValidacionInput` (`empleado-alta-val",
+      "file": "docs/codex/modulos/empleados/creacion-avanzada.md",
+      "token": "validacion",
+      "suggestion": "validación",
+      "excerpt": "- Las tres capas (obligatorio, aplicabilidad, coherencia) se unifican en UI mediante `evaluarAltaValidacionesVisibles` alimentado por `buildAltaValidacionInput` (`empleado-alta-val"
+    },
+    {
       "key": "accent|docs/codex/modulos/empleados/creacion-avanzada.md|validacion|| Guardar borrador | Validacion minima. Si falta identificacion base, MsgBox con pendientes. Si guarda, MsgBox de exito. |",
       "file": "docs/codex/modulos/empleados/creacion-avanzada.md",
       "token": "validacion",
@@ -10440,6 +10545,13 @@
       "excerpt": "- Sin cambios en SQL/RPC/RLS, motor, nomina, liquidaciones, persistencia, servicios, mappers, rutas, reglas ni payloads."
     },
     {
+      "key": "accent|docs/codex/modulos/empleados/emp-ficha-expediente-edicion-seccion-ux-04.md|edicion|# EMP-FICHA-EXPEDIENTE-EDICION-SECCION-UX-04",
+      "file": "docs/codex/modulos/empleados/emp-ficha-expediente-edicion-seccion-ux-04.md",
+      "token": "edicion",
+      "suggestion": "edición",
+      "excerpt": "# EMP-FICHA-EXPEDIENTE-EDICION-SECCION-UX-04"
+    },
+    {
       "key": "accent|docs/codex/modulos/empleados/emp-ficha-expediente-noia-01.md|modulo|Referencia visual: prototipo React en `nuevo-modulo/` (no integrado al build Angular).",
       "file": "docs/codex/modulos/empleados/emp-ficha-expediente-noia-01.md",
       "token": "modulo",
@@ -10452,6 +10564,20 @@
       "token": "diagnostico",
       "suggestion": "diagnóstico",
       "excerpt": "| Alta | `.alta-resumen-diagnostico-panel` usa tokens `--emp-*` |"
+    },
+    {
+      "key": "accent|docs/codex/modulos/empleados/empleado-alta-normativa-cl.md|creacion|- [`creacion-avanzada.md`](./creacion-avanzada.md) — EMP-ADV-VALIDATION-CL-02, flujos Guardar / Siguiente / Finalizar.",
+      "file": "docs/codex/modulos/empleados/empleado-alta-normativa-cl.md",
+      "token": "creacion",
+      "suggestion": "creación",
+      "excerpt": "- [`creacion-avanzada.md`](./creacion-avanzada.md) — EMP-ADV-VALIDATION-CL-02, flujos Guardar / Siguiente / Finalizar."
+    },
+    {
+      "key": "accent|docs/codex/modulos/empleados/empleado-alta-normativa-cl.md|validacion|| Jornada ordinaria máx. 42 h (vigencia 26-abr-2026 en copy) | `empleado-ficha-validacion.rules.ts` | 3 | Expediente + revisión coherencia |",
+      "file": "docs/codex/modulos/empleados/empleado-alta-normativa-cl.md",
+      "token": "validacion",
+      "suggestion": "validación",
+      "excerpt": "| Jornada ordinaria máx. 42 h (vigencia 26-abr-2026 en copy) | `empleado-ficha-validacion.rules.ts` | 3 | Expediente + revisión coherencia |"
     },
     {
       "key": "accent|docs/codex/modulos/empleados/ficha-empleado-inline-edicion.md|diagnostico|- **Kernel único:** `empleado-alta-diagnostico.rules.ts` consume `evaluarDiagnosticoFichaEmpleado` (mismo motor que ficha y `evaluarCompletitudYAptitudEmpleado`).",
@@ -10683,6 +10809,55 @@
       "token": "validacion",
       "suggestion": "validación",
       "excerpt": "## Pruebas/validacion"
+    },
+    {
+      "key": "accent|docs/codex/modulos/empleados/matriz-pruebas-creacion-avanzada.md|basica|| U7 | 25.050.007 | Alta Basica | F2 |",
+      "file": "docs/codex/modulos/empleados/matriz-pruebas-creacion-avanzada.md",
+      "token": "basica",
+      "suggestion": "básica",
+      "excerpt": "| U7 | 25.050.007 | Alta Basica | F2 |"
+    },
+    {
+      "key": "accent|docs/codex/modulos/empleados/matriz-pruebas-creacion-avanzada.md|creacion|| F10 | Honorarios finalizar | E2E BD + verify | `empleados-creacion-avanzada-honorarios.spec.ts`, `verify:empleados-qa` U6 | apto=false, HONORARIOS |",
+      "file": "docs/codex/modulos/empleados/matriz-pruebas-creacion-avanzada.md",
+      "token": "creacion",
+      "suggestion": "creación",
+      "excerpt": "| F10 | Honorarios finalizar | E2E BD + verify | `empleados-creacion-avanzada-honorarios.spec.ts`, `verify:empleados-qa` U6 | apto=false, HONORARIOS |"
+    },
+    {
+      "key": "accent|docs/codex/modulos/empleados/matriz-pruebas-creacion-avanzada.md|creacion|| F13 | Validación entrada nombres/correo | Unit + E2E UI + guard | `empleado-payload-guard`, `empleados-creacion-avanzada-validaciones.spec.ts` | MsgBox RRHH visible |",
+      "file": "docs/codex/modulos/empleados/matriz-pruebas-creacion-avanzada.md",
+      "token": "creacion",
+      "suggestion": "creación",
+      "excerpt": "| F13 | Validación entrada nombres/correo | Unit + E2E UI + guard | `empleado-payload-guard`, `empleados-creacion-avanzada-validaciones.spec.ts` | MsgBox RRHH visible |"
+    },
+    {
+      "key": "accent|docs/codex/modulos/empleados/matriz-pruebas-creacion-avanzada.md|creacion|| F3 | Borrador mínimo; sin email/teléfono; nombres dígitos | Unit + E2E UI + E2E BD | `empleado-borrador-form.validation`, `empleados-creacion-avanzada-validaciones.spec.ts`, `emp",
+      "file": "docs/codex/modulos/empleados/matriz-pruebas-creacion-avanzada.md",
+      "token": "creacion",
+      "suggestion": "creación",
+      "excerpt": "| F3 | Borrador mínimo; sin email/teléfono; nombres dígitos | Unit + E2E UI + E2E BD | `empleado-borrador-form.validation`, `empleados-creacion-avanzada-validaciones.spec.ts`, `emp"
+    },
+    {
+      "key": "accent|docs/codex/modulos/empleados/matriz-pruebas-creacion-avanzada.md|creacion|| F4 | Rehidratar U3 | E2E BD inferencia | `empleados-creacion-avanzada-inferencia.spec.ts` | Continuar alta + nombres U3 |",
+      "file": "docs/codex/modulos/empleados/matriz-pruebas-creacion-avanzada.md",
+      "token": "creacion",
+      "suggestion": "creación",
+      "excerpt": "| F4 | Rehidratar U3 | E2E BD inferencia | `empleados-creacion-avanzada-inferencia.spec.ts` | Continuar alta + nombres U3 |"
+    },
+    {
+      "key": "accent|docs/codex/modulos/empleados/matriz-pruebas-creacion-avanzada.md|creacion|| F5 | Finalizar dependiente completo; sin previsión | Unit + E2E BD | `empleado-completitud.rules.spec.ts`, `empleados-creacion-avanzada-flujos.spec.ts` | Éxito / sin mensaje éxit",
+      "file": "docs/codex/modulos/empleados/matriz-pruebas-creacion-avanzada.md",
+      "token": "creacion",
+      "suggestion": "creación",
+      "excerpt": "| F5 | Finalizar dependiente completo; sin previsión | Unit + E2E BD | `empleado-completitud.rules.spec.ts`, `empleados-creacion-avanzada-flujos.spec.ts` | Éxito / sin mensaje éxit"
+    },
+    {
+      "key": "accent|docs/codex/modulos/empleados/matriz-pruebas-creacion-avanzada.md|creacion|Trazabilidad entre flujos de [`auditoria-flujos-empleados-2026-05-25.md`](auditoria-flujos-empleados-2026-05-25.md), [`creacion-avanzada.md`](creacion-avanzada.md) y automatización",
+      "file": "docs/codex/modulos/empleados/matriz-pruebas-creacion-avanzada.md",
+      "token": "creacion",
+      "suggestion": "creación",
+      "excerpt": "Trazabilidad entre flujos de [`auditoria-flujos-empleados-2026-05-25.md`](auditoria-flujos-empleados-2026-05-25.md), [`creacion-avanzada.md`](creacion-avanzada.md) y automatización"
     },
     {
       "key": "accent|docs/codex/modulos/empleados/perfil-laboral-previsional.md|accion|- La UI debe avisar mediante `app-message-box` cuando existe una accion recomendada.",
@@ -11112,6 +11287,13 @@
       "excerpt": "| [emp-ficha-sustentable-00.md](./emp-ficha-sustentable-00.md) | Arquitectura modular ficha: facade, kernel diagnostico, tabs config |"
     },
     {
+      "key": "accent|docs/codex/modulos/empleados/README.md|edicion|| [`emp-ficha-expediente-edicion-seccion-ux-04.md`](./emp-ficha-expediente-edicion-seccion-ux-04.md) | Modal edición integrado al expediente (cabecera + acciones, sin footer card) ",
+      "file": "docs/codex/modulos/empleados/README.md",
+      "token": "edicion",
+      "suggestion": "edición",
+      "excerpt": "| [`emp-ficha-expediente-edicion-seccion-ux-04.md`](./emp-ficha-expediente-edicion-seccion-ux-04.md) | Modal edición integrado al expediente (cabecera + acciones, sin footer card) "
+    },
+    {
       "key": "accent|docs/codex/modulos/empleados/README.md|estandar|- Si no hay condiciones seleccionadas, el estado muestra `Trabajador estandar` o la revision sugerida correspondiente.",
       "file": "docs/codex/modulos/empleados/README.md",
       "token": "estandar",
@@ -11215,6 +11397,41 @@
       "token": "tecnico",
       "suggestion": "técnico",
       "excerpt": "Creacion avanzada ajusta el paso posterior a Banco para que el usuario lo entienda como control administrativo de RRHH y no como formulario tecnico:"
+    },
+    {
+      "key": "accent|docs/codex/modulos/empleados/tests-empleados.md|creacion|| `tests/empleados-creacion-avanzada-flujos.spec.ts` | F5 feliz / sin previsión — proyecto `empleados-db` |",
+      "file": "docs/codex/modulos/empleados/tests-empleados.md",
+      "token": "creacion",
+      "suggestion": "creación",
+      "excerpt": "| `tests/empleados-creacion-avanzada-flujos.spec.ts` | F5 feliz / sin previsión — proyecto `empleados-db` |"
+    },
+    {
+      "key": "accent|docs/codex/modulos/empleados/tests-empleados.md|creacion|| `tests/empleados-creacion-avanzada-honorarios.spec.ts` | F10 honorarios — proyecto `empleados-db` |",
+      "file": "docs/codex/modulos/empleados/tests-empleados.md",
+      "token": "creacion",
+      "suggestion": "creación",
+      "excerpt": "| `tests/empleados-creacion-avanzada-honorarios.spec.ts` | F10 honorarios — proyecto `empleados-db` |"
+    },
+    {
+      "key": "accent|docs/codex/modulos/empleados/tests-empleados.md|creacion|| `tests/empleados-creacion-avanzada-inferencia.spec.ts` | U2/U3/ERR listado — proyecto `empleados-db` |",
+      "file": "docs/codex/modulos/empleados/tests-empleados.md",
+      "token": "creacion",
+      "suggestion": "creación",
+      "excerpt": "| `tests/empleados-creacion-avanzada-inferencia.spec.ts` | U2/U3/ERR listado — proyecto `empleados-db` |"
+    },
+    {
+      "key": "accent|docs/codex/modulos/empleados/tests-empleados.md|creacion|| `tests/empleados-creacion-avanzada-validaciones.spec.ts` | Negativos UI: correo/teléfono, nombres dígitos, MsgBox finalizar/siguiente |",
+      "file": "docs/codex/modulos/empleados/tests-empleados.md",
+      "token": "creacion",
+      "suggestion": "creación",
+      "excerpt": "| `tests/empleados-creacion-avanzada-validaciones.spec.ts` | Negativos UI: correo/teléfono, nombres dígitos, MsgBox finalizar/siguiente |"
+    },
+    {
+      "key": "accent|docs/codex/modulos/empleados/tests-empleados.md|creacion|Matriz F1–F13: [`matriz-pruebas-creacion-avanzada.md`](matriz-pruebas-creacion-avanzada.md).",
+      "file": "docs/codex/modulos/empleados/tests-empleados.md",
+      "token": "creacion",
+      "suggestion": "creación",
+      "excerpt": "Matriz F1–F13: [`matriz-pruebas-creacion-avanzada.md`](matriz-pruebas-creacion-avanzada.md)."
     },
     {
       "key": "accent|docs/codex/modulos/empleados/tests-empleados.md|parametros|- Capturas opcionales de parámetros viven bajo `docs/codex/assets/` (ver `parametros-tabs.screenshots.spec.ts`); no duplicar aquí.",
@@ -32616,6 +32833,13 @@
       "excerpt": "- Sin cambios a creacion basica, ficha empleado ni persistencia final de honorarios."
     },
     {
+      "key": "accent|docs/codex/orquestador/estado-fases.md|creacion|## EMP-CREACION-AVANZADA-CERRADA-01 - Pruebas exhaustivas creación avanzada",
+      "file": "docs/codex/orquestador/estado-fases.md",
+      "token": "creacion",
+      "suggestion": "creación",
+      "excerpt": "## EMP-CREACION-AVANZADA-CERRADA-01 - Pruebas exhaustivas creación avanzada"
+    },
+    {
       "key": "accent|docs/codex/orquestador/estado-fases.md|creacion|| `EMP-ADV-HONORARIOS-UX-01` | **Implementada en ZIP** | Creacion avanzada trata `Boleta de honorarios` como modo visual controlado: confirma el cambio, oculta o marca no aplicable",
       "file": "docs/codex/orquestador/estado-fases.md",
       "token": "creacion",
@@ -32663,6 +32887,13 @@
       "token": "creacion",
       "suggestion": "creación",
       "excerpt": "| `EMP-PERFIL-LABORAL-UI-01` | **Implementada en ZIP** | Creacion avanzada incorpora perfil laboral/previsional: edad laboral derivada por fecha, condiciones especiales respaldable"
+    },
+    {
+      "key": "accent|docs/codex/orquestador/estado-fases.md|creacion|| Documento | [../modulos/empleados/matriz-pruebas-creacion-avanzada.md](../modulos/empleados/matriz-pruebas-creacion-avanzada.md), [../modulos/empleados/tests-empleados.md](../mod",
+      "file": "docs/codex/orquestador/estado-fases.md",
+      "token": "creacion",
+      "suggestion": "creación",
+      "excerpt": "| Documento | [../modulos/empleados/matriz-pruebas-creacion-avanzada.md](../modulos/empleados/matriz-pruebas-creacion-avanzada.md), [../modulos/empleados/tests-empleados.md](../mod"
     },
     {
       "key": "accent|docs/codex/orquestador/estado-fases.md|creacion|| Fuera de alcance | SQL/RPC/RLS, motor, nomina, liquidaciones, ficha empleado, creacion basica, fuentes canonicas futuras para pensionado/invalidez/extranjero/discapacidad. |",
@@ -32966,11 +33197,25 @@
       "excerpt": "**Haberes y descuentos 9.3A-9.3C:** cerradas. Quedan implementadas vigencias/duplicados recurrentes, cierre/desactivacion controlada y vista historica con filtro de estado derivado"
     },
     {
+      "key": "accent|docs/codex/orquestador/estado-fases.md|edicion|## EMP-FICHA-EXPEDIENTE-EDICION-SECCION-UX-04 - Modal edición expediente",
+      "file": "docs/codex/orquestador/estado-fases.md",
+      "token": "edicion",
+      "suggestion": "edición",
+      "excerpt": "## EMP-FICHA-EXPEDIENTE-EDICION-SECCION-UX-04 - Modal edición expediente"
+    },
+    {
       "key": "accent|docs/codex/orquestador/estado-fases.md|edicion|| `EMP-CONDICIONES-ESPECIALES-AUTODETECT-01` | **Implementada en ZIP** | Creacion avanzada pre-marca condiciones especiales cuando la informacion ya fue capturada en pasos previos:",
       "file": "docs/codex/orquestador/estado-fases.md",
       "token": "edicion",
       "suggestion": "edición",
       "excerpt": "| `EMP-CONDICIONES-ESPECIALES-AUTODETECT-01` | **Implementada en ZIP** | Creacion avanzada pre-marca condiciones especiales cuando la informacion ya fue capturada en pasos previos:"
+    },
+    {
+      "key": "accent|docs/codex/orquestador/estado-fases.md|edicion|| Documento | [../modulos/empleados/emp-ficha-expediente-edicion-seccion-ux-04.md](../modulos/empleados/emp-ficha-expediente-edicion-seccion-ux-04.md) |",
+      "file": "docs/codex/orquestador/estado-fases.md",
+      "token": "edicion",
+      "suggestion": "edición",
+      "excerpt": "| Documento | [../modulos/empleados/emp-ficha-expediente-edicion-seccion-ux-04.md](../modulos/empleados/emp-ficha-expediente-edicion-seccion-ux-04.md) |"
     },
     {
       "key": "accent|docs/codex/orquestador/estado-fases.md|edicion|3. **Movimientos variables** — **9.4A** a **9.4E** cerradas en alcance acordado (incluye UI carga manual); siguiente: RLS/roles, edicion/importacion, integracion proceso mensual se",
@@ -33295,6 +33540,20 @@
       "excerpt": "| Alcance | `bindShellPageContext`, fallback rutas, quitar breadcrumbs locales en modulos ERP. |"
     },
     {
+      "key": "accent|docs/codex/orquestador/estado-fases.md|modulos|| Documento | [../modulos/empleados/emp-ficha-expediente-edicion-seccion-ux-04.md](../modulos/empleados/emp-ficha-expediente-edicion-seccion-ux-04.md) |",
+      "file": "docs/codex/orquestador/estado-fases.md",
+      "token": "modulos",
+      "suggestion": "módulos",
+      "excerpt": "| Documento | [../modulos/empleados/emp-ficha-expediente-edicion-seccion-ux-04.md](../modulos/empleados/emp-ficha-expediente-edicion-seccion-ux-04.md) |"
+    },
+    {
+      "key": "accent|docs/codex/orquestador/estado-fases.md|modulos|| Documento | [../modulos/empleados/emp-ficha-expediente-secciones-lectura-ux-03.md](../modulos/empleados/emp-ficha-expediente-secciones-lectura-ux-03.md) |",
+      "file": "docs/codex/orquestador/estado-fases.md",
+      "token": "modulos",
+      "suggestion": "módulos",
+      "excerpt": "| Documento | [../modulos/empleados/emp-ficha-expediente-secciones-lectura-ux-03.md](../modulos/empleados/emp-ficha-expediente-secciones-lectura-ux-03.md) |"
+    },
+    {
       "key": "accent|docs/codex/orquestador/estado-fases.md|modulos|| Documento | [../modulos/empleados/emp-ficha-sustentable-00.md](../modulos/empleados/emp-ficha-sustentable-00.md) |",
       "file": "docs/codex/orquestador/estado-fases.md",
       "token": "modulos",
@@ -33314,6 +33573,20 @@
       "token": "modulos",
       "suggestion": "módulos",
       "excerpt": "| Documento | [../modulos/empleados/emp-ficha-ui-base-01.md](../modulos/empleados/emp-ficha-ui-base-01.md) |"
+    },
+    {
+      "key": "accent|docs/codex/orquestador/estado-fases.md|modulos|| Documento | [../modulos/empleados/emp-ficha-ux-replanteo-01.md](../modulos/empleados/emp-ficha-ux-replanteo-01.md) |",
+      "file": "docs/codex/orquestador/estado-fases.md",
+      "token": "modulos",
+      "suggestion": "módulos",
+      "excerpt": "| Documento | [../modulos/empleados/emp-ficha-ux-replanteo-01.md](../modulos/empleados/emp-ficha-ux-replanteo-01.md) |"
+    },
+    {
+      "key": "accent|docs/codex/orquestador/estado-fases.md|modulos|| Documento | [../modulos/empleados/matriz-pruebas-creacion-avanzada.md](../modulos/empleados/matriz-pruebas-creacion-avanzada.md), [../modulos/empleados/tests-empleados.md](../mod",
+      "file": "docs/codex/orquestador/estado-fases.md",
+      "token": "modulos",
+      "suggestion": "módulos",
+      "excerpt": "| Documento | [../modulos/empleados/matriz-pruebas-creacion-avanzada.md](../modulos/empleados/matriz-pruebas-creacion-avanzada.md), [../modulos/empleados/tests-empleados.md](../mod"
     },
     {
       "key": "accent|docs/codex/orquestador/estado-fases.md|modulos|| Documento | [../modulos/remuneraciones/movimientos-remuneracion-simple.md](../modulos/remuneraciones/movimientos-remuneracion-simple.md) |",
@@ -38944,6 +39217,41 @@
       "excerpt": "### 2026-05-01 (Creacion basica — distribucion y resumen en fila)"
     },
     {
+      "key": "accent|docs/codex/peticiones-estilos.md|bitacora|- **Archivos:** `alta-bitacora-console.component.css`, `form-empleado.css`.",
+      "file": "docs/codex/peticiones-estilos.md",
+      "token": "bitacora",
+      "suggestion": "bitácora",
+      "excerpt": "- **Archivos:** `alta-bitacora-console.component.css`, `form-empleado.css`."
+    },
+    {
+      "key": "accent|docs/codex/peticiones-estilos.md|bitacora|- **Archivos:** `alta-bitacora-console.component.ts`, spec.",
+      "file": "docs/codex/peticiones-estilos.md",
+      "token": "bitacora",
+      "suggestion": "bitácora",
+      "excerpt": "- **Archivos:** `alta-bitacora-console.component.ts`, spec."
+    },
+    {
+      "key": "accent|docs/codex/peticiones-estilos.md|bitacora|- **Archivos:** `alta-bitacora-console/*`, `form-empleado.html/ts/css`, `empleado-alta-avanzada.vm.ts`.",
+      "file": "docs/codex/peticiones-estilos.md",
+      "token": "bitacora",
+      "suggestion": "bitácora",
+      "excerpt": "- **Archivos:** `alta-bitacora-console/*`, `form-empleado.html/ts/css`, `empleado-alta-avanzada.vm.ts`."
+    },
+    {
+      "key": "accent|docs/codex/peticiones-estilos.md|bitacora|- **Archivos:** `empleado-alta-validacion-input.ts`, `empleado-alta-coherencia.rules.ts`, `alta-bitacora-console/*`, `form-empleado.*`, `empleados-form-orchestrator.service.ts`, `c",
+      "file": "docs/codex/peticiones-estilos.md",
+      "token": "bitacora",
+      "suggestion": "bitácora",
+      "excerpt": "- **Archivos:** `empleado-alta-validacion-input.ts`, `empleado-alta-coherencia.rules.ts`, `alta-bitacora-console/*`, `form-empleado.*`, `empleados-form-orchestrator.service.ts`, `c"
+    },
+    {
+      "key": "accent|docs/codex/peticiones-estilos.md|bitacora|- **Archivos:** `form-empleado.html`, `form-empleado.css`, `alta-bitacora-console/*`.",
+      "file": "docs/codex/peticiones-estilos.md",
+      "token": "bitacora",
+      "suggestion": "bitácora",
+      "excerpt": "- **Archivos:** `form-empleado.html`, `form-empleado.css`, `alta-bitacora-console/*`."
+    },
+    {
       "key": "accent|docs/codex/peticiones-estilos.md|bitacora|- **Archivos:** `proceso-mensual-container.css`, `payroll-operational-tabs.css`, `proceso-mensual-workspace.component.html`; doc `nom-workspace-bitacora-polish-02.md`.",
       "file": "docs/codex/peticiones-estilos.md",
       "token": "bitacora",
@@ -38963,6 +39271,20 @@
       "token": "bitacora",
       "suggestion": "bitácora",
       "excerpt": "- **Cambio visual:** la pantalla se presenta como workspace operativo de RRHH: header compacto, rail izquierdo de bitacora/revision y foco derecho con estado + CTA principal."
+    },
+    {
+      "key": "accent|docs/codex/peticiones-estilos.md|bitacora|- **Cambio:** «Pendientes del expediente», registros de bitácora con pendiente y «Pendientes para cierre» salen del card Resumen y pasan a `app-alta-bitacora-console` (dock inferio",
+      "file": "docs/codex/peticiones-estilos.md",
+      "token": "bitacora",
+      "suggestion": "bitácora",
+      "excerpt": "- **Cambio:** «Pendientes del expediente», registros de bitácora con pendiente y «Pendientes para cierre» salen del card Resumen y pasan a `app-alta-bitacora-console` (dock inferio"
+    },
+    {
+      "key": "accent|docs/codex/peticiones-estilos.md|bitacora|- **Cambio:** consola movida dentro de `.advanced-wizard-content` (evita 3.er hijo del grid y fila `auto` fantasma); posición en `:host`; estilos solo en `alta-bitacora-console.com",
+      "file": "docs/codex/peticiones-estilos.md",
+      "token": "bitacora",
+      "suggestion": "bitácora",
+      "excerpt": "- **Cambio:** consola movida dentro de `.advanced-wizard-content` (evita 3.er hijo del grid y fila `auto` fantasma); posición en `:host`; estilos solo en `alta-bitacora-console.com"
     },
     {
       "key": "accent|docs/codex/peticiones-estilos.md|bitacora|- **Empleados:** Ficha y Creacion avanzada mantienen `Bitacora laboral`, con chips/tabs mas sobrios y foco accesible sin barras fuertes ni sombras.",
@@ -39313,6 +39635,13 @@
       "token": "creacion",
       "suggestion": "creación",
       "excerpt": "- **Anterior / Siguiente / Finalizar alta** en la zona superior derecha del **contenido del paso** (`.advanced-step-header`), alineados con kicker + descripcion; **Volver** sigue s"
+    },
+    {
+      "key": "accent|docs/codex/peticiones-estilos.md|creacion|- **Archivos:** `tests/**`, `playwright.config.ts`, `package.json` scripts, `docs/codex/modulos/empleados/matriz-pruebas-creacion-avanzada.md`.",
+      "file": "docs/codex/peticiones-estilos.md",
+      "token": "creacion",
+      "suggestion": "creación",
+      "excerpt": "- **Archivos:** `tests/**`, `playwright.config.ts`, `package.json` scripts, `docs/codex/modulos/empleados/matriz-pruebas-creacion-avanzada.md`."
     },
     {
       "key": "accent|docs/codex/peticiones-estilos.md|creacion|- **Creacion avanzada / Condiciones especiales**: se agrega bloque compacto `pre-marcado desde pasos anteriores` cuando hay condiciones detectadas por edad o regimen previsional.",
@@ -39770,6 +40099,13 @@
       "excerpt": "- **Archivos:** rules estado-operativo/validación/workspace, workspace HTML, store, service, `nomina-periodo-diagnostico.repository.ts`, `27_nomina_periodo_diagnostico.sql`, docs m"
     },
     {
+      "key": "accent|docs/codex/peticiones-estilos.md|diagnostico|- **Cambio:** consola movida dentro de `.advanced-wizard-content` (evita 3.er hijo del grid y fila `auto` fantasma); posición en `:host`; estilos solo en `alta-bitacora-console.com",
+      "file": "docs/codex/peticiones-estilos.md",
+      "token": "diagnostico",
+      "suggestion": "diagnóstico",
+      "excerpt": "- **Cambio:** consola movida dentro de `.advanced-wizard-content` (evita 3.er hijo del grid y fila `auto` fantasma); posición en `:host`; estilos solo en `alta-bitacora-console.com"
+    },
+    {
       "key": "accent|docs/codex/peticiones-estilos.md|diagnostico|- **Corrección:** mismos CSS de ficha en `app-empleado-record-header`, `app-empleado-expediente-rail`, `app-empleado-diagnostico-panel`; `:host { display: contents }` en diagnóstic",
       "file": "docs/codex/peticiones-estilos.md",
       "token": "diagnostico",
@@ -40155,6 +40491,13 @@
       "excerpt": "### 2026-05-02 (Parametros - estandar UI del modulo)"
     },
     {
+      "key": "accent|docs/codex/peticiones-estilos.md|modulos|- **Archivos:** `tests/**`, `playwright.config.ts`, `package.json` scripts, `docs/codex/modulos/empleados/matriz-pruebas-creacion-avanzada.md`.",
+      "file": "docs/codex/peticiones-estilos.md",
+      "token": "modulos",
+      "suggestion": "módulos",
+      "excerpt": "- **Archivos:** `tests/**`, `playwright.config.ts`, `package.json` scripts, `docs/codex/modulos/empleados/matriz-pruebas-creacion-avanzada.md`."
+    },
+    {
       "key": "accent|docs/codex/peticiones-estilos.md|modulos|- **Doc:** [`nom-workspace-loc-maquetacion-01.md`](modulos/nomina-mensual/nom-workspace-loc-maquetacion-01.md)",
       "file": "docs/codex/peticiones-estilos.md",
       "token": "modulos",
@@ -40307,6 +40650,13 @@
       "token": "nomina",
       "suggestion": "nómina",
       "excerpt": "- **Doc:** `docs/codex/modulos/nomina-mensual/verificar-periodo-trabajadores-pendientes.md`."
+    },
+    {
+      "key": "accent|docs/codex/peticiones-estilos.md|nomina|- **Fixtures:** nombres QA sin dígitos en `auditoria-empleados-fixtures.mjs`, `seed-empleados-prueba-errores.mjs`, `empleados-nomina-error-fixtures.spec.ts`.",
+      "file": "docs/codex/peticiones-estilos.md",
+      "token": "nomina",
+      "suggestion": "nómina",
+      "excerpt": "- **Fixtures:** nombres QA sin dígitos en `auditoria-empleados-fixtures.mjs`, `seed-empleados-prueba-errores.mjs`, `empleados-nomina-error-fixtures.spec.ts`."
     },
     {
       "key": "accent|docs/codex/peticiones-estilos.md|nomina|- **Flujo Preparar nomina -> Liquidaciones:** fase documental para cerrar el contrato de actas guiadas por accion critica.",
@@ -41882,6 +42232,13 @@
       "token": "titulo",
       "suggestion": "título",
       "excerpt": "- **Tabs sin chips repetidos**: se quitaron los hints/chips de tipo de dato en Valores, Remuneraciones, CCAF/Mutual, Tramos, Impuesto, Salud, Prevision y Reforma; quedan titulo, fi"
+    },
+    {
+      "key": "accent|docs/codex/peticiones-estilos.md|validacion|- **Archivos:** `empleado-alta-validacion-input.ts`, `empleado-alta-coherencia.rules.ts`, `alta-bitacora-console/*`, `form-empleado.*`, `empleados-form-orchestrator.service.ts`, `c",
+      "file": "docs/codex/peticiones-estilos.md",
+      "token": "validacion",
+      "suggestion": "validación",
+      "excerpt": "- **Archivos:** `empleado-alta-validacion-input.ts`, `empleado-alta-coherencia.rules.ts`, `alta-bitacora-console/*`, `form-empleado.*`, `empleados-form-orchestrator.service.ts`, `c"
     },
     {
       "key": "accent|docs/codex/peticiones-estilos.md|validacion|- **Archivos:** `proceso-mensual-estado-operativo.rules.ts`, `proceso-mensual-flow-nav.rules.ts`, `proceso-mensual-validacion-calculo.rules.ts`.",
@@ -44033,6 +44390,412 @@
       "excerpt": "label: 'Sin prevision',"
     },
     {
+      "key": "accent|src/app/features/empleados/components/creacion-avanzada/alta-bitacora-console/alta-bitacora-console.component.html|bitacora|[class.alta-bitacora-console--expanded]=\"expanded()\"",
+      "file": "src/app/features/empleados/components/creacion-avanzada/alta-bitacora-console/alta-bitacora-console.component.html",
+      "token": "bitacora",
+      "suggestion": "bitácora",
+      "excerpt": "[class.alta-bitacora-console--expanded]=\"expanded()\""
+    },
+    {
+      "key": "accent|src/app/features/empleados/components/creacion-avanzada/alta-bitacora-console/alta-bitacora-console.component.html|bitacora|<div class=\"alta-bitacora-console__normativa-actions\">",
+      "file": "src/app/features/empleados/components/creacion-avanzada/alta-bitacora-console/alta-bitacora-console.component.html",
+      "token": "bitacora",
+      "suggestion": "bitácora",
+      "excerpt": "<div class=\"alta-bitacora-console__normativa-actions\">"
+    },
+    {
+      "key": "accent|src/app/features/empleados/components/creacion-avanzada/alta-bitacora-console/alta-bitacora-console.component.html|bitacora|<div class=\"alta-bitacora-console__normativa-copy\">",
+      "file": "src/app/features/empleados/components/creacion-avanzada/alta-bitacora-console/alta-bitacora-console.component.html",
+      "token": "bitacora",
+      "suggestion": "bitácora",
+      "excerpt": "<div class=\"alta-bitacora-console__normativa-copy\">"
+    },
+    {
+      "key": "accent|src/app/features/empleados/components/creacion-avanzada/alta-bitacora-console/alta-bitacora-console.component.html|bitacora|<div class=\"alta-bitacora-console__row-copy\">",
+      "file": "src/app/features/empleados/components/creacion-avanzada/alta-bitacora-console/alta-bitacora-console.component.html",
+      "token": "bitacora",
+      "suggestion": "bitácora",
+      "excerpt": "<div class=\"alta-bitacora-console__row-copy\">"
+    },
+    {
+      "key": "accent|src/app/features/empleados/components/creacion-avanzada/alta-bitacora-console/alta-bitacora-console.component.html|bitacora|<div id=\"alta-bitacora-console-body\" class=\"alta-bitacora-console__body\">",
+      "file": "src/app/features/empleados/components/creacion-avanzada/alta-bitacora-console/alta-bitacora-console.component.html",
+      "token": "bitacora",
+      "suggestion": "bitácora",
+      "excerpt": "<div id=\"alta-bitacora-console-body\" class=\"alta-bitacora-console__body\">"
+    },
+    {
+      "key": "accent|src/app/features/empleados/components/creacion-avanzada/alta-bitacora-console/alta-bitacora-console.component.html|bitacora|<h3 id=\"alta-console-bitacora-title\" class=\"alta-bitacora-console__section-title\">",
+      "file": "src/app/features/empleados/components/creacion-avanzada/alta-bitacora-console/alta-bitacora-console.component.html",
+      "token": "bitacora",
+      "suggestion": "bitácora",
+      "excerpt": "<h3 id=\"alta-console-bitacora-title\" class=\"alta-bitacora-console__section-title\">"
+    },
+    {
+      "key": "accent|src/app/features/empleados/components/creacion-avanzada/alta-bitacora-console/alta-bitacora-console.component.html|bitacora|<h3 id=\"alta-console-cierre-title\" class=\"alta-bitacora-console__section-title\">",
+      "file": "src/app/features/empleados/components/creacion-avanzada/alta-bitacora-console/alta-bitacora-console.component.html",
+      "token": "bitacora",
+      "suggestion": "bitácora",
+      "excerpt": "<h3 id=\"alta-console-cierre-title\" class=\"alta-bitacora-console__section-title\">"
+    },
+    {
+      "key": "accent|src/app/features/empleados/components/creacion-avanzada/alta-bitacora-console/alta-bitacora-console.component.html|bitacora|<h3 id=\"alta-console-expediente-title\" class=\"alta-bitacora-console__section-title\">",
+      "file": "src/app/features/empleados/components/creacion-avanzada/alta-bitacora-console/alta-bitacora-console.component.html",
+      "token": "bitacora",
+      "suggestion": "bitácora",
+      "excerpt": "<h3 id=\"alta-console-expediente-title\" class=\"alta-bitacora-console__section-title\">"
+    },
+    {
+      "key": "accent|src/app/features/empleados/components/creacion-avanzada/alta-bitacora-console/alta-bitacora-console.component.html|bitacora|<h3 id=\"alta-console-normativa-title\" class=\"alta-bitacora-console__section-title\">",
+      "file": "src/app/features/empleados/components/creacion-avanzada/alta-bitacora-console/alta-bitacora-console.component.html",
+      "token": "bitacora",
+      "suggestion": "bitácora",
+      "excerpt": "<h3 id=\"alta-console-normativa-title\" class=\"alta-bitacora-console__section-title\">"
+    },
+    {
+      "key": "accent|src/app/features/empleados/components/creacion-avanzada/alta-bitacora-console/alta-bitacora-console.component.html|bitacora|<header class=\"alta-bitacora-console__section-head\">",
+      "file": "src/app/features/empleados/components/creacion-avanzada/alta-bitacora-console/alta-bitacora-console.component.html",
+      "token": "bitacora",
+      "suggestion": "bitácora",
+      "excerpt": "<header class=\"alta-bitacora-console__section-head\">"
+    },
+    {
+      "key": "accent|src/app/features/empleados/components/creacion-avanzada/alta-bitacora-console/alta-bitacora-console.component.html|bitacora|<li class=\"alta-bitacora-console__normativa-item\">",
+      "file": "src/app/features/empleados/components/creacion-avanzada/alta-bitacora-console/alta-bitacora-console.component.html",
+      "token": "bitacora",
+      "suggestion": "bitácora",
+      "excerpt": "<li class=\"alta-bitacora-console__normativa-item\">"
+    },
+    {
+      "key": "accent|src/app/features/empleados/components/creacion-avanzada/alta-bitacora-console/alta-bitacora-console.component.html|bitacora|<li class=\"alta-bitacora-console__row\">",
+      "file": "src/app/features/empleados/components/creacion-avanzada/alta-bitacora-console/alta-bitacora-console.component.html",
+      "token": "bitacora",
+      "suggestion": "bitácora",
+      "excerpt": "<li class=\"alta-bitacora-console__row\">"
+    },
+    {
+      "key": "accent|src/app/features/empleados/components/creacion-avanzada/alta-bitacora-console/alta-bitacora-console.component.html|bitacora|<p class=\"alta-bitacora-console__normativa-detail\">{{ rev.detalle }}</p>",
+      "file": "src/app/features/empleados/components/creacion-avanzada/alta-bitacora-console/alta-bitacora-console.component.html",
+      "token": "bitacora",
+      "suggestion": "bitácora",
+      "excerpt": "<p class=\"alta-bitacora-console__normativa-detail\">{{ rev.detalle }}</p>"
+    },
+    {
+      "key": "accent|src/app/features/empleados/components/creacion-avanzada/alta-bitacora-console/alta-bitacora-console.component.html|bitacora|<p class=\"alta-bitacora-console__section-lead\">",
+      "file": "src/app/features/empleados/components/creacion-avanzada/alta-bitacora-console/alta-bitacora-console.component.html",
+      "token": "bitacora",
+      "suggestion": "bitácora",
+      "excerpt": "<p class=\"alta-bitacora-console__section-lead\">"
+    },
+    {
+      "key": "accent|src/app/features/empleados/components/creacion-avanzada/alta-bitacora-console/alta-bitacora-console.component.html|bitacora|<p class=\"alta-bitacora-console__section-lead\">{{ vm.motivoPrincipal }}</p>",
+      "file": "src/app/features/empleados/components/creacion-avanzada/alta-bitacora-console/alta-bitacora-console.component.html",
+      "token": "bitacora",
+      "suggestion": "bitácora",
+      "excerpt": "<p class=\"alta-bitacora-console__section-lead\">{{ vm.motivoPrincipal }}</p>"
+    },
+    {
+      "key": "accent|src/app/features/empleados/components/creacion-avanzada/alta-bitacora-console/alta-bitacora-console.component.html|bitacora|<section class=\"alta-bitacora-console__section\" aria-labelledby=\"alta-console-bitacora-title\">",
+      "file": "src/app/features/empleados/components/creacion-avanzada/alta-bitacora-console/alta-bitacora-console.component.html",
+      "token": "bitacora",
+      "suggestion": "bitácora",
+      "excerpt": "<section class=\"alta-bitacora-console__section\" aria-labelledby=\"alta-console-bitacora-title\">"
+    },
+    {
+      "key": "accent|src/app/features/empleados/components/creacion-avanzada/alta-bitacora-console/alta-bitacora-console.component.html|bitacora|<section class=\"alta-bitacora-console__section\" aria-labelledby=\"alta-console-expediente-title\">",
+      "file": "src/app/features/empleados/components/creacion-avanzada/alta-bitacora-console/alta-bitacora-console.component.html",
+      "token": "bitacora",
+      "suggestion": "bitácora",
+      "excerpt": "<section class=\"alta-bitacora-console__section\" aria-labelledby=\"alta-console-expediente-title\">"
+    },
+    {
+      "key": "accent|src/app/features/empleados/components/creacion-avanzada/alta-bitacora-console/alta-bitacora-console.component.html|bitacora|<span class=\"alta-bitacora-console__issue-block\">{{ issue.etiquetaBloque }}</span>",
+      "file": "src/app/features/empleados/components/creacion-avanzada/alta-bitacora-console/alta-bitacora-console.component.html",
+      "token": "bitacora",
+      "suggestion": "bitácora",
+      "excerpt": "<span class=\"alta-bitacora-console__issue-block\">{{ issue.etiquetaBloque }}</span>"
+    },
+    {
+      "key": "accent|src/app/features/empleados/components/creacion-avanzada/alta-bitacora-console/alta-bitacora-console.component.html|bitacora|<span class=\"alta-bitacora-console__issue-msg\">{{ issue.mensaje }}</span>",
+      "file": "src/app/features/empleados/components/creacion-avanzada/alta-bitacora-console/alta-bitacora-console.component.html",
+      "token": "bitacora",
+      "suggestion": "bitácora",
+      "excerpt": "<span class=\"alta-bitacora-console__issue-msg\">{{ issue.mensaje }}</span>"
+    },
+    {
+      "key": "accent|src/app/features/empleados/components/creacion-avanzada/alta-bitacora-console/alta-bitacora-console.component.html|bitacora|<span class=\"alta-bitacora-console__normativa-badge\">Bajo revisión RRHH</span>",
+      "file": "src/app/features/empleados/components/creacion-avanzada/alta-bitacora-console/alta-bitacora-console.component.html",
+      "token": "bitacora",
+      "suggestion": "bitácora",
+      "excerpt": "<span class=\"alta-bitacora-console__normativa-badge\">Bajo revisión RRHH</span>"
+    },
+    {
+      "key": "accent|src/app/features/empleados/components/creacion-avanzada/alta-bitacora-console/alta-bitacora-console.component.html|bitacora|<span class=\"alta-bitacora-console__row-label\">{{ row.label }}</span>",
+      "file": "src/app/features/empleados/components/creacion-avanzada/alta-bitacora-console/alta-bitacora-console.component.html",
+      "token": "bitacora",
+      "suggestion": "bitácora",
+      "excerpt": "<span class=\"alta-bitacora-console__row-label\">{{ row.label }}</span>"
+    },
+    {
+      "key": "accent|src/app/features/empleados/components/creacion-avanzada/alta-bitacora-console/alta-bitacora-console.component.html|bitacora|<span class=\"alta-bitacora-console__toggle-label\">{{ vm.collapsedLabel }}</span>",
+      "file": "src/app/features/empleados/components/creacion-avanzada/alta-bitacora-console/alta-bitacora-console.component.html",
+      "token": "bitacora",
+      "suggestion": "bitácora",
+      "excerpt": "<span class=\"alta-bitacora-console__toggle-label\">{{ vm.collapsedLabel }}</span>"
+    },
+    {
+      "key": "accent|src/app/features/empleados/components/creacion-avanzada/alta-bitacora-console/alta-bitacora-console.component.html|bitacora|<strong class=\"alta-bitacora-console__normativa-title\">{{ rev.titulo }}</strong>",
+      "file": "src/app/features/empleados/components/creacion-avanzada/alta-bitacora-console/alta-bitacora-console.component.html",
+      "token": "bitacora",
+      "suggestion": "bitácora",
+      "excerpt": "<strong class=\"alta-bitacora-console__normativa-title\">{{ rev.titulo }}</strong>"
+    },
+    {
+      "key": "accent|src/app/features/empleados/components/creacion-avanzada/alta-bitacora-console/alta-bitacora-console.component.html|bitacora|<ul class=\"alta-bitacora-console__list alta-bitacora-console__list--normativa\">",
+      "file": "src/app/features/empleados/components/creacion-avanzada/alta-bitacora-console/alta-bitacora-console.component.html",
+      "token": "bitacora",
+      "suggestion": "bitácora",
+      "excerpt": "<ul class=\"alta-bitacora-console__list alta-bitacora-console__list--normativa\">"
+    },
+    {
+      "key": "accent|src/app/features/empleados/components/creacion-avanzada/alta-bitacora-console/alta-bitacora-console.component.html|bitacora|<ul class=\"alta-bitacora-console__list alta-bitacora-console__list--plain\">",
+      "file": "src/app/features/empleados/components/creacion-avanzada/alta-bitacora-console/alta-bitacora-console.component.html",
+      "token": "bitacora",
+      "suggestion": "bitácora",
+      "excerpt": "<ul class=\"alta-bitacora-console__list alta-bitacora-console__list--plain\">"
+    },
+    {
+      "key": "accent|src/app/features/empleados/components/creacion-avanzada/alta-bitacora-console/alta-bitacora-console.component.html|bitacora|<ul class=\"alta-bitacora-console__list alta-bitacora-console__list--rows\">",
+      "file": "src/app/features/empleados/components/creacion-avanzada/alta-bitacora-console/alta-bitacora-console.component.html",
+      "token": "bitacora",
+      "suggestion": "bitácora",
+      "excerpt": "<ul class=\"alta-bitacora-console__list alta-bitacora-console__list--rows\">"
+    },
+    {
+      "key": "accent|src/app/features/empleados/components/creacion-avanzada/alta-bitacora-console/alta-bitacora-console.component.html|bitacora|<ul class=\"alta-bitacora-console__list\">",
+      "file": "src/app/features/empleados/components/creacion-avanzada/alta-bitacora-console/alta-bitacora-console.component.html",
+      "token": "bitacora",
+      "suggestion": "bitácora",
+      "excerpt": "<ul class=\"alta-bitacora-console__list\">"
+    },
+    {
+      "key": "accent|src/app/features/empleados/components/creacion-avanzada/alta-bitacora-console/alta-bitacora-console.component.html|bitacora|aria-controls=\"alta-bitacora-console-body\"",
+      "file": "src/app/features/empleados/components/creacion-avanzada/alta-bitacora-console/alta-bitacora-console.component.html",
+      "token": "bitacora",
+      "suggestion": "bitácora",
+      "excerpt": "aria-controls=\"alta-bitacora-console-body\""
+    },
+    {
+      "key": "accent|src/app/features/empleados/components/creacion-avanzada/alta-bitacora-console/alta-bitacora-console.component.html|bitacora|class=\"alta-bitacora-console__apply\"",
+      "file": "src/app/features/empleados/components/creacion-avanzada/alta-bitacora-console/alta-bitacora-console.component.html",
+      "token": "bitacora",
+      "suggestion": "bitácora",
+      "excerpt": "class=\"alta-bitacora-console__apply\""
+    },
+    {
+      "key": "accent|src/app/features/empleados/components/creacion-avanzada/alta-bitacora-console/alta-bitacora-console.component.html|bitacora|class=\"alta-bitacora-console__issue\"",
+      "file": "src/app/features/empleados/components/creacion-avanzada/alta-bitacora-console/alta-bitacora-console.component.html",
+      "token": "bitacora",
+      "suggestion": "bitácora",
+      "excerpt": "class=\"alta-bitacora-console__issue\""
+    },
+    {
+      "key": "accent|src/app/features/empleados/components/creacion-avanzada/alta-bitacora-console/alta-bitacora-console.component.html|bitacora|class=\"alta-bitacora-console__keep\"",
+      "file": "src/app/features/empleados/components/creacion-avanzada/alta-bitacora-console/alta-bitacora-console.component.html",
+      "token": "bitacora",
+      "suggestion": "bitácora",
+      "excerpt": "class=\"alta-bitacora-console__keep\""
+    },
+    {
+      "key": "accent|src/app/features/empleados/components/creacion-avanzada/alta-bitacora-console/alta-bitacora-console.component.html|bitacora|class=\"alta-bitacora-console__review\"",
+      "file": "src/app/features/empleados/components/creacion-avanzada/alta-bitacora-console/alta-bitacora-console.component.html",
+      "token": "bitacora",
+      "suggestion": "bitácora",
+      "excerpt": "class=\"alta-bitacora-console__review\""
+    },
+    {
+      "key": "accent|src/app/features/empleados/components/creacion-avanzada/alta-bitacora-console/alta-bitacora-console.component.html|bitacora|class=\"alta-bitacora-console__row-state\"",
+      "file": "src/app/features/empleados/components/creacion-avanzada/alta-bitacora-console/alta-bitacora-console.component.html",
+      "token": "bitacora",
+      "suggestion": "bitácora",
+      "excerpt": "class=\"alta-bitacora-console__row-state\""
+    },
+    {
+      "key": "accent|src/app/features/empleados/components/creacion-avanzada/alta-bitacora-console/alta-bitacora-console.component.html|bitacora|class=\"alta-bitacora-console__section alta-bitacora-console__section--alert\"",
+      "file": "src/app/features/empleados/components/creacion-avanzada/alta-bitacora-console/alta-bitacora-console.component.html",
+      "token": "bitacora",
+      "suggestion": "bitácora",
+      "excerpt": "class=\"alta-bitacora-console__section alta-bitacora-console__section--alert\""
+    },
+    {
+      "key": "accent|src/app/features/empleados/components/creacion-avanzada/alta-bitacora-console/alta-bitacora-console.component.html|bitacora|class=\"alta-bitacora-console__section alta-bitacora-console__section--normativa\"",
+      "file": "src/app/features/empleados/components/creacion-avanzada/alta-bitacora-console/alta-bitacora-console.component.html",
+      "token": "bitacora",
+      "suggestion": "bitácora",
+      "excerpt": "class=\"alta-bitacora-console__section alta-bitacora-console__section--normativa\""
+    },
+    {
+      "key": "accent|src/app/features/empleados/components/creacion-avanzada/alta-bitacora-console/alta-bitacora-console.component.html|bitacora|class=\"alta-bitacora-console__toggle-icon\"",
+      "file": "src/app/features/empleados/components/creacion-avanzada/alta-bitacora-console/alta-bitacora-console.component.html",
+      "token": "bitacora",
+      "suggestion": "bitácora",
+      "excerpt": "class=\"alta-bitacora-console__toggle-icon\""
+    },
+    {
+      "key": "accent|src/app/features/empleados/components/creacion-avanzada/alta-bitacora-console/alta-bitacora-console.component.html|bitacora|class=\"alta-bitacora-console__toggle\"",
+      "file": "src/app/features/empleados/components/creacion-avanzada/alta-bitacora-console/alta-bitacora-console.component.html",
+      "token": "bitacora",
+      "suggestion": "bitácora",
+      "excerpt": "class=\"alta-bitacora-console__toggle\""
+    },
+    {
+      "key": "accent|src/app/features/empleados/components/creacion-avanzada/alta-bitacora-console/alta-bitacora-console.component.html|bitacora|class=\"alta-bitacora-console\"",
+      "file": "src/app/features/empleados/components/creacion-avanzada/alta-bitacora-console/alta-bitacora-console.component.html",
+      "token": "bitacora",
+      "suggestion": "bitácora",
+      "excerpt": "class=\"alta-bitacora-console\""
+    },
+    {
+      "key": "accent|src/app/features/empleados/components/creacion-avanzada/alta-bitacora-console/alta-bitacora-console.component.html|titulo|<strong class=\"alta-bitacora-console__normativa-title\">{{ rev.titulo }}</strong>",
+      "file": "src/app/features/empleados/components/creacion-avanzada/alta-bitacora-console/alta-bitacora-console.component.html",
+      "token": "titulo",
+      "suggestion": "título",
+      "excerpt": "<strong class=\"alta-bitacora-console__normativa-title\">{{ rev.titulo }}</strong>"
+    },
+    {
+      "key": "accent|src/app/features/empleados/components/creacion-avanzada/alta-bitacora-console/alta-bitacora-console.component.spec.ts|bitacora|'.alta-bitacora-console__apply',",
+      "file": "src/app/features/empleados/components/creacion-avanzada/alta-bitacora-console/alta-bitacora-console.component.spec.ts",
+      "token": "bitacora",
+      "suggestion": "bitácora",
+      "excerpt": "'.alta-bitacora-console__apply',"
+    },
+    {
+      "key": "accent|src/app/features/empleados/components/creacion-avanzada/alta-bitacora-console/alta-bitacora-console.component.spec.ts|bitacora|'.alta-bitacora-console__issue',",
+      "file": "src/app/features/empleados/components/creacion-avanzada/alta-bitacora-console/alta-bitacora-console.component.spec.ts",
+      "token": "bitacora",
+      "suggestion": "bitácora",
+      "excerpt": "'.alta-bitacora-console__issue',"
+    },
+    {
+      "key": "accent|src/app/features/empleados/components/creacion-avanzada/alta-bitacora-console/alta-bitacora-console.component.spec.ts|bitacora|'.alta-bitacora-console__review',",
+      "file": "src/app/features/empleados/components/creacion-avanzada/alta-bitacora-console/alta-bitacora-console.component.spec.ts",
+      "token": "bitacora",
+      "suggestion": "bitácora",
+      "excerpt": "'.alta-bitacora-console__review',"
+    },
+    {
+      "key": "accent|src/app/features/empleados/components/creacion-avanzada/alta-bitacora-console/alta-bitacora-console.component.spec.ts|bitacora|(fixture.nativeElement.querySelector('.alta-bitacora-console__toggle') as HTMLButtonElement).click();",
+      "file": "src/app/features/empleados/components/creacion-avanzada/alta-bitacora-console/alta-bitacora-console.component.spec.ts",
+      "token": "bitacora",
+      "suggestion": "bitácora",
+      "excerpt": "(fixture.nativeElement.querySelector('.alta-bitacora-console__toggle') as HTMLButtonElement).click();"
+    },
+    {
+      "key": "accent|src/app/features/empleados/components/creacion-avanzada/alta-bitacora-console/alta-bitacora-console.component.spec.ts|bitacora|const root = fixture.nativeElement.querySelector('.alta-bitacora-console');",
+      "file": "src/app/features/empleados/components/creacion-avanzada/alta-bitacora-console/alta-bitacora-console.component.spec.ts",
+      "token": "bitacora",
+      "suggestion": "bitácora",
+      "excerpt": "const root = fixture.nativeElement.querySelector('.alta-bitacora-console');"
+    },
+    {
+      "key": "accent|src/app/features/empleados/components/creacion-avanzada/alta-bitacora-console/alta-bitacora-console.component.spec.ts|bitacora|expect(fixture.nativeElement.querySelector('.alta-bitacora-console__body')).not.toBeNull();",
+      "file": "src/app/features/empleados/components/creacion-avanzada/alta-bitacora-console/alta-bitacora-console.component.spec.ts",
+      "token": "bitacora",
+      "suggestion": "bitácora",
+      "excerpt": "expect(fixture.nativeElement.querySelector('.alta-bitacora-console__body')).not.toBeNull();"
+    },
+    {
+      "key": "accent|src/app/features/empleados/components/creacion-avanzada/alta-bitacora-console/alta-bitacora-console.component.spec.ts|bitacora|expect(fixture.nativeElement.querySelector('.alta-bitacora-console__body')).toBeNull();",
+      "file": "src/app/features/empleados/components/creacion-avanzada/alta-bitacora-console/alta-bitacora-console.component.spec.ts",
+      "token": "bitacora",
+      "suggestion": "bitácora",
+      "excerpt": "expect(fixture.nativeElement.querySelector('.alta-bitacora-console__body')).toBeNull();"
+    },
+    {
+      "key": "accent|src/app/features/empleados/components/creacion-avanzada/alta-bitacora-console/alta-bitacora-console.component.spec.ts|bitacora|expect(fixture.nativeElement.querySelector('.alta-bitacora-console')).toBeNull();",
+      "file": "src/app/features/empleados/components/creacion-avanzada/alta-bitacora-console/alta-bitacora-console.component.spec.ts",
+      "token": "bitacora",
+      "suggestion": "bitácora",
+      "excerpt": "expect(fixture.nativeElement.querySelector('.alta-bitacora-console')).toBeNull();"
+    },
+    {
+      "key": "accent|src/app/features/empleados/components/creacion-avanzada/alta-bitacora-console/alta-bitacora-console.component.spec.ts|bitacora|expect(host.classList.contains('alta-bitacora-console-host--expanded')).toBe(false);",
+      "file": "src/app/features/empleados/components/creacion-avanzada/alta-bitacora-console/alta-bitacora-console.component.spec.ts",
+      "token": "bitacora",
+      "suggestion": "bitácora",
+      "excerpt": "expect(host.classList.contains('alta-bitacora-console-host--expanded')).toBe(false);"
+    },
+    {
+      "key": "accent|src/app/features/empleados/components/creacion-avanzada/alta-bitacora-console/alta-bitacora-console.component.spec.ts|bitacora|expect(host.classList.contains('alta-bitacora-console-host--expanded')).toBe(true);",
+      "file": "src/app/features/empleados/components/creacion-avanzada/alta-bitacora-console/alta-bitacora-console.component.spec.ts",
+      "token": "bitacora",
+      "suggestion": "bitácora",
+      "excerpt": "expect(host.classList.contains('alta-bitacora-console-host--expanded')).toBe(true);"
+    },
+    {
+      "key": "accent|src/app/features/empleados/components/creacion-avanzada/alta-bitacora-console/alta-bitacora-console.component.spec.ts|bitacora|expect(root?.classList.contains('alta-bitacora-console--expanded')).toBe(false);",
+      "file": "src/app/features/empleados/components/creacion-avanzada/alta-bitacora-console/alta-bitacora-console.component.spec.ts",
+      "token": "bitacora",
+      "suggestion": "bitácora",
+      "excerpt": "expect(root?.classList.contains('alta-bitacora-console--expanded')).toBe(false);"
+    },
+    {
+      "key": "accent|src/app/features/empleados/components/creacion-avanzada/alta-bitacora-console/alta-bitacora-console.component.spec.ts|bitacora|expect(root?.classList.contains('alta-bitacora-console--expanded')).toBe(true);",
+      "file": "src/app/features/empleados/components/creacion-avanzada/alta-bitacora-console/alta-bitacora-console.component.spec.ts",
+      "token": "bitacora",
+      "suggestion": "bitácora",
+      "excerpt": "expect(root?.classList.contains('alta-bitacora-console--expanded')).toBe(true);"
+    },
+    {
+      "key": "accent|src/app/features/empleados/components/creacion-avanzada/alta-bitacora-console/alta-bitacora-console.component.spec.ts|bitacora|import { AltaBitacoraConsoleComponent } from './alta-bitacora-console.component';",
+      "file": "src/app/features/empleados/components/creacion-avanzada/alta-bitacora-console/alta-bitacora-console.component.spec.ts",
+      "token": "bitacora",
+      "suggestion": "bitácora",
+      "excerpt": "import { AltaBitacoraConsoleComponent } from './alta-bitacora-console.component';"
+    },
+    {
+      "key": "accent|src/app/features/empleados/components/creacion-avanzada/alta-bitacora-console/alta-bitacora-console.component.ts|bitacora|@HostBinding('class.alta-bitacora-console-host--expanded')",
+      "file": "src/app/features/empleados/components/creacion-avanzada/alta-bitacora-console/alta-bitacora-console.component.ts",
+      "token": "bitacora",
+      "suggestion": "bitácora",
+      "excerpt": "@HostBinding('class.alta-bitacora-console-host--expanded')"
+    },
+    {
+      "key": "accent|src/app/features/empleados/components/creacion-avanzada/alta-bitacora-console/alta-bitacora-console.component.ts|bitacora|@HostBinding('class.alta-bitacora-console-host--hidden')",
+      "file": "src/app/features/empleados/components/creacion-avanzada/alta-bitacora-console/alta-bitacora-console.component.ts",
+      "token": "bitacora",
+      "suggestion": "bitácora",
+      "excerpt": "@HostBinding('class.alta-bitacora-console-host--hidden')"
+    },
+    {
+      "key": "accent|src/app/features/empleados/components/creacion-avanzada/alta-bitacora-console/alta-bitacora-console.component.ts|bitacora|class: 'alta-bitacora-console-host',",
+      "file": "src/app/features/empleados/components/creacion-avanzada/alta-bitacora-console/alta-bitacora-console.component.ts",
+      "token": "bitacora",
+      "suggestion": "bitácora",
+      "excerpt": "class: 'alta-bitacora-console-host',"
+    },
+    {
+      "key": "accent|src/app/features/empleados/components/creacion-avanzada/alta-bitacora-console/alta-bitacora-console.component.ts|bitacora|selector: 'app-alta-bitacora-console',",
+      "file": "src/app/features/empleados/components/creacion-avanzada/alta-bitacora-console/alta-bitacora-console.component.ts",
+      "token": "bitacora",
+      "suggestion": "bitácora",
+      "excerpt": "selector: 'app-alta-bitacora-console',"
+    },
+    {
+      "key": "accent|src/app/features/empleados/components/creacion-avanzada/alta-bitacora-console/alta-bitacora-console.component.ts|bitacora|styleUrls: ['./alta-bitacora-console.component.css'],",
+      "file": "src/app/features/empleados/components/creacion-avanzada/alta-bitacora-console/alta-bitacora-console.component.ts",
+      "token": "bitacora",
+      "suggestion": "bitácora",
+      "excerpt": "styleUrls: ['./alta-bitacora-console.component.css'],"
+    },
+    {
+      "key": "accent|src/app/features/empleados/components/creacion-avanzada/alta-bitacora-console/alta-bitacora-console.component.ts|bitacora|templateUrl: './alta-bitacora-console.component.html',",
+      "file": "src/app/features/empleados/components/creacion-avanzada/alta-bitacora-console/alta-bitacora-console.component.ts",
+      "token": "bitacora",
+      "suggestion": "bitácora",
+      "excerpt": "templateUrl: './alta-bitacora-console.component.html',"
+    },
+    {
       "key": "accent|src/app/features/empleados/components/expediente/empleado-diagnostico-panel/empleado-diagnostico-panel.component.ts|diagnostico|'./empleado-diagnostico-panel.component.css',",
       "file": "src/app/features/empleados/components/expediente/empleado-diagnostico-panel/empleado-diagnostico-panel.component.ts",
       "token": "diagnostico",
@@ -44054,6 +44817,20 @@
       "excerpt": "templateUrl: './empleado-diagnostico-panel.component.html',"
     },
     {
+      "key": "accent|src/app/features/empleados/components/form-empleado/form-empleado.html|bitacora|<app-alta-bitacora-console",
+      "file": "src/app/features/empleados/components/form-empleado/form-empleado.html",
+      "token": "bitacora",
+      "suggestion": "bitácora",
+      "excerpt": "<app-alta-bitacora-console"
+    },
+    {
+      "key": "accent|src/app/features/empleados/components/form-empleado/form-empleado.html|bitacora|<div class=\"bitacora-decision-card bitacora-decision-card--neutral\" role=\"note\">",
+      "file": "src/app/features/empleados/components/form-empleado/form-empleado.html",
+      "token": "bitacora",
+      "suggestion": "bitácora",
+      "excerpt": "<div class=\"bitacora-decision-card bitacora-decision-card--neutral\" role=\"note\">"
+    },
+    {
       "key": "accent|src/app/features/empleados/components/form-empleado/form-empleado.html|bitacora|<dl class=\"bitacora-decision-card__meta\">",
       "file": "src/app/features/empleados/components/form-empleado/form-empleado.html",
       "token": "bitacora",
@@ -44066,6 +44843,13 @@
       "token": "bitacora",
       "suggestion": "bitácora",
       "excerpt": "<span class=\"bitacora-decision-card__eyebrow\""
+    },
+    {
+      "key": "accent|src/app/features/empleados/components/form-empleado/form-empleado.html|bitacora|class=\"bitacora-decision-card bitacora-decision-card--neutral\"",
+      "file": "src/app/features/empleados/components/form-empleado/form-empleado.html",
+      "token": "bitacora",
+      "suggestion": "bitácora",
+      "excerpt": "class=\"bitacora-decision-card bitacora-decision-card--neutral\""
     },
     {
       "key": "accent|src/app/features/empleados/components/form-empleado/form-empleado.html|bitacora|class=\"wizard-na-panel bitacora-decision-card\"",
@@ -44082,6 +44866,13 @@
       "excerpt": "class=\"wizard-optional-panel bitacora-decision-card bitacora-decision-card--optional\""
     },
     {
+      "key": "accent|src/app/features/empleados/components/form-empleado/form-empleado.html|decision|<div class=\"bitacora-decision-card bitacora-decision-card--neutral\" role=\"note\">",
+      "file": "src/app/features/empleados/components/form-empleado/form-empleado.html",
+      "token": "decision",
+      "suggestion": "decisión",
+      "excerpt": "<div class=\"bitacora-decision-card bitacora-decision-card--neutral\" role=\"note\">"
+    },
+    {
       "key": "accent|src/app/features/empleados/components/form-empleado/form-empleado.html|decision|<dl class=\"bitacora-decision-card__meta\">",
       "file": "src/app/features/empleados/components/form-empleado/form-empleado.html",
       "token": "decision",
@@ -44096,6 +44887,13 @@
       "excerpt": "<span class=\"bitacora-decision-card__eyebrow\""
     },
     {
+      "key": "accent|src/app/features/empleados/components/form-empleado/form-empleado.html|decision|class=\"bitacora-decision-card bitacora-decision-card--neutral\"",
+      "file": "src/app/features/empleados/components/form-empleado/form-empleado.html",
+      "token": "decision",
+      "suggestion": "decisión",
+      "excerpt": "class=\"bitacora-decision-card bitacora-decision-card--neutral\""
+    },
+    {
       "key": "accent|src/app/features/empleados/components/form-empleado/form-empleado.html|decision|class=\"wizard-na-panel bitacora-decision-card\"",
       "file": "src/app/features/empleados/components/form-empleado/form-empleado.html",
       "token": "decision",
@@ -44108,48 +44906,6 @@
       "token": "decision",
       "suggestion": "decisión",
       "excerpt": "class=\"wizard-optional-panel bitacora-decision-card bitacora-decision-card--optional\""
-    },
-    {
-      "key": "accent|src/app/features/empleados/components/form-empleado/form-empleado.html|diagnostico|<div class=\"alta-resumen-diagnostico-panel__head\">",
-      "file": "src/app/features/empleados/components/form-empleado/form-empleado.html",
-      "token": "diagnostico",
-      "suggestion": "diagnóstico",
-      "excerpt": "<div class=\"alta-resumen-diagnostico-panel__head\">"
-    },
-    {
-      "key": "accent|src/app/features/empleados/components/form-empleado/form-empleado.html|diagnostico|<span class=\"alta-resumen-diagnostico-panel__block\">{{ issue.etiquetaBloque }}</span>",
-      "file": "src/app/features/empleados/components/form-empleado/form-empleado.html",
-      "token": "diagnostico",
-      "suggestion": "diagnóstico",
-      "excerpt": "<span class=\"alta-resumen-diagnostico-panel__block\">{{ issue.etiquetaBloque }}</span>"
-    },
-    {
-      "key": "accent|src/app/features/empleados/components/form-empleado/form-empleado.html|diagnostico|<span class=\"alta-resumen-diagnostico-panel__msg\">{{ issue.mensaje }}</span>",
-      "file": "src/app/features/empleados/components/form-empleado/form-empleado.html",
-      "token": "diagnostico",
-      "suggestion": "diagnóstico",
-      "excerpt": "<span class=\"alta-resumen-diagnostico-panel__msg\">{{ issue.mensaje }}</span>"
-    },
-    {
-      "key": "accent|src/app/features/empleados/components/form-empleado/form-empleado.html|diagnostico|<ul class=\"alta-resumen-diagnostico-panel__list\">",
-      "file": "src/app/features/empleados/components/form-empleado/form-empleado.html",
-      "token": "diagnostico",
-      "suggestion": "diagnóstico",
-      "excerpt": "<ul class=\"alta-resumen-diagnostico-panel__list\">"
-    },
-    {
-      "key": "accent|src/app/features/empleados/components/form-empleado/form-empleado.html|diagnostico|class=\"alta-resumen-diagnostico-panel__issue\"",
-      "file": "src/app/features/empleados/components/form-empleado/form-empleado.html",
-      "token": "diagnostico",
-      "suggestion": "diagnóstico",
-      "excerpt": "class=\"alta-resumen-diagnostico-panel__issue\""
-    },
-    {
-      "key": "accent|src/app/features/empleados/components/form-empleado/form-empleado.html|diagnostico|class=\"alta-resumen-diagnostico-panel\"",
-      "file": "src/app/features/empleados/components/form-empleado/form-empleado.html",
-      "token": "diagnostico",
-      "suggestion": "diagnóstico",
-      "excerpt": "class=\"alta-resumen-diagnostico-panel\""
     },
     {
       "key": "accent|src/app/features/empleados/components/form-empleado/form-empleado.html|prevision|<app-empleado-prevision-salud",
@@ -44173,18 +44929,18 @@
       "excerpt": "></app-empleado-prevision-salud>"
     },
     {
-      "key": "accent|src/app/features/empleados/components/form-empleado/form-empleado.html|relacion|[visibleBlocks]=\"['relacion', 'contratoBase', 'centroCosto']\"",
+      "key": "accent|src/app/features/empleados/components/form-empleado/form-empleado.html|relacion|[bloquesVisibles]=\"['relacion', 'contratoBase', 'centroCosto']\"",
       "file": "src/app/features/empleados/components/form-empleado/form-empleado.html",
       "token": "relacion",
       "suggestion": "relación",
-      "excerpt": "[visibleBlocks]=\"['relacion', 'contratoBase', 'centroCosto']\""
+      "excerpt": "[bloquesVisibles]=\"['relacion', 'contratoBase', 'centroCosto']\""
     },
     {
-      "key": "accent|src/app/features/empleados/components/form-empleado/form-empleado.html|remuneracion|[visibleBlocks]=\"['remuneracion']\"",
+      "key": "accent|src/app/features/empleados/components/form-empleado/form-empleado.html|remuneracion|[bloquesVisibles]=\"['remuneracion']\"",
       "file": "src/app/features/empleados/components/form-empleado/form-empleado.html",
       "token": "remuneracion",
       "suggestion": "remuneración",
-      "excerpt": "[visibleBlocks]=\"['remuneracion']\""
+      "excerpt": "[bloquesVisibles]=\"['remuneracion']\""
     },
     {
       "key": "accent|src/app/features/empleados/components/form-empleado/form-empleado.spec.ts|accion|it('accion de pendiente del modal navega al paso y cierra el modal', async () => {",
@@ -44194,18 +44950,25 @@
       "excerpt": "it('accion de pendiente del modal navega al paso y cierra el modal', async () => {"
     },
     {
-      "key": "accent|src/app/features/empleados/components/form-empleado/form-empleado.spec.ts|accion|it('Boleta de honorarios usa accion final de borrador en el resumen', async () => {",
+      "key": "accent|src/app/features/empleados/components/form-empleado/form-empleado.spec.ts|accion|it('Boleta de honorarios usa accion final propia en el resumen', async () => {",
       "file": "src/app/features/empleados/components/form-empleado/form-empleado.spec.ts",
       "token": "accion",
       "suggestion": "acción",
-      "excerpt": "it('Boleta de honorarios usa accion final de borrador en el resumen', async () => {"
+      "excerpt": "it('Boleta de honorarios usa accion final propia en el resumen', async () => {"
     },
     {
-      "key": "accent|src/app/features/empleados/components/form-empleado/form-empleado.spec.ts|basica|it('no publica CTA del shell en creacion basica', async () => {",
+      "key": "accent|src/app/features/empleados/components/form-empleado/form-empleado.spec.ts|basica|actionId: 'empleado-alta-basica-guardar-borrador',",
       "file": "src/app/features/empleados/components/form-empleado/form-empleado.spec.ts",
       "token": "basica",
       "suggestion": "básica",
-      "excerpt": "it('no publica CTA del shell en creacion basica', async () => {"
+      "excerpt": "actionId: 'empleado-alta-basica-guardar-borrador',"
+    },
+    {
+      "key": "accent|src/app/features/empleados/components/form-empleado/form-empleado.spec.ts|basica|it('publica CTA de borrador en creacion basica', async () => {",
+      "file": "src/app/features/empleados/components/form-empleado/form-empleado.spec.ts",
+      "token": "basica",
+      "suggestion": "básica",
+      "excerpt": "it('publica CTA de borrador en creacion basica', async () => {"
     },
     {
       "key": "accent|src/app/features/empleados/components/form-empleado/form-empleado.spec.ts|bitacora|it('publica Guardar borrador en el shell durante la bitacora avanzada', async () => {",
@@ -44215,18 +44978,18 @@
       "excerpt": "it('publica Guardar borrador en el shell durante la bitacora avanzada', async () => {"
     },
     {
-      "key": "accent|src/app/features/empleados/components/form-empleado/form-empleado.spec.ts|creacion|it('no publica CTA del shell en creacion basica', async () => {",
+      "key": "accent|src/app/features/empleados/components/form-empleado/form-empleado.spec.ts|creacion|it('publica CTA de borrador en creacion basica', async () => {",
       "file": "src/app/features/empleados/components/form-empleado/form-empleado.spec.ts",
       "token": "creacion",
       "suggestion": "creación",
-      "excerpt": "it('no publica CTA del shell en creacion basica', async () => {"
+      "excerpt": "it('publica CTA de borrador en creacion basica', async () => {"
     },
     {
-      "key": "accent|src/app/features/empleados/components/form-empleado/form-empleado.spec.ts|decision|expect(component.advancedActionModal()?.kind).toBe('coherence-decision');",
+      "key": "accent|src/app/features/empleados/components/form-empleado/form-empleado.spec.ts|decision|expect(component.modalAccionAvanzada()?.kind).toBe('coherence-decision');",
       "file": "src/app/features/empleados/components/form-empleado/form-empleado.spec.ts",
       "token": "decision",
       "suggestion": "decisión",
-      "excerpt": "expect(component.advancedActionModal()?.kind).toBe('coherence-decision');"
+      "excerpt": "expect(component.modalAccionAvanzada()?.kind).toBe('coherence-decision');"
     },
     {
       "key": "accent|src/app/features/empleados/components/form-empleado/form-empleado.spec.ts|informacion|expect(component.cargoVisible()).toBe('Sin informacion');",
@@ -44285,11 +45048,25 @@
       "excerpt": "? \"empleado-alta-basica-guardar-borrador\""
     },
     {
+      "key": "accent|src/app/features/empleados/components/form-empleado/form-empleado.ts|bitacora|import { AltaBitacoraConsoleComponent } from \"../creacion-avanzada/alta-bitacora-console/alta-bitacora-console.component\";",
+      "file": "src/app/features/empleados/components/form-empleado/form-empleado.ts",
+      "token": "bitacora",
+      "suggestion": "bitácora",
+      "excerpt": "import { AltaBitacoraConsoleComponent } from \"../creacion-avanzada/alta-bitacora-console/alta-bitacora-console.component\";"
+    },
+    {
       "key": "accent|src/app/features/empleados/components/form-empleado/form-empleado.ts|creacion|\"Esta ficha no tiene un borrador de creacion avanzada guardado. Usa la ficha del empleado para completar por secciones.\",",
       "file": "src/app/features/empleados/components/form-empleado/form-empleado.ts",
       "token": "creacion",
       "suggestion": "creación",
       "excerpt": "\"Esta ficha no tiene un borrador de creacion avanzada guardado. Usa la ficha del empleado para completar por secciones.\","
+    },
+    {
+      "key": "accent|src/app/features/empleados/components/form-empleado/form-empleado.ts|creacion|import { AltaBitacoraConsoleComponent } from \"../creacion-avanzada/alta-bitacora-console/alta-bitacora-console.component\";",
+      "file": "src/app/features/empleados/components/form-empleado/form-empleado.ts",
+      "token": "creacion",
+      "suggestion": "creación",
+      "excerpt": "import { AltaBitacoraConsoleComponent } from \"../creacion-avanzada/alta-bitacora-console/alta-bitacora-console.component\";"
     },
     {
       "key": "accent|src/app/features/empleados/components/form-empleado/form-empleado.ts|decision|kind: \"coherence-decision\",",
@@ -44327,11 +45104,11 @@
       "excerpt": "return \"No fue posible registrar la ficha. Revisa la informacion e intenta nuevamente.\";"
     },
     {
-      "key": "accent|src/app/features/empleados/components/form-empleado/form-empleado.ts|informacion|return cargo && !this.isTechnicalCargo(cargo) ? cargo : \"Sin informacion\";",
+      "key": "accent|src/app/features/empleados/components/form-empleado/form-empleado.ts|informacion|return cargo && !this.esCargoTecnico(cargo) ? cargo : \"Sin informacion\";",
       "file": "src/app/features/empleados/components/form-empleado/form-empleado.ts",
       "token": "informacion",
       "suggestion": "información",
-      "excerpt": "return cargo && !this.isTechnicalCargo(cargo) ? cargo : \"Sin informacion\";"
+      "excerpt": "return cargo && !this.esCargoTecnico(cargo) ? cargo : \"Sin informacion\";"
     },
     {
       "key": "accent|src/app/features/empleados/components/form-empleado/form-empleado.ts|prevision|\"prevision.account2-currency\":",
@@ -44467,6 +45244,20 @@
       "excerpt": "if (cat === \"Jornada\" || cat === \"Remuneracion\") {"
     },
     {
+      "key": "accent|src/app/features/empleados/components/form-empleado/form-empleado.ts|titulo|: `${revisiones.length} revisiones normativas en este registro. ${primera.titulo}.`,",
+      "file": "src/app/features/empleados/components/form-empleado/form-empleado.ts",
+      "token": "titulo",
+      "suggestion": "título",
+      "excerpt": ": `${revisiones.length} revisiones normativas en este registro. ${primera.titulo}.`,"
+    },
+    {
+      "key": "accent|src/app/features/empleados/components/form-empleado/form-empleado.ts|validacion|} from '../../rules/empleado-alta-validacion-input';",
+      "file": "src/app/features/empleados/components/form-empleado/form-empleado.ts",
+      "token": "validacion",
+      "suggestion": "validación",
+      "excerpt": "} from '../../rules/empleado-alta-validacion-input';"
+    },
+    {
       "key": "accent|src/app/features/empleados/components/secciones/contrato/contrato.html|excepcion|<span>Aplicar excepcion art. 22</span>",
       "file": "src/app/features/empleados/components/secciones/contrato/contrato.html",
       "token": "excepcion",
@@ -44488,18 +45279,18 @@
       "excerpt": "<span class=\"period-chip\">Tabla vigente: {{ periodo }}</span>"
     },
     {
-      "key": "accent|src/app/features/empleados/components/secciones/contrato/contrato.html|relacion|@if (isBlockVisible('relacion')) {",
+      "key": "accent|src/app/features/empleados/components/secciones/contrato/contrato.html|relacion|@if (esBloqueVisible('relacion')) {",
       "file": "src/app/features/empleados/components/secciones/contrato/contrato.html",
       "token": "relacion",
       "suggestion": "relación",
-      "excerpt": "@if (isBlockVisible('relacion')) {"
+      "excerpt": "@if (esBloqueVisible('relacion')) {"
     },
     {
-      "key": "accent|src/app/features/empleados/components/secciones/contrato/contrato.html|remuneracion|@if (isBlockVisible('remuneracion')) {",
+      "key": "accent|src/app/features/empleados/components/secciones/contrato/contrato.html|remuneracion|@if (esBloqueVisible('remuneracion')) {",
       "file": "src/app/features/empleados/components/secciones/contrato/contrato.html",
       "token": "remuneracion",
       "suggestion": "remuneración",
-      "excerpt": "@if (isBlockVisible('remuneracion')) {"
+      "excerpt": "@if (esBloqueVisible('remuneracion')) {"
     },
     {
       "key": "accent|src/app/features/empleados/components/secciones/perfil-laboral/perfil-laboral.html|codigo|@for (condition of condiciones; track condition.codigo) {",
@@ -44537,11 +45328,11 @@
       "excerpt": "id=\"perfil-observacion\""
     },
     {
-      "key": "accent|src/app/features/empleados/components/secciones/prevision-salud/prevision-salud.html|prevision|[class.prevision-grid-adv]=\"advancedGridLayout\"",
+      "key": "accent|src/app/features/empleados/components/secciones/prevision-salud/prevision-salud.html|prevision|[class.prevision-grid-adv]=\"grillaAvanzada\"",
       "file": "src/app/features/empleados/components/secciones/prevision-salud/prevision-salud.html",
       "token": "prevision",
       "suggestion": "previsión",
-      "excerpt": "[class.prevision-grid-adv]=\"advancedGridLayout\""
+      "excerpt": "[class.prevision-grid-adv]=\"grillaAvanzada\""
     },
     {
       "key": "accent|src/app/features/empleados/components/secciones/prevision-salud/prevision-salud.html|prevision|<app-card className=\"prevision-card\">",
@@ -44661,13 +45452,6 @@
       "token": "prevision",
       "suggestion": "previsión",
       "excerpt": "<div class=\"prevision-state-note is-none\" role=\"status\">"
-    },
-    {
-      "key": "accent|src/app/features/empleados/components/secciones/prevision-salud/prevision-salud.html|prevision|<p class=\"prevision-state-note is-neutral\">",
-      "file": "src/app/features/empleados/components/secciones/prevision-salud/prevision-salud.html",
-      "token": "prevision",
-      "suggestion": "previsión",
-      "excerpt": "<p class=\"prevision-state-note is-neutral\">"
     },
     {
       "key": "accent|src/app/features/empleados/components/secciones/prevision-salud/prevision-salud.html|prevision|<span class=\"prevision-impact__eyebrow\">Al continuar: {{ apviDestinationLabel }}</span>",
@@ -44796,6 +45580,34 @@
       "excerpt": "header: 'Accion',"
     },
     {
+      "key": "accent|src/app/features/empleados/containers/ficha-empleado-container/components/ficha-empleado-edit-form/ficha-empleado-edit-form.component.html|prevision|} @else if (componente === 'prevision') {",
+      "file": "src/app/features/empleados/containers/ficha-empleado-container/components/ficha-empleado-edit-form/ficha-empleado-edit-form.component.html",
+      "token": "prevision",
+      "suggestion": "previsión",
+      "excerpt": "} @else if (componente === 'prevision') {"
+    },
+    {
+      "key": "accent|src/app/features/empleados/containers/ficha-empleado-container/components/ficha-empleado-edit-form/ficha-empleado-edit-form.component.html|prevision|<app-empleado-prevision-salud",
+      "file": "src/app/features/empleados/containers/ficha-empleado-container/components/ficha-empleado-edit-form/ficha-empleado-edit-form.component.html",
+      "token": "prevision",
+      "suggestion": "previsión",
+      "excerpt": "<app-empleado-prevision-salud"
+    },
+    {
+      "key": "accent|src/app/features/empleados/containers/ficha-empleado-container/components/ficha-empleado-edit-form/ficha-empleado-edit-form.component.html|prevision|></app-empleado-prevision-salud>",
+      "file": "src/app/features/empleados/containers/ficha-empleado-container/components/ficha-empleado-edit-form/ficha-empleado-edit-form.component.html",
+      "token": "prevision",
+      "suggestion": "previsión",
+      "excerpt": "></app-empleado-prevision-salud>"
+    },
+    {
+      "key": "accent|src/app/features/empleados/containers/ficha-empleado-container/components/ficha-empleado-edit-form/ficha-empleado-edit-form.component.ts|prevision|import { PrevisionSaludComponent } from '../../../../components/secciones/prevision-salud/prevision-salud';",
+      "file": "src/app/features/empleados/containers/ficha-empleado-container/components/ficha-empleado-edit-form/ficha-empleado-edit-form.component.ts",
+      "token": "prevision",
+      "suggestion": "previsión",
+      "excerpt": "import { PrevisionSaludComponent } from '../../../../components/secciones/prevision-salud/prevision-salud';"
+    },
+    {
       "key": "accent|src/app/features/empleados/containers/ficha-empleado-container/components/ficha-empleado-workspace/ficha-empleado-workspace.component.html|accion|[queryParams]=\"{ persona: employee.id, accion: null }\"",
       "file": "src/app/features/empleados/containers/ficha-empleado-container/components/ficha-empleado-workspace/ficha-empleado-workspace.component.html",
       "token": "accion",
@@ -44803,39 +45615,25 @@
       "excerpt": "[queryParams]=\"{ persona: employee.id, accion: null }\""
     },
     {
-      "key": "accent|src/app/features/empleados/containers/ficha-empleado-container/components/ficha-empleado-workspace/ficha-empleado-workspace.component.html|diagnostico|<app-empleado-diagnostico-panel [estado]=\"estado\" [progressStyle]=\"f.progressStyle(employee)\" [validando]=\"f.isValidatingPayroll()\" (navegarFaltante)=\"f.navegarFaltante($event)\" (a",
+      "key": "accent|src/app/features/empleados/containers/ficha-empleado-container/components/ficha-empleado-workspace/ficha-empleado-workspace.component.html|diagnostico|<app-empleado-diagnostico-panel",
       "file": "src/app/features/empleados/containers/ficha-empleado-container/components/ficha-empleado-workspace/ficha-empleado-workspace.component.html",
       "token": "diagnostico",
       "suggestion": "diagnóstico",
-      "excerpt": "<app-empleado-diagnostico-panel [estado]=\"estado\" [progressStyle]=\"f.progressStyle(employee)\" [validando]=\"f.isValidatingPayroll()\" (navegarFaltante)=\"f.navegarFaltante($event)\" (a"
+      "excerpt": "<app-empleado-diagnostico-panel"
     },
     {
-      "key": "accent|src/app/features/empleados/containers/ficha-empleado-container/components/ficha-empleado-workspace/ficha-empleado-workspace.component.html|prevision|} @else if (f.editComponentForBlock(block.id) === 'prevision') {",
-      "file": "src/app/features/empleados/containers/ficha-empleado-container/components/ficha-empleado-workspace/ficha-empleado-workspace.component.html",
-      "token": "prevision",
-      "suggestion": "previsión",
-      "excerpt": "} @else if (f.editComponentForBlock(block.id) === 'prevision') {"
-    },
-    {
-      "key": "accent|src/app/features/empleados/containers/ficha-empleado-container/components/ficha-empleado-workspace/ficha-empleado-workspace.component.html|prevision|<app-empleado-prevision-salud",
-      "file": "src/app/features/empleados/containers/ficha-empleado-container/components/ficha-empleado-workspace/ficha-empleado-workspace.component.html",
-      "token": "prevision",
-      "suggestion": "previsión",
-      "excerpt": "<app-empleado-prevision-salud"
-    },
-    {
-      "key": "accent|src/app/features/empleados/containers/ficha-empleado-container/components/ficha-empleado-workspace/ficha-empleado-workspace.component.html|prevision|></app-empleado-prevision-salud>",
-      "file": "src/app/features/empleados/containers/ficha-empleado-container/components/ficha-empleado-workspace/ficha-empleado-workspace.component.html",
-      "token": "prevision",
-      "suggestion": "previsión",
-      "excerpt": "></app-empleado-prevision-salud>"
-    },
-    {
-      "key": "accent|src/app/features/empleados/containers/ficha-empleado-container/components/ficha-empleado-workspace/ficha-empleado-workspace.component.html|remuneracion|f.tabActivo() === 'remuneracion' &&",
+      "key": "accent|src/app/features/empleados/containers/ficha-empleado-container/components/ficha-empleado-workspace/ficha-empleado-workspace.component.html|remuneracion|@if (f.tabActivo() === 'remuneracion' && employee.aptoParaRemuneraciones) {",
       "file": "src/app/features/empleados/containers/ficha-empleado-container/components/ficha-empleado-workspace/ficha-empleado-workspace.component.html",
       "token": "remuneracion",
       "suggestion": "remuneración",
-      "excerpt": "f.tabActivo() === 'remuneracion' &&"
+      "excerpt": "@if (f.tabActivo() === 'remuneracion' && employee.aptoParaRemuneraciones) {"
+    },
+    {
+      "key": "accent|src/app/features/empleados/containers/ficha-empleado-container/components/ficha-empleado-workspace/ficha-empleado-workspace.component.html|remuneracion|f.tabActivo() === 'remuneracion' && employee.aptoParaRemuneraciones",
+      "file": "src/app/features/empleados/containers/ficha-empleado-container/components/ficha-empleado-workspace/ficha-empleado-workspace.component.html",
+      "token": "remuneracion",
+      "suggestion": "remuneración",
+      "excerpt": "f.tabActivo() === 'remuneracion' && employee.aptoParaRemuneraciones"
     },
     {
       "key": "accent|src/app/features/empleados/containers/ficha-empleado-container/components/ficha-empleado-workspace/ficha-empleado-workspace.component.ts|diagnostico|import { EmpleadoDiagnosticoPanelComponent } from '../../../../components/expediente/empleado-diagnostico-panel/empleado-diagnostico-panel.component';",
@@ -44843,13 +45641,6 @@
       "token": "diagnostico",
       "suggestion": "diagnóstico",
       "excerpt": "import { EmpleadoDiagnosticoPanelComponent } from '../../../../components/expediente/empleado-diagnostico-panel/empleado-diagnostico-panel.component';"
-    },
-    {
-      "key": "accent|src/app/features/empleados/containers/ficha-empleado-container/components/ficha-empleado-workspace/ficha-empleado-workspace.component.ts|prevision|import { PrevisionSaludComponent } from '../../../../components/secciones/prevision-salud/prevision-salud';",
-      "file": "src/app/features/empleados/containers/ficha-empleado-container/components/ficha-empleado-workspace/ficha-empleado-workspace.component.ts",
-      "token": "prevision",
-      "suggestion": "previsión",
-      "excerpt": "import { PrevisionSaludComponent } from '../../../../components/secciones/prevision-salud/prevision-salud';"
     },
     {
       "key": "accent|src/app/features/empleados/containers/ficha-empleado-container/facade/ficha-empleado-presentacion.facade.ts|asignacion||| normalized.includes('asignacion')",
@@ -44873,11 +45664,11 @@
       "excerpt": "error instanceof Error && 'evaluacion' in error"
     },
     {
-      "key": "accent|src/app/features/empleados/containers/ficha-empleado-container/facade/ficha-empleado-presentacion.facade.ts|informacion|return normalized === 'sin información' || normalized === 'sin informacion';",
+      "key": "accent|src/app/features/empleados/containers/ficha-empleado-container/facade/ficha-empleado-presentacion.facade.ts|informacion|if (normalized === 'sin información' || normalized === 'sin informacion' || normalized === 'no informado') {",
       "file": "src/app/features/empleados/containers/ficha-empleado-container/facade/ficha-empleado-presentacion.facade.ts",
       "token": "informacion",
       "suggestion": "información",
-      "excerpt": "return normalized === 'sin información' || normalized === 'sin informacion';"
+      "excerpt": "if (normalized === 'sin información' || normalized === 'sin informacion' || normalized === 'no informado') {"
     },
     {
       "key": "accent|src/app/features/empleados/containers/ficha-empleado-container/facade/ficha-empleado-presentacion.facade.ts|modulo|field: 'modulo',",
@@ -45069,6 +45860,13 @@
       "excerpt": "it('mantiene estado de ficha y completitud coherente en el panel de diagnostico', () => {"
     },
     {
+      "key": "accent|src/app/features/empleados/containers/ficha-empleado-container/ficha-empleado-container.spec.ts|edicion|it('abre modal de edicion con titulo y acciones al editar un bloque', () => {",
+      "file": "src/app/features/empleados/containers/ficha-empleado-container/ficha-empleado-container.spec.ts",
+      "token": "edicion",
+      "suggestion": "edición",
+      "excerpt": "it('abre modal de edicion con titulo y acciones al editar un bloque', () => {"
+    },
+    {
       "key": "accent|src/app/features/empleados/containers/ficha-empleado-container/ficha-empleado-container.spec.ts|informacion|it('muestra email y telefono al editar Informacion personal y contacto', () => {",
       "file": "src/app/features/empleados/containers/ficha-empleado-container/ficha-empleado-container.spec.ts",
       "token": "informacion",
@@ -45118,25 +45916,11 @@
       "excerpt": "seccionesPendientes: ['prevision y salud'],"
     },
     {
-      "key": "accent|src/app/features/empleados/containers/ficha-empleado-container/ficha-empleado-container.spec.ts|revision|expect(component.fichaEstadoPanel(employee).faltantes.some((item) => item.severidad === 'revision')).toBe(true);",
-      "file": "src/app/features/empleados/containers/ficha-empleado-container/ficha-empleado-container.spec.ts",
-      "token": "revision",
-      "suggestion": "revisión",
-      "excerpt": "expect(component.fichaEstadoPanel(employee).faltantes.some((item) => item.severidad === 'revision')).toBe(true);"
-    },
-    {
-      "key": "accent|src/app/features/empleados/containers/ficha-empleado-container/ficha-empleado-container.spec.ts|revision|it('ficha muestra avisos compartidos como revision sin bloquear validacion', () => {",
-      "file": "src/app/features/empleados/containers/ficha-empleado-container/ficha-empleado-container.spec.ts",
-      "token": "revision",
-      "suggestion": "revisión",
-      "excerpt": "it('ficha muestra avisos compartidos como revision sin bloquear validacion', () => {"
-    },
-    {
-      "key": "accent|src/app/features/empleados/containers/ficha-empleado-container/ficha-empleado-container.spec.ts|titulo|it('mantiene el titulo de bloque y una sola barra de acciones al editar', () => {",
+      "key": "accent|src/app/features/empleados/containers/ficha-empleado-container/ficha-empleado-container.spec.ts|titulo|it('abre modal de edicion con titulo y acciones al editar un bloque', () => {",
       "file": "src/app/features/empleados/containers/ficha-empleado-container/ficha-empleado-container.spec.ts",
       "token": "titulo",
       "suggestion": "título",
-      "excerpt": "it('mantiene el titulo de bloque y una sola barra de acciones al editar', () => {"
+      "excerpt": "it('abre modal de edicion con titulo y acciones al editar un bloque', () => {"
     },
     {
       "key": "accent|src/app/features/empleados/containers/ficha-empleado-container/ficha-empleado-container.spec.ts|titulo|it('usa el titulo del bloque en el msgbox de guardado parcial', async () => {",
@@ -45146,11 +45930,11 @@
       "excerpt": "it('usa el titulo del bloque en el msgbox de guardado parcial', async () => {"
     },
     {
-      "key": "accent|src/app/features/empleados/containers/ficha-empleado-container/ficha-empleado-container.spec.ts|validacion|it('ficha muestra avisos compartidos como revision sin bloquear validacion', () => {",
+      "key": "accent|src/app/features/empleados/containers/ficha-empleado-container/ficha-empleado-container.spec.ts|validacion|it('ficha sin correo bloquea validacion de remuneraciones', () => {",
       "file": "src/app/features/empleados/containers/ficha-empleado-container/ficha-empleado-container.spec.ts",
       "token": "validacion",
       "suggestion": "validación",
-      "excerpt": "it('ficha muestra avisos compartidos como revision sin bloquear validacion', () => {"
+      "excerpt": "it('ficha sin correo bloquea validacion de remuneraciones', () => {"
     },
     {
       "key": "accent|src/app/features/empleados/data-access/empleados.repository.ts|codigo|.in('codigo', codigos);",
@@ -45207,6 +45991,13 @@
       "token": "configuracion",
       "suggestion": "configuración",
       "excerpt": "'No fue posible validar la configuracion de zona extrema.',"
+    },
+    {
+      "key": "accent|src/app/features/empleados/data-access/empleados.repository.ts|nomina|'Honorarios no participa en nomina dependiente.',",
+      "file": "src/app/features/empleados/data-access/empleados.repository.ts",
+      "token": "nomina",
+      "suggestion": "nómina",
+      "excerpt": "'Honorarios no participa en nomina dependiente.',"
     },
     {
       "key": "accent|src/app/features/empleados/data-access/empleados.repository.ts|observacion|.select('id_tipo_condicion_trabajador,vigencia_inicio,vigencia_fin,respaldo_registrado,observacion')",
@@ -45286,11 +46077,11 @@
       "excerpt": "| 'prevision'"
     },
     {
-      "key": "accent|src/app/features/empleados/data-access/empleados.repository.ts|prevision|if (seccion === 'prevision') {",
+      "key": "accent|src/app/features/empleados/data-access/empleados.repository.ts|prevision|if (seccion === 'prevision' && payload.relacionLaboral !== 'HONORARIOS') {",
       "file": "src/app/features/empleados/data-access/empleados.repository.ts",
       "token": "prevision",
       "suggestion": "previsión",
-      "excerpt": "if (seccion === 'prevision') {"
+      "excerpt": "if (seccion === 'prevision' && payload.relacionLaboral !== 'HONORARIOS') {"
     },
     {
       "key": "accent|src/app/features/empleados/data-access/empleados.repository.ts|prevision|import { TIPO_REGIMEN_OPTIONS } from '../catalogs/prevision.options';",
@@ -45319,6 +46110,13 @@
       "token": "prevision",
       "suggestion": "previsión",
       "excerpt": "seccion: 'general' | 'laboral' | 'remuneracion' | 'prevision' | 'pago',"
+    },
+    {
+      "key": "accent|src/app/features/empleados/data-access/empleados.repository.ts|prevision|supabase.from('prevision').delete().eq('id_contrato', contratoId),",
+      "file": "src/app/features/empleados/data-access/empleados.repository.ts",
+      "token": "prevision",
+      "suggestion": "previsión",
+      "excerpt": "supabase.from('prevision').delete().eq('id_contrato', contratoId),"
     },
     {
       "key": "accent|src/app/features/empleados/data-access/empleados.repository.ts|prevision|this.fetchLatestByContrato('prevision', contratoId, 'id_prevision'),",
@@ -45622,6 +46420,13 @@
       "excerpt": "expect(estado.inconsistencias.some((issue) => issue.id === 'coh.prevision.ninguna-sin-condicion')).toBe(true);"
     },
     {
+      "key": "accent|src/app/features/empleados/rules/empleado-alta-coherencia.rules.spec.ts|tecnico|expect(estado.inconsistencias.some((i) => i.id === 'coh.seguro.tecnico-extranjero-inactivo')).toBe(true);",
+      "file": "src/app/features/empleados/rules/empleado-alta-coherencia.rules.spec.ts",
+      "token": "tecnico",
+      "suggestion": "técnico",
+      "excerpt": "expect(estado.inconsistencias.some((i) => i.id === 'coh.seguro.tecnico-extranjero-inactivo')).toBe(true);"
+    },
+    {
       "key": "accent|src/app/features/empleados/rules/empleado-alta-coherencia.rules.ts|prevision|| 'prevision'",
       "file": "src/app/features/empleados/rules/empleado-alta-coherencia.rules.ts",
       "token": "prevision",
@@ -45713,6 +46518,41 @@
       "excerpt": "export type { EmpleadoFichaDiagnostico, EmpleadoFichaValidacionSnapshot } from './empleado-diagnostico.rules';"
     },
     {
+      "key": "accent|src/app/features/empleados/rules/empleado-alta-validacion-input.spec.ts|diagnostico|import { evaluarDiagnosticoFichaEmpleado } from './empleado-alta-diagnostico.rules';",
+      "file": "src/app/features/empleados/rules/empleado-alta-validacion-input.spec.ts",
+      "token": "diagnostico",
+      "suggestion": "diagnóstico",
+      "excerpt": "import { evaluarDiagnosticoFichaEmpleado } from './empleado-alta-diagnostico.rules';"
+    },
+    {
+      "key": "accent|src/app/features/empleados/rules/empleado-alta-validacion-input.spec.ts|validacion|} from './empleado-alta-validacion-input';",
+      "file": "src/app/features/empleados/rules/empleado-alta-validacion-input.spec.ts",
+      "token": "validacion",
+      "suggestion": "validación",
+      "excerpt": "} from './empleado-alta-validacion-input';"
+    },
+    {
+      "key": "accent|src/app/features/empleados/rules/empleado-alta-validacion-input.spec.ts|validacion|describe('empleado-alta-validacion-input', () => {",
+      "file": "src/app/features/empleados/rules/empleado-alta-validacion-input.spec.ts",
+      "token": "validacion",
+      "suggestion": "validación",
+      "excerpt": "describe('empleado-alta-validacion-input', () => {"
+    },
+    {
+      "key": "accent|src/app/features/empleados/rules/empleado-alta-validacion-input.spec.ts|validacion|import type { EmpleadoFichaValidacionSnapshot } from './empleado-ficha-validacion.rules';",
+      "file": "src/app/features/empleados/rules/empleado-alta-validacion-input.spec.ts",
+      "token": "validacion",
+      "suggestion": "validación",
+      "excerpt": "import type { EmpleadoFichaValidacionSnapshot } from './empleado-ficha-validacion.rules';"
+    },
+    {
+      "key": "accent|src/app/features/empleados/rules/empleado-alta-validacion-input.ts|validacion|} from './empleado-ficha-validacion.rules';",
+      "file": "src/app/features/empleados/rules/empleado-alta-validacion-input.ts",
+      "token": "validacion",
+      "suggestion": "validación",
+      "excerpt": "} from './empleado-ficha-validacion.rules';"
+    },
+    {
       "key": "accent|src/app/features/empleados/rules/empleado-alta-validaciones.rules.spec.ts|revision|it('expone coherencia corregible como revision asistida', () => {",
       "file": "src/app/features/empleados/rules/empleado-alta-validaciones.rules.spec.ts",
       "token": "revision",
@@ -45739,6 +46579,20 @@
       "token": "validacion",
       "suggestion": "validación",
       "excerpt": "} from './empleado-ficha-validacion.rules';"
+    },
+    {
+      "key": "accent|src/app/features/empleados/rules/empleado-ficha-validacion.rules.spec.ts|diagnostico|} from './empleado-diagnostico.rules';",
+      "file": "src/app/features/empleados/rules/empleado-ficha-validacion.rules.spec.ts",
+      "token": "diagnostico",
+      "suggestion": "diagnóstico",
+      "excerpt": "} from './empleado-diagnostico.rules';"
+    },
+    {
+      "key": "accent|src/app/features/empleados/rules/empleado-ficha-validacion.rules.spec.ts|validacion|describe('empleado-ficha-validacion.rules — contacto bloqueante', () => {",
+      "file": "src/app/features/empleados/rules/empleado-ficha-validacion.rules.spec.ts",
+      "token": "validacion",
+      "suggestion": "validación",
+      "excerpt": "describe('empleado-ficha-validacion.rules — contacto bloqueante', () => {"
     },
     {
       "key": "accent|src/app/features/empleados/rules/empleado-ficha-validacion.rules.ts|asignacion|label: 'Confirma el tramo de cargas familiares antes de usar la asignacion en remuneraciones',",
@@ -56318,11 +57172,11 @@
       "excerpt": "<div class=\"field-grid parametros-form-grid parametros-form-grid-compact field-grid--ccaf field-grid--ccaf-compact\" aria-label=\"Configuracion CCAF y mutual\">"
     },
     {
-      "key": "accent|src/app/features/parametros-generales/components/tabs/parametros-config-cliente-tab.component.ts|parametros|<form class=\"tab-panel parametros-tab-panel parametros-form\" [formGroup]=\"form\" (ngSubmit)=\"onSubmit?.()\">",
+      "key": "accent|src/app/features/parametros-generales/components/tabs/parametros-config-cliente-tab.component.ts|parametros|<form class=\"tab-panel parametros-tab-panel parametros-form\" [formGroup]=\"form\" (ngSubmit)=\"enviarFormulario?.()\">",
       "file": "src/app/features/parametros-generales/components/tabs/parametros-config-cliente-tab.component.ts",
       "token": "parametros",
       "suggestion": "parámetros",
-      "excerpt": "<form class=\"tab-panel parametros-tab-panel parametros-form\" [formGroup]=\"form\" (ngSubmit)=\"onSubmit?.()\">"
+      "excerpt": "<form class=\"tab-panel parametros-tab-panel parametros-form\" [formGroup]=\"form\" (ngSubmit)=\"enviarFormulario?.()\">"
     },
     {
       "key": "accent|src/app/features/parametros-generales/components/tabs/parametros-config-cliente-tab.component.ts|parametros|<section class=\"param-group parametros-section-card parametros-config-card param-group--ccaf-current\" aria-labelledby=\"ccaf-title\">",
@@ -56521,11 +57375,11 @@
       "excerpt": "<div class=\"field-grid parametros-form-grid field-grid--topes\">"
     },
     {
-      "key": "accent|src/app/features/parametros-generales/components/tabs/parametros-remuneraciones-tab.component.ts|parametros|<form class=\"tab-panel parametros-tab-panel parametros-form\" [formGroup]=\"form\" (ngSubmit)=\"onSubmit?.()\">",
+      "key": "accent|src/app/features/parametros-generales/components/tabs/parametros-remuneraciones-tab.component.ts|parametros|<form class=\"tab-panel parametros-tab-panel parametros-form\" [formGroup]=\"form\" (ngSubmit)=\"enviarFormulario?.()\">",
       "file": "src/app/features/parametros-generales/components/tabs/parametros-remuneraciones-tab.component.ts",
       "token": "parametros",
       "suggestion": "parámetros",
-      "excerpt": "<form class=\"tab-panel parametros-tab-panel parametros-form\" [formGroup]=\"form\" (ngSubmit)=\"onSubmit?.()\">"
+      "excerpt": "<form class=\"tab-panel parametros-tab-panel parametros-form\" [formGroup]=\"form\" (ngSubmit)=\"enviarFormulario?.()\">"
     },
     {
       "key": "accent|src/app/features/parametros-generales/components/tabs/parametros-remuneraciones-tab.component.ts|parametros|<section class=\"param-group parametros-section-card\" aria-labelledby=\"afc-title\">",
@@ -56864,11 +57718,11 @@
       "excerpt": "<div class=\"field-grid parametros-form-grid field-grid--values\">"
     },
     {
-      "key": "accent|src/app/features/parametros-generales/components/tabs/parametros-valores-tab.component.ts|parametros|<form class=\"tab-panel parametros-tab-panel parametros-form\" [formGroup]=\"form\" (ngSubmit)=\"onSubmit?.()\">",
+      "key": "accent|src/app/features/parametros-generales/components/tabs/parametros-valores-tab.component.ts|parametros|<form class=\"tab-panel parametros-tab-panel parametros-form\" [formGroup]=\"form\" (ngSubmit)=\"enviarFormulario?.()\">",
       "file": "src/app/features/parametros-generales/components/tabs/parametros-valores-tab.component.ts",
       "token": "parametros",
       "suggestion": "parámetros",
-      "excerpt": "<form class=\"tab-panel parametros-tab-panel parametros-form\" [formGroup]=\"form\" (ngSubmit)=\"onSubmit?.()\">"
+      "excerpt": "<form class=\"tab-panel parametros-tab-panel parametros-form\" [formGroup]=\"form\" (ngSubmit)=\"enviarFormulario?.()\">"
     },
     {
       "key": "accent|src/app/features/parametros-generales/components/tabs/parametros-valores-tab.component.ts|parametros|<section class=\"param-group parametros-section-card\" aria-labelledby=\"indicadores-title\">",
@@ -59132,6 +59986,13 @@
       "excerpt": "{ name: 'parametros', path: '/parametros' },"
     },
     {
+      "key": "accent|tests/empleados-basic-create.spec.ts|basica|await expect(page.getByTestId('empleado-alta-basica-guardar-borrador')).toBeVisible({",
+      "file": "tests/empleados-basic-create.spec.ts",
+      "token": "basica",
+      "suggestion": "básica",
+      "excerpt": "await expect(page.getByTestId('empleado-alta-basica-guardar-borrador')).toBeVisible({"
+    },
+    {
       "key": "accent|tests/empleados-basic-create.spec.ts|basica|await expect(shell).toHaveScreenshot('empleado-creacion-basica-desktop.png', {",
       "file": "tests/empleados-basic-create.spec.ts",
       "token": "basica",
@@ -59151,6 +60012,27 @@
       "token": "creacion",
       "suggestion": "creación",
       "excerpt": "Contexto y activación E2E: [`../docs/codex/temas/creacion-avanzada-borrador-tests.md`](../docs/codex/temas/creacion-avanzada-borrador-tests.md) · suite `tests/empleados-borrador-pe"
+    },
+    {
+      "key": "accent|tests/empleados-borrador.spec.ts|basica|await expect(page.getByTestId('empleado-alta-basica-guardar-borrador')).toBeVisible({",
+      "file": "tests/empleados-borrador.spec.ts",
+      "token": "basica",
+      "suggestion": "básica",
+      "excerpt": "await expect(page.getByTestId('empleado-alta-basica-guardar-borrador')).toBeVisible({"
+    },
+    {
+      "key": "accent|tests/empleados-creacion-avanzada-flujos.spec.ts|prevision|await fillPaso0BorradorMinimo(page, rut, 'Sin Prevision', 'Negativo');",
+      "file": "tests/empleados-creacion-avanzada-flujos.spec.ts",
+      "token": "prevision",
+      "suggestion": "previsión",
+      "excerpt": "await fillPaso0BorradorMinimo(page, rut, 'Sin Prevision', 'Negativo');"
+    },
+    {
+      "key": "accent|tests/empleados-creacion-avanzada-validaciones.spec.ts|validacion|await fillPaso0BorradorMinimo(page, rut, 'Test123 Nombre', 'Validacion');",
+      "file": "tests/empleados-creacion-avanzada-validaciones.spec.ts",
+      "token": "validacion",
+      "suggestion": "validación",
+      "excerpt": "await fillPaso0BorradorMinimo(page, rut, 'Test123 Nombre', 'Validacion');"
     },
     {
       "key": "accent|tests/empleados-creacion-avanzada.screenshots.spec.ts|creacion|'Faltan E2E_SUPABASE_AUTH_EMAIL/E2E_SUPABASE_AUTH_PASSWORD para capturar Creacion avanzada.',",
@@ -59286,6 +60168,41 @@
       "excerpt": "email: `${fixture.rut}@qa-nomina.local`,"
     },
     {
+      "key": "accent|tests/empleados-nomina-error-fixtures.spec.ts|nomina|nombres: 'Nomina Jornada Alta',",
+      "file": "tests/empleados-nomina-error-fixtures.spec.ts",
+      "token": "nomina",
+      "suggestion": "nómina",
+      "excerpt": "nombres: 'Nomina Jornada Alta',"
+    },
+    {
+      "key": "accent|tests/empleados-nomina-error-fixtures.spec.ts|nomina|nombres: 'Nomina No Apto',",
+      "file": "tests/empleados-nomina-error-fixtures.spec.ts",
+      "token": "nomina",
+      "suggestion": "nómina",
+      "excerpt": "nombres: 'Nomina No Apto',"
+    },
+    {
+      "key": "accent|tests/empleados-nomina-error-fixtures.spec.ts|nomina|nombres: 'Nomina Sin Prevision',",
+      "file": "tests/empleados-nomina-error-fixtures.spec.ts",
+      "token": "nomina",
+      "suggestion": "nómina",
+      "excerpt": "nombres: 'Nomina Sin Prevision',"
+    },
+    {
+      "key": "accent|tests/empleados-nomina-error-fixtures.spec.ts|nomina|nombres: 'Nomina Sueldo Bajo',",
+      "file": "tests/empleados-nomina-error-fixtures.spec.ts",
+      "token": "nomina",
+      "suggestion": "nómina",
+      "excerpt": "nombres: 'Nomina Sueldo Bajo',"
+    },
+    {
+      "key": "accent|tests/empleados-nomina-error-fixtures.spec.ts|nomina|nombres: 'Nomina Valido',",
+      "file": "tests/empleados-nomina-error-fixtures.spec.ts",
+      "token": "nomina",
+      "suggestion": "nómina",
+      "excerpt": "nombres: 'Nomina Valido',"
+    },
+    {
       "key": "accent|tests/empleados-nomina-error-fixtures.spec.ts|prevision|'prevision',",
       "file": "tests/empleados-nomina-error-fixtures.spec.ts",
       "token": "prevision",
@@ -59307,11 +60224,11 @@
       "excerpt": "cargo: 'QA Nomina sin prevision salud',"
     },
     {
-      "key": "accent|tests/empleados-nomina-error-fixtures.spec.ts|prevision|nombres: 'NOMERR2405 Sin Prevision',",
+      "key": "accent|tests/empleados-nomina-error-fixtures.spec.ts|prevision|nombres: 'Nomina Sin Prevision',",
       "file": "tests/empleados-nomina-error-fixtures.spec.ts",
       "token": "prevision",
       "suggestion": "previsión",
-      "excerpt": "nombres: 'NOMERR2405 Sin Prevision',"
+      "excerpt": "nombres: 'Nomina Sin Prevision',"
     },
     {
       "key": "accent|tests/empleados-nomina-error-fixtures.spec.ts|prevision|observacion_prevision: 'Fixture sin prevision para pruebas de errores',",

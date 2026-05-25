@@ -123,6 +123,10 @@ function shouldIgnoreMojibake(file, line) {
   return file === 'docs/codex/estilos/README.md' && (line.includes('mojibake') || line.includes('Select-String'));
 }
 
+function isTechnicalTsLiteral(text) {
+  return /^[a-z][a-z0-9_-]*(\.[a-z][a-z0-9_-]*)+$/i.test(text);
+}
+
 function textSegments(file, line) {
   if (file.endsWith('.ts')) {
     const segments = [];
@@ -130,6 +134,7 @@ function textSegments(file, line) {
     let match;
     while ((match = literalRe.exec(line))) {
       const text = match[2];
+      if (isTechnicalTsLiteral(text)) continue;
       if (/[a-záéíóúñ ]/i.test(text)) segments.push(text);
     }
     return segments;

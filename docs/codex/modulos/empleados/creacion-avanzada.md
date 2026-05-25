@@ -30,7 +30,8 @@ Reglas de UX implementadas:
 - El monto se comunica como `Monto bruto de honorarios`.
 - Bancario se comunica como `Datos para pago del prestador`.
 - El resumen final avisa que el registro no ingresa a nomina dependiente.
-- `Finalizar alta` queda bloqueado para honorarios hasta implementar persistencia real.
+- `Finalizar honorarios` queda habilitado en el shell cuando la ficha cumple aplicabilidad; no exige nómina dependiente ni previsión AFP/salud.
+- Tras finalizar honorarios, `apto_para_remuneraciones` permanece en `false` (mapper y `recalcularEstadoFicha`).
 - `Guardar borrador` sigue disponible con validacion minima.
 
 Fuera de alcance:
@@ -73,6 +74,16 @@ Comportamiento:
 | Finalizar alta | Estricto. MsgBox con datos obligatorios pendientes y advertencias de revisión. `Ir al primer pendiente` navega y enfoca el campo pendiente. |
 
 Regla UX: no duplicar la informacion del mapa con tarjetas permanentes dentro del paso.
+
+### Contacto obligatorio
+
+Correo y teléfono son obligatorios en identificación/contacto (formulario reactivo, guardar borrador, finalizar alta y guardado en repositorio). Formato: email válido y teléfono con al menos 8 dígitos.
+
+### Estado de ficha (interno, no RRHH)
+
+En creacion avanzada y edicion inline con `grillaAvanzada`, **no** se muestra el campo «Estado de ficha inicial» en el paso contrato (`contrato.html`). El `FormControl` `estado` conserva valor por defecto (`en_proceso`); el borrador fuerza `borrador` en el payload y la activacion/finalizacion aplican `buildPersonaBorradorAvanzadoInsert` / `buildPersonaActivacionUpdate` en el mapper de escritura.
+
+Limpieza total de empleados en BD de desarrollo: `node scripts/limpiar-empleados-bd.mjs --dry-run` y `--confirm` (requiere `SUPABASE_DB_URL` + `psql`).
 
 ### EMP-ALTA-NORMATIVA-CL-01 — Matriz normativa y motor único
 

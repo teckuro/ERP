@@ -80,6 +80,10 @@
   grid-template-columns: repeat(3, minmax(13rem, 1fr));
 }
 
+.labor-grid--service {
+  grid-template-columns: repeat(2, minmax(13rem, 1fr));
+}
+
 .labor-grid--schedule,
 .labor-grid--base-pay {
   grid-template-columns: minmax(16rem, 1.4fr) minmax(8rem, 0.8fr) minmax(8rem, 0.8fr);
@@ -427,6 +431,10 @@
   grid-template-columns: repeat(3, minmax(0, 1fr));
   align-items: start;
   gap: 6px 12px;
+}
+
+:host.labor-layout-advanced .labor-grid--service {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
 :host.labor-layout-advanced .labor-grid--contract > :nth-child(1),

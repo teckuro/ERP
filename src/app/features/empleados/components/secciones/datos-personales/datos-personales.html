@@ -272,14 +272,17 @@
             @if (!disposicionInlineFicha) {
             <div class="employee-block-head">
               <h4>Contacto</h4>
-              <p class="employee-block-lead">Email y teléfono opcionales.</p>
+              <p class="employee-block-lead">Correo y teléfono obligatorios para contacto laboral.</p>
             </div>
             }
 
             <div class="employee-grid employee-grid-basic--contact" [formGroup]="contactoFormGroup">
               <div class="form-field form-field--wide">
                 <div class="field-label-row">
-                  <label for="empleado-email">Email</label>
+                  <label for="empleado-email">Correo</label>
+                  @if (isContactoRequired('email')) {
+                    <app-empleado-field-required />
+                  }
                 </div>
                 <input
                   id="empleado-email"
@@ -288,8 +291,12 @@
                   placeholder="Ej: nombre@empresa.cl"
                   [class]="contactoControlClass('email')"
                 />
-                @if (hasContactoError('email', 'email')) {
-                  <p class="field-message">Ingresa un email válido.</p>
+                @if (hasContactoError('email', 'required')) {
+                  <p class="field-message">El correo es obligatorio.</p>
+                } @else if (hasContactoError('email', 'email')) {
+                  <p class="field-message">Ingresa un correo válido.</p>
+                } @else if (hasContactoError('email', 'maxlength')) {
+                  <p class="field-message">El correo supera el largo permitido.</p>
                 } @else {
                   <p class="field-message"></p>
                 }
@@ -298,6 +305,9 @@
               <div class="form-field">
                 <div class="field-label-row">
                   <label for="empleado-telefono">Teléfono</label>
+                  @if (isContactoRequired('telefono')) {
+                    <app-empleado-field-required />
+                  }
                 </div>
                 <input
                   id="empleado-telefono"
@@ -308,7 +318,9 @@
                   placeholder="Ej: +56 9 1234 5678"
                   [class]="contactoControlClass('telefono')"
                 />
-                @if (
+                @if (hasContactoError('telefono', 'required')) {
+                  <p class="field-message">El teléfono es obligatorio.</p>
+                } @else if (
                   hasContactoError('telefono', 'phoneFormat') || hasContactoError('telefono', 'maxlength')
                 ) {
                   <p class="field-message">Ingresa un teléfono válido.</p>
@@ -384,7 +396,7 @@
           @if (!disposicionInlineFicha) {
           <div class="employee-block-head">
             <h4>Contacto</h4>
-            <p class="employee-block-lead">Email y teléfono son opcionales para coordinación interna.</p>
+            <p class="employee-block-lead">Correo y teléfono son obligatorios para coordinación interna.</p>
           </div>
           }
 
@@ -395,7 +407,10 @@
           >
             <div class="form-field form-field--wide">
               <div class="field-label-row">
-                <label for="empleado-email">Email (opcional)</label>
+                <label for="empleado-email">Correo</label>
+                @if (isContactoRequired('email')) {
+                  <app-empleado-field-required />
+                }
               </div>
               <input
                 id="empleado-email"
@@ -405,8 +420,12 @@
                 placeholder="Ej: nombre@empresa.cl"
                 [class]="contactoControlClass('email')"
               />
-              @if (hasContactoError('email', 'email')) {
-                <p class="field-message">Ingresa un email válido.</p>
+              @if (hasContactoError('email', 'required')) {
+                <p class="field-message">El correo es obligatorio.</p>
+              } @else if (hasContactoError('email', 'email')) {
+                <p class="field-message">Ingresa un correo válido.</p>
+              } @else if (hasContactoError('email', 'maxlength')) {
+                <p class="field-message">El correo supera el largo permitido.</p>
               } @else {
                 <p class="field-message"></p>
               }
@@ -414,7 +433,10 @@
 
             <div class="form-field">
               <div class="field-label-row">
-                <label for="empleado-telefono">Teléfono (opcional)</label>
+                <label for="empleado-telefono">Teléfono</label>
+                @if (isContactoRequired('telefono')) {
+                  <app-empleado-field-required />
+                }
               </div>
               <input
                 id="empleado-telefono"
@@ -425,7 +447,9 @@
                 placeholder="Ej: +56 9 1234 5678"
                 [class]="contactoControlClass('telefono')"
               />
-              @if (
+              @if (hasContactoError('telefono', 'required')) {
+                <p class="field-message">El teléfono es obligatorio.</p>
+              } @else if (
                 hasContactoError('telefono', 'phoneFormat') || hasContactoError('telefono', 'maxlength')
               ) {
                 <p class="field-message">Ingresa un teléfono válido.</p>

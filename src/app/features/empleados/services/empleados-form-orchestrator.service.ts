@@ -82,11 +82,11 @@ export class EmpleadosFormOrchestratorService {
       contacto: new FormGroup({
         email: new FormControl('', {
           nonNullable: true,
-          validators: [Validators.email],
+          validators: [Validators.required, Validators.email, Validators.maxLength(120)],
         }),
         telefono: new FormControl('', {
           nonNullable: true,
-          validators: [Validators.maxLength(20), phoneFormatValidator],
+          validators: [Validators.required, Validators.maxLength(20), phoneFormatValidator],
         }),
         direccion: new FormControl('', {
           nonNullable: true,

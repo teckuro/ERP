@@ -179,7 +179,20 @@
   display: none;
 }
 
+.noia-msgbox__slot--modal {
+  order: 30;
+  flex: 0 1 auto;
+  min-height: 0;
+  padding: 0 1.65rem 1.25rem;
+  overflow: auto;
+}
+
+.noia-msgbox__body + .noia-msgbox__slot--modal:not(:empty) {
+  padding-top: 0;
+}
+
 .noia-msgbox__footer {
+  order: 40;
   display: flex;
   flex: 0 0 auto;
   align-items: center;

@@ -1,5 +1,6 @@
 /**
- * Auditoría: crea usuarios QAEMP2505 (U1–U8) en Supabase remoto.
+ * Auditoría: crea usuarios U1–U8 (RUT 25.050.001–008) en Supabase remoto.
+ * Trazabilidad por RUT/email; nombres solo letras (sin prefijo QAEMP2505 en columna nombres).
  * Uso: node scripts/auditoria-empleados-fixtures.mjs
  * Requiere: E2E_SUPABASE_URL (.supabase.co), E2E_SUPABASE_ANON_KEY, auth email/password
  */
@@ -35,14 +36,14 @@ const FECHA_INICIO = '2025-05-01';
 const RUT_BODIES = ['25050001', '25050002', '25050003', '25050004', '25050005', '25050006', '25050007', '25050008'];
 
 const USERS = [
-  { key: 'U1', nombres: 'QAEMP2505 Dependiente Activo', flujo: 'F5/F7', tipo: 'dependiente_activo' },
-  { key: 'U2', nombres: 'QAEMP2505 Borrador Paso2', flujo: 'F3', tipo: 'borrador_paso2' },
-  { key: 'U3', nombres: 'QAEMP2505 Borrador Reanudar', flujo: 'F4', tipo: 'borrador_reanudar' },
-  { key: 'U4', nombres: 'QAEMP2505 Casa Particular', flujo: 'F8', tipo: 'casa_particular' },
-  { key: 'U5', nombres: 'QAEMP2505 Exclusion Jornada', flujo: 'F9', tipo: 'exclusion_jornada' },
-  { key: 'U6', nombres: 'QAEMP2505 Honorarios', flujo: 'F10', tipo: 'honorarios' },
-  { key: 'U7', nombres: 'QAEMP2505 Basico', flujo: 'F2', tipo: 'basico' },
-  { key: 'U8', nombres: 'QAEMP2505 Ficha Incompleta', flujo: 'F12', tipo: 'ficha_incompleta' },
+  { key: 'U1', nombres: 'Dependiente Activo', flujo: 'F5/F7', tipo: 'dependiente_activo' },
+  { key: 'U2', nombres: 'Borrador Paso Dos', flujo: 'F3', tipo: 'borrador_paso2' },
+  { key: 'U3', nombres: 'Borrador Reanudar', flujo: 'F4', tipo: 'borrador_reanudar' },
+  { key: 'U4', nombres: 'Casa Particular', flujo: 'F8', tipo: 'casa_particular' },
+  { key: 'U5', nombres: 'Exclusion Jornada', flujo: 'F9', tipo: 'exclusion_jornada' },
+  { key: 'U6', nombres: 'Honorarios', flujo: 'F10', tipo: 'honorarios' },
+  { key: 'U7', nombres: 'Alta Basica', flujo: 'F2', tipo: 'basico' },
+  { key: 'U8', nombres: 'Ficha Incompleta', flujo: 'F12', tipo: 'ficha_incompleta' },
 ].map((u, i) => ({
   ...u,
   rut: RUT_BODIES[i],
@@ -219,7 +220,7 @@ async function crearUsuario(supabase, cat, user) {
           apto_para_remuneraciones: false,
           paso_alta_avanzada: user.tipo === 'borrador_paso2' ? 2 : 4,
         }
-      : user.tipo === 'ficha_incompleta'
+      : user.tipo === 'ficha_incompleta' || user.tipo === 'honorarios'
         ? {
             estado: 'ACTIVO',
             estado_ficha: 'INCOMPLETO',

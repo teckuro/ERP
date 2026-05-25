@@ -1,4 +1,14 @@
-﻿
+﻿## EMP-CREACION-AVANZADA-CERRADA-01 - Pruebas exhaustivas creación avanzada
+
+| Campo | Estado |
+| ----- | ------ |
+| Estado | **Cerrada** (2026-05-23) |
+| Tipo | Pruebas (unit + E2E UI + E2E BD + scripts verify) |
+| Alcance | Matriz F1–F13 trazable; globalSetup purge+U1–U8+ERR; specs validaciones/flujos/honorarios/inferencia; correo/teléfono obligatorios alineados. |
+| Documento | [../modulos/empleados/matriz-pruebas-creacion-avanzada.md](../modulos/empleados/matriz-pruebas-creacion-avanzada.md), [../modulos/empleados/tests-empleados.md](../modulos/empleados/tests-empleados.md) |
+| Validación | Unit **215/215**; UI **16/16** (`test:e2e:empleados:ui`); BD opt-in `E2E_EMPLEADOS_BORRADOR=1` + `verify:empleados-qa` (U1–U8; ERR opcional con `seed --append`). |
+| Restricciones | Sin SQL/motor/estilos globales en esta fase. |
+
 ## EMP-FICHA-EXPEDIENTE-EDICION-SECCION-UX-04 - Modal edición expediente
 
 | Campo | Estado |

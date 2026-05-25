@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 
-import { Tables } from '../../../core/models/database.types';
+import { Tables, TablesUpdate } from '../../../core/models/database.types';
 import { injectSupabase } from '../../../core/services/supabase.service';
 import { ESTADO_CIVIL_OPTIONS } from '../catalogs/estado-civil.options';
 import { TIPO_GRATIFICACION_OPTIONS } from '../catalogs/tipo-gratificacion.options';
@@ -73,6 +73,7 @@ import {
   buildPersonaMetaBorradorUpdate,
   puedePersistirPrevisionBorrador,
 } from '../utils/empleado-borrador.rules';
+import { assertPayloadIdentificacionValida } from '../utils/empleado-payload-guard.rules';
 import {
   EmpleadoAptitudInvalidaError,
   evaluarCompletitudYAptitudEmpleado,
@@ -626,6 +627,7 @@ export class EmpleadosRepository {
   }
 
   async insertarPersona(payload: CrearEmpleadoPayload, rut: RutParts): Promise<number> {
+    assertPayloadIdentificacionValida(payload);
     const { data, error } = await this.supabase
       .from('persona')
       .insert(buildPersonaInsert(payload, rut))
@@ -696,6 +698,7 @@ export class EmpleadosRepository {
     rut: RutParts,
     pasoWizard: number,
   ): Promise<number> {
+    assertPayloadIdentificacionValida(payload);
     const { data, error } = await this.supabase
       .from('persona')
       .insert(buildPersonaBorradorAvanzadoInsert(payload, rut, pasoWizard))
@@ -903,8 +906,7 @@ export class EmpleadosRepository {
     personaId: number,
     empresaId: number,
   ): Promise<number> {
-    const supabase = this.supabase as any;
-    const { data, error } = await supabase
+    const { data, error } = await this.supabase
       .from('contrato')
       .insert(buildContratoInsert(payload, personaId, empresaId))
       .select('id_contrato')
@@ -1795,6 +1797,7 @@ export class EmpleadosRepository {
     personaId: number,
     payload: CrearEmpleadoPayload,
   ): Promise<void> {
+    assertPayloadIdentificacionValida(payload);
     const rut = formatRutPartsFromInput(payload.rut);
     const { error } = await this.supabase
       .from('persona')
@@ -1830,7 +1833,7 @@ export class EmpleadosRepository {
     contratoId: number,
     payload: CrearEmpleadoPayload,
   ): Promise<void> {
-    const data = {
+    const data: TablesUpdate<'contrato'> = {
       relacion_laboral: payload.relacionLaboral,
       id_sucursal: payload.idSucursal,
       id_departamento_empresa: payload.idDepartamentoEmpresa,
@@ -1872,8 +1875,7 @@ export class EmpleadosRepository {
       fecha_termino: payload.fechaTermino,
     };
 
-    const supabase = this.supabase as any;
-    const { error } = await supabase
+    const { error } = await this.supabase
       .from('contrato')
       .update(data)
       .eq('id_contrato', contratoId);

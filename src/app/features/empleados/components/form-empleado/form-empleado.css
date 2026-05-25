@@ -41,7 +41,7 @@
   margin: 0 auto;
 }
 
-/* Marco del modo bÃƒÂ¡sico: ocupa el ancho del workspace; el eje comÃƒÂºn vive en .basic-create-inner */
+/* Marco del modo básico: ocupa el ancho del workspace; el eje común vive en .basic-create-inner */
 .basic-create-page {
   display: flex;
   flex-direction: column;
@@ -65,7 +65,7 @@
   background: #ffffff;
 }
 
-/* Header + resumen + formulario comparten el mismo max-width (menos aire lateral vacÃƒÂ­o) */
+/* Header + resumen + formulario comparten el mismo max-width (menos aire lateral vacío) */
 .basic-create-inner {
   width: 100%;
   max-width: none;
@@ -87,7 +87,7 @@
   min-width: 0;
 }
 
-/* Misma columna que el header: quita margen lateral global del content-body en modo bÃƒÂ¡sico */
+/* Misma columna que el header: quita margen lateral global del content-body en modo básico */
 .basic-create-inner .content-body.content-body--basic {
   margin-inline: 0;
   width: 100%;
@@ -108,7 +108,7 @@
   min-width: 0;
 }
 
-/* Panel blanco del formulario bÃƒÂ¡sico: menos aire que el paso avanzado (16px global en styles.css). */
+/* Panel blanco del formulario básico: menos aire que el paso avanzado (16px global en styles.css). */
 .basic-create-form .step-panel.step-panel--basic.basic-wizard {
   padding: 14px 16px 18px;
   border: 0;
@@ -122,7 +122,7 @@
   }
 }
 
-/* Card ÃƒÂºnica de resumen: mismo ancho que el formulario (columna .basic-create-inner) */
+/* Card única de resumen: mismo ancho que el formulario (columna .basic-create-inner) */
 .basic-create-summary-card {
   margin: 0;
   padding: 10px 16px;
@@ -198,7 +198,7 @@
   line-height: 1.35;
 }
 
-/* Cabecera bÃƒÂ¡sica: tÃƒÂ­tulo + subtÃƒÂ­tulo a la izquierda, acciones alineadas arriba a la derecha */
+/* Cabecera básica: título + subtítulo a la izquierda, acciones alineadas arriba a la derecha */
 .summary-identity--basic {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
@@ -238,7 +238,7 @@
   grid-row: 1 / -1;
 }
 
-/* Anula mayÃƒÂºsculas/herencia de `.summary-person p` global para el subtÃƒÂ­tulo */
+/* Anula mayúsculas/herencia de `.summary-person p` global para el subtítulo */
 .summary-identity--basic .summary-subtitle {
   margin: 0;
   max-width: 46rem;
@@ -278,7 +278,7 @@
 
 }
 
-/* Modo bÃƒÂ¡sico: alinear header con el ancho del bloque principal */
+/* Modo básico: alinear header con el ancho del bloque principal */
 .content-shell--basic .summary-identity {
   width: 100%;
   margin-left: auto;
@@ -632,7 +632,7 @@
   grid-column: 2;
   grid-row: 1;
   min-width: 0;
-  min-height: 100%;
+  min-height: 0;
   overflow: hidden;
   border: 0;
   border-radius: 0;
@@ -640,15 +640,15 @@
 }
 
 .advanced-wizard-content .advanced-wizard-step {
-  padding-bottom: 2.25rem;
+  padding-bottom: 1.25rem;
 }
 
 .advanced-step-header {
   display: flex;
   flex-direction: column;
-  gap: 7px;
+  gap: 5px;
   min-width: 0;
-  padding: 12px 16px 10px;
+  padding: 10px 14px 8px;
   border-bottom: 1px solid #d7dde5;
   background: #fff;
 }
@@ -666,19 +666,22 @@
   flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: 8px;
-  padding: 6px 8px;
+  gap: 6px 8px;
+  padding: 5px 7px;
   border: 1px solid #e2e8f0;
   border-radius: 6px;
   background: #fffbeb;
+  min-width: 0;
 }
 
 .advanced-step-normativa-hint__text {
   flex: 1 1 12rem;
   margin: 0;
-  font-size: 0.75rem;
-  line-height: 1.35;
+  min-width: 0;
+  font-size: 0.69rem;
+  line-height: 1.3;
   color: #78350f;
+  overflow-wrap: anywhere;
 }
 
 .advanced-step-normativa-hint__btn {
@@ -699,7 +702,12 @@
 .advanced-step-kicker { font-size: 0.68rem; font-weight: 650; letter-spacing: 0.045em; line-height: 1.25; text-transform: uppercase; }
 .advanced-step-title { margin: 0; color: var(--bitacora-text); font-size: 1.06rem; font-weight: 650; line-height: 1.25; letter-spacing: -0.012em; }
 .advanced-step-copy { max-width: 48rem; font-size: 0.75rem; line-height: 1.45; }
-.advanced-step-hint { max-width: 100%; font-size: var(--erp-text-xs, 0.665rem); line-height: 1.45; }
+.advanced-step-hint {
+  max-width: 100%;
+  font-size: var(--erp-text-xs, 0.665rem);
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
 
 @media (max-width: 1024px) {
   .advanced-create-header { grid-template-columns: minmax(0, 1fr); row-gap: 8px; }
@@ -716,7 +724,8 @@
 .content-shell:not(.content-shell--basic) .content-body {
   position: relative;
   flex: 1 1 auto;
-  min-height: 100%;
+  min-height: 0;
+  min-width: 0;
 }
 
 .content-shell:not(.content-shell--basic) {
@@ -727,12 +736,18 @@
 .advanced-wizard-step {
   display: flex;
   min-height: 0;
+  min-width: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
 }
 
 .advanced-wizard-step > .content-body {
   display: flex;
   flex-direction: column;
   width: 100%;
+  min-height: 0;
+  min-width: 0;
 }
 
 .advanced-wizard-step > .content-body > .step-panel {
@@ -746,7 +761,7 @@
   flex: 1 1 auto;
 }
 
-/* Nota de alcance removida: evita duplicar el subtÃƒÂ­tulo del paso.
+/* Nota de alcance removida: evita duplicar el subtítulo del paso.
    Reservar cajas solo para warnings/errores reales dentro de cada paso. */
 
 /* Contenedor del flujo basico: aire tras el encabezado guia */
@@ -756,7 +771,7 @@
   gap: 0;
 }
 
-/* Modal de ÃƒÂ©xito Ã¢â‚¬â€ creaciÃƒÂ³n bÃƒÂ¡sica: bloques neutros, jerarquÃƒÂ­a por tipo y espacio */
+/* Modal de éxito - creación básica: bloques neutros, jerarquía por tipo y espacio */
 .basic-success-followup {
   display: grid;
   gap: 12px;
@@ -829,7 +844,7 @@
   letter-spacing: 0.01em;
 }
 
-/* Modal de error Ã¢â‚¬â€ mismo patrÃƒÂ³n de lectura que el ÃƒÂ©xito: paneles neutros, detalle y acciÃƒÂ³n. */
+/* Modal de error - mismo patrón de lectura que el éxito: paneles neutros, detalle y acción. */
 .error-followup {
   margin-top: 0;
 }

@@ -121,7 +121,41 @@ describe('validateBorradorAvanzadoFormMinimo', () => {
       sexo: 'F',
       estadoCivil: 'SOLTERO',
     });
+    form.controls.contacto.patchValue({
+      email: 'borrador@test.cl',
+      telefono: '56912345678',
+    });
     expect(validateBorradorAvanzadoFormMinimo(form)).toBeNull();
+  });
+
+  it('rechaza sin correo de contacto', () => {
+    const form = orchestrator.createForm();
+    form.controls.datosPersonales.patchValue({
+      rut: '12.345.678-5',
+      nombres: 'Test',
+      apellidoPaterno: 'Auto',
+      fechaNacimiento: '1990-01-01',
+      idPais: 1,
+      sexo: 'F',
+      estadoCivil: 'SOLTERO',
+    });
+    form.controls.contacto.patchValue({ email: '', telefono: '56912345678' });
+    expect(validateBorradorAvanzadoFormMinimo(form)).toContain('correo');
+  });
+
+  it('rechaza sin teléfono de contacto', () => {
+    const form = orchestrator.createForm();
+    form.controls.datosPersonales.patchValue({
+      rut: '12.345.678-5',
+      nombres: 'Test',
+      apellidoPaterno: 'Auto',
+      fechaNacimiento: '1990-01-01',
+      idPais: 1,
+      sexo: 'F',
+      estadoCivil: 'SOLTERO',
+    });
+    form.controls.contacto.patchValue({ email: 'test@empresa.cl', telefono: '' });
+    expect(validateBorradorAvanzadoFormMinimo(form)).toContain('teléfono');
   });
 
   it('rechaza nombres con dígitos antes de guardar borrador', () => {
@@ -164,6 +198,10 @@ describe('validateBorradorAvanzadoFormMinimo', () => {
       idPais: 1,
       sexo: 'F',
       estadoCivil: 'SOLTERO',
+    });
+    form.controls.contacto.patchValue({
+      email: 'maria@empresa.cl',
+      telefono: '56987654321',
     });
     expect(validateBorradorAvanzadoFormMinimo(form)).toBeNull();
   });

@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common';
+import { CommonModule, DOCUMENT } from '@angular/common';
 import {
   ChangeDetectorRef,
   Component,
@@ -480,6 +480,7 @@ export class SearchSelectComponent implements ControlValueAccessor, OnDestroy {
   private readonly host = inject(ElementRef<HTMLElement>);
   private readonly cdr = inject(ChangeDetectorRef);
   private readonly injector = inject(Injector);
+  private readonly document = inject(DOCUMENT);
   private readonly inputId = SearchSelectComponent.nextInputId++;
 
   @HostBinding('class.select-panel-host-open')
@@ -531,6 +532,8 @@ export class SearchSelectComponent implements ControlValueAccessor, OnDestroy {
 
   /** Limpieza devuelta por `autoUpdate` de Floating UI (scroll/resize/animaciones). */
   private floatingDispose?: () => void;
+  private floatingOriginalParent?: Node;
+  private floatingOriginalNextSibling?: Node | null;
 
   /** Coalesce reflows al filtrar (evita ráfagas ResizeObserver ↔ autoUpdate). */
   private searchLayoutFrameId = 0;
@@ -539,7 +542,13 @@ export class SearchSelectComponent implements ControlValueAccessor, OnDestroy {
   closeOnOutsideClick(event: MouseEvent): void {
     const target = event.target;
 
-    if (target instanceof Node && this.host.nativeElement.contains(target)) {
+    if (!(target instanceof Node)) {
+      this.closePanel();
+      return;
+    }
+
+    const floating = this.getFloatingEl();
+    if (this.host.nativeElement.contains(target) || floating?.contains(target)) {
       return;
     }
 
@@ -783,6 +792,7 @@ export class SearchSelectComponent implements ControlValueAccessor, OnDestroy {
 
     /** Ancho estable desde el primer frame (luego `size.apply` lo mantiene alineado a `rects.reference`). */
     this.syncFloatingWidthToMatchReference(reference, floating);
+    this.portalFloatingElement(floating);
 
     this.floatingDispose = autoUpdate(
       reference,
@@ -803,6 +813,40 @@ export class SearchSelectComponent implements ControlValueAccessor, OnDestroy {
   private detachFloatingUi(): void {
     this.floatingDispose?.();
     this.floatingDispose = undefined;
+    this.restoreFloatingElement();
+  }
+
+  private portalFloatingElement(floating: HTMLElement): void {
+    if (floating.parentNode === this.document.body) {
+      return;
+    }
+
+    this.floatingOriginalParent = floating.parentNode ?? undefined;
+    this.floatingOriginalNextSibling = floating.nextSibling;
+
+    const hostStyles = getComputedStyle(this.host.nativeElement);
+    for (const token of ['--erp-control-height', '--erp-text-sm', '--erp-select-panel-z']) {
+      const value = hostStyles.getPropertyValue(token).trim();
+      if (value) {
+        floating.style.setProperty(token, value);
+      }
+    }
+    floating.style.fontFamily = hostStyles.fontFamily;
+    floating.style.zIndex = hostStyles.getPropertyValue('--erp-select-panel-z').trim() || '11060';
+
+    this.document.body.appendChild(floating);
+  }
+
+  private restoreFloatingElement(): void {
+    const floating = this.getFloatingEl();
+    const parent = this.floatingOriginalParent;
+
+    if (floating && parent && floating.parentNode === this.document.body) {
+      parent.insertBefore(floating, this.floatingOriginalNextSibling ?? null);
+    }
+
+    this.floatingOriginalParent = undefined;
+    this.floatingOriginalNextSibling = undefined;
   }
 
   private async runFloatingUpdate(): Promise<void> {

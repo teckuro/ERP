@@ -187,6 +187,11 @@ export function buildPrevisionInsert(
   };
 }
 
+function resolvePlanSaludLabel(payload: CrearEmpleadoPayload): string | null {
+  const tipo = payload.tipoSalud?.trim();
+  return tipo ? tipo : null;
+}
+
 export function buildSaludTrabajadorInsert(
   payload: CrearEmpleadoPayload,
   contratoId: number,
@@ -198,7 +203,7 @@ export function buildSaludTrabajadorInsert(
   return {
     id_contrato: contratoId,
     id_salud: payload.idSalud!,
-    plan_salud: null,
+    plan_salud: resolvePlanSaludLabel(payload),
     id_moneda_plan: payload.idMonedaPlan,
     valor_plan: payload.valorPlan ?? 0,
     adicional_auge_ges: payload.adicionalAugeGes ?? 0,

@@ -1,7 +1,7 @@
 <div class="prevision-shell" [formGroup]="formGroup">
   <div class="employee-section-head is-hidden">
-    <p class="employee-section-kicker">PrevisiÃ³n y beneficios</p>
-    <h3 class="employee-section-title">PrevisiÃ³n y salud</h3>
+    <p class="employee-section-kicker">Previsión y beneficios</p>
+    <h3 class="employee-section-title">Previsión y salud</h3>
   </div>
 
   @if (esBloqueVisible('regimen')) {
@@ -9,7 +9,7 @@
       <app-card-header className="prevision-card-header">
         <div class="prevision-card-title-row">
           <div>
-            <h4>RÃ©gimen previsional</h4>
+            <h4>Régimen previsional</h4>
           </div>
           <span
             class="prevision-status-chip"
@@ -32,7 +32,7 @@
               <label
                 for="empleado-tipo-regimen-previsional"
               >
-                Tipo de previsiÃ³n
+                Tipo de previsión
               </label>
               @if (isRequired('tipoRegimenPrevisional')) {
                 <app-empleado-field-required />
@@ -41,13 +41,13 @@
             <app-search-select
               id="empleado-tipo-regimen-previsional"
               formControlName="tipoRegimenPrevisional"
-              placeholder="Selecciona una opciÃ³n"
-              searchPlaceholder="Buscar tipo de previsiÃ³n"
+              placeholder="Selecciona una opción"
+              searchPlaceholder="Buscar tipo de previsión"
               [options]="tiposRegimenSelectOptions"
               [invalid]="hasError('tipoRegimenPrevisional')"
             ></app-search-select>
             @if (hasError('tipoRegimenPrevisional', 'required')) {
-              <p class="field-message">Debes seleccionar el tipo de previsiÃ³n.</p>
+              <p class="field-message">Debes seleccionar el tipo de previsión.</p>
             } @else {
               <p class="field-message"></p>
             }
@@ -78,8 +78,8 @@
 
   @if (sinPrevision && esBloqueVisible('regimen')) {
     <div class="prevision-state-note is-none" role="status">
-      <span class="prevision-state-note__label">Sin previsiÃ³n</span>
-      <p>No se solicitarÃ¡n datos de AFP, IPS ni APVI para este trabajador.</p>
+      <span class="prevision-state-note__label">Sin previsión</span>
+      <p>No se solicitarán datos de AFP, IPS ni APVI para este trabajador.</p>
     </div>
   }
 
@@ -232,7 +232,7 @@
           <div class="form-field prevision-field--regimen-excaja">
             <div class="field-label-row">
               <label for="empleado-regimen-ex-caja">
-                RÃ©gimen Ex-Caja
+                Régimen Ex-Caja
               </label>
               @if (isRequired('idRegimenExCaja')) {
                 <app-empleado-field-required />
@@ -241,16 +241,16 @@
             <app-search-select
               id="empleado-regimen-ex-caja"
               formControlName="idRegimenExCaja"
-              placeholder="Selecciona un rÃ©gimen"
-              searchPlaceholder="Buscar rÃ©gimen Ex-Caja"
+              placeholder="Selecciona un régimen"
+              searchPlaceholder="Buscar régimen Ex-Caja"
               [options]="regimenExCajaSelectOptions"
               [invalid]="hasError('idRegimenExCaja')"
             ></app-search-select>
             @if (hasError('idRegimenExCaja', 'required')) {
-              <p class="field-message">El rÃ©gimen Ex-Caja es obligatorio.</p>
+              <p class="field-message">El régimen Ex-Caja es obligatorio.</p>
             } @else if (!regimenesExCajaFiltrados.length) {
               <p class="field-message field-message--warning">
-                No hay regÃ­menes para la Ex-Caja seleccionada.
+                No hay regímenes para la Ex-Caja seleccionada.
               </p>
             } @else {
               <p class="field-message"></p>
@@ -300,7 +300,7 @@
           <div class="form-field prevision-field--salud">
             <div class="field-label-row">
               <label for="empleado-salud"
-                >InstituciÃ³n de salud</label
+                >Institución de salud</label
               >
               @if (isRequired('idSalud')) {
                 <app-empleado-field-required />
@@ -309,13 +309,13 @@
             <app-search-select
               id="empleado-salud"
               formControlName="idSalud"
-              placeholder="Selecciona una instituciÃ³n"
-              searchPlaceholder="Buscar instituciÃ³n de salud"
+              placeholder="Selecciona una institución"
+              searchPlaceholder="Buscar institución de salud"
               [options]="saludSelectOptions"
               [invalid]="hasError('idSalud')"
             ></app-search-select>
             @if (hasError('idSalud', 'required')) {
-              <p class="field-message">La instituciÃ³n de salud es obligatoria.</p>
+              <p class="field-message">La institución de salud es obligatoria.</p>
             } @else {
               <p class="field-message"></p>
             }
@@ -346,16 +346,7 @@
             }
           </div>
 
-          @if (esFonasaSalud) {
-            <div class="form-field prevision-field--amount">
-              <div class="field-label-row">
-                <label>Valor plan</label>
-              </div>
-              <p class="prevision-state-note is-neutral">
-                FONASA se calcula por cotizaciÃ³n legal; no requiere valor de plan.
-              </p>
-            </div>
-          } @else {
+          @if (!esFonasaSalud) {
             <div class="form-field prevision-field--amount">
               <div class="field-label-row">
                 <label for="empleado-valor-plan"
@@ -383,38 +374,40 @@
             </div>
           }
 
-          <div class="form-field prevision-field--amount">
-            <div class="field-label-row">
-              <label for="empleado-auge-ges">
-                Adicional GES (UF)
-              </label>
-              @if (isRequired('adicionalAugeGes')) {
-                <app-empleado-field-required />
+          @if (!esFonasaSalud) {
+            <div class="form-field prevision-field--amount">
+              <div class="field-label-row">
+                <label for="empleado-auge-ges">
+                  Adicional GES (UF)
+                </label>
+                @if (isRequired('adicionalAugeGes')) {
+                  <app-empleado-field-required />
+                }
+              </div>
+              <input
+                id="empleado-auge-ges"
+                type="number"
+                min="0"
+                step="1000"
+                formControlName="adicionalAugeGes"
+                [class]="controlClass('adicionalAugeGes')"
+              />
+              @if (hasError('adicionalAugeGes', 'required')) {
+                <p class="field-message">El adicional Plan Auge es obligatorio.</p>
+              } @else if (hasError('adicionalAugeGes', 'min')) {
+                <p class="field-message">El adicional Plan Auge no puede ser negativo.</p>
+              } @else {
+                <p class="field-message"></p>
               }
             </div>
-            <input
-              id="empleado-auge-ges"
-              type="number"
-              min="0"
-              step="1000"
-              formControlName="adicionalAugeGes"
-              [class]="controlClass('adicionalAugeGes')"
-            />
-            @if (hasError('adicionalAugeGes', 'required')) {
-              <p class="field-message">El adicional Plan Auge es obligatorio.</p>
-            } @else if (hasError('adicionalAugeGes', 'min')) {
-              <p class="field-message">El adicional Plan Auge no puede ser negativo.</p>
-            } @else {
-              <p class="field-message"></p>
-            }
-          </div>
+          }
         </div>
       </app-card-content>
     </app-card>
   } @else if (esBloqueVisible('salud') && tipoPrevision !== null) {
     <div class="prevision-state-note is-neutral" role="status">
       <span class="prevision-state-note__label">Salud sin datos requeridos</span>
-      <p>La selecciÃ³n actual no solicita datos de salud en este paso.</p>
+      <p>La selección actual no solicita datos de salud en este paso.</p>
     </div>
   }
 
@@ -450,7 +443,7 @@
             <div class="form-field">
               <div class="field-label-row">
                 <label for="empleado-institucion-apv">
-                  InstituciÃ³n APVI
+                  Institución APVI
                 </label>
                 @if (isRequired('idInstitucionApv')) {
                   <app-empleado-field-required />
@@ -459,13 +452,13 @@
               <app-search-select
                 id="empleado-institucion-apv"
                 formControlName="idInstitucionApv"
-                placeholder="Selecciona una instituciÃ³n"
-                searchPlaceholder="Buscar instituciÃ³n APVI"
+                placeholder="Selecciona una institución"
+                searchPlaceholder="Buscar institución APVI"
                 [options]="institucionApvSelectOptions"
                 [invalid]="hasError('idInstitucionApv')"
               ></app-search-select>
               @if (hasError('idInstitucionApv', 'required')) {
-                <p class="field-message">La instituciÃ³n APVI es obligatoria.</p>
+                <p class="field-message">La institución APVI es obligatoria.</p>
               } @else {
                 <p class="field-message"></p>
               }
