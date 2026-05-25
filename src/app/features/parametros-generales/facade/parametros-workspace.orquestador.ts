@@ -1062,6 +1062,11 @@ export class ParametrosWorkspaceOrquestador {
     }
   }
 
+  /** Recarga el periodo activo (p. ej. tras carga oficial externa en BD). */
+  async recargarPeriodoSeleccionado(): Promise<void> {
+    await this.cargar(this.selectedPeriodo());
+  }
+
   async sincronizar(): Promise<void> {
     const hadData = this.hasAnySyncedData();
     await this.cargar();

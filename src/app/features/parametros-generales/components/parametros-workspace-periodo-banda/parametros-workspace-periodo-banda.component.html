@@ -72,6 +72,18 @@
           <lucide-icon icon class="h-4 w-4" name="refresh-cw"></lucide-icon>
           Sincronizar
         </app-button>
+      } @else if (!ws.generalesEditando()) {
+        <app-button
+          variant="outline"
+          size="md"
+          className="erp-toolbar-button erp-action-button"
+          data-testid="parametros-refrescar-periodo"
+          [disabled]="ws.parametrosUiBloqueada()"
+          (click)="ws.recargarPeriodoSeleccionado()"
+        >
+          <lucide-icon icon class="h-4 w-4" name="refresh-cw"></lucide-icon>
+          Refrescar datos
+        </app-button>
       }
 
       @if (ws.generalesEditando()) {

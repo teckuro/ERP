@@ -20,4 +20,18 @@ function run(label, command, args, extraEnv = {}) {
 run('unit (parametros-generales)', 'npm', ['run', 'test:gate:parametros:unit']);
 run('E2E UI workspace (1 smoke)', 'npm', ['run', 'test:e2e:parametros']);
 
+const flujosOn = ['1', 'true', 'yes', 'on'].includes(
+  (process.env.E2E_PARAMETROS_PERSISTENCIA ?? '').trim().toLowerCase(),
+);
+if (flujosOn) {
+  run('E2E flujos BD (1 recorrido cliente → oficial → reconciliacion)', 'npm', [
+    'run',
+    'test:e2e:parametros:flujos',
+  ], {
+    E2E_PARAMETROS_PERSISTENCIA: '1',
+  });
+} else {
+  console.log('[gate parametros] Flujos BD omitidos (defina E2E_PARAMETROS_PERSISTENCIA=1).');
+}
+
 console.log('[gate parametros] completo.');

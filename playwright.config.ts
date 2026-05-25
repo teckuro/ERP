@@ -13,6 +13,8 @@ const empleadosDbSpecs = [
   'empleados-creacion-avanzada-inferencia.spec.ts',
 ];
 
+const parametrosDbSpecs = ['parametros-workspace-flujos.spec.ts'];
+
 export default defineConfig({
   testDir: './tests',
   snapshotDir: './tests/__snapshots__',
@@ -29,7 +31,7 @@ export default defineConfig({
   projects: [
     {
       name: 'default',
-      testIgnore: empleadosDbSpecs.map((f) => `**/${f}`),
+      testIgnore: [...empleadosDbSpecs, ...parametrosDbSpecs].map((f) => `**/${f}`),
     },
     {
       name: 'empleados-db',
@@ -41,6 +43,12 @@ export default defineConfig({
       name: 'empleados-nomina',
       testMatch: '**/empleados-nomina-error-fixtures.spec.ts',
       timeout: 120_000,
+    },
+    {
+      name: 'parametros-db',
+      testMatch: parametrosDbSpecs.map((f) => `**/${f}`),
+      globalSetup: resolve(process.cwd(), 'tests/global-setup-parametros-e2e.mjs'),
+      timeout: 240_000,
     },
   ],
   webServer: {

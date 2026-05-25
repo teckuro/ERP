@@ -3120,3 +3120,25 @@ Application bundle generation failed. [1.546 seconds] - 2026-05-25T19:49:21.092Z
 Application bundle generation complete. [3.270 seconds] - 2026-05-25T19:50:02.149Z
 
 Page reload sent to client(s).
+[33m>[39m Changes detected. Rebuilding...
+[32m√[39m Changes detected. Rebuilding...
+[1mInitial chunk files[22m[2m | [22m[1mNames[22m          [2m | [22m [1mRaw size[22m
+[32mmain.js[39m            [2m | [22m[2mmain[22m           [2m | [22m [36m71.53 kB[39m[2m | [22m
+
+[1mLazy chunk files[22m   [2m | [22m[1mNames[22m          [2m | [22m [1mRaw size[22m
+[32mchunk-XMCGC7LO.js[39m  [2m | [22m[2mparametros-page[22m[2m | [22m[36m398.77 kB[39m[2m | [22m
+
+Application bundle generation complete. [8.813 seconds] - 2026-05-25T20:26:36.253Z
+
+Page reload sent to client(s).
+[33m>[39m Changes detected. Rebuilding...
+[32m√[39m Changes detected. Rebuilding...
+[1mInitial chunk files[22m[2m | [22m[1mNames[22m          [2m | [22m [1mRaw size[22m
+[32mmain.js[39m            [2m | [22m[2mmain[22m           [2m | [22m [36m71.53 kB[39m[2m | [22m
+
+[1mLazy chunk files[22m   [2m | [22m[1mNames[22m          [2m | [22m [1mRaw size[22m
+[32mchunk-4WKR47UL.js[39m  [2m | [22m[2mparametros-page[22m[2m | [22m[36m400.50 kB[39m[2m | [22m
+
+Application bundle generation complete. [2.924 seconds] - 2026-05-25T20:32:23.765Z
+
+Component update sent to client(s).
