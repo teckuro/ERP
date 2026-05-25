@@ -1952,3 +1952,313 @@
            ╵           [32m~~~~[0m
 
 [39m[22m
+[1m[33m[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mNG8113: MovimientoVariableAltaDialogComponent is not used within the template of MovimientosVariablesContainer[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/movimientos-variables/containers/movimientos-variables-container/movimientos-variables-container.ts:61:4:
+[37m      61 │     [32mMovimientoVariableAltaDialogComponent[37m,
+         ╵     [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mNG8113: MovimientoVariableAnularDialogComponent is not used within the template of MovimientosVariablesContainer[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/movimientos-variables/containers/movimientos-variables-container/movimientos-variables-container.ts:62:4:
+[37m      62 │     [32mMovimientoVariableAnularDialogComponent[37m,
+         ╵     [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+[39m[22m
+[1m[31m[31mX [41;31m[[41;97mERROR[41;31m][0m [1mNG8001: 'app-search-select' is not a known element:
+1. If 'app-search-select' is an Angular component, then verify that it is included in the '@Component.imports' of this component.
+2. If 'app-search-select' is a Web Component then add 'CUSTOM_ELEMENTS_SCHEMA' to the '@Component.schemas' of this component to suppress this message.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/movimientos-variables/containers/movimientos-variables-container/movimientos-variables-container.html:98:14:
+[37m      98 │               [32m<app-search-select[37m
+         ╵               [32m~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component MovimientosVariablesContainer.
+
+    src/app/features/movimientos-variables/containers/movimientos-variables-container/movimientos-variables-container.ts:64:15:
+[37m      64 │   templateUrl: [32m'./movimientos-variables-container.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mNG8002: Can't bind to 'options' since it isn't a known property of 'app-search-select'.
+1. If 'app-search-select' is an Angular component and it has 'options' input, then verify that it is included in the '@Component.imports' of this component.
+2. If 'app-search-select' is a Web Component then add 'CUSTOM_ELEMENTS_SCHEMA' to the '@Component.schemas' of this component to suppress this message.
+3. To allow any property add 'NO_ERRORS_SCHEMA' to the '@Component.schemas' of this component.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/movimientos-variables/containers/movimientos-variables-container/movimientos-variables-container.html:100:16:
+[37m      100 │                 [32m[options]="empleadoOptions()"[37m
+          ╵                 [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component MovimientosVariablesContainer.
+
+    src/app/features/movimientos-variables/containers/movimientos-variables-container/movimientos-variables-container.ts:64:15:
+[37m      64 │   templateUrl: [32m'./movimientos-variables-container.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mNG8002: Can't bind to 'ngModel' since it isn't a known property of 'app-search-select'.
+1. If 'app-search-select' is an Angular component and it has 'ngModel' input, then verify that it is included in the '@Component.imports' of this component.
+2. If 'app-search-select' is a Web Component then add 'CUSTOM_ELEMENTS_SCHEMA' to the '@Component.schemas' of this component to suppress this message.
+3. To allow any property add 'NO_ERRORS_SCHEMA' to the '@Component.schemas' of this component.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/movimientos-variables/containers/movimientos-variables-container/movimientos-variables-container.html:101:16:
+[37m      101 │                 [32m[ngModel]="formPersonaId()"[37m
+          ╵                 [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component MovimientosVariablesContainer.
+
+    src/app/features/movimientos-variables/containers/movimientos-variables-container/movimientos-variables-container.ts:64:15:
+[37m      64 │   templateUrl: [32m'./movimientos-variables-container.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2345: Argument of type 'Event' is not assignable to parameter of type 'number'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/movimientos-variables/containers/movimientos-variables-container/movimientos-variables-container.html:102:51:
+[37m      102 │                 (ngModelChange)="formPersonaId.set([32m$event[37m)"
+          ╵                                                    [32m~~~~~~[0m
+
+  Error occurs in the template of component MovimientosVariablesContainer.
+
+    src/app/features/movimientos-variables/containers/movimientos-variables-container/movimientos-variables-container.ts:64:15:
+[37m      64 │   templateUrl: [32m'./movimientos-variables-container.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mNG8001: 'app-search-select' is not a known element:
+1. If 'app-search-select' is an Angular component, then verify that it is included in the '@Component.imports' of this component.
+2. If 'app-search-select' is a Web Component then add 'CUSTOM_ELEMENTS_SCHEMA' to the '@Component.schemas' of this component to suppress this message.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/movimientos-variables/containers/movimientos-variables-container/movimientos-variables-container.html:109:14:
+[37m      109 │               [32m<app-search-select[37m
+          ╵               [32m~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component MovimientosVariablesContainer.
+
+    src/app/features/movimientos-variables/containers/movimientos-variables-container/movimientos-variables-container.ts:64:15:
+[37m      64 │   templateUrl: [32m'./movimientos-variables-container.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mNG8002: Can't bind to 'options' since it isn't a known property of 'app-search-select'.
+1. If 'app-search-select' is an Angular component and it has 'options' input, then verify that it is included in the '@Component.imports' of this component.
+2. If 'app-search-select' is a Web Component then add 'CUSTOM_ELEMENTS_SCHEMA' to the '@Component.schemas' of this component to suppress this message.
+3. To allow any property add 'NO_ERRORS_SCHEMA' to the '@Component.schemas' of this component.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/movimientos-variables/containers/movimientos-variables-container/movimientos-variables-container.html:111:16:
+[37m      111 │                 [32m[options]="conceptoOpciones()"[37m
+          ╵                 [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component MovimientosVariablesContainer.
+
+    src/app/features/movimientos-variables/containers/movimientos-variables-container/movimientos-variables-container.ts:64:15:
+[37m      64 │   templateUrl: [32m'./movimientos-variables-container.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mNG8002: Can't bind to 'ngModel' since it isn't a known property of 'app-search-select'.
+1. If 'app-search-select' is an Angular component and it has 'ngModel' input, then verify that it is included in the '@Component.imports' of this component.
+2. If 'app-search-select' is a Web Component then add 'CUSTOM_ELEMENTS_SCHEMA' to the '@Component.schemas' of this component to suppress this message.
+3. To allow any property add 'NO_ERRORS_SCHEMA' to the '@Component.schemas' of this component.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/movimientos-variables/containers/movimientos-variables-container/movimientos-variables-container.html:112:16:
+[37m      112 │                 [32m[ngModel]="formConceptoId()"[37m
+          ╵                 [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component MovimientosVariablesContainer.
+
+    src/app/features/movimientos-variables/containers/movimientos-variables-container/movimientos-variables-container.ts:64:15:
+[37m      64 │   templateUrl: [32m'./movimientos-variables-container.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2345: Argument of type 'Event' is not assignable to parameter of type 'number'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/movimientos-variables/containers/movimientos-variables-container/movimientos-variables-container.html:113:52:
+[37m      113 │                 (ngModelChange)="formConceptoId.set([32m$event[37m)"
+          ╵                                                     [32m~~~~~~[0m
+
+  Error occurs in the template of component MovimientosVariablesContainer.
+
+    src/app/features/movimientos-variables/containers/movimientos-variables-container/movimientos-variables-container.ts:64:15:
+[37m      64 │   templateUrl: [32m'./movimientos-variables-container.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mNG8002: Can't bind to 'ngModel' since it isn't a known property of 'input'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/movimientos-variables/containers/movimientos-variables-container/movimientos-variables-container.html:128:16:
+[37m      128 │                 [32m[ngModel]="formMonto()"[37m
+          ╵                 [32m~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component MovimientosVariablesContainer.
+
+    src/app/features/movimientos-variables/containers/movimientos-variables-container/movimientos-variables-container.ts:64:15:
+[37m      64 │   templateUrl: [32m'./movimientos-variables-container.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2345: Argument of type 'Event' is not assignable to parameter of type 'number'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/movimientos-variables/containers/movimientos-variables-container/movimientos-variables-container.html:129:47:
+[37m      129 │                 (ngModelChange)="formMonto.set([32m$event[37m)"
+          ╵                                                [32m~~~~~~[0m
+
+  Error occurs in the template of component MovimientosVariablesContainer.
+
+    src/app/features/movimientos-variables/containers/movimientos-variables-container/movimientos-variables-container.ts:64:15:
+[37m      64 │   templateUrl: [32m'./movimientos-variables-container.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mNG8002: Can't bind to 'ngModel' since it isn't a known property of 'select'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/movimientos-variables/containers/movimientos-variables-container/movimientos-variables-container.html:137:16:
+[37m      137 │                 [32m[ngModel]="formEstadoAlta()"[37m
+          ╵                 [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component MovimientosVariablesContainer.
+
+    src/app/features/movimientos-variables/containers/movimientos-variables-container/movimientos-variables-container.ts:64:15:
+[37m      64 │   templateUrl: [32m'./movimientos-variables-container.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2345: Argument of type 'Event' is not assignable to parameter of type '"BORRADOR" | "VALIDADO"'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/movimientos-variables/containers/movimientos-variables-container/movimientos-variables-container.html:138:52:
+[37m      138 │                 (ngModelChange)="formEstadoAlta.set([32m$event[37m)"
+          ╵                                                     [32m~~~~~~[0m
+
+  Error occurs in the template of component MovimientosVariablesContainer.
+
+    src/app/features/movimientos-variables/containers/movimientos-variables-container/movimientos-variables-container.ts:64:15:
+[37m      64 │   templateUrl: [32m'./movimientos-variables-container.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mNG8002: Can't bind to 'ngValue' since it isn't a known property of 'option'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/movimientos-variables/containers/movimientos-variables-container/movimientos-variables-container.html:140:24:
+[37m      140 │                 <option [32m[ngValue]="'BORRADOR'"[37m>Borrador</option>
+          ╵                         [32m~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component MovimientosVariablesContainer.
+
+    src/app/features/movimientos-variables/containers/movimientos-variables-container/movimientos-variables-container.ts:64:15:
+[37m      64 │   templateUrl: [32m'./movimientos-variables-container.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mNG8002: Can't bind to 'ngValue' since it isn't a known property of 'option'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/movimientos-variables/containers/movimientos-variables-container/movimientos-variables-container.html:141:24:
+[37m      141 │                 <option [32m[ngValue]="'VALIDADO'"[37m>Validado</option>
+          ╵                         [32m~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component MovimientosVariablesContainer.
+
+    src/app/features/movimientos-variables/containers/movimientos-variables-container/movimientos-variables-container.ts:64:15:
+[37m      64 │   templateUrl: [32m'./movimientos-variables-container.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mNG8002: Can't bind to 'ngModel' since it isn't a known property of 'textarea'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/movimientos-variables/containers/movimientos-variables-container/movimientos-variables-container.html:150:16:
+[37m      150 │                 [32m[ngModel]="formObservacion()"[37m
+          ╵                 [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component MovimientosVariablesContainer.
+
+    src/app/features/movimientos-variables/containers/movimientos-variables-container/movimientos-variables-container.ts:64:15:
+[37m      64 │   templateUrl: [32m'./movimientos-variables-container.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2345: Argument of type 'Event' is not assignable to parameter of type 'string'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/movimientos-variables/containers/movimientos-variables-container/movimientos-variables-container.html:151:53:
+[37m      151 │                 (ngModelChange)="formObservacion.set([32m$event[37m)"
+          ╵                                                      [32m~~~~~~[0m
+
+  Error occurs in the template of component MovimientosVariablesContainer.
+
+    src/app/features/movimientos-variables/containers/movimientos-variables-container/movimientos-variables-container.ts:64:15:
+[37m      64 │   templateUrl: [32m'./movimientos-variables-container.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2551: Property 'formatMonto' does not exist on type 'MovimientosVariablesContainer'. Did you mean 'formMonto'?[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/movimientos-variables/containers/movimientos-variables-container/movimientos-variables-container.html:183:15:
+[37m      183 │             {{ [32mformatMonto[37m(row.monto) }}?
+          ╵                [32m~~~~~~~~~~~[0m
+
+  Error occurs in the template of component MovimientosVariablesContainer.
+
+    src/app/features/movimientos-variables/containers/movimientos-variables-container/movimientos-variables-container.ts:64:15:
+[37m      64 │   templateUrl: [32m'./movimientos-variables-container.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mNG8002: Can't bind to 'ngModel' since it isn't a known property of 'textarea'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/movimientos-variables/containers/movimientos-variables-container/movimientos-variables-container.html:190:12:
+[37m      190 │             [32m[ngModel]="motivoAnulacion()"[37m
+          ╵             [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component MovimientosVariablesContainer.
+
+    src/app/features/movimientos-variables/containers/movimientos-variables-container/movimientos-variables-container.ts:64:15:
+[37m      64 │   templateUrl: [32m'./movimientos-variables-container.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2345: Argument of type 'Event' is not assignable to parameter of type 'string'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/movimientos-variables/containers/movimientos-variables-container/movimientos-variables-container.html:191:49:
+[37m      191 │             (ngModelChange)="motivoAnulacion.set([32m$event[37m)"
+          ╵                                                  [32m~~~~~~[0m
+
+  Error occurs in the template of component MovimientosVariablesContainer.
+
+    src/app/features/movimientos-variables/containers/movimientos-variables-container/movimientos-variables-container.ts:64:15:
+[37m      64 │   templateUrl: [32m'./movimientos-variables-container.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+[39m[22m
+[1m[33m[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mNG8113: HaberDescuentoAsignacionEditorDialogComponent is not used within the template of HaberesDescuentosContainer[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/haberes-descuentos/containers/haberes-descuentos-container/haberes-descuentos-container.ts:75:4:
+[37m      75 │     [32mHaberDescuentoAsignacionEditorDialogComponent[37m,
+         ╵     [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+[39m[22m
+[1m[31m[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'contratoOpcionesNativo' does not exist on type 'HaberesDescuentosContainer'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/haberes-descuentos/containers/haberes-descuentos-container/haberes-descuentos-container.html:223:31:
+[37m      223 │ ...         @for (c of [32mcontratoOpcionesNativo[37m(); track c.idContra...
+          ╵                        [32m~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component HaberesDescuentosContainer.
+
+    src/app/features/haberes-descuentos/containers/haberes-descuentos-container/haberes-descuentos-container.ts:77:15:
+[37m      77 │   templateUrl: [32m'./haberes-descuentos-container.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'etiquetaNaturaleza' does not exist on type 'HaberesDescuentosContainer'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/haberes-descuentos/containers/haberes-descuentos-container/haberes-descuentos-container.html:269:27:
+[37m      269 │ ...             [value]="[32metiquetaNaturaleza[37m(conceptoVistaModal()....
+          ╵                          [32m~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component HaberesDescuentosContainer.
+
+    src/app/features/haberes-descuentos/containers/haberes-descuentos-container/haberes-descuentos-container.ts:77:15:
+[37m      77 │   templateUrl: [32m'./haberes-descuentos-container.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+[39m[22m

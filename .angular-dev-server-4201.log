@@ -2625,3 +2625,260 @@ Page reload sent to client(s).
 
 Application bundle generation complete. [0.195 seconds] - 2026-05-25T19:08:38.453Z
 
+[33m>[39m Changes detected. Rebuilding...
+[32m√[39m Changes detected. Rebuilding...
+Application bundle generation failed. [5.777 seconds] - 2026-05-25T19:17:00.603Z
+
+[33m>[39m Changes detected. Rebuilding...
+[32m√[39m Changes detected. Rebuilding...
+[1mInitial chunk files[22m[2m | [22m[1mNames[22m                      [2m | [22m [1mRaw size[22m
+[32mstyles.css[39m         [2m | [22m[2mstyles[22m                     [2m | [22m[36m103.50 kB[39m[2m | [22m
+[32mmain.js[39m            [2m | [22m[2mmain[22m                       [2m | [22m [36m71.53 kB[39m[2m | [22m
+[32mchunk-IDKKTQOK.js[39m  [2m | [22m[2m-[22m                          [2m | [22m  [36m4.95 kB[39m[2m | [22m
+[32mchunk-SH2UHXTA.js[39m  [2m | [22m[2m-[22m                          [2m | [22m  [36m3.91 kB[39m[2m | [22m
+[32mchunk-OSL5KMMJ.js[39m  [2m | [22m[2m-[22m                          [2m | [22m  [36m3.08 kB[39m[2m | [22m
+[32mchunk-26BMAMXC.js[39m  [2m | [22m[2m-[22m                          [2m | [22m  [36m1.72 kB[39m[2m | [22m
+[32mchunk-HFBNPKKE.js[39m  [2m | [22m[2m-[22m                          [2m | [22m  [36m1.45 kB[39m[2m | [22m
+
+[1m [22m                  [2m | [22m[1mInitial total[22m              [2m | [22m[1m190.12 kB[22m
+
+[1mLazy chunk files[22m   [2m | [22m[1mNames[22m                      [2m | [22m [1mRaw size[22m
+[32mchunk-VDOIU27F.js[39m  [2m | [22m[2mproceso-remuneraciones-page[22m[2m | [22m  [36m1.15 MB[39m[2m | [22m
+[32mchunk-UW3QREDS.js[39m  [2m | [22m[2m-[22m                          [2m | [22m[36m697.02 kB[39m[2m | [22m
+[32mchunk-JZ7CIZDH.js[39m  [2m | [22m[2mcrear-empleado-container[22m   [2m | [22m[36m434.73 kB[39m[2m | [22m
+[32mchunk-7NMSIEJU.js[39m  [2m | [22m[2mficha-empleado-container[22m   [2m | [22m[36m411.08 kB[39m[2m | [22m
+[32mchunk-KUSCDAS6.js[39m  [2m | [22m[2mparametros-page[22m            [2m | [22m[36m385.28 kB[39m[2m | [22m
+[32mchunk-REDDQ2GT.js[39m  [2m | [22m[2mnovedades-mensuales-page[22m   [2m | [22m[36m243.88 kB[39m[2m | [22m
+[32mchunk-4LP6ZG6Z.js[39m  [2m | [22m[2m-[22m                          [2m | [22m[36m217.65 kB[39m[2m | [22m
+[32mchunk-AXAMXZBQ.js[39m  [2m | [22m[2m-[22m                          [2m | [22m[36m139.94 kB[39m[2m | [22m
+[32mchunk-UNFBA26B.js[39m  [2m | [22m[2mconceptos-remuneracion-page[22m[2m | [22m[36m132.71 kB[39m[2m | [22m
+[32mchunk-5UV3A3N6.js[39m  [2m | [22m[2mhaberes-descuentos-page[22m    [2m | [22m[36m129.57 kB[39m[2m | [22m
+[32mchunk-RNOXV7DQ.js[39m  [2m | [22m[2mlistado-empleados-container[22m[2m | [22m[36m102.85 kB[39m[2m | [22m
+[32mchunk-2TS5XF26.js[39m  [2m | [22m[2mliquidaciones-page[22m         [2m | [22m [36m93.95 kB[39m[2m | [22m
+[32mchunk-UO3LXLTF.js[39m  [2m | [22m[2m-[22m                          [2m | [22m [36m58.97 kB[39m[2m | [22m
+[32mchunk-IJFN5ACD.js[39m  [2m | [22m[2m-[22m                          [2m | [22m [36m48.13 kB[39m[2m | [22m
+[32mchunk-PPXKUMEP.js[39m  [2m | [22m[2m-[22m                          [2m | [22m [36m48.03 kB[39m[2m | [22m
+[2m...and 17 more lazy chunks files. Use "--verbose" to show all the files.[22m
+
+Application bundle generation complete. [1.662 seconds] - 2026-05-25T19:17:18.238Z
+
+Page reload sent to client(s).
+[33m>[39m Changes detected. Rebuilding...
+[32m√[39m Changes detected. Rebuilding...
+
+No output file changes.
+
+Application bundle generation complete. [1.134 seconds] - 2026-05-25T19:17:21.997Z
+
+Component update sent to client(s).
+[33m>[39m Changes detected. Rebuilding...
+[32m√[39m Changes detected. Rebuilding...
+
+No output file changes.
+
+Application bundle generation complete. [1.285 seconds] - 2026-05-25T19:17:40.614Z
+
+Component update sent to client(s).
+[33m>[39m Changes detected. Rebuilding...
+[32m√[39m Changes detected. Rebuilding...
+[1mInitial chunk files[22m[2m | [22m[1mNames[22m                      [2m | [22m [1mRaw size[22m
+[32mstyles.css[39m         [2m | [22m[2mstyles[22m                     [2m | [22m[36m103.50 kB[39m[2m | [22m
+[32mmain.js[39m            [2m | [22m[2mmain[22m                       [2m | [22m [36m71.53 kB[39m[2m | [22m
+[32mchunk-IDKKTQOK.js[39m  [2m | [22m[2m-[22m                          [2m | [22m  [36m4.95 kB[39m[2m | [22m
+[32mchunk-SH2UHXTA.js[39m  [2m | [22m[2m-[22m                          [2m | [22m  [36m3.91 kB[39m[2m | [22m
+[32mchunk-OSL5KMMJ.js[39m  [2m | [22m[2m-[22m                          [2m | [22m  [36m3.08 kB[39m[2m | [22m
+[32mchunk-26BMAMXC.js[39m  [2m | [22m[2m-[22m                          [2m | [22m  [36m1.72 kB[39m[2m | [22m
+[32mchunk-HFBNPKKE.js[39m  [2m | [22m[2m-[22m                          [2m | [22m  [36m1.45 kB[39m[2m | [22m
+
+[1m [22m                  [2m | [22m[1mInitial total[22m              [2m | [22m[1m190.12 kB[22m
+
+[1mLazy chunk files[22m   [2m | [22m[1mNames[22m                      [2m | [22m [1mRaw size[22m
+[32mchunk-VDOIU27F.js[39m  [2m | [22m[2mproceso-remuneraciones-page[22m[2m | [22m  [36m1.15 MB[39m[2m | [22m
+[32mchunk-UW3QREDS.js[39m  [2m | [22m[2m-[22m                          [2m | [22m[36m697.02 kB[39m[2m | [22m
+[32mchunk-JZ7CIZDH.js[39m  [2m | [22m[2mcrear-empleado-container[22m   [2m | [22m[36m434.73 kB[39m[2m | [22m
+[32mchunk-7NMSIEJU.js[39m  [2m | [22m[2mficha-empleado-container[22m   [2m | [22m[36m411.08 kB[39m[2m | [22m
+[32mchunk-KUSCDAS6.js[39m  [2m | [22m[2mparametros-page[22m            [2m | [22m[36m385.28 kB[39m[2m | [22m
+[32mchunk-REDDQ2GT.js[39m  [2m | [22m[2mnovedades-mensuales-page[22m   [2m | [22m[36m243.88 kB[39m[2m | [22m
+[32mchunk-4LP6ZG6Z.js[39m  [2m | [22m[2m-[22m                          [2m | [22m[36m217.65 kB[39m[2m | [22m
+[32mchunk-AXAMXZBQ.js[39m  [2m | [22m[2m-[22m                          [2m | [22m[36m139.94 kB[39m[2m | [22m
+[32mchunk-UNFBA26B.js[39m  [2m | [22m[2mconceptos-remuneracion-page[22m[2m | [22m[36m132.71 kB[39m[2m | [22m
+[32mchunk-5UV3A3N6.js[39m  [2m | [22m[2mhaberes-descuentos-page[22m    [2m | [22m[36m129.57 kB[39m[2m | [22m
+[32mchunk-RNOXV7DQ.js[39m  [2m | [22m[2mlistado-empleados-container[22m[2m | [22m[36m102.85 kB[39m[2m | [22m
+[32mchunk-2TS5XF26.js[39m  [2m | [22m[2mliquidaciones-page[22m         [2m | [22m [36m93.95 kB[39m[2m | [22m
+[32mchunk-UO3LXLTF.js[39m  [2m | [22m[2m-[22m                          [2m | [22m [36m58.97 kB[39m[2m | [22m
+[32mchunk-IJFN5ACD.js[39m  [2m | [22m[2m-[22m                          [2m | [22m [36m48.13 kB[39m[2m | [22m
+[32mchunk-PPXKUMEP.js[39m  [2m | [22m[2m-[22m                          [2m | [22m [36m48.03 kB[39m[2m | [22m
+[2m...and 17 more lazy chunks files. Use "--verbose" to show all the files.[22m
+
+Application bundle generation complete. [0.245 seconds] - 2026-05-25T19:17:45.433Z
+
+[33m>[39m Changes detected. Rebuilding...
+[32m√[39m Changes detected. Rebuilding...
+[1mInitial chunk files[22m[2m | [22m[1mNames[22m                      [2m | [22m [1mRaw size[22m
+[32mstyles.css[39m         [2m | [22m[2mstyles[22m                     [2m | [22m[36m103.50 kB[39m[2m | [22m
+[32mmain.js[39m            [2m | [22m[2mmain[22m                       [2m | [22m [36m71.53 kB[39m[2m | [22m
+[32mchunk-IDKKTQOK.js[39m  [2m | [22m[2m-[22m                          [2m | [22m  [36m4.95 kB[39m[2m | [22m
+[32mchunk-SH2UHXTA.js[39m  [2m | [22m[2m-[22m                          [2m | [22m  [36m3.91 kB[39m[2m | [22m
+[32mchunk-OSL5KMMJ.js[39m  [2m | [22m[2m-[22m                          [2m | [22m  [36m3.08 kB[39m[2m | [22m
+[32mchunk-26BMAMXC.js[39m  [2m | [22m[2m-[22m                          [2m | [22m  [36m1.72 kB[39m[2m | [22m
+[32mchunk-HFBNPKKE.js[39m  [2m | [22m[2m-[22m                          [2m | [22m  [36m1.45 kB[39m[2m | [22m
+
+[1m [22m                  [2m | [22m[1mInitial total[22m              [2m | [22m[1m190.12 kB[22m
+
+[1mLazy chunk files[22m   [2m | [22m[1mNames[22m                      [2m | [22m [1mRaw size[22m
+[32mchunk-VDOIU27F.js[39m  [2m | [22m[2mproceso-remuneraciones-page[22m[2m | [22m  [36m1.15 MB[39m[2m | [22m
+[32mchunk-UW3QREDS.js[39m  [2m | [22m[2m-[22m                          [2m | [22m[36m697.02 kB[39m[2m | [22m
+[32mchunk-JZ7CIZDH.js[39m  [2m | [22m[2mcrear-empleado-container[22m   [2m | [22m[36m434.73 kB[39m[2m | [22m
+[32mchunk-7NMSIEJU.js[39m  [2m | [22m[2mficha-empleado-container[22m   [2m | [22m[36m411.08 kB[39m[2m | [22m
+[32mchunk-KUSCDAS6.js[39m  [2m | [22m[2mparametros-page[22m            [2m | [22m[36m385.28 kB[39m[2m | [22m
+[32mchunk-REDDQ2GT.js[39m  [2m | [22m[2mnovedades-mensuales-page[22m   [2m | [22m[36m243.88 kB[39m[2m | [22m
+[32mchunk-4LP6ZG6Z.js[39m  [2m | [22m[2m-[22m                          [2m | [22m[36m217.65 kB[39m[2m | [22m
+[32mchunk-AXAMXZBQ.js[39m  [2m | [22m[2m-[22m                          [2m | [22m[36m139.94 kB[39m[2m | [22m
+[32mchunk-UNFBA26B.js[39m  [2m | [22m[2mconceptos-remuneracion-page[22m[2m | [22m[36m132.71 kB[39m[2m | [22m
+[32mchunk-5UV3A3N6.js[39m  [2m | [22m[2mhaberes-descuentos-page[22m    [2m | [22m[36m129.57 kB[39m[2m | [22m
+[32mchunk-RNOXV7DQ.js[39m  [2m | [22m[2mlistado-empleados-container[22m[2m | [22m[36m102.85 kB[39m[2m | [22m
+[32mchunk-2TS5XF26.js[39m  [2m | [22m[2mliquidaciones-page[22m         [2m | [22m [36m93.95 kB[39m[2m | [22m
+[32mchunk-UO3LXLTF.js[39m  [2m | [22m[2m-[22m                          [2m | [22m [36m58.97 kB[39m[2m | [22m
+[32mchunk-IJFN5ACD.js[39m  [2m | [22m[2m-[22m                          [2m | [22m [36m48.13 kB[39m[2m | [22m
+[32mchunk-PPXKUMEP.js[39m  [2m | [22m[2m-[22m                          [2m | [22m [36m48.03 kB[39m[2m | [22m
+[2m...and 17 more lazy chunks files. Use "--verbose" to show all the files.[22m
+
+Application bundle generation complete. [0.207 seconds] - 2026-05-25T19:18:43.411Z
+
+[33m>[39m Changes detected. Rebuilding...
+[32m√[39m Changes detected. Rebuilding...
+[1mInitial chunk files[22m[2m | [22m[1mNames[22m                      [2m | [22m [1mRaw size[22m
+[32mstyles.css[39m         [2m | [22m[2mstyles[22m                     [2m | [22m[36m103.50 kB[39m[2m | [22m
+[32mmain.js[39m            [2m | [22m[2mmain[22m                       [2m | [22m [36m71.53 kB[39m[2m | [22m
+[32mchunk-IDKKTQOK.js[39m  [2m | [22m[2m-[22m                          [2m | [22m  [36m4.95 kB[39m[2m | [22m
+[32mchunk-SH2UHXTA.js[39m  [2m | [22m[2m-[22m                          [2m | [22m  [36m3.91 kB[39m[2m | [22m
+[32mchunk-OSL5KMMJ.js[39m  [2m | [22m[2m-[22m                          [2m | [22m  [36m3.08 kB[39m[2m | [22m
+[32mchunk-26BMAMXC.js[39m  [2m | [22m[2m-[22m                          [2m | [22m  [36m1.72 kB[39m[2m | [22m
+[32mchunk-HFBNPKKE.js[39m  [2m | [22m[2m-[22m                          [2m | [22m  [36m1.45 kB[39m[2m | [22m
+
+[1m [22m                  [2m | [22m[1mInitial total[22m              [2m | [22m[1m190.12 kB[22m
+
+[1mLazy chunk files[22m   [2m | [22m[1mNames[22m                      [2m | [22m [1mRaw size[22m
+[32mchunk-VDOIU27F.js[39m  [2m | [22m[2mproceso-remuneraciones-page[22m[2m | [22m  [36m1.15 MB[39m[2m | [22m
+[32mchunk-UW3QREDS.js[39m  [2m | [22m[2m-[22m                          [2m | [22m[36m697.02 kB[39m[2m | [22m
+[32mchunk-JZ7CIZDH.js[39m  [2m | [22m[2mcrear-empleado-container[22m   [2m | [22m[36m434.73 kB[39m[2m | [22m
+[32mchunk-7NMSIEJU.js[39m  [2m | [22m[2mficha-empleado-container[22m   [2m | [22m[36m411.08 kB[39m[2m | [22m
+[32mchunk-KUSCDAS6.js[39m  [2m | [22m[2mparametros-page[22m            [2m | [22m[36m385.28 kB[39m[2m | [22m
+[32mchunk-REDDQ2GT.js[39m  [2m | [22m[2mnovedades-mensuales-page[22m   [2m | [22m[36m243.88 kB[39m[2m | [22m
+[32mchunk-4LP6ZG6Z.js[39m  [2m | [22m[2m-[22m                          [2m | [22m[36m217.65 kB[39m[2m | [22m
+[32mchunk-AXAMXZBQ.js[39m  [2m | [22m[2m-[22m                          [2m | [22m[36m139.94 kB[39m[2m | [22m
+[32mchunk-UNFBA26B.js[39m  [2m | [22m[2mconceptos-remuneracion-page[22m[2m | [22m[36m132.71 kB[39m[2m | [22m
+[32mchunk-5UV3A3N6.js[39m  [2m | [22m[2mhaberes-descuentos-page[22m    [2m | [22m[36m129.57 kB[39m[2m | [22m
+[32mchunk-RNOXV7DQ.js[39m  [2m | [22m[2mlistado-empleados-container[22m[2m | [22m[36m102.85 kB[39m[2m | [22m
+[32mchunk-2TS5XF26.js[39m  [2m | [22m[2mliquidaciones-page[22m         [2m | [22m [36m93.95 kB[39m[2m | [22m
+[32mchunk-UO3LXLTF.js[39m  [2m | [22m[2m-[22m                          [2m | [22m [36m58.97 kB[39m[2m | [22m
+[32mchunk-IJFN5ACD.js[39m  [2m | [22m[2m-[22m                          [2m | [22m [36m48.13 kB[39m[2m | [22m
+[32mchunk-PPXKUMEP.js[39m  [2m | [22m[2m-[22m                          [2m | [22m [36m48.03 kB[39m[2m | [22m
+[2m...and 17 more lazy chunks files. Use "--verbose" to show all the files.[22m
+
+Application bundle generation complete. [0.168 seconds] - 2026-05-25T19:18:46.193Z
+
+[33m>[39m Changes detected. Rebuilding...
+[32m√[39m Changes detected. Rebuilding...
+Application bundle generation failed. [5.772 seconds] - 2026-05-25T19:24:58.777Z
+
+[33m>[39m Changes detected. Rebuilding...
+[32m√[39m Changes detected. Rebuilding...
+[1mInitial chunk files[22m[2m | [22m[1mNames[22m                      [2m | [22m [1mRaw size[22m
+[32mstyles.css[39m         [2m | [22m[2mstyles[22m                     [2m | [22m[36m103.50 kB[39m[2m | [22m
+[32mmain.js[39m            [2m | [22m[2mmain[22m                       [2m | [22m [36m71.53 kB[39m[2m | [22m
+[32mchunk-IDKKTQOK.js[39m  [2m | [22m[2m-[22m                          [2m | [22m  [36m4.95 kB[39m[2m | [22m
+[32mchunk-SH2UHXTA.js[39m  [2m | [22m[2m-[22m                          [2m | [22m  [36m3.91 kB[39m[2m | [22m
+[32mchunk-OSL5KMMJ.js[39m  [2m | [22m[2m-[22m                          [2m | [22m  [36m3.08 kB[39m[2m | [22m
+[32mchunk-26BMAMXC.js[39m  [2m | [22m[2m-[22m                          [2m | [22m  [36m1.72 kB[39m[2m | [22m
+[32mchunk-HFBNPKKE.js[39m  [2m | [22m[2m-[22m                          [2m | [22m  [36m1.45 kB[39m[2m | [22m
+
+[1m [22m                  [2m | [22m[1mInitial total[22m              [2m | [22m[1m190.12 kB[22m
+
+[1mLazy chunk files[22m   [2m | [22m[1mNames[22m                      [2m | [22m [1mRaw size[22m
+[32mchunk-VDOIU27F.js[39m  [2m | [22m[2mproceso-remuneraciones-page[22m[2m | [22m  [36m1.15 MB[39m[2m | [22m
+[32mchunk-UW3QREDS.js[39m  [2m | [22m[2m-[22m                          [2m | [22m[36m697.02 kB[39m[2m | [22m
+[32mchunk-JZ7CIZDH.js[39m  [2m | [22m[2mcrear-empleado-container[22m   [2m | [22m[36m434.73 kB[39m[2m | [22m
+[32mchunk-7NMSIEJU.js[39m  [2m | [22m[2mficha-empleado-container[22m   [2m | [22m[36m411.08 kB[39m[2m | [22m
+[32mchunk-KUSCDAS6.js[39m  [2m | [22m[2mparametros-page[22m            [2m | [22m[36m385.28 kB[39m[2m | [22m
+[32mchunk-REDDQ2GT.js[39m  [2m | [22m[2mnovedades-mensuales-page[22m   [2m | [22m[36m243.88 kB[39m[2m | [22m
+[32mchunk-4LP6ZG6Z.js[39m  [2m | [22m[2m-[22m                          [2m | [22m[36m217.65 kB[39m[2m | [22m
+[32mchunk-6JYF4FJR.js[39m  [2m | [22m[2mhaberes-descuentos-page[22m    [2m | [22m[36m156.41 kB[39m[2m | [22m
+[32mchunk-AXAMXZBQ.js[39m  [2m | [22m[2m-[22m                          [2m | [22m[36m139.94 kB[39m[2m | [22m
+[32mchunk-UNFBA26B.js[39m  [2m | [22m[2mconceptos-remuneracion-page[22m[2m | [22m[36m132.71 kB[39m[2m | [22m
+[32mchunk-RNOXV7DQ.js[39m  [2m | [22m[2mlistado-empleados-container[22m[2m | [22m[36m102.85 kB[39m[2m | [22m
+[32mchunk-2TS5XF26.js[39m  [2m | [22m[2mliquidaciones-page[22m         [2m | [22m [36m93.95 kB[39m[2m | [22m
+[32mchunk-UO3LXLTF.js[39m  [2m | [22m[2m-[22m                          [2m | [22m [36m58.97 kB[39m[2m | [22m
+[32mchunk-IJFN5ACD.js[39m  [2m | [22m[2m-[22m                          [2m | [22m [36m48.13 kB[39m[2m | [22m
+[32mchunk-PPXKUMEP.js[39m  [2m | [22m[2m-[22m                          [2m | [22m [36m48.03 kB[39m[2m | [22m
+[2m...and 17 more lazy chunks files. Use "--verbose" to show all the files.[22m
+
+Application bundle generation complete. [1.718 seconds] - 2026-05-25T19:25:35.104Z
+
+Page reload sent to client(s).
+[33m>[39m Changes detected. Rebuilding...
+[32m√[39m Changes detected. Rebuilding...
+[1mInitial chunk files[22m[2m | [22m[1mNames[22m                  [2m | [22m [1mRaw size[22m
+[32mmain.js[39m            [2m | [22m[2mmain[22m                   [2m | [22m [36m71.53 kB[39m[2m | [22m
+
+[1mLazy chunk files[22m   [2m | [22m[1mNames[22m                  [2m | [22m [1mRaw size[22m
+[32mchunk-UDTTJTOK.js[39m  [2m | [22m[2mhaberes-descuentos-page[22m[2m | [22m[36m156.08 kB[39m[2m | [22m
+
+Application bundle generation complete. [1.748 seconds] - 2026-05-25T19:25:36.871Z
+
+Component update sent to client(s).
+[33m>[39m Changes detected. Rebuilding...
+[32m√[39m Changes detected. Rebuilding...
+[1mInitial chunk files[22m[2m | [22m[1mNames[22m                  [2m | [22m [1mRaw size[22m
+[32mmain.js[39m            [2m | [22m[2mmain[22m                   [2m | [22m [36m71.53 kB[39m[2m | [22m
+
+[1mLazy chunk files[22m   [2m | [22m[1mNames[22m                  [2m | [22m [1mRaw size[22m
+[32mchunk-6VVP2CCN.js[39m  [2m | [22m[2mhaberes-descuentos-page[22m[2m | [22m[36m146.29 kB[39m[2m | [22m
+
+Application bundle generation complete. [1.386 seconds] - 2026-05-25T19:26:04.350Z
+
+Component update sent to client(s).
+[33m>[39m Changes detected. Rebuilding...
+[32m√[39m Changes detected. Rebuilding...
+[1mInitial chunk files[22m[2m | [22m[1mNames[22m                      [2m | [22m [1mRaw size[22m
+[32mstyles.css[39m         [2m | [22m[2mstyles[22m                     [2m | [22m[36m103.50 kB[39m[2m | [22m
+[32mmain.js[39m            [2m | [22m[2mmain[22m                       [2m | [22m [36m71.53 kB[39m[2m | [22m
+[32mchunk-IDKKTQOK.js[39m  [2m | [22m[2m-[22m                          [2m | [22m  [36m4.95 kB[39m[2m | [22m
+[32mchunk-SH2UHXTA.js[39m  [2m | [22m[2m-[22m                          [2m | [22m  [36m3.91 kB[39m[2m | [22m
+[32mchunk-OSL5KMMJ.js[39m  [2m | [22m[2m-[22m                          [2m | [22m  [36m3.08 kB[39m[2m | [22m
+[32mchunk-26BMAMXC.js[39m  [2m | [22m[2m-[22m                          [2m | [22m  [36m1.72 kB[39m[2m | [22m
+[32mchunk-HFBNPKKE.js[39m  [2m | [22m[2m-[22m                          [2m | [22m  [36m1.45 kB[39m[2m | [22m
+
+[1m [22m                  [2m | [22m[1mInitial total[22m              [2m | [22m[1m190.12 kB[22m
+
+[1mLazy chunk files[22m   [2m | [22m[1mNames[22m                      [2m | [22m [1mRaw size[22m
+[32mchunk-VDOIU27F.js[39m  [2m | [22m[2mproceso-remuneraciones-page[22m[2m | [22m  [36m1.15 MB[39m[2m | [22m
+[32mchunk-UW3QREDS.js[39m  [2m | [22m[2m-[22m                          [2m | [22m[36m697.02 kB[39m[2m | [22m
+[32mchunk-JZ7CIZDH.js[39m  [2m | [22m[2mcrear-empleado-container[22m   [2m | [22m[36m434.73 kB[39m[2m | [22m
+[32mchunk-7NMSIEJU.js[39m  [2m | [22m[2mficha-empleado-container[22m   [2m | [22m[36m411.08 kB[39m[2m | [22m
+[32mchunk-KUSCDAS6.js[39m  [2m | [22m[2mparametros-page[22m            [2m | [22m[36m385.28 kB[39m[2m | [22m
+[32mchunk-REDDQ2GT.js[39m  [2m | [22m[2mnovedades-mensuales-page[22m   [2m | [22m[36m243.88 kB[39m[2m | [22m
+[32mchunk-4LP6ZG6Z.js[39m  [2m | [22m[2m-[22m                          [2m | [22m[36m217.65 kB[39m[2m | [22m
+[32mchunk-6VVP2CCN.js[39m  [2m | [22m[2mhaberes-descuentos-page[22m    [2m | [22m[36m146.29 kB[39m[2m | [22m
+[32mchunk-AXAMXZBQ.js[39m  [2m | [22m[2m-[22m                          [2m | [22m[36m139.94 kB[39m[2m | [22m
+[32mchunk-UNFBA26B.js[39m  [2m | [22m[2mconceptos-remuneracion-page[22m[2m | [22m[36m132.71 kB[39m[2m | [22m
+[32mchunk-RNOXV7DQ.js[39m  [2m | [22m[2mlistado-empleados-container[22m[2m | [22m[36m102.85 kB[39m[2m | [22m
+[32mchunk-2TS5XF26.js[39m  [2m | [22m[2mliquidaciones-page[22m         [2m | [22m [36m93.95 kB[39m[2m | [22m
+[32mchunk-UO3LXLTF.js[39m  [2m | [22m[2m-[22m                          [2m | [22m [36m58.97 kB[39m[2m | [22m
+[32mchunk-IJFN5ACD.js[39m  [2m | [22m[2m-[22m                          [2m | [22m [36m48.13 kB[39m[2m | [22m
+[32mchunk-PPXKUMEP.js[39m  [2m | [22m[2m-[22m                          [2m | [22m [36m48.03 kB[39m[2m | [22m
+[2m...and 17 more lazy chunks files. Use "--verbose" to show all the files.[22m
+
+Application bundle generation complete. [0.186 seconds] - 2026-05-25T19:26:39.255Z
+
+[33m>[39m Changes detected. Rebuilding...
+[32m√[39m Changes detected. Rebuilding...
+[1mInitial chunk files[22m[2m | [22m[1mNames[22m                  [2m | [22m [1mRaw size[22m
+[32mmain.js[39m            [2m | [22m[2mmain[22m                   [2m | [22m [36m71.53 kB[39m[2m | [22m
+
+[1mLazy chunk files[22m   [2m | [22m[1mNames[22m                  [2m | [22m [1mRaw size[22m
+[32mchunk-VB2HOEEZ.js[39m  [2m | [22m[2mhaberes-descuentos-page[22m[2m | [22m[36m146.29 kB[39m[2m | [22m
+
+Application bundle generation complete. [1.716 seconds] - 2026-05-25T19:26:43.976Z
+
+Page reload sent to client(s).
