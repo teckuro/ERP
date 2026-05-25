@@ -544,6 +544,13 @@ export async function expectRutDuplicadoAlGuardarBorrador(page: Page, timeoutMs 
   ).toBeVisible({ timeout: timeoutMs });
 }
 
+/** MsgBox de validación mínima al guardar borrador (sin persistencia). */
+export async function expectMsgBoxBorradorInvalido(page: Page, timeoutMs = 15_000): Promise<void> {
+  const modal = page.getByRole('dialog', { name: /No se puede guardar el borrador/i });
+  await expect(modal).toBeVisible({ timeout: timeoutMs });
+  await expect(modal.getByRole('button', { name: /Ir al primer pendiente/i })).toBeVisible();
+}
+
 export async function dismissBorradorGuardadoModal(page: Page): Promise<void> {
   const modal = page.getByRole('dialog', { name: /Borrador guardado|Borrador actualizado/i });
   if (await modal.isVisible({ timeout: 4_000 }).catch(() => false)) {

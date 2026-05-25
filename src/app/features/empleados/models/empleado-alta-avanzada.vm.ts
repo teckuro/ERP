@@ -16,6 +16,7 @@ export type TipoModalAccionAvanzada =
   | 'next-step-review'
   | 'coherence-decision'
   | 'draft-invalid'
+  | 'draft-catalog-wait'
   | 'draft-success'
   | 'finish-invalid'
   | 'finish-confirm'

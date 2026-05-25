@@ -125,9 +125,49 @@ export function evaluarCompletitudAlta(input: {
   return evaluarCompletitudYAptitudEmpleado(input);
 }
 
+function normalizarTextoFaltante(text: string): string {
+  return text
+    .trim()
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/\p{M}/gu, '')
+    .replace(/\s+/g, ' ');
+}
+
+/** Resuelve el ítem de diagnóstico que corresponde al mensaje visible en consola o resumen. */
+export function diagnosticoItemDesdeFaltanteAlta(
+  faltante: FaltanteFichaEmpleado,
+  items: readonly EmpleadoFichaValidacionItem[],
+): EmpleadoFichaValidacionItem | undefined {
+  const msg = normalizarTextoFaltante(faltante.mensaje);
+  const byText = items.find(
+    (item) =>
+      item.visible &&
+      !item.complete &&
+      (normalizarTextoFaltante(item.detalle) === msg ||
+        normalizarTextoFaltante(item.label) === msg ||
+        normalizarTextoFaltante(item.detalle).includes(msg) ||
+        msg.includes(normalizarTextoFaltante(item.detalle))),
+  );
+  if (byText) {
+    return byText;
+  }
+
+  const inTab = items
+    .filter(
+      (item) =>
+        item.tabFicha === faltante.claveBloque && item.visible && !item.complete,
+    )
+    .sort((a, b) => a.wizardStep - b.wizardStep);
+  return inTab[0];
+}
+
 export function wizardStepDesdeFaltanteAlta(
   faltante: FaltanteFichaEmpleado,
   items: readonly EmpleadoFichaValidacionItem[],
 ): number {
-  return wizardStepDesdeClaveTab(faltante.claveBloque, items);
+  return (
+    diagnosticoItemDesdeFaltanteAlta(faltante, items)?.wizardStep ??
+    wizardStepDesdeClaveTab(faltante.claveBloque, items)
+  );
 }

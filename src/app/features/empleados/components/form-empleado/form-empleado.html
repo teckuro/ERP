@@ -42,105 +42,13 @@
           [title]="modal.title"
           [message]="modal.message"
           [sections]="modal.sections ?? []"
-          [width]="modal.fieldItems?.length ? 'lg' : 'md'"
+          width="md"
           [primaryLabel]="modal.primaryLabel"
           [secondaryLabel]="modal.secondaryLabel || ''"
           [disableClose]="modal.disableClose ?? false"
           (action)="manejarPrimariaModalAccionAvanzada()"
           (secondary)="manejarSecundariaModalAccionAvanzada()"
-        >
-          <ng-container *ngIf="modal.fieldItems as fieldItems">
-            <div
-              *ngIf="fieldItems.length > 0"
-              class="advanced-action-fields"
-              role="region"
-              aria-label="Campos obligatorios pendientes"
-            >
-              <div class="advanced-action-fields__summary">
-                <span>{{ fieldItems.length }} campo{{ fieldItems.length === 1 ? '' : 's' }} pendiente{{ fieldItems.length === 1 ? '' : 's' }}</span>
-                <strong>Primer registro: {{ primerPasoCamposModalAvanzada(fieldItems) }}</strong>
-              </div>
-              <section
-                *ngFor="let group of gruposCampoModalAvanzada(fieldItems); trackBy: trackGrupoCampoModalAvanzada"
-                class="advanced-action-field-group"
-                [attr.aria-label]="group.stepLabel"
-              >
-                <header class="advanced-action-field-group__head">
-                  <h3>{{ group.stepLabel }}</h3>
-                  <span>{{ group.items.length }} pendiente{{ group.items.length === 1 ? '' : 's' }}</span>
-                </header>
-                <div class="advanced-action-field-group__items">
-                  <article
-                    *ngFor="let item of group.items; trackBy: trackItemCampoModalAvanzada"
-                    class="advanced-action-field"
-                    [class.advanced-action-field--warning]="item.severity === 'warning'"
-                  >
-                    <div class="advanced-action-field__copy">
-                      <p class="advanced-action-field__section">
-                        {{ item.sectionTitle }}
-                      </p>
-                      <h4 class="advanced-action-field__title">
-                        {{ item.fieldLabel }}
-                      </h4>
-                      <p class="advanced-action-field__detail">
-                        {{ item.detail }}
-                      </p>
-                    </div>
-                    <button
-                      type="button"
-                      class="advanced-action-field__button"
-                      (click)="manejarItemCampoModalAvanzada(item)"
-                    >
-                      {{ item.actionLabel }}
-                    </button>
-                  </article>
-                </div>
-              </section>
-            </div>
-          </ng-container>
-          @if (!modal.sections?.length) {
-          <div
-            class="advanced-action-modal"
-            role="region"
-            aria-label="Detalle de validación"
-          >
-            @if (modal.blockingItems.length > 0) {
-            <section
-              class="advanced-action-modal__section advanced-action-modal__section--blocking"
-            >
-              <h3>Datos obligatorios pendientes</h3>
-              <ul>
-                @for (item of modal.blockingItems; track item) {
-                <li>{{ item }}</li>
-                }
-              </ul>
-            </section>
-            } @if (modal.warningItems.length > 0) {
-            <section
-              class="advanced-action-modal__section advanced-action-modal__section--warning"
-            >
-              <h3>Advertencias de revisión</h3>
-              <ul>
-                @for (item of modal.warningItems; track item) {
-                <li>{{ item }}</li>
-                }
-              </ul>
-            </section>
-            } @if (modal.infoItems.length > 0) {
-            <section
-              class="advanced-action-modal__section advanced-action-modal__section--info"
-            >
-              <h3>Información útil</h3>
-              <ul>
-                @for (item of modal.infoItems; track item) {
-                <li>{{ item }}</li>
-                }
-              </ul>
-            </section>
-            }
-          </div>
-          }
-        </app-message-box>
+        ></app-message-box>
         </ng-container>
         <ng-template #otrosModalesAvanzados>
         @if (!esModoBasico() && rutModalRutDuplicado(); as rutDup) {

@@ -611,7 +611,7 @@
   display: block;
   height: 100%;
   border-radius: inherit;
-  background: #2c2c2a;
+  background: var(--erp-primary);
 }
 
 .section-summary {

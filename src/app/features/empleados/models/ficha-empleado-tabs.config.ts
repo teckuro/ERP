@@ -82,11 +82,11 @@ export function wizardStepDesdeClaveTab(
   clave: ClaveTabFichaEmpleado,
   items: readonly EmpleadoFichaValidacionItem[],
 ): number {
-  const pending = items.find(
-    (item) => item.tabFicha === clave && item.visible && !item.complete,
-  );
-  if (pending) {
-    return pending.wizardStep;
+  const pending = items
+    .filter((item) => item.tabFicha === clave && item.visible && !item.complete)
+    .sort((a, b) => a.wizardStep - b.wizardStep);
+  if (pending.length > 0) {
+    return pending[0].wizardStep;
   }
   return FICHA_CLAVE_TAB_WIZARD_STEP_FALLBACK[clave] ?? 0;
 }

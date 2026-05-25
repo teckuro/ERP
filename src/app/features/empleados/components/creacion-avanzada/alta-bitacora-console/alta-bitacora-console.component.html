@@ -116,16 +116,16 @@
                 <li class="alta-bitacora-console__row">
                   <div class="alta-bitacora-console__row-copy">
                     <span class="alta-bitacora-console__row-label">{{ row.label }}</span>
-                    <span
-                      class="alta-bitacora-console__row-state"
-                      [class.is-error]="row.kind === 'errores'"
-                    >
+                    <span class="alta-bitacora-console__row-state">
                       {{ row.stateLabel }}
                     </span>
                   </div>
                   <button
                     type="button"
                     class="alta-bitacora-console__review"
+                    [class.alta-bitacora-console__review--attention]="
+                      row.kind === 'pendiente' || row.kind === 'errores'
+                    "
                     (click)="revisarPaso.emit(row.stepIndex)"
                   >
                     Revisar

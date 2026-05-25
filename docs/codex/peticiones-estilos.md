@@ -1,3 +1,14 @@
+## 2026-05-25 - MsgBox alta: sin listado embebido de campos
+
+- **Cambio:** Eliminado el bloque HTML `advanced-action-fields` (listado por paso + «Ir al campo») del slot del MsgBox en Siguiente / Guardar / Finalizar. Modal `md` con título, mensaje, secciones bitácora y CTAs del pie; `fieldItems` permanece en modelo para «Ir al primer pendiente» y foco. Ámbar solo en consola bitácora.
+- **Archivos:** `form-empleado.html`, `form-empleado.ts`, `form-empleado.feedback.css`.
+
+## 2026-05-25 - Primarios azul corporativo (Empleados + tokens ERP)
+
+- **Cambio:** Tokens `--erp-primary` / `--erp-primary-hover` alineados a AGENTS (`#2563EB` / `#1D4ED8`); CTA topbar shell y toolbar primaria ficha dejan negro `#2c2c2a`; barra progreso expediente usa primario; botones ámbar de atención en consola bitácora sin cambio.
+- **Archivos:** `src/styles.css`, `header.component.ts`, `ficha-empleado-container.css`, `ficha-empleado-detalle.css`, `empleado-expediente-tokens.css`.
+- **No tocado:** sidebar, botones atención ámbar, mappers/SQL, `angular.json`.
+
 ## 2026-05-25 - Creación avanzada: cierre honorarios + gate 17/15 E2E
 
 - **Cambio:** MsgBox cierre honorarios («Finalizar boleta de honorarios», CTA «Finalizar honorarios»); confirmación cambio relación con `disableClose` en modal; nota inline «Modalidad: honorarios» en paso contrato.

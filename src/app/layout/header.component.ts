@@ -337,19 +337,23 @@ import { ShellPageContextService, type ShellStatusChipTone } from './shell-page-
         min-height: 34px;
         align-items: center;
         gap: 6px;
-        border: 0.5px solid #2c2c2a;
+        border: 0.5px solid var(--erp-primary);
         border-radius: 8px;
-        background: #2c2c2a;
+        background: var(--erp-primary);
         padding: 8px 16px;
         color: #ffffff;
         font-size: 13px;
         font-weight: 500;
         cursor: pointer;
-        transition: background-color 120ms ease, transform 80ms ease;
+        transition:
+          background-color 150ms ease,
+          border-color 150ms ease,
+          transform 80ms ease;
       }
 
       .erp-shell-header__cta:hover:not(:disabled) {
-        background: #1f1f1d;
+        border-color: var(--erp-primary-hover);
+        background: var(--erp-primary-hover);
       }
 
       .erp-shell-header__cta:active:not(:disabled) {
@@ -415,6 +419,16 @@ import { ShellPageContextService, type ShellStatusChipTone } from './shell-page-
         .erp-shell-header__period-panel {
           right: auto;
           left: 0;
+        }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        .erp-shell-header__cta {
+          transition: none;
+        }
+
+        .erp-shell-header__cta:active:not(:disabled) {
+          transform: none;
         }
       }
     `,

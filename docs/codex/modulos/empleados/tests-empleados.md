@@ -20,7 +20,7 @@ npx ng test --watch=false
 |------|-----------|
 | `tests/empleados-basic-create.spec.ts` | Alta básica UI + snapshot `.basic-create-page` |
 | `tests/empleados-borrador.spec.ts` | Borrador avanzado UI sin persistencia (testid `empleado-alta-avanzada-guardar`) |
-| `tests/empleados-creacion-avanzada-validaciones.spec.ts` | Negativos UI: correo/teléfono, nombres dígitos, MsgBox finalizar/siguiente |
+| `tests/empleados-creacion-avanzada-validaciones.spec.ts` | Negativos UI: correo/teléfono, nombres dígitos, MsgBox finalizar/siguiente. Helper `expectMsgBoxBorradorInvalido` en `empleados-borrador-e2e.ts`. |
 | `tests/empleados-wizard-stability.spec.ts` | Wizard avanzado (scroll / pasos) |
 | `tests/dashboard.spec.ts` | Snapshots por ruta incl. `/empleados`; flujo «nueva ficha» wizard con 4 capturas |
 | `tests/empleados-borrador-persistencia.spec.ts` | **Opt-in** serial F3/F6/F11 — proyecto `empleados-db` |

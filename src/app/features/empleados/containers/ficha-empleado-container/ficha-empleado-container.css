@@ -55,7 +55,19 @@
 
 .file-toolbar-button--secondary { border-color: #e5e7eb; color: #374151; }
 
-.file-toolbar-button--primary { border-color: #2c2c2a; background: #2c2c2a; color: #ffffff; }
+.file-toolbar-button--primary {
+  border-color: var(--erp-primary);
+  background: var(--erp-primary);
+  color: #ffffff;
+  transition:
+    background-color 150ms ease,
+    border-color 150ms ease;
+}
+
+.file-toolbar-button--primary:hover:not(:disabled) {
+  border-color: var(--erp-primary-hover);
+  background: var(--erp-primary-hover);
+}
 
 /* Iconos toolbar / acciones: 14px (docs: 14-16px) */
 .file-toolbar-icon {

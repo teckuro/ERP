@@ -68,9 +68,9 @@ Comportamiento:
 
 | Accion | Comportamiento |
 |---|---|
-| Guardar borrador | Validacion minima. Si falta identificacion base, MsgBox con pendientes. Si guarda, MsgBox de exito. |
-| Siguiente | Flexible. Si hay pendientes/advertencias, MsgBox con `Corregir ahora` o `Continuar`. |
-| Finalizar alta | Estricto. MsgBox con datos obligatorios pendientes y advertencias de revisión. `Ir al primer pendiente` navega y enfoca el campo pendiente. |
+| Guardar borrador | Validacion minima. Si falta identificacion o contacto, MsgBox (`draft-invalid`) con lista accionable por campo (`fieldItems`) y mensaje del primer pendiente. Espera de catalogos usa `draft-catalog-wait`. Si guarda, MsgBox de exito. |
+| Siguiente | Flexible. Si hay bloqueos, advertencias o revision normativa del paso, MsgBox (`next-step-review`) con `fieldItems` accionables, `Corregir ahora` (foco al primer item) o `Continuar`. |
+| Finalizar alta | Estricto. MsgBox (`finish-invalid`) con `fieldItems` agrupados por registro del asistente. `Ir al primer pendiente` navega al mismo paso y control que el primer item de la lista. La consola bitacora y el modal comparten el motor de diagnostico (`empleado-alta-modal.presenter.ts`). |
 
 Regla UX: no duplicar la informacion del mapa con tarjetas permanentes dentro del paso.
 

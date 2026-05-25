@@ -27,7 +27,18 @@ import {
   mapEmpleadoFormToPayloadBasico,
   mapEmpleadoFormToPayloadBorrador,
 } from "../../mappers/empleado-form.mapper";
-import { validateBorradorAvanzadoFormMinimo } from "../../utils/empleado-borrador-form.validation";
+import {
+  collectBorradorAvanzadoIssues,
+} from "../../utils/empleado-borrador-form.validation";
+import {
+  buildFieldItemsFromBorradorIssues,
+  buildFieldItemsFromRules,
+  buildModalSectionsBitacora,
+  buildPendientePrincipalDesdeFieldItems,
+  mensajesNegocioDesdeReglas,
+  pesoOrdenValidacion,
+  sortReglasValidacion,
+} from "../../utils/empleado-alta-modal.presenter";
 import { normalizarBorradorAvanzadoParaFormulario } from "../../utils/empleado-borrador-hidratacion";
 import {
   etiquetasAsistenteAvanzadoEmpleado,
@@ -89,6 +100,7 @@ import {
 import {
   buildAltaResumenEstadoPanel,
   evaluarDiagnosticoFichaEmpleado,
+  diagnosticoItemDesdeFaltanteAlta,
   mapDiagnosticoItemsToEvaluatedRules,
   wizardStepDesdeFaltanteAlta,
   type EmpleadoFichaValidacionSnapshot,
@@ -110,20 +122,11 @@ import {
   CardComponent,
   CardContentComponent,
 } from "../../../../shared/components/ui/card.component";
-import {
-  MessageBoxComponent,
-  MessageBoxSection,
-} from "../../../../shared/components/ui/message-box.component";
+import { MessageBoxComponent } from "../../../../shared/components/ui/message-box.component";
 import { WorkspaceLoadingComponent } from "../../../../shared/components/ui/workspace-loading.component";
 import { bindShellPageContext } from "../../../../layout/shell-page-context.binding";
 
 const ordenPestanas: readonly IdPestana[] = [...ordenPestanasFormularioEmpleado];
-
-interface GrupoCamposModalAccionAvanzada {
-  wizardStep: number;
-  stepLabel: string;
-  items: readonly ItemCampoModalAccionAvanzada[];
-}
 
 /** Reglas de ficha ya cumplidas al cerrar el alta avanzada (estado activo y paso borrador). */
 const REGLAS_VALIDACION_EXCLUIDAS_AL_FINALIZAR_ALTA_AVANZADA = new Set([
@@ -131,59 +134,6 @@ const REGLAS_VALIDACION_EXCLUIDAS_AL_FINALIZAR_ALTA_AVANZADA = new Set([
   "alta.avanzada",
   "employee.status",
 ]);
-
-/** Mensajes de negocio al intentar finalizar con bloqueos (paso 9); no exponer detalle técnico de BD. */
-const MENSAJES_FINALIZAR_ALTA: Partial<Record<string, string>> = {
-  "personal.identity":
-    "Ingresa un RUT válido o un identificador extranjero válido.",
-  "contract.position": "Ingresa el cargo o función que tendrá el trabajador.",
-  "honorarios.service":
-    "Ingresa el servicio o función que prestará la persona a honorarios.",
-  "honorarios.amount":
-    "Ingresa el monto bruto pactado para la boleta de honorarios.",
-  "honorarios.currency": "Selecciona la moneda del monto bruto de honorarios.",
-  "contract.branch":
-    "Selecciona la sucursal u organización donde prestará servicios.",
-  "contract.worker-type":
-    "Selecciona el tipo de trabajador que corresponde al contrato.",
-  "contract.schedule-type": "Selecciona el tipo de jornada pactada.",
-  "contract.contract-type": "Selecciona el tipo de contrato laboral.",
-  "contract.start-date": "Ingresa la fecha de ingreso del trabajador.",
-  "contract.document-date": "Ingresa la fecha del contrato.",
-  "contract.end-date":
-    "Completa la fecha de término cuando el contrato no sea indefinido.",
-  "contract.salary": "Ingresa un sueldo base válido para remuneraciones.",
-  "contract.currency": "Selecciona la moneda de remuneración.",
-  "contract.weekly-hours": "Completa las horas semanales pactadas.",
-  "contract.weekly-days": "Completa los días semanales de trabajo.",
-  "prevision.regime": "Selecciona el régimen previsional del trabajador.",
-  "prevision.afp": "Selecciona la AFP cuando el régimen previsional sea AFP.",
-  "prevision.health": "Selecciona la institución de salud del trabajador.",
-  "prevision.health-currency": "Selecciona la moneda del plan de salud.",
-  "prevision.health-plan": "Ingresa el valor del plan de salud.",
-  "prevision.apv-institution":
-    "Selecciona la institución APVI o desactiva APVI si no corresponde.",
-  "prevision.apv-currency":
-    "Selecciona la moneda APVI o desactiva APVI si no corresponde.",
-  "prevision.apv-amount":
-    "Ingresa el monto APVI o desactiva APVI si no corresponde.",
-  "prevision.apv-payment":
-    "Selecciona la forma de pago APVI o desactiva APVI si no corresponde.",
-  "prevision.apv-agreement":
-    "Completa el depósito convenido APVI o desactiva APVI si no corresponde.",
-  "prevision.ips-name": "Ingresa la entidad o ex caja del régimen IPS.",
-  "prevision.ips-regime": "Ingresa el régimen IPS que corresponde.",
-  "prevision.ips-rate": "Ingresa la tasa IPS que corresponde.",
-  "prevision.health-ges": "Ingresa el adicional Auge o GES del plan de salud.",
-  "prevision.account2-currency":
-    "Completa la moneda de Cuenta 2 AFP o deja Cuenta 2 sin monto.",
-  "prevision.account2-value":
-    "Completa el valor de Cuenta 2 AFP o deja Cuenta 2 sin monto.",
-  "bank.bank": "Selecciona el banco para el pago por transferencia.",
-  "bank.account-type": "Selecciona el tipo de cuenta bancaria.",
-  "bank.account-number":
-    "Ingresa una cuenta bancaria real y reemplaza cualquier dato temporal.",
-};
 
 @Component({
   selector: "app-form-empleado",
@@ -392,13 +342,13 @@ export class FormEmpleadoComponent implements OnInit {
     if (this.cargandoCatalogos()) {
       this.retroalimentacionBorrador.set(null);
       this.abrirModalAccionAvanzada({
-        kind: "draft-invalid",
+        kind: "draft-catalog-wait",
         variant: "warning",
         eyebrow: "Revisión administrativa",
         title: "Espera a que cargue el formulario",
         message:
           "La información base aún se está preparando. Intenta guardar el borrador en unos segundos.",
-        sections: this.construirSeccionesMsgboxBitacora({
+        sections: buildModalSectionsBitacora({
           pendientePrincipal:
             "Esperar a que terminen de cargar catálogos y datos base del formulario.",
           porQueImporta:
@@ -415,10 +365,10 @@ export class FormEmpleadoComponent implements OnInit {
       return;
     }
 
-    const err = validateBorradorAvanzadoFormMinimo(this.form);
-    if (err) {
+    const borradorIssues = collectBorradorAvanzadoIssues(this.form);
+    if (borradorIssues.length > 0) {
       this.retroalimentacionBorrador.set(null);
-      this.openDraftInvalidModal(err);
+      this.openDraftInvalidModal(borradorIssues);
       return;
     }
 
@@ -843,47 +793,11 @@ export class FormEmpleadoComponent implements OnInit {
 
   manejarItemCampoModalAvanzada(item: ItemCampoModalAccionAvanzada): void {
     this.modalAccionAvanzada.set(null);
-    this.marcarPasoAsistenteTocado(item.wizardStep);
-    this.seleccionarPasoAsistente(item.wizardStep);
-    this.enfocarRutaControl(item.controlPath);
-  }
-
-  gruposCampoModalAvanzada(
-    items: readonly ItemCampoModalAccionAvanzada[] | null | undefined,
-  ): readonly GrupoCamposModalAccionAvanzada[] {
-    const grupos = new Map<number, ItemCampoModalAccionAvanzada[]>();
-    for (const item of items ?? []) {
-      const actuales = grupos.get(item.wizardStep) ?? [];
-      actuales.push(item);
-      grupos.set(item.wizardStep, actuales);
-    }
-
-    return Array.from(grupos.entries()).map(([wizardStep, groupedItems]) => ({
-      wizardStep,
-      stepLabel: this.etiquetaCompletaPasoAsistente(wizardStep),
-      items: groupedItems,
-    }));
-  }
-
-  primerPasoCamposModalAvanzada(
-    items: readonly ItemCampoModalAccionAvanzada[] | null | undefined,
-  ): string {
-    const first = items?.[0];
-    return first ? this.etiquetaCompletaPasoAsistente(first.wizardStep) : "Sin pendientes";
-  }
-
-  trackGrupoCampoModalAvanzada(
-    _index: number,
-    group: GrupoCamposModalAccionAvanzada,
-  ): number {
-    return group.wizardStep;
-  }
-
-  trackItemCampoModalAvanzada(
-    _index: number,
-    item: ItemCampoModalAccionAvanzada,
-  ): string {
-    return item.id;
+    this.enfocarPrimerItemModalAvanzada(item, () => {
+      this.marcarPasoAsistenteTocado(item.wizardStep);
+      this.seleccionarPasoAsistente(item.wizardStep);
+      this.enfocarPrimerControlPendiente(item.wizardStep);
+    });
   }
 
   cerrarModalAccionAvanzada(): void {
@@ -909,20 +823,26 @@ export class FormEmpleadoComponent implements OnInit {
         break;
       case "focus-current-step":
         this.modalAccionAvanzada.set(null);
-        this.marcarPasoAsistenteTocado(this.pasoWizardActivo());
-        this.enfocarPrimerControlPendiente(this.pasoWizardActivo());
+        this.enfocarPrimerItemModalAvanzada(modal?.fieldItems?.[0], () => {
+          this.marcarPasoAsistenteTocado(this.pasoWizardActivo());
+          this.enfocarPrimerControlPendiente(this.pasoWizardActivo());
+        });
         break;
       case "focus-draft-minimum":
         this.modalAccionAvanzada.set(null);
-        this.mostrarPasoAsistenteInvalido(0);
+        this.enfocarPrimerItemModalAvanzada(modal?.fieldItems?.[0], () => {
+          this.mostrarPasoAsistenteInvalido(0);
+        });
         break;
       case "focus-first-blocking":
         this.modalAccionAvanzada.set(null);
-        this.mostrarPasoAsistenteInvalido(
-          modal?.targetStep ??
-            this.buscarPrimerPasoAsistenteConBloqueos() ??
-            0,
-        );
+        this.enfocarPrimerItemModalAvanzada(modal?.fieldItems?.[0], () => {
+          this.mostrarPasoAsistenteInvalido(
+            modal?.targetStep ??
+              this.buscarPrimerPasoAsistenteConBloqueos() ??
+              0,
+          );
+        });
         break;
       case "execute-finish":
         this.modalAccionAvanzada.set(null);
@@ -1126,7 +1046,32 @@ export class FormEmpleadoComponent implements OnInit {
 
   irAlFaltanteResumenAlta(issue: FaltanteFichaEmpleado): void {
     const diagnostico = evaluarDiagnosticoFichaEmpleado(this.buildFichaValidacionSnapshot());
-    this.seleccionarPasoAsistente(wizardStepDesdeFaltanteAlta(issue, diagnostico.items));
+    const diagItem = diagnosticoItemDesdeFaltanteAlta(issue, diagnostico.items);
+
+    if (diagItem?.controlPath) {
+      this.enfocarPrimerItemModalAvanzada(
+        {
+          id: diagItem.id,
+          sectionTitle: diagItem.category ?? diagItem.seccion,
+          fieldLabel: diagItem.label,
+          detail: diagItem.detalle,
+          actionLabel: diagItem.accion ?? 'Ir al campo',
+          wizardStep: diagItem.wizardStep,
+          controlPath: diagItem.controlPath,
+          severity: diagItem.severity,
+        },
+        () => {
+          const step = wizardStepDesdeFaltanteAlta(issue, diagnostico.items);
+          this.seleccionarPasoAsistente(step);
+          this.enfocarPrimerControlInvalido(step);
+        },
+      );
+      return;
+    }
+
+    const step = wizardStepDesdeFaltanteAlta(issue, diagnostico.items);
+    this.seleccionarPasoAsistente(step);
+    this.enfocarPrimerControlInvalido(step);
   }
 
   altaBitacoraConsoleVm(): VmConsolaBitacoraAlta {
@@ -1538,38 +1483,12 @@ export class FormEmpleadoComponent implements OnInit {
       return [];
     }
 
-    const seen = new Set<string>();
-    const out: string[] = [];
-    let blockingSinMensaje = 0;
-
-    for (const item of this.evaluateValidationRules()) {
-      if (
-        !item.visible ||
-        item.complete ||
-        !item.blocking ||
-        item.severity !== "error"
-      ) {
-        continue;
-      }
-
-      const msg = MENSAJES_FINALIZAR_ALTA[item.id];
-      if (msg) {
-        if (!seen.has(item.id)) {
-          seen.add(item.id);
-          out.push(msg);
-        }
-      } else {
-        blockingSinMensaje += 1;
-      }
-    }
-
-    if (out.length === 0 && blockingSinMensaje > 0) {
-      out.push(
-        "Revisa las etapas con pendientes o errores antes de finalizar.",
-      );
-    }
-
-    return out.slice(0, 10);
+    const rules = this.evaluateValidationRules().filter(
+      (item) =>
+        item.visible &&
+        this.reglaValidacionCuentaEnFlujoAltaAvanzada(item),
+    );
+    return [...mensajesNegocioDesdeReglas(rules)];
   }
 
   descripcionFilaRevision(row: {
@@ -2016,7 +1935,7 @@ export class FormEmpleadoComponent implements OnInit {
       title: "Empleado registrado correctamente",
       message:
         'La ficha quedó en estado «En proceso». Puedes completar contrato, previsión y banco desde la ficha del empleado.',
-      sections: this.construirSeccionesMsgboxBitacora({
+      sections: buildModalSectionsBitacora({
         pendientePrincipal:
           "La creación básica quedó registrada con los datos personales y de contacto ingresados.",
         detailItems: [`Ficha N° ${employeeId}`],
@@ -2043,7 +1962,7 @@ export class FormEmpleadoComponent implements OnInit {
       title: "No fue posible registrar la ficha",
       message:
         "El registro no se completó. Revisa el detalle y vuelve a intentarlo.",
-      sections: this.construirSeccionesMsgboxBitacora({
+      sections: buildModalSectionsBitacora({
         pendientePrincipal: this.mensajeErrorNormalizado(message),
         detailItems: suggestedStep ? [`Revisar: ${suggestedStep}`] : undefined,
         porQueImporta:
@@ -2065,7 +1984,7 @@ export class FormEmpleadoComponent implements OnInit {
       eyebrow: "Revisión administrativa",
       title: "Ficha ya registrada",
       message: `Ya existe un empleado registrado con el RUT ${rut}.`,
-      sections: this.construirSeccionesMsgboxBitacora({
+      sections: buildModalSectionsBitacora({
         pendientePrincipal:
           "No se puede crear una nueva ficha con un RUT ya registrado en el sistema.",
         detailItems: [`RUT ${rut}`],
@@ -2090,7 +2009,7 @@ export class FormEmpleadoComponent implements OnInit {
       title: "Formulario en preparación",
       message:
         "Los catálogos y datos base aún se están cargando. Espera unos segundos e intenta guardar de nuevo.",
-      sections: this.construirSeccionesMsgboxBitacora({
+      sections: buildModalSectionsBitacora({
         pendientePrincipal:
           "Esperar a que termine la carga de catálogos antes de registrar la ficha.",
         porQueImporta:
@@ -2470,30 +2389,23 @@ export class FormEmpleadoComponent implements OnInit {
   private pendingValidationItemsForWizardStep(
     wizardStep: number,
   ): ReglaValidacionEvaluada[] {
-    return this.evaluateValidationRules()
-      .filter(
+    return sortReglasValidacion(
+      this.evaluateValidationRules().filter(
         (item) =>
           item.visible && item.wizardStep === wizardStep && !item.complete,
-      )
-      .sort(
-        (a, b) => this.pesoOrdenValidacion(a) - this.pesoOrdenValidacion(b),
-      );
+      ),
+    );
   }
 
   private pendingValidationItemsForFinalization(): ReglaValidacionEvaluada[] {
-    return this.evaluateValidationRules()
-      .filter(
+    return sortReglasValidacion(
+      this.evaluateValidationRules().filter(
         (item) =>
           item.visible &&
           !item.complete &&
           this.reglaValidacionCuentaEnFlujoAltaAvanzada(item),
-      )
-      .sort((a, b) => {
-        const byStep = a.wizardStep - b.wizardStep;
-        return byStep !== 0
-          ? byStep
-          : this.pesoOrdenValidacion(a) - this.pesoOrdenValidacion(b);
-      });
+      ),
+    );
   }
 
   private abrirModalAccionAvanzada(modal: ModalAccionAvanzada): void {
@@ -2517,7 +2429,7 @@ export class FormEmpleadoComponent implements OnInit {
         context === "finish"
           ? "Antes de finalizar conviene decidir esta combinación en la bitácora."
           : "Antes de seguir conviene decidir esta combinación en la bitácora.",
-      sections: this.construirSeccionesMsgboxBitacora({
+      sections: buildModalSectionsBitacora({
         pendientePrincipal: issue.detail,
         porQueImporta:
           "La decisión queda visible en la bitácora y en el resumen hasta que la cierres o apliques la corrección.",
@@ -2650,15 +2562,22 @@ export class FormEmpleadoComponent implements OnInit {
     const blocking = pending.filter(
       (item) => item.blocking && item.severity === "error",
     );
-    const warnings = pending.filter((item) => item.severity === "warning");
     const label = this.etiquetaCortaPasoAsistente(step);
     const hasBlocking = blocking.length > 0;
-    const fieldItems = hasBlocking
-      ? this.itemsCampoModalValidacion(blocking)
-      : [];
-    const detailItems = hasBlocking
-      ? []
-      : this.etiquetasModalValidacion(warnings, 6);
+    const onlyNormative =
+      !hasBlocking &&
+      pending.length > 0 &&
+      pending.every((item) => item.id.startsWith("aplicabilidad."));
+    const fieldSource = hasBlocking ? blocking : pending;
+    const fieldItems = buildFieldItemsFromRules(fieldSource, {
+      shortStepLabelFor: (wizardStep) =>
+        this.etiquetaCortaPasoAsistente(wizardStep),
+    });
+    const principal = hasBlocking
+      ? buildPendientePrincipalDesdeFieldItems(fieldItems, label)
+      : onlyNormative
+        ? `Revisar la revisión normativa del registro «${label}».`
+        : `Revisar las advertencias administrativas del registro «${label}».`;
 
     this.abrirModalAccionAvanzada({
       kind: "next-step-review",
@@ -2666,20 +2585,19 @@ export class FormEmpleadoComponent implements OnInit {
       eyebrow: "Revisión administrativa",
       title: hasBlocking
         ? "Datos pendientes en este registro"
-        : "Advertencias de revisión",
+        : onlyNormative
+          ? "Revisión normativa en este registro"
+          : "Advertencias de revisión",
       message: hasBlocking
         ? `El registro «${label}» aún tiene datos obligatorios. Puedes corregirlos ahora o continuar y volver antes de finalizar.`
         : `El registro «${label}» tiene revisiones que no bloquean el avance, pero conviene dejarlas claras.`,
-      sections: this.construirSeccionesMsgboxBitacora({
-        pendientePrincipal: hasBlocking
-          ? `Completar ${fieldItems.length || blocking.length} dato${(fieldItems.length || blocking.length) === 1 ? "" : "s"} obligatorio${(fieldItems.length || blocking.length) === 1 ? "" : "s"} del registro «${label}».`
-          : `Revisar las advertencias administrativas del registro «${label}».`,
-        detailItems,
+      sections: buildModalSectionsBitacora({
+        pendientePrincipal: principal,
         porQueImporta:
           "Cada pendiente queda trazado en la bitácora laboral hasta que lo cierres o decidas continuar con revisión pendiente.",
         accionRecomendada: hasBlocking
           ? "Corregir ahora el primer campo pendiente o continuar y volver a este registro desde la bitácora."
-          : "Aclarar las revisiones ahora o continuar; el resumen final mantendrá lo pendiente.",
+          : "Aclarar las revisiones ahora o continuar. El resumen final mantendrá lo pendiente.",
         pendienteTone: hasBlocking ? "attention" : "info",
       }),
       primaryLabel: "Continuar",
@@ -2688,43 +2606,41 @@ export class FormEmpleadoComponent implements OnInit {
       warningItems: [],
       infoItems: [],
       fieldItems,
-      targetStep: step,
+      targetStep: fieldItems[0]?.wizardStep ?? step,
       primaryAction: "continue-next",
       secondaryAction: "focus-current-step",
     });
   }
 
-  private openDraftInvalidModal(_message: string): void {
+  private openDraftInvalidModal(
+    issues: ReturnType<typeof collectBorradorAvanzadoIssues>,
+  ): void {
+    const fieldItems = buildFieldItemsFromBorradorIssues(issues);
+    const first = fieldItems[0];
+    const principal =
+      first?.detail ??
+      "Completar los datos mínimos antes de guardar el borrador.";
+
     this.abrirModalAccionAvanzada({
       kind: "draft-invalid",
       variant: "warning",
       eyebrow: "Revisión administrativa",
       title: "No se puede guardar el borrador",
-      message:
-        "Faltan datos mínimos para identificar al trabajador. Completa el primer pendiente y vuelve a guardar.",
-      sections: [
-        {
-          title: "Pendiente principal",
-          text: "Completar los datos mínimos de identificación del trabajador antes de guardar el borrador.",
-          tone: "attention",
-        },
-        {
-          title: "Por qué importa",
-          text: "El borrador necesita una identificación mínima para quedar trazable en la bitácora laboral.",
-          tone: "neutral",
-        },
-        {
-          title: "Acción recomendada",
-          text: "Ir al primer campo pendiente, completar la información mínima y volver a guardar.",
-          tone: "info",
-        },
-      ],
+      message: principal,
+      sections: buildModalSectionsBitacora({
+        pendientePrincipal: principal,
+        porQueImporta:
+          "El borrador necesita identificación y contacto mínimos para quedar trazable en la bitácora laboral.",
+        accionRecomendada:
+          "Ir al primer campo pendiente, completar la información mínima y volver a guardar.",
+      }),
       primaryLabel: "Ir al primer pendiente",
       secondaryLabel: "Cerrar",
       blockingItems: [],
       warningItems: [],
       infoItems: [],
-      targetStep: 0,
+      fieldItems,
+      targetStep: first?.wizardStep ?? 0,
       primaryAction: "focus-draft-minimum",
       secondaryAction: "dismiss",
     });
@@ -2738,7 +2654,7 @@ export class FormEmpleadoComponent implements OnInit {
       title: isNewDraft ? "Borrador guardado" : "Borrador actualizado",
       message:
         "La ficha quedó guardada. Puedes seguir completando la bitácora ahora o retomarla más tarde.",
-      sections: this.construirSeccionesMsgboxBitacora({
+      sections: buildModalSectionsBitacora({
         pendientePrincipal: isNewDraft
           ? "El borrador quedó registrado con los datos mínimos ingresados hasta ahora."
           : "Los cambios del borrador quedaron actualizados en la bitácora laboral.",
@@ -2761,7 +2677,11 @@ export class FormEmpleadoComponent implements OnInit {
     const blocking = pending.filter(
       (item) => item.blocking && item.severity === "error",
     );
-    const fieldItems = this.itemsCampoModalValidacion(blocking);
+    const fieldItems = buildFieldItemsFromRules(blocking, {
+      shortStepLabelFor: (wizardStep) =>
+        this.etiquetaCortaPasoAsistente(wizardStep),
+    });
+    const targetStep = fieldItems[0]?.wizardStep ?? firstBadStep;
 
     this.abrirModalAccionAvanzada({
       kind: "finish-invalid",
@@ -2770,9 +2690,8 @@ export class FormEmpleadoComponent implements OnInit {
       title: "La ficha no está lista para finalizar",
       message:
         "Aún hay registros de la bitácora con datos obligatorios pendientes. Ciérralos antes de finalizar el alta.",
-      sections: this.construirSeccionesMsgboxBitacora({
-        pendientePrincipal:
-          `Completar ${fieldItems.length || blocking.length} dato${(fieldItems.length || blocking.length) === 1 ? "" : "s"} obligatorio${(fieldItems.length || blocking.length) === 1 ? "" : "s"} en los registros pendientes de la bitácora laboral.`,
+      sections: buildModalSectionsBitacora({
+        pendientePrincipal: buildPendientePrincipalDesdeFieldItems(fieldItems),
         porQueImporta:
           "Sin esos datos la ficha no puede quedar lista para remuneraciones ni cerrarse en la bitácora.",
         accionRecomendada:
@@ -2784,7 +2703,7 @@ export class FormEmpleadoComponent implements OnInit {
       warningItems: [],
       infoItems: [],
       fieldItems,
-      targetStep: firstBadStep,
+      targetStep,
       primaryAction: "focus-first-blocking",
       secondaryAction: "dismiss",
     });
@@ -2799,7 +2718,7 @@ export class FormEmpleadoComponent implements OnInit {
         title: "Finalizar boleta de honorarios",
         message:
           "La bitácora del prestador está lista para cerrar. Revisa servicio, monto y datos de pago antes de confirmar.",
-        sections: this.construirSeccionesMsgboxBitacora({
+        sections: buildModalSectionsBitacora({
           pendientePrincipal:
             "Confirmar el cierre del registro a honorarios con la bitácora en estado listo.",
           porQueImporta:
@@ -2826,7 +2745,7 @@ export class FormEmpleadoComponent implements OnInit {
       title: "Finalizar alta del trabajador",
       message:
         "La bitácora laboral está lista para cerrar el alta. Revisa que la información sea correcta antes de confirmar.",
-      sections: this.construirSeccionesMsgboxBitacora({
+      sections: buildModalSectionsBitacora({
         pendientePrincipal:
           "Confirmar el cierre del alta con los registros de la bitácora en estado listo.",
         porQueImporta:
@@ -2853,7 +2772,7 @@ export class FormEmpleadoComponent implements OnInit {
       title: "Cambiar a boleta de honorarios",
       message:
         "El registro pasará a prestador de servicios. Los pasos laborales dependientes quedarán como no aplicables en la bitácora.",
-      sections: this.construirSeccionesMsgboxBitacora({
+      sections: buildModalSectionsBitacora({
         pendientePrincipal:
           "Confirmar el cambio a boleta de honorarios y ocultar datos de relación laboral dependiente.",
         detailItems: [
@@ -3183,142 +3102,21 @@ export class FormEmpleadoComponent implements OnInit {
     }
   }
 
-  private construirSeccionesMsgboxBitacora(options: {
-    pendientePrincipal: string;
-    detailItems?: readonly string[];
-    porQueImporta: string;
-    accionRecomendada: string;
-    pendienteTone?: MessageBoxSection["tone"];
-  }): readonly MessageBoxSection[] {
-    const items = options.detailItems?.filter((item) => item.trim());
-    return [
-      {
-        title: "Pendiente principal",
-        text: options.pendientePrincipal,
-        items: items?.length ? [...items] : undefined,
-        tone: options.pendienteTone ?? "attention",
-      },
-      {
-        title: "Por qué importa",
-        text: options.porQueImporta,
-        tone: "neutral",
-      },
-      {
-        title: "Acción recomendada",
-        text: options.accionRecomendada,
-        tone: "info",
-      },
-    ];
-  }
-
-  private etiquetasModalValidacion(
-    items: readonly ReglaValidacionEvaluada[],
-    max: number,
-  ): readonly string[] {
-    const seen = new Set<string>();
-    const out: string[] = [];
-
-    for (const item of items) {
-      const text = this.etiquetaModalValidacion(item);
-      if (seen.has(text)) {
-        continue;
-      }
-      seen.add(text);
-      out.push(text);
-      if (out.length >= max) {
-        break;
-      }
+  private enfocarPrimerItemModalAvanzada(
+    item: ItemCampoModalAccionAvanzada | undefined,
+    fallback: () => void,
+  ): void {
+    if (!item?.controlPath) {
+      fallback();
+      return;
     }
 
-    const remaining = Math.max(0, items.length - out.length);
-    if (remaining > 0) {
-      out.push(
-        `Además hay ${remaining} dato${remaining === 1 ? "" : "s"} pendiente${remaining === 1 ? "" : "s"} adicional${remaining === 1 ? "" : "es"}.`,
-      );
-    }
-
-    return out;
-  }
-
-  private itemsCampoModalValidacion(
-    items: readonly ReglaValidacionEvaluada[],
-  ): readonly ItemCampoModalAccionAvanzada[] {
-    const seen = new Set<string>();
-    const out: ItemCampoModalAccionAvanzada[] = [];
-
-    items.forEach((item, index) => {
-      const key =
-        item.id ||
-        item.sourcePath ||
-        `${item.wizardStep}-${item.sectionTitle}-${item.label}-${index}`;
-      if (seen.has(key)) {
-        return;
-      }
-      seen.add(key);
-      out.push({
-        id: key,
-        sectionTitle: item.sectionTitle || this.etiquetaCortaPasoAsistente(item.wizardStep),
-        fieldLabel: item.label,
-        detail: this.asegurarOracion(item.detail || this.etiquetaModalValidacion(item)),
-        actionLabel: item.actionLabel || "Ir al campo",
-        wizardStep: item.wizardStep,
-        controlPath: item.sourcePath,
-        severity: item.severity,
-      });
-    });
-
-    return out;
-  }
-
-  private etiquetaModalValidacion(item: ReglaValidacionEvaluada): string {
-    const negocio = MENSAJES_FINALIZAR_ALTA[item.id];
-    if (negocio) {
-      return negocio;
-    }
-
-    return this.asegurarOracion(item.label);
-  }
-
-  private asegurarOracion(text: string): string {
-    const clean = text.trim();
-    if (!clean) {
-      return clean;
-    }
-
-    return /[.!?]$/.test(clean) ? clean : `${clean}.`;
-  }
-
-  private etiquetasPendientesMinimosBorrador(): readonly string[] {
-    const dp = this.form.controls.datosPersonales.controls;
-    const pending: string[] = [];
-
-    if (dp.rut.invalid) {
-      pending.push(
-        "Ingresa un RUT válido o un identificador extranjero válido.",
-      );
-    }
-    if (!String(dp.nombres.value || "").trim()) {
-      pending.push("Nombres del trabajador.");
-    }
-    if (!String(dp.apellidoPaterno.value || "").trim()) {
-      pending.push("Apellido paterno.");
-    }
-    if (!String(dp.fechaNacimiento.value || "").trim()) {
-      pending.push("Fecha de nacimiento.");
-    }
-    if (dp.idPais.value === null || dp.idPais.value < 1) {
-      pending.push("País o nacionalidad.");
-    }
-    if (dp.sexo.value === null) {
-      pending.push("Sexo registral.");
-    }
-    if (dp.estadoCivil.value === null) {
-      pending.push("Estado civil.");
-    }
-
-    return pending.length > 0
-      ? pending
-      : ["Revisa los datos personales mínimos."];
+    this.presentacion.marcarPasoAsistenteIntentado(item.wizardStep);
+    this.pasoWizardActivo.set(item.wizardStep);
+    this.intentarTodasPestanas();
+    this.marcarPasoAsistenteTocado(item.wizardStep);
+    this.seleccionarPasoAsistente(item.wizardStep);
+    this.enfocarRutaControl(item.controlPath);
   }
 
   private rule(
@@ -3345,22 +3143,6 @@ export class FormEmpleadoComponent implements OnInit {
       isComplete,
       isVisible,
     };
-  }
-
-  private pesoOrdenValidacion(item: ReglaValidacionEvaluada): number {
-    if (item.complete) {
-      return 30;
-    }
-
-    if (item.severity === "error" && item.blocking) {
-      return 0;
-    }
-
-    if (item.severity === "warning") {
-      return 10;
-    }
-
-    return 20;
   }
 
   nombreCompletoVisible(): string {
@@ -3513,7 +3295,7 @@ export class FormEmpleadoComponent implements OnInit {
   ): void {
     window.setTimeout(() => {
       const sorted = [...this.evaluateValidationRules()].sort(
-        (a, b) => this.pesoOrdenValidacion(a) - this.pesoOrdenValidacion(b),
+        (a, b) => pesoOrdenValidacion(a) - pesoOrdenValidacion(b),
       );
       const firstPendingRule = sorted.find(
         (item) =>
@@ -3537,7 +3319,7 @@ export class FormEmpleadoComponent implements OnInit {
   ): void {
     window.setTimeout(() => {
       const sorted = [...this.evaluateValidationRules()].sort(
-        (a, b) => this.pesoOrdenValidacion(a) - this.pesoOrdenValidacion(b),
+        (a, b) => pesoOrdenValidacion(a) - pesoOrdenValidacion(b),
       );
       const firstPendingRule = sorted.find(
         (item) =>
@@ -3599,15 +3381,29 @@ export class FormEmpleadoComponent implements OnInit {
   }
 
   private buscarControlPorRuta(controlPath: string | undefined): HTMLElement | null {
-    const controlName = controlPath?.split(".").at(-1);
+    const path = controlPath?.trim();
+    if (!path) {
+      return null;
+    }
+
+    const root = this.hostElement.nativeElement;
+    const byDataPath = root.querySelector<HTMLElement>(
+      `.step-panel [data-field-path="${path}"]`,
+    );
+    if (byDataPath) {
+      return this.obtenerCampoEnfocable(byDataPath);
+    }
+
+    const segments = path.split(".");
+    const controlName = segments.at(-1);
     if (!controlName) {
       return null;
     }
 
-    const controlHost =
-      this.hostElement.nativeElement.querySelector<HTMLElement>(
-        `.step-panel [formControlName="${controlName}"], .step-panel [formcontrolname="${controlName}"]`,
-      );
+    const groupSelector = segments.length > 1 ? `[formGroupName="${segments[0]}"] ` : "";
+    const controlHost = root.querySelector<HTMLElement>(
+      `.step-panel ${groupSelector}[formControlName="${controlName}"], .step-panel ${groupSelector}[formcontrolname="${controlName}"]`,
+    );
     return this.obtenerCampoEnfocable(controlHost);
   }
 

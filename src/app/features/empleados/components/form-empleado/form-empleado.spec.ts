@@ -310,6 +310,9 @@ describe('FormEmpleadoComponent - completitud de borrador avanzado', () => {
     expect(modal?.kind).toBe('draft-invalid');
     expect(modal?.title).toBe('No se puede guardar el borrador');
     expect(modal?.sections?.length).toBe(3);
+    expect(modal?.fieldItems?.length).toBeGreaterThan(0);
+    expect(modal?.fieldItems?.[0]?.controlPath).toBe('datosPersonales.rut');
+    expect(modal?.message).toContain('RUT');
     expect(component.mensajeError()).toBeNull();
   });
 

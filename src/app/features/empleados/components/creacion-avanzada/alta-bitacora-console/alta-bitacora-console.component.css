@@ -156,12 +156,8 @@
 
 .alta-bitacora-console__row-state {
   font-size: 0.6875rem;
+  font-weight: 500;
   color: #64748b;
-}
-
-.alta-bitacora-console__row-state.is-error {
-  color: #b45309;
-  font-weight: 600;
 }
 
 .alta-bitacora-console__review,
@@ -173,7 +169,19 @@
   background: #fff;
   font-size: 0.6875rem;
   font-weight: 600;
+  color: #334155;
   cursor: pointer;
+}
+
+.alta-bitacora-console__review--attention {
+  border-color: #f59e0b;
+  background: #fffbeb;
+  color: #b45309;
+}
+
+.alta-bitacora-console__review--attention:hover {
+  border-color: #d97706;
+  background: #fef3c7;
 }
 
 .alta-bitacora-console__apply {

@@ -40,3 +40,745 @@
            ╵                                        [32m~~~~~~~~~~~~~~~~~~~~~~~[0m
 
 [39m[22m
+[1m[31m[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS18004: No value exists in scope for the shorthand property 'fechaContrato'. Either declare one or provide an initializer.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/mappers/empleado-form.mapper.ts:170:4:
+[37m      170 │     [32mfechaContrato[37m,
+          ╵     [32m~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS18004: No value exists in scope for the shorthand property 'tipoContrato'. Either declare one or provide an initializer.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/mappers/empleado-form.mapper.ts:171:4:
+[37m      171 │     [32mtipoContrato[37m,
+          ╵     [32m~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS18004: No value exists in scope for the shorthand property 'idTipoTrabajador'. Either declare one or provide an initializer.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/mappers/empleado-form.mapper.ts:172:4:
+[37m      172 │     [32midTipoTrabajador[37m,
+          ╵     [32m~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS18004: No value exists in scope for the shorthand property 'idTipoJornada'. Either declare one or provide an initializer.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/mappers/empleado-form.mapper.ts:173:4:
+[37m      173 │     [32midTipoJornada[37m,
+          ╵     [32m~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS18004: No value exists in scope for the shorthand property 'fechaIngreso'. Either declare one or provide an initializer.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/mappers/empleado-form.mapper.ts:185:4:
+[37m      185 │     [32mfechaIngreso[37m,
+          ╵     [32m~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS18004: No value exists in scope for the shorthand property 'tipoPrevision'. Either declare one or provide an initializer.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/mappers/empleado-form.mapper.ts:205:4:
+[37m      205 │     [32mtipoPrevision[37m,
+          ╵     [32m~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS18004: No value exists in scope for the shorthand property 'idRegimenPrevisional'. Either declare one or provide an initializer.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/mappers/empleado-form.mapper.ts:206:4:
+[37m      206 │     [32midRegimenPrevisional[37m,
+          ╵     [32m~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS18004: No value exists in scope for the shorthand property 'idBanco'. Either declare one or provide an initializer.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/mappers/empleado-form.mapper.ts:227:4:
+[37m      227 │     [32midBanco[37m,
+          ╵     [32m~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS18004: No value exists in scope for the shorthand property 'idTipoCuentaBancaria'. Either declare one or provide an initializer.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/mappers/empleado-form.mapper.ts:228:4:
+[37m      228 │     [32midTipoCuentaBancaria[37m,
+          ╵     [32m~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS18004: No value exists in scope for the shorthand property 'numeroCuenta'. Either declare one or provide an initializer.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/mappers/empleado-form.mapper.ts:229:4:
+[37m      229 │     [32mnumeroCuenta[37m,
+          ╵     [32m~~~~~~~~~~~~[0m
+
+[39m[22m
+[1m[31m[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS18004: No value exists in scope for the shorthand property 'fechaIngreso'. Either declare one or provide an initializer.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/mappers/empleado-form.mapper.ts:185:4:
+[37m      185 │     [32mfechaIngreso[37m,
+          ╵     [32m~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS18004: No value exists in scope for the shorthand property 'tipoPrevision'. Either declare one or provide an initializer.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/mappers/empleado-form.mapper.ts:205:4:
+[37m      205 │     [32mtipoPrevision[37m,
+          ╵     [32m~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS18004: No value exists in scope for the shorthand property 'idRegimenPrevisional'. Either declare one or provide an initializer.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/mappers/empleado-form.mapper.ts:206:4:
+[37m      206 │     [32midRegimenPrevisional[37m,
+          ╵     [32m~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS18004: No value exists in scope for the shorthand property 'idBanco'. Either declare one or provide an initializer.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/mappers/empleado-form.mapper.ts:227:4:
+[37m      227 │     [32midBanco[37m,
+          ╵     [32m~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS18004: No value exists in scope for the shorthand property 'idTipoCuentaBancaria'. Either declare one or provide an initializer.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/mappers/empleado-form.mapper.ts:228:4:
+[37m      228 │     [32midTipoCuentaBancaria[37m,
+          ╵     [32m~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS18004: No value exists in scope for the shorthand property 'numeroCuenta'. Either declare one or provide an initializer.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/mappers/empleado-form.mapper.ts:229:4:
+[37m      229 │     [32mnumeroCuenta[37m,
+          ╵     [32m~~~~~~~~~~~~[0m
+
+[39m[22m
+[1m[31m[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS18004: No value exists in scope for the shorthand property 'idPais'. Either declare one or provide an initializer.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/mappers/empleado-form.mapper.ts:552:4:
+[37m      552 │     [32midPais[37m,
+          ╵     [32m~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS18004: No value exists in scope for the shorthand property 'idComuna'. Either declare one or provide an initializer.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/mappers/empleado-form.mapper.ts:559:4:
+[37m      559 │     [32midComuna[37m,
+          ╵     [32m~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS18004: No value exists in scope for the shorthand property 'fechaContrato'. Either declare one or provide an initializer.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/mappers/empleado-form.mapper.ts:565:4:
+[37m      565 │     [32mfechaContrato[37m,
+          ╵     [32m~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS18004: No value exists in scope for the shorthand property 'idTipoTrabajador'. Either declare one or provide an initializer.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/mappers/empleado-form.mapper.ts:567:4:
+[37m      567 │     [32midTipoTrabajador[37m,
+          ╵     [32m~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS18004: No value exists in scope for the shorthand property 'idTipoJornada'. Either declare one or provide an initializer.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/mappers/empleado-form.mapper.ts:568:4:
+[37m      568 │     [32midTipoJornada[37m,
+          ╵     [32m~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS18004: No value exists in scope for the shorthand property 'fechaIngreso'. Either declare one or provide an initializer.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/mappers/empleado-form.mapper.ts:602:4:
+[37m      602 │     [32mfechaIngreso[37m,
+          ╵     [32m~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS18004: No value exists in scope for the shorthand property 'idBanco'. Either declare one or provide an initializer.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/mappers/empleado-form.mapper.ts:651:4:
+[37m      651 │     [32midBanco[37m,
+          ╵     [32m~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS18004: No value exists in scope for the shorthand property 'idTipoCuentaBancaria'. Either declare one or provide an initializer.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/mappers/empleado-form.mapper.ts:652:4:
+[37m      652 │     [32midTipoCuentaBancaria[37m,
+          ╵     [32m~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS18004: No value exists in scope for the shorthand property 'numeroCuenta'. Either declare one or provide an initializer.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/mappers/empleado-form.mapper.ts:653:4:
+[37m      653 │     [32mnumeroCuenta[37m,
+          ╵     [32m~~~~~~~~~~~~[0m
+
+[39m[22m
+[1m[31m[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS18004: No value exists in scope for the shorthand property 'fechaIngreso'. Either declare one or provide an initializer.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/mappers/empleado-form.mapper.ts:602:4:
+[37m      602 │     [32mfechaIngreso[37m,
+          ╵     [32m~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS18004: No value exists in scope for the shorthand property 'idBanco'. Either declare one or provide an initializer.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/mappers/empleado-form.mapper.ts:651:4:
+[37m      651 │     [32midBanco[37m,
+          ╵     [32m~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS18004: No value exists in scope for the shorthand property 'idTipoCuentaBancaria'. Either declare one or provide an initializer.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/mappers/empleado-form.mapper.ts:652:4:
+[37m      652 │     [32midTipoCuentaBancaria[37m,
+          ╵     [32m~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS18004: No value exists in scope for the shorthand property 'numeroCuenta'. Either declare one or provide an initializer.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/mappers/empleado-form.mapper.ts:653:4:
+[37m      653 │     [32mnumeroCuenta[37m,
+          ╵     [32m~~~~~~~~~~~~[0m
+
+[39m[22m
+[1m[31m[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2304: Cannot find name 'validateBorradorAvanzadoFormMinimo'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:431:16:
+[37m      431 │     const err = [32mvalidateBorradorAvanzadoFormMinimo[37m(this.form);
+          ╵                 [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+[39m[22m
+[1m[31m[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2304: Cannot find name 'validateBorradorAvanzadoFormMinimo'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:372:16:
+[37m      372 │     const err = [32mvalidateBorradorAvanzadoFormMinimo[37m(this.form);
+          ╵                 [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2552: Cannot find name 'GrupoCamposModalAccionAvanzada'. Did you mean 'ItemCampoModalAccionAvanzada'?[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:807:14:
+[37m      807 │   ): readonly [32mGrupoCamposModalAccionAvanzada[37m[] {
+          ╵               [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2552: Cannot find name 'GrupoCamposModalAccionAvanzada'. Did you mean 'ItemCampoModalAccionAvanzada'?[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:831:11:
+[37m      831 │     group: [32mGrupoCamposModalAccionAvanzada[37m,
+          ╵            [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2304: Cannot find name 'MENSAJES_FINALIZAR_ALTA'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:1509:18:
+[37m      1509 │       const msg = [32mMENSAJES_FINALIZAR_ALTA[37m[item.id];
+           ╵                   [32m~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2304: Cannot find name 'MENSAJES_FINALIZAR_ALTA'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:3228:20:
+[37m      3228 │     const negocio = [32mMENSAJES_FINALIZAR_ALTA[37m[item.id];
+           ╵                     [32m~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+[39m[22m
+[1m[31m[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2304: Cannot find name 'validateBorradorAvanzadoFormMinimo'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:372:16:
+[37m      372 │     const err = [32mvalidateBorradorAvanzadoFormMinimo[37m(this.form);
+          ╵                 [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2552: Cannot find name 'GrupoCamposModalAccionAvanzada'. Did you mean 'ItemCampoModalAccionAvanzada'?[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:807:14:
+[37m      807 │   ): readonly [32mGrupoCamposModalAccionAvanzada[37m[] {
+          ╵               [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2552: Cannot find name 'GrupoCamposModalAccionAvanzada'. Did you mean 'ItemCampoModalAccionAvanzada'?[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:831:11:
+[37m      831 │     group: [32mGrupoCamposModalAccionAvanzada[37m,
+          ╵            [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2304: Cannot find name 'MENSAJES_FINALIZAR_ALTA'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:1509:18:
+[37m      1509 │       const msg = [32mMENSAJES_FINALIZAR_ALTA[37m[item.id];
+           ╵                   [32m~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2304: Cannot find name 'MENSAJES_FINALIZAR_ALTA'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:3228:20:
+[37m      3228 │     const negocio = [32mMENSAJES_FINALIZAR_ALTA[37m[item.id];
+           ╵                     [32m~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+[39m[22m
+[1m[31m[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2345: Argument of type 'readonly BorradorValidacionIssue[]' is not assignable to parameter of type 'string'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:375:33:
+[37m      375 │       this.openDraftInvalidModal([32mborradorIssues[37m);
+          ╵                                  [32m~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2552: Cannot find name 'GrupoCamposModalAccionAvanzada'. Did you mean 'ItemCampoModalAccionAvanzada'?[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:807:14:
+[37m      807 │   ): readonly [32mGrupoCamposModalAccionAvanzada[37m[] {
+          ╵               [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2552: Cannot find name 'GrupoCamposModalAccionAvanzada'. Did you mean 'ItemCampoModalAccionAvanzada'?[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:831:11:
+[37m      831 │     group: [32mGrupoCamposModalAccionAvanzada[37m,
+          ╵            [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2304: Cannot find name 'MENSAJES_FINALIZAR_ALTA'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:1509:18:
+[37m      1509 │       const msg = [32mMENSAJES_FINALIZAR_ALTA[37m[item.id];
+           ╵                   [32m~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2304: Cannot find name 'MENSAJES_FINALIZAR_ALTA'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:3228:20:
+[37m      3228 │     const negocio = [32mMENSAJES_FINALIZAR_ALTA[37m[item.id];
+           ╵                     [32m~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+[39m[22m
+[1m[31m[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2345: Argument of type 'readonly BorradorValidacionIssue[]' is not assignable to parameter of type 'string'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:375:33:
+[37m      375 │       this.openDraftInvalidModal([32mborradorIssues[37m);
+          ╵                                  [32m~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2552: Cannot find name 'GrupoCamposModalAccionAvanzada'. Did you mean 'ItemCampoModalAccionAvanzada'?[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:807:14:
+[37m      807 │   ): readonly [32mGrupoCamposModalAccionAvanzada[37m[] {
+          ╵               [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2552: Cannot find name 'GrupoCamposModalAccionAvanzada'. Did you mean 'ItemCampoModalAccionAvanzada'?[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:831:11:
+[37m      831 │     group: [32mGrupoCamposModalAccionAvanzada[37m,
+          ╵            [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2304: Cannot find name 'MENSAJES_FINALIZAR_ALTA'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:1509:18:
+[37m      1509 │       const msg = [32mMENSAJES_FINALIZAR_ALTA[37m[item.id];
+           ╵                   [32m~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2304: Cannot find name 'MENSAJES_FINALIZAR_ALTA'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:3228:20:
+[37m      3228 │     const negocio = [32mMENSAJES_FINALIZAR_ALTA[37m[item.id];
+           ╵                     [32m~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+[39m[22m
+[1m[31m[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2345: Argument of type 'readonly BorradorValidacionIssue[]' is not assignable to parameter of type 'string'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:375:33:
+[37m      375 │       this.openDraftInvalidModal([32mborradorIssues[37m);
+          ╵                                  [32m~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2304: Cannot find name 'MENSAJES_FINALIZAR_ALTA'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:1501:18:
+[37m      1501 │       const msg = [32mMENSAJES_FINALIZAR_ALTA[37m[item.id];
+           ╵                   [32m~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2304: Cannot find name 'MENSAJES_FINALIZAR_ALTA'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:3220:20:
+[37m      3220 │     const negocio = [32mMENSAJES_FINALIZAR_ALTA[37m[item.id];
+           ╵                     [32m~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+[39m[22m
+[1m[31m[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2345: Argument of type 'readonly BorradorValidacionIssue[]' is not assignable to parameter of type 'string'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:375:33:
+[37m      375 │       this.openDraftInvalidModal([32mborradorIssues[37m);
+          ╵                                  [32m~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'enfocarPrimerItemModalAvanzada' does not exist on type 'FormEmpleadoComponent'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:858:13:
+[37m      858 │         this.[32menfocarPrimerItemModalAvanzada[37m(modal?.fieldItems?.[0...
+          ╵              [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'enfocarPrimerItemModalAvanzada' does not exist on type 'FormEmpleadoComponent'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:865:13:
+[37m      865 │         this.[32menfocarPrimerItemModalAvanzada[37m(modal?.fieldItems?.[0...
+          ╵              [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'enfocarPrimerItemModalAvanzada' does not exist on type 'FormEmpleadoComponent'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:871:13:
+[37m      871 │         this.[32menfocarPrimerItemModalAvanzada[37m(modal?.fieldItems?.[0...
+          ╵              [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2304: Cannot find name 'MENSAJES_FINALIZAR_ALTA'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:1507:18:
+[37m      1507 │       const msg = [32mMENSAJES_FINALIZAR_ALTA[37m[item.id];
+           ╵                   [32m~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2304: Cannot find name 'MENSAJES_FINALIZAR_ALTA'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:3226:20:
+[37m      3226 │     const negocio = [32mMENSAJES_FINALIZAR_ALTA[37m[item.id];
+           ╵                     [32m~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+[39m[22m
+[1m[31m[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2345: Argument of type 'readonly BorradorValidacionIssue[]' is not assignable to parameter of type 'string'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:375:33:
+[37m      375 │       this.openDraftInvalidModal([32mborradorIssues[37m);
+          ╵                                  [32m~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'enfocarPrimerItemModalAvanzada' does not exist on type 'FormEmpleadoComponent'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:858:13:
+[37m      858 │         this.[32menfocarPrimerItemModalAvanzada[37m(modal?.fieldItems?.[0...
+          ╵              [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'enfocarPrimerItemModalAvanzada' does not exist on type 'FormEmpleadoComponent'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:865:13:
+[37m      865 │         this.[32menfocarPrimerItemModalAvanzada[37m(modal?.fieldItems?.[0...
+          ╵              [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'enfocarPrimerItemModalAvanzada' does not exist on type 'FormEmpleadoComponent'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:871:13:
+[37m      871 │         this.[32menfocarPrimerItemModalAvanzada[37m(modal?.fieldItems?.[0...
+          ╵              [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2304: Cannot find name 'MENSAJES_FINALIZAR_ALTA'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:1507:18:
+[37m      1507 │       const msg = [32mMENSAJES_FINALIZAR_ALTA[37m[item.id];
+           ╵                   [32m~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2304: Cannot find name 'MENSAJES_FINALIZAR_ALTA'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:3226:20:
+[37m      3226 │     const negocio = [32mMENSAJES_FINALIZAR_ALTA[37m[item.id];
+           ╵                     [32m~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+[39m[22m
+[1m[31m[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2345: Argument of type 'readonly BorradorValidacionIssue[]' is not assignable to parameter of type 'string'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:375:33:
+[37m      375 │       this.openDraftInvalidModal([32mborradorIssues[37m);
+          ╵                                  [32m~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'enfocarPrimerItemModalAvanzada' does not exist on type 'FormEmpleadoComponent'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:858:13:
+[37m      858 │         this.[32menfocarPrimerItemModalAvanzada[37m(modal?.fieldItems?.[0...
+          ╵              [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'enfocarPrimerItemModalAvanzada' does not exist on type 'FormEmpleadoComponent'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:865:13:
+[37m      865 │         this.[32menfocarPrimerItemModalAvanzada[37m(modal?.fieldItems?.[0...
+          ╵              [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'enfocarPrimerItemModalAvanzada' does not exist on type 'FormEmpleadoComponent'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:871:13:
+[37m      871 │         this.[32menfocarPrimerItemModalAvanzada[37m(modal?.fieldItems?.[0...
+          ╵              [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2304: Cannot find name 'MENSAJES_FINALIZAR_ALTA'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:3200:20:
+[37m      3200 │     const negocio = [32mMENSAJES_FINALIZAR_ALTA[37m[item.id];
+           ╵                     [32m~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+[39m[22m
+[1m[31m[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'enfocarPrimerItemModalAvanzada' does not exist on type 'FormEmpleadoComponent'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:858:13:
+[37m      858 │         this.[32menfocarPrimerItemModalAvanzada[37m(modal?.fieldItems?.[0...
+          ╵              [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'enfocarPrimerItemModalAvanzada' does not exist on type 'FormEmpleadoComponent'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:865:13:
+[37m      865 │         this.[32menfocarPrimerItemModalAvanzada[37m(modal?.fieldItems?.[0...
+          ╵              [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'enfocarPrimerItemModalAvanzada' does not exist on type 'FormEmpleadoComponent'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:871:13:
+[37m      871 │         this.[32menfocarPrimerItemModalAvanzada[37m(modal?.fieldItems?.[0...
+          ╵              [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2304: Cannot find name 'MENSAJES_FINALIZAR_ALTA'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:3204:20:
+[37m      3204 │     const negocio = [32mMENSAJES_FINALIZAR_ALTA[37m[item.id];
+           ╵                     [32m~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+[39m[22m
+[1m[31m[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'enfocarPrimerItemModalAvanzada' does not exist on type 'FormEmpleadoComponent'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:858:13:
+[37m      858 │         this.[32menfocarPrimerItemModalAvanzada[37m(modal?.fieldItems?.[0...
+          ╵              [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'enfocarPrimerItemModalAvanzada' does not exist on type 'FormEmpleadoComponent'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:865:13:
+[37m      865 │         this.[32menfocarPrimerItemModalAvanzada[37m(modal?.fieldItems?.[0...
+          ╵              [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'enfocarPrimerItemModalAvanzada' does not exist on type 'FormEmpleadoComponent'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:871:13:
+[37m      871 │         this.[32menfocarPrimerItemModalAvanzada[37m(modal?.fieldItems?.[0...
+          ╵              [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2304: Cannot find name 'MENSAJES_FINALIZAR_ALTA'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:3207:20:
+[37m      3207 │     const negocio = [32mMENSAJES_FINALIZAR_ALTA[37m[item.id];
+           ╵                     [32m~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+[39m[22m
+[1m[31m[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'enfocarPrimerItemModalAvanzada' does not exist on type 'FormEmpleadoComponent'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:800:9:
+[37m      800 │     this.[32menfocarPrimerItemModalAvanzada[37m(item, () => {
+          ╵          [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'enfocarPrimerItemModalAvanzada' does not exist on type 'FormEmpleadoComponent'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:860:13:
+[37m      860 │         this.[32menfocarPrimerItemModalAvanzada[37m(modal?.fieldItems?.[0...
+          ╵              [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'enfocarPrimerItemModalAvanzada' does not exist on type 'FormEmpleadoComponent'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:867:13:
+[37m      867 │         this.[32menfocarPrimerItemModalAvanzada[37m(modal?.fieldItems?.[0...
+          ╵              [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'enfocarPrimerItemModalAvanzada' does not exist on type 'FormEmpleadoComponent'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:873:13:
+[37m      873 │         this.[32menfocarPrimerItemModalAvanzada[37m(modal?.fieldItems?.[0...
+          ╵              [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2304: Cannot find name 'MENSAJES_FINALIZAR_ALTA'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:3209:20:
+[37m      3209 │     const negocio = [32mMENSAJES_FINALIZAR_ALTA[37m[item.id];
+           ╵                     [32m~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+[39m[22m
+[1m[31m[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'enfocarPrimerItemModalAvanzada' does not exist on type 'FormEmpleadoComponent'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:800:9:
+[37m      800 │     this.[32menfocarPrimerItemModalAvanzada[37m(item, () => {
+          ╵          [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'enfocarPrimerItemModalAvanzada' does not exist on type 'FormEmpleadoComponent'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:860:13:
+[37m      860 │         this.[32menfocarPrimerItemModalAvanzada[37m(modal?.fieldItems?.[0...
+          ╵              [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'enfocarPrimerItemModalAvanzada' does not exist on type 'FormEmpleadoComponent'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:867:13:
+[37m      867 │         this.[32menfocarPrimerItemModalAvanzada[37m(modal?.fieldItems?.[0...
+          ╵              [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'enfocarPrimerItemModalAvanzada' does not exist on type 'FormEmpleadoComponent'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:873:13:
+[37m      873 │         this.[32menfocarPrimerItemModalAvanzada[37m(modal?.fieldItems?.[0...
+          ╵              [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2304: Cannot find name 'MENSAJES_FINALIZAR_ALTA'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:3202:20:
+[37m      3202 │     const negocio = [32mMENSAJES_FINALIZAR_ALTA[37m[item.id];
+           ╵                     [32m~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+[39m[22m
+[1m[31m[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'pesoOrdenValidacion' does not exist on type 'FormEmpleadoComponent'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:3307:23:
+[37m      3307 │         (a, b) => this.[32mpesoOrdenValidacion[37m(a) - this.pesoOrdenVa...
+           ╵                        [32m~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'pesoOrdenValidacion' does not exist on type 'FormEmpleadoComponent'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:3307:53:
+[37m      3307 │ ...b) => this.pesoOrdenValidacion(a) - this.[32mpesoOrdenValidacion[37m(b),
+           ╵                                             [32m~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'pesoOrdenValidacion' does not exist on type 'FormEmpleadoComponent'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:3331:23:
+[37m      3331 │         (a, b) => this.[32mpesoOrdenValidacion[37m(a) - this.pesoOrdenVa...
+           ╵                        [32m~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'pesoOrdenValidacion' does not exist on type 'FormEmpleadoComponent'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:3331:53:
+[37m      3331 │ ...b) => this.pesoOrdenValidacion(a) - this.[32mpesoOrdenValidacion[37m(b),
+           ╵                                             [32m~~~~~~~~~~~~~~~~~~~[0m
+
+[39m[22m
+[1m[31m[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'pesoOrdenValidacion' does not exist on type 'FormEmpleadoComponent'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:3308:23:
+[37m      3308 │         (a, b) => this.[32mpesoOrdenValidacion[37m(a) - this.pesoOrdenVa...
+           ╵                        [32m~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'pesoOrdenValidacion' does not exist on type 'FormEmpleadoComponent'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:3308:53:
+[37m      3308 │ ...b) => this.pesoOrdenValidacion(a) - this.[32mpesoOrdenValidacion[37m(b),
+           ╵                                             [32m~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'pesoOrdenValidacion' does not exist on type 'FormEmpleadoComponent'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:3332:23:
+[37m      3332 │         (a, b) => this.[32mpesoOrdenValidacion[37m(a) - this.pesoOrdenVa...
+           ╵                        [32m~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'pesoOrdenValidacion' does not exist on type 'FormEmpleadoComponent'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:3332:53:
+[37m      3332 │ ...b) => this.pesoOrdenValidacion(a) - this.[32mpesoOrdenValidacion[37m(b),
+           ╵                                             [32m~~~~~~~~~~~~~~~~~~~[0m
+
+[39m[22m
+[1m[31m[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'pesoOrdenValidacion' does not exist on type 'FormEmpleadoComponent'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:3305:23:
+[37m      3305 │         (a, b) => this.[32mpesoOrdenValidacion[37m(a) - this.pesoOrdenVa...
+           ╵                        [32m~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'pesoOrdenValidacion' does not exist on type 'FormEmpleadoComponent'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:3305:53:
+[37m      3305 │ ...b) => this.pesoOrdenValidacion(a) - this.[32mpesoOrdenValidacion[37m(b),
+           ╵                                             [32m~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'pesoOrdenValidacion' does not exist on type 'FormEmpleadoComponent'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:3329:23:
+[37m      3329 │         (a, b) => this.[32mpesoOrdenValidacion[37m(a) - this.pesoOrdenVa...
+           ╵                        [32m~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'pesoOrdenValidacion' does not exist on type 'FormEmpleadoComponent'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:3329:53:
+[37m      3329 │ ...b) => this.pesoOrdenValidacion(a) - this.[32mpesoOrdenValidacion[37m(b),
+           ╵                                             [32m~~~~~~~~~~~~~~~~~~~[0m
+
+[39m[22m
+[1m[31m[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2304: Cannot find name 'GrupoCamposModalAlta'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:805:14:
+[37m      805 │   ): readonly [32mGrupoCamposModalAlta[37m[] {
+          ╵               [32m~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2304: Cannot find name 'groupFieldItemsByStep'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:806:11:
+[37m      806 │     return [32mgroupFieldItemsByStep[37m(items, (step) =>
+          ╵            [32m~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS7006: Parameter 'step' implicitly has an 'any' type.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:806:41:
+[37m      806 │     return groupFieldItemsByStep(items, ([32mstep[37m) =>
+          ╵                                          [32m~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2304: Cannot find name 'primerPasoDesdeFieldItems'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:814:11:
+[37m      814 │     return [32mprimerPasoDesdeFieldItems[37m(items, (step) =>
+          ╵            [32m~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS7006: Parameter 'step' implicitly has an 'any' type.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:814:45:
+[37m      814 │     return primerPasoDesdeFieldItems(items, ([32mstep[37m) =>
+          ╵                                              [32m~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2304: Cannot find name 'GrupoCamposModalAlta'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:821:11:
+[37m      821 │     group: [32mGrupoCamposModalAlta[37m,
+          ╵            [32m~~~~~~~~~~~~~~~~~~~~[0m
+
+[39m[22m
