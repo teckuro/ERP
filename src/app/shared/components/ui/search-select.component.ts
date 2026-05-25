@@ -54,7 +54,11 @@ export interface SearchSelectOption<T extends SearchSelectValue = SearchSelectVa
     },
   ],
   template: `
-    <div class="select-root" [class.is-disabled]="disabled">
+    <div
+      class="select-root"
+      [class.is-disabled]="disabled"
+      [attr.data-field-path]="fieldPath || null"
+    >
       <button
         #selectField
         type="button"
@@ -498,6 +502,8 @@ export class SearchSelectComponent implements ControlValueAccessor, OnDestroy {
   private readonly selectPanelRef?: ElementRef<HTMLElement>;
 
   @Input() id = '';
+  /** Ruta estable para foco en alta avanzada (`data-field-path`). */
+  @Input() fieldPath = '';
   @Input() ariaLabel = '';
   @Input() placeholder = 'Selecciona una opcion';
   @Input() searchPlaceholder = 'Buscar...';

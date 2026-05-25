@@ -5,7 +5,6 @@ import {
   ElementRef,
   Injector,
   OnInit,
-  afterNextRender,
   inject,
 } from "@angular/core";
 import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
@@ -33,23 +32,30 @@ import {
   collectBorradorAvanzadoIssues,
 } from "../../utils/empleado-borrador-form.validation";
 import {
-  buildFieldItemsFromBorradorIssues,
   buildFieldItemsFromRules,
-  buildModalSectionsBitacora,
-  buildNextStepBlockingModalContent,
-  ETIQUETA_ACCION_REVISAR_PRIMER_PENDIENTE,
-  buildPendientePrincipalDesdeFieldItems,
   mensajesNegocioDesdeReglas,
   pesoOrdenValidacion,
   sortReglasValidacion,
 } from "../../utils/empleado-alta-modal.presenter";
 import { normalizarBorradorAvanzadoParaFormulario } from "../../utils/empleado-borrador-hidratacion";
 import {
+  buscarControlPorRuta,
+  buscarPrimerControlNgInvalido,
+  enfocarElemento,
+  enfocarRutaControl as enfocarRutaControlDom,
+} from "../../utils/empleado-alta-foco.util";
+import {
   etiquetasAsistenteAvanzadoEmpleado,
   cantidadPasosAsistenteAvanzadoEmpleado,
+  etiquetaPasoHonorarios,
   idsBloquesPasoFormularioEmpleado,
   ordenPestanasFormularioEmpleado,
 } from "../../models/empleado-form.manifest";
+import { construirSnapshotValidacionFicha } from "../../rules/empleado-alta-ficha-snapshot.builder";
+import {
+  EmpleadoAltaModalOrquestador,
+  type DelegadoModalAltaEmpleado,
+} from "../../facade/empleado-alta-modal.orquestador";
 import { EmpleadoFormGroup } from "../../models/empleado-form.model";
 import {
   CONDICIONES_TRABAJADOR_UI,
@@ -57,7 +63,6 @@ import {
 } from "../../models/empleado-perfil-laboral.model";
 import type {
   ModalAccionAvanzada,
-  AccionModalAccionAvanzada,
   ItemCampoModalAccionAvanzada,
   ReglaValidacionEvaluada,
   FormEmpleadoModo,
@@ -164,9 +169,9 @@ const REGLAS_VALIDACION_EXCLUIDAS_AL_FINALIZAR_ALTA_AVANZADA = new Set([
     "./form-empleado.wizard.css",
     "./form-empleado.feedback.css",
   ],
-  providers: [EmpleadoAltaAvanzadaPresentacionFacade],
+  providers: [EmpleadoAltaAvanzadaPresentacionFacade, EmpleadoAltaModalOrquestador],
 })
-export class FormEmpleadoComponent implements OnInit {
+export class FormEmpleadoComponent implements OnInit, DelegadoModalAltaEmpleado {
   private readonly empleadosService = inject(EmpleadosService);
   private readonly empleadosCatalogosService = inject(
     EmpleadosCatalogosService,
@@ -180,6 +185,7 @@ export class FormEmpleadoComponent implements OnInit {
   private readonly hostElement = inject<ElementRef<HTMLElement>>(ElementRef);
   private readonly injector = inject(Injector);
   private readonly presentacion = inject(EmpleadoAltaAvanzadaPresentacionFacade);
+  private readonly modalOrquestador = inject(EmpleadoAltaModalOrquestador);
   private suppressRelacionLaboralModal = false;
   private previousRelacionLaboral: RelacionLaboral = "CONTRATO";
   private relacionLaboralRevertirHonorarios: RelacionLaboral = "CONTRATO";
@@ -346,34 +352,14 @@ export class FormEmpleadoComponent implements OnInit {
 
     if (this.cargandoCatalogos()) {
       this.retroalimentacionBorrador.set(null);
-      this.abrirModalAccionAvanzada({
-        kind: "draft-catalog-wait",
-        variant: "warning",
-        eyebrow: "Revisión administrativa",
-        title: "Espera a que cargue el formulario",
-        message:
-          "La información base aún se está preparando. Intenta guardar el borrador en unos segundos.",
-        sections: buildModalSectionsBitacora({
-          pendientePrincipal:
-            "Esperar a que terminen de cargar catálogos y datos base del formulario.",
-          porQueImporta:
-            "Sin catálogos no se puede registrar un borrador trazable en la bitácora.",
-          accionRecomendada: "Reintentar guardar el borrador cuando el formulario esté listo.",
-          pendienteTone: "info",
-        }),
-        primaryLabel: "Aceptar",
-        blockingItems: [],
-        warningItems: [],
-        infoItems: [],
-        primaryAction: "dismiss",
-      });
+      this.modalOrquestador.abrirModalEsperaCatalogosBorrador();
       return;
     }
 
     const borradorIssues = collectBorradorAvanzadoIssues(this.form);
     if (borradorIssues.length > 0) {
       this.retroalimentacionBorrador.set(null);
-      this.openDraftInvalidModal(borradorIssues);
+      this.modalOrquestador.abrirModalBorradorInvalido(borradorIssues);
       return;
     }
 
@@ -408,7 +394,7 @@ export class FormEmpleadoComponent implements OnInit {
         queryParamsHandling: "merge",
         replaceUrl: true,
       });
-      this.openDraftSuccessModal(prevId === null);
+      this.modalOrquestador.abrirModalBorradorExito(prevId === null);
     } catch (error) {
       if (error instanceof EmpleadoRutDuplicadoError) {
         this.rutModalRutDuplicado.set(error.rut);
@@ -442,23 +428,18 @@ export class FormEmpleadoComponent implements OnInit {
     this.desplazarAInicioPasoActual(options);
   }
 
+  private opcionesEtiquetaPasoHonorarios() {
+    return {
+      indicePasoPerfilLaboral: this.perfilLaboralWizardStepIndex(),
+      etiquetasCortasAsistente: this.etiquetasCortasAsistenteAvanzado,
+      etiquetasLargasAsistente: this.etiquetasAsistenteAvanzado,
+      descripcionesPasosAsistente: this.descripcionesPasosAsistenteAvanzado,
+    };
+  }
+
   etiquetaCortaPasoAsistente(stepIndex: number): string {
     if (this.esModoHonorarios()) {
-      const honorariosLabels: Record<number, string> = {
-        2: "Servicio",
-        3: "Monto",
-        7: "Pago",
-        8: "Condiciones",
-        9: "Resumen",
-      };
-      if ([4, 5, 6, this.perfilLaboralWizardStepIndex()].includes(stepIndex)) {
-        return this.etiquetasCortasAsistenteAvanzado[stepIndex] ?? "";
-      }
-      return (
-        honorariosLabels[stepIndex] ??
-        this.etiquetasCortasAsistenteAvanzado[stepIndex] ??
-        ""
-      );
+      return etiquetaPasoHonorarios(stepIndex, "corta", this.opcionesEtiquetaPasoHonorarios());
     }
 
     return (
@@ -470,21 +451,7 @@ export class FormEmpleadoComponent implements OnInit {
 
   etiquetaCompletaPasoAsistente(stepIndex: number): string {
     if (this.esModoHonorarios()) {
-      const honorariosLabels: Record<number, string> = {
-        2: "Servicio",
-        3: "Monto",
-        4: "Asignaciones laborales",
-        5: "Previsión y salud",
-        6: "APVI",
-        7: "Pago",
-        8: "Condiciones",
-        9: "Resumen",
-      };
-      return (
-        honorariosLabels[stepIndex] ??
-        this.etiquetasAsistenteAvanzado[stepIndex] ??
-        ""
-      );
+      return etiquetaPasoHonorarios(stepIndex, "larga", this.opcionesEtiquetaPasoHonorarios());
     }
 
     return this.etiquetasAsistenteAvanzado[stepIndex] ?? "";
@@ -492,20 +459,10 @@ export class FormEmpleadoComponent implements OnInit {
 
   descripcionPasoAsistente(stepIndex: number): string {
     if (this.esModoHonorarios()) {
-      const honorariosDescriptions: Record<number, string> = {
-        2: "Completa servicio, fecha y ubicación administrativa.",
-        3: "Informa monto y moneda.",
-        4: "No requerido para honorarios.",
-        5: "No requerido para honorarios.",
-        6: "No requerido para honorarios.",
-        7: "Completa datos de pago.",
-        8: "No requerido para honorarios.",
-        9: "Revisa y finaliza el registro.",
-      };
-      return (
-        honorariosDescriptions[stepIndex] ??
-        this.descripcionesPasosAsistenteAvanzado[stepIndex] ??
-        ""
+      return etiquetaPasoHonorarios(
+        stepIndex,
+        "descripcion",
+        this.opcionesEtiquetaPasoHonorarios(),
       );
     }
 
@@ -600,7 +557,7 @@ export class FormEmpleadoComponent implements OnInit {
 
     if (this.cargandoCatalogos()) {
       if (this.esModoBasico()) {
-        this.abrirModalEsperaCatalogosBasico();
+        this.modalOrquestador.abrirModalEsperaCatalogosBasico();
       } else {
         this.mensajeError.set(
           "La informacion base del formulario aun se esta cargando. Espera unos segundos e intenta nuevamente.",
@@ -611,7 +568,9 @@ export class FormEmpleadoComponent implements OnInit {
 
     if (this.esModoBasico()) {
       if (this.esFormularioBasicoInvalido()) {
-        this.enfocarPrimerControlInvalido();
+        this.enfocarPrimerControlEnPaso(this.pasoWizardActivo(), {
+          soloBloqueantes: true,
+        });
         return;
       }
 
@@ -623,22 +582,22 @@ export class FormEmpleadoComponent implements OnInit {
 
     if (firstBadStep !== null || this.form.invalid) {
       this.sincronizarPestanasCompletadasDesdeValidez();
-      this.openFinishInvalidModal(firstBadStep ?? 0);
+      this.modalOrquestador.abrirModalFinalizarInvalido(this, firstBadStep ?? 0);
       return;
     }
 
     const coherenceIssue = this.primeraDecisionCoherenciaSinReconocer();
     if (coherenceIssue) {
       this.sincronizarPestanasCompletadasDesdeValidez();
-      this.openCoherenceDecisionModal(coherenceIssue, "finish");
+      this.modalOrquestador.abrirModalDecisionCoherencia(coherenceIssue, "finish");
       return;
     }
 
     this.marcarTodasPestanasValidasComoCompletadas();
-    this.openFinishConfirmModal();
+    this.modalOrquestador.abrirModalConfirmarFinalizar(this);
   }
 
-  private async submitAdvancedMode(): Promise<void> {
+  async enviarModoAvanzado(): Promise<void> {
     if (this.guardando()) {
       return;
     }
@@ -793,13 +752,15 @@ export class FormEmpleadoComponent implements OnInit {
   }
 
   manejarPrimariaModalAccionAvanzada(): void {
-    this.manejarAccionModalAccionAvanzada(
+    this.modalOrquestador.manejarAccion(
+      this,
       this.modalAccionAvanzada()?.primaryAction ?? "dismiss",
     );
   }
 
   manejarSecundariaModalAccionAvanzada(): void {
-    this.manejarAccionModalAccionAvanzada(
+    this.modalOrquestador.manejarAccion(
+      this,
       this.modalAccionAvanzada()?.secondaryAction ?? "dismiss",
     );
   }
@@ -807,84 +768,13 @@ export class FormEmpleadoComponent implements OnInit {
   manejarItemCampoModalAvanzada(item: ItemCampoModalAccionAvanzada): void {
     this.modalAccionAvanzada.set(null);
     this.enfocarPrimerItemModalAvanzada(item, () => {
-      this.marcarPasoAsistenteTocado(item.wizardStep);
-      this.seleccionarPasoAsistente(item.wizardStep);
-      this.enfocarPrimerControlPendiente(item.wizardStep);
+      this.mostrarPasoAsistenteInvalido(item.wizardStep);
     });
   }
 
   cerrarModalAccionAvanzada(): void {
     this.decisionCoherenciaPendiente.set(null);
     this.modalAccionAvanzada.set(null);
-  }
-
-  private manejarAccionModalAccionAvanzada(
-    action: AccionModalAccionAvanzada,
-  ): void {
-    const modal = this.modalAccionAvanzada();
-
-    switch (action) {
-      case "apply-coherence-suggestion":
-        this.applyPendingCoherenceSuggestion();
-        break;
-      case "keep-coherence-review":
-        this.keepPendingCoherenceReview();
-        break;
-      case "continue-next":
-        this.modalAccionAvanzada.set(null);
-        this.avanzarPasoSiguienteAsistente();
-        break;
-      case "focus-current-step":
-        this.modalAccionAvanzada.set(null);
-        this.enfocarPrimerItemModalAvanzada(modal?.fieldItems?.[0], () => {
-          const first = modal?.fieldItems?.[0];
-          const step =
-            first?.wizardStep ??
-            modal?.targetStep ??
-            this.pasoWizardActivo();
-          this.mostrarPasoAsistenteInvalido(step);
-          if (first?.controlPath) {
-            this.enfocarRutaControl(first.controlPath);
-          }
-        });
-        break;
-      case "focus-draft-minimum":
-        this.modalAccionAvanzada.set(null);
-        this.enfocarPrimerItemModalAvanzada(modal?.fieldItems?.[0], () => {
-          this.mostrarPasoAsistenteInvalido(0);
-        });
-        break;
-      case "focus-first-blocking":
-        this.modalAccionAvanzada.set(null);
-        this.enfocarPrimerItemModalAvanzada(modal?.fieldItems?.[0], () => {
-          this.mostrarPasoAsistenteInvalido(
-            modal?.targetStep ??
-              this.buscarPrimerPasoAsistenteConBloqueos() ??
-              0,
-          );
-        });
-        break;
-      case "execute-finish":
-        this.modalAccionAvanzada.set(null);
-        void this.submitAdvancedMode();
-        break;
-      case "confirm-honorarios":
-        this.previousRelacionLaboral = "HONORARIOS";
-        this.modalAccionAvanzada.set(null);
-        break;
-      case "cancel-honorarios":
-        this.modalAccionAvanzada.set(null);
-        this.cancelarCambioModoHonorarios();
-        break;
-      case "go-to-list":
-        this.modalAccionAvanzada.set(null);
-        this.irAListadoEmpleados();
-        break;
-      case "dismiss":
-      default:
-        this.modalAccionAvanzada.set(null);
-        break;
-    }
   }
 
   esModoBasico(): boolean {
@@ -1001,7 +891,7 @@ export class FormEmpleadoComponent implements OnInit {
 
     const coherenceIssue = this.primeraDecisionCoherenciaPorPaso(currentStep);
     if (coherenceIssue) {
-      this.openCoherenceDecisionModal(coherenceIssue, "next");
+      this.modalOrquestador.abrirModalDecisionCoherencia(coherenceIssue, "next");
       return;
     }
 
@@ -1010,14 +900,14 @@ export class FormEmpleadoComponent implements OnInit {
       ...this.aplicabilidadReviewsAsValidationRules(currentStep),
     ];
     if (pending.length > 0) {
-      this.openNextStepReviewModal(currentStep, pending);
+      this.modalOrquestador.abrirModalRevisionPasoSiguiente(this, currentStep, pending);
       return;
     }
 
     this.avanzarPasoSiguienteAsistente();
   }
 
-  private avanzarPasoSiguienteAsistente(): void {
+  avanzarPasoSiguienteAsistente(): void {
     const seq = this.secuenciaLinealAsistente();
     const next = resolverPasoSiguienteAsistenteAlta(seq, this.pasoWizardActivo());
     if (next !== null) {
@@ -1082,16 +972,14 @@ export class FormEmpleadoComponent implements OnInit {
         },
         () => {
           const step = wizardStepDesdeFaltanteAlta(issue, diagnostico.items);
-          this.seleccionarPasoAsistente(step);
-          this.enfocarPrimerControlInvalido(step);
+          this.mostrarPasoAsistenteInvalido(step);
         },
       );
       return;
     }
 
     const step = wizardStepDesdeFaltanteAlta(issue, diagnostico.items);
-    this.seleccionarPasoAsistente(step);
-    this.enfocarPrimerControlInvalido(step);
+    this.mostrarPasoAsistenteInvalido(step);
   }
 
   altaBitacoraConsoleVm(): VmConsolaBitacoraAlta {
@@ -1174,7 +1062,7 @@ export class FormEmpleadoComponent implements OnInit {
       this.seleccionarPasoAsistente(rev.stepIndex);
       return;
     }
-    this.applyCoherenceAction(issue.action, issue.actionValue);
+    this.aplicarAccionCoherencia(issue.action, issue.actionValue);
     this.idsInconsistenciasCoherenciaReconocidas.update((prev) => {
       const next = new Set(prev);
       next.delete(issue.id);
@@ -1436,13 +1324,7 @@ export class FormEmpleadoComponent implements OnInit {
 
   etiquetaEtapaPasoAsistente(stepIndex: number): string {
     if (this.esModoHonorarios()) {
-      const honorariosStages: Record<number, string> = {
-        2: "Registro del servicio",
-        3: "Monto",
-        7: "Pago",
-        9: "Resumen",
-      };
-      return honorariosStages[stepIndex] ?? "Registro administrativo";
+      return etiquetaPasoHonorarios(stepIndex, "etapa", this.opcionesEtiquetaPasoHonorarios());
     }
 
     if (stepIndex <= 1) {
@@ -1791,7 +1673,7 @@ export class FormEmpleadoComponent implements OnInit {
     };
   }
 
-  private buscarPrimerPasoAsistenteConBloqueos(): number | null {
+  buscarPrimerPasoAsistenteConBloqueos(): number | null {
     for (let s = 0; s < this.indicePasoResumenAsistente(); s++) {
       if (this.calcularNucleoValidacionPasoAsistente(s).blockingPending > 0) {
         return s;
@@ -1810,7 +1692,7 @@ export class FormEmpleadoComponent implements OnInit {
     this.pasoWizardActivo.set(step);
     this.intentarTodasPestanas();
     this.marcarPasoAsistenteTocado(step);
-    this.enfocarPrimerControlInvalido(step);
+    this.enfocarPrimerControlEnPaso(step, { soloBloqueantes: true });
   }
 
   private marcarPasoAsistenteTocado(step: number): void {
@@ -1933,117 +1815,19 @@ export class FormEmpleadoComponent implements OnInit {
       );
 
       this.form.markAsPristine();
-      this.abrirModalExitoBasico(created.id);
+      this.modalOrquestador.abrirModalExitoBasico(created.id);
     } catch (error) {
       if (error instanceof EmpleadoRutDuplicadoError) {
-        this.abrirModalRutDuplicadoBasico(error.rut);
+        this.modalOrquestador.abrirModalRutDuplicadoBasico(error.rut);
       } else {
-        this.abrirModalErrorBasico(this.resolverMensajeErrorGuardado(error));
+        this.modalOrquestador.abrirModalErrorBasico(
+          this,
+          this.resolverMensajeErrorGuardado(error),
+        );
       }
     } finally {
       this.guardando.set(false);
     }
-  }
-
-  private abrirModalExitoBasico(employeeId: number): void {
-    this.flujoExito.set("basico");
-    this.idEmpleadoCreado.set(employeeId);
-    this.abrirModalAccionAvanzada({
-      kind: "basic-success",
-      variant: "success",
-      eyebrow: "Registro actualizado",
-      title: "Empleado registrado correctamente",
-      message:
-        'La ficha quedó en estado «En proceso». Puedes completar contrato, previsión y banco desde la ficha del empleado.',
-      sections: buildModalSectionsBitacora({
-        pendientePrincipal:
-          "La creación básica quedó registrada con los datos personales y de contacto ingresados.",
-        detailItems: [`Ficha N° ${employeeId}`],
-        porQueImporta:
-          "El alta parcial queda trazable; hasta completar contrato y previsión la ficha no está lista para liquidar.",
-        accionRecomendada:
-          "Ir al listado para continuar con otras fichas o abrir la ficha del empleado para completar datos laborales.",
-        pendienteTone: "success",
-      }),
-      primaryLabel: "Ir al listado",
-      blockingItems: [],
-      warningItems: [],
-      infoItems: [],
-      primaryAction: "go-to-list",
-    });
-  }
-
-  private abrirModalErrorBasico(message: string): void {
-    const suggestedStep = this.pasoSugeridoError(message);
-    this.abrirModalAccionAvanzada({
-      kind: "basic-error",
-      variant: "danger",
-      eyebrow: "Error de guardado",
-      title: "No fue posible registrar la ficha",
-      message:
-        "El registro no se completó. Revisa el detalle y vuelve a intentarlo.",
-      sections: buildModalSectionsBitacora({
-        pendientePrincipal: this.mensajeErrorNormalizado(message),
-        detailItems: suggestedStep ? [`Revisar: ${suggestedStep}`] : undefined,
-        porQueImporta:
-          "Sin corregir el problema no se puede dejar la ficha registrada en el sistema.",
-        accionRecomendada: this.accionRecomendadaError(message),
-      }),
-      primaryLabel: "Cerrar",
-      blockingItems: [],
-      warningItems: [],
-      infoItems: [],
-      primaryAction: "dismiss",
-    });
-  }
-
-  private abrirModalRutDuplicadoBasico(rut: string): void {
-    this.abrirModalAccionAvanzada({
-      kind: "basic-duplicate-rut",
-      variant: "danger",
-      eyebrow: "Revisión administrativa",
-      title: "Ficha ya registrada",
-      message: `Ya existe un empleado registrado con el RUT ${rut}.`,
-      sections: buildModalSectionsBitacora({
-        pendientePrincipal:
-          "No se puede crear una nueva ficha con un RUT ya registrado en el sistema.",
-        detailItems: [`RUT ${rut}`],
-        porQueImporta:
-          "Evita duplicar la identificación del trabajador y mantiene coherencia en nómina y remuneraciones.",
-        accionRecomendada:
-          "Revisar el listado de empleados o editar la ficha existente antes de intentar de nuevo.",
-      }),
-      primaryLabel: "Cerrar",
-      blockingItems: [],
-      warningItems: [],
-      infoItems: [],
-      primaryAction: "dismiss",
-    });
-  }
-
-  private abrirModalEsperaCatalogosBasico(): void {
-    this.abrirModalAccionAvanzada({
-      kind: "basic-catalog-wait",
-      variant: "warning",
-      eyebrow: "Revisión administrativa",
-      title: "Formulario en preparación",
-      message:
-        "Los catálogos y datos base aún se están cargando. Espera unos segundos e intenta guardar de nuevo.",
-      sections: buildModalSectionsBitacora({
-        pendientePrincipal:
-          "Esperar a que termine la carga de catálogos antes de registrar la ficha.",
-        porQueImporta:
-          "Sin catálogos no se puede validar ni guardar datos personales de forma trazable.",
-        accionRecomendada:
-          "Reintentar el guardado cuando el formulario muestre los datos listos.",
-        pendienteTone: "info",
-      }),
-      primaryLabel: "Cerrar",
-      blockingItems: [],
-      warningItems: [],
-      infoItems: [],
-      primaryAction: "dismiss",
-    });
   }
 
   private evaluateValidationRules(): ReglaValidacionEvaluada[] {
@@ -2053,97 +1837,60 @@ export class FormEmpleadoComponent implements OnInit {
   }
 
   private buildFichaValidacionSnapshot(): EmpleadoFichaValidacionSnapshot {
-    const raw = this.form.getRawValue();
-    const salud = this.catalogos().entidadesSalud.find(
-      (item) => item.value === raw.previsionSalud.idSalud,
-    );
     const edadResumen = this.perfilLaboralEdadResumen();
-    const tieneCondicionesEspeciales = this.hasPerfilLaboralCondicionesSeleccionadas();
-
-    return {
-      origenCreacion: this.esModoBasico() ? "basico" : "avanzado",
-      pasoAltaAvanzada: this.esModoAvanzado() ? this.pasoWizardActivo() : null,
-      relacionLaboral: this.esModoHonorarios()
-        ? "HONORARIOS"
-        : raw.contrato.relacionLaboral,
-      estado: raw.contrato.estado,
-      rut: raw.datosPersonales.rut,
-      pasaporte: raw.datosPersonales.pasaporte,
-      nombres: raw.datosPersonales.nombres,
-      apellidoPaterno: raw.datosPersonales.apellidoPaterno,
-      fechaNacimiento: raw.datosPersonales.fechaNacimiento,
-      sexo: raw.datosPersonales.sexo,
-      idPais: raw.datosPersonales.idPais,
-      estadoCivil: raw.datosPersonales.estadoCivil,
-      email: raw.contacto.email,
-      telefono: raw.contacto.telefono,
-      idComuna: raw.contacto.idComuna,
-      idSucursal: raw.contrato.idSucursal,
-      idCentroCosto: raw.contrato.idCentroCosto,
-      cargo: raw.contrato.cargo,
-      fechaContrato: raw.contrato.fechaContrato,
-      tipoContrato: raw.contrato.tipoContrato,
-      idTipoTrabajador: raw.contrato.idTipoTrabajador,
-      idTipoJornada: raw.contrato.idTipoJornada,
-      seguroCesantia: raw.contrato.seguroCesantia,
-      excluidoLimiteJornada: raw.contrato.excluidoLimiteJornada,
-      causalExclusionJornada: raw.contrato.causalExclusionJornada,
-      justificacionExclusionJornada: raw.contrato.justificacionExclusionJornada,
-      casaParticularModalidad: raw.contrato.casaParticularModalidad,
-      casaParticularLabores: raw.contrato.casaParticularLabores,
-      casaParticularDomicilioEspecifico: raw.contrato.casaParticularDomicilioEspecifico,
-      casaParticularAsistenciaCuidado: raw.contrato.casaParticularAsistenciaCuidado,
-      casaParticularRegistroDtEstado: raw.contrato.casaParticularRegistroDtEstado,
-      casaParticularRegistroDtFecha: raw.contrato.casaParticularRegistroDtFecha,
-      casaParticularRegistroDtFolio: raw.contrato.casaParticularRegistroDtFolio,
-      fechaIngreso: raw.contrato.fechaIngreso,
-      fechaTermino: raw.contrato.fechaTermino,
-      sueldoBase: raw.contrato.sueldoBase,
-      idMoneda: raw.contrato.idMoneda,
-      horasSemanales: raw.contrato.horasSemanales,
-      diasSemanales: raw.contrato.diasSemanales,
-      distribucionJornada: raw.contrato.distribucionJornada,
-      semanaCorridaActiva: raw.contrato.semanaCorridaActiva,
-      semanaCorridaDiasLaborables: raw.contrato.semanaCorridaDiasLaborables,
-      zonaExtremaActiva: raw.contrato.zonaExtremaActiva,
-      zonaExtremaTerritorio: raw.contrato.zonaExtremaTerritorio,
-      zonaExtremaPorcentaje: raw.contrato.zonaExtremaPorcentaje,
-      cargas: raw.contrato.cargas,
-      idTramoCarga: raw.contrato.idTramoCarga,
+    return construirSnapshotValidacionFicha({
+      form: this.form,
+      catalogos: this.catalogos(),
+      esModoBasico: this.esModoBasico(),
+      esModoAvanzado: this.esModoAvanzado(),
+      esModoHonorarios: this.esModoHonorarios(),
+      pasoWizardActivo: this.pasoWizardActivo(),
       perfilLaboralMenorEdad: edadResumen.kind === "menor",
-      trabajadorAdolescenteProtegido: raw.perfilLaboral.trabajadorAdolescenteProtegido,
-      autorizacionMenorRegistrada: raw.perfilLaboral.autorizacionMenorRegistrada,
-      tieneCondicionesEspeciales,
-      respaldoRegistrado: raw.perfilLaboral.respaldoRegistrado,
-      vigenciaInicioCondiciones: raw.perfilLaboral.vigenciaInicio,
-      observacionCondiciones: raw.perfilLaboral.observacion,
-      observacionCondicionesValida: this.form.controls.perfilLaboral.controls.observacion.valid,
-      tipoPrevision: raw.previsionSalud.tipoRegimenPrevisional,
-      idRegimenPrevisional: null,
-      idAfp: raw.previsionSalud.idAfp,
-      idEntidadPrevisionalIps: raw.previsionSalud.idEntidadPrevisionalIps,
-      idExCajaPrevisional: raw.previsionSalud.idExCajaPrevisional,
-      idRegimenExCaja: raw.previsionSalud.idRegimenExCaja,
-      nombreExCaja: raw.previsionSalud.nombreExCaja,
-      regimenExCaja: raw.previsionSalud.regimenExCaja,
-      tasaExCaja: raw.previsionSalud.tasaExCaja,
-      idSalud: raw.previsionSalud.idSalud,
-      tipoSalud: salud?.tipo ?? null,
-      idMonedaPlan: raw.previsionSalud.idMonedaPlan,
-      valorPlan: raw.previsionSalud.valorPlan,
-      adicionalAugeGes: raw.previsionSalud.adicionalAugeGes,
-      idMonedaCuenta2: raw.previsionSalud.idMonedaCuenta2,
-      valorCuenta2: raw.previsionSalud.valorCuenta2,
-      tieneApv: raw.previsionSalud.tieneApv,
-      idInstitucionApv: raw.previsionSalud.idInstitucionApv,
-      idMonedaApv: raw.previsionSalud.idMonedaApv,
-      montoApv: raw.previsionSalud.montoApv,
-      idFormaPagoApv: raw.previsionSalud.idFormaPagoApv,
-      depositoConvenidoApvi: raw.previsionSalud.depositoConvenidoApvi,
-      idBanco: raw.bancario.idBanco,
-      idTipoCuentaBancaria: raw.bancario.idTipoCuentaBancaria,
-      numeroCuenta: raw.bancario.numeroCuenta,
-    };
+      tieneCondicionesEspeciales: this.hasPerfilLaboralCondicionesSeleccionadas(),
+      observacionCondicionesValida:
+        this.form.controls.perfilLaboral.controls.observacion.valid,
+    });
+  }
+
+  confirmarCambioHonorariosDesdeModal(): void {
+    this.previousRelacionLaboral = "HONORARIOS";
+  }
+
+  aplicarAccionCoherencia(
+    accion: AccionCoherenciaAlta | undefined,
+    valor: boolean | number | undefined,
+  ): void {
+    const contrato = this.form.controls.contrato.controls;
+    const perfil = this.form.controls.perfilLaboral.controls;
+
+    switch (accion) {
+      case "activarSeguroCesantia":
+      case "desactivarSeguroCesantia":
+        contrato.seguroCesantia.setValue(Boolean(valor));
+        contrato.seguroCesantia.markAsDirty();
+        contrato.seguroCesantia.markAsTouched();
+        break;
+      case "ajustarHorasSemanales":
+        contrato.horasSemanales.setValue(
+          typeof valor === "number" ? valor : null,
+        );
+        contrato.horasSemanales.markAsDirty();
+        contrato.horasSemanales.markAsTouched();
+        break;
+      case "marcarTrabajadorAdolescenteProtegido":
+        perfil.trabajadorAdolescenteProtegido.setValue(true);
+        perfil.trabajadorAdolescenteProtegido.markAsDirty();
+        perfil.trabajadorAdolescenteProtegido.markAsTouched();
+        break;
+      case "marcarExentoCotizacionPension":
+        perfil.exentoCotizacionPension.setValue(true);
+        perfil.exentoCotizacionPension.markAsDirty();
+        perfil.exentoCotizacionPension.markAsTouched();
+        this.seleccionarPasoAsistente(this.perfilLaboralWizardStepIndex());
+        break;
+      default:
+        break;
+    }
   }
 
   altaCoherenciaState(): EstadoCoherenciaAlta {
@@ -2417,7 +2164,7 @@ export class FormEmpleadoComponent implements OnInit {
     );
   }
 
-  private pendingValidationItemsForFinalization(): ReglaValidacionEvaluada[] {
+  obtenerPendientesValidacionFinalizacion(): ReglaValidacionEvaluada[] {
     return sortReglasValidacion(
       this.evaluateValidationRules().filter(
         (item) =>
@@ -2426,91 +2173,6 @@ export class FormEmpleadoComponent implements OnInit {
           this.reglaValidacionCuentaEnFlujoAltaAvanzada(item),
       ),
     );
-  }
-
-  private abrirModalAccionAvanzada(modal: ModalAccionAvanzada): void {
-    this.mensajeError.set(null);
-    this.rutModalRutDuplicado.set(null);
-    this.mensajeExito.set(null);
-    this.modalAccionAvanzada.set(modal);
-  }
-
-  private openCoherenceDecisionModal(
-    issue: InconsistenciaCoherenciaAlta,
-    context: "next" | "finish",
-  ): void {
-    this.decisionCoherenciaPendiente.set({ issue, context });
-    this.abrirModalAccionAvanzada({
-      kind: "coherence-decision",
-      variant: "warning",
-      eyebrow: "Revisión administrativa",
-      title: issue.title,
-      message:
-        context === "finish"
-          ? "Antes de finalizar conviene decidir esta combinación en la bitácora."
-          : "Antes de seguir conviene decidir esta combinación en la bitácora.",
-      sections: buildModalSectionsBitacora({
-        pendientePrincipal: issue.detail,
-        porQueImporta:
-          "La decisión queda visible en la bitácora y en el resumen hasta que la cierres o apliques la corrección.",
-        accionRecomendada:
-          context === "finish"
-            ? "Aplicar la corrección sugerida o mantener bajo revisión y revisar el resumen antes de finalizar."
-            : "Aplicar la corrección sugerida o mantener bajo revisión y continuar el recorrido.",
-      }),
-      primaryLabel:
-        issue.recommendedActionLabel ?? "Aplicar corrección sugerida",
-      secondaryLabel:
-        context === "finish" ? "Mantener y finalizar" : "Mantener y continuar",
-      blockingItems: [],
-      warningItems: [],
-      infoItems: [],
-      targetStep: issue.stepIndex,
-      primaryAction: "apply-coherence-suggestion",
-      secondaryAction: "keep-coherence-review",
-    });
-  }
-
-  private applyPendingCoherenceSuggestion(): void {
-    const pending = this.decisionCoherenciaPendiente();
-    if (!pending) {
-      this.modalAccionAvanzada.set(null);
-      return;
-    }
-
-    this.applyCoherenceAction(pending.issue.action, pending.issue.actionValue);
-    this.decisionCoherenciaPendiente.set(null);
-    this.modalAccionAvanzada.set(null);
-    this.idsInconsistenciasCoherenciaReconocidas.update((prev) => {
-      const next = new Set(prev);
-      next.delete(pending.issue.id);
-      return next;
-    });
-    this.sincronizarPestanasCompletadasDesdeValidez();
-    this.seleccionarPasoAsistente(pending.issue.stepIndex);
-  }
-
-  private keepPendingCoherenceReview(): void {
-    const pending = this.decisionCoherenciaPendiente();
-    if (!pending) {
-      this.modalAccionAvanzada.set(null);
-      return;
-    }
-
-    this.idsInconsistenciasCoherenciaReconocidas.update(
-      (prev) => new Set([...prev, pending.issue.id]),
-    );
-    this.decisionCoherenciaPendiente.set(null);
-    this.modalAccionAvanzada.set(null);
-    this.sincronizarPestanasCompletadasDesdeValidez();
-
-    if (pending.context === "finish") {
-      this.marcarTodasPestanasValidasComoCompletadas();
-      this.openFinishConfirmModal();
-      return;
-    }
-
-    this.avanzarPasoSiguienteAsistente();
   }
 
   private aplicabilidadReviewsAsValidationRules(
@@ -2538,296 +2200,6 @@ export class FormEmpleadoComponent implements OnInit {
       }));
   }
 
-  private applyCoherenceAction(
-    action: AccionCoherenciaAlta | undefined,
-    value: boolean | number | undefined,
-  ): void {
-    const contrato = this.form.controls.contrato.controls;
-    const perfil = this.form.controls.perfilLaboral.controls;
-
-    switch (action) {
-      case "activarSeguroCesantia":
-      case "desactivarSeguroCesantia":
-        contrato.seguroCesantia.setValue(Boolean(value));
-        contrato.seguroCesantia.markAsDirty();
-        contrato.seguroCesantia.markAsTouched();
-        break;
-      case "ajustarHorasSemanales":
-        contrato.horasSemanales.setValue(
-          typeof value === "number" ? value : null,
-        );
-        contrato.horasSemanales.markAsDirty();
-        contrato.horasSemanales.markAsTouched();
-        break;
-      case "marcarTrabajadorAdolescenteProtegido":
-        perfil.trabajadorAdolescenteProtegido.setValue(true);
-        perfil.trabajadorAdolescenteProtegido.markAsDirty();
-        perfil.trabajadorAdolescenteProtegido.markAsTouched();
-        break;
-      case "marcarExentoCotizacionPension":
-        perfil.exentoCotizacionPension.setValue(true);
-        perfil.exentoCotizacionPension.markAsDirty();
-        perfil.exentoCotizacionPension.markAsTouched();
-        this.seleccionarPasoAsistente(this.perfilLaboralWizardStepIndex());
-        break;
-      default:
-        break;
-    }
-  }
-
-  private openNextStepReviewModal(
-    step: number,
-    pending: readonly ReglaValidacionEvaluada[],
-  ): void {
-    const blocking = pending.filter(
-      (item) => item.blocking && item.severity === "error",
-    );
-    const label = this.etiquetaCortaPasoAsistente(step);
-    const hasBlocking = blocking.length > 0;
-    const onlyNormative =
-      !hasBlocking &&
-      pending.length > 0 &&
-      pending.every((item) => item.id.startsWith("aplicabilidad."));
-    const fieldSource = hasBlocking ? blocking : pending;
-    const fieldItems = buildFieldItemsFromRules(fieldSource, {
-      shortStepLabelFor: (wizardStep) =>
-        this.etiquetaCortaPasoAsistente(wizardStep),
-    });
-    if (hasBlocking) {
-      const blockingContent = buildNextStepBlockingModalContent(label, fieldItems);
-      this.abrirModalAccionAvanzada({
-        kind: "next-step-review",
-        variant: "warning",
-        title: blockingContent.title,
-        message: blockingContent.message,
-        sections: blockingContent.sections,
-        primaryLabel: ETIQUETA_ACCION_REVISAR_PRIMER_PENDIENTE,
-        secondaryLabel: "Continuar con pendiente",
-        blockingItems: [],
-        warningItems: [],
-        infoItems: [],
-        fieldItems,
-        targetStep: fieldItems[0]?.wizardStep ?? step,
-        primaryAction: "focus-current-step",
-        secondaryAction: "continue-next",
-      });
-      return;
-    }
-
-    const principal = onlyNormative
-      ? `Revisar la revisión normativa del registro «${label}».`
-      : `Revisar las advertencias administrativas del registro «${label}».`;
-
-    this.abrirModalAccionAvanzada({
-      kind: "next-step-review",
-      variant: "info",
-      eyebrow: "Revisión administrativa",
-      title: onlyNormative
-        ? "Revisión normativa en este registro"
-        : "Advertencias de revisión",
-      message: `El registro «${label}» tiene revisiones que no bloquean el avance, pero conviene dejarlas claras.`,
-      sections: buildModalSectionsBitacora({
-        pendientePrincipal: principal,
-        porQueImporta:
-          "Cada pendiente queda trazado en la bitácora laboral hasta que lo cierres o decidas continuar con revisión pendiente.",
-        accionRecomendada:
-          "Aclarar las revisiones ahora o continuar. El resumen final mantendrá lo pendiente.",
-        pendienteTone: "info",
-      }),
-      primaryLabel: "Continuar",
-      secondaryLabel: "Corregir ahora",
-      blockingItems: [],
-      warningItems: [],
-      infoItems: [],
-      fieldItems,
-      targetStep: fieldItems[0]?.wizardStep ?? step,
-      primaryAction: "continue-next",
-      secondaryAction: "focus-current-step",
-    });
-  }
-
-  private openDraftInvalidModal(
-    issues: ReturnType<typeof collectBorradorAvanzadoIssues>,
-  ): void {
-    const fieldItems = buildFieldItemsFromBorradorIssues(issues);
-    const first = fieldItems[0];
-    const principal =
-      first?.detail ??
-      "Completar los datos mínimos antes de guardar el borrador.";
-
-    this.abrirModalAccionAvanzada({
-      kind: "draft-invalid",
-      variant: "warning",
-      eyebrow: "Revisión administrativa",
-      title: "No se puede guardar el borrador",
-      message: principal,
-      sections: buildModalSectionsBitacora({
-        pendientePrincipal: principal,
-        porQueImporta:
-          "El borrador necesita identificación y contacto mínimos para quedar trazable en la bitácora laboral.",
-        accionRecomendada:
-          "Ir al primer campo pendiente, completar la información mínima y volver a guardar.",
-      }),
-      primaryLabel: ETIQUETA_ACCION_REVISAR_PRIMER_PENDIENTE,
-      secondaryLabel: "Cerrar",
-      blockingItems: [],
-      warningItems: [],
-      infoItems: [],
-      fieldItems,
-      targetStep: first?.wizardStep ?? 0,
-      primaryAction: "focus-draft-minimum",
-      secondaryAction: "dismiss",
-    });
-  }
-
-  private openDraftSuccessModal(isNewDraft: boolean): void {
-    this.abrirModalAccionAvanzada({
-      kind: "draft-success",
-      variant: "success",
-      eyebrow: "Registro actualizado",
-      title: isNewDraft ? "Borrador guardado" : "Borrador actualizado",
-      message:
-        "La ficha quedó guardada. Puedes seguir completando la bitácora ahora o retomarla más tarde.",
-      sections: buildModalSectionsBitacora({
-        pendientePrincipal: isNewDraft
-          ? "El borrador quedó registrado con los datos mínimos ingresados hasta ahora."
-          : "Los cambios del borrador quedaron actualizados en la bitácora laboral.",
-        porQueImporta:
-          "El avance parcial queda trazable para retomar la creación avanzada sin perder lo ya registrado.",
-        accionRecomendada:
-          "Continuar completando los registros de la bitácora o volver al listado de empleados.",
-        pendienteTone: "success",
-      }),
-      primaryLabel: "Aceptar",
-      blockingItems: [],
-      warningItems: [],
-      infoItems: [],
-      primaryAction: "dismiss",
-    });
-  }
-
-  private openFinishInvalidModal(firstBadStep: number): void {
-    const pending = this.pendingValidationItemsForFinalization();
-    const blocking = pending.filter(
-      (item) => item.blocking && item.severity === "error",
-    );
-    const fieldItems = buildFieldItemsFromRules(blocking, {
-      shortStepLabelFor: (wizardStep) =>
-        this.etiquetaCortaPasoAsistente(wizardStep),
-    });
-    const targetStep = fieldItems[0]?.wizardStep ?? firstBadStep;
-
-    this.abrirModalAccionAvanzada({
-      kind: "finish-invalid",
-      variant: "error",
-      eyebrow: "Revisión administrativa",
-      title: "La ficha no está lista para finalizar",
-      message:
-        "Aún hay registros de la bitácora con datos obligatorios pendientes. Ciérralos antes de finalizar el alta.",
-      sections: buildModalSectionsBitacora({
-        pendientePrincipal: buildPendientePrincipalDesdeFieldItems(fieldItems),
-        porQueImporta:
-          "Sin esos datos la ficha no puede quedar lista para remuneraciones ni cerrarse en la bitácora.",
-        accionRecomendada:
-          "Ir al primer registro con bloqueo, completar lo pendiente o guardar borrador y retomar después.",
-      }),
-      primaryLabel: ETIQUETA_ACCION_REVISAR_PRIMER_PENDIENTE,
-      secondaryLabel: "Cerrar",
-      blockingItems: [],
-      warningItems: [],
-      infoItems: [],
-      fieldItems,
-      targetStep,
-      primaryAction: "focus-first-blocking",
-      secondaryAction: "dismiss",
-    });
-  }
-
-  private openFinishConfirmModal(): void {
-    if (this.esModoHonorarios()) {
-      this.abrirModalAccionAvanzada({
-        kind: "finish-confirm",
-        variant: "success",
-        eyebrow: "Decisión requerida",
-        title: "Finalizar boleta de honorarios",
-        message:
-          "La bitácora del prestador está lista para cerrar. Revisa servicio, monto y datos de pago antes de confirmar.",
-        sections: buildModalSectionsBitacora({
-          pendientePrincipal:
-            "Confirmar el cierre del registro a honorarios con la bitácora en estado listo.",
-          porQueImporta:
-            "Al finalizar, la ficha queda activa para administración del prestador. No ingresa a nómina dependiente.",
-          accionRecomendada:
-            "Finalizar honorarios si los datos son correctos, o cancelar para revisar algún registro de la bitácora.",
-          pendienteTone: "success",
-        }),
-        primaryLabel: "Finalizar honorarios",
-        secondaryLabel: "Cancelar",
-        blockingItems: [],
-        warningItems: [],
-        infoItems: [],
-        primaryAction: "execute-finish",
-        secondaryAction: "dismiss",
-      });
-      return;
-    }
-
-    this.abrirModalAccionAvanzada({
-      kind: "finish-confirm",
-      variant: "success",
-      eyebrow: "Decisión requerida",
-      title: "Finalizar alta del trabajador",
-      message:
-        "La bitácora laboral está lista para cerrar el alta. Revisa que la información sea correcta antes de confirmar.",
-      sections: buildModalSectionsBitacora({
-        pendientePrincipal:
-          "Confirmar el cierre del alta con los registros de la bitácora en estado listo.",
-        porQueImporta:
-          "Al finalizar, la ficha queda habilitada para procesos administrativos y de remuneraciones.",
-        accionRecomendada:
-          "Finalizar el alta si los datos son correctos, o cancelar para revisar algún registro de la bitácora.",
-        pendienteTone: "success",
-      }),
-      primaryLabel: "Finalizar alta",
-      secondaryLabel: "Cancelar",
-      blockingItems: [],
-      warningItems: [],
-      infoItems: [],
-      primaryAction: "execute-finish",
-      secondaryAction: "dismiss",
-    });
-  }
-
-  private openHonorariosConfirmModal(): void {
-    this.abrirModalAccionAvanzada({
-      kind: "honorarios-confirm",
-      variant: "warning",
-      eyebrow: "Decisión requerida",
-      title: "Cambiar a boleta de honorarios",
-      message:
-        "El registro pasará a prestador de servicios. Los pasos laborales dependientes quedarán como no aplicables en la bitácora.",
-      sections: buildModalSectionsBitacora({
-        pendientePrincipal:
-          "Confirmar el cambio a boleta de honorarios y ocultar datos de relación laboral dependiente.",
-        detailItems: [
-          "Jornada, gratificación, previsión, salud, APVI y asignaciones laborales: no aplicables.",
-          "Este registro no participa en nómina dependiente.",
-        ],
-        porQueImporta:
-          "La bitácora debe reflejar la modalidad correcta para no solicitar datos que no corresponden al prestador.",
-        accionRecomendada:
-          "Confirmar el cambio si la modalidad es correcta, o cancelar y mantener relación laboral dependiente.",
-      }),
-      primaryLabel: "Confirmar cambio",
-      secondaryLabel: "Cancelar",
-      blockingItems: [],
-      warningItems: [],
-      infoItems: [],
-      primaryAction: "confirm-honorarios",
-      secondaryAction: "cancel-honorarios",
-      disableClose: true,
-    });
-  }
 
   private configurarFlujoTipoTrabajador(): void {
     const relacion = this.form.controls.contrato.controls.relacionLaboral;
@@ -2995,7 +2367,7 @@ export class FormEmpleadoComponent implements OnInit {
         ) {
           this.relacionLaboralRevertirHonorarios = this.previousRelacionLaboral;
           this.confirmarModoHonorarios({ lockPrevious: false });
-          this.openHonorariosConfirmModal();
+          this.modalOrquestador.abrirModalConfirmarHonorarios();
           return;
         }
 
@@ -3016,7 +2388,7 @@ export class FormEmpleadoComponent implements OnInit {
     }
   }
 
-  private cancelarCambioModoHonorarios(): void {
+  cancelarCambioModoHonorarios(): void {
     this.suppressRelacionLaboralModal = true;
     this.form.controls.contrato.controls.relacionLaboral.setValue(
       this.relacionLaboralRevertirHonorarios,
@@ -3136,7 +2508,20 @@ export class FormEmpleadoComponent implements OnInit {
     }
   }
 
-  private enfocarPrimerItemModalAvanzada(
+  cerrarModalYEnfocarPrimerPendiente(
+    modal: ModalAccionAvanzada | null,
+    pasoFallback: number,
+  ): void {
+    this.modalAccionAvanzada.set(null);
+    const first = modal?.fieldItems?.[0];
+    this.enfocarPrimerItemModalAvanzada(first, () => {
+      this.mostrarPasoAsistenteInvalido(
+        first?.wizardStep ?? modal?.targetStep ?? pasoFallback,
+      );
+    });
+  }
+
+  enfocarPrimerItemModalAvanzada(
     item: ItemCampoModalAccionAvanzada | undefined,
     fallback: () => void,
   ): void {
@@ -3323,34 +2708,12 @@ export class FormEmpleadoComponent implements OnInit {
     return "pendiente";
   }
 
-  private enfocarPrimerControlPendiente(
+  private enfocarPrimerControlEnPaso(
     wizardStep: number = this.pasoWizardActivo(),
+    options?: { soloBloqueantes?: boolean },
   ): void {
     window.setTimeout(() => {
-      const sorted = [...this.evaluateValidationRules()].sort(
-        (a, b) => pesoOrdenValidacion(a) - pesoOrdenValidacion(b),
-      );
-      const firstPendingRule = sorted.find(
-        (item) =>
-          item.visible && item.wizardStep === wizardStep && !item.complete,
-      );
-      const control =
-        this.buscarControlParaRegla(firstPendingRule) ??
-        this.buscarPrimerControlNgInvalido();
-
-      if (!control) {
-        return;
-      }
-
-      control.scrollIntoView({ behavior: "smooth", block: "center" });
-      control.focus({ preventScroll: true });
-    });
-  }
-
-  private enfocarPrimerControlInvalido(
-    wizardStep: number = this.pasoWizardActivo(),
-  ): void {
-    window.setTimeout(() => {
+      const host = this.hostElement.nativeElement;
       const sorted = [...this.evaluateValidationRules()].sort(
         (a, b) => pesoOrdenValidacion(a) - pesoOrdenValidacion(b),
       );
@@ -3358,62 +2721,32 @@ export class FormEmpleadoComponent implements OnInit {
         (item) =>
           item.visible &&
           item.wizardStep === wizardStep &&
-          item.blocking &&
-          !item.complete,
+          !item.complete &&
+          (!options?.soloBloqueantes || item.blocking),
       );
-      const firstInvalidControl =
-        this.buscarControlParaRegla(firstPendingRule) ??
-        this.buscarPrimerControlNgInvalido();
+      const control =
+        (firstPendingRule
+          ? buscarControlPorRuta(host, firstPendingRule.sourcePath)
+          : null) ?? buscarPrimerControlNgInvalido(host);
 
-      if (!firstInvalidControl) {
+      if (!control) {
         return;
       }
 
-      firstInvalidControl.scrollIntoView({
-        behavior: "smooth",
-        block: "center",
-      });
-      firstInvalidControl.focus({ preventScroll: true });
+      enfocarElemento(control);
     });
   }
 
-  private buscarControlParaRegla(
-    rule: ReglaValidacionEvaluada | undefined,
-  ): HTMLElement | null {
-    if (!rule) {
-      return null;
-    }
-
-    return this.buscarControlPorRuta(rule.sourcePath);
-  }
-
-  private enfocarRutaControl(controlPath: string, attempt = 0): void {
-    const maxAttempts = 16;
-    const run = (): void => {
-      const control = this.buscarControlPorRuta(controlPath);
-      if (control) {
-        control.scrollIntoView({ behavior: "smooth", block: "center" });
-        control.focus({ preventScroll: true });
-        return;
-      }
-
-      if (attempt < maxAttempts) {
-        window.setTimeout(
-          () => this.enfocarRutaControl(controlPath, attempt + 1),
-          50,
-        );
-        return;
-      }
-
-      this.desplazarAInicioPasoActual({ focusFirstField: true });
-    };
-
-    if (attempt === 0) {
-      afterNextRender(run, { injector: this.injector });
-      return;
-    }
-
-    run();
+  private enfocarRutaControl(controlPath: string): void {
+    enfocarRutaControlDom(
+      this.injector,
+      this.hostElement.nativeElement,
+      controlPath,
+      {
+        onFallback: () =>
+          this.desplazarAInicioPasoActual({ focusFirstField: true }),
+      },
+    );
   }
 
   domicilioReferenciaCasaParticular(): string | null {
@@ -3427,68 +2760,6 @@ export class FormEmpleadoComponent implements OnInit {
       .filter(Boolean);
 
     return partes.length ? partes.join(', ') : null;
-  }
-
-  private buscarControlPorRuta(controlPath: string | undefined): HTMLElement | null {
-    const path = controlPath?.trim();
-    if (!path) {
-      return null;
-    }
-
-    const root = this.hostElement.nativeElement;
-    const byDataPath = root.querySelector<HTMLElement>(
-      `[data-field-path="${path}"]`,
-    );
-    if (byDataPath) {
-      return this.obtenerCampoEnfocable(byDataPath);
-    }
-
-    const segments = path.split(".");
-    const controlName = segments.at(-1);
-    if (!controlName) {
-      return null;
-    }
-
-    const groupSelector = segments.length > 1 ? `[formGroupName="${segments[0]}"] ` : "";
-    const controlHost = root.querySelector<HTMLElement>(
-      `${groupSelector}[formControlName="${controlName}"], ${groupSelector}[formcontrolname="${controlName}"]`,
-    );
-    return this.obtenerCampoEnfocable(controlHost);
-  }
-
-  private buscarPrimerControlNgInvalido(): HTMLElement | null {
-    const invalidHost =
-      this.hostElement.nativeElement.querySelector<HTMLElement>(
-        '.step-panel input.ng-invalid:not([type="hidden"]), .step-panel select.ng-invalid, .step-panel textarea.ng-invalid, .step-panel [formControlName].ng-invalid, .step-panel [formcontrolname].ng-invalid',
-      );
-
-    return this.obtenerCampoEnfocable(invalidHost);
-  }
-
-  private obtenerCampoEnfocable(
-    controlHost: HTMLElement | null,
-  ): HTMLElement | null {
-    if (!controlHost) {
-      return null;
-    }
-
-    if (this.esCampoFormularioEnfocable(controlHost)) {
-      return controlHost;
-    }
-
-    return controlHost.querySelector<HTMLElement>(
-      'input:not([type="hidden"]):not([disabled]), select:not([disabled]), textarea:not([disabled]), button:not([disabled]), [tabindex]:not([tabindex="-1"])',
-    );
-  }
-
-  private esCampoFormularioEnfocable(element: HTMLElement): boolean {
-    return (
-      element.matches('input:not([type="hidden"]):not([disabled])') ||
-      element.matches("select:not([disabled])") ||
-      element.matches("textarea:not([disabled])") ||
-      element.matches("button:not([disabled])") ||
-      element.matches('[tabindex]:not([tabindex="-1"])')
-    );
   }
 
   private desplazarAInicioPagina(): void {
@@ -3560,7 +2831,7 @@ export class FormEmpleadoComponent implements OnInit {
     );
   }
 
-  private sincronizarPestanasCompletadasDesdeValidez(): void {
+  sincronizarPestanasCompletadasDesdeValidez(): void {
     this.pestanasCompletadas.update((tabs) => {
       const next = new Set(tabs);
 
@@ -3576,7 +2847,7 @@ export class FormEmpleadoComponent implements OnInit {
     });
   }
 
-  private marcarTodasPestanasValidasComoCompletadas(): void {
+  marcarTodasPestanasValidasComoCompletadas(): void {
     this.pestanasCompletadas.set(
       new Set(ordenPestanas.filter((tabId) => !this.esPestanaInvalida(tabId))),
     );

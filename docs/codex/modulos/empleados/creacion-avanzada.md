@@ -74,6 +74,16 @@ Comportamiento:
 
 Regla UX: no duplicar la informacion del mapa con tarjetas permanentes dentro del paso.
 
+### Pipeline de foco (MsgBox y consola)
+
+Un solo camino para «Revisar primer pendiente» y CTAs equivalentes (`focus-current-step`, `focus-draft-minimum`, `focus-first-blocking`):
+
+1. Cerrar modal y leer `fieldItems[0]` (mismo orden que la lista corta del presenter).
+2. `enfocarPrimerItemModalAvanzada`: navegar paso sin `focusFirstField` en el wizard; foco DOM via [`empleado-alta-foco.util.ts`](../../../src/app/features/empleados/utils/empleado-alta-foco.util.ts) (`data-field-path` primero, luego `formControlName`).
+3. Si no hay `controlPath`, fallback `mostrarPasoAsistenteInvalido` + `enfocarPrimerControlEnPaso` (bloqueantes u opcionales segun accion).
+
+`app-search-select` y `app-calendar-input` exponen `fieldPath` → `data-field-path` en el host del control. Campos nativos criticos del paso 0 usan `data-field-path` en el `<input>`.
+
 ### Contacto obligatorio
 
 Correo y teléfono son obligatorios en identificación/contacto (formulario reactivo, guardar borrador, finalizar alta y guardado en repositorio). Formato: email válido y teléfono con al menos 8 dígitos.
@@ -300,3 +310,17 @@ Regla vigente:
 No mover estas reglas a estilos globales ni subir budgets para resolver regresiones futuras; primero compactar CSS local o separar por responsabilidad manteniendo encapsulacion Angular.
 
 Documento de fase: [`emp-adv-css-budget-reduce-01.md`](./emp-adv-css-budget-reduce-01.md).
+
+## Roadmap fase 2 — Orquestador de modales (solo diseño)
+
+Objetivo: reducir [`form-empleado.ts`](../../../src/app/features/empleados/components/form-empleado/form-empleado.ts) sin cambiar comportamiento ni tocar mappers/SQL/estilos globales.
+
+| Modulo futuro | Responsabilidad | Estado |
+| --- | --- | --- |
+| `empleado-alta-foco.util.ts` | Foco DOM (`buscarControlPorRuta`, reintentos `afterNextRender`) | **Implementado** (fase 1) |
+| `empleado-alta-modal.presenter.ts` | Copy MsgBox, `fieldItems`, secciones bitacora | Ya existe |
+| `empleado-alta-avanzada-presentacion.facade.ts` | Paso wizard, intentos | Ya existe |
+| `empleado-alta-modal.orquestador.ts` | Modales MsgBox + `manejarAccion` + coherencia; delegación vía `DelegadoModalAltaEmpleado` | **Implementado** (2026-05-25) |
+| `empleado-alta-ficha-snapshot.builder.ts` | `construirSnapshotValidacionFicha` desde formulario | **Implementado** (2026-05-25) |
+
+**No extraer aun** (alto riesgo): `evaluateValidationRules` embebido, mappers, catálogos, honorarios. Criterio: tests existentes verdes + spec del orquestador por extraccion.

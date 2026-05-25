@@ -1,4 +1,15 @@
-﻿## EMP-CREACION-AVANZADA-CERRADA-01 - Pruebas exhaustivas creación avanzada
+﻿## EMP-MODULAR-AUDIT-01 - Modularización alta avanzada + auditoría features
+
+| Campo | Estado |
+| ----- | ------ |
+| Estado | **Ola A cerrada** (2026-05-25); Ola B backlog documentado |
+| Tipo | Refactor arquitectura (sin cambio funcional) |
+| Alcance | `empleado-alta-modal.orquestador.ts`, `empleado-alta-ficha-snapshot.builder.ts`, `etiquetaPasoHonorarios` en manifest; `form-empleado` delega modales/snapshot. |
+| Documento | [../arquitectura/auditoria-modular-features.md](../arquitectura/auditoria-modular-features.md), [../modulos/empleados/creacion-avanzada.md](../modulos/empleados/creacion-avanzada.md) |
+| Validación | Unit empleados (orquestador + snapshot + form-empleado + foco + presenter): **41** tests OK |
+| Restricciones | Sin SQL, mappers persistencia, estilos globales. PRs B1–B6 pendientes según auditoría. |
+
+## EMP-CREACION-AVANZADA-CERRADA-01 - Pruebas exhaustivas creación avanzada
 
 | Campo | Estado |
 | ----- | ------ |

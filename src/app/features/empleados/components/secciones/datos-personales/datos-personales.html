@@ -96,6 +96,7 @@
           </div>
           <app-search-select
             id="empleado-sexo"
+            fieldPath="datosPersonales.sexo"
             formControlName="sexo"
             placeholder="Selecciona sexo"
             searchPlaceholder="Buscar sexo"
@@ -141,6 +142,7 @@
           <input
             id="empleado-nombres"
             type="text"
+            data-field-path="datosPersonales.nombres"
             formControlName="nombres"
             placeholder="Ej: Camila Andrea"
             [class]="controlClass('nombres')"
@@ -166,6 +168,7 @@
           <input
             id="empleado-apellido-paterno"
             type="text"
+            data-field-path="datosPersonales.apellidoPaterno"
             formControlName="apellidoPaterno"
             placeholder="Ej: Soto"
             [class]="controlClass('apellidoPaterno')"
@@ -228,6 +231,7 @@
               </div>
               <app-search-select
                 id="empleado-idPais"
+                fieldPath="datosPersonales.idPais"
                 formControlName="idPais"
                 placeholder="Selecciona un país"
                 searchPlaceholder="Buscar país"
@@ -254,6 +258,7 @@
               </div>
               <app-search-select
                 id="empleado-estadoCivil"
+                fieldPath="datosPersonales.estadoCivil"
                 formControlName="estadoCivil"
                 placeholder="Selecciona un estado civil"
                 searchPlaceholder="Buscar estado civil"
@@ -289,6 +294,7 @@
                 <input
                   id="empleado-email"
                   type="email"
+                  data-field-path="contacto.email"
                   formControlName="email"
                   placeholder="Ej: nombre@empresa.cl"
                   [class]="contactoControlClass('email')"
@@ -316,6 +322,7 @@
                   type="text"
                   inputmode="tel"
                   maxlength="20"
+                  data-field-path="contacto.telefono"
                   formControlName="telefono"
                   placeholder="Ej: +56 9 1234 5678"
                   [class]="contactoControlClass('telefono')"
@@ -356,6 +363,7 @@
             </div>
             <app-search-select
               id="empleado-idPais"
+              fieldPath="datosPersonales.idPais"
               formControlName="idPais"
               placeholder="Selecciona un país"
               searchPlaceholder="Buscar país"
@@ -378,6 +386,7 @@
             </div>
             <app-search-select
               id="empleado-estadoCivil"
+              fieldPath="datosPersonales.estadoCivil"
               formControlName="estadoCivil"
               placeholder="Selecciona un estado civil"
               searchPlaceholder="Buscar estado civil"
@@ -418,6 +427,7 @@
                 id="empleado-email"
                 type="email"
                 inputmode="email"
+                data-field-path="contacto.email"
                 formControlName="email"
                 placeholder="Ej: nombre@empresa.cl"
                 [class]="contactoControlClass('email')"
@@ -445,6 +455,7 @@
                 type="text"
                 inputmode="tel"
                 maxlength="20"
+                data-field-path="contacto.telefono"
                 formControlName="telefono"
                 placeholder="Ej: +56 9 1234 5678"
                 [class]="contactoControlClass('telefono')"

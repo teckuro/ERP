@@ -789,3 +789,1166 @@
          ╵                                                   [32m~~~~~~~~~[0m
 
 [39m[22m
+[1m[31m[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2304: Cannot find name 'afterNextRender'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:3415:6:
+[37m      3415 │       [32mafterNextRender[37m(run, { injector: this.injector });
+           ╵       [32m~~~~~~~~~~~~~~~[0m
+
+[39m[22m
+[1m[31m[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2551: Property 'enfocarPrimerControlEnPaso' does not exist on type 'FormEmpleadoComponent'. Did you mean 'enfocarPrimerControlInvalido'?[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:619:13:
+[37m      619 │         this.[32menfocarPrimerControlEnPaso[37m(this.pasoWizardActivo(), {
+          ╵              [32m~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  'enfocarPrimerControlInvalido' is declared here.
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:3335:10:
+[37m      3335 │   private [32menfocarPrimerControlInvalido[37m(
+           ╵           [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'cerrarModalYEnfocarPrimerPendiente' does not exist on type 'FormEmpleadoComponent'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:843:13:
+[37m      843 │         this.[32mcerrarModalYEnfocarPrimerPendiente[37m(modal, this.pasoW...
+          ╵              [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'cerrarModalYEnfocarPrimerPendiente' does not exist on type 'FormEmpleadoComponent'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:846:13:
+[37m      846 │         this.[32mcerrarModalYEnfocarPrimerPendiente[37m(modal, 0);
+          ╵              [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'cerrarModalYEnfocarPrimerPendiente' does not exist on type 'FormEmpleadoComponent'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:849:13:
+[37m      849 │         this.[32mcerrarModalYEnfocarPrimerPendiente[37m(
+          ╵              [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2304: Cannot find name 'afterNextRender'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:3397:6:
+[37m      3397 │       [32mafterNextRender[37m(run, { injector: this.injector });
+           ╵       [32m~~~~~~~~~~~~~~~[0m
+
+[39m[22m
+[1m[31m[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2551: Property 'enfocarPrimerControlEnPaso' does not exist on type 'FormEmpleadoComponent'. Did you mean 'enfocarPrimerControlInvalido'?[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:619:13:
+[37m      619 │         this.[32menfocarPrimerControlEnPaso[37m(this.pasoWizardActivo(), {
+          ╵              [32m~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  'enfocarPrimerControlInvalido' is declared here.
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:3335:10:
+[37m      3335 │   private [32menfocarPrimerControlInvalido[37m(
+           ╵           [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'cerrarModalYEnfocarPrimerPendiente' does not exist on type 'FormEmpleadoComponent'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:843:13:
+[37m      843 │         this.[32mcerrarModalYEnfocarPrimerPendiente[37m(modal, this.pasoW...
+          ╵              [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'cerrarModalYEnfocarPrimerPendiente' does not exist on type 'FormEmpleadoComponent'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:846:13:
+[37m      846 │         this.[32mcerrarModalYEnfocarPrimerPendiente[37m(modal, 0);
+          ╵              [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'cerrarModalYEnfocarPrimerPendiente' does not exist on type 'FormEmpleadoComponent'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:849:13:
+[37m      849 │         this.[32mcerrarModalYEnfocarPrimerPendiente[37m(
+          ╵              [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2551: Property 'enfocarPrimerControlEnPaso' does not exist on type 'FormEmpleadoComponent'. Did you mean 'enfocarPrimerControlInvalido'?[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:1798:9:
+[37m      1798 │     this.[32menfocarPrimerControlEnPaso[37m(step, { soloBloqueantes: tru...
+           ╵          [32m~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  'enfocarPrimerControlInvalido' is declared here.
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:3335:10:
+[37m      3335 │   private [32menfocarPrimerControlInvalido[37m(
+           ╵           [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2304: Cannot find name 'afterNextRender'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:3397:6:
+[37m      3397 │       [32mafterNextRender[37m(run, { injector: this.injector });
+           ╵       [32m~~~~~~~~~~~~~~~[0m
+
+[39m[22m
+[1m[31m[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2551: Property 'enfocarPrimerControlEnPaso' does not exist on type 'FormEmpleadoComponent'. Did you mean 'enfocarPrimerControlInvalido'?[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:619:13:
+[37m      619 │         this.[32menfocarPrimerControlEnPaso[37m(this.pasoWizardActivo(), {
+          ╵              [32m~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  'enfocarPrimerControlInvalido' is declared here.
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:3348:10:
+[37m      3348 │   private [32menfocarPrimerControlInvalido[37m(
+           ╵           [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2551: Property 'enfocarPrimerControlEnPaso' does not exist on type 'FormEmpleadoComponent'. Did you mean 'enfocarPrimerControlInvalido'?[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:1798:9:
+[37m      1798 │     this.[32menfocarPrimerControlEnPaso[37m(step, { soloBloqueantes: tru...
+           ╵          [32m~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  'enfocarPrimerControlInvalido' is declared here.
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:3348:10:
+[37m      3348 │   private [32menfocarPrimerControlInvalido[37m(
+           ╵           [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2304: Cannot find name 'afterNextRender'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:3410:6:
+[37m      3410 │       [32mafterNextRender[37m(run, { injector: this.injector });
+           ╵       [32m~~~~~~~~~~~~~~~[0m
+
+[39m[22m
+[1m[31m[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'fieldPath' does not exist on type 'SearchSelectComponent'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/shared/components/ui/search-select.component.ts:60:30:
+[37m      60 │       [attr.data-field-path]="[32mfieldPath[37m || null"
+         ╵                               [32m~~~~~~~~~[0m
+
+[39m[22m
+[1m[31m[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2420: Class 'FormEmpleadoComponent' incorrectly implements interface 'DelegadoModalAltaEmpleado'.
+  Type 'FormEmpleadoComponent' is missing the following properties from type 'DelegadoModalAltaEmpleado': enviarModoAvanzado, obtenerPendientesValidacionFinalizacion, aplicarAccionCoherencia, confirmarCambioHonorariosDesdeModal[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:180:13:
+[37m      180 │ export class [32mFormEmpleadoComponent[37m implements OnInit, DelegadoMod...
+          ╵              [32m~~~~~~~~~~~~~~~~~~~~~[0m
+
+[39m[22m
+[1m[31m[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2420: Class 'FormEmpleadoComponent' incorrectly implements interface 'DelegadoModalAltaEmpleado'.
+  Type 'FormEmpleadoComponent' is missing the following properties from type 'DelegadoModalAltaEmpleado': enviarModoAvanzado, obtenerPendientesValidacionFinalizacion, aplicarAccionCoherencia, confirmarCambioHonorariosDesdeModal[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:180:13:
+[37m      180 │ export class [32mFormEmpleadoComponent[37m implements OnInit, DelegadoMod...
+          ╵              [32m~~~~~~~~~~~~~~~~~~~~~[0m
+
+[39m[22m
+[1m[31m[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2420: Class 'FormEmpleadoComponent' incorrectly implements interface 'DelegadoModalAltaEmpleado'.
+  Type 'FormEmpleadoComponent' is missing the following properties from type 'DelegadoModalAltaEmpleado': enviarModoAvanzado, obtenerPendientesValidacionFinalizacion, aplicarAccionCoherencia, confirmarCambioHonorariosDesdeModal[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:180:13:
+[37m      180 │ export class [32mFormEmpleadoComponent[37m implements OnInit, DelegadoMod...
+          ╵              [32m~~~~~~~~~~~~~~~~~~~~~[0m
+
+[39m[22m
+[1m[31m[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2420: Class 'FormEmpleadoComponent' incorrectly implements interface 'DelegadoModalAltaEmpleado'.
+  Type 'FormEmpleadoComponent' is missing the following properties from type 'DelegadoModalAltaEmpleado': enviarModoAvanzado, obtenerPendientesValidacionFinalizacion, aplicarAccionCoherencia, confirmarCambioHonorariosDesdeModal[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:180:13:
+[37m      180 │ export class [32mFormEmpleadoComponent[37m implements OnInit, DelegadoMod...
+          ╵              [32m~~~~~~~~~~~~~~~~~~~~~[0m
+
+[39m[22m
+[1m[31m[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2420: Class 'FormEmpleadoComponent' incorrectly implements interface 'DelegadoModalAltaEmpleado'.
+  Type 'FormEmpleadoComponent' is missing the following properties from type 'DelegadoModalAltaEmpleado': enviarModoAvanzado, obtenerPendientesValidacionFinalizacion, aplicarAccionCoherencia, confirmarCambioHonorariosDesdeModal[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:180:13:
+[37m      180 │ export class [32mFormEmpleadoComponent[37m implements OnInit, DelegadoMod...
+          ╵              [32m~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2345: Argument of type 'this' is not assignable to parameter of type 'DelegadoModalAltaEmpleado'.
+  Type 'FormEmpleadoComponent' is missing the following properties from type 'DelegadoModalAltaEmpleado': enviarModoAvanzado, obtenerPendientesValidacionFinalizacion, aplicarAccionCoherencia, confirmarCambioHonorariosDesdeModal[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:620:56:
+[37m      620 │ ...Orquestador.abrirModalFinalizarInvalido([32mthis[37m, firstBadStep ?? 0);
+          ╵                                            [32m~~~~[0m
+
+[39m[22m
+[1m[31m[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2420: Class 'FormEmpleadoComponent' incorrectly implements interface 'DelegadoModalAltaEmpleado'.
+  Type 'FormEmpleadoComponent' is missing the following properties from type 'DelegadoModalAltaEmpleado': enviarModoAvanzado, obtenerPendientesValidacionFinalizacion, aplicarAccionCoherencia, confirmarCambioHonorariosDesdeModal[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:180:13:
+[37m      180 │ export class [32mFormEmpleadoComponent[37m implements OnInit, DelegadoMod...
+          ╵              [32m~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2345: Argument of type 'this' is not assignable to parameter of type 'DelegadoModalAltaEmpleado'.
+  Type 'FormEmpleadoComponent' is missing the following properties from type 'DelegadoModalAltaEmpleado': enviarModoAvanzado, obtenerPendientesValidacionFinalizacion, aplicarAccionCoherencia, confirmarCambioHonorariosDesdeModal[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:620:56:
+[37m      620 │ ...Orquestador.abrirModalFinalizarInvalido([32mthis[37m, firstBadStep ?? 0);
+          ╵                                            [32m~~~~[0m
+
+[39m[22m
+[1m[31m[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2420: Class 'FormEmpleadoComponent' incorrectly implements interface 'DelegadoModalAltaEmpleado'.
+  Type 'FormEmpleadoComponent' is missing the following properties from type 'DelegadoModalAltaEmpleado': enviarModoAvanzado, obtenerPendientesValidacionFinalizacion, aplicarAccionCoherencia, confirmarCambioHonorariosDesdeModal[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:180:13:
+[37m      180 │ export class [32mFormEmpleadoComponent[37m implements OnInit, DelegadoMod...
+          ╵              [32m~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2345: Argument of type 'this' is not assignable to parameter of type 'DelegadoModalAltaEmpleado'.
+  Type 'FormEmpleadoComponent' is missing the following properties from type 'DelegadoModalAltaEmpleado': enviarModoAvanzado, obtenerPendientesValidacionFinalizacion, aplicarAccionCoherencia, confirmarCambioHonorariosDesdeModal[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:620:56:
+[37m      620 │ ...Orquestador.abrirModalFinalizarInvalido([32mthis[37m, firstBadStep ?? 0);
+          ╵                                            [32m~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2345: Argument of type 'this' is not assignable to parameter of type 'DelegadoModalAltaEmpleado'.
+  Type 'FormEmpleadoComponent' is missing the following properties from type 'DelegadoModalAltaEmpleado': enviarModoAvanzado, obtenerPendientesValidacionFinalizacion, aplicarAccionCoherencia, confirmarCambioHonorariosDesdeModal[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:791:6:
+[37m      791 │       [32mthis[37m,
+          ╵       [32m~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2345: Argument of type 'this' is not assignable to parameter of type 'DelegadoModalAltaEmpleado'.
+  Type 'FormEmpleadoComponent' is missing the following properties from type 'DelegadoModalAltaEmpleado': enviarModoAvanzado, obtenerPendientesValidacionFinalizacion, aplicarAccionCoherencia, confirmarCambioHonorariosDesdeModal[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:798:6:
+[37m      798 │       [32mthis[37m,
+          ╵       [32m~~~~[0m
+
+[39m[22m
+[1m[31m[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2420: Class 'FormEmpleadoComponent' incorrectly implements interface 'DelegadoModalAltaEmpleado'.
+  Type 'FormEmpleadoComponent' is missing the following properties from type 'DelegadoModalAltaEmpleado': obtenerPendientesValidacionFinalizacion, aplicarAccionCoherencia, confirmarCambioHonorariosDesdeModal[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:180:13:
+[37m      180 │ export class [32mFormEmpleadoComponent[37m implements OnInit, DelegadoMod...
+          ╵              [32m~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2345: Argument of type 'this' is not assignable to parameter of type 'DelegadoModalAltaEmpleado'.
+  Type 'FormEmpleadoComponent' is missing the following properties from type 'DelegadoModalAltaEmpleado': obtenerPendientesValidacionFinalizacion, aplicarAccionCoherencia, confirmarCambioHonorariosDesdeModal[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:620:56:
+[37m      620 │ ...Orquestador.abrirModalFinalizarInvalido([32mthis[37m, firstBadStep ?? 0);
+          ╵                                            [32m~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2345: Argument of type 'this' is not assignable to parameter of type 'DelegadoModalAltaEmpleado'.
+  Type 'FormEmpleadoComponent' is missing the following properties from type 'DelegadoModalAltaEmpleado': obtenerPendientesValidacionFinalizacion, aplicarAccionCoherencia, confirmarCambioHonorariosDesdeModal[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:632:55:
+[37m      632 │     this.modalOrquestador.abrirModalConfirmarFinalizar([32mthis[37m);
+          ╵                                                        [32m~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2345: Argument of type 'this' is not assignable to parameter of type 'DelegadoModalAltaEmpleado'.
+  Type 'FormEmpleadoComponent' is missing the following properties from type 'DelegadoModalAltaEmpleado': obtenerPendientesValidacionFinalizacion, aplicarAccionCoherencia, confirmarCambioHonorariosDesdeModal[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:791:6:
+[37m      791 │       [32mthis[37m,
+          ╵       [32m~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2345: Argument of type 'this' is not assignable to parameter of type 'DelegadoModalAltaEmpleado'.
+  Type 'FormEmpleadoComponent' is missing the following properties from type 'DelegadoModalAltaEmpleado': obtenerPendientesValidacionFinalizacion, aplicarAccionCoherencia, confirmarCambioHonorariosDesdeModal[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:798:6:
+[37m      798 │       [32mthis[37m,
+          ╵       [32m~~~~[0m
+
+[39m[22m
+[1m[31m[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2420: Class 'FormEmpleadoComponent' incorrectly implements interface 'DelegadoModalAltaEmpleado'.
+  Type 'FormEmpleadoComponent' is missing the following properties from type 'DelegadoModalAltaEmpleado': obtenerPendientesValidacionFinalizacion, aplicarAccionCoherencia, confirmarCambioHonorariosDesdeModal[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:180:13:
+[37m      180 │ export class [32mFormEmpleadoComponent[37m implements OnInit, DelegadoMod...
+          ╵              [32m~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2345: Argument of type 'this' is not assignable to parameter of type 'DelegadoModalAltaEmpleado'.
+  Type 'FormEmpleadoComponent' is missing the following properties from type 'DelegadoModalAltaEmpleado': obtenerPendientesValidacionFinalizacion, aplicarAccionCoherencia, confirmarCambioHonorariosDesdeModal[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:620:56:
+[37m      620 │ ...Orquestador.abrirModalFinalizarInvalido([32mthis[37m, firstBadStep ?? 0);
+          ╵                                            [32m~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2345: Argument of type 'this' is not assignable to parameter of type 'DelegadoModalAltaEmpleado'.
+  Type 'FormEmpleadoComponent' is missing the following properties from type 'DelegadoModalAltaEmpleado': obtenerPendientesValidacionFinalizacion, aplicarAccionCoherencia, confirmarCambioHonorariosDesdeModal[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:632:55:
+[37m      632 │     this.modalOrquestador.abrirModalConfirmarFinalizar([32mthis[37m);
+          ╵                                                        [32m~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2345: Argument of type 'this' is not assignable to parameter of type 'DelegadoModalAltaEmpleado'.
+  Type 'FormEmpleadoComponent' is missing the following properties from type 'DelegadoModalAltaEmpleado': obtenerPendientesValidacionFinalizacion, aplicarAccionCoherencia, confirmarCambioHonorariosDesdeModal[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:791:6:
+[37m      791 │       [32mthis[37m,
+          ╵       [32m~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2345: Argument of type 'this' is not assignable to parameter of type 'DelegadoModalAltaEmpleado'.
+  Type 'FormEmpleadoComponent' is missing the following properties from type 'DelegadoModalAltaEmpleado': obtenerPendientesValidacionFinalizacion, aplicarAccionCoherencia, confirmarCambioHonorariosDesdeModal[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:798:6:
+[37m      798 │       [32mthis[37m,
+          ╵       [32m~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2345: Argument of type 'this' is not assignable to parameter of type 'DelegadoModalAltaEmpleado'.
+  Type 'FormEmpleadoComponent' is missing the following properties from type 'DelegadoModalAltaEmpleado': obtenerPendientesValidacionFinalizacion, aplicarAccionCoherencia, confirmarCambioHonorariosDesdeModal[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:938:60:
+[37m      938 │ ...ador.abrirModalRevisionPasoSiguiente([32mthis[37m, currentStep, pending);
+          ╵                                         [32m~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'aplicarAccionCoherencia' does not exist on type 'FormEmpleadoComponent'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:1100:9:
+[37m      1100 │     this.[32maplicarAccionCoherencia[37m(issue.action, issue.actionValue);
+           ╵          [32m~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+[39m[22m
+[1m[31m[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2420: Class 'FormEmpleadoComponent' incorrectly implements interface 'DelegadoModalAltaEmpleado'.
+  Type 'FormEmpleadoComponent' is missing the following properties from type 'DelegadoModalAltaEmpleado': obtenerPendientesValidacionFinalizacion, aplicarAccionCoherencia, confirmarCambioHonorariosDesdeModal[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:180:13:
+[37m      180 │ export class [32mFormEmpleadoComponent[37m implements OnInit, DelegadoMod...
+          ╵              [32m~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2345: Argument of type 'this' is not assignable to parameter of type 'DelegadoModalAltaEmpleado'.
+  Type 'FormEmpleadoComponent' is missing the following properties from type 'DelegadoModalAltaEmpleado': obtenerPendientesValidacionFinalizacion, aplicarAccionCoherencia, confirmarCambioHonorariosDesdeModal[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:620:56:
+[37m      620 │ ...Orquestador.abrirModalFinalizarInvalido([32mthis[37m, firstBadStep ?? 0);
+          ╵                                            [32m~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2345: Argument of type 'this' is not assignable to parameter of type 'DelegadoModalAltaEmpleado'.
+  Type 'FormEmpleadoComponent' is missing the following properties from type 'DelegadoModalAltaEmpleado': obtenerPendientesValidacionFinalizacion, aplicarAccionCoherencia, confirmarCambioHonorariosDesdeModal[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:632:55:
+[37m      632 │     this.modalOrquestador.abrirModalConfirmarFinalizar([32mthis[37m);
+          ╵                                                        [32m~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2345: Argument of type 'this' is not assignable to parameter of type 'DelegadoModalAltaEmpleado'.
+  Type 'FormEmpleadoComponent' is missing the following properties from type 'DelegadoModalAltaEmpleado': obtenerPendientesValidacionFinalizacion, aplicarAccionCoherencia, confirmarCambioHonorariosDesdeModal[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:791:6:
+[37m      791 │       [32mthis[37m,
+          ╵       [32m~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2345: Argument of type 'this' is not assignable to parameter of type 'DelegadoModalAltaEmpleado'.
+  Type 'FormEmpleadoComponent' is missing the following properties from type 'DelegadoModalAltaEmpleado': obtenerPendientesValidacionFinalizacion, aplicarAccionCoherencia, confirmarCambioHonorariosDesdeModal[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:798:6:
+[37m      798 │       [32mthis[37m,
+          ╵       [32m~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2345: Argument of type 'this' is not assignable to parameter of type 'DelegadoModalAltaEmpleado'.
+  Type 'FormEmpleadoComponent' is missing the following properties from type 'DelegadoModalAltaEmpleado': obtenerPendientesValidacionFinalizacion, aplicarAccionCoherencia, confirmarCambioHonorariosDesdeModal[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:938:60:
+[37m      938 │ ...ador.abrirModalRevisionPasoSiguiente([32mthis[37m, currentStep, pending);
+          ╵                                         [32m~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'aplicarAccionCoherencia' does not exist on type 'FormEmpleadoComponent'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:1100:9:
+[37m      1100 │     this.[32maplicarAccionCoherencia[37m(issue.action, issue.actionValue);
+           ╵          [32m~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2345: Argument of type 'this' is not assignable to parameter of type 'DelegadoModalAltaEmpleado'.
+  Type 'FormEmpleadoComponent' is missing the following properties from type 'DelegadoModalAltaEmpleado': obtenerPendientesValidacionFinalizacion, aplicarAccionCoherencia, confirmarCambioHonorariosDesdeModal[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:1865:10:
+[37m      1865 │           [32mthis[37m,
+           ╵           [32m~~~~[0m
+
+[39m[22m
+[1m[31m[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2420: Class 'FormEmpleadoComponent' incorrectly implements interface 'DelegadoModalAltaEmpleado'.
+  Type 'FormEmpleadoComponent' is missing the following properties from type 'DelegadoModalAltaEmpleado': obtenerPendientesValidacionFinalizacion, aplicarAccionCoherencia, confirmarCambioHonorariosDesdeModal[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:180:13:
+[37m      180 │ export class [32mFormEmpleadoComponent[37m implements OnInit, DelegadoMod...
+          ╵              [32m~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2345: Argument of type 'this' is not assignable to parameter of type 'DelegadoModalAltaEmpleado'.
+  Type 'FormEmpleadoComponent' is missing the following properties from type 'DelegadoModalAltaEmpleado': obtenerPendientesValidacionFinalizacion, aplicarAccionCoherencia, confirmarCambioHonorariosDesdeModal[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:620:56:
+[37m      620 │ ...Orquestador.abrirModalFinalizarInvalido([32mthis[37m, firstBadStep ?? 0);
+          ╵                                            [32m~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2345: Argument of type 'this' is not assignable to parameter of type 'DelegadoModalAltaEmpleado'.
+  Type 'FormEmpleadoComponent' is missing the following properties from type 'DelegadoModalAltaEmpleado': obtenerPendientesValidacionFinalizacion, aplicarAccionCoherencia, confirmarCambioHonorariosDesdeModal[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:632:55:
+[37m      632 │     this.modalOrquestador.abrirModalConfirmarFinalizar([32mthis[37m);
+          ╵                                                        [32m~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2345: Argument of type 'this' is not assignable to parameter of type 'DelegadoModalAltaEmpleado'.
+  Type 'FormEmpleadoComponent' is missing the following properties from type 'DelegadoModalAltaEmpleado': obtenerPendientesValidacionFinalizacion, aplicarAccionCoherencia, confirmarCambioHonorariosDesdeModal[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:791:6:
+[37m      791 │       [32mthis[37m,
+          ╵       [32m~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2345: Argument of type 'this' is not assignable to parameter of type 'DelegadoModalAltaEmpleado'.
+  Type 'FormEmpleadoComponent' is missing the following properties from type 'DelegadoModalAltaEmpleado': obtenerPendientesValidacionFinalizacion, aplicarAccionCoherencia, confirmarCambioHonorariosDesdeModal[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:798:6:
+[37m      798 │       [32mthis[37m,
+          ╵       [32m~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2345: Argument of type 'this' is not assignable to parameter of type 'DelegadoModalAltaEmpleado'.
+  Type 'FormEmpleadoComponent' is missing the following properties from type 'DelegadoModalAltaEmpleado': obtenerPendientesValidacionFinalizacion, aplicarAccionCoherencia, confirmarCambioHonorariosDesdeModal[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:938:60:
+[37m      938 │ ...ador.abrirModalRevisionPasoSiguiente([32mthis[37m, currentStep, pending);
+          ╵                                         [32m~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'aplicarAccionCoherencia' does not exist on type 'FormEmpleadoComponent'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:1100:9:
+[37m      1100 │     this.[32maplicarAccionCoherencia[37m(issue.action, issue.actionValue);
+           ╵          [32m~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2345: Argument of type 'this' is not assignable to parameter of type 'DelegadoModalAltaEmpleado'.
+  Type 'FormEmpleadoComponent' is missing the following properties from type 'DelegadoModalAltaEmpleado': obtenerPendientesValidacionFinalizacion, aplicarAccionCoherencia, confirmarCambioHonorariosDesdeModal[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:1865:10:
+[37m      1865 │           [32mthis[37m,
+           ╵           [32m~~~~[0m
+
+[39m[22m
+[1m[31m[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2420: Class 'FormEmpleadoComponent' incorrectly implements interface 'DelegadoModalAltaEmpleado'.
+  Type 'FormEmpleadoComponent' is missing the following properties from type 'DelegadoModalAltaEmpleado': obtenerPendientesValidacionFinalizacion, aplicarAccionCoherencia, confirmarCambioHonorariosDesdeModal[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:180:13:
+[37m      180 │ export class [32mFormEmpleadoComponent[37m implements OnInit, DelegadoMod...
+          ╵              [32m~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2345: Argument of type 'this' is not assignable to parameter of type 'DelegadoModalAltaEmpleado'.
+  Type 'FormEmpleadoComponent' is missing the following properties from type 'DelegadoModalAltaEmpleado': obtenerPendientesValidacionFinalizacion, aplicarAccionCoherencia, confirmarCambioHonorariosDesdeModal[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:620:56:
+[37m      620 │ ...Orquestador.abrirModalFinalizarInvalido([32mthis[37m, firstBadStep ?? 0);
+          ╵                                            [32m~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2345: Argument of type 'this' is not assignable to parameter of type 'DelegadoModalAltaEmpleado'.
+  Type 'FormEmpleadoComponent' is missing the following properties from type 'DelegadoModalAltaEmpleado': obtenerPendientesValidacionFinalizacion, aplicarAccionCoherencia, confirmarCambioHonorariosDesdeModal[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:632:55:
+[37m      632 │     this.modalOrquestador.abrirModalConfirmarFinalizar([32mthis[37m);
+          ╵                                                        [32m~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2345: Argument of type 'this' is not assignable to parameter of type 'DelegadoModalAltaEmpleado'.
+  Type 'FormEmpleadoComponent' is missing the following properties from type 'DelegadoModalAltaEmpleado': obtenerPendientesValidacionFinalizacion, aplicarAccionCoherencia, confirmarCambioHonorariosDesdeModal[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:791:6:
+[37m      791 │       [32mthis[37m,
+          ╵       [32m~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2345: Argument of type 'this' is not assignable to parameter of type 'DelegadoModalAltaEmpleado'.
+  Type 'FormEmpleadoComponent' is missing the following properties from type 'DelegadoModalAltaEmpleado': obtenerPendientesValidacionFinalizacion, aplicarAccionCoherencia, confirmarCambioHonorariosDesdeModal[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:798:6:
+[37m      798 │       [32mthis[37m,
+          ╵       [32m~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2345: Argument of type 'this' is not assignable to parameter of type 'DelegadoModalAltaEmpleado'.
+  Type 'FormEmpleadoComponent' is missing the following properties from type 'DelegadoModalAltaEmpleado': obtenerPendientesValidacionFinalizacion, aplicarAccionCoherencia, confirmarCambioHonorariosDesdeModal[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:938:60:
+[37m      938 │ ...ador.abrirModalRevisionPasoSiguiente([32mthis[37m, currentStep, pending);
+          ╵                                         [32m~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'aplicarAccionCoherencia' does not exist on type 'FormEmpleadoComponent'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:1100:9:
+[37m      1100 │     this.[32maplicarAccionCoherencia[37m(issue.action, issue.actionValue);
+           ╵          [32m~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2345: Argument of type 'this' is not assignable to parameter of type 'DelegadoModalAltaEmpleado'.
+  Type 'FormEmpleadoComponent' is missing the following properties from type 'DelegadoModalAltaEmpleado': obtenerPendientesValidacionFinalizacion, aplicarAccionCoherencia, confirmarCambioHonorariosDesdeModal[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:1865:10:
+[37m      1865 │           [32mthis[37m,
+           ╵           [32m~~~~[0m
+
+[39m[22m
+[1m[31m[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2420: Class 'FormEmpleadoComponent' incorrectly implements interface 'DelegadoModalAltaEmpleado'.
+  Type 'FormEmpleadoComponent' is missing the following properties from type 'DelegadoModalAltaEmpleado': aplicarAccionCoherencia, confirmarCambioHonorariosDesdeModal[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:180:13:
+[37m      180 │ export class [32mFormEmpleadoComponent[37m implements OnInit, DelegadoMod...
+          ╵              [32m~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2345: Argument of type 'this' is not assignable to parameter of type 'DelegadoModalAltaEmpleado'.
+  Type 'FormEmpleadoComponent' is missing the following properties from type 'DelegadoModalAltaEmpleado': aplicarAccionCoherencia, confirmarCambioHonorariosDesdeModal[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:620:56:
+[37m      620 │ ...Orquestador.abrirModalFinalizarInvalido([32mthis[37m, firstBadStep ?? 0);
+          ╵                                            [32m~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2345: Argument of type 'this' is not assignable to parameter of type 'DelegadoModalAltaEmpleado'.
+  Type 'FormEmpleadoComponent' is missing the following properties from type 'DelegadoModalAltaEmpleado': aplicarAccionCoherencia, confirmarCambioHonorariosDesdeModal[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:632:55:
+[37m      632 │     this.modalOrquestador.abrirModalConfirmarFinalizar([32mthis[37m);
+          ╵                                                        [32m~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2345: Argument of type 'this' is not assignable to parameter of type 'DelegadoModalAltaEmpleado'.
+  Type 'FormEmpleadoComponent' is missing the following properties from type 'DelegadoModalAltaEmpleado': aplicarAccionCoherencia, confirmarCambioHonorariosDesdeModal[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:791:6:
+[37m      791 │       [32mthis[37m,
+          ╵       [32m~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2345: Argument of type 'this' is not assignable to parameter of type 'DelegadoModalAltaEmpleado'.
+  Type 'FormEmpleadoComponent' is missing the following properties from type 'DelegadoModalAltaEmpleado': aplicarAccionCoherencia, confirmarCambioHonorariosDesdeModal[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:798:6:
+[37m      798 │       [32mthis[37m,
+          ╵       [32m~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2345: Argument of type 'this' is not assignable to parameter of type 'DelegadoModalAltaEmpleado'.
+  Type 'FormEmpleadoComponent' is missing the following properties from type 'DelegadoModalAltaEmpleado': aplicarAccionCoherencia, confirmarCambioHonorariosDesdeModal[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:938:60:
+[37m      938 │ ...ador.abrirModalRevisionPasoSiguiente([32mthis[37m, currentStep, pending);
+          ╵                                         [32m~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'aplicarAccionCoherencia' does not exist on type 'FormEmpleadoComponent'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:1100:9:
+[37m      1100 │     this.[32maplicarAccionCoherencia[37m(issue.action, issue.actionValue);
+           ╵          [32m~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2345: Argument of type 'this' is not assignable to parameter of type 'DelegadoModalAltaEmpleado'.
+  Type 'FormEmpleadoComponent' is missing the following properties from type 'DelegadoModalAltaEmpleado': aplicarAccionCoherencia, confirmarCambioHonorariosDesdeModal[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:1865:10:
+[37m      1865 │           [32mthis[37m,
+           ╵           [32m~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2551: Property 'pendingValidationItemsForFinalization' does not exist on type 'FormEmpleadoComponent'. Did you mean 'pendingValidationItemsForWizardStep'?[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:2636:25:
+[37m      2636 │     const pending = this.[32mpendingValidationItemsForFinalization[37m();
+           ╵                          [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  'pendingValidationItemsForWizardStep' is declared here.
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:2335:10:
+[37m      2335 │   private [32mpendingValidationItemsForWizardStep[37m(
+           ╵           [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS7006: Parameter 'item' implicitly has an 'any' type.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:2638:7:
+[37m      2638 │       ([32mitem[37m) => item.blocking && item.severity === "error",
+           ╵        [32m~~~~[0m
+
+[39m[22m
+[1m[31m[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2420: Class 'FormEmpleadoComponent' incorrectly implements interface 'DelegadoModalAltaEmpleado'.
+  Type 'FormEmpleadoComponent' is missing the following properties from type 'DelegadoModalAltaEmpleado': aplicarAccionCoherencia, confirmarCambioHonorariosDesdeModal[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:180:13:
+[37m      180 │ export class [32mFormEmpleadoComponent[37m implements OnInit, DelegadoMod...
+          ╵              [32m~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2345: Argument of type 'this' is not assignable to parameter of type 'DelegadoModalAltaEmpleado'.
+  Type 'FormEmpleadoComponent' is missing the following properties from type 'DelegadoModalAltaEmpleado': aplicarAccionCoherencia, confirmarCambioHonorariosDesdeModal[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:620:56:
+[37m      620 │ ...Orquestador.abrirModalFinalizarInvalido([32mthis[37m, firstBadStep ?? 0);
+          ╵                                            [32m~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2345: Argument of type 'this' is not assignable to parameter of type 'DelegadoModalAltaEmpleado'.
+  Type 'FormEmpleadoComponent' is missing the following properties from type 'DelegadoModalAltaEmpleado': aplicarAccionCoherencia, confirmarCambioHonorariosDesdeModal[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:632:55:
+[37m      632 │     this.modalOrquestador.abrirModalConfirmarFinalizar([32mthis[37m);
+          ╵                                                        [32m~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2345: Argument of type 'this' is not assignable to parameter of type 'DelegadoModalAltaEmpleado'.
+  Type 'FormEmpleadoComponent' is missing the following properties from type 'DelegadoModalAltaEmpleado': aplicarAccionCoherencia, confirmarCambioHonorariosDesdeModal[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:791:6:
+[37m      791 │       [32mthis[37m,
+          ╵       [32m~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2345: Argument of type 'this' is not assignable to parameter of type 'DelegadoModalAltaEmpleado'.
+  Type 'FormEmpleadoComponent' is missing the following properties from type 'DelegadoModalAltaEmpleado': aplicarAccionCoherencia, confirmarCambioHonorariosDesdeModal[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:798:6:
+[37m      798 │       [32mthis[37m,
+          ╵       [32m~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2345: Argument of type 'this' is not assignable to parameter of type 'DelegadoModalAltaEmpleado'.
+  Type 'FormEmpleadoComponent' is missing the following properties from type 'DelegadoModalAltaEmpleado': aplicarAccionCoherencia, confirmarCambioHonorariosDesdeModal[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:938:60:
+[37m      938 │ ...ador.abrirModalRevisionPasoSiguiente([32mthis[37m, currentStep, pending);
+          ╵                                         [32m~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'aplicarAccionCoherencia' does not exist on type 'FormEmpleadoComponent'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:1100:9:
+[37m      1100 │     this.[32maplicarAccionCoherencia[37m(issue.action, issue.actionValue);
+           ╵          [32m~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2345: Argument of type 'this' is not assignable to parameter of type 'DelegadoModalAltaEmpleado'.
+  Type 'FormEmpleadoComponent' is missing the following properties from type 'DelegadoModalAltaEmpleado': aplicarAccionCoherencia, confirmarCambioHonorariosDesdeModal[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:1865:10:
+[37m      1865 │           [32mthis[37m,
+           ╵           [32m~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2551: Property 'pendingValidationItemsForFinalization' does not exist on type 'FormEmpleadoComponent'. Did you mean 'pendingValidationItemsForWizardStep'?[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:2636:25:
+[37m      2636 │     const pending = this.[32mpendingValidationItemsForFinalization[37m();
+           ╵                          [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  'pendingValidationItemsForWizardStep' is declared here.
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:2335:10:
+[37m      2335 │   private [32mpendingValidationItemsForWizardStep[37m(
+           ╵           [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS7006: Parameter 'item' implicitly has an 'any' type.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:2638:7:
+[37m      2638 │       ([32mitem[37m) => item.blocking && item.severity === "error",
+           ╵        [32m~~~~[0m
+
+[39m[22m
+[1m[31m[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2420: Class 'FormEmpleadoComponent' incorrectly implements interface 'DelegadoModalAltaEmpleado'.
+  Type 'FormEmpleadoComponent' is missing the following properties from type 'DelegadoModalAltaEmpleado': aplicarAccionCoherencia, confirmarCambioHonorariosDesdeModal[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:180:13:
+[37m      180 │ export class [32mFormEmpleadoComponent[37m implements OnInit, DelegadoMod...
+          ╵              [32m~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2345: Argument of type 'this' is not assignable to parameter of type 'DelegadoModalAltaEmpleado'.
+  Type 'FormEmpleadoComponent' is missing the following properties from type 'DelegadoModalAltaEmpleado': aplicarAccionCoherencia, confirmarCambioHonorariosDesdeModal[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:620:56:
+[37m      620 │ ...Orquestador.abrirModalFinalizarInvalido([32mthis[37m, firstBadStep ?? 0);
+          ╵                                            [32m~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2345: Argument of type 'this' is not assignable to parameter of type 'DelegadoModalAltaEmpleado'.
+  Type 'FormEmpleadoComponent' is missing the following properties from type 'DelegadoModalAltaEmpleado': aplicarAccionCoherencia, confirmarCambioHonorariosDesdeModal[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:632:55:
+[37m      632 │     this.modalOrquestador.abrirModalConfirmarFinalizar([32mthis[37m);
+          ╵                                                        [32m~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2345: Argument of type 'this' is not assignable to parameter of type 'DelegadoModalAltaEmpleado'.
+  Type 'FormEmpleadoComponent' is missing the following properties from type 'DelegadoModalAltaEmpleado': aplicarAccionCoherencia, confirmarCambioHonorariosDesdeModal[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:791:6:
+[37m      791 │       [32mthis[37m,
+          ╵       [32m~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2345: Argument of type 'this' is not assignable to parameter of type 'DelegadoModalAltaEmpleado'.
+  Type 'FormEmpleadoComponent' is missing the following properties from type 'DelegadoModalAltaEmpleado': aplicarAccionCoherencia, confirmarCambioHonorariosDesdeModal[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:798:6:
+[37m      798 │       [32mthis[37m,
+          ╵       [32m~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2345: Argument of type 'this' is not assignable to parameter of type 'DelegadoModalAltaEmpleado'.
+  Type 'FormEmpleadoComponent' is missing the following properties from type 'DelegadoModalAltaEmpleado': aplicarAccionCoherencia, confirmarCambioHonorariosDesdeModal[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:938:60:
+[37m      938 │ ...ador.abrirModalRevisionPasoSiguiente([32mthis[37m, currentStep, pending);
+          ╵                                         [32m~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'aplicarAccionCoherencia' does not exist on type 'FormEmpleadoComponent'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:1100:9:
+[37m      1100 │     this.[32maplicarAccionCoherencia[37m(issue.action, issue.actionValue);
+           ╵          [32m~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2345: Argument of type 'this' is not assignable to parameter of type 'DelegadoModalAltaEmpleado'.
+  Type 'FormEmpleadoComponent' is missing the following properties from type 'DelegadoModalAltaEmpleado': aplicarAccionCoherencia, confirmarCambioHonorariosDesdeModal[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:1865:10:
+[37m      1865 │           [32mthis[37m,
+           ╵           [32m~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2551: Property 'pendingValidationItemsForFinalization' does not exist on type 'FormEmpleadoComponent'. Did you mean 'pendingValidationItemsForWizardStep'?[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:2535:25:
+[37m      2535 │     const pending = this.[32mpendingValidationItemsForFinalization[37m();
+           ╵                          [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  'pendingValidationItemsForWizardStep' is declared here.
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:2234:10:
+[37m      2234 │   private [32mpendingValidationItemsForWizardStep[37m(
+           ╵           [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS7006: Parameter 'item' implicitly has an 'any' type.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:2537:7:
+[37m      2537 │       ([32mitem[37m) => item.blocking && item.severity === "error",
+           ╵        [32m~~~~[0m
+
+[39m[22m
+[1m[31m[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2420: Class 'FormEmpleadoComponent' incorrectly implements interface 'DelegadoModalAltaEmpleado'.
+  Property 'cerrarModalYEnfocarPrimerPendiente' is private in type 'FormEmpleadoComponent' but not in type 'DelegadoModalAltaEmpleado'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:180:13:
+[37m      180 │ export class [32mFormEmpleadoComponent[37m implements OnInit, DelegadoMod...
+          ╵              [32m~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2345: Argument of type 'this' is not assignable to parameter of type 'DelegadoModalAltaEmpleado'.
+  Type 'FormEmpleadoComponent' is not assignable to type 'DelegadoModalAltaEmpleado'.
+    Property 'cerrarModalYEnfocarPrimerPendiente' is private in type 'FormEmpleadoComponent' but not in type 'DelegadoModalAltaEmpleado'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:620:56:
+[37m      620 │ ...Orquestador.abrirModalFinalizarInvalido([32mthis[37m, firstBadStep ?? 0);
+          ╵                                            [32m~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2345: Argument of type 'this' is not assignable to parameter of type 'DelegadoModalAltaEmpleado'.
+  Type 'FormEmpleadoComponent' is not assignable to type 'DelegadoModalAltaEmpleado'.
+    Property 'cerrarModalYEnfocarPrimerPendiente' is private in type 'FormEmpleadoComponent' but not in type 'DelegadoModalAltaEmpleado'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:632:55:
+[37m      632 │     this.modalOrquestador.abrirModalConfirmarFinalizar([32mthis[37m);
+          ╵                                                        [32m~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2345: Argument of type 'this' is not assignable to parameter of type 'DelegadoModalAltaEmpleado'.
+  Type 'FormEmpleadoComponent' is not assignable to type 'DelegadoModalAltaEmpleado'.
+    Property 'cerrarModalYEnfocarPrimerPendiente' is private in type 'FormEmpleadoComponent' but not in type 'DelegadoModalAltaEmpleado'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:791:6:
+[37m      791 │       [32mthis[37m,
+          ╵       [32m~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2345: Argument of type 'this' is not assignable to parameter of type 'DelegadoModalAltaEmpleado'.
+  Type 'FormEmpleadoComponent' is not assignable to type 'DelegadoModalAltaEmpleado'.
+    Property 'cerrarModalYEnfocarPrimerPendiente' is private in type 'FormEmpleadoComponent' but not in type 'DelegadoModalAltaEmpleado'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:798:6:
+[37m      798 │       [32mthis[37m,
+          ╵       [32m~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2345: Argument of type 'this' is not assignable to parameter of type 'DelegadoModalAltaEmpleado'.
+  Type 'FormEmpleadoComponent' is not assignable to type 'DelegadoModalAltaEmpleado'.
+    Property 'cerrarModalYEnfocarPrimerPendiente' is private in type 'FormEmpleadoComponent' but not in type 'DelegadoModalAltaEmpleado'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:938:60:
+[37m      938 │ ...ador.abrirModalRevisionPasoSiguiente([32mthis[37m, currentStep, pending);
+          ╵                                         [32m~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2345: Argument of type 'this' is not assignable to parameter of type 'DelegadoModalAltaEmpleado'.
+  Type 'FormEmpleadoComponent' is not assignable to type 'DelegadoModalAltaEmpleado'.
+    Property 'cerrarModalYEnfocarPrimerPendiente' is private in type 'FormEmpleadoComponent' but not in type 'DelegadoModalAltaEmpleado'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:1865:10:
+[37m      1865 │           [32mthis[37m,
+           ╵           [32m~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2551: Property 'pendingValidationItemsForFinalization' does not exist on type 'FormEmpleadoComponent'. Did you mean 'pendingValidationItemsForWizardStep'?[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:2498:25:
+[37m      2498 │     const pending = this.[32mpendingValidationItemsForFinalization[37m();
+           ╵                          [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  'pendingValidationItemsForWizardStep' is declared here.
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:2197:10:
+[37m      2197 │   private [32mpendingValidationItemsForWizardStep[37m(
+           ╵           [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS7006: Parameter 'item' implicitly has an 'any' type.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:2500:7:
+[37m      2500 │       ([32mitem[37m) => item.blocking && item.severity === "error",
+           ╵        [32m~~~~[0m
+
+[39m[22m
+[1m[31m[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2420: Class 'FormEmpleadoComponent' incorrectly implements interface 'DelegadoModalAltaEmpleado'.
+  Property 'cerrarModalYEnfocarPrimerPendiente' is private in type 'FormEmpleadoComponent' but not in type 'DelegadoModalAltaEmpleado'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:180:13:
+[37m      180 │ export class [32mFormEmpleadoComponent[37m implements OnInit, DelegadoMod...
+          ╵              [32m~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2345: Argument of type 'this' is not assignable to parameter of type 'DelegadoModalAltaEmpleado'.
+  Type 'FormEmpleadoComponent' is not assignable to type 'DelegadoModalAltaEmpleado'.
+    Property 'cerrarModalYEnfocarPrimerPendiente' is private in type 'FormEmpleadoComponent' but not in type 'DelegadoModalAltaEmpleado'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:620:56:
+[37m      620 │ ...Orquestador.abrirModalFinalizarInvalido([32mthis[37m, firstBadStep ?? 0);
+          ╵                                            [32m~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2345: Argument of type 'this' is not assignable to parameter of type 'DelegadoModalAltaEmpleado'.
+  Type 'FormEmpleadoComponent' is not assignable to type 'DelegadoModalAltaEmpleado'.
+    Property 'cerrarModalYEnfocarPrimerPendiente' is private in type 'FormEmpleadoComponent' but not in type 'DelegadoModalAltaEmpleado'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:632:55:
+[37m      632 │     this.modalOrquestador.abrirModalConfirmarFinalizar([32mthis[37m);
+          ╵                                                        [32m~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2345: Argument of type 'this' is not assignable to parameter of type 'DelegadoModalAltaEmpleado'.
+  Type 'FormEmpleadoComponent' is not assignable to type 'DelegadoModalAltaEmpleado'.
+    Property 'cerrarModalYEnfocarPrimerPendiente' is private in type 'FormEmpleadoComponent' but not in type 'DelegadoModalAltaEmpleado'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:791:6:
+[37m      791 │       [32mthis[37m,
+          ╵       [32m~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2345: Argument of type 'this' is not assignable to parameter of type 'DelegadoModalAltaEmpleado'.
+  Type 'FormEmpleadoComponent' is not assignable to type 'DelegadoModalAltaEmpleado'.
+    Property 'cerrarModalYEnfocarPrimerPendiente' is private in type 'FormEmpleadoComponent' but not in type 'DelegadoModalAltaEmpleado'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:798:6:
+[37m      798 │       [32mthis[37m,
+          ╵       [32m~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2345: Argument of type 'this' is not assignable to parameter of type 'DelegadoModalAltaEmpleado'.
+  Type 'FormEmpleadoComponent' is not assignable to type 'DelegadoModalAltaEmpleado'.
+    Property 'cerrarModalYEnfocarPrimerPendiente' is private in type 'FormEmpleadoComponent' but not in type 'DelegadoModalAltaEmpleado'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:938:60:
+[37m      938 │ ...ador.abrirModalRevisionPasoSiguiente([32mthis[37m, currentStep, pending);
+          ╵                                         [32m~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2345: Argument of type 'this' is not assignable to parameter of type 'DelegadoModalAltaEmpleado'.
+  Type 'FormEmpleadoComponent' is not assignable to type 'DelegadoModalAltaEmpleado'.
+    Property 'cerrarModalYEnfocarPrimerPendiente' is private in type 'FormEmpleadoComponent' but not in type 'DelegadoModalAltaEmpleado'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:1865:10:
+[37m      1865 │           [32mthis[37m,
+           ╵           [32m~~~~[0m
+
+[39m[22m
+[1m[31m[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2420: Class 'FormEmpleadoComponent' incorrectly implements interface 'DelegadoModalAltaEmpleado'.
+  Property 'cerrarModalYEnfocarPrimerPendiente' is private in type 'FormEmpleadoComponent' but not in type 'DelegadoModalAltaEmpleado'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:180:13:
+[37m      180 │ export class [32mFormEmpleadoComponent[37m implements OnInit, DelegadoMod...
+          ╵              [32m~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2345: Argument of type 'this' is not assignable to parameter of type 'DelegadoModalAltaEmpleado'.
+  Type 'FormEmpleadoComponent' is not assignable to type 'DelegadoModalAltaEmpleado'.
+    Property 'cerrarModalYEnfocarPrimerPendiente' is private in type 'FormEmpleadoComponent' but not in type 'DelegadoModalAltaEmpleado'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:591:56:
+[37m      591 │ ...Orquestador.abrirModalFinalizarInvalido([32mthis[37m, firstBadStep ?? 0);
+          ╵                                            [32m~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2345: Argument of type 'this' is not assignable to parameter of type 'DelegadoModalAltaEmpleado'.
+  Type 'FormEmpleadoComponent' is not assignable to type 'DelegadoModalAltaEmpleado'.
+    Property 'cerrarModalYEnfocarPrimerPendiente' is private in type 'FormEmpleadoComponent' but not in type 'DelegadoModalAltaEmpleado'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:603:55:
+[37m      603 │     this.modalOrquestador.abrirModalConfirmarFinalizar([32mthis[37m);
+          ╵                                                        [32m~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2345: Argument of type 'this' is not assignable to parameter of type 'DelegadoModalAltaEmpleado'.
+  Type 'FormEmpleadoComponent' is not assignable to type 'DelegadoModalAltaEmpleado'.
+    Property 'cerrarModalYEnfocarPrimerPendiente' is private in type 'FormEmpleadoComponent' but not in type 'DelegadoModalAltaEmpleado'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:762:6:
+[37m      762 │       [32mthis[37m,
+          ╵       [32m~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2345: Argument of type 'this' is not assignable to parameter of type 'DelegadoModalAltaEmpleado'.
+  Type 'FormEmpleadoComponent' is not assignable to type 'DelegadoModalAltaEmpleado'.
+    Property 'cerrarModalYEnfocarPrimerPendiente' is private in type 'FormEmpleadoComponent' but not in type 'DelegadoModalAltaEmpleado'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:769:6:
+[37m      769 │       [32mthis[37m,
+          ╵       [32m~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2345: Argument of type 'this' is not assignable to parameter of type 'DelegadoModalAltaEmpleado'.
+  Type 'FormEmpleadoComponent' is not assignable to type 'DelegadoModalAltaEmpleado'.
+    Property 'cerrarModalYEnfocarPrimerPendiente' is private in type 'FormEmpleadoComponent' but not in type 'DelegadoModalAltaEmpleado'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:909:60:
+[37m      909 │ ...ador.abrirModalRevisionPasoSiguiente([32mthis[37m, currentStep, pending);
+          ╵                                         [32m~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2345: Argument of type 'this' is not assignable to parameter of type 'DelegadoModalAltaEmpleado'.
+  Type 'FormEmpleadoComponent' is not assignable to type 'DelegadoModalAltaEmpleado'.
+    Property 'cerrarModalYEnfocarPrimerPendiente' is private in type 'FormEmpleadoComponent' but not in type 'DelegadoModalAltaEmpleado'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:1836:10:
+[37m      1836 │           [32mthis[37m,
+           ╵           [32m~~~~[0m
+
+[39m[22m
+[1m[31m[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2420: Class 'FormEmpleadoComponent' incorrectly implements interface 'DelegadoModalAltaEmpleado'.
+  Property 'cerrarModalYEnfocarPrimerPendiente' is private in type 'FormEmpleadoComponent' but not in type 'DelegadoModalAltaEmpleado'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:180:13:
+[37m      180 │ export class [32mFormEmpleadoComponent[37m implements OnInit, DelegadoMod...
+          ╵              [32m~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2345: Argument of type 'this' is not assignable to parameter of type 'DelegadoModalAltaEmpleado'.
+  Type 'FormEmpleadoComponent' is not assignable to type 'DelegadoModalAltaEmpleado'.
+    Property 'cerrarModalYEnfocarPrimerPendiente' is private in type 'FormEmpleadoComponent' but not in type 'DelegadoModalAltaEmpleado'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:591:56:
+[37m      591 │ ...Orquestador.abrirModalFinalizarInvalido([32mthis[37m, firstBadStep ?? 0);
+          ╵                                            [32m~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2345: Argument of type 'this' is not assignable to parameter of type 'DelegadoModalAltaEmpleado'.
+  Type 'FormEmpleadoComponent' is not assignable to type 'DelegadoModalAltaEmpleado'.
+    Property 'cerrarModalYEnfocarPrimerPendiente' is private in type 'FormEmpleadoComponent' but not in type 'DelegadoModalAltaEmpleado'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:603:55:
+[37m      603 │     this.modalOrquestador.abrirModalConfirmarFinalizar([32mthis[37m);
+          ╵                                                        [32m~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2345: Argument of type 'this' is not assignable to parameter of type 'DelegadoModalAltaEmpleado'.
+  Type 'FormEmpleadoComponent' is not assignable to type 'DelegadoModalAltaEmpleado'.
+    Property 'cerrarModalYEnfocarPrimerPendiente' is private in type 'FormEmpleadoComponent' but not in type 'DelegadoModalAltaEmpleado'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:762:6:
+[37m      762 │       [32mthis[37m,
+          ╵       [32m~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2345: Argument of type 'this' is not assignable to parameter of type 'DelegadoModalAltaEmpleado'.
+  Type 'FormEmpleadoComponent' is not assignable to type 'DelegadoModalAltaEmpleado'.
+    Property 'cerrarModalYEnfocarPrimerPendiente' is private in type 'FormEmpleadoComponent' but not in type 'DelegadoModalAltaEmpleado'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:769:6:
+[37m      769 │       [32mthis[37m,
+          ╵       [32m~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2345: Argument of type 'this' is not assignable to parameter of type 'DelegadoModalAltaEmpleado'.
+  Type 'FormEmpleadoComponent' is not assignable to type 'DelegadoModalAltaEmpleado'.
+    Property 'cerrarModalYEnfocarPrimerPendiente' is private in type 'FormEmpleadoComponent' but not in type 'DelegadoModalAltaEmpleado'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:909:60:
+[37m      909 │ ...ador.abrirModalRevisionPasoSiguiente([32mthis[37m, currentStep, pending);
+          ╵                                         [32m~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2345: Argument of type 'this' is not assignable to parameter of type 'DelegadoModalAltaEmpleado'.
+  Type 'FormEmpleadoComponent' is not assignable to type 'DelegadoModalAltaEmpleado'.
+    Property 'cerrarModalYEnfocarPrimerPendiente' is private in type 'FormEmpleadoComponent' but not in type 'DelegadoModalAltaEmpleado'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:1830:10:
+[37m      1830 │           [32mthis[37m,
+           ╵           [32m~~~~[0m
+
+[39m[22m
+[1m[31m[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2420: Class 'FormEmpleadoComponent' incorrectly implements interface 'DelegadoModalAltaEmpleado'.
+  Property 'cerrarModalYEnfocarPrimerPendiente' is private in type 'FormEmpleadoComponent' but not in type 'DelegadoModalAltaEmpleado'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:175:13:
+[37m      175 │ export class [32mFormEmpleadoComponent[37m implements OnInit, DelegadoMod...
+          ╵              [32m~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2345: Argument of type 'this' is not assignable to parameter of type 'DelegadoModalAltaEmpleado'.
+  Type 'FormEmpleadoComponent' is not assignable to type 'DelegadoModalAltaEmpleado'.
+    Property 'cerrarModalYEnfocarPrimerPendiente' is private in type 'FormEmpleadoComponent' but not in type 'DelegadoModalAltaEmpleado'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:586:56:
+[37m      586 │ ...Orquestador.abrirModalFinalizarInvalido([32mthis[37m, firstBadStep ?? 0);
+          ╵                                            [32m~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2345: Argument of type 'this' is not assignable to parameter of type 'DelegadoModalAltaEmpleado'.
+  Type 'FormEmpleadoComponent' is not assignable to type 'DelegadoModalAltaEmpleado'.
+    Property 'cerrarModalYEnfocarPrimerPendiente' is private in type 'FormEmpleadoComponent' but not in type 'DelegadoModalAltaEmpleado'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:598:55:
+[37m      598 │     this.modalOrquestador.abrirModalConfirmarFinalizar([32mthis[37m);
+          ╵                                                        [32m~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2345: Argument of type 'this' is not assignable to parameter of type 'DelegadoModalAltaEmpleado'.
+  Type 'FormEmpleadoComponent' is not assignable to type 'DelegadoModalAltaEmpleado'.
+    Property 'cerrarModalYEnfocarPrimerPendiente' is private in type 'FormEmpleadoComponent' but not in type 'DelegadoModalAltaEmpleado'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:757:6:
+[37m      757 │       [32mthis[37m,
+          ╵       [32m~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2345: Argument of type 'this' is not assignable to parameter of type 'DelegadoModalAltaEmpleado'.
+  Type 'FormEmpleadoComponent' is not assignable to type 'DelegadoModalAltaEmpleado'.
+    Property 'cerrarModalYEnfocarPrimerPendiente' is private in type 'FormEmpleadoComponent' but not in type 'DelegadoModalAltaEmpleado'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:764:6:
+[37m      764 │       [32mthis[37m,
+          ╵       [32m~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2345: Argument of type 'this' is not assignable to parameter of type 'DelegadoModalAltaEmpleado'.
+  Type 'FormEmpleadoComponent' is not assignable to type 'DelegadoModalAltaEmpleado'.
+    Property 'cerrarModalYEnfocarPrimerPendiente' is private in type 'FormEmpleadoComponent' but not in type 'DelegadoModalAltaEmpleado'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:904:60:
+[37m      904 │ ...ador.abrirModalRevisionPasoSiguiente([32mthis[37m, currentStep, pending);
+          ╵                                         [32m~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2345: Argument of type 'this' is not assignable to parameter of type 'DelegadoModalAltaEmpleado'.
+  Type 'FormEmpleadoComponent' is not assignable to type 'DelegadoModalAltaEmpleado'.
+    Property 'cerrarModalYEnfocarPrimerPendiente' is private in type 'FormEmpleadoComponent' but not in type 'DelegadoModalAltaEmpleado'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:1825:10:
+[37m      1825 │           [32mthis[37m,
+           ╵           [32m~~~~[0m
+
+[39m[22m
+[1m[31m[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2420: Class 'FormEmpleadoComponent' incorrectly implements interface 'DelegadoModalAltaEmpleado'.
+  Property 'cerrarModalYEnfocarPrimerPendiente' is private in type 'FormEmpleadoComponent' but not in type 'DelegadoModalAltaEmpleado'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:174:13:
+[37m      174 │ export class [32mFormEmpleadoComponent[37m implements OnInit, DelegadoMod...
+          ╵              [32m~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2345: Argument of type 'this' is not assignable to parameter of type 'DelegadoModalAltaEmpleado'.
+  Type 'FormEmpleadoComponent' is not assignable to type 'DelegadoModalAltaEmpleado'.
+    Property 'cerrarModalYEnfocarPrimerPendiente' is private in type 'FormEmpleadoComponent' but not in type 'DelegadoModalAltaEmpleado'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:585:56:
+[37m      585 │ ...Orquestador.abrirModalFinalizarInvalido([32mthis[37m, firstBadStep ?? 0);
+          ╵                                            [32m~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2345: Argument of type 'this' is not assignable to parameter of type 'DelegadoModalAltaEmpleado'.
+  Type 'FormEmpleadoComponent' is not assignable to type 'DelegadoModalAltaEmpleado'.
+    Property 'cerrarModalYEnfocarPrimerPendiente' is private in type 'FormEmpleadoComponent' but not in type 'DelegadoModalAltaEmpleado'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:597:55:
+[37m      597 │     this.modalOrquestador.abrirModalConfirmarFinalizar([32mthis[37m);
+          ╵                                                        [32m~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2345: Argument of type 'this' is not assignable to parameter of type 'DelegadoModalAltaEmpleado'.
+  Type 'FormEmpleadoComponent' is not assignable to type 'DelegadoModalAltaEmpleado'.
+    Property 'cerrarModalYEnfocarPrimerPendiente' is private in type 'FormEmpleadoComponent' but not in type 'DelegadoModalAltaEmpleado'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:756:6:
+[37m      756 │       [32mthis[37m,
+          ╵       [32m~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2345: Argument of type 'this' is not assignable to parameter of type 'DelegadoModalAltaEmpleado'.
+  Type 'FormEmpleadoComponent' is not assignable to type 'DelegadoModalAltaEmpleado'.
+    Property 'cerrarModalYEnfocarPrimerPendiente' is private in type 'FormEmpleadoComponent' but not in type 'DelegadoModalAltaEmpleado'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:763:6:
+[37m      763 │       [32mthis[37m,
+          ╵       [32m~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2345: Argument of type 'this' is not assignable to parameter of type 'DelegadoModalAltaEmpleado'.
+  Type 'FormEmpleadoComponent' is not assignable to type 'DelegadoModalAltaEmpleado'.
+    Property 'cerrarModalYEnfocarPrimerPendiente' is private in type 'FormEmpleadoComponent' but not in type 'DelegadoModalAltaEmpleado'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:903:60:
+[37m      903 │ ...ador.abrirModalRevisionPasoSiguiente([32mthis[37m, currentStep, pending);
+          ╵                                         [32m~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2345: Argument of type 'this' is not assignable to parameter of type 'DelegadoModalAltaEmpleado'.
+  Type 'FormEmpleadoComponent' is not assignable to type 'DelegadoModalAltaEmpleado'.
+    Property 'cerrarModalYEnfocarPrimerPendiente' is private in type 'FormEmpleadoComponent' but not in type 'DelegadoModalAltaEmpleado'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:1824:10:
+[37m      1824 │           [32mthis[37m,
+           ╵           [32m~~~~[0m
+
+[39m[22m
