@@ -114,6 +114,7 @@
   font-size: 0.9rem;
   font-weight: 400;
   line-height: 1.5;
+  white-space: pre-line;
 }
 
 .noia-msgbox__body {
@@ -173,6 +174,18 @@
   margin-top: 0.25rem;
   color: #64748b;
   font-size: 0.8rem;
+}
+
+.noia-msgbox__section-list {
+  margin: 0.35rem 0 0;
+  padding-left: 1.15rem;
+  color: #475569;
+  font-size: 0.84rem;
+  line-height: 1.45;
+}
+
+.noia-msgbox__section-list li {
+  margin: 0.15rem 0;
 }
 
 .noia-msgbox__slot:empty {

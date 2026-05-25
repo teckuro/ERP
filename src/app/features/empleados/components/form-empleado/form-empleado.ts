@@ -34,6 +34,8 @@ import {
   buildFieldItemsFromBorradorIssues,
   buildFieldItemsFromRules,
   buildModalSectionsBitacora,
+  buildNextStepBlockingModalContent,
+  ETIQUETA_ACCION_REVISAR_PRIMER_PENDIENTE,
   buildPendientePrincipalDesdeFieldItems,
   mensajesNegocioDesdeReglas,
   pesoOrdenValidacion,
@@ -824,8 +826,15 @@ export class FormEmpleadoComponent implements OnInit {
       case "focus-current-step":
         this.modalAccionAvanzada.set(null);
         this.enfocarPrimerItemModalAvanzada(modal?.fieldItems?.[0], () => {
-          this.marcarPasoAsistenteTocado(this.pasoWizardActivo());
-          this.enfocarPrimerControlPendiente(this.pasoWizardActivo());
+          const first = modal?.fieldItems?.[0];
+          const step =
+            first?.wizardStep ??
+            modal?.targetStep ??
+            this.pasoWizardActivo();
+          this.mostrarPasoAsistenteInvalido(step);
+          if (first?.controlPath) {
+            this.enfocarRutaControl(first.controlPath);
+          }
         });
         break;
       case "focus-draft-minimum":
@@ -2573,32 +2582,46 @@ export class FormEmpleadoComponent implements OnInit {
       shortStepLabelFor: (wizardStep) =>
         this.etiquetaCortaPasoAsistente(wizardStep),
     });
-    const principal = hasBlocking
-      ? buildPendientePrincipalDesdeFieldItems(fieldItems, label)
-      : onlyNormative
-        ? `Revisar la revisión normativa del registro «${label}».`
-        : `Revisar las advertencias administrativas del registro «${label}».`;
+    if (hasBlocking) {
+      const blockingContent = buildNextStepBlockingModalContent(label, fieldItems);
+      this.abrirModalAccionAvanzada({
+        kind: "next-step-review",
+        variant: "warning",
+        title: blockingContent.title,
+        message: blockingContent.message,
+        sections: blockingContent.sections,
+        primaryLabel: ETIQUETA_ACCION_REVISAR_PRIMER_PENDIENTE,
+        secondaryLabel: "Continuar con pendiente",
+        blockingItems: [],
+        warningItems: [],
+        infoItems: [],
+        fieldItems,
+        targetStep: fieldItems[0]?.wizardStep ?? step,
+        primaryAction: "focus-current-step",
+        secondaryAction: "continue-next",
+      });
+      return;
+    }
+
+    const principal = onlyNormative
+      ? `Revisar la revisión normativa del registro «${label}».`
+      : `Revisar las advertencias administrativas del registro «${label}».`;
 
     this.abrirModalAccionAvanzada({
       kind: "next-step-review",
-      variant: hasBlocking ? "warning" : "info",
+      variant: "info",
       eyebrow: "Revisión administrativa",
-      title: hasBlocking
-        ? "Datos pendientes en este registro"
-        : onlyNormative
-          ? "Revisión normativa en este registro"
-          : "Advertencias de revisión",
-      message: hasBlocking
-        ? `El registro «${label}» aún tiene datos obligatorios. Puedes corregirlos ahora o continuar y volver antes de finalizar.`
-        : `El registro «${label}» tiene revisiones que no bloquean el avance, pero conviene dejarlas claras.`,
+      title: onlyNormative
+        ? "Revisión normativa en este registro"
+        : "Advertencias de revisión",
+      message: `El registro «${label}» tiene revisiones que no bloquean el avance, pero conviene dejarlas claras.`,
       sections: buildModalSectionsBitacora({
         pendientePrincipal: principal,
         porQueImporta:
           "Cada pendiente queda trazado en la bitácora laboral hasta que lo cierres o decidas continuar con revisión pendiente.",
-        accionRecomendada: hasBlocking
-          ? "Corregir ahora el primer campo pendiente o continuar y volver a este registro desde la bitácora."
-          : "Aclarar las revisiones ahora o continuar. El resumen final mantendrá lo pendiente.",
-        pendienteTone: hasBlocking ? "attention" : "info",
+        accionRecomendada:
+          "Aclarar las revisiones ahora o continuar. El resumen final mantendrá lo pendiente.",
+        pendienteTone: "info",
       }),
       primaryLabel: "Continuar",
       secondaryLabel: "Corregir ahora",
@@ -2634,7 +2657,7 @@ export class FormEmpleadoComponent implements OnInit {
         accionRecomendada:
           "Ir al primer campo pendiente, completar la información mínima y volver a guardar.",
       }),
-      primaryLabel: "Ir al primer pendiente",
+      primaryLabel: ETIQUETA_ACCION_REVISAR_PRIMER_PENDIENTE,
       secondaryLabel: "Cerrar",
       blockingItems: [],
       warningItems: [],
@@ -2697,7 +2720,7 @@ export class FormEmpleadoComponent implements OnInit {
         accionRecomendada:
           "Ir al primer registro con bloqueo, completar lo pendiente o guardar borrador y retomar después.",
       }),
-      primaryLabel: "Ir al primer pendiente",
+      primaryLabel: ETIQUETA_ACCION_REVISAR_PRIMER_PENDIENTE,
       secondaryLabel: "Cerrar",
       blockingItems: [],
       warningItems: [],
@@ -3354,17 +3377,25 @@ export class FormEmpleadoComponent implements OnInit {
     return this.buscarControlPorRuta(rule.sourcePath);
   }
 
-  private enfocarRutaControl(controlPath: string): void {
+  private enfocarRutaControl(controlPath: string, attempt = 0): void {
+    const maxAttempts = 10;
+    const delayMs = attempt === 0 ? 0 : 48;
+
     window.setTimeout(() => {
       const control = this.buscarControlPorRuta(controlPath);
-      if (!control) {
-        this.desplazarAInicioPasoActual({ focusFirstField: true });
+      if (control) {
+        control.scrollIntoView({ behavior: "smooth", block: "center" });
+        control.focus({ preventScroll: true });
         return;
       }
 
-      control.scrollIntoView({ behavior: "smooth", block: "center" });
-      control.focus({ preventScroll: true });
-    });
+      if (attempt < maxAttempts) {
+        this.enfocarRutaControl(controlPath, attempt + 1);
+        return;
+      }
+
+      this.desplazarAInicioPasoActual({ focusFirstField: true });
+    }, delayMs);
   }
 
   domicilioReferenciaCasaParticular(): string | null {

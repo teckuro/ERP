@@ -248,24 +248,48 @@ describe('FormEmpleadoComponent - completitud de borrador avanzado', () => {
     expect(host.querySelector('[data-testid="finalizar-alta"]')).toBeNull();
   });
 
-  it('Siguiente muestra MsgBox de revision cuando el paso tiene pendientes y permite continuar', async () => {
+  it('Siguiente con bloqueos: primario enfoca el primer fieldItem del modal', async () => {
+    const { component, fixture } = await setupFixture();
+    const scrollIntoView = vi.fn();
+    const focus = vi.fn();
+    HTMLElement.prototype.scrollIntoView = scrollIntoView;
+    HTMLElement.prototype.focus = focus;
+
+    component.irAPestanaSiguiente();
+    const firstPath = component.modalAccionAvanzada()?.fieldItems?.[0]?.controlPath;
+    expect(firstPath).toBe('datosPersonales.rut');
+
+    component.manejarPrimariaModalAccionAvanzada();
+    fixture.detectChanges();
+    await fixture.whenStable();
+    await new Promise((resolve) => window.setTimeout(resolve, 60));
+    fixture.detectChanges();
+
+    expect(component.modalAccionAvanzada()).toBeNull();
+    expect(component.pasoWizardActivo()).toBe(0);
+    expect(
+      fixture.nativeElement.querySelector(
+        `[data-field-path="${firstPath}"]`,
+      ),
+    ).toBeTruthy();
+    expect(scrollIntoView).toHaveBeenCalled();
+    expect(focus).toHaveBeenCalled();
+  });
+
+  it('Siguiente con bloqueos: secundario continua con pendiente', async () => {
     const component = await setup();
 
     component.irAPestanaSiguiente();
 
-    expect(component.pasoWizardActivo()).toBe(0);
-    const modal = component.modalAccionAvanzada();
-    expect(modal?.kind).toBe('next-step-review');
-    expect(modal?.primaryLabel).toBe('Continuar');
-    expect(modal?.sections?.length).toBe(3);
+    expect(component.modalAccionAvanzada()?.secondaryLabel).toBe('Continuar con pendiente');
 
-    component.manejarPrimariaModalAccionAvanzada();
+    component.manejarSecundariaModalAccionAvanzada();
 
     expect(component.modalAccionAvanzada()).toBeNull();
     expect(component.pasoWizardActivo()).toBe(1);
   });
 
-  it('Siguiente muestra pendientes obligatorios por campo dentro del modal', async () => {
+  it('Siguiente mantiene fieldItems para foco sin listado embebido', async () => {
     const { component, fixture } = await setupFixture();
 
     component.irAPestanaSiguiente();
@@ -281,7 +305,7 @@ describe('FormEmpleadoComponent - completitud de borrador avanzado', () => {
       actionLabel: 'Ir al campo',
       controlPath: 'datosPersonales.rut',
     });
-    expect(modal?.fieldItems?.[0]?.detail).toBe('Ingresa un RUT valido antes de activar la ficha.');
+    expect(modal?.message).toContain('Datos personales');
   });
 
   it('accion de pendiente del modal navega al paso y cierra el modal', async () => {

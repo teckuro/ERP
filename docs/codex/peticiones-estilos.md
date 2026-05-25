@@ -1,3 +1,13 @@
+## 2026-05-25 - MsgBox Siguiente: ajuste copy y CTA primario
+
+- **Cambio:** Mensaje «tiene N campos…», cierre «Podrás continuar…» (seccion info); primario «Ir al primer campo»; secundario «Continuar con pendiente».
+- **Archivos:** `empleado-alta-modal.presenter.ts`, `form-empleado.ts`, specs.
+
+## 2026-05-25 - MsgBox Siguiente: copy bloqueos + lista viñetas
+
+- **Cambio:** `next-step-review` con errores bloqueantes usa `buildNextStepBlockingModalContent` (titulo, mensaje, «Campos pendientes», CTAs). MessageBox renderiza `section.items` como `<ul>`. `draft-invalid` / `finish-invalid` sin cambio.
+- **Archivos:** `empleado-alta-modal.presenter.ts`, `form-empleado.ts`, `message-box.component.html/css`, specs, `creacion-avanzada.md`.
+
 ## 2026-05-25 - MsgBox alta: sin listado embebido de campos
 
 - **Cambio:** Eliminado el bloque HTML `advanced-action-fields` (listado por paso + «Ir al campo») del slot del MsgBox en Siguiente / Guardar / Finalizar. Modal `md` con título, mensaje, secciones bitácora y CTAs del pie; `fieldItems` permanece en modelo para «Ir al primer pendiente» y foco. Ámbar solo en consola bitácora.

@@ -69,7 +69,7 @@ Comportamiento:
 | Accion | Comportamiento |
 |---|---|
 | Guardar borrador | Validacion minima. Si falta identificacion o contacto, MsgBox (`draft-invalid`) con lista accionable por campo (`fieldItems`) y mensaje del primer pendiente. Espera de catalogos usa `draft-catalog-wait`. Si guarda, MsgBox de exito. |
-| Siguiente | Flexible. Si hay bloqueos, advertencias o revision normativa del paso, MsgBox (`next-step-review`) con `fieldItems` accionables, `Corregir ahora` (foco al primer item) o `Continuar`. |
+| Siguiente | Flexible. Si hay bloqueos obligatorios, MsgBox (`next-step-review`): titulo «Faltan datos obligatorios», mensaje con registro y conteo, seccion «Campos pendientes» (lista corta), nota «Podrás continuar…»; primario genérico «Revisar primer pendiente» (foco via `fieldItems[0]`), secundario «Continuar con pendiente». Sin listado HTML embebido. Advertencias/normativa: flujo previo con secciones bitacora. |
 | Finalizar alta | Estricto. MsgBox (`finish-invalid`) con `fieldItems` agrupados por registro del asistente. `Ir al primer pendiente` navega al mismo paso y control que el primer item de la lista. La consola bitacora y el modal comparten el motor de diagnostico (`empleado-alta-modal.presenter.ts`). |
 
 Regla UX: no duplicar la informacion del mapa con tarjetas permanentes dentro del paso.

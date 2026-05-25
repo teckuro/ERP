@@ -4,6 +4,7 @@ import type { ReglaValidacionEvaluada } from '../models/empleado-alta-avanzada.v
 import {
   buildFieldItemsFromBorradorIssues,
   buildFieldItemsFromRules,
+  buildNextStepBlockingModalContent,
   buildPendientePrincipalDesdeFieldItems,
   groupFieldItemsByStep,
   mensajesNegocioDesdeReglas,
@@ -74,5 +75,32 @@ describe('empleado-alta-modal.presenter', () => {
       regla({ id: 'b', wizardStep: 1 }),
     ]);
     expect(buildPendientePrincipalDesdeFieldItems(items, 'Identidad')).toContain('2 datos');
+  });
+
+  it('buildNextStepBlockingModalContent arma copy y lista corta', () => {
+    const items = buildFieldItemsFromRules([
+      regla({
+        id: 'personal.identity',
+        wizardStep: 0,
+        sourcePath: 'datosPersonales.rut',
+        label: 'Ingresa un RUT valido',
+      }),
+      regla({
+        id: 'personal.birthdate',
+        wizardStep: 0,
+        sourcePath: 'datosPersonales.fechaNacimiento',
+        label: 'Ingresa la fecha de nacimiento',
+      }),
+    ]);
+    const content = buildNextStepBlockingModalContent('Datos personales', items);
+
+    expect(content.title).toBe('Faltan datos obligatorios');
+    expect(content.message).toContain('«Datos personales» tiene 2 campos obligatorios pendientes');
+    expect(content.message).toContain('para finalizar correctamente');
+    expect(content.message).not.toContain('aún tiene');
+    expect(content.sections[0]?.title).toBe('Campos pendientes');
+    expect(content.sections[0]?.items).toEqual(['RUT', 'Fecha de nacimiento']);
+    expect(content.sections[1]?.text).toContain('Podrás continuar');
+    expect(content.sections[1]?.tone).toBe('info');
   });
 });

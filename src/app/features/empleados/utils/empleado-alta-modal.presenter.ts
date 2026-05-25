@@ -58,6 +58,82 @@ export const MENSAJES_FINALIZAR_ALTA: Partial<Record<string, string>> = {
     'Ingresa una cuenta bancaria real y reemplaza cualquier dato temporal.',
 };
 
+/** CTA primaria genérica en modales con pendientes bloqueantes (Siguiente, borrador, finalizar). */
+export const ETIQUETA_ACCION_REVISAR_PRIMER_PENDIENTE = 'Revisar primer pendiente';
+
+/** Etiquetas cortas para lista en MsgBox Siguiente (bloqueos). */
+export const ETIQUETAS_CAMPO_PENDIENTE_ALTA: Partial<Record<string, string>> = {
+  'personal.identity': 'RUT',
+  'personal.birthdate': 'Fecha de nacimiento',
+  'personal.names': 'Nombres',
+  'personal.lastname': 'Apellido paterno',
+  'personal.sex': 'Sexo',
+  'personal.country': 'Nacionalidad',
+  'personal.marital-status': 'Estado civil',
+  'personal.email-empty': 'Correo',
+  'personal.phone-empty': 'Teléfono',
+  'contact.commune': 'Comuna',
+  'contract.position': 'Cargo',
+  'honorarios.service': 'Servicio o función',
+  'honorarios.amount': 'Monto bruto',
+  'honorarios.currency': 'Moneda',
+  'contract.branch': 'Sucursal',
+  'contract.worker-type': 'Tipo de trabajador',
+  'contract.schedule-type': 'Tipo de jornada',
+  'contract.contract-type': 'Tipo de contrato',
+  'contract.start-date': 'Fecha de ingreso',
+  'contract.document-date': 'Fecha del contrato',
+  'contract.end-date': 'Fecha de término',
+  'contract.salary': 'Sueldo base',
+  'contract.currency': 'Moneda de remuneración',
+  'prevision.regime': 'Régimen previsional',
+  'prevision.afp': 'AFP',
+  'prevision.health': 'Institución de salud',
+  'bank.bank': 'Banco',
+  'bank.account-type': 'Tipo de cuenta',
+  'bank.account-number': 'Número de cuenta',
+};
+
+export function etiquetaCampoPendienteLista(
+  item: ItemCampoModalAccionAvanzada,
+): string {
+  return ETIQUETAS_CAMPO_PENDIENTE_ALTA[item.id] ?? item.fieldLabel;
+}
+
+export function etiquetasCampoPendienteDesdeFieldItems(
+  items: readonly ItemCampoModalAccionAvanzada[],
+): readonly string[] {
+  return items.map((item) => etiquetaCampoPendienteLista(item));
+}
+
+export function buildNextStepBlockingModalContent(
+  stepLabel: string,
+  fieldItems: readonly ItemCampoModalAccionAvanzada[],
+): {
+  title: string;
+  message: string;
+  sections: readonly MessageBoxSection[];
+} {
+  const n = fieldItems.length;
+  const conteo = `${n} campo${n === 1 ? '' : 's'} obligatorio${n === 1 ? '' : 's'} pendiente${n === 1 ? '' : 's'}`;
+
+  return {
+    title: 'Faltan datos obligatorios',
+    message: `El registro «${stepLabel}» tiene ${conteo}.\n\nCompleta los campos marcados en rojo para finalizar correctamente el alta del trabajador.`,
+    sections: [
+      {
+        title: 'Campos pendientes',
+        items: [...etiquetasCampoPendienteDesdeFieldItems(fieldItems)],
+        tone: 'attention',
+      },
+      {
+        text: 'Podrás continuar, pero este registro quedará pendiente hasta que completes los datos obligatorios.',
+        tone: 'info',
+      },
+    ],
+  };
+}
+
 export interface GrupoCamposModalAlta {
   wizardStep: number;
   stepLabel: string;

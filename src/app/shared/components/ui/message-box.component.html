@@ -53,12 +53,18 @@
             [ngClass]="sectionToneClass(section.tone)"
             [attr.aria-label]="section.title"
           >
-            <h3 class="noia-msgbox__section-title">{{ section.title }}</h3>
+            @if (section.title) {
+              <h3 class="noia-msgbox__section-title">{{ section.title }}</h3>
+            }
             @if (section.text) {
               <p class="noia-msgbox__section-text">{{ section.text }}</p>
             }
             @if (section.items.length) {
-              <p class="noia-msgbox__section-items">{{ section.items.join(' · ') }}</p>
+              <ul class="noia-msgbox__section-list">
+                @for (item of section.items; track item) {
+                  <li>{{ item }}</li>
+                }
+              </ul>
             }
           </article>
         }
