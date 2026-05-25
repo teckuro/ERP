@@ -38,6 +38,13 @@ yarn-error.log
 .cursor/rules/*
 !.cursor/rules/erp-ui-noia.mdc
 !.cursor/rules/erp-ui-visual-guardrails.mdc
+!.cursor/rules/erp-codex-contract.mdc
+!.cursor/rules/erp-orquestador.mdc
+!.cursor/rules/erp-protected-files.mdc
+!.cursor/skills/
+!.cursor/skills/erp-codex-docs/
+!.cursor/skills/erp-codex-docs/SKILL.md
+!.cursor/README.md
 
 # Guías y bitácora Codex (copia local del contrato de agente; no publicar en remoto)
 /docs/codex/*

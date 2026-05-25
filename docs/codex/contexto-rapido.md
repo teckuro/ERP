@@ -187,7 +187,14 @@ Parametros funciona como cierre normativo del periodo: muestra estado operativo,
 - `npm run build`
 - Si falla, distinguir entre error nuevo y deuda preexistente. No subir budgets sin fase explícita.
 
-## 10. Cómo pedir a Codex con menos tokens
+## 10. Cursor en el repo
+
+- Reglas y skill: [`.cursor/README.md`](../../.cursor/README.md).
+- Contrato raíz para el IDE: [`AGENTS.md`](../../AGENTS.md) (apunta a este árbol `docs/codex`).
+- Workspace: `.vscode/` (formato Prettier, tareas npm, debug, MCP Angular CLI).
+- Prompt UI copiable: [`diseno/noia-prompt-cursor.md`](./diseno/noia-prompt-cursor.md).
+
+## 11. Cómo pedir a Codex con menos tokens
 
 Usar un MD de fase con esta estructura mínima:
 
@@ -225,7 +232,7 @@ Respuesta esperada:
 - restricciones respetadas
 ```
 
-## 11. Uso de context pack
+## 12. Uso de context pack
 
 Para tareas acotadas, generar un paquete pequeño con:
 

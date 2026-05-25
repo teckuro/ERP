@@ -1,4 +1,49 @@
-{
+﻿{
   "workbench.secondarySideBar.defaultVisibility": "visibleInWorkspace",
-  "window.restoreWindows": "all"
+  "window.restoreWindows": "all",
+
+  "typescript.preferences.importModuleSpecifier": "relative",
+  "typescript.updateImportsOnFileMove.enabled": "always",
+  "editor.formatOnSave": true,
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "editor.tabSize": 2,
+  "editor.rulers": [100],
+  "files.trimTrailingWhitespace": true,
+  "files.insertFinalNewline": true,
+
+  "[typescript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[html]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[json]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[jsonc]": {
+    "editor.defaultFormatter": "vscode.json-language-features"
+  },
+  "[markdown]": {
+    "editor.wordWrap": "on"
+  },
+
+  "angular.enable-strict-mode-prompt": false,
+  "html.format.wrapAttributes": "aligned-multiple",
+
+  "files.exclude": {
+    "**/.angular": true
+  },
+  "search.exclude": {
+    "**/.angular": true,
+    "**/dist": true,
+    "**/node_modules": true,
+    "**/playwright-report": true,
+    "**/test-results": true,
+    "**/coverage": true
+  },
+  "files.watcherExclude": {
+    "**/.angular/**": true,
+    "**/node_modules/**": true,
+    "**/dist/**": true
+  }
 }

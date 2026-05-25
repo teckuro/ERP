@@ -1,0 +1,12 @@
+---
+description: Contrato ERP UI y docs/codex — aclarar, leer, autorevisar
+alwaysApply: true
+---
+
+# ERP Angular — contrato con `docs/codex`
+
+1. **Seguir la skill del proyecto** leyendo y aplicando `.cursor/skills/erp-codex-docs/SKILL.md` en tareas de UI, flujos ERP, estilos o módulos alineados a empleados/parámetros.
+2. **Si falta alcance** (pantalla/archivo, solo UI vs lógica, bitácora, criterio de listo), **preguntar al usuario** antes de implementar a gran escala.
+3. **Antes de codificar UI**: leer con Read los `.md` que indique esa skill (mínimo `docs/codex/AGENTS.md` + guías del tema). Si el alcance crea o mueve pantallas bajo `src/app/pages/`, contenedores o carpetas `src/app/features/`, leer también `docs/codex/arquitectura/frontend-interfaces.md`.
+4. **Antes de cerrar**: autorevisar contra checklists de AGENTS / `ui-form-guidelines.md`; si hubo cambio visual, actualizar `docs/codex/peticiones-estilos.md` salvo que el usuario pida explícitamente omitirlo (borrador).
+5. En la respuesta final, indicar **en una frase** qué se contrastó con la documentación (sin relleno).

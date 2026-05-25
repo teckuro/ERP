@@ -33,7 +33,13 @@ public/app-config.json
 .DS_Store
 Thumbs.db
 .history/
-.vscode/
+# VS Code/Cursor workspace (config versionada visible al agente)
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+!.vscode/mcp.json
 .idea/
 
 # Mantener disponibles para Cursor/Codex:
