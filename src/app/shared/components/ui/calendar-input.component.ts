@@ -42,7 +42,7 @@ interface CalendarDay {
     },
   ],
   template: `
-    <div class="calendar-root" [class.is-disabled]="disabled">
+    <div class="calendar-root" [class.is-disabled]="disabled" [attr.data-field-path]="fieldPath || null">
       <div
         #calendarField
         class="calendar-field"
@@ -539,6 +539,7 @@ export class CalendarInputComponent implements ControlValueAccessor, OnDestroy {
   floatingLayoutDone = false;
 
   @Input() id = '';
+  @Input() fieldPath = '';
   @Input() placeholder = 'dd/mm/aaaa';
   @Input() insetLabel = '';
   /** Label lateral dentro del control (ej. Desde/Hasta). */

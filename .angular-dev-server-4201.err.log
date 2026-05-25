@@ -782,3 +782,10 @@
           ╵            [32m~~~~~~~~~~~~~~~~~~~~[0m
 
 [39m[22m
+[1m[31m[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'fieldPath' does not exist on type 'CalendarInputComponent'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/shared/components/ui/calendar-input.component.ts:45:86:
+[37m      45 │ ...s-disabled]="disabled" [attr.data-field-path]="[32mfieldPath[37m || null">
+         ╵                                                   [32m~~~~~~~~~[0m
+
+[39m[22m

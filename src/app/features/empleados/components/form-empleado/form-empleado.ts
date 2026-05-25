@@ -3,7 +3,9 @@ import {
   Component,
   DestroyRef,
   ElementRef,
+  Injector,
   OnInit,
+  afterNextRender,
   inject,
 } from "@angular/core";
 import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
@@ -176,6 +178,7 @@ export class FormEmpleadoComponent implements OnInit {
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
   private readonly hostElement = inject<ElementRef<HTMLElement>>(ElementRef);
+  private readonly injector = inject(Injector);
   private readonly presentacion = inject(EmpleadoAltaAvanzadaPresentacionFacade);
   private suppressRelacionLaboralModal = false;
   private previousRelacionLaboral: RelacionLaboral = "CONTRATO";
@@ -422,13 +425,21 @@ export class FormEmpleadoComponent implements OnInit {
   }
 
   seleccionarPasoAsistente(index: number): void {
+    this.navegarPasoAsistente(index, { focusFirstField: true });
+  }
+
+  /** Cambia de paso sin robar foco al primer campo genérico (p. ej. tras MsgBox). */
+  private navegarPasoAsistente(
+    index: number,
+    options: { focusFirstField: boolean },
+  ): void {
     if (!estaPasoAsistenteAltaEnRango(index, cantidadPasosAsistenteAvanzadoEmpleado)) {
       return;
     }
 
     this.sincronizarPestanasCompletadasDesdeValidez();
     this.presentacion.seleccionarPasoAsistente(index);
-    this.desplazarAInicioPasoActual({ focusFirstField: true });
+    this.desplazarAInicioPasoActual(options);
   }
 
   etiquetaCortaPasoAsistente(stepIndex: number): string {
@@ -3135,10 +3146,9 @@ export class FormEmpleadoComponent implements OnInit {
     }
 
     this.presentacion.marcarPasoAsistenteIntentado(item.wizardStep);
-    this.pasoWizardActivo.set(item.wizardStep);
     this.intentarTodasPestanas();
     this.marcarPasoAsistenteTocado(item.wizardStep);
-    this.seleccionarPasoAsistente(item.wizardStep);
+    this.navegarPasoAsistente(item.wizardStep, { focusFirstField: false });
     this.enfocarRutaControl(item.controlPath);
   }
 
@@ -3378,10 +3388,8 @@ export class FormEmpleadoComponent implements OnInit {
   }
 
   private enfocarRutaControl(controlPath: string, attempt = 0): void {
-    const maxAttempts = 10;
-    const delayMs = attempt === 0 ? 0 : 48;
-
-    window.setTimeout(() => {
+    const maxAttempts = 16;
+    const run = (): void => {
       const control = this.buscarControlPorRuta(controlPath);
       if (control) {
         control.scrollIntoView({ behavior: "smooth", block: "center" });
@@ -3390,12 +3398,22 @@ export class FormEmpleadoComponent implements OnInit {
       }
 
       if (attempt < maxAttempts) {
-        this.enfocarRutaControl(controlPath, attempt + 1);
+        window.setTimeout(
+          () => this.enfocarRutaControl(controlPath, attempt + 1),
+          50,
+        );
         return;
       }
 
       this.desplazarAInicioPasoActual({ focusFirstField: true });
-    }, delayMs);
+    };
+
+    if (attempt === 0) {
+      afterNextRender(run, { injector: this.injector });
+      return;
+    }
+
+    run();
   }
 
   domicilioReferenciaCasaParticular(): string | null {
@@ -3419,7 +3437,7 @@ export class FormEmpleadoComponent implements OnInit {
 
     const root = this.hostElement.nativeElement;
     const byDataPath = root.querySelector<HTMLElement>(
-      `.step-panel [data-field-path="${path}"]`,
+      `[data-field-path="${path}"]`,
     );
     if (byDataPath) {
       return this.obtenerCampoEnfocable(byDataPath);
@@ -3433,7 +3451,7 @@ export class FormEmpleadoComponent implements OnInit {
 
     const groupSelector = segments.length > 1 ? `[formGroupName="${segments[0]}"] ` : "";
     const controlHost = root.querySelector<HTMLElement>(
-      `.step-panel ${groupSelector}[formControlName="${controlName}"], .step-panel ${groupSelector}[formcontrolname="${controlName}"]`,
+      `${groupSelector}[formControlName="${controlName}"], ${groupSelector}[formcontrolname="${controlName}"]`,
     );
     return this.obtenerCampoEnfocable(controlHost);
   }

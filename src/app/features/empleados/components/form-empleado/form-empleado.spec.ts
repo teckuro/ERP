@@ -262,7 +262,7 @@ describe('FormEmpleadoComponent - completitud de borrador avanzado', () => {
     component.manejarPrimariaModalAccionAvanzada();
     fixture.detectChanges();
     await fixture.whenStable();
-    await new Promise((resolve) => window.setTimeout(resolve, 60));
+    await new Promise((resolve) => window.setTimeout(resolve, 120));
     fixture.detectChanges();
 
     expect(component.modalAccionAvanzada()).toBeNull();
