@@ -27,32 +27,7 @@ export function parseIdPersonaFromUrl(url: string): number | null {
   return m ? Number(m[1]) : null;
 }
 
-async function loginIfRedirected(page: Page): Promise<void> {
-  const loginHeading = page.getByRole('heading', { name: 'Iniciar sesion' });
-  if (!(await loginHeading.isVisible({ timeout: 1500 }).catch(() => false))) {
-    return;
-  }
-
-  const email = process.env['E2E_SUPABASE_AUTH_EMAIL'] ?? '';
-  const password = process.env['E2E_SUPABASE_AUTH_PASSWORD'] ?? '';
-  expect(email, 'Falta E2E_SUPABASE_AUTH_EMAIL para ejecutar E2E empleados autenticado.').not.toBe('');
-  expect(password, 'Falta E2E_SUPABASE_AUTH_PASSWORD para ejecutar E2E empleados autenticado.').not.toBe('');
-
-  await page.locator('#login-email').fill(email);
-  await page.locator('#login-password').fill(password);
-  await page.getByRole('button', { name: 'Iniciar sesion' }).click();
-  await expect(page.getByRole('heading', { name: 'Iniciar sesion' })).toBeHidden({ timeout: 45_000 });
-  await expect(page.getByRole('button', { name: 'Salir' })).toBeVisible({ timeout: 45_000 });
-  await page.waitForLoadState('networkidle');
-}
-
-export async function ensureLoggedIn(page: Page): Promise<void> {
-  await loginIfRedirected(page);
-  if (await page.getByRole('heading', { name: 'Iniciar sesion' }).isVisible({ timeout: 500 }).catch(() => false)) {
-    await page.reload({ waitUntil: 'networkidle' });
-    await loginIfRedirected(page);
-  }
-}
+export { ensureLoggedIn } from './e2e-auth';
 
 export async function waitAdvancedFormReady(page: Page): Promise<void> {
   await page.waitForLoadState('networkidle');
@@ -347,16 +322,6 @@ export async function expectWizardPasoTitulo(page: Page, titulo: string | RegExp
 export async function clickWizardSiguiente(page: Page): Promise<void> {
   await page.getByRole('button', { name: 'Siguiente' }).click();
   await page.waitForTimeout(250);
-}
-
-/**
- * Espera a que termine la petición de guardar borrador (el botón vuelve de «Guardando…» a «Guardar borrador»).
- * El mensaje verde en `.advanced-draft-feedback` dura ~4,5 s: no usarlo como única señal si el backend es lento.
- */
-export async function expectMsgBoxBorradorInvalido(page: Page): Promise<void> {
-  await expect(page.getByRole('dialog', { name: /No se puede guardar el borrador/i })).toBeVisible({
-    timeout: 15_000,
-  });
 }
 
 export async function expectMsgBoxFinalizarInvalido(page: Page): Promise<void> {
