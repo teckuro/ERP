@@ -227,6 +227,7 @@ export class FormEmpleadoComponent implements OnInit {
   private readonly presentacion = inject(EmpleadoAltaAvanzadaPresentacionFacade);
   private suppressRelacionLaboralModal = false;
   private previousRelacionLaboral: RelacionLaboral = "CONTRATO";
+  private relacionLaboralRevertirHonorarios: RelacionLaboral = "CONTRATO";
 
   readonly modo = this.presentacion.modo;
   /** Creacion avanzada: indice de etapa 0..9 (10 pasos). */
@@ -657,7 +658,10 @@ export class FormEmpleadoComponent implements OnInit {
 
     const firstBadStep = this.buscarPrimerPasoAsistenteConBloqueos();
 
-    if (firstBadStep !== null || this.form.invalid) {
+    const bloqueadoPorFormulario =
+      !this.esModoHonorarios() && this.form.invalid;
+
+    if (firstBadStep !== null || bloqueadoPorFormulario) {
       this.sincronizarPestanasCompletadasDesdeValidez();
       this.openFinishInvalidModal(firstBadStep ?? 0);
       return;
@@ -928,8 +932,8 @@ export class FormEmpleadoComponent implements OnInit {
         void this.submitAdvancedMode();
         break;
       case "confirm-honorarios":
+        this.previousRelacionLaboral = "HONORARIOS";
         this.modalAccionAvanzada.set(null);
-        this.confirmarModoHonorarios();
         break;
       case "cancel-honorarios":
         this.modalAccionAvanzada.set(null);
@@ -1858,6 +1862,10 @@ export class FormEmpleadoComponent implements OnInit {
       }
     }
 
+    if (this.esModoHonorarios()) {
+      return null;
+    }
+
     return this.form.invalid ? 0 : null;
   }
 
@@ -2119,7 +2127,9 @@ export class FormEmpleadoComponent implements OnInit {
     return {
       origenCreacion: this.esModoBasico() ? "basico" : "avanzado",
       pasoAltaAvanzada: this.esModoAvanzado() ? this.pasoWizardActivo() : null,
-      relacionLaboral: raw.contrato.relacionLaboral,
+      relacionLaboral: this.esModoHonorarios()
+        ? "HONORARIOS"
+        : raw.contrato.relacionLaboral,
       estado: raw.contrato.estado,
       rut: raw.datosPersonales.rut,
       pasaporte: raw.datosPersonales.pasaporte,
@@ -2784,6 +2794,34 @@ export class FormEmpleadoComponent implements OnInit {
   }
 
   private openFinishConfirmModal(): void {
+    if (this.esModoHonorarios()) {
+      this.abrirModalAccionAvanzada({
+        kind: "finish-confirm",
+        variant: "success",
+        eyebrow: "Decisión requerida",
+        title: "Finalizar boleta de honorarios",
+        message:
+          "La bitácora del prestador está lista para cerrar. Revisa servicio, monto y datos de pago antes de confirmar.",
+        sections: this.construirSeccionesMsgboxBitacora({
+          pendientePrincipal:
+            "Confirmar el cierre del registro a honorarios con la bitácora en estado listo.",
+          porQueImporta:
+            "Al finalizar, la ficha queda activa para administración del prestador. No ingresa a nómina dependiente.",
+          accionRecomendada:
+            "Finalizar honorarios si los datos son correctos, o cancelar para revisar algún registro de la bitácora.",
+          pendienteTone: "success",
+        }),
+        primaryLabel: "Finalizar honorarios",
+        secondaryLabel: "Cancelar",
+        blockingItems: [],
+        warningItems: [],
+        infoItems: [],
+        primaryAction: "execute-finish",
+        secondaryAction: "dismiss",
+      });
+      return;
+    }
+
     this.abrirModalAccionAvanzada({
       kind: "finish-confirm",
       variant: "success",
@@ -2837,6 +2875,7 @@ export class FormEmpleadoComponent implements OnInit {
       infoItems: [],
       primaryAction: "confirm-honorarios",
       secondaryAction: "cancel-honorarios",
+      disableClose: true,
     });
   }
 
@@ -3004,6 +3043,8 @@ export class FormEmpleadoComponent implements OnInit {
           value === "HONORARIOS" &&
           this.previousRelacionLaboral !== "HONORARIOS"
         ) {
+          this.relacionLaboralRevertirHonorarios = this.previousRelacionLaboral;
+          this.confirmarModoHonorarios({ lockPrevious: false });
           this.openHonorariosConfirmModal();
           return;
         }
@@ -3012,23 +3053,81 @@ export class FormEmpleadoComponent implements OnInit {
       });
   }
 
-  private confirmarModoHonorarios(): void {
-    this.previousRelacionLaboral = "HONORARIOS";
+  private confirmarModoHonorarios(options?: { lockPrevious?: boolean }): void {
     this.aplicarEstadoVisualHonorarios();
     this.moverFlujoHonorariosAPasoAplicable();
     this.sincronizarPestanasCompletadasDesdeValidez();
+    if (options?.lockPrevious !== false) {
+      this.previousRelacionLaboral = "HONORARIOS";
+    }
   }
 
   private cancelarCambioModoHonorarios(): void {
     this.suppressRelacionLaboralModal = true;
     this.form.controls.contrato.controls.relacionLaboral.setValue(
-      this.previousRelacionLaboral,
+      this.relacionLaboralRevertirHonorarios,
       {
         emitEvent: true,
       },
     );
+    this.previousRelacionLaboral = this.relacionLaboralRevertirHonorarios;
     this.suppressRelacionLaboralModal = false;
+    this.sincronizarControlesNoAplicablesHonorarios(false);
     this.sincronizarPestanasCompletadasDesdeValidez();
+  }
+
+  private sincronizarControlesNoAplicablesHonorarios(
+    deshabilitarDependiente: boolean,
+  ): void {
+    const opts = { emitEvent: false } as const;
+    const contrato = this.form.controls.contrato.controls;
+    const contratoNa: AbstractControl[] = [
+      contrato.tipoContrato,
+      contrato.fechaContrato,
+      contrato.fechaTermino,
+      contrato.idTipoJornada,
+      contrato.horasSemanales,
+      contrato.diasSemanales,
+      contrato.distribucionJornada,
+      contrato.tiempoColacionMinutos,
+      contrato.tipoGratificacion,
+      contrato.cargas,
+      contrato.idTramoCarga,
+      contrato.casaParticularModalidad,
+      contrato.casaParticularLabores,
+      contrato.casaParticularDomicilioEspecifico,
+      contrato.casaParticularAsistenciaCuidado,
+      contrato.casaParticularRegistroDtEstado,
+      contrato.casaParticularRegistroDtFecha,
+      contrato.casaParticularRegistroDtFolio,
+      contrato.semanaCorridaActiva,
+      contrato.semanaCorridaDiasLaborables,
+      contrato.zonaExtremaActiva,
+      contrato.zonaExtremaTerritorio,
+      contrato.zonaExtremaPorcentaje,
+    ];
+
+    for (const control of contratoNa) {
+      if (deshabilitarDependiente) {
+        control.disable(opts);
+      } else {
+        control.enable(opts);
+      }
+    }
+
+    const gruposNa = [
+      this.form.controls.previsionSalud,
+      this.form.controls.perfilLaboral,
+    ];
+    for (const grupo of gruposNa) {
+      if (deshabilitarDependiente) {
+        grupo.disable(opts);
+      } else {
+        grupo.enable(opts);
+      }
+    }
+
+    this.form.updateValueAndValidity(opts);
   }
 
   private aplicarEstadoVisualHonorarios(): void {
@@ -3066,8 +3165,10 @@ export class FormEmpleadoComponent implements OnInit {
     contrato.cargas.setValue(0, { emitEvent: false });
     contrato.idTramoCarga.setValue(null, { emitEvent: false });
 
-    prevision.tipoRegimenPrevisional.setValue(null, { emitEvent: false });
+    prevision.tipoRegimenPrevisional.setValue("NINGUNA", { emitEvent: false });
     prevision.tieneApv.setValue(false, { emitEvent: false });
+
+    this.sincronizarControlesNoAplicablesHonorarios(true);
   }
 
   private moverFlujoHonorariosAPasoAplicable(): void {

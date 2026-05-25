@@ -1,6 +1,12 @@
+## 2026-05-25 - Creación avanzada: cierre honorarios + gate 17/15 E2E
+
+- **Cambio:** MsgBox cierre honorarios («Finalizar boleta de honorarios», CTA «Finalizar honorarios»); confirmación cambio relación con `disableClose` en modal; nota inline «Modalidad: honorarios» en paso contrato.
+- **Archivos:** `form-empleado.ts`, `form-empleado.html`, `contrato.html`, `empleado-alta-avanzada.vm.ts`.
+- **No tocado:** estilos globales, SQL, motor nómina.
+
 ## 2026-05-25 - Creación avanzada: fixes E2E + validación finalizar (sin UI global)
 
-- **Cambio:** Exclusión reglas meta al finalizar alta avanzada; matching catálogo tipo trabajador compuesto; helpers E2E (MsgBox confirmar, dismiss borrador, RUT duplicado). F10 honorarios E2E en skip documentado.
+- **Cambio:** Exclusión reglas meta al finalizar alta avanzada; matching catálogo tipo trabajador compuesto; helpers E2E (MsgBox confirmar, dismiss borrador, RUT duplicado).
 - **Archivos:** `form-empleado.ts`, `empleado-tipo-trabajador-flow.rules.ts`, `tests/helpers/empleados-borrador-e2e.ts`, specs persistencia/flujos.
 - **No tocado:** estilos globales, SQL, motor nómina.
 

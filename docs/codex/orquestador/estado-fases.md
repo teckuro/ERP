@@ -6,7 +6,7 @@
 | Tipo | Pruebas (unit + E2E UI + E2E BD + scripts verify) |
 | Alcance | Matriz F1–F13 trazable; globalSetup purge+U1–U8+ERR; specs validaciones/flujos/honorarios/inferencia; correo/teléfono obligatorios alineados. |
 | Documento | [../modulos/empleados/matriz-pruebas-creacion-avanzada.md](../modulos/empleados/matriz-pruebas-creacion-avanzada.md), [../modulos/empleados/tests-empleados.md](../modulos/empleados/tests-empleados.md) |
-| Validación | Unit **215/215**; UI **16/16** (`test:e2e:empleados:ui`); BD opt-in `E2E_EMPLEADOS_BORRADOR=1` + `verify:empleados-qa` (U1–U8; ERR opcional con `seed --append`). |
+| Validación | Unit **218/218**; UI **17/17** (`test:e2e:empleados:ui`); BD **15/15**, **0 skipped** (`E2E_EMPLEADOS_BORRADOR=1` + `test:e2e:empleados:db`); `verify:empleados-qa` (U1, U2, U6, U8, ERR01). Gate honorarios F10: mapper finalize + `formControlName` relación laboral + MsgBox cierre (2026-05-25). |
 | Restricciones | Sin SQL/motor/estilos globales en esta fase. |
 
 ## EMP-FICHA-EXPEDIENTE-EDICION-SECCION-UX-04 - Modal edición expediente

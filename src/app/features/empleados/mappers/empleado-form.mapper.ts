@@ -14,11 +14,160 @@ import {
 } from '../models/empleado-perfil-laboral.model';
 import { normalizeText } from '../utils/empleado-form.helpers';
 
+function pickFirstCatalogId(options: EmpleadoCatalogOption[], label: string): number {
+  const v = options[0]?.value;
+  if (typeof v !== 'number' || Number.isNaN(v)) {
+    throw new Error(`El catalogo de ${label} no esta disponible.`);
+  }
+  return v;
+}
+
+function resolveTipoPrevisionFromRaw(
+  tipoRaw: TipoRegimenPrevisional | null,
+): TipoRegimenPrevisional {
+  return tipoRaw === 'AFP' || tipoRaw === 'IPS' || tipoRaw === 'NINGUNA' ? tipoRaw : 'NINGUNA';
+}
+
+/** Finalizar alta en modalidad honorarios: paridad con borrador en campos no aplicables. */
+function mapEmpleadoFormToPayloadHonorarios(
+  form: EmpleadoFormGroup,
+  catalogos: EmpleadoFormCatalogos,
+): CrearEmpleadoPayload {
+  const rawValue = form.getRawValue();
+  const today = new Date().toISOString().slice(0, 10);
+  const tipoPrevision = resolveTipoPrevisionFromRaw(rawValue.previsionSalud.tipoRegimenPrevisional);
+
+  const idTipoTrabajador =
+    rawValue.contrato.idTipoTrabajador && rawValue.contrato.idTipoTrabajador > 0
+      ? rawValue.contrato.idTipoTrabajador
+      : pickFirstCatalogId(catalogos.tiposTrabajador, 'tipo de trabajador');
+  const idTipoJornada =
+    rawValue.contrato.idTipoJornada && rawValue.contrato.idTipoJornada > 0
+      ? rawValue.contrato.idTipoJornada
+      : pickFirstCatalogId(catalogos.tiposJornada, 'tipo de jornada');
+
+  const idRegimenPrevisional =
+    tipoPrevision === 'NINGUNA'
+      ? null
+      : resolveRegimenPrevisionalId(tipoPrevision, catalogos.regimenesPrevisionales);
+
+  const idBanco =
+    rawValue.bancario.idBanco && rawValue.bancario.idBanco > 0
+      ? rawValue.bancario.idBanco
+      : pickFirstCatalogId(catalogos.bancos, 'banco');
+  const idTipoCuentaBancaria =
+    rawValue.bancario.idTipoCuentaBancaria && rawValue.bancario.idTipoCuentaBancaria > 0
+      ? rawValue.bancario.idTipoCuentaBancaria
+      : pickFirstCatalogId(catalogos.tiposCuentaBancaria, 'tipo de cuenta');
+  const numeroCuentaRaw = rawValue.bancario.numeroCuenta.trim();
+  const numeroCuenta =
+    numeroCuentaRaw.length > 0
+      ? numeroCuentaRaw
+      : String(Date.now() % 1_000_000_000_000).padStart(12, '0');
+
+  const fechaIngreso = rawValue.contrato.fechaIngreso?.trim()
+    ? rawValue.contrato.fechaIngreso
+    : today;
+  const fechaContrato = rawValue.contrato.fechaContrato?.trim()
+    ? rawValue.contrato.fechaContrato
+    : fechaIngreso;
+  const tipoContrato = rawValue.contrato.tipoContrato ?? 'INDEFINIDO';
+
+  return {
+    origenCreacion: 'avanzado',
+    rut: rawValue.datosPersonales.rut,
+    nombres: rawValue.datosPersonales.nombres,
+    apellidoPaterno: rawValue.datosPersonales.apellidoPaterno,
+    apellidoMaterno: rawValue.datosPersonales.apellidoMaterno,
+    fechaNacimiento: rawValue.datosPersonales.fechaNacimiento,
+    sexo: requireSexo(rawValue.datosPersonales.sexo),
+    estadoCivil: requireEstadoCivil(rawValue.datosPersonales.estadoCivil),
+    pasaporte: rawValue.datosPersonales.pasaporte.trim() || null,
+    idPais: requireSelection(rawValue.datosPersonales.idPais, 'el pais'),
+    email: rawValue.contacto.email,
+    telefono: rawValue.contacto.telefono,
+    direccion: rawValue.contacto.direccion,
+    numeroDireccion: rawValue.contacto.numeroDireccion.trim() || null,
+    departamentoDireccion: rawValue.contacto.departamentoDireccion.trim() || null,
+    observacionesDireccion: rawValue.contacto.observacionesDireccion.trim() || null,
+    idComuna: requireSelection(rawValue.contacto.idComuna, 'la comuna'),
+    idSucursal: rawValue.contrato.idSucursal,
+    idDepartamentoEmpresa: rawValue.contrato.idDepartamentoEmpresa,
+    idCentroCosto: rawValue.contrato.idCentroCosto,
+    relacionLaboral: 'HONORARIOS',
+    cargo: requireText(rawValue.contrato.cargo, 'el servicio o funcion del prestador'),
+    fechaContrato,
+    tipoContrato,
+    idTipoTrabajador,
+    idTipoJornada,
+    seguroCesantia: false,
+    excluidoLimiteJornada: false,
+    causalExclusionJornada: null,
+    justificacionExclusionJornada: null,
+    casaParticularModalidad: null,
+    casaParticularLabores: null,
+    casaParticularDomicilioEspecifico: null,
+    casaParticularAsistenciaCuidado: false,
+    casaParticularRegistroDtEstado: null,
+    casaParticularRegistroDtFecha: null,
+    casaParticularRegistroDtFolio: null,
+    fechaIngreso,
+    fechaTermino: null,
+    sueldoBase: requireNumber(rawValue.contrato.sueldoBase, 'el monto bruto de honorarios'),
+    idMoneda: requireSelection(rawValue.contrato.idMoneda, 'la moneda del monto bruto de honorarios'),
+    sueldoVariable: false,
+    horasSemanales: 0,
+    cargas: 0,
+    diasSemanales: 0,
+    distribucionJornada: null,
+    tiempoColacionMinutos: null,
+    tipoGratificacion: rawValue.contrato.tipoGratificacion ?? 'LEGAL_ART_50',
+    gratificacionProporcional: false,
+    semanaCorridaActiva: false,
+    semanaCorridaDiasLaborables: [],
+    zonaExtremaActiva: false,
+    zonaExtremaTerritorio: null,
+    zonaExtremaPorcentaje: null,
+    estado: 'activo',
+    idTramoCarga: null,
+    condicionesTrabajador: [],
+    tipoPrevision,
+    idRegimenPrevisional,
+    idAfp: null,
+    idMonedaCuenta2: null,
+    valorCuenta2: null,
+    idEntidadPrevisionalIps: null,
+    idExCajaPrevisional: null,
+    idRegimenExCaja: null,
+    nombreExCaja: null,
+    regimenExCaja: null,
+    tasaExCaja: null,
+    idSalud: null,
+    tipoSalud: null,
+    idMonedaPlan: null,
+    valorPlan: null,
+    adicionalAugeGes: null,
+    tieneApv: false,
+    idInstitucionApv: null,
+    idMonedaApv: null,
+    montoApv: null,
+    idFormaPagoApv: null,
+    depositoConvenidoApvi: null,
+    idBanco,
+    idTipoCuentaBancaria,
+    numeroCuenta,
+  };
+}
+
 export function mapEmpleadoFormToPayload(
   form: EmpleadoFormGroup,
   catalogos: EmpleadoFormCatalogos,
 ): CrearEmpleadoPayload {
   const rawValue = form.getRawValue();
+  if (rawValue.contrato.relacionLaboral === 'HONORARIOS') {
+    return mapEmpleadoFormToPayloadHonorarios(form, catalogos);
+  }
+
   const tipoPrevision = requireTipoRegimenPrevisional(
     rawValue.previsionSalud.tipoRegimenPrevisional,
   );
@@ -303,36 +452,26 @@ export function mapEmpleadoFormToPayloadBorrador(
   const rawValue = form.getRawValue();
   const today = new Date().toISOString().slice(0, 10);
 
-  const pickFirstId = (options: EmpleadoCatalogOption[], label: string): number => {
-    const v = options[0]?.value;
-    if (typeof v !== 'number' || Number.isNaN(v)) {
-      throw new Error(`El catalogo de ${label} no esta disponible para guardar el borrador.`);
-    }
-    return v;
-  };
-
-  const tipoRaw = rawValue.previsionSalud.tipoRegimenPrevisional;
-  const tipoPrevision: TipoRegimenPrevisional =
-    tipoRaw === 'AFP' || tipoRaw === 'IPS' || tipoRaw === 'NINGUNA' ? tipoRaw : 'NINGUNA';
+  const tipoPrevision = resolveTipoPrevisionFromRaw(rawValue.previsionSalud.tipoRegimenPrevisional);
 
   const idTipoTrabajador =
     rawValue.contrato.idTipoTrabajador && rawValue.contrato.idTipoTrabajador > 0
       ? rawValue.contrato.idTipoTrabajador
-      : pickFirstId(catalogos.tiposTrabajador, 'tipo de trabajador');
+      : pickFirstCatalogId(catalogos.tiposTrabajador, 'tipo de trabajador');
   const idTipoJornada =
     rawValue.contrato.idTipoJornada && rawValue.contrato.idTipoJornada > 0
       ? rawValue.contrato.idTipoJornada
-      : pickFirstId(catalogos.tiposJornada, 'tipo de jornada');
+      : pickFirstCatalogId(catalogos.tiposJornada, 'tipo de jornada');
 
   const idPais =
     rawValue.datosPersonales.idPais && rawValue.datosPersonales.idPais > 0
       ? rawValue.datosPersonales.idPais
-      : pickFirstId(catalogos.paises, 'pais');
+      : pickFirstCatalogId(catalogos.paises, 'pais');
 
   const idComuna =
     rawValue.contacto.idComuna && rawValue.contacto.idComuna > 0
       ? rawValue.contacto.idComuna
-      : pickFirstId(catalogos.comunas, 'comuna');
+      : pickFirstCatalogId(catalogos.comunas, 'comuna');
 
   const idRegimenPrevisional =
     tipoPrevision === 'NINGUNA'
@@ -353,11 +492,11 @@ export function mapEmpleadoFormToPayloadBorrador(
   const idBanco =
     rawValue.bancario.idBanco && rawValue.bancario.idBanco > 0
       ? rawValue.bancario.idBanco
-      : pickFirstId(catalogos.bancos, 'banco');
+      : pickFirstCatalogId(catalogos.bancos, 'banco');
   const idTipoCuentaBancaria =
     rawValue.bancario.idTipoCuentaBancaria && rawValue.bancario.idTipoCuentaBancaria > 0
       ? rawValue.bancario.idTipoCuentaBancaria
-      : pickFirstId(catalogos.tiposCuentaBancaria, 'tipo de cuenta');
+      : pickFirstCatalogId(catalogos.tiposCuentaBancaria, 'tipo de cuenta');
   const numeroCuentaRaw = rawValue.bancario.numeroCuenta.trim();
   const numeroCuenta =
     numeroCuentaRaw.length > 0

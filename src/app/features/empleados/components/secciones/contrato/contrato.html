@@ -15,9 +15,8 @@
         <label class="relation-option">
           <input
             type="radio"
-            name="relacionLaboral"
-            [checked]="formGroup.controls.relacionLaboral.value === option.value"
-            (change)="manejarCambioRelacionLaboral(option.value)"
+            formControlName="relacionLaboral"
+            [value]="option.value"
           />
           <span>{{ option.label }}</span>
         </label>

@@ -342,11 +342,6 @@ export class ContratoComponent {
     return this.tramosCarga.find((option) => option.value === tramoId) ?? null;
   }
 
-  manejarCambioRelacionLaboral(value: RelacionLaboral): void {
-    this.formGroup.controls.relacionLaboral.setValue(value);
-    this.formGroup.controls.relacionLaboral.markAsTouched();
-  }
-
   manejarToggleIndefinido(checked: boolean): void {
     if (checked) {
       this.formGroup.controls.tipoContrato.setValue('INDEFINIDO');

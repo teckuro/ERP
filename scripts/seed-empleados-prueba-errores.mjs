@@ -18,6 +18,7 @@
  * y public/app-config.json (supabaseUrl, supabaseAnonKey).
  */
 
+import fs from 'node:fs';
 import { config } from 'dotenv';
 import { resolve } from 'node:path';
 
@@ -515,6 +516,21 @@ async function main() {
       prevision: r.tipo_prevision,
     })),
   );
+
+  const reportPath = resolve(process.cwd(), 'tmp', 'seed-empleados-err-result.json');
+  fs.mkdirSync(resolve(process.cwd(), 'tmp'), { recursive: true });
+  fs.writeFileSync(
+    reportPath,
+    JSON.stringify(
+      {
+        generatedAt: new Date().toISOString(),
+        fixtures: creados.map((row) => ({ rut: row.rut, dv: row.dv, regla: row.regla })),
+      },
+      null,
+      2,
+    ),
+  );
+  console.log(`Reporte ERR: ${reportPath}`);
 
   console.log('\nListo. Revisa fichas en /empleados con RUT 26.100.001-* a 26.100.010-*');
 }

@@ -54,6 +54,8 @@ export interface ModalAccionAvanzada {
   targetStep?: number;
   primaryAction: AccionModalAccionAvanzada;
   secondaryAction?: AccionModalAccionAvanzada;
+  /** Evita Escape/cierre accidental que dispare la acción secundaria (p. ej. revertir honorarios). */
+  disableClose?: boolean;
 }
 
 export interface ItemCampoModalAccionAvanzada {

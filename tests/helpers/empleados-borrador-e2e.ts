@@ -118,7 +118,7 @@ export async function clickGuardarBorrador(page: Page): Promise<void> {
 /** Confirma el MsgBox de cierre del alta avanzada (dependiente u honorarios). */
 export async function confirmarModalFinalizarAlta(page: Page): Promise<void> {
   const confirm = page.getByRole('dialog', {
-    name: /Finalizar alta del trabajador|Finalizar honorarios/i,
+    name: /Finalizar alta del trabajador|Finalizar boleta de honorarios|Finalizar honorarios/i,
   });
   const invalid = page.getByRole('dialog', { name: /La ficha no está lista para finalizar/i });
 
@@ -136,7 +136,17 @@ export async function confirmarModalFinalizarAlta(page: Page): Promise<void> {
     );
   }
 
-  await confirm.getByRole('button', { name: /^Finalizar alta$/ }).click();
+  await confirm.getByRole('button', { name: /^Finalizar (alta|honorarios)$/ }).click();
+}
+
+/** Cierra paneles flotantes que bloquean clics (select, calendario) sin Escape global (revierte modales MsgBox). */
+export async function cerrarOverlaysActivos(page: Page): Promise<void> {
+  const panels = page.locator('.select-panel:visible');
+  if ((await panels.count()) > 0) {
+    await page.keyboard.press('Escape');
+    await page.waitForTimeout(120);
+    await expect(page.locator('.select-panel:visible')).toHaveCount(0, { timeout: 3_000 });
+  }
 }
 
 /** Solo pulsa la acción primaria del shell (sin confirmar MsgBox). */
@@ -432,10 +442,15 @@ export async function fillWizardDependienteCompleto(page: Page): Promise<void> {
 
 export async function selectRelacionHonorarios(page: Page): Promise<void> {
   await selectWizardStepByIndex(page, 2);
+  const honorariosLabel = page.locator('label.relation-option').filter({
+    hasText: /Boleta de honorarios/i,
+  });
+  await expect(honorariosLabel).toBeVisible({ timeout: 15_000 });
+  await honorariosLabel.click();
   const honorarios = page.getByRole('radio', { name: /Boleta de honorarios/i });
-  await honorarios.check();
-  await expect(honorarios).toBeChecked();
-  await confirmarCambioHonorariosSiAplica(page);
+  await expect(honorarios).toBeChecked({ timeout: 10_000 });
+  await confirmarCambioHonorariosSiAplica(page, { required: true });
+  await expect(page.getByText(/Modalidad:\s*honorarios/i)).toBeVisible({ timeout: 15_000 });
 }
 
 export async function fillWizardHonorariosMinimo(page: Page): Promise<void> {
@@ -443,20 +458,28 @@ export async function fillWizardHonorariosMinimo(page: Page): Promise<void> {
   await page.locator('#empleado-direccion').fill('Calle honorarios E2E 50');
   await page.locator('#empleado-numero-direccion').fill('100');
   await pickFirstSearchSelectOption(page, 'empleado-comuna');
+  await cerrarOverlaysActivos(page);
 
   await selectRelacionHonorarios(page);
   await fillCalendarInputByHostId(page, 'empleado-fecha-ingreso', '2024-06-01');
+  await cerrarOverlaysActivos(page);
   await page.locator('#empleado-cargo').fill('Servicio consultoria E2E');
+  const tipoDerivado = page.locator('.tipo-trabajador-derived span');
+  await expect(tipoDerivado).not.toHaveText(/Tipo trabajador pendiente/i, { timeout: 20_000 });
+  await expect(tipoDerivado).not.toHaveText('', { timeout: 5_000 });
 
   await selectWizardStepByIndex(page, 3);
   await expect(page.locator('#empleado-sueldo-base')).toBeVisible({ timeout: 20_000 });
   await page.locator('#empleado-sueldo-base').fill('500000');
   await pickFirstSearchSelectOption(page, 'empleado-id-moneda');
+  await cerrarOverlaysActivos(page);
+
   await selectWizardStepByIndex(page, 7);
   await pickFirstSearchSelectOption(page, 'empleado-banco');
   await pickFirstSearchSelectOption(page, 'empleado-tipo-cuenta');
   const uniqueCuenta = String(Date.now() % 1_000_000_000).padStart(9, '0');
   await page.locator('#empleado-numero-cuenta').fill(uniqueCuenta);
+  await cerrarOverlaysActivos(page);
 }
 
 /** Alta avanzada con `idPersona` de fixture U1–U8 (JSON post-auditoría). */
@@ -469,12 +492,20 @@ export async function gotoAltaAvanzadaConPersona(
   await gotoAltaAvanzada(page, q);
 }
 
-export async function confirmarCambioHonorariosSiAplica(page: Page): Promise<void> {
+export async function confirmarCambioHonorariosSiAplica(
+  page: Page,
+  options?: { required?: boolean },
+): Promise<void> {
   const dialog = page.getByRole('dialog', { name: /Cambiar a boleta de honorarios/i });
-  if (await dialog.isVisible({ timeout: 3_000 }).catch(() => false)) {
-    await page.getByRole('button', { name: 'Confirmar cambio' }).click();
-    await page.waitForTimeout(300);
+  const timeout = options?.required ? 15_000 : 3_000;
+  if (!(await dialog.isVisible({ timeout }).catch(() => false))) {
+    if (options?.required) {
+      throw new Error('No apareció el modal de confirmación para boleta de honorarios.');
+    }
+    return;
   }
+  await dialog.getByRole('button', { name: 'Confirmar cambio' }).click();
+  await expect(dialog).toBeHidden({ timeout: 10_000 });
 }
 
 export async function waitGuardarBorradorTerminado(page: Page, timeoutMs = 90_000): Promise<void> {

@@ -45,6 +45,7 @@
           [width]="modal.fieldItems?.length ? 'lg' : 'md'"
           [primaryLabel]="modal.primaryLabel"
           [secondaryLabel]="modal.secondaryLabel || ''"
+          [disableClose]="modal.disableClose ?? false"
           (action)="manejarPrimariaModalAccionAvanzada()"
           (secondary)="manejarSecundariaModalAccionAvanzada()"
         >

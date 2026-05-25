@@ -1,0 +1,42 @@
+[1m[31m[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2304: Cannot find name 'pickFirstId'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/mappers/empleado-form.mapper.ts:495:8:
+[37m      495 │       : [32mpickFirstId[37m(catalogos.bancos, 'banco');
+          ╵         [32m~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2304: Cannot find name 'pickFirstId'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/mappers/empleado-form.mapper.ts:499:8:
+[37m      499 │       : [32mpickFirstId[37m(catalogos.tiposCuentaBancaria, 'tipo de cuent...
+          ╵         [32m~~~~~~~~~~~[0m
+
+[39m[22m
+[1m[31m[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2304: Cannot find name 'pickFirstId'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/mappers/empleado-form.mapper.ts:495:8:
+[37m      495 │       : [32mpickFirstId[37m(catalogos.bancos, 'banco');
+          ╵         [32m~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2304: Cannot find name 'pickFirstId'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/mappers/empleado-form.mapper.ts:499:8:
+[37m      499 │       : [32mpickFirstId[37m(catalogos.tiposCuentaBancaria, 'tipo de cuent...
+          ╵         [32m~~~~~~~~~~~[0m
+
+[39m[22m
+[1m[31m[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2554: Expected 0 arguments, but got 1.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:3047:39:
+[37m      3047 │           this.confirmarModoHonorarios([32m{ lockPrevious: false }[37m);
+           ╵                                        [32m~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+[39m[22m
+[1m[31m[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2554: Expected 0 arguments, but got 1.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/empleados/components/form-empleado/form-empleado.ts:3047:39:
+[37m      3047 │           this.confirmarModoHonorarios([32m{ lockPrevious: false }[37m);
+           ╵                                        [32m~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+[39m[22m

@@ -30,7 +30,10 @@ npx ng test --watch=false
 
 Matriz F1–F13: [`matriz-pruebas-creacion-avanzada.md`](matriz-pruebas-creacion-avanzada.md).
 
+**Gate creación avanzada (2026-05-25):** unit empleados **218**; UI **17/17**; BD **15/15** (0 skipped); `verify:empleados-qa` incluye ERR01.
+
 ```bash
+npx ng test --watch=false --include="**/features/empleados/**/*.spec.ts"
 npm run test:e2e:empleados:ui
 E2E_EMPLEADOS_BORRADOR=1 npm run test:e2e:empleados:db
 E2E_EMPLEADOS_BORRADOR=1 npm run verify:empleados-qa

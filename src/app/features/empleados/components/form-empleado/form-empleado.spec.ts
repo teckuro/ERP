@@ -433,6 +433,118 @@ describe('FormEmpleadoComponent - completitud de borrador avanzado', () => {
     expect(component.pasoWizardActivo()).toBe(7);
   });
 
+  it('Boleta de honorarios completa emite modal de exito al finalizar', async () => {
+    const finalizarAltaAvanzadaExistente = vi.fn().mockResolvedValue(undefined);
+    const catalogos = {
+      ...EMPTY_EMPLEADO_FORM_CATALOGOS,
+      tiposTrabajador: [
+        { value: 1, label: 'DEPENDIENTE' },
+        { value: 2, label: 'INDEPENDIENTE' },
+      ],
+      tiposJornada: [{ value: 20, label: 'Completa' }],
+      monedas: [{ value: 1, label: 'CLP', codigo: 'CLP' }],
+      bancos: [{ value: 5, label: 'Banco Test' }],
+      tiposCuentaBancaria: [{ value: 6, label: 'Corriente' }],
+      regimenesPrevisionales: [{ value: 202, label: 'NINGUNA' }],
+    };
+    const queryParamMapGet = vi.fn().mockReturnValue(null);
+    await TestBed.configureTestingModule({
+      imports: [FormEmpleadoComponent],
+      providers: [
+        {
+          provide: EmpleadosService,
+          useValue: {
+            obtenerPorId: vi.fn(),
+            guardarBorradorAvanzado: vi.fn(),
+            finalizarAltaAvanzadaExistente,
+            crear: vi.fn(),
+            crearBasico: vi.fn(),
+          },
+        },
+        {
+          provide: EmpleadosCatalogosService,
+          useValue: {
+            obtenerFormulario: vi.fn().mockResolvedValue(catalogos),
+          },
+        },
+        {
+          provide: ActivatedRoute,
+          useValue: {
+            snapshot: { queryParamMap: { get: queryParamMapGet } },
+          },
+        },
+        { provide: Router, useValue: { navigate: vi.fn() } },
+        {
+          provide: ShellPageContextService,
+          useValue: {
+            setPageContext: vi.fn(),
+            setContext: vi.fn(),
+            registerPrimaryActionHandler: vi.fn(),
+            setBindingActive: vi.fn(),
+            clearContext: vi.fn(),
+            applyRouteFallback: vi.fn(),
+          },
+        },
+      ],
+    }).compileComponents();
+
+    const component = TestBed.createComponent(FormEmpleadoComponent).componentInstance;
+    component.cargandoCatalogos.set(false);
+    component.modo.set('avanzado');
+    component.borradorPersonaId.set(99);
+    component.catalogos.set(catalogos);
+    await component.ngOnInit();
+
+    component.form.patchValue({
+      datosPersonales: {
+        rut: '12.345.678-5',
+        nombres: 'Prestador',
+        apellidoPaterno: 'Honorarios',
+        fechaNacimiento: '1990-01-01',
+        sexo: 'M',
+        estadoCivil: 'SOLTERO',
+        idPais: 1,
+      },
+      contacto: {
+        email: 'honorarios@test.local',
+        telefono: '56912345678',
+        direccion: 'Calle 1',
+        idComuna: 100,
+      },
+    } as never);
+
+    component.form.controls.contrato.controls.relacionLaboral.setValue('HONORARIOS');
+    expect(component.modalAccionAvanzada()?.kind).toBe('honorarios-confirm');
+    component.manejarPrimariaModalAccionAvanzada();
+
+    component.form.patchValue({
+      contrato: {
+        cargo: 'Servicio consultoria E2E',
+        fechaIngreso: '2024-06-01',
+        sueldoBase: 500000,
+        idMoneda: 1,
+      },
+      bancario: {
+        idBanco: 5,
+        idTipoCuentaBancaria: 6,
+        numeroCuenta: '123456789012',
+      },
+    } as never);
+
+    component.seleccionarPasoAsistente(component.indicePasoResumenAsistente());
+    await component.enviarFormulario();
+
+    expect(component.modalAccionAvanzada()?.kind).toBe('finish-confirm');
+    expect(component.modalAccionAvanzada()?.primaryLabel).toBe('Finalizar honorarios');
+
+    await component.manejarPrimariaModalAccionAvanzada();
+
+    expect(finalizarAltaAvanzadaExistente).toHaveBeenCalledWith(
+      99,
+      expect.objectContaining({ relacionLaboral: 'HONORARIOS', tipoPrevision: 'NINGUNA' }),
+    );
+    expect(component.mensajeExito()).toMatch(/guardada correctamente/i);
+  });
 
   it('Siguiente muestra MsgBox de coherencia y permite activar seguro de cesantía', async () => {
     const component = await setup();
