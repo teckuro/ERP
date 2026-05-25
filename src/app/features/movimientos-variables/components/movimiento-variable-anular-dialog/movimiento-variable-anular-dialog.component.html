@@ -1,0 +1,31 @@
+<div class="mv-dialog-root" role="presentation">
+  <div class="mv-dialog-backdrop" (click)="cerrar.emit()"></div>
+  <div
+    class="mv-dialog-panel mv-dialog-panel--narrow"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="mv-anular-title"
+  >
+    <h2 id="mv-anular-title" class="mv-dialog-title">Anular movimiento</h2>
+    <div class="mv-dialog-body">
+      <p class="mv-dialog-text">
+        Confirma la anulacion del movimiento de
+        <strong>{{ fila().trabajadorEtiqueta }}</strong> - {{ fila().conceptoEtiqueta }} -
+        {{ formatMonto(fila().monto) }}?
+      </p>
+      <label class="mv-dialog-field-label" for="mv-motivo-anul">Motivo (opcional)</label>
+      <textarea
+        id="mv-motivo-anul"
+        class="mv-dialog-input mv-dialog-textarea"
+        rows="2"
+        [ngModel]="motivoAnulacion()"
+        (ngModelChange)="motivoAnulacionChange.emit($event)"
+        placeholder="Ej. correccion solicitada por el cliente interno"
+      ></textarea>
+    </div>
+    <div class="mv-dialog-actions">
+      <button type="button" class="mv-dialog-btn mv-dialog-btn--ghost" (click)="cerrar.emit()">Cancelar</button>
+      <button type="button" class="mv-dialog-btn mv-dialog-btn--danger" (click)="confirmar.emit()">Anular</button>
+    </div>
+  </div>
+</div>

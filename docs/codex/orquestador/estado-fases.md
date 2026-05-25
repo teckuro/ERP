@@ -2,7 +2,7 @@
 
 | Campo | Estado |
 | ----- | ------ |
-| Estado | **Ola A cerrada** (2026-05-25); Ola B backlog documentado |
+| Estado | **Ola A cerrada** (2026-05-25); **PR B3** movimientos-variables cerrado (2026-05-25); resto Ola B en backlog |
 | Tipo | Refactor arquitectura (sin cambio funcional) |
 | Alcance | `empleado-alta-modal.orquestador.ts`, `empleado-alta-ficha-snapshot.builder.ts`, `etiquetaPasoHonorarios` en manifest; `form-empleado` delega modales/snapshot. |
 | Documento | [../arquitectura/auditoria-modular-features.md](../arquitectura/auditoria-modular-features.md), [../modulos/empleados/creacion-avanzada.md](../modulos/empleados/creacion-avanzada.md) |

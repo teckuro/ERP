@@ -85,119 +85,34 @@
   </div>
 
   @if (dialogNuevoAbierto()) {
-    <div class="mv-modal-root" role="presentation">
-      <div class="mv-modal-backdrop" (click)="cerrarNuevo()"></div>
-      <div class="mv-modal" role="dialog" aria-modal="true" aria-labelledby="mv-modal-nuevo-title">
-        <h2 id="mv-modal-nuevo-title" class="mv-modal-title">Registrar movimiento</h2>
-        <p class="mv-modal-sub">Periodo activo: <strong>{{ periodoActivo.etiqueta() }}</strong> - Origen: manual</p>
-
-        <div class="mv-modal-body">
-          <div class="mv-modal-group">
-            <div class="mv-modal-span2">
-              <label class="mv-field-label" for="mv-emp">Trabajador</label>
-              <app-search-select
-                id="mv-emp"
-                [options]="empleadoOptions()"
-                [ngModel]="formPersonaId()"
-                (ngModelChange)="formPersonaId.set($event)"
-                placeholder="Buscar por nombre o RUT"
-                searchPlaceholder="Filtrar lista"
-              ></app-search-select>
-            </div>
-            <div class="mv-modal-span2">
-              <label class="mv-field-label" for="mv-concepto">Concepto</label>
-              <app-search-select
-                id="mv-concepto"
-                [options]="conceptoOpciones()"
-                [ngModel]="formConceptoId()"
-                (ngModelChange)="formConceptoId.set($event)"
-                placeholder="Seleccione concepto"
-                searchPlaceholder="Buscar concepto"
-              ></app-search-select>
-            </div>
-          </div>
-          <div class="mv-modal-group">
-            <div>
-              <label class="mv-field-label" for="mv-monto">Monto</label>
-              <input
-                id="mv-monto"
-                type="number"
-                min="0"
-                step="1"
-                class="mv-input"
-                [ngModel]="formMonto()"
-                (ngModelChange)="formMonto.set($event)"
-              />
-            </div>
-            <div>
-              <label class="mv-field-label" for="mv-estado-alta">Estado al crear</label>
-              <select
-                id="mv-estado-alta"
-                class="mv-input"
-                [ngModel]="formEstadoAlta()"
-                (ngModelChange)="formEstadoAlta.set($event)"
-              >
-                <option [ngValue]="'BORRADOR'">Borrador</option>
-                <option [ngValue]="'VALIDADO'">Validado</option>
-              </select>
-            </div>
-            <div class="mv-modal-span2">
-              <label class="mv-field-label" for="mv-obs">Observacion</label>
-              <textarea
-                id="mv-obs"
-                class="mv-input mv-textarea"
-                rows="3"
-                [ngModel]="formObservacion()"
-                (ngModelChange)="formObservacion.set($event)"
-                placeholder="Opcional"
-              ></textarea>
-            </div>
-          </div>
-        </div>
-
-        <div class="mv-modal-actions">
-          <button type="button" class="mv-btn mv-btn--ghost" [disabled]="guardarNuevoLoading()" (click)="cerrarNuevo()">
-            Cancelar
-          </button>
-          <button type="button" class="mv-btn mv-btn--primary" [disabled]="guardarNuevoLoading()" (click)="guardarNuevo()">
-            @if (guardarNuevoLoading()) {
-              Guardando...
-            } @else {
-              Guardar
-            }
-          </button>
-        </div>
-      </div>
-    </div>
+    <app-movimiento-variable-alta-dialog
+      [periodoEtiqueta]="periodoActivo.etiqueta()"
+      [empleadoOpciones]="empleadoOptions()"
+      [conceptoOpciones]="conceptoOpciones()"
+      [idPersona]="formPersonaId()"
+      [idConcepto]="formConceptoId()"
+      [monto]="formMonto()"
+      [estadoAlta]="formEstadoAlta()"
+      [observacion]="formObservacion()"
+      [guardando]="guardarNuevoLoading()"
+      (cerrar)="cerrarNuevo()"
+      (guardar)="guardarNuevo()"
+      (idPersonaChange)="formPersonaId.set($event)"
+      (idConceptoChange)="formConceptoId.set($event)"
+      (montoChange)="formMonto.set($event)"
+      (estadoAltaChange)="formEstadoAlta.set($event)"
+      (observacionChange)="formObservacion.set($event)"
+    />
   }
 
   @if (confirmAnular(); as row) {
-    <div class="mv-modal-root" role="presentation">
-      <div class="mv-modal-backdrop" (click)="cerrarConfirmAnular()"></div>
-      <div class="mv-modal mv-modal--narrow" role="dialog" aria-modal="true" aria-labelledby="mv-anular-title">
-        <h2 id="mv-anular-title" class="mv-modal-title">Anular movimiento</h2>
-        <div class="mv-modal-body">
-          <p class="mv-modal-text">
-            Confirma la anulacion del movimiento de
-            <strong>{{ row.trabajadorEtiqueta }}</strong> - {{ row.conceptoEtiqueta }} -
-            {{ formatMonto(row.monto) }}?
-          </p>
-          <label class="mv-field-label" for="mv-motivo-anul">Motivo (opcional)</label>
-          <textarea
-            id="mv-motivo-anul"
-            class="mv-input mv-textarea"
-            rows="2"
-            [ngModel]="motivoAnulacion()"
-            (ngModelChange)="motivoAnulacion.set($event)"
-            placeholder="Ej. correccion solicitada por el cliente interno"
-          ></textarea>
-        </div>
-        <div class="mv-modal-actions">
-          <button type="button" class="mv-btn mv-btn--ghost" (click)="cerrarConfirmAnular()">Cancelar</button>
-          <button type="button" class="mv-btn mv-btn--danger" (click)="confirmarAnular()">Anular</button>
-        </div>
-      </div>
-    </div>
+    <app-movimiento-variable-anular-dialog
+      [fila]="row"
+      [motivoAnulacion]="motivoAnulacion()"
+      (cerrar)="cerrarConfirmAnular()"
+      (confirmar)="confirmarAnular()"
+      (motivoAnulacionChange)="motivoAnulacion.set($event)"
+    />
   }
 
   @if (modalMsg(); as msg) {
