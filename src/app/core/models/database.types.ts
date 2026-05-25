@@ -626,6 +626,7 @@ export type Database = {
           id_tipo_jornada: number | null
           id_tipo_trabajador: number | null
           justificacion_exclusion_jornada: string | null
+          relacion_laboral: string
           seguro_cesantia: boolean
         }
         Insert: {
@@ -654,6 +655,7 @@ export type Database = {
           id_tipo_jornada?: number | null
           id_tipo_trabajador?: number | null
           justificacion_exclusion_jornada?: string | null
+          relacion_laboral?: string
           seguro_cesantia?: boolean
         }
         Update: {
@@ -682,6 +684,7 @@ export type Database = {
           id_tipo_jornada?: number | null
           id_tipo_trabajador?: number | null
           justificacion_exclusion_jornada?: string | null
+          relacion_laboral?: string
           seguro_cesantia?: boolean
         }
         Relationships: [

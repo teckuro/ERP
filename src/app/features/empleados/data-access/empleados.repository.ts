@@ -81,9 +81,6 @@ import {
 type PersonaFactorRow = Tables<'vw_persona_factores'>;
 type PersonaRow = Tables<'persona'>;
 type ContratoRow = Tables<'contrato'>;
-type ContratoRowConRelacionLaboral = ContratoRow & {
-  relacion_laboral?: RelacionLaboral | null;
-};
 type RemuneracionRow = Tables<'remuneracion'>;
 type PrevisionRow = Tables<'prevision'>;
 type SaludTrabajadorRow = Tables<'salud_trabajador'>;
@@ -1283,7 +1280,7 @@ export class EmpleadosRepository {
       );
     }
 
-    const contrato = contratoResult.data as ContratoRowConRelacionLaboral | null;
+    const contrato = contratoResult.data as ContratoRow | null;
     const contratoId = contrato?.id_contrato ?? null;
     const [
       remuneracion,
@@ -1655,7 +1652,7 @@ export class EmpleadosRepository {
 
   private mapFichaFormValue(
     persona: PersonaRow,
-    contrato: ContratoRowConRelacionLaboral | null,
+    contrato: ContratoRow | null,
     remuneracion: RemuneracionRow | null,
     prevision: PrevisionRow | null,
     salud: SaludTrabajadorRow | null,

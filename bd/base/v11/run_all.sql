@@ -28,3 +28,4 @@
 \ir partes/26_empleados_condiciones_trabajador.sql
 \ir partes/27_nomina_periodo_diagnostico.sql
 \ir partes/28_empleados_contrato_normativo.sql
+\ir partes/29_relacion_laboral_contrato.sql

@@ -44,6 +44,8 @@ Estados validos:
 
 14. Para habilitar campos normativos de contrato en Empleados, ejecutar `partes/28_empleados_contrato_normativo.sql` despues de `27_nomina_periodo_diagnostico.sql`. Agrega exclusion de limite de jornada/art. 22 y datos de casa particular sobre `contrato` con `CHECK` de textos permitidos; no modifica liquidaciones ni catalogos.
 
+15. Para persistir el vinculo laboral (dependiente u honorarios) en `contrato`, ejecutar `partes/29_relacion_laboral_contrato.sql` despues de `28_empleados_contrato_normativo.sql`. Agrega `relacion_laboral` con valores `CONTRATO` o `HONORARIOS`; espejo de `supabase/migrations/20260524224000_add_relacion_laboral_contrato.sql`.
+
 `12_migracion_lre_datos_incremental.sql` requiere que existan `persona`/`contrato` con IDs coherentes si se dejan los datos demo.
 
 ### Orden de ejecucion fresh local (`partes/`)
@@ -75,6 +77,7 @@ Estados validos:
 25. `26_empleados_condiciones_trabajador.sql`: condiciones especiales del trabajador y perfil laboral/previsional derivado.
 26. `27_nomina_periodo_diagnostico.sql`: diagnostico operativo de periodos de nomina.
 27. `28_empleados_contrato_normativo.sql`: campos normativos de contrato para casa particular y exclusion de limite de jornada.
+28. `29_relacion_laboral_contrato.sql`: columna `relacion_laboral` en `contrato` (`CONTRATO` / `HONORARIOS`).
 
 ### Ejecucion fresh local
 

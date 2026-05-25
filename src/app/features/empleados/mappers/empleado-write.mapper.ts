@@ -1,6 +1,5 @@
 import { TablesInsert, TablesUpdate } from '../../../core/models/database.types';
 import { EmpleadoListado } from '../models/empleado-listado.model';
-import type { RelacionLaboral } from '../models/empleado.model';
 import { CrearEmpleadoPayload } from '../models/empleado-payload.model';
 import { formatDate } from './empleado-listado.mapper';
 import { RutParts, formatRutParts } from '../utils/empleado-rut';
@@ -13,9 +12,6 @@ import {
 export type PersonaInsert = TablesInsert<'persona'>;
 export type PersonaUpdate = TablesUpdate<'persona'>;
 export type ContratoInsert = TablesInsert<'contrato'>;
-export type ContratoInsertConRelacionLaboral = ContratoInsert & {
-  relacion_laboral: RelacionLaboral;
-};
 export type RemuneracionInsert = TablesInsert<'remuneracion'>;
 export type PrevisionInsert = TablesInsert<'prevision'>;
 export type SaludTrabajadorInsert = TablesInsert<'salud_trabajador'>;
@@ -101,7 +97,7 @@ export function buildContratoInsert(
   payload: CrearEmpleadoPayload,
   personaId: number,
   empresaId: number,
-): ContratoInsertConRelacionLaboral {
+): ContratoInsert {
   return {
     id_persona: personaId,
     id_empresa: empresaId,
