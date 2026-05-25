@@ -2,12 +2,12 @@
 
 | Campo | Estado |
 | ----- | ------ |
-| Estado | **Ola A cerrada** (2026-05-25); **PR B3** movimientos-variables cerrado (2026-05-25); resto Ola B en backlog |
+| Estado | **Ola B cerrada** (2026-05-25): B1–B3, B5. B4 y B6 aplazados |
 | Tipo | Refactor arquitectura (sin cambio funcional) |
-| Alcance | `empleado-alta-modal.orquestador.ts`, `empleado-alta-ficha-snapshot.builder.ts`, `etiquetaPasoHonorarios` en manifest; `form-empleado` delega modales/snapshot. |
+| Alcance | Ola A: orquestador modales alta, snapshot ficha, manifest honorarios. Ola B: modularización listados (mv, hd, tabla empleados) y workspace parámetros (grids/tabs presenters, banda periodo, panel tabs). |
 | Documento | [../arquitectura/auditoria-modular-features.md](../arquitectura/auditoria-modular-features.md), [../modulos/empleados/creacion-avanzada.md](../modulos/empleados/creacion-avanzada.md) |
-| Validación | Unit empleados (orquestador + snapshot + form-empleado + foco + presenter): **41** tests OK |
-| Restricciones | Sin SQL, mappers persistencia, estilos globales. PRs B1–B6 pendientes según auditoría. |
+| Validación | Unit presenters/reglas parámetros (**31**); build development OK; empleados/mv/hd según commits B2–B5 |
+| Restricciones | Sin SQL, mappers persistencia, estilos globales. **Siguiente fase sugerida:** `EMP-FICHA-MODULAR-01` (B4+B6). |
 
 ## EMP-CREACION-AVANZADA-CERRADA-01 - Pruebas exhaustivas creación avanzada
 

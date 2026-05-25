@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ElementRef, inject } from '@angular/core';
+import type { ParametrosTabId } from '../../models/parametro-general.model';
 
 import { ParametrosAfpTabComponent } from '../../components/tabs/parametros-afp-tab.component';
 import { ParametrosCcafMutualesTabComponent } from '../../components/tabs/parametros-ccaf-mutuales-tab.component';
@@ -11,7 +12,7 @@ import { ParametrosTramosCargaTabComponent } from '../../components/tabs/paramet
 import { ParametrosTramosRentaTabComponent } from '../../components/tabs/parametros-tramos-renta-tab.component';
 import { ParametrosValoresTabComponent } from '../../components/tabs/parametros-valores-tab.component';
 import { etiquetaTabParametros } from '../../utils/parametros-workspace-tabs.presenter';
-import { ParametrosWorkspaceContainer } from '../parametros-workspace-container/parametros-workspace-container';
+import { ParametrosWorkspaceOrquestador } from '../../facade/parametros-workspace.orquestador';
 
 @Component({
   selector: 'app-parametros-workspace-tabs-panel',
@@ -32,6 +33,16 @@ import { ParametrosWorkspaceContainer } from '../parametros-workspace-container/
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ParametrosWorkspaceTabsPanelComponent {
-  readonly ws = inject(ParametrosWorkspaceContainer);
+  private readonly hostElement = inject<ElementRef<HTMLElement>>(ElementRef);
+  readonly ws = inject(ParametrosWorkspaceOrquestador);
   readonly etiquetaTab = etiquetaTabParametros;
+
+  seleccionarTab(tabId: ParametrosTabId): void {
+    this.ws.seleccionarTab(tabId);
+    window.requestAnimationFrame(() => {
+      const root = this.hostElement.nativeElement;
+      const active = root.querySelector<HTMLElement>('nav.folder-tabs button.folder-tab--active');
+      active?.scrollIntoView({ inline: 'center', block: 'nearest', behavior: 'smooth' });
+    });
+  }
 }

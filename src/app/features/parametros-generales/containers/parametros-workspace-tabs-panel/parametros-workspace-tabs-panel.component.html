@@ -6,7 +6,7 @@
       [class.folder-tab--active]="ws.activeTab() === tab.id"
       [class.parametros-tab-active]="ws.activeTab() === tab.id"
       [attr.aria-current]="ws.activeTab() === tab.id ? 'page' : null"
-      (click)="ws.seleccionarTab(tab.id)"
+      (click)="seleccionarTab(tab.id)"
     >
       <span>{{ etiquetaTab(tab.id) }}</span>
     </button>

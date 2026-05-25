@@ -4,14 +4,14 @@
       <app-parametros-workspace-periodo-banda />
 
       <div class="parametros-content parametros-panel">
-        @if (isLoading()) {
+        @if (orq.isLoading()) {
           <app-message-box
             variant="loading"
             mode="modal"
             title="Cargando parámetros"
             message="Obteniendo parámetros mensuales y cargas externas."
           ></app-message-box>
-        } @else if (isLoadingPlantilla()) {
+        } @else if (orq.isLoadingPlantilla()) {
           <app-message-box
             variant="loading"
             mode="modal"
@@ -20,7 +20,7 @@
           ></app-message-box>
         }
 
-        @if (dialogState(); as dlg) {
+        @if (orq.dialogState(); as dlg) {
           <app-message-box
             [variant]="dlg.variant"
             mode="modal"
@@ -34,11 +34,11 @@
             [fourthLabel]="dlg.fourthLabel ?? ''"
             [dismissible]="dlg.kind === 'confirmar-config-cliente-extendido'"
             dismissLabel="Cerrar"
-            (action)="onDialogoAccionPrimaria()"
-            (secondary)="onDialogoAccionSecundaria()"
-            (tertiary)="onDialogoAccionTerciaria()"
-            (fourth)="onDialogoAccionCuarta()"
-            (dismiss)="cerrarDialogo()"
+            (action)="orq.onDialogoAccionPrimaria()"
+            (secondary)="orq.onDialogoAccionSecundaria()"
+            (tertiary)="orq.onDialogoAccionTerciaria()"
+            (fourth)="orq.onDialogoAccionCuarta()"
+            (dismiss)="orq.cerrarDialogo()"
           ></app-message-box>
         }
 

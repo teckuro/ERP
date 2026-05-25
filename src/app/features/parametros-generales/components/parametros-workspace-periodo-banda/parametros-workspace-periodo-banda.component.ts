@@ -5,7 +5,7 @@ import { LucideAngularModule } from 'lucide-angular';
 
 import { ButtonComponent } from '../../../../shared/components/ui/button.component';
 import { PageActionsComponent } from '../../../../shared/components/ui/page-actions.component';
-import { ParametrosWorkspaceContainer } from '../../containers/parametros-workspace-container/parametros-workspace-container';
+import { ParametrosWorkspaceOrquestador } from '../../facade/parametros-workspace.orquestador';
 
 @Component({
   selector: 'app-parametros-workspace-periodo-banda',
@@ -15,5 +15,5 @@ import { ParametrosWorkspaceContainer } from '../../containers/parametros-worksp
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ParametrosWorkspacePeriodoBandaComponent {
-  readonly ws = inject(ParametrosWorkspaceContainer);
+  readonly ws = inject(ParametrosWorkspaceOrquestador);
 }
