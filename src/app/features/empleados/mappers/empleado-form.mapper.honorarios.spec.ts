@@ -85,4 +85,49 @@ describe('mapEmpleadoFormToPayload honorarios', () => {
     expect(payload.idAfp).toBeNull();
     expect(payload.idSalud).toBeNull();
   });
+
+  it('honorarios sin datos bancarios lanza mensaje operativo al finalizar', () => {
+    const form = orchestrator.createForm();
+    const catalogos = catalogoHonorarios();
+
+    form.patchValue({
+      datosPersonales: {
+        rut: '12.345.678-5',
+        nombres: 'Prestador',
+        apellidoPaterno: 'Honorarios',
+        apellidoMaterno: '',
+        fechaNacimiento: '1990-01-01',
+        sexo: 'M',
+        estadoCivil: 'SOLTERO',
+        pasaporte: '',
+        idPais: 1,
+      },
+      contacto: {
+        email: 'honorarios@test.local',
+        telefono: '56912345678',
+        direccion: 'Calle 1',
+        numeroDireccion: '10',
+        departamentoDireccion: '',
+        observacionesDireccion: '',
+        idComuna: 100,
+      },
+      contrato: {
+        relacionLaboral: 'HONORARIOS',
+        cargo: 'Consultoria E2E',
+        fechaIngreso: '2024-06-01',
+        sueldoBase: 500000,
+        idMoneda: 1,
+      },
+      previsionSalud: {
+        tipoRegimenPrevisional: 'NINGUNA',
+      },
+      bancario: {
+        idBanco: null,
+        idTipoCuentaBancaria: null,
+        numeroCuenta: '',
+      },
+    } as never);
+
+    expect(() => mapEmpleadoFormToPayload(form, catalogos)).toThrow(/Debes seleccionar el banco de pago/i);
+  });
 });

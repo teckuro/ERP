@@ -330,6 +330,17 @@ export class EmpleadosFormOrchestratorService {
     this.updateBancarioValidators(form);
   }
 
+  /** Re-sincroniza validadores tras cambio de relación laboral (p. ej. honorarios sin emitEvent). */
+  sincronizarValidadoresPorRelacionLaboral(
+    form: EmpleadoFormGroup,
+    catalogos: EmpleadoFormCatalogos,
+  ): void {
+    this.updateContratoValidators(form);
+    this.updatePrevisionSaludValidators(form, catalogos);
+    this.updateBancarioValidators(form);
+    form.updateValueAndValidity({ emitEvent: false });
+  }
+
   /**
    * No autocompletar catálogos: la opción vacía y null en controles marcan pendiente explícito.
    * (Defaults técnicos solo en payload de borrador si la persistencia lo exige; ver mapper borrador.)

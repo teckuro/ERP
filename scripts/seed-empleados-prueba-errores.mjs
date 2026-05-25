@@ -45,6 +45,7 @@ const FIXTURES = [
     apto: false,
     sueldoBase: 0,
     horasSemanales: 42,
+    pasoAltaAvanzada: null,
     regla: 'sueldo-base:invalido',
   },
   {
@@ -288,7 +289,8 @@ async function crearEmpleadoFixture(supabase, catalogos, fixture) {
       estado_ficha: 'INCOMPLETO',
       apto_para_remuneraciones: false,
       fecha_activacion: null,
-      paso_alta_avanzada: fixture.pasoAltaAvanzada ?? 9,
+      paso_alta_avanzada:
+        fixture.pasoAltaAvanzada === undefined ? 9 : fixture.pasoAltaAvanzada,
       cargas: 0,
       tramo_carga_manual: false,
     },

@@ -31,7 +31,7 @@ Reglas de UX implementadas:
 - Bancario se comunica como `Datos para pago del prestador`.
 - El resumen final avisa que el registro no ingresa a nomina dependiente.
 - `Finalizar honorarios` queda habilitado en el shell cuando la ficha cumple aplicabilidad; no exige nómina dependiente ni previsión AFP/salud.
-- **Finalize (2026-05-25):** `mapEmpleadoFormToPayload` usa rama `HONORARIOS` con defaults alineados al borrador (`tipoPrevision: NINGUNA`, catálogos mínimos); MsgBox «Finalizar boleta de honorarios»; radios con `formControlName`.
+- **Finalize (2026-05-25):** `mapEmpleadoFormToPayload` usa rama `HONORARIOS` con `resolveEmpleadoCatalogFallbacks` (`tipoPrevision: NINGUNA`, catálogos mínimos); **banco y número de cuenta obligatorios** al finalizar (sin cuenta ficticia por timestamp); borrador sigue tolerando placeholder; MsgBox «Finalizar boleta de honorarios»; radios con `formControlName`; validadores re-sincronizados al confirmar/cancelar honorarios (`form.valid` honesto).
 - Tras finalizar honorarios, `apto_para_remuneraciones` permanece en `false` (mapper y `recalcularEstadoFicha`).
 - `Guardar borrador` sigue disponible con validacion minima.
 

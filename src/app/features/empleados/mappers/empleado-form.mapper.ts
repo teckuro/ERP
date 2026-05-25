@@ -28,14 +28,43 @@ function resolveTipoPrevisionFromRaw(
   return tipoRaw === 'AFP' || tipoRaw === 'IPS' || tipoRaw === 'NINGUNA' ? tipoRaw : 'NINGUNA';
 }
 
-/** Finalizar alta en modalidad honorarios: paridad con borrador en campos no aplicables. */
-function mapEmpleadoFormToPayloadHonorarios(
-  form: EmpleadoFormGroup,
+type EmpleadoFormRawValue = ReturnType<EmpleadoFormGroup['getRawValue']>;
+
+interface ResolveEmpleadoCatalogFallbacksOptions {
+  /** Borrador: permite número de cuenta técnico si falta. Finalize honorarios: exige datos reales. */
+  allowPlaceholderCuenta?: boolean;
+  requireBancoEnFinalize?: boolean;
+}
+
+interface EmpleadoCatalogFallbacksResolved {
+  today: string;
+  fechaIngreso: string;
+  fechaContrato: string;
+  tipoContrato: TipoContrato;
+  idTipoTrabajador: number;
+  idTipoJornada: number;
+  idPais: number;
+  idComuna: number;
+  tipoPrevision: TipoRegimenPrevisional;
+  idRegimenPrevisional: number | null;
+  idBanco: number;
+  idTipoCuentaBancaria: number;
+  numeroCuenta: string;
+}
+
+function resolveEmpleadoCatalogFallbacks(
+  rawValue: EmpleadoFormRawValue,
   catalogos: EmpleadoFormCatalogos,
-): CrearEmpleadoPayload {
-  const rawValue = form.getRawValue();
+  options: ResolveEmpleadoCatalogFallbacksOptions = {},
+): EmpleadoCatalogFallbacksResolved {
   const today = new Date().toISOString().slice(0, 10);
   const tipoPrevision = resolveTipoPrevisionFromRaw(rawValue.previsionSalud.tipoRegimenPrevisional);
+  const fechaIngreso = rawValue.contrato.fechaIngreso?.trim()
+    ? rawValue.contrato.fechaIngreso
+    : today;
+  const fechaContrato = rawValue.contrato.fechaContrato?.trim()
+    ? rawValue.contrato.fechaContrato
+    : fechaIngreso;
 
   const idTipoTrabajador =
     rawValue.contrato.idTipoTrabajador && rawValue.contrato.idTipoTrabajador > 0
@@ -45,33 +74,75 @@ function mapEmpleadoFormToPayloadHonorarios(
     rawValue.contrato.idTipoJornada && rawValue.contrato.idTipoJornada > 0
       ? rawValue.contrato.idTipoJornada
       : pickFirstCatalogId(catalogos.tiposJornada, 'tipo de jornada');
+  const idPais =
+    rawValue.datosPersonales.idPais && rawValue.datosPersonales.idPais > 0
+      ? rawValue.datosPersonales.idPais
+      : pickFirstCatalogId(catalogos.paises, 'pais');
+  const idComuna =
+    rawValue.contacto.idComuna && rawValue.contacto.idComuna > 0
+      ? rawValue.contacto.idComuna
+      : pickFirstCatalogId(catalogos.comunas, 'comuna');
 
   const idRegimenPrevisional =
     tipoPrevision === 'NINGUNA'
       ? null
       : resolveRegimenPrevisionalId(tipoPrevision, catalogos.regimenesPrevisionales);
 
-  const idBanco =
-    rawValue.bancario.idBanco && rawValue.bancario.idBanco > 0
-      ? rawValue.bancario.idBanco
-      : pickFirstCatalogId(catalogos.bancos, 'banco');
-  const idTipoCuentaBancaria =
-    rawValue.bancario.idTipoCuentaBancaria && rawValue.bancario.idTipoCuentaBancaria > 0
-      ? rawValue.bancario.idTipoCuentaBancaria
-      : pickFirstCatalogId(catalogos.tiposCuentaBancaria, 'tipo de cuenta');
-  const numeroCuentaRaw = rawValue.bancario.numeroCuenta.trim();
-  const numeroCuenta =
-    numeroCuentaRaw.length > 0
-      ? numeroCuentaRaw
-      : String(Date.now() % 1_000_000_000_000).padStart(12, '0');
+  let idBanco: number;
+  let idTipoCuentaBancaria: number;
+  let numeroCuenta: string;
 
-  const fechaIngreso = rawValue.contrato.fechaIngreso?.trim()
-    ? rawValue.contrato.fechaIngreso
-    : today;
-  const fechaContrato = rawValue.contrato.fechaContrato?.trim()
-    ? rawValue.contrato.fechaContrato
-    : fechaIngreso;
-  const tipoContrato = rawValue.contrato.tipoContrato ?? 'INDEFINIDO';
+  if (options.requireBancoEnFinalize) {
+    idBanco = requireSelection(rawValue.bancario.idBanco, 'el banco de pago');
+    idTipoCuentaBancaria = requireSelection(
+      rawValue.bancario.idTipoCuentaBancaria,
+      'el tipo de cuenta bancaria',
+    );
+    numeroCuenta = requireText(rawValue.bancario.numeroCuenta, 'el numero de cuenta bancaria');
+  } else {
+    idBanco =
+      rawValue.bancario.idBanco && rawValue.bancario.idBanco > 0
+        ? rawValue.bancario.idBanco
+        : pickFirstCatalogId(catalogos.bancos, 'banco');
+    idTipoCuentaBancaria =
+      rawValue.bancario.idTipoCuentaBancaria && rawValue.bancario.idTipoCuentaBancaria > 0
+        ? rawValue.bancario.idTipoCuentaBancaria
+        : pickFirstCatalogId(catalogos.tiposCuentaBancaria, 'tipo de cuenta');
+    const numeroCuentaRaw = rawValue.bancario.numeroCuenta.trim();
+    numeroCuenta =
+      numeroCuentaRaw.length > 0
+        ? numeroCuentaRaw
+        : options.allowPlaceholderCuenta
+          ? String(Date.now() % 1_000_000_000_000).padStart(12, '0')
+          : '';
+  }
+
+  return {
+    today,
+    fechaIngreso,
+    fechaContrato,
+    tipoContrato: rawValue.contrato.tipoContrato ?? 'INDEFINIDO',
+    idTipoTrabajador,
+    idTipoJornada,
+    idPais,
+    idComuna,
+    tipoPrevision,
+    idRegimenPrevisional,
+    idBanco,
+    idTipoCuentaBancaria,
+    numeroCuenta,
+  };
+}
+
+/** Finalizar alta en modalidad honorarios: paridad con borrador en campos no aplicables. */
+function mapEmpleadoFormToPayloadHonorarios(
+  form: EmpleadoFormGroup,
+  catalogos: EmpleadoFormCatalogos,
+): CrearEmpleadoPayload {
+  const rawValue = form.getRawValue();
+  const fb = resolveEmpleadoCatalogFallbacks(rawValue, catalogos, {
+    requireBancoEnFinalize: true,
+  });
 
   return {
     origenCreacion: 'avanzado',
@@ -90,16 +161,16 @@ function mapEmpleadoFormToPayloadHonorarios(
     numeroDireccion: rawValue.contacto.numeroDireccion.trim() || null,
     departamentoDireccion: rawValue.contacto.departamentoDireccion.trim() || null,
     observacionesDireccion: rawValue.contacto.observacionesDireccion.trim() || null,
-    idComuna: requireSelection(rawValue.contacto.idComuna, 'la comuna'),
+    idComuna: fb.idComuna,
     idSucursal: rawValue.contrato.idSucursal,
     idDepartamentoEmpresa: rawValue.contrato.idDepartamentoEmpresa,
     idCentroCosto: rawValue.contrato.idCentroCosto,
     relacionLaboral: 'HONORARIOS',
     cargo: requireText(rawValue.contrato.cargo, 'el servicio o funcion del prestador'),
-    fechaContrato,
-    tipoContrato,
-    idTipoTrabajador,
-    idTipoJornada,
+    fechaContrato: fb.fechaContrato,
+    tipoContrato: fb.tipoContrato,
+    idTipoTrabajador: fb.idTipoTrabajador,
+    idTipoJornada: fb.idTipoJornada,
     seguroCesantia: false,
     excluidoLimiteJornada: false,
     causalExclusionJornada: null,
@@ -111,7 +182,7 @@ function mapEmpleadoFormToPayloadHonorarios(
     casaParticularRegistroDtEstado: null,
     casaParticularRegistroDtFecha: null,
     casaParticularRegistroDtFolio: null,
-    fechaIngreso,
+    fechaIngreso: fb.fechaIngreso,
     fechaTermino: null,
     sueldoBase: requireNumber(rawValue.contrato.sueldoBase, 'el monto bruto de honorarios'),
     idMoneda: requireSelection(rawValue.contrato.idMoneda, 'la moneda del monto bruto de honorarios'),
@@ -131,8 +202,8 @@ function mapEmpleadoFormToPayloadHonorarios(
     estado: 'activo',
     idTramoCarga: null,
     condicionesTrabajador: [],
-    tipoPrevision,
-    idRegimenPrevisional,
+    tipoPrevision: fb.tipoPrevision,
+    idRegimenPrevisional: fb.idRegimenPrevisional,
     idAfp: null,
     idMonedaCuenta2: null,
     valorCuenta2: null,
@@ -153,9 +224,9 @@ function mapEmpleadoFormToPayloadHonorarios(
     montoApv: null,
     idFormaPagoApv: null,
     depositoConvenidoApvi: null,
-    idBanco,
-    idTipoCuentaBancaria,
-    numeroCuenta,
+    idBanco: fb.idBanco,
+    idTipoCuentaBancaria: fb.idTipoCuentaBancaria,
+    numeroCuenta: fb.numeroCuenta,
   };
 }
 
@@ -450,33 +521,12 @@ export function mapEmpleadoFormToPayloadBorrador(
   catalogos: EmpleadoFormCatalogos,
 ): CrearEmpleadoPayload {
   const rawValue = form.getRawValue();
-  const today = new Date().toISOString().slice(0, 10);
+  const fb = resolveEmpleadoCatalogFallbacks(rawValue, catalogos, {
+    allowPlaceholderCuenta: true,
+  });
 
-  const tipoPrevision = resolveTipoPrevisionFromRaw(rawValue.previsionSalud.tipoRegimenPrevisional);
-
-  const idTipoTrabajador =
-    rawValue.contrato.idTipoTrabajador && rawValue.contrato.idTipoTrabajador > 0
-      ? rawValue.contrato.idTipoTrabajador
-      : pickFirstCatalogId(catalogos.tiposTrabajador, 'tipo de trabajador');
-  const idTipoJornada =
-    rawValue.contrato.idTipoJornada && rawValue.contrato.idTipoJornada > 0
-      ? rawValue.contrato.idTipoJornada
-      : pickFirstCatalogId(catalogos.tiposJornada, 'tipo de jornada');
-
-  const idPais =
-    rawValue.datosPersonales.idPais && rawValue.datosPersonales.idPais > 0
-      ? rawValue.datosPersonales.idPais
-      : pickFirstCatalogId(catalogos.paises, 'pais');
-
-  const idComuna =
-    rawValue.contacto.idComuna && rawValue.contacto.idComuna > 0
-      ? rawValue.contacto.idComuna
-      : pickFirstCatalogId(catalogos.comunas, 'comuna');
-
-  const idRegimenPrevisional =
-    tipoPrevision === 'NINGUNA'
-      ? null
-      : resolveRegimenPrevisionalId(tipoPrevision, catalogos.regimenesPrevisionales);
+  const tipoPrevision = fb.tipoPrevision;
+  const idRegimenPrevisional = fb.idRegimenPrevisional;
 
   const tieneCuenta2 =
     tipoPrevision === 'AFP' &&
@@ -489,25 +539,6 @@ export function mapEmpleadoFormToPayloadBorrador(
   const esFonasa = tipoSalud === 'FONASA';
   const tieneApvi = tipoPrevision === 'AFP' && rawValue.previsionSalud.tieneApv === true;
 
-  const idBanco =
-    rawValue.bancario.idBanco && rawValue.bancario.idBanco > 0
-      ? rawValue.bancario.idBanco
-      : pickFirstCatalogId(catalogos.bancos, 'banco');
-  const idTipoCuentaBancaria =
-    rawValue.bancario.idTipoCuentaBancaria && rawValue.bancario.idTipoCuentaBancaria > 0
-      ? rawValue.bancario.idTipoCuentaBancaria
-      : pickFirstCatalogId(catalogos.tiposCuentaBancaria, 'tipo de cuenta');
-  const numeroCuentaRaw = rawValue.bancario.numeroCuenta.trim();
-  const numeroCuenta =
-    numeroCuentaRaw.length > 0
-      ? numeroCuentaRaw
-      : String(Date.now() % 1_000_000_000_000).padStart(12, '0');
-
-  const fechaIngreso = rawValue.contrato.fechaIngreso?.trim() ? rawValue.contrato.fechaIngreso : today;
-  const fechaContrato = rawValue.contrato.fechaContrato?.trim()
-    ? rawValue.contrato.fechaContrato
-    : fechaIngreso;
-
   return {
     origenCreacion: 'avanzado',
     rut: rawValue.datosPersonales.rut,
@@ -518,23 +549,23 @@ export function mapEmpleadoFormToPayloadBorrador(
     sexo: requireSexo(rawValue.datosPersonales.sexo),
     estadoCivil: requireEstadoCivil(rawValue.datosPersonales.estadoCivil),
     pasaporte: rawValue.datosPersonales.pasaporte.trim() || null,
-    idPais,
+    idPais: fb.idPais,
     email: rawValue.contacto.email,
     telefono: rawValue.contacto.telefono,
     direccion: (rawValue.contacto.direccion || '—').trim() || '—',
     numeroDireccion: rawValue.contacto.numeroDireccion.trim() || null,
     departamentoDireccion: rawValue.contacto.departamentoDireccion.trim() || null,
     observacionesDireccion: rawValue.contacto.observacionesDireccion.trim() || null,
-    idComuna,
+    idComuna: fb.idComuna,
     idSucursal: rawValue.contrato.idSucursal,
     idDepartamentoEmpresa: rawValue.contrato.idDepartamentoEmpresa,
     idCentroCosto: rawValue.contrato.idCentroCosto,
     relacionLaboral: rawValue.contrato.relacionLaboral,
     cargo: (rawValue.contrato.cargo || 'Sin cargo').trim() || 'Sin cargo',
-    fechaContrato,
-    tipoContrato: rawValue.contrato.tipoContrato ?? 'INDEFINIDO',
-    idTipoTrabajador,
-    idTipoJornada,
+    fechaContrato: fb.fechaContrato,
+    tipoContrato: fb.tipoContrato,
+    idTipoTrabajador: fb.idTipoTrabajador,
+    idTipoJornada: fb.idTipoJornada,
     seguroCesantia: rawValue.contrato.seguroCesantia,
     excluidoLimiteJornada: rawValue.contrato.excluidoLimiteJornada,
     causalExclusionJornada: rawValue.contrato.excluidoLimiteJornada
@@ -568,7 +599,7 @@ export function mapEmpleadoFormToPayloadBorrador(
       rawValue.contrato.casaParticularRegistroDtEstado === 'REGISTRADO'
         ? rawValue.contrato.casaParticularRegistroDtFolio.trim() || null
         : null,
-    fechaIngreso,
+    fechaIngreso: fb.fechaIngreso,
     fechaTermino: rawValue.contrato.fechaTermino || null,
     sueldoBase: rawValue.contrato.sueldoBase ?? 0,
     idMoneda: rawValue.contrato.idMoneda,
@@ -617,9 +648,9 @@ export function mapEmpleadoFormToPayloadBorrador(
     montoApv: tieneApvi ? rawValue.previsionSalud.montoApv : null,
     idFormaPagoApv: tieneApvi ? rawValue.previsionSalud.idFormaPagoApv : null,
     depositoConvenidoApvi: tieneApvi ? rawValue.previsionSalud.depositoConvenidoApvi : null,
-    idBanco,
-    idTipoCuentaBancaria,
-    numeroCuenta,
+    idBanco: fb.idBanco,
+    idTipoCuentaBancaria: fb.idTipoCuentaBancaria,
+    numeroCuenta: fb.numeroCuenta,
   };
 }
 

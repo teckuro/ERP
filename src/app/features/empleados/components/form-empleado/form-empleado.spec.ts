@@ -595,6 +595,58 @@ describe('FormEmpleadoComponent - completitud de borrador avanzado', () => {
     expect(component.coherenciaResumenItems()).toContain('Seguro de Cesantía desactivado en contrato indefinido.');
   });
 
+  it('honorarios con datos minimos deja el formulario valido tras confirmar modalidad', async () => {
+    const component = await setup({
+      ...EMPTY_EMPLEADO_FORM_CATALOGOS,
+      tiposTrabajador: [
+        { value: 1, label: 'DEPENDIENTE' },
+        { value: 2, label: 'INDEPENDIENTE' },
+      ],
+      tiposJornada: [{ value: 20, label: 'Completa' }],
+      monedas: [{ value: 1, label: 'CLP', codigo: 'CLP' }],
+      bancos: [{ value: 5, label: 'Banco Test' }],
+      tiposCuentaBancaria: [{ value: 6, label: 'Corriente' }],
+      regimenesPrevisionales: [{ value: 202, label: 'NINGUNA' }],
+    });
+
+    await component.ngOnInit();
+
+    component.form.patchValue({
+      datosPersonales: {
+        rut: '12.345.678-5',
+        nombres: 'Prestador',
+        apellidoPaterno: 'Honorarios',
+        fechaNacimiento: '1990-01-01',
+        sexo: 'M',
+        estadoCivil: 'SOLTERO',
+        idPais: 1,
+      },
+      contacto: {
+        email: 'honorarios@test.local',
+        telefono: '56912345678',
+        direccion: 'Calle 1',
+        idComuna: 100,
+      },
+      contrato: {
+        cargo: 'Servicio consultoria E2E',
+        fechaIngreso: '2024-06-01',
+        sueldoBase: 500000,
+        idMoneda: 1,
+      },
+      bancario: {
+        idBanco: 5,
+        idTipoCuentaBancaria: 6,
+        numeroCuenta: '123456789012',
+      },
+    } as never);
+
+    component.form.controls.contrato.controls.relacionLaboral.setValue('HONORARIOS');
+    expect(component.modalAccionAvanzada()?.kind).toBe('honorarios-confirm');
+    component.manejarPrimariaModalAccionAvanzada();
+
+    expect(component.form.valid).toBe(true);
+  });
+
   it('sincroniza tipo trabajador base desde relacion laboral', async () => {
     const component = await setup({
       ...EMPTY_EMPLEADO_FORM_CATALOGOS,

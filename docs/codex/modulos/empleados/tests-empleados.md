@@ -30,14 +30,20 @@ npx ng test --watch=false
 
 Matriz F1–F13: [`matriz-pruebas-creacion-avanzada.md`](matriz-pruebas-creacion-avanzada.md).
 
-**Gate creación avanzada (2026-05-25):** unit empleados **218**; UI **17/17**; BD **15/15** (0 skipped); `verify:empleados-qa` incluye ERR01.
+**Gate creación avanzada (2026-05-25):** `npm run test:gate:empleados` (unit **220** + E2E vía `scripts/gate-empleados-e2e.mjs`: UI **17/17**, BD **15/15**, verify, nómina fixtures).
 
 ```bash
-npx ng test --watch=false --include="**/features/empleados/**/*.spec.ts"
-npm run test:e2e:empleados:ui
-E2E_EMPLEADOS_BORRADOR=1 npm run test:e2e:empleados:db
-E2E_EMPLEADOS_BORRADOR=1 npm run verify:empleados-qa
+npm run test:gate:empleados
+# Equivalente manual:
+npm run test:gate:empleados:unit
+npm run test:gate:empleados:e2e
 ```
+
+PowerShell (sin script gate): `$env:E2E_EMPLEADOS_BORRADOR='1'; npm run test:e2e:empleados:db`; `$env:E2E_EMPLEADOS_NOMINA_FIXTURES='1'; npx playwright test tests/empleados-nomina-error-fixtures.spec.ts --project=empleados-nomina --workers=1`.
+
+| Spec | Proyecto |
+|------|----------|
+| `tests/empleados-nomina-error-fixtures.spec.ts` | `empleados-nomina` (sin `globalSetup` global; limpia RUT `2405*`) |
 
 `globalSetup` (solo proyecto `empleados-db` con flag): limpieza BD → U1–U8 → ERR append. Ver matriz.
 

@@ -658,10 +658,7 @@ export class FormEmpleadoComponent implements OnInit {
 
     const firstBadStep = this.buscarPrimerPasoAsistenteConBloqueos();
 
-    const bloqueadoPorFormulario =
-      !this.esModoHonorarios() && this.form.invalid;
-
-    if (firstBadStep !== null || bloqueadoPorFormulario) {
+    if (firstBadStep !== null || this.form.invalid) {
       this.sincronizarPestanasCompletadasDesdeValidez();
       this.openFinishInvalidModal(firstBadStep ?? 0);
       return;
@@ -3055,6 +3052,10 @@ export class FormEmpleadoComponent implements OnInit {
 
   private confirmarModoHonorarios(options?: { lockPrevious?: boolean }): void {
     this.aplicarEstadoVisualHonorarios();
+    this.empleadosFormService.sincronizarValidadoresPorRelacionLaboral(
+      this.form,
+      this.catalogos(),
+    );
     this.moverFlujoHonorariosAPasoAplicable();
     this.sincronizarPestanasCompletadasDesdeValidez();
     if (options?.lockPrevious !== false) {
@@ -3073,6 +3074,10 @@ export class FormEmpleadoComponent implements OnInit {
     this.previousRelacionLaboral = this.relacionLaboralRevertirHonorarios;
     this.suppressRelacionLaboralModal = false;
     this.sincronizarControlesNoAplicablesHonorarios(false);
+    this.empleadosFormService.sincronizarValidadoresPorRelacionLaboral(
+      this.form,
+      this.catalogos(),
+    );
     this.sincronizarPestanasCompletadasDesdeValidez();
   }
 

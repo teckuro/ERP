@@ -37,6 +37,11 @@ export default defineConfig({
       globalSetup: resolve(process.cwd(), 'tests/global-setup-empleados-e2e.mjs'),
       timeout: 240_000,
     },
+    {
+      name: 'empleados-nomina',
+      testMatch: '**/empleados-nomina-error-fixtures.spec.ts',
+      timeout: 120_000,
+    },
   ],
   webServer: {
     command: 'npm run start -- --host 127.0.0.1 --port 4200',
