@@ -1,4 +1,5 @@
 import type { ParametroGeneral, ParametrosGeneralesCatalogos } from '../../parametros-generales/models/parametro-general.model';
+import { describe, expect, it } from 'vitest';
 
 import { revisarGruposParametrosMinimos } from './proceso-mensual-parametros-minimos.rules';
 

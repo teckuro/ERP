@@ -4,7 +4,10 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { EmpleadosService } from '../../empleados/services/empleados.service';
 import { HaberesDescuentosService } from '../../haberes-descuentos/services/haberes-descuentos.service';
 import { MovimientosVariablesService } from '../../movimientos-variables/services/movimientos-variables.service';
-import type { ParametroGeneral } from '../../parametros-generales/models/parametro-general.model';
+import type {
+  ParametroGeneral,
+  ParametrosGeneralesClienteConfig,
+} from '../../parametros-generales/models/parametro-general.model';
 import { ParametrosGeneralesService } from '../../parametros-generales/services/parametros-generales.service';
 
 import { EntradasMensualesPeriodoService } from '../entradas/services/entradas-mensuales-periodo.service';
@@ -17,56 +20,91 @@ const filaPgMock = {
   periodo: '2026-05',
   uf: 38000,
   utm: 60000,
-  uta: null,
+  uta: 720000,
   sueldoMinimo: 500000,
-  sueldoMinimo18a65: null,
-  sueldoMinimoMenor18Mayor65: null,
-  sueldoMinimoCasaParticular: null,
-  ingresoMinimoNoRemuneracional: null,
-  topeAfpUf: null,
+  sueldoMinimo18a65: 500000,
+  sueldoMinimoMenor18Mayor65: 372989,
+  sueldoMinimoCasaParticular: 500000,
+  ingresoMinimoNoRemuneracional: 322295,
+  topeAfpUf: 87.8,
   gratificacion: false,
   immGratificacion: null,
-  topeAfp: 100,
-  topeIpsUf: null,
-  topeIps: 100,
-  topeCesantiaUf: null,
-  topeCesantia: 100,
-  topeApvMensualUf: null,
-  topeApvMensual: null,
-  topeApvAnualUf: null,
-  topeApvAnual: null,
+  topeAfp: 3336400,
+  topeIpsUf: 87.8,
+  topeIps: 3336400,
+  topeCesantiaUf: 131.9,
+  topeCesantia: 5012200,
+  topeApvMensualUf: 50,
+  topeApvMensual: 1900000,
+  topeApvAnualUf: 600,
+  topeApvAnual: 22800000,
   topeDepositoConvenidoAnualUf: null,
   topeDepositoConvenidoAnual: null,
   topeAfpVoluntario: null,
   sis: 0.0145,
-  sanna: null,
+  sanna: 0.0003,
   seguroSocialExpectativaVida: null,
   aporteEmpleadorAfp: null,
-  saludObligatoria: null,
+  saludObligatoria: 0.07,
   saludCcaf: null,
   saludFonasaConCcaf: null,
   descuentosBasePorDia: false,
-  afcTrabajadorIndefinido: null,
-  afcEmpleadorIndefinido: null,
-  afcEmpleadorPlazo: null,
+  afcTrabajadorIndefinido: 0.006,
+  afcEmpleadorIndefinido: 0.024,
+  afcEmpleadorPlazo: 0.03,
   afcEmpleadorIndefinidoOnceAnosMas: null,
   afcEmpleadorCasaParticular: null,
-  trabajoPesadoEmpleador: null,
-  trabajoPesadoTrabajador: null,
-  trabajoMenosPesadoEmpleador: null,
-  trabajoMenosPesadoTrabajador: null,
+  trabajoPesadoEmpleador: 0.02,
+  trabajoPesadoTrabajador: 0.02,
+  trabajoMenosPesadoEmpleador: 0.01,
+  trabajoMenosPesadoTrabajador: 0.01,
   fechaActualizacion: null,
 } as unknown as ParametroGeneral;
+
+const clienteConfigMock = {
+  ...filaPgMock,
+  idCcafEntidad: 1,
+  idOrganismoAdministradorLey16744: null,
+  estadoReconciliacionOficial: 'cliente_confirmado',
+  fechaReconciliacionOficial: null,
+  origenReconciliacion: null,
+  observacionReconciliacion: null,
+} as ParametrosGeneralesClienteConfig;
 
 const catalogosMock = {
   afp: [{ idAfp: 1, codigo: 'x', nombre: 'n', periodo: null, tasaObligatoria: 0.1, comision: 0, sis: 0, tasaEmpleador: 0, vigente: true, vigenciaInicio: null, vigenciaFin: null }],
   isapres: [],
   saludInstituciones: [{ idSalud: 1, codigo: 'FONASA', nombre: 'Fonasa', tipo: 'FONASA', porcentajeCotizacion: 0.07, periodo: null, vigente: true, vigenciaInicio: null, vigenciaFin: null }],
-  tramosCarga: [],
+  tramosCarga: [{ idTramo: 1, periodo: '2026-05', tramo: 'A', desde: 0, hasta: 500000, valor: 1000 }],
   tramosImpuesto: [{ idTramo: 1, periodo: '2026-05', desde: 0, hasta: 1, factor: 1, rebaja: 0 }],
   tablaImpuestoUnico: [{ id: 1, tramo: 1, desde: 0, hasta: 999999, factor: 0, rebaja: 0, vigenciaInicio: '2026-05-01', vigenciaFin: null }],
-  reformaPensiones: [],
-  trabajosPesados: [],
+  reformaPensiones: [
+    {
+      idParametro: 1,
+      nombre: 'reforma',
+      valorDecimal: 0,
+      valorEntero: null,
+      periodo: '2026-05',
+      vigenciaInicio: '2026-01-01',
+      vigenciaFin: null,
+    },
+  ],
+  trabajosPesados: [
+    {
+      idTrabajoPesadoParametro: 1,
+      codigo: 'TP',
+      periodo: '2026-05',
+      nombre: 'Trabajo pesado',
+      tasaTrabajador: 0.02,
+      tasaEmpleador: 0.02,
+      tasaTotal: 0.04,
+      requiereDictamenCen: true,
+      fuente: null,
+      vigente: true,
+      vigenciaInicio: '2026-01-01',
+      vigenciaFin: null,
+    },
+  ],
   reformaPrevisional: [
     {
       idReformaPrevisionalParametro: 1,
@@ -119,6 +157,7 @@ describe('ProcesoMensualService', () => {
   let parametros: {
     obtenerUltimoHastaPeriodo: ReturnType<typeof vi.fn>;
     obtenerPeriodoRemuneracion: ReturnType<typeof vi.fn>;
+    obtenerClienteConfig: ReturnType<typeof vi.fn>;
     listarCatalogos: ReturnType<typeof vi.fn>;
   };
   let empleados: { listar: ReturnType<typeof vi.fn>; obtenerPorId: ReturnType<typeof vi.fn> };
@@ -154,6 +193,7 @@ describe('ProcesoMensualService', () => {
         fechaInicio: '2026-05-01',
         fechaFin: '2026-05-31',
       }),
+      obtenerClienteConfig: vi.fn().mockResolvedValue(clienteConfigMock),
       listarCatalogos: vi.fn().mockResolvedValue(catalogosMock),
     };
     empleados = {

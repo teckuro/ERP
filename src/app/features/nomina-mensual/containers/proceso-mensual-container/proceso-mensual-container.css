@@ -1,6 +1,8 @@
 @import './payroll-operational-tabs.css';
 @import './payroll-segment-nav.css';
 
+:host{display:flex;flex:1;min-height:0}
+
 .payroll-ledger-shell {
   --erp-bg: #f4f8fb;
   --erp-surface: #ffffff;
@@ -24,8 +26,9 @@
   --erp-danger-soft: #fff1ee;
   --erp-danger-border: #e2b8b3;
   display: flex;
+  flex: 1;
   flex-direction: column;
-  min-height: calc(100dvh - 7rem);
+  min-height: 0;
   border: 0;
   border-radius: 0;
   background: var(--erp-surface);

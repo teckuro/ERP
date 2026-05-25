@@ -40,7 +40,7 @@ describe('proceso-mensual-flujo-completo.rules', () => {
     expect(new Set(acciones)).toEqual(new Set(['confirmarNomina']));
   });
 
-  it('borrador con revision al dia no pide Generar nomina en CTA principal', () => {
+  it('borrador con revisión al día no pide Generar nómina en CTA principal', () => {
     const { resuelta } = evaluarEtapaFlujoCompleto('borrador_revision_al_dia');
     expect(resuelta.accionPrincipal.label).not.toBe('Generar nómina');
     expect(resuelta.accionPrincipal.label).toBe('Confirmar nómina');

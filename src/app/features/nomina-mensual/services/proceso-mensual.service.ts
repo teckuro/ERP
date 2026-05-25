@@ -9,8 +9,18 @@ import type {
   MovimientoVariableListadoFila,
   MovimientoVariableOrigen,
 } from '../../movimientos-variables/models/movimiento-variable.model';
-import type { ParametroGeneral, ParametrosGeneralesCatalogos } from '../../parametros-generales/models/parametro-general.model';
+import type {
+  ParametroGeneral,
+  ParametrosGeneralesCatalogos,
+  ParametrosGeneralesClienteConfig,
+} from '../../parametros-generales/models/parametro-general.model';
 import { ParametrosGeneralesService } from '../../parametros-generales/services/parametros-generales.service';
+import {
+  evaluarCompletitudParametrosMensual,
+  resolverEstadoVisualParametros,
+  type ParametrosCompletitudResultado,
+  type ParametrosEstadoVisual,
+} from '../../parametros-generales/rules/parametros-completitud.rules';
 
 import type { EntradaMensualPeriodo } from '../entradas/models/entrada-mensual-periodo.model';
 import { LiquidacionesOficialesRepository } from '../../liquidaciones-oficiales/data-access/liquidaciones-oficiales.repository';
@@ -89,6 +99,7 @@ export class ProcesoMensualService {
     const settled = await Promise.allSettled([
       this.parametrosGenerales.obtenerUltimoHastaPeriodo(p),
       this.parametrosGenerales.obtenerPeriodoRemuneracion(p),
+      this.parametrosGenerales.obtenerClienteConfig(p),
       this.empleados.listar(),
       this.haberesDescuentos.listarConceptosMantenimiento(),
       this.entradasMensuales.listarEntradasPeriodo(p),
@@ -347,7 +358,7 @@ export class ProcesoMensualService {
       throw new Error('El resultado debe estar aprobado operativamente antes de cerrar.');
     }
     if (snapshot.cierreOperativo?.estado === 'cerrado_operativamente') {
-      throw new Error('La nomina ya esta cerrada operativamente.');
+      throw new Error('La nómina ya está cerrada operativamente.');
     }
 
     return this.snapshots.cerrarNominaOperativa({
@@ -364,6 +375,9 @@ export class ProcesoMensualService {
       lecturaUltimoPg: 'ok',
       periodoRem: null,
       lecturaPeriodoRem: 'ok',
+      parametrosEstadoVisual: 'sin_base',
+      parametrosEstadoDetalle: 'Parámetros del período pendientes: falta la fila oficial del período.',
+      parametrosOperativos: false,
       parametrosGrupos: [],
       empleadosActivosAptos: 0,
       empleadosActivosNoAptos: 0,
@@ -384,7 +398,7 @@ export class ProcesoMensualService {
     periodo: string,
     settled: PromiseSettledResult<unknown>[],
   ): ProcesoMensualHechosPrevalidacion {
-    const [rUlt, rPer, rEmp, rConc, rEntradas, rRec, rCat] = settled;
+    const [rUlt, rPer, rCfg, rEmp, rConc, rEntradas, rRec, rCat] = settled;
 
     let ultimoPg: ParametroGeneral | null = null;
     let lecturaUltimoPg: ProcesoMensualHechosPrevalidacion['lecturaUltimoPg'] = 'ok';
@@ -404,6 +418,16 @@ export class ProcesoMensualService {
     } else {
       lecturaPeriodoRem = 'error';
       errorPeriodoRem = rPer.reason instanceof Error ? rPer.reason.message : String(rPer.reason);
+    }
+
+    let clienteConfig: ParametrosGeneralesClienteConfig | null = null;
+    let lecturaClienteConfig: 'ok' | 'error' = 'ok';
+    let errorClienteConfig: string | undefined;
+    if (rCfg.status === 'fulfilled') {
+      clienteConfig = rCfg.value as ParametrosGeneralesClienteConfig | null;
+    } else {
+      lecturaClienteConfig = 'error';
+      errorClienteConfig = rCfg.reason instanceof Error ? rCfg.reason.message : String(rCfg.reason);
     }
 
     let empleadosActivosAptos = 0;
@@ -507,6 +531,21 @@ export class ProcesoMensualService {
       lecturaCatalogos,
       errorCatalogos,
     });
+    const estadoParametros = this.resolverEstadoParametrosPeriodo({
+      periodo,
+      ultimoPg,
+      periodoRem,
+      clienteConfig,
+      catalogos,
+      lecturaUltimoPg,
+      lecturaPeriodoRem,
+      lecturaClienteConfig,
+      lecturaCatalogos,
+      errorUltimoPg,
+      errorPeriodoRem,
+      errorClienteConfig,
+      errorCatalogos,
+    });
 
     return {
       periodo,
@@ -516,6 +555,9 @@ export class ProcesoMensualService {
       periodoRem,
       lecturaPeriodoRem,
       errorPeriodoRem,
+      parametrosEstadoVisual: estadoParametros.visual,
+      parametrosEstadoDetalle: estadoParametros.detalle,
+      parametrosOperativos: estadoParametros.operativo,
       parametrosGrupos,
       empleadosActivosAptos,
       empleadosActivosNoAptos,
@@ -533,6 +575,124 @@ export class ProcesoMensualService {
       movimientos,
       lecturaMovimientos,
       errorMovimientos,
+    };
+  }
+
+  private resolverEstadoParametrosPeriodo(input: {
+    periodo: string;
+    ultimoPg: ParametroGeneral | null;
+    periodoRem: ProcesoMensualHechosPrevalidacion['periodoRem'];
+    clienteConfig: ParametrosGeneralesClienteConfig | null;
+    catalogos: ParametrosGeneralesCatalogos | null;
+    lecturaUltimoPg: ProcesoMensualHechosPrevalidacion['lecturaUltimoPg'];
+    lecturaPeriodoRem: ProcesoMensualHechosPrevalidacion['lecturaPeriodoRem'];
+    lecturaClienteConfig: 'ok' | 'error';
+    lecturaCatalogos: 'ok' | 'error' | 'omitido';
+    errorUltimoPg?: string;
+    errorPeriodoRem?: string;
+    errorClienteConfig?: string;
+    errorCatalogos?: string;
+  }): {
+    visual: ParametrosEstadoVisual;
+    operativo: boolean;
+    detalle: string;
+    completitud: ParametrosCompletitudResultado;
+  } {
+    const oficialExacto = input.ultimoPg?.periodo === input.periodo ? input.ultimoPg : null;
+    const referenciaAnterior = Boolean(input.ultimoPg && input.ultimoPg.periodo !== input.periodo);
+    const errorTecnico =
+      input.lecturaUltimoPg === 'error' ||
+      input.lecturaPeriodoRem === 'error' ||
+      input.lecturaClienteConfig === 'error' ||
+      input.lecturaCatalogos === 'error';
+    const completitud = evaluarCompletitudParametrosMensual({
+      periodo: input.periodo,
+      periodoRemuneracion: input.periodoRem,
+      oficial: oficialExacto,
+      clienteConfig: input.clienteConfig,
+      catalogos: input.catalogos ?? this.catalogosParametrosVacios(),
+      errorTecnico,
+    });
+    const visual = resolverEstadoVisualParametros({
+      estadoCalculado: completitud.estadoCalculado,
+      oficialActual: oficialExacto !== null,
+      clienteConfig: input.clienteConfig !== null,
+      referenciaAnterior,
+      diferencias: completitud.reconciliacionPendiente,
+      errorTecnico,
+    });
+    const operativo = visual === 'cargado' || visual === 'corregido' || visual === 'cerrado';
+    return {
+      visual,
+      operativo,
+      detalle: this.detalleEstadoParametrosPeriodo({
+        periodo: input.periodo,
+        visual,
+        completitud,
+        ultimoPg: input.ultimoPg,
+        errorUltimoPg: input.errorUltimoPg,
+        errorPeriodoRem: input.errorPeriodoRem,
+        errorClienteConfig: input.errorClienteConfig,
+        errorCatalogos: input.errorCatalogos,
+      }),
+      completitud,
+    };
+  }
+
+  private detalleEstadoParametrosPeriodo(input: {
+    periodo: string;
+    visual: ParametrosEstadoVisual;
+    completitud: ParametrosCompletitudResultado;
+    ultimoPg: ParametroGeneral | null;
+    errorUltimoPg?: string;
+    errorPeriodoRem?: string;
+    errorClienteConfig?: string;
+    errorCatalogos?: string;
+  }): string {
+    if (input.visual === 'cargado' || input.visual === 'corregido' || input.visual === 'cerrado') {
+      return 'Parámetros del período operativos.';
+    }
+    if (input.visual === 'error') {
+      return input.errorUltimoPg ?? input.errorPeriodoRem ?? input.errorClienteConfig ?? input.errorCatalogos ??
+        'Parámetros del período pendientes por un error técnico de lectura.';
+    }
+    if (input.visual === 'referencia_anterior') {
+      return `Parámetros del período pendientes: existe referencia ${input.ultimoPg?.periodo ?? 'anterior'}, pero falta la fila oficial ${input.periodo}.`;
+    }
+    if (input.visual === 'sin_base') {
+      return 'Parámetros del período pendientes: falta la fila oficial del período.';
+    }
+    if (input.visual === 'oficial_sin_config') {
+      return 'Parámetros del período pendientes: falta completar la configuración cliente.';
+    }
+    if (input.visual === 'configuracion_parcial') {
+      return 'Parámetros del período pendientes: hay configuración cliente sin fila oficial del período.';
+    }
+    if (input.visual === 'pendiente_reconciliacion') {
+      return 'Parámetros del período pendientes: hay diferencias entre valores oficiales y configuración cliente por reconciliar.';
+    }
+    const prioridad = [...input.completitud.errores, ...input.completitud.pendientes, ...input.completitud.advertencias]
+      .find((texto) => texto.trim().length > 0);
+    return prioridad ? `Parámetros del período pendientes: ${prioridad}` : 'Parámetros del período pendientes.';
+  }
+
+  private catalogosParametrosVacios(): ParametrosGeneralesCatalogos {
+    return {
+      afp: [],
+      isapres: [],
+      saludInstituciones: [],
+      tramosCarga: [],
+      tramosImpuesto: [],
+      tablaImpuestoUnico: [],
+      reformaPensiones: [],
+      trabajosPesados: [],
+      reformaPrevisional: [],
+      ley16744Parametros: [],
+      organismosLey16744: [],
+      ccafEntidades: [],
+      apvInstituciones: [],
+      apvFormasPago: [],
+      afcParametros: [],
     };
   }
 
@@ -660,7 +820,7 @@ export class ProcesoMensualService {
     const bloqueantes = entradas.filter(entradaBloqueaProceso).length;
     if (bloqueantes > 0) return `${bloqueantes} entrada(s) bloqueante(s).`;
     const porRevisar = entradas.filter((entrada) => entradaRequiereRevision(entrada) || asArray(entrada.warnings).length > 0).length;
-    if (porRevisar > 0) return `${porRevisar} entrada(s) requieren revision.`;
+    if (porRevisar > 0) return `${porRevisar} entrada(s) requieren revisión.`;
     if (empleado.idContrato == null) return 'Contrato no disponible.';
     return 'Sin observaciones';
   }
@@ -681,13 +841,13 @@ export class ProcesoMensualService {
     if (mensaje) return mensaje.texto;
     switch (estado) {
       case 'listos':
-        return 'Parametros del periodo disponibles para preparar la base.';
+        return 'Parámetros del período disponibles para preparar la base.';
       case 'con_observaciones':
-        return 'Parametros disponibles con observaciones del periodo.';
+        return 'Parámetros disponibles con observaciones del período.';
       case 'por_revisar':
-        return 'Parametros del periodo requieren revision antes del calculo.';
+        return 'Parámetros del período requieren revisión antes del cálculo.';
       default:
-        return 'Parametros del periodo sin evaluar.';
+        return 'Parámetros del período sin evaluar.';
     }
   }
 

@@ -1,9 +1,74 @@
-/* NOM-WORKSPACE-POLISH-03 — extensión local del workspace (budget segmentado) */
+/* NOM-WORKSPACE-POLISH-03 - extension local del workspace (budget segmentado) */
 
 :host {
   display: flex;
   flex: 1 1 auto;
+  width: 100%;
+  height: 100%;
+  min-width: 0;
   min-height: 0;
+}
+
+.payroll-view-panel,
+.payroll-console,
+.payroll-main {
+  min-width: 0;
+  min-height: 0;
+}
+
+.payroll-view-panel {
+  height: 100%;
+}
+
+.payroll-workspace-sidebar,
+.payroll-tab-panel {
+  min-height: 0;
+  overflow: hidden auto;
+}
+
+.payroll-view-panel,
+.payroll-console,
+.payroll-main,
+.payroll-workspace-content,
+.payroll-tab-panel {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.payroll-view-panel,
+.payroll-console,
+.payroll-main,
+.payroll-workspace-layout,
+.payroll-workspace-content {
+  flex: 1 1 auto;
+  height: 100%;
+}
+
+.payroll-console {
+  position: relative;
+  overflow: hidden;
+}
+
+.payroll-main {
+  gap: 0;
+}
+
+.payroll-workspace-layout {
+  display: grid;
+  grid-template-columns: minmax(272px, 320px) minmax(0, 1fr);
+  grid-template-rows: minmax(0, 1fr);
+  align-items: stretch;
+  min-width: 0;
+  min-height: 0;
+}
+
+.payroll-workspace-content {
+  overflow: hidden;
+}
+
+.payroll-tab-panel {
+  flex: 1 1 auto;
 }
 
 .payroll-console:has(.payroll-workspace-layout) .payroll-focus__areas {

@@ -112,7 +112,7 @@ Specs de integración del contenedor alineados al shell modular (workspace + ove
 
 ## NOM-MENSUAL-PERSISTENCIA-ESTADO-01 aplicado
 
-Al entrar o cambiar de periodo, si existe version revisable activa en BD, el store rehidrata cabecera y detalle sin vaciar el snapshot antes del fetch; la facade infiere prevalidacion, base y calculo desde el snapshot para bitacora, franja y estado operativo. Sin guardar version revisable, la pantalla sigue en «Generar nomina». Documento: [`nom-mensual-persistencia-estado-01.md`](./nom-mensual-persistencia-estado-01.md).
+Al entrar o cambiar de período, si existe versión revisable activa en BD, el store rehidrata cabecera y detalle sin vaciar el snapshot antes del fetch; la facade infiere prevalidación, base y cálculo desde el snapshot para bitácora, franja y estado operativo. Sin guardar versión revisable, la pantalla sigue en «Generar nómina». Documento: [`nom-mensual-persistencia-estado-01.md`](./nom-mensual-persistencia-estado-01.md).
 
 ## NOM-MENSUAL-WORKSPACE-UI-01 aplicado
 
@@ -120,7 +120,7 @@ La pantalla principal se orienta como **Nomina mensual** y workspace operativo d
 
 ```txt
 Verificar periodo
--> Generar nomina
+-> Generar nómina
 -> Revisar trabajadores
 -> Confirmar nomina
 -> Generar liquidaciones

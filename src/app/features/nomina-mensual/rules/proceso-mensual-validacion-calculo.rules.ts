@@ -73,8 +73,8 @@ export function buildValidacionCalculoPreliminarView(
   if (!resultado && tieneBasePersistida) {
     informaciones.push({
       codigo: 'INFO-BASE-PERSISTIDA',
-      titulo: 'Base de nomina generada',
-      descripcion: 'La base del periodo esta guardada. Puedes continuar con la revision de trabajadores.',
+      titulo: 'Base de nómina generada',
+      descripcion: 'La base del período está guardada. Puedes continuar con la revisión de trabajadores.',
       severidad: 'info',
     });
     return assembleValidacionCalculo({ bloqueos, advertencias, informaciones });
@@ -122,8 +122,8 @@ export function buildValidacionCalculoPreliminarView(
   ) {
     bloqueos.push({
       codigo: 'BLOQ-004',
-      titulo: 'Faltan parámetros mínimos para calcular',
-      descripcion: 'Revisa los parámetros obligatorios del período antes de calcular preliminarmente.',
+      titulo: 'Parámetros del período pendientes',
+      descripcion: 'Revisa la fila oficial, configuración cliente, vigencias, calendario o reconciliación antes de calcular.',
       severidad: 'bloqueo',
       accionLabel: 'Revisar parámetros',
       ruta: '/parametros',
@@ -172,8 +172,8 @@ export function buildValidacionCalculoPreliminarView(
   if (totalMovimientosMes === 0) {
     advertencias.push({
       codigo: 'ADV-001',
-      titulo: 'No hay movimientos del periodo registrados',
-      descripcion: 'Puedes continuar si este periodo no requiere bonos, descuentos, anticipos o ajustes.',
+      titulo: 'No hay movimientos del período registrados',
+      descripcion: 'Puedes continuar si este período no requiere bonos, descuentos, anticipos o ajustes.',
       severidad: 'advertencia',
       accionLabel: 'Revisar movimientos',
       ruta: '/remuneraciones/novedades-mensuales',
@@ -184,7 +184,7 @@ export function buildValidacionCalculoPreliminarView(
     advertencias.push({
       codigo: 'ADV-002',
       titulo: 'No hay movimientos recurrentes activos',
-      descripcion: 'Puedes continuar si no aplican movimientos recurrentes para este periodo.',
+      descripcion: 'Puedes continuar si no aplican movimientos recurrentes para este período.',
       severidad: 'advertencia',
       accionLabel: 'Revisar recurrentes',
       ruta: '/remuneraciones/haberes-descuentos',
@@ -207,8 +207,8 @@ export function buildValidacionCalculoPreliminarView(
   if (parametrosOpcionales.length > 0) {
     advertencias.push({
       codigo: 'ADV-004',
-      titulo: 'Hay parametros opcionales pendientes',
-      descripcion: 'Puedes calcular preliminarmente; estos datos quedan para cierre o reconciliacion.',
+      titulo: 'Hay parámetros opcionales pendientes',
+      descripcion: 'Puedes calcular preliminarmente; estos datos quedan para cierre o reconciliación.',
       severidad: 'advertencia',
       accionLabel: 'Revisar parámetros',
       ruta: '/parametros',
@@ -218,24 +218,24 @@ export function buildValidacionCalculoPreliminarView(
   if (preNomina) {
     informaciones.push({
       codigo: 'INFO-001',
-      titulo: 'Base de nomina generada',
-      descripcion: 'La base esta disponible para revisar antes del calculo preliminar.',
+      titulo: 'Base de nómina generada',
+      descripcion: 'La base está disponible para revisar antes del cálculo preliminar.',
       severidad: 'info',
     });
   }
   if (resultado.resumen.parametrosOperativos && faltantesMinimos.length === 0) {
     informaciones.push({
       codigo: 'INFO-002',
-      titulo: 'Parametros minimos disponibles',
-      descripcion: 'Los parametros necesarios para el calculo preliminar estan disponibles.',
+      titulo: 'Parámetros del período operativos',
+      descripcion: 'Los parámetros necesarios para el cálculo preliminar están disponibles.',
       severidad: 'info',
     });
   }
   if (totalMovimientosMes > 0) {
     informaciones.push({
       codigo: 'INFO-003',
-      titulo: 'Movimientos del periodo cargados',
-      descripcion: 'Hay movimientos de remuneracion disponibles para la revision del periodo.',
+      titulo: 'Movimientos del período cargados',
+      descripcion: 'Hay movimientos de remuneración disponibles para la revisión del período.',
       severidad: 'info',
     });
   }
@@ -243,7 +243,7 @@ export function buildValidacionCalculoPreliminarView(
     informaciones.push({
       codigo: 'INFO-004',
       titulo: 'Movimientos recurrentes cargados',
-      descripcion: 'Hay movimientos recurrentes vigentes considerados para el periodo.',
+      descripcion: 'Hay movimientos recurrentes vigentes considerados para el período.',
       severidad: 'info',
     });
   }

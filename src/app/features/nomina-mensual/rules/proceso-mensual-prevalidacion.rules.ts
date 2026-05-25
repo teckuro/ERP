@@ -4,6 +4,7 @@ import type {
   ParametroGeneral,
   PeriodoRemuneracionEstadoInfo,
 } from '../../parametros-generales/models/parametro-general.model';
+import type { ParametrosEstadoVisual } from '../../parametros-generales/rules/parametros-completitud.rules';
 import type { EntradaMensualEstado, EntradaMensualPeriodo } from '../entradas/models/entrada-mensual-periodo.model';
 import {
   construirResumenEntradas,
@@ -65,6 +66,9 @@ export interface ProcesoMensualHechosPrevalidacion {
   periodoRem: PeriodoRemuneracionEstadoInfo | null;
   lecturaPeriodoRem: 'ok' | 'error';
   errorPeriodoRem?: string;
+  parametrosEstadoVisual?: ParametrosEstadoVisual;
+  parametrosEstadoDetalle?: string;
+  parametrosOperativos?: boolean;
   parametrosGrupos: ProcesoMensualGrupoParametro[];
   empleadosActivosAptos: number;
   empleadosActivosNoAptos: number;
@@ -128,6 +132,9 @@ const CODIGOS_BLOQUEO_GENERACION_NOMINA = new Set([
   'PARAMETROS_SIN_FILA',
   'PARAMETROS_CALENDARIO_LECTURA',
   'PARAMETROS_ESTADO_PERIODO_INOPERATIVO',
+  'PARAMETROS_CONFIG_CLIENTE_INCOMPLETA',
+  'PARAMETROS_COMPLETITUD_PENDIENTE',
+  'PARAMETROS_RECONCILIACION_PENDIENTE',
   'TRABAJADORES_BLOQUEADOS_NOMINA',
   'EMPLEADOS_SIN_ACTIVOS_APTOS',
   'ENTRADAS_BLOQUEANTES',
@@ -187,7 +194,7 @@ export function construirPrevalidacionMensual(hechos: ProcesoMensualHechosPreval
     pushMsg(bloqueos, 'PERIODO_FORMATO_INVALIDO', 'PARAMETROS', 'BLOQUEO', MSG_PERIODO_INVALIDO);
     items.push({
       area: 'PARAMETROS',
-      etiqueta: 'Parametros',
+      etiqueta: 'Parámetros',
       estado: 'CON_PROBLEMAS',
       detalle: MSG_PERIODO_INVALIDO,
     });
@@ -224,7 +231,9 @@ export function construirPrevalidacionMensual(hechos: ProcesoMensualHechosPreval
   /* --- Parametros --- */
   let itemParametros: ItemEstado = 'LISTO';
   let detalleParam: string | undefined;
-  let parametrosOperativos = false;
+  let parametrosOperativos = hechos.parametrosOperativos ?? estadoParametrosOperativoFallback(hechos, periodo);
+  const estadoVisualParametros = hechos.parametrosEstadoVisual;
+  const detalleEstadoParametros = hechos.parametrosEstadoDetalle?.trim();
 
   if (hechos.lecturaUltimoPg === 'error') {
     pushMsg(
@@ -232,7 +241,7 @@ export function construirPrevalidacionMensual(hechos: ProcesoMensualHechosPreval
       'PARAMETROS_LECTURA_ERROR',
       'PARAMETROS',
       'BLOQUEO',
-      hechos.errorUltimoPg ?? 'Error al leer parametros generales del periodo.',
+      hechos.errorUltimoPg ?? 'No fue posible leer los parámetros oficiales del período.',
     );
     itemParametros = 'CON_PROBLEMAS';
     detalleParam = 'Error de lectura';
@@ -242,20 +251,21 @@ export function construirPrevalidacionMensual(hechos: ProcesoMensualHechosPreval
       'PARAMETROS_SIN_FILA',
       'PARAMETROS',
       'BLOQUEO',
-      'No se encontraron parametros reales validados para este periodo.',
+      detalleEstadoParametros ?? 'Parámetros del período pendientes: falta la fila oficial del período.',
     );
     itemParametros = 'CON_PROBLEMAS';
-    detalleParam = 'Sin fila de parametros generales';
+    detalleParam = 'Sin fila oficial del período';
   } else if (hechos.ultimoPg.periodo !== periodo) {
     pushMsg(
-      advertencias,
-      'PARAMETROS_FILA_NO_EXACTA',
+      bloqueos,
+      'PARAMETROS_SIN_FILA',
       'PARAMETROS',
-      'ADVERTENCIA',
-      'La fila vigente de parametros generales corresponde a otro periodo que el seleccionado.',
+      'BLOQUEO',
+      detalleEstadoParametros ??
+        `Parámetros del período pendientes: existe referencia ${hechos.ultimoPg.periodo}, pero falta la fila oficial ${periodo}.`,
     );
     itemParametros = 'CON_PROBLEMAS';
-    detalleParam = `Ultimo registro: ${hechos.ultimoPg.periodo}`;
+    detalleParam = `Referencia anterior: ${hechos.ultimoPg.periodo}`;
   }
 
   if (hechos.lecturaPeriodoRem === 'error') {
@@ -264,66 +274,69 @@ export function construirPrevalidacionMensual(hechos: ProcesoMensualHechosPreval
       'PARAMETROS_CALENDARIO_LECTURA',
       'PARAMETROS',
       'BLOQUEO',
-      hechos.errorPeriodoRem ?? 'Error al leer calendario de remuneracion del periodo.',
+      hechos.errorPeriodoRem ?? 'No fue posible leer el calendario de remuneración del período.',
     );
     itemParametros = 'CON_PROBLEMAS';
   } else if (!hechos.periodoRem) {
-    if (hechos.ultimoPg) {
+    if (hechos.ultimoPg && !parametrosOperativos) {
       pushMsg(
-        advertencias,
-        'PARAMETROS_CALENDARIO_AUSENTE',
+        bloqueos,
+        'PARAMETROS_COMPLETITUD_PENDIENTE',
         'PARAMETROS',
-        'ADVERTENCIA',
-        'El periodo no tiene fila en periodo_remuneracion; revise calendario en base de datos.',
+        'BLOQUEO',
+        detalleEstadoParametros ?? 'Parámetros del período pendientes: falta calendario de remuneración.',
       );
       if (itemParametros === 'LISTO') {
         itemParametros = 'CON_PROBLEMAS';
-        detalleParam = 'Sin periodo_remuneracion';
+        detalleParam = 'Sin calendario del período';
       }
     }
-  } else if (hechos.periodoRem.estado === 'pendiente' || hechos.periodoRem.estado === 'error') {
+  } else if (!parametrosOperativos && (hechos.periodoRem.estado === 'pendiente' || hechos.periodoRem.estado === 'error')) {
     pushMsg(
       bloqueos,
       'PARAMETROS_ESTADO_PERIODO_INOPERATIVO',
       'PARAMETROS',
       'BLOQUEO',
-      `El periodo en calendario de remuneracion esta en estado "${hechos.periodoRem.estado}" y no admite proceso.`,
+      detalleEstadoParametros ??
+        `Parámetros del período pendientes: el calendario está en estado ${hechos.periodoRem.estado}.`,
     );
     itemParametros = 'CON_PROBLEMAS';
-    detalleParam = `Estado periodo: ${hechos.periodoRem.estado}`;
-  } else if (hechos.periodoRem.estado === 'parcial') {
+    detalleParam = `Estado período: ${hechos.periodoRem.estado}`;
+  } else if (!parametrosOperativos && hechos.periodoRem.estado === 'parcial') {
     pushMsg(
-      advertencias,
-      'PARAMETROS_ESTADO_PARCIAL',
+      bloqueos,
+      'PARAMETROS_COMPLETITUD_PENDIENTE',
       'PARAMETROS',
-      'ADVERTENCIA',
-      'Los parametros del periodo estan marcados como parciales en calendario de remuneracion.',
+      'BLOQUEO',
+      detalleEstadoParametros ?? 'Parámetros del período pendientes: la configuración está parcial.',
     );
     if (itemParametros === 'LISTO') {
       itemParametros = 'CON_PROBLEMAS';
     }
   }
 
-  if (
-    itemParametros === 'LISTO' &&
-    hechos.ultimoPg &&
-    hechos.ultimoPg.periodo === periodo &&
-    hechos.periodoRem &&
-    estadoPeriodoRemuneracionOperativo(hechos.periodoRem.estado)
-  ) {
-    parametrosOperativos = true;
+  if (!parametrosOperativos && itemParametros === 'LISTO') {
+    pushMsg(
+      bloqueos,
+      codigoBloqueoEstadoParametros(estadoVisualParametros),
+      'PARAMETROS',
+      'BLOQUEO',
+      detalleEstadoParametros ?? 'Parámetros del período pendientes.',
+    );
+    itemParametros = 'CON_PROBLEMAS';
+    detalleParam = detalleEstadoParametros ?? 'Parámetros pendientes';
   }
 
   for (const g of parametrosGrupos) {
     if (g.clasificacion === 'FALTANTE' || g.clasificacion === 'PARCIAL') {
-      pushMsg(
-        advertencias,
-        `PARAM_MIN_${g.id}`,
-        'PARAMETROS',
-        'ADVERTENCIA',
-        `Parametros grupo ${g.id}: ${g.clasificacion}${g.detalle ? ` (${g.detalle})` : ''}.`,
-      );
-      if (itemParametros === 'LISTO') {
+      if (!parametrosOperativos) {
+        pushMsg(
+          advertencias,
+          `PARAM_MIN_${g.id}`,
+          'PARAMETROS',
+          'ADVERTENCIA',
+          textoGrupoParametro(g),
+        );
         itemParametros = 'CON_PROBLEMAS';
       }
     } else if (g.clasificacion === 'PENDIENTE_INTEGRACION') {
@@ -332,14 +345,14 @@ export function construirPrevalidacionMensual(hechos: ProcesoMensualHechosPreval
         `PARAM_MIN_${g.id}`,
         'PARAMETROS',
         'INFO',
-        `Parametros grupo ${g.id}: pendiente integracion.`,
+        `Parámetros del período: ${etiquetaGrupoParametro(g.id)} pendiente de integración.`,
       );
     }
   }
 
   items.push({
     area: 'PARAMETROS',
-    etiqueta: 'Parametros',
+    etiqueta: 'Parámetros',
     estado: itemParametros,
     detalle: detalleParam,
   });
@@ -364,7 +377,7 @@ export function construirPrevalidacionMensual(hechos: ProcesoMensualHechosPreval
         'EMPLEADOS_SIN_ACTIVOS_APTOS',
         'TRABAJADORES',
         'BLOQUEO',
-        'No hay trabajadores listos para nomina en el periodo.',
+        'No hay trabajadores listos para nómina en el período.',
       );
       itemTrab = 'CON_PROBLEMAS';
       detalleTrab = 'Sin trabajadores listos';
@@ -375,7 +388,7 @@ export function construirPrevalidacionMensual(hechos: ProcesoMensualHechosPreval
         'TRABAJADORES_BLOQUEADOS_NOMINA',
         'TRABAJADORES',
         'BLOQUEO',
-        'Existen trabajadores activos con datos criticos pendientes para la nomina mensual.',
+        'Existen trabajadores activos con datos críticos pendientes para la nómina mensual.',
       );
       if (itemTrab === 'LISTO') {
         itemTrab = 'CON_PROBLEMAS';
@@ -399,7 +412,7 @@ export function construirPrevalidacionMensual(hechos: ProcesoMensualHechosPreval
       'CONCEPTOS_LECTURA',
       'CONCEPTOS',
       'ADVERTENCIA',
-      hechos.errorConceptos ?? 'No se pudo leer el catalogo de conceptos.',
+      hechos.errorConceptos ?? 'No se pudo leer el catálogo de conceptos.',
     );
     itemConc = 'CON_PROBLEMAS';
   } else if (hechos.totalConceptosMantenimiento === 0) {
@@ -408,20 +421,20 @@ export function construirPrevalidacionMensual(hechos: ProcesoMensualHechosPreval
       'CONCEPTOS_VACIO',
       'CONCEPTOS',
       'ADVERTENCIA',
-      'No hay filas en mantenimiento de conceptos; el calculo de nomina requerira catalogo.',
+      'No hay filas en mantenimiento de conceptos; el cálculo de nómina requerirá catálogo.',
     );
     itemConc = 'CON_PROBLEMAS';
-    detalleConc = 'Catalogo vacio';
+    detalleConc = 'Catálogo vacío';
   } else if (hechos.alertaConceptosMotorFuturo) {
     pushMsg(
       advertencias,
       'CONCEPTOS_CLASIFICACION_FUTURA',
       'CONCEPTOS',
       'ADVERTENCIA',
-      'Hay conceptos vigentes sin tipo o naturaleza; revisar antes del calculo de nomina.',
+      'Hay conceptos vigentes sin tipo o naturaleza; revisar antes del cálculo de nómina.',
     );
     itemConc = 'CON_PROBLEMAS';
-    detalleConc = 'Clasificacion incompleta en algun concepto';
+    detalleConc = 'Clasificación incompleta en algún concepto';
   }
   items.push({
     area: 'CONCEPTOS',
@@ -452,7 +465,7 @@ export function construirPrevalidacionMensual(hechos: ProcesoMensualHechosPreval
         'RECURRENTES_INVALIDAS',
         'HABERES_RECURRENTES',
         'BLOQUEO',
-        'Existen asignaciones recurrentes con vigencia invalida; corrija antes del calculo.',
+        'Existen asignaciones recurrentes con vigencia inválida; corrige antes del cálculo.',
       );
       itemRec = 'CON_PROBLEMAS';
       partes.push(`${rc.invalidas} invalida(s)`);
@@ -483,7 +496,7 @@ export function construirPrevalidacionMensual(hechos: ProcesoMensualHechosPreval
       'ENTRADAS_LECTURA_ERROR',
       'ENTRADAS_MENSUALES',
       'BLOQUEO',
-      hechos.errorEntradasMensuales ?? 'Error al leer entradas mensuales del periodo.',
+      hechos.errorEntradasMensuales ?? 'Error al leer entradas mensuales del período.',
     );
     itemEntradas = 'CON_PROBLEMAS';
     detalleEntradas = 'Error de lectura';
@@ -496,7 +509,7 @@ export function construirPrevalidacionMensual(hechos: ProcesoMensualHechosPreval
         'ENTRADAS_BLOQUEANTES',
         'ENTRADAS_MENSUALES',
         'BLOQUEO',
-        'Existen entradas mensuales bloqueantes para el periodo.',
+        'Existen entradas mensuales bloqueantes para el período.',
       );
       itemEntradas = 'CON_PROBLEMAS';
       partes.push(`${resumenEntradas.bloqueantes} bloqueante(s)`);
@@ -507,7 +520,7 @@ export function construirPrevalidacionMensual(hechos: ProcesoMensualHechosPreval
         'ENTRADAS_PENDIENTES_REVISION',
         'ENTRADAS_MENSUALES',
         'ADVERTENCIA',
-        'Existen entradas mensuales en borrador o pendientes de revision para el periodo.',
+        'Existen entradas mensuales en borrador o pendientes de revisión para el período.',
       );
       if (itemEntradas === 'LISTO') {
         itemEntradas = 'CON_PROBLEMAS';
@@ -520,14 +533,14 @@ export function construirPrevalidacionMensual(hechos: ProcesoMensualHechosPreval
         'ENTRADAS_OBSERVADAS',
         'ENTRADAS_MENSUALES',
         'ADVERTENCIA',
-        'Existen entradas mensuales observadas o que requieren revision para el periodo.',
+        'Existen entradas mensuales observadas o que requieren revisión para el período.',
       );
       if (itemEntradas === 'LISTO') {
         itemEntradas = 'CON_PROBLEMAS';
       }
       partes.push(`${resumenEntradas.observadas} observada(s)`);
     }
-    partes.push(`${resumenEntradas.aptasPreNomina} apta(s) para pre-nomina`);
+    partes.push(`${resumenEntradas.aptasPreNomina} apta(s) para prenómina`);
     partes.push(`${resumenEntradas.legacyMovimientos} legacy`);
     detalleEntradas = partes.join('; ');
   }
@@ -545,7 +558,7 @@ export function construirPrevalidacionMensual(hechos: ProcesoMensualHechosPreval
     'PROCESO_LIQUIDACIONES_FUTURO',
     'PROCESO',
     'INFO',
-    'Liquidaciones oficiales son una fase futura; este modulo prepara y revisa el calculo preliminar.',
+    'Liquidaciones oficiales son una fase futura; este módulo prepara y revisa el cálculo preliminar.',
   );
   items.push({
     area: 'PROCESO',
@@ -589,6 +602,57 @@ export function construirPrevalidacionMensual(hechos: ProcesoMensualHechosPreval
   };
 }
 
+function estadoParametrosOperativoFallback(hechos: ProcesoMensualHechosPrevalidacion, periodo: string): boolean {
+  return Boolean(
+    hechos.ultimoPg &&
+    hechos.ultimoPg.periodo === periodo &&
+    hechos.periodoRem &&
+    estadoPeriodoRemuneracionOperativo(hechos.periodoRem.estado),
+  );
+}
+
+function codigoBloqueoEstadoParametros(estado: ParametrosEstadoVisual | undefined): string {
+  switch (estado) {
+    case 'error':
+      return 'PARAMETROS_LECTURA_ERROR';
+    case 'oficial_sin_config':
+    case 'configuracion_parcial':
+      return 'PARAMETROS_CONFIG_CLIENTE_INCOMPLETA';
+    case 'pendiente_reconciliacion':
+      return 'PARAMETROS_RECONCILIACION_PENDIENTE';
+    case 'sin_base':
+    case 'referencia_anterior':
+      return 'PARAMETROS_SIN_FILA';
+    default:
+      return 'PARAMETROS_COMPLETITUD_PENDIENTE';
+  }
+}
+
+function etiquetaGrupoParametro(id: string): string {
+  switch (id) {
+    case 'mensuales_uf_utm_sueldo':
+      return 'valores UF, UTM y sueldos mínimos';
+    case 'topes_base':
+      return 'topes imponibles y APV';
+    case 'tasas_cotizacion':
+      return 'tasas previsionales y de salud';
+    case 'catalogos_afp_impuesto':
+      return 'vigencias de AFP, salud e impuesto único';
+    case 'ley_16744':
+      return 'parámetros Ley 16.744';
+    default:
+      return id.replace(/_/g, ' ');
+  }
+}
+
+function textoGrupoParametro(g: ProcesoMensualGrupoParametro): string {
+  const base = `Parámetros del período: revisar ${etiquetaGrupoParametro(g.id)}`;
+  if (g.detalle?.trim()) {
+    return `${base}. ${g.detalle.trim()}.`;
+  }
+  return `${base}.`;
+}
+
 function completarItemsVacios(parcial: ProcesoMensualItem[]): ProcesoMensualItem[] {
   const areas: ProcesoMensualArea[] = [
     'TRABAJADORES',
@@ -598,7 +662,7 @@ function completarItemsVacios(parcial: ProcesoMensualItem[]): ProcesoMensualItem
     'PROCESO',
   ];
   const labels: Record<ProcesoMensualArea, string> = {
-    PARAMETROS: 'Parametros',
+    PARAMETROS: 'Parámetros',
     TRABAJADORES: 'Trabajadores',
     CONCEPTOS: 'Conceptos',
     HABERES_RECURRENTES: 'Haberes recurrentes',

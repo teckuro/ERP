@@ -135,7 +135,7 @@ function baseNominaLista() {
       asignacionesRecurrentesIncluidas: 1,
       movimientosDelMesIncluidos: 1,
       parametrosEstado: 'listos',
-      observacionParametros: 'Parametros del periodo disponibles para preparar la base.',
+      observacionParametros: 'Parámetros del período disponibles para preparar la base.',
     },
   };
 }
@@ -393,12 +393,12 @@ describe('ProcesoMensualContainer', () => {
           codigo: 'PARAMETROS_SIN_FILA',
           area: 'PARAMETROS',
           severidad: 'BLOQUEO',
-          texto: 'No se encontraron parametros reales validados para este periodo.',
+          texto: 'Parámetros del período pendientes: falta la fila oficial del período.',
         },
       ],
       advertencias: [],
       informaciones: [],
-      items: [{ area: 'PARAMETROS', etiqueta: 'Parametros', estado: 'CON_PROBLEMAS' }],
+      items: [{ area: 'PARAMETROS', etiqueta: 'Parámetros', estado: 'CON_PROBLEMAS' }],
       trabajadoresPendientesRevision: [],
     } as ProcesoMensualPrevalidacion);
     generarPreNominaPeriodo.mockResolvedValue({
@@ -454,7 +454,7 @@ describe('ProcesoMensualContainer', () => {
         asignacionesRecurrentesIncluidas: 1,
         movimientosDelMesIncluidos: 2,
         parametrosEstado: 'con_observaciones',
-        observacionParametros: 'Parametros disponibles con observaciones del periodo.',
+        observacionParametros: 'Parámetros disponibles con observaciones del período.',
       },
     });
     generarCalculoPeriodo.mockResolvedValue({
@@ -1037,7 +1037,7 @@ describe('ProcesoMensualContainer', () => {
     it('muestra lead operativo sin cabecera duplicada de pagina', () => {
       const text = fixture.nativeElement.textContent as string;
       expect(fixture.nativeElement.querySelector('.payroll-head')).toBeNull();
-      expectTexto(text, 'Generar nomina');
+      expectTexto(text, 'Generar nómina');
     });
 
     it('no muestra selector de periodo local editable en la pagina', () => {
@@ -1059,7 +1059,7 @@ describe('ProcesoMensualContainer', () => {
       fixture.componentInstance.seleccionarNominaWorkspaceTab('resumen');
       fixture.detectChanges();
       const text = fixture.nativeElement.textContent as string;
-      expectTexto(text, 'Generar nomina');
+      expectTexto(text, 'Generar nómina');
       expectTexto(text, 'Revisar trabajadores');
       expectTexto(text, 'Confirmar nomina');
       expectTexto(text, 'Generar liquidaciones');
@@ -1138,7 +1138,7 @@ describe('ProcesoMensualContainer', () => {
       expect(localFixture.componentInstance.contextoOperativoPeriodo().resultadoGuardado).toBe(false);
     });
 
-    it('rehidrata borrador como base_lista y no vuelve a pedir generar nomina', async () => {
+    it('rehidrata borrador como base_lista y no vuelve a pedir generar nómina', async () => {
       obtenerSnapshotActivo.mockResolvedValue(snapshotGuardado({
         idCalculoPeriodo: 77,
         estado: 'borrador',
@@ -1270,7 +1270,7 @@ describe('ProcesoMensualContainer', () => {
       expect(aprobarResultadoPreliminarOperativamente).toHaveBeenCalled();
     });
 
-    it('tras borrador con trabajadores listos CTA shell no es Generar nomina', async () => {
+    it('tras borrador con trabajadores listos CTA shell no es Generar nómina', async () => {
       ejecutarPrevalidaciones.mockResolvedValueOnce(prevalidacionLista());
       generarPreNominaPeriodo.mockResolvedValueOnce(baseNominaLista());
       const localFixture = await montarContainer();

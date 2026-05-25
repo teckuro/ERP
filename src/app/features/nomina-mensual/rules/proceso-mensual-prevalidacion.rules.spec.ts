@@ -194,6 +194,19 @@ describe('proceso-mensual-prevalidacion.rules', () => {
     expect(r.resumen.parametrosOperativos).toBe(true);
   });
 
+  it('bloquea si el estado visual de Parámetros no está operativo aunque la fila y calendario existan', () => {
+    const r = construirPrevalidacionMensual(
+      baseHechos({
+        parametrosOperativos: false,
+        parametrosEstadoVisual: 'oficial_sin_config',
+        parametrosEstadoDetalle: 'Parámetros del período pendientes: falta completar la configuración cliente.',
+      }),
+    );
+    expect(r.estado).toBe('BLOQUEADO');
+    expect(r.resumen.parametrosOperativos).toBe(false);
+    expect(r.bloqueos.some((b) => b.codigo === 'PARAMETROS_CONFIG_CLIENTE_INCOMPLETA')).toBe(true);
+  });
+
   it('resumen de entradas calcula totales canónicos y legacy', () => {
     const r = construirPrevalidacionMensual(
       baseHechos({
