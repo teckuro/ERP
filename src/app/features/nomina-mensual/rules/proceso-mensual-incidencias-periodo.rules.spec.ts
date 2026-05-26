@@ -245,6 +245,24 @@ describe('proceso-mensual-incidencias-periodo.rules', () => {
     expect(view.todas[0]?.ambito).toBe('parametros');
   });
 
+  it('no trata sin observaciones como alerta del periodo', () => {
+    const view = buildIncidenciasPeriodo({
+      bloqueosOperativos: [],
+      advertenciasOperativas: [],
+      resultadoBloqueos: [],
+      resultadoAdvertencias: [],
+      expedienteProblemas: [{
+        severidad: 'advertencia',
+        titulo: 'TRAB-189',
+        detalle: 'Sin observaciones',
+        trabajador: 'Periodo',
+      }],
+    });
+
+    expect(view.todas).toHaveLength(0);
+    expect(view.resumen.advertencias).toBe(0);
+  });
+
   it('oculta advertencia obsoleta de empresa Ley 16.744 aunque venga de cálculo o expediente', () => {
     const detalle =
       'Falta datos de empresa Ley 16.744. se calcula solo tasa basica si existe.';

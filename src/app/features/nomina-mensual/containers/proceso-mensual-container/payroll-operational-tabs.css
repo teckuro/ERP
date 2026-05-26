@@ -4,13 +4,14 @@
   gap: 0;
   overflow-x: auto;
   scrollbar-width: thin;
-  border-bottom: 1px solid var(--erp-border);
+  border-bottom: 1px solid color-mix(in srgb, var(--erp-border) 72%, transparent);
   background: var(--erp-surface);
-  padding: 8px 18px 0;
+  padding: 4px 10px 0;
 }
 
 .payroll-operational-tabs--workspace {
-  padding: 0 14px;
+  padding: 0;
+  border-bottom-color: var(--erp-border-strong, #c5cdc3);
   background: var(--erp-surface);
 }
 
@@ -26,12 +27,13 @@
   display: inline-flex;
   flex: 0 0 auto;
   align-items: center;
-  gap: 7px;
-  min-height: 38px;
+  gap: 6px;
+  min-height: 34px;
   border: 0;
   border-bottom: 2px solid transparent;
+  border-radius: var(--payroll-radius-surface, 0);
   background: transparent;
-  padding: 0 13px;
+  padding: 0 10px;
   color: var(--erp-muted);
   font: inherit;
   font-size: 0.7875rem;
@@ -47,7 +49,7 @@
   height: 6px;
   flex: 0 0 auto;
   border: 1px solid var(--erp-border-strong);
-  border-radius: 999px;
+  border-radius: var(--payroll-radius-control, 3px);
   background: var(--erp-surface);
 }
 
@@ -69,15 +71,19 @@
   flex: 0 0 auto;
   width: auto;
   min-width: 0;
-  border: 1px solid var(--erp-border);
-  border-radius: 999px;
-  background: var(--erp-surface);
-  padding: 1px 6px;
+  border: 0;
+  border-radius: var(--payroll-radius-control, 3px);
+  background: var(--erp-surface-soft);
+  padding: 1px 5px;
   color: var(--erp-muted);
   font-size: 0.675rem;
   font-weight: 750;
   line-height: 1.35;
   text-align: center;
+}
+
+.payroll-operational-tab:first-child {
+  padding-left: var(--payroll-space-inline, 10px);
 }
 
 .payroll-operational-tab--atencion {
@@ -122,11 +128,10 @@
 .payroll-operational-tab--active::before {
   border-color: var(--erp-ink);
   background: var(--erp-ink);
-  box-shadow: 0 0 0 2px var(--erp-primary-soft);
 }
 
 .payroll-operational-tab--active .payroll-operational-tab__indicador {
-  border-color: var(--erp-primary-border);
+  background: var(--erp-primary-soft);
   color: var(--erp-ink);
 }
 

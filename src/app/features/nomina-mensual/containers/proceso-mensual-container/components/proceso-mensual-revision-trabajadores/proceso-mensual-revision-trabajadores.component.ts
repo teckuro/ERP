@@ -22,7 +22,6 @@ export type DetalleTrabajadorTab = 'resumen' | 'que_hacer';
   templateUrl: './proceso-mensual-revision-trabajadores.component.html',
   styleUrls: [
     '../../payroll-segment-nav.css',
-    '../../payroll-operativa-empty.css',
     './proceso-mensual-revision-trabajadores.component.css',
   ],
 })

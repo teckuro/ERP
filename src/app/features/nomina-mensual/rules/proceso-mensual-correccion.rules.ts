@@ -407,10 +407,7 @@ export function resolveAccionCorreccionDesdeFranjaArea(
 ): AccionCorreccionVm | null {
   switch (area) {
     case 'parametros':
-      if (!ctx.parametrosListos || ctx.parametrosConIncidenciaRevision) {
-        return { label: 'Abrir parámetros', kind: 'overlay_parametros' };
-      }
-      return null;
+      return { label: 'Abrir parámetros', kind: 'overlay_parametros' };
     case 'movimientos':
       return {
         label: 'Revisar movimientos',

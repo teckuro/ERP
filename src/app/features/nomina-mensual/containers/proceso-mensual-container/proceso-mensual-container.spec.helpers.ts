@@ -122,7 +122,7 @@ export async function avanzarFlujo(
   const c = fixture.componentInstance;
 
   if (hasta === 'prevalidado') {
-    await invocarCtaShell(fixture);
+    c.validarPeriodo();
     await esperarFlag(fixture, () => c.validando());
     await vi.waitFor(() => expect(c.resultado()).not.toBeNull(), { timeout: 3000, interval: 20 });
     return c;
@@ -131,7 +131,7 @@ export async function avanzarFlujo(
   await avanzarFlujo(fixture, 'prevalidado');
 
   if (hasta === 'base') {
-    await invocarCtaShell(fixture);
+    c.generarPreNomina();
     await esperarFlag(fixture, () => c.generandoPreNomina());
     await vi.waitFor(() => expect(c.preNomina()).not.toBeNull(), { timeout: 3000, interval: 20 });
     return c;
@@ -152,7 +152,8 @@ export async function avanzarFlujo(
   await avanzarFlujo(fixture, 'calculo');
 
   if (hasta === 'guardado') {
-    await invocarCtaShell(fixture);
+    c.guardarSnapshotPreliminar();
+    fixture.detectChanges();
     if (c.overlay().kind === 'decision') {
       await confirmarOverlayDecision(fixture);
     }

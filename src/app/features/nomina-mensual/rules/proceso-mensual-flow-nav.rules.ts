@@ -57,7 +57,7 @@ export function resolveWorkspaceTargetFromDetalleTab(
     case 'parametros':
       return {
         tabVisible: 'detalle_mensual',
-        detalleVista: 'pendientes',
+        detalleVista: 'trabajadores',
         legacyTab: 'parametros',
       };
     default:

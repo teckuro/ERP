@@ -64,19 +64,10 @@ export interface NominaWorkspaceNavigationSugerida {
 }
 
 export function suggestNominaWorkspaceNavigation(frame: NominaVisualFrame): NominaWorkspaceNavigationSugerida {
-  if (frame === 'con_pendientes') {
-    return { tabVisible: 'detalle_mensual', detalleVista: 'pendientes', legacyTab: 'trabajadores' };
-  }
-  if (frame === 'liquidaciones_generadas') {
-    return { tabVisible: 'detalle_mensual', detalleVista: 'liquidaciones', legacyTab: 'liquidaciones' };
-  }
   if (frame === 'confirmada') {
     return { tabVisible: 'historial', detalleVista: 'todos', legacyTab: 'historial' };
   }
-  if (frame === 'en_revision' || frame === 'lista_para_confirmar') {
-    return { tabVisible: 'detalle_mensual', detalleVista: 'trabajadores', legacyTab: 'trabajadores' };
-  }
-  return { tabVisible: 'detalle_mensual', detalleVista: 'todos', legacyTab: 'parametros' };
+  return { tabVisible: 'detalle_mensual', detalleVista: 'trabajadores', legacyTab: 'trabajadores' };
 }
 
 export interface NominaResumenSuperiorInput {
@@ -304,9 +295,12 @@ export function buildNominaFrameView(input: BuildNominaFrameViewInput): NominaVi
 export function buildAlertasPeriodoResumen(input: {
   validando: boolean;
   tieneResultado: boolean;
+  nominaGenerada: boolean;
   bloqueosCount: number;
   advertenciasCount: number;
 }): AlertasPeriodoResumenVm {
+  const mostrarBloque = input.nominaGenerada;
+
   if (input.validando) {
     return {
       modo: 'evaluando',
@@ -314,6 +308,7 @@ export function buildAlertasPeriodoResumen(input: {
       criticas: 0,
       advertencias: 0,
       mostrarDetalle: false,
+      mostrarBloque,
     };
   }
 
@@ -324,6 +319,7 @@ export function buildAlertasPeriodoResumen(input: {
       criticas: 0,
       advertencias: 0,
       mostrarDetalle: false,
+      mostrarBloque,
     };
   }
 
@@ -334,6 +330,7 @@ export function buildAlertasPeriodoResumen(input: {
       criticas: 0,
       advertencias: 0,
       mostrarDetalle: false,
+      mostrarBloque,
     };
   }
 
@@ -342,6 +339,7 @@ export function buildAlertasPeriodoResumen(input: {
     criticas: input.bloqueosCount,
     advertencias: input.advertenciasCount,
     mostrarDetalle: true,
+    mostrarBloque,
   };
 }
 

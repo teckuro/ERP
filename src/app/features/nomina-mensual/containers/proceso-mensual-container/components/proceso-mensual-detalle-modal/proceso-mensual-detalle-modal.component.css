@@ -1,3 +1,5 @@
+@import '../../payroll-action-buttons.css';
+
 :host {
   display: contents;
 }
@@ -115,11 +117,8 @@
 
 .payroll-modal-secondary {
   min-height: 34px;
-  border: 1px solid var(--erp-border-strong, #c5cdc3);
   border-radius: 5px;
-  background: var(--erp-surface, #ffffff);
   padding: 0 12px;
-  color: var(--erp-ink, #243b53);
   font-size: 0.8125rem;
   font-weight: 700;
   cursor: pointer;
@@ -130,20 +129,12 @@
   min-height: 36px;
   align-items: center;
   justify-content: center;
-  border: 1px solid var(--erp-ink, #243b53);
   border-radius: 6px;
-  background: var(--erp-ink, #243b53);
   padding: 0 14px;
-  color: #ffffff;
   font-size: 0.8125rem;
   font-weight: 700;
   text-decoration: none;
   cursor: pointer;
-}
-
-.payroll-modal-primary:hover {
-  border-color: var(--erp-ink-hover, #172033);
-  background: var(--erp-ink-hover, #172033);
 }
 
 .payroll-modal-footer-actions {

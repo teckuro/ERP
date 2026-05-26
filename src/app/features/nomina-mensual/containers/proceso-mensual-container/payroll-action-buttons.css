@@ -1,0 +1,55 @@
+/* Botones sólidos del módulo Nómina mensual — fondo único --erp-ink */
+
+.payroll-modal-primary,
+.payroll-modal-secondary,
+.payroll-focus__primary,
+.payroll-operativa-empty__btn,
+.payroll-rail-link--primary,
+.payroll-revision-trabajadores__accion--primary,
+.payroll-revision-trabajadores__empty-link,
+.payroll-revision-trabajadores__modal-close {
+  border-color: var(--erp-ink, #243b53);
+  background: var(--erp-ink, #243b53);
+  color: #ffffff;
+}
+
+.payroll-modal-primary:hover:not(:disabled),
+.payroll-modal-secondary:hover:not(:disabled),
+.payroll-focus__primary:hover:not(:disabled),
+.payroll-operativa-empty__btn:hover:not(:disabled),
+.payroll-rail-link--primary:hover,
+.payroll-revision-trabajadores__accion--primary:hover,
+.payroll-revision-trabajadores__empty-link:hover,
+.payroll-revision-trabajadores__modal-close:hover {
+  border-color: var(--erp-ink-hover, #172033);
+  background: var(--erp-ink-hover, #172033);
+  color: #ffffff;
+}
+
+.payroll-modal-primary:disabled,
+.payroll-modal-secondary:disabled,
+.payroll-focus__primary:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.payroll-operativa-empty__btn:disabled,
+.payroll-operativa-empty__btn:disabled:hover {
+  border-color: var(--erp-border, #dadfd7);
+  background: var(--erp-surface-soft, #eef1f5);
+  color: var(--erp-muted, #647084);
+  cursor: not-allowed;
+  opacity: 1;
+}
+
+.payroll-modal-primary:focus-visible,
+.payroll-modal-secondary:focus-visible,
+.payroll-focus__primary:focus-visible,
+.payroll-operativa-empty__btn:focus-visible,
+.payroll-rail-link--primary:focus-visible,
+.payroll-revision-trabajadores__accion--primary:focus-visible,
+.payroll-revision-trabajadores__empty-link:focus-visible,
+.payroll-revision-trabajadores__modal-close:focus-visible {
+  outline: 2px solid var(--erp-ink, #243b53);
+  outline-offset: 1px;
+}

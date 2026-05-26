@@ -1,14 +1,15 @@
 .payroll-segment-nav {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
+  gap: 0;
 }
 
 .payroll-segment-nav--detalle {
   margin: 0;
   border: 0;
+  border-bottom: 1px solid color-mix(in srgb, var(--erp-border) 72%, transparent);
   padding: 0;
-  gap: 4px;
+  gap: 0;
 }
 
 .payroll-segment-nav__btn {
@@ -16,11 +17,12 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-height: 31px;
-  border: 1px solid var(--erp-border);
-  border-radius: 5px;
-  background: var(--erp-surface);
-  padding: 4px 11px;
+  min-height: 30px;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  border-radius: var(--payroll-radius-surface, 0);
+  background: transparent;
+  padding: 4px 10px;
   color: var(--erp-muted);
   font: inherit;
   font-size: 0.745rem;
@@ -29,15 +31,14 @@
   white-space: nowrap;
   cursor: pointer;
   transition:
-    border-color 0.15s ease,
     background 0.15s ease,
-    color 0.15s ease;
+    color 0.15s ease,
+    border-color 0.15s ease;
 }
 
 .payroll-segment-nav__btn:hover {
-  border-color: var(--erp-border-strong);
   color: var(--erp-ink);
-  background: var(--erp-surface);
+  background: var(--erp-surface-soft);
 }
 
 .payroll-segment-nav__btn:focus-visible {
@@ -46,35 +47,35 @@
 }
 
 .payroll-segment-nav__btn--active {
-  border-color: var(--erp-primary-border);
-  background: var(--erp-primary-soft);
+  border-bottom-color: var(--erp-ink);
+  background: transparent;
   color: var(--erp-ink);
 }
 
 .payroll-segment-nav--detalle .payroll-segment-nav__btn {
-  min-height: 26px;
-  border-radius: 999px;
+  min-height: 28px;
   padding: 3px 10px;
-  color: var(--erp-ink);
+  color: var(--erp-muted);
   font-size: 0.72rem;
   font-weight: 650;
 }
 
 .payroll-segment-nav--detalle .payroll-segment-nav__btn:hover {
-  border-color: var(--erp-border-strong);
-  background: var(--erp-surface);
+  color: var(--erp-ink);
+  background: transparent;
 }
 
 .payroll-segment-nav--detalle .payroll-segment-nav__btn--active {
-  border-color: var(--erp-ink, #243b53);
-  background: var(--erp-ink, #243b53);
-  color: #fff;
+  border-bottom-color: var(--erp-ink);
+  background: transparent;
+  color: var(--erp-ink);
 }
 
 .payroll-segment-nav--stat {
   display: grid;
   grid-template-columns: repeat(6, minmax(0, 1fr));
-  gap: 6px;
+  gap: 0;
+  border-bottom: 1px solid color-mix(in srgb, var(--erp-border) 72%, transparent);
 }
 
 .payroll-segment-nav--stat .payroll-segment-nav__btn {
@@ -82,15 +83,20 @@
   gap: 2px;
   min-width: 0;
   justify-content: stretch;
-  border-color: var(--erp-border);
-  border-radius: 6px;
-  background: var(--erp-metric-tile, #fafaf7);
+  border: 0;
+  border-right: 1px solid color-mix(in srgb, var(--erp-border) 72%, transparent);
+  border-bottom: 2px solid transparent;
+  border-radius: var(--payroll-radius-surface, 0);
+  background: transparent;
   padding: 5px 8px;
   text-align: left;
 }
 
+.payroll-segment-nav--stat .payroll-segment-nav__btn:last-child {
+  border-right: 0;
+}
+
 .payroll-segment-nav--stat .payroll-segment-nav__btn:hover {
-  border-color: var(--erp-border-strong);
   background: var(--erp-surface-soft, #fafaf7);
 }
 
@@ -112,7 +118,7 @@
 }
 
 .payroll-segment-nav--stat .payroll-segment-nav__btn--active {
-  border-color: var(--erp-primary-border, #c5d0dc);
+  border-bottom-color: var(--erp-ink);
   background: var(--erp-primary-soft, #eef1f5);
   box-shadow: none;
 }
@@ -129,23 +135,28 @@
   align-items: end;
   justify-content: space-between;
   gap: 10px;
-  border: 1px solid var(--erp-border);
-  border-radius: 7px;
-  background: var(--erp-surface);
-  padding: 8px;
+  border: 0;
+  border-bottom: 1px solid color-mix(in srgb, var(--erp-border) 72%, transparent);
+  border-radius: var(--payroll-radius-surface, 0);
+  background: transparent;
+  padding: 6px 10px;
 }
 
 .payroll-segment-nav--toolbar .payroll-segment-nav__list {
   display: flex;
   flex: 1 1 auto;
   flex-wrap: wrap;
-  gap: 6px;
+  gap: 0;
   min-width: 0;
 }
 
 @media (max-width: 768px) {
   .payroll-segment-nav--stat {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .payroll-segment-nav--stat .payroll-segment-nav__btn:nth-child(2n) {
+    border-right: 0;
   }
 
   .payroll-segment-nav--toolbar {

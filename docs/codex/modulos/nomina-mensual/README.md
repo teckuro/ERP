@@ -42,6 +42,10 @@ Consola con **sidebar operativo** (franja KPI, bitácora, revisión, guía) y **
 
 Fix rules: CTA «Revisar parámetros» solo si `!parametrosOperativos`; prioridad a trabajadores cuando el período ya está operativo. Sin BD ni localStorage.
 
+## NOM-PARAMETROS-REFRESH-01 aplicado
+
+Click en tile **Parámetros** (franja lateral) consulta async solo `ParametrosGeneralesService`, merge en store sin resetear borrador/snapshot, modal informativo con grupos mínimos y aviso si el estado regresó con nómina ya generada. Retorno desde `/parametros` dispara refresh silencioso. Rules: `proceso-mensual-parametros-refresh.rules.ts`; servicio: `consultarEstadoParametrosPeriodo`.
+
 ## NOM-PERIODO-VERIFICAR-MODAL-02 aplicado
 
 Modal automático tras verificar el período (MessageBox): críticos, advertencias o período listo con CTA «Generar nómina». Documento: [`nom-periodo-diagnostico-persist-01.md`](./nom-periodo-diagnostico-persist-01.md).

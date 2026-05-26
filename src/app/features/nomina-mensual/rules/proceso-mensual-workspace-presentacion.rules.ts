@@ -207,13 +207,18 @@ export function buildNominaWorkspaceTabVisibleSummaries(input: {
   pendientesCount: number;
   liquidacionesGeneradas: number;
   nominaCerrada: boolean;
+  eventosHistorialCount: number;
 }): NominaWorkspaceTabVisibleSummaryVm[] {
+  const historialDescripcion = input.eventosHistorialCount > 0
+    ? 'Registro de generación, revisión y confirmación.'
+    : 'Aún no hay eventos registrados para este período.';
+
   return [
     {
       id: 'detalle_mensual',
       label: 'Detalle mensual',
       titulo: 'Expediente del período',
-      descripcion: 'Trabajadores, movimientos, liquidaciones y pendientes en una sola vista.',
+      descripcion: 'Revisión por trabajador del período.',
       severidad: input.bloqueosCount > 0 ? 'bloqueo' : input.pendientesCount > 0 ? 'atencion' : 'neutral',
       indicador: null,
       metricas: [],
@@ -222,12 +227,10 @@ export function buildNominaWorkspaceTabVisibleSummaries(input: {
       id: 'historial',
       label: 'Historial',
       titulo: 'Trazabilidad del período',
-      descripcion: 'Registro de generación, revisión y confirmación.',
+      descripcion: historialDescripcion,
       severidad: input.nominaCerrada ? 'listo' : 'neutral',
-      indicador: null,
-      metricas: [
-        { label: 'Liquidaciones', value: input.liquidacionesGeneradas > 0 ? 'Generadas' : 'Pendiente' },
-      ],
+      indicador: input.eventosHistorialCount > 0 ? `${input.eventosHistorialCount} eventos` : null,
+      metricas: [],
     },
   ];
 }

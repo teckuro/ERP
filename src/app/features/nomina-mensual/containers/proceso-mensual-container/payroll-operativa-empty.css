@@ -39,39 +39,14 @@
   align-items: center;
   justify-content: center;
   min-height: 34px;
-  border: 1px solid var(--erp-ink, #243b53);
-  border-radius: 5px;
-  background: var(--erp-ink, #243b53);
+  border-radius: var(--payroll-radius-control, 3px);
   padding: 0 12px;
-  color: #fff;
   font: inherit;
   font-size: 0.8125rem;
   font-weight: 700;
   line-height: 1.2;
   white-space: nowrap;
   cursor: pointer;
-}
-
-.payroll-operativa-empty__btn:hover {
-  border-color: var(--erp-ink-hover, #172033);
-  background: var(--erp-ink-hover, #172033);
-}
-
-.payroll-operativa-empty__btn:disabled {
-  border-color: var(--erp-border, #dadfd7);
-  background: var(--erp-surface-soft, #eef1f5);
-  color: var(--erp-muted, #647084);
-  cursor: not-allowed;
-}
-
-.payroll-operativa-empty__btn:disabled:hover {
-  border-color: var(--erp-border, #dadfd7);
-  background: var(--erp-surface-soft, #eef1f5);
-}
-
-.payroll-operativa-empty__btn:focus-visible {
-  outline: 2px solid var(--erp-ink, #243b53);
-  outline-offset: 1px;
 }
 
 @media (max-width: 768px) {

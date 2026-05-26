@@ -1,6 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { SUPABASE_CLIENT } from '../../../core/services/supabase.service';
 import { EmpleadosService } from '../../empleados/services/empleados.service';
 import { HaberesDescuentosService } from '../../haberes-descuentos/services/haberes-descuentos.service';
 import { MovimientosVariablesService } from '../../movimientos-variables/services/movimientos-variables.service';
@@ -198,8 +199,8 @@ describe('ProcesoMensualService', () => {
     };
     empleados = {
       listar: vi.fn().mockResolvedValue([
-        { id: 1, estado: 'activo', aptoParaRemuneraciones: true },
-        { id: 2, estado: 'activo', aptoParaRemuneraciones: true },
+        { id: 1, estado: 'activo', aptoParaRemuneraciones: true, idContrato: 10, estadoFicha: 'VALIDO' },
+        { id: 2, estado: 'activo', aptoParaRemuneraciones: true, idContrato: 20, estadoFicha: 'VALIDO' },
       ]),
       obtenerPorId: vi.fn().mockImplementation((id: number) => Promise.resolve({
         id,
@@ -281,9 +282,20 @@ describe('ProcesoMensualService', () => {
       cerrar: vi.fn().mockResolvedValue(undefined),
     };
 
+    const supabaseFrom = vi.fn().mockReturnValue({
+      select: vi.fn().mockReturnValue({
+        order: vi.fn().mockReturnValue({
+          limit: vi.fn().mockReturnValue({
+            maybeSingle: vi.fn().mockResolvedValue({ data: null, error: null }),
+          }),
+        }),
+      }),
+    });
+
     TestBed.configureTestingModule({
       providers: [
         ProcesoMensualService,
+        { provide: SUPABASE_CLIENT, useValue: { from: supabaseFrom } },
         { provide: ParametrosGeneralesService, useValue: parametros },
         { provide: EmpleadosService, useValue: empleados },
         { provide: HaberesDescuentosService, useValue: haberes },
@@ -316,6 +328,18 @@ describe('ProcesoMensualService', () => {
     expect(movimientos.listarPorPeriodo).not.toHaveBeenCalled();
     expect(haberes.listarAsignacionesParaPrevalidacionMensual).toHaveBeenCalledWith('2026-05');
     expect(parametros.listarCatalogos).toHaveBeenCalledWith('2026-05');
+  });
+
+  it('consultarEstadoParametrosPeriodo solo lee parametros generales', async () => {
+    const svc = TestBed.inject(ProcesoMensualService);
+    await svc.consultarEstadoParametrosPeriodo('2026-05');
+    expect(parametros.obtenerUltimoHastaPeriodo).toHaveBeenCalledWith('2026-05');
+    expect(parametros.obtenerPeriodoRemuneracion).toHaveBeenCalledWith('2026-05');
+    expect(parametros.obtenerClienteConfig).toHaveBeenCalledWith('2026-05');
+    expect(parametros.listarCatalogos).toHaveBeenCalledWith('2026-05');
+    expect(empleados.listar).not.toHaveBeenCalled();
+    expect(entradasMensuales.listarEntradasPeriodo).not.toHaveBeenCalled();
+    expect(haberes.listarAsignacionesParaPrevalidacionMensual).not.toHaveBeenCalled();
   });
 
   it('no calcula montos ni invoca liquidaciones (solo dependencias declaradas)', async () => {
@@ -478,6 +502,31 @@ describe('ProcesoMensualService', () => {
   });
 
   it('construye calculo desde entradas canonicas sin alterar resultados legales en MOTOR-04', async () => {
+    empleados.listar.mockResolvedValueOnce([
+      { id: 1, estado: 'activo', aptoParaRemuneraciones: true, idContrato: 10, estadoFicha: 'VALIDO' },
+    ]);
+    empleados.obtenerPorId.mockImplementationOnce((id: number) => Promise.resolve({
+      id,
+      idContrato: 10,
+      rut: '11.111.111-1',
+      nombre: 'Trabajador MOTOR-04',
+      cargo: 'Analista',
+      departamento: 'Operaciones',
+      fechaIngreso: '2024-01-01',
+      sueldoBase: 100,
+      estado: 'activo',
+      estadoFicha: 'VALIDO',
+      aptoParaRemuneraciones: true,
+      pasoAltaAvanzada: null,
+      historial: [],
+      formValue: {
+        datosPersonales: {},
+        contacto: {},
+        contrato: { sueldoBase: 100, tipoContrato: 'I' },
+        previsionSalud: { idAfp: 1, idSalud: 1, valorPlan: null },
+        bancario: {},
+      },
+    }));
     entradasMensuales.listarEntradasPeriodo.mockResolvedValue([
       {
         idEntrada: 'novedad:1',

@@ -2,8 +2,12 @@ import { describe, expect, it } from 'vitest';
 
 import {
   buildNominaDetalleMensualMovimientosRows,
+  buildAlertasExpedienteInformacionView,
+  buildExpedienteCabeceraAlertas,
+  buildNominaDetalleMensualPendientesRows,
   buildNominaDetalleMensualSituacion,
   buildNominaDetalleMensualTodosRows,
+  normalizeDetalleMensualVistaExpediente,
   resolveDetalleMensualAccionUi,
   buildNominaDetalleMensualTrabajadorRows,
   buildNominaHistorialTablaRows,
@@ -220,5 +224,74 @@ describe('proceso-mensual-detalle-mensual.rules', () => {
       resultado: 'Confirmado',
       detalle: 'Se confirmó la nómina mensual.',
     });
+  });
+
+  it('normalizeDetalleMensualVistaExpediente siempre devuelve trabajadores', () => {
+    expect(normalizeDetalleMensualVistaExpediente('todos')).toBe('trabajadores');
+    expect(normalizeDetalleMensualVistaExpediente('pendientes')).toBe('trabajadores');
+  });
+
+  it('buildExpedienteCabeceraAlertas cuenta bloqueos y advertencias', () => {
+    const situacion = buildNominaDetalleMensualSituacion([
+      {
+        estado: 'Bloqueo',
+        ambito: 'Trabajador',
+        trabajador: 'A',
+        situacion: 'x',
+        accionRecomendada: 'Revisar',
+        accion: 'Revisar trabajador',
+        severity: 'bloqueo',
+      },
+      {
+        estado: 'Revisar',
+        ambito: 'Trabajador',
+        trabajador: 'B',
+        situacion: 'y',
+        accionRecomendada: 'Revisar',
+        accion: 'Revisar trabajador',
+        severity: 'atencion',
+      },
+    ]);
+    expect(buildExpedienteCabeceraAlertas(situacion)).toEqual({
+      bloqueos: 1,
+      advertencias: 1,
+      total: 2,
+      tieneAlertas: true,
+    });
+  });
+
+  it('buildNominaDetalleMensualPendientesRows omite sin observaciones', () => {
+    const rows = buildNominaDetalleMensualPendientesRows(
+      buildIncidenciasPeriodo({
+        bloqueosOperativos: [],
+        advertenciasOperativas: [],
+        resultadoBloqueos: [],
+        resultadoAdvertencias: [],
+        expedienteProblemas: [{
+          severidad: 'advertencia',
+          titulo: 'TRAB-189',
+          detalle: 'Sin observaciones',
+        }],
+      }),
+    );
+    expect(rows).toHaveLength(0);
+  });
+
+  it('buildAlertasExpedienteInformacionView arma modal de alertas', () => {
+    const situacion = buildNominaDetalleMensualSituacion([
+      {
+        estado: 'Revisar',
+        ambito: 'Trabajador',
+        trabajador: 'Periodo',
+        situacion: 'TRAB-189',
+        accionRecomendada: 'Revisar trabajador',
+        accion: 'Revisar trabajador',
+        severity: 'atencion',
+      },
+    ]);
+    const vm = buildAlertasExpedienteInformacionView(situacion);
+    expect(vm.soloAlertasExpediente).toBe(true);
+    expect(vm.titulo).toBe('Alertas del período');
+    expect(vm.alertasExpediente).toHaveLength(1);
   });
 });

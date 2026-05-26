@@ -77,6 +77,8 @@ export function mapDestinoToDetalleTab(destino: InformacionPeriodoDestino): Deta
       return 'resultado';
     case 'reintentar':
     case 'cerrar':
+    case 'validar_periodo':
+    case 'generar_nomina':
       return null;
     default:
       return null;

@@ -15,6 +15,7 @@
     [class.payroll-verificacion-periodo-modal--danger]="info.tone === 'danger'"
     [class.payroll-verificacion-periodo-modal--warning]="info.tone === 'warning'"
     [class.payroll-verificacion-periodo-modal--success]="info.tone === 'success'"
+    [class.payroll-verificacion-periodo-modal--alertas-expediente]="info.soloAlertasExpediente"
     (click)="$event.stopPropagation()"
   >
     <header class="payroll-operational-detail-modal__header">
@@ -23,7 +24,11 @@
         @if (info.bajada) {
           <p>{{ info.bajada }}</p>
         }
-        @if (!f.contextoOperativoPeriodo().baseGenerada) {
+        @if (info.notaSoloVerificacion && !info.consultando) {
+          <p class="payroll-verificacion-periodo-modal__nota-resumen">
+            {{ info.notaSoloVerificacion }}
+          </p>
+        } @else if (!info.consultando && !f.contextoOperativoPeriodo().baseGenerada) {
           <p class="payroll-verificacion-periodo-modal__nota-resumen">
             Genere la nómina para ver el resumen consolidado con montos y versión.
           </p>
@@ -57,7 +62,107 @@
     }
 
     <div class="payroll-operational-detail-modal__body payroll-verificacion-periodo-modal__body">
-      @if (!info.trabajadoresPendientes?.length) {
+      @if (info.consultando) {
+        <div class="payroll-verificacion-periodo-modal__loading" role="status" aria-live="polite">
+          <span class="payroll-verificacion-periodo-modal__loading-spinner" aria-hidden="true"></span>
+          <span class="payroll-verificacion-periodo-modal__loading-text">Revisando parámetros del período…</span>
+        </div>
+      } @else {
+      @if (info.avisoDrift) {
+        <p class="payroll-verificacion-periodo-modal__aviso-drift" role="status">
+          {{ info.avisoDrift }}
+        </p>
+      }
+
+      @if (info.soloAlertasExpediente && info.alertasExpediente?.length) {
+        <section class="payroll-alertas-expediente-modal" aria-label="Alertas del período">
+          <div class="payroll-verificacion-periodo-modal__tabla-wrap">
+            <table class="payroll-verificacion-periodo-modal__tabla payroll-alertas-expediente-modal__tabla">
+              <thead>
+                <tr>
+                  <th scope="col">Estado</th>
+                  <th scope="col">Ámbito</th>
+                  <th scope="col">Trabajador</th>
+                  <th scope="col">Situación</th>
+                  <th scope="col"><span class="sr-only">Acción</span></th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (fila of info.alertasExpediente!; track fila.trabajador + fila.situacion + fila.accion) {
+                  <tr
+                    [class.payroll-alertas-expediente-modal__fila--bloqueo]="fila.severity === 'bloqueo'"
+                    [class.payroll-alertas-expediente-modal__fila--revision]="fila.severity !== 'bloqueo'"
+                  >
+                    <td>{{ fila.estado }}</td>
+                    <td>{{ fila.ambito }}</td>
+                    <td>{{ fila.trabajador }}</td>
+                    <td>{{ fila.situacion }}</td>
+                    <td class="payroll-verificacion-periodo-modal__accion-celda">
+                      @if (accionAlertaUi(fila.accion); as ui) {
+                        <button
+                          type="button"
+                          class="payroll-verificacion-periodo-modal__accion-fila"
+                          [attr.title]="ui.title"
+                          [attr.aria-label]="ui.title"
+                          (click)="facade.abrirAlertaExpedienteDesdeModal(fila)"
+                        >
+                          {{ ui.label }}
+                        </button>
+                      }
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </section>
+      }
+
+      @if (!info.soloAlertasExpediente) {
+      @if (info.parametrosGrupos?.length) {
+        <section class="payroll-verificacion-periodo-modal__bloque" aria-label="Parámetros por grupo">
+          <h3 class="payroll-verificacion-periodo-modal__bloque-titulo">Parámetros por grupo</h3>
+          <ul class="payroll-verificacion-periodo-modal__grupos">
+            @for (grupo of info.parametrosGrupos; track grupo.id) {
+              <li class="payroll-verificacion-periodo-modal__grupo">
+                <span class="payroll-verificacion-periodo-modal__grupo-label">{{ grupo.label }}</span>
+                <span
+                  class="payroll-verificacion-periodo-modal__grupo-estado"
+                  [class.payroll-verificacion-periodo-modal__grupo-estado--ok]="grupo.tono === 'ok'"
+                  [class.payroll-verificacion-periodo-modal__grupo-estado--revision]="grupo.tono === 'revision'"
+                  [attr.title]="grupo.estado"
+                >
+                  @if (grupo.tono === 'ok') {
+                    <lucide-icon [img]="checkIcon" aria-hidden="true"></lucide-icon>
+                  } @else {
+                    <lucide-icon [img]="revisionIcon" aria-hidden="true"></lucide-icon>
+                  }
+                  <span class="sr-only">{{ grupo.estado }}</span>
+                </span>
+              </li>
+            }
+          </ul>
+        </section>
+      }
+
+      @if (info.soloVerificacionParametros) {
+        <section class="payroll-verificacion-periodo-modal__contexto" aria-label="Remuneraciones del período">
+          <dl class="payroll-verificacion-periodo-modal__contexto-grid">
+            <div>
+              <dt>Período</dt>
+              <dd>{{ f.periodoActivo.etiqueta() }}</dd>
+            </div>
+            <div>
+              <dt>Tipo remuneración</dt>
+              <dd>{{ info.tipoRemuneracionLabel ?? 'Nómina mensual' }}</dd>
+            </div>
+            <div>
+              <dt>Estado calendario</dt>
+              <dd>{{ info.estadoRemuneracionLabel ?? 'Sin evaluar' }}</dd>
+            </div>
+          </dl>
+        </section>
+      } @else if (!info.trabajadoresPendientes?.length) {
         @let dash = f.dashboardResumen();
         <section class="payroll-verificacion-periodo-modal__contexto" aria-label="Contexto del período">
           <dl class="payroll-verificacion-periodo-modal__contexto-grid">
@@ -185,22 +290,71 @@
           </div>
         </section>
       }
+      }
+      }
     </div>
 
+    @if (!info.soloAlertasExpediente) {
     <footer class="payroll-operational-detail-modal__footer">
-      <div class="payroll-modal-footer-actions">
-        <button type="button" class="payroll-modal-secondary" (click)="f.cancelarInformacionPeriodo()">
-          Cerrar
-        </button>
-        @if (secondaryLabel(info)) {
-          <button type="button" class="payroll-modal-secondary" (click)="f.ejecutarAccionSecundariaInformacionPeriodo()">
-            {{ secondaryLabel(info) }}
+      <div
+        class="payroll-modal-footer-actions"
+        [class.payroll-modal-footer-actions--parametros]="info.soloVerificacionParametros"
+      >
+        @if (info.soloVerificacionParametros) {
+          @if (secondaryLabel(info)) {
+            <button
+              type="button"
+              class="payroll-modal-secondary"
+              [disabled]="info.consultando"
+              (click)="f.ejecutarAccionSecundariaInformacionPeriodo()"
+            >
+              {{ secondaryLabel(info) }}
+            </button>
+          }
+          @if (info.accionPrincipal) {
+            <button
+              type="button"
+              class="payroll-modal-primary"
+              [disabled]="info.consultando"
+              (click)="f.confirmarInformacionPeriodo()"
+            >
+              {{ primaryLabel(info) }}
+            </button>
+          } @else if (secondaryLabel(info)) {
+            <button
+              type="button"
+              class="payroll-modal-primary"
+              [disabled]="info.consultando"
+              (click)="f.ejecutarAccionSecundariaInformacionPeriodo()"
+            >
+              {{ secondaryLabel(info) }}
+            </button>
+          }
+        } @else {
+          <button type="button" class="payroll-modal-secondary" (click)="f.cancelarInformacionPeriodo()">
+            Cerrar
+          </button>
+          @if (secondaryLabel(info)) {
+            <button
+              type="button"
+              class="payroll-modal-secondary"
+              [disabled]="info.consultando"
+              (click)="f.ejecutarAccionSecundariaInformacionPeriodo()"
+            >
+              {{ secondaryLabel(info) }}
+            </button>
+          }
+          <button
+            type="button"
+            class="payroll-modal-primary"
+            [disabled]="info.consultando"
+            (click)="f.confirmarInformacionPeriodo()"
+          >
+            {{ primaryLabel(info) }}
           </button>
         }
-        <button type="button" class="payroll-modal-primary" (click)="f.confirmarInformacionPeriodo()">
-          {{ primaryLabel(info) }}
-        </button>
       </div>
     </footer>
+    }
   </div>
 </div>

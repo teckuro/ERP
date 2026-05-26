@@ -1,12 +1,13 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { LucideAngularModule } from 'lucide-angular';
-import { X as XIcon } from 'lucide-angular/src/icons';
+import { Check as CheckIcon, X as XIcon } from 'lucide-angular/src/icons';
 
 import type {
   InformacionPeriodoSeccionDetalleView,
   InformacionPeriodoView,
 } from '../../models/proceso-mensual-container.vm';
+import { resolveDetalleMensualAccionUi } from '../../../../rules/proceso-mensual-detalle-mensual.rules';
 import { ProcesoMensualPresentacionFacade } from '../../facade/proceso-mensual-presentacion.facade';
 
 @Component({
@@ -23,8 +24,13 @@ import { ProcesoMensualPresentacionFacade } from '../../facade/proceso-mensual-p
 export class ProcesoMensualInformacionModalComponent {
   readonly facade = inject(ProcesoMensualPresentacionFacade);
   readonly closeIcon = XIcon;
+  readonly checkIcon = CheckIcon;
+  readonly revisionIcon = XIcon;
 
   primaryLabel(info: InformacionPeriodoView): string {
+    if (info.consultando) {
+      return 'Revisando…';
+    }
     return info.accionPrincipal?.label ?? 'Entendido';
   }
 
@@ -37,7 +43,14 @@ export class ProcesoMensualInformacionModalComponent {
   }
 
   modalExpandido(info: InformacionPeriodoView): boolean {
+    if (info.soloAlertasExpediente) {
+      return true;
+    }
     return (info.trabajadoresPendientes?.length ?? 0) > 0;
+  }
+
+  accionAlertaUi(label: string | undefined | null) {
+    return resolveDetalleMensualAccionUi(label);
   }
 
   irARevisionDesdeAdvertencia(detalle: InformacionPeriodoSeccionDetalleView): void {

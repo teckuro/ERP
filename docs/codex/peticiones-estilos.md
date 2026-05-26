@@ -1,3 +1,23 @@
+## 2026-05-26 - Nómina mensual: radios planos e integración visual uniforme
+
+- **Ajuste 2026-05-26:** Tab Historial: sin fila placeholder ni título duplicado en grilla; vacío centrado (icono history, copy trazabilidad); cabecera sin tile suelto de liquidaciones; indicador «N eventos» en tab cuando hay datos; grilla operativa a altura completa con marco NOIA.
+- **Ajuste 2026-05-26:** Sidebar nómina (franja + bitácora): iconos sin caja de fondo; estado solo por color del icono (`--erp-ok`, `--erp-review`, `--erp-ink`, `--erp-subtle`, `--erp-danger`); columna 26px para alineación.
+- **Ajuste 2026-05-26:** Bitácora sidebar: título con más aire (`12px/9px`), borde inferior `--erp-border-strong` y alineado a pasos; rail con respiro superior/inferior; pasos alineados a franja (icono 26px, filas 46px, separadores); fondo `--erp-surface` en bloque; activo con banda `--erp-primary-soft` e indicador lateral fino (3×14px).
+- **Ajuste 2026-05-26:** Sidebar izquierda (franja, bitácora, card confirmación, focus): marcos al borde con `--erp-border-strong`; padding solo en ítems, títulos, pasos y métricas internas.
+- **Patrón reutilizable (obligatorio en nómina mensual):** el elemento que lleva borde o separador estructural va con `padding: 0`; el aire va en hijos de contenido (`--payroll-space-inline` / `--payroll-space-block`). No mezclar: marco al borde, texto y controles indentados dentro.
+- **Ajuste 2026-05-26:** Patrón padding interno (`--payroll-space-inline/block`): marcos con borde sin padding; contenido hijo (tab-summary, acta, filtros, grilla, tabs) con aire interno.
+- **Ajuste 2026-05-26:** `.payroll-tab-panel` sin padding global; espaciado en acta, tab-summary e historial; expediente detalle con borde superior (sin doble marco lateral).
+- **Ajuste 2026-05-26:** Expediente trabajadores (Detalle mensual): sin padding izquierdo en tabs workspace, barra de filtros y paginación; marco `--erp-border-strong` en expediente + grilla; celdas y cabeceras con bordes visibles.
+- **Cambio:** Segunda pasada visual del módulo: tokens locales `--payroll-radius-surface: 0` y `--payroll-radius-control: 3px`; segment nav y tabs operativos con subrayado plano (sin píldoras 999px ni cajas 5–8px); franja, sidebar, acta, expediente, focus, métricas y empty states con esquinas rectas; controles/CTA/chips con radio contenido 3px; overlay de carga y modales sin sombras decorativas; incidencias/pasos/vacíos del expediente con separadores finos en lugar de mini-cards.
+- **Archivos:** `proceso-mensual-container.css`, `proceso-mensual-workspace.component.css`, `payroll-segment-nav.css`, `payroll-operational-tabs.css`, `payroll-detalle-mensual-panel.css`, `payroll-operativa-empty.css`, `proceso-mensual-revision-trabajadores.component.css`.
+- **No tocado:** estilos globales, `angular.json`, SQL/motor.
+
+## 2026-05-26 - Nómina mensual: expediente solo trabajadores + alertas en cabecera
+
+- **Cambio:** Detalle mensual / expediente del período deja pestañas Situación, Liquidaciones y Pendientes; muestra solo revisión por trabajador. Icono de alertas en esquina superior derecha de la cabecera (contador); al pulsar abre modal expandido con tabla de bloqueos/advertencias y acción por fila (cierre solo con X). No se listan incidencias «Sin observaciones» ni copy equivalente sin pendiente real. Anti-duplicidad: CTA único en shell; sin bloque Revisión en rail, sin guía operativa repetida, sin focus ni cabecera de tab redundantes con borrador generado, sin botones duplicados en empty state ni «Resumen ampliado». Botones sólidos unificados con `var(--erp-ink)`. Navegación interna normaliza destino legacy a vista trabajadores.
+- **Archivos:** `proceso-mensual-workspace.component.{html,ts}`, `payroll-detalle-mensual-panel.css`, `proceso-mensual-detalle-mensual.rules.ts`, `proceso-mensual-workspace.rules.ts`, `proceso-mensual-workspace.port.ts`, `proceso-mensual-workspace-presentacion.rules.ts`, `proceso-mensual-presentacion.facade.ts`, specs.
+- **No tocado:** estilos globales, `angular.json`, SQL/motor.
+
 ## 2026-05-25 - Nómina mensual: secciones con botones y fondos crema puntuales
 
 - **Cambio:** Filtros detalle (Situación/Trabajadores…) en píldoras con activo carbón; métricas en cajas `--erp-metric-tile`; toolbar detalle y vacíos con `--erp-surface-soft` (#f8f5ec); franja focus y tabs sin degradado global; empty trabajadores alineado a referencia (copy + CTA + fila métricas); patrón `payroll-operativa-empty` con CTA primario arriba a la derecha (Verificar período, Ir a trabajadores).
@@ -1968,11 +1988,41 @@ Creación avanzada incorpora una identidad de producto local para dejar de senti
 - **Parámetros:** tab Configuración cliente deja de pedir mutual Ley 16.744; organismo y tasa adicional viven en `empresa`. Al guardar config cliente se envía `idOrganismoAdministradorLey16744: null`.
 - **Archivos:** `proceso-mensual-motor.rules.ts`, `proceso-mensual-empresa-ley16744.rules.ts`, `proceso-mensual.service.ts`, `parametros-config-cliente-tab`, `parametros-workspace.orquestador.ts`, `parametros-completitud.rules.ts`.
 
+## 2026-05-26 — Nómina mensual: pulido workspace sin cajas (todas las fases)
+
+- **Sin bordes de caja:** franja operativa, bitácora, tab-summary, acta, detalle mensual y métricas usan fondos suaves y separadores finos en lugar de marcos.
+- **Padding compacto:** ritmo 6–10px en sidebar, tabs, focus, acta y panel detalle; expediente a ancho completo sin doble marco.
+- **Integración:** sidebar `--erp-surface-soft`, contenido `--erp-surface`; detalle mensual sin borde exterior; acta editorial sin card.
+- **Archivos:** `proceso-mensual-container.css`, `proceso-mensual-workspace.component.css`, `payroll-detalle-mensual-panel.css`, `payroll-operational-tabs.css`.
+
+## 2026-05-26 — Nómina mensual: acta solo tras verificar (sin vacío inicial)
+
+- **Estado sin verificar:** no se muestra acta vacía ni banner focus duplicado; el workspace conserva franja operativa + expediente de trabajadores; acción principal solo en shell («Verificar y generar nómina»).
+- **Tras verificar:** acta compacta con métricas/contexto/CTA; panel sin estirarse al alto del viewport (`flex: 0`, `max-width: 40rem`).
+- **Sin modal** en camino feliz; modal reservado a errores, parámetros o listas largas.
+- **Archivos:** `proceso-mensual-presentacion.facade.ts`, `proceso-mensual-workspace.component.*`, specs container.
+
+## 2026-05-26 — Nómina mensual: verificar y generar unificados en acta
+
+- **Un CTA:** «Verificar y generar nómina» en shell y acta; tras verificación en verde encadena generación sin modal «Período listo para generar».
+- **Acta:** resumen Críticos/Advertencias/Fichas, contexto período/aptos/movimientos/recurrentes, CTA secundario si aplica; panel compacto alineado arriba (sin hero vacío).
+- **Sin banner** «Detalle mensual» encima del acta en preparación; modal informativo solo para errores, parámetros o listas largas.
+- **Reglas:** `informacionDebeAbrirModalEnPreparacion`, `puedeEncadenarGeneracionTrasVerificacion`, `ejecutarPreparacionPrincipal` en facade.
+- **Archivos:** `proceso-mensual-acta-preparacion.rules.ts`, `proceso-mensual-workspace.component.*`, `proceso-mensual-presentacion.facade.ts`, `proceso-mensual-estado-operativo.rules.ts`.
+
+## 2026-05-26 — Nómina mensual: acta central en preparación (A+D)
+
+- **Preparación sin borrador:** el workspace deja focus/empty hero y muestra acta central (`payroll-acta-preparacion`) con etapa activa, descripción, preview «N trabajador(es) listo(s)», enlace a alertas y CTA principal visible (`payroll-modal-primary`).
+- **Sidebar:** en modo preparación solo bitácora; franja operativa oculta para evitar duplicidad con el acta.
+- **Reglas:** `proceso-mensual-acta-preparacion.rules.ts`; facade expone `mostrarActaPreparacionCentral` y `actaPreparacionCentral`.
+- **Archivos:** `proceso-mensual-workspace.component.*`, `proceso-mensual-presentacion.facade.ts`, rules + spec acta.
+
 ## 2026-05-26 — Nómina mensual: compactación Detalle mensual
 
 - **Pills superiores:** filtros Situación/Trabajadores/Liquidaciones/Pendientes más bajos (`min-height` 26px, padding reducido); head del panel con menos aire.
 - **Tab summary:** en Detalle mensual sin bloque de métricas (`payroll-tab-summary__metrics`); título y descripción compactos.
 - **Trabajadores:** detalle con tabs underline compactos integrados en cabecera (sin bloques segmentados ni dobles bordes); buscador del expediente a ancho completo, icono lupa + tooltip nativo, borde izquierdo separador y campo plano sin caja interna.
+- **Parámetros (NOM-PARAMETROS-REFRESH-01):** click en tile Parámetros consulta async solo PG, merge sin resetear borrador; con base/cálculo ya generados el refresh no re-bloquea «Generar nómina»; modal solo verificación (cargador centrado; grupos con ✓/✗; copy RRHH breve; pie Abrir parámetros + Verificar período; cierre con X); congelación del CTA shell solo antes de borrador/cálculo; si el flujo avanza (p. ej. se genera borrador con modal abierto) el CTA superior deja de mostrar «Verificar período»; pie del modal con parámetros listos: «Verificar período» solo si el período aún no fue verificado en el flujo principal — si ya hay prevalidación o borrador, único CTA «Abrir parámetros»; al cerrar sin acción de flujo no hay re-sync de navegación; tile «Revisados» sí actualiza en vivo; consulta PG sin prevalidación no escribe `resultado` ni diagnóstico (slice `consultaParametrosPeriodo`); rehidrata diagnósticos solo-parámetros como slice; retorno `/parametros` refresca en silencio.
 - **Grillas Nómina mensual:** `toolbarLayout="operativa"` en DataGrid — barra superior compacta (Página · input · de N · Registros por página · navegación primera/anterior/siguiente/última); sin pie duplicado; tokens `--erp-*`; aplicado en Trabajadores, Situación, Liquidaciones, Pendientes e Historial.
 - **Situación:** lead sin caja con borde; disclosures y body con menos padding/gap.
 - **Archivos:** `payroll-segment-nav.css`, `payroll-detalle-mensual-panel.css`, `proceso-mensual-workspace.component.css`, `proceso-mensual-revision-trabajadores.*`, `proceso-mensual-workspace-presentacion.rules.ts`, `proceso-mensual-presentacion.facade.ts`.

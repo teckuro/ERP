@@ -314,56 +314,19 @@
   </div>
   } @else {
     <section
-      class="payroll-revision-trabajadores__empty-state payroll-operativa-empty"
+      class="payroll-revision-trabajadores__empty-state"
       aria-label="Nómina mensual sin datos"
     >
-      <div class="payroll-operativa-empty__main">
-        <div class="payroll-revision-trabajadores__empty-visual" aria-hidden="true">
-          <span></span>
+      <div class="payroll-revision-trabajadores__empty-panel">
+        <div class="payroll-revision-trabajadores__empty-mark" aria-hidden="true">
+          <lucide-icon [img]="buscarTrabajadorIcon" />
         </div>
-        <div class="payroll-revision-trabajadores__empty-copy">
-          <span class="payroll-revision-trabajadores__empty-kicker">Sin datos del período</span>
-          <h3>No hay trabajadores considerados para esta nómina mensual</h3>
-          <p>
-            Genere o actualice la base del período para poblar el listado de revisión. Mientras tanto,
-            puede validar parámetros y revisar movimientos aprobados.
-          </p>
-        </div>
+        <p class="payroll-revision-trabajadores__empty-kicker">Sin datos del período</p>
+        <h3>No hay trabajadores considerados para esta nómina mensual</h3>
+        <p class="payroll-revision-trabajadores__empty-lead">
+          Use la acción principal de la barra superior para generar o actualizar la base del período.
+        </p>
       </div>
-      <div class="payroll-operativa-empty__cta">
-        @let accionPrincipal = f.estadoOperativo().accionPrincipal;
-        <button
-          type="button"
-          class="payroll-operativa-empty__btn"
-          [disabled]="accionPrincipal.disabled ?? false"
-          [attr.title]="accionPrincipal.disabledReason ?? accionPrincipal.label"
-          [attr.aria-label]="accionPrincipal.disabledReason ?? accionPrincipal.label"
-          (click)="f.ejecutarAccionPrincipalEstadoOperativo()"
-        >
-          {{ accionPrincipal.label }}
-        </button>
-      </div>
-      <dl class="payroll-revision-trabajadores__empty-metrics payroll-operativa-empty__metrics" aria-label="Resumen disponible">
-        <div>
-          <dt>Listos para nómina</dt>
-          <dd>{{ f.dashboardResumen().trabajadoresAptos ?? 0 }}</dd>
-        </div>
-        <div>
-          <dt>Movimientos aprobados</dt>
-          <dd>{{ f.dashboardResumen().movimientosAprobados }}</dd>
-        </div>
-        <div>
-          <dt>Recurrentes aplicables</dt>
-          <dd>{{ f.dashboardResumen().asignacionesAplicables ?? 0 }}</dd>
-        </div>
-      </dl>
-      @if (f.puedeGenerarPreNomina()) {
-        <div class="payroll-revision-trabajadores__empty-foot payroll-operativa-empty__foot">
-          <button type="button" class="payroll-revision-trabajadores__empty-link" (click)="f.generarPreNomina()">
-            Generar nómina
-          </button>
-        </div>
-      }
     </section>
   }
 </section>

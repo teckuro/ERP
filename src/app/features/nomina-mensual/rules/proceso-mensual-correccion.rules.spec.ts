@@ -164,6 +164,14 @@ describe('proceso-mensual-correccion.rules', () => {
     expect(accion?.kind).toBe('overlay_parametros');
   });
 
+  it('resolveAccionCorreccionDesdeFranjaArea parametros listos sigue abriendo overlay', () => {
+    const accion = resolveAccionCorreccionDesdeFranjaArea('parametros', {
+      parametrosListos: true,
+      parametrosConIncidenciaRevision: false,
+    });
+    expect(accion?.kind).toBe('overlay_parametros');
+  });
+
   it('resolveAccionCorreccionDesdeModalItem ruta novedades', () => {
     const accion = resolveAccionCorreccionDesdeModalItem({
       ruta: '/remuneraciones/novedades-mensuales',

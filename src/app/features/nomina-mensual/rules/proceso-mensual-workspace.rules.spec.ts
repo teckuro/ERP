@@ -96,17 +96,32 @@ describe('proceso-mensual-workspace.rules', () => {
     const vm = buildAlertasPeriodoResumen({
       validando: true,
       tieneResultado: false,
+      nominaGenerada: true,
       bloqueosCount: 0,
       advertenciasCount: 0,
     });
     expect(vm.modo).toBe('evaluando');
     expect(vm.mensaje).toContain('Preparando');
+    expect(vm.mostrarBloque).toBe(true);
+  });
+
+  it('buildAlertasPeriodoResumen oculta bloque sin nomina generada', () => {
+    const vm = buildAlertasPeriodoResumen({
+      validando: false,
+      tieneResultado: false,
+      nominaGenerada: false,
+      bloqueosCount: 0,
+      advertenciasCount: 0,
+    });
+    expect(vm.modo).toBe('sin-evaluar');
+    expect(vm.mostrarBloque).toBe(false);
   });
 
   it('buildAlertasPeriodoResumen usa tieneResultado como prevalidación (no solo store)', () => {
     const sinPrevalidacion = buildAlertasPeriodoResumen({
       validando: false,
       tieneResultado: false,
+      nominaGenerada: false,
       bloqueosCount: 2,
       advertenciasCount: 1,
     });
@@ -115,10 +130,12 @@ describe('proceso-mensual-workspace.rules', () => {
     const conPrevalidacion = buildAlertasPeriodoResumen({
       validando: false,
       tieneResultado: true,
+      nominaGenerada: true,
       bloqueosCount: 2,
       advertenciasCount: 1,
     });
     expect(conPrevalidacion.modo).not.toBe('sin_verificar');
+    expect(conPrevalidacion.mostrarBloque).toBe(true);
   });
 
   it('buildBitacoraEtapas normaliza tildes en resumen activo', () => {

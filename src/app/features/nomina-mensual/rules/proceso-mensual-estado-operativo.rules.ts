@@ -297,7 +297,7 @@ export function resolverEstadoOperativoProcesoMensual(
       titulo: 'Sin verificar',
       descripcion: 'Verifica trabajadores, parámetros, movimientos y recurrentes del período antes de generar la nómina.',
       severidad: 'neutral',
-      accionPrincipal: local('Verificar período', 'El sistema revisará el período y mostrará un resumen antes de generar la nómina.', 'validarPeriodo', !input.periodoValido),
+      accionPrincipal: local('Verificar y generar nómina', 'Revisa el período y, si no hay bloqueos críticos, genera el borrador de nómina.', 'validarPeriodo', !input.periodoValido),
       etapaActiva: 'validar',
       disclosureActivo: 'base',
       queFaltaAhora: [info('VERIFICAR_PERIODO', 'Verificar período', 'Revisa el período activo antes de generar la nómina mensual.')],

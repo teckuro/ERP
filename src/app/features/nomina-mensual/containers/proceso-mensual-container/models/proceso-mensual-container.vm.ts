@@ -84,6 +84,7 @@ export interface ConfirmacionProcesoMensualView {
 export type InformacionPeriodoDestino =
   | 'parametros'
   | 'parametros_app'
+  | 'validar_periodo'
   | 'trabajadores'
   | 'trabajadores_fichas'
   | 'movimientos'
@@ -102,6 +103,16 @@ export interface TrabajadorPendienteInformacionPeriodoView {
 }
 
 /** Conteos visibles tras verificar período (escala nómina grande). */
+export type InformacionPeriodoParametroGrupoTono = 'ok' | 'revision';
+
+export interface InformacionPeriodoParametroGrupoView {
+  id: string;
+  label: string;
+  /** Texto accesible del estado del grupo. */
+  estado: string;
+  tono: InformacionPeriodoParametroGrupoTono;
+}
+
 export interface InformacionPeriodoResumenVerificacion {
   trabajadoresPendientes: number;
   criticos: number;
@@ -120,6 +131,17 @@ export interface InformacionPeriodoView {
   titulo: string;
   bajada?: string;
   puntos?: string[];
+  consultando?: boolean;
+  /** Modal abierto desde tile Parámetros: no avanza el flujo de nómina. */
+  soloVerificacionParametros?: boolean;
+  /** Modal de alertas del expediente (cabecera detalle mensual). */
+  soloAlertasExpediente?: boolean;
+  alertasExpediente?: ReadonlyArray<NominaDetalleMensualPendienteRow>;
+  tipoRemuneracionLabel?: string;
+  estadoRemuneracionLabel?: string;
+  notaSoloVerificacion?: string;
+  parametrosGrupos?: ReadonlyArray<InformacionPeriodoParametroGrupoView>;
+  avisoDrift?: string;
   secciones?: Array<{
     titulo: string;
     items: string[];
@@ -356,6 +378,8 @@ export interface AlertasPeriodoResumenVm {
   criticas: number;
   advertencias: number;
   mostrarDetalle: boolean;
+  /** Oculto en sidebar hasta existir borrador o snapshot del período. */
+  mostrarBloque: boolean;
 }
 
 export interface ParaContinuarItemVm {

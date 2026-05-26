@@ -21,6 +21,16 @@ describe('ProcesoMensualWorkspacePort', () => {
 
     expect(port.nominaWorkspaceTab()).toBe('liquidaciones');
     expect(port.nominaWorkspaceTabVisible()).toBe('detalle_mensual');
-    expect(port.nominaDetalleMensualVista()).toBe('liquidaciones');
+    expect(port.nominaDetalleMensualVista()).toBe('trabajadores');
+  });
+
+  it('normaliza situacion y pendientes a vista trabajadores', () => {
+    const port = new ProcesoMensualWorkspacePort();
+
+    port.seleccionarDetalleMensualVista('todos');
+    expect(port.nominaDetalleMensualVista()).toBe('trabajadores');
+
+    port.seleccionarDetalleMensualVista('pendientes');
+    expect(port.nominaDetalleMensualVista()).toBe('trabajadores');
   });
 });

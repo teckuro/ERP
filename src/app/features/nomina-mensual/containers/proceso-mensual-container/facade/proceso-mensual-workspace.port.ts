@@ -1,5 +1,6 @@
 import { Injectable, signal } from '@angular/core';
 
+import type { NominaAreaOperativa } from '../models/proceso-mensual-area-orden.config';
 import type {
   NominaDetalleMensualVista,
   NominaWorkspaceTab,
@@ -7,6 +8,7 @@ import type {
 } from '../models/proceso-mensual-container.vm';
 import type { NominaWorkspaceFlowTarget } from '../../../rules/proceso-mensual-flow-nav.rules';
 import type { NominaMasivaFiltro } from '../../../rules/proceso-mensual-masivo-layout.rules';
+import { normalizeDetalleMensualVistaExpediente } from '../../../rules/proceso-mensual-detalle-mensual.rules';
 import { mapDetalleVistaALegacyTab } from './proceso-mensual-navegacion';
 
 @Injectable()
@@ -15,6 +17,7 @@ export class ProcesoMensualWorkspacePort {
   readonly nominaWorkspaceTabVisible = signal<NominaWorkspaceTabVisible>('detalle_mensual');
   readonly nominaDetalleMensualVista = signal<NominaDetalleMensualVista>('trabajadores');
   readonly actaOperativaPreparada = signal(false);
+  readonly franjaAreaActiva = signal<NominaAreaOperativa | null>(null);
 
   seleccionarLegacyTab(tab: NominaWorkspaceTab): NominaMasivaFiltro | null {
     const mapped = mapLegacyWorkspaceTabANavegacion(tab);
@@ -42,7 +45,7 @@ export class ProcesoMensualWorkspacePort {
       this.nominaWorkspaceTab.set('movimientos');
       return 'con_movimientos';
     }
-    this.nominaDetalleMensualVista.set(vista);
+    this.nominaDetalleMensualVista.set(normalizeDetalleMensualVistaExpediente(vista));
     const legacy = mapDetalleVistaALegacyTab(vista);
     if (legacy) {
       this.nominaWorkspaceTab.set(legacy);
@@ -52,7 +55,11 @@ export class ProcesoMensualWorkspacePort {
 
   aplicarDestino(destino: NominaWorkspaceFlowTarget): void {
     this.nominaWorkspaceTabVisible.set(destino.tabVisible);
-    this.nominaDetalleMensualVista.set(destino.detalleVista);
+    this.nominaDetalleMensualVista.set(
+      destino.tabVisible === 'detalle_mensual'
+        ? normalizeDetalleMensualVistaExpediente(destino.detalleVista)
+        : destino.detalleVista,
+    );
     this.nominaWorkspaceTab.set(destino.legacyTab);
   }
 }
@@ -62,15 +69,12 @@ function mapLegacyWorkspaceTabANavegacion(tab: NominaWorkspaceTab): NominaWorksp
     case 'historial':
       return { tabVisible: 'historial', detalleVista: 'todos', legacyTab: 'historial' };
     case 'liquidaciones':
-      return { tabVisible: 'detalle_mensual', detalleVista: 'liquidaciones', legacyTab: 'liquidaciones' };
     case 'movimientos':
     case 'recurrentes':
-      return { tabVisible: 'detalle_mensual', detalleVista: 'trabajadores', legacyTab: tab };
     case 'trabajadores':
-      return { tabVisible: 'detalle_mensual', detalleVista: 'trabajadores', legacyTab: 'trabajadores' };
     case 'parametros':
-      return { tabVisible: 'detalle_mensual', detalleVista: 'pendientes', legacyTab: 'parametros' };
+      return { tabVisible: 'detalle_mensual', detalleVista: 'trabajadores', legacyTab: tab === 'parametros' ? 'parametros' : tab };
     default:
-      return { tabVisible: 'detalle_mensual', detalleVista: 'todos', legacyTab: tab };
+      return { tabVisible: 'detalle_mensual', detalleVista: 'trabajadores', legacyTab: tab };
   }
 }

@@ -119,12 +119,36 @@ describe('proceso-mensual-workspace-presentacion.rules', () => {
       pendientesCount: 2,
       liquidacionesGeneradas: 0,
       nominaCerrada: true,
+      eventosHistorialCount: 3,
     });
 
     expect(summaries.map((s) => s.id)).toEqual(['detalle_mensual', 'historial']);
     expect(summaries[0]?.severidad).toBe('bloqueo');
     expect(summaries[0]?.metricas).toEqual([]);
-    expect(summaries[1]?.metricas[0]).toEqual({ label: 'Liquidaciones', value: 'Pendiente' });
+    expect(summaries[1]?.metricas).toEqual([]);
+    expect(summaries[1]?.indicador).toBe('3 eventos');
+    expect(summaries[1]?.descripcion).toContain('generación');
+  });
+
+  it('buildNominaWorkspaceTabVisibleSummaries historial sin eventos usa copy vacío', () => {
+    const historial = buildNominaWorkspaceTabVisibleSummaries({
+      resumenSuperior: {
+        trabajadores: '0 listos',
+        parametros: 'Sin evaluar',
+        movimientos: '0 aprobados',
+        recurrentes: '0 vigentes',
+        cambios: 0,
+        bloqueos: 0,
+      },
+      bloqueosCount: 0,
+      pendientesCount: 0,
+      liquidacionesGeneradas: 0,
+      nominaCerrada: false,
+      eventosHistorialCount: 0,
+    })[1];
+
+    expect(historial?.indicador).toBeNull();
+    expect(historial?.descripcion).toContain('Aún no hay eventos');
   });
 
   it('claseNominaWorkspaceTab marca activo', () => {

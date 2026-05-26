@@ -9,6 +9,15 @@ import type {
   ProcesoMensualPrevalidacion,
 } from '../../../models/proceso-mensual.model';
 import { ProcesoMensualService } from '../../../services/proceso-mensual.service';
+import {
+  detectarDriftConsultaParametros,
+  detectarDriftParametros,
+  esDiagnosticoSoloParametros,
+  extraerConsultaParametrosPeriodo,
+  mergeParametrosEnPrevalidacion,
+  type ConsultaParametrosPeriodoVm,
+  type DriftParametrosVm,
+} from '../../../rules/proceso-mensual-parametros-refresh.rules';
 import type { AprobacionOperativaRegistroView } from '../models/proceso-mensual-container.vm';
 import { formatoFechaHoraNomina, formatoMontoNomina } from '../utils/proceso-mensual-presentacion.formato';
 
@@ -30,10 +39,13 @@ export class ProcesoMensualPeriodoStore {
 
   readonly periodoSeleccionado = computed(() => this.periodoActivo.periodoYm());
   readonly resultado = signal<ProcesoMensualPrevalidacion | null>(null);
+  /** Consulta PG del tile Parámetros sin sustituir verificación del período. */
+  readonly consultaParametrosPeriodo = signal<ConsultaParametrosPeriodoVm | null>(null);
   readonly preNomina = signal<ProcesoMensualPreNominaPeriodo | null>(null);
   readonly calculo = signal<MotorCalculoPeriodoResultado | null>(null);
   readonly snapshotActivo = signal<NominaCalculoPeriodoSnapshot | null>(null);
   readonly validando = signal(false);
+  readonly consultandoParametros = signal(false);
   readonly generandoPreNomina = signal(false);
   readonly calculandoPreliminar = signal(false);
   readonly guardandoSnapshot = signal(false);
@@ -92,6 +104,7 @@ export class ProcesoMensualPeriodoStore {
       .ejecutarPrevalidaciones(p)
       .then(async (r) => {
         this.resultado.set(r);
+        this.consultaParametrosPeriodo.set(null);
         this.preNomina.set(null);
         this.calculo.set(null);
         this.snapshotActivo.set(null);
@@ -117,6 +130,38 @@ export class ProcesoMensualPeriodoStore {
       .finally(() => {
         this.validando.set(false);
       });
+  }
+
+  async refrescarParametrosPeriodo(): Promise<DriftParametrosVm | null> {
+    const p = this.periodoSeleccionado();
+    const antes = this.resultado();
+    const antesParam = this.consultaParametrosPeriodo();
+    this.consultandoParametros.set(true);
+    this.errorEjecucion.set(null);
+    try {
+      const consulta = await this.procesoMensual.consultarEstadoParametrosPeriodo(p);
+      const slice = extraerConsultaParametrosPeriodo(consulta);
+      if (!antes) {
+        this.consultaParametrosPeriodo.set(slice);
+        return detectarDriftConsultaParametros(antesParam, slice);
+      }
+      const aislarGeneracionNomina = !!(this.preNomina() || this.calculo() || this.snapshotActivo());
+      const despues = mergeParametrosEnPrevalidacion(antes, consulta, { aislarGeneracionNomina });
+      this.resultado.set(despues);
+      this.consultaParametrosPeriodo.set(slice);
+      const drift = detectarDriftParametros(antes, despues);
+      try {
+        await this.procesoMensual.guardarDiagnosticoPeriodo(p, despues);
+      } catch {
+        // La consulta en memoria sigue disponible aunque falle la persistencia.
+      }
+      return drift;
+    } catch (e: unknown) {
+      this.errorEjecucion.set(mensajeError(e, 'No se pudo consultar el estado de parámetros del período.'));
+      return null;
+    } finally {
+      this.consultandoParametros.set(false);
+    }
   }
 
   generarPreNomina(): void {
@@ -250,7 +295,7 @@ export class ProcesoMensualPeriodoStore {
         this.liquidacionesGeneradasCount.set(liquidacionesGeneradas);
         if (snapshot) {
           if (snapshot.estado === 'borrador' && prevalidacionDiagnostico) {
-            this.resultado.set(prevalidacionDiagnostico);
+            this.aplicarPrevalidacionDiagnosticoRehidratado(prevalidacionDiagnostico);
           } else {
             this.resultado.set(null);
           }
@@ -269,7 +314,7 @@ export class ProcesoMensualPeriodoStore {
         } else {
           this.limpiarSenalesVolatiles();
           if (prevalidacionDiagnostico) {
-            this.resultado.set(prevalidacionDiagnostico);
+            this.aplicarPrevalidacionDiagnosticoRehidratado(prevalidacionDiagnostico);
           }
         }
       })
@@ -316,8 +361,19 @@ export class ProcesoMensualPeriodoStore {
     this.limpiarSenalesVolatiles();
   }
 
+  private aplicarPrevalidacionDiagnosticoRehidratado(prevalidacion: ProcesoMensualPrevalidacion): void {
+    if (esDiagnosticoSoloParametros(prevalidacion)) {
+      this.resultado.set(null);
+      this.consultaParametrosPeriodo.set(extraerConsultaParametrosPeriodo(prevalidacion));
+      return;
+    }
+    this.resultado.set(prevalidacion);
+    this.consultaParametrosPeriodo.set(null);
+  }
+
   private limpiarSenalesVolatiles(): void {
     this.resultado.set(null);
+    this.consultaParametrosPeriodo.set(null);
     this.preNomina.set(null);
     this.calculo.set(null);
     this.snapshotActivo.set(null);

@@ -2,6 +2,10 @@
 @let frame = f.nominaFrame();
 @let resumen = f.nominaResumenSuperior();
 @let pres = focusPresentacion();
+@let mostrarActa = f.mostrarActaPreparacionCentral();
+@let mostrarFocusPreparacion = !mostrarActa
+  && (!f.contextoOperativoPeriodo().baseGenerada || frame.frame === 'generando')
+  && f.contextoOperativoPeriodo().tienePrevalidacion;
 <section class="payroll-view-panel" aria-label="Consola del período">
   <div
     class="payroll-console"
@@ -19,7 +23,8 @@
         </div>
       </div>
     }
-    <main class="payroll-main" aria-labelledby="payroll-focus-title">
+    <main class="payroll-main" [attr.aria-labelledby]="mostrarFocusPreparacion ? 'payroll-focus-title' : null">
+      @if (mostrarFocusPreparacion) {
       <section
         class="payroll-focus payroll-focus--operativo"
         [class.payroll-focus--hero]="pres.layout === 'hero'"
@@ -45,30 +50,28 @@
               <p class="payroll-focus__meta">{{ frame.info }}</p>
             }
           </div>
-          @if (pres.showAreas) {
-            <ul class="payroll-focus__areas" aria-label="Áreas que revisarás al generar">
-              @for (area of f.nominaFranjaAreas; track area.id) {
-                <li>
-                  <lucide-icon [name]="area.icon" aria-hidden="true"></lucide-icon>
-                  <span>{{ area.focusAreaLabel }}</span>
-                </li>
-              }
-            </ul>
-          }
-          @if (!pres.hintInline && frame.info) {
-            <p class="payroll-focus__hint">
-              <lucide-icon name="info" aria-hidden="true"></lucide-icon>
-              <span>{{ frame.info }}</span>
-            </p>
-          }
           @if (f.estadoOperativo().accionPrincipal.disabledReason) {
             <p class="payroll-focus__note">{{ f.estadoOperativo().accionPrincipal.disabledReason }}</p>
           }
         </div>
       </section>
+      }
 
-      <div class="payroll-workspace-layout">
+      @if (f.parametrosDriftAviso(); as avisoDrift) {
+        <p class="payroll-focus__note payroll-focus__note--drift" role="status">
+          <span>{{ avisoDrift }}</span>
+          <button type="button" class="payroll-focus__note-dismiss" (click)="f.descartarAvisoDriftParametros()">
+            Entendido
+          </button>
+        </p>
+      }
+
+      <div
+        class="payroll-workspace-layout"
+        [class.payroll-workspace-layout--preparacion]="mostrarActa"
+      >
         <aside class="payroll-workspace-sidebar" aria-label="Resumen operativo del período">
+          @if (!mostrarActa) {
           <section class="payroll-franja-operativa" aria-label="Indicadores del período">
             <ul class="payroll-franja-operativa__list">
               @for (area of f.nominaFranjaAreas; track area.id) {
@@ -92,6 +95,7 @@
               }
             </ul>
           </section>
+          }
 
           <section class="payroll-rail-block payroll-rail-block--bitacora" aria-labelledby="payroll-sidebar-bitacora-title">
             <h3 id="payroll-sidebar-bitacora-title" class="payroll-resumen-block__title">Bitácora del período</h3>
@@ -115,67 +119,6 @@
             </ol>
           </section>
 
-          <section class="payroll-rail-block payroll-rail-block--alertas" aria-labelledby="payroll-sidebar-alertas-title">
-            <h3 id="payroll-sidebar-alertas-title" class="payroll-resumen-block__title">Revisión</h3>
-            @let alertas = f.alertasPeriodoResumen();
-            @if (alertas.modo === 'evaluando') {
-              <p class="payroll-rail-alertas__msg">{{ alertas.mensaje }}</p>
-            } @else if (alertas.modo === 'sin-evaluar') {
-              <p class="payroll-rail-alertas__msg">{{ alertas.mensaje }}</p>
-              @let railCta = f.revisionRailCta();
-              <button
-                type="button"
-                class="payroll-rail-link payroll-rail-link--primary"
-                [attr.title]="railCta.title ?? railCta.label"
-                [attr.aria-label]="railCta.title ?? railCta.label"
-                (click)="f.ejecutarRevisionRailPrincipal()"
-              >
-                {{ railCta.label }}
-              </button>
-            } @else if (alertas.modo === 'ok') {
-              <p class="payroll-rail-alertas__msg payroll-rail-alertas__msg--ok">{{ alertas.mensaje }}</p>
-            } @else {
-              <div class="payroll-rail-alertas__pills">
-                @if (alertas.criticas) {
-                  <span class="payroll-rail-pill payroll-rail-pill--danger">{{ alertas.criticas }} crítica{{ alertas.criticas === 1 ? '' : 's' }}</span>
-                }
-                @if (alertas.advertencias) {
-                  <span class="payroll-rail-pill payroll-rail-pill--warning">{{ alertas.advertencias }} advertencia{{ alertas.advertencias === 1 ? '' : 's' }}</span>
-                }
-              </div>
-              @if (alertas.mostrarDetalle) {
-                @let railCta = f.revisionRailCta();
-                <button
-                  type="button"
-                  class="payroll-rail-link payroll-rail-link--primary"
-                  [attr.title]="railCta.title ?? railCta.label"
-                  [attr.aria-label]="railCta.title ?? railCta.label"
-                  (click)="f.ejecutarRevisionRailPrincipal()"
-                >
-                  {{ railCta.label }}
-                </button>
-                @if (railCta.destaqueDetalle) {
-                  <p class="payroll-rail-alertas__destaque">{{ railCta.destaqueDetalle }}</p>
-                }
-                @if (f.nominaPendientesRailSecundarios().length) {
-                  <ul class="payroll-rail-pendientes">
-                    @for (pendiente of f.nominaPendientesRailSecundarios(); track pendiente.codigo) {
-                      <li>
-                        <button
-                          type="button"
-                          class="payroll-rail-link payroll-rail-link--secondary"
-                          (click)="f.navegarPendienteExterno(pendiente)"
-                        >
-                          {{ pendiente.accionLabel ?? pendiente.titulo }}
-                        </button>
-                      </li>
-                    }
-                  </ul>
-                }
-              }
-            }
-          </section>
-
           @let guiaSidebar = f.nominaGuiaPanel();
           @if (guiaSidebar.variant === 'confirmar') {
             <section class="payroll-sidebar-card" aria-label="Confirmación del período">
@@ -187,13 +130,6 @@
                 <div><dt>Cambios</dt><dd>{{ resumen.cambios }}</dd></div>
               </dl>
             </section>
-          } @else {
-            <section class="payroll-sidebar-card" aria-label="Guía operativa">
-              <h3 class="payroll-resumen-block__title">{{ guiaSidebar.titulo }}</h3>
-              @if (guiaSidebar.parrafo) {
-                <p>{{ guiaSidebar.parrafo }}</p>
-              }
-            </section>
           }
         </aside>
 
@@ -202,7 +138,6 @@
             <section class="payroll-period-actions payroll-period-actions--workspace" aria-label="Acciones del período">
               <header class="payroll-period-actions__header">
                 <h3>Acciones del período</h3>
-                <p>Operaciones sobre la versión generada. La acción principal del flujo está en la barra superior.</p>
               </header>
               @if (f.exitoAccionPeriodo()) {
                 <p class="payroll-period-actions__feedback payroll-period-actions__feedback--success" role="status">
@@ -320,10 +255,30 @@
       <section
         class="payroll-tab-panel"
         [class.payroll-tab-panel--detalle]="f.nominaWorkspaceTabVisible() === 'detalle_mensual'"
+        [class.payroll-tab-panel--historial]="f.nominaWorkspaceTabVisible() === 'historial'"
+        [class.payroll-tab-panel--acta]="mostrarActa"
         aria-live="polite"
       >
         @let tabSummary = f.nominaWorkspaceTabVisibleSummary();
-        @if (tabSummary) {
+        @if (!mostrarActa && f.nominaWorkspaceTabVisible() === 'detalle_mensual') {
+          @let alertasExp = f.expedienteCabeceraAlertas();
+          @if (alertasExp.tieneAlertas) {
+            <div class="payroll-tab-summary payroll-tab-summary--solo-alertas">
+              <button
+                type="button"
+                class="payroll-tab-summary__alerta payroll-tab-summary__alerta--esquina"
+                [class.payroll-tab-summary__alerta--bloqueo]="alertasExp.bloqueos > 0"
+                [class.payroll-tab-summary__alerta--advertencia]="alertasExp.bloqueos === 0"
+                [attr.title]="'Ver alertas del período (' + alertasExp.total + ')'"
+                [attr.aria-label]="'Abrir alertas del período, ' + alertasExp.total + ' en total'"
+                (click)="f.abrirModalAlertasExpediente()"
+              >
+                <lucide-icon [name]="alertasExp.bloqueos > 0 ? 'alert-circle' : 'circle-alert'" aria-hidden="true" />
+                <span>{{ alertasExp.total }}</span>
+              </button>
+            </div>
+          }
+        } @else if (!mostrarActa && tabSummary) {
           <header
             class="payroll-tab-summary"
             [class.payroll-tab-summary--neutral]="tabSummary.severidad === 'neutral'"
@@ -331,7 +286,7 @@
             [class.payroll-tab-summary--bloqueo]="tabSummary.severidad === 'bloqueo'"
             [class.payroll-tab-summary--listo]="tabSummary.severidad === 'listo'"
           >
-            <div>
+            <div class="payroll-tab-summary__main">
               <span class="payroll-tab-summary__eyebrow">{{ tabSummary.label }}</span>
               <h3>{{ tabSummary.titulo }}</h3>
               <p>{{ tabSummary.descripcion }}</p>
@@ -350,227 +305,142 @@
         }
         @switch (f.nominaWorkspaceTabVisible()) {
           @case ('detalle_mensual') {
-            <section class="payroll-detalle-mensual" aria-label="Vistas del detalle mensual">
-              <header class="payroll-detalle-mensual__head">
-                <nav
-                  class="payroll-segment-nav payroll-segment-nav--detalle payroll-detalle-mensual__nav"
-                  aria-label="Filtros del detalle mensual"
-                >
-                  @for (filtro of f.nominaDetalleMensualFiltros; track filtro.id) {
-                    <button
-                      type="button"
-                      [class]="claseDetalleFiltro(filtro.id)"
-                      (click)="f.seleccionarNominaDetalleMensualVista(filtro.id)"
-                    >
-                      {{ filtro.label }}
-                    </button>
-                  }
-                </nav>
-                @if (f.mostrarResumenAmpliadoEnRail()) {
+            @if (mostrarActa) {
+              @let acta = f.actaPreparacionCentral();
+              <section
+                class="payroll-acta-preparacion"
+                [class.payroll-acta-preparacion--listo]="acta.estadoResultado === 'listo'"
+                [class.payroll-acta-preparacion--bloqueado]="acta.estadoResultado === 'bloqueado'"
+                [class.payroll-acta-preparacion--advertencias]="acta.estadoResultado === 'advertencias'"
+                aria-labelledby="payroll-acta-title"
+                [attr.aria-busy]="acta.ctaLoading"
+              >
+                <header class="payroll-acta-preparacion__header">
+                  <p class="payroll-acta-preparacion__eyebrow">
+                    {{ acta.etapa }} · {{ acta.estadoEtapa }}
+                  </p>
+                  <h2 id="payroll-acta-title" class="payroll-acta-preparacion__title">{{ acta.titulo }}</h2>
+                  <p class="payroll-acta-preparacion__lead">{{ acta.descripcion }}</p>
+                </header>
+                @if (acta.previewLinea) {
+                  <p class="payroll-acta-preparacion__preview">{{ acta.previewLinea }}</p>
+                }
+                @if (acta.resumenVerificacion; as resumen) {
+                  <div class="payroll-acta-preparacion__resumen" aria-label="Resumen de la verificación">
+                    <div class="payroll-acta-preparacion__metrica">
+                      <span class="payroll-acta-preparacion__metrica-k">Críticos</span>
+                      <strong class="payroll-acta-preparacion__metrica-v">{{ resumen.criticos }}</strong>
+                    </div>
+                    <div class="payroll-acta-preparacion__metrica">
+                      <span class="payroll-acta-preparacion__metrica-k">Advertencias</span>
+                      <strong class="payroll-acta-preparacion__metrica-v">{{ resumen.advertencias }}</strong>
+                    </div>
+                    <div class="payroll-acta-preparacion__metrica payroll-acta-preparacion__metrica--destacada">
+                      <span class="payroll-acta-preparacion__metrica-k">Fichas por corregir</span>
+                      <strong class="payroll-acta-preparacion__metrica-v">{{ resumen.trabajadoresPendientes }}</strong>
+                    </div>
+                  </div>
+                }
+                @if (acta.contextoPeriodo; as ctx) {
+                  <dl class="payroll-acta-preparacion__contexto" aria-label="Contexto del período">
+                    <div>
+                      <dt>Período</dt>
+                      <dd>{{ ctx.periodoEtiqueta }}</dd>
+                    </div>
+                    <div>
+                      <dt>Trabajadores aptos</dt>
+                      <dd>{{ ctx.trabajadoresAptos }}</dd>
+                    </div>
+                    <div>
+                      <dt>Movimientos del mes</dt>
+                      <dd>{{ ctx.movimientosLabel }}</dd>
+                    </div>
+                    <div>
+                      <dt>Recurrentes aplicables</dt>
+                      <dd>{{ ctx.recurrentesLabel }}</dd>
+                    </div>
+                  </dl>
+                }
+                @if (acta.mensajeEstado) {
+                  <p class="payroll-acta-preparacion__mensaje">{{ acta.mensajeEstado }}</p>
+                }
+                @if (acta.alertasEtiqueta) {
                   <button
                     type="button"
-                    class="payroll-detalle-mensual__resumen payroll-detalle-mensual-toolbar__resumen"
-                    aria-label="Resumen ampliado del período"
-                    (click)="f.abrirDetalleOperativo('resumen')"
+                    class="payroll-acta-preparacion__alertas"
+                    [class.payroll-acta-preparacion__alertas--bloqueo]="acta.alertasTotal > 0 && f.expedienteCabeceraAlertas().bloqueos > 0"
+                    [attr.aria-label]="acta.alertasEtiqueta"
+                    (click)="f.abrirModalAlertasExpediente()"
                   >
-                    <lucide-icon name="file-text" aria-hidden="true" />
-                    <span>Resumen ampliado</span>
+                    <lucide-icon
+                      [name]="f.expedienteCabeceraAlertas().bloqueos > 0 ? 'alert-circle' : 'circle-alert'"
+                      aria-hidden="true"
+                    />
+                    <span>{{ acta.alertasEtiqueta }}</span>
                   </button>
                 }
-              </header>
-              <div class="payroll-detalle-mensual__body">
-            @switch (f.nominaDetalleMensualVista()) {
-              @case ('todos') {
-                @let situacion = f.nominaDetalleMensualSituacion();
-                <section class="payroll-detalle-situacion" aria-label="Situación del período">
-                  <p class="payroll-detalle-situacion__lead" role="note">
-                    Los movimientos del período se revisan por trabajador en la pestaña Trabajadores.
-                  </p>
-                  @if (situacion.totalAlertas > 0) {
-                    @if (situacion.bloqueos.length) {
-                      <details class="payroll-detalle-situacion__section payroll-detalle-situacion__section--bloqueo" open>
-                        <summary>
-                          <span class="payroll-detalle-situacion__summary-inner">
-                            <span class="payroll-detalle-situacion__chevron-wrap" aria-hidden="true">
-                              <lucide-icon class="payroll-detalle-situacion__chevron" [img]="chevronRightIcon" />
-                            </span>
-                            <span class="payroll-detalle-situacion__summary-label">Críticos y bloqueos</span>
-                            <span class="payroll-detalle-situacion__count">{{ situacion.bloqueos.length }}</span>
-                          </span>
-                        </summary>
-                        <div class="payroll-detalle-situacion__panel">
-                          <p class="payroll-detalle-situacion__help">
-                            Corrija estos puntos antes de generar o confirmar la nómina del período.
-                          </p>
-                          <app-data-grid
-                            className="payroll-detalle-situacion__grid"
-                            cardClassName="payroll-detalle-situacion__grid-card"
-                            title=""
-                            [columns]="f.detalleMensualPendienteColumns"
-                            [rows]="situacion.bloqueos"
-                            [filtersEnabled]="false"
-                            [filterChipsDisplay]="'never'"
-                            [showExportAction]="false"
-                            [selectable]="false"
-                            [headerCountDisplay]="'text'"
-                            [toolbarLayout]="'operativa'"
-                            headerCountNoun="bloqueos"
-                            emptyTitle="Sin bloqueos"
-                            emptyDescription=""
-                          >
-                            <ng-template appDataGridCell="accion" let-row="row">
-                              @if (accionPendienteUi(row.accion); as ui) {
-                                <button
-                                  type="button"
-                                  class="payroll-detalle-accion-btn"
-                                  [attr.title]="ui.title"
-                                  [attr.aria-label]="ui.title"
-                                  (click)="f.abrirDetallePendienteRow(row)"
-                                >
-                                  <lucide-icon [name]="ui.icon" aria-hidden="true" />
-                                  <span>{{ ui.label }}</span>
-                                </button>
-                              }
-                            </ng-template>
-                          </app-data-grid>
-                        </div>
-                      </details>
-                    }
-                    @if (situacion.porRevisar.length) {
-                      <details class="payroll-detalle-situacion__section payroll-detalle-situacion__section--revision">
-                        <summary>
-                          <span class="payroll-detalle-situacion__summary-inner">
-                            <span class="payroll-detalle-situacion__chevron-wrap" aria-hidden="true">
-                              <lucide-icon class="payroll-detalle-situacion__chevron" [img]="chevronRightIcon" />
-                            </span>
-                            <span class="payroll-detalle-situacion__summary-label">Por revisar</span>
-                            <span class="payroll-detalle-situacion__count">{{ situacion.porRevisar.length }}</span>
-                          </span>
-                        </summary>
-                        <div class="payroll-detalle-situacion__panel">
-                          <p class="payroll-detalle-situacion__help">
-                            Advertencias del período que conviene revisar antes de continuar.
-                          </p>
-                          <app-data-grid
-                            className="payroll-detalle-situacion__grid"
-                            cardClassName="payroll-detalle-situacion__grid-card"
-                            title=""
-                            [columns]="f.detalleMensualPendienteColumns"
-                            [rows]="situacion.porRevisar"
-                            [filtersEnabled]="false"
-                            [filterChipsDisplay]="'never'"
-                            [showExportAction]="false"
-                            [selectable]="false"
-                            [headerCountDisplay]="'text'"
-                            [toolbarLayout]="'operativa'"
-                            headerCountNoun="advertencias"
-                            emptyTitle="Sin revisiones pendientes"
-                            emptyDescription=""
-                          >
-                            <ng-template appDataGridCell="accion" let-row="row">
-                              @if (accionPendienteUi(row.accion); as ui) {
-                                <button
-                                  type="button"
-                                  class="payroll-detalle-accion-btn"
-                                  [attr.title]="ui.title"
-                                  [attr.aria-label]="ui.title"
-                                  (click)="f.abrirDetallePendienteRow(row)"
-                                >
-                                  <lucide-icon [name]="ui.icon" aria-hidden="true" />
-                                  <span>{{ ui.label }}</span>
-                                </button>
-                              }
-                            </ng-template>
-                          </app-data-grid>
-                        </div>
-                      </details>
-                    }
-                  } @else {
-                    <div class="payroll-detalle-situacion__empty payroll-operativa-empty">
-                      <div class="payroll-operativa-empty__main payroll-detalle-situacion__empty-copy">
-                        <p class="payroll-detalle-situacion__empty-titulo">Sin alertas del período</p>
-                        <p class="payroll-detalle-situacion__empty-desc">
-                          No hay bloqueos ni advertencias visibles. Revise trabajadores y movimientos en sus pestañas.
-                        </p>
-                      </div>
-                      <div class="payroll-operativa-empty__cta">
-                        <button
-                          type="button"
-                          class="payroll-operativa-empty__btn"
-                          (click)="f.seleccionarNominaDetalleMensualVista('trabajadores')"
-                        >
-                          Ir a trabajadores
-                        </button>
-                      </div>
-                    </div>
+                <div class="payroll-acta-preparacion__actions">
+                  <button
+                    type="button"
+                    class="payroll-modal-primary payroll-acta-preparacion__cta"
+                    [disabled]="acta.ctaDisabled"
+                    [attr.aria-busy]="acta.ctaLoading"
+                    (click)="f.ejecutarPreparacionPrincipal()"
+                  >
+                    {{ acta.ctaLabel }}
+                  </button>
+                  @if (acta.accionSecundaria) {
+                    <button
+                      type="button"
+                      class="payroll-modal-secondary payroll-acta-preparacion__cta-secondary"
+                      [disabled]="acta.ctaLoading"
+                      (click)="f.ejecutarAccionSecundariaActa()"
+                    >
+                      {{ acta.accionSecundaria.label }}
+                    </button>
                   }
-                </section>
-              }
-              @case ('trabajadores') {
+                  @if (acta.ctaDisabledReason) {
+                    <p class="payroll-acta-preparacion__note">{{ acta.ctaDisabledReason }}</p>
+                  }
+                </div>
+              </section>
+            } @else {
+            <section class="payroll-detalle-mensual" aria-label="Expediente de trabajadores del período">
+              <div class="payroll-detalle-mensual__body">
                 <app-proceso-mensual-revision-trabajadores />
-              }
-              @case ('liquidaciones') {
-                @if (f.liquidacionesPendientesCopy(); as pendiente) {
-                  <p class="payroll-liquidaciones-aviso" role="status">
-                    <strong>{{ pendiente.titulo }}</strong>
-                    {{ pendiente.descripcion }}
-                  </p>
-                } @else {
-                  <app-data-grid
-                    title="Liquidaciones del período"
-                    [columns]="f.detalleMensualExpedienteColumns"
-                    [rows]="f.nominaDetalleMensualLiquidacionRows()"
-                    headerCountNoun="liquidaciones"
-                    [toolbarLayout]="'operativa'"
-                    gridHeight="100%"
-                    cardClassName="payroll-detalle-mensual__grid"
-                    emptyTitle="Sin liquidaciones"
-                    emptyDescription="Confirme la nómina para habilitar liquidaciones oficiales."
-                  />
-                }
-              }
-              @case ('pendientes') {
-                <app-data-grid
-                  title="Pendientes de revisión"
-                  [columns]="f.detalleMensualPendienteColumns"
-                  [rows]="f.nominaDetalleMensualPendienteRows()"
-                  headerCountNoun="pendientes"
-                  [toolbarLayout]="'operativa'"
-                  gridHeight="100%"
-                  cardClassName="payroll-detalle-mensual__grid"
-                  emptyTitle="Sin pendientes visibles"
-                  emptyDescription="No hay bloqueos ni revisiones pendientes en este período."
-                >
-                  <ng-template appDataGridCell="accion" let-row="row">
-                    @if (accionPendienteUi(row.accion); as ui) {
-                      <button
-                        type="button"
-                        class="payroll-detalle-accion-btn"
-                        [attr.title]="ui.title"
-                        [attr.aria-label]="ui.title"
-                        (click)="f.abrirDetallePendienteRow(row)"
-                      >
-                        <lucide-icon [name]="ui.icon" aria-hidden="true" />
-                        <span>{{ ui.label }}</span>
-                      </button>
-                    }
-                  </ng-template>
-                </app-data-grid>
-              }
-            }
               </div>
             </section>
+            }
           }
           @case ('historial') {
-            <app-data-grid
-              title="Historial del período"
-              [columns]="f.nominaHistorialTablaColumns"
-              [rows]="f.nominaHistorialTablaRows()"
-              headerCountNoun="eventos"
-              [toolbarLayout]="'operativa'"
-              emptyTitle="Sin eventos registrados"
-              emptyDescription="Aún no hay trazabilidad para este período."
-            />
+            @let historialRows = f.nominaHistorialTablaRows();
+            <section class="payroll-historial-periodo" aria-label="Trazabilidad del período">
+              @if (historialRows.length === 0) {
+                <div class="payroll-historial-periodo__empty">
+                  <div class="payroll-historial-periodo__empty-panel">
+                    <div class="payroll-historial-periodo__empty-mark" aria-hidden="true">
+                      <lucide-icon name="history" />
+                    </div>
+                    <p class="payroll-historial-periodo__empty-kicker">Sin eventos del período</p>
+                    <h3>Aún no hay trazabilidad registrada</h3>
+                    <p class="payroll-historial-periodo__empty-lead">
+                      Los hitos de generación, revisión y confirmación aparecerán aquí conforme avance el período.
+                    </p>
+                  </div>
+                </div>
+              } @else {
+                <div class="payroll-historial-periodo__grid">
+                  <app-data-grid
+                    [columns]="f.nominaHistorialTablaColumns"
+                    [rows]="historialRows"
+                    headerCountNoun="eventos"
+                    [toolbarLayout]="'operativa'"
+                    gridHeight="100%"
+                    cardClassName="payroll-historial-periodo__grid-card"
+                  />
+                </div>
+              }
+            </section>
           }
         }
       </section>

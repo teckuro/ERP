@@ -1,3 +1,5 @@
+@import '../../payroll-action-buttons.css';
+
 .payroll-revision-preview {
   display: flex;
   flex-direction: column;
@@ -228,24 +230,10 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  border: 1px solid var(--erp-ink, #243b53);
-  background: var(--erp-ink, #243b53);
-  color: #fff;
-}
-
-.payroll-modal-primary.payroll-revision-preview__accion--primary:hover {
-  border-color: var(--erp-ink-hover, #172033);
-  background: var(--erp-ink-hover, #172033);
-}
-
-.payroll-modal-secondary.payroll-revision-preview__accion--secondary {
-  border: 1px solid var(--erp-border-strong, #c5cdc3);
-  background: var(--erp-surface, #ffffff);
-  color: var(--erp-ink, #243b53);
 }
 
 .payroll-revision-preview__accion:hover {
-  filter: brightness(0.97);
+  filter: brightness(1);
 }
 
 @media (max-width: 760px) {

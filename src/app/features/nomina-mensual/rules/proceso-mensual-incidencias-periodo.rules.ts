@@ -98,6 +98,25 @@ function severidadDesdePendiente(severidad: ProcesoMensualPendienteVm['severidad
   return 'info';
 }
 
+/** No mostrar como alerta operativa cuando el copy indica que no hay nada que revisar. */
+export function esIncidenciaPeriodoSinPendienteReal(input: {
+  titulo: string;
+  detalle?: string | null;
+  codigo?: string | null;
+}): boolean {
+  const texto = `${input.codigo ?? ''} ${input.titulo} ${input.detalle ?? ''}`.toLowerCase();
+  if (/\bsin\s+observaciones?\b/.test(texto)) {
+    return true;
+  }
+  if (/\bsin\s+pendientes?\s+visibles\b/.test(texto)) {
+    return true;
+  }
+  if (/\bsin\s+bloqueos\b/.test(texto) && /\bsin\s+advertencias\b/.test(texto)) {
+    return true;
+  }
+  return false;
+}
+
 function severidadRank(severidad: IncidenciaPeriodoSeveridad): number {
   switch (severidad) {
     case 'bloqueo':
@@ -584,7 +603,11 @@ export function buildIncidenciasPeriodo(input: BuildIncidenciasPeriodoInput): In
     ...input.resultadoBloqueos.map((item) => mapResultadoToIncidencia(item, 'bloqueo')),
     ...input.resultadoAdvertencias.map((item) => mapResultadoToIncidencia(item, 'advertencia')),
     ...(input.expedienteProblemas ?? []).map(mapExpedienteProblemaToIncidencia),
-  ].filter((inc) => !incidenciaLey16744EmpresaObsoleta(inc.id));
+  ].filter(
+    (inc) =>
+      !incidenciaLey16744EmpresaObsoleta(inc.id)
+      && !esIncidenciaPeriodoSinPendienteReal({ titulo: inc.titulo, detalle: inc.detalle, codigo: inc.id }),
+  );
   const todas = deduplicarIncidencias(crudas);
   return {
     todas,

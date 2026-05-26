@@ -343,6 +343,8 @@ describe('ProcesoMensualContainer', () => {
   const obtenerSnapshotCompletoActivo = vi.fn();
   const obtenerSnapshotCompletoPorId = vi.fn();
   const rehidratarPeriodo = vi.fn();
+  const consultarEstadoParametrosPeriodo = vi.fn();
+  const guardarDiagnosticoPeriodo = vi.fn();
 
   beforeEach(async () => {
     vi.spyOn(window, 'confirm').mockReturnValue(true);
@@ -359,6 +361,10 @@ describe('ProcesoMensualContainer', () => {
     obtenerSnapshotCompletoActivo.mockReset();
     obtenerSnapshotCompletoPorId.mockReset();
     rehidratarPeriodo.mockReset();
+    consultarEstadoParametrosPeriodo.mockReset();
+    guardarDiagnosticoPeriodo.mockReset();
+    consultarEstadoParametrosPeriodo.mockResolvedValue(prevalidacionLista());
+    guardarDiagnosticoPeriodo.mockResolvedValue(undefined);
     rehidratarPeriodo.mockImplementation(async (periodo: string) => {
       const snapshot = await obtenerSnapshotActivo(periodo);
       if (!snapshot) {
@@ -587,6 +593,8 @@ describe('ProcesoMensualContainer', () => {
             obtenerSnapshotCompletoActivo,
             obtenerSnapshotCompletoPorId,
             rehidratarPeriodo,
+            consultarEstadoParametrosPeriodo,
+            guardarDiagnosticoPeriodo,
           },
         },
         importProvidersFrom(
@@ -634,10 +642,8 @@ describe('ProcesoMensualContainer', () => {
       expect(c.informacionPeriodo()).toBeNull();
     });
 
-    it('renderiza workspace con focus operativo pulido', () => {
+    it('renderiza workspace operativo', () => {
       expect(fixture.nativeElement.querySelector('.payroll-console')).toBeTruthy();
-      expect(fixture.nativeElement.querySelector('.payroll-focus--operativo')).toBeTruthy();
-      expect(fixture.nativeElement.querySelector('.payroll-focus--prototype')).toBeNull();
     });
 
     it('abre revision con tab y cierra con cerrarOverlay', () => {
@@ -690,16 +696,25 @@ describe('ProcesoMensualContainer', () => {
       expect(fixture.nativeElement.querySelector('app-message-box')).toBeNull();
     });
 
-    it('tras validacion exitosa abre modal de revision del periodo', async () => {
-      ejecutarPrevalidaciones.mockResolvedValueOnce(prevalidacionLista());
-      const c = fixture.componentInstance;
-      c.validarPeriodo();
-      await fixture.whenStable();
-      fixture.detectChanges();
+    it('tras validacion exitosa muestra acta sin modal y encadena generacion', async () => {
+      ejecutarPrevalidaciones.mockResolvedValueOnce(prevalidacionLista({
+        resumen: {
+          ...prevalidacionLista().resumen,
+          trabajadoresActivosAptos: 1,
+        },
+      }));
+      const localFixture = await montarContainer();
+      const c = localFixture.componentInstance;
 
-      expect(c.overlay().kind).toBe('informacion');
-      expect(c.informacionPeriodo()?.titulo).toBe('Período listo para generar');
-      expect(fixture.nativeElement.querySelector('.payroll-verificacion-periodo-modal')).toBeTruthy();
+      await invocarCtaShell(localFixture);
+      await vi.waitFor(() => expect(ejecutarPrevalidaciones).toHaveBeenCalled(), { timeout: 3000, interval: 20 });
+      await vi.waitFor(() => expect(generarPreNominaPeriodo).toHaveBeenCalled(), { timeout: 3000, interval: 20 });
+      await vi.waitFor(() => expect(c.preNomina()).not.toBeNull(), { timeout: 3000, interval: 20 });
+      localFixture.detectChanges();
+
+      expect(c.informacionPeriodo()?.titulo).not.toBe('Período listo para generar');
+      expect(localFixture.nativeElement.querySelector('.payroll-verificacion-periodo-modal')).toBeNull();
+      expect(localFixture.nativeElement.querySelector('.payroll-acta-preparacion')).toBeNull();
     });
 
     it('tras verificar con trabajadores pendientes lista nominal y navega a ficha', async () => {
@@ -761,27 +776,21 @@ describe('ProcesoMensualContainer', () => {
           ],
         }),
       );
-      const c = fixture.componentInstance;
-      const router = TestBed.inject(Router);
-      const navigateSpy = vi.spyOn(router, 'navigateByUrl').mockResolvedValue(true);
+      const localFixture = await montarContainer();
+      const c = localFixture.componentInstance;
 
       c.validarPeriodo();
-      await fixture.whenStable();
-      fixture.detectChanges();
+      await localFixture.whenStable();
+      localFixture.detectChanges();
 
-      expect(c.overlay().kind).toBe('informacion');
-      expect(c.informacionPeriodo()?.trabajadoresPendientes?.[0]?.nombre).toBe('María López');
-      expect(c.informacionPeriodo()?.bajada).toContain('1 trabajador');
-      expect(c.informacionPeriodo()?.resumenVerificacion?.trabajadoresPendientes).toBe(1);
-      expect(fixture.nativeElement.textContent).toContain('Fichas por corregir');
-      expect(fixture.nativeElement.textContent).toContain('Trabajadores a corregir');
-      const irCorregir = fixture.nativeElement.querySelector(
-        '.payroll-verificacion-periodo-modal__accion-fila',
-      ) as HTMLButtonElement | null;
-      expect(irCorregir?.textContent?.trim()).toBe('Ir a corregir');
-      irCorregir?.click();
-      fixture.detectChanges();
-      expect(navigateSpy).toHaveBeenCalledWith('/empleados/7');
+      expect(c.informacionPeriodo()?.titulo).not.toBe('Período listo para generar');
+      expect(localFixture.nativeElement.textContent).toContain('Fichas por corregir');
+      expect(c.actaPreparacionCentral().resumenVerificacion?.trabajadoresPendientes).toBe(1);
+      expectTexto(c.actaPreparacionCentral().ctaLabel, 'Revisar trabajadores');
+      c.ejecutarPreparacionPrincipal();
+      localFixture.detectChanges();
+      expect(c.nominaDetalleMensualVista()).toBe('trabajadores');
+      expect(c.nominaMasivaTrabajadorSeleccionadoId()).toBe(7);
     });
 
     it('confirmar informacion con destino parametros_app navega a /parametros (no a pendientes)', () => {
@@ -845,7 +854,7 @@ describe('ProcesoMensualContainer', () => {
       fixture.detectChanges();
       expect(c.overlay().kind).toBe('cerrado');
       expect(c.nominaWorkspaceTabVisible()).toBe('detalle_mensual');
-      expect(c.nominaDetalleMensualVista()).toBe('pendientes');
+      expect(c.nominaDetalleMensualVista()).toBe('trabajadores');
     });
 
     it('abrirDetalleOperativo trabajadores abre panel sin modal revision', () => {
@@ -868,7 +877,7 @@ describe('ProcesoMensualContainer', () => {
       expect(c.contextoOperativoPeriodo().baseGenerada).toBe(true);
       expect(c.mostrarResumenAmpliadoEnRail()).toBe(true);
 
-      c.seleccionarNominaDetalleMensualVista('pendientes');
+      c.seleccionarNominaWorkspaceTabVisible('historial');
       expect(c.mostrarResumenAmpliadoEnRail()).toBe(false);
     });
 
@@ -1081,17 +1090,46 @@ describe('ProcesoMensualContainer', () => {
       expectTexto(text, 'Generar liquidaciones');
     });
 
-    it('estado inicial muestra focus sin_generar y CTA verificar periodo', () => {
-      const c = fixture.componentInstance;
+    it('estado inicial muestra workspace operativo y CTA en shell', async () => {
+      const localFixture = await montarContainer();
+      const el = localFixture.nativeElement;
+      const c = localFixture.componentInstance;
+
       expect(c.nominaVisualFrame()).toBe('sin_generar');
-      expectTexto(c.estadoOperativo().accionPrincipal.label, 'Verificar período');
+      expectTexto(c.estadoOperativo().accionPrincipal.label, 'Verificar y generar nómina');
+      expect(el.querySelector('.payroll-acta-preparacion')).toBeNull();
+      expect(el.querySelector('.payroll-franja-operativa')).toBeTruthy();
+      expect(el.querySelector('.payroll-tab-summary h3')).toBeNull();
+    });
+
+    it('acta central aparece tras verificar el periodo', async () => {
+      ejecutarPrevalidaciones.mockResolvedValueOnce(prevalidacionLista({
+        resumen: {
+          ...prevalidacionLista().resumen,
+          trabajadoresActivosAptos: 1,
+        },
+      }));
+      const localFixture = await montarContainer();
+      const el = localFixture.nativeElement;
+      const c = localFixture.componentInstance;
+
+      expect(el.querySelector('.payroll-acta-preparacion')).toBeNull();
+
+      c.validarPeriodo();
+      await vi.waitFor(() => expect(c.validando()).toBe(false), { timeout: 3000, interval: 20 });
+      await vi.waitFor(() => expect(c.resultado()).not.toBeNull(), { timeout: 3000, interval: 20 });
+      localFixture.detectChanges();
+
+      expect(el.querySelector('.payroll-acta-preparacion')).toBeTruthy();
+      expect(el.querySelector('.payroll-acta-preparacion__resumen')).toBeTruthy();
+      expectTexto(c.estadoOperativo().accionPrincipal.label, 'Generar nómina');
     });
 
     it('CTA primario del shell ejecuta verificar periodo', async () => {
       const localFixture = await montarContainer();
       const shell = TestBed.inject(ShellPageContextService);
 
-      expect(shell.primaryAction()?.label).toMatch(/Verificar período/i);
+      expect(shell.primaryAction()?.label).toMatch(/Verificar y generar nómina/i);
       await invocarCtaShell(localFixture);
 
       await vi.waitFor(() => expect(ejecutarPrevalidaciones).toHaveBeenCalledWith(PERIODO_TEST), {
@@ -1266,7 +1304,7 @@ describe('ProcesoMensualContainer', () => {
       const localFixture = await montarContainer();
       const c = localFixture.componentInstance;
 
-      expect(c.estadoOperativo().accionPrincipal.label).toMatch(/Verificar período/i);
+      expect(c.estadoOperativo().accionPrincipal.label).toMatch(/Verificar y generar nómina/i);
 
       await avanzarFlujo(localFixture, 'prevalidado');
       expectTexto(c.estadoOperativo().accionPrincipal.label, 'Generar nómina');
@@ -1483,6 +1521,177 @@ describe('ProcesoMensualContainer', () => {
       expect(c.estadoOperativo().estadoClave).toBe('resultado_listo_para_guardar');
       expectTexto(c.estadoOperativo().accionPrincipal.label, 'Confirmar nómina');
       expect(c.estadoOperativo().accionPrincipal.accionLocal).toBe('confirmarNomina');
+    });
+  });
+
+  describe('refresh parametros (NOM-PARAMETROS-REFRESH-01)', () => {
+    it('click franja parametros con listos y sin flujo avanzado ofrece verificar periodo', async () => {
+      const c = fixture.componentInstance;
+      storeDe(fixture).resultado.set(null);
+      consultarEstadoParametrosPeriodo.mockResolvedValueOnce(prevalidacionLista());
+      c.seleccionarFranjaArea('parametros');
+      await fixture.whenStable();
+      fixture.detectChanges();
+      expect(c.overlay().kind).toBe('informacion');
+      expect(c.informacionPeriodo()?.consultando).toBeFalsy();
+      expect(c.informacionPeriodo()?.titulo).toBeTruthy();
+      expect(c.informacionPeriodo()?.soloVerificacionParametros).toBe(true);
+      expect(c.informacionPeriodo()?.accionPrincipal?.label).toBe('Verificar período');
+      expect(c.informacionPeriodo()?.accionPrincipal?.destino).toBe('validar_periodo');
+      expect(c.informacionPeriodo()?.accionSecundaria?.destino).toBe('parametros_app');
+      expect(c.informacionPeriodo()?.tipoRemuneracionLabel).toBe('Nómina mensual');
+    });
+
+    it('click franja parametros con periodo ya verificado solo ofrece abrir parametros', async () => {
+      const c = fixture.componentInstance;
+      const store = storeDe(fixture);
+      store.resultado.set(prevalidacionLista());
+      store.preNomina.set(baseNominaLista() as never);
+      consultarEstadoParametrosPeriodo.mockResolvedValueOnce(prevalidacionLista());
+      c.seleccionarFranjaArea('parametros');
+      await fixture.whenStable();
+      fixture.detectChanges();
+      expect(c.informacionPeriodo()?.titulo).toContain('Parámetros revisados');
+      expect(c.informacionPeriodo()?.accionPrincipal?.destino).toBe('parametros_app');
+      expect(c.informacionPeriodo()?.accionPrincipal?.label).toBe('Abrir parámetros');
+      expect(c.informacionPeriodo()?.accionSecundaria).toBeUndefined();
+    });
+
+    it('refresh parametros sin prevalidacion no persiste diagnostico ni resultado', async () => {
+      const store = storeDe(fixture);
+      store.resultado.set(null);
+      consultarEstadoParametrosPeriodo.mockResolvedValueOnce(prevalidacionLista());
+      await store.refrescarParametrosPeriodo();
+      expect(store.resultado()).toBeNull();
+      expect(store.consultaParametrosPeriodo()?.parametrosOperativos).toBe(true);
+      expect(guardarDiagnosticoPeriodo).not.toHaveBeenCalled();
+    });
+
+    it('refresh parametros sin prevalidacion no abre revision masiva vacia', async () => {
+      const c = fixture.componentInstance;
+      storeDe(fixture).resultado.set(null);
+      consultarEstadoParametrosPeriodo.mockResolvedValueOnce(prevalidacionLista({
+        bloqueos: [{
+          codigo: 'EMPLEADOS_SIN_ACTIVOS_APTOS',
+          area: 'TRABAJADORES',
+          severidad: 'BLOQUEO',
+          texto: 'Sin aptos',
+        }],
+      }));
+      c.seleccionarFranjaArea('parametros');
+      await fixture.whenStable();
+      fixture.detectChanges();
+      expect(c.overlay().kind).toBe('informacion');
+      expect(c.revisionSoloFichasPrevalidacion()).toBe(false);
+    });
+
+    it('refresh parametros no cambia CTA superior del shell', async () => {
+      const c = fixture.componentInstance;
+      storeDe(fixture).resultado.set(null);
+      const labelAntes = c.nominaFrame().ctaLabel;
+      expect(labelAntes).toMatch(/Verificar y generar nómina/i);
+      consultarEstadoParametrosPeriodo.mockResolvedValueOnce(prevalidacionLista({
+        bloqueos: [{
+          codigo: 'EMPLEADOS_SIN_ACTIVOS_APTOS',
+          area: 'TRABAJADORES',
+          severidad: 'BLOQUEO',
+          texto: 'Sin aptos',
+        }],
+      }));
+      c.seleccionarFranjaArea('parametros');
+      await fixture.whenStable();
+      fixture.detectChanges();
+      expect(c.nominaFrame().ctaLabel).toBe(labelAntes);
+      expect(c.estadoOperativo().accionPrincipal.label).toBe(labelAntes);
+      expect(storeDe(fixture).resultado()).toBeNull();
+      expect(storeDe(fixture).consultaParametrosPeriodo()).not.toBeNull();
+    });
+
+    it('refresh parametros no reubica pestañas ni bitacora al cerrar modal', async () => {
+      const c = fixture.componentInstance;
+      const store = storeDe(fixture);
+      store.resultado.set(null);
+      c.nominaDetalleMensualVista.set('todos');
+      const vistaAntes = c.nominaDetalleMensualVista();
+      const bitacoraAntes = c.bitacoraEtapas().map((e) => `${e.clave}:${e.activa}:${e.completada}`);
+      consultarEstadoParametrosPeriodo.mockResolvedValueOnce(prevalidacionLista());
+      c.seleccionarFranjaArea('parametros');
+      await fixture.whenStable();
+      fixture.detectChanges();
+      expect(c.nominaDetalleMensualVista()).toBe(vistaAntes);
+      c.cancelarInformacionPeriodo();
+      fixture.detectChanges();
+      expect(c.nominaDetalleMensualVista()).toBe(vistaAntes);
+      expect(c.bitacoraEtapas().map((e) => `${e.clave}:${e.activa}:${e.completada}`)).toEqual(bitacoraAntes);
+    });
+
+    it('refresh parametros no reemplaza modal por verificacion del periodo', async () => {
+      const c = fixture.componentInstance;
+      storeDe(fixture).resultado.set(prevalidacionLista());
+      consultarEstadoParametrosPeriodo.mockResolvedValueOnce(prevalidacionLista());
+      c.seleccionarFranjaArea('parametros');
+      await fixture.whenStable();
+      fixture.detectChanges();
+      expect(c.informacionPeriodo()?.soloVerificacionParametros).toBe(true);
+      expect(c.informacionPeriodo()?.titulo).toContain('Parámetros');
+      expect(c.informacionPeriodo()?.accionPrincipal?.destino).not.toBe('generar_nomina');
+    });
+
+    it('refrescar parametros no borra preNomina existente', async () => {
+      const store = storeDe(fixture);
+      const preNomina = baseNominaLista();
+      store.resultado.set(prevalidacionLista());
+      store.preNomina.set(preNomina as never);
+      consultarEstadoParametrosPeriodo.mockResolvedValueOnce(prevalidacionLista());
+      await store.refrescarParametrosPeriodo();
+      expect(store.preNomina()).toEqual(preNomina);
+    });
+
+    it('con borrador generado el CTA superior no queda en Verificar período', () => {
+      const c = fixture.componentInstance;
+      const store = storeDe(fixture);
+      store.resultado.set(prevalidacionLista());
+      store.preNomina.set(baseNominaLista() as never);
+      fixture.detectChanges();
+      expect(c.nominaHistorialVisual().some((i) => i.texto.includes('borrador'))).toBe(true);
+      expect(c.nominaFrame().ctaLabel).not.toMatch(/Verificar período/i);
+    });
+
+    it('consultar parametros con borrador no congela CTA en Verificar período', async () => {
+      const c = fixture.componentInstance;
+      const store = storeDe(fixture);
+      store.resultado.set(prevalidacionLista());
+      store.preNomina.set(baseNominaLista() as never);
+      consultarEstadoParametrosPeriodo.mockResolvedValueOnce(prevalidacionLista());
+      c.seleccionarFranjaArea('parametros');
+      await fixture.whenStable();
+      fixture.detectChanges();
+      expect(c.nominaFrame().ctaLabel).not.toMatch(/Verificar período/i);
+      c.cancelarInformacionPeriodo();
+    });
+
+    it('drift con borrador muestra aviso sin resetear preNomina', async () => {
+      const c = fixture.componentInstance;
+      const store = storeDe(fixture);
+      const preNomina = baseNominaLista();
+      store.resultado.set(prevalidacionLista());
+      store.preNomina.set(preNomina as never);
+      consultarEstadoParametrosPeriodo.mockResolvedValueOnce(prevalidacionLista({
+        resumen: {
+          ...prevalidacionLista().resumen,
+          parametrosOperativos: false,
+        },
+        bloqueos: [{
+          codigo: 'PARAMETROS_SIN_FILA',
+          area: 'PARAMETROS',
+          severidad: 'BLOQUEO',
+          texto: 'Parámetros del período pendientes.',
+        }],
+      }));
+      await c.refrescarParametrosSilencioso();
+      expect(c.parametrosDriftAviso()).toContain('liquidaciones');
+      expect(store.resultado()?.estado).toBe('LISTO_PARA_CALCULO');
+      expect(store.preNomina()).toEqual(preNomina);
     });
   });
 });

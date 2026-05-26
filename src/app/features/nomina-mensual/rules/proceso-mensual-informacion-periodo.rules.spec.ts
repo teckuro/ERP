@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { informacionDebeAbrirModalEnPreparacion } from './proceso-mensual-acta-preparacion.rules';
 import { buildInformacionPeriodoView, resolveDetalleTabForRevision } from './proceso-mensual-informacion-periodo.rules';
 import type { ValidacionCalculoPreliminarView } from '../containers/proceso-mensual-container/models/proceso-mensual-container.vm';
 
@@ -59,6 +60,8 @@ describe('proceso-mensual-informacion-periodo.rules', () => {
     expect(vm?.tone).toBe('success');
     expect(vm?.titulo).toBe('Período listo para generar');
     expect(vm?.accionPrincipal?.destino).toBe('generar_nomina');
+    expect(informacionDebeAbrirModalEnPreparacion(vm, true)).toBe(false);
+    expect(informacionDebeAbrirModalEnPreparacion(vm, false)).toBe(true);
   });
 
   it('tras verificar con bloqueos criticos muestra seccion criticos', () => {

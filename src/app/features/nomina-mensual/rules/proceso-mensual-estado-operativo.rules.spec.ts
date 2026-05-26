@@ -47,7 +47,7 @@ describe('proceso-mensual-estado-operativo.rules', () => {
     const vm = resolverEstadoOperativoProcesoMensual(inputBase());
 
     expect(vm.estadoClave).toBe('pendiente_validacion');
-    expect(vm.accionPrincipal.label).toBe('Verificar período');
+    expect(vm.accionPrincipal.label).toBe('Verificar y generar nómina');
     expect(vm.etapaActiva).toBe('validar');
     expect(vm.disclosureActivo).toBe('base');
   });

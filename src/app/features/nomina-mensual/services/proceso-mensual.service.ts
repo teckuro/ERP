@@ -59,6 +59,7 @@ import {
   mapResultadoMotorToSnapshotPayload,
   validarResultadoSnapshotPreliminar,
 } from '../rules/proceso-mensual-snapshot.rules';
+import { aislarConsultaSoloParametros } from '../rules/proceso-mensual-parametros-refresh.rules';
 import { revisarGruposParametrosMinimos } from '../rules/proceso-mensual-parametros-minimos.rules';
 import { construirPreNominaPeriodo } from '../rules/proceso-mensual-prenomina.rules';
 import { construirEntradasMensualesMotor } from '../rules/proceso-mensual-motor-entradas.rules';
@@ -113,6 +114,30 @@ export class ProcesoMensualService {
     ]);
 
     return construirPrevalidacionMensual(this.mapearHechosDesdeSettled(p, settled));
+  }
+
+  /**
+   * Consulta en vivo solo parámetros del período (sin trabajadores, movimientos ni recurrentes).
+   */
+  async consultarEstadoParametrosPeriodo(periodo: string): Promise<ProcesoMensualPrevalidacion> {
+    const p = periodo.trim();
+    if (!validarPeriodoEntradaMensual(p)) {
+      return construirPrevalidacionMensual(this.hechosMinimos(p));
+    }
+
+    const settled = await Promise.allSettled([
+      this.parametrosGenerales.obtenerUltimoHastaPeriodo(p),
+      this.parametrosGenerales.obtenerPeriodoRemuneracion(p),
+      this.parametrosGenerales.obtenerClienteConfig(p),
+      this.parametrosGenerales.listarCatalogos(p),
+    ]);
+
+    return aislarConsultaSoloParametros(
+      construirPrevalidacionMensual({
+        ...this.hechosMinimos(p),
+        ...this.mapearHechosParametrosCompletosDesdeSettled(p, settled),
+      }),
+    );
   }
 
   async generarPreNominaPeriodo(periodo: string): Promise<ProcesoMensualPreNominaPeriodo> {
@@ -404,36 +429,7 @@ export class ProcesoMensualService {
     settled: PromiseSettledResult<unknown>[],
   ): ProcesoMensualHechosPrevalidacion {
     const [rUlt, rPer, rCfg, rEmp, rConc, rEntradas, rRec, rCat] = settled;
-
-    let ultimoPg: ParametroGeneral | null = null;
-    let lecturaUltimoPg: ProcesoMensualHechosPrevalidacion['lecturaUltimoPg'] = 'ok';
-    let errorUltimoPg: string | undefined;
-    if (rUlt.status === 'fulfilled') {
-      ultimoPg = rUlt.value as ParametroGeneral | null;
-    } else {
-      lecturaUltimoPg = 'error';
-      errorUltimoPg = rUlt.reason instanceof Error ? rUlt.reason.message : String(rUlt.reason);
-    }
-
-    let periodoRem: ProcesoMensualHechosPrevalidacion['periodoRem'] = null;
-    let lecturaPeriodoRem: ProcesoMensualHechosPrevalidacion['lecturaPeriodoRem'] = 'ok';
-    let errorPeriodoRem: string | undefined;
-    if (rPer.status === 'fulfilled') {
-      periodoRem = rPer.value as ProcesoMensualHechosPrevalidacion['periodoRem'];
-    } else {
-      lecturaPeriodoRem = 'error';
-      errorPeriodoRem = rPer.reason instanceof Error ? rPer.reason.message : String(rPer.reason);
-    }
-
-    let clienteConfig: ParametrosGeneralesClienteConfig | null = null;
-    let lecturaClienteConfig: 'ok' | 'error' = 'ok';
-    let errorClienteConfig: string | undefined;
-    if (rCfg.status === 'fulfilled') {
-      clienteConfig = rCfg.value as ParametrosGeneralesClienteConfig | null;
-    } else {
-      lecturaClienteConfig = 'error';
-      errorClienteConfig = rCfg.reason instanceof Error ? rCfg.reason.message : String(rCfg.reason);
-    }
+    const paramHechos = this.mapearHechosParametrosCompletosDesdeSettled(periodo, [rUlt, rPer, rCfg, rCat]);
 
     let empleadosActivosAptos = 0;
     let empleadosActivosNoAptos = 0;
@@ -528,6 +524,92 @@ export class ProcesoMensualService {
       errorCatalogos = rCat.reason instanceof Error ? rCat.reason.message : String(rCat.reason);
     }
 
+    return {
+      periodo,
+      ...paramHechos,
+      empleadosActivosAptos,
+      empleadosActivosNoAptos,
+      trabajadoresPendientesRevision,
+      lecturaEmpleados,
+      errorEmpleados,
+      totalConceptosMantenimiento,
+      lecturaConceptos,
+      errorConceptos,
+      alertaConceptosMotorFuturo,
+      recurrentesConteo,
+      entradasMensuales,
+      lecturaEntradasMensuales,
+      errorEntradasMensuales,
+      movimientos,
+      lecturaMovimientos,
+      errorMovimientos,
+    };
+  }
+
+  private mapearHechosParametrosCompletosDesdeSettled(
+    periodo: string,
+    settled: [
+      PromiseSettledResult<unknown>,
+      PromiseSettledResult<unknown>,
+      PromiseSettledResult<unknown>,
+      PromiseSettledResult<unknown>,
+    ],
+  ): Pick<
+    ProcesoMensualHechosPrevalidacion,
+    | 'ultimoPg'
+    | 'lecturaUltimoPg'
+    | 'errorUltimoPg'
+    | 'periodoRem'
+    | 'lecturaPeriodoRem'
+    | 'errorPeriodoRem'
+    | 'parametrosEstadoVisual'
+    | 'parametrosEstadoDetalle'
+    | 'parametrosOperativos'
+    | 'parametrosGrupos'
+  > {
+    const [rUlt, rPer, rCfg, rCat] = settled;
+
+    let ultimoPg: ParametroGeneral | null = null;
+    let lecturaUltimoPg: ProcesoMensualHechosPrevalidacion['lecturaUltimoPg'] = 'ok';
+    let errorUltimoPg: string | undefined;
+    if (rUlt.status === 'fulfilled') {
+      ultimoPg = rUlt.value as ParametroGeneral | null;
+    } else {
+      lecturaUltimoPg = 'error';
+      errorUltimoPg = rUlt.reason instanceof Error ? rUlt.reason.message : String(rUlt.reason);
+    }
+
+    let periodoRem: ProcesoMensualHechosPrevalidacion['periodoRem'] = null;
+    let lecturaPeriodoRem: ProcesoMensualHechosPrevalidacion['lecturaPeriodoRem'] = 'ok';
+    let errorPeriodoRem: string | undefined;
+    if (rPer.status === 'fulfilled') {
+      periodoRem = rPer.value as ProcesoMensualHechosPrevalidacion['periodoRem'];
+    } else {
+      lecturaPeriodoRem = 'error';
+      errorPeriodoRem = rPer.reason instanceof Error ? rPer.reason.message : String(rPer.reason);
+    }
+
+    let clienteConfig: ParametrosGeneralesClienteConfig | null = null;
+    let lecturaClienteConfig: 'ok' | 'error' = 'ok';
+    let errorClienteConfig: string | undefined;
+    if (rCfg.status === 'fulfilled') {
+      clienteConfig = rCfg.value as ParametrosGeneralesClienteConfig | null;
+    } else {
+      lecturaClienteConfig = 'error';
+      errorClienteConfig = rCfg.reason instanceof Error ? rCfg.reason.message : String(rCfg.reason);
+    }
+
+    let catalogos: ParametrosGeneralesCatalogos | null = null;
+    let lecturaCatalogos: 'ok' | 'error' | 'omitido' = 'omitido';
+    let errorCatalogos: string | undefined;
+    if (rCat.status === 'fulfilled') {
+      catalogos = rCat.value as ParametrosGeneralesCatalogos;
+      lecturaCatalogos = 'ok';
+    } else {
+      lecturaCatalogos = 'error';
+      errorCatalogos = rCat.reason instanceof Error ? rCat.reason.message : String(rCat.reason);
+    }
+
     const parametrosGrupos = revisarGruposParametrosMinimos({
       periodo,
       fila: ultimoPg,
@@ -553,7 +635,6 @@ export class ProcesoMensualService {
     });
 
     return {
-      periodo,
       ultimoPg,
       lecturaUltimoPg,
       errorUltimoPg,
@@ -564,22 +645,6 @@ export class ProcesoMensualService {
       parametrosEstadoDetalle: estadoParametros.detalle,
       parametrosOperativos: estadoParametros.operativo,
       parametrosGrupos,
-      empleadosActivosAptos,
-      empleadosActivosNoAptos,
-      trabajadoresPendientesRevision,
-      lecturaEmpleados,
-      errorEmpleados,
-      totalConceptosMantenimiento,
-      lecturaConceptos,
-      errorConceptos,
-      alertaConceptosMotorFuturo,
-      recurrentesConteo,
-      entradasMensuales,
-      lecturaEntradasMensuales,
-      errorEntradasMensuales,
-      movimientos,
-      lecturaMovimientos,
-      errorMovimientos,
     };
   }
 

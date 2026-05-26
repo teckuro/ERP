@@ -4,6 +4,8 @@
   NominaDetalleMensualMovimientoRow,
   NominaDetalleMensualPendienteRow,
   NominaDetalleMensualTrabajadorRow,
+  NominaDetalleMensualVista,
+  InformacionPeriodoView,
   NominaHistorialTablaRow,
   NominaWorkspaceDetailSeverity,
   FilaDetalleMovimientoNomina,
@@ -13,6 +15,7 @@
   DetalleOperativoTab,
 } from '../containers/proceso-mensual-container/models/proceso-mensual-container.vm';
 import type { IncidenciasPeriodoView } from './proceso-mensual-incidencias-periodo.rules';
+import { esIncidenciaPeriodoSinPendienteReal } from './proceso-mensual-incidencias-periodo.rules';
 
 const SEVERITY_ORDER: Record<NominaWorkspaceDetailSeverity, number> = {
   bloqueo: 0,
@@ -123,7 +126,11 @@ function ambitoDesdeIncidenciaAmbito(ambito: string): NominaDetalleMensualAmbito
 export function buildNominaDetalleMensualPendientesRows(
   incidencias: IncidenciasPeriodoView,
 ): NominaDetalleMensualPendienteRow[] {
-  const items = incidencias.todas.filter((item) => item.severidad !== 'info');
+  const items = incidencias.todas.filter(
+    (item) =>
+      item.severidad !== 'info'
+      && !esIncidenciaPeriodoSinPendienteReal({ titulo: item.titulo, detalle: item.detalle, codigo: item.id }),
+  );
 
   return items.map((item) => {
     const severity: NominaWorkspaceDetailSeverity =
@@ -274,6 +281,63 @@ export interface NominaDetalleMensualSituacionVm {
   bloqueos: NominaDetalleMensualPendienteRow[];
   porRevisar: NominaDetalleMensualPendienteRow[];
   totalAlertas: number;
+}
+
+/** Vista única del expediente en detalle mensual (sin pestañas Situación/Liquidaciones/Pendientes). */
+export function normalizeDetalleMensualVistaExpediente(
+  _vista: NominaDetalleMensualVista,
+): 'trabajadores' {
+  return 'trabajadores';
+}
+
+export interface ExpedienteCabeceraAlertasVm {
+  bloqueos: number;
+  advertencias: number;
+  total: number;
+  tieneAlertas: boolean;
+}
+
+export function buildExpedienteCabeceraAlertas(
+  situacion: NominaDetalleMensualSituacionVm,
+): ExpedienteCabeceraAlertasVm {
+  const bloqueos = situacion.bloqueos.length;
+  const advertencias = situacion.porRevisar.length;
+  return {
+    bloqueos,
+    advertencias,
+    total: bloqueos + advertencias,
+    tieneAlertas: bloqueos + advertencias > 0,
+  };
+}
+
+export function buildAlertasExpedienteInformacionView(
+  situacion: NominaDetalleMensualSituacionVm,
+): InformacionPeriodoView {
+  const filas = [...situacion.bloqueos, ...situacion.porRevisar];
+  const bloqueos = situacion.bloqueos.length;
+  const advertencias = situacion.porRevisar.length;
+  const tone = bloqueos > 0 ? 'danger' : 'warning';
+  const bajada =
+    bloqueos > 0 && advertencias > 0
+      ? `${bloqueos} bloqueo${bloqueos === 1 ? '' : 's'} y ${advertencias} advertencia${advertencias === 1 ? '' : 's'} del período.`
+      : bloqueos > 0
+        ? `${bloqueos} bloqueo${bloqueos === 1 ? '' : 's'} que conviene resolver antes de continuar.`
+        : `${advertencias} advertencia${advertencias === 1 ? '' : 's'} por revisar antes de continuar.`;
+
+  return {
+    tone,
+    titulo: 'Alertas del período',
+    bajada,
+    soloAlertasExpediente: true,
+    alertasExpediente: filas,
+    secciones:
+      bloqueos > 0 && advertencias > 0
+        ? [
+            { titulo: 'Críticos y bloqueos', items: situacion.bloqueos.map((f) => f.situacion) },
+            { titulo: 'Por revisar', items: situacion.porRevisar.map((f) => f.situacion) },
+          ]
+        : undefined,
+  };
 }
 
 export function buildNominaDetalleMensualSituacion(
