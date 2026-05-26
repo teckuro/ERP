@@ -533,21 +533,32 @@ CREATE TABLE empresa (
     dv CHAR(1) NOT NULL,
     razon_social VARCHAR(150) NOT NULL,
     fecha_creacion TIMESTAMP DEFAULT NOW(),
-    CONSTRAINT chk_empresa_rut CHECK (rut ~ '^[0-9]{7,9}$')
-);
-
-CREATE TABLE empresa_ley_16744 (
-    id_empresa_ley_16744 SERIAL PRIMARY KEY,
-    id_empresa INT NOT NULL REFERENCES empresa(id_empresa) ON DELETE CASCADE,
-    id_organismo_administrador_ley_16744 INT REFERENCES organismo_administrador_ley_16744(id_organismo_administrador_ley_16744),
-    tasa_adicional_diferenciada NUMERIC(7,4) NOT NULL DEFAULT 0,
+    nombre_fantasia VARCHAR(150),
+    giro VARCHAR(200),
     actividad_economica VARCHAR(200),
+    representante_legal_nombre VARCHAR(150),
+    representante_legal_rut VARCHAR(9),
+    representante_legal_dv CHAR(1),
+    representante_legal_email VARCHAR(150),
+    representante_legal_telefono VARCHAR(30),
+    email_contacto VARCHAR(150),
+    telefono_contacto VARCHAR(30),
+    direccion_linea_1 TEXT,
+    direccion_linea_2 TEXT,
+    comuna VARCHAR(100),
+    ciudad VARCHAR(100),
+    region VARCHAR(100),
+    codigo_postal VARCHAR(20),
+    aplica_ley_16744 BOOLEAN NOT NULL DEFAULT FALSE,
+    id_organismo_administrador_ley_16744 INT REFERENCES organismo_administrador_ley_16744(id_organismo_administrador_ley_16744),
+    tasa_adicional_diferenciada NUMERIC(7,4),
     fuente_resolucion_o_certificado TEXT,
-    vigencia_inicio DATE NOT NULL,
+    vigencia_inicio DATE,
     vigencia_fin DATE,
-    CONSTRAINT uq_empresa_ley_16744 UNIQUE (id_empresa, vigencia_inicio),
-    CONSTRAINT chk_empresa_ley_16744_tasa CHECK (tasa_adicional_diferenciada >= 0),
-    CONSTRAINT chk_empresa_ley_16744_vigencia CHECK (vigencia_fin IS NULL OR vigencia_fin >= vigencia_inicio)
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    CONSTRAINT chk_empresa_rut CHECK (rut ~ '^[0-9]{7,9}$'),
+    CONSTRAINT chk_empresa_tasa CHECK (tasa_adicional_diferenciada IS NULL OR tasa_adicional_diferenciada >= 0),
+    CONSTRAINT chk_empresa_vigencia CHECK (vigencia_fin IS NULL OR vigencia_inicio IS NULL OR vigencia_fin >= vigencia_inicio)
 );
 
 CREATE TABLE sucursal (

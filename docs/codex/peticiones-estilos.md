@@ -1947,6 +1947,14 @@ Creación avanzada incorpora una identidad de producto local para dejar de senti
 - **CSS:** estilos modal en componente propio; poda `inline-edit-shell` en `ficha-empleado-detalle.css`.
 - **Archivos:** workspace, overlays, facade, edit-form, edit-modal, expediente/responsive/detalle CSS.
 
+## 2026-05-26 — Empresas CRUD + mutual por empresa
+
+- **Nuevo módulo:** `/empresas` (listado DataGrid + ficha con secciones Identificación, Contacto, Ubicación, Mutual condicional). Nav en Administración.
+- **BD:** columna `aplica_ley_16744` en `empresa`; campos mutual consolidados en la misma tabla (sin `empresa_ley_16744`).
+- **Parámetros:** se retira sub-pestaña Ley 16.744; Mutuales renombrado a catálogo de referencia; enlace a Empresas desde Configuración cliente.
+- **Nómina:** copy visible pasa a “Mutual empleador” / “Parámetros mutual”; motor respeta `aplica_ley_16744`.
+- **Archivos:** `src/app/features/empresas/**`, migración `20260526120000_empresa_aplica_ley_16744.sql`, limpieza en parametros-generales y rules de nómina.
+
 ## 2026-05-23 — Contacto obligatorio (correo y teléfono)
 
 - **Formulario:** `Validators.required` en `contacto.email` y `contacto.telefono`; asterisco y mensajes en `contacto.html` y bloques contacto de `datos-personales.html`.

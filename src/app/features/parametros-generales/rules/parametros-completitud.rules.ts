@@ -200,7 +200,7 @@ function evaluarOficiales(
   input: EvaluarCompletitudParametrosInput,
   pendientes: string[],
 ): ParametrosCompletitudGrupo {
-  let total = 5 + CAMPOS_OFICIALES_OBLIGATORIOS.length;
+  let total = 4 + CAMPOS_OFICIALES_OBLIGATORIOS.length;
   let completos = 0;
 
   if (input.oficial) {
@@ -213,7 +213,6 @@ function evaluarOficiales(
   completos += sumaArray(input.catalogos.tramosCarga, 'Faltan tramos de carga familiar.', pendientes);
   completos += sumaArray(input.catalogos.tramosImpuesto, 'Faltan tramos de impuesto unico.', pendientes);
   completos += sumaArray(input.catalogos.tablaImpuestoUnico, 'Falta tabla de impuesto unico del periodo.', pendientes);
-  completos += sumaArray(input.catalogos.ley16744Parametros, 'Faltan parametros Ley 16.744 del periodo.', pendientes);
 
   return grupo('oficialesMensuales', completos, total);
 }

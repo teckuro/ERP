@@ -77,14 +77,10 @@
         [catalogos]="ws.catalogos()"
         [ccafColumns]="ws.ccafColumns"
         [organismosLeyColumns]="ws.organismosLeyColumns"
-        [ley16744Columns]="ws.ley16744Columns"
         [loading]="ws.isLoading()"
         [periodoLabel]="ws.periodoSeleccionadoLabel()"
-        [referenciaPeriodoLabel]="ws.referenciaLey16744Label()"
         [gridPersistenceKeyCcaf]="ws.gridPersistenceKey('parametros.ccaf.dg')"
         [gridPersistenceKeyMutuales]="ws.gridPersistenceKey('parametros.mutuales.dg')"
-        [gridPersistenceKeyLey16744]="ws.gridPersistenceKey('parametros.ley16744.dg')"
-        [verReferenciaPeriodoAnterior]="ws.verReferenciaPeriodoAnterior.bind(ws)"
         [refresh]="ws.cargar.bind(ws)"
       ></app-parametros-ccaf-mutuales-tab>
     }

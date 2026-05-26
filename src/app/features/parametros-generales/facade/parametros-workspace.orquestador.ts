@@ -90,7 +90,6 @@ export class ParametrosWorkspaceOrquestador {
   readonly afpColumns = this.gridsConfig.afpColumns;
   readonly ccafColumns = this.gridsConfig.ccafColumns;
   readonly organismosLeyColumns = this.gridsConfig.organismosLeyColumns;
-  readonly ley16744Columns = this.gridsConfig.ley16744Columns;
   readonly parametrosLegalesColumns = this.gridsConfig.parametrosLegalesColumns;
   readonly reformaPrevisionalColumns = this.gridsConfig.reformaPrevisionalColumns;
   readonly trabajosPesadosColumns = this.gridsConfig.trabajosPesadosColumns;
@@ -376,8 +375,7 @@ export class ParametrosWorkspaceOrquestador {
       tieneDatosOficiales: this.hasSelectedInRows(),
       conteoCcafMutual:
         catalogos.ccafEntidades.length +
-        catalogos.organismosLey16744.length +
-        catalogos.ley16744Parametros.length,
+        catalogos.organismosLey16744.length,
       conteoTramosCarga: this.tramosCargaPorPeriodo().length,
       conteoImpuesto: this.tramosImpuestoPorPeriodo().length + this.tablaImpuestoPorPeriodo().length,
       conteoSalud: this.isapresPorPeriodo().length + this.saludOtrasInstitucionesPorPeriodo().length,
@@ -470,10 +468,6 @@ export class ParametrosWorkspaceOrquestador {
     this.formatReferenciaMensualLabel(this.referenciasMensuales().tablaImpuestoUnico),
   );
 
-  readonly referenciaLey16744Label = computed(() =>
-    this.formatReferenciaMensualLabel(this.referenciasMensuales().ley16744Parametros),
-  );
-
   readonly referenciaVisualPrincipalLabel = computed(() => {
     return this.formatReferenciaMensualLabel(this.referenciaVisualPrincipalCodigo());
   });
@@ -484,8 +478,7 @@ export class ParametrosWorkspaceOrquestador {
       refs.parametrosGenerales ??
       refs.tramosCarga ??
       refs.tramosImpuesto ??
-      refs.tablaImpuestoUnico ??
-      refs.ley16744Parametros
+      refs.tablaImpuestoUnico
     );
   });
 
@@ -681,7 +674,6 @@ export class ParametrosWorkspaceOrquestador {
     if (catalogos.reformaPensiones.length) parts.push(`Parámetros legales ${catalogos.reformaPensiones.length}`);
     if (catalogos.trabajosPesados.length) parts.push(`Trabajo pesado ${catalogos.trabajosPesados.length}`);
     if (catalogos.reformaPrevisional.length) parts.push(`Reforma previsional ${catalogos.reformaPrevisional.length}`);
-    if (catalogos.ley16744Parametros.length) parts.push(`Ley 16.744 ${catalogos.ley16744Parametros.length}`);
     if (catalogos.organismosLey16744.length) parts.push(`Mutuales ${catalogos.organismosLey16744.length}`);
     if (catalogos.ccafEntidades.length) parts.push(`CCAF ${catalogos.ccafEntidades.length}`);
     if (catalogos.apvInstituciones.length) parts.push(`APV instituciones ${catalogos.apvInstituciones.length}`);

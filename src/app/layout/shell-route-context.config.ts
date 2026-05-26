@@ -54,6 +54,8 @@ export const SHELL_ROUTE_CONTEXT_ENTRIES: readonly ShellRouteContextEntry[] = [
     ],
   },
   { match: '/parametros', breadcrumbs: [{ label: 'Parámetros' }] },
+  { match: '/empresas/nueva', breadcrumbs: [{ label: 'Empresas', path: '/empresas' }, { label: 'Nueva empresa' }] },
+  { match: '/empresas', breadcrumbs: [{ label: 'Empresas' }] },
   { match: '/licencias-medicas', breadcrumbs: [{ label: 'Licencias médicas' }] },
   { match: '/reportes', breadcrumbs: [{ label: 'Reportes' }] },
   { match: '/preguntor', breadcrumbs: [{ label: 'Preguntor' }] },
@@ -65,6 +67,10 @@ export function resolveShellRouteBreadcrumbs(url: string): ShellBreadcrumbItem[]
 
   if (normalized.startsWith('/empleados/') && normalized !== '/empleados/nuevo') {
     return [{ label: 'Empleados', path: '/empleados' }, { label: 'Ficha empleado' }];
+  }
+
+  if (normalized.startsWith('/empresas/') && normalized !== '/empresas/nueva') {
+    return [{ label: 'Empresas', path: '/empresas' }, { label: 'Ficha empresa' }];
   }
 
   const sorted = [...SHELL_ROUTE_CONTEXT_ENTRIES].sort((a, b) => b.match.length - a.match.length);

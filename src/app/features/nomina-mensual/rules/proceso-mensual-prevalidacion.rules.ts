@@ -639,7 +639,7 @@ function etiquetaGrupoParametro(id: string): string {
     case 'catalogos_afp_impuesto':
       return 'vigencias de AFP, salud e impuesto único';
     case 'ley_16744':
-      return 'parámetros Ley 16.744';
+      return 'Parámetros mutual';
     default:
       return id.replace(/_/g, ' ');
   }

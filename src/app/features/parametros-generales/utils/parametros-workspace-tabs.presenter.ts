@@ -72,7 +72,7 @@ export function tituloRegistroTabActivo(tabId: ParametrosTabId): string {
     case 'remuneraciones':
       return 'Parámetros remuneracionales';
     case 'ccafMutual':
-      return 'CCAF, mutuales y Ley 16.744';
+      return 'CCAF y mutual';
     case 'tramosCarga':
       return 'Tramos de cargas familiares';
     case 'impuestoUnico':

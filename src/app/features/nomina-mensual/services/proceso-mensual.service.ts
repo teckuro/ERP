@@ -51,8 +51,7 @@ import { trabajadorSnapshotDesdeFicha } from '../models/proceso-mensual.model';
 import { NominaCalculoSnapshotRepository } from '../data-access/nomina-calculo-snapshot.repository';
 import { NominaPeriodoDiagnosticoRepository } from '../data-access/nomina-periodo-diagnostico.repository';
 import {
-  empresaVigenteEnPeriodo,
-  mapEmpresaRowToLey16744Snapshot,
+  resolveEmpresaMutualSnapshot,
 } from '../rules/proceso-mensual-empresa-ley16744.rules';
 import { generarCalculoPreliminarPeriodo } from '../rules/proceso-mensual-motor.rules';
 import {
@@ -867,7 +866,7 @@ export class ProcesoMensualService {
     ]);
     const { data: empresaRow, error: empresaError } = await this.supabase
       .from('empresa')
-      .select('id_empresa, id_organismo_administrador_ley_16744, tasa_adicional_diferenciada, vigencia_inicio, vigencia_fin')
+      .select('id_empresa, aplica_ley_16744, id_organismo_administrador_ley_16744, tasa_adicional_diferenciada, vigencia_inicio, vigencia_fin')
       .order('id_empresa', { ascending: true })
       .limit(1)
       .maybeSingle();
@@ -896,10 +895,7 @@ export class ProcesoMensualService {
       trabajadores,
       recurrentes,
       entradasMensuales: construirEntradasMensualesMotor(asArray(prevalidacion.entradasMensuales)),
-      empresaLey16744:
-        empresaRow && empresaVigenteEnPeriodo(empresaRow, periodo)
-          ? mapEmpresaRowToLey16744Snapshot(empresaRow)
-          : null,
+      empresaLey16744: resolveEmpresaMutualSnapshot(empresaRow, periodo),
     };
   }
 }

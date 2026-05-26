@@ -5,7 +5,6 @@ import type {
   ApvApvcInstitucion,
   CcafEntidad,
   IsapreParametro,
-  Ley16744Parametro,
   OrganismoLey16744,
   ParametroLegal,
   ReformaPrevisionalParametro,
@@ -23,7 +22,6 @@ export interface GridsParametrosWorkspace {
   afpColumns: DataGridColumn<AfpParametro>[];
   ccafColumns: DataGridColumn<CcafEntidad>[];
   organismosLeyColumns: DataGridColumn<OrganismoLey16744>[];
-  ley16744Columns: DataGridColumn<Ley16744Parametro>[];
   parametrosLegalesColumns: DataGridColumn<ParametroLegal>[];
   reformaPrevisionalColumns: DataGridColumn<ReformaPrevisionalParametro>[];
   trabajosPesadosColumns: DataGridColumn<TrabajoPesadoParametro>[];
@@ -343,41 +341,6 @@ export function crearGridsParametrosWorkspace(periodoYm: () => string): GridsPar
       { id: 'codigo', header: 'Código', field: 'codigo', sortable: true },
       { id: 'nombre', header: 'Nombre', field: 'nombre', sortable: true },
       { id: 'tipo', header: 'Tipo', field: 'tipo', sortable: true },
-      { id: 'vigente', header: 'Estado', field: 'vigente', sortable: true, format: formatoVigenteGridParametros },
-    ],
-    ley16744Columns: [
-      { id: 'codigo', header: 'Código', field: 'codigo', sortable: true },
-      {
-        id: 'cotizacionBasicaEmpleador',
-        header: 'Cotización básica',
-        field: 'cotizacionBasicaEmpleador',
-        type: 'number',
-        sortable: true,
-        align: 'right',
-        format: formatoPorcentajeGridParametros,
-      },
-      {
-        id: 'descripcionTasaAdicional',
-        header: 'Adicional diferenciada',
-        field: 'descripcionTasaAdicional',
-        sortable: true,
-      },
-      {
-        id: 'vigenciaInicio',
-        header: 'Inicio',
-        field: 'vigenciaInicio',
-        type: 'date',
-        sortable: true,
-        format: formatoFechaGridParametros,
-      },
-      {
-        id: 'vigenciaFin',
-        header: 'Fin',
-        field: 'vigenciaFin',
-        type: 'date',
-        sortable: true,
-        format: formatoFechaGridParametros,
-      },
       { id: 'vigente', header: 'Estado', field: 'vigente', sortable: true, format: formatoVigenteGridParametros },
     ],
     parametrosLegalesColumns: [

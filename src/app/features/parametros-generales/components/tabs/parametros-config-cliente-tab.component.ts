@@ -1,3 +1,4 @@
+import { RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { Component, Input } from '@angular/core';
 import { FormGroup, ReactiveFormsModule } from '@angular/forms';
@@ -13,7 +14,7 @@ import { ParametrosGeneralesCatalogos } from '../../models/parametro-general.mod
 @Component({
   selector: 'app-parametros-config-cliente-tab',
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule, SearchSelectComponent],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, RouterLink, SearchSelectComponent],
   template: `
     <form class="tab-panel parametros-tab-panel parametros-form" [formGroup]="form" (ngSubmit)="enviarFormulario?.()">
       <section class="param-group parametros-section-card" aria-labelledby="gratificacion-title">
@@ -79,7 +80,10 @@ import { ParametrosGeneralesCatalogos } from '../../models/parametro-general.mod
 
       <section class="param-group parametros-section-card parametros-config-card param-group--ccaf-current" aria-labelledby="ccaf-title">
         <h2 id="ccaf-title">CCAF</h2>
-        <p class="param-section-lead">Caja de compensación usada como referencia para el período activo. La mutual Ley 16.744 se configura en los datos de empresa.</p>
+        <p class="param-section-lead">
+          Caja de compensación usada como referencia para el período activo. La mutual se configura en
+          <a routerLink="/empresas" class="param-inline-link">Empresas</a>.
+        </p>
         <div class="field-grid parametros-form-grid parametros-form-grid-compact field-grid--ccaf field-grid--ccaf-compact" aria-label="Configuración CCAF">
           <label class="param-field">
             <span>Caja de compensacion</span>
@@ -116,6 +120,17 @@ import { ParametrosGeneralesCatalogos } from '../../models/parametro-general.mod
 
       .field-grid--ccaf-compact {
         max-width: min(56rem, 100%);
+      }
+
+      .param-inline-link {
+        color: #2563eb;
+        font-weight: 600;
+        text-decoration: none;
+      }
+
+      .param-inline-link:hover {
+        color: #1d4ed8;
+        text-decoration: underline;
       }
     `,
   ],

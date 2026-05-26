@@ -164,7 +164,7 @@ function mapTrabajador(liq: MotorCalculoPeriodoResultado['liquidaciones'][number
       ...descuentos.map((l) => mapConcepto(l, l.codigo === 'IMPUESTO_UNICO' ? 'impuesto' : 'descuento', true)),
       mapConcepto({ codigo: 'SIS', descripcion: 'SIS empleador', monto: liq.cotizacionSis, origen: 'parametros_generales', imponible: false, tributable: false }, 'cotizacion', false),
       mapConcepto({ codigo: 'SANNA', descripcion: 'SANNA empleador', monto: liq.cotizacionSanna, origen: 'parametros_generales', imponible: false, tributable: false }, 'cotizacion', false),
-      mapConcepto({ codigo: 'LEY_16744', descripcion: 'Ley 16.744 empleador', monto: liq.cotizacionLey16744, origen: 'ley_16744_parametros', imponible: false, tributable: false }, 'cotizacion', false),
+      mapConcepto({ codigo: 'LEY_16744', descripcion: 'Mutual empleador', monto: liq.cotizacionLey16744, origen: 'ley_16744_parametros', imponible: false, tributable: false }, 'cotizacion', false),
     ].filter((c) => c.monto !== 0),
     issues: liq.issues.map(mapIssue),
     trazabilidad: liq.trazabilidad.map(mapTrazabilidad),

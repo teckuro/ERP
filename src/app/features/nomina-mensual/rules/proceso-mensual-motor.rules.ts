@@ -217,7 +217,7 @@ export function calcularTrabajador(args: {
   const ley = input.catalogos.ley16744Parametros.find((l) => l.vigente) ?? input.catalogos.ley16744Parametros[0] ?? null;
   let tasaLey = normalizarTasa(ley?.cotizacionBasicaEmpleador ?? null);
   if (!ley) {
-    pushIssue(issues, 'LEY_16744_INCOMPLETA', 'ADVERTENCIA', 'No hay ley_16744_parametros para calcular cargo empleador.', 'ley_16744_parametros', input.periodo, 'cotizacion_basica_empleador');
+    pushIssue(issues, 'LEY_16744_INCOMPLETA', 'ADVERTENCIA', 'No hay parámetros mutual para calcular cargo empleador.', 'ley_16744_parametros', input.periodo, 'cotizacion_basica_empleador');
     tasaLey = null;
   } else {
     const tasaAdicionalEmpresa = input.empresaLey16744

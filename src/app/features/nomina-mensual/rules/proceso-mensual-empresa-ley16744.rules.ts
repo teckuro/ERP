@@ -2,6 +2,7 @@ import type { EmpresaLey16744CalculoSnapshot } from '../models/proceso-mensual.m
 
 export type EmpresaLey16744Row = {
   id_empresa: number;
+  aplica_ley_16744: boolean;
   id_organismo_administrador_ley_16744: number | null;
   tasa_adicional_diferenciada: number | null;
   vigencia_inicio: string | null;
@@ -40,6 +41,17 @@ export function mapEmpresaRowToLey16744Snapshot(row: EmpresaLey16744Row): Empres
     vigenciaInicio: row.vigencia_inicio,
     vigenciaFin: row.vigencia_fin,
   };
+}
+
+/** Snapshot mutual solo si la empresa aplica mutual y está vigente en el período. */
+export function resolveEmpresaMutualSnapshot(
+  row: EmpresaLey16744Row | null | undefined,
+  periodo: string,
+): EmpresaLey16744CalculoSnapshot | null {
+  if (!row || !row.aplica_ley_16744 || !empresaVigenteEnPeriodo(row, periodo)) {
+    return null;
+  }
+  return mapEmpresaRowToLey16744Snapshot(row);
 }
 
 /** Ya no se muestra: el cargo empleador usa tasa básica de parámetros aunque falte tasa adicional en empresa. */

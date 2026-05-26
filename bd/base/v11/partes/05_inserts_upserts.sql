@@ -731,26 +731,18 @@ ON CONFLICT (codigo) DO UPDATE SET
     vigente = EXCLUDED.vigente,
     fuente = EXCLUDED.fuente;
 
-INSERT INTO empresa (id_empresa, rut, dv, razon_social) VALUES
-    (1, '12345678', '9', 'Empresa Prueba')
-ON CONFLICT (id_empresa) DO NOTHING;
-
-INSERT INTO empresa_ley_16744 (
-    id_empresa, id_organismo_administrador_ley_16744,
-    tasa_adicional_diferenciada, actividad_economica,
-    fuente_resolucion_o_certificado, vigencia_inicio
+INSERT INTO empresa (
+    id_empresa, rut, dv, razon_social,
+    aplica_ley_16744, id_organismo_administrador_ley_16744,
+    tasa_adicional_diferenciada, vigencia_inicio
 )
 SELECT
-    e.id_empresa,
-    o.id_organismo_administrador_ley_16744,
-    0.0000,
-    NULL,
-    NULL,
-    DATE '2026-04-01'
-FROM empresa e
-LEFT JOIN organismo_administrador_ley_16744 o ON o.codigo = 'ISL'
-WHERE e.id_empresa = 1
-ON CONFLICT (id_empresa, vigencia_inicio) DO NOTHING;
+    1, '12345678', '9', 'Empresa Prueba',
+    TRUE, o.id_organismo_administrador_ley_16744,
+    0.0000, DATE '2026-04-01'
+FROM organismo_administrador_ley_16744 o
+WHERE o.codigo = 'ISL'
+ON CONFLICT (id_empresa) DO NOTHING;
 
 INSERT INTO sucursal (id_sucursal, id_empresa, codigo, nombre, direccion) VALUES
     (1, 1, 'MAT', 'Casa Matriz', 'Av. Central 100')
@@ -1207,7 +1199,7 @@ FROM (
     UNION
     SELECT TO_CHAR(vigencia_inicio, 'YYYY-MM') AS codigo FROM ley_16744_parametros
     UNION
-    SELECT TO_CHAR(vigencia_inicio, 'YYYY-MM') AS codigo FROM empresa_ley_16744
+    SELECT TO_CHAR(vigencia_inicio, 'YYYY-MM') AS codigo FROM empresa WHERE vigencia_inicio IS NOT NULL
     UNION
     SELECT TO_CHAR(vigencia_inicio, 'YYYY-MM') AS codigo FROM tabla_impuesto_unico
 ) src

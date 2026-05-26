@@ -118,6 +118,10 @@ export const routes: Routes = [
         path: 'parametros',
         loadComponent: () => import('./pages/parametros.page').then((m) => m.ParametrosPage),
       },
+      {
+        path: 'empresas',
+        loadChildren: () => import('./features/empresas/empresas.routes').then((m) => m.empresasRoutes),
+      },
     ],
   },
 ];
