@@ -14,11 +14,11 @@ import {
   CardComponent,
   CardContentComponent,
   CardHeaderComponent,
-} from '../../../../../shared/components/ui/card.component';
+} from '../../../../../shared/components/ui/primitives/card.component';
 import {
   SearchSelectComponent,
   type SearchSelectOption,
-} from '../../../../../shared/components/ui/search-select.component';
+} from '../../../../../shared/components/ui/forms/search-select.component';
 import { withEmptyNumberCatalog, withEmptyStringCatalog } from '../../../utils/empleado-select-options';
 import { LucideAngularModule } from 'lucide-angular';
 import { EmpleadoFieldRequiredComponent } from '../../empleado-field-required/empleado-field-required.component';

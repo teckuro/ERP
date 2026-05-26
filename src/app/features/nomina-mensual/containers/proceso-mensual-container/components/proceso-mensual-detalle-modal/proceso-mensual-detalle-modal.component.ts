@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { LucideAngularModule } from 'lucide-angular';
 import { X as XIcon } from 'lucide-angular/src/icons';
 
-import { DataGridComponent } from '../../../../../../shared/components/ui/data-grid.component';
+import { DataGridComponent } from '../../../../../../shared/components/ui/data-grid';
 import { ProcesoMensualPresentacionFacade } from '../../facade/proceso-mensual-presentacion.facade';
 import { ProcesoMensualRevisionPeriodoPreviewComponent } from '../proceso-mensual-revision-periodo-preview/proceso-mensual-revision-periodo-preview.component';
 

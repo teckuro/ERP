@@ -28,7 +28,7 @@ import {
   DataGridComponent,
   DataGridExportEvent,
   DataGridPrimaryActionMenuDirective,
-} from '../../../../shared/components/ui/data-grid.component';
+} from '../../../../shared/components/ui/data-grid';
 import {
   capitalizarTextoEmpleado,
   crearAccionesMasivasEstadoEmpleado,

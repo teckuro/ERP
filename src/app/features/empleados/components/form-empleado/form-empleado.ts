@@ -130,9 +130,9 @@ import {
 import {
   CardComponent,
   CardContentComponent,
-} from "../../../../shared/components/ui/card.component";
-import { MessageBoxComponent } from "../../../../shared/components/ui/message-box.component";
-import { WorkspaceLoadingComponent } from "../../../../shared/components/ui/workspace-loading.component";
+} from "../../../../shared/components/ui/primitives/card.component";
+import { MessageBoxComponent } from "../../../../shared/components/ui/feedback/message-box/message-box.component";
+import { WorkspaceLoadingComponent } from "../../../../shared/components/ui/feedback/workspace-loading/workspace-loading.component";
 import { bindShellPageContext } from "../../../../layout/shell-page-context.binding";
 
 const ordenPestanas: readonly IdPestana[] = [...ordenPestanasFormularioEmpleado];

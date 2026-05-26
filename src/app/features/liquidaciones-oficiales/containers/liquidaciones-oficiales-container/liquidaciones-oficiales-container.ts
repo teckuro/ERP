@@ -14,10 +14,10 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { LucideAngularModule } from 'lucide-angular';
 
 import { PeriodoActivoService } from '../../../../core/services/periodo-activo.service';
-import { BadgeComponent } from '../../../../shared/components/ui/badge.component';
-import { ButtonComponent } from '../../../../shared/components/ui/button.component';
-import { CardComponent, CardContentComponent } from '../../../../shared/components/ui/card.component';
-import { MessageBoxComponent } from '../../../../shared/components/ui/message-box.component';
+import { BadgeComponent } from '../../../../shared/components/ui/primitives/badge.component';
+import { ButtonComponent } from '../../../../shared/components/ui/primitives/button.component';
+import { CardComponent, CardContentComponent } from '../../../../shared/components/ui/primitives/card.component';
+import { MessageBoxComponent } from '../../../../shared/components/ui/feedback/message-box/message-box.component';
 import { LiquidacionDetallePanelComponent } from '../../components/liquidacion-detalle-panel/liquidacion-detalle-panel';
 import { LiquidacionResumenCardComponent } from '../../components/liquidacion-resumen-card/liquidacion-resumen-card';
 import { LiquidacionesTrabajadoresGridComponent } from '../../components/liquidaciones-trabajadores-grid/liquidaciones-trabajadores-grid';

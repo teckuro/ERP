@@ -1,4 +1,4 @@
-import type { MessageBoxVariant } from '../../../shared/components/ui/message-box.component';
+import type { MessageBoxVariant } from '../../../shared/components/ui/feedback/message-box/message-box.component';
 import type { ParametrosEstadoVisual } from '../rules/parametros-completitud.rules';
 import type { ParametrosTabId } from './parametro-general.model';
 

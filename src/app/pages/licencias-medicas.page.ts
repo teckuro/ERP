@@ -1,9 +1,9 @@
 import { ChangeDetectionStrategy, Component, DestroyRef, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { LucideAngularModule } from 'lucide-angular';
-import { CardComponent, CardContentComponent } from '../shared/components/ui/card.component';
-import { BadgeComponent } from '../shared/components/ui/badge.component';
-import { ButtonComponent } from '../shared/components/ui/button.component';
+import { CardComponent, CardContentComponent } from '../shared/components/ui/primitives/card.component';
+import { BadgeComponent } from '../shared/components/ui/primitives/badge.component';
+import { ButtonComponent } from '../shared/components/ui/primitives/button.component';
 import { bindShellPageContext } from '../layout/shell-page-context.binding';
 
 @Component({

@@ -1,4 +1,4 @@
-﻿import type { DataGridColumn, DataGridFilter } from '../../../../../shared/components/ui/data-grid.component';
+﻿import type { DataGridColumn, DataGridFilter } from '../../../../../shared/components/ui/data-grid';
 import type {
   DetalleOperativoTab,
   NominaDetalleMensualExpedienteRow,

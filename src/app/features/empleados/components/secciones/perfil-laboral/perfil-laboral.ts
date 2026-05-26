@@ -7,8 +7,8 @@ import {
 } from '../../../models/empleado-perfil-laboral.model';
 import { PerfilLaboralFormGroup } from '../../../models/empleado-form.model';
 import { RelacionLaboral } from '../../../models/empleado.model';
-import { CalendarInputComponent } from '../../../../../shared/components/ui/calendar-input.component';
-import { CardComponent } from '../../../../../shared/components/ui/card.component';
+import { CalendarInputComponent } from '../../../../../shared/components/ui/forms/calendar-input/calendar-input.component';
+import { CardComponent } from '../../../../../shared/components/ui/primitives/card.component';
 import { EmpleadoFieldRequiredComponent } from '../../empleado-field-required/empleado-field-required.component';
 import { EmpleadoFieldTipComponent } from '../../empleado-field-tip/empleado-field-tip.component';
 import { buildTodayValue } from '../../../utils/empleado-form-defaults';

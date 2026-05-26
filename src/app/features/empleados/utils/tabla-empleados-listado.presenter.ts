@@ -2,7 +2,7 @@ import type {
   DataGridBulkActionOption,
   DataGridColumn,
   DataGridFilter,
-} from '../../../shared/components/ui/data-grid.component';
+} from '../../../shared/components/ui/data-grid';
 import type { EmpleadoEstado, EmpleadoListado } from '../models/empleado-listado.model';
 
 export function etiquetaEstadoEmpleado(estado: EmpleadoEstado): string {
@@ -201,7 +201,7 @@ export function crearColumnasGridTablaEmpleados(): DataGridColumn<EmpleadoListad
     },
     {
       id: 'acciones',
-      header: 'Accion',
+      header: 'Acción',
       align: 'center',
       width: '3.25rem',
       minWidth: '3.25rem',

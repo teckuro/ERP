@@ -6,7 +6,7 @@ import { ChevronRight } from 'lucide-angular/src/icons';
 import {
   DataGridCellDirective,
   DataGridComponent,
-} from '../../../../../../shared/components/ui/data-grid.component';
+} from '../../../../../../shared/components/ui/data-grid';
 import type {
   NominaDetalleMensualExpedienteRow,
   NominaDetalleMensualPendienteRow,

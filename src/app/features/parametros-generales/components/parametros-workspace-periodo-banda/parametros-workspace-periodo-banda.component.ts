@@ -3,8 +3,8 @@ import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { LucideAngularModule } from 'lucide-angular';
 
-import { ButtonComponent } from '../../../../shared/components/ui/button.component';
-import { PageActionsComponent } from '../../../../shared/components/ui/page-actions.component';
+import { ButtonComponent } from '../../../../shared/components/ui/primitives/button.component';
+import { PageActionsComponent } from '../../../../shared/components/ui/layout/page-actions.component';
 import { ParametrosWorkspaceOrquestador } from '../../facade/parametros-workspace.orquestador';
 
 @Component({

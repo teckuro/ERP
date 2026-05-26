@@ -52,7 +52,7 @@ import {
   buildParametrosSinConfigClienteAnteriorDialog,
   buildParametrosSoloConfigClienteEditableDialog,
 } from '../rules/parametros-dialog.rules';
-import { SearchSelectValue } from '../../../shared/components/ui/search-select.component';
+import { SearchSelectValue } from '../../../shared/components/ui/forms/search-select.component';
 import { PeriodoActivoService } from '../../../core/services/periodo-activo.service';
 import {
   crearGridsParametrosWorkspace,
@@ -257,11 +257,11 @@ export class ParametrosWorkspaceOrquestador {
       case 'editando':
         return 'Estado mensual: En edición';
       case 'cargado':
-        return 'Estado mensual: Parametros cargados';
+        return 'Estado mensual: Parámetros cargados';
       case 'pendiente_reconciliacion':
-        return 'Estado mensual: Pendiente de reconciliacion';
+        return 'Estado mensual: Pendiente de reconciliación';
       case 'oficial_sin_config':
-        return 'Estado mensual: Parametros cargados';
+        return 'Estado mensual: Parámetros cargados';
       case 'configuracion_parcial':
         return 'Estado mensual: Pendiente oficial';
       case 'referencia_anterior':
@@ -287,23 +287,23 @@ export class ParametrosWorkspaceOrquestador {
       case 'editando':
         return 'Configuración guardada con pendientes. Pueden completarse valores de fin de mes.';
       case 'cargado':
-        return 'Periodo listo para revisar.';
+        return 'Período listo para revisar.';
       case 'pendiente_reconciliacion':
         return 'Diferencias pendientes de revisar.';
       case 'oficial_sin_config':
-        return 'Datos oficiales cargados. Falta configuracion cliente.';
+        return 'Datos oficiales cargados. Falta configuración cliente.';
       case 'configuracion_parcial':
-        return 'Configuracion guardada. Carga oficial pendiente.';
+        return 'Configuración guardada. Carga oficial pendiente.';
       case 'referencia_anterior':
         return 'Carga oficial pendiente.';
       case 'sin_base':
-        return 'Sin base mensual para el periodo.';
+        return 'Sin base mensual para el período.';
       case 'corregido':
         return 'Datos revisados por flujo controlado.';
       case 'cerrado':
         return 'Período cerrado. No se permite edición sin flujo de reapertura.';
       case 'parcial':
-        return this.completitudDetalle('Periodo parcial.');
+        return this.completitudDetalle('Período parcial.');
       case 'pendiente':
       default:
         return this.completitudDetalle('Carga oficial pendiente.');
@@ -323,7 +323,7 @@ export class ParametrosWorkspaceOrquestador {
       case 'oficial_sin_config':
         return 'Sin config.';
       case 'configuracion_parcial':
-        return 'Configuracion parcial';
+        return 'Configuración parcial';
       case 'referencia_anterior':
         return this.referenciaVisualPrincipalCodigo() ? `Referencia ${this.referenciaVisualPrincipalCodigo()}` : 'Referencia anterior';
       case 'sin_base':
@@ -443,15 +443,15 @@ export class ParametrosWorkspaceOrquestador {
   readonly periodoContextoHint = computed(() => {
     switch (this.periodoCargaEstado()) {
       case 'referencia_anterior':
-        return `Periodo seleccionado: ${this.selectedPeriodo()}.`;
+        return `Período seleccionado: ${this.selectedPeriodo()}.`;
       case 'configuracion_parcial':
-        return 'Configuracion cliente del periodo seleccionado.';
+        return 'Configuración cliente del período seleccionado.';
       case 'oficial_sin_config':
       case 'cargado':
       case 'pendiente_reconciliacion':
-        return 'Datos oficiales del periodo seleccionado.';
+        return 'Datos oficiales del período seleccionado.';
       default:
-        return `Periodo seleccionado: ${this.selectedPeriodo()}.`;
+        return `Período seleccionado: ${this.selectedPeriodo()}.`;
     }
   });
 
@@ -944,7 +944,7 @@ export class ParametrosWorkspaceOrquestador {
   private configClienteBaseLabel(opcion: Exclude<ParametrosConfigClienteBaseOpcion, 'cero' | 'cancelar'>): string {
     switch (opcion) {
       case 'ultima':
-        return 'Usar ultima configuracion';
+        return 'Usar última configuración';
       case 'referencia':
         return 'Usar referencia anterior';
       case 'oficiales':
@@ -986,7 +986,7 @@ export class ParametrosWorkspaceOrquestador {
   private async actualizarClienteConOficiales(): Promise<void> {
     const oficial = this.parametroOficialSeleccionado();
     if (!oficial) {
-      this.mostrarErrorClienteConfig('No hay valores oficiales actuales para actualizar la configuracion cliente.');
+      this.mostrarErrorClienteConfig('No hay valores oficiales actuales para actualizar la configuración cliente.');
       return;
     }
 
@@ -998,7 +998,7 @@ export class ParametrosWorkspaceOrquestador {
           estadoReconciliacionOficial: 'actualizado_con_oficiales',
           fechaReconciliacionOficial: new Date().toISOString(),
           origenReconciliacion: 'actualizar_con_oficiales',
-          observacionReconciliacion: 'Cliente actualizado con parametros oficiales desde reconciliacion.',
+          observacionReconciliacion: 'Cliente actualizado con parámetros oficiales desde reconciliación.',
         },
       );
       this.clienteConfig.set(saved);
@@ -1007,7 +1007,7 @@ export class ParametrosWorkspaceOrquestador {
       this.selectedMutualId.set(saved.idOrganismoAdministradorLey16744);
       this.mostrarExitoClienteConfig(saved.periodo, 'oficiales', oficial.periodo);
     } catch (err) {
-      this.mostrarErrorClienteConfig(this.extractErrorDetail(err) || 'No fue posible actualizar la configuracion con oficiales.');
+      this.mostrarErrorClienteConfig(this.extractErrorDetail(err) || 'No fue posible actualizar la configuración con oficiales.');
     } finally {
       this.guardando.set(false);
       this.cdr.markForCheck();
@@ -1018,8 +1018,8 @@ export class ParametrosWorkspaceOrquestador {
     await this.registrarDecisionReconciliacion(
       'cliente_confirmado',
       'mantener_configuracion',
-      'No se sobrescribio tu configuracion cliente.',
-      'La decision quedo registrada para este periodo.',
+      'No se sobrescribió tu configuración cliente.',
+      'La decisión quedó registrada para este período.',
     );
   }
 
@@ -1027,8 +1027,8 @@ export class ParametrosWorkspaceOrquestador {
     await this.registrarDecisionReconciliacion(
       'revisar_despues',
       'revisar_despues',
-      'La revision de diferencias quedo postergada.',
-      'Nada se actualizo automaticamente. Puedes volver a revisar la configuracion cliente cuando corresponda.',
+      'La revisión de diferencias quedó postergada.',
+      'Nada se actualizó automáticamente. Puedes volver a revisar la configuración cliente cuando corresponda.',
     );
   }
 
@@ -1040,7 +1040,7 @@ export class ParametrosWorkspaceOrquestador {
   ): Promise<void> {
     const periodo = this.selectedPeriodo();
     if (!this.clienteConfig()) {
-      this.mostrarErrorClienteConfig('No hay configuracion cliente para registrar la decision de reconciliacion.');
+      this.mostrarErrorClienteConfig('No hay configuración cliente para registrar la decisión de reconciliación.');
       return;
     }
 
@@ -1055,7 +1055,7 @@ export class ParametrosWorkspaceOrquestador {
       this.clienteConfig.set(saved);
       this.dialogState.set(buildParametrosRegistroDecisionReconciliacionDialog(estado, message, detail));
     } catch (err) {
-      this.mostrarErrorClienteConfig(this.extractErrorDetail(err) || 'No fue posible registrar la decision de reconciliacion.');
+      this.mostrarErrorClienteConfig(this.extractErrorDetail(err) || 'No fue posible registrar la decisión de reconciliación.');
     } finally {
       this.guardando.set(false);
       this.cdr.markForCheck();
@@ -1191,7 +1191,7 @@ export class ParametrosWorkspaceOrquestador {
       this.generalesEditando.set(true);
       this.form.markAsPristine();
     } catch (err) {
-      this.mostrarErrorClienteConfig(this.extractErrorDetail(err) || 'No fue posible cargar la ultima configuracion cliente.');
+      this.mostrarErrorClienteConfig(this.extractErrorDetail(err) || 'No fue posible cargar la última configuración cliente.');
     } finally {
       this.isLoadingPlantilla.set(false);
       this.cdr.markForCheck();
@@ -1201,7 +1201,7 @@ export class ParametrosWorkspaceOrquestador {
   private prepararConfigClienteDesdeOficiales(): void {
     const oficial = this.parametroOficialSeleccionado();
     if (!oficial || oficial.periodo !== this.selectedPeriodo()) {
-      this.mostrarErrorClienteConfig('No hay valores oficiales disponibles para este periodo.');
+      this.mostrarErrorClienteConfig('No hay valores oficiales disponibles para este período.');
       return;
     }
 
@@ -1333,7 +1333,7 @@ export class ParametrosWorkspaceOrquestador {
       if (isDevMode()) {
         console.error('[Parametros] guardarClienteConfig', err);
       }
-      this.mostrarErrorClienteConfig(this.extractErrorDetail(err) || 'No fue posible guardar la configuracion cliente.');
+      this.mostrarErrorClienteConfig(this.extractErrorDetail(err) || 'No fue posible guardar la configuración cliente.');
     } finally {
       this.guardando.set(false);
     }
@@ -1453,7 +1453,7 @@ export class ParametrosWorkspaceOrquestador {
       return '';
     }
     if (!this.isConfigurableTab()) {
-      return 'Modificar guarda configuracion cliente; los datos oficiales solo se usan para comparar.';
+      return 'Modificar guarda configuración cliente; los datos oficiales solo se usan para comparar.';
     }
     return '';
   }
@@ -1488,7 +1488,7 @@ export class ParametrosWorkspaceOrquestador {
       return true;
     }
     return globalThis.confirm(
-      'Hay cambios sin guardar. Si continúa, se descartarán. ¿Cambiar de periodo?',
+      'Hay cambios sin guardar. Si continúa, se descartarán. ¿Cambiar de período?',
     );
   }
 

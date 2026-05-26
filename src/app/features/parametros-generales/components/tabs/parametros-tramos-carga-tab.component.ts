@@ -4,7 +4,7 @@ import {
   DataGridColumn,
   DataGridComponent,
   DataGridFilter,
-} from '../../../../shared/components/ui/data-grid.component';
+} from '../../../../shared/components/ui/data-grid';
 import { TramoCargaParametro } from '../../models/parametro-general.model';
 
 @Component({

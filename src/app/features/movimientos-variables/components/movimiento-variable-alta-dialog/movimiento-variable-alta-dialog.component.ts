@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 import {
   SearchSelectComponent,
   SearchSelectOption,
-} from '../../../../shared/components/ui/search-select.component';
+} from '../../../../shared/components/ui/forms/search-select.component';
 import type { EstadoAltaMovimientoVariable } from '../../models/movimiento-variable-listado.vm';
 
 @Component({

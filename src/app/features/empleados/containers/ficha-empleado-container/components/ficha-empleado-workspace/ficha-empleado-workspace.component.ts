@@ -6,8 +6,8 @@ import { LucideAngularModule } from 'lucide-angular';
 import { EmpleadoDiagnosticoPanelComponent } from '../../../../components/expediente/empleado-diagnostico-panel/empleado-diagnostico-panel.component';
 import { EmpleadoExpedienteRailComponent } from '../../../../components/expediente/empleado-expediente-rail/empleado-expediente-rail.component';
 import { EmpleadoRecordHeaderComponent } from '../../../../components/expediente/empleado-record-header/empleado-record-header.component';
-import { DataGridComponent } from '../../../../../../shared/components/ui/data-grid.component';
-import { WorkspaceLoadingComponent } from '../../../../../../shared/components/ui/workspace-loading.component';
+import { DataGridComponent } from '../../../../../../shared/components/ui/data-grid';
+import { WorkspaceLoadingComponent } from '../../../../../../shared/components/ui/feedback/workspace-loading/workspace-loading.component';
 import { FichaEmpleadoPresentacionFacade } from '../../facade/ficha-empleado-presentacion.facade';
 
 @Component({

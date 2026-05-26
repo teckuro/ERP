@@ -4,8 +4,8 @@ import { Component, OnInit, inject, signal } from '@angular/core';
 import {
   RecordBreadcrumbComponent,
   RecordBreadcrumbItem,
-} from '../../../../shared/components/ui/record-breadcrumb.component';
-import { MessageBoxComponent } from '../../../../shared/components/ui/message-box.component';
+} from '../../../../shared/components/ui/layout/record-breadcrumb.component';
+import { MessageBoxComponent } from '../../../../shared/components/ui/feedback/message-box/message-box.component';
 import { TablaParametrosGeneralesComponent } from '../../components/tabla-parametros-generales/tabla-parametros-generales';
 import { ParametroGeneral } from '../../models/parametro-general.model';
 import { ParametrosGeneralesService } from '../../services/parametros-generales.service';

@@ -1,4 +1,4 @@
-import type { DataGridColumn } from '../../../shared/components/ui/data-grid.component';
+import type { DataGridColumn } from '../../../shared/components/ui/data-grid';
 import type {
   AfpParametro,
   ApvApvcFormaPago,
@@ -118,9 +118,9 @@ export function etiquetaEstadoVigenciaPeriodo(
     return 'Futuro';
   }
   if (fin && fin < fechaPeriodo) {
-    return 'Historico';
+    return 'Histórico';
   }
-  return 'Vigente al periodo';
+  return 'Vigente al período';
 }
 
 export function crearGridsParametrosWorkspace(periodoYm: () => string): GridsParametrosWorkspace {
@@ -129,7 +129,7 @@ export function crearGridsParametrosWorkspace(periodoYm: () => string): GridsPar
 
   return {
     tramosCargaColumns: [
-      { id: 'periodo', header: 'Periodo', field: 'periodo', sortable: true },
+      { id: 'periodo', header: 'Período', field: 'periodo', sortable: true },
       { id: 'tramo', header: 'Tramo', field: 'tramo', sortable: true },
       {
         id: 'desde',
@@ -207,7 +207,7 @@ export function crearGridsParametrosWorkspace(periodoYm: () => string): GridsPar
       },
     ],
     tramosImpuestoColumns: [
-      { id: 'periodo', header: 'Periodo', field: 'periodo', sortable: true },
+      { id: 'periodo', header: 'Período', field: 'periodo', sortable: true },
       {
         id: 'desde',
         header: 'Desde',
@@ -246,12 +246,12 @@ export function crearGridsParametrosWorkspace(periodoYm: () => string): GridsPar
       },
     ],
     isapreColumns: [
-      { id: 'codigo', header: 'Codigo', field: 'codigo', sortable: true },
+      { id: 'codigo', header: 'Código', field: 'codigo', sortable: true },
       { id: 'nombre', header: 'Nombre', field: 'nombre', sortable: true },
       { id: 'tipo', header: 'Tipo', field: 'tipo', sortable: true },
       {
         id: 'porcentajeCotizacion',
-        header: 'Cotizacion',
+        header: 'Cotización',
         field: 'porcentajeCotizacion',
         type: 'number',
         sortable: true,
@@ -277,7 +277,7 @@ export function crearGridsParametrosWorkspace(periodoYm: () => string): GridsPar
       { id: 'vigente', header: 'Estado', field: 'vigente', sortable: true, format: formatoVigenteGridParametros },
     ],
     afpColumns: [
-      { id: 'codigo', header: 'Codigo', field: 'codigo', sortable: true },
+      { id: 'codigo', header: 'Código', field: 'codigo', sortable: true },
       { id: 'nombre', header: 'Nombre', field: 'nombre', sortable: true },
       {
         id: 'tasaObligatoria',
@@ -290,7 +290,7 @@ export function crearGridsParametrosWorkspace(periodoYm: () => string): GridsPar
       },
       {
         id: 'comision',
-        header: 'Comision',
+        header: 'Comisión',
         field: 'comision',
         type: 'number',
         sortable: true,
@@ -334,22 +334,22 @@ export function crearGridsParametrosWorkspace(periodoYm: () => string): GridsPar
       { id: 'vigente', header: 'Estado', field: 'vigente', sortable: true, format: formatoVigenteGridParametros },
     ],
     ccafColumns: [
-      { id: 'codigo', header: 'Codigo', field: 'codigo', sortable: true },
+      { id: 'codigo', header: 'Código', field: 'codigo', sortable: true },
       { id: 'nombre', header: 'Nombre', field: 'nombre', sortable: true },
       { id: 'vigente', header: 'Estado', field: 'vigente', sortable: true, format: formatoVigenteGridParametros },
       { id: 'fuente', header: 'Fuente', field: 'fuente', sortable: true },
     ],
     organismosLeyColumns: [
-      { id: 'codigo', header: 'Codigo', field: 'codigo', sortable: true },
+      { id: 'codigo', header: 'Código', field: 'codigo', sortable: true },
       { id: 'nombre', header: 'Nombre', field: 'nombre', sortable: true },
       { id: 'tipo', header: 'Tipo', field: 'tipo', sortable: true },
       { id: 'vigente', header: 'Estado', field: 'vigente', sortable: true, format: formatoVigenteGridParametros },
     ],
     ley16744Columns: [
-      { id: 'codigo', header: 'Codigo', field: 'codigo', sortable: true },
+      { id: 'codigo', header: 'Código', field: 'codigo', sortable: true },
       {
         id: 'cotizacionBasicaEmpleador',
-        header: 'Cotizacion basica',
+        header: 'Cotización básica',
         field: 'cotizacionBasicaEmpleador',
         type: 'number',
         sortable: true,
@@ -383,7 +383,7 @@ export function crearGridsParametrosWorkspace(periodoYm: () => string): GridsPar
     parametrosLegalesColumns: [
       {
         id: 'nombre',
-        header: 'Parametro',
+        header: 'Parámetro',
         field: 'nombre',
         sortable: true,
         format: (value) => etiquetaParametroLegal(String(value ?? '')),
@@ -480,7 +480,7 @@ export function crearGridsParametrosWorkspace(periodoYm: () => string): GridsPar
       { id: 'fuente', header: 'Fuente', field: 'fuente', sortable: true },
     ],
     trabajosPesadosColumns: [
-      { id: 'codigo', header: 'Codigo', field: 'codigo', sortable: true },
+      { id: 'codigo', header: 'Código', field: 'codigo', sortable: true },
       { id: 'nombre', header: 'Nombre', field: 'nombre', sortable: true },
       {
         id: 'tasaTrabajador',
@@ -519,12 +519,12 @@ export function crearGridsParametrosWorkspace(periodoYm: () => string): GridsPar
       { id: 'vigente', header: 'Estado', field: 'vigente', sortable: true, format: formatoVigenteGridParametros },
     ],
     apvInstitucionesColumns: [
-      { id: 'codigo', header: 'Codigo', field: 'codigo', sortable: true },
+      { id: 'codigo', header: 'Código', field: 'codigo', sortable: true },
       { id: 'nombre', header: 'Institucion', field: 'nombre', sortable: true },
       { id: 'vigente', header: 'Estado', field: 'vigente', sortable: true, format: formatoVigenteGridParametros },
     ],
     apvFormasPagoColumns: [
-      { id: 'codigo', header: 'Codigo', field: 'codigo', sortable: true },
+      { id: 'codigo', header: 'Código', field: 'codigo', sortable: true },
       { id: 'nombre', header: 'Forma', field: 'nombre', sortable: true },
       { id: 'vigente', header: 'Estado', field: 'vigente', sortable: true, format: formatoVigenteGridParametros },
     ],

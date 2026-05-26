@@ -10,7 +10,7 @@ import {
   SaveIcon,
 } from 'lucide-angular';
 
-import { ButtonComponent } from './button.component';
+import { ButtonComponent } from '../primitives/button.component';
 
 export type PageActionType = 'back' | 'save' | 'edit' | 'export' | 'import';
 @Component({

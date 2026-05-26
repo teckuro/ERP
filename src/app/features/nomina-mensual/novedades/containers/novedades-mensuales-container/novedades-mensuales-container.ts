@@ -22,20 +22,20 @@ import {
   primerDiaSqlDesdeYm,
   ultimoDiaSqlDesdeYm,
 } from '../../../../../core/services/periodo-activo.service';
-import { ButtonComponent } from '../../../../../shared/components/ui/button.component';
+import { ButtonComponent } from '../../../../../shared/components/ui/primitives/button.component';
 import {
   DataGridCellDirective,
   DataGridColumn,
   DataGridComponent,
   DataGridFilter,
-} from '../../../../../shared/components/ui/data-grid.component';
+} from '../../../../../shared/components/ui/data-grid';
 import {
   MessageBoxComponent,
   MessageBoxVariant,
-} from '../../../../../shared/components/ui/message-box.component';
-import type { MessageBoxSection } from '../../../../../shared/components/ui/message-box.types';
-import { CalendarInputComponent } from '../../../../../shared/components/ui/calendar-input.component';
-import { FieldHelpTipComponent } from '../../../../../shared/components/ui/field-help-tip.component';
+} from '../../../../../shared/components/ui/feedback/message-box/message-box.component';
+import type { MessageBoxSection } from '../../../../../shared/components/ui/feedback/message-box/message-box.types';
+import { CalendarInputComponent } from '../../../../../shared/components/ui/forms/calendar-input/calendar-input.component';
+import { FieldHelpTipComponent } from '../../../../../shared/components/ui/forms/field-help-tip.component';
 import { bindShellPageContext } from '../../../../../layout/shell-page-context.binding';
 import {
   buildNominaFlowReturnUrl,
@@ -46,7 +46,7 @@ import {
 import {
   SearchSelectComponent,
   type SearchSelectOption,
-} from '../../../../../shared/components/ui/search-select.component';
+} from '../../../../../shared/components/ui/forms/search-select.component';
 import type { EmpleadoListado } from '../../../../empleados/models/empleado-listado.model';
 import { EmpleadosService } from '../../../../empleados/services/empleados.service';
 import {

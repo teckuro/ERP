@@ -1,0 +1,763 @@
+      :host {
+        display: block;
+        min-height: 0;
+        --data-grid-border: #daddd6;
+        --data-grid-border-soft: #eef1ec;
+        --data-grid-head-bg: #fafaf7;
+        --data-grid-row-hover: #fafaf7;
+        --data-grid-row-selected: #eff6ff;
+        --data-grid-scrollbar-track: #eef1ec;
+        --data-grid-scrollbar-thumb: #c7d0c4;
+        --data-grid-text-xs: 0.64rem;
+        --data-grid-text-sm: 0.72rem;
+        --data-grid-text-md: 0.76rem;
+        --data-grid-padding-inline: 0.5rem;
+        --data-grid-padding-block-body: 0.5rem;
+        --data-grid-padding-block-head: 0.5rem;
+        --data-grid-padding-num-inline: 0.45rem;
+        --data-grid-padding-skel: 0.65rem;
+      }
+
+      :host.data-grid-host--sized {
+        display: flex;
+        flex-direction: column;
+      }
+
+      :host.data-grid-host--sized > app-card {
+        flex: 1 1 auto;
+        min-height: 0;
+      }
+
+      :host ::ng-deep lucide-icon {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        flex: 0 0 auto;
+        align-self: center;
+        line-height: 0;
+        vertical-align: middle;
+      }
+
+      :host ::ng-deep lucide-icon svg {
+        display: block;
+        width: 100%;
+        height: 100%;
+        margin: 0;
+        overflow: visible;
+      }
+
+      .data-grid-scroll {
+        position: relative;
+        min-height: 0;
+        flex: 1 1 auto;
+        background: #ffffff;
+        overscroll-behavior: contain;
+        scrollbar-gutter: auto;
+        scrollbar-color: var(--data-grid-scrollbar-thumb) var(--data-grid-scrollbar-track);
+        scrollbar-width: thin;
+      }
+
+      .data-grid-scroll:has(> .data-grid-state--empty) {
+        display: flex;
+        flex-direction: column;
+      }
+
+      .data-grid-filter-grid {
+        display: grid;
+        gap: 0.75rem 0.875rem;
+        align-items: end;
+      }
+
+      .data-grid-filter-panel {
+        --data-grid-filter-h: var(--erp-control-height, 22px);
+        background: #fafaf7 !important;
+        border-color: var(--data-grid-border) !important;
+      }
+
+      .data-grid-filter-shell {
+        display: grid !important;
+        grid-template-columns: minmax(0, 1fr) auto;
+        align-items: flex-end;
+      }
+
+      .data-grid-filter-shell > .min-w-0 {
+        width: 100%;
+        min-width: 0;
+      }
+
+      .data-grid-filter-actions {
+        flex-wrap: wrap;
+        align-self: flex-end;
+      }
+
+      .data-grid-filter-control {
+        box-sizing: border-box;
+        width: 100%;
+        min-width: 0;
+        height: var(--data-grid-filter-h);
+        max-height: var(--data-grid-filter-h);
+        min-height: var(--data-grid-filter-h);
+        margin: 0;
+        border: 1px solid #daddd6;
+        border-radius: 0.5rem;
+        background: #ffffff;
+        padding: 0 0.625rem;
+        color: #172033;
+        font-size: 0.74rem;
+        font-weight: 500;
+        line-height: 1;
+        box-shadow: none;
+        outline: none;
+        transition:
+          border-color 150ms ease,
+          background-color 150ms ease,
+          box-shadow 150ms ease;
+      }
+
+      .data-grid-filter-control::placeholder {
+        color: #8a94a6;
+      }
+
+      .data-grid-filter-control:hover {
+        border-color: #c7d0c4;
+        background: #fafaf7;
+      }
+
+      .data-grid-filter-control:focus {
+        border-color: var(--erp-primary, #1e3a8a);
+        background: #ffffff;
+        box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.14);
+      }
+
+      select.data-grid-filter-control {
+        cursor: pointer;
+      }
+
+      .data-grid-filter-action {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.375rem;
+        box-sizing: border-box;
+        height: var(--data-grid-filter-h);
+        max-height: var(--data-grid-filter-h);
+        min-height: var(--data-grid-filter-h);
+        padding: 0 0.75rem;
+        border: 1px solid #daddd6;
+        border-radius: 0.5rem;
+        background: #ffffff;
+        color: #647084;
+        font-size: var(--data-grid-text-sm);
+        font-weight: 500;
+        line-height: 1;
+        cursor: pointer;
+        transition:
+          border-color 150ms ease,
+          background-color 150ms ease,
+          color 150ms ease,
+          box-shadow 150ms ease;
+      }
+
+      .data-grid-filter-action:hover {
+        border-color: #c7d0c4;
+        background: #fafaf7;
+        color: #172033;
+      }
+
+      .data-grid-filter-action:focus-visible {
+        outline: none;
+        box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.18);
+      }
+
+      .data-grid-filter-action--primary {
+        border-color: var(--erp-primary, #1e3a8a);
+        background: var(--erp-primary, #1e3a8a);
+        color: #ffffff;
+        box-shadow: none;
+      }
+
+      .data-grid-filter-action--primary:hover {
+        border-color: var(--erp-primary-hover, #1d4ed8);
+        background: var(--erp-primary-hover, #1d4ed8);
+        color: #ffffff;
+      }
+
+      :host ::ng-deep .data-grid-filter-panel app-calendar-input .calendar-field {
+        height: var(--data-grid-filter-h, 22px) !important;
+        min-height: var(--data-grid-filter-h, 22px) !important;
+        max-height: var(--data-grid-filter-h, 22px) !important;
+      }
+
+      /* Fechas: control compuesto más alto (34px). */
+      .data-grid-filter-panel app-calendar-input.data-grid-date-control {
+        --erp-control-height: 34px;
+      }
+
+      .data-grid-filter-chips {
+        display: flex;
+        min-width: 0;
+        width: 100%;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: flex-start;
+        gap: 0.5rem;
+      }
+
+      .data-grid-filter-chip {
+        display: inline-flex;
+        max-height: var(--data-grid-filter-h);
+        min-height: var(--data-grid-filter-h);
+        height: var(--data-grid-filter-h);
+        align-items: center;
+        gap: 0.35rem;
+        border: 1px solid #daddd6;
+        border-radius: 999px;
+        background: #ffffff;
+        padding: 0 0.625rem;
+        color: #172033;
+        font-size: var(--data-grid-text-sm);
+        font-weight: 600;
+        line-height: 1;
+        transition:
+          background-color 150ms ease,
+          border-color 150ms ease;
+      }
+
+      .data-grid-filter-chip:hover {
+        border-color: #c7d0c4;
+        background: #fafaf7;
+      }
+
+      .data-grid-filter-chip__label {
+        color: #647084;
+      }
+
+      .data-grid-filter-chip__value {
+        max-width: 11rem;
+        overflow: hidden;
+        color: #172033;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .data-grid-filter-field {
+        display: flex;
+        min-width: 0;
+        flex-direction: column;
+        gap: 0.35rem;
+      }
+
+      .data-grid-filter-field--wide {
+        grid-column: span 2;
+      }
+
+      .data-grid-filter-label {
+        width: 100%;
+        padding: 0 0.15rem;
+        text-align: left;
+        font-size: var(--data-grid-text-xs);
+        font-weight: 600;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: #647084;
+      }
+
+      .data-grid-filter-range {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 0.5rem;
+        align-items: end;
+      }
+
+      .data-grid-filter-range-slot {
+        min-width: 0;
+      }
+
+      .data-grid-scroll::-webkit-scrollbar {
+        width: 0.5rem;
+        height: 0.5rem;
+      }
+
+      .data-grid-scroll::-webkit-scrollbar-track {
+        border-radius: 999px;
+        background: transparent;
+      }
+
+      .data-grid-scroll::-webkit-scrollbar-thumb {
+        border: 1px solid #fafaf7;
+        border-radius: 999px;
+        background: var(--data-grid-scrollbar-thumb);
+      }
+
+      .data-grid-scroll::-webkit-scrollbar-thumb:hover {
+        background: #8a94a6;
+      }
+
+      .data-grid-scroll::-webkit-scrollbar-corner {
+        background: transparent;
+      }
+
+      .data-grid-row-selected {
+        box-shadow: inset 0 0 0 1px #bfdbfe;
+      }
+
+      .data-grid-table-region {
+        position: relative;
+        min-height: 0;
+        background: #ffffff;
+      }
+
+      .data-grid-card-list {
+        display: none;
+      }
+
+      .data-grid-table-view--fit {
+        min-width: 100%;
+        table-layout: fixed;
+      }
+
+      .data-grid-table-view--scroll {
+        min-width: max(100%, var(--data-grid-table-min-width, 64rem));
+        table-layout: auto;
+      }
+
+      .data-grid-row-number-col {
+        width: 3rem;
+      }
+
+      .data-grid-head-cell,
+      .data-grid-selection-head {
+        padding: var(--data-grid-padding-block-head) var(--data-grid-padding-inline);
+      }
+
+      .data-grid-head-num {
+        padding: var(--data-grid-padding-block-head) var(--data-grid-padding-num-inline);
+      }
+
+      .data-grid-body-cell {
+        padding: var(--data-grid-padding-block-body) var(--data-grid-padding-inline);
+        font-size: var(--data-grid-text-md);
+        line-height: 1.35;
+      }
+
+      .data-grid-body-num {
+        padding: calc(var(--data-grid-padding-block-body) - 0.03rem)
+          var(--data-grid-padding-num-inline);
+      }
+
+      .data-grid-selection-cell {
+        padding: 0.6rem var(--data-grid-padding-inline);
+      }
+
+      .data-grid-skel-cell {
+        padding: var(--data-grid-padding-skel) var(--data-grid-padding-inline);
+      }
+
+      .data-grid-skel-num {
+        padding: var(--data-grid-padding-skel) var(--data-grid-padding-num-inline);
+      }
+
+      .data-grid-skel-select {
+        padding: var(--data-grid-padding-skel) var(--data-grid-padding-inline);
+      }
+
+      .data-grid-row-number-cell {
+        width: 3rem;
+        text-align: center;
+        white-space: nowrap;
+      }
+
+      .data-grid-selection-col {
+        width: 2.75rem;
+      }
+
+      .data-grid-head {
+        background: var(--data-grid-head-bg);
+      }
+
+      .data-grid-head th {
+        border-color: var(--data-grid-border);
+        background: var(--data-grid-head-bg);
+        color: #647084;
+        font-weight: 600;
+      }
+
+      .data-grid-head button:disabled {
+        cursor: wait;
+        opacity: 0.7;
+      }
+
+      .data-grid-row {
+        background: #ffffff;
+      }
+
+      .data-grid-row:hover {
+        background: var(--data-grid-row-hover);
+      }
+
+      .data-grid-row.data-grid-row-selected {
+        background: var(--data-grid-row-selected);
+      }
+
+      .data-grid-row td {
+        border-color: var(--data-grid-border-soft);
+      }
+
+      .data-grid-table-region.is-loading table {
+        pointer-events: none;
+      }
+
+      .data-grid-skeleton-box,
+      .data-grid-skeleton-line {
+        display: inline-block;
+        overflow: hidden;
+        position: relative;
+        background: #eef1ec;
+      }
+
+      .data-grid-skeleton-line {
+        width: min(100%, 10rem);
+        height: 0.75rem;
+        border-radius: 999px;
+      }
+
+      .data-grid-skeleton-line--short {
+        width: 5rem;
+      }
+
+      .data-grid-skeleton-line--number {
+        width: 1.5rem;
+      }
+
+      .data-grid-skeleton-line--title {
+        width: 13rem;
+        height: 0.9rem;
+      }
+
+      .data-grid-skeleton-box::after,
+      .data-grid-skeleton-line::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        transform: translateX(-100%);
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.65), transparent);
+        animation: data-grid-skeleton 1200ms ease-in-out infinite;
+      }
+
+      .data-grid-state {
+        display: grid;
+        min-height: 14rem;
+        place-items: center;
+        padding: 2.25rem 1.25rem;
+        background: #ffffff;
+        text-align: center;
+      }
+
+      .data-grid-state--empty {
+        display: flex;
+        flex: 1 1 auto;
+        align-self: stretch;
+        align-items: stretch;
+        justify-content: stretch;
+        width: 100%;
+        min-height: 100%;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      .data-grid-state--empty .data-grid-state-panel {
+        display: flex;
+        flex: 1 1 auto;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        max-width: none;
+        min-height: 100%;
+        border: none;
+        border-radius: 0;
+        background: #f8fafc;
+        padding: 2rem 1.65rem;
+        gap: 0.65rem;
+        text-align: center;
+      }
+
+      .data-grid-state-panel {
+        display: grid;
+        width: min(100%, 30rem);
+        justify-items: center;
+        gap: 0.55rem;
+        border: 1px solid #daddd6;
+        border-radius: 0.6rem;
+        background: #fafaf7;
+        padding: 1.25rem;
+      }
+
+      .data-grid-state-mark {
+        display: grid;
+        width: 2.4rem;
+        height: 2.4rem;
+        place-items: center;
+        border: 1px solid #daddd6;
+        border-radius: 0.5rem;
+        background: #ffffff;
+        color: #647084;
+      }
+
+      .data-grid-state-mark lucide-icon {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 1.15rem;
+        height: 1.15rem;
+        line-height: 0;
+      }
+
+      .data-grid-state-mark lucide-icon svg {
+        display: block;
+        width: 1.15rem;
+        height: 1.15rem;
+      }
+
+      .data-grid-state-kicker,
+      .data-grid-state h3,
+      .data-grid-state p {
+        margin: 0;
+      }
+
+      .data-grid-state-kicker {
+        color: #647084;
+        font-size: 0.68rem;
+        font-weight: 650;
+        letter-spacing: 0.1em;
+        line-height: 1;
+        text-transform: uppercase;
+      }
+
+      .data-grid-state h3 {
+        color: #172033;
+        font-size: 0.96rem;
+        font-weight: 650;
+        line-height: 1.25;
+      }
+
+      .data-grid-state p {
+        max-width: 26rem;
+        color: #647084;
+        font-size: 0.82rem;
+        font-weight: 450;
+        line-height: 1.45;
+      }
+
+      .data-grid-state--empty h3 {
+        max-width: 28rem;
+      }
+
+      .data-grid-state--empty p {
+        max-width: 32rem;
+      }
+
+      .data-grid-state-action {
+        display: inline-flex;
+        height: 2.1rem;
+        align-items: center;
+        justify-content: center;
+        gap: 0.4rem;
+        margin-top: 0.25rem;
+        border: 1px solid #daddd6;
+        border-radius: 0.5rem;
+        background: #ffffff;
+        color: #4b5563;
+        padding: 0 0.8rem;
+        font-size: 0.78rem;
+        font-weight: 650;
+        line-height: 1;
+        transition:
+          border-color 150ms ease,
+          background-color 150ms ease,
+          color 150ms ease,
+          box-shadow 150ms ease;
+      }
+
+      .data-grid-state-action:hover {
+        border-color: #c7d0c4;
+        background: #fafaf7;
+        color: #172033;
+      }
+
+      .data-grid-state-action:focus-visible {
+        outline: none;
+        box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.18);
+      }
+
+      .data-grid-state-action--primary {
+        border-color: var(--erp-primary, #1e3a8a);
+        background: var(--erp-primary, #1e3a8a);
+        color: #ffffff;
+      }
+
+      .data-grid-state-action--primary:hover {
+        border-color: var(--erp-primary-hover, #1d4ed8);
+        background: var(--erp-primary-hover, #1d4ed8);
+        color: #ffffff;
+      }
+
+      .data-grid-state--error {
+        background: #ffffff;
+      }
+
+      .data-grid-footer {
+        border-color: var(--data-grid-border);
+        background: #ffffff;
+      }
+
+      .data-grid-button-spinner {
+        width: 0.75rem;
+        height: 0.75rem;
+        border: 2px solid currentColor;
+        border-right-color: transparent;
+        border-radius: 999px;
+        animation: data-grid-spin 800ms linear infinite;
+      }
+
+      @keyframes data-grid-spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+
+      @keyframes data-grid-skeleton {
+        to {
+          transform: translateX(100%);
+        }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        .data-grid-button-spinner {
+          animation: none;
+        }
+
+        .data-grid-skeleton-box::after,
+        .data-grid-skeleton-line::after {
+          animation: none;
+        }
+      }
+
+      @media (max-width: 1023px) {
+        .data-grid-filter-field--wide {
+          grid-column: span 1;
+        }
+
+        .data-grid-filter-range {
+          grid-template-columns: minmax(0, 1fr);
+        }
+      }
+
+      @media (max-width: 767px) {
+        .data-grid-filter-shell {
+          grid-template-columns: minmax(0, 1fr);
+        }
+
+        .data-grid-filter-actions {
+          justify-content: flex-start;
+          justify-self: stretch;
+        }
+
+        .data-grid-filter-panel {
+          padding: 0.75rem;
+        }
+
+        .data-grid-filter-chips {
+          justify-content: flex-start;
+          flex-wrap: nowrap;
+          overflow-x: auto;
+          padding-bottom: 0.125rem;
+          scrollbar-width: thin;
+        }
+
+        .data-grid-filter-chip {
+          flex: 0 0 auto;
+        }
+
+        .data-grid-table-view {
+          display: none;
+        }
+
+        .data-grid-card-list {
+          display: grid;
+          gap: 0.75rem;
+          padding: 0.75rem;
+          background: #f8fafc;
+        }
+
+        .data-grid-mobile-card {
+          display: grid;
+          gap: 0.75rem;
+          border: 1px solid #e5e7eb;
+          border-radius: 8px;
+          background: #ffffff;
+          padding: 0.75rem;
+        }
+
+        .data-grid-mobile-counter {
+          justify-self: start;
+          border-radius: 999px;
+          background: #f1f5f9;
+          padding: 0.15rem 0.5rem;
+          color: #475569;
+          font-size: var(--data-grid-text-sm);
+          font-weight: 700;
+        }
+
+        .data-grid-mobile-card--selected {
+          border-color: #bfdbfe;
+          background: #eff6ff;
+        }
+
+        .data-grid-mobile-select {
+          display: inline-flex;
+          align-items: center;
+          gap: 0.5rem;
+          color: #374151;
+          font-size: var(--data-grid-text-md);
+          font-weight: 600;
+        }
+
+        .data-grid-mobile-fields {
+          display: grid;
+          gap: 0.75rem;
+          margin: 0;
+        }
+
+        .data-grid-mobile-field {
+          display: grid;
+          gap: 0.25rem;
+        }
+
+        .data-grid-mobile-field dt {
+          color: #6b7280;
+          font-size: var(--data-grid-text-sm);
+          font-weight: 700;
+          letter-spacing: 0.04em;
+          text-transform: uppercase;
+        }
+
+        .data-grid-mobile-field dd {
+          min-width: 0;
+          margin: 0;
+          color: #111827;
+          font-size: 0.74rem;
+          font-weight: 600;
+        }
+
+        .data-grid-mobile-field--primary dd {
+          font-size: 0.8rem;
+        }
+
+        .data-grid-mobile-actions {
+          display: flex;
+          justify-content: flex-end;
+          border-top: 1px solid #e5e7eb;
+          padding-top: 0.75rem;
+        }
+      }

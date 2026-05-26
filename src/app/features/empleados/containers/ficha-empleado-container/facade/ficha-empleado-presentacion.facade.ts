@@ -49,8 +49,8 @@ import {
   type EstadoNavegacionFichaEmpleado,
   type FichaEstadoPanelVm,
 } from '../../../rules/ficha-empleado-presentacion.rules';
-import { DataGridColumn } from '../../../../../shared/components/ui/data-grid.component';
-import { type MessageBoxSection } from '../../../../../shared/components/ui/message-box.component';
+import { DataGridColumn } from '../../../../../shared/components/ui/data-grid';
+import { type MessageBoxSection } from '../../../../../shared/components/ui/feedback/message-box/message-box.component';
 import { bindShellPageContext } from '../../../../../layout/shell-page-context.binding';
 import { PeriodoActivoService } from '../../../../../core/services/periodo-activo.service';
 import { mapCondicionesTrabajadorFromFormValue } from '../../../mappers/empleado-form.mapper';

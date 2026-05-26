@@ -5,8 +5,8 @@ import { LucideAngularModule } from 'lucide-angular';
 
 import { PeriodoActivoService } from '../core/services/periodo-activo.service';
 import { bindShellPageContext } from '../layout/shell-page-context.binding';
-import { BadgeComponent } from '../shared/components/ui/badge.component';
-import { CardComponent, CardContentComponent, CardHeaderComponent } from '../shared/components/ui/card.component';
+import { BadgeComponent } from '../shared/components/ui/primitives/badge.component';
+import { CardComponent, CardContentComponent, CardHeaderComponent } from '../shared/components/ui/primitives/card.component';
 
 @Component({
   selector: 'app-dashboard-page',

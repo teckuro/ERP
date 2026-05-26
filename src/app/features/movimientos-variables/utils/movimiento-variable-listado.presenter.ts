@@ -1,4 +1,4 @@
-import type { DataGridColumn, DataGridFilter } from '../../../shared/components/ui/data-grid.component';
+import type { DataGridColumn, DataGridFilter } from '../../../shared/components/ui/data-grid';
 import type { EmpleadoListado } from '../../empleados/models/empleado-listado.model';
 import type { ConceptoListado } from '../../haberes-descuentos/models/haber-descuento-asignacion.model';
 import type {

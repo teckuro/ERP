@@ -21,8 +21,8 @@ import type {
   ProcesoMensualPreNominaPeriodo,
   ProcesoMensualPrevalidacion,
 } from '../../../models/proceso-mensual.model';
-import { type RecordBreadcrumbItem } from '../../../../../shared/components/ui/record-breadcrumb.component';
-import type { DataGridColumn } from '../../../../../shared/components/ui/data-grid.component';
+import { type RecordBreadcrumbItem } from '../../../../../shared/components/ui/layout/record-breadcrumb.component';
+import type { DataGridColumn } from '../../../../../shared/components/ui/data-grid';
 import type { ActaOperativaPeriodoViewModel } from '../../../models/acta-operativa-periodo.model';
 import { ProcesoMensualPeriodoStore } from '../store/proceso-mensual-periodo.store';
 import { formatoFechaHoraNomina, formatoMontoNomina, horaCortaNomina } from '../utils/proceso-mensual-presentacion.formato';

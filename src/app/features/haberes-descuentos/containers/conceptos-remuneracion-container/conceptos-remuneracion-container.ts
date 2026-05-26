@@ -9,9 +9,9 @@ import {
   DataGridColumn,
   DataGridComponent,
   DataGridFilter,
-} from '../../../../shared/components/ui/data-grid.component';
-import { MessageBoxComponent, MessageBoxVariant } from '../../../../shared/components/ui/message-box.component';
-import { SearchSelectComponent, SearchSelectOption } from '../../../../shared/components/ui/search-select.component';
+} from '../../../../shared/components/ui/data-grid';
+import { MessageBoxComponent, MessageBoxVariant } from '../../../../shared/components/ui/feedback/message-box/message-box.component';
+import { SearchSelectComponent, SearchSelectOption } from '../../../../shared/components/ui/forms/search-select.component';
 import { HaberesDescuentosService } from '../../services/haberes-descuentos.service';
 import {
   CatalogoLreOpcion,

@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, Input } from '@angular/core';
 
-import { DataGridColumn, DataGridComponent, DataGridFilter } from '../../../../shared/components/ui/data-grid.component';
+import { DataGridColumn, DataGridComponent, DataGridFilter } from '../../../../shared/components/ui/data-grid';
 import { ParametroGeneral } from '../../models/parametro-general.model';
 
 @Component({

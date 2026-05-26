@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
-import { MessageBoxComponent } from '../../../../../../shared/components/ui/message-box.component';
+import { MessageBoxComponent } from '../../../../../../shared/components/ui/feedback/message-box/message-box.component';
 import { ProcesoMensualDetalleModalComponent } from '../proceso-mensual-detalle-modal/proceso-mensual-detalle-modal.component';
 import { ProcesoMensualInformacionModalComponent } from '../proceso-mensual-informacion-modal/proceso-mensual-informacion-modal.component';
 import { ProcesoMensualPresentacionFacade } from '../../facade/proceso-mensual-presentacion.facade';

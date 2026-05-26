@@ -21,21 +21,21 @@ import {
   CardComponent,
   CardContentComponent,
   CardHeaderComponent,
-} from '../../../../shared/components/ui/card.component';
+} from '../../../../shared/components/ui/primitives/card.component';
 import {
   DataGridCellDirective,
   DataGridComponent,
-} from '../../../../shared/components/ui/data-grid.component';
-import { ButtonComponent } from '../../../../shared/components/ui/button.component';
+} from '../../../../shared/components/ui/data-grid';
+import { ButtonComponent } from '../../../../shared/components/ui/primitives/button.component';
 import {
   MessageBoxComponent,
   MessageBoxVariant,
-} from '../../../../shared/components/ui/message-box.component';
+} from '../../../../shared/components/ui/feedback/message-box/message-box.component';
 import { bindShellPageContext } from '../../../../layout/shell-page-context.binding';
 import {
   SearchSelectComponent,
   SearchSelectOption,
-} from '../../../../shared/components/ui/search-select.component';
+} from '../../../../shared/components/ui/forms/search-select.component';
 import { PeriodoActivoService, primerDiaSqlDesdeYm } from '../../../../core/services/periodo-activo.service';
 import { HaberesDescuentosService } from '../../services/haberes-descuentos.service';
 import {

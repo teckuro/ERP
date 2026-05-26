@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 import {
   SearchSelectComponent,
   SearchSelectOption,
-} from '../../../../shared/components/ui/search-select.component';
+} from '../../../../shared/components/ui/forms/search-select.component';
 import type { HaberDescuentoTipoValor } from '../../models/haber-descuento-asignacion.model';
 import type {
   TrabajadorResumenModal,

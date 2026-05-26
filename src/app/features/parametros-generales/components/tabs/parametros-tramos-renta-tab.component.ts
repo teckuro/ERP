@@ -4,7 +4,7 @@ import {
   DataGridColumn,
   DataGridComponent,
   DataGridFilter,
-} from '../../../../shared/components/ui/data-grid.component';
+} from '../../../../shared/components/ui/data-grid';
 import { TablaImpuestoUnicoParametro, TramoImpuestoParametro } from '../../models/parametro-general.model';
 import { ParametrosInnerTabBarComponent } from '../parametros-inner-tab-bar.component';
 

@@ -7,7 +7,7 @@ import {
   SearchSelectComponent,
   SearchSelectOption,
   SearchSelectValue,
-} from '../../../../shared/components/ui/search-select.component';
+} from '../../../../shared/components/ui/forms/search-select.component';
 import { ParametrosGeneralesCatalogos } from '../../models/parametro-general.model';
 
 @Component({

@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
 
-import { FieldHelpTipComponent } from '../../../../shared/components/ui/field-help-tip.component';
+import { FieldHelpTipComponent } from '../../../../shared/components/ui/forms/field-help-tip.component';
 
 /** Alias de compatibilidad: usa el tooltip compartido con posicionamiento dinámico. */
 @Component({

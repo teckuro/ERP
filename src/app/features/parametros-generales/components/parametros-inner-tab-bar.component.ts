@@ -5,7 +5,7 @@ import {
   SearchSelectComponent,
   SearchSelectOption,
   SearchSelectValue,
-} from '../../../shared/components/ui/search-select.component';
+} from '../../../shared/components/ui/forms/search-select.component';
 
 export interface ParametrosInnerTabItem {
   id: string;

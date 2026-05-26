@@ -1,4 +1,4 @@
-import type { MessageBoxSection, MessageBoxVariant } from '../../../shared/components/ui/message-box.component';
+import type { MessageBoxSection, MessageBoxVariant } from '../../../shared/components/ui/feedback/message-box/message-box.component';
 import type { EmpleadoFormTabId } from './empleado-form.manifest';
 import type { CondicionTrabajadorControlName } from './empleado-perfil-laboral.model';
 import type { FaltanteFichaEmpleado } from './ficha-empleado.vm';

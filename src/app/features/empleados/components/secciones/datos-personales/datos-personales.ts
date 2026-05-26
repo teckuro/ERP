@@ -7,12 +7,12 @@ import {
   EmpleadoStringCatalogOption,
 } from '../../../models/empleado-catalogos.model';
 import { EmpleadoSexo, TipoEstadoCivil } from '../../../models/empleado.model';
-import { CalendarInputComponent } from '../../../../../shared/components/ui/calendar-input.component';
-import { CardComponent } from '../../../../../shared/components/ui/card.component';
+import { CalendarInputComponent } from '../../../../../shared/components/ui/forms/calendar-input/calendar-input.component';
+import { CardComponent } from '../../../../../shared/components/ui/primitives/card.component';
 import {
   SearchSelectComponent,
   type SearchSelectOption,
-} from '../../../../../shared/components/ui/search-select.component';
+} from '../../../../../shared/components/ui/forms/search-select.component';
 import { withEmptyNumberCatalog, withEmptyStringCatalog } from '../../../utils/empleado-select-options';
 import { EmpleadoFieldRequiredComponent } from '../../empleado-field-required/empleado-field-required.component';
 

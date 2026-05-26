@@ -10,8 +10,8 @@ import {
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ReactiveFormsModule } from '@angular/forms';
-import { CardComponent, CardContentComponent } from '../../../../shared/components/ui/card.component';
-import { MessageBoxComponent } from '../../../../shared/components/ui/message-box.component';
+import { CardComponent, CardContentComponent } from '../../../../shared/components/ui/primitives/card.component';
+import { MessageBoxComponent } from '../../../../shared/components/ui/feedback/message-box/message-box.component';
 import { ParametrosWorkspacePeriodoBandaComponent } from '../../components/parametros-workspace-periodo-banda/parametros-workspace-periodo-banda.component';
 import { bindShellPageContext } from '../../../../layout/shell-page-context.binding';
 import { ParametrosWorkspaceTabsPanelComponent } from '../parametros-workspace-tabs-panel/parametros-workspace-tabs-panel.component';

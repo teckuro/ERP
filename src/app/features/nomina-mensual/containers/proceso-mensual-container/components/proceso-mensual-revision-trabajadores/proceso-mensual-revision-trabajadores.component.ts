@@ -4,7 +4,7 @@ import { CommonModule } from '@angular/common';
 import {
   DataGridCellDirective,
   DataGridComponent,
-} from '../../../../../../shared/components/ui/data-grid.component';
+} from '../../../../../../shared/components/ui/data-grid';
 import type { NominaDetalleMensualMovimientoRow } from '../../models/proceso-mensual-container.vm';
 import type { NominaMasivaFila } from '../../../../rules/proceso-mensual-masivo-layout.rules';
 import type { IncidenciaPeriodo } from '../../../../rules/proceso-mensual-incidencias-periodo.rules';

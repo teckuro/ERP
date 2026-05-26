@@ -13,20 +13,20 @@ import { LucideAngularModule } from 'lucide-angular';
 import { Plus, RefreshCw } from 'lucide-angular/src/icons';
 
 import { PeriodoActivoService } from '../../../../core/services/periodo-activo.service';
-import { ButtonComponent } from '../../../../shared/components/ui/button.component';
+import { ButtonComponent } from '../../../../shared/components/ui/primitives/button.component';
 import {
   DataGridCellDirective,
   DataGridComponent,
-} from '../../../../shared/components/ui/data-grid.component';
+} from '../../../../shared/components/ui/data-grid';
 import {
   MessageBoxComponent,
   MessageBoxVariant,
-} from '../../../../shared/components/ui/message-box.component';
+} from '../../../../shared/components/ui/feedback/message-box/message-box.component';
 import {
   RecordBreadcrumbComponent,
   RecordBreadcrumbItem,
-} from '../../../../shared/components/ui/record-breadcrumb.component';
-import { SearchSelectOption } from '../../../../shared/components/ui/search-select.component';
+} from '../../../../shared/components/ui/layout/record-breadcrumb.component';
+import { SearchSelectOption } from '../../../../shared/components/ui/forms/search-select.component';
 import { EmpleadoListado } from '../../../empleados/models/empleado-listado.model';
 import { EmpleadosService } from '../../../empleados/services/empleados.service';
 import { ConceptoListado } from '../../../haberes-descuentos/models/haber-descuento-asignacion.model';

@@ -1,6 +1,6 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 
-import { StepperComponent, StepperItem } from '../../../../shared/components/ui/stepper.component';
+import { StepperComponent, StepperItem } from '../../../../shared/components/ui/layout/stepper.component';
 
 @Component({
   selector: 'app-tabs-empleado',

@@ -2,8 +2,8 @@ import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { LucideAngularModule } from 'lucide-angular';
-import { CardComponent, CardContentComponent } from '../shared/components/ui/card.component';
-import { ButtonComponent } from '../shared/components/ui/button.component';
+import { CardComponent, CardContentComponent } from '../shared/components/ui/primitives/card.component';
+import { ButtonComponent } from '../shared/components/ui/primitives/button.component';
 import { PeriodoActivoService } from '../core/services/periodo-activo.service';
 
 @Component({

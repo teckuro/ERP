@@ -3,11 +3,11 @@ import { ReactiveFormsModule, Validators } from '@angular/forms';
 
 import { EmpleadoCatalogOption } from '../../../models/empleado-catalogos.model';
 import { ContactoFormGroup } from '../../../models/empleado-form.model';
-import { CardComponent } from '../../../../../shared/components/ui/card.component';
+import { CardComponent } from '../../../../../shared/components/ui/primitives/card.component';
 import {
   SearchSelectComponent,
   type SearchSelectOption,
-} from '../../../../../shared/components/ui/search-select.component';
+} from '../../../../../shared/components/ui/forms/search-select.component';
 import { withEmptyNumberCatalog } from '../../../utils/empleado-select-options';
 import { EmpleadoFieldRequiredComponent } from '../../empleado-field-required/empleado-field-required.component';
 

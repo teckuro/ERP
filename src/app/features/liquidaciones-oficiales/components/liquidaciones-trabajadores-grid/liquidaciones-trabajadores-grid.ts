@@ -1,8 +1,8 @@
 import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
-import { BadgeComponent } from '../../../../shared/components/ui/badge.component';
-import { ButtonComponent } from '../../../../shared/components/ui/button.component';
+import { BadgeComponent } from '../../../../shared/components/ui/primitives/badge.component';
+import { ButtonComponent } from '../../../../shared/components/ui/primitives/button.component';
 import type { LiquidacionTrabajador } from '../../models/liquidacion-oficial.model';
 
 @Component({

@@ -8,7 +8,7 @@ import { EmpleadosService } from '../../services/empleados.service';
 import {
   DataGridBulkActionEvent,
   DataGridBulkActionResult,
-} from '../../../../shared/components/ui/data-grid.component';
+} from '../../../../shared/components/ui/data-grid';
 @Component({
   selector: 'app-listado-empleados',
   imports: [CommonModule, TablaEmpleadosComponent],

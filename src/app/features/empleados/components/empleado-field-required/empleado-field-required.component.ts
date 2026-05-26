@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
 
-import { FieldHelpTipComponent } from '../../../../shared/components/ui/field-help-tip.component';
+import { FieldHelpTipComponent } from '../../../../shared/components/ui/forms/field-help-tip.component';
 
 /** Marcador compacto de campo obligatorio (icono + tooltip), mismo slot que el asterisco anterior. */
 @Component({

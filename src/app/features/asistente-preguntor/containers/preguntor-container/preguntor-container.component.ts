@@ -13,7 +13,7 @@ import {
   AsistentePreguntorService,
 } from '../../../../core/services/asistente-preguntor.service';
 import { bindShellPageContext } from '../../../../layout/shell-page-context.binding';
-import { ButtonComponent } from '../../../../shared/components/ui/button.component';
+import { ButtonComponent } from '../../../../shared/components/ui/primitives/button.component';
 
 @Component({
   selector: 'app-preguntor-container',

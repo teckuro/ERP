@@ -1,4 +1,4 @@
-import type { MessageBoxSection } from '../../../shared/components/ui/message-box.types';
+import type { MessageBoxSection } from '../../../shared/components/ui/feedback/message-box/message-box.types';
 import type {
   ItemCampoModalAccionAvanzada,
   ReglaValidacionEvaluada,

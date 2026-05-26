@@ -5,7 +5,7 @@ import {
   DataGridColumn,
   DataGridComponent,
   DataGridFilter,
-} from '../../../../shared/components/ui/data-grid.component';
+} from '../../../../shared/components/ui/data-grid';
 import {
   CcafEntidad,
   Ley16744Parametro,

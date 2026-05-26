@@ -18,12 +18,12 @@ import {
   TipoGratificacion,
 } from '../../../models/empleado.model';
 import { EmpleadoEstado } from '../../../models/empleado-listado.model';
-import { CalendarInputComponent } from '../../../../../shared/components/ui/calendar-input.component';
-import { CardComponent } from '../../../../../shared/components/ui/card.component';
+import { CalendarInputComponent } from '../../../../../shared/components/ui/forms/calendar-input/calendar-input.component';
+import { CardComponent } from '../../../../../shared/components/ui/primitives/card.component';
 import {
   SearchSelectComponent,
   type SearchSelectOption,
-} from '../../../../../shared/components/ui/search-select.component';
+} from '../../../../../shared/components/ui/forms/search-select.component';
 import { withEmptyNumberCatalog, withEmptyStringCatalog } from '../../../utils/empleado-select-options';
 import {
   buscarTipoTrabajadorBase,
