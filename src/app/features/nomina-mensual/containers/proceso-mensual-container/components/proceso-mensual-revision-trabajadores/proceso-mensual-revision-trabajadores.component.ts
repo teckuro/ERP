@@ -19,7 +19,11 @@ export type DetalleTrabajadorTab = 'resumen' | 'que_hacer';
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CommonModule, DataGridComponent, DataGridCellDirective],
   templateUrl: './proceso-mensual-revision-trabajadores.component.html',
-  styleUrls: ['../../payroll-segment-nav.css', './proceso-mensual-revision-trabajadores.component.css'],
+  styleUrls: [
+    '../../payroll-segment-nav.css',
+    '../../payroll-operativa-empty.css',
+    './proceso-mensual-revision-trabajadores.component.css',
+  ],
 })
 export class ProcesoMensualRevisionTrabajadoresComponent {
   readonly facade = inject(ProcesoMensualPresentacionFacade);

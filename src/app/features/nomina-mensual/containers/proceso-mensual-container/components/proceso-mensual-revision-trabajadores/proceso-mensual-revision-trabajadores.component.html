@@ -311,19 +311,29 @@
       </aside>
     </div>
   } @else {
-    <section class="payroll-revision-trabajadores__empty-state" aria-label="Nómina mensual sin datos">
-      <div class="payroll-revision-trabajadores__empty-visual" aria-hidden="true">
-        <span></span>
+    <section
+      class="payroll-revision-trabajadores__empty-state payroll-operativa-empty"
+      aria-label="Nómina mensual sin datos"
+    >
+      <div class="payroll-operativa-empty__main">
+        <div class="payroll-revision-trabajadores__empty-visual" aria-hidden="true">
+          <span></span>
+        </div>
+        <div class="payroll-revision-trabajadores__empty-copy">
+          <span class="payroll-revision-trabajadores__empty-kicker">Sin datos del período</span>
+          <h3>No hay trabajadores considerados para esta nómina mensual</h3>
+          <p>
+            Genere o actualice la base del período para poblar el listado de revisión. Mientras tanto,
+            puede validar parámetros y revisar movimientos aprobados.
+          </p>
+        </div>
       </div>
-      <div class="payroll-revision-trabajadores__empty-copy">
-        <span class="payroll-revision-trabajadores__empty-kicker">Sin datos del período</span>
-        <h3>No hay trabajadores considerados para esta nómina mensual</h3>
-        <p>
-          Genere o actualice la base del período para poblar el listado de revisión. Mientras tanto,
-          puede validar parámetros y revisar movimientos aprobados.
-        </p>
+      <div class="payroll-operativa-empty__cta">
+        <button type="button" class="payroll-operativa-empty__btn" (click)="f.ejecutarAccionValidacion('validarPeriodo')">
+          Verificar período
+        </button>
       </div>
-      <dl class="payroll-revision-trabajadores__empty-metrics" aria-label="Resumen disponible">
+      <dl class="payroll-revision-trabajadores__empty-metrics payroll-operativa-empty__metrics" aria-label="Resumen disponible">
         <div>
           <dt>Listos para nómina</dt>
           <dd>{{ f.dashboardResumen().trabajadoresAptos ?? 0 }}</dd>
@@ -337,16 +347,13 @@
           <dd>{{ f.dashboardResumen().asignacionesAplicables ?? 0 }}</dd>
         </div>
       </dl>
-      <div class="payroll-revision-trabajadores__empty-actions">
-        <button type="button" class="payroll-revision-trabajadores__empty-action" (click)="f.ejecutarAccionValidacion('validarPeriodo')">
-          Verificar período
-        </button>
-        @if (f.puedeGenerarPreNomina()) {
+      @if (f.puedeGenerarPreNomina()) {
+        <div class="payroll-revision-trabajadores__empty-foot payroll-operativa-empty__foot">
           <button type="button" class="payroll-revision-trabajadores__empty-link" (click)="f.generarPreNomina()">
             Generar nómina
           </button>
-        }
-      </div>
+        </div>
+      }
     </section>
   }
 </section>

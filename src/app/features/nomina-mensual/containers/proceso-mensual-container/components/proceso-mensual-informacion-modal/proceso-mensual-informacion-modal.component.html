@@ -11,6 +11,7 @@
   <div
     class="payroll-operational-detail-modal payroll-verificacion-periodo-modal"
     [class.payroll-verificacion-periodo-modal--con-resumen]="!!resumen"
+    [class.payroll-verificacion-periodo-modal--expandido]="modalExpandido(info)"
     [class.payroll-verificacion-periodo-modal--danger]="info.tone === 'danger'"
     [class.payroll-verificacion-periodo-modal--warning]="info.tone === 'warning'"
     [class.payroll-verificacion-periodo-modal--success]="info.tone === 'success'"
@@ -56,6 +57,42 @@
     }
 
     <div class="payroll-operational-detail-modal__body payroll-verificacion-periodo-modal__body">
+      @if (!info.trabajadoresPendientes?.length) {
+        @let dash = f.dashboardResumen();
+        <section class="payroll-verificacion-periodo-modal__contexto" aria-label="Contexto del período">
+          <dl class="payroll-verificacion-periodo-modal__contexto-grid">
+            <div>
+              <dt>Período</dt>
+              <dd>{{ f.periodoActivo.etiqueta() }}</dd>
+            </div>
+            <div>
+              <dt>Trabajadores aptos</dt>
+              <dd>{{ dash.trabajadoresAptos ?? 0 }}</dd>
+            </div>
+            <div>
+              <dt>Movimientos del mes</dt>
+              <dd>
+                @if ((dash.movimientosAprobados ?? 0) > 0) {
+                  {{ dash.movimientosAprobados }} considerados
+                } @else {
+                  sin registros
+                }
+              </dd>
+            </div>
+            <div>
+              <dt>Recurrentes aplicables</dt>
+              <dd>
+                @if ((dash.asignacionesAplicables ?? 0) > 0) {
+                  {{ dash.asignacionesAplicables }} consideradas
+                } @else {
+                  sin registros
+                }
+              </dd>
+            </div>
+          </dl>
+        </section>
+      }
+
       @if (info.puntos?.length) {
         <section class="payroll-verificacion-periodo-modal__bloque">
           <h3 class="payroll-verificacion-periodo-modal__bloque-titulo">Qué revisar</h3>
@@ -70,11 +107,31 @@
       @for (seccion of info.secciones ?? []; track seccion.titulo) {
         <section class="payroll-verificacion-periodo-modal__bloque">
           <h3 class="payroll-verificacion-periodo-modal__bloque-titulo">{{ seccion.titulo }}</h3>
-          <ul class="payroll-verificacion-periodo-modal__lista">
-            @for (item of seccion.items; track item) {
-              <li>{{ item }}</li>
-            }
-          </ul>
+          @if (seccion.detalles?.length) {
+            <div class="payroll-verificacion-periodo-modal__detalles">
+              @for (detalle of seccion.detalles; track detalle.titulo + detalle.descripcion) {
+                <article class="payroll-verificacion-periodo-modal__detalle">
+                  <h4>{{ detalle.titulo }}</h4>
+                  <p>{{ detalle.descripcion }}</p>
+                  @if (detalle.accionLabel && detalle.ruta) {
+                    <button
+                      type="button"
+                      class="payroll-verificacion-periodo-modal__detalle-accion"
+                      (click)="irARevisionDesdeAdvertencia(detalle)"
+                    >
+                      {{ detalle.accionLabel }}
+                    </button>
+                  }
+                </article>
+              }
+            </div>
+          } @else {
+            <ul class="payroll-verificacion-periodo-modal__lista">
+              @for (item of seccion.items; track item) {
+                <li>{{ item }}</li>
+              }
+            </ul>
+          }
         </section>
       }
 

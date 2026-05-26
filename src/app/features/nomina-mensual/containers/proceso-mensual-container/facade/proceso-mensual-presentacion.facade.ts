@@ -678,7 +678,7 @@ export class ProcesoMensualPresentacionFacade {
           ? undefined
           : ['Continúe con la revisión de trabajadores o genere la nómina mensual.'],
         accionPrincipal: { label: 'Ver revisión', destino: 'trabajadores' },
-        accionSecundaria: { label: 'Abrir parámetros', destino: 'parametros' },
+        accionSecundaria: { label: 'Abrir parámetros', destino: 'parametros_app' },
       });
       return;
     }
@@ -693,7 +693,7 @@ export class ProcesoMensualPresentacionFacade {
       puntos: faltantes.length
         ? undefined
         : ['Complete los parámetros mensuales antes de continuar.'],
-      accionPrincipal: { label: 'Abrir parámetros', destino: 'parametros' },
+      accionPrincipal: { label: 'Abrir parámetros', destino: 'parametros_app' },
     });
   }
 
@@ -1855,6 +1855,10 @@ export class ProcesoMensualPresentacionFacade {
     if (destino === 'cerrar') return;
     if (destino === 'generar_nomina') {
       this.ejecutarAccionValidacion('generarBase');
+      return;
+    }
+    if (destino === 'parametros_app') {
+      this.ejecutarAccionCorreccion({ label: 'Abrir parámetros', kind: 'ruta', ruta: '/parametros' });
       return;
     }
     if (destino === 'trabajadores_fichas') {

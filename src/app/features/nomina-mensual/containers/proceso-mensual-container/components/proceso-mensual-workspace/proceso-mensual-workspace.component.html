@@ -313,7 +313,11 @@
         }
       </nav>
 
-      <section class="payroll-tab-panel" aria-live="polite">
+      <section
+        class="payroll-tab-panel"
+        [class.payroll-tab-panel--detalle]="f.nominaWorkspaceTabVisible() === 'detalle_mensual'"
+        aria-live="polite"
+      >
         @let tabSummary = f.nominaWorkspaceTabVisibleSummary();
         @if (tabSummary) {
           <header
@@ -340,33 +344,35 @@
         }
         @switch (f.nominaWorkspaceTabVisible()) {
           @case ('detalle_mensual') {
-            <div class="payroll-detalle-mensual-toolbar">
-              <nav
-                class="payroll-segment-nav payroll-segment-nav--detalle payroll-detalle-mensual-toolbar__filtros"
-                aria-label="Filtros del detalle mensual"
-              >
-                @for (filtro of f.nominaDetalleMensualFiltros; track filtro.id) {
+            <section class="payroll-detalle-mensual" aria-label="Vistas del detalle mensual">
+              <header class="payroll-detalle-mensual__head">
+                <nav
+                  class="payroll-segment-nav payroll-segment-nav--detalle payroll-detalle-mensual__nav"
+                  aria-label="Filtros del detalle mensual"
+                >
+                  @for (filtro of f.nominaDetalleMensualFiltros; track filtro.id) {
+                    <button
+                      type="button"
+                      [class]="claseDetalleFiltro(filtro.id)"
+                      (click)="f.seleccionarNominaDetalleMensualVista(filtro.id)"
+                    >
+                      {{ filtro.label }}
+                    </button>
+                  }
+                </nav>
+                @if (f.mostrarResumenAmpliadoEnRail()) {
                   <button
                     type="button"
-                    [class]="claseDetalleFiltro(filtro.id)"
-                    (click)="f.seleccionarNominaDetalleMensualVista(filtro.id)"
+                    class="payroll-detalle-mensual__resumen payroll-detalle-mensual-toolbar__resumen"
+                    aria-label="Resumen ampliado del período"
+                    (click)="f.abrirDetalleOperativo('resumen')"
                   >
-                    {{ filtro.label }}
+                    <lucide-icon name="file-text" aria-hidden="true" />
+                    <span>Resumen ampliado</span>
                   </button>
                 }
-              </nav>
-              @if (f.mostrarResumenAmpliadoEnRail()) {
-                <button
-                  type="button"
-                  class="payroll-detalle-mensual-toolbar__resumen"
-                  aria-label="Resumen ampliado del período"
-                  (click)="f.abrirDetalleOperativo('resumen')"
-                >
-                  <lucide-icon name="file-text" aria-hidden="true" />
-                  <span>Resumen ampliado</span>
-                </button>
-              }
-            </div>
+              </header>
+              <div class="payroll-detalle-mensual__body">
             @switch (f.nominaDetalleMensualVista()) {
               @case ('todos') {
                 @let situacion = f.nominaDetalleMensualSituacion();
@@ -472,18 +478,22 @@
                       </details>
                     }
                   } @else {
-                    <div class="payroll-detalle-situacion__empty">
-                      <p class="payroll-detalle-situacion__empty-titulo">Sin alertas del período</p>
-                      <p class="payroll-detalle-situacion__empty-desc">
-                        No hay bloqueos ni advertencias visibles. Revise trabajadores y movimientos en sus pestañas.
-                      </p>
-                      <button
-                        type="button"
-                        class="payroll-modal-secondary"
-                        (click)="f.seleccionarNominaDetalleMensualVista('trabajadores')"
-                      >
-                        Ir a trabajadores
-                      </button>
+                    <div class="payroll-detalle-situacion__empty payroll-operativa-empty">
+                      <div class="payroll-operativa-empty__main payroll-detalle-situacion__empty-copy">
+                        <p class="payroll-detalle-situacion__empty-titulo">Sin alertas del período</p>
+                        <p class="payroll-detalle-situacion__empty-desc">
+                          No hay bloqueos ni advertencias visibles. Revise trabajadores y movimientos en sus pestañas.
+                        </p>
+                      </div>
+                      <div class="payroll-operativa-empty__cta">
+                        <button
+                          type="button"
+                          class="payroll-operativa-empty__btn"
+                          (click)="f.seleccionarNominaDetalleMensualVista('trabajadores')"
+                        >
+                          Ir a trabajadores
+                        </button>
+                      </div>
                     </div>
                   }
                 </section>
@@ -503,6 +513,8 @@
                     [columns]="f.detalleMensualExpedienteColumns"
                     [rows]="f.nominaDetalleMensualLiquidacionRows()"
                     headerCountNoun="liquidaciones"
+                    gridHeight="100%"
+                    cardClassName="payroll-detalle-mensual__grid"
                     emptyTitle="Sin liquidaciones"
                     emptyDescription="Confirme la nómina para habilitar liquidaciones oficiales."
                   />
@@ -514,6 +526,8 @@
                   [columns]="f.detalleMensualPendienteColumns"
                   [rows]="f.nominaDetalleMensualPendienteRows()"
                   headerCountNoun="pendientes"
+                  gridHeight="100%"
+                  cardClassName="payroll-detalle-mensual__grid"
                   emptyTitle="Sin pendientes visibles"
                   emptyDescription="No hay bloqueos ni revisiones pendientes en este período."
                 >
@@ -534,6 +548,8 @@
                 </app-data-grid>
               }
             }
+              </div>
+            </section>
           }
           @case ('historial') {
             <app-data-grid

@@ -83,6 +83,7 @@ export interface ConfirmacionProcesoMensualView {
 
 export type InformacionPeriodoDestino =
   | 'parametros'
+  | 'parametros_app'
   | 'trabajadores'
   | 'trabajadores_fichas'
   | 'movimientos'
@@ -107,12 +108,23 @@ export interface InformacionPeriodoResumenVerificacion {
   advertencias: number;
 }
 
+export interface InformacionPeriodoSeccionDetalleView {
+  titulo: string;
+  descripcion: string;
+  accionLabel?: string;
+  ruta?: string;
+}
+
 export interface InformacionPeriodoView {
   tone: 'info' | 'warning' | 'danger' | 'success';
   titulo: string;
   bajada?: string;
   puntos?: string[];
-  secciones?: Array<{ titulo: string; items: string[] }>;
+  secciones?: Array<{
+    titulo: string;
+    items: string[];
+    detalles?: InformacionPeriodoSeccionDetalleView[];
+  }>;
   resumenVerificacion?: InformacionPeriodoResumenVerificacion;
   trabajadoresPendientes?: TrabajadorPendienteInformacionPeriodoView[];
   accionPrincipal?: {

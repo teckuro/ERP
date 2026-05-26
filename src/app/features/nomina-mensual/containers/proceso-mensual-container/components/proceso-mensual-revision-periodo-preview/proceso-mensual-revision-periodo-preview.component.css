@@ -11,9 +11,9 @@
 .payroll-revision-preview--panel {
   gap: 0;
   overflow: hidden;
-  border: 1px solid var(--erp-border, #d8d3c7);
+  border: 1px solid var(--erp-border, #dadfd7);
   border-radius: 6px;
-  background: var(--erp-surface, #fffdf8);
+  background: var(--erp-surface, #ffffff);
 }
 
 .payroll-revision-preview__head {
@@ -24,8 +24,8 @@
 
 .payroll-revision-preview--panel .payroll-revision-preview__head {
   padding: 12px 14px;
-  border-bottom: 1px solid var(--erp-border, #d8d3c7);
-  background: var(--erp-surface-soft, #f8f5ec);
+  border-bottom: 1px solid var(--erp-border, #dadfd7);
+  background: var(--erp-surface-soft, #fafaf7);
 }
 
 .payroll-revision-preview__title {
@@ -34,21 +34,21 @@
   font-weight: 700;
   letter-spacing: 0.04em;
   text-transform: uppercase;
-  color: var(--erp-muted, #6f6a5f);
+  color: var(--erp-muted, #647084);
 }
 
 .payroll-revision-preview__subtitle {
   margin: 0;
   font-size: 0.8125rem;
   font-weight: 650;
-  color: var(--erp-ink, #201f1b);
+  color: var(--erp-ink, #243b53);
 }
 
 .payroll-revision-preview__bajada {
   margin: 0;
   font-size: 0.75rem;
   line-height: 1.4;
-  color: var(--erp-muted, #6f6a5f);
+  color: var(--erp-muted, #647084);
 }
 
 .payroll-revision-preview__metricas {
@@ -72,9 +72,9 @@
   flex-direction: column;
   gap: 2px;
   padding: 8px 10px;
-  border: 1px solid var(--erp-border, #d8d3c7);
+  border: 1px solid var(--erp-border, #dadfd7);
   border-radius: 4px;
-  background: var(--erp-surface, #fffdf8);
+  background: var(--erp-surface, #ffffff);
 }
 
 .payroll-revision-preview__metrica--destacada {
@@ -86,14 +86,14 @@
   font-size: 0.625rem;
   font-weight: 600;
   text-transform: uppercase;
-  color: var(--erp-muted, #6f6a5f);
+  color: var(--erp-muted, #647084);
 }
 
 .payroll-revision-preview__metrica-v {
   font-size: 1.1rem;
   font-weight: 700;
   line-height: 1.1;
-  color: var(--erp-ink, #201f1b);
+  color: var(--erp-ink, #243b53);
 }
 
 .payroll-revision-preview__ejes {
@@ -110,9 +110,9 @@
   grid-template-columns: minmax(5.5rem, 7rem) 1fr;
   gap: 0.35rem 0.5rem;
   padding: 7px 9px;
-  border: 1px solid var(--erp-border, #d8d3c7);
+  border: 1px solid var(--erp-border, #dadfd7);
   border-radius: 4px;
-  background: var(--erp-surface, #fffdf8);
+  background: var(--erp-surface, #ffffff);
   font-size: 0.75rem;
 }
 
@@ -137,18 +137,18 @@
 
 .payroll-revision-preview__eje-label {
   font-weight: 650;
-  color: var(--erp-ink, #201f1b);
+  color: var(--erp-ink, #243b53);
 }
 
 .payroll-revision-preview__eje-detalle {
-  color: var(--erp-muted, #6f6a5f);
+  color: var(--erp-muted, #647084);
 }
 
 .payroll-revision-preview__bloque-title {
   margin: 0 0 4px;
   font-size: 0.75rem;
   font-weight: 650;
-  color: var(--erp-ink, #201f1b);
+  color: var(--erp-ink, #243b53);
 }
 
 .payroll-revision-preview__lista {
@@ -167,9 +167,9 @@
   gap: 2px;
   width: 100%;
   padding: 5px 8px;
-  border: 1px solid var(--erp-border, #d8d3c7);
+  border: 1px solid var(--erp-border, #dadfd7);
   border-radius: 4px;
-  background: var(--erp-surface, #fffdf8);
+  background: var(--erp-surface, #ffffff);
   text-align: left;
   cursor: pointer;
   font: inherit;
@@ -183,19 +183,19 @@
 }
 
 .payroll-revision-preview__pendiente-btn:hover {
-  border-color: var(--erp-primary-border, #a8c4d4);
-  background: var(--erp-primary-soft, #edf5f9);
+  border-color: var(--erp-primary-border, #c5d0dc);
+  background: var(--erp-primary-soft, #eef1f5);
 }
 
 .payroll-revision-preview__pendiente-btn strong {
   font-size: 0.75rem;
   font-weight: 650;
-  color: var(--erp-ink, #201f1b);
+  color: var(--erp-ink, #243b53);
 }
 
 .payroll-revision-preview__pendiente-btn span {
   font-size: 0.6875rem;
-  color: var(--erp-muted, #6f6a5f);
+  color: var(--erp-muted, #647084);
   line-height: 1.35;
 }
 
@@ -210,8 +210,8 @@
   flex-wrap: wrap;
   justify-content: flex-end;
   margin-top: 12px;
-  border-top: 1px solid var(--erp-border, #d8d3c7);
-  background: var(--erp-surface, #fffdf8);
+  border-top: 1px solid var(--erp-border, #dadfd7);
+  background: var(--erp-surface, #ffffff);
   padding: 10px 12px;
 }
 
@@ -228,15 +228,20 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  border: 1px solid var(--erp-primary-hover, #3f3b37);
-  background: var(--erp-primary-hover, #3f3b37);
+  border: 1px solid var(--erp-ink, #243b53);
+  background: var(--erp-ink, #243b53);
   color: #fff;
 }
 
+.payroll-modal-primary.payroll-revision-preview__accion--primary:hover {
+  border-color: var(--erp-ink-hover, #172033);
+  background: var(--erp-ink-hover, #172033);
+}
+
 .payroll-modal-secondary.payroll-revision-preview__accion--secondary {
-  border: 1px solid var(--erp-border-strong, #c8bda9);
-  background: var(--erp-surface, #fffdf8);
-  color: var(--erp-primary-hover, #3f3b37);
+  border: 1px solid var(--erp-border-strong, #c5cdc3);
+  background: var(--erp-surface, #ffffff);
+  color: var(--erp-ink, #243b53);
 }
 
 .payroll-revision-preview__accion:hover {

@@ -3,7 +3,10 @@ import { CommonModule } from '@angular/common';
 import { LucideAngularModule } from 'lucide-angular';
 import { X as XIcon } from 'lucide-angular/src/icons';
 
-import type { InformacionPeriodoView } from '../../models/proceso-mensual-container.vm';
+import type {
+  InformacionPeriodoSeccionDetalleView,
+  InformacionPeriodoView,
+} from '../../models/proceso-mensual-container.vm';
 import { ProcesoMensualPresentacionFacade } from '../../facade/proceso-mensual-presentacion.facade';
 
 @Component({
@@ -31,5 +34,19 @@ export class ProcesoMensualInformacionModalComponent {
       return '';
     }
     return info.accionSecundaria?.label ?? '';
+  }
+
+  modalExpandido(info: InformacionPeriodoView): boolean {
+    return (info.trabajadoresPendientes?.length ?? 0) > 0;
+  }
+
+  irARevisionDesdeAdvertencia(detalle: InformacionPeriodoSeccionDetalleView): void {
+    if (!detalle.ruta || !detalle.accionLabel) {
+      return;
+    }
+    this.facade.ejecutarAccionCorreccionDesdeModal({
+      ruta: detalle.ruta,
+      label: detalle.accionLabel,
+    });
   }
 }

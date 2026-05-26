@@ -138,6 +138,42 @@ describe('proceso-mensual-informacion-periodo.rules', () => {
     expect(vm?.accionPrincipal?.destino).toBe('parametros');
   });
 
+  it('con solo advertencias expone resumen y detalle accionable', () => {
+    const vm = buildInformacionPeriodoView({
+      errorEjecucion: null,
+      validacionCalculo: validacionBase({
+        estado: 'advertencias',
+        advertencias: [
+          {
+            codigo: 'ADV-001',
+            titulo: 'No hay movimientos del período registrados',
+            descripcion: 'Puedes continuar si este período no requiere bonos.',
+            severidad: 'advertencia',
+            accionLabel: 'Revisar movimientos',
+            ruta: '/remuneraciones/novedades-mensuales',
+          },
+        ],
+      }),
+      paraContinuar: [],
+      bloqueosOperativos: [],
+      advertenciasOperativas: [],
+      nominaFrame: 'sin_generar',
+      tienePrevalidacion: true,
+      puedeGenerarNomina: true,
+      tienePreNomina: false,
+      tieneCalculo: false,
+      tieneResultado: false,
+      trabajadoresPendientesRevision: [],
+      prevalidacionEstado: 'CON_ADVERTENCIAS',
+    });
+
+    expect(vm?.resumenVerificacion?.advertencias).toBe(1);
+    expect(vm?.resumenVerificacion?.criticos).toBe(0);
+    const advertencias = vm?.secciones?.find((s) => s.titulo === 'Advertencias');
+    expect(advertencias?.detalles?.[0].accionLabel).toBe('Revisar movimientos');
+    expect(advertencias?.detalles?.[0].ruta).toBe('/remuneraciones/novedades-mensuales');
+  });
+
   it('con trabajadores no aptos prioriza revisar fichas y lista nominal', () => {
     const vm = buildInformacionPeriodoView({
       errorEjecucion: null,

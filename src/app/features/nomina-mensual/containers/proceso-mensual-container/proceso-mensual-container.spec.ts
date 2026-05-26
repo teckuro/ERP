@@ -784,6 +784,22 @@ describe('ProcesoMensualContainer', () => {
       expect(navigateSpy).toHaveBeenCalledWith('/empleados/7');
     });
 
+    it('confirmar informacion con destino parametros_app navega a /parametros (no a pendientes)', () => {
+      const c = fixture.componentInstance;
+      const router = TestBed.inject(Router);
+      const navigateSpy = vi.spyOn(router, 'navigateByUrl').mockResolvedValue(true);
+      const accionSpy = vi.spyOn(c, 'ejecutarAccionCorreccion');
+
+      (c as any).ejecutarDestinoInformacionPeriodo('parametros_app');
+
+      expect(accionSpy).toHaveBeenCalled();
+      expect(navigateSpy).toHaveBeenCalled();
+      const url = String(navigateSpy.mock.calls[0]?.[0] ?? '');
+      expect(url.startsWith('/parametros?')).toBe(true);
+      expect(url).toContain('returnTo=');
+      expect(url).toContain('periodo=');
+    });
+
     it('tras error de validacion abre informacion y oculta banner crudo', async () => {
       ejecutarPrevalidaciones.mockRejectedValueOnce(new Error('rpc_validar_periodo timeout'));
       const c = fixture.componentInstance;
@@ -1247,7 +1263,6 @@ describe('ProcesoMensualContainer', () => {
     it('cadena feliz: verificar → generar → calcular → guardar → aprobar invoca servicios en orden', async () => {
       ejecutarPrevalidaciones.mockResolvedValue(prevalidacionLista());
       generarPreNominaPeriodo.mockResolvedValue(baseNominaLista());
-      generarCalculoPeriodo.mockResolvedValue(calculoConObservacionesYOmitidos());
       const localFixture = await montarContainer();
       const c = localFixture.componentInstance;
 

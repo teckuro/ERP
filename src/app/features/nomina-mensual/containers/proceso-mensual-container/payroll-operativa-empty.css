@@ -1,0 +1,91 @@
+/* Panel vacío / informativo: copy a la izquierda, CTA arriba a la derecha */
+
+.payroll-operativa-empty {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-rows: auto auto;
+  gap: 12px 16px;
+  align-items: start;
+}
+
+.payroll-operativa-empty__main {
+  grid-column: 1;
+  grid-row: 1;
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  min-width: 0;
+}
+
+.payroll-operativa-empty__cta {
+  grid-column: 2;
+  grid-row: 1;
+  align-self: start;
+  justify-self: end;
+}
+
+.payroll-operativa-empty__metrics {
+  grid-column: 1 / -1;
+  grid-row: 2;
+}
+
+.payroll-operativa-empty__foot {
+  grid-column: 1 / -1;
+  grid-row: 3;
+}
+
+.payroll-operativa-empty__btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 34px;
+  border: 1px solid var(--erp-ink, #243b53);
+  border-radius: 5px;
+  background: var(--erp-ink, #243b53);
+  padding: 0 12px;
+  color: #fff;
+  font: inherit;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  line-height: 1.2;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.payroll-operativa-empty__btn:hover {
+  border-color: var(--erp-ink-hover, #172033);
+  background: var(--erp-ink-hover, #172033);
+}
+
+.payroll-operativa-empty__btn:focus-visible {
+  outline: 2px solid var(--erp-ink, #243b53);
+  outline-offset: 1px;
+}
+
+@media (max-width: 768px) {
+  .payroll-operativa-empty {
+    grid-template-columns: 1fr;
+  }
+
+  .payroll-operativa-empty__cta {
+    grid-column: 1;
+    grid-row: 2;
+    justify-self: stretch;
+  }
+
+  .payroll-operativa-empty__main {
+    grid-row: 1;
+  }
+
+  .payroll-operativa-empty__metrics {
+    grid-row: 3;
+  }
+
+  .payroll-operativa-empty__foot {
+    grid-row: 4;
+  }
+
+  .payroll-operativa-empty__btn {
+    width: 100%;
+  }
+}

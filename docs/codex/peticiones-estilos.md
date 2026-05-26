@@ -1,3 +1,13 @@
+## 2026-05-25 - Nómina mensual: secciones con botones y fondos crema puntuales
+
+- **Cambio:** Filtros detalle (Situación/Trabajadores…) en píldoras con activo carbón; métricas en cajas `--erp-metric-tile`; toolbar detalle y vacíos con `--erp-surface-soft` (#f8f5ec); franja focus y tabs sin degradado global; empty trabajadores alineado a referencia (copy + CTA + fila métricas); patrón `payroll-operativa-empty` con CTA primario arriba a la derecha (Verificar período, Ir a trabajadores).
+- **Ajuste 2026-05-25:** Tokens nómina realineados a creación avanzada (`#ffffff`, `#fafaf7`, bordes `#dadfd7`); sin crema `#f8f5ec`.
+- **Ajuste 2026-05-25:** Acción/activo/hover con familia `--erp-ink` (`#243b53` / `#172033`); `--erp-primary*` alias de ink; CTAs, tabs, rail y modales.
+- **Ajuste 2026-05-25:** Detalle mensual unificado (`payroll-detalle-mensual-panel.css`): expediente + tabbar + cuerpo en un panel; scroll horizontal en pestañas; avisos y vacíos dentro del cuerpo.
+- **Ajuste 2026-05-25:** Empty `app-data-grid` («Registro pendiente») ocupa 100% del alto en Pendientes/Liquidaciones/Trabajadores: `gridHeight="100%"`, cadena flex en panel detalle y reglas en `data-grid.component.css`.
+- **Archivos:** `payroll-segment-nav.css`, `payroll-operational-tabs.css`, `payroll-operativa-empty.css`, `proceso-mensual-container.css`, `proceso-mensual-workspace.component.{html,css}`, `proceso-mensual-revision-trabajadores.component.{html,css,ts}`.
+- **No tocado:** estilos globales, `angular.json`, servicios/motor.
+
 ## 2026-05-25 - MsgBox Siguiente: ajuste copy y CTA primario
 
 - **Cambio:** Mensaje «tiene N campos…», cierre «Podrás continuar…» (seccion info); primario «Ir al primer campo»; secundario «Continuar con pendiente».

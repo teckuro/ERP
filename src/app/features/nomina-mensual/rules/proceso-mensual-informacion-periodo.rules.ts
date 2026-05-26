@@ -10,7 +10,11 @@ import type {
 } from '../containers/proceso-mensual-container/models/proceso-mensual-container.vm';
 import type { TrabajadorPendienteRevisionPeriodo } from '../models/proceso-mensual.model';
 import { limpiarCopyTecnicoNomina } from './proceso-mensual-copy-limpio.rules';
-import type { InformacionPeriodoResumenVerificacion } from '../containers/proceso-mensual-container/models/proceso-mensual-container.vm';
+import type {
+  InformacionPeriodoResumenVerificacion,
+  InformacionPeriodoSeccionDetalleView,
+  ValidacionOperativaItemView,
+} from '../containers/proceso-mensual-container/models/proceso-mensual-container.vm';
 import { buildItemsTrabajadoresPendientesModal } from './proceso-mensual-trabajadores-prevalidacion.rules';
 
 export interface BuildInformacionPeriodoInput {
@@ -61,6 +65,8 @@ export function mapDestinoToDetalleTab(destino: InformacionPeriodoDestino): Deta
   switch (destino) {
     case 'parametros':
       return 'parametros';
+    case 'parametros_app':
+      return null;
     case 'trabajadores':
     case 'trabajadores_fichas':
       return 'trabajadores';
@@ -112,6 +118,37 @@ function resolveDetalleTabFromCodigo(codigo: string, accionLocal?: ValidacionAcc
   if (accionLocal === 'revisarBloqueos') return 'trabajadores';
   if (accionLocal === 'calcularPreliminar' || accionLocal === 'guardarResultado' || accionLocal === 'confirmarNomina') return 'resultado';
   return 'parametros';
+}
+
+function mapSeccionOperativa(items: ValidacionOperativaItemView[]): {
+  titulo: string;
+  items: string[];
+  detalles: InformacionPeriodoSeccionDetalleView[];
+} {
+  const slice = items.slice(0, 6);
+  const detalles = slice.map((item) => ({
+    titulo: item.titulo,
+    descripcion: humanizarErrorEjecucion(item.descripcion),
+    accionLabel: item.accionLabel,
+    ruta: item.ruta,
+  }));
+  return {
+    titulo: '',
+    items: detalles.map((item) => `${item.titulo}: ${item.descripcion}`),
+    detalles,
+  };
+}
+
+function pushSeccionOperativa(
+  secciones: Array<{ titulo: string; items: string[]; detalles?: InformacionPeriodoSeccionDetalleView[] }>,
+  titulo: string,
+  items: ValidacionOperativaItemView[],
+): void {
+  if (items.length === 0) {
+    return;
+  }
+  const mapped = mapSeccionOperativa(items);
+  secciones.push({ titulo, items: mapped.items, detalles: mapped.detalles });
 }
 
 export function buildInformacionPeriodoView(input: BuildInformacionPeriodoInput): InformacionPeriodoView | null {
@@ -321,19 +358,13 @@ function buildVerificacionPeriodoInformacionView(
     };
   }
 
-  const secciones: Array<{ titulo: string; items: string[] }> = [];
-  if (bloqueos.length > 0) {
-    secciones.push({
-      titulo: 'Críticos',
-      items: bloqueos.slice(0, 6).map((item) => `${item.titulo}: ${humanizarErrorEjecucion(item.descripcion)}`),
-    });
-  }
-  if (advertencias.length > 0) {
-    secciones.push({
-      titulo: 'Advertencias',
-      items: advertencias.slice(0, 6).map((item) => `${item.titulo}: ${humanizarErrorEjecucion(item.descripcion)}`),
-    });
-  }
+  const secciones: Array<{
+    titulo: string;
+    items: string[];
+    detalles?: InformacionPeriodoSeccionDetalleView[];
+  }> = [];
+  pushSeccionOperativa(secciones, 'Críticos', bloqueos);
+  pushSeccionOperativa(secciones, 'Advertencias', advertencias);
 
   if (bloqueos.length > 0) {
     const tabDestino = resolveDetalleTabFromCodigo(
@@ -391,6 +422,7 @@ function buildVerificacionPeriodoInformacionView(
       ? 'Hay advertencias que puedes revisar o continuar para generar la nómina.'
       : 'Revisa las advertencias del período antes de continuar.',
     secciones,
+    resumenVerificacion: resumen,
     accionPrincipal: input.puedeGenerarNomina
       ? { label: 'Generar nómina', destino: 'generar_nomina' }
       : {
