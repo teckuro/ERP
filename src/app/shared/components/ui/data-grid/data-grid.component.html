@@ -122,7 +122,84 @@
         </div>
       }
 
-      @if ((rows.length > 0 || title) && showHeader) {
+      @if (showHeader && toolbarLayout === 'operativa' && filteredRows.length > 0) {
+        <div class="data-grid-toolbar data-grid-toolbar--operativa" aria-label="Paginación de la grilla">
+          <div class="data-grid-toolbar--operativa__page">
+            <span class="data-grid-toolbar--operativa__label">Página</span>
+            <input
+              class="data-grid-toolbar--operativa__page-input"
+              type="number"
+              min="1"
+              [max]="totalPages"
+              [value]="pageInput"
+              aria-label="Número de página"
+              [disabled]="loading"
+              (input)="updatePageInput($event)"
+              (keydown.enter)="confirmOperativaPageInput()"
+              (blur)="confirmOperativaPageInput()"
+            />
+            <span class="data-grid-toolbar--operativa__label">de {{ totalPages }}</span>
+          </div>
+
+          <div class="data-grid-toolbar--operativa__actions">
+            <label class="data-grid-toolbar--operativa__page-size">
+              <span class="data-grid-toolbar--operativa__label">Registros por página</span>
+              <select
+                class="data-grid-toolbar--operativa__page-size-select"
+                [value]="pageSize"
+                aria-label="Registros por página"
+                [disabled]="loading"
+                (change)="updatePageSize($event)"
+              >
+                @for (option of pageSizeOptions; track option) {
+                  <option [value]="option">{{ option }}</option>
+                }
+              </select>
+            </label>
+
+            <div class="data-grid-toolbar--operativa__nav" aria-label="Navegación entre páginas">
+              <button
+                type="button"
+                class="data-grid-toolbar--operativa__nav-btn"
+                aria-label="Primera página"
+                [disabled]="loading || currentPage <= 1"
+                (click)="firstPage()"
+              >
+                <lucide-icon class="data-grid-toolbar--operativa__nav-icon" [img]="firstPageIcon"></lucide-icon>
+              </button>
+              <button
+                type="button"
+                class="data-grid-toolbar--operativa__nav-btn"
+                aria-label="Página anterior"
+                [disabled]="loading || currentPage <= 1"
+                (click)="previousPage()"
+              >
+                <lucide-icon class="data-grid-toolbar--operativa__nav-icon" [img]="previousIcon"></lucide-icon>
+              </button>
+              <button
+                type="button"
+                class="data-grid-toolbar--operativa__nav-btn"
+                aria-label="Página siguiente"
+                [disabled]="loading || currentPage >= totalPages"
+                (click)="nextPage()"
+              >
+                <lucide-icon class="data-grid-toolbar--operativa__nav-icon" [img]="nextIcon"></lucide-icon>
+              </button>
+              <button
+                type="button"
+                class="data-grid-toolbar--operativa__nav-btn"
+                aria-label="Última página"
+                [disabled]="loading || currentPage >= totalPages"
+                (click)="lastPage()"
+              >
+                <lucide-icon class="data-grid-toolbar--operativa__nav-icon" [img]="lastPageIcon"></lucide-icon>
+              </button>
+            </div>
+          </div>
+        </div>
+      }
+
+      @if ((rows.length > 0 || title) && showHeader && toolbarLayout !== 'operativa') {
         <div class="border-b border-neutral-100 bg-white px-4 pb-4 pt-3.5">
           <div class="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
             <div class="min-w-0">
@@ -704,7 +781,7 @@
         }
       </div>
 
-      @if (filteredRows.length > 0) {
+      @if (filteredRows.length > 0 && toolbarLayout !== 'operativa') {
         <div
           class="data-grid-footer flex flex-col gap-3 border-t border-neutral-200 bg-white px-4 py-3 sm:flex-row sm:items-center sm:justify-between"
         >

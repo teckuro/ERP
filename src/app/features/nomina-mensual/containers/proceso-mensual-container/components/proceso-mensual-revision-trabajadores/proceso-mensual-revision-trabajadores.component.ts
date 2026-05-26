@@ -1,5 +1,6 @@
 ﻿import { ChangeDetectionStrategy, Component, effect, HostListener, inject, signal, untracked } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { LucideAngularModule, ChevronRight, Search, X } from 'lucide-angular';
 
 import {
   DataGridCellDirective,
@@ -17,7 +18,7 @@ export type DetalleTrabajadorTab = 'resumen' | 'que_hacer';
   selector: 'app-proceso-mensual-revision-trabajadores',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, DataGridComponent, DataGridCellDirective],
+  imports: [CommonModule, LucideAngularModule, DataGridComponent, DataGridCellDirective],
   templateUrl: './proceso-mensual-revision-trabajadores.component.html',
   styleUrls: [
     '../../payroll-segment-nav.css',
@@ -27,6 +28,9 @@ export type DetalleTrabajadorTab = 'resumen' | 'que_hacer';
 })
 export class ProcesoMensualRevisionTrabajadoresComponent {
   readonly facade = inject(ProcesoMensualPresentacionFacade);
+  readonly cerrarDetalleIcon = X;
+  readonly abrirDetalleIcon = ChevronRight;
+  readonly buscarTrabajadorIcon = Search;
   readonly modalMovimientosAbierto = signal(false);
   readonly detalleTrabajadorTab = signal<DetalleTrabajadorTab>('que_hacer');
 
@@ -127,6 +131,10 @@ export class ProcesoMensualRevisionTrabajadoresComponent {
   activarFila(row: NominaMasivaFila, event?: Event): void {
     event?.preventDefault();
     event?.stopPropagation();
+    if (this.facade.esFilaMasivaSeleccionada(row.idPersona)) {
+      this.facade.limpiarSeleccionTrabajadorNominaMasiva();
+      return;
+    }
     this.facade.seleccionarTrabajadorNominaMasiva(row.idPersona);
   }
 
@@ -135,7 +143,21 @@ export class ProcesoMensualRevisionTrabajadoresComponent {
     this.activarFila(row, event);
   }
 
+  cerrarDetalleTrabajador(): void {
+    this.facade.limpiarSeleccionTrabajadorNominaMasiva();
+  }
+
+  esAccionPanelTrabajador(row: NominaMasivaFila): boolean {
+    return this.facade.accionCorreccionFilaMasiva(row).kind === 'panel_trabajador';
+  }
+
   ejecutarAccionFila(row: NominaMasivaFila, event?: Event): void {
+    event?.preventDefault();
+    event?.stopPropagation();
+    if (this.facade.esFilaMasivaSeleccionada(row.idPersona) && this.esAccionPanelTrabajador(row)) {
+      this.cerrarDetalleTrabajador();
+      return;
+    }
     this.detalleTrabajadorTab.set('que_hacer');
     this.facade.ejecutarAccionCorreccionFilaMasiva(row, event);
   }
@@ -162,9 +184,13 @@ export class ProcesoMensualRevisionTrabajadoresComponent {
   }
 
   @HostListener('document:keydown.escape')
-  cerrarModalMovimientosConEscape(): void {
+  cerrarConEscape(): void {
     if (this.modalMovimientosAbierto()) {
       this.cerrarModalMovimientos();
+      return;
+    }
+    if (this.facade.nominaMasivaDetalleSeleccionado()) {
+      this.cerrarDetalleTrabajador();
     }
   }
 }

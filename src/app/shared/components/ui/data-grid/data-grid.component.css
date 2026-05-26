@@ -779,3 +779,149 @@
           padding-top: 0.75rem;
         }
       }
+
+      .data-grid-toolbar--operativa + .data-grid-scroll .data-grid-head {
+        box-shadow: none;
+      }
+
+      .data-grid-toolbar--operativa {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px 12px;
+        min-height: 30px;
+        padding: 4px 10px;
+        border-bottom: 1px solid var(--erp-border, var(--data-grid-border, #dadfd7));
+        background: var(--erp-surface, #ffffff);
+      }
+
+      .data-grid-toolbar--operativa__page,
+      .data-grid-toolbar--operativa__actions {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 6px;
+        min-width: 0;
+      }
+
+      .data-grid-toolbar--operativa__actions {
+        margin-left: auto;
+        justify-content: flex-end;
+      }
+
+      .data-grid-toolbar--operativa__label {
+        color: var(--erp-muted, #647084);
+        font-size: var(--data-grid-text-sm, 0.72rem);
+        font-weight: 650;
+        line-height: 1.2;
+        white-space: nowrap;
+      }
+
+      .data-grid-toolbar--operativa__page-input,
+      .data-grid-toolbar--operativa__page-size-select {
+        box-sizing: border-box;
+        min-height: 26px;
+        height: 26px;
+        margin: 0;
+        border: 1px solid var(--erp-border, var(--data-grid-border, #dadfd7));
+        border-radius: 4px;
+        background: var(--erp-surface, #ffffff);
+        color: var(--erp-ink, #243b53);
+        font-size: var(--data-grid-text-sm, 0.72rem);
+        font-weight: 650;
+        line-height: 1;
+        outline: none;
+      }
+
+      .data-grid-toolbar--operativa__page-input {
+        width: 3.25rem;
+        padding: 0 6px;
+        text-align: center;
+        -moz-appearance: textfield;
+      }
+
+      .data-grid-toolbar--operativa__page-input::-webkit-outer-spin-button,
+      .data-grid-toolbar--operativa__page-input::-webkit-inner-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+      }
+
+      .data-grid-toolbar--operativa__page-input:focus,
+      .data-grid-toolbar--operativa__page-size-select:focus {
+        border-color: var(--erp-primary, #243b53);
+        box-shadow: 0 0 0 2px var(--erp-primary-soft, #eef1f5);
+      }
+
+      .data-grid-toolbar--operativa__page-size {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        min-width: 0;
+      }
+
+      .data-grid-toolbar--operativa__page-size-select {
+        min-width: 3.25rem;
+        padding: 0 6px;
+        cursor: pointer;
+      }
+
+      .data-grid-toolbar--operativa__nav {
+        display: inline-flex;
+        overflow: hidden;
+        border: 1px solid var(--erp-border, var(--data-grid-border, #dadfd7));
+        border-radius: 4px;
+        background: var(--erp-surface, #ffffff);
+      }
+
+      .data-grid-toolbar--operativa__nav-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 28px;
+        min-height: 26px;
+        margin: 0;
+        padding: 0 6px;
+        border: 0;
+        border-right: 1px solid var(--erp-border, var(--data-grid-border, #dadfd7));
+        border-radius: 0;
+        background: var(--erp-surface, #ffffff);
+        color: var(--erp-ink, #243b53);
+        cursor: pointer;
+      }
+
+      .data-grid-toolbar--operativa__nav-btn:last-child {
+        border-right: 0;
+      }
+
+      .data-grid-toolbar--operativa__nav-btn:hover:not(:disabled) {
+        background: var(--erp-metric-tile, #f3f4f1);
+      }
+
+      .data-grid-toolbar--operativa__nav-btn:focus-visible {
+        outline: 2px solid var(--erp-primary, #243b53);
+        outline-offset: -2px;
+        z-index: 1;
+      }
+
+      .data-grid-toolbar--operativa__nav-btn:disabled {
+        opacity: 0.45;
+        cursor: not-allowed;
+      }
+
+      .data-grid-toolbar--operativa__nav-icon {
+        width: 0.875rem;
+        height: 0.875rem;
+      }
+
+      @media (max-width: 640px) {
+        .data-grid-toolbar--operativa {
+          flex-direction: column;
+          align-items: stretch;
+        }
+
+        .data-grid-toolbar--operativa__actions {
+          margin-left: 0;
+          justify-content: space-between;
+        }
+      }

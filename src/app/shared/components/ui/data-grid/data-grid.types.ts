@@ -13,6 +13,7 @@ export type DataGridFilterNormalization = 'text' | 'rut' | 'none';
 export type DataGridFilterMatchMode = 'default' | 'tokens';
 export type DataGridFilterChipsDisplay = 'whenFiltersVisible' | 'whenFiltersHidden' | 'always' | 'never';
 export type DataGridHeaderCountDisplay = 'badge' | 'text';
+export type DataGridToolbarLayout = 'default' | 'operativa';
 
 export interface DataGridDateRangeValue {
   from?: string;

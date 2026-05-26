@@ -104,15 +104,27 @@
   height: 100%;
 }
 
-.payroll-detalle-mensual__body:has(> app-data-grid:only-child) {
+.payroll-detalle-mensual__body:has(> app-data-grid:only-child),
+.payroll-detalle-mensual__body:has(> app-proceso-mensual-revision-trabajadores) {
   gap: 0;
   padding: 0;
   overflow: hidden;
 }
 
 .payroll-detalle-mensual__body .payroll-revision-trabajadores {
-  gap: 8px;
+  gap: 0;
   min-height: min(420px, 55vh);
+}
+
+.payroll-detalle-mensual__body .payroll-revision-trabajadores__expediente-head {
+  padding: 0;
+  border-bottom: 1px solid var(--erp-border, #dadfd7);
+}
+
+.payroll-detalle-mensual__body .payroll-revision-trabajadores__expediente-body {
+  border: 0;
+  border-radius: 0;
+  background: transparent;
 }
 
 @media (max-width: 768px) {

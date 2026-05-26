@@ -72,7 +72,7 @@
             <div>
               <dt>Movimientos del mes</dt>
               <dd>
-                @if ((dash.movimientosAprobados ?? 0) > 0) {
+                @if (dash.movimientosAprobados > 0) {
                   {{ dash.movimientosAprobados }} considerados
                 } @else {
                   sin registros

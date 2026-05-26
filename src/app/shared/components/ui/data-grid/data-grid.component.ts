@@ -21,6 +21,8 @@ import {
   ArrowLeft,
   ArrowUp,
   ArrowUpDown,
+  ChevronsLeft,
+  ChevronsRight,
   ChevronRight,
   CheckCircle,
   Download,
@@ -54,6 +56,7 @@ import type {
   DataGridFilterValue,
   DataGridHeaderCountDisplay,
   DataGridSortDirection,
+  DataGridToolbarLayout,
 } from './data-grid.types';
 export * from './data-grid.types';
 export { DataGridCellDirective, DataGridPrimaryActionMenuDirective } from './data-grid.directives';
@@ -103,6 +106,8 @@ export class DataGridComponent<T = unknown> implements OnChanges, OnDestroy {
 
   @Input() title = '';
   @Input() showHeader = true;
+  /** Barra superior: default (SaaS) u operativa (paginación compacta tipo ERP). */
+  @Input() toolbarLayout: DataGridToolbarLayout = 'default';
   @Input() columns: DataGridColumn<T>[] = [];
   @Input() rows: T[] = [];
   @Input() filters: DataGridFilter<T>[] = [];
@@ -159,6 +164,8 @@ export class DataGridComponent<T = unknown> implements OnChanges, OnDestroy {
 
   readonly previousIcon = ArrowLeft;
   readonly nextIcon = ChevronRight;
+  readonly firstPageIcon = ChevronsLeft;
+  readonly lastPageIcon = ChevronsRight;
   readonly downloadIcon = Download;
   readonly filterIcon = Filter;
   readonly plusIcon = Plus;
@@ -805,6 +812,25 @@ export class DataGridComponent<T = unknown> implements OnChanges, OnDestroy {
 
   nextPage(): void {
     this.goToPage(this.currentPage + 1);
+  }
+
+  firstPage(): void {
+    this.goToPage(1);
+  }
+
+  lastPage(): void {
+    this.goToPage(this.totalPages);
+  }
+
+  confirmOperativaPageInput(): void {
+    const page = Number(this.pageInput);
+
+    if (!Number.isInteger(page) || page < 1 || page > this.totalPages) {
+      this.pageInput = String(this.currentPage);
+      return;
+    }
+
+    this.goToPage(page);
   }
 
   updatePageSize(event: Event): void {

@@ -1366,7 +1366,7 @@ describe('ProcesoMensualContainer', () => {
       }
     });
 
-    it('revision masiva sincroniza seleccion al cambiar filtros y busqueda', async () => {
+    it('revision masiva mantiene seleccion visible y limpia al salir del filtro', async () => {
       ejecutarPrevalidaciones.mockResolvedValueOnce(prevalidacionLista({
         entradasMensuales: [entradaMensualAprobada()],
       }));
@@ -1379,13 +1379,16 @@ describe('ProcesoMensualContainer', () => {
       c.seleccionarFiltroNominaMasiva('todos');
       localFixture.detectChanges();
 
+      expect(c.nominaMasivaTrabajadorSeleccionadoId()).toBeNull();
+
       c.seleccionarTrabajadorNominaMasiva(3);
       c.seleccionarFiltroNominaMasiva('con_movimientos');
       localFixture.detectChanges();
       expect(c.nominaMasivaFilasFiltradas().length).toBeGreaterThan(0);
-      expect(c.nominaMasivaTrabajadorSeleccionadoId()).toBe(c.nominaMasivaFilasFiltradas()[0].idPersona);
+      expect(c.nominaMasivaTrabajadorSeleccionadoId()).toBeNull();
 
-      const seleccionVisible = c.nominaMasivaTrabajadorSeleccionadoId();
+      const seleccionVisible = c.nominaMasivaFilasFiltradas()[0].idPersona;
+      c.seleccionarTrabajadorNominaMasiva(seleccionVisible);
       c.seleccionarFiltroNominaMasiva('todos');
       localFixture.detectChanges();
       expect(c.nominaMasivaTrabajadorSeleccionadoId()).toBe(seleccionVisible);
@@ -1393,7 +1396,7 @@ describe('ProcesoMensualContainer', () => {
       c.nominaMasivaTrabajadorSeleccionadoId.set(null);
       c.seleccionarFiltroNominaMasiva('listos');
       localFixture.detectChanges();
-      expect(c.nominaMasivaTrabajadorSeleccionadoId()).toBe(c.nominaMasivaFilasFiltradas()[0].idPersona);
+      expect(c.nominaMasivaTrabajadorSeleccionadoId()).toBeNull();
 
       c.actualizarBusquedaNominaMasiva('sin coincidencias visibles');
       localFixture.detectChanges();

@@ -1,6 +1,8 @@
 @let f = facade;
 @let detalleMasivo = f.nominaMasivaDetalleSeleccionado();
 @let accionRecomendada = f.nominaMasivaAccionRecomendadaPanel();
+@let filasVisibles = f.nominaMasivaFilasFiltradas();
+@let panelDetalleAbierto = !!detalleMasivo;
 
 <section class="payroll-revision-trabajadores" aria-label="Revisión de trabajadores del período">
   @if (f.nominaMasivaFilas().length > 0) {
@@ -12,7 +14,7 @@
     @if (!f.revisionSoloFichasPrevalidacion()) {
       <header class="payroll-revision-trabajadores__expediente-head">
         <nav
-          class="payroll-segment-nav payroll-revision-trabajadores__stat-nav payroll-revision-trabajadores__file-tabs"
+          class="payroll-segment-nav payroll-revision-trabajadores__stat-nav payroll-revision-trabajadores__file-tabs payroll-revision-trabajadores__file-tabs--segmented"
           aria-label="Resumen agregado de trabajadores"
         >
           @for (stat of f.nominaMasivaStatFiltrosVisibles(); track stat.id) {
@@ -27,12 +29,23 @@
             </button>
           }
         </nav>
-        <label class="payroll-revision-trabajadores__search">
+        <label
+          class="payroll-revision-trabajadores__search"
+          title="Buscar trabajador por nombre o RUT"
+        >
+          <span
+            class="payroll-revision-trabajadores__search-icon"
+            aria-hidden="true"
+            title="Buscar trabajador por nombre o RUT"
+          >
+            <lucide-icon [img]="buscarTrabajadorIcon" />
+          </span>
           <span class="payroll-revision-trabajadores__sr-only">Buscar trabajador</span>
           <input
             type="search"
             placeholder="Buscar por nombre o RUT"
-            aria-label="Buscar trabajador"
+            aria-label="Buscar trabajador por nombre o RUT"
+            title="Buscar trabajador por nombre o RUT"
             [value]="f.nominaMasivaBusqueda()"
             (input)="f.actualizarBusquedaNominaMasiva($any($event.target).value)"
           />
@@ -40,15 +53,20 @@
       </header>
     }
     <div class="payroll-revision-trabajadores__expediente-body">
-    <div class="payroll-revision-trabajadores__layout">
+    <div
+      class="payroll-revision-trabajadores__layout"
+      [class.payroll-revision-trabajadores__layout--solo-grilla]="!panelDetalleAbierto"
+      [class.payroll-revision-trabajadores__layout--con-detalle]="panelDetalleAbierto"
+    >
       <div class="payroll-revision-trabajadores__grid">
         <app-data-grid
           title=""
-          [rows]="f.nominaMasivaFilasFiltradas()"
+          [rows]="filasVisibles"
           [columns]="f.nominaMasivaTrabajadoresColumns"
           [filtersEnabled]="false"
           [filterChipsDisplay]="'never'"
           [headerCountDisplay]="'badge'"
+          [toolbarLayout]="'operativa'"
           [showExportAction]="false"
           [selectable]="false"
           [maxItems]="25"
@@ -136,24 +154,54 @@
             </button>
           </ng-template>
           <ng-template appDataGridCell="accion" let-row="row">
-            <button
-              type="button"
-              class="payroll-revision-trabajadores__link"
-              (click)="ejecutarAccionFila(row, $event)"
-            >
-              {{ f.accionCorreccionFilaMasiva(row).label }}
-            </button>
+            @if (f.esFilaMasivaSeleccionada(row.idPersona) && esAccionPanelTrabajador(row)) {
+              <button
+                type="button"
+                class="payroll-revision-trabajadores__accion-cerrar"
+                aria-label="Cerrar detalle del trabajador"
+                (click)="ejecutarAccionFila(row, $event)"
+              >
+                <lucide-icon [img]="cerrarDetalleIcon" class="payroll-revision-trabajadores__accion-icon" aria-hidden="true" />
+                <span>Cerrar detalle</span>
+              </button>
+            } @else {
+              <button
+                type="button"
+                class="payroll-revision-trabajadores__link payroll-revision-trabajadores__link--accion"
+                (click)="ejecutarAccionFila(row, $event)"
+              >
+                @if (esAccionPanelTrabajador(row)) {
+                  <lucide-icon [img]="abrirDetalleIcon" class="payroll-revision-trabajadores__accion-icon" aria-hidden="true" />
+                }
+                <span>{{ f.accionCorreccionFilaMasiva(row).label }}</span>
+              </button>
+            }
           </ng-template>
         </app-data-grid>
       </div>
 
+      @if (panelDetalleAbierto && detalleMasivo) {
       <aside class="payroll-revision-trabajadores__detail" aria-label="Detalle del trabajador seleccionado">
         <div class="payroll-revision-trabajadores__detail-panel">
-          @if (detalleMasivo) {
-            @if (detalleTrabajadorTabsVisibles().length > 1) {
-              <header class="payroll-revision-trabajadores__detail-head">
+            <header class="payroll-revision-trabajadores__detail-chrome">
+              <div class="payroll-revision-trabajadores__detail-chrome-top">
+                <div class="payroll-revision-trabajadores__detail-identity">
+                  <strong>{{ detalleMasivo.trabajador }}</strong>
+                  <span>{{ detalleMasivo.rut }}</span>
+                </div>
+                <button
+                  type="button"
+                  class="payroll-revision-trabajadores__detail-close"
+                  aria-label="Cerrar detalle del trabajador"
+                  (click)="cerrarDetalleTrabajador()"
+                >
+                  <lucide-icon [img]="cerrarDetalleIcon" aria-hidden="true" />
+                </button>
+              </div>
+
+              @if (detalleTrabajadorTabsVisibles().length > 1) {
                 <nav
-                  class="payroll-segment-nav payroll-revision-trabajadores__detail-tabs payroll-revision-trabajadores__file-tabs"
+                  class="payroll-segment-nav payroll-revision-trabajadores__detail-tabs"
                   aria-label="Secciones del detalle del trabajador"
                 >
                   @for (tab of detalleTrabajadorTabsVisibles(); track tab.id) {
@@ -166,8 +214,8 @@
                     </button>
                   }
                 </nav>
-              </header>
-            }
+              }
+            </header>
 
             <div class="payroll-revision-trabajadores__detail-body">
           @switch (detalleTrabajadorTab()) {
@@ -180,17 +228,20 @@
               </dl>
 
               <section class="payroll-revision-trabajadores__section" aria-label="Movimientos del período">
-                @if (f.nominaMasivaMovimientosPanelRows().length) {
-                  <button
-                    type="button"
-                    class="payroll-revision-trabajadores__link"
-                    (click)="abrirModalMovimientos()"
-                  >
-                    Ver {{ f.etiquetaConteoMasivo(f.nominaMasivaMovimientosPanelRows().length, 'movimiento', 'movimientos') }}
-                  </button>
-                } @else {
-                  <p>Sin movimientos ni recurrentes considerados en el período.</p>
-                }
+                <div class="payroll-revision-trabajadores__section-row">
+                  <span class="payroll-revision-trabajadores__section-k">Movimientos del período</span>
+                  @if (f.nominaMasivaMovimientosPanelRows().length) {
+                    <button
+                      type="button"
+                      class="payroll-revision-trabajadores__link"
+                      (click)="abrirModalMovimientos()"
+                    >
+                      Ver {{ f.etiquetaConteoMasivo(f.nominaMasivaMovimientosPanelRows().length, 'movimiento', 'movimientos') }}
+                    </button>
+                  } @else {
+                    <span class="payroll-revision-trabajadores__section-v">Sin movimientos</span>
+                  }
+                </div>
               </section>
             }
 
@@ -255,23 +306,9 @@
             }
           }
             </div>
-          } @else {
-            <div class="payroll-revision-trabajadores__detail-body payroll-revision-trabajadores__detail-body--empty">
-          <div class="payroll-revision-trabajadores__empty payroll-revision-trabajadores__empty--selection">
-            @if (f.nominaMasivaFilasFiltradas().length) {
-              <span class="payroll-revision-trabajadores__empty-kicker">Sin selección</span>
-              <strong>Seleccione un trabajador</strong>
-              <span>Use la grilla o «Ver detalle» para ver qué corregir.</span>
-            } @else {
-              <span class="payroll-revision-trabajadores__empty-kicker">Filtro sin resultados</span>
-              <strong>No hay trabajadores para la búsqueda actual</strong>
-              <span>Ajuste filtros o búsqueda para volver al listado del período.</span>
-            }
-          </div>
-            </div>
-          }
         </div>
       </aside>
+      }
     </div>
     </div>
   </div>
@@ -366,6 +403,7 @@
           [filterChipsDisplay]="'never'"
           [headerCountDisplay]="'text'"
           headerCountNoun="movimientos"
+          [toolbarLayout]="'operativa'"
           [showExportAction]="false"
           [selectable]="false"
           [maxItems]="25"

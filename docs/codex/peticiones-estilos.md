@@ -1972,7 +1972,8 @@ Creación avanzada incorpora una identidad de producto local para dejar de senti
 
 - **Pills superiores:** filtros Situación/Trabajadores/Liquidaciones/Pendientes más bajos (`min-height` 26px, padding reducido); head del panel con menos aire.
 - **Tab summary:** en Detalle mensual sin bloque de métricas (`payroll-tab-summary__metrics`); título y descripción compactos.
-- **Trabajadores:** tabs stat en una línea (`Total · 1`); inactivos con fondo `--erp-surface-soft`; activo acoplado al cuerpo.
+- **Trabajadores:** detalle con tabs underline compactos integrados en cabecera (sin bloques segmentados ni dobles bordes); buscador del expediente a ancho completo, icono lupa + tooltip nativo, borde izquierdo separador y campo plano sin caja interna.
+- **Grillas Nómina mensual:** `toolbarLayout="operativa"` en DataGrid — barra superior compacta (Página · input · de N · Registros por página · navegación primera/anterior/siguiente/última); sin pie duplicado; tokens `--erp-*`; aplicado en Trabajadores, Situación, Liquidaciones, Pendientes e Historial.
 - **Situación:** lead sin caja con borde; disclosures y body con menos padding/gap.
 - **Archivos:** `payroll-segment-nav.css`, `payroll-detalle-mensual-panel.css`, `proceso-mensual-workspace.component.css`, `proceso-mensual-revision-trabajadores.*`, `proceso-mensual-workspace-presentacion.rules.ts`, `proceso-mensual-presentacion.facade.ts`.
 

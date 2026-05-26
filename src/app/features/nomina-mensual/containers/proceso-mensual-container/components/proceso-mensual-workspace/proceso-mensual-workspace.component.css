@@ -243,6 +243,12 @@
   min-height: 0;
 }
 
+:host ::ng-deep app-card.payroll-detalle-mensual__grid .data-grid-toolbar--operativa {
+  padding-inline: 0.625rem;
+  border-bottom: 1px solid var(--erp-border, #dadfd7);
+  background: var(--erp-surface, #ffffff);
+}
+
 .payroll-console .payroll-sidebar-card .payroll-tab-summary__metrics {
   justify-content: flex-start;
 }
@@ -485,9 +491,10 @@
   border-top-color: var(--erp-danger-border, #e8c4c4) !important;
 }
 
-:host ::ng-deep .payroll-detalle-situacion__grid-card > div:first-of-type {
+:host ::ng-deep .payroll-detalle-situacion__grid-card .data-grid-toolbar--operativa {
   padding-inline: 0.75rem;
-  padding-top: 0.5rem;
+  border-bottom: 1px solid var(--erp-border, #dadfd7);
+  background: var(--erp-surface, #ffffff);
 }
 
 :host ::ng-deep .payroll-detalle-situacion__grid-card .overflow-auto,

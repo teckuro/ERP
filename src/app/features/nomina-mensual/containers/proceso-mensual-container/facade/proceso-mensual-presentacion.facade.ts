@@ -1671,12 +1671,11 @@ export class ProcesoMensualPresentacionFacade {
       return;
     }
     if (seleccionado == null) {
-      untracked(() => this.revisionTrabajadoresPort.seleccionarTrabajador(filas[0].idPersona));
       return;
     }
     const visible = filas.some((fila) => this.mismaPersonaNominaMasiva(fila.idPersona, seleccionado));
     if (visible) return;
-    untracked(() => this.revisionTrabajadoresPort.seleccionarTrabajador(filas[0].idPersona));
+    untracked(() => this.revisionTrabajadoresPort.limpiarTrabajadorSeleccionado());
   });
 
   mostrarDetalleOperativo(etapa: EtapaOperativaActiva): boolean {
@@ -2323,6 +2322,10 @@ export class ProcesoMensualPresentacionFacade {
 
   seleccionarTrabajadorNominaMasiva(idPersona: number | string): void {
     this.revisionTrabajadoresPort.seleccionarTrabajador(idPersona);
+  }
+
+  limpiarSeleccionTrabajadorNominaMasiva(): void {
+    this.revisionTrabajadoresPort.limpiarTrabajadorSeleccionado();
   }
 
   esFilaMasivaSeleccionada(idPersona: number | string): boolean {
