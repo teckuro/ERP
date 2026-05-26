@@ -245,7 +245,7 @@ describe('proceso-mensual-incidencias-periodo.rules', () => {
     expect(view.todas[0]?.ambito).toBe('parametros');
   });
 
-  it('deduplica advertencia live y snapshot con distinto ambito trabajadores vs periodo', () => {
+  it('oculta advertencia obsoleta de empresa Ley 16.744 aunque venga de cálculo o expediente', () => {
     const detalle =
       'Falta datos de empresa Ley 16.744. se calcula solo tasa basica si existe.';
     const view = buildIncidenciasPeriodo({
@@ -266,9 +266,7 @@ describe('proceso-mensual-incidencias-periodo.rules', () => {
       }],
     });
 
-    expect(view.todas).toHaveLength(1);
-    expect(view.todas[0]?.ambito).toBe('parametros');
-    expect(view.todas[0]?.titulo).toBe('LEY_16744_EMPRESA_INCOMPLETA');
+    expect(view.todas).toHaveLength(0);
   });
 
   it('deduplica SANNA repetida por trabajador en expediente', () => {

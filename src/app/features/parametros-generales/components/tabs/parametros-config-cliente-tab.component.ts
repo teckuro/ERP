@@ -78,9 +78,9 @@ import { ParametrosGeneralesCatalogos } from '../../models/parametro-general.mod
       </section>
 
       <section class="param-group parametros-section-card parametros-config-card param-group--ccaf-current" aria-labelledby="ccaf-title">
-        <h2 id="ccaf-title">CCAF y mutual</h2>
-        <p class="param-section-lead">Seleccion usada como referencia para el periodo activo.</p>
-        <div class="field-grid parametros-form-grid parametros-form-grid-compact field-grid--ccaf field-grid--ccaf-compact" aria-label="Configuracion CCAF y mutual">
+        <h2 id="ccaf-title">CCAF</h2>
+        <p class="param-section-lead">Caja de compensación usada como referencia para el período activo. La mutual Ley 16.744 se configura en los datos de empresa.</p>
+        <div class="field-grid parametros-form-grid parametros-form-grid-compact field-grid--ccaf field-grid--ccaf-compact" aria-label="Configuración CCAF">
           <label class="param-field">
             <span>Caja de compensacion</span>
             <app-search-select
@@ -93,27 +93,6 @@ import { ParametrosGeneralesCatalogos } from '../../models/parametro-general.mod
               placeholder="Sin CCAF seleccionada"
               searchPlaceholder="Buscar CCAF"
             ></app-search-select>
-          </label>
-
-          <label class="param-field">
-            <span>Mutual de Seguridad</span>
-            <app-search-select
-              class="param-field-search-select"
-              [ngModel]="selectedMutualId"
-              [ngModelOptions]="{ standalone: true }"
-              (ngModelChange)="seleccionarMutual?.($event)"
-              [options]="mutualSelectOptions"
-              [disabled]="!editable"
-              placeholder="Sin mutual seleccionada"
-              searchPlaceholder="Buscar mutual"
-            ></app-search-select>
-          </label>
-
-          <label class="param-field">
-            <span>Porcentaje</span>
-            <span class="unit-field unit-field--suffix" data-unit="%">
-              <input class="param-input text-right" type="text" [value]="percentLabel === '-' ? '-' : percentLabel" readonly />
-            </span>
           </label>
         </div>
       </section>
@@ -148,14 +127,11 @@ export class ParametrosConfigClienteTabComponent {
   @Input() hasClienteConfig = false;
   @Input() periodoLabel = 'este periodo';
   @Input() selectedCcafId: number | null = null;
-  @Input() selectedMutualId: number | null = null;
-  @Input() percentLabel = '-';
   @Input() fechaActualizacionLabel: string | null = null;
   @Input() enviarFormulario: (() => void) | null = null;
   @Input() bloquearSiLectura: ((event: Event) => void) | null = null;
   @Input() setDescuentosBaseFn: ((value: boolean) => void) | null = null;
   @Input() seleccionarCcaf: ((value: SearchSelectValue) => void) | null = null;
-  @Input() seleccionarMutual: ((value: SearchSelectValue) => void) | null = null;
 
   get ccafSelectOptions(): SearchSelectOption<number | null>[] {
     return [
@@ -163,16 +139,6 @@ export class ParametrosConfigClienteTabComponent {
       ...this.catalogos.ccafEntidades.map((ccaf) => ({
         value: ccaf.idCcafEntidad,
         label: ccaf.nombre,
-      })),
-    ];
-  }
-
-  get mutualSelectOptions(): SearchSelectOption<number | null>[] {
-    return [
-      { value: null, label: 'Sin mutual seleccionada' },
-      ...this.catalogos.organismosLey16744.map((mutual) => ({
-        value: mutual.idOrganismoAdministradorLey16744,
-        label: mutual.nombre,
       })),
     ];
   }

@@ -1953,6 +1953,13 @@ Creación avanzada incorpora una identidad de producto local para dejar de senti
 - **Borrador / ficha / persistencia:** `validateBorradorAvanzadoFormMinimo`, reglas `personal.email-empty` y `personal.phone-empty` (error bloqueante), `assertPayloadIdentificacionValida`.
 - **E2E:** `fillPaso0BorradorMinimo` rellena correo y teléfono.
 
+## 2026-05-25 — Nómina mensual: advertencia Ley 16.744 empresa
+
+- **Lógica (no UI):** se deja de emitir `LEY_16744_EMPRESA_INCOMPLETA` cuando la tasa básica de parámetros permite calcular; tasa adicional de `empresa` es opcional. Incidencias y resultado preliminar filtran el código obsoleto en snapshots previos.
+- **Carga:** `proceso-mensual.service` mapea solo `empresa` (vigencia del período); sin fallback desde configuración cliente de parámetros.
+- **Parámetros:** tab Configuración cliente deja de pedir mutual Ley 16.744; organismo y tasa adicional viven en `empresa`. Al guardar config cliente se envía `idOrganismoAdministradorLey16744: null`.
+- **Archivos:** `proceso-mensual-motor.rules.ts`, `proceso-mensual-empresa-ley16744.rules.ts`, `proceso-mensual.service.ts`, `parametros-config-cliente-tab`, `parametros-workspace.orquestador.ts`, `parametros-completitud.rules.ts`.
+
 ## 2026-05-23 — Alta avanzada: estado interno y limpieza BD
 
 - **UI:** en paso contrato con `grillaAvanzada`, se oculta el select «Estado de ficha inicial»; el bloque pasa a «Centro de costo y cargo». El motor sigue usando `en_proceso` / `borrador` en mappers (no editable por RRHH).

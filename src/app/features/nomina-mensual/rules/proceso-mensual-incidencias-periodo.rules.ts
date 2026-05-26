@@ -1,5 +1,6 @@
 ﻿import type { DetalleOperativoTab } from '../containers/proceso-mensual-container/models/proceso-mensual-container.vm';
 import { limpiarCopyTecnicoNomina } from './proceso-mensual-copy-limpio.rules';
+import { incidenciaLey16744EmpresaObsoleta } from './proceso-mensual-empresa-ley16744.rules';
 import type { ResultadoObservacionView } from '../containers/proceso-mensual-container/models/proceso-mensual-container.vm';
 import type { ProcesoMensualPendienteVm } from './proceso-mensual-estado-operativo.rules';
 import { resolveDetalleTabFromPendiente } from './proceso-mensual-informacion-periodo.rules';
@@ -583,7 +584,7 @@ export function buildIncidenciasPeriodo(input: BuildIncidenciasPeriodoInput): In
     ...input.resultadoBloqueos.map((item) => mapResultadoToIncidencia(item, 'bloqueo')),
     ...input.resultadoAdvertencias.map((item) => mapResultadoToIncidencia(item, 'advertencia')),
     ...(input.expedienteProblemas ?? []).map(mapExpedienteProblemaToIncidencia),
-  ];
+  ].filter((inc) => !incidenciaLey16744EmpresaObsoleta(inc.id));
   const todas = deduplicarIncidencias(crudas);
   return {
     todas,

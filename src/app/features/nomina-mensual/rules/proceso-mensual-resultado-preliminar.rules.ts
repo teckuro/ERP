@@ -17,6 +17,7 @@ import type {
   TrabajadorResultadoPreliminarView,
 } from '../containers/proceso-mensual-container/models/proceso-mensual-container.vm';
 import { limpiarCopyTecnicoNomina, limpiarYUnirMensajes } from './proceso-mensual-copy-limpio.rules';
+import { incidenciaLey16744EmpresaObsoleta } from './proceso-mensual-empresa-ley16744.rules';
 
 export interface BuildResultadoPreliminarInput {
   calculo: MotorCalculoPeriodoResultado | null;
@@ -107,7 +108,7 @@ function observacionesResultado(
     ...asArray(calculo.issues),
     ...asArray(calculo.liquidaciones).flatMap((liq) => asArray(liq.issues)),
   ]
-    .filter((issue) => issue.severidad === severidad)
+    .filter((issue) => issue.severidad === severidad && !incidenciaLey16744EmpresaObsoleta(issue.codigo))
     .map((issue) => ({
       codigo: issue.codigo,
       titulo: severidad === 'BLOQUEO' ? 'Bloqueo del resultado' : 'Advertencia del resultado',

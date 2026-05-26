@@ -31,13 +31,10 @@
         [hasClienteConfig]="ws.clienteConfig() !== null"
         [periodoLabel]="ws.periodoSeleccionadoLabel()"
         [selectedCcafId]="ws.selectedCcafId()"
-        [selectedMutualId]="ws.selectedMutualId()"
-        [percentLabel]="ws.decimal(ws.selectedLey16744Rate(), 2)"
         [fechaActualizacionLabel]="ws.fechaActualizacionLabel()"
         [bloquearSiLectura]="ws.bloquearSiLectura.bind(ws)"
         [setDescuentosBaseFn]="ws.setDescuentosBase.bind(ws)"
         [seleccionarCcaf]="ws.seleccionarCcaf.bind(ws)"
-        [seleccionarMutual]="ws.seleccionarMutual.bind(ws)"
         [enviarFormulario]="ws.guardar.bind(ws)"
       ></app-parametros-config-cliente-tab>
     }

@@ -50,6 +50,10 @@ import type {
 import { trabajadorSnapshotDesdeFicha } from '../models/proceso-mensual.model';
 import { NominaCalculoSnapshotRepository } from '../data-access/nomina-calculo-snapshot.repository';
 import { NominaPeriodoDiagnosticoRepository } from '../data-access/nomina-periodo-diagnostico.repository';
+import {
+  empresaVigenteEnPeriodo,
+  mapEmpresaRowToLey16744Snapshot,
+} from '../rules/proceso-mensual-empresa-ley16744.rules';
 import { generarCalculoPreliminarPeriodo } from '../rules/proceso-mensual-motor.rules';
 import {
   buildGuardarSnapshotRechazado,
@@ -861,7 +865,7 @@ export class ProcesoMensualService {
       this.empleados.listar(),
       this.haberesDescuentos.listarAsignacionesParaPrevalidacionMensual(periodo),
     ]);
-    const { data: empresa, error: empresaError } = await this.supabase
+    const { data: empresaRow, error: empresaError } = await this.supabase
       .from('empresa')
       .select('id_empresa, id_organismo_administrador_ley_16744, tasa_adicional_diferenciada, vigencia_inicio, vigencia_fin')
       .order('id_empresa', { ascending: true })
@@ -892,15 +896,10 @@ export class ProcesoMensualService {
       trabajadores,
       recurrentes,
       entradasMensuales: construirEntradasMensualesMotor(asArray(prevalidacion.entradasMensuales)),
-      empresaLey16744: empresa
-        ? {
-            idEmpresa: empresa.id_empresa ?? null,
-            idOrganismoAdministradorLey16744: (empresa as any).id_organismo_administrador_ley_16744 ?? null,
-            tasaAdicionalDiferenciada: (empresa as any).tasa_adicional_diferenciada ?? null,
-            vigenciaInicio: (empresa as any).vigencia_inicio ?? null,
-            vigenciaFin: (empresa as any).vigencia_fin ?? null,
-          }
-        : null,
+      empresaLey16744:
+        empresaRow && empresaVigenteEnPeriodo(empresaRow, periodo)
+          ? mapEmpresaRowToLey16744Snapshot(empresaRow)
+          : null,
     };
   }
 }

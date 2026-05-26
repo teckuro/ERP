@@ -241,6 +241,12 @@ describe('proceso-mensual-motor.rules', () => {
     expect(liq.totalDescuentos).not.toBeGreaterThan(800000);
   });
 
+  it('sin datos de empresa no genera advertencia si existe tasa básica en parámetros', () => {
+    const liq = generarCalculoPreliminarPeriodo(input({ empresaLey16744: null }), 'now').liquidaciones[0];
+    expect(liq.cotizacionLey16744).toBeGreaterThan(0);
+    expect(liq.issues.some((i) => i.codigo === 'LEY_16744_EMPRESA_INCOMPLETA')).toBe(false);
+  });
+
   it('liquido preliminar = total haberes - descuentos trabajador', () => {
     const liq = generarCalculoPreliminarPeriodo(input(), 'now').liquidaciones[0];
     expect(liq.liquidoAPago).toBe(liq.totalHaberes - liq.totalDescuentos);

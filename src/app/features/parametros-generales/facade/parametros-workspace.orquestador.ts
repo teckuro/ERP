@@ -110,7 +110,6 @@ export class ParametrosWorkspaceOrquestador {
   readonly periodosMensualesCatalogo = signal<string[]>([]);
   readonly periodoRemuneracion = signal<PeriodoRemuneracionEstadoInfo | null>(null);
   readonly selectedCcafId = this.presentacion.selectedCcafId;
-  readonly selectedMutualId = this.presentacion.selectedMutualId;
   readonly isLoading = this.presentacion.isLoading;
   /** Consulta al backend solo para plantilla del último período (crear parámetros); no es guardado. */
   readonly isLoadingPlantilla = this.presentacion.isLoadingPlantilla;
@@ -1004,7 +1003,6 @@ export class ParametrosWorkspaceOrquestador {
       this.clienteConfig.set(saved);
       this.patchForm(this.parametroConClienteConfig(oficial, saved), this.selectedPeriodo());
       this.selectedCcafId.set(saved.idCcafEntidad);
-      this.selectedMutualId.set(saved.idOrganismoAdministradorLey16744);
       this.mostrarExitoClienteConfig(saved.periodo, 'oficiales', oficial.periodo);
     } catch (err) {
       this.mostrarErrorClienteConfig(this.extractErrorDetail(err) || 'No fue posible actualizar la configuración con oficiales.');
@@ -1207,7 +1205,6 @@ export class ParametrosWorkspaceOrquestador {
 
     this.patchForm(oficial, this.selectedPeriodo());
     this.selectedCcafId.set(null);
-    this.selectedMutualId.set(null);
     this.configDraftSource.set('oficiales');
     this.configDraftSourcePeriodo.set(oficial.periodo);
     this.generalesEditando.set(true);
@@ -1224,7 +1221,6 @@ export class ParametrosWorkspaceOrquestador {
 
     this.patchForm({ ...referencia, periodo: this.selectedPeriodo() }, this.selectedPeriodo());
     this.selectedCcafId.set(null);
-    this.selectedMutualId.set(null);
     this.configDraftSource.set('referencia');
     this.configDraftSourcePeriodo.set(referencia.periodo);
     this.generalesEditando.set(true);
@@ -1280,7 +1276,6 @@ export class ParametrosWorkspaceOrquestador {
     );
 
     this.selectedCcafId.set(config?.idCcafEntidad ?? null);
-    this.selectedMutualId.set(config?.idOrganismoAdministradorLey16744 ?? null);
   }
 
   private baseActualParaConfigCliente(): ParametroGeneral {
@@ -1384,7 +1379,7 @@ export class ParametrosWorkspaceOrquestador {
       gratificacion: raw.gratificacion,
       immGratificacion: this.numberFromUnknown(raw.immGratificacion),
       idCcafEntidad: this.selectedCcafId(),
-      idOrganismoAdministradorLey16744: this.selectedMutualId(),
+      idOrganismoAdministradorLey16744: null,
     });
   }
 
@@ -1408,10 +1403,6 @@ export class ParametrosWorkspaceOrquestador {
 
   seleccionarCcaf(value: SearchSelectValue): void {
     this.selectedCcafId.set(this.catalogIdFromSearchValue(value));
-  }
-
-  seleccionarMutual(value: SearchSelectValue): void {
-    this.selectedMutualId.set(this.catalogIdFromSearchValue(value));
   }
 
   selectedYear(): string {
@@ -1456,10 +1447,6 @@ export class ParametrosWorkspaceOrquestador {
       return 'Modificar guarda configuración cliente; los datos oficiales solo se usan para comparar.';
     }
     return '';
-  }
-
-  selectedLey16744Rate(): number | null {
-    return this.catalogos().ley16744Parametros[0]?.cotizacionBasicaEmpleador ?? null;
   }
 
   fechaActualizacionLabel(): string {
@@ -1673,15 +1660,8 @@ export class ParametrosWorkspaceOrquestador {
   private ensureCatalogSelection(catalogos: ParametrosGeneralesCatalogos): void {
     const config = this.clienteConfig();
     const configCcafId = config?.idCcafEntidad ?? null;
-    const configMutualId = config?.idOrganismoAdministradorLey16744 ?? null;
-
     const ccafExists = catalogos.ccafEntidades.some((row) => row.idCcafEntidad === configCcafId);
-    const mutualExists = catalogos.organismosLey16744.some(
-      (row) => row.idOrganismoAdministradorLey16744 === configMutualId,
-    );
-
     this.selectedCcafId.set(ccafExists ? configCcafId : null);
-    this.selectedMutualId.set(mutualExists ? configMutualId : null);
   }
 
   /** Valores neutros para un periodo sin registro (sin datos de otros periodos). */

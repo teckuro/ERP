@@ -219,11 +219,13 @@ export function calcularTrabajador(args: {
   if (!ley) {
     pushIssue(issues, 'LEY_16744_INCOMPLETA', 'ADVERTENCIA', 'No hay ley_16744_parametros para calcular cargo empleador.', 'ley_16744_parametros', input.periodo, 'cotizacion_basica_empleador');
     tasaLey = null;
-  }
-  if (!input.empresaLey16744) {
-    pushIssue(issues, 'LEY_16744_EMPRESA_INCOMPLETA', 'ADVERTENCIA', 'Faltan datos de empresa para Ley 16.744; se calcula solo tasa básica si existe.', 'empresa', null, 'tasa_adicional_diferenciada');
   } else {
-    tasaLey = (tasaLey ?? 0) + (normalizarTasa(input.empresaLey16744.tasaAdicionalDiferenciada) ?? 0);
+    const tasaAdicionalEmpresa = input.empresaLey16744
+      ? normalizarTasa(input.empresaLey16744.tasaAdicionalDiferenciada)
+      : null;
+    if (tasaAdicionalEmpresa != null) {
+      tasaLey = (tasaLey ?? 0) + tasaAdicionalEmpresa;
+    }
   }
   const cotizacionLey16744 = tasaLey == null ? 0 : redondear(baseImponiblePrevisional * tasaLey);
   if (tasaLey != null) {
