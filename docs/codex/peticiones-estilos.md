@@ -5,6 +5,7 @@
 - **Ajuste 2026-05-25:** Acción/activo/hover con familia `--erp-ink` (`#243b53` / `#172033`); `--erp-primary*` alias de ink; CTAs, tabs, rail y modales.
 - **Ajuste 2026-05-25:** Detalle mensual unificado (`payroll-detalle-mensual-panel.css`): expediente + tabbar + cuerpo en un panel; scroll horizontal en pestañas; avisos y vacíos dentro del cuerpo.
 - **Ajuste 2026-05-25:** Empty `app-data-grid` («Registro pendiente») ocupa 100% del alto en Pendientes/Liquidaciones/Trabajadores: `gridHeight="100%"`, cadena flex en panel detalle y reglas en `data-grid.component.css`.
+- **Ajuste 2026-05-25:** CTA superior derecho en `payroll-operativa-empty` ya no queda fijo: toma la acción principal del estado operativo (p. ej. tras verificar pasa a `Generar nómina`); añade estilo `:disabled` coherente.
 - **Archivos:** `payroll-segment-nav.css`, `payroll-operational-tabs.css`, `payroll-operativa-empty.css`, `proceso-mensual-container.css`, `proceso-mensual-workspace.component.{html,css}`, `proceso-mensual-revision-trabajadores.component.{html,css,ts}`.
 - **No tocado:** estilos globales, `angular.json`, servicios/motor.
 

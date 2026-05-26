@@ -2749,6 +2749,20 @@ export class ProcesoMensualPresentacionFacade {
     }
   }
 
+  ejecutarAccionPrincipalEstadoOperativo(): void {
+    const accion = this.estadoOperativo().accionPrincipal;
+    if (accion.tipo === 'local' && accion.accionLocal) {
+      if (accion.disabled) return;
+      this.ejecutarAccionValidacion(accion.accionLocal);
+      return;
+    }
+    if (accion.tipo === 'ruta' && accion.ruta) {
+      void this.router.navigateByUrl(
+        appendNominaFlowQuery(accion.ruta, this.periodoSeleccionado()),
+      );
+    }
+  }
+
   private pendienteDesdeValidacion(
     item: ValidacionOperativaItemView,
     severidad: ProcesoMensualEstadoSeveridad = item.severidad === 'bloqueo' ? 'danger' : item.severidad === 'advertencia' ? 'warning' : 'info',
