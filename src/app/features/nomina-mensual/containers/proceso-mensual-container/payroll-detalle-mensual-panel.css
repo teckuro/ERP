@@ -15,6 +15,12 @@
   margin-bottom: 0;
   border-bottom: 0;
   border-radius: 7px 7px 0 0;
+  gap: 6px;
+  padding: 8px 12px;
+}
+
+.payroll-tab-panel--detalle > .payroll-tab-summary h3 {
+  font-size: 0.875rem;
 }
 
 .payroll-detalle-mensual {
@@ -34,8 +40,8 @@
   flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: 8px 10px;
-  padding: 8px 12px;
+  gap: 6px;
+  padding: 6px 10px;
   border-bottom: 1px solid var(--erp-border);
   background: var(--erp-surface-soft);
 }
@@ -44,7 +50,7 @@
   display: flex;
   flex: 1 1 auto;
   flex-wrap: nowrap;
-  gap: 6px;
+  gap: 4px;
   min-width: 0;
   overflow-x: auto;
   scrollbar-width: thin;
@@ -64,25 +70,25 @@
   display: flex;
   flex: 1 1 auto;
   flex-direction: column;
-  gap: 10px;
+  gap: 8px;
   min-height: 0;
-  padding: 12px 14px;
+  padding: 8px 10px;
   overflow: auto;
 }
 
 .payroll-detalle-mensual__body > .payroll-detalle-situacion {
-  gap: 10px;
+  gap: 8px;
   padding: 0;
 }
 
 .payroll-detalle-mensual__body .payroll-detalle-situacion__lead {
   margin: 0;
-  padding: 8px 10px;
-  border: 1px solid var(--erp-border);
-  border-radius: 5px;
-  background: var(--erp-surface-soft);
-  font-size: 0.75rem;
-  line-height: 1.45;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  font-size: 0.72rem;
+  line-height: 1.4;
 }
 
 .payroll-detalle-mensual__body .payroll-liquidaciones-aviso {
@@ -105,13 +111,8 @@
 }
 
 .payroll-detalle-mensual__body .payroll-revision-trabajadores {
-  gap: 10px;
+  gap: 8px;
   min-height: min(420px, 55vh);
-}
-
-.payroll-detalle-mensual__body .payroll-revision-trabajadores__contexto {
-  border: 1px solid var(--erp-border);
-  border-radius: 5px;
 }
 
 @media (max-width: 768px) {

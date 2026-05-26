@@ -1341,6 +1341,13 @@ describe('ProcesoMensualContainer', () => {
       const c = localFixture.componentInstance;
       c.seleccionarNominaDetalleMensualVista('trabajadores');
 
+      expect(c.nominaMasivaStatFiltrosVisibles().map((item) => item.id)).toEqual([
+        'todos',
+        'listos',
+        'observaciones',
+        'bloqueados',
+      ]);
+
       const resumen = c.nominaMasivaResumen();
       const casos: Array<[NominaMasivaFiltro, string, number]> = [
         ['todos', 'Total', resumen.totalTrabajadores],

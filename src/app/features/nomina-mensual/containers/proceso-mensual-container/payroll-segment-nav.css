@@ -8,7 +8,7 @@
   margin: 0;
   border: 0;
   padding: 0;
-  gap: 6px;
+  gap: 4px;
 }
 
 .payroll-segment-nav__btn {
@@ -52,11 +52,11 @@
 }
 
 .payroll-segment-nav--detalle .payroll-segment-nav__btn {
-  min-height: 30px;
+  min-height: 26px;
   border-radius: 999px;
-  padding: 5px 14px;
+  padding: 3px 10px;
   color: var(--erp-ink);
-  font-size: 0.75rem;
+  font-size: 0.72rem;
   font-weight: 650;
 }
 
@@ -79,13 +79,13 @@
 
 .payroll-segment-nav--stat .payroll-segment-nav__btn {
   display: grid;
-  gap: 3px;
+  gap: 2px;
   min-width: 0;
   justify-content: stretch;
   border-color: var(--erp-border);
   border-radius: 6px;
   background: var(--erp-metric-tile, #fafaf7);
-  padding: 8px 10px;
+  padding: 5px 8px;
   text-align: left;
 }
 
@@ -97,7 +97,7 @@
 .payroll-segment-nav--stat .payroll-segment-nav__label {
   overflow: hidden;
   color: var(--erp-muted);
-  font-size: 0.705rem;
+  font-size: 0.68rem;
   font-weight: 750;
   text-overflow: ellipsis;
   text-transform: uppercase;
@@ -106,7 +106,7 @@
 
 .payroll-segment-nav--stat .payroll-segment-nav__value {
   color: var(--erp-ink);
-  font-size: 1.02rem;
+  font-size: 0.875rem;
   font-weight: 800;
   line-height: 1.15;
 }

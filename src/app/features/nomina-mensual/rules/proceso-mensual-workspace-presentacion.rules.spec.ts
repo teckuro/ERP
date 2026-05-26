@@ -123,6 +123,7 @@ describe('proceso-mensual-workspace-presentacion.rules', () => {
 
     expect(summaries.map((s) => s.id)).toEqual(['detalle_mensual', 'historial']);
     expect(summaries[0]?.severidad).toBe('bloqueo');
+    expect(summaries[0]?.metricas).toEqual([]);
     expect(summaries[1]?.metricas[0]).toEqual({ label: 'Liquidaciones', value: 'Pendiente' });
   });
 

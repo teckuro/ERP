@@ -1968,6 +1968,14 @@ Creación avanzada incorpora una identidad de producto local para dejar de senti
 - **Parámetros:** tab Configuración cliente deja de pedir mutual Ley 16.744; organismo y tasa adicional viven en `empresa`. Al guardar config cliente se envía `idOrganismoAdministradorLey16744: null`.
 - **Archivos:** `proceso-mensual-motor.rules.ts`, `proceso-mensual-empresa-ley16744.rules.ts`, `proceso-mensual.service.ts`, `parametros-config-cliente-tab`, `parametros-workspace.orquestador.ts`, `parametros-completitud.rules.ts`.
 
+## 2026-05-26 — Nómina mensual: compactación Detalle mensual
+
+- **Pills superiores:** filtros Situación/Trabajadores/Liquidaciones/Pendientes más bajos (`min-height` 26px, padding reducido); head del panel con menos aire.
+- **Tab summary:** en Detalle mensual sin bloque de métricas (`payroll-tab-summary__metrics`); título y descripción compactos.
+- **Trabajadores:** tabs stat en una línea (`Total · 1`); inactivos con fondo `--erp-surface-soft`; activo acoplado al cuerpo.
+- **Situación:** lead sin caja con borde; disclosures y body con menos padding/gap.
+- **Archivos:** `payroll-segment-nav.css`, `payroll-detalle-mensual-panel.css`, `proceso-mensual-workspace.component.css`, `proceso-mensual-revision-trabajadores.*`, `proceso-mensual-workspace-presentacion.rules.ts`, `proceso-mensual-presentacion.facade.ts`.
+
 ## 2026-05-23 — Alta avanzada: estado interno y limpieza BD
 
 - **UI:** en paso contrato con `grillaAvanzada`, se oculta el select «Estado de ficha inicial»; el bloque pasa a «Centro de costo y cargo». El motor sigue usando `en_proceso` / `borrador` en mappers (no editable por RRHH).

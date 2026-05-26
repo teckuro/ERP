@@ -1566,6 +1566,18 @@ export class ProcesoMensualPresentacionFacade {
     buildResumenMasivoDesdeFilas(this.nominaMasivaFilas()),
   );
 
+  readonly nominaMasivaStatFiltrosVisibles = computed<
+    ReadonlyArray<{ id: NominaMasivaFiltro; label: string; value: number }>
+  >(() => {
+    const resumen = this.nominaMasivaResumen();
+    return [
+      { id: 'todos', label: 'Total', value: resumen.totalTrabajadores },
+      { id: 'listos', label: 'Listos', value: resumen.listos },
+      { id: 'observaciones', label: 'Con observaciones', value: resumen.conObservaciones },
+      { id: 'bloqueados', label: 'Bloqueados', value: resumen.bloqueados },
+    ];
+  });
+
   readonly nominaMasivaFilas = computed<NominaMasivaFila[]>(() => {
     const input = this.nominaMasivaInput();
     const base = buildFilasMasivasTrabajadores(input);

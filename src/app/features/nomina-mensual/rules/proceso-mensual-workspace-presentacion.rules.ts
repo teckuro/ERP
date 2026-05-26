@@ -216,11 +216,7 @@ export function buildNominaWorkspaceTabVisibleSummaries(input: {
       descripcion: 'Trabajadores, movimientos, liquidaciones y pendientes en una sola vista.',
       severidad: input.bloqueosCount > 0 ? 'bloqueo' : input.pendientesCount > 0 ? 'atencion' : 'neutral',
       indicador: null,
-      metricas: [
-        { label: 'Trabajadores', value: input.resumenSuperior.trabajadores },
-        { label: 'Movimientos', value: input.resumenSuperior.movimientos },
-        { label: 'Bloqueos', value: input.bloqueosCount },
-      ],
+      metricas: [],
     },
     {
       id: 'historial',
