@@ -172,6 +172,76 @@ function ultimoGuardadoDesdeSnapshot(
   };
 }
 
+function trabajadoresDesdeBaseNomina(
+  base: BuildResultadoPreliminarInput['base'],
+): TrabajadorResultadoPreliminarView[] {
+  return asArray(base?.trabajadores).map((trabajador) => {
+    const estadoLabel =
+      trabajador.estado === 'bloqueado' || trabajador.estado === 'excluido'
+        ? 'Omitido'
+        : trabajador.estado === 'con_observaciones'
+          ? 'Con observaciones'
+          : 'Calculado';
+    return {
+      idPersona: trabajador.idPersona,
+      trabajadorLabel: trabajador.trabajadorLabel?.trim() || 'Trabajador sin ficha visible',
+      rutLabel: trabajador.rutLabel?.trim() || 'RUT no disponible',
+      estadoLabel,
+      haberesLabel: 'Monto no disponible',
+      descuentosLabel: 'Monto no disponible',
+      liquidoLabel: 'Monto no disponible',
+      observacionLabel: trabajador.observacion?.trim() || 'Sin observaciones',
+      accionLabel:
+        estadoLabel === 'Omitido'
+          ? 'Revisar trabajadores'
+          : estadoLabel === 'Con observaciones'
+            ? 'Revisar antes de confirmar'
+            : 'Sin acción pendiente',
+    };
+  });
+}
+
+function trabajadoresDesdeSnapshotActivo(
+  snapshot: NominaCalculoPeriodoSnapshot | null,
+): TrabajadorResultadoPreliminarView[] {
+  return asArray(snapshot?.trabajadores).map((trabajador) => {
+    const estadoLabel = estadoResultadoTrabajador(trabajador.estado);
+    const issues = asArray(trabajador.issues);
+    return {
+      idPersona: trabajador.idPersona,
+      trabajadorLabel: trabajador.nombreCompletoSnapshot?.trim() || 'Trabajador sin ficha visible',
+      rutLabel: trabajador.rut?.trim() || 'RUT no disponible',
+      estadoLabel,
+      haberesLabel: formatoMontoNomina(trabajador.totalHaberesImponibles + trabajador.totalHaberesNoImponibles),
+      descuentosLabel: formatoMontoNomina(trabajador.totalDescuentosLegales + trabajador.totalDescuentosVoluntarios),
+      liquidoLabel: formatoMontoNomina(trabajador.liquidoPreliminar),
+      observacionLabel: issues.length
+        ? limpiarYUnirMensajes(issues.map((issue) => issue.mensaje))
+        : 'Sin observaciones',
+      accionLabel:
+        estadoLabel === 'Omitido' || estadoLabel === 'No calculado'
+          ? 'Revisar trabajadores'
+          : estadoLabel === 'Con observaciones'
+            ? 'Revisar antes de confirmar'
+            : 'Sin acción pendiente',
+    };
+  });
+}
+
+function resolverTrabajadoresPreliminaresSinCalculo(
+  input: BuildResultadoPreliminarInput,
+): TrabajadorResultadoPreliminarView[] {
+  const desdeCompleto = trabajadoresDesdeSnapshotGuardado(input.snapshotCompleto);
+  if (desdeCompleto.length > 0) {
+    return desdeCompleto;
+  }
+  const desdeActivo = trabajadoresDesdeSnapshotActivo(input.snapshotActivo);
+  if (desdeActivo.length > 0) {
+    return desdeActivo;
+  }
+  return trabajadoresDesdeBaseNomina(input.base);
+}
+
 function trabajadoresDesdeSnapshotGuardado(
   snapshotCompleto: NominaSnapshotCompletoView | null,
 ): TrabajadorResultadoPreliminarView[] {
@@ -226,7 +296,7 @@ export function buildResultadoPreliminarView(input: BuildResultadoPreliminarInpu
         totalLiquido: snapshot?.totalLiquido ?? null,
         totalCostoEmpresa: null,
       },
-      trabajadores: trabajadoresDesdeSnapshotGuardado(input.snapshotCompleto),
+      trabajadores: resolverTrabajadoresPreliminaresSinCalculo(input),
       bloqueos: [],
       advertencias: [],
       informaciones: guardado

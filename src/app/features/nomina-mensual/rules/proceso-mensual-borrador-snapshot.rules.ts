@@ -132,14 +132,15 @@ export function buildPrevalidacionLecturaDesdeBorrador(
   };
 }
 
-export function mapSnapshotCompletoToBaseTrazabilidad(
-  completo: NominaSnapshotCompletoView | null,
-): BaseNominaTrazabilidad | null {
-  if (!completo) {
-    return null;
-  }
-  const cabecera = completo.cabecera;
-  const trabajadores: BaseNominaTrabajadorResumen[] = completo.trabajadores.map((t) => ({
+function asArray<T>(value: readonly T[] | null | undefined): T[] {
+  return Array.isArray(value) ? [...value] : [];
+}
+
+function mapTrabajadoresSnapshotToBaseTrazabilidad(
+  trabajadoresSnapshot: readonly NominaCalculoTrabajadorSnapshot[],
+  totalTrabajadores: number,
+): BaseNominaTrazabilidad {
+  const trabajadores: BaseNominaTrabajadorResumen[] = trabajadoresSnapshot.map((t) => ({
     idPersona: t.idPersona,
     trabajadorLabel: t.nombreCompletoSnapshot,
     rutLabel: t.rut,
@@ -156,7 +157,7 @@ export function mapSnapshotCompletoToBaseTrazabilidad(
 
   return {
     trabajadores,
-    trabajadoresConsiderados: cabecera.totalTrabajadores,
+    trabajadoresConsiderados: totalTrabajadores,
     listosParaCalculo: trabajadores.filter((t) => t.estado === 'listo').length,
     conObservaciones: trabajadores.filter((t) => t.estado === 'con_observaciones').length,
     bloqueados: trabajadores.filter((t) => t.estado === 'bloqueado').length,
@@ -166,6 +167,58 @@ export function mapSnapshotCompletoToBaseTrazabilidad(
     parametrosEstado: 'por_revisar',
     observacionParametros: '',
   };
+}
+
+export function mapSnapshotCompletoToBaseTrazabilidad(
+  completo: NominaSnapshotCompletoView | null,
+): BaseNominaTrazabilidad | null {
+  if (!completo) {
+    return null;
+  }
+  return mapTrabajadoresSnapshotToBaseTrazabilidad(
+    completo.trabajadores,
+    completo.cabecera.totalTrabajadores,
+  );
+}
+
+export function mapSnapshotActivoToBaseTrazabilidad(
+  snapshot: NominaCalculoPeriodoSnapshot | null,
+): BaseNominaTrazabilidad | null {
+  const trabajadoresSnapshot = asArray(snapshot?.trabajadores);
+  if (!snapshot || trabajadoresSnapshot.length === 0) {
+    return null;
+  }
+  return mapTrabajadoresSnapshotToBaseTrazabilidad(
+    trabajadoresSnapshot,
+    snapshot.totalTrabajadores,
+  );
+}
+
+export interface ResolveBaseNominaTrazabilidadInput {
+  preNomina: ProcesoMensualPreNominaPeriodo | null;
+  snapshotActivo: NominaCalculoPeriodoSnapshot | null;
+  snapshotCompleto: NominaSnapshotCompletoView | null;
+}
+
+export function resolveBaseNominaTrazabilidad(
+  input: ResolveBaseNominaTrazabilidadInput,
+): BaseNominaTrazabilidad | null {
+  const trazabilidadPreNomina = input.preNomina?.trazabilidad ?? null;
+  if (trazabilidadPreNomina?.trabajadores.length) {
+    return trazabilidadPreNomina;
+  }
+
+  const trazabilidadCompleto = mapSnapshotCompletoToBaseTrazabilidad(input.snapshotCompleto);
+  if (trazabilidadCompleto?.trabajadores.length) {
+    return trazabilidadCompleto;
+  }
+
+  const trazabilidadActivo = mapSnapshotActivoToBaseTrazabilidad(input.snapshotActivo);
+  if (trazabilidadActivo?.trabajadores.length) {
+    return trazabilidadActivo;
+  }
+
+  return trazabilidadPreNomina ?? trazabilidadCompleto ?? trazabilidadActivo;
 }
 
 function mapTrabajadorBorradorToSnapshot(trabajador: BaseNominaTrabajadorResumen): NominaCalculoTrabajadorSnapshot {

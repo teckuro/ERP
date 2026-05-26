@@ -199,6 +199,22 @@ describe('proceso-mensual-expediente-periodo.rules', () => {
     expect(vm.trabajadores[0].totalLiquido).toBe(400000);
   });
 
+  it('usa trabajadores del snapshot activo cuando completo aun no cargo', () => {
+    const vm = buildExpedienteNominaPeriodo({
+      snapshotActivo: cabeceraBase({
+        estado: 'borrador',
+        trabajadores: completoConTrabajadores().trabajadores,
+      }),
+      snapshotCompleto: null,
+      consultandoSnapshotCompleto: false,
+      errorSnapshotCompleto: null,
+      nominaCerrada: false,
+      liquidacionesDisponibles: false,
+    });
+    expect(vm.trabajadores).toHaveLength(1);
+    expect(vm.trabajadores[0].nombre).toBe('Ana Pérez');
+  });
+
   it('sin fuente de liquidaciones no inventa liquidaciones disponibles', () => {
     const vm = buildExpedienteNominaPeriodo({
       snapshotActivo: cabeceraBase({

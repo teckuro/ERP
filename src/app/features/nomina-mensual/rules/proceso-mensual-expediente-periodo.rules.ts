@@ -200,7 +200,10 @@ export function buildExpedienteNominaPeriodo(input: BuildExpedienteNominaPeriodo
     };
   }
 
-  const trabajadoresFuente = input.snapshotCompleto?.trabajadores ?? [];
+  const trabajadoresFuente =
+    input.snapshotCompleto?.trabajadores
+    ?? input.snapshotActivo?.trabajadores
+    ?? [];
   const sinDetalle =
     trabajadoresFuente.length === 0 &&
     (cabecera.totalTrabajadores > 0 || (input.snapshotCompleto?.resumen.totalTrabajadoresSinDetalle ?? 0) > 0);

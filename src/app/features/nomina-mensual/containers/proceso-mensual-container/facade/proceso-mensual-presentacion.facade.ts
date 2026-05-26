@@ -57,7 +57,7 @@ import {
   mostrarAccionesPeriodoNomina,
   type AccionNominaPeriodoId,
 } from '../../../rules/proceso-mensual-acciones-periodo.rules';
-import { mapSnapshotCompletoToBaseTrazabilidad } from '../../../rules/proceso-mensual-borrador-snapshot.rules';
+import { resolveBaseNominaTrazabilidad } from '../../../rules/proceso-mensual-borrador-snapshot.rules';
 import {
   buildIncidenciasPeriodo,
   esIncidenciaPeriodoSinPendienteReal,
@@ -1009,7 +1009,8 @@ export class ProcesoMensualPresentacionFacade {
       align: 'right',
       sortable: true,
       minWidth: '120px',
-      format: (_value, row) => this.etiquetaMontoRevisionTrabajador(row.liquidoEstimado),
+      format: (_value, row) =>
+        this.etiquetaMontoRevisionTrabajador(row.liquidoEstimado, row.montosEstimadosDesdeEntradas === true),
     },
     { id: 'accion', header: 'Acción', field: 'idPersona', minWidth: '128px' },
   ];
@@ -1018,10 +1019,12 @@ export class ProcesoMensualPresentacionFacade {
     (column) => column.id !== 'trabajador',
   );
 
-  readonly baseNominaTrazabilidad = computed(
-    () =>
-      this.store.preNomina()?.trazabilidad
-      ?? mapSnapshotCompletoToBaseTrazabilidad(this.store.snapshotCompleto()),
+  readonly baseNominaTrazabilidad = computed(() =>
+    resolveBaseNominaTrazabilidad({
+      preNomina: this.store.preNomina(),
+      snapshotActivo: this.store.snapshotActivo(),
+      snapshotCompleto: this.store.snapshotCompleto(),
+    }),
   );
 
   readonly cierreOperativo = computed<CierreOperativoView>(() => {
@@ -1677,9 +1680,16 @@ export class ProcesoMensualPresentacionFacade {
     }),
   );
 
+  private readonly entradasMensualesPeriodo = computed(
+    () =>
+      this.resultadoFlujoNomina()?.entradasMensuales
+      ?? this.store.snapshotActivo()?.borradorPersist?.entradasMensuales
+      ?? [],
+  );
+
   readonly filasDetalleMovimientoNomina = computed<FilaDetalleMovimientoNomina[]>(() =>
     construirFilasDetalleMovimientoNomina({
-      entradasMensuales: this.store.resultado()?.entradasMensuales,
+      entradasMensuales: this.entradasMensualesPeriodo(),
       base: this.baseNominaTrazabilidad(),
       resultadoTrabajadores: this.resultadoPreliminar().trabajadores,
     }),
@@ -1687,7 +1697,7 @@ export class ProcesoMensualPresentacionFacade {
 
   readonly filasDetalleRecurrenteNomina = computed<FilaDetalleRecurrenteNomina[]>(() =>
     construirFilasDetalleRecurrenteNomina({
-      entradasMensuales: this.store.resultado()?.entradasMensuales,
+      entradasMensuales: this.entradasMensualesPeriodo(),
       base: this.baseNominaTrazabilidad(),
       resultadoTrabajadores: this.resultadoPreliminar().trabajadores,
     }),
@@ -1797,14 +1807,19 @@ export class ProcesoMensualPresentacionFacade {
     };
   });
 
-  private readonly nominaMasivaInput = computed(() => ({
-    resultadoTrabajadores: this.resultadoPreliminar().trabajadores,
-    expedienteTrabajadores: this.expedienteNominaPeriodo().trabajadores,
-    baseTrabajadores: this.baseNominaTrazabilidad()?.trabajadores ?? [],
-    filasMovimientos: this.filasDetalleMovimientoNomina(),
-    filasRecurrentes: this.filasDetalleRecurrenteNomina(),
-    incidencias: this.incidenciasRevisionTrabajadores(),
-  }));
+  private readonly nominaMasivaInput = computed(() => {
+    const contexto = this.contextoOperativoPeriodo();
+    return {
+      resultadoTrabajadores: this.resultadoPreliminar().trabajadores,
+      expedienteTrabajadores: this.expedienteNominaPeriodo().trabajadores,
+      baseTrabajadores: this.baseNominaTrazabilidad()?.trabajadores ?? [],
+      filasMovimientos: this.filasDetalleMovimientoNomina(),
+      filasRecurrentes: this.filasDetalleRecurrenteNomina(),
+      incidencias: this.incidenciasRevisionTrabajadores(),
+      montosOficialesDisponibles: contexto.calculoGenerado || contexto.resultadoGuardado,
+      entradasMensuales: this.entradasMensualesPeriodo(),
+    };
+  });
 
   readonly nominaMasivaResumen = computed(() =>
     buildResumenMasivoDesdeFilas(this.nominaMasivaFilas()),
@@ -1826,7 +1841,11 @@ export class ProcesoMensualPresentacionFacade {
     const input = this.nominaMasivaInput();
     const base = buildFilasMasivasTrabajadores(input);
     if (this.contextoOperativoPeriodo().baseGenerada) {
-      return base;
+      if (base.length > 0) {
+        return base;
+      }
+      const pendientes = buildFilasMasivasDesdePendientesRevision(this.trabajadoresPendientesRevision());
+      return mergeFilasMasivasConPendientesRevision(base, pendientes);
     }
     const pendientes = buildFilasMasivasDesdePendientesRevision(this.trabajadoresPendientesRevision());
     return mergeFilasMasivasConPendientesRevision(base, pendientes);
@@ -1874,6 +1893,7 @@ export class ProcesoMensualPresentacionFacade {
       haberes: fila.haberes,
       descuentos: fila.descuentos,
       liquidoEstimado: fila.liquidoEstimado,
+      montosEstimadosDesdeEntradas: fila.montosEstimadosDesdeEntradas,
       movimientos: [],
       recurrentes: [],
       incidencias,
@@ -1898,11 +1918,30 @@ export class ProcesoMensualPresentacionFacade {
     return `${this.etiquetaFiltroNominaMasiva(this.nominaMasivaFiltro())} · ${this.etiquetaCantidadTrabajadores(cantidad)}`;
   });
 
-  etiquetaMontoRevisionTrabajador(monto: number | null | undefined): string {
-    if (!this.contextoOperativoPeriodo().baseGenerada && (monto == null || monto === 0)) {
+  etiquetaMontoRevisionTrabajador(
+    monto: number | null | undefined,
+    esEstimado = false,
+  ): string {
+    const contexto = this.contextoOperativoPeriodo();
+    if (!contexto.baseGenerada && (monto == null || monto === 0)) {
       return 'Sin nómina generada';
     }
-    return this.etiquetaMontoNominaMasiva(monto ?? null);
+    if (
+      contexto.baseGenerada
+      && !contexto.calculoGenerado
+      && !contexto.resultadoGuardado
+      && (monto == null || monto === 0)
+      && !esEstimado
+    ) {
+      return 'Pendiente de cálculo';
+    }
+    if (monto == null) {
+      return this.etiquetaMontoNominaMasiva(null);
+    }
+    if (esEstimado) {
+      return `Est. ${this.formatoMonto(monto)}`;
+    }
+    return this.formatoMonto(monto);
   }
 
   private readonly syncNominaMasivaSeleccion = effect(() => {

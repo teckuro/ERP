@@ -8,7 +8,9 @@ import type {
 import {
   buildBorradorSnapshotFromPreNomina,
   extractBorradorPersistContext,
+  mapSnapshotActivoToBaseTrazabilidad,
   mapSnapshotCompletoToBaseTrazabilidad,
+  resolveBaseNominaTrazabilidad,
 } from './proceso-mensual-borrador-snapshot.rules';
 
 const trazabilidadBase: BaseNominaTrazabilidad = {
@@ -190,5 +192,44 @@ describe('proceso-mensual-borrador-snapshot.rules', () => {
 
     expect(trazabilidad?.trabajadores).toHaveLength(1);
     expect(trazabilidad?.trabajadores[0]?.trabajadorLabel).toBe('Pedro Rios');
+  });
+
+  it('reconstruye trazabilidad base desde snapshot activo en memoria', () => {
+    const { snapshot } = buildBorradorSnapshotFromPreNomina({
+      periodo: '2026-05',
+      preNomina: preNominaBase,
+      prevalidacion: prevalidacionBase,
+      fechaGeneracion: '2026-05-18T10:00:00.000Z',
+      totalAdvertencias: 1,
+    });
+
+    const trazabilidad = mapSnapshotActivoToBaseTrazabilidad(snapshot);
+    expect(trazabilidad?.trabajadores).toHaveLength(2);
+    expect(trazabilidad?.trabajadores[0]?.trabajadorLabel).toBe('Ana Perez');
+  });
+
+  it('prioriza preNomina y cae a snapshot activo tras rehidratar borrador', () => {
+    const { snapshot } = buildBorradorSnapshotFromPreNomina({
+      periodo: '2026-05',
+      preNomina: preNominaBase,
+      prevalidacion: prevalidacionBase,
+      fechaGeneracion: '2026-05-18T10:00:00.000Z',
+      totalAdvertencias: 1,
+    });
+
+    const desdePreNomina = resolveBaseNominaTrazabilidad({
+      preNomina: preNominaBase,
+      snapshotActivo: snapshot,
+      snapshotCompleto: null,
+    });
+    expect(desdePreNomina?.trabajadores).toHaveLength(2);
+
+    const rehidratado = resolveBaseNominaTrazabilidad({
+      preNomina: null,
+      snapshotActivo: snapshot,
+      snapshotCompleto: null,
+    });
+    expect(rehidratado?.trabajadores).toHaveLength(2);
+    expect(rehidratado?.trabajadores[1]?.trabajadorLabel).toBe('Luis Gomez');
   });
 });

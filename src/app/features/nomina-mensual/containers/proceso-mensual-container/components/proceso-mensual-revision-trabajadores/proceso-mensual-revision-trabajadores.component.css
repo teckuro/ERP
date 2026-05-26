@@ -646,6 +646,14 @@
   text-align: right;
 }
 
+.payroll-revision-trabajadores__totals-note {
+  margin: 0;
+  padding: 0 10px 8px;
+  color: var(--erp-muted, #647084);
+  font-size: 0.72rem;
+  line-height: 1.35;
+}
+
 .payroll-revision-trabajadores__section {
   display: grid;
   gap: 0;

@@ -1190,6 +1190,50 @@ describe('ProcesoMensualContainer', () => {
       expect(localFixture.componentInstance.snapshotActivo()?.estado).toBe('borrador');
       expect(localFixture.componentInstance.contextoOperativoPeriodo().baseGenerada).toBe(true);
       expect(localFixture.componentInstance.contextoOperativoPeriodo().resultadoGuardado).toBe(false);
+      expect(localFixture.componentInstance.nominaMasivaFilas().length).toBeGreaterThan(0);
+    });
+
+    it('tras generar base estima montos desde entradas aprobadas del periodo', async () => {
+      ejecutarPrevalidaciones.mockResolvedValueOnce(prevalidacionLista({
+        entradasMensuales: [
+          entradaMensualAprobada({ idPersona: 1, monto: 800000 }),
+          entradaMensualAprobada({
+            idEntrada: 'novedad:2',
+            idPersona: 1,
+            monto: 120000,
+            tipoEntrada: 'descuento',
+            categoria: 'descuento_variable',
+            tipoMovimiento: 'descuento',
+          }),
+        ],
+      }));
+      generarPreNominaPeriodo.mockResolvedValueOnce({
+        ...baseNominaLista(),
+        trazabilidad: {
+          ...baseNominaLista().trazabilidad,
+          trabajadores: [{
+            idPersona: 1,
+            trabajadorLabel: 'Ana Perez',
+            rutLabel: '11.111.111-1',
+            contratoLabel: 'Contrato vigente',
+            estado: 'listo',
+            asignacionesRecurrentes: 0,
+            movimientosDelMes: 2,
+            observacion: 'Sin observaciones',
+          }],
+        },
+      });
+      const localFixture = await montarContainer();
+      await avanzarFlujo(localFixture, 'base');
+
+      const c = localFixture.componentInstance;
+      await vi.waitFor(() => expect(guardarBaseNominaBorrador).toHaveBeenCalled());
+      const fila = c.nominaMasivaFilas().find((item) => String(item.idPersona) === '1');
+      expect(fila?.montosEstimadosDesdeEntradas).toBe(true);
+      expect(fila?.haberes).toBe(800000);
+      expect(fila?.descuentos).toBe(120000);
+      expect(fila?.liquidoEstimado).toBe(680000);
+      expect(c.etiquetaMontoRevisionTrabajador(fila?.liquidoEstimado, true)).toContain('Est.');
     });
 
     it('rehidrata borrador como base_lista y no vuelve a pedir generar nómina', async () => {

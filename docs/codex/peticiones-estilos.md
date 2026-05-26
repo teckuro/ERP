@@ -1,3 +1,9 @@
+## 2026-05-26 - Nómina mensual: montos referenciales en borrador (Detalle mensual / trabajadores)
+
+- **Cambio:** Tras generar base en borrador, la grilla de revisión ya no muestra `$0` engañoso. Sin cálculo oficial: copy **«Pendiente de cálculo»**. Con movimientos aprobados del mes: montos **«Est. $X»** (referencia desde entradas, no liquidación). Nota contextual en panel detalle: *«Referencia desde movimientos del mes…»*.
+- **Archivos:** `proceso-mensual-masivo-montos-estimados.rules.ts`, `proceso-mensual-masivo-layout.rules.ts`, `proceso-mensual-presentacion.facade.ts`, `proceso-mensual-revision-trabajadores.component.{html,css}`, specs rules + container.
+- **No tocado:** estilos globales, `angular.json`, SQL/motor.
+
 ## 2026-05-26 - Nómina mensual: radios planos e integración visual uniforme
 
 - **Ajuste 2026-05-26:** Tab Historial: sin fila placeholder ni título duplicado en grilla; vacío centrado (icono history, copy trazabilidad); cabecera sin tile suelto de liquidaciones; indicador «N eventos» en tab cuando hay datos; grilla operativa a altura completa con marco NOIA.

@@ -1,4 +1,6 @@
 ﻿import type { BaseNominaTrazabilidad } from '../models/proceso-mensual.model';
+import type { EntradaMensualPeriodo } from '../entradas/models/entrada-mensual-periodo.model';
+import { aplicarMontosEstimadosDesdeEntradas } from './proceso-mensual-masivo-montos-estimados.rules';
 import type { ExpedienteNominaPeriodoView } from './proceso-mensual-expediente-periodo.rules';
 import type { IncidenciaPeriodo } from './proceso-mensual-incidencias-periodo.rules';
 import type {
@@ -43,6 +45,8 @@ export interface NominaMasivaFila {
   haberes: number | null;
   descuentos: number | null;
   liquidoEstimado: number | null;
+  /** Montos referenciales desde entradas del mes; no reemplazan el cálculo preliminar. */
+  montosEstimadosDesdeEntradas?: boolean;
   pendientes: number;
   /** Alias visible en columna Incidencias. */
   incidenciasCount: number;
@@ -66,6 +70,7 @@ export interface NominaMasivaDetalle {
   haberes: number | null;
   descuentos: number | null;
   liquidoEstimado: number | null;
+  montosEstimadosDesdeEntradas?: boolean;
   movimientos: FilaDetalleMovimientoNomina[];
   recurrentes: FilaDetalleRecurrenteNomina[];
   incidencias: IncidenciaPeriodo[];
@@ -78,6 +83,9 @@ export interface BuildNominaMasivaInput {
   filasMovimientos: FilaDetalleMovimientoNomina[];
   filasRecurrentes: FilaDetalleRecurrenteNomina[];
   incidencias: IncidenciaPeriodo[];
+  /** True cuando hay cálculo preliminar guardado u oficial; evita mostrar $0 del borrador como monto real. */
+  montosOficialesDisponibles: boolean;
+  entradasMensuales?: readonly EntradaMensualPeriodo[];
 }
 
 interface FilaDraft {
@@ -197,22 +205,49 @@ function rowsPorTrabajador<T extends FilaDetalleMovimientoNomina | FilaDetalleRe
   return rows.filter((row) => normalizarNombre(row.trabajador) === nombre);
 }
 
-function mergeFila(map: Map<string, FilaDraft>, fila: FilaDraft): void {
-  const clave = clavePersona(fila.idPersona);
+function mergeMonto(
+  existente: number | null,
+  candidato: number | null,
+  montosOficialesDisponibles: boolean,
+): number | null {
+  if (existente != null) {
+    return existente;
+  }
+  if (!montosOficialesDisponibles && (candidato == null || candidato === 0)) {
+    return null;
+  }
+  return candidato;
+}
+
+function normalizarMontosFila(fila: FilaDraft, montosOficialesDisponibles: boolean): FilaDraft {
+  if (montosOficialesDisponibles) {
+    return fila;
+  }
+  return {
+    ...fila,
+    haberes: fila.haberes === 0 ? null : fila.haberes,
+    descuentos: fila.descuentos === 0 ? null : fila.descuentos,
+    liquidoEstimado: fila.liquidoEstimado === 0 ? null : fila.liquidoEstimado,
+  };
+}
+
+function mergeFila(map: Map<string, FilaDraft>, fila: FilaDraft, montosOficialesDisponibles: boolean): void {
+  const filaNormalizada = normalizarMontosFila(fila, montosOficialesDisponibles);
+  const clave = clavePersona(filaNormalizada.idPersona);
   if (!clave) return;
   const existente = map.get(clave);
   if (!existente) {
-    map.set(clave, fila);
+    map.set(clave, filaNormalizada);
     return;
   }
   map.set(clave, {
     idPersona: existente.idPersona,
-    trabajador: existente.trabajador || fila.trabajador,
-    rut: existente.rut || fila.rut,
-    estado: mejorEstado(existente.estado, fila.estado),
-    haberes: existente.haberes ?? fila.haberes,
-    descuentos: existente.descuentos ?? fila.descuentos,
-    liquidoEstimado: existente.liquidoEstimado ?? fila.liquidoEstimado,
+    trabajador: existente.trabajador || filaNormalizada.trabajador,
+    rut: existente.rut || filaNormalizada.rut,
+    estado: mejorEstado(existente.estado, filaNormalizada.estado),
+    haberes: mergeMonto(existente.haberes, filaNormalizada.haberes, montosOficialesDisponibles),
+    descuentos: mergeMonto(existente.descuentos, filaNormalizada.descuentos, montosOficialesDisponibles),
+    liquidoEstimado: mergeMonto(existente.liquidoEstimado, filaNormalizada.liquidoEstimado, montosOficialesDisponibles),
   });
 }
 
@@ -254,15 +289,16 @@ function filaDesdeBase(trabajador: BaseNominaTrazabilidad['trabajadores'][number
 
 export function buildFilasMasivasTrabajadores(input: BuildNominaMasivaInput): NominaMasivaFila[] {
   const map = new Map<string, FilaDraft>();
+  const montosOficiales = input.montosOficialesDisponibles;
 
   for (const trabajador of input.resultadoTrabajadores) {
-    mergeFila(map, filaDesdeResultado(trabajador));
+    mergeFila(map, filaDesdeResultado(trabajador), montosOficiales);
   }
   for (const trabajador of input.expedienteTrabajadores) {
-    mergeFila(map, filaDesdeExpediente(trabajador));
+    mergeFila(map, filaDesdeExpediente(trabajador), montosOficiales);
   }
   for (const trabajador of input.baseTrabajadores) {
-    mergeFila(map, filaDesdeBase(trabajador));
+    mergeFila(map, filaDesdeBase(trabajador), montosOficiales);
   }
 
   return [...map.values()]
@@ -278,8 +314,11 @@ export function buildFilasMasivasTrabajadores(input: BuildNominaMasivaInput): No
       const movimientosMes = rowsPorTrabajador(input.filasMovimientos, fila.trabajador);
       const recurrentes = rowsPorTrabajador(input.filasRecurrentes, fila.trabajador);
       const incidenciasCount = incidencias.filter((incidencia) => incidencia.severidad !== 'info').length;
+      const filaConMontos = !montosOficiales
+        ? aplicarMontosEstimadosDesdeEntradas(fila, input.entradasMensuales)
+        : fila;
       return {
-        ...fila,
+        ...filaConMontos,
         estado,
         pendientes: incidenciasCount,
         incidenciasCount,
@@ -424,6 +463,7 @@ export function buildDetalleMasivoTrabajador(
     haberes: fila.haberes,
     descuentos: fila.descuentos,
     liquidoEstimado: fila.liquidoEstimado,
+    montosEstimadosDesdeEntradas: fila.montosEstimadosDesdeEntradas,
     movimientos: rowsPorTrabajador(input.filasMovimientos, fila.trabajador),
     recurrentes: rowsPorTrabajador(input.filasRecurrentes, fila.trabajador),
     incidencias: incidenciasPorPersona(input.incidencias, fila.idPersona),
