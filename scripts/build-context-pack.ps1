@@ -14,18 +14,33 @@ $repoRoot = (Resolve-Path (Join-Path $PSScriptRoot "..")).Path
 $stageRoot = Join-Path $repoRoot "tmp/context-pack-stage"
 $outputFullPath = if ([System.IO.Path]::IsPathRooted($OutputPath)) { $OutputPath } else { Join-Path $repoRoot $OutputPath }
 
+function Get-RelativePathCompat {
+  param(
+    [Parameter(Mandatory = $true)][string]$BasePath,
+    [Parameter(Mandatory = $true)][string]$TargetPath
+  )
+
+  $baseFull = [System.IO.Path]::GetFullPath($BasePath)
+  if (-not $baseFull.EndsWith([System.IO.Path]::DirectorySeparatorChar)) {
+    $baseFull += [System.IO.Path]::DirectorySeparatorChar
+  }
+  $targetFull = [System.IO.Path]::GetFullPath($TargetPath)
+  $relativeUri = New-Object System.Uri($baseFull)
+  $targetUri = New-Object System.Uri($targetFull)
+  return [System.Uri]::UnescapeDataString($relativeUri.MakeRelativeUri($targetUri).ToString()).Replace("\", "/")
+}
+
 function Add-RelativeFile {
   param(
-    [Parameter(Mandatory = $true)][string]$RelativePath,
-    [Parameter(Mandatory = $true)][System.Collections.Generic.List[string]]$Collector
+    [Parameter(Mandatory = $true)][string]$RelativePath
   )
 
   $normalized = $RelativePath.Replace("/", [System.IO.Path]::DirectorySeparatorChar).Replace("\", [System.IO.Path]::DirectorySeparatorChar)
   $fullPath = Join-Path $repoRoot $normalized
 
   if (Test-Path $fullPath -PathType Leaf) {
-    if (-not $Collector.Contains($RelativePath)) {
-      $Collector.Add($RelativePath) | Out-Null
+    if (-not $script:ContextPackFiles.Contains($RelativePath)) {
+      [void]$script:ContextPackFiles.Add($RelativePath)
     }
   }
 }
@@ -33,7 +48,6 @@ function Add-RelativeFile {
 function Add-RelativeDirectoryFiles {
   param(
     [Parameter(Mandatory = $true)][string]$RelativeDirectory,
-    [Parameter(Mandatory = $true)][System.Collections.Generic.List[string]]$Collector,
     [string[]]$Include = @("*.md", "*.mdc")
   )
 
@@ -46,15 +60,16 @@ function Add-RelativeDirectoryFiles {
 
   foreach ($pattern in $Include) {
     Get-ChildItem -Path $fullDirectory -Recurse -File -Filter $pattern | ForEach-Object {
-      $relative = [System.IO.Path]::GetRelativePath($repoRoot, $_.FullName).Replace("\", "/")
-      if (-not $Collector.Contains($relative)) {
-        $Collector.Add($relative) | Out-Null
+      $relative = Get-RelativePathCompat -BasePath $repoRoot -TargetPath $_.FullName
+      if (-not $script:ContextPackFiles.Contains($relative)) {
+        [void]$script:ContextPackFiles.Add($relative)
       }
     }
   }
 }
 
-$files = [System.Collections.Generic.List[string]]::new()
+$script:ContextPackFiles = New-Object System.Collections.Generic.List[string]
+$files = $script:ContextPackFiles
 
 # Núcleo mínimo para tareas Cursor/Codex.
 $coreFiles = @(
@@ -83,7 +98,7 @@ $coreFiles = @(
 )
 
 foreach ($file in $coreFiles) {
-  Add-RelativeFile -RelativePath $file -Collector $files
+  Add-RelativeFile -RelativePath $file
 }
 
 if ($IncludeEmpleadoAdvanced) {
@@ -98,7 +113,7 @@ if ($IncludeEmpleadoAdvanced) {
     "src/app/features/empleados/pages/form-empleado/form-empleado.feedback.css"
   )
   foreach ($file in $empleadosFiles) {
-    Add-RelativeFile -RelativePath $file -Collector $files
+    Add-RelativeFile -RelativePath $file
   }
 }
 
@@ -116,26 +131,28 @@ if ($IncludeShellNoia) {
     "src/app/layout/sidebar/sidebar.css"
   )
   foreach ($file in $shellFiles) {
-    Add-RelativeFile -RelativePath $file -Collector $files
+    Add-RelativeFile -RelativePath $file
   }
 }
 
 if ($IncludeNomina) {
-  Add-RelativeDirectoryFiles -RelativeDirectory "docs/codex/modulos/nomina-mensual" -Collector $files
+  Add-RelativeDirectoryFiles -RelativeDirectory "docs/codex/modulos/nomina-mensual"
 }
 
 if ($IncludeMovimientos) {
-  Add-RelativeDirectoryFiles -RelativeDirectory "docs/codex/modulos/movimientos-variables" -Collector $files
-  Add-RelativeDirectoryFiles -RelativeDirectory "docs/codex/modulos/haberes-descuentos" -Collector $files
+  Add-RelativeDirectoryFiles -RelativeDirectory "docs/codex/modulos/movimientos-variables"
+  Add-RelativeDirectoryFiles -RelativeDirectory "docs/codex/modulos/haberes-descuentos"
 }
 
 if ($IncludeParametros) {
-  Add-RelativeDirectoryFiles -RelativeDirectory "docs/codex/modulos/parametros" -Collector $files
+  Add-RelativeDirectoryFiles -RelativeDirectory "docs/codex/modulos/parametros"
 }
 
 foreach ($file in $ExtraFiles) {
-  Add-RelativeFile -RelativePath $file -Collector $files
+  Add-RelativeFile -RelativePath $file
 }
+
+$files = $script:ContextPackFiles
 
 if (Test-Path $stageRoot) {
   Remove-Item $stageRoot -Recurse -Force

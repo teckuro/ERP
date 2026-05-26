@@ -17,7 +17,7 @@ import { normalizeText } from '../utils/empleado-form.helpers';
 function pickFirstCatalogId(options: EmpleadoCatalogOption[], label: string): number {
   const v = options[0]?.value;
   if (typeof v !== 'number' || Number.isNaN(v)) {
-    throw new Error(`El catalogo de ${label} no esta disponible.`);
+    throw new Error(`El catálogo de ${label} no está disponible.`);
   }
   return v;
 }

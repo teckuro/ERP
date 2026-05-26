@@ -27,7 +27,9 @@ export function parseIdPersonaFromUrl(url: string): number | null {
   return m ? Number(m[1]) : null;
 }
 
-export { ensureLoggedIn } from './e2e-auth';
+import { ensureLoggedIn } from './e2e-auth';
+
+export { ensureLoggedIn };
 
 export async function waitAdvancedFormReady(page: Page): Promise<void> {
   await page.waitForLoadState('networkidle');

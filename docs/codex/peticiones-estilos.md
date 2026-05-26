@@ -5,7 +5,7 @@
 
 ## 2026-05-25 - MsgBox Siguiente: copy bloqueos + lista viñetas
 
-- **Cambio:** `next-step-review` con errores bloqueantes usa `buildNextStepBlockingModalContent` (titulo, mensaje, «Campos pendientes», CTAs). MessageBox renderiza `section.items` como `<ul>`. `draft-invalid` / `finish-invalid` sin cambio.
+- **Cambio:** `next-step-review` con errores bloqueantes usa `buildNextStepBlockingModalContent` (título, mensaje, «Campos pendientes», CTAs). MessageBox renderiza `section.items` como `<ul>`. `draft-invalid` / `finish-invalid` sin cambio.
 - **Archivos:** `empleado-alta-modal.presenter.ts`, `form-empleado.ts`, `message-box.component.html/css`, specs, `creacion-avanzada.md`.
 
 ## 2026-05-25 - MsgBox alta: sin listado embebido de campos

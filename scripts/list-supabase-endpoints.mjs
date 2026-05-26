@@ -5,10 +5,15 @@ import { fileURLToPath } from 'url';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const projectRoot = path.join(__dirname, '..');
 const configPath = path.join(projectRoot, 'public', 'app-config.json');
-const schemaPath = path.join(projectRoot, 'src', 'app', 'supabase', 'supabase.ts');
+const schemaPath = path.join(projectRoot, 'src', 'app', 'core', 'models', 'database.types.ts');
+
+function readUtf8(filePath) {
+  const raw = fs.readFileSync(filePath, 'utf8');
+  return raw.charCodeAt(0) === 0xfeff ? raw.slice(1) : raw;
+}
 
 function readJson(filePath) {
-  return JSON.parse(fs.readFileSync(filePath, 'utf8'));
+  return JSON.parse(readUtf8(filePath));
 }
 
 function getBlock(source, blockName, indent = '') {
@@ -56,7 +61,7 @@ if (!fs.existsSync(configPath)) {
 }
 
 if (!fs.existsSync(schemaPath)) {
-  console.error('No existe src/app/supabase/supabase.ts.');
+  console.error('No existe src/app/core/models/database.types.ts. Ejecute: npm run types:supabase');
   process.exit(1);
 }
 
@@ -67,13 +72,14 @@ if (!supabaseUrl) {
   process.exit(1);
 }
 
-const raw = fs.readFileSync(schemaPath, 'utf8');
+const raw = readUtf8(schemaPath);
 const publicBlock = getBlock(raw, 'public', '  ');
 const graphqlBlock = getBlock(raw, 'graphql_public', '  ');
+const schemaIndent = '    ';
 
-const publicTables = extractNames(getBlock(publicBlock, 'Tables'));
-const publicViews = extractNames(getBlock(publicBlock, 'Views'));
-const publicFunctions = extractNames(getBlock(publicBlock, 'Functions'));
+const publicTables = extractNames(getBlock(publicBlock, 'Tables', schemaIndent));
+const publicViews = extractNames(getBlock(publicBlock, 'Views', schemaIndent));
+const publicFunctions = extractNames(getBlock(publicBlock, 'Functions', schemaIndent));
 const graphqlFunctions = extractNames(getBlock(graphqlBlock, 'Functions'));
 
 console.log(`Base URL: ${supabaseUrl}`);

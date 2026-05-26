@@ -1,5 +1,5 @@
 <div class="parametros-viewhead">
-  <div class="period-row parametros-period-band" aria-label="Periodo">
+  <div class="period-row parametros-period-band" aria-label="Período">
     <div class="period-row__left parametros-period-left">
       <div class="period-row__left-top">
         <span class="period-label">Parámetros del período {{ ws.periodoGlobal.etiqueta() }}</span>
@@ -7,7 +7,7 @@
           <button
             type="button"
             class="period-arrow"
-            aria-label="Periodo anterior"
+            aria-label="Período anterior"
             [disabled]="ws.parametrosUiBloqueada()"
             (click)="ws.moverPeriodo(-1)"
           >
@@ -39,7 +39,7 @@
           <button
             type="button"
             class="period-arrow"
-            aria-label="Periodo siguiente"
+            aria-label="Período siguiente"
             [disabled]="ws.parametrosUiBloqueada()"
             (click)="ws.moverPeriodo(1)"
           >
@@ -60,7 +60,7 @@
       <p class="period-mensual__detail parametros-period-status-detail">{{ ws.periodoEstadoDetalle() }}</p>
     </div>
 
-    <div class="parametros-period-actions" aria-label="Acciones del periodo">
+    <div class="parametros-period-actions" aria-label="Acciones del período">
       @if (!ws.hasAnySyncedData()) {
         <app-button
           variant="outline"

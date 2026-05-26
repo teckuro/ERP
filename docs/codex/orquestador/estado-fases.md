@@ -4,7 +4,7 @@
 | ----- | ------ |
 | Estado | **Ola B cerrada** (2026-05-25): B1–B3, B5. B4 y B6 aplazados |
 | Tipo | Refactor arquitectura (sin cambio funcional) |
-| Alcance | Ola A: orquestador modales alta, snapshot ficha, manifest honorarios. Ola B: modularización listados (mv, hd, tabla empleados) y workspace parámetros (grids/tabs presenters, banda periodo, panel tabs). |
+| Alcance | Ola A: orquestador modales alta, snapshot ficha, manifest honorarios. Ola B: modularización listados (mv, hd, tabla empleados) y workspace parámetros (grids/tabs presenters, banda período, panel tabs). |
 | Documento | [../arquitectura/auditoria-modular-features.md](../arquitectura/auditoria-modular-features.md), [../modulos/empleados/creacion-avanzada.md](../modulos/empleados/creacion-avanzada.md) |
 | Validación | Unit presenters/reglas parámetros (**31**); build development OK; empleados/mv/hd según commits B2–B5 |
 | Restricciones | Sin SQL, mappers persistencia, estilos globales. **Siguiente fase sugerida:** `EMP-FICHA-MODULAR-01` (B4+B6). |

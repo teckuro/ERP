@@ -123,21 +123,150 @@ function shouldIgnoreMojibake(file, line) {
   return file === 'docs/codex/estilos/README.md' && (line.includes('mojibake') || line.includes('Select-String'));
 }
 
+const TECHNICAL_LITERAL_RE =
+  /^[a-z][a-z0-9_-]*(\.[a-z][a-z0-9_-]*)+$/i;
+const IDENTIFIER_LITERAL_RE = /^[a-z][a-z0-9_-]*$/i;
+
 function isTechnicalTsLiteral(text) {
-  return /^[a-z][a-z0-9_-]*(\.[a-z][a-z0-9_-]*)+$/i.test(text);
+  if (!text || !/[a-z]/i.test(text)) return true;
+  if (TECHNICAL_LITERAL_RE.test(text)) return true;
+  if (/[/\\]/.test(text)) return true;
+  if (/\.(ts|rules|spec|md|html|css|mjs|cjs|json)(\b|$)/i.test(text)) return true;
+  if (/^app-[a-z0-9-]+$/i.test(text)) return true;
+  if (/^[a-z0-9]+(-[a-z0-9]+)+$/i.test(text) && !/\s/.test(text)) return true;
+  return false;
+}
+
+function isTsImportExportLine(line) {
+  const trimmed = line.trimStart();
+  return (
+    trimmed.startsWith('import ') ||
+    trimmed.startsWith('export type') ||
+    trimmed.startsWith('export {') ||
+    trimmed.startsWith('export *') ||
+    (trimmed.startsWith('export ') && trimmed.includes(' from ')) ||
+    trimmed.startsWith('console.')
+  );
+}
+
+function isTsDomainKeyLiteral(line, text) {
+  if (!IDENTIFIER_LITERAL_RE.test(text)) return false;
+
+  const idFieldRe = /\b(id|field)\s*:\s*['"`]([^'"`]+)['"`]/g;
+  let idFieldMatch;
+  while ((idFieldMatch = idFieldRe.exec(line))) {
+    if (idFieldMatch[2] === text) return true;
+  }
+
+  if (/\b(case|kind|selector|templateUrl|styleUrl)\s*:\s*['"`]/.test(line)) {
+    return true;
+  }
+  if (/^\s*['"`][a-z][a-z0-9_-]*['"`]\s*,?\s*$/i.test(line.trim())) return true;
+  return false;
+}
+
+function isTestTechnicalLine(file, line) {
+  if (!file.startsWith('tests/')) return false;
+  return (
+    /\.locator\(|getByRole|formcontrolname|spawnSync|test\.describe|page\.|process\.execPath/.test(line) ||
+    /#parametros-|\.parametros-|app-parametros-|'--periodo'|--reset-|--apply-/.test(line)
+  );
+}
+
+function isLikelyUserFacingTsLine(line) {
+  return /\b(header|label|title|message|mensaje|placeholder|aria-label)\s*:/i.test(line) ||
+    /throw new Error|return\s*`/.test(line);
+}
+
+function shouldScanTsLiteral(line, text) {
+  if (isTechnicalTsLiteral(text)) return false;
+  if (isTsDomainKeyLiteral(line, text)) return false;
+  if (IDENTIFIER_LITERAL_RE.test(text) && !isLikelyUserFacingTsLine(line)) return false;
+  if (/\{ id: /.test(line) && IDENTIFIER_LITERAL_RE.test(text) && !/\b(header|label)\s*:\s*['"`]/.test(line)) {
+    return false;
+  }
+  return true;
+}
+
+function templateLiteralProseChunks(text) {
+  return text.split(/\$\{[^}]*\}/).filter((chunk) => /[a-záéíóúñ]/i.test(chunk));
+}
+
+function stripMarkdownBackticks(line) {
+  return line
+    .replace(/`[^`]*`/g, ' ')
+    .replace(/\[[^\]]*\]\([^)]*\)/g, ' ');
+}
+
+function isSpecTestDescriptionLine(file, line) {
+  if (!file.endsWith('.spec.ts')) return false;
+  const trimmed = line.trimStart();
+  return (
+    trimmed.startsWith('it(') ||
+    trimmed.startsWith('describe(') ||
+    trimmed.startsWith('expect(')
+  );
+}
+
+function htmlVisibleSegments(line) {
+  const segments = [];
+
+  const attrRe =
+    /\b(?:placeholder|title|aria-label)\s*=\s*(['"])(.*?)\1/gi;
+  let match;
+  while ((match = attrRe.exec(line))) {
+    if (match[2].trim()) segments.push(match[2]);
+  }
+
+  const labelRe = /<label\b[^>]*>([^<]*)<\/label>/gi;
+  while ((match = labelRe.exec(line))) {
+    if (match[1].trim()) segments.push(match[1]);
+  }
+
+  const textRe = />([^<]+)</g;
+  while ((match = textRe.exec(line))) {
+    const text = match[1].trim();
+    if (!text || text.startsWith('{{') || text.startsWith('<!--')) continue;
+    if (/^[\s{}\[\]|.:,;#%+\-*/\\()0-9]+$/i.test(text)) continue;
+    segments.push(text);
+  }
+
+  return segments;
 }
 
 function textSegments(file, line) {
   if (file.endsWith('.ts')) {
+    if (isTsImportExportLine(line)) return [];
+    if (isSpecTestDescriptionLine(file, line)) return [];
+    if (isTestTechnicalLine(file, line)) return [];
+
     const segments = [];
     const literalRe = /(['"`])((?:\\.|(?!\1).)*)(\1)/g;
     let match;
     while ((match = literalRe.exec(line))) {
+      const quote = match[1];
       const text = match[2];
-      if (isTechnicalTsLiteral(text)) continue;
+      if (!shouldScanTsLiteral(line, text)) continue;
+
+      if (quote === '`' && text.includes('${')) {
+        for (const chunk of templateLiteralProseChunks(text)) {
+          if (/[a-záéíóúñ ]/i.test(chunk)) segments.push(chunk);
+        }
+        continue;
+      }
+
       if (/[a-záéíóúñ ]/i.test(text)) segments.push(text);
     }
     return segments;
+  }
+
+  if (file.endsWith('.html')) {
+    return htmlVisibleSegments(line);
+  }
+
+  if (file.endsWith('.md')) {
+    const prose = stripMarkdownBackticks(line);
+    return prose.trim() ? [prose] : [];
   }
 
   return [line];

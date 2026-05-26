@@ -66,11 +66,11 @@ La creacion avanzada no debe mostrar una tarjeta fija de validaciones por paso. 
 
 Comportamiento:
 
-| Accion | Comportamiento |
+| Acción | Comportamiento |
 |---|---|
-| Guardar borrador | Validacion minima. Si falta identificacion o contacto, MsgBox (`draft-invalid`) con lista accionable por campo (`fieldItems`) y mensaje del primer pendiente. Espera de catalogos usa `draft-catalog-wait`. Si guarda, MsgBox de exito. |
-| Siguiente | Flexible. Si hay bloqueos obligatorios, MsgBox (`next-step-review`): titulo «Faltan datos obligatorios», mensaje con registro y conteo, seccion «Campos pendientes» (lista corta), nota «Podrás continuar…»; primario genérico «Revisar primer pendiente» (foco via `fieldItems[0]`), secundario «Continuar con pendiente». Sin listado HTML embebido. Advertencias/normativa: flujo previo con secciones bitacora. |
-| Finalizar alta | Estricto. MsgBox (`finish-invalid`) con `fieldItems` agrupados por registro del asistente. `Ir al primer pendiente` navega al mismo paso y control que el primer item de la lista. La consola bitacora y el modal comparten el motor de diagnostico (`empleado-alta-modal.presenter.ts`). |
+| Guardar borrador | Validación mínima. Si falta identificación o contacto, MsgBox (`draft-invalid`) con lista accionable por campo (`fieldItems`) y mensaje del primer pendiente. Espera de catálogos usa `draft-catalog-wait`. Si guarda, MsgBox de éxito. |
+| Siguiente | Flexible. Si hay bloqueos obligatorios, MsgBox (`next-step-review`): título «Faltan datos obligatorios», mensaje con registro y conteo, sección «Campos pendientes» (lista corta), nota «Podrás continuar…»; primario genérico «Revisar primer pendiente» (foco via `fieldItems[0]`), secundario «Continuar con pendiente». Sin listado HTML embebido. Advertencias/normativa: flujo previo con secciones bitácora. |
+| Finalizar alta | Estricto. MsgBox (`finish-invalid`) con `fieldItems` agrupados por registro del asistente. `Ir al primer pendiente` navega al mismo paso y control que el primer item de la lista. La consola bitácora y el modal comparten el motor de diagnóstico (`empleado-alta-modal.presenter.ts`). |
 
 Regla UX: no duplicar la informacion del mapa con tarjetas permanentes dentro del paso.
 
@@ -80,7 +80,7 @@ Un solo camino para «Revisar primer pendiente» y CTAs equivalentes (`focus-cur
 
 1. Cerrar modal y leer `fieldItems[0]` (mismo orden que la lista corta del presenter).
 2. `enfocarPrimerItemModalAvanzada`: navegar paso sin `focusFirstField` en el wizard; foco DOM via [`empleado-alta-foco.util.ts`](../../../src/app/features/empleados/utils/empleado-alta-foco.util.ts) (`data-field-path` primero, luego `formControlName`).
-3. Si no hay `controlPath`, fallback `mostrarPasoAsistenteInvalido` + `enfocarPrimerControlEnPaso` (bloqueantes u opcionales segun accion).
+3. Si no hay `controlPath`, fallback `mostrarPasoAsistenteInvalido` + `enfocarPrimerControlEnPaso` (bloqueantes u opcionales según acción).
 
 `app-search-select` y `app-calendar-input` exponen `fieldPath` → `data-field-path` en el host del control. Campos nativos criticos del paso 0 usan `data-field-path` en el `<input>`.
 
@@ -315,10 +315,10 @@ Documento de fase: [`emp-adv-css-budget-reduce-01.md`](./emp-adv-css-budget-redu
 
 Objetivo: reducir [`form-empleado.ts`](../../../src/app/features/empleados/components/form-empleado/form-empleado.ts) sin cambiar comportamiento ni tocar mappers/SQL/estilos globales.
 
-| Modulo futuro | Responsabilidad | Estado |
+| Módulo futuro | Responsabilidad | Estado |
 | --- | --- | --- |
 | `empleado-alta-foco.util.ts` | Foco DOM (`buscarControlPorRuta`, reintentos `afterNextRender`) | **Implementado** (fase 1) |
-| `empleado-alta-modal.presenter.ts` | Copy MsgBox, `fieldItems`, secciones bitacora | Ya existe |
+| `empleado-alta-modal.presenter.ts` | Copy MsgBox, `fieldItems`, secciones bitácora | Ya existe |
 | `empleado-alta-avanzada-presentacion.facade.ts` | Paso wizard, intentos | Ya existe |
 | `empleado-alta-modal.orquestador.ts` | Modales MsgBox + `manejarAccion` + coherencia; delegación vía `DelegadoModalAltaEmpleado` | **Implementado** (2026-05-25) |
 | `empleado-alta-ficha-snapshot.builder.ts` | `construirSnapshotValidacionFicha` desde formulario | **Implementado** (2026-05-25) |

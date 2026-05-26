@@ -45,7 +45,7 @@ export function etiquetaTabParametros(tabId: ParametrosTabId): string {
     case 'salud':
       return 'Salud';
     case 'prevision':
-      return 'Prevision';
+      return 'Previsión';
     case 'reforma':
       return 'Reforma';
   }
@@ -54,7 +54,7 @@ export function etiquetaTabParametros(tabId: ParametrosTabId): string {
 export function tipoRegistroTabActivo(tabId: ParametrosTabId): string {
   switch (tabId) {
     case 'configCliente':
-      return 'Configuracion cliente';
+      return 'Configuración cliente';
     case 'valores':
     case 'remuneraciones':
       return 'Datos oficiales';
@@ -66,11 +66,11 @@ export function tipoRegistroTabActivo(tabId: ParametrosTabId): string {
 export function tituloRegistroTabActivo(tabId: ParametrosTabId): string {
   switch (tabId) {
     case 'configCliente':
-      return 'Configuracion cliente del periodo';
+      return 'Configuración cliente del período';
     case 'valores':
-      return 'Valores oficiales del periodo';
+      return 'Valores oficiales del período';
     case 'remuneraciones':
-      return 'Parametros remuneracionales';
+      return 'Parámetros remuneracionales';
     case 'ccafMutual':
       return 'CCAF, mutuales y Ley 16.744';
     case 'tramosCarga':
@@ -80,7 +80,7 @@ export function tituloRegistroTabActivo(tabId: ParametrosTabId): string {
     case 'salud':
       return 'Instituciones de salud';
     case 'prevision':
-      return 'Prevision y AFP';
+      return 'Previsión y AFP';
     case 'reforma':
       return 'Reforma previsional y registros asociados';
   }
@@ -105,12 +105,12 @@ export function detalleRegistroTabActivo(
   switch (tabId) {
     case 'configCliente':
       return ctx.tieneConfigCliente
-        ? `Configuracion vigente para ${ctx.periodoLabel}.`
+        ? `Configuración vigente para ${ctx.periodoLabel}.`
         : `Pendiente para ${ctx.periodoLabel}.`;
     case 'valores':
-      return ctx.tieneDatosOficiales ? 'UF, UTM y UTA del periodo.' : 'Carga oficial pendiente.';
+      return ctx.tieneDatosOficiales ? 'UF, UTM y UTA del período.' : 'Carga oficial pendiente.';
     case 'remuneraciones':
-      return ctx.tieneDatosOficiales ? 'Montos y topes del periodo.' : 'Carga mensual pendiente.';
+      return ctx.tieneDatosOficiales ? 'Montos y topes del período.' : 'Carga mensual pendiente.';
     case 'ccafMutual':
       return `${ctx.conteoCcafMutual} registros.`;
     case 'tramosCarga':
