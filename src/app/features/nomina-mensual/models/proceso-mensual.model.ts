@@ -240,7 +240,6 @@ export interface TrabajadorMotorCalculoSnapshot {
 }
 
 export interface EmpresaLey16744CalculoSnapshot {
-  idEmpresaLey16744: number;
   idEmpresa: number | null;
   idOrganismoAdministradorLey16744: number | null;
   tasaAdicionalDiferenciada: number | null;

@@ -6,6 +6,9 @@
 - **Ajuste 2026-05-25:** Detalle mensual unificado (`payroll-detalle-mensual-panel.css`): expediente + tabbar + cuerpo en un panel; scroll horizontal en pestañas; avisos y vacíos dentro del cuerpo.
 - **Ajuste 2026-05-25:** Empty `app-data-grid` («Registro pendiente») ocupa 100% del alto en Pendientes/Liquidaciones/Trabajadores: `gridHeight="100%"`, cadena flex en panel detalle y reglas en `data-grid.component.css`.
 - **Ajuste 2026-05-25:** CTA superior derecho en `payroll-operativa-empty` ya no queda fijo: toma la acción principal del estado operativo (p. ej. tras verificar pasa a `Generar nómina`); añade estilo `:disabled` coherente.
+- **Ajuste 2026-05-25:** Panel de cargado (`payroll-workspace-loading`) también aparece durante flujos largos (verificar/generar/calcular/guardar/confirmar) con mensaje contextual, no solo al rehidratar/consultar snapshot.
+- **Ajuste 2026-05-25:** `payroll-workspace-loading` sube a `z-index: 70` para cubrir headers sticky del `app-data-grid` (`z-10`) y evitar que se vean por encima del overlay.
+- **Ajuste 2026-05-25:** Overlay de carga se unifica: `accionPeriodoEnCurso()` incluye también rehidratación/consulta de snapshot, evitando doble overlay al generar nómina (no hay “corte” entre generar y cargar bitácora).
 - **Archivos:** `payroll-segment-nav.css`, `payroll-operational-tabs.css`, `payroll-operativa-empty.css`, `proceso-mensual-container.css`, `proceso-mensual-workspace.component.{html,css}`, `proceso-mensual-revision-trabajadores.component.{html,css,ts}`.
 - **No tocado:** estilos globales, `angular.json`, servicios/motor.
 

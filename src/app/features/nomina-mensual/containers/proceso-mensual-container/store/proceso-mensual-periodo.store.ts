@@ -71,6 +71,9 @@ export class ProcesoMensualPeriodoStore {
       this.generandoPreNomina() ||
       this.calculandoPreliminar() ||
       this.guardandoSnapshot() ||
+      this.rehidratandoPeriodo() ||
+      this.consultandoSnapshot() ||
+      this.consultandoSnapshotCompleto() ||
       this.aprobandoResultado() ||
       this.cerrandoNomina()
       || this.gestionandoAccionPeriodo()

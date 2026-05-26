@@ -1035,75 +1035,93 @@ export type Database = {
       }
       empresa: {
         Row: {
+          actividad_economica: string | null
+          ciudad: string | null
+          codigo_postal: string | null
+          comuna: string | null
+          direccion_linea_1: string | null
+          direccion_linea_2: string | null
           dv: string
+          email_contacto: string | null
           fecha_creacion: string | null
+          fuente_resolucion_o_certificado: string | null
+          giro: string | null
           id_empresa: number
+          id_organismo_administrador_ley_16744: number | null
+          nombre_fantasia: string | null
+          representante_legal_dv: string | null
+          representante_legal_email: string | null
+          representante_legal_nombre: string | null
+          representante_legal_rut: string | null
+          representante_legal_telefono: string | null
+          region: string | null
           razon_social: string
           rut: string
+          tasa_adicional_diferenciada: number | null
+          telefono_contacto: string | null
+          updated_at: string
+          vigencia_fin: string | null
+          vigencia_inicio: string | null
         }
         Insert: {
+          actividad_economica?: string | null
+          ciudad?: string | null
+          codigo_postal?: string | null
+          comuna?: string | null
+          direccion_linea_1?: string | null
+          direccion_linea_2?: string | null
           dv: string
+          email_contacto?: string | null
           fecha_creacion?: string | null
+          fuente_resolucion_o_certificado?: string | null
+          giro?: string | null
           id_empresa?: number
+          id_organismo_administrador_ley_16744?: number | null
+          nombre_fantasia?: string | null
+          representante_legal_dv?: string | null
+          representante_legal_email?: string | null
+          representante_legal_nombre?: string | null
+          representante_legal_rut?: string | null
+          representante_legal_telefono?: string | null
+          region?: string | null
           razon_social: string
           rut: string
+          tasa_adicional_diferenciada?: number | null
+          telefono_contacto?: string | null
+          updated_at?: string
+          vigencia_fin?: string | null
+          vigencia_inicio?: string | null
         }
         Update: {
+          actividad_economica?: string | null
+          ciudad?: string | null
+          codigo_postal?: string | null
+          comuna?: string | null
+          direccion_linea_1?: string | null
+          direccion_linea_2?: string | null
           dv?: string
+          email_contacto?: string | null
           fecha_creacion?: string | null
+          fuente_resolucion_o_certificado?: string | null
+          giro?: string | null
           id_empresa?: number
+          id_organismo_administrador_ley_16744?: number | null
+          nombre_fantasia?: string | null
+          representante_legal_dv?: string | null
+          representante_legal_email?: string | null
+          representante_legal_nombre?: string | null
+          representante_legal_rut?: string | null
+          representante_legal_telefono?: string | null
+          region?: string | null
           razon_social?: string
           rut?: string
+          tasa_adicional_diferenciada?: number | null
+          telefono_contacto?: string | null
+          updated_at?: string
+          vigencia_fin?: string | null
+          vigencia_inicio?: string | null
         }
         Relationships: []
-      }
-      empresa_ley_16744: {
-        Row: {
-          actividad_economica: string | null
-          fuente_resolucion_o_certificado: string | null
-          id_empresa: number
-          id_empresa_ley_16744: number
-          id_organismo_administrador_ley_16744: number | null
-          tasa_adicional_diferenciada: number
-          vigencia_fin: string | null
-          vigencia_inicio: string
-        }
-        Insert: {
-          actividad_economica?: string | null
-          fuente_resolucion_o_certificado?: string | null
-          id_empresa: number
-          id_empresa_ley_16744?: number
-          id_organismo_administrador_ley_16744?: number | null
-          tasa_adicional_diferenciada?: number
-          vigencia_fin?: string | null
-          vigencia_inicio: string
-        }
-        Update: {
-          actividad_economica?: string | null
-          fuente_resolucion_o_certificado?: string | null
-          id_empresa?: number
-          id_empresa_ley_16744?: number
-          id_organismo_administrador_ley_16744?: number | null
-          tasa_adicional_diferenciada?: number
-          vigencia_fin?: string | null
-          vigencia_inicio?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "empresa_ley_16744_id_empresa_fkey"
-            columns: ["id_empresa"]
-            isOneToOne: false
-            referencedRelation: "empresa"
-            referencedColumns: ["id_empresa"]
-          },
-          {
-            foreignKeyName: "empresa_ley_16744_id_organismo_administrador_ley_16744_fkey"
-            columns: ["id_organismo_administrador_ley_16744"]
-            isOneToOne: false
-            referencedRelation: "organismo_administrador_ley_16744"
-            referencedColumns: ["id_organismo_administrador_ley_16744"]
-          },
-        ]
       }
       entidad_previsional_ips: {
         Row: {

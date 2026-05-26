@@ -1,5 +1,6 @@
 import { inject, Injectable } from '@angular/core';
 
+import { injectSupabase } from '../../../core/services/supabase.service';
 import type { HaberDescuentoAsignacionPrevalidacionMensualFila } from '../../haberes-descuentos/models/haber-descuento-asignacion.model';
 import { EmpleadosService } from '../../empleados/services/empleados.service';
 import type { EmpleadoListado } from '../../empleados/models/empleado-listado.model';
@@ -78,6 +79,7 @@ function asArray<T>(value: readonly T[] | null | undefined): T[] {
 
 @Injectable({ providedIn: 'root' })
 export class ProcesoMensualService {
+  private readonly supabase = injectSupabase();
   private readonly parametrosGenerales = inject(ParametrosGeneralesService);
   private readonly empleados = inject(EmpleadosService);
   private readonly haberesDescuentos = inject(HaberesDescuentosService);
@@ -859,6 +861,15 @@ export class ProcesoMensualService {
       this.empleados.listar(),
       this.haberesDescuentos.listarAsignacionesParaPrevalidacionMensual(periodo),
     ]);
+    const { data: empresa, error: empresaError } = await this.supabase
+      .from('empresa')
+      .select('id_empresa, id_organismo_administrador_ley_16744, tasa_adicional_diferenciada, vigencia_inicio, vigencia_fin')
+      .order('id_empresa', { ascending: true })
+      .limit(1)
+      .maybeSingle();
+    if (empresaError) {
+      // No bloquea: la tasa adicional es un ajuste empleador no crítico para el flujo preliminar.
+    }
     const preNomina = construirPreNominaPeriodo(prevalidacion, new Date().toISOString());
     const entradasPorPersona = new Map<number, EntradaMensualPeriodo[]>();
     for (const entrada of asArray(prevalidacion.entradasMensuales)) {
@@ -881,7 +892,15 @@ export class ProcesoMensualService {
       trabajadores,
       recurrentes,
       entradasMensuales: construirEntradasMensualesMotor(asArray(prevalidacion.entradasMensuales)),
-      empresaLey16744: null,
+      empresaLey16744: empresa
+        ? {
+            idEmpresa: empresa.id_empresa ?? null,
+            idOrganismoAdministradorLey16744: (empresa as any).id_organismo_administrador_ley_16744 ?? null,
+            tasaAdicionalDiferenciada: (empresa as any).tasa_adicional_diferenciada ?? null,
+            vigenciaInicio: (empresa as any).vigencia_inicio ?? null,
+            vigenciaFin: (empresa as any).vigencia_fin ?? null,
+          }
+        : null,
     };
   }
 }

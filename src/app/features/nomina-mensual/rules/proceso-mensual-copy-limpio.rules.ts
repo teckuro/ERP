@@ -28,7 +28,7 @@ export const COPY_TECNICO_NOMINA: Record<string, string> = {
   TOPE_IMPONIBLE_NO_DISPONIBLE: 'Tope imponible previsional no disponible',
   tabla_impuesto_unico: 'tabla de impuesto único',
   ley_16744_parametros: 'parámetros Ley 16.744',
-  empresa_ley_16744: 'datos de empresa Ley 16.744',
+  empresa: 'datos de empresa Ley 16.744',
   mensuales_uf_utm_sueldo: 'valores UF, UTM y sueldo mínimo del período',
   catalogos_afp_impuesto: 'catálogos AFP e impuesto',
   topes_base: 'topes de cotización del período',

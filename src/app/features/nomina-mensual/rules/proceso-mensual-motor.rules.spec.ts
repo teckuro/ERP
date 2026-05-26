@@ -175,7 +175,6 @@ function input(over: Partial<MotorCalculoInput> = {}): MotorCalculoInput {
     recurrentes: [],
     entradasMensuales: [],
     empresaLey16744: {
-      idEmpresaLey16744: 1,
       idEmpresa: 1,
       idOrganismoAdministradorLey16744: 1,
       tasaAdicionalDiferenciada: 0.001,

@@ -221,13 +221,13 @@ export function calcularTrabajador(args: {
     tasaLey = null;
   }
   if (!input.empresaLey16744) {
-    pushIssue(issues, 'LEY_16744_EMPRESA_INCOMPLETA', 'ADVERTENCIA', 'Falta empresa_ley_16744; se calcula solo tasa basica si existe.', 'empresa_ley_16744', null, 'tasa_adicional_diferenciada');
+    pushIssue(issues, 'LEY_16744_EMPRESA_INCOMPLETA', 'ADVERTENCIA', 'Faltan datos de empresa para Ley 16.744; se calcula solo tasa básica si existe.', 'empresa', null, 'tasa_adicional_diferenciada');
   } else {
     tasaLey = (tasaLey ?? 0) + (normalizarTasa(input.empresaLey16744.tasaAdicionalDiferenciada) ?? 0);
   }
   const cotizacionLey16744 = tasaLey == null ? 0 : redondear(baseImponiblePrevisional * tasaLey);
   if (tasaLey != null) {
-    pushTraza(trazabilidad, 'LEY_16744_PARAMETRO_APLICADO', 'parametros', 'ley_16744_parametros/empresa_ley_16744', 'cotizacion_basica_empleador+tasa_adicional_diferenciada', tasaLey, 'baseImponiblePrevisional * tasa empleador', cotizacionLey16744, ley?.vigenciaInicio, ley?.vigenciaFin, 'Cargo empleador separado de descuentos trabajador');
+    pushTraza(trazabilidad, 'LEY_16744_PARAMETRO_APLICADO', 'parametros', 'ley_16744_parametros/empresa', 'cotizacion_basica_empleador+tasa_adicional_diferenciada', tasaLey, 'baseImponiblePrevisional * tasa empleador', cotizacionLey16744, ley?.vigenciaInicio, ley?.vigenciaFin, 'Cargo empleador separado de descuentos trabajador');
   }
 
   const haberesTributables = sumar([...haberesImponibles, ...haberesNoImponibles].filter((h) => h.tributable !== false).map((h) => h.monto));

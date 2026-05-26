@@ -289,6 +289,21 @@ export class ProcesoMensualPresentacionFacade {
   readonly exitoAccionPeriodo = this.store.exitoAccionPeriodo;
   readonly overlay = this.overlaysPort.overlay;
 
+  readonly flujoEnCurso = computed(() => this.store.accionPeriodoEnCurso());
+  readonly flujoEnCursoMensaje = computed(() => {
+    if (this.store.validando()) return 'Verificando período';
+    if (this.store.generandoPreNomina()) return 'Generando nómina';
+    if (this.store.calculandoPreliminar()) return 'Calculando nómina';
+    if (this.store.guardandoSnapshot()) return 'Guardando versión revisada';
+    if (this.store.rehidratandoPeriodo() || this.store.consultandoSnapshot() || this.store.consultandoSnapshotCompleto()) {
+      return 'Cargando bitácora del período';
+    }
+    if (this.store.aprobandoResultado()) return 'Registrando revisión';
+    if (this.store.cerrandoNomina()) return 'Confirmando nómina';
+    if (this.store.gestionandoAccionPeriodo()) return 'Aplicando cambios del período';
+    return 'Procesando cambios del período';
+  });
+
   readonly confirmacionProceso = computed(() => {
     const current = this.overlay();
     return current.kind === 'decision' ? current.view : null;
@@ -1699,11 +1714,17 @@ export class ProcesoMensualPresentacionFacade {
   });
 
   validarPeriodo(): void {
+    if (this.overlay().kind === 'informacion') {
+      this.overlaysPort.cerrar();
+    }
     this.overlaysPort.habilitarInformacionPeriodo();
     this.store.validarPeriodo();
   }
 
   generarPreNomina(): void {
+    if (this.overlay().kind === 'informacion') {
+      this.overlaysPort.cerrar();
+    }
     this.overlaysPort.habilitarInformacionPeriodo();
     this.store.generarPreNomina();
   }
@@ -1734,6 +1755,9 @@ export class ProcesoMensualPresentacionFacade {
 
   calcularPreliminar(): void {
     if (!this.puedeCalcularPreliminar()) return;
+    if (this.overlay().kind === 'informacion') {
+      this.overlaysPort.cerrar();
+    }
     this.overlaysPort.habilitarInformacionPeriodo();
     this.store.calcularPreliminar();
   }
