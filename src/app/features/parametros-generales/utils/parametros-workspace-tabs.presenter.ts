@@ -140,7 +140,7 @@ export function etiquetaTabParametros(tabId: ParametrosTabId): string {
     case 'prevision':
       return 'Previsión';
     case 'reforma':
-      return 'Reforma de pensiones';
+      return 'Gradualidad';
   }
 }
 
@@ -151,6 +151,8 @@ export function tipoRegistroTabActivo(tabId: ParametrosTabId): string {
     case 'valores':
     case 'remuneraciones':
       return 'Datos oficiales';
+    case 'reforma':
+      return 'Obs. normativa';
     default:
       return 'Cierre normativo';
   }
@@ -175,7 +177,7 @@ export function tituloRegistroTabActivo(tabId: ParametrosTabId): string {
     case 'prevision':
       return 'Previsión y AFP';
     case 'reforma':
-      return 'Reforma de pensiones';
+      return 'Gradualidad futura';
   }
 }
 
@@ -215,7 +217,7 @@ export function detalleRegistroTabActivo(
     case 'prevision':
       return `${ctx.conteoPrevision} registros.`;
     case 'reforma':
-      return `${ctx.conteoReforma} registros de observación normativa.`;
+      return `${ctx.conteoReforma} registros.`;
   }
 }
 

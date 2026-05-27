@@ -77,28 +77,28 @@ export class TablaParametrosGeneralesComponent {
 
   private formatMoney = (value: unknown): string => {
     const numberValue = Number(value);
-    return Number.isFinite(numberValue) ? `$${this.clpFormatter.format(numberValue)}` : '-';
+    return Number.isFinite(numberValue) ? `$ ${this.clpFormatter.format(numberValue)}` : '—';
   };
 
   private formatDecimal = (value: unknown): string => {
     const numberValue = Number(value);
-    return Number.isFinite(numberValue) ? this.decimalFormatter.format(numberValue) : '-';
+    return Number.isFinite(numberValue) ? this.decimalFormatter.format(numberValue) : '—';
   };
 
   private formatPercent = (value: unknown): string => {
     const numberValue = Number(value);
-    return Number.isFinite(numberValue) ? `${this.percentFormatter.format(numberValue)}%` : '-';
+    return Number.isFinite(numberValue) ? `${this.percentFormatter.format(numberValue)} %` : '—';
   };
 
-  private formatBoolean = (value: unknown): string => (value ? 'Si' : 'No');
+  private formatBoolean = (value: unknown): string => (value ? 'Sí' : 'No');
 
   private formatDateTime = (value: unknown): string => {
     if (!value) {
-      return '-';
+      return '—';
     }
 
     const date = new Date(String(value));
-    return Number.isFinite(date.getTime()) ? this.dateFormatter.format(date) : String(value);
+    return Number.isFinite(date.getTime()) ? this.dateFormatter.format(date) : String(value || '—');
   };
 
   readonly columns: DataGridColumn<ParametroGeneral>[] = [

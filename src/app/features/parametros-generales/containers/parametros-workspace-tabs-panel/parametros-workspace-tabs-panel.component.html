@@ -57,37 +57,26 @@
             <span class="param-eyebrow">Pendiente principal</span>
             <div class="parametros-cierre-summary__actions">
               <div class="parametros-cierre-summary__action-wrap">
-                <button type="button" class="parametros-cierre-action" (click)="ws.ejecutarAccionCierre()">
-                  {{ ws.cierreAccionSiguienteLabel() }}
-                </button>
-                <app-field-help-tip
-                  ariaLabel="Ayuda: acción recomendada"
+                <app-tooltip
+                  preferredPlacement="top"
+                  text="Actualiza la información del período actual. Úsalo si sabes que hubo cambios recientes y quieres verlos aquí. No abre edición."
+                >
+                  <button type="button" class="parametros-cierre-ghost" (click)="ws.recargarPeriodoSeleccionado()">
+                    Refrescar datos
+                  </button>
+                </app-tooltip>
+                <app-tooltip
                   preferredPlacement="top"
                   text="Te lleva directo a la sección que falta completar. Si el período aún no está listo, puede tardar un momento en preparar la edición."
-                />
+                >
+                  <button type="button" class="parametros-cierre-action" (click)="ws.ejecutarAccionCierre()">
+                    {{ ws.cierreAccionSiguienteLabel() }}
+                  </button>
+                </app-tooltip>
               </div>
             </div>
           </div>
           <p>{{ ws.cierrePendientePrincipal() }}</p>
-        </article>
-
-        <article class="parametros-cierre-summary">
-          <div class="parametros-cierre-summary__head">
-            <span class="param-eyebrow">Impacto</span>
-            <div class="parametros-cierre-summary__actions">
-              <div class="parametros-cierre-summary__action-wrap">
-                <button type="button" class="parametros-cierre-ghost" (click)="ws.recargarPeriodoSeleccionado()">
-                  Refrescar datos
-                </button>
-                <app-field-help-tip
-                  ariaLabel="Ayuda: refrescar datos"
-                  preferredPlacement="top"
-                  text="Actualiza la información del período actual. Úsalo si sabes que hubo cambios recientes y quieres verlos aquí. No abre edición."
-                />
-              </div>
-            </div>
-          </div>
-          <p>{{ ws.cierreImpacto() }}</p>
         </article>
       </div>
 
@@ -200,6 +189,8 @@
 
     @case ('impuestoUnico') {
       <app-parametros-tramos-renta-tab
+        [activeSub]="ws.impuestoSubTab()"
+        (activeSubChange)="ws.impuestoSubTab.set($event)"
         [tablaRows]="ws.tablaImpuestoPorPeriodo()"
         [tablaColumns]="ws.tablaImpuestoColumns"
         [tramosRows]="ws.tramosImpuestoPorPeriodo()"
@@ -217,6 +208,8 @@
 
     @case ('salud') {
       <app-parametros-salud-tab
+        [activeSub]="ws.saludSubTab()"
+        (activeSubChange)="ws.saludSubTab.set($event)"
         [isapreRows]="ws.isapresPorPeriodo()"
         [institucionesRows]="ws.saludOtrasInstitucionesPorPeriodo()"
         [columns]="ws.isapreColumns"
@@ -239,12 +232,9 @@
 
     @case ('reforma') {
       <app-parametros-reforma-tab
-        [reformaPensiones]="ws.reformaPensionesPorPeriodo()"
         [reformaPrevisional]="ws.reformaPrevisionalPorPeriodo()"
-        [parametrosLegalesColumns]="ws.parametrosLegalesColumns"
         [reformaPrevisionalColumns]="ws.reformaPrevisionalColumns"
         [loading]="ws.isLoading()"
-        [gridPersistenceKeyLegal]="ws.gridPersistenceKey('parametros.reforma-legal.dg')"
         [gridPersistenceKeyPrevisional]="ws.gridPersistenceKey('parametros.reforma-previsional.dg')"
         [refresh]="ws.cargar.bind(ws)"
       ></app-parametros-reforma-tab>

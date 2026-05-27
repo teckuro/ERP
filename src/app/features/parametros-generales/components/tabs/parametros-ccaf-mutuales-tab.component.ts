@@ -4,7 +4,6 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
 import {
   DataGridColumn,
   DataGridComponent,
-  DataGridFilter,
 } from '../../../../shared/components/ui/data-grid';
 import {
   CcafEntidad,
@@ -45,8 +44,7 @@ export type CcafMutualSubId = 'listaCcaf' | 'mutuales';
               [rows]="catalogos.ccafEntidades"
               [columns]="ccafColumns"
               [loading]="loading"
-              [filters]="ccafEntidadFilters"
-              [filtersEnabled]="true"
+              [filtersEnabled]="false"
               [showExportAction]="true"
               [maxItems]="8"
               gridHeight="min(520px, 100%)"
@@ -66,8 +64,7 @@ export type CcafMutualSubId = 'listaCcaf' | 'mutuales';
               [rows]="catalogos.organismosLey16744"
               [columns]="organismosLeyColumns"
               [loading]="loading"
-              [filters]="organismosLeyFilters"
-              [filtersEnabled]="true"
+              [filtersEnabled]="false"
               [showExportAction]="true"
               [maxItems]="8"
               gridHeight="min(520px, 100%)"
@@ -105,37 +102,4 @@ export class ParametrosCcafMutualesTabComponent {
   emitSub(id: string): void {
     this.activeSubChange.emit(id as CcafMutualSubId);
   }
-
-  readonly ccafEntidadFilters: DataGridFilter<CcafEntidad>[] = [
-    { id: 'codigo', label: 'Codigo', field: 'codigo', type: 'text', operator: 'contains', emptyLabel: 'Todos' },
-    { id: 'nombre', label: 'Nombre', field: 'nombre', type: 'text', operator: 'contains', emptyLabel: 'Todos' },
-    {
-      id: 'vigente',
-      label: 'Estado',
-      field: 'vigente',
-      type: 'select',
-      emptyLabel: 'Todos',
-      options: [
-        { label: 'Vigente', value: 'true' },
-        { label: 'Inactivo', value: 'false' },
-      ],
-    },
-  ];
-
-  readonly organismosLeyFilters: DataGridFilter<OrganismoLey16744>[] = [
-    { id: 'codigo', label: 'Codigo', field: 'codigo', type: 'text', operator: 'contains', emptyLabel: 'Todos' },
-    { id: 'nombre', label: 'Nombre', field: 'nombre', type: 'text', operator: 'contains', emptyLabel: 'Todos' },
-    { id: 'tipo', label: 'Tipo', field: 'tipo', type: 'text', operator: 'contains', emptyLabel: 'Todos' },
-    {
-      id: 'vigente',
-      label: 'Estado',
-      field: 'vigente',
-      type: 'select',
-      emptyLabel: 'Todos',
-      options: [
-        { label: 'Vigente', value: 'true' },
-        { label: 'Inactivo', value: 'false' },
-      ],
-    },
-  ];
 }

@@ -109,6 +109,8 @@ export class ParametrosWorkspaceOrquestador {
   readonly activeTab = this.presentacion.activeTab;
   readonly activeArea = this.presentacion.activeArea;
   readonly ccafMutualSubTab = this.presentacion.ccafMutualSubTab;
+  readonly saludSubTab = this.presentacion.saludSubTab;
+  readonly impuestoSubTab = this.presentacion.impuestoSubTab;
   readonly rows = signal<ParametroGeneral[]>([]);
   readonly selectedPeriodo = this.presentacion.selectedPeriodo;
   readonly catalogosOficiales = signal<ParametrosGeneralesCatalogos>(this.emptyCatalogos());
@@ -389,7 +391,19 @@ export class ParametrosWorkspaceOrquestador {
   readonly activeRecordTitle = computed(() =>
     this.activeArea() === 'cierrePeriodo'
       ? tituloAreaParametros(this.activeArea())
-      : tituloRegistroTabActivo(this.activeTab()),
+      : this.activeTab() === 'salud'
+        ? this.saludSubTab() === 'isapre'
+          ? 'ISAPRE'
+          : 'Instituciones de salud'
+        : this.activeTab() === 'ccafMutual'
+          ? this.ccafMutualSubTab() === 'listaCcaf'
+            ? 'CCAF'
+            : 'Mutuales'
+          : this.activeTab() === 'impuestoUnico'
+            ? this.impuestoSubTab() === 'tramos'
+              ? 'Tramos de impuesto'
+              : 'Tabla de impuesto único'
+        : tituloRegistroTabActivo(this.activeTab()),
   );
 
   readonly activeRecordDetail = computed(() => {
@@ -398,6 +412,34 @@ export class ParametrosWorkspaceOrquestador {
     }
 
     const catalogos = this.catalogos();
+
+    if (this.activeTab() === 'salud') {
+      const isapreCount = this.isapresPorPeriodo().length;
+      const instCount = this.saludOtrasInstitucionesPorPeriodo().length;
+      if (this.saludSubTab() === 'isapre') {
+        return `${isapreCount} ${isapreCount === 1 ? 'ISAPRE' : 'ISAPRE'}.`;
+      }
+      return `${instCount} ${instCount === 1 ? 'institución' : 'instituciones'}.`;
+    }
+
+    if (this.activeTab() === 'ccafMutual') {
+      const ccafCount = catalogos.ccafEntidades.length;
+      const mutualCount = catalogos.organismosLey16744.length;
+      if (this.ccafMutualSubTab() === 'listaCcaf') {
+        return `${ccafCount} ${ccafCount === 1 ? 'registro' : 'registros'}.`;
+      }
+      return `${mutualCount} ${mutualCount === 1 ? 'registro' : 'registros'}.`;
+    }
+
+    if (this.activeTab() === 'impuestoUnico') {
+      const tramosCount = this.tramosImpuestoPorPeriodo().length;
+      const tablaCount = this.tablaImpuestoPorPeriodo().length;
+      if (this.impuestoSubTab() === 'tramos') {
+        return `${tramosCount} ${tramosCount === 1 ? 'registro' : 'registros'}.`;
+      }
+      return `${tablaCount} ${tablaCount === 1 ? 'registro' : 'registros'}.`;
+    }
+
     return detalleRegistroTabActivo(this.activeTab(), {
       periodoLabel: this.periodoSeleccionadoLabel(),
       tieneConfigCliente: this.clienteConfig() !== null,

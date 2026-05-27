@@ -2084,7 +2084,7 @@ Creación avanzada incorpora una identidad de producto local para dejar de senti
 
 - **Navegación:** Catálogos necesarios conserva Salud, AFP y CCAF/mutual; Reforma pasa a Observación normativa.
 - **Tablas:** se mantienen AFP, Salud/ISAPRE, CCAF/mutual, cargas, impuesto y reforma; se ocultan APV instituciones, APV formas y trabajos pesados.
-- **Reforma:** queda como información de proyección/gradualidad futura, sin maestros APV ni subtabs técnicos.
+- **Reforma:** queda como información de proyección/gradualidad futura, mostrando solo **Gradualidad** (sin subtabs).
 - **Visual:** se retiran bordes de color en alertas, grupos completos y tabs activas; quedan bordes neutros.
 - **No tocado:** motor de nómina, SQL, Python, servicios ni persistencia.
 

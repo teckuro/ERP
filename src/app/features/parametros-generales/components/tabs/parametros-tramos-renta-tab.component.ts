@@ -1,14 +1,13 @@
 import { CommonModule } from '@angular/common';
-import { Component, Input, signal } from '@angular/core';
+import { Component, EventEmitter, Input, Output } from '@angular/core';
 import {
   DataGridColumn,
   DataGridComponent,
-  DataGridFilter,
 } from '../../../../shared/components/ui/data-grid';
 import { TablaImpuestoUnicoParametro, TramoImpuestoParametro } from '../../models/parametro-general.model';
 import { ParametrosInnerTabBarComponent } from '../parametros-inner-tab-bar.component';
 
-type ImpuestoSubId = 'tramos' | 'tabla';
+export type ImpuestoSubId = 'tramos' | 'tabla';
 
 @Component({
   selector: 'app-parametros-tramos-renta-tab',
@@ -22,22 +21,21 @@ type ImpuestoSubId = 'tramos' | 'tabla';
             ariaLabel="Secciones impuesto unico"
             mobileLabel="Vista"
             [tabs]="impuestoInnerTabs"
-            [activeId]="activeSub()"
-            (activeIdChange)="setSub($event)"
+            [activeId]="activeSub"
+            (activeIdChange)="emitSub($event)"
           />
         </div>
       </div>
 
       <div class="param-tab-subview">
-        @if (activeSub() === 'tramos') {
+        @if (activeSub === 'tramos') {
           <section class="catalog-section parametros-grid-shell" aria-label="Tramos impuesto">
             <app-data-grid
               title="Tramos impuesto por periodo"
               [rows]="tramosRows"
               [columns]="tramosColumns"
               [loading]="loading"
-              [filters]="tramosImpuestoFilters"
-              [filtersEnabled]="true"
+              [filtersEnabled]="false"
               [showExportAction]="true"
               [maxItems]="10"
               gridHeight="min(520px, 100%)"
@@ -49,15 +47,14 @@ type ImpuestoSubId = 'tramos' | 'tabla';
           </section>
         }
 
-        @if (activeSub() === 'tabla') {
+        @if (activeSub === 'tabla') {
           <section class="catalog-section parametros-grid-shell" aria-label="Tabla impuesto unico">
             <app-data-grid
               title="Tabla impuesto unico"
               [rows]="tablaRows"
               [columns]="tablaColumns"
               [loading]="loading"
-              [filters]="tablaImpuestoFilters"
-              [filtersEnabled]="true"
+              [filtersEnabled]="false"
               [showExportAction]="true"
               [maxItems]="10"
               gridHeight="min(520px, 100%)"
@@ -78,7 +75,8 @@ export class ParametrosTramosRentaTabComponent {
     { id: 'tabla' as const, label: 'Tabla' },
   ];
 
-  readonly activeSub = signal<ImpuestoSubId>('tramos');
+  @Input({ required: true }) activeSub!: ImpuestoSubId;
+  @Output() activeSubChange = new EventEmitter<ImpuestoSubId>();
 
   @Input({ required: true }) tablaRows!: TablaImpuestoUnicoParametro[];
   @Input({ required: true }) tablaColumns!: DataGridColumn<TablaImpuestoUnicoParametro>[];
@@ -94,34 +92,9 @@ export class ParametrosTramosRentaTabComponent {
   @Input() verReferenciaPeriodoAnterior: (() => void) | null = null;
   @Input() refresh: (() => void) | null = null;
 
-  readonly tablaImpuestoFilters: DataGridFilter<TablaImpuestoUnicoParametro>[] = [
-    {
-      id: 'periodo',
-      label: 'Periodo tabla',
-      field: 'periodo',
-      type: 'text',
-      operator: 'startsWith',
-      normalize: 'none',
-      placeholder: 'Ej: 2026-05',
-      emptyLabel: 'Todos',
-    },
-  ];
-
-  readonly tramosImpuestoFilters: DataGridFilter<TramoImpuestoParametro>[] = [
-    {
-      id: 'periodo',
-      label: 'Periodo',
-      field: 'periodo',
-      type: 'text',
-      operator: 'startsWith',
-      placeholder: 'Ej: 2026-05',
-      emptyLabel: 'Todos',
-    },
-  ];
-
-  setSub(id: string): void {
+  emitSub(id: string): void {
     if (id === 'tramos' || id === 'tabla') {
-      this.activeSub.set(id);
+      this.activeSubChange.emit(id);
     }
   }
 }

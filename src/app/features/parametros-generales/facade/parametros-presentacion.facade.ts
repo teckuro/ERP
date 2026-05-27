@@ -2,6 +2,8 @@ import { Injectable, inject, signal } from '@angular/core';
 
 import { PeriodoActivoService } from '../../../core/services/periodo-activo.service';
 import type { CcafMutualSubId } from '../components/tabs/parametros-ccaf-mutuales-tab.component';
+import type { SaludSubId } from '../components/tabs/parametros-salud-tab.component';
+import type { ImpuestoSubId } from '../components/tabs/parametros-tramos-renta-tab.component';
 import type { ParametrosTabId } from '../models/parametro-general.model';
 import type {
   ConfigClienteDraftSource,
@@ -16,6 +18,8 @@ export class ParametrosPresentacionFacade {
   readonly activeArea = signal<ParametrosAreaId>('cierrePeriodo');
   readonly activeTab = signal<ParametrosTabId>('configCliente');
   readonly ccafMutualSubTab = signal<CcafMutualSubId>('listaCcaf');
+  readonly saludSubTab = signal<SaludSubId>('isapre');
+  readonly impuestoSubTab = signal<ImpuestoSubId>('tramos');
   readonly selectedPeriodo = signal(this.periodoGlobal.periodoYm());
   readonly selectedCcafId = signal<number | null>(null);
   readonly selectedOrganismoLey16744Id = signal<number | null>(null);

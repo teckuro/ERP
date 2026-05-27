@@ -44,6 +44,16 @@ export function formatoMontoGridParametros(value: unknown): string {
     : `$ ${new Intl.NumberFormat('es-CL', { maximumFractionDigits: 0 }).format(numberValue)}`;
 }
 
+export function formatoMontoDecimalGridParametros(value: unknown, digits = 2): string {
+  const numberValue = numeroDesdeDesconocido(value);
+  return numberValue === null
+    ? '—'
+    : `$ ${new Intl.NumberFormat('es-CL', {
+        minimumFractionDigits: digits,
+        maximumFractionDigits: digits,
+      }).format(numberValue)}`;
+}
+
 export function formatoDecimalGridParametros(value: unknown, digits = 2): string {
   const numberValue = numeroDesdeDesconocido(value);
   return numberValue === null
@@ -174,7 +184,7 @@ export function crearGridsParametrosWorkspace(periodoYm: () => string): GridsPar
         type: 'number',
         sortable: true,
         align: 'right',
-        format: (v) => formatoDecimalGridParametros(v, 2),
+        format: (v) => formatoMontoDecimalGridParametros(v, 2),
       },
       {
         id: 'hasta',
@@ -183,7 +193,7 @@ export function crearGridsParametrosWorkspace(periodoYm: () => string): GridsPar
         type: 'number',
         sortable: true,
         align: 'right',
-        format: (v) => formatoDecimalGridParametros(v, 2),
+        format: (v) => formatoMontoDecimalGridParametros(v, 2),
       },
       {
         id: 'factor',
@@ -201,7 +211,7 @@ export function crearGridsParametrosWorkspace(periodoYm: () => string): GridsPar
         type: 'number',
         sortable: true,
         align: 'right',
-        format: (v) => formatoDecimalGridParametros(v, 4),
+        format: (v) => formatoMontoDecimalGridParametros(v, 4),
       },
     ],
     tramosImpuestoColumns: [

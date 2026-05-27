@@ -11,13 +11,13 @@ import {
 } from 'lucide-angular';
 
 import { ButtonComponent } from '../primitives/button.component';
-import { FieldHelpTipComponent } from '../forms/field-help-tip.component';
+import { TooltipComponent } from '../tooltip/tooltip.component';
 
 export type PageActionType = 'back' | 'save' | 'edit' | 'export' | 'import';
 @Component({
   selector: 'app-page-actions',
   standalone: true,
-  imports: [CommonModule, RouterLink, LucideAngularModule, ButtonComponent, FieldHelpTipComponent],
+  imports: [CommonModule, RouterLink, LucideAngularModule, ButtonComponent, TooltipComponent],
   template: `
     <div class="page-actions-toolbar">
       @if (hasAction('back')) {
@@ -65,18 +65,30 @@ export type PageActionType = 'back' | 'save' | 'edit' | 'export' | 'import';
 
       @if (hasAction('edit')) {
         <span class="page-actions-edit-wrap">
-          <app-button
-            variant="outline"
-            size="md"
-            [className]="actionClass('edit')"
-            [disabled]="editDisabled"
-            (click)="editClick.emit()"
-          >
-            <lucide-icon class="h-4 w-4" [img]="PencilIcon"></lucide-icon>
-            {{ editLabel }}
-          </app-button>
           @if (editTooltip.trim()) {
-            <app-field-help-tip ariaLabel="Ayuda: modificar" preferredPlacement="top" [text]="editTooltip" />
+            <app-tooltip preferredPlacement="top" [text]="editTooltip">
+              <app-button
+                variant="outline"
+                size="md"
+                [className]="actionClass('edit')"
+                [disabled]="editDisabled"
+                (click)="editClick.emit()"
+              >
+                <lucide-icon class="h-4 w-4" [img]="PencilIcon"></lucide-icon>
+                {{ editLabel }}
+              </app-button>
+            </app-tooltip>
+          } @else {
+            <app-button
+              variant="outline"
+              size="md"
+              [className]="actionClass('edit')"
+              [disabled]="editDisabled"
+              (click)="editClick.emit()"
+            >
+              <lucide-icon class="h-4 w-4" [img]="PencilIcon"></lucide-icon>
+              {{ editLabel }}
+            </app-button>
           }
         </span>
       }
