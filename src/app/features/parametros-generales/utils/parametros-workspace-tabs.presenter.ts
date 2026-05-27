@@ -1,5 +1,10 @@
 import type { ParametrosTabId } from '../models/parametro-general.model';
-import type { MonthOption, ParametrosTab } from '../models/parametros-workspace.vm';
+import type {
+  MonthOption,
+  ParametrosArea,
+  ParametrosAreaId,
+  ParametrosTab,
+} from '../models/parametros-workspace.vm';
 
 export const MESES_PARAMETROS_WORKSPACE: readonly MonthOption[] = [
   { value: '01', label: 'ENERO' },
@@ -28,6 +33,94 @@ export const TABS_PARAMETROS_WORKSPACE: readonly ParametrosTab[] = [
   { id: 'reforma', label: 'Reforma de Pensiones' },
 ];
 
+export const AREAS_PARAMETROS_WORKSPACE: readonly ParametrosArea[] = [
+  {
+    id: 'cierrePeriodo',
+    label: 'Cierre del período',
+    description: 'Estado, pendientes, impacto y acción siguiente.',
+    tabIds: [],
+  },
+  {
+    id: 'configuracionCliente',
+    label: 'Configuración cliente',
+    description: 'Gratificación, ausencias, CCAF, mutual y porcentaje.',
+    tabIds: ['configCliente'],
+  },
+  {
+    id: 'datosOficiales',
+    label: 'Datos oficiales',
+    description: 'Valores, remuneraciones, cargas e impuesto.',
+    tabIds: ['valores', 'remuneraciones', 'tramosCarga', 'impuestoUnico'],
+  },
+  {
+    id: 'catalogosVigencias',
+    label: 'Catálogos necesarios',
+    description: 'Salud, AFP y CCAF/mutual usados para liquidar.',
+    tabIds: ['salud', 'prevision', 'ccafMutual'],
+  },
+  {
+    id: 'observacionNormativa',
+    label: 'Observación normativa',
+    description: 'Reforma de pensiones como referencia de cambios futuros.',
+    tabIds: ['reforma'],
+  },
+];
+
+export function tabsDeAreaParametros(areaId: ParametrosAreaId): readonly ParametrosTab[] {
+  const area = AREAS_PARAMETROS_WORKSPACE.find((item) => item.id === areaId);
+  if (!area) {
+    return [];
+  }
+  return area.tabIds
+    .map((tabId) => TABS_PARAMETROS_WORKSPACE.find((tab) => tab.id === tabId))
+    .filter((tab): tab is ParametrosTab => tab !== undefined);
+}
+
+export function areaDeTabParametros(tabId: ParametrosTabId): ParametrosAreaId {
+  return (
+    AREAS_PARAMETROS_WORKSPACE.find((area) => area.tabIds.includes(tabId))?.id ??
+    'cierrePeriodo'
+  );
+}
+
+export function primerTabDeAreaParametros(areaId: ParametrosAreaId): ParametrosTabId | null {
+  return tabsDeAreaParametros(areaId)[0]?.id ?? null;
+}
+
+export function tituloAreaParametros(areaId: ParametrosAreaId): string {
+  switch (areaId) {
+    case 'cierrePeriodo':
+      return 'Cierre del período';
+    case 'configuracionCliente':
+      return 'Configuración cliente';
+    case 'datosOficiales':
+      return 'Datos oficiales';
+    case 'catalogosVigencias':
+      return 'Catálogos necesarios';
+    case 'observacionNormativa':
+      return 'Observación normativa';
+  }
+}
+
+export function tipoAreaParametros(areaId: ParametrosAreaId): string {
+  switch (areaId) {
+    case 'cierrePeriodo':
+      return 'Consola mensual';
+    case 'configuracionCliente':
+      return 'Política cliente';
+    case 'datosOficiales':
+      return 'Base normativa';
+    case 'catalogosVigencias':
+      return 'Catálogos de liquidación';
+    case 'observacionNormativa':
+      return 'Observación normativa';
+  }
+}
+
+export function detalleAreaParametros(areaId: ParametrosAreaId): string {
+  return AREAS_PARAMETROS_WORKSPACE.find((area) => area.id === areaId)?.description ?? '';
+}
+
 export function etiquetaTabParametros(tabId: ParametrosTabId): string {
   switch (tabId) {
     case 'configCliente':
@@ -47,7 +140,7 @@ export function etiquetaTabParametros(tabId: ParametrosTabId): string {
     case 'prevision':
       return 'Previsión';
     case 'reforma':
-      return 'Reforma';
+      return 'Reforma de pensiones';
   }
 }
 
@@ -82,7 +175,7 @@ export function tituloRegistroTabActivo(tabId: ParametrosTabId): string {
     case 'prevision':
       return 'Previsión y AFP';
     case 'reforma':
-      return 'Reforma previsional y registros asociados';
+      return 'Reforma de pensiones';
   }
 }
 
@@ -122,7 +215,7 @@ export function detalleRegistroTabActivo(
     case 'prevision':
       return `${ctx.conteoPrevision} registros.`;
     case 'reforma':
-      return `${ctx.conteoReforma} registros.`;
+      return `${ctx.conteoReforma} registros de observación normativa.`;
   }
 }
 

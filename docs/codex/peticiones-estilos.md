@@ -2071,3 +2071,27 @@ Creación avanzada incorpora una identidad de producto local para dejar de senti
 - **Completitud:** la mutual seleccionada vuelve a contar como dato requerido cuando existe catalogo de organismos Ley 16.744.
 - **Archivos:** `parametros-config-cliente-tab.component.ts`, `parametros-workspace.orquestador.ts`, `parametros-presentacion.facade.ts`, `parametros-completitud.rules.ts`.
 - **No tocado:** SQL, carga Python, motor de nomina ni estilos globales.
+
+## 2026-05-27 - Parámetros: consola por áreas para cierre mensual
+
+- **Estructura:** 9 tabs principales se agrupan en 4 áreas: Cierre del período, Configuración cliente, Datos oficiales, Catálogos y vigencias.
+- **Cierre:** nueva vista operativa con estado mensual, completitud, pendiente principal, impacto, acción siguiente y resumen por grupo.
+- **Navegación:** subtabs solo dentro de Datos oficiales y Catálogos; formularios, grillas, servicios y guardado se mantienen.
+- **Visual:** un marco principal, tabs sobrias, fondos blanco/#f8fafc y foco #2563eb; sin colores nuevos.
+- **Archivos:** presenter/modelos de tabs, orquestador, panel de tabs, banda de periodo y CSS local de Parametros.
+
+## 2026-05-27 - Parámetros: tablas cliente y reforma como observación
+
+- **Navegación:** Catálogos necesarios conserva Salud, AFP y CCAF/mutual; Reforma pasa a Observación normativa.
+- **Tablas:** se mantienen AFP, Salud/ISAPRE, CCAF/mutual, cargas, impuesto y reforma; se ocultan APV instituciones, APV formas y trabajos pesados.
+- **Reforma:** queda como información de proyección/gradualidad futura, sin maestros APV ni subtabs técnicos.
+- **Visual:** se retiran bordes de color en alertas, grupos completos y tabs activas; quedan bordes neutros.
+- **No tocado:** motor de nómina, SQL, Python, servicios ni persistencia.
+
+## 2026-05-27 - Parámetros: período desde Shell, grillas al fondo y consistencia sin 1/1
+
+- **Período:** se elimina el selector local de período en la banda de Parámetros; la vista queda sincronizada con `PeriodoActivoService.periodoYm` (selector global del shell).
+- **Banda período:** el espacio del selector se reemplaza por un bloque informativo compacto con **Estado mensual**, **Detalle**, **Referencia (YYYY-MM)** cuando aplica y **Pendiente principal**.
+- **Acciones:** se elimina el botón duplicado **Refrescar datos** de la banda superior; se mantiene la acción de refresco dentro del panel de Cierre del período.
+- **Grillas:** se ajustan overrides de `app-data-grid` para que el contenedor llegue al fondo real y el scroll quede dentro de la grilla, sin scroll horizontal global.
+- **Consistencia:** meses sin base comparable (sin oficiales/config cliente) ya no se muestran como consistencia 1/1; se omite visualmente hasta que exista base comparable.

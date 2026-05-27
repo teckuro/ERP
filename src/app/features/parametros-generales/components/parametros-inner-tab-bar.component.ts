@@ -153,7 +153,7 @@ export interface ParametrosInnerTabItem {
       }
 
       .param-inner-tab--active {
-        border-color: #c7d0c4;
+        border-color: #cbd5e1;
         border-bottom-color: #ffffff;
         background: #ffffff;
         color: #172033;
@@ -162,7 +162,7 @@ export interface ParametrosInnerTabItem {
       }
 
       .param-inner-tab--active::before {
-        background: #2563eb;
+        background: #94a3b8;
       }
 
       @media (max-width: 720px) {

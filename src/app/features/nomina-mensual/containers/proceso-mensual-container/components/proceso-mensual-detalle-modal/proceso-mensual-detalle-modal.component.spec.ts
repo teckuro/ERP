@@ -577,7 +577,24 @@ describe('ProcesoMensualDetalleModalComponent', () => {
 
   it('muestra indicador en tabs de revision', async () => {
     obtenerSnapshotActivo.mockResolvedValue(snapshotGuardado());
-    obtenerSnapshotCompletoActivo.mockResolvedValue(snapshotCompletoGuardado());
+    obtenerSnapshotCompletoActivo.mockResolvedValue({
+      ...snapshotCompletoGuardado(),
+      observaciones: [
+        {
+          codigo: 'parametros_generales',
+          severidad: 'BLOQUEO',
+          origen: 'validacion',
+          mensaje: 'Pendiente de revisión',
+          campo: null,
+          entidadId: null,
+          idCalculoTrabajador: null,
+        },
+      ],
+      resumen: {
+        ...snapshotCompletoGuardado().resumen,
+        totalObservaciones: 1,
+      },
+    });
     const fixture = await montarContainer();
     await fixture.whenStable();
     fixture.componentInstance.abrirOverlayRevision('resumen');

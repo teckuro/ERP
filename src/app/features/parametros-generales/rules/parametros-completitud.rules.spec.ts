@@ -72,6 +72,20 @@ describe('parametros-completitud.rules', () => {
     expect(resultado.pendientes).toContain('Faltan datos oficiales mensuales del periodo.');
   });
 
+  it('mes sin datos oficiales no evalua consistencia (no 1/1 artificial)', () => {
+    const resultado = evaluarCompletitudParametrosMensual({
+      periodo,
+      periodoRemuneracion: periodoInfo('pendiente'),
+      oficial: null,
+      clienteConfig: null,
+      catalogos: catalogosCompletos(),
+    });
+
+    expect(resultado.grupos.consistencia.total).toBe(0);
+    expect(resultado.grupos.consistencia.completos).toBe(0);
+    expect(resultado.grupos.consistencia.porcentaje).toBe(0);
+  });
+
   it('no marca cargado ni 100% cuando la UI muestra referencia anterior pero los oficiales actuales faltan', () => {
     const catalogosActuales = catalogosCompletos();
     catalogosActuales.tramosCarga = [];

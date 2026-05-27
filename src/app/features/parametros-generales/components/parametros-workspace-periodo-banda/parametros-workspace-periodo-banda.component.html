@@ -3,61 +3,29 @@
     <div class="period-row__left parametros-period-left">
       <div class="period-row__left-top">
         <span class="period-label">Parámetros del período {{ ws.periodoGlobal.etiqueta() }}</span>
-        <div class="period-controls parametros-period-controls">
-          <button
-            type="button"
-            class="period-arrow"
-            aria-label="Período anterior"
-            [disabled]="ws.parametrosUiBloqueada()"
-            (click)="ws.moverPeriodo(-1)"
-          >
-            <lucide-icon class="h-4 w-4" name="arrow-left"></lucide-icon>
-          </button>
-
-          <select
-            class="param-select period-year"
-            id="parametros-periodo-anio"
-            [ngModel]="ws.selectedYear()"
-            (ngModelChange)="ws.seleccionarAnioValue($event)"
-          >
-            @for (year of ws.yearOptions(); track year) {
-              <option [value]="ws.asString(year)">{{ year }}</option>
-            }
-          </select>
-
-          <select
-            class="param-select period-month"
-            id="parametros-periodo-mes"
-            [ngModel]="ws.selectedMonth()"
-            (ngModelChange)="ws.seleccionarMesValue($event)"
-          >
-            @for (month of ws.monthOptions; track month.value) {
-              <option [value]="month.value">{{ month.label }}</option>
-            }
-          </select>
-
-          <button
-            type="button"
-            class="period-arrow"
-            aria-label="Período siguiente"
-            [disabled]="ws.parametrosUiBloqueada()"
-            (click)="ws.moverPeriodo(1)"
-          >
-            <lucide-icon class="h-4 w-4" name="chevron-right"></lucide-icon>
-          </button>
-        </div>
       </div>
       <p class="period-sync-hint parametros-period-sync">{{ ws.periodoContextoHint() }}</p>
-    </div>
 
-    <div class="period-row__right parametros-period-status" role="region" aria-label="Estado mensual">
-      <div class="period-mensual__head">
-        <span class="period-mensual__title parametros-period-status-title">{{ ws.periodoEstadoTitulo() }}</span>
-        <span class="period-mensual__chip" role="status" aria-label="Resumen de estado">
-          <span class="period-chip" [ngClass]="ws.periodoEstadoChipClass()">{{ ws.periodoEstadoChip() }}</span>
-        </span>
+      <div class="parametros-period-info" role="region" aria-label="Estado mensual">
+        <div class="parametros-period-info__head">
+          <span class="parametros-period-info__title">{{ ws.periodoEstadoTitulo() }}</span>
+          <span class="parametros-period-info__chip" role="status" aria-label="Resumen de estado">
+            <span class="period-chip" [ngClass]="ws.periodoEstadoChipClass()">{{ ws.periodoEstadoChip() }}</span>
+          </span>
+        </div>
+
+        <p class="parametros-period-info__detail">{{ ws.periodoEstadoDetalle() }}</p>
+
+        @if (ws.periodoReferenciaAnterior()) {
+          <p class="parametros-period-info__ref">
+            Referencia: {{ ws.periodoReferenciaAnterior() }} ({{ ws.periodoReferenciaAnteriorLabel() }})
+          </p>
+        }
+
+        <p class="parametros-period-info__pending">
+          Pendiente principal: {{ ws.cierrePendientePrincipal() }}
+        </p>
       </div>
-      <p class="period-mensual__detail parametros-period-status-detail">{{ ws.periodoEstadoDetalle() }}</p>
     </div>
 
     <div class="parametros-period-actions" aria-label="Acciones del período">
@@ -71,18 +39,6 @@
         >
           <lucide-icon icon class="h-4 w-4" name="refresh-cw"></lucide-icon>
           Sincronizar
-        </app-button>
-      } @else if (!ws.generalesEditando()) {
-        <app-button
-          variant="outline"
-          size="md"
-          className="erp-toolbar-button erp-action-button"
-          data-testid="parametros-refrescar-periodo"
-          [disabled]="ws.parametrosUiBloqueada()"
-          (click)="ws.recargarPeriodoSeleccionado()"
-        >
-          <lucide-icon icon class="h-4 w-4" name="refresh-cw"></lucide-icon>
-          Refrescar datos
         </app-button>
       }
 

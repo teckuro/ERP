@@ -2,6 +2,20 @@ import type { MessageBoxVariant } from '../../../shared/components/ui/feedback/m
 import type { ParametrosEstadoVisual } from '../rules/parametros-completitud.rules';
 import type { ParametrosTabId } from './parametro-general.model';
 
+export type ParametrosAreaId =
+  | 'cierrePeriodo'
+  | 'configuracionCliente'
+  | 'datosOficiales'
+  | 'catalogosVigencias'
+  | 'observacionNormativa';
+
+export interface ParametrosArea {
+  id: ParametrosAreaId;
+  label: string;
+  description: string;
+  tabIds: readonly ParametrosTabId[];
+}
+
 export interface ParametrosTab {
   id: ParametrosTabId;
   label: string;

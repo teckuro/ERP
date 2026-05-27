@@ -2,6 +2,7 @@ import {
   ChangeDetectorRef,
   Injectable,
   computed,
+  effect,
   inject,
   isDevMode,
   signal,
@@ -19,6 +20,7 @@ import {
 import { ParametrosPresentacionFacade } from './parametros-presentacion.facade';
 import type {
   ConfigClienteDraftSource,
+  ParametrosAreaId,
   ParametrosDialogAction,
   PeriodoCargaEstado,
 } from '../models/parametros-workspace.vm';
@@ -61,11 +63,18 @@ import {
   formatoMontoGridParametros,
 } from '../utils/parametros-workspace-grids.presenter';
 import {
+  AREAS_PARAMETROS_WORKSPACE,
   MESES_PARAMETROS_WORKSPACE,
   TABS_PARAMETROS_WORKSPACE,
+  areaDeTabParametros,
+  detalleAreaParametros,
   detalleRegistroTabActivo,
   formatearPeriodoMesAnio,
+  primerTabDeAreaParametros,
+  tabsDeAreaParametros,
+  tipoAreaParametros,
   tipoRegistroTabActivo,
+  tituloAreaParametros,
   tituloRegistroTabActivo,
 } from '../utils/parametros-workspace-tabs.presenter';
 
@@ -79,6 +88,7 @@ export class ParametrosWorkspaceOrquestador {
   readonly periodoGlobal = inject(PeriodoActivoService);
 
   readonly tabs = TABS_PARAMETROS_WORKSPACE;
+  readonly areas = AREAS_PARAMETROS_WORKSPACE;
   readonly monthOptions = MESES_PARAMETROS_WORKSPACE;
 
   private readonly gridsConfig = crearGridsParametrosWorkspace(() => this.selectedPeriodo());
@@ -97,6 +107,7 @@ export class ParametrosWorkspaceOrquestador {
   readonly apvFormasPagoColumns = this.gridsConfig.apvFormasPagoColumns;
 
   readonly activeTab = this.presentacion.activeTab;
+  readonly activeArea = this.presentacion.activeArea;
   readonly ccafMutualSubTab = this.presentacion.ccafMutualSubTab;
   readonly rows = signal<ParametroGeneral[]>([]);
   readonly selectedPeriodo = this.presentacion.selectedPeriodo;
@@ -129,6 +140,7 @@ export class ParametrosWorkspaceOrquestador {
 
   private cargarDepth = 0;
   private readonly reconciliacionAvisadaPeriodos = new Set<string>();
+  private readonly inicializado = signal(false);
 
   /** Bloqueo de acciones de barra / período por carga principal, plantilla o guardado. */
   readonly parametrosUiBloqueada = computed(
@@ -364,11 +376,27 @@ export class ParametrosWorkspaceOrquestador {
     }
   });
 
-  readonly activeRecordKind = computed(() => tipoRegistroTabActivo(this.activeTab()));
+  readonly activeAreaTabs = computed(() => tabsDeAreaParametros(this.activeArea()));
 
-  readonly activeRecordTitle = computed(() => tituloRegistroTabActivo(this.activeTab()));
+  readonly activeAreaHasSubTabs = computed(() => this.activeAreaTabs().length > 1);
+
+  readonly activeRecordKind = computed(() =>
+    this.activeArea() === 'cierrePeriodo'
+      ? tipoAreaParametros(this.activeArea())
+      : tipoRegistroTabActivo(this.activeTab()),
+  );
+
+  readonly activeRecordTitle = computed(() =>
+    this.activeArea() === 'cierrePeriodo'
+      ? tituloAreaParametros(this.activeArea())
+      : tituloRegistroTabActivo(this.activeTab()),
+  );
 
   readonly activeRecordDetail = computed(() => {
+    if (this.activeArea() === 'cierrePeriodo') {
+      return detalleAreaParametros(this.activeArea());
+    }
+
     const catalogos = this.catalogos();
     return detalleRegistroTabActivo(this.activeTab(), {
       periodoLabel: this.periodoSeleccionadoLabel(),
@@ -383,9 +411,96 @@ export class ParametrosWorkspaceOrquestador {
       conteoPrevision: this.afpPorPeriodo().length,
       conteoReforma:
         this.reformaPensionesPorPeriodo().length +
-        this.reformaPrevisionalPorPeriodo().length +
-        this.trabajosPesadosPorPeriodo().length,
+        this.reformaPrevisionalPorPeriodo().length,
     });
+  });
+
+  readonly cierreGrupos = computed(() => {
+    const grupos = this.completitudParametros().grupos;
+    return [
+      {
+        ...grupos.oficialesMensuales,
+        id: 'oficialesMensuales',
+        label: 'Datos oficiales',
+        detail: 'Valores, remuneraciones, cargas e impuesto',
+      },
+      {
+        ...grupos.configuracionCliente,
+        id: 'configuracionCliente',
+        label: 'Configuración cliente',
+        detail: 'Gratificación, ausencias, CCAF y mutual',
+      },
+      {
+        ...grupos.vigencias,
+        id: 'vigencias',
+        label: 'Catálogos necesarios',
+        detail: 'Salud, AFP, CCAF/mutual y reforma de pensiones',
+      },
+      ...(grupos.consistencia.total > 0
+        ? [{
+          ...grupos.consistencia,
+          id: 'consistencia',
+          label: 'Consistencia',
+          detail: 'Diferencias entre oficial y configuración cliente',
+        }]
+        : []),
+    ];
+  });
+
+  readonly cierrePendientePrincipal = computed(() => {
+    const completitud = this.completitudParametros();
+    return completitud.errores[0] ??
+      completitud.pendientes[0] ??
+      completitud.advertencias[0] ??
+      'Sin pendientes críticos.';
+  });
+
+  readonly cierreAlertas = computed(() => {
+    const completitud = this.completitudParametros();
+    return [
+      ...completitud.errores.map((mensaje) => ({ kind: 'error' as const, mensaje })),
+      ...completitud.pendientes.map((mensaje) => ({ kind: 'pendiente' as const, mensaje })),
+      ...completitud.advertencias.map((mensaje) => ({ kind: 'advertencia' as const, mensaje })),
+    ].slice(0, 6);
+  });
+
+  readonly cierreImpacto = computed(() => {
+    const completitud = this.completitudParametros();
+    if (completitud.errores.length > 0) {
+      return 'Bloquea la lectura confiable del período hasta corregir la carga.';
+    }
+    if (completitud.pendientes.length > 0) {
+      return 'El cierre puede quedar parcial y afectar el cálculo mensual.';
+    }
+    if (completitud.advertencias.length > 0) {
+      return 'Revisar antes de cerrar para evitar diferencias posteriores.';
+    }
+    return 'Base normativa lista para revisión del período.';
+  });
+
+  readonly cierreAccionSiguienteLabel = computed(() => {
+    const completitud = this.completitudParametros();
+    const pendiente = this.cierrePendientePrincipal();
+
+    if (
+      !this.clienteConfig() ||
+      pendiente.includes('configuración') ||
+      pendiente.includes('configuracion') ||
+      pendiente.includes('CCAF') ||
+      pendiente.includes('mutual')
+    ) {
+      return 'Completar configuración';
+    }
+    if (!completitud.grupos.oficialesMensuales.completo) {
+      return 'Revisar datos oficiales';
+    }
+    if (!completitud.grupos.vigencias.completo) {
+      return 'Revisar catálogos';
+    }
+    if (completitud.advertencias.length > 0) {
+      return 'Revisar consistencia';
+    }
+    return 'Refrescar datos';
   });
 
   private completitudDetalle(base: string): string {
@@ -400,26 +515,6 @@ export class ParametrosWorkspaceOrquestador {
     const pendiente = completitud.errores[0] ?? completitud.advertencias[0] ?? '';
     return pendiente ? `${base} ${detalleCompletitud} ${pendiente}` : `${base} ${detalleCompletitud}`;
   }
-
-  readonly yearOptions = computed(() => {
-    const selectedYear = Number(this.selectedYear());
-    const yearsFromBd = new Set<number>();
-    for (const p of [...this.periodosGeneralesCatalogo(), ...this.periodosMensualesCatalogo()]) {
-      const year = Number(String(p).slice(0, 4));
-      if (Number.isFinite(year)) {
-        yearsFromBd.add(year);
-      }
-    }
-
-    // Si la BD aún no carga, al menos no dejamos el selector vacío.
-    if (yearsFromBd.size === 0) {
-      const currentYear = Number(this.currentPeriodo().slice(0, 4));
-      return [currentYear - 1, currentYear, currentYear + 1, selectedYear].filter((y) => Number.isFinite(y));
-    }
-
-    yearsFromBd.add(selectedYear);
-    return [...yearsFromBd].sort((left, right) => right - left);
-  });
 
   /** Catálogos aplican su política propia: periodo mensual, vigencia o catálogo global. */
   readonly periodoReferenciaAnterior = computed(() => {
@@ -438,20 +533,7 @@ export class ParametrosWorkspaceOrquestador {
     return periodo ? formatearPeriodoMesAnio(periodo, this.monthOptions) : null;
   });
 
-  readonly periodoContextoHint = computed(() => {
-    switch (this.periodoCargaEstado()) {
-      case 'referencia_anterior':
-        return `Período seleccionado: ${this.selectedPeriodo()}.`;
-      case 'configuracion_parcial':
-        return 'Configuración cliente del período seleccionado.';
-      case 'oficial_sin_config':
-      case 'cargado':
-      case 'pendiente_reconciliacion':
-        return 'Datos oficiales del período seleccionado.';
-      default:
-        return `Período seleccionado: ${this.selectedPeriodo()}.`;
-    }
-  });
+  readonly periodoContextoHint = computed(() => 'Sincronizado con el período activo.');
 
   readonly referenciaParametrosGeneralesLabel = computed(() =>
     this.formatReferenciaMensualLabel(this.referenciasMensuales().parametrosGenerales),
@@ -558,6 +640,16 @@ export class ParametrosWorkspaceOrquestador {
   constructor() {
     this.actualizarValidadorImm(this.form.controls.gratificacion.value);
     this.form.controls.gratificacion.valueChanges.subscribe((value) => this.actualizarValidadorImm(value));
+
+    effect(() => {
+      if (!this.inicializado()) {
+        return;
+      }
+      const globalYm = this.periodoGlobal.periodoYm();
+      if (globalYm !== this.selectedPeriodo()) {
+        void this.seleccionarPeriodo(globalYm, { fromGlobal: true });
+      }
+    });
   }
 
   private actualizarValidadorImm(gratificacion: boolean): void {
@@ -586,6 +678,7 @@ export class ParametrosWorkspaceOrquestador {
     // Periodo fijo en formulario: edición solo vía selector de período / cabecera.
     this.form.controls.periodo.disable({ emitEvent: false });
     await Promise.all([this.cargar(periodoInicial), this.refrescarPeriodosDesdeBd()]);
+    this.inicializado.set(true);
   }
 
   asString(value: number | string): string {
@@ -682,12 +775,9 @@ export class ParametrosWorkspaceOrquestador {
     if (catalogos.tramosImpuesto.length) parts.push(`Tramos renta ${catalogos.tramosImpuesto.length}`);
     if (catalogos.tablaImpuestoUnico.length) parts.push(`Tabla impuesto ${catalogos.tablaImpuestoUnico.length}`);
     if (catalogos.reformaPensiones.length) parts.push(`Parámetros legales ${catalogos.reformaPensiones.length}`);
-    if (catalogos.trabajosPesados.length) parts.push(`Trabajo pesado ${catalogos.trabajosPesados.length}`);
     if (catalogos.reformaPrevisional.length) parts.push(`Reforma previsional ${catalogos.reformaPrevisional.length}`);
     if (catalogos.organismosLey16744.length) parts.push(`Mutuales ${catalogos.organismosLey16744.length}`);
     if (catalogos.ccafEntidades.length) parts.push(`CCAF ${catalogos.ccafEntidades.length}`);
-    if (catalogos.apvInstituciones.length) parts.push(`APV instituciones ${catalogos.apvInstituciones.length}`);
-    if (catalogos.apvFormasPago.length) parts.push(`APV formas ${catalogos.apvFormasPago.length}`);
     if (catalogos.afcParametros.length) parts.push(`AFC ${catalogos.afcParametros.length}`);
     return parts.join(', ');
   }
@@ -1085,21 +1175,43 @@ export class ParametrosWorkspaceOrquestador {
 
   seleccionarTab(tabId: ParametrosTabId): void {
     this.presentacion.seleccionarTab(tabId);
+    this.presentacion.seleccionarArea(areaDeTabParametros(tabId));
   }
 
-  async seleccionarAnioValue(year: string): Promise<void> {
-    await this.seleccionarPeriodo(`${year}-${this.selectedMonth()}`);
+  seleccionarArea(areaId: ParametrosAreaId): void {
+    this.presentacion.seleccionarArea(areaId);
+
+    const firstTab = primerTabDeAreaParametros(areaId);
+    if (firstTab) {
+      this.presentacion.seleccionarTab(firstTab);
+    }
   }
 
-  async seleccionarMesValue(month: string): Promise<void> {
-    await this.seleccionarPeriodo(`${this.selectedYear()}-${month}`);
-  }
+  async ejecutarAccionCierre(): Promise<void> {
+    const label = this.cierreAccionSiguienteLabel();
 
-  async moverPeriodo(offset: number): Promise<void> {
-    const [year, month] = this.selectedPeriodo().split('-').map((value) => Number(value));
-    const date = new Date(year, month - 1 + offset, 1);
-    const periodo = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
-    await this.seleccionarPeriodo(periodo);
+    if (label === 'Completar configuración') {
+      this.seleccionarArea('configuracionCliente');
+      await this.editarParametros();
+      return;
+    }
+
+    if (label === 'Revisar datos oficiales') {
+      this.seleccionarArea('datosOficiales');
+      return;
+    }
+
+    if (label === 'Revisar catálogos') {
+      this.seleccionarArea('catalogosVigencias');
+      return;
+    }
+
+    if (label === 'Revisar consistencia') {
+      this.seleccionarArea('configuracionCliente');
+      return;
+    }
+
+    await this.recargarPeriodoSeleccionado();
   }
 
   async verReferenciaPeriodoAnterior(): Promise<void> {
@@ -1135,10 +1247,12 @@ export class ParametrosWorkspaceOrquestador {
     }
 
     if (!this.clienteConfig()) {
+      this.seleccionarArea('configuracionCliente');
       await this.mostrarDecisionConfigCliente();
       return;
     }
 
+    this.seleccionarArea('configuracionCliente');
     this.patchForm(
       this.parametroConClienteConfig(this.baseActualParaConfigCliente(), this.clienteConfig()),
       this.selectedPeriodo(),
@@ -1415,20 +1529,12 @@ export class ParametrosWorkspaceOrquestador {
     this.selectedOrganismoLey16744Id.set(this.catalogIdFromSearchValue(value));
   }
 
-  selectedYear(): string {
-    return this.selectedPeriodo().slice(0, 4);
-  }
-
-  selectedMonth(): string {
-    return this.selectedPeriodo().slice(5, 7);
-  }
-
   isConfigurableTab(): boolean {
     return true;
   }
 
   isClienteConfigTab(): boolean {
-    return this.activeTab() === 'configCliente';
+    return this.activeArea() === 'configuracionCliente';
   }
 
   hasClienteConfigEditableEnTab(): boolean {

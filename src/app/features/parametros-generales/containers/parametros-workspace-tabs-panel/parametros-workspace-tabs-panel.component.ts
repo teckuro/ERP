@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, ElementRef, inject } from '@angular/core';
 import type { ParametrosTabId } from '../../models/parametro-general.model';
+import type { ParametrosAreaId } from '../../models/parametros-workspace.vm';
 
 import { ParametrosAfpTabComponent } from '../../components/tabs/parametros-afp-tab.component';
 import { ParametrosCcafMutualesTabComponent } from '../../components/tabs/parametros-ccaf-mutuales-tab.component';
@@ -37,11 +38,20 @@ export class ParametrosWorkspaceTabsPanelComponent {
   readonly ws = inject(ParametrosWorkspaceOrquestador);
   readonly etiquetaTab = etiquetaTabParametros;
 
+  seleccionarArea(areaId: ParametrosAreaId): void {
+    this.ws.seleccionarArea(areaId);
+    this.scrollActive('nav.parametros-area-tabs button.parametros-area-tab--active');
+  }
+
   seleccionarTab(tabId: ParametrosTabId): void {
     this.ws.seleccionarTab(tabId);
+    this.scrollActive('nav.parametros-subtabs button.parametros-subtab--active');
+  }
+
+  private scrollActive(selector: string): void {
     window.requestAnimationFrame(() => {
       const root = this.hostElement.nativeElement;
-      const active = root.querySelector<HTMLElement>('nav.folder-tabs button.folder-tab--active');
+      const active = root.querySelector<HTMLElement>(selector);
       active?.scrollIntoView({ inline: 'center', block: 'nearest', behavior: 'smooth' });
     });
   }

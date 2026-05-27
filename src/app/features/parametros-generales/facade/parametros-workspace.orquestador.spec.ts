@@ -8,6 +8,8 @@ import { ParametrosPresentacionFacade } from './parametros-presentacion.facade';
 import { ParametrosWorkspaceOrquestador } from './parametros-workspace.orquestador';
 
 describe('ParametrosWorkspaceOrquestador', () => {
+  const setPeriodoYm = vi.fn();
+
   function crearOrquestador(periodo = '2026-05') {
     TestBed.configureTestingModule({
       providers: [
@@ -22,7 +24,7 @@ describe('ParametrosWorkspaceOrquestador', () => {
         },
         {
           provide: PeriodoActivoService,
-          useValue: { periodoYm: signal(periodo) },
+          useValue: { periodoYm: signal(periodo), setPeriodoYm },
         },
         {
           provide: ChangeDetectorRef,
@@ -42,10 +44,11 @@ describe('ParametrosWorkspaceOrquestador', () => {
     expect(orq.gridPersistenceKey('parametros.ccaf')).toBe('parametros.ccaf.2026-03');
   });
 
-  it('selectedYear y selectedMonth derivan del periodo activo', () => {
+  it('seleccionarPeriodo sincroniza el periodo global', async () => {
+    setPeriodoYm.mockClear();
     const orq = crearOrquestador('2025-11');
-    expect(orq.selectedYear()).toBe('2025');
-    expect(orq.selectedMonth()).toBe('11');
+    await orq.seleccionarPeriodo('2026-01');
+    expect(setPeriodoYm).toHaveBeenCalledWith('2026-01');
   });
 
   it('seleccionarTab delega en presentacion', () => {
@@ -53,6 +56,12 @@ describe('ParametrosWorkspaceOrquestador', () => {
     const presentacion = TestBed.inject(ParametrosPresentacionFacade);
     orq.seleccionarTab('salud');
     expect(presentacion.activeTab()).toBe('salud');
+    expect(presentacion.activeArea()).toBe('catalogosVigencias');
+  });
+
+  it('inicia en area Cierre del periodo', () => {
+    const orq = crearOrquestador();
+    expect(orq.activeArea()).toBe('cierrePeriodo');
   });
 
   it('money y decimal formatean valores nulos como guion', () => {

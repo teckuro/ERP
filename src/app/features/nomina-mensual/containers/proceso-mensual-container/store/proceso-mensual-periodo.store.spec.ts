@@ -119,7 +119,7 @@ describe('ProcesoMensualPeriodoStore rehidratacion', () => {
       bloqueos: [],
       advertencias: [],
       informaciones: [],
-      items: [],
+      items: [{ area: 'TRABAJADORES', etiqueta: 'Trabajadores', estado: 'LISTO' as const }],
       entradasMensuales: [],
     };
     const snapshot = {
@@ -191,7 +191,7 @@ describe('ProcesoMensualPeriodoStore rehidratacion', () => {
       bloqueos: [],
       advertencias: [],
       informaciones: [],
-      items: [],
+      items: [{ area: 'TRABAJADORES', etiqueta: 'Trabajadores', estado: 'LISTO' as const }],
     };
 
     rehidratarPeriodo.mockReset();

@@ -1,17 +1,32 @@
-<nav class="folder-tabs parametros-tabs" aria-label="Secciones de parámetros">
-  @for (tab of ws.tabs; track tab.id) {
+<nav class="parametros-area-tabs" aria-label="Áreas de parámetros">
+  @for (area of ws.areas; track area.id) {
     <button
       type="button"
-      class="folder-tab parametros-tab-button"
-      [class.folder-tab--active]="ws.activeTab() === tab.id"
-      [class.parametros-tab-active]="ws.activeTab() === tab.id"
-      [attr.aria-current]="ws.activeTab() === tab.id ? 'page' : null"
-      (click)="seleccionarTab(tab.id)"
+      class="parametros-area-tab"
+      [class.parametros-area-tab--active]="ws.activeArea() === area.id"
+      [attr.aria-current]="ws.activeArea() === area.id ? 'page' : null"
+      (click)="seleccionarArea(area.id)"
     >
-      <span>{{ etiquetaTab(tab.id) }}</span>
+      <span>{{ area.label }}</span>
     </button>
   }
 </nav>
+
+@if (ws.activeAreaHasSubTabs()) {
+  <nav class="parametros-subtabs" aria-label="Secciones de parámetros">
+    @for (tab of ws.activeAreaTabs(); track tab.id) {
+      <button
+        type="button"
+        class="parametros-subtab"
+        [class.parametros-subtab--active]="ws.activeTab() === tab.id"
+        [attr.aria-current]="ws.activeTab() === tab.id ? 'page' : null"
+        (click)="seleccionarTab(tab.id)"
+      >
+        <span>{{ etiquetaTab(tab.id) }}</span>
+      </button>
+    }
+  </nav>
+}
 
 <div class="parametros-tab-body" role="region" aria-label="Contenido de la sección">
   <header class="param-record-header" aria-label="Contexto de la seccion activa">
@@ -22,7 +37,67 @@
     </div>
   </header>
 
-  @switch (ws.activeTab()) {
+  @if (ws.activeArea() === 'cierrePeriodo') {
+    <section class="parametros-cierre" aria-label="Cierre del período">
+      <div class="parametros-cierre-hero">
+        <div class="parametros-cierre-copy">
+          <span class="param-eyebrow">{{ ws.periodoSeleccionadoLabel() }}</span>
+          <h3>{{ ws.periodoEstadoTitulo() }}</h3>
+          <p>{{ ws.periodoEstadoDetalle() }}</p>
+        </div>
+        <div class="parametros-cierre-score" aria-label="Completitud del período">
+          <span>Completitud</span>
+          <strong>{{ ws.completitudParametros().porcentaje }}%</strong>
+        </div>
+      </div>
+
+      <div class="parametros-cierre-grid">
+        <article class="parametros-cierre-summary">
+          <span class="param-eyebrow">Pendiente principal</span>
+          <p>{{ ws.cierrePendientePrincipal() }}</p>
+          <button type="button" class="parametros-cierre-action" (click)="ws.ejecutarAccionCierre()">
+            {{ ws.cierreAccionSiguienteLabel() }}
+          </button>
+        </article>
+
+        <article class="parametros-cierre-summary">
+          <span class="param-eyebrow">Impacto</span>
+          <p>{{ ws.cierreImpacto() }}</p>
+          <button type="button" class="parametros-cierre-ghost" (click)="ws.recargarPeriodoSeleccionado()">
+            Refrescar datos
+          </button>
+        </article>
+      </div>
+
+      <section class="parametros-cierre-groups" aria-label="Resumen de completitud">
+        @for (grupo of ws.cierreGrupos(); track grupo.id) {
+          <article class="parametros-cierre-group" [class.parametros-cierre-group--ok]="grupo.completo">
+            <div>
+              <strong>{{ grupo.label }}</strong>
+              <span>{{ grupo.detail }}</span>
+            </div>
+            <div class="parametros-cierre-meter" aria-label="Avance {{ grupo.label }}">
+              <span>{{ grupo.completos }}/{{ grupo.total }}</span>
+              <strong>{{ grupo.porcentaje }}%</strong>
+            </div>
+          </article>
+        }
+      </section>
+
+      <section class="parametros-cierre-alertas" aria-label="Pendientes del período">
+        @if (ws.cierreAlertas().length === 0) {
+          <p>No hay pendientes visibles para el período.</p>
+        } @else {
+          @for (alerta of ws.cierreAlertas(); track alerta.kind + alerta.mensaje) {
+            <p [class]="'parametros-cierre-alerta parametros-cierre-alerta--' + alerta.kind">
+              {{ alerta.mensaje }}
+            </p>
+          }
+        }
+      </section>
+    </section>
+  } @else {
+    @switch (ws.activeTab()) {
     @case ('configCliente') {
       <app-parametros-config-cliente-tab
         [form]="ws.form"
@@ -144,22 +219,14 @@
       <app-parametros-reforma-tab
         [reformaPensiones]="ws.reformaPensionesPorPeriodo()"
         [reformaPrevisional]="ws.reformaPrevisionalPorPeriodo()"
-        [trabajosPesados]="ws.trabajosPesadosPorPeriodo()"
-        [apvInstituciones]="ws.catalogos().apvInstituciones"
-        [apvFormasPago]="ws.catalogos().apvFormasPago"
         [parametrosLegalesColumns]="ws.parametrosLegalesColumns"
         [reformaPrevisionalColumns]="ws.reformaPrevisionalColumns"
-        [trabajosPesadosColumns]="ws.trabajosPesadosColumns"
-        [apvInstitucionesColumns]="ws.apvInstitucionesColumns"
-        [apvFormasPagoColumns]="ws.apvFormasPagoColumns"
         [loading]="ws.isLoading()"
         [gridPersistenceKeyLegal]="ws.gridPersistenceKey('parametros.reforma-legal.dg')"
         [gridPersistenceKeyPrevisional]="ws.gridPersistenceKey('parametros.reforma-previsional.dg')"
-        [gridPersistenceKeyTrabPesados]="ws.gridPersistenceKey('parametros.trabajos-pesados.dg')"
-        [gridPersistenceKeyApvInst]="ws.gridPersistenceKey('parametros.apv-instituciones.dg')"
-        [gridPersistenceKeyApvPago]="ws.gridPersistenceKey('parametros.apv-formas-pago.dg')"
         [refresh]="ws.cargar.bind(ws)"
       ></app-parametros-reforma-tab>
     }
+  }
   }
 </div>

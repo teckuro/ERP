@@ -157,8 +157,13 @@ export function evaluarCompletitudParametrosMensual(
   const config = evaluarConfigCliente(input, pendientes);
   const vigencias = evaluarVigencias(input, pendientes);
   const diferencias = compararOficialCliente(input.oficial, input.clienteConfig);
-  const reconciliacionPendiente = diferencias.length > 0 && requiereReconciliacionOficial(input.clienteConfig);
-  const consistencia = grupo('consistencia', reconciliacionPendiente ? 0 : 1, 1);
+  const consistenciaEvaluable = Boolean(input.oficial && input.clienteConfig);
+  const reconciliacionPendiente = consistenciaEvaluable
+    && diferencias.length > 0
+    && requiereReconciliacionOficial(input.clienteConfig);
+  const consistencia = consistenciaEvaluable
+    ? grupo('consistencia', reconciliacionPendiente ? 0 : 1, 1)
+    : grupoNoAplica('consistencia');
   if (reconciliacionPendiente) {
     advertencias.push('Existen diferencias pendientes entre valores oficiales y configuracion cliente.');
   }
@@ -177,12 +182,14 @@ export function evaluarCompletitudParametrosMensual(
     tecnico,
   };
 
-  const porcentaje = Math.min(100, Math.round(
-    (Object.entries(grupos) as Array<[ParametrosCompletitudGrupoId, ParametrosCompletitudGrupo]>).reduce(
-      (acc, [id, g]) => acc + (g.porcentaje * PESOS[id]) / 100,
-      0,
-    ),
-  ));
+  const gruposEntries = Object.entries(grupos) as Array<[ParametrosCompletitudGrupoId, ParametrosCompletitudGrupo]>;
+  const gruposAplicables = gruposEntries.filter(([, g]) => g.total > 0);
+  const pesosAplicables = gruposAplicables.reduce((acc, [id]) => acc + PESOS[id], 0);
+  const porcentaje = pesosAplicables === 0
+    ? 0
+    : Math.min(100, Math.round(
+      gruposAplicables.reduce((acc, [id, g]) => acc + (g.porcentaje * PESOS[id]) / 100, 0) * (100 / pesosAplicables),
+    ));
 
   return {
     estadoCalculado: resolverEstado(input.periodoRemuneracion?.estado ?? null, grupos, errores, reconciliacionPendiente),
@@ -496,6 +503,10 @@ function grupo(id: ParametrosCompletitudGrupoId, completos: number, total: numbe
   const safeTotal = Math.max(total, 1);
   const porcentaje = Math.round((completos / safeTotal) * 100);
   return { id, completo: completos >= safeTotal, porcentaje, total: safeTotal, completos };
+}
+
+function grupoNoAplica(id: ParametrosCompletitudGrupoId): ParametrosCompletitudGrupo {
+  return { id, completo: true, porcentaje: 0, total: 0, completos: 0 };
 }
 
 function tieneValor(value: unknown): boolean {

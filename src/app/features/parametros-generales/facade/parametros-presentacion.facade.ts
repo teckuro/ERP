@@ -5,6 +5,7 @@ import type { CcafMutualSubId } from '../components/tabs/parametros-ccaf-mutuale
 import type { ParametrosTabId } from '../models/parametro-general.model';
 import type {
   ConfigClienteDraftSource,
+  ParametrosAreaId,
   ParametrosDialogState,
 } from '../models/parametros-workspace.vm';
 
@@ -12,6 +13,7 @@ import type {
 export class ParametrosPresentacionFacade {
   private readonly periodoGlobal = inject(PeriodoActivoService);
 
+  readonly activeArea = signal<ParametrosAreaId>('cierrePeriodo');
   readonly activeTab = signal<ParametrosTabId>('configCliente');
   readonly ccafMutualSubTab = signal<CcafMutualSubId>('listaCcaf');
   readonly selectedPeriodo = signal(this.periodoGlobal.periodoYm());
@@ -39,6 +41,10 @@ export class ParametrosPresentacionFacade {
 
   seleccionarTab(tabId: ParametrosTabId): void {
     this.activeTab.set(tabId);
+  }
+
+  seleccionarArea(areaId: ParametrosAreaId): void {
+    this.activeArea.set(areaId);
   }
 
   seleccionarPeriodo(periodo: string): void {
