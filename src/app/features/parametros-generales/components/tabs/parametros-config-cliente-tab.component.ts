@@ -1,4 +1,3 @@
-import { RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { Component, Input } from '@angular/core';
 import { FormGroup, ReactiveFormsModule } from '@angular/forms';
@@ -14,7 +13,7 @@ import { ParametrosGeneralesCatalogos } from '../../models/parametro-general.mod
 @Component({
   selector: 'app-parametros-config-cliente-tab',
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule, RouterLink, SearchSelectComponent],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, SearchSelectComponent],
   template: `
     <form class="tab-panel parametros-tab-panel parametros-form" [formGroup]="form" (ngSubmit)="enviarFormulario?.()">
       <section class="param-group parametros-section-card" aria-labelledby="gratificacion-title">
@@ -78,13 +77,18 @@ import { ParametrosGeneralesCatalogos } from '../../models/parametro-general.mod
         </div>
       </section>
 
-      <section class="param-group parametros-section-card parametros-config-card param-group--ccaf-current" aria-labelledby="ccaf-title">
-        <h2 id="ccaf-title">CCAF</h2>
+      <section
+        class="param-group parametros-section-card parametros-config-card param-group--ccaf-current"
+        aria-labelledby="ccaf-title"
+      >
+        <h2 id="ccaf-title">CCAF y mutual</h2>
         <p class="param-section-lead">
-          Caja de compensación usada como referencia para el período activo. La mutual se configura en
-          <a routerLink="/empresas" class="param-inline-link">Empresas</a>.
+          Caja de compensacion, organismo mutual y tasa base usados como referencia para el periodo activo.
         </p>
-        <div class="field-grid parametros-form-grid parametros-form-grid-compact field-grid--ccaf field-grid--ccaf-compact" aria-label="Configuración CCAF">
+        <div
+          class="field-grid parametros-form-grid parametros-form-grid-compact field-grid--ccaf field-grid--ccaf-compact"
+          aria-label="Configuracion CCAF y mutual"
+        >
           <label class="param-field">
             <span>Caja de compensacion</span>
             <app-search-select
@@ -97,6 +101,33 @@ import { ParametrosGeneralesCatalogos } from '../../models/parametro-general.mod
               placeholder="Sin CCAF seleccionada"
               searchPlaceholder="Buscar CCAF"
             ></app-search-select>
+          </label>
+
+          <label class="param-field">
+            <span>Mutual de Seguridad</span>
+            <app-search-select
+              class="param-field-search-select"
+              [ngModel]="selectedOrganismoLey16744Id"
+              [ngModelOptions]="{ standalone: true }"
+              (ngModelChange)="seleccionarOrganismoLey16744?.($event)"
+              [options]="organismosLeySelectOptions"
+              [disabled]="!editable"
+              placeholder="Sin mutual seleccionada"
+              searchPlaceholder="Buscar mutual"
+            ></app-search-select>
+          </label>
+
+          <label class="param-field">
+            <span>Porcentaje</span>
+            <span class="unit-field unit-field--suffix" data-unit="%">
+              <input
+                class="param-input text-right"
+                type="number"
+                step="0.01"
+                [value]="selectedLey16744CotizacionBasica"
+                readonly
+              />
+            </span>
           </label>
         </div>
       </section>
@@ -121,17 +152,6 @@ import { ParametrosGeneralesCatalogos } from '../../models/parametro-general.mod
       .field-grid--ccaf-compact {
         max-width: min(56rem, 100%);
       }
-
-      .param-inline-link {
-        color: #2563eb;
-        font-weight: 600;
-        text-decoration: none;
-      }
-
-      .param-inline-link:hover {
-        color: #1d4ed8;
-        text-decoration: underline;
-      }
     `,
   ],
 })
@@ -142,11 +162,14 @@ export class ParametrosConfigClienteTabComponent {
   @Input() hasClienteConfig = false;
   @Input() periodoLabel = 'este periodo';
   @Input() selectedCcafId: number | null = null;
+  @Input() selectedOrganismoLey16744Id: number | null = null;
+  @Input() selectedLey16744CotizacionBasica: number | null = null;
   @Input() fechaActualizacionLabel: string | null = null;
   @Input() enviarFormulario: (() => void) | null = null;
   @Input() bloquearSiLectura: ((event: Event) => void) | null = null;
   @Input() setDescuentosBaseFn: ((value: boolean) => void) | null = null;
   @Input() seleccionarCcaf: ((value: SearchSelectValue) => void) | null = null;
+  @Input() seleccionarOrganismoLey16744: ((value: SearchSelectValue) => void) | null = null;
 
   get ccafSelectOptions(): SearchSelectOption<number | null>[] {
     return [
@@ -154,6 +177,16 @@ export class ParametrosConfigClienteTabComponent {
       ...this.catalogos.ccafEntidades.map((ccaf) => ({
         value: ccaf.idCcafEntidad,
         label: ccaf.nombre,
+      })),
+    ];
+  }
+
+  get organismosLeySelectOptions(): SearchSelectOption<number | null>[] {
+    return [
+      { value: null, label: 'Sin mutual seleccionada' },
+      ...this.catalogos.organismosLey16744.map((organismo) => ({
+        value: organismo.idOrganismoAdministradorLey16744,
+        label: organismo.nombre,
       })),
     ];
   }

@@ -341,6 +341,42 @@
                     </div>
                   </div>
                 }
+                @if (acta.pendientes.length) {
+                  <div
+                    class="payroll-acta-preparacion__pendientes"
+                    [class.payroll-acta-preparacion__pendientes--bloqueo]="acta.estadoResultado === 'bloqueado'"
+                    role="list"
+                    aria-label="Qué corregir antes de generar"
+                  >
+                    <p class="payroll-acta-preparacion__pendientes-k">Qué corregir</p>
+                    <ul class="payroll-acta-preparacion__pendientes-list">
+                      @for (pendiente of acta.pendientes; track pendiente.titulo + pendiente.descripcion) {
+                        <li
+                          class="payroll-acta-preparacion__pendiente"
+                          [class.payroll-acta-preparacion__pendiente--bloqueo]="pendiente.severidad === 'bloqueo'"
+                          role="listitem"
+                        >
+                          <div class="payroll-acta-preparacion__pendiente-main">
+                            <span class="payroll-acta-preparacion__pendiente-marker" aria-hidden="true"></span>
+                            <div class="payroll-acta-preparacion__pendiente-copy">
+                              <strong class="payroll-acta-preparacion__pendiente-titulo">{{ pendiente.titulo }}</strong>
+                              <p class="payroll-acta-preparacion__pendiente-detalle">{{ pendiente.descripcion }}</p>
+                            </div>
+                          </div>
+                          @if (pendiente.accionLabel && (pendiente.destino || pendiente.idPersona != null)) {
+                            <button
+                              type="button"
+                              class="payroll-acta-preparacion__pendiente-action"
+                              (click)="f.ejecutarPendienteActa(pendiente)"
+                            >
+                              {{ pendiente.accionLabel }}
+                            </button>
+                          }
+                        </li>
+                      }
+                    </ul>
+                  </div>
+                }
                 @if (acta.contextoPeriodo; as ctx) {
                   <dl class="payroll-acta-preparacion__contexto" aria-label="Contexto del período">
                     <div>

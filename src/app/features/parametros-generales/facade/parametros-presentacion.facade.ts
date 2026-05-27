@@ -16,6 +16,7 @@ export class ParametrosPresentacionFacade {
   readonly ccafMutualSubTab = signal<CcafMutualSubId>('listaCcaf');
   readonly selectedPeriodo = signal(this.periodoGlobal.periodoYm());
   readonly selectedCcafId = signal<number | null>(null);
+  readonly selectedOrganismoLey16744Id = signal<number | null>(null);
   readonly isLoading = signal(true);
   readonly isLoadingPlantilla = signal(false);
   readonly guardando = signal(false);

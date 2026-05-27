@@ -34,8 +34,11 @@ export class ParametrosGeneralesService {
     return this.repository.obtenerPeriodoRemuneracion(periodo);
   }
 
-  obtenerUltimoHastaPeriodo(periodo: string): Promise<ParametroGeneral | null> {
-    return this.repository.obtenerUltimoHastaPeriodo(periodo);
+  obtenerUltimoHastaPeriodo(
+    periodo: string,
+    opciones?: { enriquecer?: boolean },
+  ): Promise<ParametroGeneral | null> {
+    return this.repository.obtenerUltimoHastaPeriodo(periodo, opciones);
   }
 
   guardar(payload: ParametroGeneralUpsert): Promise<ParametroGeneral> {

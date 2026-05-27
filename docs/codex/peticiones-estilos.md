@@ -1,3 +1,10 @@
+## 2026-05-26 - Nómina mensual: verificar y generar en un solo paso (restaurado)
+
+- **Ajuste 2026-05-26:** Loading unificado **«Verificando y generando nómina»** en overlay, acta y focus mientras corre el paso encadenado (sin alternar «Verificando período» / «Generando nómina»). Copy del frame `generando` alineado al mismo paso.
+- **Cambio:** El CTA **Verificar y generar nómina** vuelve a encadenar prevalidación + generación de borrador (fix effect que limpiaba la bandera antes de tener resultado). Mismo label en shell, acta y estado `listo_para_generar_base` hasta existir borrador. Bitácora lateral oculta el paso «Generar nómina» duplicado mientras preparación no termina.
+- **Archivos:** `proceso-mensual-presentacion.facade.ts`, `proceso-mensual-estado-operativo.rules.ts`, `proceso-mensual-acta-preparacion.rules.ts`, `proceso-mensual-workspace.rules.ts`, specs.
+- **No tocado:** estilos globales, `angular.json`, SQL/motor.
+
 ## 2026-05-26 - Nómina mensual: CTAs y modales de confirmación diferenciados
 
 - **Cambio:** Se distingue el flujo RRHH en tres pasos con copy propio: **Guardar revisión** → **Registrar revisión RRHH** → **Confirmar nómina del período** (shell y estado operativo). Modales de decisión con `eyebrow` explícito, variante `decision`/`warning` y bloque «Próxima acción» contextual (sin texto genérico de liquidaciones en el paso intermedio). Frame `lista_para_confirmar` adapta chip y mensaje según sub-estado.
@@ -2026,6 +2033,13 @@ Creación avanzada incorpora una identidad de producto local para dejar de senti
 - **Reglas:** `informacionDebeAbrirModalEnPreparacion`, `puedeEncadenarGeneracionTrasVerificacion`, `ejecutarPreparacionPrincipal` en facade.
 - **Archivos:** `proceso-mensual-acta-preparacion.rules.ts`, `proceso-mensual-workspace.component.*`, `proceso-mensual-presentacion.facade.ts`, `proceso-mensual-estado-operativo.rules.ts`.
 
+## 2026-05-27 — Nómina mensual: acta con pendientes integrados
+
+- **Acta preparación:** bloque «Qué corregir» inline con título, detalle y acción por ítem (p. ej. parámetros UF); sustituye el chip genérico «Revisar N alertas» cuando hay secciones de verificación.
+- **Copy:** se oculta el mensaje genérico duplicado si ya hay pendientes detallados; CTA principal sigue siendo la corrección recomendada.
+- **Reglas:** `buildPendientesActaPreparacion`, `ActaPreparacionPendienteVm`, `ejecutarPendienteActa` en facade.
+- **Archivos:** `proceso-mensual-acta-preparacion.rules.ts`, `proceso-mensual-workspace.component.*`, `proceso-mensual-presentacion.facade.ts`.
+
 ## 2026-05-26 — Nómina mensual: acta central en preparación (A+D)
 
 - **Preparación sin borrador:** el workspace deja focus/empty hero y muestra acta central (`payroll-acta-preparacion`) con etapa activa, descripción, preview «N trabajador(es) listo(s)», enlace a alertas y CTA principal visible (`payroll-modal-primary`).
@@ -2050,3 +2064,10 @@ Creación avanzada incorpora una identidad de producto local para dejar de senti
 - **Fixtures:** nombres QA sin dígitos en `auditoria-empleados-fixtures.mjs`, `seed-empleados-prueba-errores.mjs`, `empleados-nomina-error-fixtures.spec.ts`.
 - **Archivos:** `contrato.html`; no estilos globales ni SQL.
 
+## 2026-05-27 - Parametros: restaurar CCAF y mutual en configuracion cliente
+
+- **Cambio:** Configuracion cliente vuelve a mostrar CCAF, Mutual de Seguridad y Porcentaje Ley 16.744 en el mismo bloque operativo.
+- **Guardado:** se conserva `idOrganismoAdministradorLey16744` al guardar configuracion cliente y al actualizar desde oficiales; ya no se fuerza a `null`.
+- **Completitud:** la mutual seleccionada vuelve a contar como dato requerido cuando existe catalogo de organismos Ley 16.744.
+- **Archivos:** `parametros-config-cliente-tab.component.ts`, `parametros-workspace.orquestador.ts`, `parametros-presentacion.facade.ts`, `parametros-completitud.rules.ts`.
+- **No tocado:** SQL, carga Python, motor de nomina ni estilos globales.

@@ -77,7 +77,7 @@ export const FLUJO_COMPLETO_ETAPAS: readonly FlujoCompletoEtapaEsperada[] = [
       puedeGenerarBase: true,
     }),
     estadoClave: 'listo_para_generar_base',
-    ctaLabel: 'Generar nómina',
+    ctaLabel: 'Verificar y generar nómina',
     ctaAccionLocal: 'generarBase',
     shellUsaValidacionLocal: true,
   },

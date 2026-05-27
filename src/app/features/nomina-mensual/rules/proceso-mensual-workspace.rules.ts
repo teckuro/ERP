@@ -110,6 +110,7 @@ export interface BuildNominaFrameViewInput {
   trabajadoresCount: number;
   resumenRevisionTrabajadores: string;
   accionPeriodoEnCurso: boolean;
+  preparacionNominaUnificada?: boolean;
 }
 
 export interface ResumenRevisionTrabajadoresInput {
@@ -229,13 +230,23 @@ export function buildNominaFrameView(input: BuildNominaFrameViewInput): NominaVi
 
   switch (frame) {
     case 'generando':
-      return base({
-        chip: 'Generando',
-        titulo: 'Estamos preparando la nómina mensual.',
-        texto:
-          'Estamos revisando trabajadores, parámetros, movimientos y recurrentes para armar el borrador del período.',
-        info: 'Este paso genera una versión de trabajo; todavía no es la base oficial.',
-      });
+      return base(
+        input.preparacionNominaUnificada
+          ? {
+              chip: 'En curso',
+              titulo: 'Verificando y generando la nómina mensual.',
+              texto:
+                'Revisamos trabajadores, parámetros, movimientos y recurrentes, y armamos el borrador preliminar del período en un solo paso.',
+              info: 'Al terminar verá el detalle por trabajador; aún no es la confirmación oficial.',
+            }
+          : {
+              chip: 'Generando',
+              titulo: 'Estamos preparando la nómina mensual.',
+              texto:
+                'Estamos revisando trabajadores, parámetros, movimientos y recurrentes para armar el borrador del período.',
+              info: 'Este paso genera una versión de trabajo; todavía no es la base oficial.',
+            },
+      );
     case 'en_revision': {
       const esBorrador = estadoClave === 'base_lista';
       return base({
@@ -428,11 +439,9 @@ export function buildBitacoraEtapas(input: BitacoraEtapasInput): BitacoraEtapaVm
   };
 
   const subpasosValidar = (): BitacoraSubpasoVm[] => {
-    if (etapaActiva !== 'validar') return [];
-    return [
-      { marca: marca(validado, !validado), etiqueta: 'Verificar período' },
-      { marca: marca(false, validado && !baseLista), etiqueta: 'Generar nómina' },
-    ];
+    if (etapaActiva !== 'validar' && etapaActiva !== 'base') return [];
+    if (baseLista) return [];
+    return [{ marca: validado ? 'actual' : 'pendiente', etiqueta: 'Verificar y generar nómina' }];
   };
 
   const subpasosBase = (): BitacoraSubpasoVm[] => {
@@ -473,10 +482,10 @@ export function buildBitacoraEtapas(input: BitacoraEtapasInput): BitacoraEtapaVm
   return [
     {
       clave: 'validar',
-      etiqueta: 'Verificar período',
-      resumen: resumenValidar(),
-      activa: etapaActiva === 'validar',
-      completada: validado && etapaActiva !== 'validar',
+      etiqueta: baseLista ? 'Verificar período' : 'Verificar y generar nómina',
+      resumen: baseLista ? resumenValidar() : (validado ? resumenBase() : resumenValidar()),
+      activa: !baseLista && (etapaActiva === 'validar' || etapaActiva === 'base'),
+      completada: baseLista,
       bloqueada: false,
       subpasos: subpasosValidar(),
     },
@@ -484,7 +493,7 @@ export function buildBitacoraEtapas(input: BitacoraEtapasInput): BitacoraEtapaVm
       clave: 'base',
       etiqueta: 'Generar nómina',
       resumen: resumenBase(),
-      activa: etapaActiva === 'base',
+      activa: baseLista && etapaActiva === 'base',
       completada: baseLista && etapaActiva !== 'validar' && etapaActiva !== 'base',
       bloqueada: false,
       subpasos: subpasosBase(),
@@ -520,7 +529,9 @@ export function buildBitacoraEtapas(input: BitacoraEtapasInput): BitacoraEtapaVm
 }
 
 export function mapBitacoraRailEtapas(etapas: BitacoraEtapaVm[]): BitacoraRailEtapaVm[] {
-  return etapas.map((etapa) => ({
+  return etapas
+    .filter((etapa) => etapa.clave !== 'base' || etapa.completada || etapa.activa)
+    .map((etapa) => ({
     clave: etapa.clave,
     etiqueta: etapa.etiqueta,
     estadoCorto: etapa.bloqueada

@@ -109,6 +109,7 @@ export class ParametrosWorkspaceOrquestador {
   readonly periodosMensualesCatalogo = signal<string[]>([]);
   readonly periodoRemuneracion = signal<PeriodoRemuneracionEstadoInfo | null>(null);
   readonly selectedCcafId = this.presentacion.selectedCcafId;
+  readonly selectedOrganismoLey16744Id = this.presentacion.selectedOrganismoLey16744Id;
   readonly isLoading = this.presentacion.isLoading;
   /** Consulta al backend solo para plantilla del último período (crear parámetros); no es guardado. */
   readonly isLoadingPlantilla = this.presentacion.isLoadingPlantilla;
@@ -499,6 +500,15 @@ export class ParametrosWorkspaceOrquestador {
   readonly reformaPrevisionalPorPeriodo = computed(() => this.catalogos().reformaPrevisional);
 
   readonly trabajosPesadosPorPeriodo = computed(() => this.catalogos().trabajosPesados);
+
+  readonly ley16744ParametroActivo = computed(() => {
+    const parametros = this.catalogos().ley16744Parametros;
+    return parametros.find((row) => row.vigente) ?? parametros[0] ?? null;
+  });
+
+  readonly cotizacionLey16744Seleccionada = computed(
+    () => this.ley16744ParametroActivo()?.cotizacionBasicaEmpleador ?? null,
+  );
 
   readonly form = this.fb.group({
     periodo: [this.periodoGlobal.periodoYm(), [Validators.required, Validators.pattern(/^\d{4}-\d{2}$/)]],
@@ -995,6 +1005,7 @@ export class ParametrosWorkspaceOrquestador {
       this.clienteConfig.set(saved);
       this.patchForm(this.parametroConClienteConfig(oficial, saved), this.selectedPeriodo());
       this.selectedCcafId.set(saved.idCcafEntidad);
+      this.selectedOrganismoLey16744Id.set(saved.idOrganismoAdministradorLey16744);
       this.mostrarExitoClienteConfig(saved.periodo, 'oficiales', oficial.periodo);
     } catch (err) {
       this.mostrarErrorClienteConfig(this.extractErrorDetail(err) || 'No fue posible actualizar la configuración con oficiales.');
@@ -1197,6 +1208,7 @@ export class ParametrosWorkspaceOrquestador {
 
     this.patchForm(oficial, this.selectedPeriodo());
     this.selectedCcafId.set(null);
+    this.selectedOrganismoLey16744Id.set(null);
     this.configDraftSource.set('oficiales');
     this.configDraftSourcePeriodo.set(oficial.periodo);
     this.generalesEditando.set(true);
@@ -1213,6 +1225,7 @@ export class ParametrosWorkspaceOrquestador {
 
     this.patchForm({ ...referencia, periodo: this.selectedPeriodo() }, this.selectedPeriodo());
     this.selectedCcafId.set(null);
+    this.selectedOrganismoLey16744Id.set(null);
     this.configDraftSource.set('referencia');
     this.configDraftSourcePeriodo.set(referencia.periodo);
     this.generalesEditando.set(true);
@@ -1268,6 +1281,7 @@ export class ParametrosWorkspaceOrquestador {
     );
 
     this.selectedCcafId.set(config?.idCcafEntidad ?? null);
+    this.selectedOrganismoLey16744Id.set(config?.idOrganismoAdministradorLey16744 ?? null);
   }
 
   private baseActualParaConfigCliente(): ParametroGeneral {
@@ -1371,7 +1385,7 @@ export class ParametrosWorkspaceOrquestador {
       gratificacion: raw.gratificacion,
       immGratificacion: this.numberFromUnknown(raw.immGratificacion),
       idCcafEntidad: this.selectedCcafId(),
-      idOrganismoAdministradorLey16744: null,
+      idOrganismoAdministradorLey16744: this.selectedOrganismoLey16744Id(),
     });
   }
 
@@ -1395,6 +1409,10 @@ export class ParametrosWorkspaceOrquestador {
 
   seleccionarCcaf(value: SearchSelectValue): void {
     this.selectedCcafId.set(this.catalogIdFromSearchValue(value));
+  }
+
+  seleccionarOrganismoLey16744(value: SearchSelectValue): void {
+    this.selectedOrganismoLey16744Id.set(this.catalogIdFromSearchValue(value));
   }
 
   selectedYear(): string {
@@ -1654,6 +1672,12 @@ export class ParametrosWorkspaceOrquestador {
     const configCcafId = config?.idCcafEntidad ?? null;
     const ccafExists = catalogos.ccafEntidades.some((row) => row.idCcafEntidad === configCcafId);
     this.selectedCcafId.set(ccafExists ? configCcafId : null);
+
+    const configOrganismoId = config?.idOrganismoAdministradorLey16744 ?? null;
+    const organismoExists = catalogos.organismosLey16744.some(
+      (row) => row.idOrganismoAdministradorLey16744 === configOrganismoId,
+    );
+    this.selectedOrganismoLey16744Id.set(organismoExists ? configOrganismoId : null);
   }
 
   /** Valores neutros para un periodo sin registro (sin datos de otros periodos). */

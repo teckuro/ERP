@@ -88,6 +88,17 @@ describe('proceso-mensual-parametros-minimos.rules', () => {
     expect(grupos.find((g) => g.id === 'catalogos_afp_impuesto')?.clasificacion).toBe('OK');
   });
 
+  it('fila exacta con uf null -> mensuales PARCIAL', () => {
+    const grupos = revisarGruposParametrosMinimos({
+      periodo: '2026-05',
+      fila: { ...filaOk, uf: null },
+      lecturaFila: 'ok',
+      catalogos: catalogosMin,
+      lecturaCatalogos: 'ok',
+    });
+    expect(grupos.find((g) => g.id === 'mensuales_uf_utm_sueldo')?.clasificacion).toBe('PARCIAL');
+  });
+
   it('sin fila -> mensuales y topes FALTANTE', () => {
     const grupos = revisarGruposParametrosMinimos({
       periodo: '2026-05',

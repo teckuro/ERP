@@ -97,8 +97,10 @@ import {
 import {
   buildActaPreparacionCentral,
   informacionDebeAbrirModalEnPreparacion,
+  mensajePreparacionNominaEnCurso,
   puedeEncadenarGeneracionTrasVerificacion,
   type ActaPreparacionCentralVm,
+  type ActaPreparacionPendienteVm,
 } from '../../../rules/proceso-mensual-acta-preparacion.rules';
 import {
   buildInformacionPeriodoView,
@@ -320,6 +322,9 @@ export class ProcesoMensualPresentacionFacade {
 
   readonly flujoEnCurso = computed(() => this.store.accionPeriodoEnCurso());
   readonly flujoEnCursoMensaje = computed(() => {
+    if (this.preparacionNominaUnificada()) {
+      return mensajePreparacionNominaEnCurso();
+    }
     if (this.store.validando()) return 'Verificando período';
     if (this.store.generandoPreNomina()) return 'Generando nómina';
     if (this.store.calculandoPreliminar()) return 'Calculando nómina';
@@ -330,7 +335,10 @@ export class ProcesoMensualPresentacionFacade {
     if (this.store.aprobandoResultado()) return 'Registrando revisión';
     if (this.store.cerrandoNomina()) return 'Confirmando nómina';
     if (this.store.gestionandoAccionPeriodo()) return 'Aplicando cambios del período';
-    return 'Procesando cambios del período';
+    if (this.store.accionPeriodoEnCurso()) {
+      return 'Procesando cambios del período';
+    }
+    return '';
   });
 
   readonly confirmacionProceso = computed(() => {
@@ -538,6 +546,8 @@ export class ProcesoMensualPresentacionFacade {
   readonly actaOperativaPreparada = this.workspacePort.actaOperativaPreparada;
 
   private readonly encadenarGeneracionTrasVerificacion = signal(false);
+  /** Verificar + generar borrador (+ cálculo preliminar) como un solo paso visible para RRHH. */
+  private readonly preparacionNominaUnificada = signal(false);
 
   accionPeriodoEnCurso(): boolean {
     return this.store.accionPeriodoEnCurso();
@@ -1340,15 +1350,32 @@ export class ProcesoMensualPresentacionFacade {
   private readonly encadenarPostValidacionEffect = effect(() => {
     const validando = this.store.validando();
     const encadenar = this.encadenarGeneracionTrasVerificacion();
-    if (validando || !encadenar) {
+    const tienePrevalidacion = this.contextoOperativoPeriodo().tienePrevalidacion;
+    if (!encadenar || validando || !tienePrevalidacion) {
       return;
     }
     untracked(() => {
       this.encadenarGeneracionTrasVerificacion.set(false);
       if (this.puedeEncadenarGeneracionTrasVerificacion()) {
         this.generarPreNomina();
+      } else {
+        this.preparacionNominaUnificada.set(false);
       }
     });
+  });
+
+  private readonly finalizarPreparacionNominaUnificadaEffect = effect(() => {
+    if (!this.preparacionNominaUnificada()) {
+      return;
+    }
+    const ocupado =
+      this.store.validando()
+      || this.store.generandoPreNomina()
+      || this.store.calculandoPreliminar();
+    if (ocupado) {
+      return;
+    }
+    untracked(() => this.preparacionNominaUnificada.set(false));
   });
 
   readonly nominaFrame = computed<NominaVisualFrameView>(() => {
@@ -1376,6 +1403,7 @@ export class ProcesoMensualPresentacionFacade {
       trabajadoresCount: this.dashboardResumen().trabajadoresAptos ?? this.store.snapshotActivo()?.totalTrabajadores ?? 0,
       resumenRevisionTrabajadores: this.resumenRevisionTrabajadores(),
       accionPeriodoEnCurso: this.accionPeriodoEnCurso(),
+      preparacionNominaUnificada: this.preparacionNominaUnificada(),
     });
   }
 
@@ -1513,6 +1541,7 @@ export class ProcesoMensualPresentacionFacade {
       accionPeriodoEnCurso: this.accionPeriodoEnCurso(),
       validando: this.store.validando(),
       generandoPreNomina: this.store.generandoPreNomina(),
+      preparacionNominaUnificada: this.preparacionNominaUnificada(),
       frameTexto: this.nominaFrame().texto,
       periodoEtiqueta: this.periodoActivo.etiqueta(),
       movimientosAprobados: dash.movimientosAprobados,
@@ -2161,11 +2190,13 @@ export class ProcesoMensualPresentacionFacade {
     if (!ctx.baseGenerada) {
       if (!ctx.tienePrevalidacion) {
         this.overlaysPort.suprimirInformacionPeriodo();
+        this.preparacionNominaUnificada.set(true);
         this.encadenarGeneracionTrasVerificacion.set(true);
         this.validarPeriodo();
         return;
       }
       if (accion.accionLocal === 'generarBase' && !accion.disabled) {
+        this.preparacionNominaUnificada.set(true);
         this.generarPreNomina();
         return;
       }
@@ -2178,6 +2209,19 @@ export class ProcesoMensualPresentacionFacade {
     if (!secundaria) return;
     this.overlaysPort.suprimirInformacionPeriodo();
     this.ejecutarDestinoInformacionPeriodo(secundaria.destino);
+  }
+
+  ejecutarPendienteActa(pendiente: ActaPreparacionPendienteVm): void {
+    this.overlaysPort.suprimirInformacionPeriodo();
+    if (pendiente.idPersona != null) {
+      this.irACorregirFichaDesdeVerificacion(pendiente.idPersona);
+      return;
+    }
+    if (pendiente.destino) {
+      this.ejecutarDestinoInformacionPeriodo(pendiente.destino);
+      return;
+    }
+    this.abrirModalAlertasExpediente();
   }
 
   cerrarInformacionPeriodo(): void {

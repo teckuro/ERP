@@ -348,7 +348,7 @@ describe('parametros-completitud.rules', () => {
     expect(payload.gratificacion).toBe(false);
     expect(payload.immGratificacion).toBe(3.5);
     expect(payload.idCcafEntidad).toBe(2);
-    expect(payload.idOrganismoAdministradorLey16744).toBeNull();
+    expect(payload.idOrganismoAdministradorLey16744).toBe(3);
     expect(oficial.periodo).toBe('2026-05');
     expect(oficial.uf).toBe(38100);
   });

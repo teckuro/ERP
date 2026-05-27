@@ -221,7 +221,7 @@ function evaluarConfigCliente(
   input: EvaluarCompletitudParametrosInput,
   pendientes: string[],
 ): ParametrosCompletitudGrupo {
-  let total = 4 + CAMPOS_CLIENTE_OPERATIVOS.length;
+  let total = 6 + CAMPOS_CLIENTE_OPERATIVOS.length;
   let completos = 0;
   const cfg = input.clienteConfig;
 
@@ -254,6 +254,12 @@ function evaluarConfigCliente(
   completos += !requiereCcaf || cfg?.idCcafEntidad ? 1 : 0;
   if (requiereCcaf && !cfg?.idCcafEntidad) {
     pendientes.push('Falta CCAF seleccionada.');
+  }
+
+  const requiereOrganismoLey16744 = input.catalogos.organismosLey16744.length > 0;
+  completos += !requiereOrganismoLey16744 || cfg?.idOrganismoAdministradorLey16744 ? 1 : 0;
+  if (requiereOrganismoLey16744 && !cfg?.idOrganismoAdministradorLey16744) {
+    pendientes.push('Falta mutual seleccionada.');
   }
 
   completos += contarCampos(cfg, CAMPOS_CLIENTE_OPERATIVOS, pendientes, 'Falta configuracion cliente');
@@ -482,7 +488,7 @@ export function crearClienteConfigDesdeOficiales(
     gratificacion: actual?.gratificacion ?? oficial.gratificacion ?? true,
     immGratificacion: actual?.immGratificacion ?? oficial.immGratificacion,
     idCcafEntidad: actual?.idCcafEntidad ?? null,
-    idOrganismoAdministradorLey16744: null,
+    idOrganismoAdministradorLey16744: actual?.idOrganismoAdministradorLey16744 ?? null,
   };
 }
 

@@ -31,10 +31,13 @@
         [hasClienteConfig]="ws.clienteConfig() !== null"
         [periodoLabel]="ws.periodoSeleccionadoLabel()"
         [selectedCcafId]="ws.selectedCcafId()"
+        [selectedOrganismoLey16744Id]="ws.selectedOrganismoLey16744Id()"
+        [selectedLey16744CotizacionBasica]="ws.cotizacionLey16744Seleccionada()"
         [fechaActualizacionLabel]="ws.fechaActualizacionLabel()"
         [bloquearSiLectura]="ws.bloquearSiLectura.bind(ws)"
         [setDescuentosBaseFn]="ws.setDescuentosBase.bind(ws)"
         [seleccionarCcaf]="ws.seleccionarCcaf.bind(ws)"
+        [seleccionarOrganismoLey16744]="ws.seleccionarOrganismoLey16744.bind(ws)"
         [enviarFormulario]="ws.guardar.bind(ws)"
       ></app-parametros-config-cliente-tab>
     }

@@ -489,7 +489,10 @@ export class ParametrosGeneralesRepository {
     return this.hydrateConfigurables(rows);
   }
 
-  async obtenerUltimoHastaPeriodo(periodo: string): Promise<ParametroGeneral | null> {
+  async obtenerUltimoHastaPeriodo(
+    periodo: string,
+    opciones: { enriquecer?: boolean } = {},
+  ): Promise<ParametroGeneral | null> {
     const { data, error } = await this.supabaseUntyped
       .from('parametros_generales')
       .select(
@@ -543,7 +546,12 @@ export class ParametrosGeneralesRepository {
       return null;
     }
 
-    const [hydrated] = await this.hydrateConfigurables([this.toModel(row)]);
+    const model = this.toModel(row);
+    if (opciones.enriquecer === false) {
+      return model;
+    }
+
+    const [hydrated] = await this.hydrateConfigurables([model]);
     return hydrated ?? null;
   }
 

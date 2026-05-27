@@ -103,7 +103,7 @@ export class ProcesoMensualService {
     }
 
     const settled = await Promise.allSettled([
-      this.parametrosGenerales.obtenerUltimoHastaPeriodo(p),
+      this.parametrosGenerales.obtenerUltimoHastaPeriodo(p, { enriquecer: false }),
       this.parametrosGenerales.obtenerPeriodoRemuneracion(p),
       this.parametrosGenerales.obtenerClienteConfig(p),
       this.empleados.listar(),
@@ -126,7 +126,7 @@ export class ProcesoMensualService {
     }
 
     const settled = await Promise.allSettled([
-      this.parametrosGenerales.obtenerUltimoHastaPeriodo(p),
+      this.parametrosGenerales.obtenerUltimoHastaPeriodo(p, { enriquecer: false }),
       this.parametrosGenerales.obtenerPeriodoRemuneracion(p),
       this.parametrosGenerales.obtenerClienteConfig(p),
       this.parametrosGenerales.listarCatalogos(p),

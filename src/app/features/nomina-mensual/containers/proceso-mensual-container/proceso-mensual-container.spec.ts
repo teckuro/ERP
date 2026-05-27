@@ -1122,10 +1122,12 @@ describe('ProcesoMensualContainer', () => {
 
       expect(el.querySelector('.payroll-acta-preparacion')).toBeTruthy();
       expect(el.querySelector('.payroll-acta-preparacion__resumen')).toBeTruthy();
-      expectTexto(c.estadoOperativo().accionPrincipal.label, 'Generar nómina');
+      expectTexto(c.estadoOperativo().accionPrincipal.label, 'Verificar y generar nómina');
     });
 
-    it('CTA primario del shell ejecuta verificar periodo', async () => {
+    it('CTA primario del shell encadena verificar y generar nomina', async () => {
+      ejecutarPrevalidaciones.mockResolvedValueOnce(prevalidacionLista());
+      generarPreNominaPeriodo.mockResolvedValueOnce(baseNominaLista());
       const localFixture = await montarContainer();
       const shell = TestBed.inject(ShellPageContextService);
 
@@ -1136,7 +1138,15 @@ describe('ProcesoMensualContainer', () => {
         timeout: 3000,
         interval: 20,
       });
+      await vi.waitFor(() => expect(generarPreNominaPeriodo).toHaveBeenCalledWith(PERIODO_TEST), {
+        timeout: 3000,
+        interval: 20,
+      });
+      expect(ejecutarPrevalidaciones.mock.invocationCallOrder[0]).toBeLessThan(
+        generarPreNominaPeriodo.mock.invocationCallOrder[0] ?? 0,
+      );
       expect(localFixture.componentInstance.resultado()).not.toBeNull();
+      expect(localFixture.componentInstance.preNomina()).not.toBeNull();
     });
 
     it('no muestra labels tecnicos en copy visible del shell', () => {
@@ -1350,7 +1360,7 @@ describe('ProcesoMensualContainer', () => {
       expect(c.estadoOperativo().accionPrincipal.label).toMatch(/Verificar y generar nómina/i);
 
       await avanzarFlujo(localFixture, 'prevalidado');
-      expectTexto(c.estadoOperativo().accionPrincipal.label, 'Generar nómina');
+      expectTexto(c.estadoOperativo().accionPrincipal.label, 'Verificar y generar nómina');
 
       await avanzarFlujo(localFixture, 'base');
       expect(generarPreNominaPeriodo).toHaveBeenCalled();

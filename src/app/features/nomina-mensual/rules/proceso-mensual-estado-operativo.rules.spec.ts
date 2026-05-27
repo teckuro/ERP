@@ -75,7 +75,7 @@ describe('proceso-mensual-estado-operativo.rules', () => {
     }));
 
     expect(vm.estadoClave).toBe('listo_para_generar_base');
-    expect(vm.accionPrincipal.label).toBe('Generar nómina');
+    expect(vm.accionPrincipal.label).toBe('Verificar y generar nómina');
     expect(vm.accionPrincipal.accionLocal).toBe('generarBase');
   });
 
@@ -114,7 +114,7 @@ describe('proceso-mensual-estado-operativo.rules', () => {
 
     expect(vm.estadoClave).toBe('listo_para_generar_base');
     expect(vm.titulo).toBe('Período verificado');
-    expect(vm.accionPrincipal.label).toBe('Generar nómina');
+    expect(vm.accionPrincipal.label).toBe('Verificar y generar nómina');
     expect(vm.etapaActiva).toBe('base');
     expect(vm.timeline.map((paso) => paso.titulo)).toEqual([
       'Generar nómina',

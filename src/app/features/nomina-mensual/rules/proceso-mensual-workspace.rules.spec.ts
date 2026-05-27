@@ -58,6 +58,24 @@ describe('proceso-mensual-workspace.rules', () => {
     expect(vm.texto.toLowerCase()).not.toContain('snapshot');
   });
 
+  it('buildNominaFrameView en generando unificado describe un solo paso', () => {
+    const vm = buildNominaFrameView({
+      frame: 'generando',
+      estadoClave: 'pendiente_validacion',
+      accion: accionLocal('Verificar y generar nómina'),
+      periodoEtiqueta: 'Mayo 2026',
+      bloqueosCount: 0,
+      advertenciasCount: 0,
+      trabajadoresCount: 0,
+      resumenRevisionTrabajadores: 'sin observaciones disponibles',
+      accionPeriodoEnCurso: true,
+      preparacionNominaUnificada: true,
+    });
+
+    expect(vm.titulo).toContain('Verificando y generando');
+    expect(vm.texto).toContain('un solo paso');
+  });
+
   it('buildNominaFrameView en_revision con base_lista usa chip Borrador generado', () => {
     const vm = buildNominaFrameView({
       frame: 'en_revision',

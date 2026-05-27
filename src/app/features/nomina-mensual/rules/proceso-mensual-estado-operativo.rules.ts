@@ -333,9 +333,14 @@ export function resolverEstadoOperativoProcesoMensual(
   return buildEstado(input, {
     estadoClave: 'listo_para_generar_base',
     titulo: 'Período verificado',
-    descripcion: 'El período está verificado. Puedes generar la nómina mensual del período.',
+    descripcion: 'El período está verificado. Puede generarse el borrador de nómina mensual en el mismo paso.',
     severidad: input.advertenciasPrevalidacion.length ? 'warning' : 'success',
-    accionPrincipal: local('Generar nómina', 'Consolida trabajadores, movimientos del mes y calcula la nómina preliminar del período.', 'generarBase', !input.puedeGenerarBase),
+    accionPrincipal: local(
+      'Verificar y generar nómina',
+      'Consolida trabajadores, movimientos del mes y calcula la nómina preliminar del período.',
+      'generarBase',
+      !input.puedeGenerarBase,
+    ),
     etapaActiva: 'base',
     disclosureActivo: 'base',
     queFaltaAhora: [

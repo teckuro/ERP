@@ -26,6 +26,15 @@ export interface ActaPreparacionAccionSecundariaVm {
   destino: InformacionPeriodoDestino;
 }
 
+export interface ActaPreparacionPendienteVm {
+  severidad: 'bloqueo' | 'advertencia';
+  titulo: string;
+  descripcion: string;
+  accionLabel: string | null;
+  destino: InformacionPeriodoDestino | null;
+  idPersona?: number;
+}
+
 export interface ActaPreparacionCentralVm {
   etapa: string;
   estadoEtapa: string;
@@ -37,6 +46,7 @@ export interface ActaPreparacionCentralVm {
   contextoPeriodo: ActaPreparacionContextoPeriodoVm | null;
   alertasTotal: number;
   alertasEtiqueta: string | null;
+  pendientes: readonly ActaPreparacionPendienteVm[];
   ctaLabel: string;
   ctaDisabled: boolean;
   ctaDisabledReason: string | null;
@@ -46,7 +56,16 @@ export interface ActaPreparacionCentralVm {
   mensajeEstado: string | null;
 }
 
-const LABEL_VERIFICAR_Y_GENERAR = 'Verificar y generar nómina';
+export const LABEL_VERIFICAR_Y_GENERAR = 'Verificar y generar nómina';
+export const LABEL_PREPARACION_NOMINA_EN_CURSO = 'Verificando y generando nómina';
+
+export function mensajePreparacionNominaEnCurso(): string {
+  return LABEL_PREPARACION_NOMINA_EN_CURSO;
+}
+
+export function ctaLabelPreparacionNominaEnCurso(): string {
+  return `${LABEL_PREPARACION_NOMINA_EN_CURSO}…`;
+}
 
 export function previewTrabajadoresPreparacion(input: {
   trabajadoresAptos: number | null;
@@ -90,14 +109,15 @@ function resolveCtaLabel(input: {
   accionPrincipal: ProcesoMensualAccionPrincipalVm;
   validando: boolean;
   generandoPreNomina: boolean;
+  preparacionNominaUnificada: boolean;
 }): string {
-  if (input.validando) {
-    return 'Verificando período…';
+  if (
+    input.preparacionNominaUnificada
+    && (input.validando || input.generandoPreNomina)
+  ) {
+    return ctaLabelPreparacionNominaEnCurso();
   }
-  if (input.generandoPreNomina) {
-    return 'Generando nómina…';
-  }
-  if (!input.tienePrevalidacion || input.accionPrincipal.accionLocal === 'validarPeriodo') {
+  if (!input.tienePrevalidacion || input.accionPrincipal.accionLocal === 'validarPeriodo' || input.accionPrincipal.accionLocal === 'generarBase') {
     return LABEL_VERIFICAR_Y_GENERAR;
   }
   return input.accionPrincipal.label;
@@ -106,12 +126,16 @@ function resolveCtaLabel(input: {
 function resolveEstadoResultado(input: {
   validando: boolean;
   generandoPreNomina: boolean;
+  preparacionNominaUnificada: boolean;
   tienePrevalidacion: boolean;
   criticos: number;
   fichasPendientes: number;
   advertencias: number;
 }): ActaPreparacionEstadoResultado {
-  if (input.validando || input.generandoPreNomina) {
+  if (
+    input.preparacionNominaUnificada
+    && (input.validando || input.generandoPreNomina)
+  ) {
     return 'verificando';
   }
   if (!input.tienePrevalidacion) {
@@ -126,10 +150,107 @@ function resolveEstadoResultado(input: {
   return 'listo';
 }
 
+function severidadDesdeTituloSeccion(titulo: string): 'bloqueo' | 'advertencia' {
+  const normalizado = titulo.toLowerCase();
+  if (normalizado.includes('crít') || normalizado.includes('crit')) {
+    return 'bloqueo';
+  }
+  return 'advertencia';
+}
+
+function destinoDesdeRutaPendiente(ruta?: string): InformacionPeriodoDestino | null {
+  const limpia = ruta?.trim();
+  if (!limpia) {
+    return null;
+  }
+  if (limpia === '/parametros') {
+    return 'parametros_app';
+  }
+  if (limpia.includes('novedades') || limpia.includes('movimiento')) {
+    return 'movimientos';
+  }
+  if (limpia.includes('liquidacion')) {
+    return 'resultado';
+  }
+  return null;
+}
+
+function parseItemSeccionPendiente(item: string): { titulo: string; descripcion: string } {
+  const separador = item.indexOf(': ');
+  if (separador <= 0) {
+    return { titulo: item.trim(), descripcion: item.trim() };
+  }
+  return {
+    titulo: item.slice(0, separador).trim(),
+    descripcion: item.slice(separador + 2).trim(),
+  };
+}
+
+export function buildPendientesActaPreparacion(
+  info: InformacionPeriodoView | null,
+): ActaPreparacionPendienteVm[] {
+  if (!info) {
+    return [];
+  }
+
+  const out: ActaPreparacionPendienteVm[] = [];
+
+  for (const seccion of info.secciones ?? []) {
+    const severidad = severidadDesdeTituloSeccion(seccion.titulo);
+    if (seccion.detalles?.length) {
+      for (const detalle of seccion.detalles) {
+        out.push({
+          severidad,
+          titulo: detalle.titulo,
+          descripcion: detalle.descripcion,
+          accionLabel: detalle.accionLabel ?? null,
+          destino: destinoDesdeRutaPendiente(detalle.ruta),
+        });
+      }
+      continue;
+    }
+    for (const item of seccion.items) {
+      const parsed = parseItemSeccionPendiente(item);
+      out.push({
+        severidad,
+        titulo: parsed.titulo,
+        descripcion: parsed.descripcion,
+        accionLabel: null,
+        destino: null,
+      });
+    }
+  }
+
+  for (const trabajador of info.trabajadoresPendientes ?? []) {
+    out.push({
+      severidad: 'advertencia',
+      titulo: trabajador.nombre,
+      descripcion: trabajador.detalleCorreccion?.trim() || trabajador.motivo,
+      accionLabel: 'Revisar ficha',
+      destino: 'trabajadores_fichas',
+      idPersona: trabajador.idPersona,
+    });
+  }
+
+  const vistos = new Set<string>();
+  return out.filter((item) => {
+    const clave = `${item.severidad}|${item.titulo}|${item.descripcion}`;
+    if (vistos.has(clave)) {
+      return false;
+    }
+    vistos.add(clave);
+    return true;
+  }).slice(0, 5);
+}
+
 function resolveMensajeEstado(
   estado: ActaPreparacionEstadoResultado,
   tienePrevalidacion: boolean,
+  pendientesCount: number,
 ): string | null {
+  if (pendientesCount > 0) {
+    return null;
+  }
   if (!tienePrevalidacion) {
     return 'Use la acción principal para revisar el período y, si no hay bloqueos, generar la nómina automáticamente.';
   }
@@ -215,6 +336,7 @@ export function buildActaPreparacionCentral(input: {
   accionPeriodoEnCurso: boolean;
   validando: boolean;
   generandoPreNomina: boolean;
+  preparacionNominaUnificada: boolean;
   frameTexto: string;
   periodoEtiqueta: string;
   movimientosAprobados: number;
@@ -238,6 +360,7 @@ export function buildActaPreparacionCentral(input: {
   const estadoResultado = resolveEstadoResultado({
     validando: input.validando,
     generandoPreNomina: input.generandoPreNomina,
+    preparacionNominaUnificada: input.preparacionNominaUnificada,
     tienePrevalidacion: input.tienePrevalidacion,
     criticos,
     fichasPendientes,
@@ -245,11 +368,11 @@ export function buildActaPreparacionCentral(input: {
   });
 
   const alertasTotal = input.bloqueosCount + input.advertenciasCount;
-  const alertasEtiqueta = alertasTotal > 0
+  const info = input.informacionPeriodo;
+  const pendientes = buildPendientesActaPreparacion(info);
+  const alertasEtiqueta = pendientes.length === 0 && alertasTotal > 0
     ? `Revisar ${alertasTotal} alerta${alertasTotal === 1 ? '' : 's'} del período`
     : null;
-
-  const info = input.informacionPeriodo;
   const accionSecundaria: ActaPreparacionAccionSecundariaVm | null =
     info?.accionSecundaria && info.accionSecundaria.destino !== 'cerrar'
       ? { label: info.accionSecundaria.label, destino: info.accionSecundaria.destino }
@@ -299,6 +422,7 @@ export function buildActaPreparacionCentral(input: {
     contextoPeriodo,
     alertasTotal,
     alertasEtiqueta,
+    pendientes,
     ctaLabel: ctaEsCorreccion && accionCorreccion
       ? accionCorreccion.label
       : resolveCtaLabel({
@@ -306,12 +430,16 @@ export function buildActaPreparacionCentral(input: {
           accionPrincipal: input.accionPrincipal,
           validando: input.validando,
           generandoPreNomina: input.generandoPreNomina,
+          preparacionNominaUnificada: input.preparacionNominaUnificada,
         }),
     ctaDisabled: !!input.accionPrincipal.disabled || input.accionPeriodoEnCurso,
     ctaDisabledReason: input.accionPrincipal.disabledReason ?? null,
-    ctaLoading: input.validando || input.generandoPreNomina,
+    ctaLoading:
+      input.preparacionNominaUnificada
+      || input.validando
+      || input.generandoPreNomina,
     accionSecundaria,
     accionCorreccion: ctaEsCorreccion ? accionCorreccion : null,
-    mensajeEstado: resolveMensajeEstado(estadoResultado, input.tienePrevalidacion),
+    mensajeEstado: resolveMensajeEstado(estadoResultado, input.tienePrevalidacion, pendientes.length),
   };
 }
