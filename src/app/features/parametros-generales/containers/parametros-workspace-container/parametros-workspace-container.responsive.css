@@ -532,6 +532,18 @@
           align-items: stretch;
         }
 
+        .parametros-period-right {
+          justify-content: space-between;
+          align-items: flex-start;
+          flex-wrap: wrap;
+          gap: 8px 10px;
+        }
+
+        .parametros-period-right__status {
+          max-width: none;
+          width: 100%;
+        }
+
         .parametros-period-actions {
           justify-content: flex-end;
         }

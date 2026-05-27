@@ -2091,7 +2091,8 @@ Creación avanzada incorpora una identidad de producto local para dejar de senti
 ## 2026-05-27 - Parámetros: período desde Shell, grillas al fondo y consistencia sin 1/1
 
 - **Período:** se elimina el selector local de período en la banda de Parámetros; la vista queda sincronizada con `PeriodoActivoService.periodoYm` (selector global del shell).
-- **Banda período:** el espacio del selector se reemplaza por un bloque informativo compacto con **Estado mensual**, **Detalle**, **Referencia (YYYY-MM)** cuando aplica y **Pendiente principal**.
+- **Banda período:** se reordena la banda para alinear **título + acciones + chip** en una fila y mover el contexto a un cuerpo inferior (detalle operativo + referencia). Se elimina la repetición entre **Detalle** y **Pendiente principal**; la acción recomendada solo se muestra cuando aporta un texto distinto.
 - **Acciones:** se elimina el botón duplicado **Refrescar datos** de la banda superior; se mantiene la acción de refresco dentro del panel de Cierre del período.
 - **Grillas:** se ajustan overrides de `app-data-grid` para que el contenedor llegue al fondo real y el scroll quede dentro de la grilla, sin scroll horizontal global.
 - **Consistencia:** meses sin base comparable (sin oficiales/config cliente) ya no se muestran como consistencia 1/1; se omite visualmente hasta que exista base comparable.
+- **Ajuste:** se refuerza la cadena de altura flexible para que la grilla no colapse (título visible pero cuerpo sin alto) y se compacta tipografía/espaciado de la banda de período con jerarquía “sistema”.

@@ -478,6 +478,14 @@ export class ParametrosWorkspaceOrquestador {
     return 'Base normativa lista para revisión del período.';
   });
 
+  readonly periodoBandaPendienteVisible = computed(() => {
+    const pendiente = this.cierrePendientePrincipal();
+    if (!pendiente || pendiente === 'Sin pendientes críticos.') return false;
+
+    const detalle = this.periodoEstadoDetalle();
+    return !detalle.toLocaleLowerCase().includes(pendiente.toLocaleLowerCase());
+  });
+
   readonly cierreAccionSiguienteLabel = computed(() => {
     const completitud = this.completitudParametros();
     const pendiente = this.cierrePendientePrincipal();
@@ -1560,9 +1568,9 @@ export class ParametrosWorkspaceOrquestador {
       return '';
     }
     if (!this.isConfigurableTab()) {
-      return 'Modificar guarda configuración cliente; los datos oficiales solo se usan para comparar.';
+      return 'Modificar aplica a la configuración del cliente. Los datos oficiales se muestran para referencia.';
     }
-    return '';
+    return 'Abre edición para completar la configuración. Si el período aún no está listo, puede tardar un momento en preparar la edición.';
   }
 
   fechaActualizacionLabel(): string {

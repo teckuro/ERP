@@ -69,4 +69,18 @@ describe('ParametrosWorkspaceOrquestador', () => {
     expect(orq.money(null)).toBe('—');
     expect(orq.decimal(null)).toBe('—');
   });
+
+  it('periodoBandaPendienteVisible oculta pendiente si ya viene en el detalle', () => {
+    const orq = crearOrquestador();
+    vi.spyOn(orq, 'cierrePendientePrincipal').mockReturnValue('Falta completar mutual.');
+    vi.spyOn(orq, 'periodoEstadoDetalle').mockReturnValue('Período parcial. Falta completar mutual.');
+    expect(orq.periodoBandaPendienteVisible()).toBe(false);
+  });
+
+  it('periodoBandaPendienteVisible muestra pendiente si aporta un texto distinto', () => {
+    const orq = crearOrquestador();
+    vi.spyOn(orq, 'cierrePendientePrincipal').mockReturnValue('Completar configuración cliente.');
+    vi.spyOn(orq, 'periodoEstadoDetalle').mockReturnValue('Período listo para revisar.');
+    expect(orq.periodoBandaPendienteVisible()).toBe(true);
+  });
 });

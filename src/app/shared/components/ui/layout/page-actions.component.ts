@@ -11,12 +11,13 @@ import {
 } from 'lucide-angular';
 
 import { ButtonComponent } from '../primitives/button.component';
+import { FieldHelpTipComponent } from '../forms/field-help-tip.component';
 
 export type PageActionType = 'back' | 'save' | 'edit' | 'export' | 'import';
 @Component({
   selector: 'app-page-actions',
   standalone: true,
-  imports: [CommonModule, RouterLink, LucideAngularModule, ButtonComponent],
+  imports: [CommonModule, RouterLink, LucideAngularModule, ButtonComponent, FieldHelpTipComponent],
   template: `
     <div class="page-actions-toolbar">
       @if (hasAction('back')) {
@@ -63,7 +64,7 @@ export type PageActionType = 'back' | 'save' | 'edit' | 'export' | 'import';
       }
 
       @if (hasAction('edit')) {
-        <span class="inline-flex max-w-full" [attr.title]="editTooltip.trim() ? editTooltip : null">
+        <span class="page-actions-edit-wrap">
           <app-button
             variant="outline"
             size="md"
@@ -74,6 +75,9 @@ export type PageActionType = 'back' | 'save' | 'edit' | 'export' | 'import';
             <lucide-icon class="h-4 w-4" [img]="PencilIcon"></lucide-icon>
             {{ editLabel }}
           </app-button>
+          @if (editTooltip.trim()) {
+            <app-field-help-tip ariaLabel="Ayuda: modificar" preferredPlacement="top" [text]="editTooltip" />
+          }
         </span>
       }
 
@@ -122,6 +126,13 @@ export type PageActionType = 'back' | 'save' | 'edit' | 'export' | 'import';
         width: 100%;
         height: 100%;
         margin: auto;
+      }
+
+      .page-actions-edit-wrap {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        max-width: 100%;
       }
     `,
   ],

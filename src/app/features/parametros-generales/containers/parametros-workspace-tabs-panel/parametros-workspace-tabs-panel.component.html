@@ -53,19 +53,41 @@
 
       <div class="parametros-cierre-grid">
         <article class="parametros-cierre-summary">
-          <span class="param-eyebrow">Pendiente principal</span>
+          <div class="parametros-cierre-summary__head">
+            <span class="param-eyebrow">Pendiente principal</span>
+            <div class="parametros-cierre-summary__actions">
+              <div class="parametros-cierre-summary__action-wrap">
+                <button type="button" class="parametros-cierre-action" (click)="ws.ejecutarAccionCierre()">
+                  {{ ws.cierreAccionSiguienteLabel() }}
+                </button>
+                <app-field-help-tip
+                  ariaLabel="Ayuda: acción recomendada"
+                  preferredPlacement="top"
+                  text="Te lleva directo a la sección que falta completar. Si el período aún no está listo, puede tardar un momento en preparar la edición."
+                />
+              </div>
+            </div>
+          </div>
           <p>{{ ws.cierrePendientePrincipal() }}</p>
-          <button type="button" class="parametros-cierre-action" (click)="ws.ejecutarAccionCierre()">
-            {{ ws.cierreAccionSiguienteLabel() }}
-          </button>
         </article>
 
         <article class="parametros-cierre-summary">
-          <span class="param-eyebrow">Impacto</span>
+          <div class="parametros-cierre-summary__head">
+            <span class="param-eyebrow">Impacto</span>
+            <div class="parametros-cierre-summary__actions">
+              <div class="parametros-cierre-summary__action-wrap">
+                <button type="button" class="parametros-cierre-ghost" (click)="ws.recargarPeriodoSeleccionado()">
+                  Refrescar datos
+                </button>
+                <app-field-help-tip
+                  ariaLabel="Ayuda: refrescar datos"
+                  preferredPlacement="top"
+                  text="Actualiza la información del período actual. Úsalo si sabes que hubo cambios recientes y quieres verlos aquí. No abre edición."
+                />
+              </div>
+            </div>
+          </div>
           <p>{{ ws.cierreImpacto() }}</p>
-          <button type="button" class="parametros-cierre-ghost" (click)="ws.recargarPeriodoSeleccionado()">
-            Refrescar datos
-          </button>
         </article>
       </div>
 

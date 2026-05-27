@@ -12,6 +12,7 @@ import { ParametrosSaludTabComponent } from '../../components/tabs/parametros-sa
 import { ParametrosTramosCargaTabComponent } from '../../components/tabs/parametros-tramos-carga-tab.component';
 import { ParametrosTramosRentaTabComponent } from '../../components/tabs/parametros-tramos-renta-tab.component';
 import { ParametrosValoresTabComponent } from '../../components/tabs/parametros-valores-tab.component';
+import { FieldHelpTipComponent } from '../../../../shared/components/ui/forms/field-help-tip.component';
 import { etiquetaTabParametros } from '../../utils/parametros-workspace-tabs.presenter';
 import { ParametrosWorkspaceOrquestador } from '../../facade/parametros-workspace.orquestador';
 
@@ -29,6 +30,7 @@ import { ParametrosWorkspaceOrquestador } from '../../facade/parametros-workspac
     ParametrosSaludTabComponent,
     ParametrosAfpTabComponent,
     ParametrosReformaTabComponent,
+    FieldHelpTipComponent,
   ],
   templateUrl: './parametros-workspace-tabs-panel.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
