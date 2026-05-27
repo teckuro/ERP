@@ -146,7 +146,7 @@ describe('proceso-mensual-estado-operativo.rules', () => {
     }));
 
     expect(vm.estadoClave).toBe('base_lista');
-    expect(vm.accionPrincipal.label).toBe('Confirmar nómina');
+    expect(vm.accionPrincipal.label).toBe('Calcular nómina preliminar');
     expect(vm.accionPrincipal.accionLocal).toBe('confirmarNomina');
   });
 
@@ -178,13 +178,13 @@ describe('proceso-mensual-estado-operativo.rules', () => {
     }));
 
     expect(vm.estadoClave).toBe('resultado_listo_para_guardar');
-    expect(vm.accionPrincipal.label).toBe('Confirmar nómina');
+    expect(vm.accionPrincipal.label).toBe('Guardar revisión');
     expect(vm.accionPrincipal.descripcion).not.toContain('resultado preliminar');
-    expect(vm.queFaltaAhora.map((item) => item.titulo).join(' ')).not.toContain('Guardar');
+    expect(vm.queFaltaAhora.map((item) => item.titulo).join(' ')).toContain('Guardar');
     expect(vm.accionPrincipal.accionLocal).toBe('confirmarNomina');
   });
 
-  it('resultado guardado pide confirmar nomina', () => {
+  it('resultado guardado pide registrar revision RRHH', () => {
     const vm = resolverEstadoOperativoProcesoMensual(inputBase({
       tienePrevalidacion: true,
       baseGenerada: true,
@@ -194,9 +194,24 @@ describe('proceso-mensual-estado-operativo.rules', () => {
     }));
 
     expect(vm.estadoClave).toBe('resultado_guardado');
-    expect(vm.accionPrincipal.label).toBe('Confirmar nómina');
+    expect(vm.accionPrincipal.label).toBe('Registrar revisión RRHH');
     expect(vm.accionPrincipal.accionLocal).toBe('confirmarNomina');
     expect(vm.etapaActiva).toBe('aprobar_cerrar');
+  });
+
+  it('aprobado operativamente pide confirmar nomina del periodo', () => {
+    const vm = resolverEstadoOperativoProcesoMensual(inputBase({
+      tienePrevalidacion: true,
+      baseGenerada: true,
+      calculoGenerado: true,
+      resultadoGuardado: true,
+      aprobadoOperativamente: true,
+      puedeCerrar: true,
+    }));
+
+    expect(vm.estadoClave).toBe('aprobado_operativamente');
+    expect(vm.accionPrincipal.label).toBe('Confirmar nómina del período');
+    expect(vm.accionPrincipal.accionLocal).toBe('confirmarNomina');
   });
 
   it('trata trabajadores bloqueados y entradas bloqueantes como criticos antes de generar', () => {

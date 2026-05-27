@@ -89,6 +89,17 @@ describe('movimiento-variable-validacion.rules', () => {
       );
     });
 
+    it('con snapshot: rechaza concepto reservado de sueldo base', () => {
+      const r = validarMovimientoVariableInput(base, {
+        tipo: 'HABER',
+        codigo: 'SUELDO_BASE',
+        nombre: 'Sueldo base',
+        esSistema: false,
+      });
+      expect(r.valido).toBe(false);
+      expect(r.motivos.some((m) => m.includes('ficha del trabajador'))).toBe(true);
+    });
+
     it('sin snapshot no valida tipo de concepto', () => {
       const r = validarMovimientoVariableInput(base);
       expect(r.valido).toBe(true);

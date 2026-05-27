@@ -127,6 +127,8 @@ export interface ProcesoMensualPrevalidacion {
   items: ProcesoMensualItem[];
   entradasMensuales?: EntradaMensualPeriodo[];
   trabajadoresPendientesRevision: TrabajadorPendienteRevisionPeriodo[];
+  /** Moneda del contrato por idPersona (CLP, UF, …). */
+  monedaContratoPorPersona?: Record<string, string | null>;
 }
 
 export type ProcesoMensualPreNominaEstado =

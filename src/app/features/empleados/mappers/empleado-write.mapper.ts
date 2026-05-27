@@ -334,6 +334,7 @@ export function mapCreatedEmpleado(
     departamento: departamento ?? 'Sin centro de costo',
     fechaIngreso: formatDate(payload.fechaIngreso),
     sueldoBase: payload.sueldoBase,
+    monedaContrato: null,
     estado: payload.estado,
     estadoFicha: mapEmpleadoEstadoToEstadoFicha(payload.estado),
     aptoParaRemuneraciones: payload.estado === 'activo' && payload.relacionLaboral !== 'HONORARIOS',

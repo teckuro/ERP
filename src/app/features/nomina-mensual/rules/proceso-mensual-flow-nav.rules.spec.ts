@@ -117,7 +117,7 @@ describe('proceso-mensual-flow-nav.rules', () => {
       hayPendientesRevisionTrabajadores: false,
       revisionTrabajadoresCompleta: true,
     });
-    expect(cta.label).toBe('Confirmar nómina');
+    expect(cta.label).toBe('Calcular nómina preliminar');
     expect(cta.accionLocal).toBe('confirmarNomina');
     expect(cta.usarPanel).toBe(false);
   });

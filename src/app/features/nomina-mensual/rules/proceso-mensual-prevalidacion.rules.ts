@@ -1,4 +1,5 @@
 import type { HaberDescuentoAsignacionPrevalidacionMensualFila } from '../../haberes-descuentos/models/haber-descuento-asignacion.model';
+import type { ConceptoMantenimientoFila } from '../../haberes-descuentos/models/haber-descuento-asignacion.model';
 import type { MovimientoVariableEstado, MovimientoVariableListadoFila } from '../../movimientos-variables/models/movimiento-variable.model';
 import type {
   ParametroGeneral,
@@ -12,6 +13,7 @@ import {
   entradaRequiereRevision,
   validarPeriodoEntradaMensual,
 } from '../entradas/rules/entradas-mensuales-periodo.rules';
+import { advertenciasEntradasConceptoReservadoContrato } from './proceso-mensual-concepto-reservado-prevalidacion.rules';
 
 import type {
   ProcesoMensualArea,
@@ -87,6 +89,8 @@ export interface ProcesoMensualHechosPrevalidacion {
   movimientos: MovimientoVariableListadoFila[];
   lecturaMovimientos: 'ok' | 'error';
   errorMovimientos?: string;
+  conceptosCatalogo: ConceptoMantenimientoFila[];
+  monedaContratoPorPersona: Record<string, string | null>;
 }
 
 const MSG_PERIODO_INVALIDO = 'El periodo debe tener formato YYYY-MM.';
@@ -225,6 +229,7 @@ export function construirPrevalidacionMensual(hechos: ProcesoMensualHechosPreval
       items: completarItemsVacios(items),
       entradasMensuales: [],
       trabajadoresPendientesRevision,
+      monedaContratoPorPersona: {},
     };
   }
 
@@ -543,6 +548,16 @@ export function construirPrevalidacionMensual(hechos: ProcesoMensualHechosPreval
     partes.push(`${resumenEntradas.aptasPreNomina} apta(s) para prenómina`);
     partes.push(`${resumenEntradas.legacyMovimientos} legacy`);
     detalleEntradas = partes.join('; ');
+
+    for (const advertencia of advertenciasEntradasConceptoReservadoContrato(
+      entradas,
+      hechos.conceptosCatalogo,
+    )) {
+      advertencias.push(advertencia);
+      if (itemEntradas === 'LISTO') {
+        itemEntradas = 'CON_PROBLEMAS';
+      }
+    }
   }
 
   items.push({
@@ -599,6 +614,7 @@ export function construirPrevalidacionMensual(hechos: ProcesoMensualHechosPreval
     items,
     entradasMensuales: entradas,
     trabajadoresPendientesRevision,
+    monedaContratoPorPersona: hechos.monedaContratoPorPersona,
   };
 }
 

@@ -269,7 +269,7 @@ export function buildRevisionRailCta(
         return { label: 'Generar nómina', usarPanel: false, accionLocal: 'generarBase' };
       }
       if (ctx.baseGenerada && ctx.puedeCalcular) {
-        return { label: 'Confirmar nómina', usarPanel: false, accionLocal: 'confirmarNomina' };
+        return { label: 'Calcular nómina preliminar', usarPanel: false, accionLocal: 'confirmarNomina' };
       }
     }
   }

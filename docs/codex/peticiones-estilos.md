@@ -1,8 +1,18 @@
-## 2026-05-26 - Nómina mensual: montos referenciales en borrador (Detalle mensual / trabajadores)
+## 2026-05-26 - Nómina mensual: CTAs y modales de confirmación diferenciados
 
-- **Cambio:** Tras generar base en borrador, la grilla de revisión ya no muestra `$0` engañoso. Sin cálculo oficial: copy **«Pendiente de cálculo»**. Con movimientos aprobados del mes: montos **«Est. $X»** (referencia desde entradas, no liquidación). Nota contextual en panel detalle: *«Referencia desde movimientos del mes…»*.
-- **Archivos:** `proceso-mensual-masivo-montos-estimados.rules.ts`, `proceso-mensual-masivo-layout.rules.ts`, `proceso-mensual-presentacion.facade.ts`, `proceso-mensual-revision-trabajadores.component.{html,css}`, specs rules + container.
+- **Cambio:** Se distingue el flujo RRHH en tres pasos con copy propio: **Guardar revisión** → **Registrar revisión RRHH** → **Confirmar nómina del período** (shell y estado operativo). Modales de decisión con `eyebrow` explícito, variante `decision`/`warning` y bloque «Próxima acción» contextual (sin texto genérico de liquidaciones en el paso intermedio). Frame `lista_para_confirmar` adapta chip y mensaje según sub-estado.
+- **Archivos:** `proceso-mensual-estado-operativo.rules.ts`, `proceso-mensual-workspace.rules.ts`, `proceso-mensual-presentacion.facade.ts`, `proceso-mensual-overlays.component.html`, `proceso-mensual-container.vm.ts`, `proceso-mensual-flow-nav.rules.ts`, `proceso-mensual-revision-aprobacion.rules.ts`, `proceso-mensual-flujo-completo.rules.ts`, specs.
 - **No tocado:** estilos globales, `angular.json`, SQL/motor.
+
+## 2026-05-26 - Nómina mensual: montos borrador sin «Est.» + moneda contrato + bloqueo sueldo base
+
+- **Cambio:** Se retira la estimación «Est. $X» desde entradas (no incluía sueldo base del contrato). En borrador sin cálculo: copy **«Pendiente de cálculo»** y montos `$0` normalizados a vacío. Montos visibles respetan moneda del contrato en personal (`$` CLP o `UF`). Bloqueo de sueldo base como concepto/movimiento manual en catálogo, novedades y movimientos variables; advertencia en prevalidación si hay entradas históricas con concepto reservado. **Generar nómina** dispara también el cálculo preliminar (mismos datos que antes exigían un paso aparte).
+- **Archivos:** `concepto-contrato-reservado.rules.ts`, `proceso-mensual-masivo-layout.rules.ts`, `proceso-mensual-presentacion.facade.ts`, `proceso-mensual-presentacion.formato.ts`, `proceso-mensual-revision-trabajadores.component.{html,css}`, `proceso-mensual-concepto-reservado-prevalidacion.rules.ts`, `empleados.repository.ts`, `haberes-descuentos.service.ts`, `novedades-mensuales.{rules,service}.ts`, `movimiento-variable-validacion.rules.ts`, specs.
+- **No tocado:** estilos globales, `angular.json`, SQL/motor.
+
+## 2026-05-26 - Nómina mensual: montos referenciales en borrador (Detalle mensual / trabajadores) — **revertido**
+
+- **Nota:** La entrada anterior quedó reemplazada por el bloqueo de «Est.» y moneda por contrato (ver entrada inmediata superior).
 
 ## 2026-05-26 - Nómina mensual: radios planos e integración visual uniforme
 

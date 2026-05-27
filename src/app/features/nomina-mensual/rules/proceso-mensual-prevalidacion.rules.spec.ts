@@ -48,6 +48,8 @@ function baseHechos(over: Partial<ProcesoMensualHechosPrevalidacion> = {}): Proc
     lecturaEntradasMensuales: 'ok',
     movimientos: [],
     lecturaMovimientos: 'ok',
+    conceptosCatalogo: [],
+    monedaContratoPorPersona: {},
     ...over,
   };
 }
@@ -299,5 +301,42 @@ describe('proceso-mensual-prevalidacion.rules', () => {
 
     expect(r.resumen.resumenEntradasMensuales?.conWarnings).toBe(0);
     expect(r.bloqueos).toEqual([]);
+  });
+
+  it('advierte entradas con concepto reservado de sueldo base', () => {
+    const r = construirPrevalidacionMensual(
+      baseHechos({
+        entradasMensuales: [entrada({ idConcepto: 99 })],
+        conceptosCatalogo: [{
+          idConcepto: 99,
+          codigo: 'SUELDO_BASE',
+          codigoMotor: null,
+          nombre: 'Sueldo base',
+          tipo: 'HABER',
+          naturaleza: 'IMPONIBLE',
+          idCatalogoLre: null,
+          codigoLre: null,
+          nombreLre: null,
+          moduloLre: null,
+          grupoLre: null,
+          clasificacionLre: null,
+          imponible: true,
+          tributable: true,
+          afectaAfp: false,
+          afectaSalud: false,
+          afectaAfc: false,
+          afectaSis: false,
+          afectaLiquido: false,
+          esSistema: false,
+          calculoAutomatico: false,
+          vigente: true,
+          vigenciaInicio: null,
+          vigenciaFin: null,
+          ordenImpresion: 0,
+        }],
+      }),
+    );
+
+    expect(r.advertencias.some((msg) => msg.codigo === 'ENTRADAS_CONCEPTO_SUELDO_BASE')).toBe(true);
   });
 });

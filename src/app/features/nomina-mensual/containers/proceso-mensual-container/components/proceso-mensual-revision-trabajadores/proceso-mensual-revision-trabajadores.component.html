@@ -150,7 +150,7 @@
               (click)="activarFila(row, $event)"
               (keydown)="onFilaKeydown(row, $event)"
             >
-              {{ f.etiquetaMontoRevisionTrabajador(row.liquidoEstimado, row.montosEstimadosDesdeEntradas === true) }}
+              {{ f.etiquetaMontoRevisionTrabajador(row.liquidoEstimado, row.monedaContrato) }}
             </button>
           </ng-template>
           <ng-template appDataGridCell="accion" let-row="row">
@@ -222,15 +222,10 @@
             @case ('resumen') {
               <dl class="payroll-revision-trabajadores__totals">
                 <div><dt>Estado</dt><dd>{{ f.etiquetaEstadoNominaMasiva(detalleMasivo.estado) }}</dd></div>
-                <div><dt>Haberes</dt><dd>{{ f.etiquetaMontoRevisionTrabajador(detalleMasivo.haberes, detalleMasivo.montosEstimadosDesdeEntradas === true) }}</dd></div>
-                <div><dt>Descuentos</dt><dd>{{ f.etiquetaMontoRevisionTrabajador(detalleMasivo.descuentos, detalleMasivo.montosEstimadosDesdeEntradas === true) }}</dd></div>
-                <div><dt>Líquido estimado</dt><dd>{{ f.etiquetaMontoRevisionTrabajador(detalleMasivo.liquidoEstimado, detalleMasivo.montosEstimadosDesdeEntradas === true) }}</dd></div>
+                <div><dt>Haberes</dt><dd>{{ f.etiquetaMontoRevisionTrabajador(detalleMasivo.haberes, detalleMasivo.monedaContrato) }}</dd></div>
+                <div><dt>Descuentos</dt><dd>{{ f.etiquetaMontoRevisionTrabajador(detalleMasivo.descuentos, detalleMasivo.monedaContrato) }}</dd></div>
+                <div><dt>Líquido estimado</dt><dd>{{ f.etiquetaMontoRevisionTrabajador(detalleMasivo.liquidoEstimado, detalleMasivo.monedaContrato) }}</dd></div>
               </dl>
-              @if (detalleMasivo.montosEstimadosDesdeEntradas) {
-                <p class="payroll-revision-trabajadores__totals-note">
-                  Referencia desde movimientos del mes. El líquido final se calcula al confirmar la nómina.
-                </p>
-              }
 
               <section class="payroll-revision-trabajadores__section" aria-label="Movimientos del período">
                 <div class="payroll-revision-trabajadores__section-row">

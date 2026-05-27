@@ -190,6 +190,7 @@ export class ProcesoMensualPeriodoStore {
             } catch {
               // El borrador persistido no depende del cierre del diagnóstico.
             }
+            await this.ejecutarCalculoPreliminarTrasGenerar(p);
           } catch (e: unknown) {
             this.errorGuardadoResultado.set(e instanceof Error ? e.message : String(e));
           }
@@ -225,17 +226,7 @@ export class ProcesoMensualPeriodoStore {
     const p = this.periodoSeleccionado();
     this.calculandoPreliminar.set(true);
     this.errorEjecucion.set(null);
-    void this.procesoMensual
-      .generarCalculoPeriodo(p)
-      .then((r) => {
-        this.calculo.set(r);
-        this.errorGuardadoResultado.set(null);
-        this.errorAprobacionOperativa.set(null);
-        this.exitoGuardadoResultado.set(null);
-        this.identificadorResultadoGuardadoActual.set(null);
-        this.snapshotCompleto.set(null);
-        this.errorSnapshotCompleto.set(null);
-      })
+    void this.ejecutarCalculoPreliminarTrasGenerar(p)
       .catch((e: unknown) => {
         this.calculo.set(null);
         this.errorEjecucion.set(e instanceof Error ? e.message : String(e));
@@ -243,6 +234,17 @@ export class ProcesoMensualPeriodoStore {
       .finally(() => {
         this.calculandoPreliminar.set(false);
       });
+  }
+
+  private async ejecutarCalculoPreliminarTrasGenerar(periodo: string): Promise<void> {
+    const r = await this.procesoMensual.generarCalculoPeriodo(periodo);
+    this.calculo.set(r);
+    this.errorGuardadoResultado.set(null);
+    this.errorAprobacionOperativa.set(null);
+    this.exitoGuardadoResultado.set(null);
+    this.identificadorResultadoGuardadoActual.set(null);
+    this.snapshotCompleto.set(null);
+    this.errorSnapshotCompleto.set(null);
   }
 
   ejecutarGuardarSnapshotPreliminar(): void {

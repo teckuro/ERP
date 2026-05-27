@@ -1,5 +1,9 @@
 import type { MovimientoVariableConceptoSnapshot, MovimientoVariableEstado } from '../models/movimiento-variable.model';
 import { MOVIMIENTO_VARIABLE_ESTADOS } from '../models/movimiento-variable.model';
+import {
+  esConceptoReservadoContrato,
+  motivoConceptoReservadoContrato,
+} from '../../haberes-descuentos/rules/concepto-contrato-reservado.rules';
 
 export interface MovimientoVariableInput {
   idPersona: number | null;
@@ -100,6 +104,19 @@ export function validarMovimientoVariableInput(
     }
     if (concepto.esSistema === true) {
       motivos.push('No se permiten conceptos de sistema para movimiento puntual manual en v1.');
+    }
+    if (
+      esConceptoReservadoContrato({
+        codigo: concepto.codigo ?? '',
+        nombre: concepto.nombre ?? '',
+        esSistema: concepto.esSistema ?? false,
+      })
+    ) {
+      motivos.push(motivoConceptoReservadoContrato({
+        codigo: concepto.codigo ?? '',
+        nombre: concepto.nombre ?? '',
+        esSistema: concepto.esSistema ?? false,
+      }));
     }
   }
 

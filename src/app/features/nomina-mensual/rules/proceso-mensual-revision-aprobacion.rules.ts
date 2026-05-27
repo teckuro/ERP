@@ -243,9 +243,9 @@ export function buildRevisionAprobacionView(input: BuildRevisionAprobacionInput)
     advertencias,
     informaciones,
     accionPrincipalLabel: actualizadoSinGuardar || estado === 'pendiente_guardado'
-      ? 'Confirmar nómina actualizada'
+      ? 'Guardar revisión actualizada'
       : hayGuardado
-        ? 'Confirmar nómina'
+        ? 'Registrar revisión RRHH'
         : 'Revisar trabajadores',
     puedeGuardarActualizado: resultado.acciones.puedeGuardarPreliminar,
     puedeRecalcular: resultado.acciones.puedeRecalcular,

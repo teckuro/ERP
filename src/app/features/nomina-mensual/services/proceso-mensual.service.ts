@@ -421,6 +421,8 @@ export class ProcesoMensualService {
       lecturaEntradasMensuales: 'ok',
       movimientos: [],
       lecturaMovimientos: 'ok',
+      conceptosCatalogo: [],
+      monedaContratoPorPersona: {},
     };
   }
 
@@ -448,8 +450,10 @@ export class ProcesoMensualService {
     let lecturaConceptos: ProcesoMensualHechosPrevalidacion['lecturaConceptos'] = 'ok';
     let errorConceptos: string | undefined;
     let alertaConceptosMotorFuturo = false;
+    let conceptosCatalogo: ProcesoMensualHechosPrevalidacion['conceptosCatalogo'] = [];
     if (rConc.status === 'fulfilled') {
       const rows = asArray(rConc.value as Awaited<ReturnType<HaberesDescuentosService['listarConceptosMantenimiento']>>);
+      conceptosCatalogo = rows;
       totalConceptosMantenimiento = rows.length;
       alertaConceptosMotorFuturo = rows.some(
         (c) => c.vigente && !c.esSistema && (!c.tipo?.trim() || !c.naturaleza?.trim()),
@@ -478,7 +482,11 @@ export class ProcesoMensualService {
       errorMovimientos = errorEntradasMensuales;
     }
 
+    let monedaContratoPorPersona: ProcesoMensualHechosPrevalidacion['monedaContratoPorPersona'] = {};
     if (lecturaEmpleados === 'ok') {
+      monedaContratoPorPersona = Object.fromEntries(
+        listadoEmpleados.map((empleado) => [String(empleado.id), empleado.monedaContrato ?? null]),
+      );
       trabajadoresPendientesRevision = buildTrabajadoresPendientesRevision(listadoEmpleados, entradasMensuales);
       const entradasPorPersona = new Map<number, EntradaMensualPeriodo[]>();
       for (const entrada of entradasMensuales) {
@@ -543,6 +551,8 @@ export class ProcesoMensualService {
       movimientos,
       lecturaMovimientos,
       errorMovimientos,
+      conceptosCatalogo,
+      monedaContratoPorPersona,
     };
   }
 

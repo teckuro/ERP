@@ -1193,19 +1193,9 @@ describe('ProcesoMensualContainer', () => {
       expect(localFixture.componentInstance.nominaMasivaFilas().length).toBeGreaterThan(0);
     });
 
-    it('tras generar base estima montos desde entradas aprobadas del periodo', async () => {
+    it('tras generar nomina calcula preliminar y muestra montos en revision', async () => {
       ejecutarPrevalidaciones.mockResolvedValueOnce(prevalidacionLista({
-        entradasMensuales: [
-          entradaMensualAprobada({ idPersona: 1, monto: 800000 }),
-          entradaMensualAprobada({
-            idEntrada: 'novedad:2',
-            idPersona: 1,
-            monto: 120000,
-            tipoEntrada: 'descuento',
-            categoria: 'descuento_variable',
-            tipoMovimiento: 'descuento',
-          }),
-        ],
+        monedaContratoPorPersona: { '1': 'CLP' },
       }));
       generarPreNominaPeriodo.mockResolvedValueOnce({
         ...baseNominaLista(),
@@ -1227,13 +1217,22 @@ describe('ProcesoMensualContainer', () => {
       await avanzarFlujo(localFixture, 'base');
 
       const c = localFixture.componentInstance;
-      await vi.waitFor(() => expect(guardarBaseNominaBorrador).toHaveBeenCalled());
+      await vi.waitFor(() => expect(generarCalculoPeriodo).toHaveBeenCalledWith(PERIODO_TEST));
       const fila = c.nominaMasivaFilas().find((item) => String(item.idPersona) === '1');
-      expect(fila?.montosEstimadosDesdeEntradas).toBe(true);
       expect(fila?.haberes).toBe(800000);
-      expect(fila?.descuentos).toBe(120000);
-      expect(fila?.liquidoEstimado).toBe(680000);
-      expect(c.etiquetaMontoRevisionTrabajador(fila?.liquidoEstimado, true)).toContain('Est.');
+      expect(fila?.descuentos).toBe(150000);
+      expect(fila?.liquidoEstimado).toBe(650000);
+      expect(c.contextoOperativoPeriodo().calculoGenerado).toBe(true);
+    });
+
+    it('formatea montos de revision con moneda del contrato', async () => {
+      ejecutarPrevalidaciones.mockResolvedValueOnce(prevalidacionLista({
+        monedaContratoPorPersona: { '1': 'UF' },
+      }));
+      const localFixture = await montarContainer();
+      await localFixture.whenStable();
+      const c = localFixture.componentInstance;
+      expect(c.etiquetaMontoRevisionTrabajador(45.5, 'UF')).toContain('UF');
     });
 
     it('rehidrata borrador como base_lista y no vuelve a pedir generar nómina', async () => {
@@ -1374,16 +1373,20 @@ describe('ProcesoMensualContainer', () => {
       await avanzarFlujo(localFixture, 'base');
 
       const c = localFixture.componentInstance;
+      await vi.waitFor(() => expect(c.contextoOperativoPeriodo().calculoGenerado).toBe(true), {
+        timeout: 3000,
+        interval: 20,
+      });
       const resumen = c.nominaMasivaResumen();
       expect(resumen.totalTrabajadores).toBeGreaterThan(0);
       expect(resumen.bloqueados).toBe(0);
       expect(resumen.conObservaciones).toBe(0);
 
-      expectTexto(c.estadoOperativo().accionPrincipal.label, 'Confirmar nómina');
+      expectTexto(c.estadoOperativo().accionPrincipal.label, 'Guardar revisión');
       expectTextoNo(c.estadoOperativo().accionPrincipal.label, 'Generar nómina');
 
       const shell = TestBed.inject(ShellPageContextService);
-      expect(shell.primaryAction()?.label).toMatch(/Confirmar nómina/i);
+      expect(shell.primaryAction()?.label).toMatch(/Guardar revisión/i);
     });
 
     it('shell revisar trabajadores abre vista trabajadores y preselecciona fila', async () => {
@@ -1486,32 +1489,37 @@ describe('ProcesoMensualContainer', () => {
       expect(c.nominaMasivaTrabajadorSeleccionadoId()).toBeNull();
     });
 
-    it('invocar CTA shell con confirmar nomina ejecuta calculo preliminar', async () => {
+    it('invocar CTA shell tras calculo abre guardar revision', async () => {
       ejecutarPrevalidaciones.mockResolvedValueOnce(prevalidacionLista());
       generarPreNominaPeriodo.mockResolvedValueOnce(baseNominaLista());
       const localFixture = await montarContainer();
       await avanzarFlujo(localFixture, 'base');
 
       const c = localFixture.componentInstance;
-      expectTexto(c.estadoOperativo().accionPrincipal.label, 'Confirmar nómina');
+      await vi.waitFor(() => expect(c.contextoOperativoPeriodo().calculoGenerado).toBe(true), {
+        timeout: 3000,
+        interval: 20,
+      });
+      expectTexto(c.estadoOperativo().accionPrincipal.label, 'Guardar revisión');
 
       await invocarCtaShell(localFixture);
-      await vi.waitFor(() => expect(c.calculandoPreliminar()).toBe(false), { timeout: 3000, interval: 20 });
-      expect(generarCalculoPeriodo).toHaveBeenCalled();
+      expect(c.overlay().kind).toBe('decision');
+      expectTexto(c.confirmacionProceso()?.titulo ?? '', 'Guardar revisión del período');
     });
 
-    it('rail confirmar nomina dispara calculo preliminar', async () => {
+    it('tras registrar revision RRHH shell pide confirmar nomina del periodo', async () => {
       ejecutarPrevalidaciones.mockResolvedValueOnce(prevalidacionLista());
-      generarPreNominaPeriodo.mockResolvedValueOnce(baseNominaLista());
+      generarPreNominaPeriodo.mockResolvedValue(baseNominaLista());
       const localFixture = await montarContainer();
-      await avanzarFlujo(localFixture, 'base');
+      await avanzarFlujo(localFixture, 'aprobado');
 
       const c = localFixture.componentInstance;
-      expectTexto(c.revisionRailCta().label, 'Confirmar nómina');
+      expect(c.estadoOperativo().estadoClave).toBe('aprobado_operativamente');
+      expectTexto(c.estadoOperativo().accionPrincipal.label, 'Confirmar nómina del período');
+      expectTextoNo(c.estadoOperativo().accionPrincipal.label, 'Registrar revisión');
 
-      c.ejecutarRevisionRailPrincipal();
-      await vi.waitFor(() => expect(c.calculandoPreliminar()).toBe(false), { timeout: 3000, interval: 20 });
-      expect(generarCalculoPeriodo).toHaveBeenCalled();
+      const shell = TestBed.inject(ShellPageContextService);
+      expect(shell.primaryAction()?.label).toMatch(/Confirmar nómina del período/i);
     });
 
     it('tras calculo sin bloqueos CTA apunta a guardar resultado', async () => {
@@ -1563,7 +1571,7 @@ describe('ProcesoMensualContainer', () => {
 
       const c = localFixture.componentInstance;
       expect(c.estadoOperativo().estadoClave).toBe('resultado_listo_para_guardar');
-      expectTexto(c.estadoOperativo().accionPrincipal.label, 'Confirmar nómina');
+      expectTexto(c.estadoOperativo().accionPrincipal.label, 'Guardar revisión');
       expect(c.estadoOperativo().accionPrincipal.accionLocal).toBe('confirmarNomina');
     });
   });

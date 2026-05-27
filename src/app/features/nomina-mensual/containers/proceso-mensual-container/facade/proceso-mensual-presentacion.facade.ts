@@ -1010,7 +1010,7 @@ export class ProcesoMensualPresentacionFacade {
       sortable: true,
       minWidth: '120px',
       format: (_value, row) =>
-        this.etiquetaMontoRevisionTrabajador(row.liquidoEstimado, row.montosEstimadosDesdeEntradas === true),
+        this.etiquetaMontoRevisionTrabajador(row.liquidoEstimado, row.monedaContrato),
     },
     { id: 'accion', header: 'Acción', field: 'idPersona', minWidth: '128px' },
   ];
@@ -1807,6 +1807,10 @@ export class ProcesoMensualPresentacionFacade {
     };
   });
 
+  private readonly monedaContratoPorPersona = computed(
+    () => this.store.resultado()?.monedaContratoPorPersona ?? {},
+  );
+
   private readonly nominaMasivaInput = computed(() => {
     const contexto = this.contextoOperativoPeriodo();
     return {
@@ -1817,7 +1821,7 @@ export class ProcesoMensualPresentacionFacade {
       filasRecurrentes: this.filasDetalleRecurrenteNomina(),
       incidencias: this.incidenciasRevisionTrabajadores(),
       montosOficialesDisponibles: contexto.calculoGenerado || contexto.resultadoGuardado,
-      entradasMensuales: this.entradasMensualesPeriodo(),
+      monedaContratoPorPersona: this.monedaContratoPorPersona(),
     };
   });
 
@@ -1893,7 +1897,7 @@ export class ProcesoMensualPresentacionFacade {
       haberes: fila.haberes,
       descuentos: fila.descuentos,
       liquidoEstimado: fila.liquidoEstimado,
-      montosEstimadosDesdeEntradas: fila.montosEstimadosDesdeEntradas,
+      monedaContrato: fila.monedaContrato,
       movimientos: [],
       recurrentes: [],
       incidencias,
@@ -1920,7 +1924,7 @@ export class ProcesoMensualPresentacionFacade {
 
   etiquetaMontoRevisionTrabajador(
     monto: number | null | undefined,
-    esEstimado = false,
+    monedaContrato?: string | null,
   ): string {
     const contexto = this.contextoOperativoPeriodo();
     if (!contexto.baseGenerada && (monto == null || monto === 0)) {
@@ -1931,17 +1935,13 @@ export class ProcesoMensualPresentacionFacade {
       && !contexto.calculoGenerado
       && !contexto.resultadoGuardado
       && (monto == null || monto === 0)
-      && !esEstimado
     ) {
       return 'Pendiente de cálculo';
     }
     if (monto == null) {
-      return this.etiquetaMontoNominaMasiva(null);
+      return 'Monto no disponible';
     }
-    if (esEstimado) {
-      return `Est. ${this.formatoMonto(monto)}`;
-    }
-    return this.formatoMonto(monto);
+    return formatoMontoNomina(monto, monedaContrato);
   }
 
   private readonly syncNominaMasivaSeleccion = effect(() => {
@@ -2394,14 +2394,19 @@ export class ProcesoMensualPresentacionFacade {
   guardarSnapshotPreliminar(): void {
     this.abrirOverlayDecision({
       tipo: 'guardar_preliminar',
-      titulo: 'Confirmar nómina',
-      mensaje: 'Se guardará la nómina mensual revisada para este periodo.',
-      detalle: 'No emite liquidaciones ni genera archivos legales; deja la versión lista para la confirmación oficial.',
+      variant: 'decision',
+      eyebrow: 'Revisión de nómina',
+      titulo: 'Guardar revisión del período',
+      mensaje: 'Se guardará la versión revisada de la nómina mensual de este período.',
+      detalle: 'No es la confirmación oficial ni genera liquidaciones.',
+      puntosTitulo: 'Qué queda registrado',
       puntos: [
-        'Quedará disponible para la confirmación final.',
-        'Si cambias datos del periodo, deberás revisar y guardar una nueva versión.',
+        'Versión revisada disponible para registrar la revisión de remuneraciones.',
+        'Si cambian datos del período, deberá revisar y guardar una nueva versión.',
       ],
-      primaryLabel: 'Confirmar nómina',
+      mostrarProximaAccion: true,
+      proximaAccion: 'Registrar la revisión de RRHH y luego confirmar la nómina del período.',
+      primaryLabel: 'Guardar revisión',
       secondaryLabel: 'Cancelar',
     });
   }
@@ -2508,19 +2513,24 @@ export class ProcesoMensualPresentacionFacade {
     }
     this.abrirOverlayDecision({
       tipo: 'aprobar_preliminar',
-      titulo: 'Confirmar nómina',
-      mensaje: 'Marca la versión revisada por RRHH antes de cerrar la nómina oficial.',
-      detalle: 'No emite liquidaciones ni genera archivos legales.',
+      variant: 'decision',
+      eyebrow: 'Revisión de nómina',
+      titulo: 'Registrar revisión de RRHH',
+      mensaje: 'Indica que remuneraciones revisó la versión guardada de este período.',
+      detalle: 'No confirma la nómina oficial ni genera liquidaciones.',
+      puntosTitulo: 'Qué implica',
       puntos: advertenciasAprobacion.length > 0
         ? [
-            'Existen advertencias visibles que quedarán registradas como observaciones de revisión.',
-            'RRHH puede continuar si las advertencias no bloquean el proceso.',
+            'Las advertencias visibles quedarán como observaciones de la revisión.',
+            'Puede continuar si no bloquean el proceso.',
           ]
         : [
-            'La versión revisable pasará a la confirmación oficial de nómina.',
-            'Esta revisión queda como respaldo interno del periodo.',
+            'Queda respaldo interno de la revisión del período.',
+            'El siguiente paso es confirmar la nómina del período en la barra superior.',
           ],
-      primaryLabel: 'Confirmar nómina',
+      mostrarProximaAccion: true,
+      proximaAccion: 'Confirmar la nómina del período como base oficial para liquidaciones.',
+      primaryLabel: 'Registrar revisión',
       secondaryLabel: 'Cancelar',
       advertenciasAprobacion,
     });
@@ -2778,15 +2788,20 @@ export class ProcesoMensualPresentacionFacade {
   abrirConfirmacionCierreNominaOperativa(): void {
     this.abrirOverlayDecision({
       tipo: 'cerrar_nomina',
-      titulo: 'Confirmar nómina mensual',
-      mensaje: `Vas a confirmar la nomina mensual de ${this.store.periodoSeleccionado()}.`,
-      detalle: 'La version revisada quedara congelada como base oficial para liquidaciones mientras no exista un flujo de reapertura.',
+      variant: 'warning',
+      eyebrow: 'Confirmación oficial',
+      titulo: 'Confirmar nómina del período',
+      mensaje: `Confirma la nómina mensual de ${this.periodoActivo.etiqueta() || this.store.periodoSeleccionado()} como versión oficial.`,
+      detalle: 'La versión revisada quedará congelada como base del período para liquidaciones.',
+      puntosTitulo: 'Qué ocurre',
       puntos: [
-        'Bloquea nuevos calculos o reemplazos para el periodo.',
-        'No emite liquidaciones oficiales.',
+        'Congela esta versión mientras no exista reapertura del período.',
+        'No emite liquidaciones en este paso.',
         'No genera archivos Previred, LRE, banco ni PDF.',
       ],
-      primaryLabel: 'Confirmar nomina',
+      mostrarProximaAccion: true,
+      proximaAccion: 'Generar liquidaciones desde la nómina confirmada.',
+      primaryLabel: 'Confirmar nómina del período',
       secondaryLabel: 'Cancelar',
     });
   }

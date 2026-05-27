@@ -10,6 +10,11 @@ import {
   type NovedadMensualOrigen,
   type NovedadMensualTipoMovimiento,
 } from '../models/novedad-mensual.model';
+import {
+  esConceptoReservadoContrato,
+  motivoConceptoReservadoContrato,
+  type ConceptoReservadoContratoInput,
+} from '../../../haberes-descuentos/rules/concepto-contrato-reservado.rules';
 
 export const NOVEDAD_MENSUAL_ERRORES = [
   'NOVEDAD_PERIODO_INVALIDO',
@@ -27,6 +32,7 @@ export const NOVEDAD_MENSUAL_ERRORES = [
   'NOVEDAD_CANTIDAD_REQUERIDA',
   'NOVEDAD_MONTO_REQUERIDO',
   'NOVEDAD_OBSERVACION_REQUERIDA',
+  'NOVEDAD_CONCEPTO_RESERVADO',
 ] as const;
 
 export type NovedadMensualErrorCodigo = (typeof NOVEDAD_MENSUAL_ERRORES)[number];
@@ -43,6 +49,7 @@ export interface ResultadoValidacionNovedadMensual {
 
 export interface ValidarNovedadMensualOpciones {
   paraAprobacion?: boolean;
+  concepto?: ConceptoReservadoContratoInput | null;
 }
 
 export type NovedadMensualValidacionInput = Partial<CrearNovedadMensualInput> & {
@@ -202,6 +209,9 @@ export function validarNovedadMensualInput(
   }
   if (input.idConcepto == null || input.idConcepto <= 0) {
     errores.push(error('NOVEDAD_CONCEPTO_REQUERIDO', 'Debe indicar un concepto valido.'));
+  }
+  if (options.concepto && esConceptoReservadoContrato(options.concepto)) {
+    errores.push(error('NOVEDAD_CONCEPTO_RESERVADO', motivoConceptoReservadoContrato(options.concepto)));
   }
   if (!esCategoriaNovedadMensualValida(categoria)) {
     errores.push(error('NOVEDAD_CATEGORIA_INVALIDA', 'La categoria de la novedad no es valida.'));

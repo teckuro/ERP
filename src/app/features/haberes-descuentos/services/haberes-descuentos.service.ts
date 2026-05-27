@@ -19,12 +19,18 @@ import {
   motivosNoAsignableConcepto,
   type ConceptoAsignableInput,
 } from '../rules/concepto-asignabilidad.rules';
+import {
+  esConceptoReservadoContrato,
+  motivoConceptoReservadoContrato,
+} from '../rules/concepto-contrato-reservado.rules';
 
 /** Snapshot alineado a `MovimientoVariableConceptoSnapshot` (evita dependencia circular con movimientos-variables). */
 export type SnapshotConceptoMovimientoVariable = {
   tipo: string | null;
   calculoAutomatico: boolean;
   esSistema: boolean;
+  codigo: string | null;
+  nombre: string | null;
 };
 import {
   clasificarVigenciaAsignacion,
@@ -74,7 +80,9 @@ export class HaberesDescuentosService {
   listarConceptos(fechaReferencia?: Date): Promise<ConceptoListado[]> {
     const ref = fechaReferencia ?? inicioDiaReferencia(new Date());
     return this.repository.listarConceptosMantenimiento().then((rows) =>
-      rows.filter((r) => esConceptoAsignable(r, ref)).map(conceptoMantenimientoToListado),
+      rows
+        .filter((r) => esConceptoAsignable(r, ref) && !esConceptoReservadoContrato(r))
+        .map(conceptoMantenimientoToListado),
     );
   }
 
@@ -147,6 +155,19 @@ export class HaberesDescuentosService {
     if (!meta) {
       throw new Error('No se pudo validar el concepto de remuneracion seleccionado.');
     }
+    if (
+      esConceptoReservadoContrato({
+        codigo: meta.codigo ?? '',
+        nombre: meta.nombre ?? '',
+        esSistema: meta.esSistema,
+      })
+    ) {
+      throw new Error(motivoConceptoReservadoContrato({
+        codigo: meta.codigo ?? '',
+        nombre: meta.nombre ?? '',
+        esSistema: meta.esSistema,
+      }));
+    }
     const ref = inicioDiaReferencia(refDate);
     const tipoNorm = (meta.tipo ?? '').trim().toUpperCase();
     if (tipoNorm === 'APORTE_EMPLEADOR') {
@@ -171,6 +192,8 @@ export class HaberesDescuentosService {
       tipo: meta.tipo ?? null,
       calculoAutomatico: meta.calculoAutomatico,
       esSistema: meta.esSistema,
+      codigo: meta.codigo ?? null,
+      nombre: meta.nombre ?? null,
     };
   }
 
@@ -336,6 +359,19 @@ export class HaberesDescuentosService {
     }
     if (!p.nombre?.trim()) {
       throw new Error('El nombre es obligatorio.');
+    }
+    if (
+      esConceptoReservadoContrato({
+        codigo: p.codigo,
+        nombre: p.nombre,
+        esSistema: false,
+      })
+    ) {
+      throw new Error(motivoConceptoReservadoContrato({
+        codigo: p.codigo,
+        nombre: p.nombre,
+        esSistema: false,
+      }));
     }
     if (!p.tipo || !['HABER', 'DESCUENTO', 'APORTE_EMPLEADOR'].includes(p.tipo)) {
       throw new Error('El tipo de concepto no es válido.');

@@ -32,6 +32,7 @@ export type PersonaFactorEmpleadoRow = Pick<
 export function mapPersonaFactorToEmpleado(
   row: PersonaFactorEmpleadoRow,
   departamentos: Map<number, string>,
+  monedaContrato: string | null = null,
 ): EmpleadoListado {
   const rut = row.rut ? formatRut(row.rut, row.dv ?? '') : 'Sin RUT';
   const nombre = [row.nombres, row.apellido_paterno, row.apellido_materno]
@@ -50,6 +51,7 @@ export function mapPersonaFactorToEmpleado(
       'Sin centro de costo',
     fechaIngreso: row.fingreso ? formatDate(row.fingreso) : 'Sin fecha',
     sueldoBase: row.base ?? 0,
+    monedaContrato,
     estado:
       mapPersonaEstadoToEmpleadoEstado(row.estado) ??
       mapEstadoFichaToEmpleadoEstado(row.estado_ficha) ??

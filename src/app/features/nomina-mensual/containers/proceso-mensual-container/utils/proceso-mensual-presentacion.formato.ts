@@ -1,8 +1,22 @@
-export function formatoMontoNomina(valor: number | null | undefined): string {
+function normalizarCodigoMoneda(moneda: string | null | undefined): string {
+  return (moneda ?? 'CLP').trim().toUpperCase() || 'CLP';
+}
+
+export function formatoMontoNomina(
+  valor: number | null | undefined,
+  moneda: string | null | undefined = 'CLP',
+): string {
   if (typeof valor !== 'number' || !Number.isFinite(valor)) return 'Monto no disponible';
+  const codigo = normalizarCodigoMoneda(moneda);
+  if (codigo === 'UF') {
+    return `UF ${new Intl.NumberFormat('es-CL', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    }).format(valor)}`;
+  }
   return new Intl.NumberFormat('es-CL', {
     style: 'currency',
-    currency: 'CLP',
+    currency: codigo === 'CLP' || codigo.length !== 3 ? 'CLP' : codigo,
     maximumFractionDigits: 0,
   }).format(valor);
 }

@@ -257,13 +257,31 @@ export function buildNominaFrameView(input: BuildNominaFrameViewInput): NominaVi
             ? `${bloqueosCount} bloqueo${bloqueosCount === 1 ? '' : 's'} crítico${bloqueosCount === 1 ? '' : 's'} requiere${bloqueosCount === 1 ? '' : 'n'} revisión.`
             : 'Los cambios no confirmados quedarán registrados en el historial operativo.',
       });
-    case 'lista_para_confirmar':
+    case 'lista_para_confirmar': {
+      const pendienteCierre = estadoClave === 'aprobado_operativamente';
+      const pendienteRegistrar = estadoClave === 'resultado_guardado';
+      const pendienteGuardar = estadoClave === 'resultado_listo_para_guardar';
       return base({
-        chip: 'Lista para confirmar',
-        titulo: 'La nómina mensual está lista para confirmar.',
-        texto: 'Todos los bloqueos críticos fueron resueltos. Puedes confirmar esta versión como base oficial del período.',
-        info: 'Al confirmar, las liquidaciones se generarán desde esta versión y no desde datos vivos.',
+        chip: pendienteCierre ? 'Revisión registrada' : 'Lista para confirmar',
+        titulo: pendienteCierre
+          ? 'Revisión de RRHH registrada. Falta la confirmación oficial del período.'
+          : pendienteRegistrar
+            ? 'Versión guardada. Falta registrar la revisión de remuneraciones.'
+            : pendienteGuardar
+              ? 'La nómina está lista para guardar la revisión del período.'
+              : 'La nómina mensual está lista para confirmar.',
+        texto: pendienteCierre
+          ? 'Use el botón superior para confirmar la nómina del período como base oficial.'
+          : pendienteRegistrar
+            ? 'Registre la revisión de remuneraciones antes de la confirmación oficial.'
+            : pendienteGuardar
+              ? 'Guarde la versión revisada; luego podrá registrar la revisión de RRHH.'
+              : 'Todos los bloqueos críticos fueron resueltos. Siga el paso indicado en la barra superior.',
+        info: pendienteCierre
+          ? 'La confirmación oficial congela la versión para liquidaciones; aún no las genera.'
+          : 'La confirmación oficial del período es el último paso antes de liquidaciones.',
       });
+    }
     case 'confirmada':
       return base({
         chip: 'Confirmada',

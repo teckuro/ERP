@@ -19,6 +19,7 @@ function empleado(over: Partial<EmpleadoFichaDetalle> = {}): EmpleadoFichaDetall
     departamento: 'Administracion',
     fechaIngreso: '01/01/2026',
     sueldoBase: 900000,
+    monedaContrato: null,
     estado: 'activo',
     estadoFicha: 'INCOMPLETO',
     aptoParaRemuneraciones: false,

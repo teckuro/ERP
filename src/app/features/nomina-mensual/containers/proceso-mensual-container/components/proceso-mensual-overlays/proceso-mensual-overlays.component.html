@@ -9,8 +9,9 @@
   @case ('decision') {
     @let confirmacion = f.confirmacionProceso()!;
     <app-message-box
-      variant="warning"
+      [variant]="confirmacion.variant ?? 'decision'"
       mode="modal"
+      [eyebrow]="confirmacion.eyebrow ?? ''"
       [title]="confirmacion.titulo"
       [message]="confirmacion.mensaje"
       [detail]="confirmacion.detalle"
@@ -22,14 +23,16 @@
       (dismiss)="f.cancelarAccionProceso()"
     >
       <div class="nom-acta-modal">
-        <section class="nom-acta-modal__summary">
-          <p>Qué debe revisar RRHH</p>
-          <ul>
-            @for (punto of (confirmacion.puntos ?? []); track punto) {
-              <li>{{ punto }}</li>
-            }
-          </ul>
-        </section>
+        @if ((confirmacion.puntos ?? []).length) {
+          <section class="nom-acta-modal__summary">
+            <p>{{ confirmacion.puntosTitulo ?? 'Qué debe revisar RRHH' }}</p>
+            <ul>
+              @for (punto of (confirmacion.puntos ?? []); track punto) {
+                <li>{{ punto }}</li>
+              }
+            </ul>
+          </section>
+        }
         @if ((confirmacion.secciones ?? []).length) {
           <div class="nom-acta-modal__grid">
             @for (seccion of (confirmacion.secciones ?? []); track seccion.titulo) {
@@ -44,10 +47,12 @@
             }
           </div>
         }
-        <section class="nom-acta-modal__next">
-          <p>Próxima acción</p>
-          <span>Revisar Liquidaciones oficiales con este contexto como respaldo.</span>
-        </section>
+        @if (confirmacion.mostrarProximaAccion !== false && confirmacion.proximaAccion) {
+          <section class="nom-acta-modal__next">
+            <p>Próxima acción</p>
+            <span>{{ confirmacion.proximaAccion }}</span>
+          </section>
+        }
       </div>
     </app-message-box>
   }

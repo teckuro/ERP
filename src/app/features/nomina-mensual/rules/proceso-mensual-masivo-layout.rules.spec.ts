@@ -222,84 +222,13 @@ describe('proceso-mensual-masivo-layout.rules', () => {
     expect(filas[0]?.liquidoEstimado).toBeNull();
   });
 
-  it('estima montos desde entradas cuando la base borrador aun no calcula', () => {
+  it('propaga moneda del contrato por persona en filas masivas', () => {
     const filas = buildFilasMasivasTrabajadores(input({
-      montosOficialesDisponibles: false,
-      resultadoTrabajadores: [],
-      baseTrabajadores: [{
-        idPersona: 9,
-        trabajadorLabel: 'Finalizar Alta Prueba Borrador',
-        rutLabel: '33.772.972-K',
-        contratoLabel: 'Contrato vigente',
-        estado: 'listo',
-        asignacionesRecurrentes: 1,
-        movimientosDelMes: 2,
-        observacion: 'Sin observaciones',
-      }],
-      expedienteTrabajadores: [{
-        idPersona: 9,
-        nombre: 'Finalizar Alta Prueba Borrador',
-        rut: '33.772.972-K',
-        estado: 'listo',
-        totalHaberes: 0,
-        totalDescuentos: 0,
-        totalLiquido: 0,
-        observaciones: [],
-      }],
-      entradasMensuales: [{
-        idEntrada: 'novedad:1',
-        origen: 'novedad_mensual',
-        origenId: 1,
-        periodo: '2026-05',
-        idPersona: 9,
-        idContrato: 10,
-        idConcepto: 1,
-        tipoEntrada: 'haber',
-        categoria: 'haber_variable',
-        tipoMovimiento: 'haber',
-        cantidad: null,
-        unidad: null,
-        monto: 500000,
-        moneda: 'CLP',
-        estado: 'aprobada',
-        fechaEvento: null,
-        observacion: null,
-        referenciaExterna: null,
-        requiereRevision: false,
-        bloqueaProceso: false,
-        warnings: [],
-        metadata: {},
-      }, {
-        idEntrada: 'novedad:2',
-        origen: 'novedad_mensual',
-        origenId: 2,
-        periodo: '2026-05',
-        idPersona: 9,
-        idContrato: 10,
-        idConcepto: 2,
-        tipoEntrada: 'descuento',
-        categoria: 'descuento_variable',
-        tipoMovimiento: 'descuento',
-        cantidad: null,
-        unidad: null,
-        monto: 50000,
-        moneda: 'CLP',
-        estado: 'aprobada',
-        fechaEvento: null,
-        observacion: null,
-        referenciaExterna: null,
-        requiereRevision: false,
-        bloqueaProceso: false,
-        warnings: [],
-        metadata: {},
-      }],
+      monedaContratoPorPersona: { '1': 'UF', '2': 'CLP' },
     }));
 
-    expect(filas).toHaveLength(1);
-    expect(filas[0]?.montosEstimadosDesdeEntradas).toBe(true);
-    expect(filas[0]?.haberes).toBe(500000);
-    expect(filas[0]?.descuentos).toBe(50000);
-    expect(filas[0]?.liquidoEstimado).toBe(450000);
+    expect(filas.find((fila) => String(fila.idPersona) === '1')?.monedaContrato).toBe('UF');
+    expect(filas.find((fila) => String(fila.idPersona) === '2')?.monedaContrato).toBe('CLP');
   });
 
   it('construye detalle solo para el trabajador seleccionado', () => {

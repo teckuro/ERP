@@ -25,6 +25,7 @@ function empleado(over: Partial<EmpleadoListado> = {}): EmpleadoListado {
     departamento: 'RRHH',
     fechaIngreso: '2024-01-01',
     sueldoBase: 1_000_000,
+    monedaContrato: null,
     estado: 'activo',
     estadoFicha: 'VALIDO',
     aptoParaRemuneraciones: true,

@@ -75,10 +75,18 @@ export interface ConfirmacionProcesoMensualView {
   mensaje: string;
   detalle: string;
   puntos?: string[];
+  /** Título del bloque de viñetas en el modal de decisión. */
+  puntosTitulo?: string;
   primaryLabel: string;
   secondaryLabel: string;
   advertenciasAprobacion?: string[];
   secciones?: Array<{ titulo: string; items?: string[] }>;
+  /** Variante visual del MessageBox (por defecto `decision`). */
+  variant?: 'info' | 'decision' | 'warning';
+  eyebrow?: string;
+  /** Si es `false`, no se muestra el bloque «Próxima acción». */
+  mostrarProximaAccion?: boolean;
+  proximaAccion?: string;
 }
 
 export type InformacionPeriodoDestino =

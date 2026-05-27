@@ -185,6 +185,8 @@ export class HaberesDescuentosRepository {
    * `esConceptoAsignable` (servicio).
    */
   async obtenerConceptoParaAsignacion(idConcepto: number): Promise<{
+    codigo: string | null;
+    nombre: string | null;
     tipo: string | null;
     esSistema: boolean;
     calculoAutomatico: boolean;
@@ -194,7 +196,7 @@ export class HaberesDescuentosRepository {
   } | null> {
     const { data, error } = await this.supabase
       .from('concepto')
-      .select('tipo, es_sistema, calculo_automatico, vigente, vigencia_inicio, vigencia_fin')
+      .select('codigo, nombre, tipo, es_sistema, calculo_automatico, vigente, vigencia_inicio, vigencia_fin')
       .eq('id_concepto', idConcepto)
       .maybeSingle();
 
@@ -207,6 +209,8 @@ export class HaberesDescuentosRepository {
     }
 
     return {
+      codigo: data.codigo ?? null,
+      nombre: data.nombre ?? null,
       tipo: data.tipo ?? null,
       esSistema: Boolean(data.es_sistema),
       calculoAutomatico: Boolean(data.calculo_automatico),

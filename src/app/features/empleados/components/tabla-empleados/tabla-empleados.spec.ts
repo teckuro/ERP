@@ -16,6 +16,7 @@ function fila(over: Partial<EmpleadoListado>): EmpleadoListado {
     departamento: 'CC',
     fechaIngreso: '2020-01-01',
     sueldoBase: 0,
+    monedaContrato: null,
     estado: 'borrador',
     estadoFicha: 'BORRADOR',
     aptoParaRemuneraciones: false,

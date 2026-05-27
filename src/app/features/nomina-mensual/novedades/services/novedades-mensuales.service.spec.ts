@@ -1,5 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 
+import { HaberesDescuentosService } from '../../../haberes-descuentos/services/haberes-descuentos.service';
 import { NovedadesMensualesRepository } from '../data-access/novedades-mensuales.repository';
 import type { CrearNovedadMensualInput, NovedadMensual } from '../models/novedad-mensual.model';
 import { NovedadesMensualesService } from './novedades-mensuales.service';
@@ -55,6 +56,9 @@ describe('NovedadesMensualesService', () => {
     anular: ReturnType<typeof vi.fn>;
     eliminarSoloBorrador: ReturnType<typeof vi.fn>;
   };
+  let haberesDescuentosService: {
+    resolverSnapshotConceptoParaMovimientoVariableManual: ReturnType<typeof vi.fn>;
+  };
 
   beforeEach(() => {
     repository = {
@@ -67,11 +71,21 @@ describe('NovedadesMensualesService', () => {
       anular: vi.fn(),
       eliminarSoloBorrador: vi.fn(),
     };
+    haberesDescuentosService = {
+      resolverSnapshotConceptoParaMovimientoVariableManual: vi.fn().mockResolvedValue({
+        tipo: 'HABER',
+        calculoAutomatico: false,
+        esSistema: false,
+        codigo: 'BONO',
+        nombre: 'Bono',
+      }),
+    };
 
     TestBed.configureTestingModule({
       providers: [
         NovedadesMensualesService,
         { provide: NovedadesMensualesRepository, useValue: repository },
+        { provide: HaberesDescuentosService, useValue: haberesDescuentosService },
       ],
     });
     service = TestBed.inject(NovedadesMensualesService);
@@ -96,6 +110,7 @@ describe('NovedadesMensualesService', () => {
     const arg = repository.crear.mock.calls[0][0] as CrearNovedadMensualInput;
     expect(arg.periodo).toBe('2026-05');
     expect(arg.moneda).toBe('CLP');
+    expect(haberesDescuentosService.resolverSnapshotConceptoParaMovimientoVariableManual).toHaveBeenCalled();
   });
 
   it('aprobar valida transicion', async () => {

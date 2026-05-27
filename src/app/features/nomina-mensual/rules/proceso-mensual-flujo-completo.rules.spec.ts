@@ -31,19 +31,24 @@ describe('proceso-mensual-flujo-completo.rules', () => {
     },
   );
 
-  it('usa una unica accion local para el CTA visible Confirmar nomina', () => {
-    const acciones = FLUJO_COMPLETO_ETAPAS
+  it('etapas de confirmacion usan accion local confirmarNomina con labels distintos', () => {
+    const confirmacion = FLUJO_COMPLETO_ETAPAS
       .map((etapa) => evaluarEtapaFlujoCompleto(etapa.id).resuelta.accionPrincipal)
-      .filter((accion) => accion.label === 'Confirmar nómina')
-      .map((accion) => accion.accionLocal);
+      .filter((accion) => accion.accionLocal === 'confirmarNomina')
+      .map((accion) => accion.label);
 
-    expect(new Set(acciones)).toEqual(new Set(['confirmarNomina']));
+    expect(new Set(confirmacion)).toEqual(new Set([
+      'Calcular nómina preliminar',
+      'Guardar revisión',
+      'Registrar revisión RRHH',
+      'Confirmar nómina del período',
+    ]));
   });
 
   it('borrador con revisión al día no pide Generar nómina en CTA principal', () => {
     const { resuelta } = evaluarEtapaFlujoCompleto('borrador_revision_al_dia');
     expect(resuelta.accionPrincipal.label).not.toBe('Generar nómina');
-    expect(resuelta.accionPrincipal.label).toBe('Confirmar nómina');
+    expect(resuelta.accionPrincipal.label).toBe('Calcular nómina preliminar');
   });
 
   it('revisarBloqueos abre detalle trabajadores en workspace', () => {
@@ -55,7 +60,7 @@ describe('proceso-mensual-flujo-completo.rules', () => {
     expect(shellDebePriorizarValidacionLocal('generarBase')).toBe(false);
   });
 
-  it('rail con borrador y revision al dia confirma nomina', () => {
+  it('rail con borrador y revision al dia calcula preliminar', () => {
     const cta = revisionRailConBorradorAlDia({
       baseGenerada: true,
       puedeGenerarNomina: false,
@@ -63,7 +68,7 @@ describe('proceso-mensual-flujo-completo.rules', () => {
       hayPendientesRevisionTrabajadores: false,
       revisionTrabajadoresCompleta: true,
     });
-    expect(cta.label).toBe('Confirmar nómina');
+    expect(cta.label).toBe('Calcular nómina preliminar');
     expect(cta.accionLocal).toBe('confirmarNomina');
     expect(cta.usarPanel).toBe(false);
   });

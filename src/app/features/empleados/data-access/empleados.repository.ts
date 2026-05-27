@@ -410,13 +410,18 @@ export class EmpleadosRepository {
       (row): row is PersonaFactorRow & { id_persona: number } => typeof row.id_persona === 'number',
     );
 
-    const departamentos = await this.fetchDepartamentos(rows.map((row) => row.id_contrato));
-    const pasos = await this.fetchPasosAltaAvanzada(rows.map((row) => row.id_persona));
+    const contractIds = rows.map((row) => row.id_contrato);
+    const [departamentos, monedasContrato, pasos] = await Promise.all([
+      this.fetchDepartamentos(contractIds),
+      this.fetchMonedaContratoPorContrato(contractIds),
+      this.fetchPasosAltaAvanzada(rows.map((row) => row.id_persona)),
+    ]);
 
     return rows.map((row) =>
       mapPersonaFactorToEmpleado(
         { ...row, paso_alta_avanzada: pasos.get(row.id_persona) ?? null },
         departamentos,
+        row.id_contrato == null ? null : (monedasContrato.get(row.id_contrato) ?? null),
       ),
     );
   }
@@ -2192,6 +2197,42 @@ export class EmpleadosRepository {
     }
 
     return data;
+  }
+
+  private async fetchMonedaContratoPorContrato(
+    contractIds: Array<number | null>,
+  ): Promise<Map<number, string>> {
+    const normalizedIds = contractIds.filter((id): id is number => typeof id === 'number');
+
+    if (normalizedIds.length === 0) {
+      return new Map<number, string>();
+    }
+
+    const { data, error } = await this.supabase
+      .from('remuneracion')
+      .select('id_contrato, id_remuneracion, moneda(codigo)')
+      .in('id_contrato', normalizedIds)
+      .order('id_remuneracion', { ascending: false });
+
+    if (error) {
+      throw buildRepositoryError(
+        'No fue posible cargar la moneda del contrato de los empleados.',
+        error.message,
+      );
+    }
+
+    const monedas = new Map<number, string>();
+
+    for (const row of (data ?? []) as Array<{
+      id_contrato: number;
+      moneda: { codigo: string } | null;
+    }>) {
+      if (!monedas.has(row.id_contrato) && row.moneda?.codigo) {
+        monedas.set(row.id_contrato, row.moneda.codigo);
+      }
+    }
+
+    return monedas;
   }
 
   private async fetchDepartamentos(

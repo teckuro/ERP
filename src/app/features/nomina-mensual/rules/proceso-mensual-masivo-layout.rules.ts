@@ -1,6 +1,4 @@
 ﻿import type { BaseNominaTrazabilidad } from '../models/proceso-mensual.model';
-import type { EntradaMensualPeriodo } from '../entradas/models/entrada-mensual-periodo.model';
-import { aplicarMontosEstimadosDesdeEntradas } from './proceso-mensual-masivo-montos-estimados.rules';
 import type { ExpedienteNominaPeriodoView } from './proceso-mensual-expediente-periodo.rules';
 import type { IncidenciaPeriodo } from './proceso-mensual-incidencias-periodo.rules';
 import type {
@@ -45,8 +43,8 @@ export interface NominaMasivaFila {
   haberes: number | null;
   descuentos: number | null;
   liquidoEstimado: number | null;
-  /** Montos referenciales desde entradas del mes; no reemplazan el cálculo preliminar. */
-  montosEstimadosDesdeEntradas?: boolean;
+  /** Moneda del contrato registrada en personal (CLP, UF, …). */
+  monedaContrato?: string | null;
   pendientes: number;
   /** Alias visible en columna Incidencias. */
   incidenciasCount: number;
@@ -70,7 +68,7 @@ export interface NominaMasivaDetalle {
   haberes: number | null;
   descuentos: number | null;
   liquidoEstimado: number | null;
-  montosEstimadosDesdeEntradas?: boolean;
+  monedaContrato?: string | null;
   movimientos: FilaDetalleMovimientoNomina[];
   recurrentes: FilaDetalleRecurrenteNomina[];
   incidencias: IncidenciaPeriodo[];
@@ -85,7 +83,7 @@ export interface BuildNominaMasivaInput {
   incidencias: IncidenciaPeriodo[];
   /** True cuando hay cálculo preliminar guardado u oficial; evita mostrar $0 del borrador como monto real. */
   montosOficialesDisponibles: boolean;
-  entradasMensuales?: readonly EntradaMensualPeriodo[];
+  monedaContratoPorPersona?: Readonly<Record<string, string | null>>;
 }
 
 interface FilaDraft {
@@ -287,6 +285,15 @@ function filaDesdeBase(trabajador: BaseNominaTrazabilidad['trabajadores'][number
   };
 }
 
+function monedaContratoFila(
+  idPersona: number | string,
+  mapa: Readonly<Record<string, string | null>> | undefined,
+): string | null {
+  if (!mapa) return null;
+  const clave = clavePersona(idPersona);
+  return clave ? (mapa[clave] ?? null) : null;
+}
+
 export function buildFilasMasivasTrabajadores(input: BuildNominaMasivaInput): NominaMasivaFila[] {
   const map = new Map<string, FilaDraft>();
   const montosOficiales = input.montosOficialesDisponibles;
@@ -314,11 +321,9 @@ export function buildFilasMasivasTrabajadores(input: BuildNominaMasivaInput): No
       const movimientosMes = rowsPorTrabajador(input.filasMovimientos, fila.trabajador);
       const recurrentes = rowsPorTrabajador(input.filasRecurrentes, fila.trabajador);
       const incidenciasCount = incidencias.filter((incidencia) => incidencia.severidad !== 'info').length;
-      const filaConMontos = !montosOficiales
-        ? aplicarMontosEstimadosDesdeEntradas(fila, input.entradasMensuales)
-        : fila;
       return {
-        ...filaConMontos,
+        ...fila,
+        monedaContrato: monedaContratoFila(fila.idPersona, input.monedaContratoPorPersona),
         estado,
         pendientes: incidenciasCount,
         incidenciasCount,
@@ -463,7 +468,7 @@ export function buildDetalleMasivoTrabajador(
     haberes: fila.haberes,
     descuentos: fila.descuentos,
     liquidoEstimado: fila.liquidoEstimado,
-    montosEstimadosDesdeEntradas: fila.montosEstimadosDesdeEntradas,
+    monedaContrato: fila.monedaContrato,
     movimientos: rowsPorTrabajador(input.filasMovimientos, fila.trabajador),
     recurrentes: rowsPorTrabajador(input.filasRecurrentes, fila.trabajador),
     incidencias: incidenciasPorPersona(input.incidencias, fila.idPersona),

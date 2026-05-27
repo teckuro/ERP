@@ -81,6 +81,25 @@ describe('novedades-mensuales.rules', () => {
     expect(result.errores.some((e) => e.codigo === 'NOVEDAD_CONCEPTO_REQUERIDO')).toBe(true);
   });
 
+  it('rechaza concepto reservado de sueldo base', () => {
+    const result = validarNovedadMensualInput(
+      {
+        periodo: '2026-05',
+        idPersona: 10,
+        idConcepto: 99,
+        categoria: 'haber_variable',
+        tipoMovimiento: 'haber',
+        moneda: 'CLP',
+      },
+      {
+        concepto: { codigo: 'SUELDO_BASE', nombre: 'Sueldo base', esSistema: false },
+      },
+    );
+
+    expect(result.valido).toBe(false);
+    expect(result.errores.some((e) => e.codigo === 'NOVEDAD_CONCEPTO_RESERVADO')).toBe(true);
+  });
+
   it('cantidad negativa falla', () => {
     const result = validarNovedadMensualInput({
       periodo: '2026-05',
