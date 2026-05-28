@@ -2,8 +2,14 @@ import { describe, expect, it } from 'vitest';
 
 import {
   contieneNomenclaturaTecnica,
+  extraerCamposFaltaDatoOficial,
+  extraerCamposOficialesPendientes,
+  humanizarFaltaDatoOficial,
+  humanizarPendienteActa,
   limpiarCopyTecnicoNomina,
   limpiarYUnirMensajes,
+  mensajeCampoOficialEnCero,
+  mensajeFaltaCampoOficial,
 } from './proceso-mensual-copy-limpio.rules';
 
 describe('proceso-mensual-copy-limpio.rules', () => {
@@ -76,5 +82,43 @@ describe('proceso-mensual-copy-limpio.rules', () => {
   it('detecta nomenclatura tecnica', () => {
     expect(contieneNomenclaturaTecnica('parametros_generales')).toBe(true);
     expect(contieneNomenclaturaTecnica('Parámetros del período')).toBe(false);
+  });
+
+  it('humaniza Falta dato oficial con campo sanna', () => {
+    const salida = humanizarFaltaDatoOficial('Falta dato oficial: sanna.');
+    expect(salida).toContain('SANNA');
+    expect(salida).not.toMatch(/\bsanna\b/);
+    expect(salida).toContain('datos oficiales del período');
+  });
+
+  it('extraerCamposOficialesPendientes deduplica y distingue cero', () => {
+    expect(
+      extraerCamposFaltaDatoOficial(
+        'Falta dato oficial: sanna. Falta dato oficial: uf. Falta dato oficial: sanna.',
+      ),
+    ).toEqual(['sanna', 'uf']);
+    expect(
+      extraerCamposOficialesPendientes('Dato oficial en cero: uf. Falta dato oficial: utm.'),
+    ).toEqual(expect.arrayContaining([
+      { campo: 'uf', motivo: 'cero' },
+      { campo: 'utm', motivo: 'falta' },
+    ]));
+    expect(mensajeFaltaCampoOficial('uf')).toContain('UF mensual');
+    expect(mensajeCampoOficialEnCero('uf')).toContain('no puede quedar en cero');
+    expect(
+      extraerCamposOficialesPendientes(
+        'El valor UF mensual no puede quedar en cero en datos oficiales del período.',
+      ),
+    ).toEqual([{ campo: 'uf', motivo: 'cero' }]);
+  });
+
+  it('humanizarPendienteActa quita prefijo duplicado de parámetros', () => {
+    const { titulo, descripcion } = humanizarPendienteActa(
+      'Parámetros del período pendientes',
+      'Parámetros del período pendientes: Falta dato oficial: sanna.',
+    );
+    expect(titulo).toBe('Datos oficiales del período');
+    expect(descripcion).toContain('SANNA');
+    expect(descripcion).not.toMatch(/Parámetros del período pendientes:/i);
   });
 });

@@ -700,8 +700,16 @@ export class ParametrosGeneralesRepository {
     const isapres = await this.safeListWithError(() => this.listarIsapres(periodo));
     const saludInstituciones = await this.safeListWithError(() => this.listarSaludInstituciones(periodo));
     const tramosCarga = await this.safeListWithError(() => this.listarTramosCarga(periodo));
-    const tramosImpuesto = await this.safeListWithError(() => this.listarTramosImpuesto(periodo));
     const tablaImpuestoUnico = await this.safeListWithError(() => this.listarTablaImpuestoUnico(periodo));
+    const tramosImpuestoLegacy = await this.safeListWithError(() => this.listarTramosImpuesto(periodo));
+    const tramosImpuestoData =
+      tablaImpuestoUnico.data.length > 0
+        ? this.mapTablaImpuestoATramosCompat(tablaImpuestoUnico.data)
+        : tramosImpuestoLegacy.data;
+    const tramosImpuesto = {
+      data: tramosImpuestoData,
+      error: tablaImpuestoUnico.error ?? tramosImpuestoLegacy.error,
+    };
     const reformaPensiones = await this.safeListWithError(() => this.listarParametrosLegales(periodo));
     const trabajosPesados = await this.safeListWithError(() => this.listarTrabajosPesados(periodo));
     const reformaPrevisional = await this.safeListWithError(() => this.listarReformaPrevisional(periodo));
@@ -1673,6 +1681,20 @@ export class ParametrosGeneralesRepository {
       factor: row.factor,
       rebaja: row.rebaja,
     };
+  }
+
+  /** Espejo de lectura alineado a tabla_impuesto_unico (fuente SII). */
+  private mapTablaImpuestoATramosCompat(
+    tabla: TablaImpuestoUnicoParametro[],
+  ): TramoImpuestoParametro[] {
+    return tabla.map((row) => ({
+      idTramo: row.tramo,
+      periodo: row.periodo ?? row.vigenciaInicio.slice(0, 7),
+      desde: row.desde,
+      hasta: row.hasta,
+      factor: row.factor,
+      rebaja: row.rebaja,
+    }));
   }
 
   private toTablaImpuestoUnico(row: TablaImpuestoUnicoRow): TablaImpuestoUnicoParametro {

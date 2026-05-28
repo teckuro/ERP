@@ -333,7 +333,7 @@ describe('ProcesoMensualService', () => {
   it('consultarEstadoParametrosPeriodo solo lee parametros generales', async () => {
     const svc = TestBed.inject(ProcesoMensualService);
     await svc.consultarEstadoParametrosPeriodo('2026-05');
-    expect(parametros.obtenerUltimoHastaPeriodo).toHaveBeenCalledWith('2026-05', { enriquecer: false });
+    expect(parametros.obtenerUltimoHastaPeriodo).toHaveBeenCalledWith('2026-05');
     expect(parametros.obtenerPeriodoRemuneracion).toHaveBeenCalledWith('2026-05');
     expect(parametros.obtenerClienteConfig).toHaveBeenCalledWith('2026-05');
     expect(parametros.listarCatalogos).toHaveBeenCalledWith('2026-05');
@@ -347,7 +347,7 @@ describe('ProcesoMensualService', () => {
     const r = await svc.ejecutarPrevalidaciones('2026-05');
     expect(r.resumen.trabajadoresActivosAptos).toBe(2);
     expect(r.resumen.recurrentesAplicablesAlPeriodo).toBe(0);
-    expect(parametros.obtenerUltimoHastaPeriodo).toHaveBeenCalledWith('2026-05', { enriquecer: false });
+    expect(parametros.obtenerUltimoHastaPeriodo).toHaveBeenCalledWith('2026-05');
   });
 
   it('marca parametros no operativos si la fila oficial tiene UF vacia', async () => {

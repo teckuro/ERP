@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { LucideAngularModule } from 'lucide-angular';
 
 import { ProcesoMensualOverlaysComponent } from './components/proceso-mensual-overlays/proceso-mensual-overlays.component';
 import { ProcesoMensualWorkspaceComponent } from './components/proceso-mensual-workspace/proceso-mensual-workspace.component';
@@ -22,6 +23,7 @@ import { ProcesoMensualPeriodoStore } from './store/proceso-mensual-periodo.stor
   ],
   imports: [
     CommonModule,
+    LucideAngularModule,
     ProcesoMensualWorkspaceComponent,
     ProcesoMensualOverlaysComponent,
   ],

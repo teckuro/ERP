@@ -154,6 +154,19 @@ describe('parametros-completitud.rules', () => {
     expect(resultado.pendientes).toContain('Falta vigencia aplicable de trabajo pesado.');
   });
 
+  it('marca valores oficiales en cero como pendientes (p. ej. UF del mes)', () => {
+    const resultado = evaluarCompletitudParametrosMensual({
+      periodo,
+      periodoRemuneracion: periodoInfo('parcial'),
+      oficial: parametroOficial({ uf: 0 }),
+      clienteConfig: clienteConfig(),
+      catalogos: catalogosCompletos(),
+    });
+
+    expect(resultado.pendientes).toContain('Dato oficial en cero: uf.');
+    expect(resultado.grupos.oficialesMensuales.completo).toBe(false);
+  });
+
   it('detecta diferencias oficial cliente y no marca cerrado', () => {
     const resultado = evaluarCompletitudParametrosMensual({
       periodo,

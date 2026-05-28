@@ -19,7 +19,7 @@ export class ParametrosPresentacionFacade {
   readonly activeTab = signal<ParametrosTabId>('configCliente');
   readonly ccafMutualSubTab = signal<CcafMutualSubId>('listaCcaf');
   readonly saludSubTab = signal<SaludSubId>('isapre');
-  readonly impuestoSubTab = signal<ImpuestoSubId>('tramos');
+  readonly impuestoSubTab = signal<ImpuestoSubId>('tabla');
   readonly selectedPeriodo = signal(this.periodoGlobal.periodoYm());
   readonly selectedCcafId = signal<number | null>(null);
   readonly selectedOrganismoLey16744Id = signal<number | null>(null);

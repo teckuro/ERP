@@ -818,7 +818,7 @@ describe('ProcesoMensualContainer', () => {
 
       expect(c.overlay().kind).toBe('informacion');
       expect(c.informacionPeriodo()?.titulo).toBeTruthy();
-      expect(fixture.nativeElement.querySelector('.payroll-ledger-error')).toBeNull();
+      expect(fixture.nativeElement.querySelector('.payroll-ledger-error-focus')).toBeNull();
       expect(fixture.nativeElement.querySelector('.payroll-verificacion-periodo-modal')).toBeTruthy();
     });
 

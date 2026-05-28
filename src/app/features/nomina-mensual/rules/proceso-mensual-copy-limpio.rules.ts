@@ -182,3 +182,170 @@ function limpiarCopyTecnicoNominaInterno(texto: string | null | undefined): stri
 export function limpiarCopyTecnicoNomina(texto: string | null | undefined): string {
   return limpiarCopyTecnicoNominaInterno(texto);
 }
+
+const ETIQUETA_CAMPO_OFICIAL: Readonly<Record<string, string>> = {
+  uf: 'UF mensual',
+  utm: 'UTM mensual',
+  uta: 'UTA mensual',
+  sis: 'SIS del período',
+  sanna: 'SANNA',
+  saludObligatoria: 'cotización de salud obligatoria',
+  sueldoMinimo18a65: 'sueldo mínimo (18 a 65 años)',
+  sueldoMinimoMenor18Mayor65: 'sueldo mínimo (menores y mayores)',
+  sueldoMinimoCasaParticular: 'sueldo mínimo casa particular',
+  ingresoMinimoNoRemuneracional: 'ingreso mínimo no remuneracional',
+  topeAfpUf: 'tope AFP (UF)',
+  topeAfp: 'tope AFP',
+  topeIpsUf: 'tope IPS (UF)',
+  topeIps: 'tope IPS',
+  topeCesantiaUf: 'tope cesantía (UF)',
+  topeCesantia: 'tope cesantía',
+  topeApvMensualUf: 'tope APV mensual (UF)',
+  topeApvMensual: 'tope APV mensual',
+  topeApvAnualUf: 'tope APV anual (UF)',
+  topeApvAnual: 'tope APV anual',
+  afcTrabajadorIndefinido: 'AFC trabajador indefinido',
+  afcEmpleadorIndefinido: 'AFC empleador indefinido',
+  afcEmpleadorPlazo: 'AFC empleador plazo fijo',
+};
+
+function etiquetaCampoOficial(campo: string): string {
+  const clave = campo.trim().toLowerCase();
+  const conocido = ETIQUETA_CAMPO_OFICIAL[clave];
+  if (conocido) {
+    return conocido;
+  }
+  const humanizado = limpiarCopyTecnicoNomina(campo);
+  return humanizado || campo;
+}
+
+/** Convierte mensajes de completitud PG («Falta dato oficial: uf») a copy RRHH. */
+export function humanizarFaltaDatoOficial(texto: string): string {
+  return texto
+    .replace(
+      /Falta dato oficial:\s*([a-zA-Z0-9_]+)\.?/gi,
+      (_coincidencia, campo) => mensajeFaltaCampoOficial(campo),
+    )
+    .replace(
+      /Dato oficial en cero:\s*([a-zA-Z0-9_]+)\.?/gi,
+      (_coincidencia, campo) => mensajeCampoOficialEnCero(campo),
+    );
+}
+
+const PREFIJO_PARAMETROS_PENDIENTES = /^Parámetros del período pendientes:\s*/i;
+
+function esTituloPendienteParametros(titulo: string): boolean {
+  return /parámetros del período/i.test(titulo);
+}
+
+/** Normaliza título y detalle de ítems del acta de preparación (sin claves crudas ni prefijos duplicados). */
+export function humanizarPendienteActa(
+  titulo: string,
+  descripcion: string,
+): { titulo: string; descripcion: string } {
+  let tituloLimpio = humanizarFaltaDatoOficial(limpiarCopyTecnicoNomina(titulo));
+  let descripcionLimpia = humanizarFaltaDatoOficial(limpiarCopyTecnicoNomina(descripcion));
+
+  if (esTituloPendienteParametros(tituloLimpio) || esTituloPendienteParametros(descripcionLimpia)) {
+    descripcionLimpia = descripcionLimpia.replace(PREFIJO_PARAMETROS_PENDIENTES, '').trim();
+    if (/^Parámetros del período pendientes$/i.test(tituloLimpio)) {
+      tituloLimpio = 'Datos oficiales del período';
+    } else if (/por revisar/i.test(tituloLimpio)) {
+      tituloLimpio = 'Parámetros del período';
+    }
+  }
+
+  if (
+    descripcionLimpia
+    && tituloLimpio
+    && descripcionLimpia.localeCompare(tituloLimpio, 'es', { sensitivity: 'accent' }) === 0
+  ) {
+    descripcionLimpia = '';
+  }
+
+  return { titulo: tituloLimpio, descripcion: descripcionLimpia };
+}
+
+export type CampoOficialPendienteActa = {
+  campo: string;
+  motivo: 'falta' | 'cero';
+};
+
+function campoDesdeEtiquetaRRHH(etiqueta: string): string | null {
+  const normalizada = etiqueta.trim().toLowerCase();
+  for (const [campo, label] of Object.entries(ETIQUETA_CAMPO_OFICIAL)) {
+    if (label.trim().toLowerCase() === normalizada) {
+      return campo;
+    }
+  }
+  return null;
+}
+
+function registrarCampoOficialPendiente(
+  vistos: Set<string>,
+  out: CampoOficialPendienteActa[],
+  campo: string,
+  motivo: CampoOficialPendienteActa['motivo'],
+): void {
+  const clave = campo.trim().toLowerCase();
+  if (!clave || vistos.has(clave)) {
+    return;
+  }
+  vistos.add(clave);
+  out.push({ campo: clave, motivo });
+}
+
+/** Lista campos oficiales en textos de completitud (falta, cero o copy ya humanizado). */
+export function extraerCamposOficialesPendientes(texto: string): CampoOficialPendienteActa[] {
+  const vistos = new Set<string>();
+  const out: CampoOficialPendienteActa[] = [];
+  const patrones: Array<{ motivo: CampoOficialPendienteActa['motivo']; re: RegExp }> = [
+    { motivo: 'falta', re: /Falta dato oficial:\s*([a-zA-Z0-9_]+)/gi },
+    { motivo: 'cero', re: /Dato oficial en cero:\s*([a-zA-Z0-9_]+)/gi },
+    {
+      motivo: 'falta',
+      re: /Falta el valor ([^.]+?) en datos oficiales del período/gi,
+    },
+    {
+      motivo: 'cero',
+      re: /El valor ([^.]+?) no puede quedar en cero en datos oficiales del período/gi,
+    },
+  ];
+  for (const { motivo, re } of patrones) {
+    let coincidencia: RegExpExecArray | null;
+    while ((coincidencia = re.exec(texto)) !== null) {
+      const fragmento = coincidencia[1].trim();
+      const campoDirecto = fragmento.toLowerCase();
+      if (/^[a-z0-9_]+$/i.test(campoDirecto)) {
+        registrarCampoOficialPendiente(vistos, out, campoDirecto, motivo);
+        continue;
+      }
+      const desdeEtiqueta = campoDesdeEtiquetaRRHH(fragmento);
+      if (desdeEtiqueta) {
+        registrarCampoOficialPendiente(vistos, out, desdeEtiqueta, motivo);
+      }
+    }
+  }
+  return out;
+}
+
+/** @deprecated Usar extraerCamposOficialesPendientes */
+export function extraerCamposFaltaDatoOficial(texto: string): string[] {
+  return extraerCamposOficialesPendientes(texto).map((item) => item.campo);
+}
+
+export function mensajeFaltaCampoOficial(campo: string): string {
+  return `Falta el valor ${etiquetaCampoOficial(campo)} en datos oficiales del período`;
+}
+
+export function mensajeCampoOficialEnCero(campo: string): string {
+  return `El valor ${etiquetaCampoOficial(campo)} no puede quedar en cero en datos oficiales del período`;
+}
+
+export function mensajeCampoOficialPendiente(campo: string, motivo: CampoOficialPendienteActa['motivo']): string {
+  return motivo === 'cero' ? mensajeCampoOficialEnCero(campo) : mensajeFaltaCampoOficial(campo);
+}
+
+export function tituloCampoOficialPendiente(campo: string): string {
+  return etiquetaCampoOficial(campo);
+}

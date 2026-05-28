@@ -1,6 +1,54 @@
 <section class="payroll-page payroll-ledger-shell" aria-label="Nómina mensual">
-  @if (errorEjecucion() && overlay().kind !== 'informacion') {
-    <div class="payroll-ledger-error" role="alert">{{ errorEjecucion() }}</div>
+  @if (errorBannerPeriodo(); as banner) {
+    <section
+      class="payroll-ledger-error-focus payroll-focus payroll-focus--operativo payroll-focus--danger"
+      role="alert"
+      aria-labelledby="payroll-ledger-error-title"
+    >
+      <div class="payroll-focus__body payroll-focus__body--operativo">
+        <div class="payroll-focus__operativa-grid">
+          <div class="payroll-focus__band">
+            <div class="payroll-focus__visual" aria-hidden="true">
+              <lucide-icon name="circle-alert"></lucide-icon>
+            </div>
+            <div class="payroll-focus__copy">
+              <span class="payroll-focus__chip">Atención</span>
+              <h2 id="payroll-ledger-error-title" class="payroll-focus__title">{{ banner.titulo }}</h2>
+              @if (banner.bajada) {
+                <p class="payroll-focus__lead">{{ banner.bajada }}</p>
+              }
+            </div>
+          </div>
+          @if (banner.accionPrincipal) {
+            <div class="payroll-focus__cta">
+              <button type="button" class="payroll-focus__primary" (click)="confirmarErrorBannerPeriodo()">
+                {{ banner.accionPrincipal.label }}
+              </button>
+            </div>
+          }
+        </div>
+        @if (banner.puntos?.length) {
+          <ul class="payroll-focus__areas payroll-focus__areas--compact">
+            @for (punto of banner.puntos; track punto) {
+              <li>{{ punto }}</li>
+            }
+          </ul>
+        }
+        @if (errorEjecucion()) {
+          <details class="payroll-focus__detalle-tecnico">
+            <summary>Ver detalle técnico</summary>
+            <p>{{ errorEjecucion() }}</p>
+          </details>
+        }
+        @if (banner.accionSecundaria) {
+          <div class="payroll-focus__acciones-secundarias">
+            <button type="button" class="payroll-modal-secondary" (click)="cerrarErrorBannerPeriodo()">
+              {{ banner.accionSecundaria.label }}
+            </button>
+          </div>
+        }
+      </div>
+    </section>
   }
 
   <app-proceso-mensual-workspace />

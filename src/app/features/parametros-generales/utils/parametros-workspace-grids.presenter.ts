@@ -81,6 +81,11 @@ export function formatoPorcentajeGridParametros(value: unknown): string {
       }).format(numberValue)} %`;
 }
 
+/** Factor impuesto SII: decimal (ej. 0,135), no porcentaje con símbolo %. */
+export function formatoFactorImpuestoSiiGridParametros(value: unknown): string {
+  return formatoDecimalGridParametros(value, 3);
+}
+
 export function formatoFechaGridParametros(value: unknown): string {
   if (typeof value !== 'string' || !value) {
     return '—';
@@ -179,7 +184,7 @@ export function crearGridsParametrosWorkspace(periodoYm: () => string): GridsPar
       { id: 'tramo', header: 'Tramo', field: 'tramo', type: 'number', sortable: true, align: 'right' },
       {
         id: 'desde',
-        header: 'Desde UTM',
+        header: 'Desde ($)',
         field: 'desde',
         type: 'number',
         sortable: true,
@@ -188,7 +193,7 @@ export function crearGridsParametrosWorkspace(periodoYm: () => string): GridsPar
       },
       {
         id: 'hasta',
-        header: 'Hasta UTM',
+        header: 'Hasta ($)',
         field: 'hasta',
         type: 'number',
         sortable: true,
@@ -197,60 +202,60 @@ export function crearGridsParametrosWorkspace(periodoYm: () => string): GridsPar
       },
       {
         id: 'factor',
-        header: 'Factor',
+        header: 'Factor SII',
         field: 'factor',
         type: 'number',
         sortable: true,
         align: 'right',
-        format: formatoPorcentajeGridParametros,
+        format: formatoFactorImpuestoSiiGridParametros,
       },
       {
         id: 'rebaja',
-        header: 'Rebaja UTM',
+        header: 'Rebaja ($)',
         field: 'rebaja',
         type: 'number',
         sortable: true,
         align: 'right',
-        format: (v) => formatoMontoDecimalGridParametros(v, 4),
+        format: (v) => formatoMontoDecimalGridParametros(v, 2),
       },
     ],
     tramosImpuestoColumns: [
       { id: 'periodo', header: 'Período', field: 'periodo', sortable: true },
       {
         id: 'desde',
-        header: 'Desde',
+        header: 'Desde ($)',
         field: 'desde',
         type: 'number',
         sortable: true,
         align: 'right',
-        format: formatoMontoGridParametros,
+        format: (v) => formatoMontoDecimalGridParametros(v, 2),
       },
       {
         id: 'hasta',
-        header: 'Hasta',
+        header: 'Hasta ($)',
         field: 'hasta',
         type: 'number',
         sortable: true,
         align: 'right',
-        format: formatoMontoGridParametros,
+        format: (v) => formatoMontoDecimalGridParametros(v, 2),
       },
       {
         id: 'factor',
-        header: 'Factor',
+        header: 'Factor SII',
         field: 'factor',
         type: 'number',
         sortable: true,
         align: 'right',
-        format: formatoPorcentajeGridParametros,
+        format: formatoFactorImpuestoSiiGridParametros,
       },
       {
         id: 'rebaja',
-        header: 'Rebaja',
+        header: 'Rebaja ($)',
         field: 'rebaja',
         type: 'number',
         sortable: true,
         align: 'right',
-        format: formatoMontoGridParametros,
+        format: (v) => formatoMontoDecimalGridParametros(v, 2),
       },
     ],
     isapreColumns: [

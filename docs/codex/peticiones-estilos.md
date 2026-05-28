@@ -2088,6 +2088,44 @@ Creación avanzada incorpora una identidad de producto local para dejar de senti
 - **Visual:** se retiran bordes de color en alertas, grupos completos y tabs activas; quedan bordes neutros.
 - **No tocado:** motor de nómina, SQL, Python, servicios ni persistencia.
 
+## 2026-05-27 — Nómina verificar: texto prevalidación en acta (fix SANNA engañoso)
+
+- **Bug:** `textosDetalleParametrosDesde` leía `bloqueo.mensaje` (inexistente); no llegaban pendientes reales de `bloqueo.texto` y el acta quedaba solo con copy humanizado (a menudo SANNA).
+- **Acta:** textos crudos solo desde prevalidación PARAMETROS + detalle de grupos; sin incidencias/secciones ya humanizadas.
+- **Parser:** `extraerCamposOficialesPendientes` también entiende mensajes RRHH («UF mensual… en cero»).
+
+## 2026-05-27 — Parámetros/Nómina: UF en cero y pendientes correctos en acta
+
+- **Completitud PG:** valores numéricos oficiales `<= 0` cuentan como pendientes (`Dato oficial en cero: uf.`); el detalle del período concatena todos los pendientes, no solo el primero.
+- **Grupos mínimos nómina:** `mensuales_uf_utm_sueldo` trata UF/UTM/sueldo en cero como inválidos y detalla campos en `detalle` del grupo.
+- **Acta:** cada campo con título RRHH (p. ej. «UF mensual») y mensaje distinto si falta o está en cero; se ocultan ítems genéricos «Parámetros del período» cuando hay detalle por campo.
+- **Archivos:** `parametros-completitud.rules.ts`, `proceso-mensual.service.ts`, `proceso-mensual-parametros-minimos.rules.ts`, `proceso-mensual-copy-limpio.rules.ts`, `proceso-mensual-acta-preparacion.rules.ts` (+ specs).
+
+## 2026-05-27 — Nómina mensual: acta parámetros (pendientes, shell, dos fuentes)
+
+- **Pendientes:** el acta lista varios ítems desde `parametrosGrupos` (FALTANTE/PARCIAL) y todos los «Falta dato oficial» detectados en textos de completitud; métricas alineadas con `mergeResumenVerificacionActa`.
+- **Shell:** se oculta la CTA duplicada «Revisar parámetros» cuando el acta ya ofrece «Abrir parámetros» (`shellDebeOcultarCtaParametros`).
+- **Estado:** `parametrosListos` en dashboard ya no asume `true` por tener snapshot sin prevalidación operativa.
+- **Copy:** nota RRHH sobre configuración cliente vs datos oficiales (`.payroll-acta-preparacion__nota-fuentes`) hasta cargar oficiales.
+- **Archivos:** `proceso-mensual-acta-preparacion.rules.ts`, `proceso-mensual-copy-limpio.rules.ts`, `proceso-mensual-presentacion.facade.ts`, `proceso-mensual-workspace.component.html|css` (+ specs).
+- **No tocado:** `parametros-completitud.rules.ts`, SQL, motor, estilos globales.
+
+## 2026-05-27 — Nómina mensual: acta preparación (orden, espacio, copy)
+
+- **Layout:** contenedor `.payroll-acta-preparacion__shell` con padding `10px 12px`; orden fijo encabezado → métricas → qué corregir → contexto → acciones.
+- **Visual:** sin fondo amarillo/rojo en todo el acta; tono solo en bloque «Qué corregir»; lista compacta (~40px); CTA única al pie (sin botón duplicado «Revisar parámetros» en ítems).
+- **Copy:** `humanizarPendienteActa` / `humanizarFaltaDatoOficial` — «Falta dato oficial: sanna» → mensaje RRHH con SANNA y datos oficiales; sin prefijos repetidos.
+- **Archivos:** `proceso-mensual-workspace.component.html|css`, `proceso-mensual-copy-limpio.rules.ts`, `proceso-mensual-acta-preparacion.rules.ts` (+ specs).
+- **No tocado:** `parametros-completitud.rules.ts`, SQL, motor, estilos globales.
+
+## 2026-05-27 — Nómina mensual: error inline y sidebar (espacio + scroll)
+
+- **Error de ejecución:** el banner crudo (`.payroll-ledger-error`) pasa a franja operativa NOIA (`.payroll-ledger-error-focus`): título, bajada humanizada, puntos, CTA principal, cierre secundario y detalle técnico en `<details>`.
+- **Focus preparación:** layout tipo `payroll-operativa-empty` (copy + CTA), chip del frame, `frame.info` en disclosure; densidad compacta en título/lead.
+- **Sidebar:** scroll en `.payroll-workspace-sidebar__scroll` (el `aside` ya no recorta franja/bitácora); padding compacto en franja, título de bitácora y pasos del rail (~40px filas).
+- **Archivos:** `proceso-mensual-container.html|css|ts`, `proceso-mensual-presentacion.facade.ts`, `proceso-mensual-workspace.component.html|css`.
+- **No tocado:** SQL, motor, servicios, `angular.json`, `src/styles/*`.
+
 ## 2026-05-27 - Parámetros: período desde Shell, grillas al fondo y consistencia sin 1/1
 
 - **Período:** se elimina el selector local de período en la banda de Parámetros; la vista queda sincronizada con `PeriodoActivoService.periodoYm` (selector global del shell).
@@ -2096,3 +2134,10 @@ Creación avanzada incorpora una identidad de producto local para dejar de senti
 - **Grillas:** se ajustan overrides de `app-data-grid` para que el contenedor llegue al fondo real y el scroll quede dentro de la grilla, sin scroll horizontal global.
 - **Consistencia:** meses sin base comparable (sin oficiales/config cliente) ya no se muestran como consistencia 1/1; se omite visualmente hasta que exista base comparable.
 - **Ajuste:** se refuerza la cadena de altura flexible para que la grilla no colapse (título visible pero cuerpo sin alto) y se compacta tipografía/espaciado de la banda de período con jerarquía “sistema”.
+
+## 2026-05-27 — Parámetros: impuesto único fiel al SII
+
+- **Datos:** `tramo_impuesto` amplía `factor`/`rebaja` y se sincroniza desde `tabla_impuesto_unico` (scraper SII); sin redondeo 0,135→0,14.
+- **UI:** una sola grilla «Tabla impuesto único (SII)»; factor decimal 3 cifras (sin `%`); montos Desde/Hasta/Rebaja en pesos.
+- **Archivos:** `parametros-tramos-renta-tab`, `parametros-workspace-grids.presenter`, `parametros-generales.repository`, Python `v611_sql_merge_helpers` + `04_render_*`.
+- **No tocado:** `angular.json`, `src/styles/*`, motor nómina.

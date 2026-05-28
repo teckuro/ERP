@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+"""Copia legacy. Generador canonico: ERP/Python/04_render_parametros_mensuales_v611_sql_full.py"""
 from __future__ import annotations
 
 import argparse
@@ -33,6 +34,24 @@ def sql_literal(value: Any) -> str:
 
 def rows_values(rows: Iterable[Iterable[Any]]) -> str:
     return ",\n  ".join("(" + ", ".join(sql_literal(value) for value in row) + ")" for row in rows)
+
+
+def render_tramo_carga_merge(periodo: str) -> list[str]:
+  periodo_sql = sql_literal(periodo)
+  return [
+      "UPDATE tramo_carga tc",
+      "SET desde = e.desde, hasta = e.hasta, valor = e.valor",
+      "FROM _expected_tramo_carga e",
+      f"WHERE tc.periodo = {periodo_sql} AND tc.tramo = e.tramo;",
+      "INSERT INTO tramo_carga (periodo, desde, hasta, valor, tramo)",
+      "SELECT e.periodo, e.desde, e.hasta, e.valor, e.tramo",
+      "FROM _expected_tramo_carga e",
+      "WHERE NOT EXISTS (",
+      "    SELECT 1 FROM tramo_carga tc",
+      f"    WHERE tc.periodo = {periodo_sql} AND tc.tramo = e.tramo",
+      ");",
+      "",
+  ]
 
 
 def render_compare_notice(table: str, actual_sql: str, expected_sql: str, label: str) -> str:
@@ -206,10 +225,7 @@ def render_sql(payload: dict[str, Any]) -> str:
                     "SELECT periodo, desde, hasta, valor, tramo FROM _expected_tramo_carga",
                     "tramo_carga",
                 ).rstrip(),
-                f"DELETE FROM tramo_carga WHERE periodo = {sql_literal(periodo)};",
-                "INSERT INTO tramo_carga (periodo, desde, hasta, valor, tramo)",
-                "SELECT periodo, desde, hasta, valor, tramo FROM _expected_tramo_carga;",
-                "",
+                *render_tramo_carga_merge(periodo),
             ]
         )
 

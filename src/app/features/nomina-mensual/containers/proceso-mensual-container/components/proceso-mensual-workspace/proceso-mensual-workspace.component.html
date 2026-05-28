@@ -37,19 +37,39 @@
         [class.payroll-focus--success]="pres.variant === 'success'"
         aria-labelledby="payroll-focus-title"
       >
-        <div class="payroll-focus__body">
-          <div class="payroll-focus__band">
-            <div class="payroll-focus__visual" aria-hidden="true">
-              <lucide-icon [name]="pres.icon"></lucide-icon>
+        <div class="payroll-focus__body payroll-focus__body--operativo">
+          <div class="payroll-focus__operativa-grid">
+            <div class="payroll-focus__band">
+              <div class="payroll-focus__visual" aria-hidden="true">
+                <lucide-icon [name]="pres.icon"></lucide-icon>
+              </div>
+              <div class="payroll-focus__copy">
+                @if (frame.chip) {
+                  <span class="payroll-focus__chip">{{ frame.chip }}</span>
+                }
+                <h2 id="payroll-focus-title" class="payroll-focus__title">{{ frame.titulo }}</h2>
+                <p class="payroll-focus__lead">{{ frame.texto }}</p>
+              </div>
             </div>
-            <div class="payroll-focus__copy">
-              <h2 id="payroll-focus-title" class="payroll-focus__title">{{ frame.titulo }}</h2>
-              <p class="payroll-focus__lead">{{ frame.texto }}</p>
-            </div>
-            @if (pres.hintInline && frame.info) {
-              <p class="payroll-focus__meta">{{ frame.info }}</p>
+            @if (frame.ctaLabel && frame.ctaTipo !== 'ninguna') {
+              <div class="payroll-focus__cta">
+                <button
+                  type="button"
+                  class="payroll-focus__primary"
+                  [disabled]="frame.ctaDisabled"
+                  (click)="f.ejecutarPreparacionPrincipal()"
+                >
+                  {{ frame.ctaLabel }}
+                </button>
+              </div>
             }
           </div>
+          @if (pres.hintInline && frame.info) {
+            <details class="payroll-focus__detalle-tecnico">
+              <summary>Ver detalle</summary>
+              <p>{{ frame.info }}</p>
+            </details>
+          }
           @if (f.estadoOperativo().accionPrincipal.disabledReason) {
             <p class="payroll-focus__note">{{ f.estadoOperativo().accionPrincipal.disabledReason }}</p>
           }
@@ -71,6 +91,7 @@
         [class.payroll-workspace-layout--preparacion]="mostrarActa"
       >
         <aside class="payroll-workspace-sidebar" aria-label="Resumen operativo del período">
+          <div class="payroll-workspace-sidebar__scroll">
           @if (!mostrarActa) {
           <section class="payroll-franja-operativa" aria-label="Indicadores del período">
             <ul class="payroll-franja-operativa__list">
@@ -131,6 +152,7 @@
               </dl>
             </section>
           }
+          </div>
         </aside>
 
         <div class="payroll-workspace-content">
@@ -315,129 +337,149 @@
                 aria-labelledby="payroll-acta-title"
                 [attr.aria-busy]="acta.ctaLoading"
               >
-                <header class="payroll-acta-preparacion__header">
-                  <p class="payroll-acta-preparacion__eyebrow">
-                    {{ acta.etapa }} · {{ acta.estadoEtapa }}
-                  </p>
-                  <h2 id="payroll-acta-title" class="payroll-acta-preparacion__title">{{ acta.titulo }}</h2>
-                  <p class="payroll-acta-preparacion__lead">{{ acta.descripcion }}</p>
-                </header>
-                @if (acta.previewLinea) {
-                  <p class="payroll-acta-preparacion__preview">{{ acta.previewLinea }}</p>
-                }
-                @if (acta.resumenVerificacion; as resumen) {
-                  <div class="payroll-acta-preparacion__resumen" aria-label="Resumen de la verificación">
-                    <div class="payroll-acta-preparacion__metrica">
-                      <span class="payroll-acta-preparacion__metrica-k">Críticos</span>
-                      <strong class="payroll-acta-preparacion__metrica-v">{{ resumen.criticos }}</strong>
+                <div class="payroll-acta-preparacion__shell">
+                  <header class="payroll-acta-preparacion__header">
+                    <p class="payroll-acta-preparacion__eyebrow">
+                      {{ acta.etapa }} · {{ acta.estadoEtapa }}
+                    </p>
+                    <h2 id="payroll-acta-title" class="payroll-acta-preparacion__title">{{ acta.titulo }}</h2>
+                    <p class="payroll-acta-preparacion__lead">{{ acta.descripcion }}</p>
+                    @if (acta.notaFuentesParametros) {
+                      <p class="payroll-acta-preparacion__nota-fuentes">{{ acta.notaFuentesParametros }}</p>
+                    }
+                    @if (acta.previewLinea) {
+                      <p class="payroll-acta-preparacion__preview">{{ acta.previewLinea }}</p>
+                    }
+                  </header>
+
+                  @if (acta.resumenVerificacion; as resumen) {
+                    <div class="payroll-acta-preparacion__resumen" aria-label="Resumen de la verificación">
+                      <div class="payroll-acta-preparacion__metrica">
+                        <span class="payroll-acta-preparacion__metrica-k">Críticos</span>
+                        <strong class="payroll-acta-preparacion__metrica-v">{{ resumen.criticos }}</strong>
+                      </div>
+                      <div class="payroll-acta-preparacion__metrica">
+                        <span class="payroll-acta-preparacion__metrica-k">Advertencias</span>
+                        <strong class="payroll-acta-preparacion__metrica-v">{{ resumen.advertencias }}</strong>
+                      </div>
+                      <div class="payroll-acta-preparacion__metrica payroll-acta-preparacion__metrica--destacada">
+                        <span class="payroll-acta-preparacion__metrica-k">Fichas por corregir</span>
+                        <strong class="payroll-acta-preparacion__metrica-v">{{ resumen.trabajadoresPendientes }}</strong>
+                      </div>
                     </div>
-                    <div class="payroll-acta-preparacion__metrica">
-                      <span class="payroll-acta-preparacion__metrica-k">Advertencias</span>
-                      <strong class="payroll-acta-preparacion__metrica-v">{{ resumen.advertencias }}</strong>
-                    </div>
-                    <div class="payroll-acta-preparacion__metrica payroll-acta-preparacion__metrica--destacada">
-                      <span class="payroll-acta-preparacion__metrica-k">Fichas por corregir</span>
-                      <strong class="payroll-acta-preparacion__metrica-v">{{ resumen.trabajadoresPendientes }}</strong>
-                    </div>
-                  </div>
-                }
-                @if (acta.pendientes.length) {
-                  <div
-                    class="payroll-acta-preparacion__pendientes"
-                    [class.payroll-acta-preparacion__pendientes--bloqueo]="acta.estadoResultado === 'bloqueado'"
-                    role="list"
-                    aria-label="Qué corregir antes de generar"
-                  >
-                    <p class="payroll-acta-preparacion__pendientes-k">Qué corregir</p>
-                    <ul class="payroll-acta-preparacion__pendientes-list">
-                      @for (pendiente of acta.pendientes; track pendiente.titulo + pendiente.descripcion) {
-                        <li
-                          class="payroll-acta-preparacion__pendiente"
-                          [class.payroll-acta-preparacion__pendiente--bloqueo]="pendiente.severidad === 'bloqueo'"
-                          role="listitem"
-                        >
-                          <div class="payroll-acta-preparacion__pendiente-main">
-                            <span class="payroll-acta-preparacion__pendiente-marker" aria-hidden="true"></span>
+                  }
+
+                  @if (acta.pendientes.length) {
+                    <section
+                      class="payroll-acta-preparacion__pendientes"
+                      [class.payroll-acta-preparacion__pendientes--bloqueo]="acta.estadoResultado === 'bloqueado'"
+                      aria-label="Qué corregir antes de generar"
+                    >
+                      <p class="payroll-acta-preparacion__pendientes-k">Qué corregir</p>
+                      <ul class="payroll-acta-preparacion__pendientes-list" role="list">
+                        @for (pendiente of acta.pendientes; track pendiente.titulo + pendiente.descripcion) {
+                          <li
+                            class="payroll-acta-preparacion__pendiente"
+                            [class.payroll-acta-preparacion__pendiente--bloqueo]="pendiente.severidad === 'bloqueo'"
+                            role="listitem"
+                          >
                             <div class="payroll-acta-preparacion__pendiente-copy">
                               <strong class="payroll-acta-preparacion__pendiente-titulo">{{ pendiente.titulo }}</strong>
-                              <p class="payroll-acta-preparacion__pendiente-detalle">{{ pendiente.descripcion }}</p>
+                              @if (pendiente.descripcion) {
+                                <p class="payroll-acta-preparacion__pendiente-detalle">{{ pendiente.descripcion }}</p>
+                              }
                             </div>
-                          </div>
-                          @if (pendiente.accionLabel && (pendiente.destino || pendiente.idPersona != null)) {
-                            <button
-                              type="button"
-                              class="payroll-acta-preparacion__pendiente-action"
-                              (click)="f.ejecutarPendienteActa(pendiente)"
-                            >
-                              {{ pendiente.accionLabel }}
-                            </button>
-                          }
-                        </li>
-                      }
-                    </ul>
-                  </div>
-                }
-                @if (acta.contextoPeriodo; as ctx) {
-                  <dl class="payroll-acta-preparacion__contexto" aria-label="Contexto del período">
-                    <div>
-                      <dt>Período</dt>
-                      <dd>{{ ctx.periodoEtiqueta }}</dd>
-                    </div>
-                    <div>
-                      <dt>Trabajadores aptos</dt>
-                      <dd>{{ ctx.trabajadoresAptos }}</dd>
-                    </div>
-                    <div>
-                      <dt>Movimientos del mes</dt>
-                      <dd>{{ ctx.movimientosLabel }}</dd>
-                    </div>
-                    <div>
-                      <dt>Recurrentes aplicables</dt>
-                      <dd>{{ ctx.recurrentesLabel }}</dd>
-                    </div>
-                  </dl>
-                }
-                @if (acta.mensajeEstado) {
-                  <p class="payroll-acta-preparacion__mensaje">{{ acta.mensajeEstado }}</p>
-                }
-                @if (acta.alertasEtiqueta) {
-                  <button
-                    type="button"
-                    class="payroll-acta-preparacion__alertas"
-                    [class.payroll-acta-preparacion__alertas--bloqueo]="acta.alertasTotal > 0 && f.expedienteCabeceraAlertas().bloqueos > 0"
-                    [attr.aria-label]="acta.alertasEtiqueta"
-                    (click)="f.abrirModalAlertasExpediente()"
-                  >
-                    <lucide-icon
-                      [name]="f.expedienteCabeceraAlertas().bloqueos > 0 ? 'alert-circle' : 'circle-alert'"
-                      aria-hidden="true"
-                    />
-                    <span>{{ acta.alertasEtiqueta }}</span>
-                  </button>
-                }
-                <div class="payroll-acta-preparacion__actions">
-                  <button
-                    type="button"
-                    class="payroll-modal-primary payroll-acta-preparacion__cta"
-                    [disabled]="acta.ctaDisabled"
-                    [attr.aria-busy]="acta.ctaLoading"
-                    (click)="f.ejecutarPreparacionPrincipal()"
-                  >
-                    {{ acta.ctaLabel }}
-                  </button>
-                  @if (acta.accionSecundaria) {
+                            @if (pendiente.idPersona != null && pendiente.accionLabel) {
+                              <button
+                                type="button"
+                                class="payroll-acta-preparacion__pendiente-action"
+                                (click)="f.ejecutarPendienteActa(pendiente)"
+                              >
+                                {{ pendiente.accionLabel }}
+                              </button>
+                            } @else if (pendiente.destino && pendiente.destino !== 'parametros_app' && pendiente.accionLabel) {
+                              <button
+                                type="button"
+                                class="payroll-acta-preparacion__pendiente-action"
+                                (click)="f.ejecutarPendienteActa(pendiente)"
+                              >
+                                {{ pendiente.accionLabel }}
+                              </button>
+                            }
+                          </li>
+                        }
+                      </ul>
+                    </section>
+                  }
+
+                  @if (acta.contextoPeriodo; as ctx) {
+                    <dl class="payroll-acta-preparacion__contexto" aria-label="Contexto del período">
+                      <div>
+                        <dt>Período</dt>
+                        <dd>{{ ctx.periodoEtiqueta }}</dd>
+                      </div>
+                      <div>
+                        <dt>Trabajadores aptos</dt>
+                        <dd>{{ ctx.trabajadoresAptos }}</dd>
+                      </div>
+                      <div>
+                        <dt>Movimientos del mes</dt>
+                        <dd>{{ ctx.movimientosLabel }}</dd>
+                      </div>
+                      <div>
+                        <dt>Recurrentes aplicables</dt>
+                        <dd>{{ ctx.recurrentesLabel }}</dd>
+                      </div>
+                    </dl>
+                  }
+
+                  @if (acta.mensajeEstado) {
+                    <p class="payroll-acta-preparacion__mensaje">{{ acta.mensajeEstado }}</p>
+                  }
+                  @if (acta.alertasEtiqueta) {
                     <button
                       type="button"
-                      class="payroll-modal-secondary payroll-acta-preparacion__cta-secondary"
-                      [disabled]="acta.ctaLoading"
-                      (click)="f.ejecutarAccionSecundariaActa()"
+                      class="payroll-acta-preparacion__alertas"
+                      [class.payroll-acta-preparacion__alertas--bloqueo]="acta.alertasTotal > 0 && f.expedienteCabeceraAlertas().bloqueos > 0"
+                      [attr.aria-label]="acta.alertasEtiqueta"
+                      (click)="f.abrirModalAlertasExpediente()"
                     >
-                      {{ acta.accionSecundaria.label }}
+                      <lucide-icon
+                        [name]="f.expedienteCabeceraAlertas().bloqueos > 0 ? 'alert-circle' : 'circle-alert'"
+                        aria-hidden="true"
+                      />
+                      <span>{{ acta.alertasEtiqueta }}</span>
                     </button>
                   }
-                  @if (acta.ctaDisabledReason) {
-                    <p class="payroll-acta-preparacion__note">{{ acta.ctaDisabledReason }}</p>
-                  }
+
+                  <div class="payroll-acta-preparacion__actions">
+                    <div class="payroll-acta-preparacion__actions-copy">
+                      @if (acta.ctaDisabledReason) {
+                        <p class="payroll-acta-preparacion__note">{{ acta.ctaDisabledReason }}</p>
+                      }
+                    </div>
+                    <div class="payroll-acta-preparacion__actions-cta">
+                      @if (acta.accionSecundaria) {
+                        <button
+                          type="button"
+                          class="payroll-modal-secondary payroll-acta-preparacion__cta-secondary"
+                          [disabled]="acta.ctaLoading"
+                          (click)="f.ejecutarAccionSecundariaActa()"
+                        >
+                          {{ acta.accionSecundaria.label }}
+                        </button>
+                      }
+                      <button
+                        type="button"
+                        class="payroll-modal-primary payroll-acta-preparacion__cta"
+                        [disabled]="acta.ctaDisabled"
+                        [attr.aria-busy]="acta.ctaLoading"
+                        (click)="f.ejecutarPreparacionPrincipal()"
+                      >
+                        {{ acta.ctaLabel }}
+                      </button>
+                    </div>
+                  </div>
                 </div>
               </section>
             } @else {

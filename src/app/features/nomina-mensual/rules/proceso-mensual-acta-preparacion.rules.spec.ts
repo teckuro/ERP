@@ -1,13 +1,18 @@
 import { describe, expect, it } from 'vitest';
 
+import type { ProcesoMensualGrupoParametro } from '../models/proceso-mensual.model';
 import {
   buildActaPreparacionCentral,
   buildPendientesActaPreparacion,
   ctaLabelPreparacionNominaEnCurso,
   informacionDebeAbrirModalEnPreparacion,
+  LABEL_ABRIR_PARAMETROS,
+  mergeResumenVerificacionActa,
   mensajePreparacionNominaEnCurso,
+  NOTA_DOS_FUENTES_PARAMETROS,
   puedeEncadenarGeneracionTrasVerificacion,
   previewTrabajadoresPreparacion,
+  shellDebeOcultarCtaParametros,
 } from './proceso-mensual-acta-preparacion.rules';
 import type { InformacionPeriodoView } from '../containers/proceso-mensual-container/models/proceso-mensual-container.vm';
 
@@ -78,8 +83,34 @@ describe('proceso-mensual-acta-preparacion.rules', () => {
 
     expect(pendientes).toHaveLength(1);
     expect(pendientes[0].severidad).toBe('bloqueo');
+    expect(pendientes[0].titulo).toBe('Datos oficiales del período');
     expect(pendientes[0].accionLabel).toBe('Revisar parámetros');
     expect(pendientes[0].destino).toBe('parametros_app');
+  });
+
+  it('buildPendientesActaPreparacion humaniza Falta dato oficial sanna', () => {
+    const pendientes = buildPendientesActaPreparacion(
+      {
+        tone: 'warning',
+        titulo: 'Revisión del período antes de generar',
+        secciones: [{
+          titulo: 'Advertencias',
+          items: [],
+          detalles: [{
+            titulo: 'Parámetros del período por revisar',
+            descripcion: 'Parámetros del período pendientes: Falta dato oficial: sanna.',
+            accionLabel: 'Revisar parámetros',
+            ruta: '/parametros',
+          }],
+        }],
+      },
+      { textosDetalleParametros: ['Falta dato oficial: sanna.'] },
+    );
+
+    const sanna = pendientes.find((p) => p.titulo.includes('SANNA'));
+    expect(sanna?.descripcion).toContain('SANNA');
+    expect(sanna?.descripcion).not.toMatch(/\bsanna\b/);
+    expect(sanna?.descripcion).not.toMatch(/pendientes:/i);
   });
 
   it('buildActaPreparacionCentral oculta mensaje generico si hay pendientes detallados', () => {
@@ -134,7 +165,101 @@ describe('proceso-mensual-acta-preparacion.rules', () => {
     expect(vm.pendientes).toHaveLength(1);
     expect(vm.mensajeEstado).toBeNull();
     expect(vm.alertasEtiqueta).toBeNull();
-    expect(vm.ctaLabel).toBe('Corregir pendientes');
+    expect(vm.ctaLabel).toBe(LABEL_ABRIR_PARAMETROS);
+    expect(shellDebeOcultarCtaParametros(vm)).toBe(true);
+  });
+
+  it('buildPendientesActaPreparacion expande grupos y varios Falta dato oficial', () => {
+    const grupos: ProcesoMensualGrupoParametro[] = [
+      { id: 'oficial_mensual', clasificacion: 'FALTANTE', detalle: 'Por corregir en Datos oficiales del período.' },
+      { id: 'sis_fila_mensual', clasificacion: 'PARCIAL', detalle: 'Parcial en SIS del período.' },
+    ];
+    const pendientes = buildPendientesActaPreparacion(
+      {
+        tone: 'warning',
+        titulo: 'Revisión del período antes de generar',
+        secciones: [{
+          titulo: 'Críticos',
+          items: ['Parámetros del período pendientes: Falta dato oficial: sanna.'],
+        }],
+      },
+      {
+        parametrosGrupos: grupos,
+        textosDetalleParametros: [
+          'Parámetros del período pendientes: Falta dato oficial: sanna.',
+          'Falta dato oficial: uf.',
+          'Falta dato oficial: utm.',
+        ],
+      },
+    );
+
+    expect(pendientes.length).toBeGreaterThanOrEqual(3);
+    expect(pendientes.some((p) => p.titulo.includes('SANNA'))).toBe(true);
+    expect(pendientes.some((p) => p.titulo.includes('UF mensual'))).toBe(true);
+    expect(pendientes.some((p) => p.titulo.includes('SIS'))).toBe(true);
+  });
+
+  it('buildActaPreparacionCentral expone nota dos fuentes y resumen alineado', () => {
+    const vm = buildActaPreparacionCentral({
+      etapasRail: [{
+        clave: 'validar',
+        etiqueta: 'Verificar y generar nómina',
+        estadoCorto: 'En curso',
+        marca: 'actual',
+        activa: true,
+      }],
+      accionPrincipal: {
+        label: 'Verificar y generar nómina',
+        descripcion: 'Verificar',
+        tipo: 'local',
+        accionLocal: 'validarPeriodo',
+      },
+      tienePrevalidacion: true,
+      trabajadoresAptos: 1,
+      trabajadoresPorRevisar: 0,
+      trabajadoresPendientesRevisionCount: 0,
+      bloqueosCount: 1,
+      advertenciasCount: 0,
+      validacionCriticos: 1,
+      validacionAdvertencias: 0,
+      accionPeriodoEnCurso: false,
+      validando: false,
+      generandoPreNomina: false,
+      preparacionNominaUnificada: false,
+      frameTexto: 'Texto',
+      periodoEtiqueta: 'Mayo 2026',
+      movimientosAprobados: 0,
+      asignacionesAplicables: 0,
+      parametrosOperativos: false,
+      parametrosGrupos: [
+        { id: 'oficial_mensual', clasificacion: 'FALTANTE' },
+        { id: 'afc_catalogo', clasificacion: 'FALTANTE' },
+      ],
+      textosDetalleParametros: ['Falta dato oficial: uf.', 'Falta dato oficial: utm.'],
+      informacionPeriodo: {
+        tone: 'warning',
+        titulo: 'Revisión del período antes de generar',
+        resumenVerificacion: { criticos: 1, advertencias: 0, trabajadoresPendientes: 0 },
+        accionPrincipal: { label: 'Corregir pendientes', destino: 'parametros_app' },
+      },
+    });
+
+    expect(vm.notaFuentesParametros).toBe(NOTA_DOS_FUENTES_PARAMETROS);
+    expect(vm.resumenVerificacion?.criticos).toBeGreaterThanOrEqual(2);
+    expect(vm.ctaLabel).toBe(LABEL_ABRIR_PARAMETROS);
+  });
+
+  it('mergeResumenVerificacionActa toma el máximo entre base y pendientes', () => {
+    expect(
+      mergeResumenVerificacionActa(
+        { criticos: 1, advertencias: 0, trabajadoresPendientes: 0 },
+        [
+          { severidad: 'bloqueo', titulo: 'A', descripcion: '', accionLabel: null, destino: 'parametros_app' },
+          { severidad: 'bloqueo', titulo: 'B', descripcion: '', accionLabel: null, destino: 'parametros_app' },
+          { severidad: 'advertencia', titulo: 'C', descripcion: '', accionLabel: null, destino: null },
+        ],
+      ),
+    ).toEqual({ criticos: 2, advertencias: 1, trabajadoresPendientes: 0 });
   });
 
   it('buildActaPreparacionCentral con prevalidación expone resumen y contexto', () => {

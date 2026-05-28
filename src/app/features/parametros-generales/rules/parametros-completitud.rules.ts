@@ -348,6 +348,16 @@ function periodoRango(periodo: string): { inicio: string; fin: string } {
   return { inicio: `${periodo}-01`, fin: `${periodo}-${String(lastDay).padStart(2, '0')}` };
 }
 
+function valorOficialCampoValido(value: unknown): boolean {
+  if (!tieneValor(value)) {
+    return false;
+  }
+  if (typeof value === 'number' && Number.isFinite(value) && value <= 0) {
+    return false;
+  }
+  return true;
+}
+
 function contarCampos<T extends Partial<Record<keyof ParametroGeneral, unknown>>>(
   source: T | null,
   fields: Array<keyof ParametroGeneral>,
@@ -356,8 +366,11 @@ function contarCampos<T extends Partial<Record<keyof ParametroGeneral, unknown>>
 ): number {
   let out = 0;
   for (const field of fields) {
-    if (tieneValor(source?.[field])) {
+    const valor = source?.[field];
+    if (valorOficialCampoValido(valor)) {
       out += 1;
+    } else if (typeof valor === 'number' && Number.isFinite(valor) && valor <= 0) {
+      pendientes.push(`Dato oficial en cero: ${String(field)}.`);
     } else {
       pendientes.push(`${prefix}: ${String(field)}.`);
     }

@@ -5,81 +5,42 @@ import {
   DataGridComponent,
 } from '../../../../shared/components/ui/data-grid';
 import { TablaImpuestoUnicoParametro, TramoImpuestoParametro } from '../../models/parametro-general.model';
-import { ParametrosInnerTabBarComponent } from '../parametros-inner-tab-bar.component';
 
-export type ImpuestoSubId = 'tramos' | 'tabla';
+/** @deprecated Solo se usa la vista tabla SII; se mantiene el tipo por compatibilidad interna. */
+export type ImpuestoSubId = 'tabla';
 
 @Component({
   selector: 'app-parametros-tramos-renta-tab',
   standalone: true,
-  imports: [CommonModule, DataGridComponent, ParametrosInnerTabBarComponent],
+  imports: [CommonModule, DataGridComponent],
   template: `
     <section class="tab-panel parametros-tab-panel">
-      <div class="param-subhead">
-        <div class="param-subhead__tabs">
-          <app-parametros-inner-tab-bar
-            ariaLabel="Secciones impuesto unico"
-            mobileLabel="Vista"
-            [tabs]="impuestoInnerTabs"
-            [activeId]="activeSub"
-            (activeIdChange)="emitSub($event)"
-          />
-        </div>
-      </div>
-
-      <div class="param-tab-subview">
-        @if (activeSub === 'tramos') {
-          <section class="catalog-section parametros-grid-shell" aria-label="Tramos impuesto">
-            <app-data-grid
-              title="Tramos impuesto por periodo"
-              [rows]="tramosRows"
-              [columns]="tramosColumns"
-              [loading]="loading"
-              [filtersEnabled]="false"
-              [showExportAction]="true"
-              [maxItems]="10"
-              gridHeight="min(520px, 100%)"
-              [persistenceKey]="gridPersistenceKeyTramos"
-              [emptyTitle]="'No hay tramos de impuesto unico para ' + periodoLabel + '.'"
-              emptyDescription="La tabla oficial del periodo aun no esta integrada."
-              (refresh)="refresh?.()"
-            ></app-data-grid>
-          </section>
-        }
-
-        @if (activeSub === 'tabla') {
-          <section class="catalog-section parametros-grid-shell" aria-label="Tabla impuesto unico">
-            <app-data-grid
-              title="Tabla impuesto unico"
-              [rows]="tablaRows"
-              [columns]="tablaColumns"
-              [loading]="loading"
-              [filtersEnabled]="false"
-              [showExportAction]="true"
-              [maxItems]="10"
-              gridHeight="min(520px, 100%)"
-              [persistenceKey]="gridPersistenceKeyTabla"
-              [emptyTitle]="'No hay tabla de impuesto unico para ' + periodoLabel + '.'"
-              emptyDescription="La tabla oficial del periodo aun no esta integrada."
-              (refresh)="refresh?.()"
-            ></app-data-grid>
-          </section>
-        }
-      </div>
+      <section class="catalog-section parametros-grid-shell" aria-label="Tabla impuesto único SII">
+        <app-data-grid
+          title="Tabla impuesto único (SII)"
+          [rows]="tablaRows"
+          [columns]="tablaColumns"
+          [loading]="loading"
+          [filtersEnabled]="false"
+          [showExportAction]="true"
+          [maxItems]="12"
+          gridHeight="min(520px, 100%)"
+          [persistenceKey]="gridPersistenceKeyTabla"
+          [emptyTitle]="'No hay tabla de impuesto único para ' + periodoLabel + '.'"
+          emptyDescription="Ejecute la carga mensual v6.11 (fuente SII) para este período."
+          (refresh)="refresh?.()"
+        ></app-data-grid>
+      </section>
     </section>
   `,
 })
 export class ParametrosTramosRentaTabComponent {
-  readonly impuestoInnerTabs = [
-    { id: 'tramos' as const, label: 'Tramos' },
-    { id: 'tabla' as const, label: 'Tabla' },
-  ];
-
   @Input({ required: true }) activeSub!: ImpuestoSubId;
   @Output() activeSubChange = new EventEmitter<ImpuestoSubId>();
 
   @Input({ required: true }) tablaRows!: TablaImpuestoUnicoParametro[];
   @Input({ required: true }) tablaColumns!: DataGridColumn<TablaImpuestoUnicoParametro>[];
+  /** @deprecated Ya no se muestra grilla separada; se conserva el input por contrato del contenedor. */
   @Input({ required: true }) tramosRows!: TramoImpuestoParametro[];
   @Input({ required: true }) tramosColumns!: DataGridColumn<TramoImpuestoParametro>[];
 
@@ -91,10 +52,4 @@ export class ParametrosTramosRentaTabComponent {
   @Input() referenciaTablaPeriodoLabel: string | null = null;
   @Input() verReferenciaPeriodoAnterior: (() => void) | null = null;
   @Input() refresh: (() => void) | null = null;
-
-  emitSub(id: string): void {
-    if (id === 'tramos' || id === 'tabla') {
-      this.activeSubChange.emit(id);
-    }
-  }
 }

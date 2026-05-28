@@ -134,8 +134,8 @@ CREATE TABLE tramo_impuesto (
     periodo VARCHAR(7) NOT NULL,
     desde NUMERIC(12,0),
     hasta NUMERIC(12,0),
-    factor NUMERIC(5,2),
-    rebaja NUMERIC(12,0),
+    factor NUMERIC(8,6),
+    rebaja NUMERIC(18,2),
     CONSTRAINT chk_tramo_impuesto_periodo CHECK (periodo ~ '^[0-9]{4}-(0[1-9]|1[0-2])$'),
     CONSTRAINT chk_tramo_impuesto_rango CHECK (hasta IS NULL OR desde IS NULL OR hasta >= desde)
 );

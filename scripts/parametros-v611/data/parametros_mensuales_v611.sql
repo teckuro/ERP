@@ -180,9 +180,17 @@ BEGIN
         RAISE NOTICE 'tramo_carga: existen diferencias contra el archivo generado; se reemplaza la data del periodo.';
     END IF;
 END $$;
-DELETE FROM tramo_carga WHERE periodo = '2026-04';
+UPDATE tramo_carga tc
+SET desde = e.desde, hasta = e.hasta, valor = e.valor
+FROM _expected_tramo_carga e
+WHERE tc.periodo = '2026-04' AND tc.tramo = e.tramo;
 INSERT INTO tramo_carga (periodo, desde, hasta, valor, tramo)
-SELECT periodo, desde, hasta, valor, tramo FROM _expected_tramo_carga;
+SELECT e.periodo, e.desde, e.hasta, e.valor, e.tramo
+FROM _expected_tramo_carga e
+WHERE NOT EXISTS (
+    SELECT 1 FROM tramo_carga tc
+    WHERE tc.periodo = '2026-04' AND tc.tramo = e.tramo
+);
 
 CREATE TEMP TABLE _expected_tabla_impuesto_unico (tramo INTEGER, desde NUMERIC, hasta NUMERIC, factor NUMERIC, rebaja NUMERIC, vigencia_inicio DATE, vigencia_fin DATE) ON COMMIT DROP;
 INSERT INTO _expected_tabla_impuesto_unico (tramo, desde, hasta, factor, rebaja, vigencia_inicio, vigencia_fin) VALUES

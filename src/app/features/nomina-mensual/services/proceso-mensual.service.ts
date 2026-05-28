@@ -103,7 +103,7 @@ export class ProcesoMensualService {
     }
 
     const settled = await Promise.allSettled([
-      this.parametrosGenerales.obtenerUltimoHastaPeriodo(p, { enriquecer: false }),
+      this.parametrosGenerales.obtenerUltimoHastaPeriodo(p),
       this.parametrosGenerales.obtenerPeriodoRemuneracion(p),
       this.parametrosGenerales.obtenerClienteConfig(p),
       this.empleados.listar(),
@@ -126,7 +126,7 @@ export class ProcesoMensualService {
     }
 
     const settled = await Promise.allSettled([
-      this.parametrosGenerales.obtenerUltimoHastaPeriodo(p, { enriquecer: false }),
+      this.parametrosGenerales.obtenerUltimoHastaPeriodo(p),
       this.parametrosGenerales.obtenerPeriodoRemuneracion(p),
       this.parametrosGenerales.obtenerClienteConfig(p),
       this.parametrosGenerales.listarCatalogos(p),
@@ -751,9 +751,16 @@ export class ProcesoMensualService {
     if (input.visual === 'pendiente_reconciliacion') {
       return 'Parámetros del período pendientes: hay diferencias entre valores oficiales y configuración cliente por reconciliar.';
     }
-    const prioridad = [...input.completitud.errores, ...input.completitud.pendientes, ...input.completitud.advertencias]
-      .find((texto) => texto.trim().length > 0);
-    return prioridad ? `Parámetros del período pendientes: ${prioridad}` : 'Parámetros del período pendientes.';
+    const pendientesTexto = [
+      ...input.completitud.errores,
+      ...input.completitud.pendientes,
+      ...input.completitud.advertencias,
+    ]
+      .map((texto) => texto.trim())
+      .filter((texto) => texto.length > 0);
+    return pendientesTexto.length
+      ? `Parámetros del período pendientes: ${pendientesTexto.join(' ')}`
+      : 'Parámetros del período pendientes.';
   }
 
   private catalogosParametrosVacios(): ParametrosGeneralesCatalogos {

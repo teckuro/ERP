@@ -99,6 +99,7 @@ import {
   informacionDebeAbrirModalEnPreparacion,
   mensajePreparacionNominaEnCurso,
   puedeEncadenarGeneracionTrasVerificacion,
+  shellDebeOcultarCtaParametros,
   type ActaPreparacionCentralVm,
   type ActaPreparacionPendienteVm,
 } from '../../../rules/proceso-mensual-acta-preparacion.rules';
@@ -351,6 +352,13 @@ export class ProcesoMensualPresentacionFacade {
     return current.kind === 'informacion' ? current.view : null;
   });
 
+  /** Banner inline cuando hay error de ejecución y el modal de información no está abierto. */
+  readonly errorBannerPeriodo = computed(() => {
+    if (!this.store.errorEjecucion()) return null;
+    if (this.overlay().kind === 'informacion') return null;
+    return this.buildInformacionPeriodoPreview();
+  });
+
   readonly detalleOperativoAbierto = computed(() => this.overlay().kind === 'revision');
 
   readonly detalleOperativoTabActivo = computed(() => {
@@ -481,6 +489,9 @@ export class ProcesoMensualPresentacionFacade {
       destroyRef,
       () => {
         const frame = this.nominaFrame();
+        const actaVisible = this.mostrarActaPreparacionCentral();
+        const acta = actaVisible ? this.actaPreparacionCentral() : null;
+        const ocultarCtaShell = acta != null && shellDebeOcultarCtaParametros(acta);
         return {
           breadcrumbs: [
             { label: 'Remuneraciones', path: '/remuneraciones/proceso-mensual' },
@@ -490,8 +501,9 @@ export class ProcesoMensualPresentacionFacade {
             label: frame.chip,
             tone: toneDesdeNominaFrame(frame.frame),
           },
-          primaryAction:
-            frame.ctaTipo === 'local' && frame.ctaAccion
+          primaryAction: ocultarCtaShell
+            ? undefined
+            : frame.ctaTipo === 'local' && frame.ctaAccion
               ? {
                   label: frame.ctaLabel,
                   disabled: frame.ctaDisabled,
@@ -1208,7 +1220,8 @@ export class ProcesoMensualPresentacionFacade {
       parametrosListos:
         resumenParametros?.parametrosOperativos
         ?? this.store.consultaParametrosPeriodo()?.parametrosOperativos
-        ?? (snapshot ? true : null),
+        ?? resumen?.parametrosOperativos
+        ?? null,
       movimientosAprobados,
       movimientosPendientes,
       asignacionesAplicables: resumen?.recurrentesAplicablesAlPeriodo ?? null,
@@ -1527,6 +1540,11 @@ export class ProcesoMensualPresentacionFacade {
     const advertenciasValidacion = asArray(validacion.advertencias);
     const pendientes = this.trabajadoresPendientesRevision();
     const ctx = this.contextoOperativoPeriodo();
+    const informacionPeriodo = this.buildInformacionPeriodoPreview();
+    const parametrosOperativos =
+      this.store.resultado()?.resumen.parametrosOperativos
+      ?? this.store.consultaParametrosPeriodo()?.parametrosOperativos
+      ?? false;
     return buildActaPreparacionCentral({
       etapasRail: this.bitacoraRailEtapas(),
       accionPrincipal: estado.accionPrincipal,
@@ -1546,9 +1564,37 @@ export class ProcesoMensualPresentacionFacade {
       periodoEtiqueta: this.periodoActivo.etiqueta(),
       movimientosAprobados: dash.movimientosAprobados,
       asignacionesAplicables: dash.asignacionesAplicables,
-      informacionPeriodo: this.buildInformacionPeriodoPreview(),
+      informacionPeriodo,
+      parametrosGrupos: this.parametrosGruposEnVivo(),
+      textosDetalleParametros: this.textosDetalleParametrosDesde(informacionPeriodo),
+      parametrosOperativos,
     });
   });
+
+  private textosDetalleParametrosDesde(_info: InformacionPeriodoView | null): string[] {
+    const out: string[] = [];
+    const prevalidacion = this.store.resultado();
+    const pushTextoParametros = (texto: string | undefined) => {
+      const limpio = texto?.trim();
+      if (limpio) {
+        out.push(limpio);
+      }
+    };
+    for (const bloqueo of prevalidacion?.bloqueos ?? []) {
+      if (bloqueo.area === 'PARAMETROS') {
+        pushTextoParametros(bloqueo.texto);
+      }
+    }
+    for (const advertencia of prevalidacion?.advertencias ?? []) {
+      if (advertencia.area === 'PARAMETROS') {
+        pushTextoParametros(advertencia.texto);
+      }
+    }
+    for (const grupo of this.parametrosGruposEnVivo()) {
+      pushTextoParametros(grupo.detalle);
+    }
+    return out;
+  }
 
   readonly alertasPeriodoResumen = computed<AlertasPeriodoResumenVm>(() => {
     const estado = this.estadoOperativo();
@@ -2256,6 +2302,25 @@ export class ProcesoMensualPresentacionFacade {
       }
       this.overlaysPort.cerrarInformacionSuprimida();
     }
+  }
+
+  confirmarErrorBannerPeriodo(): void {
+    const view = this.errorBannerPeriodo();
+    if (!view?.accionPrincipal) return;
+    const destino = view.accionPrincipal.destino;
+    if (destino === 'cerrar') {
+      this.descartarErrorEjecucion();
+      return;
+    }
+    this.ejecutarDestinoInformacionPeriodo(destino, view.reintentarAccion);
+  }
+
+  cerrarErrorBannerPeriodo(): void {
+    this.descartarErrorEjecucion();
+  }
+
+  descartarErrorEjecucion(): void {
+    this.store.errorEjecucion.set(null);
   }
 
   ejecutarAccionSecundariaInformacionPeriodo(): void {

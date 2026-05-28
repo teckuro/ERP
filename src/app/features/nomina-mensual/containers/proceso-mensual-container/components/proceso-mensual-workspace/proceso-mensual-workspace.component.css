@@ -22,10 +22,14 @@
   height: 100%;
 }
 
-.payroll-workspace-sidebar,
 .payroll-tab-panel {
   min-height: 0;
   overflow: hidden auto;
+}
+
+.payroll-workspace-sidebar {
+  min-height: 0;
+  overflow: hidden;
 }
 
 .payroll-view-panel,
@@ -83,9 +87,7 @@
   flex-direction: column;
   align-items: stretch;
   align-self: start;
-  gap: 8px;
   width: 100%;
-  max-width: 38rem;
   min-height: 0;
   margin: 0;
   padding: 0;
@@ -95,20 +97,19 @@
   text-align: left;
 }
 
-.payroll-acta-preparacion--listo {
+.payroll-acta-preparacion--listo,
+.payroll-acta-preparacion--bloqueado,
+.payroll-acta-preparacion--advertencias {
   background: transparent;
 }
 
-.payroll-acta-preparacion--bloqueado {
-  padding: 8px 10px;
-  border-radius: var(--payroll-radius-surface, 0);
-  background: color-mix(in srgb, var(--erp-danger-soft, #fff6f6) 55%, transparent);
-}
-
-.payroll-acta-preparacion--advertencias {
-  padding: 8px 10px;
-  border-radius: var(--payroll-radius-surface, 0);
-  background: color-mix(in srgb, var(--erp-review-soft) 55%, transparent);
+.payroll-acta-preparacion__shell {
+  display: grid;
+  gap: 10px;
+  width: 100%;
+  max-width: min(42rem, 100%);
+  padding: 10px 12px;
+  box-sizing: border-box;
 }
 
 .payroll-acta-preparacion__header {
@@ -141,9 +142,20 @@
   line-height: 1.45;
 }
 
+.payroll-acta-preparacion__nota-fuentes {
+  margin: 0.375rem 0 0;
+  padding: 0.5rem 0.625rem;
+  border: 1px solid var(--erp-border);
+  border-radius: 6px;
+  background: var(--erp-surface-subtle, #f8f9fa);
+  color: var(--erp-text);
+  font-size: 0.75rem;
+  line-height: 1.45;
+}
+
 .payroll-acta-preparacion__preview {
   margin: 0;
-  padding: 4px 0;
+  padding: 0;
   border: 0;
   border-radius: 0;
   background: transparent;
@@ -156,13 +168,13 @@
 .payroll-acta-preparacion__resumen {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 6px;
+  gap: 8px;
 }
 
 .payroll-acta-preparacion__metrica {
   display: grid;
   gap: 2px;
-  padding: 5px 6px;
+  padding: 6px 8px;
   border: 0;
   border-radius: var(--payroll-radius-surface, 0);
   background: var(--erp-surface-soft, #fafaf7);
@@ -189,9 +201,9 @@
 .payroll-acta-preparacion__contexto {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 4px 10px;
+  gap: 6px 12px;
   margin: 0;
-  padding: 6px 0 0;
+  padding: 8px 0 0;
   border: 0;
   border-top: 1px solid color-mix(in srgb, var(--erp-border) 72%, transparent);
   border-radius: 0;
@@ -228,27 +240,40 @@
 .payroll-acta-preparacion__pendientes {
   display: grid;
   gap: 6px;
-  padding: 8px;
-  border: 1px solid color-mix(in srgb, var(--erp-border) 82%, transparent);
-  border-radius: var(--payroll-radius-surface, 3px);
-  background: color-mix(in srgb, var(--erp-review-soft) 48%, var(--erp-surface));
+  margin: 0;
+  padding: 8px 0 0;
+  border: 0;
+  border-top: 1px solid color-mix(in srgb, var(--erp-border) 72%, transparent);
+  border-radius: 0;
+  background: transparent;
 }
 
-.payroll-acta-preparacion__pendientes--bloqueo {
-  background: color-mix(in srgb, var(--erp-danger-soft, #fff6f6) 62%, var(--erp-surface));
-  border-color: color-mix(in srgb, var(--erp-danger, #b42318) 18%, var(--erp-border));
+.payroll-acta-preparacion--advertencias .payroll-acta-preparacion__pendientes {
+  padding: 8px 10px;
+  border: 1px solid color-mix(in srgb, var(--erp-review-border, #dfc383) 45%, var(--erp-border));
+  border-radius: var(--payroll-radius-surface, 0);
+  background: color-mix(in srgb, var(--erp-review-soft) 42%, var(--erp-surface));
+}
+
+.payroll-acta-preparacion--bloqueado .payroll-acta-preparacion__pendientes {
+  padding: 8px 10px;
+  border: 1px solid color-mix(in srgb, var(--erp-danger-border, #e2b8b3) 45%, var(--erp-border));
+  border-radius: var(--payroll-radius-surface, 0);
+  background: color-mix(in srgb, var(--erp-danger-soft, #fff6f6) 42%, var(--erp-surface));
 }
 
 .payroll-acta-preparacion__pendientes-k {
   margin: 0;
-  color: var(--erp-ink);
-  font-size: 0.75rem;
-  font-weight: 650;
+  color: var(--erp-muted);
+  font-size: 0.6875rem;
+  font-weight: 750;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
 }
 
 .payroll-acta-preparacion__pendientes-list {
   display: grid;
-  gap: 6px;
+  gap: 0;
   margin: 0;
   padding: 0;
   list-style: none;
@@ -256,33 +281,17 @@
 
 .payroll-acta-preparacion__pendiente {
   display: grid;
-  gap: 6px;
-  padding: 6px 0;
-  border-top: 1px solid color-mix(in srgb, var(--erp-border) 68%, transparent);
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px 10px;
+  align-items: start;
+  min-height: 40px;
+  padding: 7px 0;
+  border-top: 1px solid color-mix(in srgb, var(--erp-border) 55%, transparent);
 }
 
 .payroll-acta-preparacion__pendiente:first-child {
-  padding-top: 0;
+  padding-top: 4px;
   border-top: 0;
-}
-
-.payroll-acta-preparacion__pendiente-main {
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
-  gap: 8px;
-  align-items: start;
-}
-
-.payroll-acta-preparacion__pendiente-marker {
-  width: 7px;
-  height: 7px;
-  margin-top: 0.35rem;
-  border-radius: 999px;
-  background: var(--erp-review, #946200);
-}
-
-.payroll-acta-preparacion__pendiente--bloqueo .payroll-acta-preparacion__pendiente-marker {
-  background: var(--erp-danger, #b42318);
 }
 
 .payroll-acta-preparacion__pendiente-copy {
@@ -306,9 +315,10 @@
 }
 
 .payroll-acta-preparacion__pendiente-action {
-  justify-self: start;
+  justify-self: end;
+  align-self: center;
   min-height: 28px;
-  margin-left: 15px;
+  margin: 0;
   border: 1px solid color-mix(in srgb, var(--erp-border) 88%, transparent);
   border-radius: var(--payroll-radius-control, 3px);
   background: var(--erp-surface);
@@ -361,11 +371,24 @@
 }
 
 .payroll-acta-preparacion__actions {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px 12px;
+  align-items: end;
+  margin: 0;
+  padding-top: 4px;
+  border-top: 1px solid color-mix(in srgb, var(--erp-border) 72%, transparent);
+}
+
+.payroll-acta-preparacion__actions-copy {
+  min-width: 0;
+}
+
+.payroll-acta-preparacion__actions-cta {
   display: flex;
   flex-wrap: wrap;
-  align-items: center;
+  justify-content: flex-end;
   gap: 8px;
-  margin-top: 2px;
 }
 
 .payroll-acta-preparacion__cta {
@@ -413,22 +436,36 @@
   box-sizing: border-box;
 }
 
-.payroll-tab-panel--acta
-  .payroll-acta-preparacion:not(.payroll-acta-preparacion--bloqueado):not(.payroll-acta-preparacion--advertencias)
-  > * {
-  padding-inline: var(--payroll-space-inline, 10px);
-}
+@media (max-width: 640px) {
+  .payroll-acta-preparacion__resumen {
+    grid-template-columns: 1fr;
+  }
 
-.payroll-tab-panel--acta
-  .payroll-acta-preparacion:not(.payroll-acta-preparacion--bloqueado):not(.payroll-acta-preparacion--advertencias)
-  > :first-child {
-  padding-top: var(--payroll-space-block, 8px);
-}
+  .payroll-acta-preparacion__contexto {
+    grid-template-columns: 1fr;
+  }
 
-.payroll-tab-panel--acta
-  .payroll-acta-preparacion:not(.payroll-acta-preparacion--bloqueado):not(.payroll-acta-preparacion--advertencias)
-  > :last-child {
-  padding-bottom: var(--payroll-space-block, 8px);
+  .payroll-acta-preparacion__pendiente {
+    grid-template-columns: 1fr;
+  }
+
+  .payroll-acta-preparacion__pendiente-action {
+    justify-self: stretch;
+    width: 100%;
+  }
+
+  .payroll-acta-preparacion__actions {
+    grid-template-columns: 1fr;
+  }
+
+  .payroll-acta-preparacion__actions-cta {
+    justify-content: stretch;
+  }
+
+  .payroll-acta-preparacion__actions-cta .payroll-acta-preparacion__cta,
+  .payroll-acta-preparacion__actions-cta .payroll-acta-preparacion__cta-secondary {
+    width: 100%;
+  }
 }
 
 .payroll-tab-panel:not(.payroll-tab-panel--detalle) > app-data-grid {

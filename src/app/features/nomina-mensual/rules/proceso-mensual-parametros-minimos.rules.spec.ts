@@ -99,6 +99,19 @@ describe('proceso-mensual-parametros-minimos.rules', () => {
     expect(grupos.find((g) => g.id === 'mensuales_uf_utm_sueldo')?.clasificacion).toBe('PARCIAL');
   });
 
+  it('fila exacta con uf en cero -> mensuales PARCIAL y detalle uf', () => {
+    const grupos = revisarGruposParametrosMinimos({
+      periodo: '2026-05',
+      fila: { ...filaOk, uf: 0 },
+      lecturaFila: 'ok',
+      catalogos: catalogosMin,
+      lecturaCatalogos: 'ok',
+    });
+    const mensuales = grupos.find((g) => g.id === 'mensuales_uf_utm_sueldo');
+    expect(mensuales?.clasificacion).toBe('PARCIAL');
+    expect(mensuales?.detalle).toContain('Dato oficial en cero: uf');
+  });
+
   it('sin fila -> mensuales y topes FALTANTE', () => {
     const grupos = revisarGruposParametrosMinimos({
       periodo: '2026-05',

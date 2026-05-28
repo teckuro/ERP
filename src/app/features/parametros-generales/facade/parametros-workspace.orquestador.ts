@@ -400,9 +400,7 @@ export class ParametrosWorkspaceOrquestador {
             ? 'CCAF'
             : 'Mutuales'
           : this.activeTab() === 'impuestoUnico'
-            ? this.impuestoSubTab() === 'tramos'
-              ? 'Tramos de impuesto'
-              : 'Tabla de impuesto único'
+            ? 'Tabla impuesto único (SII)'
         : tituloRegistroTabActivo(this.activeTab()),
   );
 
@@ -432,12 +430,8 @@ export class ParametrosWorkspaceOrquestador {
     }
 
     if (this.activeTab() === 'impuestoUnico') {
-      const tramosCount = this.tramosImpuestoPorPeriodo().length;
       const tablaCount = this.tablaImpuestoPorPeriodo().length;
-      if (this.impuestoSubTab() === 'tramos') {
-        return `${tramosCount} ${tramosCount === 1 ? 'registro' : 'registros'}.`;
-      }
-      return `${tablaCount} ${tablaCount === 1 ? 'registro' : 'registros'}.`;
+      return `${tablaCount} ${tablaCount === 1 ? 'tramo' : 'tramos'} según tabla mensual SII.`;
     }
 
     return detalleRegistroTabActivo(this.activeTab(), {
@@ -448,7 +442,7 @@ export class ParametrosWorkspaceOrquestador {
         catalogos.ccafEntidades.length +
         catalogos.organismosLey16744.length,
       conteoTramosCarga: this.tramosCargaPorPeriodo().length,
-      conteoImpuesto: this.tramosImpuestoPorPeriodo().length + this.tablaImpuestoPorPeriodo().length,
+      conteoImpuesto: this.tablaImpuestoPorPeriodo().length,
       conteoSalud: this.isapresPorPeriodo().length + this.saludOtrasInstitucionesPorPeriodo().length,
       conteoPrevision: this.afpPorPeriodo().length,
       conteoReforma:
