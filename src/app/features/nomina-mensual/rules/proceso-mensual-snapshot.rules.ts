@@ -30,7 +30,7 @@ export function validarResultadoSnapshotPreliminar(
     return [{
       codigo: 'SNAPSHOT_CALCULO_BLOQUEADO',
       severidad: 'BLOQUEO',
-      mensaje: 'El calculo preliminar tiene bloqueos; no se guarda snapshot.',
+      mensaje: 'El calculo preliminar tiene bloqueos. No se guarda snapshot.',
       origen: 'motor_calculo',
       campo: 'estado',
     }, ...bloqueos];

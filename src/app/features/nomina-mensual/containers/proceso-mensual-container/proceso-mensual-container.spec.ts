@@ -1380,6 +1380,49 @@ describe('ProcesoMensualContainer', () => {
       expect(texto).not.toContain('Forzar eliminación');
     });
 
+    it('muestra checklist de configuración del período con acciones directas', async () => {
+      ejecutarPrevalidaciones.mockResolvedValueOnce(prevalidacionLista());
+      generarPreNominaPeriodo.mockResolvedValueOnce(baseNominaLista());
+      const localFixture = await montarContainer();
+      await avanzarFlujo(localFixture, 'base');
+
+      localFixture.detectChanges();
+      const texto = localFixture.nativeElement.textContent as string;
+      expect(texto).toContain('Configuración del período');
+      expect(texto).toContain('Parámetros');
+      expect(texto).toContain('Trabajadores');
+      expect(texto).toContain('Movimientos');
+      expect(texto).toContain('Liquidaciones');
+      expect(texto).toContain('Abrir parámetros');
+      expect(texto).toContain('Revisar trabajadores');
+      expect(texto).toContain('Revisar movimientos');
+    });
+
+    it('checklist usa iconos por área operativa', async () => {
+      ejecutarPrevalidaciones.mockResolvedValueOnce(prevalidacionLista());
+      generarPreNominaPeriodo.mockResolvedValueOnce(baseNominaLista());
+      const localFixture = await montarContainer();
+      await avanzarFlujo(localFixture, 'base');
+
+      localFixture.detectChanges();
+      const icons = localFixture.componentInstance.configuracionPeriodoItems().map((item) => item.icon);
+      expect(icons).toEqual(['sliders', 'users', 'list-checks', 'receipt']);
+    });
+
+    it('acciones secundarias del período usan estilo outline en el workspace', async () => {
+      obtenerSnapshotActivo.mockResolvedValue(snapshotGuardado());
+      obtenerSnapshotCompletoActivo.mockResolvedValue(snapshotCompletoGuardado());
+      const localFixture = await montarContainer();
+      await esperarSnapshotActivo(localFixture);
+
+      localFixture.detectChanges();
+      const action = localFixture.nativeElement.querySelector(
+        '.payroll-period-actions .payroll-modal-secondary',
+      ) as HTMLButtonElement | null;
+      expect(action).toBeTruthy();
+      expect(action?.className).toContain('payroll-modal-secondary');
+    });
+
     it('falla aprobacion muestra error sin marcar aprobado en copy', async () => {
       aprobarResultadoPreliminarOperativamente.mockRejectedValueOnce(new Error('RLS'));
       ejecutarPrevalidaciones.mockResolvedValueOnce(prevalidacionLista());
@@ -1437,11 +1480,11 @@ describe('ProcesoMensualContainer', () => {
       expect(resumen.bloqueados).toBe(0);
       expect(resumen.conObservaciones).toBe(0);
 
-      expectTexto(c.estadoOperativo().accionPrincipal.label, 'Confirmar nómina del período');
+      expectTexto(c.estadoOperativo().accionPrincipal.label, 'Confirmar nómina');
       expectTextoNo(c.estadoOperativo().accionPrincipal.label, 'Generar nómina');
 
       const shell = TestBed.inject(ShellPageContextService);
-      expect(shell.primaryAction()?.label).toMatch(/Confirmar nómina del período/i);
+      expect(shell.primaryAction()?.label).toMatch(/Confirmar nómina/i);
     });
 
     it('shell revisar trabajadores abre vista trabajadores y preselecciona fila', async () => {
@@ -1555,11 +1598,11 @@ describe('ProcesoMensualContainer', () => {
         timeout: 5000,
         interval: 20,
       });
-      expectTexto(c.estadoOperativo().accionPrincipal.label, 'Confirmar nómina del período');
+      expectTexto(c.estadoOperativo().accionPrincipal.label, 'Confirmar nómina');
 
       await invocarCtaShell(localFixture);
       expect(c.overlay().kind).toBe('decision');
-      expectTexto(c.confirmacionProceso()?.titulo ?? '', 'Confirmar nómina del período');
+      expectTexto(c.confirmacionProceso()?.titulo ?? '', 'Confirmar nómina');
     });
 
     it('tras registrar revision RRHH shell pide confirmar nomina del periodo', async () => {
@@ -1570,11 +1613,11 @@ describe('ProcesoMensualContainer', () => {
 
       const c = localFixture.componentInstance;
       expect(c.estadoOperativo().estadoClave).toBe('aprobado_operativamente');
-      expectTexto(c.estadoOperativo().accionPrincipal.label, 'Confirmar nómina del período');
+      expectTexto(c.estadoOperativo().accionPrincipal.label, 'Confirmar nómina');
       expectTextoNo(c.estadoOperativo().accionPrincipal.label, 'Registrar revisión');
 
       const shell = TestBed.inject(ShellPageContextService);
-      expect(shell.primaryAction()?.label).toMatch(/Confirmar nómina del período/i);
+      expect(shell.primaryAction()?.label).toMatch(/Confirmar nómina/i);
     });
 
     it('tras generar sin bloqueos CTA apunta a confirmar nómina del período', async () => {
@@ -1626,7 +1669,7 @@ describe('ProcesoMensualContainer', () => {
 
       const c = localFixture.componentInstance;
       expect(c.estadoOperativo().estadoClave).toBe('resultado_guardado');
-      expectTexto(c.estadoOperativo().accionPrincipal.label, 'Confirmar nómina del período');
+      expectTexto(c.estadoOperativo().accionPrincipal.label, 'Confirmar nómina');
       expect(c.estadoOperativo().accionPrincipal.accionLocal).toBe('confirmarNomina');
     });
   });

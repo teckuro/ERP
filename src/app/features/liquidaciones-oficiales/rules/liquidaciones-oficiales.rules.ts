@@ -61,7 +61,7 @@ export function clasificarAdvertenciasLiquidacion(params: {
     advertencias.push('Hay trabajadores sin conceptos materializados en la liquidacion.');
   }
   if ((params.conceptosSinCodigoLre ?? 0) > 0) {
-    advertencias.push('Existen conceptos sin codigo LRE; LRE operativo queda para una fase posterior.');
+    advertencias.push('Existen conceptos sin codigo LRE. LRE operativo queda para una fase posterior.');
   }
   return advertencias;
 }

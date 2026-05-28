@@ -132,9 +132,11 @@ import {
   movimientoRowsAExpediente,
 } from '../../../rules/proceso-mensual-detalle-mensual.rules';
 import {
+  buildNominaConfiguracionPeriodoItems,
   buildNominaWorkspaceTabsVisibleMeta,
   buildNominaWorkspaceTabVisibleSummaries,
   resolveFranjaItemTono,
+  type NominaConfiguracionPeriodoAccion,
   type NominaWorkspaceTabVisibleSummaryVm,
 } from '../../../rules/proceso-mensual-workspace-presentacion.rules';
 import { claseSegmentNavActivo } from '../../../rules/proceso-mensual-segment-nav.rules';
@@ -580,6 +582,26 @@ export class ProcesoMensualPresentacionFacade {
     const filtro = this.workspacePort.seleccionarDetalleMensualVista(vista);
     if (filtro) {
       this.revisionTrabajadoresPort.seleccionarFiltro(filtro);
+    }
+  }
+
+  ejecutarConfiguracionPeriodo(accion: NominaConfiguracionPeriodoAccion): void {
+    switch (accion) {
+      case 'abrir_parametros':
+        void this.entrarVistaParametros();
+        break;
+      case 'revisar_trabajadores':
+        this.seleccionarNominaDetalleMensualVista('trabajadores');
+        break;
+      case 'revisar_movimientos':
+        this.seleccionarNominaDetalleMensualVista('movimientos');
+        break;
+      case 'generar_liquidaciones':
+      case 'ver_liquidaciones':
+        void this.router.navigateByUrl(
+          appendNominaFlowQuery('/remuneraciones/liquidaciones', this.periodoSeleccionado()),
+        );
+        break;
     }
   }
 
@@ -1587,6 +1609,25 @@ export class ProcesoMensualPresentacionFacade {
 
   readonly bitacoraRailEtapas = computed<BitacoraRailEtapaVm[]>(() => mapBitacoraRailEtapas(this.bitacoraEtapas()));
 
+  readonly configuracionPeriodoItems = computed(() => {
+    const dash = this.dashboardResumen();
+    const estado = this.estadoOperativo();
+    return buildNominaConfiguracionPeriodoItems({
+      parametrosListos: dash.parametrosListos,
+      parametrosConsultando: this.store.consultandoParametros(),
+      trabajadoresAptos: dash.trabajadoresAptos,
+      trabajadoresPorRevisar: dash.trabajadoresPorRevisar ?? 0,
+      bloqueosCount: asArray(estado.bloqueos).length,
+      advertenciasCount: asArray(estado.advertencias).length,
+      movimientosAprobados: dash.movimientosAprobados,
+      movimientosPendientes: dash.movimientosPendientes,
+      recurrentesAplicables: dash.asignacionesAplicables,
+      nominaFrame: this.nominaVisualFrame(),
+      nominaConfirmada: this.nominaEstaCerradaOperativamente(),
+      liquidacionesGeneradas: this.liquidacionesGeneradasCount(),
+    });
+  });
+
   readonly mostrarActaPreparacionCentral = computed(() => {
     const ctx = this.contextoOperativoPeriodo();
     if (ctx.baseGenerada || this.flujoEnCurso()) {
@@ -1908,7 +1949,7 @@ export class ProcesoMensualPresentacionFacade {
         trabajador: 'Período',
         conceptoSituacion: generadas > 0
           ? `${generadas} liquidación${generadas === 1 ? '' : 'es'} del período`
-          : 'Nómina confirmada; puede generar liquidaciones',
+          : 'Nómina confirmada. Puede generar liquidaciones',
         origenDuracion: '—',
         vigencia: this.periodoActivo.etiqueta(),
         monto: '—',
@@ -2689,7 +2730,7 @@ export class ProcesoMensualPresentacionFacade {
       tipo: 'aprobar_preliminar',
       variant: 'decision',
       eyebrow: 'Revisión de nómina',
-      titulo: 'Registrar revisión de RRHH',
+      titulo: 'Confirmar revisión de nómina',
       mensaje: 'Indica que remuneraciones revisó la versión guardada de este período.',
       detalle: 'No confirma la nómina oficial ni genera liquidaciones.',
       puntosTitulo: 'Qué implica',
@@ -2701,10 +2742,10 @@ export class ProcesoMensualPresentacionFacade {
         : [
             'Queda respaldo interno de la revisión del período.',
             'El siguiente paso es confirmar la nómina del período en la barra superior.',
-          ],
+      ],
       mostrarProximaAccion: true,
       proximaAccion: 'Confirmar la nómina del período como base oficial para liquidaciones.',
-      primaryLabel: 'Registrar revisión',
+      primaryLabel: 'Confirmar revisión',
       secondaryLabel: 'Cancelar',
       advertenciasAprobacion,
     });
@@ -2964,7 +3005,7 @@ export class ProcesoMensualPresentacionFacade {
       tipo: 'cerrar_nomina',
       variant: 'warning',
       eyebrow: 'Confirmación oficial',
-      titulo: 'Confirmar nómina del período',
+      titulo: 'Confirmar nómina',
       mensaje: `Confirma la nómina mensual de ${this.periodoActivo.etiqueta() || this.store.periodoSeleccionado()} como versión oficial.`,
       detalle: 'La versión revisada quedará congelada como base del período para liquidaciones.',
       puntosTitulo: 'Qué ocurre',
@@ -2975,7 +3016,7 @@ export class ProcesoMensualPresentacionFacade {
       ],
       mostrarProximaAccion: true,
       proximaAccion: 'Generar liquidaciones desde la nómina confirmada.',
-      primaryLabel: 'Confirmar nómina del período',
+      primaryLabel: 'Confirmar nómina',
       secondaryLabel: 'Cancelar',
     });
   }
@@ -3078,7 +3119,7 @@ export class ProcesoMensualPresentacionFacade {
       tipo: 'confirmar_nomina_operativa',
       variant: 'decision',
       eyebrow: 'Confirmación de nómina',
-      titulo: 'Confirmar nómina del período',
+      titulo: 'Confirmar nómina',
       mensaje: 'Confirma esta versión como base oficial del período para liquidaciones.',
       detalle: 'En este paso se registra la revisión de RRHH y se cierra operativamente el período.',
       puntosTitulo: 'Qué implica',

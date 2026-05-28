@@ -85,7 +85,7 @@ describe('LiquidacionesOficialesContainer', () => {
     fixture.detectChanges();
 
     expect(fixture.nativeElement.textContent).toContain('Generar liquidaciones');
-    expect(fixture.nativeElement.textContent).toContain('No se recalcularan montos.');
+    expect(fixture.nativeElement.textContent).toContain('No se recalcularán montos en este paso.');
     expect(service.generarLiquidaciones).not.toHaveBeenCalled();
   });
 

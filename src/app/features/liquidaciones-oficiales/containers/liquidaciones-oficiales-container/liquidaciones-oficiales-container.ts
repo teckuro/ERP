@@ -100,7 +100,7 @@ export class LiquidacionesOficialesContainer {
     if (this.generando()) {
       return {
         titulo: 'Generando liquidaciones oficiales',
-        descripcion: 'Se esta materializando la salida interna desde la nomina mensual confirmada.',
+        descripcion: 'Se esta materializando la salida interna desde la nómina mensual confirmada.',
       };
     }
     if (estado?.liquidacion) {
@@ -112,12 +112,12 @@ export class LiquidacionesOficialesContainer {
     if (estado?.estado === 'lista_para_generar') {
       return {
         titulo: 'Generar liquidaciones oficiales',
-        descripcion: 'La nomina mensual esta confirmada. Puedes generar la salida interna del periodo.',
+        descripcion: 'La nómina mensual está confirmada. Puedes generar la salida interna del periodo.',
       };
     }
     return {
       titulo: 'Volver a Nómina mensual',
-      descripcion: estado?.motivoNoPuedeGenerar ?? 'Primero debe existir una nomina mensual confirmada.',
+      descripcion: estado?.motivoNoPuedeGenerar ?? 'Primero debe existir una nómina mensual confirmada.',
     };
   });
 

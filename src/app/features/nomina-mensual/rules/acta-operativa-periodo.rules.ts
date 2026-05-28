@@ -96,7 +96,7 @@ function buildEvidencia(input: BuildActaOperativaPeriodoInput, observaciones: st
     { label: 'Movimientos y asignaciones', detalle: `${input.movimientosLabel || 'No disponible en esta fase'} / ${input.asignacionesLabel || 'Pendiente de validacion'}`, estado: 'incluida' },
     {
       label: observaciones.length ? 'Observaciones pendientes' : 'Sin observaciones bloqueantes visibles',
-      detalle: observaciones.length ? observaciones.slice(0, 2).join('; ') : undefined,
+      detalle: observaciones.length ? observaciones.slice(0, 2).join(' · ') : undefined,
       estado: observaciones.length ? 'revision' : 'incluida',
     },
     {

@@ -196,6 +196,15 @@ describe('proceso-mensual-prevalidacion.rules', () => {
     expect(r.resumen.parametrosOperativos).toBe(true);
   });
 
+  it('presenta liquidaciones oficiales como salida desde nomina confirmada', () => {
+    const r = construirPrevalidacionMensual(baseHechos());
+    const proceso = r.items.find((item) => item.area === 'PROCESO');
+
+    expect(r.informaciones.some((msg) => msg.codigo === 'PROCESO_LIQUIDACIONES_OFICIALES')).toBe(true);
+    expect(proceso?.etiqueta).toBe('Liquidaciones oficiales');
+    expect(proceso?.detalle).toBe('Disponibles al confirmar la nómina mensual');
+  });
+
   it('bloquea si el estado visual de Parámetros no está operativo aunque la fila y calendario existan', () => {
     const r = construirPrevalidacionMensual(
       baseHechos({

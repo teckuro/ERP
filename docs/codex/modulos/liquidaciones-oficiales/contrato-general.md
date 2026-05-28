@@ -2,12 +2,12 @@
 
 ## Definicion
 
-La liquidacion oficial interna v1 es el comprobante persistido por trabajador generado desde una nomina mensual confirmada.
+La liquidacion oficial interna v1 es el comprobante persistido por trabajador generado desde una nómina mensual confirmada.
 
 ## Fuente de verdad
 
 ```txt
-nomina mensual confirmada de nomina
+nómina mensual confirmada
 ```
 
 ## NOM-MENSUAL-CONFIRMACION-FLOW-00 - Entrada oficial
@@ -18,7 +18,7 @@ Para usuario final, la fuente de entrada debe comunicarse como:
 nómina mensual confirmada
 ```
 
-La nocion tecnica de `nomina mensual confirmada de nomina` sigue siendo valida internamente, pero no debe dominar el copy visible. Liquidaciones oficiales materializa la nómina mensual confirmada y no recalcula parametros, movimientos, recurrentes ni datos vivos.
+La nocion tecnica asociada al snapshot confirmado sigue siendo valida internamente, pero no debe dominar el copy visible. Liquidaciones oficiales materializa la nómina mensual confirmada y no recalcula parametros, movimientos, recurrentes ni datos vivos.
 
 
 No usa parametros vivos para recalcular.
@@ -53,7 +53,7 @@ sin service_role desde frontend
 ```txt
 snapshot activo
 snapshot con revision interna vigente
-nomina mensual confirmada operativamente
+nómina mensual confirmada operativamente
 snapshot no reemplazado
 trabajadores existentes
 sin duplicado activo por id_calculo_periodo
@@ -97,7 +97,7 @@ reliquidacion
 La RPC y la UI deben conservar esta regla:
 
 ```txt
-Liquidaciones oficiales no recalcula; persiste totales desde el nomina mensual confirmada.
+Liquidaciones oficiales no recalcula. Persiste totales desde la nómina mensual confirmada.
 ```
 
 ## REM-PERIOD-GLOBAL-01 / REM-NAV-IA-01 - Ruta visible y periodo global

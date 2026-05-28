@@ -42,7 +42,7 @@ export const COPY_TECNICO_NOMINA: Record<string, string> = {
   is_null: 'valor no disponible',
 };
 
-/** Une fragmentos tras limpiar cada uno (evita `;` crudo entre mensajes). */
+/** Une fragmentos tras limpiar cada uno y evita puntuacion cruda entre mensajes. */
 export function limpiarYUnirMensajes(fragmentos: string[], separador = '. '): string {
   const partes = fragmentos
     .map((fragmento) => limpiarCopyTecnicoNomina(fragmento))
@@ -155,7 +155,7 @@ function colapsarEspacios(texto: string): string {
 }
 
 /**
- * Normaliza copy visible del modal de revisión: sin claves técnicas, `;` accidentales ni snake_case crudo.
+ * Normaliza copy visible del modal de revisión: sin claves técnicas, puntuacion accidental ni snake_case crudo.
  */
 function limpiarCopyTecnicoNominaInterno(texto: string | null | undefined): string {
   if (texto == null) return '';

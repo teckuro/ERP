@@ -208,7 +208,7 @@ export function buildValidacionCalculoPreliminarView(
     advertencias.push({
       codigo: 'ADV-004',
       titulo: 'Hay parámetros opcionales pendientes',
-      descripcion: 'Puedes calcular preliminarmente; estos datos quedan para cierre o reconciliación.',
+      descripcion: 'Puedes calcular preliminarmente. Estos datos quedan para cierre o reconciliación.',
       severidad: 'advertencia',
       accionLabel: 'Revisar parámetros',
       ruta: '/parametros',

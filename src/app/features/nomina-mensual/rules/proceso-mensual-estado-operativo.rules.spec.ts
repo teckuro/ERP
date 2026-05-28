@@ -184,7 +184,7 @@ describe('proceso-mensual-estado-operativo.rules', () => {
     expect(vm.accionPrincipal.accionLocal).toBe('confirmarNomina');
   });
 
-  it('resultado guardado pide registrar revision RRHH', () => {
+  it('resultado guardado pide confirmar nomina', () => {
     const vm = resolverEstadoOperativoProcesoMensual(inputBase({
       tienePrevalidacion: true,
       baseGenerada: true,
@@ -194,7 +194,7 @@ describe('proceso-mensual-estado-operativo.rules', () => {
     }));
 
     expect(vm.estadoClave).toBe('resultado_guardado');
-    expect(vm.accionPrincipal.label).toBe('Registrar revisión RRHH');
+    expect(vm.accionPrincipal.label).toBe('Confirmar nómina');
     expect(vm.accionPrincipal.accionLocal).toBe('confirmarNomina');
     expect(vm.etapaActiva).toBe('aprobar_cerrar');
   });
@@ -210,7 +210,7 @@ describe('proceso-mensual-estado-operativo.rules', () => {
     }));
 
     expect(vm.estadoClave).toBe('aprobado_operativamente');
-    expect(vm.accionPrincipal.label).toBe('Confirmar nómina del período');
+    expect(vm.accionPrincipal.label).toBe('Confirmar nómina');
     expect(vm.accionPrincipal.accionLocal).toBe('confirmarNomina');
   });
 

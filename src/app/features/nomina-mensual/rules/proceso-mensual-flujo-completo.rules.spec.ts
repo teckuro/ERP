@@ -31,7 +31,7 @@ describe('proceso-mensual-flujo-completo.rules', () => {
     },
   );
 
-  it('etapas de confirmacion usan accion local confirmarNomina con labels distintos', () => {
+  it('etapas de confirmacion usan accion local confirmarNomina con salida visible unica', () => {
     const confirmacion = FLUJO_COMPLETO_ETAPAS
       .map((etapa) => evaluarEtapaFlujoCompleto(etapa.id).resuelta.accionPrincipal)
       .filter((accion) => accion.accionLocal === 'confirmarNomina')
@@ -40,8 +40,7 @@ describe('proceso-mensual-flujo-completo.rules', () => {
     expect(new Set(confirmacion)).toEqual(new Set([
       'Calcular nómina preliminar',
       'Guardar revisión',
-      'Registrar revisión RRHH',
-      'Confirmar nómina del período',
+      'Confirmar nómina',
     ]));
   });
 

@@ -426,7 +426,7 @@ export function construirPrevalidacionMensual(hechos: ProcesoMensualHechosPreval
       'CONCEPTOS_VACIO',
       'CONCEPTOS',
       'ADVERTENCIA',
-      'No hay filas en mantenimiento de conceptos; el cálculo de nómina requerirá catálogo.',
+      'No hay filas en mantenimiento de conceptos. El cálculo de nómina requerirá catálogo.',
     );
     itemConc = 'CON_PROBLEMAS';
     detalleConc = 'Catálogo vacío';
@@ -436,7 +436,7 @@ export function construirPrevalidacionMensual(hechos: ProcesoMensualHechosPreval
       'CONCEPTOS_CLASIFICACION_FUTURA',
       'CONCEPTOS',
       'ADVERTENCIA',
-      'Hay conceptos vigentes sin tipo o naturaleza; revisar antes del cálculo de nómina.',
+      'Hay conceptos vigentes sin tipo o naturaleza. Revisar antes del cálculo de nómina.',
     );
     itemConc = 'CON_PROBLEMAS';
     detalleConc = 'Clasificación incompleta en algún concepto';
@@ -470,7 +470,7 @@ export function construirPrevalidacionMensual(hechos: ProcesoMensualHechosPreval
         'RECURRENTES_INVALIDAS',
         'HABERES_RECURRENTES',
         'BLOQUEO',
-        'Existen asignaciones recurrentes con vigencia inválida; corrige antes del cálculo.',
+        'Existen asignaciones recurrentes con vigencia inválida. Corrige antes del cálculo.',
       );
       itemRec = 'CON_PROBLEMAS';
       partes.push(`${rc.invalidas} invalida(s)`);
@@ -478,7 +478,7 @@ export function construirPrevalidacionMensual(hechos: ProcesoMensualHechosPreval
     partes.push(`${rc.aplicables} aplicable(s) al mes`);
     partes.push(`${rc.fueraDelMes} abierta(s) fuera del mes`);
     partes.push(`${rc.cerradas} cerrada(s)`);
-    detalleRec = partes.join('; ');
+    detalleRec = partes.join(' · ');
   }
   items.push({
     area: 'HABERES_RECURRENTES',
@@ -547,7 +547,7 @@ export function construirPrevalidacionMensual(hechos: ProcesoMensualHechosPreval
     }
     partes.push(`${resumenEntradas.aptasPreNomina} apta(s) para prenómina`);
     partes.push(`${resumenEntradas.legacyMovimientos} legacy`);
-    detalleEntradas = partes.join('; ');
+    detalleEntradas = partes.join(' · ');
 
     for (const advertencia of advertenciasEntradasConceptoReservadoContrato(
       entradas,
@@ -567,19 +567,19 @@ export function construirPrevalidacionMensual(hechos: ProcesoMensualHechosPreval
     detalle: detalleEntradas,
   });
 
-  /* --- Proceso / liquidaciones futuras --- */
+  /* --- Proceso / liquidaciones oficiales --- */
   pushMsg(
     informaciones,
-    'PROCESO_LIQUIDACIONES_FUTURO',
+    'PROCESO_LIQUIDACIONES_OFICIALES',
     'PROCESO',
     'INFO',
-    'Liquidaciones oficiales son una fase futura; este módulo prepara y revisa el cálculo preliminar.',
+    'Liquidaciones oficiales se generan desde una nómina mensual confirmada. Este paso prepara la versión revisable del período.',
   );
   items.push({
     area: 'PROCESO',
-    etiqueta: 'Liquidaciones futuras',
+    etiqueta: 'Liquidaciones oficiales',
     estado: 'PENDIENTE_INTEGRACION',
-    detalle: 'Snapshot e inmutabilidad: fase futura (p. ej. LIQ-CHILE-01)',
+    detalle: 'Disponibles al confirmar la nómina mensual',
   });
 
   const { bloqueosGeneracion, advertenciasDesdeBloqueo } = separarBloqueosGeneracionNomina(bloqueos);
@@ -684,7 +684,7 @@ function completarItemsVacios(parcial: ProcesoMensualItem[]): ProcesoMensualItem
     HABERES_RECURRENTES: 'Haberes recurrentes',
     ENTRADAS_MENSUALES: 'Entradas mensuales',
     MOVIMIENTOS_VARIABLES: 'Movimientos del mes',
-    PROCESO: 'Liquidaciones futuras',
+    PROCESO: 'Liquidaciones oficiales',
   };
   const out = [...parcial];
   for (const a of areas) {

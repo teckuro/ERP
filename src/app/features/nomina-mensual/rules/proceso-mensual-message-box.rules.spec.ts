@@ -43,7 +43,7 @@ describe('proceso-mensual-message-box.rules', () => {
       mensaje: 'Guardar revisión del período.',
       detalle: 'No es la confirmación oficial.',
       puntos: ['Versión revisada disponible.'],
-      proximaAccion: 'Registrar revisión RRHH.',
+      proximaAccion: 'Confirmar nómina.',
       mostrarProximaAccion: true,
       primaryLabel: 'Guardar revisión',
     });
@@ -55,7 +55,7 @@ describe('proceso-mensual-message-box.rules', () => {
     const sections = mapConfirmacionProcesoMensualToSections({
       tipo: 'cerrar_nomina',
       variant: 'warning',
-      mensaje: 'Confirmar nómina del período.',
+      mensaje: 'Confirmar nómina.',
       detalle: 'La versión revisada quedará congelada.',
       puntosTitulo: 'Qué cambia al confirmar',
       puntos: ['No emite liquidaciones en este paso.', 'Queda lista para liquidaciones.'],

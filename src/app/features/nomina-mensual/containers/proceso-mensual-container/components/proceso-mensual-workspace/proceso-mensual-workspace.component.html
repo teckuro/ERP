@@ -125,6 +125,44 @@
               }
             </ul>
           </section>
+
+          <section class="payroll-configuracion-periodo" aria-labelledby="payroll-configuracion-periodo-title">
+            <header class="payroll-configuracion-periodo__header">
+              <h3 id="payroll-configuracion-periodo-title" class="payroll-resumen-block__title">Configuración del período</h3>
+            </header>
+            <ul class="payroll-configuracion-periodo__list" role="list">
+              @for (item of f.configuracionPeriodoItems(); track item.id) {
+                <li
+                  class="payroll-configuracion-periodo__item"
+                  [class.payroll-configuracion-periodo__item--neutral]="item.tono === 'neutral'"
+                  [class.payroll-configuracion-periodo__item--review]="item.tono === 'review'"
+                  [class.payroll-configuracion-periodo__item--danger]="item.tono === 'danger'"
+                  [class.payroll-configuracion-periodo__item--ok]="item.tono === 'ok'"
+                  [class.payroll-configuracion-periodo__item--priority]="item.prioridad"
+                >
+                  <span class="payroll-configuracion-periodo__icon" aria-hidden="true">
+                    <lucide-icon [name]="item.icon"></lucide-icon>
+                  </span>
+                  <span class="payroll-configuracion-periodo__copy">
+                    <span class="payroll-configuracion-periodo__label">{{ item.label }}</span>
+                    <span class="payroll-configuracion-periodo__value">{{ item.valor }}</span>
+                    @if (item.disabled && item.disabledReason) {
+                      <span class="payroll-configuracion-periodo__reason">{{ item.disabledReason }}</span>
+                    }
+                  </span>
+                  <span class="payroll-configuracion-periodo__state">{{ item.estado }}</span>
+                  <button
+                    type="button"
+                    class="payroll-configuracion-periodo__action"
+                    [disabled]="item.disabled"
+                    (click)="f.ejecutarConfiguracionPeriodo(item.accion)"
+                  >
+                    {{ item.accionLabel }}
+                  </button>
+                </li>
+              }
+            </ul>
+          </section>
           }
 
           <section class="payroll-rail-block payroll-rail-block--bitacora" aria-labelledby="payroll-sidebar-bitacora-title">

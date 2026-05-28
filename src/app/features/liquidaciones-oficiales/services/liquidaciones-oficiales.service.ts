@@ -90,6 +90,6 @@ function buildMetadataGeneracion(estado: LiquidacionesEstadoPeriodo): Record<str
     totalTrabajadoresSnapshot: estado.snapshot?.totalTrabajadores ?? 0,
     versionMotor: estado.snapshot?.versionMotor ?? null,
     hashSnapshot: estado.snapshot?.hashSnapshot ?? null,
-    notaAlcance: 'Generacion interna desde nomina mensual confirmada; sin recalculo ni salidas legales.',
+    notaAlcance: 'Generacion interna desde nómina mensual confirmada. Sin recalculo ni salidas legales.',
   };
 }

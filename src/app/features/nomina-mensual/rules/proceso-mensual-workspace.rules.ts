@@ -237,14 +237,14 @@ export function buildNominaFrameView(input: BuildNominaFrameViewInput): NominaVi
               titulo: 'Verificando y generando la nómina mensual.',
               texto:
                 'Revisamos trabajadores, parámetros, movimientos y recurrentes, y armamos el borrador preliminar del período en un solo paso.',
-              info: 'Al terminar verá el detalle por trabajador; aún no es la confirmación oficial.',
+              info: 'Al terminar verá el detalle por trabajador. Aún no es la confirmación oficial.',
             }
           : {
               chip: 'Generando',
               titulo: 'Estamos preparando la nómina mensual.',
               texto:
                 'Estamos revisando trabajadores, parámetros, movimientos y recurrentes para armar el borrador del período.',
-              info: 'Este paso genera una versión de trabajo; todavía no es la base oficial.',
+              info: 'Este paso genera una versión de trabajo. Todavía no es la base oficial.',
             },
       );
     case 'en_revision': {
@@ -286,10 +286,10 @@ export function buildNominaFrameView(input: BuildNominaFrameViewInput): NominaVi
           : pendienteRegistrar
             ? 'Registre la revisión de remuneraciones antes de la confirmación oficial.'
             : pendienteGuardar
-              ? 'Guarde la versión revisada; luego podrá registrar la revisión de RRHH.'
+              ? 'Guarde la versión revisada. Luego podrá registrar la revisión de RRHH.'
               : 'Todos los bloqueos críticos fueron resueltos. Siga el paso indicado en la barra superior.',
         info: pendienteCierre
-          ? 'La confirmación oficial congela la versión para liquidaciones; aún no las genera.'
+          ? 'La confirmación oficial congela la versión para liquidaciones. Aún no las genera.'
           : 'La confirmación oficial del período es el último paso antes de liquidaciones.',
       });
     }

@@ -31,7 +31,7 @@ describe('nomina-msgbox-lab.rules', () => {
       detalle: 'No es la confirmación oficial.',
       puntosTitulo: 'Qué queda registrado',
       puntos: ['Versión revisada disponible.'],
-      proximaAccion: 'Registrar revisión RRHH.',
+      proximaAccion: 'Confirmar nómina.',
       mostrarProximaAccion: true,
       primaryLabel: 'Guardar revisión',
     });

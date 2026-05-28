@@ -11,6 +11,7 @@ import {
 import { buildDetalleRevisionTabsMeta } from './proceso-mensual-detalle-modal.rules';
 import { buildIncidenciasPeriodo } from './proceso-mensual-incidencias-periodo.rules';
 import {
+  buildNominaConfiguracionPeriodoItems,
   buildNominaWorkspaceTabVisibleSummaries,
   buildNominaWorkspaceTabsVisibleMeta,
   claseNominaWorkspaceTab,
@@ -154,5 +155,105 @@ describe('proceso-mensual-workspace-presentacion.rules', () => {
   it('claseNominaWorkspaceTab marca activo', () => {
     expect(claseNominaWorkspaceTab('bloqueo', true)).toContain('payroll-operational-tab--active');
     expect(claseNominaWorkspaceTab('bloqueo', true)).toContain('payroll-operational-tab--bloqueo');
+  });
+
+  it('buildNominaConfiguracionPeriodoItems prioriza parámetros bloqueados', () => {
+    const items = buildNominaConfiguracionPeriodoItems({
+      parametrosListos: false,
+      parametrosConsultando: false,
+      trabajadoresAptos: null,
+      trabajadoresPorRevisar: 0,
+      bloqueosCount: 0,
+      advertenciasCount: 0,
+      movimientosAprobados: 0,
+      movimientosPendientes: 0,
+      recurrentesAplicables: null,
+      nominaFrame: 'sin_generar',
+      nominaConfirmada: false,
+      liquidacionesGeneradas: 0,
+    });
+
+    expect(items.find((item) => item.id === 'parametros')).toMatchObject({
+      icon: 'sliders',
+      estado: 'Bloqueado',
+      valor: 'Faltan parámetros',
+      accionLabel: 'Abrir parámetros',
+      tono: 'danger',
+      prioridad: true,
+    });
+  });
+
+  it('buildNominaConfiguracionPeriodoItems muestra trabajadores por revisar', () => {
+    const items = buildNominaConfiguracionPeriodoItems({
+      parametrosListos: true,
+      parametrosConsultando: false,
+      trabajadoresAptos: 10,
+      trabajadoresPorRevisar: 2,
+      bloqueosCount: 0,
+      advertenciasCount: 1,
+      movimientosAprobados: 3,
+      movimientosPendientes: 0,
+      recurrentesAplicables: 4,
+      nominaFrame: 'en_revision',
+      nominaConfirmada: false,
+      liquidacionesGeneradas: 0,
+    });
+
+    expect(items.find((item) => item.id === 'trabajadores')).toMatchObject({
+      icon: 'users',
+      estado: 'Por revisar',
+      accionLabel: 'Revisar trabajadores',
+      tono: 'review',
+      prioridad: true,
+    });
+  });
+
+  it('buildNominaConfiguracionPeriodoItems habilita liquidaciones con nómina confirmada', () => {
+    const items = buildNominaConfiguracionPeriodoItems({
+      parametrosListos: true,
+      parametrosConsultando: false,
+      trabajadoresAptos: 10,
+      trabajadoresPorRevisar: 0,
+      bloqueosCount: 0,
+      advertenciasCount: 0,
+      movimientosAprobados: 3,
+      movimientosPendientes: 0,
+      recurrentesAplicables: 4,
+      nominaFrame: 'confirmada',
+      nominaConfirmada: true,
+      liquidacionesGeneradas: 0,
+    });
+
+    expect(items.find((item) => item.id === 'liquidaciones')).toMatchObject({
+      icon: 'lock',
+      valor: 'Liquidaciones pendientes',
+      accionLabel: 'Generar liquidaciones',
+      disabled: false,
+      prioridad: true,
+    });
+  });
+
+  it('buildNominaConfiguracionPeriodoItems cambia a ver liquidaciones cuando existen', () => {
+    const items = buildNominaConfiguracionPeriodoItems({
+      parametrosListos: true,
+      parametrosConsultando: false,
+      trabajadoresAptos: 10,
+      trabajadoresPorRevisar: 0,
+      bloqueosCount: 0,
+      advertenciasCount: 0,
+      movimientosAprobados: 3,
+      movimientosPendientes: 0,
+      recurrentesAplicables: 4,
+      nominaFrame: 'liquidaciones_generadas',
+      nominaConfirmada: true,
+      liquidacionesGeneradas: 5,
+    });
+
+    expect(items.find((item) => item.id === 'liquidaciones')).toMatchObject({
+      icon: 'receipt',
+      estado: 'Listo',
+      accionLabel: 'Ver liquidaciones',
+      tono: 'ok',
+    });
   });
 });

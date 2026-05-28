@@ -152,7 +152,7 @@ export function calcularTrabajador(args: {
   const baseImponibleSinTope = sumar(haberesImponibles.map((h) => h.monto));
   const topePrevisional = resolverTopePesos(input.parametrosPeriodo, 'afp');
   if (topePrevisional == null) {
-    pushIssue(issues, 'TOPE_IMPONIBLE_NO_DISPONIBLE', 'ADVERTENCIA', 'No hay tope previsional claro en parametros_generales; no se hardcodea limite.', 'parametros_generales', input.periodo, 'topeAfp/topeAfpUf');
+    pushIssue(issues, 'TOPE_IMPONIBLE_NO_DISPONIBLE', 'ADVERTENCIA', 'No hay tope previsional claro en parametros_generales. No se hardcodea limite.', 'parametros_generales', input.periodo, 'topeAfp/topeAfpUf');
   }
   const baseImponiblePrevisional = topePrevisional == null
     ? baseImponibleSinTope
@@ -207,7 +207,7 @@ export function calcularTrabajador(args: {
 
   const tasaSanna = normalizarTasa(input.parametrosPeriodo?.sanna ?? null);
   if (tasaSanna == null) {
-    pushIssue(issues, 'SANNA_NO_DEFINIDO', 'ADVERTENCIA', 'SANNA no definido en parametros_generales.sanna; queda pendiente sin afectar liquido trabajador.', 'parametros_generales', input.periodo, 'sanna');
+    pushIssue(issues, 'SANNA_NO_DEFINIDO', 'ADVERTENCIA', 'SANNA no definido en parametros_generales.sanna. Queda pendiente sin afectar liquido trabajador.', 'parametros_generales', input.periodo, 'sanna');
   }
   const cotizacionSanna = tasaSanna == null ? 0 : redondear(baseImponiblePrevisional * tasaSanna);
   if (tasaSanna != null) {
@@ -369,7 +369,7 @@ function calcularGratificacionArticulo50(
     || modalidad.includes('25')
     || modalidad.includes('LEGAL_ARTICULO_50');
   if (!habilitada) {
-    pushIssue(issues, 'GRATIFICACION_SIN_CONFIGURACION', 'ADVERTENCIA', 'Gratificacion automatica pendiente de configuracion; no se inventa monto.', 'empleados', trabajador.idPersona, 'tipoGratificacion');
+    pushIssue(issues, 'GRATIFICACION_SIN_CONFIGURACION', 'ADVERTENCIA', 'Gratificacion automatica pendiente de configuracion. No se inventa monto.', 'empleados', trabajador.idPersona, 'tipoGratificacion');
     return 0;
   }
   const imm = parametros?.immGratificacion ?? parametros?.sueldoMinimo18a65 ?? parametros?.sueldoMinimo ?? null;
@@ -403,7 +403,7 @@ function calcularAsignacionFamiliar(
     ? null
     : tramos.find((t) => t.idTramo === trabajador.idTramoCarga) ?? null;
   if (!tramo || tramo.valor == null) {
-    pushIssue(issues, 'ASIGNACION_FAMILIAR_SIN_TRAMO', 'ADVERTENCIA', 'Trabajador con cargas sin tramo_carga suficiente; no se inventa monto.', 'tramo_carga', trabajador.idPersona, 'idTramoCarga');
+    pushIssue(issues, 'ASIGNACION_FAMILIAR_SIN_TRAMO', 'ADVERTENCIA', 'Trabajador con cargas sin tramo_carga suficiente. No se inventa monto.', 'tramo_carga', trabajador.idPersona, 'idTramoCarga');
     return 0;
   }
   const monto = redondear(cargas * tramo.valor);
@@ -466,7 +466,7 @@ function calcularSalud(
     return { monto: legal, descripcion: 'Cotizacion salud Fonasa', origen: 'salud', origenTabla: 'salud/parametros_generales', campo: 'porcentaje_cotizacion/salud_obligatoria', valorEntrada: tasaLegal, formula: 'baseImponiblePrevisional * tasa legal salud' };
   }
   if (trabajador.valorPlanSalud == null || trabajador.valorPlanSalud <= 0) {
-    pushIssue(issues, 'SALUD_PLAN_INSUFICIENTE', 'BLOQUEO', 'Isapre sin valor de plan suficiente; no se inventa cotizacion.', 'salud_plan', trabajador.idPersona, 'valorPlan');
+    pushIssue(issues, 'SALUD_PLAN_INSUFICIENTE', 'BLOQUEO', 'Isapre sin valor de plan suficiente. No se inventa cotizacion.', 'salud_plan', trabajador.idPersona, 'valorPlan');
     return { monto: 0, descripcion: 'Cotizacion salud Isapre', origen: 'salud_plan', origenTabla: 'salud_plan', campo: 'valor_referencia', valorEntrada: null, formula: 'sin calculo' };
   }
   return { monto: Math.max(legal, trabajador.valorPlanSalud), descripcion: 'Cotizacion salud Isapre', origen: 'salud_plan', origenTabla: 'salud_plan', campo: 'valor_referencia', valorEntrada: trabajador.valorPlanSalud, formula: 'max(7% legal, plan pactado)' };

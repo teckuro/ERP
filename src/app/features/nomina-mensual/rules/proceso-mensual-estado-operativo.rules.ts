@@ -213,7 +213,7 @@ export function resolverEstadoOperativoProcesoMensual(
       descripcion: 'RRHH ya registró la revisión. Falta confirmar la nómina oficial del período.',
       severidad: 'success',
       accionPrincipal: local(
-        'Confirmar nómina del período',
+        'Confirmar nómina',
         'Deja esta versión como base oficial del período para liquidaciones.',
         'confirmarNomina',
         !input.puedeCerrar,
@@ -221,7 +221,7 @@ export function resolverEstadoOperativoProcesoMensual(
       ),
       etapaActiva: 'aprobar_cerrar',
       disclosureActivo: 'cierre',
-      queFaltaAhora: [info('FALTA_CIERRE', 'Confirmar nómina del período', 'La confirmación oficial congela la versión revisada para liquidaciones.')],
+      queFaltaAhora: [info('FALTA_CIERRE', 'Confirmar nómina', 'La confirmación oficial congela la versión revisada para liquidaciones.')],
     });
   }
 
@@ -232,7 +232,7 @@ export function resolverEstadoOperativoProcesoMensual(
       descripcion: 'La versión revisada quedó guardada. Falta confirmar la nómina del período.',
       severidad: 'info',
       accionPrincipal: local(
-        'Confirmar nómina del período',
+        'Confirmar nómina',
         'Registra la revisión y confirma esta versión como base oficial para liquidaciones.',
         'confirmarNomina',
         !input.puedeCerrar && !input.puedeAprobar,
@@ -240,7 +240,7 @@ export function resolverEstadoOperativoProcesoMensual(
       ),
       etapaActiva: 'aprobar_cerrar',
       disclosureActivo: 'aprobacion',
-      queFaltaAhora: [info('FALTA_APROBACION_CIERRE', 'Confirmar nómina del período', 'Registra la revisión y deja la versión como base oficial del período.')],
+      queFaltaAhora: [info('FALTA_APROBACION_CIERRE', 'Confirmar nómina', 'Registra la revisión y deja la versión como base oficial del período.')],
     });
   }
 

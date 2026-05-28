@@ -17,6 +17,7 @@ import type {
   IncidenciaPeriodoAmbito,
   IncidenciasPeriodoView,
 } from './proceso-mensual-incidencias-periodo.rules';
+import type { NominaAreaOperativa } from '../containers/proceso-mensual-container/models/proceso-mensual-area-orden.config';
 
 export type FocusPresentacionVariant = 'neutral' | 'active' | 'info' | 'review' | 'success';
 
@@ -125,6 +126,243 @@ function peorSeveridad(
   if (severidades.includes('atencion')) return 'atencion';
   if (severidades.every((s) => s === 'listo')) return 'listo';
   return 'neutral';
+}
+
+export type NominaConfiguracionPeriodoTono = 'neutral' | 'review' | 'danger' | 'ok';
+
+export type NominaConfiguracionPeriodoAccion =
+  | 'abrir_parametros'
+  | 'revisar_trabajadores'
+  | 'revisar_movimientos'
+  | 'generar_liquidaciones'
+  | 'ver_liquidaciones';
+
+export interface NominaConfiguracionPeriodoItemVm {
+  id: NominaAreaOperativa;
+  label: string;
+  icon: string;
+  estado: string;
+  valor: string;
+  tono: NominaConfiguracionPeriodoTono;
+  accionLabel: string;
+  accion: NominaConfiguracionPeriodoAccion;
+  disabled: boolean;
+  disabledReason: string | null;
+  prioridad: boolean;
+}
+
+export interface NominaConfiguracionPeriodoInput {
+  parametrosListos: boolean | null;
+  parametrosConsultando: boolean;
+  trabajadoresAptos: number | null;
+  trabajadoresPorRevisar: number;
+  bloqueosCount: number;
+  advertenciasCount: number;
+  movimientosAprobados: number;
+  movimientosPendientes: number;
+  recurrentesAplicables: number | null;
+  nominaFrame: NominaVisualFrame;
+  nominaConfirmada: boolean;
+  liquidacionesGeneradas: number;
+}
+
+function estadoParametros(input: NominaConfiguracionPeriodoInput): Pick<NominaConfiguracionPeriodoItemVm, 'estado' | 'valor' | 'tono' | 'accionLabel' | 'disabled' | 'disabledReason' | 'prioridad'> {
+  if (input.parametrosConsultando) {
+    return {
+      estado: 'Consultando',
+      valor: 'Lectura en curso',
+      tono: 'neutral',
+      accionLabel: 'Abrir parámetros',
+      disabled: true,
+      disabledReason: 'Consulta en curso',
+      prioridad: false,
+    };
+  }
+  if (input.parametrosListos === true) {
+    return {
+      estado: 'Listo',
+      valor: 'Parámetros listos',
+      tono: 'ok',
+      accionLabel: 'Abrir parámetros',
+      disabled: false,
+      disabledReason: null,
+      prioridad: false,
+    };
+  }
+  if (input.parametrosListos === false) {
+    return {
+      estado: 'Bloqueado',
+      valor: 'Faltan parámetros',
+      tono: 'danger',
+      accionLabel: 'Abrir parámetros',
+      disabled: false,
+      disabledReason: null,
+      prioridad: true,
+    };
+  }
+  return {
+    estado: 'Pendiente',
+    valor: 'Sin evaluar',
+    tono: 'neutral',
+    accionLabel: 'Abrir parámetros',
+    disabled: false,
+    disabledReason: null,
+    prioridad: false,
+  };
+}
+
+function estadoTrabajadores(input: NominaConfiguracionPeriodoInput): Pick<NominaConfiguracionPeriodoItemVm, 'estado' | 'valor' | 'tono' | 'accionLabel' | 'disabled' | 'disabledReason' | 'prioridad'> {
+  if (input.bloqueosCount > 0) {
+    return {
+      estado: 'Bloqueado',
+      valor: `${input.bloqueosCount} bloqueo${input.bloqueosCount === 1 ? '' : 's'}`,
+      tono: 'danger',
+      accionLabel: 'Revisar trabajadores',
+      disabled: false,
+      disabledReason: null,
+      prioridad: true,
+    };
+  }
+  if (input.trabajadoresPorRevisar > 0 || input.advertenciasCount > 0) {
+    const total = Math.max(input.trabajadoresPorRevisar, input.advertenciasCount);
+    return {
+      estado: 'Por revisar',
+      valor: `${total} por revisar`,
+      tono: 'review',
+      accionLabel: 'Revisar trabajadores',
+      disabled: false,
+      disabledReason: null,
+      prioridad: true,
+    };
+  }
+  if (input.trabajadoresAptos != null) {
+    return {
+      estado: 'Listo',
+      valor: `${input.trabajadoresAptos} listo${input.trabajadoresAptos === 1 ? '' : 's'}`,
+      tono: 'ok',
+      accionLabel: 'Revisar trabajadores',
+      disabled: false,
+      disabledReason: null,
+      prioridad: false,
+    };
+  }
+  return {
+    estado: 'Pendiente',
+    valor: 'Sin evaluar',
+    tono: 'neutral',
+    accionLabel: 'Revisar trabajadores',
+    disabled: input.nominaFrame === 'sin_generar',
+    disabledReason: input.nominaFrame === 'sin_generar' ? 'Primero genera la nómina' : null,
+    prioridad: false,
+  };
+}
+
+function estadoMovimientos(input: NominaConfiguracionPeriodoInput): Pick<NominaConfiguracionPeriodoItemVm, 'estado' | 'valor' | 'tono' | 'accionLabel' | 'disabled' | 'disabledReason' | 'prioridad'> {
+  if (input.movimientosPendientes > 0) {
+    return {
+      estado: 'Por revisar',
+      valor: `${input.movimientosPendientes} pendiente${input.movimientosPendientes === 1 ? '' : 's'}`,
+      tono: 'review',
+      accionLabel: 'Revisar movimientos',
+      disabled: false,
+      disabledReason: null,
+      prioridad: true,
+    };
+  }
+  if (input.movimientosAprobados > 0 || input.recurrentesAplicables != null) {
+    const recurrentes = input.recurrentesAplicables ?? 0;
+    return {
+      estado: 'Listo',
+      valor: `${input.movimientosAprobados} aprobados · ${recurrentes} recurrentes`,
+      tono: 'ok',
+      accionLabel: 'Revisar movimientos',
+      disabled: false,
+      disabledReason: null,
+      prioridad: false,
+    };
+  }
+  return {
+    estado: 'Pendiente',
+    valor: 'Sin movimientos',
+    tono: 'neutral',
+    accionLabel: 'Revisar movimientos',
+    disabled: input.nominaFrame === 'sin_generar',
+    disabledReason: input.nominaFrame === 'sin_generar' ? 'Primero genera la nómina' : null,
+    prioridad: false,
+  };
+}
+
+function estadoLiquidaciones(input: NominaConfiguracionPeriodoInput): Pick<NominaConfiguracionPeriodoItemVm, 'estado' | 'valor' | 'tono' | 'accionLabel' | 'disabled' | 'disabledReason' | 'prioridad'> {
+  if (input.liquidacionesGeneradas > 0) {
+    return {
+      estado: 'Listo',
+      valor: `${input.liquidacionesGeneradas} generada${input.liquidacionesGeneradas === 1 ? '' : 's'}`,
+      tono: 'ok',
+      accionLabel: 'Ver liquidaciones',
+      disabled: false,
+      disabledReason: null,
+      prioridad: input.nominaFrame === 'liquidaciones_generadas',
+    };
+  }
+  if (input.nominaConfirmada) {
+    return {
+      estado: 'Pendiente',
+      valor: 'Liquidaciones pendientes',
+      tono: 'review',
+      accionLabel: 'Generar liquidaciones',
+      disabled: false,
+      disabledReason: null,
+      prioridad: true,
+    };
+  }
+  return {
+    estado: 'Pendiente',
+    valor: 'Confirme nómina',
+    tono: 'neutral',
+    accionLabel: 'Generar liquidaciones',
+    disabled: true,
+    disabledReason: 'Primero confirma la nómina',
+    prioridad: false,
+  };
+}
+
+export function buildNominaConfiguracionPeriodoItems(
+  input: NominaConfiguracionPeriodoInput,
+): NominaConfiguracionPeriodoItemVm[] {
+  const parametros = estadoParametros(input);
+  const trabajadores = estadoTrabajadores(input);
+  const movimientos = estadoMovimientos(input);
+  const liquidaciones = estadoLiquidaciones(input);
+  return [
+    {
+      id: 'parametros',
+      label: 'Parámetros',
+      icon: 'sliders',
+      accion: 'abrir_parametros',
+      ...parametros,
+    },
+    {
+      id: 'trabajadores',
+      label: 'Trabajadores',
+      icon: 'users',
+      accion: 'revisar_trabajadores',
+      ...trabajadores,
+    },
+    {
+      id: 'movimientos',
+      label: 'Movimientos',
+      icon: 'list-checks',
+      accion: 'revisar_movimientos',
+      ...movimientos,
+    },
+    {
+      id: 'liquidaciones',
+      label: 'Liquidaciones',
+      icon: input.liquidacionesGeneradas > 0 ? 'receipt' : input.nominaConfirmada ? 'lock' : 'receipt',
+      accion: input.liquidacionesGeneradas > 0 ? 'ver_liquidaciones' : 'generar_liquidaciones',
+      ...liquidaciones,
+    },
+  ];
 }
 
 /** Alias del patrón operativo compartido con el modal de revisión. */
