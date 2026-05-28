@@ -520,9 +520,17 @@ function resolverMontoAsignacion(monto: number | null, porcentaje: number | null
   return redondear(monto ?? 0);
 }
 
-function normalizarTasa(v: number | null): number | null {
+/** Normaliza tasa desde catálogo (% legible o decimal). Exportado para pruebas unitarias. */
+export function normalizarTasaNomina(v: number | null): number | null {
   if (v == null || !Number.isFinite(v)) return null;
-  return Math.abs(v) > 1 ? v / 100 : v;
+  // Catálogos mezclan formatos: 0.07 = 7%, 7 = 7%, 0.6 = 0,6%, 1.5 = 1,5%.
+  // Valores >= 0.3 se interpretan como porcentaje (÷100) salvo que ya sean >1.
+  const abs = Math.abs(v);
+  return abs > 1 || abs >= 0.3 ? v / 100 : v;
+}
+
+function normalizarTasa(v: number | null): number | null {
+  return normalizarTasaNomina(v);
 }
 
 function sumar(values: number[]): number {

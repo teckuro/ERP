@@ -241,6 +241,19 @@ describe('proceso-mensual-motor.rules', () => {
     expect(liq.totalDescuentos).not.toBeGreaterThan(800000);
   });
 
+  it('AFC interpreta 0.6 como 0,6% (no 60%)', () => {
+    const liq = generarCalculoPreliminarPeriodo(input({
+      catalogos: catalogos({
+        afcParametros: [{ ...catalogos().afcParametros[0], tasaTrabajador: 0.6 }],
+      }),
+    }), 'now').liquidaciones[0];
+
+    // base imponible previsional: 800.000 => 0,6% = 4.800
+    expect(liq.baseImponiblePrevisional).toBe(800000);
+    expect(liq.cotizacionAfc).toBe(4800);
+    expect(liq.descuentosLegales.some((d) => d.codigo === 'AFC' && d.monto === 4800)).toBe(true);
+  });
+
   it('sin datos de empresa no genera advertencia si existe tasa básica en parámetros', () => {
     const liq = generarCalculoPreliminarPeriodo(input({ empresaLey16744: null }), 'now').liquidaciones[0];
     expect(liq.cotizacionLey16744).toBeGreaterThan(0);

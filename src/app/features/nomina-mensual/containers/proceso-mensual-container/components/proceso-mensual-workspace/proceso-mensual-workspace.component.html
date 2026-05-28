@@ -179,123 +179,33 @@
         </aside>
 
         <div class="payroll-workspace-content">
-          @if (f.mostrarAccionesPeriodoNomina() || f.puedeGuardarBaseNominaRevisada()) {
-            <section class="payroll-period-actions payroll-period-actions--workspace" aria-label="Acciones del período">
-              <header class="payroll-period-actions__header">
-                <h3>Acciones del período</h3>
-              </header>
-              @if (f.exitoAccionPeriodo()) {
-                <p class="payroll-period-actions__feedback payroll-period-actions__feedback--success" role="status">
-                  {{ f.exitoAccionPeriodo() }}
-                </p>
-              }
-              @if (f.errorAccionPeriodo()) {
-                <p class="payroll-period-actions__feedback payroll-period-actions__feedback--error" role="alert">
-                  {{ f.errorAccionPeriodo() }}
-                </p>
-              }
-              <ul class="payroll-period-actions__list">
-                @for (accion of f.accionesNominaPeriodoNormales(); track accion.id) {
-                  <li class="payroll-period-actions__item">
-                    <div class="payroll-period-actions__copy">
-                      <h4>{{ accion.label }}</h4>
-                      <p>{{ accion.descripcion }}</p>
-                      @if (accion.bloqueada && accion.motivoBloqueo) {
-                        <p class="payroll-period-actions__blocked">{{ accion.motivoBloqueo }}</p>
-                      }
-                    </div>
-                    @if (accion.disponible) {
-                      <button
-                        type="button"
-                        class="payroll-modal-secondary"
-                        [class.payroll-period-actions__btn--danger]="accion.variante === 'danger'"
-                        [disabled]="f.gestionandoAccionPeriodo()"
-                        (click)="f.ejecutarAccionNominaPeriodo(accion.id)"
-                      >
-                        {{ accion.label }}
-                      </button>
-                    } @else {
-                      <span class="payroll-period-actions__chip">No disponible</span>
-                    }
-                  </li>
-                }
-              </ul>
-              @if (f.puedeGuardarBaseNominaRevisada()) {
-                <details class="payroll-period-actions__admin">
-                  <summary>Acciones técnicas del borrador</summary>
-                  <p class="payroll-period-actions__admin-note">
-                    Guardado intermedio del borrador. No sustituye la confirmación oficial de la nómina.
-                  </p>
-                  @if (f.exitoGuardadoBaseNomina()) {
-                    <p class="payroll-period-actions__feedback payroll-period-actions__feedback--success" role="status">
-                      {{ f.exitoGuardadoBaseNomina() }}
-                    </p>
+          <div class="payroll-operational-tabs-bar">
+            <nav class="payroll-operational-tabs payroll-operational-tabs--workspace" aria-label="Nómina mensual">
+              @for (tab of f.nominaWorkspaceTabsMeta(); track tab.id) {
+                <button
+                  type="button"
+                  [class]="claseWorkspaceTab(tab.severidad, f.nominaWorkspaceTabVisible() === tab.id)"
+                  (click)="f.seleccionarNominaWorkspaceTabVisible(tab.id)"
+                >
+                  <span class="payroll-operational-tab__label">{{ tab.label }}</span>
+                  @if (tab.indicador) {
+                    <span class="payroll-operational-tab__indicador">{{ tab.indicador }}</span>
                   }
-                  @if (f.errorGuardadoBaseNomina()) {
-                    <p class="payroll-period-actions__feedback payroll-period-actions__feedback--error" role="alert">
-                      {{ f.errorGuardadoBaseNomina() }}
-                    </p>
-                  }
-                  <ul class="payroll-period-actions__list">
-                    <li class="payroll-period-actions__item">
-                      <div class="payroll-period-actions__copy">
-                        <h4>Guardar borrador revisado</h4>
-                        <p>Conserva el borrador actual antes de continuar con la revisión por trabajador.</p>
-                      </div>
-                      <button
-                        type="button"
-                        class="payroll-modal-secondary"
-                        [disabled]="f.guardandoSnapshot()"
-                        (click)="f.guardarBaseNominaRevisada()"
-                      >
-                        Guardar borrador
-                      </button>
-                    </li>
-                  </ul>
-                </details>
+                </button>
               }
-              @if (f.accionesNominaPeriodoAdmin().length) {
-                <details class="payroll-period-actions__admin">
-                  <summary>Acciones administrativas</summary>
-                  <p class="payroll-period-actions__admin-note">
-                    Acción de prueba para ambiente no productivo. No es el flujo operativo final de RRHH.
-                  </p>
-                  <ul class="payroll-period-actions__list">
-                    @for (accion of f.accionesNominaPeriodoAdmin(); track accion.id) {
-                      <li class="payroll-period-actions__item">
-                        <div class="payroll-period-actions__copy">
-                          <h4>{{ accion.label }}</h4>
-                          <p>{{ accion.descripcion }}</p>
-                        </div>
-                        <button
-                          type="button"
-                          class="payroll-modal-secondary payroll-period-actions__btn--admin"
-                          [disabled]="f.gestionandoAccionPeriodo()"
-                          (click)="f.ejecutarAccionNominaPeriodo(accion.id)"
-                        >
-                          {{ accion.label }}
-                        </button>
-                      </li>
-                    }
-                  </ul>
-                </details>
-              }
-            </section>
-          }
-          <nav class="payroll-operational-tabs payroll-operational-tabs--workspace" aria-label="Nómina mensual">
-        @for (tab of f.nominaWorkspaceTabsMeta(); track tab.id) {
-          <button
-            type="button"
-            [class]="claseWorkspaceTab(tab.severidad, f.nominaWorkspaceTabVisible() === tab.id)"
-            (click)="f.seleccionarNominaWorkspaceTabVisible(tab.id)"
-          >
-            <span class="payroll-operational-tab__label">{{ tab.label }}</span>
-            @if (tab.indicador) {
-              <span class="payroll-operational-tab__indicador">{{ tab.indicador }}</span>
+            </nav>
+            @if (mostrarAccesoAccionesPeriodo()) {
+              <button
+                type="button"
+                class="payroll-operational-tabs__settings"
+                aria-label="Abrir acciones del período"
+                title="Acciones del período"
+                (click)="abrirModalAccionesPeriodo()"
+              >
+                <lucide-icon name="settings" class="payroll-icon-btn__glyph" aria-hidden="true" />
+              </button>
             }
-          </button>
-        }
-      </nav>
+          </div>
 
       <section
         class="payroll-tab-panel"
@@ -318,7 +228,11 @@
                 [attr.aria-label]="'Abrir alertas del período, ' + alertasExp.total + ' en total'"
                 (click)="f.abrirModalAlertasExpediente()"
               >
-                <lucide-icon [name]="alertasExp.bloqueos > 0 ? 'alert-circle' : 'circle-alert'" aria-hidden="true" />
+                <lucide-icon
+                  class="payroll-icon-btn__glyph"
+                  [name]="alertasExp.bloqueos > 0 ? 'alert-circle' : 'circle-alert'"
+                  aria-hidden="true"
+                />
                 <span>{{ alertasExp.total }}</span>
               </button>
             </div>
@@ -559,4 +473,128 @@
       </div>
     </main>
   </div>
+
+  @if (modalAccionesPeriodoAbierto() && mostrarAccesoAccionesPeriodo()) {
+    <div
+      class="payroll-operational-detail-overlay payroll-period-actions-overlay"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="payroll-period-actions-modal-title"
+      (click)="cerrarModalAccionesPeriodo()"
+    >
+      <div class="payroll-period-actions-dialog" (click)="$event.stopPropagation()">
+        <header class="payroll-period-actions-dialog__header">
+          <div>
+            <h2 id="payroll-period-actions-modal-title">Acciones del período</h2>
+            <p>Administración del período en curso.</p>
+          </div>
+          <button
+            type="button"
+            class="payroll-modal-secondary payroll-period-actions-dialog__close"
+            (click)="cerrarModalAccionesPeriodo()"
+          >
+            Cerrar
+          </button>
+        </header>
+        <div class="payroll-period-actions payroll-period-actions--modal">
+          @if (f.exitoAccionPeriodo()) {
+            <p class="payroll-period-actions__feedback payroll-period-actions__feedback--success" role="status">
+              {{ f.exitoAccionPeriodo() }}
+            </p>
+          }
+          @if (f.errorAccionPeriodo()) {
+            <p class="payroll-period-actions__feedback payroll-period-actions__feedback--error" role="alert">
+              {{ f.errorAccionPeriodo() }}
+            </p>
+          }
+          <ul class="payroll-period-actions__list">
+            @for (accion of f.accionesNominaPeriodoNormales(); track accion.id) {
+              <li class="payroll-period-actions__item">
+                <div class="payroll-period-actions__copy">
+                  <h4>{{ accion.label }}</h4>
+                  <p>{{ accion.descripcion }}</p>
+                  @if (accion.bloqueada && accion.motivoBloqueo) {
+                    <p class="payroll-period-actions__blocked">{{ accion.motivoBloqueo }}</p>
+                  }
+                </div>
+                @if (accion.disponible) {
+                  <button
+                    type="button"
+                    class="payroll-modal-secondary"
+                    [class.payroll-period-actions__btn--danger]="accion.variante === 'danger'"
+                    [disabled]="f.gestionandoAccionPeriodo()"
+                    (click)="f.ejecutarAccionNominaPeriodo(accion.id)"
+                  >
+                    {{ accion.label }}
+                  </button>
+                } @else {
+                  <span class="payroll-period-actions__chip">No disponible</span>
+                }
+              </li>
+            }
+          </ul>
+          @if (f.puedeGuardarBaseNominaRevisada()) {
+            <details class="payroll-period-actions__admin">
+              <summary>Acciones técnicas del borrador</summary>
+              <p class="payroll-period-actions__admin-note">
+                Guardado intermedio del borrador. No sustituye la confirmación oficial de la nómina.
+              </p>
+              @if (f.exitoGuardadoBaseNomina()) {
+                <p class="payroll-period-actions__feedback payroll-period-actions__feedback--success" role="status">
+                  {{ f.exitoGuardadoBaseNomina() }}
+                </p>
+              }
+              @if (f.errorGuardadoBaseNomina()) {
+                <p class="payroll-period-actions__feedback payroll-period-actions__feedback--error" role="alert">
+                  {{ f.errorGuardadoBaseNomina() }}
+                </p>
+              }
+              <ul class="payroll-period-actions__list">
+                <li class="payroll-period-actions__item">
+                  <div class="payroll-period-actions__copy">
+                    <h4>Guardar borrador revisado</h4>
+                    <p>Conserva el borrador actual antes de continuar con la revisión por trabajador.</p>
+                  </div>
+                  <button
+                    type="button"
+                    class="payroll-modal-secondary"
+                    [disabled]="f.guardandoSnapshot()"
+                    (click)="f.guardarBaseNominaRevisada()"
+                  >
+                    Guardar borrador
+                  </button>
+                </li>
+              </ul>
+            </details>
+          }
+          @if (f.accionesNominaPeriodoAdmin().length) {
+            <details class="payroll-period-actions__admin">
+              <summary>Acciones administrativas</summary>
+              <p class="payroll-period-actions__admin-note">
+                Acción de prueba para ambiente no productivo. No es el flujo operativo final de RRHH.
+              </p>
+              <ul class="payroll-period-actions__list">
+                @for (accion of f.accionesNominaPeriodoAdmin(); track accion.id) {
+                  <li class="payroll-period-actions__item">
+                    <div class="payroll-period-actions__copy">
+                      <h4>{{ accion.label }}</h4>
+                      <p>{{ accion.descripcion }}</p>
+                    </div>
+                    <button
+                      type="button"
+                      class="payroll-modal-secondary payroll-period-actions__btn--admin"
+                      [disabled]="f.gestionandoAccionPeriodo()"
+                      (click)="f.ejecutarAccionNominaPeriodo(accion.id)"
+                    >
+                      {{ accion.label }}
+                    </button>
+                  </li>
+                }
+              </ul>
+            </details>
+          }
+        </div>
+      </div>
+    </div>
+  }
 </section>

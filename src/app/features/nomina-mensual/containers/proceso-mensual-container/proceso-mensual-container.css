@@ -485,29 +485,29 @@
 }
 
 .payroll-configuracion-periodo__item--ok .payroll-configuracion-periodo__icon {
-  color: var(--erp-ok);
+  color: color-mix(in srgb, var(--erp-ok) 72%, var(--erp-muted));
 }
 
 .payroll-configuracion-periodo__item--review .payroll-configuracion-periodo__icon {
-  color: var(--erp-review);
+  color: color-mix(in srgb, var(--erp-review) 65%, var(--erp-muted));
 }
 
 .payroll-configuracion-periodo__item--danger .payroll-configuracion-periodo__icon {
-  color: var(--erp-danger);
+  color: color-mix(in srgb, var(--erp-danger) 55%, var(--erp-muted));
 }
 
 .payroll-configuracion-periodo__icon {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 22px;
-  height: 22px;
-  color: var(--erp-subtle);
+  width: 20px;
+  height: 20px;
+  color: var(--erp-muted);
 }
 
 .payroll-configuracion-periodo__icon lucide-icon {
-  width: 16px;
-  height: 16px;
+  width: 15px;
+  height: 15px;
 }
 
 .payroll-configuracion-periodo__copy {

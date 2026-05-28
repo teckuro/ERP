@@ -427,11 +427,11 @@ function construirTimeline(
   ];
 }
 
-function bloqueoDestinoParametros(bloqueo: ProcesoMensualPendienteVm): boolean {
+export function bloqueoDestinoParametros(bloqueo: ProcesoMensualPendienteVm): boolean {
   return bloqueo.ruta === '/parametros' || bloqueo.codigo === 'BLOQ-004';
 }
 
-function bloqueoDestinoTrabajadores(bloqueo: ProcesoMensualPendienteVm): boolean {
+export function bloqueoDestinoTrabajadores(bloqueo: ProcesoMensualPendienteVm): boolean {
   const codigo = bloqueo.codigo.toUpperCase();
   return (
     bloqueo.accionLocal === 'revisarBloqueos' ||
@@ -439,6 +439,33 @@ function bloqueoDestinoTrabajadores(bloqueo: ProcesoMensualPendienteVm): boolean
     codigo === 'BLOQ-006' ||
     codigo.includes('TRABAJ')
   );
+}
+
+export function bloqueoDestinoNominaPeriodo(bloqueo: ProcesoMensualPendienteVm): boolean {
+  return !bloqueoDestinoParametros(bloqueo) && !bloqueoDestinoTrabajadores(bloqueo);
+}
+
+export interface BloqueosConfiguracionPeriodoConteo {
+  trabajadores: number;
+  nomina: number;
+}
+
+export function contarBloqueosConfiguracionPeriodo(
+  bloqueos: readonly ProcesoMensualPendienteVm[],
+): BloqueosConfiguracionPeriodoConteo {
+  let trabajadores = 0;
+  let nomina = 0;
+  for (const bloqueo of bloqueos) {
+    if (bloqueoDestinoParametros(bloqueo)) {
+      continue;
+    }
+    if (bloqueoDestinoTrabajadores(bloqueo)) {
+      trabajadores += 1;
+    } else {
+      nomina += 1;
+    }
+  }
+  return { trabajadores, nomina };
 }
 
 function accionPrincipalBorradorGenerado(
@@ -482,6 +509,14 @@ function resolverAccionPrincipalPeriodoConPendientes(
       'revisarBloqueos',
     );
   }
+  const bloqueoNomina = bloqueosCriticos.find(bloqueoDestinoNominaPeriodo);
+  if (bloqueoNomina) {
+    return local(
+      'Revisar nómina',
+      'Resuelve los bloqueos del período antes de confirmar la nómina mensual.',
+      'revisarBloqueos',
+    );
+  }
   if (!input.parametrosOperativos && bloqueosCriticos.some(bloqueoDestinoParametros)) {
     return ruta('Revisar parámetros', 'Corrige los parámetros bloqueantes antes de avanzar.', '/parametros');
   }
@@ -502,8 +537,8 @@ function resolverAccionPrincipalPeriodoConPendientes(
     );
   }
   return local(
-    'Revisar trabajadores',
-    'Resuelve los bloqueos antes de confirmar la nómina mensual.',
+    'Revisar nómina',
+    'Resuelve los bloqueos del período antes de confirmar la nómina mensual.',
     'revisarBloqueos',
   );
 }

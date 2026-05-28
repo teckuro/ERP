@@ -1,3 +1,21 @@
+## 2026-05-28 - Nómina mensual: checklist resumido (parámetros, nómina, trabajadores, liquidaciones)
+
+- **Cambio:** Checklist sin fila Movimientos. **Nómina del período** siempre visible: «Sin generar» sin borrador, «Cerrada» con bloqueos o confirmada, resumen según frame. Acciones `verificar_periodo` / `generar_nomina` desde la fila.
+- **Archivos:** `proceso-mensual-workspace-presentacion.rules.ts`, `proceso-mensual-presentacion.facade.ts`, specs, `peticiones-estilos.md`.
+- **No tocado:** estilos globales, SQL/motor.
+
+## 2026-05-28 - Nómina mensual: checklist bloqueos, iconos sutiles en tabs
+
+- **Cambio:** El checklist «Configuración del período» distingue bloqueos de **Nómina del período** (fila propia, «Revisar nómina») vs bloqueos en **Trabajadores**. Icono de acciones del período (tuerca) y chip de alertas del detalle mensual más discretos; iconos del checklist con tono atenuado en estados críticos.
+- **Archivos:** `proceso-mensual-estado-operativo.rules.ts`, `proceso-mensual-workspace-presentacion.rules.ts`, `proceso-mensual-presentacion.facade.ts`, `proceso-mensual-workspace.component.{html,css}`, `payroll-detalle-mensual-panel.css`, `proceso-mensual-container.css`, specs.
+- **No tocado:** estilos globales, `angular.json`, SQL/motor.
+
+## 2026-05-28 - Nómina mensual: acciones del período en modal y historial
+
+- **Cambio:** «Acciones del período» deja de ocupar la franja superior del workspace; se abre con icono de configuración a la derecha de las pestañas Detalle/Historial. Historial del período incorpora el snapshot activo si la lista async aún no lo incluye.
+- **Archivos:** `proceso-mensual-workspace.component.{html,css,ts}`, `proceso-mensual-historial-periodo.rules.ts`, `proceso-mensual-presentacion.facade.ts`, specs.
+- **No tocado:** estilos globales, `angular.json`, SQL/motor.
+
 ## 2026-05-28 - Nómina mensual: persistencia F5 y parámetros alineados
 
 - **Cambio:** Rehidratación restaura `resultado` desde metadata del snapshot (borrador/preliminar/confirmado). Overlay Parámetros con copy de carga oficial/reconciliación; workspace `/parametros` respeta `periodo` en query desde nómina.

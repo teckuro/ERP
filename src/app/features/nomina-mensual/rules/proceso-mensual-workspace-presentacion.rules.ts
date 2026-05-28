@@ -132,13 +132,18 @@ export type NominaConfiguracionPeriodoTono = 'neutral' | 'review' | 'danger' | '
 
 export type NominaConfiguracionPeriodoAccion =
   | 'abrir_parametros'
+  | 'verificar_periodo'
+  | 'generar_nomina'
+  | 'revisar_bloqueos_nomina'
   | 'revisar_trabajadores'
   | 'revisar_movimientos'
   | 'generar_liquidaciones'
   | 'ver_liquidaciones';
 
+export type NominaConfiguracionPeriodoItemId = NominaAreaOperativa | 'nomina_revision';
+
 export interface NominaConfiguracionPeriodoItemVm {
-  id: NominaAreaOperativa;
+  id: NominaConfiguracionPeriodoItemId;
   label: string;
   icon: string;
   estado: string;
@@ -156,12 +161,15 @@ export interface NominaConfiguracionPeriodoInput {
   parametrosConsultando: boolean;
   trabajadoresAptos: number | null;
   trabajadoresPorRevisar: number;
-  bloqueosCount: number;
+  bloqueosTrabajadoresCount: number;
+  bloqueosNominaCount: number;
   advertenciasCount: number;
   movimientosAprobados: number;
   movimientosPendientes: number;
   recurrentesAplicables: number | null;
   nominaFrame: NominaVisualFrame;
+  nominaGenerada: boolean;
+  tienePrevalidacion: boolean;
   nominaConfirmada: boolean;
   liquidacionesGeneradas: number;
 }
@@ -211,11 +219,101 @@ function estadoParametros(input: NominaConfiguracionPeriodoInput): Pick<NominaCo
   };
 }
 
+function estadoNominaPeriodo(input: NominaConfiguracionPeriodoInput): Pick<NominaConfiguracionPeriodoItemVm, 'estado' | 'valor' | 'tono' | 'accionLabel' | 'disabled' | 'disabledReason' | 'prioridad' | 'accion'> {
+  if (input.bloqueosNominaCount > 0) {
+    const n = input.bloqueosNominaCount;
+    return {
+      estado: 'Cerrada',
+      valor: `${n} bloqueo${n === 1 ? '' : 's'} en la nómina`,
+      tono: 'danger',
+      accion: 'revisar_bloqueos_nomina',
+      accionLabel: 'Revisar nómina',
+      disabled: false,
+      disabledReason: null,
+      prioridad: true,
+    };
+  }
+  if (!input.nominaGenerada) {
+    const puedeGenerar = input.tienePrevalidacion && input.nominaFrame === 'sin_generar';
+    return {
+      estado: 'Sin generar',
+      valor: 'Sin borrador del período',
+      tono: 'neutral',
+      accion: puedeGenerar ? 'generar_nomina' : 'verificar_periodo',
+      accionLabel: puedeGenerar ? 'Generar nómina' : 'Verificar período',
+      disabled: !puedeGenerar,
+      disabledReason: puedeGenerar ? null : 'Primero verifica el período',
+      prioridad: input.tienePrevalidacion,
+    };
+  }
+  if (input.nominaConfirmada) {
+    return {
+      estado: 'Cerrada',
+      valor: input.liquidacionesGeneradas > 0
+        ? `${input.liquidacionesGeneradas} liquidación${input.liquidacionesGeneradas === 1 ? '' : 'es'}`
+        : 'Nómina confirmada',
+      tono: 'ok',
+      accion: 'revisar_bloqueos_nomina',
+      accionLabel: 'Revisar nómina',
+      disabled: false,
+      disabledReason: null,
+      prioridad: false,
+    };
+  }
+  if (input.nominaFrame === 'lista_para_confirmar') {
+    return {
+      estado: 'Por confirmar',
+      valor: 'Lista para confirmar',
+      tono: 'review',
+      accion: 'revisar_bloqueos_nomina',
+      accionLabel: 'Revisar nómina',
+      disabled: false,
+      disabledReason: null,
+      prioridad: true,
+    };
+  }
+  if (input.nominaFrame === 'liquidaciones_generadas') {
+    return {
+      estado: 'Cerrada',
+      valor: `${input.liquidacionesGeneradas} liquidación${input.liquidacionesGeneradas === 1 ? '' : 'es'}`,
+      tono: 'ok',
+      accion: 'revisar_bloqueos_nomina',
+      accionLabel: 'Revisar nómina',
+      disabled: false,
+      disabledReason: null,
+      prioridad: false,
+    };
+  }
+  if (input.nominaFrame === 'con_pendientes') {
+    return {
+      estado: 'En revisión',
+      valor: 'Con pendientes del período',
+      tono: 'review',
+      accion: 'revisar_bloqueos_nomina',
+      accionLabel: 'Revisar nómina',
+      disabled: false,
+      disabledReason: null,
+      prioridad: true,
+    };
+  }
+  return {
+    estado: 'En revisión',
+    valor: 'Borrador en curso',
+    tono: 'ok',
+    accion: 'revisar_bloqueos_nomina',
+    accionLabel: 'Revisar nómina',
+    disabled: false,
+    disabledReason: null,
+    prioridad: false,
+  };
+}
+
 function estadoTrabajadores(input: NominaConfiguracionPeriodoInput): Pick<NominaConfiguracionPeriodoItemVm, 'estado' | 'valor' | 'tono' | 'accionLabel' | 'disabled' | 'disabledReason' | 'prioridad'> {
-  if (input.bloqueosCount > 0) {
+  if (input.bloqueosTrabajadoresCount > 0) {
+    const n = input.bloqueosTrabajadoresCount;
     return {
       estado: 'Bloqueado',
-      valor: `${input.bloqueosCount} bloqueo${input.bloqueosCount === 1 ? '' : 's'}`,
+      valor: `${n} bloqueo${n === 1 ? '' : 's'} en trabajadores`,
       tono: 'danger',
       accionLabel: 'Revisar trabajadores',
       disabled: false,
@@ -251,41 +349,6 @@ function estadoTrabajadores(input: NominaConfiguracionPeriodoInput): Pick<Nomina
     valor: 'Sin evaluar',
     tono: 'neutral',
     accionLabel: 'Revisar trabajadores',
-    disabled: input.nominaFrame === 'sin_generar',
-    disabledReason: input.nominaFrame === 'sin_generar' ? 'Primero genera la nómina' : null,
-    prioridad: false,
-  };
-}
-
-function estadoMovimientos(input: NominaConfiguracionPeriodoInput): Pick<NominaConfiguracionPeriodoItemVm, 'estado' | 'valor' | 'tono' | 'accionLabel' | 'disabled' | 'disabledReason' | 'prioridad'> {
-  if (input.movimientosPendientes > 0) {
-    return {
-      estado: 'Por revisar',
-      valor: `${input.movimientosPendientes} pendiente${input.movimientosPendientes === 1 ? '' : 's'}`,
-      tono: 'review',
-      accionLabel: 'Revisar movimientos',
-      disabled: false,
-      disabledReason: null,
-      prioridad: true,
-    };
-  }
-  if (input.movimientosAprobados > 0 || input.recurrentesAplicables != null) {
-    const recurrentes = input.recurrentesAplicables ?? 0;
-    return {
-      estado: 'Listo',
-      valor: `${input.movimientosAprobados} aprobados · ${recurrentes} recurrentes`,
-      tono: 'ok',
-      accionLabel: 'Revisar movimientos',
-      disabled: false,
-      disabledReason: null,
-      prioridad: false,
-    };
-  }
-  return {
-    estado: 'Pendiente',
-    valor: 'Sin movimientos',
-    tono: 'neutral',
-    accionLabel: 'Revisar movimientos',
     disabled: input.nominaFrame === 'sin_generar',
     disabledReason: input.nominaFrame === 'sin_generar' ? 'Primero genera la nómina' : null,
     prioridad: false,
@@ -330,8 +393,8 @@ export function buildNominaConfiguracionPeriodoItems(
   input: NominaConfiguracionPeriodoInput,
 ): NominaConfiguracionPeriodoItemVm[] {
   const parametros = estadoParametros(input);
+  const nominaPeriodo = estadoNominaPeriodo(input);
   const trabajadores = estadoTrabajadores(input);
-  const movimientos = estadoMovimientos(input);
   const liquidaciones = estadoLiquidaciones(input);
   return [
     {
@@ -342,18 +405,17 @@ export function buildNominaConfiguracionPeriodoItems(
       ...parametros,
     },
     {
+      id: 'nomina_revision',
+      label: 'Nómina del período',
+      icon: 'calculator',
+      ...nominaPeriodo,
+    },
+    {
       id: 'trabajadores',
       label: 'Trabajadores',
       icon: 'users',
       accion: 'revisar_trabajadores',
       ...trabajadores,
-    },
-    {
-      id: 'movimientos',
-      label: 'Movimientos',
-      icon: 'list-checks',
-      accion: 'revisar_movimientos',
-      ...movimientos,
     },
     {
       id: 'liquidaciones',

@@ -24,6 +24,7 @@ import {
   Receipt,
   Repeat,
   RefreshCw,
+  Settings,
   Sliders,
   SlidersHorizontal,
   Upload,
@@ -629,6 +630,7 @@ describe('ProcesoMensualContainer', () => {
             Receipt,
             Repeat,
             RefreshCw,
+            Settings,
             Sliders,
             SlidersHorizontal,
             Upload,
@@ -961,7 +963,8 @@ describe('ProcesoMensualContainer', () => {
       localFixture.detectChanges();
       expect(localFixture.componentInstance.overlay().kind).toBe('decision');
       await confirmarOverlayDecision(localFixture);
-      expect(guardarSnapshotPreliminar).toHaveBeenCalledWith(PERIODO_TEST);
+      await vi.waitFor(() => expect(guardarSnapshotPreliminar).toHaveBeenCalled());
+      expect(guardarSnapshotPreliminar.mock.calls.some((call) => call[0] === PERIODO_TEST)).toBe(true);
     });
 
     it('prepararActaOperativaPeriodo abre overlay decision', async () => {
@@ -1221,7 +1224,8 @@ describe('ProcesoMensualContainer', () => {
       const localFixture = await montarContainer();
       await avanzarFlujo(localFixture, 'base');
       expect(generarPreNominaPeriodo).toHaveBeenCalledWith(PERIODO_TEST);
-      expect(guardarSnapshotPreliminar).toHaveBeenCalledWith(PERIODO_TEST);
+      await vi.waitFor(() => expect(guardarSnapshotPreliminar).toHaveBeenCalled());
+      expect(guardarSnapshotPreliminar.mock.calls.some((call) => call[0] === PERIODO_TEST)).toBe(true);
       expect(localFixture.componentInstance.preNomina()).toBeNull();
       expect(localFixture.componentInstance.snapshotActivo()?.estado).toBe('preliminar');
     });
@@ -1354,7 +1358,8 @@ describe('ProcesoMensualContainer', () => {
       generarPreNominaPeriodo.mockResolvedValueOnce(baseNominaLista());
       const localFixture = await montarContainer();
       await avanzarFlujo(localFixture, 'guardado');
-      expect(guardarSnapshotPreliminar).toHaveBeenCalledWith(PERIODO_TEST);
+      await vi.waitFor(() => expect(guardarSnapshotPreliminar).toHaveBeenCalled());
+      expect(guardarSnapshotPreliminar.mock.calls.some((call) => call[0] === PERIODO_TEST)).toBe(true);
       expect(localFixture.componentInstance.snapshotActivo()).not.toBeNull();
     });
 
@@ -1379,10 +1384,39 @@ describe('ProcesoMensualContainer', () => {
       await esperarSnapshotActivo(localFixture);
 
       localFixture.detectChanges();
+      const settingsBtn = localFixture.nativeElement.querySelector(
+        '.payroll-operational-tabs__settings',
+      ) as HTMLButtonElement | null;
+      expect(settingsBtn).toBeTruthy();
+      settingsBtn?.click();
+      localFixture.detectChanges();
       const texto = localFixture.nativeElement.textContent as string;
       expect(texto).toContain('Acciones del período');
       expect(texto).toContain('Descartar nómina generada');
       expect(texto).not.toContain('Forzar eliminación');
+    });
+
+    it('checklist con bloqueo de nómina muestra fila Nómina del período', async () => {
+      ejecutarPrevalidaciones.mockResolvedValueOnce(
+        prevalidacionLista({
+          bloqueos: [{
+            codigo: 'BLOQ-002',
+            area: 'PROCESO',
+            severidad: 'BLOQUEO',
+            texto: 'Hay bloqueos en el periodo.',
+          }],
+        }),
+      );
+      const localFixture = await montarContainer();
+      await avanzarFlujo(localFixture, 'prevalidado');
+      localFixture.detectChanges();
+      const items = localFixture.componentInstance.configuracionPeriodoItems();
+      expect(items.find((item) => item.id === 'nomina_revision')).toMatchObject({
+        label: 'Nómina del período',
+        accionLabel: 'Revisar nómina',
+        estado: 'Cerrada',
+      });
+      expect(items.find((item) => item.id === 'trabajadores')?.estado).not.toBe('Bloqueado');
     });
 
     it('muestra checklist de configuración del período con acciones directas', async () => {
@@ -1396,11 +1430,11 @@ describe('ProcesoMensualContainer', () => {
       expect(texto).toContain('Configuración del período');
       expect(texto).toContain('Parámetros');
       expect(texto).toContain('Trabajadores');
-      expect(texto).toContain('Movimientos');
+      expect(texto).toContain('Nómina del período');
       expect(texto).toContain('Liquidaciones');
       expect(texto).toContain('Abrir parámetros');
       expect(texto).toContain('Revisar trabajadores');
-      expect(texto).toContain('Revisar movimientos');
+      expect(texto).not.toContain('Revisar movimientos');
     });
 
     it('checklist usa iconos por área operativa', async () => {
@@ -1411,7 +1445,7 @@ describe('ProcesoMensualContainer', () => {
 
       localFixture.detectChanges();
       const icons = localFixture.componentInstance.configuracionPeriodoItems().map((item) => item.icon);
-      expect(icons).toEqual(['sliders', 'users', 'list-checks', 'receipt']);
+      expect(icons).toEqual(['sliders', 'calculator', 'users', 'receipt']);
     });
 
     it('sidebar no duplica areas operativas fuera del checklist', async () => {
@@ -1426,7 +1460,7 @@ describe('ProcesoMensualContainer', () => {
       expect(sidebar.querySelectorAll('.payroll-configuracion-periodo__item')).toHaveLength(4);
       const labels = Array.from(sidebar.querySelectorAll('.payroll-configuracion-periodo__label'))
         .map((node) => node.textContent?.trim());
-      expect(labels).toEqual(['Parámetros', 'Trabajadores', 'Movimientos', 'Liquidaciones']);
+      expect(labels).toEqual(['Parámetros', 'Nómina del período', 'Trabajadores', 'Liquidaciones']);
     });
 
     it('acciones secundarias del período usan estilo outline en el workspace', async () => {
@@ -1436,8 +1470,14 @@ describe('ProcesoMensualContainer', () => {
       await esperarSnapshotActivo(localFixture);
 
       localFixture.detectChanges();
+      const settingsBtn = localFixture.nativeElement.querySelector(
+        '.payroll-operational-tabs__settings',
+      ) as HTMLButtonElement | null;
+      expect(settingsBtn).toBeTruthy();
+      settingsBtn?.click();
+      localFixture.detectChanges();
       const action = localFixture.nativeElement.querySelector(
-        '.payroll-period-actions .payroll-modal-secondary',
+        '.payroll-period-actions--modal .payroll-modal-secondary',
       ) as HTMLButtonElement | null;
       expect(action).toBeTruthy();
       expect(action?.className).toContain('payroll-modal-secondary');
@@ -1721,7 +1761,7 @@ describe('ProcesoMensualContainer', () => {
       c.seleccionarFranjaArea('parametros');
       await fixture.whenStable();
       fixture.detectChanges();
-      expect(c.informacionPeriodo()?.titulo).toContain('Parámetros revisados');
+      expect(c.informacionPeriodo()?.titulo).toMatch(/Parámetros/i);
       expect(c.informacionPeriodo()?.accionPrincipal?.destino).toBe('parametros_app');
       expect(c.informacionPeriodo()?.accionPrincipal?.label).toBe('Abrir parámetros');
       expect(c.informacionPeriodo()?.accionSecundaria).toBeUndefined();

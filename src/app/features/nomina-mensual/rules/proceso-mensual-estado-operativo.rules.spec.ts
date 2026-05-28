@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import {
+  contarBloqueosConfiguracionPeriodo,
   resolverEstadoOperativoProcesoMensual,
   type ProcesoMensualEstadoOperativoInput,
   type ProcesoMensualPendienteVm,
@@ -77,6 +78,42 @@ describe('proceso-mensual-estado-operativo.rules', () => {
     expect(vm.estadoClave).toBe('listo_para_generar_base');
     expect(vm.accionPrincipal.label).toBe('Verificar y generar nómina');
     expect(vm.accionPrincipal.accionLocal).toBe('generarBase');
+  });
+
+  it('contarBloqueosConfiguracionPeriodo separa nómina y trabajadores', () => {
+    const conteo = contarBloqueosConfiguracionPeriodo([
+      bloqueoParametros,
+      {
+        codigo: 'BLOQ-002',
+        titulo: 'Calculo bloqueado',
+        descripcion: 'Revisa el periodo.',
+        severidad: 'danger',
+      },
+      {
+        codigo: 'BLOQ-006',
+        titulo: 'Trabajador bloqueado',
+        descripcion: 'Revisa trabajadores.',
+        severidad: 'danger',
+      },
+    ]);
+    expect(conteo).toEqual({ trabajadores: 1, nomina: 1 });
+  });
+
+  it('con bloqueo de nómina sin trabajadores pide revisar nómina', () => {
+    const vm = resolverEstadoOperativoProcesoMensual(inputBase({
+      tienePrevalidacion: true,
+      parametrosOperativos: true,
+      bloqueosPrevalidacion: [{
+        codigo: 'BLOQ-002',
+        titulo: 'Periodo con bloqueos',
+        descripcion: 'Revisa la nomina del periodo.',
+        severidad: 'danger',
+      }],
+    }));
+
+    expect(vm.estadoClave).toBe('periodo_con_pendientes');
+    expect(vm.accionPrincipal.label).toBe('Revisar nómina');
+    expect(vm.accionPrincipal.accionLocal).toBe('revisarBloqueos');
   });
 
   it('con BLOQ-006 y parametros pendientes prioriza trabajadores bloqueados', () => {

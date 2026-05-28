@@ -30,6 +30,7 @@ import { formatoFechaHoraNomina, formatoMontoNomina, horaCortaNomina } from '../
 import { validarPeriodoEntradaMensual } from '../../../entradas/rules/entradas-mensuales-periodo.rules';
 import { buildActaOperativaPeriodoViewModel } from '../../../rules/acta-operativa-periodo.rules';
 import {
+  contarBloqueosConfiguracionPeriodo,
   hayPendientesRevisionTrabajadores,
   resolverEstadoOperativoProcesoMensual,
   type ProcesoMensualAccionLocal,
@@ -135,6 +136,7 @@ import {
   buildNominaHistorialTablaRows,
   movimientoRowsAExpediente,
 } from '../../../rules/proceso-mensual-detalle-mensual.rules';
+import { mergeSnapshotsHistorialPeriodo } from '../../../rules/proceso-mensual-historial-periodo.rules';
 import {
   buildNominaConfiguracionPeriodoItems,
   buildNominaWorkspaceTabsVisibleMeta,
@@ -595,6 +597,19 @@ export class ProcesoMensualPresentacionFacade {
     switch (accion) {
       case 'abrir_parametros':
         void this.entrarVistaParametros();
+        break;
+      case 'verificar_periodo':
+        this.validarPeriodo();
+        break;
+      case 'generar_nomina':
+        if (this.contextoOperativoPeriodo().tienePrevalidacion) {
+          this.generarPreNomina();
+        } else {
+          this.validarPeriodo();
+        }
+        break;
+      case 'revisar_bloqueos_nomina':
+        this.revisarBloqueosOperativos();
         break;
       case 'revisar_trabajadores':
         this.seleccionarNominaDetalleMensualVista('trabajadores');
@@ -1542,7 +1557,10 @@ export class ProcesoMensualPresentacionFacade {
   );
 
   readonly nominaHistorialVisual = computed(() => {
-    const snapshots = this.store.historialSnapshotsPeriodo();
+    const snapshots = mergeSnapshotsHistorialPeriodo(
+      this.store.historialSnapshotsPeriodo(),
+      this.store.snapshotActivo(),
+    );
     const items: Array<{ hora: string; texto: string; destacado: boolean; etapa: string; usuario: string; resultado: string }> = [];
 
     if (this.store.preNomina()) {
@@ -1656,17 +1674,22 @@ export class ProcesoMensualPresentacionFacade {
   readonly configuracionPeriodoItems = computed(() => {
     const dash = this.dashboardResumen();
     const estado = this.estadoOperativo();
+    const bloqueosCfg = contarBloqueosConfiguracionPeriodo(asArray(estado.bloqueos));
+    const ctx = this.contextoOperativoPeriodo();
     return buildNominaConfiguracionPeriodoItems({
       parametrosListos: dash.parametrosListos,
       parametrosConsultando: this.store.consultandoParametros(),
       trabajadoresAptos: dash.trabajadoresAptos,
       trabajadoresPorRevisar: dash.trabajadoresPorRevisar ?? 0,
-      bloqueosCount: asArray(estado.bloqueos).length,
+      bloqueosTrabajadoresCount: bloqueosCfg.trabajadores,
+      bloqueosNominaCount: bloqueosCfg.nomina,
       advertenciasCount: asArray(estado.advertencias).length,
       movimientosAprobados: dash.movimientosAprobados,
       movimientosPendientes: dash.movimientosPendientes,
       recurrentesAplicables: dash.asignacionesAplicables,
       nominaFrame: this.nominaVisualFrame(),
+      nominaGenerada: ctx.baseGenerada,
+      tienePrevalidacion: ctx.tienePrevalidacion,
       nominaConfirmada: this.nominaEstaCerradaOperativamente(),
       liquidacionesGeneradas: this.liquidacionesGeneradasCount(),
     });

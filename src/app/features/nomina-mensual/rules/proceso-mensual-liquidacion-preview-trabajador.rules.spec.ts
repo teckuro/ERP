@@ -30,6 +30,7 @@ describe('buildLiquidacionPreviewTrabajador', () => {
         ],
         descuentosLegales: [
           { codigo: 'AFP', descripcion: 'Cotización AFP', monto: 200_000, origen: 'motor', imponible: false, tributable: false },
+          { codigo: 'AFC', descripcion: 'Seguro de cesantia trabajador', monto: 4_800, origen: 'afc_parametro', imponible: false, tributable: false },
         ],
         descuentosVoluntarios: [
           { codigo: 'IMPUESTO_UNICO', descripcion: 'Impuesto único', monto: 1_219_765, origen: 'motor', imponible: false, tributable: false },
@@ -46,7 +47,7 @@ describe('buildLiquidacionPreviewTrabajador', () => {
         cotizacionLey16744: 0,
         impuestoUnico: 1_219_765,
         totalHaberes: 1_810_002,
-        totalDescuentos: 1_419_765,
+        totalDescuentos: 1_424_565,
         liquidoAPago: 390_236,
         issues: [],
         trazabilidad: [
@@ -86,6 +87,11 @@ describe('buildLiquidacionPreviewTrabajador', () => {
     expect(vm.secciones[0]?.lineas.some((l) => l.etiqueta.includes('Sueldo'))).toBe(true);
     expect(vm.totales.liquido).toContain('390');
     expect(vm.referencias.some((r) => r.titulo.toLowerCase().includes('imponible'))).toBe(true);
+    const afc = vm.secciones
+      .find((s) => s.titulo === 'Descuentos')
+      ?.lineas.find((l) => l.etiqueta.toLowerCase().includes('cesant'));
+    expect(afc?.monto).toContain('4');
+    expect(afc?.monto).not.toContain('1.086');
   });
 
   it('no expone cuando no hay datos de cálculo', () => {

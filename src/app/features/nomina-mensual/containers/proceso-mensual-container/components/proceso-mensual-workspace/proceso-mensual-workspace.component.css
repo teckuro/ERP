@@ -698,6 +698,109 @@
 }
 
 
+.payroll-operational-tabs-bar {
+  display: flex;
+  align-items: stretch;
+  gap: 0;
+  border-bottom: 1px solid var(--erp-border-strong, #c5cdc3);
+  background: var(--erp-surface);
+}
+
+.payroll-operational-tabs-bar .payroll-operational-tabs--workspace {
+  flex: 1 1 auto;
+  min-width: 0;
+  border-bottom: 0;
+}
+
+.payroll-operational-tabs__settings {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  align-self: center;
+  width: 32px;
+  min-width: 32px;
+  height: 32px;
+  margin: 1px 6px 1px 2px;
+  padding: 0;
+  border: 0;
+  border-radius: var(--payroll-radius-control, 3px);
+  background: transparent;
+  color: var(--erp-muted);
+  cursor: pointer;
+}
+
+.payroll-operational-tabs__settings lucide-icon,
+.payroll-operational-tabs__settings .payroll-icon-btn__glyph {
+  width: 15px;
+  height: 15px;
+}
+
+.payroll-operational-tabs__settings:hover {
+  color: var(--erp-ink);
+  background: var(--erp-surface-soft);
+}
+
+.payroll-operational-tabs__settings:focus-visible {
+  outline: 2px solid var(--erp-ink);
+  outline-offset: -2px;
+}
+
+.payroll-period-actions-overlay {
+  z-index: 65;
+}
+
+.payroll-period-actions-dialog {
+  display: flex;
+  flex-direction: column;
+  width: min(520px, calc(100vw - 32px));
+  max-height: min(85vh, 720px);
+  overflow: hidden;
+  border: 1px solid var(--erp-border-strong, #c5cdc3);
+  border-radius: 7px;
+  background: var(--erp-surface, #ffffff);
+}
+
+.payroll-period-actions-dialog__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--erp-border, #dadfd7);
+}
+
+.payroll-period-actions-dialog__header h2 {
+  margin: 0 0 2px;
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: var(--erp-ink);
+}
+
+.payroll-period-actions-dialog__header p {
+  margin: 0;
+  font-size: 0.75rem;
+  color: var(--erp-muted);
+}
+
+.payroll-period-actions-dialog__close {
+  flex: 0 0 auto;
+}
+
+.payroll-period-actions--modal {
+  overflow: auto;
+  padding: 10px 14px 14px;
+}
+
+.payroll-period-actions--modal .payroll-period-actions__list,
+.payroll-period-actions--modal .payroll-period-actions__admin {
+  padding-inline: 0;
+}
+
+.payroll-period-actions--modal .payroll-period-actions__feedback {
+  padding: 0 0 8px;
+}
+
 .payroll-period-actions--workspace {
   margin: 0;
   border: 0;

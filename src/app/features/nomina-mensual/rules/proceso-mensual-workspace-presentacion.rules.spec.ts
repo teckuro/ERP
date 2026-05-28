@@ -18,7 +18,29 @@ import {
   resolveBitacoraRailIcon,
   resolveFocusPresentacion,
   resolveFranjaItemTono,
+  type NominaConfiguracionPeriodoInput,
 } from './proceso-mensual-workspace-presentacion.rules';
+
+function inputChecklist(overrides: Partial<NominaConfiguracionPeriodoInput> = {}): NominaConfiguracionPeriodoInput {
+  return {
+    parametrosListos: true,
+    parametrosConsultando: false,
+    trabajadoresAptos: 10,
+    trabajadoresPorRevisar: 0,
+    bloqueosTrabajadoresCount: 0,
+    bloqueosNominaCount: 0,
+    advertenciasCount: 0,
+    movimientosAprobados: 0,
+    movimientosPendientes: 0,
+    recurrentesAplicables: null,
+    nominaFrame: 'sin_generar',
+    nominaGenerada: false,
+    tienePrevalidacion: false,
+    nominaConfirmada: false,
+    liquidacionesGeneradas: 0,
+    ...overrides,
+  };
+}
 
 describe('proceso-mensual-workspace-presentacion.rules', () => {
   it('sin_generar usa layout hero con areas', () => {
@@ -158,20 +180,10 @@ describe('proceso-mensual-workspace-presentacion.rules', () => {
   });
 
   it('buildNominaConfiguracionPeriodoItems prioriza parámetros bloqueados', () => {
-    const items = buildNominaConfiguracionPeriodoItems({
+    const items = buildNominaConfiguracionPeriodoItems(inputChecklist({
       parametrosListos: false,
-      parametrosConsultando: false,
       trabajadoresAptos: null,
-      trabajadoresPorRevisar: 0,
-      bloqueosCount: 0,
-      advertenciasCount: 0,
-      movimientosAprobados: 0,
-      movimientosPendientes: 0,
-      recurrentesAplicables: null,
-      nominaFrame: 'sin_generar',
-      nominaConfirmada: false,
-      liquidacionesGeneradas: 0,
-    });
+    }));
 
     expect(items.find((item) => item.id === 'parametros')).toMatchObject({
       icon: 'sliders',
@@ -184,20 +196,13 @@ describe('proceso-mensual-workspace-presentacion.rules', () => {
   });
 
   it('buildNominaConfiguracionPeriodoItems muestra trabajadores por revisar', () => {
-    const items = buildNominaConfiguracionPeriodoItems({
-      parametrosListos: true,
-      parametrosConsultando: false,
-      trabajadoresAptos: 10,
+    const items = buildNominaConfiguracionPeriodoItems(inputChecklist({
       trabajadoresPorRevisar: 2,
-      bloqueosCount: 0,
       advertenciasCount: 1,
-      movimientosAprobados: 3,
-      movimientosPendientes: 0,
-      recurrentesAplicables: 4,
       nominaFrame: 'en_revision',
-      nominaConfirmada: false,
-      liquidacionesGeneradas: 0,
-    });
+      nominaGenerada: true,
+      tienePrevalidacion: true,
+    }));
 
     expect(items.find((item) => item.id === 'trabajadores')).toMatchObject({
       icon: 'users',
@@ -208,20 +213,68 @@ describe('proceso-mensual-workspace-presentacion.rules', () => {
     });
   });
 
+  it('buildNominaConfiguracionPeriodoItems sin borrador muestra Sin generar', () => {
+    const items = buildNominaConfiguracionPeriodoItems(inputChecklist({
+      tienePrevalidacion: true,
+      nominaFrame: 'sin_generar',
+    }));
+
+    expect(items.map((item) => item.id)).toEqual(['parametros', 'nomina_revision', 'trabajadores', 'liquidaciones']);
+    expect(items.find((item) => item.id === 'nomina_revision')).toMatchObject({
+      estado: 'Sin generar',
+      accionLabel: 'Generar nómina',
+      tono: 'neutral',
+    });
+  });
+
+  it('buildNominaConfiguracionPeriodoItems muestra fila nómina con bloqueo BLOQ-002', () => {
+    const items = buildNominaConfiguracionPeriodoItems(inputChecklist({
+      bloqueosNominaCount: 1,
+      nominaFrame: 'con_pendientes',
+      nominaGenerada: true,
+      tienePrevalidacion: true,
+    }));
+
+    expect(items.find((item) => item.id === 'nomina_revision')).toMatchObject({
+      label: 'Nómina del período',
+      estado: 'Cerrada',
+      accionLabel: 'Revisar nómina',
+      tono: 'danger',
+    });
+    expect(items.find((item) => item.id === 'trabajadores')).toMatchObject({
+      estado: 'Listo',
+      tono: 'ok',
+    });
+  });
+
+  it('buildNominaConfiguracionPeriodoItems bloqueo BLOQ-006 en fila trabajadores', () => {
+    const items = buildNominaConfiguracionPeriodoItems(inputChecklist({
+      bloqueosTrabajadoresCount: 1,
+      nominaFrame: 'con_pendientes',
+      nominaGenerada: true,
+      tienePrevalidacion: true,
+    }));
+
+    expect(items.find((item) => item.id === 'nomina_revision')?.estado).toBe('En revisión');
+    expect(items.find((item) => item.id === 'trabajadores')).toMatchObject({
+      estado: 'Bloqueado',
+      valor: '1 bloqueo en trabajadores',
+      accionLabel: 'Revisar trabajadores',
+      tono: 'danger',
+    });
+  });
+
   it('buildNominaConfiguracionPeriodoItems habilita liquidaciones con nómina confirmada', () => {
-    const items = buildNominaConfiguracionPeriodoItems({
-      parametrosListos: true,
-      parametrosConsultando: false,
-      trabajadoresAptos: 10,
-      trabajadoresPorRevisar: 0,
-      bloqueosCount: 0,
-      advertenciasCount: 0,
-      movimientosAprobados: 3,
-      movimientosPendientes: 0,
-      recurrentesAplicables: 4,
+    const items = buildNominaConfiguracionPeriodoItems(inputChecklist({
       nominaFrame: 'confirmada',
+      nominaGenerada: true,
+      tienePrevalidacion: true,
       nominaConfirmada: true,
-      liquidacionesGeneradas: 0,
+    }));
+
+    expect(items.find((item) => item.id === 'nomina_revision')).toMatchObject({
+      estado: 'Cerrada',
+      valor: 'Nómina confirmada',
     });
 
     expect(items.find((item) => item.id === 'liquidaciones')).toMatchObject({
@@ -234,20 +287,13 @@ describe('proceso-mensual-workspace-presentacion.rules', () => {
   });
 
   it('buildNominaConfiguracionPeriodoItems cambia a ver liquidaciones cuando existen', () => {
-    const items = buildNominaConfiguracionPeriodoItems({
-      parametrosListos: true,
-      parametrosConsultando: false,
-      trabajadoresAptos: 10,
-      trabajadoresPorRevisar: 0,
-      bloqueosCount: 0,
-      advertenciasCount: 0,
-      movimientosAprobados: 3,
-      movimientosPendientes: 0,
-      recurrentesAplicables: 4,
+    const items = buildNominaConfiguracionPeriodoItems(inputChecklist({
       nominaFrame: 'liquidaciones_generadas',
+      nominaGenerada: true,
+      tienePrevalidacion: true,
       nominaConfirmada: true,
       liquidacionesGeneradas: 5,
-    });
+    }));
 
     expect(items.find((item) => item.id === 'liquidaciones')).toMatchObject({
       icon: 'receipt',

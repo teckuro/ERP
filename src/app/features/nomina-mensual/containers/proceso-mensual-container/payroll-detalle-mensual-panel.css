@@ -37,29 +37,45 @@
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  min-height: 28px;
-  padding: 2px 8px;
-  border: 0;
+  min-height: 26px;
+  padding: 2px 7px;
+  border: 1px solid var(--erp-border, #dadfd7);
   border-radius: var(--payroll-radius-control, 3px);
-  background: var(--erp-surface-soft, #fafaf7);
-  color: var(--erp-ink, #243b53);
+  background: var(--erp-surface, #ffffff);
+  color: var(--erp-muted, #647084);
   font-size: 0.75rem;
   font-weight: 600;
   line-height: 1.2;
   cursor: pointer;
 }
 
+.payroll-tab-summary__alerta lucide-icon,
+.payroll-tab-summary__alerta .payroll-icon-btn__glyph {
+  width: 14px;
+  height: 14px;
+  flex: 0 0 auto;
+}
+
 .payroll-tab-summary__alerta:hover {
   background: var(--erp-surface-soft, #fafaf7);
+  color: var(--erp-ink, #243b53);
 }
 
 .payroll-tab-summary__alerta--bloqueo {
-  border-color: color-mix(in srgb, var(--erp-danger, #b42318) 35%, var(--erp-border, #dadfd7));
+  border-color: color-mix(in srgb, var(--erp-danger, #b42318) 28%, var(--erp-border, #dadfd7));
+  color: var(--erp-danger, #b42318);
+}
+
+.payroll-tab-summary__alerta--bloqueo lucide-icon {
   color: var(--erp-danger, #b42318);
 }
 
 .payroll-tab-summary__alerta--advertencia {
-  border-color: color-mix(in srgb, var(--erp-warning, #b54708) 35%, var(--erp-border, #dadfd7));
+  border-color: color-mix(in srgb, var(--erp-warning, #b54708) 28%, var(--erp-border, #dadfd7));
+  color: var(--erp-warning, #b54708);
+}
+
+.payroll-tab-summary__alerta--advertencia lucide-icon {
   color: var(--erp-warning, #b54708);
 }
 

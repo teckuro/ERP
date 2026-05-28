@@ -411,3 +411,19 @@ Movimientos de remuneracion queda administrado por trabajador en la vista mensua
 `Movimientos de remuneración` es el menú único para gestionar movimientos mensuales y recurrentes por trabajador. La pantalla mantiene la grilla de trabajadores como entrada principal y usa un modal de gestión del trabajador con tres secciones: movimientos del mes, recurrentes y pendientes de revisión.
 
 El alta mensual y el alta recurrente son formularios separados. El modal mensual registra solo movimientos puntuales del período activo. El modal recurrente registra o edita asignaciones recurrentes y concentra la futura sección de cuotas. No se agregan tablas, SQL, motor ni payloads nuevos.
+
+## Pruebas del motor y limpieza de período
+
+Antes de probar **generar nómina → F5 → confirmar** en un período de desarrollo, limpiar snapshots y liquidaciones de ese período:
+
+```bash
+psql "$SUPABASE_DB_URL" -v ON_ERROR_STOP=1 -v periodo=2026-05 -f bd/scripts/limpiar-nominas-mensuales.sql
+```
+
+**Tests unitarios (sin BD):**
+
+- `proceso-mensual-motor.rules.spec.ts` — reglas y bloqueos del motor.
+- `proceso-mensual-motor-calculos-concretos.spec.ts` — montos esperados (AFP, salud, AFC 0,6%, base tributable, líquido).
+- `proceso-mensual-liquidacion-preview-trabajador.rules.spec.ts` — previsualización por trabajador.
+
+**Tasas:** el motor normaliza catálogos que mezclan decimal (`0.006` = 0,6%) y porcentaje (`0.6` = 0,6%). Un AFC cercano al millón sobre base ~1,8M suele indicar tasa mal interpretada (60% en lugar de 0,6%); los tests `AFC interpreta 0.6` y el escenario `1.810.002` lo evitan.
