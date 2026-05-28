@@ -4,6 +4,7 @@
 @let pres = focusPresentacion();
 @let mostrarActa = f.mostrarActaPreparacionCentral();
 @let mostrarFocusPreparacion = !mostrarActa
+  && !f.preparacionNominaUnificada()
   && (!f.contextoOperativoPeriodo().baseGenerada || frame.frame === 'generando')
   && f.contextoOperativoPeriodo().tienePrevalidacion;
 <section class="payroll-view-panel" aria-label="Consola del período">
@@ -12,27 +13,64 @@
     [attr.aria-busy]="f.rehidratandoPeriodo() || f.consultandoSnapshot() || f.consultandoSnapshotCompleto()"
   >
     @if (f.flujoEnCurso()) {
-      <div class="payroll-workspace-loading" role="status" aria-live="polite">
-        <div class="payroll-workspace-loading__panel">
-          <span class="payroll-workspace-loading__spinner" aria-hidden="true"></span>
-          <div class="payroll-workspace-loading__copy">
-            <p class="payroll-workspace-loading__title">
-              {{
-                f.calculandoPreliminar()
-                  ? 'Calculando remuneraciones...'
-                  : f.flujoEnCursoMensaje()
-              }}
-            </p>
-            @if (f.calculandoPreliminar()) {
-              <p class="payroll-workspace-loading__message">
-                Procesando tramos de impuesto único y cotizaciones obligatorias.
-              </p>
-            }
+      @if (f.preparacionNominaProgreso(); as progreso) {
+        <div
+          class="payroll-workspace-loading payroll-workspace-loading--preparacion"
+          role="status"
+          aria-live="polite"
+        >
+          <div class="payroll-workspace-loading__panel payroll-workspace-loading__panel--preparacion">
+            <span class="payroll-workspace-loading__spinner" aria-hidden="true"></span>
+            <div class="payroll-workspace-loading__copy">
+              <p class="payroll-workspace-loading__title">{{ progreso.titulo }}</p>
+              @if (progreso.subtitulo) {
+                <p class="payroll-workspace-loading__message">{{ progreso.subtitulo }}</p>
+              }
+            </div>
+            <ol class="payroll-preparacion-etapas" aria-label="Etapas de preparación">
+              @for (etapa of progreso.etapas; track etapa.clave) {
+                <li
+                  class="payroll-preparacion-etapas__item"
+                  [class.payroll-preparacion-etapas__item--hecho]="etapa.marca === 'hecho'"
+                  [class.payroll-preparacion-etapas__item--actual]="etapa.marca === 'actual'"
+                  [attr.aria-current]="etapa.marca === 'actual' ? 'step' : null"
+                >
+                  <span class="payroll-preparacion-etapas__mark" aria-hidden="true">
+                    <lucide-icon [name]="resolveBitacoraRailIcon(etapa.marca)" />
+                  </span>
+                  <span class="payroll-preparacion-etapas__label">{{ etapa.etiqueta }}</span>
+                </li>
+              }
+            </ol>
           </div>
         </div>
-      </div>
+      } @else {
+        <div class="payroll-workspace-loading" role="status" aria-live="polite">
+          <div class="payroll-workspace-loading__panel">
+            <span class="payroll-workspace-loading__spinner" aria-hidden="true"></span>
+            <div class="payroll-workspace-loading__copy">
+              <p class="payroll-workspace-loading__title">
+                {{
+                  f.calculandoPreliminar()
+                    ? 'Calculando remuneraciones...'
+                    : f.flujoEnCursoMensaje()
+                }}
+              </p>
+              @if (f.calculandoPreliminar()) {
+                <p class="payroll-workspace-loading__message">
+                  Procesando tramos de impuesto único y cotizaciones obligatorias.
+                </p>
+              }
+            </div>
+          </div>
+        </div>
+      }
     }
-    <main class="payroll-main" [attr.aria-labelledby]="mostrarFocusPreparacion ? 'payroll-focus-title' : null">
+    <main
+      class="payroll-main"
+      [class.payroll-main--bloqueada]="f.preparacionNominaUnificada()"
+      [attr.aria-labelledby]="mostrarFocusPreparacion ? 'payroll-focus-title' : null"
+    >
       @if (mostrarFocusPreparacion) {
       <section
         class="payroll-focus payroll-focus--operativo"

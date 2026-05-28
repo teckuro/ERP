@@ -1,3 +1,9 @@
+## 2026-05-28 - Nómina mensual: flujo unificado verificar y generar (overlay etapas)
+
+- **Cambio:** «Verificar y generar» usa un solo overlay con lista de etapas (verificar → borrador → cálculo → guardar → bitácora), sin alternar acta/focus/layout `--preparacion` ni parpadeos de checklist/shell/tabs. Modo encadenado en store omite vaciado intermedio de snapshot y carga completa duplicada tras validar.
+- **Archivos:** `proceso-mensual-periodo.store.ts`, `proceso-mensual-presentacion.facade.ts`, `proceso-mensual-workspace.rules.ts`, `proceso-mensual-workspace.component.{html,css}`, specs.
+- **No tocado:** estilos globales, `angular.json`, SQL/motor.
+
 ## 2026-05-28 - Nómina mensual: checklist resumido (parámetros, nómina, trabajadores, liquidaciones)
 
 - **Cambio:** Checklist sin fila Movimientos. **Nómina del período** siempre visible: «Sin generar» sin borrador, «Cerrada» con bloqueos o confirmada, resumen según frame. Acciones `verificar_periodo` / `generar_nomina` desde la fila.

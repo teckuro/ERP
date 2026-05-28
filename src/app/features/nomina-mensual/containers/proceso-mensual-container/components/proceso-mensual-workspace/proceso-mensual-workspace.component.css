@@ -560,6 +560,68 @@
   line-height: 1.45;
 }
 
+.payroll-workspace-loading--preparacion {
+  background: rgb(248 250 252 / 0.92);
+}
+
+.payroll-workspace-loading__panel--preparacion {
+  width: min(100%, 28rem);
+  align-items: stretch;
+  padding: 1.75rem 1.5rem 1.5rem;
+  text-align: left;
+  box-shadow: 0 12px 32px rgb(15 23 42 / 0.1);
+}
+
+.payroll-workspace-loading__panel--preparacion .payroll-workspace-loading__copy {
+  align-self: center;
+  text-align: center;
+  max-width: none;
+}
+
+.payroll-preparacion-etapas {
+  display: grid;
+  gap: 0.35rem;
+  width: 100%;
+  margin: 1rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.payroll-preparacion-etapas__item {
+  display: grid;
+  grid-template-columns: 1.25rem minmax(0, 1fr);
+  gap: 0.5rem;
+  align-items: center;
+  color: #64748b;
+  font-size: 0.8125rem;
+  line-height: 1.35;
+}
+
+.payroll-preparacion-etapas__item--hecho {
+  color: #475569;
+}
+
+.payroll-preparacion-etapas__item--actual {
+  color: #0f172a;
+  font-weight: 600;
+}
+
+.payroll-preparacion-etapas__mark {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.72;
+}
+
+.payroll-preparacion-etapas__item--actual .payroll-preparacion-etapas__mark {
+  opacity: 1;
+  color: var(--erp-primary, #2563eb);
+}
+
+.payroll-main--bloqueada {
+  pointer-events: none;
+}
+
 @keyframes payroll-loading-spin {
   to {
     transform: rotate(1turn);

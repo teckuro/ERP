@@ -121,9 +121,11 @@ import {
   buildNominaFrameView,
   buildNominaGuiaPanelCopy,
   buildNominaResumenSuperior,
+  buildPreparacionNominaProgresoVm,
   buildResumenRevisionTrabajadores,
   mapBitacoraRailEtapas,
   resolveNominaVisualFrame,
+  type PreparacionNominaEtapaClave,
 } from '../../../rules/proceso-mensual-workspace.rules';
 import {
   buildNominaDetalleMensualMovimientosRows,
@@ -331,10 +333,37 @@ export class ProcesoMensualPresentacionFacade {
   readonly exitoAccionPeriodo = this.store.exitoAccionPeriodo;
   readonly overlay = this.overlaysPort.overlay;
 
-  readonly flujoEnCurso = computed(() => this.store.accionPeriodoEnCurso());
+  private readonly encadenarGeneracionTrasVerificacion = signal(false);
+  /** Verificar + generar borrador (+ cálculo preliminar) como un solo paso visible para RRHH. */
+  private readonly preparacionNominaUnificadaSignal = signal(false);
+
+  private configuracionPeriodoItemsCongelados: ReturnType<
+    typeof buildNominaConfiguracionPeriodoItems
+  > | null = null;
+
+  private bitacoraRailEtapasCongeladas: BitacoraRailEtapaVm[] | null = null;
+
+  readonly preparacionNominaUnificada = this.preparacionNominaUnificadaSignal.asReadonly();
+
+  readonly flujoEnCurso = computed(
+    () => this.store.accionPeriodoEnCurso() || this.preparacionNominaUnificada(),
+  );
+
+  readonly preparacionNominaProgreso = computed(() => {
+    if (!this.preparacionNominaUnificada()) {
+      return null;
+    }
+    const etapa = this.resolveEtapaPreparacionNomina();
+    return buildPreparacionNominaProgresoVm({
+      titulo: mensajePreparacionNominaEnCurso(),
+      etapaActiva: etapa,
+    });
+  });
+
   readonly flujoEnCursoMensaje = computed(() => {
     if (this.preparacionNominaUnificada()) {
-      return mensajePreparacionNominaEnCurso();
+      const progreso = this.preparacionNominaProgreso();
+      return progreso?.subtitulo ?? mensajePreparacionNominaEnCurso();
     }
     if (this.store.validando()) return 'Verificando período';
     if (this.store.generandoPreNomina()) return 'Generando nómina';
@@ -499,6 +528,7 @@ export class ProcesoMensualPresentacionFacade {
       destroyRef,
       () => {
         const frame = this.nominaFrame();
+        const enPreparacion = this.preparacionNominaUnificada();
         const actaVisible = this.mostrarActaPreparacionCentral();
         const acta = actaVisible ? this.actaPreparacionCentral() : null;
         const ocultarCtaShell = acta != null && shellDebeOcultarCtaParametros(acta);
@@ -508,16 +538,16 @@ export class ProcesoMensualPresentacionFacade {
             { label: 'Nómina mensual' },
           ],
           statusChip: {
-            label: frame.chip,
-            tone: toneDesdeNominaFrame(frame.frame),
+            label: enPreparacion ? 'En curso' : frame.chip,
+            tone: enPreparacion ? 'neutral' : toneDesdeNominaFrame(frame.frame),
           },
-          primaryAction: ocultarCtaShell
+          primaryAction: ocultarCtaShell || enPreparacion
             ? undefined
             : frame.ctaTipo === 'local' && frame.ctaAccion
               ? {
                   label: frame.ctaLabel,
                   disabled: frame.ctaDisabled,
-                  loading: this.accionPeriodoEnCurso(),
+                  loading: this.flujoEnCurso(),
                   actionId: frame.ctaAccion,
                 }
               : frame.ctaTipo === 'ruta' && frame.ctaRuta
@@ -566,10 +596,6 @@ export class ProcesoMensualPresentacionFacade {
   readonly nominaMasivaBusqueda = this.revisionTrabajadoresPort.nominaMasivaBusqueda;
   readonly nominaMasivaTrabajadorSeleccionadoId = this.revisionTrabajadoresPort.nominaMasivaTrabajadorSeleccionadoId;
   readonly actaOperativaPreparada = this.workspacePort.actaOperativaPreparada;
-
-  private readonly encadenarGeneracionTrasVerificacion = signal(false);
-  /** Verificar + generar borrador (+ cálculo preliminar) como un solo paso visible para RRHH. */
-  private readonly preparacionNominaUnificada = signal(false);
 
   accionPeriodoEnCurso(): boolean {
     return this.store.accionPeriodoEnCurso();
@@ -1388,6 +1414,7 @@ export class ProcesoMensualPresentacionFacade {
       generandoPreNomina: this.store.generandoPreNomina(),
       calculandoPreliminar: this.store.calculandoPreliminar(),
       rehidratandoPeriodo: this.store.rehidratandoPeriodo(),
+      preparacionNominaUnificada: this.preparacionNominaUnificada(),
       estadoClave: this.estadoOperativo().estadoClave,
     }),
   );
@@ -1410,6 +1437,9 @@ export class ProcesoMensualPresentacionFacade {
   private readonly syncNominaWorkspaceTab = effect(() => {
     const nav = this.nominaWorkspaceNavigationSugerida();
     untracked(() => {
+      if (this.preparacionNominaUnificada()) {
+        return;
+      }
       if (this.overlaysPort.verificacionParametrosActiva()) {
         return;
       }
@@ -1432,7 +1462,13 @@ export class ProcesoMensualPresentacionFacade {
     this.store.validando();
     this.store.generandoPreNomina();
     this.store.calculandoPreliminar();
-    if (this.store.validando() || this.store.generandoPreNomina() || this.store.calculandoPreliminar()) {
+    this.preparacionNominaUnificada();
+    if (
+      this.preparacionNominaUnificada()
+      || this.store.validando()
+      || this.store.generandoPreNomina()
+      || this.store.calculandoPreliminar()
+    ) {
       return;
     }
     if (this.overlaysPort.verificacionParametrosActiva()) {
@@ -1453,7 +1489,7 @@ export class ProcesoMensualPresentacionFacade {
       if (this.puedeEncadenarGeneracionTrasVerificacion()) {
         this.generarPreNomina();
       } else {
-        this.preparacionNominaUnificada.set(false);
+        this.finalizarPreparacionNominaUnificada();
       }
     });
   });
@@ -1465,12 +1501,44 @@ export class ProcesoMensualPresentacionFacade {
     const ocupado =
       this.store.validando()
       || this.store.generandoPreNomina()
-      || this.store.calculandoPreliminar();
+      || this.store.calculandoPreliminar()
+      || this.store.guardandoSnapshot()
+      || this.store.consultandoSnapshotCompleto()
+      || this.store.rehidratandoPeriodo();
     if (ocupado) {
       return;
     }
-    untracked(() => this.preparacionNominaUnificada.set(false));
+    untracked(() => this.finalizarPreparacionNominaUnificada());
   });
+
+  private finalizarPreparacionNominaUnificada(): void {
+    this.preparacionNominaUnificadaSignal.set(false);
+    this.store.desactivarPreparacionEncadenada();
+    this.configuracionPeriodoItemsCongelados = null;
+    this.bitacoraRailEtapasCongeladas = null;
+  }
+
+  private iniciarPreparacionNominaUnificada(): void {
+    this.preparacionNominaUnificadaSignal.set(true);
+    this.store.activarPreparacionEncadenada();
+    this.configuracionPeriodoItemsCongelados = this.configuracionPeriodoItemsLive();
+    this.bitacoraRailEtapasCongeladas = [...this.bitacoraRailEtapasLive()];
+  }
+
+  private resolveEtapaPreparacionNomina(): PreparacionNominaEtapaClave | null {
+    const desdeStore = this.store.etapaPreparacionNomina();
+    if (desdeStore) {
+      return desdeStore;
+    }
+    if (this.store.validando()) return 'verificar';
+    if (this.store.generandoPreNomina() && !this.store.calculo()) return 'borrador';
+    if (this.store.calculandoPreliminar()) return 'calculo';
+    if (this.store.guardandoSnapshot()) return 'guardar';
+    if (this.store.consultandoSnapshotCompleto() || this.store.rehidratandoPeriodo()) {
+      return 'bitacora';
+    }
+    return null;
+  }
 
   readonly nominaFrame = computed<NominaVisualFrameView>(() => {
     const actual = this.buildNominaFrameViewActual();
@@ -1669,9 +1737,25 @@ export class ProcesoMensualPresentacionFacade {
     return partes.join(' · ');
   });
 
-  readonly bitacoraRailEtapas = computed<BitacoraRailEtapaVm[]>(() => mapBitacoraRailEtapas(this.bitacoraEtapas()));
+  readonly bitacoraRailEtapas = computed<BitacoraRailEtapaVm[]>(() => {
+    if (this.preparacionNominaUnificada() && this.bitacoraRailEtapasCongeladas) {
+      return this.bitacoraRailEtapasCongeladas;
+    }
+    return this.bitacoraRailEtapasLive();
+  });
+
+  private bitacoraRailEtapasLive(): BitacoraRailEtapaVm[] {
+    return mapBitacoraRailEtapas(this.bitacoraEtapas());
+  }
 
   readonly configuracionPeriodoItems = computed(() => {
+    if (this.preparacionNominaUnificada() && this.configuracionPeriodoItemsCongelados) {
+      return this.configuracionPeriodoItemsCongelados;
+    }
+    return this.configuracionPeriodoItemsLive();
+  });
+
+  private configuracionPeriodoItemsLive() {
     const dash = this.dashboardResumen();
     const estado = this.estadoOperativo();
     const bloqueosCfg = contarBloqueosConfiguracionPeriodo(asArray(estado.bloqueos));
@@ -1693,11 +1777,11 @@ export class ProcesoMensualPresentacionFacade {
       nominaConfirmada: this.nominaEstaCerradaOperativamente(),
       liquidacionesGeneradas: this.liquidacionesGeneradasCount(),
     });
-  });
+  }
 
   readonly mostrarActaPreparacionCentral = computed(() => {
     const ctx = this.contextoOperativoPeriodo();
-    if (ctx.baseGenerada || this.flujoEnCurso()) {
+    if (ctx.baseGenerada || this.flujoEnCurso() || this.preparacionNominaUnificada()) {
       return false;
     }
     return ctx.tienePrevalidacion;
@@ -2302,7 +2386,9 @@ export class ProcesoMensualPresentacionFacade {
     if (this.overlay().kind === 'informacion') {
       this.overlaysPort.cerrar();
     }
-    this.overlaysPort.habilitarInformacionPeriodo();
+    if (!this.store.modoPreparacionEncadenada()) {
+      this.overlaysPort.habilitarInformacionPeriodo();
+    }
     this.store.validarPeriodo();
   }
 
@@ -2310,7 +2396,9 @@ export class ProcesoMensualPresentacionFacade {
     if (this.overlay().kind === 'informacion') {
       this.overlaysPort.cerrar();
     }
-    this.overlaysPort.habilitarInformacionPeriodo();
+    if (!this.store.modoPreparacionEncadenada()) {
+      this.overlaysPort.habilitarInformacionPeriodo();
+    }
     this.store.generarPreNomina();
   }
 
@@ -2452,13 +2540,13 @@ export class ProcesoMensualPresentacionFacade {
     if (!ctx.baseGenerada) {
       if (!ctx.tienePrevalidacion) {
         this.overlaysPort.suprimirInformacionPeriodo();
-        this.preparacionNominaUnificada.set(true);
+        this.iniciarPreparacionNominaUnificada();
         this.encadenarGeneracionTrasVerificacion.set(true);
         this.validarPeriodo();
         return;
       }
       if (accion.accionLocal === 'generarBase' && !accion.disabled) {
-        this.preparacionNominaUnificada.set(true);
+        this.iniciarPreparacionNominaUnificada();
         this.generarPreNomina();
         return;
       }

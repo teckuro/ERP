@@ -22,7 +22,22 @@ export interface NominaVisualFrameInput {
   generandoPreNomina: boolean;
   calculandoPreliminar: boolean;
   rehidratandoPeriodo: boolean;
+  preparacionNominaUnificada?: boolean;
   estadoClave: ProcesoMensualEstadoClave;
+}
+
+export type PreparacionNominaEtapaClave = 'verificar' | 'borrador' | 'calculo' | 'guardar' | 'bitacora';
+
+export interface PreparacionNominaProgresoEtapaVm {
+  clave: PreparacionNominaEtapaClave;
+  etiqueta: string;
+  marca: BitacoraSubpasoMarca;
+}
+
+export interface PreparacionNominaProgresoVm {
+  titulo: string;
+  subtitulo: string | null;
+  etapas: PreparacionNominaProgresoEtapaVm[];
 }
 
 function asArray<T>(value: readonly T[] | null | undefined): T[] {
@@ -30,7 +45,13 @@ function asArray<T>(value: readonly T[] | null | undefined): T[] {
 }
 
 export function resolveNominaVisualFrame(input: NominaVisualFrameInput): NominaVisualFrame {
-  if (input.validando || input.generandoPreNomina || input.calculandoPreliminar || input.rehidratandoPeriodo) {
+  if (
+    input.preparacionNominaUnificada
+    || input.validando
+    || input.generandoPreNomina
+    || input.calculandoPreliminar
+    || input.rehidratandoPeriodo
+  ) {
     return 'generando';
   }
 
@@ -47,6 +68,52 @@ export function resolveNominaVisualFrame(input: NominaVisualFrameInput): NominaV
   if (estado === 'periodo_con_pendientes' || estado === 'resultado_con_bloqueos') return 'con_pendientes';
   if (estado === 'base_lista' || estado === 'resultado_preliminar_revisable') return 'en_revision';
   return 'sin_generar';
+}
+
+const PREPARACION_ETAPAS_ORDEN: readonly { clave: PreparacionNominaEtapaClave; etiqueta: string }[] = [
+  { clave: 'verificar', etiqueta: 'Verificar período' },
+  { clave: 'borrador', etiqueta: 'Generar borrador' },
+  { clave: 'calculo', etiqueta: 'Calcular remuneraciones' },
+  { clave: 'guardar', etiqueta: 'Guardar versión revisable' },
+  { clave: 'bitacora', etiqueta: 'Actualizar detalle del período' },
+];
+
+const PREPARACION_SUBTITULOS: Record<PreparacionNominaEtapaClave, string> = {
+  verificar: 'Revisamos parámetros, movimientos y trabajadores del período.',
+  borrador: 'Armamos el borrador preliminar de la nómina mensual.',
+  calculo: 'Procesamos tramos de impuesto único y cotizaciones obligatorias.',
+  guardar: 'Dejamos una versión revisable antes de confirmar.',
+  bitacora: 'Cargamos el detalle por trabajador en la consola.',
+};
+
+function indiceEtapaPreparacion(clave: PreparacionNominaEtapaClave | null): number {
+  if (!clave) return -1;
+  return PREPARACION_ETAPAS_ORDEN.findIndex((e) => e.clave === clave);
+}
+
+export function buildPreparacionNominaProgresoVm(input: {
+  titulo: string;
+  etapaActiva: PreparacionNominaEtapaClave | null;
+}): PreparacionNominaProgresoVm {
+  const activoIdx = indiceEtapaPreparacion(input.etapaActiva);
+  const etapas: PreparacionNominaProgresoEtapaVm[] = PREPARACION_ETAPAS_ORDEN.map((def, idx) => {
+    let marca: BitacoraSubpasoMarca = 'pendiente';
+    if (activoIdx < 0) {
+      marca = 'pendiente';
+    } else if (idx < activoIdx) {
+      marca = 'hecho';
+    } else if (idx === activoIdx) {
+      marca = 'actual';
+    }
+    return { clave: def.clave, etiqueta: def.etiqueta, marca };
+  });
+  const subtitulo =
+    input.etapaActiva != null ? PREPARACION_SUBTITULOS[input.etapaActiva] : null;
+  return {
+    titulo: input.titulo,
+    subtitulo,
+    etapas,
+  };
 }
 
 export function suggestNominaWorkspaceTab(frame: NominaVisualFrame): NominaWorkspaceTab {

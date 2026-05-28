@@ -8,6 +8,7 @@ import {
   buildNominaFrameView,
   buildNominaGuiaPanelCopy,
   buildResumenRevisionTrabajadores,
+  buildPreparacionNominaProgresoVm,
   resolveNominaVisualFrame,
   suggestNominaWorkspaceTab,
 } from './proceso-mensual-workspace.rules';
@@ -224,6 +225,30 @@ describe('proceso-mensual-workspace.rules', () => {
         estadoClave: 'base_lista',
       }),
     ).toBe('en_revision');
+  });
+
+  it('resolveNominaVisualFrame con preparacion unificada devuelve generando', () => {
+    expect(
+      resolveNominaVisualFrame({
+        validando: false,
+        generandoPreNomina: false,
+        calculandoPreliminar: false,
+        rehidratandoPeriodo: false,
+        preparacionNominaUnificada: true,
+        estadoClave: 'pendiente_validacion',
+      }),
+    ).toBe('generando');
+  });
+
+  it('buildPreparacionNominaProgresoVm marca etapa activa y anteriores', () => {
+    const vm = buildPreparacionNominaProgresoVm({
+      titulo: 'Verificando y generando nómina',
+      etapaActiva: 'calculo',
+    });
+    expect(vm.etapas.find((e) => e.clave === 'verificar')?.marca).toBe('hecho');
+    expect(vm.etapas.find((e) => e.clave === 'calculo')?.marca).toBe('actual');
+    expect(vm.etapas.find((e) => e.clave === 'bitacora')?.marca).toBe('pendiente');
+    expect(vm.subtitulo).toContain('impuesto');
   });
 
   it('suggestNominaWorkspaceTab evita resumen como tab inicial visible', () => {
