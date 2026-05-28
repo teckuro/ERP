@@ -31,6 +31,7 @@ export class ProcesoMensualRevisionTrabajadoresComponent {
   readonly abrirDetalleIcon = ChevronRight;
   readonly buscarTrabajadorIcon = Search;
   readonly modalMovimientosAbierto = signal(false);
+  readonly modalResumenDetalladoAbierto = signal(false);
   readonly detalleTrabajadorTab = signal<DetalleTrabajadorTab>('que_hacer');
 
   private ultimaPersonaDetalleTab = '';
@@ -43,6 +44,16 @@ export class ProcesoMensualRevisionTrabajadoresComponent {
         || this.facade.nominaMasivaMovimientosPanelRows().length === 0
       ) {
         this.modalMovimientosAbierto.set(false);
+      }
+    });
+
+    effect(() => {
+      if (!this.modalResumenDetalladoAbierto()) return;
+      if (
+        !this.facade.nominaMasivaDetalleSeleccionado()
+        || !this.facade.liquidacionPreviewTrabajadorSeleccionado().visible
+      ) {
+        this.modalResumenDetalladoAbierto.set(false);
       }
     });
 
@@ -127,6 +138,23 @@ export class ProcesoMensualRevisionTrabajadoresComponent {
     }
   }
 
+  incidenciasSituacionRequierenAtencion(): IncidenciaPeriodo[] {
+    return this.facade
+      .incidenciasSituacionNominaRevision()
+      .filter((incidencia) => incidencia.severidad !== 'info');
+  }
+
+  abrirModalResumenDetallado(): void {
+    if (!this.facade.liquidacionPreviewTrabajadorSeleccionado().visible) {
+      return;
+    }
+    this.modalResumenDetalladoAbierto.set(true);
+  }
+
+  cerrarModalResumenDetallado(): void {
+    this.modalResumenDetalladoAbierto.set(false);
+  }
+
   activarFila(row: NominaMasivaFila, event?: Event): void {
     event?.preventDefault();
     event?.stopPropagation();
@@ -184,6 +212,10 @@ export class ProcesoMensualRevisionTrabajadoresComponent {
 
   @HostListener('document:keydown.escape')
   cerrarConEscape(): void {
+    if (this.modalResumenDetalladoAbierto()) {
+      this.cerrarModalResumenDetallado();
+      return;
+    }
     if (this.modalMovimientosAbierto()) {
       this.cerrarModalMovimientos();
       return;

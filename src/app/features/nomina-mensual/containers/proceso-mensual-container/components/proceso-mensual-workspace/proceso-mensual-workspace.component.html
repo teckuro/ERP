@@ -102,30 +102,6 @@
         <aside class="payroll-workspace-sidebar" aria-label="Resumen operativo del período">
           <div class="payroll-workspace-sidebar__scroll">
           @if (!mostrarActa) {
-          <section class="payroll-franja-operativa" aria-label="Indicadores del período">
-            <ul class="payroll-franja-operativa__list">
-              @for (area of f.nominaFranjaAreas; track area.id) {
-                <li>
-                  <button
-                    type="button"
-                    [class]="f.franjaItemClase(area.id)"
-                    (click)="f.seleccionarFranjaArea(area.id)"
-                    [attr.aria-label]="area.ariaLabel"
-                  >
-                    <span class="payroll-franja-operativa__icon" aria-hidden="true">
-                      <lucide-icon [name]="area.icon"></lucide-icon>
-                    </span>
-                    <span class="payroll-franja-operativa__copy">
-                      <span class="payroll-franja-operativa__k">{{ area.label }}</span>
-                      <span class="payroll-franja-operativa__v">{{ f.valorFranjaArea(area.id) }}</span>
-                    </span>
-                    <lucide-icon name="chevron-right" class="payroll-franja-operativa__chevron" aria-hidden="true"></lucide-icon>
-                  </button>
-                </li>
-              }
-            </ul>
-          </section>
-
           <section class="payroll-configuracion-periodo" aria-labelledby="payroll-configuracion-periodo-title">
             <header class="payroll-configuracion-periodo__header">
               <h3 id="payroll-configuracion-periodo-title" class="payroll-resumen-block__title">Configuración del período</h3>

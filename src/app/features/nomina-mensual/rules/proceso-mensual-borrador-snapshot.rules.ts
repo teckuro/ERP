@@ -13,6 +13,7 @@ import type {
   ProcesoMensualPreNominaPeriodo,
   ProcesoMensualPrevalidacion,
   ProcesoMensualResumen,
+  TrabajadorPendienteRevisionPeriodo,
 } from '../models/proceso-mensual.model';
 
 export type { BorradorPersistContext };
@@ -59,13 +60,48 @@ export function buildBorradorSnapshotFromPreNomina(input: BuildBorradorSnapshotI
     trazabilidad: [],
   };
 
-  const borradorPersist: BorradorPersistContext = {
-    entradasMensuales: input.prevalidacion?.entradasMensuales ?? [],
-    resumenPrevalidacion: input.prevalidacion?.resumen ?? null,
-    prevalidacionEstado: input.prevalidacion?.estado ?? null,
-  };
+  const borradorPersist = buildBorradorPersistFromPrevalidacion(input.prevalidacion);
 
   return { snapshot, borradorPersist };
+}
+
+export function buildBorradorPersistFromPrevalidacion(
+  prevalidacion: ProcesoMensualPrevalidacion | null,
+): BorradorPersistContext {
+  return {
+    entradasMensuales: prevalidacion?.entradasMensuales ?? [],
+    resumenPrevalidacion: prevalidacion?.resumen ?? null,
+    prevalidacionEstado: prevalidacion?.estado ?? null,
+    trabajadoresPendientesRevision: prevalidacion?.trabajadoresPendientesRevision ?? [],
+    bloqueos: prevalidacion?.bloqueos ?? [],
+    advertencias: prevalidacion?.advertencias ?? [],
+  };
+}
+
+export function mergeBorradorPersistContexts(
+  base: BorradorPersistContext | null | undefined,
+  overlay: BorradorPersistContext | null | undefined,
+): BorradorPersistContext {
+  if (!base && !overlay) {
+    return buildBorradorPersistFromPrevalidacion(null);
+  }
+  if (!base) {
+    return overlay!;
+  }
+  if (!overlay) {
+    return base;
+  }
+  return {
+    entradasMensuales: overlay.entradasMensuales.length > 0 ? overlay.entradasMensuales : base.entradasMensuales,
+    resumenPrevalidacion: overlay.resumenPrevalidacion ?? base.resumenPrevalidacion,
+    prevalidacionEstado: overlay.prevalidacionEstado ?? base.prevalidacionEstado,
+    trabajadoresPendientesRevision:
+      overlay.trabajadoresPendientesRevision?.length
+        ? overlay.trabajadoresPendientesRevision
+        : base.trabajadoresPendientesRevision ?? [],
+    bloqueos: overlay.bloqueos?.length ? overlay.bloqueos : base.bloqueos ?? [],
+    advertencias: overlay.advertencias?.length ? overlay.advertencias : base.advertencias ?? [],
+  };
 }
 
 export function buildBorradorPersistMetadataPayload(
@@ -99,7 +135,23 @@ export function extractBorradorPersistContext(
     typeof record['prevalidacionEstado'] === 'string'
       ? (record['prevalidacionEstado'] as ProcesoMensualPrevalidacion['estado'])
       : null;
-  return { entradasMensuales: entradas, resumenPrevalidacion: resumen, prevalidacionEstado };
+  const trabajadoresPendientesRevision = Array.isArray(record['trabajadoresPendientesRevision'])
+    ? (record['trabajadoresPendientesRevision'] as TrabajadorPendienteRevisionPeriodo[])
+    : [];
+  const bloqueos = Array.isArray(record['bloqueos'])
+    ? (record['bloqueos'] as ProcesoMensualMensaje[])
+    : [];
+  const advertencias = Array.isArray(record['advertencias'])
+    ? (record['advertencias'] as ProcesoMensualMensaje[])
+    : [];
+  return {
+    entradasMensuales: entradas,
+    resumenPrevalidacion: resumen,
+    prevalidacionEstado,
+    trabajadoresPendientesRevision,
+    bloqueos,
+    advertencias,
+  };
 }
 
 export function buildPrevalidacionLecturaDesdeBorrador(
@@ -124,13 +176,65 @@ export function buildPrevalidacionLecturaDesdeBorrador(
     periodo,
     estado: context.prevalidacionEstado ?? 'LISTO_PARA_CALCULO',
     resumen,
+    bloqueos: asArray(context.bloqueos),
+    advertencias: asArray(context.advertencias),
+    informaciones: [],
+    items: [],
+    entradasMensuales: context.entradasMensuales,
+    trabajadoresPendientesRevision: asArray(context.trabajadoresPendientesRevision),
+  };
+}
+
+export function buildPrevalidacionMinimaDesdeSnapshot(
+  periodo: string,
+  snapshot: NominaCalculoPeriodoSnapshot,
+): ProcesoMensualPrevalidacion {
+  const persist = snapshot.borradorPersist;
+  if (persist) {
+    return buildPrevalidacionLecturaDesdeBorrador(periodo, persist);
+  }
+  const resumen: ProcesoMensualResumen = {
+    periodo,
+    hayBloqueos: snapshot.totalBloqueados > 0,
+    hayAdvertencias: snapshot.totalAdvertencias > 0,
+    conteoMovimientosPorEstado: {},
+    trabajadoresActivosAptos: snapshot.totalTrabajadores,
+    trabajadoresActivosNoAptos: 0,
+    parametrosOperativos: true,
+    parametrosGrupos: [],
+    recurrentesAplicablesAlPeriodo: 0,
+    recurrentesInvalidas: 0,
+    recurrentesCerradas: 0,
+    recurrentesFueraDelMes: 0,
+  };
+  return {
+    periodo,
+    estado: snapshot.totalBloqueados > 0 ? 'BLOQUEADO' : snapshot.totalAdvertencias > 0 ? 'CON_ADVERTENCIAS' : 'LISTO_PARA_CALCULO',
+    resumen,
     bloqueos: [],
     advertencias: [],
     informaciones: [],
     items: [],
-    entradasMensuales: context.entradasMensuales,
+    entradasMensuales: [],
     trabajadoresPendientesRevision: [],
   };
+}
+
+export function resolvePrevalidacionDiagnosticoRehidratacion(
+  periodo: string,
+  snapshot: NominaCalculoPeriodoSnapshot | null,
+  diagnosticoBd: ProcesoMensualPrevalidacion | null,
+): ProcesoMensualPrevalidacion | null {
+  if (snapshot?.borradorPersist) {
+    return buildPrevalidacionLecturaDesdeBorrador(periodo, snapshot.borradorPersist);
+  }
+  if (diagnosticoBd) {
+    return diagnosticoBd;
+  }
+  if (snapshot) {
+    return buildPrevalidacionMinimaDesdeSnapshot(periodo, snapshot);
+  }
+  return null;
 }
 
 function asArray<T>(value: readonly T[] | null | undefined): T[] {

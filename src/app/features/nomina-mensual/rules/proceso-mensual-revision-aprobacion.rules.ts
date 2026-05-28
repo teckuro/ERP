@@ -89,7 +89,6 @@ function checklistRevisionAprobacion(input: {
   tieneAprobacionOperativa: boolean;
 }): RevisionAprobacionChecklistItemView[] {
   const totalCalculados = input.guardado?.trabajadoresCalculados ?? 0;
-  const omitidos = input.guardado?.trabajadoresOmitidos ?? 0;
   return [
     {
       titulo: 'Nómina mensual revisada guardada',
@@ -121,7 +120,7 @@ function checklistRevisionAprobacion(input: {
       descripcion: input.bloqueos.length
         ? 'Hay bloqueos que requieren correccion antes de avanzar.'
         : 'No hay bloqueos visibles en la revision operativa.',
-      estado: input.bloqueos.length || omitidos > 0 ? 'Requiere atencion' : input.hayGuardado ? 'Completo' : 'Pendiente',
+      estado: input.bloqueos.length ? 'Requiere atencion' : input.hayGuardado ? 'Completo' : 'Pendiente',
     },
     {
       titulo: 'Advertencias visibles para decision RRHH',
@@ -150,7 +149,6 @@ function razonNoPuedeAprobar(input: {
   hayGuardado: boolean;
   actualizadoSinGuardar: boolean;
   bloqueos: ResultadoObservacionView[];
-  omitidos: number;
   aprobacionVigente: boolean;
   nominaCerradaOperativamente: boolean;
   periodoValido: boolean;
@@ -163,7 +161,7 @@ function razonNoPuedeAprobar(input: {
   if (!input.hayResultadoActual && !input.hayGuardado) return 'Primero revisa la nómina mensual.';
   if (!input.hayGuardado) return 'Primero guarda la nómina mensual revisada.';
   if (input.actualizadoSinGuardar) return 'Hay un resultado actualizado sin guardar.';
-  if (input.bloqueos.length > 0 || input.omitidos > 0) return 'Existen bloqueos operativos pendientes.';
+  if (input.bloqueos.length > 0) return 'Existen bloqueos operativos pendientes.';
   return undefined;
 }
 
@@ -194,7 +192,7 @@ export function buildRevisionAprobacionView(input: BuildRevisionAprobacionInput)
   ];
 
   let estado: RevisionAprobacionEstado;
-  if ((hayResultadoActual || hayGuardado) && (bloqueos.length > 0 || (guardado?.trabajadoresOmitidos ?? 0) > 0)) {
+  if ((hayResultadoActual || hayGuardado) && bloqueos.length > 0) {
     estado = 'no_apto';
   } else if (!hayGuardado) {
     estado = hayResultadoActual ? 'pendiente_guardado' : 'sin_resultado_guardado';
@@ -220,7 +218,6 @@ export function buildRevisionAprobacionView(input: BuildRevisionAprobacionInput)
     hayGuardado &&
     !actualizadoSinGuardar &&
     bloqueos.length === 0 &&
-    (guardado?.trabajadoresOmitidos ?? 0) === 0 &&
     input.periodoValido &&
     !input.guardandoSnapshot &&
     !input.aprobandoResultado &&
@@ -255,7 +252,6 @@ export function buildRevisionAprobacionView(input: BuildRevisionAprobacionInput)
       hayGuardado,
       actualizadoSinGuardar,
       bloqueos,
-      omitidos: guardado?.trabajadoresOmitidos ?? 0,
       aprobacionVigente,
       nominaCerradaOperativamente: input.nominaCerradaOperativamente,
       periodoValido: input.periodoValido,

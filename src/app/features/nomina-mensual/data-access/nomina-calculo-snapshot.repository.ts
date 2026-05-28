@@ -99,11 +99,19 @@ export class NominaCalculoSnapshotRepository {
     };
   }
 
-  async guardarSnapshotPreliminar(snapshot: NominaCalculoPeriodoSnapshot): Promise<{
+  async guardarSnapshotPreliminar(
+    snapshot: NominaCalculoPeriodoSnapshot,
+    borradorPersist?: BorradorPersistContext | null,
+  ): Promise<{
     snapshot: NominaCalculoPeriodoSnapshot;
     reemplazoSnapshotAnterior: boolean;
   }> {
     const anterior = await this.obtenerSnapshotActivo(snapshot.periodo, snapshot.idEmpresa);
+    const persist =
+      borradorPersist
+      ?? anterior?.borradorPersist
+      ?? snapshot.borradorPersist
+      ?? null;
     const payload = buildGuardarSnapshotRpcPayload(snapshot);
     const { data, error } = await this.supabase.rpc('guardar_nomina_calculo_snapshot', {
       p_periodo: snapshot.periodo,
@@ -119,13 +127,20 @@ export class NominaCalculoSnapshotRepository {
       throw new Error('No se pudo guardar el resultado preliminar completo. No se realizaron cambios parciales.');
     }
 
+    if (persist) {
+      await this.guardarBorradorMetadata(data, persist);
+    }
+
     const completo = await this.obtenerSnapshotCompletoPorId(data);
     if (!completo) {
       throw new Error('El resultado se guardo, pero no fue posible consultar el detalle guardado.');
     }
 
     return {
-      snapshot: completo.cabecera,
+      snapshot: {
+        ...completo.cabecera,
+        borradorPersist: persist,
+      },
       reemplazoSnapshotAnterior: !!anterior,
     };
   }

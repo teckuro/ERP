@@ -329,18 +329,30 @@ export function buildResultadoPreliminarView(input: BuildResultadoPreliminarInpu
   const liquidaciones = asArray(calculo.liquidaciones);
   const trabajadoresCalculadosIds = new Set(liquidaciones.map((liq) => liq.idPersona));
   const omitidosBase = asArray(base?.trabajadores)
-    .filter((trabajador) => !trabajadoresCalculadosIds.has(trabajador.idPersona) || trabajador.estado === 'bloqueado' || trabajador.estado === 'excluido')
-    .map<TrabajadorResultadoPreliminarView>((trabajador) => ({
-      idPersona: `omitido-${trabajador.idPersona}`,
-      trabajadorLabel: trabajador.trabajadorLabel || 'Trabajador sin ficha visible',
-      rutLabel: trabajador.rutLabel || 'RUT no disponible',
-      estadoLabel: 'Omitido',
-      haberesLabel: 'Monto no disponible',
-      descuentosLabel: 'Monto no disponible',
-      liquidoLabel: 'Monto no disponible',
-      observacionLabel: limpiarCopyTecnicoNomina(trabajador.observacion) || 'No calculado en la nómina mensual revisada.',
-      accionLabel: 'Revisar trabajadores',
-    }));
+    .filter((trabajador) => (
+      !trabajadoresCalculadosIds.has(trabajador.idPersona) ||
+      trabajador.estado === 'bloqueado' ||
+      trabajador.estado === 'excluido'
+    ))
+    .map((trabajador) => {
+      const noCalculado = !trabajadoresCalculadosIds.has(trabajador.idPersona);
+      const bloqueaConfirmacion = trabajador.estado === 'bloqueado' || (
+        noCalculado &&
+        trabajador.estado !== 'excluido'
+      );
+      const view: TrabajadorResultadoPreliminarView = {
+        idPersona: `omitido-${trabajador.idPersona}`,
+        trabajadorLabel: trabajador.trabajadorLabel || 'Trabajador sin ficha visible',
+        rutLabel: trabajador.rutLabel || 'RUT no disponible',
+        estadoLabel: 'Omitido',
+        haberesLabel: 'Monto no disponible',
+        descuentosLabel: 'Monto no disponible',
+        liquidoLabel: 'Monto no disponible',
+        observacionLabel: limpiarCopyTecnicoNomina(trabajador.observacion) || 'No calculado en la nómina mensual revisada.',
+        accionLabel: bloqueaConfirmacion ? 'Revisar trabajadores' : 'Sin acción pendiente',
+      };
+      return { bloqueaConfirmacion, view };
+    });
   const trabajadores = [
     ...liquidaciones.map<TrabajadorResultadoPreliminarView>((liq) => {
       const estadoLabel = estadoResultadoTrabajador(liq.estado);
@@ -359,13 +371,16 @@ export function buildResultadoPreliminarView(input: BuildResultadoPreliminarInpu
         ...accionResultadoDesdeIssues(issues),
       };
     }),
-    ...omitidosBase,
+    ...omitidosBase.map((omitido) => omitido.view),
   ];
   for (const omitido of omitidosBase) {
+    if (!omitido.bloqueaConfirmacion) {
+      continue;
+    }
     bloqueos.push({
-      codigo: String(omitido.idPersona),
+      codigo: String(omitido.view.idPersona),
       titulo: 'Trabajador omitido del calculo',
-      descripcion: omitido.observacionLabel,
+      descripcion: omitido.view.observacionLabel,
       accionLabel: 'Revisar trabajadores',
     });
   }

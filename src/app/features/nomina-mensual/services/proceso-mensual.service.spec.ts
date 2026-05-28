@@ -742,6 +742,29 @@ describe('ProcesoMensualService', () => {
     expect(r.cierreOperativo?.estado).toBe('cerrado_operativamente');
   });
 
+  it('contarLiquidacionesGeneradas filtra por snapshot activo', async () => {
+    const liquidaciones = TestBed.inject(LiquidacionesOficialesRepository) as unknown as {
+      obtenerLiquidacionPeriodo: ReturnType<typeof vi.fn>;
+    };
+    liquidaciones.obtenerLiquidacionPeriodo.mockImplementation(
+      async (_periodo: string, idCalculoPeriodo?: number | null) =>
+        idCalculoPeriodo === 9
+          ? {
+              idLiquidacionPeriodo: 1,
+              idCalculoPeriodo: 9,
+              periodo: '2026-05',
+            }
+          : null,
+    );
+
+    const svc = TestBed.inject(ProcesoMensualService);
+    await expect(svc.contarLiquidacionesGeneradas('2026-05', 9)).resolves.toBe(1);
+    await expect(svc.contarLiquidacionesGeneradas('2026-05', 99)).resolves.toBe(0);
+
+    expect(liquidaciones.obtenerLiquidacionPeriodo).toHaveBeenCalledWith('2026-05', 9);
+    expect(liquidaciones.obtenerLiquidacionPeriodo).toHaveBeenCalledWith('2026-05', 99);
+  });
+
   it('rehidratarPeriodo sin snapshot restaura prevalidacion desde diagnostico persistido (NOM-PERIODO-DIAGNOSTICO)', async () => {
     const prevalidacion = {
       periodo: '2026-05',

@@ -453,6 +453,9 @@ export interface BorradorPersistContext {
   entradasMensuales: EntradaMensualPeriodo[];
   resumenPrevalidacion: ProcesoMensualResumen | null;
   prevalidacionEstado: ProcesoMensualPrevalidacion['estado'] | null;
+  trabajadoresPendientesRevision?: TrabajadorPendienteRevisionPeriodo[];
+  bloqueos?: ProcesoMensualMensaje[];
+  advertencias?: ProcesoMensualMensaje[];
 }
 
 export interface NominaCalculoPeriodoSnapshot {

@@ -16,6 +16,7 @@ import {
   resolverEstadoPeriodoRemuneracionDesdePrevalidacion,
   nominaFrameCongeladoObsoleto,
   resolverAccionesFooterModalParametros,
+  buildParametrosOverlayContexto,
 } from './proceso-mensual-parametros-refresh.rules';
 
 function prevalidacionBase(overrides: Partial<ProcesoMensualPrevalidacion> = {}): ProcesoMensualPrevalidacion {
@@ -253,6 +254,15 @@ describe('proceso-mensual-parametros-refresh.rules', () => {
     });
     expect(acciones.accionPrincipal?.label).toBe('Abrir parámetros');
     expect(acciones.accionPrincipal?.destino).toBe('parametros_app');
+  });
+
+  it('buildParametrosOverlayContexto menciona reconciliación si hay pendiente de integración', () => {
+    const ctx = buildParametrosOverlayContexto({
+      parametrosOperativos: false,
+      parametrosGrupos: [{ id: 'oficialesMensuales', clasificacion: 'PENDIENTE_INTEGRACION' }],
+      prevalidacion: null,
+    });
+    expect(ctx.puntos.some((p) => p.includes('reconciliación'))).toBe(true);
   });
 
   it('nominaFrameCongeladoObsoleto detecta avance tras verificación congelada', () => {

@@ -100,6 +100,22 @@ describe('ProcesoMensualPeriodoStore rehidratacion', () => {
     expect(store.resultado()).toBeNull();
   });
 
+  it('sin snapshot conserva conteo de liquidaciones del periodo', async () => {
+    const store = await storeTrasHidratacionInicial();
+
+    rehidratarPeriodo.mockImplementation(async () => ({
+      snapshot: null,
+      completo: null,
+      liquidacionesGeneradas: 1,
+      prevalidacionDiagnostico: null,
+    }));
+    store.rehidratarPeriodoActivo('2026-05');
+    await vi.waitFor(() => expect(store.liquidacionesGeneradasCount()).toBe(1));
+
+    expect(store.snapshotActivo()).toBeNull();
+    expect(store.liquidacionesGeneradasCount()).toBe(1);
+  });
+
   it('borrador rehidrata prevalidacion desde metadata y mantiene snapshot', async () => {
     const store = await storeTrasHidratacionInicial();
     const prevalidacion = {
@@ -169,6 +185,85 @@ describe('ProcesoMensualPeriodoStore rehidratacion', () => {
     await vi.waitFor(() => expect(store.snapshotActivo()?.estado).toBe('borrador'));
 
     expect(store.resultado()?.estado).toBe('CON_ADVERTENCIAS');
+    expect(store.preNomina()).toBeNull();
+  });
+
+  it('preliminar rehidrata resultado desde metadata del snapshot', async () => {
+    const store = await storeTrasHidratacionInicial();
+    const prevalidacion = {
+      periodo: '2026-05',
+      estado: 'LISTO_PARA_CALCULO' as const,
+      resumen: {
+        periodo: '2026-05',
+        hayBloqueos: false,
+        hayAdvertencias: false,
+        conteoMovimientosPorEstado: {},
+        trabajadoresActivosAptos: 3,
+        trabajadoresActivosNoAptos: 0,
+        parametrosOperativos: true,
+        parametrosGrupos: [],
+        recurrentesAplicablesAlPeriodo: 0,
+        recurrentesInvalidas: 0,
+        recurrentesCerradas: 0,
+        recurrentesFueraDelMes: 0,
+      },
+      bloqueos: [],
+      advertencias: [],
+      informaciones: [],
+      items: [],
+      entradasMensuales: [],
+      trabajadoresPendientesRevision: [],
+    };
+    const snapshot = {
+      idCalculoPeriodo: 20,
+      periodo: '2026-05',
+      idEmpresa: null,
+      estado: 'preliminar' as const,
+      fechaGeneracion: '2026-05-18T10:00:00.000Z',
+      usuarioGenerador: null,
+      totalTrabajadores: 3,
+      totalHaberes: 100,
+      totalDescuentos: 20,
+      totalLiquido: 80,
+      totalBloqueados: 0,
+      totalAdvertencias: 0,
+      versionMotor: 'v1',
+      hashSnapshot: 'hash-20',
+      origen: 'preliminar' as const,
+      activo: true,
+      reemplazadoPor: null,
+      aprobacionOperativa: null,
+      cierreOperativo: null,
+      trabajadores: [],
+      issues: [],
+      trazabilidad: [],
+      borradorPersist: {
+        entradasMensuales: [],
+        resumenPrevalidacion: prevalidacion.resumen,
+        prevalidacionEstado: prevalidacion.estado,
+        trabajadoresPendientesRevision: [],
+        bloqueos: [],
+        advertencias: [],
+      },
+    };
+    rehidratarPeriodo.mockImplementation(async (periodo: string) =>
+      periodo === '2026-05'
+        ? {
+            snapshot,
+            completo: null,
+            liquidacionesGeneradas: 0,
+            prevalidacionDiagnostico: prevalidacion,
+          }
+        : {
+            snapshot: null,
+            completo: null,
+            liquidacionesGeneradas: 0,
+            prevalidacionDiagnostico: null,
+          },
+    );
+    store.rehidratarPeriodoActivo('2026-05');
+    await vi.waitFor(() => expect(store.snapshotActivo()?.estado).toBe('preliminar'));
+    expect(store.resultado()?.resumen.trabajadoresActivosAptos).toBe(3);
     expect(store.preNomina()).toBeNull();
   });
 
@@ -391,7 +486,7 @@ describe('ProcesoMensualPeriodoStore generar nómina + persistencia', () => {
     await vi.waitFor(() => expect(store.generandoPreNomina()).toBe(false), { timeout: 5000 });
     expect(guardarBaseNominaBorrador).toHaveBeenCalled();
     expect(generarCalculoPeriodo).toHaveBeenCalledWith('2026-05');
-    expect(guardarSnapshotPreliminar).toHaveBeenCalledWith('2026-05');
+    expect(guardarSnapshotPreliminar).toHaveBeenCalledWith('2026-05', { prevalidacion: null });
     expect(store.errorGuardadoResultado()).toBeNull();
     expect(store.exitoGuardadoResultado()).toMatch(/guardada/i);
     expect(store.snapshotActivo()?.estado).toBe('preliminar');

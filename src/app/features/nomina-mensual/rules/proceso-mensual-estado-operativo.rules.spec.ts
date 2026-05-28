@@ -250,4 +250,29 @@ describe('proceso-mensual-estado-operativo.rules', () => {
     expect(vm.accionPrincipal.label).toBe('Generar liquidaciones');
     expect(vm.etapaActiva).toBe('liquidaciones');
   });
+
+  it('liquidaciones de otro ciclo sin nomina confirmada no ocultan confirmacion', () => {
+    const vm = resolverEstadoOperativoProcesoMensual(inputBase({
+      liquidacionesDisponibles: true,
+      cerradoOperativamente: false,
+      resultadoGuardado: true,
+      aprobadoOperativamente: false,
+      puedeCerrar: true,
+    }));
+
+    expect(vm.estadoClave).toBe('resultado_guardado');
+    expect(vm.accionPrincipal.accionLocal).toBe('confirmarNomina');
+  });
+
+  it('nomina confirmada con liquidaciones muestra estado liquidaciones_disponibles', () => {
+    const vm = resolverEstadoOperativoProcesoMensual(inputBase({
+      liquidacionesDisponibles: true,
+      cerradoOperativamente: true,
+      resultadoGuardado: true,
+      aprobadoOperativamente: true,
+    }));
+
+    expect(vm.estadoClave).toBe('liquidaciones_disponibles');
+    expect(vm.accionPrincipal.label).toBe('Ver liquidaciones');
+  });
 });

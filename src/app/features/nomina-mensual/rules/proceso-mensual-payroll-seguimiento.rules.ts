@@ -87,6 +87,18 @@ export interface EntradaFilasDetalleMovimientoNomina {
   resultadoTrabajadores: TrabajadorResultadoPreliminarView[];
 }
 
+/** Prioriza la primera fuente con entradas (F5: metadata del snapshot antes que prevalidación mínima vacía). */
+export function resolverEntradasMensualesPeriodo(
+  ...fuentes: Array<ProcesoMensualPrevalidacion['entradasMensuales'] | null | undefined>
+): ProcesoMensualPrevalidacion['entradasMensuales'] {
+  for (const fuente of fuentes) {
+    if (fuente && fuente.length > 0) {
+      return fuente;
+    }
+  }
+  return [];
+}
+
 export function construirFilasDetalleMovimientoNomina(input: EntradaFilasDetalleMovimientoNomina): FilaDetalleMovimientoNomina[] {
   const trabajadorPorId = buildTrabajadorLabelPorId(input.base, input.resultadoTrabajadores);
   return (input.entradasMensuales ?? [])

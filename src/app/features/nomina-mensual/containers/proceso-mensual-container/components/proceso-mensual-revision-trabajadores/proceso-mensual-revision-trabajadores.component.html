@@ -3,9 +3,10 @@
 @let accionRecomendada = f.nominaMasivaAccionRecomendadaPanel();
 @let filasVisibles = f.nominaMasivaFilasFiltradas();
 @let panelDetalleAbierto = !!detalleMasivo;
+@let panelSituacionNomina = f.revisionTrabajadoresPanel() === 'situacion_periodo';
 
 <section class="payroll-revision-trabajadores" aria-label="Revisión de trabajadores del período">
-  @if (f.nominaMasivaFilas().length > 0) {
+  @if (f.nominaMasivaFilas().length > 0 || f.mostrarPanelSituacionNominaRevision()) {
   <div
     class="payroll-revision-trabajadores__expediente"
     [class.payroll-revision-trabajadores__expediente--sin-head]="f.revisionSoloFichasPrevalidacion()"
@@ -13,6 +14,28 @@
   >
     @if (!f.revisionSoloFichasPrevalidacion()) {
       <header class="payroll-revision-trabajadores__expediente-head">
+        @if (f.mostrarPanelSituacionNominaRevision()) {
+          <nav
+            class="payroll-segment-nav payroll-revision-trabajadores__panel-nav"
+            aria-label="Vista de revisión del período"
+          >
+            <button
+              type="button"
+              [class]="f.claseRevisionTrabajadoresPanel('trabajadores')"
+              (click)="f.seleccionarRevisionTrabajadoresPanel('trabajadores')"
+            >
+              Trabajadores
+            </button>
+            <button
+              type="button"
+              [class]="f.claseRevisionTrabajadoresPanel('situacion_periodo')"
+              (click)="f.seleccionarRevisionTrabajadoresPanel('situacion_periodo')"
+            >
+              Situación del período · {{ f.incidenciasSituacionNominaRevision().length }}
+            </button>
+          </nav>
+        }
+        @if (!panelSituacionNomina) {
         <nav
           class="payroll-segment-nav payroll-revision-trabajadores__stat-nav payroll-revision-trabajadores__file-tabs payroll-revision-trabajadores__file-tabs--segmented"
           aria-label="Resumen agregado de trabajadores"
@@ -50,9 +73,57 @@
             (input)="f.actualizarBusquedaNominaMasiva($any($event.target).value)"
           />
         </label>
+        }
       </header>
     }
     <div class="payroll-revision-trabajadores__expediente-body">
+    @if (panelSituacionNomina) {
+      @let incidenciasAtencion = incidenciasSituacionRequierenAtencion();
+      <div class="payroll-revision-trabajadores__situacion-periodo" aria-label="Situación de la nómina del período">
+        <p class="payroll-revision-trabajadores__situacion-lead">
+          Observaciones del período o de la nómina confirmada. No corresponden a un trabajador puntual.
+        </p>
+
+        @if (incidenciasAtencion.length) {
+          <section class="payroll-revision-trabajadores__situacion-bloque" aria-label="Puntos que requieren atención">
+            <h3 class="payroll-revision-trabajadores__situacion-bloque-k">Requiere atención</h3>
+            <ul class="payroll-revision-trabajadores__atencion-lista" role="list">
+              @for (incidencia of incidenciasAtencion; track incidencia.id + incidencia.titulo) {
+                <li class="payroll-revision-trabajadores__atencion-item">
+                  <div class="payroll-revision-trabajadores__atencion-item-head">
+                    <span [class]="claseSeveridadIncidencia(incidencia.severidad)">
+                      {{ etiquetaSeveridadIncidencia(incidencia.severidad) }}
+                    </span>
+                    <p>
+                      <span class="payroll-revision-trabajadores__situacion-meta">
+                        {{ f.etiquetaAmbitoIncidenciaRevision(incidencia) }} ·
+                      </span>
+                      <strong>{{ incidencia.titulo }}</strong>
+                      {{ incidencia.detalle }}
+                    </p>
+                  </div>
+                  @if (incidencia.accion) {
+                    <button
+                      type="button"
+                      class="payroll-revision-trabajadores__accion payroll-revision-trabajadores__accion--primary"
+                      (click)="f.ejecutarAccionCorreccionDesdeIncidencia(incidencia)"
+                    >
+                      {{ incidencia.accion.label }}
+                    </button>
+                  }
+                </li>
+              }
+            </ul>
+          </section>
+        }
+
+        @if (!incidenciasAtencion.length) {
+          <p class="payroll-revision-trabajadores__empty payroll-revision-trabajadores__empty--inline">
+            No hay observaciones del período en esta revisión.
+          </p>
+        }
+      </div>
+    } @else {
     <div
       class="payroll-revision-trabajadores__layout"
       [class.payroll-revision-trabajadores__layout--solo-grilla]="!panelDetalleAbierto"
@@ -243,6 +314,18 @@
                   }
                 </div>
               </section>
+
+              @if (f.liquidacionPreviewTrabajadorSeleccionado().visible) {
+                <div class="payroll-revision-trabajadores__resumen-cta">
+                  <button
+                    type="button"
+                    class="payroll-revision-trabajadores__resumen-cta-btn"
+                    (click)="abrirModalResumenDetallado()"
+                  >
+                    Ver resumen detallado
+                  </button>
+                </div>
+              }
             }
 
             @case ('que_hacer') {
@@ -310,6 +393,7 @@
       </aside>
       }
     </div>
+    }
     </div>
   </div>
   } @else {
@@ -330,6 +414,87 @@
     </section>
   }
 </section>
+
+@let previewLiquidacion = f.liquidacionPreviewTrabajadorSeleccionado();
+@if (modalResumenDetalladoAbierto() && detalleMasivo && previewLiquidacion.visible) {
+  <div
+    class="payroll-revision-trabajadores__overlay"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="payroll-revision-preview-modal-title"
+    (click)="cerrarModalResumenDetallado()"
+  >
+    <div
+      class="payroll-revision-trabajadores__modal payroll-revision-trabajadores__modal--preview"
+      (click)="$event.stopPropagation()"
+    >
+      <header class="payroll-revision-trabajadores__modal-header">
+        <div>
+          <p id="payroll-revision-preview-modal-title">Detalle de la previsualización</p>
+          <h3>{{ detalleMasivo.trabajador }}</h3>
+          <span>{{ detalleMasivo.rut }} · {{ previewLiquidacion.periodoLabel }}</span>
+        </div>
+        <button
+          type="button"
+          class="payroll-revision-trabajadores__modal-close"
+          (click)="cerrarModalResumenDetallado()"
+          aria-label="Cerrar resumen detallado"
+        >
+          Cerrar
+        </button>
+      </header>
+      <div class="payroll-revision-trabajadores__modal-body payroll-revision-trabajadores__modal-body--preview">
+        <p class="payroll-revision-trabajadores__preview-aviso">{{ previewLiquidacion.avisoPreliminar }}</p>
+
+        <dl class="payroll-revision-trabajadores__totals payroll-revision-trabajadores__totals--preview">
+          <div><dt>Estado</dt><dd>{{ previewLiquidacion.totales.estado }}</dd></div>
+          <div><dt>Haberes</dt><dd>{{ previewLiquidacion.totales.haberes }}</dd></div>
+          <div><dt>Descuentos</dt><dd>{{ previewLiquidacion.totales.descuentos }}</dd></div>
+          <div class="payroll-revision-trabajadores__totals-row--destacada">
+            <dt>Líquido estimado</dt>
+            <dd>{{ previewLiquidacion.totales.liquido }}</dd>
+          </div>
+        </dl>
+
+        @for (seccion of previewLiquidacion.secciones; track seccion.titulo) {
+          <section class="payroll-revision-trabajadores__preview-bloque" [attr.aria-label]="seccion.titulo">
+            <header class="payroll-revision-trabajadores__preview-bloque-head">
+              <h4>{{ seccion.titulo }}</h4>
+              @if (seccion.subtotal) {
+                <span>{{ seccion.subtotal }}</span>
+              }
+            </header>
+            <ul class="payroll-revision-trabajadores__preview-lineas" role="list">
+              @for (linea of seccion.lineas; track linea.etiqueta + linea.monto) {
+                <li>
+                  <span>{{ linea.etiqueta }}</span>
+                  <strong>{{ linea.monto }}</strong>
+                </li>
+              }
+            </ul>
+          </section>
+        }
+
+        @if (previewLiquidacion.referencias.length) {
+          <section class="payroll-revision-trabajadores__preview-bloque payroll-revision-trabajadores__preview-bloque--referencia" aria-label="Referencias de cálculo">
+            <h4 class="payroll-revision-trabajadores__preview-bloque-k">Referencias de cálculo</h4>
+            <p class="payroll-revision-trabajadores__preview-bloque-nota">
+              Ayuda para revisar de dónde salen los montos. No reemplaza la liquidación oficial.
+            </p>
+            <ul class="payroll-revision-trabajadores__preview-referencias" role="list">
+              @for (ref of previewLiquidacion.referencias; track ref.titulo + ref.detalle) {
+                <li>
+                  <strong>{{ ref.titulo }}</strong>
+                  <span>{{ ref.detalle }}</span>
+                </li>
+              }
+            </ul>
+          </section>
+        }
+      </div>
+    </div>
+  </div>
+}
 
 @if (modalMovimientosAbierto() && detalleMasivo) {
   <div

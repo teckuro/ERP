@@ -106,7 +106,13 @@ export function esDiagnosticoSoloParametros(prevalidacion: ProcesoMensualPrevali
   ) {
     return false;
   }
-  return items.length === 0 || items.every((item) => item.area === AREA_PARAMETROS);
+  if ((prevalidacion.entradasMensuales?.length ?? 0) > 0) {
+    return false;
+  }
+  if ((prevalidacion.trabajadoresPendientesRevision?.length ?? 0) > 0) {
+    return false;
+  }
+  return items.length > 0 && items.every((item) => item.area === AREA_PARAMETROS);
 }
 
 export function detectarDriftParametros(
@@ -280,7 +286,50 @@ export const AVISO_DRIFT_PARAMETROS_CON_BASE =
   'Los parámetros del período cambiaron. Revise antes de recalcular liquidaciones. La base del período se mantiene disponible.';
 
 export const NOTA_SOLO_VERIFICACION_PARAMETROS =
-  'Solo revisa parámetros. Para avanzar la nómina use el flujo principal.';
+  'Resumen del período. Para cargar oficiales, configurar el mes o reconciliar diferencias, use Abrir parámetros.';
+
+export function buildParametrosOverlayContexto(
+  input: {
+    parametrosOperativos: boolean;
+    parametrosGrupos: readonly ProcesoMensualGrupoParametro[];
+    prevalidacion: ProcesoMensualPrevalidacion | null;
+  },
+): { bajada: string; puntos: string[]; estadoCalendario: string } {
+  const { parametrosOperativos, parametrosGrupos, prevalidacion } = input;
+  const estadoCalendario = resolverEstadoPeriodoRemuneracionDesdePrevalidacion(prevalidacion);
+  const faltantes = parametrosGrupos.filter(
+    (g) => g.clasificacion === 'FALTANTE' || g.clasificacion === 'PARCIAL',
+  );
+  const pendienteIntegracion = parametrosGrupos.some(
+    (g) => g.clasificacion === 'PENDIENTE_INTEGRACION',
+  );
+  const puntos: string[] = [];
+  if (pendienteIntegracion) {
+    puntos.push('Revise carga oficial del mes o reconciliación con la configuración cliente.');
+  }
+  for (const grupo of faltantes) {
+    puntos.push(`${etiquetaGrupoParametroUi(grupo.id)}: ${etiquetaClasificacionGrupoParametro(grupo.clasificacion)}.`);
+  }
+  if (parametrosOperativos && puntos.length === 0) {
+    return {
+      bajada: 'Parámetros del período listos para liquidar.',
+      puntos: [],
+      estadoCalendario,
+    };
+  }
+  if (puntos.length === 0) {
+    return {
+      bajada: 'Revise parámetros oficiales, configuración del mes y vigencias antes de liquidar.',
+      puntos: [],
+      estadoCalendario,
+    };
+  }
+  return {
+    bajada: 'Hay pendientes en parámetros del período.',
+    puntos,
+    estadoCalendario,
+  };
+}
 
 export interface AccionFooterModalParametrosVm {
   label: string;

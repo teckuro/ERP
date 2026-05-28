@@ -704,9 +704,13 @@ export class ParametrosWorkspaceOrquestador {
     control.updateValueAndValidity({ emitEvent: false });
   }
 
-  async inicializar(): Promise<void> {
-    // Carga inicial: período = contexto global (cabecera). Sin sustituir por último de BD para mantener una sola fuente de verdad.
-    const periodoInicial = this.periodoGlobal.periodoYm();
+  async inicializar(periodoDesdeRuta?: string | null): Promise<void> {
+    const periodoRuta = periodoDesdeRuta?.trim() ?? '';
+    const periodoRutaValido = /^\d{4}-\d{2}$/.test(periodoRuta) ? periodoRuta : null;
+    const periodoInicial = periodoRutaValido ?? this.periodoGlobal.periodoYm();
+    if (periodoRutaValido) {
+      this.periodoGlobal.setPeriodoYm(periodoRutaValido);
+    }
 
     try {
       const [periodos, periodosMensuales] = await Promise.all([

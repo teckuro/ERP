@@ -66,7 +66,7 @@ describe('proceso-mensual-validacion-calculo.rules', () => {
 
     expect(vm.estado).toBe('listo');
     expect(vm.puedeCalcular).toBe(true);
-    expect(vm.siguienteAccion.accionLocal).toBe('confirmarNomina');
+    expect(vm.siguienteAccion.accionLocal).toBe('revisarBloqueos');
   });
 
   it('bloquea cuando hay error de ejecucion', () => {

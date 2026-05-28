@@ -128,6 +128,101 @@ describe('proceso-mensual-resultado-preliminar.rules', () => {
     expect(vm.acciones.puedeGuardarPreliminar).toBe(false);
   });
 
+  it('no convierte trabajadores excluidos en bloqueo de confirmacion', () => {
+    const vm = buildResultadoPreliminarView({
+      ...inputBase,
+      calculo: calculoBase(),
+      base: {
+        trabajadoresConsiderados: 2,
+        listosParaCalculo: 1,
+        conObservaciones: 0,
+        bloqueados: 0,
+        excluidos: 1,
+        asignacionesRecurrentesIncluidas: 0,
+        movimientosDelMesIncluidos: 0,
+        parametrosEstado: 'listos',
+        observacionParametros: 'Parametros listos',
+        trabajadores: [{
+          idPersona: 1,
+          trabajadorLabel: 'Ana Perez',
+          rutLabel: '11.111.111-1',
+          contratoLabel: 'Contrato indefinido',
+          estado: 'listo',
+          asignacionesRecurrentes: 0,
+          movimientosDelMes: 0,
+          observacion: 'Listo para nomina',
+        }, {
+          idPersona: 2,
+          trabajadorLabel: 'Luis Soto',
+          rutLabel: '22.222.222-2',
+          contratoLabel: 'Contrato finalizado',
+          estado: 'excluido',
+          asignacionesRecurrentes: 0,
+          movimientosDelMes: 0,
+          observacion: 'Contrato fuera del periodo',
+        }],
+      },
+      puedeGuardarPreliminar: true,
+    });
+
+    expect(vm.estado).toBe('no_guardado');
+    expect(vm.bloqueos).toHaveLength(0);
+    expect(vm.trabajadores).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        trabajadorLabel: 'Luis Soto',
+        estadoLabel: 'Omitido',
+        accionLabel: 'Sin acción pendiente',
+      }),
+    ]));
+    expect(vm.acciones.puedeGuardarPreliminar).toBe(true);
+  });
+
+  it('mantiene bloqueo cuando el trabajador base esta bloqueado', () => {
+    const vm = buildResultadoPreliminarView({
+      ...inputBase,
+      calculo: calculoBase(),
+      base: {
+        trabajadoresConsiderados: 2,
+        listosParaCalculo: 1,
+        conObservaciones: 0,
+        bloqueados: 1,
+        excluidos: 0,
+        asignacionesRecurrentesIncluidas: 0,
+        movimientosDelMesIncluidos: 0,
+        parametrosEstado: 'listos',
+        observacionParametros: 'Parametros listos',
+        trabajadores: [{
+          idPersona: 1,
+          trabajadorLabel: 'Ana Perez',
+          rutLabel: '11.111.111-1',
+          contratoLabel: 'Contrato indefinido',
+          estado: 'listo',
+          asignacionesRecurrentes: 0,
+          movimientosDelMes: 0,
+          observacion: 'Listo para nomina',
+        }, {
+          idPersona: 2,
+          trabajadorLabel: 'Luis Soto',
+          rutLabel: '22.222.222-2',
+          contratoLabel: 'Contrato activo',
+          estado: 'bloqueado',
+          asignacionesRecurrentes: 0,
+          movimientosDelMes: 0,
+          observacion: 'Ficha incompleta',
+        }],
+      },
+      puedeGuardarPreliminar: true,
+    });
+
+    expect(vm.estado).toBe('con_bloqueos');
+    expect(vm.bloqueos).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        codigo: 'omitido-2',
+        accionLabel: 'Revisar trabajadores',
+      }),
+    ]));
+  });
+
   it('tolera snapshot completo parcial con listas ausentes', () => {
     const vm = buildResultadoPreliminarView({
       ...inputBase,

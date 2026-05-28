@@ -692,8 +692,8 @@
 }
 
 .payroll-rail-block--bitacora .payroll-rail-step__state {
-  min-width: 4.5rem;
-  padding-left: 6px;
+  min-width: 0;
+  padding-left: 4px;
   text-align: right;
 }
 

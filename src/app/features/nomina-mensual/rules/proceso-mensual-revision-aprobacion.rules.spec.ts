@@ -146,4 +146,43 @@ describe('proceso-mensual-revision-aprobacion.rules', () => {
     expect(vm.informaciones).toEqual([]);
     expect(vm.puedeAprobar).toBe(true);
   });
+
+  it('trabajadores omitidos sin bloqueo real no impiden confirmar', () => {
+    const resultadoPreliminar = {
+      estado: 'guardado',
+      ultimoGuardado: {
+        trabajadoresCalculados: 1,
+        trabajadoresOmitidos: 1,
+        trabajadoresConObservaciones: 0,
+      },
+      bloqueos: [],
+      advertencias: [],
+      informaciones: [],
+      acciones: {
+        puedeGuardarPreliminar: false,
+        puedeRecalcular: true,
+      },
+    } as any;
+    const validacionCalculo = {
+      bloqueos: [],
+      advertencias: [],
+      informaciones: [],
+    } as any;
+
+    const vm = buildRevisionAprobacionView({
+      resultadoPreliminar,
+      validacionCalculo,
+      hayResultadoActual: false,
+      snapshotHash: 'hash-abc',
+      aprobacionOperativa: null,
+      guardandoSnapshot: false,
+      aprobandoResultado: false,
+      nominaCerradaOperativamente: false,
+      periodoValido: true,
+    });
+
+    expect(vm.estado).toBe('listo');
+    expect(vm.puedeAprobar).toBe(true);
+    expect(vm.razonNoPuedeAprobar).toBeUndefined();
+  });
 });

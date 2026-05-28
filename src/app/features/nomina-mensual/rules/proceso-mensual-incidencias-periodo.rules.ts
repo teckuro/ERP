@@ -174,6 +174,36 @@ export function incidenciaEsAlcancePeriodo(codigo: string): boolean {
   return false;
 }
 
+/** Incidencias que aplican a un trabajador concreto (revisión masiva / ficha). */
+export function filterIncidenciasAlcanceTrabajador(
+  incidencias: readonly IncidenciaPeriodo[],
+): IncidenciaPeriodo[] {
+  return incidencias.filter(
+    (incidencia) =>
+      incidencia.idPersona != null
+      || incidencia.ambito === 'trabajadores'
+      || incidencia.ambito === 'movimientos'
+      || incidencia.ambito === 'recurrentes',
+  );
+}
+
+/** Bloqueos o advertencias del período o de la nómina (no de un trabajador puntual). */
+export function filterIncidenciasAlcancePeriodoNomina(
+  incidencias: readonly IncidenciaPeriodo[],
+): IncidenciaPeriodo[] {
+  return incidencias.filter((incidencia) => {
+    if (incidencia.idPersona != null) {
+      return incidenciaEsAlcancePeriodo(incidencia.id);
+    }
+    return (
+      incidencia.ambito === 'periodo'
+      || incidencia.ambito === 'parametros'
+      || incidencia.ambito === 'calculo'
+      || incidencia.ambito === 'resultado'
+    );
+  });
+}
+
 export function ambitoDesdeCodigoIncidencia(codigo: string, ruta?: string): IncidenciaPeriodoAmbito {
   const normalizado = codigo.toUpperCase();
   if (

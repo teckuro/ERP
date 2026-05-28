@@ -2,14 +2,25 @@ import { Injectable, signal } from '@angular/core';
 
 import type { NominaMasivaFiltro } from '../../../rules/proceso-mensual-masivo-layout.rules';
 
+export type RevisionTrabajadoresPanelModo = 'trabajadores' | 'situacion_periodo';
+
 @Injectable()
 export class ProcesoMensualRevisionTrabajadoresPort {
+  readonly revisionTrabajadoresPanel = signal<RevisionTrabajadoresPanelModo>('trabajadores');
   readonly nominaMasivaFiltro = signal<NominaMasivaFiltro>('todos');
   readonly nominaMasivaBusqueda = signal('');
   readonly nominaMasivaTrabajadorSeleccionadoId = signal<number | string | null>(null);
 
+  seleccionarPanel(modo: RevisionTrabajadoresPanelModo): void {
+    this.revisionTrabajadoresPanel.set(modo);
+    if (modo === 'situacion_periodo') {
+      this.nominaMasivaTrabajadorSeleccionadoId.set(null);
+    }
+  }
+
   seleccionarFiltro(filtro: NominaMasivaFiltro): void {
     this.nominaMasivaFiltro.set(filtro);
+    this.revisionTrabajadoresPanel.set('trabajadores');
   }
 
   actualizarBusqueda(valor: string): void {

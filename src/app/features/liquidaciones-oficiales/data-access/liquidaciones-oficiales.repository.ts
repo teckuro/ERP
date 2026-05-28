@@ -21,15 +21,21 @@ const ERROR_GENERAR =
 export class LiquidacionesOficialesRepository {
   private readonly supabase = injectSupabase();
 
-  async obtenerLiquidacionPeriodo(periodo: string): Promise<LiquidacionPeriodo | null> {
-    const { data, error } = await this.supabase
+  async obtenerLiquidacionPeriodo(
+    periodo: string,
+    idCalculoPeriodo?: number | null,
+  ): Promise<LiquidacionPeriodo | null> {
+    let query = this.supabase
       .from('nomina_liquidacion_periodo')
       .select('*')
       .eq('periodo', periodo)
       .eq('activo', true)
       .order('fecha_generacion', { ascending: false })
-      .limit(1)
-      .maybeSingle();
+      .limit(1);
+    if (idCalculoPeriodo != null) {
+      query = query.eq('id_calculo_periodo', idCalculoPeriodo);
+    }
+    const { data, error } = await query.maybeSingle();
     if (error) throw new Error('No se pudo consultar la liquidacion oficial del periodo.');
     return data ? mapPeriodoRow(data) : null;
   }

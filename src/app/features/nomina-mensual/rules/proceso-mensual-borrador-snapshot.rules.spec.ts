@@ -6,11 +6,14 @@ import type {
   ProcesoMensualPrevalidacion,
 } from '../models/proceso-mensual.model';
 import {
+  buildBorradorPersistFromPrevalidacion,
   buildBorradorSnapshotFromPreNomina,
+  buildPrevalidacionLecturaDesdeBorrador,
   extractBorradorPersistContext,
   mapSnapshotActivoToBaseTrazabilidad,
   mapSnapshotCompletoToBaseTrazabilidad,
   resolveBaseNominaTrazabilidad,
+  resolvePrevalidacionDiagnosticoRehidratacion,
 } from './proceso-mensual-borrador-snapshot.rules';
 
 const trazabilidadBase: BaseNominaTrazabilidad = {
@@ -111,6 +114,57 @@ describe('proceso-mensual-borrador-snapshot.rules', () => {
     expect(snapshot.issues.some((i) => i.codigo === 'ADV_MOV')).toBe(true);
     expect(snapshot.issues.some((i) => i.codigo === 'ADV_TEST')).toBe(true);
     expect(borradorPersist.resumenPrevalidacion?.periodo).toBe('2026-05');
+    expect(borradorPersist.advertencias).toHaveLength(1);
+  });
+
+  it('buildBorradorPersistFromPrevalidacion conserva fichas pendientes', () => {
+    const persist = buildBorradorPersistFromPrevalidacion({
+      ...prevalidacionBase,
+      trabajadoresPendientesRevision: [
+        {
+          idPersona: 9,
+          nombre: 'Pedro',
+          rut: '9.999.999-9',
+          motivo: 'Ficha incompleta',
+          estadoFicha: 'INCOMPLETO',
+          aptoParaRemuneraciones: false,
+        },
+      ],
+    });
+    const lectura = buildPrevalidacionLecturaDesdeBorrador('2026-05', persist);
+    expect(lectura.trabajadoresPendientesRevision).toHaveLength(1);
+    expect(lectura.trabajadoresPendientesRevision[0]?.nombre).toBe('Pedro');
+  });
+
+  it('resolvePrevalidacionDiagnosticoRehidratacion reconstruye desde snapshot preliminar', () => {
+    const snapshot = {
+      idCalculoPeriodo: 10,
+      periodo: '2026-05',
+      idEmpresa: null,
+      estado: 'preliminar' as const,
+      fechaGeneracion: '2026-05-18T10:00:00.000Z',
+      usuarioGenerador: null,
+      totalTrabajadores: 3,
+      totalHaberes: 100,
+      totalDescuentos: 20,
+      totalLiquido: 80,
+      totalBloqueados: 0,
+      totalAdvertencias: 0,
+      versionMotor: 'v1',
+      hashSnapshot: 'abc',
+      origen: 'preliminar' as const,
+      activo: true,
+      reemplazadoPor: null,
+      aprobacionOperativa: null,
+      cierreOperativo: null,
+      trabajadores: [],
+      issues: [],
+      trazabilidad: [],
+      borradorPersist: buildBorradorPersistFromPrevalidacion(prevalidacionBase),
+    };
+    const pv = resolvePrevalidacionDiagnosticoRehidratacion('2026-05', snapshot, null);
+    expect(pv?.resumen.parametrosOperativos).toBe(true);
+    expect(pv?.resumen.trabajadoresActivosAptos).toBe(2);
   });
 
   it('extrae contexto de metadata persistida', () => {

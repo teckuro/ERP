@@ -6,6 +6,7 @@ import {
   construirFilasDetalleObservacionNomina,
   construirItemsSeguimientoParametrosNomina,
   construirFilasDetalleTrabajadorNomina,
+  resolverEntradasMensualesPeriodo,
 } from './proceso-mensual-payroll-seguimiento.rules';
 
 describe('proceso-mensual-payroll-seguimiento.rules', () => {
@@ -199,5 +200,12 @@ describe('proceso-mensual-payroll-seguimiento.rules', () => {
     expect(items).toHaveLength(1);
     expect(items[0].descripcion).toContain('resumen');
     expect(items[0].titulo).not.toMatch(/PARAM_|bloqueo/i);
+  });
+
+  it('resolverEntradasMensualesPeriodo prioriza fuente con datos', () => {
+    const vacias: never[] = [];
+    const desdeMetadata = [{ idPersona: 1 } as never];
+    expect(resolverEntradasMensualesPeriodo(vacias, desdeMetadata, vacias)).toBe(desdeMetadata);
+    expect(resolverEntradasMensualesPeriodo(vacias, vacias, vacias)).toEqual([]);
   });
 });

@@ -1101,9 +1101,13 @@ describe('ProcesoMensualContainer', () => {
     it('renderiza workspace con sidebar operativo y tabbar visible', () => {
       const el = fixture.nativeElement;
       expect(el.querySelector('.payroll-console')).toBeTruthy();
-      expect(el.querySelector('.payroll-franja-operativa')).toBeTruthy();
       expect(el.querySelector('.payroll-workspace-sidebar')).toBeTruthy();
+      expect(el.querySelector('.payroll-configuracion-periodo')).toBeTruthy();
+      expect(el.querySelector('.payroll-rail-block--bitacora')).toBeTruthy();
+      expect(el.querySelector('.payroll-workspace-sidebar .payroll-franja-operativa')).toBeNull();
       expect(el.querySelectorAll('.payroll-operational-tabs button').length).toBe(2);
+      expectTexto(el.textContent as string, 'Configuración del período');
+      expectTexto(el.textContent as string, 'Bitácora del período');
       expectTexto(el.textContent as string, 'Detalle mensual');
       expectTexto(el.textContent as string, 'Historial');
     });
@@ -1126,7 +1130,8 @@ describe('ProcesoMensualContainer', () => {
       expect(c.nominaVisualFrame()).toBe('sin_generar');
       expectTexto(c.estadoOperativo().accionPrincipal.label, 'Verificar y generar nómina');
       expect(el.querySelector('.payroll-acta-preparacion')).toBeNull();
-      expect(el.querySelector('.payroll-franja-operativa')).toBeTruthy();
+      expect(el.querySelector('.payroll-configuracion-periodo')).toBeTruthy();
+      expect(el.querySelector('.payroll-workspace-sidebar .payroll-franja-operativa')).toBeNull();
       expect(el.querySelector('.payroll-tab-summary h3')).toBeNull();
     });
 
@@ -1407,6 +1412,21 @@ describe('ProcesoMensualContainer', () => {
       localFixture.detectChanges();
       const icons = localFixture.componentInstance.configuracionPeriodoItems().map((item) => item.icon);
       expect(icons).toEqual(['sliders', 'users', 'list-checks', 'receipt']);
+    });
+
+    it('sidebar no duplica areas operativas fuera del checklist', async () => {
+      ejecutarPrevalidaciones.mockResolvedValueOnce(prevalidacionLista());
+      generarPreNominaPeriodo.mockResolvedValueOnce(baseNominaLista());
+      const localFixture = await montarContainer();
+      await avanzarFlujo(localFixture, 'base');
+
+      localFixture.detectChanges();
+      const sidebar = localFixture.nativeElement.querySelector('.payroll-workspace-sidebar') as HTMLElement;
+      expect(sidebar.querySelector('.payroll-franja-operativa')).toBeNull();
+      expect(sidebar.querySelectorAll('.payroll-configuracion-periodo__item')).toHaveLength(4);
+      const labels = Array.from(sidebar.querySelectorAll('.payroll-configuracion-periodo__label'))
+        .map((node) => node.textContent?.trim());
+      expect(labels).toEqual(['Parámetros', 'Trabajadores', 'Movimientos', 'Liquidaciones']);
     });
 
     it('acciones secundarias del período usan estilo outline en el workspace', async () => {

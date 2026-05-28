@@ -106,7 +106,7 @@ export function valorFranjaLiquidaciones(input: {
   if (input.nominaCerrada) {
     return 'Pendiente de generar';
   }
-  return 'Confirme nómina';
+  return 'Confirmar nómina';
 }
 
 export function valorFranjaArea(

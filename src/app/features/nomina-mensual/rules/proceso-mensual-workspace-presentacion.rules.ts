@@ -317,7 +317,7 @@ function estadoLiquidaciones(input: NominaConfiguracionPeriodoInput): Pick<Nomin
   }
   return {
     estado: 'Pendiente',
-    valor: 'Confirme nómina',
+    valor: 'Confirmar nómina',
     tono: 'neutral',
     accionLabel: 'Generar liquidaciones',
     disabled: true,

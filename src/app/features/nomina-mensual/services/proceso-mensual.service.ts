@@ -74,7 +74,10 @@ import {
 } from '../rules/proceso-mensual-trabajadores-prevalidacion.rules';
 import {
   buildBorradorSnapshotFromPreNomina,
+  buildBorradorPersistFromPrevalidacion,
   buildPrevalidacionLecturaDesdeBorrador,
+  mergeBorradorPersistContexts,
+  resolvePrevalidacionDiagnosticoRehidratacion,
 } from '../rules/proceso-mensual-borrador-snapshot.rules';
 
 function asArray<T>(value: readonly T[] | null | undefined): T[] {
@@ -227,7 +230,10 @@ export class ProcesoMensualService {
     return this.calculosPorPeriodo.get(periodo.trim()) ?? null;
   }
 
-  async guardarSnapshotPreliminar(periodo: string): Promise<GuardarSnapshotPreliminarResult> {
+  async guardarSnapshotPreliminar(
+    periodo: string,
+    opciones: { prevalidacion?: ProcesoMensualPrevalidacion | null } = {},
+  ): Promise<GuardarSnapshotPreliminarResult> {
     const p = periodo.trim();
     const resultado = this.obtenerResultadoCalculoPeriodo(p);
     const issues = validarResultadoSnapshotPreliminar(resultado);
@@ -243,7 +249,12 @@ export class ProcesoMensualService {
       origen: 'preliminar',
       usuarioGenerador: usuarioId,
     });
-    const guardado = await this.snapshots.guardarSnapshotPreliminar(snapshot);
+    const activo = await this.snapshots.obtenerSnapshotActivo(p);
+    const persistNuevo = opciones.prevalidacion
+      ? buildBorradorPersistFromPrevalidacion(opciones.prevalidacion)
+      : null;
+    const borradorPersist = mergeBorradorPersistContexts(activo?.borradorPersist, persistNuevo);
+    const guardado = await this.snapshots.guardarSnapshotPreliminar(snapshot, borradorPersist);
     return {
       ok: true,
       snapshot: guardado.snapshot,
@@ -288,10 +299,11 @@ export class ProcesoMensualService {
     prevalidacionDiagnostico: ProcesoMensualPrevalidacion | null;
   }> {
     const p = periodo.trim();
-    const [snapshot, liquidacionesGeneradas] = await Promise.all([
-      this.obtenerSnapshotActivo(p),
-      this.contarLiquidacionesGeneradas(p),
-    ]);
+    const snapshot = await this.obtenerSnapshotActivo(p);
+    const liquidacionesGeneradas = await this.contarLiquidacionesGeneradas(
+      p,
+      snapshot?.idCalculoPeriodo ?? null,
+    );
     if (!snapshot) {
       let prevalidacionDiagnostico: ProcesoMensualPrevalidacion | null = null;
       try {
@@ -302,10 +314,19 @@ export class ProcesoMensualService {
       return { snapshot: null, completo: null, liquidacionesGeneradas, prevalidacionDiagnostico };
     }
     const completo = await this.obtenerSnapshotCompletoActivo(p);
-    let prevalidacionDiagnostico: ProcesoMensualPrevalidacion | null = null;
-    if (snapshot.estado === 'borrador' && snapshot.borradorPersist) {
-      prevalidacionDiagnostico = buildPrevalidacionLecturaDesdeBorrador(p, snapshot.borradorPersist);
+    let diagnosticoBd: ProcesoMensualPrevalidacion | null = null;
+    if (!snapshot.borradorPersist && snapshot.estado === 'borrador') {
+      try {
+        diagnosticoBd = await this.diagnosticoPeriodo.obtenerActivo(p);
+      } catch {
+        diagnosticoBd = null;
+      }
     }
+    const prevalidacionDiagnostico = resolvePrevalidacionDiagnosticoRehidratacion(
+      p,
+      snapshot,
+      diagnosticoBd,
+    );
     return { snapshot, completo, liquidacionesGeneradas, prevalidacionDiagnostico };
   }
 
@@ -334,8 +355,18 @@ export class ProcesoMensualService {
     ].join('|');
   }
 
-  async contarLiquidacionesGeneradas(periodo: string): Promise<number> {
-    const liquidacion = await this.liquidaciones.obtenerLiquidacionPeriodo(periodo.trim());
+  listarEntradasMensualesPeriodo(periodo: string) {
+    return this.entradasMensuales.listarEntradasPeriodo(periodo.trim());
+  }
+
+  async contarLiquidacionesGeneradas(
+    periodo: string,
+    idCalculoPeriodo: number | null = null,
+  ): Promise<number> {
+    const liquidacion = await this.liquidaciones.obtenerLiquidacionPeriodo(
+      periodo.trim(),
+      idCalculoPeriodo,
+    );
     return liquidacion ? 1 : 0;
   }
 

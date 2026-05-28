@@ -2,6 +2,8 @@ import { describe, expect, it } from 'vitest';
 
 import {
   buildIncidenciasPeriodo,
+  filterIncidenciasAlcancePeriodoNomina,
+  filterIncidenciasAlcanceTrabajador,
   ordenarIncidencias,
   type IncidenciaPeriodo,
 } from './proceso-mensual-incidencias-periodo.rules';
@@ -477,5 +479,32 @@ describe('proceso-mensual-incidencias-periodo.rules', () => {
       tipo: 'ruta',
       label: 'Revisar parámetros',
     });
+  });
+
+  it('separa incidencias de trabajador y de periodo o nomina', () => {
+    const incidencias: IncidenciaPeriodo[] = [
+      {
+        id: 'BLOQ-001',
+        severidad: 'bloqueo',
+        ambito: 'parametros',
+        titulo: 'Parámetros',
+        detalle: 'Falta UF',
+        origen: 'prevalidacion',
+        prioridad: 10,
+      },
+      {
+        id: 'TRAB-001',
+        severidad: 'bloqueo',
+        ambito: 'trabajadores',
+        titulo: 'Ficha',
+        detalle: 'RUT inválido',
+        origen: 'prevalidacion',
+        prioridad: 20,
+        idPersona: 7,
+      },
+    ];
+
+    expect(filterIncidenciasAlcanceTrabajador(incidencias).map((i) => i.id)).toEqual(['TRAB-001']);
+    expect(filterIncidenciasAlcancePeriodoNomina(incidencias).map((i) => i.id)).toEqual(['BLOQ-001']);
   });
 });

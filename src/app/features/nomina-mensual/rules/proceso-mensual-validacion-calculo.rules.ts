@@ -70,14 +70,34 @@ export function buildValidacionCalculoPreliminarView(
     });
   }
 
-  if (!resultado && tieneBasePersistida) {
+  if (!resultado && (tieneBasePersistida || tieneSnapshotPersistido)) {
     informaciones.push({
-      codigo: 'INFO-BASE-PERSISTIDA',
-      titulo: 'Base de nómina generada',
-      descripcion: 'La base del período está guardada. Puedes continuar con la revisión de trabajadores.',
+      codigo: tieneSnapshotPersistido && !tieneBasePersistida ? 'INFO-SNAPSHOT-PERSISTIDO' : 'INFO-BASE-PERSISTIDA',
+      titulo: tieneSnapshotPersistido && !tieneBasePersistida
+        ? 'Nómina mensual guardada en el período'
+        : 'Base de nómina generada',
+      descripcion: tieneSnapshotPersistido && !tieneBasePersistida
+        ? 'La versión del período está guardada. Puedes continuar con la revisión sin volver a verificar el período.'
+        : 'La base del período está guardada. Puedes continuar con la revisión de trabajadores.',
       severidad: 'info',
     });
-    return assembleValidacionCalculo({ bloqueos, advertencias, informaciones });
+    return assembleValidacionCalculo({
+      bloqueos,
+      advertencias,
+      informaciones,
+      estadoForzado: bloqueos.length ? 'bloqueado' : advertencias.length ? 'advertencias' : 'listo',
+      siguienteAccion: tieneSnapshotPersistido && !tieneBasePersistida
+        ? {
+            label: 'Revisar trabajadores',
+            descripcion: 'Continúa la revisión de la nómina mensual guardada.',
+            accionLocal: 'revisarBloqueos',
+          }
+        : {
+            label: 'Revisar trabajadores',
+            descripcion: 'Continúa con la revisión del borrador generado.',
+            accionLocal: 'revisarBloqueos',
+          },
+    });
   }
 
   if (!resultado) {

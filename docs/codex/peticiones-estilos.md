@@ -1,3 +1,15 @@
+## 2026-05-28 - Nómina mensual: persistencia F5 y parámetros alineados
+
+- **Cambio:** Rehidratación restaura `resultado` desde metadata del snapshot (borrador/preliminar/confirmado). Overlay Parámetros con copy de carga oficial/reconciliación; workspace `/parametros` respeta `periodo` en query desde nómina.
+- **Archivos:** `proceso-mensual-borrador-snapshot.rules.ts`, `proceso-mensual-periodo.store.ts`, `proceso-mensual.service.ts`, `nomina-calculo-snapshot.repository.ts`, `proceso-mensual-presentacion.facade.ts`, `proceso-mensual-validacion-calculo.rules.ts`, `proceso-mensual-parametros-refresh.rules.ts`, `parametros-workspace-container.ts`, `parametros-workspace.orquestador.ts`, specs.
+- **No tocado:** estilos globales, `angular.json`, SQL/motor.
+
+## 2026-05-28 - Nómina mensual: barra lateral sin borde izquierdo de acento
+
+- **Cambio:** Se quitan `border-left` de acento en la barra izquierda del workspace: ítems de configuración del período (prioridad/revisión/riesgo) y pasos de bitácora (activo/bloqueado). El estado se mantiene por icono, fondo y chip.
+- **Archivos:** `proceso-mensual-container.css`.
+- **No tocado:** estilos globales, `angular.json`, SQL/motor.
+
 ## 2026-05-27 - Loading NOIA unificado (MessageBox + overlay nómina)
 
 - **Cambio:** `app-message-box` loading modal: ancho `sm` por defecto, sin cerrar ni eyebrow, spinner azul primario. Parámetros y empleados usan solo `variant="loading"`. Nómina vuelve al overlay contextual sobre la consola (no modal pantalla completa), con la misma tarjeta/spinner azul del diseño actual.
@@ -2176,3 +2188,18 @@ Creación avanzada incorpora una identidad de producto local para dejar de senti
 - **Producto:** nómina, novedades, liquidaciones, parámetros, data-grid y cierre de recurrentes usan secciones según intención; acciones destructivas usan `role="danger"` cuando aplica.
 - **Componente base:** mantiene layout angular para 2 bloques y layout vertical compacto para 3; no se modifican estilos `.noia-msgbox--loading`.
 - **Validación:** `tsc`, specs de reglas MsgBox, spec del componente y build development pasan.
+
+## 2026-05-28 — Nómina mensual: pestaña Situación del período (revisión trabajadores)
+
+- **Panel:** la pestaña «Situación del período» deja el listado tipo card y reutiliza la lista plana de «Atención» del detalle de trabajador (`__atencion-lista` / `__atencion-item`).
+- **Secciones:** «Requiere atención» (bloqueos y observaciones) e «Información y cómo se calculó» (severidad info), con nota operativa y fondo suave solo en referencia.
+- **Archivos:** `proceso-mensual-revision-trabajadores` (HTML/CSS/TS local).
+- **No tocado:** estilos globales, `angular.json`, SQL, facade/store.
+
+## 2026-05-28 — Nómina mensual: previsualización liquidación por trabajador
+
+- **Resumen lateral:** botón «Ver resumen detallado» en pestaña Resumen del detalle de trabajador (como mock operativo).
+- **Modal:** totales + desglose Haberes/Descuentos desde cálculo en memoria o conceptos del snapshot; bloque «Información y cómo se calculó» con trazas e incidencias informativas (sin copy técnico protagonista).
+- **Situación del período:** solo pendientes de atención; la referencia informativa pasa al modal del trabajador.
+- **Reglas:** `proceso-mensual-liquidacion-preview-trabajador.rules.ts` + facade `liquidacionPreviewTrabajadorSeleccionado`.
+- **No tocado:** estilos globales, motor, liquidaciones productivas.

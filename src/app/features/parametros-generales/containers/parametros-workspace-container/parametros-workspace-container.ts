@@ -8,6 +8,7 @@ import {
   effect,
   inject,
 } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { ReactiveFormsModule } from '@angular/forms';
 import { CardComponent, CardContentComponent } from '../../../../shared/components/ui/primitives/card.component';
@@ -38,6 +39,7 @@ import { ParametrosWorkspaceOrquestador } from '../../facade/parametros-workspac
 })
 export class ParametrosWorkspaceContainer implements OnInit {
   readonly orq = inject(ParametrosWorkspaceOrquestador);
+  private readonly route = inject(ActivatedRoute);
 
   constructor() {
     bindShellPageContext(inject(DestroyRef), () => ({
@@ -54,6 +56,7 @@ export class ParametrosWorkspaceContainer implements OnInit {
   }
 
   async ngOnInit(): Promise<void> {
-    await this.orq.inicializar();
+    const periodoQuery = this.route.snapshot.queryParamMap.get('periodo');
+    await this.orq.inicializar(periodoQuery);
   }
 }

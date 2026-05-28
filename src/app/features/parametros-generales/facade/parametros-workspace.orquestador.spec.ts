@@ -51,6 +51,39 @@ describe('ParametrosWorkspaceOrquestador', () => {
     expect(setPeriodoYm).toHaveBeenCalledWith('2026-01');
   });
 
+  it('inicializar con periodo de ruta sincroniza periodo global y formulario', async () => {
+    setPeriodoYm.mockClear();
+    const svc = {
+      listarPeriodos: vi.fn().mockResolvedValue([]),
+      listarPeriodosConDatosMensuales: vi.fn().mockResolvedValue([]),
+      listar: vi.fn().mockResolvedValue([]),
+      listarCatalogos: vi.fn().mockResolvedValue({}),
+      obtenerPeriodoRemuneracion: vi.fn().mockResolvedValue(null),
+      obtenerClienteConfig: vi.fn().mockResolvedValue(null),
+      obtenerReferenciaVisualMensual: vi.fn().mockResolvedValue({}),
+    };
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({
+      providers: [
+        ParametrosPresentacionFacade,
+        ParametrosWorkspaceOrquestador,
+        { provide: ParametrosGeneralesService, useValue: svc },
+        {
+          provide: PeriodoActivoService,
+          useValue: { periodoYm: signal('2025-11'), setPeriodoYm },
+        },
+        {
+          provide: ChangeDetectorRef,
+          useValue: { markForCheck: vi.fn(), detectChanges: vi.fn() },
+        },
+      ],
+    });
+    const orq = TestBed.inject(ParametrosWorkspaceOrquestador);
+    await orq.inicializar('2026-04');
+    expect(setPeriodoYm).toHaveBeenCalledWith('2026-04');
+    expect(orq.selectedPeriodo()).toBe('2026-04');
+  });
+
   it('seleccionarTab delega en presentacion', () => {
     const orq = crearOrquestador();
     const presentacion = TestBed.inject(ParametrosPresentacionFacade);

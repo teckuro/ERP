@@ -180,7 +180,7 @@ export function resolverEstadoOperativoProcesoMensual(
 ): ProcesoMensualEstadoOperativoVm {
   const bloqueosCriticosPrevalidacion = filtrarBloqueosCriticosPrevalidacion(input);
 
-  if (input.liquidacionesDisponibles) {
+  if (input.cerradoOperativamente && input.liquidacionesDisponibles) {
     return buildEstado(input, {
       estadoClave: 'liquidaciones_disponibles',
       titulo: 'Liquidaciones disponibles',
