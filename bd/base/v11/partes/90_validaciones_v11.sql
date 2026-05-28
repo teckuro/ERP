@@ -95,6 +95,20 @@ SELECT periodo
 FROM parametros_generales
 WHERE periodo !~ '^[0-9]{4}-(0[1-9]|1[0-2])$';
 
+\echo '05b_snapshot_sanna_null_periodo_cargado'
+SELECT
+    pr.codigo AS periodo,
+    pr.estado,
+    pg.sanna AS sanna_snapshot,
+    pl.valor_decimal AS sanna_legal
+FROM periodo_remuneracion pr
+JOIN parametros_generales pg ON pg.periodo = pr.codigo
+LEFT JOIN parametros_legales pl ON pl.nombre = 'SANNA'
+    AND pl.vigencia_inicio <= (pr.codigo || '-01')::date
+    AND (pl.vigencia_fin IS NULL OR pl.vigencia_fin >= (pr.codigo || '-01')::date)
+WHERE pr.estado IN ('cargado', 'corregido', 'cerrado')
+  AND pg.sanna IS NULL;
+
 \echo '06_tramo_carga_duplicados'
 SELECT
     periodo,

@@ -1009,6 +1009,10 @@ export class ParametrosGeneralesRepository {
     return Promise.all(rows.map((row) => this.hydrateConfigurable(row)));
   }
 
+  /**
+   * Enriquece solo campos que no viven en parametros_generales (catalogos / reforma).
+   * Escalares oficiales (UF, SANNA, topes, etc.) vienen exclusivamente del snapshot mensual.
+   */
   private async hydrateConfigurable(row: ParametroGeneral): Promise<ParametroGeneral> {
     const vigenciaInicio = this.periodoToVigenciaInicio(row.periodo);
     const [legales, afcParametros, trabajosPesados, reformaPrevisional] = await Promise.all([
@@ -1030,42 +1034,9 @@ export class ParametrosGeneralesRepository {
     const casaParticular = afcByContrato.get('CASA_PARTICULAR');
     const pesado = trabajoByCodigo.get('PESADO');
     const menosPesado = trabajoByCodigo.get('MENOS_PESADO');
-    const saludCcaf = legalNumber('SALUD_CCAF');
-    const saludFonasa = legalNumber('SALUD_FONASA');
-    const saludObligatoria = legalNumber('SALUD_OBLIGATORIA') ?? this.sumNullable(saludCcaf, saludFonasa);
-    const saludFonasaConCcaf = legalNumber('SALUD_FONASA_CON_CCAF') ?? this.sumNullable(saludCcaf, saludFonasa);
 
     return {
       ...row,
-      // Fuente de verdad: parametros_generales. Legales solo fallback si viene NULL.
-      uf: row.uf ?? legalNumber('UF'),
-      utm: row.utm ?? legalNumber('UTM'),
-      uta: row.uta ?? legalNumber('UTA'),
-      sis: row.sis ?? legalNumber('SIS'),
-      sanna: row.sanna ?? legalNumber('SANNA'),
-      sueldoMinimo: row.sueldoMinimo ?? legalNumber('SUELDO_MINIMO'),
-      sueldoMinimo18a65: row.sueldoMinimo18a65 ?? legalNumber('SUELDO_MINIMO'),
-      sueldoMinimoMenor18Mayor65: row.sueldoMinimoMenor18Mayor65 ?? legalNumber('SUELDO_MINIMO_18_65'),
-      sueldoMinimoCasaParticular: row.sueldoMinimoCasaParticular ?? legalNumber('SUELDO_MINIMO_TPC'),
-      ingresoMinimoNoRemuneracional: row.ingresoMinimoNoRemuneracional ?? legalNumber('SUELDO_MINIMO_NO_REM'),
-      topeAfpUf: row.topeAfpUf ?? legalNumber('TOPE_AFP_UF'),
-      topeAfp: row.topeAfp ?? legalNumber('TOPE_AFP_PESOS'),
-      topeIpsUf: row.topeIpsUf ?? legalNumber('TOPE_INP_UF'),
-      topeIps: row.topeIps ?? legalNumber('TOPE_INP_PESOS'),
-      topeCesantiaUf: row.topeCesantiaUf ?? legalNumber('TOPE_AFC_UF'),
-      topeCesantia: row.topeCesantia ?? legalNumber('TOPE_AFC_PESOS'),
-      topeApvMensualUf: row.topeApvMensualUf ?? legalNumber('TOPE_APV_MENSUAL_UF'),
-      topeApvMensual: row.topeApvMensual ?? legalNumber('TOPE_APV_MENSUAL_PESOS'),
-      topeAfpVoluntario: row.topeAfpVoluntario ?? legalNumber('TOPE_APV_MENSUAL_PESOS'),
-      topeApvAnualUf: row.topeApvAnualUf ?? legalNumber('TOPE_APV_ANUAL_UF'),
-      topeApvAnual: row.topeApvAnual ?? legalNumber('TOPE_APV_ANUAL_PESOS'),
-      topeDepositoConvenidoAnualUf:
-        row.topeDepositoConvenidoAnualUf ?? legalNumber('TOPE_DEPOSITO_CONVENIDO_ANUAL_UF'),
-      topeDepositoConvenidoAnual:
-        row.topeDepositoConvenidoAnual ?? legalNumber('TOPE_DEPOSITO_CONVENIDO_ANUAL_PESOS'),
-      saludObligatoria: row.saludObligatoria ?? saludObligatoria,
-      saludCcaf: row.saludCcaf ?? saludCcaf,
-      saludFonasaConCcaf: row.saludFonasaConCcaf ?? saludFonasaConCcaf,
       afcTrabajadorIndefinido: indefinido?.tasaTrabajador ?? row.afcTrabajadorIndefinido,
       afcEmpleadorIndefinido: indefinido?.tasaEmpleador ?? row.afcEmpleadorIndefinido,
       afcEmpleadorPlazo: plazo?.tasaEmpleador ?? row.afcEmpleadorPlazo,
@@ -1078,14 +1049,6 @@ export class ParametrosGeneralesRepository {
       seguroSocialExpectativaVida: reformaPrevisional?.fappSeguroSocial ?? null,
       aporteEmpleadorAfp: reformaPrevisional?.cuentaCapitalizacionIndividual ?? null,
     };
-  }
-
-  private sumNullable(left: number | null, right: number | null): number | null {
-    if (left === null || right === null) {
-      return null;
-    }
-
-    return left + right;
   }
 
   private async listarParametrosLegalesPorVigencia(vigenciaInicio: string): Promise<ParametroLegal[]> {

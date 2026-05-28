@@ -16,6 +16,19 @@ import {
 describe('parametros-completitud.rules', () => {
   const periodo = '2026-05';
 
+  it('marca pendiente oficial sanna si el snapshot parametros_generales viene null', () => {
+    const resultado = evaluarCompletitudParametrosMensual({
+      periodo,
+      periodoRemuneracion: periodoInfo('cargado'),
+      oficial: parametroOficial({ sanna: null }),
+      clienteConfig: clienteConfig(),
+      catalogos: catalogosCompletos(),
+    });
+
+    expect(resultado.grupos.oficialesMensuales.completo).toBe(false);
+    expect(resultado.pendientes.some((p) => p.includes('sanna'))).toBe(true);
+  });
+
   it('marca cerrado solo cuando oficiales, configuracion, vigencias y consistencia estan completos', () => {
     const resultado = evaluarCompletitudParametrosMensual({
       periodo,

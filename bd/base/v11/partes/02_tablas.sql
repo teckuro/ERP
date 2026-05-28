@@ -115,8 +115,8 @@ CREATE TABLE parametros_generales (
     fecha_actualizacion TIMESTAMP DEFAULT NOW(),
     CONSTRAINT chk_parametros_periodo CHECK (periodo ~ '^[0-9]{4}-(0[1-9]|1[0-2])$')
 );
--- Snapshot denormalizado consumido por la app (database.types / repositorio).
--- Detalle normativo sigue en parametros_legales y tabla_impuesto_unico.
+-- Snapshot oficial mensual: unica fuente de escalares para completitud, nomina y motor.
+-- parametros_legales y tablas de catalogo (impuesto, tramos, AFP) no sustituyen columnas NULL aqui.
 
 CREATE TABLE tramo_carga (
     id_tramo SERIAL PRIMARY KEY,

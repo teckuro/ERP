@@ -358,6 +358,18 @@ describe('ProcesoMensualService', () => {
     expect(r.resumen.parametrosGrupos.find((g) => g.id === 'mensuales_uf_utm_sueldo')?.clasificacion).toBe('PARCIAL');
   });
 
+  it('marca parametros no operativos si sanna falta en parametros_generales aunque exista en legales', async () => {
+    parametros.obtenerUltimoHastaPeriodo.mockResolvedValue({ ...filaPgMock, sanna: null });
+    const svc = TestBed.inject(ProcesoMensualService);
+    const r = await svc.ejecutarPrevalidaciones('2026-05');
+    expect(r.resumen.parametrosOperativos).toBe(false);
+    const mensajesParametros = [...r.bloqueos, ...r.advertencias]
+      .filter((m) => m.area === 'PARAMETROS')
+      .map((m) => m.texto)
+      .join(' ');
+    expect(mensajesParametros).toMatch(/sanna/i);
+  });
+
   it('propaga fallo de lectura de entradas como advertencia (no bloquea generar nómina)', async () => {
     entradasMensuales.listarEntradasPeriodo.mockRejectedValue(new Error('red'));
     const svc = TestBed.inject(ProcesoMensualService);
