@@ -1,3 +1,9 @@
+## 2026-05-27 - Loading NOIA unificado (MessageBox + overlay nómina)
+
+- **Cambio:** `app-message-box` loading modal: ancho `sm` por defecto, sin cerrar ni eyebrow, spinner azul primario. Parámetros y empleados usan solo `variant="loading"`. Nómina vuelve al overlay contextual sobre la consola (no modal pantalla completa), con la misma tarjeta/spinner azul del diseño actual.
+- **Archivos:** `message-box.component.ts`, `proceso-mensual-workspace.component.{html,css,ts}`, `parametros-workspace-container.html`, `form-empleado.html`.
+- **No tocado:** estilos globales, SQL/motor.
+
 ## 2026-05-27 - Nómina: laboratorio MessageBox (guía visual)
 
 - **Cambio:** Página `/remuneraciones/msgbox-lab` con pestañas Referencia (Parámetros) / Nómina actual / Nómina propuesto / Utilidad; preview modal por ejemplo; regla `mapConfirmacionNominaToSections` para migrar overlays sin `nom-acta-modal`.

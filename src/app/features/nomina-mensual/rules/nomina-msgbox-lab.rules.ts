@@ -13,8 +13,10 @@ import {
   buildMsgboxDecisionGuiada,
   buildMsgboxDiagnostico,
   buildMsgboxErrorSimple,
-  mapConfirmacionProcesoMensualToSections,
   type MsgboxNoiaPattern,
+} from '../../../shared/components/ui/feedback/message-box/message-box.builders';
+import {
+  mapConfirmacionProcesoMensualToSections,
 } from './proceso-mensual-message-box.rules';
 
 export type NominaMsgboxLabTabId = 'referencia' | 'nomina' | 'otros-flujos';

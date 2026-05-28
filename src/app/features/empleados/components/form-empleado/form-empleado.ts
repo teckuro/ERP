@@ -133,6 +133,10 @@ import {
 } from "../../../../shared/components/ui/primitives/card.component";
 import { MessageBoxComponent } from "../../../../shared/components/ui/feedback/message-box/message-box.component";
 import type { MessageBoxSection } from "../../../../shared/components/ui/feedback/message-box/message-box.component";
+import {
+  buildMsgboxDiagnostico,
+  buildMsgboxErrorSimple,
+} from "../../../../shared/components/ui/feedback/message-box/message-box.builders";
 import { WorkspaceLoadingComponent } from "../../../../shared/components/ui/feedback/workspace-loading/workspace-loading.component";
 import { bindShellPageContext } from "../../../../layout/shell-page-context.binding";
 
@@ -742,39 +746,18 @@ export class FormEmpleadoComponent implements OnInit, DelegadoModalAltaEmpleado 
   }
 
   seccionesRutDuplicado(rut: string): MessageBoxSection[] {
-    return [
-      {
-        title: "Acción recomendada",
-        text: "Revisa el listado o edita la ficha existente antes de crear una nueva.",
-        items: [`RUT ${rut}`],
-        tone: "attention",
-      },
-    ];
+    return buildMsgboxErrorSimple({
+      accion: `Revisa el listado o edita la ficha existente antes de crear una nueva. RUT ${rut}.`,
+    });
   }
 
   seccionesErrorGuardado(message: string): MessageBoxSection[] {
     const suggestedStep = this.pasoSugeridoError(message);
-    const sections: MessageBoxSection[] = [
-      {
-        title: "Diagnóstico",
-        text: this.mensajeErrorNormalizado(message),
-        tone: "attention",
-      },
-      {
-        title: "Acción recomendada",
-        text: this.accionRecomendadaError(message),
-        tone: "info",
-      },
-    ];
-
-    if (suggestedStep) {
-      sections.splice(1, 0, {
-        title: "Pendiente principal",
-        text: `Revisar: ${suggestedStep}`,
-      });
-    }
-
-    return sections.slice(0, 3);
+    return buildMsgboxDiagnostico({
+      diagnostico: this.mensajeErrorNormalizado(message),
+      detalle: suggestedStep ? `Revisar: ${suggestedStep}` : null,
+      accion: this.accionRecomendadaError(message),
+    });
   }
 
   seccionesExitoAlta(): MessageBoxSection[] {

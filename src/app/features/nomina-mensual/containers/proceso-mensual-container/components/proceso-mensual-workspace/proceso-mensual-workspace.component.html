@@ -15,11 +15,20 @@
       <div class="payroll-workspace-loading" role="status" aria-live="polite">
         <div class="payroll-workspace-loading__panel">
           <span class="payroll-workspace-loading__spinner" aria-hidden="true"></span>
-          <span>
-            {{
-              f.flujoEnCursoMensaje()
-            }}
-          </span>
+          <div class="payroll-workspace-loading__copy">
+            <p class="payroll-workspace-loading__title">
+              {{
+                f.calculandoPreliminar()
+                  ? 'Calculando remuneraciones...'
+                  : f.flujoEnCursoMensaje()
+              }}
+            </p>
+            @if (f.calculandoPreliminar()) {
+              <p class="payroll-workspace-loading__message">
+                Procesando tramos de impuesto único y cotizaciones obligatorias.
+              </p>
+            }
+          </div>
         </div>
       </div>
     }

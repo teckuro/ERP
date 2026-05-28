@@ -67,109 +67,20 @@
           variant="error"
           [title]="tituloModalError()"
           [message]="mensajeModalError()"
+          [sections]="seccionesErrorGuardado(message)"
           primaryLabel="Aceptar"
           (action)="cerrarMensajeError()"
-        >
-          <div
-            class="basic-success-followup error-followup"
-            role="region"
-            aria-labelledby="save-error-detail-title"
-          >
-            <div class="basic-success-followup__panel error-followup__panel">
-              <h3
-                class="basic-success-followup__title"
-                id="save-error-detail-title"
-              >
-                Qué revisar
-              </h3>
-              <p class="basic-success-followup__text">
-                {{ mensajeErrorNormalizado(message) }}
-              </p>
-            </div>
-            <div class="basic-success-followup__panel error-followup__panel">
-              <h3 class="basic-success-followup__title">Acción recomendada</h3>
-              <p class="basic-success-followup__text">
-                {{ accionRecomendadaError(message) }}
-              </p>
-            </div>
-            @if (pasoSugeridoError(message); as suggestedStep) {
-            <div class="basic-success-followup__meta error-followup__meta">
-              <span class="basic-success-followup__meta-label"
-                >Paso sugerido</span
-              >
-              <span class="basic-success-followup__meta-value"
-                >{{ suggestedStep }}</span
-              >
-            </div>
-            }
-          </div>
-        </app-message-box>
+        ></app-message-box>
         } @else if (!esModoBasico() && mensajeExito(); as message) {
         <app-message-box
           mode="modal"
           variant="success"
           [title]="tituloModalExito()"
           [message]="message"
+          [sections]="seccionesExitoAlta()"
           [primaryLabel]="etiquetaPrimariaModalExito()"
           (action)="manejarAccionExito()"
-        >
-          @if (flujoExito() === 'basico') {
-          <div
-            class="basic-success-followup"
-            role="region"
-            aria-labelledby="basic-success-next-title"
-          >
-            <div class="basic-success-followup__panel">
-              <h3
-                class="basic-success-followup__title"
-                id="basic-success-next-title"
-              >
-                Próximo paso
-              </h3>
-              <p class="basic-success-followup__text">
-                La ficha queda en proceso. Completa contrato, previsión, salud,
-                banco y remuneración desde la ficha del empleado cuando
-                corresponda. Hasta entonces no está lista para liquidar.
-              </p>
-            </div>
-            @if (idEmpleadoCreado(); as fichaId) {
-            <div class="basic-success-followup__meta">
-              <span class="basic-success-followup__meta-label">Referencia</span>
-              <span class="basic-success-followup__meta-value"
-                >Ficha N° {{ fichaId }}</span
-              >
-            </div>
-            }
-          </div>
-          } @else {
-          <div
-            class="basic-success-followup"
-            role="region"
-            aria-labelledby="advanced-success-detail-title"
-          >
-            <div class="basic-success-followup__panel">
-              <h3
-                class="basic-success-followup__title"
-                id="advanced-success-detail-title"
-              >
-                Detalle
-              </h3>
-              <p class="basic-success-followup__text">
-                Puedes revisar o completar información adicional desde la ficha
-                del empleado.
-              </p>
-            </div>
-            @if (idEmpleadoCreado(); as fichaId) {
-            <div class="basic-success-followup__meta">
-              <span class="basic-success-followup__meta-label">Referencia</span>
-              <span class="basic-success-followup__meta-value"
-                >Ficha N° {{ fichaId }}</span
-              >
-            </div>
-            }
-          </div>
-          }
-        </app-message-box>
+        ></app-message-box>
         }
         </ng-template>
         }

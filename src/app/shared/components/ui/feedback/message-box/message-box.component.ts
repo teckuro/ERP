@@ -162,6 +162,9 @@ export class MessageBoxComponent implements AfterViewInit, OnDestroy {
     if (this.width) {
       return this.width;
     }
+    if (this.resolvedVariant() === 'loading') {
+      return 'sm';
+    }
     if (this.normalizedSections().length > 2) {
       return 'lg';
     }
@@ -176,7 +179,7 @@ export class MessageBoxComponent implements AfterViewInit, OnDestroy {
     if (custom) {
       return custom;
     }
-    if (this.mode === 'inline') {
+    if (this.mode === 'inline' || this.resolvedVariant() === 'loading') {
       return '';
     }
     return DEFAULT_EYEBROW[this.resolvedVariant()] ?? '';
@@ -233,6 +236,9 @@ export class MessageBoxComponent implements AfterViewInit, OnDestroy {
   }
 
   showClose(): boolean {
+    if (this.resolvedVariant() === 'loading') {
+      return false;
+    }
     return this.mode === 'modal' && !this.disableClose;
   }
 

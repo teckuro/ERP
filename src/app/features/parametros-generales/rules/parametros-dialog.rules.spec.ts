@@ -12,7 +12,8 @@ describe('parametros-dialog.rules', () => {
     expect(buildParametrosConfirmacionModificacionDialog('2026-05')).toMatchObject({
       kind: 'confirmar-guardado',
       variant: 'warning',
-      message: 'Se actualizarán los parámetros del período 2026-05.',
+      message: 'Revisa el impacto antes de actualizar la configuración cliente.',
+      sections: expect.any(Array),
       secondaryLabel: 'Cancelar',
     });
   });

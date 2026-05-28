@@ -92,7 +92,7 @@
 
 .noia-msgbox__spinner {
   margin-bottom: 0.5rem;
-  color: #64748b;
+  color: var(--erp-primary, #2563eb);
   animation: noia-msgbox-spin 850ms linear infinite;
 }
 

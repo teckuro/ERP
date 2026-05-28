@@ -11,7 +11,12 @@ import { ChangeDetectionStrategy, Component, HostBinding, Input } from '@angular
     <div class="erp-workspace-loading__backdrop">
       <div class="erp-workspace-loading__panel">
         <span class="erp-workspace-loading__spinner" aria-hidden="true"></span>
-        <span class="erp-workspace-loading__label">{{ message }}</span>
+        <div class="erp-workspace-loading__copy">
+          <p class="erp-workspace-loading__title">{{ title || message }}</p>
+          @if (title) {
+            <p class="erp-workspace-loading__message">{{ message }}</p>
+          }
+        </div>
       </div>
     </div>
   `,
@@ -41,37 +46,56 @@ import { ChangeDetectionStrategy, Component, HostBinding, Input } from '@angular
         justify-items: center;
         border: 0;
         border-radius: 0;
-        background: #ffffff;
+        background: rgb(255 255 255 / 0.86);
+        backdrop-filter: blur(2px);
         box-sizing: border-box;
       }
 
       .erp-workspace-loading__panel {
-        display: inline-flex;
+        display: flex;
+        flex-direction: column;
         align-items: center;
-        gap: 12px;
-        border: 1px solid var(--erp-border, #dde3ea);
-        border-radius: 8px;
+        justify-content: center;
+        gap: 0;
+        width: min(100%, 26.25rem);
+        border: 1px solid #d5dce8;
+        border-radius: 22px;
         background: #ffffff;
-        padding: 12px 18px;
-        color: var(--erp-ink, #2c2c2a);
-        font-size: 0.875rem;
-        font-weight: 700;
-        line-height: 1.35;
-        box-shadow: 0 14px 36px rgba(20, 32, 51, 0.1);
-      }
-
-      .erp-workspace-loading__label {
-        margin: 0;
+        padding: 2.5rem 2rem 2rem;
+        text-align: center;
+        box-shadow: 0 24px 60px rgb(15 23 42 / 0.14);
       }
 
       .erp-workspace-loading__spinner {
-        width: 18px;
-        height: 18px;
-        flex: 0 0 18px;
-        border: 2px solid var(--erp-border, #dde3ea);
-        border-top-color: var(--erp-primary, #1e3a8a);
+        flex: 0 0 auto;
+        width: 2rem;
+        height: 2rem;
+        margin-bottom: 1.1rem;
+        border: 2px solid #e4e9f2;
+        border-top-color: var(--erp-primary, #2563eb);
         border-radius: 999px;
         animation: erp-workspace-loading-spin 0.75s linear infinite;
+      }
+
+      .erp-workspace-loading__copy {
+        display: grid;
+        gap: 0.35rem;
+        max-width: 22rem;
+      }
+
+      .erp-workspace-loading__title {
+        margin: 0;
+        color: #0f172a;
+        font-size: 1.1rem;
+        font-weight: 600;
+        line-height: 1.35;
+      }
+
+      .erp-workspace-loading__message {
+        margin: 0;
+        color: #64748b;
+        font-size: 0.875rem;
+        line-height: 1.45;
       }
 
       @keyframes erp-workspace-loading-spin {
@@ -84,6 +108,8 @@ import { ChangeDetectionStrategy, Component, HostBinding, Input } from '@angular
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class WorkspaceLoadingComponent {
+  /** Si se entrega, el `message` pasa a ser la línea secundaria. */
+  @Input() title: string | null = null;
   @Input({ required: true }) message!: string;
 
   @HostBinding('class.erp-workspace-loading--fill')
