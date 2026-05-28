@@ -11,7 +11,7 @@
   [attr.aria-live]="mode === 'inline' ? liveRegion() : null"
 >
   @if (mode === 'modal') {
-    <header [class]="'noia-msgbox__header noia-msgbox__header--' + resolvedVariant()">
+    <header class="noia-msgbox__header">
       @if (showClose()) {
         <button
           #closeBtn
@@ -24,25 +24,17 @@
         </button>
       }
 
-      <div class="noia-msgbox__header-grid">
-        @if (resolvedVariant() === 'loading') {
-          <lucide-icon class="noia-msgbox__spinner" [img]="loadingIcon" aria-hidden="true"></lucide-icon>
-        } @else if (variantIcon(); as icon) {
-          <div [class]="'noia-msgbox__header-icon-wrap noia-msgbox__header-icon-wrap--' + resolvedVariant()">
-            <lucide-icon class="noia-msgbox__header-icon" [img]="icon" aria-hidden="true"></lucide-icon>
-          </div>
-        }
+      @if (resolvedVariant() === 'loading') {
+        <lucide-icon class="noia-msgbox__spinner" [img]="loadingIcon" aria-hidden="true"></lucide-icon>
+      }
 
-        <div class="noia-msgbox__header-texts">
-          @if (resolvedEyebrow()) {
-            <p class="noia-msgbox__eyebrow">{{ resolvedEyebrow() }}</p>
-          }
+      @if (resolvedEyebrow()) {
+        <p class="noia-msgbox__eyebrow">{{ resolvedEyebrow() }}</p>
+      }
 
-          @if (title) {
-            <h2 class="noia-msgbox__title" [id]="titleId">{{ title }}</h2>
-          }
-        </div>
-      </div>
+      @if (title) {
+        <h2 class="noia-msgbox__title" [id]="titleId">{{ title }}</h2>
+      }
 
       @if (message) {
         <p class="noia-msgbox__message" [id]="messageId">{{ message }}</p>
@@ -50,8 +42,12 @@
     </header>
 
     @if (hasBodyContent()) {
-      <div class="noia-msgbox__body">
-        @if (detail && !hasStructuredSections()) {
+      <div
+        class="noia-msgbox__body"
+        [class.noia-msgbox__body--two-blocks]="useTwoBlockLayout()"
+        [id]="bodyId"
+      >
+        @if (detail) {
           <p class="noia-msgbox__detail">{{ detail }}</p>
         }
 
@@ -84,9 +80,11 @@
         <div class="noia-msgbox__footer-left">
           @for (action of leftActions(); track actionTrack(action, $index)) {
             <button
+              #actionBtn
               type="button"
               class="noia-msgbox__action"
               [ngClass]="actionClass(action)"
+              [attr.data-action-value]="action.value ?? actionTrack(action, $index)"
               (click)="onConfigAction(action, $index)"
             >
               {{ action.label }}
@@ -100,6 +98,7 @@
               type="button"
               class="noia-msgbox__action"
               [ngClass]="actionClass(action)"
+              [attr.data-action-value]="action.value ?? actionTrack(action, $index)"
               (click)="onConfigAction(action, $index)"
             >
               {{ action.label }}
@@ -135,6 +134,7 @@
           type="button"
           class="noia-msgbox__action"
           [ngClass]="actionClass(action)"
+          [attr.data-action-value]="action.value ?? actionTrack(action, $index)"
           (click)="onConfigAction(action, $index)"
         >
           {{ action.label }}

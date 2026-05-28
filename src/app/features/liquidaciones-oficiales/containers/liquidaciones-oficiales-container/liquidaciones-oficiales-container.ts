@@ -18,6 +18,7 @@ import { BadgeComponent } from '../../../../shared/components/ui/primitives/badg
 import { ButtonComponent } from '../../../../shared/components/ui/primitives/button.component';
 import { CardComponent, CardContentComponent } from '../../../../shared/components/ui/primitives/card.component';
 import { MessageBoxComponent } from '../../../../shared/components/ui/feedback/message-box/message-box.component';
+import type { MessageBoxSection } from '../../../../shared/components/ui/feedback/message-box/message-box.types';
 import { LiquidacionDetallePanelComponent } from '../../components/liquidacion-detalle-panel/liquidacion-detalle-panel';
 import { LiquidacionResumenCardComponent } from '../../components/liquidacion-resumen-card/liquidacion-resumen-card';
 import { LiquidacionesTrabajadoresGridComponent } from '../../components/liquidaciones-trabajadores-grid/liquidaciones-trabajadores-grid';
@@ -183,6 +184,20 @@ export class LiquidacionesOficialesContainer {
   generarLiquidaciones(): void {
     if (!this.puedeGenerar()) return;
     this.confirmacionGeneracionVisible.set(true);
+  }
+
+  seccionesConfirmacionGeneracion(): MessageBoxSection[] {
+    return [
+      {
+        title: 'Principal',
+        text: `Se usará la nómina mensual confirmada del período ${this.periodoSeleccionado()}.`,
+      },
+      {
+        title: 'Acción',
+        text: 'Generar la salida interna por trabajador. Las salidas legales y archivos externos siguen fuera de alcance.',
+        tone: 'info',
+      },
+    ];
   }
 
   cancelarGeneracion(): void {

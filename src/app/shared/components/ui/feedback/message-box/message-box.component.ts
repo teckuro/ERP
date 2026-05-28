@@ -15,16 +15,7 @@ import {
   inject,
 } from '@angular/core';
 import { LucideAngularModule } from 'lucide-angular';
-import {
-  LoaderCircle,
-  X as XIcon,
-  Info as InfoIcon,
-  CheckCircle as CheckCircleIcon,
-  AlertTriangle as AlertTriangleIcon,
-  AlertCircle as AlertCircleIcon,
-  HelpCircle as HelpCircleIcon,
-  Lock as LockIcon,
-} from 'lucide-angular/src/icons';
+import { LoaderCircle, X as XIcon } from 'lucide-angular/src/icons';
 
 import type {
   MessageBoxAction,
@@ -80,6 +71,7 @@ export class MessageBoxComponent implements AfterViewInit, OnDestroy {
   readonly instanceId = MessageBoxComponent.nextId++;
   readonly titleId = `erp-message-box-title-${this.instanceId}`;
   readonly messageId = `erp-message-box-message-${this.instanceId}`;
+  readonly bodyId = `erp-message-box-body-${this.instanceId}`;
   readonly closeIcon = XIcon;
   readonly loadingIcon = LoaderCircle;
 
@@ -145,24 +137,6 @@ export class MessageBoxComponent implements AfterViewInit, OnDestroy {
     this.onDismiss();
   }
 
-  readonly infoIcon = InfoIcon;
-  readonly successIcon = CheckCircleIcon;
-  readonly warningIcon = AlertTriangleIcon;
-  readonly dangerIcon = AlertCircleIcon;
-  readonly decisionIcon = HelpCircleIcon;
-  readonly blockedIcon = LockIcon;
-
-  variantIcon(): any {
-    const v = this.resolvedVariant();
-    if (v === 'info') return this.infoIcon;
-    if (v === 'success') return this.successIcon;
-    if (v === 'warning') return this.warningIcon;
-    if (v === 'danger') return this.dangerIcon;
-    if (v === 'decision') return this.decisionIcon;
-    if (v === 'blocked') return this.blockedIcon;
-    return null;
-  }
-
   resolvedVariant(): MessageBoxResolvedVariant {
     if (this.variant === 'error') {
       return 'danger';
@@ -175,7 +149,6 @@ export class MessageBoxComponent implements AfterViewInit, OnDestroy {
 
   panelClasses(): string[] {
     const classes: string[] = [];
-    classes.push(`noia-msgbox--${this.resolvedVariant()}`);
     if (this.mode === 'modal') {
       classes.push(`noia-msgbox--${this.resolvedWidth()}`);
       if (this.resolvedVariant() === 'loading') {
@@ -210,6 +183,9 @@ export class MessageBoxComponent implements AfterViewInit, OnDestroy {
   }
 
   normalizedSections(): NormalizedMessageBoxSection[] {
+    if (this.resolvedVariant() === 'loading') {
+      return [];
+    }
     return (this.sections ?? [])
       .map((section) => this.normalizeSection(section))
       .filter((section) => section.title || section.text || section.items.length)
@@ -224,6 +200,10 @@ export class MessageBoxComponent implements AfterViewInit, OnDestroy {
     return !!(this.detail || this.hasStructuredSections());
   }
 
+  useTwoBlockLayout(): boolean {
+    return this.mode === 'modal' && !this.detail && this.normalizedSections().length === 2;
+  }
+
   sectionToneClass(tone: MessageBoxSectionTone): string {
     return tone === 'neutral' ? 'noia-msgbox__section--neutral' : `noia-msgbox__section--${tone}`;
   }
@@ -233,7 +213,14 @@ export class MessageBoxComponent implements AfterViewInit, OnDestroy {
   }
 
   describedByIds(): string | null {
-    return this.message ? this.messageId : null;
+    const ids: string[] = [];
+    if (this.message) {
+      ids.push(this.messageId);
+    }
+    if (this.hasBodyContent()) {
+      ids.push(this.bodyId);
+    }
+    return ids.length ? ids.join(' ') : null;
   }
 
   liveRole(): 'status' | 'alert' {
@@ -380,14 +367,41 @@ export class MessageBoxComponent implements AfterViewInit, OnDestroy {
       this.closeBtn.nativeElement.focus();
       return;
     }
-    const primary = this.actionButtons?.first;
-    if (this.initialFocus === 'primary' && primary) {
-      primary.nativeElement.focus();
+    if (this.initialFocus === 'primary' && this.focusPreferredAction()) {
+      return;
+    }
+    if (this.initialFocus === 'secondary' && this.focusSecondaryAction()) {
+      return;
+    }
+    if (this.actionButtons?.first) {
+      this.actionButtons.first.nativeElement.focus();
       return;
     }
     if (this.closeBtn && this.showClose()) {
       this.closeBtn.nativeElement.focus();
     }
+  }
+
+  private focusPreferredAction(): boolean {
+    const button = this.dialogPanel?.nativeElement.querySelector<HTMLButtonElement>(
+      '.noia-msgbox__action--primary, .noia-msgbox__action--danger',
+    );
+    if (!button) {
+      return false;
+    }
+    button.focus();
+    return true;
+  }
+
+  private focusSecondaryAction(): boolean {
+    const button = this.dialogPanel?.nativeElement.querySelector<HTMLButtonElement>(
+      '.noia-msgbox__footer-left .noia-msgbox__action, .noia-msgbox__inline-actions .noia-msgbox__action',
+    );
+    if (!button) {
+      return false;
+    }
+    button.focus();
+    return true;
   }
 
   private restoreFocus(): void {

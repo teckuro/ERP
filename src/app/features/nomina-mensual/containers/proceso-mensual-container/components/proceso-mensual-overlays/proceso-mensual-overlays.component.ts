@@ -5,6 +5,11 @@ import { MessageBoxComponent } from '../../../../../../shared/components/ui/feed
 import { ProcesoMensualDetalleModalComponent } from '../proceso-mensual-detalle-modal/proceso-mensual-detalle-modal.component';
 import { ProcesoMensualInformacionModalComponent } from '../proceso-mensual-informacion-modal/proceso-mensual-informacion-modal.component';
 import { ProcesoMensualPresentacionFacade } from '../../facade/proceso-mensual-presentacion.facade';
+import {
+  buildConfirmacionProcesoMensualActions,
+  mapConfirmacionProcesoMensualToSections,
+} from '../../../../rules/proceso-mensual-message-box.rules';
+import type { ConfirmacionProcesoMensualView } from '../../models/proceso-mensual-container.vm';
 
 @Component({
   selector: 'app-proceso-mensual-overlays',
@@ -21,4 +26,12 @@ import { ProcesoMensualPresentacionFacade } from '../../facade/proceso-mensual-p
 })
 export class ProcesoMensualOverlaysComponent {
   readonly facade = inject(ProcesoMensualPresentacionFacade);
+
+  sectionsConfirmacion(confirmacion: ConfirmacionProcesoMensualView) {
+    return mapConfirmacionProcesoMensualToSections(confirmacion);
+  }
+
+  actionsConfirmacion(confirmacion: ConfirmacionProcesoMensualView) {
+    return buildConfirmacionProcesoMensualActions(confirmacion);
+  }
 }

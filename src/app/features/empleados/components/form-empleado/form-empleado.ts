@@ -132,6 +132,7 @@ import {
   CardContentComponent,
 } from "../../../../shared/components/ui/primitives/card.component";
 import { MessageBoxComponent } from "../../../../shared/components/ui/feedback/message-box/message-box.component";
+import type { MessageBoxSection } from "../../../../shared/components/ui/feedback/message-box/message-box.component";
 import { WorkspaceLoadingComponent } from "../../../../shared/components/ui/feedback/workspace-loading/workspace-loading.component";
 import { bindShellPageContext } from "../../../../layout/shell-page-context.binding";
 
@@ -738,6 +739,66 @@ export class FormEmpleadoComponent implements OnInit, DelegadoModalAltaEmpleado 
     }
 
     return this.esModoAvanzado() ? "Acta de revisión" : null;
+  }
+
+  seccionesRutDuplicado(rut: string): MessageBoxSection[] {
+    return [
+      {
+        title: "Acción recomendada",
+        text: "Revisa el listado o edita la ficha existente antes de crear una nueva.",
+        items: [`RUT ${rut}`],
+        tone: "attention",
+      },
+    ];
+  }
+
+  seccionesErrorGuardado(message: string): MessageBoxSection[] {
+    const suggestedStep = this.pasoSugeridoError(message);
+    const sections: MessageBoxSection[] = [
+      {
+        title: "Diagnóstico",
+        text: this.mensajeErrorNormalizado(message),
+        tone: "attention",
+      },
+      {
+        title: "Acción recomendada",
+        text: this.accionRecomendadaError(message),
+        tone: "info",
+      },
+    ];
+
+    if (suggestedStep) {
+      sections.splice(1, 0, {
+        title: "Pendiente principal",
+        text: `Revisar: ${suggestedStep}`,
+      });
+    }
+
+    return sections.slice(0, 3);
+  }
+
+  seccionesExitoAlta(): MessageBoxSection[] {
+    const fichaId = this.idEmpleadoCreado();
+    const items = fichaId ? [`Ficha N° ${fichaId}`] : [];
+    if (this.flujoExito() === "basico") {
+      return [
+        {
+          title: "Acción recomendada",
+          text: "Completa contrato, previsión, salud, banco y remuneración desde la ficha del empleado cuando corresponda.",
+          items,
+          tone: "info",
+        },
+      ];
+    }
+
+    return [
+      {
+        title: "Acción recomendada",
+        text: "Puedes revisar o completar información adicional desde la ficha del empleado.",
+        items,
+        tone: "info",
+      },
+    ];
   }
 
   irAListadoEmpleados(): void {

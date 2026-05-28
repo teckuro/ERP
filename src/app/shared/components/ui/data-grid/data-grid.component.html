@@ -497,8 +497,8 @@
           [variant]="bulkConfirmationVariant"
           [title]="bulkConfirmationTitle"
           [message]="bulkConfirmationMessage"
-          [primaryLabel]="bulkConfirmationPrimaryLabel"
-          secondaryLabel="Cancelar"
+          [sections]="bulkConfirmationSections"
+          [actions]="bulkConfirmationActions"
           (action)="confirmBulkAction()"
           (secondary)="cancelBulkAction()"
         ></app-message-box>

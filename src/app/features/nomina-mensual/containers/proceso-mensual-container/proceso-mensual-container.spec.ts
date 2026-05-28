@@ -676,6 +676,8 @@ describe('ProcesoMensualContainer', () => {
       expect(c.overlay().kind).toBe('decision');
       expect(c.confirmacionProceso()?.titulo).toContain('Guardar');
       expect(fixture.nativeElement.querySelector('app-message-box')).toBeTruthy();
+      expect(fixture.nativeElement.textContent).toContain('Principal');
+      expect(fixture.nativeElement.textContent).toContain('Acción');
     });
 
     it('cancelar decision vuelve a overlay cerrado', () => {

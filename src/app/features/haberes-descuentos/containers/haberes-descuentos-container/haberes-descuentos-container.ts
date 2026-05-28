@@ -31,6 +31,10 @@ import {
   MessageBoxComponent,
   MessageBoxVariant,
 } from '../../../../shared/components/ui/feedback/message-box/message-box.component';
+import type {
+  MessageBoxAction,
+  MessageBoxSection,
+} from '../../../../shared/components/ui/feedback/message-box/message-box.component';
 import { bindShellPageContext } from '../../../../layout/shell-page-context.binding';
 import {
   SearchSelectComponent,
@@ -136,6 +140,28 @@ export class HaberesDescuentosContainer implements OnInit {
   } | null>(null);
 
   readonly confirmDesactivar = signal<{ idAsignacion: number; nombre: string } | null>(null);
+
+  seccionesCerrarRecurrente(nombre: string): MessageBoxSection[] {
+    return [
+      {
+        title: 'Principal',
+        text: nombre,
+        tone: 'attention',
+      },
+      {
+        title: 'Acción',
+        text: 'Cerrar solo si el movimiento no debe seguir aplicándose en períodos futuros.',
+        tone: 'info',
+      },
+    ];
+  }
+
+  accionesCerrarRecurrente(): MessageBoxAction[] {
+    return [
+      { label: 'Cancelar', value: 'secondary', role: 'secondary', align: 'left' },
+      { label: 'Cerrar', value: 'primary', role: 'danger', align: 'right' },
+    ];
+  }
 
   readonly empleadoActual = computed(() => {
     const id = this.personaIdSeleccionada();

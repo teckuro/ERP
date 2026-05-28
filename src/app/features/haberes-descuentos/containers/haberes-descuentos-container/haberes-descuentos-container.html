@@ -219,7 +219,6 @@
     <app-message-box
       [variant]="msg.variant"
       mode="modal"
-      [modalHeadlineSplit]="true"
       [title]="msg.title"
       [message]="msg.message"
       [detail]="msg.detail ?? ''"
@@ -232,12 +231,10 @@
     <app-message-box
       variant="warning"
       mode="modal"
-      [modalHeadlineSplit]="true"
       title="Cerrar movimiento recurrente"
-      message="El movimiento dejara de aplicar, pero se conservara en el historial."
-      [detail]="conf.nombre"
-      secondaryLabel="Cancelar"
-      primaryLabel="Cerrar"
+      message="El movimiento dejará de aplicar, pero se conservará en el historial."
+      [sections]="seccionesCerrarRecurrente(conf.nombre)"
+      [actions]="accionesCerrarRecurrente()"
       (secondary)="cerrarConfirmDesactivar()"
       (action)="confirmarDesactivar()"
     ></app-message-box>

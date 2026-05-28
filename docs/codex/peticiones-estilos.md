@@ -2153,3 +2153,20 @@ Creación avanzada incorpora una identidad de producto local para dejar de senti
 - **UI:** una sola grilla «Tabla impuesto único (SII)»; factor decimal 3 cifras (sin `%`); montos Desde/Hasta/Rebaja en pesos.
 - **Archivos:** `parametros-tramos-renta-tab`, `parametros-workspace-grids.presenter`, `parametros-generales.repository`, Python `v611_sql_merge_helpers` + `04_render_*`.
 - **No tocado:** `angular.json`, `src/styles/*`, motor nómina.
+
+## 2026-05-27 — MsgBox NOIA: decisiones y bloqueos de nómina
+
+- **Overlay real:** confirmaciones de nómina dejan de proyectar `nom-acta-modal`; ahora usan `sections` con **Principal** y **Acción**.
+- **Acciones:** reaperturas/descartes/forzados usan acción primaria `danger`; secundaria queda a la izquierda y primaria a la derecha por API `actions`.
+- **Componente base:** `app-message-box` mejora foco inicial, `aria-describedby`, detalle visible junto a bloques y botones compactos con foco claro.
+- **Reducción:** las confirmaciones de nómina quedan en 2 bloques compactos: **Principal** y **Acción**, con layout de dos ángulos en desktop.
+- **Laboratorio:** `/remuneraciones/msgbox-lab` prioriza Uso, Decisión, Impacto y Acción principal; datos técnicos bajan a franja secundaria.
+- **Cargando:** variante `loading` y ejemplos de carga quedan sin cambios visuales ni de comportamiento.
+- **No tocado:** servicios, rutas, persistencia, motor de nómina, SQL ni estilos globales.
+## 2026-05-27 - MsgBox NOIA: matriz por intención
+
+- **Patrones:** se reemplaza el enfoque único de 2 bloques por builders oficiales: `feedback-simple`, `error-simple`, `decision-compacta`, `decision-guiada` y `diagnostico`; `loading` queda sin bloques.
+- **Laboratorio:** `/remuneraciones/msgbox-lab` queda organizado como matriz: Referencia, Nómina y Otros flujos, con ejemplos de 0, 1, 2 y 3 bloques.
+- **Producto:** nómina, novedades, liquidaciones, parámetros, data-grid y cierre de recurrentes usan secciones según intención; acciones destructivas usan `role="danger"` cuando aplica.
+- **Componente base:** mantiene layout angular para 2 bloques y layout vertical compacto para 3; no se modifican estilos `.noia-msgbox--loading`.
+- **Validación:** `tsc`, specs de reglas MsgBox, spec del componente y build development pasan.

@@ -1077,17 +1077,17 @@ export class NovedadesMensualesContainer implements OnInit, OnDestroy {
     const alcance = tipo === 'mensual' ? 'el movimiento del mes' : 'el recurrente';
     return [
       {
-        label: 'Situación detectada',
-        body: `Hay cambios sin guardar en ${alcance}.`,
+        title: 'Pendiente principal',
+        text: `Hay cambios sin guardar en ${alcance}.`,
       },
       {
-        label: 'Impacto si cierras ahora',
-        body: 'Los datos ingresados en este formulario no quedarán registrados.',
-        tone: 'warning',
+        title: 'Impacto operativo',
+        text: 'Los datos ingresados en este formulario no quedarán registrados.',
+        tone: 'attention',
       },
       {
-        label: 'Acción recomendada',
-        body: 'Seguir editando si aún debes registrar o ajustar el movimiento.',
+        title: 'Acción recomendada',
+        text: 'Seguir editando si aún debes registrar o ajustar el movimiento.',
         tone: 'info',
       },
     ];
@@ -1096,17 +1096,17 @@ export class NovedadesMensualesContainer implements OnInit, OnDestroy {
   seccionesFinalizarRecurrente(trabajador: string, nombre: string): MessageBoxSection[] {
     return [
       {
-        label: 'Movimiento',
-        body: `${trabajador} · ${nombre}`,
+        title: 'Pendiente principal',
+        text: `${trabajador} · ${nombre}`,
       },
       {
-        label: 'Impacto',
-        body: 'El recurrente dejará de aplicar en períodos futuros y quedará disponible solo como historial.',
-        tone: 'warning',
+        title: 'Impacto operativo',
+        text: 'El recurrente dejará de aplicar en períodos futuros y quedará disponible solo como historial.',
+        tone: 'attention',
       },
       {
-        label: 'Acción recomendada',
-        body: 'Finalizar solo si confirmas que no debe seguir aplicándose.',
+        title: 'Acción recomendada',
+        text: 'Finalizar solo si confirmas que no debe seguir aplicándose.',
         tone: 'info',
       },
     ];

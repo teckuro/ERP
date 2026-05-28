@@ -194,8 +194,19 @@ export function buildParametrosConfirmacionModificacionDialog(periodo: string): 
     kind: 'confirmar-guardado',
     variant: 'warning',
     title: 'Confirmar modificación',
-    message: `Se actualizarán los parámetros del período ${periodo}.`,
-    detail: 'Esta modificación puede afectar cálculos de remuneraciones asociados a este período.',
+    message: 'Revisa el impacto antes de actualizar la configuración cliente.',
+    sections: [
+      {
+        title: 'Principal',
+        text: `Se actualizarán los parámetros del período ${periodo}.`,
+        tone: 'attention',
+      },
+      {
+        title: 'Acción',
+        text: 'Confirmar solo si los valores corresponden al cierre del período.',
+        tone: 'info',
+      },
+    ],
     primaryLabel: 'Confirmar modificación',
     secondaryLabel: 'Cancelar',
   };

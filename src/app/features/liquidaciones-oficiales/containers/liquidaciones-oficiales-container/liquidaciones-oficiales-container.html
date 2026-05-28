@@ -198,17 +198,13 @@
       variant="warning"
       mode="modal"
       title="Generar liquidaciones oficiales"
-      [message]="'Se usara la nomina mensual confirmada del periodo ' + periodoSeleccionado() + '. No se recalcularan montos.'"
+      message="No se recalcularán montos en este paso."
+      [sections]="seccionesConfirmacionGeneracion()"
       secondaryLabel="Cancelar"
       primaryLabel="Generar liquidaciones"
-      [modalHeadlineSplit]="true"
       (secondary)="cancelarGeneracion()"
       (dismiss)="cancelarGeneracion()"
       (action)="confirmarGeneracionLiquidaciones()"
-    >
-      <p class="message-detail">
-        Esta accion crea la salida interna por trabajador. Las salidas legales y archivos externos siguen fuera de alcance.
-      </p>
-    </app-message-box>
+    ></app-message-box>
   }
 </div>

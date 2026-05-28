@@ -38,114 +38,10 @@
 .noia-msgbox__header {
   position: relative;
   flex: 0 0 auto;
-  padding: 1.45rem 3rem 1.25rem 1.65rem;
+  padding: 1.25rem 3rem 1.05rem 1.5rem;
   border-bottom: 1px solid #e4e9f2;
   background: #f8fafc;
-  transition: background 0.15s, border-color 0.15s;
 }
-
-/* ── Variantes de cabecera ─────────────────────────────────────────────── */
-.noia-msgbox__header--info {
-  background: #f0f9ff;
-  border-bottom-color: #e0f2fe;
-}
-.noia-msgbox__header--info .noia-msgbox__eyebrow {
-  color: #0284c7;
-}
-
-.noia-msgbox__header--success {
-  background: #f0fdf4;
-  border-bottom-color: #dcfce7;
-}
-.noia-msgbox__header--success .noia-msgbox__eyebrow {
-  color: #16a34a;
-}
-
-.noia-msgbox__header--warning {
-  background: #fffbeb;
-  border-bottom-color: #fef3c7;
-}
-.noia-msgbox__header--warning .noia-msgbox__eyebrow {
-  color: #d97706;
-}
-
-.noia-msgbox__header--danger {
-  background: #fef2f2;
-  border-bottom-color: #fee2e2;
-}
-.noia-msgbox__header--danger .noia-msgbox__eyebrow {
-  color: #dc2626;
-}
-
-.noia-msgbox__header--blocked {
-  background: #fef2f2;
-  border-bottom-color: #fee2e2;
-  border-top: 4px solid #ef4444;
-}
-.noia-msgbox__header--blocked .noia-msgbox__eyebrow {
-  color: #b91c1c;
-}
-
-.noia-msgbox__header--decision {
-  background: #eff6ff;
-  border-bottom-color: #dbeafe;
-}
-.noia-msgbox__header--decision .noia-msgbox__eyebrow {
-  color: #2563eb;
-}
-
-/* ── Estructura interna del header ───────────────────────────────────── */
-.noia-msgbox__header-grid {
-  display: flex;
-  align-items: flex-start;
-  gap: 12px;
-}
-
-.noia-msgbox--loading .noia-msgbox__header-grid {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0;
-  width: 100%;
-}
-
-.noia-msgbox__header-texts {
-  flex: 1;
-  min-width: 0;
-}
-
-/* ── Envoltorios de iconos en cabecera ─────────────────────────────────── */
-.noia-msgbox__header-icon-wrap {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 2.25rem;
-  height: 2.25rem;
-  border-radius: 8px;
-  flex-shrink: 0;
-  margin-top: 2px;
-}
-
-.noia-msgbox__header-icon {
-  width: 1.15rem;
-  height: 1.15rem;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-}
-
-:host ::ng-deep .noia-msgbox__header-icon svg {
-  display: block;
-  width: 100%;
-  height: 100%;
-}
-
-.noia-msgbox__header-icon-wrap--info { background: #e0f2fe; color: #0284c7; }
-.noia-msgbox__header-icon-wrap--success { background: #dcfce7; color: #16a34a; }
-.noia-msgbox__header-icon-wrap--warning { background: #fef3c7; color: #d97706; }
-.noia-msgbox__header-icon-wrap--danger { background: #fee2e2; color: #dc2626; }
-.noia-msgbox__header-icon-wrap--blocked { background: #fee2e2; color: #b91c1c; }
-.noia-msgbox__header-icon-wrap--decision { background: #dbeafe; color: #2563eb; }
 
 .noia-msgbox__close {
   position: absolute;
@@ -168,6 +64,12 @@
 .noia-msgbox__close:hover {
   background: #eef2f7;
   color: #0f172a;
+}
+
+.noia-msgbox__close:focus-visible,
+.noia-msgbox__action:focus-visible {
+  outline: 2px solid #2563eb;
+  outline-offset: 2px;
 }
 
 .noia-msgbox__close-icon,
@@ -231,27 +133,29 @@
 }
 
 .noia-msgbox__eyebrow {
-  margin: 0 0 0.55rem;
+  margin: 0 0 0.45rem;
   color: #64748b;
-  font-size: 0.72rem;
+  font-size: 0.7rem;
   font-weight: 700;
   line-height: 1.25;
-  letter-spacing: 0.02em;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
 }
 
 .noia-msgbox__title {
   margin: 0;
   color: #0f172a;
-  font-size: 1.35rem;
+  font-size: 1.18rem;
   font-weight: 700;
-  line-height: 1.2;
-  letter-spacing: -0.01em;
+  line-height: 1.25;
+  letter-spacing: 0;
 }
 
 .noia-msgbox__message {
-  margin: 0.55rem 0 0;
+  max-width: 38rem;
+  margin: 0.45rem 0 0;
   color: #475569;
-  font-size: 0.9rem;
+  font-size: 0.875rem;
   font-weight: 400;
   line-height: 1.5;
   white-space: pre-line;
@@ -259,24 +163,41 @@
 
 .noia-msgbox__body {
   display: grid;
-  gap: 0.75rem;
-  padding: 1.25rem 1.65rem;
-  overflow: auto;
   min-height: 0;
+  padding: 1rem 1.5rem;
+  gap: 0.625rem;
+  overflow: auto;
 }
 
 .noia-msgbox__detail {
   margin: 0;
-  color: #64748b;
+  padding: 0 0 0.125rem;
+  color: #475569;
   font-size: 0.84rem;
-  line-height: 1.45;
+  line-height: 1.5;
+  white-space: pre-line;
 }
 
 .noia-msgbox__section {
-  padding: 0.9rem 1rem;
+  position: relative;
+  padding: 0.75rem 0.85rem;
   border: 1px solid #e4e9f2;
-  border-radius: 12px;
+  border-radius: 8px;
   background: #f8fafc;
+}
+
+.noia-msgbox__body--two-blocks {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+.noia-msgbox__body--two-blocks .noia-msgbox__section {
+  min-height: 7rem;
+  border-radius: 8px 8px 8px 2px;
+}
+
+.noia-msgbox__body--two-blocks .noia-msgbox__section:nth-child(2) {
+  border-radius: 8px 8px 2px 8px;
 }
 
 .noia-msgbox__section--attention {
@@ -295,9 +216,9 @@
 }
 
 .noia-msgbox__section-title {
-  margin: 0 0 0.35rem;
+  margin: 0 0 0.3rem;
   color: #0f172a;
-  font-size: 0.76rem;
+  font-size: 0.75rem;
   font-weight: 700;
   line-height: 1.3;
 }
@@ -306,7 +227,7 @@
 .noia-msgbox__section-items {
   margin: 0;
   color: #475569;
-  font-size: 0.84rem;
+  font-size: 0.8125rem;
   line-height: 1.45;
 }
 
@@ -317,10 +238,10 @@
 }
 
 .noia-msgbox__section-list {
-  margin: 0.35rem 0 0;
-  padding-left: 1.15rem;
+  margin: 0.3rem 0 0;
+  padding-left: 1rem;
   color: #475569;
-  font-size: 0.84rem;
+  font-size: 0.8125rem;
   line-height: 1.45;
 }
 
@@ -336,7 +257,7 @@
   order: 30;
   flex: 0 1 auto;
   min-height: 0;
-  padding: 0 1.65rem 1.25rem;
+  padding: 0 1.5rem 1rem;
   overflow: auto;
 }
 
@@ -351,9 +272,9 @@
   align-items: center;
   justify-content: space-between;
   gap: 0.75rem;
-  padding: 1rem 1.65rem;
+  padding: 0.875rem 1.5rem;
   border-top: 1px solid #e4e9f2;
-  background: #ffffff;
+  background: #f8fafc;
 }
 
 .noia-msgbox__footer-left,
@@ -373,10 +294,10 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-height: 2rem;
-  padding: 0 0.9rem;
+  min-height: 2.125rem;
+  padding: 0 0.875rem;
   border: 1px solid #d5dce8;
-  border-radius: 8px;
+  border-radius: 6px;
   background: #ffffff;
   color: #334155;
   cursor: pointer;
@@ -403,14 +324,16 @@
 }
 
 .noia-msgbox__action--danger {
-  border-color: #e4b4b4;
-  background: #ffffff;
-  color: #b91c1c;
+  border-color: #b91c1c;
+  background: #b91c1c;
+  color: #ffffff;
+  font-weight: 600;
 }
 
 .noia-msgbox__action--danger:hover {
-  border-color: #dc2626;
-  background: #fef2f2;
+  border-color: #991b1b;
+  background: #991b1b;
+  color: #ffffff;
 }
 
 .noia-msgbox__action--ghost {
@@ -469,6 +392,16 @@
   .noia-msgbox__footer {
     flex-direction: column;
     align-items: stretch;
+  }
+
+  .noia-msgbox__body--two-blocks {
+    grid-template-columns: 1fr;
+  }
+
+  .noia-msgbox__body--two-blocks .noia-msgbox__section,
+  .noia-msgbox__body--two-blocks .noia-msgbox__section:nth-child(2) {
+    min-height: auto;
+    border-radius: 8px;
   }
 
   .noia-msgbox__footer-left,

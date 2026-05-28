@@ -37,7 +37,7 @@ import {
 import { CardComponent } from '../primitives/card.component';
 import { CalendarInputComponent } from '../forms/calendar-input/calendar-input.component';
 import { MessageBoxComponent } from '../feedback/message-box/message-box.component';
-import type { MessageBoxVariant } from '../feedback/message-box/message-box.types';
+import type { MessageBoxAction, MessageBoxSection, MessageBoxVariant } from '../feedback/message-box/message-box.types';
 import type {
   DataGridBulkAction,
   DataGridBulkActionEvent,
@@ -653,17 +653,49 @@ export class DataGridComponent<T = unknown> implements OnChanges, OnDestroy {
   }
 
   get bulkConfirmationMessage(): string {
-    const count = this.selectedRows.length;
-    const label = `${count} ${this.selectionLabel}`;
-
-    return (
-      this.pendingBulkAction?.confirmMessage ??
-      `Se cambiara el estado de ${label} seleccionados a ${this.pendingBulkAction?.label ?? 'el estado indicado'}. Esta accion no afecta registros filtrados que no esten marcados.`
-    );
+    return `Confirma "${this.pendingBulkAction?.label ?? 'la acción'}" sobre la selección actual.`;
   }
 
   get bulkConfirmationPrimaryLabel(): string {
     return this.pendingBulkAction?.confirmLabel ?? `Aplicar ${this.pendingBulkAction?.label ?? 'estado'}`;
+  }
+
+  get bulkConfirmationSections(): MessageBoxSection[] {
+    if (!this.pendingBulkAction) {
+      return [];
+    }
+    const count = this.selectedRowKeys.size;
+    const label = `${count} ${this.selectionLabel}`;
+    return [
+      {
+        title: 'Principal',
+        text: `Se procesarán ${label} seleccionados.`,
+        tone: this.pendingBulkAction.tone === 'danger' || this.pendingBulkAction.tone === 'blocked' ? 'attention' : 'neutral',
+      },
+      {
+        title: 'Acción',
+        text:
+          this.pendingBulkAction.confirmMessage ??
+          `Aplicar "${this.pendingBulkAction.label}" solo a los registros marcados.`,
+        tone: 'info',
+      },
+    ];
+  }
+
+  get bulkConfirmationActions(): MessageBoxAction[] {
+    if (!this.pendingBulkAction) {
+      return [];
+    }
+    const danger = this.pendingBulkAction.tone === 'danger' || this.pendingBulkAction.tone === 'blocked';
+    return [
+      { label: 'Cancelar', value: 'secondary', role: 'secondary', align: 'left' },
+      {
+        label: this.bulkConfirmationPrimaryLabel,
+        value: 'primary',
+        role: danger ? 'danger' : 'primary',
+        align: 'right',
+      },
+    ];
   }
 
   bulkActionButtonClass(action: DataGridBulkActionOption): string {
@@ -1701,4 +1733,3 @@ export class DataGridComponent<T = unknown> implements OnChanges, OnDestroy {
     return Math.min(Math.max(1, Math.floor(page)), this.totalPages);
   }
 }
-

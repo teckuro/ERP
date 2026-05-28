@@ -1235,22 +1235,6 @@
   color: var(--erp-danger, #b91c1c);
 }
 
-.nom-acta-modal {
-  display: grid;
-  gap: 10px;
-  margin-top: 10px;
-}
-
-.nom-acta-modal__summary,
-.nom-acta-modal__next,
-.nom-acta-modal__block {
-  border: 0;
-  border-top: 1px solid var(--erp-border);
-  border-radius: var(--payroll-radius-surface, 0);
-  background: transparent;
-  padding: 10px 0;
-}
-
 @keyframes payroll-pulse {
   50% {
     opacity: 0.42;

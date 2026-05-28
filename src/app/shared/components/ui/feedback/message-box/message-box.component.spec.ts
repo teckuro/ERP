@@ -53,6 +53,88 @@ describe('MessageBoxComponent', () => {
     expect(el.querySelector('.noia-msgbox__section ul')).toBeNull();
   });
 
+  it('usa layout de dos bloques cuando hay dos secciones principales', () => {
+    const fixture = TestBed.createComponent(MessageBoxComponent);
+    fixture.componentInstance.mode = 'modal';
+    fixture.componentInstance.title = 'Confirmar nómina';
+    fixture.componentInstance.sections = [
+      { title: 'Principal', text: 'Queda congelada.', tone: 'attention' },
+      { title: 'Acción', text: 'Generar liquidaciones.', tone: 'info' },
+    ];
+    fixture.detectChanges();
+
+    const el = fixture.nativeElement as HTMLElement;
+    expect(el.querySelector('.noia-msgbox__body--two-blocks')).not.toBeNull();
+  });
+
+  it('mantiene tres bloques en layout vertical compacto', () => {
+    const fixture = TestBed.createComponent(MessageBoxComponent);
+    fixture.componentInstance.mode = 'modal';
+    fixture.componentInstance.title = 'Confirmar cierre';
+    fixture.componentInstance.sections = [
+      { title: 'Pendiente principal', text: 'Validar cierre.', tone: 'attention' },
+      { title: 'Impacto operativo', text: 'Congela el período.', tone: 'neutral' },
+      { title: 'Acción recomendada', text: 'Confirmar solo si está revisado.', tone: 'info' },
+    ];
+    fixture.detectChanges();
+
+    const el = fixture.nativeElement as HTMLElement;
+    expect(el.querySelectorAll('.noia-msgbox__section').length).toBe(3);
+    expect(el.querySelector('.noia-msgbox__body--two-blocks')).toBeNull();
+  });
+
+  it('loading no renderiza acciones aunque se configuren labels', () => {
+    const fixture = TestBed.createComponent(MessageBoxComponent);
+    fixture.componentInstance.mode = 'modal';
+    fixture.componentInstance.variant = 'loading';
+    fixture.componentInstance.title = 'Calculando remuneraciones...';
+    fixture.componentInstance.primaryLabel = 'Aceptar';
+    fixture.componentInstance.sections = [{ title: 'Principal', text: 'No debe mostrarse como acción.' }];
+    fixture.detectChanges();
+
+    const el = fixture.nativeElement as HTMLElement;
+    expect(el.querySelector('.noia-msgbox__action')).toBeNull();
+    expect(el.querySelector('.noia-msgbox--loading')).not.toBeNull();
+  });
+
+  it('incluye el cuerpo en aria-describedby cuando hay detalle o secciones', () => {
+    const fixture = TestBed.createComponent(MessageBoxComponent);
+    fixture.componentInstance.mode = 'modal';
+    fixture.componentInstance.title = 'Confirmar acción';
+    fixture.componentInstance.message = 'Mensaje principal.';
+    fixture.componentInstance.detail = 'Detalle operativo visible.';
+    fixture.componentInstance.sections = [
+      { title: 'Impacto operativo', text: 'Queda en auditoría.', tone: 'neutral' },
+    ];
+    fixture.detectChanges();
+
+    const el = fixture.nativeElement as HTMLElement;
+    const dialog = el.querySelector('.noia-msgbox') as HTMLElement;
+    const describedBy = dialog.getAttribute('aria-describedby') ?? '';
+    expect(describedBy).toContain(fixture.componentInstance.messageId);
+    expect(describedBy).toContain(fixture.componentInstance.bodyId);
+    expect(el.textContent).toContain('Detalle operativo visible.');
+  });
+
+  it('renderiza acciones configuradas con rol danger y emite primary', () => {
+    const fixture = TestBed.createComponent(MessageBoxComponent);
+    fixture.componentInstance.mode = 'modal';
+    fixture.componentInstance.title = 'Descartar nómina';
+    fixture.componentInstance.actions = [
+      { label: 'Cancelar', value: 'secondary', role: 'secondary', align: 'left' },
+      { label: 'Descartar', value: 'primary', role: 'danger', align: 'right' },
+    ];
+    let primary = 0;
+    fixture.componentInstance.action.subscribe(() => primary++);
+    fixture.detectChanges();
+
+    const el = fixture.nativeElement as HTMLElement;
+    const danger = el.querySelector('.noia-msgbox__action--danger') as HTMLButtonElement;
+    expect(danger.textContent?.trim()).toBe('Descartar');
+    danger.click();
+    expect(primary).toBe(1);
+  });
+
   it('la X del modal emite secondary cuando hay acción de cierre', () => {
     const fixture = TestBed.createComponent(MessageBoxComponent);
     fixture.componentInstance.mode = 'modal';

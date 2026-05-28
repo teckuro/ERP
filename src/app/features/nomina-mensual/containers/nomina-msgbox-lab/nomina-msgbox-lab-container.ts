@@ -38,7 +38,7 @@ export class NominaMsgboxLabContainer {
   readonly examples = buildNominaMsgboxLabExamples();
 
   readonly activeTab = signal<NominaMsgboxLabTabId>('referencia');
-  readonly selectedExampleId = signal<string>('parametros-reconciliacion');
+  readonly selectedExampleId = signal<string>('parametros-carga');
   readonly previewOpen = signal(false);
 
   readonly filteredExamples = computed(() =>
@@ -57,6 +57,55 @@ export class NominaMsgboxLabContainer {
   /** Badge visual por variante. */
   variantBadge(variant: string): { label: string; cls: string } {
     return VARIANT_BADGE[variant] ?? { label: variant, cls: 'badge--info' };
+  }
+
+  decisionText(example: NominaMsgboxLabExample): string {
+    const section = example.sections?.find((item) =>
+      item.title === 'Principal' ||
+      item.title === 'Decisión requerida' ||
+      item.title === 'Pendiente principal' ||
+      item.title === 'Diagnóstico',
+    );
+    return section?.text || example.detail || example.message;
+  }
+
+  impactoText(example: NominaMsgboxLabExample): string {
+    const section =
+      example.sections?.find((item) => item.title === 'Impacto operativo') ??
+      example.sections?.find((item) => item.title === 'Detalle') ??
+      example.sections?.find((item) => item.title === 'Principal') ??
+      example.sections?.find((item) => item.title === 'Diagnóstico');
+    if (section?.text) {
+      return section.text;
+    }
+    if (section?.items?.length) {
+      return section.items.join(' ');
+    }
+    return example.descripcion;
+  }
+
+  accionPrincipal(example: NominaMsgboxLabExample): string {
+    return example.primaryLabel ?? example.actions?.find((action) => action.value === 'primary')?.label ?? 'Aceptar';
+  }
+
+  technicalSummary(example: NominaMsgboxLabExample): string {
+    const width = example.width ?? 'md';
+    const sections = example.sections?.length ?? 0;
+    return `${this.patternLabel(example.patron)} · ${this.variantBadge(example.variant).label} · ${width} · ${
+      sections ? `${sections} bloques` : 'sin bloques'
+    }`;
+  }
+
+  patternLabel(pattern: NominaMsgboxLabExample['patron']): string {
+    const labels: Record<NominaMsgboxLabExample['patron'], string> = {
+      loading: 'Cargando',
+      'feedback-simple': 'Feedback simple',
+      'error-simple': 'Error simple',
+      'decision-compacta': 'Decisión compacta',
+      'decision-guiada': 'Decisión guiada',
+      diagnostico: 'Diagnóstico',
+    };
+    return labels[pattern];
   }
 
   seleccionarTab(tab: NominaMsgboxLabTabId): void {

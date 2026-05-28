@@ -1,4 +1,4 @@
-import type { MessageBoxVariant } from '../../../shared/components/ui/feedback/message-box/message-box.component';
+import type { MessageBoxSection, MessageBoxVariant } from '../../../shared/components/ui/feedback/message-box/message-box.component';
 import type { ParametrosEstadoVisual } from '../rules/parametros-completitud.rules';
 import type { ParametrosTabId } from './parametro-general.model';
 
@@ -54,6 +54,7 @@ export interface ParametrosDialogState {
   title: string;
   message: string;
   detail?: string;
+  sections?: MessageBoxSection[];
   primaryLabel?: string;
   secondaryLabel?: string;
   tertiaryLabel?: string;
