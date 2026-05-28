@@ -18,7 +18,7 @@ function parametros(over: Partial<ParametroGeneral> = {}): ParametroGeneral {
     sueldoMinimoCasaParticular: null,
     ingresoMinimoNoRemuneracional: null,
     topeAfpUf: null,
-    gratificacion: false,
+    gratificacion: true,
     immGratificacion: null,
     topeAfp: null,
     topeIpsUf: null,
@@ -470,5 +470,58 @@ describe('proceso-mensual-motor.rules', () => {
     expect(conEntradas.cotizacionLey16744).toBe(base.cotizacionLey16744);
     expect(conEntradas.impuestoUnico).toBe(base.impuestoUnico);
     expect(conEntradas.liquidoAPago).toBe(base.liquidoAPago);
+  });
+
+  describe('gratificacion legal art. 50 (factor 4,75 y politica empresa)', () => {
+    it('immGratificacion=4.75 con sueldoMinimo=539000 da tope mensual ~213354 y aplica tope', () => {
+      const liq = generarCalculoPreliminarPeriodo(input({
+        parametrosPeriodo: parametros({ gratificacion: true, immGratificacion: 4.75, sueldoMinimo: 539000, sueldoMinimo18a65: null }),
+        trabajadores: [{ ...input().trabajadores[0], tipoGratificacion: 'LEGAL_ART_50', sueldoBase: 1200000 }],
+      }), 'now').liquidaciones[0];
+
+      expect(liq.gratificacionLegal).toBe(213354.17);
+      expect(liq.issues.some((i) => i.codigo === 'GRATIFICACION_TOPE_APLICADO')).toBe(true);
+    });
+
+    it('trabajador que NO supera el tope recibe 25% de la base imponible', () => {
+      const liq = generarCalculoPreliminarPeriodo(input({
+        parametrosPeriodo: parametros({ gratificacion: true, immGratificacion: 4.75, sueldoMinimo: 539000, sueldoMinimo18a65: null }),
+        trabajadores: [{ ...input().trabajadores[0], tipoGratificacion: 'LEGAL_ART_50', sueldoBase: 600000 }],
+      }), 'now').liquidaciones[0];
+
+      // base 600000 * 0,25 = 150000 < tope 213354,17
+      expect(liq.gratificacionLegal).toBe(150000);
+      expect(liq.issues.some((i) => i.codigo === 'GRATIFICACION_TOPE_APLICADO')).toBe(false);
+    });
+
+    it('el factor proviene de immGratificacion, no de un 4,75 hardcodeado', () => {
+      const liq = generarCalculoPreliminarPeriodo(input({
+        parametrosPeriodo: parametros({ gratificacion: true, immGratificacion: 10, sueldoMinimo: 539000, sueldoMinimo18a65: null }),
+        trabajadores: [{ ...input().trabajadores[0], tipoGratificacion: 'LEGAL_ART_50', sueldoBase: 2000000 }],
+      }), 'now').liquidaciones[0];
+
+      // tope = (539000 * 10) / 12 = 449166,67 ; base 2.000.000 * 0,25 = 500.000 > tope
+      expect(liq.gratificacionLegal).toBe(449166.67);
+    });
+
+    it('parametros.gratificacion=false no calcula gratificacion legal automatica', () => {
+      const liq = generarCalculoPreliminarPeriodo(input({
+        parametrosPeriodo: parametros({ gratificacion: false, immGratificacion: 4.75, sueldoMinimo: 539000 }),
+        trabajadores: [{ ...input().trabajadores[0], tipoGratificacion: 'LEGAL_ART_50', sueldoBase: 1200000 }],
+      }), 'now').liquidaciones[0];
+
+      expect(liq.gratificacionLegal).toBe(0);
+      expect(liq.issues.some((i) => i.codigo === 'GRATIFICACION_DESACTIVADA_EMPRESA')).toBe(true);
+    });
+
+    it('ausencia de sueldo minimo genera advertencia y no inventa monto', () => {
+      const liq = generarCalculoPreliminarPeriodo(input({
+        parametrosPeriodo: parametros({ gratificacion: true, immGratificacion: 4.75, sueldoMinimo: null, sueldoMinimo18a65: null }),
+        trabajadores: [{ ...input().trabajadores[0], tipoGratificacion: 'LEGAL_ART_50', sueldoBase: 1200000 }],
+      }), 'now').liquidaciones[0];
+
+      expect(liq.gratificacionLegal).toBe(0);
+      expect(liq.issues.some((i) => i.codigo === 'GRATIFICACION_SIN_CONFIGURACION' && i.severidad === 'ADVERTENCIA')).toBe(true);
+    });
   });
 });

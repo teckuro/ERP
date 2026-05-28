@@ -355,6 +355,17 @@ function jornadaMaximaLegalPeriodo(periodo: string): number {
   return 45;
 }
 
+/**
+ * Porcentaje legal de gratificacion art. 50 (25%).
+ * Fallback hasta que se exponga como parametro normativo versionado en parametros_generales.
+ */
+const PORCENTAJE_GRATIFICACION_LEGAL_DEFECTO = 0.25;
+/**
+ * Factor legal del tope de gratificacion (4,75 IMM anual).
+ * Se usa solo si parametros_generales.immGratificacion viene null; no se duplica en la formula.
+ */
+const FACTOR_GRATIFICACION_LEGAL_DEFECTO = 4.75;
+
 function calcularGratificacionArticulo50(
   parametros: ParametroGeneral | null,
   trabajador: TrabajadorMotorCalculoSnapshot,
@@ -362,6 +373,11 @@ function calcularGratificacionArticulo50(
   issues: MotorCalculoIssue[],
   trazabilidad: MotorCalculoTrazabilidad[],
 ): number {
+  // Politica de empresa: si no paga gratificacion, no se calcula art. 50 automatico.
+  if (parametros?.gratificacion !== true) {
+    pushIssue(issues, 'GRATIFICACION_DESACTIVADA_EMPRESA', 'INFO', 'La empresa no tiene gratificacion activa en los parametros del periodo. No se calcula gratificacion legal automatica.', 'parametros_generales', parametros?.periodo ?? null, 'gratificacion');
+    return 0;
+  }
   const modalidad = normalizar(trabajador.tipoGratificacion);
   const habilitada = trabajador.gratificacionProporcional === true
     || modalidad.includes('ART_50')
@@ -372,21 +388,25 @@ function calcularGratificacionArticulo50(
     pushIssue(issues, 'GRATIFICACION_SIN_CONFIGURACION', 'ADVERTENCIA', 'Gratificacion automatica pendiente de configuracion. No se inventa monto.', 'empleados', trabajador.idPersona, 'tipoGratificacion');
     return 0;
   }
-  const imm = parametros?.immGratificacion ?? parametros?.sueldoMinimo18a65 ?? parametros?.sueldoMinimo ?? null;
-  if (imm == null || imm <= 0) {
-    pushIssue(issues, 'GRATIFICACION_SIN_CONFIGURACION', 'ADVERTENCIA', 'No hay IMM suficiente para calcular gratificacion art. 50.', 'parametros_generales', parametros?.periodo ?? null, 'immGratificacion/sueldoMinimo');
+  // El sueldo minimo en pesos viene de los sueldos minimos del periodo, NO de immGratificacion (que es el factor 4,75).
+  const sueldoMinimo = parametros?.sueldoMinimo18a65 ?? parametros?.sueldoMinimo ?? null;
+  if (sueldoMinimo == null || sueldoMinimo <= 0) {
+    pushIssue(issues, 'GRATIFICACION_SIN_CONFIGURACION', 'ADVERTENCIA', 'No hay sueldo minimo del periodo para calcular el tope de gratificacion art. 50.', 'parametros_generales', parametros?.periodo ?? null, 'sueldoMinimo18a65/sueldoMinimo');
     return 0;
   }
+  // immGratificacion es el factor legal (4,75). Si falta, se usa el factor por defecto, sin literales duplicados en la formula.
+  const factorGratificacion = parametros?.immGratificacion ?? FACTOR_GRATIFICACION_LEGAL_DEFECTO;
+  const porcentajeGratificacion = PORCENTAJE_GRATIFICACION_LEGAL_DEFECTO;
   const base = sumar(haberesImponibles.filter((h) => !esConceptoGratificacion(h.codigo, h.descripcion)).map((h) => h.monto));
-  const topeMensual = redondear((imm * 4.75) / 12);
-  const resultado = redondear(Math.min(base * 0.25, topeMensual));
+  const topeMensual = redondear((sueldoMinimo * factorGratificacion) / 12);
+  const resultado = redondear(Math.min(base * porcentajeGratificacion, topeMensual));
   const periodoParametro = parametros?.periodo ?? null;
-  const campoImm = parametros?.immGratificacion != null ? 'immGratificacion' : 'sueldoMinimo';
+  const campoFactor = parametros?.immGratificacion != null ? 'immGratificacion' : 'factorGratificacionDefecto';
   pushTraza(trazabilidad, 'GRATIFICACION_ART_50_BASE', 'motor', 'resultado', 'haberesImponiblesRemuneracionales', base, 'sum(haberes imponibles sin gratificacion)', base, periodoParametro, null);
-  pushTraza(trazabilidad, 'GRATIFICACION_ART_50_TOPE', 'parametros', 'parametros_generales', campoImm, imm, 'IMM * 4.75 / 12', topeMensual, periodoParametro, null);
-  pushTraza(trazabilidad, 'GRATIFICACION_ART_50_RESULTADO', 'motor', 'resultado', 'base/tope', `${base}/${topeMensual}`, 'min(base * 0.25, topeMensual)', resultado, periodoParametro, null);
-  if (resultado === topeMensual && base * 0.25 > topeMensual) {
-    pushIssue(issues, 'GRATIFICACION_TOPE_APLICADO', 'INFO', 'Gratificacion art. 50 limitada por tope mensual 4,75 IMM / 12.', 'parametros_generales', periodoParametro, 'sueldoMinimo');
+  pushTraza(trazabilidad, 'GRATIFICACION_ART_50_TOPE', 'parametros', 'parametros_generales', campoFactor, factorGratificacion, 'sueldoMinimo * factorGratificacion / 12', topeMensual, periodoParametro, null);
+  pushTraza(trazabilidad, 'GRATIFICACION_ART_50_RESULTADO', 'motor', 'resultado', 'base/tope', `${base}/${topeMensual}`, 'min(base * porcentaje, topeMensual)', resultado, periodoParametro, null);
+  if (resultado === topeMensual && base * porcentajeGratificacion > topeMensual) {
+    pushIssue(issues, 'GRATIFICACION_TOPE_APLICADO', 'INFO', 'Gratificacion art. 50 limitada por tope mensual (sueldo minimo * factor / 12).', 'parametros_generales', periodoParametro, 'sueldoMinimo');
   }
   return resultado;
 }
