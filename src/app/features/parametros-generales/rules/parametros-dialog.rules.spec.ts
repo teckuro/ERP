@@ -5,6 +5,7 @@ import {
   buildParametrosDecisionConfigClienteDialog,
   buildParametrosExitoClienteConfigDialog,
   buildParametrosReconciliacionDiferenciasDialog,
+  detalleDiferenciasOficialesCliente,
 } from './parametros-dialog.rules';
 
 describe('parametros-dialog.rules', () => {
@@ -44,5 +45,33 @@ describe('parametros-dialog.rules', () => {
       secondaryAction: 'actualizar-con-oficiales',
       tertiaryAction: 'revisar-despues',
     });
+  });
+
+  it('detalle de diferencias usa etiqueta RRHH para tope AFP en UF', () => {
+    const detalle = detalleDiferenciasOficialesCliente('2026-05', [
+      { campo: 'topeAfpUf', oficial: 87.8, cliente: 99 },
+    ]);
+
+    expect(detalle).toContain('Tope AFP (UF)');
+    expect(detalle).not.toContain('topeAfpUf');
+  });
+
+  it('detalle advierte desviacion extrema respecto al valor oficial', () => {
+    const detalle = detalleDiferenciasOficialesCliente('2026-05', [
+      { campo: 'uf', oficial: 38000, cliente: 6_000_000 },
+    ]);
+
+    expect(detalle).toContain('El valor guardado se aparta mucho del oficial del mes');
+    expect(detalle).toContain('UF');
+  });
+
+  it('detalle indica comparacion con referencia de otro periodo', () => {
+    const detalle = detalleDiferenciasOficialesCliente(
+      '2026-05',
+      [{ campo: 'uf', oficial: 38000, cliente: 40000 }],
+      { periodoReferenciaOficial: '2026-04' },
+    );
+
+    expect(detalle).toContain('Comparación con referencia del período 2026-04');
   });
 });

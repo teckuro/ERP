@@ -16,6 +16,12 @@ import {
   resolverEstadoPeriodoRemuneracionDesdePrevalidacion,
   nominaFrameCongeladoObsoleto,
   resolverAccionesFooterModalParametros,
+  resolveParametrosListosPeriodo,
+  resolveParametrosOperativosPeriodo,
+  mapParametrosGruposParaModal,
+  GRUPO_CONFIGURACION_PERIODO_ID,
+  LABEL_CONFIGURACION_PERIODO,
+  etiquetaEstadoConfiguracionPeriodoModal,
   buildParametrosOverlayContexto,
 } from './proceso-mensual-parametros-refresh.rules';
 
@@ -223,7 +229,73 @@ describe('proceso-mensual-parametros-refresh.rules', () => {
     expect(etiquetaEstadoPeriodoRemuneracion('cargado')).toBe('Cargado');
   });
 
-  it('resolverAccionesFooterModalParametros sin flujo avanzado ofrece verificar periodo', () => {
+  it('resolveParametrosListosPeriodo prioriza consulta PG sobre prevalidacion', () => {
+    expect(resolveParametrosListosPeriodo({
+      consultaParametrosOperativos: false,
+      prevalidacionParametrosOperativos: true,
+      persistidoParametrosOperativos: true,
+    })).toBe(false);
+    expect(resolveParametrosListosPeriodo({
+      consultaParametrosOperativos: true,
+      prevalidacionParametrosOperativos: false,
+    })).toBe(true);
+    expect(resolveParametrosListosPeriodo({
+      consultaParametrosOperativos: null,
+      prevalidacionParametrosOperativos: false,
+    })).toBe(false);
+    expect(resolveParametrosListosPeriodo({})).toBeNull();
+  });
+
+  it('resolveParametrosOperativosPeriodo es true solo con listos explicitos', () => {
+    expect(resolveParametrosOperativosPeriodo({
+      consultaParametrosOperativos: true,
+    })).toBe(true);
+    expect(resolveParametrosOperativosPeriodo({
+      consultaParametrosOperativos: false,
+      prevalidacionParametrosOperativos: true,
+    })).toBe(false);
+  });
+
+  it('etiquetaEstadoConfiguracionPeriodoModal usa copy RRHH', () => {
+    expect(etiquetaEstadoConfiguracionPeriodoModal('Por revisar')).toBe('Faltan datos');
+    expect(etiquetaEstadoConfiguracionPeriodoModal('Listo para liquidar')).toBe('Listo');
+  });
+
+  it('mapParametrosGruposParaModal agrega configuracion del periodo si no esta lista', () => {
+    const filas = mapParametrosGruposParaModal({
+      grupos: [{ id: 'mensuales_uf_utm_sueldo', clasificacion: 'OK' }],
+      parametrosOperativos: false,
+      estadoCalendario: 'Por revisar',
+    });
+    expect(filas[0]?.id).toBe(GRUPO_CONFIGURACION_PERIODO_ID);
+    expect(filas[0]?.label).toBe(LABEL_CONFIGURACION_PERIODO);
+    expect(filas[0]?.estado).toBe('Faltan datos');
+    expect(filas[0]?.tono).toBe('revision');
+    expect(filas.some((f) => f.id === 'mensuales_uf_utm_sueldo' && f.tono === 'ok')).toBe(true);
+  });
+
+  it('buildParametrosOverlayContexto menciona configuracion si grupos ok pero no operativos', () => {
+    const ctx = buildParametrosOverlayContexto({
+      parametrosOperativos: false,
+      parametrosGrupos: [{ id: 'mensuales_uf_utm_sueldo', clasificacion: 'OK' }],
+      prevalidacion: null,
+    });
+    expect(ctx.puntos.some((p) => p.includes('configuración del período'))).toBe(true);
+  });
+
+  it('resolverAccionesFooterModalParametros con parametros no operativos solo abre parametros', () => {
+    const acciones = resolverAccionesFooterModalParametros({
+      tienePrevalidacion: false,
+      baseGenerada: false,
+      calculoGenerado: false,
+      resultadoGuardado: false,
+      parametrosOperativos: false,
+    });
+    expect(acciones.accionPrincipal?.destino).toBe('parametros_app');
+    expect(acciones.accionSecundaria).toBeUndefined();
+  });
+
+  it('resolverAccionesFooterModalParametros sin evaluar ofrece verificar periodo', () => {
     const acciones = resolverAccionesFooterModalParametros({
       tienePrevalidacion: false,
       baseGenerada: false,
@@ -232,6 +304,30 @@ describe('proceso-mensual-parametros-refresh.rules', () => {
     });
     expect(acciones.accionPrincipal?.destino).toBe('validar_periodo');
     expect(acciones.accionSecundaria?.destino).toBe('parametros_app');
+  });
+
+  it('resolverAccionesFooterModalParametros con parametros operativos solo abre parametros', () => {
+    const acciones = resolverAccionesFooterModalParametros({
+      tienePrevalidacion: false,
+      baseGenerada: false,
+      calculoGenerado: false,
+      resultadoGuardado: false,
+      parametrosOperativos: true,
+    });
+    expect(acciones.accionPrincipal?.destino).toBe('parametros_app');
+    expect(acciones.accionSecundaria).toBeUndefined();
+  });
+
+  it('resolverAccionesFooterModalParametros en preparacion unificada no ofrece verificar periodo', () => {
+    const acciones = resolverAccionesFooterModalParametros({
+      tienePrevalidacion: false,
+      baseGenerada: false,
+      calculoGenerado: false,
+      resultadoGuardado: false,
+      preparacionNominaEnCurso: true,
+    });
+    expect(acciones.accionPrincipal?.destino).toBe('parametros_app');
+    expect(acciones.accionSecundaria).toBeUndefined();
   });
 
   it('resolverAccionesFooterModalParametros con prevalidacion solo abre parametros', () => {

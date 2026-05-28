@@ -55,16 +55,8 @@
         <article class="parametros-cierre-summary">
           <div class="parametros-cierre-summary__head">
             <span class="param-eyebrow">Pendiente principal</span>
-            <div class="parametros-cierre-summary__actions">
-              <div class="parametros-cierre-summary__action-wrap">
-                <app-tooltip
-                  preferredPlacement="top"
-                  text="Actualiza la información del período actual. Úsalo si sabes que hubo cambios recientes y quieres verlos aquí. No abre edición."
-                >
-                  <button type="button" class="parametros-cierre-ghost" (click)="ws.recargarPeriodoSeleccionado()">
-                    Refrescar datos
-                  </button>
-                </app-tooltip>
+            @if (ws.cierreAccionVisible()) {
+              <div class="parametros-cierre-summary__actions">
                 <app-tooltip
                   preferredPlacement="top"
                   text="Te lleva directo a la sección que falta completar. Si el período aún no está listo, puede tardar un momento en preparar la edición."
@@ -74,7 +66,7 @@
                   </button>
                 </app-tooltip>
               </div>
-            </div>
+            }
           </div>
           <p>{{ ws.cierrePendientePrincipal() }}</p>
         </article>

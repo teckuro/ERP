@@ -12,8 +12,10 @@ import {
   NOTA_DOS_FUENTES_PARAMETROS,
   puedeEncadenarGeneracionTrasVerificacion,
   previewTrabajadoresPreparacion,
+  actaPendienteMuestraAccionInline,
   shellDebeOcultarCtaParametros,
 } from './proceso-mensual-acta-preparacion.rules';
+import { LABEL_CONFIGURACION_PERIODO } from './proceso-mensual-parametros-refresh.rules';
 import type { InformacionPeriodoView } from '../containers/proceso-mensual-container/models/proceso-mensual-container.vm';
 
 describe('proceso-mensual-acta-preparacion.rules', () => {
@@ -53,15 +55,12 @@ describe('proceso-mensual-acta-preparacion.rules', () => {
       preparacionNominaUnificada: false,
       frameTexto: 'Texto frame',
       periodoEtiqueta: 'Mayo 2026',
-      movimientosAprobados: 2,
-      asignacionesAplicables: 1,
       informacionPeriodo: null,
     });
 
     expect(vm.etapa).toBe('Generar nómina');
     expect(vm.ctaLabel).toBe('Verificar y generar nómina');
     expect(vm.resumenVerificacion).toBeNull();
-    expect(vm.contextoPeriodo).toBeNull();
     expect(vm.pendientes).toEqual([]);
   });
 
@@ -113,6 +112,77 @@ describe('proceso-mensual-acta-preparacion.rules', () => {
     expect(sanna?.descripcion).not.toMatch(/pendientes:/i);
   });
 
+  it('buildPendientesActaPreparacion incluye configuracion del periodo si no operativos', () => {
+    const pendientes = buildPendientesActaPreparacion(null, {
+      parametrosOperativos: false,
+      estadoConfiguracionPeriodo: 'Faltan datos',
+      parametrosGrupos: [{ id: 'mensuales_uf_utm_sueldo', clasificacion: 'OK' }],
+    });
+    expect(pendientes.some((p) => p.titulo === LABEL_CONFIGURACION_PERIODO)).toBe(true);
+  });
+
+  it('actaPendienteMuestraAccionInline nunca muestra boton inline hacia parametros', () => {
+    const acta = { ctaLabel: LABEL_ABRIR_PARAMETROS };
+    expect(actaPendienteMuestraAccionInline({
+      severidad: 'bloqueo',
+      titulo: 'UF mensual',
+      descripcion: 'En cero',
+      accionLabel: 'Revisar parámetros',
+      destino: 'parametros_app',
+    }, acta)).toBe(false);
+    expect(actaPendienteMuestraAccionInline({
+      severidad: 'bloqueo',
+      titulo: LABEL_CONFIGURACION_PERIODO,
+      descripcion: 'Faltan datos',
+      accionLabel: null,
+      destino: 'parametros_app',
+    }, acta)).toBe(false);
+  });
+
+  it('actaPendienteMuestraAccionInline muestra boton para ficha de trabajador', () => {
+    expect(actaPendienteMuestraAccionInline({
+      severidad: 'advertencia',
+      titulo: 'Juan Pérez',
+      descripcion: 'Ficha incompleta',
+      accionLabel: 'Revisar ficha',
+      destino: 'trabajadores_fichas',
+      idPersona: 1,
+    }, { ctaLabel: LABEL_ABRIR_PARAMETROS })).toBe(true);
+  });
+
+  it('actaPendienteMuestraAccionInline oculta boton duplicado hacia parametros en acta completa', () => {
+    const acta = buildActaPreparacionCentral({
+      etapasRail: [{ clave: 'validar', etiqueta: 'Verificar', estadoCorto: 'En curso', marca: 'actual', activa: true }],
+      accionPrincipal: { label: 'X', descripcion: '', tipo: 'local', accionLocal: 'validarPeriodo' },
+      tienePrevalidacion: true,
+      trabajadoresAptos: 0,
+      trabajadoresPorRevisar: 0,
+      trabajadoresPendientesRevisionCount: 0,
+      bloqueosCount: 1,
+      advertenciasCount: 0,
+      validacionCriticos: 1,
+      validacionAdvertencias: 0,
+      accionPeriodoEnCurso: false,
+      validando: false,
+      generandoPreNomina: false,
+      preparacionNominaUnificada: false,
+      frameTexto: '',
+      periodoEtiqueta: 'Mayo 2026',
+      informacionPeriodo: {
+        tone: 'danger',
+        titulo: 'Revisión',
+        accionPrincipal: { label: 'Abrir parámetros', destino: 'parametros_app' },
+      },
+      parametrosOperativos: false,
+      estadoConfiguracionPeriodo: 'Faltan datos',
+      parametrosGrupos: [{ id: 'mensuales_uf_utm_sueldo', clasificacion: 'FALTANTE' }],
+    });
+    const pendienteParam = acta.pendientes.find((p) => p.destino === 'parametros_app');
+    expect(pendienteParam).toBeTruthy();
+    expect(actaPendienteMuestraAccionInline(pendienteParam!, acta)).toBe(false);
+    expect(acta.ctaLabel).toBe(LABEL_ABRIR_PARAMETROS);
+  });
+
   it('buildActaPreparacionCentral oculta mensaje generico si hay pendientes detallados', () => {
     const vm = buildActaPreparacionCentral({
       etapasRail: [{
@@ -142,8 +212,6 @@ describe('proceso-mensual-acta-preparacion.rules', () => {
       preparacionNominaUnificada: false,
       frameTexto: 'Texto frame',
       periodoEtiqueta: 'Mayo 2026',
-      movimientosAprobados: 2,
-      asignacionesAplicables: 1,
       informacionPeriodo: {
         tone: 'warning',
         titulo: 'Revisión del período antes de generar',
@@ -228,8 +296,6 @@ describe('proceso-mensual-acta-preparacion.rules', () => {
       preparacionNominaUnificada: false,
       frameTexto: 'Texto',
       periodoEtiqueta: 'Mayo 2026',
-      movimientosAprobados: 0,
-      asignacionesAplicables: 0,
       parametrosOperativos: false,
       parametrosGrupos: [
         { id: 'oficial_mensual', clasificacion: 'FALTANTE' },
@@ -262,7 +328,7 @@ describe('proceso-mensual-acta-preparacion.rules', () => {
     ).toEqual({ criticos: 2, advertencias: 1, trabajadoresPendientes: 0 });
   });
 
-  it('buildActaPreparacionCentral con prevalidación expone resumen y contexto', () => {
+  it('buildActaPreparacionCentral con prevalidación expone resumen sin bloque contexto', () => {
     const vm = buildActaPreparacionCentral({
       etapasRail: [{
         clave: 'base',
@@ -291,8 +357,6 @@ describe('proceso-mensual-acta-preparacion.rules', () => {
       preparacionNominaUnificada: false,
       frameTexto: 'Texto frame',
       periodoEtiqueta: 'Mayo 2026',
-      movimientosAprobados: 2,
-      asignacionesAplicables: 1,
       informacionPeriodo: {
         tone: 'success',
         titulo: 'Período listo para generar',
@@ -302,8 +366,49 @@ describe('proceso-mensual-acta-preparacion.rules', () => {
 
     expect(vm.previewLinea).toContain('1 trabajador listo');
     expect(vm.resumenVerificacion?.advertencias).toBe(1);
-    expect(vm.contextoPeriodo?.trabajadoresAptos).toBe(1);
+    expect(vm.titulo).toBe('Generar nómina');
     expect(vm.estadoResultado).toBe('advertencias');
+  });
+
+  it('buildActaPreparacionCentral con pendientes usa descripcion corta', () => {
+    const vm = buildActaPreparacionCentral({
+      etapasRail: [{
+        clave: 'base',
+        etiqueta: 'Verificar y generar nómina',
+        estadoCorto: 'En curso',
+        marca: 'actual',
+        activa: true,
+      }],
+      accionPrincipal: {
+        label: 'Generar nómina',
+        descripcion: 'Arma borrador',
+        tipo: 'local',
+        accionLocal: 'generarBase',
+      },
+      tienePrevalidacion: true,
+      trabajadoresAptos: 1,
+      trabajadoresPorRevisar: 0,
+      trabajadoresPendientesRevisionCount: 0,
+      bloqueosCount: 1,
+      advertenciasCount: 0,
+      validacionCriticos: 1,
+      validacionAdvertencias: 0,
+      accionPeriodoEnCurso: false,
+      validando: false,
+      generandoPreNomina: false,
+      preparacionNominaUnificada: false,
+      frameTexto: 'Texto frame',
+      periodoEtiqueta: 'Mayo 2026',
+      informacionPeriodo: {
+        tone: 'danger',
+        titulo: 'Revisión del período antes de generar',
+        bajada: 'Texto largo duplicado que no debería repetirse.',
+        resumenVerificacion: { criticos: 1, advertencias: 0, trabajadoresPendientes: 0 },
+      },
+      parametrosGrupos: [{ id: 'mensuales_uf_utm_sueldo', clasificacion: 'FALTANTE' }],
+    });
+    expect(vm.descripcion).toContain('puntos indicados');
+    expect(vm.pendientes.length).toBeGreaterThan(0);
   });
 
   it('informacionDebeAbrirModalEnPreparacion no abre modal en camino feliz', () => {
@@ -353,8 +458,6 @@ describe('proceso-mensual-acta-preparacion.rules', () => {
       preparacionNominaUnificada: true,
       frameTexto: 'Texto frame',
       periodoEtiqueta: 'Mayo 2026',
-      movimientosAprobados: 0,
-      asignacionesAplicables: 0,
       informacionPeriodo: null,
     });
     expect(vm.ctaLabel).toBe(ctaLabelPreparacionNominaEnCurso());

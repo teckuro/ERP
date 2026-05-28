@@ -1735,7 +1735,7 @@ describe('ProcesoMensualContainer', () => {
   });
 
   describe('refresh parametros (NOM-PARAMETROS-REFRESH-01)', () => {
-    it('click franja parametros con listos y sin flujo avanzado ofrece verificar periodo', async () => {
+    it('click franja parametros con listos operativos solo ofrece abrir parametros', async () => {
       const c = fixture.componentInstance;
       storeDe(fixture).resultado.set(null);
       consultarEstadoParametrosPeriodo.mockResolvedValueOnce(prevalidacionLista());
@@ -1746,10 +1746,35 @@ describe('ProcesoMensualContainer', () => {
       expect(c.informacionPeriodo()?.consultando).toBeFalsy();
       expect(c.informacionPeriodo()?.titulo).toBeTruthy();
       expect(c.informacionPeriodo()?.soloVerificacionParametros).toBe(true);
-      expect(c.informacionPeriodo()?.accionPrincipal?.label).toBe('Verificar período');
-      expect(c.informacionPeriodo()?.accionPrincipal?.destino).toBe('validar_periodo');
-      expect(c.informacionPeriodo()?.accionSecundaria?.destino).toBe('parametros_app');
+      expect(c.informacionPeriodo()?.accionPrincipal?.label).toBe('Abrir parámetros');
+      expect(c.informacionPeriodo()?.accionPrincipal?.destino).toBe('parametros_app');
+      expect(c.informacionPeriodo()?.accionSecundaria).toBeUndefined();
       expect(c.informacionPeriodo()?.tipoRemuneracionLabel).toBe('Nómina mensual');
+    });
+
+    it('click franja parametros sin operativos solo ofrece abrir parametros y marca grupos pendientes', async () => {
+      const c = fixture.componentInstance;
+      storeDe(fixture).resultado.set(null);
+      consultarEstadoParametrosPeriodo.mockResolvedValueOnce(prevalidacionLista({
+        resumen: {
+          ...prevalidacionLista().resumen,
+          parametrosOperativos: false,
+          parametrosGrupos: [
+            { id: 'mensuales_uf_utm_sueldo', clasificacion: 'FALTANTE' },
+          ],
+        },
+        items: [
+          { area: 'PARAMETROS', etiqueta: 'Parámetros', estado: 'CON_PROBLEMAS', detalle: 'Estado período: pendiente' },
+        ],
+      }));
+      c.seleccionarFranjaArea('parametros');
+      await fixture.whenStable();
+      fixture.detectChanges();
+      expect(c.informacionPeriodo()?.accionPrincipal?.label).toBe('Abrir parámetros');
+      expect(c.informacionPeriodo()?.accionPrincipal?.destino).toBe('parametros_app');
+      expect(c.informacionPeriodo()?.accionSecundaria).toBeUndefined();
+      const grupos = c.informacionPeriodo()?.parametrosGrupos ?? [];
+      expect(grupos.some((g) => g.tono === 'revision')).toBe(true);
     });
 
     it('click franja parametros con periodo ya verificado solo ofrece abrir parametros', async () => {

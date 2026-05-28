@@ -195,6 +195,23 @@ describe('proceso-mensual-workspace-presentacion.rules', () => {
     });
   });
 
+  it('buildNominaConfiguracionPeriodoItems sin nomina generada no marca trabajadores listos', () => {
+    const items = buildNominaConfiguracionPeriodoItems(inputChecklist({
+      tienePrevalidacion: true,
+      parametrosListos: false,
+      trabajadoresAptos: 1,
+      trabajadoresPorRevisar: 0,
+      nominaGenerada: false,
+      nominaFrame: 'sin_generar',
+    }));
+
+    expect(items.find((item) => item.id === 'trabajadores')).toMatchObject({
+      estado: 'Pendiente',
+      tono: 'review',
+      valor: '1 apto · sin nómina generada',
+    });
+  });
+
   it('buildNominaConfiguracionPeriodoItems muestra trabajadores por revisar', () => {
     const items = buildNominaConfiguracionPeriodoItems(inputChecklist({
       trabajadoresPorRevisar: 2,

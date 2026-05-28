@@ -157,7 +157,7 @@
               <dd>{{ info.tipoRemuneracionLabel ?? 'Nómina mensual' }}</dd>
             </div>
             <div>
-              <dt>Estado calendario</dt>
+              <dt>Configuración del período</dt>
               <dd>{{ info.estadoRemuneracionLabel ?? 'Sin evaluar' }}</dd>
             </div>
           </dl>
@@ -198,7 +198,7 @@
         </section>
       }
 
-      @if (info.puntos?.length) {
+      @if (!info.soloVerificacionParametros && info.puntos?.length) {
         <section class="payroll-verificacion-periodo-modal__bloque">
           <h3 class="payroll-verificacion-periodo-modal__bloque-titulo">Qué revisar</h3>
           <ul class="payroll-verificacion-periodo-modal__lista">
@@ -209,7 +209,7 @@
         </section>
       }
 
-      @for (seccion of info.secciones ?? []; track seccion.titulo) {
+      @for (seccion of info.soloVerificacionParametros ? [] : (info.secciones ?? []); track seccion.titulo) {
         <section class="payroll-verificacion-periodo-modal__bloque">
           <h3 class="payroll-verificacion-periodo-modal__bloque-titulo">{{ seccion.titulo }}</h3>
           @if (seccion.detalles?.length) {
@@ -294,7 +294,7 @@
       }
     </div>
 
-    @if (!info.soloAlertasExpediente) {
+    @if (!info.soloAlertasExpediente && !(info.soloVerificacionParametros && info.consultando)) {
     <footer class="payroll-operational-detail-modal__footer">
       <div
         class="payroll-modal-footer-actions"

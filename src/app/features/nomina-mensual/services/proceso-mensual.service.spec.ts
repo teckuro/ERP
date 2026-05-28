@@ -370,6 +370,20 @@ describe('ProcesoMensualService', () => {
     expect(mensajesParametros).toMatch(/sanna/i);
   });
 
+  it('marca parametros no operativos si hay diferencias y la config cliente se edito tras decision', async () => {
+    parametros.obtenerClienteConfig.mockResolvedValue({
+      ...clienteConfigMock,
+      uf: 40000,
+      estadoReconciliacionOficial: 'cliente_confirmado',
+      fechaReconciliacionOficial: '2026-05-01T10:00:00',
+      fechaActualizacion: '2026-05-20T12:00:00',
+    });
+    const svc = TestBed.inject(ProcesoMensualService);
+    const r = await svc.consultarEstadoParametrosPeriodo('2026-05');
+    expect(r.resumen.parametrosOperativos).toBe(false);
+    expect(r.advertencias.some((a) => a.codigo === 'PARAMETROS_RECONCILIACION_PENDIENTE')).toBe(true);
+  });
+
   it('propaga fallo de lectura de entradas como advertencia (no bloquea generar nómina)', async () => {
     entradasMensuales.listarEntradasPeriodo.mockRejectedValue(new Error('red'));
     const svc = TestBed.inject(ProcesoMensualService);

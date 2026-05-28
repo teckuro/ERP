@@ -1,3 +1,33 @@
+## 2026-05-28 - Parámetros: aviso de diferencias al guardar y al reingresar
+
+- **Cambio:** Modal de diferencias (oficial vs configuración) al **guardar** si hay valores distintos, y al **cargar/reingresar** el período; ya no se bloquea por calendario en estado pendiente; reabre si hubo decisión sin fecha o config editada después. Recarga al volver desde otra ruta a `/parametros`.
+- **Archivos:** `parametros-completitud.rules.ts`, `parametros-dialog.rules.ts`, `parametros-workspace.orquestador.ts`, specs, `peticiones-estilos.md`.
+- **No tocado:** estilos globales, SQL/RPC, motor de nómina.
+
+## 2026-05-28 - Nómina mensual: checklist coherente y modal parámetros sin duplicar
+
+- **Cambio:** Trabajadores no muestra «Listo» hasta existir nómina generada (queda «Pendiente»). Modal Parámetros: un solo mensaje de carga, tarjeta de contexto como fuente única (sin «Qué revisar» repetido); checklist no duplica «Consultando» mientras el modal está abierto.
+- **Archivos:** `proceso-mensual-workspace-presentacion.rules.ts`, `proceso-mensual-presentacion.facade.ts`, `proceso-mensual-informacion-modal.component.html`, specs, `peticiones-estilos.md`.
+- **No tocado:** estilos globales, store, SQL/motor.
+
+## 2026-05-28 - Nómina mensual: acta un CTA y checklist lateral con acta
+
+- **Cambio:** Con el acta de preparación visible, el sidebar vuelve a mostrar «Configuración del período» (Parámetros, Nómina, Trabajadores, Liquidaciones). En «Qué corregir» solo texto por fila; un único «Abrir parámetros» en `payroll-acta-preparacion__actions`.
+- **Archivos:** `proceso-mensual-acta-preparacion.rules.ts`, `proceso-mensual-workspace.component.html`, specs, `peticiones-estilos.md`.
+- **No tocado:** estilos globales, store, SQL/motor.
+
+## 2026-05-28 - Nómina mensual: modal parámetros alineado con consulta PG
+
+- **Cambio:** El modal «Parámetros del período» prioriza la consulta en vivo (grupos y operatividad) sobre prevalidación antigua; fila **Configuración del período** con estado RRHH («Faltan datos» / «Listo») cuando bloquea; pie solo «Abrir parámetros» si ya se evaluó el período (operativo o con pendientes).
+- **Archivos:** `proceso-mensual-parametros-refresh.rules.ts`, `proceso-mensual-presentacion.facade.ts`, specs.
+- **No tocado:** estilos globales, SQL/motor.
+
+## 2026-05-28 - Nómina mensual: acta sin movimientos y modal parámetros alineado
+
+- **Cambio:** Acta central «Revisión del período» sin bloque contexto (período/trabajadores/movimientos/recurrentes); título y descripción desde etapa activa; pendientes y resumen sin duplicar copy largo. Modal Parámetros: si parámetros operativos o flujo principal/preparación en curso, pie solo «Abrir parámetros» (sin CTA «Verificar período» obsoleto); checklist mantiene fila parámetros en vivo durante preparación unificada.
+- **Archivos:** `proceso-mensual-acta-preparacion.rules.ts`, `proceso-mensual-workspace.component.html`, `proceso-mensual-parametros-refresh.rules.ts`, `proceso-mensual-presentacion.facade.ts`, specs, `peticiones-estilos.md`.
+- **No tocado:** estilos globales, `angular.json`, SQL/motor.
+
 ## 2026-05-28 - Nómina mensual: flujo unificado verificar y generar (overlay etapas)
 
 - **Cambio:** «Verificar y generar» usa un solo overlay con lista de etapas (verificar → borrador → cálculo → guardar → bitácora), sin alternar acta/focus/layout `--preparacion` ni parpadeos de checklist/shell/tabs. Modo encadenado en store omite vaciado intermedio de snapshot y carga completa duplicada tras validar.
@@ -2227,3 +2257,27 @@ Creación avanzada incorpora una identidad de producto local para dejar de senti
 - **Situación del período:** solo pendientes de atención; la referencia informativa pasa al modal del trabajador.
 - **Reglas:** `proceso-mensual-liquidacion-preview-trabajador.rules.ts` + facade `liquidacionPreviewTrabajadorSeleccionado`.
 - **No tocado:** estilos globales, motor, liquidaciones productivas.
+
+## 2026-05-28 — Parámetros: contraste controles readonly / disabled
+
+- **Inputs:** `.param-input` readonly y disabled unifican fondo, borde y texto legible (`--prm-field-readonly-*`).
+- **Checks/radios:** checkboxes y radios disabled dejan opacidad nativa; borde, fondo y marca visibles (`--prm-field-locked-*`).
+- **Unidad y selects:** chip de unidad y `app-search-select` en consulta mantienen contraste sin opacidad global.
+- **Gratificación:** «Tope legal» marcado como locked con aria/title RRHH.
+- **Archivos:** `parametros-workspace-container.css`, `parametros-workspace-container.responsive.css`, `parametros-config-cliente-tab.component.ts`.
+- **No tocado:** estilos globales, SQL, motor.
+
+## 2026-05-28 — Parámetros: cierre del período sin refrescar duplicado
+
+- **Pendiente principal:** se elimina el botón «Refrescar datos»; la acción contextual solo aparece cuando hay pendiente real.
+- **Estado limpio:** con «Sin pendientes críticos» no se muestra botón de acción.
+- **Archivos:** `parametros-workspace-tabs-panel.component.html`, `parametros-workspace.orquestador.ts`.
+- **No tocado:** estilos globales, SQL, motor.
+
+## 2026-05-28 — Parámetros: modal diferencias con valores oficiales
+
+- **Comparación:** el aviso usa baseline resuelto (fila exacta, último oficial del mes o referencia visual), alineado con nómina mensual vía `obtenerUltimoHastaPeriodo`.
+- **Modal:** se muestra al entrar o guardar cuando hay diferencias; deduplicación por huella en sesión. Detalle advierte desviación extrema y referencia de otro período cuando aplica.
+- **Reconciliación:** chip y bloqueo nómina incluyen re-edición tras «Actualizar con oficiales».
+- **Archivos:** `parametros-completitud.rules.ts`, `parametros-dialog.rules.ts`, `parametros-workspace.orquestador.ts`.
+- **No tocado:** estilos globales, SQL, motor de nómina, `angular.json`.

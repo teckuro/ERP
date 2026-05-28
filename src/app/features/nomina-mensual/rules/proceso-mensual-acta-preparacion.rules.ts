@@ -7,7 +7,10 @@ import {
 } from './proceso-mensual-copy-limpio.rules';
 import {
   etiquetaClasificacionGrupoParametro,
+  etiquetaEstadoConfiguracionPeriodoModal,
   etiquetaGrupoParametroUi,
+  LABEL_CONFIGURACION_PERIODO,
+  resolverEstadoPeriodoRemuneracionDesdePrevalidacion,
 } from './proceso-mensual-parametros-refresh.rules';
 import type {
   InformacionPeriodoDestino,
@@ -24,13 +27,6 @@ export type ActaPreparacionEstadoResultado =
   | 'listo'
   | 'bloqueado'
   | 'advertencias';
-
-export interface ActaPreparacionContextoPeriodoVm {
-  periodoEtiqueta: string;
-  trabajadoresAptos: number;
-  movimientosLabel: string;
-  recurrentesLabel: string;
-}
 
 export interface ActaPreparacionAccionSecundariaVm {
   label: string;
@@ -54,7 +50,6 @@ export interface ActaPreparacionCentralVm {
   previewLinea: string | null;
   estadoResultado: ActaPreparacionEstadoResultado;
   resumenVerificacion: InformacionPeriodoResumenVerificacion | null;
-  contextoPeriodo: ActaPreparacionContextoPeriodoVm | null;
   alertasTotal: number;
   alertasEtiqueta: string | null;
   pendientes: readonly ActaPreparacionPendienteVm[];
@@ -277,6 +272,31 @@ function buildPendientesParametrosDesdeGrupos(
   return out;
 }
 
+function buildPendienteConfiguracionPeriodo(
+  parametrosOperativos: boolean | undefined,
+  estadoConfiguracion: string | undefined,
+): ActaPreparacionPendienteVm | null {
+  if (parametrosOperativos === undefined && estadoConfiguracion === undefined) {
+    return null;
+  }
+  if (parametrosOperativos === true) {
+    return null;
+  }
+  const estado = etiquetaEstadoConfiguracionPeriodoModal(estadoConfiguracion ?? 'Faltan datos');
+  if (estado === 'Listo') {
+    return null;
+  }
+  return pendienteActaDesdeCopy({
+    severidad: 'bloqueo',
+    titulo: LABEL_CONFIGURACION_PERIODO,
+    descripcion: estado === 'Faltan datos'
+      ? 'Complete la configuración del mes en Parámetros antes de liquidar.'
+      : `${LABEL_CONFIGURACION_PERIODO}: ${estado}.`,
+    accionLabel: null,
+    destino: 'parametros_app',
+  });
+}
+
 function buildPendientesCamposOficialesDesdeTexto(textos: readonly string[]): ActaPreparacionPendienteVm[] {
   const campos = new Map<string, 'falta' | 'cero'>();
   for (const texto of textos) {
@@ -303,9 +323,17 @@ export function buildPendientesActaPreparacion(
   extras?: {
     parametrosGrupos?: readonly ProcesoMensualGrupoParametro[];
     textosDetalleParametros?: readonly string[];
+    parametrosOperativos?: boolean;
+    estadoConfiguracionPeriodo?: string;
   },
 ): ActaPreparacionPendienteVm[] {
-  if (!info && !extras?.parametrosGrupos?.length && !extras?.textosDetalleParametros?.length) {
+  if (
+    !info
+    && !extras?.parametrosGrupos?.length
+    && !extras?.textosDetalleParametros?.length
+    && extras?.parametrosOperativos !== false
+    && !extras?.estadoConfiguracionPeriodo
+  ) {
     return [];
   }
 
@@ -359,7 +387,12 @@ export function buildPendientesActaPreparacion(
     );
   }
 
+  const pendienteConfiguracion = buildPendienteConfiguracionPeriodo(
+    extras?.parametrosOperativos,
+    extras?.estadoConfiguracionPeriodo,
+  );
   const expandidos = [
+    ...(pendienteConfiguracion ? [pendienteConfiguracion] : []),
     ...buildPendientesParametrosDesdeGrupos(extras?.parametrosGrupos ?? []),
     ...buildPendientesCamposOficialesDesdeTexto(textosRawParaCampos),
   ];
@@ -487,12 +520,11 @@ export function buildActaPreparacionCentral(input: {
   preparacionNominaUnificada: boolean;
   frameTexto: string;
   periodoEtiqueta: string;
-  movimientosAprobados: number;
-  asignacionesAplicables: number | null;
   informacionPeriodo: InformacionPeriodoView | null;
   parametrosGrupos?: readonly ProcesoMensualGrupoParametro[];
   textosDetalleParametros?: readonly string[];
   parametrosOperativos?: boolean;
+  estadoConfiguracionPeriodo?: string;
 }): ActaPreparacionCentralVm {
   const activa = input.etapasRail.find((etapa) => etapa.activa)
     ?? input.etapasRail.find((etapa) => etapa.marca === 'actual')
@@ -518,6 +550,8 @@ export function buildActaPreparacionCentral(input: {
   const pendientes = buildPendientesActaPreparacion(info, {
     parametrosGrupos: input.parametrosGrupos,
     textosDetalleParametros: input.textosDetalleParametros,
+    parametrosOperativos: input.parametrosOperativos,
+    estadoConfiguracionPeriodo: input.estadoConfiguracionPeriodo,
   });
   const resumenBase = input.tienePrevalidacion
     ? (input.informacionPeriodo?.resumenVerificacion
@@ -550,37 +584,33 @@ export function buildActaPreparacionCentral(input: {
   const ctaEsCorreccion = accionCorreccion != null
     && (estadoResultado === 'bloqueado' || estadoResultado === 'advertencias');
 
-  const contextoPeriodo: ActaPreparacionContextoPeriodoVm | null = input.tienePrevalidacion
-    ? {
-        periodoEtiqueta: input.periodoEtiqueta,
-        trabajadoresAptos: input.trabajadoresAptos ?? 0,
-        movimientosLabel: input.movimientosAprobados > 0
-          ? `${input.movimientosAprobados} considerados`
-          : 'sin registros',
-        recurrentesLabel: (input.asignacionesAplicables ?? 0) > 0
-          ? `${input.asignacionesAplicables} consideradas`
-          : 'sin registros',
-      }
-    : null;
+  const tituloGenericoInformacion =
+    info?.titulo === 'Revisión del período antes de generar'
+    || info?.titulo === 'Período listo para generar';
+  const tituloActa = input.tienePrevalidacion
+    ? (info?.titulo && !tituloGenericoInformacion
+      ? info.titulo
+      : (activa?.etiqueta ?? 'Período verificado'))
+    : (activa?.etiqueta ?? input.accionPrincipal.label);
+  const descripcionDesdeEtapa = descripcionActaDesdeEtapa(activa?.clave ?? '', input.frameTexto);
+  const descripcionActa =
+    input.tienePrevalidacion && pendientes.length > 0
+      ? 'Revise los puntos indicados antes de generar la nómina del período.'
+      : input.tienePrevalidacion && info?.bajada && !tituloGenericoInformacion
+        ? info.bajada
+        : descripcionDesdeEtapa;
 
   return {
     etapa: activa?.etiqueta ?? 'Preparación del período',
     estadoEtapa: activa?.estadoCorto ?? 'En curso',
-    titulo: input.tienePrevalidacion
-      ? (info?.titulo && info.titulo !== 'Período listo para generar'
-        ? info.titulo
-        : (activa?.etiqueta ?? 'Período verificado'))
-      : (activa?.etiqueta ?? input.accionPrincipal.label),
-    descripcion: input.tienePrevalidacion && info?.bajada
-      ? info.bajada
-      : descripcionActaDesdeEtapa(activa?.clave ?? '', input.frameTexto),
+    titulo: tituloActa,
+    descripcion: descripcionActa,
     previewLinea: previewTrabajadoresPreparacion({
       trabajadoresAptos: input.trabajadoresAptos,
       trabajadoresPorRevisar: input.trabajadoresPorRevisar,
     }),
     estadoResultado,
     resumenVerificacion,
-    contextoPeriodo,
     alertasTotal,
     alertasEtiqueta,
     pendientes,
@@ -604,6 +634,20 @@ export function buildActaPreparacionCentral(input: {
     mensajeEstado: resolveMensajeEstado(estadoResultado, input.tienePrevalidacion, pendientes.length),
     notaFuentesParametros,
   };
+}
+
+/** Una sola acción hacia Parámetros: CTA del pie del acta, sin botón duplicado en cada pendiente. */
+export function actaPendienteMuestraAccionInline(
+  pendiente: ActaPreparacionPendienteVm,
+  _acta: Pick<ActaPreparacionCentralVm, 'ctaLabel'>,
+): boolean {
+  if (pendiente.destino === 'parametros_app' || pendiente.destino === 'parametros') {
+    return false;
+  }
+  if (pendiente.idPersona != null && pendiente.accionLabel) {
+    return true;
+  }
+  return !!(pendiente.destino && pendiente.accionLabel);
 }
 
 /** Oculta la CTA del shell cuando el acta ya ofrece la misma acción hacia Parámetros. */

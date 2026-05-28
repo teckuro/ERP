@@ -104,6 +104,7 @@ import {
   informacionDebeAbrirModalEnPreparacion,
   mensajePreparacionNominaEnCurso,
   puedeEncadenarGeneracionTrasVerificacion,
+  actaPendienteMuestraAccionInline,
   shellDebeOcultarCtaParametros,
   type ActaPreparacionCentralVm,
   type ActaPreparacionPendienteVm,
@@ -175,8 +176,12 @@ import {
   etiquetaGrupoParametroUi,
   NOTA_SOLO_VERIFICACION_PARAMETROS,
   buildParametrosOverlayContexto,
+  mapParametrosGruposParaModal,
+  etiquetaEstadoConfiguracionPeriodoModal,
   nominaFrameCongeladoObsoleto,
   resolverAccionesFooterModalParametros,
+  resolveParametrosListosPeriodo,
+  resolveParametrosOperativosPeriodo,
   resolverEstadoPeriodoRemuneracionDesdePrevalidacion,
   type DriftParametrosVm,
 } from '../../../rules/proceso-mensual-parametros-refresh.rules';
@@ -858,11 +863,11 @@ export class ProcesoMensualPresentacionFacade {
   }): InformacionPeriodoView {
     const prevalidacionParametros = this.store.resultado();
     const gruposEnVivo = this.parametrosGruposEnVivo();
-    const parametrosOperativos =
-      this.dashboardResumen().parametrosListos === true
-      || prevalidacionParametros?.resumen.parametrosOperativos
-      || this.store.consultaParametrosPeriodo()?.parametrosOperativos
-      || false;
+    const consultaParametros = this.store.consultaParametrosPeriodo();
+    const parametrosOperativos = resolveParametrosOperativosPeriodo({
+      consultaParametrosOperativos: consultaParametros?.parametrosOperativos,
+      prevalidacionParametrosOperativos: prevalidacionParametros?.resumen.parametrosOperativos,
+    });
     const overlayCtx = buildParametrosOverlayContexto({
       parametrosOperativos,
       parametrosGrupos: gruposEnVivo,
@@ -871,17 +876,18 @@ export class ProcesoMensualPresentacionFacade {
     const contextoParametros = {
       soloVerificacionParametros: true as const,
       tipoRemuneracionLabel: 'Nómina mensual',
-      estadoRemuneracionLabel: overlayCtx.estadoCalendario,
+      estadoRemuneracionLabel: etiquetaEstadoConfiguracionPeriodoModal(overlayCtx.estadoCalendario),
       notaSoloVerificacion: NOTA_SOLO_VERIFICACION_PARAMETROS,
     };
 
     if (input?.consultando) {
       return {
         tone: 'info',
-        titulo: 'Revisando parámetros',
+        titulo: 'Parámetros del período',
         consultando: true,
         ...contextoParametros,
         notaSoloVerificacion: undefined,
+        bajada: undefined,
       };
     }
 
@@ -891,39 +897,39 @@ export class ProcesoMensualPresentacionFacade {
     const incidenciasRevision = incidencias.filter(
       (item) => item.severidad === 'bloqueo' || (!parametrosOperativos && item.severidad === 'advertencia'),
     );
-    const parametrosGrupos = gruposEnVivo.map((grupo) => ({
-      id: grupo.id,
-      label: etiquetaGrupoParametroUi(grupo.id),
-      estado: etiquetaClasificacionGrupoParametro(grupo.clasificacion),
-      tono: tonoGrupoParametro(grupo.clasificacion),
-    }));
+    const parametrosGrupos = mapParametrosGruposParaModal({
+      grupos: gruposEnVivo,
+      parametrosOperativos,
+      estadoCalendario: overlayCtx.estadoCalendario,
+    });
     const avisoDrift =
       input?.drift?.regresion && this.parametrosDriftAfectaLiquidaciones()
         ? AVISO_DRIFT_PARAMETROS_CON_BASE
         : undefined;
-    const footer = resolverAccionesFooterModalParametros(this.contextoOperativoPeriodo());
+    const ctxOperativo = this.contextoOperativoPeriodo();
+    const footer = resolverAccionesFooterModalParametros({
+      tienePrevalidacion: ctxOperativo.tienePrevalidacion,
+      baseGenerada: ctxOperativo.baseGenerada,
+      calculoGenerado: ctxOperativo.calculoGenerado,
+      resultadoGuardado: ctxOperativo.resultadoGuardado,
+      parametrosOperativos,
+      preparacionNominaEnCurso: this.preparacionNominaUnificada(),
+      flujoPrincipalEnCurso: this.flujoEnCurso(),
+    });
 
     if (parametrosOperativos && incidenciasRevision.length === 0) {
       return {
         tone: incidencias.length ? 'warning' : 'success',
         titulo: 'Parámetros del período',
         bajada: overlayCtx.bajada,
-        puntos: overlayCtx.puntos.length ? overlayCtx.puntos : undefined,
         parametrosGrupos,
         avisoDrift,
         ...contextoParametros,
-        secciones: incidencias.length
-          ? [{ titulo: 'Observaciones opcionales', items: incidencias.map((item) => item.titulo) }]
-          : undefined,
         accionPrincipal: footer.accionPrincipal,
         accionSecundaria: footer.accionSecundaria,
       };
     }
 
-    const faltantes = [
-      ...overlayCtx.puntos,
-      ...incidencias.map((item) => item.titulo),
-    ];
     return {
       tone: incidencias.some((item) => item.severidad === 'bloqueo') || !parametrosOperativos
         ? 'danger'
@@ -933,20 +939,17 @@ export class ProcesoMensualPresentacionFacade {
       parametrosGrupos,
       avisoDrift,
       ...contextoParametros,
-      secciones: faltantes.length
-        ? [{ titulo: 'Qué revisar', items: faltantes }]
-        : undefined,
       accionPrincipal: footer.accionPrincipal ?? { label: 'Abrir parámetros', destino: 'parametros_app' },
       accionSecundaria: footer.accionSecundaria,
     };
   }
 
   private parametrosGruposEnVivo(): readonly ProcesoMensualGrupoParametro[] {
-    return (
-      this.store.resultado()?.resumen.parametrosGrupos
-      ?? this.store.consultaParametrosPeriodo()?.parametrosGrupos
-      ?? []
-    );
+    const gruposResultado = this.store.resultado()?.resumen.parametrosGrupos;
+    if (gruposResultado?.length) {
+      return gruposResultado;
+    }
+    return this.store.consultaParametrosPeriodo()?.parametrosGrupos ?? [];
   }
 
   private etiquetaEstadoRemuneracionParametros(): string {
@@ -956,7 +959,7 @@ export class ProcesoMensualPresentacionFacade {
     }
     const consulta = this.store.consultaParametrosPeriodo();
     if (consulta) {
-      return consulta.parametrosOperativos ? 'Listo para liquidar' : 'Por revisar';
+      return consulta.parametrosOperativos ? 'Listo' : 'Faltan datos';
     }
     return 'Sin evaluar';
   }
@@ -1324,11 +1327,11 @@ export class ProcesoMensualPresentacionFacade {
       estadoPeriodo: resultadoFlujo?.estado ?? null,
       trabajadoresAptos: contexto.trabajadoresAptos ?? resumen?.trabajadoresActivosAptos ?? snapshot?.totalTrabajadores ?? null,
       trabajadoresPorRevisar: resumen?.trabajadoresActivosNoAptos ?? null,
-      parametrosListos:
-        resumenParametros?.parametrosOperativos
-        ?? this.store.consultaParametrosPeriodo()?.parametrosOperativos
-        ?? resumen?.parametrosOperativos
-        ?? null,
+      parametrosListos: resolveParametrosListosPeriodo({
+        consultaParametrosOperativos: this.store.consultaParametrosPeriodo()?.parametrosOperativos,
+        prevalidacionParametrosOperativos: resumenParametros?.parametrosOperativos,
+        persistidoParametrosOperativos: resumen?.parametrosOperativos,
+      }),
       movimientosAprobados,
       movimientosPendientes,
       asignacionesAplicables: resumen?.recurrentesAplicablesAlPeriodo ?? null,
@@ -1750,7 +1753,14 @@ export class ProcesoMensualPresentacionFacade {
 
   readonly configuracionPeriodoItems = computed(() => {
     if (this.preparacionNominaUnificada() && this.configuracionPeriodoItemsCongelados) {
-      return this.configuracionPeriodoItemsCongelados;
+      const live = this.configuracionPeriodoItemsLive();
+      const parametrosLive = live.find((item) => item.id === 'parametros');
+      if (!parametrosLive) {
+        return this.configuracionPeriodoItemsCongelados;
+      }
+      return this.configuracionPeriodoItemsCongelados.map((item) =>
+        item.id === 'parametros' ? parametrosLive : item,
+      );
     }
     return this.configuracionPeriodoItemsLive();
   });
@@ -1762,7 +1772,9 @@ export class ProcesoMensualPresentacionFacade {
     const ctx = this.contextoOperativoPeriodo();
     return buildNominaConfiguracionPeriodoItems({
       parametrosListos: dash.parametrosListos,
-      parametrosConsultando: this.store.consultandoParametros(),
+      parametrosConsultando:
+        this.store.consultandoParametros()
+        && this.overlaysPort.overlay().kind !== 'informacion',
       trabajadoresAptos: dash.trabajadoresAptos,
       trabajadoresPorRevisar: dash.trabajadoresPorRevisar ?? 0,
       bloqueosTrabajadoresCount: bloqueosCfg.trabajadores,
@@ -1819,12 +1831,13 @@ export class ProcesoMensualPresentacionFacade {
       preparacionNominaUnificada: this.preparacionNominaUnificada(),
       frameTexto: this.nominaFrame().texto,
       periodoEtiqueta: this.periodoActivo.etiqueta(),
-      movimientosAprobados: dash.movimientosAprobados,
-      asignacionesAplicables: dash.asignacionesAplicables,
       informacionPeriodo,
       parametrosGrupos: this.parametrosGruposEnVivo(),
       textosDetalleParametros: this.textosDetalleParametrosDesde(informacionPeriodo),
       parametrosOperativos,
+      estadoConfiguracionPeriodo: resolverEstadoPeriodoRemuneracionDesdePrevalidacion(
+        this.store.resultado(),
+      ),
     });
   });
 
@@ -2559,6 +2572,13 @@ export class ProcesoMensualPresentacionFacade {
     if (!secundaria) return;
     this.overlaysPort.suprimirInformacionPeriodo();
     this.ejecutarDestinoInformacionPeriodo(secundaria.destino);
+  }
+
+  actaPendienteMuestraAccionInline(
+    pendiente: ActaPreparacionPendienteVm,
+    acta: ActaPreparacionCentralVm,
+  ): boolean {
+    return actaPendienteMuestraAccionInline(pendiente, acta);
   }
 
   ejecutarPendienteActa(pendiente: ActaPreparacionPendienteVm): void {

@@ -4,7 +4,10 @@ import type {
   ParametrosDialogAction,
   ParametrosDialogState,
 } from '../models/parametros-workspace.vm';
-import type { ParametrosDiferenciaCompletitud } from './parametros-completitud.rules';
+import {
+  diferenciasConDesviacionExtrema,
+  type ParametrosDiferenciaCompletitud,
+} from './parametros-completitud.rules';
 
 export interface ParametrosConfigClienteActionVm {
   label: string;
@@ -247,6 +250,24 @@ const ETIQUETAS_CAMPO_DIFERENCIA: Partial<Record<keyof ParametroGeneral, string>
   utm: 'UTM',
   uta: 'UTA',
   sueldoMinimo: 'Sueldo mínimo',
+  sueldoMinimo18a65: 'Sueldo mínimo 18 a 65',
+  sueldoMinimoMenor18Mayor65: 'Sueldo mínimo menor 18 o mayor 65',
+  sueldoMinimoCasaParticular: 'Sueldo mínimo casa particular',
+  ingresoMinimoNoRemuneracional: 'Ingreso mínimo no remuneracional',
+  topeAfpUf: 'Tope AFP (UF)',
+  topeAfp: 'Tope AFP',
+  topeIpsUf: 'Tope IPS (UF)',
+  topeIps: 'Tope IPS',
+  topeCesantiaUf: 'Tope cesantía (UF)',
+  topeCesantia: 'Tope cesantía',
+  topeApvMensualUf: 'Tope APV mensual (UF)',
+  topeApvMensual: 'Tope APV mensual',
+  topeApvAnualUf: 'Tope APV anual (UF)',
+  topeApvAnual: 'Tope APV anual',
+  topeDepositoConvenidoAnualUf: 'Tope depósito convenido anual (UF)',
+  topeDepositoConvenidoAnual: 'Tope depósito convenido anual',
+  topeAfpVoluntario: 'Tope AFP voluntario',
+  sis: 'SIS',
   sanna: 'SANNA',
   saludObligatoria: 'Salud obligatoria',
   afcTrabajadorIndefinido: 'AFC trabajador indefinido',
@@ -268,12 +289,31 @@ function formatearValorDiferencia(value: number | boolean | null): string {
   return String(value);
 }
 
+export interface DetalleDiferenciasOficialesOpciones {
+  periodoReferenciaOficial?: string | null;
+}
+
 export function detalleDiferenciasOficialesCliente(
   periodo: string,
   diferencias: readonly ParametrosDiferenciaCompletitud[],
+  opciones?: DetalleDiferenciasOficialesOpciones,
 ): string {
   if (diferencias.length === 0) {
     return `Período ${periodo}. Puede mantener su configuración, alinearla con los oficiales o revisar las diferencias más tarde.`;
+  }
+
+  const encabezado: string[] = [`Período ${periodo}`];
+  const periodoRef = opciones?.periodoReferenciaOficial?.trim();
+  if (periodoRef && periodoRef !== periodo) {
+    encabezado.push(`Comparación con referencia del período ${periodoRef}.`);
+  }
+
+  const extremas = diferenciasConDesviacionExtrema(diferencias);
+  if (extremas.length > 0) {
+    const etiquetas = extremas
+      .map((d) => ETIQUETAS_CAMPO_DIFERENCIA[d.campo] ?? String(d.campo))
+      .join(', ');
+    encabezado.push(`El valor guardado se aparta mucho del oficial del mes (${etiquetas}).`);
   }
 
   const lineas = diferencias.map((d) => {
@@ -281,12 +321,13 @@ export function detalleDiferenciasOficialesCliente(
     return `· ${etiqueta}: oficial ${formatearValorDiferencia(d.oficial)} · su configuración ${formatearValorDiferencia(d.cliente)}`;
   });
 
-  return [`Período ${periodo}`, '', 'Campos distintos:', ...lineas].join('\n');
+  return [...encabezado, '', 'Campos distintos:', ...lineas].join('\n');
 }
 
 export function buildParametrosReconciliacionDiferenciasDialog(
   periodo: string,
   diferencias: readonly ParametrosDiferenciaCompletitud[] = [],
+  opciones?: DetalleDiferenciasOficialesOpciones,
 ): ParametrosDialogState {
   return {
     kind: 'reconciliacion-diferencias',
@@ -294,7 +335,7 @@ export function buildParametrosReconciliacionDiferenciasDialog(
     title: 'Configuración distinta a los parámetros oficiales del mes',
     message:
       'Los datos guardados para este período no coinciden con la carga oficial del mes. No se actualizará nada automáticamente.',
-    detail: detalleDiferenciasOficialesCliente(periodo, diferencias),
+    detail: detalleDiferenciasOficialesCliente(periodo, diferencias, opciones),
     primaryLabel: 'Mantener mi configuración',
     secondaryLabel: 'Actualizar con oficiales',
     secondaryAction: 'actualizar-con-oficiales',

@@ -139,7 +139,6 @@
       >
         <aside class="payroll-workspace-sidebar" aria-label="Resumen operativo del período">
           <div class="payroll-workspace-sidebar__scroll">
-          @if (!mostrarActa) {
           <section class="payroll-configuracion-periodo" aria-labelledby="payroll-configuracion-periodo-title">
             <header class="payroll-configuracion-periodo__header">
               <h3 id="payroll-configuracion-periodo-title" class="payroll-resumen-block__title">Configuración del período</h3>
@@ -177,7 +176,6 @@
               }
             </ul>
           </section>
-          }
 
           <section class="payroll-rail-block payroll-rail-block--bitacora" aria-labelledby="payroll-sidebar-bitacora-title">
             <h3 id="payroll-sidebar-bitacora-title" class="payroll-resumen-block__title">Bitácora del período</h3>
@@ -364,58 +362,24 @@
                                 <p class="payroll-acta-preparacion__pendiente-detalle">{{ pendiente.descripcion }}</p>
                               }
                             </div>
-                            @if (pendiente.idPersona != null && pendiente.accionLabel) {
+                            @if (f.actaPendienteMuestraAccionInline(pendiente, acta)) {
                               <button
                                 type="button"
                                 class="payroll-acta-preparacion__pendiente-action"
                                 (click)="f.ejecutarPendienteActa(pendiente)"
                               >
-                                {{ pendiente.accionLabel }}
-                              </button>
-                            } @else if (
-                              pendiente.destino === 'parametros_app' || pendiente.destino === 'parametros'
-                            ) {
-                              <button
-                                type="button"
-                                class="payroll-acta-preparacion__pendiente-action"
-                                (click)="f.ejecutarPendienteActa(pendiente)"
-                              >
-                                Abrir parámetros
-                              </button>
-                            } @else if (pendiente.destino && pendiente.accionLabel) {
-                              <button
-                                type="button"
-                                class="payroll-acta-preparacion__pendiente-action"
-                                (click)="f.ejecutarPendienteActa(pendiente)"
-                              >
-                                {{ pendiente.accionLabel }}
+                                {{
+                                  pendiente.accionLabel
+                                  ?? (pendiente.destino === 'parametros_app' || pendiente.destino === 'parametros'
+                                    ? 'Abrir parámetros'
+                                    : 'Revisar')
+                                }}
                               </button>
                             }
                           </li>
                         }
                       </ul>
                     </section>
-                  }
-
-                  @if (acta.contextoPeriodo; as ctx) {
-                    <dl class="payroll-acta-preparacion__contexto" aria-label="Contexto del período">
-                      <div>
-                        <dt>Período</dt>
-                        <dd>{{ ctx.periodoEtiqueta }}</dd>
-                      </div>
-                      <div>
-                        <dt>Trabajadores aptos</dt>
-                        <dd>{{ ctx.trabajadoresAptos }}</dd>
-                      </div>
-                      <div>
-                        <dt>Movimientos del mes</dt>
-                        <dd>{{ ctx.movimientosLabel }}</dd>
-                      </div>
-                      <div>
-                        <dt>Recurrentes aplicables</dt>
-                        <dd>{{ ctx.recurrentesLabel }}</dd>
-                      </div>
-                    </dl>
                   }
 
                   @if (acta.mensajeEstado) {

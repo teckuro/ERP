@@ -333,6 +333,17 @@ function estadoTrabajadores(input: NominaConfiguracionPeriodoInput): Pick<Nomina
       prioridad: true,
     };
   }
+  if (!input.nominaGenerada && input.trabajadoresAptos != null && input.trabajadoresAptos > 0) {
+    return {
+      estado: 'Pendiente',
+      valor: `${input.trabajadoresAptos} apto${input.trabajadoresAptos === 1 ? '' : 's'} · sin nómina generada`,
+      tono: input.parametrosListos === false ? 'review' : 'neutral',
+      accionLabel: 'Revisar trabajadores',
+      disabled: false,
+      disabledReason: null,
+      prioridad: input.parametrosListos === false,
+    };
+  }
   if (input.trabajadoresAptos != null) {
     return {
       estado: 'Listo',

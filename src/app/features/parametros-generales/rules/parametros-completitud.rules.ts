@@ -49,13 +49,67 @@ export interface ParametrosCompletitudResultado {
   reconciliacionPendiente: boolean;
 }
 
+export type OficialComparacionOrigen = 'fila_exacta' | 'ultimo_hasta_periodo' | 'referencia_visual';
+
+export interface OficialParaComparacionResult {
+  oficial: ParametroGeneral | null;
+  origen: OficialComparacionOrigen | null;
+  /** Período real del snapshot usado (si difiere del seleccionado, es referencia). */
+  periodoOrigen: string | null;
+}
+
+export interface ResolverOficialParaComparacionInput {
+  periodoSeleccionado: string;
+  filaExacta: ParametroGeneral | null;
+  ultimoHastaPeriodo: ParametroGeneral | null;
+  referenciaVisual: ParametroGeneral | null;
+}
+
 export interface EvaluarCompletitudParametrosInput {
   periodo: string;
   periodoRemuneracion: PeriodoRemuneracionEstadoInfo | null;
+  /** Fila exacta del mes en parametros_generales (completitud de oficiales). */
   oficial: ParametroGeneral | null;
+  /** Baseline para comparar con configuración cliente (puede ser fila, último del mes o referencia). */
+  oficialParaComparacion?: ParametroGeneral | null;
   clienteConfig: ParametrosGeneralesClienteConfig | null;
   catalogos: ParametrosGeneralesCatalogos;
   errorTecnico?: boolean;
+}
+
+/** Umbral relativo para marcar desviación fuerte respecto al valor oficial. */
+export const UMBRAL_DESVIACION_OFICIAL_RELATIVA = 0.2;
+
+export function resolverOficialParaComparacionCliente(
+  input: ResolverOficialParaComparacionInput,
+): OficialParaComparacionResult {
+  const { periodoSeleccionado, filaExacta, ultimoHastaPeriodo, referenciaVisual } = input;
+
+  if (filaExacta?.periodo === periodoSeleccionado) {
+    return {
+      oficial: filaExacta,
+      origen: 'fila_exacta',
+      periodoOrigen: filaExacta.periodo,
+    };
+  }
+
+  if (ultimoHastaPeriodo?.periodo === periodoSeleccionado) {
+    return {
+      oficial: ultimoHastaPeriodo,
+      origen: 'ultimo_hasta_periodo',
+      periodoOrigen: ultimoHastaPeriodo.periodo,
+    };
+  }
+
+  if (referenciaVisual) {
+    return {
+      oficial: { ...referenciaVisual, periodo: periodoSeleccionado },
+      origen: 'referencia_visual',
+      periodoOrigen: referenciaVisual.periodo,
+    };
+  }
+
+  return { oficial: null, origen: null, periodoOrigen: null };
 }
 
 export interface ResolverEstadoVisualParametrosInput {
@@ -156,11 +210,11 @@ export function evaluarCompletitudParametrosMensual(
   const oficiales = evaluarOficiales(input, pendientes);
   const config = evaluarConfigCliente(input, pendientes);
   const vigencias = evaluarVigencias(input, pendientes);
-  const diferencias = compararOficialCliente(input.oficial, input.clienteConfig);
+  const baselineComparacion = input.oficialParaComparacion ?? input.oficial;
+  const diferencias = compararOficialCliente(baselineComparacion, input.clienteConfig);
   const consistenciaEvaluable = Boolean(input.oficial && input.clienteConfig);
   const reconciliacionPendiente = consistenciaEvaluable
-    && diferencias.length > 0
-    && requiereReconciliacionOficial(input.clienteConfig);
+    && hayReconciliacionOficialClientePendiente(input.clienteConfig, diferencias);
   const consistencia = consistenciaEvaluable
     ? grupo('consistencia', reconciliacionPendiente ? 0 : 1, 1)
     : grupoNoAplica('consistencia');
@@ -310,7 +364,7 @@ function evaluarVigencias(
   return grupo('vigencias', completos, checks.length);
 }
 
-function compararOficialCliente(
+export function compararOficialCliente(
   oficial: ParametroGeneral | null,
   cliente: ParametrosGeneralesClienteConfig | null,
 ): ParametrosDiferenciaCompletitud[] {
@@ -416,6 +470,56 @@ function requiereReconciliacionOficial(cliente: ParametrosGeneralesClienteConfig
   return cliente?.estadoReconciliacionOficial !== 'cliente_confirmado'
     && cliente?.estadoReconciliacionOficial !== 'actualizado_con_oficiales'
     && cliente?.estadoReconciliacionOficial !== 'revisar_despues';
+}
+
+const ESTADOS_DECISION_RECONCILIACION: ReadonlySet<ParametrosGeneralesClienteConfig['estadoReconciliacionOficial']> =
+  new Set(['cliente_confirmado', 'revisar_despues', 'actualizado_con_oficiales']);
+
+/** Configuración cliente guardada después de una decisión de reconciliación previa. */
+export function configuracionClienteModificadaDespuesDeDecisionReconciliacion(
+  cliente: ParametrosGeneralesClienteConfig,
+): boolean {
+  if (!ESTADOS_DECISION_RECONCILIACION.has(cliente.estadoReconciliacionOficial)) {
+    return false;
+  }
+  const actualizacionTs = cliente.fechaActualizacion;
+  if (!actualizacionTs) {
+    return false;
+  }
+  const decisionTs = cliente.fechaReconciliacionOficial;
+  if (!decisionTs) {
+    return true;
+  }
+  return new Date(actualizacionTs).getTime() > new Date(decisionTs).getTime();
+}
+
+export function diferenciasConDesviacionExtrema(
+  diferencias: readonly ParametrosDiferenciaCompletitud[],
+  umbral = UMBRAL_DESVIACION_OFICIAL_RELATIVA,
+): ParametrosDiferenciaCompletitud[] {
+  return diferencias.filter((d) => {
+    if (typeof d.oficial !== 'number' || typeof d.cliente !== 'number') {
+      return false;
+    }
+    const base = Math.abs(d.oficial);
+    if (base < 0.0001) {
+      return false;
+    }
+    return Math.abs(d.cliente - d.oficial) / base > umbral;
+  });
+}
+
+export function hayReconciliacionOficialClientePendiente(
+  cliente: ParametrosGeneralesClienteConfig | null,
+  diferencias: readonly ParametrosDiferenciaCompletitud[],
+): boolean {
+  if (!cliente || diferencias.length === 0) {
+    return false;
+  }
+  if (requiereReconciliacionOficial(cliente)) {
+    return true;
+  }
+  return configuracionClienteModificadaDespuesDeDecisionReconciliacion(cliente);
 }
 
 export function resolverEstadoVisualParametros(input: ResolverEstadoVisualParametrosInput): ParametrosEstadoVisual {
@@ -539,30 +643,24 @@ function sonEquivalentes(left: number | boolean | null, right: number | boolean 
 
 export interface DebeMostrarAvisoDiferenciasOficialesInput {
   periodoRemuneracion: PeriodoRemuneracionEstadoInfo | null;
-  tieneOficialMensual: boolean;
   oficial: ParametroGeneral | null;
   clienteConfig: ParametrosGeneralesClienteConfig | null;
   diferencias: ParametrosDiferenciaCompletitud[];
 }
 
-/** Aviso modal al entrar a un período con carga oficial y configuración cliente distinta. */
+/** Aviso modal al entrar o guardar cuando hay baseline oficial y diferencias con la config cliente. */
 export function debeMostrarAvisoDiferenciasParametrosOficialesMes(
   input: DebeMostrarAvisoDiferenciasOficialesInput,
 ): boolean {
-  if (!input.tieneOficialMensual || !input.oficial || !input.clienteConfig || input.diferencias.length === 0) {
+  if (!input.oficial || !input.clienteConfig || input.diferencias.length === 0) {
     return false;
   }
 
-  const estado = input.periodoRemuneracion?.estado;
-  if (!estado || estado === 'pendiente' || estado === 'error') {
+  if (input.periodoRemuneracion?.estado === 'error') {
     return false;
   }
 
-  if (requiereReconciliacionOficial(input.clienteConfig)) {
-    return true;
-  }
-
-  return debeReabrirAvisoDiferenciasTrasOficialReciente(input.oficial, input.clienteConfig);
+  return true;
 }
 
 export function huellaDiferenciasOficialesCliente(

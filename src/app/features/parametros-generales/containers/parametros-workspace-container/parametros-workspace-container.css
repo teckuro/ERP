@@ -25,6 +25,13 @@
         --prm-inline-soft-ring: rgba(37, 99, 235, 0.17);
         --prm-soft-muted-zone: #f8fafc;
         --prm-input-border: #d1d5db;
+        --prm-field-readonly-bg: #f8fafc;
+        --prm-field-readonly-text: #111827;
+        --prm-field-readonly-border: #d1d5db;
+        --prm-field-locked-bg: #f1f5f9;
+        --prm-field-locked-border: #94a3b8;
+        --prm-field-locked-ink: #334155;
+        --prm-field-locked-muted: #64748b;
         --prm-unit-gap: var(--prm-unit-chip-gap);
         --param-content-max-width: 1060px;
         display: flex;
@@ -391,9 +398,23 @@
         box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.14);
       }
 
-      .param-input[readonly] {
-        background: #f8fafc;
-        color: #111827;
+      .param-input:is([readonly], :disabled) {
+        background: var(--prm-field-readonly-bg);
+        color: var(--prm-field-readonly-text);
+        border-color: var(--prm-field-readonly-border);
+        cursor: default;
+      }
+
+      .parametros-page .param-field-search-select .select-field.is-disabled {
+        opacity: 1;
+        background: var(--prm-field-readonly-bg);
+        border-color: var(--prm-field-readonly-border);
+        color: var(--prm-field-readonly-text);
+        cursor: default;
+      }
+
+      .parametros-page .param-field-search-select .select-field.is-disabled .select-value {
+        color: var(--prm-field-readonly-text);
       }
 
       /* Selects: evitar que el texto empuje el layout */

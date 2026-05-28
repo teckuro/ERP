@@ -132,7 +132,7 @@ export class ProcesoMensualPeriodoStore {
       .ejecutarPrevalidaciones(p)
       .then(async (r) => {
         this.resultado.set(r);
-        this.consultaParametrosPeriodo.set(null);
+        this.consultaParametrosPeriodo.set(extraerConsultaParametrosPeriodo(r));
         if (!encadenado) {
           this.limpiarVolatilesTrasPrevalidacion();
         } else {

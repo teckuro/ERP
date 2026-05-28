@@ -27,11 +27,13 @@ import type {
 import { ParametrosGeneralesService } from '../services/parametros-generales.service';
 import {
   ParametrosConfigClienteBaseOpcion,
+  compararOficialCliente,
   crearClienteConfigDesdeOficiales,
   debeMostrarAvisoDiferenciasParametrosOficialesMes,
   evaluarCompletitudParametrosMensual,
   huellaDiferenciasOficialesCliente,
   resolverEstadoVisualParametros,
+  resolverOficialParaComparacionCliente,
   resolverOpcionesBaseConfigCliente,
 } from '../rules/parametros-completitud.rules';
 import {
@@ -145,6 +147,8 @@ export class ParametrosWorkspaceOrquestador {
   private cargarDepth = 0;
   private readonly reconciliacionAvisadaHuellas = new Map<string, string>();
   private readonly inicializado = signal(false);
+  /** Expuesto para contenedor / pruebas: período inicial ya cargado. */
+  readonly workspaceInicializado = this.inicializado.asReadonly();
 
   /** Bloqueo de acciones de barra / período por carga principal, plantilla o guardado. */
   readonly parametrosUiBloqueada = computed(
@@ -162,7 +166,8 @@ export class ParametrosWorkspaceOrquestador {
       this.guardando() ||
       this.isPreparingEdit() ||
       !this.datosFormularioListos() ||
-      this.cargaBloqueadaPorError(),
+      this.cargaBloqueadaPorError() ||
+      this.generalesEditando(),
   );
 
   readonly crearParametrosDeshabilitado = computed(
@@ -216,11 +221,22 @@ export class ParametrosWorkspaceOrquestador {
   readonly parametroOficialSeleccionado = computed(
     () => this.rows().find((row) => row.periodo === this.selectedPeriodo()) ?? null,
   );
+  readonly ultimoHastaPeriodoOficial = signal<ParametroGeneral | null>(null);
+  readonly contextoOficialComparacion = computed(() =>
+    resolverOficialParaComparacionCliente({
+      periodoSeleccionado: this.selectedPeriodo(),
+      filaExacta: this.parametroOficialSeleccionado(),
+      ultimoHastaPeriodo: this.ultimoHastaPeriodoOficial(),
+      referenciaVisual: this.parametroReferenciaAnterior(),
+    }),
+  );
+  readonly oficialComparacionResuelto = computed(() => this.contextoOficialComparacion().oficial);
   readonly completitudParametros = computed(() =>
     evaluarCompletitudParametrosMensual({
       periodo: this.selectedPeriodo(),
       periodoRemuneracion: this.periodoRemuneracion(),
       oficial: this.parametroOficialSeleccionado(),
+      oficialParaComparacion: this.oficialComparacionResuelto(),
       clienteConfig: this.clienteConfig(),
       catalogos: this.catalogosOficiales(),
       errorTecnico: this.cargaBloqueadaPorError(),
@@ -234,7 +250,7 @@ export class ParametrosWorkspaceOrquestador {
   readonly periodoCargaEstado = computed<PeriodoCargaEstado>(() =>
     resolverEstadoVisualParametros({
       estadoCalculado: this.completitudParametros().estadoCalculado,
-      oficialActual: this.parametroOficialSeleccionado() !== null,
+      oficialActual: this.oficialComparacionResuelto() !== null,
       clienteConfig: this.clienteConfig() !== null,
       referenciaAnterior: this.hayReferenciaVisualMensual(),
       diferencias: this.hayReconciliacionOficialPendiente(),
@@ -524,7 +540,15 @@ export class ParametrosWorkspaceOrquestador {
     return !detalle.toLocaleLowerCase().includes(pendiente.toLocaleLowerCase());
   });
 
+  readonly cierreAccionVisible = computed(
+    () => this.cierrePendientePrincipal() !== 'Sin pendientes críticos.',
+  );
+
   readonly cierreAccionSiguienteLabel = computed(() => {
+    if (!this.cierreAccionVisible()) {
+      return '';
+    }
+
     const completitud = this.completitudParametros();
     const pendiente = this.cierrePendientePrincipal();
 
@@ -546,7 +570,7 @@ export class ParametrosWorkspaceOrquestador {
     if (completitud.advertencias.length > 0) {
       return 'Revisar consistencia';
     }
-    return 'Refrescar datos';
+    return 'Revisar pendiente';
   });
 
   private completitudDetalle(base: string): string {
@@ -735,8 +759,12 @@ export class ParametrosWorkspaceOrquestador {
     return String(value);
   }
 
-  async cargar(periodo?: string, options?: { showLoadingOverlay?: boolean }): Promise<void> {
+  async cargar(
+    periodo?: string,
+    options?: { showLoadingOverlay?: boolean; preservarModoEdicion?: boolean },
+  ): Promise<void> {
     const showOverlay = options?.showLoadingOverlay !== false;
+    const preservarEdicion = options?.preservarModoEdicion === true && this.generalesEditando();
     if (showOverlay) {
       this.enterCargar();
     }
@@ -746,12 +774,13 @@ export class ParametrosWorkspaceOrquestador {
     try {
       const selectedPeriodo = periodo ?? this.selectedPeriodo();
       this.periodoRemuneracion.set(null);
-      const [rowsRaw, catalogos, periodoRemuneracion, clienteConfig] = await Promise.all([
+      const [rowsRaw, catalogos, periodoRemuneracion, clienteConfig, ultimoHastaPeriodo] = await Promise.all([
         // Siempre se consulta por periodo seleccionado para evitar traer todo el histórico.
         this.service.listar({ periodo: selectedPeriodo }),
         this.service.listarCatalogos(selectedPeriodo),
         this.service.obtenerPeriodoRemuneracion(selectedPeriodo),
         this.service.obtenerClienteConfig(selectedPeriodo),
+        this.service.obtenerUltimoHastaPeriodo(selectedPeriodo, { enriquecer: false }),
       ]);
       const rows = rowsRaw ?? [];
       const referenciaVisual = await this.service.obtenerReferenciaVisualMensual(
@@ -770,6 +799,7 @@ export class ParametrosWorkspaceOrquestador {
       this.referenciasMensuales.set(referenciaVisual.referencias);
       this.periodoRemuneracion.set(periodoRemuneracion);
       this.clienteConfig.set(clienteConfig);
+      this.ultimoHastaPeriodoOficial.set(ultimoHastaPeriodo);
       this.assertCatalogosArrayShape(referenciaVisual.catalogos);
       this.ensureCatalogSelection(referenciaVisual.catalogos);
       if (!rows.length) {
@@ -778,7 +808,9 @@ export class ParametrosWorkspaceOrquestador {
           ? { ...referenciaVisual.parametroGeneral, periodo: selectedPeriodo }
           : this.emptyParametroForPeriodo(selectedPeriodo);
         this.patchForm(this.parametroConClienteConfig(baseReferencia, clienteConfig), selectedPeriodo);
-        this.generalesEditando.set(false);
+        if (!preservarEdicion) {
+          this.generalesEditando.set(false);
+        }
         this.mostrarAvisoReconciliacionSiCorresponde();
         return;
       }
@@ -787,7 +819,9 @@ export class ParametrosWorkspaceOrquestador {
         this.parametroConClienteConfig(rows.find((row) => row.periodo === selectedPeriodo) ?? rows[0], clienteConfig),
         selectedPeriodo,
       );
-      this.generalesEditando.set(false);
+      if (!preservarEdicion) {
+        this.generalesEditando.set(false);
+      }
       this.mostrarAvisoReconciliacionSiCorresponde();
     } catch (err) {
       this.cargaBloqueadaPorError.set(true);
@@ -1109,13 +1143,49 @@ export class ParametrosWorkspaceOrquestador {
     this.cdr.markForCheck();
   }
 
-  private mostrarAvisoReconciliacionSiCorresponde(): void {
-    const periodo = this.selectedPeriodo();
-    const diferencias = this.completitudParametros().diferencias;
+  /** Tras guardar con diferencias: permite re-mostrar el aviso al reingresar en la misma sesión. */
+  private invalidarHuellaReconciliacionSiHayDiferencias(periodo: string): void {
+    if (this.completitudParametros().diferencias.length > 0) {
+      this.reconciliacionAvisadaHuellas.delete(periodo);
+    }
+  }
+
+  /**
+   * Tras guardar configuración cliente: aviso inmediato si hay diferencias con el oficial del mes.
+   * Devuelve true si se abrió el modal de reconciliación (no mostrar éxito genérico encima).
+   */
+  private intentarMostrarAvisoReconciliacionTrasGuardar(
+    periodo: string,
+    clienteGuardado: ParametrosGeneralesClienteConfig,
+  ): boolean {
+    const oficial = this.oficialComparacionResuelto();
+    const diferencias = compararOficialCliente(oficial, clienteGuardado);
+    if (diferencias.length === 0) {
+      return false;
+    }
+    this.invalidarHuellaReconciliacionSiHayDiferencias(periodo);
     const debeMostrar = debeMostrarAvisoDiferenciasParametrosOficialesMes({
       periodoRemuneracion: this.periodoRemuneracion(),
-      tieneOficialMensual: this.parametroOficialSeleccionado() !== null,
-      oficial: this.parametroOficialSeleccionado(),
+      oficial,
+      clienteConfig: clienteGuardado,
+      diferencias,
+    });
+    if (!debeMostrar) {
+      return false;
+    }
+    this.mostrarReconciliacionDiferencias(diferencias);
+    const huella = huellaDiferenciasOficialesCliente(diferencias);
+    this.reconciliacionAvisadaHuellas.set(periodo, huella);
+    return true;
+  }
+
+  private mostrarAvisoReconciliacionSiCorresponde(): void {
+    const periodo = this.selectedPeriodo();
+    const oficial = this.oficialComparacionResuelto();
+    const diferencias = compararOficialCliente(oficial, this.clienteConfig());
+    const debeMostrar = debeMostrarAvisoDiferenciasParametrosOficialesMes({
+      periodoRemuneracion: this.periodoRemuneracion(),
+      oficial,
       clienteConfig: this.clienteConfig(),
       diferencias,
     });
@@ -1135,10 +1205,23 @@ export class ParametrosWorkspaceOrquestador {
   private mostrarReconciliacionDiferencias(
     diferencias = this.completitudParametros().diferencias,
   ): void {
+    const ctx = this.contextoOficialComparacion();
+    const periodoRef =
+      ctx.periodoOrigen && ctx.periodoOrigen !== this.selectedPeriodo() ? ctx.periodoOrigen : null;
     this.dialogState.set(
-      buildParametrosReconciliacionDiferenciasDialog(this.selectedPeriodo(), diferencias),
+      buildParametrosReconciliacionDiferenciasDialog(this.selectedPeriodo(), diferencias, {
+        periodoReferenciaOficial: periodoRef,
+      }),
     );
     this.cdr.markForCheck();
+  }
+
+  /** Recarga al volver a la pantalla sin interrumpir edición en curso. */
+  async refrescarAlEntrar(): Promise<void> {
+    if (!this.workspaceInicializado() || this.generalesEditando() || this.guardando()) {
+      return;
+    }
+    await this.cargar(this.selectedPeriodo());
   }
 
   private async actualizarClienteConOficiales(): Promise<void> {
@@ -1222,6 +1305,9 @@ export class ParametrosWorkspaceOrquestador {
 
   /** Recarga el periodo activo (p. ej. tras carga oficial externa en BD). */
   async recargarPeriodoSeleccionado(): Promise<void> {
+    if (this.generalesEditando() || this.guardando()) {
+      return;
+    }
     await this.cargar(this.selectedPeriodo());
   }
 
@@ -1256,6 +1342,9 @@ export class ParametrosWorkspaceOrquestador {
 
   async ejecutarAccionCierre(): Promise<void> {
     const label = this.cierreAccionSiguienteLabel();
+    if (!label) {
+      return;
+    }
 
     if (label === 'Completar configuración') {
       this.seleccionarArea('configuracionCliente');
@@ -1273,12 +1362,10 @@ export class ParametrosWorkspaceOrquestador {
       return;
     }
 
-    if (label === 'Revisar consistencia') {
+    if (label === 'Revisar consistencia' || label === 'Revisar pendiente') {
       this.seleccionarArea('configuracionCliente');
       return;
     }
-
-    await this.recargarPeriodoSeleccionado();
   }
 
   async verReferenciaPeriodoAnterior(): Promise<void> {
@@ -1319,7 +1406,7 @@ export class ParametrosWorkspaceOrquestador {
       return;
     }
 
-    this.seleccionarArea('configuracionCliente');
+    this.irAreaEdicionConfiguracionCliente(this.activeTab());
     this.patchForm(
       this.parametroConClienteConfig(this.baseActualParaConfigCliente(), this.clienteConfig()),
       this.selectedPeriodo(),
@@ -1469,6 +1556,21 @@ export class ParametrosWorkspaceOrquestador {
     return this.parametroOficialSeleccionado() ?? this.emptyParametroForPeriodo(this.selectedPeriodo());
   }
 
+  /** Mantiene pestaña de valores/remuneraciones al modificar; no fuerza solo «Cliente». */
+  private irAreaEdicionConfiguracionCliente(tabActual: ParametrosTabId): void {
+    if (tabActual === 'valores' || tabActual === 'remuneraciones') {
+      this.seleccionarArea('datosOficiales');
+      this.presentacion.seleccionarTab(tabActual);
+      return;
+    }
+    if (tabActual === 'configCliente') {
+      this.seleccionarArea('configuracionCliente');
+      return;
+    }
+    this.seleccionarArea('datosOficiales');
+    this.presentacion.seleccionarTab('valores');
+  }
+
   volverParametros(): void {
     const row = this.rows().find((item) => item.periodo === this.selectedPeriodo());
     const referencia = this.parametroReferenciaAnterior();
@@ -1485,10 +1587,17 @@ export class ParametrosWorkspaceOrquestador {
   async guardar(): Promise<void> {
     this.form.markAllAsTouched();
 
-    if (this.form.invalid || this.guardando() || !this.datosFormularioListos()) {
-      if (this.form.invalid && !this.guardando() && this.datosFormularioListos()) {
-        this.mostrarFormularioInvalido();
-      }
+    if (this.guardando()) {
+      return;
+    }
+    if (!this.datosFormularioListos()) {
+      this.mostrarErrorClienteConfig(
+        'Los datos del período aún se están cargando. Espere un momento e intente guardar de nuevo.',
+      );
+      return;
+    }
+    if (this.form.invalid) {
+      this.mostrarFormularioInvalido();
       return;
     }
 
@@ -1507,10 +1616,21 @@ export class ParametrosWorkspaceOrquestador {
     try {
       const saved = await this.guardarClienteConfigDesdeFormulario(periodo);
       this.clienteConfig.set(saved);
+      const oficial = this.parametroOficialSeleccionado();
+      this.patchForm(
+        this.parametroConClienteConfig(
+          oficial ?? this.emptyParametroForPeriodo(periodo),
+          saved,
+        ),
+        periodo,
+      );
       this.generalesEditando.set(false);
-      this.mostrarExitoClienteConfig(saved.periodo, this.configDraftSource(), this.configDraftSourcePeriodo());
       this.configDraftSource.set('existente');
       this.configDraftSourcePeriodo.set(saved.periodo);
+      if (this.intentarMostrarAvisoReconciliacionTrasGuardar(periodo, saved)) {
+        return;
+      }
+      this.mostrarExitoClienteConfig(saved.periodo, this.configDraftSource(), this.configDraftSourcePeriodo());
     } catch (err) {
       if (isDevMode()) {
         console.error('[Parametros] guardarClienteConfig', err);
@@ -1518,6 +1638,7 @@ export class ParametrosWorkspaceOrquestador {
       this.mostrarErrorClienteConfig(this.extractErrorDetail(err) || 'No fue posible guardar la configuración cliente.');
     } finally {
       this.guardando.set(false);
+      this.cdr.markForCheck();
     }
   }
 
@@ -1624,7 +1745,10 @@ export class ParametrosWorkspaceOrquestador {
   /** Tooltip del botón Modificar cuando la vista activa no es editable. */
   modificarTooltipConsulta(): string {
     if (this.generalesEditando()) {
-      return '';
+      return 'Ya está en modo edición. Use Guardar o Cancelar en la banda del período.';
+    }
+    if (!this.datosFormularioListos()) {
+      return 'Espere a que termine la carga del período antes de modificar.';
     }
     if (!this.isConfigurableTab()) {
       return 'Modificar aplica a la configuración del cliente. Los datos oficiales se muestran para referencia.';

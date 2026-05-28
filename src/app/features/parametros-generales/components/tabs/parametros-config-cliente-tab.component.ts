@@ -43,8 +43,8 @@ import { ParametrosGeneralesCatalogos } from '../../models/parametro-general.mod
             <input type="checkbox" formControlName="gratificacion" (click)="onReadonlyToggle($event)" />
             <span>Con gratificacion</span>
           </label>
-          <label class="param-checkbox-inline">
-            <input type="checkbox" checked disabled />
+          <label class="param-checkbox-inline param-checkbox-inline--locked">
+            <input type="checkbox" checked disabled aria-disabled="true" title="Valor normativo fijo" />
             <span>Tope legal</span>
           </label>
         </div>

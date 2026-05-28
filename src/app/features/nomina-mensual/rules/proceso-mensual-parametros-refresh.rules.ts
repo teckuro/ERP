@@ -261,8 +261,84 @@ export function etiquetaGrupoParametroUi(id: string): string {
 
 export type ParametroGrupoEstadoTono = 'ok' | 'revision';
 
+export interface ParametroGrupoModalVm {
+  id: string;
+  label: string;
+  estado: string;
+  tono: ParametroGrupoEstadoTono;
+}
+
+export const LABEL_CONFIGURACION_PERIODO = 'Configuración del período';
+
+/** @deprecated Use GRUPO_CONFIGURACION_PERIODO_ID */
+export const GRUPO_CALENDARIO_REMUNERACIONES_ID = 'configuracion_periodo';
+
+export const GRUPO_CONFIGURACION_PERIODO_ID = 'configuracion_periodo';
+
 export function tonoGrupoParametro(clasificacion: ClasificacionParametroGrupo): ParametroGrupoEstadoTono {
   return clasificacion === 'OK' ? 'ok' : 'revision';
+}
+
+/** Copy RRHH para estado de configuración del período (modal y resumen). */
+export function etiquetaEstadoConfiguracionPeriodoModal(estado: string): string {
+  const normalizado = estado.trim().toLowerCase();
+  if (
+    normalizado === 'listo para liquidar'
+    || normalizado === 'cargado'
+    || normalizado === 'corregido'
+    || normalizado === 'cerrado'
+    || normalizado === 'listo'
+  ) {
+    return 'Listo';
+  }
+  if (normalizado === 'parcial' || normalizado === 'incompleto') {
+    return 'Incompleto';
+  }
+  if (normalizado === 'pendiente' || normalizado === 'pendiente de completar') {
+    return 'Pendiente de completar';
+  }
+  if (normalizado === 'con error' || normalizado === 'con observaciones') {
+    return 'Con observaciones';
+  }
+  return 'Faltan datos';
+}
+
+function configuracionPeriodoOperativa(estadoConfiguracion: string, parametrosOperativos: boolean): boolean {
+  if (parametrosOperativos) {
+    return true;
+  }
+  return etiquetaEstadoConfiguracionPeriodoModal(estadoConfiguracion) === 'Listo';
+}
+
+/** Lista de grupos del modal: consulta en vivo + configuración del período si bloquea operatividad. */
+export function mapParametrosGruposParaModal(input: {
+  grupos: readonly ProcesoMensualGrupoParametro[];
+  parametrosOperativos: boolean;
+  estadoCalendario: string;
+}): ParametroGrupoModalVm[] {
+  const filas: ParametroGrupoModalVm[] = input.grupos.map((grupo) => ({
+    id: grupo.id,
+    label: etiquetaGrupoParametroUi(grupo.id),
+    estado: etiquetaClasificacionGrupoParametro(grupo.clasificacion),
+    tono: tonoGrupoParametro(grupo.clasificacion),
+  }));
+
+  if (!configuracionPeriodoOperativa(input.estadoCalendario, input.parametrosOperativos)) {
+    const idx = filas.findIndex((f) => f.id === GRUPO_CONFIGURACION_PERIODO_ID);
+    const filaConfiguracion: ParametroGrupoModalVm = {
+      id: GRUPO_CONFIGURACION_PERIODO_ID,
+      label: LABEL_CONFIGURACION_PERIODO,
+      estado: etiquetaEstadoConfiguracionPeriodoModal(input.estadoCalendario),
+      tono: 'revision',
+    };
+    if (idx >= 0) {
+      filas[idx] = filaConfiguracion;
+    } else {
+      filas.unshift(filaConfiguracion);
+    }
+  }
+
+  return filas;
 }
 
 export function etiquetaClasificacionGrupoParametro(clasificacion: ClasificacionParametroGrupo): string {
@@ -317,6 +393,14 @@ export function buildParametrosOverlayContexto(
       estadoCalendario,
     };
   }
+  if (!parametrosOperativos && puntos.length === 0 && !configuracionPeriodoOperativa(estadoCalendario, false)) {
+    const estado = etiquetaEstadoConfiguracionPeriodoModal(estadoCalendario);
+    puntos.push(
+      estado === 'Faltan datos'
+        ? 'Faltan datos en la configuración del período.'
+        : `${LABEL_CONFIGURACION_PERIODO}: ${estado}.`,
+    );
+  }
   if (puntos.length === 0) {
     return {
       bajada: 'Revise parámetros oficiales, configuración del mes y vigencias antes de liquidar.',
@@ -341,6 +425,42 @@ export interface ResolverAccionesFooterModalParametrosInput {
   baseGenerada: boolean;
   calculoGenerado: boolean;
   resultadoGuardado: boolean;
+  parametrosOperativos?: boolean;
+  preparacionNominaEnCurso?: boolean;
+  flujoPrincipalEnCurso?: boolean;
+}
+
+/** Tri-estado para checklist: prioriza consulta PG en vivo sobre prevalidación persistida. */
+export function resolveParametrosListosPeriodo(input: {
+  consultaParametrosOperativos?: boolean | null;
+  prevalidacionParametrosOperativos?: boolean | null;
+  persistidoParametrosOperativos?: boolean | null;
+}): boolean | null {
+  if (input.consultaParametrosOperativos != null) {
+    return input.consultaParametrosOperativos;
+  }
+  if (input.prevalidacionParametrosOperativos != null) {
+    return input.prevalidacionParametrosOperativos;
+  }
+  if (input.persistidoParametrosOperativos != null) {
+    return input.persistidoParametrosOperativos;
+  }
+  return null;
+}
+
+export function resolveParametrosOperativosPeriodo(input: {
+  parametrosListosDashboard?: boolean | null;
+  prevalidacionParametrosOperativos?: boolean | null;
+  consultaParametrosOperativos?: boolean | null;
+  persistidoParametrosOperativos?: boolean | null;
+}): boolean {
+  const listos = resolveParametrosListosPeriodo({
+    consultaParametrosOperativos: input.consultaParametrosOperativos,
+    prevalidacionParametrosOperativos: input.prevalidacionParametrosOperativos,
+    persistidoParametrosOperativos:
+      input.persistidoParametrosOperativos ?? input.parametrosListosDashboard,
+  });
+  return listos === true;
 }
 
 /** Pie del modal Parámetros: no repetir verificación del período si RRHH ya avanzó en el flujo principal. */
@@ -354,6 +474,15 @@ export function resolverAccionesFooterModalParametros(
     label: 'Abrir parámetros',
     destino: 'parametros_app',
   };
+
+  if (
+    ctx.parametrosOperativos != null
+    || ctx.preparacionNominaEnCurso
+    || ctx.flujoPrincipalEnCurso
+  ) {
+    return { accionPrincipal: abrirParametros };
+  }
+
   const yaAvanzoFlujoPrincipal =
     ctx.baseGenerada
     || ctx.calculoGenerado
@@ -411,7 +540,7 @@ export function resolverEstadoPeriodoRemuneracionDesdePrevalidacion(
     return etiquetaEstadoPeriodoRemuneracion(match[1]);
   }
   if (prevalidacion?.resumen.parametrosOperativos) {
-    return 'Listo para liquidar';
+    return 'Listo';
   }
-  return 'Por revisar';
+  return 'Faltan datos';
 }
