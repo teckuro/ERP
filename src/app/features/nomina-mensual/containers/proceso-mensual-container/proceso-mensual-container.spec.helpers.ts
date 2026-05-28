@@ -25,6 +25,10 @@ export function storeDe(fixture: ComponentFixture<ProcesoMensualContainer>): Pro
 
 export const PERIODO_TEST = '2026-05';
 
+/** Limpia snapshots y liquidaciones del período en BD local (pruebas manuales / E2E). */
+export const COMANDO_LIMPIAR_NOMINAS_PERIODO =
+  `psql "$SUPABASE_DB_URL" -v ON_ERROR_STOP=1 -v periodo=${PERIODO_TEST} -f bd/scripts/limpiar-nominas-mensuales.sql`;
+
 export function textoIncluye(haystack: string, needle: string): boolean {
   const fold = (value: string) =>
     value
@@ -133,31 +137,36 @@ export async function avanzarFlujo(
   if (hasta === 'base') {
     c.generarPreNomina();
     await esperarFlag(fixture, () => c.generandoPreNomina());
-    await vi.waitFor(() => expect(c.preNomina()).not.toBeNull(), { timeout: 3000, interval: 20 });
+    await vi.waitFor(
+      () => expect(storeDe(fixture).snapshotActivo()?.estado).toBe('preliminar'),
+      { timeout: 5000, interval: 20 },
+    );
     return c;
   }
 
   await avanzarFlujo(fixture, 'base');
 
   if (hasta === 'calculo') {
-    await invocarCtaShell(fixture);
     if (!c.calculo()) {
+      await invocarCtaShell(fixture);
       storeDe(fixture).calcularPreliminar();
+      await esperarFlag(fixture, () => c.calculandoPreliminar());
+      await vi.waitFor(() => expect(c.calculo()).not.toBeNull(), { timeout: 3000, interval: 20 });
     }
-    await esperarFlag(fixture, () => c.calculandoPreliminar());
-    await vi.waitFor(() => expect(c.calculo()).not.toBeNull(), { timeout: 3000, interval: 20 });
     return c;
   }
 
   await avanzarFlujo(fixture, 'calculo');
 
   if (hasta === 'guardado') {
-    c.guardarSnapshotPreliminar();
-    fixture.detectChanges();
-    if (c.overlay().kind === 'decision') {
-      await confirmarOverlayDecision(fixture);
+    if (!c.snapshotActivo()) {
+      c.guardarSnapshotPreliminar();
+      fixture.detectChanges();
+      if (c.overlay().kind === 'decision') {
+        await confirmarOverlayDecision(fixture);
+      }
+      await esperarFlag(fixture, () => c.guardandoSnapshot());
     }
-    await esperarFlag(fixture, () => c.guardandoSnapshot());
     await vi.waitFor(() => expect(c.snapshotActivo()).not.toBeNull(), { timeout: 3000, interval: 20 });
     return c;
   }

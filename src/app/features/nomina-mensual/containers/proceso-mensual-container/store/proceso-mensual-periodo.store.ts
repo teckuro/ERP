@@ -68,6 +68,9 @@ export class ProcesoMensualPeriodoStore {
   readonly errorAccionPeriodo = signal<string | null>(null);
   readonly exitoAccionPeriodo = signal<string | null>(null);
 
+  /** Invalida respuestas de rehidratación anteriores (p. ej. doble effect o generar en curso). */
+  private rehidratarSeq = 0;
+
   constructor() {
     effect(() => {
       const periodo = this.periodoSeleccionado();
@@ -166,11 +169,12 @@ export class ProcesoMensualPeriodoStore {
 
   generarPreNomina(): void {
     const p = this.periodoSeleccionado();
+    this.rehidratarSeq++;
     this.generandoPreNomina.set(true);
     this.errorEjecucion.set(null);
-    void this.procesoMensual
-      .generarPreNominaPeriodo(p)
-      .then(async (r) => {
+    void (async () => {
+      try {
+        const r = await this.procesoMensual.generarPreNominaPeriodo(p);
         this.preNomina.set(r);
         this.calculo.set(null);
         this.snapshotActivo.set(null);
@@ -191,19 +195,30 @@ export class ProcesoMensualPeriodoStore {
               // El borrador persistido no depende del cierre del diagnóstico.
             }
             await this.ejecutarCalculoPreliminarTrasGenerar(p);
+            // Guardado automático: evita perder el resultado tras F5 (cache motor se pierde).
+            const guardado = await this.procesoMensual.guardarSnapshotPreliminar(p);
+            if (!guardado.ok || !guardado.snapshot) {
+              const msg =
+                guardado.issues.map((i) => i.mensaje).join(' ')
+                || 'No se pudo guardar la versión revisable del período.';
+              throw new Error(msg);
+            }
+            this.aplicarSnapshotActivo(guardado.snapshot);
+            this.preNomina.set(null);
+            this.identificadorResultadoGuardadoActual.set(guardado.snapshot.hashSnapshot ?? null);
+            void this.cargarSnapshotCompletoActivo(p);
+            this.exitoGuardadoResultado.set('Versión revisable guardada correctamente.');
           } catch (e: unknown) {
             this.errorGuardadoResultado.set(e instanceof Error ? e.message : String(e));
           }
         }
-        return undefined;
-      })
-      .catch((e: unknown) => {
+      } catch (e: unknown) {
         this.preNomina.set(null);
         this.errorEjecucion.set(e instanceof Error ? e.message : String(e));
-      })
-      .finally(() => {
+      } finally {
         this.generandoPreNomina.set(false);
-      });
+      }
+    })();
   }
 
   guardarBaseNominaRevisada(): void {
@@ -279,6 +294,7 @@ export class ProcesoMensualPeriodoStore {
   }
 
   rehidratarPeriodoActivo(periodo: string): void {
+    const seq = ++this.rehidratarSeq;
     this.rehidratandoPeriodo.set(true);
     this.consultandoSnapshot.set(true);
     this.errorEjecucion.set(null);
@@ -291,7 +307,7 @@ export class ProcesoMensualPeriodoStore {
     void this.procesoMensual
       .rehidratarPeriodo(periodo)
       .then(({ snapshot, completo, liquidacionesGeneradas, prevalidacionDiagnostico }) => {
-        if (this.periodoSeleccionado() !== periodo) {
+        if (seq !== this.rehidratarSeq || this.periodoSeleccionado() !== periodo) {
           return;
         }
         this.liquidacionesGeneradasCount.set(liquidacionesGeneradas);
@@ -321,14 +337,14 @@ export class ProcesoMensualPeriodoStore {
         }
       })
       .catch((e: unknown) => {
-        if (this.periodoSeleccionado() !== periodo) {
+        if (seq !== this.rehidratarSeq || this.periodoSeleccionado() !== periodo) {
           return;
         }
         this.limpiarSenalesVolatiles();
         this.errorEjecucion.set(e instanceof Error ? e.message : String(e));
       })
       .finally(() => {
-        if (this.periodoSeleccionado() === periodo) {
+        if (seq === this.rehidratarSeq && this.periodoSeleccionado() === periodo) {
           this.consultandoSnapshot.set(false);
           this.rehidratandoPeriodo.set(false);
         }

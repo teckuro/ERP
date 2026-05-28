@@ -385,6 +385,9 @@ export function labelAccionParametrosActa(destino: InformacionPeriodoDestino | n
   if (destino === 'parametros_app' || destino === 'parametros') {
     return LABEL_ABRIR_PARAMETROS;
   }
+  if (destino === 'trabajadores_fichas') {
+    return 'Revisar trabajadores';
+  }
   return 'Revisar parámetros';
 }
 

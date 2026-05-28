@@ -243,3 +243,152 @@ describe('ProcesoMensualPeriodoStore rehidratacion', () => {
     expect(store.snapshotActivo()).toBeNull();
   });
 });
+
+describe('ProcesoMensualPeriodoStore generar nómina + persistencia', () => {
+  const generarPreNominaPeriodo = vi.fn();
+  const guardarBaseNominaBorrador = vi.fn();
+  const generarCalculoPeriodo = vi.fn();
+  const guardarSnapshotPreliminar = vi.fn();
+  const obtenerSnapshotCompletoActivo = vi.fn();
+  const cerrarDiagnosticoPeriodo = vi.fn();
+  const rehidratarPeriodo = vi.fn();
+
+  beforeEach(() => {
+    generarPreNominaPeriodo.mockReset();
+    guardarBaseNominaBorrador.mockReset();
+    generarCalculoPeriodo.mockReset();
+    guardarSnapshotPreliminar.mockReset();
+    obtenerSnapshotCompletoActivo.mockReset();
+    cerrarDiagnosticoPeriodo.mockReset();
+    rehidratarPeriodo.mockReset();
+
+    generarPreNominaPeriodo.mockResolvedValue({
+      periodo: '2026-05',
+      estado: 'GENERADA',
+      generadoEn: '2026-05-20T00:00:00.000Z',
+      trabajadoresIncluidos: 1,
+      recurrentesIncluidos: 0,
+      movimientosVariablesValidados: 1,
+      movimientosVariablesBorrador: 0,
+      parametrosOperativos: true,
+      codigosBloqueo: [],
+      codigosAdvertencia: [],
+      origenPrevalidacion: 'LISTO_PARA_CALCULO',
+      trazabilidad: { trabajadores: [], trabajadoresConsiderados: 1, listosParaCalculo: 1 },
+    });
+    guardarBaseNominaBorrador.mockResolvedValue({
+      ok: true,
+      snapshot: {
+        idCalculoPeriodo: 10,
+        periodo: '2026-05',
+        idEmpresa: null,
+        estado: 'borrador',
+        fechaGeneracion: '2026-05-20T00:00:00.000Z',
+        usuarioGenerador: null,
+        totalTrabajadores: 1,
+        totalHaberes: 0,
+        totalDescuentos: 0,
+        totalLiquido: 0,
+        totalBloqueados: 0,
+        totalAdvertencias: 0,
+        versionMotor: 'BASE-NOMINA-01',
+        hashSnapshot: 'hash-borrador',
+        origen: 'preliminar',
+        activo: true,
+        reemplazadoPor: null,
+        aprobacionOperativa: null,
+        cierreOperativo: null,
+        trabajadores: [],
+        issues: [],
+        trazabilidad: [],
+      },
+      reemplazoSnapshotAnterior: false,
+      hashSnapshot: 'hash-borrador',
+      issues: [],
+    });
+    generarCalculoPeriodo.mockResolvedValue({ periodo: '2026-05' });
+    guardarSnapshotPreliminar.mockResolvedValue({
+      ok: true,
+      snapshot: {
+        idCalculoPeriodo: 11,
+        periodo: '2026-05',
+        idEmpresa: null,
+        estado: 'preliminar',
+        fechaGeneracion: '2026-05-20T00:10:00.000Z',
+        usuarioGenerador: null,
+        totalTrabajadores: 1,
+        totalHaberes: 100,
+        totalDescuentos: 0,
+        totalLiquido: 100,
+        totalBloqueados: 0,
+        totalAdvertencias: 0,
+        versionMotor: 'MOTOR-03B',
+        hashSnapshot: 'hash-preliminar',
+        origen: 'preliminar',
+        activo: true,
+        reemplazadoPor: null,
+        aprobacionOperativa: null,
+        cierreOperativo: null,
+        trabajadores: [],
+        issues: [],
+        trazabilidad: [],
+      },
+      reemplazoSnapshotAnterior: true,
+      hashSnapshot: 'hash-preliminar',
+      issues: [],
+    });
+    obtenerSnapshotCompletoActivo.mockResolvedValue(null);
+    cerrarDiagnosticoPeriodo.mockResolvedValue(undefined);
+    rehidratarPeriodo.mockResolvedValue({
+      snapshot: null,
+      completo: null,
+      liquidacionesGeneradas: 0,
+      prevalidacionDiagnostico: null,
+    });
+
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({
+      providers: [
+        ProcesoMensualPeriodoStore,
+        PeriodoActivoService,
+        {
+          provide: ProcesoMensualService,
+          useValue: {
+            generarPreNominaPeriodo,
+            guardarBaseNominaBorrador,
+            generarCalculoPeriodo,
+            guardarSnapshotPreliminar,
+            obtenerSnapshotCompletoActivo,
+            cerrarDiagnosticoPeriodo,
+            rehidratarPeriodo,
+          },
+        },
+      ],
+    });
+
+    TestBed.inject(PeriodoActivoService).setPeriodoYm('2026-05');
+  });
+
+  async function storeTrasHidratacionInicial(): Promise<ProcesoMensualPeriodoStore> {
+    const store = TestBed.inject(ProcesoMensualPeriodoStore);
+    await vi.waitFor(() => expect(store.rehidratandoPeriodo()).toBe(false));
+    rehidratarPeriodo.mockClear();
+    return store;
+  }
+
+  it('tras generar nómina calcula y guarda snapshot preliminar automaticamente', async () => {
+    const store = await storeTrasHidratacionInicial();
+    vi.spyOn(store, 'rehidratarPeriodoActivo').mockImplementation(() => undefined);
+    store.generarPreNomina();
+
+    await vi.waitFor(() => expect(store.generandoPreNomina()).toBe(false), { timeout: 5000 });
+    expect(guardarBaseNominaBorrador).toHaveBeenCalled();
+    expect(generarCalculoPeriodo).toHaveBeenCalledWith('2026-05');
+    expect(guardarSnapshotPreliminar).toHaveBeenCalledWith('2026-05');
+    expect(store.errorGuardadoResultado()).toBeNull();
+    expect(store.exitoGuardadoResultado()).toMatch(/guardada/i);
+    expect(store.snapshotActivo()?.estado).toBe('preliminar');
+    expect(store.preNomina()).toBeNull();
+    expect(store.calculo()).not.toBeNull();
+  });
+});
