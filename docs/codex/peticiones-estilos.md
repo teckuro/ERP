@@ -1,3 +1,15 @@
+## 2026-05-27 - Nómina: laboratorio MessageBox (guía visual)
+
+- **Cambio:** Página `/remuneraciones/msgbox-lab` con pestañas Referencia (Parámetros) / Nómina actual / Nómina propuesto / Utilidad; preview modal por ejemplo; regla `mapConfirmacionNominaToSections` para migrar overlays sin `nom-acta-modal`.
+- **Archivos:** `nomina-msgbox-lab-container.*`, `nomina-msgbox-lab.rules.ts`, `nomina-msgbox-lab.page.ts`, `app.routes.ts`, spec.
+- **No tocado:** overlays productivos de nómina, estilos globales, SQL/motor.
+
+## 2026-05-27 - Parámetros: modal diferencias con carga oficial del mes
+
+- **Cambio:** Al abrir un período con carga oficial y configuración cliente distinta, MessageBox de reconciliación con copy RRHH («Configuración distinta a los parámetros oficiales del mes») y detalle por campo. Reaparece si cambian las diferencias o si hubo nueva carga oficial tras «Revisar después» / «Mantener configuración».
+- **Archivos:** `parametros-completitud.rules.ts`, `parametros-dialog.rules.ts`, `parametros-workspace.orquestador.ts`, specs.
+- **No tocado:** estilos globales, `angular.json`, SQL/motor.
+
 ## 2026-05-26 - Nómina mensual: verificar y generar en un solo paso (restaurado)
 
 - **Ajuste 2026-05-26:** Loading unificado **«Verificando y generando nómina»** en overlay, acta y focus mientras corre el paso encadenado (sin alternar «Verificando período» / «Generando nómina»). Copy del frame `generando` alineado al mismo paso.

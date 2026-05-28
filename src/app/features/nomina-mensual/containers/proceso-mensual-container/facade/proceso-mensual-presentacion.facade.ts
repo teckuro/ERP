@@ -2353,7 +2353,7 @@ export class ProcesoMensualPresentacionFacade {
       this.ejecutarAccionValidacion('generarBase');
       return;
     }
-    if (destino === 'parametros_app') {
+    if (destino === 'parametros_app' || destino === 'parametros') {
       this.ejecutarAccionCorreccion({ label: 'Abrir parámetros', kind: 'ruta', ruta: '/parametros' });
       return;
     }

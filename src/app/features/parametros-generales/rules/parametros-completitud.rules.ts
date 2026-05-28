@@ -536,3 +536,71 @@ function sonEquivalentes(left: number | boolean | null, right: number | boolean 
   }
   return left === right;
 }
+
+export interface DebeMostrarAvisoDiferenciasOficialesInput {
+  periodoRemuneracion: PeriodoRemuneracionEstadoInfo | null;
+  tieneOficialMensual: boolean;
+  oficial: ParametroGeneral | null;
+  clienteConfig: ParametrosGeneralesClienteConfig | null;
+  diferencias: ParametrosDiferenciaCompletitud[];
+}
+
+/** Aviso modal al entrar a un período con carga oficial y configuración cliente distinta. */
+export function debeMostrarAvisoDiferenciasParametrosOficialesMes(
+  input: DebeMostrarAvisoDiferenciasOficialesInput,
+): boolean {
+  if (!input.tieneOficialMensual || !input.oficial || !input.clienteConfig || input.diferencias.length === 0) {
+    return false;
+  }
+
+  const estado = input.periodoRemuneracion?.estado;
+  if (!estado || estado === 'pendiente' || estado === 'error') {
+    return false;
+  }
+
+  if (requiereReconciliacionOficial(input.clienteConfig)) {
+    return true;
+  }
+
+  return debeReabrirAvisoDiferenciasTrasOficialReciente(input.oficial, input.clienteConfig);
+}
+
+export function huellaDiferenciasOficialesCliente(
+  diferencias: readonly ParametrosDiferenciaCompletitud[],
+): string {
+  return [...diferencias]
+    .map((d) => `${String(d.campo)}:${String(d.oficial)}:${String(d.cliente)}`)
+    .sort()
+    .join('|');
+}
+
+function debeReabrirAvisoDiferenciasTrasOficialReciente(
+  oficial: ParametroGeneral,
+  cliente: ParametrosGeneralesClienteConfig,
+): boolean {
+  if (cliente.estadoReconciliacionOficial === 'actualizado_con_oficiales') {
+    return false;
+  }
+  if (
+    cliente.estadoReconciliacionOficial !== 'revisar_despues'
+    && cliente.estadoReconciliacionOficial !== 'cliente_confirmado'
+  ) {
+    return false;
+  }
+  return oficialActualizadoDespuesDeDecisionReconciliacion(cliente, oficial);
+}
+
+function oficialActualizadoDespuesDeDecisionReconciliacion(
+  cliente: ParametrosGeneralesClienteConfig,
+  oficial: ParametroGeneral,
+): boolean {
+  const oficialTs = oficial.fechaActualizacion;
+  if (!oficialTs) {
+    return false;
+  }
+  const decisionTs = cliente.fechaReconciliacionOficial;
+  if (!decisionTs) {
+    return true;
+  }
+  return new Date(oficialTs).getTime() > new Date(decisionTs).getTime();
+}

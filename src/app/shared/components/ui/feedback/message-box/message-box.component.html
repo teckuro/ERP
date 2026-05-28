@@ -11,7 +11,7 @@
   [attr.aria-live]="mode === 'inline' ? liveRegion() : null"
 >
   @if (mode === 'modal') {
-    <header class="noia-msgbox__header">
+    <header [class]="'noia-msgbox__header noia-msgbox__header--' + resolvedVariant()">
       @if (showClose()) {
         <button
           #closeBtn
@@ -24,17 +24,25 @@
         </button>
       }
 
-      @if (resolvedVariant() === 'loading') {
-        <lucide-icon class="noia-msgbox__spinner" [img]="loadingIcon" aria-hidden="true"></lucide-icon>
-      }
+      <div class="noia-msgbox__header-grid">
+        @if (resolvedVariant() === 'loading') {
+          <lucide-icon class="noia-msgbox__spinner" [img]="loadingIcon" aria-hidden="true"></lucide-icon>
+        } @else if (variantIcon(); as icon) {
+          <div [class]="'noia-msgbox__header-icon-wrap noia-msgbox__header-icon-wrap--' + resolvedVariant()">
+            <lucide-icon class="noia-msgbox__header-icon" [img]="icon" aria-hidden="true"></lucide-icon>
+          </div>
+        }
 
-      @if (resolvedEyebrow()) {
-        <p class="noia-msgbox__eyebrow">{{ resolvedEyebrow() }}</p>
-      }
+        <div class="noia-msgbox__header-texts">
+          @if (resolvedEyebrow()) {
+            <p class="noia-msgbox__eyebrow">{{ resolvedEyebrow() }}</p>
+          }
 
-      @if (title) {
-        <h2 class="noia-msgbox__title" [id]="titleId">{{ title }}</h2>
-      }
+          @if (title) {
+            <h2 class="noia-msgbox__title" [id]="titleId">{{ title }}</h2>
+          }
+        </div>
+      </div>
 
       @if (message) {
         <p class="noia-msgbox__message" [id]="messageId">{{ message }}</p>

@@ -1,8 +1,10 @@
+import type { ParametroGeneral } from '../models/parametro-general.model';
 import type {
   ConfigClienteDraftSource,
   ParametrosDialogAction,
   ParametrosDialogState,
 } from '../models/parametros-workspace.vm';
+import type { ParametrosDiferenciaCompletitud } from './parametros-completitud.rules';
 
 export interface ParametrosConfigClienteActionVm {
   label: string;
@@ -229,15 +231,59 @@ export function buildParametrosSinConfigClienteAnteriorDialog(periodo: string): 
   };
 }
 
-export function buildParametrosReconciliacionDiferenciasDialog(): ParametrosDialogState {
+const ETIQUETAS_CAMPO_DIFERENCIA: Partial<Record<keyof ParametroGeneral, string>> = {
+  uf: 'UF',
+  utm: 'UTM',
+  uta: 'UTA',
+  sueldoMinimo: 'Sueldo mínimo',
+  sanna: 'SANNA',
+  saludObligatoria: 'Salud obligatoria',
+  afcTrabajadorIndefinido: 'AFC trabajador indefinido',
+  afcEmpleadorIndefinido: 'AFC empleador indefinido',
+  afcEmpleadorPlazo: 'AFC empleador plazo',
+  trabajoPesadoEmpleador: 'Trabajo pesado empleador',
+  trabajoPesadoTrabajador: 'Trabajo pesado trabajador',
+  trabajoMenosPesadoEmpleador: 'Trabajo menos pesado empleador',
+  trabajoMenosPesadoTrabajador: 'Trabajo menos pesado trabajador',
+};
+
+function formatearValorDiferencia(value: number | boolean | null): string {
+  if (value === null) {
+    return 'sin valor';
+  }
+  if (typeof value === 'boolean') {
+    return value ? 'Sí' : 'No';
+  }
+  return String(value);
+}
+
+export function detalleDiferenciasOficialesCliente(
+  periodo: string,
+  diferencias: readonly ParametrosDiferenciaCompletitud[],
+): string {
+  if (diferencias.length === 0) {
+    return `Período ${periodo}. Puede mantener su configuración, alinearla con los oficiales o revisar las diferencias más tarde.`;
+  }
+
+  const lineas = diferencias.map((d) => {
+    const etiqueta = ETIQUETAS_CAMPO_DIFERENCIA[d.campo] ?? String(d.campo);
+    return `· ${etiqueta}: oficial ${formatearValorDiferencia(d.oficial)} · su configuración ${formatearValorDiferencia(d.cliente)}`;
+  });
+
+  return [`Período ${periodo}`, '', 'Campos distintos:', ...lineas].join('\n');
+}
+
+export function buildParametrosReconciliacionDiferenciasDialog(
+  periodo: string,
+  diferencias: readonly ParametrosDiferenciaCompletitud[] = [],
+): ParametrosDialogState {
   return {
     kind: 'reconciliacion-diferencias',
     variant: 'warning',
-    title: 'Hay diferencias con los valores oficiales del período',
+    title: 'Configuración distinta a los parámetros oficiales del mes',
     message:
-      'Este período ya tiene una configuración guardada por el cliente, pero la carga oficial contiene valores distintos. Nada se actualizará automáticamente.',
-    detail:
-      'Se encontró configuración cliente guardada, datos oficiales cargados y diferencias entre ambos registros. Puedes mantener tu configuración, actualizarla con oficiales o revisar las diferencias más tarde.',
+      'Los datos guardados para este período no coinciden con la carga oficial del mes. No se actualizará nada automáticamente.',
+    detail: detalleDiferenciasOficialesCliente(periodo, diferencias),
     primaryLabel: 'Mantener mi configuración',
     secondaryLabel: 'Actualizar con oficiales',
     secondaryAction: 'actualizar-con-oficiales',

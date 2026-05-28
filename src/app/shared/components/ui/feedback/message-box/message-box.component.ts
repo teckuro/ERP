@@ -15,7 +15,16 @@ import {
   inject,
 } from '@angular/core';
 import { LucideAngularModule } from 'lucide-angular';
-import { LoaderCircle, X as XIcon } from 'lucide-angular/src/icons';
+import {
+  LoaderCircle,
+  X as XIcon,
+  Info as InfoIcon,
+  CheckCircle as CheckCircleIcon,
+  AlertTriangle as AlertTriangleIcon,
+  AlertCircle as AlertCircleIcon,
+  HelpCircle as HelpCircleIcon,
+  Lock as LockIcon,
+} from 'lucide-angular/src/icons';
 
 import type {
   MessageBoxAction,
@@ -136,6 +145,24 @@ export class MessageBoxComponent implements AfterViewInit, OnDestroy {
     this.onDismiss();
   }
 
+  readonly infoIcon = InfoIcon;
+  readonly successIcon = CheckCircleIcon;
+  readonly warningIcon = AlertTriangleIcon;
+  readonly dangerIcon = AlertCircleIcon;
+  readonly decisionIcon = HelpCircleIcon;
+  readonly blockedIcon = LockIcon;
+
+  variantIcon(): any {
+    const v = this.resolvedVariant();
+    if (v === 'info') return this.infoIcon;
+    if (v === 'success') return this.successIcon;
+    if (v === 'warning') return this.warningIcon;
+    if (v === 'danger') return this.dangerIcon;
+    if (v === 'decision') return this.decisionIcon;
+    if (v === 'blocked') return this.blockedIcon;
+    return null;
+  }
+
   resolvedVariant(): MessageBoxResolvedVariant {
     if (this.variant === 'error') {
       return 'danger';
@@ -148,6 +175,7 @@ export class MessageBoxComponent implements AfterViewInit, OnDestroy {
 
   panelClasses(): string[] {
     const classes: string[] = [];
+    classes.push(`noia-msgbox--${this.resolvedVariant()}`);
     if (this.mode === 'modal') {
       classes.push(`noia-msgbox--${this.resolvedWidth()}`);
       if (this.resolvedVariant() === 'loading') {

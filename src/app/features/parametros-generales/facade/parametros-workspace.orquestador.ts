@@ -28,7 +28,9 @@ import { ParametrosGeneralesService } from '../services/parametros-generales.ser
 import {
   ParametrosConfigClienteBaseOpcion,
   crearClienteConfigDesdeOficiales,
+  debeMostrarAvisoDiferenciasParametrosOficialesMes,
   evaluarCompletitudParametrosMensual,
+  huellaDiferenciasOficialesCliente,
   resolverEstadoVisualParametros,
   resolverOpcionesBaseConfigCliente,
 } from '../rules/parametros-completitud.rules';
@@ -141,7 +143,7 @@ export class ParametrosWorkspaceOrquestador {
   readonly configDraftSourcePeriodo = this.presentacion.configDraftSourcePeriodo;
 
   private cargarDepth = 0;
-  private readonly reconciliacionAvisadaPeriodos = new Set<string>();
+  private readonly reconciliacionAvisadaHuellas = new Map<string, string>();
   private readonly inicializado = signal(false);
 
   /** Bloqueo de acciones de barra / período por carga principal, plantilla o guardado. */
@@ -1105,16 +1107,33 @@ export class ParametrosWorkspaceOrquestador {
 
   private mostrarAvisoReconciliacionSiCorresponde(): void {
     const periodo = this.selectedPeriodo();
-    if (!this.hayReconciliacionOficialPendiente() || this.reconciliacionAvisadaPeriodos.has(periodo)) {
+    const diferencias = this.completitudParametros().diferencias;
+    const debeMostrar = debeMostrarAvisoDiferenciasParametrosOficialesMes({
+      periodoRemuneracion: this.periodoRemuneracion(),
+      tieneOficialMensual: this.parametroOficialSeleccionado() !== null,
+      oficial: this.parametroOficialSeleccionado(),
+      clienteConfig: this.clienteConfig(),
+      diferencias,
+    });
+    if (!debeMostrar) {
       return;
     }
 
-    this.reconciliacionAvisadaPeriodos.add(periodo);
-    this.mostrarReconciliacionDiferencias();
+    const huella = huellaDiferenciasOficialesCliente(diferencias);
+    if (this.reconciliacionAvisadaHuellas.get(periodo) === huella) {
+      return;
+    }
+
+    this.reconciliacionAvisadaHuellas.set(periodo, huella);
+    this.mostrarReconciliacionDiferencias(diferencias);
   }
 
-  private mostrarReconciliacionDiferencias(): void {
-    this.dialogState.set(buildParametrosReconciliacionDiferenciasDialog());
+  private mostrarReconciliacionDiferencias(
+    diferencias = this.completitudParametros().diferencias,
+  ): void {
+    this.dialogState.set(
+      buildParametrosReconciliacionDiferenciasDialog(this.selectedPeriodo(), diferencias),
+    );
     this.cdr.markForCheck();
   }
 

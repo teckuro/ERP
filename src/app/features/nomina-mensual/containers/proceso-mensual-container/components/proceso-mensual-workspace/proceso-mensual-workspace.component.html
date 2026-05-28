@@ -397,7 +397,17 @@
                               >
                                 {{ pendiente.accionLabel }}
                               </button>
-                            } @else if (pendiente.destino && pendiente.destino !== 'parametros_app' && pendiente.accionLabel) {
+                            } @else if (
+                              pendiente.destino === 'parametros_app' || pendiente.destino === 'parametros'
+                            ) {
+                              <button
+                                type="button"
+                                class="payroll-acta-preparacion__pendiente-action"
+                                (click)="f.ejecutarPendienteActa(pendiente)"
+                              >
+                                Abrir parámetros
+                              </button>
+                            } @else if (pendiente.destino && pendiente.accionLabel) {
                               <button
                                 type="button"
                                 class="payroll-acta-preparacion__pendiente-action"

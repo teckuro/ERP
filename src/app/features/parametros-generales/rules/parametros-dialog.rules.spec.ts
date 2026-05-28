@@ -35,8 +35,11 @@ describe('parametros-dialog.rules', () => {
   });
 
   it('expone acciones de reconciliación sin mutar datos', () => {
-    expect(buildParametrosReconciliacionDiferenciasDialog()).toMatchObject({
+    expect(buildParametrosReconciliacionDiferenciasDialog('2026-05', [{ campo: 'uf', oficial: 38000, cliente: 40000 }])).toMatchObject({
       kind: 'reconciliacion-diferencias',
+      title: 'Configuración distinta a los parámetros oficiales del mes',
+      message: expect.stringContaining('no coinciden con la carga oficial del mes'),
+      detail: expect.stringContaining('UF'),
       secondaryAction: 'actualizar-con-oficiales',
       tertiaryAction: 'revisar-despues',
     });

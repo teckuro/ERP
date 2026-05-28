@@ -809,6 +809,19 @@ describe('ProcesoMensualContainer', () => {
       expect(url).toContain('periodo=');
     });
 
+    it('destino parametros (legacy) en acta tambien navega a /parametros', () => {
+      const c = fixture.componentInstance;
+      const router = TestBed.inject(Router);
+      const navigateSpy = vi.spyOn(router, 'navigateByUrl').mockResolvedValue(true);
+      const accionSpy = vi.spyOn(c, 'ejecutarAccionCorreccion');
+
+      (c as any).ejecutarDestinoInformacionPeriodo('parametros');
+
+      expect(accionSpy).toHaveBeenCalled();
+      expect(navigateSpy).toHaveBeenCalled();
+      expect(String(navigateSpy.mock.calls[0]?.[0] ?? '')).toMatch(/^\/parametros\?/);
+    });
+
     it('tras error de validacion abre informacion y oculta banner crudo', async () => {
       ejecutarPrevalidaciones.mockRejectedValueOnce(new Error('rpc_validar_periodo timeout'));
       const c = fixture.componentInstance;

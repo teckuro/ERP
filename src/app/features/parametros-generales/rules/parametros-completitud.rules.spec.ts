@@ -8,7 +8,9 @@ import { describe, expect, it } from 'vitest';
 
 import {
   crearClienteConfigDesdeOficiales,
+  debeMostrarAvisoDiferenciasParametrosOficialesMes,
   evaluarCompletitudParametrosMensual,
+  huellaDiferenciasOficialesCliente,
   resolverEstadoVisualParametros,
   resolverOpcionesBaseConfigCliente,
 } from './parametros-completitud.rules';
@@ -250,6 +252,73 @@ describe('parametros-completitud.rules', () => {
     expect(resultado.reconciliacionPendiente).toBe(false);
     expect(resultado.grupos.consistencia.completo).toBe(true);
     expect(resultado.advertencias).toEqual([]);
+  });
+
+  it('debe mostrar aviso cuando el periodo esta cargado y hay diferencias sin decision', () => {
+    const oficial = parametroOficial();
+    const cliente = clienteConfig({ uf: 40000, estadoReconciliacionOficial: 'pendiente' });
+    const diferencias = [{ campo: 'uf' as const, oficial: 38000, cliente: 40000 }];
+
+    expect(
+      debeMostrarAvisoDiferenciasParametrosOficialesMes({
+        periodoRemuneracion: periodoInfo('cargado'),
+        tieneOficialMensual: true,
+        oficial,
+        clienteConfig: cliente,
+        diferencias,
+      }),
+    ).toBe(true);
+  });
+
+  it('no debe mostrar aviso si ya confirmo mantener configuracion y no hubo nueva carga oficial', () => {
+    const oficial = parametroOficial({ fechaActualizacion: '2026-05-01T10:00:00' });
+    const cliente = clienteConfig({
+      uf: 40000,
+      estadoReconciliacionOficial: 'cliente_confirmado',
+      fechaReconciliacionOficial: '2026-05-02T12:00:00',
+    });
+    const diferencias = [{ campo: 'uf' as const, oficial: 38000, cliente: 40000 }];
+
+    expect(
+      debeMostrarAvisoDiferenciasParametrosOficialesMes({
+        periodoRemuneracion: periodoInfo('cargado'),
+        tieneOficialMensual: true,
+        oficial,
+        clienteConfig: cliente,
+        diferencias,
+      }),
+    ).toBe(false);
+  });
+
+  it('reabre aviso tras revisar despues si la carga oficial es mas reciente que la decision', () => {
+    const oficial = parametroOficial({ fechaActualizacion: '2026-05-10T08:00:00' });
+    const cliente = clienteConfig({
+      uf: 40000,
+      estadoReconciliacionOficial: 'revisar_despues',
+      fechaReconciliacionOficial: '2026-05-01T12:00:00',
+    });
+    const diferencias = [{ campo: 'uf' as const, oficial: 38000, cliente: 40000 }];
+
+    expect(
+      debeMostrarAvisoDiferenciasParametrosOficialesMes({
+        periodoRemuneracion: periodoInfo('cargado'),
+        tieneOficialMensual: true,
+        oficial,
+        clienteConfig: cliente,
+        diferencias,
+      }),
+    ).toBe(true);
+  });
+
+  it('genera huella estable para no repetir el mismo aviso en la sesion', () => {
+    const diferencias = [
+      { campo: 'uf' as const, oficial: 38000, cliente: 40000 },
+      { campo: 'sanna' as const, oficial: 0.03, cliente: 0.04 },
+    ];
+
+    expect(huellaDiferenciasOficialesCliente(diferencias)).toBe(
+      huellaDiferenciasOficialesCliente([...diferencias].reverse()),
+    );
   });
 
   it('revisar despues registra decision y no mantiene la reconciliacion en bucle', () => {

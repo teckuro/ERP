@@ -1,0 +1,388 @@
+:host {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-height: 0;
+  min-width: 0;
+}
+
+/* ── Contenedor principal ─────────────────────────────────────────────── */
+.msgbox-lab {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  gap: 0;
+  min-height: 0;
+  padding: 12px 16px 16px;
+  background: var(--erp-bg, #f8fafc);
+}
+
+/* ── Cabecera ─────────────────────────────────────────────────────────── */
+.msgbox-lab__header {
+  display: grid;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+
+.msgbox-lab__headline {
+  display: grid;
+  gap: 3px;
+}
+
+.msgbox-lab__title {
+  margin: 0;
+  font-size: var(--erp-title-md, 1.125rem);
+  font-weight: 600;
+  color: var(--erp-ink, #111827);
+}
+
+.msgbox-lab__lead {
+  margin: 0;
+  max-width: 52rem;
+  font-size: var(--erp-text-sm, 0.8125rem);
+  line-height: 1.45;
+  color: var(--erp-subtle, #6b7280);
+}
+
+/* ── Tabs con conteo ──────────────────────────────────────────────────── */
+.msgbox-lab__tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0;
+  border-bottom: 1px solid var(--erp-border, #e5e7eb);
+  margin-bottom: 10px;
+}
+
+.msgbox-lab__tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  padding: 7px 12px;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  background: transparent;
+  font-size: var(--erp-text-sm, 0.8125rem);
+  font-weight: 500;
+  color: var(--erp-subtle, #6b7280);
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s;
+}
+
+.msgbox-lab__tab:hover {
+  color: var(--erp-ink, #111827);
+}
+
+.msgbox-lab__tab--active {
+  border-bottom-color: var(--erp-primary, #2563eb);
+  color: var(--erp-ink, #111827);
+}
+
+.msgbox-lab__tab-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 9px;
+  background: var(--erp-surface-muted, #f1f5f9);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: var(--erp-subtle, #6b7280);
+  line-height: 1;
+}
+
+.msgbox-lab__tab--active .msgbox-lab__tab-count {
+  background: var(--erp-primary-soft, #eff6ff);
+  color: var(--erp-primary, #2563eb);
+}
+
+/* ── Layout panel dividido ────────────────────────────────────────────── */
+.msgbox-lab__layout {
+  display: grid;
+  grid-template-columns: minmax(200px, 260px) minmax(0, 1fr);
+  gap: 10px;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+/* ── Lista lateral ────────────────────────────────────────────────────── */
+.msgbox-lab__list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-height: 0;
+  overflow: auto;
+  border: 1px solid var(--erp-border, #e5e7eb);
+  border-radius: 4px;
+  background: #fff;
+  padding: 5px;
+}
+
+.msgbox-lab__item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid transparent;
+  border-radius: 3px;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.1s;
+}
+
+.msgbox-lab__item:hover {
+  background: var(--erp-surface-muted, #f8fafc);
+}
+
+.msgbox-lab__item--active {
+  border-color: var(--erp-border-strong, #d5dce8);
+  background: var(--erp-primary-soft, #eff6ff);
+}
+
+.msgbox-lab__item-label {
+  font-size: var(--erp-text-sm, 0.8125rem);
+  font-weight: 500;
+  color: var(--erp-ink, #111827);
+  line-height: 1.3;
+}
+
+/* ── Badges de variante ───────────────────────────────────────────────── */
+.msgbox-lab__item-badge {
+  display: inline-flex;
+  align-items: center;
+  height: 18px;
+  padding: 0 6px;
+  border-radius: 3px;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  line-height: 1;
+  width: fit-content;
+}
+
+.badge--decision { background: #eff6ff; color: #2563eb; }
+.badge--warning  { background: #fffbeb; color: #b45309; }
+.badge--blocked  { background: #fef2f2; color: #dc2626; }
+.badge--loading  { background: #f0fdf4; color: #16a34a; }
+.badge--info     { background: #f0f9ff; color: #0284c7; }
+.badge--success  { background: #f0fdf4; color: #16a34a; }
+.badge--danger   { background: #fef2f2; color: #dc2626; }
+
+/* ── Panel de detalle ─────────────────────────────────────────────────── */
+.msgbox-lab__detail {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  min-height: 0;
+  overflow: auto;
+  border: 1px solid var(--erp-border, #e5e7eb);
+  border-radius: 4px;
+  background: #fff;
+}
+
+/* Cabecera integrada con botón de acción */
+.msgbox-lab__detail-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 14px 10px;
+  border-bottom: 1px solid var(--erp-border, #e5e7eb);
+  background: var(--erp-surface-muted, #f8fafc);
+}
+
+.msgbox-lab__detail-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.msgbox-lab__eyebrow {
+  margin: 0;
+  font-size: var(--erp-text-xs, 0.75rem);
+  font-weight: 500;
+  color: var(--erp-subtle, #6b7280);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.msgbox-lab__detail-title {
+  margin: 0;
+  font-size: var(--erp-title-sm, 1rem);
+  font-weight: 600;
+  color: var(--erp-ink, #111827);
+}
+
+/* Descripción */
+.msgbox-lab__detail-desc {
+  margin: 0;
+  padding: 10px 14px;
+  font-size: var(--erp-text-sm, 0.8125rem);
+  line-height: 1.5;
+  color: var(--erp-ink, #111827);
+  border-bottom: 1px solid var(--erp-border, #e5e7eb);
+}
+
+/* ── Tabla de metadata ────────────────────────────────────────────────── */
+.msgbox-lab__meta {
+  display: grid;
+  gap: 0;
+  margin: 0;
+  padding: 0 14px;
+}
+
+.msgbox-lab__meta-row {
+  display: grid;
+  grid-template-columns: 110px 1fr;
+  gap: 8px;
+  align-items: baseline;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--erp-border, #e5e7eb);
+}
+
+.msgbox-lab__meta-row:last-child {
+  border-bottom: 0;
+}
+
+.msgbox-lab__meta dt {
+  margin: 0;
+  font-size: var(--erp-text-xs, 0.75rem);
+  font-weight: 600;
+  color: var(--erp-subtle, #6b7280);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.msgbox-lab__meta dd {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  font-size: var(--erp-text-sm, 0.8125rem);
+  line-height: 1.4;
+  color: var(--erp-ink, #111827);
+}
+
+/* Código inline */
+.msgbox-lab__code {
+  padding: 1px 5px;
+  border-radius: 3px;
+  background: var(--erp-surface-muted, #f1f5f9);
+  font-family: ui-monospace, 'Cascadia Code', monospace;
+  font-size: 0.75rem;
+  color: var(--erp-subtle, #374151);
+}
+
+/* ── Botones ──────────────────────────────────────────────────────────── */
+.msgbox-lab__btn {
+  flex-shrink: 0;
+  height: 32px;
+  padding: 0 12px;
+  border: 1px solid var(--erp-border, #e5e7eb);
+  border-radius: 3px;
+  background: #fff;
+  font-size: var(--erp-text-sm, 0.8125rem);
+  font-weight: 500;
+  color: var(--erp-ink, #111827);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s;
+}
+
+.msgbox-lab__btn--primary {
+  border-color: var(--erp-primary, #2563eb);
+  background: var(--erp-primary, #2563eb);
+  color: #fff;
+}
+
+.msgbox-lab__btn--primary:hover {
+  background: var(--erp-primary-hover, #1d4ed8);
+}
+
+/* ── Flags / notas técnicas ───────────────────────────────────────────── */
+.msgbox-lab__flag {
+  margin: 0;
+  padding: 8px 14px;
+  font-size: var(--erp-text-xs, 0.75rem);
+  line-height: 1.5;
+  border-top: 1px solid var(--erp-border, #e5e7eb);
+}
+
+.msgbox-lab__flag--legacy {
+  background: #fffbeb;
+  color: #92400e;
+}
+
+.msgbox-lab__flag--sections {
+  background: #f0fdf4;
+  color: #166534;
+}
+
+.msgbox-lab__flag--note {
+  background: #f0f9ff;
+  color: #075985;
+}
+
+/* ── Slot legacy del acta ─────────────────────────────────────────────── */
+.nom-acta-modal {
+  display: grid;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.nom-acta-modal__summary,
+.nom-acta-modal__next,
+.nom-acta-modal__block {
+  border: 0;
+  border-top: 1px solid var(--erp-border, #e5e7eb);
+  border-radius: 0;
+  background: transparent;
+  padding: 10px 0;
+}
+
+.nom-acta-modal__summary p,
+.nom-acta-modal__next p,
+.nom-acta-modal__title {
+  margin: 0 0 6px;
+  font-size: var(--erp-text-xs, 0.75rem);
+  font-weight: 600;
+  color: var(--erp-subtle, #6b7280);
+}
+
+.nom-acta-modal ul {
+  margin: 0;
+  padding-left: 1.1rem;
+  font-size: var(--erp-text-sm, 0.8125rem);
+  color: var(--erp-ink, #111827);
+}
+
+.nom-acta-modal__next span {
+  font-size: var(--erp-text-sm, 0.8125rem);
+  color: var(--erp-ink, #111827);
+}
+
+/* ── Responsive ───────────────────────────────────────────────────────── */
+@media (max-width: 900px) {
+  .msgbox-lab__layout {
+    grid-template-columns: 1fr;
+  }
+
+  .msgbox-lab__detail-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .msgbox-lab__btn--primary {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .msgbox-lab__meta-row {
+    grid-template-columns: 90px 1fr;
+  }
+}

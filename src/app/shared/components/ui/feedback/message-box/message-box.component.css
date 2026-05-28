@@ -41,7 +41,111 @@
   padding: 1.45rem 3rem 1.25rem 1.65rem;
   border-bottom: 1px solid #e4e9f2;
   background: #f8fafc;
+  transition: background 0.15s, border-color 0.15s;
 }
+
+/* ── Variantes de cabecera ─────────────────────────────────────────────── */
+.noia-msgbox__header--info {
+  background: #f0f9ff;
+  border-bottom-color: #e0f2fe;
+}
+.noia-msgbox__header--info .noia-msgbox__eyebrow {
+  color: #0284c7;
+}
+
+.noia-msgbox__header--success {
+  background: #f0fdf4;
+  border-bottom-color: #dcfce7;
+}
+.noia-msgbox__header--success .noia-msgbox__eyebrow {
+  color: #16a34a;
+}
+
+.noia-msgbox__header--warning {
+  background: #fffbeb;
+  border-bottom-color: #fef3c7;
+}
+.noia-msgbox__header--warning .noia-msgbox__eyebrow {
+  color: #d97706;
+}
+
+.noia-msgbox__header--danger {
+  background: #fef2f2;
+  border-bottom-color: #fee2e2;
+}
+.noia-msgbox__header--danger .noia-msgbox__eyebrow {
+  color: #dc2626;
+}
+
+.noia-msgbox__header--blocked {
+  background: #fef2f2;
+  border-bottom-color: #fee2e2;
+  border-top: 4px solid #ef4444;
+}
+.noia-msgbox__header--blocked .noia-msgbox__eyebrow {
+  color: #b91c1c;
+}
+
+.noia-msgbox__header--decision {
+  background: #eff6ff;
+  border-bottom-color: #dbeafe;
+}
+.noia-msgbox__header--decision .noia-msgbox__eyebrow {
+  color: #2563eb;
+}
+
+/* ── Estructura interna del header ───────────────────────────────────── */
+.noia-msgbox__header-grid {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.noia-msgbox--loading .noia-msgbox__header-grid {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
+  width: 100%;
+}
+
+.noia-msgbox__header-texts {
+  flex: 1;
+  min-width: 0;
+}
+
+/* ── Envoltorios de iconos en cabecera ─────────────────────────────────── */
+.noia-msgbox__header-icon-wrap {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 8px;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.noia-msgbox__header-icon {
+  width: 1.15rem;
+  height: 1.15rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+:host ::ng-deep .noia-msgbox__header-icon svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.noia-msgbox__header-icon-wrap--info { background: #e0f2fe; color: #0284c7; }
+.noia-msgbox__header-icon-wrap--success { background: #dcfce7; color: #16a34a; }
+.noia-msgbox__header-icon-wrap--warning { background: #fef3c7; color: #d97706; }
+.noia-msgbox__header-icon-wrap--danger { background: #fee2e2; color: #dc2626; }
+.noia-msgbox__header-icon-wrap--blocked { background: #fee2e2; color: #b91c1c; }
+.noia-msgbox__header-icon-wrap--decision { background: #dbeafe; color: #2563eb; }
 
 .noia-msgbox__close {
   position: absolute;
@@ -88,6 +192,42 @@
   margin-bottom: 0.5rem;
   color: #64748b;
   animation: noia-msgbox-spin 850ms linear infinite;
+}
+
+/* ── Estado loading: centrado vertical + horizontal ────────────────────────── */
+.noia-msgbox--loading .noia-msgbox__header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 2.5rem 2rem 2rem;
+  background: #ffffff;
+  border-bottom: none;
+}
+
+.noia-msgbox--loading .noia-msgbox__spinner {
+  width: 2rem;
+  height: 2rem;
+  margin-bottom: 1.1rem;
+  color: var(--erp-primary, #2563eb);
+  animation: noia-msgbox-spin 750ms linear infinite;
+}
+
+:host ::ng-deep .noia-msgbox--loading .noia-msgbox__spinner svg {
+  width: 100%;
+  height: 100%;
+}
+
+.noia-msgbox--loading .noia-msgbox__title {
+  font-size: 1.1rem;
+  color: #0f172a;
+}
+
+.noia-msgbox--loading .noia-msgbox__message {
+  max-width: 22rem;
+  color: #64748b;
+  font-size: 0.875rem;
 }
 
 .noia-msgbox__eyebrow {
