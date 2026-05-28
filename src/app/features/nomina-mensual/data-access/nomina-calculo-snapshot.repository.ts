@@ -156,7 +156,15 @@ export class NominaCalculoSnapshotRepository {
   async anularSnapshotActivo(periodo: string, motivo?: string): Promise<void> {
     const activo = await this.obtenerSnapshotActivo(periodo);
     if (!activo?.idCalculoPeriodo) return;
-    await this.marcarInactivo(activo.idCalculoPeriodo, 'anulado', motivo);
+    const { error } = await this.supabase.rpc('anular_nomina_operativa', {
+      p_id_calculo_periodo: activo.idCalculoPeriodo,
+      p_periodo: periodo,
+      p_observacion: motivo ?? undefined,
+      p_metadata: {} as Json,
+    });
+    if (error) {
+      throw new Error('No se pudo descartar la nómina del período. No se realizaron cambios parciales.');
+    }
   }
 
   async obtenerSnapshotCompletoActivo(periodo: string, idEmpresa: number | null = null): Promise<NominaSnapshotCompletoView | null> {
@@ -722,10 +730,46 @@ function mapPeriodoRow(row: NominaCalculoPeriodoRow): NominaCalculoPeriodoSnapsh
     reemplazadoPor: row.reemplazado_por ?? null,
     aprobacionOperativa: mapAprobacionOperativa(row),
     cierreOperativo: mapCierreOperativo(row),
+    reaperturaOperativa: mapReaperturaOperativa(row),
+    anulacion: mapAnulacionOperativa(row),
     borradorPersist: extractBorradorPersistContext(parseRecord(row.cierre_operativo_metadata)),
     trabajadores: [],
     issues: [],
     trazabilidad: [],
+  };
+}
+
+function mapReaperturaOperativa(row: NominaCalculoPeriodoRow): {
+  fecha: string;
+  usuarioId: string | null;
+  usuarioLabel: string | null;
+  observacion: string | null;
+  metadata: Record<string, unknown> | null;
+} | null {
+  const fecha = (row as any).reapertura_operativa_fecha ?? null;
+  if (!fecha) return null;
+  return {
+    fecha,
+    usuarioId: (row as any).reapertura_operativa_usuario_id ?? null,
+    usuarioLabel: (row as any).reapertura_operativa_usuario_label ?? null,
+    observacion: (row as any).reapertura_operativa_observacion ?? null,
+    metadata: parseRecord((row as any).reapertura_operativa_metadata),
+  };
+}
+
+function mapAnulacionOperativa(row: NominaCalculoPeriodoRow): {
+  fecha: string;
+  usuarioId: string | null;
+  usuarioLabel: string | null;
+  observacion: string | null;
+} | null {
+  const fecha = (row as any).anulacion_fecha ?? null;
+  if (!fecha) return null;
+  return {
+    fecha,
+    usuarioId: (row as any).anulacion_usuario_id ?? null,
+    usuarioLabel: (row as any).anulacion_usuario_label ?? null,
+    observacion: row.observacion_anulacion ?? null,
   };
 }
 

@@ -156,6 +156,8 @@ export class ProcesoMensualService {
     prevalidacion?: ProcesoMensualPrevalidacion,
     opciones: { permitirAdvertencias?: boolean } = {},
   ): Promise<GuardarSnapshotPreliminarResult> {
+    const { data: userData } = await this.supabase.auth.getUser();
+    const usuarioId = userData.user?.id ?? null;
     const bloqueos = [
       ...(prevalidacion?.bloqueos ?? []).map((mensaje) => ({
         codigo: mensaje.codigo,
@@ -202,6 +204,7 @@ export class ProcesoMensualService {
       fechaGeneracion: new Date().toISOString(),
       totalAdvertencias: opciones.permitirAdvertencias ? advertencias.length : 0,
     });
+    snapshot.usuarioGenerador = usuarioId;
     const guardado = await this.snapshots.guardarBaseNominaBorrador(snapshot, borradorPersist);
     return {
       ok: true,
@@ -232,10 +235,13 @@ export class ProcesoMensualService {
       return buildGuardarSnapshotRechazado(issues);
     }
 
+    const { data: userData } = await this.supabase.auth.getUser();
+    const usuarioId = userData.user?.id ?? null;
     const snapshot = mapResultadoMotorToSnapshotPayload({
       resultado,
       fechaGeneracion: new Date().toISOString(),
       origen: 'preliminar',
+      usuarioGenerador: usuarioId,
     });
     const guardado = await this.snapshots.guardarSnapshotPreliminar(snapshot);
     return {
@@ -253,10 +259,13 @@ export class ProcesoMensualService {
     if (issues.length > 0) {
       return buildGuardarSnapshotRechazado(issues);
     }
+    const { data: userData } = await this.supabase.auth.getUser();
+    const usuarioId = userData.user?.id ?? null;
     const snapshot = mapResultadoMotorToSnapshotPayload({
       resultado,
       fechaGeneracion: new Date().toISOString(),
       origen: 'recalculo',
+      usuarioGenerador: usuarioId,
     });
     const guardado = await this.snapshots.guardarSnapshotPreliminar(snapshot);
     return {

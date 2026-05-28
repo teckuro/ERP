@@ -217,11 +217,18 @@ describe('proceso-mensual-detalle-mensual.rules', () => {
 
   it('buildNominaHistorialTablaRows mapea eventos visuales', () => {
     const rows = buildNominaHistorialTablaRows([
-      { hora: '10:30', texto: 'Se confirmó la nómina mensual.', destacado: true },
+      {
+        hora: '10:30',
+        etapa: 'Confirmación',
+        usuario: 'rrhh@demo.cl',
+        resultado: 'Confirmada',
+        texto: 'Se confirmó la nómina mensual.',
+        destacado: true,
+      },
     ]);
     expect(rows[0]).toMatchObject({
       fecha: '10:30',
-      resultado: 'Confirmado',
+      resultado: 'Confirmada',
       detalle: 'Se confirmó la nómina mensual.',
     });
   });

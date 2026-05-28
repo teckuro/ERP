@@ -229,18 +229,18 @@ export function resolverEstadoOperativoProcesoMensual(
     return buildEstado(input, {
       estadoClave: 'resultado_guardado',
       titulo: 'Revisión guardada',
-      descripcion: 'La versión revisada quedó guardada. Falta registrar la revisión de remuneraciones.',
+      descripcion: 'La versión revisada quedó guardada. Falta confirmar la nómina del período.',
       severidad: 'info',
       accionPrincipal: local(
-        'Registrar revisión RRHH',
-        'Marca que remuneraciones revisó esta versión antes de la confirmación oficial.',
+        'Confirmar nómina del período',
+        'Registra la revisión y confirma esta versión como base oficial para liquidaciones.',
         'confirmarNomina',
-        !input.puedeAprobar,
-        input.razonNoPuedeAprobar,
+        !input.puedeCerrar && !input.puedeAprobar,
+        input.razonNoPuedeCerrar || input.razonNoPuedeAprobar,
       ),
       etapaActiva: 'aprobar_cerrar',
       disclosureActivo: 'aprobacion',
-      queFaltaAhora: [info('FALTA_APROBACION', 'Registrar revisión RRHH', 'Es el respaldo interno antes de confirmar la nómina del período.')],
+      queFaltaAhora: [info('FALTA_APROBACION_CIERRE', 'Confirmar nómina del período', 'Registra la revisión y deja la versión como base oficial del período.')],
     });
   }
 

@@ -8,10 +8,12 @@ import { ProcesoMensualPeriodoStore } from './proceso-mensual-periodo.store';
 describe('ProcesoMensualPeriodoStore rehidratacion', () => {
   const rehidratarPeriodo = vi.fn();
   const obtenerSnapshotCompletoActivo = vi.fn();
+  const listarSnapshotsPeriodo = vi.fn();
 
   beforeEach(() => {
     rehidratarPeriodo.mockReset();
     obtenerSnapshotCompletoActivo.mockReset();
+    listarSnapshotsPeriodo.mockReset();
     rehidratarPeriodo.mockResolvedValue({
       snapshot: null,
       completo: null,
@@ -19,6 +21,7 @@ describe('ProcesoMensualPeriodoStore rehidratacion', () => {
       prevalidacionDiagnostico: null,
     });
     obtenerSnapshotCompletoActivo.mockResolvedValue(null);
+    listarSnapshotsPeriodo.mockResolvedValue([]);
 
     TestBed.configureTestingModule({
       providers: [
@@ -26,7 +29,7 @@ describe('ProcesoMensualPeriodoStore rehidratacion', () => {
         PeriodoActivoService,
         {
           provide: ProcesoMensualService,
-          useValue: { rehidratarPeriodo, obtenerSnapshotCompletoActivo },
+          useValue: { rehidratarPeriodo, obtenerSnapshotCompletoActivo, listarSnapshotsPeriodo },
         },
       ],
     });
@@ -252,6 +255,7 @@ describe('ProcesoMensualPeriodoStore generar nómina + persistencia', () => {
   const obtenerSnapshotCompletoActivo = vi.fn();
   const cerrarDiagnosticoPeriodo = vi.fn();
   const rehidratarPeriodo = vi.fn();
+  const listarSnapshotsPeriodo = vi.fn();
 
   beforeEach(() => {
     generarPreNominaPeriodo.mockReset();
@@ -261,6 +265,7 @@ describe('ProcesoMensualPeriodoStore generar nómina + persistencia', () => {
     obtenerSnapshotCompletoActivo.mockReset();
     cerrarDiagnosticoPeriodo.mockReset();
     rehidratarPeriodo.mockReset();
+    listarSnapshotsPeriodo.mockReset();
 
     generarPreNominaPeriodo.mockResolvedValue({
       periodo: '2026-05',
@@ -345,6 +350,7 @@ describe('ProcesoMensualPeriodoStore generar nómina + persistencia', () => {
       liquidacionesGeneradas: 0,
       prevalidacionDiagnostico: null,
     });
+    listarSnapshotsPeriodo.mockResolvedValue([]);
 
     TestBed.resetTestingModule();
     TestBed.configureTestingModule({
@@ -361,6 +367,7 @@ describe('ProcesoMensualPeriodoStore generar nómina + persistencia', () => {
             obtenerSnapshotCompletoActivo,
             cerrarDiagnosticoPeriodo,
             rehidratarPeriodo,
+            listarSnapshotsPeriodo,
           },
         },
       ],

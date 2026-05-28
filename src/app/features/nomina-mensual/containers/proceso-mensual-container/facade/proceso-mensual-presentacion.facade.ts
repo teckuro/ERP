@@ -1476,14 +1476,79 @@ export class ProcesoMensualPresentacionFacade {
   );
 
   readonly nominaHistorialVisual = computed(() => {
-    const snapshot = this.store.snapshotActivo();
-    const cierre = snapshot?.cierreOperativo;
-    const items: Array<{ hora: string; texto: string; destacado: boolean }> = [];
-    if (this.store.preNomina()) items.push({ hora: this.horaCorta(this.store.preNomina()?.generadoEn), texto: 'Se generó el borrador de nómina mensual.', destacado: false });
-    if (snapshot) items.push({ hora: this.horaCorta(snapshot.fechaGeneracion), texto: 'Se guardó una versión para revisión del período.', destacado: false });
-    if (snapshot?.aprobacionOperativa) items.push({ hora: this.horaCorta(snapshot.aprobacionOperativa.fecha), texto: 'Se revisó la nómina mensual.', destacado: false });
-    if (cierre) items.push({ hora: this.horaCorta(cierre.fecha), texto: 'Se confirmó la nómina mensual.', destacado: true });
-    return items;
+    const snapshots = this.store.historialSnapshotsPeriodo();
+    const items: Array<{ hora: string; texto: string; destacado: boolean; etapa: string; usuario: string; resultado: string }> = [];
+
+    if (this.store.preNomina()) {
+      items.push({
+        hora: this.horaCorta(this.store.preNomina()?.generadoEn),
+        etapa: 'Generación',
+        usuario: '—',
+        resultado: 'Borrador generado',
+        texto: 'Se generó el borrador de nómina mensual.',
+        destacado: false,
+      });
+    }
+
+    for (const s of snapshots) {
+      items.push({
+        hora: this.horaCorta(s.fechaGeneracion),
+        etapa: s.estado === 'borrador' ? 'Generación' : 'Revisión',
+        usuario: s.usuarioGenerador || '—',
+        resultado: s.estado === 'borrador' ? 'Borrador generado' : 'Versión guardada',
+        texto: s.estado === 'borrador'
+          ? 'Se generó el borrador de nómina mensual.'
+          : 'Se guardó una versión para revisión del período.',
+        destacado: false,
+      });
+
+      if (s.aprobacionOperativa) {
+        items.push({
+          hora: this.horaCorta(s.aprobacionOperativa.fecha),
+          etapa: 'Revisión RRHH',
+          usuario: s.aprobacionOperativa.usuarioLabel || '—',
+          resultado: 'Revisión registrada',
+          texto: 'Se registró la revisión de RRHH del período.',
+          destacado: false,
+        });
+      }
+
+      if (s.cierreOperativo) {
+        items.push({
+          hora: this.horaCorta(s.cierreOperativo.fecha),
+          etapa: 'Confirmación',
+          usuario: s.cierreOperativo.usuarioLabel || '—',
+          resultado: 'Confirmada',
+          texto: 'Se confirmó la nómina mensual.',
+          destacado: true,
+        });
+      }
+
+      if (s.reaperturaOperativa) {
+        items.push({
+          hora: this.horaCorta(s.reaperturaOperativa.fecha),
+          etapa: 'Reapertura',
+          usuario: s.reaperturaOperativa.usuarioLabel || '—',
+          resultado: 'Reabierta',
+          texto: 'Se reabrió la nómina para revisión.',
+          destacado: false,
+        });
+      }
+
+      if (s.anulacion) {
+        items.push({
+          hora: this.horaCorta(s.anulacion.fecha),
+          etapa: 'Descarte',
+          usuario: s.anulacion.usuarioLabel || '—',
+          resultado: 'Descartada',
+          texto: 'Se descartó la versión generada del período.',
+          destacado: false,
+        });
+      }
+    }
+
+    // Orden descendente por hora (HH:mm), estable para la grilla.
+    return items.sort((a, b) => String(b.hora).localeCompare(String(a.hora)));
   });
 
   readonly etapaOperativaActiva = computed<EtapaOperativaActiva>(() => {
@@ -2656,7 +2721,7 @@ export class ProcesoMensualPresentacionFacade {
       return;
     }
     if (estado === 'resultado_guardado') {
-      this.aprobarResultadoPreliminar();
+      this.abrirConfirmacionConfirmarNominaOperativa();
       return;
     }
     if (estado === 'aprobado_operativamente') {
@@ -3001,6 +3066,35 @@ export class ProcesoMensualPresentacionFacade {
     this.store.ejecutarCierreNominaOperativa();
   }
 
+  private abrirConfirmacionConfirmarNominaOperativa(): void {
+    const revision = this.revisionAprobacion();
+    const snapshot = this.store.snapshotActivo();
+    if (!revision.puedeAprobar || !snapshot) return;
+    const advertenciasAprobacion = (revision.advertencias ?? []).map((advertencia) => advertencia.descripcion);
+    if (advertenciasAprobacion.length === 0 && (snapshot.totalAdvertencias ?? 0) > 0) {
+      advertenciasAprobacion.push(`Resultado guardado con ${snapshot.totalAdvertencias} advertencia(s) no bloqueante(s).`);
+    }
+    this.abrirOverlayDecision({
+      tipo: 'confirmar_nomina_operativa',
+      variant: 'decision',
+      eyebrow: 'Confirmación de nómina',
+      titulo: 'Confirmar nómina del período',
+      mensaje: 'Confirma esta versión como base oficial del período para liquidaciones.',
+      detalle: 'En este paso se registra la revisión de RRHH y se cierra operativamente el período.',
+      puntosTitulo: 'Qué implica',
+      puntos: [
+        'Queda respaldo interno de la revisión de RRHH.',
+        'La nómina queda confirmada como base oficial para liquidaciones.',
+        'No genera liquidaciones ni archivos legales en este paso.',
+      ],
+      mostrarProximaAccion: true,
+      proximaAccion: 'Continuar con liquidaciones oficiales del período.',
+      primaryLabel: 'Confirmar nómina',
+      secondaryLabel: 'Cancelar',
+      advertenciasAprobacion,
+    });
+  }
+
   confirmarAccionProceso(): void {
     const current = this.overlay();
     if (current.kind !== 'decision') return;
@@ -3012,6 +3106,9 @@ export class ProcesoMensualPresentacionFacade {
         break;
       case 'aprobar_preliminar':
         this.ejecutarAprobacionOperativa(confirmacion.advertenciasAprobacion ?? []);
+        break;
+      case 'confirmar_nomina_operativa':
+        this.store.ejecutarConfirmarNominaOperativa(confirmacion.advertenciasAprobacion ?? []);
         break;
       case 'cerrar_nomina':
         this.ejecutarCierreNominaOperativa();

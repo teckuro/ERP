@@ -33,6 +33,7 @@ export type PasoPeriodoEstado = 'Actual' | 'Completo' | 'Pendiente' | 'Bloqueada
 export type ConfirmacionProcesoMensualTipo =
   | 'guardar_preliminar'
   | 'aprobar_preliminar'
+  | 'confirmar_nomina_operativa'
   | 'cerrar_nomina'
   | 'preparar_acta'
   | 'abrir_nomina'

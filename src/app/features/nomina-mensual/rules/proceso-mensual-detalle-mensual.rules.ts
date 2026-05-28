@@ -368,13 +368,13 @@ export function buildNominaDetalleMensualTodosRows(input: {
 }
 
 export function buildNominaHistorialTablaRows(
-  items: ReadonlyArray<{ hora: string; texto: string; destacado: boolean }>,
+  items: ReadonlyArray<{ hora: string; texto: string; destacado: boolean; etapa: string; usuario: string; resultado: string }>,
 ): NominaHistorialTablaRow[] {
   return items.map((item) => ({
     fecha: item.hora,
-    etapa: item.destacado ? 'Cierre' : 'Registro',
-    usuario: '—',
-    resultado: item.destacado ? 'Confirmado' : 'Registrado',
+    etapa: item.etapa,
+    usuario: item.usuario,
+    resultado: item.resultado,
     detalle: item.texto,
   }));
 }

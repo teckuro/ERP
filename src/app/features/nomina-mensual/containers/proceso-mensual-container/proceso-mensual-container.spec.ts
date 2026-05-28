@@ -13,6 +13,7 @@ import {
   CircleAlert,
   CircleDot,
   Home,
+  History,
   Minus,
   FileCheck2,
   FileSpreadsheet,
@@ -343,6 +344,7 @@ describe('ProcesoMensualContainer', () => {
   const obtenerSnapshotCompletoActivo = vi.fn();
   const obtenerSnapshotCompletoPorId = vi.fn();
   const rehidratarPeriodo = vi.fn();
+  const listarSnapshotsPeriodo = vi.fn();
   const consultarEstadoParametrosPeriodo = vi.fn();
   const guardarDiagnosticoPeriodo = vi.fn();
   const cerrarDiagnosticoPeriodo = vi.fn();
@@ -362,6 +364,7 @@ describe('ProcesoMensualContainer', () => {
     obtenerSnapshotCompletoActivo.mockReset();
     obtenerSnapshotCompletoPorId.mockReset();
     rehidratarPeriodo.mockReset();
+    listarSnapshotsPeriodo.mockReset();
     consultarEstadoParametrosPeriodo.mockReset();
     guardarDiagnosticoPeriodo.mockReset();
     cerrarDiagnosticoPeriodo.mockReset();
@@ -380,6 +383,7 @@ describe('ProcesoMensualContainer', () => {
         prevalidacionDiagnostico: null,
       };
     });
+    listarSnapshotsPeriodo.mockResolvedValue([]);
     ejecutarPrevalidaciones.mockResolvedValue({
       periodo: '2026-05',
       estado: 'BLOQUEADO',
@@ -596,6 +600,7 @@ describe('ProcesoMensualContainer', () => {
             obtenerSnapshotCompletoActivo,
             obtenerSnapshotCompletoPorId,
             rehidratarPeriodo,
+            listarSnapshotsPeriodo,
             consultarEstadoParametrosPeriodo,
             guardarDiagnosticoPeriodo,
             cerrarDiagnosticoPeriodo,
@@ -613,6 +618,7 @@ describe('ProcesoMensualContainer', () => {
             CircleAlert,
             CircleDot,
             Home,
+            History,
             Minus,
             FileCheck2,
             FileSpreadsheet,
@@ -1431,11 +1437,11 @@ describe('ProcesoMensualContainer', () => {
       expect(resumen.bloqueados).toBe(0);
       expect(resumen.conObservaciones).toBe(0);
 
-      expectTexto(c.estadoOperativo().accionPrincipal.label, 'Registrar revisión RRHH');
+      expectTexto(c.estadoOperativo().accionPrincipal.label, 'Confirmar nómina del período');
       expectTextoNo(c.estadoOperativo().accionPrincipal.label, 'Generar nómina');
 
       const shell = TestBed.inject(ShellPageContextService);
-      expect(shell.primaryAction()?.label).toMatch(/Registrar revisión RRHH/i);
+      expect(shell.primaryAction()?.label).toMatch(/Confirmar nómina del período/i);
     });
 
     it('shell revisar trabajadores abre vista trabajadores y preselecciona fila', async () => {
@@ -1538,7 +1544,7 @@ describe('ProcesoMensualContainer', () => {
       expect(c.nominaMasivaTrabajadorSeleccionadoId()).toBeNull();
     });
 
-    it('invocar CTA shell tras generar abre registrar revision RRHH', async () => {
+    it('invocar CTA shell tras generar abre confirmar nómina del período', async () => {
       ejecutarPrevalidaciones.mockResolvedValueOnce(prevalidacionLista());
       generarPreNominaPeriodo.mockResolvedValueOnce(baseNominaLista());
       const localFixture = await montarContainer();
@@ -1549,11 +1555,11 @@ describe('ProcesoMensualContainer', () => {
         timeout: 5000,
         interval: 20,
       });
-      expectTexto(c.estadoOperativo().accionPrincipal.label, 'Registrar revisión RRHH');
+      expectTexto(c.estadoOperativo().accionPrincipal.label, 'Confirmar nómina del período');
 
       await invocarCtaShell(localFixture);
       expect(c.overlay().kind).toBe('decision');
-      expectTexto(c.confirmacionProceso()?.titulo ?? '', 'Registrar revisión de RRHH');
+      expectTexto(c.confirmacionProceso()?.titulo ?? '', 'Confirmar nómina del período');
     });
 
     it('tras registrar revision RRHH shell pide confirmar nomina del periodo', async () => {
@@ -1571,7 +1577,7 @@ describe('ProcesoMensualContainer', () => {
       expect(shell.primaryAction()?.label).toMatch(/Confirmar nómina del período/i);
     });
 
-    it('tras generar sin bloqueos CTA apunta a registrar revision RRHH', async () => {
+    it('tras generar sin bloqueos CTA apunta a confirmar nómina del período', async () => {
       ejecutarPrevalidaciones.mockResolvedValueOnce(prevalidacionLista());
       generarPreNominaPeriodo.mockResolvedValueOnce(baseNominaLista());
       generarCalculoPeriodo.mockResolvedValueOnce({
@@ -1620,7 +1626,7 @@ describe('ProcesoMensualContainer', () => {
 
       const c = localFixture.componentInstance;
       expect(c.estadoOperativo().estadoClave).toBe('resultado_guardado');
-      expectTexto(c.estadoOperativo().accionPrincipal.label, 'Registrar revisión RRHH');
+      expectTexto(c.estadoOperativo().accionPrincipal.label, 'Confirmar nómina del período');
       expect(c.estadoOperativo().accionPrincipal.accionLocal).toBe('confirmarNomina');
     });
   });

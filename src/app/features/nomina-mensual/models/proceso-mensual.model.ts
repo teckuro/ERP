@@ -475,11 +475,28 @@ export interface NominaCalculoPeriodoSnapshot {
   reemplazadoPor: number | null;
   aprobacionOperativa: AprobacionOperativaPersistida | null;
   cierreOperativo: NominaCierreOperativo | null;
+  reaperturaOperativa?: NominaReaperturaOperativa | null;
+  anulacion?: NominaAnulacionOperativa | null;
   trabajadores: NominaCalculoTrabajadorSnapshot[];
   issues: NominaCalculoIssueSnapshot[];
   trazabilidad: NominaCalculoTrazabilidadSnapshot[];
   /** Contexto rehidratable guardado en metadata del período (borrador). */
   borradorPersist?: BorradorPersistContext | null;
+}
+
+export interface NominaReaperturaOperativa {
+  fecha: string;
+  usuarioId: string | null;
+  usuarioLabel: string | null;
+  observacion: string | null;
+  metadata: Record<string, unknown> | null;
+}
+
+export interface NominaAnulacionOperativa {
+  fecha: string;
+  usuarioId: string | null;
+  usuarioLabel: string | null;
+  observacion: string | null;
 }
 
 export interface GuardarSnapshotPreliminarResult {

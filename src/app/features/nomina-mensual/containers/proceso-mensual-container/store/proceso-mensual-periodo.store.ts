@@ -62,6 +62,7 @@ export class ProcesoMensualPeriodoStore {
   readonly aprobandoResultado = signal(false);
   readonly cerrandoNomina = signal(false);
   readonly snapshotCompleto = signal<NominaSnapshotCompletoView | null>(null);
+  readonly historialSnapshotsPeriodo = signal<NominaCalculoPeriodoSnapshot[]>([]);
   readonly rehidratandoPeriodo = signal(false);
   readonly liquidacionesGeneradasCount = signal(0);
   readonly gestionandoAccionPeriodo = signal(false);
@@ -335,6 +336,7 @@ export class ProcesoMensualPeriodoStore {
             this.aplicarPrevalidacionDiagnosticoRehidratado(prevalidacionDiagnostico);
           }
         }
+        void this.cargarHistorialSnapshotsPeriodo(periodo, seq);
       })
       .catch((e: unknown) => {
         if (seq !== this.rehidratarSeq || this.periodoSeleccionado() !== periodo) {
@@ -342,6 +344,7 @@ export class ProcesoMensualPeriodoStore {
         }
         this.limpiarSenalesVolatiles();
         this.errorEjecucion.set(e instanceof Error ? e.message : String(e));
+        void this.cargarHistorialSnapshotsPeriodo(periodo, seq);
       })
       .finally(() => {
         if (seq === this.rehidratarSeq && this.periodoSeleccionado() === periodo) {
@@ -396,6 +399,7 @@ export class ProcesoMensualPeriodoStore {
     this.calculo.set(null);
     this.snapshotActivo.set(null);
     this.snapshotCompleto.set(null);
+    this.historialSnapshotsPeriodo.set([]);
     this.errorEjecucion.set(null);
     this.errorGuardadoResultado.set(null);
     this.errorAprobacionOperativa.set(null);
@@ -491,6 +495,59 @@ export class ProcesoMensualPeriodoStore {
       .finally(() => {
         this.aprobandoResultado.set(false);
       });
+  }
+
+  /** Confirma el período en un solo paso: registra revisión + cierre operativo. */
+  ejecutarConfirmarNominaOperativa(advertenciasAprobacion: string[] = []): void {
+    const snapshot = this.snapshotActivo();
+    const idCalculoPeriodo = snapshot?.idCalculoPeriodo;
+    if (!idCalculoPeriodo) return;
+    const periodo = this.periodoSeleccionado();
+    this.gestionandoAccionPeriodo.set(true);
+    this.errorAccionPeriodo.set(null);
+    this.exitoAccionPeriodo.set(null);
+    this.errorAprobacionOperativa.set(null);
+    this.errorCierreOperativo.set(null);
+    void (async () => {
+      try {
+        const aprobado = await this.procesoMensual.aprobarResultadoPreliminarOperativamente({
+          idCalculoPeriodo,
+          periodo,
+          advertencias: advertenciasAprobacion ?? [],
+        });
+        this.aplicarSnapshotActivo(aprobado);
+
+        const cerrado = await this.procesoMensual.cerrarNominaOperativamente({
+          idCalculoPeriodo,
+          periodo,
+        });
+        this.aplicarSnapshotActivo(cerrado);
+        void this.cargarSnapshotCompletoActivo(periodo);
+        this.exitoAccionPeriodo.set('La nómina quedó confirmada como base oficial del período.');
+      } catch (e: unknown) {
+        // Si falla el cierre tras aprobar, dejamos el snapshot aprobado y exponemos error de cierre.
+        const msg = e instanceof Error ? e.message : String(e);
+        if (this.snapshotActivo()?.aprobacionOperativa?.estado === 'aprobado_operativamente') {
+          this.errorCierreOperativo.set(
+            errorConContexto(
+              'No se pudo cerrar operativamente la nomina',
+              e,
+              'La revisión quedó registrada. Reintenta la confirmación para cerrar.',
+            ),
+          );
+        } else {
+          this.errorAprobacionOperativa.set(
+            errorConContexto(
+              'No se pudo registrar la aprobacion operativa',
+              e,
+              msg || 'Intenta nuevamente o revisa la conexion.',
+            ),
+          );
+        }
+      } finally {
+        this.gestionandoAccionPeriodo.set(false);
+      }
+    })();
   }
 
   ejecutarAbrirNomina(input: { observacion?: string; forzar?: boolean } = {}): void {
@@ -606,6 +663,23 @@ export class ProcesoMensualPeriodoStore {
   private aplicarSnapshotActivo(snapshot: NominaCalculoPeriodoSnapshot | null): void {
     this.snapshotActivo.set(snapshot);
     this.aprobacionOperativa.set(snapshot ? this.aprobacionDesdeSnapshot(snapshot) : null);
+  }
+
+  private cargarHistorialSnapshotsPeriodo(periodo: string, seq: number): Promise<void> {
+    return this.procesoMensual
+      .listarSnapshotsPeriodo(periodo)
+      .then((items) => {
+        if (seq !== this.rehidratarSeq || this.periodoSeleccionado() !== periodo) {
+          return;
+        }
+        this.historialSnapshotsPeriodo.set(items ?? []);
+      })
+      .catch(() => {
+        if (seq !== this.rehidratarSeq || this.periodoSeleccionado() !== periodo) {
+          return;
+        }
+        this.historialSnapshotsPeriodo.set([]);
+      });
   }
 
   private aprobacionDesdeSnapshot(snapshot: NominaCalculoPeriodoSnapshot): AprobacionOperativaRegistroView | null {

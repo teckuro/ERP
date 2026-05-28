@@ -23,6 +23,7 @@ export interface BuildBorradorSnapshotInput {
   prevalidacion: ProcesoMensualPrevalidacion | null;
   fechaGeneracion: string;
   totalAdvertencias: number;
+  usuarioGenerador?: string | null;
 }
 
 export function buildBorradorSnapshotFromPreNomina(input: BuildBorradorSnapshotInput): {
@@ -39,7 +40,7 @@ export function buildBorradorSnapshotFromPreNomina(input: BuildBorradorSnapshotI
     idEmpresa: null,
     estado: 'borrador',
     fechaGeneracion: input.fechaGeneracion,
-    usuarioGenerador: null,
+    usuarioGenerador: input.usuarioGenerador ?? null,
     totalTrabajadores: input.preNomina.trabajadoresIncluidos,
     totalHaberes: 0,
     totalDescuentos: 0,
