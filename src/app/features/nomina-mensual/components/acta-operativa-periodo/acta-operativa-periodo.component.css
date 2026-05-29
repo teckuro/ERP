@@ -1,0 +1,347 @@
+.nom-acta {
+  border: 1px solid rgba(15, 23, 42, 0.12);
+  border-radius: 10px;
+  background: #ffffff;
+  overflow: hidden;
+}
+
+.nom-acta--blocked {
+  background: #fffafa;
+}
+
+.nom-acta--review {
+  background: #fffdf4;
+}
+
+.nom-acta--ready,
+.nom-acta--prepared {
+  background: #f8fef9;
+}
+
+.nom-acta__header {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 14px;
+  align-items: start;
+  padding: 14px 16px;
+  border-bottom: 1px solid rgba(15, 23, 42, 0.08);
+  background: rgba(248, 250, 252, 0.78);
+}
+
+.nom-acta__identity {
+  min-width: 0;
+}
+
+.nom-acta__period {
+  margin: 0 0 4px;
+  color: #64748b;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.nom-acta__title {
+  margin: 0;
+  color: #0f172a;
+  font-size: 1rem;
+  font-weight: 750;
+  line-height: 1.3;
+}
+
+.nom-acta__kicker {
+  margin: 5px 0 0;
+  color: #475569;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.nom-acta__subtitle {
+  margin: 3px 0 0;
+  max-width: 44rem;
+  color: #64748b;
+  font-size: 0.84rem;
+  line-height: 1.45;
+}
+
+.nom-acta__header-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.nom-acta__primary-action,
+.nom-acta__secondary-action {
+  display: inline-flex;
+  min-height: 34px;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(15, 23, 42, 0.14);
+  border-radius: 8px;
+  padding: 0 12px;
+  font-size: 0.8125rem;
+  font-weight: 750;
+  text-decoration: none;
+}
+
+.nom-acta__primary-action {
+  background: #0f172a;
+  color: #ffffff;
+  cursor: pointer;
+}
+
+.nom-acta__primary-action:disabled {
+  cursor: not-allowed;
+  background: #e2e8f0;
+  color: #64748b;
+}
+
+.nom-acta__secondary-action {
+  background: #ffffff;
+  color: #334155;
+  cursor: pointer;
+}
+
+.nom-acta__context-strip {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  margin: 0;
+  border-bottom: 1px solid rgba(15, 23, 42, 0.08);
+}
+
+.nom-acta__context-item {
+  min-width: 0;
+  padding: 10px 12px;
+  border-right: 1px solid rgba(15, 23, 42, 0.08);
+}
+
+.nom-acta__context-item:nth-child(4n) {
+  border-right: 0;
+}
+
+.nom-acta__context-label {
+  margin: 0;
+  color: #64748b;
+  font-size: 0.7rem;
+  font-weight: 700;
+}
+
+.nom-acta__context-value {
+  display: block;
+  margin: 3px 0 0;
+  overflow: hidden;
+  color: #0f172a;
+  font-size: 0.84rem;
+  font-weight: 750;
+  line-height: 1.3;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.nom-acta__body {
+  display: grid;
+  grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr);
+  gap: 12px;
+  padding: 14px 16px;
+}
+
+.nom-acta__decision,
+.nom-acta__evidence {
+  min-width: 0;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  border-radius: 10px;
+  background: #ffffff;
+  padding: 12px;
+}
+
+.nom-acta__section-kicker {
+  margin: 0 0 3px;
+  color: #64748b;
+  font-size: 0.6875rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.nom-acta__section-title,
+.nom-acta__decision-title {
+  margin: 0;
+  color: #334155;
+  font-size: 0.84rem;
+  font-weight: 760;
+}
+
+.nom-acta__decision-text {
+  margin: 7px 0 0;
+  color: #475569;
+  font-size: 0.84rem;
+  line-height: 1.45;
+}
+
+.nom-acta__pending-list,
+.nom-acta__evidence-list {
+  display: grid;
+  gap: 6px;
+  margin: 10px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.nom-acta__pending-list li {
+  color: #475569;
+  font-size: 0.8rem;
+  line-height: 1.4;
+}
+
+.nom-acta__pending-list li::before {
+  content: 'Pendiente · ';
+  color: #64748b;
+  font-weight: 750;
+}
+
+.nom-acta__evidence-item {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 8px;
+  align-items: start;
+  color: #334155;
+  font-size: 0.8125rem;
+}
+
+.nom-acta__evidence-state {
+  min-width: 68px;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  border-radius: 999px;
+  background: #f8fafc;
+  padding: 2px 7px;
+  color: #475569;
+  font-size: 0.6875rem;
+  font-weight: 800;
+  text-align: center;
+}
+
+.nom-acta__evidence-item[data-state='revision'] .nom-acta__evidence-state {
+  border-color: #fde68a;
+  background: #fffbeb;
+  color: #92400e;
+}
+
+.nom-acta__evidence-item[data-state='incluida'] .nom-acta__evidence-state {
+  border-color: #e2e8f0;
+  background: #f8fafc;
+  color: #64748b;
+}
+
+.nom-acta__evidence-item[data-state='pendiente'] .nom-acta__evidence-state {
+  border-color: #fde68a;
+  background: #fffbeb;
+  color: #92400e;
+}
+
+.nom-acta--compact {
+  background: #fafafa;
+}
+
+.nom-acta--compact .nom-acta__header {
+  padding: 12px 14px;
+  background: #ffffff;
+}
+
+.nom-acta--compact .nom-acta__title {
+  font-size: 0.9375rem;
+}
+
+.nom-acta__note--inline {
+  margin-top: 8px;
+}
+
+.nom-acta__decision-text--muted {
+  color: #64748b;
+  font-size: 0.8125rem;
+}
+
+.nom-acta__evidence-item strong,
+.nom-acta__evidence-item small {
+  display: block;
+}
+
+.nom-acta__evidence-item strong {
+  overflow: hidden;
+  color: #0f172a;
+  font-weight: 750;
+  text-overflow: ellipsis;
+}
+
+.nom-acta__evidence-item small {
+  margin-top: 1px;
+  color: #64748b;
+  font-size: 0.75rem;
+  line-height: 1.35;
+}
+
+.nom-acta__footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 11px 16px;
+  border-top: 1px solid rgba(15, 23, 42, 0.08);
+  background: rgba(248, 250, 252, 0.62);
+}
+
+.nom-acta__note {
+  margin: 0;
+  color: #64748b;
+  font-size: 0.8125rem;
+  line-height: 1.4;
+}
+
+.nom-acta__actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+@media (max-width: 980px) {
+  .nom-acta__header {
+    grid-template-columns: 1fr;
+  }
+
+  .nom-acta__header-actions {
+    justify-content: flex-start;
+  }
+
+  .nom-acta__context-strip {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .nom-acta__context-item:nth-child(2n) {
+    border-right: 0;
+  }
+
+  .nom-acta__body {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 560px) {
+  .nom-acta__context-strip {
+    grid-template-columns: 1fr;
+  }
+
+  .nom-acta__context-item {
+    border-right: 0;
+  }
+
+  .nom-acta__footer {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .nom-acta__actions,
+  .nom-acta__primary-action,
+  .nom-acta__secondary-action {
+    width: 100%;
+  }
+}

@@ -87,6 +87,11 @@ export const routes: Routes = [
               import('./pages/proceso-remuneraciones.page').then((m) => m.ProcesoRemuneracionesPage),
           },
           {
+            path: 'nomina-mensual-v2',
+            loadComponent: () =>
+              import('./pages/nomina-mensual-v2.page').then((m) => m.NominaMensualV2Page),
+          },
+          {
             path: 'msgbox-lab',
             loadComponent: () =>
               import('./pages/nomina-msgbox-lab.page').then((m) => m.NominaMsgboxLabPage),

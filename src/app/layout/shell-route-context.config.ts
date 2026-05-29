@@ -12,6 +12,13 @@ export const SHELL_ROUTE_CONTEXT_ENTRIES: readonly ShellRouteContextEntry[] = [
   { match: '/empleados/nuevo', breadcrumbs: [{ label: 'Empleados', path: '/empleados' }, { label: 'Nuevo empleado' }] },
   { match: '/empleados', breadcrumbs: [{ label: 'Empleados' }] },
   {
+    match: '/remuneraciones/nomina-mensual-v2',
+    breadcrumbs: [
+      { label: 'Remuneraciones', path: '/remuneraciones/proceso-mensual' },
+      { label: 'Nómina mensual V2' },
+    ],
+  },
+  {
     match: '/remuneraciones/proceso-mensual',
     breadcrumbs: [
       { label: 'Remuneraciones', path: '/remuneraciones/proceso-mensual' },

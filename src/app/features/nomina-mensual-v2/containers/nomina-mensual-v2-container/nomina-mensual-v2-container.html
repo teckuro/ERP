@@ -1,0 +1,751 @@
+<section class="nmv2-page" [attr.data-step]="currentStep()">
+  <div class="nmv2-stepper-card">
+    <nav class="nmv2-stepper" aria-label="Flujo de nómina mensual">
+      @for (step of steps; track step.id) {
+        <button type="button" class="step" [class]="stepStatus(step.id)" (click)="intentarIrAPaso(step.id)">
+          <span class="step-number">
+            @if (stepStatus(step.id) === 'completed') {
+              <lucide-icon name="check" aria-hidden="true"></lucide-icon>
+            } @else {
+              <span>{{ step.number }}</span>
+            }
+          </span>
+          <span class="step-copy">
+            <strong>{{ step.title }}</strong>
+            <small>{{ stepStatus(step.id) === 'completed' ? 'Completo' : step.subtitle }}</small>
+          </span>
+        </button>
+      }
+    </nav>
+  </div>
+
+  <header class="nmv2-screen-header">
+    <div class="nmv2-screen-copy">
+      <h1>{{ pageTitle() }}</h1>
+      <p>{{ pageSubtitle() }}</p>
+      @if (ayudaAvanceParametros(); as ayudaAvance) {
+        <p
+          class="nmv2-step-nav-hint"
+          [class.nmv2-step-nav-hint--bloqueo]="tonoAyudaAvanceParametros() === 'bloqueo'"
+          [class.nmv2-step-nav-hint--revision]="tonoAyudaAvanceParametros() === 'revision'"
+        >{{ ayudaAvance }}</p>
+      }
+    </div>
+
+
+  </header>
+
+  @switch (currentStep()) {
+    @case ('parameters') {
+      <div class="nmv2-step-body nmv2-step-body--parameters">
+      @if (parametrosCargaOverlay(); as overlay) {
+        <app-message-box
+          variant="loading"
+          mode="modal"
+          width="sm"
+          [title]="overlay.titulo"
+          [message]="overlay.mensaje"
+        ></app-message-box>
+      }
+      <div
+        class="content-grid content-grid--aside parameters-perfect-layout parameters-step-content"
+        [class.parameters-step-content--busy]="parametrosLoading() || parametrosValidando()"
+        [attr.aria-busy]="parametrosLoading() || parametrosValidando()"
+      >
+        <main class="content-main">
+          @if (parametrosAlertaTipo(); as alertaTipo) {
+            @switch (alertaTipo) {
+              @case ('error') {
+                <div class="alert-banner alert-banner--error alert-banner--parameter-inline">
+                  <div class="alert-banner__icon"><lucide-icon name="circle-alert" aria-hidden="true"></lucide-icon></div>
+                  <div class="alert-banner__copy">
+                    <strong>No fue posible cargar los parámetros</strong>
+                    <p>{{ parametrosError() }}</p>
+                  </div>
+                </div>
+              }
+              @case ('bloqueo') {
+                <div class="alert-banner alert-banner--warning alert-banner--parameter-inline">
+                  <div class="alert-banner__icon"><lucide-icon name="triangle-alert" aria-hidden="true"></lucide-icon></div>
+                  <div class="alert-banner__copy">
+                    <strong>{{ alertaBloqueoTitulo() }}</strong>
+                    <p>{{ alertaBloqueoDescripcion() }}</p>
+                  </div>
+                </div>
+              }
+              @case ('revision') {
+                <div class="alert-banner alert-banner--revision alert-banner--parameter-inline">
+                  <div class="alert-banner__icon"><lucide-icon name="triangle-alert" aria-hidden="true"></lucide-icon></div>
+                  <div class="alert-banner__copy">
+                    <strong>{{ alertaRevisionTitulo() }}</strong>
+                    <p>{{ alertaRevisionDescripcion() }}</p>
+                  </div>
+                </div>
+              }
+            }
+          }
+          <section class="surface-card parameter-prep-card parameters-prep-flow-card">
+            <div class="section-heading section-heading--compact">
+              <div>
+                <h2>Flujo de preparación de parámetros</h2>
+              </div>
+            </div>
+
+            <div class="parameter-prep-flow-shell">
+              <div
+                class="parameter-prep-flow"
+                [class.parameter-prep-flow--validacion-pendiente]="prepValidacionEstadoPaso() === 'pendiente'"
+                [class.parameter-prep-flow--validacion-lista]="prepValidacionEstadoPaso() === 'completo'"
+                [class.parameter-prep-flow--solo-validacion]="parametrosAreas().length === 0"
+              >
+              @for (area of parametrosAreas(); track area.id) {
+                <div class="prep-segment">
+                  <article class="prep-step" [class]="parametroPrepClase(area.estado)">
+                    <span class="prep-node">
+                      <lucide-icon [name]="parametroPrepIcono(area.estado)" aria-hidden="true"></lucide-icon>
+                    </span>
+                    <div class="prep-copy">
+                      <strong class="prep-item__titulo">{{ area.titulo }}</strong>
+                      <small class="prep-item__estado">{{ parametroPrepEtiqueta(area.estado) }}</small>
+                    </div>
+                  </article>
+                  <span class="prep-connector" [class]="parametroPrepConectorClase(area.estado)" aria-hidden="true"></span>
+                </div>
+              }
+              <div class="prep-segment prep-segment--terminal">
+                <article class="prep-step prep-step--validacion" [class]="prepValidacionClase()">
+                  <span class="prep-node">
+                    <lucide-icon [name]="prepValidacionIcono()" aria-hidden="true"></lucide-icon>
+                  </span>
+                  <div class="prep-copy">
+                    <strong class="prep-item__titulo">Validación</strong>
+                    <small class="prep-item__estado">{{ prepValidacionEtiqueta() }}</small>
+                  </div>
+                </article>
+              </div>
+            </div>
+            </div>
+          </section>
+
+          <section class="parameter-cards-grid">
+            @for (area of parametrosAreas(); track area.id) {
+              <article class="surface-card parameter-summary-card" (click)="goToParametros(area.mantenedor)">
+                <header class="parameter-summary-card__head">
+                  <span class="parameter-summary-card__icon"><lucide-icon [name]="area.icono" aria-hidden="true"></lucide-icon></span>
+                  <div class="parameter-summary-card__title-group">
+                    <h3>{{ area.titulo }}</h3>
+                    <p>{{ area.descripcion }}</p>
+                  </div>
+                </header>
+                @if (area.items.length > 0) {
+                  <div class="parameter-summary-card__chips" [attr.aria-label]="'Validaciones de ' + area.titulo">
+                    @for (item of chipsVisiblesParametro(area.items); track item.label) {
+                      <span>{{ item.label }}</span>
+                    }
+                    @if (cantidadChipsOcultosParametro(area.items) > 0) {
+                      <span class="parameter-summary-card__chips-more">+{{ cantidadChipsOcultosParametro(area.items) }} más</span>
+                    }
+                  </div>
+                }
+                <footer class="parameter-summary-card__foot">
+                  <span class="plain-status" [class]="parametroEstadoClase(area.estado)"><lucide-icon [name]="parametroEstadoIcono(area.estado)" aria-hidden="true"></lucide-icon>{{ parametroEstadoEtiqueta(area.estado) }}</span>
+                  <lucide-icon class="parameter-summary-card__chevron" name="chevron-right" aria-hidden="true"></lucide-icon>
+                </footer>
+              </article>
+            }
+          </section>
+        </main>
+
+        <aside class="content-side parameters-sidebar-perfect parameters-sidebar-compact">
+          <section class="surface-card side-card parameters-perfect-summary">
+            <h2>Resumen de parámetros</h2>
+            <div class="parameters-perfect-summary__top">
+              <div class="donut-summary-block">
+                <div class="donut-ring donut-ring--summary donut-ring--dynamic"
+                  [class.donut-ring--success]="donutTono() === 'exito'"
+                  [class.donut-ring--warning]="donutTono() === 'revision'"
+                  [class.donut-ring--danger]="donutTono() === 'bloqueo'"
+                  [class.donut-ring--neutral]="donutTono() === 'neutral'"
+                  [style.background]="estiloArcoDonut()">
+                  <span>{{ completitudItemsPct() }}%</span>
+                </div>
+                <small class="donut-total-caption">{{ completitudItemsCaption() }}</small>
+              </div>
+              <div class="summary-state-list">
+                <div class="summary-state-row status-red"><lucide-icon name="circle-alert" aria-hidden="true"></lucide-icon><strong>{{ parametrosResumen()?.bloqueos ?? 0 }}</strong><span>Bloqueos</span></div>
+                <div class="summary-state-row status-amber"><lucide-icon name="triangle-alert" aria-hidden="true"></lucide-icon><strong>{{ parametrosResumen()?.requiereRevision ?? 0 }}</strong><span>Requiere revisión</span></div>
+                <div class="summary-state-row status-green"><lucide-icon name="check-circle-2" aria-hidden="true"></lucide-icon><strong>{{ parametrosResumen()?.completos ?? 0 }}</strong><span>Completos</span></div>
+              </div>
+            </div>
+            <div class="updated-row updated-row--summary">
+              <span><lucide-icon name="clock-3" aria-hidden="true"></lucide-icon>Última actualización:</span>
+              <strong>{{ formatoHoraActualizacion(parametrosResumen()?.ultimaActualizacion) }}</strong>
+            </div>
+          </section>
+
+          <section class="surface-card side-card parameter-access-card">
+            <h2>Accesos rápidos</h2>
+            <p class="side-caption">Ir al mantenedor de Parámetros.</p>
+            <div class="parameter-access-grid">
+              @for (acceso of parametrosAccesos(); track acceso.id) {
+                <button type="button" class="parameter-access-tile" (click)="goToParametros(acceso.mantenedor)">
+                  <span class="parameter-access-tile__icon"><lucide-icon [name]="acceso.icono" aria-hidden="true"></lucide-icon></span>
+                  <span>{{ acceso.label }}</span>
+                  <lucide-icon name="external-link" aria-hidden="true"></lucide-icon>
+                </button>
+              }
+            </div>
+          </section>
+
+          <section
+            id="parametros-pendientes-sidebar"
+            class="surface-card side-card parameter-blockers-perfect"
+            [class.parameter-blockers-perfect--empty]="parametrosBloqueosActuales().length === 0"
+          >
+            <h2>{{ tituloEstadoParametros() }}</h2>
+            <div class="parameter-blocker-list">
+              @if (parametrosBloqueosActuales().length === 0) {
+                <div
+                  class="parameter-blocker-empty"
+                  [class.parametros-estado-correcto]="parametrosEstadoCompleto()"
+                >
+                  <lucide-icon name="check-circle-2" aria-hidden="true"></lucide-icon>
+                  <span>Sin pendientes activos.</span>
+                </div>
+              }
+              @for (bloqueo of parametrosBloqueosActuales(); track bloqueo.id) {
+                <div class="parameter-blocker-row" (click)="goToParametros(bloqueo.mantenedor)">
+                  <div class="parameter-blocker-row__status" [class]="bloqueoSeveridadClase(bloqueo.severidad)"><lucide-icon [name]="bloqueoSeveridadIcono(bloqueo.severidad)" aria-hidden="true"></lucide-icon><strong>{{ bloqueoSeveridadEtiqueta(bloqueo.severidad) }}</strong></div>
+                  <div class="parameter-blocker-row__copy"><span class="parameter-blocker-row__area">{{ parametroAreaTitulo(bloqueo.areaId) }}</span><h3>{{ bloqueo.titulo }}</h3><p>{{ bloqueo.detalle }}</p></div>
+                  <lucide-icon class="parameter-blocker-row__chevron" name="chevron-right" aria-hidden="true"></lucide-icon>
+                </div>
+              }
+            </div>
+          </section>
+        </aside>
+      </div>
+      </div>
+    }
+
+    @case ('employees') {
+      <div class="metric-strip">
+        @for (metric of employeeMetrics; track metric.id) {
+          <article class="summary-metric" [class]="toneClass(metric.tone)">
+            <div class="summary-metric__icon"><lucide-icon [name]="metricIcon(metric.id)" aria-hidden="true"></lucide-icon></div>
+            <div class="summary-metric__copy">
+              <span>{{ metric.label }}</span>
+              <strong>{{ metric.value }}</strong>
+              <small>{{ metric.helperText }}</small>
+            </div>
+          </article>
+        }
+      </div>
+
+      <div class="content-grid content-grid--aside nmv2-employees-layout">
+        <main class="content-main">
+          <div class="nmv2-empleados-grid-wrap">
+            <app-data-grid
+              title="Empleados para nómina"
+              [columns]="columnasGrillaEmpleados"
+              [rows]="filasEmpleadosNomina()"
+              [filters]="filtrosGrillaEmpleados"
+              [filtersEnabled]="true"
+              [filtersCollapsible]="true"
+              filterChipsDisplay="whenFiltersHidden"
+              headerCountDisplay="text"
+              headerCountNoun="resultados"
+              [headerShowActiveFiltersCount]="true"
+              [loading]="empleadosCargando()"
+              loadingLabel="Cargando empleados del período..."
+              [mensajeError]="empleadosError()"
+              [showHeader]="true"
+              [selectable]="false"
+              [trackBy]="trackFilaEmpleadoNomina"
+              persistenceKey="nomina-mensual-v2.empleados.grid"
+              gridHeight="min(520px, 100%)"
+              toolbarLayout="operativa"
+              emptyTitleWhenFiltered="No se encontraron empleados con los filtros aplicados."
+              emptyDescriptionWhenFiltered="Ajusta la búsqueda o limpia los filtros para ver más resultados."
+              emptyTitle="Sin empleados en el período"
+              emptyDescription="No hay trabajadores activos para este período de nómina."
+              className="nmv2-empleados-grid-shell"
+              cardClassName="nmv2-empleados-grid-card"
+              (refresh)="recargarGrillaEmpleados()"
+              (retry)="recargarGrillaEmpleados()"
+            >
+              <ng-template appDataGridCell="nombre" let-fila>
+                <div class="nmv2-empleado-nombre-cell" [title]="fila.nombreCompleto">
+                  <span class="nmv2-empleado-avatar" aria-hidden="true">{{ inicialesEmpleado(fila.nombreCompleto) }}</span>
+                  <span class="nmv2-empleado-nombre-cell__text">{{ fila.nombreCompleto }}</span>
+                </div>
+              </ng-template>
+
+              <ng-template appDataGridCell="estadoNomina" let-fila>
+                <span class="nmv2-grid-badge" [ngClass]="claseBadgeEstadoNomina(fila.estadoNomina)">
+                  <span class="nmv2-grid-badge__dot" aria-hidden="true"></span>
+                  {{ fila.etiquetaEstadoNomina }}
+                </span>
+              </ng-template>
+
+              <ng-template appDataGridCell="datosBancarios" let-fila>
+                <span class="nmv2-grid-badge" [ngClass]="claseBadgeDatosBancarios(fila.datosBancarios)">
+                  <span class="nmv2-grid-badge__dot" aria-hidden="true"></span>
+                  {{ fila.etiquetaDatosBancarios }}
+                </span>
+              </ng-template>
+
+              <ng-template appDataGridCell="contrato" let-fila>
+                <span class="nmv2-grid-badge" [ngClass]="claseBadgeContrato(fila.contrato)">
+                  <span class="nmv2-grid-badge__dot" aria-hidden="true"></span>
+                  {{ fila.etiquetaContrato }}
+                </span>
+              </ng-template>
+
+              <ng-template appDataGridCell="acciones" let-fila>
+                <div class="nmv2-empleado-acciones" (click)="$event.stopPropagation()">
+                  <button
+                    type="button"
+                    class="nmv2-row-more-action"
+                    aria-label="Acciones del empleado"
+                    title="Acciones"
+                    [attr.aria-expanded]="empleadoAccionMenuAbierto() === fila.id"
+                    (click)="toggleMenuAccionEmpleado(fila.id, $event)"
+                  >
+                    <lucide-icon name="ellipsis" aria-hidden="true"></lucide-icon>
+                  </button>
+                  @if (empleadoAccionMenuAbierto() === fila.id) {
+                    <div class="nmv2-empleado-action-menu" role="menu">
+                      <button type="button" class="nmv2-empleado-action-menu__item" role="menuitem" (click)="revisarEmpleadoNomina(fila)">
+                        <lucide-icon name="eye" aria-hidden="true"></lucide-icon>
+                        Revisar ficha
+                      </button>
+                    </div>
+                  }
+                </div>
+              </ng-template>
+            </app-data-grid>
+          </div>
+        </main>
+        <aside class="content-side">
+          <section class="surface-card side-card">
+            <h2>Checklist para continuar</h2>
+            <p class="side-caption">Revisa que todos los aspectos estén listos para avanzar al siguiente paso.</p>
+            <div class="checklist-stack">
+              @for (item of employeeChecklist; track item.id) {
+                <div class="checklist-item" [class]="checklistClass(item.status)">
+                  <span class="checklist-item__icon"><lucide-icon [name]="checklistIcon(item.status)" aria-hidden="true"></lucide-icon></span>
+                  <div class="checklist-item__copy"><strong>{{ item.title }}</strong><small>{{ item.description }}</small></div>
+                  <lucide-icon name="chevron-right" aria-hidden="true"></lucide-icon>
+                </div>
+              }
+            </div>
+            <div class="info-banner"><lucide-icon name="info" aria-hidden="true"></lucide-icon><span>Completa los pendientes para garantizar una nómina sin observaciones.</span></div>
+            <button type="button" class="btn btn-primary btn-block" (click)="nextStep()">Continuar a novedades <lucide-icon name="arrow-right" aria-hidden="true"></lucide-icon></button>
+            <button type="button" class="text-link" (click)="intentarIrAPaso('parameters')">Volver a parámetros</button>
+          </section>
+        </aside>
+      </div>
+    }
+
+    @case ('movements') {
+      <div class="tabs-bar">
+        <button type="button" class="tab active">Movimientos</button>
+        <button type="button" class="tab">Recurrentes</button>
+        <button type="button" class="tab">Licencias</button>
+      </div>
+
+      <div class="metric-strip">
+        @for (metric of movementMetrics; track metric.id) {
+          <article class="summary-metric" [class]="toneClass(metric.tone)">
+            <div class="summary-metric__icon"><lucide-icon [name]="metricIcon(metric.id)" aria-hidden="true"></lucide-icon></div>
+            <div class="summary-metric__copy">
+              <span>{{ metric.label }}</span>
+              <strong>{{ metric.value }}</strong>
+              <small>{{ metric.helperText }}</small>
+            </div>
+          </article>
+        }
+      </div>
+
+      <div class="content-grid content-grid--aside">
+        <main class="content-main">
+          <section class="surface-card table-surface">
+            <div class="sub-toolbar">
+              <div class="pill-tabs">
+                <span class="pill-tab active">Todos</span>
+                <span class="pill-tab">Pendientes <strong>12</strong></span>
+                <span class="pill-tab">Cargados hoy <strong>6</strong></span>
+                <span class="pill-tab">Importados <strong>4</strong></span>
+              </div>
+              <div class="toolbar-group">
+                <button type="button" class="btn btn-secondary btn-compact"><lucide-icon name="filter" aria-hidden="true"></lucide-icon>Filtros</button>
+                <div class="field-input field-input--search field-input--compact"><input type="search" placeholder="Buscar..." /><lucide-icon name="search" aria-hidden="true"></lucide-icon></div>
+              </div>
+            </div>
+            <table class="data-table">
+              <thead><tr><th>Trabajador</th><th>Tipo</th><th>Concepto</th><th>Fecha</th><th>Monto</th><th>Origen</th><th>Estado</th><th>Acciones</th></tr></thead>
+              <tbody>
+                @for (row of movementRows; track row.worker + row.concept) {
+                  <tr>
+                    <td class="name-cell multi-line"><span class="avatar-box">{{ initials(row.worker) }}</span><span>{{ row.worker }}<small>{{ row.rut }}</small></span></td>
+                    <td><span class="status-pill" [class]="toneClass(row.type.tone)"><lucide-icon [name]="statusIcon(row.type.tone)" aria-hidden="true"></lucide-icon>{{ row.type.label }}</span></td>
+                    <td>{{ row.concept }}</td>
+                    <td>{{ row.date }}</td>
+                    <td [class.amount-negative]="row.amount.startsWith('-')">{{ row.amount }}</td>
+                    <td>{{ row.origin }}</td>
+                    <td><span class="status-pill" [class]="toneClass(row.status.tone)"><lucide-icon [name]="statusIcon(row.status.tone)" aria-hidden="true"></lucide-icon>{{ row.status.label }}</span></td>
+                    <td class="action-cell"><button class="icon-btn"><lucide-icon name="ellipsis" aria-hidden="true"></lucide-icon></button></td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+            <div class="table-meta"><span>Mostrando 1 a 6 de 6 novedades</span><div class="table-pagination"><span>10 por página</span><span class="page-chip active">1</span></div></div>
+          </section>
+        </main>
+
+        <aside class="content-side">
+          <section class="surface-card side-card">
+            <h2>Carga masiva</h2>
+            <button type="button" class="action-tile"><lucide-icon name="sheet" aria-hidden="true"></lucide-icon><span>Importar Excel<small>Desde planilla</small></span></button>
+            <button type="button" class="action-tile"><lucide-icon name="refresh-cw" aria-hidden="true"></lucide-icon><span>Aplicar recurrentes<small>Programados para el período</small></span></button>
+            <button type="button" class="action-tile action-tile--primary"><lucide-icon name="plus" aria-hidden="true"></lucide-icon><span>Registrar movimiento<small>Agregar manualmente</small></span></button>
+          </section>
+          <section class="surface-card side-card">
+            <h2>¿El período está listo?</h2>
+            <div class="checklist-stack checklist-stack--simple">
+              <div class="checkline success"><lucide-icon name="check-circle-2" aria-hidden="true"></lucide-icon><div><strong>Parámetros configurados</strong><small>Completado</small></div></div>
+              <div class="checkline success"><lucide-icon name="check-circle-2" aria-hidden="true"></lucide-icon><div><strong>Empleados cargados</strong><small>104 trabajadores</small></div></div>
+              <div class="checkline warning"><lucide-icon name="triangle-alert" aria-hidden="true"></lucide-icon><div><strong>Novedades registradas</strong><small>30 pendientes de revisión</small></div></div>
+              <div class="checkline pending"><lucide-icon name="circle" aria-hidden="true"></lucide-icon><div><strong>Listo para cálculo</strong><small>Faltan revisar novedades</small></div></div>
+            </div>
+            <button type="button" class="text-link text-link--left">Ver resumen de novedades <lucide-icon name="arrow-right" aria-hidden="true"></lucide-icon></button>
+          </section>
+        </aside>
+      </div>
+    }
+
+    @case ('calculation') {
+      <div class="metric-strip">
+        @for (metric of calculationMetrics; track metric.id) {
+          <article class="summary-metric" [class]="toneClass(metric.tone)">
+            <div class="summary-metric__icon"><lucide-icon [name]="metricIcon(metric.id)" aria-hidden="true"></lucide-icon></div>
+            <div class="summary-metric__copy">
+              <span>{{ metric.label }}</span>
+              <strong>{{ metric.value }}</strong>
+              <small>{{ metric.helperText }}</small>
+            </div>
+          </article>
+        }
+      </div>
+
+      <section class="surface-card process-card">
+        <div class="process-flow">
+          <div class="process-node success"><span class="process-node__icon"><lucide-icon name="settings-2" aria-hidden="true"></lucide-icon></span><div><strong>Parámetros</strong><small>OK</small></div></div>
+          <span class="process-arrow"></span>
+          <div class="process-node success"><span class="process-node__icon"><lucide-icon name="users" aria-hidden="true"></lucide-icon></span><div><strong>Dotación</strong><small>validada</small></div></div>
+          <span class="process-arrow"></span>
+          <div class="process-node success"><span class="process-node__icon"><lucide-icon name="list-plus" aria-hidden="true"></lucide-icon></span><div><strong>Novedades</strong><small>listas</small></div></div>
+          <span class="process-arrow"></span>
+          <div class="process-node active"><span class="process-node__icon"><lucide-icon name="calculator" aria-hidden="true"></lucide-icon></span><div><strong>Cálculo</strong><small>en revisión</small></div></div>
+          <span class="process-arrow process-arrow--muted"></span>
+          <div class="process-node pending"><span class="process-node__icon"><lucide-icon name="shield-check" aria-hidden="true"></lucide-icon></span><div><strong>Validación</strong><small>pendiente</small></div></div>
+        </div>
+      </section>
+
+      <div class="content-grid content-grid--aside">
+        <main class="content-main">
+          <section class="surface-card table-surface">
+            <div class="sub-toolbar sub-toolbar--table-header">
+              <h2>Resultados del cálculo</h2>
+              <div class="toolbar-group">
+                <div class="field-input field-input--search"><lucide-icon name="search" aria-hidden="true"></lucide-icon><input type="search" placeholder="Buscar trabajador" /></div>
+                <button type="button" class="select-chip">Todos los estados <lucide-icon name="chevron-down" aria-hidden="true"></lucide-icon></button>
+                <button type="button" class="btn btn-secondary btn-compact"><lucide-icon name="download" aria-hidden="true"></lucide-icon>Exportar</button>
+              </div>
+            </div>
+            <table class="data-table">
+              <thead><tr><th>Trabajador</th><th>Haberes</th><th>Descuentos</th><th>Imponible</th><th>Líquido</th><th>Estado</th><th></th></tr></thead>
+              <tbody>
+                @for (row of calculationRows; track row.worker) {
+                  <tr>
+                    <td class="name-cell multi-line"><span class="avatar-box">{{ initials(row.worker) }}</span><span>{{ row.worker }}<small>{{ row.area }}</small></span></td>
+                    <td>{{ row.earnings }}</td><td>{{ row.deductions }}</td><td>{{ row.taxable }}</td><td>{{ row.net }}</td>
+                    <td><span class="status-pill" [class]="toneClass(row.status.tone)"><lucide-icon [name]="statusIcon(row.status.tone)" aria-hidden="true"></lucide-icon>{{ row.status.label }}</span></td>
+                    <td class="action-cell"><button class="icon-btn"><lucide-icon name="ellipsis" aria-hidden="true"></lucide-icon></button></td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+            <div class="table-meta"><span>Mostrando 1 a 6 de 124 trabajadores</span><div class="table-pagination"><span class="page-chip active">1</span><span class="page-chip">2</span><span class="page-chip">3</span><span class="page-chip">…</span><span class="page-chip">16</span></div></div>
+          </section>
+        </main>
+
+        <aside class="content-side">
+          <section class="surface-card side-card">
+            <h2>Resumen del cálculo</h2>
+            <div class="donut-panel">
+              <div class="donut-ring donut-ring--large"><span>Total líquido<br><strong>$160.051.540</strong><small>73,1%</small></span></div>
+              <ul class="legend-list">
+                <li><i class="dot dot-green"></i><span>Haberes imponibles</span><strong>$218.795.452 (100%)</strong></li>
+                <li><i class="dot dot-red"></i><span>Descuentos</span><strong>$58.743.912 (26,9%)</strong></li>
+                <li><i class="dot dot-blue"></i><span>Líquido estimado</span><strong>$160.051.540 (73,1%)</strong></li>
+              </ul>
+            </div>
+            <div class="concept-block">
+              <h3>Principales conceptos</h3>
+              <ul class="summary-list">
+                <li><span>Sueldo base</span><strong>$158.742.300</strong><em>72,5%</em></li>
+                <li><span>Horas extra</span><strong>$18.236.450</strong><em>8,3%</em></li>
+                <li><span>Gratificación legal</span><strong>$12.450.000</strong><em>5,7%</em></li>
+                <li><span>Bonos y asignaciones</span><strong>$8.586.702</strong><em>3,9%</em></li>
+              </ul>
+            </div>
+            <div class="concept-block">
+              <h3>Principales descuentos</h3>
+              <ul class="summary-list">
+                <li><span>AFP</span><strong>$30.655.259</strong><em>14,0%</em></li>
+                <li><span>Salud</span><strong>$17.922.140</strong><em>8,2%</em></li>
+                <li><span>Seguro cesantía</span><strong>$3.738.794</strong><em>1,7%</em></li>
+                <li><span>Impuesto único</span><strong>$4.254.312</strong><em>1,9%</em></li>
+              </ul>
+            </div>
+            <button type="button" class="text-link text-link--left">Ver detalle por trabajador <lucide-icon name="arrow-right" aria-hidden="true"></lucide-icon></button>
+          </section>
+        </aside>
+      </div>
+    }
+
+    @case ('validation') {
+      <section class="surface-card validation-summary-card">
+        <div class="validation-summary-item tone-blue"><span class="summary-metric__icon"><lucide-icon [name]="metricIcon('rules')" aria-hidden="true"></lucide-icon></span><div><strong>28</strong><small>Validaciones ejecutadas</small></div></div>
+        <div class="validation-summary-item tone-red"><span class="summary-metric__icon"><lucide-icon [name]="metricIcon('blockers')" aria-hidden="true"></lucide-icon></span><div><strong>2</strong><small>Bloqueos</small></div></div>
+        <div class="validation-summary-item tone-amber"><span class="summary-metric__icon"><lucide-icon [name]="metricIcon('warnings')" aria-hidden="true"></lucide-icon></span><div><strong>5</strong><small>Advertencias</small></div></div>
+        <div class="validation-summary-item tone-green"><span class="summary-metric__icon"><lucide-icon [name]="metricIcon('hash')" aria-hidden="true"></lucide-icon></span><div><strong>OK</strong><small>Hash snapshot</small></div></div>
+      </section>
+
+      <div class="content-grid content-grid--aside">
+        <main class="content-main">
+          <section class="surface-card table-surface">
+            <h2>Resultado de validaciones</h2>
+            <table class="data-table">
+              <thead><tr><th>Estado</th><th>Regla de validación</th><th>Detalle</th><th>Severidad</th></tr></thead>
+              <tbody>
+                @for (row of validationRows; track row.rule) {
+                  <tr>
+                    <td class="status-only"><span class="status-dot" [class]="toneClass(row.severity.tone)"><lucide-icon [name]="statusIcon(row.severity.tone)" aria-hidden="true"></lucide-icon></span></td>
+                    <td>{{ row.rule }}</td>
+                    <td>{{ row.detail }}</td>
+                    <td><span class="status-pill" [class]="toneClass(row.severity.tone)">{{ row.severity.label }}</span></td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+            <div class="table-meta"><span>Mostrando 6 de 6 validaciones</span><div class="table-pagination"><span class="page-chip active">1</span><span>10 / página</span></div></div>
+          </section>
+        </main>
+
+        <aside class="content-side">
+          <section class="surface-card side-card side-card--danger-lite">
+            <h2>Incidencias detectadas</h2>
+            <div class="incident-group">
+              <div class="incident-group__header incident-group__header--red"><lucide-icon name="circle-alert" aria-hidden="true"></lucide-icon>Bloqueos (2)</div>
+              <div class="issue-row issue-row--compact"><div><strong>Trabajadores sin cuenta bancaria</strong><span>2 trabajadores afectados</span></div><lucide-icon name="chevron-right" aria-hidden="true"></lucide-icon></div>
+              <div class="issue-row issue-row--compact"><div><strong>Descuento sin fórmula</strong><span>1 concepto afectado</span></div><lucide-icon name="chevron-right" aria-hidden="true"></lucide-icon></div>
+            </div>
+            <div class="incident-group">
+              <div class="incident-group__header incident-group__header--amber"><lucide-icon name="triangle-alert" aria-hidden="true"></lucide-icon>Advertencias (5)</div>
+              <div class="issue-row issue-row--compact"><div><strong>Centro de costo faltante</strong><span>3 movimientos afectados</span></div><lucide-icon name="chevron-right" aria-hidden="true"></lucide-icon></div>
+              <div class="issue-row issue-row--compact"><div><strong>Topes imponibles revisados</strong><span>1 trabajador afectado</span></div><lucide-icon name="chevron-right" aria-hidden="true"></lucide-icon></div>
+              <div class="issue-row issue-row--compact"><div><strong>Horas extraordinarias sin justificación</strong><span>4 registros afectados</span></div><lucide-icon name="chevron-right" aria-hidden="true"></lucide-icon></div>
+              <div class="issue-row issue-row--compact"><div><strong>Asignación de mutual no informada</strong><span>2 trabajadores afectados</span></div><lucide-icon name="chevron-right" aria-hidden="true"></lucide-icon></div>
+              <div class="issue-row issue-row--compact"><div><strong>Aguinaldo proporcional no calculado</strong><span>1 trabajador afectado</span></div><lucide-icon name="chevron-right" aria-hidden="true"></lucide-icon></div>
+            </div>
+            <button type="button" class="btn btn-warning-outline btn-block"><lucide-icon name="list" aria-hidden="true"></lucide-icon>Ver todas las incidencias</button>
+          </section>
+        </aside>
+      </div>
+
+      <section class="surface-card trace-card">
+        <div class="section-heading"><h2>Trazabilidad</h2></div>
+        <div class="trace-grid">
+          <div><span>Guardado por</span><strong>prueba (Administrador)</strong></div>
+          <div><span>Fecha</span><strong>Hoy, 12:45 por prueba</strong></div>
+          <div><span>Versión</span><strong>v3</strong></div>
+          <div><span>Hash snapshot</span><strong>3f9a6d2c7e8b4f5a9c1d2e3f4b5c6d7e</strong></div>
+          <div><span>Hash resultado</span><strong>3f9a6d2c7e8b4f5a9c1d2e3f4b5c6d7e</strong></div>
+        </div>
+      </section>
+
+      <div class="bottom-callout">
+        <div class="info-banner"><lucide-icon name="info" aria-hidden="true"></lucide-icon><span>Para continuar a aprobación debes resolver todos los bloqueos.</span></div>
+        <button type="button" class="btn btn-primary" [disabled]="true">Continuar a aprobación <lucide-icon name="arrow-right" aria-hidden="true"></lucide-icon></button>
+      </div>
+    }
+
+    @case ('approval') {
+      <div class="metric-strip">
+        @for (metric of approvalMetrics; track metric.id) {
+          <article class="summary-metric" [class]="toneClass(metric.tone)">
+            <div class="summary-metric__icon"><lucide-icon [name]="metricIcon(metric.id)" aria-hidden="true"></lucide-icon></div>
+            <div class="summary-metric__copy">
+              <span>{{ metric.label }}</span>
+              <strong>{{ metric.value }}</strong>
+              <small>{{ metric.helperText }}</small>
+            </div>
+          </article>
+        }
+      </div>
+
+      <div class="approval-grid">
+        <section class="surface-card">
+          <h2>Resumen final</h2>
+          <p class="side-caption">Totales consolidados de la nómina.</p>
+          <div class="summary-bars">
+            <div><span><i class="dot dot-green"></i>Haberes imponibles<br><small>Total devengado</small></span><strong>$312.654.321<small>72,8%</small></strong></div>
+            <div><span><i class="dot dot-red"></i>Descuentos<br><small>Total descuentos</small></span><strong>$98.765.432<small>23,0%</small></strong></div>
+            <div><span><i class="dot dot-blue"></i>Aporte empresa<br><small>Costos no imponibles</small></span><strong>$45.123.456<small>10,5%</small></strong></div>
+            <div class="net"><span><i class="dot dot-green"></i>Líquido a pagar<br><small>Total a transferir</small></span><strong>$182.345.678</strong></div>
+          </div>
+          <div class="info-banner info-banner--subtle"><lucide-icon name="info" aria-hidden="true"></lucide-icon><span>Valores expresados en pesos chilenos (CLP)</span></div>
+        </section>
+
+        <section class="surface-card side-card">
+          <h2>Requisitos cumplidos</h2>
+          <p class="side-caption">Verificación final previa a la aprobación.</p>
+          <div class="checklist-stack checklist-stack--simple">
+            <div class="checkline success"><lucide-icon name="check-circle-2" aria-hidden="true"></lucide-icon><div><strong>Parámetros validados</strong><small>Configuración verificada.</small></div></div>
+            <div class="checkline success"><lucide-icon name="check-circle-2" aria-hidden="true"></lucide-icon><div><strong>Dotación revisada</strong><small>124 trabajadores activos y validados.</small></div></div>
+            <div class="checkline success"><lucide-icon name="check-circle-2" aria-hidden="true"></lucide-icon><div><strong>Novedades registradas</strong><small>Todas las novedades calculadas.</small></div></div>
+            <div class="checkline success"><lucide-icon name="check-circle-2" aria-hidden="true"></lucide-icon><div><strong>Hash consistente</strong><small>Integridad verificada.</small></div></div>
+            <div class="ready-box"><lucide-icon name="check-circle-2" aria-hidden="true"></lucide-icon><span>Todo listo para aprobar</span></div>
+          </div>
+        </section>
+
+        <section class="surface-card">
+          <h2>Aprobación de la nómina</h2>
+          <p class="side-caption">Autoriza y bloquea el período para Mayo 2026.</p>
+          <div class="form-grid">
+            <label><span>Aprobado por *</span><button type="button" class="select-field">Seleccione un aprobador <lucide-icon name="chevron-down" aria-hidden="true"></lucide-icon></button></label>
+            <label><span>Fecha estimada de pago *</span><button type="button" class="select-field"><lucide-icon name="calendar-days" aria-hidden="true"></lucide-icon>30/05/2026</button></label>
+            <label><span>Forma de cierre *</span><button type="button" class="select-field">Cierre definitivo (bloquear período) <lucide-icon name="chevron-down" aria-hidden="true"></lucide-icon></button></label>
+            <label class="full-row"><span>Observaciones</span><textarea placeholder="Ingrese observaciones (opcional)..."></textarea></label>
+          </div>
+          <div class="form-actions">
+            <button type="button" class="btn btn-primary btn-block"><lucide-icon name="check-circle-2" aria-hidden="true"></lucide-icon>Aprobar nómina</button>
+            <button type="button" class="btn btn-secondary btn-block"><lucide-icon name="lock" aria-hidden="true"></lucide-icon>Bloquear período</button>
+          </div>
+        </section>
+      </div>
+
+      <section class="surface-card">
+        <h2>Bitácora de autorización</h2>
+        <p class="side-caption">Registro de eventos del proceso de aprobación.</p>
+        <div class="timeline-list">
+          @for (item of approvalTimeline; track item.time + item.title) {
+            <div class="timeline-row" [class]="checklistClass(item.status)">
+              <span class="timeline-row__icon"><lucide-icon [name]="checklistIcon(item.status)" aria-hidden="true"></lucide-icon></span>
+              <strong>{{ item.time }}</strong>
+              <span>{{ item.title }}</span>
+              <small>{{ item.description }}</small>
+              <em>{{ item.status === 'pending' ? 'Pendiente' : 'Sistema' }}</em>
+            </div>
+          }
+        </div>
+      </section>
+    }
+
+    @case ('payslips') {
+      <div class="metric-strip">
+        @for (metric of payslipMetrics; track metric.id) {
+          <article class="summary-metric" [class]="toneClass(metric.tone)">
+            <div class="summary-metric__icon"><lucide-icon [name]="metricIcon(metric.id)" aria-hidden="true"></lucide-icon></div>
+            <div class="summary-metric__copy">
+              <span>{{ metric.label }}</span>
+              <strong>{{ metric.value }}</strong>
+              <small>{{ metric.helperText }}</small>
+            </div>
+          </article>
+        }
+      </div>
+
+      <div class="content-grid content-grid--aside">
+        <main class="content-main">
+          <section class="surface-card table-surface">
+            <table class="data-table">
+              <thead><tr><th>Trabajador</th><th>RUT</th><th>Cargo</th><th>Líquido a pagar</th><th>Estado documento</th><th>Firma</th><th>Envío</th><th>Acciones</th></tr></thead>
+              <tbody>
+                @for (row of payslipRows; track row.rut) {
+                  <tr>
+                    <td class="name-cell"><span class="avatar-box">{{ initials(row.worker) }}</span><span>{{ row.worker }}</span></td>
+                    <td>{{ row.rut }}</td>
+                    <td>{{ row.role }}</td>
+                    <td><strong>{{ row.net }}</strong></td>
+                    <td><span class="status-pill" [class]="toneClass(row.documentStatus.tone)"><lucide-icon [name]="statusIcon(row.documentStatus.tone)" aria-hidden="true"></lucide-icon>{{ row.documentStatus.label }}</span></td>
+                    <td><span class="status-pill" [class]="toneClass(row.signature.tone)"><lucide-icon [name]="statusIcon(row.signature.tone)" aria-hidden="true"></lucide-icon>{{ row.signature.label }}</span></td>
+                    <td><span class="status-pill" [class]="toneClass(row.delivery.tone)"><lucide-icon [name]="statusIcon(row.delivery.tone)" aria-hidden="true"></lucide-icon>{{ row.delivery.label }}</span></td>
+                    <td class="action-cell action-cell--double"><button class="icon-btn"><lucide-icon name="download" aria-hidden="true"></lucide-icon></button><button class="icon-btn"><lucide-icon name="ellipsis" aria-hidden="true"></lucide-icon></button></td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+            <div class="table-meta"><span>Mostrando 1 a 5 de 124 liquidaciones</span><div class="table-pagination"><span>10 por página</span><span class="page-chip active">1</span><span class="page-chip">2</span><span class="page-chip">3</span><span class="page-chip">…</span><span class="page-chip">13</span></div></div>
+          </section>
+        </main>
+        <aside class="content-side">
+          <section class="surface-card side-card">
+            <h2>Canales de entrega</h2>
+            <div class="channel-row"><div><lucide-icon name="globe" aria-hidden="true"></lucide-icon><span>Portal empleado</span></div><strong>72% (89)</strong><i style="--w:72%"></i></div>
+            <div class="channel-row"><div><lucide-icon name="mail" aria-hidden="true"></lucide-icon><span>Correo</span></div><strong>23% (28)</strong><i style="--w:23%"></i></div>
+            <div class="channel-row"><div><lucide-icon name="download" aria-hidden="true"></lucide-icon><span>Descarga manual</span></div><strong>5% (7)</strong><i style="--w:5%"></i></div>
+          </section>
+
+          <section class="surface-card side-card">
+            <h2>Historial de emisión</h2>
+            <div class="history-list">
+              <div class="history-item"><lucide-icon name="check-circle-2" aria-hidden="true"></lucide-icon><div><strong>Liquidaciones generadas</strong><small>Hoy, 12:34 · 124 liquidaciones creadas correctamente.</small></div></div>
+              <div class="history-item"><lucide-icon name="check-circle-2" aria-hidden="true"></lucide-icon><div><strong>Firmas digitales aplicadas</strong><small>Hoy, 12:38 · Todas las liquidaciones firmadas correctamente.</small></div></div>
+              <div class="history-item"><lucide-icon name="check-circle-2" aria-hidden="true"></lucide-icon><div><strong>Envíos procesados</strong><small>Hoy, 12:45 · 96 liquidaciones enviadas a sus destinatarios.</small></div></div>
+            </div>
+          </section>
+
+          <div class="info-banner"><lucide-icon name="info" aria-hidden="true"></lucide-icon><span>Las liquidaciones estarán disponibles en el portal del empleado por 90 días.</span></div>
+        </aside>
+      </div>
+    }
+  }
+
+
+  @if (modalAvanceParametros(); as modalAvance) {
+    @switch (modalAvance.tipo) {
+      @case ('bloqueo') {
+        <app-message-box
+          variant="blocked"
+          mode="modal"
+          width="md"
+          title="No puedes continuar"
+          message="Aún tienes parámetros obligatorios pendientes en este paso. Corrígelos antes de avanzar."
+          [sections]="seccionesMsgBoxBloqueoParametros"
+          primaryLabel="Entendido"
+          secondaryLabel="Ver pendientes"
+          (action)="cerrarModalAvanceParametros()"
+          (secondary)="irAPendientesParametros()"
+        ></app-message-box>
+      }
+      @case ('revision') {
+        <app-message-box
+          variant="decision"
+          mode="modal"
+          width="md"
+          title="Tienes elementos pendientes de revisión"
+          message="Puedes corregirlos ahora o continuar bajo tu responsabilidad."
+          [sections]="seccionesMsgBoxRevisionParametros"
+          primaryLabel="Continuar de todas formas"
+          secondaryLabel="Volver y corregir"
+          (action)="confirmarAvanceConRevision()"
+          (secondary)="cerrarModalAvanceParametros()"
+        ></app-message-box>
+      }
+    }
+  }
+
+</section>

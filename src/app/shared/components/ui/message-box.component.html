@@ -1,0 +1,135 @@
+<section
+  #dialogPanel
+  class="noia-msgbox message-box"
+  [class.noia-msgbox--modal]="mode === 'modal'"
+  [class.noia-msgbox--inline]="mode === 'inline'"
+  [ngClass]="panelClasses()"
+  [attr.role]="mode === 'modal' ? 'dialog' : liveRole()"
+  [attr.aria-modal]="mode === 'modal' ? true : null"
+  [attr.aria-labelledby]="title ? titleId : null"
+  [attr.aria-describedby]="describedByIds()"
+  [attr.aria-live]="mode === 'inline' ? liveRegion() : null"
+>
+  @if (mode === 'modal') {
+    <header class="noia-msgbox__header">
+      @if (showClose()) {
+        <button
+          #closeBtn
+          type="button"
+          class="noia-msgbox__close"
+          [attr.aria-label]="dismissLabel"
+          (click)="onDismiss()"
+        >
+          <lucide-icon class="noia-msgbox__close-icon" [img]="closeIcon"></lucide-icon>
+        </button>
+      }
+
+      @if (resolvedVariant() === 'loading') {
+        <lucide-icon class="noia-msgbox__spinner" [img]="loadingIcon" aria-hidden="true"></lucide-icon>
+      }
+
+      @if (resolvedEyebrow()) {
+        <p class="noia-msgbox__eyebrow">{{ resolvedEyebrow() }}</p>
+      }
+
+      @if (title) {
+        <h2 class="noia-msgbox__title" [id]="titleId">{{ title }}</h2>
+      }
+
+      @if (message) {
+        <p class="noia-msgbox__message" [id]="messageId">{{ message }}</p>
+      }
+    </header>
+
+    @if (hasBodyContent()) {
+      <div class="noia-msgbox__body">
+        @if (detail && !hasStructuredSections()) {
+          <p class="noia-msgbox__detail">{{ detail }}</p>
+        }
+
+        @for (section of normalizedSections(); track sectionTrack(section)) {
+          <article
+            class="noia-msgbox__section"
+            [ngClass]="sectionToneClass(section.tone)"
+            [attr.aria-label]="section.title"
+          >
+            <h3 class="noia-msgbox__section-title">{{ section.title }}</h3>
+            @if (section.text) {
+              <p class="noia-msgbox__section-text">{{ section.text }}</p>
+            }
+            @if (section.items.length) {
+              <p class="noia-msgbox__section-items">{{ section.items.join(' · ') }}</p>
+            }
+          </article>
+        }
+
+        <div class="noia-msgbox__slot">
+          <ng-content></ng-content>
+        </div>
+      </div>
+    }
+
+    @if (hasActions()) {
+      <footer class="noia-msgbox__footer">
+        <div class="noia-msgbox__footer-left">
+          @for (action of leftActions(); track actionTrack(action, $index)) {
+            <button
+              type="button"
+              class="noia-msgbox__action"
+              [ngClass]="actionClass(action)"
+              (click)="onConfigAction(action, $index)"
+            >
+              {{ action.label }}
+            </button>
+          }
+        </div>
+        <div class="noia-msgbox__footer-right">
+          @for (action of rightActions(); track actionTrack(action, $index)) {
+            <button
+              #actionBtn
+              type="button"
+              class="noia-msgbox__action"
+              [ngClass]="actionClass(action)"
+              (click)="onConfigAction(action, $index)"
+            >
+              {{ action.label }}
+            </button>
+          }
+        </div>
+      </footer>
+    }
+  } @else {
+    <div class="noia-msgbox__inline">
+      <div class="noia-msgbox__inline-head">
+        @if (resolvedEyebrow()) {
+          <p class="noia-msgbox__eyebrow">{{ resolvedEyebrow() }}</p>
+        }
+        @if (title) {
+          <p class="noia-msgbox__title noia-msgbox__title--inline" [id]="titleId">{{ title }}</p>
+        }
+      </div>
+      @if (message || detail) {
+        <p class="noia-msgbox__message noia-msgbox__message--inline" [id]="messageId">
+          {{ message || detail }}
+        </p>
+      }
+      <div class="noia-msgbox__slot">
+        <ng-content></ng-content>
+      </div>
+      @if (hasActions()) {
+        <div class="noia-msgbox__inline-actions">
+          @for (action of allActions(); track actionTrack(action, $index)) {
+            <button
+              type="button"
+              class="noia-msgbox__action"
+              [ngClass]="actionClass(action)"
+              (click)="onConfigAction(action, $index)"
+            >
+              {{ action.label }}
+            </button>
+          }
+        </div>
+      }
+    </div>
+  }
+</section>

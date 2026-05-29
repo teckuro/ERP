@@ -13,26 +13,8 @@ export function isE2eEmpleadosBorradorEnabled(): boolean {
   return v === '1' || v === 'true' || v === 'yes' || v === 'on';
 }
 
-/** Activa E2E que crea fixtures de empleados para pruebas de errores de remuneraciones. */
-export function isE2eEmpleadosNominaFixturesEnabled(): boolean {
-  const v = (process.env['E2E_EMPLEADOS_NOMINA_FIXTURES'] ?? '').trim().toLowerCase();
-  return v === '1' || v === 'true' || v === 'yes' || v === 'on';
-}
-
 /** Activa E2E real de Preparar nomina con sesion Supabase authenticated. */
 export function isE2eNominaRealEnabled(): boolean {
   const v = (process.env['E2E_NOMINA_REAL'] ?? '').trim().toLowerCase();
-  return v === '1' || v === 'true' || v === 'yes' || v === 'on';
-}
-
-/** Activa smoke UI del epic NOM-MENSUAL-FLOW-UNIFICADO-03 (mismas credenciales que E2E real). */
-export function isE2eNominaFlowUiEnabled(): boolean {
-  const v = (process.env['E2E_NOMINA_FLOW_UI'] ?? '').trim().toLowerCase();
-  return v === '1' || v === 'true' || v === 'yes' || v === 'on';
-}
-
-/** Activa E2E con escritura en BD de parámetros (reservado; el gate actual es solo UI). */
-export function isE2eParametrosPersistenciaEnabled(): boolean {
-  const v = (process.env['E2E_PARAMETROS_PERSISTENCIA'] ?? '').trim().toLowerCase();
   return v === '1' || v === 'true' || v === 'yes' || v === 'on';
 }

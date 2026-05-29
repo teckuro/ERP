@@ -32,6 +32,12 @@ export const SHELL_NAV_SECTIONS: ShellNavSection[] = [
         icon: 'file-text',
         badgeKey: 'periodoMes',
       },
+      {
+        path: '/remuneraciones/nomina-mensual-v2',
+        label: 'Nómina mensual V2',
+        icon: 'sparkles',
+        badgeKey: 'periodoMes',
+      },
       { path: '/remuneraciones/liquidaciones', label: 'Liquidaciones', icon: 'file-check-2' },
       { path: '/parametros', label: 'Parámetros', icon: 'settings' },
     ],

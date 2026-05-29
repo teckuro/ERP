@@ -9,6 +9,8 @@ import {
   inject,
 } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
+import type { ParametrosTabId } from '../../models/parametro-general.model';
+import type { ParametrosAreaId } from '../../models/parametros-workspace.vm';
 import { FormsModule } from '@angular/forms';
 import { ReactiveFormsModule } from '@angular/forms';
 import { CardComponent, CardContentComponent } from '../../../../shared/components/ui/primitives/card.component';
@@ -56,7 +58,20 @@ export class ParametrosWorkspaceContainer implements OnInit {
   }
 
   async ngOnInit(): Promise<void> {
-    const periodoQuery = this.route.snapshot.queryParamMap.get('periodo');
+    const query = this.route.snapshot.queryParamMap;
+    const periodoQuery = query.get('periodo');
     await this.orq.inicializar(periodoQuery);
+
+    const tabQuery = query.get('tab');
+    const areaQuery = query.get('area');
+
+    if (tabQuery && this.orq.tabs.some((tab) => tab.id === tabQuery)) {
+      this.orq.seleccionarTab(tabQuery as ParametrosTabId);
+      return;
+    }
+
+    if (areaQuery && this.orq.areas.some((area) => area.id === areaQuery)) {
+      this.orq.seleccionarArea(areaQuery as ParametrosAreaId);
+    }
   }
 }

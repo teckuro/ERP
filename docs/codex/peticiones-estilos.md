@@ -1,3 +1,97 @@
+## 2026-05-29 - Nómina mensual V2: Empleados V1 (grilla del sistema)
+
+- **Cambio:** Paso Empleados migra el listado central a `app-data-grid` (mismo componente que listado empleados/empresas): columnas Nombre/RUT/Cargo/Centro/Jornada/Estados/Acciones, filtros integrados (búsqueda, Estado, Centro, Jornada), badges estándar, menú fila tipo kebab, KPIs y checklist lateral preservados. Presenter local `nomina-empleados-grid.presenter.ts`.
+- **Archivos:** `nomina-mensual-v2-container.{html,ts,css}`, `presenters/nomina-empleados-grid.presenter.ts`, `peticiones-estilos.md`.
+- **No tocado:** services, SQL, pasos 1 y 3–7, estilos globales.
+
+## 2026-05-29 - Nómina mensual V2: funcional Parámetros V7 (MsgBox bloqueo de avance)
+
+- **Cambio:** Guard de navegación en paso Parámetros con `app-message-box` estándar NOIA: `variant="blocked"` si hay bloqueos (CTA Entendido / Ver pendientes); `variant="decision"` si solo revisiones (Volver y corregir / Continuar de todas formas). Aplica a stepper superior, shell «Validar parámetros» y `nextStep`. Microcopy bajo título cuando hay pendientes. Sin cambios a services/mapper.
+- **Archivos:** `nomina-mensual-v2-container.{html,ts,css}`, `peticiones-estilos.md`.
+- **No tocado:** SQL, estilos globales, pasos mock 2–7 (salvo mecanismo compartido `intentarIrAPaso`).
+
+## 2026-05-29 - Nómina mensual V2: pulido Parámetros V6 (prep-flow estados claros)
+
+- **Cambio:** Prep-flow superior con modelo de estado explícito (`completo` / `revision` / `faltante` / `bloqueado` / `pendiente`): nodos, etiquetas e iconos diferenciados; conectores coloreados por progreso; paso Validación con `Bloqueado` cuando hay bloqueos (no «Pendiente» genérico); anillo suave en nodo Validación listo/bloqueado. Solo presentación en contenedor.
+- **Archivos:** `nomina-mensual-v2-container.{html,ts,css}`, `peticiones-estilos.md`.
+- **No tocado:** services, mapper, estilos globales, pasos 2–7, `app.config.ts`.
+
+## 2026-05-29 - Nómina mensual V2: pulido Parámetros V5 (copy y semántica de estado)
+
+- **Cambio:** Pasada final de copy en sidebar paso Parámetros: título dinámico `tituloEstadoParametros()` (`Bloqueos actuales` / `Revisiones pendientes` / `Estado actual`); mensaje completo `Sin pendientes activos.`; caja éxito compacta (`parametros-estado-correcto`, 56px, tono suave). Sin cambio de layout.
+- **Archivos:** `nomina-mensual-v2-container.{html,ts,css}`, `peticiones-estilos.md`.
+- **No tocado:** services, mapper, estilos globales, pasos 2–7.
+
+## 2026-05-29 - Nómina mensual V2: pulido Parámetros V4 (terminación visual)
+
+- **Cambio:** Pasada fina V4 en paso Parámetros: menos aire residual (`flex: 0 1 auto` en layout, gaps grid 12px); conectores prep-flow más legibles (línea `#b8c3d1`, chevron 7px `#8fa0b3`, nodo revisión `#fffbeb`/`#b45309`); donut ámbar `#d97706`; card lateral Revisiones/Bloqueos más compacta (padding 16px, filas alineadas); cards resumen `min-height: 136px`, footer `padding-top: 12px`, chips `gap: 6px`.
+- **Archivos:** `nomina-mensual-v2-container.{ts,css}`, `peticiones-estilos.md`.
+- **No tocado:** services, mapper, estilos globales, pasos 2–7.
+
+## 2026-05-29 - Nómina mensual V2: pulido Parámetros V3 (jerarquía y densidad)
+
+- **Cambio:** V3 completo en paso Parámetros: alertas compactas con copy/pluralización (`Corrígelo`/`Corrígelos`, `Hay N ítem(s)`); conectores prep-flow más legibles (chevron centrado, estados distintos); chips ligeros máx. 5 + `+N más`; jerarquía cards (título/subtítulo/footer); sidebar `parametrosPendientesTitle`; donut `donutTone()` (success/warning/danger/neutral); stepper principal más compacto.
+- **Archivos:** `nomina-mensual-v2-container.{html,ts,css}`, `peticiones-estilos.md`.
+- **No tocado:** services, mapper, estilos globales, pasos 2–7 (solo densidad visual compartida del stepper).
+
+## 2026-05-29 - Nómina mensual V2: pulido Parámetros V3 (alertas copy/pluralización)
+
+- **Cambio:** Franjas de alerta del paso Parámetros con copy RRHH y pluralización correcta (`1 ítem que requiere` / `N ítems que requieren`; `Falta 1 parámetro` / `Faltan N parámetros`; detalle con lo/los según cuenta).
+- **Archivos:** `nomina-mensual-v2-container.{html,ts}`, `peticiones-estilos.md`.
+- **No tocado:** services, mapper, estilos globales, pasos 2–7.
+
+## 2026-05-29 - Nómina mensual V2: prep-flow slate + shell centrado
+
+- **Cambio:** Wrapper `parameter-prep-flow-shell` con `inline-flex` centrado (anula grid legacy que empujaba a la izquierda). Paleta slate/apagada en prep-flow y tokens `--nmv2-*` del paso: verde `#4a5d56`, revisión stone `#6b6560`, bloqueo `#6f4e4e`; donut alineado. Sin naranjas/verdes neón.
+- **Archivos:** `nomina-mensual-v2-container.{html,ts,css}`, `peticiones-estilos.md`.
+
+## 2026-05-29 - Nómina mensual V2: prep-flow centrado en card
+
+- **Cambio:** `parameter-prep-flow` con `justify-content: center` y segmentos `flex: 0 0 auto`; conectores ancho fijo (36px) para que la franja quede centrada en la card, no estirada a la izquierda.
+- **Archivos:** `nomina-mensual-v2-container.css`, `peticiones-estilos.md`.
+
+## 2026-05-29 - Nómina mensual V2: prep-flow premium (segment + connector)
+
+- **Cambio:** Prep-flow rediseñado al patrón stepper ERP: nodo circular (`prep-node`) centrado sobre copy, conector entre segmentos alineado al eje del icono, estados en anillo/fondo/texto, conector coloreado según paso previo. Sin grid desalineado ni flecha flotante.
+- **Archivos:** `nomina-mensual-v2-container.{html,ts,css}`, `peticiones-estilos.md`.
+- **No tocado:** mapper, services, estilos globales.
+
+## 2026-05-29 - Nómina mensual V2: conector prep-flow (flecha alineada)
+
+- **Cambio:** Prep-flow con `prep-track` flex (icono + línea); flecha al final del tramo hacia el siguiente paso; sin posicionamiento absoluto ni flecha centrada. Oculta conector al final de fila (responsive) y antes de Validación en ancho completo.
+- **Archivos:** `nomina-mensual-v2-container.{html,css}`, `peticiones-estilos.md`.
+- **No tocado:** mapper, services, estilos globales.
+
+## 2026-05-29 - Nómina mensual V2: separación validaciones por área (paso Parámetros)
+
+- **Cambio:** Cada área del paso Parámetros muestra solo sus validaciones: Configuración cliente (gratificación, CCAF, mutual, reconciliación); Datos oficiales (UF/UTM/topes); Catálogos previsionales (AFP/impuesto/salud); Reglas de cálculo (AFC/SIS); Observación normativa. Sin duplicar `catalogos_afp_impuesto` ni mezclar centros/jornadas en cliente. Bloqueos etiquetados por área.
+- **Archivos:** `nomina-parametros-resumen.mapper.{ts,spec.ts}`, `nomina-mensual-v2-container.{html,ts,css}`, `peticiones-estilos.md`.
+- **No tocado:** services de negocio, SQL, estilos globales, pasos 2–7.
+
+## 2026-05-29 - Nómina mensual V2: paleta NOIA apagada paso Parámetros
+
+- **Cambio:** Colores del paso Parámetros alineados a tokens ERP sobrios (`#166534`, `#92400e`, `#991b1b`, `#0c447c`): donut, prep-flow, alertas, bloqueos vacíos, iconos de cards/accesos y estados; sin verdes/azules neón.
+- **Archivos:** `nomina-mensual-v2-container.{ts,css}`, `peticiones-estilos.md`.
+- **No tocado:** services, mapper, estilos globales, pasos 2–7.
+
+## 2026-05-29 - Nómina mensual V2: overlay carga paso Parámetros
+
+- **Cambio:** Al entrar al paso Parámetros se muestra `app-message-box variant="loading" mode="modal"` (mismo patrón que mantenedor Parámetros) mientras `parametrosLoading` o `parametrosValidando`; carga inicial en `true` para evitar flash vacío (0 de 0, solo Validación). Contenido detrás con `aria-busy` y sin interacción. Prep-flow: nodo Validación en «Pendiente» abarca todo el ancho del card y queda centrado.
+- **Archivos:** `nomina-mensual-v2-container.{html,ts,css}`, `peticiones-estilos.md`.
+- **No tocado:** services, mapper, estilos globales.
+
+## 2026-05-29 - Nómina mensual V2: densidad y proporciones paso Parámetros
+
+- **Cambio:** Corrección de inflado visual: revertido `flex: 1` en sidebar/bloqueos (solo el shell estira); prep-flow como franja compacta (`parameters-prep-flow-card`); bloqueos vacíos colapsados (`parameter-blockers-perfect--empty`, mensaje ~72px); cards con chips desde `area.items` (máx. 3); sidebar «Accesos rápidos» más denso; gaps 12px; donut caption más pegado.
+- **Archivos:** `nomina-mensual-v2-container.{html,css}`, `peticiones-estilos.md`.
+- **No tocado:** services, mapper/models, rules, estilos globales, `angular.json`, pasos 2–7.
+
+## 2026-05-29 - Nómina mensual V2: pulido paso Parámetros (Prompt 1 + 2)
+
+- **Cambio:** Paso Parámetros del wizard V2: franja de alerta condicional (oculta si todo OK; warning/revisión/error según estado), donut de completitud dinámico con caption «X de Y listos» (`completitudItemsPct`, no el porcentaje ponderado del resumen), nodo Validación del prep-flow sincronizado, layout stretch hasta el fondo del viewport. Limpieza CSS: eliminados bloques duplicados v5–v7 (~647 líneas) y reglas redundantes de donut/alerta en iteraciones previas; reglas finales consolidadas al cierre del CSS local.
+- **Archivos:** `nomina-mensual-v2-container.{html,ts,css}`, `nomina-mensual-v2.page.ts`, `peticiones-estilos.md`.
+- **No tocado:** `nomina-parametros-resumen.service.ts`, mapper/models de parámetros, rules de negocio, SQL/motor, estilos globales, `angular.json`, pasos mock 2–7.
+
 ## 2026-05-29 - Liquidaciones oficiales: flujo visual por trabajador y compactación NOIA
 
 - **Cambio:** Liquidaciones se reordena como acta operativa compacta: franja superior con estado/origen/acción, resumen financiero único, grilla protagonista y detalle lateral. La grilla incorpora flujo visual local por trabajador (**Autorizar** → **Registrar pago** → **Enviar documento**) con PDF deshabilitado y **Solicitar rectificación** solo como marca UI no persistente. Nómina mensual mejora el empty inicial y diferencia el cierre final como `Proceso mensual cerrado`.
