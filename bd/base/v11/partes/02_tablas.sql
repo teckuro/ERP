@@ -1112,6 +1112,10 @@ CREATE TABLE persona_tramo_carga (
     CONSTRAINT chk_persona_tramo_carga_vigencia CHECK (vigencia_fin IS NULL OR vigencia_fin >= vigencia_inicio)
 );
 
+-- [LEGACY/DEPRECADO] Tabla liquidacion
+-- Salida del motor SQL fn_generar_liquidacion. No es liquidación oficial del periodo.
+-- Reemplazada por nomina_liquidacion_periodo / nomina_liquidacion_trabajador (emisión desde snapshot aprobado).
+-- Se conserva por compatibilidad y datos históricos; no eliminar sin fase explícita.
 CREATE TABLE liquidacion (
     id_liquidacion SERIAL PRIMARY KEY,
     id_contrato INT NOT NULL REFERENCES contrato(id_contrato),
@@ -1146,6 +1150,10 @@ CREATE TABLE liquidacion (
     CONSTRAINT uq_liquidacion_periodo UNIQUE (id_contrato, periodo)
 );
 
+-- [LEGACY/DEPRECADO] Tabla liquidacion_detalle
+-- Detalle de fn_generar_liquidacion. No es snapshot oficial de conceptos del periodo.
+-- Reemplazada por nomina_liquidacion_concepto. Sigue leída (solo COUNT) por contarUsoConcepto en Angular (guard borrado concepto).
+-- Se conserva por compatibilidad; no eliminar sin migrar ese guard.
 CREATE TABLE liquidacion_detalle (
     id_detalle SERIAL PRIMARY KEY,
     id_liquidacion INT NOT NULL REFERENCES liquidacion(id_liquidacion) ON DELETE CASCADE,

@@ -357,6 +357,11 @@ export class HaberesDescuentosRepository {
     }
   }
 
+  /**
+   * Cuenta referencias al concepto antes de borrarlo.
+   * `liquidacionDetalle` consulta la tabla legacy `liquidacion_detalle` (salida de fn_generar_liquidacion);
+   * no es la liquidación oficial del periodo (nomina_liquidacion_concepto). Solo lectura COUNT; no alterar sin fase de migración del guard.
+   */
   async contarUsoConcepto(idConcepto: number): Promise<{ liquidacionDetalle: number; asignaciones: number }> {
     const [liq, asig] = await Promise.all([
       this.supabase
