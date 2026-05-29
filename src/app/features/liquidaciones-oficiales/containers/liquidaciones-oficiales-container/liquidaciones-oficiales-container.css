@@ -5,6 +5,18 @@
   width: 100%;
   min-width: 0;
   min-height: 100%;
+  --erp-bg: #f6f7f4;
+  --erp-surface: #ffffff;
+  --erp-border: #dadfd7;
+  --erp-ink: #243b53;
+  --erp-muted: #647084;
+  --erp-review-soft: #fff8e7;
+  --erp-review-border: #dfc383;
+  --erp-danger-soft: #fff1ee;
+  --erp-danger-border: #e2b8b3;
+  --erp-danger: #9f2f2f;
+  --erp-ok-soft: #f1f7ed;
+  --erp-ok-border: #b9d2b2;
 }
 
 .liq-page {
@@ -14,14 +26,17 @@
   gap: 0;
   min-height: 100%;
   overflow: hidden;
-  background: #ffffff;
+  background: var(--erp-surface);
+  color: var(--erp-ink);
 }
 
-.liq-header {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 16px;
+.liq-lead {
+  margin: 0;
+  padding: 8px 14px;
+  border-bottom: 1px solid var(--erp-border);
+  font-size: 0.8125rem;
+  line-height: 1.4;
+  color: var(--erp-muted);
 }
 
 .liq-actions {
@@ -29,8 +44,8 @@
   flex-wrap: wrap;
   justify-content: flex-end;
   gap: 8px;
-  border-bottom: 1px solid #d7dde5;
-  background: #ffffff;
+  border-bottom: 1px solid var(--erp-border);
+  background: var(--erp-surface);
   padding: 10px 14px;
 }
 
@@ -40,47 +55,205 @@
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  border: 1px solid #fde68a;
-  border-radius: 6px;
-  background: #fffbeb;
+  margin: 10px 14px 0;
+  border: 1px solid var(--erp-review-border);
+  border-radius: 0;
+  background: var(--erp-review-soft);
   padding: 10px 12px;
 }
 
 .liq-status-strip strong,
 .liq-status-strip span {
-  color: #111827;
+  display: block;
   font-size: 0.875rem;
+  color: var(--erp-ink);
 }
 
 .liq-status-strip span {
-  margin-left: 8px;
-  color: #4b5563;
+  margin-top: 2px;
+  color: var(--erp-muted);
+  font-size: 0.8125rem;
 }
 
-.liq-status-strip a {
-  color: #1d4ed8;
+.liq-status-strip a,
+.liq-link {
+  color: var(--erp-ink);
+  font-size: 0.875rem;
+  font-weight: 650;
+  text-decoration: underline;
+}
+
+.liq-status-strip--ok {
+  border-color: var(--erp-ok-border);
+  background: var(--erp-ok-soft);
+}
+
+.liq-operativa {
+  display: grid;
+  gap: 10px;
+  padding: 10px 14px 0;
+}
+
+@media (min-width: 1024px) {
+  .liq-operativa {
+    grid-template-columns: minmax(0, 1fr) 280px;
+  }
+}
+
+.liq-panel {
+  border: 1px solid var(--erp-border);
+  background: var(--erp-surface);
+  padding: 12px 14px;
+}
+
+.liq-panel__header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.liq-panel h2 {
+  margin: 0;
   font-size: 0.875rem;
   font-weight: 700;
-  text-decoration: underline;
+  color: var(--erp-ink);
+}
+
+.liq-panel__meta {
+  margin: 2px 0 0;
+  font-size: 0.75rem;
+  color: var(--erp-muted);
+}
+
+.liq-panel__lead {
+  margin-top: 8px;
+  font-size: 0.8125rem;
+  font-weight: 650;
+  color: var(--erp-ink);
+}
+
+.liq-panel__lead--flush {
+  margin-top: 0;
+}
+
+.liq-text-muted {
+  margin: 4px 0 0;
+  font-size: 0.8125rem;
+  color: var(--erp-muted);
+}
+
+.liq-text-muted--spaced {
+  margin: 8px 0 0;
+  font-size: 0.8125rem;
+  color: var(--erp-muted);
+}
+
+.liq-actions--inline {
+  border: 0;
+  padding: 10px 0 0;
+  justify-content: flex-start;
+}
+
+.liq-detalle-wrap {
+  margin-top: 12px;
+}
+
+.liq-metrics {
+  display: grid;
+  gap: 8px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin: 0;
+}
+
+@media (min-width: 1280px) {
+  .liq-metrics {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+.liq-metrics div {
+  border: 1px solid var(--erp-border);
+  background: var(--erp-bg);
+  padding: 8px 10px;
+}
+
+.liq-metrics dt {
+  margin: 0;
+  font-size: 0.6875rem;
+  font-weight: 650;
+  color: var(--erp-muted);
+}
+
+.liq-metrics dd {
+  margin: 4px 0 0;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--erp-ink);
+}
+
+.liq-empty-inline {
+  margin: 0;
+  border: 1px solid var(--erp-border);
+  background: var(--erp-bg);
+  padding: 8px 10px;
+  font-size: 0.8125rem;
+  color: var(--erp-muted);
+}
+
+.liq-section {
+  margin: 10px 14px 0;
+  border: 1px solid var(--erp-border);
+  background: var(--erp-surface);
+  padding: 12px 14px;
+}
+
+.liq-alert--review {
+  margin-top: 8px;
+  border: 1px solid var(--erp-review-border);
+  background: var(--erp-review-soft);
+  padding: 8px 10px;
+  font-size: 0.8125rem;
+  color: var(--erp-ink);
+  list-style: none;
+}
+
+.liq-alert--error {
+  margin-top: 8px;
+  border: 1px solid var(--erp-danger-border);
+  background: var(--erp-danger-soft);
+  padding: 8px 10px;
+  font-size: 0.8125rem;
+  color: var(--erp-danger);
 }
 
 .liq-empty-compact {
   min-height: 120px;
-  border: 1px dashed #cbd5e1;
-  border-radius: 6px;
-  background: #f8fafc;
+  border: 1px dashed var(--erp-border);
+  background: var(--erp-bg);
   padding: 16px;
+}
+
+.liq-details {
+  margin: 10px 14px 14px;
+  border: 1px solid var(--erp-border);
+  background: var(--erp-bg);
+  padding: 10px 12px;
+  font-size: 0.8125rem;
+  color: var(--erp-muted);
+}
+
+.liq-details summary {
+  cursor: pointer;
+  font-weight: 650;
+  color: var(--erp-ink);
 }
 
 @media (max-width: 720px) {
   .liq-header,
   .liq-actions {
     justify-content: flex-start;
-  }
-
-  .liq-status-strip span {
-    display: block;
-    margin-left: 0;
-    margin-top: 2px;
   }
 }

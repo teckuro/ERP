@@ -71,8 +71,8 @@ describe('LiquidacionesOficialesContainer', () => {
     const input = fixture.nativeElement.querySelector('input[type="month"]') as HTMLInputElement | null;
     const text = fixture.nativeElement.textContent as string;
     expect(input).toBeNull();
-    expect(text).toContain('Periodo activo:');
-    expect(text).toContain('Informacion interna y alcance');
+    expect(text).toContain('Período activo:');
+    expect(text).toContain('Información interna y alcance');
   });
 
   it('no duplica el CTA principal de generar en la botonera superior', () => {

@@ -43,7 +43,8 @@ function accionAbrirNomina(input: AccionesNominaPeriodoInput): AccionNominaPerio
   const bloqueada = !input.tieneNominaConfirmada || conLiquidaciones(input);
   let motivoBloqueo: string | undefined;
   if (!input.tieneNominaConfirmada) {
-    motivoBloqueo = 'La nómina aún no está confirmada. Puede seguir revisando la versión guardada sin abrir de nuevo.';
+    motivoBloqueo =
+      'El proceso mensual aún no está cerrado. Puede seguir revisando la versión guardada sin abrir de nuevo.';
   } else if (conLiquidaciones(input)) {
     motivoBloqueo = MOTIVO_LIQUIDACIONES_ABRIR;
   }

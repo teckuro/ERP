@@ -1,5 +1,5 @@
 <div class="liq-page">
-  <p class="liq-lead text-sm text-gray-600">
+  <p class="liq-lead">
     Comprobantes generados desde la nómina mensual aprobada. No recalculan montos ni generan salidas legales.
   </p>
 
@@ -20,175 +20,166 @@
         <strong>No hay nómina mensual aprobada disponible.</strong>
         <span>Para generar liquidaciones, primero aprueba la nómina mensual del período.</span>
       </div>
-      <a routerLink="/remuneraciones/proceso-mensual" [queryParams]="volverNominaQuery()">Volver a Nómina mensual</a>
+      <a class="liq-link" routerLink="/remuneraciones/proceso-mensual" [queryParams]="volverNominaQuery()">Volver a Nómina mensual</a>
     </section>
   }
 
-  <section class="grid gap-4 lg:grid-cols-[minmax(0,1fr)_280px]">
-    <app-card>
-      <app-card-content className="p-4">
-        <div class="mb-3 flex flex-wrap items-center justify-between gap-2">
-          <div>
-            <h2 class="text-sm font-semibold text-gray-900">Resumen ejecutivo</h2>
-            <p class="text-xs text-gray-500">Periodo activo: {{ periodoActivo.etiqueta() }}</p>
-          </div>
-          <app-badge [variant]="badgeVariant()" size="sm">{{ estadoLabel() }}</app-badge>
-        </div>
-
-        @if (estadoPeriodo()?.snapshot; as resultadoCerrado) {
-          <dl class="grid gap-3 sm:grid-cols-2 xl:grid-cols-4 text-sm">
-            <div class="rounded-md border border-slate-200 bg-white p-3">
-              <dt class="text-xs font-medium text-gray-500">Trabajadores</dt>
-              <dd class="mt-1 text-lg font-semibold text-gray-900">{{ resultadoCerrado.totalTrabajadores }}</dd>
-            </div>
-            <div class="rounded-md border border-slate-200 bg-white p-3">
-              <dt class="text-xs font-medium text-gray-500">Haberes</dt>
-              <dd class="mt-1 text-lg font-semibold text-gray-900">{{ money(resultadoCerrado.totalHaberes) }}</dd>
-            </div>
-            <div class="rounded-md border border-slate-200 bg-white p-3">
-              <dt class="text-xs font-medium text-gray-500">Descuentos</dt>
-              <dd class="mt-1 text-lg font-semibold text-gray-900">{{ money(resultadoCerrado.totalDescuentos) }}</dd>
-            </div>
-            <div class="rounded-md border border-slate-200 bg-white p-3">
-              <dt class="text-xs font-medium text-gray-500">Liquido</dt>
-              <dd class="mt-1 text-lg font-semibold text-gray-900">{{ money(resultadoCerrado.totalLiquido) }}</dd>
-            </div>
-          </dl>
-        } @else {
-          <p class="rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-gray-700">
-            {{ cargando() ? 'Consultando periodo...' : 'No hay nómina mensual aprobada disponible para liquidaciones oficiales.' }}
-          </p>
-        }
-      </app-card-content>
-    </app-card>
-
-    <app-card>
-      <app-card-content className="p-4">
-        <h2 class="text-sm font-semibold text-gray-900">Siguiente accion</h2>
-        <p class="mt-2 text-sm font-medium text-gray-900">{{ siguienteAccion().titulo }}</p>
-        <p class="mt-1 text-sm text-gray-700">{{ siguienteAccion().descripcion }}</p>
-        <div class="mt-4 flex flex-wrap gap-2">
-          @if (estadoPeriodo()?.estado === 'lista_para_generar') {
-            <app-button variant="primary" size="sm" [disabled]="!puedeGenerar()" (click)="generarLiquidaciones()">
-              Generar liquidaciones oficiales
-            </app-button>
-          } @else if (estadoPeriodo()?.liquidacion) {
-            <app-button variant="outline" size="sm" [disabled]="cargando()" (click)="consultar()">
-              Actualizar consulta
-            </app-button>
-          } @else {
-            <a routerLink="/remuneraciones/proceso-mensual" [queryParams]="volverNominaQuery()" class="text-sm font-medium text-blue-700 underline">
-              Volver a Nómina mensual
-            </a>
-          }
-        </div>
-      </app-card-content>
-    </app-card>
-  </section>
-
-  <app-card>
-    <app-card-content className="p-4">
-      <div class="grid gap-4">
-        <div>
-          <div class="flex flex-wrap items-center gap-2">
-            <h2 class="text-sm font-semibold text-gray-900">Que falta ahora</h2>
-            <app-badge [variant]="badgeVariant()" size="sm">{{ estadoLabel() }}</app-badge>
-          </div>
-          @if (estadoPeriodo(); as estado) {
-            @if (estado.motivoNoPuedeGenerar && !estado.liquidacion) {
-              <p class="mt-2 text-sm text-gray-700">{{ estado.motivoNoPuedeGenerar }}</p>
-            } @else if (estado.liquidacion) {
-              <p class="mt-2 text-sm text-gray-700">
-                Las liquidaciones oficiales del periodo ya fueron generadas. Puedes revisar el detalle por trabajador.
-              </p>
-            } @else {
-              <p class="mt-2 text-sm text-gray-700">
-                La nómina mensual está aprobada y lista para generar liquidaciones oficiales.
-              </p>
-            }
-
-            @if (estado.advertencias.length) {
-              <ul class="mt-3 space-y-1 rounded-md border border-yellow-200 bg-yellow-50 px-3 py-2 text-sm text-yellow-900">
-                @for (advertencia of estado.advertencias; track advertencia) {
-                  <li>{{ advertencia }}</li>
-                }
-              </ul>
-            }
-
-            @if (estado.snapshot) {
-              <p class="mt-3 text-xs text-gray-500">
-                La trazabilidad interna queda disponible al final de la pantalla para no competir con la accion principal.
-              </p>
-            }
-          } @else {
-            <p class="mt-2 text-sm text-gray-700">
-              {{ cargando() ? 'Consultando periodo...' : 'Aun no puedes generar liquidaciones oficiales.' }}
-            </p>
-          }
-
-          @if (error()) {
-            <p class="mt-3 rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800">{{ error() }}</p>
-          }
-        </div>
-
+  @if (estadoPeriodo()?.liquidacion) {
+    <section class="liq-status-strip liq-status-strip--ok" role="status">
+      <div>
+        <strong>Liquidaciones emitidas.</strong>
+        <span>Vuelva a Nómina mensual para cerrar el proceso mensual del período si aún no lo hizo.</span>
       </div>
-    </app-card-content>
-  </app-card>
+      <a class="liq-link" routerLink="/remuneraciones/proceso-mensual" [queryParams]="volverNominaQuery()">Cerrar proceso mensual</a>
+    </section>
+  }
+
+  <div class="liq-operativa">
+    <section class="liq-panel">
+      <div class="liq-panel__header">
+        <div>
+          <h2>Resumen del período</h2>
+          <p class="liq-panel__meta">Período activo: {{ periodoActivo.etiqueta() }}</p>
+        </div>
+        <app-badge [variant]="badgeVariant()" size="sm">{{ estadoLabel() }}</app-badge>
+      </div>
+
+      @if (estadoPeriodo()?.snapshot; as resultadoCerrado) {
+        <dl class="liq-metrics">
+          <div>
+            <dt>Trabajadores</dt>
+            <dd>{{ resultadoCerrado.totalTrabajadores }}</dd>
+          </div>
+          <div>
+            <dt>Haberes</dt>
+            <dd>{{ money(resultadoCerrado.totalHaberes) }}</dd>
+          </div>
+          <div>
+            <dt>Descuentos</dt>
+            <dd>{{ money(resultadoCerrado.totalDescuentos) }}</dd>
+          </div>
+          <div>
+            <dt>Líquido</dt>
+            <dd>{{ money(resultadoCerrado.totalLiquido) }}</dd>
+          </div>
+        </dl>
+      } @else {
+        <p class="liq-empty-inline">
+          {{ cargando() ? 'Consultando período...' : 'No hay nómina mensual aprobada disponible para liquidaciones oficiales.' }}
+        </p>
+      }
+    </section>
+
+    <section class="liq-panel">
+      <h2>Siguiente acción</h2>
+      <p class="liq-panel__lead">{{ siguienteAccion().titulo }}</p>
+      <p class="liq-text-muted">{{ siguienteAccion().descripcion }}</p>
+      <div class="liq-actions liq-actions--inline">
+        @if (estadoPeriodo()?.estado === 'lista_para_generar') {
+          <app-button variant="primary" size="sm" [disabled]="!puedeGenerar()" (click)="generarLiquidaciones()">
+            Generar liquidaciones oficiales
+          </app-button>
+        } @else if (estadoPeriodo()?.liquidacion) {
+          <app-button variant="outline" size="sm" [disabled]="cargando()" (click)="consultar()">
+            Actualizar consulta
+          </app-button>
+        } @else {
+          <a class="liq-link" routerLink="/remuneraciones/proceso-mensual" [queryParams]="volverNominaQuery()">Volver a Nómina mensual</a>
+        }
+      </div>
+    </section>
+  </div>
+
+  <section class="liq-section">
+    <div class="liq-panel__header">
+      <div>
+        <h2>Qué falta ahora</h2>
+        <app-badge [variant]="badgeVariant()" size="sm">{{ estadoLabel() }}</app-badge>
+      </div>
+    </div>
+    @if (estadoPeriodo(); as estado) {
+      @if (estado.motivoNoPuedeGenerar && !estado.liquidacion) {
+        <p class="liq-text-muted--spaced">{{ estado.motivoNoPuedeGenerar }}</p>
+      } @else if (estado.liquidacion) {
+        <p class="liq-text-muted--spaced">
+          Las liquidaciones oficiales del período ya fueron emitidas. Puede revisar el detalle por trabajador.
+        </p>
+      } @else {
+        <p class="liq-text-muted--spaced">
+          La nómina mensual está aprobada y lista para generar liquidaciones oficiales.
+        </p>
+      }
+
+      @if (estado.advertencias.length) {
+        <ul class="liq-alert--review">
+          @for (advertencia of estado.advertencias; track advertencia) {
+            <li>{{ advertencia }}</li>
+          }
+        </ul>
+      }
+    } @else {
+      <p class="liq-text-muted--spaced">
+        {{ cargando() ? 'Consultando período...' : 'Aún no puede generar liquidaciones oficiales.' }}
+      </p>
+    }
+
+    @if (error()) {
+      <p class="liq-alert--error" role="alert">{{ error() }}</p>
+    }
+  </section>
 
   @if (estadoPeriodo()?.liquidacion) {
     <app-liquidacion-resumen-card [liquidacion]="estadoPeriodo()?.liquidacion ?? null" />
   }
 
-  <app-card>
-    <app-card-content className="p-4">
-      <div class="mb-3 flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h2 class="text-sm font-semibold text-gray-900">Trabajadores liquidados</h2>
-          <p class="mt-1 text-sm text-gray-600">Listado persistido desde la liquidacion oficial interna.</p>
-        </div>
-        <app-badge variant="default" size="sm">{{ estadoPeriodo()?.trabajadores?.length ?? 0 }} trabajador(es)</app-badge>
+  <section class="liq-section">
+    <div class="liq-panel__header">
+      <div>
+        <h2>Trabajadores liquidados</h2>
+        <p class="liq-panel__meta">Listado persistido desde la liquidación oficial interna.</p>
       </div>
+      <app-badge variant="default" size="sm">{{ estadoPeriodo()?.trabajadores?.length ?? 0 }} trabajador(es)</app-badge>
+    </div>
 
-      @if ((estadoPeriodo()?.trabajadores?.length ?? 0) > 0) {
-        <app-liquidaciones-trabajadores-grid
-          [trabajadores]="estadoPeriodo()?.trabajadores ?? []"
-          [seleccionado]="trabajadorSeleccionado()"
-          (verDetalle)="verDetalleTrabajador($event)"
-        />
+    @if ((estadoPeriodo()?.trabajadores?.length ?? 0) > 0) {
+      <app-liquidaciones-trabajadores-grid
+        [trabajadores]="estadoPeriodo()?.trabajadores ?? []"
+        [seleccionado]="trabajadorSeleccionado()"
+        (verDetalle)="verDetalleTrabajador($event)"
+      />
+    } @else {
+      <div class="liq-empty-compact">
+        <p class="liq-panel__lead liq-panel__lead--flush">Sin trabajadores liquidados</p>
+        <p class="liq-text-muted">
+          Cuando exista una liquidación oficial interna, aquí aparecerá el listado por trabajador.
+        </p>
+      </div>
+    }
+
+    <div class="liq-detalle-wrap">
+      @if (cargandoDetalle()) {
+        <p class="liq-alert--review">Consultando detalle...</p>
       } @else {
-        <div class="liq-empty-compact">
-          <p class="font-medium text-gray-900">Sin trabajadores liquidados</p>
-          <p class="mt-1 text-sm text-gray-600">
-            Cuando exista una liquidacion oficial interna, aqui aparecera el listado por trabajador.
-          </p>
-        </div>
+        <app-liquidacion-detalle-panel
+          [trabajador]="trabajadorSeleccionado()"
+          [conceptos]="conceptosDetalle()"
+        />
       }
+    </div>
+  </section>
 
-      <div class="mt-4">
-        @if (cargandoDetalle()) {
-          <p class="rounded-md border border-blue-100 bg-blue-50 px-3 py-2 text-sm text-blue-900">Consultando detalle...</p>
-        } @else {
-          <app-liquidacion-detalle-panel
-            [trabajador]="trabajadorSeleccionado()"
-            [conceptos]="conceptosDetalle()"
-          />
-        }
-      </div>
-    </app-card-content>
-  </app-card>
-
-  <details class="rounded-md border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-gray-700">
-    <summary class="cursor-pointer font-medium text-gray-900">Informacion interna y alcance</summary>
-    <p class="mt-2">
-      Esta salida interna usa la nómina mensual confirmada y no recalcula montos. Salidas legales, firma, envio,
-      portal trabajador, archivo banco, contabilidad, reapertura, anulacion, rectificacion y reliquidacion quedan fuera de esta fase.
+  <details class="liq-details">
+    <summary>Información interna y alcance</summary>
+    <p class="liq-text-muted--spaced">
+      Esta salida interna usa la nómina mensual aprobada y no recalcula montos. Salidas legales, firma, envío,
+      portal trabajador, archivo banco, contabilidad, reapertura, anulación, rectificación y reliquidación quedan fuera de esta fase.
     </p>
     @if (estadoPeriodo()?.snapshot; as snapshot) {
-      <dl class="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        <div><dt class="text-gray-500">Referencia interna</dt><dd class="font-semibold text-gray-900">#{{ snapshot.idCalculoPeriodo }}</dd></div>
-        <div><dt class="text-gray-500">Trabajadores</dt><dd class="font-semibold text-gray-900">{{ snapshot.totalTrabajadores }}</dd></div>
-        <div><dt class="text-gray-500">Liquido cerrado</dt><dd class="font-semibold text-gray-900">{{ money(snapshot.totalLiquido) }}</dd></div>
-        <div><dt class="text-gray-500">Version interna</dt><dd class="font-semibold text-gray-900">{{ snapshot.versionMotor }}</dd></div>
+      <dl class="liq-metrics liq-detalle-wrap">
+        <div><dt>Referencia interna</dt><dd>#{{ snapshot.idCalculoPeriodo }}</dd></div>
+        <div><dt>Trabajadores</dt><dd>{{ snapshot.totalTrabajadores }}</dd></div>
+        <div><dt>Líquido</dt><dd>{{ money(snapshot.totalLiquido) }}</dd></div>
+        <div><dt>Versión interna</dt><dd>{{ snapshot.versionMotor }}</dd></div>
       </dl>
     }
   </details>

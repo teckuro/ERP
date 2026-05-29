@@ -22,7 +22,7 @@ describe('proceso-mensual-message-box.rules', () => {
     ).toHaveLength(2);
     expect(
       buildMsgboxDecisionGuiada({
-        pendiente: 'Confirmar nómina.',
+        pendiente: 'Aprobar nómina.',
         impacto: 'Congela el período.',
         accion: 'Generar liquidaciones.',
       }),
@@ -43,7 +43,7 @@ describe('proceso-mensual-message-box.rules', () => {
       mensaje: 'Guardar revisión del período.',
       detalle: 'No es la confirmación oficial.',
       puntos: ['Versión revisada disponible.'],
-      proximaAccion: 'Confirmar nómina.',
+      proximaAccion: 'Aprobar nómina.',
       mostrarProximaAccion: true,
       primaryLabel: 'Guardar revisión',
     });
@@ -51,17 +51,17 @@ describe('proceso-mensual-message-box.rules', () => {
     expect(sections.map((section) => section.title)).toEqual(['Principal', 'Acción']);
   });
 
-  it('confirmar nómina usa decisión guiada cuando hay impacto operativo', () => {
+  it('aprobar nómina usa decisión guiada cuando hay impacto operativo', () => {
     const sections = mapConfirmacionProcesoMensualToSections({
       tipo: 'cerrar_nomina',
       variant: 'warning',
-      mensaje: 'Confirmar nómina.',
-      detalle: 'La versión revisada quedará congelada.',
-      puntosTitulo: 'Qué cambia al confirmar',
-      puntos: ['No emite liquidaciones en este paso.', 'Queda lista para liquidaciones.'],
-      proximaAccion: 'Generar liquidaciones desde la nómina confirmada.',
+      mensaje: 'Aprobar nómina.',
+      detalle: 'La versión revisada quedará lista para emitir liquidaciones.',
+      puntosTitulo: 'Qué cambia al aprobar',
+      puntos: ['No emite liquidaciones en este paso.', 'Queda lista para generar liquidaciones oficiales.'],
+      proximaAccion: 'Generar liquidaciones desde la nómina aprobada.',
       mostrarProximaAccion: true,
-      primaryLabel: 'Confirmar nómina',
+      primaryLabel: 'Aprobar nómina',
     });
 
     expect(sections.map((section) => section.title)).toEqual([

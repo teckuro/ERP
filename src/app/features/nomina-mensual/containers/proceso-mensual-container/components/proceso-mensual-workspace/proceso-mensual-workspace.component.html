@@ -133,6 +133,23 @@
         </p>
       }
 
+      @if (f.errorAprobacionOperativaUi(); as errAprobacion) {
+        <p class="payroll-flow-status payroll-flow-status--error" role="alert">{{ errAprobacion }}</p>
+      }
+      @if (f.errorCierreOperativoUi(); as errCierre) {
+        <p class="payroll-flow-status payroll-flow-status--error" role="alert">{{ errCierre }}</p>
+      }
+      @if (
+        !mostrarFocusPreparacion
+        && !f.errorAprobacionOperativaUi()
+        && !f.errorCierreOperativoUi()
+        && f.estadoOperativo().accionPrincipal.disabledReason
+      ) {
+        <p class="payroll-flow-status payroll-flow-status--atencion" role="status">
+          {{ f.estadoOperativo().accionPrincipal.disabledReason }}
+        </p>
+      }
+
       <div
         class="payroll-workspace-layout"
         [class.payroll-workspace-layout--preparacion]="mostrarActa"

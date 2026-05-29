@@ -109,6 +109,7 @@ import {
   type ActaPreparacionCentralVm,
   type ActaPreparacionPendienteVm,
 } from '../../../rules/proceso-mensual-acta-preparacion.rules';
+import { mensajeErrorPrenominaParaUsuario } from '../../../rules/prenomina-validacion-ui.rules';
 import {
   buildInformacionPeriodoView,
   mapDestinoToDetalleTab,
@@ -325,6 +326,13 @@ export class ProcesoMensualPresentacionFacade {
   readonly errorGuardadoResultado = this.store.errorGuardadoResultado;
   readonly errorAprobacionOperativa = this.store.errorAprobacionOperativa;
   readonly errorCierreOperativo = this.store.errorCierreOperativo;
+
+  readonly errorAprobacionOperativaUi = computed(() =>
+    mensajeErrorPrenominaParaUsuario(this.errorAprobacionOperativa()),
+  );
+  readonly errorCierreOperativoUi = computed(() =>
+    mensajeErrorPrenominaParaUsuario(this.errorCierreOperativo()),
+  );
   readonly errorSnapshotCompleto = this.store.errorSnapshotCompleto;
   readonly exitoGuardadoResultado = this.store.exitoGuardadoResultado;
   readonly identificadorResultadoGuardadoActual = this.store.identificadorResultadoGuardadoActual;
@@ -1675,10 +1683,10 @@ export class ProcesoMensualPresentacionFacade {
       if (s.cierreOperativo) {
         items.push({
           hora: this.horaCorta(s.cierreOperativo.fecha),
-          etapa: 'Confirmación',
+          etapa: 'Cierre',
           usuario: s.cierreOperativo.usuarioLabel || '—',
-          resultado: 'Confirmada',
-          texto: 'Se confirmó la nómina mensual.',
+          resultado: 'Cerrada',
+          texto: 'Se cerró el proceso mensual del período.',
           destacado: true,
         });
       }
@@ -1735,11 +1743,11 @@ export class ProcesoMensualPresentacionFacade {
       this.store.snapshotActivo() ? 'version revisable guardada' : 'version revisable pendiente',
     ];
     if (this.nominaEstaCerradaOperativamente()) {
-      partes.push('nomina confirmada');
+      partes.push('proceso cerrado');
     } else if (this.store.aprobacionOperativa()) {
-      partes.push('lista para confirmar');
+      partes.push('nómina aprobada');
     } else if (this.store.snapshotActivo()) {
-      partes.push('confirmacion pendiente');
+      partes.push('aprobación pendiente');
     }
     return partes.join(' · ');
   });
@@ -2753,14 +2761,14 @@ export class ProcesoMensualPresentacionFacade {
     this.abrirOverlayDecision({
       tipo: 'abrir_nomina',
       titulo: 'Abrir nómina del período',
-      mensaje: 'La nómina volverá a revisión. Podrá corregir datos antes de volver a confirmarla.',
+      mensaje: 'La nómina volverá a revisión. Podrá corregir datos antes de volver a aprobarla.',
       detalle: 'Esta acción no elimina liquidaciones ni modifica movimientos ya registrados.',
       puntos: [
-        'La confirmación operativa quedará revertida para este período.',
-        'Podrá revisar trabajadores, parámetros y resultado antes de confirmar de nuevo.',
+        'La aprobación operativa quedará revertida para este período.',
+        'Podrá revisar trabajadores, parámetros y resultado antes de aprobar de nuevo.',
       ],
       primaryLabel: 'Abrir nómina',
-      secondaryLabel: 'Mantener confirmada',
+      secondaryLabel: 'Mantener cerrada',
     });
   }
 
@@ -3368,35 +3376,6 @@ export class ProcesoMensualPresentacionFacade {
     this.store.ejecutarCierreNominaOperativa();
   }
 
-  private abrirConfirmacionConfirmarNominaOperativa(): void {
-    const revision = this.revisionAprobacion();
-    const snapshot = this.store.snapshotActivo();
-    if (!revision.puedeAprobar || !snapshot) return;
-    const advertenciasAprobacion = (revision.advertencias ?? []).map((advertencia) => advertencia.descripcion);
-    if (advertenciasAprobacion.length === 0 && (snapshot.totalAdvertencias ?? 0) > 0) {
-      advertenciasAprobacion.push(`Resultado guardado con ${snapshot.totalAdvertencias} advertencia(s) no bloqueante(s).`);
-    }
-    this.abrirOverlayDecision({
-      tipo: 'confirmar_nomina_operativa',
-      variant: 'decision',
-      eyebrow: 'Confirmación de nómina',
-      titulo: 'Confirmar nómina',
-      mensaje: 'Confirma esta versión como base oficial del período para liquidaciones.',
-      detalle: 'En este paso se registra la revisión de RRHH y se cierra operativamente el período.',
-      puntosTitulo: 'Qué implica',
-      puntos: [
-        'Queda respaldo interno de la revisión de RRHH.',
-        'La nómina queda confirmada como base oficial para liquidaciones.',
-        'No genera liquidaciones ni archivos legales en este paso.',
-      ],
-      mostrarProximaAccion: true,
-      proximaAccion: 'Continuar con liquidaciones oficiales del período.',
-      primaryLabel: 'Confirmar nómina',
-      secondaryLabel: 'Cancelar',
-      advertenciasAprobacion,
-    });
-  }
-
   confirmarAccionProceso(): void {
     const current = this.overlay();
     if (current.kind !== 'decision') return;
@@ -3408,9 +3387,6 @@ export class ProcesoMensualPresentacionFacade {
         break;
       case 'aprobar_preliminar':
         this.ejecutarAprobacionOperativa(confirmacion.advertenciasAprobacion ?? []);
-        break;
-      case 'confirmar_nomina_operativa':
-        this.store.ejecutarConfirmarNominaOperativa(confirmacion.advertenciasAprobacion ?? []);
         break;
       case 'cerrar_nomina':
         this.ejecutarCierreNominaOperativa();

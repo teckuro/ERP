@@ -573,7 +573,7 @@ export function construirPrevalidacionMensual(hechos: ProcesoMensualHechosPreval
     'PROCESO_LIQUIDACIONES_OFICIALES',
     'PROCESO',
     'INFO',
-    'Liquidaciones oficiales se generan desde una nómina mensual confirmada. Este paso prepara la versión revisable del período.',
+    'Liquidaciones oficiales se generan desde una nómina mensual aprobada. Este paso prepara la versión revisable del período.',
   );
   items.push({
     area: 'PROCESO',

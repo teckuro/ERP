@@ -164,7 +164,8 @@ describe('proceso-mensual-parametros-refresh.rules', () => {
     });
 
     expect(detectarDriftParametros(antes, despues)).toEqual({ huboCambio: true, regresion: true });
-    expect(AVISO_DRIFT_PARAMETROS_CON_BASE).toContain('liquidaciones');
+    expect(AVISO_DRIFT_PARAMETROS_CON_BASE).toContain('aprobar');
+    expect(AVISO_DRIFT_PARAMETROS_CON_BASE).toContain('emitir liquidaciones');
   });
 
   it('detectarDriftParametros sin cambios devuelve huboCambio false', () => {

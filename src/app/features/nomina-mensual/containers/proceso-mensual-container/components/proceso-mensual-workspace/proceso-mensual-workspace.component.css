@@ -32,6 +32,26 @@
   overflow: hidden;
 }
 
+.payroll-flow-status {
+  margin: 0;
+  padding: 6px var(--payroll-space-inline, 10px);
+  border-bottom: 1px solid color-mix(in srgb, var(--erp-border) 72%, transparent);
+  font-size: 0.75rem;
+  line-height: 1.35;
+}
+
+.payroll-flow-status--error {
+  border-bottom-color: color-mix(in srgb, var(--erp-danger-border) 55%, var(--erp-border));
+  background: color-mix(in srgb, var(--erp-danger-soft) 45%, transparent);
+  color: var(--erp-danger);
+}
+
+.payroll-flow-status--atencion {
+  border-bottom-color: color-mix(in srgb, var(--erp-review-border) 55%, var(--erp-border));
+  background: color-mix(in srgb, var(--erp-review-soft) 45%, transparent);
+  color: var(--erp-review);
+}
+
 .payroll-view-panel,
 .payroll-console,
 .payroll-main,

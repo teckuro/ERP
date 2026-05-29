@@ -1,3 +1,9 @@
+## 2026-05-29 - Nómina mensual: cierre UI flujo aprobar → emitir → cerrar (fases P4–P10)
+
+- **Cambio:** Cierre del plan UI-Flow: eliminado camino atómico `confirmar_nomina_operativa` (store/facade). Errores de aprobación/cierre humanizados (`prenomina-validacion-ui.rules`, banners en workspace). Copy residual (flow-nav, acciones período, bitácora cierre, modales). Liquidaciones: layout `liq-*` con tokens `--erp-*` locales, sin `app-card` en contenedor. Capturador Playwright y docs `01-flujo-operativo.md` / `paso-a-paso/README` en orden aprobar → liquidaciones → cerrar.
+- **Archivos:** `proceso-mensual-periodo.store.ts`, `proceso-mensual-presentacion.facade.ts`, `proceso-mensual-workspace.*`, `prenomina-validacion-ui.rules.*`, `proceso-mensual-flow-nav.rules.ts`, `proceso-mensual-acciones-periodo.rules.ts`, `liquidaciones-oficiales-container.*`, `tests/preparar-nomina-screenshots.spec.ts`, docs preparar-nomina, specs message-box/parametros.
+- **No tocado:** SQL/RPC, motor, repos de negocio, estilos globales, `angular.json`.
+
 ## 2026-05-29 - Nómina mensual: copy y bitácora alineados a aprobar → emitir → cerrar (UI fase 1)
 
 - **Cambio:** Terminología visible unificada: **Aprobar nómina** → **Generar liquidaciones** → **Cerrar proceso mensual** → **Proceso cerrado** / **Cerrada**. Timeline de 5 pasos; bitácora lateral con etapas separadas (aprobar, liquidaciones, cierre). Modales de aprobar y cierre con copy coherente. Configuración del período distingue aprobada vs cerrada. Liquidaciones: copy «aprobada», shell CTA «Volver a Nómina mensual para cerrar el período» tras emitir. Estado `nomina_cerrada` sin CTA activo de generar.

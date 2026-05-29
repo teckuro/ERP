@@ -137,7 +137,7 @@ function razonNoPuedeGuardarResultado(
 ): string {
   if (!input.periodoValido) return 'El periodo seleccionado no es valido.';
   if (input.nominaCerradaOperativamente) {
-    return 'La nómina del período está confirmada. Para modificarla, será necesario reabrir el período en una fase posterior.';
+    return 'El proceso mensual del período está cerrado. Para modificarlo, será necesario reabrir el período en una fase posterior.';
   }
   if (!input.calculo) return 'Primero revisa la nómina.';
   if (input.errorEjecucion) return 'Hay un error tecnico activo que debes resolver antes de guardar.';

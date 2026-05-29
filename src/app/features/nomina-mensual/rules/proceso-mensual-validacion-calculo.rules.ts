@@ -51,9 +51,9 @@ export function buildValidacionCalculoPreliminarView(
   if (nominaCerradaOperativamente) {
     bloqueos.push({
       codigo: 'BLOQ-CIERRE-OPERATIVO',
-      titulo: 'Nómina confirmada',
+      titulo: 'Proceso cerrado',
       descripcion:
-        'La nómina mensual está confirmada. Para modificarla, será necesario reabrir el período en una fase posterior.',
+        'El proceso mensual está cerrado. Para modificarlo, será necesario reabrir el período en una fase posterior.',
       severidad: 'bloqueo',
       accionLabel: 'Consultar resultado guardado',
     });
@@ -340,7 +340,7 @@ function resolverSiguienteAccion(
   }
   const baseGenerada = !bloqueos.some((item) => item.codigo === 'BLOQ-005');
   return {
-    label: baseGenerada ? 'Confirmar nómina' : 'Generar nómina',
+    label: baseGenerada ? 'Calcular nómina preliminar' : 'Generar nómina',
     descripcion: baseGenerada
       ? 'La revisión del período está al día. Continúa hacia la confirmación de la nómina mensual.'
       : 'El período está listo para armar la nómina mensual del período.',

@@ -155,7 +155,7 @@ function razonNoPuedeAprobar(input: {
 }): string | undefined {
   if (input.aprobacionVigente) return 'La nómina mensual revisada ya está lista para confirmarse.';
   if (input.nominaCerradaOperativamente) {
-    return 'La nómina del período está confirmada. Para modificarla, será necesario reabrir el período en una fase posterior.';
+    return 'El proceso mensual del período está cerrado. Para modificarlo, será necesario reabrir el período en una fase posterior.';
   }
   if (!input.periodoValido) return 'El periodo no es valido para confirmar la nómina.';
   if (!input.hayResultadoActual && !input.hayGuardado) return 'Primero revisa la nómina mensual.';

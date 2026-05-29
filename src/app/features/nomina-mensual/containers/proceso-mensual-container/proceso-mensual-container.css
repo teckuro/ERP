@@ -1513,6 +1513,10 @@
 
 .payroll-period-actions__feedback--error {
   color: var(--erp-danger);
+  border: 1px solid color-mix(in srgb, var(--erp-danger-border) 55%, var(--erp-border));
+  border-radius: var(--payroll-radius-surface, 0);
+  background: color-mix(in srgb, var(--erp-danger-soft) 45%, transparent);
+  padding: 6px 8px;
 }
 
 .payroll-period-actions__list {

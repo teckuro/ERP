@@ -359,7 +359,7 @@ export function etiquetaClasificacionGrupoParametro(clasificacion: Clasificacion
 }
 
 export const AVISO_DRIFT_PARAMETROS_CON_BASE =
-  'Los parámetros del período cambiaron. Revise antes de recalcular liquidaciones. La base del período se mantiene disponible.';
+  'Los parámetros del período cambiaron. Revise en Parámetros, vuelva a calcular y guardar la revisión antes de aprobar o emitir liquidaciones.';
 
 export const NOTA_SOLO_VERIFICACION_PARAMETROS =
   'Resumen del período. Para cargar oficiales, configurar el mes o reconciliar diferencias, use Abrir parámetros.';

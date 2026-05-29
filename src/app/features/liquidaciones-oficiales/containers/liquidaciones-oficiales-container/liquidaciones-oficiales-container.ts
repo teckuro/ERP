@@ -16,7 +16,6 @@ import { LucideAngularModule } from 'lucide-angular';
 import { PeriodoActivoService } from '../../../../core/services/periodo-activo.service';
 import { BadgeComponent } from '../../../../shared/components/ui/primitives/badge.component';
 import { ButtonComponent } from '../../../../shared/components/ui/primitives/button.component';
-import { CardComponent, CardContentComponent } from '../../../../shared/components/ui/primitives/card.component';
 import { MessageBoxComponent } from '../../../../shared/components/ui/feedback/message-box/message-box.component';
 import type { MessageBoxSection } from '../../../../shared/components/ui/feedback/message-box/message-box.types';
 import { LiquidacionDetallePanelComponent } from '../../components/liquidacion-detalle-panel/liquidacion-detalle-panel';
@@ -41,8 +40,6 @@ import type { ShellStatusChipTone } from '../../../../layout/shell-page-context.
     LucideAngularModule,
     BadgeComponent,
     ButtonComponent,
-    CardComponent,
-    CardContentComponent,
     MessageBoxComponent,
     LiquidacionResumenCardComponent,
     LiquidacionesTrabajadoresGridComponent,

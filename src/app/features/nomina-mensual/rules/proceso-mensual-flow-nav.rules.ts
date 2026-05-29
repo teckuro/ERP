@@ -104,18 +104,18 @@ export function resolveNominaEstadoRrhh(frame: NominaVisualFrame): NominaEstadoR
       };
     case 'lista_para_confirmar':
       return {
-        etiqueta: 'Lista para confirmar',
-        descripcion: 'Puede confirmar esta versión como base oficial del período.',
+        etiqueta: 'Lista para aprobar',
+        descripcion: 'Puede aprobar esta versión antes de emitir liquidaciones.',
       };
     case 'confirmada':
       return {
-        etiqueta: 'Confirmada',
-        descripcion: 'Versión oficial bloqueada para liquidaciones.',
+        etiqueta: 'Proceso cerrado',
+        descripcion: 'Período cerrado; consulta y liquidaciones en solo lectura.',
       };
     case 'liquidaciones_generadas':
       return {
         etiqueta: 'Liquidaciones generadas',
-        descripcion: 'Liquidaciones emitidas desde la nómina confirmada.',
+        descripcion: 'Liquidaciones emitidas desde la nómina aprobada.',
       };
     case 'sin_generar':
     default:
@@ -232,7 +232,8 @@ const ETIQUETAS_REVISION_RAIL_DUPLICADAS = new Set([
   'generar nómina',
   'preparar confirmación',
   'confirmar revisión',
-  'confirmar nómina',
+  'aprobar nómina',
+  'cerrar proceso mensual',
   'revisar fichas',
   'revisar movimientos',
   'revisar trabajadores',

@@ -107,7 +107,7 @@ describe('proceso-mensual-detalle-modal.rules', () => {
   it('confirmar_nomina respeta bloqueo cuando no puede cerrar', () => {
     const cta = buildExpedienteRevisionCta({
       accion: 'confirmar_nomina',
-      label: 'Confirmar nómina',
+      label: 'Aprobar nómina',
       puedeConfirmarNomina: false,
       motivoNoPuedeConfirmar: 'Falta aprobación operativa',
       liquidacionesDisponibles: false,

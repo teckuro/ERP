@@ -606,64 +606,6 @@ export class ProcesoMensualPeriodoStore {
       });
   }
 
-  /** Confirma el período en un solo paso: registra revisión + cierre operativo. */
-  ejecutarConfirmarNominaOperativa(advertenciasAprobacion: string[] = []): void {
-    const snapshot = this.snapshotActivo();
-    const idCalculoPeriodo = snapshot?.idCalculoPeriodo;
-    if (!idCalculoPeriodo) return;
-    const periodo = this.periodoSeleccionado();
-    this.gestionandoAccionPeriodo.set(true);
-    this.errorAccionPeriodo.set(null);
-    this.exitoAccionPeriodo.set(null);
-    this.errorAprobacionOperativa.set(null);
-    this.errorCierreOperativo.set(null);
-    void (async () => {
-      try {
-        const aprobado = await this.procesoMensual.aprobarResultadoPreliminarOperativamente({
-          idCalculoPeriodo,
-          periodo,
-          advertencias: advertenciasAprobacion ?? [],
-        });
-        this.aplicarSnapshotActivo(aprobado);
-
-        const cerrado = await this.procesoMensual.cerrarNominaOperativamente({
-          idCalculoPeriodo,
-          periodo,
-        });
-        this.aplicarSnapshotActivo(cerrado);
-        const liq = await this.procesoMensual.contarLiquidacionesGeneradas(
-          periodo,
-          cerrado.idCalculoPeriodo ?? null,
-        );
-        this.liquidacionesGeneradasCount.set(liq);
-        void this.cargarSnapshotCompletoActivo(periodo);
-        this.exitoAccionPeriodo.set('La nómina quedó confirmada como base oficial del período.');
-      } catch (e: unknown) {
-        // Si falla el cierre tras aprobar, dejamos el snapshot aprobado y exponemos error de cierre.
-        const msg = e instanceof Error ? e.message : String(e);
-        if (this.snapshotActivo()?.aprobacionOperativa?.estado === 'aprobado_operativamente') {
-          this.errorCierreOperativo.set(
-            errorConContexto(
-              'No se pudo cerrar operativamente la nomina',
-              e,
-              'La revisión quedó registrada. Reintenta la confirmación para cerrar.',
-            ),
-          );
-        } else {
-          this.errorAprobacionOperativa.set(
-            errorConContexto(
-              'No se pudo registrar la aprobacion operativa',
-              e,
-              msg || 'Intenta nuevamente o revisa la conexion.',
-            ),
-          );
-        }
-      } finally {
-        this.gestionandoAccionPeriodo.set(false);
-      }
-    })();
-  }
-
   ejecutarAbrirNomina(input: { observacion?: string; forzar?: boolean } = {}): void {
     const snapshot = this.snapshotActivo();
     if (!snapshot?.idCalculoPeriodo) return;
@@ -681,7 +623,7 @@ export class ProcesoMensualPeriodoStore {
       .then((persistido) => {
         this.aplicarSnapshotActivo(persistido);
         void this.cargarSnapshotCompletoActivo(periodo);
-        this.exitoAccionPeriodo.set('La nómina volvió a revisión. Puede corregir datos antes de confirmarla nuevamente.');
+        this.exitoAccionPeriodo.set('La nómina volvió a revisión. Puede corregir datos antes de aprobarla y cerrar el período nuevamente.');
       })
       .catch((e: unknown) => {
         this.errorAccionPeriodo.set(
